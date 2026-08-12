@@ -20,10 +20,10 @@ import { applyPatch, type Operation } from 'rfc6902';
 import { reject, rejectionFromZod, type PatchRejection } from '../patch/reject';
 import {
   lookSchema,
+  nonFiniteNumbers,
   simHashOf,
   simSchema,
   validateLook,
-  worldDocSchema,
   type WorldDoc,
 } from './worlddoc';
 
@@ -104,6 +104,13 @@ export function commitPart(doc: WorldDoc, patch: PartPatch): RevisionResult {
   const shape = simSchema.safeParse(draft);
   if (!shape.success) return rejectionFromZod(shape.error, ['sim']);
 
+  // Konečnost platí pro `sim` NALÉHAVĚJI než pro `look`: `NaN`, `Infinity`
+  // i `null` kolabují v kanonickém zápisu na tentýž řetězec, takže by se
+  // dokumenty s různou sémantikou schovaly za jeden `simHash` — a hash je tady
+  // kotva certifikátu, ne jen kontrolní součet.
+  const nonFinite = nonFiniteNumbers(shape.data, '/sim');
+  if (nonFinite.length > 0) return reject('STRUCTURE', '/sim', 'finite numbers throughout', nonFinite[0]);
+
   // `simHash` se přepočítá, protože se změnila právě ta část, ze které se počítá.
   const withSim = { ...doc, sim: shape.data, simRevision: doc.simRevision + 1 };
   const committed: WorldDoc = { ...withSim, simHash: simHashOf(withSim) };
@@ -153,8 +160,8 @@ export function isStale(result: RevisionResult): boolean {
   return result.verdict === 'REJECTED' && result.expected.startsWith('baseRevision');
 }
 
-/** Validace celého dokumentu. Používá ji test i migrace. */
-export function parseWorldDoc(input: unknown): WorldDoc | null {
-  const parsed = worldDocSchema.safeParse(input);
-  return parsed.success ? parsed.data : null;
-}
+// `parseWorldDoc` tu **záměrně není**. Vracela `WorldDoc` po pouhém `safeParse`,
+// tedy bez kontroly verze i bez kontroly `simHash`, pod jménem, které vypadá
+// jako ta samozřejmá cesta — a příští volající, který potřebuje „přečíst
+// dokument", by sáhl po ní a požadavek „migrace explicitně odmítá" by se tiše
+// stal doporučením. Jediný vstup je `migrateWorldDoc`.

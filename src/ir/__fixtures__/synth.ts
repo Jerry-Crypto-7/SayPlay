@@ -18,7 +18,7 @@
 import type { Operation } from 'rfc6902';
 
 import { createStreams, nextInt } from '../../sim/rng';
-import { IR_VERSION, sealSimHash, type LookPart, type SimPart, type WorldDoc } from '../worlddoc';
+import { WORLD_DOC_VERSION, sealSimHash, type LookPart, type SimPart, type WorldDoc } from '../worlddoc';
 
 /** Systémový default vzhledu. V P1 ho emituje SYSTÉM, ne model (`p1Status`). */
 export function defaultLook(): LookPart {
@@ -57,7 +57,7 @@ function simOf(seed: number): SimPart {
 /** Hotový dokument se zapečeným `simHash`. */
 export function synthWorld(seed: number): WorldDoc {
   return sealSimHash({
-    irVersion: IR_VERSION,
+    irVersion: WORLD_DOC_VERSION,
     simRevision: 0,
     lookRevision: 0,
     simHash: '',
@@ -91,10 +91,16 @@ export function synthPair(seed: number): SynthPair {
     { op: 'add', path: '/sockets/s_side', value: [2, 2] },
   ];
 
+  // `sim` je uvnitř `unknown` (kořen je uzavřený, vnitřek otevřený — viz
+  // `worlddoc.ts`), takže se tady zúží na tvar, který tenhle generátor sám vydal.
+  const simA = worldA.sim as SimPart & {
+    sockets: Record<string, readonly [number, number]>;
+    state: Record<string, unknown>;
+  };
   const simB: SimPart = {
-    ...worldA.sim,
-    sockets: { ...worldA.sim.sockets, s_side: [2, 2] },
-    state: { ...worldA.sim.state, counters: { keys: keysAfter } },
+    ...simA,
+    sockets: { ...simA.sockets, s_side: [2, 2] },
+    state: { ...simA.state, counters: { keys: keysAfter } },
   };
 
   const worldB = sealSimHash({

@@ -21,7 +21,15 @@
 
 import { z } from 'zod';
 
-export const IR_VERSION = 'world-ir-v1';
+/**
+ * Verze **dokumentu**, ne sníženého IR.
+ *
+ * Zmrazený korpus nese `irVersion: "v1"` — jsou to dvě různé věci a splést je
+ * znamená odmítnout každou zmrazenou emisi: `types.ts` má `IR_VERSION =
+ * 'world-ir-v1'`, což verzuje **snížené** IR, které čte verifikátor. Povrchový
+ * dokument, který emituje model, se verzuje tímhle.
+ */
+export const WORLD_DOC_VERSION = 'v1';
 
 /** Pole `sim`, doslova ze zmrazeného protokolu. Pořadí je jeho, ne naše. */
 export const SIM_FIELDS = [
@@ -46,47 +54,78 @@ export const LOOK_FIELDS = [
   'audio',
 ] as const;
 
-/** Topologie scény podle §13.3. Model ji emituje, systém ji jen validuje. */
-export const LAYOUT_TYPES = ['grid', 'ring', 'corridor', 'tower', 'cave'] as const;
+/**
+ * Topologie scény podle §13.3. Model ji emituje, systém ji jen validuje.
+ *
+ * **Zmrazený soubor si tu odporuje a je to zapsané, ne zahlazené:**
+ * `sim.fieldNotes.layout` jmenuje pět typů, `layoutTypeIs` jich jmenuje šest —
+ * navíc `maze`. Rozhodují **živé artefakty**: kontrakt C08 má požadavek
+ * `layoutTypeIs: "maze"` s `nonVacuous: true` a jeho zmrazená odpověď má
+ * `expectedVerdict: FULFILLED`. Užší varianta by tedy udělala C08 nesplnitelným
+ * a offline distribuční bránu nedosažitelnou konstrukcí. Platí šest.
+ */
+export const LAYOUT_TYPES = ['grid', 'ring', 'corridor', 'tower', 'cave', 'maze'] as const;
 
 const finiteInt = z.int();
-const cell = z.tuple([finiteInt, finiteInt]);
-const aabb = z.tuple([finiteInt, finiteInt, finiteInt, finiteInt]);
 
 /**
- * `sim` — hloubka schématu je záměrně mělká.
+ * `sim` a `look` — **kořen je uzavřený, vnitřek otevřený**.
  *
- * Zmrazený protokol mrazí **tvar**, ne implementaci: naplnění emisní cesty pro
- * `layout` je P5 T506. Vymýšlet tady hlubší strukturu, než jakou protokol
- * popisuje, by znamenalo zmrazit něco, co nikdo neodsouhlasil — a rozejít se
- * s dokumentem, který je nadřazený. Co protokol jmenuje, to se kontroluje;
- * co nechává na P5, zůstává otevřené uvnitř a **uzavřené v kořeni**.
+ * Zmrazený protokol mrazí seznam **kořenových polí** a `additionalProperties:
+ * false`; hlubší tvar výslovně odkládá (`layout` naplňuje P5 T506, `look`
+ * generátor rodin taky). Typovat vnitřek podle vlastní představy znamená rozejít
+ * se se zmrazeným korpusem — a přesně to se tady jednou stalo: první znění
+ * žádalo `layout.type`, `grid.width/height` a `entities` jako pole, zatímco
+ * korpus nese `layout.kind`, `grid.cell` a `entities` jako záznam. **0 z 15**
+ * zmrazených emisí prošlo, aniž si toho kterýkoli test všiml, protože se
+ * validovaly jen fixtury autorované ve stejném commitu.
+ *
+ * Proto `z.unknown()` uvnitř a `.strict()` v kořeni — a proto konformanční test
+ * nad **zmrazeným korpusem**, ne nad vlastní fixturou. Ten je tu tím skutečným
+ * oraclem; schéma samo umí jen jména.
  */
 export const simSchema = z
   .object({
-    layout: z.object({ type: z.enum(LAYOUT_TYPES) }).loose(),
-    grid: z.object({ width: finiteInt.min(1), height: finiteInt.min(1) }).loose(),
-    sockets: z.record(z.string(), cell),
-    collisionAabb: z.record(z.string(), aabb),
-    entities: z.array(z.object({ stableId: z.string() }).loose()),
-    rules: z.array(z.object({ ruleId: z.string() }).loose()),
-    state: z.object({}).loose(),
-    witness: z.object({ ops: z.array(z.unknown()) }).loose(),
+    layout: z.unknown(),
+    grid: z.unknown(),
+    sockets: z.unknown(),
+    collisionAabb: z.unknown(),
+    entities: z.unknown(),
+    rules: z.unknown(),
+    state: z.unknown(),
+    witness: z.unknown(),
   })
   .strict();
 
 export const lookSchema = z
   .object({
-    modules: z.record(z.string(), z.unknown()),
-    palette: z.array(z.string()),
-    lightRig: z.object({}).loose(),
-    atmosphere: z.object({}).loose(),
-    materialRoles: z.record(z.string(), z.string()),
-    camera: z.object({}).loose(),
-    audio: z.object({}).loose(),
+    modules: z.unknown(),
+    palette: z.unknown(),
+    lightRig: z.unknown(),
+    atmosphere: z.unknown(),
+    materialRoles: z.unknown(),
+    camera: z.unknown(),
+    audio: z.unknown(),
   })
   .strict();
 
+/**
+ * Dokument, jak ho **emituje model** — bez `simHash`.
+ *
+ * Hash počítá systém ze `sim`, ne model; kdyby ho emitoval, prohlásil by si sám
+ * identitu své vlastní části. Zmrazené odpovědi ho proto nenesou.
+ */
+export const worldEmissionSchema = z
+  .object({
+    irVersion: z.string(),
+    simRevision: finiteInt.min(0),
+    lookRevision: finiteInt.min(0),
+    sim: simSchema,
+    look: lookSchema,
+  })
+  .strict();
+
+/** Dokument, jak ho drží systém — se zapečetěným `simHash`. */
 export const worldDocSchema = z
   .object({
     irVersion: z.string(),
@@ -176,26 +215,33 @@ export interface LookVerdict {
  * Rozpočty z §13.2 tady **nejsou** a je to záměr, ne opomenutí: `p1Status` je
  * má až v P5. Tenhle validátor v P1 dělá schéma a konečnost.
  */
+/**
+ * Nekonečná a `NaN` čísla, kdekoli ve stromu.
+ *
+ * Platí pro **obě** části a pro `sim` to platí naléhavěji: `JSON.stringify` je
+ * převádí na `null`, takže `NaN`, `Infinity` i skutečné `null` **kolabují na
+ * tentýž kanonický zápis a tedy na tentýž `simHash`**. Dokument by prošel
+ * migrací jako platný (hash by seděl na svou vlastní `sim`), a po průchodu
+ * uložištěm nebo sítí by se sémantika změnila, zatímco kotva certifikátu by
+ * zůstala stejná. To není kolize po narozeninovém paradoxu — je to determinis­tický
+ * kolaps dosažitelný jednou operací.
+ */
+export function nonFiniteNumbers(value: unknown, path = ''): string[] {
+  if (typeof value === 'number')
+    return Number.isFinite(value) ? [] : [`${path}: ${String(value)} is not finite`];
+  if (value === null || typeof value !== 'object') return [];
+  if (Array.isArray(value)) return value.flatMap((item, i) => nonFiniteNumbers(item, `${path}/${i}`));
+  return Object.entries(value as Record<string, unknown>).flatMap(([key, item]) =>
+    nonFiniteNumbers(item, `${path}/${key}`),
+  );
+}
+
 export function validateLook(look: unknown): LookVerdict {
   const parsed = lookSchema.safeParse(look);
   if (!parsed.success)
     return { ok: false, issues: parsed.error.issues.map((issue) => `schema:/${issue.path.join('/')}: ${issue.message}`) };
 
-  const issues: string[] = [];
-  const walk = (value: unknown, path: string): void => {
-    if (typeof value === 'number') {
-      if (!Number.isFinite(value)) issues.push(`${path}: ${String(value)} is not finite`);
-      return;
-    }
-    if (value === null || typeof value !== 'object') return;
-    if (Array.isArray(value)) {
-      for (let i = 0; i < value.length; i += 1) walk(value[i], `${path}/${i}`);
-      return;
-    }
-    for (const [key, item] of Object.entries(value as Record<string, unknown>)) walk(item, `${path}/${key}`);
-  };
-  walk(parsed.data, '');
-
+  const issues = nonFiniteNumbers(parsed.data, '');
   return { ok: issues.length === 0, issues };
 }
 
@@ -227,12 +273,17 @@ export function migrateWorldDoc(input: unknown): MigrationVerdict {
   if (!parsed.success)
     return { ok: false, doc: null, reason: `not a world doc: ${parsed.error.issues[0].message}` };
 
-  if (parsed.data.irVersion !== IR_VERSION)
+  if (parsed.data.irVersion !== WORLD_DOC_VERSION)
     return {
       ok: false,
       doc: null,
-      reason: `no migration path from ${parsed.data.irVersion} to ${IR_VERSION}; a migrated world needs a freshly verified witness`,
+      reason: `no migration path from ${parsed.data.irVersion} to ${WORLD_DOC_VERSION}; a migrated world needs a freshly verified witness`,
     };
+
+  // Nekonečno ve `sim` kolabuje na `null` v kanonickém zápisu, takže hash by
+  // seděl a přesto by dokument po průchodu uložištěm znamenal něco jiného.
+  const nonFinite = nonFiniteNumbers(parsed.data.sim, '/sim');
+  if (nonFinite.length > 0) return { ok: false, doc: null, reason: nonFinite[0] };
 
   if (parsed.data.simHash !== simHashOf(parsed.data))
     return { ok: false, doc: null, reason: 'simHash does not match the sim part it claims to describe' };

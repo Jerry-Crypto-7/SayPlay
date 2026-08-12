@@ -11,7 +11,14 @@
 import { describe, expect, it } from 'vitest';
 
 import { commitMixed, commitPart, type PartPatch } from '../revision';
-import { IR_VERSION, canonicalHash, migrateWorldDoc, simHashOf, validateLook } from '../worlddoc';
+import {
+  WORLD_DOC_VERSION,
+  canonicalHash,
+  migrateWorldDoc,
+  sealSimHash,
+  simHashOf,
+  validateLook,
+} from '../worlddoc';
 import { defaultLook, synthWorld } from '../__fixtures__/synth';
 
 const world = synthWorld(20260812);
@@ -154,10 +161,14 @@ describe('smíšený požadavek se necheká na sebe', () => {
   });
 
   it('a vadný `sim` vzhledový commit nezruší', () => {
+    // Vnitřek `sim` je ve schématu otevřený (kořen uzavřený), takže „špatný typ"
+    // ho neshodí. Co ho shodí, je NEKONEČNO — a je to ta vada, na které záleží:
+    // v kanonickém zápisu kolabuje na `null`, takže by se dokumenty s různou
+    // sémantikou schovaly za jeden `simHash`.
     const bad: PartPatch = {
       part: 'sim',
       baseRevision: 0,
-      operations: [{ op: 'replace', path: '/grid/width', value: 'wide' }],
+      operations: [{ op: 'replace', path: '/state/counters/keys', value: Number.POSITIVE_INFINITY }],
     };
     const mixed = commitMixed(world, lookPatch(0), bad);
 
@@ -167,6 +178,54 @@ describe('smíšený požadavek se necheká na sebe', () => {
     expect(mixed.doc.lookRevision).toBe(1);
     expect(mixed.doc.simRevision).toBe(0);
     expect(mixed.doc.simHash).toBe(world.simHash);
+  });
+});
+
+/**
+ * Konečnost čísel je v `sim` **naléhavější** než v `look`, protože tam je hash.
+ *
+ * `JSON.stringify` převádí `NaN` i `Infinity` na `null`, takže tři sémanticky
+ * různé dokumenty mají tentýž kanonický zápis a tentýž `simHash`. Dokument by
+ * prošel migrací jako platný — hash by seděl na svou vlastní `sim` — a po
+ * průchodu uložištěm nebo sítí by znamenal něco jiného, zatímco kotva
+ * certifikátu by zůstala stejná. Není to narozeninová kolize; je to
+ * deterministický kolaps dosažitelný jednou operací.
+ */
+describe('nekonečno se do hashované části nedostane', () => {
+  const write = (value: number | null) =>
+    commitPart(world, {
+      part: 'sim',
+      baseRevision: 0,
+      operations: [{ op: 'replace', path: '/state/counters/keys', value }],
+    });
+
+  it('`NaN` ani `Infinity` se do `sim` necommitnou', () => {
+    for (const value of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+      const result = write(value);
+      expect(result.verdict, String(value)).toBe('REJECTED');
+      if (result.verdict !== 'REJECTED') continue;
+      expect(result.detail, String(value)).toContain('counters/keys');
+    }
+  });
+
+  it('a kdyby se commitly, měly by tentýž hash jako `null` — proto ta kontrola', () => {
+    // Doklad té kolize, ne hypotéza: kanonický zápis všech tří je totožný.
+    const withValue = (value: unknown) => canonicalHash({ counters: { keys: value } });
+    expect(withValue(Number.NaN)).toBe(withValue(null));
+    expect(withValue(Number.POSITIVE_INFINITY)).toBe(withValue(null));
+  });
+
+  it('migrace dokument s nekonečnem ve `sim` odmítne, i když mu hash sedí', () => {
+    // Hash SEDÍ — spočítal se z téže vadné `sim`. Kdyby migrace kontrolovala jen
+    // hash, prošlo by to jako platný svět.
+    const poisoned = sealSimHash({
+      ...world,
+      sim: { ...world.sim, state: { counters: { keys: Number.POSITIVE_INFINITY } } },
+    });
+    expect(poisoned.simHash).toBe(simHashOf(poisoned));
+    const verdict = migrateWorldDoc(poisoned);
+    expect(verdict.ok).toBe(false);
+    expect(verdict.reason).toContain('not finite');
   });
 });
 
@@ -206,7 +265,7 @@ describe('verzování a migrace — mezera §11.3', () => {
   it('aktuální verze projde a hash se ověří proti obsahu', () => {
     const verdict = migrateWorldDoc(world);
     expect(verdict.ok).toBe(true);
-    expect(verdict.doc?.irVersion).toBe(IR_VERSION);
+    expect(verdict.doc?.irVersion).toBe(WORLD_DOC_VERSION);
   });
 
   it('neznámá verze je EXPLICITNĚ odmítnuta, ne mlčky přijata', () => {
