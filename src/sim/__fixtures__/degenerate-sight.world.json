@@ -1,0 +1,59 @@
+{
+  "_note": "Degenerovaný paprsek: obě entity stojí ve STEJNÉ kvantované buňce, takže `onSeen` musí rozhodnout na první iteraci průchodu mřížkou. Tohle je ta díra, kterou review P1 kolo 2 prostřelilo první čtyři podmínky totality — omezovaly POČET položek fáze, ne PRÁCI uvnitř jedné položky. Vnitřní `while` nad degenerovaným paprskem by všechny čtyři splnil a `step()` by se stejně nevrátil.",
+  "trace": [],
+  "space": {
+    "sockets": { "s_hall": [2, 2] },
+    "zones": {},
+    "blocked": [],
+    "tags": {}
+  },
+  "ir": {
+    "irVersion": "world-ir-v1",
+    "limits": {
+      "maxEntities": 2,
+      "maxSlots": 4,
+      "maxRules": 4,
+      "maxRuleFiringsPerTick": 4,
+      "maxQueueDepth": 4,
+      "maxAgents": 1,
+      "memorySlotsPerAgent": 0,
+      "gridWidth": 4,
+      "gridHeight": 4
+    },
+    "slots": [{ "space": "flag", "id": "seen", "initial": false }],
+    "entities": [
+      {
+        "stableId": "watcher",
+        "role": "actor",
+        "socket": "s_hall",
+        "states": ["idle"],
+        "initialState": "idle",
+        "initialLocked": false
+      },
+      {
+        "stableId": "mark",
+        "role": "prop",
+        "socket": "s_hall",
+        "states": ["idle"],
+        "initialState": "idle",
+        "initialLocked": false
+      }
+    ],
+    "nodes": [
+      { "kind": "ref", "ref": { "space": "observed", "fact": "visible", "args": ["watcher", "mark"] } },
+      { "kind": "literal", "value": true }
+    ],
+    "predicates": [{ "predicateId": "p.onSeen", "source": "onSeen", "expr": 0 }],
+    "effects": [{ "op": "assign", "ref": { "space": "flag", "slot": "seen" }, "value": 1 }],
+    "rules": [
+      {
+        "ruleId": "r.seen",
+        "phase": 0,
+        "priority": 0,
+        "trigger": { "kind": "onEdge", "predicate": "p.onSeen", "became": true },
+        "guard": null,
+        "effects": [0]
+      }
+    ]
+  }
+}
