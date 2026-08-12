@@ -1,0 +1,52 @@
+{
+  "_note": "Zmrazená vada M25 (`insta_win`) v podobě, kterou umí spustit interpret: výhra je pravdivá už při setupu, protože `onStart` padne v tiku 0 bez jediného vstupu. Odmítá se SPUŠTĚNÍM, ne hledáním tvaru — svět, který k témuž dojde přes stráž pravdivou při setupu, by tvarové hledání minulo.",
+  "trace": [],
+  "space": {
+    "sockets": { "s_start": [1, 1] },
+    "zones": {},
+    "blocked": [],
+    "tags": {}
+  },
+  "ir": {
+    "irVersion": "world-ir-v1",
+    "limits": {
+      "maxEntities": 4,
+      "maxRules": 4,
+      "maxRuleFiringsPerTick": 4,
+      "maxQueueDepth": 4,
+      "maxAgents": 1,
+      "memorySlotsPerAgent": 0,
+      "gridWidth": 4,
+      "gridHeight": 4
+    },
+    "slots": [{ "space": "flag", "id": "cleared", "initial": true }],
+    "entities": [
+      {
+        "stableId": "hero",
+        "role": "actor",
+        "socket": "s_start",
+        "states": ["idle"],
+        "initialState": "idle",
+        "initialLocked": false
+      }
+    ],
+    "nodes": [
+      { "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } },
+      { "kind": "ref", "ref": { "space": "flag", "slot": "cleared" } },
+      { "kind": "literal", "value": true },
+      { "kind": "compare", "lhs": 1, "op": "=", "rhs": 2 }
+    ],
+    "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+    "effects": [{ "op": "win" }],
+    "rules": [
+      {
+        "ruleId": "r.win",
+        "phase": 0,
+        "priority": 0,
+        "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true },
+        "guard": 3,
+        "effects": [0]
+      }
+    ]
+  }
+}

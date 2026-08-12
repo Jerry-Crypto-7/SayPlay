@@ -1,0 +1,129 @@
+{
+  "_note": "Regresní síť pro cyklus stavů přes `onStateEnter`. Tři entity oscilují mezi `s1` a `s2`; v tiku 0 vstoupí do `s1` všechny tři naráz, takže se o spuštění hlásí tři pravidla při stropu dvou na tik. Strop je překročen, tik se ATOMICKY přeruší a runtime přejde do `runtimeFault` — poloviční tik by nechal svět ve stavu, který replay nezopakuje.",
+  "trace": [],
+  "space": {
+    "sockets": { "s_a": [0, 0], "s_b": [1, 0], "s_c": [2, 0] },
+    "zones": {},
+    "blocked": [],
+    "tags": {}
+  },
+  "ir": {
+    "irVersion": "world-ir-v1",
+    "limits": {
+      "maxEntities": 4,
+      "maxRules": 8,
+      "maxRuleFiringsPerTick": 2,
+      "maxQueueDepth": 4,
+      "maxAgents": 1,
+      "memorySlotsPerAgent": 0,
+      "gridWidth": 4,
+      "gridHeight": 4
+    },
+    "slots": [],
+    "entities": [
+      {
+        "stableId": "ea",
+        "role": "prop",
+        "socket": "s_a",
+        "states": ["s1", "s2"],
+        "initialState": "s1",
+        "initialLocked": false
+      },
+      {
+        "stableId": "eb",
+        "role": "prop",
+        "socket": "s_b",
+        "states": ["s1", "s2"],
+        "initialState": "s1",
+        "initialLocked": false
+      },
+      {
+        "stableId": "ec",
+        "role": "prop",
+        "socket": "s_c",
+        "states": ["s1", "s2"],
+        "initialState": "s1",
+        "initialLocked": false
+      }
+    ],
+    "nodes": [
+      { "kind": "ref", "ref": { "space": "entityState", "entity": "ea" } },
+      { "kind": "literal", "value": "s1" },
+      { "kind": "compare", "lhs": 0, "op": "=", "rhs": 1 },
+      { "kind": "literal", "value": "s2" },
+      { "kind": "compare", "lhs": 0, "op": "=", "rhs": 3 },
+      { "kind": "ref", "ref": { "space": "entityState", "entity": "eb" } },
+      { "kind": "compare", "lhs": 5, "op": "=", "rhs": 1 },
+      { "kind": "compare", "lhs": 5, "op": "=", "rhs": 3 },
+      { "kind": "ref", "ref": { "space": "entityState", "entity": "ec" } },
+      { "kind": "compare", "lhs": 8, "op": "=", "rhs": 1 },
+      { "kind": "compare", "lhs": 8, "op": "=", "rhs": 3 }
+    ],
+    "predicates": [
+      { "predicateId": "p.onStateEnter.ea.s1", "source": "onStateEnter", "expr": 2 },
+      { "predicateId": "p.onStateEnter.ea.s2", "source": "onStateEnter", "expr": 4 },
+      { "predicateId": "p.onStateEnter.eb.s1", "source": "onStateEnter", "expr": 6 },
+      { "predicateId": "p.onStateEnter.eb.s2", "source": "onStateEnter", "expr": 7 },
+      { "predicateId": "p.onStateEnter.ec.s1", "source": "onStateEnter", "expr": 9 },
+      { "predicateId": "p.onStateEnter.ec.s2", "source": "onStateEnter", "expr": 10 }
+    ],
+    "effects": [
+      { "op": "assign", "ref": { "space": "entityState", "entity": "ea" }, "value": 3 },
+      { "op": "assign", "ref": { "space": "entityState", "entity": "ea" }, "value": 1 },
+      { "op": "assign", "ref": { "space": "entityState", "entity": "eb" }, "value": 3 },
+      { "op": "assign", "ref": { "space": "entityState", "entity": "eb" }, "value": 1 },
+      { "op": "assign", "ref": { "space": "entityState", "entity": "ec" }, "value": 3 },
+      { "op": "assign", "ref": { "space": "entityState", "entity": "ec" }, "value": 1 }
+    ],
+    "rules": [
+      {
+        "ruleId": "r.ea.up",
+        "phase": 0,
+        "priority": 0,
+        "trigger": { "kind": "onEdge", "predicate": "p.onStateEnter.ea.s1", "became": true },
+        "guard": null,
+        "effects": [0]
+      },
+      {
+        "ruleId": "r.ea.down",
+        "phase": 0,
+        "priority": 1,
+        "trigger": { "kind": "onEdge", "predicate": "p.onStateEnter.ea.s2", "became": true },
+        "guard": null,
+        "effects": [1]
+      },
+      {
+        "ruleId": "r.eb.up",
+        "phase": 0,
+        "priority": 2,
+        "trigger": { "kind": "onEdge", "predicate": "p.onStateEnter.eb.s1", "became": true },
+        "guard": null,
+        "effects": [2]
+      },
+      {
+        "ruleId": "r.eb.down",
+        "phase": 0,
+        "priority": 3,
+        "trigger": { "kind": "onEdge", "predicate": "p.onStateEnter.eb.s2", "became": true },
+        "guard": null,
+        "effects": [3]
+      },
+      {
+        "ruleId": "r.ec.up",
+        "phase": 0,
+        "priority": 4,
+        "trigger": { "kind": "onEdge", "predicate": "p.onStateEnter.ec.s1", "became": true },
+        "guard": null,
+        "effects": [4]
+      },
+      {
+        "ruleId": "r.ec.down",
+        "phase": 0,
+        "priority": 5,
+        "trigger": { "kind": "onEdge", "predicate": "p.onStateEnter.ec.s2", "became": true },
+        "guard": null,
+        "effects": [5]
+      }
+    ]
+  }
+}
