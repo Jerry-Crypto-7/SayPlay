@@ -662,6 +662,59 @@ describe('podmínka 5 — jméno meze se dá přebít, a pravidlo to musí pozna
     expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
   });
 
+  it('otrávený `limits` se neschová za neprůhledný parametr', () => {
+    // `20b8a56` tenhle tvar odmítalo a `b6cc8c6` ho pustilo — zastavení
+    // u neprůhledné vazby je správně pro číselnou mez, ne pro identitu objektu.
+    const facts = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(r, doc){',
+        '  const limits = { ...r.limits, maxSlots: doc.ir.slots.length };',
+        '  const scan = (limits) => { for (let i = 0; i < limits.maxSlots; i += 1) { touch(i); } };',
+        '  scan(limits);',
+        '}',
+      ].join('\n'),
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
+  it('mez schovaná v hlavičce `for` neprojde — je to učebnicový idiom', () => {
+    const facts = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(r, doc){',
+        '  const bound = r.limits.maxSlots;',
+        '  for (let i = 0, bound = doc.ir.slots.length; i < bound; i += 1) { touch(i); }',
+        '}',
+      ].join('\n'),
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
+  it('ani parametr `catch`, ani parametr šipky se stručným tělem', () => {
+    const caught = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(r){',
+        '  const bound = r.limits.maxSlots;',
+        '  try { risky(); } catch (bound) { for (let i = 0; i < bound; i += 1) { touch(i); } }',
+        '}',
+      ].join('\n'),
+    );
+    const concise = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(r, doc){',
+        '  const bound = r.limits.maxSlots;',
+        '  const scan = (bound) => run(() => { for (let i = 0; i < bound; i += 1) { touch(i); } });',
+        '  scan(doc.ir.slots.length);',
+        '}',
+      ].join('\n'),
+    );
+    expect(caught.sites.map((site) => site.bounded)).toEqual([false]);
+    expect(concise.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
   it('zápis přes `!` nebo `as` je taky zápis', () => {
     const nonNull = analyseModule(
       'synthetic.ts',

@@ -272,18 +272,49 @@ function declarationsIn(node: ts.Node): Map<string, Binding> {
       if (!ts.isOmittedExpression(element)) bind(element.name);
   };
 
-  // Parametry patří do rozsahu těla funkce, ne do toho okolo.
-  const owner: ts.Node | undefined = node.parent;
-  const isFunctionLike =
-    owner !== undefined &&
-    (ts.isFunctionDeclaration(owner) ||
-      ts.isFunctionExpression(owner) ||
-      ts.isArrowFunction(owner) ||
-      ts.isMethodDeclaration(owner) ||
-      ts.isConstructorDeclaration(owner) ||
-      ts.isGetAccessorDeclaration(owner) ||
-      ts.isSetAccessorDeclaration(owner));
-  if (isFunctionLike && owner.body === node) for (const parameter of owner.parameters) bind(parameter.name);
+  const declare = (decl: ts.VariableDeclaration): void => {
+    if (ts.isIdentifier(decl.name)) found.set(decl.name.text, decl.initializer ?? null);
+    else bind(decl.name);
+  };
+
+  /**
+   * Parametry patří do rozsahu těla funkce.
+   *
+   * Chodí se **nahoru až k nejbližšímu skutečnému rozsahu**, ne jen na rodiče:
+   * šipka se stručným tělem žádný blok neotevírá, takže její parametry by jinak
+   * nebyl kde zapsat a `(bound) => run(() => { for (… i < bound …) })` by `bound`
+   * rozpustilo na vnější deklaraci *(nález review nad `b6cc8c6`)*. Cestou se
+   * posbírají i parametry `catch` — ta klauzule taky není funkce.
+   */
+  let cursor: ts.Node | undefined = node.parent;
+  while (cursor !== undefined) {
+    if (
+      ts.isFunctionDeclaration(cursor) ||
+      ts.isFunctionExpression(cursor) ||
+      ts.isArrowFunction(cursor) ||
+      ts.isMethodDeclaration(cursor) ||
+      ts.isConstructorDeclaration(cursor) ||
+      ts.isGetAccessorDeclaration(cursor) ||
+      ts.isSetAccessorDeclaration(cursor)
+    )
+      for (const parameter of cursor.parameters) bind(parameter.name);
+    else if (ts.isCatchClause(cursor) && cursor.variableDeclaration !== undefined)
+      bind(cursor.variableDeclaration.name);
+    else if (
+      ts.isBlock(cursor) ||
+      ts.isSourceFile(cursor) ||
+      ts.isCaseBlock(cursor) ||
+      ts.isForStatement(cursor)
+    )
+      break; // vlastní rozsah, ten si své deklarace zapíše sám
+    cursor = cursor.parent;
+  }
+
+  // Hlavička `for` je vlastní rozsah a `for (let i = 0, bound = arr.length; …)`
+  // je učebnicový idiom — bez tohohle by `bound` stínilo vnější mez a smyčka by
+  // prošla jako ohraničená.
+  if (ts.isForStatement(node) && node.initializer !== undefined && ts.isVariableDeclarationList(node.initializer))
+    for (const decl of node.initializer.declarations) declare(decl);
 
   const statements: ts.Statement[] = ts.isCaseBlock(node)
     ? node.clauses.flatMap((clause) => [...clause.statements])
@@ -292,13 +323,7 @@ function declarationsIn(node: ts.Node): Map<string, Binding> {
       : [];
   for (const statement of statements) {
     if (!ts.isVariableStatement(statement)) continue;
-    for (const decl of statement.declarationList.declarations) {
-      if (!ts.isIdentifier(decl.name)) {
-        bind(decl.name);
-        continue;
-      }
-      found.set(decl.name.text, decl.initializer ?? null);
-    }
+    for (const decl of statement.declarationList.declarations) declare(decl);
   }
   return found;
 }
@@ -333,6 +358,28 @@ export function analyseModule(moduleName: string, source: string): ModuleFacts {
   };
 
   /**
+   * **Všechny** čitelné hodnoty jména v celém řetězci rozsahů, zvenčí neprůhledné
+   * vazby přeskočené.
+   *
+   * `lookup` se u neprůhledné vazby zastaví, a pro číselnou mez je to správně:
+   * hodnota parametru je neznámá, tedy cizí. Pro **identitu objektu mezí** je to
+   * ale slabé — `const limits = { ...r.limits, maxSlots: doc.ir.slots.length }`
+   * předaný do `(limits) => …` by se schoval za neprůhledný parametr a jméno by
+   * zase rozhodovalo samo *(regrese nalezená review nad `b6cc8c6`: `20b8a56` ten
+   * tvar odmítalo)*. Otázka „je to objekt mezí" se proto ptá celého řetězce:
+   * **existuje-li kdekoli čitelná deklarace toho jména, musí to být objekt mezí.**
+   */
+  const readableValues = (name: string): ts.Expression[] => {
+    if (reassigned.has(name)) return [];
+    const found: ts.Expression[] = [];
+    for (let i = scopes.length - 1; i >= 0; i -= 1) {
+      const value = scopes[i].get(name);
+      if (value) found.push(value);
+    }
+    return found;
+  };
+
+  /**
    * Nese tenhle výraz objekt deklarovaných mezí?
    *
    * Bez typové informace se `IrLimits` pozná jen podle jména, ale samotné jméno
@@ -356,8 +403,11 @@ export function analyseModule(moduleName: string, source: string): ModuleFacts {
     if (ts.isParenthesizedExpression(node)) return isLimitObject(node.expression, depth + 1);
     if (ts.isIdentifier(node)) {
       if (node.text !== LIMIT_OBJECT || reassigned.has(node.text)) return false;
-      const declaredAs = lookup(node.text);
-      return declaredAs === undefined || isLimitObject(declaredAs, depth + 1);
+      const values = readableValues(node.text);
+      // Žádná čitelná deklarace (destrukturace, parametr, import) → rozhoduje
+      // jméno. Jinak musí být objektem mezí každá z nich.
+      for (const value of values) if (!isLimitObject(value, depth + 1)) return false;
+      return true;
     }
     if (ts.isPropertyAccessExpression(node))
       return node.name.text === LIMIT_OBJECT && ts.isIdentifier(node.expression);
