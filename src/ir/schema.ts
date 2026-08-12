@@ -253,6 +253,14 @@ export function validateIrDoc(input: unknown): IrValidation {
     values.filter((value, position) => values.indexOf(value) !== position);
 
   for (const id of duplicates(doc.slots.map((slot) => slot.id))) fail(`duplicate slot id: ${id}`);
+  // Paměťový slot se za běhu adresuje `agent#index`, ne svým `id` — `checkRef`
+  // ho tak rozpouští a `interpreter.slotIdOf` z toho staví klíč do layoutu.
+  // Hlídat jedinečnost jen podle `id` proto pouští dvojici, která se v layoutu
+  // srazí, a `defineLayout` na ní **vyhodí výjimku** místo aby vznikl nález.
+  for (const address of duplicates(
+    doc.slots.filter((slot) => slot.space === 'memory').map((slot) => `${slot.agent}#${slot.index}`),
+  ))
+    fail(`duplicate memory slot ${address}`);
   for (const id of duplicates(doc.entities.map((entity) => entity.stableId)))
     fail(`duplicate stableId: ${id}`);
   for (const id of duplicates(doc.predicates.map((predicate) => predicate.predicateId)))

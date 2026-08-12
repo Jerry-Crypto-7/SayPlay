@@ -120,7 +120,7 @@ const STRUCTURE_POINTERS: readonly (readonly [RegExp, string])[] = [
   [/^effect (\d+)/, '/ir/effects'],
   [/^predicate /, '/ir/predicates'],
   [/^rule /, '/ir/rules'],
-  [/^duplicate slot id|^slot |^counter |^timer |^memory slot /, '/ir/slots'],
+  [/^duplicate slot id|^duplicate memory slot|^slot |^counter |^timer |^memory slot /, '/ir/slots'],
   [/^duplicate stableId|^entity /, '/ir/entities'],
   [/^entity count|^slot count|^rule count|^distinct memory agents/, '/ir/limits'],
   [/^ambiguous execution order/, '/ir/rules'],

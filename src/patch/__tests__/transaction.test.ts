@@ -215,6 +215,49 @@ describe('patch mimo `/ir` je pod stráží stejně jako graf', () => {
     expect(result.pointer).toContain('/space/sockets/');
   });
 
+  it('druhý paměťový slot na téže adrese je odmítnut — jeho identita není `id`', () => {
+    // Paměťový slot se za běhu adresuje `agent#index`; `id` je u něj dekorace.
+    // Hlídat jedinečnost podle `id` pouští dvojici, která se srazí až
+    // v `defineLayout` — a to je výjimka, ne definovaný přechod.
+    const roomy = applyWorldPatch(vault, [
+      { op: 'replace', path: '/ir/limits/memorySlotsPerAgent', value: 1 },
+      {
+        op: 'add',
+        path: '/ir/slots/-',
+        value: { space: 'memory', id: 'm_one', agent: 'hero', index: 0, values: ['a'], initial: 'a' },
+      },
+    ]);
+    expect(roomy.verdict).toBe('COMMITTED');
+    if (roomy.verdict !== 'COMMITTED') return;
+
+    const clash = applyWorldPatch(roomy.doc, [
+      {
+        op: 'add',
+        path: '/ir/slots/-',
+        value: { space: 'memory', id: 'm_two', agent: 'hero', index: 0, values: ['a'], initial: 'a' },
+      },
+    ]);
+    expect(clash).toMatchObject({
+      verdict: 'REJECTED',
+      reason: 'STRUCTURE',
+      pointer: '/ir/slots',
+    });
+
+    // A jiný index projde — kontrola musí odmítat srážku, ne paměť jako takovou.
+    const roomier = applyWorldPatch(roomy.doc, [
+      { op: 'replace', path: '/ir/limits/memorySlotsPerAgent', value: 2 },
+      {
+        op: 'add',
+        path: '/ir/slots/-',
+        value: { space: 'memory', id: 'm_two', agent: 'hero', index: 1, values: ['a'], initial: 'a' },
+      },
+    ]);
+    expect(roomier.verdict).toBe('COMMITTED');
+    if (roomier.verdict !== 'COMMITTED') return;
+    // Oracle je SPUŠTĚNÍ: dokument, který projde, musí jít postavit a odkrokovat.
+    expect(verifyWitness(roomier.doc, WITNESS).verdict).toBe('CERTIFIED');
+  });
+
   it('ale mřížka, do které se soketa vejdou, projde — jinak by kontrola jen zakazovala', () => {
     const result = applyWorldPatch(vault, [{ op: 'replace', path: '/ir/limits/gridWidth', value: 16 }]);
     expect(result.verdict).toBe('COMMITTED');
