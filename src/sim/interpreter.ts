@@ -29,7 +29,7 @@
 
 import { atTickBoundary, evalBool, evalNode, factKey, type Observation } from '../ir/eval';
 import type { EntityDecl, IrDoc, IrEffect, IrLimits, IrRule, SlotDecl, StateRef } from '../ir/types';
-import { pairBound, pathBound, phaseBound, settleItemBound, sightBound, type Phase } from './phases';
+import { pairBound, pathBound, phaseBound, sightBound, type Phase } from './phases';
 import { createState, defineLayout, readSlot, writeSlot, type SlotSpec, type StateLayout } from './state';
 
 // ---------------------------------------------------------------------------
@@ -672,9 +672,14 @@ function applyEffect(runtime: Runtime, effect: IrEffect, obs: Observation): Effe
 function settle(runtime: Runtime, counts: Record<Phase, number>): void {
   const { layout, limits, doc, entityOrder } = runtime;
 
+  // Časovače jsou SLOTY, takže mez je `maxSlots`. Mez odvozená z entit by tuhle
+  // smyčku uřízla uprostřed deklarované tabulky a časovač za řezem by se nikdy
+  // nesnížil — tik by dál terminoval, `onTimerEnd` by nikdy nenastalo a svět by
+  // zamrznul beze stopy. Je to táž vada, kvůli které v téhle úloze vzniklo
+  // `maxSlots`, jen v sesterské smyčce.
   const slotCount = doc.ir.slots.length;
-  const settleBound = settleItemBound(limits);
-  for (let i = 0; i < settleBound && i < slotCount; i += 1) {
+  const timerBound = limits.maxSlots;
+  for (let i = 0; i < timerBound && i < slotCount; i += 1) {
     counts.settle += 1;
     const decl = doc.ir.slots[i];
     if (decl.space !== 'timer') continue;
@@ -683,7 +688,9 @@ function settle(runtime: Runtime, counts: Record<Phase, number>): void {
     if (left > 0) writeSlot(layout, runtime.state, id, left - 1);
   }
 
-  for (let i = 0; i < settleBound && i < entityOrder.length; i += 1) {
+  // Zmrazení a příkazy pohybu jsou ENTITY, takže mez je `maxEntities`.
+  const entityBound = limits.maxEntities;
+  for (let i = 0; i < entityBound && i < entityOrder.length; i += 1) {
     counts.settle += 1;
     const id = entityOrder[i];
     const frozen = readSlot(layout, runtime.state, entitySlotId(id, 'freeze'));

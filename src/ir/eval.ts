@@ -1,5 +1,5 @@
 import { nodeValueKind } from './schema';
-import { NO_TARGET, type IrDoc, type LiteralValue, type StateRef } from './types';
+import { MAX_OPERANDS, NO_TARGET, type IrDoc, type LiteralValue, type StateRef } from './types';
 
 /**
  * Referenční vyhodnocení ploché tabulky uzlů. Není to interpret — ten staví T9.
@@ -175,10 +175,27 @@ export function evalNode(doc: IrDoc, index: number, obs: Observation): LiteralVa
           return (lhs as number) > (rhs as number);
       }
     }
-    case 'allOf':
-      return node.operands.every((operand) => evalNode(doc, operand, obs) === true);
-    case 'anyOf':
-      return node.operands.some((operand) => evalNode(doc, operand, obs) === true);
+    // Indexovaná smyčka s mezí v podmínce, ne `.every` / `.some`.
+    //
+    // `evalNode` leží na **tikové cestě** — `step()` ho volá přes `evalBool` na
+    // každý spouštěč a stráž. Iterace bez podmínky nemá kam mez napsat, takže by
+    // práce uvnitř jednoho vyhodnocení rostla s délkou pole v dokumentu. Mez je
+    // `MAX_OPERANDS` a je to **tentýž** strop, který vynucuje zod schéma; delší
+    // pole se sem nedostane a kdyby se dostalo, smyčka ho neprojde celé.
+    case 'allOf': {
+      const operands = node.operands;
+      for (let i = 0; i < MAX_OPERANDS && i < operands.length; i += 1) {
+        if (evalNode(doc, operands[i], obs) !== true) return false;
+      }
+      return true;
+    }
+    case 'anyOf': {
+      const operands = node.operands;
+      for (let i = 0; i < MAX_OPERANDS && i < operands.length; i += 1) {
+        if (evalNode(doc, operands[i], obs) === true) return true;
+      }
+      return false;
+    }
     case 'not':
       return evalNode(doc, node.operand, obs) !== true;
   }

@@ -12,27 +12,17 @@
  *
  * Podmínka 5 je **AST pravidlo, ne regex** (upřesnění review P1, kolo 3): regex
  * nad textem je křehký a hlavně neumí dokázat, že mez pochází z deklarovaných
- * hranic světa. Pravidlo rozpouští jméno meze až k jejímu původu a přijímá
- * jediné dva tvary — klesající rozpočet, nebo výraz nad `IrLimits`.
- *
- * **Co pravidlo NEPOKRÝVÁ, a je to tu napsané, ne zamlčené.** Policuje explicitní
- * iterační konstrukce a pole-callbacky. Implicitní iterace zůstávají dvě, obě na
- * tikové cestě a obě ohraničené jinde: `runtime.state.slice()` (délka je layout
- * postavený z deklarovaných slotů a entit) a `new Set(runtime.drainQueue)`
- * (každý `push` do fronty má před sebou test proti `maxQueueDepth`, jinak je to
- * `queue-overflow`). Kdyby některá z těch dvou mezí zmizela, tohle pravidlo to
- * neuvidí.
+ * hranic světa. Samotný analyzátor i jeho rozsah, včetně toho, co vědomě
+ * nepokrývá, jsou v `./ast-rule`.
  */
 
-import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
-
-import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
-import type { IrEffect } from '../../ir/types';
+import { worldIr } from '../../ir/schema';
+import { MAX_OPERANDS, type IrEffect } from '../../ir/types';
 import {
   createRuntime,
+  run,
   step,
   traceSight,
   type Budget,
@@ -42,9 +32,11 @@ import {
   type WorldDocRuntime,
 } from '../interpreter';
 import { PHASES, phaseBound, type Phase } from '../phases';
+import { SCANNED, analyseAll, analyseModule, tickPath, undeclaredTickNames } from './ast-rule';
 
 import degenerateSightWorld from '../__fixtures__/degenerate-sight.world.json';
 import instaWinWorld from '../__fixtures__/insta-win.world.json';
+import lateTimerWorld from '../__fixtures__/late-timer.world.json';
 import signalLoopWorld from '../__fixtures__/signal-loop.world.json';
 import stateCycleWorld from '../__fixtures__/state-cycle.world.json';
 import vaultWorld from '../__fixtures__/vault.world.json';
@@ -54,6 +46,7 @@ const instaWin = instaWinWorld as unknown as WorldDocRuntime;
 const signalLoop = signalLoopWorld as unknown as WorldDocRuntime;
 const stateCycle = stateCycleWorld as unknown as WorldDocRuntime;
 const degenerateSight = degenerateSightWorld as unknown as WorldDocRuntime;
+const lateTimer = lateTimerWorld as unknown as WorldDocRuntime;
 
 const WORLDS: readonly (readonly [string, WorldDocRuntime])[] = [
   ['vault', vault],
@@ -61,244 +54,12 @@ const WORLDS: readonly (readonly [string, WorldDocRuntime])[] = [
   ['signal-loop', signalLoop],
   ['state-cycle', stateCycle],
   ['degenerate-sight', degenerateSight],
+  ['late-timer', lateTimer],
 ];
 
 const TICK_BUDGET = 60;
 
-// ===========================================================================
-// AST pravidlo
-// ===========================================================================
-
-const SIM_DIR = join(process.cwd(), 'src', 'sim');
-
-/** Pole `IrLimits`. Mez smí pocházet jen odsud, ne z délky vstupního pole. */
-const LIMIT_FIELDS = new Set([
-  'maxEntities',
-  'maxSlots',
-  'maxRules',
-  'maxRuleFiringsPerTick',
-  'maxQueueDepth',
-  'maxAgents',
-  'memorySlotsPerAgent',
-  'gridWidth',
-  'gridHeight',
-]);
-
-/** Funkce, které mez z `IrLimits` odvozují. Jiný způsob, jak ji vyrobit, není. */
-const BOUND_FUNCTIONS = new Set(['phaseBound', 'pairBound', 'settleItemBound', 'sightBound', 'pathBound']);
-
-/** Iterace bez podmínky. Nemá kam mez napsat, takže je zakázaná na tikové cestě. */
-const ARRAY_CALLBACKS = new Set([
-  'forEach',
-  'map',
-  'filter',
-  'some',
-  'every',
-  'find',
-  'findIndex',
-  'flatMap',
-  'reduce',
-  'reduceRight',
-  'sort',
-]);
-
-interface Site {
-  readonly module: string;
-  readonly fn: string;
-  readonly line: number;
-  readonly kind: string;
-  readonly bounded: boolean;
-}
-
-interface SwitchFact {
-  readonly module: string;
-  readonly fn: string;
-  readonly line: number;
-  readonly hasNeverDefault: boolean;
-}
-
-interface ModuleFacts {
-  readonly sites: readonly Site[];
-  readonly switches: readonly SwitchFact[];
-  readonly calls: ReadonlyMap<string, ReadonlySet<string>>;
-  readonly resetBudgetCallers: readonly string[];
-}
-
-function enclosingFunction(node: ts.Node): string {
-  let current: ts.Node | undefined = node.parent;
-  while (current) {
-    if (ts.isFunctionDeclaration(current) && current.name) return current.name.text;
-    current = current.parent;
-  }
-  return '<module>';
-}
-
-/**
- * Analýza jednoho modulu. Bere text, ne cestu, aby se dala pustit na syntetický
- * zdroj — pravidlo, které nikdo nezkusil shodit, je jen dekorace.
- */
-function analyseModule(moduleName: string, source: string): ModuleFacts {
-  const sf = ts.createSourceFile(moduleName, source, ts.ScriptTarget.ES2022, true);
-  const sites: Site[] = [];
-  const switches: SwitchFact[] = [];
-  const calls = new Map<string, Set<string>>();
-  const resetBudgetCallers: string[] = [];
-  const scopes: Map<string, ts.Expression>[] = [new Map()];
-
-  const lineOf = (node: ts.Node) => sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
-
-  const lookup = (name: string): ts.Expression | undefined => {
-    for (let i = scopes.length - 1; i >= 0; i -= 1) {
-      const hit = scopes[i].get(name);
-      if (hit) return hit;
-    }
-    return undefined;
-  };
-
-  /**
-   * Kolik atomů odvozených z `IrLimits` výraz obsahuje. Není to boolean schválně:
-   * `const bound = 5` je taky statická mez, ale ne mez SVĚTA, a tenhle rozdíl je
-   * celý smysl pravidla.
-   */
-  const limitAtoms = (node: ts.Node, depth: number): number => {
-    if (depth > 8) return 0;
-    if (ts.isParenthesizedExpression(node)) return limitAtoms(node.expression, depth + 1);
-    if (ts.isPropertyAccessExpression(node)) return LIMIT_FIELDS.has(node.name.text) ? 1 : 0;
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression))
-      return BOUND_FUNCTIONS.has(node.expression.text) ? 1 : 0;
-    if (ts.isBinaryExpression(node)) return limitAtoms(node.left, depth + 1) + limitAtoms(node.right, depth + 1);
-    if (ts.isPrefixUnaryExpression(node)) return limitAtoms(node.operand, depth + 1);
-    if (ts.isIdentifier(node)) {
-      const declared = lookup(node.text);
-      return declared ? limitAtoms(declared, depth + 1) : 0;
-    }
-    return 0;
-  };
-
-  /** Klesající rozpočet kontrolovaný před každou iterací — druhý povolený tvar. */
-  const hasBudgetGuard = (node: ts.Node): boolean => {
-    let found = false;
-    const visit = (inner: ts.Node): void => {
-      if (
-        ts.isPropertyAccessExpression(inner) &&
-        inner.name.text === 'remaining' &&
-        inner.expression.getText(sf).includes('budget')
-      )
-        found = true;
-      ts.forEachChild(inner, visit);
-    };
-    visit(node);
-    return found;
-  };
-
-  const record = (node: ts.Node, kind: string, condition: ts.Expression | undefined) => {
-    const bounded =
-      condition !== undefined && (hasBudgetGuard(condition) || limitAtoms(condition, 0) > 0);
-    sites.push({ module: moduleName, fn: enclosingFunction(node), line: lineOf(node), kind, bounded });
-  };
-
-  const visit = (node: ts.Node): void => {
-    const opensScope =
-      ts.isBlock(node) || ts.isSourceFile(node) || ts.isForStatement(node) || ts.isCaseBlock(node);
-    if (opensScope) scopes.push(new Map());
-
-    if (ts.isVariableStatement(node)) {
-      for (const decl of node.declarationList.declarations) {
-        if (ts.isIdentifier(decl.name) && decl.initializer)
-          scopes[scopes.length - 1].set(decl.name.text, decl.initializer);
-      }
-    }
-
-    if (ts.isForStatement(node)) record(node, 'for', node.condition);
-    else if (ts.isWhileStatement(node)) record(node, 'while', node.expression);
-    else if (ts.isDoStatement(node)) record(node, 'do', node.expression);
-    else if (ts.isForOfStatement(node)) record(node, 'for-of', undefined);
-    else if (ts.isForInStatement(node)) record(node, 'for-in', undefined);
-    else if (
-      ts.isCallExpression(node) &&
-      ts.isPropertyAccessExpression(node.expression) &&
-      ARRAY_CALLBACKS.has(node.expression.name.text)
-    )
-      record(node, `callback:${node.expression.name.text}`, undefined);
-
-    if (ts.isSwitchStatement(node)) {
-      const fallback = node.caseBlock.clauses.find((clause) => ts.isDefaultClause(clause));
-      switches.push({
-        module: moduleName,
-        fn: enclosingFunction(node),
-        line: lineOf(node),
-        hasNeverDefault: fallback !== undefined && /:\s*never\b/.test(fallback.getText(sf)),
-      });
-    }
-
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
-      const caller = enclosingFunction(node);
-      if (!calls.has(caller)) calls.set(caller, new Set());
-      calls.get(caller)?.add(node.expression.text);
-      if (node.expression.text === 'resetBudget') resetBudgetCallers.push(caller);
-    }
-
-    ts.forEachChild(node, visit);
-    if (opensScope) scopes.pop();
-  };
-
-  visit(sf);
-  return { sites, switches, calls, resetBudgetCallers };
-}
-
-/** `.ts` i `.tsx`, rekurzivně — obojí je díra, kterou kolo 4 review T8b našlo ve skenu zákazu `look`. */
-function collectModules(dir: string = SIM_DIR, prefix = ''): string[] {
-  const found: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
-    if (entry.isDirectory()) {
-      if (entry.name === '__tests__' || entry.name === '__fixtures__') continue;
-      found.push(...collectModules(join(dir, entry.name), rel));
-    } else if (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx')) {
-      found.push(rel);
-    }
-  }
-  return found.sort();
-}
-
-function analyseSim(): ModuleFacts {
-  const sites: Site[] = [];
-  const switches: SwitchFact[] = [];
-  const calls = new Map<string, Set<string>>();
-  const resetBudgetCallers: string[] = [];
-  for (const moduleName of collectModules()) {
-    const facts = analyseModule(moduleName, readFileSync(join(SIM_DIR, moduleName), 'utf8'));
-    sites.push(...facts.sites);
-    switches.push(...facts.switches);
-    resetBudgetCallers.push(...facts.resetBudgetCallers);
-    for (const [caller, callees] of facts.calls) {
-      if (!calls.has(caller)) calls.set(caller, new Set());
-      for (const callee of callees) calls.get(caller)?.add(callee);
-    }
-  }
-  return { sites, switches, calls, resetBudgetCallers };
-}
-
-/**
- * Tiková cesta = tranzitivní uzávěr volání z `step()`. Rozsah pravidla se tím
- * **počítá**, ne ručně vypisuje: kdyby se zítra dostala konstrukční funkce do
- * tiku, spadne pod tvrdou půlku pravidla sama.
- */
-function tickPath(calls: ReadonlyMap<string, ReadonlySet<string>>): Set<string> {
-  const reached = new Set<string>(['step']);
-  const queue = ['step'];
-  while (queue.length > 0) {
-    const current = queue.shift() as string;
-    for (const callee of calls.get(current) ?? []) {
-      if (reached.has(callee)) continue;
-      reached.add(callee);
-      queue.push(callee);
-    }
-  }
-  return reached;
-}
-
-const FACTS = analyseSim();
+const FACTS = analyseAll(SCANNED);
 const TICK_PATH = tickPath(FACTS.calls);
 
 // ===========================================================================
@@ -342,7 +103,7 @@ describe('podmínka 1 — rozpočet uvnitř tiku jen klesá', () => {
     expect(ticks).toBeGreaterThan(1);
   });
 
-  it('`resetBudget` má v `src/sim/` právě jedno volání a je v `step`', () => {
+  it('`resetBudget` má ve skenovaných modulech právě jedno volání a je v `step`', () => {
     expect(FACTS.resetBudgetCallers).toEqual(['step']);
   });
 
@@ -388,6 +149,25 @@ describe('podmínka 2 — fronta ke čtení a fronta k zápisu jsou různé obje
 // ===========================================================================
 // Podmínka 3 — vyčerpanost přechodů
 // ===========================================================================
+
+/**
+ * Záměrně částečné přepínače. Všechny leží ve validátoru dokumentu, ne na tikové
+ * cestě, a u každého by `never` větev byla **nepravda**: jejich `default` pokrývá
+ * skutečné varianty, ne nemožný zbytek.
+ *
+ * - `nodeValueKind` — `default` vrací `bool` pro `compare` / `allOf` / `anyOf` /
+ *   `not`, což jsou čtyři reálné a všechny boolean varianty
+ * - `childIndices` — `default` vrací prázdné pole pro listy, které potomky nemají
+ * - `checkFactArgs`, `checkRef`, `validateIrDoc` — validace se úmyslně vyjadřuje
+ *   jen k rolím a prostorům, které mají v `world-ir-v1` deklarační tabulku
+ */
+const PARTIAL_SWITCHES: readonly string[] = [
+  'ir/schema.ts:checkFactArgs',
+  'ir/schema.ts:checkRef',
+  'ir/schema.ts:childIndices',
+  'ir/schema.ts:nodeValueKind',
+  'ir/schema.ts:validateIrDoc',
+];
 
 /** Insta-win se přepíše na prohru, aby byla pozorovatelná i ta výstupní cesta. */
 const instaLose: WorldDocRuntime = {
@@ -463,10 +243,20 @@ describe('podmínka 3 — každá výstupní cesta `step()` vrací definovaný s
     }
   });
 
-  it('každý `switch` v `src/sim/` končí větví `never`, kterou ověří překladač', () => {
-    const leaky = FACTS.switches.filter((entry) => !entry.hasNeverDefault);
-    expect(leaky.map((entry) => `${entry.module}:${entry.fn}:${entry.line}`)).toEqual([]);
+  it('každý `switch` ve skenovaných modulech je vyčerpaný podle překladače', () => {
+    const leaky = FACTS.switches
+      .filter((entry) => !entry.exhaustive)
+      .map((entry) => `${entry.module}:${entry.fn}`);
+    expect(leaky.sort()).toEqual([...PARTIAL_SWITCHES].sort());
     expect(FACTS.switches.length).toBeGreaterThan(3);
+  });
+
+  it('a mezi vyčerpanými jsou oba uznávané tvary, ne jen `never` větev', () => {
+    // `readRef` vyčerpanost dokazuje návratovým typem; kdyby test uznával jen
+    // `never` větev, propustil by ji jako výjimku místo jako důkaz.
+    const byReturnType = FACTS.switches.filter((entry) => entry.fn === 'readRef');
+    expect(byReturnType.length).toBe(1);
+    expect(byReturnType[0].exhaustive).toBe(true);
   });
 });
 
@@ -501,33 +291,58 @@ describe('podmínka 4 — každá fáze zpracuje nejvýš tolik položek, kolik 
 // ===========================================================================
 
 /**
- * Smyčky mimo tikovou cestu. Konstrukce světa, hashování a replay smí růst
- * s dokumentem — přečíst dokument jinak nejde. Práce **na tik** růst nesmí.
+ * Smyčky mimo tikovou cestu. Konstrukce světa, hashování, validace dokumentu
+ * a replay smí růst s dokumentem — přečíst dokument jinak nejde. Práce **na tik**
+ * růst nesmí.
  *
  * Seznam je pinutý přesně: nová nezajištěná smyčka se sem nedostane potichu,
  * a kdyby se kterákoli z nich dostala na tikovou cestu, spadne pod tvrdou půlku
  * pravidla dřív, než se sem stihne přidat.
  */
 const OFF_TICK_PATH: Readonly<Record<string, number>> = {
-  'clock.ts:runTicks': 1, // pumpa tiků, mez je `MAX_CATCHUP_TICKS` v `pump`
-  'hash.ts:hashWords': 1, // hash je pozorování stavu, ne krok přechodu
-  'interpreter.ts:createRuntime': 4, // stavba layoutu, entit, predikátů a pořadí pravidel
-  'interpreter.ts:enumTable': 1, // tabulka symbolů, staví se jednou při konstrukci
-  'interpreter.ts:run': 2, // replay driver, mez je argument volajícího
-  'rng.ts:createStreams': 1, // čtyři pevné streamy z konstanty
-  'state.ts:createState': 1, // počáteční hodnoty layoutu
-  'state.ts:defineLayout': 1, // rozvržení slotů ve stavovém poli
+  'ir/eval.ts:edgeFires': 1, // vyhledání predikátu; `step` má `predicateIndex`, tudy nejde
+  'ir/eval.ts:observationOf': 9, // stavba scény z doménového popisu, mimo tik
+  'ir/schema.ts:checkFactArgs': 1, // validace argumentů odvozeného faktu
+  'ir/schema.ts:duplicates': 1, // hledání duplicit v deklaracích
+  'ir/schema.ts:validateIrDoc': 28, // validace dokumentu — z principu roste s dokumentem
+  'sim/clock.ts:runTicks': 1, // pumpa tiků, mez je `MAX_CATCHUP_TICKS` v `pump`
+  'sim/hash.ts:hashWords': 1, // hash je pozorování stavu, ne krok přechodu
+  'sim/interpreter.ts:createRuntime': 4, // stavba layoutu, entit, predikátů a pořadí pravidel
+  'sim/interpreter.ts:enumTable': 1, // tabulka symbolů, staví se jednou při konstrukci
+  'sim/interpreter.ts:run': 2, // replay driver, mez je argument volajícího
+  'sim/rng.ts:createStreams': 1, // čtyři pevné streamy z konstanty
+  'sim/state.ts:createState': 1, // počáteční hodnoty layoutu
+  'sim/state.ts:defineLayout': 1, // rozvržení slotů ve stavovém poli
 };
 
-describe('podmínka 5 — každá smyčka na tikové cestě nese mez v podmínce', () => {
+describe('podmínka 5 — rozsah pravidla je tiková cesta, ne adresář', () => {
+  it('modul, do kterého tik vystupuje z `src/sim/`, je skenovaný', () => {
+    // Tohle je ta konkrétní díra: `evalNode` byl na tikové cestě a jeho `.every`
+    // nad operandy vstupního dokumentu pravidlo nikdy nevidělo.
+    expect(SCANNED).toContain('ir/eval.ts');
+    expect(TICK_PATH.has('evalNode')).toBe(true);
+    expect(FACTS.sites.filter((site) => site.module === 'ir/eval.ts').length).toBeGreaterThan(0);
+  });
+
+  it('každé jméno na tikové cestě má deklaraci ve skenovaných modulech', () => {
+    expect(undeclaredTickNames(FACTS.declared, TICK_PATH)).toEqual([]);
+  });
+
+  it('a ta kontrola není prázdná — volání do neskenovaného modulu ji shodí', () => {
+    const facts = analyseModule('synthetic.ts', 'function step(r){ outsider(r); }');
+    expect(undeclaredTickNames(facts.declared, tickPath(facts.calls))).toEqual(['outsider']);
+  });
+
   it('a tiková cesta je počítaná z volání, ne vypsaná ručně', () => {
     // Kdyby se uzávěr nepočítal, tenhle výčet by mlčky vyschnul na `step`.
-    for (const fn of ['sense', 'settle', 'applyEffect', 'traceSight', 'isBlocked', 'stepToward'])
+    for (const fn of ['sense', 'settle', 'applyEffect', 'traceSight', 'isBlocked', 'stepToward', 'evalBool'])
       expect(TICK_PATH.has(fn), fn).toBe(true);
     expect(TICK_PATH.has('createRuntime')).toBe(false);
     expect(TICK_PATH.has('run')).toBe(false);
   });
+});
 
+describe('podmínka 5 — každá smyčka na tikové cestě nese mez v podmínce', () => {
   it('žádná nezajištěná smyčka na tikové cestě', () => {
     const violations = FACTS.sites
       .filter((site) => !site.bounded && TICK_PATH.has(site.fn))
@@ -569,14 +384,6 @@ describe('podmínka 5 — každá smyčka na tikové cestě nese mez v podmínce
     expect(facts.sites.every((site) => site.bounded)).toBe(true);
   });
 
-  it('klesající rozpočet je druhý povolený tvar', () => {
-    const facts = analyseModule(
-      'synthetic.ts',
-      'function step(r){ while (r.budget.remaining > 0) { r.budget.remaining -= 1; } }',
-    );
-    expect(facts.sites.every((site) => site.bounded)).toBe(true);
-  });
-
   it('statická mez, která NENÍ z mezí světa, neprojde', () => {
     const facts = analyseModule('synthetic.ts', 'function step(){ for (let i = 0; i < 64; i += 1) { touch(i); } }');
     expect(facts.sites.every((site) => site.bounded)).toBe(false);
@@ -602,6 +409,126 @@ describe('podmínka 5 — každá smyčka na tikové cestě nese mez v podmínce
       'function step(r){ while (true) { if (i > r.limits.maxEntities) break; touch(i); } }',
     );
     expect(facts.sites.every((site) => site.bounded)).toBe(false);
+  });
+});
+
+/**
+ * Tohle je půlka pravidla, kterou review nad `1afb764` prostřelilo: `bounded`
+ * znamenalo „v podmínce se někde vyskytuje jméno meze", ne „mez omezuje řídicí
+ * proměnnou". Rozdíl je pozorovatelný jen na těchhle tvarech — v produkčním kódu
+ * dávala obě čtení stejný verdikt, a proto to nespadlo.
+ */
+describe('podmínka 5 — mez musí OMEZOVAT, ne se jen vyskytovat', () => {
+  it('jméno meze vedle iterace přes vstupní dokument neprojde', () => {
+    const facts = analyseModule(
+      'synthetic.ts',
+      'function step(r){ for (let i = 0; i < r.doc.slots.length && r.limits.maxSlots > 0; i += 1) { touch(i); } }',
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
+  it('mez na jiné proměnné než na té řídicí neprojde', () => {
+    // Mez je v podmínce a je to skutečná mez světa — jen nesvazuje `i`.
+    const facts = analyseModule(
+      'synthetic.ts',
+      'function step(r, k){ for (let i = 0; i < r.items.length && k < r.limits.maxEntities; i += 1) { touch(i); } }',
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
+  it('obrácená orientace porovnání projde, když váže řídicí proměnnou', () => {
+    const facts = analyseModule(
+      'synthetic.ts',
+      'function step(r){ for (let i = 0; r.limits.maxEntities > i; i += 1) { touch(i); } }',
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([true]);
+  });
+
+  it('klesající rozpočet je druhý povolený tvar', () => {
+    const facts = analyseModule(
+      'synthetic.ts',
+      'function step(r){ while (r.budget.remaining > 0) { r.budget.remaining -= 1; } }',
+    );
+    expect(facts.sites.every((site) => site.bounded)).toBe(true);
+  });
+
+  it('rozpočet bez odečtení v těle neprojde — porovnání by nikdy nepřestalo platit', () => {
+    const facts = analyseModule(
+      'synthetic.ts',
+      'function step(r, q){ while (q.length > 0 && r.budget.remaining >= 0) { touch(q); } }',
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
+  it('zmíněný rozpočet bez porovnání taky ne', () => {
+    const facts = analyseModule(
+      'synthetic.ts',
+      'function step(r, q){ while (q.length > 0) { r.budget.remaining -= 1; } }',
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
+  it('a `--` se počítá jako odečtení stejně jako `-= 1`', () => {
+    const facts = analyseModule(
+      'synthetic.ts',
+      'function step(r){ while (r.budget.remaining > 0) { r.budget.remaining--; } }',
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([true]);
+  });
+});
+
+/**
+ * Mez `MAX_OPERANDS` je třetí povolený původ — ale jen proto, že ji **vynucuje
+ * schéma**. Kdyby ji schéma nevynutilo, byla by to konstanta v podmínce smyčky,
+ * která o vstupním dokumentu netvrdí nic, a `evalNode` by prostě tiše zahodil
+ * operandy nad stropem.
+ */
+describe('podmínka 5 — mez sdílená se zod schématem je skutečně sdílená', () => {
+  const LIMITS = {
+    maxEntities: 1,
+    maxSlots: 1,
+    maxRules: 1,
+    maxRuleFiringsPerTick: 1,
+    maxQueueDepth: 1,
+    maxAgents: 0,
+    memorySlotsPerAgent: 0,
+    gridWidth: 1,
+    gridHeight: 1,
+  };
+
+  const docWithOperands = (count: number) => {
+    const operands = Array.from({ length: count }, (_value, i) => i);
+    return {
+      irVersion: 'world-ir-v1',
+      limits: LIMITS,
+      slots: [],
+      entities: [],
+      nodes: [...operands.map(() => ({ kind: 'literal', value: true })), { kind: 'allOf', operands }],
+      predicates: [],
+      effects: [],
+      rules: [],
+    };
+  };
+
+  it('schéma přijme právě `MAX_OPERANDS` operandů', () => {
+    expect(worldIr.safeParse(docWithOperands(MAX_OPERANDS)).success).toBe(true);
+  });
+
+  it('a o jeden víc odmítne — tím je mez v podmínce smyčky vynutitelná', () => {
+    expect(worldIr.safeParse(docWithOperands(MAX_OPERANDS + 1)).success).toBe(false);
+  });
+
+  it('smyčka s mezí ze schématu projde, s cizí konstantou ne', () => {
+    const shared = analyseModule(
+      'synthetic.ts',
+      'function step(n){ for (let i = 0; i < MAX_OPERANDS && i < n.operands.length; i += 1) { touch(i); } }',
+    );
+    const foreign = analyseModule(
+      'synthetic.ts',
+      'function step(n){ for (let i = 0; i < MAX_WHATEVER && i < n.operands.length; i += 1) { touch(i); } }',
+    );
+    expect(shared.sites.map((site) => site.bounded)).toEqual([true]);
+    expect(foreign.sites.map((site) => site.bounded)).toEqual([false]);
   });
 });
 
@@ -632,5 +559,37 @@ describe('podmínka 5 — degenerovaný paprsek vrací v jedné iteraci', () => 
     expect(result.runState).toBe('running');
     expect(result.fault).toBeNull();
     expect(result.iterations.apply).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * Mez smyčky musí být z domény, kterou smyčka prochází.
+ *
+ * Časovače jsou sloty, ale mez byla `maxEntities + maxQueueDepth`. Svět s jednou
+ * entitou a časovačem za tím řezem svůj časovač **nikdy nesnížil**: tik dál
+ * terminoval, žádný fault se nevyhlásil, `onTimerEnd` prostě nikdy nenastalo.
+ * Tichý soft-lock je horší než pád — pád je pozorovatelný.
+ */
+describe('mez fáze `settle` je z domény smyčky, ne z té sousední', () => {
+  it('časovač za mezí odvozenou z entit se snižuje a pravidlo spustí', () => {
+    const runtime = createRuntime(lateTimer);
+    expect(run(runtime, TICK_BUDGET)).toBe('won');
+    expect(runtime.tick).toBe(lateTimer.winsAtTick);
+  });
+
+  it('a leží skutečně za tou původní mezí — jinak by fixture nic nedokazovala', () => {
+    const limits = lateTimer.ir.limits;
+    const timerIndex = lateTimer.ir.slots.findIndex((slot) => slot.space === 'timer');
+    expect(timerIndex).toBeGreaterThanOrEqual(limits.maxEntities + limits.maxQueueDepth);
+    expect(timerIndex).toBeLessThan(limits.maxSlots);
+  });
+
+  it('fáze `settle` zůstává ohraničená deklarovanými mezemi', () => {
+    const runtime = createRuntime(lateTimer);
+    for (let i = 0; i < TICK_BUDGET && runtime.runState === 'running'; i += 1) {
+      const result = step(runtime, []);
+      expect(result.iterations.settle).toBeLessThanOrEqual(phaseBound('settle', runtime.limits));
+      expect(result.iterations.settle).toBeGreaterThan(0);
+    }
   });
 });

@@ -162,6 +162,17 @@ export const BOOLEAN_SPACES = ['flag', 'locked', 'observed', 'pulse'] as const;
 export type CompareOp = '<' | '<=' | '=' | '>=' | '>';
 export const COMPARE_OPS: readonly CompareOp[] = ['<', '<=', '=', '>=', '>'];
 
+/**
+ * Strop počtu operandů `allOf` a `anyOf`.
+ *
+ * Žije **na jednom místě**, protože ho potřebují dvě strany téhož tvrzení: zod
+ * schéma ho dosazuje do `.max()`, takže dokument nad stropem se do runtimu
+ * nedostane, a vyhodnocovač ho dosazuje do podmínky smyčky, takže práce uvnitř
+ * jednoho primitiva má mez, kterou vstupní dokument nezvětší. Kdyby ta čísla
+ * byla dvě, drift mezi nimi by jednu z těch dvou vět tiše zrušil.
+ */
+export const MAX_OPERANDS = 16;
+
 export type LiteralValue = number | boolean | string;
 
 /**

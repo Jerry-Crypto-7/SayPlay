@@ -1,0 +1,60 @@
+{
+  "_note": "Časovač na indexu 5 v deklarované tabulce slotů, svět s JEDINOU entitou a `maxQueueDepth: 1`. Původní mez smyčky časovačů ve fázi `settle` byla `maxEntities + maxQueueDepth`, tedy 2 — časovač `fuse` ležel za řezem a nikdy se nesnížil, takže `onTimerEnd` nenastalo, žádný fault se nevyhlásil a svět tiše zamrznul. Žádná z pěti starších fixture nemá jediný časovačový slot, takže tělo té smyčky v testech nikdy neběželo. Pět flagů před časovačem není výplň: bez nich by index časovače spadl pod kteroukoli mez a vada by zůstala nepozorovatelná.",
+  "trace": [],
+  "space": {
+    "sockets": { "s_hall": [1, 1] },
+    "zones": {},
+    "blocked": [],
+    "tags": {}
+  },
+  "ir": {
+    "irVersion": "world-ir-v1",
+    "limits": {
+      "maxEntities": 1,
+      "maxSlots": 8,
+      "maxRules": 4,
+      "maxRuleFiringsPerTick": 4,
+      "maxQueueDepth": 1,
+      "maxAgents": 0,
+      "memorySlotsPerAgent": 0,
+      "gridWidth": 4,
+      "gridHeight": 4
+    },
+    "slots": [
+      { "space": "flag", "id": "pad0", "initial": false },
+      { "space": "flag", "id": "pad1", "initial": false },
+      { "space": "flag", "id": "pad2", "initial": false },
+      { "space": "flag", "id": "pad3", "initial": false },
+      { "space": "flag", "id": "pad4", "initial": false },
+      { "space": "timer", "id": "fuse", "maxTicks": 16, "initial": 3 }
+    ],
+    "entities": [
+      {
+        "stableId": "hero",
+        "role": "actor",
+        "socket": "s_hall",
+        "states": ["idle"],
+        "initialState": "idle",
+        "initialLocked": false
+      }
+    ],
+    "nodes": [
+      { "kind": "ref", "ref": { "space": "timer", "slot": "fuse" } },
+      { "kind": "literal", "value": 0 },
+      { "kind": "compare", "lhs": 0, "op": "=", "rhs": 1 }
+    ],
+    "predicates": [{ "predicateId": "p.onTimerEnd", "source": "onTimerEnd", "expr": 2 }],
+    "effects": [{ "op": "win" }],
+    "rules": [
+      {
+        "ruleId": "r.fuse",
+        "phase": 0,
+        "priority": 0,
+        "trigger": { "kind": "onEdge", "predicate": "p.onTimerEnd", "became": true },
+        "guard": null,
+        "effects": [0]
+      }
+    ]
+  },
+  "winsAtTick": 4
+}

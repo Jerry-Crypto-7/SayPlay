@@ -6,6 +6,7 @@ import {
   COMPARE_OPS,
   ID_PATTERN,
   IR_VERSION,
+  MAX_OPERANDS,
   NO_TARGET,
   OBSERVED_FACTS,
   PULSE_FACTS,
@@ -63,8 +64,10 @@ const nodeSchema = z.discriminatedUnion('kind', [
     .object({ kind: z.literal('query'), query: z.literal('countInZone'), zone: identifier, tag: identifier })
     .strict(),
   z.object({ kind: z.literal('compare'), lhs: nodeIndex, op: z.enum(COMPARE_OPS), rhs: nodeIndex }).strict(),
-  z.object({ kind: z.literal('allOf'), operands: z.array(nodeIndex).min(1).max(16) }).strict(),
-  z.object({ kind: z.literal('anyOf'), operands: z.array(nodeIndex).min(1).max(16) }).strict(),
+  // `MAX_OPERANDS`, ne literál: tentýž strop drží podmínku smyčky ve `evalNode`,
+  // a mez, kterou schéma nevynutí, není mez.
+  z.object({ kind: z.literal('allOf'), operands: z.array(nodeIndex).min(1).max(MAX_OPERANDS) }).strict(),
+  z.object({ kind: z.literal('anyOf'), operands: z.array(nodeIndex).min(1).max(MAX_OPERANDS) }).strict(),
   z.object({ kind: z.literal('not'), operand: nodeIndex }).strict(),
 ]);
 

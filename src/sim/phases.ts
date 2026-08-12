@@ -48,9 +48,10 @@ export function phaseBound(phase: Phase, limits: IrLimits): number {
       // jednoho pravidla se počítají proti témuž deklarovanému stropu.
       return limits.maxRuleFiringsPerTick * (1 + limits.maxRuleFiringsPerTick);
     case 'settle':
-      // Časovače, příkazy pohybu a zmrazení — dvě smyčky, každá po entitách
-      // a slotech.
-      return 2 * settleItemBound(limits);
+      // Dvě smyčky s RŮZNÝMI doménami: časovače jsou sloty, zmrazení a příkazy
+      // pohybu jsou entity. Součet je proto `maxSlots + maxEntities`, ne
+      // dvojnásobek jedné z nich.
+      return settleItemBound(limits);
     default: {
       // Vyčerpanost přechodů kontroluje TypeScript při kompilaci. Kdyby do
       // `PHASES` přibyla pátá fáze bez `case`, tenhle řádek přestane přeložit.
@@ -69,11 +70,18 @@ export function pairBound(limits: IrLimits): number {
 }
 
 /**
- * Mez jedné smyčky fáze `settle`. Časovače jsou sloty, příkazy pohybu a zmrazení
- * entity — obojí shora omezené deklarací, ne délkou fronty.
+ * Mez celé fáze `settle` — součet jejích dvou smyček.
+ *
+ * **Každá jde po jiné doméně a mez musí být z té její.** Časovače jsou sloty,
+ * takže jejich smyčka nese `maxSlots`; zmrazení a příkazy pohybu jsou entity,
+ * takže ta druhá nese `maxEntities`. Původní znění dávalo obojímu
+ * `maxEntities + maxQueueDepth` a to byla tichá vada, ne konzervativní odhad:
+ * svět s jedinou entitou a časovačem na indexu 5 ten časovač **nikdy nesnížil**,
+ * takže `onTimerEnd` nenastalo, žádný fault se nevyhlásil a svět tiše zamrznul.
+ * `maxQueueDepth` tu nemá co dělat vůbec — `settle` frontu nečerpá.
  */
 export function settleItemBound(limits: IrLimits): number {
-  return limits.maxEntities + limits.maxQueueDepth;
+  return limits.maxSlots + limits.maxEntities;
 }
 
 /**
