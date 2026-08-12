@@ -73,6 +73,35 @@ describe('syntetický svět je platný dokument, ne jen tvar', () => {
     // Bez toho by padající test nešlo zopakovat.
     for (const seed of SEEDS) expect(canonical(synthWorld(seed))).toBe(canonical(synthWorld(seed)));
   });
+
+  /**
+   * **Fixtura se musí jmenovat stejně jako korpus.**
+   *
+   * Schéma má vnitřek otevřený, takže rozdíl v názvech polí neshodí nic — a přesně
+   * tak fixtura celé jedno kolo nesla vymyšlené `layout.type` a `grid.width`,
+   * zatímco korpus má `layout.kind` a `grid.cell`. Fixtura je to, co příští autor
+   * zkopíruje; když se rozejde s korpusem, rozejde se i on. Tenhle test je ta
+   * regresní pojistka, která u realignmentu chyběla.
+   */
+  it('a jmenuje pole stejně jako zmrazený korpus, ne po svém', () => {
+    const world = synthWorld(20260812);
+    const sim = world.sim as Record<string, Record<string, unknown>>;
+    const look = world.look as Record<string, unknown>;
+
+    expect(Object.keys(sim.layout)).toContain('kind');
+    expect(Object.keys(sim.layout)).not.toContain('type');
+    expect(Object.keys(sim.grid)).toEqual(['cell']);
+    // `entities` je ZÁZNAM podle `stableId`, ne pole.
+    expect(Array.isArray(sim.entities)).toBe(false);
+    // Svědek nese tier a meze, ne jen operace.
+    expect(Object.keys(sim.witness)).toEqual(
+      expect.arrayContaining(['tier', 'H_cert', 'L_witness', 'K_input', 'ops']),
+    );
+    // `look`: paleta, světlo a atmosféra jsou v korpusu ŘETĚZCE, ne struktury.
+    expect(typeof look.palette).toBe('string');
+    expect(typeof look.lightRig).toBe('string');
+    expect(typeof look.atmosphere).toBe('string');
+  });
 });
 
 /**

@@ -227,6 +227,24 @@ describe('nekonečno se do hashované části nedostane', () => {
     expect(verdict.reason).toContain('not finite');
   });
 
+  it('a `undefined` HLOUBĚJI ve stromu taky ne — `ops` svědka nesmí zmizet', () => {
+    // `.nonoptional()` chrání osm kořenových jmen, ale strom je hlubší.
+    // `replace /witness/ops undefined` a `remove /witness/ops` mají **bitově
+    // totožný** hash, protože `canonical` položky s `undefined` vyfiltruje —
+    // dva různé dokumenty, jedna kotva certifikátu.
+    const erased = commitPart(world, {
+      part: 'sim',
+      baseRevision: 0,
+      operations: [{ op: 'replace', path: '/witness/ops', value: undefined }],
+    });
+    expect(erased.verdict).toBe('REJECTED');
+
+    // Doklad té kolize, ne hypotéza.
+    const withOps = canonicalHash({ witness: { ops: [1] } });
+    expect(canonicalHash({ witness: { ops: undefined } })).toBe(canonicalHash({ witness: {} }));
+    expect(canonicalHash({ witness: { ops: undefined } })).not.toBe(withOps);
+  });
+
   it('a `undefined` v kořenovém poli `sim` se nedá zapsat — svědek nesmí zmizet', () => {
     // `z.unknown()` je v objektu volitelné, takže bez `.nonoptional()` projde
     // `replace /witness undefined`; `canonical` položky s `undefined` vyfiltruje,

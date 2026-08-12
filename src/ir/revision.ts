@@ -20,7 +20,7 @@ import { applyPatch, type Operation } from 'rfc6902';
 import { reject, rejectionFromZod, type PatchRejection } from '../patch/reject';
 import {
   lookSchema,
-  nonFiniteNumbers,
+  unhashableValues,
   simHashOf,
   simSchema,
   validateLook,
@@ -108,7 +108,7 @@ export function commitPart(doc: WorldDoc, patch: PartPatch): RevisionResult {
   // i `null` kolabují v kanonickém zápisu na tentýž řetězec, takže by se
   // dokumenty s různou sémantikou schovaly za jeden `simHash` — a hash je tady
   // kotva certifikátu, ne jen kontrolní součet.
-  const nonFinite = nonFiniteNumbers(shape.data, '/sim');
+  const nonFinite = unhashableValues(shape.data, '/sim');
   if (nonFinite.length > 0) return reject('STRUCTURE', '/sim', 'finite numbers throughout', nonFinite[0]);
 
   // `simHash` se přepočítá, protože se změnila právě ta část, ze které se počítá.

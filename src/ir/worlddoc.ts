@@ -227,23 +227,34 @@ export interface LookVerdict {
  * má až v P5. Tenhle validátor v P1 dělá schéma a konečnost.
  */
 /**
- * Nekonečná a `NaN` čísla, kdekoli ve stromu.
+ * Hodnoty, které kanonizace **tiše zahladí** — kdekoli ve stromu, ne jen v kořeni.
  *
- * Platí pro **obě** části a pro `sim` to platí naléhavěji: `JSON.stringify` je
- * převádí na `null`, takže `NaN`, `Infinity` i skutečné `null` **kolabují na
- * tentýž kanonický zápis a tedy na tentýž `simHash`**. Dokument by prošel
- * migrací jako platný (hash by seděl na svou vlastní `sim`), a po průchodu
- * uložištěm nebo sítí by se sémantika změnila, zatímco kotva certifikátu by
- * zůstala stejná. To není kolize po narozeninovém paradoxu — je to determinis­tický
- * kolaps dosažitelný jednou operací.
+ * Jsou dvě a obě dělají totéž: dva sémanticky různé dokumenty dostanou jeden
+ * `simHash`.
+ *
+ * - **Nekonečno a `NaN`.** `JSON.stringify` je převádí na `null`, takže `NaN`,
+ *   `Infinity` i skutečné `null` mají tentýž kanonický zápis.
+ * - **`undefined`.** `canonical` položky s `undefined` **vyfiltruje**, takže
+ *   `replace /witness/ops undefined` a `remove /witness/ops` dají **bitově
+ *   totožný** hash. Svědek bez `ops` je přitom stejně neověřitelný jako svědek
+ *   žádný — a dokument by prošel migrací jako aktuální, protože hash by seděl
+ *   na svou vlastní vadnou `sim`.
+ *
+ * `.nonoptional()` na kořenových polích tohle **neřeší** — chrání osm jmen,
+ * zatímco strom je hlubší. Kontrola proto patří sem, kde se chodí celý.
+ *
+ * Ani jedna hodnota nemůže přijít z `JSON.parse`; obě přijdou z patche
+ * složeného v procesu a obě přežijí `structuredClone` i IndexedDB. To je tentýž
+ * argument o dosažitelnosti, jaký už platí pro `Infinity`.
  */
-export function nonFiniteNumbers(value: unknown, path = ''): string[] {
+export function unhashableValues(value: unknown, path = ''): string[] {
+  if (value === undefined) return [`${path}: undefined is dropped by canonicalization`];
   if (typeof value === 'number')
     return Number.isFinite(value) ? [] : [`${path}: ${String(value)} is not finite`];
   if (value === null || typeof value !== 'object') return [];
-  if (Array.isArray(value)) return value.flatMap((item, i) => nonFiniteNumbers(item, `${path}/${i}`));
+  if (Array.isArray(value)) return value.flatMap((item, i) => unhashableValues(item, `${path}/${i}`));
   return Object.entries(value as Record<string, unknown>).flatMap(([key, item]) =>
-    nonFiniteNumbers(item, `${path}/${key}`),
+    unhashableValues(item, `${path}/${key}`),
   );
 }
 
@@ -252,7 +263,7 @@ export function validateLook(look: unknown): LookVerdict {
   if (!parsed.success)
     return { ok: false, issues: parsed.error.issues.map((issue) => `schema:/${issue.path.join('/')}: ${issue.message}`) };
 
-  const issues = nonFiniteNumbers(parsed.data, '');
+  const issues = unhashableValues(parsed.data, '');
   return { ok: issues.length === 0, issues };
 }
 
@@ -300,8 +311,8 @@ export function migrateWorldDoc(input: unknown): MigrationVerdict {
   // kterým to má platit. Kontrolovat ji jen tam, kde je hash, a vynechat ji tam,
   // kde ji předepisuje kontrakt, je přesně opačná asymetrie, než jaká dává smysl.
   const nonFinite = [
-    ...nonFiniteNumbers(parsed.data.sim, '/sim'),
-    ...nonFiniteNumbers(parsed.data.look, '/look'),
+    ...unhashableValues(parsed.data.sim, '/sim'),
+    ...unhashableValues(parsed.data.look, '/look'),
   ];
   if (nonFinite.length > 0) return { ok: false, doc: null, reason: nonFinite[0] };
 
