@@ -91,16 +91,20 @@ type NameNamespace = Exclude<SurfaceNamespace, 'slot'>;
 /**
  * Jména deklarovaná v kontejneru.
  *
- * Chybějící kontejner je **prázdný** prostor — odkaz do něj je osiřelý, což je
- * přesně vada M15. Kontejner špatného tvaru (pole místo objektu, číslo, řetězec)
- * je ale **nerozpustitelný**, ne prázdný: tvarovou vadu vlastní schéma a je to
- * zmrazená třída `type_coercion`, tedy jedna opravitelná vada. Kdyby se tady
- * převedla na osiřelé odkazy, vyrobila by hromadu vad, které protokol prohlašuje
- * za NEopravitelné — jedna špatná závorka by dokument poslala rovnou do koše.
+ * **Chybějící** kontejner je prázdný prostor — odkaz do něj je osiřelý, což je
+ * přesně vada M15. Kontejner **špatného tvaru** (pole, číslo, řetězec i `null`)
+ * je naopak **nerozpustitelný**: tvarovou vadu vlastní schéma a je to zmrazená
+ * třída `type_coercion`, tedy jedna opravitelná vada. Kdyby se tady převedla na
+ * osiřelé odkazy, vyrobila by hromadu vad, které protokol prohlašuje za
+ * NEopravitelné — jedna špatná závorka by dokument poslala rovnou do koše.
+ *
+ * `null` patří k tvarovým vadám, ne k chybějícím: `"counters": null` je běžný
+ * zápis pro „žádné countery", ale kontrakt na tom místě žádá objekt, a mýlit se
+ * ve prospěch mlčení je tu levnější než ve prospěch neopravitelného verdiktu.
  */
 function names(container: unknown): NameSet {
-  if (container === undefined || container === null) return new Set();
-  if (typeof container !== 'object' || Array.isArray(container)) return UNRESOLVABLE;
+  if (container === undefined) return new Set();
+  if (container === null || typeof container !== 'object' || Array.isArray(container)) return UNRESOLVABLE;
   return new Set(Object.keys(container as Record<string, unknown>));
 }
 

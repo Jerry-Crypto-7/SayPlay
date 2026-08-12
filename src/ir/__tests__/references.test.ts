@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { findDanglingReferences } from '../references';
+import { findDanglingReferences, type DanglingReference } from '../references';
 
 function frozenLines(...parts: string[]): Record<string, any>[] {
   return readFileSync(join(process.cwd(), 'evals', 'frozen', ...parts), 'utf8')
@@ -18,21 +18,25 @@ const responses = frozenLines('responses', 'index.jsonl');
 /** Zmrazená třída defektu „osiřelý odkaz". Je jich málo — a to je důvod je jmenovat. */
 const DANGLING = malformed.filter((entry) => entry.defectClass === 'dangling_reference');
 
+/**
+ * Očekávaný nález je vypsaný celý, ne jen „něco spadlo". Podřetězec v anotaci
+ * defektu by prošel i resolveru, který navíc hlásí `win` (id pravidla) nebo
+ * `entities` — obojí v té české větě totiž taky stojí.
+ */
+const EXPECTED_DANGLING: Readonly<Record<string, readonly DanglingReference[]>> = {
+  M15: [{ where: 'sim.rules[win].event.ref', namespace: 'counter', name: 'coins' }],
+  M16: [{ where: 'look.modules.lamp', namespace: 'entity', name: 'lamp' }],
+};
+
 describe('osiřelé odkazy ve zmrazených vadných emisích', () => {
-  it('třída dangling_reference není prázdná', () => {
-    expect(DANGLING.length).toBeGreaterThan(0);
+  it('pokrývá celou zmrazenou třídu dangling_reference', () => {
+    expect(DANGLING.map((entry) => entry.id).sort()).toEqual(Object.keys(EXPECTED_DANGLING).sort());
   });
 
   it.each(DANGLING.map((entry) => [entry.id, entry] as const))(
-    '%s je nahlášen a jmenuje symbol ze své anotace',
-    (_id, entry) => {
-      const found = findDanglingReferences(entry.body);
-      expect(found.length).toBeGreaterThan(0);
-      // Nestačí, že něco spadlo — musí spadnout na tom jméně, které `defect`
-      // pojmenovává. Jinak by test prošel i resolveru, který hlásí všechno.
-      for (const reference of found) {
-        expect(entry.defect).toContain(reference.name);
-      }
+    '%s dá přesně očekávaný nález',
+    (id, entry) => {
+      expect(findDanglingReferences(entry.body)).toEqual([...EXPECTED_DANGLING[id]]);
     },
   );
 });
@@ -128,6 +132,19 @@ describe('deklarace špatného tvaru', () => {
 
   it('celý state špatného tvaru zneplatní všechny prostory, které v něm bydlí', () => {
     expect(findDanglingReferences(shaped(['score']))).toEqual([]);
+  });
+
+  it('null je tvarová vada, ne prázdný prostor — ani u kontejneru, ani u celého state', () => {
+    expect(findDanglingReferences(shaped({ counters: null, flags: { lit: false }, timers: {} }))).toEqual(
+      [],
+    );
+    expect(findDanglingReferences(shaped(null))).toEqual([]);
+  });
+
+  it('prázdný objekt naopak prázdný prostor JE — a odkaz do něj je osiřelý', () => {
+    expect(findDanglingReferences(shaped({ counters: {}, flags: { lit: false }, timers: {} }))).toEqual([
+      { where: 'sim.rules[r1].event.ref', namespace: 'counter', name: 'score' },
+    ]);
   });
 
   it('entity zapsané polem nehlásí osiřelý odkaz na akci', () => {

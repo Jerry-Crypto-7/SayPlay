@@ -323,12 +323,16 @@ describe('oddělení od části vzhledu', () => {
   });
 
   it('modul `src/ir` obsahuje právě čtyři soubory cesty snížení plus resolver', () => {
-    // Kdyby přibyl pátý produkční modul, předchozí test by ho tiše minul.
-    const produced = readdirSync(irDir, { withFileTypes: true })
-      .filter((entry) => entry.isFile() && entry.name.endsWith('.ts'))
-      .map((entry) => entry.name)
-      .sort();
-    expect(produced).toEqual([...IR_PATH_MODULES, 'references.ts'].sort());
+    // Kdyby přibyl pátý produkční modul, předchozí test by ho tiše minul —
+    // a rekurzivně proto, že adresář o úroveň níž by výjimku zdědil taky.
+    const walk = (dir: string, prefix: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        if (entry.isDirectory()) {
+          return entry.name.startsWith('__') ? [] : walk(join(dir, entry.name), `${prefix}${entry.name}/`);
+        }
+        return entry.name.endsWith('.ts') ? [`${prefix}${entry.name}`] : [];
+      });
+    expect(walk(irDir, '').sort()).toEqual([...IR_PATH_MODULES, 'references.ts'].sort());
   });
 
   it('resolver ji jmenuje výhradně u klíčů modulů', () => {
