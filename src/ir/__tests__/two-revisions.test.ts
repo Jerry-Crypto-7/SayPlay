@@ -14,6 +14,7 @@ import { describe, expect, it } from 'vitest';
 import { commitMixed, commitPart, type PartPatch } from '../revision';
 import {
   WORLD_DOC_VERSION,
+  canonical,
   canonicalHash,
   migrateWorldDoc,
   sealSimHash,
@@ -333,6 +334,64 @@ describe('do `sim` se dostane jen JSON', () => {
     ) as Operation[];
     const result = commitPart(world, { part: 'sim', baseRevision: 0, operations });
     expect(result.verdict).toBe('REJECTED');
+  });
+
+  /**
+   * **A totéž musí platit pro POLE, protože tam se to hlídalo jinak.**
+   *
+   * `rfc6902` hlídá zápis do pole jedinou podmínkou `parseInt(key,10) >= length`.
+   * Nečíselný token dá `NaN >= length === false`, takže propadne až na
+   * `parent[key] = clone(value)` a zapíše **neindexovou vlastní vlastnost přímo
+   * na pole**. `canonical` prochází pole přes `.map`, tedy jen pozice — ten klíč
+   * nikdy neuvidí, hash zůstane bitově týž, `structuredClone` klíč zachová
+   * a `JSON.stringify` ho zahodí. Commitnutý dokument tedy není ten, který se
+   * znovu načte, a oba mají stejný `simHash`.
+   */
+  it('neindexová vlastnost propašovaná na pole taky ne', () => {
+    const before = world.simHash;
+    const operations = JSON.parse('[{"op":"replace","path":"/rules/smuggled","value":{"hidden":true}}]') as Operation[];
+    const result = commitPart(world, { part: 'sim', baseRevision: 0, operations });
+
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.pointer).toBe('/sim');
+    expect(result.detail).toContain('/rules/smuggled');
+    expect(world.simHash).toBe(before);
+  });
+
+  it('a kdyby prošla, dokument po uložení by byl jiný — se stejným hashem', () => {
+    // Doklad té kolize, ne hypotéza.
+    const rules: unknown[] = [{ id: 'win' }];
+    (rules as unknown as Record<string, unknown>).smuggled = { hidden: true };
+    expect(Object.keys(rules)).toEqual(['0', 'smuggled']);
+    expect(canonicalHash({ rules })).toBe(canonicalHash({ rules: [{ id: 'win' }] }));
+    expect(Object.keys(structuredClone(rules))).toEqual(['0', 'smuggled']);
+    expect(Object.keys(JSON.parse(JSON.stringify(rules)) as object)).toEqual(['0']);
+  });
+
+  it('a díra v poli taky ne — `canonical` a `JSON` ji píšou jinak', () => {
+    const holed: unknown[] = [1, 2, 3];
+    delete holed[1];
+    const result = commitPart(world, {
+      part: 'sim',
+      baseRevision: 0,
+      operations: [{ op: 'replace', path: '/state/slots', value: holed } as Operation],
+    });
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.detail).toContain('hole in an array');
+    // Doklad rozdílu: `canonical` renderuje díru jako prázdno, `JSON` jako `null`.
+    expect(canonical(holed)).toBe('[1,,3]');
+    expect(JSON.stringify(holed)).toBe('[1,null,3]');
+  });
+
+  it('ale pole s prototypem a bez děr projít MUSÍ — jinak by to nebyl strop, ale zákaz polí', () => {
+    const result = commitPart(world, {
+      part: 'sim',
+      baseRevision: 0,
+      operations: [{ op: 'replace', path: '/state/slots', value: [1, 2, 3] } as Operation],
+    });
+    expect(result.verdict).toBe('COMMITTED');
   });
 });
 

@@ -308,14 +308,16 @@ export function unhashableValues(
   open.add(object);
 
   const issues: UnhashableIssue[] = [];
-  if (Array.isArray(object)) {
-    for (let i = 0; i < object.length; i += 1)
-      issues.push(...unhashableValues(object[i], `${path}/${i}`, open, depth + 1));
-    open.delete(object);
-    return issues;
-  }
+  const isArray = Array.isArray(object);
 
-  // **Jen prostý objekt.** Tahle jediná podmínka zavírá dvě různé díry naráz:
+  // **Pole a objekt tudy chodí JEDNOU cestou, a je to oprava metody, ne dalších
+  // dveří.** Sedm kol brány našlo sedm vad téže třídy a pokaždé to bylo místo, kde
+  // se ty dvě větve rozcházely: větev pro pole se neptala na prototyp, neptala se
+  // na vlastní klíče, a tím pádem nevěděla o ničem, co se do pole dá propašovat.
+  // Dokud existují dvě větve, existuje i rozdíl mezi nimi, který nikdo neuhlídá.
+  //
+  // Jediné, čím se pole a objekt liší, jsou proto **dvě data**: očekávaný prototyp
+  // a seznam klíčů, které `canonical` doopravdy serializuje. Zbytek je společný.
   //
   // - `Date`, `Map`, `Set` a spol. `canonical` zploští na `{}`, takže pět různých
   //   dokumentů dostane jeden `simHash` — a po `JSON` round-tripu se `Date` změní
@@ -323,33 +325,53 @@ export function unhashableValues(
   // - **`__proto__` v cestě patche.** `add /entities/__proto__` nepřidá klíč, ale
   //   **přepíše prototyp**; `Object.entries` ho nevidí, takže hash zůstane bitově
   //   stejný, zatímco runtime přes `entities[id]` vidí entitu navíc, kterou
-  //   certifikát nepokrývá. Prototyp se tím z prostého objektu změní — a to je
-  //   pozorovatelné právě tady.
-  //
-  // **Ani `null` prototyp neprojde**, ačkoli `Object.entries` nad ním funguje a
-  // hash by seděl: `add /__proto__` s hodnotou `null` prototyp přepíše taky, a
-  // `structuredClone` takovému objektu `Object.prototype` mlčky vrátí. Commitnutý
-  // dokument by tedy po průchodu uložištěm nebyl týž objekt, který se commitoval —
-  // a „COMMITTED s nezměněným hashem" má znamenat, že se nezměnilo nic.
-  const proto = Object.getPrototypeOf(object) as unknown;
-  if (proto !== Object.prototype) {
+  //   certifikát nepokrývá.
+  // - **Ani `null` prototyp neprojde**, ačkoli `Object.entries` nad ním funguje a
+  //   hash by seděl: `structuredClone` takovému objektu `Object.prototype` mlčky
+  //   vrátí, takže commitnutý dokument by po uložení nebyl týž, který se commitl.
+  if (Object.getPrototypeOf(object) !== (isArray ? Array.prototype : Object.prototype)) {
     open.delete(object);
     return [issue(path, 'only plain objects and arrays survive canonicalization')];
   }
 
-  for (const key of Object.keys(object)) {
+  // `canonical` u pole prochází `.map`, tedy pozice `0 … length-1`; u objektu
+  // vlastní enumerovatelné klíče. `own` je to, co na hodnotě SKUTEČNĚ je —
+  // a rozdíl mezi těmi dvěma množinami je přesně to, co se kanonizací ztratí.
+  const own = new Set(Object.keys(object));
+
+  const inspect = (key: string): void => {
     // Token se escapuje, protože `pointer` je podle `patch/reject.ts` **RFC 6901**,
     // ne popisná cesta: klíč `a/b` by jinak ukázal na `/a/b`, tedy na jiné a
     // neexistující místo dokumentu.
     const at = `${path}/${escapeToken(key)}`;
+    if (!own.delete(key)) {
+      // Díra v poli: `canonical` ji vyrenderuje jako prázdno (`[1,,3]`),
+      // `JSON.stringify` jako `null` (`[1,null,3]`). Dva zápisy téhož dokumentu.
+      issues.push(issue(at, 'a hole in an array is dropped by canonicalization'));
+      return;
+    }
     const descriptor = Object.getOwnPropertyDescriptor(object, key);
     // Getter by se zavolal až v `canonical` a mohl by vyhodit; hodnotou není.
     if (descriptor === undefined || descriptor.get !== undefined) {
       issues.push(issue(at, 'accessor properties have no JSON form'));
-      continue;
+      return;
     }
     issues.push(...unhashableValues(descriptor.value, at, open, depth + 1));
-  }
+  };
+
+  if (isArray) for (let i = 0; i < (object as unknown[]).length; i += 1) inspect(String(i));
+  else for (const key of [...own]) inspect(key);
+
+  // Co v `own` zbylo, `canonical` nikdy neuvidí. U objektu nezbyde nic — smyčka
+  // výš prošla přesně jeho klíče. U pole je to **neindexová vlastní vlastnost**:
+  // `rfc6902` hlídá zápis do pole jen podmínkou `parseInt(key,10) >= length`,
+  // takže nečíselný token dá `NaN >= length === false` a propadne až na
+  // `parent[key] = value`. Takový klíč přežije `structuredClone`, ale `JSON`
+  // ho zahodí — commitnutý dokument pak není ten, který se znovu načte, a oba
+  // mají bitově týž hash.
+  for (const key of own)
+    issues.push(issue(`${path}/${escapeToken(key)}`, 'a property canonicalization never serializes'));
+
   open.delete(object);
   return issues;
 }

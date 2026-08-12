@@ -512,6 +512,40 @@ describe('sousední patch cesta má tytéž stráže jako `ir/revision.ts`', () 
     }
   });
 
+  it('neindexová vlastnost propašovaná na pole neprojde ani tudy', () => {
+    // `rfc6902` hlídá zápis do pole jen podmínkou `parseInt(key,10) >= length`,
+    // takže nečíselný token propadne na `parent[key] = value`. `canonical` pole
+    // prochází přes `.map`, tedy jen pozice — hash by zůstal bitově týž.
+    const before = graphHash(vault);
+    const operations = JSON.parse('[{"op":"replace","path":"/ir/rules/smuggled","value":{"a":1}}]') as Operation[];
+    const result = applyWorldPatch(vault, operations);
+
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.pointer).toBe('/ir/rules/smuggled');
+    expectUntouched(before);
+  });
+
+  /**
+   * A tenhle případ dřív procházel jako `MALFORMED_OPERATION` s textem
+   * `value.map is not a function`.
+   *
+   * Operace je přitom bezvadná RFC 6902 a projde každou hodnotovou kontrolou —
+   * vada je ve **výsledném dokumentu** a dřív se objevila teprve tím, že
+   * `canonical` zavolal `.map` na něčem, co už pole nebylo. Volající klíčovaný na
+   * `MALFORMED_OPERATION` by týž patch přeemitoval donekonečna.
+   */
+  it('přepsaný prototyp pole je vada struktury, ne vadná operace', () => {
+    const before = graphHash(vault);
+    const operations = JSON.parse('[{"op":"replace","path":"/ir/rules/__proto__","value":{}}]') as Operation[];
+    const result = applyWorldPatch(vault, operations);
+
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'STRUCTURE' });
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.pointer).toBe('/ir/rules');
+    expectUntouched(before);
+  });
+
   it('`__proto__` s hodnotou `null` taky neprojde', () => {
     // Užší varianta téhož: `Object.entries` nad objektem s `null` prototypem
     // funguje a hash sedí, ale `structuredClone` mu `Object.prototype` mlčky
