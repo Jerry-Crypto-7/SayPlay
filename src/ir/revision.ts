@@ -124,7 +124,7 @@ function commitChecked(doc: WorldDoc, patch: PartPatch): RevisionResult {
         'MALFORMED_OPERATION',
         patch.operations[i].path,
         'a value with a JSON form',
-        unusable[0],
+        unusable[0].detail,
       );
   }
 
@@ -172,7 +172,7 @@ function sealPart(doc: WorldDoc, part: Part, draft: unknown): RevisionResult {
   // shodil samotné parsování dřív, než by se k němu kontrola dostala.
   const unhashable = unhashableValues(draft, `/${part}`);
   if (unhashable.length > 0)
-    return reject('STRUCTURE', `/${part}`, 'values with a JSON form', unhashable[0]);
+    return reject('STRUCTURE', `/${part}`, 'values with a JSON form', unhashable[0].detail);
 
   if (part === 'look') {
     const shape = lookSchema.safeParse(draft);

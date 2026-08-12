@@ -20,7 +20,7 @@ import { applyPatch, type Operation } from 'rfc6902';
 import { z } from 'zod';
 
 import { validateIrDoc, worldIr } from '../ir/schema';
-import { unhashablePointer, unhashableValues } from '../ir/worlddoc';
+import { unhashableValues } from '../ir/worlddoc';
 import { hashWords } from '../sim/hash';
 import { TIERS } from '../verify/tiers';
 import type { VerifiableWorld } from '../verify/witness';
@@ -144,6 +144,27 @@ function threw(pointer: string, what: string, error: unknown): PatchRejection {
 }
 
 function applyChecked(doc: VerifiableWorld, operations: readonly Operation[]): PatchResult {
+  // **Nejdřív vstupní dokument, a odděleně od patche.**
+  //
+  // `graphHash(doc)` je první výpočet v celé funkci, dřív než vůbec existuje
+  // nějaká operace — takže svět, který sám o sobě nejde kanonizovat (hloubka,
+  // `undefined` v nepovinném poli, prototyp), by shodil hashování a odpověď by
+  // vinila patch. Prázdný seznam operací hlášený jako `MALFORMED_OPERATION` je
+  // nesmysl, na který se navíc nedá reagovat: volající by patch přeemitoval
+  // donekonečna, zatímco vada je v uloženém světě.
+  //
+  // Odděleně to musí být i proto, že po téhle kontrole je vstup čistý — takže
+  // nález v draftu níž je nutně **to, co přinesl patch**, a ne něco, co ve světě
+  // leželo předtím.
+  const inputIssues = unhashableValues(doc, '');
+  if (inputIssues.length > 0)
+    return reject(
+      'STRUCTURE',
+      inputIssues[0].pointer,
+      'a target document with a JSON form',
+      `the world this patch targets cannot be canonicalized: ${inputIssues[0].detail}`,
+    );
+
   const hashBefore = graphHash(doc);
 
   // Tvar OPERACÍ dřív, než je uvidí knihovna. `readonly Operation[]` platí jen
@@ -161,6 +182,21 @@ function applyChecked(doc: VerifiableWorld, operations: readonly Operation[]): P
       'an RFC 6902 operation with op and path',
       `operation ${i}: ${parsed.error.issues[0].message}`,
     );
+  }
+
+  // Hodnoty operací **před** aplikací, a tahle kontrola není zdvojení té níž.
+  //
+  // `rfc6902` si `value` při vkládání kopíruje (`util.js` `clone`), a ta kopie
+  // přestavuje každý objekt mimo pole a `Date` na **prostý `{}`** přes `for…in`.
+  // `Map` i `Set` tedy do draftu dorazí už zploštěné na `{}` — kontrola nad
+  // draftem je od `{}` nerozezná a dva sémanticky různé dokumenty by dostaly
+  // jeden `graphHash`. Vidět je lze **jen tady**, dokud jsou ještě v operaci.
+  for (let i = 0; i < operations.length; i += 1) {
+    const operation = operations[i] as { value?: unknown };
+    if (!('value' in operation)) continue;
+    const unusable = unhashableValues(operation.value, `operation ${i} value`);
+    if (unusable.length > 0)
+      return reject('MALFORMED_OPERATION', operations[i].path, 'a value with a JSON form', unusable[0].detail);
   }
 
   // Hluboká kopie: vstup se nesmí dotknout ani při úspěchu, aby volající mohl
@@ -198,24 +234,19 @@ function applyChecked(doc: VerifiableWorld, operations: readonly Operation[]): P
     );
   }
 
-  // Hodnoty, které kanonizace zahladí — **sdílená stráž s `ir/revision.ts`**, ne
-  // druhá implementace téhož. Obě cesty spolu sdílely `operationSchema`, ale ne
-  // tohle, takže se stejná vada dala odmítnout jednou cestou a commitnout druhou.
+  // A teď hotový draft, na SYROVO — dřív, než ho uvidí zod.
   //
-  // Kontroluje se **hotový draft**, ne hodnoty v operacích: draft je to, co se
-  // commitne, takže tahle jedna kontrola pokrývá i cesty, kde vada nevznikla ze
-  // `value`. Právě to je ten případ níž — a zároveň důvod, proč tu na rozdíl od
-  // `ir/revision.ts` žádná druhá kontrola nad operacemi není: byla by mrtvá.
+  // Kontrola nad operacemi tohle nezastane: **`__proto__` je v CESTĚ, ne
+  // v hodnotě**. `add /space/sockets/__proto__` klíč nepřidá, ale přepíše
+  // prototyp — `Object.entries` ho nevidí, takže `worldEnvelope`, `layoutFits`
+  // i `graphHash` projdou beze změny a patch se commitne s `hashBefore ===
+  // hashAfter`, zatímco runtime přes `sockets[name]` vidí soket navíc, který
+  // certifikát nepokrývá a kontrola mřížky neviděla.
   //
-  // Na SYROVÉM draftu, dřív než ho uvidí zod — a je to jediné místo, kde je
-  // **`__proto__` v cestě patche** pozorovatelné. `add /space/sockets/__proto__`
-  // klíč nepřidá, ale přepíše prototyp: `Object.entries` ho nevidí, takže
-  // `worldEnvelope`, `layoutFits` i `graphHash` projdou beze změny a patch se
-  // commitne s `hashBefore === hashAfter` — zatímco runtime přes `sockets[name]`
-  // vidí soket navíc, který certifikát nepokrývá a kontrola mřížky neviděla.
+  // Vstup je v tuhle chvíli už ověřený, takže cokoli se najde tady přinesl patch.
   const unhashable = unhashableValues(draft, '');
   if (unhashable.length > 0)
-    return reject('STRUCTURE', unhashablePointer(unhashable[0]), 'values with a JSON form', unhashable[0]);
+    return reject('STRUCTURE', unhashable[0].pointer, 'values with a JSON form', unhashable[0].detail);
 
   const envelope = worldEnvelope.safeParse(draft);
   if (!envelope.success) return rejectionFromZod(envelope.error, []);

@@ -490,23 +490,66 @@ describe('sousední patch cesta má tytéž stráže jako `ir/revision.ts`', () 
     expectUntouched(before);
   });
 
-  it('hodnota bez JSON tvaru se odmítne v operaci, ne až v hashi', () => {
-    // `canonical` zploští `Map` i `Date` na `{}`, takže by se dva sémanticky různé
-    // dokumenty schovaly pod jeden `graphHash`.
-    for (const value of [new Map([['k', 1]]), new Date(0), Number.NaN]) {
+  /**
+   * **Na místě, kde zod NEPOMŮŽE.**
+   *
+   * `/ir/rules/0/priority` je `z.int()`, takže tam `Map` shodí schéma i bez téhle
+   * stráže — test by prošel s vypnutou kontrolou a měřil by zod. `worldEnvelope`
+   * je ale v kořeni `.loose()`, takže `/_evil` je místo, kde neplatí žádné jiné
+   * omezení a rozhoduje výhradně tahle kontrola.
+   *
+   * Že to musí být kontrola nad OPERACÍ, plyne z `rfc6902`: jeho `clone` přestaví
+   * každý objekt mimo pole a `Date` na prostý `{}` přes `for…in`, takže `Map`
+   * i `Set` dorazí do draftu už zploštěné a kontrola nad draftem je od `{}`
+   * nerozezná.
+   */
+  it('hodnota bez JSON tvaru se odmítne i tam, kde ji schéma propustí', () => {
+    for (const value of [new Map([['k', 1]]), new Set([1, 2]), new Date(0), Number.NaN]) {
       const before = graphHash(vault);
-      const result = applyWorldPatch(vault, [
-        { op: 'replace', path: '/ir/rules/0/priority', value } as Operation,
-      ]);
+      const result = applyWorldPatch(vault, [{ op: 'add', path: '/_evil', value } as Operation]);
       expect(result.verdict, String(value)).toBe('REJECTED');
       expectUntouched(before);
     }
   });
 
-  it('hodnota, která vyhodí uvnitř knihovny, je odmítnutí s pointerem', () => {
-    // `rfc6902` si `value` při vkládání kopíruje, takže nepřátelská hodnota
-    // vyhodí uvnitř `applyPatch` — tedy tam, kde se pořád ví, která operace to
-    // byla, a odmítnutí proto může nést pointer.
+  it('`__proto__` s hodnotou `null` taky neprojde', () => {
+    // Užší varianta téhož: `Object.entries` nad objektem s `null` prototypem
+    // funguje a hash sedí, ale `structuredClone` mu `Object.prototype` mlčky
+    // vrátí — commitnutý dokument by po uložení nebyl týž objekt.
+    const before = graphHash(vault);
+    const operations = JSON.parse('[{"op":"add","path":"/space/sockets/__proto__","value":null}]') as Operation[];
+    expect(applyWorldPatch(vault, operations).verdict).toBe('REJECTED');
+    expectUntouched(before);
+  });
+
+  it('a pointer odmítnutí je RFC 6901, i když klíč obsahuje lomítko', () => {
+    // `pointer` je podle `reject.ts` strojové pole, ne popisná cesta: neescapovaný
+    // klíč `a/b` by ukázal na `/space/tags/a/b`, tedy na jiné a neexistující místo
+    // dokumentu. `space.tags` je `z.record(z.string(), …)`, takže `/` v klíči je
+    // reprezentovatelný.
+    //
+    // Cesta sem vede přes kontrolu VSTUPU: kdyby vada přišla v `value` operace,
+    // pointer by byl prostě cesta té operace a o escapování by nic nedokazoval.
+    const tainted = structuredClone(vault) as unknown as {
+      space: { tags: Record<string, unknown> };
+    };
+    tainted.space.tags['a/b'] = Number.NaN;
+
+    const result = applyWorldPatch(tainted as unknown as VerifiableWorld, []);
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.pointer).toBe('/space/tags/a~1b');
+  });
+
+  /**
+   * **Kontrakt zní „nikdy nevyhodí", ne „nevyhodí na těchhle osmi vstupech".**
+   *
+   * `Proxy` vyhodí v `Object.keys`, tedy uvnitř samotné kontroly hodnot — dřív,
+   * než se aplikuje jediná operace, a mimo dosah jakéhokoli záchytu kolem
+   * `applyPatch`. Sem se dá dojít jen záchytem kolem celého průchodu, a proto
+   * odmítnutí nemá pointer: v tu chvíli není co zaměřit.
+   */
+  it('i hodnota, která vyhodí uvnitř kontroly, skončí jako verdikt', () => {
     const before = graphHash(vault);
     const hostile = new Proxy({}, { ownKeys() { throw new Error('ownKeys trap'); } });
     let result: ReturnType<typeof applyWorldPatch> | undefined;
@@ -517,19 +560,19 @@ describe('sousední patch cesta má tytéž stráže jako `ir/revision.ts`', () 
     }).not.toThrow();
     expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
     if (result?.verdict !== 'REJECTED') return;
-    expect(result.pointer).toBe('/ir/rules/0/priority');
+    expect(result.detail).toContain('ownKeys trap');
     expectUntouched(before);
   });
 
   /**
-   * A tohle je ten případ, na který per-operační záchyt nedosáhne.
+   * **Vada ve VSTUPNÍM světě se nesmí vykázat jako vadný patch.**
    *
-   * `hashBefore` se počítá z **vstupního** dokumentu jako úplně první krok, dřív
-   * než existuje jakákoli operace. `graphHash` je přitom rekurzivní stejně jako
-   * `canonical`, takže dost hluboký dokument ho přetopí — a volající by místo
-   * verdiktu dostal `RangeError` z funkce, která má vracet odmítnutí.
+   * `graphHash(doc)` je první výpočet celé funkce, dřív než existuje jakákoli
+   * operace — takže neuchopitelný svět by shodil hashování a odpověď by vinila
+   * patch. Prázdný seznam operací hlášený jako `MALFORMED_OPERATION` je nesmysl,
+   * na který se nedá reagovat: volající by patch přeemitoval donekonečna.
    */
-  it('a hluboký VSTUPNÍ dokument taky, ještě než dojde na operace', () => {
+  it('hluboký VSTUPNÍ dokument je vada světa, ne patche', () => {
     let node: unknown = 1;
     for (let i = 0; i < 5000; i += 1) node = { n: node };
     const deep = { ...structuredClone(vault), ir: { ...vault.ir, deep: node } } as unknown as VerifiableWorld;
@@ -538,7 +581,22 @@ describe('sousední patch cesta má tytéž stráže jako `ir/revision.ts`', () 
     expect(() => {
       result = applyWorldPatch(deep, []);
     }).not.toThrow();
-    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'STRUCTURE' });
+    if (result?.verdict !== 'REJECTED') return;
+    expect(result.detail).toContain('the world this patch targets');
+  });
+
+  it('a `undefined` v nepovinném poli světa nevydává za vinu nesouvisející patch', () => {
+    // `certification` je `.optional()`, takže `{certification: undefined}` je
+    // legální TS i legální schéma — a `canonical` ho zahladí, takže identita
+    // dokumentu je nejednoznačná. Odmítnout je správně; vinit patch, který na to
+    // pole nesáhl, není.
+    const withUndefined = { ...structuredClone(vault), certification: undefined } as unknown as VerifiableWorld;
+    const result = applyWorldPatch(withUndefined, [{ op: 'replace', path: '/ir/rules/0/priority', value: 5 }]);
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.pointer).toBe('/certification');
+    expect(result.detail).toContain('the world this patch targets');
   });
 
   it('operace, která projde, se aplikuje na tentýž draft jako ta před ní', () => {

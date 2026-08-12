@@ -266,32 +266,48 @@ export interface LookVerdict {
  * složeného v procesu a obě přežijí `structuredClone` i IndexedDB. To je tentýž
  * argument o dosažitelnosti, jaký už platí pro `Infinity`.
  */
+export interface UnhashableIssue {
+  /** RFC 6901 pointer na to místo. Skládá se z escapovaných tokenů, ne z holých klíčů. */
+  readonly pointer: string;
+  /** Čitelný popis včetně cesty. To, co jde do `detail` odmítnutí. */
+  readonly detail: string;
+}
+
+function issue(pointer: string, message: string): UnhashableIssue {
+  return { pointer, detail: `${pointer}: ${message}` };
+}
+
+/** Escapování podle RFC 6901: `~` je `~0`, `/` je `~1`. V tomhle pořadí. */
+function escapeToken(token: string): string {
+  return token.replace(/~/g, '~0').replace(/\//g, '~1');
+}
+
 export function unhashableValues(
   value: unknown,
   path = '',
   open = new WeakSet<object>(),
   depth = 0,
-): string[] {
+): UnhashableIssue[] {
   if (depth > MAX_CANONICAL_DEPTH)
-    return [`${path}: nested deeper than ${MAX_CANONICAL_DEPTH} — canonicalization would overflow the stack`];
-  if (value === undefined) return [`${path}: undefined is dropped by canonicalization`];
+    return [issue(path, `nested deeper than ${MAX_CANONICAL_DEPTH} — canonicalization would overflow the stack`)];
+  if (value === undefined) return [issue(path, 'undefined is dropped by canonicalization')];
   if (value === null) return [];
 
   const kind = typeof value;
   if (kind === 'number')
-    return Number.isFinite(value as number) ? [] : [`${path}: ${String(value)} is not finite`];
+    return Number.isFinite(value as number) ? [] : [issue(path, `${String(value)} is not finite`)];
   if (kind === 'string' || kind === 'boolean') return [];
   // `bigint` vyhodí uvnitř `JSON.stringify`, `function` i `symbol` z něj vypadnou
   // beze stopy. Ani jedno nemá JSON tvar, takže ani jedno nesmí do dokumentu.
-  if (kind !== 'object') return [`${path}: ${kind} has no JSON form`];
+  if (kind !== 'object') return [issue(path, `${kind} has no JSON form`)];
 
   const object = value as object;
   // Cyklus se `structuredClone` přenese a `canonical` by na něm nedoběhl. Sleduje
   // se **cesta**, ne všechno viděné, aby sdílený odkaz (DAG) nebyl falešný nález.
-  if (open.has(object)) return [`${path}: cycle — canonicalization would not terminate`];
+  if (open.has(object)) return [issue(path, 'cycle — canonicalization would not terminate')];
   open.add(object);
 
-  const issues: string[] = [];
+  const issues: UnhashableIssue[] = [];
   if (Array.isArray(object)) {
     for (let i = 0; i < object.length; i += 1)
       issues.push(...unhashableValues(object[i], `${path}/${i}`, open, depth + 1));
@@ -309,34 +325,33 @@ export function unhashableValues(
   //   stejný, zatímco runtime přes `entities[id]` vidí entitu navíc, kterou
   //   certifikát nepokrývá. Prototyp se tím z prostého objektu změní — a to je
   //   pozorovatelné právě tady.
+  //
+  // **Ani `null` prototyp neprojde**, ačkoli `Object.entries` nad ním funguje a
+  // hash by seděl: `add /__proto__` s hodnotou `null` prototyp přepíše taky, a
+  // `structuredClone` takovému objektu `Object.prototype` mlčky vrátí. Commitnutý
+  // dokument by tedy po průchodu uložištěm nebyl týž objekt, který se commitoval —
+  // a „COMMITTED s nezměněným hashem" má znamenat, že se nezměnilo nic.
   const proto = Object.getPrototypeOf(object) as unknown;
-  if (proto !== Object.prototype && proto !== null) {
+  if (proto !== Object.prototype) {
     open.delete(object);
-    return [`${path}: only plain objects and arrays survive canonicalization`];
+    return [issue(path, 'only plain objects and arrays survive canonicalization')];
   }
 
   for (const key of Object.keys(object)) {
+    // Token se escapuje, protože `pointer` je podle `patch/reject.ts` **RFC 6901**,
+    // ne popisná cesta: klíč `a/b` by jinak ukázal na `/a/b`, tedy na jiné a
+    // neexistující místo dokumentu.
+    const at = `${path}/${escapeToken(key)}`;
     const descriptor = Object.getOwnPropertyDescriptor(object, key);
     // Getter by se zavolal až v `canonical` a mohl by vyhodit; hodnotou není.
     if (descriptor === undefined || descriptor.get !== undefined) {
-      issues.push(`${path}/${key}: accessor properties have no JSON form`);
+      issues.push(issue(at, 'accessor properties have no JSON form'));
       continue;
     }
-    issues.push(...unhashableValues(descriptor.value, `${path}/${key}`, open, depth + 1));
+    issues.push(...unhashableValues(descriptor.value, at, open, depth + 1));
   }
   open.delete(object);
   return issues;
-}
-
-/**
- * Pointer z nálezu `unhashableValues` — cesta je všechno před prvním `": "`.
- *
- * Je to inverze toho, jak si nález cestu skládá (`${path}/${key}`), a proto stojí
- * tady vedle něj: kdyby se skládání změnilo, obě strany jsou na očích.
- */
-export function unhashablePointer(issue: string): string {
-  const at = issue.indexOf(': ');
-  return at === -1 ? '' : issue.slice(0, at);
 }
 
 export function validateLook(look: unknown): LookVerdict {
@@ -344,7 +359,7 @@ export function validateLook(look: unknown): LookVerdict {
   if (!parsed.success)
     return { ok: false, issues: parsed.error.issues.map((issue) => `schema:/${issue.path.join('/')}: ${issue.message}`) };
 
-  const issues = unhashableValues(parsed.data, '');
+  const issues = unhashableValues(parsed.data, '').map((found) => found.detail);
   return { ok: issues.length === 0, issues };
 }
 
@@ -395,7 +410,7 @@ export function migrateWorldDoc(input: unknown): MigrationVerdict {
     ...unhashableValues(parsed.data.sim, '/sim'),
     ...unhashableValues(parsed.data.look, '/look'),
   ];
-  if (nonFinite.length > 0) return { ok: false, doc: null, reason: nonFinite[0] };
+  if (nonFinite.length > 0) return { ok: false, doc: null, reason: nonFinite[0].detail };
 
   if (parsed.data.simHash !== simHashOf(parsed.data))
     return { ok: false, doc: null, reason: 'simHash does not match the sim part it claims to describe' };
