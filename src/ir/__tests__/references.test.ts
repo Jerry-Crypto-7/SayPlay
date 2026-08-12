@@ -15,28 +15,37 @@ function frozenLines(...parts: string[]): Record<string, any>[] {
 const malformed = frozenLines('malformed', 'index.jsonl');
 const responses = frozenLines('responses', 'index.jsonl');
 
-/** Zmrazená třída defektu „osiřelý odkaz". Je jich málo — a to je důvod je jmenovat. */
-const DANGLING = malformed.filter((entry) => entry.defectClass === 'dangling_reference');
-
 /**
  * Očekávaný nález je vypsaný celý, ne jen „něco spadlo". Podřetězec v anotaci
  * defektu by prošel i resolveru, který navíc hlásí `win` (id pravidla) nebo
  * `entities` — obojí v té české větě totiž taky stojí.
+ *
+ * **Sada se prochází celá, ne filtrovaná na `defectClass === 'dangling_reference'`.**
+ * Ten filtr vypadal jako zúžení na relevantní případy, ale byl to výpadek
+ * pokrytí: M03 je zmrazený osiřelý **socket** (`zone: "s9"` v pravidle a týž
+ * cíl ve svědkovi) vedený jako `index_out_of_range`, takže se přes filtr nikdy
+ * nespustil — a socketový prostor tím zůstal bez jediné zmrazené aserce.
+ * Zbylých 27 fixture nemá zásah, což je zároveň negativní kontrola: resolver,
+ * který hlásí příliš, spadne tady.
  */
 const EXPECTED_DANGLING: Readonly<Record<string, readonly DanglingReference[]>> = {
+  M03: [
+    { where: 'sim.rules[win].event.zone', namespace: 'socket', name: 's9' },
+    { where: 'sim.witness.ops[0].target', namespace: 'entityOrSocket', name: 's9' },
+  ],
   M15: [{ where: 'sim.rules[win].event.ref', namespace: 'counter', name: 'coins' }],
   M16: [{ where: 'look.modules.lamp', namespace: 'entity', name: 'lamp' }],
 };
 
 describe('osiřelé odkazy ve zmrazených vadných emisích', () => {
-  it('pokrývá celou zmrazenou třídu dangling_reference', () => {
-    expect(DANGLING.map((entry) => entry.id).sort()).toEqual(Object.keys(EXPECTED_DANGLING).sort());
+  it('prochází celou zmrazenou sadu, ne jen deklarovanou třídu', () => {
+    expect(malformed).toHaveLength(30);
   });
 
-  it.each(DANGLING.map((entry) => [entry.id, entry] as const))(
+  it.each(malformed.map((entry) => [entry.id, entry] as const))(
     '%s dá přesně očekávaný nález',
     (id, entry) => {
-      expect(findDanglingReferences(entry.body)).toEqual([...EXPECTED_DANGLING[id]]);
+      expect(findDanglingReferences(entry.body)).toEqual([...(EXPECTED_DANGLING[id] ?? [])]);
     },
   );
 });
@@ -102,6 +111,110 @@ describe('rozpouštění jmen', () => {
 });
 
 /**
+ * Socketový prostor a `entityOrSocket` neměly ani jednu pozitivní aserci — každý
+ * nález v sadě byl `counter`, `flag`, `entity` nebo `slot`, a negativní kontrola
+ * nad zmrazenými světy asertuje prázdno, což tiché vypnutí prostoru splní.
+ * Reprodukce toho výpadku: nahradit `const sockets = union(...)` za
+ * `UNRESOLVABLE`, nebo smazat celou smyčku přes `witness.ops`, neshodilo nic.
+ * Každá cesta, která do socketového prostoru ukazuje, tu proto má vlastní případ.
+ */
+describe('socketový a smíšený prostor je pinutý na každé cestě, která do něj ukazuje', () => {
+  const base = (): Record<string, any> => ({
+    sim: {
+      sockets: { s0: [1, 1], s1: [4, 4] },
+      entities: { player: { role: 'actor', socket: 's0', state: 'idle' } },
+      state: { counters: {}, flags: {}, timers: {}, zones: { z0: [2, 2] }, slots: 1 },
+      rules: [
+        {
+          id: 'r1',
+          event: { kind: 'onEnterZone', entity: 'player', zone: 'z0' },
+          condition: { kind: 'inZone', entity: 'player', zone: 's1' },
+          actions: [{ kind: 'moveTo', target: 'player', socket: 's1' }],
+        },
+        {
+          id: 'r2',
+          event: { kind: 'onDrop', socket: 's0', slot: 0 },
+          condition: { kind: 'countInZone', zone: 'z0', n: 1 },
+          actions: [{ kind: 'setState', target: 'player', value: 'idle' }],
+        },
+      ],
+      witness: { ops: [{ tick: 0, actionId: 'moveTo', target: 's1' }] },
+    },
+  });
+
+  it('plně deklarovaný svět projde', () => {
+    expect(findDanglingReferences(base())).toEqual([]);
+  });
+
+  const cases: Array<[string, (world: Record<string, any>) => void, DanglingReference]> = [
+    [
+      'onEnterZone.zone',
+      (world) => {
+        world.sim.rules[0].event.zone = 's9';
+      },
+      { where: 'sim.rules[r1].event.zone', namespace: 'socket', name: 's9' },
+    ],
+    [
+      'inZone.zone',
+      (world) => {
+        world.sim.rules[0].condition.zone = 's9';
+      },
+      { where: 'sim.rules[r1].condition.zone', namespace: 'socket', name: 's9' },
+    ],
+    [
+      'moveTo.socket',
+      (world) => {
+        world.sim.rules[0].actions[0].socket = 's9';
+      },
+      { where: 'sim.rules[r1].actions[0].socket', namespace: 'socket', name: 's9' },
+    ],
+    [
+      'onDrop.socket',
+      (world) => {
+        world.sim.rules[1].event.socket = 's9';
+      },
+      { where: 'sim.rules[r2].event.socket', namespace: 'socket', name: 's9' },
+    ],
+    [
+      'countInZone.zone',
+      (world) => {
+        world.sim.rules[1].condition.zone = 's9';
+      },
+      { where: 'sim.rules[r2].condition.zone', namespace: 'socket', name: 's9' },
+    ],
+    [
+      'witness.ops[].target',
+      (world) => {
+        world.sim.witness.ops[0].target = 's9';
+      },
+      { where: 'sim.witness.ops[0].target', namespace: 'entityOrSocket', name: 's9' },
+    ],
+  ];
+
+  it.each(cases)('%s nad nedeklarovaným socketem je osiřelý odkaz', (_path, breakIt, expected) => {
+    const world = base();
+    breakIt(world);
+    expect(findDanglingReferences(world)).toEqual([expected]);
+  });
+
+  it('zóna z `state.zones` je socket jako každý jiný — prostor je sjednocení', () => {
+    // Kdyby se četly jen `sim.sockets`, `z0` by osiřelo na obou místech naráz.
+    const world = base();
+    delete world.sim.state.zones;
+    expect(findDanglingReferences(world)).toEqual([
+      { where: 'sim.rules[r1].event.zone', namespace: 'socket', name: 'z0' },
+      { where: 'sim.rules[r2].condition.zone', namespace: 'socket', name: 'z0' },
+    ]);
+  });
+
+  it('svědek smí mířit i na entitu, ne jen na socket', () => {
+    const world = base();
+    world.sim.witness.ops[0].target = 'player';
+    expect(findDanglingReferences(world)).toEqual([]);
+  });
+});
+
+/**
  * Tvarová vada je jiná třída než osiřelý odkaz, a dělí je jedna otázka: jsou
  * jména zapsaná jinak (pole, skalár — vlastní schéma, čtení by hádalo), nebo
  * nejsou zapsaná vůbec (chybí, `null`, `{}` — prázdný prostor)?
@@ -161,15 +274,38 @@ describe('deklarace špatného tvaru', () => {
 
   it('null entities se chovají jako chybějící i směrem od části vzhledu', () => {
     const look = { modules: { lamp: {}, torch: {}, banner: {} } };
-    const withEntities = (entities: unknown) => ({ ...shaped({ counters: {}, flags: {} }, entities), look });
-    const asNull = findDanglingReferences(withEntities(null)).filter((entry) =>
-      entry.where.startsWith('look.'),
+    // Chybějící kontejner se **maže**, nepředává se `undefined`. Druhý parametr
+    // `shaped` má výchozí hodnotu, takže `withEntities(undefined)` dosadilo
+    // deklarované `player` a porovnávalo `null` proti *deklaraci*, ne proti
+    // chybějícímu klíči. Filtr na `look.` to schoval: nad deklarovanou entitou
+    // vyjdou obě větve na týchž třech vzhledových nálezech.
+    const build = (mutate: (sim: Record<string, any>) => void) => {
+      const world: Record<string, any> = { ...shaped({ counters: {}, flags: {} }), look };
+      mutate(world.sim);
+      return world;
+    };
+    // A bez filtru vůbec: zahazoval sim-side nálezy, takže by test prošel, i
+    // kdyby detekce entit uvnitř `sim` přestala fungovat úplně. Nález na
+    // `actions[0].target` je ta odhozená polovina.
+    const asNull = findDanglingReferences(
+      build((sim) => {
+        sim.entities = null;
+      }),
     );
-    const asMissing = findDanglingReferences(withEntities(undefined)).filter((entry) =>
-      entry.where.startsWith('look.'),
+    const asMissing = findDanglingReferences(
+      build((sim) => {
+        delete sim.entities;
+      }),
     );
-    expect(asNull.map((entry) => entry.name)).toEqual(['lamp', 'torch', 'banner']);
-    expect(asNull).toEqual(asMissing);
+    expect(asNull).toEqual([
+      { where: 'sim.rules[r1].event.ref', namespace: 'counter', name: 'score' },
+      { where: 'sim.rules[r1].condition.ref', namespace: 'flag', name: 'lit' },
+      { where: 'sim.rules[r1].actions[0].target', namespace: 'entity', name: 'player' },
+      { where: 'look.modules.lamp', namespace: 'entity', name: 'lamp' },
+      { where: 'look.modules.torch', namespace: 'entity', name: 'torch' },
+      { where: 'look.modules.banner', namespace: 'entity', name: 'banner' },
+    ]);
+    expect(asMissing).toEqual(asNull);
   });
 
   it('prázdný objekt naopak prázdný prostor JE — a odkaz do něj je osiřelý', () => {

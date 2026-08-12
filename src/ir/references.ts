@@ -92,11 +92,20 @@ type NameNamespace = Exclude<SurfaceNamespace, 'slot'>;
  * Jména deklarovaná v kontejneru.
  *
  * **Chybějící kontejner a `null` kódují tentýž záměr** — „žádné countery" — a
- * proto se řeší identicky: prázdný prostor, odkaz do něj je osiřelý. Rozlišovat
- * je nemá ve zmrazené sadě oporu; žádný z 30 vadných fixture ani z 15
- * syntetických odpovědí chybějící ani `null` kontejner nenese, takže by šlo o
- * vymyšlenou sémantiku, která dvěma zápisům téhož dává opačnou třídu defektu.
- * Prázdný objekt `{}` je třetí zápis téhož a pinuje ho M15.
+ * proto se řeší identicky: prázdný prostor, odkaz do něj je osiřelý.
+ *
+ * Větev „chybějící → prázdný prostor" **je zmrazenou sadou vázaná**, a to
+ * silně: `state.zones` chybí ve **40 ze 43** těl nesoucích `sim` (deklarované
+ * jsou jen v C03, C05 a C08) a přes `union` níž tvoří polovinu socketového
+ * prostoru. Kdyby chybějící kontejner znamenal `UNRESOLVABLE`, sockety by ve
+ * čtyřiceti zmrazených světech přestaly být rozpustitelné a osiřelý socket v
+ * M03 by zmizel — tiše, protože nerozpustitelný prostor nálezy nehlásí. Tuhle
+ * větev tedy neměň bez fixture, který si to vynutí.
+ *
+ * `null` naopak ve zmrazené sadě není ani jednou. Přiřadit ho k chybějícímu je
+ * volba bez opory ve fixture — ale je to volba mezi dvěma zápisy **téhož**
+ * záměru, ne mezi dvěma významy. Prázdný objekt `{}` je třetí zápis téhož a
+ * pinuje ho M15.
  *
  * Kontejner **špatného tvaru** (pole, číslo, řetězec, boolean) je naopak
  * **nerozpustitelný**. Tam totiž jména existují, jen jsou zapsaná jinak, než

@@ -305,12 +305,22 @@ describe('oddělení od části vzhledu', () => {
   const irDir = join(process.cwd(), 'src', 'ir');
   const IR_PATH_MODULES = ['types.ts', 'schema.ts', 'lower.ts', 'eval.ts'];
 
+  /** Jediný modul pod `src/ir`, který část vzhledu jmenovat MUSÍ — má vlastní test níž. */
+  const RESOLVER_MODULE = 'references.ts';
+
   /**
    * Adresáře, které smí část vzhledu jmenovat, protože bez pojmenování zákazu
    * ho nejde vynutit. Je to **výčet jmen, ne prefix** — `startsWith('__')` by
    * amnestii rozdal každému budoucímu `__gen__` nebo `__generated__`.
    */
   const NAMING_ALLOWED_DIRS = new Set(['__tests__', '__fixtures__']);
+
+  /**
+   * `.tsx` je v projektu živá přípona (`src/components/Stage.tsx`), takže sken
+   * jen nad `.ts` by minul produkční `src/ir/lower-impl.tsx` — táž díra jako
+   * amnestie pro `__gen__`, jen přes příponu místo adresáře.
+   */
+  const SOURCE_EXTENSIONS = ['.ts', '.tsx'];
 
   const collectModules = (dir: string, prefix = ''): string[] =>
     readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -319,7 +329,7 @@ describe('oddělení od části vzhledu', () => {
           ? []
           : collectModules(join(dir, entry.name), `${prefix}${entry.name}/`);
       }
-      return entry.name.endsWith('.ts') ? [`${prefix}${entry.name}`] : [];
+      return SOURCE_EXTENSIONS.some((ext) => entry.name.endsWith(ext)) ? [`${prefix}${entry.name}`] : [];
     });
 
   const linesOf = (file: string) => readFileSync(join(irDir, file), 'utf8').split(/\r?\n/);
@@ -331,12 +341,19 @@ describe('oddělení od části vzhledu', () => {
   });
 
   it('cesta snížení a vyhodnocení ji nezmiňuje ani slovem', () => {
+    // Rozsah se **odvozuje ze stromu**, ne z ručního výčtu: nový produkční modul
+    // pod `src/ir` spadne do zákazu sám, i když ho nikdo nedopíše do konstanty.
+    // Ruční seznam by ho minul a chytila by ho až inventura níž — tedy jiný
+    // test, s jinou chybovou hláškou, o krok později.
+    const scanned = collectModules(irDir).filter((file) => file !== RESOLVER_MODULE);
     const offenders: string[] = [];
-    for (const file of IR_PATH_MODULES) {
+    for (const file of scanned) {
       linesOf(file).forEach((line, position) => {
         if (/look/i.test(line)) offenders.push(`${file}:${position + 1}: ${line.trim()}`);
       });
     }
+    // Aby sken nemohl tiše zdegenerovat na prázdný seznam a projít naprázdno.
+    expect(IR_PATH_MODULES.filter((file) => !scanned.includes(file))).toEqual([]);
     expect(offenders).toEqual([]);
   });
 
@@ -345,9 +362,10 @@ describe('oddělení od části vzhledu', () => {
     expect(collectModules(irDir).sort()).toEqual([...IR_PATH_MODULES, 'references.ts'].sort());
   });
 
-  it('výjimka platí jen pro dva jmenované adresáře, ne pro každý s prefixem `__`', () => {
-    // Vynechat cokoli s prefixem `__` je díra velikosti `src/ir/__gen__/`:
-    // produkční modul by v něm mohl část vzhledu jmenovat a sken by ho nikdy
+  it('sken nemá díru ani v adresáři s prefixem `__`, ani v příponě `.tsx`', () => {
+    // Dvě varianty téže díry. Vynechat cokoli s prefixem `__` je díra velikosti
+    // `src/ir/__gen__/`; sbírat jen `.ts` je díra velikosti `lower-impl.tsx`.
+    // V obou by produkční modul směl část vzhledu jmenovat a sken by ho nikdy
     // neuviděl. Reprodukce nad skutečným stromem, ne nad `src/`, aby test
     // nemusel zapisovat do zdrojů.
     const root = mkdtempSync(join(tmpdir(), 'ir-scan-'));
@@ -356,10 +374,17 @@ describe('oddělení od části vzhledu', () => {
       mkdirSync(join(root, '__tests__'));
       mkdirSync(join(root, 'sub'));
       writeFileSync(join(root, 'a.ts'), '');
+      writeFileSync(join(root, 'lower-impl.tsx'), '');
       writeFileSync(join(root, '__gen__', 'lower-impl.ts'), '');
       writeFileSync(join(root, '__tests__', 'a.test.ts'), '');
-      writeFileSync(join(root, 'sub', 'b.ts'), '');
-      expect(collectModules(root).sort()).toEqual(['__gen__/lower-impl.ts', 'a.ts', 'sub/b.ts']);
+      writeFileSync(join(root, 'sub', 'b.tsx'), '');
+      writeFileSync(join(root, 'notes.md'), '');
+      expect(collectModules(root).sort()).toEqual([
+        '__gen__/lower-impl.ts',
+        'a.ts',
+        'lower-impl.tsx',
+        'sub/b.tsx',
+      ]);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
