@@ -1,4 +1,5 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -304,6 +305,23 @@ describe('oddělení od části vzhledu', () => {
   const irDir = join(process.cwd(), 'src', 'ir');
   const IR_PATH_MODULES = ['types.ts', 'schema.ts', 'lower.ts', 'eval.ts'];
 
+  /**
+   * Adresáře, které smí část vzhledu jmenovat, protože bez pojmenování zákazu
+   * ho nejde vynutit. Je to **výčet jmen, ne prefix** — `startsWith('__')` by
+   * amnestii rozdal každému budoucímu `__gen__` nebo `__generated__`.
+   */
+  const NAMING_ALLOWED_DIRS = new Set(['__tests__', '__fixtures__']);
+
+  const collectModules = (dir: string, prefix = ''): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      if (entry.isDirectory()) {
+        return NAMING_ALLOWED_DIRS.has(entry.name)
+          ? []
+          : collectModules(join(dir, entry.name), `${prefix}${entry.name}/`);
+      }
+      return entry.name.endsWith('.ts') ? [`${prefix}${entry.name}`] : [];
+    });
+
   const linesOf = (file: string) => readFileSync(join(irDir, file), 'utf8').split(/\r?\n/);
 
   it('nemá ve zkompilovaném schématu jediné pole vzhledu', () => {
@@ -323,16 +341,28 @@ describe('oddělení od části vzhledu', () => {
   });
 
   it('modul `src/ir` obsahuje právě čtyři soubory cesty snížení plus resolver', () => {
-    // Kdyby přibyl pátý produkční modul, předchozí test by ho tiše minul —
-    // a rekurzivně proto, že adresář o úroveň níž by výjimku zdědil taky.
-    const walk = (dir: string, prefix: string): string[] =>
-      readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-        if (entry.isDirectory()) {
-          return entry.name.startsWith('__') ? [] : walk(join(dir, entry.name), `${prefix}${entry.name}/`);
-        }
-        return entry.name.endsWith('.ts') ? [`${prefix}${entry.name}`] : [];
-      });
-    expect(walk(irDir, '').sort()).toEqual([...IR_PATH_MODULES, 'references.ts'].sort());
+    // Kdyby přibyl pátý produkční modul, předchozí test by ho tiše minul.
+    expect(collectModules(irDir).sort()).toEqual([...IR_PATH_MODULES, 'references.ts'].sort());
+  });
+
+  it('výjimka platí jen pro dva jmenované adresáře, ne pro každý s prefixem `__`', () => {
+    // Vynechat cokoli s prefixem `__` je díra velikosti `src/ir/__gen__/`:
+    // produkční modul by v něm mohl část vzhledu jmenovat a sken by ho nikdy
+    // neuviděl. Reprodukce nad skutečným stromem, ne nad `src/`, aby test
+    // nemusel zapisovat do zdrojů.
+    const root = mkdtempSync(join(tmpdir(), 'ir-scan-'));
+    try {
+      mkdirSync(join(root, '__gen__'));
+      mkdirSync(join(root, '__tests__'));
+      mkdirSync(join(root, 'sub'));
+      writeFileSync(join(root, 'a.ts'), '');
+      writeFileSync(join(root, '__gen__', 'lower-impl.ts'), '');
+      writeFileSync(join(root, '__tests__', 'a.test.ts'), '');
+      writeFileSync(join(root, 'sub', 'b.ts'), '');
+      expect(collectModules(root).sort()).toEqual(['__gen__/lower-impl.ts', 'a.ts', 'sub/b.ts']);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it('resolver ji jmenuje výhradně u klíčů modulů', () => {

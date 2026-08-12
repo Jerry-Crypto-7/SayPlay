@@ -102,9 +102,13 @@ describe('rozpouštění jmen', () => {
 });
 
 /**
- * Tvarová vada je jiná třída než osiřelý odkaz. `type_coercion` je ve zmrazené
- * sadě opravitelná, odkaz na nedeklarovaný counter není — takže záměna jednoho
- * za druhé by z jedné opravitelné vady vyrobila hromadu neopravitelných.
+ * Tvarová vada je jiná třída než osiřelý odkaz, a dělí je jedna otázka: jsou
+ * jména zapsaná jinak (pole, skalár — vlastní schéma, čtení by hádalo), nebo
+ * nejsou zapsaná vůbec (chybí, `null`, `{}` — prázdný prostor)?
+ *
+ * **Neopírá se to o opravitelnost, protože ta nejde ani jedním směrem.** Ve
+ * zmrazené sadě je `type_coercion` opravitelná u M07 a M08, ale ne u M09, a
+ * `dangling_reference` je neopravitelný u M15, ale opravitelný u M16.
  */
 describe('deklarace špatného tvaru', () => {
   const shaped = (state: unknown, entities: unknown = { player: { role: 'actor' } }) => ({
@@ -134,11 +138,38 @@ describe('deklarace špatného tvaru', () => {
     expect(findDanglingReferences(shaped(['score']))).toEqual([]);
   });
 
-  it('null je tvarová vada, ne prázdný prostor — ani u kontejneru, ani u celého state', () => {
-    expect(findDanglingReferences(shaped({ counters: null, flags: { lit: false }, timers: {} }))).toEqual(
-      [],
+  it('null kontejner znamená totéž co chybějící, protože kóduje tentýž záměr', () => {
+    // Rozlišit je by znamenalo dát dvěma zápisům „žádné countery" opačnou třídu
+    // defektu — a zmrazená sada pro to rozlišení nemá jediný fixture.
+    const asNull = findDanglingReferences(shaped({ counters: null, flags: { lit: false }, timers: {} }));
+    const asMissing = findDanglingReferences(shaped({ flags: { lit: false }, timers: {} }));
+    expect(asNull).toEqual([{ where: 'sim.rules[r1].event.ref', namespace: 'counter', name: 'score' }]);
+    expect(asNull).toEqual(asMissing);
+  });
+
+  it('null místo celého state se chová jako chybějící state, ne jako pole', () => {
+    const asNull = findDanglingReferences(shaped(null));
+    const asMissing = findDanglingReferences(shaped(undefined));
+    expect(asNull).toEqual([
+      { where: 'sim.rules[r1].event.ref', namespace: 'counter', name: 'score' },
+      { where: 'sim.rules[r1].condition.ref', namespace: 'flag', name: 'lit' },
+    ]);
+    expect(asNull).toEqual(asMissing);
+    // A protipól, aby test nedokazoval jen to, že se všechno chová stejně.
+    expect(findDanglingReferences(shaped(['score']))).toEqual([]);
+  });
+
+  it('null entities se chovají jako chybějící i směrem od části vzhledu', () => {
+    const look = { modules: { lamp: {}, torch: {}, banner: {} } };
+    const withEntities = (entities: unknown) => ({ ...shaped({ counters: {}, flags: {} }, entities), look });
+    const asNull = findDanglingReferences(withEntities(null)).filter((entry) =>
+      entry.where.startsWith('look.'),
     );
-    expect(findDanglingReferences(shaped(null))).toEqual([]);
+    const asMissing = findDanglingReferences(withEntities(undefined)).filter((entry) =>
+      entry.where.startsWith('look.'),
+    );
+    expect(asNull.map((entry) => entry.name)).toEqual(['lamp', 'torch', 'banner']);
+    expect(asNull).toEqual(asMissing);
   });
 
   it('prázdný objekt naopak prázdný prostor JE — a odkaz do něj je osiřelý', () => {

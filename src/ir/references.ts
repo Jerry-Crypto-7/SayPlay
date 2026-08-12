@@ -91,20 +91,28 @@ type NameNamespace = Exclude<SurfaceNamespace, 'slot'>;
 /**
  * Jména deklarovaná v kontejneru.
  *
- * **Chybějící** kontejner je prázdný prostor — odkaz do něj je osiřelý, což je
- * přesně vada M15. Kontejner **špatného tvaru** (pole, číslo, řetězec i `null`)
- * je naopak **nerozpustitelný**: tvarovou vadu vlastní schéma a je to zmrazená
- * třída `type_coercion`, tedy jedna opravitelná vada. Kdyby se tady převedla na
- * osiřelé odkazy, vyrobila by hromadu vad, které protokol prohlašuje za
- * NEopravitelné — jedna špatná závorka by dokument poslala rovnou do koše.
+ * **Chybějící kontejner a `null` kódují tentýž záměr** — „žádné countery" — a
+ * proto se řeší identicky: prázdný prostor, odkaz do něj je osiřelý. Rozlišovat
+ * je nemá ve zmrazené sadě oporu; žádný z 30 vadných fixture ani z 15
+ * syntetických odpovědí chybějící ani `null` kontejner nenese, takže by šlo o
+ * vymyšlenou sémantiku, která dvěma zápisům téhož dává opačnou třídu defektu.
+ * Prázdný objekt `{}` je třetí zápis téhož a pinuje ho M15.
  *
- * `null` patří k tvarovým vadám, ne k chybějícím: `"counters": null` je běžný
- * zápis pro „žádné countery", ale kontrakt na tom místě žádá objekt, a mýlit se
- * ve prospěch mlčení je tu levnější než ve prospěch neopravitelného verdiktu.
+ * Kontejner **špatného tvaru** (pole, číslo, řetězec, boolean) je naopak
+ * **nerozpustitelný**. Tam totiž jména existují, jen jsou zapsaná jinak, než
+ * kontrakt žádá — vadu vlastní schéma a čtení jmen by hádalo. Kdyby se převedla
+ * na osiřelé odkazy, vyrobila by z jedné špatné závorky hromadu nálezů.
+ *
+ * **Bez tvrzení o opravitelnosti, protože zmrazená sada ho nepodpírá:**
+ * `dangling_reference` má obě polarity (M15 `repairable: false`, protože meze
+ * chybějícího counteru se dají jen uhodnout; M16 `repairable: true`, protože
+ * osiřelý vzhledový modul je mimo hash a jde smazat) a `type_coercion` taky
+ * (M07 a M08 opravitelné, M09 ne). Záměna tříd tedy neposouvá verdikt
+ * předvídatelným směrem ani v jednu stranu — což je horší než posun, ne lepší.
  */
 function names(container: unknown): NameSet {
-  if (container === undefined) return new Set();
-  if (container === null || typeof container !== 'object' || Array.isArray(container)) return UNRESOLVABLE;
+  if (container === undefined || container === null) return new Set();
+  if (typeof container !== 'object' || Array.isArray(container)) return UNRESOLVABLE;
   return new Set(Object.keys(container as Record<string, unknown>));
 }
 
