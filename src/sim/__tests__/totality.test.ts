@@ -471,6 +471,42 @@ describe('podmínka 5 — mez musí OMEZOVAT, ne se jen vyskytovat', () => {
     expect(product.sites.map((site) => site.bounded)).toEqual([false]);
   });
 
+  it('mez propašovaná do argumentu meznové funkce neprojde', () => {
+    // Skórovat volání podle jména volaného je táž díra jako sčítání atomů, jen
+    // přesunutá ze sčítance do argumentu.
+    const raw = analyseModule(
+      'synthetic.ts',
+      'function step(r){ for (let i = 0; i < sightBound(r.doc.nodes); i += 1) { touch(i); } }',
+    );
+    const spread = analyseModule(
+      'synthetic.ts',
+      'function step(r){ for (let i = 0; i < settleItemBound({ ...r.limits, maxSlots: r.doc.slots.length }); i += 1) { touch(i); } }',
+    );
+    const nested = analyseModule(
+      'synthetic.ts',
+      'function step(r){ for (let i = 0; i < phaseBound("sense", makeLimits(r.doc)); i += 1) { touch(i); } }',
+    );
+    expect(raw.sites.map((site) => site.bounded)).toEqual([false]);
+    expect(spread.sites.map((site) => site.bounded)).toEqual([false]);
+    expect(nested.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
+  it('a meznová funkce nad deklarovanými mezemi projde', () => {
+    const facts = analyseModule(
+      'synthetic.ts',
+      'function step(r){ for (let i = 0; i < phaseBound("trigger" satisfies Phase, r.limits); i += 1) { touch(i); } }',
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([true]);
+  });
+
+  it('jméno meze na cizím objektu neprojde — kontroluje se i příjemce', () => {
+    const facts = analyseModule(
+      'synthetic.ts',
+      'function step(r){ for (let i = 0; i < r.doc.stats.maxSlots; i += 1) { touch(i); } }',
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
   it('ale čistá aritmetika nad mezemi a konstantami ano', () => {
     const facts = analyseModule(
       'synthetic.ts',

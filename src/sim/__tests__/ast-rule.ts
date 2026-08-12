@@ -23,6 +23,13 @@
  * (`BOOLEAN_SPACES`, `ASSIGNABLE_SPACES` — jejich délka je pevná v době překladu
  * a vstupní dokument ji nezvětší, což je přesně to, co pravidlo hlídá). Kdyby
  * některá z těch mezí zmizela, tohle pravidlo to neuvidí.
+ *
+ * **Druhá přiznaná mezera: aritmetika se nevyhodnocuje.** `0 * limits.maxSlots +
+ * 4096` projde jako mez světa, protože atom `maxSlots` v ní je, a rozpoznat, že
+ * ho násobení nulou umlčelo, by znamenalo konstantní skládání. Vlastnost, na
+ * které totalita stojí — práce na tik neroste se vstupním dokumentem — přitom
+ * platí dál, protože taková mez je konstanta. Slabší je jen tvrzení „mez pochází
+ * z deklarovaných hranic světa".
  */
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
@@ -53,6 +60,15 @@ const LIMIT_FIELDS = new Set([
 
 /** Funkce, které mez z `IrLimits` odvozují. Jiný způsob, jak ji vyrobit, není. */
 const BOUND_FUNCTIONS = new Set(['phaseBound', 'pairBound', 'settleItemBound', 'sightBound', 'pathBound']);
+
+/**
+ * Jméno, pod kterým se v tomhle projektu nosí objekt deklarovaných mezí.
+ *
+ * Pravidlo bez typové informace nemá jak poznat `IrLimits` jinak než podle jména,
+ * a **jméno pole samo nestačí**: `doc.stats.maxSlots` má taky `maxSlots`. Proto
+ * se u každého přístupu k mezi kontroluje i příjemce.
+ */
+const LIMIT_OBJECT = 'limits';
 
 /**
  * Konstanty, které drží **totéž číslo jako zod schéma**. Jsou třetím povoleným
@@ -170,6 +186,42 @@ export function analyseModule(moduleName: string, source: string): ModuleFacts {
     return undefined;
   };
 
+  /** Nese tenhle výraz objekt deklarovaných mezí? Poznává se podle jména. */
+  const isLimitObject = (node: ts.Node): boolean => {
+    if (ts.isParenthesizedExpression(node)) return isLimitObject(node.expression);
+    if (ts.isIdentifier(node)) return node.text === LIMIT_OBJECT;
+    if (ts.isPropertyAccessExpression(node)) return node.name.text === LIMIT_OBJECT;
+    return false;
+  };
+
+  /** Přístup k poli `IrLimits` — jméno pole **i** příjemce musí sedět. */
+  const isLimitField = (node: ts.PropertyAccessExpression): boolean =>
+    LIMIT_FIELDS.has(node.name.text) && isLimitObject(node.expression);
+
+  /**
+   * Argument meznové funkce nesmí propašovat velikost vstupu.
+   *
+   * Skórovat volání podle jména volaného a nedívat se do argumentů znamená, že
+   * `sightBound(doc.nodes)` nebo `settleItemBound({ ...limits, maxSlots:
+   * doc.ir.slots.length })` projde jako mez světa *(nález re-review, 12. 8.
+   * 2026)*. Je to tentýž únik jako sčítání atomů, jen přesunutý ze sčítance do
+   * argumentu. Povolené jsou proto jen inertní argumenty: literály (jména fází)
+   * a samotný objekt mezí.
+   */
+  const inertArgument = (node: ts.Node): boolean => {
+    if (ts.isParenthesizedExpression(node)) return inertArgument(node.expression);
+    if (ts.isAsExpression(node) || ts.isSatisfiesExpression(node)) return inertArgument(node.expression);
+    if (ts.isStringLiteral(node) || ts.isNumericLiteral(node)) return true;
+    return isLimitObject(node);
+  };
+
+  const isBoundCall = (node: ts.Node): boolean => {
+    if (!ts.isCallExpression(node) || !ts.isIdentifier(node.expression)) return false;
+    if (!BOUND_FUNCTIONS.has(node.expression.text)) return false;
+    for (const argument of node.arguments) if (!inertArgument(argument)) return false;
+    return true;
+  };
+
   /**
    * Kolik atomů odvozených z deklarovaných mezí výraz obsahuje. Není to boolean
    * schválně: `const bound = 5` je taky statická mez, ale ne mez SVĚTA, a tenhle
@@ -178,9 +230,8 @@ export function analyseModule(moduleName: string, source: string): ModuleFacts {
   const limitAtoms = (node: ts.Node, depth: number): number => {
     if (depth > 8) return 0;
     if (ts.isParenthesizedExpression(node)) return limitAtoms(node.expression, depth + 1);
-    if (ts.isPropertyAccessExpression(node)) return LIMIT_FIELDS.has(node.name.text) ? 1 : 0;
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression))
-      return BOUND_FUNCTIONS.has(node.expression.text) ? 1 : 0;
+    if (ts.isPropertyAccessExpression(node)) return isLimitField(node) ? 1 : 0;
+    if (ts.isCallExpression(node)) return isBoundCall(node) ? 1 : 0;
     if (ts.isBinaryExpression(node)) return limitAtoms(node.left, depth + 1) + limitAtoms(node.right, depth + 1);
     if (ts.isPrefixUnaryExpression(node)) return limitAtoms(node.operand, depth + 1);
     if (ts.isIdentifier(node)) {
@@ -205,11 +256,8 @@ export function analyseModule(moduleName: string, source: string): ModuleFacts {
     if (depth > 8) return 1;
     if (ts.isParenthesizedExpression(node)) return foreignAtoms(node.expression, depth + 1);
     if (ts.isNumericLiteral(node)) return 0;
-    if (ts.isPropertyAccessExpression(node)) return LIMIT_FIELDS.has(node.name.text) ? 0 : 1;
-    if (ts.isCallExpression(node)) {
-      const callee = node.expression;
-      return ts.isIdentifier(callee) && BOUND_FUNCTIONS.has(callee.text) ? 0 : 1;
-    }
+    if (ts.isPropertyAccessExpression(node)) return isLimitField(node) ? 0 : 1;
+    if (ts.isCallExpression(node)) return isBoundCall(node) ? 0 : 1;
     if (ts.isBinaryExpression(node))
       return foreignAtoms(node.left, depth + 1) + foreignAtoms(node.right, depth + 1);
     if (ts.isPrefixUnaryExpression(node)) return foreignAtoms(node.operand, depth + 1);
