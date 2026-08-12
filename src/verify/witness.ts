@@ -25,6 +25,7 @@ import {
   createRuntime,
   entityActive,
   step,
+  type Runtime,
   type TraceInput,
   type WorldDocRuntime,
 } from '../sim/interpreter';
@@ -48,7 +49,11 @@ export type RejectReason =
 export interface Certificate {
   readonly verdict: 'CERTIFIED';
   readonly tier: Tier;
-  /** Horizont, který certifikaci skutečně řídil — systémový, ne přaný. */
+  /**
+   * Horizont, který certifikaci skutečně řídil. Je to **vždy** `H_cert` tieru,
+   * nikdy číslo z dokumentu — `evals/frozen/protocol.v1.json` má
+   * `horizonDeclaredBy: "system"` a `modelMayDeclareHorizon: false`.
+   */
   readonly horizonTicks: number;
   /** `L_witness` — kolik tiků stopa doopravdy potřebovala. */
   readonly witnessLength: number;
@@ -74,6 +79,21 @@ export type VerifiableWorld = WorldDocRuntime & { readonly certification?: Certi
 
 function reject(reason: RejectReason, atStep: number | null, detail: string): Rejection {
   return { verdict: 'REJECTED', reason, atStep, detail };
+}
+
+/**
+ * Cíl kanonické akce je `entityOrSocket`, ne jen entita.
+ *
+ * `src/ir/references.ts` typuje `onAction.target` i cíle svědkových operací jako
+ * `entityOrSocket` a zmrazený korpus tak vypadá — `{ actionId: "moveTo", target:
+ * "s1" }` je jeho nejběžnější tvar. Kdyby verifikátor uznával jen entity,
+ * odmítal by jako neproveditelnou většinu svědků, které mu P1 vůbec pošle.
+ *
+ * Sokety se rozpouštějí proti **deklarovanému** layoutu, ne proti vykreslené
+ * geometrii — je to táž vstupní hranice z §13.1, jen druhý jmenný prostor.
+ */
+function targetReachable(doc: VerifiableWorld, runtime: Runtime, target: string): boolean {
+  return entityActive(runtime, target) || Object.hasOwn(doc.space.sockets, target);
 }
 
 /**
@@ -126,7 +146,9 @@ export function verifyWitness(doc: VerifiableWorld, witness: readonly TraceInput
       `witness carries ${witness.length} inputs, tier ${policy.tier} allows ${policy.maxInputs}`,
     );
 
-  const horizonTicks = request.horizonTicks;
+  // `H_cert` tieru, NIKDY číslo z dokumentu. Žádost směla jen říct, o který tier
+  // jde, a `resolvePolicy` už ověřila, že se do něj vejde.
+  const horizonTicks = policy.maxHorizonTicks;
   const malformed = shapeOfWitness(witness, horizonTicks);
   if (malformed !== null) return malformed;
 
@@ -141,8 +163,13 @@ export function verifyWitness(doc: VerifiableWorld, witness: readonly TraceInput
       // tímhle — ne proti výchozímu světu.
       if (!entityActive(runtime, input.actor))
         return reject('STEP_UNREACHABLE', k, `actor ${input.actor} is not an active entity at tick ${tick}`);
-      if (input.target !== undefined && input.target !== NO_TARGET && !entityActive(runtime, input.target))
-        return reject('STEP_UNREACHABLE', k, `target ${input.target} is not an active entity at tick ${tick}`);
+      const target = input.target;
+      if (target !== undefined && target !== NO_TARGET && !targetReachable(doc, runtime, target))
+        return reject(
+          'STEP_UNREACHABLE',
+          k,
+          `target ${target} is neither an active entity nor a declared socket at tick ${tick}`,
+        );
       inputs.push(input);
     }
     cursor += inputs.length;
@@ -151,7 +178,16 @@ export function verifyWitness(doc: VerifiableWorld, witness: readonly TraceInput
     if (result.runState === 'runtimeFault')
       return reject('RUNTIME_FAULT', cursor, `${String(result.fault)} at tick ${tick}`);
     if (result.runState === 'lost') return reject('NO_WIN', cursor, `run was lost at tick ${tick}`);
-    if (result.runState === 'won')
+    if (result.runState === 'won') {
+      // Kroky za výhrou by se nikdy nezkontrolovaly — běh už skončil, takže
+      // proveditelné nejsou, a přesto by se počítaly do `K_input`. Certifikát by
+      // tak vykazoval délku stopy, kterou nikdo neověřil.
+      if (cursor < witness.length)
+        return reject(
+          'STEP_UNREACHABLE',
+          cursor,
+          `step lies after the run ended at tick ${tick}, so it was never played`,
+        );
       return {
         verdict: 'CERTIFIED',
         tier: policy.tier,
@@ -161,6 +197,7 @@ export function verifyWitness(doc: VerifiableWorld, witness: readonly TraceInput
         runtimeVersion: RUNTIME_VERSION,
         snapshotHash: hashHex(runtime.state),
       };
+    }
   }
 
   return reject('NO_WIN', cursor, `horizon ${horizonTicks} exhausted in state ${runtime.runState}`);

@@ -154,19 +154,16 @@ describe('podmínka 2 — fronta ke čtení a fronta k zápisu jsou různé obje
  * Záměrně částečné přepínače — a **žádný z nich nesmí ležet na tikové cestě**,
  * což hlídá vlastní aserce, ne tenhle komentář.
  *
- * Všechny čtyři jsou ve validátoru dokumentu, který se úmyslně vyjadřuje jen
- * k rolím a prostorům majícím ve `world-ir-v1` deklarační tabulku, a k listovým
- * uzlům bez potomků. `nodeValueKind` na tomhle seznamu **byl a neprávem**
- * *(nález re-review, 12. 8. 2026)*: je na tikové cestě, takže jeho `default:
- * return 'bool'` by z nového nebooleovského druhu uzlu udělal tiše boolean.
- * Dostal proto vyjmenované větve a `never`, místo aby dostal výjimku.
+ * Seznam je **prázdný a je to výsledek, ne opomenutí.** Čtyři výjimky tu byly,
+ * všechny ve `validateIrDoc`, a zmizely spolu s celým `ir/schema.ts`: `eval.ts`
+ * si `nodeValueKind` bere ze `types.ts`, takže schéma **přestalo být v uzávěru
+ * importů tikové cesty**. Není to zeslabení pravidla, je to zúžení jeho rozsahu
+ * na to, co replay doopravdy volá — a byl to zároveň důvod téhle změny:
+ * `schema.ts` táhne `zod`, a ten skrz verifikátor prosakoval do klientského
+ * balíčku. Validátor si vlastní částečné přepínače ponechal, jen je už nikdo
+ * nevydává za součást důkazu totality.
  */
-const PARTIAL_SWITCHES: readonly string[] = [
-  'ir/schema.ts:checkFactArgs',
-  'ir/schema.ts:checkRef',
-  'ir/schema.ts:childIndices',
-  'ir/schema.ts:validateIrDoc',
-];
+const PARTIAL_SWITCHES: readonly string[] = [];
 
 /** Insta-win se přepíše na prohru, aby byla pozorovatelná i ta výstupní cesta. */
 const instaLose: WorldDocRuntime = {
@@ -323,9 +320,10 @@ describe('podmínka 4 — každá fáze zpracuje nejvýš tolik položek, kolik 
 const OFF_TICK_PATH: Readonly<Record<string, number>> = {
   'ir/eval.ts:edgeFires': 1, // vyhledání predikátu; `step` má `predicateIndex`, tudy nejde
   'ir/eval.ts:observationOf': 9, // stavba scény z doménového popisu, mimo tik
-  'ir/schema.ts:checkFactArgs': 1, // validace argumentů odvozeného faktu
-  'ir/schema.ts:duplicates': 1, // hledání duplicit v deklaracích
-  'ir/schema.ts:validateIrDoc': 28, // validace dokumentu — z principu roste s dokumentem
+  // `ir/schema.ts` tu **byl a přestal být skenovaný**: `eval.ts` si
+  // `nodeValueKind` bere ze `types.ts`, takže validátor vypadl z uzávěru importů
+  // tikové cesty. Rozsah pravidla se tím zúžil na to, co replay volá — a
+  // klientský balíček přestal táhnout `zod`.
   'sim/clock.ts:runTicks': 1, // pumpa tiků, mez je `MAX_CATCHUP_TICKS` v `pump`
   'sim/hash.ts:hashWords': 1, // hash je pozorování stavu, ne krok přechodu
   'sim/interpreter.ts:createRuntime': 4, // stavba layoutu, entit, predikátů a pořadí pravidel

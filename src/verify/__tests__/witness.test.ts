@@ -69,21 +69,41 @@ describe('horizont deklaruje systém, ne dokument', () => {
     expect(verifyWitness(modest, horizonGreedy.trace).verdict).toBe('CERTIFIED');
   });
 
-  it('horizont v certifikátu je ten systémový, nikdy vyšší než strop tieru', () => {
+  it('horizont v certifikátu je `H_cert` tieru, ne číslo z dokumentu', () => {
+    // Zmrazený `protocol.v1.json` má `horizonDeclaredBy: "system"` a
+    // `modelMayDeclareHorizon: false`. Dokument smí říct jen to, o který tier
+    // jde; kdyby jeho číslo řídilo replay, byl by `resolvePolicy` jen strop a
+    // ne branka, a certifikát by vykazoval modelem zvolený horizont jako
+    // systémový.
     const result = verifyWitness(
       { ...vault, certification: { tier: 'short', horizonTicks: 30 } },
       WINNING,
     ) as Certificate;
-    expect(result.horizonTicks).toBe(30);
-    expect(result.horizonTicks).toBeLessThanOrEqual(TIER_POLICY.short.maxHorizonTicks);
+    expect(result.horizonTicks).toBe(TIER_POLICY.short.maxHorizonTicks);
+    expect(result.horizonTicks).not.toBe(30);
+  });
+
+  it('a delší tier dá delší horizont, i když dokument žádal o kratší', () => {
+    const result = verifyWitness(
+      { ...vault, certification: { tier: 'long', horizonTicks: 5 } },
+      WINNING,
+    ) as Certificate;
+    expect(result.tier).toBe('long');
+    expect(result.horizonTicks).toBe(TIER_POLICY.long.maxHorizonTicks);
   });
 });
 
 describe('`K_input` je strop, ne doporučení', () => {
-  /** Vítězný vstup plus neškodná výplň, roztažená přes tiky kvůli frontě. */
-  const padded = (count: number): TraceInput[] => {
-    const inputs: TraceInput[] = [{ tick: 2, actor: 'hero', actionId: 'pull', target: 'lever' }];
-    for (let i = 0; i < count; i += 1) inputs.push({ tick: 3 + i, actor: 'hero', actionId: 'wave' });
+  /**
+   * Neškodná výplň PŘED vítězným vstupem, jeden vstup na tik kvůli frontě.
+   *
+   * Pořadí je podstatné: výplň za výhrou by běh nikdy nedočerpal, takže by ji
+   * odmítla kontrola kroků za koncem běhu a test by měřil ji místo stropu.
+   */
+  const padded = (fillerCount: number): TraceInput[] => {
+    const inputs: TraceInput[] = [];
+    for (let i = 0; i < fillerCount; i += 1) inputs.push({ tick: i, actor: 'hero', actionId: 'wave' });
+    inputs.push({ tick: fillerCount, actor: 'hero', actionId: 'pull', target: 'lever' });
     return inputs;
   };
 
@@ -122,6 +142,43 @@ describe('k-tý krok musí být proveditelný', () => {
         atStep: entry.atStep,
       });
     }
+  });
+
+  it('krok ZA výhrou taky ne — běh už skončil, takže se nikdy nezahrál', () => {
+    // Bez téhle kontroly se nedeklarovaný aktér za vítězným tikem nikdy
+    // nezkontroluje, a přesto se započítá do `K_input` — certifikát by pak
+    // vykazoval délku stopy, kterou nikdo neověřil.
+    const witness: TraceInput[] = [
+      { tick: 2, actor: 'hero', actionId: 'pull', target: 'lever' },
+      { tick: 10, actor: 'ghost', actionId: 'pull', target: 'phantom' },
+    ];
+    expect(verifyWitness(vault, witness)).toMatchObject({
+      verdict: 'REJECTED',
+      reason: 'STEP_UNREACHABLE',
+      atStep: 1,
+    });
+
+    // A bez toho druhého kroku je to týž svědek a certifikuje se — takže
+    // odmítnutí přišlo od něj, ne od vítězné části.
+    expect(verifyWitness(vault, [witness[0]]).verdict).toBe('CERTIFIED');
+  });
+
+  it('cíl smí být i deklarovaný soket, ne jen entita', () => {
+    // `references.ts` typuje `onAction.target` jako `entityOrSocket` a zmrazený
+    // korpus tak vypadá (`{ actionId: "moveTo", target: "s1" }`). Kdyby
+    // verifikátor uznával jen entity, odmítl by většinu svědků, které dostane.
+    const toSocket: TraceInput[] = [
+      { tick: 1, actor: 'hero', actionId: 'moveTo', target: 's_vault' },
+      { tick: 2, actor: 'hero', actionId: 'pull', target: 'lever' },
+    ];
+    expect(Object.keys(vault.space.sockets)).toContain('s_vault');
+    expect(verifyWitness(vault, toSocket).verdict).toBe('CERTIFIED');
+
+    // Nedeklarovaný soket je pořád neproveditelný — jinak by kontrola cíle
+    // zmizela úplně.
+    expect(
+      verifyWitness(vault, [{ tick: 1, actor: 'hero', actionId: 'moveTo', target: 's_nowhere' }]),
+    ).toMatchObject({ verdict: 'REJECTED', reason: 'STEP_UNREACHABLE' });
   });
 
   /**
@@ -168,6 +225,38 @@ describe('k-tý krok musí být proveditelný', () => {
 });
 
 describe('náhodná procházka se necertifikuje', () => {
+  /** Sto seedovaných svědků nad daným světem; vrací počet certifikací. */
+  const walk = (world: VerifiableWorld, actions: readonly string[]): number => {
+    // `pure-rand`, ne globální náhoda — replay cesta musí zůstat
+    // reprodukovatelná a `CLAUDE.md` to má mezi nepřekročitelnými pravidly.
+    const stream = createStreams(20260812).ai;
+    const actors = ['hero', 'lever', 'door'];
+    let certified = 0;
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      const witness: TraceInput[] = [];
+      const steps = nextInt(stream, 1, TIER_POLICY.short.maxInputs);
+      let tick = 0;
+      for (let i = 0; i < steps; i += 1) {
+        tick += nextInt(stream, 0, 3);
+        witness.push({
+          tick,
+          actor: actors[nextInt(stream, 0, actors.length - 1)],
+          actionId: actions[nextInt(stream, 0, actions.length - 1)],
+          target: actors[nextInt(stream, 0, actors.length - 1)],
+        });
+      }
+      if (verifyWitness(world, witness).verdict === 'CERTIFIED') certified += 1;
+    }
+    return certified;
+  };
+
+  it('kandidát BEZ platného svědka neprojde ani jednou, ani s vítěznou akcí v abecedě', () => {
+    // Tohle je doslovné znění AC: kandidát bez platného svědka. `unwinnable`
+    // žádného nemá, takže abeceda smí obsahovat i `pull` — neexistuje stopa,
+    // která by ho vyhrála, a certifikace by znamenala vadu verifikátoru.
+    expect(walk(unwinnable, ['pull', 'wave', 'push', 'look'])).toBe(0);
+  });
+
   it('sto seedovaných svědků bez příčinného vstupu neprojde ani jednou', () => {
     // `pure-rand`, ne globální náhoda — replay cesta musí zůstat reprodukovatelná
     // a `CLAUDE.md` to má mezi nepřekročitelnými pravidly.

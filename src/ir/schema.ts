@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 import {
   ASSIGNABLE_SPACES,
-  BOOLEAN_SPACES,
   COMPARE_OPS,
   ID_PATTERN,
   IR_VERSION,
@@ -12,6 +11,8 @@ import {
   PULSE_FACTS,
   SURFACE_EVENTS,
   SYMBOL_PATTERN,
+  nodeValueKind,
+  refValueKind,
   type ArgRole,
   type IrDoc,
   type IrNode,
@@ -19,6 +20,11 @@ import {
   type PulseFact,
   type StateRef,
 } from './types';
+
+// Přeexportované, aby dosavadní volající nemuseli vědět, že se přestěhovaly.
+// Bydlí v `types.ts`, protože jsou čisté a nesmí přes sebe táhnout `zod` na
+// replay cestu — viz komentář u nich.
+export { nodeValueKind, refValueKind, type ValueKind } from './types';
 
 /**
  * Schéma je jen tvar. Vazby mezi indexy, jednoznačnost identifikátorů a typová
@@ -204,44 +210,6 @@ export const worldIr = z
 // ---------------------------------------------------------------------------
 // Strukturální kontrola indexů, vazeb a typů
 // ---------------------------------------------------------------------------
-
-export type ValueKind = 'bool' | 'number' | 'symbol';
-
-export function refValueKind(ref: StateRef): ValueKind {
-  if ((BOOLEAN_SPACES as readonly string[]).includes(ref.space)) return 'bool';
-  if (ref.space === 'counter' || ref.space === 'timer') return 'number';
-  return 'symbol';
-}
-
-/**
- * Typ hodnoty uzlu. **Leží na tikové cestě** — `evalBool` se jím ptá před každým
- * vyhodnocením spouštěče, takže tady se nesmí hádat.
- *
- * Boolovské varianty jsou proto vyjmenované a `default` je `never` větev, ne
- * `return 'bool'`. Ten rozdíl není kosmetický: s tichým fallbackem by nový
- * nebooleovský druh uzlu prošel jako boolean, `evalBool` by ho nepustil do
- * výjimky a stráž nad ním by se prostě nikdy nespustila — bez faultu, bez stopy.
- */
-export function nodeValueKind(nodes: readonly IrNode[], index: number): ValueKind {
-  const node = nodes[index];
-  switch (node.kind) {
-    case 'literal':
-      return typeof node.value === 'boolean' ? 'bool' : typeof node.value === 'number' ? 'number' : 'symbol';
-    case 'ref':
-      return refValueKind(node.ref);
-    case 'query':
-      return 'number';
-    case 'compare':
-    case 'allOf':
-    case 'anyOf':
-    case 'not':
-      return 'bool';
-    default: {
-      const exhaustive: never = node;
-      return exhaustive;
-    }
-  }
-}
 
 function childIndices(node: IrNode): number[] {
   switch (node.kind) {

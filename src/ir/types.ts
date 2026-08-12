@@ -191,6 +191,50 @@ export type IrNode =
   | { readonly kind: 'anyOf'; readonly operands: readonly NodeIndex[] }
   | { readonly kind: 'not'; readonly operand: NodeIndex };
 
+/**
+ * Typ hodnoty uzlu a odkazu.
+ *
+ * Bydlí tady, ne ve `schema.ts`, a je to rozhodnutí o **grafu závislostí**, ne
+ * o vkusu: `evalBool` se `nodeValueKind` ptá před každým vyhodnocením, takže
+ * kdyby zůstala u schématu, každý modul na replay cestě by přes ni táhl `zod` —
+ * a s ním i do klientského balíčku, jakmile verifikátor poběží v prohlížeči.
+ * Obě funkce jsou přitom čisté a o schématu nevědí nic.
+ */
+export type ValueKind = 'bool' | 'number' | 'symbol';
+
+export function refValueKind(ref: StateRef): ValueKind {
+  if ((BOOLEAN_SPACES as readonly string[]).includes(ref.space)) return 'bool';
+  if (ref.space === 'counter' || ref.space === 'timer') return 'number';
+  return 'symbol';
+}
+
+/**
+ * **Leží na tikové cestě** — tady se nesmí hádat. Boolovské druhy jsou proto
+ * vyjmenované a `default` je `never` větev: s tichým fallbackem by nový
+ * nebooleovský druh uzlu prošel jako boolean, `evalBool` by ho nepustil do
+ * výjimky a stráž nad ním by se nikdy nespustila.
+ */
+export function nodeValueKind(nodes: readonly IrNode[], index: number): ValueKind {
+  const node = nodes[index];
+  switch (node.kind) {
+    case 'literal':
+      return typeof node.value === 'boolean' ? 'bool' : typeof node.value === 'number' ? 'number' : 'symbol';
+    case 'ref':
+      return refValueKind(node.ref);
+    case 'query':
+      return 'number';
+    case 'compare':
+    case 'allOf':
+    case 'anyOf':
+    case 'not':
+      return 'bool';
+    default: {
+      const exhaustive: never = node;
+      return exhaustive;
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Deklarace stavu, entit, predikátů, efektů a pravidel
 // ---------------------------------------------------------------------------

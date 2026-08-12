@@ -1,5 +1,14 @@
-import { nodeValueKind } from './schema';
-import { MAX_OPERANDS, NO_TARGET, type IrDoc, type LiteralValue, type StateRef } from './types';
+// Ze `types`, ne ze `schema`: `schema.ts` importuje `zod` a tenhle modul leží na
+// replay cestě, která běží i v prohlížeči. Validátor do klientského balíčku
+// nepatří — schéma se ptá na tvar dokumentu, replay na jeho význam.
+import {
+  MAX_OPERANDS,
+  NO_TARGET,
+  nodeValueKind,
+  type IrDoc,
+  type LiteralValue,
+  type StateRef,
+} from './types';
 
 /**
  * Referenční vyhodnocení ploché tabulky uzlů. Není to interpret — ten staví T9.
