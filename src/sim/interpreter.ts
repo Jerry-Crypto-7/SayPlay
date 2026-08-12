@@ -739,20 +739,25 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
 
   // Kanonické vstupy tiku se doručují do ČERPANÉ fronty: hráčův stisk je
   // událost tohoto tiku, ne odvozená událost vyrobená pravidlem.
+  //
+  // Kontrola je PŘED smyčkou, protože smyčka má mez `maxQueueDepth` a víc vstupů
+  // by za ní prostě zůstalo — tedy tiše zahozených. Přetečení je odmítnutí, ne
+  // zahození: ztracená událost rozbije replay a svědek přestane platit.
+  if (runtime.drainQueue.length + inputs.length > limits.maxQueueDepth) {
+    runtime.state = snapshot;
+    runtime.runState = 'runtimeFault';
+    runtime.fault = 'queue-overflow';
+    return {
+      runState: 'runtimeFault',
+      tick: runtime.tick,
+      fault: 'queue-overflow',
+      firings: 0,
+      iterations: counts,
+    };
+  }
+
   const inputBound = limits.maxQueueDepth;
   for (let i = 0; i < inputBound && i < inputs.length; i += 1) {
-    if (runtime.drainQueue.length >= limits.maxQueueDepth) {
-      runtime.state = snapshot;
-      runtime.runState = 'runtimeFault';
-      runtime.fault = 'queue-overflow';
-      return {
-        runState: 'runtimeFault',
-        tick: runtime.tick,
-        fault: 'queue-overflow',
-        firings: 0,
-        iterations: counts,
-      };
-    }
     const input = inputs[i];
     runtime.drainQueue.push(factKey('acted', [input.actor, input.actionId, input.target ?? 'none']));
   }
