@@ -181,6 +181,39 @@ describe('k-tý krok musí být proveditelný', () => {
     ).toMatchObject({ verdict: 'REJECTED', reason: 'STEP_UNREACHABLE' });
   });
 
+  it('a soket pojmenovaný jako entita tu entitu nepřebije', () => {
+    // Ve zmrazeném korpusu má 9 ze 13 světů soket pojmenovaný přesně jako
+    // entita, takže sjednocení „entita NEBO soket" by u nich vypnulo jedinou
+    // kontrolu, kterou verifikátor umí změřit až za běhu.
+    const effects: IrEffect[] = [...unwinnable.ir.effects, { op: 'despawn', entity: 'lever' }];
+    const rules: IrRule[] = [
+      ...unwinnable.ir.rules,
+      {
+        ruleId: 'r.vanish',
+        phase: 0,
+        priority: 3,
+        trigger: { kind: 'onEdge', predicate: 'p.onAction.hero.pull.lever', became: true },
+        guard: null,
+        effects: [effects.length - 1],
+      },
+    ];
+    const shadowed: VerifiableWorld = {
+      ...unwinnable,
+      space: { ...unwinnable.space, sockets: { ...unwinnable.space.sockets, lever: [3, 1] } },
+      ir: { ...unwinnable.ir, effects, rules },
+    };
+
+    const witness: TraceInput[] = [
+      { tick: 1, actor: 'hero', actionId: 'pull', target: 'lever' },
+      { tick: 4, actor: 'hero', actionId: 'pull', target: 'lever' },
+    ];
+    expect(verifyWitness(shadowed, witness)).toMatchObject({
+      verdict: 'REJECTED',
+      reason: 'STEP_UNREACHABLE',
+      atStep: 1,
+    });
+  });
+
   /**
    * Stav-závislý případ. Předchozí případy jdou rozhodnout ze samotného svědka;
    * tenhle ne — aktér je na začátku aktivní a **přestane být** krokem před tím.

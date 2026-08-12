@@ -91,9 +91,22 @@ function reject(reason: RejectReason, atStep: number | null, detail: string): Re
  *
  * Sokety se rozpouštějí proti **deklarovanému** layoutu, ne proti vykreslené
  * geometrii — je to táž vstupní hranice z §13.1, jen druhý jmenný prostor.
+ *
+ * **Jmenné prostory se nesčítají, řadí se.** Jméno, které je deklarovanou
+ * entitou, se rozhoduje VÝHRADNĚ podle její aktivity; soket je až náhradník pro
+ * jména, která entitou nejsou. Sjednocení („entita **nebo** soket") tu bylo
+ * a bylo to tiché vypnutí jediné kontroly, kterou verifikátor umí změřit až za
+ * běhu: stačí soket pojmenovaný jako entita a despawnutý cíl projde. Není to
+ * teoretický tvar — ve zmrazeném korpusu má **9 ze 13** světů soket pojmenovaný
+ * přesně jako entita (`exit`, `valve`, `chest`, `torch`, `bed`, `oil`) a jsou to
+ * tytéž názvy, na které míří jejich svědci.
+ *
+ * Nic se tím neztrácí: `PULSE_FACTS.acted` má cíl jako `entityOrNone`, takže
+ * jméno, které je *jen* soketem, stejně nemůže klíčovat `acted` predikát.
  */
 function targetReachable(doc: VerifiableWorld, runtime: Runtime, target: string): boolean {
-  return entityActive(runtime, target) || Object.hasOwn(doc.space.sockets, target);
+  if (runtime.entityDecls.has(target)) return entityActive(runtime, target);
+  return Object.hasOwn(doc.space.sockets, target);
 }
 
 /**
