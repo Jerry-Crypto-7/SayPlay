@@ -1,0 +1,420 @@
+{
+  "protocolVersion": "v1",
+  "frozenOn": "2026-08-12",
+  "frozenBy": "P1 T1 (plans/2026-08-12-vertikalni-rez.md)",
+  "sourceOfTruth": {
+    "designBook": "DESIGN-BOOK.md v1.1",
+    "sections": ["§5 gramatika", "§6 garance", "§7 editace", "§13 scéna", "§15 kill gate"],
+    "verify": "VERIFY.md §3",
+    "note": "Mrazí se TVAR, ne implementace. `look` má tady schéma, validátor a vlastní revizi; generátor parametrických rodin a celá dráha vzhledu se staví až v P5. Tvrzení 'scénu autoruje model' smí padnout až po P5."
+  },
+
+  "worldDoc": {
+    "shape": "two-part",
+    "rationale": "DESIGN-BOOK.md §13.1 — uvnitř hashe je jen to, co může rozhodnout o výhře.",
+    "topLevelFields": ["irVersion", "simRevision", "lookRevision", "simHash", "sim", "look"],
+    "additionalPropertiesAllowed": false,
+
+    "revisions": {
+      "simRevision": {
+        "type": "integer",
+        "min": 0,
+        "independent": true,
+        "incrementedBy": ["committed sim patch"],
+        "neverIncrementedBy": ["look commit"]
+      },
+      "lookRevision": {
+        "type": "integer",
+        "min": 0,
+        "independent": true,
+        "incrementedBy": ["committed look patch"],
+        "neverIncrementedBy": ["sim commit"]
+      },
+      "rule": "baseRevision v patchi odkazuje na TU SVOU revizi. Sdílená revize je zakázaná — §13.1.1 popisuje přesně to selhání: okamžitý vzhledový commit během probíhající verifikace `sim` by revizi posunul a patch pravidel by se odmítl jako zastalý, ačkoli se na `sim` nic nezměnilo.",
+      "mixedRequest": "Validní `look` se commitne OKAMŽITĚ; po ověření se `sim` atomicky vloží do AKTUÁLNÍHO dokumentu se zachováním aktuálního `look` i `lookRevision`. Nečeká se na sebe."
+    },
+
+    "sim": {
+      "insideHash": true,
+      "verifiedBy": "replay svědka (§6)",
+      "additionalPropertiesAllowed": false,
+      "fields": [
+        "layout",
+        "grid",
+        "sockets",
+        "collisionAabb",
+        "entities",
+        "rules",
+        "state",
+        "witness"
+      ],
+      "fieldNotes": {
+        "layout": "topologie scény — typ (grid|ring|corridor|tower|cave), rozměry, patra, portály. Model ji emituje (§13.3), systém ji jen validuje. Naplnění emisní cesty je P5 T506; tvar je zmrazený tady.",
+        "grid": "kvantizovaná navigační mřížka; pozice a rychlost s fixním krokem",
+        "sockets": "pojmenovaná kotevní místa; každý socket musí být dosažitelný",
+        "collisionAabb": "DEKLAROVANÉ kvantizované AABB. Vygenerovaná geometrie je dekorace kolem deklarovaného kolideru a nikdy z ní kolize nevzniká (§13.1).",
+        "entities": "stabilní `stableId`, role, počáteční stav, socket",
+        "rules": "pravidla událost–podmínka–akce s explicitním pořadím vykonání `(fáze, priorita, ruleId)`",
+        "state": "countery, flagy, timery, entity.state enumy, inventární sloty, memory sloty — vše ohraničené",
+        "witness": "konečná přípustná vstupní stopa v kanonických `sim` akcích, run-length kódovaná"
+      }
+    },
+
+    "look": {
+      "insideHash": false,
+      "verifiedBy": "rozpočtový validátor, NIKDY verifikátor svědka",
+      "additionalPropertiesAllowed": false,
+      "fields": [
+        "modules",
+        "palette",
+        "lightRig",
+        "atmosphere",
+        "materialRoles",
+        "camera",
+        "audio"
+      ],
+      "onlyAllowedLinkToSim": "stableId",
+      "linkRule": "`look` NESMÍ obsahovat odkazy ani parametry, které kdokoli v simulaci čte. Jedinou povolenou vazbou z `look` do `sim` je `stableId` entity (§13.1, §5).",
+      "doesNotLowerToIr": true,
+      "p1Status": "V P1 emituje `look` SYSTÉMOVÝ DEFAULT, ne model. Generátor parametrických rodin je P5. P1 mrazí tvar a prokazuje, že potrubí obě části unese.",
+      "failurePolicy": "Sémanticky neodmítá, technicky ano (§7). Před atomickou výměnou musí projít validací schématu, kontrolou konečnosti VŠECH číselných hodnot a bezpečným zachycením výjimky při stavbě geometrie s okamžitým návratem na předchozí `look`. Rozpočty z §13.2 přijdou v P5.",
+      "emptyScreenRule": "Prázdná obrazovka je chyba, ne částečný výsledek (§13.4). `NO_FIT` a necertifikovaný patch se vztahují VÝHRADNĚ na `sim`."
+    },
+
+    "hash": {
+      "computedFrom": ["sim"],
+      "excludes": ["look", "částice", "zvuk", "kamera", "tweeny", "postprocessing"],
+      "algorithm": "FNV-1a nad Uint32Array, synchronní, ruční",
+      "forbidden": ["WASM hasher (async init na kritické cestě)"],
+      "assertion": "Změna libovolného pole v `look` musí nechat hash BITOVĚ TOTOŽNÝ."
+    }
+  },
+
+  "inputBoundary": {
+    "binding": true,
+    "statement": "Svědek obsahuje kanonické `sim` akce. Jejich aplikace, picking i navigace čtou výhradně `sim` a nikdy kameru ani vykreslenou geometrii.",
+    "rationale": "Kamera je v `look`. Kamerově relativní pohyb nebo raycast do vykreslené geometrie by `look` propůjčil moc měnit akci doručenou simulaci, a tím i dosažitelnost (§13.1).",
+    "practice": [
+      "kliknutí = raycast proti DEKLAROVANÝM AABB, ne proti meshi",
+      "výsledkem je onAction(actor, actionId, targetStableId) — kanonická akce z konečné abecedy",
+      "do svědka a do hashe jde jen ta kanonická akce",
+      "pohyb je kvantizovaný po mřížce v souřadnicích `sim`, nikdy v bázi kamery"
+    ]
+  },
+
+  "grammar": {
+    "surfaceEvents": [
+      "onStart",
+      "onClick",
+      "onEnterZone",
+      "onExitZone",
+      "onCollide",
+      "onPickup",
+      "onDrop",
+      "onTimerEnd",
+      "onCounterReaches",
+      "onStateEnter",
+      "onSignal",
+      "onSeen",
+      "onAction",
+      "onCommandComplete"
+    ],
+    "surfaceEventCount": 14,
+    "newInV1_1": {
+      "onAction": "onAction(actor, actionId, target?) — záměr hráče nezávislý na ovladači; nosič vstupní hranice",
+      "onCommandComplete": "onCommandComplete(entity, commandId, result) — choreografie pohybu a zmrazení"
+    },
+    "conditions": [
+      "counterIs",
+      "stateIs",
+      "timerRunning",
+      "inZone",
+      "hasItem",
+      "flagIs",
+      "countInZone",
+      "allOf/anyOf/not (AST operátory, ne podmínky)"
+    ],
+    "actions": [
+      "setState",
+      "addCounter",
+      "setFlag",
+      "startTimer",
+      "stopTimer",
+      "spawn",
+      "despawn",
+      "moveTo",
+      "freeze",
+      "setLocked",
+      "giveItem",
+      "takeItem",
+      "emit",
+      "playEffect",
+      "win",
+      "lose"
+    ],
+    "irPrimitives": {
+      "onEdge": "onEdge(predicateId, became: bool) — nahrazuje onEnterZone, onExitZone, onStateEnter, onCounterReaches, onPickup, onDrop, ztrátu viditelnosti, agregační prahy",
+      "compare": "compare(lhs: ValueExpr, op, rhs: Literal) — nahrazuje counterIs, stateIs, timerRunning, flagIs, hasItem",
+      "assign": "assign(ref: MutableStateRef, value: Literal) — nahrazuje setState, setFlag, setLocked, reset čítače"
+    },
+    "irPrimitiveCount": 3,
+    "loweringRule": "Všech 14 povrchových událostí se sníží do tří IR primitiv. `look` do IR NEVSTUPUJE — verifikátor ji nikdy nevidí, nezvětšuje stavový prostor a nemá vlastní primitiva.",
+    "memoryAccess": "compare(memory[…]) a assign(memory[…]) MUSÍ být v IR přítomné, i když dialog je za bránou. Bez nich je paměť deklarovaná, ale nečitelná.",
+
+    "resolvedSemantics": {
+      "onCounterReaches": "Spouští se při PŘEKROČENÍ prahu, ne jen při rovnosti. Přírůstek ze 4 na 6 s prahem 5 se SPUSTÍ (hrana predikátu `counter >= n` se změnila z false na true). Právě jednou za překročení; návrat pod práh predikát rearmuje.",
+      "onCollide": "Spouští se PŘI VSTUPU (hrana), ne každý tik.",
+      "onSeen": "Spouští se PŘI VSTUPU do viditelnosti (hrana), ne každý tik. Ztráta viditelnosti je `onEdge(became: false)`.",
+      "freeze": "Počítá se v TICÍCH, ne v sekundách.",
+      "spawn": "spawn(poolTag, socket) vybírá NEJNIŽŠÍ NEAKTIVNÍ ID z předalokovaného poolu, deterministicky.",
+      "addCounter": "Clampuje na deklarované meze; clamp není chyba."
+    },
+
+    "restrictions": [
+      "žádný libovolný JavaScript ani funkce definované modelem",
+      "žádná rekurze ani sebemodifikace grafu",
+      "cykly povolené, ale veškerý měnitelný stav konečný",
+      "jen booleany, enumy a ohraničená celá čísla",
+      "pevné stropy počtu entit a agentů",
+      "fronty, inventáře a paměťové sloty pevné velikosti",
+      "ohraničené časovače a čítače",
+      "žádné neomezené řetězce, kolekce, spawnování ani externí data",
+      "kvantizovaná pozice a rychlost s fixním krokem",
+      "konečná abeceda akcí hráče",
+      "whitelistované deterministické akce se stabilním pořadím vyhodnocení",
+      "seedovaná náhoda jen tam, kde jsou výsledky přehratelné, a NIKDY na kritické cestě k výhře"
+    ]
+  },
+
+  "tick": {
+    "hz": 20,
+    "source": "VERIFY.md §3.3 — jediné hodiny jsou fixní simulovaný krok",
+    "phasedSemantics": [
+      "1. Vyhodnoť spouštěče a stráže proti PRE-STAVU tiku",
+      "2. Aplikuj akce ve stabilním pořadí (fáze, priorita, ruleId)",
+      "3. Odvozené události se doručí AŽ V PŘÍŠTÍM TIKU",
+      "4. Přetečení fronty = odmítnutí",
+      "5. Strop počtu spuštění pravidel na tik"
+    ],
+    "runtimeFault": {
+      "isExceptionOrRejection": false,
+      "statement": "Vyčerpání stropu spuštění nebo přetečení fronty ATOMICKY přeruší tik a přejde do deterministického zotavitelného stavu `runtimeFault`. Není to odmítnutí ve verifikátoru — je to definovaný přechod runtimu, který musí nastat pro KAŽDÝ vstup.",
+      "stepAfterFaultMustReturn": true
+    },
+    "forbiddenOnReplayPath": ["Date.now()", "performance.now()", "skutečný requestAnimationFrame", "Math.random()", "seedrandom"],
+    "prng": "pure-rand, jeden oddělený stream na subsystém přes jump()"
+  },
+
+  "certification": {
+    "guarantee": "Každý potvrzený graf nese konečnou přípustnou vstupní stopu, kterou autoritativní runtime s připnutou verzí přehrál z kompletního hashovaného snapshotu odpovídajícího zobrazenému stavu — včetně skrytého stavu, front, fáze časovačů a seedu — až do win() v deklarovaném tikovém horizontu. Certifikuje to výhradně tento přesný replay, ne vyčerpávající, časově robustní, napříč-runtimovou ani obecně lidskou hratelnost.",
+    "horizonDeclaredBy": "system",
+    "modelMayRequestTier": true,
+    "modelMayDeclareHorizon": false,
+    "tiers": {
+      "short": { "H_cert": 600, "durationSeconds": 30, "K_input": 32 },
+      "standard": { "H_cert": 1200, "durationSeconds": 60, "K_input": 64 },
+      "long": { "H_cert": 3600, "durationSeconds": 180, "K_input": 128 }
+    },
+    "tierNumbersAreEstimates": true,
+    "tierRemeasuredBy": "plans/P7-brany-a-evaluace.md (§18 #4)",
+    "overMaxPolicy": "Svět nad maximum se ZKRÁTÍ, PŘESUNE do dlouhého tieru, nebo vrátí NO_FIT. Nikdy si nezvedne horizont sám. Dokument, který si sám nastaví H_cert nad maximum svého tieru, je odmítnut jako NO_FIT.",
+    "certificateRecords": ["tier", "L_witness", "K_input", "runtimeVersion", "snapshotHash"],
+    "kInputRationale": "K_input je jediná obrana proti dlouhé, náhodně vypadající stopě. Nesmí se nahradit předstíráním, že věta o dosažitelnosti certifikuje lidskou hratelnost.",
+    "heuristicSearch": "Falešné negativy jsou přijatelné (vyhrávající graf odmítnutý, protože heuristika svědka minula). Falešné pozitivy nejsou.",
+    "samplingIsNotPartOfGuarantee": true
+  },
+
+  "editContract": {
+    "authoredBy": "human",
+    "modelMayAuthorItsOwnContract": false,
+    "rationale": "§7 — model NESMÍ být autorem jediného kontraktu, podle kterého se soudí. To by umožnilo praní kontraktu.",
+    "fields": ["baseRevision", "allowedPaths", "requiredPostconditions", "protectedObservations", "preservedWitness"],
+    "oneSemanticIntentPerPatch": true,
+    "patchFormat": "RFC 6902 (knihovna `rfc6902`; NE fast-json-patch, NE immer patche)",
+    "changedLeafRule": "Množina skutečně změněných LISTOVÝCH JSON pointerů se počítá DIFFEM STAVU PŘED A PO aplikaci, nikdy čtením operací patche. Jinak `replace` na povoleném předkovi přepíše nepovolené potomky a formálně projde.",
+    "router": {
+      "decidesFrom": "normalizované JSON Pointer cesty operací patche",
+      "decidesFromLabel": false,
+      "simWinsRule": "Jakýkoli zápis, vznik nebo smazání pod `/sim` BEZPODMÍNEČNĚ přesměruje celý dotčený patch do dráhy pravidel, i když patch nese modelový štítek `look`.",
+      "labelMismatch": "zaznamenaná anomálie do telemetrie, NENÍ důvod k odmítnutí — rozhodly cesty",
+      "mixedPatch": "rozdělí se na dva patche s jedním sémantickým záměrem"
+    }
+  },
+
+  "evalSet": {
+    "createPromptCount": 15,
+    "editPromptCount": 25,
+    "totalPromptCount": 40,
+    "worldClusters": 15,
+    "minWorldClusters": 12,
+    "minWorldClustersRule": "Report se ODMÍTNE, když počet nezávislých světových clusterů klesne pod 12. Cluster = jeden `create` prompt a všechny `edit` prompty, které na něj navazují přes `baseWorld`.",
+
+    "split": {
+      "values": ["calibration", "holdout", "reserve"],
+      "inheritedFrom": "evals/prompts.jsonl pole `split` (dev -> calibration, holdout -> holdout, reserve -> reserve)",
+      "honestNote": "Split NENÍ vylosovaný. Byl autorsky určen dřív (holdout prompty byly vybrané tak, aby zůstaly neviděné) a P1 ho DĚDÍ, protože přelosování by tenhle záměr zničilo. Výběr 15 create promptů ze 116 je ručně stratifikovaný přes buckety, ne náhodný — rationale je u každého promptu v prompts.v1.jsonl.",
+      "seedIsFor": "deterministický cluster bootstrap ve statistické vrstvě (T20) a jakékoli budoucí rozšíření sady v P7 — NE pro tenhle split",
+      "seed": 20260812,
+      "prng": "pure-rand, vlastní stream"
+    },
+
+    "editClasses": [
+      { "id": "param_change",     "count": 3, "rawPassFloor": 0.93, "source": "§15 'drobné záměny literálu' 93–97 %" },
+      { "id": "predicate_flip",   "count": 3, "rawPassFloor": 0.93, "source": "§15 'drobné záměny predikátu' 93–97 %" },
+      { "id": "action_swap",      "count": 3, "rawPassFloor": 0.93, "source": "§15 'drobné záměny akce' 93–97 %" },
+      { "id": "rule_insert",      "count": 3, "rawPassFloor": 0.87, "source": "§15 'vložení pravidla' 87–93 %" },
+      { "id": "rule_delete",      "count": 3, "rawPassFloor": 0.87, "source": "§15 'smazání pravidla' 87–93 %" },
+      { "id": "topology_rewire",  "count": 5, "rawPassFloor": 0.75, "source": "§15 'přepojení topologie' 75–87 %", "hard": true },
+      { "id": "goal_swap",        "count": 5, "rawPassFloor": 0.75, "source": "§15 'výměna cíle' 75–87 %", "hard": true }
+    ],
+    "hardClassRule": "Přepojení topologie a výměna cíle se NESMÍ schovat za triviální záměny. Vykazují se zvlášť a mají vlastní podlahu.",
+
+    "perClassFloorEnforcement": {
+      "minDenominatorForFloor": 12,
+      "statusInP1": "REPORTED_NOT_GATED",
+      "honestNote": "Při jmenovateli 3–5 je podlaha 0,93 neměřitelná (3/3 = 1,00, 2/3 = 0,67). V P1 se míry po třídách VYKAZUJÍ, ale NEHRADÍ. Gating jmenovatel dodá P7 rozšířením sady na §15 rozsah (20 světů × 5 úprav = 100 tahů). Tvrdit v P1 splněnou třídní podlahu by bylo měření šumu."
+    },
+
+    "aggregateGates": {
+      "rawPatchPassRate": { "floor": 0.85, "meaning": "syrová první emise modelu" },
+      "firstRequestCommitRate": { "floor": 0.93, "meaning": "po nejvýš jedné automatické opravě" },
+      "structuralContract": { "floor": 1.0, "meaning": "žádný přijatý patch ho nesmí porušit" },
+      "threeEditSessionRate": { "measuredDirectly": true, "meaning": "NEDOPOČÍTÁVÁ se z nezávislosti tahů" },
+      "repairCountsAsSameRequest": "Oprava se počítá jako tentýž uživatelský požadavek, když je automatická, ohraničená, nechá starý graf aktivní a NEŽÁDÁ uživatele, aby to zkusil znovu.",
+      "wilsonCaveat": "Při 93/100 je Wilsonova dolní mez jen 86,2 %, a těch 100 tahů je shlukovaných uvnitř dvaceti světů. Sto tahů je VÝVOJOVÁ brána. Pro skutečný důkaz je potřeba řádově 288/300 slepých tahů."
+    },
+
+    "verdicts": {
+      "FULFILLED": "Splnil strojově kontrolovatelný kontrakt daného promptu — vlastnosti grafu I runtime chování.",
+      "ROBUST": "Nespadl, dal použitelný výsledek nebo poctivý fallback, ale kontrakt nesplnil (nebo žádný neměl).",
+      "NO_FIT": "Systém poctivě odmítl `sim` část — mechanika není v gramatice. Scéna se přesto MUSÍ postavit (§13.4).",
+      "FAULT": "Pád, timeout, nevalidní výstup po opravě."
+    },
+    "emptyRequirementRule": "Prompt s PRÁZDNÝM vektorem požadavků má verdictCeiling `ROBUST` a NIKDY nemůže dostat `FULFILLED`. Schema-validní graf s prázdným chováním, fallback i insta-win končí stejně. Tohle je přímá oprava známého rozporu: v evals/gold.jsonl má 42 ze 116 promptů prázdný `required` a v dřívějším headline čísle procházely automaticky čímkoli.",
+    "reportSeparation": "ROBUST (nespadlo, dalo fallback) a FULFILLED (splnilo kritérium) se vykazují ODDĚLENĚ. Žádná agregovaná míra nesmí obě sloučit.",
+
+    "incompleteRunRule": {
+      "statement": "Běh přerušený stropem útraty, timeoutem nebo výpadkem poskytovatele se označí `INCOMPLETE` a NESMÍ se vykázat jako výsledek brány.",
+      "requirements": [
+        "report nese `completedCases` a `plannedCases` a ty se musí rovnat, jinak je `complete: false`",
+        "žádná míra úspěšnosti se nepočítá z neúplného jmenovatele",
+        "částečná data se smí publikovat jen s explicitním štítkem INCOMPLETE a s uvedeným důvodem zastavení"
+      ]
+    }
+  },
+
+  "requirementKinds": {
+    "purpose": "Zmrazený slovník scoreru (T16). Scorer čte VÝHRADNĚ contracts.v1.jsonl a smí rozumět jen těmhle druhům. Každý požadavek nese vlastní `rid`, protože T16 vyžaduje kontrafaktuální mutaci PO JEDNOM požadavku — bez adresovatelného ID se 'poruš právě tenhle jeden' nedá strojově vyrobit.",
+    "ridFormat": "<promptId>.<layerLetter><n>, např. C01.g2 nebo E17.e1",
+    "graph": {
+      "requiresEvent": "value: název povrchové události ze 14",
+      "requiresAction": "value: název akce",
+      "requiresCondition": "value: název podmínky",
+      "requiresCounter": "value: { id?, min, max }",
+      "requiresTimer": "value: { id?, durationTicks? }",
+      "requiresFlag": "value: { id? }",
+      "requiresInventorySlots": "value: { count }",
+      "requiresMemorySlots": "value: { count }",
+      "minEntitiesByRole": "value: { role, min }",
+      "minRules": "value: { min }",
+      "forbidsAction": "value: název akce, která se v grafu NESMÍ objevit",
+      "layoutTypeIs": "value: grid | ring | corridor | tower | cave | maze",
+      "minDistinctSockets": "value: { min }"
+    },
+    "runtime": {
+      "witnessCertifies": "value: { tier } — svědek dojde do win() uvnitř H_cert svého tieru",
+      "notWinnableAtSetup": "výhra NESMÍ být pravdivá už při setupu (insta-win je odmítnutí)",
+      "observationAtTick": "value: { tick, expr, op, rhs }",
+      "observationAtWin": "value: { expr, op, rhs }",
+      "observationAtLose": "value: { expr, op, rhs }",
+      "counterfactual": "value: { removeWitnessOps, expect } — po odstranění příčinného vstupu ze stopy výhra ve stejném rozpočtu tiků NENASTANE",
+      "reachesLose": "value: { within } — existuje stopa, která skončí lose() uvnitř horizontu",
+      "randomNotOnWinPath": "seedovaná náhoda se smí objevit, ale výhra na ní nesmí záviset",
+      "noRuntimeFault": "replay svědka nesmí skončit v runtimeFault"
+    },
+    "edit": {
+      "changedLeavesWithin": "value: allowedPaths — množina změněných LISTŮ (diff stavu před/po) je podmnožinou deklarovaných dvojic operace–cesta",
+      "postcondition": "value: { expr, op, rhs } — typovaná postpodmínka; 'změnilo jen povolená pole' nestačí",
+      "protectedObservation": "value: { expr } — chráněný stav, který se diferenciálním replayem nesmí změnit",
+      "witnessPreserved": "value: bool — starý svědek musí (true) nebo nemusí (false) dál dojít do výhry",
+      "revisionBumped": "value: { which: sim|look, by } — druhá revize musí zůstat beze změny",
+      "entityCountUnchanged": "počet entit se nesmí změnit",
+      "notNoOp": "patch s NULOVÝM behaviorálním efektem je selhání, ne úspěch"
+    },
+    "outcome": {
+      "expectedOutcome": "value: FULFILLED | ROBUST | NO_FIT | FAULT",
+      "sceneMustBuild": "scéna se musí postavit a být viditelná i při NO_FIT (§13.4)"
+    }
+  },
+
+  "fallbackFloors": {
+    "consumer": "plans/P2-fallback-tri-hry.md T205",
+    "frozenHere": true,
+    "rationale": "P2 si je nesmí nastavit sám. Bez nich by fallback vracející stabilně NO_FIT na všechno prošel všemi ostatními AC (nález review P2, kolo 1).",
+    "denominator": {
+      "rule": "Počítá se VÝHRADNĚ nad podmnožinou promptů s NEPRÁZDNÝM vektorem požadavků v contracts.v1.jsonl.",
+      "promptSetInP1": "createNonVacuous",
+      "minDenominator": 8
+    },
+    "minFulfilled": 5,
+    "maxNoFitShare": 0.25,
+    "nonVacuityAssertion": "Router nebo fallback, který vrací NO_FIT na víc než 25 % nevakuózních promptů, bránu NEPROJDE, i kdyby splnil všechna ostatní AC."
+  },
+
+  "malformedFixtures": {
+    "count": 30,
+    "frozenBy": "P1 T2",
+    "annotationFields": ["defect", "expectedRepair", "mustPreserve"],
+    "mustPreserveRationale": "Nezávislá anotace, proti které se ověří zachování sémantiky. Bez ní by opravář mohl 'opravit' emisi tak, že změní její význam.",
+    "repairFloor": { "minRepaired": 8, "of": 30 },
+    "repairRule": "Kanonizace, výchozí hodnoty, oprava rozsahů indexů. ŽÁDNÁ dohadovaná sémantika."
+  },
+
+  "syntheticResponses": {
+    "frozenBy": "P1 T2",
+    "coversEveryFrozenPrompt": true,
+    "headerFields": ["synthetic", "forPrompt", "sha256"],
+    "honestyClause": "Nejsou to záznamy skutečného poskytovatele. Phase 3 jimi prokazuje SPRÁVNOST POTRUBÍ, ne kvalitu modelu. Kvalitu modelu měří až živá Phase 4. Kdyby se tyhle soubory kdy vydávaly za důkaz o modelu, je to podvod na sobě samém.",
+    "distributionIsDeclared": true,
+    "distributionRationale": "Kdyby všech 40 syntetických odpovědí kontrakt splnilo, byla by offline FULFILLED rate 100 % konstrukcí a neprokázala by, že scorer umí verdikt PŘEKLOPIT. Distribuce je proto deklarovaná dopředu a T17 proti NÍ asertuje, ne proti 100 %.",
+    "declaredDistribution": {
+      "FULFILLED": 24,
+      "ROBUST": 9,
+      "NO_FIT": 4,
+      "FAULT": 3,
+      "total": 40
+    },
+    "offlineFulfilledThreshold": {
+      "exact": 24,
+      "rule": "T17 vyžaduje PŘESNOU shodu s deklarovanou distribucí, ne minimum. Odchylka kterýmkoli směrem je selhání potrubí nebo scoreru."
+    }
+  },
+
+  "freezeIntegrity": {
+    "marker": "evals/frozen/FROZEN",
+    "anchor": "evals/FROZEN_ANCHOR",
+    "anchorIsOutsideFrozenTree": true,
+    "anchorRationale": "Tree hash tagovaného commitu je znám až po commitu, ale jeho zapsání dovnitř zmrazeného adresáře by vytvořilo další změnu uvnitř a zrušilo platnost markeru. Kotva proto leží o úroveň výš.",
+    "tag": "evals-frozen-v1",
+    "rule": "Po commitu, který přidal FROZEN, se do evals/frozen/ už NESMÍ sáhnout.",
+    "honestLimit": "Lokální git historie se dá přepsat. `git commit --amend` nebo rebase umí propašovat změněný obsah přímo do markerového commitu a žádný novější commit dotýkající se adresáře pak neexistuje — test to neodhalí. Anotovaný tag to ztěžuje a činí hlasitějším, ale nedělá nemožným. JEDINÁ skutečně neměnná kotva je první push na vzdálený repozitář. Dokud repo nemá remote, je tahle kontrola disciplína s hlasitým alarmem, ne kryptografická záruka."
+  },
+
+  "knownGapsDuringP1": [
+    {
+      "gap": "Validátor layoutu z §13.3 (kolize socketů, souvislost navigační mřížky, dosažitelnost socketů, meze) je až P5 T505.",
+      "consequenceInP1": "Vadný layout se projeví jako SELHANÝ REPLAY SVĚDKA, tedy NO_FIT bez konkrétního důvodu.",
+      "acceptable": "Pro vertikální řez ano. Pro produkt ne."
+    },
+    {
+      "gap": "Rozpočtový validátor geometrie (§13.2) a metrika vizuální divergence (§13.5) v P1 neexistují.",
+      "consequenceInP1": "`look` se validuje jen schématem a konečností čísel.",
+      "acceptable": "Ano — P1 mrazí tvar, P5 staví obsah."
+    },
+    {
+      "gap": "Gold `EditContract` anotace pro stobranou bránu vlastní P7 a musí být hotové PŘED P4.",
+      "consequenceInP1": "P1 mrazí 25 editačních kontraktů jako semínko a třídní taxonomii, ne celou stobranou sadu.",
+      "acceptable": "Ano — plans/00-MAPA.md řádek 213/214 to tak dělí."
+    }
+  ]
+}

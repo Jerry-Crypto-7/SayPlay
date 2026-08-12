@@ -1,0 +1,13 @@
+{
+  "lockVersion": 1,
+  "protocolVersion": "v1",
+  "algorithm": "sha256",
+  "normalization": "CRLF -> LF před hashováním. Bez toho by hash téhož souboru závisel na tom, na jakém stroji se repo checkoutovalo, a zmrazení by přestalo být ověřitelné. Repo to navíc vynucuje i na úrovni gitu (.gitattributes, eol=lf) — normalizace tady je druhá vrstva, ne náhrada.",
+  "coverageRule": "Manifest musí krýt KAŽDÝ soubor uvnitř evals/frozen/. Soubor, který v manifestu chybí, je stejné selhání jako nesouhlasný hash — jinak by šlo do zmrazeného adresáře nepozorovaně přidat obsah.",
+  "writtenBy": "P1 T1; rozšiřuje P1 T2 o malformed/ a responses/ a o marker FROZEN",
+  "files": {
+    "protocol.v1.json": "282a2382de51039e6c9090220a597cba75aaedca928c4188c553c1fa66b1cdb0",
+    "prompts.v1.jsonl": "30ac784ba5f7cb187af6dd674362537a1faba106e8d1e0075583e282ad3fe3e8",
+    "contracts.v1.jsonl": "a8741a8b8deb9d1e7ed9303bff4248022479aa3aa6bb4d5dc495ef2785c8a7c3"
+  }
+}
