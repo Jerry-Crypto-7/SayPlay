@@ -17,11 +17,64 @@
  */
 
 import { applyPatch, type Operation } from 'rfc6902';
+import { z } from 'zod';
 
 import { validateIrDoc, worldIr } from '../ir/schema';
 import { hashWords } from '../sim/hash';
+import { TIERS } from '../verify/tiers';
 import type { VerifiableWorld } from '../verify/witness';
 import { reject, rejectionFromZod, structurePointer, type PatchRejection } from './reject';
+
+/**
+ * Obálka světa — všechno, co patch umí zasáhnout **mimo** `ir`.
+ *
+ * `worldIr` popisuje jen graf, takže bez tohohle projde jako platný patch, který
+ * smaže `space.sockets` (runtime pak spadne na `TypeError`, ne na definovaný
+ * `runtimeFault`), přepíše `space.blocked` na řetězec (certifikát se vydá nad
+ * geometrií, která není geometrie), přidá soket a tím udělá z dřív
+ * neproveditelného svědka proveditelný, nebo dosadí nesmyslnou `certification`
+ * a tím **natrvalo** shodí verifikaci světa, který předtím vyhrával. To je přesně
+ * ten stav, kterému má transakčnost bránit — jen dosažený commitem, ne pádem.
+ *
+ * Kanonický `WorldDoc` staví až T12; tohle je stráž patch cesty, ne jeho definice.
+ * Neznámé klíče v kořeni se proto tolerují — `_note` a `winsAtTick` v fixturách
+ * jsou přesně ony a nikdo je nečte.
+ */
+const cell = z.tuple([z.int(), z.int()]);
+
+const worldEnvelope = z
+  .object({
+    space: z
+      .object({
+        sockets: z.record(z.string(), cell),
+        zones: z.record(z.string(), z.tuple([z.int(), z.int(), z.int(), z.int()])),
+        blocked: z.array(cell),
+        tags: z.record(z.string(), z.string()),
+      })
+      .strict(),
+    trace: z.array(
+      z
+        .object({
+          tick: z.int().min(0),
+          actor: z.string(),
+          actionId: z.string(),
+          target: z.string().optional(),
+        })
+        .strict(),
+    ),
+    certification: z
+      .object({ tier: z.enum(TIERS), horizonTicks: z.int().min(1) })
+      .strict()
+      .optional(),
+  })
+  .loose();
+
+/** RFC 6902 operace. `readonly Operation[]` je jen typ — patch přichází jako JSON. */
+const operationSchema = z.union([
+  z.object({ op: z.enum(['add', 'replace', 'test']), path: z.string(), value: z.unknown() }).loose(),
+  z.object({ op: z.literal('remove'), path: z.string() }).loose(),
+  z.object({ op: z.enum(['move', 'copy']), path: z.string(), from: z.string() }).loose(),
+]);
 
 export interface PatchCommit {
   readonly verdict: 'COMMITTED';
@@ -75,6 +128,24 @@ export function graphHash(doc: unknown): string {
  */
 export function applyWorldPatch(doc: VerifiableWorld, operations: readonly Operation[]): PatchResult {
   const hashBefore = graphHash(doc);
+
+  // Tvar OPERACÍ dřív, než je uvidí knihovna. `readonly Operation[]` platí jen
+  // při překladu, patch přichází jako JSON od modelu — a operace bez `path`
+  // uvnitř `rfc6902` **vyhodí**, místo aby se vrátila jako odmítnutí.
+  for (let i = 0; i < operations.length; i += 1) {
+    const parsed = operationSchema.safeParse(operations[i]);
+    if (parsed.success) continue;
+    const path = (operations[i] as { path?: unknown }).path;
+    return reject(
+      'MALFORMED_OPERATION',
+      // Prázdný pointer je kořen a znamená „nelze zaměřit" — operace, která
+      // nemá použitelnou cestu, žádné místo v dokumentu neoznačuje.
+      typeof path === 'string' ? path : '',
+      'an RFC 6902 operation with op and path',
+      `operation ${i}: ${parsed.error.issues[0].message}`,
+    );
+  }
+
   // Hluboká kopie: vstup se nesmí dotknout ani při úspěchu, aby volající mohl
   // starý graf pořád replaynout.
   const draft = structuredClone(doc) as VerifiableWorld;
@@ -83,13 +154,27 @@ export function applyWorldPatch(doc: VerifiableWorld, operations: readonly Opera
   for (let i = 0; i < outcomes.length; i += 1) {
     const failure = outcomes[i];
     if (failure === null) continue;
+    const operation = operations[i];
+    // U `move`/`copy` je rozbitá souřadnice typicky `from`, ne `path`. Ukázat
+    // `path` by autorský nástroj poslalo na místo, které je v pořádku — to je
+    // horší než hrubý pointer, protože to je pointer nesprávný.
+    const from = (operation as { from?: unknown }).from;
+    const pointer =
+      typeof from === 'string' && failure.message.includes(from) ? from : operation.path;
     return reject(
       'MALFORMED_OPERATION',
-      operations[i].path,
-      `an applicable ${operations[i].op} target`,
-      `operation ${i} (${operations[i].op} ${operations[i].path}): ${failure.message}`,
+      pointer,
+      // `test` neselhal na tvaru cíle, ale na jeho hodnotě — a očekávání je pak
+      // ta hodnota, ne „použitelný cíl".
+      operation.op === 'test'
+        ? `the value ${JSON.stringify((operation as { value?: unknown }).value)}`
+        : `an applicable ${operation.op} target`,
+      `operation ${i} (${operation.op} ${operation.path}): ${failure.message}`,
     );
   }
+
+  const envelope = worldEnvelope.safeParse(draft);
+  if (!envelope.success) return rejectionFromZod(envelope.error, []);
 
   const shape = worldIr.safeParse(draft.ir);
   if (!shape.success) return rejectionFromZod(shape.error, ['ir']);

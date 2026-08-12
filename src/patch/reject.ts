@@ -62,9 +62,46 @@ export function reject(
  */
 export function rejectionFromZod(error: ZodError, prefix: readonly string[]): PatchRejection {
   const issue = error.issues[0];
+
+  // Neznámý klíč zná své jméno, takže pointer smí mířit PŘÍMO na něj místo na
+  // objekt, který ho nese — a očekávání je tvar, ne kód chyby.
+  if (issue.code === 'unrecognized_keys') {
+    const key = issue.keys[0];
+    return reject(
+      'SCHEMA',
+      pointerOf([...prefix, ...issue.path, key]),
+      'no property here — this object declares its full shape',
+      issue.message,
+    );
+  }
+
   const pointer = pointerOf([...prefix, ...issue.path]);
-  const expected = 'expected' in issue ? String(issue.expected) : issue.code;
-  return reject('SCHEMA', pointer, expected, issue.message);
+  return reject('SCHEMA', pointer, expectedOf(issue), issue.message);
+}
+
+/**
+ * Co se na tom místě čekalo, **v pojmech tvaru**.
+ *
+ * Vracet `issue.code` je levné a k ničemu: `invalid_union` neříká autorovi ani
+ * modelu nic o tom, co tam mělo být. Kódy se proto překládají na popis tvaru
+ * a `expected` z toho nikdy nevyjde prázdné.
+ */
+function expectedOf(issue: ZodError['issues'][number]): string {
+  if ('expected' in issue && typeof issue.expected === 'string') return issue.expected;
+  switch (issue.code) {
+    case 'invalid_union':
+      return 'one of the declared variants';
+    case 'invalid_value':
+      return 'values' in issue ? `one of ${issue.values.map((v) => String(v)).join(', ')}` : 'a declared value';
+    case 'too_big':
+      return 'maximum' in issue ? `at most ${String(issue.maximum)}` : 'a smaller value';
+    case 'too_small':
+      return 'minimum' in issue ? `at least ${String(issue.minimum)}` : 'a larger value';
+    case 'invalid_format':
+      return 'format' in issue ? `a value matching ${String(issue.format)}` : 'a valid format';
+    default:
+      return issue.code;
+  }
 }
 
 /**

@@ -46,6 +46,15 @@ describe('validní patch se commitne atomicky', () => {
     expect(vault.ir.rules[0].priority).toBe(0);
   });
 
+  it('prázdný patch je no-op commit — `COMMITTED` samo o sobě změnu hashe neslibuje', () => {
+    // Pinuje se to schválně: AC mluví o tom, že VALIDNÍ patch hash změní, a
+    // prázdný seznam operací je hraniční případ, kde to neplatí a platit nemá.
+    const result = applyWorldPatch(vault, []);
+    expect(result.verdict).toBe('COMMITTED');
+    if (result.verdict !== 'COMMITTED') return;
+    expect(result.hashAfter).toBe(result.hashBefore);
+  });
+
   it('a nový graf je pořád platný svět, ne jen jiný JSON', () => {
     const result = applyWorldPatch(vault, [{ op: 'replace', path: '/ir/rules/0/priority', value: 5 }]);
     if (result.verdict !== 'COMMITTED') throw new Error('patch se necommitl');
@@ -151,6 +160,109 @@ describe('nevalidní patch je odmítnut s přesným pointerem', () => {
   });
 });
 
+/**
+ * `worldIr` popisuje jen graf, takže bez stráže nad obálkou projde jako platný
+ * patch, který rozbije všechno ostatní — a projde jako **commit**, ne jako pád.
+ * To je horší než odmítnutí: gate na to dá razítko.
+ */
+describe('patch mimo `/ir` je pod stráží stejně jako graf', () => {
+  const outside: readonly (readonly [string, Operation])[] = [
+    ['smazaná tabulka soketů', { op: 'remove', path: '/space/sockets' }],
+    ['geometrie nahrazená řetězcem', { op: 'replace', path: '/space/blocked', value: 'nope' }],
+    ['soket s nečíselnou buňkou', { op: 'add', path: '/space/sockets/ghost', value: ['a', 'b'] }],
+    ['certifikace, která není objekt', { op: 'add', path: '/certification', value: 42 }],
+    ['neznámý tier', { op: 'add', path: '/certification', value: { tier: 'nope', horizonTicks: 10 } }],
+    ['záporný horizont', { op: 'add', path: '/certification', value: { tier: 'short', horizonTicks: -1 } }],
+    ['stopa bez aktéra', { op: 'add', path: '/trace/-', value: { tick: 1, actionId: 'pull' } }],
+    ['záporný tik ve stopě', { op: 'replace', path: '/trace/0/tick', value: -3 }],
+  ];
+
+  it.each(outside)('%s je odmítnuto', (_label, operation) => {
+    const before = graphHash(vault);
+    const result = applyWorldPatch(vault, [operation]);
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.reason).toBe('SCHEMA');
+    expectUntouched(before);
+  });
+
+  it('smazaná tabulka soketů by jinak runtime shodila výjimkou, ne faultem', () => {
+    // Důvod, proč tohle patří sem a ne do „ať si to runtime ošetří": pád při
+    // konstrukci není definovaný přechod, takže by ho nešlo replaynout.
+    const result = applyWorldPatch(vault, [{ op: 'remove', path: '/space/sockets' }]);
+    expect(result.verdict).toBe('REJECTED');
+  });
+
+  it('přidaný soket by jinak udělal z neproveditelného svědka proveditelného', () => {
+    // `verifyWitness` rozpouští cíle kroků proti `space.sockets`, takže patch
+    // do té tabulky je cesta, jak si vyrobit platný certifikát bez zásahu do grafu.
+    const bogus: TraceInput[] = [
+      { tick: 0, actor: 'hero', actionId: 'moveTo', target: 'ghost' },
+      ...WITNESS,
+    ];
+    expect(verifyWitness(vault, bogus).verdict).toBe('REJECTED');
+
+    const result = applyWorldPatch(vault, [{ op: 'add', path: '/space/sockets/ghost', value: [9, 9] }]);
+    // Dobře utvořený soket projít SMÍ — je to legitimní editace layoutu. Pointa
+    // je, že projde jen dobře utvořený, a že se tím nic nepodstrčí za zády
+    // schématu.
+    expect(result.verdict).toBe('COMMITTED');
+    if (result.verdict !== 'COMMITTED') return;
+    expect(verifyWitness(result.doc, bogus).verdict).toBe('CERTIFIED');
+    // A původní dokument to nezměnilo, takže starý certifikát platí dál.
+    expect(verifyWitness(vault, bogus).verdict).toBe('REJECTED');
+  });
+});
+
+describe('vadná operace je odmítnutí, ne výjimka', () => {
+  it('operace bez `path` neproletí do knihovny', () => {
+    const before = graphHash(vault);
+    let result: ReturnType<typeof applyWorldPatch> | undefined;
+    expect(() => {
+      result = applyWorldPatch(vault, [{ op: 'add', value: 1 } as unknown as Operation]);
+    }).not.toThrow();
+    expect(result?.verdict).toBe('REJECTED');
+    if (result?.verdict !== 'REJECTED') return;
+    expect(result.reason).toBe('MALFORMED_OPERATION');
+    expect(result.expected.length).toBeGreaterThan(0);
+    expectUntouched(before);
+  });
+
+  it('neznámé `op` taky ne', () => {
+    const result = applyWorldPatch(vault, [
+      { op: 'obliterate', path: '/ir/rules/0' } as unknown as Operation,
+    ]);
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+  });
+
+  it('`move` s rozbitým `from` ukáže na `from`, ne na platný `path`', () => {
+    // Ukázat `path` znamená poslat autorský nástroj na místo, které je
+    // v pořádku — pointer nesprávný je horší než pointer hrubý.
+    const result = applyWorldPatch(vault, [
+      { op: 'move', from: '/ir/rules/99', path: '/ir/rules/0' },
+    ]);
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.pointer).toBe('/ir/rules/99');
+  });
+
+  it('`test`, který neprošel, hlásí očekávanou HODNOTU, ne „použitelný cíl"', () => {
+    const result = applyWorldPatch(vault, [{ op: 'test', path: '/ir/rules/0/priority', value: 999 }]);
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.expected).toContain('999');
+  });
+
+  it('neznámý klíč ukáže přímo na sebe a řekne tvar, ne kód chyby', () => {
+    const result = applyWorldPatch(vault, [{ op: 'add', path: '/ir/rules/0/haste', value: true }]);
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.pointer).toBe('/ir/rules/0/haste');
+    expect(result.expected).not.toBe('unrecognized_keys');
+    expect(result.expected).toContain('no property');
+  });
+});
+
 describe('částečná aplikace není možná', () => {
   it('platná operace před neplatnou se nepropíše', () => {
     const before = graphHash(vault);
@@ -233,9 +345,11 @@ describe('patch cesta stojí na RFC 6902, ne na náhražce', () => {
     expect(specifiers).toEqual([
       '../ir/schema',
       '../sim/hash',
+      '../verify/tiers',
       '../verify/witness',
       './reject',
       'rfc6902',
+      'zod',
     ]);
   });
 
