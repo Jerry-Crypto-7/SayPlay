@@ -16,27 +16,61 @@ export const TICK_DT = 1 / TICK_HZ;
 
 export const TICK_MS = 1000 / TICK_HZ;
 
+/**
+ * Strop dohánění v jednom pumpnutí.
+ *
+ * Uspaná záložka se probudí se skokem nástěnných hodin o desítky sekund; bez
+ * stropu by z třicetisekundového skoku vzniklo 600 tiků v jednom snímku, což je
+ * spirála smrti — dohánění trvá déle než uplynulý čas a akumulátor roste dál.
+ *
+ * 25 tiků je 1,25 s. Číslo je zvolené proti reálnému throttlingu: záložka na
+ * pozadí dostává timery zhruba jednou za sekundu, tedy 20 tiků na pumpnutí, a
+ * ta se s tímhle stropem doháněla celá. Škrtá se až skutečný skok, ne běžné
+ * zpomalení.
+ */
+export const MAX_CATCHUP_TICKS = 25;
+
 export interface SimClock {
   /** Počet odkrokovaných tiků od začátku běhu. */
   tick: number;
   /** Nástěnný zbytek pod hranicí jednoho tiku. Dělený tik neexistuje. */
   accumulatorMs: number;
+  /** Tiky zahozené stropem dohánění. Nástěnná nespojitost je vidět, ne tichá. */
+  droppedTicks: number;
 }
 
 export function createClock(): SimClock {
-  return { tick: 0, accumulatorMs: 0 };
+  return { tick: 0, accumulatorMs: 0, droppedTicks: 0 };
 }
 
 /**
  * Převede uplynulý nástěnný čas na celý počet tiků, které se mají odkrokovat.
  * Zbytek pod tikem zůstává v akumulátoru, takže se nástěnný čas neztrácí po
  * kouscích a posloupnost tiků nezávisí na tom, jak hustě se hodiny pumpují.
+ *
+ * Přebytek nad stropem se **zahodí, ne odloží**: kdyby se přenesl do akumulátoru,
+ * příští pumpnutí by ho dostalo znovu a strop by jen rozložil tutéž spirálu do
+ * více snímků. Simulovaný čas je po probuzení pozadu za nástěnným — a to je
+ * správně, protože simulovaný tik je jediná jednotka a replay cesta nástěnné
+ * hodiny nečte vůbec.
+ *
+ * Záporný `elapsedMs` (posun systémových hodin zpět) nepřidá nic. Vracet záporný
+ * počet tiků nejde a couvání simulace není definované.
  */
 export function pump(clock: SimClock, elapsedMs: number): number {
-  clock.accumulatorMs += elapsedMs;
+  if (elapsedMs > 0) {
+    clock.accumulatorMs += elapsedMs;
+  }
+
   const due = Math.floor(clock.accumulatorMs / TICK_MS);
   clock.accumulatorMs -= due * TICK_MS;
-  return due;
+
+  if (due <= MAX_CATCHUP_TICKS) {
+    return due;
+  }
+
+  clock.droppedTicks += due - MAX_CATCHUP_TICKS;
+  return MAX_CATCHUP_TICKS;
 }
 
 /**
