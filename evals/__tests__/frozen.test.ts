@@ -16,6 +16,27 @@ interface Manifest {
   files: Record<string, string>;
 }
 
+interface Requirement {
+  rid: string;
+  layer: string;
+  kind: string;
+}
+
+interface Contract {
+  id: string;
+  verdictCeiling: 'FULFILLED' | 'ROBUST';
+  scoreAs?: 'FULFILLABLE' | 'ROBUST_ONLY';
+  scoreAsReason?: string;
+  requirements: Requirement[];
+}
+
+/**
+ * `sceneMustBuild` platí pro každý prompt, který projde moderací (§13.4), takže
+ * sám o sobě nic neodlišuje. Kontrakt, jehož jediný požadavek je tenhle, je
+ * vakuózní — a musí to o sobě říct štítkem, ne mlčením.
+ */
+const NON_DISCRIMINATING_KINDS = new Set(['sceneMustBuild']);
+
 /**
  * Hash se počítá nad obsahem normalizovaným na LF. Bez toho by tentýž soubor
  * dal na Windows jiný hash než na Linuxu a zmrazení by neznamenalo nic
@@ -67,6 +88,57 @@ describe('evals/frozen — hash lock', () => {
     const onDisk = frozenRelativePaths().filter((rel) => rel !== 'MANIFEST.lock');
     const covered = Object.keys(manifest.files).sort();
     expect(onDisk).toEqual(covered);
+  });
+});
+
+describe('evals/frozen — žádný kontrakt neprochází mlčením', () => {
+  const contracts = readFileSync(join(frozenDir, 'contracts.v1.jsonl'), 'utf8')
+    .trim()
+    .split('\n')
+    .map((line) => JSON.parse(line) as Contract);
+
+  const prompts = readFileSync(join(frozenDir, 'prompts.v1.jsonl'), 'utf8')
+    .trim()
+    .split('\n')
+    .map((line) => JSON.parse(line) as { id: string });
+
+  it('každý zmrazený prompt má právě jeden kontrakt', () => {
+    expect(contracts.map((c) => c.id).sort()).toEqual(prompts.map((p) => p.id).sort());
+  });
+
+  // Tohle je ta kontrola, bez které by se zabetonovala nadhodnocující metrika:
+  // 42 ze 116 promptů v evals/gold.jsonl má prázdný `required` a projde čímkoli.
+  it('každý kontrakt deklaruje scoreAs', () => {
+    for (const c of contracts) {
+      expect(c.scoreAs, `${c.id} nemá scoreAs`).toBeDefined();
+      expect(['FULFILLABLE', 'ROBUST_ONLY'], `${c.id} má neznámé scoreAs`).toContain(c.scoreAs);
+    }
+  });
+
+  it('ROBUST_ONLY nese odůvodnění a FULFILLABLE nese skutečný požadavek', () => {
+    for (const c of contracts) {
+      if (c.scoreAs === 'ROBUST_ONLY') {
+        expect((c.scoreAsReason ?? '').length, `${c.id} je ROBUST_ONLY bez odůvodnění`).toBeGreaterThan(0);
+        continue;
+      }
+      const discriminating = c.requirements.filter((r) => !NON_DISCRIMINATING_KINDS.has(r.kind));
+      expect(discriminating.length, `${c.id} je FULFILLABLE, ale nemá jediný odlišující požadavek`).toBeGreaterThan(0);
+    }
+  });
+
+  it('scoreAs souhlasí s verdictCeiling', () => {
+    for (const c of contracts) {
+      expect(c.scoreAs === 'ROBUST_ONLY', `${c.id}: scoreAs a verdictCeiling si odporují`).toBe(
+        c.verdictCeiling === 'ROBUST',
+      );
+    }
+  });
+
+  // T16 mutuje požadavky PO JEDNOM a čeká překlopení verdiktu. Bez jedinečného
+  // rid se "poruš právě tenhle jeden" nedá strojově adresovat.
+  it('každé rid je v celé sadě jedinečné', () => {
+    const rids = contracts.flatMap((c) => c.requirements.map((r) => r.rid));
+    expect(rids.length).toBe(new Set(rids).size);
   });
 });
 

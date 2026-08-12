@@ -344,6 +344,13 @@
     "outcome": {
       "expectedOutcome": "value: FULFILLED | ROBUST | NO_FIT | FAULT",
       "sceneMustBuild": "scéna se musí postavit a být viditelná i při NO_FIT (§13.4)"
+    },
+    "scoreAs": {
+      "required": true,
+      "values": ["FULFILLABLE", "ROBUST_ONLY"],
+      "rule": "KAŽDÝ záznam v contracts.v1.jsonl musí `scoreAs` deklarovat. `ROBUST_ONLY` navíc vyžaduje neprázdný `scoreAsReason`. `FULFILLABLE` vyžaduje aspoň jeden požadavek, jehož `kind` NENÍ pouze `sceneMustBuild` — tedy něco, co jde opravdu splnit nebo nesplnit.",
+      "consistency": "scoreAs === 'ROBUST_ONLY' právě tehdy, když verdictCeiling === 'ROBUST'. Rozpor je selhání testu, ne varování.",
+      "rationale": "Bez explicitního štítku by prompt bez skutečného požadavku prošel jako splněný čímkoli. Přesně tohle je známý rozpor #2 z CLAUDE.md: v evals/gold.jsonl má 42 ze 116 promptů prázdný `required` a v dřívějším headline čísle 73/116 tvořily 42 volných průchodů. Zmrazit ten tvar bez štítku by zabetonovalo metriku, která nadhodnocuje. Mlčení tady NENÍ povolený stav — chybějící `scoreAs` shodí frozen.test.ts."
     }
   },
 
