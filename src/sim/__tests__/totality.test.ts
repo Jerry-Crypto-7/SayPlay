@@ -151,21 +151,20 @@ describe('podmínka 2 — fronta ke čtení a fronta k zápisu jsou různé obje
 // ===========================================================================
 
 /**
- * Záměrně částečné přepínače. Všechny leží ve validátoru dokumentu, ne na tikové
- * cestě, a u každého by `never` větev byla **nepravda**: jejich `default` pokrývá
- * skutečné varianty, ne nemožný zbytek.
+ * Záměrně částečné přepínače — a **žádný z nich nesmí ležet na tikové cestě**,
+ * což hlídá vlastní aserce, ne tenhle komentář.
  *
- * - `nodeValueKind` — `default` vrací `bool` pro `compare` / `allOf` / `anyOf` /
- *   `not`, což jsou čtyři reálné a všechny boolean varianty
- * - `childIndices` — `default` vrací prázdné pole pro listy, které potomky nemají
- * - `checkFactArgs`, `checkRef`, `validateIrDoc` — validace se úmyslně vyjadřuje
- *   jen k rolím a prostorům, které mají v `world-ir-v1` deklarační tabulku
+ * Všechny čtyři jsou ve validátoru dokumentu, který se úmyslně vyjadřuje jen
+ * k rolím a prostorům majícím ve `world-ir-v1` deklarační tabulku, a k listovým
+ * uzlům bez potomků. `nodeValueKind` na tomhle seznamu **byl a neprávem**
+ * *(nález re-review, 12. 8. 2026)*: je na tikové cestě, takže jeho `default:
+ * return 'bool'` by z nového nebooleovského druhu uzlu udělal tiše boolean.
+ * Dostal proto vyjmenované větve a `never`, místo aby dostal výjimku.
  */
 const PARTIAL_SWITCHES: readonly string[] = [
   'ir/schema.ts:checkFactArgs',
   'ir/schema.ts:checkRef',
   'ir/schema.ts:childIndices',
-  'ir/schema.ts:nodeValueKind',
   'ir/schema.ts:validateIrDoc',
 ];
 
@@ -251,12 +250,34 @@ describe('podmínka 3 — každá výstupní cesta `step()` vrací definovaný s
     expect(FACTS.switches.length).toBeGreaterThan(3);
   });
 
-  it('a mezi vyčerpanými jsou oba uznávané tvary, ne jen `never` větev', () => {
-    // `readRef` vyčerpanost dokazuje návratovým typem; kdyby test uznával jen
-    // `never` větev, propustil by ji jako výjimku místo jako důkaz.
-    const byReturnType = FACTS.switches.filter((entry) => entry.fn === 'readRef');
-    expect(byReturnType.length).toBe(1);
-    expect(byReturnType[0].exhaustive).toBe(true);
+  it('a pinutý seznam nesmí krýt přepínač na tikové cestě', () => {
+    // Bez téhle aserce se dá díra na tikové cestě zavřít tím, že se dopíše na
+    // seznam výjimek — což je přesně to, co se s `nodeValueKind` stalo.
+    const onTick = FACTS.switches
+      .filter((entry) => !entry.exhaustive && TICK_PATH.has(entry.fn))
+      .map((entry) => `${entry.module}:${entry.fn}`);
+    expect(onTick).toEqual([]);
+    expect(TICK_PATH.has('nodeValueKind')).toBe(true);
+  });
+
+  it('vyčerpanost uznává jen `never` větev — návratový typ sám nestačí', () => {
+    // Za přepínačem stačí jediný `return` a TS2366 nevznikne; totéž při
+    // návratovém typu s `undefined`. Obojí je běžný ČÁSTEČNÝ přepínač.
+    const trailing = analyseModule(
+      'synthetic.ts',
+      'function pick(x: Kind): number { switch (x) { case "a": return 1; case "b": return 2; } return 0; }',
+    );
+    const optional = analyseModule(
+      'synthetic.ts',
+      'function pick(x: Kind): number | undefined { switch (x) { case "a": return 1; case "b": return 2; } }',
+    );
+    const never = analyseModule(
+      'synthetic.ts',
+      'function pick(x: Kind): number { switch (x) { case "a": return 1; default: { const e: never = x; return e; } } }',
+    );
+    expect(trailing.switches.map((entry) => entry.exhaustive)).toEqual([false]);
+    expect(optional.switches.map((entry) => entry.exhaustive)).toEqual([false]);
+    expect(never.switches.map((entry) => entry.exhaustive)).toEqual([true]);
   });
 });
 
@@ -434,6 +455,28 @@ describe('podmínka 5 — mez musí OMEZOVAT, ne se jen vyskytovat', () => {
       'function step(r, k){ for (let i = 0; i < r.items.length && k < r.limits.maxEntities; i += 1) { touch(i); } }',
     );
     expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
+  it('mez smíchaná s délkou vstupního pole neprojde', () => {
+    // Váže řídicí proměnnou, mez je v podmínce — a přesto roste s dokumentem.
+    const sum = analyseModule(
+      'synthetic.ts',
+      'function step(r){ for (let i = 0; i < r.limits.maxSlots + r.doc.slots.length; i += 1) { touch(i); } }',
+    );
+    const product = analyseModule(
+      'synthetic.ts',
+      'function step(r){ for (let i = 0; i < r.limits.maxSlots * r.doc.nodes.length; i += 1) { touch(i); } }',
+    );
+    expect(sum.sites.map((site) => site.bounded)).toEqual([false]);
+    expect(product.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
+  it('ale čistá aritmetika nad mezemi a konstantami ano', () => {
+    const facts = analyseModule(
+      'synthetic.ts',
+      'function step(r){ for (let i = 0; i < 2 * r.limits.maxSlots + 1; i += 1) { touch(i); } }',
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([true]);
   });
 
   it('obrácená orientace porovnání projde, když váže řídicí proměnnou', () => {

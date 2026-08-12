@@ -147,6 +147,13 @@ export function readRef(ref: StateRef, obs: Observation): LiteralValue {
       return obs.facts.has(factKey(ref.fact, ref.args));
     case 'pulse':
       return obs.pulses.has(factKey(ref.fact, ref.args));
+    default: {
+      // Nový prostor v `StateRef` se do `never` nepřiřadí (TS2322). Spoléhat
+      // místo toho na „funkci chybí návrat" je slabší: propadne, jakmile se pod
+      // přepínač připíše jediný řádek.
+      const exhaustive: never = ref;
+      return exhaustive;
+    }
   }
 }
 
@@ -162,7 +169,8 @@ export function evalNode(doc: IrDoc, index: number, obs: Observation): LiteralVa
     case 'compare': {
       const lhs = evalNode(doc, node.lhs, obs);
       const rhs = evalNode(doc, node.rhs, obs);
-      switch (node.op) {
+      const op = node.op;
+      switch (op) {
         case '=':
           return lhs === rhs;
         case '<':
@@ -173,6 +181,10 @@ export function evalNode(doc: IrDoc, index: number, obs: Observation): LiteralVa
           return (lhs as number) >= (rhs as number);
         case '>':
           return (lhs as number) > (rhs as number);
+        default: {
+          const exhaustive: never = op;
+          return exhaustive;
+        }
       }
     }
     // Indexovaná smyčka s mezí v podmínce, ne `.every` / `.some`.
@@ -198,6 +210,10 @@ export function evalNode(doc: IrDoc, index: number, obs: Observation): LiteralVa
     }
     case 'not':
       return evalNode(doc, node.operand, obs) !== true;
+    default: {
+      const exhaustive: never = node;
+      return exhaustive;
+    }
   }
 }
 

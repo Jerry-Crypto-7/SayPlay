@@ -131,61 +131,23 @@ function enclosingFunction(node: ts.Node): string {
   return '<module>';
 }
 
-/** Končí příkaz vždycky návratem nebo výjimkou? Blok i vnořený `switch` se počítají. */
-function alwaysReturns(statement: ts.Statement): boolean {
-  if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement)) return true;
-  if (ts.isBlock(statement)) {
-    const last = statement.statements[statement.statements.length - 1];
-    return last !== undefined && alwaysReturns(last);
-  }
-  if (ts.isSwitchStatement(statement)) return clausesAlwaysReturn(statement);
-  return false;
-}
-
-function clausesAlwaysReturn(node: ts.SwitchStatement): boolean {
-  if (node.caseBlock.clauses.length === 0) return false;
-  for (const clause of node.caseBlock.clauses) {
-    const last = clause.statements[clause.statements.length - 1];
-    if (last === undefined || !alwaysReturns(last)) return false;
-  }
-  return true;
-}
-
-/** Deklarovaný návratový typ nejbližší obklopující funkce, pokud nějaký je. */
-function enclosingReturnType(node: ts.Node): ts.TypeNode | undefined {
-  let current: ts.Node | undefined = node.parent;
-  while (current) {
-    if (
-      ts.isFunctionDeclaration(current) ||
-      ts.isArrowFunction(current) ||
-      ts.isFunctionExpression(current) ||
-      ts.isMethodDeclaration(current)
-    )
-      return current.type;
-    current = current.parent;
-  }
-  return undefined;
-}
-
 /**
- * Vyčerpanost, kterou **ověří překladač**. Uznávají se dva tvary a oba jsou
- * skutečná chyba překladu, ne konvence:
+ * Vyčerpanost, kterou **ověří překladač** — a uznává se jediný tvar:
+ * `default: { const exhaustive: never = x; … }`. Nová varianta unie se do `never`
+ * nepřiřadí a je to TS2322, tedy chyba překladu, ne konvence.
  *
- * 1. `default: { const exhaustive: never = x; … }` — nová varianta unie se do
- *    `never` nepřiřadí (TS2322).
- * 2. **žádný `default`**, každá větev končí návratem nebo výjimkou a funkce má
- *    deklarovaný nevoidový návratový typ — nepokrytá varianta propadne na konec
- *    funkce a to je „lacks ending return statement" (TS2366).
- *
- * Druhý tvar existuje proto, že první do funkce jako `readRef` napsat nejde:
- * `never` větev by tam byla mrtvý kód, který sám nic nedokazuje.
+ * **Druhý tvar tu byl a byl nesprávný** *(nález re-review, 12. 8. 2026)*: „žádný
+ * `default`, každá větev vrací, funkce má nevoidový návratový typ" se opírá
+ * o TS2366 („lacks ending return statement"), jenže ten nevznikne, když za
+ * přepínačem stojí jediný další `return`, ani když návratový typ obsahuje
+ * `undefined`. Obojí je běžný způsob, jak se píše **částečný** přepínač, takže
+ * pravidlo hlásilo „ověřeno překladačem" o kódu, který překladač nekontroluje.
+ * Místo záplaty na heuristiku dostaly tři přepínače v `ir/eval.ts` `never` větev
+ * — stejnou, jakou má zbytek projektu.
  */
 function switchExhaustive(node: ts.SwitchStatement, sf: ts.SourceFile): boolean {
   const fallback = node.caseBlock.clauses.find((clause) => ts.isDefaultClause(clause));
-  if (fallback !== undefined) return /:\s*never\b/.test(fallback.getText(sf));
-  const returnType = enclosingReturnType(node);
-  if (returnType === undefined || returnType.kind === ts.SyntaxKind.VoidKeyword) return false;
-  return clausesAlwaysReturn(node);
+  return fallback !== undefined && /:\s*never\b/.test(fallback.getText(sf));
 }
 
 /** Analýza jednoho modulu. Bere text, ne cestu, aby šla pustit na syntetický zdroj. */
@@ -229,6 +191,39 @@ export function analyseModule(moduleName: string, source: string): ModuleFacts {
     return 0;
   };
 
+  /**
+   * Kolik členů výrazu **není** ani mez, ani číselná konstanta.
+   *
+   * Bez tohohle by stačil jeden atom kdekoli: `i < limits.maxSlots +
+   * doc.ir.slots.length` má mez v podmínce, váže řídicí proměnnou a přesto roste
+   * se vstupním dokumentem *(nález re-review, 12. 8. 2026)*. Mez tedy musí být
+   * čistá — aritmetika nad `IrLimits` a konstantami ano, jakýkoli jiný člen ne.
+   * Neznámý identifikátor (parametr funkce) se počítá jako cizí schválně: o jeho
+   * hodnotě pravidlo nic neví.
+   */
+  const foreignAtoms = (node: ts.Node, depth: number): number => {
+    if (depth > 8) return 1;
+    if (ts.isParenthesizedExpression(node)) return foreignAtoms(node.expression, depth + 1);
+    if (ts.isNumericLiteral(node)) return 0;
+    if (ts.isPropertyAccessExpression(node)) return LIMIT_FIELDS.has(node.name.text) ? 0 : 1;
+    if (ts.isCallExpression(node)) {
+      const callee = node.expression;
+      return ts.isIdentifier(callee) && BOUND_FUNCTIONS.has(callee.text) ? 0 : 1;
+    }
+    if (ts.isBinaryExpression(node))
+      return foreignAtoms(node.left, depth + 1) + foreignAtoms(node.right, depth + 1);
+    if (ts.isPrefixUnaryExpression(node)) return foreignAtoms(node.operand, depth + 1);
+    if (ts.isIdentifier(node)) {
+      if (SCHEMA_BOUNDS.has(node.text)) return 0;
+      const declaredAs = lookup(node.text);
+      return declaredAs ? foreignAtoms(declaredAs, depth + 1) : 1;
+    }
+    return 1;
+  };
+
+  /** Mez je výraz nad deklarovanými mezemi a **ničím jiným**. */
+  const limitDerived = (node: ts.Node): boolean => limitAtoms(node, 0) > 0 && foreignAtoms(node, 0) === 0;
+
   /** Rozloží podmínku na konjunkty — mez musí být v jednom z nich, ne kdekoli. */
   const conjuncts = (expr: ts.Expression): ts.Expression[] => {
     if (ts.isParenthesizedExpression(expr)) return conjuncts(expr.expression);
@@ -259,7 +254,7 @@ export function analyseModule(moduleName: string, source: string): ModuleFacts {
     const control = side === 'left' ? conjunct.left : conjunct.right;
     const bound = side === 'left' ? conjunct.right : conjunct.left;
     if (!ts.isIdentifier(control) || !controls.has(control.text)) return false;
-    return limitAtoms(bound, 0) > 0;
+    return limitDerived(bound);
   };
 
   const isBudgetRemaining = (node: ts.Node): boolean =>

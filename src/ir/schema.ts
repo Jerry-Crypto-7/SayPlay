@@ -213,6 +213,15 @@ export function refValueKind(ref: StateRef): ValueKind {
   return 'symbol';
 }
 
+/**
+ * Typ hodnoty uzlu. **Leží na tikové cestě** — `evalBool` se jím ptá před každým
+ * vyhodnocením spouštěče, takže tady se nesmí hádat.
+ *
+ * Boolovské varianty jsou proto vyjmenované a `default` je `never` větev, ne
+ * `return 'bool'`. Ten rozdíl není kosmetický: s tichým fallbackem by nový
+ * nebooleovský druh uzlu prošel jako boolean, `evalBool` by ho nepustil do
+ * výjimky a stráž nad ním by se prostě nikdy nespustila — bez faultu, bez stopy.
+ */
 export function nodeValueKind(nodes: readonly IrNode[], index: number): ValueKind {
   const node = nodes[index];
   switch (node.kind) {
@@ -222,8 +231,15 @@ export function nodeValueKind(nodes: readonly IrNode[], index: number): ValueKin
       return refValueKind(node.ref);
     case 'query':
       return 'number';
-    default:
+    case 'compare':
+    case 'allOf':
+    case 'anyOf':
+    case 'not':
       return 'bool';
+    default: {
+      const exhaustive: never = node;
+      return exhaustive;
+    }
   }
 }
 
