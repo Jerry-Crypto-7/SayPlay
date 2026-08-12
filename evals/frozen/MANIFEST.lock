@@ -4,10 +4,14 @@
   "algorithm": "sha256",
   "normalization": "CRLF -> LF před hashováním. Bez toho by hash téhož souboru závisel na tom, na jakém stroji se repo checkoutovalo, a zmrazení by přestalo být ověřitelné. Repo to navíc vynucuje i na úrovni gitu (.gitattributes, eol=lf) — normalizace tady je druhá vrstva, ne náhrada.",
   "coverageRule": "Manifest musí krýt KAŽDÝ soubor uvnitř evals/frozen/. Soubor, který v manifestu chybí, je stejné selhání jako nesouhlasný hash — jinak by šlo do zmrazeného adresáře nepozorovaně přidat obsah.",
-  "writtenBy": "P1 T1; rozšiřuje P1 T2 o malformed/ a responses/ a o marker FROZEN",
+  "writtenBy": "P1 T1; rozšířeno P1 T2 o malformed/, responses/ a marker FROZEN",
+  "responseBodyHashRule": "Per-record `sha256` v responses/index.jsonl se počítá nad `JSON.stringify(record.body)`, tedy nad tělem BEZ hlavičky. T13 tím ověřuje, že použitá odpověď pochází ze zmrazeného manifestu; odpověď vzniklá mimo něj je diskvalifikovaná.",
   "files": {
     "protocol.v1.json": "a63fa013868ae0bd1df73eceb119f767026c906ffb30eec14f7e57b86775c3ff",
     "prompts.v1.jsonl": "30ac784ba5f7cb187af6dd674362537a1faba106e8d1e0075583e282ad3fe3e8",
-    "contracts.v1.jsonl": "e6f7955a41965a1aa56a9c5b92dc4120805ff16958b7ea1f19af26278a6a8780"
+    "contracts.v1.jsonl": "e6f7955a41965a1aa56a9c5b92dc4120805ff16958b7ea1f19af26278a6a8780",
+    "malformed/index.jsonl": "62199b17b9c6356d3875239fae6ee36585fbf4ff878fe80dd65eb9389531635a",
+    "responses/index.jsonl": "be43614fddabab7ea38a4d441c305146ce48b0cdd0cf20b5549bea8df08a8fd9",
+    "FROZEN": "f6e0f650139c4ce77a66231a8b20d90394d052fd70ee971a6fc7647ed6481a02"
   }
 }

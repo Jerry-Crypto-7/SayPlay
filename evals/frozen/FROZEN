@@ -1,0 +1,30 @@
+FROZEN 2026-08-12
+protocol: v1
+tag: evals-frozen-v1
+written-by: P1 T2 (plans/2026-08-12-vertikalni-rez.md)
+
+Tenhle marker uzavírá zmrazení. Po commitu, který ho přidal, se do evals/frozen/
+už nesmí sáhnout — evals/__tests__/frozen.test.ts selže, jakmile najde novější
+commit dotýkající se tohoto adresáře.
+
+Co je zmrazené:
+  protocol.v1.json        tvar dvoudílného WorldDoc, gramatika, tik, tier politika, brány
+  prompts.v1.jsonl        40 promptů (15 create + 25 edit) přes sedm tříd úprav z §15
+  contracts.v1.jsonl      40 kontraktů, každý požadavek s vlastním rid
+  malformed/index.jsonl   30 vadných emisí s anotací defect/expectedRepair/mustPreserve
+  responses/index.jsonl   40 SYNTETICKÝCH odpovědí poskytovatele
+
+Syntetické odpovědi nejsou záznamy skutečného poskytovatele. Phase 3 jimi
+prokazuje správnost potrubí, ne kvalitu modelu. Kvalitu modelu měří až živá
+Phase 4. Kdyby se tyhle soubory kdy vydávaly za důkaz o modelu, je to podvod
+na sobě samém.
+
+Poctivě k síle téhle ochrany: lokální git historie se dá přepsat. `git commit
+--amend` nebo rebase umí propašovat změněný obsah přímo do markerového commitu
+a žádný novější commit dotýkající se adresáře pak neexistuje — test to
+neodhalí. Anotovaný tag evals-frozen-v1 a kotva v evals/FROZEN_ANCHOR to
+ztěžují a činí hlasitějším, ale nedělají nemožným.
+
+Jediná skutečně neměnná kotva je první push na vzdálený repozitář. Dokud repo
+nemá remote (P0 T100 ho blokuje), je tohle disciplína s hlasitým alarmem, ne
+kryptografická záruka. Až repo remote dostane, tenhle tag se pushne jako první.
