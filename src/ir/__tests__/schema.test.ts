@@ -338,8 +338,26 @@ describe('oddělení od části vzhledu', () => {
   const irDir = join(process.cwd(), 'src', 'ir');
   const IR_PATH_MODULES = ['types.ts', 'schema.ts', 'lower.ts', 'eval.ts'];
 
-  /** Jediný modul pod `src/ir`, který část vzhledu jmenovat MUSÍ — má vlastní test níž. */
-  const RESOLVER_MODULE = 'references.ts';
+  /**
+   * Moduly pod `src/ir`, které část vzhledu jmenovat **musí**.
+   *
+   * Nejsou to výjimky z pohodlnosti — každý z nich je na **povrchu**, ne na cestě
+   * snížení, a povrch tu část podle zmrazeného `protocol.v1.json` nese
+   * (`topLevelFields` má `look` doslova):
+   *
+   * - `references.ts` — kontroluje jedinou vazbu, kterou §13.1 povoluje, a čte
+   *   přitom jen klíče `modules`, tedy `stableId`. Má vlastní test níž.
+   * - `worlddoc.ts` — popisuje dvoudílný dokument. Bez pojmenování obou částí by
+   *   nešlo zapsat, že hash se počítá jen z jedné z nich.
+   * - `revision.ts` — commituje patche do obou částí a drží jejich nezávislé
+   *   revize. §13.1.1 je celý o tom, že se ty dvě části nesmí míchat; napsat to
+   *   bez jejich jmen nelze.
+   *
+   * Zákaz tím neztrácí zuby: cesta snížení je pořád `IR_PATH_MODULES`, pořád
+   * nesmí to slovo napsat, a nově se ověřuje i to, že se k němu nedostane
+   * **importem** — viz test hned pod inventurou.
+   */
+  const SURFACE_MODULES = ['references.ts', 'worlddoc.ts', 'revision.ts'];
 
   /**
    * Adresáře, které smí část vzhledu jmenovat, protože bez pojmenování zákazu
@@ -378,7 +396,7 @@ describe('oddělení od části vzhledu', () => {
     // pod `src/ir` spadne do zákazu sám, i když ho nikdo nedopíše do konstanty.
     // Ruční seznam by ho minul a chytila by ho až inventura níž — tedy jiný
     // test, s jinou chybovou hláškou, o krok později.
-    const scanned = collectModules(irDir).filter((file) => file !== RESOLVER_MODULE);
+    const scanned = collectModules(irDir).filter((file) => !SURFACE_MODULES.includes(file));
     const offenders: string[] = [];
     for (const file of scanned) {
       linesOf(file).forEach((line, position) => {
@@ -390,9 +408,23 @@ describe('oddělení od části vzhledu', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('modul `src/ir` obsahuje právě čtyři soubory cesty snížení plus resolver', () => {
-    // Kdyby přibyl pátý produkční modul, předchozí test by ho tiše minul.
-    expect(collectModules(irDir).sort()).toEqual([...IR_PATH_MODULES, 'references.ts'].sort());
+  it('modul `src/ir` obsahuje právě cestu snížení plus povrchové moduly', () => {
+    // Kdyby přibyl další produkční modul, předchozí test by ho tiše minul.
+    expect(collectModules(irDir).sort()).toEqual([...IR_PATH_MODULES, ...SURFACE_MODULES].sort());
+  });
+
+  it('a cesta snížení se k povrchovým modulům nedostane ani importem', () => {
+    // Tohle je to, co seznamu výjimek vrací zuby. Bez něj by stačilo přesunout
+    // vzhled do `worlddoc.ts` a importovat ho do `lower.ts` — slovo `look` by
+    // v cestě snížení nebylo a zákaz by přesto padl.
+    const reachable: string[] = [];
+    for (const file of IR_PATH_MODULES) {
+      for (const line of linesOf(file)) {
+        const hit = /from '\.\/([A-Za-z0-9_-]+)'/.exec(line);
+        if (hit !== null && SURFACE_MODULES.includes(`${hit[1]}.ts`)) reachable.push(`${file}: ${line.trim()}`);
+      }
+    }
+    expect(reachable).toEqual([]);
   });
 
   it('sken nemá díru ani v adresáři s prefixem `__`, ani v příponě `.tsx`', () => {
