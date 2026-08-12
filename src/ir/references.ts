@@ -83,6 +83,32 @@ function asArray(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
 }
 
+/** Jmenný prostor, jehož deklarace nemá očekávaný tvar. */
+const UNRESOLVABLE = Symbol('unresolvable');
+type NameSet = ReadonlySet<string> | typeof UNRESOLVABLE;
+type NameNamespace = Exclude<SurfaceNamespace, 'slot'>;
+
+/**
+ * Jména deklarovaná v kontejneru.
+ *
+ * Chybějící kontejner je **prázdný** prostor — odkaz do něj je osiřelý, což je
+ * přesně vada M15. Kontejner špatného tvaru (pole místo objektu, číslo, řetězec)
+ * je ale **nerozpustitelný**, ne prázdný: tvarovou vadu vlastní schéma a je to
+ * zmrazená třída `type_coercion`, tedy jedna opravitelná vada. Kdyby se tady
+ * převedla na osiřelé odkazy, vyrobila by hromadu vad, které protokol prohlašuje
+ * za NEopravitelné — jedna špatná závorka by dokument poslala rovnou do koše.
+ */
+function names(container: unknown): NameSet {
+  if (container === undefined || container === null) return new Set();
+  if (typeof container !== 'object' || Array.isArray(container)) return UNRESOLVABLE;
+  return new Set(Object.keys(container as Record<string, unknown>));
+}
+
+function union(a: NameSet, b: NameSet): NameSet {
+  if (a === UNRESOLVABLE || b === UNRESOLVABLE) return UNRESOLVABLE;
+  return new Set([...a, ...b]);
+}
+
 export function findDanglingReferences(worldDoc: unknown): DanglingReference[] {
   const root = asRecord(worldDoc);
   const sim = asRecord(root.sim);
@@ -91,23 +117,42 @@ export function findDanglingReferences(worldDoc: unknown): DanglingReference[] {
   // emise bez něj legitimně nese jen vzhledovou část a chybějící `sim` je
   // porušení schématu, ne osiřelý odkaz.
   if (Object.keys(sim).length === 0) return [];
-  const state = asRecord(sim.state);
+  // Táž úvaha o úroveň výš: `state` špatného tvaru zneplatní všechny prostory,
+  // které v něm bydlí, místo aby je prohlásil za prázdné.
+  const stateIsSound = names(sim.state) !== UNRESOLVABLE;
+  const state = stateIsSound ? asRecord(sim.state) : {};
+  const inState = (container: unknown): NameSet => (stateIsSound ? names(container) : UNRESOLVABLE);
 
-  const entities = new Set(Object.keys(asRecord(sim.entities)));
-  const sockets = new Set([...Object.keys(asRecord(sim.sockets)), ...Object.keys(asRecord(state.zones))]);
-  const declared: Readonly<Record<SurfaceNamespace, ReadonlySet<string>>> = {
+  const entities = names(sim.entities);
+  const sockets = union(names(sim.sockets), inState(state.zones));
+  const declared: Readonly<Record<NameNamespace, NameSet>> = {
     entity: entities,
     socket: sockets,
-    counter: new Set(Object.keys(asRecord(state.counters))),
-    flag: new Set(Object.keys(asRecord(state.flags))),
-    timer: new Set(Object.keys(asRecord(state.timers))),
-    slot: new Set(Object.keys(asRecord(state.slots))),
-    entityOrSocket: new Set([...entities, ...sockets]),
+    counter: inState(state.counters),
+    flag: inState(state.flags),
+    timer: inState(state.timers),
+    entityOrSocket: union(entities, sockets),
   };
+
+  // Inventární sloty se adresují **indexem**, ne jménem, a `state.slots` je
+  // jejich pevný počet (§5: „slot inventární, pevný počet"). Osiřelý odkaz je
+  // tu index mimo rozsah, ne neznámé jméno.
+  const slotCount =
+    stateIsSound && typeof state.slots === 'number' && Number.isInteger(state.slots) && state.slots >= 0
+      ? state.slots
+      : null;
 
   const found: DanglingReference[] = [];
   const resolve = (namespace: SurfaceNamespace, name: unknown, where: string) => {
-    if (typeof name !== 'string' || declared[namespace].has(name)) return;
+    if (namespace === 'slot') {
+      // Neceločíselná hodnota je tvarová vada a vlastní ji schéma.
+      if (slotCount === null || typeof name !== 'number' || !Number.isInteger(name)) return;
+      if (name >= 0 && name < slotCount) return;
+      found.push({ where, namespace, name: String(name) });
+      return;
+    }
+    const declaredNames = declared[namespace];
+    if (declaredNames === UNRESOLVABLE || typeof name !== 'string' || declaredNames.has(name)) return;
     found.push({ where, namespace, name });
   };
   const applyTable = (table: ReferenceTable, node: Record<string, unknown>, where: string) => {

@@ -96,3 +96,86 @@ describe('rozpouštění jmen', () => {
     ]);
   });
 });
+
+/**
+ * Tvarová vada je jiná třída než osiřelý odkaz. `type_coercion` je ve zmrazené
+ * sadě opravitelná, odkaz na nedeklarovaný counter není — takže záměna jednoho
+ * za druhé by z jedné opravitelné vady vyrobila hromadu neopravitelných.
+ */
+describe('deklarace špatného tvaru', () => {
+  const shaped = (state: unknown, entities: unknown = { player: { role: 'actor' } }) => ({
+    sim: {
+      sockets: { s0: [1, 1] },
+      entities,
+      state,
+      rules: [
+        {
+          id: 'r1',
+          event: { kind: 'onCounterReaches', ref: 'score', threshold: 3 },
+          condition: { kind: 'flagIs', ref: 'lit', value: true },
+          actions: [{ kind: 'setState', target: 'player', value: 'idle' }],
+          },
+      ],
+      witness: { ops: [] },
+    },
+  });
+
+  it('countery zapsané polem místo objektu nehlásí osiřelý odkaz', () => {
+    expect(
+      findDanglingReferences(shaped({ counters: ['score'], flags: { lit: false }, timers: {} })),
+    ).toEqual([]);
+  });
+
+  it('celý state špatného tvaru zneplatní všechny prostory, které v něm bydlí', () => {
+    expect(findDanglingReferences(shaped(['score']))).toEqual([]);
+  });
+
+  it('entity zapsané polem nehlásí osiřelý odkaz na akci', () => {
+    const found = findDanglingReferences(shaped({ counters: { score: {} }, flags: { lit: false } }, ['player']));
+    expect(found).toEqual([]);
+  });
+
+  it('chybějící deklarace naopak osiřelý odkaz JE', () => {
+    const found = findDanglingReferences(shaped({ flags: { lit: false }, timers: {} }));
+    expect(found).toEqual([{ where: 'sim.rules[r1].event.ref', namespace: 'counter', name: 'score' }]);
+  });
+});
+
+/**
+ * Inventární sloty se v zmrazeném kontraktu adresují indexem a `state.slots` je
+ * jejich pevný počet. Osiřelý odkaz je tu index mimo rozsah.
+ */
+describe('inventární sloty se adresují indexem', () => {
+  const withSlot = (slot: unknown, slots: unknown = 3) => ({
+    sim: {
+      sockets: {},
+      entities: { player: { role: 'actor' } },
+      state: { counters: {}, flags: {}, timers: {}, slots },
+      rules: [
+        {
+          id: 'r1',
+          event: { kind: 'onPickup', slot },
+          condition: { kind: 'hasItem', slot, item: 'key' },
+          actions: [{ kind: 'giveItem', slot, item: 'key' }],
+        },
+      ],
+      witness: { ops: [] },
+    },
+  });
+
+  it('index uvnitř deklarovaného počtu projde', () => {
+    expect(findDanglingReferences(withSlot(0))).toEqual([]);
+  });
+
+  it('index nad deklarovaným počtem je osiřelý odkaz na všech třech místech', () => {
+    expect(findDanglingReferences(withSlot(9)).map((entry) => entry.where)).toEqual([
+      'sim.rules[r1].event.slot',
+      'sim.rules[r1].condition.slot',
+      'sim.rules[r1].actions[0].slot',
+    ]);
+  });
+
+  it('bez deklarovaného počtu se nerozpouští, místo aby se hádalo', () => {
+    expect(findDanglingReferences(withSlot(9, null))).toEqual([]);
+  });
+});
