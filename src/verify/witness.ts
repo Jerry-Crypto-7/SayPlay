@@ -103,10 +103,17 @@ function reject(reason: RejectReason, atStep: number | null, detail: string): Re
  *
  * Nic se tím neztrácí: `PULSE_FACTS.acted` má cíl jako `entityOrNone`, takže
  * jméno, které je *jen* soketem, stejně nemůže klíčovat `acted` predikát.
+ *
+ * **Soketový prostor je `sockets` SJEDNOCENÉ se `zones`**, ne jen `sockets`.
+ * Definuje ho `src/ir/references.ts:148` a je to tentýž prostor, proti kterému
+ * se rozpouštějí cíle svědkových operací. Ptát se jen na `space.sockets` je
+ * půlka opravy: zóna je legitimní cíl `moveTo` a odmítnout ji znamená nevydat
+ * certifikát světu, který se doopravdy vyhrát dá — tedy chybu opačným směrem,
+ * ale pořád chybu.
  */
 function targetReachable(doc: VerifiableWorld, runtime: Runtime, target: string): boolean {
   if (runtime.entityDecls.has(target)) return entityActive(runtime, target);
-  return Object.hasOwn(doc.space.sockets, target);
+  return Object.hasOwn(doc.space.sockets, target) || Object.hasOwn(doc.space.zones, target);
 }
 
 /**
@@ -181,7 +188,7 @@ export function verifyWitness(doc: VerifiableWorld, witness: readonly TraceInput
         return reject(
           'STEP_UNREACHABLE',
           k,
-          `target ${target} is neither an active entity nor a declared socket at tick ${tick}`,
+          `target ${target} is neither an active entity nor a declared socket or zone at tick ${tick}`,
         );
       inputs.push(input);
     }

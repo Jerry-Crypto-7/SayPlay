@@ -181,37 +181,75 @@ describe('k-tý krok musí být proveditelný', () => {
     ).toMatchObject({ verdict: 'REJECTED', reason: 'STEP_UNREACHABLE' });
   });
 
+  it('zóna je taky legitimní cíl — soketový prostor je `sockets` ∪ `zones`', () => {
+    // `references.ts:148` definuje soketový prostor jako sjednocení a je to
+    // tentýž prostor, proti kterému se rozpouštějí cíle svědkových operací.
+    // Ptát se jen na `space.sockets` znamená nevydat certifikát světu, který se
+    // doopravdy vyhrát dá.
+    const withZone: VerifiableWorld = {
+      ...vault,
+      space: { ...vault.space, zones: { ...vault.space.zones, plaza: [0, 0, 4, 4] } },
+    };
+    const witness: TraceInput[] = [
+      { tick: 0, actor: 'hero', actionId: 'moveTo', target: 'plaza' },
+      ...(vault.trace as TraceInput[]),
+    ];
+    expect(verifyWitness(withZone, witness).verdict).toBe('CERTIFIED');
+  });
+
   it('a soket pojmenovaný jako entita tu entitu nepřebije', () => {
     // Ve zmrazeném korpusu má 9 ze 13 světů soket pojmenovaný přesně jako
     // entita, takže sjednocení „entita NEBO soket" by u nich vypnulo jedinou
     // kontrolu, kterou verifikátor umí změřit až za běhu.
-    const effects: IrEffect[] = [...unwinnable.ir.effects, { op: 'despawn', entity: 'lever' }];
+    //
+    // Základem je VYHRATELNÝ vault, aby se rozdíl měřil na certifikaci: se
+    // sjednocením tenhle svědek projde jako CERTIFIED, s uspořádáním padne.
+    // Nad nevyhratelným světem by se rozdíl schoval do dvou různých odmítnutí.
+    const smashed = vault.ir.nodes.length;
+    const nodes = [
+      ...vault.ir.nodes,
+      { kind: 'ref' as const, ref: { space: 'pulse' as const, fact: 'acted' as const, args: ['hero', 'smash', 'lever'] } },
+    ];
+    const effects: IrEffect[] = [...vault.ir.effects, { op: 'despawn', entity: 'lever' }];
     const rules: IrRule[] = [
-      ...unwinnable.ir.rules,
+      ...vault.ir.rules,
       {
-        ruleId: 'r.vanish',
+        ruleId: 'r.smash',
         phase: 0,
         priority: 3,
-        trigger: { kind: 'onEdge', predicate: 'p.onAction.hero.pull.lever', became: true },
+        trigger: { kind: 'onEdge', predicate: 'p.onAction.hero.smash.lever', became: true },
         guard: null,
         effects: [effects.length - 1],
       },
     ];
     const shadowed: VerifiableWorld = {
-      ...unwinnable,
-      space: { ...unwinnable.space, sockets: { ...unwinnable.space.sockets, lever: [3, 1] } },
-      ir: { ...unwinnable.ir, effects, rules },
+      ...vault,
+      space: { ...vault.space, sockets: { ...vault.space.sockets, lever: [3, 1] } },
+      ir: {
+        ...vault.ir,
+        nodes,
+        predicates: [
+          ...vault.ir.predicates,
+          { predicateId: 'p.onAction.hero.smash.lever', source: 'onAction' as const, expr: smashed },
+        ],
+        effects,
+        rules,
+      },
     };
 
     const witness: TraceInput[] = [
-      { tick: 1, actor: 'hero', actionId: 'pull', target: 'lever' },
-      { tick: 4, actor: 'hero', actionId: 'pull', target: 'lever' },
+      { tick: 0, actor: 'hero', actionId: 'smash', target: 'lever' },
+      { tick: 2, actor: 'hero', actionId: 'pull', target: 'lever' },
     ];
     expect(verifyWitness(shadowed, witness)).toMatchObject({
       verdict: 'REJECTED',
       reason: 'STEP_UNREACHABLE',
       atStep: 1,
     });
+
+    // Bez despawnu je týž svědek platný — odmítla ho aktivita entity, ne tvar.
+    const intact: VerifiableWorld = { ...shadowed, ir: { ...shadowed.ir, rules: vault.ir.rules } };
+    expect(verifyWitness(intact, witness).verdict).toBe('CERTIFIED');
   });
 
   /**
