@@ -52,8 +52,8 @@ describe('patchovaná a přímo sestavená větev se sejdou', () => {
     // před patchem NESE očekávanou hodnotu, kterou `worldA` nemá.
     const { worldA, worldB } = synthPair(20260812);
     expect(worldA.simHash).not.toBe(worldB.simHash);
-    expect(worldB.sim.sockets).toHaveProperty('s_side');
-    expect(worldA.sim.sockets).not.toHaveProperty('s_side');
+    expect(worldB.sim.sockets).toHaveProperty('side');
+    expect(worldA.sim.sockets).not.toHaveProperty('side');
   });
 
   it('různé seedy dávají různé světy — jinak by pět běhů měřilo jeden', () => {

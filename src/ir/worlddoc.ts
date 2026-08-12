@@ -84,28 +84,39 @@ const finiteInt = z.int();
  * nad **zmrazeným korpusem**, ne nad vlastní fixturou. Ten je tu tím skutečným
  * oraclem; schéma samo umí jen jména.
  */
+/**
+ * Pole musí být **přítomné a nesmí být `undefined`**.
+ *
+ * Samotné `z.unknown()` je v objektu volitelné, takže `{op:'replace', path:
+ * '/witness', value: undefined}` projde — a `canonical` položky s `undefined`
+ * vyfiltruje, takže i hash sedne. Dokument bez svědka by se tak zapečetil,
+ * zmigroval a tvářil se aktuální, přestože svědek je ten artefakt, který replay
+ * ověřuje. Otevřít vnitřek je správně; zapomenout přitom na přítomnost není.
+ */
+const present = z.unknown().nonoptional();
+
 export const simSchema = z
   .object({
-    layout: z.unknown(),
-    grid: z.unknown(),
-    sockets: z.unknown(),
-    collisionAabb: z.unknown(),
-    entities: z.unknown(),
-    rules: z.unknown(),
-    state: z.unknown(),
-    witness: z.unknown(),
+    layout: present,
+    grid: present,
+    sockets: present,
+    collisionAabb: present,
+    entities: present,
+    rules: present,
+    state: present,
+    witness: present,
   })
   .strict();
 
 export const lookSchema = z
   .object({
-    modules: z.unknown(),
-    palette: z.unknown(),
-    lightRig: z.unknown(),
-    atmosphere: z.unknown(),
-    materialRoles: z.unknown(),
-    camera: z.unknown(),
-    audio: z.unknown(),
+    modules: present,
+    palette: present,
+    lightRig: present,
+    atmosphere: present,
+    materialRoles: present,
+    camera: present,
+    audio: present,
   })
   .strict();
 
@@ -282,7 +293,16 @@ export function migrateWorldDoc(input: unknown): MigrationVerdict {
 
   // Nekonečno ve `sim` kolabuje na `null` v kanonickém zápisu, takže hash by
   // seděl a přesto by dokument po průchodu uložištěm znamenal něco jiného.
-  const nonFinite = nonFiniteNumbers(parsed.data.sim, '/sim');
+  //
+  // A **obě části**, ne jen `sim`: u `look` je konečnost dokonce jediné místo,
+  // kde ji zmrazený protokol žádá výslovně (`look.failurePolicy`: *„kontrolou
+  // konečnosti VŠECH číselných hodnot"*), a migrace je ten atomický vstup, před
+  // kterým to má platit. Kontrolovat ji jen tam, kde je hash, a vynechat ji tam,
+  // kde ji předepisuje kontrakt, je přesně opačná asymetrie, než jaká dává smysl.
+  const nonFinite = [
+    ...nonFiniteNumbers(parsed.data.sim, '/sim'),
+    ...nonFiniteNumbers(parsed.data.look, '/look'),
+  ];
   if (nonFinite.length > 0) return { ok: false, doc: null, reason: nonFinite[0] };
 
   if (parsed.data.simHash !== simHashOf(parsed.data))

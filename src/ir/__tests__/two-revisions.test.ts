@@ -26,23 +26,23 @@ const world = synthWorld(20260812);
 const lookPatch = (baseRevision: number): PartPatch => ({
   part: 'look',
   baseRevision,
-  operations: [{ op: 'replace', path: '/camera/fov', value: 60 }],
+  operations: [{ op: 'replace', path: '/camera/kind', value: 'follow' }],
 });
 
 const simPatch = (baseRevision: number): PartPatch => ({
   part: 'sim',
   baseRevision,
-  operations: [{ op: 'replace', path: '/state/counters/keys', value: 7 }],
+  operations: [{ op: 'replace', path: '/state/counters/keys/init', value: 7 }],
 });
 
 describe('hash je počítaný výhradně ze `sim`', () => {
   it('změna libovolného pole v `look` nechá hash BITOVĚ totožný', () => {
     const before = simHashOf(world);
     for (const operations of [
-      [{ op: 'replace' as const, path: '/camera/fov', value: 120 }],
-      [{ op: 'replace' as const, path: '/palette/0', value: '#ffffff' }],
-      [{ op: 'add' as const, path: '/modules/goal', value: { family: 'ring', scale: 3 } }],
-      [{ op: 'replace' as const, path: '/atmosphere/fog', value: 0.9 }],
+      [{ op: 'replace' as const, path: '/camera/kind', value: 'fixed' }],
+      [{ op: 'replace' as const, path: '/palette', value: 'ember' }],
+      [{ op: 'add' as const, path: '/modules/exit', value: { family: 'arch', params: { span: 2 } } }],
+      [{ op: 'replace' as const, path: '/atmosphere', value: 'fog' }],
     ]) {
       const result = commitPart(world, { part: 'look', baseRevision: 0, operations });
       expect(result.verdict, JSON.stringify(operations)).toBe('COMMITTED');
@@ -116,7 +116,7 @@ describe('revize jsou nezávislé', () => {
     expect(applied.verdict).toBe('COMMITTED');
     if (applied.verdict !== 'COMMITTED') return;
     // A vzhled zůstal ten nový, ne ten z doby vydání patche.
-    expect(applied.doc.look.camera).toEqual({ fov: 60, distance: 6 });
+    expect(applied.doc.look.camera).toEqual({ kind: 'follow' });
     expect(applied.doc.lookRevision).toBe(1);
     expect(applied.doc.simRevision).toBe(1);
   });
@@ -154,7 +154,7 @@ describe('smíšený požadavek se necheká na sebe', () => {
     // Zachovaný AKTUÁLNÍ `look` i `lookRevision` — kdyby se `sim` vkládal do
     // dokumentu zachyceného před vzhledovým commitem, úprava vzhledu by hráči
     // zmizela ve chvíli, kdy doběhne verifikace něčeho úplně jiného.
-    expect(mixed.doc.look.camera).toEqual({ fov: 60, distance: 6 });
+    expect(mixed.doc.look.camera).toEqual({ kind: 'follow' });
     expect(mixed.doc.lookRevision).toBe(1);
     expect(mixed.doc.simRevision).toBe(1);
     expect(mixed.doc.simHash).toBe(simHashOf(mixed.doc));
@@ -196,7 +196,7 @@ describe('nekonečno se do hashované části nedostane', () => {
     commitPart(world, {
       part: 'sim',
       baseRevision: 0,
-      operations: [{ op: 'replace', path: '/state/counters/keys', value }],
+      operations: [{ op: 'replace', path: '/state/counters/keys/init', value }],
     });
 
   it('`NaN` ani `Infinity` se do `sim` necommitnou', () => {
@@ -215,12 +215,37 @@ describe('nekonečno se do hashované části nedostane', () => {
     expect(withValue(Number.POSITIVE_INFINITY)).toBe(withValue(null));
   });
 
+  it('migrace odmítne nekonečno i ve `look`, kde ho protokol žádá výslovně', () => {
+    // Asymetrie by byla obrácená, než dává smysl: `look.failurePolicy` je jediné
+    // místo, kde zmrazený protokol konečnost žádá doslova, a migrace je ten
+    // atomický vstup, před kterým to má platit. Hash tu nepomůže — `look` v něm
+    // není. A `structuredClone`/IndexedDB `Infinity` na rozdíl od JSON zachovají.
+    const poisoned = { ...world, look: { ...world.look, camera: { kind: 'orbit', fov: Number.POSITIVE_INFINITY } } };
+    expect(validateLook(poisoned.look).ok).toBe(false);
+    const verdict = migrateWorldDoc(poisoned);
+    expect(verdict.ok).toBe(false);
+    expect(verdict.reason).toContain('not finite');
+  });
+
+  it('a `undefined` v kořenovém poli `sim` se nedá zapsat — svědek nesmí zmizet', () => {
+    // `z.unknown()` je v objektu volitelné, takže bez `.nonoptional()` projde
+    // `replace /witness undefined`; `canonical` položky s `undefined` vyfiltruje,
+    // takže by seděl i hash. Dokument bez svědka by se tvářil aktuální, přestože
+    // svědek je ten artefakt, který replay ověřuje.
+    const erased = commitPart(world, {
+      part: 'sim',
+      baseRevision: 0,
+      operations: [{ op: 'replace', path: '/witness', value: undefined }],
+    });
+    expect(erased.verdict).toBe('REJECTED');
+  });
+
   it('migrace dokument s nekonečnem ve `sim` odmítne, i když mu hash sedí', () => {
     // Hash SEDÍ — spočítal se z téže vadné `sim`. Kdyby migrace kontrolovala jen
     // hash, prošlo by to jako platný svět.
     const poisoned = sealSimHash({
       ...world,
-      sim: { ...world.sim, state: { counters: { keys: Number.POSITIVE_INFINITY } } },
+      sim: { ...world.sim, state: { counters: { keys: { init: Number.POSITIVE_INFINITY } } } },
     });
     expect(poisoned.simHash).toBe(simHashOf(poisoned));
     const verdict = migrateWorldDoc(poisoned);
@@ -234,15 +259,15 @@ describe('`look` má validátor, ne verifikátor', () => {
     // §7: „Sémanticky neodmítá, technicky ano." `NaN` projde typem `number` a
     // rozbije stavbu geometrie až tam, kde nezbude nic než prázdná obrazovka.
     for (const value of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
-      const verdict = validateLook({ ...defaultLook(), camera: { fov: value, distance: 6 } });
+      const verdict = validateLook({ ...defaultLook(), camera: { kind: 'orbit', fov: value } });
       expect(verdict.ok, String(value)).toBe(false);
       expect(verdict.issues[0], String(value)).toContain('camera/fov');
     }
   });
 
   it('ale ošklivý vzhled projde — validátor se nevyjadřuje k vkusu', () => {
-    expect(validateLook({ ...defaultLook(), palette: ['#000000'] }).ok).toBe(true);
-    expect(validateLook({ ...defaultLook(), camera: { fov: 179, distance: 0.001 } }).ok).toBe(true);
+    expect(validateLook({ ...defaultLook(), palette: 'ink' }).ok).toBe(true);
+    expect(validateLook({ ...defaultLook(), camera: { kind: 'orbit', fov: 179 } }).ok).toBe(true);
   });
 
   it('a commit `look` s nekonečnem je odmítnut, ne zapsán', () => {
@@ -251,13 +276,13 @@ describe('`look` má validátor, ne verifikátor', () => {
     const result = commitPart(world, {
       part: 'look',
       baseRevision: 0,
-      operations: [{ op: 'replace', path: '/lightRig/key', value: Number.POSITIVE_INFINITY }],
+      operations: [{ op: 'replace', path: '/lightRig', value: Number.POSITIVE_INFINITY }],
     });
     expect(result.verdict).toBe('REJECTED');
     if (result.verdict !== 'REJECTED') return;
-    expect(result.detail).toContain('lightRig/key');
+    expect(result.detail).toContain('lightRig');
     // A aktivní dokument zůstal beze změny.
-    expect(world.look.lightRig).toEqual({ key: 1.4, ambient: 0.6 });
+    expect(world.look.lightRig).toBe('key');
   });
 });
 

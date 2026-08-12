@@ -20,16 +20,23 @@ import type { Operation } from 'rfc6902';
 import { createStreams, nextInt } from '../../sim/rng';
 import { WORLD_DOC_VERSION, sealSimHash, type LookPart, type SimPart, type WorldDoc } from '../worlddoc';
 
-/** Systémový default vzhledu. V P1 ho emituje SYSTÉM, ne model (`p1Status`). */
+/**
+ * Systémový default vzhledu. V P1 ho emituje SYSTÉM, ne model (`p1Status`).
+ *
+ * **Tvar se drží zmrazeného korpusu, ne vlastní představy.** Schéma má vnitřek
+ * otevřený, takže by rozdíl nikdo nechytil — a přesně takhle se do minulého kola
+ * dostalo `layout.type` proti korpusovému `layout.kind`. Fixtura je to, co příští
+ * autor zkopíruje; když se rozejde s korpusem, rozejde se i on.
+ */
 export function defaultLook(): LookPart {
   return {
-    modules: { hero: { family: 'capsule', scale: 1 } },
-    palette: ['#1d2b2f', '#2f9e8f', '#e8d9a0'],
-    lightRig: { key: 1.4, ambient: 0.6 },
-    atmosphere: { fog: 0.02 },
-    materialRoles: { hero: 'matte', floor: 'matte' },
-    camera: { fov: 45, distance: 6 },
-    audio: { bed: 'none' },
+    modules: { hero: { family: 'actor', params: { height: 1.8 } } },
+    palette: 'slate',
+    lightRig: 'key',
+    atmosphere: 'none',
+    materialRoles: {},
+    camera: { kind: 'orbit' },
+    audio: {},
   };
 }
 
@@ -39,18 +46,35 @@ function simOf(seed: number): SimPart {
   const height = nextInt(stream, 4, 12);
   const keys = nextInt(stream, 1, 3);
 
+  // Jména polí jsou z korpusu: `layout.kind` (ne `type`), `grid.cell` (ne
+  // `width`/`height`), `entities` jako ZÁZNAM (ne pole), svědek s tierem a mezemi.
   return {
-    layout: { type: 'grid', floors: 1 },
-    grid: { width, height, step: 1 },
-    sockets: { s_start: [1, 1], s_goal: [width - 1, height - 1] },
-    collisionAabb: { hero: [0, 0, 1, 1], goal: [0, 0, 1, 1] },
-    entities: [
-      { stableId: 'hero', role: 'actor', socket: 's_start', initialState: 'idle' },
-      { stableId: 'goal', role: 'fixture', socket: 's_goal', initialState: 'shut' },
+    layout: { kind: 'grid', width, height, levels: 1, portals: [] },
+    grid: { cell: 1 },
+    sockets: { spawn: [1, 1], exit: [width - 1, height - 1] },
+    collisionAabb: { player: [1, 1, 1, 1], exit: [width - 1, height - 1, 1, 1] },
+    entities: {
+      player: { role: 'actor', socket: 'spawn', state: 'idle' },
+      exit: { role: 'goal', socket: 'exit', state: 'closed', locked: true },
+    },
+    rules: [
+      {
+        id: 'win',
+        phase: 0,
+        priority: 0,
+        event: { kind: 'onEnterZone', entity: 'player', zone: 'exit' },
+        condition: null,
+        actions: [{ kind: 'win' }],
+      },
     ],
-    rules: [{ ruleId: 'r.reach', phase: 0, priority: 0, effects: ['win'] }],
-    state: { counters: { keys }, flags: { open: false } },
-    witness: { ops: [{ tick: 0, actor: 'hero', actionId: 'moveTo', target: 's_goal' }] },
+    state: { counters: { keys: { min: 0, max: 3, init: keys } }, flags: {}, timers: {}, slots: 3 },
+    witness: {
+      tier: 'short',
+      H_cert: 600,
+      L_witness: 40,
+      K_input: 1,
+      ops: [{ tick: 0, actionId: 'moveTo', target: 'exit' }],
+    },
   };
 }
 
@@ -87,20 +111,23 @@ export function synthPair(seed: number): SynthPair {
   const keysAfter = nextInt(stream, 4, 9);
 
   const operations: readonly Operation[] = [
-    { op: 'replace', path: '/state/counters/keys', value: keysAfter },
-    { op: 'add', path: '/sockets/s_side', value: [2, 2] },
+    { op: 'replace', path: '/state/counters/keys/init', value: keysAfter },
+    { op: 'add', path: '/sockets/side', value: [2, 2] },
   ];
 
   // `sim` je uvnitř `unknown` (kořen je uzavřený, vnitřek otevřený — viz
   // `worlddoc.ts`), takže se tady zúží na tvar, který tenhle generátor sám vydal.
   const simA = worldA.sim as SimPart & {
     sockets: Record<string, readonly [number, number]>;
-    state: Record<string, unknown>;
+    state: { counters: { keys: Record<string, number> }; [key: string]: unknown };
   };
   const simB: SimPart = {
     ...simA,
-    sockets: { ...simA.sockets, s_side: [2, 2] },
-    state: { ...simA.state, counters: { keys: keysAfter } },
+    sockets: { ...simA.sockets, side: [2, 2] },
+    state: {
+      ...simA.state,
+      counters: { keys: { ...simA.state.counters.keys, init: keysAfter } },
+    },
   };
 
   const worldB = sealSimHash({
