@@ -1,0 +1,11 @@
+{
+  "anchorVersion": 1,
+  "frozenOn": "2026-08-12",
+  "tag": "evals-frozen-v1",
+  "markerCommit": "c4aeaf83f45335fc6382830d8cca244b0e24565f",
+  "treeHash": "974ac6278675e8448096ba35ec892d9b0e22f144",
+  "frozenSubtreeHash": "ab9468ffbc7f43d1b56e168390cbbd392ede97f5",
+  "whyOutsideTheFrozenTree": "Tree hash tagovaného commitu je znám AŽ PO commitu. Zapsat ho dovnitř evals/frozen/ by vytvořilo další změnu uvnitř zmrazeného adresáře a zrušilo platnost tvrzení, že FROZEN přidal poslední commit, který se ho dotkl. Přetagování ten kruh jen zopakuje. Kotva proto leží o úroveň výš — tenhle soubor smí vzniknout novým commitem, protože evals/frozen/ nechává na pokoji.",
+  "whatItArms": "Dokud tenhle soubor neexistuje, je historická kontrola v evals/__tests__/frozen.test.ts inertní (freeze je otevřený). Jakmile existuje, test vyžaduje, aby FROZEN existoval a aby žádný commit nesáhl do evals/frozen/ po markerovém commitu. Smazání markeru kontrolu NEODZBROJÍ — autoritou je tenhle soubor, ne marker.",
+  "honestLimit": "Lokální git historie se dá přepsat. `git commit --amend` nebo rebase umí propašovat změněný obsah přímo do markerového commitu; hashe výše by se tím změnily a test by to odhalil, ale kdo přepisuje historii, přepíše i tenhle soubor. Anotovaný tag drží kopii týchž hashů nezávisle, takže lež musí být na dvou místech místo jednoho. Jediná skutečně neměnná kotva je první push na vzdálený repozitář — ten P0 T100 zatím blokuje."
+}
