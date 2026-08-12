@@ -4,26 +4,9 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { EMPTY_OBSERVATION, edgeFires, type Observation } from '../eval';
 import goldenSet from '../__fixtures__/golden.json';
-import {
-  NodeTable,
-  lowerEvent,
-  predicateIdFor,
-  surfaceFires,
-  type LoweringWorld,
-  type SurfaceEventSpec,
-} from '../lower';
 import { validateIrDoc, worldIr } from '../schema';
-import {
-  IR_PRIMITIVES,
-  IR_VERSION,
-  SURFACE_EVENTS,
-  SURFACE_EVENT_SIGNATURES,
-  type IrDoc,
-  type IrNode,
-  type SurfaceEventName,
-} from '../types';
+import { IR_PRIMITIVES, IR_VERSION, SURFACE_EVENTS, SURFACE_EVENT_SIGNATURES, type IrDoc } from '../types';
 
 const compiled = () => z.toJSONSchema(worldIr, { cycles: 'throw' });
 
@@ -112,9 +95,7 @@ describe('povrchový slovník', () => {
 
   it('deklaruje signatury obou událostí z v1.1 doslova', () => {
     expect(SURFACE_EVENT_SIGNATURES.onAction).toBe('onAction(actor, actionId, target?)');
-    expect(SURFACE_EVENT_SIGNATURES.onCommandComplete).toBe(
-      'onCommandComplete(entity, commandId, result)',
-    );
+    expect(SURFACE_EVENT_SIGNATURES.onCommandComplete).toBe('onCommandComplete(entity, commandId, result)');
   });
 
   it('má právě tři IR primitiva', () => {
@@ -123,33 +104,33 @@ describe('povrchový slovník', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Snížení všech 14 událostí
+// Rozhodnutá sémantika, kterou drží samo schéma
+//
+// Chování snížení v čase ověřuje `lower.test.ts` proti ručně psané tabulce
+// tiků. Tady zůstává jen to, co je vlastnost tvaru, ne běhu.
 // ---------------------------------------------------------------------------
 
-const WORLD: LoweringWorld = { inventorySlots: ['hand', 'belt'] };
+describe('rozhodnutá sémantika ve tvaru', () => {
+  it('freeze se počítá v ticích — sekundová varianta neprojde schématem', () => {
+    const seconds = goldenSet.invalid.find((entry) => entry.id === 'I17-freeze-in-seconds');
+    expect(validateIrDoc(seconds?.doc).ok).toBe(false);
+    expect(JSON.stringify(compiled())).not.toContain('seconds');
+  });
 
-const SPECS: Readonly<Record<SurfaceEventName, SurfaceEventSpec>> = {
-  onStart: { event: 'onStart' },
-  onClick: { event: 'onClick', entity: 'vault' },
-  onEnterZone: { event: 'onEnterZone', entity: 'hero', zone: 'atrium' },
-  onExitZone: { event: 'onExitZone', entity: 'hero', zone: 'atrium' },
-  onCollide: { event: 'onCollide', a: 'hero', b: 'spike' },
-  onPickup: { event: 'onPickup', item: 'key' },
-  onDrop: { event: 'onDrop', item: 'gem', socket: 's.pedestal' },
-  onTimerEnd: { event: 'onTimerEnd', timer: 'fuse' },
-  onCounterReaches: { event: 'onCounterReaches', counter: 'shards', n: 5 },
-  onStateEnter: { event: 'onStateEnter', entity: 'vault', state: 'open' },
-  onSignal: { event: 'onSignal', name: 'sig.gotKey' },
-  onSeen: { event: 'onSeen', agent: 'guard', target: 'hero' },
-  onAction: { event: 'onAction', actor: 'hero', actionId: 'use', target: 'vault' },
-  onCommandComplete: { event: 'onCommandComplete', entity: 'hero', commandId: 'cmd.move', result: 'ok' },
-};
+  it('spawn připouští jedinou, deterministickou volbu instance', () => {
+    const spawn = compiledView().properties.effects.items.oneOf.find(
+      (variant) => variant.properties.op.const === 'spawn',
+    );
+    expect(spawn?.properties.selection.const).toBe('lowest-inactive');
+  });
+});
 
-/** Deklarace, na které se snížené predikáty odkazují. */
-function documentFor(spec: SurfaceEventSpec): IrDoc {
-  const table = new NodeTable();
-  const lowered = lowerEvent(spec, table, WORLD);
-  const predicateId = predicateIdFor(spec);
+// ---------------------------------------------------------------------------
+// Strukturální kontroly, které schéma vyjádřit neumí
+// ---------------------------------------------------------------------------
+
+/** Minimální kostra, do které se dosazuje právě ta jedna vlastnost, která se zkoumá. */
+function docWith(patch: Partial<IrDoc>): IrDoc {
   return {
     irVersion: IR_VERSION,
     limits: {
@@ -162,181 +143,135 @@ function documentFor(spec: SurfaceEventSpec): IrDoc {
       gridWidth: 16,
       gridHeight: 16,
     },
-    slots: [
-      { space: 'counter', id: 'shards', min: 0, max: 8, initial: 0 },
-      { space: 'timer', id: 'fuse', maxTicks: 200, initial: 0 },
-      { space: 'inventory', id: 'hand', values: ['empty', 'key'], initial: 'empty' },
-      { space: 'inventory', id: 'belt', values: ['empty', 'key'], initial: 'empty' },
-    ],
-    entities: [
-      {
-        stableId: 'vault',
-        role: 'prop',
-        socket: 's.vault',
-        states: ['closed', 'open'],
-        initialState: 'closed',
-        initialLocked: true,
-      },
-    ],
-    nodes: table.list(),
-    predicates: [{ predicateId, source: spec.event, expr: lowered.expr }],
-    effects: [{ op: 'win' }],
-    rules: [
-      {
-        ruleId: 'r.fire',
-        phase: 0,
-        priority: 0,
-        trigger: { kind: 'onEdge', predicate: predicateId, became: lowered.became },
-        guard: null,
-        effects: [0],
-      },
-    ],
+    slots: [],
+    entities: [],
+    nodes: [],
+    predicates: [],
+    effects: [],
+    rules: [],
+    ...patch,
   };
 }
 
-function observation(partial: Partial<Observation>): Observation {
-  return { ...EMPTY_OBSERVATION, ...partial };
-}
-
-const facts = (...keys: string[]) => observation({ facts: new Set(keys) });
-
-/** Kandidátní pozorování na událost. Testuje se každá uspořádaná dvojice. */
-function observationsFor(name: SurfaceEventName): Observation[] {
-  switch (name) {
-    case 'onStart':
-      return [facts(), facts('started()')];
-    case 'onClick':
-      return [facts(), facts('clicked(vault)'), facts('clicked(lever)')];
-    case 'onEnterZone':
-    case 'onExitZone':
-      return [facts(), facts('inZone(hero,atrium)'), facts('inZone(hero,cellar)')];
-    case 'onCollide':
-      return [facts(), facts('overlapping(hero,spike)'), facts('overlapping(spike,hero)')];
-    case 'onPickup':
-      return [facts(), facts('hasItem(hand,key)'), facts('hasItem(belt,key)'), facts('hasItem(hand,gem)')];
-    case 'onDrop':
-      return [facts(), facts('socketHolds(s.pedestal,gem)'), facts('socketHolds(s.altar,gem)')];
-    case 'onTimerEnd':
-      return [
-        observation({ timers: { fuse: 0 } }),
-        observation({ timers: { fuse: 1 } }),
-        observation({ timers: { fuse: 120 } }),
-      ];
-    case 'onCounterReaches':
-      return [0, 4, 5, 6, 8].map((value) => observation({ counters: { shards: value } }));
-    case 'onStateEnter':
-      return ['closed', 'open'].map((state) => observation({ entityStates: { vault: state } }));
-    case 'onSignal':
-      return [facts(), facts('signalled(sig.gotKey)'), facts('signalled(sig.other)')];
-    case 'onSeen':
-      return [facts(), facts('visible(guard,hero)'), facts('visible(hero,guard)')];
-    case 'onAction':
-      return [facts(), facts('acted(hero,use,vault)'), facts('acted(hero,use,none)')];
-    case 'onCommandComplete':
-      return [facts(), facts('commandDone(hero,cmd.move,ok)'), facts('commandDone(hero,cmd.move,blocked)')];
-  }
-}
-
-describe('snížení povrchových událostí do IR', () => {
-  it.each(SURFACE_EVENTS.map((name) => [name] as const))(
-    '%s se sníží do validního dokumentu',
-    (name) => {
-      const verdict = validateIrDoc(documentFor(SPECS[name]));
-      expect(verdict.issues).toEqual([]);
-    },
-  );
-
-  it.each(SURFACE_EVENTS.map((name) => [name] as const))(
-    '%s vyhodnotí zpětně shodně s povrchovou sémantikou',
-    (name) => {
-      const spec = SPECS[name];
-      const doc = documentFor(spec);
-      const predicateId = predicateIdFor(spec);
-      const became = doc.rules[0].trigger.became;
-      const candidates = observationsFor(name);
-
-      // Matice VŠECH uspořádaných dvojic, ne jen té jedné, která má spustit.
-      // Shoda musí platit i tam, kde nespouští ani jedna cesta.
-      let firedAtLeastOnce = false;
-      for (const previous of candidates) {
-        for (const current of candidates) {
-          const surface = surfaceFires(spec, previous, current, WORLD);
-          const ir = edgeFires(doc, predicateId, became, previous, current);
-          expect({ surface, ir }).toEqual({ surface, ir: surface });
-          firedAtLeastOnce ||= surface;
-        }
-      }
-      // Bez tohohle by test prošel i na matici, kde nikdy nic nespustí.
-      expect(firedAtLeastOnce).toBe(true);
-    },
-  );
-
-  it('používá výhradně tři IR primitiva a AST operátory nad nimi', () => {
-    const allowed = new Set<IrNode['kind']>(['literal', 'ref', 'query', 'compare', 'allOf', 'anyOf', 'not']);
-    for (const name of SURFACE_EVENTS) {
-      const doc = documentFor(SPECS[name]);
-      expect(doc.rules[0].trigger.kind).toBe('onEdge');
-      for (const node of doc.nodes) {
-        expect(allowed.has(node.kind)).toBe(true);
-      }
-    }
+describe('acykličnost', () => {
+  const cyclic = docWith({
+    nodes: [
+      { kind: 'not', operand: 1 },
+      { kind: 'not', operand: 0 },
+    ],
   });
 
-  it('nemá pro žádnou událost vlastní spouštěcí primitivum', () => {
-    const triggerKinds = new Set(SURFACE_EVENTS.map((name) => documentFor(SPECS[name]).rules[0].trigger.kind));
-    expect([...triggerKinds]).toEqual(['onEdge']);
+  // Komentář u `worldIr` tvrdí přesně tohle rozdělení rolí. Kdyby si schéma
+  // s cyklem poradilo samo, byl by ten komentář zbytečný; kdyby ho nechytil
+  // ani validátor, byl by nepravdivý.
+  it('cyklus tabulkou uzlů PROJDE schématem — tvar ho nezakazuje', () => {
+    expect(worldIr.safeParse(cyclic).success).toBe(true);
+  });
+
+  it('cyklus odmítne až kontrola monotonie indexů', () => {
+    const verdict = validateIrDoc(cyclic);
+    expect(verdict.ok).toBe(false);
+    expect(verdict.issues.join('\n')).toContain('references node 1 at or above itself');
   });
 });
 
-// ---------------------------------------------------------------------------
-// Rozhodnutá sémantika z protokolu
-// ---------------------------------------------------------------------------
+describe('osiřelé odkazy', () => {
+  const inZoneDoc = (entities: IrDoc['entities']) =>
+    docWith({
+      entities,
+      nodes: [{ kind: 'ref', ref: { space: 'observed', fact: 'inZone', args: ['hero', 'atrium'] } }],
+      predicates: [{ predicateId: 'p.inZone', source: 'onEnterZone', expr: 0 }],
+    });
 
-describe('rozhodnutá sémantika', () => {
-  it('onCounterReaches se spustí při překročení, ne jen při rovnosti', () => {
-    const spec = SPECS.onCounterReaches;
-    const doc = documentFor(spec);
-    const compare = doc.nodes.find((node) => node.kind === 'compare');
-    expect(compare).toMatchObject({ op: '>=' });
+  const hero: IrDoc['entities'][number] = {
+    stableId: 'hero',
+    role: 'agent',
+    socket: 's.start',
+    states: ['idle'],
+    initialState: 'idle',
+    initialLocked: false,
+  };
 
-    const from4 = observation({ counters: { shards: 4 } });
-    const to6 = observation({ counters: { shards: 6 } });
-    expect(edgeFires(doc, predicateIdFor(spec), true, from4, to6)).toBe(true);
+  it('inZone(hero, atrium) s prázdným entities je odmítnut', () => {
+    const verdict = validateIrDoc(inZoneDoc([]));
+    expect(verdict.ok).toBe(false);
+    expect(verdict.issues.join('\n')).toContain('unknown entity hero');
   });
 
-  it('onCounterReaches se rearmuje až návratem pod práh', () => {
-    const spec = SPECS.onCounterReaches;
-    const doc = documentFor(spec);
-    const predicateId = predicateIdFor(spec);
-    const at6 = observation({ counters: { shards: 6 } });
-    const at8 = observation({ counters: { shards: 8 } });
-    const at0 = observation({ counters: { shards: 0 } });
-    expect(edgeFires(doc, predicateId, true, at6, at8)).toBe(false);
-    expect(edgeFires(doc, predicateId, true, at0, at6)).toBe(true);
+  it('týž dokument s deklarovanou entitou projde', () => {
+    expect(validateIrDoc(inZoneDoc([hero])).issues).toEqual([]);
   });
 
-  it('onCollide a onSeen jsou hrany vstupu, ne každý tik', () => {
-    for (const name of ['onCollide', 'onSeen'] as const) {
-      const spec = SPECS[name];
-      const doc = documentFor(spec);
-      const key = name === 'onCollide' ? 'overlapping(hero,spike)' : 'visible(guard,hero)';
-      const held = facts(key);
-      expect(edgeFires(doc, predicateIdFor(spec), true, held, held)).toBe(false);
-      expect(edgeFires(doc, predicateIdFor(spec), true, facts(), held)).toBe(true);
-    }
-  });
-
-  it('freeze se počítá v ticích — sekundová varianta neprojde schématem', () => {
-    const seconds = goldenSet.invalid.find((entry) => entry.id === 'I17-freeze-in-seconds');
-    expect(validateIrDoc(seconds?.doc).ok).toBe(false);
-    expect(JSON.stringify(compiled())).not.toContain('seconds');
-  });
-
-  it('spawn připouští jedinou, deterministickou volbu instance', () => {
-    const spawn = compiledView().properties.effects.items.oneOf.find(
-      (variant) => variant.properties.op.const === 'spawn',
+  it('pulzní fakt odkazující na nedeklarovanou entitu je odmítnut', () => {
+    const verdict = validateIrDoc(
+      docWith({
+        entities: [hero],
+        nodes: [{ kind: 'ref', ref: { space: 'pulse', fact: 'acted', args: ['hero', 'use', 'vault'] } }],
+        predicates: [{ predicateId: 'p.acted', source: 'onAction', expr: 0 }],
+      }),
     );
-    expect(spawn?.properties.selection.const).toBe('lowest-inactive');
+    expect(verdict.ok).toBe(false);
+    expect(verdict.issues.join('\n')).toContain('unknown entity vault');
+  });
+
+  it('nepřítomný cíl onAction je kanonická hodnota, ne osiřelý odkaz', () => {
+    expect(
+      validateIrDoc(
+        docWith({
+          entities: [hero],
+          nodes: [{ kind: 'ref', ref: { space: 'pulse', fact: 'acted', args: ['hero', 'use', 'none'] } }],
+          predicates: [{ predicateId: 'p.acted', source: 'onAction', expr: 0 }],
+        }),
+      ).issues,
+    ).toEqual([]);
+  });
+
+  it('pulzní prostor není zapisovatelný — graf si nesmí psát vlastní vstupy', () => {
+    const verdict = validateIrDoc(
+      docWith({
+        entities: [hero],
+        nodes: [{ kind: 'literal', value: true }],
+        effects: [
+          { op: 'assign', ref: { space: 'pulse', fact: 'clicked', args: ['hero'] }, value: 0 },
+        ],
+      }),
+    );
+    expect(verdict.ok).toBe(false);
+    expect(verdict.issues.join('\n')).toContain('pulse is not assignable');
+  });
+
+  it('hasItem nad nedeklarovaným slotem je odmítnut', () => {
+    const verdict = validateIrDoc(
+      docWith({
+        nodes: [{ kind: 'ref', ref: { space: 'observed', fact: 'hasItem', args: ['hand', 'key'] } }],
+        predicates: [{ predicateId: 'p.hasItem', source: 'onPickup', expr: 0 }],
+      }),
+    );
+    expect(verdict.ok).toBe(false);
+    expect(verdict.issues.join('\n')).toContain('unknown slot hand');
+  });
+});
+
+describe('assign do timeru', () => {
+  const assignDoc = (value: number) =>
+    docWith({
+      slots: [{ space: 'timer', id: 'fuse', maxTicks: 200, initial: 0 }],
+      nodes: [{ kind: 'literal', value }],
+      effects: [{ op: 'assign', ref: { space: 'timer', slot: 'fuse' }, value: 0 }],
+    });
+
+  it('hodnota nad deklarovaným maxTicks je odmítnuta', () => {
+    const verdict = validateIrDoc(assignDoc(500));
+    expect(verdict.ok).toBe(false);
+    expect(verdict.issues.join('\n')).toContain('assign value outside timer bounds');
+  });
+
+  it('záporná hodnota je odmítnuta', () => {
+    expect(validateIrDoc(assignDoc(-1)).ok).toBe(false);
+  });
+
+  it('hodnota uvnitř mezí projde', () => {
+    expect(validateIrDoc(assignDoc(200)).issues).toEqual([]);
   });
 });
 
@@ -358,20 +293,18 @@ describe('paměťové sloty', () => {
 
 // ---------------------------------------------------------------------------
 // Část vzhledu do IR nevstupuje
+//
+// Zákaz se dá vynutit jen tak, že ho někdo pojmenuje. Cesta snížení a
+// vyhodnocení ho pojmenovat nesmí vůbec; `references.ts` ho pojmenovat MUSÍ,
+// protože kontroluje jedinou vazbu, kterou §13.1 povoluje — a čte přitom jen
+// klíče `modules`, tedy `stableId`.
 // ---------------------------------------------------------------------------
 
 describe('oddělení od části vzhledu', () => {
   const irDir = join(process.cwd(), 'src', 'ir');
+  const IR_PATH_MODULES = ['types.ts', 'schema.ts', 'lower.ts', 'eval.ts'];
 
-  // Skenují se moduly IR, ne testy: test, který zákaz vynucuje, tu věc musí
-  // pojmenovat, jinak by nešel napsat.
-  function sources(dir: string): string[] {
-    return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) return entry.name === '__tests__' ? [] : sources(full);
-      return entry.name.endsWith('.ts') ? [full] : [];
-    });
-  }
+  const linesOf = (file: string) => readFileSync(join(irDir, file), 'utf8').split(/\r?\n/);
 
   it('nemá ve zkompilovaném schématu jediné pole vzhledu', () => {
     // Strukturální oracle: do IR se ta část nedá zapsat, protože pro ni schéma
@@ -379,17 +312,30 @@ describe('oddělení od části vzhledu', () => {
     expect(JSON.stringify(compiled()).toLowerCase()).not.toContain('look');
   });
 
-  it('zmiňuje ji ve zdrojích IR jen ve větě o stableId', () => {
+  it('cesta snížení a vyhodnocení ji nezmiňuje ani slovem', () => {
     const offenders: string[] = [];
-    for (const file of sources(irDir)) {
-      readFileSync(file, 'utf8')
-        .split(/\r?\n/)
-        .forEach((line, position) => {
-          if (/look/i.test(line) && !line.includes('stableId')) {
-            offenders.push(`${file}:${position + 1}: ${line.trim()}`);
-          }
-        });
+    for (const file of IR_PATH_MODULES) {
+      linesOf(file).forEach((line, position) => {
+        if (/look/i.test(line)) offenders.push(`${file}:${position + 1}: ${line.trim()}`);
+      });
     }
+    expect(offenders).toEqual([]);
+  });
+
+  it('modul `src/ir` obsahuje právě čtyři soubory cesty snížení plus resolver', () => {
+    // Kdyby přibyl pátý produkční modul, předchozí test by ho tiše minul.
+    const produced = readdirSync(irDir, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && entry.name.endsWith('.ts'))
+      .map((entry) => entry.name)
+      .sort();
+    expect(produced).toEqual([...IR_PATH_MODULES, 'references.ts'].sort());
+  });
+
+  it('resolver ji jmenuje výhradně u klíčů modulů', () => {
+    const offenders = linesOf('references.ts')
+      .map((line, position) => [position + 1, line.trim()] as const)
+      .filter(([, line]) => /look/i.test(line))
+      .filter(([, line]) => !line.startsWith('*') && !line.startsWith('//') && !/modules/.test(line));
     expect(offenders).toEqual([]);
   });
 });

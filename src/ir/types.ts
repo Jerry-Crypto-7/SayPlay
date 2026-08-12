@@ -6,10 +6,15 @@
  * spodní vrstvu a signatury té horní.
  *
  * Klíčová vlastnost: **výrazy nejsou rekurzivní**. Všechny uzly leží v jedné
- * ploché tabulce `nodes` a potomek se adresuje celočíselným indexem, který musí
- * být menší než index rodiče. Cyklus tím není zakázaný pravidlem, ale
- * nevyjádřitelný — a `z.toJSONSchema(..., { cycles: "throw" })` nemá kde
- * narazit na `$ref` smyčku.
+ * ploché tabulce `nodes` a potomek se adresuje celočíselným indexem. Tvar
+ * schématu tím nemá jediné rekurzivní odkázání, takže
+ * `z.toJSONSchema(..., { cycles: "throw" })` nemá kde narazit na `$ref` smyčku.
+ *
+ * **Acykličnost samotné tabulky z toho ale neplyne** — index je jen celé číslo
+ * a `{ kind: "not", operand: 1 }` na indexu 0 projde tvarem bez potíží. Vynucuje
+ * ji až kontrola monotonie indexů ve `validateIrDoc`: potomek musí mít index
+ * menší než rodič. Jsou to dvě různá tvrzení a `__tests__/schema.test.ts` je
+ * odděluje asercí na obě strany.
  */
 
 export const IR_VERSION = 'world-ir-v1';
@@ -19,6 +24,9 @@ export const ID_PATTERN = /^[A-Za-z][A-Za-z0-9_.]{0,63}$/;
 
 /** Symbol z deklarovaného enumu (stav entity, položka, hodnota paměti). */
 export const SYMBOL_PATTERN = /^[A-Za-z][A-Za-z0-9_]{0,31}$/;
+
+/** Kanonický zástupce za nepřítomný `target?` v `onAction`. */
+export const NO_TARGET = 'none';
 
 // ---------------------------------------------------------------------------
 // Povrchový slovník — 14 událostí (§5 + v1.1)
@@ -74,24 +82,53 @@ export type IrPrimitive = (typeof IR_PRIMITIVES)[number];
 // ---------------------------------------------------------------------------
 
 /**
- * Odvozené fakty, které runtime udržuje mimo skalární stav. Právě přes ně se
- * snižují události, které nejsou přímo hranou nad čítačem nebo stavem —
- * kliknutí, signál, kolize, viditelnost, kanonická akce hráče.
+ * Role argumentu odvozeného faktu. Rozhoduje o tom, proti čemu se jméno
+ * rozpouští.
+ *
+ * `entity`, `entityOrNone` a `inventorySlot` mají ve `world-ir-v1` deklarační
+ * tabulku, takže osiřelý odkaz jde odhalit. `zone`, `socket`, `item`, `signal`
+ * a `symbol` ji nemají — zóny a sockety deklaruje layout, jehož validátor je
+ * podle protokolu (`knownGapsDuringP1`) až P5 T505. Do té doby se nerozpouštějí
+ * a je to napsané tady, ne zamlčené.
+ */
+export type ArgRole = 'entity' | 'entityOrNone' | 'inventorySlot' | 'zone' | 'socket' | 'item' | 'signal' | 'symbol';
+
+/** Role, které `validateIrDoc` skutečně rozpouští proti deklaracím dokumentu. */
+export const RESOLVED_ARG_ROLES = ['entity', 'entityOrNone', 'inventorySlot'] as const;
+
+/**
+ * **Trvalé** odvozené fakty. Platí, dokud trvá stav, který je vyrábí, takže
+ * `onEdge` nad nimi znamená vstup do stavu nebo výstup z něj.
  */
 export const OBSERVED_FACTS = {
-  started: 0,
-  clicked: 1,
-  acted: 3,
-  commandDone: 3,
-  signalled: 1,
-  overlapping: 2,
-  visible: 2,
-  inZone: 2,
-  hasItem: 2,
-  socketHolds: 2,
+  started: [],
+  inZone: ['entity', 'zone'],
+  overlapping: ['entity', 'entity'],
+  visible: ['entity', 'entity'],
+  hasItem: ['inventorySlot', 'item'],
+  socketHolds: ['socket', 'item'],
 } as const;
 
 export type ObservedFact = keyof typeof OBSERVED_FACTS;
+
+/**
+ * **Pulzní** fakty — doručená událost, ne stav. Žijí právě jeden tik a přes
+ * hranici tiku nepřecházejí, takže hodnota v pre-stavu je vždy `false` a
+ * `onEdge` nad nimi vyjde na *přítomnost*.
+ *
+ * Je to nutné, ne kosmetické: `DESIGN-BOOK.md` §5 vyjmenovává osm událostí,
+ * které `onEdge` nahrazuje, a tyhle čtyři mezi nimi nejsou. Náběžná hrana nad
+ * trvalým faktem by druhý signál v řadě spolkla — a §5 zároveň říká, že právě
+ * signálem se pravidla řetězí.
+ */
+export const PULSE_FACTS = {
+  clicked: ['entity'],
+  signalled: ['signal'],
+  acted: ['entity', 'symbol', 'entityOrNone'],
+  commandDone: ['entity', 'symbol', 'symbol'],
+} as const;
+
+export type PulseFact = keyof typeof PULSE_FACTS;
 
 export type StateRef =
   | { readonly space: 'counter'; readonly slot: string }
@@ -101,9 +138,10 @@ export type StateRef =
   | { readonly space: 'memory'; readonly agent: string; readonly index: number }
   | { readonly space: 'entityState'; readonly entity: string }
   | { readonly space: 'locked'; readonly entity: string }
-  | { readonly space: 'observed'; readonly fact: ObservedFact; readonly args: readonly string[] };
+  | { readonly space: 'observed'; readonly fact: ObservedFact; readonly args: readonly string[] }
+  | { readonly space: 'pulse'; readonly fact: PulseFact; readonly args: readonly string[] };
 
-/** Prostory, do kterých smí `assign` zapisovat. `observed` mezi nimi není. */
+/** Prostory, do kterých smí `assign` zapisovat. `observed` ani `pulse` mezi nimi nejsou. */
 export const ASSIGNABLE_SPACES = [
   'counter',
   'flag',
@@ -115,7 +153,7 @@ export const ASSIGNABLE_SPACES = [
 ] as const;
 
 /** Prostory, jejichž hodnota je boolean. */
-export const BOOLEAN_SPACES = ['flag', 'locked', 'observed'] as const;
+export const BOOLEAN_SPACES = ['flag', 'locked', 'observed', 'pulse'] as const;
 
 // ---------------------------------------------------------------------------
 // Plochá tabulka uzlů

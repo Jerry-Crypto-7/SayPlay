@@ -6,12 +6,16 @@ import {
   COMPARE_OPS,
   ID_PATTERN,
   IR_VERSION,
+  NO_TARGET,
   OBSERVED_FACTS,
+  PULSE_FACTS,
   SURFACE_EVENTS,
   SYMBOL_PATTERN,
+  type ArgRole,
   type IrDoc,
   type IrNode,
   type ObservedFact,
+  type PulseFact,
   type StateRef,
 } from './types';
 
@@ -28,6 +32,7 @@ const nodeIndex = z.int().min(0).max(4095);
 const effectIndex = z.int().min(0).max(4095);
 
 const observedFactName = z.enum(Object.keys(OBSERVED_FACTS) as [ObservedFact, ...ObservedFact[]]);
+const pulseFactName = z.enum(Object.keys(PULSE_FACTS) as [PulseFact, ...PulseFact[]]);
 
 const stateRefSchema = z.discriminatedUnion('space', [
   z.object({ space: z.literal('counter'), slot: identifier }).strict(),
@@ -39,6 +44,9 @@ const stateRefSchema = z.discriminatedUnion('space', [
   z.object({ space: z.literal('locked'), entity: identifier }).strict(),
   z
     .object({ space: z.literal('observed'), fact: observedFactName, args: z.array(identifier).max(3) })
+    .strict(),
+  z
+    .object({ space: z.literal('pulse'), fact: pulseFactName, args: z.array(identifier).max(3) })
     .strict(),
 ]);
 
@@ -173,7 +181,8 @@ const limitsSchema = z
   .strict();
 
 /**
- * Kořen IR. Část vzhledu do IR nevstupuje (§5): `look` tu nemá pole ani variantu a její jediná vazba do simulace je `stableId` entity.
+ * Kořen IR. Vzhledová část dokumentu sem nevstupuje (§5) — nemá tu pole ani
+ * variantu a její jediná vazba do simulace je `stableId` entity.
  */
 export const worldIr = z
   .object({
@@ -294,6 +303,36 @@ export function validateIrDoc(input: unknown): IrValidation {
       fail(`entity ${entity.stableId} has initialState outside its declared states`);
   }
 
+  /**
+   * Argumenty odvozeného faktu jsou jména, ne indexy — a jméno, které nikde
+   * není deklarované, je osiřelý odkaz. Rozpouštějí se role z `RESOLVED_ARG_ROLES`;
+   * zbytek nemá ve `world-ir-v1` deklarační tabulku, viz `ArgRole`.
+   */
+  const checkFactArgs = (roles: readonly ArgRole[], fact: string, args: readonly string[], where: string) => {
+    if (args.length !== roles.length) {
+      fail(`${where}: fact ${fact} takes ${roles.length} arguments`);
+      return;
+    }
+    roles.forEach((role, position) => {
+      const arg = args[position];
+      switch (role) {
+        case 'entity':
+        case 'entityOrNone':
+          if (!(role === 'entityOrNone' && arg === NO_TARGET) && !entitiesById.has(arg))
+            fail(`${where}: unknown entity ${arg}`);
+          break;
+        case 'inventorySlot': {
+          const slot = slotsById.get(arg);
+          if (!slot) fail(`${where}: unknown slot ${arg}`);
+          else if (slot.space !== 'inventory') fail(`${where}: slot ${arg} is not an inventory slot`);
+          break;
+        }
+        default:
+          break;
+      }
+    });
+  };
+
   const checkRef = (ref: StateRef, where: string) => {
     switch (ref.space) {
       case 'counter':
@@ -314,14 +353,19 @@ export function validateIrDoc(input: unknown): IrValidation {
         if (!entitiesById.has(ref.entity)) fail(`${where}: unknown entity ${ref.entity}`);
         break;
       case 'observed':
-        if (ref.args.length !== OBSERVED_FACTS[ref.fact])
-          fail(`${where}: fact ${ref.fact} takes ${OBSERVED_FACTS[ref.fact]} arguments`);
+        checkFactArgs(OBSERVED_FACTS[ref.fact], ref.fact, ref.args, where);
+        break;
+      case 'pulse':
+        checkFactArgs(PULSE_FACTS[ref.fact], ref.fact, ref.args, where);
         break;
     }
   };
 
-  // Index potomka musí být menší než index rodiče. Tím je acykličnost
-  // strukturální — cyklus se do tabulky nedá zapsat, ne že by se hledal.
+  // Index potomka musí být menší než index rodiče. **Tohle je jediné místo,
+  // kde se acykličnost vynucuje** — tvar schématu ji nedává. `nodeIndex` je
+  // obyčejné celé číslo, takže `{ kind: "not", operand: 1 }` na indexu 0 projde
+  // `safeParse` bez námitky a cyklus odmítne až tenhle průchod. Plochá tabulka
+  // odstraňuje `$ref` rekurzi v JSON Schema, ne cykly v datech.
   doc.nodes.forEach((node, index) => {
     for (const child of childIndices(node)) {
       if (child >= index) fail(`node ${index} references node ${child} at or above itself`);
@@ -390,6 +434,13 @@ export function validateIrDoc(input: unknown): IrValidation {
           if (slot?.space === 'counter' && typeof valueNode.value === 'number') {
             if (valueNode.value < slot.min || valueNode.value > slot.max)
               fail(`${where}: assign value outside counter bounds`);
+          }
+        }
+        if (effect.ref.space === 'timer') {
+          const slot = slotsById.get(effect.ref.slot);
+          if (slot?.space === 'timer' && typeof valueNode.value === 'number') {
+            if (valueNode.value < 0 || valueNode.value > slot.maxTicks)
+              fail(`${where}: assign value outside timer bounds`);
           }
         }
         if (effect.ref.space === 'entityState') {

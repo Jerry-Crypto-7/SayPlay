@@ -1,5 +1,11 @@
-import { factKey, type Observation } from './eval';
-import type { IrNode, NodeIndex, SurfaceEventName } from './types';
+import {
+  NO_TARGET,
+  type IrNode,
+  type NodeIndex,
+  type ObservedFact,
+  type PulseFact,
+  type SurfaceEventName,
+} from './types';
 
 /**
  * Snížení povrchového slovníku do IR.
@@ -9,14 +15,13 @@ import type { IrNode, NodeIndex, SurfaceEventName } from './types';
  * dvojici (predikát, hrana). Predikát sám je `compare` nebo AST operátor nad
  * `compare` — žádná událost si nepřináší vlastní primitivum.
  *
- * Vedle snížení tu je i `surfaceHolds` — ručně psaná povrchová sémantika podle
- * tabulky v §5, napsaná **nezávisle** na uzlech. Test proti sobě staví právě
- * tyhle dvě cesty; kdyby snížení sdílelo implementaci s povrchem, neprokázalo
- * by nic.
+ * Oracle správnosti snížení je ručně psaná tabulka tiků v
+ * `__tests__/lower.test.ts`, ne druhá implementace téhle sémantiky. Druhá
+ * implementace tady dřív byla a četla fakty toutéž cestou jako vyhodnocovač,
+ * takže dokazovala jen shodu dvou tabulek mezi sebou.
  */
 
-/** Kanonický zástupce za nepřítomný `target?` v `onAction`. */
-export const NO_TARGET = 'none';
+export { NO_TARGET };
 
 export type SurfaceEventSpec =
   | { readonly event: 'onStart' }
@@ -64,12 +69,13 @@ export class NodeTable {
   }
 }
 
-function observedFactNode(
-  table: NodeTable,
-  fact: 'started' | 'clicked' | 'acted' | 'commandDone' | 'signalled' | 'overlapping' | 'visible' | 'inZone' | 'hasItem' | 'socketHolds',
-  args: readonly string[],
-): NodeIndex {
+function observedFactNode(table: NodeTable, fact: ObservedFact, args: readonly string[]): NodeIndex {
   return table.add({ kind: 'ref', ref: { space: 'observed', fact, args } });
+}
+
+/** Doručená událost jednoho tiku. Hrana nad ní vyjde na přítomnost, ne na náběh. */
+function pulseFactNode(table: NodeTable, fact: PulseFact, args: readonly string[]): NodeIndex {
+  return table.add({ kind: 'ref', ref: { space: 'pulse', fact, args } });
 }
 
 export interface LoweredEvent {
@@ -87,7 +93,7 @@ export function lowerEvent(spec: SurfaceEventSpec, table: NodeTable, world: Lowe
     case 'onStart':
       return { expr: observedFactNode(table, 'started', []), became: true };
     case 'onClick':
-      return { expr: observedFactNode(table, 'clicked', [spec.entity]), became: true };
+      return { expr: pulseFactNode(table, 'clicked', [spec.entity]), became: true };
     case 'onEnterZone':
       return { expr: observedFactNode(table, 'inZone', [spec.entity, spec.zone]), became: true };
     case 'onExitZone':
@@ -125,20 +131,24 @@ export function lowerEvent(spec: SurfaceEventSpec, table: NodeTable, world: Lowe
       return { expr: table.add({ kind: 'compare', lhs, op: '=', rhs }), became: true };
     }
     case 'onSignal':
-      return { expr: observedFactNode(table, 'signalled', [spec.name]), became: true };
+      // Pulz, ne trvalý fakt. §5 na signálu staví řetězení pravidel — kdyby se
+      // snížil na náběžnou hranu, druhá emise v řadě by se ztratila a řetěz by
+      // se utnul právě tam, kde má držet.
+      return { expr: pulseFactNode(table, 'signalled', [spec.name]), became: true };
     case 'onSeen':
       // Hrana vstupu do viditelnosti; ztráta je táž hrana s `became: false`.
       return { expr: observedFactNode(table, 'visible', [spec.agent, spec.target]), became: true };
     case 'onAction':
       // Nosič vstupní hranice: kanonická akce z konečné abecedy, nikdy kamera
-      // ani vykreslená geometrie.
+      // ani vykreslená geometrie. Stisk je pulz — dvě stejná stisknutí po sobě
+      // jsou dva záměry.
       return {
-        expr: observedFactNode(table, 'acted', [spec.actor, spec.actionId, spec.target ?? NO_TARGET]),
+        expr: pulseFactNode(table, 'acted', [spec.actor, spec.actionId, spec.target ?? NO_TARGET]),
         became: true,
       };
     case 'onCommandComplete':
       return {
-        expr: observedFactNode(table, 'commandDone', [spec.entity, spec.commandId, spec.result]),
+        expr: pulseFactNode(table, 'commandDone', [spec.entity, spec.commandId, spec.result]),
         became: true,
       };
   }
@@ -181,60 +191,4 @@ export function predicateIdFor(spec: SurfaceEventSpec): string {
 
 export function eventNameOf(spec: SurfaceEventSpec): SurfaceEventName {
   return spec.event;
-}
-
-/**
- * Povrchová sémantika, psaná přímo podle tabulky událostí v §5 a podle
- * `resolvedSemantics` ve zmrazeném protokolu. Vrací, jestli podmínka události
- * v daném pozorování **platí** — spuštění je až změna téhle hodnoty.
- *
- * Tohle je záměrně druhá, nezávislá implementace. Nečte tabulku uzlů.
- */
-export function surfaceHolds(spec: SurfaceEventSpec, obs: Observation, world: LoweringWorld): boolean {
-  const has = (fact: string, args: readonly string[]) => obs.facts.has(factKey(fact, args));
-  switch (spec.event) {
-    case 'onStart':
-      return has('started', []);
-    case 'onClick':
-      return has('clicked', [spec.entity]);
-    case 'onEnterZone':
-    case 'onExitZone':
-      return has('inZone', [spec.entity, spec.zone]);
-    case 'onCollide':
-      return has('overlapping', [spec.a, spec.b]);
-    case 'onPickup':
-      return world.inventorySlots.some((slot) => has('hasItem', [slot, spec.item]));
-    case 'onDrop':
-      return has('socketHolds', [spec.socket, spec.item]);
-    case 'onTimerEnd':
-      return (obs.timers[spec.timer] ?? 0) > 0;
-    case 'onCounterReaches':
-      return (obs.counters[spec.counter] ?? 0) >= spec.n;
-    case 'onStateEnter':
-      return (obs.entityStates[spec.entity] ?? 'none') === spec.state;
-    case 'onSignal':
-      return has('signalled', [spec.name]);
-    case 'onSeen':
-      return has('visible', [spec.agent, spec.target]);
-    case 'onAction':
-      return has('acted', [spec.actor, spec.actionId, spec.target ?? NO_TARGET]);
-    case 'onCommandComplete':
-      return has('commandDone', [spec.entity, spec.commandId, spec.result]);
-  }
-}
-
-/** Směr hrany podle povrchové sémantiky, nezávisle na snížení. */
-export function surfaceBecame(spec: SurfaceEventSpec): boolean {
-  return spec.event !== 'onExitZone' && spec.event !== 'onTimerEnd';
-}
-
-export function surfaceFires(
-  spec: SurfaceEventSpec,
-  previous: Observation,
-  current: Observation,
-  world: LoweringWorld,
-): boolean {
-  const before = surfaceHolds(spec, previous, world);
-  const after = surfaceHolds(spec, current, world);
-  return surfaceBecame(spec) ? !before && after : before && !after;
 }
