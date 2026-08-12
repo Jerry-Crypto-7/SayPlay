@@ -60,7 +60,12 @@ desktop.ini
 .vscode/*
 !.vscode/extensions.json
 
-# Lokální scratch
+# Lokální scratch. Agenti opakovaně nechávají v kořeni analytické jednorázovky
+# (`tmp-dump.cjs`, `.tmp-review.mjs`, `lower.bak.tmp`) a `rm` jim sandbox odmítá.
+# Repo bude podle RULES.md §2 veřejné – tohle je pojistka, ne úklid.
 scratch/
 tmp/
+tmp-*
+.tmp-*
+*.bak.tmp
 .playwright-mcp/
