@@ -1,0 +1,66 @@
+# --- Interní materiály (NEMAZAT) ---
+# Tenhle repozitář se stane VEŘEJNÝM (povinný deliverable, RULES.md §2). Pracovní strom
+# vedle produktu nese interní podklady: bezpečnostní nález třetí strany, strategické
+# rozvahy, plány a pracovní logy. Nic z toho není povinný deliverable a nic z toho se
+# nesmí dostat do historie – smazání po commitu problém neřeší, historie zůstává.
+SECURITY-FINDINGS.md
+
+# Interní dokumentace, plány a pracovní logy.
+# Veřejné repo nese produkt, ne strategii. P8 do něj přidá vlastní README.md
+# a DISCLOSURE.md – proto ty dvě negace. Vzor /*.md míří jen na kořen, takže
+# evals/README.md ani dokumentace uvnitř src/ tím dotčené nejsou.
+/*.md
+!README.md
+!DISCLOSURE.md
+plans/
+.claude/
+
+# Secrets obecně
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.json
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+.turbo/
+
+# Test a coverage
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+*-snapshots/__diff_output__/
+
+# Assety – zdrojové soubory pipeline se necommitují, jen normalizovaný kit
+assets/raw/
+assets/_work/
+*.blend1
+*.fbx
+
+# Nástroje a cache
+.cache/
+.eslintcache
+.vercel/
+public/sw.js
+public/workbox-*.js
+
+# OS a editory
+Thumbs.db
+desktop.ini
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Lokální scratch
+scratch/
+tmp/
+.playwright-mcp/

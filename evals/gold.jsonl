@@ -1,0 +1,116 @@
+{"id":"IC01","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_TIMER","STATE_DISCRETE","REQ_MULTI_AGENT"],"note":"two roles behave DIFFERENTLY by phase -> genuine multi-agent, not one behaviour reskinned"}
+{"id":"IC02","required":["GOAL_COLLECT_N","GOAL_REACH","ACT_PLAYER_DIRECT","STATE_COUNTER","STATE_DISCRETE"]}
+{"id":"IC03","required":["GOAL_NONE","ACT_PLAYER_DIRECT","IN_DRAG","STATE_CONTINUOUS"],"note":"propagating ripples are a continuous field, not discrete states"}
+{"id":"IC04","required":["GOAL_SURVIVE_T","ACT_PLAYER_INDIRECT","ACT_AUTONOMOUS","STATE_COUNTER","STATE_DISCRETE","REQ_MULTI_AGENT","IN_DRAG"],"note":"corrected 11.8.: tower-defense enemy path is fixed, not computed. Defenders and enemies are two distinct behaviours."}
+{"id":"IC05","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_DISCRETE","REQ_TEXT_RENDER","IN_MOVE"]}
+{"id":"IC06","required":["GOAL_NONE","ACT_PLAYER_DIRECT","REQ_PHYSICS_SIM","STATE_CONTINUOUS","IN_DRAG"]}
+{"id":"IC07","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_DISCRETE","IN_CLICK"],"note":"'spawns and falls' is satisfiable by a scripted drop; no physics sim required"}
+{"id":"IC08","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_TIMER","STATE_DISCRETE"],"note":"corrected 11.8.: bee follows a fixed flower circuit"}
+{"id":"IC09","required":["GOAL_SURVIVE_T","ACT_PLAYER_DIRECT","STATE_TIMER","STATE_DISCRETE","REQ_TEXT_RENDER"],"note":"'visible countdown' requires legible numbers -> REQ_TEXT_RENDER"}
+{"id":"IC10","required":["GOAL_THRESHOLD","ACT_PLAYER_DIRECT","STATE_TIMER","STATE_COUNTER","STATE_DISCRETE","REQ_TEXT_RENDER"]}
+{"id":"IC11","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_TIMER","STATE_DISCRETE"]}
+{"id":"IC12","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_DISCRETE","STATE_QUEUE","REQ_MULTI_AGENT","REQ_DIALOGUE"],"note":"turn-taking is an ordered pending set -> STATE_QUEUE"}
+{"id":"IC13","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_DISCRETE","IN_CLICK"]}
+{"id":"IC14","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_DISCRETE","IN_MOVE"]}
+{"id":"IC15","required":["GOAL_REACH","ACT_PLAYER_INDIRECT","REQ_PHYSICS_SIM","STATE_CONTINUOUS","IN_DRAG"]}
+{"id":"IC16","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_COUNTER","IN_DRAG"],"note":"'not binary' is satisfied by a bounded counter with >2 levels; continuous not required"}
+{"id":"IC17","required":["GOAL_REACH","ACT_PLAYER_DIRECT","ACT_AUTONOMOUS","STATE_DISCRETE","IN_MOVE","REQ_MULTI_SOURCE_INPUT"],"note":"corrected 11.8.: patrol is a fixed route, not pathfinding; position AND light is multi-source per the MD13 precedent"}
+{"id":"IC18","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_CONTINUOUS","IN_CLICK"],"note":"flocking is continuous; all fish share one behaviour"}
+{"id":"IC19","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_DISCRETE","IN_CLICK"]}
+{"id":"IC20","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_DISCRETE","STATE_TIMER","STATE_QUEUE"],"note":"corrected 11.8.: cars follow a road network, not a computed route. No overlap forces queueing."}
+{"id":"IC21","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_DISCRETE","IN_CLICK"]}
+{"id":"IC22","required":["GOAL_THRESHOLD","ACT_PLAYER_DIRECT","STATE_COUNTER","STATE_TIMER","IN_AIM","REQ_TEXT_RENDER"]}
+{"id":"IC23","required":["GOAL_COLLECT_N","GOAL_DELIVER","ACT_PLAYER_DIRECT","STATE_COUNTER","STATE_DISCRETE","IN_MOVE"],"note":"contested: one specific item makes counter==identity, so STATE_INVENTORY is NOT required"}
+{"id":"IC24","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_CONTINUOUS"]}
+{"id":"IC25","required":["GOAL_NONE","ACT_AUTONOMOUS","ACT_PLAYER_DIRECT","STATE_CONTINUOUS","STATE_DISCRETE","REQ_PATHFIND_GRID","IN_MOVE"]}
+{"id":"OC01","required":["GOAL_NONE","REQ_DATA_BINDING","REQ_TEXT_RENDER"],"note":"canonical NO_FIT: axes, scale and values cannot be faked with bar-shaped props"}
+{"id":"OC02","required":["GOAL_NONE","REQ_DATA_BINDING","REQ_TEXT_RENDER"]}
+{"id":"OC03","required":["GOAL_NONE","ACT_PLAYER_DIRECT","REQ_DATA_BINDING","IN_MOVE"],"note":"'correct door heights' is real numbers -> geometry"}
+{"id":"OC04","required":["GOAL_SEQUENCE","ACT_PLAYER_DIRECT","STATE_DISCRETE","REQ_TEXT_RENDER","IN_DRAG"]}
+{"id":"OC05","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_DISCRETE","IN_CLICK"]}
+{"id":"OC06","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_CONTINUOUS","STATE_TIMER","REQ_DATA_BINDING","IN_CLICK"]}
+{"id":"OC07","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_QUEUE","STATE_DISCRETE"],"note":"'observable queueing' is the whole point of the prompt"}
+{"id":"OC08","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_DISCRETE","STATE_TIMER","REQ_TEXT_RENDER"]}
+{"id":"OC09","required":["GOAL_NONE","ACT_PLAYER_DIRECT","REQ_FREEFORM_BUILD","REQ_DATA_BINDING","REQ_TEXT_RENDER","IN_DRAG"]}
+{"id":"OC10","required":["GOAL_REACH","ACT_PLAYER_DIRECT","STATE_DISCRETE","REQ_TEXT_RENDER","IN_MOVE"]}
+{"id":"OC11","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_CONTINUOUS","IN_DRAG"]}
+{"id":"OC12","required":["GOAL_NONE","REQ_DATA_BINDING","REQ_TEXT_RENDER"]}
+{"id":"OC13","required":["GOAL_NONE","STATE_CONTINUOUS","REQ_PHYSICS_SIM"],"note":"pass explicitly demands a continuous field, not discrete props"}
+{"id":"OC14","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_DISCRETE","REQ_TEXT_RENDER","IN_CLICK"]}
+{"id":"OC15","required":["GOAL_NONE","STATE_TIMER","STATE_DISCRETE","REQ_TEXT_RENDER","IN_DRAG"]}
+{"id":"MD01","required":["GOAL_SURVIVE_T","ACT_PLAYER_DIRECT","STATE_TIMER","STATE_CONTINUOUS","IN_MOVE"]}
+{"id":"MD02","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_COUNTER","STATE_DISCRETE","REQ_TEXT_RENDER","IN_CLICK"]}
+{"id":"MD03","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_DISCRETE","STATE_QUEUE","REQ_MULTI_SOURCE_INPUT","IN_CLICK"],"note":"canonical NO_FIT; both blocking tokens present"}
+{"id":"MD04","required":["GOAL_NONE","ACT_PLAYER_DIRECT","ACT_AUTONOMOUS","STATE_DISCRETE","REQ_MULTI_SOURCE_INPUT","REQ_MULTI_AGENT"]}
+{"id":"MD05","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_INVENTORY","STATE_COUNTER","IN_CLICK"],"note":"'no item duplication' forces real item identity"}
+{"id":"MD06","required":["GOAL_THRESHOLD","ACT_PLAYER_DIRECT","STATE_COUNTER","STATE_DISCRETE","STATE_PERSISTENT_MEMORY","REQ_TEXT_RENDER","IN_CLICK"]}
+{"id":"MD07","required":["GOAL_NONE","ACT_PLAYER_DIRECT","ACT_AUTONOMOUS","STATE_COUNTER","STATE_PERSISTENT_MEMORY","IN_AIM"],"note":"'state survives entity death' is exactly persistent memory"}
+{"id":"MD08","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_TIMER","STATE_DISCRETE","IN_CLICK"]}
+{"id":"MD09","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_COUNTER","REQ_PHYSICS_SIM","IN_DRAG"]}
+{"id":"MD10","required":["GOAL_SEQUENCE","ACT_PLAYER_DIRECT","STATE_DISCRETE","REQ_TEXT_RENDER","IN_TEXT"]}
+{"id":"MD11","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_COUNTER","STATE_DISCRETE","REQ_MULTI_AGENT","REQ_PATHFIND_GRID"]}
+{"id":"MD12","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_DISCRETE","IN_MOVE"]}
+{"id":"MD13","required":["GOAL_THRESHOLD","ACT_PLAYER_DIRECT","STATE_TIMER","STATE_DISCRETE","REQ_MULTI_SOURCE_INPUT","IN_CLICK"],"note":"conjunction over two independent sources is multi-source input even without buttons"}
+{"id":"MD14","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_PERSISTENT_MEMORY","REQ_DIALOGUE","IN_TEXT"]}
+{"id":"MD15","required":["GOAL_REACH","ACT_PLAYER_DIRECT","STATE_PERSISTENT_MEMORY","STATE_CONTINUOUS","IN_MOVE"]}
+{"id":"VG01","required":[],"note":"vague prompts require nothing -> every archetype is feasible -> hash tie-break decides, deterministically"}
+{"id":"VG02","required":[]}
+{"id":"VG03","required":[]}
+{"id":"VG04","required":[]}
+{"id":"VG05","required":[]}
+{"id":"VG06","required":[]}
+{"id":"VG07","required":[]}
+{"id":"VG08","required":[]}
+{"id":"VG09","required":[],"note":"'a game' demands a goal but names none; every archetype has one, so no token is required"}
+{"id":"VG10","required":[]}
+{"id":"CT01","required":[]}
+{"id":"CT02","required":[]}
+{"id":"CT03","required":[]}
+{"id":"CT04","required":[]}
+{"id":"CT05","required":[]}
+{"id":"CT06","required":[]}
+{"id":"CT07","required":[]}
+{"id":"CT08","required":[]}
+{"id":"NS01","required":[]}
+{"id":"NS02","required":[]}
+{"id":"NS03","required":[]}
+{"id":"NS04","required":[]}
+{"id":"NS05","required":[]}
+{"id":"NS06","required":[]}
+{"id":"NS07","required":[]}
+{"id":"NS08","required":[],"note":"injection safety is a runtime property, never a capability token"}
+{"id":"NS09","required":[]}
+{"id":"NS10","required":[]}
+{"id":"NE01","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_DISCRETE"]}
+{"id":"NE02","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_DISCRETE","REQ_TEXT_RENDER"],"note":"diacritics in labels make text rendering a real requirement"}
+{"id":"NE03","required":["GOAL_REACH","ACT_PLAYER_DIRECT","ACT_AUTONOMOUS","STATE_DISCRETE","IN_MOVE"],"note":"corrected 11.8.: pass says the agent is PLACED centrally, not that it navigates"}
+{"id":"NE04","required":["GOAL_NONE","ACT_AUTONOMOUS"]}
+{"id":"NE05","required":["GOAL_NONE","REQ_TEXT_RENDER"],"note":"CJK glyph coverage"}
+{"id":"NE06","required":["GOAL_NONE","STATE_TIMER","STATE_DISCRETE"]}
+{"id":"NE07","required":["GOAL_NONE","ACT_AUTONOMOUS","REQ_TEXT_RENDER"],"note":"RTL layout"}
+{"id":"NE08","required":["GOAL_NONE","ACT_PLAYER_DIRECT","ACT_AUTONOMOUS","STATE_COUNTER","IN_AIM"]}
+{"id":"HO01","required":[]}
+{"id":"HO02","required":[]}
+{"id":"HO03","required":[]}
+{"id":"HO04","required":[]}
+{"id":"HO05","required":[]}
+{"id":"HO06","required":[]}
+{"id":"HO07","required":[]}
+{"id":"HO08","required":["GOAL_REACH","ACT_PLAYER_DIRECT","STATE_CONTINUOUS","REQ_PHYSICS_SIM","IN_MOVE"],"note":"pass demands a generic platformer; jumping is continuous"}
+{"id":"HO09","required":[]}
+{"id":"HO10","required":["GOAL_NONE","ACT_AUTONOMOUS","REQ_MULTI_AGENT","REQ_DIALOGUE"]}
+{"id":"HO11","required":[]}
+{"id":"HO12","required":[]}
+{"id":"IT01","required":["GOAL_NONE","ACT_PLAYER_DIRECT","ACT_AUTONOMOUS","STATE_DISCRETE","REQ_MULTI_AGENT","REQ_BEHAVIOUR_EDIT","IN_DRAG"],"note":"turn 4 rewrites the causal rule, not a parameter"}
+{"id":"IT02","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_DISCRETE","REQ_DIALOGUE","REQ_BEHAVIOUR_EDIT"]}
+{"id":"IT03","required":["GOAL_REACH","ACT_PLAYER_DIRECT","STATE_CONTINUOUS","REQ_PHYSICS_SIM","REQ_BEHAVIOUR_EDIT","IN_MOVE"],"note":"'up and down instead' changes the motion rule; 'undo that' must restore it exactly"}
+{"id":"IT04","required":["GOAL_NONE","ACT_PLAYER_DIRECT","STATE_TIMER","STATE_DISCRETE","REQ_BEHAVIOUR_EDIT"]}
+{"id":"IT05","required":["GOAL_REACH","ACT_PLAYER_DIRECT","IN_MOVE"],"note":"corrected 11.8.: the PLAYER walks the maze, no agent pathfinds. The one iterative prompt that is pure parameter patching."}
+{"id":"IT06","required":["GOAL_NONE","REQ_FREEFORM_BUILD","REQ_PHYSICS_SIM","REQ_BEHAVIOUR_EDIT","IN_DRAG"]}
+{"id":"IT07","required":["GOAL_NONE","ACT_AUTONOMOUS","STATE_COUNTER","STATE_PERSISTENT_MEMORY","REQ_BEHAVIOUR_EDIT","REQ_TEXT_RENDER"],"note":"Codex's 'threat nobody raised' in one prompt: the behaviour graph must grow across turns"}
+{"id":"IT08","required":["GOAL_NONE","STATE_TIMER"],"note":"contested: purely aesthetic refinement, so light preset counts as a parameter, NOT a behaviour edit -> should be FULL"}
+{"id":"PF01","required":[],"note":"perf is a runtime budget, never a capability token"}
+{"id":"PF02","required":[]}
+{"id":"PF03","required":["GOAL_NONE","ACT_PLAYER_DIRECT","IN_MOVE"]}
+{"id":"PF04","required":[]}
+{"id":"PF05","required":[]}

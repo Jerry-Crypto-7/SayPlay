@@ -1,0 +1,16 @@
+# LF v repozitáři i v pracovním stromu, na všech platformách.
+# Není to kosmetika: T1 a T2 mrazí `evals/frozen/` přes sha256 v `MANIFEST.lock`.
+# Kdyby Git na Windows checkoutoval CRLF, hash téhož souboru by se lišil podle
+# stroje a zmrazení by přestalo znamenat cokoli ověřitelného.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.glb binary
+*.gltf binary
+*.hdr binary
+*.ktx2 binary
+*.mp3 binary
+*.wav binary
+*.mp4 binary
+*.webm binary
