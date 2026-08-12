@@ -22,27 +22,35 @@ export const PHASES = ['sense', 'trigger', 'apply', 'settle'] as const;
 export type Phase = (typeof PHASES)[number];
 
 /**
- * Horní mez počtu **položek**, které fáze zpracuje. Není to mez práce — tu drží
- * rozpočet uvnitř primitiv (podmínka 5). Jsou to dvě různá tvrzení a plán je
- * odděluje schválně: „ohraničený počet kroků" a „ohraničená práce" se snadno
- * spletou a první z nich sama o sobě totalitu nedává.
+ * Horní mez počtu **položek**, které fáze zpracuje — součet přes všechny její
+ * smyčky. Není to mez práce: tu drží rozpočet uvnitř primitiv (podmínka 5). Jsou
+ * to dvě různá tvrzení a plán je odděluje schválně: „ohraničený počet kroků" a
+ * „ohraničená práce" se snadno spletou a první z nich sama o sobě totalitu nedává.
+ *
+ * **Jednotlivé smyčky mají vlastní, těsnější meze** (`limits.maxSlots`,
+ * `limits.maxEntities`, `pairBound`, …). Tahle funkce je jejich součet, protože
+ * podmínka 4 mluví o fázi, ne o smyčce, a instrumentovaný čítač počítá iterace
+ * všech smyček fáze dohromady. Kdyby vracela mez jedné smyčky, byla by aserce
+ * `iterace ≤ mez` nepravdivá pro každou fázi, která má smyčky dvě.
  */
 export function phaseBound(phase: Phase, limits: IrLimits): number {
   switch (phase) {
     case 'sense':
-      // Odvozené fakty jsou párové (`overlapping`, `visible`), takže mez je
-      // druhá mocnina počtu entit. Vnitřek jednoho páru — průchod mřížkou —
-      // má vlastní mez v `sightBound`.
-      return limits.maxEntities * limits.maxEntities;
+      // Sloty se procházejí dvakrát (stav a inventář), entity jednou a k nim
+      // zóny, odvozené fakty jsou párové (`overlapping`, `visible`). Vnitřek
+      // jednoho páru — průchod mřížkou — má vlastní mez v `sightBound`.
+      return 2 * limits.maxSlots + limits.maxEntities + 2 * pairBound(limits);
     case 'trigger':
       // Každé pravidlo se vyhodnotí nejvýš jednou za tik.
       return limits.maxRules;
     case 'apply':
-      // Spuštění pravidla stojí jednu jednotku klesajícího rozpočtu.
-      return limits.maxRuleFiringsPerTick;
+      // Spuštění pravidla stojí jednu jednotku klesajícího rozpočtu; efekty
+      // jednoho pravidla se počítají proti témuž deklarovanému stropu.
+      return limits.maxRuleFiringsPerTick * (1 + limits.maxRuleFiringsPerTick);
     case 'settle':
-      // Časovače, příkazy pohybu a zmrazení — vše po entitách a slotech.
-      return limits.maxEntities + limits.maxQueueDepth;
+      // Časovače, příkazy pohybu a zmrazení — dvě smyčky, každá po entitách
+      // a slotech.
+      return 2 * settleItemBound(limits);
     default: {
       // Vyčerpanost přechodů kontroluje TypeScript při kompilaci. Kdyby do
       // `PHASES` přibyla pátá fáze bez `case`, tenhle řádek přestane přeložit.
@@ -50,6 +58,22 @@ export function phaseBound(phase: Phase, limits: IrLimits): number {
       return exhaustive;
     }
   }
+}
+
+/**
+ * Mez párové smyčky ve fázi `sense`. Odvozené fakty `overlapping` a `visible`
+ * jsou nad dvojicemi entit, takže je to druhá mocnina deklarovaného počtu entit.
+ */
+export function pairBound(limits: IrLimits): number {
+  return limits.maxEntities * limits.maxEntities;
+}
+
+/**
+ * Mez jedné smyčky fáze `settle`. Časovače jsou sloty, příkazy pohybu a zmrazení
+ * entity — obojí shora omezené deklarací, ne délkou fronty.
+ */
+export function settleItemBound(limits: IrLimits): number {
+  return limits.maxEntities + limits.maxQueueDepth;
 }
 
 /**

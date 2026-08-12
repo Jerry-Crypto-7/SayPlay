@@ -275,9 +275,20 @@ export interface IrRule {
   readonly effects: readonly EffectIndex[];
 }
 
-/** Deklarované meze světa. Každá fáze tiku se z nich shora omezuje (T9). */
+/**
+ * Deklarované meze světa. Každá fáze tiku se z nich shora omezuje (T9).
+ *
+ * `maxSlots` tu je proto, že fáze `sense` prochází **všechny** deklarované sloty
+ * (countery, flagy, časovače, inventář, paměť), aby postavila `Observation`. Bez
+ * stropu by práce na tik rostla se vstupním dokumentem — tik by pořád terminoval,
+ * ale ohraničený by nebyl. Zmrazený `protocol.v1.json` strop slotů vyžaduje
+ * prózou (*„countery, flagy, timery, entity.state enumy, inventární sloty,
+ * memory sloty — vše ohraničené"*) a nikdy ho nevyčíslil; tohle pole je jeho
+ * strojově kontrolovatelný tvar, ne nová sémantika.
+ */
 export interface IrLimits {
   readonly maxEntities: number;
+  readonly maxSlots: number;
   readonly maxRules: number;
   readonly maxRuleFiringsPerTick: number;
   readonly maxQueueDepth: number;

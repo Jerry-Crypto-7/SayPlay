@@ -170,6 +170,7 @@ const ruleSchema = z
 const limitsSchema = z
   .object({
     maxEntities: z.int().min(1).max(512),
+    maxSlots: z.int().min(1).max(256),
     maxRules: z.int().min(1).max(512),
     maxRuleFiringsPerTick: z.int().min(1).max(4096),
     maxQueueDepth: z.int().min(1).max(1024),
@@ -275,6 +276,9 @@ export function validateIrDoc(input: unknown): IrValidation {
   for (const key of duplicates(orderKeys)) fail(`ambiguous execution order: ${key}`);
 
   if (doc.entities.length > doc.limits.maxEntities) fail('entity count above limits.maxEntities');
+  // Fáze `sense` prochází všechny sloty, takže bez téhle kontroly je `maxSlots`
+  // jen deklarace, kterou runtime nemá o co opřít.
+  if (doc.slots.length > doc.limits.maxSlots) fail('slot count above limits.maxSlots');
   if (doc.rules.length > doc.limits.maxRules) fail('rule count above limits.maxRules');
 
   const slotsById = new Map(doc.slots.map((slot) => [slot.id, slot]));

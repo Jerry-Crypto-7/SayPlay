@@ -6,7 +6,7 @@
       "why": "onStart snizeno na hranu odvozeneho faktu started()",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "flag", "id": "ready", "initial": false }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "literal", "value": true }],
@@ -20,7 +20,7 @@
       "why": "onClick snizeno na hranu faktu clicked(entity)",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [{ "stableId": "lever", "role": "prop", "socket": "s.hall", "states": ["down", "up"], "initialState": "down", "initialLocked": false }],
         "nodes": [{ "kind": "ref", "ref": { "space": "pulse", "fact": "clicked", "args": ["lever"] } }, { "kind": "literal", "value": "up" }],
@@ -34,7 +34,7 @@
       "why": "onEnterZone je hrana inZone(entity, zone) nahoru",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "counter", "id": "visits", "min": 0, "max": 8, "initial": 0 }],
         "entities": [{ "stableId": "hero", "role": "agent", "socket": "s.start", "states": ["idle"], "initialState": "idle", "initialLocked": false }],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "inZone", "args": ["hero", "atrium"] } }],
@@ -48,7 +48,7 @@
       "why": "onExitZone je TATAZ hrana s became:false — dve povrchove udalosti, jeden predikat",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "flag", "id": "outside", "initial": true }],
         "entities": [{ "stableId": "hero", "role": "agent", "socket": "s.start", "states": ["idle"], "initialState": "idle", "initialLocked": false }],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "inZone", "args": ["hero", "atrium"] } }, { "kind": "literal", "value": true }],
@@ -62,7 +62,7 @@
       "why": "onCollide se spousti PRI VSTUPU, tedy hranou nahoru, ne kazdy tik",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [{ "stableId": "hero", "role": "agent", "socket": "s.start", "states": ["idle"], "initialState": "idle", "initialLocked": false }, { "stableId": "spike", "role": "hazard", "socket": "s.trap", "states": ["armed"], "initialState": "armed", "initialLocked": false }],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "overlapping", "args": ["hero", "spike"] } }],
@@ -76,7 +76,7 @@
       "why": "onPickup(item) je disjunkce hasItem pres PEVNY pocet deklarovanych slotu — ohranicene, bez noveho primitiva",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "inventory", "id": "hand", "values": ["empty", "key"], "initial": "empty" }, { "space": "inventory", "id": "belt", "values": ["empty", "key"], "initial": "empty" }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "hasItem", "args": ["hand", "key"] } }, { "kind": "ref", "ref": { "space": "observed", "fact": "hasItem", "args": ["belt", "key"] } }, { "kind": "allOf", "operands": [0] }, { "kind": "anyOf", "operands": [0, 1] }],
@@ -90,7 +90,7 @@
       "why": "onDrop(item, socket) je hrana socketHolds(socket, item)",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "socketHolds", "args": ["s.pedestal", "gem"] } }],
@@ -104,7 +104,7 @@
       "why": "onTimerEnd je pad hrany timerRunning, tedy compare(timer > 0) s became:false",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "timer", "id": "fuse", "maxTicks": 200, "initial": 0 }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "timer", "slot": "fuse" } }, { "kind": "literal", "value": 0 }, { "kind": "compare", "lhs": 0, "op": ">", "rhs": 1 }],
@@ -118,7 +118,7 @@
       "why": "onCounterReaches je compare >=, ne rovnost — prirustek ze 4 na 6 s prahem 5 hranu prekroci",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "counter", "id": "shards", "min": 0, "max": 8, "initial": 0 }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "counter", "slot": "shards" } }, { "kind": "literal", "value": 5 }, { "kind": "compare", "lhs": 0, "op": ">=", "rhs": 1 }],
@@ -132,7 +132,7 @@
       "why": "onStateEnter je hrana compare(entityState = state)",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [{ "stableId": "vault", "role": "prop", "socket": "s.vault", "states": ["closed", "open"], "initialState": "closed", "initialLocked": true }],
         "nodes": [{ "kind": "ref", "ref": { "space": "entityState", "entity": "vault" } }, { "kind": "literal", "value": "open" }, { "kind": "compare", "lhs": 0, "op": "=", "rhs": 1 }],
@@ -146,7 +146,7 @@
       "why": "onSignal je hrana signalled(name) — tim se pravidla retezi",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "flag", "id": "chained", "initial": false }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "pulse", "fact": "signalled", "args": ["sig.gotKey"] } }, { "kind": "literal", "value": true }],
@@ -160,7 +160,7 @@
       "why": "onSeen je hrana vstupu do viditelnosti; ztrata je tataz hrana s became:false",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "flag", "id": "alarm", "initial": false }],
         "entities": [{ "stableId": "guard", "role": "agent", "socket": "s.post", "states": ["idle"], "initialState": "idle", "initialLocked": false }, { "stableId": "hero", "role": "agent", "socket": "s.start", "states": ["idle"], "initialState": "idle", "initialLocked": false }],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "visible", "args": ["guard", "hero"] } }, { "kind": "literal", "value": true }],
@@ -174,7 +174,7 @@
       "why": "onAction(actor, actionId, target?) — nosic vstupni hranice; chybejici target ma kanonickeho zastupce",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [{ "stableId": "vault", "role": "prop", "socket": "s.vault", "states": ["closed", "open"], "initialState": "closed", "initialLocked": true }, { "stableId": "hero", "role": "agent", "socket": "s.start", "states": ["idle"], "initialState": "idle", "initialLocked": false }],
         "nodes": [{ "kind": "ref", "ref": { "space": "pulse", "fact": "acted", "args": ["hero", "use", "vault"] } }, { "kind": "ref", "ref": { "space": "pulse", "fact": "acted", "args": ["hero", "wait", "none"] } }, { "kind": "literal", "value": false }],
@@ -188,7 +188,7 @@
       "why": "onCommandComplete(entity, commandId, result) — choreografie pohybu a zmrazeni",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [{ "stableId": "hero", "role": "agent", "socket": "s.start", "states": ["idle", "moving"], "initialState": "idle", "initialLocked": false }],
         "nodes": [{ "kind": "ref", "ref": { "space": "pulse", "fact": "commandDone", "args": ["hero", "cmd.move", "ok"] } }, { "kind": "literal", "value": "idle" }],
@@ -202,7 +202,7 @@
       "why": "compare(memory[...]) ve strazi a assign(memory[...]) v efektu — bez obojiho je pamet deklarovana, ale nectitelna",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 2, "memorySlotsPerAgent": 2, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 2, "memorySlotsPerAgent": 2, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "memory", "id": "m.guard.0", "agent": "guard", "index": 0, "values": ["calm", "alert"], "initial": "calm" }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "ref", "ref": { "space": "memory", "agent": "guard", "index": 0 } }, { "kind": "literal", "value": "alert" }, { "kind": "compare", "lhs": 1, "op": "=", "rhs": 2 }, { "kind": "literal", "value": "calm" }],
@@ -216,7 +216,7 @@
       "why": "countInZone je ohranicena agregace jako ValueExpr, ne vlastni udalost",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [],
         "nodes": [{ "kind": "query", "query": "countInZone", "zone": "pen", "tag": "sheep" }, { "kind": "literal", "value": 3 }, { "kind": "compare", "lhs": 0, "op": ">=", "rhs": 1 }],
@@ -230,7 +230,7 @@
       "why": "allOf/anyOf/not jsou AST operatory nad compare, ne dalsi podminky",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "counter", "id": "shards", "min": 0, "max": 8, "initial": 0 }, { "space": "flag", "id": "alarm", "initial": false }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "ref", "ref": { "space": "counter", "slot": "shards" } }, { "kind": "literal", "value": 2 }, { "kind": "compare", "lhs": 1, "op": ">=", "rhs": 2 }, { "kind": "ref", "ref": { "space": "flag", "slot": "alarm" } }, { "kind": "not", "operand": 4 }, { "kind": "allOf", "operands": [3, 5] }, { "kind": "anyOf", "operands": [6, 4] }],
@@ -244,7 +244,7 @@
       "why": "spawn vybira nejnizsi neaktivni ID; freeze je v TICICH, ne v sekundach",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [{ "stableId": "hero", "role": "agent", "socket": "s.start", "states": ["idle"], "initialState": "idle", "initialLocked": false }],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
@@ -258,7 +258,7 @@
       "why": "poradi vykonani je explicitni (phase, priority, ruleId) — bez nej je textove preusporadani potencialne semanticke",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "counter", "id": "shards", "min": 0, "max": 8, "initial": 0 }, { "space": "timer", "id": "fuse", "maxTicks": 200, "initial": 0 }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "ref", "ref": { "space": "counter", "slot": "shards" } }, { "kind": "literal", "value": 4 }, { "kind": "compare", "lhs": 1, "op": ">=", "rhs": 2 }],
@@ -272,7 +272,7 @@
       "why": "assign pokryva setState, setFlag, setLocked i reset citace — proto neni potreba samostatne primitivum",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "counter", "id": "shards", "min": 0, "max": 8, "initial": 3 }, { "space": "inventory", "id": "hand", "values": ["empty", "key", "gem"], "initial": "empty" }],
         "entities": [{ "stableId": "vault", "role": "prop", "socket": "s.vault", "states": ["closed", "open"], "initialState": "closed", "initialLocked": true }, { "stableId": "hero", "role": "agent", "socket": "s.start", "states": ["idle"], "initialState": "idle", "initialLocked": false }],
         "nodes": [{ "kind": "ref", "ref": { "space": "pulse", "fact": "acted", "args": ["hero", "unlock", "vault"] } }, { "kind": "literal", "value": false }, { "kind": "literal", "value": 0 }, { "kind": "literal", "value": "key" }],
@@ -289,7 +289,7 @@
       "expect": "schema:",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
@@ -305,7 +305,7 @@
       "expect": "schema:/irVersion",
       "doc": {
         "irVersion": "world-ir-v2",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
@@ -320,7 +320,7 @@
       "expect": "expr index out of range",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
@@ -335,7 +335,7 @@
       "expect": "at or above itself",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "flag", "id": "alarm", "initial": false }],
         "entities": [],
         "nodes": [{ "kind": "not", "operand": 1 }, { "kind": "ref", "ref": { "space": "flag", "slot": "alarm" } }],
@@ -350,7 +350,7 @@
       "expect": "at or above itself",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "flag", "id": "alarm", "initial": false }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "flag", "slot": "alarm" } }, { "kind": "not", "operand": 1 }],
@@ -365,7 +365,7 @@
       "expect": "compare rhs must be a literal",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "counter", "id": "a", "min": 0, "max": 8, "initial": 0 }, { "space": "counter", "id": "b", "min": 0, "max": 8, "initial": 0 }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "counter", "slot": "a" } }, { "kind": "ref", "ref": { "space": "counter", "slot": "b" } }, { "kind": "compare", "lhs": 0, "op": ">=", "rhs": 1 }],
@@ -380,7 +380,7 @@
       "expect": "compare operands are",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "counter", "id": "shards", "min": 0, "max": 8, "initial": 0 }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "counter", "slot": "shards" } }, { "kind": "literal", "value": "gem" }, { "kind": "compare", "lhs": 0, "op": "=", "rhs": 1 }],
@@ -395,7 +395,7 @@
       "expect": "support only the '=' operator",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [{ "stableId": "vault", "role": "prop", "socket": "s.vault", "states": ["closed", "open"], "initialState": "closed", "initialLocked": true }],
         "nodes": [{ "kind": "ref", "ref": { "space": "entityState", "entity": "vault" } }, { "kind": "literal", "value": "open" }, { "kind": "compare", "lhs": 0, "op": ">", "rhs": 1 }],
@@ -410,7 +410,7 @@
       "expect": "duplicate ruleId",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
@@ -425,7 +425,7 @@
       "expect": "duplicate predicateId",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "flag", "id": "alarm", "initial": false }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "ref", "ref": { "space": "flag", "slot": "alarm" } }],
@@ -440,7 +440,7 @@
       "expect": "unknown predicate",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
@@ -455,7 +455,7 @@
       "expect": "guard is not boolean",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "counter", "id": "shards", "min": 0, "max": 8, "initial": 0 }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "counter", "slot": "shards" } }, { "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
@@ -470,7 +470,7 @@
       "expect": "effect index 5 out of range",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
@@ -485,7 +485,7 @@
       "expect": "is not assignable",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "literal", "value": true }],
@@ -500,7 +500,7 @@
       "expect": "assign value must be a literal",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "counter", "id": "shards", "min": 0, "max": 8, "initial": 0 }, { "space": "flag", "id": "alarm", "initial": false }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "ref", "ref": { "space": "counter", "slot": "shards" } }, { "kind": "literal", "value": 2 }, { "kind": "compare", "lhs": 1, "op": ">=", "rhs": 2 }],
@@ -515,7 +515,7 @@
       "expect": "is not declared on",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [{ "stableId": "vault", "role": "prop", "socket": "s.vault", "states": ["closed", "open"], "initialState": "closed", "initialLocked": true }],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "literal", "value": "ajar" }],
@@ -530,7 +530,7 @@
       "expect": "schema:",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [{ "stableId": "hero", "role": "agent", "socket": "s.start", "states": ["idle"], "initialState": "idle", "initialLocked": false }],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
@@ -545,7 +545,7 @@
       "expect": "schema:",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
@@ -560,7 +560,7 @@
       "expect": "above limits.memorySlotsPerAgent",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 2, "memorySlotsPerAgent": 2, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 2, "memorySlotsPerAgent": 2, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "memory", "id": "m.guard.3", "agent": "guard", "index": 3, "values": ["calm", "alert"], "initial": "calm" }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
@@ -575,7 +575,7 @@
       "expect": "has min above max",
       "doc": {
         "irVersion": "world-ir-v1",
-        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "limits": { "maxEntities": 8, "maxSlots": 32, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
         "slots": [{ "space": "counter", "id": "shards", "min": 5, "max": 2, "initial": 5 }],
         "entities": [],
         "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],

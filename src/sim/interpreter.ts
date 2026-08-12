@@ -29,7 +29,7 @@
 
 import { atTickBoundary, evalBool, evalNode, factKey, type Observation } from '../ir/eval';
 import type { EntityDecl, IrDoc, IrEffect, IrLimits, IrRule, SlotDecl, StateRef } from '../ir/types';
-import { pathBound, phaseBound, sightBound, type Phase } from './phases';
+import { pairBound, pathBound, phaseBound, settleItemBound, sightBound, type Phase } from './phases';
 import { createState, defineLayout, readSlot, writeSlot, type SlotSpec, type StateLayout } from './state';
 
 // ---------------------------------------------------------------------------
@@ -78,12 +78,28 @@ export type RunState = 'running' | 'won' | 'lost' | 'runtimeFault';
 /** Proč tik atomicky spadl. Je to definovaný přechod runtimu, ne výjimka. */
 export type FaultReason = 'budget-exhausted' | 'queue-overflow' | 'entity-cap';
 
+/**
+ * Kolik položek která fáze v tomhle tiku skutečně zpracovala.
+ *
+ * Je to instrumentace pro podmínku 4, ne stav: do hashe nevstupuje a čte se
+ * výhradně z `StepResult`. Bez ní by se aserce „iterací je nejvýš tolik, kolik
+ * deklarují meze světa" dala napsat jen přes proxy metriku, tedy přes něco, co
+ * s počtem iterací pouze koreluje.
+ */
+export type PhaseCounts = Readonly<Record<Phase, number>>;
+
+function zeroCounts(): Record<Phase, number> {
+  return { sense: 0, trigger: 0, apply: 0, settle: 0 };
+}
+
 export interface StepResult {
   readonly runState: RunState;
   readonly tick: number;
   readonly fault: FaultReason | null;
   /** Kolik spuštění pravidel tik spotřeboval. Instrumentace pro podmínku 1. */
   readonly firings: number;
+  /** Počet iterací po fázích. Instrumentace pro podmínku 4. */
+  readonly iterations: PhaseCounts;
 }
 
 const SYMBOL_NONE = 'none';
@@ -311,6 +327,12 @@ function isBlocked(space: SpaceDecl, x: number, y: number, limits: IrLimits): bo
   return false;
 }
 
+/** Výsledek jednoho průchodu mřížkou i s počtem iterací, které stál. */
+export interface SightTrace {
+  readonly visible: boolean;
+  readonly steps: number;
+}
+
 /**
  * Viditelnost průchodem mřížkou.
  *
@@ -319,15 +341,19 @@ function isBlocked(space: SpaceDecl, x: number, y: number, limits: IrLimits): bo
  * první iteraci: to je přesně ten případ, kterým review P1 kolo 2 prostřelilo
  * první čtyři podmínky totality, protože počet položek fáze omezovaly, ale
  * práci uvnitř jedné položky ne.
+ *
+ * `steps` je exportovaná instrumentace, ne ozdoba: „vrátí v jedné iteraci" je
+ * tvrzení o vnitřku primitiva a zvenčí — z faktu `visible` nebo z doby běhu —
+ * se nedá pozorovat.
  */
-function hasLineOfSight(
+export function traceSight(
   space: SpaceDecl,
   limits: IrLimits,
   ax: number,
   ay: number,
   bx: number,
   by: number,
-): boolean {
+): SightTrace {
   const bound = sightBound(limits);
   let x = ax;
   let y = ay;
@@ -337,8 +363,8 @@ function hasLineOfSight(
   const stepY = ay < by ? 1 : -1;
   let error = dx - dy;
   for (let i = 0; i < bound; i += 1) {
-    if (x === bx && y === by) return true;
-    if ((x !== ax || y !== ay) && isBlocked(space, x, y, limits)) return false;
+    if (x === bx && y === by) return { visible: true, steps: i + 1 };
+    if ((x !== ax || y !== ay) && isBlocked(space, x, y, limits)) return { visible: false, steps: i + 1 };
     const doubled = error * 2;
     if (doubled > -dy) {
       error -= dy;
@@ -349,14 +375,25 @@ function hasLineOfSight(
       y += stepY;
     }
   }
-  return false;
+  return { visible: false, steps: bound };
+}
+
+function hasLineOfSight(
+  space: SpaceDecl,
+  limits: IrLimits,
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+): boolean {
+  return traceSight(space, limits, ax, ay, bx, by).visible;
 }
 
 function inRect(rect: readonly [number, number, number, number], x: number, y: number): boolean {
   return x >= rect[0] && x < rect[0] + rect[2] && y >= rect[1] && y < rect[1] + rect[3];
 }
 
-function sense(runtime: Runtime): Observation {
+function sense(runtime: Runtime, counts: Record<Phase, number>): Observation {
   const { doc, layout, limits, entityOrder } = runtime;
   const counters: Record<string, number> = {};
   const flags: Record<string, boolean> = {};
@@ -368,8 +405,12 @@ function sense(runtime: Runtime): Observation {
   const facts = new Set<string>();
   const zoneCounts: Record<string, number> = {};
 
+  // Mez je deklarovaná (`maxSlots`), ne délka vstupního pole. Bez ní by práce
+  // fáze rostla s dokumentem — tik by terminoval, ohraničený by nebyl.
+  const slotBound = limits.maxSlots;
   const slotCount = doc.ir.slots.length;
-  for (let i = 0; i < slotCount; i += 1) {
+  for (let i = 0; i < slotBound && i < slotCount; i += 1) {
+    counts.sense += 1;
     const decl = doc.ir.slots[i];
     const id = slotIdOf(decl);
     const raw = readSlot(layout, runtime.state, id);
@@ -400,7 +441,8 @@ function sense(runtime: Runtime): Observation {
 
   // Inventář drží položky po slotech; `socketHolds` je jeho protějšek u socketu.
   const invCount = doc.ir.slots.length;
-  for (let i = 0; i < invCount; i += 1) {
+  for (let i = 0; i < slotBound && i < invCount; i += 1) {
+    counts.sense += 1;
     const decl = doc.ir.slots[i];
     if (decl.space !== 'inventory') continue;
     const held = inventory[decl.id];
@@ -410,6 +452,7 @@ function sense(runtime: Runtime): Observation {
   const entityBound = limits.maxEntities;
   const zoneNames = runtime.zoneNames;
   for (let i = 0; i < entityBound && i < entityOrder.length; i += 1) {
+    counts.sense += 1;
     const id = entityOrder[i];
     if (readSlot(layout, runtime.state, entitySlotId(id, 'active')) !== 1) continue;
     const table = runtime.entityStates.get(id);
@@ -418,6 +461,7 @@ function sense(runtime: Runtime): Observation {
     const x = readSlot(layout, runtime.state, entitySlotId(id, 'x'));
     const y = readSlot(layout, runtime.state, entitySlotId(id, 'y'));
     for (let z = 0; z < entityBound && z < zoneNames.length; z += 1) {
+      counts.sense += 1;
       const zone = zoneNames[z];
       if (!inRect(doc.space.zones[zone], x, y)) continue;
       facts.add(factKey('inZone', [id, zone]));
@@ -427,11 +471,12 @@ function sense(runtime: Runtime): Observation {
     }
   }
 
-  // Párové fakty. Mez fáze je `maxEntities²` a je v podmínce obou smyček.
-  const pairBound = phaseBound('sense' satisfies Phase, limits);
+  // Párové fakty. Mez je `maxEntities²` a je v podmínce obou smyček.
+  const pairLimit = pairBound(limits);
   let pairs = 0;
   for (let i = 0; i < entityBound && i < entityOrder.length; i += 1) {
-    for (let j = 0; j < entityBound && j < entityOrder.length && pairs < pairBound; j += 1) {
+    for (let j = 0; j < entityBound && j < entityOrder.length && pairs < pairLimit; j += 1) {
+      counts.sense += 1;
       if (i === j) continue;
       pairs += 1;
       const a = entityOrder[i];
@@ -624,12 +669,13 @@ function applyEffect(runtime: Runtime, effect: IrEffect, obs: Observation): Effe
 // Fáze 4 — settle
 // ---------------------------------------------------------------------------
 
-function settle(runtime: Runtime): void {
+function settle(runtime: Runtime, counts: Record<Phase, number>): void {
   const { layout, limits, doc, entityOrder } = runtime;
 
   const slotCount = doc.ir.slots.length;
-  const settleBound = phaseBound('settle' satisfies Phase, limits);
+  const settleBound = settleItemBound(limits);
   for (let i = 0; i < settleBound && i < slotCount; i += 1) {
+    counts.settle += 1;
     const decl = doc.ir.slots[i];
     if (decl.space !== 'timer') continue;
     const id = `t:${decl.id}`;
@@ -638,6 +684,7 @@ function settle(runtime: Runtime): void {
   }
 
   for (let i = 0; i < settleBound && i < entityOrder.length; i += 1) {
+    counts.settle += 1;
     const id = entityOrder[i];
     const frozen = readSlot(layout, runtime.state, entitySlotId(id, 'freeze'));
     if (frozen > 0) {
@@ -674,8 +721,15 @@ function settle(runtime: Runtime): void {
  * začátku tiku. Bez toho by po pádu zůstal poloviční tik a replay by nesouhlasil.
  */
 export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResult {
+  const counts = zeroCounts();
   if (runtime.runState !== 'running') {
-    return { runState: runtime.runState, tick: runtime.tick, fault: runtime.fault, firings: 0 };
+    return {
+      runState: runtime.runState,
+      tick: runtime.tick,
+      fault: runtime.fault,
+      firings: 0,
+      iterations: counts,
+    };
   }
 
   const limits = runtime.limits;
@@ -691,18 +745,25 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
       runtime.state = snapshot;
       runtime.runState = 'runtimeFault';
       runtime.fault = 'queue-overflow';
-      return { runState: 'runtimeFault', tick: runtime.tick, fault: 'queue-overflow', firings: 0 };
+      return {
+        runState: 'runtimeFault',
+        tick: runtime.tick,
+        fault: 'queue-overflow',
+        firings: 0,
+        iterations: counts,
+      };
     }
     const input = inputs[i];
     runtime.drainQueue.push(factKey('acted', [input.actor, input.actionId, input.target ?? 'none']));
   }
 
-  const observation = sense(runtime);
+  const observation = sense(runtime, counts);
 
   // Fáze 2 — spouštěče a stráže proti PRE-STAVU tiku.
   const triggerBound = phaseBound('trigger' satisfies Phase, limits);
   const fired: IrRule[] = [];
   for (let i = 0; i < triggerBound && i < runtime.ruleOrder.length; i += 1) {
+    counts.trigger += 1;
     const rule = runtime.ruleOrder[i];
     const expr = runtime.predicateIndex.get(rule.trigger.predicate);
     if (expr === undefined) continue;
@@ -715,14 +776,18 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
   }
 
   // Fáze 3 — akce ve stabilním pořadí, každá za jednotku klesajícího rozpočtu.
-  const applyBound = phaseBound('apply' satisfies Phase, limits);
+  // Mez SPUŠTĚNÍ, ne mez fáze: `phaseBound('apply')` je součet přes vnější
+  // i vnitřní smyčku, a dosadit ho sem by strop spuštění zvedl na kvadrát.
+  const applyBound = limits.maxRuleFiringsPerTick;
   let outcome: RunState = 'running';
   let fault: FaultReason | null = null;
   for (let i = 0; i < applyBound && i < fired.length && runtime.budget.remaining > 0; i += 1) {
+    counts.apply += 1;
     runtime.budget.remaining -= 1;
     const rule = fired[i];
     const effectBound = limits.maxRuleFiringsPerTick;
     for (let e = 0; e < effectBound && e < rule.effects.length && fault === null; e += 1) {
+      counts.apply += 1;
       const result = applyEffect(runtime, runtime.doc.ir.effects[rule.effects[e]], observation);
       if (result === 'won') outcome = 'won';
       else if (result === 'lost') outcome = 'lost';
@@ -739,10 +804,16 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
     runtime.writeQueue = [];
     runtime.runState = 'runtimeFault';
     runtime.fault = fault;
-    return { runState: 'runtimeFault', tick: runtime.tick, fault, firings: before - runtime.budget.remaining };
+    return {
+      runState: 'runtimeFault',
+      tick: runtime.tick,
+      fault,
+      firings: before - runtime.budget.remaining,
+      iterations: counts,
+    };
   }
 
-  settle(runtime);
+  settle(runtime, counts);
 
   // Prohození bufferů. Fronta zapisovaná tímhle tikem se čerpá až tím příštím —
   // tohle je to, co `onSignal(A) → emit(A)` znemožňuje strukturálně.
@@ -752,7 +823,13 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
   runtime.tick += 1;
   runtime.runState = outcome;
 
-  return { runState: outcome, tick: runtime.tick, fault: null, firings: before - runtime.budget.remaining };
+  return {
+    runState: outcome,
+    tick: runtime.tick,
+    fault: null,
+    firings: before - runtime.budget.remaining,
+    iterations: counts,
+  };
 }
 
 /**

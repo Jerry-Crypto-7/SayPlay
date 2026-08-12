@@ -136,6 +136,7 @@ function docWith(patch: Partial<IrDoc>): IrDoc {
     irVersion: IR_VERSION,
     limits: {
       maxEntities: 8,
+      maxSlots: 32,
       maxRules: 16,
       maxRuleFiringsPerTick: 64,
       maxQueueDepth: 32,
@@ -289,6 +290,38 @@ describe('paměťové sloty', () => {
     const reads = doc.nodes.some((node) => node.kind === 'ref' && node.ref.space === 'memory');
     const writes = doc.effects.some((effect) => effect.op === 'assign' && effect.ref.space === 'memory');
     expect({ reads, writes }).toEqual({ reads: true, writes: true });
+  });
+});
+
+/**
+ * `maxSlots` je jediná mez, kterou zmrazený protokol vyžaduje prózou a nikdy
+ * nevyčíslil (*„countery, flagy, timery, … — vše ohraničené"*). Fáze `sense`
+ * prochází všechny sloty, takže bez tohohle stropu roste práce na tik se
+ * vstupním dokumentem — tik pořád terminuje, ohraničený ale není.
+ */
+describe('strop počtu slotů', () => {
+  const twoSlots: IrDoc['slots'] = [
+    { space: 'flag', id: 'a', initial: false },
+    { space: 'flag', id: 'b', initial: false },
+  ];
+
+  it('dokument nad deklarovaným stropem je odmítnut', () => {
+    const verdict = validateIrDoc(
+      docWith({ limits: { ...docWith({}).limits, maxSlots: 1 }, slots: twoSlots }),
+    );
+    expect(verdict.ok).toBe(false);
+    expect(verdict.issues.join('\n')).toContain('slot count above limits.maxSlots');
+  });
+
+  it('a týž dokument pod stropem projde — jinak by kontrola vracela pořád totéž', () => {
+    expect(validateIrDoc(docWith({ slots: twoSlots })).ok).toBe(true);
+  });
+
+  it('chybějící `maxSlots` neprojde ani schématem', () => {
+    const { maxSlots: _dropped, ...withoutMaxSlots } = docWith({}).limits;
+    const verdict = validateIrDoc({ ...docWith({}), limits: withoutMaxSlots });
+    expect(verdict.ok).toBe(false);
+    expect(verdict.issues.join('\n')).toContain('schema:/limits/maxSlots');
   });
 });
 
