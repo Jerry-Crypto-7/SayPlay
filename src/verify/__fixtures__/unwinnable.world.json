@@ -1,0 +1,98 @@
+{
+  "_note": "Nevyhratelný svět, a je to ZÁMĚRNĚ minimální odchylka od `vault.world.json`: tentýž řetěz onAction → onCounterReaches → onSignal, jen bez pravidla `r.open`, které jako jediné spouští efekt `win`. Efekt `win` v dokumentu zůstává, takže se nedá odmítnout tvarem — odmítnout ho musí až replay. Svět bez jediného pravidla by dokazoval jen to, že prázdný svět nevyhrává.",
+  "certification": { "tier": "short", "horizonTicks": 60 },
+  "trace": [{ "tick": 2, "actor": "hero", "actionId": "pull", "target": "lever" }],
+  "space": {
+    "sockets": {
+      "s_start": [1, 1],
+      "s_lever": [3, 1],
+      "s_vault": [6, 6]
+    },
+    "zones": {},
+    "blocked": [],
+    "tags": {}
+  },
+  "ir": {
+    "irVersion": "world-ir-v1",
+    "limits": {
+      "maxEntities": 8,
+      "maxSlots": 8,
+      "maxRules": 8,
+      "maxRuleFiringsPerTick": 8,
+      "maxQueueDepth": 8,
+      "maxAgents": 2,
+      "memorySlotsPerAgent": 0,
+      "gridWidth": 8,
+      "gridHeight": 8
+    },
+    "slots": [
+      { "space": "counter", "id": "keys", "min": 0, "max": 3, "initial": 0 },
+      { "space": "flag", "id": "unlocked", "initial": false }
+    ],
+    "entities": [
+      {
+        "stableId": "hero",
+        "role": "actor",
+        "socket": "s_start",
+        "states": ["idle"],
+        "initialState": "idle",
+        "initialLocked": false
+      },
+      {
+        "stableId": "lever",
+        "role": "fixture",
+        "socket": "s_lever",
+        "states": ["up", "down"],
+        "initialState": "up",
+        "initialLocked": false
+      },
+      {
+        "stableId": "door",
+        "role": "fixture",
+        "socket": "s_vault",
+        "states": ["shut", "open"],
+        "initialState": "shut",
+        "initialLocked": true
+      }
+    ],
+    "nodes": [
+      { "kind": "ref", "ref": { "space": "pulse", "fact": "acted", "args": ["hero", "pull", "lever"] } },
+      { "kind": "ref", "ref": { "space": "counter", "slot": "keys" } },
+      { "kind": "literal", "value": 1 },
+      { "kind": "compare", "lhs": 1, "op": ">=", "rhs": 2 },
+      { "kind": "ref", "ref": { "space": "pulse", "fact": "signalled", "args": ["open"] } },
+      { "kind": "ref", "ref": { "space": "flag", "slot": "unlocked" } },
+      { "kind": "literal", "value": true },
+      { "kind": "compare", "lhs": 5, "op": "=", "rhs": 6 }
+    ],
+    "predicates": [
+      { "predicateId": "p.onAction.hero.pull.lever", "source": "onAction", "expr": 0 },
+      { "predicateId": "p.onCounterReaches.keys.1", "source": "onCounterReaches", "expr": 3 },
+      { "predicateId": "p.onSignal.open", "source": "onSignal", "expr": 4 }
+    ],
+    "effects": [
+      { "op": "assign", "ref": { "space": "flag", "slot": "unlocked" }, "value": 6 },
+      { "op": "addCounter", "slot": "keys", "delta": 1 },
+      { "op": "emit", "signal": "open" },
+      { "op": "win" }
+    ],
+    "rules": [
+      {
+        "ruleId": "r.pull",
+        "phase": 0,
+        "priority": 0,
+        "trigger": { "kind": "onEdge", "predicate": "p.onAction.hero.pull.lever", "became": true },
+        "guard": null,
+        "effects": [0, 1]
+      },
+      {
+        "ruleId": "r.threshold",
+        "phase": 0,
+        "priority": 1,
+        "trigger": { "kind": "onEdge", "predicate": "p.onCounterReaches.keys.1", "became": true },
+        "guard": null,
+        "effects": [2]
+      }
+    ]
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "_note": "Svět, který si řekne o horizont 5 000 tiků v tieru `short` (strop 600). Je VYHRATELNÝ schválně a je to celý smysl fixture: kdyby vyhratelný nebyl, `NO_FIT` by se nedalo odlišit od `NO_WIN` a test by neprokázal, že odmítla politika, ne obsah. `DESIGN-BOOK.md` §6: *„Kdyby si ho deklaroval model, projde verifikací triviálně: prohlásí horizont tak dlouhý, že vyhraje i náhodná procházka.“*",
+  "certification": { "tier": "short", "horizonTicks": 5000 },
+  "winsAtTick": 5,
+  "trace": [{ "tick": 2, "actor": "hero", "actionId": "pull", "target": "lever" }],
+  "space": {
+    "sockets": {
+      "s_start": [1, 1],
+      "s_lever": [3, 1],
+      "s_vault": [6, 6]
+    },
+    "zones": {},
+    "blocked": [],
+    "tags": {}
+  },
+  "ir": {
+    "irVersion": "world-ir-v1",
+    "limits": {
+      "maxEntities": 8,
+      "maxSlots": 8,
+      "maxRules": 8,
+      "maxRuleFiringsPerTick": 8,
+      "maxQueueDepth": 8,
+      "maxAgents": 2,
+      "memorySlotsPerAgent": 0,
+      "gridWidth": 8,
+      "gridHeight": 8
+    },
+    "slots": [
+      { "space": "counter", "id": "keys", "min": 0, "max": 3, "initial": 0 },
+      { "space": "flag", "id": "unlocked", "initial": false }
+    ],
+    "entities": [
+      {
+        "stableId": "hero",
+        "role": "actor",
+        "socket": "s_start",
+        "states": ["idle"],
+        "initialState": "idle",
+        "initialLocked": false
+      },
+      {
+        "stableId": "lever",
+        "role": "fixture",
+        "socket": "s_lever",
+        "states": ["up", "down"],
+        "initialState": "up",
+        "initialLocked": false
+      },
+      {
+        "stableId": "door",
+        "role": "fixture",
+        "socket": "s_vault",
+        "states": ["shut", "open"],
+        "initialState": "shut",
+        "initialLocked": true
+      }
+    ],
+    "nodes": [
+      { "kind": "ref", "ref": { "space": "pulse", "fact": "acted", "args": ["hero", "pull", "lever"] } },
+      { "kind": "ref", "ref": { "space": "counter", "slot": "keys" } },
+      { "kind": "literal", "value": 1 },
+      { "kind": "compare", "lhs": 1, "op": ">=", "rhs": 2 },
+      { "kind": "ref", "ref": { "space": "pulse", "fact": "signalled", "args": ["open"] } },
+      { "kind": "ref", "ref": { "space": "flag", "slot": "unlocked" } },
+      { "kind": "literal", "value": true },
+      { "kind": "compare", "lhs": 5, "op": "=", "rhs": 6 }
+    ],
+    "predicates": [
+      { "predicateId": "p.onAction.hero.pull.lever", "source": "onAction", "expr": 0 },
+      { "predicateId": "p.onCounterReaches.keys.1", "source": "onCounterReaches", "expr": 3 },
+      { "predicateId": "p.onSignal.open", "source": "onSignal", "expr": 4 }
+    ],
+    "effects": [
+      { "op": "assign", "ref": { "space": "flag", "slot": "unlocked" }, "value": 6 },
+      { "op": "addCounter", "slot": "keys", "delta": 1 },
+      { "op": "emit", "signal": "open" },
+      { "op": "win" }
+    ],
+    "rules": [
+      {
+        "ruleId": "r.pull",
+        "phase": 0,
+        "priority": 0,
+        "trigger": { "kind": "onEdge", "predicate": "p.onAction.hero.pull.lever", "became": true },
+        "guard": null,
+        "effects": [0, 1]
+      },
+      {
+        "ruleId": "r.threshold",
+        "phase": 0,
+        "priority": 1,
+        "trigger": { "kind": "onEdge", "predicate": "p.onCounterReaches.keys.1", "became": true },
+        "guard": null,
+        "effects": [2]
+      },
+      {
+        "ruleId": "r.open",
+        "phase": 0,
+        "priority": 2,
+        "trigger": { "kind": "onEdge", "predicate": "p.onSignal.open", "became": true },
+        "guard": 7,
+        "effects": [3]
+      }
+    ]
+  }
+}

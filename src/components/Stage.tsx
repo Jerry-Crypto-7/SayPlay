@@ -3,9 +3,23 @@
 import { Canvas } from '@react-three/fiber';
 import { useState } from 'react';
 
+import type { TraceInput } from '@/sim/interpreter';
+import { verifyWitness, type VerifiableWorld, type VerifyResult } from '@/verify/witness';
+
 declare global {
   interface Window {
-    __worldsmith?: { webgl2: boolean; renderer: string };
+    __worldsmith?: {
+      webgl2: boolean;
+      renderer: string;
+      /**
+       * Verifikátor svědka spuštěný **v prohlížeči**. Není to testovací pomůcka:
+       * replay musí dát tentýž hash v Node i v prohlížeči, jinak certifikát
+       * vydaný na serveru o hře v prohlížeči netvrdí nic. `e2e/witness-replay`
+       * porovnává obojí a je to jediná cesta, jak se na to zeptat skutečného
+       * runtimu místo jeho napodobeniny.
+       */
+      verify: (doc: VerifiableWorld, witness: readonly TraceInput[]) => VerifyResult;
+    };
   }
 }
 
@@ -31,6 +45,7 @@ export default function Stage() {
         window.__worldsmith = {
           webgl2: ctx instanceof WebGL2RenderingContext,
           renderer: 'three',
+          verify: verifyWitness,
         };
         setReady(true);
       }}

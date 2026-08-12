@@ -1,0 +1,47 @@
+{
+  "_note": "Vadní svědci proti `src/sim/__fixtures__/vault.world.json`. Každý porušuje právě JEDNU podmínku proveditelnosti a nese očekávaný důvod odmítnutí jako anotaci — test tak porovnává verdikt s deklarovaným záměrem, ne sám se sebou. Stav-závislý případ (aktér despawnutý dřívějším krokem) tady schválně NENÍ: nedá se zapsat samotným svědkem, protože potřebuje svět s `despawn`, a ten si test odvozuje z vaultu. Kdyby se sem vešel jako statický záznam, přestal by dokazovat, že se proveditelnost měří proti STAVU.",
+  "forWorld": "src/sim/__fixtures__/vault.world.json",
+  "cases": [
+    {
+      "name": "backwards-tick",
+      "expect": "STEP_UNREACHABLE",
+      "atStep": 1,
+      "why": "Čas v záznamu hry nejde zpátky. Bez téhle kontroly by se krok mimo pořadí replay smyčce prostě minul a stopa by skončila jako NO_WIN — tedy jako neúspěšná místo jako nesmyslná.",
+      "witness": [
+        { "tick": 3, "actor": "hero", "actionId": "pull", "target": "lever" },
+        { "tick": 1, "actor": "hero", "actionId": "pull", "target": "lever" }
+      ]
+    },
+    {
+      "name": "beyond-horizon",
+      "expect": "STEP_UNREACHABLE",
+      "atStep": 0,
+      "why": "Vault žádá tier `short` s horizontem 600 tiků; krok v tiku 900 leží za ním. Systémový horizont musí uřezat i svědka, ne jen běh.",
+      "witness": [{ "tick": 900, "actor": "hero", "actionId": "pull", "target": "lever" }]
+    },
+    {
+      "name": "unknown-actor",
+      "expect": "STEP_UNREACHABLE",
+      "atStep": 0,
+      "why": "Aktér, který ve světě není deklarovaný, nemohl nic udělat.",
+      "witness": [{ "tick": 1, "actor": "ghost", "actionId": "pull", "target": "lever" }]
+    },
+    {
+      "name": "unknown-target",
+      "expect": "STEP_UNREACHABLE",
+      "atStep": 1,
+      "why": "Cíl akce se rozpouští proti deklarovanému `sim` (§13.1), nikdy proti vykreslené geometrii. První krok je platný, takže se prokáže, že odmítnutí přišlo od DRUHÉHO.",
+      "witness": [
+        { "tick": 1, "actor": "hero", "actionId": "wave" },
+        { "tick": 2, "actor": "hero", "actionId": "pull", "target": "phantom" }
+      ]
+    },
+    {
+      "name": "negative-tick",
+      "expect": "STEP_UNREACHABLE",
+      "atStep": 0,
+      "why": "Tik je index, ne čas — záporná hodnota není dřívější okamžik, je to vadný záznam.",
+      "witness": [{ "tick": -1, "actor": "hero", "actionId": "pull", "target": "lever" }]
+    }
+  ]
+}

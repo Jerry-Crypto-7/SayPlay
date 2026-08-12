@@ -73,6 +73,16 @@ export interface WorldDocRuntime {
 // Běhový stav
 // ---------------------------------------------------------------------------
 
+/**
+ * Verze runtimu, kterou zaznamenává certifikát svědka.
+ *
+ * Není to kosmetika: certifikát tvrdí „tenhle svědek dojde do výhry", a to
+ * tvrzení platí jen proti konkrétní sémantice tiku. Změna pořadí fází, tvaru
+ * pulzních událostí nebo mezí musí tuhle konstantu zvednout, jinak by staré
+ * certifikáty dál vypadaly platně nad runtimem, který je nikdy neověřil.
+ */
+export const RUNTIME_VERSION = 'sim-runtime-v1';
+
 export type RunState = 'running' | 'won' | 'lost' | 'runtimeFault';
 
 /** Proč tik atomicky spadl. Je to definovaný přechod runtimu, ne výjimka. */
@@ -297,6 +307,19 @@ export function createRuntime(doc: WorldDocRuntime): Runtime {
     writeQueue: [],
     previous: emptyObservation(),
   };
+}
+
+/**
+ * Je entita deklarovaná **a aktivní**?
+ *
+ * Vstupní hranice podle `DESIGN-BOOK.md` §13.1: kanonická akce se čte proti
+ * deklarovanému `sim`, nikdy proti kameře ani vykreslené geometrii. Verifikátor
+ * se tím ptá, jestli k-tý krok svědka vůbec šlo udělat — jednat despawnutou
+ * entitou hráč nemohl, takže taková stopa není záznam hry.
+ */
+export function entityActive(runtime: Runtime, stableId: string): boolean {
+  if (!runtime.entityDecls.has(stableId)) return false;
+  return readSlot(runtime.layout, runtime.state, entitySlotId(stableId, 'active')) === 1;
 }
 
 function emptyObservation(): Observation {
