@@ -557,6 +557,90 @@ describe('podmínka 5 — mez musí OMEZOVAT, ne se jen vyskytovat', () => {
 });
 
 /**
+ * Mez se pozná jen podle jména, a jméno je slabé ve třech směrech. Všechny tři
+ * našlo review nad `dfe727c` a všechny tři mají produkční tvar, ne jen syntetický.
+ */
+describe('podmínka 5 — jméno meze se dá přebít, a pravidlo to musí poznat', () => {
+  it('mez v `let`, kterou pozdější řádek přepíše ze vstupu, neprojde', () => {
+    // Reviewer to klasifikoval jako hazard BĚŽNÉHO refaktoru: nevypadá to jako
+    // útok, vypadá to jako „ať se větší svět neusekne".
+    const facts = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(r, doc){',
+        '  let slotBound = r.limits.maxSlots;',
+        '  if (doc.ir.slots.length > slotBound) slotBound = doc.ir.slots.length;',
+        '  for (let i = 0; i < slotBound; i += 1) { touch(i); }',
+        '}',
+      ].join('\n'),
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
+  it('lokální `limits` postavený ze vstupu není objekt mezí', () => {
+    const facts = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(runtime, doc){',
+        '  const limits = { ...runtime.limits, maxSlots: doc.ir.slots.length };',
+        '  for (let i = 0; i < limits.maxSlots; i += 1) { touch(i); }',
+        '}',
+      ].join('\n'),
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
+  it('ani když se přepíše až po deklaraci', () => {
+    const facts = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(runtime, doc){',
+        '  let limits = runtime.limits;',
+        '  limits = { ...limits, maxSlots: doc.ir.slots.length };',
+        '  for (let i = 0; i < limits.maxSlots; i += 1) { touch(i); }',
+        '}',
+      ].join('\n'),
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
+  it('`limits` schované hlouběji v řetězci neprojde — příjemce musí být identifikátor', () => {
+    const facts = analyseModule(
+      'synthetic.ts',
+      'function step(doc){ for (let i = 0; i < doc.userSupplied.limits.maxSlots; i += 1) { touch(i); } }',
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
+  it('ale produkční tvar — destrukturace z runtimu — projde dál', () => {
+    // Kdyby neprošel, zpřísnění by mez neutáhlo, jen ji zrušilo.
+    const facts = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(runtime){',
+        '  const { doc, limits } = runtime;',
+        '  for (let i = 0; i < limits.maxSlots && i < doc.ir.slots.length; i += 1) { touch(i); }',
+        '}',
+      ].join('\n'),
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([true]);
+  });
+
+  it('a `const limits = runtime.limits` taky', () => {
+    const facts = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(runtime){',
+        '  const limits = runtime.limits;',
+        '  for (let i = 0; i < settleItemBound(limits); i += 1) { touch(i); }',
+        '}',
+      ].join('\n'),
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([true]);
+  });
+});
+
+/**
  * Mez `MAX_OPERANDS` je třetí povolený původ — ale jen proto, že ji **vynucuje
  * schéma**. Kdyby ji schéma nevynutilo, byla by to konstanta v podmínce smyčky,
  * která o vstupním dokumentu netvrdí nic, a `evalNode` by prostě tiše zahodil

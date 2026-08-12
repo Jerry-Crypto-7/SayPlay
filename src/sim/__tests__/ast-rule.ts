@@ -166,6 +166,46 @@ function switchExhaustive(node: ts.SwitchStatement, sf: ts.SourceFile): boolean 
   return fallback !== undefined && /:\s*never\b/.test(fallback.getText(sf));
 }
 
+/**
+ * Jména, do kterých se kdekoli v modulu **zapisuje** po deklaraci.
+ *
+ * Mapa rozsahů si pamatuje jen inicializátor, takže bez tohohle projde
+ * `let bound = limits.maxSlots;` následované `bound = doc.ir.slots.length;` jako
+ * mez světa — mez v podmínce je, řídicí proměnnou váže, a přesto roste se
+ * vstupním dokumentem *(nález re-review, 12. 8. 2026, klasifikovaný jako hazard
+ * běžného refaktoru: napsané to nevypadá jako útok, vypadá to jako „ať se větší
+ * svět neusekne")*.
+ *
+ * Odpověď je hrubá schválně: **jméno, do kterého se zapisuje, není statická mez**,
+ * bez ohledu na to, co do něj přiteče. Dohledávat hodnotu přes přiřazení by
+ * znamenalo psát datový tok, a pravidlo, které si ho napíše samo, bude mít vlastní
+ * díry. Řídicí proměnné smyček se tím označí taky — a je to neškodné, protože ty
+ * se jako mez nikdy nedohledávají.
+ */
+function reassignedNames(sf: ts.SourceFile): Set<string> {
+  const written = new Set<string>();
+  const target = (node: ts.Node): void => {
+    if (ts.isIdentifier(node)) written.add(node.text);
+    else if (ts.isParenthesizedExpression(node)) target(node.expression);
+  };
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+      node.operatorToken.kind <= ts.SyntaxKind.LastAssignment
+    )
+      target(node.left);
+    if (
+      (ts.isPostfixUnaryExpression(node) || ts.isPrefixUnaryExpression(node)) &&
+      (node.operator === ts.SyntaxKind.PlusPlusToken || node.operator === ts.SyntaxKind.MinusMinusToken)
+    )
+      target(node.operand);
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+  return written;
+}
+
 /** Analýza jednoho modulu. Bere text, ne cestu, aby šla pustit na syntetický zdroj. */
 export function analyseModule(moduleName: string, source: string): ModuleFacts {
   const sf = ts.createSourceFile(moduleName, source, ts.ScriptTarget.ES2022, true);
@@ -175,10 +215,14 @@ export function analyseModule(moduleName: string, source: string): ModuleFacts {
   const resetBudgetCallers: string[] = [];
   const declared = new Set<string>();
   const scopes: Map<string, ts.Expression>[] = [new Map()];
+  const reassigned = reassignedNames(sf);
 
   const lineOf = (node: ts.Node) => sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
 
   const lookup = (name: string): ts.Expression | undefined => {
+    // Zapisovaná proměnná se nedohledává: mapa zná jen inicializátor a o tom,
+    // co do ní přiteklo potom, pravidlo nic neví.
+    if (reassigned.has(name)) return undefined;
     for (let i = scopes.length - 1; i >= 0; i -= 1) {
       const hit = scopes[i].get(name);
       if (hit) return hit;
@@ -186,11 +230,35 @@ export function analyseModule(moduleName: string, source: string): ModuleFacts {
     return undefined;
   };
 
-  /** Nese tenhle výraz objekt deklarovaných mezí? Poznává se podle jména. */
-  const isLimitObject = (node: ts.Node): boolean => {
-    if (ts.isParenthesizedExpression(node)) return isLimitObject(node.expression);
-    if (ts.isIdentifier(node)) return node.text === LIMIT_OBJECT;
-    if (ts.isPropertyAccessExpression(node)) return node.name.text === LIMIT_OBJECT;
+  /**
+   * Nese tenhle výraz objekt deklarovaných mezí?
+   *
+   * Bez typové informace se `IrLimits` pozná jen podle jména, ale samotné jméno
+   * je slabé ve dvou směrech a oba review našlo:
+   *
+   * - **lokální deklarace jméno přebije** — `const limits = { ...runtime.limits,
+   *   maxSlots: doc.ir.slots.length }` znovu otevře přesně to, co zavřela
+   *   kontrola argumentů. Identifikátor se proto rozpouští přes `lookup` a jeho
+   *   deklarace musí být objekt mezí sama; **jméno rozhoduje jen tehdy, když
+   *   deklarace není vidět** (destrukturace — což je právě produkční tvar —,
+   *   parametr, import).
+   * - **`limits` může být kdekoli v řetězci** — `doc.userSupplied.limits.maxSlots`
+   *   projde, když se kouká jen na poslední článek. Příjemcem přístupu proto musí
+   *   být **prostý identifikátor** (`runtime.limits`, `r.limits`), ne další
+   *   přístup. Hlubší řetězec tím selže **zavřeně**: mez se musí vytáhnout do
+   *   lokální proměnné, jinak ji pravidlo neuzná. To je správný směr — totalita
+   *   se nesmí opírat o tvrzení, které pravidlo neumí ověřit.
+   */
+  const isLimitObject = (node: ts.Node, depth = 0): boolean => {
+    if (depth > 8) return false;
+    if (ts.isParenthesizedExpression(node)) return isLimitObject(node.expression, depth + 1);
+    if (ts.isIdentifier(node)) {
+      if (node.text !== LIMIT_OBJECT || reassigned.has(node.text)) return false;
+      const declaredAs = lookup(node.text);
+      return declaredAs === undefined || isLimitObject(declaredAs, depth + 1);
+    }
+    if (ts.isPropertyAccessExpression(node))
+      return node.name.text === LIMIT_OBJECT && ts.isIdentifier(node.expression);
     return false;
   };
 
