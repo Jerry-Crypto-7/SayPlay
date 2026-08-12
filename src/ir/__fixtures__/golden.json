@@ -1,0 +1,588 @@
+{
+  "note": "Golden set pro world-ir-v1. 20 validnich a 20 nevalidnich dokumentu. Kazdy nevalidni porusuje PRAVE JEDNU deklarovanou vlastnost a `why` rika kterou. Verdikt dava `validateIrDoc` (schema + strukturalni kontrola dohromady).",
+  "valid": [
+    {
+      "id": "V01-on-start",
+      "why": "onStart snizeno na hranu odvozeneho faktu started()",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "flag", "id": "ready", "initial": false }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "literal", "value": true }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "assign", "ref": { "space": "flag", "slot": "ready" }, "value": 1 }],
+        "rules": [{ "ruleId": "r.boot", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V02-on-click",
+      "why": "onClick snizeno na hranu faktu clicked(entity)",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [{ "stableId": "lever", "role": "prop", "socket": "s.hall", "states": ["down", "up"], "initialState": "down", "initialLocked": false }],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "clicked", "args": ["lever"] } }, { "kind": "literal", "value": "up" }],
+        "predicates": [{ "predicateId": "p.onClick.lever", "source": "onClick", "expr": 0 }],
+        "effects": [{ "op": "assign", "ref": { "space": "entityState", "entity": "lever" }, "value": 1 }],
+        "rules": [{ "ruleId": "r.pull", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onClick.lever", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V03-on-enter-zone",
+      "why": "onEnterZone je hrana inZone(entity, zone) nahoru",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "counter", "id": "visits", "min": 0, "max": 8, "initial": 0 }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "inZone", "args": ["hero", "atrium"] } }],
+        "predicates": [{ "predicateId": "p.onEnterZone.hero.atrium", "source": "onEnterZone", "expr": 0 }],
+        "effects": [{ "op": "addCounter", "slot": "visits", "delta": 1 }],
+        "rules": [{ "ruleId": "r.count", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onEnterZone.hero.atrium", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V04-on-exit-zone",
+      "why": "onExitZone je TATAZ hrana s became:false — dve povrchove udalosti, jeden predikat",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "flag", "id": "outside", "initial": true }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "inZone", "args": ["hero", "atrium"] } }, { "kind": "literal", "value": true }],
+        "predicates": [{ "predicateId": "p.onExitZone.hero.atrium", "source": "onExitZone", "expr": 0 }],
+        "effects": [{ "op": "assign", "ref": { "space": "flag", "slot": "outside" }, "value": 1 }],
+        "rules": [{ "ruleId": "r.left", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onExitZone.hero.atrium", "became": false }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V05-on-collide",
+      "why": "onCollide se spousti PRI VSTUPU, tedy hranou nahoru, ne kazdy tik",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [{ "stableId": "hero", "role": "agent", "socket": "s.start", "states": ["idle"], "initialState": "idle", "initialLocked": false }],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "overlapping", "args": ["hero", "spike"] } }],
+        "predicates": [{ "predicateId": "p.onCollide.hero.spike", "source": "onCollide", "expr": 0 }],
+        "effects": [{ "op": "lose" }],
+        "rules": [{ "ruleId": "r.hit", "phase": 1, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onCollide.hero.spike", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V06-on-pickup",
+      "why": "onPickup(item) je disjunkce hasItem pres PEVNY pocet deklarovanych slotu — ohranicene, bez noveho primitiva",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "inventory", "id": "hand", "values": ["empty", "key"], "initial": "empty" }, { "space": "inventory", "id": "belt", "values": ["empty", "key"], "initial": "empty" }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "hasItem", "args": ["hand", "key"] } }, { "kind": "ref", "ref": { "space": "observed", "fact": "hasItem", "args": ["belt", "key"] } }, { "kind": "allOf", "operands": [0] }, { "kind": "anyOf", "operands": [0, 1] }],
+        "predicates": [{ "predicateId": "p.onPickup.key", "source": "onPickup", "expr": 3 }],
+        "effects": [{ "op": "emit", "signal": "sig.gotKey" }],
+        "rules": [{ "ruleId": "r.pick", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onPickup.key", "became": true }, "guard": 2, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V07-on-drop",
+      "why": "onDrop(item, socket) je hrana socketHolds(socket, item)",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "socketHolds", "args": ["s.pedestal", "gem"] } }],
+        "predicates": [{ "predicateId": "p.onDrop.gem.pedestal", "source": "onDrop", "expr": 0 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.place", "phase": 2, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onDrop.gem.pedestal", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V08-on-timer-end",
+      "why": "onTimerEnd je pad hrany timerRunning, tedy compare(timer > 0) s became:false",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "timer", "id": "fuse", "maxTicks": 200, "initial": 0 }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "timer", "slot": "fuse" } }, { "kind": "literal", "value": 0 }, { "kind": "compare", "lhs": 0, "op": ">", "rhs": 1 }],
+        "predicates": [{ "predicateId": "p.onTimerEnd.fuse", "source": "onTimerEnd", "expr": 2 }],
+        "effects": [{ "op": "lose" }],
+        "rules": [{ "ruleId": "r.boom", "phase": 3, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onTimerEnd.fuse", "became": false }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V09-on-counter-reaches",
+      "why": "onCounterReaches je compare >=, ne rovnost — prirustek ze 4 na 6 s prahem 5 hranu prekroci",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "counter", "id": "shards", "min": 0, "max": 8, "initial": 0 }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "counter", "slot": "shards" } }, { "kind": "literal", "value": 5 }, { "kind": "compare", "lhs": 0, "op": ">=", "rhs": 1 }],
+        "predicates": [{ "predicateId": "p.onCounterReaches.shards.5", "source": "onCounterReaches", "expr": 2 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.enough", "phase": 2, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onCounterReaches.shards.5", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V10-on-state-enter",
+      "why": "onStateEnter je hrana compare(entityState = state)",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [{ "stableId": "vault", "role": "prop", "socket": "s.vault", "states": ["closed", "open"], "initialState": "closed", "initialLocked": true }],
+        "nodes": [{ "kind": "ref", "ref": { "space": "entityState", "entity": "vault" } }, { "kind": "literal", "value": "open" }, { "kind": "compare", "lhs": 0, "op": "=", "rhs": 1 }],
+        "predicates": [{ "predicateId": "p.onStateEnter.vault.open", "source": "onStateEnter", "expr": 2 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.opened", "phase": 2, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStateEnter.vault.open", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V11-on-signal",
+      "why": "onSignal je hrana signalled(name) — tim se pravidla retezi",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "flag", "id": "chained", "initial": false }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "signalled", "args": ["sig.gotKey"] } }, { "kind": "literal", "value": true }],
+        "predicates": [{ "predicateId": "p.onSignal.gotKey", "source": "onSignal", "expr": 0 }],
+        "effects": [{ "op": "assign", "ref": { "space": "flag", "slot": "chained" }, "value": 1 }],
+        "rules": [{ "ruleId": "r.chain", "phase": 1, "priority": 3, "trigger": { "kind": "onEdge", "predicate": "p.onSignal.gotKey", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V12-on-seen",
+      "why": "onSeen je hrana vstupu do viditelnosti; ztrata je tataz hrana s became:false",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "flag", "id": "alarm", "initial": false }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "visible", "args": ["guard", "hero"] } }, { "kind": "literal", "value": true }],
+        "predicates": [{ "predicateId": "p.onSeen.guard.hero", "source": "onSeen", "expr": 0 }],
+        "effects": [{ "op": "assign", "ref": { "space": "flag", "slot": "alarm" }, "value": 1 }],
+        "rules": [{ "ruleId": "r.spotted", "phase": 1, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onSeen.guard.hero", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V13-on-action",
+      "why": "onAction(actor, actionId, target?) — nosic vstupni hranice; chybejici target ma kanonickeho zastupce",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [{ "stableId": "vault", "role": "prop", "socket": "s.vault", "states": ["closed", "open"], "initialState": "closed", "initialLocked": true }],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "acted", "args": ["hero", "use", "vault"] } }, { "kind": "ref", "ref": { "space": "observed", "fact": "acted", "args": ["hero", "wait", "none"] } }, { "kind": "literal", "value": false }],
+        "predicates": [{ "predicateId": "p.onAction.hero.use.vault", "source": "onAction", "expr": 0 }, { "predicateId": "p.onAction.hero.wait.none", "source": "onAction", "expr": 1 }],
+        "effects": [{ "op": "assign", "ref": { "space": "locked", "entity": "vault" }, "value": 2 }],
+        "rules": [{ "ruleId": "r.use", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onAction.hero.use.vault", "became": true }, "guard": null, "effects": [0] }, { "ruleId": "r.wait", "phase": 0, "priority": 1, "trigger": { "kind": "onEdge", "predicate": "p.onAction.hero.wait.none", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V14-on-command-complete",
+      "why": "onCommandComplete(entity, commandId, result) — choreografie pohybu a zmrazeni",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [{ "stableId": "hero", "role": "agent", "socket": "s.start", "states": ["idle", "moving"], "initialState": "idle", "initialLocked": false }],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "commandDone", "args": ["hero", "cmd.move", "ok"] } }, { "kind": "literal", "value": "idle" }],
+        "predicates": [{ "predicateId": "p.onCommandComplete.hero.move.ok", "source": "onCommandComplete", "expr": 0 }],
+        "effects": [{ "op": "assign", "ref": { "space": "entityState", "entity": "hero" }, "value": 1 }],
+        "rules": [{ "ruleId": "r.arrived", "phase": 1, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onCommandComplete.hero.move.ok", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V15-memory-read-and-write",
+      "why": "compare(memory[...]) ve strazi a assign(memory[...]) v efektu — bez obojiho je pamet deklarovana, ale nectitelna",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 2, "memorySlotsPerAgent": 2, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "memory", "id": "m.guard.0", "agent": "guard", "index": 0, "values": ["calm", "alert"], "initial": "calm" }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "ref", "ref": { "space": "memory", "agent": "guard", "index": 0 } }, { "kind": "literal", "value": "alert" }, { "kind": "compare", "lhs": 1, "op": "=", "rhs": 2 }, { "kind": "literal", "value": "calm" }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "assign", "ref": { "space": "memory", "agent": "guard", "index": 0 }, "value": 4 }],
+        "rules": [{ "ruleId": "r.calmDown", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": 3, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V16-bounded-aggregation",
+      "why": "countInZone je ohranicena agregace jako ValueExpr, ne vlastni udalost",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [],
+        "nodes": [{ "kind": "query", "query": "countInZone", "zone": "pen", "tag": "sheep" }, { "kind": "literal", "value": 3 }, { "kind": "compare", "lhs": 0, "op": ">=", "rhs": 1 }],
+        "predicates": [{ "predicateId": "p.penFull", "source": "onCounterReaches", "expr": 2 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.herded", "phase": 2, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.penFull", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V17-ast-operators",
+      "why": "allOf/anyOf/not jsou AST operatory nad compare, ne dalsi podminky",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "counter", "id": "shards", "min": 0, "max": 8, "initial": 0 }, { "space": "flag", "id": "alarm", "initial": false }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "ref", "ref": { "space": "counter", "slot": "shards" } }, { "kind": "literal", "value": 2 }, { "kind": "compare", "lhs": 1, "op": ">=", "rhs": 2 }, { "kind": "ref", "ref": { "space": "flag", "slot": "alarm" } }, { "kind": "not", "operand": 4 }, { "kind": "allOf", "operands": [3, 5] }, { "kind": "anyOf", "operands": [6, 4] }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.guarded", "phase": 2, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": 7, "effects": [0] }]
+      }
+    },
+    {
+      "id": "V18-bounded-actions",
+      "why": "spawn vybira nejnizsi neaktivni ID; freeze je v TICICH, ne v sekundach",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [{ "stableId": "hero", "role": "agent", "socket": "s.start", "states": ["idle"], "initialState": "idle", "initialLocked": false }],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "spawn", "poolTag": "sheep", "socket": "s.pen", "selection": "lowest-inactive" }, { "op": "moveTo", "entity": "hero", "socket": "s.pen", "ticks": 40 }, { "op": "freeze", "entity": "hero", "ticks": 20 }, { "op": "despawn", "entity": "hero" }, { "op": "playEffect", "effectId": "fx.puff", "target": "hero" }, { "op": "playEffect", "effectId": "fx.ambient", "target": null }],
+        "rules": [{ "ruleId": "r.setup", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [0, 1, 2, 3, 4, 5] }]
+      }
+    },
+    {
+      "id": "V19-multi-rule-order",
+      "why": "poradi vykonani je explicitni (phase, priority, ruleId) — bez nej je textove preusporadani potencialne semanticke",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "counter", "id": "shards", "min": 0, "max": 8, "initial": 0 }, { "space": "timer", "id": "fuse", "maxTicks": 200, "initial": 0 }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "ref", "ref": { "space": "counter", "slot": "shards" } }, { "kind": "literal", "value": 4 }, { "kind": "compare", "lhs": 1, "op": ">=", "rhs": 2 }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }, { "predicateId": "p.four", "source": "onCounterReaches", "expr": 3 }],
+        "effects": [{ "op": "startTimer", "slot": "fuse", "durationTicks": 120 }, { "op": "addCounter", "slot": "shards", "delta": 2 }, { "op": "stopTimer", "slot": "fuse" }, { "op": "emit", "signal": "sig.armed" }, { "op": "win" }],
+        "rules": [{ "ruleId": "r.arm", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [0, 3] }, { "ruleId": "r.gather", "phase": 1, "priority": 5, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [1] }, { "ruleId": "r.done", "phase": 2, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.four", "became": true }, "guard": null, "effects": [2, 4] }]
+      }
+    },
+    {
+      "id": "V20-assign-covers-locked-and-inventory",
+      "why": "assign pokryva setState, setFlag, setLocked i reset citace — proto neni potreba samostatne primitivum",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "counter", "id": "shards", "min": 0, "max": 8, "initial": 3 }, { "space": "inventory", "id": "hand", "values": ["empty", "key", "gem"], "initial": "empty" }],
+        "entities": [{ "stableId": "vault", "role": "prop", "socket": "s.vault", "states": ["closed", "open"], "initialState": "closed", "initialLocked": true }],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "acted", "args": ["hero", "unlock", "vault"] } }, { "kind": "literal", "value": false }, { "kind": "literal", "value": 0 }, { "kind": "literal", "value": "key" }],
+        "predicates": [{ "predicateId": "p.onAction.hero.unlock.vault", "source": "onAction", "expr": 0 }],
+        "effects": [{ "op": "assign", "ref": { "space": "locked", "entity": "vault" }, "value": 1 }, { "op": "assign", "ref": { "space": "counter", "slot": "shards" }, "value": 2 }, { "op": "assign", "ref": { "space": "inventory", "slot": "hand" }, "value": 3 }, { "op": "giveItem", "slot": "hand", "item": "gem" }, { "op": "takeItem", "slot": "hand", "item": "key" }],
+        "rules": [{ "ruleId": "r.unlock", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onAction.hero.unlock.vault", "became": true }, "guard": null, "effects": [0, 1, 2, 3, 4] }]
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "id": "I01-look-smuggled-into-ir",
+      "why": "cast vzhledu do IR nevstupuje — neznamy korenovy klic musi schema odmitnout",
+      "expect": "schema:",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [0] }],
+        "look": { "palette": ["#101820"], "camera": { "fov": 60 } }
+      }
+    },
+    {
+      "id": "I02-wrong-ir-version",
+      "why": "irVersion mimo pinnutou hodnotu",
+      "expect": "schema:/irVersion",
+      "doc": {
+        "irVersion": "world-ir-v2",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I03-predicate-expr-out-of-range",
+      "why": "predikat ukazuje mimo tabulku uzlu",
+      "expect": "expr index out of range",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 9 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I04-forward-reference",
+      "why": "potomek ma vetsi index nez rodic — presne to, co cyklus v ploche tabulce znamena",
+      "expect": "at or above itself",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "flag", "id": "alarm", "initial": false }],
+        "entities": [],
+        "nodes": [{ "kind": "not", "operand": 1 }, { "kind": "ref", "ref": { "space": "flag", "slot": "alarm" } }],
+        "predicates": [{ "predicateId": "p.a", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.a", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I05-self-reference",
+      "why": "uzel odkazuje sam na sebe",
+      "expect": "at or above itself",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "flag", "id": "alarm", "initial": false }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "flag", "slot": "alarm" } }, { "kind": "not", "operand": 1 }],
+        "predicates": [{ "predicateId": "p.a", "source": "onStart", "expr": 1 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.a", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I06-compare-rhs-not-literal",
+      "why": "compare(lhs, op, rhs) ma rhs typu Literal — porovnani dvou odkazu do stavu neni v gramatice",
+      "expect": "compare rhs must be a literal",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "counter", "id": "a", "min": 0, "max": 8, "initial": 0 }, { "space": "counter", "id": "b", "min": 0, "max": 8, "initial": 0 }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "counter", "slot": "a" } }, { "kind": "ref", "ref": { "space": "counter", "slot": "b" } }, { "kind": "compare", "lhs": 0, "op": ">=", "rhs": 1 }],
+        "predicates": [{ "predicateId": "p.a", "source": "onCounterReaches", "expr": 2 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.a", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I07-compare-type-mismatch",
+      "why": "citac proti symbolu — typova neshoda operandu",
+      "expect": "compare operands are",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "counter", "id": "shards", "min": 0, "max": 8, "initial": 0 }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "counter", "slot": "shards" } }, { "kind": "literal", "value": "gem" }, { "kind": "compare", "lhs": 0, "op": "=", "rhs": 1 }],
+        "predicates": [{ "predicateId": "p.a", "source": "onCounterReaches", "expr": 2 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.a", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I08-ordering-on-symbols",
+      "why": "usporadani nad enumem nema definovanou semantiku — symboly umi jen rovnost",
+      "expect": "support only the '=' operator",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [{ "stableId": "vault", "role": "prop", "socket": "s.vault", "states": ["closed", "open"], "initialState": "closed", "initialLocked": true }],
+        "nodes": [{ "kind": "ref", "ref": { "space": "entityState", "entity": "vault" } }, { "kind": "literal", "value": "open" }, { "kind": "compare", "lhs": 0, "op": ">", "rhs": 1 }],
+        "predicates": [{ "predicateId": "p.a", "source": "onStateEnter", "expr": 2 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.a", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I09-duplicate-rule-id",
+      "why": "dva ruleId se stejnym jmenem — poradi vykonani prestava byt jednoznacne",
+      "expect": "duplicate ruleId",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [0] }, { "ruleId": "r.a", "phase": 0, "priority": 1, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I10-duplicate-predicate-id",
+      "why": "dva predikaty stejneho jmena — onEdge by nevedel, kterou hranu sleduje",
+      "expect": "duplicate predicateId",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "flag", "id": "alarm", "initial": false }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "ref", "ref": { "space": "flag", "slot": "alarm" } }],
+        "predicates": [{ "predicateId": "p.a", "source": "onStart", "expr": 0 }, { "predicateId": "p.a", "source": "onStart", "expr": 1 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.a", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I11-unknown-predicate-in-trigger",
+      "why": "osirely odkaz z pravidla na predikat",
+      "expect": "unknown predicate",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.nope", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I12-guard-is-not-boolean",
+      "why": "straz ukazuje na citac, ne na boolean vyraz",
+      "expect": "guard is not boolean",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "counter", "id": "shards", "min": 0, "max": 8, "initial": 0 }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "counter", "slot": "shards" } }, { "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 1 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": 0, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I13-effect-index-out-of-range",
+      "why": "pravidlo ukazuje mimo tabulku efektu",
+      "expect": "effect index 5 out of range",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [5] }]
+      }
+    },
+    {
+      "id": "I14-assign-into-observed",
+      "why": "odvozeny fakt neni menitelny stav — assign do nej by dovolil grafu psat si vlastni vstupy",
+      "expect": "is not assignable",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "literal", "value": true }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "assign", "ref": { "space": "observed", "fact": "clicked", "args": ["lever"] }, "value": 1 }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I15-assign-value-not-literal",
+      "why": "assign(ref, value) ma value typu Literal — vypocitana prava strana neni v gramatice",
+      "expect": "assign value must be a literal",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "counter", "id": "shards", "min": 0, "max": 8, "initial": 0 }, { "space": "flag", "id": "alarm", "initial": false }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "ref", "ref": { "space": "counter", "slot": "shards" } }, { "kind": "literal", "value": 2 }, { "kind": "compare", "lhs": 1, "op": ">=", "rhs": 2 }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "assign", "ref": { "space": "flag", "slot": "alarm" }, "value": 3 }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I16-state-outside-declared-enum",
+      "why": "assign do entityState hodnotou mimo deklarovanou mnozinu stavu",
+      "expect": "is not declared on",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [{ "stableId": "vault", "role": "prop", "socket": "s.vault", "states": ["closed", "open"], "initialState": "closed", "initialLocked": true }],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }, { "kind": "literal", "value": "ajar" }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "assign", "ref": { "space": "entityState", "entity": "vault" }, "value": 1 }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I17-freeze-in-seconds",
+      "why": "jednotkova zamena — freeze se pocita v ticich, pole `seconds` v IR neexistuje",
+      "expect": "schema:",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [{ "stableId": "hero", "role": "agent", "socket": "s.start", "states": ["idle"], "initialState": "idle", "initialLocked": false }],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "freeze", "entity": "hero", "seconds": 2 }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I18-nondeterministic-spawn",
+      "why": "spawn musi vybirat nejnizsi neaktivni ID; jina volba zavadi vetveni identity",
+      "expect": "schema:",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "spawn", "poolTag": "sheep", "socket": "s.pen", "selection": "random" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I19-memory-slot-above-limit",
+      "why": "pametovy slot nad deklarovanym poctem slotu na agenta",
+      "expect": "above limits.memorySlotsPerAgent",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 2, "memorySlotsPerAgent": 2, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "memory", "id": "m.guard.3", "agent": "guard", "index": 3, "values": ["calm", "alert"], "initial": "calm" }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [0] }]
+      }
+    },
+    {
+      "id": "I20-counter-bounds-inverted",
+      "why": "citac s min nad max — menitelny stav prestava byt konecny a definovany",
+      "expect": "has min above max",
+      "doc": {
+        "irVersion": "world-ir-v1",
+        "limits": { "maxEntities": 8, "maxRules": 16, "maxRuleFiringsPerTick": 64, "maxQueueDepth": 32, "maxAgents": 0, "memorySlotsPerAgent": 0, "gridWidth": 16, "gridHeight": 16 },
+        "slots": [{ "space": "counter", "id": "shards", "min": 5, "max": 2, "initial": 5 }],
+        "entities": [],
+        "nodes": [{ "kind": "ref", "ref": { "space": "observed", "fact": "started", "args": [] } }],
+        "predicates": [{ "predicateId": "p.onStart", "source": "onStart", "expr": 0 }],
+        "effects": [{ "op": "win" }],
+        "rules": [{ "ruleId": "r.a", "phase": 0, "priority": 0, "trigger": { "kind": "onEdge", "predicate": "p.onStart", "became": true }, "guard": null, "effects": [0] }]
+      }
+    }
+  ]
+}
