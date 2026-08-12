@@ -172,22 +172,37 @@ function switchExhaustive(node: ts.SwitchStatement, sf: ts.SourceFile): boolean 
  * Mapa rozsahů si pamatuje jen inicializátor, takže bez tohohle projde
  * `let bound = limits.maxSlots;` následované `bound = doc.ir.slots.length;` jako
  * mez světa — mez v podmínce je, řídicí proměnnou váže, a přesto roste se
- * vstupním dokumentem *(nález re-review, 12. 8. 2026, klasifikovaný jako hazard
- * běžného refaktoru: napsané to nevypadá jako útok, vypadá to jako „ať se větší
- * svět neusekne")*.
+ * vstupním dokumentem *(nález review, klasifikovaný jako hazard běžného
+ * refaktoru: napsané to nevypadá jako útok, vypadá to jako „ať se větší svět
+ * neusekne")*.
  *
  * Odpověď je hrubá schválně: **jméno, do kterého se zapisuje, není statická mez**,
  * bez ohledu na to, co do něj přiteče. Dohledávat hodnotu přes přiřazení by
  * znamenalo psát datový tok, a pravidlo, které si ho napíše samo, bude mít vlastní
- * díry. Řídicí proměnné smyček se tím označí taky — a je to neškodné, protože ty
- * se jako mez nikdy nedohledávají.
+ * díry. Řídicí proměnné smyček se tím označí taky — neškodně, protože ty se jako
+ * mez nikdy nedohledávají.
+ *
+ * **Zápis je i destrukturace.** `[bound] = [doc.ir.slots.length]` a
+ * `({ limits } = …)` jsou obyčejný JavaScript a mění tutéž proměnnou jako prosté
+ * `=`; první znění téhle funkce je neumělo, a tím vracelo nález beze změny, jen
+ * jinak zapsaný *(nález kola 5)*.
  */
 function reassignedNames(sf: ts.SourceFile): Set<string> {
-  const written = new Set<string>();
+  const reassigned = new Set<string>();
+
+  /** Cíl zápisu. Rozebírá i destrukturační vzory, ne jen holý identifikátor. */
   const target = (node: ts.Node): void => {
-    if (ts.isIdentifier(node)) written.add(node.text);
+    if (ts.isIdentifier(node)) reassigned.add(node.text);
     else if (ts.isParenthesizedExpression(node)) target(node.expression);
+    else if (ts.isArrayLiteralExpression(node)) for (const element of node.elements) target(element);
+    else if (ts.isObjectLiteralExpression(node)) for (const property of node.properties) target(property);
+    else if (ts.isPropertyAssignment(node)) target(node.initializer);
+    else if (ts.isShorthandPropertyAssignment(node)) reassigned.add(node.name.text);
+    else if (ts.isSpreadElement(node) || ts.isSpreadAssignment(node)) target(node.expression);
+    else if (ts.isBindingElement(node)) target(node.name);
+    // Zápis do prvku nebo vlastnosti (`a[i] = …`, `o.x = …`) jméno nepřepisuje.
   };
+
   const visit = (node: ts.Node): void => {
     if (
       ts.isBinaryExpression(node) &&
@@ -202,8 +217,35 @@ function reassignedNames(sf: ts.SourceFile): Set<string> {
       target(node.operand);
     ts.forEachChild(node, visit);
   };
+
   visit(sf);
-  return written;
+  return reassigned;
+}
+
+/**
+ * Deklarace **přímo v tomhle rozsahu**, posbírané dřív, než se do něj sestoupí.
+ *
+ * Bez toho se mapa rozsahů plní za průchodu, takže odkaz ležící **nad** svou
+ * deklarací ji nevidí a `isLimitObject` ho pošle do větve „deklarace není vidět,
+ * rozhoduje jméno" — verdikt by pak závisel na pořadí řádků, ne na hodnotě
+ * *(nález kola 5)*. Předplnění je zároveň jediná varianta, která zůstává
+ * **rozsahově správná**: modulová množina jmen by lokální `const limits`
+ * v `step()` promítla do destrukturovaného `limits` v `sense()` a shodila
+ * třináct produkčních smyček, které jsou v pořádku.
+ */
+function declarationsIn(node: ts.Node): Map<string, ts.Expression> {
+  const found = new Map<string, ts.Expression>();
+  const statements: ts.Statement[] = ts.isCaseBlock(node)
+    ? node.clauses.flatMap((clause) => [...clause.statements])
+    : ts.isSourceFile(node) || ts.isBlock(node)
+      ? [...node.statements]
+      : [];
+  for (const statement of statements) {
+    if (!ts.isVariableStatement(statement)) continue;
+    for (const decl of statement.declarationList.declarations)
+      if (ts.isIdentifier(decl.name) && decl.initializer) found.set(decl.name.text, decl.initializer);
+  }
+  return found;
 }
 
 /** Analýza jednoho modulu. Bere text, ne cestu, aby šla pustit na syntetický zdroj. */
@@ -447,7 +489,9 @@ export function analyseModule(moduleName: string, source: string): ModuleFacts {
   const visit = (node: ts.Node): void => {
     const opensScope =
       ts.isBlock(node) || ts.isSourceFile(node) || ts.isForStatement(node) || ts.isCaseBlock(node);
-    if (opensScope) scopes.push(new Map());
+    // Předplněno, ne prázdné: odkaz nad svou deklarací ji jinak nevidí a verdikt
+    // by závisel na pořadí řádků.
+    if (opensScope) scopes.push(declarationsIn(node));
 
     if (ts.isFunctionDeclaration(node) && node.name) declared.add(node.name.text);
 

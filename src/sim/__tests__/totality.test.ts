@@ -604,6 +604,47 @@ describe('podmínka 5 — jméno meze se dá přebít, a pravidlo to musí pozna
     expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
   });
 
+  it('ani když se přepíše destrukturací — je to obyčejný JavaScript, ne trik', () => {
+    const array = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(r, doc){',
+        '  let slotBound = r.limits.maxSlots;',
+        '  [slotBound] = [doc.ir.slots.length];',
+        '  for (let i = 0; i < slotBound; i += 1) { touch(i); }',
+        '}',
+      ].join('\n'),
+    );
+    const object = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(runtime, doc){',
+        '  let limits = runtime.limits;',
+        '  ({ limits } = { limits: { ...limits, maxSlots: doc.ir.slots.length } });',
+        '  for (let i = 0; i < limits.maxSlots; i += 1) { touch(i); }',
+        '}',
+      ].join('\n'),
+    );
+    expect(array.sites.map((site) => site.bounded)).toEqual([false]);
+    expect(object.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
+  it('verdikt nezávisí na pořadí řádků — odkaz nad deklarací neprojde', () => {
+    // `lookup` se plní za průchodu, takže odkaz ležící NAD svou deklarací by
+    // spadl do větve „deklarace není vidět, rozhoduje jméno".
+    const facts = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(runtime, doc){',
+        '  helper();',
+        '  function helper(){ for (let i = 0; i < limits.maxSlots; i += 1) { touch(i); } }',
+        '  const limits = { ...runtime.limits, maxSlots: doc.ir.slots.length };',
+        '}',
+      ].join('\n'),
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
   it('`limits` schované hlouběji v řetězci neprojde — příjemce musí být identifikátor', () => {
     const facts = analyseModule(
       'synthetic.ts',
