@@ -186,6 +186,42 @@ describe('patch mimo `/ir` je pod stráží stejně jako graf', () => {
     expectUntouched(before);
   });
 
+  it('soket mimo deklarovanou mřížku je odmítnut — commit by shodil `createRuntime`', () => {
+    // Tuhle otázku nemá kdo jiný položit: `worldIr` vidí jen `ir`, obálka vidí
+    // `space` bez `limits`, `validateIrDoc` `space` nevidí vůbec.
+    const before = graphHash(vault);
+    for (const value of [
+      [-1, 0],
+      [99, 99],
+    ]) {
+      const result = applyWorldPatch(vault, [
+        { op: 'replace', path: '/space/sockets/s_start', value },
+      ]);
+      expect(result, JSON.stringify(value)).toMatchObject({
+        verdict: 'REJECTED',
+        reason: 'STRUCTURE',
+        pointer: '/space/sockets/s_start',
+      });
+    }
+    expectUntouched(before);
+  });
+
+  it('a zmenšená mřížka pod stávajícím soketem taky — patch se `/space` ani nedotkne', () => {
+    const result = applyWorldPatch(vault, [{ op: 'replace', path: '/ir/limits/gridWidth', value: 2 }]);
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'STRUCTURE' });
+    if (result.verdict !== 'REJECTED') return;
+    // Ukazuje na soket, který se do zmenšené mřížky nevešel, ne na `limits`:
+    // tam se dá skočit a opravit to.
+    expect(result.pointer).toContain('/space/sockets/');
+  });
+
+  it('ale mřížka, do které se soketa vejdou, projde — jinak by kontrola jen zakazovala', () => {
+    const result = applyWorldPatch(vault, [{ op: 'replace', path: '/ir/limits/gridWidth', value: 16 }]);
+    expect(result.verdict).toBe('COMMITTED');
+    if (result.verdict !== 'COMMITTED') return;
+    expect(verifyWitness(result.doc, WITNESS).verdict).toBe('CERTIFIED');
+  });
+
   it('smazaná tabulka soketů by jinak runtime shodila výjimkou, ne faultem', () => {
     // Důvod, proč tohle patří sem a ne do „ať si to runtime ošetří": pád při
     // konstrukci není definovaný přechod, takže by ho nešlo replaynout.
@@ -202,7 +238,8 @@ describe('patch mimo `/ir` je pod stráží stejně jako graf', () => {
     ];
     expect(verifyWitness(vault, bogus).verdict).toBe('REJECTED');
 
-    const result = applyWorldPatch(vault, [{ op: 'add', path: '/space/sockets/ghost', value: [9, 9] }]);
+    // Buňka uvnitř deklarované mřížky 8×8 — mimo ni by ji odmítla kontrola layoutu.
+    const result = applyWorldPatch(vault, [{ op: 'add', path: '/space/sockets/ghost', value: [4, 4] }]);
     // Dobře utvořený soket projít SMÍ — je to legitimní editace layoutu. Pointa
     // je, že projde jen dobře utvořený, a že se tím nic nepodstrčí za zády
     // schématu.
@@ -226,6 +263,36 @@ describe('vadná operace je odmítnutí, ne výjimka', () => {
     expect(result.reason).toBe('MALFORMED_OPERATION');
     expect(result.expected.length).toBeGreaterThan(0);
     expectUntouched(before);
+  });
+
+  it('cesta bez úvodního lomítka není JSON Pointer — a nesmí proletět jako výjimka', () => {
+    // Nejběžnější chyba v ručně i modelem psaném patchi. `rfc6902` na ní vyhodí
+    // `Invalid JSON Pointer`, takže kontrola chybějící cesty sama nestačí.
+    const before = graphHash(vault);
+    for (const operation of [
+      { op: 'replace', path: 'ir/rules/0/priority', value: 5 },
+      { op: 'move', from: 'ir/rules/0', path: '/ir/rules/1' },
+    ] as unknown as Operation[]) {
+      let result: ReturnType<typeof applyWorldPatch> | undefined;
+      expect(() => {
+        result = applyWorldPatch(vault, [operation]);
+      }, JSON.stringify(operation)).not.toThrow();
+      expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+    }
+    expectUntouched(before);
+  });
+
+  it('rozbitý index se pozná přesně, ne podřetězcem', () => {
+    // `/ir/nodes/1` je podřetězcem `/ir/nodes/12`, takže hádání porovnáváním
+    // řetězců by obvinilo uzel, který je v pořádku. Chybu hlásí knihovna i
+    // s cestou — ta se použije doslova.
+    const result = applyWorldPatch(vault, [
+      { op: 'copy', from: '/ir/nodes/1', path: '/ir/nodes/12/kind' },
+    ]);
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.pointer).not.toBe('/ir/nodes/1');
+    expect(result.pointer).toContain('/ir/nodes/12');
   });
 
   it('neznámé `op` taky ne', () => {

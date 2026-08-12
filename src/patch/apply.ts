@@ -69,11 +69,21 @@ const worldEnvelope = z
   })
   .loose();
 
-/** RFC 6902 operace. `readonly Operation[]` je jen typ — patch přichází jako JSON. */
+/**
+ * RFC 6902 operace. `readonly Operation[]` je jen typ — patch přichází jako JSON.
+ *
+ * Cesta musí být **skutečný JSON Pointer**, ne jen řetězec: `"ir/rules/0"` bez
+ * úvodního lomítka je nejběžnější chyba v ručně i modelem psaném patchi a
+ * `rfc6902` na ní **vyhodí** (`Invalid JSON Pointer`), takže bez tohohle by
+ * kontrakt „vadná operace je odmítnutí, ne výjimka" platil jen pro chybějící
+ * cestu a ne pro špatně napsanou.
+ */
+const jsonPointer = z.string().regex(/^(\/[^/]*)*$/, 'must be an RFC 6901 JSON Pointer');
+
 const operationSchema = z.union([
-  z.object({ op: z.enum(['add', 'replace', 'test']), path: z.string(), value: z.unknown() }).loose(),
-  z.object({ op: z.literal('remove'), path: z.string() }).loose(),
-  z.object({ op: z.enum(['move', 'copy']), path: z.string(), from: z.string() }).loose(),
+  z.object({ op: z.enum(['add', 'replace', 'test']), path: jsonPointer, value: z.unknown() }).loose(),
+  z.object({ op: z.literal('remove'), path: jsonPointer }).loose(),
+  z.object({ op: z.enum(['move', 'copy']), path: jsonPointer, from: jsonPointer }).loose(),
 ]);
 
 export interface PatchCommit {
@@ -155,12 +165,12 @@ export function applyWorldPatch(doc: VerifiableWorld, operations: readonly Opera
     const failure = outcomes[i];
     if (failure === null) continue;
     const operation = operations[i];
-    // U `move`/`copy` je rozbitá souřadnice typicky `from`, ne `path`. Ukázat
-    // `path` by autorský nástroj poslalo na místo, které je v pořádku — to je
-    // horší než hrubý pointer, protože to je pointer nesprávný.
-    const from = (operation as { from?: unknown }).from;
-    const pointer =
-      typeof from === 'string' && failure.message.includes(from) ? from : operation.path;
+    // `MissingError` z `rfc6902` nese **přesnou** cestu, na které to selhalo —
+    // u `move`/`copy` je to typicky `from`, ne `path`. Hádat ji porovnáváním
+    // řetězců je horší než nehádat: `/ir/nodes/1` je podřetězcem `/ir/nodes/12`,
+    // takže by index 1 přebil skutečně rozbitý index 12.
+    const failedPath = (failure as { path?: unknown }).path;
+    const pointer = typeof failedPath === 'string' ? failedPath : operation.path;
     return reject(
       'MALFORMED_OPERATION',
       pointer,
@@ -185,5 +195,37 @@ export function applyWorldPatch(doc: VerifiableWorld, operations: readonly Opera
     return reject('STRUCTURE', structurePointer(issue), 'a resolvable reference', issue);
   }
 
+  const layout = layoutFits(draft);
+  if (layout !== null) return layout;
+
   return { verdict: 'COMMITTED', doc: draft, hashBefore, hashAfter: graphHash(draft) };
+}
+
+/**
+ * Sedí layout do mřížky, kterou deklaruje graf?
+ *
+ * Tuhle otázku **nemá kdo jiný položit**: `worldIr` vidí jen `ir`, obálka vidí
+ * `space` bez `limits`, a `validateIrDoc` `space` nevidí vůbec. Mezi nimi propadne
+ * soket mimo mřížku i zmenšená mřížka pod stávajícím soketem — obojí je běžná
+ * živá editace a obojí commitne dokument, na kterém `createRuntime` **vyhodí
+ * výjimku** (`slot e:hero:x has an initial value outside its bounds`). Výjimka
+ * není definovaný přechod, takže takový svět nejde ani replaynout, ani nahlásit
+ * jako `runtimeFault` — a certifikát nad ním by neměl co znamenat.
+ *
+ * Meze jsou úmyslně tytéž, jaké dosazuje `createRuntime` do slotů entit:
+ * `0 … gridWidth` včetně. Kdyby se rozešly, kontrola by hlídala jiný svět než
+ * ten, který se pak staví.
+ */
+function layoutFits(draft: VerifiableWorld): PatchRejection | null {
+  const { gridWidth, gridHeight } = draft.ir.limits;
+  for (const [name, cell] of Object.entries(draft.space.sockets)) {
+    if (cell[0] >= 0 && cell[0] <= gridWidth && cell[1] >= 0 && cell[1] <= gridHeight) continue;
+    return reject(
+      'STRUCTURE',
+      `/space/sockets/${name}`,
+      `a cell inside 0..${gridWidth} x 0..${gridHeight}`,
+      `socket ${name} at [${cell[0]}, ${cell[1]}] lies outside the declared grid`,
+    );
+  }
+  return null;
 }
