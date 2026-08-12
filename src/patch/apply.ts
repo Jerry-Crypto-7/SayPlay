@@ -20,6 +20,7 @@ import { applyPatch, type Operation } from 'rfc6902';
 import { z } from 'zod';
 
 import { validateIrDoc, worldIr } from '../ir/schema';
+import { unhashablePointer, unhashableValues } from '../ir/worlddoc';
 import { hashWords } from '../sim/hash';
 import { TIERS } from '../verify/tiers';
 import type { VerifiableWorld } from '../verify/witness';
@@ -127,6 +128,22 @@ export function graphHash(doc: unknown): string {
  * zamíchat je znamená vracet horší pointer, než jaký byl k mání.
  */
 export function applyWorldPatch(doc: VerifiableWorld, operations: readonly Operation[]): PatchResult {
+  // **Jeden záchyt kolem celého zbytku** — tentýž kontrakt jako `ir/revision.ts`:
+  // patch cesta nikdy nevyhodí, volající vždycky dostane verdikt. Zavírat výjimky
+  // po jedné znamená zavřít tu, kterou zrovna někdo našel.
+  try {
+    return applyChecked(doc, operations);
+  } catch (error) {
+    return threw('', 'applying the patch', error);
+  }
+}
+
+function threw(pointer: string, what: string, error: unknown): PatchRejection {
+  const message = error instanceof Error ? error.message : String(error);
+  return reject('MALFORMED_OPERATION', pointer, 'a patch the system can apply and hash', `${what} threw: ${message}`);
+}
+
+function applyChecked(doc: VerifiableWorld, operations: readonly Operation[]): PatchResult {
   const hashBefore = graphHash(doc);
 
   // Tvar OPERACÍ dřív, než je uvidí knihovna. `readonly Operation[]` platí jen
@@ -150,11 +167,19 @@ export function applyWorldPatch(doc: VerifiableWorld, operations: readonly Opera
   // starý graf pořád replaynout.
   const draft = structuredClone(doc) as VerifiableWorld;
 
-  const outcomes = applyPatch(draft as unknown as object, [...operations]);
-  for (let i = 0; i < outcomes.length; i += 1) {
-    const failure = outcomes[i];
-    if (failure === null) continue;
+  // Po jedné a každá ve svém `try` — `ir/revision.ts` to dělá ze stejného důvodu:
+  // `add /ir/limits/gridWidth/x` na čísle uvnitř `rfc6902` **vyhodí**, takže by
+  // volající místo odmítnutí dostal pád. Dávkové volání by u toho navíc ztratilo
+  // index, tedy i pointer.
+  for (let i = 0; i < operations.length; i += 1) {
     const operation = operations[i];
+    let failure: ReturnType<typeof applyPatch>[number] | undefined;
+    try {
+      [failure] = applyPatch(draft as unknown as object, [operation]);
+    } catch (error) {
+      return threw(operation.path, `operation ${i} (${operation.op} ${operation.path})`, error);
+    }
+    if (failure === null || failure === undefined) continue;
     // `MissingError` z `rfc6902` nese **přesnou** cestu, na které to selhalo —
     // u `move`/`copy` je to typicky `from`, ne `path`. Hádat ji porovnáváním
     // řetězců je horší než nehádat: `/ir/nodes/1` je podřetězcem `/ir/nodes/12`,
@@ -172,6 +197,25 @@ export function applyWorldPatch(doc: VerifiableWorld, operations: readonly Opera
       `operation ${i} (${operation.op} ${operation.path}): ${failure.message}`,
     );
   }
+
+  // Hodnoty, které kanonizace zahladí — **sdílená stráž s `ir/revision.ts`**, ne
+  // druhá implementace téhož. Obě cesty spolu sdílely `operationSchema`, ale ne
+  // tohle, takže se stejná vada dala odmítnout jednou cestou a commitnout druhou.
+  //
+  // Kontroluje se **hotový draft**, ne hodnoty v operacích: draft je to, co se
+  // commitne, takže tahle jedna kontrola pokrývá i cesty, kde vada nevznikla ze
+  // `value`. Právě to je ten případ níž — a zároveň důvod, proč tu na rozdíl od
+  // `ir/revision.ts` žádná druhá kontrola nad operacemi není: byla by mrtvá.
+  //
+  // Na SYROVÉM draftu, dřív než ho uvidí zod — a je to jediné místo, kde je
+  // **`__proto__` v cestě patche** pozorovatelné. `add /space/sockets/__proto__`
+  // klíč nepřidá, ale přepíše prototyp: `Object.entries` ho nevidí, takže
+  // `worldEnvelope`, `layoutFits` i `graphHash` projdou beze změny a patch se
+  // commitne s `hashBefore === hashAfter` — zatímco runtime přes `sockets[name]`
+  // vidí soket navíc, který certifikát nepokrývá a kontrola mřížky neviděla.
+  const unhashable = unhashableValues(draft, '');
+  if (unhashable.length > 0)
+    return reject('STRUCTURE', unhashablePointer(unhashable[0]), 'values with a JSON form', unhashable[0]);
 
   const envelope = worldEnvelope.safeParse(draft);
   if (!envelope.success) return rejectionFromZod(envelope.error, []);

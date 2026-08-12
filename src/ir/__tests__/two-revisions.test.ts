@@ -363,6 +363,176 @@ describe('vadná operace je i tady odmítnutí, ne výjimka', () => {
     expect(mixed?.doc.lookRevision).toBe(1);
     expect(mixed?.doc.simRevision).toBe(0);
   });
+
+  /**
+   * **Vada není v operaci, ale ve dvojici operace a dokumentu.**
+   *
+   * `{"op":"add","path":"/grid/cell/x"}` projde kontrolou tvaru i hodnoty — je to
+   * platná RFC 6902 operace s platným pointerem. Teprve `grid.cell` je ve
+   * zmrazeném korpusu **číslo**, takže `rfc6902` uvnitř vyhodí `TypeError: Cannot
+   * create property 'x' on number '1'`. Dřív než při aplikaci to vidět nejde.
+   *
+   * Patchovat primitivum, jako by to byl objekt, je běžná chyba emise, ne útok.
+   */
+  it('`add` do primitivu je odmítnutí s pointerem, ne `TypeError`', () => {
+    const operations = JSON.parse('[{"op":"add","path":"/grid/cell/x","value":1}]') as Operation[];
+    let result: ReturnType<typeof commitPart> | undefined;
+    expect(() => {
+      result = commitPart(world, { part: 'sim', baseRevision: 0, operations });
+    }).not.toThrow();
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+    // Pointer musí ukazovat na TU operaci, ne na část dokumentu — proto se
+    // operace pouštějí po jedné.
+    if (result?.verdict !== 'REJECTED') return;
+    expect(result.pointer).toBe('/grid/cell/x');
+  });
+
+  it('a u smíšeného požadavku ta výjimka nesmí sebrat už commitnutý `look`', () => {
+    // Tohle je ta cena: výjimka přijde AŽ PO commitnutém `look`, takže volající
+    // nedostane `{look: COMMITTED, sim: REJECTED}`, ale pád — a vzhledová úprava,
+    // kterou hráč právě viděl, zmizí.
+    const broken: PartPatch = {
+      part: 'sim',
+      baseRevision: 0,
+      operations: JSON.parse('[{"op":"add","path":"/grid/cell/x","value":1}]') as Operation[],
+    };
+    let mixed: ReturnType<typeof commitMixed> | undefined;
+    expect(() => {
+      mixed = commitMixed(world, lookPatch(0), broken);
+    }).not.toThrow();
+    expect(mixed?.look.verdict).toBe('COMMITTED');
+    expect(mixed?.sim.verdict).toBe('REJECTED');
+    expect(mixed?.doc.lookRevision).toBe(1);
+    expect((mixed?.doc.look as { camera: { kind: string } }).camera.kind).toBe('follow');
+  });
+
+  /**
+   * **Kontrakt zní „nikdy nevyhodí", ne „nevyhodí na těchhle osmi vstupech".**
+   *
+   * Pět kol brány našlo pět různých dveří — vymyšlená hloubka schématu,
+   * `Infinity`, `undefined` hlouběji ve stromu, `Date`/`Map`/`Set`, `__proto__`
+   * v cestě. Zavírat je po jedné znamená zavřít tu, kterou zrovna někdo našel,
+   * takže tenhle test nemíří na konkrétní vadu, ale na ten kontrakt: hodnota,
+   * která **vyhodí uvnitř samotné kontroly**, musí skončit jako verdikt.
+   *
+   * `Proxy` je k tomu jen nástroj — vyhodí v `Object.keys`, tedy uvnitř
+   * `unhashableValues`, což je **před** aplikací patche a mimo dosah jakéhokoli
+   * záchytu kolem `applyPatch`. Sem se dá dojít jen záchytem kolem všeho.
+   */
+  it('i hodnota, která vyhodí uvnitř kontroly, skončí jako verdikt', () => {
+    const hostile = new Proxy(
+      {},
+      {
+        ownKeys() {
+          throw new Error('ownKeys trap');
+        },
+      },
+    );
+    let result: ReturnType<typeof commitPart> | undefined;
+    expect(() => {
+      result = commitPart(world, {
+        part: 'sim',
+        baseRevision: 0,
+        operations: [{ op: 'replace', path: '/state/slots', value: hostile } as Operation],
+      });
+    }).not.toThrow();
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+    if (result?.verdict !== 'REJECTED') return;
+    expect(result.detail).toContain('ownKeys trap');
+  });
+
+  it('a smíšený požadavek si u toho udrží commitnutý `look`', () => {
+    const hostile = new Proxy({}, { ownKeys() { throw new Error('ownKeys trap'); } });
+    let mixed: ReturnType<typeof commitMixed> | undefined;
+    expect(() => {
+      mixed = commitMixed(world, lookPatch(0), {
+        part: 'sim',
+        baseRevision: 0,
+        operations: [{ op: 'replace', path: '/state/slots', value: hostile } as Operation],
+      });
+    }).not.toThrow();
+    expect(mixed?.look.verdict).toBe('COMMITTED');
+    expect(mixed?.sim.verdict).toBe('REJECTED');
+    expect(mixed?.doc.lookRevision).toBe(1);
+  });
+
+  it('operace, která projde, se aplikuje na tentýž draft jako ta před ní', () => {
+    // Pouštění po jedné nesmí změnit sémantiku: druhá operace musí vidět výsledek
+    // první. Bez téhle aserce by shodou okolností prošla i implementace, která
+    // každou operaci pouští na čerstvou kopii.
+    const result = commitPart(world, {
+      part: 'sim',
+      baseRevision: 0,
+      operations: [
+        { op: 'add', path: '/sockets/side', value: [2, 2] },
+        { op: 'move', path: '/sockets/flank', from: '/sockets/side' },
+      ],
+    });
+    expect(result.verdict).toBe('COMMITTED');
+    if (result.verdict !== 'COMMITTED') return;
+    const sockets = (result.doc.sim as { sockets: Record<string, unknown> }).sockets;
+    expect(sockets.flank).toEqual([2, 2]);
+    expect(sockets.side).toBeUndefined();
+  });
+});
+
+/**
+ * Hloubka je vada HODNOTY, ne výjimka na konci.
+ *
+ * `canonical` je rekurzivní, takže dokument zanořený ~2000 úrovní přeteče
+ * zásobník až uvnitř `simHashOf` — tedy za všemi kontrolami. Strop proto sedí
+ * v `unhashableValues`, která běží **před** každým hashováním, a platí tím pádem
+ * na všech vstupech naráz: patch, migrace i validace `look`.
+ */
+describe('příliš hluboké zanoření se odmítne, ne přeteče', () => {
+  const nest = (depth: number): unknown => {
+    let node: unknown = 1;
+    for (let i = 0; i < depth; i += 1) node = { n: node };
+    return node;
+  };
+
+  it('commit hlubokého patche je odmítnutí s důvodem', () => {
+    let result: ReturnType<typeof commitPart> | undefined;
+    expect(() => {
+      result = commitPart(world, {
+        part: 'sim',
+        baseRevision: 0,
+        operations: [{ op: 'replace', path: '/state/slots', value: nest(2000) }],
+      });
+    }).not.toThrow();
+    expect(result?.verdict).toBe('REJECTED');
+    if (result?.verdict !== 'REJECTED') return;
+    expect(result.detail).toContain('deeper than');
+  });
+
+  it('migrace hlubokého dokumentu ho odmítne místo aby spadla', () => {
+    // Migrace je JEDINÝ vstup pro čtení dokumentu (`parseWorldDoc` tu schválně
+    // není), takže výjimka odsud je 500 místo verdiktu — přesně to, co §11.3
+    // zakazuje větou „buď vyrobí ověřeného svědka, nebo svět explicitně odmítne".
+    //
+    // Hash je schválně **placeholder, ne spočítaný**: takový dokument přichází
+    // z uložiště s tím hashem, který v něm je, a `sealSimHash` by na téhle hloubce
+    // sama přetekla dřív, než by se test k migraci vůbec dostal. Kontrola hloubky
+    // běží před porovnáním hashe, takže verdikt rozhoduje ona.
+    const deep = { ...world, simHash: '00000000', sim: { ...world.sim, state: nest(2000) } };
+    let verdict: ReturnType<typeof migrateWorldDoc> | undefined;
+    expect(() => {
+      verdict = migrateWorldDoc(deep);
+    }).not.toThrow();
+    expect(verdict?.ok).toBe(false);
+    expect(verdict?.reason).toContain('deeper than');
+  });
+
+  it('ale běžná hloubka projít MUSÍ — jinak by strop byl jen jiná vada', () => {
+    // Nejhlubší cesta ve zmrazeném korpusu má jednotky úrovní. Kdyby strop
+    // odmítal i legitimní dokument, zavřel by branku i pro správné světy.
+    expect(commitPart(world, {
+      part: 'sim',
+      baseRevision: 0,
+      operations: [{ op: 'replace', path: '/state/slots', value: nest(32) }],
+    }).verdict).toBe('COMMITTED');
+    expect(migrateWorldDoc(world).ok).toBe(true);
+  });
 });
 
 describe('`look` má validátor, ne verifikátor', () => {

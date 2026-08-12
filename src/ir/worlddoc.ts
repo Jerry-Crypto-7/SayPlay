@@ -160,6 +160,25 @@ const FNV_OFFSET_BASIS = 0x811c9dc5;
 const FNV_PRIME = 0x01000193;
 
 /**
+ * Nejhlubší zanoření, které `canonical` ještě projde — a je to **strop hodnoty,
+ * ne obrana proti útoku**.
+ *
+ * `canonical` je rekurzivní a na dokumentu zanořeném ~2000 úrovní přeteče
+ * zásobník uvnitř `simHashOf`. Výjimka odtamtud je nejhorší možný výsledek:
+ * přijde až za všemi kontrolami, u smíšeného požadavku **po** commitnutém `look`,
+ * a volající místo odmítnutí dostane pád.
+ *
+ * Strop je proto v `unhashableValues`, tedy v té kontrole, která se ptá „dá se
+ * tahle hodnota kanonizovat" — a která se pouští **před** každým hashováním.
+ * Tím se hloubka odmítne jako vada hodnoty na všech vstupech naráz (patch,
+ * migrace, validace `look`), místo aby se chytala jako výjimka na jednom z nich.
+ *
+ * 256 je řádově nad čímkoli, co dokument potřebuje (nejhlubší cesta ve zmrazeném
+ * korpusu má jednotky úrovní), a řádově pod hloubkou, kde `canonical` padá.
+ */
+export const MAX_CANONICAL_DEPTH = 256;
+
+/**
  * Kanonická serializace: klíče objektů **seřazené**, žádné mezery.
  *
  * Bez toho by hash závisel na pořadí, ve kterém klíče vznikly, takže dokument
@@ -247,7 +266,14 @@ export interface LookVerdict {
  * složeného v procesu a obě přežijí `structuredClone` i IndexedDB. To je tentýž
  * argument o dosažitelnosti, jaký už platí pro `Infinity`.
  */
-export function unhashableValues(value: unknown, path = '', open = new WeakSet<object>()): string[] {
+export function unhashableValues(
+  value: unknown,
+  path = '',
+  open = new WeakSet<object>(),
+  depth = 0,
+): string[] {
+  if (depth > MAX_CANONICAL_DEPTH)
+    return [`${path}: nested deeper than ${MAX_CANONICAL_DEPTH} — canonicalization would overflow the stack`];
   if (value === undefined) return [`${path}: undefined is dropped by canonicalization`];
   if (value === null) return [];
 
@@ -267,7 +293,8 @@ export function unhashableValues(value: unknown, path = '', open = new WeakSet<o
 
   const issues: string[] = [];
   if (Array.isArray(object)) {
-    for (let i = 0; i < object.length; i += 1) issues.push(...unhashableValues(object[i], `${path}/${i}`, open));
+    for (let i = 0; i < object.length; i += 1)
+      issues.push(...unhashableValues(object[i], `${path}/${i}`, open, depth + 1));
     open.delete(object);
     return issues;
   }
@@ -295,10 +322,21 @@ export function unhashableValues(value: unknown, path = '', open = new WeakSet<o
       issues.push(`${path}/${key}: accessor properties have no JSON form`);
       continue;
     }
-    issues.push(...unhashableValues(descriptor.value, `${path}/${key}`, open));
+    issues.push(...unhashableValues(descriptor.value, `${path}/${key}`, open, depth + 1));
   }
   open.delete(object);
   return issues;
+}
+
+/**
+ * Pointer z nálezu `unhashableValues` — cesta je všechno před prvním `": "`.
+ *
+ * Je to inverze toho, jak si nález cestu skládá (`${path}/${key}`), a proto stojí
+ * tady vedle něj: kdyby se skládání změnilo, obě strany jsou na očích.
+ */
+export function unhashablePointer(issue: string): string {
+  const at = issue.indexOf(': ');
+  return at === -1 ? '' : issue.slice(0, at);
 }
 
 export function validateLook(look: unknown): LookVerdict {

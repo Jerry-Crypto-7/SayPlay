@@ -440,6 +440,117 @@ describe('hash grafu je kanonický', () => {
   });
 });
 
+/**
+ * **Obě patch cesty musí být hlídané stejně.**
+ *
+ * `ir/revision.ts` a `patch/apply.ts` sdílely `operationSchema`, ale ne hodnotovou
+ * stráž — takže se stejná vada dala odmítnout jednou cestou a commitnout druhou.
+ * Sdílená kontrola to zavírá; tyhle testy hlídají, že se zase nerozejdou.
+ */
+describe('sousední patch cesta má tytéž stráže jako `ir/revision.ts`', () => {
+  it('`__proto__` v cestě neprojde, i když by hash zůstal bitově stejný', () => {
+    const before = graphHash(vault);
+    // Z čistého JSON, tedy z té cesty, kvůli které tahle vrstva existuje.
+    const operations = JSON.parse(
+      '[{"op":"add","path":"/space/sockets/__proto__","value":{"phantom":[99,99]}}]',
+    ) as Operation[];
+    const result = applyWorldPatch(vault, operations);
+
+    expect(result.verdict).toBe('REJECTED');
+    expectUntouched(before);
+  });
+
+  it('a kdyby prošlo, runtime by přes `sockets[name]` viděl soket navíc', () => {
+    // Doklad té vady, ne hypotéza. `rfc6902` dělá `add` **přiřazením**, a to na
+    // klíči `__proto__` spustí setter prototypu místo aby přidalo vlastní klíč —
+    // proto se tady pollutuje stejným způsobem, ne přes `JSON.parse` (ten
+    // `__proto__` naopak založí jako vlastní klíč, tedy jinou věc).
+    const polluted = structuredClone(vault) as unknown as { space: { sockets: Record<string, unknown> } };
+    (polluted.space.sockets as { __proto__?: unknown }).__proto__ = { phantom: [99, 99] };
+
+    // `Object.entries` ho nevidí, takže `worldEnvelope`, `layoutFits` i `graphHash`
+    // projdou beze změny…
+    expect(Object.keys(polluted.space.sockets)).toEqual(Object.keys(vault.space.sockets));
+    expect(graphHash(polluted)).toBe(graphHash(vault));
+    // …zatímco čtení klíčem ten fantomový soket najde. Certifikát ho nepokrývá a
+    // kontrola mřížky ho neviděla.
+    expect((polluted.space.sockets as { phantom?: unknown }).phantom).toEqual([99, 99]);
+  });
+
+  it('`add` do primitivu je odmítnutí s pointerem, ne `TypeError`', () => {
+    const before = graphHash(vault);
+    const operations = JSON.parse('[{"op":"add","path":"/ir/limits/gridWidth/x","value":1}]') as Operation[];
+    let result: ReturnType<typeof applyWorldPatch> | undefined;
+    expect(() => {
+      result = applyWorldPatch(vault, operations);
+    }).not.toThrow();
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+    if (result?.verdict !== 'REJECTED') return;
+    expect(result.pointer).toBe('/ir/limits/gridWidth/x');
+    expectUntouched(before);
+  });
+
+  it('hodnota bez JSON tvaru se odmítne v operaci, ne až v hashi', () => {
+    // `canonical` zploští `Map` i `Date` na `{}`, takže by se dva sémanticky různé
+    // dokumenty schovaly pod jeden `graphHash`.
+    for (const value of [new Map([['k', 1]]), new Date(0), Number.NaN]) {
+      const before = graphHash(vault);
+      const result = applyWorldPatch(vault, [
+        { op: 'replace', path: '/ir/rules/0/priority', value } as Operation,
+      ]);
+      expect(result.verdict, String(value)).toBe('REJECTED');
+      expectUntouched(before);
+    }
+  });
+
+  it('hodnota, která vyhodí uvnitř knihovny, je odmítnutí s pointerem', () => {
+    // `rfc6902` si `value` při vkládání kopíruje, takže nepřátelská hodnota
+    // vyhodí uvnitř `applyPatch` — tedy tam, kde se pořád ví, která operace to
+    // byla, a odmítnutí proto může nést pointer.
+    const before = graphHash(vault);
+    const hostile = new Proxy({}, { ownKeys() { throw new Error('ownKeys trap'); } });
+    let result: ReturnType<typeof applyWorldPatch> | undefined;
+    expect(() => {
+      result = applyWorldPatch(vault, [
+        { op: 'replace', path: '/ir/rules/0/priority', value: hostile } as Operation,
+      ]);
+    }).not.toThrow();
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+    if (result?.verdict !== 'REJECTED') return;
+    expect(result.pointer).toBe('/ir/rules/0/priority');
+    expectUntouched(before);
+  });
+
+  /**
+   * A tohle je ten případ, na který per-operační záchyt nedosáhne.
+   *
+   * `hashBefore` se počítá z **vstupního** dokumentu jako úplně první krok, dřív
+   * než existuje jakákoli operace. `graphHash` je přitom rekurzivní stejně jako
+   * `canonical`, takže dost hluboký dokument ho přetopí — a volající by místo
+   * verdiktu dostal `RangeError` z funkce, která má vracet odmítnutí.
+   */
+  it('a hluboký VSTUPNÍ dokument taky, ještě než dojde na operace', () => {
+    let node: unknown = 1;
+    for (let i = 0; i < 5000; i += 1) node = { n: node };
+    const deep = { ...structuredClone(vault), ir: { ...vault.ir, deep: node } } as unknown as VerifiableWorld;
+
+    let result: ReturnType<typeof applyWorldPatch> | undefined;
+    expect(() => {
+      result = applyWorldPatch(deep, []);
+    }).not.toThrow();
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+  });
+
+  it('operace, která projde, se aplikuje na tentýž draft jako ta před ní', () => {
+    // Pouštění po jedné nesmí změnit sémantiku: druhá operace vidí výsledek první.
+    const result = applyWorldPatch(vault, [
+      { op: 'replace', path: '/ir/rules/0/priority', value: 5 },
+      { op: 'test', path: '/ir/rules/0/priority', value: 5 },
+    ]);
+    expect(result.verdict).toBe('COMMITTED');
+  });
+});
+
 describe('patch cesta stojí na RFC 6902, ne na náhražce', () => {
   /**
    * Kontroluje se **množina importů**, ne text souboru.
@@ -454,6 +565,11 @@ describe('patch cesta stojí na RFC 6902, ne na náhražce', () => {
     const specifiers = [...text.matchAll(/from '([^']+)'/g)].map((hit) => hit[1]).sort();
     expect(specifiers).toEqual([
       '../ir/schema',
+      // `unhashableValues` je SDÍLENÁ stráž, ne kopie: druhá implementace téhož
+      // by se rozešla po prvním nálezu, který se opraví jen na jedné cestě —
+      // a přesně tak vznikl rozdíl, kvůli kterému `__proto__` prošlo tudy,
+      // zatímco `ir/revision.ts` ho odmítal.
+      '../ir/worlddoc',
       '../sim/hash',
       '../verify/tiers',
       '../verify/witness',

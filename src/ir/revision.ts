@@ -68,6 +68,29 @@ export function commitPart(doc: WorldDoc, patch: PartPatch): RevisionResult {
       `patch was issued against ${patch.part}Revision ${patch.baseRevision}, current is ${current}`,
     );
 
+  // **Jeden záchyt kolem celého zbytku**, a je to reakce na to, jak tahle úloha
+  // probíhala: pět kol brány, pokaždé skutečná vada, pokaždé jiné dveře —
+  // vymyšlená hloubka schématu, `Infinity`, `undefined` hlouběji ve stromu,
+  // `Date`/`Map`/`Set`, `__proto__` v cestě. Zavírat je po jedné znamená zavřít
+  // tu, kterou zrovna někdo našel.
+  //
+  // Kontrakt je tím pádem jednoduchý a nezávisí na výčtu: `commitPart` **nikdy
+  // nevyhodí**. Volající dostane verdikt, protože u smíšeného požadavku je rozdíl
+  // mezi „`sim` neprošel" a pádem ten, že pád sebere i `look`, který se právě
+  // commitnul a ukázal hráči.
+  try {
+    return commitChecked(doc, patch);
+  } catch (error) {
+    return threw(`/${patch.part}`, `applying the patch to ${patch.part}`, error);
+  }
+}
+
+function threw(pointer: string, what: string, error: unknown): PatchRejection {
+  const message = error instanceof Error ? error.message : String(error);
+  return reject('MALFORMED_OPERATION', pointer, 'a patch the system can apply and hash', `${what} threw: ${message}`);
+}
+
+function commitChecked(doc: WorldDoc, patch: PartPatch): RevisionResult {
   // Tvar OPERACÍ dřív, než je uvidí knihovna — `patch/apply.ts` to dělá ze
   // stejného důvodu a `commitPart` ho při přebírání té struktury vynechal:
   // `readonly Operation[]` platí jen při překladu, patch přichází jako JSON od
@@ -106,12 +129,30 @@ export function commitPart(doc: WorldDoc, patch: PartPatch): RevisionResult {
   }
 
   const draft = structuredClone(doc[patch.part]) as unknown;
-  const outcomes = applyPatch(draft as object, [...patch.operations]);
-  for (let i = 0; i < outcomes.length; i += 1) {
-    const failure = outcomes[i];
-    if (failure === null) continue;
-    const failedPath = (failure as { path?: unknown }).path;
+
+  // Operace se pouštějí **po jedné**, a každá ve svém `try`.
+  //
+  // `rfc6902` na některých cílech nevrací chybu, ale **vyhodí**: `add
+  // /grid/cell/x`, kde `grid.cell` je číslo, skončí `TypeError: Cannot create
+  // property 'x' on number '1'`. Projde přitom kontrolou tvaru i hodnoty, protože
+  // vada není v operaci — je ve dvojici operace a dokumentu, a tu nelze vidět
+  // dřív než při aplikaci. Patchovat primitivum, jako by to byl objekt, je běžná
+  // chyba emise, ne útok.
+  //
+  // Dávkové `applyPatch` by u toho ztratilo index, takže by odmítnutí nemělo
+  // pointer. Po jedné je to totéž pořadí nad tímtéž draftem — knihovna operace
+  // stejně aplikuje sekvenčně — jen s tím rozdílem, že se ví, která z nich to
+  // byla, a že se u ní dá zastavit.
+  for (let i = 0; i < patch.operations.length; i += 1) {
     const operation = patch.operations[i];
+    let failure: ReturnType<typeof applyPatch>[number] | undefined;
+    try {
+      [failure] = applyPatch(draft as object, [operation]);
+    } catch (error) {
+      return threw(operation.path, `operation ${i} (${operation.op} ${operation.path})`, error);
+    }
+    if (failure === null || failure === undefined) continue;
+    const failedPath = (failure as { path?: unknown }).path;
     return reject(
       'MALFORMED_OPERATION',
       typeof failedPath === 'string' ? failedPath : operation.path,
@@ -120,15 +161,20 @@ export function commitPart(doc: WorldDoc, patch: PartPatch): RevisionResult {
     );
   }
 
+  return sealPart(doc, patch.part, draft);
+}
+
+/** Kontroly a zapečetění nad hotovým draftem. Volá se **uvnitř** `try`. */
+function sealPart(doc: WorldDoc, part: Part, draft: unknown): RevisionResult {
   // Hodnoty, které kanonizace zahladí, se kontrolují na SYROVÉM draftu — dřív,
   // než ho uvidí zod. Parser si data překopíruje, takže `Map` nebo cyklus by za
   // ním vypadaly jinak, než co do dokumentu doopravdy přišlo; a cyklus by navíc
   // shodil samotné parsování dřív, než by se k němu kontrola dostala.
-  const unhashable = unhashableValues(draft, `/${patch.part}`);
+  const unhashable = unhashableValues(draft, `/${part}`);
   if (unhashable.length > 0)
-    return reject('STRUCTURE', `/${patch.part}`, 'values with a JSON form', unhashable[0]);
+    return reject('STRUCTURE', `/${part}`, 'values with a JSON form', unhashable[0]);
 
-  if (patch.part === 'look') {
+  if (part === 'look') {
     const shape = lookSchema.safeParse(draft);
     if (!shape.success) return rejectionFromZod(shape.error, ['look']);
     // Konečnost VŠECH čísel — `NaN` projde typem `number` a rozbije stavbu
