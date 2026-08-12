@@ -17,7 +17,7 @@
 
 import { applyPatch, type Operation } from 'rfc6902';
 
-import { reject, rejectionFromZod, type PatchRejection } from '../patch/reject';
+import { operationSchema, reject, rejectionFromZod, type PatchRejection } from '../patch/reject';
 import {
   lookSchema,
   unhashableValues,
@@ -68,6 +68,43 @@ export function commitPart(doc: WorldDoc, patch: PartPatch): RevisionResult {
       `patch was issued against ${patch.part}Revision ${patch.baseRevision}, current is ${current}`,
     );
 
+  // Tvar OPERACÍ dřív, než je uvidí knihovna — `patch/apply.ts` to dělá ze
+  // stejného důvodu a `commitPart` ho při přebírání té struktury vynechal:
+  // `readonly Operation[]` platí jen při překladu, patch přichází jako JSON od
+  // modelu, a operace bez `path` uvnitř `rfc6902` **vyhodí**. U smíšeného
+  // požadavku by ta výjimka přišla až PO commitnutém `look`, takže by volající
+  // místo `{look: COMMITTED, sim: REJECTED}` dostal pád a commitnutý dokument by
+  // se ztratil — přesně ten kontrakt, který se tu má držet.
+  for (let i = 0; i < patch.operations.length; i += 1) {
+    const parsed = operationSchema.safeParse(patch.operations[i]);
+    if (parsed.success) continue;
+    const path = (patch.operations[i] as { path?: unknown } | null)?.path;
+    return reject(
+      'MALFORMED_OPERATION',
+      typeof path === 'string' ? path : '',
+      'an RFC 6902 operation with op and path',
+      `operation ${i}: ${parsed.error.issues[0].message}`,
+    );
+  }
+
+  // Hodnoty, které kanonizace zahladí, se odmítají **v operaci**, ne až ve
+  // výsledku. `rfc6902` i `zod` si vstup po svém překopírují, takže `Map`, cyklus
+  // nebo funkce se za nimi buď promění v něco jiného, nebo shodí celý průchod
+  // výjimkou dřív, než se ke kontrole vůbec dojde. Odmítnout patch je navíc
+  // přesnější odpověď než odmítnout dokument, který z něj vznikl.
+  for (let i = 0; i < patch.operations.length; i += 1) {
+    const operation = patch.operations[i] as { value?: unknown };
+    if (!('value' in operation)) continue;
+    const unusable = unhashableValues(operation.value, `operation ${i} value`);
+    if (unusable.length > 0)
+      return reject(
+        'MALFORMED_OPERATION',
+        patch.operations[i].path,
+        'a value with a JSON form',
+        unusable[0],
+      );
+  }
+
   const draft = structuredClone(doc[patch.part]) as unknown;
   const outcomes = applyPatch(draft as object, [...patch.operations]);
   for (let i = 0; i < outcomes.length; i += 1) {
@@ -82,6 +119,14 @@ export function commitPart(doc: WorldDoc, patch: PartPatch): RevisionResult {
       `operation ${i} (${operation.op} ${operation.path}): ${failure.message}`,
     );
   }
+
+  // Hodnoty, které kanonizace zahladí, se kontrolují na SYROVÉM draftu — dřív,
+  // než ho uvidí zod. Parser si data překopíruje, takže `Map` nebo cyklus by za
+  // ním vypadaly jinak, než co do dokumentu doopravdy přišlo; a cyklus by navíc
+  // shodil samotné parsování dřív, než by se k němu kontrola dostala.
+  const unhashable = unhashableValues(draft, `/${patch.part}`);
+  if (unhashable.length > 0)
+    return reject('STRUCTURE', `/${patch.part}`, 'values with a JSON form', unhashable[0]);
 
   if (patch.part === 'look') {
     const shape = lookSchema.safeParse(draft);
@@ -103,13 +148,6 @@ export function commitPart(doc: WorldDoc, patch: PartPatch): RevisionResult {
 
   const shape = simSchema.safeParse(draft);
   if (!shape.success) return rejectionFromZod(shape.error, ['sim']);
-
-  // Konečnost platí pro `sim` NALÉHAVĚJI než pro `look`: `NaN`, `Infinity`
-  // i `null` kolabují v kanonickém zápisu na tentýž řetězec, takže by se
-  // dokumenty s různou sémantikou schovaly za jeden `simHash` — a hash je tady
-  // kotva certifikátu, ne jen kontrolní součet.
-  const nonFinite = unhashableValues(shape.data, '/sim');
-  if (nonFinite.length > 0) return reject('STRUCTURE', '/sim', 'finite numbers throughout', nonFinite[0]);
 
   // `simHash` se přepočítá, protože se změnila právě ta část, ze které se počítá.
   const withSim = { ...doc, sim: shape.data, simRevision: doc.simRevision + 1 };

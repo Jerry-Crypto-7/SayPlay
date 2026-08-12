@@ -8,6 +8,7 @@
  * nedotýkají**.
  */
 
+import type { Operation } from 'rfc6902';
 import { describe, expect, it } from 'vitest';
 
 import { commitMixed, commitPart, type PartPatch } from '../revision';
@@ -204,7 +205,7 @@ describe('nekonečno se do hashované části nedostane', () => {
       const result = write(value);
       expect(result.verdict, String(value)).toBe('REJECTED');
       if (result.verdict !== 'REJECTED') continue;
-      expect(result.detail, String(value)).toContain('counters/keys');
+      expect(result.pointer, String(value)).toContain('counters/keys');
     }
   });
 
@@ -272,6 +273,98 @@ describe('nekonečno se do hashované části nedostane', () => {
   });
 });
 
+/**
+ * Do hashované části smí **jen to, co má JSON tvar**.
+ *
+ * Všechno ostatní `canonical` buď zploští, nebo zahladí — a výsledek je pokaždé
+ * týž: dva sémanticky různé dokumenty pod jednou kotvou certifikátu.
+ */
+describe('do `sim` se dostane jen JSON', () => {
+  const put = (value: unknown) =>
+    commitPart(world, {
+      part: 'sim',
+      baseRevision: 0,
+      operations: [{ op: 'replace', path: '/state/slots', value } as Operation],
+    });
+
+  it('`Date`, `Map` a `Set` se zploští na `{}` — proto neprojdou', () => {
+    for (const value of [new Date(0), new Map([['k', 1]]), new Set([1, 2, 3])]) {
+      expect(put(value).verdict, String(value)).toBe('REJECTED');
+    }
+    // Doklad té kolize: `canonical` je od `{}` nerozezná.
+    expect(canonicalHash(new Date(0))).toBe(canonicalHash({}));
+    expect(canonicalHash(new Map([['k', 1]]))).toBe(canonicalHash({}));
+  });
+
+  it('`BigInt`, funkce a symbol taky ne — a nesmí to být výjimka', () => {
+    for (const value of [1n, () => 1, Symbol('x')]) {
+      let result: ReturnType<typeof put> | undefined;
+      expect(() => {
+        result = put(value);
+      }, String(value)).not.toThrow();
+      expect(result?.verdict, String(value)).toBe('REJECTED');
+    }
+  });
+
+  it('cyklus neprojde a hlavně nezacyklí kontrolu', () => {
+    const cyclic: Record<string, unknown> = {};
+    cyclic.self = cyclic;
+    let result: ReturnType<typeof put> | undefined;
+    expect(() => {
+      result = put(cyclic);
+    }).not.toThrow();
+    expect(result?.verdict).toBe('REJECTED');
+  });
+
+  it('ale sdílený odkaz bez cyklu projít MUSÍ — jinak by to byl falešný nález', () => {
+    const shared = { a: 1 };
+    expect(put({ left: shared, right: shared }).verdict).toBe('COMMITTED');
+  });
+
+  /**
+   * `__proto__` v cestě patche **nepřidá klíč, přepíše prototyp**. `Object.keys`
+   * ho nevidí, takže hash zůstane bitově stejný — a runtime přes `entities[id]`
+   * vidí entitu, kterou certifikát nepokrývá. Přijde přitom z čistého JSON, tedy
+   * z té cesty, kvůli které tahle vrstva existuje.
+   */
+  it('`__proto__` v cestě patche neprojde, i když by hash zůstal stejný', () => {
+    const operations = JSON.parse(
+      '[{"op":"add","path":"/entities/__proto__","value":{"ghost":{"role":"goal"}}}]',
+    ) as Operation[];
+    const result = commitPart(world, { part: 'sim', baseRevision: 0, operations });
+    expect(result.verdict).toBe('REJECTED');
+  });
+});
+
+describe('vadná operace je i tady odmítnutí, ne výjimka', () => {
+  it('operace bez `path` neproletí do knihovny', () => {
+    const operations = JSON.parse('[{"op":"add","value":1}]') as Operation[];
+    let result: ReturnType<typeof commitPart> | undefined;
+    expect(() => {
+      result = commitPart(world, { part: 'sim', baseRevision: 0, operations });
+    }).not.toThrow();
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+  });
+
+  it('a u smíšeného požadavku zůstane vzhled commitnutý místo aby spadl celý', () => {
+    // Kdyby to vyhodilo, volající by místo `{look: COMMITTED, sim: REJECTED}`
+    // dostal pád a už commitnutý vzhledový dokument by se ztratil.
+    const broken: PartPatch = {
+      part: 'sim',
+      baseRevision: 0,
+      operations: JSON.parse('[{"op":"move","path":"/grid/cell"}]') as Operation[],
+    };
+    let mixed: ReturnType<typeof commitMixed> | undefined;
+    expect(() => {
+      mixed = commitMixed(world, lookPatch(0), broken);
+    }).not.toThrow();
+    expect(mixed?.look.verdict).toBe('COMMITTED');
+    expect(mixed?.sim.verdict).toBe('REJECTED');
+    expect(mixed?.doc.lookRevision).toBe(1);
+    expect(mixed?.doc.simRevision).toBe(0);
+  });
+});
+
 describe('`look` má validátor, ne verifikátor', () => {
   it('nekonečné a NaN hodnoty jsou technická vada, ne sémantická', () => {
     // §7: „Sémanticky neodmítá, technicky ano." `NaN` projde typem `number` a
@@ -298,7 +391,7 @@ describe('`look` má validátor, ne verifikátor', () => {
     });
     expect(result.verdict).toBe('REJECTED');
     if (result.verdict !== 'REJECTED') return;
-    expect(result.detail).toContain('lightRig');
+    expect(result.pointer).toContain('lightRig');
     // A aktivní dokument zůstal beze změny.
     expect(world.look.lightRig).toBe('key');
   });

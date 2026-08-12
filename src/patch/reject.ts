@@ -10,7 +10,7 @@
  * odpověď mluví v souřadnicích dotazu — ne v souřadnicích vnitřní reprezentace.
  */
 
-import type { ZodError } from 'zod';
+import { z, type ZodError } from 'zod';
 
 export type RejectReason =
   /** Operace se na dokument nedala provést (chybějící rodič, index mimo pole). */
@@ -134,3 +134,20 @@ export function structurePointer(issue: string): string {
   }
   return '/ir';
 }
+
+/**
+ * RFC 6902 operace. `readonly Operation[]` je jen typ — patch přichází jako JSON.
+ *
+ * Cesta musí být **skutečný JSON Pointer**, ne jen řetězec: `"ir/rules/0"` bez
+ * úvodního lomítka je nejběžnější chyba v ručně i modelem psaném patchi a
+ * `rfc6902` na ní **vyhodí** (`Invalid JSON Pointer`), takže bez tohohle by
+ * kontrakt „vadná operace je odmítnutí, ne výjimka" platil jen pro chybějící
+ * cestu a ne pro špatně napsanou.
+ */
+export const jsonPointer = z.string().regex(/^(\/[^/]*)*$/, 'must be an RFC 6901 JSON Pointer');
+
+export const operationSchema = z.union([
+  z.object({ op: z.enum(['add', 'replace', 'test']), path: jsonPointer, value: z.unknown() }).loose(),
+  z.object({ op: z.literal('remove'), path: jsonPointer }).loose(),
+  z.object({ op: z.enum(['move', 'copy']), path: jsonPointer, from: jsonPointer }).loose(),
+]);

@@ -247,15 +247,58 @@ export interface LookVerdict {
  * složeného v procesu a obě přežijí `structuredClone` i IndexedDB. To je tentýž
  * argument o dosažitelnosti, jaký už platí pro `Infinity`.
  */
-export function unhashableValues(value: unknown, path = ''): string[] {
+export function unhashableValues(value: unknown, path = '', open = new WeakSet<object>()): string[] {
   if (value === undefined) return [`${path}: undefined is dropped by canonicalization`];
-  if (typeof value === 'number')
-    return Number.isFinite(value) ? [] : [`${path}: ${String(value)} is not finite`];
-  if (value === null || typeof value !== 'object') return [];
-  if (Array.isArray(value)) return value.flatMap((item, i) => unhashableValues(item, `${path}/${i}`));
-  return Object.entries(value as Record<string, unknown>).flatMap(([key, item]) =>
-    unhashableValues(item, `${path}/${key}`),
-  );
+  if (value === null) return [];
+
+  const kind = typeof value;
+  if (kind === 'number')
+    return Number.isFinite(value as number) ? [] : [`${path}: ${String(value)} is not finite`];
+  if (kind === 'string' || kind === 'boolean') return [];
+  // `bigint` vyhodí uvnitř `JSON.stringify`, `function` i `symbol` z něj vypadnou
+  // beze stopy. Ani jedno nemá JSON tvar, takže ani jedno nesmí do dokumentu.
+  if (kind !== 'object') return [`${path}: ${kind} has no JSON form`];
+
+  const object = value as object;
+  // Cyklus se `structuredClone` přenese a `canonical` by na něm nedoběhl. Sleduje
+  // se **cesta**, ne všechno viděné, aby sdílený odkaz (DAG) nebyl falešný nález.
+  if (open.has(object)) return [`${path}: cycle — canonicalization would not terminate`];
+  open.add(object);
+
+  const issues: string[] = [];
+  if (Array.isArray(object)) {
+    for (let i = 0; i < object.length; i += 1) issues.push(...unhashableValues(object[i], `${path}/${i}`, open));
+    open.delete(object);
+    return issues;
+  }
+
+  // **Jen prostý objekt.** Tahle jediná podmínka zavírá dvě různé díry naráz:
+  //
+  // - `Date`, `Map`, `Set` a spol. `canonical` zploští na `{}`, takže pět různých
+  //   dokumentů dostane jeden `simHash` — a po `JSON` round-tripu se `Date` změní
+  //   na řetězec, takže znovu načtená kopie už tomu hashi neodpovídá.
+  // - **`__proto__` v cestě patche.** `add /entities/__proto__` nepřidá klíč, ale
+  //   **přepíše prototyp**; `Object.entries` ho nevidí, takže hash zůstane bitově
+  //   stejný, zatímco runtime přes `entities[id]` vidí entitu navíc, kterou
+  //   certifikát nepokrývá. Prototyp se tím z prostého objektu změní — a to je
+  //   pozorovatelné právě tady.
+  const proto = Object.getPrototypeOf(object) as unknown;
+  if (proto !== Object.prototype && proto !== null) {
+    open.delete(object);
+    return [`${path}: only plain objects and arrays survive canonicalization`];
+  }
+
+  for (const key of Object.keys(object)) {
+    const descriptor = Object.getOwnPropertyDescriptor(object, key);
+    // Getter by se zavolal až v `canonical` a mohl by vyhodit; hodnotou není.
+    if (descriptor === undefined || descriptor.get !== undefined) {
+      issues.push(`${path}/${key}: accessor properties have no JSON form`);
+      continue;
+    }
+    issues.push(...unhashableValues(descriptor.value, `${path}/${key}`, open));
+  }
+  open.delete(object);
+  return issues;
 }
 
 export function validateLook(look: unknown): LookVerdict {
