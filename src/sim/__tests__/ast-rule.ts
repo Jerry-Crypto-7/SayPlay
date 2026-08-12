@@ -24,7 +24,14 @@
  * a vstupní dokument ji nezvětší, což je přesně to, co pravidlo hlídá). Kdyby
  * některá z těch mezí zmizela, tohle pravidlo to neuvidí.
  *
- * **Druhá přiznaná mezera: aritmetika se nevyhodnocuje.** `0 * limits.maxSlots +
+ * **Druhá přiznaná mezera: mutace objektu mezí na místě.** `IrLimits` je celý
+ * `readonly`, takže `limits.maxSlots = doc.ir.slots.length` neprojde překladačem
+ * — ale `Object.assign(limits, { maxSlots: doc.ir.slots.length })` `readonly`
+ * obchází a pravidlo pořád hlásí `limits.maxSlots` jako mez. Zavřít to znamená
+ * modelovat aliasy objektů, ne jmen. Napsat to omylem nejde, a proto je to
+ * přiznaná hranice, ne kód.
+ *
+ * **Třetí přiznaná mezera: aritmetika se nevyhodnocuje.** `0 * limits.maxSlots +
  * 4096` projde jako mez světa, protože atom `maxSlots` v ní je, a rozpoznat, že
  * ho násobení nulou umlčelo, by znamenalo konstantní skládání. Vlastnost, na
  * které totalita stojí — práce na tik neroste se vstupním dokumentem — přitom
@@ -200,6 +207,12 @@ function reassignedNames(sf: ts.SourceFile): Set<string> {
     else if (ts.isShorthandPropertyAssignment(node)) reassigned.add(node.name.text);
     else if (ts.isSpreadElement(node) || ts.isSpreadAssignment(node)) target(node.expression);
     else if (ts.isBindingElement(node)) target(node.name);
+    // `x! = …` a `(x as T) = …` jsou taky platné cíle přiřazení. `inertArgument`
+    // ty obaly rozbaluje odjakživa, takže je tady rozbalovat taky není nová
+    // hranice, jen dorovnání vlastní nedůslednosti *(nález kola 5)*.
+    else if (ts.isNonNullExpression(node) || ts.isAsExpression(node) || ts.isSatisfiesExpression(node))
+      target(node.expression);
+    else if (ts.isTypeAssertionExpression(node)) target(node.expression);
     // Zápis do prvku nebo vlastnosti (`a[i] = …`, `o.x = …`) jméno nepřepisuje.
   };
 
@@ -223,6 +236,19 @@ function reassignedNames(sf: ts.SourceFile): Set<string> {
 }
 
 /**
+ * Vazba v rozsahu. `null` znamená **deklarováno, ale hodnota není čitelná** —
+ * parametr, destrukturovaná vazba, deklarace bez inicializátoru.
+ *
+ * Rozdíl proti „jméno tu vůbec není" je celý smysl týhle mapy: stínící jméno se
+ * nesmí dohledat o rozsah výš. Bez toho `const scanInventory = (slotBound) => {
+ * for (let i = 0; i < slotBound; …) }` volané s `doc.ir.slots.length` rozpustí
+ * `slotBound` na **vnější** `limits.maxSlots` a smyčka projde jako ohraničená,
+ * přestože běží přes vstupní dokument *(nález kola 5; hazard běžného refaktoru —
+ * extrakce metody si jméno parametru nechává)*.
+ */
+type Binding = ts.Expression | null;
+
+/**
  * Deklarace **přímo v tomhle rozsahu**, posbírané dřív, než se do něj sestoupí.
  *
  * Bez toho se mapa rozsahů plní za průchodu, takže odkaz ležící **nad** svou
@@ -233,8 +259,32 @@ function reassignedNames(sf: ts.SourceFile): Set<string> {
  * v `step()` promítla do destrukturovaného `limits` v `sense()` a shodila
  * třináct produkčních smyček, které jsou v pořádku.
  */
-function declarationsIn(node: ts.Node): Map<string, ts.Expression> {
-  const found = new Map<string, ts.Expression>();
+function declarationsIn(node: ts.Node): Map<string, Binding> {
+  const found = new Map<string, Binding>();
+
+  /** Destrukturovaná jména se zapisují jako neprůhledná, ne jako nepřítomná. */
+  const bind = (name: ts.BindingName): void => {
+    if (ts.isIdentifier(name)) {
+      found.set(name.text, null);
+      return;
+    }
+    for (const element of name.elements)
+      if (!ts.isOmittedExpression(element)) bind(element.name);
+  };
+
+  // Parametry patří do rozsahu těla funkce, ne do toho okolo.
+  const owner: ts.Node | undefined = node.parent;
+  const isFunctionLike =
+    owner !== undefined &&
+    (ts.isFunctionDeclaration(owner) ||
+      ts.isFunctionExpression(owner) ||
+      ts.isArrowFunction(owner) ||
+      ts.isMethodDeclaration(owner) ||
+      ts.isConstructorDeclaration(owner) ||
+      ts.isGetAccessorDeclaration(owner) ||
+      ts.isSetAccessorDeclaration(owner));
+  if (isFunctionLike && owner.body === node) for (const parameter of owner.parameters) bind(parameter.name);
+
   const statements: ts.Statement[] = ts.isCaseBlock(node)
     ? node.clauses.flatMap((clause) => [...clause.statements])
     : ts.isSourceFile(node) || ts.isBlock(node)
@@ -242,8 +292,13 @@ function declarationsIn(node: ts.Node): Map<string, ts.Expression> {
       : [];
   for (const statement of statements) {
     if (!ts.isVariableStatement(statement)) continue;
-    for (const decl of statement.declarationList.declarations)
-      if (ts.isIdentifier(decl.name) && decl.initializer) found.set(decl.name.text, decl.initializer);
+    for (const decl of statement.declarationList.declarations) {
+      if (!ts.isIdentifier(decl.name)) {
+        bind(decl.name);
+        continue;
+      }
+      found.set(decl.name.text, decl.initializer ?? null);
+    }
   }
   return found;
 }
@@ -256,18 +311,23 @@ export function analyseModule(moduleName: string, source: string): ModuleFacts {
   const calls = new Map<string, Set<string>>();
   const resetBudgetCallers: string[] = [];
   const declared = new Set<string>();
-  const scopes: Map<string, ts.Expression>[] = [new Map()];
+  const scopes: Map<string, Binding>[] = [new Map()];
   const reassigned = reassignedNames(sf);
 
   const lineOf = (node: ts.Node) => sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
 
+  /**
+   * Hodnota jména, **jestli je čitelná**. Vyhledávání se zastaví u prvního
+   * rozsahu, který jméno deklaruje — i když ho deklaruje neprůhledně. Kdyby
+   * pokračovalo dál, stínící parametr by se rozpustil na vnější deklaraci.
+   */
   const lookup = (name: string): ts.Expression | undefined => {
     // Zapisovaná proměnná se nedohledává: mapa zná jen inicializátor a o tom,
     // co do ní přiteklo potom, pravidlo nic neví.
     if (reassigned.has(name)) return undefined;
     for (let i = scopes.length - 1; i >= 0; i -= 1) {
-      const hit = scopes[i].get(name);
-      if (hit) return hit;
+      if (!scopes[i].has(name)) continue;
+      return scopes[i].get(name) ?? undefined;
     }
     return undefined;
   };

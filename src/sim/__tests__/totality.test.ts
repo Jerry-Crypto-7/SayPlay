@@ -629,6 +629,64 @@ describe('podmínka 5 — jméno meze se dá přebít, a pravidlo to musí pozna
     expect(object.sites.map((site) => site.bounded)).toEqual([false]);
   });
 
+  it('stínící parametr se nerozpustí na vnější mez', () => {
+    // Extrakce metody si jméno parametru nechává, takže vnější `const bound =
+    // limits.maxSlots` zůstane v dosahu a smyčka uvnitř vypadá ohraničeně —
+    // přestože volající předává délku vstupního pole.
+    const facts = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(r, doc){',
+        '  const bound = r.limits.maxSlots;',
+        '  const scan = (bound) => { for (let i = 0; i < bound; i += 1) { touch(i); } };',
+        '  scan(doc.ir.slots.length);',
+        '  for (let j = 0; j < bound; j += 1) { touch(j); }',
+        '}',
+      ].join('\n'),
+    );
+    // Vnější smyčka je pořád ohraničená; stíněná ne.
+    expect(facts.sites.map((site) => site.bounded)).toEqual([false, true]);
+  });
+
+  it('a stínící destrukturovaná vazba taky ne', () => {
+    const facts = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(r, doc){',
+        '  const bound = r.limits.maxSlots;',
+        '  function scan(){ const { bound } = doc.ir; for (let i = 0; i < bound; i += 1) { touch(i); } }',
+        '  scan();',
+        '}',
+      ].join('\n'),
+    );
+    expect(facts.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
+  it('zápis přes `!` nebo `as` je taky zápis', () => {
+    const nonNull = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(r, doc){',
+        '  let bound = r.limits.maxSlots;',
+        '  bound! = doc.ir.slots.length;',
+        '  for (let i = 0; i < bound; i += 1) { touch(i); }',
+        '}',
+      ].join('\n'),
+    );
+    const asCast = analyseModule(
+      'synthetic.ts',
+      [
+        'function step(r, doc){',
+        '  let bound = r.limits.maxSlots;',
+        '  (bound as number) = doc.ir.slots.length;',
+        '  for (let i = 0; i < bound; i += 1) { touch(i); }',
+        '}',
+      ].join('\n'),
+    );
+    expect(nonNull.sites.map((site) => site.bounded)).toEqual([false]);
+    expect(asCast.sites.map((site) => site.bounded)).toEqual([false]);
+  });
+
   it('verdikt nezávisí na pořadí řádků — odkaz nad deklarací neprojde', () => {
     // `lookup` se plní za průchodu, takže odkaz ležící NAD svou deklarací by
     // spadl do větve „deklarace není vidět, rozhoduje jméno".
