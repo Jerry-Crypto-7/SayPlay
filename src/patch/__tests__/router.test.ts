@@ -600,6 +600,60 @@ describe('rozhodnutí T22: pravidlo musí ležet pod svým `id`', () => {
   });
 
   /**
+   * **Vypadnout z id-prostoru jde i jinak než rozejitím klíče.**
+   *
+   * Kontrola se ptala `typeof id !== 'string' → přeskoč`, takže pravidlo, kterému
+   * se `id` přepíše na číslo nebo smaže, propadlo úplně: klíč se s ničím nerozešel,
+   * protože tam nebylo co porovnávat. Výsledek je ale přesně to, čemu má invariant
+   * bránit — pravidlo v dokumentu je a žádný id-adresovaný patch ho nenajde. Totéž
+   * platí pro položku, která vůbec není pravidlo (pole, `null`, číslo).
+   *
+   * Cena na zmrazeném korpusu je nulová a je přeměřená: 31 z 31 pravidel v create
+   * tělech nese řetězcové `id` a žádný z 25 editačních patchů se `/sim/rules`
+   * nedotýká. Zúžení tedy nezamítá nic, co korpus deklaruje.
+   */
+  describe('a pravidlo, které z id-prostoru vypadne úplně', () => {
+    const cases: readonly (readonly [string, Operation[]])[] = [
+      ['`id` přepsané na číslo', [{ op: 'replace', path: '/rules/win/id', value: 123 } as Operation]],
+      [
+        '`id` smazané',
+        [
+          { op: 'move', from: '/rules/win', path: '/rules/bent' } as Operation,
+          { op: 'remove', path: '/rules/bent/id' } as Operation,
+        ],
+      ],
+      [
+        'pravidlo zabalené do pole',
+        [
+          { op: 'move', from: '/rules/win', path: '/rules/bent' } as Operation,
+          { op: 'replace', path: '/rules/bent', value: [{ id: 'win' }] } as Operation,
+        ],
+      ],
+      ['položka, která není pravidlo', [{ op: 'replace', path: '/rules/win', value: 7 } as Operation]],
+    ];
+
+    for (const [name, operations] of cases) {
+      it(`se odmítne — ${name}`, () => {
+        const result = commitPart(C01, { part: 'sim', baseRevision: C01.simRevision, operations });
+        expect(result.verdict, name).toBe('REJECTED');
+        if (result.verdict !== 'REJECTED') return;
+        expect(result.reason, name).toBe('STRUCTURE');
+        expect(result.detail, name).toContain('stable id');
+      });
+    }
+
+    it('a kdyby přesto prošlo, `ruleKeyFault` nad výsledkem to musí vidět', () => {
+      // Dřív vracela nad poškozeným světem `null` — tedy „všechno v pořádku" nad
+      // dokumentem, ve kterém pravidlo `win` už nikdo neadresuje.
+      const damaged = structuredClone(C01.sim) as { rules: Record<string, unknown> };
+      damaged.rules.bent = { ...(damaged.rules.win as object) };
+      delete (damaged.rules.bent as { id?: unknown }).id;
+      delete damaged.rules.win;
+      expect(ruleKeyFault(damaged)).not.toBeNull();
+    });
+  });
+
+  /**
    * **Odmítá se to, co patch PŘINESL — ne stav, který zdědil.**
    *
    * Kontrola nad samotným draftem tenhle rozdíl nezná, a stojí to víc, než se zdá:
@@ -728,6 +782,27 @@ describe('rozhodnutí T22: pravidlo musí ležet pod svým `id`', () => {
       expect(result.verdict).toBe('REJECTED');
       if (result.verdict !== 'REJECTED') return;
       expect(result.pointer).toBe('/sim/rules/stillWrong');
+    });
+
+    it('a přepsat `id` ve stejném patchi tu identitu neobejde', () => {
+      // Dvě operace, které se navzájem kryjí: `move` uloží `unlock` pod provinilý
+      // klíč `-` a `replace` mu vrátí `id` zděděné vady. Množina vad se tím jeví
+      // nezměněná — je v ní pořád jen `("-", "win")` — a přitom pravidlo `unlock`
+      // po commitu neexistuje. Proto se identita neváže na `id`, ale na kanonický
+      // zápis CELÉ položky: tělo `unlock` se od těla `win` liší, ať `id` říká
+      // cokoli. (Naměřeno před opravou: `COMMITTED`, klíče `["pick","-"]`.)
+      const world = bentKey();
+      const result = commitPart(world, {
+        part: 'sim',
+        baseRevision: world.simRevision,
+        operations: [
+          { op: 'move', from: '/rules/unlock', path: '/rules/-' } as Operation,
+          { op: 'replace', path: '/rules/-/id', value: 'win' } as Operation,
+        ],
+      });
+      expect(result.verdict).toBe('REJECTED');
+      if (result.verdict !== 'REJECTED') return;
+      expect(result.pointer).toBe('/sim/rules/-');
     });
 
     it('a `move` pod provinilý klíč nesmí projít ani proto, že tam něco bylo', () => {

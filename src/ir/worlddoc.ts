@@ -442,17 +442,20 @@ export function ruleKeyFault(sim: unknown): UnhashableIssue | null {
  * stav, který ten patch nezpůsobil. Blokovat nesouvisející úpravy adresovatelnost
  * stejně nevrátí — vrátit ji umí jedině oprava, a ta musí projít.
  *
- * **Porovnává se identita vady, ne řetězec pointeru.** Samotný pointer nestačí
- * a je to díra, ne detail: pod klíčem, který už provinilý byl, by se dalo
- * beztrestně uložit **jiné** pravidlo. `move /rules/unlock → /rules/-` nad světem,
- * kde `-` už něco drží, tak vezme pravidlo, které adresovatelné BYLO, a udělá
- * z něj neadresovatelné — množina pointerů se přitom nezmění. Do identity proto
- * patří i `id` provinilého pravidla.
+ * **Identita vady je klíč plus CELÁ položka, ne klíč a `id`.** Dvě slabší znění
+ * to nezvládla a obě padla na témže vzorci — patch, který vypadá jako by vadu jen
+ * zdědil, ji ve skutečnosti přinesl:
  *
- * U pole žádné jednotlivé pravidlo identitu nemá — vadná je celá tabulka naráz,
- * takže má jednu společnou. Přidat pravidlo do tabulky, která už je pole, tím
- * projde: neadresovatelné bylo i před tím patchem a žádné dosud adresovatelné se
- * nerozbilo. Převod záznamu NA pole je naopak nový pointer, tedy odmítnutí.
+ * - samotný pointer pustil `move /rules/unlock → /rules/-` nad světem, kde `-` už
+ *   něco drží: množina klíčů se nezmění a `unlock` přestane existovat;
+ * - dvojice `(klíč, id)` pustila totéž ve dvou operacích — `move` uloží `unlock`
+ *   pod `-` a `replace /rules/-/id` mu vrátí zděděné `id`, takže i dvojice sedí.
+ *
+ * Kanonický zápis položky obojí zavře: tělo pravidla se přepisem `id` nezmění na
+ * to původní. Oprava pořád vyrobí **nula** nálezů a projde, nesouvisející patch
+ * pořád reprodukuje bitově shodnou položku, takže slepá ulička nevzniká.
+ *
+ * U pole je vadná celá tabulka naráz, takže je identitou její kanonický zápis.
  */
 export function introducedRuleKeyFault(stored: unknown, draft: unknown): UnhashableIssue | null {
   const before = new Set(ruleKeyFaults(stored).map(identityOf));
@@ -461,14 +464,22 @@ export function introducedRuleKeyFault(stored: unknown, draft: unknown): Unhasha
 
 interface RuleKeyFault {
   readonly pointer: string;
-  /** `id` provinilého pravidla; u vadné celé tabulky ho jednotlivé pravidlo nemá. */
-  readonly ruleId: string | null;
+  /** Kanonický zápis provinilé položky — identita vady, ne jen její místo. */
+  readonly entry: string;
   readonly issue: UnhashableIssue;
 }
 
 /** `JSON.stringify` místo spojovacího znaku — dvojice se nedá srazit obsahem klíče. */
 function identityOf(fault: RuleKeyFault): string {
-  return JSON.stringify([fault.pointer, fault.ruleId]);
+  return JSON.stringify([fault.pointer, fault.entry]);
+}
+
+/**
+ * `canonical` je bezpečné: obě strany prošly `unhashableValues` dřív, než se sem
+ * došlo — `commitChecked` uloženou část, `sealPart` draft.
+ */
+function ruleFault(pointer: string, entry: unknown, detail: string): RuleKeyFault {
+  return { pointer, entry: canonical(entry), issue: issue(pointer, detail) };
 }
 
 function ruleKeyFaults(sim: unknown): RuleKeyFault[] {
@@ -488,30 +499,59 @@ function ruleKeyFaults(sim: unknown): RuleKeyFault[] {
   // nejsou, takže se ani žádné adresování nelomí.
   if (Array.isArray(rules))
     return [
-      {
-        pointer: '/sim/rules',
-        ruleId: null,
-        issue: issue(
-          '/sim/rules',
-          'the rule table is an array, so every rule is filed under an index — a patch addressing any of them by its stable id would miss a rule that exists',
-        ),
-      },
+      ruleFault(
+        '/sim/rules',
+        rules,
+        'the rule table is an array, so every rule is filed under an index — a patch addressing any of them by its stable id would miss a rule that exists',
+      ),
     ];
 
   const faults: RuleKeyFault[] = [];
 
+  // **Vypadnout z id-prostoru jde i jinak než rozejitím klíče**, a dřív to tudy
+  // šlo tiše: `typeof id !== 'string' → přeskoč` znamenalo, že pravidlo, kterému
+  // se `id` přepíše na číslo nebo smaže, se nepočítá za vadu — klíč se neměl
+  // s čím rozejít. Výsledek je přitom přesně to, čemu invariant brání: pravidlo
+  // v dokumentu leží a žádný id-adresovaný patch ho nenajde. Stejně dopadne
+  // položka, která pravidlo vůbec není (pole, `null`, číslo).
+  //
+  // Naměřeno na zmrazeném korpusu: 31 z 31 pravidel v create tělech nese
+  // řetězcové `id` a žádný z 25 editačních patchů se `/sim/rules` nedotýká —
+  // zúžení tedy nestojí ani jeden zmrazený záznam.
   for (const [key, rule] of Object.entries(rules as Record<string, unknown>)) {
-    if (rule === null || typeof rule !== 'object' || Array.isArray(rule)) continue;
+    const pointer = `/sim/rules/${escapeToken(key)}`;
+
+    if (rule === null || typeof rule !== 'object' || Array.isArray(rule)) {
+      faults.push(
+        ruleFault(
+          pointer,
+          rule,
+          `the entry under key "${key}" is not a rule object, so it carries no stable id to be addressed by`,
+        ),
+      );
+      continue;
+    }
+
     const id = (rule as { readonly id?: unknown }).id;
-    if (typeof id !== 'string' || id === key) continue;
-    faults.push({
-      pointer: `/sim/rules/${escapeToken(key)}`,
-      ruleId: id,
-      issue: issue(
-        `/sim/rules/${escapeToken(key)}`,
+    if (typeof id !== 'string') {
+      faults.push(
+        ruleFault(
+          pointer,
+          rule,
+          `the rule under key "${key}" has no string id, so it has dropped out of the stable id space entirely`,
+        ),
+      );
+      continue;
+    }
+
+    if (id === key) continue;
+    faults.push(
+      ruleFault(
+        pointer,
+        rule,
         `rule "${id}" is filed under key "${key}" — a patch addressing it by its stable id would miss a rule that exists`,
       ),
-    });
+    );
   }
   return faults;
 }
