@@ -1,0 +1,10 @@
+#!/bin/sh
+# Brána před nahráním (RULES.md §6, slepé hodnocení).
+#
+# Hook je verzovaný, ne schovaný v .git/hooks — aktivuje se jednou:
+#   git config core.hooksPath .githooks
+#
+# Po prvním pushi se prozrazení autora zpětně nespraví, proto se push
+# nedokončí, dokud kontrola neprojde. Vynutit se dá `--no-verify`, což je
+# vědomé rozhodnutí, ne omyl.
+exec node scripts/blind-check.mjs

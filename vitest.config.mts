@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config';
 // spadnou na "test() can only be called in a test file" a shodí celý `npm test`.
 export default defineConfig({
   test: {
-    include: ['src/**/*.test.ts', 'evals/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'evals/**/*.test.ts', 'scripts/**/*.test.ts'],
     exclude: ['node_modules/**', 'e2e/**', '.next/**'],
   },
 });

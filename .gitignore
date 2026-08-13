@@ -5,6 +5,11 @@
 # nesmí dostat do historie – smazání po commitu problém neřeší, historie zůstává.
 SECURITY-FINDINGS.md
 
+# Config kontroly před nahráním. Nese skutečné jméno autora a handly, které se
+# hledají v identitě commitů – tedy přesně to, co se nesmí nahrát. `blind-check.mjs`
+# proto SELŽE, kdyby se tenhle soubor ocitl mezi trackovanými.
+blind-check.config.json
+
 # Interní dokumentace, plány a pracovní logy.
 # Veřejné repo nese produkt, ne strategii. P8 do něj přidá vlastní README.md
 # a DISCLOSURE.md – proto ty dvě negace. Vzor /*.md míří jen na kořen, takže
