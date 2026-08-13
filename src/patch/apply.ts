@@ -25,7 +25,7 @@ import { hashWords } from '../sim/hash';
 import { TIERS } from '../verify/tiers';
 import type { VerifiableWorld } from '../verify/witness';
 import {
-  badArrayTarget,
+  pointerFault,
   operationSchema,
   reject,
   rejectionFromZod,
@@ -211,17 +211,15 @@ function applyChecked(doc: VerifiableWorld, operations: readonly Operation[]): P
   for (let i = 0; i < operations.length; i += 1) {
     const operation = operations[i];
 
-    // `rfc6902` u pole nehlídá tvar tokenu a tiše uhne na index 0 (`add`) nebo
-    // smaže nultý prvek (`move` přes `from`) — viz `badArrayTarget`.
-    // `add /ir/rules/smuggled` by jinak přečísloval pravidla a vrátil
-    // `COMMITTED`: konzistentní dokument, sedící hash, jiný svět.
-    const bad = badArrayTarget(draft, operation);
-    if (bad !== null)
+    // **Kam operace míří podle RFC 6901**, rozhodnuto vlastním rozborem — teprve
+    // co jím projde, uvidí `rfc6902`. Tentýž kontrakt jako v `ir/revision.ts`.
+    const fault = pointerFault(draft, operation);
+    if (fault !== null)
       return reject(
         'MALFORMED_OPERATION',
-        bad.pointer,
-        operation.op === 'add' && bad.pointer === operation.path ? 'an array index or "-"' : 'an array index',
-        `operation ${i} (${operation.op} ${operation.path}): "${bad.token}" is not an index of the array it targets`,
+        fault.pointer,
+        fault.expected,
+        `operation ${i} (${operation.op} ${operation.path}): ${fault.reason}`,
       );
 
     let failure: ReturnType<typeof applyPatch>[number] | undefined;

@@ -159,72 +159,126 @@ function tokensOf(pointer: string): string[] {
 const ARRAY_INDEX = /^(0|[1-9][0-9]*)$/;
 
 /**
- * Rodič a klíč **přesně tak, jak je vidí `rfc6902`** — je to věrný port jeho
- * `Pointer.evaluate`, ne vlastní rozbor cesty.
+ * Tokeny, které `rfc6902` **přeskakuje** — a proto se tu nesmí objevit vůbec.
  *
- * Ta věrnost je celý point. Knihovna totiž `__proto__`, `constructor` a
- * `prototype` v cestě **přeskočí** (`pointer.js`: `continue`), takže jí `parent`
- * zůstane na hodnotě O ÚROVEŇ VÝŠ. Vlastní rozbor, který do těch klíčů naopak
- * sestoupí, uvidí něco jiného než knihovna — a rozdíl mezi tím, co vidí kontrola,
- * a tím, co udělá aplikace, je přesně ta skulina, kterou se dá kontrola obejít:
- * `/ir/rules/constructor/smuggled` vypadá jako zápis do `Array` funkce, ale
- * knihovna ho provede jako zápis do **pole** `rules`.
+ * `Pointer.evaluate` na nich dělá `continue`, takže mu `parent` zůstane o úroveň
+ * výš a operace zapíše **jinam, než kam ukazuje**. `remove /ir/rules/prototype/0`
+ * tedy nesahá na `rules.prototype`, ale smaže `rules[0]`.
+ *
+ * Podle RFC 6901 přitom `prototype` je obyčejné jméno členu a `/ir/rules/prototype/0`
+ * neadresuje `rules[0]` ani náhodou. Ta neshoda je celý důvod, proč tenhle seznam
+ * existuje: kontrolu **nelze** postavit na tom, co udělá knihovna, protože pak
+ * schválí všechno, co knihovna udělá. Staví se na tom, co cesta znamená — a když
+ * se to od knihovny liší, je to důvod odmítnout, ne se srovnat.
+ *
+ * Nic legitimního tím nepadne: ve zmrazeném korpusu ani v jedné fixtuře se ty tři
+ * řetězce nevyskytují jako klíč ani jednou.
  */
-function evaluate(doc: unknown, pointer: string): { parent: unknown; key: string } {
-  let parent: unknown = null;
-  let key = '';
-  let value: unknown = doc;
-  for (const token of tokensOf(pointer)) {
-    parent = value;
-    key = token;
-    if (token === '__proto__' || token === 'constructor' || token === 'prototype') continue;
-    // `(parent || {})[key]` v originále — u falsy rodiče tedy `undefined`.
-    value = parent ? (parent as Record<string, unknown>)[token] : undefined;
-  }
-  return { parent, key };
-}
+const UNSAFE_TOKENS = new Set(['__proto__', 'constructor', 'prototype']);
 
-export interface BadArrayTarget {
+export interface PointerFault {
   /** Cesta, která to způsobila — `path`, nebo `from` u `move`/`copy`. */
   readonly pointer: string;
-  readonly token: string;
+  /** Co se na tom místě čekalo, v pojmech tvaru. Jde rovnou do `expected`. */
+  readonly expected: string;
+  readonly reason: string;
 }
 
 /**
- * Míří operace do POLE tokenem, který není index?
+ * Kam operace míří **podle RFC 6901** — nebo proč nikam.
  *
- * `rfc6902` tohle nehlídá a **tiše uhne**, obojím směrem:
- * - `_add` dělá `splice(parseInt(key,10), 0, v)`, takže nečíselný token dá
- *   `splice(NaN, …)` a hodnota přistane na **indexu 0** — `add /rules/smuggled`
- *   nevloží nic pojmenovaného, vloží pravidlo na začátek a přečísluje ostatní.
- * - `_remove` dělá `splice(parseInt(key,10), 1)`, takže `move` s `from`
- *   `/rules/length` **smaže nulté pravidlo**.
+ * Tohle je vlastní, striktní rozbor cesty; `rfc6902` se pak pouští jen na operaci,
+ * která jím prošla. Obrácené pořadí (zeptat se knihovny a přizpůsobit se jí) je
+ * to, co devět kol brány nezavřelo: knihovna má vlastní představu o tom, co cesta
+ * adresuje — přeskakuje tři klíče, pole indexuje přes `parseInt` — a kontrola
+ * srovnaná s ní ty představy zdědí i s jejich vadami.
  *
- * Výsledek je v obou případech dokonale konzistentní dokument se sedícím hashem,
- * takže ho žádná pozdější kontrola nepozná — jenom to není ten svět, o který si
- * patch řekl. U `/rules` jde navíc o pořadí vyhodnocení, na kterém stojí
- * `priority`, `phase` i „ambiguous execution order" z `validateIrDoc`.
- *
- * Kontrolují se **obě** cesty operace. `from` je u `move` mazání a u `copy` čtení,
- * takže `-` („za poslední prvek") tam nedává smysl ani u jednoho — RFC 6902 §4 ho
- * povoluje jen tam, kde se přidává.
+ * `mode` říká, jestli cíl smí teprve vzniknout (`insert` — `add` a cíl `move`
+ * i `copy`, tedy místa, kde RFC 6902 §4 povoluje `-` a index rovný délce), nebo
+ * jestli už musí existovat (`existing` — `replace`, `remove`, `test` a zdroj
+ * `move` i `copy`).
  */
-export function badArrayTarget(draft: unknown, operation: Operation): BadArrayTarget | null {
-  const targets: { pointer: string; allowDash: boolean }[] = [
-    { pointer: operation.path, allowDash: operation.op === 'add' },
-  ];
-  if (operation.op === 'move' || operation.op === 'copy')
-    targets.push({ pointer: operation.from, allowDash: false });
+function resolve(pointer: string, doc: unknown, mode: 'insert' | 'existing'): PointerFault | null {
+  const tokens = tokensOf(pointer);
+  if (tokens.length === 0)
+    return {
+      pointer,
+      expected: 'a pointer to something inside the document',
+      reason: 'the document root is not a patch target — a patch edits a graph, it does not swap it',
+    };
 
-  for (const target of targets) {
-    if (target.pointer === '') continue;
-    const { parent, key } = evaluate(draft, target.pointer);
-    if (!Array.isArray(parent)) continue;
-    if (ARRAY_INDEX.test(key)) continue;
-    if (key === '-' && target.allowDash) continue;
-    return { pointer: target.pointer, token: key };
+  let node: unknown = doc;
+  for (let i = 0; i < tokens.length; i += 1) {
+    const token = tokens[i];
+    const last = i === tokens.length - 1;
+
+    if (UNSAFE_TOKENS.has(token))
+      return {
+        pointer,
+        expected: 'an ordinary member name',
+        reason: `"${token}" is not addressable — rfc6902 skips it and would mutate the parent instead`,
+      };
+
+    if (Array.isArray(node)) {
+      // `-` a index rovný délce znamenají „za poslední prvek" a dávají smysl jen
+      // na konci cesty a jen tam, kde se přidává.
+      const appendable = last && mode === 'insert';
+      const expected = appendable ? 'an array index or "-"' : 'an array index';
+      if (token === '-') {
+        if (appendable) return null;
+        return { pointer, expected, reason: '"-" names the position after the last element, which only exists when adding' };
+      }
+      if (!ARRAY_INDEX.test(token))
+        return { pointer, expected, reason: `"${token}" is not an index of the array it targets` };
+
+      const limit = appendable ? node.length : node.length - 1;
+      if (Number(token) > limit)
+        return {
+          pointer,
+          expected: `an index at most ${limit}`,
+          reason: `index ${token} is out of range for an array of length ${node.length}`,
+        };
+      if (last) return null;
+      node = node[Number(token)];
+      continue;
+    }
+
+    if (node === null || typeof node !== 'object')
+      return {
+        pointer,
+        expected: 'an object or array to descend into',
+        reason: `"${token}" has no container to live in — the path runs through a primitive`,
+      };
+
+    // Poslední token na objektu smí teprve vzniknout (`add`), a když nesmí,
+    // ohlásí to knihovna přesnou `MissingError` — dublovat ji tady by znamenalo
+    // dvě pravidla o téže věci.
+    if (last) return null;
+    if (!Object.hasOwn(node, token))
+      return {
+        pointer,
+        expected: 'an existing member',
+        reason: `"${token}" does not exist, so the path has no parent to write into`,
+      };
+    node = (node as Record<string, unknown>)[token];
   }
   return null;
+}
+
+/**
+ * Obě cesty operace, každá ve svém režimu.
+ *
+ * `move` i `copy` jsou podle RFC 6902 §4.4/§4.5 **čtení/odebrání na `from` plus
+ * `add` na `path`**, takže `-` je na jejich `path` legální (knihovna ho řeší
+ * `push`) a na `from` ne. Natvrdo svázat `-` s `op === 'add'` znamená odmítnout
+ * „zduplikuj tohle pravidlo na konec", což je nejběžnější živá editace, jaká je.
+ */
+export function pointerFault(draft: unknown, operation: Operation): PointerFault | null {
+  const inserts = operation.op === 'add' || operation.op === 'move' || operation.op === 'copy';
+  const onPath = resolve(operation.path, draft, inserts ? 'insert' : 'existing');
+  if (onPath !== null) return onPath;
+  if (operation.op !== 'move' && operation.op !== 'copy') return null;
+  return resolve(operation.from, draft, 'existing');
 }
 
 export const operationSchema = z.union([

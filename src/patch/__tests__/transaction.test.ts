@@ -544,7 +544,11 @@ describe('sousední patch cesta má tytéž stráže jako `ir/revision.ts`', () 
         });
         if (result.verdict !== 'REJECTED') continue;
         expect(result.pointer, `${op} ${token}`).toBe(`/ir/rules/${token}`);
-        expect(result.detail, `${op} ${token}`).toContain('is not an index');
+        // `__proto__` dostane přesnější důvod: není to jen neindexový token, je to
+        // token, který knihovna přeskakuje a zapsala by o úroveň výš.
+        expect(result.detail, `${op} ${token}`).toContain(
+          token === '__proto__' ? 'is not addressable' : 'is not an index',
+        );
       }
     }
     expectUntouched(before);
@@ -575,8 +579,106 @@ describe('sousední patch cesta má tytéž stráže jako `ir/revision.ts`', () 
 
       expect(result, prefix).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
       if (result.verdict !== 'REJECTED') continue;
-      expect(result.detail, prefix).toContain('is not an index');
+      expect(result.detail, prefix).toContain('is not addressable');
     }
+    expectUntouched(before);
+  });
+
+  /**
+   * **A ten zákaz nesmí platit jen pro neindexový poslední token.**
+   *
+   * Tohle je ta past, do které spadla předchozí verze: kontrola srovnaná
+   * s knihovnou zachytila jen dvojici „rodič je pole + klíč není index", takže
+   * stačilo napsat jako poslední token `0` a všechno prošlo. Přeskakovaný token
+   * je vadný **sám o sobě** — ať už za ním následuje cokoli a ať je rodič pole
+   * nebo objekt. Podle RFC 6901 `/ir/rules/prototype/0` neadresuje `rules[0]`.
+   */
+  it('a platí i s indexem na konci a nad objektovým rodičem', () => {
+    const before = graphHash(vault);
+    for (const body of [
+      // Rodič je POLE, poslední token je platný index — dřív prošlo a smazalo
+      // `rules[0]`, respektive vložilo pravidlo na index 0 a přečíslovalo zbytek.
+      '{"op":"remove","path":"/ir/rules/prototype/0"}',
+      '{"op":"add","path":"/ir/rules/constructor/0","value":{"a":1}}',
+      '{"op":"move","from":"/ir/rules/constructor/0","path":"/ir/rules/1"}',
+      // Rodič je OBJEKT — dřív nehlídané vůbec.
+      '{"op":"add","path":"/ir/limits/__proto__/gridWidth","value":99}',
+      '{"op":"replace","path":"/space/__proto__/blocked","value":[]}',
+      '{"op":"add","path":"/space/sockets/constructor/ghost","value":[1,1]}',
+    ]) {
+      const result = applyWorldPatch(vault, JSON.parse(`[${body}]`) as Operation[]);
+      expect(result, body).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+      if (result.verdict !== 'REJECTED') continue;
+      expect(result.detail, body).toContain('is not addressable');
+    }
+    expectUntouched(before);
+  });
+
+  /**
+   * **`-` na cíli `move` a `copy` je legální a nesmí se odmítat.**
+   *
+   * RFC 6902 §4.4/§4.5 definují obě operace jako čtení/odebrání na `from` plus
+   * **`add` na `path`**, a knihovna `-` řeší přes `push`. Svázat `-` natvrdo
+   * s `op === 'add'` znamená odmítnout „zduplikuj tohle na konec", což je
+   * nejběžnější živá editace, jaká existuje.
+   */
+  it('`-` je legální na cíli `add`, `move` i `copy`', () => {
+    for (const body of [
+      '{"op":"add","path":"/ir/effects/-","value":{"op":"lose"}}',
+      '{"op":"move","from":"/ir/effects/0","path":"/ir/effects/-"}',
+      '{"op":"copy","from":"/ir/effects/0","path":"/ir/effects/-"}',
+    ]) {
+      const result = applyWorldPatch(vault, JSON.parse(`[${body}]`) as Operation[]);
+      expect(result.verdict, body).toBe('COMMITTED');
+    }
+  });
+
+  it('ale `-` jako ZDROJ `move`/`copy` legální není — neexistuje', () => {
+    const before = graphHash(vault);
+    for (const op of ['move', 'copy'] as const) {
+      const result = applyWorldPatch(
+        vault,
+        JSON.parse(`[{"op":"${op}","from":"/ir/effects/-","path":"/ir/effects/0"}]`) as Operation[],
+      );
+      expect(result, op).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+      if (result.verdict !== 'REJECTED') continue;
+      expect(result.pointer, op).toBe('/ir/effects/-');
+      // Musí to odmítnout kontrola cesty, ne až něco za ní: `_remove` by na `-`
+      // udělalo `splice(NaN, 1)`, tedy smazalo nultý efekt.
+      expect(result.detail, op).toContain('only exists when adding');
+    }
+    expectUntouched(before);
+  });
+
+  it('a chybějící mezičlánek se odmítne na svém tokenu, ne pádem uvnitř knihovny', () => {
+    // Bez téhle kontroly dojde `rfc6902` s `parent === undefined` až na
+    // `undefined['x'] = …`, tedy `TypeError` — odpověď by pak neměla pointer.
+    const before = graphHash(vault);
+    const result = applyWorldPatch(vault, [{ op: 'add', path: '/ir/nope/x', value: 1 } as Operation]);
+
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.pointer).toBe('/ir/nope/x');
+    expect(result.detail).toContain('does not exist');
+    expectUntouched(before);
+  });
+
+  it('a index mimo rozsah se odmítne s tím rozsahem v odpovědi', () => {
+    const before = graphHash(vault);
+    // `replace` na délku pole je mimo rozsah (nahrazovat se dá jen existující),
+    // `add` na délku je legální append — ta hranice se liší o jedna a musí sedět.
+    const length = vault.ir.effects.length;
+    const bad = applyWorldPatch(vault, [
+      { op: 'replace', path: `/ir/effects/${length}`, value: { op: 'lose' } } as Operation,
+    ]);
+    expect(bad).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+    if (bad.verdict === 'REJECTED') expect(bad.detail).toContain('out of range');
+
+    expect(
+      applyWorldPatch(vault, [
+        { op: 'add', path: `/ir/effects/${length}`, value: { op: 'lose' } } as Operation,
+      ]).verdict,
+    ).toBe('COMMITTED');
     expectUntouched(before);
   });
 

@@ -379,7 +379,7 @@ describe('do `sim` se dostane jen JSON', () => {
 
       expect(result, prefix).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
       if (result.verdict !== 'REJECTED') continue;
-      expect(result.detail, prefix).toContain('is not an index');
+      expect(result.detail, prefix).toContain('is not addressable');
     }
     expect(world.simHash).toBe(before);
   });

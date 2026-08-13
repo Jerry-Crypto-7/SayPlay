@@ -17,7 +17,7 @@
 
 import { applyPatch, type Operation } from 'rfc6902';
 
-import { badArrayTarget, operationSchema, reject, rejectionFromZod, type PatchRejection } from '../patch/reject';
+import { operationSchema, pointerFault, reject, rejectionFromZod, type PatchRejection } from '../patch/reject';
 import {
   lookSchema,
   unhashableValues,
@@ -160,17 +160,18 @@ function commitChecked(doc: WorldDoc, patch: PartPatch): RevisionResult {
   for (let i = 0; i < patch.operations.length; i += 1) {
     const operation = patch.operations[i];
 
-    // `rfc6902` u pole nehlídá tvar tokenu a tiše uhne na index 0 (`add`) nebo
-    // smaže nultý prvek (`move` přes `from`) — viz `badArrayTarget`. Bez tohohle
-    // by `add /rules/smuggled` přečísloval pravidla a vrátil `COMMITTED`, tedy
-    // tichý jiný svět místo přesného odmítnutí.
-    const bad = badArrayTarget(draft, operation);
-    if (bad !== null)
+    // **Kam operace míří podle RFC 6901**, rozhodnuto vlastním rozborem — teprve
+    // co jím projde, uvidí `rfc6902`. Knihovna sama tři klíče přeskakuje a pole
+    // indexuje přes `parseInt`, takže by `remove /rules/prototype/0` smazalo
+    // `rules[0]` a `add /rules/smuggled` přečíslovalo pravidla: konzistentní
+    // dokument, sedící hash, jiný svět.
+    const fault = pointerFault(draft, operation);
+    if (fault !== null)
       return reject(
         'MALFORMED_OPERATION',
-        bad.pointer,
-        operation.op === 'add' && bad.pointer === operation.path ? 'an array index or "-"' : 'an array index',
-        `operation ${i} (${operation.op} ${operation.path}): "${bad.token}" is not an index of the array it targets`,
+        fault.pointer,
+        fault.expected,
+        `operation ${i} (${operation.op} ${operation.path}): ${fault.reason}`,
       );
 
     let failure: ReturnType<typeof applyPatch>[number] | undefined;
