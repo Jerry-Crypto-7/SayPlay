@@ -230,13 +230,22 @@ describe('socketový a smíšený prostor je pinutý na každé cestě, která d
    */
   it('a tentýž svět zapsaný POLEM dá tentýž nález — obě větve `ruleEntries` žijí', () => {
     const asRecord = base();
-    const asArray = base();
-    asArray.sim.rules = Object.values(asRecord.sim.rules);
+    // **`structuredClone`, ne `Object.values`.** To by do pole propašovalo tytéž
+    // objekty pravidel, na které ukazuje záznam — jeden objektový graf ve dvou
+    // kontejnerech. Mutace níž by pak sáhla dvakrát na totéž pravidlo a test by
+    // porovnával jeden svět sám se sebou, ne dva zápisy téhož.
+    const asArray = structuredClone(asRecord);
+    asArray.sim.rules = Object.values(structuredClone(asRecord.sim.rules));
     expect(Array.isArray(asArray.sim.rules)).toBe(true);
 
     asRecord.sim.rules.r2.event.socket = 's9';
     asArray.sim.rules[1].event.socket = 's9';
+    // A důkaz, že jsou to opravdu dva stromy: záznam si `r1` nechal nedotčené.
+    expect(asRecord.sim.rules.r1.event.zone).toBe('z0');
+    expect(asArray.sim.rules[0].event.zone).toBe('z0');
 
+    // Popisek `r2` vzniká u pole z `rule.id`, u záznamu z klíče — dvě různé cesty
+    // ke stejnému výsledku, což je přesně to, co má tenhle test držet.
     const expected = [{ where: 'sim.rules[r2].event.socket', namespace: 'socket', name: 's9' }];
     expect(findDanglingReferences(asArray)).toEqual(expected);
     expect(findDanglingReferences(asRecord)).toEqual(expected);

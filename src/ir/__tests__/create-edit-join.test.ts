@@ -391,29 +391,37 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
 
   /**
    * Čtyři se neaplikují a **žádný z nich nemá deklarovaný verdikt `FULFILLED`**.
-   * Důvody nejsou stejné a slévat je by zakrylo to zajímavější z nich:
+   * Důvody nejsou stejné, a jsou to **dvě nezávislé osy** — dřívější znění je
+   * slilo do jedné věty a popsalo obě špatně.
    *
-   * - **E06** (`FAULT`) padá na **svém vlastním deklarovaném defektu** — `replace`
-   *   na cestu, jejíž rodič ve světě není. Jediný ze čtyř, u kterého to platí.
-   * - **E19** (`ROBUST`) padá na neshodě **skalár vs. kontejner**: `add
-   *   /sim/layout/levels/1` nad `C02.layout.levels: 1`, tedy cesta vede skrz
-   *   primitivum. Je to táž třída vady jako tvar `sim.rules`, kvůli které se
-   *   korpus mrazil na v2 — jen zůstala neopravená, protože `CLAUDE.md` ji vede
-   *   jako **nedořešený rozpor #4(a)** a AC T2b zakazuje měnit prompty i kontrakty.
-   * - **E20** (`NO_FIT`) padá na **chybějícím listu, ne na skaláru**, a slévat ho
-   *   s E19 by byla přesně ta konflace, kvůli které tenhle blok vznikl:
-   *   `C03.sim.rules.patrol.actions[0]` je `{kind, target, socket, ticks}` — objekt,
-   *   jen bez `route`. `replace` nad nepřítomným členem tedy odmítá `rfc6902`
-   *   (`Value required`), což je **táž mechanika jako u E06**. Dvě pinuté regexy
-   *   níž ten rozdíl drží: `/runs through a primitive/` u E19 proti
-   *   `/Value required/` u E20. Rozpor #4(a) se jich týká obou (ani bezchybná
-   *   emise je nesplní), mechanika je ale jiná.
-   * - **E24** (`FAULT`) padá taky na něčem jiném, a je to ten nejzajímavější případ.
-   *   Deklarovaný defekt zní „`add` s cestou `/sim/state/counters/streak/-`, což je
-   *   **index pole na objektu**". Jenže `streak` v `C09` vůbec není
-   *   (`state.counters` nese jediné `score`), takže rozbor cesty skončí o token
-   *   dřív — `"streak" does not exist` — a k tokenu `-` se **nikdy nedostane**.
-   *   Odmítnutí je správné, deklarovaná třída ale zůstává **nezměřená**.
+   * **Osa 1: padá to na svém vlastním deklarovaném defektu?** Jenom u **E06**.
+   * - **E06** (`FAULT`): `replace` na cestu, jejíž rodič ve světě není. Ano.
+   * - **E19** (`ROBUST`): `add /sim/layout/levels/1` nad `C02.layout.levels: 1`,
+   *   tedy cesta skrz **primitivum**; deklarovaný defekt je přitom chybějící portál.
+   * - **E20** (`NO_FIT`): `C03.sim.rules.patrol.actions[0]` je `{kind, target,
+   *   socket, ticks}` — objekt, jen bez listu `route`. **Chybějící list, ne skalár.**
+   * - **E24** (`FAULT`): deklarované je „`-` jako index pole **na objektu**", ale
+   *   `streak` v `C09` vůbec není (`state.counters` nese jediné `score`), takže
+   *   rozbor skončí o token dřív a k `-` se **nikdy nedostane**. Deklarovaná třída
+   *   zůstává nezměřená.
+   * E19 a E20 nesplní ani bezchybná emise — `CLAUDE.md` je vede jako **nedořešený
+   * rozpor #4(a)** a AC T2b zakazuje měnit prompty i kontrakty.
+   *
+   * **Osa 2: KDO to odmítl.** Tohle je ta osa, kterou dřívější znění spletlo úplně:
+   * tvrdilo, že E20 padá „touž mechanikou jako E06" a že E24 padá jinam než E06.
+   * Naměřeno je to **přesně naopak** — proto se od teď asertuje i `expected`, což
+   * je to jediné pole, které odmítající komponentu identifikuje:
+   * - **`resolve` v `patch/reject.ts`, tedy vlastní rozbor cesty:** E06, E19 **a
+   *   E24**. E06 a E24 jsou dokonce **táž větev** (`an existing member`), liší se
+   *   jen chybějícím tokenem; E19 je větev o úroveň vedle (`an object or array to
+   *   descend into`).
+   * - **`rfc6902`, tedy knihovna:** **E20 sám**. `pointerFault` mu vrátí `null`,
+   *   protože chybějící **poslední** token na objektu `resolve` schválně předává
+   *   knihovně (dublovat její přesnou `MissingError` by znamenalo dvě pravidla
+   *   o téže věci), a ta ohlásí `an applicable replace target`.
+   * Kdo by chtěl `resolve` utáhnout na chybějící poslední token, pohne **jen
+   * E20** — a to je přesně ta předpověď, kterou pinuje `expected` a `detail`
+   * nikoli. Text zprávy říká *co* se stalo, `expected` říká *kdo to řekl*.
    *
    * **Důsledek, který ten mislabel schovával, a patří k rozhodnutí, ne k opravě:**
    * `-` ani číselný token nad OBJEKTEM dnes odmítnutí nevyvolá — `resolve`
@@ -436,19 +444,40 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
    * čtyři odmítnutí čtyřmi odmítnutími, jen z jiných dveří).
    */
   it('a právě čtyři se NEaplikují — každý na svém konkrétním místě', () => {
-    // Pointer je souřadnice v části, tedy už po strhnutí prefixu; `detail` je
-    // věta, kterou dostane autorský nástroj.
-    const expected: Readonly<Record<string, { readonly pointer: string; readonly detail: RegExp }>> = {
-      // Vlastní deklarovaný defekt: `replace` na cestu, jejíž rodič neexistuje.
-      E06: { pointer: '/rules/openChest/condition/negated', detail: /does not exist/ },
-      // NE vlastní defekt, skalár vs. kontejner: `levels: 1` je primitivum.
-      E19: { pointer: '/layout/levels/1', detail: /runs through a primitive/ },
-      // NE vlastní defekt, chybějící LIST (ne skalár): `actions[0]` je objekt bez
-      // `route`. Táž mechanika jako E06, jiná než E19 — proto jiná regex.
-      E20: { pointer: '/rules/patrol/actions/0/route', detail: /Value required/ },
+    // `pointer` je souřadnice v části, tedy už po strhnutí prefixu. `detail` je
+    // věta pro autorský nástroj — říká CO se stalo. `expected` říká KDO to řekl:
+    // věty `resolve` z `patch/reject.ts` jsou jiné než ty, které vyrobí `rfc6902`,
+    // takže je to jediné pole, kterým se odmítající komponenta pozná.
+    const expected: Readonly<
+      Record<string, { readonly pointer: string; readonly detail: RegExp; readonly expected: string }>
+    > = {
+      // Vlastní deklarovaný defekt. `resolve`: chybějící MEZIčlánek cesty.
+      E06: {
+        pointer: '/rules/openChest/condition/negated',
+        detail: /"openChest" does not exist/,
+        expected: 'an existing member',
+      },
+      // NE vlastní defekt. `resolve`, větev vedle: cesta vede skrz primitivum.
+      E19: {
+        pointer: '/layout/levels/1',
+        detail: /runs through a primitive/,
+        expected: 'an object or array to descend into',
+      },
+      // NE vlastní defekt. **Jediný ze čtyř, kterého odmítá KNIHOVNA** — chybějící
+      // POSLEDNÍ token na objektu `resolve` schválně předává dál.
+      E20: {
+        pointer: '/rules/patrol/actions/0/route',
+        detail: /Value required/,
+        expected: 'an applicable replace target',
+      },
       // NE vlastní defekt: deklarovaný je `-` nad objektem, ale `streak` v C09
-      // není, takže rozbor skončí o token dřív a k `-` se nedojde.
-      E24: { pointer: '/state/counters/streak/-', detail: /"streak" does not exist/ },
+      // není, takže rozbor skončí o token dřív a k `-` se nedojde. Táž větev
+      // `resolve` jako E06 — jen jiný chybějící token.
+      E24: {
+        pointer: '/state/counters/streak/-',
+        detail: /"streak" does not exist/,
+        expected: 'an existing member',
+      },
     };
 
     const rejected = edits.filter((entry) => commitEdit(entry).result.verdict === 'REJECTED');
@@ -460,7 +489,19 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
       expect(entry.expectedVerdict, entry.forPrompt).not.toBe('FULFILLED');
       expect(result.pointer, entry.forPrompt).toBe(expected[entry.forPrompt].pointer);
       expect(result.detail, entry.forPrompt).toMatch(expected[entry.forPrompt].detail);
+      expect(result.expected, entry.forPrompt).toBe(expected[entry.forPrompt].expected);
     }
+
+    // A ta osa nahlas, ať se nedá přečíst špatně z tabulky: tři odmítá vlastní
+    // rozbor cesty, jeden knihovna. Utažení `resolve` na chybějící poslední token
+    // pohne právě E20 — nic jiného.
+    const byLibrary = rejected
+      .filter((entry) => {
+        const { result } = commitEdit(entry);
+        return result.verdict === 'REJECTED' && result.expected === 'an applicable replace target';
+      })
+      .map((entry) => entry.forPrompt);
+    expect(byLibrary).toEqual(['E20']);
   });
 
   it('a to znamená 21 z 25 aplikovatelných a 17 ze 17 u `FULFILLED`', () => {
@@ -559,9 +600,12 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
    */
   it('a fixtura nese `sim.rules` v témže tvaru jako korpus — záznam, ne pole', () => {
     let bodiesWithRules = 0;
+    let rulesChecked = 0;
     for (const create of createEntries) {
+      // C14 a C15 jsou `NO_FIT` a nesou `sim: null` — klíč tam JE, hodnota je
+      // `null` (asertováno výš u `NO_FIT`). Proto `=== null`, ne `=== undefined`.
       const sim = create.body.sim as { rules?: unknown } | null;
-      if (sim === null || sim === undefined) continue;
+      if (sim === null || sim === undefined || sim.rules === undefined) continue;
       expect(Array.isArray(sim.rules), `${create.forPrompt}: korpus`).toBe(false);
       expect(sim.rules, create.forPrompt).toBeTypeOf('object');
 
@@ -570,11 +614,16 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
       // o jednom pravidle — tedy zrovna ten invariant, o který jde, byl jediné
       // místo, kde blok opisoval místo aby měřil.
       bodiesWithRules += 1;
-      for (const [id, rule] of Object.entries(sim.rules as Record<string, { id?: unknown }>))
+      for (const [id, rule] of Object.entries(sim.rules as Record<string, { id?: unknown }>)) {
         expect(rule.id, `${create.forPrompt}.rules.${id}`).toBe(id);
+        rulesChecked += 1;
+      }
     }
-    // C14 a C15 jsou `NO_FIT` a `sim` nenesou vůbec — 15 emisí, 13 s pravidly.
+    // Počítá se to, co jméno říká: těla, která `rules` SKUTEČNĚ nesou. 15 emisí,
+    // 13 s pravidly. Druhý čítač hlídá, že smyčka uvnitř nejela naprázdno —
+    // bez něj by `13` prošlo i nad třinácti prázdnými záznamy pravidel.
     expect(bodiesWithRules).toBe(13);
+    expect(rulesChecked).toBe(31);
     const fixture = synthWorld(20260812).sim as { rules: Record<string, { id: string }> };
     expect(Array.isArray(fixture.rules), 'synth.ts').toBe(false);
 
