@@ -45,6 +45,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { peelEnvelope, simHashOf } from '../ir/worlddoc';
 import type { Grammar, UpstreamRequest } from './prompt';
 
 const FROZEN_DIR = join(process.cwd(), 'evals', 'frozen');
@@ -58,7 +59,9 @@ export type ClientReason =
   /** Pro tenhle prompt zmrazená odpověď neexistuje. */
   | 'NO_FROZEN_RESPONSE'
   /** Tělo se rozešlo s vlastním `sha256`, nebo mu chybí hlavička. */
-  | 'RESPONSE_TAMPERED';
+  | 'RESPONSE_TAMPERED'
+  /** Editační záznam existuje, ale je vázaný na jiný svět, než jaký přišel. */
+  | 'BASE_WORLD_MISMATCH';
 
 export interface ClientFailure {
   readonly ok: false;
@@ -192,38 +195,142 @@ export function frozenPrompt(id: string): Read<FrozenPrompt | null> {
  * ten, který se doopravdy odeslal.
  */
 export function emitWorld(promptId: string, request: UpstreamRequest): ClientResult {
+  const record = verifiedRecord(promptId, 'create');
+  if (!record.ok) return record;
+
+  return {
+    ok: true,
+    body: record.value.entry.body,
+    request,
+    provenance: provenanceOf(record.value),
+  };
+}
+
+interface VerifiedRecord {
+  readonly entry: Record<string, unknown>;
+  readonly bodySha256: string;
+}
+
+/**
+ * Zmrazený záznam pro dvojici (prompt, větev), ověřený **oběma** hashi.
+ *
+ * Sdílené mezi tvorbou a editací schválně: obě větve mají tutéž záruku a druhá
+ * kopie kontrol je přesně ta třída vady, kterou brána nad T13 našla u čtení
+ * promptů — jedna cesta hash ověřovala, druhá ne, a rozdíl neuhlídal nikdo.
+ */
+function verifiedRecord(promptId: string, branch: 'create' | 'edit'): Read<VerifiedRecord> {
   const records = readJsonl(RESPONSES_FILE);
   if (!records.ok) return records;
 
-  const record = records.value.find((entry) => entry.forPrompt === promptId && entry.branch === 'create');
-  if (record === undefined)
-    return { ok: false, reason: 'NO_FROZEN_RESPONSE', detail: `no frozen create response for ${promptId}` };
+  const entry = records.value.find((item) => item.forPrompt === promptId && item.branch === branch);
+  if (entry === undefined)
+    return { ok: false, reason: 'NO_FROZEN_RESPONSE', detail: `no frozen ${branch} response for ${promptId}` };
 
-  if (record.synthetic !== true)
+  if (entry.synthetic !== true)
     return {
       ok: false,
       reason: 'RESPONSE_TAMPERED',
       detail: `response for ${promptId} does not declare synthetic: true`,
     };
 
-  const bodySha256 = createHash('sha256').update(JSON.stringify(record.body)).digest('hex');
-  if (bodySha256 !== record.sha256)
+  const bodySha256 = createHash('sha256').update(JSON.stringify(entry.body)).digest('hex');
+  if (bodySha256 !== entry.sha256)
     return {
       ok: false,
       reason: 'RESPONSE_TAMPERED',
-      detail: `body for ${promptId} hashes to ${bodySha256}, the record claims ${String(record.sha256)}`,
+      detail: `body for ${promptId} hashes to ${bodySha256}, the record claims ${String(entry.sha256)}`,
+    };
+
+  return { ok: true, value: { entry, bodySha256 } };
+}
+
+function provenanceOf(record: VerifiedRecord): Provenance {
+  return {
+    source: 'frozen-manifest',
+    synthetic: true,
+    file: RESPONSES_FILE,
+    bodySha256: record.bodySha256,
+    declaredVerdict: String(record.entry.expectedVerdict),
+  };
+}
+
+export interface PatchSuccess {
+  readonly ok: true;
+  /** Tělo patche tak, jak přišlo — pole operací se ověřuje až router. */
+  readonly body: unknown;
+  /** Štítek od modelu. **Zaznamenává se, nerozhoduje** (§7). */
+  readonly label: string | undefined;
+  /** Svět, proti kterému byl záznam autorován. */
+  readonly baseWorld: string;
+  readonly request: UpstreamRequest;
+  readonly provenance: Provenance;
+}
+
+export type PatchResult = PatchSuccess | ClientFailure;
+
+/**
+ * Vydá patch poskytovatele pro zmrazený **editační** prompt.
+ *
+ * `simHash` není dekorace: Oracle úlohy T14 povoluje jako double *„upstream jen
+ * záznamem vázaným na dvojici (svět, prompt)"*. Zmrazený patch je autorovaný
+ * proti konkrétnímu základnímu světu a proti jinému světu neměří editaci, ale
+ * náhodu — cesty buď neexistují, nebo trefí něco jiného, než na co mířily.
+ * Vazba se proto ověřuje **hashem `sim` části** základního světa, ne jménem:
+ * jméno by sedělo i na svět, který si volající přepsal cestou sem.
+ *
+ * `look` do vazby nevstupuje. Leží mimo hash schválně (§13.1) a patch vzhledu se
+ * proti němu vydává stejně legálně jako proti výchozímu.
+ */
+export function emitPatch(promptId: string, request: UpstreamRequest, simHash: string): PatchResult {
+  const record = verifiedRecord(promptId, 'edit');
+  if (!record.ok) return record;
+
+  const baseWorld = record.value.entry.baseWorld;
+  if (typeof baseWorld !== 'string')
+    return {
+      ok: false,
+      reason: 'RESPONSE_TAMPERED',
+      detail: `the edit response for ${promptId} names no baseWorld, so it is bound to no world at all`,
+    };
+
+  const expected = frozenBaseSimHash(baseWorld);
+  if (!expected.ok) return expected;
+  if (expected.value !== simHash)
+    return {
+      ok: false,
+      reason: 'BASE_WORLD_MISMATCH',
+      detail: `${promptId} was authored against ${baseWorld} (simHash ${expected.value}); the submitted world hashes to ${simHash}`,
     };
 
   return {
     ok: true,
-    body: record.body,
+    body: record.value.entry.body,
+    label: typeof record.value.entry.modelLabel === 'string' ? record.value.entry.modelLabel : undefined,
+    baseWorld,
     request,
-    provenance: {
-      source: 'frozen-manifest',
-      synthetic: true,
-      file: RESPONSES_FILE,
-      bodySha256,
-      declaredVerdict: String(record.expectedVerdict),
-    },
+    provenance: provenanceOf(record.value),
   };
+}
+
+/**
+ * `simHash` základního světa, spočítaný z jeho zmrazené create emise.
+ *
+ * Počítá se **z oloupaného** těla: anotace obálky (`simOutcome` a spol.) jedou
+ * vedle dokumentu a do hashe nikdy nevstupují — tak, jak je pečetí `/api/emit`.
+ * Kdyby se hashovalo syrové tělo, čtyři anotované create světy by měly jiný hash
+ * tady než tam a vazba by je odmítla, přestože se nic nezměnilo.
+ */
+function frozenBaseSimHash(baseWorld: string): Read<string> {
+  const record = verifiedRecord(baseWorld, 'create');
+  if (!record.ok) return record;
+
+  const peeled = peelEnvelope(record.value.entry.body);
+  if (peeled === null || !Object.hasOwn(peeled.document, 'sim'))
+    return {
+      ok: false,
+      reason: 'RESPONSE_TAMPERED',
+      detail: `the frozen create response for ${baseWorld} carries no sim part to bind against`,
+    };
+
+  return { ok: true, value: simHashOf(peeled.document as { sim: unknown }) };
 }

@@ -1,0 +1,31 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`svědek se po editaci ověřuje znovu > certifikovaný patch nese čerstvý certifikát, odmítnutý nese důvod 1`] = `
+{
+  "E01": "CERTIFIED/CERTIFIED",
+  "E02": "REJECTED/witness:NO_WIN",
+  "E03": "CERTIFIED/CERTIFIED",
+  "E04": "CERTIFIED/CERTIFIED",
+  "E05": "REJECTED/lowering:UNSUPPORTED_SURFACE",
+  "E06": "REJECTED/apply:MALFORMED_OPERATION",
+  "E07": "REJECTED/witness:STEP_UNREACHABLE",
+  "E08": "REJECTED/witness:STEP_UNREACHABLE",
+  "E09": "CERTIFIED/CERTIFIED",
+  "E10": "CERTIFIED/CERTIFIED",
+  "E11": "REJECTED/references:DANGLING_REFERENCE",
+  "E12": "REJECTED/lowering:UNSUPPORTED_SURFACE",
+  "E13": "REJECTED/witness:NO_WIN",
+  "E14": "REJECTED/witness:STEP_UNREACHABLE",
+  "E15": "CERTIFIED/CERTIFIED",
+  "E16": "CERTIFIED/CERTIFIED",
+  "E17": "REJECTED/witness:NO_WIN",
+  "E18": "CERTIFIED/CERTIFIED",
+  "E19": "REJECTED/apply:MALFORMED_OPERATION",
+  "E20": "REJECTED/apply:MALFORMED_OPERATION",
+  "E21": "REJECTED/witness:NO_WIN",
+  "E22": "REJECTED/witness:NO_WIN",
+  "E23": "REJECTED/witness:NO_WIN",
+  "E24": "REJECTED/apply:MALFORMED_OPERATION",
+  "E25": "REJECTED/references:DANGLING_REFERENCE",
+}
+`;
