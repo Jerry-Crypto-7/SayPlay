@@ -31,6 +31,19 @@
  * zmizelé i vzniklé. Vykázat jen jednu by znamenalo, že se přepsáním podstromu
  * na číslo dosah patche opticky zmenší.
  *
+ * ## Co se u listu ještě měří: jak se pohnul
+ *
+ * Kontrakt nedeklaruje jen cesty, ale **dvojice operace–cesta**. Aby se dala
+ * ověřit i ta druhá půlka, nese každý změněný list svůj `effect` — `add`,
+ * `remove`, nebo `replace`. Počítá se ze stavu, ne ze čtení patche, takže platí
+ * tentýž důvod jako u samotných listů: patch nemá jak o svém dosahu lhát tím,
+ * jak se pojmenuje.
+ *
+ * Rozhoduje se **na adrese, kde se tvary rozešly**: chybí vlevo → `add`, chybí
+ * vpravo → `remove`, je na obou stranách → `replace`. Listy pod tou adresou
+ * účinek dědí. Odvozovat ho z členství v množinách listů by pletlo `replace`
+ * skaláru objektem s dvojicí `remove` + `add`.
+ *
  * ## Pořadí a stabilita
  *
  * Vrací se **seřazená** množina. Dosah je vlastnost výsledku, ne pořadí, ve
@@ -71,11 +84,32 @@ function collectLeaves(value: unknown, tokens: readonly string[], out: Set<strin
   out.add(pointerOf(tokens));
 }
 
-function diff(before: unknown, after: unknown, tokens: readonly string[], out: Set<string>): void {
-  // `canonical` je táž serializace, jakou se dokument hashuje — takže „nezměnilo
-  // se to" tu znamená přesně to, co znamená pro `simHash`. Vlastní porovnání by
-  // se s hashem mohlo rozejít a dosah by pak tvrdil něco jiného než identita.
-  if (canonical(before) === canonical(after)) return;
+/** Jak se list pohnul. Odvozeno **ze stavu**, nikdy ze čtení operací patche. */
+export type LeafEffect = 'add' | 'remove' | 'replace';
+
+export interface ChangedLeaf {
+  readonly path: string;
+  readonly effect: LeafEffect;
+}
+
+function diff(before: unknown, after: unknown, tokens: readonly string[], out: Map<string, LeafEffect>): void {
+  // **Přítomnost se rozhoduje před `canonical`, ne jím.** `canonical(undefined)`
+  // i `canonical(null)` vracejí `"null"`, protože `JSON.stringify(undefined)` je
+  // `undefined` a spadne do `?? 'null'` (`ir/worlddoc.ts`). Smazání klíče, který
+  // nesl `null`, by se tedy vyhodnotilo jako „nezměnilo se nic" — a zmrazené
+  // create světy nesou 23 takových listů, všechny `/sim/rules/<id>/condition`.
+  // Dosah `remove` nad nimi by vyšel prázdný, přestože se dokument prokazatelně
+  // pohnul: jiná revize, jiný `simHash`, jiný výsledek certifikace. Zápis mimo
+  // `allowedPaths` by tou dírou prošel neviděn, což je přesně to, co má rozvinutá
+  // množina listů znemožnit.
+  //
+  // Rovnost hashů tu proto záměrně **není** rovnost dosahu: hash obě hodnoty
+  // sjednocuje (a smí, `null` a chybějící klíč popisují týž stav světa), zatímco
+  // adresa listu je rozlišuje (a musí, protože kontrakt mluví o adresách).
+  const beforeAbsent = before === undefined;
+  const afterAbsent = after === undefined;
+
+  if (beforeAbsent === afterAbsent && canonical(before) === canonical(after)) return;
 
   if (isRecord(before) && isRecord(after)) {
     for (const key of new Set([...Object.keys(before), ...Object.keys(after)]))
@@ -93,8 +127,19 @@ function diff(before: unknown, after: unknown, tokens: readonly string[], out: S
   }
 
   // Tvar se rozešel, nebo je to skalár proti skaláru. Obě strany, viz docblock.
-  collectLeaves(before, tokens, out);
-  collectLeaves(after, tokens, out);
+  //
+  // **Účinek se rozhoduje TADY, na adrese rozchodu — ne členstvím v množinách.**
+  // Rozdíl je vidět na `replace` skaláru objektem: `/…/condition` bylo `null`
+  // a je z něj objekt o pěti klíčích. Adresa existuje na obou stranách, takže
+  // se **nahradila**. Kdyby se účinek odvozoval z toho, že stará listová adresa
+  // v nové množině listů chybí (je z ní vnitřní uzel), vyšel by `remove` — a
+  // kontrakt deklarující `replace` nad toutéž cestou by se ohlásil jako porušený.
+  // Naměřeno na `E25`, kde je to legální tah, ne vada korpusu.
+  const effect: LeafEffect = beforeAbsent ? 'add' : afterAbsent ? 'remove' : 'replace';
+  const touched = new Set<string>();
+  collectLeaves(before, tokens, touched);
+  collectLeaves(after, tokens, touched);
+  for (const path of touched) out.set(path, effect);
 }
 
 /**
@@ -104,8 +149,13 @@ function diff(before: unknown, after: unknown, tokens: readonly string[], out: S
  * dosah mluvil v souřadnicích části, zatímco kontrakt (`allowedPaths`) i patch
  * mluví v souřadnicích dokumentu — a porovnávaly by se dvě různé adresy.
  */
-export function changedLeaves(before: unknown, after: unknown, prefix = ''): readonly string[] {
-  const out = new Set<string>();
+export function changedLeafEffects(before: unknown, after: unknown, prefix = ''): readonly ChangedLeaf[] {
+  const out = new Map<string, LeafEffect>();
   diff(before, after, prefix === '' ? [] : [prefix.replace(/^\//, '')], out);
-  return [...out].sort();
+  return [...out.keys()].sort().map((path) => ({ path, effect: out.get(path) as LeafEffect }));
+}
+
+/** Samotné adresy. Projekce `changedLeafEffects`, aby existoval jeden výpočet. */
+export function changedLeaves(before: unknown, after: unknown, prefix = ''): readonly string[] {
+  return changedLeafEffects(before, after, prefix).map((leaf) => leaf.path);
 }

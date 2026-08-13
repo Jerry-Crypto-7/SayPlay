@@ -138,7 +138,8 @@ function same(a: unknown, b: unknown): boolean {
   return false;
 }
 
-function diffLeaves(before: unknown, after: unknown, tokens: string[], out: Set<string>): void {
+/** `same` rozlišuje `null` od chybějícího klíče — `Object.is(null, undefined)` je `false`. */
+function diffLeaves(before: unknown, after: unknown, tokens: string[], out: Map<string, LeafEffect>): void {
   if (same(before, after)) return;
   if (isRecord(before) && isRecord(after)) {
     for (const key of new Set([...Object.keys(before), ...Object.keys(after)]))
@@ -150,8 +151,11 @@ function diffLeaves(before: unknown, after: unknown, tokens: string[], out: Set<
       diffLeaves(before[i], after[i], [...tokens, String(i)], out);
     return;
   }
-  leavesOf(before, tokens, out);
-  leavesOf(after, tokens, out);
+  const effect: LeafEffect = before === undefined ? 'add' : after === undefined ? 'remove' : 'replace';
+  const touched = new Set<string>();
+  leavesOf(before, tokens, touched);
+  leavesOf(after, tokens, touched);
+  for (const path of touched) out.set(path, effect);
 }
 
 /** Svět po aplikaci patche — spočítaný **tady**, ne převzatý z odpovědi. */
@@ -164,16 +168,40 @@ function applied(doc: Record<string, unknown>, patch: readonly Operation[]): Rec
   return draft;
 }
 
-function changedLeavesOf(before: Record<string, unknown>, after: Record<string, unknown>): string[] {
-  const out = new Set<string>();
-  diffLeaves(before.sim, after.sim, ['sim'], out);
-  diffLeaves(before.look, after.look, ['look'], out);
-  return [...out].sort();
+type LeafEffect = 'add' | 'remove' | 'replace';
+
+interface MeasuredLeaf {
+  readonly path: string;
+  readonly effect: LeafEffect;
 }
 
-/** Na deklarované cestě, nebo pod ní — nikdy nad ní. Odůvodnění v route testu. */
-function outsideContract(leaves: readonly string[], allowed: readonly AllowedPath[]): string[] {
-  return leaves.filter((leaf) => !allowed.some((entry) => leaf === entry.path || leaf.startsWith(`${entry.path}/`)));
+function changedLeafEffectsOf(
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+): MeasuredLeaf[] {
+  const out = new Map<string, LeafEffect>();
+  diffLeaves(before.sim, after.sim, ['sim'], out);
+  diffLeaves(before.look, after.look, ['look'], out);
+  return [...out.keys()].sort().map((path) => ({ path, effect: out.get(path) as LeafEffect }));
+}
+
+function changedLeavesOf(before: Record<string, unknown>, after: Record<string, unknown>): string[] {
+  return changedLeafEffectsOf(before, after).map((leaf) => leaf.path);
+}
+
+/**
+ * Na deklarované cestě, nebo pod ní — nikdy nad ní, a **se shodnou operací**.
+ * Odůvodnění obou půlek je v route testu u `insideContract`.
+ */
+function outsideContract(leaves: readonly MeasuredLeaf[], allowed: readonly AllowedPath[]): MeasuredLeaf[] {
+  return leaves.filter(
+    (leaf) =>
+      !allowed.some((entry) => {
+        if (leaf.path === entry.path) return leaf.effect === entry.op;
+        if (!leaf.path.startsWith(`${entry.path}/`)) return false;
+        return entry.op === 'replace' || leaf.effect === entry.op;
+      }),
+  );
 }
 
 function replay(doc: Record<string, unknown>): { world: VerifiableWorld; witness: readonly TraceInput[] } {
@@ -222,9 +250,12 @@ test('rozvinutá množina změněných listů, ne přečtené operace', async ({
   const body = await edit(request, 'E03', doc);
   expect(body.outcome).toBe('CERTIFIED');
 
-  const measured = changedLeavesOf(doc, applied(doc, body.patch));
+  const after = applied(doc, body.patch);
+  const measured = changedLeafEffectsOf(doc, after);
   expect(measured.length, 'patch bez jediného změněného listu je no-op, ne editace').toBeGreaterThan(0);
-  expect(body.changedLeaves, 'endpoint počítá dosah jinak než nezávislé měření').toEqual(measured);
+  expect(body.changedLeaves, 'endpoint počítá dosah jinak než nezávislé měření').toEqual(
+    changedLeavesOf(doc, after),
+  );
   expect(outsideContract(measured, contract.allowedPaths), 'dosah vystoupil z `allowedPaths`').toEqual([]);
 });
 
@@ -247,8 +278,8 @@ test('`replace` na povoleném předkovi selže na rozvinuté množině listů', 
   expect(byOperations, 'předpoklad testu padl: čtení operací už tenhle patch nepouští').toBe(true);
 
   // Rozvinutý dosah ukáže i `init`, který se změnil s ním.
-  const outside = outsideContract(changedLeavesOf(doc, applied(doc, sneaky)), contract.allowedPaths);
-  expect(outside).toContain('/sim/state/timers/flood/init');
+  const outside = outsideContract(changedLeafEffectsOf(doc, applied(doc, sneaky)), contract.allowedPaths);
+  expect(outside.map((leaf) => leaf.path)).toContain('/sim/state/timers/flood/init');
 });
 
 test('dráhu rozhodly cesty, ne štítek — a neshoda je telemetrie, ne odmítnutí', async ({ request }) => {

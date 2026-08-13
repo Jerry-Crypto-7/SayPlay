@@ -19,7 +19,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { commitPart } from '../../ir/revision';
 import { ruleKeyFault, sealSimHash, worldDocSchema, type LookPart, type WorldDoc } from '../../ir/worlddoc';
 import { withRequest } from '../../obs/trace';
-import { drainRoutingAnomalies, routePatch, runLookLane, type LabelledPatch } from '../router';
+import { drainRoutingAnomalies, droppedAnomalies, routePatch, runLookLane, type LabelledPatch } from '../router';
 
 function frozen(...parts: string[]): string {
   return readFileSync(join(process.cwd(), 'evals', 'frozen', ...parts), 'utf8');
@@ -155,6 +155,21 @@ describe('simWinsRule — zápis pod `/sim` jde do dráhy pravidel bez ohledu na
   it('mimo požadavek je `requestId` `undefined`, ne vymyšlené', () => {
     routePatch(MISLABELLED);
     expect(drainRoutingAnomalies()[0].requestId).toBeUndefined();
+  });
+
+  it('sběr má strop a zahození přiznává — dlouhý běh ho nenafoukne donekonečna', () => {
+    // **Nález brány nad T14.** Do T14 nemělo `routePatch` produkčního volajícího
+    // a pole čerpal jen tenhle soubor. `/api/edit` ho teď volá jednou za
+    // požadavek, takže bez stropu by si `next start` držel jednu anomálii na
+    // každý špatně oštítkovaný patch — navždy, včetně `requestId`.
+    for (let i = 0; i < 300; i += 1) routePatch(MISLABELLED);
+
+    // Čte se PŘED odčerpáním: `drainRoutingAnomalies` počítadlo nuluje.
+    expect(droppedAnomalies(), 'strop nezahodil, co přeteklo').toBe(300 - 256);
+
+    const drained = drainRoutingAnomalies();
+    expect(drained).toHaveLength(256);
+    expect(droppedAnomalies(), 'odčerpání nevynulovalo počítadlo').toBe(0);
   });
 
   /**

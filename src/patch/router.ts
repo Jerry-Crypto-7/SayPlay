@@ -95,11 +95,36 @@ export type RoutingResult = Routing | PatchRejection;
  * P1 nemá exportér telemetrie a stavět ho dopředu by byla fikce; sběrné pole se
  * čte přes `drainRoutingAnomalies()`. Až exportér vznikne, změní se odběratel,
  * ne tohle místo.
+ *
+ * **Strop je tu proto, že odběratel zatím neexistuje.** Do T14 nemělo `routePatch`
+ * produkčního volajícího a pole rostlo jen v testu, který ho hned vyprázdnil.
+ * Endpoint `/api/edit` ho teď volá jednou za požadavek, takže dlouho běžící
+ * `next start` by si bez stropu držel jednu anomálii na každý špatně oštítkovaný
+ * patch — navždy a včetně `requestId`. Přetečení zahazuje **nejstarší** záznam:
+ * novější anomálie vypovídá o modelu, který právě běží, a `droppedAnomalies`
+ * říká nahlas, že se něco zahodilo, aby se ztráta nedala splést s tichem.
  */
+const MAX_RECORDED_ANOMALIES = 256;
+
 const recorded: RoutingAnomaly[] = [];
+let dropped = 0;
+
+function record(anomaly: RoutingAnomaly): void {
+  recorded.push(anomaly);
+  if (recorded.length > MAX_RECORDED_ANOMALIES) {
+    recorded.splice(0, recorded.length - MAX_RECORDED_ANOMALIES);
+    dropped += 1;
+  }
+}
 
 export function drainRoutingAnomalies(): RoutingAnomaly[] {
+  dropped = 0;
   return recorded.splice(0);
+}
+
+/** Kolik anomálií strop zahodil od posledního vyprázdnění. */
+export function droppedAnomalies(): number {
+  return dropped;
 }
 
 /** Do které části dokumentu cesta míří — `null`, když do žádné. */
@@ -265,7 +290,7 @@ function routeChecked(patch: LabelledPatch): RoutingResult {
       evidence: mismatch,
     };
     anomalies.push(anomaly);
-    recorded.push(anomaly);
+    record(anomaly);
   }
 
   return { verdict: 'ROUTED', patches, anomalies };

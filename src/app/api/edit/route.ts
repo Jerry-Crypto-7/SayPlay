@@ -184,8 +184,13 @@ export async function POST(request: Request): Promise<Response> {
 
     // `migrateWorldDoc` je **jediný** vstup pro čtení dokumentu (viz poznámka na
     // konci `ir/revision.ts`): ověří tvar, verzi, konečnost čísel i to, že
-    // `simHash` sedí na `sim`, kterou popisuje. Dokument, který si volající
+    // `simHash` sedí na `sim`, kterou popisuje. Dokument, jehož `sim` si volající
     // upravil a hash nechal starý, se sem nedostane.
+    //
+    // **Na revize se ta věta nevztahuje a nesmí se tak číst.** `simHash` kryje
+    // `doc.sim` a nic jiného (`worlddoc.ts`, a je to zmrazený protokol), takže
+    // `simRevision` ani `lookRevision` hashem vázané nejsou. Meze téhle kontroly
+    // jsou proto zapsané u brány 409 níž.
     const migrated = migrateWorldDoc(worldDoc);
     if (!migrated.ok || migrated.doc === null)
       return badRequest(requestId, 'INVALID_WORLD_DOC', migrated.reason, 'worldDoc');
@@ -254,6 +259,19 @@ export async function POST(request: Request): Promise<Response> {
     // **Zastaralost se rozhoduje před aplikací čehokoli.** Kdyby se na ni přišlo
     // až uvnitř `commitMixed`, smíšený požadavek by zůstal půl commitnutý a klient
     // by dostal 409 nad světem, který se mu mezitím pod rukama pohnul.
+    //
+    // **Co tahle brána doopravdy umí, poctivě.** Endpoint je bezstavový: „aktuální"
+    // revizi nezná odjinud než z dokumentu, který mu poslal týž volající. Porovnává
+    // tedy `baseRevision` proti `doc.<part>Revision` — dvě čísla z jednoho požadavku.
+    // Chytí tím **vnitřní rozpor požadavku**, což je přesně ta chyba, kterou dělá
+    // klient se dvěma revizemi a jedním strojem: patch vydaný proti jedné části,
+    // zatímco druhá se mezitím posunula (AC T14 žádá oba směry a oba jsou v testech).
+    // **Nechytí zastaralost proti světu, který drží někdo jiný** — volající se dvěma
+    // koly pozadu pošle svůj dokument i své `baseRevision` a oba spolu souhlasí.
+    // Autorita nad „aktuální" revizí by znamenala server, který si světy drží; ten
+    // v P1 neexistuje a stavět ho tady by bylo mimo rozsah úlohy. Co existuje, je
+    // monotónní čítač: `revision.ts` zvedá revizi části o jedna při každém commitu,
+    // takže dvě různé historie nikdy nevydají totéž číslo nad týmž obsahem.
     for (const routed of routing.patches) {
       const current = revisionOf(doc, routed.part);
       if (base[routed.part] === current) continue;

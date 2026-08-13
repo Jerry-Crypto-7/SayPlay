@@ -122,7 +122,20 @@ function same(a: unknown, b: unknown): boolean {
   return false;
 }
 
-function diffLeaves(before: unknown, after: unknown, tokens: string[], out: Set<string>): void {
+type LeafEffect = 'add' | 'remove' | 'replace';
+
+interface MeasuredLeaf {
+  readonly path: string;
+  readonly effect: LeafEffect;
+}
+
+/**
+ * `same` rozlišuje `null` od chybějícího klíče, protože `Object.is(null, undefined)`
+ * je `false` — a je to tady schválně napsané vlastním porovnáním, ne `canonical`
+ * z produkce, právě aby ta dvojice nesplynula. Produkční `scope.ts` ji dřív
+ * slučovala a smazání `null` listu vykázala jako nulový dosah.
+ */
+function diffLeaves(before: unknown, after: unknown, tokens: string[], out: Map<string, LeafEffect>): void {
   if (same(before, after)) return;
   if (isRecord(before) && isRecord(after)) {
     for (const key of new Set([...Object.keys(before), ...Object.keys(after)]))
@@ -134,25 +147,34 @@ function diffLeaves(before: unknown, after: unknown, tokens: string[], out: Set<
       diffLeaves(before[i], after[i], [...tokens, String(i)], out);
     return;
   }
-  leavesOf(before, tokens, out);
-  leavesOf(after, tokens, out);
+  // Účinek na adrese rozchodu; listy pod ní ho dědí. Je na obou stranách =
+  // `replace`, i když se z listu stal vnitřní uzel (`null` → objekt).
+  const effect: LeafEffect = before === undefined ? 'add' : after === undefined ? 'remove' : 'replace';
+  const touched = new Set<string>();
+  leavesOf(before, tokens, touched);
+  leavesOf(after, tokens, touched);
+  for (const path of touched) out.set(path, effect);
 }
 
 /**
  * Dosah patche, změřený **aplikací a diffem stavu** — tak, jak to žádá
  * `editContract.changedLeafRule`, a bez jediného pohledu do operací.
  */
-function measuredLeaves(before: WorldDoc, operations: readonly Operation[]): readonly string[] {
+function measuredLeafEffects(before: WorldDoc, operations: readonly Operation[]): readonly MeasuredLeaf[] {
   const draft = structuredClone(before) as unknown as Record<string, unknown>;
   applyPatch(draft, structuredClone(operations) as Operation[]);
-  const out = new Set<string>();
+  const out = new Map<string, LeafEffect>();
   diffLeaves(before.sim, draft.sim, ['sim'], out);
   diffLeaves(before.look, draft.look, ['look'], out);
-  return [...out].sort();
+  return [...out.keys()].sort().map((path) => ({ path, effect: out.get(path) as LeafEffect }));
+}
+
+function measuredLeaves(before: WorldDoc, operations: readonly Operation[]): readonly string[] {
+  return measuredLeafEffects(before, operations).map((leaf) => leaf.path);
 }
 
 /**
- * Je list uvnitř kontraktu?
+ * Je změněný list uvnitř kontraktu — **cestou i operací**?
  *
  * **Na deklarované cestě, nebo pod ní. Nikdy nad ní.** Sestup je legální —
  * `replace /sim/layout/portals` deklaruje celý ten podstrom a jeho listy se
@@ -161,9 +183,25 @@ function measuredLeaves(before: WorldDoc, operations: readonly Operation[]): rea
  * propustí `replace /sim`, protože `/sim` je prefixem úplně každé povolené cesty.
  * Rozvinutý list `/sim/state/timers/flood/init` naproti tomu neleží pod
  * `/sim/state/timers/flood/durationTicks`, takže se ukáže.
+ *
+ * **Druhá půlka je operace, a bez ní byla kontrola poloviční.** `allowedPaths`
+ * deklaruje dvojice `{op, path}` a AC úlohy mluví doslova o *dvojicích
+ * operace–cesta*. Dokud se porovnávala jen cesta, kontrakt `E21` povolující
+ * `add /sim/state/counters/keysReturned` propustil i `remove` téhož counteru —
+ * tedy pravý opak deklarovaného záměru nad toutéž adresou.
+ *
+ * Porovnává se na **přesné** cestě, protože tam kontrakt tvrdí právě jednu věc.
+ * Při sestupu pod deklarovanou cestu platí operace na celý podstrom: `replace`
+ * podstromu uvnitř legálně přidává i maže klíče (nová hodnota má jiný tvar),
+ * kdežto `add` podstromu uvnitř jen přidává a `remove` jen maže. Vyžadovat
+ * shodu i tam by vyrobilo falešné nálezy nad `replace` celého objektu.
  */
-function insideContract(leaf: string, allowed: readonly AllowedPath[]): boolean {
-  return allowed.some((entry) => leaf === entry.path || leaf.startsWith(`${entry.path}/`));
+function insideContract(leaf: MeasuredLeaf, allowed: readonly AllowedPath[]): boolean {
+  return allowed.some((entry) => {
+    if (leaf.path === entry.path) return leaf.effect === entry.op;
+    if (!leaf.path.startsWith(`${entry.path}/`)) return false;
+    return entry.op === 'replace' || leaf.effect === entry.op;
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -306,7 +344,7 @@ describe('dosah patche — rozvinutá množina listů proti `allowedPaths`', () 
       if (UNAPPLICABLE.includes(id)) continue;
       const contract = contractOf(id);
       const world = baseDoc(contract.baseWorld as string);
-      const leaves = measuredLeaves(world, responseOf(id).body as Operation[]);
+      const leaves = measuredLeafEffects(world, responseOf(id).body as Operation[]);
       const allowed = contract.allowedPaths ?? [];
       const outside = leaves.filter((leaf) => !insideContract(leaf, allowed));
       if (outside.length > 0) overrun.push(id);
@@ -335,11 +373,42 @@ describe('dosah patche — rozvinutá množina listů proti `allowedPaths`', () 
     expect(byOperations, 'předpoklad testu padl: čtení operací už tenhle patch nepouští').toBe(true);
 
     // Rozvinutá množina listů: `init` je vidět a leží mimo kontrakt.
-    const leaves = measuredLeaves(world, sneaky);
+    const leaves = measuredLeafEffects(world, sneaky);
     const outside = leaves.filter((leaf) => !insideContract(leaf, allowed));
     expect(outside.length, `rozvinutý dosah nechytil přepis předka: ${JSON.stringify(leaves)}`).toBeGreaterThan(0);
-    expect(outside).toContain('/sim/state/timers/flood/init');
+    expect(outside.map((leaf) => leaf.path)).toContain('/sim/state/timers/flood/init');
   });
+
+  it('operace je druhá půlka kontraktu — `remove` tam, kde se deklaruje `add`, neprojde', () => {
+    // **Nález brány nad T14.** `allowedPaths` deklaruje dvojice `{op, path}`
+    // a AC mluví doslova o *dvojicích operace–cesta*. Dokud se porovnávala jen
+    // cesta, prošel nad deklarovaným `add` i jeho pravý opak: smazání téže
+    // adresy. Kontrakt `E25` deklaruje `add /sim/state/counters/tagged`.
+    const allowed = contractOf('E25').allowedPaths as readonly AllowedPath[];
+    const path = '/sim/state/counters/tagged';
+    expect(
+      allowed.some((entry) => entry.op === 'add' && entry.path === path),
+      'korpus se pohnul: `E25` už tuhle dvojici nedeklaruje',
+    ).toBe(true);
+
+    expect(insideContract({ path, effect: 'add' }, allowed)).toBe(true);
+    expect(insideContract({ path, effect: 'remove' }, allowed)).toBe(false);
+    expect(insideContract({ path, effect: 'replace' }, allowed)).toBe(false);
+  });
+
+  it('sestup dědí operaci: pod `replace` se smí přidávat, pod `add` ne mazat', () => {
+    const allowed = contractOf('E25').allowedPaths as readonly AllowedPath[];
+
+    // `replace /sim/rules/win/condition` — nová hodnota má jiný tvar, takže se
+    // uvnitř legálně objeví klíč, který tam dřív nebyl. Vyžadovat i tady shodu
+    // účinku by vyrobilo falešný nález nad každým `replace` celého objektu.
+    expect(insideContract({ path: '/sim/rules/win/condition/zone', effect: 'add' }, allowed)).toBe(true);
+
+    // `add /sim/rules/tag` — podstrom je nový, takže uvnitř nemá co ztratit.
+    expect(insideContract({ path: '/sim/rules/tag/actions/0/by', effect: 'add' }, allowed)).toBe(true);
+    expect(insideContract({ path: '/sim/rules/tag/actions/0/by', effect: 'remove' }, allowed)).toBe(false);
+  });
+
 });
 
 describe('dráhu rozhodují cesty, ne štítek', () => {
@@ -397,6 +466,37 @@ describe('dvě revize, dvě nezávislé kontroly zastaralosti', () => {
     expect(staleSim.status).toBe(409);
     expect((staleSim.body.error as { code: string }).code).toBe('STALE_REVISION');
     expect((staleSim.body.error as { field: string }).field).toBe('baseRevision/sim');
+  });
+
+  it('409 chytí vnitřní rozpor požadavku, ne zastaralost proti světu, který drží někdo jiný', async () => {
+    // **Meze brány, změřené a připnuté — ne tvrzení, že mez neexistuje.**
+    // Endpoint je bezstavový: „aktuální" revizi zná jen z dokumentu, který mu
+    // poslal týž volající. `simHash` navíc kryje `doc.sim` a nic víc (zmrazený
+    // protokol), takže revize hashem vázané nejsou. Volající dvě kola pozadu
+    // proto projde — jeho dokument a jeho `baseRevision` spolu souhlasí.
+    //
+    // Je to vlastnost bezstavového endpointu, ne vada implementace, a stojí to
+    // tady napsané proto, aby si to nikdo nespletl s optimistickým zámkem nad
+    // sdíleným světem. Ten by potřeboval server, který si světy drží; v P1
+    // neexistuje a T14 ho stavět nemá.
+    const world = baseDoc(contractOf('E01').baseWorld as string);
+    const behind = { ...world, simRevision: world.simRevision + 5, lookRevision: world.lookRevision + 5 };
+
+    const consistent = await post({
+      worldDoc: behind,
+      baseRevision: { sim: behind.simRevision, look: behind.lookRevision },
+      promptId: 'E01',
+    });
+    expect(consistent.status, 'sám se sebou souhlasící požadavek 409 nedostane').toBe(200);
+
+    // A totéž číslo v rozporu s dokumentem 409 dostane — bez téhle druhé
+    // poloviny by aserce výš prošla i endpointu, který 409 nevrací nikdy.
+    const contradictory = await post({
+      worldDoc: behind,
+      baseRevision: { sim: world.simRevision, look: behind.lookRevision },
+      promptId: 'E01',
+    });
+    expect(contradictory.status).toBe(409);
   });
 
   it('409 se rozhodne PŘED aplikací — revize v odpovědi se nepohnuly', async () => {
@@ -481,12 +581,22 @@ describe('svědek se po editaci ověřuje znovu', () => {
     expect(contradicts.sort()).toEqual(['E13', 'E14']);
   });
 
-  it('necertifikovaná `sim` se neaplikuje a nemá dosah', async () => {
+  it('necertifikovaná `sim` se neaplikuje a nevykáže jediný `sim` list', async () => {
+    // **Měří se dosah té části, která se neaplikovala, ne prázdnota celé odpovědi.**
+    // Dřívější znění tvrdilo `changedLeaves === []` pro každý necertifikovaný
+    // záznam. Drží to jen proto, že zmrazená sada nemá smíšený patch, jehož `look`
+    // půlka commitne a `sim` půlka padne na svědkovi — a ten by legálně vykázal
+    // `look` listy (`route.ts` je do dosahu započítá podle `applied`). Aserce by
+    // tedy praskla na změně korpusu, ne na vadě. Vlastnost, o kterou tu jde, je
+    // užší a platí bez ohledu na sadu: co se neaplikovalo, nemá dosah.
     for (const id of ids) {
       const body = await edit(id);
       if (body.outcome === 'CERTIFIED') continue;
       expect(body.applied, `${id}: odmítnutá `.concat('sim se přesto aplikovala')).not.toContain('sim');
-      expect(body.changedLeaves, `${id}: odmítnutý patch vykázal dosah`).toEqual([]);
+      const simLeaves = body.changedLeaves.filter((leaf) => leaf === '/sim' || leaf.startsWith('/sim/'));
+      expect(simLeaves, `${id}: odmítnutá `.concat('sim vykázala dosah')).toEqual([]);
+      if (!body.applied.includes('look'))
+        expect(body.changedLeaves, `${id}: nic se neaplikovalo, dosah přesto není prázdný`).toEqual([]);
     }
   });
 });
