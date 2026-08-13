@@ -457,7 +457,18 @@ export function ruleKeyFault(sim: unknown): UnhashableIssue | null {
  * to původní. Oprava pořád vyrobí **nula** nálezů a projde, nesouvisející patch
  * pořád reprodukuje bitově shodnou položku, takže slepá ulička nevzniká.
  *
- * U pole je vadná celá tabulka naráz, takže je identitou její kanonický zápis.
+ * **U celotabulkové vady je identitou TVAR tabulky, ne její obsah** — rozhodnutí
+ * člověka z 13. 8. 2026 nad bránou 5. Kanonický zápis celé tabulky sem nepatří:
+ * pod ním měnila identitu každá úprava kteréhokoli pravidla, takže svět zděděně
+ * uložený jako pole vracel `REJECTED` na `/sim/rules` i patchi, který ten pointer
+ * vůbec nejmenoval. To je táž třída falešného odmítnutí, kvůli které vznikl
+ * `97f4741`, jen ve tvaru pole — a model, který ji dostane, nemá co opravit.
+ * Pod polem navíc žádné pravidlo adresovatelné není, takže se úpravou uvnitř
+ * nic adresovatelného neztrácí.
+ *
+ * Značky jsou dvě, ne jedna, a to je ta konzervativní půlka: přechod mezi tvary
+ * (pole → primitiv, tedy smazání všech pravidel) identitu **změní**, takže se
+ * odmítne. Tolerance platí pro úpravy uvnitř zděděného tvaru, ne pro jeho výměnu.
  */
 export function introducedRuleKeyFault(stored: unknown, draft: unknown): UnhashableIssue | null {
   const before = new Set(ruleKeyFaults(stored).map(identityOf));
@@ -466,27 +477,65 @@ export function introducedRuleKeyFault(stored: unknown, draft: unknown): Unhasha
 
 interface RuleKeyFault {
   readonly pointer: string;
-  /** Kanonický zápis provinilé položky — identita vady, ne jen její místo. */
-  readonly entry: string;
+  /**
+   * Značka celotabulkové vady, nebo `null` u vady jedné položky. Nese TVAR
+   * tabulky, ne její obsah — proto ji úprava uvnitř zděděně vadné tabulky nezmění.
+   */
+  readonly marker: string | null;
+  /** Provinilá položka. Kanonizuje se až v `identityOf`, viz `ruleFault`. */
+  readonly entry: unknown;
   readonly issue: UnhashableIssue;
 }
 
-/** `JSON.stringify` místo spojovacího znaku — dvojice se nedá srazit obsahem klíče. */
+/**
+ * `JSON.stringify` místo spojovacího znaku — dvojice se nedá srazit obsahem klíče.
+ * Rozlišovač je vlastní prvek pole, takže se značka tvaru nemůže potkat
+ * s kanonickým zápisem položky, ať do něj přijde cokoli.
+ */
 function identityOf(fault: RuleKeyFault): string {
-  return JSON.stringify([fault.pointer, fault.entry]);
+  return fault.marker === null
+    ? JSON.stringify(['entry', fault.pointer, canonical(fault.entry)])
+    : JSON.stringify(['table', fault.pointer, fault.marker]);
 }
 
 /**
- * `canonical` je bezpečné: obě strany prošly `unhashableValues` dřív, než se sem
- * došlo — `commitChecked` uloženou část, `sealPart` draft.
+ * **`canonical` se odsud nevolá, a je to podmínka totality `ruleKeyFault`.**
+ * `canonical` je nehlídaná rekurze, takže cyklická nebo ~20k hluboká položka z ní
+ * vyhodí `RangeError`. Uvnitř `introducedRuleKeyFault` to nevadí — obě strany
+ * prošly `unhashableValues` (`commitChecked` uloženou část, `sealPart` draft),
+ * který cyklus i hloubku odmítne dřív. `ruleKeyFault` je ale exportovaný **bez**
+ * té předběžné podmínky a už dnes se volá nad syrovými zmrazenými těly, a bude
+ * ho tak volat scorer z T16 nad živými emisemi. Musí tedy vrátit verdikt na
+ * čemkoli, což platí právě proto, že se položka kanonizuje až v `identityOf`.
  */
 function ruleFault(pointer: string, entry: unknown, detail: string): RuleKeyFault {
-  return { pointer, entry: canonical(entry), issue: issue(pointer, detail) };
+  return { pointer, marker: null, entry, issue: issue(pointer, detail) };
+}
+
+/** Vada celé tabulky. `marker` je jediné, co jde do identity — obsah do ní nesmí. */
+function tableFault(marker: string, detail: string): RuleKeyFault {
+  return { pointer: '/sim/rules', marker, entry: undefined, issue: issue('/sim/rules', detail) };
 }
 
 function ruleKeyFaults(sim: unknown): RuleKeyFault[] {
   const rules = (sim as { readonly rules?: unknown } | null)?.rules;
-  if (rules === null || typeof rules !== 'object') return [];
+
+  // Chybějící `rules` a `null` zůstávají bez nálezu — tam žádná pravidla nejsou,
+  // takže se ani žádné adresování nelomí.
+  if (rules === undefined || rules === null) return [];
+
+  // **Tabulka, která není ani objekt, je vada celé tabulky** — a je to táž vada
+  // jako pole níž, jen o úroveň výš: jediná operace `replace /sim/rules` hodnotou
+  // `"gone"` nebo `7` smaže všechna pravidla naráz a invariant nad výsledkem
+  // dřív hlásil čisto. Zotavení jde jen dalším celotabulkovým `replace`; `add
+  // /sim/rules/win` po něm padne na „path runs through a primitive".
+  if (typeof rules !== 'object')
+    return [
+      tableFault(
+        'primitive',
+        `the rule table is ${typeof rules} instead of a keyed record, so every rule it held is gone and nothing is reachable by its stable id`,
+      ),
+    ];
 
   // **Pole je vada celé tabulky, ne jednoho klíče** — a je to přesně ten tvar v1,
   // kvůli kterému se korpus mrazil na v2. Pod polem leží každé pravidlo pod
@@ -497,13 +546,11 @@ function ruleKeyFaults(sim: unknown): RuleKeyFault[] {
   // Naměřeno na zmrazeném korpusu, ne odhadnuto: 13 create těl nese `rules` jako
   // záznam a **žádné** jako pole, a **žádný** z 25 editačních patchů celé
   // `/sim/rules` nepřepisuje. Tohle odmítnutí tedy nestojí ani jeden zmrazený
-  // záznam. Chybějící `rules` a `null` zůstávají bez nálezu — tam žádná pravidla
-  // nejsou, takže se ani žádné adresování nelomí.
+  // záznam.
   if (Array.isArray(rules))
     return [
-      ruleFault(
-        '/sim/rules',
-        rules,
+      tableFault(
+        'array',
         'the rule table is an array, so every rule is filed under an index — a patch addressing any of them by its stable id would miss a rule that exists',
       ),
     ];

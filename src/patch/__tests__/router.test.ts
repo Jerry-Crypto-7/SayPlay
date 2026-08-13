@@ -846,6 +846,85 @@ describe('rozhodnutí T22: pravidlo musí ležet pod svým `id`', () => {
       });
       expect(result.verdict).toBe('REJECTED');
     });
+
+    /**
+     * **Rozhodnutí člověka, 13. 8. 2026 — brána 5, nález 2.** Zděděná tabulka ve
+     * tvaru pole se toleruje: patch, který uvnitř ní něco mění, projde.
+     *
+     * Dřív ne. Identitou celotabulkové vady byl kanonický zápis CELÉ tabulky,
+     * takže ji každá úprava kteréhokoli pravidla změnila a četla se jako
+     * zavlečená — `replace /rules/0/priority` skončil `REJECTED` na `/sim/rules`,
+     * tedy na pointeru, který žádná operace nejmenovala. To je táž třída falešného
+     * odmítnutí, kvůli které vznikl `97f4741`, jen ve tvaru pole: model dostane
+     * zprávu, se kterou nemůže nic udělat, a patch přeemituje donekonečna.
+     *
+     * Tolerovat je bezpečné, protože pod polem není adresovatelné **žádné**
+     * pravidlo už před patchem — úpravou uvnitř se tedy nic adresovatelného
+     * neztrácí. Vrátit adresovatelnost umí jedině celotabulková oprava a ta projde
+     * (test „a to i když zdědil rovnou celou tabulku jako pole" výš).
+     */
+    it('a úprava UVNITŘ zděděného pole projde — toleruje se zděděný TVAR', () => {
+      const cases: readonly (readonly [string, Operation])[] = [
+        ['úprava pravidla', { op: 'replace', path: '/rules/0/priority', value: 3 } as Operation],
+        ['přidání pravidla', { op: 'add', path: '/rules/-', value: rule } as Operation],
+        ['smazání pravidla', { op: 'remove', path: '/rules/0' } as Operation],
+      ];
+
+      for (const [name, operation] of cases) {
+        const table = bentTable();
+        const result = commitPart(table, { part: 'sim', baseRevision: table.simRevision, operations: [operation] });
+        expect(result.verdict, name).toBe('COMMITTED');
+      }
+    });
+
+    it('ale VYMĚNIT ten tvar za jiný vadný se odmítne — tolerance je na úpravy, ne na výměnu', () => {
+      // Konzervativní půlka rozhodnutí, a proto jsou značky tvaru dvě a ne jedna:
+      // pole → primitiv smaže všechna pravidla naráz, což je poškození, které
+      // přinesl tenhle patch, ne stav, který zdědil.
+      const table = bentTable();
+      const result = commitPart(table, {
+        part: 'sim',
+        baseRevision: table.simRevision,
+        operations: [{ op: 'replace', path: '/rules', value: 'gone' } as Operation],
+      });
+      expect(result.verdict).toBe('REJECTED');
+      if (result.verdict !== 'REJECTED') return;
+      expect(result.pointer).toBe('/sim/rules');
+    });
+
+    it('a tabulka, která není ani objekt, je vada celé tabulky', () => {
+      // Brána 5, nález 1. Dřív se `replace /sim/rules` hodnotou `"gone"` commitnul:
+      // `ruleKeyFaults` vracel `[]` pro cokoli, co není objekt, takže jediná
+      // operace smazala všechna pravidla a invariant nad výsledkem hlásil čisto.
+      // Táž vada jako u pole, jen o úroveň výš — a zotavení jde jen dalším
+      // celotabulkovým `replace`, protože `add /sim/rules/win` po něm padne na
+      // „path runs through a primitive".
+      for (const value of ['gone', 7, true]) {
+        const result = commitPart(C01, {
+          part: 'sim',
+          baseRevision: C01.simRevision,
+          operations: [{ op: 'replace', path: '/rules', value } as Operation],
+        });
+        expect(result.verdict, String(value)).toBe('REJECTED');
+        if (result.verdict !== 'REJECTED') continue;
+        expect(result.pointer, String(value)).toBe('/sim/rules');
+        expect(result.detail, String(value)).toContain('stable id');
+      }
+    });
+
+    it('a `ruleKeyFault` vrátí verdikt i nad položkou, kterou nejde kanonizovat', () => {
+      // Brána 5, nález 3. Exportovaný kontrolor se volá **bez** předběžné podmínky
+      // `unhashableValues` — nad syrovými zmrazenými těly už dnes (níž v tomhle
+      // souboru) a nad živými emisemi ve scoreru z T16. `canonical` je nehlídaná
+      // rekurze, takže odsud dřív místo verdiktu létal `RangeError`.
+      const cyclic: Record<string, unknown> = { id: 'bent' };
+      cyclic.self = cyclic;
+      expect(ruleKeyFault({ rules: { win: cyclic } })?.pointer).toBe('/sim/rules/win');
+
+      let deep: Record<string, unknown> = { id: 'win' };
+      for (let i = 0; i < 30_000; i += 1) deep = { nested: deep };
+      expect(ruleKeyFault({ rules: { win: deep } })?.pointer).toBe('/sim/rules/win');
+    });
   });
 });
 
