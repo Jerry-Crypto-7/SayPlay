@@ -65,11 +65,29 @@ export function reject(
  */
 export function describeThrown(error: unknown): string {
   try {
-    if (error instanceof Error && typeof error.message === 'string') return error.message;
+    if (error instanceof Error) {
+      // **Jedno čtení, ne dvě.** `message` je getter a nic nezaručuje, že dvě
+      // čtení vrátí totéž — ověřit typ na prvním a vrátit druhé znamená vrátit
+      // hodnotu, kterou nikdo nezkontroloval. Šablona u volajícího na ní pak
+      // vyhodí, a to zvenčí tohohle `try`, tedy přesně tam, kde se to nesmí stát.
+      const message: unknown = error.message;
+      if (typeof message === 'string') return message;
+    }
     return String(error);
   } catch {
     return `a thrown ${typeof error} with no readable string form`;
   }
+}
+
+/**
+ * Tokeny, které rozbor cesty odmítá v **každé** pozici — `resolve` níž.
+ *
+ * Exportuje se proto, že „adresovatelnost" nedrží jen cesta: pravidlo uložené pod
+ * takovým klíčem splní `id == klíč` a přesto se k němu žádný patch nedostane, což
+ * musí vidět i kontrola invariantu v `ir/worlddoc.ts`.
+ */
+export function isUnaddressableToken(token: string): boolean {
+  return UNSAFE_TOKENS.has(token);
 }
 
 /**

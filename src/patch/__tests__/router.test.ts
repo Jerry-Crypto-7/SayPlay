@@ -609,8 +609,9 @@ describe('rozhodnutí T22: pravidlo musí ležet pod svým `id`', () => {
    * platí pro položku, která vůbec není pravidlo (pole, `null`, číslo).
    *
    * Cena na zmrazeném korpusu je nulová a je přeměřená: 31 z 31 pravidel v create
-   * tělech nese řetězcové `id` a žádný z 25 editačních patchů se `/sim/rules`
-   * nedotýká. Zúžení tedy nezamítá nic, co korpus deklaruje.
+   * tělech nese řetězcové `id`, a ačkoli se 20 z 25 editačních patchů dotýká cest
+   * pod `/sim/rules`, celou tabulku nepřepisuje ani jeden. Hlídá to sada níž nad
+   * korpusem, ne tenhle odstavec.
    */
   describe('a pravidlo, které z id-prostoru vypadne úplně', () => {
     const cases: readonly (readonly [string, Operation[]])[] = [
@@ -641,6 +642,31 @@ describe('rozhodnutí T22: pravidlo musí ležet pod svým `id`', () => {
         expect(result.detail, name).toContain('stable id');
       });
     }
+
+    /**
+     * **`id == klíč` nestačí, když ten klíč rozbor cesty odmítá.**
+     *
+     * `resolve` v `src/patch/reject.ts` zakazuje `__proto__`, `constructor`
+     * a `prototype` v každé pozici cesty — `rfc6902` je přeskakuje a sáhlo by
+     * místo nich na rodiče. Pravidlo pod takovým klíčem tedy invariant formálně
+     * splní a přesto se k němu žádný patch nedostane, což je doslova ten stav,
+     * kterému má invariant bránit. Jednotlivá operace `add /sim/rules/constructor`
+     * se odmítne už na rozboru cesty; dovnitř se to dostane přepisem celé tabulky.
+     */
+    it('a pravidlo pod klíčem, který rozbor cesty odmítá, i když se `id` rovná klíči', () => {
+      const rules = structuredClone((C01.sim as { rules: Record<string, unknown> }).rules);
+      for (const key of ['constructor', 'prototype']) {
+        const table = { ...rules, [key]: { ...(rules.win as object), id: key } };
+        const result = commitPart(C01, {
+          part: 'sim',
+          baseRevision: C01.simRevision,
+          operations: [{ op: 'replace', path: '/rules', value: table } as Operation],
+        });
+        expect(result.verdict, key).toBe('REJECTED');
+        if (result.verdict !== 'REJECTED') continue;
+        expect(result.detail, key).toContain('stable id');
+      }
+    });
 
     it('a kdyby přesto prošlo, `ruleKeyFault` nad výsledkem to musí vidět', () => {
       // Dřív vracela nad poškozeným světem `null` — tedy „všechno v pořádku" nad

@@ -21,6 +21,8 @@
 
 import { z } from 'zod';
 
+import { isUnaddressableToken } from '../patch/reject';
+
 /**
  * Verze **dokumentu**, ne sníženého IR.
  *
@@ -516,10 +518,29 @@ function ruleKeyFaults(sim: unknown): RuleKeyFault[] {
   // položka, která pravidlo vůbec není (pole, `null`, číslo).
   //
   // Naměřeno na zmrazeném korpusu: 31 z 31 pravidel v create tělech nese
-  // řetězcové `id` a žádný z 25 editačních patchů se `/sim/rules` nedotýká —
-  // zúžení tedy nestojí ani jeden zmrazený záznam.
+  // řetězcové `id`, a přestože se **20 z 25** editačních patchů dotýká cest POD
+  // `/sim/rules`, celou tabulku nepřepisuje ani jeden. Zúžení tedy nestojí žádný
+  // zmrazený záznam — ověřuje to sada nad korpusem, ne tenhle komentář.
   for (const [key, rule] of Object.entries(rules as Record<string, unknown>)) {
     const pointer = `/sim/rules/${escapeToken(key)}`;
+
+    // **Klíč, který rozbor cesty odmítá, je neadresovatelný i když se `id` rovná
+    // jemu.** `resolve` zakazuje `__proto__`, `constructor` a `prototype` v každé
+    // pozici, protože je `rfc6902` přeskakuje a sáhlo by místo nich na rodiče.
+    // Pravidlo pod takovým klíčem tedy invariant formálně splní a přesto se k němu
+    // žádný patch nedostane — doslova ten stav, kterému má invariant bránit.
+    // Jednotlivá operace se odmítne už na cestě; dovnitř se to dostane přepisem
+    // celé tabulky, kde se žádný takový token neadresuje.
+    if (isUnaddressableToken(key)) {
+      faults.push(
+        ruleFault(
+          pointer,
+          rule,
+          `the rule under key "${key}" sits on a token the path parser refuses in every position, so nothing can reach it by its stable id`,
+        ),
+      );
+      continue;
+    }
 
     if (rule === null || typeof rule !== 'object' || Array.isArray(rule)) {
       faults.push(

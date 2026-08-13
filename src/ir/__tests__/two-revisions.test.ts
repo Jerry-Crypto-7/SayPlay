@@ -748,6 +748,45 @@ describe('vadná operace je i tady odmítnutí, ne výjimka', () => {
     expect(result.detail).toContain('threw');
   });
 
+  /**
+   * **A `message` se smí přečíst jen jednou.**
+   *
+   * `error.message` je getter a nic nezaručuje, že dvě čtení vrátí totéž. Kontrola
+   * typu na prvním čtení a návrat z druhého tedy umí propustit hodnotu, která
+   * řetězec není — a šablona u volajícího na ní vyhodí. Zase z `catch` bloku,
+   * jehož jediný kontrakt je pád nepustit ven.
+   */
+  it('a to i když `message` vrací pokaždé něco jiného', () => {
+    class Stateful extends Error {
+      private reads = 0;
+      override get message(): string {
+        this.reads += 1;
+        // Druhé čtení vrátí objekt, který na převod na řetězec vyhodí.
+        return this.reads === 1
+          ? 'ok'
+          : ({
+              toString() {
+                throw new Error('boom');
+              },
+            } as unknown as string);
+      }
+    }
+
+    const operation = {
+      op: 'replace',
+      path: '/state/slots',
+      get value(): never {
+        throw new Stateful();
+      },
+    } as unknown as Operation;
+
+    let result: ReturnType<typeof commitPart> | undefined;
+    expect(() => {
+      result = commitPart(world, { part: 'sim', baseRevision: 0, operations: [operation] });
+    }).not.toThrow();
+    expect(result?.verdict).toBe('REJECTED');
+  });
+
   it('a smíšený požadavek si u toho udrží commitnutý `look`', () => {
     const hostile = new Proxy({}, { ownKeys() { throw new Error('ownKeys trap'); } });
     let mixed: ReturnType<typeof commitMixed> | undefined;
