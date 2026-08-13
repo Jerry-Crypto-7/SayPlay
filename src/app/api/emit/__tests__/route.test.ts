@@ -18,7 +18,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { ENVELOPE_ANNOTATIONS, simHashOf, validateLook, worldDocSchema } from '../../../../ir/worlddoc';
-import { POST } from '../route';
+import { MAX_BODY_BYTES, POST, readBody } from '../route';
 
 interface FrozenContract {
   readonly id: string;
@@ -177,6 +177,91 @@ describe('celá zmrazená create sada projde endpointem', () => {
       }
     }
   });
+});
+
+describe('čtení těla je ohraničené velikostí i časem', () => {
+  /**
+   * Pošle `prefixBytes` a pak **navždy mlčí**, aniž by stream zavřel.
+   *
+   * Tohle je ten klient z nálezu: zůstane pod stropem, takže velikostní mez se
+   * neuplatní nikdy, a jediné, co ho může utnout, jsou hodiny.
+   */
+  function stalling(prefixBytes: number): ReadableStream<Uint8Array> {
+    let sent = false;
+    return new ReadableStream({
+      pull(controller) {
+        if (!sent) {
+          sent = true;
+          if (prefixBytes > 0) controller.enqueue(new Uint8Array(prefixBytes));
+          return undefined;
+        }
+        // Nikdy se nedokončí — `read()` tedy visí, přesně jako na síti.
+        return new Promise<void>(() => undefined);
+      },
+    });
+  }
+
+  /** Stream, který sype dál a dál. Přeteče dřív, než dojdou hodiny. */
+  function flooding(chunkBytes: number): ReadableStream<Uint8Array> {
+    return new ReadableStream({
+      pull(controller) {
+        controller.enqueue(new Uint8Array(chunkBytes));
+      },
+    });
+  }
+
+  function streamed(body: ReadableStream<Uint8Array>): Request {
+    return new Request('http://127.0.0.1/api/emit', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body,
+      // Node vyžaduje duplex u těla, které je stream.
+      duplex: 'half',
+    } as RequestInit & { duplex: 'half' });
+  }
+
+  it('nekonečný stream POD stropem skončí na deadlinu, ne až na timeoutu Node', async () => {
+    // **Tohle je ta půlka, kterou první verze deadlinu neuměla.** Armovala ho až
+    // při přetečení, takže 1 kB kusy do nezavřeného streamu deadline nikdy
+    // nenaarmovaly a handler visel do výchozích 300 s `requestTimeout`.
+    const started = Date.now();
+    const read = await readBody(streamed(stalling(1024)), 60);
+    expect(read.ok).toBe(false);
+    expect(!read.ok && read.reason).toBe('TIMEOUT');
+    expect(Date.now() - started).toBeLessThan(2_000);
+  });
+
+  it('mlčící stream skončí taky — deadline neběží na kusech, ale na hodinách', async () => {
+    const read = await readBody(streamed(stalling(0)), 60);
+    expect(read.ok).toBe(false);
+    expect(!read.ok && read.reason).toBe('TIMEOUT');
+  });
+
+  it('stream NAD stropem se odliší jako `TOO_LARGE`, ne `TIMEOUT`', async () => {
+    // Dvě různé příčiny, dva různé kódy: 413 mluví o velikosti, 408 o čase.
+    // Kdyby splynuly, klient přes strop by dostal radu „zkus to pomaleji".
+    const read = await readBody(streamed(flooding(MAX_BODY_BYTES + 1)), 60);
+    expect(read.ok).toBe(false);
+    expect(!read.ok && read.reason).toBe('TOO_LARGE');
+  });
+
+  it('legální tělo se o deadline neopře a projde celé', async () => {
+    // Polarita. Bez ní by testy výš splnil i `readBody`, který odmítá vždycky.
+    const read = await readBody(
+      new Request('http://127.0.0.1/api/emit', { method: 'POST', body: '{"promptId":"C01"}' }),
+      60,
+    );
+    expect(read.ok).toBe(true);
+    expect(read.ok && read.text).toBe('{"promptId":"C01"}');
+  });
+
+  it('deadline je zapojený do `POST`, ne jen do pomocné funkce', async () => {
+    // `readBody` se dá otestovat samo a pořád být v handleru odpojené. Tenhle
+    // případ jede přes `POST` a s produkční hodnotou, takže platí i to spojení.
+    const response = await POST(streamed(stalling(0)));
+    expect(response.status).toBe(408);
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe('BODY_TIMEOUT');
+  }, 15_000);
 });
 
 describe('stavový kontrakt', () => {

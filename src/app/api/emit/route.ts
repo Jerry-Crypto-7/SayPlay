@@ -75,25 +75,34 @@ export const runtime = 'nodejs';
  * bez tohohle by se libovolně velký POST celý nabufferoval dřív, než se vůbec
  * podíváme na `promptId`. Legální požadavek je jedno krátké id.
  */
-const MAX_BODY_BYTES = 64 * 1024;
+export const MAX_BODY_BYTES = 64 * 1024;
 
 /**
- * Jak dlouho se ještě dočítá tělo, které už je za stropem.
+ * Strop **času** na přečtení celého těla, ne jen jeho přebytku.
  *
- * Paměť ohraničuje `MAX_BODY_BYTES`, čas neohraničoval nic: nekonečný chunked
- * POST po jednom bajtu držel handler až do výchozích 300 s `requestTimeout`
- * Node, protože smyčka čeká na `reader.read()` a hodiny se v ní nikdo neptá.
+ * Paměť ohraničuje `MAX_BODY_BYTES`, čas neohraničovalo nic: nekonečný chunked
+ * POST držel handler až do výchozích 300 s `requestTimeout` Node, protože
+ * smyčka čeká na `reader.read()` a hodiny se v ní nikdo neptá.
+ *
+ * **Musí to platit i POD stropem, a to je oprava první, poloviční verze.** Ta
+ * armovala deadline až v okamžiku přetečení, takže stačil jeden kilobajtový kus
+ * a nezavřený stream: nikdy se nepřeteklo, deadline se nenaarmoval a handler
+ * visel dál — táž denial, jen za 1/64 odeslaných bajtů. Velikost a čas jsou dvě
+ * nezávislé meze a nesmí se jedna podmiňovat druhou.
+ *
+ * Legální požadavek je jedno krátké id, takže 5 s je řádově nad čímkoli, co
+ * poctivý klient potřebuje.
  *
  * Za deadlinem se zbytek **zruší**, přestože to je přesně ta cesta, kterou
- * docblock `readBody` popisuje jako škodlivou. Je to vědomá výměna a platí jen
- * tady: rozsynchronizované keep-alive spojení se týká klienta, který už dávno
- * překročil strop a pokračuje; zdržený handler se týká všech ostatních.
+ * docblock `readBody` popisuje jako škodlivou. Je to vědomá výměna: rozsynchro-
+ * nizované keep-alive spojení se týká klienta, který posílá tělo pět sekund;
+ * zdržený handler se týká všech ostatních.
  *
  * **Wall-clock je tu legální.** Zákaz `Date.now()` z `CLAUDE.md` platí na
  * replay cestě, kde je simulovaný tik jedinou jednotkou. Tohle je čtení HTTP
  * těla — do hashovaného stavu z něj nevstupuje nic.
  */
-const DRAIN_DEADLINE_MS = 5_000;
+export const BODY_DEADLINE_MS = 5_000;
 
 type Stage = 'schema' | 'references' | 'lowering' | 'witness' | 'look' | 'declined';
 
@@ -147,35 +156,38 @@ function corpusUnavailable(requestId: string, failure: ClientFailure): Response 
  * do timeoutu, zatímco krátký prošel. Vypadá to jako vada klienta a není —
  * spojení rozsynchronizuje server.
  */
-async function readBody(request: Request): Promise<{ ok: true; text: string } | { ok: false }> {
+export type BodyRead = { ok: true; text: string } | { ok: false; reason: 'TOO_LARGE' | 'TIMEOUT' };
+
+export async function readBody(request: Request, deadlineMs = BODY_DEADLINE_MS): Promise<BodyRead> {
   if (request.body === null) return { ok: true, text: '' };
   const reader = request.body.getReader();
+  // **Jedny hodiny na celé čtení**, naarmované hned. Ne až při přetečení: pod
+  // stropem se nepřeteče nikdy, takže podmíněný deadline neplatí zrovna tam,
+  // kde je nejlevnější ho obejít.
+  const readUntil = Date.now() + deadlineMs;
   let chunks: Uint8Array[] = [];
   let size = 0;
   let overflowed = false;
-  /** Nastaví se až při přetečení — legální tělo se o hodiny neopírá vůbec. */
-  let drainUntil = 0;
 
   for (;;) {
-    const chunk = overflowed ? await raceDeadline(reader.read(), drainUntil - Date.now()) : await reader.read();
+    const chunk = await raceDeadline(reader.read(), readUntil - Date.now());
     if (chunk === null) {
-      // Deadline. Zbytek se zruší; viz `DRAIN_DEADLINE_MS`, proč zrovna tady.
+      // Zbytek se zruší; viz `BODY_DEADLINE_MS`, proč zrovna tady.
       await reader.cancel().catch(() => undefined);
-      return { ok: false };
+      return { ok: false, reason: overflowed ? 'TOO_LARGE' : 'TIMEOUT' };
     }
     if (chunk.done) break;
     size += chunk.value.byteLength;
     if (size > MAX_BODY_BYTES) {
       if (!overflowed) {
         overflowed = true;
-        drainUntil = Date.now() + DRAIN_DEADLINE_MS;
         chunks = [];
       }
       continue;
     }
     chunks.push(chunk.value);
   }
-  return overflowed ? { ok: false } : { ok: true, text: Buffer.concat(chunks).toString('utf8') };
+  return overflowed ? { ok: false, reason: 'TOO_LARGE' } : { ok: true, text: Buffer.concat(chunks).toString('utf8') };
 }
 
 /** `null` znamená, že vypršel deadline dřív, než dorazil další kus. */
@@ -200,13 +212,21 @@ export async function POST(request: Request): Promise<Response> {
   return withRequest(requestId, async () => {
     const raw = await readBody(request);
     if (!raw.ok)
-      return Response.json(
-        {
-          requestId,
-          error: { code: 'PAYLOAD_TOO_LARGE', message: `request body exceeds ${MAX_BODY_BYTES} bytes` },
-        },
-        { status: 413 },
-      );
+      return raw.reason === 'TOO_LARGE'
+        ? Response.json(
+            {
+              requestId,
+              error: { code: 'PAYLOAD_TOO_LARGE', message: `request body exceeds ${MAX_BODY_BYTES} bytes` },
+            },
+            { status: 413 },
+          )
+        : Response.json(
+            {
+              requestId,
+              error: { code: 'BODY_TIMEOUT', message: `request body did not arrive within ${BODY_DEADLINE_MS} ms` },
+            },
+            { status: 408 },
+          );
 
     let body: unknown;
     try {
