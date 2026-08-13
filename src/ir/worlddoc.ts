@@ -429,28 +429,49 @@ export function unhashableValues(
  * a POKUD položka nese řetězcové `id`, musí se ty dva rovnat.
  */
 export function ruleKeyFault(sim: unknown): UnhashableIssue | null {
-  return ruleKeyFaults(sim)[0] ?? null;
+  return ruleKeyFaults(sim)[0]?.issue ?? null;
 }
 
 /**
  * **Jen ta poškození, která patch PŘINESL** — ne ta, která ve světě už ležela.
  *
- * Kontrola nad samotným draftem nezná rozdíl mezi „tohle přinesl patch" a „tohle
- * tam bylo", a rozdíl je zásadní: svět uložený s rozejitým klíčem by jinak odmítl
- * **každý** `sim` patch — včetně toho, který ho opravuje (`move /rules/- →
- * /rules/win`). `commitPart` je jediná zapisovací cesta do `sim`, takže by z něj
- * takový svět udělal slepou uličku bez cesty ven, a to za stav, který nezpůsobil.
+ * Kontrola nad samotným draftem ten rozdíl nezná, a je zásadní: svět uložený
+ * s rozejitým klíčem by jinak odmítl **každý** `sim` patch — včetně toho, který ho
+ * opravuje (`move /rules/- → /rules/win`). `commitPart` je jediná zapisovací cesta
+ * do `sim`, takže by z něj takový svět udělal slepou uličku bez cesty ven, a to za
+ * stav, který ten patch nezpůsobil. Blokovat nesouvisející úpravy adresovatelnost
+ * stejně nevrátí — vrátit ji umí jedině oprava, a ta musí projít.
  *
- * Blokovat nesouvisející úpravy adresovatelnost stejně nevrátí — poškození už
- * nastalo. Vrátit ji umí jedině oprava, a ta musí projít. Rovná se proto MNOŽINY:
- * odmítá se pointer, který je v draftu a ve `stored` nebyl.
+ * **Porovnává se identita vady, ne řetězec pointeru.** Samotný pointer nestačí
+ * a je to díra, ne detail: pod klíčem, který už provinilý byl, by se dalo
+ * beztrestně uložit **jiné** pravidlo. `move /rules/unlock → /rules/-` nad světem,
+ * kde `-` už něco drží, tak vezme pravidlo, které adresovatelné BYLO, a udělá
+ * z něj neadresovatelné — množina pointerů se přitom nezmění. Do identity proto
+ * patří i `id` provinilého pravidla.
+ *
+ * U pole žádné jednotlivé pravidlo identitu nemá — vadná je celá tabulka naráz,
+ * takže má jednu společnou. Přidat pravidlo do tabulky, která už je pole, tím
+ * projde: neadresovatelné bylo i před tím patchem a žádné dosud adresovatelné se
+ * nerozbilo. Převod záznamu NA pole je naopak nový pointer, tedy odmítnutí.
  */
 export function introducedRuleKeyFault(stored: unknown, draft: unknown): UnhashableIssue | null {
-  const before = new Set(ruleKeyFaults(stored).map((fault) => fault.pointer));
-  return ruleKeyFaults(draft).find((fault) => !before.has(fault.pointer)) ?? null;
+  const before = new Set(ruleKeyFaults(stored).map(identityOf));
+  return ruleKeyFaults(draft).find((fault) => !before.has(identityOf(fault)))?.issue ?? null;
 }
 
-function ruleKeyFaults(sim: unknown): UnhashableIssue[] {
+interface RuleKeyFault {
+  readonly pointer: string;
+  /** `id` provinilého pravidla; u vadné celé tabulky ho jednotlivé pravidlo nemá. */
+  readonly ruleId: string | null;
+  readonly issue: UnhashableIssue;
+}
+
+/** `JSON.stringify` místo spojovacího znaku — dvojice se nedá srazit obsahem klíče. */
+function identityOf(fault: RuleKeyFault): string {
+  return JSON.stringify([fault.pointer, fault.ruleId]);
+}
+
+function ruleKeyFaults(sim: unknown): RuleKeyFault[] {
   const rules = (sim as { readonly rules?: unknown } | null)?.rules;
   if (rules === null || typeof rules !== 'object') return [];
 
@@ -467,24 +488,30 @@ function ruleKeyFaults(sim: unknown): UnhashableIssue[] {
   // nejsou, takže se ani žádné adresování nelomí.
   if (Array.isArray(rules))
     return [
-      issue(
-        '/sim/rules',
-        'the rule table is an array, so every rule is filed under an index — a patch addressing any of them by its stable id would miss a rule that exists',
-      ),
+      {
+        pointer: '/sim/rules',
+        ruleId: null,
+        issue: issue(
+          '/sim/rules',
+          'the rule table is an array, so every rule is filed under an index — a patch addressing any of them by its stable id would miss a rule that exists',
+        ),
+      },
     ];
 
-  const faults: UnhashableIssue[] = [];
+  const faults: RuleKeyFault[] = [];
 
   for (const [key, rule] of Object.entries(rules as Record<string, unknown>)) {
     if (rule === null || typeof rule !== 'object' || Array.isArray(rule)) continue;
     const id = (rule as { readonly id?: unknown }).id;
     if (typeof id !== 'string' || id === key) continue;
-    faults.push(
-      issue(
+    faults.push({
+      pointer: `/sim/rules/${escapeToken(key)}`,
+      ruleId: id,
+      issue: issue(
         `/sim/rules/${escapeToken(key)}`,
         `rule "${id}" is filed under key "${key}" — a patch addressing it by its stable id would miss a rule that exists`,
       ),
-    );
+    });
   }
   return faults;
 }

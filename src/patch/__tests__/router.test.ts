@@ -678,6 +678,73 @@ describe('rozhodnutí T22: pravidlo musí ležet pod svým `id`', () => {
       if (result.verdict !== 'REJECTED') return;
       expect(result.pointer).toBe('/sim/rules/late');
     });
+
+    /**
+     * **A druhý směr téhož: JINÉ pravidlo pod klíčem, který provinilý už byl.**
+     *
+     * Tenhle směr je ten těžší a rozdíl pointerů ho nevidí — množina se nezmění,
+     * protože klíč `-` v ní byl i předtím. Přesto je to poškození, které přinesl
+     * patch: `move` sem vezme pravidlo, které adresovatelné BYLO, a udělá z něj
+     * neadresovatelné. Proto se porovnává dvojice (klíč, `id`), ne klíč.
+     */
+    it('a stejně tak JINÉ pravidlo uložené pod už provinilý klíč', () => {
+      // Celou cestou, tedy včetně routeru — souřadnice jsou zakotvené v dokumentu
+      // (`/sim/rules/-`) přesně jak přijdou od modelu, ne už strhnuté na část.
+      const smuggled = { ...(rule as Record<string, unknown>), id: 'smuggled' };
+      const cases: readonly (readonly [string, Operation])[] = [
+        ['add', { op: 'add', path: '/sim/rules/-', value: smuggled } as Operation],
+        ['copy', { op: 'copy', from: '/sim/rules/unlock', path: '/sim/rules/-' } as Operation],
+        ['move', { op: 'move', from: '/sim/rules/unlock', path: '/sim/rules/-' } as Operation],
+      ];
+
+      for (const [name, operation] of cases) {
+        const routing = routePatch({ operations: [operation] });
+        expect(routing.verdict, name).toBe('ROUTED');
+        if (routing.verdict !== 'ROUTED') continue;
+        expect(routing.patches[0].part, name).toBe('sim');
+
+        const result = commitRouted(bentKey(), routing.patches[0]);
+        expect(result.verdict, name).toBe('REJECTED');
+        if (result.verdict !== 'REJECTED') continue;
+        expect(result.pointer, name).toBe('/sim/rules/-');
+      }
+    });
+
+    it('a přestěhovat zděděnou vadu pod JINÝ špatný klíč se taky odmítne', () => {
+      // Tohle je ta konzervativní půlka rozhodnutí a je vypsaná schválně: `win` je
+      // neadresovatelný před patchem i po něm, takže se nic dosud funkčního
+      // nerozbilo a tolerovat by se to dalo. Netoleruje se, protože pravidlo „ulož
+      // ho pod jeho `id`" má zůstat bezpodmínečné — přestěhovat vadu jinam není
+      // oprava. Oprava vyrobí nula nálezů a projde, jak ukazují testy výš.
+      //
+      // Pinuje se to proto, že bez téhle aserce nedrží pointerová půlka identity
+      // vůbec nic (ověřeno mutací: identita jen podle `id` projde beze změny).
+      const world = bentKey();
+      const result = commitPart(world, {
+        part: 'sim',
+        baseRevision: world.simRevision,
+        operations: [{ op: 'move', from: '/rules/-', path: '/rules/stillWrong' } as Operation],
+      });
+      expect(result.verdict).toBe('REJECTED');
+      if (result.verdict !== 'REJECTED') return;
+      expect(result.pointer).toBe('/sim/rules/stillWrong');
+    });
+
+    it('a `move` pod provinilý klíč nesmí projít ani proto, že tam něco bylo', () => {
+      // Nejostřejší varianta předchozího případu, vypsaná zvlášť: `unlock` je před
+      // patchem adresovatelný a po něm by nebyl. Svět je po takovém commitu horší,
+      // než byl — přesně to, co „toleruj jen zděděné" tolerovat nesmí.
+      const world = bentKey();
+      expect(ruleKeyFault(world.sim)?.pointer).toBe('/sim/rules/-');
+      expect((world.sim as { rules: Record<string, unknown> }).rules.unlock).toBeDefined();
+
+      const result = commitPart(world, {
+        part: 'sim',
+        baseRevision: world.simRevision,
+        operations: [{ op: 'move', from: '/rules/unlock', path: '/rules/-' } as Operation],
+      });
+      expect(result.verdict).toBe('REJECTED');
+    });
   });
 });
 
