@@ -429,8 +429,30 @@ export function unhashableValues(
  * a POKUD položka nese řetězcové `id`, musí se ty dva rovnat.
  */
 export function ruleKeyFault(sim: unknown): UnhashableIssue | null {
+  return ruleKeyFaults(sim)[0] ?? null;
+}
+
+/**
+ * **Jen ta poškození, která patch PŘINESL** — ne ta, která ve světě už ležela.
+ *
+ * Kontrola nad samotným draftem nezná rozdíl mezi „tohle přinesl patch" a „tohle
+ * tam bylo", a rozdíl je zásadní: svět uložený s rozejitým klíčem by jinak odmítl
+ * **každý** `sim` patch — včetně toho, který ho opravuje (`move /rules/- →
+ * /rules/win`). `commitPart` je jediná zapisovací cesta do `sim`, takže by z něj
+ * takový svět udělal slepou uličku bez cesty ven, a to za stav, který nezpůsobil.
+ *
+ * Blokovat nesouvisející úpravy adresovatelnost stejně nevrátí — poškození už
+ * nastalo. Vrátit ji umí jedině oprava, a ta musí projít. Rovná se proto MNOŽINY:
+ * odmítá se pointer, který je v draftu a ve `stored` nebyl.
+ */
+export function introducedRuleKeyFault(stored: unknown, draft: unknown): UnhashableIssue | null {
+  const before = new Set(ruleKeyFaults(stored).map((fault) => fault.pointer));
+  return ruleKeyFaults(draft).find((fault) => !before.has(fault.pointer)) ?? null;
+}
+
+function ruleKeyFaults(sim: unknown): UnhashableIssue[] {
   const rules = (sim as { readonly rules?: unknown } | null)?.rules;
-  if (rules === null || typeof rules !== 'object') return null;
+  if (rules === null || typeof rules !== 'object') return [];
 
   // **Pole je vada celé tabulky, ne jednoho klíče** — a je to přesně ten tvar v1,
   // kvůli kterému se korpus mrazil na v2. Pod polem leží každé pravidlo pod
@@ -444,21 +466,27 @@ export function ruleKeyFault(sim: unknown): UnhashableIssue | null {
   // záznam. Chybějící `rules` a `null` zůstávají bez nálezu — tam žádná pravidla
   // nejsou, takže se ani žádné adresování nelomí.
   if (Array.isArray(rules))
-    return issue(
-      '/sim/rules',
-      'the rule table is an array, so every rule is filed under an index — a patch addressing any of them by its stable id would miss a rule that exists',
-    );
+    return [
+      issue(
+        '/sim/rules',
+        'the rule table is an array, so every rule is filed under an index — a patch addressing any of them by its stable id would miss a rule that exists',
+      ),
+    ];
+
+  const faults: UnhashableIssue[] = [];
 
   for (const [key, rule] of Object.entries(rules as Record<string, unknown>)) {
     if (rule === null || typeof rule !== 'object' || Array.isArray(rule)) continue;
     const id = (rule as { readonly id?: unknown }).id;
     if (typeof id !== 'string' || id === key) continue;
-    return issue(
-      `/sim/rules/${escapeToken(key)}`,
-      `rule "${id}" is filed under key "${key}" — a patch addressing it by its stable id would miss a rule that exists`,
+    faults.push(
+      issue(
+        `/sim/rules/${escapeToken(key)}`,
+        `rule "${id}" is filed under key "${key}" — a patch addressing it by its stable id would miss a rule that exists`,
+      ),
     );
   }
-  return null;
+  return faults;
 }
 
 export function validateLook(look: unknown): LookVerdict {

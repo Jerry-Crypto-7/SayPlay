@@ -599,51 +599,85 @@ describe('rozhodnutí T22: pravidlo musí ležet pod svým `id`', () => {
     expect(result.detail).toContain('stable id');
   });
 
-  it('a rovnou po něm je vidět, PROČ se to musí zastavit u commitu tabulky', () => {
-    // Charakterizace té škody, ne jen verdikt nad ní. Kdyby se tabulka jako pole
-    // commitla, je svět **trvale nepatchovatelný**: odmítnutí dostane až DALŠÍ
-    // patch, ten, který nic špatného nedělá. Proto se tu měří i adresát —
-    // odmítnutí musí ukázat na uložený svět, ne na příchozí operaci, jinak model
-    // opravuje patch, který za nic nemůže.
-    const asArray = structuredClone(C01.sim) as { rules: unknown };
-    asArray.rules = [rule];
-    const bent = worldDocSchema.safeParse(sealSimHash({ ...C01, sim: asArray }));
-    if (!bent.success) throw new Error('svět s polem se nedal zapečetit');
+  /**
+   * **Odmítá se to, co patch PŘINESL — ne stav, který zdědil.**
+   *
+   * Kontrola nad samotným draftem tenhle rozdíl nezná, a stojí to víc, než se zdá:
+   * `commitPart` je jediná zapisovací cesta do `sim`, takže svět, který rozejitý
+   * klíč už nesl, by odmítl **každý** patch — včetně toho, který ho opravuje.
+   * Slepá ulička bez cesty ven, za stav, který ten patch nezpůsobil.
+   *
+   * Blokovat nesouvisející úpravy adresovatelnost stejně nevrátí. Vrátit ji umí
+   * jedině oprava, a ta musí projít.
+   */
+  describe('a rozdíl mezi zděděnou a přinesenou vadou', () => {
+    /** Uložený svět s rozejitým klíčem — projde schématem i `migrateWorldDoc`. */
+    const bentKey = (): WorldDoc => {
+      const sim = structuredClone(C01.sim) as { rules: Record<string, unknown> };
+      sim.rules['-'] = sim.rules.win;
+      delete sim.rules.win;
+      const parsed = worldDocSchema.safeParse(sealSimHash({ ...C01, sim }));
+      if (!parsed.success) throw new Error('svět s rozejitým klíčem se nedal zapečetit');
+      return parsed.data;
+    };
 
-    const followUp = commitPart(bent.data, {
-      part: 'sim',
-      baseRevision: bent.data.simRevision,
-      operations: [{ op: 'replace', path: '/rules/lose/priority', value: 1 } as Operation],
+    /** Uložený svět s tabulkou jako polem — tvar v1, taky projde schématem. */
+    const bentTable = (): WorldDoc => {
+      const sim = structuredClone(C01.sim) as { rules: unknown };
+      sim.rules = [rule];
+      const parsed = worldDocSchema.safeParse(sealSimHash({ ...C01, sim }));
+      if (!parsed.success) throw new Error('svět s polem se nedal zapečetit');
+      return parsed.data;
+    };
+
+    it('svět, který vadu zdědil, jde OPRAVIT — jinak je to slepá ulička', () => {
+      const repair = commitPart(bentKey(), {
+        part: 'sim',
+        baseRevision: bentKey().simRevision,
+        operations: [{ op: 'move', from: '/rules/-', path: '/rules/win' } as Operation],
+      });
+      expect(repair.verdict).toBe('COMMITTED');
+      if (repair.verdict !== 'COMMITTED') return;
+      expect(ruleKeyFault(repair.doc.sim)).toBeNull();
     });
-    expect(followUp.verdict).toBe('REJECTED');
-    if (followUp.verdict !== 'REJECTED') return;
-    expect(followUp.expected).toContain('stored');
-    expect(followUp.pointer).toBe('/sim/rules');
-  });
 
-  it('ale vada, která ve světě ležela už předtím, se nevykáže jako vada příchozího patche', () => {
-    // Kontrola nad DRAFTEM nezná rozdíl mezi „tohle přinesl patch" a „tohle tam
-    // bylo". Uložený svět s rozejitým klíčem projde `migrateWorldDoc` jako
-    // `already current`, a pak i patch, který se `rules` vůbec nedotkne, vyjde
-    // jako odmítnutý s pointerem do `rules`. Model to přeemituje donekonečna,
-    // protože jeho patch je v pořádku. `commitChecked` má na tohle vlastní
-    // hranici (`stored` před patchem) a tahle kontrola musí sedět na její straně.
-    const bentSim = structuredClone(C01.sim) as { rules: Record<string, unknown> };
-    bentSim.rules['-'] = bentSim.rules.win;
-    delete bentSim.rules.win;
-    const bent = worldDocSchema.safeParse(sealSimHash({ ...C01, sim: bentSim }));
-    if (!bent.success) throw new Error('svět s rozejitým klíčem se nedal zapečetit');
+    it('a to i když zdědil rovnou celou tabulku jako pole', () => {
+      const table = bentTable();
+      const repair = commitPart(table, {
+        part: 'sim',
+        baseRevision: table.simRevision,
+        operations: [{ op: 'replace', path: '/rules', value: { lose: rule } } as Operation],
+      });
+      expect(repair.verdict).toBe('COMMITTED');
+      if (repair.verdict !== 'COMMITTED') return;
+      expect(ruleKeyFault(repair.doc.sim)).toBeNull();
+    });
 
-    const routing = routePatch({ operations: [{ op: 'replace', path: '/sim/grid/cell', value: 2 } as Operation] });
-    if (routing.verdict !== 'ROUTED') throw new Error('patch se nerozřadil');
+    it('a nesouvisející patch se kvůli zděděné vadě neodmítá', () => {
+      // Dřív tenhle patch vyšel jako `REJECTED` s pointerem do `/sim/rules`, kterých
+      // se ani nedotkl — model by přeemitoval donekonečna něco, co je v pořádku.
+      const routing = routePatch({ operations: [{ op: 'replace', path: '/sim/grid/cell', value: 2 } as Operation] });
+      if (routing.verdict !== 'ROUTED') throw new Error('patch se nerozřadil');
+      expect(commitRouted(bentKey(), routing.patches[0]).verdict).toBe('COMMITTED');
+    });
 
-    const result = commitRouted(bent.data, routing.patches[0]);
-    expect(result.verdict).toBe('REJECTED');
-    if (result.verdict !== 'REJECTED') return;
-    // Odmítnutí je v pořádku — takový svět opravdu patchovat nelze. Co musí sedět,
-    // je ADRESÁT: viník je uložená část, ne operace, kterou model právě poslal.
-    expect(result.expected).toContain('stored');
-    expect(result.detail).toContain('already');
+    it('ale DALŠÍ rozejitý klíč nad týmž světem se odmítne — zdědění není propustka', () => {
+      // Klíč je schválně `late`, ne `0`. Číselné klíče staví `Object.entries`
+      // dopředu, takže nad `0` by prošlo i porovnání pouhého PRVNÍHO nálezu —
+      // zděděný `-` by se posunul na druhé místo a vypadal by jako změna. `late`
+      // se řadí až za zděděný klíč, takže první nález zůstane týž a rozhodnout
+      // musí doopravdy rozdíl množin. (Ověřeno mutací: bez množin tenhle případ
+      // projde, s `0` neprojde ani ta degradovaná verze.)
+      const world = bentKey();
+      const result = commitPart(world, {
+        part: 'sim',
+        baseRevision: world.simRevision,
+        operations: [{ op: 'add', path: '/rules/late', value: rule } as Operation],
+      });
+      expect(result.verdict).toBe('REJECTED');
+      if (result.verdict !== 'REJECTED') return;
+      expect(result.pointer).toBe('/sim/rules/late');
+    });
   });
 });
 

@@ -26,8 +26,8 @@ import {
   type PatchRejection,
 } from '../patch/reject';
 import {
+  introducedRuleKeyFault,
   lookSchema,
-  ruleKeyFault,
   unhashableValues,
   simHashOf,
   simSchema,
@@ -119,24 +119,6 @@ function commitChecked(doc: WorldDoc, patch: PartPatch): RevisionResult {
       'a stored part with a JSON form',
       `the ${patch.part} part this patch targets cannot be canonicalized: ${stored[0].detail}`,
     );
-
-  // **Táž hranice i pro invariant `id == klíč`.** Kontrola nad draftem nezná rozdíl
-  // mezi „tohle přinesl patch" a „tohle tam leželo": svět uložený s rozejitým
-  // klíčem by odmítl i patch, který se `rules` vůbec nedotkne, a model by
-  // přeemitoval donekonečna něco, co je v pořádku. Odmítnout takový svět je
-  // správně — patchovat se opravdu nedá — ale odpověď musí ukázat na uloženou
-  // část, ne na příchozí operaci. `sealSimHash` dokument zapečetí bez téhle
-  // kontroly, takže sem takový svět umí přijít.
-  if (patch.part === 'sim') {
-    const storedKeys = ruleKeyFault(doc.sim);
-    if (storedKeys !== null)
-      return reject(
-        'STRUCTURE',
-        storedKeys.pointer,
-        'a stored part whose rules are filed under their own ids',
-        `the sim part this patch targets is already broken, before this patch: ${storedKeys.detail}`,
-      );
-  }
 
   // Tvar OPERACÍ dřív, než je uvidí knihovna — `patch/apply.ts` to dělá ze
   // stejného důvodu a `commitPart` ho při přebírání té struktury vynechal:
@@ -262,7 +244,12 @@ function sealPart(doc: WorldDoc, part: Part, draft: unknown): RevisionResult {
   // se nedá adresovat — odůvodnění je u `ruleKeyFault`. Kontrola stojí až tady,
   // protože se ptá na tvar VÝSLEDKU, ne na tvar operace: `replace` na `id`
   // rozejde klíč s `id` stejně spolehlivě jako `add /rules/-`.
-  const keyFault = ruleKeyFault(shape.data);
+  //
+  // Ptá se ale **proti uložené části**, ne jen na draft. Odmítá se tím jen to, co
+  // patch přinesl; svět, který už rozejitý klíč nesl, zůstane opravitelný — jinak
+  // by ho tahle kontrola zavřela i před patchem, který ho spravuje, a `commitPart`
+  // je jediná cesta dovnitř.
+  const keyFault = introducedRuleKeyFault(doc.sim, shape.data);
   if (keyFault !== null)
     return reject('STRUCTURE', keyFault.pointer, 'a rule filed under its own id', keyFault.detail);
 
