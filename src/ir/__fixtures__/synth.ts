@@ -55,8 +55,9 @@ function simOf(seed: number): SimPart {
   // se korpus mrazil znovu: editační patche adresují pravidla jménem
   // (`/sim/rules/open/condition/op`), zatímco pole se indexuje číslem, a vložení
   // nebo smazání pravidla u pole posune indexy všem ostatním, takže patch tiše
-  // trefí jiné pravidlo. `id` uvnitř pravidla se **rovná klíči** — korpus to tak
-  // má a `references.ts` na tom stojí.
+  // trefí jiné pravidlo. `id` uvnitř pravidla se **rovná klíči**, protože to tak
+  // má korpus — `ruleEntries` v `references.ts` na tom nestojí, u záznamu adresuje
+  // klíčem a `rule.id` čte jen ve větvi pro pole.
   return {
     layout: { kind: 'grid', width, height, levels: 1, portals: [] },
     grid: { cell: 1 },

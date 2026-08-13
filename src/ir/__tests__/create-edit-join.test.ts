@@ -393,9 +393,8 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
    * Čtyři se neaplikují a **žádný z nich nemá deklarovaný verdikt `FULFILLED`**.
    * Důvody nejsou stejné a slévat je by zakrylo to zajímavější z nich:
    *
-   * - **E06** (`FAULT`) a **E24** (`FAULT`) padají na **svém vlastním deklarovaném
-   *   defektu** — `replace` na neexistující cestě, resp. `add` na cíl, jehož rodič
-   *   ve světě není.
+   * - **E06** (`FAULT`) padá na **svém vlastním deklarovaném defektu** — `replace`
+   *   na cestu, jejíž rodič ve světě není. Jediný ze čtyř, u kterého to platí.
    * - **E19** (`ROBUST`) a **E20** (`NO_FIT`) padají na něčem jiném: jejich tělo
    *   počítá s kontejnerem tam, kde základní svět nese **skalár** (`add
    *   /sim/layout/levels/1` nad `layout.levels: 1`; `replace
@@ -403,14 +402,32 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
    *   vady jako tvar `sim.rules`, kvůli které se korpus mrazil na v2 — jen zůstala
    *   neopravená, protože `CLAUDE.md` ji vede jako **nedořešený rozpor #4(a)**
    *   a AC T2b zakazuje měnit prompty i kontrakty. Ani bezchybná emise je nesplní.
+   * - **E24** (`FAULT`) padá taky na něčem jiném, a je to ten nejzajímavější případ.
+   *   Deklarovaný defekt zní „`add` s cestou `/sim/state/counters/streak/-`, což je
+   *   **index pole na objektu**". Jenže `streak` v `C09` vůbec není
+   *   (`state.counters` nese jediné `score`), takže rozbor cesty skončí o token
+   *   dřív — `"streak" does not exist` — a k tokenu `-` se **nikdy nedostane**.
+   *   Odmítnutí je správné, deklarovaná třída ale zůstává **nezměřená**.
+   *
+   * **Důsledek, který ten mislabel schovával, a patří k rozhodnutí, ne k opravě:**
+   * `-` ani číselný token nad OBJEKTEM dnes odmítnutí nevyvolá — `resolve`
+   * (`patch/reject.ts`) u posledního tokenu na objektu vrací `null`, protože podle
+   * RFC 6901 je `-` na objektu obyčejné jméno členu a `add` ho má vytvořit. Naměřeno
+   * na nezmutovaném stromu: `add /state/counters/keys/-` se **commitne** a vyrobí
+   * člen `"-"` vedle `min`/`max`/`init`. Je to v souladu s RFC i s knihovnou, takže
+   * to není vada rozboru cesty — je to otázka, jestli si tenhle protokol nad RFC
+   * přidá vlastní zúžení (model, který mířil na append pole a trefil objekt, dostane
+   * tiše smetí místo odmítnutí). Rozhodnout to patří k **T22**, který vlastní
+   * normalizaci cest; korpus na to nemá živý oracle, protože jeho jediný svědek
+   * téhle třídy je E24 a ten k ní nedojde. Zapsáno u T22 v plánu.
    *
    * `evals/FROZEN_ANCHOR` u těch čtyř píše „zamítá je jejich vlastní deklarovaný
-   * defekt" — pro E06 a E24 to sedí, pro E19 a E20 ne. Tenhle test je od toho, aby
-   * ten rozdíl byl vidět a **měřený, ne opsaný** — proto se asertuje i pointer
-   * a důvod, ne jen jméno záznamu. Bez toho by ta oprava kotvy byla jen komentář:
-   * množina jmen i počty vyjdou stejně, i kdyby každé z těch čtyř padalo úplně
-   * jinde (ověřeno mutací — vypnutý rozbor cesty v `patch/reject.ts` nechá čtyři
-   * odmítnutí čtyřmi odmítnutími, jen z jiných dveří).
+   * defekt" — platí to tedy pro **jeden ze čtyř**, ne pro dva. Tenhle test je od
+   * toho, aby ten rozdíl byl vidět a **měřený, ne opsaný** — proto se asertuje
+   * i pointer a důvod, ne jen jméno záznamu. Bez toho by ta oprava kotvy byla jen
+   * komentář: množina jmen i počty vyjdou stejně, i kdyby každé z těch čtyř padalo
+   * úplně jinde (ověřeno mutací — vypnutý rozbor cesty v `patch/reject.ts` nechá
+   * čtyři odmítnutí čtyřmi odmítnutími, jen z jiných dveří).
    */
   it('a právě čtyři se NEaplikují — každý na svém konkrétním místě', () => {
     // Pointer je souřadnice v části, tedy už po strhnutí prefixu; `detail` je
@@ -422,8 +439,9 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
       E19: { pointer: '/layout/levels/1', detail: /runs through a primitive/ },
       // NE vlastní defekt: `replace …/actions/0/route` nad akcí, která `route` nemá.
       E20: { pointer: '/rules/patrol/actions/0/route', detail: /Value required/ },
-      // Vlastní deklarovaný defekt: cíl `add` nemá ve světě rodiče.
-      E24: { pointer: '/state/counters/streak/-', detail: /does not exist/ },
+      // NE vlastní defekt: deklarovaný je `-` nad objektem, ale `streak` v C09
+      // není, takže rozbor skončí o token dřív a k `-` se nedojde.
+      E24: { pointer: '/state/counters/streak/-', detail: /"streak" does not exist/ },
     };
 
     const rejected = edits.filter((entry) => commitEdit(entry).result.verdict === 'REJECTED');
@@ -533,7 +551,12 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
     }
     const fixture = synthWorld(20260812).sim as { rules: Record<string, { id: string }> };
     expect(Array.isArray(fixture.rules), 'synth.ts').toBe(false);
-    // `id` uvnitř pravidla se rovná klíči — korpus to tak má a `references.ts` na tom stojí.
+
+    // **`id` uvnitř pravidla se rovná klíči, protože to tak má KORPUS** — všech 13
+    // create těl nesoucích `sim.rules`, nula neshod. Produkční konzument na tom
+    // nestojí: `ruleEntries` (`references.ts`) bere u záznamu klíč přes
+    // `Object.entries` a `rule.id` čte **jen** ve větvi pro pole. Fixtura se tedy
+    // drží korpusu, ne implementace — což je celý smysl tohohle testu.
     for (const [key, rule] of Object.entries(fixture.rules)) expect(rule.id, key).toBe(key);
   });
 });
