@@ -164,6 +164,27 @@ describe('evals/frozen — žádný kontrakt neprochází mlčením', () => {
  * nahlásí další generace a všechny předchozí tagy zůstanou na místě s pravdivými
  * hashi. Tiché přemrazení tím není nemožné, je nepřehlédnutelné; a víc než to
  * lokální repo bez remote nabídnout neumí, jak říká sám marker.
+ *
+ * **Čtyři díry, které v téhle západce našlo druhé kolo brány, a jak jsou zavřené.**
+ * (1) `git log -- <cesta>` NENÍ „commity, které kdy zapsaly ten soubor" — je to
+ * zjednodušená procházka od HEADu, která u merge commitu jde jen za prvním
+ * TREESAME rodičem a druhou stranu odřízne. Šlo tedy podstrčit paralelní linii
+ * s podvrženými markery, mergnout ji tak, aby vyhrála, a skutečné commity zmizely
+ * oběma dotazům z očí. → `--full-history` na obou dotazech **plus** aserce, že
+ * commit každé generace je předkem té následující a poslední je předkem HEADu;
+ * paralelní linie tím spadne na předkovství.
+ * (2) Jméno tagu se četlo Z KOTVY (`g.tag`), takže literál `evals-frozen-v1`
+ * nebyl nikde vynucený a šlo si zvolit vlastní. → jméno je odvozené z čísla
+ * generace, ne přečtené.
+ * (3) **Z tagu se četl jen jeho TYP.** Všechny porovnávané hashe se odvozovaly
+ * z `markerCommit`, takže tag nepřidával ŽÁDNÝ nezávislý důkaz — a věta v kotvě
+ * o tom, že „anotované tagy drží kopii týchž hashů nezávisle", byla tím pádem
+ * nepravdivá. Přitom obě anotace ty hashe doopravdy nesou. → čte se **tělo
+ * anotace** a musí oba hashe obsahovat. Teprve tím je ta věta pravdivá.
+ * (4) Všechny aserce visely na neprázdném `markerCommits`, takže existoval stav,
+ * ve kterém celý blok projde prázdný. → prázdný řetěz při existující kotvě je
+ * selhání, a mělký klon se odmítne rovnou, protože nad useknutou historií se
+ * tohle ověřit NEDÁ a tichý průchod by lhal.
  */
 describe('evals/frozen — historie po uzavření freeze', () => {
   interface Generation {
@@ -174,11 +195,39 @@ describe('evals/frozen — historie po uzavření freeze', () => {
     frozenSubtreeHash: string;
   }
 
-  /** Commity, které kdy zapsaly marker, nejstarší první. Prázdné = freeze nikdy nebyl uzavřen. */
-  const markerCommits = git('log', '--reverse', '--format=%H', '--', 'evals/frozen/FROZEN')
+  const anchorExists = existsSync(anchorPath);
+  const anchor = anchorExists
+    ? (JSON.parse(readFileSync(anchorPath, 'utf8')) as { generations?: Generation[] })
+    : null;
+
+  /**
+   * Commity, které kdy zapsaly marker, nejstarší první.
+   *
+   * `--full-history` je tu nosné, ne kosmetické: bez něj git u merge commitu
+   * prořezává větve, které vypadají TREESAME, a celá vedlejší linie — včetně
+   * commitů, které marker doopravdy zapsaly — z odpovědi zmizí.
+   */
+  const markerCommits = git('log', '--full-history', '--reverse', '--format=%H', '--', 'evals/frozen/FROZEN')
     .split('\n')
     .filter(Boolean);
   const freezeEverClosed = markerCommits.length > 0;
+
+  /** Je `a` předek `b` (nebo `b` sám)? */
+  const isAncestor = (a: string, b: string): boolean => {
+    if (a === b) return true;
+    try {
+      git('merge-base', '--is-ancestor', a, b);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  // Nad useknutou historií se řetěz ověřit NEDÁ. Tiše projít by znamenalo vydat
+  // „nevím" za „v pořádku" — a to je přesně ta záměna, kterou má tenhle blok lovit.
+  it('historie je úplná, jinak se tenhle blok nedá vyhodnotit', () => {
+    expect(git('rev-parse', '--is-shallow-repository'), 'mělký klon — řetěz generací nejde ověřit').toBe('false');
+  });
 
   // Autoritou je HISTORIE, ne přítomnost souboru. Původní znění gatovalo celý
   // blok na `existsSync(anchorPath)`, takže SMAZÁNÍ kotvy z něj udělalo no-op —
@@ -186,44 +235,74 @@ describe('evals/frozen — historie po uzavření freeze', () => {
   // Přemrazení v2 tou dírou samo prošlo; tohle ji zavírá.
   it('kotva existuje, jakmile historie ukazuje, že FROZEN kdy vznikl', () => {
     if (!freezeEverClosed) return;
-    expect(existsSync(anchorPath), 'FROZEN v historii je, ale kotva chybí — freeze byl odzbrojen').toBe(true);
+    expect(anchorExists, 'FROZEN v historii je, ale kotva chybí — freeze byl odzbrojen').toBe(true);
   });
 
   it('marker FROZEN existuje, jakmile existuje kotva', () => {
-    if (!existsSync(anchorPath)) return;
+    if (!anchorExists) return;
     expect(existsSync(markerPath), 'kotva existuje, ale marker FROZEN chybí — freeze byl rozmrazen').toBe(true);
+  });
+
+  // Bez tohohle by prázdný `generations` udělal ze všech asercí níž vakuum.
+  it('kotva, která existuje, nahlašuje aspoň jednu generaci', () => {
+    if (!anchorExists) return;
+    expect((anchor?.generations ?? []).length, 'kotva existuje, ale nehlásí žádnou generaci').toBeGreaterThan(0);
   });
 
   it('řetěz generací se přesně kryje s commity, které kdy zapsaly FROZEN', () => {
     if (!freezeEverClosed) return;
 
-    const anchor = JSON.parse(readFileSync(anchorPath, 'utf8')) as { generations?: Generation[] };
-    const generations = anchor.generations ?? [];
     // Nerovnost tady znamená jedno ze dvou: buď se korpus přemrazil a nikdo to
     // nenahlásil, nebo někdo z řetězu vyškrtl generaci, aby zmizela její vada.
     expect(
-      generations.map((g) => g.markerCommit),
+      (anchor?.generations ?? []).map((g) => g.markerCommit),
       'seznam nahlášených generací nesouhlasí s commity, které zapsaly FROZEN',
     ).toEqual(markerCommits);
   });
 
-  it('každá nahlášená generace má anotovaný tag se sedícími tree hashi', () => {
+  it('generace tvoří jednu linii, která končí u HEADu', () => {
     if (!freezeEverClosed) return;
 
-    const anchor = JSON.parse(readFileSync(anchorPath, 'utf8')) as { generations?: Generation[] };
-    for (const g of anchor.generations ?? []) {
+    const generations = anchor?.generations ?? [];
+    for (let i = 1; i < generations.length; i += 1) {
+      expect(
+        isAncestor(generations[i - 1].markerCommit, generations[i].markerCommit),
+        `generace ${generations[i - 1].generation} není předkem generace ${generations[i].generation} — řetěz je slepený ze dvou linií`,
+      ).toBe(true);
+    }
+    const newest = generations[generations.length - 1];
+    if (!newest) return;
+    expect(
+      isAncestor(newest.markerCommit, git('rev-parse', 'HEAD')),
+      'poslední generace neleží v historii HEADu',
+    ).toBe(true);
+  });
+
+  it('každá generace má anotovaný tag pod svým jménem a se sedícími tree hashi', () => {
+    if (!freezeEverClosed) return;
+
+    for (const g of anchor?.generations ?? []) {
+      // Jméno se ODVOZUJE z čísla generace. Kdyby se četlo z kotvy, mohl by si
+      // ho podvrh zvolit a `evals-frozen-v1` by nikde vynucený nebyl.
+      const name = `evals-frozen-v${g.generation}`;
+      expect(g.tag, `generace ${g.generation} hlásí tag ${g.tag}`).toBe(name);
       // Lightweight tag by šlo přepsat bez stopy a anotace by neexistovala —
       // právě v ní je zapsaná vada té generace.
-      expect(git('cat-file', '-t', g.tag), `${g.tag} není anotovaný tag`).toBe('tag');
-      expect(git('rev-parse', `${g.tag}^{commit}`), `${g.tag} neukazuje na svůj markerový commit`).toBe(
-        g.markerCommit,
-      );
-      expect(git('rev-parse', `${g.markerCommit}^{tree}`), `${g.tag}: tree hash nesedí`).toBe(g.treeHash);
+      expect(git('cat-file', '-t', name), `${name} není anotovaný tag`).toBe('tag');
+      expect(git('rev-parse', `${name}^{commit}`), `${name} neukazuje na svůj markerový commit`).toBe(g.markerCommit);
+      expect(git('rev-parse', `${g.markerCommit}^{tree}`), `${name}: tree hash nesedí`).toBe(g.treeHash);
       // Podvrh musí lhát na dvou místech, ne na jednom: tenhle hash kryje
       // výhradně zmrazený podstrom, takže ho nezakryje změna jinde v commitu.
-      expect(git('rev-parse', `${g.markerCommit}:evals/frozen`), `${g.tag}: hash podstromu nesedí`).toBe(
+      expect(git('rev-parse', `${g.markerCommit}:evals/frozen`), `${name}: hash podstromu nesedí`).toBe(
         g.frozenSubtreeHash,
       );
+
+      // A tohle je ta NEZÁVISLÁ kopie. Bez čtení anotace přidával tag jen svůj
+      // typ a věta v kotvě o nezávislém důkazu byla nepravdivá. Porovnává se
+      // holý hash jako podřetězec, ne formát — v1 a v2 mají anotaci každý jinak.
+      const annotation = git('cat-file', '-p', name);
+      expect(annotation, `${name}: anotace nenese tree hash, tag tedy nic nedokládá`).toContain(g.treeHash);
+      expect(annotation, `${name}: anotace nenese hash podstromu`).toContain(g.frozenSubtreeHash);
     }
   });
 
@@ -231,8 +310,9 @@ describe('evals/frozen — historie po uzavření freeze', () => {
     if (!freezeEverClosed) return;
 
     const newest = markerCommits[markerCommits.length - 1];
-    expect(git('log', '-1', '--format=%H', '--', 'evals/frozen'), 'po markeru se do evals/frozen/ znovu sáhlo').toBe(
-      newest,
-    );
+    expect(
+      git('log', '--full-history', '-1', '--format=%H', '--', 'evals/frozen'),
+      'po markeru se do evals/frozen/ znovu sáhlo',
+    ).toBe(newest);
   });
 });
