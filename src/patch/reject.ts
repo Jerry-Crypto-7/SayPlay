@@ -278,7 +278,85 @@ export function pointerFault(draft: unknown, operation: Operation): PointerFault
   const onPath = resolve(operation.path, draft, inserts ? 'insert' : 'existing');
   if (onPath !== null) return onPath;
   if (operation.op !== 'move' && operation.op !== 'copy') return null;
-  return resolve(operation.from, draft, 'existing');
+  const onFrom = resolve(operation.from, draft, 'existing');
+  if (onFrom !== null) return onFrom;
+  // `copy` nic neodebírá, takže žádné indexy neposouvá.
+  return operation.op === 'move' ? movedTwice(draft, operation.from, operation.path) : null;
+}
+
+function nodeAt(doc: unknown, tokens: readonly string[]): unknown {
+  let node: unknown = doc;
+  for (const token of tokens) {
+    if (node === null || typeof node !== 'object') return undefined;
+    node = (node as Record<string, unknown>)[token];
+  }
+  return node;
+}
+
+/**
+ * `move` je jediná operace, kde se dokument **mezi svými dvěma cestami změní**.
+ *
+ * RFC 6902 §4.4 ho definuje jako *odeber na `from`, pak přidej na `path`* — takže
+ * `path` se čte na dokumentu **po** odebrání. `rfc6902` ale vyhodnotí `path`
+ * dopředu (`Pointer.evaluate` před `_remove`) a drží si živý odkaz na rodiče.
+ *
+ * Pro **poslední** token to vyjde nastejno: rodič je odkaz na to pole a klíč se
+ * použije až po odebrání, takže `move /arr/0 → /arr/1` udělá přesně to, co RFC
+ * říká. Jakmile ale `path` pokračuje **za** ten index, knihovna sestoupila do
+ * prvku, který na té pozici byl PŘED odebráním — `move /arr/0 → /arr/2/fresh`
+ * zapíše do původního `arr[2]`, zatímco RFC mluví o `arr[3]`. Ověřeno spuštěním.
+ *
+ * Tohle se nedá „spočítat správně": aplikátor je `rfc6902` a ten to udělá po
+ * svém. Jediná poctivá odpověď je operaci odmítnout — je nejednoznačná mezi dvěma
+ * čteními a tiše vybrat to knihovní je přesně ta vada, kterou celá tahle cesta
+ * řeší. Kdo to potřebuje, napíše `remove` + `add`, což význam nezamlčuje.
+ */
+function movedTwice(draft: unknown, from: string, path: string): PointerFault | null {
+  const fromTokens = tokensOf(from);
+  const pathTokens = tokensOf(path);
+
+  // RFC 6902 §4.4 doslova: „The `from` location MUST NOT be a proper prefix of
+  // the `path` location." Přesouvat hodnotu do sebe sama nemá výsledek.
+  if (pathTokens.length > fromTokens.length && fromTokens.every((token, i) => token === pathTokens[i]))
+    return {
+      pointer: path,
+      expected: 'a target outside the value being moved',
+      reason: `RFC 6902 §4.4 forbids moving a value into itself — "${from}" is a prefix of "${path}"`,
+    };
+
+  // Indexy posouvá jen odebrání z POLE.
+  const parentTokens = fromTokens.slice(0, -1);
+  const parent = nodeAt(draft, parentTokens);
+  if (!Array.isArray(parent)) return null;
+
+  // Míří `path` do téhož pole?
+  if (pathTokens.length <= parentTokens.length) return null;
+  for (let i = 0; i < parentTokens.length; i += 1) if (pathTokens[i] !== parentTokens[i]) return null;
+
+  const token = pathTokens[parentTokens.length];
+  if (token === '-') return null; // konec je konec i po odebrání
+  const index = Number(token);
+  const removed = Number(fromTokens[fromTokens.length - 1]);
+
+  if (pathTokens.length > parentTokens.length + 1) {
+    if (index < removed) return null; // prvek před odebraným se neposune
+    return {
+      pointer: path,
+      expected: `an index below ${removed}, or a target outside ${`/${parentTokens.join('/')}`}`,
+      reason: `after the move removes index ${removed}, "${token}" names a different element than it does now — rfc6902 would write into the one it names now`,
+    };
+  }
+
+  // Index je poslední token, takže se použije až po odebrání — ale mez je pak
+  // délka BEZ odebraného prvku. `rfc6902` na to nehlídá a mlčky připojí na konec.
+  const limit = parent.length - 1;
+  if (index > limit)
+    return {
+      pointer: path,
+      expected: `an index at most ${limit}`,
+      reason: `index ${token} is out of range for the array of length ${limit} that remains once the move removes "${from}"`,
+    };
+  return null;
 }
 
 export const operationSchema = z.union([

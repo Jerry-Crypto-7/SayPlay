@@ -650,6 +650,76 @@ describe('sousední patch cesta má tytéž stráže jako `ir/revision.ts`', () 
     expectUntouched(before);
   });
 
+  /**
+   * **`move` je jediná operace, kde se dokument mezi svými dvěma cestami změní.**
+   *
+   * RFC 6902 §4.4 ho čte jako *odeber na `from`, pak přidej na `path`*, takže
+   * `path` platí na dokumentu PO odebrání. `rfc6902` ale `path` vyhodnotí dopředu
+   * a drží si živý odkaz na rodiče. U posledního tokenu to vyjde nastejno (klíč
+   * se použije až po odebrání), jakmile ale `path` pokračuje **za** ten index,
+   * knihovna sestoupila do prvku, který tam byl PŘED odebráním.
+   *
+   * Ověřeno spuštěním knihovny: `move /arr/0 → /arr/2/fresh` nad
+   * `[{id:0},{id:1},{id:2},{id:3}]` zapíše `fresh` do `{id:2}`, zatímco RFC mluví
+   * o `{id:3}`.
+   */
+  it('`move`, jehož cíl vede skrz posunuté indexy, je odmítnut', () => {
+    const before = graphHash(vault);
+    const result = applyWorldPatch(vault, [
+      { op: 'move', from: '/ir/rules/0', path: '/ir/rules/2/guard' } as Operation,
+    ]);
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.detail).toContain('names a different element');
+    expectUntouched(before);
+  });
+
+  it('ale cíl PŘED odebraným indexem se neposune, takže rozbor ho nezastaví', () => {
+    // `ir/rules/0` leží před `ir/rules/2`, takže odebrání s ním nehne a obě čtení
+    // `path` splývají. Že tenhle patch nakonec neprojde schématem (pravidlo se
+    // nedá dosadit do `guard`) je jiná věc — pointuje se tu, že ho **nezastavil
+    // rozbor cesty**. Kdyby zastavil, nebyla by to mez, ale zákaz `move` uvnitř
+    // vlastního pole.
+    const result = applyWorldPatch(vault, [
+      { op: 'move', from: '/ir/rules/2', path: '/ir/rules/0/guard' } as Operation,
+    ]);
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.detail).not.toContain('names a different element');
+    expect(result.reason).not.toBe('MALFORMED_OPERATION');
+  });
+
+  it('a `move` do sebe sama zakazuje RFC 6902 §4.4 výslovně', () => {
+    const before = graphHash(vault);
+    const result = applyWorldPatch(vault, [
+      { op: 'move', from: '/ir/rules/0', path: '/ir/rules/0/guard' } as Operation,
+    ]);
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.detail).toContain('into itself');
+    expectUntouched(before);
+  });
+
+  it('a cíl `move` se měří proti délce PO odebrání', () => {
+    // `rfc6902` na to nehlídá vůbec — index za koncem mlčky připojí na konec,
+    // takže by patch dostal jiný výsledek, než o jaký si řekl.
+    const before = graphHash(vault);
+    const length = vault.ir.rules.length;
+    const result = applyWorldPatch(vault, [
+      { op: 'move', from: '/ir/rules/0', path: `/ir/rules/${length}` } as Operation,
+    ]);
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.detail).toContain('remains once the move removes');
+    expectUntouched(before);
+
+    // A index rovný délce po odebrání je legální připojení.
+    expect(
+      applyWorldPatch(vault, [
+        { op: 'move', from: '/ir/rules/0', path: `/ir/rules/${length - 1}` } as Operation,
+      ]).verdict,
+    ).toBe('COMMITTED');
+  });
+
   it('a chybějící mezičlánek se odmítne na svém tokenu, ne pádem uvnitř knihovny', () => {
     // Bez téhle kontroly dojde `rfc6902` s `parent === undefined` až na
     // `undefined['x'] = …`, tedy `TypeError` — odpověď by pak neměla pointer.
@@ -661,6 +731,32 @@ describe('sousední patch cesta má tytéž stráže jako `ir/revision.ts`', () 
     expect(result.pointer).toBe('/ir/nope/x');
     expect(result.detail).toContain('does not exist');
     expectUntouched(before);
+  });
+
+  /**
+   * **Odmítnout to musí rozbor cesty, ne až zachycený pád knihovny.**
+   *
+   * Obojí skončí jako `REJECTED`, takže test, který se ptá jen na verdikt, mezi
+   * nimi nerozliší — a přesně tak se dvě dřívější stráže tvářily živě, přestože
+   * je bylo možné smazat beze změny výsledku. Rozdíl je v odpovědi: rozbor vrátí
+   * cestu a důvod, zachycený `TypeError` vrátí prázdný pointer a text výjimky,
+   * ze kterého se nedá nic opravit.
+   */
+  it('cesta skrz primitivum má odpověď z rozboru, ne text výjimky', () => {
+    const result = applyWorldPatch(vault, [{ op: 'add', path: '/ir/limits/gridWidth/x', value: 1 } as Operation]);
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.pointer).toBe('/ir/limits/gridWidth/x');
+    expect(result.detail).toContain('runs through a primitive');
+    expect(result.detail).not.toContain('threw');
+  });
+
+  it('a kořenový pointer taky', () => {
+    const result = applyWorldPatch(vault, [{ op: 'replace', path: '', value: {} } as Operation]);
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.detail).toContain('the document root is not a patch target');
+    expect(result.detail).not.toContain('threw');
   });
 
   it('a index mimo rozsah se odmítne s tím rozsahem v odpovědi', () => {
