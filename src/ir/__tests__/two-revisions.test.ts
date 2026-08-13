@@ -506,6 +506,19 @@ describe('do `sim` se dostane jen JSON', () => {
       expect(rules[token].id, token).toBe('lose');
       expect(rules.lose, token).toBeUndefined();
     }
+
+    // A totéž mimo `rules`, protože komentář u T22 se odvolává právě na tenhle
+    // pointer: `-` nad OBJEKTEM je podle RFC 6901 obyčejné jméno členu, takže
+    // `add` vyrobí člen `"-"` vedle `min`/`max`/`init`.
+    const counter = commitPart(world, {
+      part: 'sim',
+      baseRevision: 0,
+      operations: [{ op: 'add', path: '/state/counters/keys/-', value: 9 } as Operation],
+    });
+    expect(counter.verdict).toBe('COMMITTED');
+    if (counter.verdict !== 'COMMITTED') return;
+    const keys = (counter.doc.sim as { state: { counters: { keys: Record<string, number> } } }).state.counters.keys;
+    expect(Object.keys(keys).sort()).toEqual(['-', 'init', 'max', 'min']);
   });
 
   it('a pole s propašovaným klíčem neprojde ani jako HODNOTA operace', () => {

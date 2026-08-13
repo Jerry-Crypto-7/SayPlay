@@ -24,7 +24,6 @@ import {
   canonical,
   canonicalHash,
   lookSchema,
-  migrateWorldDoc,
   sealSimHash,
   simHashOf,
   simSchema,
@@ -181,7 +180,8 @@ describe('zmrazený korpus projde schématem', () => {
    * Dva `ROBUST` záznamy neprojdou a **je to informace, ne vada**: nesou klíče,
    * které přidává potrubí kolem světa, ne model uvnitř něj — C12 `refusedBeforeModel`
    * (prázdný prompt odmítnutý PŘED voláním modelu, tělo je systémový default,
-   * §13.4), C13 `sim.entityCap`.
+   * §13.4), C13 `sim.entityCap` **i kořenové `clampedFrom`**; každý z těch dvou
+   * klíčů by C13 shodil sám, takže se pinují oba.
    *
    * Zmrazený protokol má `additionalPropertiesAllowed: false` na obou částech,
    * takže **schéma se kvůli nim rozvolnit nesmí** — pak by přestalo hlídat to,
@@ -193,6 +193,12 @@ describe('zmrazený korpus projde schématem', () => {
       .filter((entry) => !worldEmissionSchema.safeParse(entry.body).success)
       .map((entry) => entry.forPrompt);
     expect(rejected.sort()).toEqual(['C12', 'C13']);
+
+    // Jmenované klíče se pinují, ne jen výsledek — jinak by komentář mohl
+    // ukazovat na jiný důvod, než jaký záznam skutečně nese.
+    const c13 = creates.find((entry) => entry.forPrompt === 'C13');
+    expect((c13?.body.sim as Record<string, unknown>).entityCap).toBeDefined();
+    expect(c13?.body.clampedFrom).toBeDefined();
 
     // A zbytek `ROBUST` projde — kdyby ne, byla by to vada schématu, ne anotace.
     for (const entry of byVerdict('ROBUST')) {
@@ -395,15 +401,20 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
       expect(result.doc.simRevision, label).toBe(doc.simRevision + 1);
       expect(result.doc.lookRevision, label).toBe(doc.lookRevision);
 
-      // **Commitnutý dokument musí projít i vstupní branou, ne jen tou výstupní.**
-      // `simSchema.safeParse(result.doc.sim)` tu stálo dřív a bylo to k ničemu:
-      // `sealPart` vrací `COMMITTED` až po témže `safeParse` a uloží jeho výstup,
-      // takže se znovu četl vlastní výsledek. `migrateWorldDoc` je jiná cesta —
-      // kontroluje celý kořen, `irVersion`, konečnost čísel v OBOU částech
-      // a shodu `simHash` s obsahem. To je otázka „přijal by systém tenhle
-      // dokument, kdyby ho dostal znovu na vstupu", a tu `sealPart` nezodpovídá.
-      const reloaded = migrateWorldDoc(result.doc);
-      expect(reloaded.ok, `${label}: ${reloaded.reason}`).toBe(true);
+      // **Tvar `rules` po patchi — jediná věc, kterou tudy nikdo jiný nehlídá.**
+      // `simSchema` má vnitřek `unknown` a `sealPart` z něj počítá hash, takže
+      // commitnutý svět smí mít `rules` jako pole nebo pravidlo s `id` jiným než
+      // klíč, a projde. Přitom je to přesně ten invariant, kvůli kterému se korpus
+      // mrazil na v2: patch adresuje pravidlo jménem. Nad **zmrazenými editacemi**
+      // se to do teď neměřilo — jen nad create těly a nad fixturou.
+      //
+      // (Dřív tu stál `migrateWorldDoc` round-trip. Neuhlídal nic: `sealPart`
+      // pouští týž `unhashableValues`, týž `simSchema` a hash odvozuje z jeho
+      // výstupu, takže vyprázdnění celé migrace nechalo tenhle soubor zelený.)
+      const rules = (result.doc.sim as { rules?: unknown }).rules;
+      expect(Array.isArray(rules), `${label}: rules`).toBe(false);
+      for (const [id, rule] of Object.entries(rules as Record<string, { id?: unknown }>))
+        expect(rule.id, `${label}.rules.${id}`).toBe(id);
     },
   );
 
