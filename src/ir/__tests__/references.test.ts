@@ -238,11 +238,15 @@ describe('socketový a smíšený prostor je pinutý na každé cestě, která d
     asArray.sim.rules = Object.values(structuredClone(asRecord.sim.rules));
     expect(Array.isArray(asArray.sim.rules)).toBe(true);
 
+    // Důkaz, že jsou to dva stromy, musí porovnávat IDENTITU. Čtení hodnoty
+    // z `r1` to nedokáže — `r1` nemutuje ani jedna větev, takže by ta aserce
+    // prošla i nad sdíleným grafem, tedy přesně v tom případě, před kterým
+    // varuje komentář výš.
+    expect(asArray.sim.rules[0]).not.toBe(asRecord.sim.rules.r1);
+    expect(asArray.sim.rules[1]).not.toBe(asRecord.sim.rules.r2);
+
     asRecord.sim.rules.r2.event.socket = 's9';
     asArray.sim.rules[1].event.socket = 's9';
-    // A důkaz, že jsou to opravdu dva stromy: záznam si `r1` nechal nedotčené.
-    expect(asRecord.sim.rules.r1.event.zone).toBe('z0');
-    expect(asArray.sim.rules[0].event.zone).toBe('z0');
 
     // Popisek `r2` vzniká u pole z `rule.id`, u záznamu z klíče — dvě různé cesty
     // ke stejnému výsledku, což je přesně to, co má tenhle test držet.

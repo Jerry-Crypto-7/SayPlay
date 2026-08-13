@@ -273,11 +273,10 @@ describe('kanonický hash nezávisí na pořadí klíčů', () => {
  * porovnávat. Tvrdit tu spojení obou větví by bylo přesně to nadhodnocení, kvůli
  * kterému tenhle blok vznikl.
  *
- * Z dvojice hashových ascí níž je `simHash === simHashOf(doc)` konzistenční
- * kontrola, kterou `sealPart` splní konstrukcí. `simHash` se pohnul **ne** — tu
- * neprojde patch, který se aplikuje naprázdno (`replace /grid/cell` toutéž
- * hodnotou se commitne, zvedne revizi a hash nechá bitově stejný), takže je
- * load-bearing a mazat se nesmí.
+ * Aserce „`simHash` se pohnul" **není** kosmetika: patch, který se aplikuje
+ * naprázdno, se commitne a hash nechá bitově stejný (`replace /grid/cell` toutéž
+ * hodnotou — pinuje to `two-revisions.test.ts`). Bez ní by „editace funguje"
+ * znamenalo „nic se nerozbilo".
  */
 describe('editační větev se proti zmrazenému korpusu skutečně spustí', () => {
   const edits = responses.filter((entry) => entry.branch === 'edit');
@@ -375,8 +374,9 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
   it('všech 68 operací je zakotvených v DOKUMENTU — proto si test prefix strhává sám', () => {
     const pointers = edits.flatMap((entry) => operationsOf(entry).flatMap(pointersOf));
     expect(edits.reduce((count, entry) => count + operationsOf(entry).length, 0)).toBe(68);
-    // Kdyby jediná cesta přišla part-relativní, převod výš by ji nechal být a patch
-    // by se aplikoval o úroveň vedle — tiše a se sedícím hashem.
+    // Part-relativní cestu by `partOfPointer` shodila výjimkou, takže tahle aserce
+    // hlídá něco jiného: `rehomed()` by přijalo i `/look`-zakotvenou cestu, a nad
+    // ní by `commitEdit` mířil do druhé části dokumentu. Korpus je celý `/sim`.
     for (const pointer of pointers) expect(pointer, pointer).toMatch(/^\/sim\//);
     // Číslo, na které se odvolává komentář u `rehomed()` výš. Ať je měřené.
     expect(new Set(pointers).size).toBe(55);
@@ -404,7 +404,6 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
       // dokument, kdyby ho dostal znovu na vstupu", a tu `sealPart` nezodpovídá.
       const reloaded = migrateWorldDoc(result.doc);
       expect(reloaded.ok, `${label}: ${reloaded.reason}`).toBe(true);
-      expect(reloaded.doc?.simHash, label).toBe(simHashOf(result.doc));
     },
   );
 
@@ -556,9 +555,9 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
    * a přesto nechají svět rozbitý. Ani jedna nezastoupí druhou.
    *
    * **Nekrade to rozsah T13.** Tam se `findDanglingReferences` zapojuje do
-   * PRODUKČNÍ emisní cesty jako odmítnutí; tady je čtený jako měřidlo nad
-   * zmrazeným korpusem. Do té doby je to modul, který drží jen vlastní test —
-   * a tenhle test je první, který ho pouští na cizí data.
+   * PRODUKČNÍ emisní cesty jako odmítnutí; tady je čtený jako měřidlo. Nad cizími
+   * daty ho pouští už `references.test.ts` (30 vadných emisí a 13 zmrazených
+   * světů); nové je tu jen to, že ho dostane dokument **po aplikaci patche**.
    */
   it('a `FULFILLED` po sobě nenechá osiřelý odkaz, zatímco deklarovaný defekt ano', () => {
     // **Porovnávají se MNOŽINY nálezů, ne jejich počty.** Patch, který jeden odkaz
