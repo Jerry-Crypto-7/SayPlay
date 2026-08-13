@@ -25,6 +25,7 @@ import { hashWords } from '../sim/hash';
 import { TIERS } from '../verify/tiers';
 import type { VerifiableWorld } from '../verify/witness';
 import {
+  describeThrown,
   pointerFault,
   operationSchema,
   reject,
@@ -140,8 +141,14 @@ export function applyWorldPatch(doc: VerifiableWorld, operations: readonly Opera
 }
 
 function threw(pointer: string, what: string, error: unknown): PatchRejection {
-  const message = error instanceof Error ? error.message : String(error);
-  return reject('MALFORMED_OPERATION', pointer, 'a patch the system can apply and hash', `${what} threw: ${message}`);
+  // `describeThrown`, ne `String(error)` — jinak vyhodí samo složení odpovědi na
+  // výjimku a záchyt nad ním svůj jediný slib poruší.
+  return reject(
+    'MALFORMED_OPERATION',
+    pointer,
+    'a patch the system can apply and hash',
+    `${what} threw: ${describeThrown(error)}`,
+  );
 }
 
 function applyChecked(doc: VerifiableWorld, operations: readonly Operation[]): PatchResult {

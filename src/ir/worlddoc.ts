@@ -430,7 +430,24 @@ export function unhashableValues(
  */
 export function ruleKeyFault(sim: unknown): UnhashableIssue | null {
   const rules = (sim as { readonly rules?: unknown } | null)?.rules;
-  if (rules === null || typeof rules !== 'object' || Array.isArray(rules)) return null;
+  if (rules === null || typeof rules !== 'object') return null;
+
+  // **Pole je vada celé tabulky, ne jednoho klíče** — a je to přesně ten tvar v1,
+  // kvůli kterému se korpus mrazil na v2. Pod polem leží každé pravidlo pod
+  // indexem, takže `replace /sim/rules/lose/priority` selže na pravidle, které
+  // existuje; jediná operace `replace /sim/rules` tím zabije id-adresování všech
+  // pravidel naráz, tedy širší podobu téhož selhání jako `add /sim/rules/-`.
+  //
+  // Naměřeno na zmrazeném korpusu, ne odhadnuto: 13 create těl nese `rules` jako
+  // záznam a **žádné** jako pole, a **žádný** z 25 editačních patchů celé
+  // `/sim/rules` nepřepisuje. Tohle odmítnutí tedy nestojí ani jeden zmrazený
+  // záznam. Chybějící `rules` a `null` zůstávají bez nálezu — tam žádná pravidla
+  // nejsou, takže se ani žádné adresování nelomí.
+  if (Array.isArray(rules))
+    return issue(
+      '/sim/rules',
+      'the rule table is an array, so every rule is filed under an index — a patch addressing any of them by its stable id would miss a rule that exists',
+    );
 
   for (const [key, rule] of Object.entries(rules as Record<string, unknown>)) {
     if (rule === null || typeof rule !== 'object' || Array.isArray(rule)) continue;

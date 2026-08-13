@@ -29,7 +29,7 @@ import type { Operation } from 'rfc6902';
 import { commitPart, type Part, type PartPatch } from '../ir/revision';
 import type { LookPart, WorldDoc } from '../ir/worlddoc';
 import { currentRequestId } from '../obs/trace';
-import { operationSchema, pointerOf, pointerTokens, reject, type PatchRejection } from './reject';
+import { describeThrown, operationSchema, pointerOf, pointerTokens, reject, type PatchRejection } from './reject';
 
 /** §7 mluví o dráhách, dokument o částech. Je to totéž rozdělení dvěma slovníky. */
 export type Lane = 'rules' | 'look';
@@ -136,7 +136,48 @@ function rehomed(operation: Operation): Operation {
  * nepatří — o té rozhodly cesty a zůstává po ní záznam.
  */
 export function routePatch(patch: LabelledPatch): RoutingResult {
-  if (patch.operations.length === 0)
+  // **Jeden záchyt kolem celého zbytku** — tentýž kontrakt, jaký drží `commitPart`
+  // a `applyWorldPatch`, a ze stejného důvodu: výjimka odsud není odmítnutí, je to
+  // odpověď bez verdiktu. U smíšeného požadavku navíc sebere i tu půlku, která se
+  // mezitím commitla a ukázala hráči.
+  try {
+    return routeChecked(patch);
+  } catch (error) {
+    return reject(
+      'MALFORMED_OPERATION',
+      '',
+      'a patch the router can read',
+      `routing the patch threw: ${describeThrown(error)}`,
+    );
+  }
+}
+
+/** Jak se ta hodnota jmenuje v odmítnutí. Bez toho by odpověď mlčela o tom, co přišlo. */
+function shapeOf(value: unknown): string {
+  if (value === null) return 'null';
+  if (value === undefined) return 'nothing';
+  if (Array.isArray(value)) return 'an array';
+  return typeof value === 'object' ? 'an object' : `a ${typeof value}`;
+}
+
+function routeChecked(patch: LabelledPatch): RoutingResult {
+  // **Tvar OBÁLKY dřív než tvar operací**, a je to táž třída vady, jakou o pár
+  // řádků níž řeší kontrola `path` — jen o úroveň výš. `readonly Operation[]` platí
+  // jen při překladu; obálka přichází jako JSON od modelu úplně stejně jako
+  // operace v ní. `operations: null` vyhodí hned na `.length`, a `operations: {}`
+  // má `length === undefined`, takže smyčka neproběhne ani jednou a router vydá
+  // `ROUTED` bez jediného patche — tedy úspěch popisující nulovou práci, na který
+  // volající odpoví „prošlo to".
+  const operations = (patch as { readonly operations?: unknown } | null | undefined)?.operations;
+  if (!Array.isArray(operations))
+    return reject(
+      'MALFORMED_OPERATION',
+      '',
+      'an envelope with an array of operations',
+      `the patch carries operations as ${shapeOf(operations)}, so there is no path to decide the lane from`,
+    );
+
+  if (operations.length === 0)
     return reject(
       'MALFORMED_OPERATION',
       '',
@@ -150,8 +191,8 @@ export function routePatch(patch: LabelledPatch): RoutingResult {
   const byPart = new Map<Part, Operation[]>();
   let mismatch: string | null = null;
 
-  for (let i = 0; i < patch.operations.length; i += 1) {
-    const operation = patch.operations[i];
+  for (let i = 0; i < operations.length; i += 1) {
+    const operation = operations[i] as Operation;
 
     // Tvar dřív, než se z operace čte cesta. `readonly Operation[]` platí jen při
     // překladu — patch přichází jako JSON od modelu, takže `path` nemusí být ani
@@ -296,7 +337,7 @@ export function runLookLane(doc: WorldDoc, patch: PartPatch, build: GeometryBuil
       verdict: 'REVERTED',
       doc,
       rejection: null,
-      reverted: `building geometry from the new look threw: ${error instanceof Error ? error.message : String(error)}`,
+      reverted: `building geometry from the new look threw: ${describeThrown(error)}`,
     };
   }
 

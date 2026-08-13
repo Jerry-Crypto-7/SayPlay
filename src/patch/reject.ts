@@ -51,6 +51,28 @@ export function reject(
 }
 
 /**
+ * Text vyhozené hodnoty, který **sám nevyhodí**.
+ *
+ * `String(error)` vypadá bezpečně a není: hodnota bez převodu na řetězec
+ * (`Object.create(null)`, nebo `Symbol.toPrimitive`, které vyhodí) shodí
+ * `TypeError` — a shodí ho z `catch` bloku, tedy z jediného místa, jehož celý
+ * kontrakt je pád ven nepustit. Volající pak nedostane verdikt **vůbec žádný**,
+ * což je horší než odmítnutí: na dráze vzhledu je to prázdná obrazovka, na
+ * smíšeném požadavku ztráta už commitnutého `look`.
+ *
+ * Sdílené je to proto, že slib „nikdy nevyhodí" mají všechny tři patch cesty
+ * stejný — `ir/revision.ts`, `patch/apply.ts` i `patch/router.ts`.
+ */
+export function describeThrown(error: unknown): string {
+  try {
+    if (error instanceof Error && typeof error.message === 'string') return error.message;
+    return String(error);
+  } catch {
+    return `a thrown ${typeof error} with no readable string form`;
+  }
+}
+
+/**
  * Odmítnutí ze zod chyby.
  *
  * Bere **první** nález, ne všechny: patch se aplikuje transakčně, takže první

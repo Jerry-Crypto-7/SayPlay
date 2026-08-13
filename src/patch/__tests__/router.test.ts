@@ -238,6 +238,112 @@ describe('dráha se rozhoduje z NORMALIZOVANÝCH cest, ne porovnáním řetězc�
   });
 });
 
+/**
+ * **Obálka je vstup od modelu úplně stejně jako operace v ní.**
+ *
+ * `routePatch` je podle vlastního docblocku „jediný vstup na editační cestě",
+ * jenže tvar kontroloval až uvnitř smyčky — tedy až u něčeho, k čemu se nemuselo
+ * dojít. `readonly Operation[]` platí jen při překladu; patch přichází jako JSON.
+ * Je to táž třída vady, kterou si `router.ts` popisuje o pár řádků výš u `path`,
+ * jen o úroveň výš, a `commitPart` má na ni záchyt kolem všeho právě proto, že
+ * u smíšeného požadavku pád sebere i commitnutý `look`.
+ */
+describe('obálka patche se kontroluje dřív, než se z ní čtou operace', () => {
+  const envelopes: readonly (readonly [string, unknown])[] = [
+    ['null', null],
+    ['undefined', undefined],
+    ['objekt bez `length`', {}],
+    ['řetězec', '[{"op":"replace","path":"/sim/grid/cell","value":2}]'],
+    ['číslo', 7],
+  ];
+
+  it('`operations` mimo pole je odmítnutí s důvodem, ne `TypeError` z routeru', () => {
+    for (const [name, operations] of envelopes) {
+      let result: ReturnType<typeof routePatch> | undefined;
+      expect(() => {
+        result = routePatch({ label: 'sim', operations } as unknown as LabelledPatch);
+      }, name).not.toThrow();
+      expect(result?.verdict, name).toBe('REJECTED');
+      if (result?.verdict !== 'REJECTED') continue;
+      expect(result.expected, name).toContain('array of operations');
+    }
+  });
+
+  it('a `ROUTED` nikdy nepopisuje nulovou práci', () => {
+    // `{}` má `length === undefined`, takže `i < undefined` je rovnou `false`:
+    // smyčka neproběhla ani jednou a router vydal ÚSPĚCH bez jediného patche.
+    // Volající, který se ptá „prošlo to?", dostal ano — proto se to neměří jen
+    // verdiktem, ale i tím, že žádný `ROUTED` nesmí vyjít s prázdnými `patches`.
+    const result = routePatch({ label: 'look', operations: {} } as unknown as LabelledPatch);
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict === 'ROUTED') expect(result.patches).not.toHaveLength(0);
+  });
+
+  it('a ani sama obálka nemusí být objekt', () => {
+    for (const envelope of [null, undefined, 'a patch', 7]) {
+      let result: ReturnType<typeof routePatch> | undefined;
+      expect(() => {
+        result = routePatch(envelope as unknown as LabelledPatch);
+      }, String(envelope)).not.toThrow();
+      expect(result?.verdict, String(envelope)).toBe('REJECTED');
+    }
+  });
+
+  /**
+   * **Záchyt kolem všeho, ne kolem vyjmenovaných vstupů** — tentýž kontrakt, jaký
+   * `commitPart` dostal po pěti kolech brány, a ze stejného důvodu: zavírat dveře
+   * po jedné znamená zavřít tu, kterou zrovna někdo našel.
+   *
+   * Poctivě k dosažitelnosti: `JSON.parse` hodnotu s getterem ani `Proxy`
+   * nevyrobí, takže tohle není obrana proti konkrétní emisi. Je to důkaz, že
+   * funkce svůj slib drží i tam, kam kontrola tvaru nedosáhne — a **kdyby tenhle
+   * test neexistoval, celý ten záchyt by nedokazovalo nic** (ověřeno mutací:
+   * bez něj jeho odstranění neshodí ani jeden test).
+   */
+  it('a co vyhodí uvnitř kontroly tvaru, skončí jako verdikt, ne jako pád', () => {
+    const hostile: readonly (readonly [string, unknown])[] = [
+      [
+        'getter na `path`',
+        { operations: [{ op: 'replace', get path(): never { throw new Error('path getter'); }, value: 1 }] },
+      ],
+      [
+        'getter na `label`',
+        {
+          get label(): never {
+            throw new Error('label getter');
+          },
+          operations: [{ op: 'replace', path: '/sim/grid/cell', value: 2 }],
+        },
+      ],
+      [
+        '`Proxy` s vyhazujícím `get`',
+        {
+          operations: [
+            new Proxy(
+              { op: 'replace', path: '/sim/grid/cell', value: 2 },
+              {
+                get() {
+                  throw new Error('get trap');
+                },
+              },
+            ),
+          ],
+        },
+      ],
+    ];
+
+    for (const [name, patch] of hostile) {
+      let result: ReturnType<typeof routePatch> | undefined;
+      expect(() => {
+        result = routePatch(patch as LabelledPatch);
+      }, name).not.toThrow();
+      expect(result?.verdict, name).toBe('REJECTED');
+      if (result?.verdict !== 'REJECTED') continue;
+      expect(result.detail, name).toContain('threw');
+    }
+  });
+});
+
 describe('mixedPatch — smíšený patch se dělí na dva s jedním záměrem', () => {
   it('rozdělí se podle částí a pořadí operací uvnitř každé zůstane', () => {
     const routing = routePatch(MIXED);
@@ -349,6 +455,43 @@ describe('dráha vzhledu — sémanticky neodmítá, technicky ano', () => {
     ).not.toThrow();
   });
 
+  /**
+   * **Záchyt, který sám umí vyhodit, není záchyt.**
+   *
+   * Celý kontrakt téhle funkce je „pád stavby nepustí ven", jenže vysvětlení se
+   * skládalo přes `String(error)` — a to na hodnotě bez převodu na řetězec vyhodí
+   * `TypeError` z `catch` bloku. Nevznikne pak **žádný** `LookLaneOutcome`, ani
+   * commitnutý, ani předchozí: tedy přesně prázdná obrazovka, kvůli které dráha
+   * vzhledu existuje (§13.4). Předchozí test kryl jen `throw 'a bare string'`,
+   * což je ta varianta, která funguje.
+   */
+  it('ani když vyhozená hodnota nemá převod na řetězec', () => {
+    const hostile: readonly [string, unknown][] = [
+      ['bez prototypu', Object.create(null) as unknown],
+      [
+        'vyhazující `Symbol.toPrimitive`',
+        {
+          [Symbol.toPrimitive]() {
+            throw new Error('nelze převést');
+          },
+        },
+      ],
+    ];
+
+    for (const [name, thrown] of hostile) {
+      let outcome: ReturnType<typeof runLookLane> | undefined;
+      expect(() => {
+        outcome = runLookLane(C01, lookPatchOf(repaint), () => {
+          throw thrown;
+        });
+      }, name).not.toThrow();
+      // Nejen „nespadlo" — musí vzniknout verdikt, se kterým se dá dál renderovat.
+      expect(outcome?.verdict, name).toBe('REVERTED');
+      expect(outcome?.doc, name).toEqual(C01);
+      expect(outcome?.reverted, name).toBeTruthy();
+    }
+  });
+
   it('odmítnutý vzhled nechá dokument bitově nedotčený', () => {
     const outcome = runLookLane(
       C01,
@@ -438,6 +581,69 @@ describe('rozhodnutí T22: pravidlo musí ležet pod svým `id`', () => {
     expect(result.verdict).toBe('REJECTED');
     if (result.verdict !== 'REJECTED') return;
     expect(result.pointer).toBe('/sim/rules/unlock');
+  });
+
+  it('a převod celé tabulky na POLE se odmítne — pod polem je neadresovatelné každé pravidlo', () => {
+    // Tvar v1, tedy přesně ten, kvůli kterému se korpus mrazil na v2. Kdyby prošel,
+    // následný `replace /sim/rules/lose/priority` padne na `"lose" is not an index
+    // of the array` — táž vada jako `add /sim/rules/-`, jen o úroveň výš: nezmizí
+    // jedno pravidlo, zmizí id-adresování celé tabulky jednou operací.
+    const routing = routePatch({ operations: [{ op: 'replace', path: '/sim/rules', value: [rule] } as Operation] });
+    if (routing.verdict !== 'ROUTED') throw new Error('patch se nerozřadil');
+
+    const result = commitRouted(C01, routing.patches[0]);
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.reason).toBe('STRUCTURE');
+    expect(result.pointer).toBe('/sim/rules');
+    expect(result.detail).toContain('stable id');
+  });
+
+  it('a rovnou po něm je vidět, PROČ se to musí zastavit u commitu tabulky', () => {
+    // Charakterizace té škody, ne jen verdikt nad ní. Kdyby se tabulka jako pole
+    // commitla, je svět **trvale nepatchovatelný**: odmítnutí dostane až DALŠÍ
+    // patch, ten, který nic špatného nedělá. Proto se tu měří i adresát —
+    // odmítnutí musí ukázat na uložený svět, ne na příchozí operaci, jinak model
+    // opravuje patch, který za nic nemůže.
+    const asArray = structuredClone(C01.sim) as { rules: unknown };
+    asArray.rules = [rule];
+    const bent = worldDocSchema.safeParse(sealSimHash({ ...C01, sim: asArray }));
+    if (!bent.success) throw new Error('svět s polem se nedal zapečetit');
+
+    const followUp = commitPart(bent.data, {
+      part: 'sim',
+      baseRevision: bent.data.simRevision,
+      operations: [{ op: 'replace', path: '/rules/lose/priority', value: 1 } as Operation],
+    });
+    expect(followUp.verdict).toBe('REJECTED');
+    if (followUp.verdict !== 'REJECTED') return;
+    expect(followUp.expected).toContain('stored');
+    expect(followUp.pointer).toBe('/sim/rules');
+  });
+
+  it('ale vada, která ve světě ležela už předtím, se nevykáže jako vada příchozího patche', () => {
+    // Kontrola nad DRAFTEM nezná rozdíl mezi „tohle přinesl patch" a „tohle tam
+    // bylo". Uložený svět s rozejitým klíčem projde `migrateWorldDoc` jako
+    // `already current`, a pak i patch, který se `rules` vůbec nedotkne, vyjde
+    // jako odmítnutý s pointerem do `rules`. Model to přeemituje donekonečna,
+    // protože jeho patch je v pořádku. `commitChecked` má na tohle vlastní
+    // hranici (`stored` před patchem) a tahle kontrola musí sedět na její straně.
+    const bentSim = structuredClone(C01.sim) as { rules: Record<string, unknown> };
+    bentSim.rules['-'] = bentSim.rules.win;
+    delete bentSim.rules.win;
+    const bent = worldDocSchema.safeParse(sealSimHash({ ...C01, sim: bentSim }));
+    if (!bent.success) throw new Error('svět s rozejitým klíčem se nedal zapečetit');
+
+    const routing = routePatch({ operations: [{ op: 'replace', path: '/sim/grid/cell', value: 2 } as Operation] });
+    if (routing.verdict !== 'ROUTED') throw new Error('patch se nerozřadil');
+
+    const result = commitRouted(bent.data, routing.patches[0]);
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    // Odmítnutí je v pořádku — takový svět opravdu patchovat nelze. Co musí sedět,
+    // je ADRESÁT: viník je uložená část, ne operace, kterou model právě poslal.
+    expect(result.expected).toContain('stored');
+    expect(result.detail).toContain('already');
   });
 });
 

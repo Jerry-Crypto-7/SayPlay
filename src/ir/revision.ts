@@ -17,7 +17,14 @@
 
 import { applyPatch, type Operation } from 'rfc6902';
 
-import { operationSchema, pointerFault, reject, rejectionFromZod, type PatchRejection } from '../patch/reject';
+import {
+  describeThrown,
+  operationSchema,
+  pointerFault,
+  reject,
+  rejectionFromZod,
+  type PatchRejection,
+} from '../patch/reject';
 import {
   lookSchema,
   ruleKeyFault,
@@ -87,8 +94,15 @@ export function commitPart(doc: WorldDoc, patch: PartPatch): RevisionResult {
 }
 
 function threw(pointer: string, what: string, error: unknown): PatchRejection {
-  const message = error instanceof Error ? error.message : String(error);
-  return reject('MALFORMED_OPERATION', pointer, 'a patch the system can apply and hash', `${what} threw: ${message}`);
+  // `describeThrown`, ne `String(error)`: hodnota bez převodu na řetězec by
+  // vyhodila **odsud**, tedy ze složení odpovědi na výjimku, a slib „`commitPart`
+  // nikdy nevyhodí" by padl na vlastním záchytu.
+  return reject(
+    'MALFORMED_OPERATION',
+    pointer,
+    'a patch the system can apply and hash',
+    `${what} threw: ${describeThrown(error)}`,
+  );
 }
 
 function commitChecked(doc: WorldDoc, patch: PartPatch): RevisionResult {
@@ -105,6 +119,24 @@ function commitChecked(doc: WorldDoc, patch: PartPatch): RevisionResult {
       'a stored part with a JSON form',
       `the ${patch.part} part this patch targets cannot be canonicalized: ${stored[0].detail}`,
     );
+
+  // **Táž hranice i pro invariant `id == klíč`.** Kontrola nad draftem nezná rozdíl
+  // mezi „tohle přinesl patch" a „tohle tam leželo": svět uložený s rozejitým
+  // klíčem by odmítl i patch, který se `rules` vůbec nedotkne, a model by
+  // přeemitoval donekonečna něco, co je v pořádku. Odmítnout takový svět je
+  // správně — patchovat se opravdu nedá — ale odpověď musí ukázat na uloženou
+  // část, ne na příchozí operaci. `sealSimHash` dokument zapečetí bez téhle
+  // kontroly, takže sem takový svět umí přijít.
+  if (patch.part === 'sim') {
+    const storedKeys = ruleKeyFault(doc.sim);
+    if (storedKeys !== null)
+      return reject(
+        'STRUCTURE',
+        storedKeys.pointer,
+        'a stored part whose rules are filed under their own ids',
+        `the sim part this patch targets is already broken, before this patch: ${storedKeys.detail}`,
+      );
+  }
 
   // Tvar OPERACÍ dřív, než je uvidí knihovna — `patch/apply.ts` to dělá ze
   // stejného důvodu a `commitPart` ho při přebírání té struktury vynechal:

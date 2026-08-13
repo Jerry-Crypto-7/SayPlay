@@ -717,6 +717,37 @@ describe('vadná operace je i tady odmítnutí, ne výjimka', () => {
     expect(result.detail).toContain('ownKeys trap');
   });
 
+  /**
+   * **A vysvětlení té výjimky nesmí být další cesta ven.**
+   *
+   * Záchyt kolem všeho skládá důvod přes `String(error)`, jenže vyhozená hodnota
+   * nemusí mít převod na řetězec — `Object.create(null)` ho nemá vůbec. `TypeError`
+   * pak odejde z `catch` bloku, tedy z jediného místa, které slibuje, že se to
+   * nestane, a `commitPart` vyhodí navzdory vlastnímu docblocku.
+   *
+   * Cesta sem je skutečná, ne vymyšlená: getter na `value` se čte uvnitř
+   * `unhashableValues`, tedy uvnitř `try`, a co odtud vyhodí, jde rovnou do toho
+   * záchytu.
+   */
+  it('a to i když vyhozená hodnota nemá převod na řetězec', () => {
+    const operation = {
+      op: 'replace',
+      path: '/state/slots',
+      get value(): never {
+        throw Object.create(null) as never;
+      },
+    } as unknown as Operation;
+
+    let result: ReturnType<typeof commitPart> | undefined;
+    expect(() => {
+      result = commitPart(world, { part: 'sim', baseRevision: 0, operations: [operation] });
+    }).not.toThrow();
+    expect(result?.verdict).toBe('REJECTED');
+    if (result?.verdict !== 'REJECTED') return;
+    // Verdikt musí i něco říct — prázdný důvod je tentýž problém o krok dál.
+    expect(result.detail).toContain('threw');
+  });
+
   it('a smíšený požadavek si u toho udrží commitnutý `look`', () => {
     const hostile = new Proxy({}, { ownKeys() { throw new Error('ownKeys trap'); } });
     let mixed: ReturnType<typeof commitMixed> | undefined;
