@@ -465,51 +465,46 @@ describe('do `sim` se dostane jen JSON', () => {
   });
 
   /**
-   * **Charakterizace, ne schválení: `-` a číselný token nad `rules` DNES projdou.**
+   * **Obráceno rozhodnutím T22, variantou (b).**
    *
-   * Dokud bylo `rules` pole, `add /rules/-` byl legální append a měl tady vlastní
-   * test. Po přechodu na záznam znamená ta samá operace něco jiného — vyrobí
-   * pravidlo s **klíčem `"-"`** — a přesměrováním toho testu na `/witness/ops/-`
-   * (což je tvar, kde `-` pořád znamená append) zůstala tahle cesta **bez jediné
-   * aserce**. Tenhle test tu díru zavírá.
+   * Dřív tu stála charakterizace: `-` a číselný token nad `rules` projdou a vyrobí
+   * pravidlo s klíčem `"-"` a `id: "lose"`. Její vlastní docblock si vyžádal, že se
+   * po rozhodnutí T22 buď obrátí, nebo dostane protipól — obrací se.
    *
-   * **Pinuje se dnešní chování, ne kýžené.** `resolve` v `patch/reject.ts` vrací
-   * u posledního tokenu na objektu `null` a je to v souladu s RFC 6901 (`-` je na
-   * objektu obyčejné jméno členu) i s knihovnou. Vadné na tom je až to, co z toho
-   * plyne o **adresování**: vzniklé pravidlo má `id: 'lose'`, ale klíč `"-"`, takže
-   * následný patch na `/rules/lose` padne, **zatímco to pravidlo existuje** — přesně
-   * to selhání, kvůli kterému se korpus mrazil na v2. Jestli se to má odmítnout
-   * (`resolve`), dorovnat (`id == klíč` v `sealPart`), nebo nechat scoreru,
-   * **rozhoduje T22** — má to u sebe zapsané i s variantami. Až rozhodne, tenhle
-   * test se buď obrátí, nebo mu přibude protipól; do té doby aspoň nikdo nezmění
-   * tohle chování omylem.
+   * Rozhodnuto **nezakazovat tvar cesty**, ale vynutit invariant, o který jde:
+   * `-` je podle RFC 6901 nad objektem obyčejné jméno členu, takže `resolve` ani
+   * knihovna nemají co namítat a rozcházet se s nimi by byla přesně ta chyba, kterou
+   * si tenhle projekt u patch cesty desetkrát zaplatil. Vadné je až to, co z operace
+   * **vyleze**: pravidlo, které existuje pod jménem, pod kterým ho žádný další patch
+   * nenajde. Kontrola proto sedí v `sealPart` a měří výsledek — odůvodnění i naměřený
+   * dopad na zmrazený korpus jsou u `ruleKeyFault` a v `patch/__tests__/router.test.ts`.
    */
-  it('CHARAKTERIZACE: `-` a číselný token nad `rules` projdou a rozbijí `id == klíč`', () => {
+  it('`-` a číselný token nad `rules` se odmítnou — rozešly by `id` s klíčem', () => {
     const rule = JSON.parse(
       '{"id":"lose","phase":0,"priority":1,"event":{"kind":"onStart"},"condition":null,"actions":[{"kind":"lose"}]}',
     ) as unknown;
 
     for (const token of ['-', '0']) {
+      const before = world.simHash;
       const result = commitPart(world, {
         part: 'sim',
         baseRevision: 0,
         operations: [{ op: 'add', path: `/rules/${token}`, value: rule } as Operation],
       });
-      expect(result.verdict, token).toBe('COMMITTED');
-      if (result.verdict !== 'COMMITTED') continue;
+      expect(result.verdict, token).toBe('REJECTED');
+      if (result.verdict !== 'REJECTED') continue;
 
-      const rules = (result.doc.sim as { rules: Record<string, { id: string }> }).rules;
-      // Klíč je doslova ten token — ne append, ne index.
-      expect(Object.keys(rules).sort(), token).toEqual([token, 'win'].sort());
-      // A tady je ta vada: `id` a klíč se rozešly, takže pravidlo existuje pod
-      // jménem, pod kterým ho žádný další patch nenajde.
-      expect(rules[token].id, token).toBe('lose');
-      expect(rules.lose, token).toBeUndefined();
+      expect(result.reason, token).toBe('STRUCTURE');
+      expect(result.pointer, token).toBe(`/sim/rules/${token}`);
+      // Odmítnutí nesmí sáhnout na aktivní graf — tentýž kontrakt jako u ostatních.
+      expect(world.simHash, token).toBe(before);
     }
+  });
 
-    // A totéž mimo `rules`, protože komentář u T22 se odvolává právě na tenhle
-    // pointer: `-` nad OBJEKTEM je podle RFC 6901 obyčejné jméno členu, takže
-    // `add` vyrobí člen `"-"` vedle `min`/`max`/`init`.
+  it('ale `-` nad objektem MIMO `rules` zůstává legální', () => {
+    // Zúžení míří na adresování pravidel, ne na tvar cesty obecně. `-` je podle
+    // RFC 6901 nad objektem obyčejné jméno členu a `state.counters` žádné
+    // `id == klíč` nedeklaruje, takže tady se nic nerozbíjí.
     const counter = commitPart(world, {
       part: 'sim',
       baseRevision: 0,

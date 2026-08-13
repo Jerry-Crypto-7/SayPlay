@@ -20,6 +20,7 @@ import { applyPatch, type Operation } from 'rfc6902';
 import { operationSchema, pointerFault, reject, rejectionFromZod, type PatchRejection } from '../patch/reject';
 import {
   lookSchema,
+  ruleKeyFault,
   unhashableValues,
   simHashOf,
   simSchema,
@@ -224,6 +225,14 @@ function sealPart(doc: WorldDoc, part: Part, draft: unknown): RevisionResult {
 
   const shape = simSchema.safeParse(draft);
   if (!shape.success) return rejectionFromZod(shape.error, ['sim']);
+
+  // Pravidlo uložené jinde než pod svým `id` je pravidlo, které existuje a přesto
+  // se nedá adresovat — odůvodnění je u `ruleKeyFault`. Kontrola stojí až tady,
+  // protože se ptá na tvar VÝSLEDKU, ne na tvar operace: `replace` na `id`
+  // rozejde klíč s `id` stejně spolehlivě jako `add /rules/-`.
+  const keyFault = ruleKeyFault(shape.data);
+  if (keyFault !== null)
+    return reject('STRUCTURE', keyFault.pointer, 'a rule filed under its own id', keyFault.detail);
 
   // `simHash` se přepočítá, protože se změnila právě ta část, ze které se počítá.
   const withSim = { ...doc, sim: shape.data, simRevision: doc.simRevision + 1 };

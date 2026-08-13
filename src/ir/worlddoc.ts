@@ -405,6 +405,45 @@ export function unhashableValues(
   return issues;
 }
 
+/**
+ * Pravidlo musí být uložené **pod svým vlastním `id`** — jinak ho příští patch
+ * nenajde, přestože existuje.
+ *
+ * **Rozhodnutí předané z T12 do T22, varianta (b).** `add /sim/rules/-` i
+ * `add /sim/rules/0` dnes projdou rozborem cesty a je to správně: podle RFC 6901
+ * je `-` na objektu obyčejné jméno členu, takže `resolve` ani `rfc6902` nemají
+ * co namítat. Vadné je až to, co z toho plyne o **adresování** — vznikne pravidlo
+ * s klíčem `"-"` a `id: "lose"`, načež patch na `/sim/rules/lose` selže na
+ * pravidle, které tam je. To je přesně to selhání, kvůli kterému se korpus mrazil
+ * na v2 (§15 vede vložení i smazání pravidla jako vlastní třídy editace).
+ *
+ * Zúžení proto míří na **ten invariant**, ne na tvar cesty: zakázat `-` a číselný
+ * token nad objektem obecně by odmítlo i legální `add /sim/state/counters/keys/-`,
+ * kde se žádné adresování nerozbíjí. Naměřeno na zmrazeném korpusu: 31 pravidel
+ * ve 13 tělech splňuje `id == klíč`, a **žádný** z 21 aplikovatelných editačních
+ * patchů ho neporuší — tahle kontrola tedy nezamítá nic, co korpus deklaruje.
+ *
+ * Kontrola je **podmíněná**, a to schválně. `simSchema` typuje `rules` jako
+ * `unknown`, protože vymyslet si hloubku znamenalo, že neprošlo 0 z 15 zmrazených
+ * emisí. Tady se proto netvrdí, jak `rules` vypadá — jen že POKUD je to záznam
+ * a POKUD položka nese řetězcové `id`, musí se ty dva rovnat.
+ */
+export function ruleKeyFault(sim: unknown): UnhashableIssue | null {
+  const rules = (sim as { readonly rules?: unknown } | null)?.rules;
+  if (rules === null || typeof rules !== 'object' || Array.isArray(rules)) return null;
+
+  for (const [key, rule] of Object.entries(rules as Record<string, unknown>)) {
+    if (rule === null || typeof rule !== 'object' || Array.isArray(rule)) continue;
+    const id = (rule as { readonly id?: unknown }).id;
+    if (typeof id !== 'string' || id === key) continue;
+    return issue(
+      `/sim/rules/${escapeToken(key)}`,
+      `rule "${id}" is filed under key "${key}" — a patch addressing it by its stable id would miss a rule that exists`,
+    );
+  }
+  return null;
+}
+
 export function validateLook(look: unknown): LookVerdict {
   const parsed = lookSchema.safeParse(look);
   if (!parsed.success)
