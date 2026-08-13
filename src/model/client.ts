@@ -41,11 +41,11 @@
  * provenience, aby se výsledek nedal vydávat za měření modelu.
  */
 
-import { createHash } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { peelEnvelope, simHashOf } from '../ir/worlddoc';
+import { canonical, peelEnvelope } from '../ir/worlddoc';
 import type { Grammar, UpstreamRequest } from './prompt';
 
 const FROZEN_DIR = join(process.cwd(), 'evals', 'frozen');
@@ -61,7 +61,15 @@ export type ClientReason =
   /** Tělo se rozešlo s vlastním `sha256`, nebo mu chybí hlavička. */
   | 'RESPONSE_TAMPERED'
   /** Editační záznam existuje, ale je vázaný na jiný svět, než jaký přišel. */
-  | 'BASE_WORLD_MISMATCH';
+  | 'BASE_WORLD_MISMATCH'
+  /**
+   * Editační záznam jmenuje základní svět, který ve zmrazené sadě není.
+   *
+   * Je to vada **korpusu**, ne dotazu, a proto vlastní důvod: kdyby se schovala
+   * pod `NO_FROZEN_RESPONSE`, endpoint by rozbité prostředí vydal jako 404 nad
+   * dvojicí — tedy jako naměřený výsledek něčeho, co se skórovat nesmí.
+   */
+  | 'BASE_WORLD_MISSING';
 
 export interface ClientFailure {
   readonly ok: false;
@@ -269,19 +277,44 @@ export interface PatchSuccess {
 export type PatchResult = PatchSuccess | ClientFailure;
 
 /**
+ * Otisk `sim` části pro **vazbu záznamu na svět** — SHA-256, ne `simHash`.
+ *
+ * `simHash` (FNV-1a-32, osm hex znaků) je identita pro replay a k tomu stačí:
+ * dva různé stavy se stejným otiskem se v replayi projeví hned, protože se
+ * porovnává celý průběh. Jako **autentizační vazba** je ale nepoužitelný —
+ * 32 bitů se nehledá štěstím, hledá se výpočtem.
+ *
+ * Naměřeno bránou nad `f7e153c`, spuštěno end-to-end: ze zmrazeného `C02` stačí
+ * změnit `state.timers.flood.durationTicks` (přesně ten list, který edituje
+ * `E01`) a doplnit výplňový klíč do `witness`; protože `canonical` řadí klíče,
+ * výplň se hashuje poslední a prefix se počítá jen jednou. **11,6 milionu
+ * kandidátů, 215 ms** — a endpoint podvržený svět přijal jako `C02` s verdiktem
+ * `CERTIFIED`. `migrateWorldDoc` proti tomu nepomůže: ověřuje, že `simHash`
+ * sedí na svou vlastní `sim`, a to má padělatel plně ve své moci.
+ *
+ * Je to tatáž třída, jakou `CLAUDE.md` §5 vede u vynutitelnosti zmrazení — jen
+ * uvnitř endpointu. Proto druhý, širší otisk počítaný **z obsahu**, nikdy
+ * z hodnoty, kterou poslal volající.
+ */
+function simFingerprint(sim: unknown): string {
+  return createHash('sha256').update(canonical(sim)).digest('hex');
+}
+
+/**
  * Vydá patch poskytovatele pro zmrazený **editační** prompt.
  *
- * `simHash` není dekorace: Oracle úlohy T14 povoluje jako double *„upstream jen
+ * `sim` není dekorace: Oracle úlohy T14 povoluje jako double *„upstream jen
  * záznamem vázaným na dvojici (svět, prompt)"*. Zmrazený patch je autorovaný
  * proti konkrétnímu základnímu světu a proti jinému světu neměří editaci, ale
  * náhodu — cesty buď neexistují, nebo trefí něco jiného, než na co mířily.
- * Vazba se proto ověřuje **hashem `sim` části** základního světa, ne jménem:
- * jméno by sedělo i na svět, který si volající přepsal cestou sem.
+ * Vazba se proto ověřuje **otiskem obsahu** `sim` části základního světa, ne
+ * jménem a ne `simHash`em: jméno by sedělo i na svět, který si volající přepsal
+ * cestou sem, a `simHash` je forgeovatelný (viz `simFingerprint`).
  *
  * `look` do vazby nevstupuje. Leží mimo hash schválně (§13.1) a patch vzhledu se
  * proti němu vydává stejně legálně jako proti výchozímu.
  */
-export function emitPatch(promptId: string, request: UpstreamRequest, simHash: string): PatchResult {
+export function emitPatch(promptId: string, request: UpstreamRequest, sim: unknown): PatchResult {
   const record = verifiedRecord(promptId, 'edit');
   if (!record.ok) return record;
 
@@ -295,11 +328,16 @@ export function emitPatch(promptId: string, request: UpstreamRequest, simHash: s
 
   const expected = frozenBaseSimHash(baseWorld);
   if (!expected.ok) return expected;
-  if (expected.value !== simHash)
+
+  // `timingSafeEqual` proto, že rozdíl v době odpovědi je oracle: kdo umí měřit,
+  // umí očekávaný otisk uhodnout po bajtech místo celý naráz. Obě strany jsou
+  // hex téže délky, takže `Buffer.from` dá vždy shodně dlouhé pole.
+  const actual = simFingerprint(sim);
+  if (!timingSafeEqual(Buffer.from(expected.value, 'hex'), Buffer.from(actual, 'hex')))
     return {
       ok: false,
       reason: 'BASE_WORLD_MISMATCH',
-      detail: `${promptId} was authored against ${baseWorld} (simHash ${expected.value}); the submitted world hashes to ${simHash}`,
+      detail: `${promptId} was authored against ${baseWorld}; the submitted world does not carry that sim part`,
     };
 
   return {
@@ -313,16 +351,26 @@ export function emitPatch(promptId: string, request: UpstreamRequest, simHash: s
 }
 
 /**
- * `simHash` základního světa, spočítaný z jeho zmrazené create emise.
+ * Otisk `sim` části základního světa, spočítaný z jeho zmrazené create emise.
  *
  * Počítá se **z oloupaného** těla: anotace obálky (`simOutcome` a spol.) jedou
  * vedle dokumentu a do hashe nikdy nevstupují — tak, jak je pečetí `/api/emit`.
- * Kdyby se hashovalo syrové tělo, čtyři anotované create světy by měly jiný hash
- * tady než tam a vazba by je odmítla, přestože se nic nezměnilo.
+ * Kdyby se hashovalo syrové tělo, čtyři anotované create světy by měly jiný
+ * otisk tady než tam a vazba by je odmítla, přestože se nic nezměnilo.
  */
 function frozenBaseSimHash(baseWorld: string): Read<string> {
   const record = verifiedRecord(baseWorld, 'create');
-  if (!record.ok) return record;
+  // Chybějící základní svět je vada **korpusu**, ne dotazu. Bez téhle výměny by
+  // ji endpoint vydal jako 404 nad dvojicí, tedy jako naměřený výsledek —
+  // a rozbité prostředí se skórovat nesmí.
+  if (!record.ok)
+    return record.reason === 'NO_FROZEN_RESPONSE'
+      ? {
+          ok: false,
+          reason: 'BASE_WORLD_MISSING',
+          detail: `an edit record names base world ${baseWorld}, which the frozen corpus does not contain`,
+        }
+      : record;
 
   const peeled = peelEnvelope(record.value.entry.body);
   if (peeled === null || !Object.hasOwn(peeled.document, 'sim'))
@@ -332,5 +380,5 @@ function frozenBaseSimHash(baseWorld: string): Read<string> {
       detail: `the frozen create response for ${baseWorld} carries no sim part to bind against`,
     };
 
-  return { ok: true, value: simHashOf(peeled.document as { sim: unknown }) };
+  return { ok: true, value: simFingerprint(peeled.document.sim) };
 }

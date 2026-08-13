@@ -94,10 +94,14 @@ function badRequest(requestId: string, code: string, message: string, field?: st
 /**
  * Zmrazený korpus je nečitelný nebo se rozešel s `MANIFEST.lock`.
  *
- * **Není to verdikt a nesmí se skórovat** — stejně jako u `/api/emit`. Jediná
- * odchylka je `BASE_WORLD_MISMATCH`: ten neříká nic o prostředí, říká, že
- * požadavek žádá patch pro svět, ke kterému zmrazený záznam nepatří. To je vada
- * dotazu, tedy 404 nad dvojicí, ne 503.
+ * **Není to verdikt a nesmí se skórovat** — stejně jako u `/api/emit`. Odchylkou
+ * jsou dva důvody, které nemluví o prostředí, ale o dotazu: `BASE_WORLD_MISMATCH`
+ * a `NO_FROZEN_RESPONSE` říkají, že pro dvojici (svět, prompt) zmrazený záznam
+ * není. To je 404 nad dvojicí, ne 503.
+ *
+ * `BASE_WORLD_MISSING` je naopak zpátky na straně prostředí: editační záznam
+ * jmenuje základní svět, který v korpusu chybí. Kdyby se schoval mezi ty dva
+ * nad ním, rozbitý korpus by se vydával za naměřený výsledek.
  */
 function corpusUnavailable(requestId: string, failure: ClientFailure): Response {
   if (failure.reason === 'BASE_WORLD_MISMATCH' || failure.reason === 'NO_FROZEN_RESPONSE')
@@ -202,7 +206,10 @@ export async function POST(request: Request): Promise<Response> {
     if (!grammar.ok) return corpusUnavailable(requestId, grammar);
 
     const upstream = buildEditRequest(prompt.value.prompt, grammar.value, doc);
-    const emission = emitPatch(promptId, upstream, doc.simHash);
+    // Vazba se ověřuje proti **obsahu** `sim`, ne proti `simHash`, který přišel
+    // v požadavku. Ten je FNV-1a-32 a padělá se výpočtem, ne štěstím — viz
+    // `simFingerprint` v `model/client.ts`.
+    const emission = emitPatch(promptId, upstream, doc.sim);
     if (!emission.ok) return corpusUnavailable(requestId, emission);
 
     const envelope = {

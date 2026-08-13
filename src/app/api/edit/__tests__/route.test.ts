@@ -543,6 +543,47 @@ describe('hranice požadavku', () => {
     expect((response.body.error as { code: string }).code).toBe('UNKNOWN_PAIR');
   });
 
+  it('svět se shodným `simHash`, ale jiným obsahem, vazbu neprojde', async () => {
+    // **Regrese na nález brány nad `f7e153c`, reprodukovaný end-to-end.**
+    //
+    // Vazba záznamu na svět se původně ověřovala `simHash`em, tedy FNV-1a-32 —
+    // osmi hex znaky. To je otisk pro replay, ne autentizace: 32 bitů se nehledá
+    // štěstím, hledá se výpočtem. Padělek níž je **skutečný**, ne teoretický:
+    // z `C02` se změní `state.timers.flood.durationTicks` (přesně ten list, který
+    // edituje `E01`) a do `witness` přibude výplňový klíč. `canonical` řadí klíče,
+    // takže se výplň hashuje jako poslední a prefix se počítá jen jednou —
+    // sedmiznakový řetězec `cem6xgv` se našel za 32 sekund.
+    //
+    // `migrateWorldDoc` proti tomu nepomůže a nemá jak: ověřuje, že `simHash`
+    // sedí na svou vlastní `sim`, a to má padělatel plně ve své moci. Dokud vazba
+    // četla `simHash`, endpoint tenhle svět přijal jako `C02` a vrátil
+    // `CERTIFIED` — tedy měřil editaci proti světu, který si zvolil volající.
+    //
+    // Hodnoty jsou tu jako **data**, ne jako výpočet: kolize se hledala jednou.
+    // Kdyby se hledala v testu, sada by na tři desítky sekund běhu doplácela při
+    // každém spuštění a při změně korpusu by tiše přestala hledat cokoli.
+    const source = baseDoc('C02');
+    const forged = structuredClone(source) as WorldDoc;
+    const timers = (forged.sim as { state: { timers: { flood: { durationTicks: number } } } }).state.timers;
+    timers.flood.durationTicks = 9;
+    (forged.sim as { witness: Record<string, unknown> }).witness.zz = 'cem6xgv';
+
+    // Předpoklady testu — obojí musí platit, jinak by aserce níž neměřila nic.
+    const sealed = sealSimHash(forged) as WorldDoc;
+    expect(sealed.simHash, 'kolize se rozpadla — padělek už nemá `simHash` jako `C02`').toBe(source.simHash);
+    expect(JSON.stringify(sealed.sim), 'padělek se neliší obsahem, takže není padělek').not.toBe(
+      JSON.stringify(source.sim),
+    );
+
+    const response = await post({
+      worldDoc: sealed,
+      baseRevision: { sim: sealed.simRevision, look: sealed.lookRevision },
+      promptId: 'E01',
+    });
+    expect(response.status, 'endpoint přijal podvržený svět jako `C02`').toBe(404);
+    expect((response.body.error as { code: string }).code).toBe('UNKNOWN_PAIR');
+  });
+
   it('create prompt tudy neprojde — druhá větev je `/api/emit`', async () => {
     const world = baseDoc('C01');
     for (const id of ['C01', 'E99']) {
