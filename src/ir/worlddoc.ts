@@ -369,8 +369,8 @@ export function unhashableValues(
   };
 
   // **Zastavuje se na PRVNÍM nálezu, a je to mez, ne úspora.** `length` pole je
-  // zapisovatelná (`replace /rules/length` s `4294967295` projde `rfc6902` bez
-  // mrknutí), takže smyčka po pozicích je řízená číslem z patche. Bez téhle meze
+  // zapisovatelná (`replace /witness/ops/length` s `4294967295` projde `rfc6902`
+  // bez mrknutí), takže smyčka po pozicích je řízená číslem z patche. Bez téhle meze
   // by vyrobila jeden objekt nálezu na díru, což u velkého `length` skončí jako
   // `heap out of memory` — a to je **abort procesu, ne výjimka**, takže by ho
   // nechytil ani záchyt, který slibuje „nikdy nevyhodí". Volající navíc čte

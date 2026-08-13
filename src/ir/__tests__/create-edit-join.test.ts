@@ -13,23 +13,46 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import type { Operation } from 'rfc6902';
 import { describe, expect, it } from 'vitest';
 
-import { commitPart } from '../revision';
+import { commitPart, type Part } from '../revision';
 import {
   LAYOUT_TYPES,
   WORLD_DOC_VERSION,
   canonical,
   canonicalHash,
   lookSchema,
+  sealSimHash,
   simHashOf,
   simSchema,
   worldDocSchema,
   worldEmissionSchema,
+  type WorldDoc,
 } from '../worlddoc';
 import { synthPair, synthWorld } from '../__fixtures__/synth';
 
 const SEEDS = [20260812, 1, 424242, 7, 999983];
+
+interface FrozenResponse {
+  readonly branch: string;
+  readonly forPrompt: string;
+  readonly expectedVerdict: string;
+  /** Tvorba nese celý dokument, editace pole RFC 6902 operací. */
+  readonly body: unknown;
+  /** Jen u editace: `forPrompt` tvorby, proti které byl patch vydán. */
+  readonly baseWorld?: string;
+  /** Jen u editace: dráha, kterou si **model myslí**. Nerozhoduje o ničem. */
+  readonly modelLabel?: string;
+}
+
+const responses: readonly FrozenResponse[] = readFileSync(
+  join(process.cwd(), 'evals', 'frozen', 'responses', 'index.jsonl'),
+  'utf8',
+)
+  .trim()
+  .split(/\r?\n/)
+  .map((line) => JSON.parse(line) as FrozenResponse);
 
 describe('patchovaná a přímo sestavená větev se sejdou', () => {
   it.each(SEEDS)('seed %i: hash po patchi se rovná hashi sestaveného světa', (seed) => {
@@ -116,23 +139,14 @@ describe('syntetický svět je platný dokument, ne jen tvar', () => {
  * Fixtura, kterou si autor napsal k svému schématu, o schématu nedokazuje nic.
  * Zmrazený korpus je artefakt, který schéma nepsal.
  */
+type CreateResponse = FrozenResponse & { readonly body: Record<string, unknown> };
+
+const createEntries = responses.filter(
+  (entry): entry is CreateResponse => entry.branch === 'create',
+);
+
 describe('zmrazený korpus projde schématem', () => {
-  interface FrozenResponse {
-    readonly branch: string;
-    readonly forPrompt: string;
-    readonly expectedVerdict: string;
-    readonly body: Record<string, unknown>;
-  }
-
-  const responses: readonly FrozenResponse[] = readFileSync(
-    join(process.cwd(), 'evals', 'frozen', 'responses', 'index.jsonl'),
-    'utf8',
-  )
-    .trim()
-    .split(/\r?\n/)
-    .map((line) => JSON.parse(line) as FrozenResponse);
-
-  const creates = responses.filter((entry) => entry.branch === 'create');
+  const creates = createEntries;
   const byVerdict = (verdict: string) => creates.filter((entry) => entry.expectedVerdict === verdict);
 
   it('korpus má tři třídy a jejich počty sedí', () => {
@@ -228,5 +242,215 @@ describe('kanonický hash nezávisí na pořadí klíčů', () => {
   it('ale jiný obsah dá jiný hash', () => {
     const world = synthWorld(20260812);
     expect(canonicalHash({ ...world, simRevision: 9 })).not.toBe(canonicalHash(world));
+  });
+});
+
+/**
+ * **Editační větev proti ZMRAZENÉMU korpusu — uzavírací podmínka T12.**
+ *
+ * Až sem se tenhle soubor ptal jen na tvorbu (`branch === 'create'`) a spojení
+ * obou větví dokazoval přes `synthPair`, tedy přes fixturu autorovanou ve stejném
+ * commitu. Všechna kritéria T12 tím procházela a úloha přitom **míjela vlastní
+ * účel**: „spojit tvorbu a editaci" se na datech, která ten kód nepsal, neprokázalo
+ * ani jednou. Je to doslova ta past, kterou tenhle projekt zaplatil už dvakrát —
+ * jednou u T8b a jednou tak, jak to popisuje `worlddoc.ts` („0 z 15 … protože se
+ * validovaly jen fixtury autorované ve stejném commitu").
+ *
+ * Oracle je proto **zmrazený artefakt**: create tělo emitované do korpusu je svět,
+ * editační patch je vydaný proti němu, a obě větve musí dojít do jednoho kontraktu.
+ * Fixtura se tu nepoužívá k ničemu než k tomu, aby se ověřilo, že má tentýž tvar
+ * jako korpus.
+ */
+describe('editační větev se proti zmrazenému korpusu skutečně spustí', () => {
+  const edits = responses.filter((entry) => entry.branch === 'edit');
+  const operationsOf = (entry: FrozenResponse) => entry.body as readonly Operation[];
+  const pointersOf = (operation: Operation): readonly string[] =>
+    'from' in operation ? [operation.path, operation.from] : [operation.path];
+
+  /**
+   * **Prefix se strhává TADY, ručně, a je to dluh vůči T22 — ne převod.**
+   *
+   * Všech 55 unikátních cest ve zmrazených editačních tělech je zakotvených
+   * v dokumentu (`/sim/state/…`), zatímco `commitPart` klonuje `doc[part]`, takže
+   * čeká cesty relativní k části (`/state/…`). Odvodit `part` z prefixu cesty je
+   * náplň **T22** (router podle normalizovaných cest) a dělat to v produkční cestě
+   * už teď by znamenalo napsat router dvakrát — jednou tady potichu a jednou tam
+   * pořádně.
+   *
+   * Do té doby si ho tenhle test strhává sám a **říká to nahlas**: jakmile T22
+   * stojí, tenhle helper zmizí a `commitPart` dostane cesty rovnou. Kdyby se místo
+   * toho tiše schoval do produkčního kódu, měřilo by se potrubí, které nikdo
+   * nenavrhl.
+   *
+   * `part` se odvozuje **z cesty, nikdy ze štítku** — a když cesta prefix nemá,
+   * helper spadne, protože strhávat prefix, který tam není, je domněnka.
+   */
+  const DOCUMENT_ROOT = /^\/(sim|look)(?=\/)/;
+
+  function partOfPointer(pointer: string, label: string): Part {
+    const hit = DOCUMENT_ROOT.exec(pointer);
+    if (hit === null)
+      throw new Error(`${label}: "${pointer}" není zakotvená v dokumentu — strhnout prefix by tu byla domněnka`);
+    return hit[1] as Part;
+  }
+
+  function rehomed(entry: FrozenResponse): { readonly part: Part; readonly operations: readonly Operation[] } {
+    const parts = new Set<Part>();
+    for (const operation of operationsOf(entry))
+      for (const pointer of pointersOf(operation)) parts.add(partOfPointer(pointer, entry.forPrompt));
+
+    // Smíšený patch se podle §7 dělí na dva; dokud ho korpus nenese, je jeho výskyt
+    // signál, že se tenhle převod přestal trefovat, ne že se má domyslet.
+    expect([...parts], `${entry.forPrompt}: patch míchá části dokumentu`).toHaveLength(1);
+    const [part] = parts;
+
+    const operations = operationsOf(entry).map((operation) => {
+      const next = { ...(operation as unknown as Record<string, unknown>) };
+      next.path = String(next.path).replace(DOCUMENT_ROOT, '');
+      if (typeof next.from === 'string') next.from = next.from.replace(DOCUMENT_ROOT, '');
+      return next as unknown as Operation;
+    });
+    return { part, operations };
+  }
+
+  /** Svět, proti kterému byl patch vydán — **zmrazená emise**, zapečetěná systémem. */
+  function baseDocOf(entry: FrozenResponse): WorldDoc {
+    const create = createEntries.find((candidate) => candidate.forPrompt === entry.baseWorld);
+    if (create === undefined)
+      throw new Error(`${entry.forPrompt}: baseWorld ${String(entry.baseWorld)} není ve zmrazeném korpusu`);
+
+    // Emise `simHash` nenese — pečetí ho systém. Průchod `worldDocSchema` je
+    // zároveň důkaz, že zmrazené tělo je skutečný dokument, ne jen podobný tvar.
+    const sealed = sealSimHash(create.body as Record<string, unknown> & { sim: unknown });
+    const parsed = worldDocSchema.safeParse(sealed);
+    if (!parsed.success)
+      throw new Error(`${String(entry.baseWorld)}: ${JSON.stringify(parsed.error.issues[0])}`);
+    return parsed.data;
+  }
+
+  function commitEdit(entry: FrozenResponse) {
+    const doc = baseDocOf(entry);
+    const { part, operations } = rehomed(entry);
+    const baseRevision = part === 'sim' ? doc.simRevision : doc.lookRevision;
+    return { doc, part, result: commitPart(doc, { part, baseRevision, operations }) };
+  }
+
+  const fulfilled = edits.filter((entry) => entry.expectedVerdict === 'FULFILLED');
+
+  it('korpus má 25 editačních záznamů a jejich verdikty sedí', () => {
+    // Kdyby se rozpad tříd změnil, dělily by se testy níž na jiné množině, než
+    // pro kterou byly napsané — tatáž pojistka jako u create větve.
+    expect(edits.length).toBe(25);
+    const byVerdict = (verdict: string) => edits.filter((entry) => entry.expectedVerdict === verdict).length;
+    expect(byVerdict('FULFILLED')).toBe(17);
+    expect(byVerdict('ROBUST')).toBe(3);
+    expect(byVerdict('FAULT')).toBe(3);
+    expect(byVerdict('NO_FIT')).toBe(2);
+  });
+
+  it('všech 68 operací je zakotvených v DOKUMENTU — proto si test prefix strhává sám', () => {
+    const pointers = edits.flatMap((entry) => operationsOf(entry).flatMap(pointersOf));
+    expect(edits.reduce((count, entry) => count + operationsOf(entry).length, 0)).toBe(68);
+    // Kdyby jediná cesta přišla part-relativní, převod výš by ji nechal být a patch
+    // by se aplikoval o úroveň vedle — tiše a se sedícím hashem.
+    for (const pointer of pointers) expect(pointer, pointer).toMatch(/^\/sim\//);
+  });
+
+  it.each(fulfilled.map((entry) => [entry.forPrompt, entry] as const))(
+    '%s (FULFILLED) se aplikuje na svůj `baseWorld` a commitne se do `sim`',
+    (label, entry) => {
+      const { doc, result } = commitEdit(entry);
+      expect(result.verdict, `${label}: ${result.verdict === 'REJECTED' ? result.detail : ''}`).toBe('COMMITTED');
+      if (result.verdict !== 'COMMITTED') return;
+
+      // **Patch musel něco udělat.** Bez téhle aserce by prošel i patch, který se
+      // aplikuje naprázdno — a „editace funguje" by znamenalo „nic se nerozbilo".
+      expect(result.doc.simHash, label).not.toBe(doc.simHash);
+      expect(result.doc.simRevision, label).toBe(doc.simRevision + 1);
+      expect(result.doc.lookRevision, label).toBe(doc.lookRevision);
+      // A výsledek je pořád dokument, ne jen aplikovaný diff.
+      expect(simSchema.safeParse(result.doc.sim).success, label).toBe(true);
+      expect(result.doc.simHash, label).toBe(simHashOf(result.doc));
+    },
+  );
+
+  /**
+   * Čtyři se neaplikují a **žádný z nich nemá deklarovaný verdikt `FULFILLED`**.
+   * Důvody nejsou stejné a slévat je by zakrylo to zajímavější z nich:
+   *
+   * - **E06** (`FAULT`) a **E24** (`FAULT`) padají na **svém vlastním deklarovaném
+   *   defektu** — `replace` na neexistující cestě, resp. `add` na cíl, jehož rodič
+   *   ve světě není.
+   * - **E19** (`ROBUST`) a **E20** (`NO_FIT`) padají na něčem jiném: jejich tělo
+   *   počítá s kontejnerem tam, kde základní svět nese **skalár** (`add
+   *   /sim/layout/levels/1` nad `layout.levels: 1`; `replace
+   *   /sim/rules/patrol/actions/0/route` nad akcí bez `route`). Je to táž třída
+   *   vady jako tvar `sim.rules`, kvůli které se korpus mrazil na v2 — jen zůstala
+   *   neopravená, protože `CLAUDE.md` ji vede jako **nedořešený rozpor #4(a)**
+   *   a AC T2b zakazuje měnit prompty i kontrakty. Ani bezchybná emise je nesplní.
+   *
+   * `evals/FROZEN_ANCHOR` u těch čtyř píše „zamítá je jejich vlastní deklarovaný
+   * defekt" — pro E06 a E24 to sedí, pro E19 a E20 ne. Tenhle test je od toho, aby
+   * ten rozdíl byl vidět a měřený, ne opsaný.
+   */
+  it('a právě čtyři se NEaplikují — ani jeden nemá deklarovaný verdikt `FULFILLED`', () => {
+    const rejected = edits.filter((entry) => commitEdit(entry).result.verdict === 'REJECTED');
+    expect(rejected.map((entry) => entry.forPrompt).sort()).toEqual(['E06', 'E19', 'E20', 'E24']);
+    for (const entry of rejected) expect(entry.expectedVerdict, entry.forPrompt).not.toBe('FULFILLED');
+  });
+
+  it('a to znamená 21 z 25 aplikovatelných a 17 ze 17 u `FULFILLED`', () => {
+    // Číslo, které `evals/FROZEN_ANCHOR` uvádí jako naměřený efekt přemrazení.
+    // Do teď se dalo reprodukovat jen jednorázovým skriptem, který v repu nezůstal.
+    const committed = edits.filter((entry) => commitEdit(entry).result.verdict === 'COMMITTED');
+    expect(committed.length).toBe(21);
+    expect(committed.filter((entry) => entry.expectedVerdict === 'FULFILLED').length).toBe(17);
+  });
+
+  /**
+   * **Štítek o dráze nerozhoduje** — rozhoduje cesta.
+   *
+   * `DESIGN-BOOK.md` §7: nechat dráhu určit modelovým štítkem dělá z modelu
+   * autoritu nad tím, co se bude verifikovat. Tady je to zatím jen konstatované
+   * nad korpusem; vynucuje to router z **T22** a tohle jsou jeho offline kotvy.
+   */
+  it('štítek dráhy NErozhoduje — oba `look` patche míří celé pod `/sim`', () => {
+    const mislabelled = edits.filter((entry) => entry.modelLabel === 'look');
+    expect(mislabelled.map((entry) => entry.forPrompt)).toEqual(['E10', 'E24']);
+    for (const entry of mislabelled) expect(rehomed(entry).part, entry.forPrompt).toBe('sim');
+
+    // E10 je navíc `FULFILLED`, takže se ten špatně oštítkovaný patch musí
+    // commitnout **do `sim`** — zvednout `simRevision`, ne `lookRevision`.
+    const e10 = mislabelled.find((entry) => entry.forPrompt === 'E10');
+    if (e10 === undefined) throw new Error('E10 zmizelo z korpusu');
+    const { doc, result } = commitEdit(e10);
+    expect(result.verdict).toBe('COMMITTED');
+    if (result.verdict !== 'COMMITTED') return;
+    expect(result.part).toBe('sim');
+    expect(result.doc.simRevision).toBe(doc.simRevision + 1);
+    expect(result.doc.lookRevision).toBe(doc.lookRevision);
+  });
+
+  /**
+   * **Fixtura se musí trefit do korpusu i tvarem `rules`.**
+   *
+   * Po přemrazení na `evals-frozen-v2` nese korpus `sim.rules` jako **záznam
+   * klíčovaný stabilním `id`**. `synth.ts` ho do téhle úlohy stavěl jako **pole** —
+   * poslední místo v repu, které si s kanonickým tvarem odporovalo. Schéma to
+   * nechytí (vnitřek `sim` je záměrně `unknown`), takže rozdíl by přežil až do
+   * chvíle, kdy by na fixtuře stál generátor patchů — a ten by adresoval indexy
+   * tam, kde korpus adresuje jména.
+   */
+  it('a fixtura nese `sim.rules` v témže tvaru jako korpus — záznam, ne pole', () => {
+    for (const create of createEntries) {
+      const sim = create.body.sim as { rules?: unknown } | null;
+      if (sim === null || sim === undefined) continue;
+      expect(Array.isArray(sim.rules), `${create.forPrompt}: korpus`).toBe(false);
+      expect(sim.rules, create.forPrompt).toBeTypeOf('object');
+    }
+    const fixture = synthWorld(20260812).sim as { rules: Record<string, { id: string }> };
+    expect(Array.isArray(fixture.rules), 'synth.ts').toBe(false);
+    // `id` uvnitř pravidla se rovná klíči — korpus to tak má a `references.ts` na tom stojí.
+    for (const [key, rule] of Object.entries(fixture.rules)) expect(rule.id, key).toBe(key);
   });
 });

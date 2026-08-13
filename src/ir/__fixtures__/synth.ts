@@ -48,6 +48,15 @@ function simOf(seed: number): SimPart {
 
   // Jména polí jsou z korpusu: `layout.kind` (ne `type`), `grid.cell` (ne
   // `width`/`height`), `entities` jako ZÁZNAM (ne pole), svědek s tierem a mezemi.
+  //
+  // **`rules` je ZÁZNAM klíčovaný stabilním `id`, ne pole** — to je tvar po
+  // přemrazení na `evals-frozen-v2`. Pole tady zůstalo jako poslední místo v repu,
+  // které si s kanonickým tvarem odporovalo, a je to přesně ta vada, kvůli které
+  // se korpus mrazil znovu: editační patche adresují pravidla jménem
+  // (`/sim/rules/open/condition/op`), zatímco pole se indexuje číslem, a vložení
+  // nebo smazání pravidla u pole posune indexy všem ostatním, takže patch tiše
+  // trefí jiné pravidlo. `id` uvnitř pravidla se **rovná klíči** — korpus to tak
+  // má a `references.ts` na tom stojí.
   return {
     layout: { kind: 'grid', width, height, levels: 1, portals: [] },
     grid: { cell: 1 },
@@ -57,8 +66,8 @@ function simOf(seed: number): SimPart {
       player: { role: 'actor', socket: 'spawn', state: 'idle' },
       exit: { role: 'goal', socket: 'exit', state: 'closed', locked: true },
     },
-    rules: [
-      {
+    rules: {
+      win: {
         id: 'win',
         phase: 0,
         priority: 0,
@@ -66,7 +75,7 @@ function simOf(seed: number): SimPart {
         condition: null,
         actions: [{ kind: 'win' }],
       },
-    ],
+    },
     state: { counters: { keys: { min: 0, max: 3, init: keys } }, flags: {}, timers: {}, slots: 3 },
     witness: {
       tier: 'short',

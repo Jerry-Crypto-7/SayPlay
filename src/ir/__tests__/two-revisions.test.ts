@@ -347,6 +347,14 @@ describe('do `sim` se dostane jen JSON', () => {
    * nikdy neuvidí, hash zůstane bitově týž, `structuredClone` klíč zachová
    * a `JSON.stringify` ho zahodí. Commitnutý dokument tedy není ten, který se
    * znovu načte, a oba mají stejný `simHash`.
+   *
+   * **Cíl se přesunul z `rules` na `witness.ops`, a je to oprava, ne kosmetika.**
+   * Po přemrazení na `evals-frozen-v2` je `sim.rules` **záznam klíčovaný `id`**,
+   * ne pole — čtyři testy v tomhle bloku tím přestaly měřit pole. Jeden to řekl
+   * nahlas (spadl na jiné hlášce), tři prošly naprázdno: kontrola tokenu se
+   * u záznamu nikdy nedostane k větvi pro pole, takže by se dala vypnout, aniž by
+   * se cokoli obarvilo. `witness.ops` je pole i po v2 — a je to zrovna ta kolekce,
+   * kterou replay čte, takže propašovaný klíč na ní je nejdražší z možných.
    */
   it('neindexový token do pole je odmítnut dřív, než se vůbec aplikuje', () => {
     // `rfc6902` by ho nezamítl: `replace` zapíše přímo `parent[key]`, `add` dělá
@@ -354,13 +362,13 @@ describe('do `sim` se dostane jen JSON', () => {
     // musí přijít z kontroly tokenu, ne až z nálezu nad draftem.
     const before = world.simHash;
     for (const op of ['replace', 'add', 'copy', 'move'] as const) {
-      const body = op === 'copy' || op === 'move' ? '"from":"/rules/0"' : '"value":{"hidden":true}';
-      const operations = JSON.parse(`[{"op":"${op}","path":"/rules/smuggled",${body}}]`) as Operation[];
+      const body = op === 'copy' || op === 'move' ? '"from":"/witness/ops/0"' : '"value":{"hidden":true}';
+      const operations = JSON.parse(`[{"op":"${op}","path":"/witness/ops/smuggled",${body}}]`) as Operation[];
       const result = commitPart(world, { part: 'sim', baseRevision: 0, operations });
 
       expect(result, op).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
       if (result.verdict !== 'REJECTED') continue;
-      expect(result.pointer, op).toBe('/rules/smuggled');
+      expect(result.pointer, op).toBe('/witness/ops/smuggled');
       expect(result.detail, op).toContain('is not an index');
     }
     expect(world.simHash).toBe(before);
@@ -373,7 +381,7 @@ describe('do `sim` se dostane jen JSON', () => {
     const before = world.simHash;
     for (const prefix of ['constructor', '__proto__', 'prototype']) {
       const operations = JSON.parse(
-        `[{"op":"add","path":"/rules/${prefix}/smuggled","value":{"id":"x"}}]`,
+        `[{"op":"add","path":"/witness/ops/${prefix}/smuggled","value":{"id":"x"}}]`,
       ) as Operation[];
       const result = commitPart(world, { part: 'sim', baseRevision: 0, operations });
 
@@ -384,29 +392,57 @@ describe('do `sim` se dostane jen JSON', () => {
     expect(world.simHash).toBe(before);
   });
 
-  it('a `from` u `move` nesmí smazat nulté pravidlo', () => {
+  it('a `from` u `move` nesmí smazat nultou operaci svědka', () => {
     // `_remove` splicuje pole přes `parseInt(key,10)`, takže `from`
-    // `/rules/length` znamená `splice(NaN, 1)` — smazané pravidlo `win`.
+    // `/witness/ops/length` znamená `splice(NaN, 1)` — smazaná nultá operace,
+    // tedy svědek, který dojde jinam než ten certifikovaný.
     const before = world.simHash;
-    const operations = JSON.parse('[{"op":"move","from":"/rules/length","path":"/grid/cell"}]') as Operation[];
+    const operations = JSON.parse(
+      '[{"op":"move","from":"/witness/ops/length","path":"/grid/cell"}]',
+    ) as Operation[];
     const result = commitPart(world, { part: 'sim', baseRevision: 0, operations });
 
     expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
     if (result.verdict !== 'REJECTED') return;
-    expect(result.pointer).toBe('/rules/length');
+    expect(result.pointer).toBe('/witness/ops/length');
     expect(world.simHash).toBe(before);
   });
 
   it('ale `-` u `add` je legální „za poslední prvek"', () => {
+    const step = JSON.parse('{"tick":1,"actionId":"moveTo","target":"spawn"}') as unknown;
+    const result = commitPart(world, {
+      part: 'sim',
+      baseRevision: 0,
+      operations: [{ op: 'add', path: '/witness/ops/-', value: step } as Operation],
+    });
+    expect(result.verdict).toBe('COMMITTED');
+  });
+
+  /**
+   * **A vložení pravidla je po v2 zápis klíče, ne `splice`.**
+   *
+   * Tohle je celý důvod přemrazení: u pole posune vložení nebo smazání pravidla
+   * indexy všem za ním, takže příští patch adresující `/rules/2` tiše trefí jiné
+   * pravidlo. U záznamu klíčovaného `id` se ostatní klíče nehnou. §15 vede vložení
+   * i smazání pravidla jako vlastní třídy editace, takže obojí musí jít provést
+   * adresně.
+   */
+  it('a vložení pravidla adresuje `id`, takže ostatní pravidla nepřečísluje', () => {
     const rule = JSON.parse(
       '{"id":"lose","phase":0,"priority":1,"event":{"kind":"onEnterZone","entity":"player","zone":"spawn"},"condition":null,"actions":[{"kind":"lose"}]}',
     ) as unknown;
     const result = commitPart(world, {
       part: 'sim',
       baseRevision: 0,
-      operations: [{ op: 'add', path: '/rules/-', value: rule } as Operation],
+      operations: [{ op: 'add', path: '/rules/lose', value: rule } as Operation],
     });
     expect(result.verdict).toBe('COMMITTED');
+    if (result.verdict !== 'COMMITTED') return;
+
+    const rules = (result.doc.sim as { rules: Record<string, { id: string }> }).rules;
+    expect(Object.keys(rules).sort()).toEqual(['lose', 'win']);
+    // Původní pravidlo je pořád adresovatelné týmž jménem, jaké mělo předtím.
+    expect(rules.win.id).toBe('win');
   });
 
   it('a pole s propašovaným klíčem neprojde ani jako HODNOTA operace', () => {
