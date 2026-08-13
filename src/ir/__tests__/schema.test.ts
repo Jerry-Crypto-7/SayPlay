@@ -336,7 +336,7 @@ describe('strop počtu slotů', () => {
 
 describe('oddělení od části vzhledu', () => {
   const irDir = join(process.cwd(), 'src', 'ir');
-  const IR_PATH_MODULES = ['types.ts', 'schema.ts', 'lower.ts', 'eval.ts'];
+  const IR_PATH_MODULES = ['types.ts', 'schema.ts', 'lower.ts', 'eval.ts', 'surface.ts', 'build.ts'];
 
   /**
    * Moduly pod `src/ir`, které část vzhledu jmenovat **musí**.
