@@ -198,14 +198,20 @@ export interface PointerFault {
  * jestli už musí existovat (`existing` — `replace`, `remove`, `test` a zdroj
  * `move` i `copy`).
  */
-function resolve(pointer: string, doc: unknown, mode: 'insert' | 'existing'): PointerFault | null {
+function resolve(pointer: string, doc: unknown, mode: 'insert' | 'existing' | 'read'): PointerFault | null {
   const tokens = tokensOf(pointer);
+  // Kořen se nedá patchovat — `add`/`replace`/`remove` na `""` je v knihovně
+  // `MissingError` a významově „vyměň celý dokument", což patch dělat nemá.
+  // **`test` je ale výjimka a legální**: nic nemění, jen se ptá, a `rfc6902` si
+  // takový kořenový test sám generuje.
   if (tokens.length === 0)
-    return {
-      pointer,
-      expected: 'a pointer to something inside the document',
-      reason: 'the document root is not a patch target — a patch edits a graph, it does not swap it',
-    };
+    return mode === 'read'
+      ? null
+      : {
+          pointer,
+          expected: 'a pointer to something inside the document',
+          reason: 'the document root is not a patch target — a patch edits a graph, it does not swap it',
+        };
 
   let node: unknown = doc;
   for (let i = 0; i < tokens.length; i += 1) {
@@ -275,7 +281,8 @@ function resolve(pointer: string, doc: unknown, mode: 'insert' | 'existing'): Po
  */
 export function pointerFault(draft: unknown, operation: Operation): PointerFault | null {
   const inserts = operation.op === 'add' || operation.op === 'move' || operation.op === 'copy';
-  const onPath = resolve(operation.path, draft, inserts ? 'insert' : 'existing');
+  const mode = inserts ? 'insert' : operation.op === 'test' ? 'read' : 'existing';
+  const onPath = resolve(operation.path, draft, mode);
   if (onPath !== null) return onPath;
   if (operation.op !== 'move' && operation.op !== 'copy') return null;
   const onFrom = resolve(operation.from, draft, 'existing');
@@ -329,20 +336,33 @@ function movedTwice(draft: unknown, from: string, path: string): PointerFault | 
   const parent = nodeAt(draft, parentTokens);
   if (!Array.isArray(parent)) return null;
 
-  // Míří `path` do téhož pole?
-  if (pathTokens.length <= parentTokens.length) return null;
-  for (let i = 0; i < parentTokens.length; i += 1) if (pathTokens[i] !== parentTokens[i]) return null;
+  // Míří `path` do téhož pole? **Porovnává se odkaz, ne řetězec tokenů.**
+  // Dva různé pointery můžou adresovat tentýž objekt (`doc.s === doc.t`), a pak
+  // by shoda prefixů řekla „jiné pole", zatímco odebrání ty indexy posune.
+  let node: unknown = draft;
+  let at = -1;
+  for (let i = 0; i <= pathTokens.length; i += 1) {
+    if (node === parent) {
+      at = i;
+      break;
+    }
+    if (i === pathTokens.length || node === null || typeof node !== 'object') break;
+    node = (node as Record<string, unknown>)[pathTokens[i]];
+  }
+  // `at === pathTokens.length` znamená, že `path` končí na tom poli samotném —
+  // nahrazuje se celé, takže žádný index se neposouvá.
+  if (at === -1 || at >= pathTokens.length) return null;
 
-  const token = pathTokens[parentTokens.length];
+  const token = pathTokens[at];
   if (token === '-') return null; // konec je konec i po odebrání
   const index = Number(token);
   const removed = Number(fromTokens[fromTokens.length - 1]);
 
-  if (pathTokens.length > parentTokens.length + 1) {
+  if (pathTokens.length > at + 1) {
     if (index < removed) return null; // prvek před odebraným se neposune
     return {
       pointer: path,
-      expected: `an index below ${removed}, or a target outside ${`/${parentTokens.join('/')}`}`,
+      expected: `an index below ${removed}, or a target outside that array`,
       reason: `after the move removes index ${removed}, "${token}" names a different element than it does now — rfc6902 would write into the one it names now`,
     };
   }

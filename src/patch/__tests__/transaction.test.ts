@@ -759,6 +759,34 @@ describe('sousední patch cesta má tytéž stráže jako `ir/revision.ts`', () 
     expect(result.detail).not.toContain('threw');
   });
 
+  it('ale kořenový `test` legální JE — nic nemění, jen se ptá', () => {
+    // `rfc6902` si takový test sám generuje (`createTests`), takže zakázat ho
+    // není mez, ale odmítnutí platné operace.
+    expect(applyWorldPatch(vault, [{ op: 'test', path: '', value: vault } as Operation]).verdict).toBe('COMMITTED');
+    const wrong = applyWorldPatch(vault, [{ op: 'test', path: '', value: { nope: 1 } } as Operation]);
+    expect(wrong.verdict).toBe('REJECTED');
+  });
+
+  /**
+   * **Dva pointery můžou adresovat TENTÝŽ objekt.**
+   *
+   * `movedTwice` se proto ptá na odkaz, ne na shodu tokenů: kdyby porovnávalo
+   * řetězce, `move /s/0 → /t/1/ghost` nad dokumentem, kde `s` i `t` je jedno
+   * a totéž pole, by prošlo — a `rfc6902` by zapsalo do prvku, který na té pozici
+   * byl před odebráním. `unhashableValues` sdílené odkazy záměrně připouští
+   * (DAG není cyklus) a `structuredClone` je zachovává, takže to nikdo jiný
+   * nezachytí.
+   */
+  it('`move` pozná posunuté indexy i přes druhé jméno téhož pole', () => {
+    const shared = [{ id: 'A' }, { id: 'B' }, { id: 'C' }];
+    const aliased = { ...structuredClone(vault), s: shared, t: shared } as unknown as VerifiableWorld;
+
+    const result = applyWorldPatch(aliased, [{ op: 'move', from: '/s/0', path: '/t/1/ghost' } as Operation]);
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.detail).toContain('names a different element');
+  });
+
   it('a index mimo rozsah se odmítne s tím rozsahem v odpovědi', () => {
     const before = graphHash(vault);
     // `replace` na délku pole je mimo rozsah (nahrazovat se dá jen existující),
