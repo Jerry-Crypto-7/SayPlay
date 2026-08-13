@@ -723,6 +723,11 @@ describe('rozhodnutí T22: pravidlo musí ležet pod svým `id`', () => {
 
     it('a to i když zdědil rovnou celou tabulku jako pole', () => {
       const table = bentTable();
+      // Výchozí stav se tvrdí, ne předpokládá. Bez téhle aserce test přežil
+      // smazání CELÉ větve pro pole — tvrdil jen „oprava na čistý záznam projde",
+      // což platí v každé implementaci, která nad čistým záznamem nález nevyrábí.
+      expect(ruleKeyFault(table.sim)?.pointer).toBe('/sim/rules');
+
       const repair = commitPart(table, {
         part: 'sim',
         baseRevision: table.simRevision,
@@ -731,6 +736,8 @@ describe('rozhodnutí T22: pravidlo musí ležet pod svým `id`', () => {
       expect(repair.verdict).toBe('COMMITTED');
       if (repair.verdict !== 'COMMITTED') return;
       expect(ruleKeyFault(repair.doc.sim)).toBeNull();
+      // A opravená tabulka je doopravdy záznam klíčovaný `id`, ne jen „bez nálezu".
+      expect(Object.keys(repair.doc.sim.rules as object)).toEqual(['lose']);
     });
 
     it('a nesouvisející patch se kvůli zděděné vadě neodmítá', () => {
@@ -877,39 +884,71 @@ describe('rozhodnutí T22: pravidlo musí ležet pod svým `id`', () => {
       }
     });
 
-    it('ale VYMĚNIT ten tvar za jiný vadný se odmítne — tolerance je na úpravy, ne na výměnu', () => {
-      // Konzervativní půlka rozhodnutí, a proto jsou značky tvaru dvě a ne jedna:
-      // pole → primitiv smaže všechna pravidla naráz, což je poškození, které
-      // přinesl tenhle patch, ne stav, který zdědil.
-      const table = bentTable();
-      const result = commitPart(table, {
-        part: 'sim',
-        baseRevision: table.simRevision,
-        operations: [{ op: 'replace', path: '/rules', value: 'gone' } as Operation],
-      });
-      expect(result.verdict).toBe('REJECTED');
-      if (result.verdict !== 'REJECTED') return;
-      expect(result.pointer).toBe('/sim/rules');
-    });
-
-    it('a tabulka, která není ani objekt, je vada celé tabulky', () => {
-      // Brána 5, nález 1. Dřív se `replace /sim/rules` hodnotou `"gone"` commitnul:
-      // `ruleKeyFaults` vracel `[]` pro cokoli, co není objekt, takže jediná
-      // operace smazala všechna pravidla a invariant nad výsledkem hlásil čisto.
-      // Táž vada jako u pole, jen o úroveň výš — a zotavení jde jen dalším
-      // celotabulkovým `replace`, protože `add /sim/rules/win` po něm padne na
-      // „path runs through a primitive".
-      for (const value of ['gone', 7, true]) {
+    /**
+     * **Ze ZDRAVÉHO záznamu se nesmí stát ani jeden z těch tvarů**, `null` včetně.
+     *
+     * Brána 5, nález 1, a `null` je jeho půlka, kterou první oprava vynechala: dvě
+     * nezávislé revize shodně naměřily, že `replace /sim/rules` hodnotou `null` se
+     * commitne, smaže všechna tři pravidla a `ruleKeyFault` nad výsledkem vrátí
+     * „čisto". `simSchema` ho nezachytí, protože `rules: present` je splněné —
+     * povinnost `null` má. Zotavení je u všech čtyř stejné: další celotabulkový
+     * `replace` záznamem; `add /sim/rules/win` po nich padne na rozbor cesty.
+     */
+    it('a ze zdravého záznamu se nesmí stát pole, primitiv ANI `null`', () => {
+      for (const value of ['gone', 7, true, null, [rule]]) {
         const result = commitPart(C01, {
           part: 'sim',
           baseRevision: C01.simRevision,
           operations: [{ op: 'replace', path: '/rules', value } as Operation],
         });
-        expect(result.verdict, String(value)).toBe('REJECTED');
+        expect(result.verdict, JSON.stringify(value)).toBe('REJECTED');
         if (result.verdict !== 'REJECTED') continue;
-        expect(result.pointer, String(value)).toBe('/sim/rules');
-        expect(result.detail, String(value)).toContain('stable id');
+        expect(result.pointer, JSON.stringify(value)).toBe('/sim/rules');
+        expect(result.detail, JSON.stringify(value)).toContain('stable id');
       }
+    });
+
+    /**
+     * **A mezi těmi tvary navzájem se to naopak toleruje — jednotně.**
+     *
+     * Tohle je oprava vlastního předchozího kola, ne nová vlastnost. Značky tvaru
+     * byly dvě, takže ze zděděného pole `replace /rules` hodnotou `7` odmítlo,
+     * zatímco `null`, `[]` i `[{"id":"jine"}]` prošly — táž škoda, opačný verdikt.
+     *
+     * Odůvodnit to škodou nejde, protože **ze samotného stavu ty případy nejsou
+     * rozlišitelné**: `remove /rules/0` nad `[rule]` a `replace /rules` hodnotou
+     * `[]` vyrobí bitově týž dokument, a protokol počítá změněné listy diffem
+     * stavu, ne čtením operací. Pod žádným z těch tvarů přitom není adresovatelné
+     * ani jedno pravidlo, takže se tolerancí žádná adresovatelnost neztrácí —
+     * a vrátit ji umí jedině oprava na záznam, která projde (test níž).
+     */
+    it('ale pohyb MEZI vadnými tvary se toleruje jednotně, včetně vyprázdnění', () => {
+      for (const value of [null, 7, [], [{ id: 'jine' }], 'gone']) {
+        const table = bentTable();
+        const result = commitPart(table, {
+          part: 'sim',
+          baseRevision: table.simRevision,
+          operations: [{ op: 'replace', path: '/rules', value } as Operation],
+        });
+        expect(result.verdict, JSON.stringify(value)).toBe('COMMITTED');
+      }
+    });
+
+    it('a `add /rules/-` nad zděděným polem taky — nové pravidlo je tam neadresovatelné, jako všechna ostatní', () => {
+      // Vypsané schválně, aby to byl pinutý záměr a ne náhoda: pod polem se
+      // `add /sim/rules/lose` NEDÁ provést („is not an index of the array"), takže
+      // jediný způsob, jak do takové tabulky pravidlo přidat, je index nebo `-`.
+      // Odmítnout to by znamenalo, že zděděné pole nejde ani doplnit, ani opravit
+      // po částech — jen zahodit celé.
+      const table = bentTable();
+      const result = commitPart(table, {
+        part: 'sim',
+        baseRevision: table.simRevision,
+        operations: [{ op: 'add', path: '/rules/-', value: rule } as Operation],
+      });
+      expect(result.verdict).toBe('COMMITTED');
+      if (result.verdict !== 'COMMITTED') return;
+      expect(ruleKeyFault(result.doc.sim)?.pointer).toBe('/sim/rules');
     });
 
     it('a `ruleKeyFault` vrátí verdikt i nad položkou, kterou nejde kanonizovat', () => {

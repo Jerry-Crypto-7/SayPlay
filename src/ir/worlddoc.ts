@@ -466,20 +466,44 @@ export function ruleKeyFault(sim: unknown): UnhashableIssue | null {
  * Pod polem navíc žádné pravidlo adresovatelné není, takže se úpravou uvnitř
  * nic adresovatelného neztrácí.
  *
- * Značky jsou dvě, ne jedna, a to je ta konzervativní půlka: přechod mezi tvary
- * (pole → primitiv, tedy smazání všech pravidel) identitu **změní**, takže se
- * odmítne. Tolerance platí pro úpravy uvnitř zděděného tvaru, ne pro jeho výměnu.
+ * **Značka je JEDNA pro všechny tvary, které nejsou záznam** — pole, primitiv
+ * i `null`. Dvě značky (zvlášť pole, zvlášť primitiv) tady jedno kolo stály a byly
+ * chyba: ze zděděného pole pak `replace /sim/rules` hodnotou `7` odmítlo, zatímco
+ * `null`, `[]` i `[{"id":"jine"}]` prošly. Táž škoda, opačný verdikt — a odůvodnit
+ * to škodou nejde, protože **ze samotného stavu ty dva případy nejsou rozlišitelné**:
+ * `remove /sim/rules/0` nad `[a]` a `replace /sim/rules` hodnotou `[]` vyrobí
+ * bitově týž dokument. Protokol přitom počítá změněné listy diffem stavu, ne
+ * čtením operací, takže „úprava uvnitř" a „výměna celé tabulky" jsou tady jedna věc.
+ *
+ * Invariant, který tahle kontrola vlastní, je **adresovatelnost pravidla jeho
+ * `id`** — a pod žádným z těch tvarů není adresovatelné ani jedno pravidlo, ať
+ * v tabulce zbylo cokoli. Přechod ze záznamu do kteréhokoli z nich se proto pořád
+ * odmítá (identita se změní), zatímco pohyb mezi nimi se toleruje jednotně.
  */
 export function introducedRuleKeyFault(stored: unknown, draft: unknown): UnhashableIssue | null {
   const before = new Set(ruleKeyFaults(stored).map(identityOf));
   return ruleKeyFaults(draft).find((fault) => !before.has(identityOf(fault)))?.issue ?? null;
 }
 
+/**
+ * Jediná identita celotabulkové vady. Je to konstanta, ne popis tvaru: pole,
+ * primitiv i `null` jsou pro adresování pravidel táž vada, takže pohyb mezi nimi
+ * nesmí vypadat jako zavlečení nové. Do hlášky jde `describeTable`, do identity ne.
+ */
+const TABLE_NOT_A_RECORD = 'not-a-record';
+
+/** Jen do textu hlášky. Nikdy do identity — tam by z toho byly zase dvě značky. */
+function describeTable(rules: unknown): string {
+  if (rules === null) return 'null';
+  return Array.isArray(rules) ? 'an array' : `a ${typeof rules}`;
+}
+
 interface RuleKeyFault {
   readonly pointer: string;
   /**
-   * Značka celotabulkové vady, nebo `null` u vady jedné položky. Nese TVAR
-   * tabulky, ne její obsah — proto ji úprava uvnitř zděděně vadné tabulky nezmění.
+   * `TABLE_NOT_A_RECORD` u vady celé tabulky, `null` u vady jedné položky.
+   * Nenese ani tvar, ani obsah — proto ji úprava uvnitř zděděně vadné tabulky
+   * nezmění a nečte se jako zavlečená.
    */
   readonly marker: string | null;
   /** Provinilá položka. Kanonizuje se až v `identityOf`, viz `ruleFault`. */
@@ -512,46 +536,42 @@ function ruleFault(pointer: string, entry: unknown, detail: string): RuleKeyFaul
   return { pointer, marker: null, entry, issue: issue(pointer, detail) };
 }
 
-/** Vada celé tabulky. `marker` je jediné, co jde do identity — obsah do ní nesmí. */
-function tableFault(marker: string, detail: string): RuleKeyFault {
-  return { pointer: '/sim/rules', marker, entry: undefined, issue: issue('/sim/rules', detail) };
+/** Vada celé tabulky. Do identity jde jen konstanta — tvar ani obsah do ní nesmí. */
+function tableFault(detail: string): RuleKeyFault {
+  return {
+    pointer: '/sim/rules',
+    marker: TABLE_NOT_A_RECORD,
+    entry: undefined,
+    issue: issue('/sim/rules', detail),
+  };
 }
 
 function ruleKeyFaults(sim: unknown): RuleKeyFault[] {
   const rules = (sim as { readonly rules?: unknown } | null)?.rules;
 
-  // Chybějící `rules` a `null` zůstávají bez nálezu — tam žádná pravidla nejsou,
-  // takže se ani žádné adresování nelomí.
-  if (rules === undefined || rules === null) return [];
+  // Chybějící `rules` je bez nálezu, a stojí to na `simSchema`, ne na téhle větvi:
+  // `rules: present` je povinné, takže dokument s vyříznutou tabulkou se odmítne
+  // o krok dřív a sem se nedostane. `null` povinnost splňuje, proto tady zůstává.
+  if (rules === undefined) return [];
 
-  // **Tabulka, která není ani objekt, je vada celé tabulky** — a je to táž vada
-  // jako pole níž, jen o úroveň výš: jediná operace `replace /sim/rules` hodnotou
-  // `"gone"` nebo `7` smaže všechna pravidla naráz a invariant nad výsledkem
-  // dřív hlásil čisto. Zotavení jde jen dalším celotabulkovým `replace`; `add
-  // /sim/rules/win` po něm padne na „path runs through a primitive".
-  if (typeof rules !== 'object')
-    return [
-      tableFault(
-        'primitive',
-        `the rule table is ${typeof rules} instead of a keyed record, so every rule it held is gone and nothing is reachable by its stable id`,
-      ),
-    ];
-
-  // **Pole je vada celé tabulky, ne jednoho klíče** — a je to přesně ten tvar v1,
-  // kvůli kterému se korpus mrazil na v2. Pod polem leží každé pravidlo pod
-  // indexem, takže `replace /sim/rules/lose/priority` selže na pravidle, které
-  // existuje; jediná operace `replace /sim/rules` tím zabije id-adresování všech
-  // pravidel naráz, tedy širší podobu téhož selhání jako `add /sim/rules/-`.
+  // **Cokoli, co není záznam, je vada CELÉ tabulky** — pole, primitiv i `null`.
+  //
+  // Pole je ten tvar v1, kvůli kterému se korpus mrazil na v2: každé pravidlo pod
+  // ním leží pod indexem, takže `replace /sim/rules/lose/priority` selže na
+  // pravidle, které existuje. Primitiv a `null` jsou širší podoba téhož — jediná
+  // operace `replace /sim/rules` hodnotou `"gone"`, `7` nebo `null` smaže všechna
+  // pravidla naráz a invariant nad výsledkem dřív hlásil čisto. Zotavení je u všech
+  // tří stejné: další celotabulkový `replace` záznamem. `add /sim/rules/win` po nich
+  // padne na „path runs through a primitive", resp. „is not an index of the array".
   //
   // Naměřeno na zmrazeném korpusu, ne odhadnuto: 13 create těl nese `rules` jako
   // záznam a **žádné** jako pole, a **žádný** z 25 editačních patchů celé
   // `/sim/rules` nepřepisuje. Tohle odmítnutí tedy nestojí ani jeden zmrazený
   // záznam.
-  if (Array.isArray(rules))
+  if (rules === null || typeof rules !== 'object' || Array.isArray(rules))
     return [
       tableFault(
-        'array',
-        'the rule table is an array, so every rule is filed under an index — a patch addressing any of them by its stable id would miss a rule that exists',
+        `the rule table is ${describeTable(rules)} instead of a keyed record, so no rule in it is reachable by its stable id`,
       ),
     ];
 
