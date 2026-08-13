@@ -62,6 +62,29 @@ describe('hash je počítaný výhradně ze `sim`', () => {
     expect(result.doc.simHash).toBe(simHashOf(result.doc));
   });
 
+  /**
+   * **Patch, který se aplikuje naprázdno, se commitne a hash nechá být.**
+   *
+   * `sealPart` hash přepočítá z draftu, takže rovnost `simHash === simHashOf(doc)`
+   * platí konstrukcí — ale to, že se hash **pohnul**, konstrukcí neplatí. Tenhle
+   * test to pinuje, protože na tom stojí aserce `not.toBe(doc.simHash)`
+   * v `create-edit-join.test.ts`: bez ní by za „editace funguje" prošel i patch,
+   * který nezměnil nic. Bez tohohle testu je to jen tvrzení v komentáři.
+   */
+  it('a patch, který nic nezmění, se commitne s BITOVĚ stejným hashem', () => {
+    const cell = (world.sim as { grid: { cell: number } }).grid.cell;
+    const result = commitPart(world, {
+      part: 'sim',
+      baseRevision: 0,
+      operations: [{ op: 'replace', path: '/grid/cell', value: cell }],
+    });
+    expect(result.verdict).toBe('COMMITTED');
+    if (result.verdict !== 'COMMITTED') return;
+    // Revize se zvedne — commit proběhl — ale obsah `sim` je týž, takže i hash.
+    expect(result.doc.simRevision).toBe(world.simRevision + 1);
+    expect(result.doc.simHash).toBe(world.simHash);
+  });
+
   it('hash se počítá ze `sim` SAMOTNÉ, ne z obalu kolem ní', () => {
     // Porovnává se proti PRIMITIVU `canonicalHash`, ne proti `simHashOf` — ta by
     // se ptala sama sebe a prošla by i tehdy, kdyby hashovala obal, dokument bez

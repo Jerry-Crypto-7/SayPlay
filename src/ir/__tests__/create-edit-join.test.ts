@@ -264,17 +264,19 @@ describe('kanonický hash nezávisí na pořadí klíčů', () => {
  * **Co tenhle blok dokazuje a co ne — přesně, protože rozdíl je celý jeho smysl.**
  * DOKAZUJE, že se editační patch na zmrazený svět aplikuje, že to něco udělá, že
  * výsledek je pořád dokument, a — přes `findDanglingReferences` — že po něm
- * nezůstane odkaz do prázdna. Poslední z toho je jediná aserce v tomhle souboru,
- * která **rozlišuje** `FULFILLED` od `FAULT` na datech, která tenhle kód nepsal.
+ * nezůstane odkaz do prázdna.
  *
  * NEDOKAZUJE rovnost „patchovaný svět == nezávisle sestavený svět". Ta zůstává
  * u `synthPair` výš, a **je to mez korpusu, ne opomenutí**: zmrazená sada nese
  * pro editaci jen `(baseWorld, patch)`, žádné cílové tělo, takže není s čím
- * porovnávat. Aserce `simHash` se pohnul a `simHash === simHashOf(doc)` jsou
- * proto konzistenční kontroly, ne oracle — `sealPart` je splní konstrukcí
- * (`revision.ts`), takže samy o sobě neumí odhalit výsledek dobře tvarovaný
- * a přitom špatný. Tvrdit tu spojení obou větví by bylo přesně to nadhodnocení,
- * kvůli kterému tenhle blok vznikl.
+ * porovnávat. Tvrdit tu spojení obou větví by bylo přesně to nadhodnocení, kvůli
+ * kterému tenhle blok vznikl.
+ *
+ * Z dvojice hashových ascí níž je `simHash === simHashOf(doc)` konzistenční
+ * kontrola, kterou `sealPart` splní konstrukcí. `simHash` se pohnul **ne** — tu
+ * neprojde patch, který se aplikuje naprázdno (`replace /grid/cell` toutéž
+ * hodnotou se commitne, zvedne revizi a hash nechá bitově stejný), takže je
+ * load-bearing a mazat se nesmí.
  */
 describe('editační větev se proti zmrazenému korpusu skutečně spustí', () => {
   const edits = responses.filter((entry) => entry.branch === 'edit');
@@ -400,10 +402,12 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
    *   tedy cesta skrz **primitivum**; deklarovaný defekt je přitom chybějící portál.
    * - **E20** (`NO_FIT`): `C03.sim.rules.patrol.actions[0]` je `{kind, target,
    *   socket, ticks}` — objekt, jen bez listu `route`. **Chybějící list, ne skalár.**
-   * - **E24** (`FAULT`): deklarované je „`-` jako index pole **na objektu**", ale
-   *   `streak` v `C09` vůbec není (`state.counters` nese jediné `score`), takže
-   *   rozbor skončí o token dřív a k `-` se **nikdy nedostane**. Deklarovaná třída
-   *   zůstává nezměřená.
+   * - **E24** (`FAULT`): `deliberateDefect` **té odpovědi** popisuje `-` jako
+   *   „index pole na objektu" (kontrakt `E24` sám povoluje `add
+   *   /sim/state/counters/streak`, tedy bez `-` — ten je odchylka odpovědi, ne
+   *   deklarace kontraktu). Jenže `streak` v `C09` vůbec není (`state.counters`
+   *   nese jediné `score`), takže rozbor skončí o token dřív a k `-` se **nikdy
+   *   nedostane**. Popsaná třída tedy zůstává nezměřená.
    * E19 a E20 nesplní ani bezchybná emise — `CLAUDE.md` je vede jako **nedořešený
    * rozpor #4(a)** a AC T2b zakazuje měnit prompty i kontrakty.
    *
@@ -420,8 +424,10 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
    *   knihovně (dublovat její přesnou `MissingError` by znamenalo dvě pravidla
    *   o téže věci), a ta ohlásí `an applicable replace target`.
    * Kdo by chtěl `resolve` utáhnout na chybějící poslední token, pohne **jen
-   * E20** — a to je přesně ta předpověď, kterou pinuje `expected` a `detail`
-   * nikoli. Text zprávy říká *co* se stalo, `expected` říká *kdo to řekl*.
+   * E20** — ověřeno mutací. `expected` tu předpověď pinuje **přímo**: je to jediné
+   * pole, jehož hodnota odmítající komponentu pojmenovává. (`detail` ji u E20
+   * chytí taky, protože `Value required` je shodou okolností řetězec z `rfc6902`
+   * — ale to je vlastnost té jedné zprávy, ne kontrakt, na který se dá spolehnout.)
    *
    * **Důsledek, který ten mislabel schovával, a patří k rozhodnutí, ne k opravě:**
    * `-` ani číselný token nad OBJEKTEM dnes odmítnutí nevyvolá — `resolve`
@@ -525,8 +531,12 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
    * po sobě nenechá jediný osiřelý odkaz**, zatímco dva záznamy, které se
    * commitnou navzdory deklarovanému defektu, po sobě nechají právě jeden každý —
    * `E11` (`FAULT`) míří pravidlem na socket `centre2`, který nevznikl, a `E25`
-   * (`NO_FIT`) na zónu `tagged`. Je to jediná aserce v tomhle bloku, která umí říct
-   * `FULFILLED` od `FAULT` na datech, která tenhle kód nepsal.
+   * (`NO_FIT`) na zónu `tagged`.
+   *
+   * Rozlišení `FULFILLED` od vadných záznamů drží v tomhle bloku **dvě** aserce
+   * a každá jinou půlku: odmítnutá čtveřice výš odchytí ty, které se vůbec
+   * neaplikují (E06 a E24 jsou `FAULT`), tahle odchytí ty, které se aplikují
+   * a přesto nechají svět rozbitý. Ani jedna nezastoupí druhou.
    *
    * **Nekrade to rozsah T13.** Tam se `findDanglingReferences` zapojuje do
    * PRODUKČNÍ emisní cesty jako odmítnutí; tady je čtený jako měřidlo nad
