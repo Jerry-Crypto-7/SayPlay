@@ -83,6 +83,21 @@ function asArray(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
 }
 
+/**
+ * Pravidla jako dvojice `[popisek, pravidlo]`, ať přijdou v záznamu, nebo v poli.
+ *
+ * Popisek je to, čím pravidlo adresuje patch: u záznamu klíč, u pole vlastní
+ * `id`, a teprve když ani to není řetězec, index. Kanonický tvar je záznam.
+ */
+function ruleEntries(value: unknown): Array<[string, unknown]> {
+  if (Array.isArray(value))
+    return value.map((entry, index) => {
+      const id = asRecord(entry).id;
+      return [typeof id === 'string' ? id : String(index), entry];
+    });
+  return Object.entries(asRecord(value));
+}
+
 /** Jmenný prostor, jehož deklarace nemá očekávaný tvar. */
 const UNRESOLVABLE = Symbol('unresolvable');
 type NameSet = ReadonlySet<string> | typeof UNRESOLVABLE;
@@ -196,15 +211,21 @@ export function findDanglingReferences(worldDoc: unknown): DanglingReference[] {
     }
   };
 
-  asArray(sim.rules).forEach((entry, index) => {
+  // Povrchová `sim.rules` je od `evals-frozen-v2` **záznam klíčovaný stabilním
+  // id** (snížené `ir.rules` zůstává pole — to model neadresuje). Pole se tu
+  // přesto pořád projde: `simSchema` má `rules: present`, tedy `unknown`, takže
+  // emise s polem projde tvarem a jediné, co by se stalo, je že by tahle
+  // kontrola tiše vrátila prázdno a osiřelé odkazy uvnitř by nikdo nezkontroloval.
+  // Umlčet kontrolu kvůli špatnému kontejneru je horší než ji nechat běžet.
+  for (const [label, entry] of ruleEntries(sim.rules)) {
     const rule = asRecord(entry);
-    const where = `sim.rules[${typeof rule.id === 'string' ? rule.id : index}]`;
+    const where = `sim.rules[${label}]`;
     applyTable(EVENT_REFERENCES, asRecord(rule.event), `${where}.event`);
     walkCondition(rule.condition, `${where}.condition`);
     asArray(rule.actions).forEach((action, position) => {
       applyTable(ACTION_REFERENCES, asRecord(action), `${where}.actions[${position}]`);
     });
-  });
+  }
 
   asArray(asRecord(sim.witness).ops).forEach((entry, index) => {
     resolve('entityOrSocket', asRecord(entry).target, `sim.witness.ops[${index}].target`);

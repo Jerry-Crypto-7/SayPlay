@@ -1,9 +1,10 @@
-FROZEN 2026-08-12
+FROZEN 2026-08-13
 protocol: v1
-tag: evals-frozen-v1
-written-by: P1 T2 (plans/2026-08-12-vertikalni-rez.md)
+tag: evals-frozen-v2
+supersedes: evals-frozen-v1 (tag ZŮSTÁVÁ, vada je popsaná níž)
+written-by: P1 T2b (plans/2026-08-12-vertikalni-rez.md)
 
-Tenhle marker uzavírá zmrazení. Po commitu, který ho přidal, se do evals/frozen/
+Tenhle marker uzavírá zmrazení. Po commitu, který ho zapsal, se do evals/frozen/
 už nesmí sáhnout — evals/__tests__/frozen.test.ts selže, jakmile najde novější
 commit dotýkající se tohoto adresáře.
 
@@ -14,6 +15,37 @@ Co je zmrazené:
   malformed/index.jsonl   30 vadných emisí s anotací defect/expectedRepair/mustPreserve
   responses/index.jsonl   40 SYNTETICKÝCH odpovědí poskytovatele
 
+PROČ v2: evals-frozen-v1 SI PROTIŘEČIL A NEŠEL POUŽÍT
+
+Editační patche adresovaly pravidla jménem (/sim/rules/open/condition/op), ale
+všech 13 create těl neslo sim.rules jako POLE ([{"id":"pick",…}]). Nic nemůže být
+zároveň klíčované `open` a indexované `0`, takže se ze zmrazených editačních
+patchů dalo aplikovat 4 z 25 — a ani jeden z těch, které se pravidel skutečně
+dotýkají. Editační větev se proti vlastnímu zmrazenému artefaktu dokázat nedala.
+
+Testy to minuly, protože create-edit-join.test.ts filtroval konformanční blok na
+branch === 'create' a oracle spojení jel přes fixture autorovanou ve stejném
+commitu. Objevila to až brána nad T12 (13. 8. 2026).
+
+Co se ve v2 změnilo: VÝHRADNĚ tvar sim.rules — pole -> záznam klíčovaný stabilním
+id, pořadí pravidel zachované, pole `id` uvnitř pravidla ponechané. Prompty,
+kontrakty, protokol, rozdělení calibration/holdout ani distribuce verdiktů se
+nezměnily; jejich hashe z v1 sedí beze změny a skript přemrazení to ověřoval.
+Dvě formulace anotací u vadných emisí (M05.mustPreserve, M24.defect) říkaly
+"pole" o něčem, co polem přestalo být — přepsané, význam beze změny.
+
+Proč záznam a ne pole: DESIGN-BOOK.md §15 má mezi třídami editačních promptů
+VLOŽENÍ a SMAZÁNÍ pravidla. U pole se po nich posunou indexy všech následujících,
+takže patch mířený na index 0 po jedné editaci tiše trefí jiné pravidlo — a je to
+selhání, které projde všemi testy. Stabilní id je jediný tvar, ve kterém patch
+přežije vlastní třídu změn.
+
+Proč to není ladění metriky podle výsledků: zmrazení chrání před úpravou eval
+sady PO zhlédnutí výsledků. Žádné výsledky neexistovaly — Phase 4 neproběhla,
+placený model nebyl zavolán ani jednou, HALT brána s útratou stojí. Opravit
+vnitřní spor PŘED prvním měřením ten účel zachovává; nechat instrument rozbitý
+ho neochrání, jen znehodnotí.
+
 Syntetické odpovědi nejsou záznamy skutečného poskytovatele. Phase 3 jimi
 prokazuje správnost potrubí, ne kvalitu modelu. Kvalitu modelu měří až živá
 Phase 4. Kdyby se tyhle soubory kdy vydávaly za důkaz o modelu, je to podvod
@@ -22,9 +54,11 @@ na sobě samém.
 Poctivě k síle téhle ochrany: lokální git historie se dá přepsat. `git commit
 --amend` nebo rebase umí propašovat změněný obsah přímo do markerového commitu
 a žádný novější commit dotýkající se adresáře pak neexistuje — test to
-neodhalí. Anotovaný tag evals-frozen-v1 a kotva v evals/FROZEN_ANCHOR to
-ztěžují a činí hlasitějším, ale nedělají nemožným.
+neodhalí. Anotované tagy evals-frozen-v1 a evals-frozen-v2 a kotva
+v evals/FROZEN_ANCHOR to ztěžují a činí hlasitějším, ale nedělají nemožným.
+Přemrazení je samo důkazem, že jde o disciplínu, ne o zámek — a proto se
+dokládá tagem navíc, ne přepsáním toho starého.
 
 Jediná skutečně neměnná kotva je první push na vzdálený repozitář. Dokud repo
 nemá remote (P0 T100 ho blokuje), je tohle disciplína s hlasitým alarmem, ne
-kryptografická záruka. Až repo remote dostane, tenhle tag se pushne jako první.
+kryptografická záruka. Až repo remote dostane, oba tagy se pushnou jako první.

@@ -90,6 +90,45 @@ describe('evals/frozen/responses — pokrytí zmrazené sady', () => {
   });
 });
 
+describe('evals/frozen/responses — sim.rules je záznam klíčovaný stabilním id', () => {
+  const bodies = responses
+    .filter((r) => r.branch === 'create')
+    .map((r) => ({ id: r.forPrompt, sim: (r.body as { sim?: { rules?: unknown } }).sim }))
+    .filter((b): b is { id: string; sim: { rules?: unknown } } => Boolean(b.sim));
+
+  // Tohle je celý důvod přemrazení na v2. Ve v1 byla `sim.rules` POLE, zatímco
+  // editační patche adresují pravidla JMÉNEM — a nic nemůže být zároveň
+  // klíčované `open` a indexované `0`. Ze zmrazených 25 editačních patchů se
+  // dalo aplikovat 4. Bez týhle kontroly je „nikde pole" tvrzení, ne vlastnost.
+  it('žádné tělo nenese rules jako pole', () => {
+    expect(bodies.length).toBeGreaterThan(0);
+    for (const b of bodies) {
+      expect(Array.isArray(b.sim.rules), `${b.id}: sim.rules je pole`).toBe(false);
+      expect(typeof b.sim.rules, `${b.id}: sim.rules není záznam`).toBe('object');
+    }
+  });
+
+  // Dva zdroje pravdy o tomtéž id se rozejdou. Klíč je adresa, kterou vidí patch;
+  // `id` je to, podle čeho se řadí vykonání — musí to být totéž slovo.
+  it('klíč se rovná poli id uvnitř pravidla', () => {
+    for (const b of bodies) {
+      for (const [key, rule] of Object.entries(b.sim.rules as Record<string, { id?: unknown }>)) {
+        expect(rule.id, `${b.id}: pravidlo pod klíčem ${key} nese id ${String(rule.id)}`).toBe(key);
+      }
+    }
+  });
+
+  // Klíč, který vypadá jako index pole, si v JS objektu vynutí pozici na začátku
+  // — pořadí vykonání by pak záviselo na tom, jak se pravidlo jmenuje.
+  it('žádné id nevypadá jako index pole', () => {
+    for (const b of bodies) {
+      for (const key of Object.keys(b.sim.rules as Record<string, unknown>)) {
+        expect(key, `${b.id}: id "${key}" je index-like`).not.toMatch(/^(0|[1-9]\d*)$/);
+      }
+    }
+  });
+});
+
 describe('evals/frozen/responses — deklarovaná distribuce', () => {
   // Kdyby všech 40 odpovědí kontrakt splnilo, byla by offline FULFILLED rate
   // 100 % konstrukcí a neprokázala by, že scorer umí verdikt PŘEKLOPIT.

@@ -61,6 +61,24 @@ describe('evals/frozen/malformed — anotace', () => {
   });
 });
 
+// Vadné emise jsou vadné ve svém DEKLAROVANÉM defektu, ne v tvaru kontejneru.
+// Kdyby tady zůstalo pole, opravář z T15 by kromě svého defektu potkal ještě
+// spor, který mu nikdo nedeklaroval — a `mustPreserve` by ho nechránilo.
+describe('evals/frozen/malformed — sim.rules je záznam klíčovaný stabilním id', () => {
+  const withSim = fixtures.filter((f) => (f.body as { sim?: unknown }).sim);
+
+  it('žádné tělo nenese rules jako pole a klíč se rovná id', () => {
+    expect(withSim.length).toBeGreaterThan(0);
+    for (const f of withSim) {
+      const rules = (f.body as { sim: { rules?: unknown } }).sim.rules;
+      expect(Array.isArray(rules), `${f.id}: sim.rules je pole`).toBe(false);
+      for (const [key, rule] of Object.entries(rules as Record<string, { id?: unknown }>)) {
+        expect(rule.id, `${f.id}: pravidlo pod klíčem ${key} nese jiné id`).toBe(key);
+      }
+    }
+  });
+});
+
 describe('evals/frozen/malformed — rozložení defektů', () => {
   // "Rozložení defektů přes třídy z protokolu, ne jen chybějící výchozí hodnoty."
   // Osm triviálních chybějících defaultů by splnilo podlahu T15 a nedokázalo nic.

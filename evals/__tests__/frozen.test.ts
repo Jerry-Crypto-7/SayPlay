@@ -152,27 +152,41 @@ describe('evals/frozen — historie po uzavření freeze', () => {
 
   // Tohle je ta půlka AC, kterou nejde splnit přepočítáním obsahu spolu s lockem:
   // historie commitů je to, co se nedá přepsat bez viditelné stopy.
-  it('žádný commit se nedotkl evals/frozen/ po commitu, který přidal FROZEN', () => {
+  //
+  // **Autoritou je kotva, ne „právě jeden přidávající commit".** Původní znění
+  // počítalo commity s `--diff-filter=A` nad markerem a trvalo na jediném — což
+  // je invariant, který PŘEMRAZENÍ (T2b, evals-frozen-v2) porušuje ze své
+  // podstaty: druhé zmrazení marker přepíše, ne přidá. Kontrola se proto ptá na
+  // to, co doopravdy platit má — poslední commit, který sáhl do evals/frozen/,
+  // je ten, který zapsal aktuální marker — a autoritu bere z `evals/FROZEN_ANCHOR`,
+  // tedy ze souboru MIMO zmrazený strom. Zuby zůstávají stejné: jakýkoli pozdější
+  // commit dotýkající se adresáře tenhle test shodí.
+  it('žádný commit se nedotkl evals/frozen/ po commitu, který zapsal FROZEN', () => {
     if (!freezeClosed) return;
 
-    const markerCommits = git('log', '--diff-filter=A', '--format=%H', '--', 'evals/frozen/FROZEN')
-      .split('\n')
-      .filter(Boolean);
-    expect(markerCommits, 'FROZEN musí být přidán právě jedním commitem').toHaveLength(1);
+    const anchor = JSON.parse(readFileSync(anchorPath, 'utf8')) as { markerCommit: string };
+    const markerCommit = git('log', '-1', '--format=%H', '--', 'evals/frozen/FROZEN');
+    expect(markerCommit, 'FROZEN naposledy zapsal jiný commit, než na který ukazuje kotva').toBe(
+      anchor.markerCommit,
+    );
 
-    const newestTouching = git('log', '-1', '--format=%H', '--', 'evals/frozen').split('\n')[0];
-    expect(newestTouching, 'po markeru se do evals/frozen/ znovu sáhlo').toBe(markerCommits[0]);
+    const newestTouching = git('log', '-1', '--format=%H', '--', 'evals/frozen');
+    expect(newestTouching, 'po markeru se do evals/frozen/ znovu sáhlo').toBe(anchor.markerCommit);
   });
 
-  it('kotva ukazuje na tree hash markerového commitu', () => {
+  it('kotva ukazuje na tree hash markerového commitu i na podstrom evals/frozen', () => {
     if (!freezeClosed) return;
 
     const anchor = JSON.parse(readFileSync(anchorPath, 'utf8')) as {
       markerCommit: string;
       treeHash: string;
+      frozenSubtreeHash: string;
       tag: string;
     };
     expect(git('rev-parse', `${anchor.markerCommit}^{tree}`)).toBe(anchor.treeHash);
+    // Podvrh musí lhát na dvou místech, ne na jednom: tenhle hash kryje výhradně
+    // zmrazený podstrom, takže ho nezakryje změna kdekoli jinde v commitu.
+    expect(git('rev-parse', `${anchor.markerCommit}:evals/frozen`)).toBe(anchor.frozenSubtreeHash);
     expect(git('rev-parse', `${anchor.tag}^{commit}`)).toBe(anchor.markerCommit);
   });
 });
