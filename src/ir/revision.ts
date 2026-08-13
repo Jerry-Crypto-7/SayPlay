@@ -17,7 +17,7 @@
 
 import { applyPatch, type Operation } from 'rfc6902';
 
-import { badArrayToken, operationSchema, reject, rejectionFromZod, type PatchRejection } from '../patch/reject';
+import { badArrayTarget, operationSchema, reject, rejectionFromZod, type PatchRejection } from '../patch/reject';
 import {
   lookSchema,
   unhashableValues,
@@ -160,16 +160,17 @@ function commitChecked(doc: WorldDoc, patch: PartPatch): RevisionResult {
   for (let i = 0; i < patch.operations.length; i += 1) {
     const operation = patch.operations[i];
 
-    // `rfc6902` u pole nehlídá tvar tokenu a tiše uhne na index 0 — viz
-    // `badArrayToken`. Bez tohohle by `add /rules/smuggled` přečísloval pravidla
-    // a vrátil `COMMITTED`, tedy tichý jiný svět místo přesného odmítnutí.
-    const badToken = badArrayToken(draft, operation.op, operation.path);
-    if (badToken !== null)
+    // `rfc6902` u pole nehlídá tvar tokenu a tiše uhne na index 0 (`add`) nebo
+    // smaže nultý prvek (`move` přes `from`) — viz `badArrayTarget`. Bez tohohle
+    // by `add /rules/smuggled` přečísloval pravidla a vrátil `COMMITTED`, tedy
+    // tichý jiný svět místo přesného odmítnutí.
+    const bad = badArrayTarget(draft, operation);
+    if (bad !== null)
       return reject(
         'MALFORMED_OPERATION',
-        operation.path,
-        operation.op === 'add' ? 'an array index or "-"' : 'an array index',
-        `operation ${i} (${operation.op} ${operation.path}): "${badToken}" is not an index of the array it targets`,
+        bad.pointer,
+        operation.op === 'add' && bad.pointer === operation.path ? 'an array index or "-"' : 'an array index',
+        `operation ${i} (${operation.op} ${operation.path}): "${bad.token}" is not an index of the array it targets`,
       );
 
     let failure: ReturnType<typeof applyPatch>[number] | undefined;

@@ -10,6 +10,7 @@
  * odpověď mluví v souřadnicích dotazu — ne v souřadnicích vnitřní reprezentace.
  */
 
+import type { Operation } from 'rfc6902';
 import { z, type ZodError } from 'zod';
 
 export type RejectReason =
@@ -158,35 +159,72 @@ function tokensOf(pointer: string): string[] {
 const ARRAY_INDEX = /^(0|[1-9][0-9]*)$/;
 
 /**
+ * Rodič a klíč **přesně tak, jak je vidí `rfc6902`** — je to věrný port jeho
+ * `Pointer.evaluate`, ne vlastní rozbor cesty.
+ *
+ * Ta věrnost je celý point. Knihovna totiž `__proto__`, `constructor` a
+ * `prototype` v cestě **přeskočí** (`pointer.js`: `continue`), takže jí `parent`
+ * zůstane na hodnotě O ÚROVEŇ VÝŠ. Vlastní rozbor, který do těch klíčů naopak
+ * sestoupí, uvidí něco jiného než knihovna — a rozdíl mezi tím, co vidí kontrola,
+ * a tím, co udělá aplikace, je přesně ta skulina, kterou se dá kontrola obejít:
+ * `/ir/rules/constructor/smuggled` vypadá jako zápis do `Array` funkce, ale
+ * knihovna ho provede jako zápis do **pole** `rules`.
+ */
+function evaluate(doc: unknown, pointer: string): { parent: unknown; key: string } {
+  let parent: unknown = null;
+  let key = '';
+  let value: unknown = doc;
+  for (const token of tokensOf(pointer)) {
+    parent = value;
+    key = token;
+    if (token === '__proto__' || token === 'constructor' || token === 'prototype') continue;
+    // `(parent || {})[key]` v originále — u falsy rodiče tedy `undefined`.
+    value = parent ? (parent as Record<string, unknown>)[token] : undefined;
+  }
+  return { parent, key };
+}
+
+export interface BadArrayTarget {
+  /** Cesta, která to způsobila — `path`, nebo `from` u `move`/`copy`. */
+  readonly pointer: string;
+  readonly token: string;
+}
+
+/**
  * Míří operace do POLE tokenem, který není index?
  *
- * `rfc6902` tohle nehlídá a **tiše uhne**: `add` dělá `splice(parseInt(key,10), …)`,
- * takže nečíselný token dá `splice(NaN, …)` a hodnota přistane na **indexu 0**.
- * `add /rules/smuggled` tedy nevloží nic pojmenovaného — vloží pravidlo na začátek
- * a přečísluje všechna ostatní. Dokument je přitom dokonale konzistentní a hash
- * sedí, takže žádná pozdější kontrola už to nepozná; jenom to není ten svět, o který
- * si patch řekl. U `/rules` je to navíc pořadí vyhodnocení, na kterém stojí
+ * `rfc6902` tohle nehlídá a **tiše uhne**, obojím směrem:
+ * - `_add` dělá `splice(parseInt(key,10), 0, v)`, takže nečíselný token dá
+ *   `splice(NaN, …)` a hodnota přistane na **indexu 0** — `add /rules/smuggled`
+ *   nevloží nic pojmenovaného, vloží pravidlo na začátek a přečísluje ostatní.
+ * - `_remove` dělá `splice(parseInt(key,10), 1)`, takže `move` s `from`
+ *   `/rules/length` **smaže nulté pravidlo**.
+ *
+ * Výsledek je v obou případech dokonale konzistentní dokument se sedícím hashem,
+ * takže ho žádná pozdější kontrola nepozná — jenom to není ten svět, o který si
+ * patch řekl. U `/rules` jde navíc o pořadí vyhodnocení, na kterém stojí
  * `priority`, `phase` i „ambiguous execution order" z `validateIrDoc`.
  *
- * RFC 6902 §4 přitom žádá index nebo `-` (a `-` jen pro `add`). Vrací vadný token,
- * nebo `null`, když je všechno v pořádku.
+ * Kontrolují se **obě** cesty operace. `from` je u `move` mazání a u `copy` čtení,
+ * takže `-` („za poslední prvek") tam nedává smysl ani u jednoho — RFC 6902 §4 ho
+ * povoluje jen tam, kde se přidává.
  */
-export function badArrayToken(draft: unknown, op: string, pointer: string): string | null {
-  const tokens = tokensOf(pointer);
-  if (tokens.length === 0) return null;
+export function badArrayTarget(draft: unknown, operation: Operation): BadArrayTarget | null {
+  const targets: { pointer: string; allowDash: boolean }[] = [
+    { pointer: operation.path, allowDash: operation.op === 'add' },
+  ];
+  if (operation.op === 'move' || operation.op === 'copy')
+    targets.push({ pointer: operation.from, allowDash: false });
 
-  let parent: unknown = draft;
-  for (let i = 0; i < tokens.length - 1; i += 1) {
-    if (parent === null || typeof parent !== 'object') return null;
-    parent = (parent as Record<string, unknown>)[tokens[i]];
+  for (const target of targets) {
+    if (target.pointer === '') continue;
+    const { parent, key } = evaluate(draft, target.pointer);
+    if (!Array.isArray(parent)) continue;
+    if (ARRAY_INDEX.test(key)) continue;
+    if (key === '-' && target.allowDash) continue;
+    return { pointer: target.pointer, token: key };
   }
-  if (!Array.isArray(parent)) return null;
-
-  const token = tokens[tokens.length - 1];
-  if (ARRAY_INDEX.test(token)) return null;
-  // `-` je „za poslední prvek" a dává smysl jen tam, kde se přidává.
-  if (token === '-' && op === 'add') return null;
-  return token;
+  return null;
 }
 
 export const operationSchema = z.union([

@@ -366,6 +366,37 @@ describe('do `sim` se dostane jen JSON', () => {
     expect(world.simHash).toBe(before);
   });
 
+  it('a přeskakovaný token v cestě ten zákaz neobejde', () => {
+    // `rfc6902` `__proto__`/`constructor`/`prototype` v cestě PŘESKAKUJE, takže
+    // mu rodičem zůstane pole. Kontrola, která do nich sestoupí, vidí něco jiného
+    // než knihovna — a ten rozdíl je celá skulina.
+    const before = world.simHash;
+    for (const prefix of ['constructor', '__proto__', 'prototype']) {
+      const operations = JSON.parse(
+        `[{"op":"add","path":"/rules/${prefix}/smuggled","value":{"id":"x"}}]`,
+      ) as Operation[];
+      const result = commitPart(world, { part: 'sim', baseRevision: 0, operations });
+
+      expect(result, prefix).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+      if (result.verdict !== 'REJECTED') continue;
+      expect(result.detail, prefix).toContain('is not an index');
+    }
+    expect(world.simHash).toBe(before);
+  });
+
+  it('a `from` u `move` nesmí smazat nulté pravidlo', () => {
+    // `_remove` splicuje pole přes `parseInt(key,10)`, takže `from`
+    // `/rules/length` znamená `splice(NaN, 1)` — smazané pravidlo `win`.
+    const before = world.simHash;
+    const operations = JSON.parse('[{"op":"move","from":"/rules/length","path":"/grid/cell"}]') as Operation[];
+    const result = commitPart(world, { part: 'sim', baseRevision: 0, operations });
+
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.pointer).toBe('/rules/length');
+    expect(world.simHash).toBe(before);
+  });
+
   it('ale `-` u `add` je legální „za poslední prvek"', () => {
     const rule = JSON.parse(
       '{"id":"lose","phase":0,"priority":1,"event":{"kind":"onEnterZone","entity":"player","zone":"spawn"},"condition":null,"actions":[{"kind":"lose"}]}',

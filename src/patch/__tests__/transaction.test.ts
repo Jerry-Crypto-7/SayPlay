@@ -550,6 +550,64 @@ describe('sousední patch cesta má tytéž stráže jako `ir/revision.ts`', () 
     expectUntouched(before);
   });
 
+  /**
+   * **A jeden token navíc v cestě ten zákaz nesmí obejít.**
+   *
+   * `rfc6902` v `Pointer.evaluate` klíče `__proto__`, `constructor` a `prototype`
+   * **přeskakuje** (`continue`), takže mu `parent` zůstane o úroveň výš. Pro
+   * `/ir/rules/constructor/smuggled` je jeho rodičem pořád **pole** `rules` —
+   * zatímco kontrola, která do `constructor` sestoupí, uvidí `Array` funkci,
+   * usoudí „tohle není pole" a pustí to dál. Aplikace pak udělá `splice(NaN,0,v)`
+   * a vloží pravidlo na index 0.
+   *
+   * Rozdíl mezi tím, co vidí kontrola, a tím, co udělá knihovna, JE ta skulina.
+   */
+  it('přeskakovaný token v cestě zákaz neobejde', () => {
+    const before = graphHash(vault);
+    const rule = JSON.parse(JSON.stringify(vault.ir.rules[0])) as { ruleId: string };
+    rule.ruleId = 'r.smuggled';
+
+    for (const prefix of ['constructor', '__proto__', 'prototype', '__proto__/__proto__']) {
+      const operations = JSON.parse(
+        `[{"op":"add","path":"/ir/rules/${prefix}/smuggled","value":${JSON.stringify(rule)}}]`,
+      ) as Operation[];
+      const result = applyWorldPatch(vault, operations);
+
+      expect(result, prefix).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+      if (result.verdict !== 'REJECTED') continue;
+      expect(result.detail, prefix).toContain('is not an index');
+    }
+    expectUntouched(before);
+  });
+
+  /**
+   * **`from` je druhá cesta operace a mazala nulté pravidlo.**
+   *
+   * `_remove` splicuje pole přes `parseInt(key,10)`, takže `move` s `from`
+   * `/ir/rules/length` provede `splice(NaN, 1)` — smaže prvek 0. Ve `vault`
+   * fixtuře je to pravidlo, na kterém stojí certifikovaný svědek: dokument je po
+   * commitu konzistentní, hash sedí, a svět tiše přišel o pravidlo.
+   */
+  it('a `from` u `move`/`copy` se kontroluje stejně jako `path`', () => {
+    const before = graphHash(vault);
+    for (const op of ['move', 'copy'] as const) {
+      for (const token of ['length', 'smuggled', '-']) {
+        const operations = JSON.parse(
+          `[{"op":"${op}","from":"/ir/rules/${token}","path":"/ir/limits/maxRules"}]`,
+        ) as Operation[];
+        const result = applyWorldPatch(vault, operations);
+
+        expect(result, `${op} ${token}`).toMatchObject({
+          verdict: 'REJECTED',
+          reason: 'MALFORMED_OPERATION',
+        });
+        if (result.verdict !== 'REJECTED') continue;
+        expect(result.pointer, `${op} ${token}`).toBe(`/ir/rules/${token}`);
+      }
+    }
+    expectUntouched(before);
+  });
+
   it('ale `-` u `add` je legální a index projde', () => {
     // Bez těchhle dvou by kontrola tokenu nebyla strop, ale zákaz zápisu do pole.
     expect(
