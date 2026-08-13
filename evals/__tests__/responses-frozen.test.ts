@@ -4,6 +4,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
+import { canonicalRuleOrder, carriesOrderKeys, ruleRecordOf, type RuleRecord } from './rule-order';
+
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 const frozenDir = join(repoRoot, 'evals', 'frozen');
 
@@ -126,6 +128,30 @@ describe('evals/frozen/responses — sim.rules je záznam klíčovaný stabilní
         expect(key, `${b.id}: id "${key}" je index-like`).not.toMatch(/^(0|[1-9]\d*)$/);
       }
     }
+  });
+
+  // Od v2 nehlídá pořadí klíčů `simHash` — `canonical()` klíče řadí. Není to
+  // ztráta sémantiky (pořadí je odvozené z `phase`/`priority`/`id`, a ta se
+  // hashují), ale vynucení deklarovaného VYKRESLENÍ odpadlo úplně. Bez týhle
+  // aserce je `rulesShapeRule` v `MANIFEST.lock` věta, kterou nic nekontroluje.
+  it('každé pravidlo nese phase i priority jako konečné číslo', () => {
+    for (const b of bodies) {
+      const rules = ruleRecordOf({ sim: b.sim });
+      expect(rules, `${b.id}: sim.rules není záznam`).not.toBeNull();
+      expect(carriesOrderKeys(rules as RuleRecord), `${b.id}: pravidlo bez phase/priority`).toBe(true);
+    }
+  });
+
+  it('pořadí klíčů se rovná deklarovanému pořadí vykonání (phase, priority, id)', () => {
+    let checked = 0;
+    for (const b of bodies) {
+      const rules = ruleRecordOf({ sim: b.sim });
+      if (!rules || Object.keys(rules).length < 2) continue;
+      checked += 1;
+      expect(Object.keys(rules), `${b.id}: pořadí klíčů není kanonické`).toEqual(canonicalRuleOrder(rules));
+    }
+    // Bez tohohle by aserce prošla i nad sadou, kde žádné tělo nemá dvě pravidla.
+    expect(checked, 'žádné tělo nemá dvě a víc pravidel — kontrola pořadí by byla vakuózní').toBeGreaterThan(0);
   });
 });
 

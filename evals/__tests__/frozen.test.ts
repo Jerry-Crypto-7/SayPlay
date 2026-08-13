@@ -69,6 +69,18 @@ function git(...args: string[]): string {
 
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as Manifest;
 
+/**
+ * Commity, které kdy zapsaly marker, nejstarší první.
+ *
+ * `--full-history` je tu nosné, ne kosmetické: bez něj git u merge commitu
+ * prořezává větve, které vypadají TREESAME, a celá vedlejší linie — včetně
+ * commitů, které marker doopravdy zapsaly — z odpovědi zmizí.
+ */
+const markerCommits = git('log', '--full-history', '--reverse', '--format=%H', '--', 'evals/frozen/FROZEN')
+  .split('\n')
+  .filter(Boolean);
+const freezeEverClosed = markerCommits.length > 0;
+
 describe('evals/frozen — hash lock', () => {
   it('používá sha256', () => {
     expect(manifest.algorithm).toBe('sha256');
@@ -88,6 +100,82 @@ describe('evals/frozen — hash lock', () => {
     const onDisk = frozenRelativePaths().filter((rel) => rel !== 'MANIFEST.lock');
     const covered = Object.keys(manifest.files).sort();
     expect(onDisk).toEqual(covered);
+  });
+});
+
+/**
+ * **Most mezi bajty a historií — bez něj nedokazuje celý aparát níž nic o tom,
+ * co testy doopravdy čtou.**
+ *
+ * Hash lock výš čte korpus z DISKU a `MANIFEST.lock` čte taky z disku. Obojí je
+ * zapisovatelné, takže „přepiš korpus a přepočítej lock" projde zeleně — a to
+ * **bez jediného git příkazu**, s bitově nedotčenou historií, tagy i kotvou.
+ * Blok o historii níž zase dokazuje vlastnosti GIT OBJEKTŮ. Dokud ty dvě poloviny
+ * nic nespojí, ověřuje každá něco jiného a útok prochází mezerou mezi nimi.
+ * Commitnutý podvrh navíc stačilo odstranit jedním `git reset --soft HEAD~1`:
+ * historie zpátky na místě, index i strom dál přepsané, sada zelená.
+ *
+ * Tenhle blok je ta spojka: **bajty na disku se musí rovnat bajtům v HEADu.**
+ * Teprve tím řetěz drží celý — disk == HEAD == poslední generace v kotvě ==
+ * anotovaný tag.
+ *
+ * Porovnává se OBSAH, ne `git status`: status jde umlčet `assume-unchanged`
+ * i `skip-worktree`, kdežto `git show HEAD:<cesta>` čte objekt a o nastavení
+ * indexu nic neví. Normalizace na LF je tatáž jako u `normalisedSha256`, takže
+ * se neporovnává konec řádku, ale obsah.
+ */
+describe('evals/frozen — disk se rovná commitnutému stromu', () => {
+  const headFrozenFiles = (() => {
+    try {
+      return git('ls-tree', '-r', '--name-only', 'HEAD', '--', 'evals/frozen')
+        .split('\n')
+        .filter(Boolean)
+        .map((path) => path.replace(/^evals\/frozen\//, ''))
+        .sort();
+    } catch {
+      return [];
+    }
+  })();
+
+  const headNormalisedSha256 = (repoRelative: string): string => {
+    const raw = execFileSync('git', ['show', `HEAD:${repoRelative}`], { cwd: repoRoot, maxBuffer: 1 << 28 });
+    const normalised = raw.toString('utf8').replace(/\r\n/g, '\n');
+    return createHash('sha256').update(Buffer.from(normalised, 'utf8')).digest('hex');
+  };
+
+  // Bez tohohle by se dal celý blok odzbrojit smazáním zmrazeného stromu z HEADu:
+  // prázdný seznam a všechny aserce níž projdou naprázdno.
+  it('zmrazený strom je v HEADu vůbec přítomný', () => {
+    if (!freezeEverClosed) return;
+    expect(headFrozenFiles.length, 'freeze byl uzavřen, ale HEAD nenese evals/frozen').toBeGreaterThan(0);
+  });
+
+  // Chytá PŘIDANÝ i SMAZANÝ soubor v pracovním stromu — hash existujících by u obou dál seděl.
+  it('množina souborů na disku se rovná té v HEADu', () => {
+    if (!freezeEverClosed) return;
+    expect(frozenRelativePaths(), 'obsah evals/frozen/ na disku neodpovídá commitnutému').toEqual(headFrozenFiles);
+  });
+
+  it('každý zmrazený soubor má na disku bajty svého commitnutého protějšku', () => {
+    if (!freezeEverClosed) return;
+    for (const rel of headFrozenFiles) {
+      const abs = join(frozenDir, rel);
+      expect(existsSync(abs), `${rel} je v HEADu, ale chybí na disku`).toBe(true);
+      expect(
+        normalisedSha256(abs),
+        `${rel}: bajty na disku se liší od commitnutých — korpus je přepsaný v pracovním stromu`,
+      ).toBe(headNormalisedSha256(`evals/frozen/${rel}`));
+    }
+  });
+
+  // Kotva arms všechno níž, takže přepsaná kotva v pracovním stromu je tatáž
+  // třída útoku jako přepsaný korpus. Při přemrazení je tahle aserce jeden
+  // commit červená — a přesně to je ten hlasitý mezistav, který kotva popisuje.
+  it('kotva má na disku bajty svého commitnutého protějšku', () => {
+    if (!freezeEverClosed || !existsSync(anchorPath)) return;
+    expect(normalisedSha256(anchorPath), 'FROZEN_ANCHOR je v pracovním stromu přepsaná').toBe(
+      headNormalisedSha256('evals/FROZEN_ANCHOR'),
+    );
   });
 });
 
@@ -199,18 +287,6 @@ describe('evals/frozen — historie po uzavření freeze', () => {
   const anchor = anchorExists
     ? (JSON.parse(readFileSync(anchorPath, 'utf8')) as { generations?: Generation[] })
     : null;
-
-  /**
-   * Commity, které kdy zapsaly marker, nejstarší první.
-   *
-   * `--full-history` je tu nosné, ne kosmetické: bez něj git u merge commitu
-   * prořezává větve, které vypadají TREESAME, a celá vedlejší linie — včetně
-   * commitů, které marker doopravdy zapsaly — z odpovědi zmizí.
-   */
-  const markerCommits = git('log', '--full-history', '--reverse', '--format=%H', '--', 'evals/frozen/FROZEN')
-    .split('\n')
-    .filter(Boolean);
-  const freezeEverClosed = markerCommits.length > 0;
 
   /** Je `a` předek `b` (nebo `b` sám)? */
   const isAncestor = (a: string, b: string): boolean => {

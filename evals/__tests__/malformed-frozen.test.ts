@@ -3,6 +3,14 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
+import {
+  canonicalRuleOrder,
+  carriesOrderKeys,
+  isCanonicallyOrdered,
+  ruleRecordOf,
+  type RuleRecord,
+} from './rule-order';
+
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 const frozenDir = join(repoRoot, 'evals', 'frozen');
 
@@ -76,6 +84,52 @@ describe('evals/frozen/malformed — sim.rules je záznam klíčovaný stabilní
         expect(rule.id, `${f.id}: pravidlo pod klíčem ${key} nese jiné id`).toBe(key);
       }
     }
+  });
+});
+
+/**
+ * **Pořadí klíčů je od v2 měřitelné jedině tímhle — `simHash` ho nevidí.**
+ *
+ * `canonical()` klíče objektů řadí, takže M05 je pod v2 bajtově shodná před
+ * i po vlastní deklarované opravě („kanonicky seřadit"). Scorer z T15/T16, který
+ * by třídu `non_canonical_order` soudil podle hashe, by tedy opravu viděl jako
+ * no-op a celá třída by byla neměřitelná. Jednotkou téhle třídy je POŘADÍ KLÍČŮ.
+ *
+ * Pozor na rozsah třídy: `non_canonical_order` nesou DVĚ emise, ale každá v jiném
+ * rozsahu — M05 pořadí PRAVIDEL, M06 pořadí operandů `allOf` uvnitř podmínky
+ * (a nese jediné pravidlo, takže pořadí klíčů porušit ani nemůže). Aserce proto
+ * jmenuje M05, ne celou třídu.
+ */
+describe('evals/frozen/malformed — deklarované pořadí vykonání', () => {
+  const bodiesWithRules = fixtures
+    .map((f) => ({ id: f.id, rules: ruleRecordOf(f.body) }))
+    .filter((x): x is { id: string; rules: RuleRecord } => x.rules !== null);
+
+  it('řadicí pole jsou všude konečná čísla, jinak je pořadí nedefinované', () => {
+    expect(bodiesWithRules.length).toBeGreaterThan(0);
+    for (const b of bodiesWithRules) {
+      expect(carriesOrderKeys(b.rules), `${b.id}: pravidlo bez phase/priority`).toBe(true);
+    }
+  });
+
+  // Pozitivní i negativní pól v jedné aserci: kdyby oracle přestal fungovat,
+  // vypadne M05; kdyby začal hlásit i zdravá těla, přibude někdo další.
+  it('deklarované pořadí porušuje právě M05 a nikdo jiný', () => {
+    const multiRule = bodiesWithRules.filter((b) => Object.keys(b.rules).length >= 2);
+    expect(multiRule.length, 'žádná emise nemá dvě pravidla — kontrola by byla vakuózní').toBeGreaterThan(0);
+
+    const violators = multiRule.filter((b) => !isCanonicallyOrdered(b.rules)).map((b) => b.id);
+    expect(violators).toEqual(['M05']);
+  });
+
+  // Tohle je ta věta, kterou hash říct neumí: oprava M05 je POZOROVATELNÁ změna.
+  it('deklarovaná oprava M05 je v jednotce pořadí klíčů vidět', () => {
+    const m05 = bodiesWithRules.find((b) => b.id === 'M05');
+    expect(m05, 'M05 v sadě chybí').toBeDefined();
+    const before = Object.keys((m05 as { rules: RuleRecord }).rules);
+    const after = canonicalRuleOrder((m05 as { rules: RuleRecord }).rules);
+    expect(after, 'oprava M05 nemění pořadí klíčů — třída non_canonical_order je neměřitelná').not.toEqual(before);
+    expect([...after].sort(), 'oprava M05 nesmí měnit MNOŽINU pravidel').toEqual([...before].sort());
   });
 });
 
