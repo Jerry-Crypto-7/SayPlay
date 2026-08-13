@@ -1,0 +1,22 @@
+{
+  "anchorVersion": 2,
+  "frozenOn": "2026-08-13",
+  "tag": "evals-frozen-v2",
+  "supersedes": {
+    "tag": "evals-frozen-v1",
+    "markerCommit": "c4aeaf83f45335fc6382830d8cca244b0e24565f",
+    "treeHash": "974ac6278675e8448096ba35ec892d9b0e22f144",
+    "frozenSubtreeHash": "ab9468ffbc7f43d1b56e168390cbbd392ede97f5",
+    "tagRetained": true,
+    "defect": "sim.rules bylo v create tělech POLE, zatímco editační patche adresovaly pravidla JMÉNEM. Ze zmrazených 25 editačních patchů se dalo aplikovat 4, a ani jeden z těch, které se pravidel dotýkají — editační větev P1 T12 se proti vlastnímu artefaktu dokázat nedala. Testy to minuly, protože create-edit-join.test.ts filtroval na branch === 'create' a join oracle jel přes fixture autorovanou ve stejném commitu.",
+    "whyTagStays": "Přemrazení se dokládá, nezakrývá. Tag v1 se nemaže ani nepřepisuje — kdo chce vidět, co bylo zmrazené 12. 8. 2026 a proč to nešlo použít, najde to tam."
+  },
+  "markerCommit": "28d75fa0a7a82fb3949c91b32808517f4d0c9e19",
+  "treeHash": "d06d75ddb18fbafd64cf0f3532bee3ab006ceafd",
+  "frozenSubtreeHash": "e4565de4187ab3fb3b558158e54c698fae640a4b",
+  "changedInV2": "VÝHRADNĚ tvar sim.rules: pole -> záznam klíčovaný stabilním id, pořadí zachované, pole `id` uvnitř pravidla ponechané a rovné klíči. Protokol, prompty a kontrakty jsou bitově shodné s v1. Dvě formulace anotací vadných emisí (M05.mustPreserve, M24.defect) mluvily o poli u něčeho, co polem přestalo být.",
+  "measuredEffect": "editační patche aplikovatelné proti svému baseWorld: 4 z 25 -> 21 z 25; ze 17 záznamů s deklarovaným verdiktem FULFILLED 2 -> 17. Všechny 4 zbývající zamítnuté jsou záznamy s deklarovaným verdiktem jiným než FULFILLED a zamítá je jejich vlastní deklarovaný defekt, ne tvar kontejneru.",
+  "whyOutsideTheFrozenTree": "Tree hash tagovaného commitu je znám AŽ PO commitu. Zapsat ho dovnitř evals/frozen/ by vytvořilo další změnu uvnitř zmrazeného adresáře a zrušilo platnost tvrzení, že marker zapsal poslední commit, který se ho dotkl. Přetagování ten kruh jen zopakuje. Kotva proto leží o úroveň výš — tenhle soubor smí vzniknout novým commitem, protože evals/frozen/ nechává na pokoji.",
+  "whatItArms": "Dokud tenhle soubor neexistuje, je historická kontrola v evals/__tests__/frozen.test.ts inertní (freeze je otevřený — a přesně tak přemrazení proběhlo: markerový commit kotvu odstranil, tenhle ji vrací). Jakmile existuje, test vyžaduje, aby FROZEN existoval, aby ho zapsal commit uvedený tady, a aby po něm do evals/frozen/ nesáhl žádný další. Smazání markeru kontrolu NEODZBROJÍ — autoritou je tenhle soubor, ne marker.",
+  "honestLimit": "Lokální git historie se dá přepsat. `git commit --amend` nebo rebase umí propašovat změněný obsah přímo do markerového commitu; hashe výše by se tím změnily a test by to odhalil, ale kdo přepisuje historii, přepíše i tenhle soubor. Anotovaný tag drží kopii týchž hashů nezávisle, takže lež musí být na dvou místech místo jednoho. Že přemrazení vůbec bylo možné, je samo důkazem, že jde o disciplínu, ne o zámek. Jediná skutečně neměnná kotva je první push na vzdálený repozitář — ten P0 T100 zatím blokuje."
+}
