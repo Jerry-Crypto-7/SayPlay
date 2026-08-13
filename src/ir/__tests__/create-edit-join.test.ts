@@ -16,6 +16,7 @@ import { join } from 'node:path';
 import type { Operation } from 'rfc6902';
 import { describe, expect, it } from 'vitest';
 
+import { findDanglingReferences } from '../references';
 import { commitPart, type Part } from '../revision';
 import {
   LAYOUT_TYPES,
@@ -256,10 +257,24 @@ describe('kanonický hash nezávisí na pořadí klíčů', () => {
  * jednou u T8b a jednou tak, jak to popisuje `worlddoc.ts` („0 z 15 … protože se
  * validovaly jen fixtury autorované ve stejném commitu").
  *
- * Oracle je proto **zmrazený artefakt**: create tělo emitované do korpusu je svět,
- * editační patch je vydaný proti němu, a obě větve musí dojít do jednoho kontraktu.
- * Fixtura se tu nepoužívá k ničemu než k tomu, aby se ověřilo, že má tentýž tvar
- * jako korpus.
+ * Oracle je proto **zmrazený artefakt**: create tělo emitované do korpusu je svět
+ * a editační patch je vydaný proti němu. Fixtura se tu nepoužívá k ničemu než
+ * k tomu, aby se ověřilo, že má tentýž tvar jako korpus.
+ *
+ * **Co tenhle blok dokazuje a co ne — přesně, protože rozdíl je celý jeho smysl.**
+ * DOKAZUJE, že se editační patch na zmrazený svět aplikuje, že to něco udělá, že
+ * výsledek je pořád dokument, a — přes `findDanglingReferences` — že po něm
+ * nezůstane odkaz do prázdna. Poslední z toho je jediná aserce v tomhle souboru,
+ * která **rozlišuje** `FULFILLED` od `FAULT` na datech, která tenhle kód nepsal.
+ *
+ * NEDOKAZUJE rovnost „patchovaný svět == nezávisle sestavený svět". Ta zůstává
+ * u `synthPair` výš, a **je to mez korpusu, ne opomenutí**: zmrazená sada nese
+ * pro editaci jen `(baseWorld, patch)`, žádné cílové tělo, takže není s čím
+ * porovnávat. Aserce `simHash` se pohnul a `simHash === simHashOf(doc)` jsou
+ * proto konzistenční kontroly, ne oracle — `sealPart` je splní konstrukcí
+ * (`revision.ts`), takže samy o sobě neumí odhalit výsledek dobře tvarovaný
+ * a přitom špatný. Tvrdit tu spojení obou větví by bylo přesně to nadhodnocení,
+ * kvůli kterému tenhle blok vznikl.
  */
 describe('editační větev se proti zmrazenému korpusu skutečně spustí', () => {
   const edits = responses.filter((entry) => entry.branch === 'edit');
@@ -391,12 +406,36 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
    *
    * `evals/FROZEN_ANCHOR` u těch čtyř píše „zamítá je jejich vlastní deklarovaný
    * defekt" — pro E06 a E24 to sedí, pro E19 a E20 ne. Tenhle test je od toho, aby
-   * ten rozdíl byl vidět a měřený, ne opsaný.
+   * ten rozdíl byl vidět a **měřený, ne opsaný** — proto se asertuje i pointer
+   * a důvod, ne jen jméno záznamu. Bez toho by ta oprava kotvy byla jen komentář:
+   * množina jmen i počty vyjdou stejně, i kdyby každé z těch čtyř padalo úplně
+   * jinde (ověřeno mutací — vypnutý rozbor cesty v `patch/reject.ts` nechá čtyři
+   * odmítnutí čtyřmi odmítnutími, jen z jiných dveří).
    */
-  it('a právě čtyři se NEaplikují — ani jeden nemá deklarovaný verdikt `FULFILLED`', () => {
+  it('a právě čtyři se NEaplikují — každý na svém konkrétním místě', () => {
+    // Pointer je souřadnice v části, tedy už po strhnutí prefixu; `detail` je
+    // věta, kterou dostane autorský nástroj.
+    const expected: Readonly<Record<string, { readonly pointer: string; readonly detail: RegExp }>> = {
+      // Vlastní deklarovaný defekt: `replace` na cestu, jejíž rodič neexistuje.
+      E06: { pointer: '/rules/openChest/condition/negated', detail: /does not exist/ },
+      // NE vlastní defekt: `add /sim/layout/levels/1` nad skalárem `levels: 1`.
+      E19: { pointer: '/layout/levels/1', detail: /runs through a primitive/ },
+      // NE vlastní defekt: `replace …/actions/0/route` nad akcí, která `route` nemá.
+      E20: { pointer: '/rules/patrol/actions/0/route', detail: /Value required/ },
+      // Vlastní deklarovaný defekt: cíl `add` nemá ve světě rodiče.
+      E24: { pointer: '/state/counters/streak/-', detail: /does not exist/ },
+    };
+
     const rejected = edits.filter((entry) => commitEdit(entry).result.verdict === 'REJECTED');
-    expect(rejected.map((entry) => entry.forPrompt).sort()).toEqual(['E06', 'E19', 'E20', 'E24']);
-    for (const entry of rejected) expect(entry.expectedVerdict, entry.forPrompt).not.toBe('FULFILLED');
+    expect(rejected.map((entry) => entry.forPrompt).sort()).toEqual(Object.keys(expected));
+
+    for (const entry of rejected) {
+      const { result } = commitEdit(entry);
+      if (result.verdict !== 'REJECTED') continue;
+      expect(entry.expectedVerdict, entry.forPrompt).not.toBe('FULFILLED');
+      expect(result.pointer, entry.forPrompt).toBe(expected[entry.forPrompt].pointer);
+      expect(result.detail, entry.forPrompt).toMatch(expected[entry.forPrompt].detail);
+    }
   });
 
   it('a to znamená 21 z 25 aplikovatelných a 17 ze 17 u `FULFILLED`', () => {
@@ -405,6 +444,50 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
     const committed = edits.filter((entry) => commitEdit(entry).result.verdict === 'COMMITTED');
     expect(committed.length).toBe(21);
     expect(committed.filter((entry) => entry.expectedVerdict === 'FULFILLED').length).toBe(17);
+  });
+
+  /**
+   * **„Commitnul se" je slabý signál — tohle je ten silný.**
+   *
+   * Patch, který se aplikuje vedle, ale nechá kořenový tvar `sim` na místě, projde
+   * všemi ascemi výš: schéma má vnitřek `unknown`, hash se přepočítá na cokoli, co
+   * v dokumentu skutečně je. Rozdíl mezi „aplikovalo se" a „dopadlo to, jak mělo"
+   * proto potřebuje oracle, který se dívá **dovnitř** — a ten už v repu je.
+   *
+   * `findDanglingReferences` (T8b) rozpouští odkazy proti deklarovaným jmenným
+   * prostorům. Nad zmrazenou sadou dělí přesně tam, kde má: **všech 17 `FULFILLED`
+   * po sobě nenechá jediný osiřelý odkaz**, zatímco dva záznamy, které se
+   * commitnou navzdory deklarovanému defektu, po sobě nechají právě jeden každý —
+   * `E11` (`FAULT`) míří pravidlem na socket `centre2`, který nevznikl, a `E25`
+   * (`NO_FIT`) na zónu `tagged`. Je to jediná aserce v tomhle bloku, která umí říct
+   * `FULFILLED` od `FAULT` na datech, která tenhle kód nepsal.
+   *
+   * **Nekrade to rozsah T13.** Tam se `findDanglingReferences` zapojuje do
+   * PRODUKČNÍ emisní cesty jako odmítnutí; tady je čtený jako měřidlo nad
+   * zmrazeným korpusem. Do té doby je to modul, který drží jen vlastní test —
+   * a tenhle test je první, který ho pouští na cizí data.
+   */
+  it('a `FULFILLED` po sobě nenechá osiřelý odkaz, zatímco deklarovaný defekt ano', () => {
+    const fresh = new Map<string, number>();
+    for (const entry of edits) {
+      const { doc, result } = commitEdit(entry);
+      if (result.verdict !== 'COMMITTED') continue;
+      // Počítá se PŘÍRŮSTEK, ne absolutní počet: kdyby základní svět nesl osiřelý
+      // odkaz už předtím, připsal by se patchi, který se ho ani nedotkl.
+      const before = findDanglingReferences(doc).length;
+      fresh.set(entry.forPrompt, findDanglingReferences(result.doc).length - before);
+    }
+
+    for (const entry of edits) {
+      if (entry.expectedVerdict !== 'FULFILLED') continue;
+      expect(fresh.get(entry.forPrompt), `${entry.forPrompt} (FULFILLED)`).toBe(0);
+    }
+
+    // A protipól: bez něj by aserce výš prošla i s detekcí vypnutou natvrdo.
+    const introduced = [...fresh].filter(([, count]) => count > 0).map(([label]) => label).sort();
+    expect(introduced).toEqual(['E11', 'E25']);
+    expect(fresh.get('E11')).toBe(1);
+    expect(fresh.get('E25')).toBe(1);
   });
 
   /**
