@@ -9,7 +9,8 @@
  * ## Co je chyba a co je výsledek
  *
  * **400** vrací jen **nevalidní požadavek** — tělo, které není `{ promptId }`.
- * **404** neznámý zmrazený prompt. **413** tělo přes strop. **503** nečitelný
+ * **404** neznámý zmrazený prompt. **408** tělo, které nedorazilo do
+ * `BODY_DEADLINE_MS`. **413** tělo přes strop. **503** nečitelný
  * nebo podvržený zmrazený korpus — rozbité prostředí, o kterém se nesmí nic
  * skórovat. Všechno ostatní je **200 s verdiktem**: emise, která neprošla
  * schématem, nese osiřelý odkaz, nejde snížit nebo její svědek nedojde do výhry,
@@ -142,19 +143,25 @@ function corpusUnavailable(requestId: string, failure: ClientFailure): Response 
 }
 
 /**
- * Načte tělo se stropem. Za stropem **dočítá a zahazuje**, nikdy neruší.
+ * Načte tělo pod dvěma nezávislými mezemi: **velikostí** a **časem**.
  *
- * Co to chrání: **paměť**. Nad stropem se nedrží nic, takže žádný upload
+ * Co chrání velikost: **paměť**. Nad stropem se nedrží nic, takže žádný upload
  * nenafoukne proces — víc než `MAX_BODY_BYTES` plus jeden kus se nikdy nesejde
  * na hromadě. Šířku pásma to nechrání a předstírat se to nebude; na to je
  * reverzní proxy, ne route handler.
  *
- * **Proč se neruší, ačkoli by to šetřilo i pásmo:** `reader.cancel()` nechá na
- * keep-alive spojení nepřečtený zbytek těla, takže server začne číst zbytek
- * uploadu jako začátek dalšího požadavku. Naměřeno proti `next start`: po
- * odmítnutém 200 kB uploadu **další velký požadavek na témže spojení uvízl** až
- * do timeoutu, zatímco krátký prošel. Vypadá to jako vada klienta a není —
- * spojení rozsynchronizuje server.
+ * **Za stropem se dočítá a zahazuje, a ruší se až na deadlinu.** To pořadí je
+ * důležité, protože `reader.cancel()` má naměřenou cenu: nechá na keep-alive
+ * spojení nepřečtený zbytek těla, takže server začne číst zbytek uploadu jako
+ * začátek dalšího požadavku. Naměřeno proti `next start` — po zrušeném 200 kB
+ * uploadu **další velký požadavek na témže spojení uvízl** až do timeoutu,
+ * zatímco krátký prošel. Vypadá to jako vada klienta a není; spojení
+ * rozsynchronizuje server.
+ *
+ * Proto se ruší jedině tehdy, když dojdou hodiny — a **týká se to i klienta pod
+ * stropem**, který jen posílá pomalu. Je to vědomá výměna zapsaná
+ * u `BODY_DEADLINE_MS`: rozsynchronizované spojení platí ten, kdo posílá tělo
+ * přes pět sekund, zdržený handler by platili všichni ostatní.
  */
 export type BodyRead = { ok: true; text: string } | { ok: false; reason: 'TOO_LARGE' | 'TIMEOUT' };
 
