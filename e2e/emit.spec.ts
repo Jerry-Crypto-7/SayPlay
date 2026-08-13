@@ -37,6 +37,9 @@ interface EmitResponse {
   readonly certificate?: { readonly verdict: string; readonly snapshotHash: string };
   readonly rejection: { readonly stage: string; readonly reason: string; readonly detail: string } | null;
   readonly doc: Record<string, unknown> | null;
+  /** Oloupaný dokument tak, jak přišel. Na 200 je vždycky — i u odmítnutí. */
+  readonly emission: Record<string, unknown> | null;
+  readonly annotations: Record<string, unknown>;
 }
 
 /** Zmrazený text promptu — čtený nezávisle na `src/model/`. */
@@ -149,29 +152,34 @@ test('dva prompty dají světy, které se liší chováním — svědek jednoho 
   expect(verifyWitness(worldA.world, worldB.witness).verdict).toBe('REJECTED');
 });
 
-test('poctivé odmítnutí `sim` je vlastní verdikt a scéna se vydá i tak', async ({ request }) => {
-  // `C14` (3D sloupcový graf) a `C15` (fyzikální hřiště) leží mimo gramatiku.
-  // Zmrazený protokol na ně má `NO_FIT` — *„systém poctivě odmítl `sim` část"* —
-  // a zároveň žádá, aby se **scéna postavila** (§13.4). Dokud se to hlásilo jako
-  // `SCHEMA_VIOLATION`, dostaly 2 z 15 create promptů třídu vady emise a přišly
-  // o `look`, ze kterého se scéna staví.
-  for (const id of ['C14', 'C15']) {
+test('odmítnutí se vztahuje na `sim`, nikdy na scénu', async ({ request }) => {
+  // §13.4 platí pro **všechna** odmítnutí, ne jen pro `NO_FIT`. Trojice pokrývá
+  // tři různé cesty, jak se dá o `sim` přijít, a u všech tří musí zůstat scéna:
+  // `C14` deklarované `NO_FIT`, `C12` systémový default po odmítnutí před
+  // modelem, `C13` ořez na deklarovanou mez. Dokud endpoint u posledních dvou
+  // vracel `doc: null` a nic víc, přišly o `look` i o entity, ze kterých se
+  // skórují jejich vlastní zmrazené požadavky.
+  for (const id of ['C14', 'C12', 'C13']) {
     const body = await emit(request, id);
-
-    expect(body.outcome, `${id} není vada schématu`).toBe('NO_FIT');
-    expect(body.rejection?.stage).toBe('declined');
-    expect(body.rejection?.reason).toBe('NO_FIT_DECLARED');
-
-    // Scéna: `look` je tam celý a projde kontrolou konečnosti, `sim` chybí.
-    expect(body.doc).not.toBeNull();
-    const doc = body.doc as { sim: unknown; look: unknown; simOutcome: string; simHash?: string };
-    expect(doc.sim).toBeNull();
-    expect(doc.simOutcome).toBe('NO_FIT');
-    expect(validateLook(doc.look).issues).toEqual([]);
-    // `simHash` chybí schválně — není co hashovat. Kdyby tu byl, tvrdil by
-    // identitu části, která neexistuje.
-    expect(doc.simHash).toBeUndefined();
+    expect(body.emission, `${id} přišel o emisi`).not.toBeNull();
+    expect(validateLook(body.emission!.look).issues, `${id} přišel o scénu`).toEqual([]);
   }
+
+  // `NO_FIT` je vlastní verdikt, ne vada schématu — a říká to anotace obálky.
+  const declined = await emit(request, 'C14');
+  expect(declined.outcome).toBe('NO_FIT');
+  expect(declined.rejection?.stage).toBe('declined');
+  expect(declined.rejection?.reason).toBe('NO_FIT_DECLARED');
+  expect(declined.annotations.simOutcome).toBe('NO_FIT');
+  expect(declined.emission!.sim).toBeNull();
+  // Anotace v dokumentu nezůstává a `doc` nevzniká — není co pečetit.
+  expect(declined.emission).not.toHaveProperty('simOutcome');
+  expect(declined.doc).toBeNull();
+
+  // Anotaci píše potrubí, ne model — a taky se loupe, ne validuje jako pole.
+  const clamped = await emit(request, 'C13');
+  expect(clamped.annotations.clampedFrom).toBe(10_000);
+  expect(clamped.emission).not.toHaveProperty('clampedFrom');
 });
 
 test('naměřené odmítnutí je 200 s verdiktem a s atribucí, ne 5xx', async ({ request }) => {

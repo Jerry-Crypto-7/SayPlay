@@ -12,6 +12,7 @@
  * právě z nich vzniká zaznamenaný upstream požadavek, na který se AC T13 ptá.
  */
 
+import { createHash } from 'node:crypto';
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -37,6 +38,25 @@ async function clientAt(root: string) {
 
 function frozenFile(root: string, name: string): string {
   return join(root, 'evals', 'frozen', name);
+}
+
+/**
+ * Přepíše zmrazený soubor **a dorovná mu hash v `MANIFEST.lock`**.
+ *
+ * Bez toho se za per-record kontroly v `emitWorld` vůbec nedá dostat: souborový
+ * hash je zachytí dřív a test pak měří jen tu první vrstvu. Přesně na tom stálo
+ * původní znění případu `RESPONSE_TAMPERED` — obě větve uvnitř `emitWorld`
+ * (hlavička `synthetic` i per-record `sha256`) šlo smazat a sada zůstala zelená.
+ *
+ * Podvrh se tím **posiluje**, ne oslabuje: takhle vypadá útočník, který má
+ * přístup i k manifestu, a jediné, co ho pak ještě zastaví, je per-record hash.
+ */
+function rewriteFrozen(root: string, name: string, next: string): void {
+  writeFileSync(frozenFile(root, name), next, 'utf8');
+  const manifestPath = frozenFile(root, 'MANIFEST.lock');
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { files: Record<string, string> };
+  manifest.files[name] = createHash('sha256').update(Buffer.from(next.replace(/\r\n/g, '\n'), 'utf8')).digest('hex');
+  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
 }
 
 afterEach(() => {
@@ -87,14 +107,56 @@ describe('zmrazený korpus na produkční cestě', () => {
     expect(!grammar.ok && grammar.reason).toBe('MANIFEST_MISMATCH');
   });
 
-  it('přepsaná odpověď se nedostane k volajícímu', async () => {
+  it('přepsaná odpověď se nedostane k volajícímu ani s dorovnaným manifestem', async () => {
+    const root = corpusRoot();
+    const original = readFileSync(frozenFile(root, 'responses/index.jsonl'), 'utf8');
+
+    // **Vyměněné tělo uvnitř jinak nedotčeného souboru.** Manifest je dorovnaný,
+    // takže tuhle vrstvu podvrh prošel — chytit to musí per-record `sha256`.
+    const records = original.trim().split('\n').map((line) => JSON.parse(line) as Record<string, unknown>);
+    const swapped = records.map((record) =>
+      record.forPrompt === 'C01' && record.branch === 'create'
+        ? { ...record, body: records.find((other) => other.forPrompt === 'C02')!.body }
+        : record,
+    );
+    rewriteFrozen(root, 'responses/index.jsonl', `${swapped.map((r) => JSON.stringify(r)).join('\n')}\n`);
+
+    const tamperedBody = await clientAt(root);
+    const swappedResult = tamperedBody.emitWorld('C01', REQUEST);
+    expect(swappedResult.ok).toBe(false);
+    expect(!swappedResult.ok && swappedResult.reason).toBe('RESPONSE_TAMPERED');
+    expect(!swappedResult.ok && swappedResult.detail).toContain('the record claims');
+  });
+
+  it('odpověď bez hlavičky `synthetic` se nevydá, i když jí hash sedí', async () => {
+    // Hlavička není formalita: syntetický záznam neříká nic o kvalitě modelu.
+    // Kdyby ji šlo shodit, dal by se offline běh vydávat za měření modelu.
+    const root = corpusRoot();
+    const original = readFileSync(frozenFile(root, 'responses/index.jsonl'), 'utf8');
+    const records = original.trim().split('\n').map((line) => JSON.parse(line) as Record<string, unknown>);
+    const stripped = records.map((record) =>
+      record.forPrompt === 'C01' && record.branch === 'create' ? { ...record, synthetic: false } : record,
+    );
+    // Tělo se nemění, takže per-record `sha256` dál sedí — zbývá jen hlavička.
+    rewriteFrozen(root, 'responses/index.jsonl', `${stripped.map((r) => JSON.stringify(r)).join('\n')}\n`);
+
+    const client = await clientAt(root);
+    const result = client.emitWorld('C01', REQUEST);
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.reason).toBe('RESPONSE_TAMPERED');
+    expect(!result.ok && result.detail).toContain('synthetic: true');
+  });
+
+  it('souborový hash chytá podvrh, kterému se manifest nedorovnal', async () => {
+    // Druhá vrstva zvlášť — jinak by se dvě nezávislé kontroly nedaly rozeznat.
     const root = corpusRoot();
     const file = frozenFile(root, 'responses/index.jsonl');
-    writeFileSync(file, `${readFileSync(file, 'utf8').trimEnd()}\n`.replace('"synthetic":true', '"synthetic":false'), 'utf8');
+    writeFileSync(file, readFileSync(file, 'utf8').replace('"synthetic":true', '"synthetic":false'), 'utf8');
 
     const client = await clientAt(root);
     const emission = client.emitWorld('C01', REQUEST);
     expect(emission.ok).toBe(false);
+    expect(!emission.ok && emission.reason).toBe('MANIFEST_MISMATCH');
   });
 
   it('chybějící korpus je výsledek, ne vyhozená výjimka', async () => {

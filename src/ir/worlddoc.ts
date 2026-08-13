@@ -139,7 +139,7 @@ export const worldEmissionSchema = z
   .strict();
 
 /**
- * Emise, ve které systém **poctivě odmítl `sim` část** — `NO_FIT`.
+ * Emise, ve které je `sim` část **poctivě odmítnutá** — `NO_FIT`.
  *
  * Není to vada schématu a nesmí se tak vykazovat. `protocol.v1.json` říká
  * u `NO_FIT` doslova *„systém poctivě odmítl `sim` část — mechanika není
@@ -147,21 +147,73 @@ export const worldEmissionSchema = z
  * to opakuje u očekávaných výsledků. Proto tenhle tvar **vyžaduje `look`**
  * a zakazuje `sim`: odmítnutí se vztahuje výhradně na `sim`, nikdy na scénu.
  *
- * Bez tohohle schématu spadly zmrazené emise `C14` a `C15` na `.strict()`
- * (`simOutcome` je neznámé pole, `sim: null` není objekt) a endpoint je hlásil
- * jako `SCHEMA_VIOLATION` — tedy vadu emise místo systémového odmítnutí, na
- * kterém stojí scorer z T16.
+ * Že jde o `NO_FIT`, říká **anotace `simOutcome` na obálce**, ne pole dokumentu —
+ * viz `ENVELOPE_ANNOTATIONS`. Tady zbývá jen tvar dokumentu pod ní.
  */
 export const declinedEmissionSchema = z
   .object({
     irVersion: z.string(),
     simRevision: finiteInt.min(0),
     lookRevision: finiteInt.min(0),
-    simOutcome: z.literal('NO_FIT'),
     sim: z.null(),
     look: lookSchema,
   })
   .strict();
+
+// ---------------------------------------------------------------------------
+// Obálka emise — dokument plus deklarované anotace
+// ---------------------------------------------------------------------------
+
+/**
+ * Pole, která smějí jet **vedle dokumentu**, ne v něm.
+ *
+ * Zmrazený `protocol.v1.json` mrazí `worldDoc.topLevelFields` s
+ * `additionalPropertiesAllowed: false` — a popisuje tím **uložený dokument**, ne
+ * emisní obálku. Že to jsou dvě různé věci, plyne už z toho seznamu samého:
+ * obsahuje `simHash`, který v emisi nikdy není, protože ho pečetí systém.
+ *
+ * Obálka je proto **dokument bez `simHash` plus tenhle uzavřený seznam**. Cokoli
+ * mimo něj zůstává `SCHEMA_VIOLATION`; seznam nic nepovoluje navíc, jen
+ * pojmenovává, co anotace je a co je dokument.
+ *
+ * - `simOutcome` — píše ho **model**: `"NO_FIT"` je deklarované odmítnutí `sim`
+ *   části (`prompt.ts` mu tu cestu předepisuje doslova).
+ * - `refusedBeforeModel` — píše ho **potrubí**: prompt byl odmítnut ještě před
+ *   voláním poskytovatele a tělo je systémový default (zmrazené `C12`).
+ * - `clampedFrom` — píše ho **potrubí**: emise byla oříznuta na deklarovanou mez
+ *   a původní počet se nesmí ztratit (zmrazené `C13`).
+ *
+ * **Proč seznam, a ne tři větve.** První oprava téhle třídy ošetřila jmenovitě
+ * `C14` a `C15`, jenže táž vada leží i na `C12` a `C13` — pole navíc nese
+ * **4 z 15** zmrazených create emisí. Jedna anotace = jedna větev znamená, že
+ * pátý případ se najde zase až bránou.
+ */
+export const ENVELOPE_ANNOTATIONS = ['simOutcome', 'refusedBeforeModel', 'clampedFrom'] as const;
+
+export interface Envelope {
+  /** Emise bez anotací — to, co se validuje jako dokument. */
+  readonly document: Record<string, unknown>;
+  /** Deklarované anotace, oloupané z kořene. Jde do odpovědi, nikdy do hashe. */
+  readonly annotations: Record<string, unknown>;
+}
+
+/**
+ * Rozdělí emisní tělo na dokument a anotace.
+ *
+ * `null` znamená, že tělo vůbec není objekt — tedy ani dokument, ani obálka.
+ */
+export function peelEnvelope(body: unknown): Envelope | null {
+  if (body === null || typeof body !== 'object' || Array.isArray(body)) return null;
+
+  const document: Record<string, unknown> = { ...(body as Record<string, unknown>) };
+  const annotations: Record<string, unknown> = {};
+  for (const name of ENVELOPE_ANNOTATIONS) {
+    if (!Object.hasOwn(document, name)) continue;
+    annotations[name] = document[name];
+    delete document[name];
+  }
+  return { document, annotations };
+}
 
 /** Dokument, jak ho drží systém — se zapečetěným `simHash`. */
 export const worldDocSchema = z

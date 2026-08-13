@@ -22,14 +22,25 @@
  * výhru, `declined` poctivé systémové odmítnutí `sim` části. Scorer v T16 na
  * tom stojí.
  *
- * ## `NO_FIT` není vada schématu
+ * ## Odmítnutí se vztahuje na `sim`, nikdy na scénu
  *
- * Zmrazený protokol vede `NO_FIT` jako *„systém poctivě odmítl `sim` část"*
- * a zároveň žádá, aby se **scéna postavila i tak** (§13.4). Taková emise nese
- * `simOutcome: "NO_FIT"`, `sim: null` a platný `look`. Do `worldEmissionSchema`
- * se nevejde a bez vlastní větve by ji endpoint hlásil jako `SCHEMA_VIOLATION`
- * s `doc: null` — tedy vadu emise místo systémového odmítnutí, a ještě by
- * zahodil scénu, kterou má povinnost vydat.
+ * Zmrazený protokol to říká jednou větou a platí pro **všechna** odmítnutí, ne
+ * jen pro `NO_FIT`: *„`NO_FIT` a necertifikovaný patch se vztahují VÝHRADNĚ na
+ * `sim`"* (`look.emptyScreenRule`, §13.4). Odpověď proto vždy nese `emission` —
+ * oloupaný dokument tak, jak přišel — takže `look` i emitovaná `sim` přežijí
+ * i odmítnutí, které se stalo dřív, než mohl vzniknout `doc`. Bez toho přišly
+ * `C12` a `C13` o scénu i o entity, ze kterých se skórují jejich vlastní
+ * požadavky (`sceneMustBuild`, `minEntitiesByRole`).
+ *
+ * `doc` má oproti tomu užší význam a nechává si ho: **zapečetěný dokument**,
+ * který prošel schématem. `null` znamená „nevznikl", ne „scéna se ztratila".
+ *
+ * ## Anotace obálky
+ *
+ * `simOutcome`, `refusedBeforeModel` a `clampedFrom` jedou **vedle** dokumentu
+ * (`ENVELOPE_ANNOTATIONS` ve `worlddoc.ts`) a endpoint je oloupe dřív, než
+ * cokoli validuje. Jmenovitá větev na dvou z nich tuhle třídu nezavřela —
+ * pole navíc nesou **4 z 15** zmrazených create emisí, ne 2.
  *
  * ## Část vzhledu
  *
@@ -44,7 +55,13 @@ import { randomUUID } from 'node:crypto';
 
 import { buildRuntimeWorld } from '../../../ir/build';
 import { findDanglingReferences } from '../../../ir/references';
-import { declinedEmissionSchema, sealSimHash, validateLook, worldEmissionSchema } from '../../../ir/worlddoc';
+import {
+  declinedEmissionSchema,
+  peelEnvelope,
+  sealSimHash,
+  validateLook,
+  worldEmissionSchema,
+} from '../../../ir/worlddoc';
 import { emitWorld, frozenGrammar, frozenPrompt, type ClientFailure } from '../../../model/client';
 import { buildEmissionRequest } from '../../../model/prompt';
 import { withRequest } from '../../../obs/trace';
@@ -60,6 +77,24 @@ export const runtime = 'nodejs';
  */
 const MAX_BODY_BYTES = 64 * 1024;
 
+/**
+ * Jak dlouho se ještě dočítá tělo, které už je za stropem.
+ *
+ * Paměť ohraničuje `MAX_BODY_BYTES`, čas neohraničoval nic: nekonečný chunked
+ * POST po jednom bajtu držel handler až do výchozích 300 s `requestTimeout`
+ * Node, protože smyčka čeká na `reader.read()` a hodiny se v ní nikdo neptá.
+ *
+ * Za deadlinem se zbytek **zruší**, přestože to je přesně ta cesta, kterou
+ * docblock `readBody` popisuje jako škodlivou. Je to vědomá výměna a platí jen
+ * tady: rozsynchronizované keep-alive spojení se týká klienta, který už dávno
+ * překročil strop a pokračuje; zdržený handler se týká všech ostatních.
+ *
+ * **Wall-clock je tu legální.** Zákaz `Date.now()` z `CLAUDE.md` platí na
+ * replay cestě, kde je simulovaný tik jedinou jednotkou. Tohle je čtení HTTP
+ * těla — do hashovaného stavu z něj nevstupuje nic.
+ */
+const DRAIN_DEADLINE_MS = 5_000;
+
 type Stage = 'schema' | 'references' | 'lowering' | 'witness' | 'look' | 'declined';
 
 interface Rejection {
@@ -71,6 +106,16 @@ interface Rejection {
 
 function rejected(requestId: string, promptId: string, rejection: Rejection, extra: object = {}): Response {
   return Response.json({ requestId, promptId, outcome: 'REJECTED', rejection, doc: null, ...extra });
+}
+
+/** Neznámé pole je pořád `SCHEMA_VIOLATION` — obálka nic nepovoluje navíc. */
+function rejectionFromSchema(issues: readonly { message: string; path: PropertyKey[] }[]): Rejection {
+  return {
+    stage: 'schema',
+    reason: 'SCHEMA_VIOLATION',
+    detail: issues[0].message,
+    issues: issues.map((issue) => `/${issue.path.join('/')}: ${issue.message}`),
+  };
 }
 
 /**
@@ -108,20 +153,45 @@ async function readBody(request: Request): Promise<{ ok: true; text: string } | 
   let chunks: Uint8Array[] = [];
   let size = 0;
   let overflowed = false;
+  /** Nastaví se až při přetečení — legální tělo se o hodiny neopírá vůbec. */
+  let drainUntil = 0;
+
   for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    size += value.byteLength;
+    const chunk = overflowed ? await raceDeadline(reader.read(), drainUntil - Date.now()) : await reader.read();
+    if (chunk === null) {
+      // Deadline. Zbytek se zruší; viz `DRAIN_DEADLINE_MS`, proč zrovna tady.
+      await reader.cancel().catch(() => undefined);
+      return { ok: false };
+    }
+    if (chunk.done) break;
+    size += chunk.value.byteLength;
     if (size > MAX_BODY_BYTES) {
       if (!overflowed) {
         overflowed = true;
+        drainUntil = Date.now() + DRAIN_DEADLINE_MS;
         chunks = [];
       }
       continue;
     }
-    chunks.push(value);
+    chunks.push(chunk.value);
   }
   return overflowed ? { ok: false } : { ok: true, text: Buffer.concat(chunks).toString('utf8') };
+}
+
+/** `null` znamená, že vypršel deadline dřív, než dorazil další kus. */
+async function raceDeadline<T>(pending: Promise<T>, remainingMs: number): Promise<T | null> {
+  if (remainingMs <= 0) return null;
+  let timer: NodeJS.Timeout | undefined;
+  try {
+    return await Promise.race([
+      pending,
+      new Promise<null>((resolve) => {
+        timer = setTimeout(() => resolve(null), remainingMs);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -180,51 +250,70 @@ export async function POST(request: Request): Promise<Response> {
     const emission = emitWorld(promptId, upstream);
     if (!emission.ok) return corpusUnavailable(requestId, emission);
 
-    const envelope = { upstream, provenance: emission.provenance };
-
-    const parsed = worldEmissionSchema.safeParse(emission.body);
-    if (!parsed.success) {
-      // Poctivé odmítnutí `sim` části, ne vada emise — a scéna se vydává i tak.
-      // `simHash` tu chybí schválně: není co hashovat, `sim` neexistuje.
-      const declined = declinedEmissionSchema.safeParse(emission.body);
-      if (declined.success) {
-        const declinedLook = validateLook(declined.data.look);
-        if (!declinedLook.ok)
-          return rejected(
-            requestId,
-            promptId,
-            { stage: 'look', reason: 'LOOK_INVALID', detail: declinedLook.issues[0], issues: declinedLook.issues },
-            envelope,
-          );
-
-        return Response.json({
-          requestId,
-          promptId,
-          ...envelope,
-          outcome: 'NO_FIT',
-          certificate: null,
-          rejection: {
-            stage: 'declined',
-            reason: 'NO_FIT_DECLARED',
-            detail: 'the emission declined the sim part; the scene is still built from look',
-            issues: [],
-          },
-          doc: declined.data,
-        });
-      }
-
+    // Anotace se loupou **před** vším ostatním. Dokument je to, co zbude —
+    // a jen na něj se ptá schéma, protože jen on se pečetí a hashuje.
+    const peeled = peelEnvelope(emission.body);
+    if (peeled === null)
       return rejected(
         requestId,
         promptId,
         {
           stage: 'schema',
-          reason: 'SCHEMA_VIOLATION',
-          detail: parsed.error.issues[0].message,
-          issues: parsed.error.issues.map((issue) => `/${issue.path.join('/')}: ${issue.message}`),
+          reason: 'NOT_A_DOCUMENT',
+          detail: 'the emission body is not a JSON object',
+          issues: [],
         },
-        envelope,
+        { upstream, provenance: emission.provenance, annotations: {}, emission: null },
       );
+
+    // `emission` je v odpovědi **vždy**, i u odmítnutí. Odmítnutí se podle
+    // §13.4 vztahuje výhradně na `sim`; scéna a emitované entity se s ním
+    // zahazovat nesmějí, protože z nich se skórují `sceneMustBuild`
+    // i `minEntitiesByRole`.
+    const envelope = {
+      upstream,
+      provenance: emission.provenance,
+      annotations: peeled.annotations,
+      emission: peeled.document,
+    };
+
+    // Poctivé odmítnutí `sim` části, ne vada emise. Říká to anotace na obálce,
+    // ne pole dokumentu — pod ní zbývá jen tvar `sim: null` plus platný `look`.
+    if (peeled.annotations.simOutcome === 'NO_FIT') {
+      const declined = declinedEmissionSchema.safeParse(peeled.document);
+      if (!declined.success)
+        return rejected(requestId, promptId, rejectionFromSchema(declined.error.issues), envelope);
+
+      const declinedLook = validateLook(declined.data.look);
+      if (!declinedLook.ok)
+        return rejected(
+          requestId,
+          promptId,
+          { stage: 'look', reason: 'LOOK_INVALID', detail: declinedLook.issues[0], issues: declinedLook.issues },
+          envelope,
+        );
+
+      return Response.json({
+        requestId,
+        promptId,
+        ...envelope,
+        outcome: 'NO_FIT',
+        certificate: null,
+        rejection: {
+          stage: 'declined',
+          reason: 'NO_FIT_DECLARED',
+          detail: 'the emission declined the sim part; the scene is still built from look',
+          issues: [],
+        },
+        // `doc` je zapečetěný dokument, a ten tu nevznikl — není co hashovat.
+        // Scéna se tím neztrácí, jede v `emission`.
+        doc: null,
+      });
     }
+
+    const parsed = worldEmissionSchema.safeParse(peeled.document);
+    if (!parsed.success)
+      return rejected(requestId, promptId, rejectionFromSchema(parsed.error.issues), envelope);
 
     // Před snížením do IR, ne po něm: povrchová jména (countery, sockety, zóny)
     // se do IR vůbec nedostanou, takže osiřelý odkaz se za nimi už nedá najít.
