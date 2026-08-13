@@ -512,37 +512,74 @@ describe('sousední patch cesta má tytéž stráže jako `ir/revision.ts`', () 
     }
   });
 
-  it('neindexová vlastnost propašovaná na pole neprojde ani tudy', () => {
-    // `rfc6902` hlídá zápis do pole jen podmínkou `parseInt(key,10) >= length`,
-    // takže nečíselný token propadne na `parent[key] = value`. `canonical` pole
-    // prochází přes `.map`, tedy jen pozice — hash by zůstal bitově týž.
+  /**
+   * **Neindexový token do pole se odmítne dřív, než se aplikuje.**
+   *
+   * `rfc6902` ho nezamítne: `replace` zapíše přímo `parent[key]` (klíč, který
+   * `canonical` přes `.map` nikdy neuvidí → bitově týž hash), `add` dělá
+   * `splice(parseInt(key,10), …)` a `NaN` znamená **index 0** (dokument
+   * konzistentní, hash sedící, ale pravidla přečíslovaná — a na jejich pořadí
+   * stojí `priority`, `phase` i „ambiguous execution order"). Ani jedno nepozná
+   * žádná pozdější kontrola, takže odmítnout to musí kontrola tokenu.
+   *
+   * `__proto__` je tentýž případ: na poli to není index. Dřív to skončilo až
+   * pádem `value.map is not a function` uvnitř hashe, tedy hláškou, ze které se
+   * nedalo nic opravit.
+   */
+  it('neindexový token do pole je odmítnut dřív, než se vůbec aplikuje', () => {
     const before = graphHash(vault);
-    const operations = JSON.parse('[{"op":"replace","path":"/ir/rules/smuggled","value":{"a":1}}]') as Operation[];
-    const result = applyWorldPatch(vault, operations);
+    for (const [op, body] of [
+      ['replace', '"value":{"a":1}'],
+      ['add', '"value":{"a":1}'],
+      ['copy', '"from":"/ir/rules/0"'],
+      ['move', '"from":"/ir/rules/0"'],
+    ] as const) {
+      for (const token of ['smuggled', '__proto__', 'length']) {
+        const operations = JSON.parse(`[{"op":"${op}","path":"/ir/rules/${token}",${body}}]`) as Operation[];
+        const result = applyWorldPatch(vault, operations);
 
-    expect(result.verdict).toBe('REJECTED');
-    if (result.verdict !== 'REJECTED') return;
-    expect(result.pointer).toBe('/ir/rules/smuggled');
+        expect(result, `${op} ${token}`).toMatchObject({
+          verdict: 'REJECTED',
+          reason: 'MALFORMED_OPERATION',
+        });
+        if (result.verdict !== 'REJECTED') continue;
+        expect(result.pointer, `${op} ${token}`).toBe(`/ir/rules/${token}`);
+        expect(result.detail, `${op} ${token}`).toContain('is not an index');
+      }
+    }
     expectUntouched(before);
   });
 
-  /**
-   * A tenhle případ dřív procházel jako `MALFORMED_OPERATION` s textem
-   * `value.map is not a function`.
-   *
-   * Operace je přitom bezvadná RFC 6902 a projde každou hodnotovou kontrolou —
-   * vada je ve **výsledném dokumentu** a dřív se objevila teprve tím, že
-   * `canonical` zavolal `.map` na něčem, co už pole nebylo. Volající klíčovaný na
-   * `MALFORMED_OPERATION` by týž patch přeemitoval donekonečna.
-   */
-  it('přepsaný prototyp pole je vada struktury, ne vadná operace', () => {
-    const before = graphHash(vault);
-    const operations = JSON.parse('[{"op":"replace","path":"/ir/rules/__proto__","value":{}}]') as Operation[];
-    const result = applyWorldPatch(vault, operations);
+  it('ale `-` u `add` je legální a index projde', () => {
+    // Bez těchhle dvou by kontrola tokenu nebyla strop, ale zákaz zápisu do pole.
+    expect(
+      applyWorldPatch(vault, [{ op: 'add', path: '/ir/effects/-', value: { op: 'lose' } } as Operation]).verdict,
+    ).toBe('COMMITTED');
+    expect(applyWorldPatch(vault, [{ op: 'replace', path: '/ir/rules/0/priority', value: 3 }]).verdict).toBe(
+      'COMMITTED',
+    );
+  });
 
-    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'STRUCTURE' });
+  it('a pole s přepsaným prototypem neprojde jako hodnota operace', () => {
+    // Cesta, na kterou kontrola tokenu nedosáhne: pole přijaté celé.
+    // `Array.isArray` je pořád `true`, ale `canonical` by na něm `.map` nenašel.
+    const rogue: unknown[] = [];
+    Object.setPrototypeOf(rogue, null);
+    const before = graphHash(vault);
+    const result = applyWorldPatch(vault, [{ op: 'replace', path: '/ir/rules', value: rogue } as Operation]);
+    expect(result.verdict).toBe('REJECTED');
     if (result.verdict !== 'REJECTED') return;
-    expect(result.pointer).toBe('/ir/rules');
+    expect(result.detail).toContain('only plain objects and arrays');
+    expectUntouched(before);
+  });
+
+  it('a `-0` taky ne — hash by mluvil o nule', () => {
+    const before = graphHash(vault);
+    const operations = JSON.parse('[{"op":"replace","path":"/ir/rules/0/priority","value":-0}]') as Operation[];
+    const result = applyWorldPatch(vault, operations);
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.detail).toContain('negative zero');
     expectUntouched(before);
   });
 

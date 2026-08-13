@@ -25,6 +25,7 @@ import { hashWords } from '../sim/hash';
 import { TIERS } from '../verify/tiers';
 import type { VerifiableWorld } from '../verify/witness';
 import {
+  badArrayToken,
   operationSchema,
   reject,
   rejectionFromZod,
@@ -209,6 +210,19 @@ function applyChecked(doc: VerifiableWorld, operations: readonly Operation[]): P
   // index, tedy i pointer.
   for (let i = 0; i < operations.length; i += 1) {
     const operation = operations[i];
+
+    // `rfc6902` u pole nehlídá tvar tokenu a tiše uhne na index 0 — viz
+    // `badArrayToken`. `add /ir/rules/smuggled` by jinak přečísloval pravidla
+    // a vrátil `COMMITTED`: konzistentní dokument, sedící hash, jiný svět.
+    const badToken = badArrayToken(draft, operation.op, operation.path);
+    if (badToken !== null)
+      return reject(
+        'MALFORMED_OPERATION',
+        operation.path,
+        operation.op === 'add' ? 'an array index or "-"' : 'an array index',
+        `operation ${i} (${operation.op} ${operation.path}): "${badToken}" is not an index of the array it targets`,
+      );
+
     let failure: ReturnType<typeof applyPatch>[number] | undefined;
     try {
       [failure] = applyPatch(draft as unknown as object, [operation]);

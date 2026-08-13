@@ -19,6 +19,7 @@ import {
   migrateWorldDoc,
   sealSimHash,
   simHashOf,
+  unhashableValues,
   validateLook,
 } from '../worlddoc';
 import { defaultLook, synthWorld } from '../__fixtures__/synth';
@@ -347,16 +348,94 @@ describe('do `sim` se dostane jen JSON', () => {
    * a `JSON.stringify` ho zahodí. Commitnutý dokument tedy není ten, který se
    * znovu načte, a oba mají stejný `simHash`.
    */
-  it('neindexová vlastnost propašovaná na pole taky ne', () => {
+  it('neindexový token do pole je odmítnut dřív, než se vůbec aplikuje', () => {
+    // `rfc6902` by ho nezamítl: `replace` zapíše přímo `parent[key]`, `add` dělá
+    // `splice(parseInt(key,10), …)` a `NaN` znamená **index 0**. Odmítnutí proto
+    // musí přijít z kontroly tokenu, ne až z nálezu nad draftem.
     const before = world.simHash;
-    const operations = JSON.parse('[{"op":"replace","path":"/rules/smuggled","value":{"hidden":true}}]') as Operation[];
-    const result = commitPart(world, { part: 'sim', baseRevision: 0, operations });
+    for (const op of ['replace', 'add', 'copy', 'move'] as const) {
+      const body = op === 'copy' || op === 'move' ? '"from":"/rules/0"' : '"value":{"hidden":true}';
+      const operations = JSON.parse(`[{"op":"${op}","path":"/rules/smuggled",${body}}]`) as Operation[];
+      const result = commitPart(world, { part: 'sim', baseRevision: 0, operations });
 
+      expect(result, op).toMatchObject({ verdict: 'REJECTED', reason: 'MALFORMED_OPERATION' });
+      if (result.verdict !== 'REJECTED') continue;
+      expect(result.pointer, op).toBe('/rules/smuggled');
+      expect(result.detail, op).toContain('is not an index');
+    }
+    expect(world.simHash).toBe(before);
+  });
+
+  it('ale `-` u `add` je legální „za poslední prvek"', () => {
+    const rule = JSON.parse(
+      '{"id":"lose","phase":0,"priority":1,"event":{"kind":"onEnterZone","entity":"player","zone":"spawn"},"condition":null,"actions":[{"kind":"lose"}]}',
+    ) as unknown;
+    const result = commitPart(world, {
+      part: 'sim',
+      baseRevision: 0,
+      operations: [{ op: 'add', path: '/rules/-', value: rule } as Operation],
+    });
+    expect(result.verdict).toBe('COMMITTED');
+  });
+
+  it('a pole s propašovaným klíčem neprojde ani jako HODNOTA operace', () => {
+    // Tudy se do draftu dostane i to, co kontrola tokenu nevidí — pole přijaté
+    // celé, s neindexovou vlastností už na sobě.
+    const smuggler: unknown[] = [1, 2];
+    (smuggler as unknown as Record<string, unknown>).hidden = true;
+    const result = commitPart(world, {
+      part: 'sim',
+      baseRevision: 0,
+      operations: [{ op: 'replace', path: '/state/slots', value: smuggler } as Operation],
+    });
     expect(result.verdict).toBe('REJECTED');
     if (result.verdict !== 'REJECTED') return;
-    expect(result.pointer).toBe('/sim');
-    expect(result.detail).toContain('/rules/smuggled');
-    expect(world.simHash).toBe(before);
+    expect(result.detail).toContain('never serializes');
+  });
+
+  it('a pole s přepsaným prototypem taky ne', () => {
+    // `Array.isArray` je pořád `true` — prototyp se kontroluje zvlášť, protože
+    // bez něj by `.map` v `canonical` nebyla funkce.
+    const rogue: unknown[] = [1, 2];
+    Object.setPrototypeOf(rogue, null);
+    const result = commitPart(world, {
+      part: 'sim',
+      baseRevision: 0,
+      operations: [{ op: 'replace', path: '/state/slots', value: rogue } as Operation],
+    });
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.detail).toContain('only plain objects and arrays');
+  });
+
+  /**
+   * `-0` je táž vada jako přepsaný prototyp, jen ji model umí poslat přímo v JSON.
+   *
+   * `Number.isFinite(-0)` je `true` a `JSON.stringify(-0)` je `"0"`, takže hash
+   * mluví o nule. `JSON.parse` i `structuredClone` ale `-0` **zachovají** — takže
+   * commitnutý dokument nese `-0`, jeho kotva popisuje `0`, a po průchodu
+   * uložištěm se z něj `0` doopravdy stane.
+   */
+  it('`-0` se do hashované části nedostane', () => {
+    const operations = JSON.parse('[{"op":"replace","path":"/state/counters/keys/init","value":-0}]') as Operation[];
+    const result = commitPart(world, { part: 'sim', baseRevision: 0, operations });
+    expect(result.verdict).toBe('REJECTED');
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.detail).toContain('negative zero');
+
+    // Doklad té kolize, ne hypotéza.
+    expect(canonicalHash({ v: -0 })).toBe(canonicalHash({ v: 0 }));
+    expect(Object.is(structuredClone({ v: -0 }).v, -0)).toBe(true);
+    expect(Object.is(JSON.parse(JSON.stringify({ v: -0 })).v, -0)).toBe(false);
+  });
+
+  it('ale kladná nula projít MUSÍ — jinak by to byl zákaz nuly', () => {
+    const result = commitPart(world, {
+      part: 'sim',
+      baseRevision: 0,
+      operations: [{ op: 'replace', path: '/state/counters/keys/init', value: 0 } as Operation],
+    });
+    expect(result.verdict).toBe('COMMITTED');
   });
 
   it('a kdyby prošla, dokument po uložení by byl jiný — se stejným hashem', () => {
@@ -580,6 +659,50 @@ describe('příliš hluboké zanoření se odmítne, ne přeteče', () => {
     }).not.toThrow();
     expect(verdict?.ok).toBe(false);
     expect(verdict?.reason).toContain('deeper than');
+  });
+
+  /**
+   * **Smyčka po pozicích pole je řízená číslem, které může přijít z patche.**
+   *
+   * `length` je zapisovatelná, takže pole umí tvrdit, že má miliardu prvků,
+   * zatímco vlastní klíče má dva. Bez zastavení na prvním nálezu by kontrola
+   * vyrobila jeden objekt nálezu na díru a skončila jako `heap out of memory` —
+   * což je **abort procesu, ne výjimka**, takže by ho nechytil ani záchyt, který
+   * slibuje „nikdy nevyhodí".
+   */
+  it('kontrola je omezená i nad polem, které tvrdí, že má milion prvků', () => {
+    const vast: unknown[] = [];
+    vast.length = 1_000_000;
+    const issues = unhashableValues(vast, '/sim');
+    expect(issues).toHaveLength(1);
+    expect(issues[0].detail).toContain('hole in an array');
+  });
+
+  it('a zastavení na prvním nálezu neobviní klíč, ke kterému se nedošlo', () => {
+    // Po předčasném zastavení je množina neprošlých klíčů teprve zpola
+    // vyprázdněná. Kdyby se hlásila jako „tohle kanonizace neserializuje",
+    // dostal by `b` nález za vadu, kterou má `a` — a `validateLook` ty nálezy
+    // vydává celé, ne jen ten první.
+    const issues = unhashableValues({ a: Number.NaN, b: 1 }, '/sim');
+    expect(issues).toHaveLength(1);
+    expect(issues[0].pointer).toBe('/sim/a');
+    expect(issues.some((found) => found.detail.includes('never serializes'))).toBe(false);
+  });
+
+  it('a uložená vada se nevykazuje jako vada patche', () => {
+    // `sealSimHash` dokument zapečetí bez kontroly, takže `WorldDoc` sem umí
+    // přijít i mimo `migrateWorldDoc`. Nález nad draftem by pak vypadal, jako by
+    // ho přinesl tenhle patch — a volající by ho přeemitoval donekonečna.
+    const stored = sealSimHash({
+      ...world,
+      sim: { ...world.sim, state: { counters: { keys: { min: 0, max: 3, init: -0 } } } },
+    });
+    const result = commitPart(stored, simPatch(0));
+
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'STRUCTURE' });
+    if (result.verdict !== 'REJECTED') return;
+    expect(result.detail).toContain('the sim part this patch targets');
+    expect(result.pointer).toBe('/sim/state/counters/keys/init');
   });
 
   it('ale běžná hloubka projít MUSÍ — jinak by strop byl jen jiná vada', () => {

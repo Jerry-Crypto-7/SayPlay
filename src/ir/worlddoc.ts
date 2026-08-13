@@ -294,8 +294,17 @@ export function unhashableValues(
   if (value === null) return [];
 
   const kind = typeof value;
-  if (kind === 'number')
-    return Number.isFinite(value as number) ? [] : [issue(path, `${String(value)} is not finite`)];
+  if (kind === 'number') {
+    if (!Number.isFinite(value as number)) return [issue(path, `${String(value)} is not finite`)];
+    // **`-0` je táž vada jako `null` prototyp, jen se hůř vidí.** `Number.isFinite`
+    // ho propustí a `JSON.stringify` z něj napíše `0` — takže hash je hash nuly.
+    // Přitom `JSON.parse` i `structuredClone` `-0` **zachovají**, takže dokument
+    // v paměti nese `-0`, jeho hash mluví o `0`, a po průchodu uložištěm se
+    // z něj `0` stane doopravdy. Dva různé dokumenty, jedna kotva certifikátu —
+    // a na rozdíl od prototypu ho model umí poslat přímo v JSON patche.
+    if (Object.is(value, -0)) return [issue(path, 'negative zero is written as 0 by canonicalization')];
+    return [];
+  }
   if (kind === 'string' || kind === 'boolean') return [];
   // `bigint` vyhodí uvnitř `JSON.stringify`, `function` i `symbol` z něj vypadnou
   // beze stopy. Ani jedno nemá JSON tvar, takže ani jedno nesmí do dokumentu.
@@ -359,8 +368,23 @@ export function unhashableValues(
     issues.push(...unhashableValues(descriptor.value, at, open, depth + 1));
   };
 
-  if (isArray) for (let i = 0; i < (object as unknown[]).length; i += 1) inspect(String(i));
-  else for (const key of [...own]) inspect(key);
+  // **Zastavuje se na PRVNÍM nálezu, a je to mez, ne úspora.** `length` pole je
+  // zapisovatelná (`replace /rules/length` s `4294967295` projde `rfc6902` bez
+  // mrknutí), takže smyčka po pozicích je řízená číslem z patche. Bez téhle meze
+  // by vyrobila jeden objekt nálezu na díru, což u velkého `length` skončí jako
+  // `heap out of memory` — a to je **abort procesu, ne výjimka**, takže by ho
+  // nechytil ani záchyt, který slibuje „nikdy nevyhodí". Volající navíc čte
+  // `issues[0]`, takže první důvod je celá odpověď (`rejectionFromZod` to má
+  // stejně).
+  if (isArray) {
+    const array = object as unknown[];
+    for (let i = 0; i < array.length && issues.length === 0; i += 1) inspect(String(i));
+  } else {
+    for (const key of [...own]) {
+      if (issues.length > 0) break;
+      inspect(key);
+    }
+  }
 
   // Co v `own` zbylo, `canonical` nikdy neuvidí. U objektu nezbyde nic — smyčka
   // výš prošla přesně jeho klíče. U pole je to **neindexová vlastní vlastnost**:
@@ -369,8 +393,13 @@ export function unhashableValues(
   // `parent[key] = value`. Takový klíč přežije `structuredClone`, ale `JSON`
   // ho zahodí — commitnutý dokument pak není ten, který se znovu načte, a oba
   // mají bitově týž hash.
-  for (const key of own)
-    issues.push(issue(`${path}/${escapeToken(key)}`, 'a property canonicalization never serializes'));
+  //
+  // Čte se **jen když se výš nic nenašlo**: po předčasném zastavení je `own`
+  // teprve zpola vyprázdněná, takže by její obsah neznamenal to, co tenhle
+  // nález tvrdí.
+  const [leftover] = own;
+  if (issues.length === 0 && leftover !== undefined)
+    issues.push(issue(`${path}/${escapeToken(leftover)}`, 'a property canonicalization never serializes'));
 
   open.delete(object);
   return issues;

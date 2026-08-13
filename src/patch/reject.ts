@@ -146,6 +146,49 @@ export function structurePointer(issue: string): string {
  */
 export const jsonPointer = z.string().regex(/^(\/[^/]*)*$/, 'must be an RFC 6901 JSON Pointer');
 
+/** Rozebrání RFC 6901 pointeru na tokeny. `~1` je `/`, `~0` je `~`. V tomhle pořadí. */
+function tokensOf(pointer: string): string[] {
+  if (pointer === '') return [];
+  return pointer
+    .split('/')
+    .slice(1)
+    .map((token) => token.replace(/~1/g, '/').replace(/~0/g, '~'));
+}
+
+const ARRAY_INDEX = /^(0|[1-9][0-9]*)$/;
+
+/**
+ * Míří operace do POLE tokenem, který není index?
+ *
+ * `rfc6902` tohle nehlídá a **tiše uhne**: `add` dělá `splice(parseInt(key,10), …)`,
+ * takže nečíselný token dá `splice(NaN, …)` a hodnota přistane na **indexu 0**.
+ * `add /rules/smuggled` tedy nevloží nic pojmenovaného — vloží pravidlo na začátek
+ * a přečísluje všechna ostatní. Dokument je přitom dokonale konzistentní a hash
+ * sedí, takže žádná pozdější kontrola už to nepozná; jenom to není ten svět, o který
+ * si patch řekl. U `/rules` je to navíc pořadí vyhodnocení, na kterém stojí
+ * `priority`, `phase` i „ambiguous execution order" z `validateIrDoc`.
+ *
+ * RFC 6902 §4 přitom žádá index nebo `-` (a `-` jen pro `add`). Vrací vadný token,
+ * nebo `null`, když je všechno v pořádku.
+ */
+export function badArrayToken(draft: unknown, op: string, pointer: string): string | null {
+  const tokens = tokensOf(pointer);
+  if (tokens.length === 0) return null;
+
+  let parent: unknown = draft;
+  for (let i = 0; i < tokens.length - 1; i += 1) {
+    if (parent === null || typeof parent !== 'object') return null;
+    parent = (parent as Record<string, unknown>)[tokens[i]];
+  }
+  if (!Array.isArray(parent)) return null;
+
+  const token = tokens[tokens.length - 1];
+  if (ARRAY_INDEX.test(token)) return null;
+  // `-` je „za poslední prvek" a dává smysl jen tam, kde se přidává.
+  if (token === '-' && op === 'add') return null;
+  return token;
+}
+
 export const operationSchema = z.union([
   z.object({ op: z.enum(['add', 'replace', 'test']), path: jsonPointer, value: z.unknown() }).loose(),
   z.object({ op: z.literal('remove'), path: jsonPointer }).loose(),

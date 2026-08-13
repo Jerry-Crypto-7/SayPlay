@@ -17,7 +17,7 @@
 
 import { applyPatch, type Operation } from 'rfc6902';
 
-import { operationSchema, reject, rejectionFromZod, type PatchRejection } from '../patch/reject';
+import { badArrayToken, operationSchema, reject, rejectionFromZod, type PatchRejection } from '../patch/reject';
 import {
   lookSchema,
   unhashableValues,
@@ -91,6 +91,20 @@ function threw(pointer: string, what: string, error: unknown): PatchRejection {
 }
 
 function commitChecked(doc: WorldDoc, patch: PartPatch): RevisionResult {
+  // **Uložená část dřív než patch** — tatáž hranice, jakou drží `patch/apply.ts`.
+  // Bez ní by se vada, která ve světě ležela už předtím, vykázala jako nález nad
+  // draftem, tedy jako by ji přinesl tenhle patch; volající by ho přeemitoval
+  // donekonečna. `sealSimHash` dokument zapečetí bez kontroly, takže `WorldDoc`
+  // sem umí přijít i mimo `migrateWorldDoc`.
+  const stored = unhashableValues(doc[patch.part], `/${patch.part}`);
+  if (stored.length > 0)
+    return reject(
+      'STRUCTURE',
+      stored[0].pointer,
+      'a stored part with a JSON form',
+      `the ${patch.part} part this patch targets cannot be canonicalized: ${stored[0].detail}`,
+    );
+
   // Tvar OPERACÍ dřív, než je uvidí knihovna — `patch/apply.ts` to dělá ze
   // stejného důvodu a `commitPart` ho při přebírání té struktury vynechal:
   // `readonly Operation[]` platí jen při překladu, patch přichází jako JSON od
@@ -145,6 +159,19 @@ function commitChecked(doc: WorldDoc, patch: PartPatch): RevisionResult {
   // byla, a že se u ní dá zastavit.
   for (let i = 0; i < patch.operations.length; i += 1) {
     const operation = patch.operations[i];
+
+    // `rfc6902` u pole nehlídá tvar tokenu a tiše uhne na index 0 — viz
+    // `badArrayToken`. Bez tohohle by `add /rules/smuggled` přečísloval pravidla
+    // a vrátil `COMMITTED`, tedy tichý jiný svět místo přesného odmítnutí.
+    const badToken = badArrayToken(draft, operation.op, operation.path);
+    if (badToken !== null)
+      return reject(
+        'MALFORMED_OPERATION',
+        operation.path,
+        operation.op === 'add' ? 'an array index or "-"' : 'an array index',
+        `operation ${i} (${operation.op} ${operation.path}): "${badToken}" is not an index of the array it targets`,
+      );
+
     let failure: ReturnType<typeof applyPatch>[number] | undefined;
     try {
       [failure] = applyPatch(draft as object, [operation]);
