@@ -163,10 +163,9 @@ function commitChecked(doc: WorldDoc, patch: PartPatch): RevisionResult {
     // **Kam operace míří podle RFC 6901**, rozhodnuto vlastním rozborem — teprve
     // co jím projde, uvidí `rfc6902`. Knihovna sama tři klíče přeskakuje a pole
     // indexuje přes `parseInt`, takže by `remove /witness/ops/prototype/0`
-    // smazalo `ops[0]` a `add /witness/ops/smuggled` pověsilo neindexový klíč
-    // přímo na pole svědka: konzistentní dokument, sedící hash, jiný svět.
-    // (Příklad jede přes `witness.ops`, protože povrchové `sim.rules` je po
-    // přemrazení na v2 záznam klíčovaný `id`, ne pole.)
+    // smazalo `ops[0]` a `add /witness/ops/smuggled` provedlo
+    // `splice(NaN → 0, 0, …)`, tedy přečíslovalo operace svědka: konzistentní
+    // dokument, sedící hash, jiný svět.
     const fault = pointerFault(draft, operation);
     if (fault !== null)
       return reject(

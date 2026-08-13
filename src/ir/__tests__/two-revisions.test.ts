@@ -371,13 +371,9 @@ describe('do `sim` se dostane jen JSON', () => {
    * a `JSON.stringify` ho zahodí. Commitnutý dokument tedy není ten, který se
    * znovu načte, a oba mají stejný `simHash`.
    *
-   * **Cíl se přesunul z `rules` na `witness.ops`, a je to oprava, ne kosmetika.**
-   * Po přemrazení na `evals-frozen-v2` je `sim.rules` **záznam klíčovaný `id`**,
-   * ne pole — čtyři testy v tomhle bloku tím přestaly měřit pole. Jeden to řekl
-   * nahlas (spadl na jiné hlášce), tři prošly naprázdno: kontrola tokenu se
-   * u záznamu nikdy nedostane k větvi pro pole, takže by se dala vypnout, aniž by
-   * se cokoli obarvilo. `witness.ops` je pole i po v2 — a je to zrovna ta kolekce,
-   * kterou replay čte, takže propašovaný klíč na ní je nejdražší z možných.
+   * Cíl je `witness.ops`, protože povrchové `sim.rules` je po přemrazení na
+   * `evals-frozen-v2` **záznam klíčovaný `id`**, ne pole — nad ním by tyhle čtyři
+   * testy poleovou větev rozboru cesty vůbec nepotkaly.
    */
   it('neindexový token do pole je odmítnut dřív, než se vůbec aplikuje', () => {
     // `rfc6902` by ho nezamítl: `replace` zapíše přímo `parent[key]`, `add` dělá

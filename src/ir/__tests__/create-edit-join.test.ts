@@ -24,6 +24,7 @@ import {
   canonical,
   canonicalHash,
   lookSchema,
+  migrateWorldDoc,
   sealSimHash,
   simHashOf,
   simSchema,
@@ -354,6 +355,12 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
 
   const fulfilled = edits.filter((entry) => entry.expectedVerdict === 'FULFILLED');
 
+  it('editační záznam nese POUZE patch — proto se rovnost světů dokazovat nedá', () => {
+    // Docblock bloku tvrdí, že korpus nemá cílové tělo, proti kterému by šlo
+    // porovnávat. Tady je to měřené: tělo editačního záznamu je pole operací.
+    for (const entry of edits) expect(Array.isArray(entry.body), entry.forPrompt).toBe(true);
+  });
+
   it('korpus má 25 editačních záznamů a jejich verdikty sedí', () => {
     // Kdyby se rozpad tříd změnil, dělily by se testy níž na jiné množině, než
     // pro kterou byly napsané — tatáž pojistka jako u create větve.
@@ -371,6 +378,8 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
     // Kdyby jediná cesta přišla part-relativní, převod výš by ji nechal být a patch
     // by se aplikoval o úroveň vedle — tiše a se sedícím hashem.
     for (const pointer of pointers) expect(pointer, pointer).toMatch(/^\/sim\//);
+    // Číslo, na které se odvolává komentář u `rehomed()` výš. Ať je měřené.
+    expect(new Set(pointers).size).toBe(55);
   });
 
   it.each(fulfilled.map((entry) => [entry.forPrompt, entry] as const))(
@@ -385,9 +394,17 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
       expect(result.doc.simHash, label).not.toBe(doc.simHash);
       expect(result.doc.simRevision, label).toBe(doc.simRevision + 1);
       expect(result.doc.lookRevision, label).toBe(doc.lookRevision);
-      // A výsledek je pořád dokument, ne jen aplikovaný diff.
-      expect(simSchema.safeParse(result.doc.sim).success, label).toBe(true);
-      expect(result.doc.simHash, label).toBe(simHashOf(result.doc));
+
+      // **Commitnutý dokument musí projít i vstupní branou, ne jen tou výstupní.**
+      // `simSchema.safeParse(result.doc.sim)` tu stálo dřív a bylo to k ničemu:
+      // `sealPart` vrací `COMMITTED` až po témže `safeParse` a uloží jeho výstup,
+      // takže se znovu četl vlastní výsledek. `migrateWorldDoc` je jiná cesta —
+      // kontroluje celý kořen, `irVersion`, konečnost čísel v OBOU částech
+      // a shodu `simHash` s obsahem. To je otázka „přijal by systém tenhle
+      // dokument, kdyby ho dostal znovu na vstupu", a tu `sealPart` nezodpovídá.
+      const reloaded = migrateWorldDoc(result.doc);
+      expect(reloaded.ok, `${label}: ${reloaded.reason}`).toBe(true);
+      expect(reloaded.doc?.simHash, label).toBe(simHashOf(result.doc));
     },
   );
 
