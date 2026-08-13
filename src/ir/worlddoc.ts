@@ -138,6 +138,31 @@ export const worldEmissionSchema = z
   })
   .strict();
 
+/**
+ * Emise, ve které systém **poctivě odmítl `sim` část** — `NO_FIT`.
+ *
+ * Není to vada schématu a nesmí se tak vykazovat. `protocol.v1.json` říká
+ * u `NO_FIT` doslova *„systém poctivě odmítl `sim` část — mechanika není
+ * v gramatice. Scéna se přesto MUSÍ postavit (§13.4)"*, a `sceneMustBuild`
+ * to opakuje u očekávaných výsledků. Proto tenhle tvar **vyžaduje `look`**
+ * a zakazuje `sim`: odmítnutí se vztahuje výhradně na `sim`, nikdy na scénu.
+ *
+ * Bez tohohle schématu spadly zmrazené emise `C14` a `C15` na `.strict()`
+ * (`simOutcome` je neznámé pole, `sim: null` není objekt) a endpoint je hlásil
+ * jako `SCHEMA_VIOLATION` — tedy vadu emise místo systémového odmítnutí, na
+ * kterém stojí scorer z T16.
+ */
+export const declinedEmissionSchema = z
+  .object({
+    irVersion: z.string(),
+    simRevision: finiteInt.min(0),
+    lookRevision: finiteInt.min(0),
+    simOutcome: z.literal('NO_FIT'),
+    sim: z.null(),
+    look: lookSchema,
+  })
+  .strict();
+
 /** Dokument, jak ho drží systém — se zapečetěným `simHash`. */
 export const worldDocSchema = z
   .object({

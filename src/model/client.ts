@@ -10,17 +10,30 @@
  * Kontroluje se **dvakrát, dvěma nezávislými hashi**, protože každý chytá jinou
  * podvodnou cestu:
  *
- * 1. **hash souboru proti `MANIFEST.lock`** (`files["responses/index.jsonl"]`) —
- *    zachytí přepsaný, doplněný nebo odebraný záznam. Bez něj by stačilo do
- *    souboru dopsat řádek s vlastní odpovědí a per-record hash by na ni seděl,
- *    protože by se počítal z ní samé.
+ * 1. **hash souboru proti `MANIFEST.lock`** — zachytí přepsaný, doplněný nebo
+ *    odebraný záznam. Bez něj by stačilo do souboru dopsat řádek s vlastní
+ *    odpovědí a per-record hash by na ni seděl, protože by se počítal z ní samé.
  * 2. **per-record `sha256` nad `JSON.stringify(record.body)`** — `MANIFEST.lock`
  *    to předepisuje doslova (`responseBodyHashRule`) a zachytí tělo vyměněné za
  *    jiné uvnitř jinak nedotčeného souboru.
  *
+ * **Ta první kontrola platí pro KAŽDÝ zmrazený soubor, který tahle cesta čte,
+ * ne jen pro odpovědi.** `MANIFEST.lock` sám říká, že musí krýt každý soubor, a
+ * `protocol.v1.json` i `prompts.v1.jsonl` jsou přesně to, z čeho vzniká
+ * zaznamenaný upstream požadavek — tedy artefakt, na který se AC T13 ptá.
+ * Dokud se nekontrolovaly, stačilo přepsat text promptu: endpoint vrátil 200
+ * s nezměněným zmrazeným světem, `upstream.user` nesl cizí text, a test to
+ * neviděl, protože četl tentýž podvržený soubor.
+ *
  * Ani jedna z nich nedokazuje, že soubor sedí na commitnutý strom — to hlídá
  * `evals/__tests__/frozen.test.ts`. Tady jde o to, aby produkční cesta nikdy
  * nevydala odpověď, kterou zmrazení nekryje.
+ *
+ * **Nečitelný korpus není verdikt.** Každé čtení je proto výsledek, ne výjimka:
+ * spuštění z jiného adresáře je rozbité prostředí, ne vadná emise, a smí skončit
+ * jedině strukturovanou odpovědí. Nezachycená výjimka by z něj udělala 500 —
+ * přesně ten signál, který má endpoint vyhrazený pro spadlé potrubí a který by
+ * měřicí běh v T17 nedokázal odlišit od vadného světa.
  *
  * **Hlavička `synthetic: true` není formalita.** Tyhle záznamy neříkají nic
  * o kvalitě modelu; prokazují správnost potrubí. Kvalitu měří až živý běh za
@@ -40,6 +53,8 @@ const RESPONSES_FILE = 'responses/index.jsonl';
 export type ClientReason =
   /** Zmrazený soubor se rozešel s `MANIFEST.lock`. */
   | 'MANIFEST_MISMATCH'
+  /** Soubor zmrazeného korpusu nejde přečíst — rozbité prostředí, ne emise. */
+  | 'CORPUS_UNREADABLE'
   /** Pro tenhle prompt zmrazená odpověď neexistuje. */
   | 'NO_FROZEN_RESPONSE'
   /** Tělo se rozešlo s vlastním `sha256`, nebo mu chybí hlavička. */
@@ -69,34 +84,81 @@ export interface ClientSuccess {
 
 export type ClientResult = ClientSuccess | ClientFailure;
 
+type Read<T> = { readonly ok: true; readonly value: T } | ClientFailure;
+
 /**
+ * Přečte zmrazený soubor a **ověří jeho hash proti `MANIFEST.lock`**.
+ *
  * `MANIFEST.lock` normalizuje CRLF na LF **před** hashováním. Bez toho by hash
  * téhož souboru závisel na stroji, na kterém se repo checkoutovalo.
  */
-function normalisedSha256(absolutePath: string): string {
-  const normalised = readFileSync(absolutePath).toString('utf8').replace(/\r\n/g, '\n');
-  return createHash('sha256').update(Buffer.from(normalised, 'utf8')).digest('hex');
+function readFrozen(relativePath: string): Read<string> {
+  let manifest: { files?: Record<string, string> };
+  let text: string;
+  try {
+    manifest = JSON.parse(readFileSync(join(FROZEN_DIR, 'MANIFEST.lock'), 'utf8')) as {
+      files?: Record<string, string>;
+    };
+    text = readFileSync(join(FROZEN_DIR, relativePath)).toString('utf8').replace(/\r\n/g, '\n');
+  } catch (thrown) {
+    return {
+      ok: false,
+      reason: 'CORPUS_UNREADABLE',
+      detail: `${relativePath} is not readable under ${FROZEN_DIR}: ${(thrown as Error).message}`,
+    };
+  }
+
+  const expected = manifest.files?.[relativePath];
+  const actual = createHash('sha256').update(Buffer.from(text, 'utf8')).digest('hex');
+  if (expected !== actual)
+    return {
+      ok: false,
+      reason: 'MANIFEST_MISMATCH',
+      detail: `${relativePath} hashes to ${actual}, MANIFEST.lock says ${String(expected)}`,
+    };
+
+  return { ok: true, value: text };
 }
 
-function readJsonl(relativePath: string): Record<string, unknown>[] {
-  return readFileSync(join(FROZEN_DIR, relativePath), 'utf8')
-    .trim()
-    .split('\n')
-    .map((line) => JSON.parse(line) as Record<string, unknown>);
+function readJsonl(relativePath: string): Read<Record<string, unknown>[]> {
+  const file = readFrozen(relativePath);
+  if (!file.ok) return file;
+  try {
+    return {
+      ok: true,
+      value: file.value
+        .trim()
+        .split('\n')
+        .map((line) => JSON.parse(line) as Record<string, unknown>),
+    };
+  } catch (thrown) {
+    // Hash sedí, takže tohle je vada zmrazeného souboru samotného, ne podvrh.
+    return { ok: false, reason: 'CORPUS_UNREADABLE', detail: `${relativePath}: ${(thrown as Error).message}` };
+  }
 }
 
 /** Slovník ze zmrazeného protokolu — prompt si ho nesmí opsat. */
-export function frozenGrammar(): Grammar {
-  const protocol = JSON.parse(readFileSync(join(FROZEN_DIR, 'protocol.v1.json'), 'utf8')) as {
+export function frozenGrammar(): Read<Grammar> {
+  const file = readFrozen('protocol.v1.json');
+  if (!file.ok) return file;
+  let protocol: {
     grammar: { surfaceEvents: string[]; conditions: string[]; actions: string[] };
     worldDoc: { sim: { fields: string[] }; look: { fields: string[] } };
   };
+  try {
+    protocol = JSON.parse(file.value) as typeof protocol;
+  } catch (thrown) {
+    return { ok: false, reason: 'CORPUS_UNREADABLE', detail: `protocol.v1.json: ${(thrown as Error).message}` };
+  }
   return {
-    surfaceEvents: protocol.grammar.surfaceEvents,
-    conditions: protocol.grammar.conditions,
-    actions: protocol.grammar.actions,
-    simFields: protocol.worldDoc.sim.fields,
-    lookFields: protocol.worldDoc.look.fields,
+    ok: true,
+    value: {
+      surfaceEvents: protocol.grammar.surfaceEvents,
+      conditions: protocol.grammar.conditions,
+      actions: protocol.grammar.actions,
+      simFields: protocol.worldDoc.sim.fields,
+      lookFields: protocol.worldDoc.look.fields,
+    },
   };
 }
 
@@ -106,11 +168,19 @@ export interface FrozenPrompt {
   readonly prompt: string;
 }
 
-/** Zmrazený prompt podle id, nebo `null`. Endpoint z toho dělá 404, ne 500. */
-export function frozenPrompt(id: string): FrozenPrompt | null {
-  const found = readJsonl('prompts.v1.jsonl').find((record) => record.id === id);
-  if (found === undefined || typeof found.prompt !== 'string' || typeof found.kind !== 'string') return null;
-  return { id, kind: found.kind, prompt: found.prompt };
+/**
+ * Zmrazený prompt podle id.
+ *
+ * `null` znamená **neznámé id** (endpoint z toho dělá 404). Nečitelný nebo
+ * podvržený korpus je oproti tomu `ClientFailure` — jiná věc, jiná odpověď.
+ */
+export function frozenPrompt(id: string): Read<FrozenPrompt | null> {
+  const records = readJsonl('prompts.v1.jsonl');
+  if (!records.ok) return records;
+  const found = records.value.find((record) => record.id === id);
+  if (found === undefined || typeof found.prompt !== 'string' || typeof found.kind !== 'string')
+    return { ok: true, value: null };
+  return { ok: true, value: { id, kind: found.kind, prompt: found.prompt } };
 }
 
 /**
@@ -122,21 +192,10 @@ export function frozenPrompt(id: string): FrozenPrompt | null {
  * ten, který se doopravdy odeslal.
  */
 export function emitWorld(promptId: string, request: UpstreamRequest): ClientResult {
-  const manifest = JSON.parse(readFileSync(join(FROZEN_DIR, 'MANIFEST.lock'), 'utf8')) as {
-    files: Record<string, string>;
-  };
-  const expected = manifest.files[RESPONSES_FILE];
-  const actual = normalisedSha256(join(FROZEN_DIR, RESPONSES_FILE));
-  if (expected !== actual)
-    return {
-      ok: false,
-      reason: 'MANIFEST_MISMATCH',
-      detail: `${RESPONSES_FILE} hashes to ${actual}, MANIFEST.lock says ${String(expected)}`,
-    };
+  const records = readJsonl(RESPONSES_FILE);
+  if (!records.ok) return records;
 
-  const record = readJsonl(RESPONSES_FILE).find(
-    (entry) => entry.forPrompt === promptId && entry.branch === 'create',
-  );
+  const record = records.value.find((entry) => entry.forPrompt === promptId && entry.branch === 'create');
   if (record === undefined)
     return { ok: false, reason: 'NO_FROZEN_RESPONSE', detail: `no frozen create response for ${promptId}` };
 

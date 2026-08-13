@@ -26,9 +26,15 @@ export default defineConfig({
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    command: 'npx next start --port 3100 --hostname 127.0.0.1',
+    // **Build je součást příkazu, ne předpoklad.** `next start` sám servíruje
+    // to, co zrovna leží v `.next/`, takže bez tohohle uměl zelený e2E běh
+    // certifikovat bundle z dřívějšího commitu — a oracle by pak měřil jiný kód,
+    // než jaký se právě commituje. Deklarované prostředí úloh je `next build &&
+    // next start`; tady se to vynucuje, ne jen popisuje.
+    command: 'npm run build && npx next start --port 3100 --hostname 127.0.0.1',
     url: 'http://127.0.0.1:3100',
     reuseExistingServer: false,
-    timeout: 120_000,
+    // Build je teď uvnitř příkazu, takže strop musí pokrýt build i start.
+    timeout: 240_000,
   },
 });

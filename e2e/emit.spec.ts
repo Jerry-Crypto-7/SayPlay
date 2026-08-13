@@ -31,7 +31,7 @@ import { verifyWitness, type VerifiableWorld } from '../src/verify/witness';
 interface EmitResponse {
   readonly requestId: string;
   readonly promptId: string;
-  readonly outcome: 'CERTIFIED' | 'REJECTED';
+  readonly outcome: 'CERTIFIED' | 'REJECTED' | 'NO_FIT';
   readonly upstream: { readonly model: string; readonly system: string; readonly user: string };
   readonly provenance: { readonly source: string; readonly synthetic: boolean; readonly bodySha256: string };
   readonly certificate?: { readonly verdict: string; readonly snapshotHash: string };
@@ -113,21 +113,65 @@ test('zaznamenaný upstream požadavek nese text promptu', async ({ request }) =
   expect(body.provenance.source).toBe('frozen-manifest');
 });
 
-test('dva prompty dají světy, které se liší chováním — svědek jednoho ve druhém selže', async ({ request }) => {
-  const [a, b] = await Promise.all([emit(request, 'C01'), emit(request, 'C02')]);
+test('dva prompty dají světy, které se liší chováním — svědek jednoho ve druhém doběhne a nevyhraje', async ({
+  request,
+}) => {
+  // **Dvojice není libovolná a nesmí se měnit bez přeměření.** `C04` (truhla,
+  // která jde otevřít jen s pochodní z vedlejší místnosti) a `C07` (pochodní,
+  // co za dvě minuty dohoří) sdílejí dost jmen na to, aby byl svědek `C04`
+  // ve světě `C07` celý **přípustný** — odmítne ho až vyčerpaný horizont.
+  //
+  // Na tom celý test stojí. Kterákoli jiná dvojice ze zmrazené sady padá na
+  // `STEP_UNREACHABLE` v kroku 0, tedy dřív, než se vůbec zavolá `step()` —
+  // to by dokazovalo neshodu **jmen**, ne rozdíl **chování**, a prošly by i dva
+  // světy s bajtově shodnými pravidly a přejmenovanými sokety. Review v2
+  // (Q2/T12) žádá behaviorální rozdíl, ne jiný hash; `NO_WIN` je ten rozdíl.
+  const [a, b] = await Promise.all([emit(request, 'C04'), emit(request, 'C07')]);
   expect([a.outcome, b.outcome]).toEqual(['CERTIFIED', 'CERTIFIED']);
 
   const worldA = replay(a.doc!);
   const worldB = replay(b.doc!);
 
   // Kontrola polarity **první**: kdyby verifikátor odmítal cokoli, křížový test
-  // by prošel a nedokazoval nic. Review v2 (Q2/T12): rozdílný hash splní i mrtvý
-  // uzel, proto se rozdíl měří chováním, ne hashem.
+  // by prošel a nedokazoval nic.
   expect(verifyWitness(worldA.world, worldA.witness).verdict).toBe('CERTIFIED');
   expect(verifyWitness(worldB.world, worldB.witness).verdict).toBe('CERTIFIED');
 
-  expect(verifyWitness(worldB.world, worldA.witness).verdict).toBe('REJECTED');
+  const crossed = verifyWitness(worldB.world, worldA.witness);
+  expect(crossed.verdict).toBe('REJECTED');
+  // `reason` je tady tvrdší aserce než `verdict`: přesně tohle brání testu tiše
+  // zdegenerovat na měření jmen, kdyby se korpus nebo rozpouštění cílů pohnulo.
+  expect(crossed.verdict === 'REJECTED' && crossed.reason).toBe('NO_WIN');
+  expect(crossed.verdict === 'REJECTED' && crossed.reason).not.toBe('STEP_UNREACHABLE');
+
+  // Opačný směr je slabší důkaz (padá na dosažitelnosti) a je tu jen proto, aby
+  // se nedalo tvrdit, že se světy liší jen v jednom směru. Neopírá se o něj nic.
   expect(verifyWitness(worldA.world, worldB.witness).verdict).toBe('REJECTED');
+});
+
+test('poctivé odmítnutí `sim` je vlastní verdikt a scéna se vydá i tak', async ({ request }) => {
+  // `C14` (3D sloupcový graf) a `C15` (fyzikální hřiště) leží mimo gramatiku.
+  // Zmrazený protokol na ně má `NO_FIT` — *„systém poctivě odmítl `sim` část"* —
+  // a zároveň žádá, aby se **scéna postavila** (§13.4). Dokud se to hlásilo jako
+  // `SCHEMA_VIOLATION`, dostaly 2 z 15 create promptů třídu vady emise a přišly
+  // o `look`, ze kterého se scéna staví.
+  for (const id of ['C14', 'C15']) {
+    const body = await emit(request, id);
+
+    expect(body.outcome, `${id} není vada schématu`).toBe('NO_FIT');
+    expect(body.rejection?.stage).toBe('declined');
+    expect(body.rejection?.reason).toBe('NO_FIT_DECLARED');
+
+    // Scéna: `look` je tam celý a projde kontrolou konečnosti, `sim` chybí.
+    expect(body.doc).not.toBeNull();
+    const doc = body.doc as { sim: unknown; look: unknown; simOutcome: string; simHash?: string };
+    expect(doc.sim).toBeNull();
+    expect(doc.simOutcome).toBe('NO_FIT');
+    expect(validateLook(doc.look).issues).toEqual([]);
+    // `simHash` chybí schválně — není co hashovat. Kdyby tu byl, tvrdil by
+    // identitu části, která neexistuje.
+    expect(doc.simHash).toBeUndefined();
+  }
 });
 
 test('naměřené odmítnutí je 200 s verdiktem a s atribucí, ne 5xx', async ({ request }) => {
@@ -173,6 +217,30 @@ test('nevalidní vstup vrátí 400 se strukturovaným tělem', async ({ request 
   });
   expect(notObject.status()).toBe(400);
   expect(((await notObject.json()) as { error: { code: string } }).error.code).toBe('INVALID_REQUEST');
+});
+
+test('tělo přes strop se odmítne a spojení zůstane použitelné', async ({ request }) => {
+  // Route handlery App Routeru vlastní strop nemají a `next.config.mjs` žádný
+  // nenastavuje, takže bez kontroly by se libovolně velký POST celý načetl dřív,
+  // než se kdokoli podívá na `promptId`. Legální požadavek je jedno krátké id.
+  const oversized = await request.post('/api/emit', {
+    data: Buffer.alloc(200 * 1024, 0x61),
+    headers: { 'content-type': 'application/json' },
+  });
+  expect(oversized.status()).toBe(413);
+  expect(((await oversized.json()) as { error: { code: string } }).error.code).toBe('PAYLOAD_TOO_LARGE');
+
+  // **Druhá půlka je ta důležitá a je to regrese na naměřenou vadu.** První
+  // znění stropu zbytek těla `cancel()`-ovalo. Nepřečtený zbytek zůstal na
+  // keep-alive spojení, server ho začal číst jako začátek dalšího požadavku, a
+  // následující **velký** požadavek uvízl až do timeoutu (krátký prošel, což to
+  // maskovalo). Zároveň je to kontrola polarity: se stropem 0 by tahle aserce
+  // padla, takže test nemůže projít s endpointem, který neodpovídá nikomu.
+  const after = await request.post('/api/emit', {
+    data: { promptId: 'C01', padding: 'x'.repeat(32 * 1024) },
+  });
+  expect(after.status()).toBe(200);
+  expect(((await after.json()) as { outcome: string }).outcome).toBe('CERTIFIED');
 });
 
 test('neznámý prompt je 404, ne 400 a ne vymyšlený svět', async ({ request }) => {
