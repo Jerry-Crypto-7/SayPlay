@@ -147,8 +147,17 @@ export function structurePointer(issue: string): string {
  */
 export const jsonPointer = z.string().regex(/^(\/[^/]*)*$/, 'must be an RFC 6901 JSON Pointer');
 
-/** Rozebrání RFC 6901 pointeru na tokeny. `~1` je `/`, `~0` je `~`. V tomhle pořadí. */
-function tokensOf(pointer: string): string[] {
+/**
+ * Rozebrání RFC 6901 pointeru na tokeny. `~1` je `/`, `~0` je `~`. V tomhle pořadí.
+ *
+ * **Exportované schválně, a je to jediný dekodér v repu.** Router z T22 potřebuje
+ * tutéž normalizaci, aby uměl říct, do které části dokumentu cesta míří — a druhá
+ * implementace téhož je přesně ta třída vady, kterou tenhle soubor platil desetkrát:
+ * dvě větve, které se rozejdou, a rozdíl mezi nimi nikdo neuhlídá. Porovnávat
+ * `pointer.startsWith('/sim')` nad syrovým řetězcem je navíc rovnou špatně —
+ * trefilo by `/simRevision` a minulo by člen doslova pojmenovaný `/sim` (`/~1sim`).
+ */
+export function pointerTokens(pointer: string): string[] {
   if (pointer === '') return [];
   return pointer
     .split('/')
@@ -199,7 +208,7 @@ export interface PointerFault {
  * `move` i `copy`).
  */
 function resolve(pointer: string, doc: unknown, mode: 'insert' | 'existing' | 'read'): PointerFault | null {
-  const tokens = tokensOf(pointer);
+  const tokens = pointerTokens(pointer);
   // Kořen se nedá patchovat — `add`/`replace`/`remove` na `""` je v knihovně
   // `MissingError` a významově „vyměň celý dokument", což patch dělat nemá.
   // **`test` je ale výjimka a legální**: nic nemění, jen se ptá, a `rfc6902` si
@@ -319,8 +328,8 @@ function nodeAt(doc: unknown, tokens: readonly string[]): unknown {
  * řeší. Kdo to potřebuje, napíše `remove` + `add`, což význam nezamlčuje.
  */
 function movedTwice(draft: unknown, from: string, path: string): PointerFault | null {
-  const fromTokens = tokensOf(from);
-  const pathTokens = tokensOf(path);
+  const fromTokens = pointerTokens(from);
+  const pathTokens = pointerTokens(path);
 
   // RFC 6902 §4.4 doslova: „The `from` location MUST NOT be a proper prefix of
   // the `path` location." Přesouvat hodnotu do sebe sama nemá výsledek.

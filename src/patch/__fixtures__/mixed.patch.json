@@ -1,0 +1,10 @@
+{
+  "note": "Dva sémantické záměry v jednom patchi. Router ho dělí na dva, každý s jedním záměrem, a pořadí operací uvnitř každého zůstává. Štítek navíc nesedí ani jedné části.",
+  "label": "look",
+  "baseWorld": "C01",
+  "operations": [
+    { "op": "replace", "path": "/look/palette", "value": "amber" },
+    { "op": "replace", "path": "/sim/state/counters/keysHeld/max", "value": 4 },
+    { "op": "replace", "path": "/look/camera/kind", "value": "follow" }
+  ]
+}

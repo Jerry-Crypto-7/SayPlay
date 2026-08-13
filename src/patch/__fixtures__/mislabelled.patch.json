@@ -1,0 +1,8 @@
+{
+  "note": "Model tvrdí look, jediná operace míří pod /sim. Podle protokolu rozhodují cesty: patch skončí v dráze pravidel a po štítku zůstane anomálie, ne odmítnutí.",
+  "label": "look",
+  "baseWorld": "C01",
+  "operations": [
+    { "op": "replace", "path": "/sim/rules/unlock/condition/value", "value": 2 }
+  ]
+}
