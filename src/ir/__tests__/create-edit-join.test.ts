@@ -395,13 +395,19 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
    *
    * - **E06** (`FAULT`) padá na **svém vlastním deklarovaném defektu** — `replace`
    *   na cestu, jejíž rodič ve světě není. Jediný ze čtyř, u kterého to platí.
-   * - **E19** (`ROBUST`) a **E20** (`NO_FIT`) padají na něčem jiném: jejich tělo
-   *   počítá s kontejnerem tam, kde základní svět nese **skalár** (`add
-   *   /sim/layout/levels/1` nad `layout.levels: 1`; `replace
-   *   /sim/rules/patrol/actions/0/route` nad akcí bez `route`). Je to táž třída
-   *   vady jako tvar `sim.rules`, kvůli které se korpus mrazil na v2 — jen zůstala
-   *   neopravená, protože `CLAUDE.md` ji vede jako **nedořešený rozpor #4(a)**
-   *   a AC T2b zakazuje měnit prompty i kontrakty. Ani bezchybná emise je nesplní.
+   * - **E19** (`ROBUST`) padá na neshodě **skalár vs. kontejner**: `add
+   *   /sim/layout/levels/1` nad `C02.layout.levels: 1`, tedy cesta vede skrz
+   *   primitivum. Je to táž třída vady jako tvar `sim.rules`, kvůli které se
+   *   korpus mrazil na v2 — jen zůstala neopravená, protože `CLAUDE.md` ji vede
+   *   jako **nedořešený rozpor #4(a)** a AC T2b zakazuje měnit prompty i kontrakty.
+   * - **E20** (`NO_FIT`) padá na **chybějícím listu, ne na skaláru**, a slévat ho
+   *   s E19 by byla přesně ta konflace, kvůli které tenhle blok vznikl:
+   *   `C03.sim.rules.patrol.actions[0]` je `{kind, target, socket, ticks}` — objekt,
+   *   jen bez `route`. `replace` nad nepřítomným členem tedy odmítá `rfc6902`
+   *   (`Value required`), což je **táž mechanika jako u E06**. Dvě pinuté regexy
+   *   níž ten rozdíl drží: `/runs through a primitive/` u E19 proti
+   *   `/Value required/` u E20. Rozpor #4(a) se jich týká obou (ani bezchybná
+   *   emise je nesplní), mechanika je ale jiná.
    * - **E24** (`FAULT`) padá taky na něčem jiném, a je to ten nejzajímavější případ.
    *   Deklarovaný defekt zní „`add` s cestou `/sim/state/counters/streak/-`, což je
    *   **index pole na objektu**". Jenže `streak` v `C09` vůbec není
@@ -435,9 +441,10 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
     const expected: Readonly<Record<string, { readonly pointer: string; readonly detail: RegExp }>> = {
       // Vlastní deklarovaný defekt: `replace` na cestu, jejíž rodič neexistuje.
       E06: { pointer: '/rules/openChest/condition/negated', detail: /does not exist/ },
-      // NE vlastní defekt: `add /sim/layout/levels/1` nad skalárem `levels: 1`.
+      // NE vlastní defekt, skalár vs. kontejner: `levels: 1` je primitivum.
       E19: { pointer: '/layout/levels/1', detail: /runs through a primitive/ },
-      // NE vlastní defekt: `replace …/actions/0/route` nad akcí, která `route` nemá.
+      // NE vlastní defekt, chybějící LIST (ne skalár): `actions[0]` je objekt bez
+      // `route`. Táž mechanika jako E06, jiná než E19 — proto jiná regex.
       E20: { pointer: '/rules/patrol/actions/0/route', detail: /Value required/ },
       // NE vlastní defekt: deklarovaný je `-` nad objektem, ale `streak` v C09
       // není, takže rozbor skončí o token dřív a k `-` se nedojde.
@@ -486,26 +493,34 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
    * a tenhle test je první, který ho pouští na cizí data.
    */
   it('a `FULFILLED` po sobě nenechá osiřelý odkaz, zatímco deklarovaný defekt ano', () => {
-    const fresh = new Map<string, number>();
+    // **Porovnávají se MNOŽINY nálezů, ne jejich počty.** Patch, který jeden odkaz
+    // odstraní a jiný zavede, dá rozdíl počtů nula a přečetl by se jako čistý.
+    // V tomhle korpusu to nenastává, ale je to rozdíl mezi „nic nepřibylo" a
+    // „přibylo právě tolik, kolik ubylo" — a jen to první tahle aserce tvrdí.
+    // Množina navíc nález **pojmenuje**, takže padající test rovnou řekne který.
+    const key = (found: { where: string; namespace: string; name: string }) =>
+      `${found.where} → ${found.namespace}:${found.name}`;
+    const fresh = new Map<string, string[]>();
+
     for (const entry of edits) {
       const { doc, result } = commitEdit(entry);
       if (result.verdict !== 'COMMITTED') continue;
-      // Počítá se PŘÍRŮSTEK, ne absolutní počet: kdyby základní svět nesl osiřelý
-      // odkaz už předtím, připsal by se patchi, který se ho ani nedotkl.
-      const before = findDanglingReferences(doc).length;
-      fresh.set(entry.forPrompt, findDanglingReferences(result.doc).length - before);
+      // Odečítá se PROTI ZÁKLADNÍMU SVĚTU: kdyby v něm osiřelý odkaz ležel už
+      // předtím, připsal by se patchi, který se ho ani nedotkl.
+      const before = new Set(findDanglingReferences(doc).map(key));
+      fresh.set(entry.forPrompt, findDanglingReferences(result.doc).map(key).filter((found) => !before.has(found)));
     }
 
     for (const entry of edits) {
       if (entry.expectedVerdict !== 'FULFILLED') continue;
-      expect(fresh.get(entry.forPrompt), `${entry.forPrompt} (FULFILLED)`).toBe(0);
+      expect(fresh.get(entry.forPrompt), `${entry.forPrompt} (FULFILLED)`).toEqual([]);
     }
 
     // A protipól: bez něj by aserce výš prošla i s detekcí vypnutou natvrdo.
-    const introduced = [...fresh].filter(([, count]) => count > 0).map(([label]) => label).sort();
+    const introduced = [...fresh].filter(([, found]) => found.length > 0).map(([label]) => label).sort();
     expect(introduced).toEqual(['E11', 'E25']);
-    expect(fresh.get('E11')).toBe(1);
-    expect(fresh.get('E25')).toBe(1);
+    expect(fresh.get('E11')).toEqual(['sim.rules[patrol2].actions[0].socket → socket:centre2']);
+    expect(fresh.get('E25')).toEqual(['sim.rules[win].condition.zone → socket:tagged']);
   });
 
   /**
@@ -536,19 +551,30 @@ describe('editační větev se proti zmrazenému korpusu skutečně spustí', ()
    * **Fixtura se musí trefit do korpusu i tvarem `rules`.**
    *
    * Po přemrazení na `evals-frozen-v2` nese korpus `sim.rules` jako **záznam
-   * klíčovaný stabilním `id`**. `synth.ts` ho do téhle úlohy stavěl jako **pole** —
-   * poslední místo v repu, které si s kanonickým tvarem odporovalo. Schéma to
-   * nechytí (vnitřek `sim` je záměrně `unknown`), takže rozdíl by přežil až do
+   * klíčovaný stabilním `id`**. `synth.ts` ho do téhle úlohy stavěl jako **pole**,
+   * stejně jako čtyři fixtury v `references.test.ts` — obojí převedeno. Schéma
+   * rozdíl nechytí (vnitřek `sim` je záměrně `unknown`), takže by přežil až do
    * chvíle, kdy by na fixtuře stál generátor patchů — a ten by adresoval indexy
    * tam, kde korpus adresuje jména.
    */
   it('a fixtura nese `sim.rules` v témže tvaru jako korpus — záznam, ne pole', () => {
+    let bodiesWithRules = 0;
     for (const create of createEntries) {
       const sim = create.body.sim as { rules?: unknown } | null;
       if (sim === null || sim === undefined) continue;
       expect(Array.isArray(sim.rules), `${create.forPrompt}: korpus`).toBe(false);
       expect(sim.rules, create.forPrompt).toBeTypeOf('object');
+
+      // **`id == klíč` se nad korpusem MĚŘÍ, ne opisuje.** Předchozí znění tvrdilo
+      // „13 z 13, nula neshod" v komentáři a asertovalo to jen nad fixturou
+      // o jednom pravidle — tedy zrovna ten invariant, o který jde, byl jediné
+      // místo, kde blok opisoval místo aby měřil.
+      bodiesWithRules += 1;
+      for (const [id, rule] of Object.entries(sim.rules as Record<string, { id?: unknown }>))
+        expect(rule.id, `${create.forPrompt}.rules.${id}`).toBe(id);
     }
+    // C14 a C15 jsou `NO_FIT` a `sim` nenesou vůbec — 15 emisí, 13 s pravidly.
+    expect(bodiesWithRules).toBe(13);
     const fixture = synthWorld(20260812).sim as { rules: Record<string, { id: string }> };
     expect(Array.isArray(fixture.rules), 'synth.ts').toBe(false);
 

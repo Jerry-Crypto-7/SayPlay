@@ -50,8 +50,9 @@ function simOf(seed: number): SimPart {
   // `width`/`height`), `entities` jako ZÁZNAM (ne pole), svědek s tierem a mezemi.
   //
   // **`rules` je ZÁZNAM klíčovaný stabilním `id`, ne pole** — to je tvar po
-  // přemrazení na `evals-frozen-v2`. Pole tady zůstalo jako poslední místo v repu,
-  // které si s kanonickým tvarem odporovalo, a je to přesně ta vada, kvůli které
+  // přemrazení na `evals-frozen-v2`. Pole tady zůstalo jako jedno ze dvou míst
+  // v repu, která si s kanonickým tvarem odporovala (druhé byly fixtury
+  // v `__tests__/references.test.ts`), a je to přesně ta vada, kvůli které
   // se korpus mrazil znovu: editační patche adresují pravidla jménem
   // (`/sim/rules/open/condition/op`), zatímco pole se indexuje číslem, a vložení
   // nebo smazání pravidla u pole posune indexy všem ostatním, takže patch tiše

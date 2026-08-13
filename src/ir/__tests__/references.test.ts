@@ -76,14 +76,19 @@ describe('rozpouštění jmen', () => {
       sockets: { s0: [1, 1] },
       entities: { player: { role: 'actor', socket: 's0', state: 'idle' } },
       state: { counters: { score: { min: 0, max: 9, init: 0 } }, flags: {}, timers: {} },
-      rules: [
-        {
+      // **Záznam klíčovaný `id`, ne pole** — kanonický tvar povrchového `sim`
+      // po přemrazení na `evals-frozen-v2`. Fixtury tady byly polem, což je tvar,
+      // který korpus opustil; `ruleEntries` obojí uneslo, takže se rozdíl nikde
+      // neprojevil a celá socketová sada níž běžela nad opuštěným tvarem.
+      // Pole má vlastní případ dole — podpora obou tvarů je záměr, ne shoda okolností.
+      rules: {
+        win: {
           id: 'win',
           event: { kind: 'onCounterReaches', ref: 'score', threshold: 3 },
           condition: null,
           actions: [{ kind: 'win' }],
         },
-      ],
+      },
       witness: { ops: [] },
     },
     look: { modules: { player: { family: 'actor', params: {} } } },
@@ -95,7 +100,7 @@ describe('rozpouštění jmen', () => {
 
   it('pravidlo nad nedeklarovaným counterem je osiřelý odkaz', () => {
     const broken = structuredClone(world);
-    broken.sim.rules[0].event.ref = 'coins';
+    broken.sim.rules.win.event.ref = 'coins';
     expect(findDanglingReferences(broken)).toEqual([
       { where: 'sim.rules[win].event.ref', namespace: 'counter', name: 'coins' },
     ]);
@@ -124,20 +129,20 @@ describe('socketový a smíšený prostor je pinutý na každé cestě, která d
       sockets: { s0: [1, 1], s1: [4, 4] },
       entities: { player: { role: 'actor', socket: 's0', state: 'idle' } },
       state: { counters: {}, flags: {}, timers: {}, zones: { z0: [2, 2] }, slots: 1 },
-      rules: [
-        {
+      rules: {
+        r1: {
           id: 'r1',
           event: { kind: 'onEnterZone', entity: 'player', zone: 'z0' },
           condition: { kind: 'inZone', entity: 'player', zone: 's1' },
           actions: [{ kind: 'moveTo', target: 'player', socket: 's1' }],
         },
-        {
+        r2: {
           id: 'r2',
           event: { kind: 'onDrop', socket: 's0', slot: 0 },
           condition: { kind: 'countInZone', zone: 'z0', n: 1 },
           actions: [{ kind: 'setState', target: 'player', value: 'idle' }],
         },
-      ],
+      },
       witness: { ops: [{ tick: 0, actionId: 'moveTo', target: 's1' }] },
     },
   });
@@ -150,35 +155,35 @@ describe('socketový a smíšený prostor je pinutý na každé cestě, která d
     [
       'onEnterZone.zone',
       (world) => {
-        world.sim.rules[0].event.zone = 's9';
+        world.sim.rules.r1.event.zone = 's9';
       },
       { where: 'sim.rules[r1].event.zone', namespace: 'socket', name: 's9' },
     ],
     [
       'inZone.zone',
       (world) => {
-        world.sim.rules[0].condition.zone = 's9';
+        world.sim.rules.r1.condition.zone = 's9';
       },
       { where: 'sim.rules[r1].condition.zone', namespace: 'socket', name: 's9' },
     ],
     [
       'moveTo.socket',
       (world) => {
-        world.sim.rules[0].actions[0].socket = 's9';
+        world.sim.rules.r1.actions[0].socket = 's9';
       },
       { where: 'sim.rules[r1].actions[0].socket', namespace: 'socket', name: 's9' },
     ],
     [
       'onDrop.socket',
       (world) => {
-        world.sim.rules[1].event.socket = 's9';
+        world.sim.rules.r2.event.socket = 's9';
       },
       { where: 'sim.rules[r2].event.socket', namespace: 'socket', name: 's9' },
     ],
     [
       'countInZone.zone',
       (world) => {
-        world.sim.rules[1].condition.zone = 's9';
+        world.sim.rules.r2.condition.zone = 's9';
       },
       { where: 'sim.rules[r2].condition.zone', namespace: 'socket', name: 's9' },
     ],
@@ -212,6 +217,30 @@ describe('socketový a smíšený prostor je pinutý na každé cestě, která d
     world.sim.witness.ops[0].target = 'player';
     expect(findDanglingReferences(world)).toEqual([]);
   });
+
+  /**
+   * **Pole je podporované SCHVÁLNĚ a od teď to má vlastní aserci.**
+   *
+   * Kanonický tvar je záznam, ale `ruleEntries` (`references.ts`) nese i větev pro
+   * pole — a je to úmysl: kontrola osiřelých odkazů má mluvit i nad emisí, která
+   * tvar splete, místo aby nad ní zmlkla. Dokud ale všechny fixtury byly polem,
+   * měřila se **jen** ta větev; po převodu na záznam by se bez tohohle případu
+   * nemeřila žádná. Popisek se v ní bere z `rule.id`, ne z klíče — proto stejný
+   * `where` jako u záznamu.
+   */
+  it('a tentýž svět zapsaný POLEM dá tentýž nález — obě větve `ruleEntries` žijí', () => {
+    const asRecord = base();
+    const asArray = base();
+    asArray.sim.rules = Object.values(asRecord.sim.rules);
+    expect(Array.isArray(asArray.sim.rules)).toBe(true);
+
+    asRecord.sim.rules.r2.event.socket = 's9';
+    asArray.sim.rules[1].event.socket = 's9';
+
+    const expected = [{ where: 'sim.rules[r2].event.socket', namespace: 'socket', name: 's9' }];
+    expect(findDanglingReferences(asArray)).toEqual(expected);
+    expect(findDanglingReferences(asRecord)).toEqual(expected);
+  });
 });
 
 /**
@@ -229,14 +258,14 @@ describe('deklarace špatného tvaru', () => {
       sockets: { s0: [1, 1] },
       entities,
       state,
-      rules: [
-        {
+      rules: {
+        r1: {
           id: 'r1',
           event: { kind: 'onCounterReaches', ref: 'score', threshold: 3 },
           condition: { kind: 'flagIs', ref: 'lit', value: true },
           actions: [{ kind: 'setState', target: 'player', value: 'idle' }],
-          },
-      ],
+        },
+      },
       witness: { ops: [] },
     },
   });
@@ -335,14 +364,14 @@ describe('inventární sloty se adresují indexem', () => {
       sockets: {},
       entities: { player: { role: 'actor' } },
       state: { counters: {}, flags: {}, timers: {}, slots },
-      rules: [
-        {
+      rules: {
+        r1: {
           id: 'r1',
           event: { kind: 'onPickup', slot },
           condition: { kind: 'hasItem', slot, item: 'key' },
           actions: [{ kind: 'giveItem', slot, item: 'key' }],
         },
-      ],
+      },
       witness: { ops: [] },
     },
   });

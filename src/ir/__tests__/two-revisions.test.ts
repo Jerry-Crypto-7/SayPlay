@@ -445,6 +445,50 @@ describe('do `sim` se dostane jen JSON', () => {
     expect(rules.win.id).toBe('win');
   });
 
+  /**
+   * **Charakterizace, ne schválení: `-` a číselný token nad `rules` DNES projdou.**
+   *
+   * Dokud bylo `rules` pole, `add /rules/-` byl legální append a měl tady vlastní
+   * test. Po přechodu na záznam znamená ta samá operace něco jiného — vyrobí
+   * pravidlo s **klíčem `"-"`** — a přesměrováním toho testu na `/witness/ops/-`
+   * (což je tvar, kde `-` pořád znamená append) zůstala tahle cesta **bez jediné
+   * aserce**. Tenhle test tu díru zavírá.
+   *
+   * **Pinuje se dnešní chování, ne kýžené.** `resolve` v `patch/reject.ts` vrací
+   * u posledního tokenu na objektu `null` a je to v souladu s RFC 6901 (`-` je na
+   * objektu obyčejné jméno členu) i s knihovnou. Vadné na tom je až to, co z toho
+   * plyne o **adresování**: vzniklé pravidlo má `id: 'lose'`, ale klíč `"-"`, takže
+   * následný patch na `/rules/lose` padne, **zatímco to pravidlo existuje** — přesně
+   * to selhání, kvůli kterému se korpus mrazil na v2. Jestli se to má odmítnout
+   * (`resolve`), dorovnat (`id == klíč` v `sealPart`), nebo nechat scoreru,
+   * **rozhoduje T22** — má to u sebe zapsané i s variantami. Až rozhodne, tenhle
+   * test se buď obrátí, nebo mu přibude protipól; do té doby aspoň nikdo nezmění
+   * tohle chování omylem.
+   */
+  it('CHARAKTERIZACE: `-` a číselný token nad `rules` projdou a rozbijí `id == klíč`', () => {
+    const rule = JSON.parse(
+      '{"id":"lose","phase":0,"priority":1,"event":{"kind":"onStart"},"condition":null,"actions":[{"kind":"lose"}]}',
+    ) as unknown;
+
+    for (const token of ['-', '0']) {
+      const result = commitPart(world, {
+        part: 'sim',
+        baseRevision: 0,
+        operations: [{ op: 'add', path: `/rules/${token}`, value: rule } as Operation],
+      });
+      expect(result.verdict, token).toBe('COMMITTED');
+      if (result.verdict !== 'COMMITTED') continue;
+
+      const rules = (result.doc.sim as { rules: Record<string, { id: string }> }).rules;
+      // Klíč je doslova ten token — ne append, ne index.
+      expect(Object.keys(rules).sort(), token).toEqual([token, 'win'].sort());
+      // A tady je ta vada: `id` a klíč se rozešly, takže pravidlo existuje pod
+      // jménem, pod kterým ho žádný další patch nenajde.
+      expect(rules[token].id, token).toBe('lose');
+      expect(rules.lose, token).toBeUndefined();
+    }
+  });
+
   it('a pole s propašovaným klíčem neprojde ani jako HODNOTA operace', () => {
     // Tudy se do draftu dostane i to, co kontrola tokenu nevidí — pole přijaté
     // celé, s neindexovou vlastností už na sobě.
