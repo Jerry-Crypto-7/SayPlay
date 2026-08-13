@@ -149,6 +149,11 @@ const createEntries = responses.filter(
 describe('zmrazený korpus projde schématem', () => {
   const creates = createEntries;
   const byVerdict = (verdict: string) => creates.filter((entry) => entry.expectedVerdict === verdict);
+  const bodyOf = (label: string): Record<string, unknown> => {
+    const entry = creates.find((candidate) => candidate.forPrompt === label);
+    if (!entry) throw new Error(`create záznam ${label} v korpusu není`);
+    return entry.body;
+  };
 
   it('korpus má tři třídy a jejich počty sedí', () => {
     // Kdyby se rozpad tříd změnil, dělily by se testy níž na jiné množině, než
@@ -183,6 +188,10 @@ describe('zmrazený korpus projde schématem', () => {
    * §13.4), C13 `sim.entityCap` **i kořenové `clampedFrom`**; každý z těch dvou
    * klíčů by C13 shodil sám, takže se pinují oba.
    *
+   * Pin je **odebráním, ne přítomností**: `toBeDefined()` by řeklo jen že klíč
+   * v těle je, ne že odmítnutí způsobil on. Test proto klíč odstraní z kopie
+   * a čeká opačný verdikt — to je jediná forma, kterou tvrzení výš unese.
+   *
    * Zmrazený protokol má `additionalPropertiesAllowed: false` na obou částech,
    * takže **schéma se kvůli nim rozvolnit nesmí** — pak by přestalo hlídat to,
    * kvůli čemu existuje. Pin je tady proto, aby ta volba byla vidět a aby si
@@ -194,11 +203,26 @@ describe('zmrazený korpus projde schématem', () => {
       .map((entry) => entry.forPrompt);
     expect(rejected.sort()).toEqual(['C12', 'C13']);
 
-    // Jmenované klíče se pinují, ne jen výsledek — jinak by komentář mohl
-    // ukazovat na jiný důvod, než jaký záznam skutečně nese.
-    const c13 = creates.find((entry) => entry.forPrompt === 'C13');
-    expect((c13?.body.sim as Record<string, unknown>).entityCap).toBeDefined();
-    expect(c13?.body.clampedFrom).toBeDefined();
+    // C12 shodí jediný klíč: bez něj tělo schématem projde.
+    const c12 = structuredClone(bodyOf('C12'));
+    expect(c12.refusedBeforeModel).toBeDefined();
+    delete c12.refusedBeforeModel;
+    expect(worldEmissionSchema.safeParse(c12).success, 'C12 bez refusedBeforeModel').toBe(true);
+
+    // C13 shodí každý z těch dvou klíčů sám — po odebrání jednoho se pořád
+    // odmítá, projde teprve bez obou.
+    const withoutCap = structuredClone(bodyOf('C13'));
+    delete (withoutCap.sim as Record<string, unknown>).entityCap;
+    expect(worldEmissionSchema.safeParse(withoutCap).success, 'C13 bez sim.entityCap').toBe(false);
+
+    const withoutClamped = structuredClone(bodyOf('C13'));
+    delete withoutClamped.clampedFrom;
+    expect(worldEmissionSchema.safeParse(withoutClamped).success, 'C13 bez clampedFrom').toBe(false);
+
+    const withoutBoth = structuredClone(bodyOf('C13'));
+    delete (withoutBoth.sim as Record<string, unknown>).entityCap;
+    delete withoutBoth.clampedFrom;
+    expect(worldEmissionSchema.safeParse(withoutBoth).success, 'C13 bez obou').toBe(true);
 
     // A zbytek `ROBUST` projde — kdyby ne, byla by to vada schématu, ne anotace.
     for (const entry of byVerdict('ROBUST')) {
