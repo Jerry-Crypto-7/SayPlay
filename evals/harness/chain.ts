@@ -103,7 +103,7 @@ export function stageHash(value: unknown): string {
   return createHash('sha256').update(JSON.stringify(value) ?? 'undefined').digest('hex');
 }
 
-interface Ledger {
+export interface Ledger {
   readonly records: readonly StageRecord[];
   /** Stadium, které vyrobilo nový výstup. */
   write(stage: StageName, output: unknown, detail: string): void;
@@ -111,7 +111,8 @@ interface Ledger {
   identity(stage: StageName, detail: string): void;
 }
 
-function ledger(caseId: string, requestId: string, firstInputHash: string): Ledger {
+/** Exportovaný kvůli `live.ts` (T18): živý běh vede týž řetěz jiným vstupem. */
+export function ledger(caseId: string, requestId: string, firstInputHash: string): Ledger {
   const records: StageRecord[] = [];
   let previous = firstInputHash;
   const push = (stage: StageName, outputHash: string, detail: string): void => {

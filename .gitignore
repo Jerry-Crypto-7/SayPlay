@@ -20,6 +20,12 @@ blind-check.config.json
 plans/
 .claude/
 
+# Syrové odpovědi poskytovatele z živého běhu (T18). Nejsou artefakt k
+# commitnutí – jsou to naměřená data jednoho běhu, nesou plné znění promptů
+# i odpovědí a repo půjde podle RULES.md §2 ven. Adresář sám zůstává.
+evals/live/*
+!evals/live/.gitkeep
+
 # Secrets obecně
 .env
 .env.*
