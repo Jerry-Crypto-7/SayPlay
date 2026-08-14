@@ -18,6 +18,7 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { buildRuntimeWorld } from '../../ir/build';
 import { worldIr } from '../../ir/schema';
 import { MAX_OPERANDS, type IrEffect, type IrLimits } from '../../ir/types';
 import {
@@ -48,6 +49,44 @@ const stateCycle = stateCycleWorld as unknown as WorldDocRuntime;
 const degenerateSight = degenerateSightWorld as unknown as WorldDocRuntime;
 const lateTimer = lateTimerWorld as unknown as WorldDocRuntime;
 
+/**
+ * Svět, ve kterém je zón **víc než entit**.
+ *
+ * Bez něj neměří podmínka 4 nad zónami nic: všech šest ručně psaných fixtur má
+ * `space.zones` prázdné, takže vnitřní smyčka fáze `sense` v nich nikdy
+ * neproběhne a příspěvek `maxEntities * maxZones` v `phaseBound` je v jejich
+ * společnosti nezjistitelný. Naměřeno 14. 8. 2026: mutace, která ten příspěvek
+ * ze součtu odstranila, přežila celou sadu.
+ *
+ * Staví se `buildRuntimeWorld`, ne ručně psaným IR — meze pak pocházejí ze
+ * stejného místa jako v produkci, a fixtura si je nemůže nastavit pohodlně.
+ */
+const zoneHeavy = ((): WorldDocRuntime => {
+  const built = buildRuntimeWorld({
+    layout: { width: 10, height: 6 },
+    sockets: { spawn: [1, 3], p1: [3, 3], p2: [5, 3], p3: [7, 3], goal: [9, 3] },
+    entities: {
+      hero: { role: 'actor', socket: 'spawn', state: 'idle' },
+      post: { role: 'goal', socket: 'goal', state: 'idle' },
+    },
+    state: { counters: {}, flags: {}, timers: {}, zones: { far: [[8, 2, 2, 3]] } },
+    rules: {
+      done: {
+        phase: 0,
+        priority: 0,
+        event: { kind: 'onEnterZone', entity: 'hero', zone: 'far' },
+        condition: null,
+        actions: [{ kind: 'win' }],
+      },
+    },
+    witness: { tier: 'short', H_cert: 600, ops: [{ tick: 0, actionId: 'moveTo', target: 'post' }] },
+  });
+  if (!built.ok) throw new Error(`zone-heavy fixtura se nepostavila: ${built.issues.join('; ')}`);
+  if (built.world.ir.limits.maxZones <= built.world.ir.limits.maxEntities)
+    throw new Error('zone-heavy fixtura přestala mít víc zón než entit — přestala měřit, co měla');
+  return built.world;
+})();
+
 const WORLDS: readonly (readonly [string, WorldDocRuntime])[] = [
   ['vault', vault],
   ['insta-win', instaWin],
@@ -55,6 +94,7 @@ const WORLDS: readonly (readonly [string, WorldDocRuntime])[] = [
   ['state-cycle', stateCycle],
   ['degenerate-sight', degenerateSight],
   ['late-timer', lateTimer],
+  ['zone-heavy', zoneHeavy],
 ];
 
 const TICK_BUDGET = 60;
