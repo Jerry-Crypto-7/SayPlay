@@ -80,7 +80,7 @@ export { BODY_DEADLINE_MS, MAX_BODY_BYTES };
 
 type Stage = 'routing' | 'apply' | 'references' | 'lowering' | 'witness';
 
-interface Rejection {
+export interface Rejection {
   readonly stage: Stage;
   readonly reason: string;
   readonly pointer: string;
@@ -297,69 +297,107 @@ export async function POST(request: Request): Promise<Response> {
       }),
     );
 
-    // Smíšený požadavek: `look` se commitne OKAMŽITĚ a `sim` se vkládá do
-    // AKTUÁLNÍHO dokumentu, tedy už do toho se vzhledem (§13.1.1). Vlastní
-    // pořadí by vzhled vrátilo zpátky hráči před očima.
-    const lookPatch = parts.find((patch) => patch.part === 'look');
-    const simPatch = parts.find((patch) => patch.part === 'sim');
-    const outcome =
-      lookPatch !== undefined && simPatch !== undefined
-        ? commitMixed(doc, lookPatch, simPatch)
-        : singlePart(doc, parts[0]);
-
-    const applied: ('sim' | 'look')[] = [];
-    // **Obě půlky si nesou svůj důvod.** U smíšeného požadavku umí selhat každá
-    // zvlášť a z jiné příčiny; nechat si jen jednu znamená, že se ta druhá ztratí
-    // beze stopy a model dostane k opravě polovinu zprávy.
-    const rejections: Rejection[] = [];
-    let after = doc;
-
-    if (outcome.look !== null) {
-      if (outcome.look.verdict === 'COMMITTED') {
-        applied.push('look');
-        after = outcome.look.doc;
-      } else rejections.push(fromRejection('apply', outcome.look));
-    }
-
-    let certificate: ReturnType<typeof verifyWitness> | null = null;
-
-    if (outcome.sim !== null) {
-      if (outcome.sim.verdict === 'COMMITTED') {
-        // `look` se mezitím mohl commitnout, takže se bere dokument ze `sim` větve —
-        // ta už ten vzhled nese.
-        const committed = outcome.sim.doc;
-        const verified = certifySim(committed);
-        certificate = verified.certificate;
-        if (verified.rejection === null) {
-          applied.push('sim');
-          after = committed;
-        } else {
-          // Necertifikovaný patch se vztahuje **výhradně na `sim`** — `look`, který
-          // se commitnul, v `applied` zůstává a scéna se s ním nezahazuje.
-          rejections.push(verified.rejection);
-        }
-      } else rejections.push(fromRejection('apply', outcome.sim));
-    }
+    const committed = commitRoutedParts(doc, parts);
 
     return Response.json({
       ...envelope,
-      outcome: rejections.length === 0 ? 'CERTIFIED' : 'REJECTED',
+      outcome: committed.outcome,
       lanes: routing.patches.map((routed) => routed.lane),
-      applied,
-      // Dosah **diffem stavu**, ne čtením operací (`editContract.changedLeafRule`).
-      // Počítá se jen z toho, co se doopravdy použilo: necertifikovaná `sim` se
-      // nikam neaplikuje, takže její listy nejsou změněné, jen navrhované.
-      changedLeaves: [
-        ...(applied.includes('sim') ? changedLeaves(doc.sim, after.sim, '/sim') : []),
-        ...(applied.includes('look') ? changedLeaves(doc.look, after.look, '/look') : []),
-      ].sort(),
-      revisions: revisionsOf(doc, after),
-      certificate,
+      applied: committed.applied,
+      changedLeaves: committed.changedLeaves,
+      revisions: revisionsOf(doc, committed.after),
+      certificate: committed.certificate,
       anomalies: routing.anomalies,
-      rejection: rejections[0] ?? null,
-      rejections,
+      rejection: committed.rejections[0] ?? null,
+      rejections: committed.rejections,
     });
   });
+}
+
+export interface CommitOutcome {
+  readonly outcome: 'CERTIFIED' | 'REJECTED';
+  /** Které půlky si volající smí nechat. Pořadí je pořadí commitu, ne abecední. */
+  readonly applied: readonly ('sim' | 'look')[];
+  readonly changedLeaves: readonly string[];
+  /** Dokument po commitu — u odmítnuté půlky ten předchozí. */
+  readonly after: WorldDoc;
+  readonly certificate: ReturnType<typeof verifyWitness> | null;
+  readonly rejections: readonly Rejection[];
+}
+
+/**
+ * Commit rozřazených částí a atribuce výsledku.
+ *
+ * **Je to vlastní funkce schválně, ne kvůli délce `POST`.** Všech 25 zmrazených
+ * editačních patchů míří výhradně pod `/sim` — vzhled v P1 nikdo neemituje,
+ * generátor rodin je P5 — takže `look` půlku téhle logiky nedokáže přes
+ * `POST /api/edit` vyvolat **žádný** legální vstup: `Allowed doubles` úlohy
+ * zakazuje nahradit upstream čímkoli mimo `MANIFEST.lock`. Bez téhle hranice by
+ * okamžitý commit vzhledu, pořadí u smíšeného požadavku i §13.4 (*necertifikovaná
+ * `sim` scénu nebere s sebou*) byly kód, o kterém tvrdí něco jen docblock —
+ * prohození `lookPatch` a `simPatch` níž je typově v pořádku a neshodilo by
+ * jediný test. Testuje se tedy o patro níž, ručně psanými `look` patchi, což je
+ * týž postup, jakým dráhu vzhledu testuje T22 (`mixed.patch.json`).
+ */
+export function commitRoutedParts(doc: WorldDoc, parts: readonly PartPatch[]): CommitOutcome {
+  // Smíšený požadavek: `look` se commitne OKAMŽITĚ a `sim` se vkládá do
+  // AKTUÁLNÍHO dokumentu, tedy už do toho se vzhledem (§13.1.1). Vlastní
+  // pořadí by vzhled vrátilo zpátky hráči před očima.
+  const lookPatch = parts.find((patch) => patch.part === 'look');
+  const simPatch = parts.find((patch) => patch.part === 'sim');
+  const outcome =
+    lookPatch !== undefined && simPatch !== undefined
+      ? commitMixed(doc, lookPatch, simPatch)
+      : singlePart(doc, parts[0]);
+
+  const applied: ('sim' | 'look')[] = [];
+  // **Obě půlky si nesou svůj důvod.** U smíšeného požadavku umí selhat každá
+  // zvlášť a z jiné příčiny; nechat si jen jednu znamená, že se ta druhá ztratí
+  // beze stopy a model dostane k opravě polovinu zprávy.
+  const rejections: Rejection[] = [];
+  let after = doc;
+
+  if (outcome.look !== null) {
+    if (outcome.look.verdict === 'COMMITTED') {
+      applied.push('look');
+      after = outcome.look.doc;
+    } else rejections.push(fromRejection('apply', outcome.look));
+  }
+
+  let certificate: ReturnType<typeof verifyWitness> | null = null;
+
+  if (outcome.sim !== null) {
+    if (outcome.sim.verdict === 'COMMITTED') {
+      // `look` se mezitím mohl commitnout, takže se bere dokument ze `sim` větve —
+      // ta už ten vzhled nese.
+      const simDoc = outcome.sim.doc;
+      const verified = certifySim(simDoc);
+      certificate = verified.certificate;
+      if (verified.rejection === null) {
+        applied.push('sim');
+        after = simDoc;
+      } else {
+        // Necertifikovaný patch se vztahuje **výhradně na `sim`** — `look`, který
+        // se commitnul, v `applied` zůstává a scéna se s ním nezahazuje.
+        rejections.push(verified.rejection);
+      }
+    } else rejections.push(fromRejection('apply', outcome.sim));
+  }
+
+  return {
+    outcome: rejections.length === 0 ? 'CERTIFIED' : 'REJECTED',
+    applied,
+    // Dosah **diffem stavu**, ne čtením operací (`editContract.changedLeafRule`).
+    // Počítá se jen z toho, co se doopravdy použilo: necertifikovaná `sim` se
+    // nikam neaplikuje, takže její listy nejsou změněné, jen navrhované.
+    changedLeaves: [
+      ...(applied.includes('sim') ? changedLeaves(doc.sim, after.sim, '/sim') : []),
+      ...(applied.includes('look') ? changedLeaves(doc.look, after.look, '/look') : []),
+    ].sort(),
+    after,
+    certificate,
+    rejections,
+  };
 }
 
 function revisionsOf(before: WorldDoc, after: WorldDoc): object {

@@ -20,8 +20,10 @@ import { readFileSync } from 'node:fs';
 import { applyPatch, type Operation } from 'rfc6902';
 import { describe, expect, it } from 'vitest';
 
+import { type PartPatch } from '../../../../ir/revision';
 import { peelEnvelope, sealSimHash, type WorldDoc } from '../../../../ir/worlddoc';
-import { POST } from '../route';
+import { routePatch } from '../../../../patch/router';
+import { commitRoutedParts, POST } from '../route';
 
 // ---------------------------------------------------------------------------
 // Zmrazený korpus, čtený nezávisle na `src/model/client.ts`
@@ -598,6 +600,121 @@ describe('svědek se po editaci ověřuje znovu', () => {
       if (!body.applied.includes('look'))
         expect(body.changedLeaves, `${id}: nic se neaplikovalo, dosah přesto není prázdný`).toEqual([]);
     }
+  });
+});
+
+/**
+ * **Vzhledová půlka commitu — jediná větev, kterou zmrazený korpus nedosáhne.**
+ *
+ * Všech 25 zmrazených editačních patchů míří výhradně pod `/sim`: vzhled v P1
+ * nikdo neemituje a generátor rodin je až P5. `Allowed doubles` úlohy přitom
+ * zakazuje nahradit upstream čímkoli mimo `MANIFEST.lock`, takže **žádný legální
+ * vstup do `POST` vzhledovou větev nespustí**. Okamžitý commit `look`, pořadí
+ * u smíšeného požadavku i §13.4 (*necertifikovaná `sim` scénu nebere s sebou*)
+ * byly do téhle sady kód, o kterém tvrdil něco jen docblock — a brána nad T14 to
+ * doložila reprodukcí: prohodit `lookPatch` a `simPatch` uvnitř
+ * `commitRoutedParts` je typově v pořádku a neshodilo to jediný test z 681.
+ * Vlastní komentář o kus výš (`necertifikovaná sim…`) tu díru sám pojmenovává.
+ *
+ * Testuje se proto o patro níž, ručně psaným `look` patchem — týž postup, jakým
+ * dráhu vzhledu testuje T22 (`mixed.patch.json` je taky ruční JSON). **Hranice
+ * `route:POST /api/edit` tím nedostává double:** běží skutečný router, skutečný
+ * `commitMixed`, skutečný verifikátor svědka i skutečné počítání dosahu, a `sim`
+ * půlka smíšeného patche je pokaždé nedotčené zmrazené tělo.
+ */
+describe('vzhledová půlka commitu', () => {
+  const PALETTE = { op: 'replace', path: '/look/palette', value: 'amber' } as Operation;
+
+  /** Táž cesta, jakou skládá `POST`: dráhu z cest, revizi z dokumentu. */
+  function routedParts(doc: WorldDoc, operations: readonly Operation[]): PartPatch[] {
+    const routing = routePatch({ operations });
+    if (routing.verdict !== 'ROUTED') throw new Error(`patch se nerozřadil: ${routing.detail}`);
+    return routing.patches.map((patch) => ({
+      part: patch.part,
+      baseRevision: patch.part === 'sim' ? doc.simRevision : doc.lookRevision,
+      operations: patch.operations,
+    }));
+  }
+
+  /**
+   * Zmrazené `sim` tělo nad `baseWorld` s požadovaným osudem — **vyhledané, ne
+   * napsané do testu**. Když se pokrytí korpusu pohne, test spadne na „žádný
+   * takový záznam" místo aby tiše měřil jiný případ, než tvrdí jeho titulek.
+   */
+  async function simBodyOver(baseWorld: string, outcome: 'CERTIFIED' | 'REJECTED'): Promise<readonly Operation[]> {
+    for (const contract of contracts) {
+      if (contract.baseWorld !== baseWorld) continue;
+      const body = await edit(contract.id);
+      if (body.outcome === outcome) return responseOf(contract.id).body as Operation[];
+    }
+    throw new Error(`zmrazená sada nemá nad ${baseWorld} editaci s výsledkem ${outcome}`);
+  }
+
+  it('samotný `look` se commitne, zvedne svou revizi a `sim` ani její hash se nehnou', () => {
+    const doc = baseDoc('C01');
+    const committed = commitRoutedParts(doc, routedParts(doc, [PALETTE]));
+
+    expect(committed.outcome).toBe('CERTIFIED');
+    expect(committed.applied).toEqual(['look']);
+    expect(committed.changedLeaves).toEqual(['/look/palette']);
+    expect((committed.after.look as { palette: string }).palette).toBe('amber');
+    expect(committed.after.lookRevision).toBe(doc.lookRevision + 1);
+    // `look` je MIMO hash (§13.1) — vzhledový commit `sim` identitu nesmí pohnout.
+    expect(committed.after.simRevision).toBe(doc.simRevision);
+    expect(committed.after.simHash).toBe(doc.simHash);
+    // Bez `sim` půlky se svědek neověřuje: není co certifikovat.
+    expect(committed.certificate).toBeNull();
+  });
+
+  it('smíšený patch: `sim` padá do dokumentu, který UŽ nese nový vzhled', async () => {
+    const doc = baseDoc('C01');
+    const sim = await simBodyOver('C01', 'CERTIFIED');
+    const committed = commitRoutedParts(doc, routedParts(doc, [PALETTE, ...sim]));
+
+    expect(committed.outcome).toBe('CERTIFIED');
+    // Pořadí je pořadí commitu, a §13.1.1 ho předepisuje: vzhled první.
+    expect(committed.applied).toEqual(['look', 'sim']);
+    expect((committed.after.look as { palette: string }).palette).toBe('amber');
+    expect(committed.after.lookRevision).toBe(doc.lookRevision + 1);
+    expect(committed.after.simRevision).toBe(doc.simRevision + 1);
+    expect(committed.certificate?.verdict).toBe('CERTIFIED');
+    // Dosah proti NEZÁVISLÉMU měření testu, ne proti `src/patch/scope.ts`.
+    expect(committed.changedLeaves).toEqual(measuredLeaves(doc, [PALETTE, ...sim]));
+    expect(committed.changedLeaves).toContain('/look/palette');
+  });
+
+  it('necertifikovaná `sim` scénu nebere s sebou — §13.4 nad smíšeným patchem', async () => {
+    const doc = baseDoc('C01');
+    const sim = await simBodyOver('C01', 'REJECTED');
+    const committed = commitRoutedParts(doc, routedParts(doc, [PALETTE, ...sim]));
+
+    expect(committed.outcome).toBe('REJECTED');
+    // Vzhled commitnutý zůstává, pravidla se nepoužila. Tohle je celá §13.4.
+    expect(committed.applied).toEqual(['look']);
+    expect((committed.after.look as { palette: string }).palette).toBe('amber');
+    expect(committed.after.lookRevision).toBe(doc.lookRevision + 1);
+    expect(committed.after.simRevision).toBe(doc.simRevision);
+    expect(committed.after.simHash).toBe(doc.simHash);
+    // Co se neaplikovalo, nemá dosah — a `look` půlka ho legálně má.
+    expect(committed.changedLeaves).toEqual(['/look/palette']);
+    expect(committed.rejections).toHaveLength(1);
+  });
+
+  it('zastaralá `lookRevision` odmítne vzhled a pravidel se nedotkne', async () => {
+    const doc = baseDoc('C01');
+    const sim = await simBodyOver('C01', 'CERTIFIED');
+    const parts = routedParts(doc, [PALETTE, ...sim]).map((patch) =>
+      patch.part === 'look' ? { ...patch, baseRevision: patch.baseRevision + 7 } : patch,
+    );
+    const committed = commitRoutedParts(doc, parts);
+
+    // Obě části se posuzují každá proti své revizi (§13.1.1): vzhled padne,
+    // pravidla projdou. Se sdílenou revizí by padlo obojí.
+    expect(committed.applied).toEqual(['sim']);
+    expect((committed.after.look as { palette: string }).palette).toBe('slate');
+    expect(committed.after.lookRevision).toBe(doc.lookRevision);
+    expect(committed.after.simRevision).toBe(doc.simRevision + 1);
+    expect(committed.rejections[0].reason).toBe('STALE_REVISION');
   });
 });
 

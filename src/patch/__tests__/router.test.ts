@@ -146,15 +146,15 @@ describe('simWinsRule — zápis pod `/sim` jde do dráhy pravidel bez ohledu na
     withRequest('req-42', () => routePatch(MISLABELLED));
 
     const drained = drainRoutingAnomalies();
-    expect(drained).toHaveLength(1);
-    expect(drained[0].requestId).toBe('req-42');
+    expect(drained.anomalies).toHaveLength(1);
+    expect(drained.anomalies[0].requestId).toBe('req-42');
     // Sběr se odčerpáním vyprázdní, jinak by druhý odběratel viděl cizí běh.
-    expect(drainRoutingAnomalies()).toHaveLength(0);
+    expect(drainRoutingAnomalies().anomalies).toHaveLength(0);
   });
 
   it('mimo požadavek je `requestId` `undefined`, ne vymyšlené', () => {
     routePatch(MISLABELLED);
-    expect(drainRoutingAnomalies()[0].requestId).toBeUndefined();
+    expect(drainRoutingAnomalies().anomalies[0].requestId).toBeUndefined();
   });
 
   it('sběr má strop a zahození přiznává — dlouhý běh ho nenafoukne donekonečna', () => {
@@ -164,12 +164,18 @@ describe('simWinsRule — zápis pod `/sim` jde do dráhy pravidel bez ohledu na
     // každý špatně oštítkovaný patch — navždy, včetně `requestId`.
     for (let i = 0; i < 300; i += 1) routePatch(MISLABELLED);
 
-    // Čte se PŘED odčerpáním: `drainRoutingAnomalies` počítadlo nuluje.
     expect(droppedAnomalies(), 'strop nezahodil, co přeteklo').toBe(300 - 256);
 
+    // **Ztráta odchází SPOLU se záznamy, v jednom volání.** Druhá brána nad T14
+    // našla, že se počet dřív četl zvlášť — a odčerpání ho nuluje, takže
+    // přirozené pořadí „vyprázdni, pak se zeptej, cos ztratil" hlásilo vždycky
+    // nula. Tenhle test tehdy prošel jen proto, že se ptal obráceně, tedy
+    // pinoval past místo vlastnosti.
     const drained = drainRoutingAnomalies();
-    expect(drained).toHaveLength(256);
+    expect(drained.anomalies).toHaveLength(256);
+    expect(drained.dropped, 'odčerpání zamlčelo, kolik se ztratilo').toBe(300 - 256);
     expect(droppedAnomalies(), 'odčerpání nevynulovalo počítadlo').toBe(0);
+    expect(drainRoutingAnomalies().dropped, 'ztráta se vykázala dvakrát').toBe(0);
   });
 
   /**

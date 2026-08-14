@@ -117,12 +117,29 @@ function record(anomaly: RoutingAnomaly): void {
   }
 }
 
-export function drainRoutingAnomalies(): RoutingAnomaly[] {
-  dropped = 0;
-  return recorded.splice(0);
+export interface AnomalyDrain {
+  readonly anomalies: readonly RoutingAnomaly[];
+  /** Kolik jich strop zahodil od minulého odčerpání. */
+  readonly dropped: number;
 }
 
-/** Kolik anomálií strop zahodil od posledního vyprázdnění. */
+/**
+ * Odčerpá anomálie **i s počtem zahozených**, jedním voláním.
+ *
+ * Ta dvojice jde ven společně schválně. Dřív se počet četl druhým voláním
+ * (`droppedAnomalies()`), jenže odčerpání ho nuluje — takže přirozené pořadí
+ * „vyprázdni, pak se zeptej, cos ztratil" hlásilo **vždycky nula**. Ztráta se
+ * tím nedala splést s tichem jen v testu, který věděl, že se musí ptát obráceně;
+ * exportér, kvůli kterému strop vznikl, by se to dozvěděl až tím, že mu
+ * telemetrie tiše nesedí. Kdo si vyzvedne záznamy, drží i jejich ztrátu.
+ */
+export function drainRoutingAnomalies(): AnomalyDrain {
+  const drain: AnomalyDrain = { anomalies: recorded.splice(0), dropped };
+  dropped = 0;
+  return drain;
+}
+
+/** Nahlédnutí bez odčerpání: kolik strop zahodil od posledního vyprázdnění. */
 export function droppedAnomalies(): number {
   return dropped;
 }
