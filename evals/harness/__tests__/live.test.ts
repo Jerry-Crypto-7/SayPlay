@@ -17,10 +17,12 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import type { UpstreamRequest } from '../../../src/model/prompt';
 import { verifyWitness, type VerifiableWorld } from '../../../src/verify/witness';
 import { frozenResponses, stageHash } from '../chain';
 import {
   PreflightError,
+  canonicalHash,
   extractJson,
   frozenBodyHashes,
   responsesDir,
@@ -37,9 +39,13 @@ import {
   withLiveModel,
   type Env,
   type LiveConfig,
+  type Usage,
 } from '../preflight';
 
-const KEY = 'sk-REDACTED';
+// Schválně NEMÁ tvar skutečného klíče (`sk-…`). Kontrola 6 v `blind-check.mjs`
+// hledá ten tvar v commitnutém obsahu a fixture, která ho napodobuje, by bránu
+// shazovala na vlastním repozitáři — a bránu, co pořád křičí, někdo vypne.
+const KEY = 'TEST-CREDENTIAL-NOT-A-REAL-KEY-0123456789';
 
 const FULL: Env = {
   OPENAI_API_KEY: KEY,
@@ -265,14 +271,25 @@ function completion(body: unknown, id = 'resp'): LiveCompletion {
   };
 }
 
-/** Doprava, která počítá volání — bez ní nejde dokázat, že se NEvolalo. */
-function fakeProvider(bodies: readonly unknown[]): ProviderTransport & { calls: number } {
+/**
+ * Doprava, která počítá volání a **pamatuje si, co dostala**.
+ *
+ * Počítadlo je jediný způsob, jak dokázat, že se NEvolalo; seznam požadavků
+ * je jediný způsob, jak dokázat, že uložený artefakt patří k tomu volání.
+ */
+function fakeProvider(
+  bodies: readonly unknown[],
+  usage?: Usage,
+): ProviderTransport & { calls: number; sent: UpstreamRequest[] } {
   const state = {
     calls: 0,
-    complete: async (): Promise<LiveCompletion> => {
+    sent: [] as UpstreamRequest[],
+    complete: async (request: UpstreamRequest): Promise<LiveCompletion> => {
       const body = bodies[Math.min(state.calls, bodies.length - 1)];
       state.calls += 1;
-      return completion(body, `resp_${state.calls}`);
+      state.sent.push(request);
+      const result = completion(body, `resp_${state.calls}`);
+      return usage === undefined ? result : { ...result, usage };
     },
   };
   return state;
@@ -347,10 +364,13 @@ describe('runLiveChain', () => {
   });
 
   it('běh se zastaví na stropu a označí výsledek jako NEÚPLNÝ', async () => {
-    // Strop na dvě volání: třetí prompt se už neodbaví.
+    // Cena vstupu je nula schválně: rezerva pak nezávisí na délce promptu a
+    // vyjde přesně `MAX_OUTPUT_TOKENS × cena_výstupu`, tedy 0.016 USD.
+    // Skutečná cena volání je 500 výstupních tokenů = 0.0005 USD.
+    // Strop 0.0165 pokryje dvě volání a před třetím rezerva nevyjde.
     const provider = fakeProvider([freshBody()]);
     const report = await runLiveChain({
-      env: { ...FULL, EVAL_SPEND_CAP_USD: '0.0125' },
+      env: { ...FULL, EVAL_SPEND_CAP_USD: '0.0165', EVAL_USD_PER_MTOK_IN: '0', EVAL_USD_PER_MTOK_OUT: '1' },
       provider,
       replay,
       promptIds: ['C01', 'C02', 'C04'],
@@ -358,13 +378,57 @@ describe('runLiveChain', () => {
     });
 
     expect(report.complete, 'useknutý běh se vykázal jako úplný').toBe(false);
-    expect(report.stoppedReason).toContain('CAP_EXHAUSTED');
+    expect(report.stoppedReason).toContain('CAP_RESERVE');
     expect(report.total).toBe(3);
-    // Přesně dvě volání: 2 × 0.00625 vyčerpá strop 0.0125 a třetí brána zastaví.
-    // `toBeLessThan` by tady prošlo i s nulou odbavených promptů.
+    // Přesně dvě volání. `toBeLessThan` by prošlo i s nulou odbavených promptů.
     expect(provider.calls, 'strop nezastavil přesně po druhém volání').toBe(2);
     expect(report.attempted).toBe(2);
-    expect(report.spentUsd).toBeCloseTo(0.0125, 10);
+    expect(report.spentUsd).toBeCloseTo(0.001, 10);
+    // A hlavně: schválený strop se NEPŘEKROČIL. Bez rezervy by běh pustil
+    // ještě třetí volání, protože do stropu „ještě něco zbývalo".
+    expect(report.spentUsd).toBeLessThanOrEqual(report.capUsd);
+  });
+
+  it('rezerva zastaví běh dřív, než se překročí strop o celé volání', async () => {
+    // Strop menší než rezerva jednoho volání: neodbaví se ANI JEDEN prompt,
+    // přestože strop je kladný a preflight sám by start pustil.
+    const provider = fakeProvider([freshBody()]);
+    const report = await runLiveChain({
+      env: { ...FULL, EVAL_SPEND_CAP_USD: '0.001', EVAL_USD_PER_MTOK_IN: '0', EVAL_USD_PER_MTOK_OUT: '1' },
+      provider,
+      replay,
+      promptIds: ['C01'],
+      root: tempRoot(),
+    });
+
+    expect(provider.calls, 'volání proběhlo, i když ho strop nemohl pokrýt').toBe(0);
+    expect(report.complete).toBe(false);
+    expect(report.stoppedReason).toContain('CAP_RESERVE');
+    expect(report.spentUsd).toBe(0);
+  });
+
+  it('chybějící usage je selhání, ne nulová útrata', async () => {
+    // Kdyby se neznámá útrata počítala jako nula, `spentUsd` by nerostl a
+    // strop by nesepnul nikdy — celá sada by se protočila bez rozpočtu.
+    const provider = fakeProvider([freshBody()], { inputTokens: Number.NaN, outputTokens: 500 });
+    const report = await runLiveChain({ env: FULL, provider, replay, promptIds: ['C01'], root: tempRoot() });
+
+    expect(report.failures.map((failure) => failure.kind)).toEqual(['provider']);
+    expect(report.failures[0].detail).toContain('usage');
+    expect(report.spentUsd, 'neznámá útrata se započítala jako nula').toBe(0);
+    expect(report.cases).toEqual([]);
+  });
+
+  it('uložený požadavek je ten, který doopravdy odešel', async () => {
+    const provider = fakeProvider([freshBody()]);
+    const report = await runLiveChain({ env: FULL, provider, replay, promptIds: ['C01'], root: tempRoot() });
+
+    const stored = JSON.parse(readFileSync(report.cases[0].responsePath, 'utf8')) as { request: UpstreamRequest };
+    expect(provider.sent).toHaveLength(1);
+    // Ne „stejně vypadající", ale týž obsah jako objekt předaný dopravě.
+    // Druhá konstrukce téhož požadavku by artefakt s voláním nespojila.
+    expect(stored.request).toEqual(provider.sent[0]);
+    expect(stored.request.model, 'záznam nese jméno modelu, který se nezavolal').toBe(LIVE_MODELS[0].id);
   });
 
   it('spadlý poskytovatel je rozbité prostředí, ne verdikt o modelu', async () => {
@@ -378,6 +442,11 @@ describe('runLiveChain', () => {
     expect(report.failures.map((failure) => failure.kind)).toEqual(['provider']);
     expect(report.cases, 'ze spadlého spojení se odvodil verdikt').toEqual([]);
     expect(report.counts).toEqual({ FULFILLED: 0, ROBUST: 0, NO_FIT: 0, FAULT: 0 });
+
+    // Neúplnost musí umět říct proč. `complete: false` se `stoppedReason: null`
+    // je report, který si protiřečí — čtenář pak hledá chybu ve stropu.
+    expect(report.complete).toBe(false);
+    expect(report.stoppedReason, 'neúplný běh neřekl proč').toContain('PROVIDER_FAILURES');
   });
 });
 
@@ -391,5 +460,19 @@ describe('brána proti zmrazenému korpusu není dekorativní', () => {
     }
     // Čerstvé tělo v ní být nesmí, jinak by brána hlásila únik na všem.
     expect(hashes.has(stageHash(freshBody()))).toBe(false);
+  });
+
+  it('zmrazené tělo s přeskládanými klíči branou neproklouzne', async () => {
+    // `JSON.stringify` je citlivý na pořadí klíčů, takže zmrazené tělo
+    // protažené čímkoli, co objekty přeskládá, dá jiný hash — a významově je
+    // to pořád tentýž záznam. Kanonický tvar tuhle skulinu zavírá.
+    const reordered = JSON.parse(JSON.stringify(c01.body)) as Record<string, unknown>;
+    const flipped = Object.fromEntries(Object.entries(reordered).reverse());
+    expect(stageHash(flipped), 'přeskládání nic nezměnilo, test by netvrdil nic').not.toBe(stageHash(c01.body));
+    expect(canonicalHash(flipped)).toBe(canonicalHash(c01.body));
+
+    const provider = fakeProvider([flipped]);
+    const report = await runLiveChain({ env: FULL, provider, replay, promptIds: ['C01'], root: tempRoot() });
+    expect(report.failures.map((failure) => failure.kind)).toContain('frozen-leak');
   });
 });

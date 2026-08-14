@@ -25,6 +25,7 @@
     "zod": "4.4.x"
   },
   "devDependencies": {
+    "@next/env": "16.3.x",
     "@playwright/test": "1.62.x",
     "@types/node": "26.2.x",
     "@types/react": "19.2.x",

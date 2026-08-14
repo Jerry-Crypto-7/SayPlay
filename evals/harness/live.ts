@@ -44,7 +44,7 @@
  * je to týž kód, jen jinak nakrmený. Živá editace přes `POST /api/edit` je T19.
  */
 
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -95,6 +95,33 @@ export interface ProviderTransport {
   readonly complete: (request: UpstreamRequest, config: LiveConfig) => Promise<LiveCompletion>;
 }
 
+/** Počet tokenů musí být konečné nezáporné číslo — jinak se strop nedá počítat. */
+const isTokenCount = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0;
+
+/**
+ * Strop výstupu jednoho volání.
+ *
+ * Bez něj nemá jedno volání horní mez ceny a „tvrdý strop" je tvrdý jen do
+ * poslední žádosti. Číslo je velkorysé vůči emisi celého světa a zároveň
+ * konečné, což je celý požadavek.
+ */
+export const MAX_OUTPUT_TOKENS = 16_000;
+
+/**
+ * Konzervativní horní odhad ceny volání, které ještě neproběhlo.
+ *
+ * Vstup se odhaduje z délky zprávy dělené dvěma. Skutečná tokenizace dělá
+ * zhruba 4 znaky na token, takže odhad je asi dvojnásobný — **a to je ta
+ * správná strana**: přestřelený odhad zastaví běh dřív, podstřelený ho pustí
+ * přes schválený strop. Výstup mez nemá odhadnutou, ale vynucenou
+ * (`MAX_OUTPUT_TOKENS`).
+ */
+export function worstCaseCostUsd(request: UpstreamRequest, config: LiveConfig): number {
+  const inputTokens = Math.ceil((request.system.length + request.user.length) / 2);
+  return costUsd({ inputTokens, outputTokens: MAX_OUTPUT_TOKENS }, config);
+}
+
 /**
  * Skutečné volání OpenAI.
  *
@@ -118,6 +145,8 @@ export function openAiTransport(fetchImpl: typeof fetch = fetch): ProviderTransp
             { role: 'user', content: request.user },
           ],
           response_format: { type: 'json_object' },
+          // Bez horní meze výstupu nemá jedno volání strop ceny.
+          max_completion_tokens: MAX_OUTPUT_TOKENS,
         }),
       });
 
@@ -129,14 +158,17 @@ export function openAiTransport(fetchImpl: typeof fetch = fetch): ProviderTransp
       const text = typeof choice?.message?.content === 'string' ? choice.message.content : '';
       const reported = (raw as { usage?: { prompt_tokens?: number; completion_tokens?: number } } | null)?.usage;
 
-      return {
-        raw,
-        text,
-        usage: {
-          inputTokens: reported?.prompt_tokens ?? 0,
-          outputTokens: reported?.completion_tokens ?? 0,
-        },
-      };
+      // **Chybějící `usage` je selhání, ne nula.** `?? 0` by z neznámé útraty
+      // udělal nulovou, `spentUsd` by nerostl a strop by nikdy nesepnul —
+      // celá sada by se protočila bez rozpočtu. Stačí k tomu 200 s tělem,
+      // které není JSON (gateway, proxy, useknutá odpověď): `raw` je pak
+      // `null` a počty tokenů chybí obojí. Fail closed.
+      if (!isTokenCount(reported?.prompt_tokens) || !isTokenCount(reported?.completion_tokens))
+        throw new Error(
+          `poskytovatel nevykázal usage (prompt=${String(reported?.prompt_tokens)}, completion=${String(reported?.completion_tokens)}); bez počtu tokenů se strop nedá vynutit`,
+        );
+
+      return { raw, text, usage: { inputTokens: reported.prompt_tokens!, outputTokens: reported.completion_tokens! } };
     },
   };
 }
@@ -238,8 +270,27 @@ export function frozenBodyHashes(): ReadonlySet<string> {
   for (const response of frozenResponses()) {
     hashes.add(response.sha256);
     hashes.add(stageHash(response.body));
+    hashes.add(canonicalHash(response.body));
   }
   return hashes;
+}
+
+/**
+ * Hash nad **kanonickým** tvarem, tedy s seřazenými klíči.
+ *
+ * `stageHash` jede přes `JSON.stringify` a ten je citlivý na pořadí klíčů,
+ * takže zmrazené tělo protažené čímkoli, co objekty přeskládá (parser podle
+ * schématu, `canonical()` samotné), by dalo jiný hash a branou by prošlo —
+ * přestože je významově bajt po bajtu totéž. Obě formy proto jdou do sady i do
+ * porovnání.
+ */
+export function canonicalHash(value: unknown): string {
+  try {
+    return createHash('sha256').update(canonical(value)).digest('hex');
+  } catch {
+    // Nekanonizovatelný vstup (model vrátil text) — `stageHash` ho pokrývá.
+    return stageHash(value);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -311,6 +362,7 @@ const hashOf = (result: VerifyResult | null): string | null =>
 async function runLiveCreate(
   prompt: LivePrompt,
   contract: Contract,
+  request: UpstreamRequest,
   completion: LiveCompletion,
   config: LiveConfig,
   runId: string,
@@ -329,7 +381,8 @@ async function runLiveCreate(
       runId,
       forPrompt: id,
       branch: 'create',
-      request: withLiveModel(buildEmissionRequest(prompt.prompt, grammar()), config),
+      // Týž objekt, který odešel k poskytovateli — ne druhá konstrukce téhož.
+      request,
       raw: completion.raw,
       body,
       parsedVia: via,
@@ -343,6 +396,7 @@ async function runLiveCreate(
   for (const [what, hash] of [
     ['odpověď', stored.rawHash],
     ['tělo', stored.bodyHash],
+    ['tělo v kanonickém tvaru', canonicalHash(body)],
   ] as const)
     if (frozenHashes.has(hash))
       failures.push({
@@ -510,19 +564,45 @@ export async function runLiveChain(options: LiveOptions): Promise<LiveReport> {
     const contract = contracts.get(prompt.id);
     if (contract === undefined) throw new Error(`prompt ${prompt.id} nemá zmrazený kontrakt`);
 
+    // Požadavek se staví **jednou**: týž objekt odejde k poskytovateli a týž se
+    // uloží do artefaktu. Druhá konstrukce by artefakt s voláním nespojila —
+    // záznam by tvrdil, co se poslat mělo, ne co se poslalo.
+    const request = withLiveModel(buildEmissionRequest(prompt.prompt, grammar()), gate);
+
+    // **Tvrdý strop rezervuje nejhorší cenu volání, ne nulovou.** Pustit
+    // volání jen proto, že do stropu ještě něco zbývá, znamená překročit ho
+    // o celé jedno volání — schválená částka je pak horní mez jen přibližně.
+    const reserve = worstCaseCostUsd(request, gate);
+    if (reserve > gate.remainingUsd) {
+      stoppedReason = `CAP_RESERVE: zbývá ${gate.remainingUsd.toFixed(5)} USD, ale volání může stát až ${reserve.toFixed(5)} USD`;
+      break;
+    }
+
     let completion: LiveCompletion;
     try {
-      completion = await options.provider.complete(withLiveModel(buildEmissionRequest(prompt.prompt, grammar()), gate), gate);
+      completion = await options.provider.complete(request, gate);
+      // Platí pro KAŽDOU dopravu, ne jen pro tu naši: nepoužitelné `usage`
+      // znamená neznámou útratu, a ta se nesmí započítat jako nulová.
+      if (!isTokenCount(completion.usage.inputTokens) || !isTokenCount(completion.usage.outputTokens))
+        throw new Error(
+          `doprava vrátila nepoužitelné usage (in=${String(completion.usage.inputTokens)}, out=${String(completion.usage.outputTokens)})`,
+        );
     } catch (thrown) {
       failures.push({ caseId: prompt.id, kind: 'provider', detail: (thrown as Error).message });
       continue;
     }
 
-    const result = await runLiveCreate(prompt, contract, completion, gate, runId, options.replay, frozenHashes, root);
+    const result = await runLiveCreate(prompt, contract, request, completion, gate, runId, options.replay, frozenHashes, root);
     spentUsd += result.costUsd;
     cases.push(result);
     failures.push(...result.failures);
   }
+
+  // Neúplný běh musí vždycky umět říct proč. Bez tohohle řádku vyjde po
+  // spadlém volání `complete: false` se `stoppedReason: null` — report, který
+  // si protiřečí, a čtenář hledá chybu ve stropu, kde žádná není.
+  if (stoppedReason === null && cases.length !== prompts.length)
+    stoppedReason = `PROVIDER_FAILURES: ${prompts.length - cases.length} z ${prompts.length} promptů se neodbavilo`;
 
   const counts: Record<Verdict, number> = { FULFILLED: 0, ROBUST: 0, NO_FIT: 0, FAULT: 0 };
   for (const result of cases) counts[result.verdict] += 1;
