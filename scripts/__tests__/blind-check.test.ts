@@ -214,6 +214,27 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
     expect(failedChecks(result.out)).toEqual([6]);
   });
 
+  it('[6] vývojový report z profilu předplatného je trackovaný', () => {
+    // Leží v `evals/` vedle oficiálního `kill-gate-report.json`. Commitnutý ve
+    // veřejném repu je to levné číslo na místě, kde ho někdo přečte jako
+    // výsledek brány — přesně ta záměna, proti které profily vznikly.
+    const result = blindCheck(
+      makeRepo({ extraFile: { name: 'evals/dev-report.subscription.json', body: '{"profile":"subscription"}\n' } }),
+    );
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([6]);
+  });
+
+  it('[6] oficiální kill-gate-report.json commitnutelný ZŮSTÁVÁ', () => {
+    // Je to deliverable T21. Kdyby ho nová kontrola chytila taky, brána by
+    // blokovala právě ten artefakt, kvůli kterému celý plán existuje.
+    const result = blindCheck(
+      makeRepo({ extraFile: { name: 'evals/kill-gate-report.json', body: '{"profile":"api"}\n' } }),
+    );
+    expect(result.code).toBe(0);
+    expect(failedChecks(result.out)).toEqual([]);
+  });
+
   it('[6] evals/live/.gitkeep je součást struktury a projít MÁ', () => {
     const result = blindCheck(makeRepo({ extraFile: { name: 'evals/live/.gitkeep', body: '' } }));
     expect(result.code).toBe(0);

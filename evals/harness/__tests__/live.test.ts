@@ -731,6 +731,22 @@ describe('doprava a profil k sobě musí sedět', () => {
     await expect(anthropicTransport(never).complete(request, okConfig())).rejects.toThrow(/anthropic-messages/);
   });
 
+  it('žádná položka allowlistu nespojuje placený profil s anthropickým tvarem', () => {
+    // Kontrola nad SKUTEČNÝM artefaktem, ne nad ručně složeným objektem.
+    // Kdyby taková položka vznikla, mířil by placený klíč na adresu, kterou
+    // určuje ta položka — a to je jediná cesta, jak by mohl uniknout.
+    expect(LIVE_MODELS.filter((model) => model.profile === 'api' && model.wire === 'anthropic-messages')).toEqual([]);
+  });
+
+  it('anthropicská doprava odmítne i metrovanou konfiguraci, ne jen cizí tvar', async () => {
+    // Dnes nesestavitelné z allowlistu — proto ta konfigurace vzniká ručně.
+    // Je to pojistka pro chvíli, kdy do allowlistu někdo takovou položku
+    // přidá: má spadnout na dopravě, ne tiše odeslat klíč.
+    const proxyModel = LIVE_MODELS.find((model) => model.wire === 'anthropic-messages')!;
+    const metered = { ...okConfig(), model: proxyModel };
+    await expect(anthropicTransport(never).complete(request, metered)).rejects.toThrow(/nemetrovaná doprava/);
+  });
+
   it('dopravu vybírá allowlist podle tvaru drátu', async () => {
     let hit = '';
     const toProxy = async (url: RequestInfo | URL): Promise<Response> => {
@@ -749,6 +765,59 @@ describe('doprava a profil k sobě musí sedět', () => {
     };
     await transportFor(okConfig(), toApi).complete(request, okConfig());
     expect(hit).toContain('api.openai.com');
+  });
+});
+
+describe('bez předané dopravy ji vybere allowlist', () => {
+  // Tohle je ta cesta, kterou jede `e2e/live-chain.spec.ts`. Dokud si spec
+  // dopravu předával sám, mířila natvrdo na placený endpoint a profil
+  // předplatného neprošel ani jedním voláním.
+  const urlsHitBy = async (env: Env, reply: () => Response): Promise<string[]> => {
+    const hits: string[] = [];
+    const original = globalThis.fetch;
+    globalThis.fetch = (async (url: RequestInfo | URL): Promise<Response> => {
+      hits.push(String(url));
+      return reply();
+    }) as typeof fetch;
+    try {
+      await runLiveChain({ env, replay, promptIds: ['C01'], root: tempRoot() });
+    } finally {
+      globalThis.fetch = original;
+    }
+    return hits;
+  };
+
+  it('profil předplatného jde na lokální proxy, ne na placený endpoint', async () => {
+    const hits = await urlsHitBy(
+      SUBSCRIPTION,
+      () =>
+        new Response(
+          JSON.stringify({
+            content: [{ type: 'text', text: JSON.stringify(freshBody()) }],
+            usage: { input_tokens: 1, output_tokens: 1 },
+          }),
+          { status: 200 },
+        ),
+    );
+    expect(hits, 'nezavolalo se nic — výchozí doprava chybí').toHaveLength(1);
+    expect(hits[0]).toContain('localhost');
+    expect(hits[0]).not.toContain('api.openai.com');
+  });
+
+  it('metrovaný profil jde na endpoint poskytovatele', async () => {
+    const hits = await urlsHitBy(
+      FULL,
+      () =>
+        new Response(
+          JSON.stringify({
+            choices: [{ message: { content: JSON.stringify(freshBody()) } }],
+            usage: { prompt_tokens: 1, completion_tokens: 1 },
+          }),
+          { status: 200 },
+        ),
+    );
+    expect(hits).toHaveLength(1);
+    expect(hits[0]).toContain('api.openai.com');
   });
 });
 
@@ -795,6 +864,10 @@ describe('brána profilu — co smí být výsledek brány', () => {
     // `every()` nad prázdným polem je `true`, takže bez téhle podmínky by
     // report bez jediného případu prošel jako čistý.
     expect(() => assertGateProfile(report('api', []))).toThrow(ProfileGateError);
+    // A hláška musí říct PROČ. Společná věta pro obě vady tady vypisovala
+    // „smí vzniknout jedině z api, ale běh nese api", což si protiřečí.
+    expect(() => assertGateProfile(report('api', []))).toThrow(/jediný případ/);
+    expect(() => assertGateProfile(report('api', []))).not.toThrow(/ale běh nese api\./);
   });
 
   it('vyhrazené jméno souboru dostane jedině api běh', () => {

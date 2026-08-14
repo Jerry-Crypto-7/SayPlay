@@ -213,13 +213,23 @@ export function anthropicTransport(fetchImpl: typeof fetch = fetch): ProviderTra
   return {
     async complete(request, config) {
       assertWire(config, 'anthropic-messages');
+      // **Zrcadlí to, co dělá metrovaná doprava, a je to jediná pojistka proti
+      // úniku klíče na tuhle adresu.** Dřív tu stálo
+      // `config.metered ? config.apiKey : 'unused'`, což je dnes nedosažitelné
+      // jen proto, že žádná položka allowlistu nespojuje `profile: 'api'` s
+      // anthropicským tvarem. Až ji tam někdo přidá — a hlavička souboru přesně
+      // takovou zvažuje — odešel by `OPENAI_API_KEY` na tu URL a žádný test
+      // toho není svědkem. Odmítnout to je levnější než si to pamatovat.
+      if (config.metered) throw new Error('anthropicTransport je nemetrovaná doprava; profil api na ni nepatří');
 
       const response = await fetchImpl(config.model.url, {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
           'anthropic-version': '2023-06-01',
-          authorization: `Bearer ${config.metered ? config.apiKey : 'unused'}`,
+          // Proxy autorizaci nečte — přihlášení drží ona sama. Hodnota je
+          // konstanta, takže sem nemá jak přitéct nic tajného.
+          authorization: 'Bearer unused',
         },
         body: JSON.stringify({
           model: request.model,
@@ -620,11 +630,11 @@ async function runLiveCreate(
 // ---------------------------------------------------------------------------
 
 export class ProfileGateError extends Error {
-  constructor(readonly found: readonly ProviderProfile[]) {
-    super(
-      `kill gate report smí vzniknout jedině z profilu api, ale běh nese ${found.join(', ')}. ` +
-        'Vývojové měření přes předplatné není výsledek brány — spusť ho znovu s api modelem z allowlistu.',
-    );
+  constructor(
+    readonly found: readonly ProviderProfile[],
+    reason: string,
+  ) {
+    super(`kill gate report nesmí vzniknout: ${reason}`);
     this.name = 'ProfileGateError';
   }
 }
@@ -644,8 +654,17 @@ export class ProfileGateError extends Error {
  */
 export function assertGateProfile(report: LiveReport): void {
   const found = new Set<ProviderProfile>([report.profile, ...report.cases.map((result) => result.profile)]);
-  if (report.cases.length === 0) throw new ProfileGateError([...found]);
-  if (found.size !== 1 || !found.has('api')) throw new ProfileGateError([...found]);
+  // **Dvě různé vady, dvě různé hlášky.** Jedna společná by u prázdného api
+  // běhu vypsala „smí vzniknout jedině z api, ale běh nese api" — věta, která
+  // si protiřečí a člověku u ní nedojde, co má opravit.
+  if (report.cases.length === 0)
+    throw new ProfileGateError([...found], 'běh neobsahuje jediný případ, takže neměří nic. Spusť ho znovu.');
+  if (found.size !== 1 || !found.has('api'))
+    throw new ProfileGateError(
+      [...found],
+      `smí vzniknout jedině z profilu api, ale běh nese ${[...found].join(', ')}. ` +
+        'Vývojové měření přes předplatné není výsledek brány — spusť ho znovu s api modelem z allowlistu.',
+    );
 }
 
 /**
@@ -675,7 +694,19 @@ function grammar(): Parameters<typeof buildEmissionRequest>[1] {
 
 export interface LiveOptions {
   readonly env: Env;
-  readonly provider: ProviderTransport;
+  /**
+   * Doprava k poskytovateli. **Bez ní ji vybere allowlist** (`transportFor`).
+   *
+   * Volitelná je schválně, a výchozí hodnota je ta produkční: jediný skutečný
+   * spouštěč živého běhu (`e2e/live-chain.spec.ts`) si ji dřív předával sám, a
+   * protože předával tu metrovanou natvrdo, nešlo profilem předplatného projet
+   * ani jedno volání — vybraný model mluvil jiným tvarem, než co ta doprava
+   * umí, a běh umřel na prvním případu. Kdo dopravu vybírá, rozhoduje i o tom,
+   * kam poletí klíč; to rozhodnutí patří k allowlistu, ne k volajícímu.
+   *
+   * Předává se už jen v testech, které potřebují double.
+   */
+  readonly provider?: ProviderTransport;
   readonly replay: Transport['replay'];
   /** Vlastní id běhu. Bez něj se vygeneruje — do jména adresáře na disku. */
   readonly runId?: string;
@@ -753,7 +784,7 @@ export async function runLiveChain(options: LiveOptions): Promise<LiveReport> {
     // počtu volání by nedržel nic.
     calls += 1;
     try {
-      completion = await options.provider.complete(request, gate);
+      completion = await (options.provider ?? transportFor(gate)).complete(request, gate);
       // Platí pro KAŽDOU dopravu, ne jen pro tu naši: nepoužitelné `usage`
       // znamená neznámou útratu, a ta se nesmí započítat jako nulová.
       if (!isTokenCount(completion.usage.inputTokens) || !isTokenCount(completion.usage.outputTokens))

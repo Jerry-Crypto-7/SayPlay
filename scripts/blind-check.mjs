@@ -178,6 +178,16 @@ check(6, 'no credentials or raw run artefacts entered history', () => {
   if (artefacts.length > 0)
     return `syrové odpovědi poskytovatele jsou trackované: ${artefacts.slice(0, 3).join(', ')}`;
 
+  // Report z vývojového profilu. Leží v `evals/` vedle oficiálního
+  // `kill-gate-report.json`, takže commitnutý by v published repu stál přesně
+  // tam, kde ho někdo přečte jako výsledek brány. `.gitignore` ho drží venku;
+  // tahle kontrola hlídá případ, kdy ho někdo přidá přes `git add -f`.
+  const devReports = lower
+    .filter(([, path]) => /^evals\/dev-report\..*\.json$/.test(path))
+    .map(([original]) => original);
+  if (devReports.length > 0)
+    return `vývojový report je trackovaný a plete se s výsledkem brány: ${devReports.join(', ')}`;
+
   // Tvar API klíče v commitnutém obsahu. Hledá se nad `HEAD` ze stejného
   // důvodu jako u kontroly 3: nahrávají se commity, ne pracovní strom.
   const keys = git(['grep', '-InE', 'sk-[A-Za-z0-9_-]{20,}', 'HEAD', '--', '.'], { allowFail: true }).trim();

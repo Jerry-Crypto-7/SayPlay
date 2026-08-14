@@ -35,7 +35,7 @@ import { loadEnvConfig } from '@next/env';
 import { expect, test, type Page } from '@playwright/test';
 
 import { STAGES } from '../evals/harness/chain';
-import { PreflightError, openAiTransport, runLiveChain, type LiveReport } from '../evals/harness/live';
+import { PreflightError, runLiveChain, type LiveReport } from '../evals/harness/live';
 import { preflight } from '../evals/harness/preflight';
 import type { TraceInput } from '../src/sim/interpreter';
 import type { VerifiableWorld, VerifyResult } from '../src/verify/witness';
@@ -79,7 +79,9 @@ async function live(page: Page): Promise<LiveReport> {
   try {
     cached = await runLiveChain({
       env: process.env,
-      provider: openAiTransport(),
+      // Dopravu NEVYBÍRÁME tady. Vybere ji allowlist podle tvaru drátu, který
+      // zvolený model mluví — zadrátovat ji sem znamená, že přepnutí profilu
+      // v `.env.local` změní model, ale ne cestu, po které se volá.
       async replay(world, witness) {
         return page.evaluate(
           ([doc, trace]) => {

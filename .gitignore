@@ -26,6 +26,12 @@ plans/
 evals/live/*
 !evals/live/.gitkeep
 
+# Report z vývojového profilu (předplatné). Leží ve stejném adresáři jako
+# oficiální evals/kill-gate-report.json a je to přesně ta záměna, které má
+# celý profil bránit: levné číslo vedle toho, na kterém stojí rozhodnutí.
+# Vyhrazené jméno kill-gate-report.json commitnutelné zůstává.
+evals/dev-report.*.json
+
 # Secrets obecně
 .env
 .env.*
