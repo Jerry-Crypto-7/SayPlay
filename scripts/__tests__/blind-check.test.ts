@@ -10,9 +10,9 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { afterAll, describe, expect, it } from 'vitest';
 
@@ -53,7 +53,13 @@ function makeRepo(fixture: Fixture = {}): string {
     'utf8',
   );
   writeFileSync(join(dir, 'README.md'), '# world builder\n\nNic, co by jmenovalo autora.\n', 'utf8');
-  if (fixture.extraFile) writeFileSync(join(dir, fixture.extraFile.name), fixture.extraFile.body, 'utf8');
+  if (fixture.extraFile) {
+    // Jméno smí být cesta (`evals/live/RUN/responses/C01.json`) — kontrola 6 se
+    // ptá právě na trackované soubory pod konkrétním adresářem.
+    const target = join(dir, fixture.extraFile.name);
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, fixture.extraFile.body, 'utf8');
+  }
 
   if (!fixture.noLocalEmail) {
     run(dir, ['config', '--local', 'user.email', 'worldsmith@users.noreply.github.com']);
@@ -102,15 +108,15 @@ afterAll(() => {
 });
 
 describe('blind-check propustí čistý repozitář', () => {
-  it('vrátí 0 a všech pět kontrol projde', () => {
+  it('vrátí 0 a všech šest kontrol projde', () => {
     const result = blindCheck(makeRepo());
-    expect(result.out).toContain('Všech 5 kontrol prošlo');
+    expect(result.out).toContain('Všech 6 kontrol prošlo');
     expect(failedChecks(result.out)).toEqual([]);
     expect(result.code).toBe(0);
   });
 });
 
-describe('a každou z pěti kontrol umí shodit zvlášť', () => {
+describe('a každou z šesti kontrol umí shodit zvlášť', () => {
   it('[1] zakázaný token v identitě autora', () => {
     const result = blindCheck(makeRepo({ identity: 'acme-person' }));
     expect(result.code).toBe(1);
@@ -163,5 +169,44 @@ describe('a každou z pěti kontrol umí shodit zvlášť', () => {
     const result = blindCheck(makeRepo({ remote: null }));
     expect(result.code).toBe(1);
     expect(failedChecks(result.out)).toEqual([5]);
+  });
+
+  // Kontrola 6 přibyla s T18: repozitář od té chvíle poprvé sousedí se
+  // skutečnými credentials a se syrovými odpověďmi poskytovatele. Obojí brání
+  // `.gitignore`, a to je jedna editace od toho, aby nebránil nic.
+  it('[6] soubor s credentials je trackovaný', () => {
+    const result = blindCheck(makeRepo({ extraFile: { name: '.env.local', body: 'OPENAI_API_KEY=abc\n' } }));
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([6]);
+  });
+
+  it('[6] .env.example je vzor bez hodnot a projít MÁ', () => {
+    // Kontrola polarity: kdyby vzor padal taky, ostrý repozitář by neprošel
+    // nikdy a kontrola by se musela vypnout — tedy zmizet.
+    const result = blindCheck(makeRepo({ extraFile: { name: '.env.example', body: 'OPENAI_API_KEY=\n' } }));
+    expect(result.code).toBe(0);
+    expect(failedChecks(result.out)).toEqual([]);
+  });
+
+  it('[6] syrová odpověď poskytovatele je trackovaná', () => {
+    const result = blindCheck(
+      makeRepo({ extraFile: { name: 'evals/live/RUN/responses/C01.json', body: '{"raw":{}}\n' } }),
+    );
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([6]);
+  });
+
+  it('[6] evals/live/.gitkeep je součást struktury a projít MÁ', () => {
+    const result = blindCheck(makeRepo({ extraFile: { name: 'evals/live/.gitkeep', body: '' } }));
+    expect(result.code).toBe(0);
+    expect(failedChecks(result.out)).toEqual([]);
+  });
+
+  it('[6] řetězec ve tvaru API klíče v commitnutém obsahu', () => {
+    const result = blindCheck(
+      makeRepo({ extraFile: { name: 'config.ts', body: "const key = 'sk-REDACTED';\n" } }),
+    );
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([6]);
   });
 });

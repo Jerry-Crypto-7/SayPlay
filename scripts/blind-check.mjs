@@ -7,7 +7,7 @@
  * historie je veřejná a přepis zanechá viditelnou stopu. Tenhle skript je
  * proto brána, ne úklid, a běží v `pre-push` hooku (`.githooks/pre-push`).
  *
- * Skončí `0`, když projde všech pět kontrol, jinak `1`.
+ * Skončí `0`, když projde všech šest kontrol, jinak `1`.
  *
  * **Skript sám je veřejný, takže v něm nesmí stát skutečné jméno autora.**
  * Zakázané tokeny pro identitu se proto čtou z `blind-check.config.json`,
@@ -145,6 +145,36 @@ check(5, 'every remote points at the anonymous account', (config) => {
   return wrong.length ? `remote nemíří na očekávaný účet: ${wrong[0]}` : null;
 });
 
+/**
+ * Od T18 nese repozitář poprvé skutečné credentials (`.env.local`) a poprvé
+ * syrové odpovědi poskytovatele (`evals/live/`). Obojí brání jen `.gitignore`,
+ * a `.gitignore` je jediná editace od toho, aby nebránil nic — `git add -f` ho
+ * obejde rovnou. Tahle kontrola je ta druhá vrstva: ptá se, co je doopravdy
+ * v `HEAD`, ne co má být ignorované.
+ */
+check(6, 'no credentials or raw run artefacts entered history', () => {
+  const tracked = git(['ls-tree', '-r', '--name-only', 'HEAD'], { allowFail: true })
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (tracked.length === 0) return 'repozitář nemá žádný commit, není co ověřit';
+
+  // `.env.example` je vzor bez hodnot a commitovat se má; cokoli dalšího ne.
+  const envFiles = tracked.filter((path) => /(^|\/)\.env($|\.)/.test(path) && !path.endsWith('.env.example'));
+  if (envFiles.length > 0) return `soubor s credentials je trackovaný: ${envFiles.join(', ')}`;
+
+  const artefacts = tracked.filter((path) => path.startsWith('evals/live/') && !path.endsWith('.gitkeep'));
+  if (artefacts.length > 0)
+    return `syrové odpovědi poskytovatele jsou trackované: ${artefacts.slice(0, 3).join(', ')}`;
+
+  // Tvar API klíče v commitnutém obsahu. Hledá se nad `HEAD` ze stejného
+  // důvodu jako u kontroly 3: nahrávají se commity, ne pracovní strom.
+  const keys = git(['grep', '-InE', 'sk-[A-Za-z0-9_-]{20,}', 'HEAD', '--', '.'], { allowFail: true }).trim();
+  if (keys) return `commitnutý obsah nese řetězec ve tvaru API klíče: ${keys.split('\n')[0].slice(0, 160)}`;
+
+  return null;
+});
+
 const config = loadConfig();
 let failed = 0;
 
@@ -164,9 +194,11 @@ for (const { id, title, run } of checks) {
   }
 }
 
+// Počet se bere z `checks`, ne z konstanty: zapsané číslo se při přidání
+// kontroly rozejde se skutečností a hláška pak lže o rozsahu brány.
 console.log(
   failed === 0
-    ? '\nVšech 5 kontrol prošlo — push je z hlediska slepého hodnocení v pořádku.'
-    : `\n${failed} z 5 kontrol selhalo. Push se NEPROVEDE.`,
+    ? `\nVšech ${checks.length} kontrol prošlo — push je z hlediska slepého hodnocení v pořádku.`
+    : `\n${failed} z ${checks.length} kontrol selhalo. Push se NEPROVEDE.`,
 );
 process.exit(failed === 0 ? 0 : 1);
