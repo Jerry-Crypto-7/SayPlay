@@ -1,0 +1,27 @@
+{
+  "id": "thicket-clearing",
+  "title": "Mýtina v houští",
+  "palette": "thicket",
+  "placements": [
+    { "piece": "organic.tree", "cell": [0, 0] },
+    { "piece": "organic.tree", "cell": [4, 0], "yaw": 2 },
+    { "piece": "organic.shrub", "cell": [1, 0], "offset": [0.2, 0.3] },
+    { "piece": "organic.boulder", "cell": [3, 1] },
+    { "piece": "organic.cluster", "cell": [0, 1], "yaw": 1 },
+    { "piece": "organic.pebble", "cell": [2, 1], "offset": [-0.2, 0.1] },
+    { "piece": "organic.pebble", "cell": [2, 1], "offset": [0.25, -0.2] },
+    { "piece": "organic.reed", "cell": [4, 2], "yaw": 1 },
+    { "piece": "organic.reed", "cell": [1, 2], "offset": [0.1, -0.2] },
+    { "piece": "organic.tree", "cell": [2, 3], "yaw": 1 },
+    { "piece": "organic.shrub", "cell": [4, 3] },
+    { "piece": "organic.cluster", "cell": [0, 3], "yaw": 3 },
+    { "piece": "organic.boulder", "cell": [3, 4], "yaw": 2 },
+    { "piece": "organic.shrub", "cell": [1, 4], "offset": [-0.1, 0.2] },
+
+    { "piece": "column.broken", "cell": [2, 1], "offset": [0.1, 0.35] },
+    { "piece": "arch.buttress", "cell": [1, 2], "yaw": 3, "offset": [-0.3, 0.2] },
+    { "piece": "fixture.sign", "cell": [0, 3], "offset": [0.3, -0.3] },
+    { "piece": "actor.quadruped", "cell": [3, 1], "offset": [0.2, 0.3], "yaw": 1 },
+    { "piece": "actor.tall", "cell": [2, 3], "offset": [-0.35, -0.2], "yaw": 2 }
+  ]
+}

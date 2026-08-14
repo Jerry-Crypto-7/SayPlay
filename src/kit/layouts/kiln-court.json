@@ -1,0 +1,32 @@
+{
+  "id": "kiln-court",
+  "title": "Pecní dvůr",
+  "palette": "kiln",
+  "placements": [
+    { "piece": "mass.block", "cell": [0, 0] },
+    { "piece": "mass.plinth", "cell": [1, 0] },
+    { "piece": "arch.doorway", "cell": [2, 0], "yaw": 0 },
+    { "piece": "mass.plinth", "cell": [3, 0] },
+    { "piece": "mass.block", "cell": [4, 0] },
+
+    { "piece": "column.pillar", "cell": [0, 1] },
+    { "piece": "column.capital", "cell": [4, 1] },
+    { "piece": "panel.wall", "cell": [0, 2], "yaw": 1 },
+    { "piece": "arch.round", "cell": [4, 2], "yaw": 1 },
+    { "piece": "column.fluted", "cell": [0, 3] },
+    { "piece": "column.broken", "cell": [4, 3] },
+
+    { "piece": "mass.block", "cell": [0, 4] },
+    { "piece": "panel.half", "cell": [1, 4] },
+    { "piece": "arch.flat", "cell": [2, 4], "yaw": 2 },
+    { "piece": "panel.half", "cell": [3, 4] },
+    { "piece": "mass.block", "cell": [4, 4] },
+
+    { "piece": "panel.roof", "cell": [0, 0], "level": 1, "yaw": 1 },
+    { "piece": "panel.roof", "cell": [4, 4], "level": 1, "yaw": 3 },
+    { "piece": "fixture.barrel", "cell": [1, 0], "level": 0.8 },
+    { "piece": "fixture.terminal", "cell": [3, 0], "level": 0.8, "yaw": 2 },
+    { "piece": "actor.squat", "cell": [1, 4], "yaw": 2 },
+    { "piece": "actor.drone", "cell": [3, 4], "level": 1.2 }
+  ]
+}

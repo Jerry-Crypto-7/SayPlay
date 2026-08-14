@@ -1,0 +1,34 @@
+{
+  "id": "frost-plateau",
+  "title": "Zmrzlá plošina",
+  "palette": "frost",
+  "placements": [
+    { "piece": "arch.portal", "cell": [2, 2] },
+    { "piece": "panel.floor", "cell": [2, 2], "level": -0.12 },
+
+    { "piece": "panel.floor", "cell": [2, 0], "level": -0.12 },
+    { "piece": "panel.floor", "cell": [2, 1], "level": -0.12 },
+    { "piece": "panel.floor", "cell": [2, 3], "level": -0.12 },
+    { "piece": "panel.floor", "cell": [2, 4], "level": -0.12 },
+    { "piece": "panel.floor", "cell": [0, 2], "level": -0.12 },
+    { "piece": "panel.floor", "cell": [1, 2], "level": -0.12 },
+    { "piece": "panel.floor", "cell": [3, 2], "level": -0.12 },
+    { "piece": "panel.floor", "cell": [4, 2], "level": -0.12 },
+
+    { "piece": "column.capital", "cell": [1, 1] },
+    { "piece": "column.capital", "cell": [3, 1], "yaw": 1 },
+    { "piece": "column.capital", "cell": [1, 3], "yaw": 3 },
+    { "piece": "column.capital", "cell": [3, 3], "yaw": 2 },
+
+    { "piece": "arch.round", "cell": [2, 0], "yaw": 2 },
+    { "piece": "arch.round", "cell": [2, 4] },
+    { "piece": "arch.flat", "cell": [0, 2], "yaw": 1 },
+    { "piece": "arch.flat", "cell": [4, 2], "yaw": 3 },
+
+    { "piece": "organic.pebble", "cell": [1, 1], "offset": [0.35, 0.3] },
+    { "piece": "organic.pebble", "cell": [3, 3], "offset": [-0.3, -0.35] },
+    { "piece": "fixture.hatch", "cell": [2, 1] },
+    { "piece": "fixture.lamp", "cell": [1, 3], "offset": [0.4, -0.3] },
+    { "piece": "actor.drone", "cell": [2, 3], "level": 0.9 }
+  ]
+}

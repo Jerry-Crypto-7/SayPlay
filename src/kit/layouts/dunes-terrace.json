@@ -1,0 +1,28 @@
+{
+  "id": "dunes-terrace",
+  "title": "Dunová terasa",
+  "palette": "dunes",
+  "placements": [
+    { "piece": "mass.plinth", "cell": [0, 0] },
+    { "piece": "mass.step", "cell": [1, 0], "yaw": 1 },
+    { "piece": "mass.step", "cell": [1, 1] },
+    { "piece": "mass.bevel", "cell": [2, 1] },
+    { "piece": "mass.step", "cell": [2, 2], "yaw": 1 },
+    { "piece": "mass.stack", "cell": [3, 2] },
+    { "piece": "mass.step", "cell": [3, 3] },
+    { "piece": "mass.bevel", "cell": [4, 3] },
+    { "piece": "mass.plinth", "cell": [4, 4] },
+    { "piece": "mass.wedge", "cell": [5, 4], "yaw": 1 },
+
+    { "piece": "panel.ramp", "cell": [1, 1], "level": 0.8, "yaw": 1 },
+    { "piece": "panel.ramp", "cell": [3, 3], "level": 0.8, "yaw": 3 },
+    { "piece": "arch.portal", "cell": [2, 2], "level": 0.9 },
+    { "piece": "column.twisted", "cell": [0, 0], "level": 0.85 },
+    { "piece": "column.twisted", "cell": [4, 4], "level": 0.85, "yaw": 2 },
+
+    { "piece": "organic.pebble", "cell": [5, 4], "offset": [0.2, 0.3] },
+    { "piece": "organic.boulder", "cell": [0, 0], "offset": [-0.6, -0.4] },
+    { "piece": "fixture.sign", "cell": [3, 2], "level": 0.9, "offset": [0.3, 0.2] },
+    { "piece": "actor.squat", "cell": [2, 1], "level": 0.85, "yaw": 3 }
+  ]
+}
