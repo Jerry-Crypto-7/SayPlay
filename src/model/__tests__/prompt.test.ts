@@ -115,6 +115,17 @@ describe('příklad učí, kam smí mířit svědek', () => {
     expect(verifyWitness(built.world, built.world.trace).verdict).not.toBe('CERTIFIED');
   });
 
+  it('příklad projde inventářem, ne jen kolem něj', () => {
+    // `state.slots` je jediné místo, kde se počet slotů deklaruje, a zpráva o
+    // něm mlčela, přestože `giveItem` i `hasItem` jmenovala. Aby ta oprava
+    // nebyla jen věta v textu, musí ji příklad doopravdy projít.
+    const sim = example().sim;
+    expect(typeof (sim.state as { slots?: unknown }).slots, 'příklad nedeklaruje state.slots').toBe('number');
+    const rules = JSON.stringify(sim.rules);
+    expect(rules, 'příklad nikdy nic nedá do inventáře').toContain('"giveItem"');
+    expect(rules, 'příklad se inventáře nikdy nezeptá').toContain('"hasItem"');
+  });
+
   it('každý klíč look.modules je deklarovaná entita', () => {
     const doc = example();
     for (const key of Object.keys(doc.look.modules as Record<string, unknown>))
@@ -135,6 +146,16 @@ describe('zpráva nese slovník i tvar', () => {
     // Ne libovolná formulace: obojí je vlastnost, kterou model nemá odkud vzít.
     for (const named of ['names an ENTITY stableId', 'Never a socket name', 'key of look.modules'])
       expect(system, `zpráva mlčí o ${named}`).toContain(named);
+  });
+
+  it('neříká o rolích a inventáři nepravdu', () => {
+    const system = buildEmissionRequest('anything', grammar()).system;
+    // Role je volný řetězec: `build.ts` čte `actor` a `agent`, nic dalšího.
+    expect(system, 'zpráva pořád vydává role za pevný výčet').toContain('role is a FREE label');
+    expect(system, 'zpráva neříká, které role systém opravdu čte').toContain('reads exactly two');
+    // Inventář nemá kde vzniknout, dokud se nejmenuje jeho deklarace.
+    expect(system, 'zpráva mlčí o state.slots').toContain('slots:');
+    expect(system, 'zpráva nespojí sloty s giveItem/hasItem').toContain('giveItem or hasItem declares state.slots');
   });
 
   it('nese uživatelský prompt doslova', () => {

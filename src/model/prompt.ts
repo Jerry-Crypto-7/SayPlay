@@ -56,6 +56,22 @@
  * které z těch dvou jmen tam patří. Teď mají sokety vlastní jména (`leverPad`),
  * a `__tests__/prompt.test.ts` na tu nekolizi má aserci — bez ní by se příklad
  * mohl kdykoli vrátit k dvojznačnému tvaru a testy by mlčely.
+ *
+ * ## Dvě nepravdy, které zpráva o vlastním systému říkala
+ *
+ * Nalezeno po opravě výše, na témže běhu. Obojí je vada popisu, ne modelu, a
+ * obojí se dá doložit ze zdrojáků bez jediného skóre:
+ *
+ * 3. **`sim.state.slots` chybělo v popisu tvaru.** Je to počet inventárních
+ *    slotů a povrch ho nese (`state=[counters, flags, timers, slots]` ve dvou
+ *    zmrazených tělech). Zpráva vyjmenovala `counters`, `flags`, `timers`,
+ *    `zones` a `pool` — a přitom mluvila o `giveItem` i `hasItem`, tedy o
+ *    inventáři, který se nemá kde vzít.
+ * 4. **Role entity NENÍ výčet čtyř hodnot.** Je to volný řetězec: `build.ts:184`
+ *    hledá `actor` (a když není, bere první entitu), `build.ts:285` počítá
+ *    `agent` do `maxAgents`, a tím výčet končí — `goal` ani `prop` nečte nic.
+ *    Naproti tomu `onPickup` se smí klíčovat **rolí** (`surface.ts:276`), takže
+ *    role je nositel významu. Věta „prop everything else" ten prostor zavírala.
  */
 
 /** Slovník ze zmrazeného protokolu. Čte ho `./client`, sem se jen předává. */
@@ -108,10 +124,11 @@ const EXAMPLE_WORLD = {
   sim: {
     layout: { width: 12, height: 8 },
     grid: { cell: 1 },
-    sockets: { spawnPad: [1, 4], leverPad: [5, 4], gatePad: [10, 4] },
-    collisionAabb: { player: [1, 4, 1, 1], lever: [5, 4, 1, 1], gate: [10, 4, 1, 2] },
+    sockets: { spawnPad: [1, 4], cardPad: [3, 4], leverPad: [5, 4], gatePad: [10, 4] },
+    collisionAabb: { player: [1, 4, 1, 1], card: [3, 4, 1, 1], lever: [5, 4, 1, 1], gate: [10, 4, 1, 2] },
     entities: {
       player: { role: 'actor', socket: 'spawnPad', state: 'idle' },
+      card: { role: 'pickup', socket: 'cardPad', state: 'loose' },
       lever: { role: 'prop', socket: 'leverPad', state: 'down' },
       gate: { role: 'goal', socket: 'gatePad', state: 'shut', locked: true },
     },
@@ -120,13 +137,24 @@ const EXAMPLE_WORLD = {
       flags: { powered: { init: false } },
       timers: {},
       zones: {},
+      slots: 1,
     },
     rules: {
-      pull: {
+      grab: {
         phase: 0,
         priority: 0,
-        event: { kind: 'onAction', actionId: 'use', target: 'lever' },
+        event: { kind: 'onPickup', role: 'pickup' },
         condition: null,
+        actions: [
+          { kind: 'giveItem', slot: 0, item: 'card' },
+          { kind: 'despawn', target: 'card' },
+        ],
+      },
+      pull: {
+        phase: 0,
+        priority: 1,
+        event: { kind: 'onAction', actionId: 'use', target: 'lever' },
+        condition: { kind: 'hasItem', slot: 0, item: 'card' },
         actions: [
           { kind: 'setState', target: 'lever', value: 'up' },
           { kind: 'setFlag', flag: 'powered', value: true },
@@ -145,9 +173,11 @@ const EXAMPLE_WORLD = {
       tier: 'short',
       H_cert: 600,
       ops: [
-        { tick: 0, actionId: 'moveTo', target: 'lever' },
-        { tick: 30, actionId: 'use', target: 'lever' },
-        { tick: 60, actionId: 'moveTo', target: 'gate' },
+        { tick: 0, actionId: 'moveTo', target: 'card' },
+        { tick: 30, actionId: 'pickup', target: 'card' },
+        { tick: 60, actionId: 'moveTo', target: 'lever' },
+        { tick: 90, actionId: 'use', target: 'lever' },
+        { tick: 120, actionId: 'moveTo', target: 'gate' },
       ],
     },
   },
@@ -205,8 +235,10 @@ export function buildEmissionRequest(prompt: string, grammar: Grammar): Upstream
     'sim.layout   { width, height } — positive integers, the grid measured in cells. Required.',
     'sim.sockets  { <socketName>: [x, y] } — named cells. Everything positional names a socket.',
     'sim.entities { <stableId>: { role, socket, state, locked } } — an OBJECT keyed by stableId, never a list.',
-    '             role "actor" marks the player and there is exactly one; "agent" is an NPC, "goal" the',
-    '             objective, "prop" everything else. socket names a sim.sockets entry.',
+    '             socket names a sim.sockets entry. role is a FREE label, not a fixed list: the system',
+    '             reads exactly two of them, "actor" for the player (exactly one) and "agent" for an NPC.',
+    '             Every other role is yours to name after what the thing is in the request, and naming it',
+    '             well pays off, because onPickup can fire on a role instead of on one named entity.',
     'sim.rules    { <ruleId>: { phase, priority, event, condition, actions } } — an OBJECT keyed by ruleId,',
     '             never a list. The key is how a later edit names one rule, so it has to be stable.',
     '             event and condition and every entry of actions carry their name under "kind".',
@@ -215,7 +247,9 @@ export function buildEmissionRequest(prompt: string, grammar: Grammar): Upstream
     '               flags:    { <id>: { init: <bool> } },',
     '               timers:   { <id>: { durationTicks, init } },   durationTicks is where a duration lives',
     '               zones:    { <name>: [[x, y, w, h], ...] },     rectangles in cells',
+    '               slots:    <count>,                             inventory slots the actor may hold',
     '               pool:     { <idPrefix>: { size, tag } } }      for spawn and countInZone',
+    '             A world whose rules use giveItem or hasItem declares state.slots. Slot indexes run from 0.',
     'sim.witness  { tier: "short" | "standard" | "long", H_cert, ops: [{ tick, actionId, target }] }',
     'sim.grid and sim.collisionAabb are declared and carried, and this version does not read them.',
     'look.<field> is free-form as long as every number in it is finite.',
