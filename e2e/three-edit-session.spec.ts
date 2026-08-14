@@ -163,7 +163,10 @@ test('kotva je živá odpověď na disku, nikdy zmrazený záznam', async ({ pag
   for (const session of report.sessions)
     for (const turn of session.turns) {
       expect(frozenHashes.has(turn.rawHash), `${turn.promptId}: kotva je zmrazená odpověď`).toBe(false);
-      expect(frozenHashes.has(turn.bodyHash), `${turn.promptId}: tělo je zmrazená odpověď`).toBe(false);
+      // Tělo shodné se zmrazeným je nález, ne selhání — ale **jen když je
+      // vykázané**. Tichá shoda je pořád ta věc, kvůli které brána vznikla.
+      if (frozenHashes.has(turn.bodyHash))
+        expect(turn.frozenBodyMatch, `${turn.promptId}: tělo sedí na zmrazený záznam a report o tom mlčí`).not.toBeNull();
       expect(existsSync(turn.responsePath), `${turn.promptId}: odpověď se neuložila`).toBe(true);
 
       const stored = JSON.parse(readFileSync(turn.responsePath, 'utf8')) as {
@@ -245,6 +248,7 @@ test('běh nepřekročil strop, neúplnost přizná a úspěšnost relace nedopo
         `turns=${report.turnsPassed}/${report.turnsRun} rate=${String(report.turnSuccessRate)} ` +
         `independenceEstimate=${String(report.independenceEstimate)} counts=${JSON.stringify(report.counts)}`,
       `${budget} complete=${report.complete}`,
+      ...report.frozenBodyMatches.map((match) => `FROZEN-BODY-MATCH ${match.caseId}: ${match.detail}`),
       ...report.failures.map((failure) => `FAIL ${failure.kind} ${failure.caseId}: ${failure.detail}`),
       '',
     ].join('\n'),

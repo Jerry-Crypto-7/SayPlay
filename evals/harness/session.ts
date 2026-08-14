@@ -71,6 +71,9 @@
  * Neúspěšný tah mezi ně nepatří: model, který úpravu nezvládl, je to, co se tu
  * měří. Kdyby obojí padalo do jedné hromady, `ok: false` by přestalo znamenat
  * „tomuhle běhu se nedá věřit".
+ *
+ * Do téže hromady nepatří ani **tělo shodné se zmrazeným záznamem** — proč,
+ * stojí u `FrozenBodyMatch`. Obálka odpovědi zůstává tvrdou branou.
  */
 
 import { randomUUID } from 'node:crypto';
@@ -323,6 +326,30 @@ export function preservationOf(
 // Jeden tah
 // ---------------------------------------------------------------------------
 
+/**
+ * Živé tělo shodné se zmrazeným — **naměřený nález, ne selhání běhu.**
+ *
+ * Naměřeno 14. 8. 2026 v prvním živém běhu T19: model vydal na `E01` přesně ta
+ * dvě `replace` nad časovačem `flood`, která nese zmrazený záznam. Brána z T18
+ * to hlásila jako `frozen-leak`, tedy „běh čte záznam". Nečetl — z dvanácti tahů
+ * se shodl jediný a hash obálky odpovědi se neshodoval ani u něj.
+ *
+ * Rozdíl proti tvorbě je vlastnost úlohy, ne kvality modelu: celý svět se bit po
+ * bitu netrefí nikdy, kdežto **minimální správný patch má jeden tvar.** „Zpomal
+ * záplavu na dvojnásobek" je jedna cesta a jedna hodnota; každý, kdo to udělá
+ * správně, napíše totéž. Shoda těla tedy o původu odpovědi neříká nic.
+ *
+ * Co o původu pořád říká všechno, je **obálka** — a ta zůstává tvrdou branou,
+ * protože zmrazený korpus ji nemá z čeho vydat.
+ *
+ * Nález se nese až do reportu schválně: mlčky spolknutá shoda je přesně ta věc,
+ * kvůli které brána vznikla.
+ */
+export interface FrozenBodyMatch {
+  readonly caseId: string;
+  readonly detail: string;
+}
+
 export interface SessionTurn {
   /** Pořadí v relaci, počítáno od jedné. */
   readonly index: number;
@@ -346,6 +373,8 @@ export interface SessionTurn {
   readonly browserReplayed: boolean;
   readonly browserHash: string | null;
   readonly offlineHash: string | null;
+  /** Viz `FrozenBodyMatch`. `null` = tělo se se zmrazeným korpusem nepotkalo. */
+  readonly frozenBodyMatch: FrozenBodyMatch | null;
   readonly records: readonly StageRecord[];
   readonly failures: readonly LiveFailure[];
 }
@@ -395,18 +424,28 @@ async function runTurn(input: TurnInput): Promise<{ readonly turn: SessionTurn; 
     input.root,
   );
 
-  // Táž brána jako u tvorby: živý tah nesmí ukazovat na nic ze zmrazeného korpusu.
-  for (const [what, hash] of [
-    ['odpověď', stored.rawHash],
+  // Obálka odpovědi je tvrdá brána, stejně jako u tvorby. Zmrazený korpus žádnou
+  // obálku nemá — nese holé `body` — takže shoda tady znamená, že se do role
+  // odpovědi poskytovatele dosadil záznam.
+  if (input.frozenHashes.has(stored.rawHash))
+    failures.push({
+      caseId: id,
+      kind: 'frozen-leak',
+      detail: `obálka odpovědi tahu ${input.index} má hash ${stored.rawHash}, který je ve zmrazeném korpusu — běh čte záznam, ne poskytovatele`,
+    });
+
+  const bodyMatch = ([
     ['tělo', stored.bodyHash],
     ['tělo v kanonickém tvaru', canonicalHash(body)],
-  ] as const)
-    if (input.frozenHashes.has(hash))
-      failures.push({
-        caseId: id,
-        kind: 'frozen-leak',
-        detail: `${what} tahu ${input.index} má hash ${hash}, který je ve zmrazeném korpusu — běh čte záznam, ne poskytovatele`,
-      });
+  ] as const).find(([, hash]) => input.frozenHashes.has(hash));
+
+  const frozenBodyMatch =
+    bodyMatch === undefined
+      ? null
+      : {
+          caseId: id,
+          detail: `${bodyMatch[0]} tahu ${input.index} je bit po bitu shodné se zmrazeným záznamem (hash ${bodyMatch[1]})`,
+        };
 
   const log = ledger(id, randomUUID(), stored.rawHash);
 
@@ -501,6 +540,7 @@ async function runTurn(input: TurnInput): Promise<{ readonly turn: SessionTurn; 
       browserReplayed: browser !== null,
       browserHash: hashOf(browser),
       offlineHash: hashOf(offline),
+      frozenBodyMatch,
       records: log.records,
       failures,
     },
@@ -576,6 +616,8 @@ export interface SessionReport {
   readonly callCap: number | null;
   readonly browserReplays: number;
   readonly responsesDir: string;
+  /** Viz `FrozenBodyMatch` — naměřený nález, který musí projít až do reportu. */
+  readonly frozenBodyMatches: readonly FrozenBodyMatch[];
   readonly failures: readonly LiveFailure[];
   readonly ok: boolean;
 }
@@ -742,6 +784,7 @@ export async function runEditSessions(options: SessionOptions): Promise<SessionR
     callCap: initial.metered ? null : initial.callCap,
     browserReplays: turnList.filter((turn) => turn.browserReplayed).length,
     responsesDir: responsesDir(runId, root),
+    frozenBodyMatches: turnList.flatMap((turn) => (turn.frozenBodyMatch === null ? [] : [turn.frozenBodyMatch])),
     failures,
     ok: failures.length === 0 && turnList.length > 0,
   };

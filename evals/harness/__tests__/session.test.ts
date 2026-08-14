@@ -319,11 +319,53 @@ describe('runEditSessions — úspěšnost relace se měří, nedopočítává',
 });
 
 describe('runEditSessions — zmrazený korpus se nesmí vydávat za živý', () => {
-  it('zmrazený patch podstrčený jako živá odpověď je selhání běhu', async () => {
-    const frozen = frozenResponses().find((entry) => entry.forPrompt === 'E01' && entry.branch === 'edit');
-    const result = await run([frozen!.body]).report;
+  const frozenE01 = (): unknown => {
+    const found = frozenResponses().find((entry) => entry.forPrompt === 'E01' && entry.branch === 'edit');
+    if (found === undefined) throw new Error('zmrazený záznam E01 chybí');
+    return found.body;
+  };
+
+  it('zmrazený záznam dosazený do role obálky odpovědi je selhání běhu', async () => {
+    // Tvrdá brána. Obálku zmrazený korpus nemá z čeho vydat, takže shoda tady
+    // znamená, že se do ní posadil záznam — na rozdíl od shody samotného těla.
+    const body = frozenE01();
+    const provider: ProviderTransport = {
+      complete: async (): Promise<LiveCompletion> => ({
+        raw: body,
+        text: JSON.stringify(body),
+        usage: { inputTokens: 100, outputTokens: 50 },
+      }),
+    };
+    const result = await runEditSessions({
+      env: SUBSCRIPTION,
+      provider,
+      transport: fakeTransport(baseDoc('C02')),
+      baseWorlds: ['C02'],
+      root: tempRoot(),
+    });
+
     expect(result.failures.map((failure) => failure.kind)).toContain('frozen-leak');
     expect(result.ok).toBe(false);
+  });
+
+  it('tělo shodné se zmrazeným je naměřený nález, ne selhání běhu', async () => {
+    // Naměřeno živě 14. 8. 2026: model na `E01` vydal přesně ta dvě `replace`,
+    // která nese zmrazený záznam. Minimální správný patch má jeden tvar, takže
+    // shoda těla o původu odpovědi neříká nic — viz `FrozenBodyMatch`.
+    const result = await run([frozenE01()]).report;
+
+    expect(result.failures.filter((failure) => failure.kind === 'frozen-leak')).toEqual([]);
+    expect(result.frozenBodyMatches.map((match) => match.caseId)).toContain('E01');
+    expect(result.sessions[0].turns[0].frozenBodyMatch?.detail).toMatch(/bit po bitu/);
+  });
+
+  it('nález se nese do reportu, mlčky se nespolkne', async () => {
+    // Brána vznikla proti tichému propašování záznamu. Kdyby se shoda jen
+    // překlopila na `null`, zmizela by z reportu i z důkazu — a to je horší než
+    // falešný poplach, protože se to nedá zpětně poznat.
+    const clean = await run([SLOWER_FLOOD]).report;
+    expect(clean.frozenBodyMatches).toEqual([]);
+    expect(clean.sessions[0].turns.every((turn) => turn.frozenBodyMatch === null)).toBe(true);
   });
 
   it('živá odpověď se ukládá na disk a kotví řetěz hashem ze souboru', async () => {
