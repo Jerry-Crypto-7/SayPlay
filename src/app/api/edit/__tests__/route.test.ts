@@ -23,7 +23,8 @@ import { describe, expect, it } from 'vitest';
 import { type PartPatch } from '../../../../ir/revision';
 import { peelEnvelope, sealSimHash, type WorldDoc } from '../../../../ir/worlddoc';
 import { routePatch } from '../../../../patch/router';
-import { commitRoutedParts, POST } from '../route';
+import { commitRoutedParts, staleRevision } from '../commit';
+import { POST } from '../route';
 
 // ---------------------------------------------------------------------------
 // Zmrazený korpus, čtený nezávisle na `src/model/client.ts`
@@ -698,6 +699,51 @@ describe('vzhledová půlka commitu', () => {
     // Co se neaplikovalo, nemá dosah — a `look` půlka ho legálně má.
     expect(committed.changedLeaves).toEqual(['/look/palette']);
     expect(committed.rejections).toHaveLength(1);
+  });
+
+  /**
+   * **Brána 409 se ptá každé části na JEJÍ revizi — a tohle je jediné místo, kde
+   * to jde dokázat.** Druhá brána nad T14 to našla mutací: `staleRevision`
+   * přestala číst `patch.part` a ptala se natvrdo na `sim`, a 159 testů z 159
+   * dál prošlo. Přes `POST` je ta půlka nedosažitelná ze stejného důvodu jako
+   * commit vzhledu — všech 25 zmrazených patchů je `/sim`-only.
+   *
+   * Co ta mutace vyrábí: `look` patch se zastaralou `lookRevision` propadne
+   * branou dolů a `commitPart` ho odmítne až **uvnitř 200** jako
+   * `apply/STALE_REVISION`, tedy mimo taxonomii stavů, kterou endpoint deklaruje
+   * ve svém docblocku (409 = zastaralá revize).
+   */
+  describe('brána 409 čte revizi té části, do které patch míří', () => {
+    const AT = { sim: 3, look: 8 };
+    const doc = { simRevision: AT.sim, lookRevision: AT.look } as WorldDoc;
+
+    it('`sim` patch: rozhoduje `simRevision`, zastaralá `lookRevision` mu nevadí', () => {
+      expect(staleRevision(doc, { sim: AT.sim, look: AT.look - 5 }, [{ part: 'sim' }])).toBeNull();
+      expect(staleRevision(doc, { sim: AT.sim - 1, look: AT.look }, [{ part: 'sim' }])).toEqual({
+        part: 'sim',
+        claimed: AT.sim - 1,
+        current: AT.sim,
+      });
+    });
+
+    it('`look` patch: rozhoduje `lookRevision`, zastaralá `simRevision` mu nevadí', () => {
+      // Tahle dvojice je celá vlastnost. Brána, která se ptá natvrdo na `sim`,
+      // otočí obě aserce naráz.
+      expect(staleRevision(doc, { sim: AT.sim - 2, look: AT.look }, [{ part: 'look' }])).toBeNull();
+      expect(staleRevision(doc, { sim: AT.sim, look: AT.look - 1 }, [{ part: 'look' }])).toEqual({
+        part: 'look',
+        claimed: AT.look - 1,
+        current: AT.look,
+      });
+    });
+
+    it('smíšený patch hlásí PRVNÍ rozpor v pořadí, ve kterém model své záměry vydal', () => {
+      const both = [{ part: 'look' as const }, { part: 'sim' as const }];
+      expect(staleRevision(doc, AT, both)).toBeNull();
+      // Obě zastaralé: rozhoduje pořadí operací, ne abeceda ani přednost `sim`.
+      expect(staleRevision(doc, { sim: 0, look: 0 }, both)?.part).toBe('look');
+      expect(staleRevision(doc, { sim: 0, look: 0 }, [...both].reverse())?.part).toBe('sim');
+    });
   });
 
   it('zastaralá `lookRevision` odmítne vzhled a pravidel se nedotkne', async () => {

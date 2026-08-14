@@ -61,31 +61,16 @@ import { randomUUID } from 'node:crypto';
 import type { Operation } from 'rfc6902';
 
 import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
-import { buildRuntimeWorld } from '../../../ir/build';
-import { findDanglingReferences } from '../../../ir/references';
-import { commitMixed, commitPart, isStale, type PartPatch, type RevisionResult } from '../../../ir/revision';
+import type { PartPatch } from '../../../ir/revision';
 import { migrateWorldDoc, type WorldDoc } from '../../../ir/worlddoc';
 import { emitPatch, frozenGrammar, frozenPrompt, type ClientFailure } from '../../../model/client';
 import { buildEditRequest } from '../../../model/edit-prompt';
 import { withRequest } from '../../../obs/trace';
-import type { PatchRejection } from '../../../patch/reject';
 import { routePatch, type RoutedPatch } from '../../../patch/router';
-import { changedLeaves } from '../../../patch/scope';
-import { verifyWitness } from '../../../verify/witness';
+import { commitRoutedParts, staleRevision, type BaseRevision, type Rejection } from './commit';
 
 /** `AsyncLocalStorage` i čtení zmrazeného korpusu potřebují Node, ne edge. */
 export const runtime = 'nodejs';
-
-export { BODY_DEADLINE_MS, MAX_BODY_BYTES };
-
-type Stage = 'routing' | 'apply' | 'references' | 'lowering' | 'witness';
-
-export interface Rejection {
-  readonly stage: Stage;
-  readonly reason: string;
-  readonly pointer: string;
-  readonly detail: string;
-}
 
 function badRequest(requestId: string, code: string, message: string, field?: string): Response {
   return Response.json({ requestId, error: { code, message, ...(field === undefined ? {} : { field }) } }, { status: 400 });
@@ -110,16 +95,6 @@ function corpusUnavailable(requestId: string, failure: ClientFailure): Response 
       { status: 404 },
     );
   return Response.json({ requestId, error: { code: failure.reason, message: failure.detail } }, { status: 503 });
-}
-
-function revisionOf(doc: WorldDoc, part: 'sim' | 'look'): number {
-  return part === 'sim' ? doc.simRevision : doc.lookRevision;
-}
-
-/** Revize, které klient prohlašuje za aktuální. Obě, protože obě části se patchují. */
-interface BaseRevision {
-  readonly sim: number;
-  readonly look: number;
 }
 
 function parseBaseRevision(value: unknown): BaseRevision | null {
@@ -256,38 +231,23 @@ export async function POST(request: Request): Promise<Response> {
         detail: `${routing.detail} (expected ${routing.expected})`,
       });
 
-    // **Zastaralost se rozhoduje před aplikací čehokoli.** Kdyby se na ni přišlo
-    // až uvnitř `commitMixed`, smíšený požadavek by zůstal půl commitnutý a klient
-    // by dostal 409 nad světem, který se mu mezitím pod rukama pohnul.
-    //
-    // **Co tahle brána doopravdy umí, poctivě.** Endpoint je bezstavový: „aktuální"
-    // revizi nezná odjinud než z dokumentu, který mu poslal týž volající. Porovnává
-    // tedy `baseRevision` proti `doc.<part>Revision` — dvě čísla z jednoho požadavku.
-    // Chytí tím **vnitřní rozpor požadavku**, což je přesně ta chyba, kterou dělá
-    // klient se dvěma revizemi a jedním strojem: patch vydaný proti jedné části,
-    // zatímco druhá se mezitím posunula (AC T14 žádá oba směry a oba jsou v testech).
-    // **Nechytí zastaralost proti světu, který drží někdo jiný** — volající se dvěma
-    // koly pozadu pošle svůj dokument i své `baseRevision` a oba spolu souhlasí.
-    // Autorita nad „aktuální" revizí by znamenala server, který si světy drží; ten
-    // v P1 neexistuje a stavět ho tady by bylo mimo rozsah úlohy. Co existuje, je
-    // monotónní čítač: `revision.ts` zvedá revizi části o jedna při každém commitu,
-    // takže dvě různé historie nikdy nevydají totéž číslo nad týmž obsahem.
-    for (const routed of routing.patches) {
-      const current = revisionOf(doc, routed.part);
-      if (base[routed.part] === current) continue;
+    // Zastaralost se rozhoduje **před aplikací čehokoli** a každá část proti své
+    // vlastní revizi — odůvodnění i meze té brány jsou u `staleRevision`
+    // v `./commit`, protože jen tam se dají otestovat obě její poloviny.
+    const stale = staleRevision(doc, base, routing.patches);
+    if (stale !== null)
       return Response.json(
         {
           ...envelope,
           error: {
             code: 'STALE_REVISION',
-            message: `patch was issued against ${routed.part}Revision ${base[routed.part]}, the document is at ${current}`,
-            field: `baseRevision/${routed.part}`,
+            message: `patch was issued against ${stale.part}Revision ${stale.claimed}, the document is at ${stale.current}`,
+            field: `baseRevision/${stale.part}`,
           },
           revisions: revisionsOf(doc, doc),
         },
         { status: 409 },
       );
-    }
 
     const parts = routing.patches.map(
       (routed: RoutedPatch): PartPatch => ({
@@ -314,92 +274,6 @@ export async function POST(request: Request): Promise<Response> {
   });
 }
 
-export interface CommitOutcome {
-  readonly outcome: 'CERTIFIED' | 'REJECTED';
-  /** Které půlky si volající smí nechat. Pořadí je pořadí commitu, ne abecední. */
-  readonly applied: readonly ('sim' | 'look')[];
-  readonly changedLeaves: readonly string[];
-  /** Dokument po commitu — u odmítnuté půlky ten předchozí. */
-  readonly after: WorldDoc;
-  readonly certificate: ReturnType<typeof verifyWitness> | null;
-  readonly rejections: readonly Rejection[];
-}
-
-/**
- * Commit rozřazených částí a atribuce výsledku.
- *
- * **Je to vlastní funkce schválně, ne kvůli délce `POST`.** Všech 25 zmrazených
- * editačních patchů míří výhradně pod `/sim` — vzhled v P1 nikdo neemituje,
- * generátor rodin je P5 — takže `look` půlku téhle logiky nedokáže přes
- * `POST /api/edit` vyvolat **žádný** legální vstup: `Allowed doubles` úlohy
- * zakazuje nahradit upstream čímkoli mimo `MANIFEST.lock`. Bez téhle hranice by
- * okamžitý commit vzhledu, pořadí u smíšeného požadavku i §13.4 (*necertifikovaná
- * `sim` scénu nebere s sebou*) byly kód, o kterém tvrdí něco jen docblock —
- * prohození `lookPatch` a `simPatch` níž je typově v pořádku a neshodilo by
- * jediný test. Testuje se tedy o patro níž, ručně psanými `look` patchi, což je
- * týž postup, jakým dráhu vzhledu testuje T22 (`mixed.patch.json`).
- */
-export function commitRoutedParts(doc: WorldDoc, parts: readonly PartPatch[]): CommitOutcome {
-  // Smíšený požadavek: `look` se commitne OKAMŽITĚ a `sim` se vkládá do
-  // AKTUÁLNÍHO dokumentu, tedy už do toho se vzhledem (§13.1.1). Vlastní
-  // pořadí by vzhled vrátilo zpátky hráči před očima.
-  const lookPatch = parts.find((patch) => patch.part === 'look');
-  const simPatch = parts.find((patch) => patch.part === 'sim');
-  const outcome =
-    lookPatch !== undefined && simPatch !== undefined
-      ? commitMixed(doc, lookPatch, simPatch)
-      : singlePart(doc, parts[0]);
-
-  const applied: ('sim' | 'look')[] = [];
-  // **Obě půlky si nesou svůj důvod.** U smíšeného požadavku umí selhat každá
-  // zvlášť a z jiné příčiny; nechat si jen jednu znamená, že se ta druhá ztratí
-  // beze stopy a model dostane k opravě polovinu zprávy.
-  const rejections: Rejection[] = [];
-  let after = doc;
-
-  if (outcome.look !== null) {
-    if (outcome.look.verdict === 'COMMITTED') {
-      applied.push('look');
-      after = outcome.look.doc;
-    } else rejections.push(fromRejection('apply', outcome.look));
-  }
-
-  let certificate: ReturnType<typeof verifyWitness> | null = null;
-
-  if (outcome.sim !== null) {
-    if (outcome.sim.verdict === 'COMMITTED') {
-      // `look` se mezitím mohl commitnout, takže se bere dokument ze `sim` větve —
-      // ta už ten vzhled nese.
-      const simDoc = outcome.sim.doc;
-      const verified = certifySim(simDoc);
-      certificate = verified.certificate;
-      if (verified.rejection === null) {
-        applied.push('sim');
-        after = simDoc;
-      } else {
-        // Necertifikovaný patch se vztahuje **výhradně na `sim`** — `look`, který
-        // se commitnul, v `applied` zůstává a scéna se s ním nezahazuje.
-        rejections.push(verified.rejection);
-      }
-    } else rejections.push(fromRejection('apply', outcome.sim));
-  }
-
-  return {
-    outcome: rejections.length === 0 ? 'CERTIFIED' : 'REJECTED',
-    applied,
-    // Dosah **diffem stavu**, ne čtením operací (`editContract.changedLeafRule`).
-    // Počítá se jen z toho, co se doopravdy použilo: necertifikovaná `sim` se
-    // nikam neaplikuje, takže její listy nejsou změněné, jen navrhované.
-    changedLeaves: [
-      ...(applied.includes('sim') ? changedLeaves(doc.sim, after.sim, '/sim') : []),
-      ...(applied.includes('look') ? changedLeaves(doc.look, after.look, '/look') : []),
-    ].sort(),
-    after,
-    certificate,
-    rejections,
-  };
-}
-
 function revisionsOf(before: WorldDoc, after: WorldDoc): object {
   return {
     sim: { before: before.simRevision, after: after.simRevision },
@@ -407,74 +281,3 @@ function revisionsOf(before: WorldDoc, after: WorldDoc): object {
   };
 }
 
-/** Jednodílný patch ve stejném tvaru, v jakém vrací výsledek `commitMixed`. */
-function singlePart(
-  doc: WorldDoc,
-  patch: PartPatch,
-): { look: RevisionResult | null; sim: RevisionResult | null } {
-  const result = commitPart(doc, patch);
-  return patch.part === 'look' ? { look: result, sim: null } : { look: null, sim: result };
-}
-
-function fromRejection(stage: Stage, result: PatchRejection): Rejection {
-  return {
-    stage,
-    // `isStale` sem dojít nemá — zastaralost se odbavuje 409 před aplikací —
-    // ale kdyby se ta hranice někdy posunula, ať to řekne verdikt, ne mlčení.
-    reason: isStale(result) ? 'STALE_REVISION' : result.reason,
-    pointer: result.pointer,
-    detail: `${result.detail} (expected ${result.expected})`,
-  };
-}
-
-/**
- * Svědek po editaci — **znovu ověřený nad commitnutou `sim`**, ne převzatý.
- *
- * Editace, která pravidla změní tak, že svědek přestane docházet do výhry, je
- * přesně ta věc, kterou má editační větev umět zachytit. Převzít starý
- * certifikát by znamenalo tvrdit o novém světě něco, co bylo naměřené nad jiným.
- */
-function certifySim(doc: WorldDoc): {
-  certificate: ReturnType<typeof verifyWitness> | null;
-  rejection: Rejection | null;
-} {
-  // Před snížením do IR, ne po něm: povrchová jména se do IR nedostanou, takže
-  // odkaz osiřelý po editaci by se za nimi už nedal najít.
-  const dangling = findDanglingReferences(doc);
-  if (dangling.length > 0)
-    return {
-      certificate: null,
-      rejection: {
-        stage: 'references',
-        reason: 'DANGLING_REFERENCE',
-        pointer: '/sim',
-        detail: `${dangling[0].where} names no declared ${dangling[0].namespace} ${dangling[0].name}`,
-      },
-    };
-
-  const built = buildRuntimeWorld(doc.sim);
-  if (!built.ok)
-    return {
-      certificate: null,
-      rejection: {
-        stage: 'lowering',
-        reason: built.reason,
-        pointer: '/sim',
-        detail: built.issues[0] ?? 'no detail',
-      },
-    };
-
-  const verdict = verifyWitness(built.world, built.world.trace);
-  if (verdict.verdict === 'REJECTED')
-    return {
-      certificate: verdict,
-      rejection: {
-        stage: 'witness',
-        reason: verdict.reason,
-        pointer: '/sim/witness',
-        detail: verdict.detail,
-      },
-    };
-
-  return { certificate: verdict, rejection: null };
-}
