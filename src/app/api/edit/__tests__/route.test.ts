@@ -584,6 +584,33 @@ describe('svědek se po editaci ověřuje znovu', () => {
     expect(contradicts.sort()).toEqual(['E13', 'E14']);
   });
 
+  it('200 s verdiktem má JEDEN tvar — `rejection` je vždycky `rejections[0]`', async () => {
+    // **Brána 3 nad T14.** Směrovací odmítnutí si skládalo tělo vlastní cestou
+    // a vyšlo mu o klíč míň: `rejection` ano, `rejections` ne. Konzument, který
+    // se větví na `outcome` a sáhne na `body.rejections` — a scorer z T16 je
+    // přesně takový — dostal `undefined`. Zvenčí ta větev **není dosažitelná**
+    // (`emitPatch` vrací zmrazené tělo a všech 25 se rozřadí čistě), takže se
+    // sem nedá poslat vstup, který ji vyvolá; opravou proto nebylo doplnit klíč,
+    // ale zrušit druhou cestu. Tenhle test drží kontrakt, který ta jedna cesta
+    // vydává, aby se klíč nedal zase tiše vypustit.
+    const shape = new Set<string>();
+    for (const id of ids) {
+      const body = (await edit(id)) as unknown as Record<string, unknown>;
+      shape.add(Object.keys(body).sort().join(','));
+
+      const rejections = body.rejections as { stage: string }[];
+      expect(Array.isArray(rejections), `${id}: `.concat('rejections není pole')).toBe(true);
+      expect(body.rejection ?? null, `${id}: `.concat('rejection se rozešlo s rejections[0]')).toEqual(
+        rejections[0] ?? null,
+      );
+      expect(body.outcome === 'REJECTED', `${id}: verdikt nesouhlasí s počtem odmítnutí`).toBe(rejections.length > 0);
+    }
+
+    // Jediný tvar napříč celou sadou — certifikované i odmítnuté odpovědi nesou
+    // tytéž klíče. Dva tvary za jednou hodnotou `outcome` je právě ta vada.
+    expect(shape.size, `naměřené tvary: ${[...shape].join(' | ')}`).toBe(1);
+  });
+
   it('necertifikovaná `sim` se neaplikuje a nevykáže jediný `sim` list', async () => {
     // **Měří se dosah té části, která se neaplikovala, ne prázdnota celé odpovědi.**
     // Dřívější znění tvrdilo `changedLeaves === []` pro každý necertifikovaný

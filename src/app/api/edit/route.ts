@@ -66,8 +66,8 @@ import { migrateWorldDoc, type WorldDoc } from '../../../ir/worlddoc';
 import { emitPatch, frozenGrammar, frozenPrompt, type ClientFailure } from '../../../model/client';
 import { buildEditRequest } from '../../../model/edit-prompt';
 import { withRequest } from '../../../obs/trace';
-import { routePatch, type RoutedPatch } from '../../../patch/router';
-import { commitRoutedParts, staleRevision, type BaseRevision, type Rejection } from './commit';
+import { routePatch, type Lane, type RoutedPatch, type RoutingAnomaly } from '../../../patch/router';
+import { commitRoutedParts, staleRevision, type BaseRevision, type CommitOutcome } from './commit';
 
 /** `AsyncLocalStorage` i čtení zmrazeného korpusu potřebují Node, ne edge. */
 export const runtime = 'nodejs';
@@ -204,18 +204,34 @@ export async function POST(request: Request): Promise<Response> {
       label: emission.label ?? null,
     };
 
-    const rejected = (rejection: Rejection, extra: object = {}): Response =>
+    /**
+     * **Jediný tvar 200 s verdiktem, pro obě cesty, které ho vydávají.**
+     *
+     * Dřív si směrovací odmítnutí skládalo tělo vlastní cestou a vyšlo mu o klíč
+     * míň: `rejection` ano, `rejections` ne. Konzument, který se větví na
+     * `outcome === 'REJECTED'` a sáhne na `body.rejections` — a scorer z T16 je
+     * přesně takový konzument — dostal `undefined`. Dva tvary za jednou hodnotou
+     * `outcome` na veřejné cestě.
+     *
+     * **Není to opravené doplněním klíče, ale zrušením druhé cesty**, protože
+     * doplněný klíč se za měsíc rozejde znovu. Odmítnutí routeru sem vstupuje
+     * jako `CommitOutcome`, ve kterém se nic necommitlo (`after: doc`), takže
+     * tvar odpovědi má v kódu jedno místo. Test to navíc nemá jak pokrýt zvenčí:
+     * `emitPatch` vrací zmrazené tělo a všech 25 se rozřadí čistě, takže
+     * `routing.verdict === 'REJECTED'` v režimu záznamu nenastane vůbec.
+     */
+    const verdict = (committed: CommitOutcome, lanes: readonly Lane[], anomalies: readonly RoutingAnomaly[]): Response =>
       Response.json({
         ...envelope,
-        outcome: 'REJECTED',
-        lanes: [],
-        applied: [],
-        changedLeaves: [],
-        revisions: revisionsOf(doc, doc),
-        certificate: null,
-        anomalies: [],
-        rejection,
-        ...extra,
+        outcome: committed.outcome,
+        lanes,
+        applied: committed.applied,
+        changedLeaves: committed.changedLeaves,
+        revisions: revisionsOf(doc, committed.after),
+        certificate: committed.certificate,
+        anomalies,
+        rejection: committed.rejections[0] ?? null,
+        rejections: committed.rejections,
       });
 
     // Router je jediný vstup: rozhodne dráhu z normalizovaných cest a smíšený
@@ -224,12 +240,25 @@ export async function POST(request: Request): Promise<Response> {
     // `readonly Operation[]` platí jen při překladu a tělo přišlo jako JSON.
     const routing = routePatch({ label: emission.label, operations: emission.body as readonly Operation[] });
     if (routing.verdict === 'REJECTED')
-      return rejected({
-        stage: 'routing',
-        reason: routing.reason,
-        pointer: routing.pointer,
-        detail: `${routing.detail} (expected ${routing.expected})`,
-      });
+      return verdict(
+        {
+          outcome: 'REJECTED',
+          applied: [],
+          changedLeaves: [],
+          after: doc,
+          certificate: null,
+          rejections: [
+            {
+              stage: 'routing',
+              reason: routing.reason,
+              pointer: routing.pointer,
+              detail: `${routing.detail} (expected ${routing.expected})`,
+            },
+          ],
+        },
+        [],
+        [],
+      );
 
     // Zastaralost se rozhoduje **před aplikací čehokoli** a každá část proti své
     // vlastní revizi — odůvodnění i meze té brány jsou u `staleRevision`
@@ -257,20 +286,11 @@ export async function POST(request: Request): Promise<Response> {
       }),
     );
 
-    const committed = commitRoutedParts(doc, parts);
-
-    return Response.json({
-      ...envelope,
-      outcome: committed.outcome,
-      lanes: routing.patches.map((routed) => routed.lane),
-      applied: committed.applied,
-      changedLeaves: committed.changedLeaves,
-      revisions: revisionsOf(doc, committed.after),
-      certificate: committed.certificate,
-      anomalies: routing.anomalies,
-      rejection: committed.rejections[0] ?? null,
-      rejections: committed.rejections,
-    });
+    return verdict(
+      commitRoutedParts(doc, parts),
+      routing.patches.map((routed) => routed.lane),
+      routing.anomalies,
+    );
   });
 }
 
