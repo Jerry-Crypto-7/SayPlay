@@ -45,7 +45,7 @@
  */
 
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { buildRuntimeWorld } from '../../src/ir/build';
@@ -665,6 +665,60 @@ export class ProfileGateError extends Error {
   }
 }
 
+/** Co ten artefakt smí tvrdit. Není to o ceně běhu, je to o jeho důkazní síle. */
+export type GateGrade =
+  /** Celý běh přes metrované API — číslo z něj smí být headline výsledek brány. */
+  | 'GATE'
+  /** Cokoli jiného. Měření platí, razítko brány nenese. */
+  | 'DEVELOPMENTAL';
+
+export interface GateStanding {
+  readonly grade: GateGrade;
+  /** Profily, které se doopravdy našly. Setříděné, aby byl artefakt stabilní. */
+  readonly profiles: readonly ProviderProfile[];
+  /** Smí se tohle číslo vydávat za výsledek brány? `grade === 'GATE'`. */
+  readonly headlineClaimable: boolean;
+  /** Věta pro člověka nad reportem. U `GATE` říká, čím se to kvalifikovalo. */
+  readonly reason: string;
+}
+
+/**
+ * Jediná definice toho, co je výsledek brány — a co jen měření.
+ *
+ * Stojí to samostatně, protože z toho vycházejí **dvě různá rozhodnutí**:
+ * `assertGateProfile` na tom odmítá zapsat `LiveReport` pod vyhrazeným jménem,
+ * kdežto kill gate report (T21) se zapíše vždycky a nese `grade` jako první klíč.
+ * Dvě kopie téhle podmínky by znamenaly dvě definice toho, co je brána.
+ *
+ * **Prázdná množina je `DEVELOPMENTAL`, ne `GATE`.** `every()` nad prázdným polem
+ * vrací `true`, takže běh bez jediného případu by jinak prošel jako čistý.
+ */
+export function gateStanding(profiles: Iterable<ProviderProfile>): GateStanding {
+  const found = [...new Set(profiles)].sort();
+  if (found.length === 0)
+    return {
+      grade: 'DEVELOPMENTAL',
+      profiles: found,
+      headlineClaimable: false,
+      reason: 'běh neobsahuje jediný případ, takže neměří nic. Spusť ho znovu.',
+    };
+  if (found.length !== 1 || found[0] !== 'api')
+    return {
+      grade: 'DEVELOPMENTAL',
+      profiles: found,
+      headlineClaimable: false,
+      reason:
+        `smí vzniknout jedině z profilu api, ale běh nese ${found.join(', ')}. ` +
+        'Vývojové měření přes předplatné není výsledek brány — spusť ho znovu s api modelem z allowlistu.',
+    };
+  return {
+    grade: 'GATE',
+    profiles: found,
+    headlineClaimable: true,
+    reason: 'všechny uložené odpovědi nesou razítko profilu api',
+  };
+}
+
 /**
  * Odmítne cokoli, co není celé `api`.
  *
@@ -675,8 +729,7 @@ export class ProfileGateError extends Error {
  * čitatele, jehož polovina nevznikla tam, kde tvrdí. Proto se kontroluje
  * množina, ne jedna hodnota.
  *
- * Prázdný běh se odmítá taky: report bez jediného případu nedokazuje nic a
- * `every()` nad prázdným polem vrací `true`, takže by branou prošel jako čistý.
+ * Prázdný běh se odmítá taky: report bez jediného případu nedokazuje nic.
  */
 export function assertGateProfile(report: LiveReport): void {
   const found = new Set<ProviderProfile>([report.profile, ...report.cases.map((result) => result.profile)]);
@@ -684,26 +737,61 @@ export function assertGateProfile(report: LiveReport): void {
   // běhu vypsala „smí vzniknout jedině z api, ale běh nese api" — věta, která
   // si protiřečí a člověku u ní nedojde, co má opravit.
   if (report.cases.length === 0)
-    throw new ProfileGateError([...found], 'běh neobsahuje jediný případ, takže neměří nic. Spusť ho znovu.');
-  if (found.size !== 1 || !found.has('api'))
-    throw new ProfileGateError(
-      [...found],
-      `smí vzniknout jedině z profilu api, ale běh nese ${[...found].join(', ')}. ` +
-        'Vývojové měření přes předplatné není výsledek brány — spusť ho znovu s api modelem z allowlistu.',
-    );
+    throw new ProfileGateError([...found], gateStanding([]).reason);
+  const standing = gateStanding(found);
+  if (standing.grade !== 'GATE') throw new ProfileGateError([...found], standing.reason);
 }
 
 /**
- * Kam se report smí zapsat.
+ * Razítka profilu přečtená **zpátky ze souborů na disku**.
+ *
+ * `assertGateProfile` čte profil z objektu v paměti — tedy z hodnoty, kterou tam
+ * zapsal týž běh, co ji teď vykazuje. To stačí proti překlepu a nestačí proti
+ * ničemu jinému: kdo report skládá, tu hodnotu drží v ruce. Nález u T18 to
+ * pojmenoval doslova — *„brána musí číst razítko `profile` zpátky z uložených
+ * odpovědí na disku, ne z proměnné, do které se zkopírovalo"*.
+ *
+ * Soubor bez razítka je **chyba, ne neznámý profil**: prázdná množina se jinak
+ * potichu propadne na `DEVELOPMENTAL` a nikdo se nedozví, že se artefakt rozešel
+ * se svým vlastním zápisem.
+ */
+export function storedProfiles(dirs: Iterable<string>): readonly ProviderProfile[] {
+  const found: ProviderProfile[] = [];
+  for (const dir of dirs) {
+    if (!existsSync(dir)) throw new Error(`adresář odpovědí ${dir} neexistuje — běh nemá čím doložit svůj profil`);
+    for (const name of readdirSync(dir).sort()) {
+      if (!name.endsWith('.json')) continue;
+      const record = JSON.parse(readFileSync(join(dir, name), 'utf8')) as { profile?: unknown };
+      if (record.profile !== 'api' && record.profile !== 'subscription')
+        throw new Error(`uložená odpověď ${join(dir, name)} nenese razítko profilu (${String(record.profile)})`);
+      found.push(record.profile);
+    }
+  }
+  return found;
+}
+
+/**
+ * Vyhrazené jméno reportu brány — **jediná definice v repozitáři**.
+ *
+ * Druhý literál by byl druhé místo, odkud se dá ten soubor zapsat, a přesně to
+ * je vada, kterou nález u T18 pojmenoval: *„kdo ho zapíše obyčejným
+ * `writeFileSync`, bránu obejde a nic nezčervená"*. Hlídá to test v
+ * `__tests__/kill-gate.test.ts`, který literál počítá napříč `evals/`.
+ */
+export const KILL_GATE_REPORT = 'kill-gate-report.json';
+
+/**
+ * Kam se `LiveReport` smí zapsat.
  *
  * Jméno souboru nese profil, takže vývojový výsledek nemá jak skončit pod
- * jménem produkčního — a `evals/kill-gate-report.json` je vyhrazené jméno,
- * které vrátí jedině běh, co prošel `assertGateProfile`.
+ * jménem produkčního — a vyhrazené jméno vrátí jedině běh, co prošel
+ * `assertGateProfile`. Report brány (T21) je jiný artefakt a jde jinudy:
+ * `writeKillGateReport` v `./kill-gate`.
  */
 export function reportPath(report: LiveReport, root: string = process.cwd()): string {
   if (report.profile !== 'api') return join(root, 'evals', `dev-report.${report.profile}.json`);
   assertGateProfile(report);
-  return join(root, 'evals', 'kill-gate-report.json');
+  return join(root, 'evals', KILL_GATE_REPORT);
 }
 
 /** Gramatika se čte jednou; nečitelný zmrazený protokol je rozbité prostředí. */

@@ -1,0 +1,979 @@
+{
+  "schema": "kill-gate-report.v1",
+  "gate": {
+    "grade": "DEVELOPMENTAL",
+    "profiles": [
+      "subscription"
+    ],
+    "headlineClaimable": false,
+    "reason": "smí vzniknout jedině z profilu api, ale běh nese subscription. Vývojové měření přes předplatné není výsledek brány — spusť ho znovu s api modelem z allowlistu."
+  },
+  "complete": true,
+  "completedCases": 27,
+  "plannedCases": 27,
+  "incompleteReason": null,
+  "run": {
+    "createRunId": "dd08a4e4-b6ee-4f63-8119-975099d6c79e",
+    "editRunId": "3b575451-98c2-459e-874c-23abaa225a65",
+    "model": "gpt-5.6-sol@proxy",
+    "responseDirs": [
+      "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses",
+      "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses"
+    ]
+  },
+  "corpus": {
+    "clusters": 15,
+    "minWorldClusters": 12,
+    "worlds": [
+      {
+        "world": "C01",
+        "trials": 4,
+        "successes": 1
+      },
+      {
+        "world": "C02",
+        "trials": 4,
+        "successes": 0
+      },
+      {
+        "world": "C03",
+        "trials": 4,
+        "successes": 0
+      },
+      {
+        "world": "C04",
+        "trials": 1,
+        "successes": 1
+      },
+      {
+        "world": "C05",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C06",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C07",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C08",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C09",
+        "trials": 4,
+        "successes": 0
+      },
+      {
+        "world": "C10",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C11",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C12",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C13",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C14",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C15",
+        "trials": 1,
+        "successes": 0
+      }
+    ]
+  },
+  "fulfilledRate": {
+    "id": "fulfilledRate",
+    "numerator": "FULFILLED",
+    "definition": "podíl případů obou větví se sémantickým verdiktem FULFILLED z T16",
+    "successes": 2,
+    "trials": 27,
+    "rate": 0.07407407407407407,
+    "wilson": {
+      "successes": 2,
+      "trials": 27,
+      "point": 0.07407407407407407,
+      "lower": 0.020554654060988622,
+      "upper": 0.23369592683023144,
+      "z": 1.959963984540054
+    },
+    "floor": null,
+    "meetsFloor": null,
+    "claimable": false,
+    "successIds": [
+      "C04",
+      "E15"
+    ]
+  },
+  "rawPatchPassRate": {
+    "id": "rawPatchPassRate",
+    "numerator": "FULFILLED",
+    "definition": "FULFILLED bez jediné mechanické opravy — syrová první emise modelu",
+    "successes": 2,
+    "trials": 27,
+    "rate": 0.07407407407407407,
+    "wilson": {
+      "successes": 2,
+      "trials": 27,
+      "point": 0.07407407407407407,
+      "lower": 0.020554654060988622,
+      "upper": 0.23369592683023144,
+      "z": 1.959963984540054
+    },
+    "floor": 0.85,
+    "meetsFloor": false,
+    "claimable": false,
+    "successIds": [
+      "C04",
+      "E15"
+    ]
+  },
+  "firstRequestCommitRate": {
+    "id": "firstRequestCommitRate",
+    "numerator": "FULFILLED",
+    "definition": "FULFILLED po nejvýš jedné automatické opravě, tedy uvnitř téhož uživatelského požadavku",
+    "successes": 2,
+    "trials": 27,
+    "rate": 0.07407407407407407,
+    "wilson": {
+      "successes": 2,
+      "trials": 27,
+      "point": 0.07407407407407407,
+      "lower": 0.020554654060988622,
+      "upper": 0.23369592683023144,
+      "z": 1.959963984540054
+    },
+    "floor": 0.93,
+    "meetsFloor": false,
+    "claimable": false,
+    "successIds": [
+      "C04",
+      "E15"
+    ]
+  },
+  "structuralContract": {
+    "floor": 1,
+    "accepted": 17,
+    "clean": 17,
+    "rate": 1,
+    "meetsFloor": true,
+    "notARate": "invariant potrubí, ne míra kvality modelu: čitatelem je přijatý kandidát bez strukturální vady, ne FULFILLED. Vydávat ho za míru úspěšnosti by obešlo AC úlohy přesně tam, kde na ní záleží.",
+    "violations": []
+  },
+  "perClassFloors": [
+    {
+      "classId": "param_change",
+      "floor": 0.93,
+      "successes": 0,
+      "trials": 1,
+      "rate": 0,
+      "wilson": {
+        "successes": 0,
+        "trials": 1,
+        "point": 0,
+        "lower": 0,
+        "upper": 0.7934506856227626,
+        "z": 1.959963984540054
+      },
+      "measured": true,
+      "gated": false,
+      "meetsFloor": false,
+      "members": [
+        {
+          "id": "E01",
+          "success": false,
+          "record": {
+            "branch": "edit",
+            "fulfilled": false,
+            "repairs": 0,
+            "accepted": true,
+            "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E01.json",
+            "rawHash": "662799b387d6d9329035b8f0da1fcbe8fcb048867b7be71f626712d9d506522c"
+          }
+        }
+      ]
+    },
+    {
+      "classId": "predicate_flip",
+      "floor": 0.93,
+      "successes": 0,
+      "trials": 1,
+      "rate": 0,
+      "wilson": {
+        "successes": 0,
+        "trials": 1,
+        "point": 0,
+        "lower": 0,
+        "upper": 0.7934506856227626,
+        "z": 1.959963984540054
+      },
+      "measured": true,
+      "gated": false,
+      "meetsFloor": false,
+      "members": [
+        {
+          "id": "E04",
+          "success": false,
+          "record": {
+            "branch": "edit",
+            "fulfilled": false,
+            "repairs": 0,
+            "accepted": false,
+            "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E04.json",
+            "rawHash": "a9b647d13a33ed7b53ca8ba86ea2307884a77d5727fd846de5fb96218116405e"
+          }
+        }
+      ]
+    },
+    {
+      "classId": "action_swap",
+      "floor": 0.93,
+      "successes": 0,
+      "trials": 2,
+      "rate": 0,
+      "wilson": {
+        "successes": 0,
+        "trials": 2,
+        "point": 0,
+        "lower": 0,
+        "upper": 0.6576197724933469,
+        "z": 1.959963984540054
+      },
+      "measured": true,
+      "gated": false,
+      "meetsFloor": false,
+      "members": [
+        {
+          "id": "E07",
+          "success": false,
+          "record": {
+            "branch": "edit",
+            "fulfilled": false,
+            "repairs": 0,
+            "accepted": true,
+            "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E07.json",
+            "rawHash": "cc332d51463272fc8e99632a6d83dd4810a681960d7ed1d7deb759cfb4f133f2"
+          }
+        },
+        {
+          "id": "E08",
+          "success": false,
+          "record": {
+            "branch": "edit",
+            "fulfilled": false,
+            "repairs": 0,
+            "accepted": false,
+            "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E08.json",
+            "rawHash": "52c5a0ace25d087236c1ccb0b8c1ccbb0eedc76cefb0b78b6b1855d56e42a184"
+          }
+        }
+      ]
+    },
+    {
+      "classId": "rule_insert",
+      "floor": 0.87,
+      "successes": 0,
+      "trials": 1,
+      "rate": 0,
+      "wilson": {
+        "successes": 0,
+        "trials": 1,
+        "point": 0,
+        "lower": 0,
+        "upper": 0.7934506856227626,
+        "z": 1.959963984540054
+      },
+      "measured": true,
+      "gated": false,
+      "meetsFloor": false,
+      "members": [
+        {
+          "id": "E10",
+          "success": false,
+          "record": {
+            "branch": "edit",
+            "fulfilled": false,
+            "repairs": 0,
+            "accepted": true,
+            "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E10.json",
+            "rawHash": "28454e0726318a2f8425c47d13a8fac73cfb75b37e7973b8d155abfdcc87e916"
+          }
+        }
+      ]
+    },
+    {
+      "classId": "rule_delete",
+      "floor": 0.87,
+      "successes": 1,
+      "trials": 3,
+      "rate": 0.3333333333333333,
+      "wilson": {
+        "successes": 1,
+        "trials": 3,
+        "point": 0.3333333333333333,
+        "lower": 0.06149194472039615,
+        "upper": 0.7923403991979523,
+        "z": 1.959963984540054
+      },
+      "measured": true,
+      "gated": false,
+      "meetsFloor": false,
+      "members": [
+        {
+          "id": "E15",
+          "success": true,
+          "record": {
+            "branch": "edit",
+            "fulfilled": true,
+            "repairs": 0,
+            "accepted": true,
+            "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E15.json",
+            "rawHash": "4d2e7c6b98764073a843864429720eeb8758171ac6b2ac240db3cf1a0a4a4099"
+          }
+        },
+        {
+          "id": "E13",
+          "success": false,
+          "record": {
+            "branch": "edit",
+            "fulfilled": false,
+            "repairs": 0,
+            "accepted": false,
+            "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E13.json",
+            "rawHash": "c3ecd6884c2f2a3494cf2c74cfd659ecb2d76132f5414d96fb4d369b3ab25540"
+          }
+        },
+        {
+          "id": "E14",
+          "success": false,
+          "record": {
+            "branch": "edit",
+            "fulfilled": false,
+            "repairs": 0,
+            "accepted": false,
+            "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E14.json",
+            "rawHash": "0a74d22308da2055c5eec3ada5d07b4ad9ab4c6605f015122deb73937a96a742"
+          }
+        }
+      ]
+    },
+    {
+      "classId": "topology_rewire",
+      "floor": 0.75,
+      "successes": 0,
+      "trials": 3,
+      "rate": 0,
+      "wilson": {
+        "successes": 0,
+        "trials": 3,
+        "point": 0,
+        "lower": 0,
+        "upper": 0.5614970317550455,
+        "z": 1.959963984540054
+      },
+      "measured": true,
+      "gated": false,
+      "meetsFloor": false,
+      "members": [
+        {
+          "id": "E18",
+          "success": false,
+          "record": {
+            "branch": "edit",
+            "fulfilled": false,
+            "repairs": 0,
+            "accepted": true,
+            "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E18.json",
+            "rawHash": "58f5757fc39c48b7396d3d9e7fd83c1daaa4c87712886b16c6bf8cb0dadfeab4"
+          }
+        },
+        {
+          "id": "E19",
+          "success": false,
+          "record": {
+            "branch": "edit",
+            "fulfilled": false,
+            "repairs": 0,
+            "accepted": true,
+            "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E19.json",
+            "rawHash": "df58eae2e848dbef3679e4da20080f0a1781705490e2011435baf1f553dda668"
+          }
+        },
+        {
+          "id": "E20",
+          "success": false,
+          "record": {
+            "branch": "edit",
+            "fulfilled": false,
+            "repairs": 0,
+            "accepted": true,
+            "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E20.json",
+            "rawHash": "dbf3cad374e5fe96f46386fefd59b7d83b87a67a8cbb54509984c7342d65ffa2"
+          }
+        }
+      ]
+    },
+    {
+      "classId": "goal_swap",
+      "floor": 0.75,
+      "successes": 0,
+      "trials": 1,
+      "rate": 0,
+      "wilson": {
+        "successes": 0,
+        "trials": 1,
+        "point": 0,
+        "lower": 0,
+        "upper": 0.7934506856227626,
+        "z": 1.959963984540054
+      },
+      "measured": true,
+      "gated": false,
+      "meetsFloor": false,
+      "members": [
+        {
+          "id": "E24",
+          "success": false,
+          "record": {
+            "branch": "edit",
+            "fulfilled": false,
+            "repairs": 0,
+            "accepted": false,
+            "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E24.json",
+            "rawHash": "de3d51d6ffd71cc9ed1d24670390b60b2b3f803b4c15e062a8b6e2ebda917901"
+          }
+        }
+      ]
+    }
+  ],
+  "clustered": {
+    "rate": 0.07407407407407407,
+    "successes": 2,
+    "trials": 27,
+    "standardError": 0.049553887155523856,
+    "interval": {
+      "lower": 0,
+      "upper": 0.19047619047619047,
+      "level": 0.95,
+      "seed": 20260812,
+      "resamples": 10000
+    },
+    "meetsClusterFloor": true,
+    "clusters": [
+      {
+        "world": "C01",
+        "trials": 4,
+        "successes": 1
+      },
+      {
+        "world": "C02",
+        "trials": 4,
+        "successes": 0
+      },
+      {
+        "world": "C03",
+        "trials": 4,
+        "successes": 0
+      },
+      {
+        "world": "C04",
+        "trials": 1,
+        "successes": 1
+      },
+      {
+        "world": "C05",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C06",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C07",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C08",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C09",
+        "trials": 4,
+        "successes": 0
+      },
+      {
+        "world": "C10",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C11",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C12",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C13",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C14",
+        "trials": 1,
+        "successes": 0
+      },
+      {
+        "world": "C15",
+        "trials": 1,
+        "successes": 0
+      }
+    ]
+  },
+  "wilsonCaveat": "Při 93/100 je Wilsonova dolní mez jen 86,2 %, a těch 100 tahů je shlukovaných uvnitř dvaceti světů. Sto tahů je VÝVOJOVÁ brána. Pro skutečný důkaz je potřeba řádově 288/300 slepých tahů.",
+  "timeToCommit": {
+    "unit": "providerRequests",
+    "committedOnRawEmission": 17,
+    "committedAfterOneRepair": 0,
+    "neverCommitted": 10,
+    "maxRequestsUsed": 1,
+    "honestNote": "jedno volání na případ je strop potrubí P1, ne naměřený výsledek: distribuce proto nemá ocas. Mechanická oprava jmenovatel nezvedá, protože podle protokolu leží uvnitř téhož požadavku.",
+    "byCase": [
+      {
+        "id": "C01",
+        "requests": 1
+      },
+      {
+        "id": "C02",
+        "requests": 1
+      },
+      {
+        "id": "C03",
+        "requests": 1
+      },
+      {
+        "id": "C04",
+        "requests": 1
+      },
+      {
+        "id": "C05",
+        "requests": 1
+      },
+      {
+        "id": "C06",
+        "requests": 1
+      },
+      {
+        "id": "C07",
+        "requests": 1
+      },
+      {
+        "id": "C08",
+        "requests": null
+      },
+      {
+        "id": "C09",
+        "requests": null
+      },
+      {
+        "id": "C10",
+        "requests": 1
+      },
+      {
+        "id": "C11",
+        "requests": 1
+      },
+      {
+        "id": "C12",
+        "requests": 1
+      },
+      {
+        "id": "C13",
+        "requests": null
+      },
+      {
+        "id": "C14",
+        "requests": null
+      },
+      {
+        "id": "C15",
+        "requests": null
+      },
+      {
+        "id": "E07",
+        "requests": 1
+      },
+      {
+        "id": "E15",
+        "requests": 1
+      },
+      {
+        "id": "E18",
+        "requests": 1
+      },
+      {
+        "id": "E01",
+        "requests": 1
+      },
+      {
+        "id": "E10",
+        "requests": 1
+      },
+      {
+        "id": "E19",
+        "requests": 1
+      },
+      {
+        "id": "E04",
+        "requests": null
+      },
+      {
+        "id": "E13",
+        "requests": null
+      },
+      {
+        "id": "E20",
+        "requests": 1
+      },
+      {
+        "id": "E08",
+        "requests": null
+      },
+      {
+        "id": "E14",
+        "requests": null
+      },
+      {
+        "id": "E24",
+        "requests": null
+      }
+    ]
+  },
+  "commitsWithoutSecondCall": {
+    "commits": 17,
+    "withoutSecondCall": 17,
+    "share": 1,
+    "structural": true,
+    "honestNote": "P1 pošle na každý případ právě jedno volání poskytovatele a druhé nemá kde vzniknout — opravná dávka je mechanická a běží uvnitř téhož požadavku. Ta jednička je tedy vlastnost potrubí, ne naměřený úspěch modelu, a naměřitelná bude až tam, kde bude existovat cesta se znovu zeptat."
+  },
+  "threeEditSession": {
+    "measuredDirectly": true,
+    "sessionsPassed": 0,
+    "sessionsCompleted": 4,
+    "sessionsPlanned": 4,
+    "rate": 0,
+    "turnsPassed": 0,
+    "turnsRun": 12,
+    "turnRate": 0,
+    "independenceEstimate": 0,
+    "contrastNote": "rate je počítaná z relací (passed/completed), NIKDY z tahů. independenceEstimate je turnRate³, tedy přesně ten zakázaný dopočet — vykazuje se vedle, protože rozdíl mezi nimi je nález."
+  },
+  "findings": {
+    "frozenBodyMatches": [
+      {
+        "caseId": "E01",
+        "detail": "tělo tahu 1 je bit po bitu shodné se zmrazeným záznamem (hash f6b5f1530354c80b99dce1850b32392f2f4735b9bec1daba8014f70d157ccce8)"
+      }
+    ],
+    "harnessFailures": []
+  },
+  "cases": [
+    {
+      "id": "C01",
+      "branch": "create",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses\\C01.json",
+      "rawHash": "db450d7c4ff020998aaff3bf541f68bc663226ee68712645ce87bd67fb311570"
+    },
+    {
+      "id": "C02",
+      "branch": "create",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses\\C02.json",
+      "rawHash": "ee58ccb200ac9fc99fedeb1fbc6b2ba3ed5a7441f5dcca23753f91bc49772d5d"
+    },
+    {
+      "id": "C03",
+      "branch": "create",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses\\C03.json",
+      "rawHash": "634e1ed3a928bf1a603ec01ef02cc57bd67ebe76b15d769c4d664f16c1110175"
+    },
+    {
+      "id": "C04",
+      "branch": "create",
+      "fulfilled": true,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses\\C04.json",
+      "rawHash": "729f0c2286ccaf76b1403fb08c3d8f21e2be0f0c29b2502b2ac36e9bf1b7a6c5"
+    },
+    {
+      "id": "C05",
+      "branch": "create",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses\\C05.json",
+      "rawHash": "914395b4de8d80873474224ef8999e699e463051b51196d593a64788995ad996"
+    },
+    {
+      "id": "C06",
+      "branch": "create",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses\\C06.json",
+      "rawHash": "5ab05870582c557c2865852df22802d0f728c73336fe1ea79073d571b0d34719"
+    },
+    {
+      "id": "C07",
+      "branch": "create",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses\\C07.json",
+      "rawHash": "1d3ef223e9d480b13ff3ae18408c80c8708bd4cb7aa36605fffe04d7ac99879c"
+    },
+    {
+      "id": "C08",
+      "branch": "create",
+      "fulfilled": false,
+      "repairs": 1,
+      "accepted": false,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses\\C08.json",
+      "rawHash": "bfaed8399f3d599bcf2e06c22a3f56327db1ab000725993fb9fbb788ae620c55"
+    },
+    {
+      "id": "C09",
+      "branch": "create",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": false,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses\\C09.json",
+      "rawHash": "b566a3e04fef56f0f715bc6d1a5699581f7fc4f2ab275525f42d72bffd23c8bf"
+    },
+    {
+      "id": "C10",
+      "branch": "create",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses\\C10.json",
+      "rawHash": "5c4fab38c7c6d7761b988fdbbf3b0a9f14ce80d8de743f05079878373a5c7086"
+    },
+    {
+      "id": "C11",
+      "branch": "create",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses\\C11.json",
+      "rawHash": "2372581434f9129dd5498b71b2e2fe0acd6a990b3d0e2dd3c05b62ff5a93716a"
+    },
+    {
+      "id": "C12",
+      "branch": "create",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses\\C12.json",
+      "rawHash": "3446a72765e3f775a31e51dca40fb4d8b4dec2bbde8d7ecf15c16276d17ab380"
+    },
+    {
+      "id": "C13",
+      "branch": "create",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": false,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses\\C13.json",
+      "rawHash": "da356c5a91925d6047786a64daa268c3f700092d7ea4546acc14d368a9adc13f"
+    },
+    {
+      "id": "C14",
+      "branch": "create",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": false,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses\\C14.json",
+      "rawHash": "fb288320bd81a20de98dee17651ce7f8ae92fa8ec9d9d0828c251b400ea0cd03"
+    },
+    {
+      "id": "C15",
+      "branch": "create",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": false,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\dd08a4e4-b6ee-4f63-8119-975099d6c79e\\responses\\C15.json",
+      "rawHash": "ef52e944683ffd18267b05b918ed4c499d27a2b4dcf7e8be7cfbb39916bfb0a5"
+    },
+    {
+      "id": "E07",
+      "branch": "edit",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E07.json",
+      "rawHash": "cc332d51463272fc8e99632a6d83dd4810a681960d7ed1d7deb759cfb4f133f2"
+    },
+    {
+      "id": "E15",
+      "branch": "edit",
+      "fulfilled": true,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E15.json",
+      "rawHash": "4d2e7c6b98764073a843864429720eeb8758171ac6b2ac240db3cf1a0a4a4099"
+    },
+    {
+      "id": "E18",
+      "branch": "edit",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E18.json",
+      "rawHash": "58f5757fc39c48b7396d3d9e7fd83c1daaa4c87712886b16c6bf8cb0dadfeab4"
+    },
+    {
+      "id": "E01",
+      "branch": "edit",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E01.json",
+      "rawHash": "662799b387d6d9329035b8f0da1fcbe8fcb048867b7be71f626712d9d506522c"
+    },
+    {
+      "id": "E10",
+      "branch": "edit",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E10.json",
+      "rawHash": "28454e0726318a2f8425c47d13a8fac73cfb75b37e7973b8d155abfdcc87e916"
+    },
+    {
+      "id": "E19",
+      "branch": "edit",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E19.json",
+      "rawHash": "df58eae2e848dbef3679e4da20080f0a1781705490e2011435baf1f553dda668"
+    },
+    {
+      "id": "E04",
+      "branch": "edit",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": false,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E04.json",
+      "rawHash": "a9b647d13a33ed7b53ca8ba86ea2307884a77d5727fd846de5fb96218116405e"
+    },
+    {
+      "id": "E13",
+      "branch": "edit",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": false,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E13.json",
+      "rawHash": "c3ecd6884c2f2a3494cf2c74cfd659ecb2d76132f5414d96fb4d369b3ab25540"
+    },
+    {
+      "id": "E20",
+      "branch": "edit",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": true,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E20.json",
+      "rawHash": "dbf3cad374e5fe96f46386fefd59b7d83b87a67a8cbb54509984c7342d65ffa2"
+    },
+    {
+      "id": "E08",
+      "branch": "edit",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": false,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E08.json",
+      "rawHash": "52c5a0ace25d087236c1ccb0b8c1ccbb0eedc76cefb0b78b6b1855d56e42a184"
+    },
+    {
+      "id": "E14",
+      "branch": "edit",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": false,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E14.json",
+      "rawHash": "0a74d22308da2055c5eec3ada5d07b4ad9ab4c6605f015122deb73937a96a742"
+    },
+    {
+      "id": "E24",
+      "branch": "edit",
+      "fulfilled": false,
+      "repairs": 0,
+      "accepted": false,
+      "structuralFailures": [],
+      "responsePath": "D:\\claude\\Hackaton\\evals\\live\\3b575451-98c2-459e-874c-23abaa225a65\\responses\\E24.json",
+      "rawHash": "de3d51d6ffd71cc9ed1d24670390b60b2b3f803b4c15e062a8b6e2ebda917901"
+    }
+  ]
+}
