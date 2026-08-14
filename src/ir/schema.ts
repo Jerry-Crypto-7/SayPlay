@@ -179,6 +179,7 @@ const ruleSchema = z
 const limitsSchema = z
   .object({
     maxEntities: z.int().min(1).max(512),
+    maxZones: z.int().min(1).max(512),
     maxSlots: z.int().min(1).max(256),
     maxRules: z.int().min(1).max(512),
     maxRuleFiringsPerTick: z.int().min(1).max(4096),

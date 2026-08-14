@@ -11,6 +11,7 @@
     "irVersion": "world-ir-v1",
     "limits": {
       "maxEntities": 2,
+      "maxZones": 1,
       "maxSlots": 8,
       "maxRules": 4,
       "maxRuleFiringsPerTick": 4,

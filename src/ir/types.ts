@@ -343,6 +343,19 @@ export interface IrRule {
  */
 export interface IrLimits {
   readonly maxEntities: number;
+  /**
+   * Počet deklarovaných zón — mez smyčky, která ve fázi `sense` zjišťuje, kdo
+   * v které zóně stojí.
+   *
+   * **Musí to být vlastní pole, ne odvozenina z `maxEntities`.** Do 14. 8. 2026
+   * ta smyčka běžela právě proti `maxEntities` a byla to tichá vada téhož druhu,
+   * jakou popisuje `settleItemBound`: svět s víc zónami než entitami přestal
+   * zóny za tím indexem vnímat, takže `onEnterZone`, `inZone` i `countInZone`
+   * nad nimi zůstaly navždy nepravdivé. Nic nespadlo a nic to nenahlásilo — svět
+   * se jen nedal dohrát. Našel to první živý běh (T18): `C02` postavil pět entit
+   * a šest zón, výherní zóna byla ta šestá.
+   */
+  readonly maxZones: number;
   readonly maxSlots: number;
   readonly maxRules: number;
   readonly maxRuleFiringsPerTick: number;

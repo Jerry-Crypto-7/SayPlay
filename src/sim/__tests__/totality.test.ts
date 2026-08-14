@@ -19,7 +19,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { worldIr } from '../../ir/schema';
-import { MAX_OPERANDS, type IrEffect } from '../../ir/types';
+import { MAX_OPERANDS, type IrEffect, type IrLimits } from '../../ir/types';
 import {
   createRuntime,
   run,
@@ -32,7 +32,7 @@ import {
   type WorldDocRuntime,
 } from '../interpreter';
 import { PHASES, phaseBound, type Phase } from '../phases';
-import { SCANNED, analyseAll, analyseModule, tickPath, undeclaredTickNames } from './ast-rule';
+import { LIMIT_FIELDS, SCANNED, analyseAll, analyseModule, tickPath, undeclaredTickNames } from './ast-rule';
 
 import degenerateSightWorld from '../__fixtures__/degenerate-sight.world.json';
 import instaWinWorld from '../__fixtures__/insta-win.world.json';
@@ -362,6 +362,31 @@ describe('podmínka 5 — rozsah pravidla je tiková cesta, ne adresář', () =>
 });
 
 describe('podmínka 5 — každá smyčka na tikové cestě nese mez v podmínce', () => {
+  /**
+   * `LIMIT_FIELDS` je ruční kopie jmen z `IrLimits` a rozejde se s ním tiše.
+   *
+   * Selhává to v nebezpečném směru: nové pole, které v množině chybí, se za mez
+   * neuzná, korektní smyčka spadne jako „nezajištěná" a nejlevnější oprava je mez
+   * z podmínky vyhodit. Přesně tuhle situaci vyrobilo přidání `maxZones`
+   * (14. 8. 2026), takže se to od té doby kontroluje. Klíče se berou ze
+   * **skutečné hodnoty** `IrLimits`, ne z druhého ručního seznamu.
+   */
+  it('množina polí IrLimits je úplná', () => {
+    const limits: IrLimits = {
+      maxEntities: 1,
+      maxZones: 1,
+      maxSlots: 1,
+      maxRules: 1,
+      maxRuleFiringsPerTick: 1,
+      maxQueueDepth: 1,
+      maxAgents: 0,
+      memorySlotsPerAgent: 0,
+      gridWidth: 1,
+      gridHeight: 1,
+    };
+    expect([...Object.keys(limits)].sort()).toEqual([...LIMIT_FIELDS].sort());
+  });
+
   it('žádná nezajištěná smyčka na tikové cestě', () => {
     const violations = FACTS.sites
       .filter((site) => !site.bounded && TICK_PATH.has(site.fn))
@@ -799,6 +824,7 @@ describe('podmínka 5 — jméno meze se dá přebít, a pravidlo to musí pozna
 describe('podmínka 5 — mez sdílená se zod schématem je skutečně sdílená', () => {
   const LIMITS = {
     maxEntities: 1,
+    maxZones: 1,
     maxSlots: 1,
     maxRules: 1,
     maxRuleFiringsPerTick: 1,

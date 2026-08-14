@@ -52,9 +52,18 @@ export const TICK_ROOTS = ['sim/interpreter.ts'] as const;
 /** Adresář, který se skenuje celý, i mimo tikovou cestu. */
 const SIM_PREFIX = 'sim/';
 
-/** Pole `IrLimits`. Mez smí pocházet odsud, ne z délky vstupního pole. */
-const LIMIT_FIELDS = new Set([
+/**
+ * Pole `IrLimits`. Mez smí pocházet odsud, ne z délky vstupního pole.
+ *
+ * Je to **ruční kopie** jmen z `IrLimits` — typ tu za běhu k dispozici není.
+ * Kopie se od originálu rozejde tiše a v nebezpečném směru: pole, které v téhle
+ * množině chybí, pravidlo za mez neuzná, takže korektní smyčka spadne jako
+ * „nezajištěná" a nejlevnější cesta ven je mez zahodit. Úplnost proto hlídá
+ * `totality.test.ts` → „množina polí IrLimits je úplná".
+ */
+export const LIMIT_FIELDS = new Set([
   'maxEntities',
+  'maxZones',
   'maxSlots',
   'maxRules',
   'maxRuleFiringsPerTick',

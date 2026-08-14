@@ -43,6 +43,7 @@ function documentFor(spec: SurfaceEventSpec): IrDoc {
     irVersion: IR_VERSION,
     limits: {
       maxEntities: 8,
+      maxZones: 8,
       maxSlots: 32,
       maxRules: 16,
       maxRuleFiringsPerTick: 64,

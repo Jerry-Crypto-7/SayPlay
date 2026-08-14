@@ -39,7 +39,14 @@ export function phaseBound(phase: Phase, limits: IrLimits): number {
       // Sloty se procházejí dvakrát (stav a inventář), entity jednou a k nim
       // zóny, odvozené fakty jsou párové (`overlapping`, `visible`). Vnitřek
       // jednoho páru — průchod mřížkou — má vlastní mez v `sightBound`.
-      return 2 * limits.maxSlots + limits.maxEntities + 2 * pairBound(limits);
+      //
+      // **Zóny mají vlastní součin, ne `pairBound` jako zástupce.** Do
+      // 14. 8. 2026 tu příspěvek zónové smyčky chyběl a schovával se pod
+      // `2 * pairBound` — a schovat se tam mohl jedině proto, že ta smyčka běžela
+      // proti `maxEntities` místo proti počtu zón. Ta mez byla vada (viz
+      // `IrLimits.maxZones`); jakmile se opravila, musí být její cena v součtu
+      // napsaná, jinak by `phaseBound` přestal být horní mezí.
+      return 2 * limits.maxSlots + limits.maxEntities * (1 + limits.maxZones) + 2 * pairBound(limits);
     case 'trigger':
       // Každé pravidlo se vyhodnotí nejvýš jednou za tik.
       return limits.maxRules;

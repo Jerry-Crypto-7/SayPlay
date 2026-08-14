@@ -181,6 +181,64 @@ describe('systémové vazby, které model neautoruje', () => {
     expect(verifyWitness(without, without.trace).verdict).toBe('REJECTED');
   });
 
+  /**
+   * Zón bývá víc než entit, a to je normální svět, ne patologie.
+   *
+   * **Oracle je tady ručně psaný, proti zvyku tohohle souboru — schválně.**
+   * Zmrazený korpus tuhle vlastnost nepokrývá: všechny jeho create světy mají zón
+   * nejvýš tolik co entit, protože zóny v nich vznikají skoro jen ze socketů.
+   * Právě proto vada přežila do prvního živého běhu (T18), kde ji `C02` trefil
+   * hned — pět entit, šest zón, a výherní zóna byla ta šestá. Sensing běžel proti
+   * `maxEntities`, takže se na ni nikdy nedostalo: `onEnterZone` nad ní zůstalo
+   * navždy nepravdivé, nic nespadlo a svět se prostě nedal dohrát.
+   */
+  it('svět s víc zónami než entitami vnímá i tu poslední zónu', () => {
+    const sim = {
+      layout: { width: 12, height: 6 },
+      sockets: { spawn: [1, 3], a: [3, 3], b: [5, 3], c: [7, 3], finish: [10, 3] },
+      entities: {
+        player: { role: 'actor', socket: 'spawn', state: 'idle' },
+        marker: { role: 'prop', socket: 'a', state: 'idle' },
+        // Kanonické `moveTo` míří na ENTITU, ne na soket — hráče posune až
+        // systémová vazba `sys.moveTo.<entita>`. Bez cíle na `finish` by svědek
+        // neselhal na zónách, ale na tom, že se hráč vůbec nehne.
+        goalPost: { role: 'goal', socket: 'finish', state: 'idle' },
+      },
+      state: { counters: {}, flags: {}, timers: {}, zones: { winZone: [[9, 2, 3, 3]] } },
+      rules: {
+        arrive: {
+          phase: 0,
+          priority: 0,
+          event: { kind: 'onEnterZone', entity: 'player', zone: 'winZone' },
+          condition: null,
+          actions: [{ kind: 'win' }],
+        },
+      },
+      witness: { tier: 'short', H_cert: 600, ops: [{ tick: 0, actionId: 'moveTo', target: 'marker' }] },
+    };
+
+    // Svědek míří na `marker` na socketu `a` — mimo `winZone`. Výhru přinese až
+    // druhý krok, takže samotné postavení světa nic nevyhrává.
+    const built = buildRuntimeWorld({
+      ...sim,
+      witness: { ...sim.witness, ops: [{ tick: 0, actionId: 'moveTo', target: 'marker' }] },
+    });
+    expect(built.ok).toBe(true);
+    if (!built.ok) return;
+
+    // Bez tohohle by test zezelenal i nad světem, kde zón NENÍ víc než entit —
+    // tedy nad světem, který vadu vůbec nespouští. Aserce drží předpoklad, ne kosmetiku.
+    const zoneCount = Object.keys(built.world.space.zones).length;
+    expect(zoneCount).toBeGreaterThan(built.world.ir.limits.maxEntities);
+    expect(built.world.ir.limits.maxZones).toBe(zoneCount);
+
+    const winning = buildRuntimeWorld(sim);
+    expect(winning.ok).toBe(true);
+    if (!winning.ok) return;
+    const toFinish = [{ tick: 0, actor: 'player', actionId: 'moveTo', target: 'goalPost' }];
+    expect(verifyWitness(winning.world, toFinish).verdict).toBe('CERTIFIED');
+  });
+
   it('horizont zůstává přáním dokumentu — tier ho smí jen odmítnout', () => {
     const sim = structuredClone(c01.body.sim) as { witness: { tier: string; H_cert: number } };
     sim.witness.H_cert = 5_000;

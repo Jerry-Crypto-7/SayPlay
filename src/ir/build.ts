@@ -275,6 +275,9 @@ export function buildRuntimeWorld(sim: unknown): BuildResult {
     irVersion: IR_VERSION,
     limits: {
       maxEntities: Math.max(asInt(part.entityCap) ?? 0, builder.entities.length, 1),
+      // Zóny jsou sokety plus deklarované obdélníky, takže jich bývá **víc než
+      // entit** — proto vlastní mez, ne `maxEntities`. Viz `IrLimits.maxZones`.
+      maxZones: Math.max(Object.keys(zones.rects).length, 1),
       maxSlots: Math.max(builder.slots.length, 1),
       maxRules: Math.max(builder.rules.length, 1),
       maxRuleFiringsPerTick: Math.max(MIN_FIRINGS_PER_TICK, builder.rules.length),

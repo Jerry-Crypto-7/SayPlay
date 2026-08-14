@@ -495,7 +495,7 @@ function sense(runtime: Runtime, counts: Record<Phase, number>): Observation {
     locked[id] = readSlot(layout, runtime.state, entitySlotId(id, 'locked')) === 1;
     const x = readSlot(layout, runtime.state, entitySlotId(id, 'x'));
     const y = readSlot(layout, runtime.state, entitySlotId(id, 'y'));
-    for (let z = 0; z < entityBound && z < zoneNames.length; z += 1) {
+    for (let z = 0; z < limits.maxZones && z < zoneNames.length; z += 1) {
       counts.sense += 1;
       const zone = zoneNames[z];
       if (!inRect(doc.space.zones[zone], x, y)) continue;
