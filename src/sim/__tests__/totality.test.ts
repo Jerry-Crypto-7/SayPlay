@@ -906,3 +906,54 @@ describe('mez fáze `settle` je z domény smyčky, ne z té sousední', () => {
     }
   });
 });
+
+// ===========================================================================
+// `fired` — které pravidlo tik doopravdy SPUSTIL
+// ===========================================================================
+
+/**
+ * `StepResult.fired` je jediná vlastnost běhu, kterou zvenčí nejde dopočítat ze
+ * stavu: dva průchody týmž pravidlem umí skončit ve stejném stavu. Čte to
+ * `fireCount()` sémantického scoreru (T16), takže obě jeho deklarované meze —
+ * pořadí vykonání a prázdno po vadě — musí držet test, ne komentář.
+ */
+describe('`fired` vykazuje spuštěná pravidla, ne odpálená', () => {
+  it('v běžném tiku nese ID pravidel, jejichž efekty proběhly, a nic navíc', () => {
+    const known = new Set(vault.ir.rules.map((rule) => rule.ruleId));
+    const runtime = createRuntime(vault);
+    let seen = 0;
+
+    for (let i = 0; i < TICK_BUDGET && runtime.runState === 'running'; i += 1) {
+      const result = step(
+        runtime,
+        vault.trace.filter((entry) => entry.tick === runtime.tick),
+      );
+      for (const ruleId of result.fired) expect(known.has(ruleId)).toBe(true);
+      seen += result.fired.length;
+    }
+
+    // Bez tohohle by test prošel i nad polem, které je pořád prázdné.
+    expect(seen).toBeGreaterThan(0);
+    expect(runtime.runState).toBe('won');
+  });
+
+  it('tik ukončený `runtimeFault` vrací prázdno, i když se před vadou stihly efekty', () => {
+    const runtime = createRuntime(signalLoop);
+    let lastRunning: readonly string[] = [];
+
+    let result = step(runtime, []);
+    for (let i = 0; i < TICK_BUDGET && runtime.runState === 'running'; i += 1) {
+      lastRunning = result.fired;
+      result = step(runtime, []);
+    }
+
+    // Fixture musí doopravdy faultnout, jinak se níž netvrdí nic.
+    expect(runtime.runState).toBe('runtimeFault');
+    expect(result.fault).toBe('queue-overflow');
+    // Vada přijde až na TŘETÍ emisi pravidla, takže dvě předtím proběhly — a
+    // přesto se nevykazují: stav se atomicky vrátil na začátek tiku.
+    expect(result.fired).toEqual([]);
+    // A předchozí, dokončený tik prázdný nebyl — jinak by prázdno nic neznamenalo.
+    expect(lastRunning.length).toBeGreaterThan(0);
+  });
+});

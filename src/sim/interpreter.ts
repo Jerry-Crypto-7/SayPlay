@@ -110,6 +110,18 @@ export interface StepResult {
   readonly firings: number;
   /** Počet iterací po fázích. Instrumentace pro podmínku 4. */
   readonly iterations: PhaseCounts;
+  /**
+   * `ruleId` pravidel, jejichž efekty tenhle tik **doopravdy provedl** — v pořadí
+   * vykonání. Čte to `fireCount()` sémantického scoreru (T16): kontrakt `C06`
+   * žádá „pravidlo spustilo právě jednou" a to je jediná vlastnost, kterou zvenčí
+   * nejde dopočítat ze stavu — dva průchody týmž pravidlem umí skončit ve stejném
+   * stavu.
+   *
+   * **Spuštěné, ne jen odpálené.** Pravidlo, na které se kvůli stropu nedostalo,
+   * tu není, protože jeho efekty neproběhly. A tik ukončený `runtimeFault` vrací
+   * prázdné pole: stav se atomicky vrátil na začátek tiku, takže se nestalo nic.
+   */
+  readonly fired: readonly string[];
 }
 
 const SYMBOL_NONE = 'none';
@@ -759,6 +771,7 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
       fault: runtime.fault,
       firings: 0,
       iterations: counts,
+      fired: [],
     };
   }
 
@@ -783,6 +796,7 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
       fault: 'queue-overflow',
       firings: 0,
       iterations: counts,
+      fired: [],
     };
   }
 
@@ -816,10 +830,12 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
   const applyBound = limits.maxRuleFiringsPerTick;
   let outcome: RunState = 'running';
   let fault: FaultReason | null = null;
+  const applied: string[] = [];
   for (let i = 0; i < applyBound && i < fired.length && runtime.budget.remaining > 0; i += 1) {
     counts.apply += 1;
     runtime.budget.remaining -= 1;
     const rule = fired[i];
+    applied.push(rule.ruleId);
     const effectBound = limits.maxRuleFiringsPerTick;
     for (let e = 0; e < effectBound && e < rule.effects.length && fault === null; e += 1) {
       counts.apply += 1;
@@ -845,6 +861,7 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
       fault,
       firings: before - runtime.budget.remaining,
       iterations: counts,
+      fired: [],
     };
   }
 
@@ -864,6 +881,7 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
     fault: null,
     firings: before - runtime.budget.remaining,
     iterations: counts,
+    fired: applied,
   };
 }
 

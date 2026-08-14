@@ -1,0 +1,36 @@
+{
+  "irVersion": "v1",
+  "simRevision": 0,
+  "lookRevision": 0,
+  "sim": {
+    "layout": { "kind": "grid", "width": 8, "height": 8, "levels": 1, "portals": [] },
+    "grid": { "cell": 1 },
+    "sockets": { "spawn": [1, 4], "exit": [6, 4] },
+    "collisionAabb": { "player": [1, 4, 1, 1], "exit": [6, 4, 1, 1] },
+    "entities": {
+      "player": { "role": "actor", "socket": "spawn", "state": "idle" },
+      "exit": { "role": "goal", "socket": "exit", "state": "open" }
+    },
+    "state": { "counters": {}, "flags": {}, "timers": {} },
+    "rules": {
+      "immediate": {
+        "id": "immediate",
+        "phase": 0,
+        "priority": 0,
+        "event": { "kind": "onStart" },
+        "condition": null,
+        "actions": [{ "kind": "win" }]
+      }
+    },
+    "witness": { "tier": "short", "H_cert": 600, "L_witness": 0, "K_input": 0, "ops": [] }
+  },
+  "look": {
+    "modules": { "player": { "family": "actor", "params": { "height": 1.8 } } },
+    "palette": "slate",
+    "lightRig": "key",
+    "atmosphere": "none",
+    "materialRoles": {},
+    "camera": { "kind": "orbit" },
+    "audio": {}
+  }
+}
