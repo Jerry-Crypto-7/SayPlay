@@ -25,6 +25,7 @@ import {
   canonicalHash,
   extractJson,
   frozenBodyHashes,
+  openAiTransport,
   responsesDir,
   runLiveChain,
   storeResponse,
@@ -407,16 +408,56 @@ describe('runLiveChain', () => {
     expect(report.spentUsd).toBe(0);
   });
 
-  it('chybějící usage je selhání, ne nulová útrata', async () => {
-    // Kdyby se neznámá útrata počítala jako nula, `spentUsd` by nerostl a
-    // strop by nesepnul nikdy — celá sada by se protočila bez rozpočtu.
+  it('neznámá útrata běh ZASTAVÍ a účtuje se jako nejhorší možná', async () => {
+    // Volání proběhlo, takže ho poskytovatel účtovat mohl — jen jeho odpověď
+    // nejde přečíst. Kdyby se to počítalo jako nula a běh pokračoval, zbylých
+    // 14 promptů se zavolá s cenou, kterou nikdo nesčítá, a strop nesepne ani
+    // po patnácté. Tři prompty, jedna vadná odpověď hned na první.
     const provider = fakeProvider([freshBody()], { inputTokens: Number.NaN, outputTokens: 500 });
-    const report = await runLiveChain({ env: FULL, provider, replay, promptIds: ['C01'], root: tempRoot() });
+    const report = await runLiveChain({
+      env: FULL,
+      provider,
+      replay,
+      promptIds: ['C01', 'C02', 'C04'],
+      root: tempRoot(),
+    });
 
     expect(report.failures.map((failure) => failure.kind)).toEqual(['provider']);
     expect(report.failures[0].detail).toContain('usage');
-    expect(report.spentUsd, 'neznámá útrata se započítala jako nula').toBe(0);
+    expect(provider.calls, 'běh volal dál s nezapočítanou útratou').toBe(1);
+    expect(report.spentUsd, 'neznámá útrata se započítala jako nula').toBeGreaterThan(0);
+    expect(report.complete).toBe(false);
+    expect(report.stoppedReason).toContain('PROVIDER_UNUSABLE');
     expect(report.cases).toEqual([]);
+    expect(report.ok, 'běh, který nezměřil nic, se vykázal jako v pořádku').toBe(false);
+  });
+
+  it('nulová cena výstupu neprojde — jinak je rezerva i strop nula', async () => {
+    // Při ceně výstupu 0 vyjde nula i nejhorší možná cena volání, rezerva nic
+    // nezadrží a celá sada se protočí, zatímco poskytovatel účtuje.
+    const provider = fakeProvider([freshBody()]);
+    await expect(
+      runLiveChain({
+        env: { ...FULL, EVAL_USD_PER_MTOK_IN: '0', EVAL_USD_PER_MTOK_OUT: '0', EVAL_SPEND_CAP_USD: '0.000001' },
+        provider,
+        replay,
+        promptIds: ['C01', 'C02', 'C04'],
+        root: tempRoot(),
+      }),
+    ).rejects.toBeInstanceOf(PreflightError);
+    expect(provider.calls, 'při nulové ceně se přesto volalo').toBe(0);
+  });
+
+  it('sada bez jediného promptu není úplný běh', async () => {
+    // `promptIds` s překlepem: `total: 0`. Bez ošetření by vyšlo
+    // `complete: true, ok: true` — hotové měření, které nezměřilo nic.
+    const provider = fakeProvider([freshBody()]);
+    const report = await runLiveChain({ env: FULL, provider, replay, promptIds: ['NEEXISTUJE'], root: tempRoot() });
+
+    expect(provider.calls).toBe(0);
+    expect(report.total).toBe(0);
+    expect(report.complete, 'prázdná sada se vykázala jako úplný běh').toBe(false);
+    expect(report.ok, 'prázdná sada se vykázala jako v pořádku').toBe(false);
   });
 
   it('uložený požadavek je ten, který doopravdy odešel', async () => {
@@ -446,7 +487,29 @@ describe('runLiveChain', () => {
     // Neúplnost musí umět říct proč. `complete: false` se `stoppedReason: null`
     // je report, který si protiřečí — čtenář pak hledá chybu ve stropu.
     expect(report.complete).toBe(false);
-    expect(report.stoppedReason, 'neúplný běh neřekl proč').toContain('PROVIDER_FAILURES');
+    expect(report.stoppedReason, 'neúplný běh neřekl proč').toContain('PROVIDER_UNUSABLE');
+    expect(report.ok).toBe(false);
+  });
+});
+
+describe('chyba poskytovatele se hlásí bez jeho těla', () => {
+  it('401 nevypíše tělo odpovědi, jen kód a typ', async () => {
+    // U 401 poskytovatel odesílaný klíč v těle cituje a špatně nastavená proxy
+    // ho umí vrátit celý. Hláška končí v logu běhu a v CI výstupu.
+    const leaky = JSON.stringify({
+      error: { type: 'invalid_request_error', code: 'invalid_api_key', message: `Incorrect API key provided: ${KEY}` },
+    });
+    const fakeFetch = (async () =>
+      new Response(leaky, { status: 401, headers: { 'content-type': 'application/json' } })) as unknown as typeof fetch;
+
+    const thrown = await openAiTransport(fakeFetch)
+      .complete({ model: 'gpt-5.6', system: 'S', user: 'U' }, okConfig())
+      .then(() => null, (error: Error) => error);
+
+    expect(thrown, 'volání s 401 neselhalo').not.toBeNull();
+    expect(thrown!.message).not.toContain(KEY);
+    expect(thrown!.message, 'z hlášky nejde poznat, co se stalo').toContain('401');
+    expect(thrown!.message).toContain('invalid_api_key');
   });
 });
 

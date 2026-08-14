@@ -196,6 +196,24 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
     expect(failedChecks(result.out)).toEqual([6]);
   });
 
+  it('[6] .ENV.local velkými písmeny je pořád soubor s credentials', () => {
+    // Na Windows i macOS je to funkční env soubor. Case-sensitive vzor by ho
+    // minul a brána by propustila přesně to, kvůli čemu vznikla.
+    const result = blindCheck(makeRepo({ extraFile: { name: '.ENV.local', body: 'OPENAI_API_KEY=abc\n' } }));
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([6]);
+  });
+
+  it('[6] cesta s diakritikou se neschová za uvozovky gitu', () => {
+    // `ls-tree` bez `-z` cesty s ne-ASCII znaky uvozuje a vedoucí uvozovka
+    // rozbije porovnání prefixu — soubor by branou prošel.
+    const result = blindCheck(
+      makeRepo({ extraFile: { name: 'evals/live/RUN/responses/Cžluťoučký.json', body: '{"raw":{}}\n' } }),
+    );
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([6]);
+  });
+
   it('[6] evals/live/.gitkeep je součást struktury a projít MÁ', () => {
     const result = blindCheck(makeRepo({ extraFile: { name: 'evals/live/.gitkeep', body: '' } }));
     expect(result.code).toBe(0);

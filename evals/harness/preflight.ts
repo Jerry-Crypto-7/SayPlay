@@ -180,6 +180,16 @@ export function preflight(env: Env, spentUsd = 0): PreflightResult {
       return fail('INVALID_PRICE', `${price.name} je "${String(env[price.name])}"; čekalo se konečné nezáporné číslo.`);
   }
 
+  // **Cena výstupu musí být kladná.** Při nule vyjde nula i nejhorší možná
+  // cena volání, rezerva před voláním nic nezadrží a strop je dekorace —
+  // běh se protočí celý, zatímco poskytovatel účtuje. Cena vstupu nula
+  // projít smí: rezervu drží strop výstupních tokenů.
+  if (prices[1].value === 0)
+    return fail(
+      'INVALID_PRICE',
+      'EVAL_USD_PER_MTOK_OUT je 0; při nulové ceně výstupu vyjde nula i rezerva a strop by nic nezadržel.',
+    );
+
   const remainingUsd = capUsd - spentUsd;
   if (remainingUsd <= 0)
     return fail(

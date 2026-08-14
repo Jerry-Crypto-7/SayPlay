@@ -151,8 +151,16 @@ export function openAiTransport(fetchImpl: typeof fetch = fetch): ProviderTransp
       });
 
       const raw: unknown = await response.json().catch(() => null);
-      if (!response.ok)
-        throw new Error(`poskytovatel vrátil ${response.status}: ${JSON.stringify(raw).slice(0, 300)}`);
+      if (!response.ok) {
+        // **Tělo chyby se do hlášky nedává.** U 401 v něm poskytovatel
+        // odesílaný klíč cituje (byť maskovaný) a špatně nastavená proxy ho
+        // umí vrátit celý — a tahle hláška končí v logu běhu a v CI výstupu.
+        // Kód a typ stačí k diagnóze a nenesou nic tajného.
+        const error = (raw as { error?: { type?: unknown; code?: unknown } } | null)?.error;
+        throw new Error(
+          `poskytovatel vrátil ${response.status} (type=${String(error?.type ?? 'neuveden')}, code=${String(error?.code ?? 'neuveden')})`,
+        );
+      }
 
       const choice = (raw as { choices?: { message?: { content?: unknown } }[] } | null)?.choices?.[0];
       const text = typeof choice?.message?.content === 'string' ? choice.message.content : '';
@@ -589,7 +597,15 @@ export async function runLiveChain(options: LiveOptions): Promise<LiveReport> {
         );
     } catch (thrown) {
       failures.push({ caseId: prompt.id, kind: 'provider', detail: (thrown as Error).message });
-      continue;
+      // **Neznámá útrata zastavuje běh, a účtuje se jako nejhorší možná.**
+      // Volání, které se nepovedlo přečíst, poskytovatel účtovat mohl —
+      // pokračovat by znamenalo volat dál s cenou, kterou nikdo nesčítá, a
+      // strop by nesepnul ani po patnácti takových. Zastavit a přiznat
+      // neúplnost je jediná bezpečná strana: přeceněná rezerva stojí jeden
+      // zbytečně useknutý běh, podceněná stojí peníze.
+      spentUsd += reserve;
+      stoppedReason = `PROVIDER_UNUSABLE: ${prompt.id} — útrata volání je neznámá, rezerva ${reserve.toFixed(5)} USD účtována`;
+      break;
     }
 
     const result = await runLiveCreate(prompt, contract, request, completion, gate, runId, options.replay, frozenHashes, root);
@@ -616,13 +632,19 @@ export async function runLiveChain(options: LiveOptions): Promise<LiveReport> {
     fulfilled: counts.FULFILLED,
     attempted: cases.length,
     total: prompts.length,
-    complete: stoppedReason === null && cases.length === prompts.length,
+    // Prázdná sada není úplný běh. `promptIds` s překlepem dá `total: 0`, a
+    // bez téhle podmínky by se vykázal jako `complete: true` — tedy jako
+    // hotové měření, které nezměřilo nic.
+    complete: stoppedReason === null && prompts.length > 0 && cases.length === prompts.length,
     stoppedReason,
     spentUsd,
     capUsd: initial.capUsd,
     browserReplays: cases.filter((result) => result.browserReplayed).length,
     responsesDir: responsesDir(runId, root),
     failures,
-    ok: failures.length === 0,
+    // Běh, který nezměřil nic, není běh v pořádku. Bez `attempted > 0` vyjde
+    // `ok: true` i tam, kde se neodbavil ani jeden prompt — a to je přesně
+    // ten signál, který by T20 vzal jako platnou sadu.
+    ok: failures.length === 0 && cases.length > 0,
   };
 }

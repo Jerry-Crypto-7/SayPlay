@@ -153,17 +153,28 @@ check(5, 'every remote points at the anonymous account', (config) => {
  * v `HEAD`, ne co má být ignorované.
  */
 check(6, 'no credentials or raw run artefacts entered history', () => {
-  const tracked = git(['ls-tree', '-r', '--name-only', 'HEAD'], { allowFail: true })
-    .split('\n')
+  // `-z`: bez něj git cesty s ne-ASCII znaky uvozuje (`"evals/live/C\305\276.json"`),
+  // a vedoucí uvozovka rozbije obě porovnání níž — soubor s diakritikou by
+  // branou prošel.
+  const tracked = git(['ls-tree', '-r', '-z', '--name-only', 'HEAD'], { allowFail: true })
+    .split('\0')
     .map((line) => line.trim())
     .filter(Boolean);
   if (tracked.length === 0) return 'repozitář nemá žádný commit, není co ověřit';
 
+  // Porovnává se na malá písmena: `.ENV.local` je na Windows i macOS funkční
+  // soubor s credentials a case-sensitive vzor by ho minul.
+  const lower = tracked.map((path) => [path, path.toLowerCase()]);
+
   // `.env.example` je vzor bez hodnot a commitovat se má; cokoli dalšího ne.
-  const envFiles = tracked.filter((path) => /(^|\/)\.env($|\.)/.test(path) && !path.endsWith('.env.example'));
+  const envFiles = lower
+    .filter(([, path]) => /(^|\/)(\.env($|\.)|\.envrc$)/.test(path) && !path.endsWith('.env.example'))
+    .map(([original]) => original);
   if (envFiles.length > 0) return `soubor s credentials je trackovaný: ${envFiles.join(', ')}`;
 
-  const artefacts = tracked.filter((path) => path.startsWith('evals/live/') && !path.endsWith('.gitkeep'));
+  const artefacts = lower
+    .filter(([, path]) => path.startsWith('evals/live/') && !path.endsWith('.gitkeep'))
+    .map(([original]) => original);
   if (artefacts.length > 0)
     return `syrové odpovědi poskytovatele jsou trackované: ${artefacts.slice(0, 3).join(', ')}`;
 
