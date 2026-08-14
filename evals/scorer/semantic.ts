@@ -29,7 +29,6 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import { changedLeafEffects, type ChangedLeaf } from '../../src/patch/scope';
 import { findDanglingReferences } from '../../src/ir/references';
@@ -51,8 +50,17 @@ import {
   type Moment,
 } from './world';
 
-/** Jediný zdroj kontraktů v celém scoreru. Zmrazeno v T1, tag `evals-frozen-v2`. */
-export const CONTRACTS_PATH = join(fileURLToPath(new URL('../..', import.meta.url)), 'evals', 'frozen', 'contracts.v1.jsonl');
+/**
+ * Jediný zdroj kontraktů v celém scoreru. Zmrazeno v T1, tag `evals-frozen-v2`.
+ *
+ * Cesta se skládá z `process.cwd()`, ne z `import.meta.url`. Offline řetězec
+ * (T17) tenhle modul volá z Playwrightu, který projektové `.ts` překládá do
+ * CommonJS — a `import.meta` je tam **syntaktická** chyba, tedy i v modulu, ze
+ * kterého by se nic nevolalo. Je to táž konvence, na které stojí produkční čtení
+ * zmrazeného korpusu (`FROZEN_DIR` v `src/model/client.ts`); obě sady se
+ * spouštějí z kořene repozitáře a `semantic.test.ts` tu cestu pinuje.
+ */
+export const CONTRACTS_PATH = join(process.cwd(), 'evals', 'frozen', 'contracts.v1.jsonl');
 
 export type Verdict = 'FULFILLED' | 'ROBUST' | 'NO_FIT' | 'FAULT';
 
