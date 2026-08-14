@@ -203,9 +203,13 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
   });
 
   it('[6] řetězec ve tvaru API klíče v commitnutém obsahu', () => {
-    const result = blindCheck(
-      makeRepo({ extraFile: { name: 'config.ts', body: "const key = 'sk-REDACTED';\n" } }),
-    );
+    // Skládá se za běhu, aby literál ve tvaru klíče **nebyl v tomhle souboru**.
+    // Napsaný přímo by ho kontrola 6 našla v našem vlastním repozitáři a brána
+    // by hlásila nález na svém vlastním testu — což je přesně ta past, do které
+    // spadla kontrola 3 (viz poznámka u ní). Do dočasného repa se zapíše
+    // skutečný tvar, takže test testuje pořád totéž.
+    const shaped = `${'sk'}-abcdefghijklmnopqrstuvwxyz0123`;
+    const result = blindCheck(makeRepo({ extraFile: { name: 'config.ts', body: `const key = '${shaped}';\n` } }));
     expect(result.code).toBe(1);
     expect(failedChecks(result.out)).toEqual([6]);
   });
