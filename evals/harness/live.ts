@@ -284,7 +284,19 @@ export interface LiveRecord {
   readonly synthetic: false;
   readonly runId: string;
   readonly forPrompt: string;
-  readonly branch: 'create';
+  /**
+   * Která větev kontraktu odpověď vyrobila.
+   *
+   * `edit` sem přibylo s T19: tříúpravová relace ukládá odpovědi týmž zápisem a
+   * do téhož adresáře, protože kotva řetězu — hash souboru po zápisu — musí být
+   * pro obě větve tatáž věc. Druhý ukladač by znamenal druhou definici toho, co
+   * je auditovatelný artefakt.
+   */
+  readonly branch: 'create' | 'edit';
+  /** Jen u editace: svět, na kterém relace začala. */
+  readonly baseWorld?: string;
+  /** Jen u editace: kolikátý tah relace to je, počítáno od jedné. */
+  readonly turn?: number;
   /**
    * Profil, kterým odpověď přišla — razítko, ne dopočet.
    *
@@ -359,14 +371,28 @@ export interface LivePrompt {
   readonly id: string;
   readonly kind: string;
   readonly prompt: string;
+  /** Jen u editačních promptů: svět, proti kterému je zadání autorované. */
+  readonly baseWorld?: string;
+  readonly editClass?: string;
 }
 
-export function createPrompts(): readonly LivePrompt[] {
+/**
+ * Zmrazené prompty jedné větve.
+ *
+ * Obě větve čtou **týž soubor týmž způsobem** — T19 si vlastní čtečku psát
+ * nebude. Druhá kopie tohohle řádku je druhé místo, kde se dá tiše rozejít s tím,
+ * co je vlastně zmrazená sada.
+ */
+export function frozenPromptsOfKind(kind: 'create' | 'edit'): readonly LivePrompt[] {
   return readFileSync(join(FROZEN_DIR, 'prompts.v1.jsonl'), 'utf8')
     .trim()
     .split('\n')
     .map((line) => JSON.parse(line) as LivePrompt)
-    .filter((entry) => entry.kind === 'create');
+    .filter((entry) => entry.kind === kind);
+}
+
+export function createPrompts(): readonly LivePrompt[] {
+  return frozenPromptsOfKind('create');
 }
 
 /**

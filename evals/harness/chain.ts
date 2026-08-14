@@ -681,7 +681,7 @@ async function runEdit(
  * Sloučit je pod jeden `fault` by smazalo přesně ten rozdíl, kvůli kterému
  * endpoint vydává `rejection.stage` — a `evalSet.reportSeparation` ho vyžaduje.
  */
-function editEvidence(before: WorldDoc, committed: CommitOutcome | null, routingReason: string | null): Evidence {
+export function editEvidence(before: WorldDoc, committed: CommitOutcome | null, routingReason: string | null): Evidence {
   if (committed === null)
     return { kind: 'edit', outcome: 'fault', sceneBuilt: true, detail: `routing/${String(routingReason)}` };
   if (committed.outcome === 'CERTIFIED')
