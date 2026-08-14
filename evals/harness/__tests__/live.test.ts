@@ -15,7 +15,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { UpstreamRequest } from '../../../src/model/prompt';
 import { verifyWitness, type VerifiableWorld } from '../../../src/verify/witness';
@@ -772,18 +772,21 @@ describe('bez předané dopravy ji vybere allowlist', () => {
   // Tohle je ta cesta, kterou jede `e2e/live-chain.spec.ts`. Dokud si spec
   // dopravu předával sám, mířila natvrdo na placený endpoint a profil
   // předplatného neprošel ani jedním voláním.
+  // Úklid patří vitestu, ne `finally`: `finally` doběhne až se ten příslib
+  // usadí, takže kdyby běh někdy zamrznul, zůstane atrapa nainstalovaná a
+  // další testy v souboru by prošly proti podvržené odpovědi. `afterEach`
+  // uklidí i po testu, který spadl na timeout.
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   const urlsHitBy = async (env: Env, reply: () => Response): Promise<string[]> => {
     const hits: string[] = [];
-    const original = globalThis.fetch;
-    globalThis.fetch = (async (url: RequestInfo | URL): Promise<Response> => {
+    vi.stubGlobal('fetch', async (url: RequestInfo | URL): Promise<Response> => {
       hits.push(String(url));
       return reply();
-    }) as typeof fetch;
-    try {
-      await runLiveChain({ env, replay, promptIds: ['C01'], root: tempRoot() });
-    } finally {
-      globalThis.fetch = original;
-    }
+    });
+    await runLiveChain({ env, provider: 'allowlist', replay, promptIds: ['C01'], root: tempRoot() });
     return hits;
   };
 

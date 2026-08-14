@@ -695,18 +695,19 @@ function grammar(): Parameters<typeof buildEmissionRequest>[1] {
 export interface LiveOptions {
   readonly env: Env;
   /**
-   * Doprava k poskytovateli. **Bez ní ji vybere allowlist** (`transportFor`).
+   * Doprava k poskytovateli — buď konkrétní (double v testech), nebo
+   * `'allowlist'`, což znamená „vyber ji podle tvaru drátu zvoleného modelu".
    *
-   * Volitelná je schválně, a výchozí hodnota je ta produkční: jediný skutečný
-   * spouštěč živého běhu (`e2e/live-chain.spec.ts`) si ji dřív předával sám, a
-   * protože předával tu metrovanou natvrdo, nešlo profilem předplatného projet
-   * ani jedno volání — vybraný model mluvil jiným tvarem, než co ta doprava
-   * umí, a běh umřel na prvním případu. Kdo dopravu vybírá, rozhoduje i o tom,
-   * kam poletí klíč; to rozhodnutí patří k allowlistu, ne k volajícímu.
-   *
-   * Předává se už jen v testech, které potřebují double.
+   * **Zůstává POVINNÁ, a je to pojistka proti placenému volání omylem.**
+   * Zadrátovaná metrovaná doprava tu dřív znemožnila projet profil
+   * předplatného (model mluvil jiným tvarem a běh umřel na prvním případu),
+   * takže výběr musel přejít na allowlist — kdo dopravu vybírá, rozhoduje i o
+   * tom, kam poletí klíč. Udělat ji ale kvůli tomu nepovinnou by znamenalo, že
+   * test, který ji zapomene, tiše dostane skutečný `fetch` na placený endpoint
+   * a odešle tam celý prompt. Sentinel to vrací překladači: vynechat se nedá,
+   * a napsat `'allowlist'` je vědomé rozhodnutí, ne opomenutí.
    */
-  readonly provider?: ProviderTransport;
+  readonly provider: ProviderTransport | 'allowlist';
   readonly replay: Transport['replay'];
   /** Vlastní id běhu. Bez něj se vygeneruje — do jména adresáře na disku. */
   readonly runId?: string;
@@ -784,7 +785,8 @@ export async function runLiveChain(options: LiveOptions): Promise<LiveReport> {
     // počtu volání by nedržel nic.
     calls += 1;
     try {
-      completion = await (options.provider ?? transportFor(gate)).complete(request, gate);
+      const transport = options.provider === 'allowlist' ? transportFor(gate) : options.provider;
+      completion = await transport.complete(request, gate);
       // Platí pro KAŽDOU dopravu, ne jen pro tu naši: nepoužitelné `usage`
       // znamená neznámou útratu, a ta se nesmí započítat jako nulová.
       if (!isTokenCount(completion.usage.inputTokens) || !isTokenCount(completion.usage.outputTokens))

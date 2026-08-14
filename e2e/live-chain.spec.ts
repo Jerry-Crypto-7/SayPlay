@@ -82,6 +82,7 @@ async function live(page: Page): Promise<LiveReport> {
       // Dopravu NEVYBÍRÁME tady. Vybere ji allowlist podle tvaru drátu, který
       // zvolený model mluví — zadrátovat ji sem znamená, že přepnutí profilu
       // v `.env.local` změní model, ale ne cestu, po které se volá.
+      provider: 'allowlist',
       async replay(world, witness) {
         return page.evaluate(
           ([doc, trace]) => {
