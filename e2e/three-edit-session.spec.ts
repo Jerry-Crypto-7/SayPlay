@@ -213,7 +213,11 @@ test('replay v prohlížeči sedí s Node a doopravdy proběhl v prohlížeči',
   const report = await sessions(page, request);
 
   expect(report.failures.filter((failure) => failure.kind === 'browser-divergence')).toEqual([]);
-  expect(pageReplays, 'prohlížeč neprovedl ani jeden replay').toBe(report.browserReplays);
+  // Rovnost sama o sobě projde i na nule, a nula je přesně ten stav, kdy doprava
+  // prohlížeč obešla a hash si spočítala v Node — mutace, kterou T17 zabíjel.
+  // Počet se proto nejdřív musí utrhnout od nuly a teprve pak sedět.
+  expect(report.browserReplays, 'prohlížeč neprovedl ani jeden replay').toBeGreaterThan(0);
+  expect(pageReplays, 'replay se počítal jinde než v prohlížeči').toBe(report.browserReplays);
 
   for (const session of report.sessions)
     for (const turn of session.turns.filter((entry) => entry.browserHash !== null))
@@ -247,6 +251,7 @@ test('běh nepřekročil strop, neúplnost přizná a úspěšnost relace nedopo
       `sessions=${report.sessionsPassed}/${report.sessionsCompleted} rate=${String(report.sessionSuccessRate)} ` +
         `turns=${report.turnsPassed}/${report.turnsRun} rate=${String(report.turnSuccessRate)} ` +
         `independenceEstimate=${String(report.independenceEstimate)} counts=${JSON.stringify(report.counts)}`,
+      `browserReplays=${report.browserReplays}`,
       `${budget} complete=${report.complete}`,
       ...report.frozenBodyMatches.map((match) => `FROZEN-BODY-MATCH ${match.caseId}: ${match.detail}`),
       ...report.failures.map((failure) => `FAIL ${failure.kind} ${failure.caseId}: ${failure.detail}`),
