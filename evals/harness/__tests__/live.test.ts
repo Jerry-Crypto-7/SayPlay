@@ -21,15 +21,22 @@ import type { UpstreamRequest } from '../../../src/model/prompt';
 import { verifyWitness, type VerifiableWorld } from '../../../src/verify/witness';
 import { frozenResponses, stageHash } from '../chain';
 import {
+  MAX_OUTPUT_TOKENS,
   PreflightError,
+  ProfileGateError,
+  anthropicTransport,
+  assertGateProfile,
   canonicalHash,
   extractJson,
   frozenBodyHashes,
   openAiTransport,
+  reportPath,
   responsesDir,
   runLiveChain,
   storeResponse,
+  transportFor,
   type LiveCompletion,
+  type LiveReport,
   type ProviderTransport,
 } from '../live';
 import {
@@ -38,8 +45,10 @@ import {
   describeConfig,
   preflight,
   withLiveModel,
+  type ApiConfig,
   type Env,
-  type LiveConfig,
+  type ProviderProfile,
+  type SubscriptionConfig,
   type Usage,
 } from '../preflight';
 
@@ -62,9 +71,23 @@ const without = (...names: string[]): Env => {
   return env;
 };
 
-const okConfig = (): LiveConfig => {
-  const result = preflight(FULL, 0);
+const okConfig = (): ApiConfig => {
+  const result = preflight(FULL);
   if (!result.ok) throw new Error(`fixture je rozbitá: ${result.reason}`);
+  if (!result.metered) throw new Error('fixture je rozbitá: FULL má být metrovaný profil');
+  return result;
+};
+
+/** Profil předplatného: bez klíče, bez ceny, se stropem počtu volání. */
+const SUBSCRIPTION: Env = {
+  EVAL_MODEL: 'gpt-5.6-sol@proxy',
+  EVAL_CALL_CAP: '3',
+};
+
+const subscriptionConfig = (): SubscriptionConfig => {
+  const result = preflight(SUBSCRIPTION);
+  if (!result.ok) throw new Error(`fixture je rozbitá: ${result.reason}`);
+  if (result.metered) throw new Error('fixture je rozbitá: proxy model má být nemetrovaný');
   return result;
 };
 
@@ -113,21 +136,80 @@ describe('preflight odmítne start, když cokoli chybí', () => {
   });
 
   it('vyčerpaný strop zastavuje, i když je všechno ostatní v pořádku', () => {
-    expect(preflight(FULL, 49.999)).toMatchObject({ ok: true, remainingUsd: expect.any(Number) });
-    expect(preflight(FULL, 50)).toMatchObject({ ok: false, reason: 'CAP_EXHAUSTED' });
-    expect(preflight(FULL, 61)).toMatchObject({ ok: false, reason: 'CAP_EXHAUSTED' });
+    expect(preflight(FULL, { usd: 49.999, calls: 0 })).toMatchObject({ ok: true, remainingUsd: expect.any(Number) });
+    expect(preflight(FULL, { usd: 50, calls: 0 })).toMatchObject({ ok: false, reason: 'CAP_EXHAUSTED' });
+    expect(preflight(FULL, { usd: 61, calls: 0 })).toMatchObject({ ok: false, reason: 'CAP_EXHAUSTED' });
   });
 
   it('kompletní prostředí projde a zbytek stropu se dopočítá', () => {
-    const result = preflight(FULL, 12.5);
+    const result = preflight(FULL, { usd: 12.5, calls: 0 });
     expect(result).toMatchObject({ ok: true, capUsd: 50, spentUsd: 12.5, remainingUsd: 37.5 });
     expect(result.ok === true && result.model.id).toBe(LIVE_MODELS[0].id);
   });
 
-  it('ptá se na credentials PRVNÍ — prázdné prostředí neohlásí chybějící model', () => {
-    // Pořadí je součást zadání („ověří credentials, model a zbývající strop").
-    // Kdyby se ptal odzadu, člověk bez klíče by dostal hlášku o ceně za token.
-    expect(preflight({})).toMatchObject({ ok: false, reason: 'NO_CREDENTIALS' });
+  it('ptá se na MODEL první, protože z něj plyne profil', () => {
+    // Pořadí se změnilo, když přibyly profily, a je to vynucené: dokud není
+    // znám model, není známo, jestli je klíč a cena za token vůbec na místě.
+    // Ptát se dřív na klíč by u profilu předplatného hlásilo chybějící věc,
+    // kterou ten profil nepotřebuje.
+    //
+    // Vlastnost, kterou původní test hlídal, platí dál: prázdné prostředí
+    // musí dostat tu nejakčnější hlášku, ne libovolnou z konce řetězu.
+    const empty = preflight({});
+    expect(empty).toMatchObject({ ok: false, reason: 'NO_MODEL' });
+    expect(empty.ok === false && empty.detail).toContain('Povolené modely');
+    for (const downstream of ['NO_PRICE', 'INVALID_PRICE', 'NO_SPEND_CAP'])
+      expect(empty.ok === false && empty.reason).not.toBe(downstream);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Profily — co ten běh smí dokázat
+// ---------------------------------------------------------------------------
+
+describe('profil předplatného má vlastní strop a nečte klíč', () => {
+  it('projde bez klíče, bez stropu v dolarech i bez ceny za token', () => {
+    const result = subscriptionConfig();
+    expect(result).toMatchObject({ profile: 'subscription', metered: false, callCap: 3, callsRemaining: 3 });
+    expect(result.model.url).toContain('localhost');
+    expect(result.model.wire).toBe('anthropic-messages');
+  });
+
+  it('klíč v prostředí se u předplatného ignoruje, ne přenáší', () => {
+    const withKey = preflight({ ...SUBSCRIPTION, OPENAI_API_KEY: KEY });
+    expect(withKey.ok).toBe(true);
+    // Konfigurace nemetrovaného běhu klíč vůbec nenese, takže ho nemá kam pustit.
+    expect(JSON.stringify(withKey)).not.toContain(KEY);
+  });
+
+  it('bez stropu počtu volání se nespustí', () => {
+    expect(preflight({ EVAL_MODEL: 'gpt-5.6-sol@proxy' })).toMatchObject({ ok: false, reason: 'NO_CALL_CAP' });
+    for (const value of ['0', '-1', '2.5', 'hodně', 'Infinity'])
+      expect(preflight({ ...SUBSCRIPTION, EVAL_CALL_CAP: value }), value).toMatchObject({
+        ok: false,
+        reason: 'INVALID_CALL_CAP',
+      });
+  });
+
+  it('vyčerpaný strop volání zastavuje stejně tvrdě jako strop v dolarech', () => {
+    expect(preflight(SUBSCRIPTION, { usd: 0, calls: 2 })).toMatchObject({ ok: true, callsRemaining: 1 });
+    expect(preflight(SUBSCRIPTION, { usd: 0, calls: 3 })).toMatchObject({ ok: false, reason: 'CALL_CAP_EXHAUSTED' });
+    expect(preflight(SUBSCRIPTION, { usd: 0, calls: 99 })).toMatchObject({ ok: false, reason: 'CALL_CAP_EXHAUSTED' });
+  });
+
+  it('utracené dolary strop volání neposunou a naopak', () => {
+    // Kdyby preflight bral jedno číslo „spotřebováno", zvolily by se špatné
+    // jednotky a strop by hlídal něco jiného, než co běh utrácí.
+    expect(preflight(SUBSCRIPTION, { usd: 9_999, calls: 0 })).toMatchObject({ ok: true });
+    expect(preflight(FULL, { usd: 0, calls: 9_999 })).toMatchObject({ ok: true });
+  });
+
+  it('popis konfigurace přizná, že dolary u předplatného neplatí', () => {
+    const described = describeConfig(subscriptionConfig());
+    expect(described).toContain('profile=subscription');
+    expect(described).toContain('cap=3 calls');
+    expect(described).toContain('usd=neplatné');
+    expect(described).not.toContain('USD');
   });
 });
 
@@ -142,10 +224,11 @@ describe('klíč se z preflightu nikdy nedostane ven', () => {
       { ...FULL, EVAL_SPEND_CAP_USD: '-1' },
       { ...FULL, EVAL_USD_PER_MTOK_OUT: 'zdarma' },
     ].map((env) => {
-      const result = preflight(env, 0);
+      const result = preflight(env);
       return result.ok ? '' : result.detail;
     });
-    details.push(preflight(FULL, 999).ok ? '' : (preflight(FULL, 999) as { detail: string }).detail);
+    const exhausted = preflight(FULL, { usd: 999, calls: 0 });
+    details.push(exhausted.ok ? '' : exhausted.detail);
     details.push(describeConfig(okConfig()));
 
     for (const detail of details) expect(detail).not.toContain(KEY);
@@ -186,6 +269,8 @@ describe('kotva řetězu se počítá ze souboru, ne z paměti', () => {
         runId: 'RUN',
         forPrompt: 'C01',
         branch: 'create',
+        profile: 'api',
+        endpoint: 'https://api.openai.com/v1/chat/completions',
         request: { model: 'gpt-5.6', system: 'S', user: 'U' },
         raw: { id: 'resp_1', choices: [] },
         body: { irVersion: 1 },
@@ -219,6 +304,8 @@ describe('kotva řetězu se počítá ze souboru, ne z paměti', () => {
       runId: 'RUN',
       forPrompt: 'C02',
       branch: 'create' as const,
+      profile: 'api' as const,
+      endpoint: 'https://api.openai.com/v1/chat/completions',
       request: { model: 'gpt-5.6', system: 'S', user: 'U' },
       raw: { id: 'resp_2' },
       body: { irVersion: 1 },
@@ -387,7 +474,7 @@ describe('runLiveChain', () => {
     expect(report.spentUsd).toBeCloseTo(0.001, 10);
     // A hlavně: schválený strop se NEPŘEKROČIL. Bez rezervy by běh pustil
     // ještě třetí volání, protože do stropu „ještě něco zbývalo".
-    expect(report.spentUsd).toBeLessThanOrEqual(report.capUsd);
+    expect(report.spentUsd!).toBeLessThanOrEqual(report.capUsd!);
   });
 
   it('rezerva zastaví běh dřív, než se překročí strop o celé volání', async () => {
@@ -537,5 +624,245 @@ describe('brána proti zmrazenému korpusu není dekorativní', () => {
     const provider = fakeProvider([flipped]);
     const report = await runLiveChain({ env: FULL, provider, replay, promptIds: ['C01'], root: tempRoot() });
     expect(report.failures.map((failure) => failure.kind)).toContain('frozen-leak');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Doprava k předplatnému a brána profilu
+// ---------------------------------------------------------------------------
+
+const VALID_USAGE = { input_tokens: 12, output_tokens: 7 };
+
+/**
+ * Odpověď anthropicského tvaru — jiná pole než u chat completions.
+ *
+ * `usage` je **povinný parametr, i pro šťastnou cestu**. Výchozí hodnota by
+ * spolkla právě ten tvar, o který tu jde nejvíc: `undefined` znamená „pole
+ * `usage` v odpovědi vůbec není" (`JSON.stringify` klíč s `undefined` zahodí),
+ * jenže jako výchozí argument by se místo něj tiše dosadilo platné `usage` a
+ * test chybějícího pole by procházel nad odpovědí, které nic nechybí.
+ */
+const anthropicReply = (text: string, usage: unknown): Response =>
+  new Response(JSON.stringify({ id: 'msg_1', content: [{ type: 'text', text }], usage }), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  });
+
+describe('doprava k předplatnému', () => {
+  const request: UpstreamRequest = { model: 'gpt-5.6-sol', system: 'SYSTEM', user: 'USER' };
+
+  it('posílá systémovou zprávu jako vlastní pole, ne jako roli v messages', async () => {
+    let sent: { url: string; init: RequestInit } | null = null;
+    const transport = anthropicTransport(async (url, init) => {
+      sent = { url: String(url), init: init! };
+      return anthropicReply('{"a":1}', VALID_USAGE);
+    });
+
+    const result = await transport.complete(request, subscriptionConfig());
+    const body = JSON.parse(String(sent!.init.body)) as Record<string, unknown>;
+
+    expect(body.system).toBe('SYSTEM');
+    expect(body.messages).toEqual([{ role: 'user', content: 'USER' }]);
+    expect(body.max_tokens).toBe(MAX_OUTPUT_TOKENS);
+    // `response_format` tenhle tvar nezná; poslat ho je 400, ne tichá tolerance.
+    expect(body).not.toHaveProperty('response_format');
+    expect(sent!.url).toContain('localhost');
+    expect(result.usage).toEqual({ inputTokens: 12, outputTokens: 7 });
+    expect(result.text).toBe('{"a":1}');
+  });
+
+  it('klíč se k předplatnému neposílá, protože ho konfigurace nemá', async () => {
+    let headers: Record<string, string> = {};
+    const transport = anthropicTransport(async (_url, init) => {
+      headers = init!.headers as Record<string, string>;
+      return anthropicReply('{}', VALID_USAGE);
+    });
+    await transport.complete(request, subscriptionConfig());
+    expect(JSON.stringify(headers)).not.toContain(KEY);
+    expect(headers.authorization).toBe('Bearer unused');
+  });
+
+  it('slepí víc textových bloků a ty netextové zahodí', async () => {
+    const transport = anthropicTransport(
+      async () =>
+        new Response(
+          JSON.stringify({
+            content: [
+              { type: 'text', text: '{"a":' },
+              { type: 'thinking', thinking: 'ignoruj mě' },
+              { type: 'text', text: '1}' },
+            ],
+            usage: { input_tokens: 1, output_tokens: 1 },
+          }),
+          { status: 200 },
+        ),
+    );
+    expect((await transport.complete(request, subscriptionConfig())).text).toBe('{"a":1}');
+  });
+
+  it('chybějící usage je selhání, ne nula — i když se neplatí za tokeny', async () => {
+    for (const usage of [undefined, {}, { input_tokens: 5 }, { input_tokens: 5, output_tokens: -1 }]) {
+      const transport = anthropicTransport(async () => anthropicReply('{}', usage));
+      await expect(transport.complete(request, subscriptionConfig())).rejects.toThrow(/usage/);
+    }
+  });
+
+  it('chybu nepřepisuje tělem odpovědi', async () => {
+    const transport = anthropicTransport(
+      async () =>
+        new Response(JSON.stringify({ error: { type: 'overloaded_error', message: `token ${KEY}` } }), { status: 529 }),
+    );
+    await expect(transport.complete(request, subscriptionConfig())).rejects.toThrow(/529/);
+    await expect(transport.complete(request, subscriptionConfig())).rejects.not.toThrow(new RegExp(KEY));
+  });
+});
+
+describe('doprava a profil k sobě musí sedět', () => {
+  const request: UpstreamRequest = { model: 'gpt-5.6', system: 'S', user: 'U' };
+  const never = async (): Promise<Response> => {
+    throw new Error('doprava se zavolala, přestože měla odmítnout dřív');
+  };
+
+  it('metrovaná doprava odmítne nemetrovanou konfiguraci', async () => {
+    await expect(openAiTransport(never).complete(request, subscriptionConfig())).rejects.toThrow(/openai-chat/);
+  });
+
+  it('anthropicská doprava odmítne model mluvící jiným tvarem', async () => {
+    await expect(anthropicTransport(never).complete(request, okConfig())).rejects.toThrow(/anthropic-messages/);
+  });
+
+  it('dopravu vybírá allowlist podle tvaru drátu', async () => {
+    let hit = '';
+    const toProxy = async (url: RequestInfo | URL): Promise<Response> => {
+      hit = String(url);
+      return anthropicReply('{}', VALID_USAGE);
+    };
+    await transportFor(subscriptionConfig(), toProxy).complete(request, subscriptionConfig());
+    expect(hit).toContain('localhost');
+
+    const toApi = async (url: RequestInfo | URL): Promise<Response> => {
+      hit = String(url);
+      return new Response(
+        JSON.stringify({ choices: [{ message: { content: '{}' } }], usage: { prompt_tokens: 1, completion_tokens: 1 } }),
+        { status: 200 },
+      );
+    };
+    await transportFor(okConfig(), toApi).complete(request, okConfig());
+    expect(hit).toContain('api.openai.com');
+  });
+});
+
+describe('brána profilu — co smí být výsledek brány', () => {
+  const report = (profile: ProviderProfile, caseProfiles: readonly ProviderProfile[]): LiveReport =>
+    ({
+      runId: 'R',
+      model: 'm',
+      profile,
+      cases: caseProfiles.map((each, index) => ({ id: `C0${index}`, profile: each })),
+      records: [],
+      counts: { FULFILLED: 0, ROBUST: 0, NO_FIT: 0, FAULT: 0 },
+      fulfilled: 0,
+      attempted: caseProfiles.length,
+      total: caseProfiles.length,
+      complete: true,
+      stoppedReason: null,
+      spentUsd: 0,
+      capUsd: 50,
+      calls: caseProfiles.length,
+      callCap: null,
+      browserReplays: 0,
+      responsesDir: '',
+      failures: [],
+      ok: true,
+    }) as unknown as LiveReport;
+
+  it('celý api běh projde', () => {
+    expect(() => assertGateProfile(report('api', ['api', 'api']))).not.toThrow();
+  });
+
+  it('běh přes předplatné neprojde, i když je jinak bez chyby', () => {
+    expect(() => assertGateProfile(report('subscription', ['subscription']))).toThrow(ProfileGateError);
+  });
+
+  it('smíchaný běh neprojde — kontroluje se po případech, ne hlavička', () => {
+    // Hlavička říká `api`, ale polovina čitatele vznikla přes předplatné.
+    // Kontrola nad jednou hodnotou by tenhle běh pustila.
+    expect(() => assertGateProfile(report('api', ['api', 'subscription']))).toThrow(ProfileGateError);
+    expect(() => assertGateProfile(report('api', ['api', 'subscription']))).toThrow(/subscription/);
+  });
+
+  it('prázdný běh neprojde — nic nedokazuje', () => {
+    // `every()` nad prázdným polem je `true`, takže bez téhle podmínky by
+    // report bez jediného případu prošel jako čistý.
+    expect(() => assertGateProfile(report('api', []))).toThrow(ProfileGateError);
+  });
+
+  it('vyhrazené jméno souboru dostane jedině api běh', () => {
+    expect(reportPath(report('api', ['api']), '/x')).toBe(join('/x', 'evals', 'kill-gate-report.json'));
+    expect(reportPath(report('subscription', ['subscription']), '/x')).toBe(
+      join('/x', 'evals', 'dev-report.subscription.json'),
+    );
+    // A smíchaný běh nedostane ani jedno jméno — spadne dřív.
+    expect(() => reportPath(report('api', ['subscription']), '/x')).toThrow(ProfileGateError);
+  });
+});
+
+describe('běh přes předplatné', () => {
+  it('razítkuje profil do uložené odpovědi i do výsledku případu', async () => {
+    const provider = fakeProvider([freshBody()]);
+    const report = await runLiveChain({ env: SUBSCRIPTION, provider, replay, promptIds: ['C01'], root: tempRoot() });
+
+    expect(report.profile).toBe('subscription');
+    expect(report.cases[0].profile).toBe('subscription');
+    // Dolary jsou `null`, ne nula: nula by tvrdila, že se měřila útrata.
+    expect(report.spentUsd).toBeNull();
+    expect(report.capUsd).toBeNull();
+    expect(report.cases[0].costUsd).toBeNull();
+    expect(report.calls).toBe(1);
+    expect(report.callCap).toBe(3);
+
+    const stored = JSON.parse(readFileSync(report.cases[0].responsePath, 'utf8')) as Record<string, unknown>;
+    expect(stored.profile, 'razítko chybí v artefaktu na disku').toBe('subscription');
+    expect(stored.endpoint).toContain('localhost');
+    expect(stored.costUsd).toBeNull();
+
+    // A ten běh se nesmí dostat do brány, i když je jinak bezvadný.
+    expect(report.failures).toEqual([]);
+    expect(() => assertGateProfile(report)).toThrow(ProfileGateError);
+  });
+
+  it('strop počtu volání zastaví běh přesně na svém čísle', async () => {
+    const provider = fakeProvider([freshBody()]);
+    const report = await runLiveChain({
+      env: { ...SUBSCRIPTION, EVAL_CALL_CAP: '2' },
+      provider,
+      replay,
+      promptIds: ['C01', 'C02', 'C03', 'C04'],
+      root: tempRoot(),
+    });
+
+    expect(provider.calls, 'strop nezastavil přesně po druhém volání').toBe(2);
+    expect(report.attempted).toBe(2);
+    expect(report.complete).toBe(false);
+    expect(report.stoppedReason).toContain('CALL_CAP_EXHAUSTED');
+  });
+
+  it('padající volání se do stropu počítá — jinak by šla opakovat donekonečna', async () => {
+    const exploding: ProviderTransport = {
+      complete: async () => {
+        throw new Error('poskytovatel vrátil 500');
+      },
+    };
+    const report = await runLiveChain({
+      env: { ...SUBSCRIPTION, EVAL_CALL_CAP: '2' },
+      provider: exploding,
+      replay,
+      promptIds: ['C01', 'C02', 'C03'],
+      root: tempRoot(),
+    });
+
+    expect(report.calls).toBe(1);
+    expect(report.attempted).toBe(0);
+    expect(report.ok).toBe(false);
   });
 });

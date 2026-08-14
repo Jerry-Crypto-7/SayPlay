@@ -109,14 +109,24 @@ async function live(page: Page): Promise<LiveReport> {
 test('preflight odmítne běh dřív, než se cokoli utratí', () => {
   // Jediný test v souboru, který běží VŽDY — i bez objednávky a bez klíče.
   // Ověřuje bránu samotnou, ne model, a proto nic nestojí.
-  const result = preflight(process.env, 0);
+  const result = preflight(process.env);
   if (result.ok) {
-    expect(result.capUsd, 'strop musí být kladný').toBeGreaterThan(0);
-    expect(result.remainingUsd).toBeLessThanOrEqual(result.capUsd);
+    // Každý profil se ptá na svůj vlastní strop. Společné je jen to, že
+    // nějaký strop mít MUSÍ a že zbytek nesmí být větší než celek.
+    if (result.metered) {
+      expect(result.capUsd, 'strop musí být kladný').toBeGreaterThan(0);
+      expect(result.remainingUsd).toBeLessThanOrEqual(result.capUsd);
+    } else {
+      expect(result.callCap, 'strop počtu volání musí být kladný').toBeGreaterThan(0);
+      expect(result.callsRemaining).toBeLessThanOrEqual(result.callCap);
+    }
     return;
   }
   expect(
-    ['NO_CREDENTIALS', 'NO_MODEL', 'MODEL_NOT_ALLOWED', 'NO_SPEND_CAP', 'INVALID_SPEND_CAP', 'NO_PRICE', 'INVALID_PRICE', 'CAP_EXHAUSTED'],
+    [
+      'NO_CREDENTIALS', 'NO_MODEL', 'MODEL_NOT_ALLOWED', 'NO_SPEND_CAP', 'INVALID_SPEND_CAP',
+      'NO_PRICE', 'INVALID_PRICE', 'CAP_EXHAUSTED', 'NO_CALL_CAP', 'INVALID_CALL_CAP', 'CALL_CAP_EXHAUSTED',
+    ],
     'preflight vrátil důvod, který neumí pojmenovat',
   ).toContain(result.reason);
   expect(result.detail.length, 'selhání bez návodu pro člověka').toBeGreaterThan(20);
@@ -198,16 +208,23 @@ test('běh nepřekročil schválený strop a neúplnost přizná', async ({ page
   test.setTimeout(900_000);
   const report = await live(page);
 
+  const budget =
+    report.spentUsd === null
+      ? `calls=${report.calls}/${String(report.callCap)} (předplatné, dolary neplatí)`
+      : `spent=${report.spentUsd.toFixed(4)}/${(report.capUsd ?? 0).toFixed(2)} USD`;
+
   console.log(
-    ['', `=== live chain (T18) run=${report.runId} model=${report.model} ===`,
+    ['', `=== live chain (T18) run=${report.runId} model=${report.model} profile=${report.profile} ===`,
       ...report.cases.map((result) =>
-        `${result.id.padEnd(4)} verdict=${result.verdict.padEnd(9)} stopped=${String(result.stoppedAt).padEnd(10)} parsed=${result.parsedVia.padEnd(11)} browser=${result.browserReplayed ? 'yes' : 'no '} cost=${result.costUsd.toFixed(5)} unmet=${result.unmet.join(',')}`,
+        `${result.id.padEnd(4)} verdict=${result.verdict.padEnd(9)} stopped=${String(result.stoppedAt).padEnd(10)} parsed=${result.parsedVia.padEnd(11)} browser=${result.browserReplayed ? 'yes' : 'no '} cost=${result.costUsd === null ? '   n/a ' : result.costUsd.toFixed(5)} unmet=${result.unmet.join(',')}`,
       ),
-      `counts=${JSON.stringify(report.counts)} attempted=${report.attempted}/${report.total} spent=${report.spentUsd.toFixed(4)}/${report.capUsd.toFixed(2)} USD complete=${report.complete}`,
+      `counts=${JSON.stringify(report.counts)} attempted=${report.attempted}/${report.total} ${budget} complete=${report.complete}`,
       ...report.failures.map((failure) => `FAIL ${failure.kind} ${failure.caseId}: ${failure.detail}`), ''].join('\n'),
   );
 
-  expect(report.spentUsd, 'běh přeutratil schválený strop').toBeLessThanOrEqual(report.capUsd);
+  if (report.spentUsd !== null)
+    expect(report.spentUsd, 'běh přeutratil schválený strop').toBeLessThanOrEqual(report.capUsd!);
+  else expect(report.calls, 'běh překročil strop počtu volání').toBeLessThanOrEqual(report.callCap!);
 
   // Neúplnost není selhání, ale nesmí se zamlčet: useknutý běh vykázaný jako
   // úplný by prošel do statistiky T20 jako plnohodnotná sada.

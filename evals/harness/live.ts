@@ -70,9 +70,11 @@ import {
   costUsd,
   preflight,
   withLiveModel,
+  type ApiConfig,
   type Env,
   type LiveConfig,
   type PreflightFailure,
+  type ProviderProfile,
   type Usage,
 } from './preflight';
 
@@ -117,7 +119,7 @@ export const MAX_OUTPUT_TOKENS = 16_000;
  * přes schválený strop. Výstup mez nemá odhadnutou, ale vynucenou
  * (`MAX_OUTPUT_TOKENS`).
  */
-export function worstCaseCostUsd(request: UpstreamRequest, config: LiveConfig): number {
+export function worstCaseCostUsd(request: UpstreamRequest, config: ApiConfig): number {
   const inputTokens = Math.ceil((request.system.length + request.user.length) / 2);
   return costUsd({ inputTokens, outputTokens: MAX_OUTPUT_TOKENS }, config);
 }
@@ -132,6 +134,12 @@ export function worstCaseCostUsd(request: UpstreamRequest, config: LiveConfig): 
 export function openAiTransport(fetchImpl: typeof fetch = fetch): ProviderTransport {
   return {
     async complete(request, config) {
+      // Doprava a tvar drátu k sobě musí sedět. Přehozené zapojení by jinak
+      // poslalo klíč na `localhost` nebo naopak jelo na placený endpoint bez
+      // něj — obojí je chyba, kterou žádný test nad odpovědí nechytne.
+      assertWire(config, 'openai-chat');
+      if (!config.metered) throw new Error('openAiTransport je metrovaná doprava; profil subscription na ni nepatří');
+
       const response = await fetchImpl(config.model.url, {
         method: 'POST',
         headers: {
@@ -181,6 +189,79 @@ export function openAiTransport(fetchImpl: typeof fetch = fetch): ProviderTransp
   };
 }
 
+function assertWire(config: LiveConfig, expected: LiveConfig['model']['wire']): void {
+  if (config.model.wire !== expected)
+    throw new Error(`doprava čeká tvar ${expected}, ale model ${config.model.id} mluví ${config.model.wire}`);
+}
+
+/**
+ * Anthropicský tvar zprávy — v P1 cesta k lokální proxy nad předplatným.
+ *
+ * Dva rozdíly proti OpenAI dopravě, oba vynucené protistranou:
+ *
+ * 1. **Systémová zpráva je vlastní pole**, ne první zpráva v poli. Poslat ji
+ *    jako `role: 'system'` uvnitř `messages` je u tohohle tvaru chyba 400.
+ * 2. **Není `response_format`.** JSON se nedá vynutit parametrem, takže se
+ *    spoléhá na systémovou instrukci a na `extractJson`, který obalení do
+ *    fence stejně vykáže přes `parsedVia`. Ticho o tom by znamenalo měřit něco
+ *    jiného, než co model poslal.
+ *
+ * Klíč se sem nedostane: nemetrovaný profil žádný nemá a proxy autorizaci
+ * nečte — přihlášení drží ona sama.
+ */
+export function anthropicTransport(fetchImpl: typeof fetch = fetch): ProviderTransport {
+  return {
+    async complete(request, config) {
+      assertWire(config, 'anthropic-messages');
+
+      const response = await fetchImpl(config.model.url, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'anthropic-version': '2023-06-01',
+          authorization: `Bearer ${config.metered ? config.apiKey : 'unused'}`,
+        },
+        body: JSON.stringify({
+          model: request.model,
+          system: request.system,
+          messages: [{ role: 'user', content: request.user }],
+          max_tokens: MAX_OUTPUT_TOKENS,
+        }),
+      });
+
+      const raw: unknown = await response.json().catch(() => null);
+      if (!response.ok) {
+        const error = (raw as { error?: { type?: unknown; message?: unknown } } | null)?.error;
+        throw new Error(
+          `poskytovatel vrátil ${response.status} (type=${String(error?.type ?? 'neuveden')})`,
+        );
+      }
+
+      const blocks = (raw as { content?: { type?: unknown; text?: unknown }[] } | null)?.content;
+      const text = (Array.isArray(blocks) ? blocks : [])
+        .filter((block) => block.type === 'text' && typeof block.text === 'string')
+        .map((block) => block.text as string)
+        .join('');
+      const reported = (raw as { usage?: { input_tokens?: number; output_tokens?: number } } | null)?.usage;
+
+      // Táž fail-closed logika jako u metrované dopravy. Tady sice nejde o
+      // dolary, ale počty tokenů se ukládají do artefaktu a nula místo
+      // neznámé hodnoty je tichá lež o tom, co běh stál.
+      if (!isTokenCount(reported?.input_tokens) || !isTokenCount(reported?.output_tokens))
+        throw new Error(
+          `poskytovatel nevykázal usage (input=${String(reported?.input_tokens)}, output=${String(reported?.output_tokens)})`,
+        );
+
+      return { raw, text, usage: { inputTokens: reported.input_tokens!, outputTokens: reported.output_tokens! } };
+    },
+  };
+}
+
+/** Dopravu vybírá **allowlist**, ne volající. Profil se tím nedá obejít. */
+export function transportFor(config: LiveConfig, fetchImpl: typeof fetch = fetch): ProviderTransport {
+  return config.model.wire === 'openai-chat' ? openAiTransport(fetchImpl) : anthropicTransport(fetchImpl);
+}
+
 // ---------------------------------------------------------------------------
 // Uložení odpovědi — artefakt, na kterém stojí kotva řetězu
 // ---------------------------------------------------------------------------
@@ -194,13 +275,24 @@ export interface LiveRecord {
   readonly runId: string;
   readonly forPrompt: string;
   readonly branch: 'create';
+  /**
+   * Profil, kterým odpověď přišla — razítko, ne dopočet.
+   *
+   * Zapisuje se ve chvíli uložení odpovědi, tedy tam, kde ještě existuje
+   * konfigurace volání. Odvodit ho zpětně z reportu by znamenalo, že o původu
+   * čísla rozhoduje ten, kdo report skládá; tady o něm rozhoduje volání samo.
+   */
+  readonly profile: ProviderProfile;
+  /** Kam to doopravdy šlo. U předplatného `localhost`, a je to vidět. */
+  readonly endpoint: string;
   /** Požadavek, který doopravdy odešel. **Bez klíče** — ten se nikam neukládá. */
   readonly request: UpstreamRequest;
   readonly raw: unknown;
   readonly body: unknown;
   readonly parsedVia: ParsedVia;
   readonly usage: Usage;
-  readonly costUsd: number;
+  /** `null` u nemetrovaného profilu. Nula by tvrdila, že volání stálo nula. */
+  readonly costUsd: number | null;
 }
 
 /**
@@ -320,6 +412,8 @@ export interface LiveFailure {
 
 export interface LiveCaseResult {
   readonly id: string;
+  /** Razítko z uložené odpovědi. Brána ho čte **po případech**, ne z hlavičky. */
+  readonly profile: ProviderProfile;
   readonly verdict: Verdict;
   readonly gates: readonly string[];
   readonly unmet: readonly string[];
@@ -334,7 +428,7 @@ export interface LiveCaseResult {
   readonly bodyHash: string;
   readonly responsePath: string;
   readonly usage: Usage;
-  readonly costUsd: number;
+  readonly costUsd: number | null;
   readonly records: readonly StageRecord[];
   readonly failures: readonly LiveFailure[];
 }
@@ -342,6 +436,8 @@ export interface LiveCaseResult {
 export interface LiveReport {
   readonly runId: string;
   readonly model: string;
+  /** Profil běhu. Kill gate report smí vzniknout jedině z `api` — viz `assertGateProfile`. */
+  readonly profile: ProviderProfile;
   readonly cases: readonly LiveCaseResult[];
   readonly records: readonly StageRecord[];
   readonly counts: Readonly<Record<Verdict, number>>;
@@ -352,8 +448,17 @@ export interface LiveReport {
   /** `false` = běh se zastavil na stropu a výsledek je NEÚPLNÝ. */
   readonly complete: boolean;
   readonly stoppedReason: string | null;
-  readonly spentUsd: number;
-  readonly capUsd: number;
+  /**
+   * Rozpočet v jednotce svého profilu. Ta druhá je `null`, ne nula.
+   *
+   * Nula by u předplatného tvrdila „utraceno 0 USD", což zní jako měření a je
+   * to jen neplatná otázka. Počet volání se vykazuje vždycky — je to jediná
+   * veličina, která má smysl v obou profilech.
+   */
+  readonly spentUsd: number | null;
+  readonly capUsd: number | null;
+  readonly calls: number;
+  readonly callCap: number | null;
   readonly browserReplays: number;
   readonly responsesDir: string;
   readonly failures: readonly LiveFailure[];
@@ -381,7 +486,7 @@ async function runLiveCreate(
   const id = prompt.id;
   const failures: LiveFailure[] = [];
   const { body, via } = extractJson(completion.text);
-  const spent = costUsd(completion.usage, config);
+  const spent = config.metered ? costUsd(completion.usage, config) : null;
 
   const stored = storeResponse(
     {
@@ -389,6 +494,8 @@ async function runLiveCreate(
       runId,
       forPrompt: id,
       branch: 'create',
+      profile: config.profile,
+      endpoint: config.model.url,
       // Týž objekt, který odešel k poskytovateli — ne druhá konstrukce téhož.
       request,
       raw: completion.raw,
@@ -488,6 +595,7 @@ async function runLiveCreate(
 
   return {
     id,
+    profile: config.profile,
     verdict: score.verdict,
     gates: score.gates,
     unmet: score.requirements.filter((requirement) => !requirement.met).map((requirement) => requirement.rid),
@@ -505,6 +613,52 @@ async function runLiveCreate(
     records: log.records,
     failures,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Brána profilu — jediné místo, kde se rozhoduje, co smí být výsledek brány
+// ---------------------------------------------------------------------------
+
+export class ProfileGateError extends Error {
+  constructor(readonly found: readonly ProviderProfile[]) {
+    super(
+      `kill gate report smí vzniknout jedině z profilu api, ale běh nese ${found.join(', ')}. ` +
+        'Vývojové měření přes předplatné není výsledek brány — spusť ho znovu s api modelem z allowlistu.',
+    );
+    this.name = 'ProfileGateError';
+  }
+}
+
+/**
+ * Odmítne cokoli, co není celé `api`.
+ *
+ * **Čte profily po případech, ne hlavičku reportu.** Hlavička nese profil
+ * preflightu, tedy úmysl na začátku běhu; případ nese razítko z uložené
+ * odpovědi, tedy původ toho konkrétního čísla. Smíchaný běh — část přes
+ * předplatné, část přes API — má hlavičku v pořádku a přesto by vykázal
+ * čitatele, jehož polovina nevznikla tam, kde tvrdí. Proto se kontroluje
+ * množina, ne jedna hodnota.
+ *
+ * Prázdný běh se odmítá taky: report bez jediného případu nedokazuje nic a
+ * `every()` nad prázdným polem vrací `true`, takže by branou prošel jako čistý.
+ */
+export function assertGateProfile(report: LiveReport): void {
+  const found = new Set<ProviderProfile>([report.profile, ...report.cases.map((result) => result.profile)]);
+  if (report.cases.length === 0) throw new ProfileGateError([...found]);
+  if (found.size !== 1 || !found.has('api')) throw new ProfileGateError([...found]);
+}
+
+/**
+ * Kam se report smí zapsat.
+ *
+ * Jméno souboru nese profil, takže vývojový výsledek nemá jak skončit pod
+ * jménem produkčního — a `evals/kill-gate-report.json` je vyhrazené jméno,
+ * které vrátí jedině běh, co prošel `assertGateProfile`.
+ */
+export function reportPath(report: LiveReport, root: string = process.cwd()): string {
+  if (report.profile !== 'api') return join(root, 'evals', `dev-report.${report.profile}.json`);
+  assertGateProfile(report);
+  return join(root, 'evals', 'kill-gate-report.json');
 }
 
 /** Gramatika se čte jednou; nečitelný zmrazený protokol je rozbité prostředí. */
@@ -548,7 +702,7 @@ export async function runLiveChain(options: LiveOptions): Promise<LiveReport> {
   const runId = options.runId ?? randomUUID();
 
   // PŘED prvním placeným voláním. Selhání tady je odmítnutí startu, ne výsledek.
-  const initial = preflight(options.env, 0);
+  const initial = preflight(options.env);
   if (!initial.ok) throw new PreflightError(initial);
 
   const contracts = new Map(loadContracts().map((contract) => [contract.id, contract]));
@@ -559,11 +713,13 @@ export async function runLiveChain(options: LiveOptions): Promise<LiveReport> {
   const cases: LiveCaseResult[] = [];
   const failures: LiveFailure[] = [];
   let spentUsd = 0;
+  let calls = 0;
   let stoppedReason: string | null = null;
 
   for (const prompt of prompts) {
-    // Strop se kontroluje PŘED každým dalším voláním, ne po něm.
-    const gate = preflight(options.env, spentUsd);
+    // Strop se kontroluje PŘED každým dalším voláním, ne po něm. Který strop
+    // to je, rozhoduje profil — dolary u metrovaného, počet volání u předplatného.
+    const gate = preflight(options.env, { usd: spentUsd, calls });
     if (!gate.ok) {
       stoppedReason = `${gate.reason}: ${gate.detail}`;
       break;
@@ -580,13 +736,22 @@ export async function runLiveChain(options: LiveOptions): Promise<LiveReport> {
     // **Tvrdý strop rezervuje nejhorší cenu volání, ne nulovou.** Pustit
     // volání jen proto, že do stropu ještě něco zbývá, znamená překročit ho
     // o celé jedno volání — schválená částka je pak horní mez jen přibližně.
-    const reserve = worstCaseCostUsd(request, gate);
-    if (reserve > gate.remainingUsd) {
+    //
+    // U předplatného se nerezervuje nic a není to mezera: jedno volání stojí
+    // právě jednu jednotku toho stropu, takže `CALL_CAP_EXHAUSTED` z preflightu
+    // sepne přesně a odhad nejhoršího případu nemá co odhadovat.
+    const reserve = gate.metered ? worstCaseCostUsd(request, gate) : 0;
+    if (gate.metered && reserve > gate.remainingUsd) {
       stoppedReason = `CAP_RESERVE: zbývá ${gate.remainingUsd.toFixed(5)} USD, ale volání může stát až ${reserve.toFixed(5)} USD`;
       break;
     }
 
     let completion: LiveCompletion;
+    // **Počítá se před odesláním, ne po návratu.** Volání, které skončí
+    // výjimkou, protistranu stejně zatížilo — kdyby se přičítalo až po
+    // úspěchu, dala by se řada padajících volání opakovat donekonečna a strop
+    // počtu volání by nedržel nic.
+    calls += 1;
     try {
       completion = await options.provider.complete(request, gate);
       // Platí pro KAŽDOU dopravu, ne jen pro tu naši: nepoužitelné `usage`
@@ -609,7 +774,7 @@ export async function runLiveChain(options: LiveOptions): Promise<LiveReport> {
     }
 
     const result = await runLiveCreate(prompt, contract, request, completion, gate, runId, options.replay, frozenHashes, root);
-    spentUsd += result.costUsd;
+    spentUsd += result.costUsd ?? 0;
     cases.push(result);
     failures.push(...result.failures);
   }
@@ -626,6 +791,7 @@ export async function runLiveChain(options: LiveOptions): Promise<LiveReport> {
   return {
     runId,
     model: initial.model.id,
+    profile: initial.profile,
     cases,
     records: cases.flatMap((result) => result.records),
     counts,
@@ -637,8 +803,10 @@ export async function runLiveChain(options: LiveOptions): Promise<LiveReport> {
     // hotové měření, které nezměřilo nic.
     complete: stoppedReason === null && prompts.length > 0 && cases.length === prompts.length,
     stoppedReason,
-    spentUsd,
-    capUsd: initial.capUsd,
+    spentUsd: initial.metered ? spentUsd : null,
+    capUsd: initial.metered ? initial.capUsd : null,
+    calls,
+    callCap: initial.metered ? null : initial.callCap,
     browserReplays: cases.filter((result) => result.browserReplayed).length,
     responsesDir: responsesDir(runId, root),
     failures,
