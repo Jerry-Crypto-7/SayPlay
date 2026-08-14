@@ -31,6 +31,31 @@
  * `__tests__/prompt.test.ts`: vezme příklad **z hotového textu zprávy**, ne
  * z konstanty, a protáhne ho validací, snížením i verifikací svědka. Až se
  * povrch pohne, zčervená prompt, ne až měření.
+ *
+ * ## Co našel druhý živý běh (15 create promptů, 14. 8. 2026)
+ *
+ * Tvar už seděl — schématem prošlo všech patnáct. Zbyly dvě věci, které zpráva
+ * pořád neříkala, a obě jsou stejného druhu jako výše: nejsou odvoditelné.
+ *
+ * 1. **`moveTo` ve svědkovi míří na ENTITU, ne na soket.** Pravidlo chůze se
+ *    generuje v `src/ir/build.ts:253` cyklem přes `entityIds`, takže
+ *    `sys.moveTo.<soket>` nikdy nevznikne a op se soketem v cíli nespustí nic:
+ *    stopa stojí na místě a doběhne do konce horizontu jako `NO_WIN`. Přesně
+ *    tohle zabilo pět z devíti měřitelných create záznamů — svědek byl jinak
+ *    smysluplný, jen jmenoval `redKeySocket` místo `redKey`. Zpráva přitom o
+ *    kanonickém `moveTo` mluvila, ale slovem *„socket"*, což ke stejné chybě
+ *    přímo vede. `src/ir/surface.ts:19` tu vlastnost popisuje od začátku.
+ * 2. **Klíče `look.modules` musí být stabilní id deklarované entity**
+ *    (`src/ir/references.ts:236`). Model si pod „modules" přirozeně představil
+ *    kulisy (`environment`, `maze_environment`, `pressureHull`) a čtyři z
+ *    patnácti emisí kvůli tomu skončily na `DANGLING_REFERENCE` — na vadě
+ *    v `look`, která se `sim` vůbec netýká.
+ *
+ * **Příklad sám dvojku ani jedničku naučit nemohl:** sokety se v něm jmenovaly
+ * stejně jako entity (`lever`, `gate`), takže z `target: "lever"` nešlo poznat,
+ * které z těch dvou jmen tam patří. Teď mají sokety vlastní jména (`leverPad`),
+ * a `__tests__/prompt.test.ts` na tu nekolizi má aserci — bez ní by se příklad
+ * mohl kdykoli vrátit k dvojznačnému tvaru a testy by mlčely.
  */
 
 /** Slovník ze zmrazeného protokolu. Čte ho `./client`, sem se jen předává. */
@@ -83,12 +108,12 @@ const EXAMPLE_WORLD = {
   sim: {
     layout: { width: 12, height: 8 },
     grid: { cell: 1 },
-    sockets: { spawn: [1, 4], lever: [5, 4], gate: [10, 4] },
+    sockets: { spawnPad: [1, 4], leverPad: [5, 4], gatePad: [10, 4] },
     collisionAabb: { player: [1, 4, 1, 1], lever: [5, 4, 1, 1], gate: [10, 4, 1, 2] },
     entities: {
-      player: { role: 'actor', socket: 'spawn', state: 'idle' },
-      lever: { role: 'prop', socket: 'lever', state: 'down' },
-      gate: { role: 'goal', socket: 'gate', state: 'shut', locked: true },
+      player: { role: 'actor', socket: 'spawnPad', state: 'idle' },
+      lever: { role: 'prop', socket: 'leverPad', state: 'down' },
+      gate: { role: 'goal', socket: 'gatePad', state: 'shut', locked: true },
     },
     state: {
       counters: {},
@@ -111,7 +136,7 @@ const EXAMPLE_WORLD = {
       escape: {
         phase: 1,
         priority: 0,
-        event: { kind: 'onEnterZone', entity: 'player', zone: 'gate' },
+        event: { kind: 'onEnterZone', entity: 'player', zone: 'gatePad' },
         condition: { kind: 'flagIs', flag: 'powered', value: true },
         actions: [{ kind: 'win' }],
       },
@@ -150,7 +175,10 @@ export function buildEmissionRequest(prompt: string, grammar: Grammar): Upstream
     '',
     `sim carries: ${grammar.simFields.join(', ')}. It is inside the state hash.`,
     `look carries: ${grammar.lookFields.join(', ')}. It is outside the state hash, and its only`,
-    'permitted link into sim is an entity stableId.',
+    'permitted link into sim is an entity stableId. Every key of look.modules IS one: it must appear',
+    'in sim.entities. There are no scenery-only modules — a key like "environment" or "maze" that names',
+    'no entity is a dangling reference and the whole emission is rejected. Put scenery in palette,',
+    'atmosphere and lightRig, or declare it as an entity first.',
     '',
     `Rules fire on these events: ${grammar.surfaceEvents.join(', ')}.`,
     `Guards use these conditions: ${grammar.conditions.join(', ')}.`,
@@ -160,6 +188,16 @@ export function buildEmissionRequest(prompt: string, grammar: Grammar): Upstream
     'sim.witness is a finite admissible input trace in canonical sim actions. It must reach win()',
     'inside the horizon of the tier it asks for. You may request a tier; you may not declare the',
     'horizon — the system does that.',
+    '',
+    'WALKING, and the single most expensive mistake you can make here.',
+    'Every op target in sim.witness names an ENTITY stableId from sim.entities. Never a socket name,',
+    'never a zone name. { actionId: "moveTo", target: "redKey" } walks the actor to whatever socket the',
+    'entity redKey sits on. { actionId: "moveTo", target: "redKeySocket" } matches no rule at all: the',
+    'actor does not move, the trace still runs to the end of the horizon, and the world is rejected as',
+    'NO_WIN even though every rule in it was right. To send the actor to a place that holds no entity,',
+    'declare an entity there and walk to that.',
+    'Each socket is also a 1x1 zone of the same name, so onEnterZone may name a socket — that is the',
+    'one place a socket name belongs. Zones in sim.state.zones are for anything larger.',
     '',
     'SHAPE. The interpreter reads these exact containers and field names. A world that renames them',
     'is discarded whole, however sensible the alternative looks.',
@@ -198,8 +236,9 @@ export function buildEmissionRequest(prompt: string, grammar: Grammar): Upstream
     '',
     'The clock runs at 20 ticks per second, so a 60-second timer is durationTicks 1200. Horizon caps are',
     'short 600 ticks, standard 1200, long 3600 — ask for the tier that fits the witness you wrote.',
-    'The system already turns the canonical moveTo action into movement to a socket; you do not write',
-    'a rule for walking.',
+    'The system already binds the canonical moveTo action for every entity that sits on a socket, so you',
+    'never write a rule for walking. The moveTo ACTION inside a rule is the other thing: it moves some',
+    'entity you name, and it does take {target, socket, ticks}.',
     '',
     EXAMPLE_MARKER,
     JSON.stringify(EXAMPLE_WORLD, null, 2),

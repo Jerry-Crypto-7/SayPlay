@@ -74,11 +74,66 @@ describe('příklad ve zprávě je platná emise', () => {
   });
 });
 
+/**
+ * Druhý živý běh: patnáct emisí prošlo schématem a pět z devíti měřitelných
+ * přesto skončilo `NO_WIN`, protože svědek jmenoval soket místo entity. Příklad
+ * to tehdy naučit nemohl — `lever` byl současně entita i soket, takže z
+ * `target: "lever"` nešlo poznat, co tam patří. Tyhle tři testy drží obojí: že
+ * příklad tu dvojznačnost nemá, a že vlastnost, kterou zpráva tvrdí, opravdu
+ * platí o interpretu.
+ */
+describe('příklad učí, kam smí mířit svědek', () => {
+  const example = () => exampleFromMessage() as { sim: Record<string, Record<string, unknown>>; look: Record<string, unknown> };
+
+  it('jméno soketu se nekryje se jménem entity', () => {
+    const sim = example().sim;
+    const collide = Object.keys(sim.sockets).filter((socket) => socket in sim.entities);
+    expect(collide, 'příklad je dvojznačný: soket se jmenuje stejně jako entita').toEqual([]);
+  });
+
+  it('každý cíl svědka je deklarovaná entita', () => {
+    const sim = example().sim;
+    const ops = (sim.witness as { ops: readonly { target: string }[] }).ops;
+    expect(ops.length, 'příklad nemá jediný op — test by neměřil nic').toBeGreaterThan(0);
+    for (const op of ops) expect(sim.entities, `cíl ${op.target} není entita`).toHaveProperty(op.target);
+  });
+
+  it('cíl na soketu opravdu nedojde do výhry', () => {
+    // Tvrzení zprávy proti skutečnému chování. Kdyby se povrch změnil a soket
+    // v cíli začal fungovat, zčervená tenhle test — a věta ve zprávě je pak
+    // zbytečně strašící, ne popis systému.
+    const doc = example();
+    const socketOf = doc.sim.entities as Record<string, { socket: string }>;
+    const ops = (doc.sim.witness as { ops: readonly { target: string }[] }).ops;
+    const sim = {
+      ...doc.sim,
+      witness: { ...doc.sim.witness, ops: ops.map((op) => ({ ...op, target: socketOf[op.target].socket })) },
+    };
+    const built = buildRuntimeWorld(sim);
+    expect(built.ok, 'svět se soketem v cíli se nepostavil — test měří něco jiného, než měl').toBe(true);
+    if (!built.ok) return;
+    expect(verifyWitness(built.world, built.world.trace).verdict).not.toBe('CERTIFIED');
+  });
+
+  it('každý klíč look.modules je deklarovaná entita', () => {
+    const doc = example();
+    for (const key of Object.keys(doc.look.modules as Record<string, unknown>))
+      expect(doc.sim.entities, `look.modules.${key} nepojmenovává entitu`).toHaveProperty(key);
+  });
+});
+
 describe('zpráva nese slovník i tvar', () => {
   it('jmenuje kontejnery, na kterých snížení stojí', () => {
     const system = buildEmissionRequest('anything', grammar()).system;
     // Přesně ta pole, na kterých padly všechny tři emise z prvního živého běhu.
     for (const named of ['sim.layout', 'width, height', 'keyed by stableId', 'keyed by ruleId', 'durationTicks'])
+      expect(system, `zpráva mlčí o ${named}`).toContain(named);
+  });
+
+  it('pojmenuje obě vady druhého živého běhu', () => {
+    const system = buildEmissionRequest('anything', grammar()).system;
+    // Ne libovolná formulace: obojí je vlastnost, kterou model nemá odkud vzít.
+    for (const named of ['names an ENTITY stableId', 'Never a socket name', 'key of look.modules'])
       expect(system, `zpráva mlčí o ${named}`).toContain(named);
   });
 
