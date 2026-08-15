@@ -15,7 +15,7 @@
  * někdy ocitl mezi trackovanými.
  */
 
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -43,6 +43,91 @@ function git(args, { allowFail = false } = {}) {
     if (allowFail) return typeof error.stdout === 'string' ? error.stdout : '';
     throw error;
   }
+}
+
+/**
+ * `git grep` přes CELOU dosažitelnou historii, po dávkách.
+ *
+ * Dvě věci, které naivní verze nezvládla a obě končily tichou zelenou:
+ *
+ * 1. **Délka argv.** Revize se předávají jako argumenty, a Windows má na
+ *    `CreateProcess` tvrdý limit. Naměřeno: 700 revizí vrátilo 78 zásahů, 800
+ *    revizí nula — `execFileSync` vyhodil a kontrola prohlásila za čistou
+ *    historii, kterou vůbec neotevřela. Proto dávky.
+ * 2. **Chyba vs. žádná shoda.** `git grep` vrací 1, když nenašel nic, a ≥2 při
+ *    chybě. Slít obojí do prázdného řetězce znamená číst rozbitý běh jako čistý.
+ *    Chyba se proto vyhazuje a hlásí jako selhání kontroly.
+ */
+function grepHistory(patterns, pathspec, { extended = false } = {}) {
+  // BEZ `allowFail`. Prázdný výstup smí znamenat „repozitář nemá commity" jenom
+  // tehdy, když git skončil nulou; rozbitý ref nebo chybějící objekt by se jinak
+  // četl jako čistá historie — a to je právě ta tichá zelená, kterou tahle
+  // funkce zavírá o dva řádky níž u `git grep`.
+  let listing;
+  try {
+    listing = git(['rev-list', '--all']);
+  } catch (error) {
+    throw new Error(`historii se nepodařilo přečíst (${String(error.message).split('\n')[0]})`);
+  }
+  const revisions = listing.trim().split('\n').filter(Boolean);
+  if (revisions.length === 0) return '';
+
+  // Dávku smí test zmenšit, nikdy zvětšit — jinak by seam uměl vrátit tu vadu,
+  // kvůli které tu je. 160 commitů jen kvůli překročení hranice by stálo 26 s.
+  //
+  // **Co je a co není otestované:** testem je pokryté to, že se prochází i další
+  // dávky (zásah v druhé se najde). Samotná hodnota 150 pokrytá NENÍ — hranice
+  // argv leží mezi 700 a 800 revizemi a repozitář by kvůli tomu musel mít osm
+  // set commitů. Mutant, který dávku zvětší na celou historii, proto v testu
+  // přežije; je to omezení měřítka, ne děravé tvrzení.
+  const requested = Number(process.env.BLIND_CHECK_REV_CHUNK);
+  const CHUNK = Number.isInteger(requested) && requested > 0 ? Math.min(150, requested) : 150;
+
+  for (let start = 0; start < revisions.length; start += CHUNK) {
+    const args = ['grep', extended ? '-IinE' : '-Iin'];
+    for (const pattern of patterns) args.push('-e', pattern);
+    args.push(...revisions.slice(start, start + CHUNK), '--', ...pathspec);
+
+    // `spawnSync`, ne `execFileSync`: potřebujeme stderr i u nulového návratu.
+    const result = spawnSync('git', ['--no-replace-objects', ...args], {
+      cwd: REPO,
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    });
+
+    // **Návratový kód sám nestačí a je to ta nejtišší past v celém souboru.**
+    // `git grep` vrací 1 jak při „žádná shoda", tak když některý blob nešlo
+    // přečíst — nečitelný objekt jen ohlásí na stderr a jede dál. Naměřeno na
+    // repozitáři se smazaným loose objektem: `error: '<rev>:a.txt': unable to
+    // read <oid>`, exit 1. Číst to jako čistou historii by znamenalo hlásit
+    // zelenou nad soubory, které nikdo neotevřel.
+    const stderr = String(result.stderr ?? '').trim();
+    if (result.error || stderr || (result.status !== 0 && result.status !== 1)) {
+      const why = stderr.split('\n')[0] || result.error?.message || `git skončil s kódem ${result.status}`;
+      throw new Error(`git grep nad historií selhal (${why})`);
+    }
+    if (result.status === 0) {
+      const output = String(result.stdout ?? '').trim();
+      if (output) return output;
+    }
+  }
+  return '';
+}
+
+/**
+ * Každá cesta, která kdy vstoupila do libovolného commitu — ne jen ta, která je
+ * ve stromu `HEAD`. Soubor přidaný a v dalším commitu smazaný se nahraje stejně
+ * jistě jako ten, co zůstal; `git ls-tree HEAD` o něm neví.
+ *
+ * `--diff-filter=A` (přidání) stačí: cesta, která nikdy nebyla přidaná, v žádném
+ * commitu není. `-z` kvůli cestám s diakritikou, které by git jinak uvozoval a
+ * vedoucí uvozovka by rozbila porovnání vzorů.
+ */
+function historyPaths() {
+  const listing = git(['log', '--all', '--full-history', '--diff-filter=A', '--name-only', '--format=', '-z'], {
+    allowFail: true,
+  });
+  return [...new Set(listing.split('\0').map((line) => line.trim()).filter(Boolean))];
 }
 
 function loadConfig() {
@@ -116,21 +201,12 @@ check(3, 'committed content mentions neither AcmeCorp nor ACME', () => {
   // ne snímek: jméno vyškrtnuté v posledním commitu drží jeho rodič dál a
   // `git log -p` ho ukáže komukoli. Kontrola 4 vedle chodí přes `--all` ze
   // stejného důvodu.
-  const revisions = git(['rev-list', '--all'], { allowFail: true }).trim().split('\n').filter(Boolean);
-  if (revisions.length === 0) return null;
-
-  const args = ['grep', '-Iin'];
-  for (const token of PUBLIC_TOKENS) args.push('-e', token);
-  args.push(
-    ...revisions,
-    '--',
+  const output = grepHistory(PUBLIC_TOKENS, [
     '.',
     ':(exclude)SECURITY-FINDINGS.md',
     ':(exclude)scripts/blind-check.mjs',
     ':(exclude)scripts/__tests__/blind-check.test.ts',
-  );
-
-  const output = git(args, { allowFail: true }).trim();
+  ]);
   if (!output) return null;
   const lines = output.split('\n');
   return `${lines.length} zásahů v commitnuté historii, první: ${lines[0].slice(0, 160)}`;
@@ -166,9 +242,14 @@ check(5, 'every remote points at the anonymous account', (config) => {
   // Účet je jen půlka adresy. Jméno repozitáře je ta druhá a jde ven se stejnou
   // jistotou — hodnotitel dostane URL dřív než obsah. Kontrola 3 čte strom, takže
   // token v názvu repa jí projde: strom o svém vlastním URL nic neví.
+  //
+  // Hledá se TÝŽ seznam jako v kontrole 1, tedy i skutečné jméno autora. Samotné
+  // `PUBLIC_TOKENS` nechá projít `github.com/<správný-účet>/<jméno-autora>-hra.git`:
+  // účet sedí, jméno organizátora tam není, a jméno autora přesto jde ven.
+  const tokens = [...PUBLIC_TOKENS, ...config.identityTokens].filter(Boolean);
   const named = lines.filter((line) => {
     const url = (line.split(/\s+/)[1] ?? '').toLowerCase();
-    return PUBLIC_TOKENS.some((token) => url.includes(token.toLowerCase()));
+    return tokens.some((token) => url.includes(token.toLowerCase()));
   });
   return named.length ? `adresa remote sama nese zakázaný token: ${named[0]}` : null;
 });
@@ -178,16 +259,17 @@ check(5, 'every remote points at the anonymous account', (config) => {
  * syrové odpovědi poskytovatele (`evals/live/`). Obojí brání jen `.gitignore`,
  * a `.gitignore` je jediná editace od toho, aby nebránil nic — `git add -f` ho
  * obejde rovnou. Tahle kontrola je ta druhá vrstva: ptá se, co je doopravdy
- * v `HEAD`, ne co má být ignorované.
+ * v historii, ne co má být ignorované.
+ *
+ * **Celá historie, ne `HEAD`** — přesně jako kontrola 3 a ze stejného důvodu.
+ * `git add -f .env.local`, commit, `git rm`, commit: `HEAD` je čistý, klíč je
+ * v rodiči a push ho nahraje. Nad `HEAD` se to nedalo poznat.
  */
 check(6, 'no credentials or raw run artefacts entered history', () => {
   // `-z`: bez něj git cesty s ne-ASCII znaky uvozuje (`"evals/live/C\305\276.json"`),
   // a vedoucí uvozovka rozbije obě porovnání níž — soubor s diakritikou by
   // branou prošel.
-  const tracked = git(['ls-tree', '-r', '-z', '--name-only', 'HEAD'], { allowFail: true })
-    .split('\0')
-    .map((line) => line.trim())
-    .filter(Boolean);
+  const tracked = historyPaths();
   if (tracked.length === 0) return 'repozitář nemá žádný commit, není co ověřit';
 
   // Porovnává se na malá písmena: `.ENV.local` je na Windows i macOS funkční
@@ -216,9 +298,9 @@ check(6, 'no credentials or raw run artefacts entered history', () => {
   if (devReports.length > 0)
     return `vývojový report je trackovaný a plete se s výsledkem brány: ${devReports.join(', ')}`;
 
-  // Tvar API klíče v commitnutém obsahu. Hledá se nad `HEAD` ze stejného
-  // důvodu jako u kontroly 3: nahrávají se commity, ne pracovní strom.
-  const keys = git(['grep', '-InE', 'sk-[A-Za-z0-9_-]{20,}', 'HEAD', '--', '.'], { allowFail: true }).trim();
+  // Tvar API klíče kdekoli v commitnuté historii. Klíč smazaný v dalším commitu
+  // je pořád klíč, který se nahraje.
+  const keys = grepHistory(['sk-[A-Za-z0-9_-]{20,}'], ['.'], { extended: true });
   if (keys) return `commitnutý obsah nese řetězec ve tvaru API klíče: ${keys.split('\n')[0].slice(0, 160)}`;
 
   return null;

@@ -82,9 +82,9 @@ function makeRepo(fixture: Fixture = {}): string {
   return dir;
 }
 
-function blindCheck(cwd: string): { code: number; out: string } {
+function blindCheck(cwd: string, env: Record<string, string> = {}): { code: number; out: string } {
   try {
-    const out = execFileSync(process.execPath, [SCRIPT], { cwd, encoding: 'utf8' });
+    const out = execFileSync(process.execPath, [SCRIPT], { cwd, encoding: 'utf8', env: { ...process.env, ...env } });
     return { code: 0, out };
   } catch (error) {
     const failure = error as { status?: number; stdout?: string; stderr?: string };
@@ -177,6 +177,86 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
     const result = blindCheck(dir);
     expect(result.code).toBe(1);
     expect(failedChecks(result.out)).toEqual([3]);
+  });
+
+  it('[6] credentials přidané a v dalším commitu smazané', () => {
+    // `git add -f .env.local`, commit, `git rm`, commit. HEAD je čistý, klíč je
+    // v rodiči — a push nahraje rodiče taky.
+    const dir = makeRepo({ extraFile: { name: '.env.local', body: 'OPENAI_API_KEY=xxx\n' } });
+    run(dir, ['rm', '.env.local']);
+    run(dir, [...CLEAN_AUTHOR, 'commit', '-m', 'chore: remove']);
+
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([6]);
+  });
+
+  it('[6] tvar API klíče přežívá ve smazaném souboru', () => {
+    const shaped = `${'sk'}-abcdefghijklmnopqrstuvwxyz0123`;
+    const dir = makeRepo({ extraFile: { name: 'config.ts', body: `const key = '${shaped}';\n` } });
+    writeFileSync(join(dir, 'config.ts'), 'const key = process.env.KEY;\n', 'utf8');
+    run(dir, ['add', '-A']);
+    run(dir, [...CLEAN_AUTHOR, 'commit', '-m', 'fix: read key from env']);
+
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([6]);
+  });
+
+  it('[3] zásah v revizi až za hranicí dávky se pořád najde', () => {
+    // Revize se `git grep` předávají jako argumenty a Windows má na argv tvrdý
+    // limit: naměřeno 700 revizí → 78 zásahů, 800 revizí → nula, protože
+    // execFileSync vyhodil a kontrola prohlásila za čistou historii, kterou
+    // nikdy neotevřela. Dávky to řeší; tenhle test je zmenší, aby hranici
+    // překročilo pět commitů místo stopadesáti.
+    const dir = makeRepo({ extraFile: { name: 'notes.md', body: 'Postaveno pro AcmeCorp.\n' } });
+    writeFileSync(join(dir, 'notes.md'), 'Nic konkrétního.\n', 'utf8');
+    run(dir, ['add', '-A']);
+    run(dir, [...CLEAN_AUTHOR, 'commit', '-m', 'docs: scrub']);
+    for (let index = 0; index < 4; index += 1) {
+      run(dir, [...CLEAN_AUTHOR, 'commit', '--allow-empty', '-m', `chore: ${index}`]);
+    }
+
+    // `rev-list --all` vypisuje od nejnovější, takže znečištěný kořen leží až
+    // v druhé dávce. S jednou dávkou na všechno by tenhle test neměřil nic.
+    const result = blindCheck(dir, { BLIND_CHECK_REV_CHUNK: '2' });
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([3]);
+  });
+
+  it('[3] a [6] rozbitá historie je selhání, ne prázdný nález', () => {
+    // Kontroly nad historií skládají seznam revizí z `git rev-list --all`.
+    // Kdyby se chyba gitu četla jako prázdný výstup, hlásily by čistou historii,
+    // kterou nikdy neotevřely — tedy zelenou nad repozitářem, o kterém nic nevědí.
+    const dir = makeRepo();
+    writeFileSync(join(dir, '.git', 'refs', 'heads', 'main'), 'tohle není objekt\n', 'utf8');
+
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual(expect.arrayContaining([3, 6]));
+    expect(result.out).toContain('historii se nepodařilo přečíst');
+  });
+
+  it('[3] a [6] nečitelný objekt je selhání, i když git vrátí „žádná shoda"', () => {
+    // `git grep` vrací 1 jak při nulovém nálezu, tak když blob nešlo přečíst —
+    // rozdíl je jen na stderr. Číst obojí stejně by znamenalo hlásit čistou
+    // historii nad soubory, které nikdo neotevřel.
+    const dir = makeRepo();
+    const blob = execFileSync('git', ['rev-parse', 'HEAD:README.md'], { cwd: dir, encoding: 'utf8' }).trim();
+    rmSync(join(dir, '.git', 'objects', blob.slice(0, 2), blob.slice(2)), { force: true });
+
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual(expect.arrayContaining([3, 6]));
+    expect(result.out).toContain('git grep nad historií selhal');
+  });
+
+  it('[5] skutečné jméno autora v adrese, organizátor nikde', () => {
+    // `identityTokens` z configu, ne jen PUBLIC_TOKENS: účet sedí, jméno
+    // organizátora v URL není, a jméno autora přesto jde ven.
+    const result = blindCheck(makeRepo({ remote: `https://github.com/${ACCOUNT}/johndoe-hackathon.git` }));
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([5]);
   });
 
   it('[5] token v NÁZVU repozitáře, účet přitom správný', () => {
