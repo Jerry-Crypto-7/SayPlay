@@ -19,7 +19,8 @@
  *    soubor spadl do vlastní karantény.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -35,10 +36,15 @@ import {
   fallbackBytes,
   globalMembers,
   importSpecifiers,
+  isLocalConnect,
   isUnder,
   listFiles,
+  missingAfterRestore,
+  mixedChunks,
   moduleTail,
+  quarantineAll,
   resolveSpecifier,
+  restoreAll,
   scrubbedEnv,
   testId,
 } from '../../../scripts/prove-fallback-isolation.mjs';
@@ -274,6 +280,28 @@ describe('analyzerModules', () => {
     expect(moduleTail(`${SRC}/fallback/router.ts`)).toBe(`${SRC}/fallback/router.ts`);
   });
 
+  it('sdílený chunk fallbacku a jádra se pozná', () => {
+    // Kontrola nad úplným buildem: tam jádro existuje, takže tohle je jediná
+    // část analýzy, která umí selhat. Nad izolovaným buildem je pravdivá
+    // konstrukcí, protože jádro se před ním smazalo.
+    const shared = analyzerModules([
+      {
+        label: 'chunk-shared.js',
+        groups: [
+          { path: `./${SRC}/kit/index.ts`, statSize: 10 },
+          { path: `./${SRC}/sim/interpreter.ts`, statSize: 20 },
+        ],
+      },
+      { label: 'chunk-clean.js', groups: [{ path: `./${SRC}/fallback/loop.ts`, statSize: 30 }] },
+      { label: 'chunk-core.js', groups: [{ path: `./${SRC}/ir/build.ts`, statSize: 40 }] },
+    ]);
+
+    expect(mixedChunks(shared)).toEqual([
+      { chunk: 'chunk-shared.js', core: [`${SRC}/sim/interpreter.ts`] },
+    ]);
+    expect(mixedChunks(analyzerModules(report))).toEqual([]);
+  });
+
   it('měří jen fallback a kit, ne celý chunk', () => {
     expect(fallbackBytes(analyzerModules(report))).toEqual({
       moduleCount: 2,
@@ -284,18 +312,64 @@ describe('analyzerModules', () => {
 });
 
 describe('scrubbedEnv', () => {
-  it('vyhodí všechno, co vypadá jako přístup k vzdálenému API', () => {
+  it('propustí jen to, co je na seznamu', () => {
     const scrubbed = scrubbedEnv({
       PATH: '/usr/bin',
       OPENAI_API_KEY: 'sk-live',
-      GITHUB_TOKEN: 'ghp',
-      MY_SECRET: 'x',
       HTTPS_PROXY: 'http://corp',
-      SIGNING_KEY: 'k',
       NODE_ENV: 'production',
     });
 
     expect(Object.keys(scrubbed).sort()).toEqual(['NEXT_TELEMETRY_DISABLED', 'NODE_ENV', 'PATH']);
+  });
+
+  it('zadrží i jména, na která žádný vzor typu key|token|secret nesedí', () => {
+    // Tohle je důvod, proč je to allowlist. Blocklist propustil všech pět a
+    // test nad ním se nedal napsat tak, aby uměl selhat — krmil se jmény, která
+    // ten vzor už obsahoval.
+    const scrubbed = scrubbedEnv({
+      AWS_ACCESS_KEY_ID: 'AKIA',
+      DATABASE_URL: 'postgres://user:pw@host/db',
+      SENTRY_DSN: 'https://x@sentry.io/1',
+      KUBECONFIG: '/home/x/.kube/config',
+      NPM_CONFIG_REGISTRY: 'https://registry.internal',
+    });
+
+    expect(Object.keys(scrubbed)).toEqual(['NEXT_TELEMETRY_DISABLED']);
+  });
+
+  it('jméno proměnné je na Windows case-insensitive', () => {
+    expect(scrubbedEnv({ Path: '/usr/bin' }).Path).toBe('/usr/bin');
+  });
+});
+
+/**
+ * Guard se do běžícího artefaktu vkládá zdrojem téhle funkce, takže co projde
+ * tady, projde i tam. Naivní verze **nechytala nic** a vypadala při běhu
+ * identicky: žádný smoke případ ven nesahá, takže by prošla bez povšimnutí.
+ */
+describe('isLocalConnect', () => {
+  it('normalizované pole je to, co Socket.prototype.connect doopravdy dostane', () => {
+    // `net.connect({host, port})` i `net.createConnection(port, host)` volají
+    // connect s polem, ne s options. Čtení `args[0].host` na něm dá `undefined`
+    // a naivní verze to přečetla jako localhost — tudy chodí `fetch` z undici.
+    expect(isLocalConnect([[{ host: 'example.com', port: 80 }]])).toBe(false);
+    expect(isLocalConnect([[{ host: '127.0.0.1', port: 3000 }]])).toBe(true);
+  });
+
+  it('options objektem i pozičně', () => {
+    expect(isLocalConnect([{ host: 'example.com', port: 443 }])).toBe(false);
+    expect(isLocalConnect([80, 'example.com'])).toBe(false);
+    expect(isLocalConnect([80, '127.0.0.1'])).toBe(true);
+  });
+
+  it('chybějící host je localhost, ne neznámo kam', () => {
+    expect(isLocalConnect([[{ port: 3000 }]])).toBe(true);
+  });
+
+  it('path je unixový socket jen bez portu — HTTP klient si nese cestu URL', () => {
+    expect(isLocalConnect([[{ path: '/var/run/x.sock' }]])).toBe(true);
+    expect(isLocalConnect([[{ host: 'example.com', port: 80, path: '/' }]])).toBe(false);
   });
 });
 
@@ -307,6 +381,61 @@ describe('testId', () => {
 
   it('chybějící značka není prázdný řetězec', () => {
     expect(testId('<b data-testid="jine">x</b>', 'route-kind')).toBeNull();
+  });
+});
+
+/**
+ * Destruktivní půlka skriptu, nad skutečnými soubory v dočasném adresáři.
+ * Odstavené soubory nemají jinou kopii, takže „obnova proběhla" nesmí být
+ * tvrzení, které nikdo neměřil.
+ */
+describe('karanténa a obnova', () => {
+  const scratch = () => {
+    const root = mkdtempSync(join(tmpdir(), 'isolation-test-'));
+    mkdirSync(join(root, 'tree', 'nested'), { recursive: true });
+    writeFileSync(join(root, 'tree', 'a.ts'), 'a', 'utf-8');
+    writeFileSync(join(root, 'tree', 'nested', 'b.ts'), 'b', 'utf-8');
+    return { root: join(root, 'tree'), quarantine: join(root, 'quarantine') };
+  };
+
+  it('vrátí soubory i z podadresářů', () => {
+    const { root, quarantine } = scratch();
+    const moved: string[] = [];
+
+    quarantineAll(root, quarantine, ['a.ts', 'nested/b.ts'], moved);
+    expect(existsSync(join(root, 'a.ts'))).toBe(false);
+    expect(existsSync(join(root, 'nested/b.ts'))).toBe(false);
+
+    restoreAll(root, quarantine, moved);
+    expect(missingAfterRestore(root, moved)).toEqual([]);
+    expect(readFileSync(join(root, 'nested/b.ts'), 'utf-8')).toBe('b');
+  });
+
+  it('když přesun spadne uprostřed, volající drží přesně to, co je odstavené', () => {
+    const { root, quarantine } = scratch();
+    const moved: string[] = [];
+
+    // Prostřední soubor neexistuje — `renameSync` na něm hodí ENOENT přesně
+    // tak, jako by na Windows hodil EPERM nad souborem drženým editorem.
+    expect(() =>
+      quarantineAll(root, quarantine, ['a.ts', 'chybi.ts', 'nested/b.ts'], moved),
+    ).toThrow();
+    expect(moved).toEqual(['a.ts']);
+
+    restoreAll(root, quarantine, moved);
+    expect(missingAfterRestore(root, moved)).toEqual([]);
+    // A ten, na který smyčka nedošla, zůstal na místě netknutý.
+    expect(existsSync(join(root, 'nested/b.ts'))).toBe(true);
+  });
+
+  it('neobnovený soubor se ohlásí, i když ho git nikdy neviděl', () => {
+    const { root, quarantine } = scratch();
+    const moved: string[] = [];
+
+    quarantineAll(root, quarantine, ['a.ts', 'nested/b.ts'], moved);
+    restoreAll(root, quarantine, ['a.ts']);
+
+    expect(missingAfterRestore(root, moved)).toEqual(['nested/b.ts']);
   });
 });
 

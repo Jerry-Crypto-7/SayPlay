@@ -311,6 +311,29 @@ export function coreModulesIn(modules) {
   return modules.filter((module) => isUnder(module.path, CORE_DIRS));
 }
 
+/**
+ * Chunky, ve kterých leží fallback **i** jádro zároveň.
+ *
+ * Tohle je jediná část analýzy, která se dá vyhodnotit nad **normálním**
+ * buildem, kde jádro existuje. V izolovaném buildu je „žádný modul jádra"
+ * pravda konstrukcí — jádro se před ním smazalo — takže tam ta kontrola nemůže
+ * selhat a nedokazuje nic. Nad úplným buildem naopak dokazuje přesně to, co
+ * chce AC: build graf fallbacku a kitu neobsahuje ani jeden modul jádra.
+ */
+export function mixedChunks(modules) {
+  const own = new Set();
+  const core = new Map();
+  for (const module of modules) {
+    if (isUnder(module.path, PROTECTED_DIRS)) own.add(module.chunk);
+    if (isUnder(module.path, CORE_DIRS)) {
+      core.set(module.chunk, [...(core.get(module.chunk) ?? []), module.path]);
+    }
+  }
+  return [...own]
+    .filter((chunk) => core.has(chunk))
+    .map((chunk) => ({ chunk, core: core.get(chunk) }));
+}
+
 /** Bajty fallbacku a kitu v bundlu — měřená veličina, která jde do baseline. */
 export function fallbackBytes(modules) {
   const own = modules.filter((module) => isUnder(module.path, PROTECTED_DIRS));
@@ -325,40 +348,129 @@ export function fallbackBytes(modules) {
 // Prostředí podprocesů
 // ---------------------------------------------------------------------------
 
-const SECRET_LIKE = /(api[_-]?key|_key$|token|secret|password|credential|openai|anthropic|proxy)/i;
+/**
+ * Proměnné, které podproces smí vidět. **Allowlist, ne blocklist** — seznam
+ * vzorů jako `key|token|secret` propustí `AWS_ACCESS_KEY_ID`, `DATABASE_URL`
+ * i `SENTRY_DSN`, a test nad ním se nedá napsat tak, aby uměl selhat: krmí se
+ * jmény, která ten vzor už obsahuje.
+ */
+export const ENV_ALLOWLIST = [
+  'PATH',
+  'PATHEXT',
+  'COMSPEC',
+  'SYSTEMROOT',
+  'SYSTEMDRIVE',
+  'WINDIR',
+  'TEMP',
+  'TMP',
+  'TMPDIR',
+  'HOME',
+  'HOMEDRIVE',
+  'HOMEPATH',
+  'USERPROFILE',
+  'APPDATA',
+  'LOCALAPPDATA',
+  'PROGRAMDATA',
+  'PROGRAMFILES',
+  'PROGRAMFILES(X86)',
+  'NUMBER_OF_PROCESSORS',
+  'PROCESSOR_ARCHITECTURE',
+  'OS',
+  'LANG',
+  'LC_ALL',
+  'TZ',
+  'CI',
+  'NODE_ENV',
+  'NODE_OPTIONS',
+  'ANALYZE',
+  'NEXT_TELEMETRY_DISABLED',
+];
 
 /**
  * Prostředí bez čehokoli, co vypadá jako přístup k vzdálenému API. Krok 4 chce
  * artefakt bez cesty ven; klíč v prostředí je první polovina takové cesty.
+ * Jména proměnných jsou na Windows case-insensitive, takže se porovnávají velkými.
  */
 export function scrubbedEnv(env) {
+  const allowed = new Set(ENV_ALLOWLIST);
   const out = {};
   for (const [key, value] of Object.entries(env)) {
-    if (!SECRET_LIKE.test(key)) out[key] = value;
+    if (allowed.has(key.toUpperCase())) out[key] = value;
   }
   out.NEXT_TELEMETRY_DISABLED = '1';
   return out;
 }
 
 /**
+ * Je tohle spojení lokální? Rozhoduje o tom, co guard pustí ven.
+ *
+ * **Argumenty se musí rozbalit přesně jako je rozbaluje Node**, jinak guard
+ * nechytá nic. `net.connect(...)` a `net.createConnection(...)` volají
+ * `Socket.prototype.connect` s **normalizovaným polem**, takže `args[0].host`
+ * je `undefined` a naivní čtení to přečte jako localhost — což je přesně ta
+ * cesta, kterou chodí `fetch` z undici. Naměřeno: s naivní verzí prošel
+ * `fetch('http://example.com/')` se stavem 200.
+ *
+ * `options.path` je unixový socket jen tehdy, když u něj není port. HTTP klient
+ * si v options nese `path` s cestou URL, takže samotná jeho přítomnost by byla
+ * druhá díra.
+ */
+export function isLocalConnect(args) {
+  const options = Array.isArray(args[0])
+    ? (args[0][0] ?? {})
+    : typeof args[0] === 'object' && args[0] !== null
+      ? args[0]
+      : { port: args[0], host: typeof args[1] === 'string' ? args[1] : undefined };
+
+  if (typeof options.path === 'string' && options.port === undefined) return true;
+
+  // Chybějící host je v Node localhost, ne „neznámo kam".
+  const host = String(options.host ?? 'localhost').toLowerCase();
+  return ['localhost', '127.0.0.1', '::1', '0.0.0.0', '::'].includes(host);
+}
+
+/**
  * Druhá polovina: TCP mimo loopback se v běžícím artefaktu neotevře vůbec.
  * Guard se vkládá přes `--import`, takže platí i pro moduly, které si `net`
  * vytáhnou samy (`fetch` z undici mezi ně patří).
+ *
+ * Rozhodovací funkce se sem vkládá zdrojem, ne kopií — testuje se pak přesně
+ * ten kód, který běží. A na konci je **pozitivní kontrola**: guard, který nic
+ * nechytá, vypadá při běhu identicky jako guard, který funguje, protože žádný
+ * smoke případ ven nesahá. Proto si tři spojení zkusí sám a musí spadnout.
  */
 const NETWORK_GUARD = `
 import net from 'node:net';
 
-const LOOPBACK = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0', '::', '']);
+${isLocalConnect.toString()}
+
 const original = net.Socket.prototype.connect;
 
 net.Socket.prototype.connect = function guardedConnect(...args) {
-  const options = typeof args[0] === 'object' && args[0] !== null ? args[0] : {};
-  const host = options.host ?? (typeof args[1] === 'string' ? args[1] : undefined);
-  if (options.path === undefined && !LOOPBACK.has(String(host ?? '').toLowerCase())) {
-    throw new Error('isolation guard: outbound connection to ' + host + ' is blocked');
+  if (!isLocalConnect(args)) {
+    throw new Error('isolation guard: outbound connection is blocked');
   }
   return original.apply(this, args);
 };
+
+// TEST-NET-1 (RFC 5737) — adresa, která se nikam nesměruje, takže kontrola
+// nezávisí na tom, jestli je stroj online.
+for (const attempt of [
+  () => net.connect({ host: '192.0.2.1', port: 80 }),
+  () => net.connect({ host: '192.0.2.1', port: 80, path: '/' }),
+  () => net.createConnection(80, '192.0.2.1'),
+]) {
+  let blocked = false;
+  try {
+    attempt();
+  } catch {
+    blocked = true;
+  }
+  if (!blocked) {
+    console.error('isolation guard: self-check failed, outbound connection was allowed');
+    process.exit(3);
+  }
+}
 `;
 
 // ---------------------------------------------------------------------------
@@ -388,8 +500,45 @@ export function listFiles(dir, out = []) {
   return out;
 }
 
+/**
+ * Přesun do karantény, který **průběžně hlásí, co se povedlo**.
+ *
+ * `moved` je vstupní pole schválně: když smyčka uprostřed spadne (na Windows
+ * stačí soubor otevřený v editoru), volající pořád drží přesný seznam toho, co
+ * je odstavené, a umí to vrátit. Kdyby se seznam vracel návratovou hodnotou,
+ * při výjimce by neexistoval — a odstavené soubory nemají jinou kopii.
+ */
+export function quarantineAll(root, quarantine, files, moved) {
+  for (const file of files) {
+    const target = join(quarantine, file);
+    mkdirSync(dirname(target), { recursive: true });
+    renameSync(join(root, file), target);
+    moved.push(file);
+  }
+}
+
+/** Opačný směr. */
+export function restoreAll(root, quarantine, files) {
+  for (const file of files) {
+    mkdirSync(dirname(join(root, file)), { recursive: true });
+    renameSync(join(quarantine, file), join(root, file));
+  }
+}
+
+/**
+ * Soubory, které se po obnově v pracovním stromu neobjevily.
+ *
+ * `git status --porcelain` na tuhle otázku odpovědět neumí: **ignorované
+ * soubory nevypisuje**, a přesně ty nemají jinou kopii. V tomhle stromu jsou
+ * uvnitř obalu jádra tři (`scratch-*`, `tmp-*` podle `.gitignore`), takže by
+ * jejich ztráta nechala výstup gitu beze změny.
+ */
+export function missingAfterRestore(root, files) {
+  return files.filter((file) => !existsSync(join(root, file)));
+}
+
 function step(index, label) {
-  process.stdout.write(`\n[${index}/6] ${label}\n`);
+  process.stdout.write(`\n[${index}/7] ${label}\n`);
 }
 
 function freePort() {
@@ -532,21 +681,23 @@ async function main() {
     throw new Error(`chybí ${routeFile} — bez routy nemá analýza bundlu co analyzovat`);
   }
 
-  const moved = [...reach].sort();
+  const plan = [...reach].sort();
   process.stdout.write(
-    `      ${seed.length} souborů jádra + ${moved.length - seed.length} závislých = ${moved.length} odstaveno\n`,
+    `      ${seed.length} souborů jádra + ${plan.length - seed.length} závislých = ${plan.length} odstaví se\n`,
   );
-  for (const file of moved) {
-    const target = join(quarantine, file);
-    mkdirSync(dirname(target), { recursive: true });
-    renameSync(join(ROOT, file), target);
-  }
-  for (const dir of CORE_DIRS) {
-    rmSync(join(ROOT, dir), { recursive: true, force: true });
-  }
 
+  // Přesun je **uvnitř** `try`, a co se povedlo přesunout, se zapisuje po
+  // jednom. Kdyby byl venku, jediné selhání uprostřed smyčky (na Windows stačí
+  // otevřený soubor v editoru nebo běžící `next dev`) nechá desítky souborů v
+  // ignorovaném adresáři, pracovní strom bez nich a obnovu, která nikdy neběžela.
+  const moved = [];
   let measured;
   try {
+    quarantineAll(ROOT, quarantine, plan, moved);
+    for (const dir of CORE_DIRS) {
+      rmSync(join(ROOT, dir), { recursive: true, force: true });
+    }
+
     step(2, 'smazat předchozí artefakty');
     for (const artefact of ['.next', 'out', 'analyze', join('node_modules', '.cache')]) {
       rmSync(join(ROOT, artefact), { recursive: true, force: true });
@@ -590,17 +741,54 @@ async function main() {
     }
   } finally {
     step(6, 'vrátit odstavené soubory');
-    for (const file of moved) {
-      const target = join(ROOT, file);
-      mkdirSync(dirname(target), { recursive: true });
-      renameSync(join(quarantine, file), target);
-    }
-    rmSync(quarantine, { recursive: true, force: true });
+    restoreAll(ROOT, quarantine, moved);
+    if (existsSync(quarantine)) rmSync(quarantine, { recursive: true, force: true });
+  }
+
+  const lost = missingAfterRestore(ROOT, moved);
+  if (lost.length > 0) {
+    throw new Error(`obnova nevrátila ${lost.length} souborů:\n  ${lost.join('\n  ')}`);
   }
 
   const after = git('status', '--porcelain');
   if (after !== before) {
     throw new Error(`pracovní strom se po obnově neshoduje se stavem před během:\n${after}`);
+  }
+
+  // Kroky 1–6 dokazují „fallback se postaví a běží bez jádra". Nedokazují ale
+  // to, co AC říká o bundlu: v izolovaném buildu je „žádný modul jádra" pravda
+  // konstrukcí, protože se jádro předtím smazalo, takže ta kontrola nemůže
+  // selhat. Falsifikovatelná je až nad úplným buildem, kde jádro existuje.
+  step(7, 'analýza úplného buildu, kde jádro existuje');
+  for (const stale of ['.next/analyze', 'analyze']) {
+    rmSync(join(ROOT, stale), { recursive: true, force: true });
+  }
+  await run('build', ['node_modules/next/dist/bin/next', 'build', '--webpack'], {
+    ...scrubbedEnv(process.env),
+    ANALYZE: 'true',
+    NODE_ENV: 'production',
+  });
+
+  for (const name of ['client', 'nodejs']) {
+    const modules = readReport(name);
+    const own = modules.filter((module) => isUnder(module.path, PROTECTED_DIRS)).length;
+    const core = coreModulesIn(modules).length;
+    if (own === 0 || core === 0) {
+      throw new Error(
+        `${name}: úplný build musí nést obojí, jinak kontrola nic netvrdí ` +
+          `(fallback ${own}, jádro ${core})`,
+      );
+    }
+    const mixed = mixedChunks(modules);
+    if (mixed.length > 0) {
+      const sample = mixed
+        .slice(0, 3)
+        .map((entry) => `${entry.chunk}: ${entry.core.slice(0, 3).join(', ')}`);
+      throw new Error(`${name}: fallback a jádro sdílejí chunk:\n  ${sample.join('\n  ')}`);
+    }
+    process.stdout.write(
+      `      ${name}: ${own} modulů fallbacku, ${core} modulů jádra, žádný společný chunk\n`,
+    );
   }
 
   const baseline = {
@@ -636,7 +824,18 @@ function restoreQuarantine() {
     process.stdout.write('nic k obnově\n');
     return;
   }
-  const files = listFiles(QUARANTINE_DIR).map((file) => file.slice(QUARANTINE_DIR.length + 1));
+  // Vlastní procházení, ne `listFiles` — ta filtruje jména adresářů jako `out`
+  // nebo `coverage` v libovolné hloubce, takže by odstavený soubor s takovým
+  // segmentem v cestě přeskočila a `rmSync` níž by ho pak smazal nadobro.
+  const walk = (dir, out = []) => {
+    for (const entry of readdirSync(join(quarantine, dir), { withFileTypes: true })) {
+      const rel = dir === '' ? entry.name : `${dir}/${entry.name}`;
+      if (entry.isDirectory()) walk(rel, out);
+      else out.push(rel);
+    }
+    return out;
+  };
+  const files = walk('');
   for (const file of files) {
     mkdirSync(dirname(join(ROOT, file)), { recursive: true });
     renameSync(join(quarantine, file), join(ROOT, file));
@@ -649,6 +848,12 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const task = process.argv[2] === '--restore' ? async () => restoreQuarantine() : main;
   task().catch((error) => {
     process.stderr.write(`\n❌ ${error.message}\n`);
+    if (existsSync(join(ROOT, QUARANTINE_DIR))) {
+      process.stderr.write(
+        `\nV ${QUARANTINE_DIR}/ zůstaly odstavené soubory a jinou kopii nemají.\n` +
+          `Vrať je: node scripts/prove-fallback-isolation.mjs --restore\n`,
+      );
+    }
     process.exitCode = 1;
   });
 }

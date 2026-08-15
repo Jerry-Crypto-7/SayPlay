@@ -57,14 +57,39 @@ export declare function analyzerModules(report: unknown[]): AnalyzerModule[];
 
 export declare function coreModulesIn(modules: readonly AnalyzerModule[]): AnalyzerModule[];
 
+export declare function mixedChunks(modules: readonly AnalyzerModule[]): {
+  chunk: string;
+  core: string[];
+}[];
+
 export declare function fallbackBytes(modules: readonly AnalyzerModule[]): {
   moduleCount: number;
   statBytes: number;
   totalStatBytes: number;
 };
 
+export declare const ENV_ALLOWLIST: string[];
+
 export declare function scrubbedEnv(env: Record<string, string | undefined>): Record<string, string>;
+
+/** `args` tak, jak je dostane `net.Socket.prototype.connect`. */
+export declare function isLocalConnect(args: unknown[]): boolean;
 
 export declare function testId(html: string, id: string): string | null;
 
 export declare function listFiles(dir: string, out?: string[]): string[];
+
+export declare function quarantineAll(
+  root: string,
+  quarantine: string,
+  files: readonly string[],
+  moved: string[],
+): void;
+
+export declare function restoreAll(
+  root: string,
+  quarantine: string,
+  files: readonly string[],
+): void;
+
+export declare function missingAfterRestore(root: string, files: readonly string[]): string[];
