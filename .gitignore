@@ -10,6 +10,13 @@ SECURITY-FINDINGS.md
 # proto SELŽE, kdyby se tenhle soubor ocitl mezi trackovanými.
 blind-check.config.json
 
+# Seznam zakázaných identifikátorů z proprietárního ECA modulu AcmeCorp.
+# Sám nese ta jména, takže commitnout ho znamená vynést přesně to, čemu má bránit
+# – stejný důvod a stejná přísnost jako u SECURITY-FINDINGS.md.
+# `cleanroom-check.mjs` je proto fail-closed: bez seznamu SELŽE, nepřeskočí se.
+# Provisioning nového klonu: ops/cleanroom-provisioning.md
+scripts/cleanroom-forbidden.txt
+
 # Interní dokumentace, plány a pracovní logy.
 # Veřejné repo nese produkt, ne strategii. P8 do něj přidá vlastní README.md
 # a DISCLOSURE.md – proto ty dvě negace. Vzor /*.md míří jen na kořen, takže

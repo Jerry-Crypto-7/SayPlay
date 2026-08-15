@@ -14,7 +14,10 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "prove:fallback": "node scripts/prove-fallback-isolation.mjs",
-    "build:from-tag": "node scripts/build-from-tag.mjs"
+    "build:from-tag": "node scripts/build-from-tag.mjs",
+    "gate:license": "node scripts/license-gate.mjs",
+    "gate:cleanroom": "node scripts/cleanroom-check.mjs",
+    "disclosure": "node scripts/license-gate.mjs --sync"
   },
   "dependencies": {
     "@react-three/fiber": "9.7.x",

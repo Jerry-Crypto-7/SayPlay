@@ -1,0 +1,19 @@
+#!/bin/sh
+# Licenční a clean-room brána (RULES.md §2 disclosure, §4 kontrola před npm install,
+# DESIGN-BOOK.md §12 clean-room).
+#
+# Hook je verzovaný, ne schovaný v .git/hooks — aktivuje se jednou:
+#   git config core.hooksPath .githooks
+#
+# Proč pre-commit a ne jen CI: obojí hlídá věc, kterou commit dělá nevratnou.
+# Proprietární identifikátor a nedeklarovaná licence se z historie zpětně
+# nevyndají, jen přepíšou — a přepis zanechá stopu. Vynutit se dá `--no-verify`,
+# což je vědomé rozhodnutí, ne omyl.
+#
+# Na čerstvém klonu cleanroom-check SELŽE, protože jeho seznam je mimo verzování.
+# Je to záměr a postup je v ops/cleanroom-provisioning.md.
+
+set -e
+
+node scripts/license-gate.mjs
+node scripts/cleanroom-check.mjs

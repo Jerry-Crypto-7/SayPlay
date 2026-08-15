@@ -1,0 +1,2326 @@
+{
+  "$comment": "Generováno `node scripts/license-gate.mjs --sync`. library a asset se odvozují ze stromu; model, dataset a api se píšou ručně a sync je nechává být.",
+  "entries": [
+    {
+      "name": "@babel/runtime@7.29.7",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@babel/runtime/-/runtime-7.29.7.tgz",
+      "authorOrProvider": "The Babel Team (https://babel.dev/team)",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2014-present Sebastian McKenzie and other contributors",
+      "scope": "prod"
+    },
+    {
+      "name": "@dimforge/rapier3d-compat@0.12.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@dimforge/rapier3d-compat/-/rapier3d-compat-0.12.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "\"Licensor\" shall mean the copyright owner or entity authorized by",
+      "scope": "dev"
+    },
+    {
+      "name": "@discoveryjs/json-ext@0.5.7",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz",
+      "authorOrProvider": "Roman Dvornov (https://github.com/lahmatiy)",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2020 Roman Dvornov <rdvornov@gmail.com>",
+      "scope": "dev"
+    },
+    {
+      "name": "@emnapi/runtime@1.11.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@emnapi/runtime/-/runtime-1.11.3.tgz",
+      "authorOrProvider": "toyobayashi",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2021-present Toyobayashi",
+      "scope": "prod"
+    },
+    {
+      "name": "@img/colour@1.1.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/colour/-/colour-1.1.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2012 Heather Arthur",
+      "scope": "prod"
+    },
+    {
+      "name": "@img/sharp-darwin-arm64@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-darwin-arm64/-/sharp-darwin-arm64-0.35.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "držitelé práv k @img/sharp-darwin-arm64, viz https://registry.npmjs.org/@img/sharp-darwin-arm64/-/sharp-darwin-arm64-0.35.3.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@img/sharp-darwin-x64@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-darwin-x64/-/sharp-darwin-x64-0.35.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "držitelé práv k @img/sharp-darwin-x64, viz https://registry.npmjs.org/@img/sharp-darwin-x64/-/sharp-darwin-x64-0.35.3.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@img/sharp-freebsd-wasm32@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-freebsd-wasm32/-/sharp-freebsd-wasm32-0.35.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "držitelé práv k @img/sharp-freebsd-wasm32, viz https://registry.npmjs.org/@img/sharp-freebsd-wasm32/-/sharp-freebsd-wasm32-0.35.3.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@img/sharp-libvips-darwin-arm64@1.3.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-libvips-darwin-arm64/-/sharp-libvips-darwin-arm64-1.3.2.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "LGPL-3.0-or-later",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "právo příjemce knihovnu nahradit nebo přelinkovat",
+        "dostupnost zdrojů knihovny"
+      ],
+      "attribution": "držitelé práv k @img/sharp-libvips-darwin-arm64, viz https://registry.npmjs.org/@img/sharp-libvips-darwin-arm64/-/sharp-libvips-darwin-arm64-1.3.2.tgz",
+      "scope": "prod",
+      "reviewNote": "Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit."
+    },
+    {
+      "name": "@img/sharp-libvips-darwin-x64@1.3.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-libvips-darwin-x64/-/sharp-libvips-darwin-x64-1.3.2.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "LGPL-3.0-or-later",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "právo příjemce knihovnu nahradit nebo přelinkovat",
+        "dostupnost zdrojů knihovny"
+      ],
+      "attribution": "držitelé práv k @img/sharp-libvips-darwin-x64, viz https://registry.npmjs.org/@img/sharp-libvips-darwin-x64/-/sharp-libvips-darwin-x64-1.3.2.tgz",
+      "scope": "prod",
+      "reviewNote": "Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit."
+    },
+    {
+      "name": "@img/sharp-libvips-linux-arm@1.3.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-libvips-linux-arm/-/sharp-libvips-linux-arm-1.3.2.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "LGPL-3.0-or-later",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "právo příjemce knihovnu nahradit nebo přelinkovat",
+        "dostupnost zdrojů knihovny"
+      ],
+      "attribution": "držitelé práv k @img/sharp-libvips-linux-arm, viz https://registry.npmjs.org/@img/sharp-libvips-linux-arm/-/sharp-libvips-linux-arm-1.3.2.tgz",
+      "scope": "prod",
+      "reviewNote": "Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit."
+    },
+    {
+      "name": "@img/sharp-libvips-linux-arm64@1.3.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-libvips-linux-arm64/-/sharp-libvips-linux-arm64-1.3.2.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "LGPL-3.0-or-later",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "právo příjemce knihovnu nahradit nebo přelinkovat",
+        "dostupnost zdrojů knihovny"
+      ],
+      "attribution": "držitelé práv k @img/sharp-libvips-linux-arm64, viz https://registry.npmjs.org/@img/sharp-libvips-linux-arm64/-/sharp-libvips-linux-arm64-1.3.2.tgz",
+      "scope": "prod",
+      "reviewNote": "Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit."
+    },
+    {
+      "name": "@img/sharp-libvips-linux-ppc64@1.3.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-libvips-linux-ppc64/-/sharp-libvips-linux-ppc64-1.3.2.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "LGPL-3.0-or-later",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "právo příjemce knihovnu nahradit nebo přelinkovat",
+        "dostupnost zdrojů knihovny"
+      ],
+      "attribution": "držitelé práv k @img/sharp-libvips-linux-ppc64, viz https://registry.npmjs.org/@img/sharp-libvips-linux-ppc64/-/sharp-libvips-linux-ppc64-1.3.2.tgz",
+      "scope": "prod",
+      "reviewNote": "Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit."
+    },
+    {
+      "name": "@img/sharp-libvips-linux-riscv64@1.3.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-libvips-linux-riscv64/-/sharp-libvips-linux-riscv64-1.3.2.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "LGPL-3.0-or-later",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "právo příjemce knihovnu nahradit nebo přelinkovat",
+        "dostupnost zdrojů knihovny"
+      ],
+      "attribution": "držitelé práv k @img/sharp-libvips-linux-riscv64, viz https://registry.npmjs.org/@img/sharp-libvips-linux-riscv64/-/sharp-libvips-linux-riscv64-1.3.2.tgz",
+      "scope": "prod",
+      "reviewNote": "Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit."
+    },
+    {
+      "name": "@img/sharp-libvips-linux-s390x@1.3.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-libvips-linux-s390x/-/sharp-libvips-linux-s390x-1.3.2.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "LGPL-3.0-or-later",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "právo příjemce knihovnu nahradit nebo přelinkovat",
+        "dostupnost zdrojů knihovny"
+      ],
+      "attribution": "držitelé práv k @img/sharp-libvips-linux-s390x, viz https://registry.npmjs.org/@img/sharp-libvips-linux-s390x/-/sharp-libvips-linux-s390x-1.3.2.tgz",
+      "scope": "prod",
+      "reviewNote": "Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit."
+    },
+    {
+      "name": "@img/sharp-libvips-linux-x64@1.3.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-libvips-linux-x64/-/sharp-libvips-linux-x64-1.3.2.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "LGPL-3.0-or-later",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "právo příjemce knihovnu nahradit nebo přelinkovat",
+        "dostupnost zdrojů knihovny"
+      ],
+      "attribution": "držitelé práv k @img/sharp-libvips-linux-x64, viz https://registry.npmjs.org/@img/sharp-libvips-linux-x64/-/sharp-libvips-linux-x64-1.3.2.tgz",
+      "scope": "prod",
+      "reviewNote": "Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit."
+    },
+    {
+      "name": "@img/sharp-libvips-linuxmusl-arm64@1.3.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-libvips-linuxmusl-arm64/-/sharp-libvips-linuxmusl-arm64-1.3.2.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "LGPL-3.0-or-later",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "právo příjemce knihovnu nahradit nebo přelinkovat",
+        "dostupnost zdrojů knihovny"
+      ],
+      "attribution": "držitelé práv k @img/sharp-libvips-linuxmusl-arm64, viz https://registry.npmjs.org/@img/sharp-libvips-linuxmusl-arm64/-/sharp-libvips-linuxmusl-arm64-1.3.2.tgz",
+      "scope": "prod",
+      "reviewNote": "Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit."
+    },
+    {
+      "name": "@img/sharp-libvips-linuxmusl-x64@1.3.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-libvips-linuxmusl-x64/-/sharp-libvips-linuxmusl-x64-1.3.2.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "LGPL-3.0-or-later",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "právo příjemce knihovnu nahradit nebo přelinkovat",
+        "dostupnost zdrojů knihovny"
+      ],
+      "attribution": "držitelé práv k @img/sharp-libvips-linuxmusl-x64, viz https://registry.npmjs.org/@img/sharp-libvips-linuxmusl-x64/-/sharp-libvips-linuxmusl-x64-1.3.2.tgz",
+      "scope": "prod",
+      "reviewNote": "Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit."
+    },
+    {
+      "name": "@img/sharp-linux-arm@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-linux-arm/-/sharp-linux-arm-0.35.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "držitelé práv k @img/sharp-linux-arm, viz https://registry.npmjs.org/@img/sharp-linux-arm/-/sharp-linux-arm-0.35.3.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@img/sharp-linux-arm64@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-linux-arm64/-/sharp-linux-arm64-0.35.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "držitelé práv k @img/sharp-linux-arm64, viz https://registry.npmjs.org/@img/sharp-linux-arm64/-/sharp-linux-arm64-0.35.3.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@img/sharp-linux-ppc64@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-linux-ppc64/-/sharp-linux-ppc64-0.35.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "držitelé práv k @img/sharp-linux-ppc64, viz https://registry.npmjs.org/@img/sharp-linux-ppc64/-/sharp-linux-ppc64-0.35.3.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@img/sharp-linux-riscv64@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-linux-riscv64/-/sharp-linux-riscv64-0.35.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "držitelé práv k @img/sharp-linux-riscv64, viz https://registry.npmjs.org/@img/sharp-linux-riscv64/-/sharp-linux-riscv64-0.35.3.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@img/sharp-linux-s390x@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-linux-s390x/-/sharp-linux-s390x-0.35.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "držitelé práv k @img/sharp-linux-s390x, viz https://registry.npmjs.org/@img/sharp-linux-s390x/-/sharp-linux-s390x-0.35.3.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@img/sharp-linux-x64@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-linux-x64/-/sharp-linux-x64-0.35.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "držitelé práv k @img/sharp-linux-x64, viz https://registry.npmjs.org/@img/sharp-linux-x64/-/sharp-linux-x64-0.35.3.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@img/sharp-linuxmusl-arm64@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-linuxmusl-arm64/-/sharp-linuxmusl-arm64-0.35.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "držitelé práv k @img/sharp-linuxmusl-arm64, viz https://registry.npmjs.org/@img/sharp-linuxmusl-arm64/-/sharp-linuxmusl-arm64-0.35.3.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@img/sharp-linuxmusl-x64@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-linuxmusl-x64/-/sharp-linuxmusl-x64-0.35.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "držitelé práv k @img/sharp-linuxmusl-x64, viz https://registry.npmjs.org/@img/sharp-linuxmusl-x64/-/sharp-linuxmusl-x64-0.35.3.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@img/sharp-wasm32@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-wasm32/-/sharp-wasm32-0.35.3.tgz",
+      "authorOrProvider": "Lovell Fuller",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later AND MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn",
+        "právo příjemce knihovnu nahradit nebo přelinkovat",
+        "dostupnost zdrojů knihovny"
+      ],
+      "attribution": "\"Licensor\" shall mean the copyright owner or entity authorized by the copyright",
+      "scope": "prod",
+      "reviewNote": "Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit."
+    },
+    {
+      "name": "@img/sharp-webcontainers-wasm32@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-webcontainers-wasm32/-/sharp-webcontainers-wasm32-0.35.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "držitelé práv k @img/sharp-webcontainers-wasm32, viz https://registry.npmjs.org/@img/sharp-webcontainers-wasm32/-/sharp-webcontainers-wasm32-0.35.3.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@img/sharp-win32-arm64@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-win32-arm64/-/sharp-win32-arm64-0.35.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn",
+        "právo příjemce knihovnu nahradit nebo přelinkovat",
+        "dostupnost zdrojů knihovny"
+      ],
+      "attribution": "držitelé práv k @img/sharp-win32-arm64, viz https://registry.npmjs.org/@img/sharp-win32-arm64/-/sharp-win32-arm64-0.35.3.tgz",
+      "scope": "prod",
+      "reviewNote": "Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit."
+    },
+    {
+      "name": "@img/sharp-win32-ia32@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-win32-ia32/-/sharp-win32-ia32-0.35.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn",
+        "právo příjemce knihovnu nahradit nebo přelinkovat",
+        "dostupnost zdrojů knihovny"
+      ],
+      "attribution": "držitelé práv k @img/sharp-win32-ia32, viz https://registry.npmjs.org/@img/sharp-win32-ia32/-/sharp-win32-ia32-0.35.3.tgz",
+      "scope": "prod",
+      "reviewNote": "Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit."
+    },
+    {
+      "name": "@img/sharp-win32-x64@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@img/sharp-win32-x64/-/sharp-win32-x64-0.35.3.tgz",
+      "authorOrProvider": "Lovell Fuller",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn",
+        "právo příjemce knihovnu nahradit nebo přelinkovat",
+        "dostupnost zdrojů knihovny"
+      ],
+      "attribution": "\"Licensor\" shall mean the copyright owner or entity authorized by the copyright",
+      "scope": "prod",
+      "reviewNote": "Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit."
+    },
+    {
+      "name": "@jridgewell/sourcemap-codec@1.5.5",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz",
+      "authorOrProvider": "Justin Ridgewell",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright 2024 Justin Ridgewell <justin@ridgewell.name>",
+      "scope": "dev"
+    },
+    {
+      "name": "@next/bundle-analyzer@16.3.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@next/bundle-analyzer/-/bundle-analyzer-16.3.1.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @next/bundle-analyzer, viz https://registry.npmjs.org/@next/bundle-analyzer/-/bundle-analyzer-16.3.1.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@next/env@16.3.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@next/env/-/env-16.3.0.tgz",
+      "authorOrProvider": "Next.js Team",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @next/env, viz https://registry.npmjs.org/@next/env/-/env-16.3.0.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@next/swc-darwin-arm64@16.3.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-16.3.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @next/swc-darwin-arm64, viz https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-16.3.0.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@next/swc-darwin-x64@16.3.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@next/swc-darwin-x64/-/swc-darwin-x64-16.3.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @next/swc-darwin-x64, viz https://registry.npmjs.org/@next/swc-darwin-x64/-/swc-darwin-x64-16.3.0.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@next/swc-linux-arm64-gnu@16.3.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@next/swc-linux-arm64-gnu/-/swc-linux-arm64-gnu-16.3.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @next/swc-linux-arm64-gnu, viz https://registry.npmjs.org/@next/swc-linux-arm64-gnu/-/swc-linux-arm64-gnu-16.3.0.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@next/swc-linux-arm64-musl@16.3.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@next/swc-linux-arm64-musl/-/swc-linux-arm64-musl-16.3.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @next/swc-linux-arm64-musl, viz https://registry.npmjs.org/@next/swc-linux-arm64-musl/-/swc-linux-arm64-musl-16.3.0.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@next/swc-linux-x64-gnu@16.3.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-16.3.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @next/swc-linux-x64-gnu, viz https://registry.npmjs.org/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-16.3.0.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@next/swc-linux-x64-musl@16.3.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@next/swc-linux-x64-musl/-/swc-linux-x64-musl-16.3.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @next/swc-linux-x64-musl, viz https://registry.npmjs.org/@next/swc-linux-x64-musl/-/swc-linux-x64-musl-16.3.0.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@next/swc-win32-arm64-msvc@16.3.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@next/swc-win32-arm64-msvc/-/swc-win32-arm64-msvc-16.3.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @next/swc-win32-arm64-msvc, viz https://registry.npmjs.org/@next/swc-win32-arm64-msvc/-/swc-win32-arm64-msvc-16.3.0.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@next/swc-win32-x64-msvc@16.3.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-16.3.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @next/swc-win32-x64-msvc, viz https://registry.npmjs.org/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-16.3.0.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@oxc-project/types@0.144.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@oxc-project/types/-/types-0.144.0.tgz",
+      "authorOrProvider": "Boshen and oxc contributors",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2024-present VoidZero Inc. & Contributors",
+      "scope": "dev"
+    },
+    {
+      "name": "@playwright/test@1.62.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@playwright/test/-/test-1.62.1.tgz",
+      "authorOrProvider": "Microsoft Corporation",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "\"Licensor\" shall mean the copyright owner or entity authorized by",
+      "scope": "prod"
+    },
+    {
+      "name": "@polka/url@1.0.0-next.29",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@polka/url/-/url-1.0.0-next.29.tgz",
+      "authorOrProvider": "Luke Edwards",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @polka/url, viz https://registry.npmjs.org/@polka/url/-/url-1.0.0-next.29.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@react-three/fiber@9.7.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@react-three/fiber/-/fiber-9.7.0.tgz",
+      "authorOrProvider": "Paul Henschel (https://github.com/drcmda)",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @react-three/fiber, viz https://registry.npmjs.org/@react-three/fiber/-/fiber-9.7.0.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "@rolldown/binding-android-arm64@1.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@rolldown/binding-android-arm64/-/binding-android-arm64-1.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @rolldown/binding-android-arm64, viz https://registry.npmjs.org/@rolldown/binding-android-arm64/-/binding-android-arm64-1.2.4.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@rolldown/binding-darwin-arm64@1.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@rolldown/binding-darwin-arm64/-/binding-darwin-arm64-1.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @rolldown/binding-darwin-arm64, viz https://registry.npmjs.org/@rolldown/binding-darwin-arm64/-/binding-darwin-arm64-1.2.4.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@rolldown/binding-darwin-x64@1.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@rolldown/binding-darwin-x64/-/binding-darwin-x64-1.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @rolldown/binding-darwin-x64, viz https://registry.npmjs.org/@rolldown/binding-darwin-x64/-/binding-darwin-x64-1.2.4.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@rolldown/binding-freebsd-x64@1.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@rolldown/binding-freebsd-x64/-/binding-freebsd-x64-1.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @rolldown/binding-freebsd-x64, viz https://registry.npmjs.org/@rolldown/binding-freebsd-x64/-/binding-freebsd-x64-1.2.4.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@rolldown/binding-linux-arm-gnueabihf@1.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@rolldown/binding-linux-arm-gnueabihf/-/binding-linux-arm-gnueabihf-1.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @rolldown/binding-linux-arm-gnueabihf, viz https://registry.npmjs.org/@rolldown/binding-linux-arm-gnueabihf/-/binding-linux-arm-gnueabihf-1.2.4.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@rolldown/binding-linux-arm64-gnu@1.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@rolldown/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-1.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @rolldown/binding-linux-arm64-gnu, viz https://registry.npmjs.org/@rolldown/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-1.2.4.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@rolldown/binding-linux-arm64-musl@1.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@rolldown/binding-linux-arm64-musl/-/binding-linux-arm64-musl-1.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @rolldown/binding-linux-arm64-musl, viz https://registry.npmjs.org/@rolldown/binding-linux-arm64-musl/-/binding-linux-arm64-musl-1.2.4.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@rolldown/binding-linux-ppc64-gnu@1.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@rolldown/binding-linux-ppc64-gnu/-/binding-linux-ppc64-gnu-1.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @rolldown/binding-linux-ppc64-gnu, viz https://registry.npmjs.org/@rolldown/binding-linux-ppc64-gnu/-/binding-linux-ppc64-gnu-1.2.4.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@rolldown/binding-linux-s390x-gnu@1.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@rolldown/binding-linux-s390x-gnu/-/binding-linux-s390x-gnu-1.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @rolldown/binding-linux-s390x-gnu, viz https://registry.npmjs.org/@rolldown/binding-linux-s390x-gnu/-/binding-linux-s390x-gnu-1.2.4.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@rolldown/binding-linux-x64-gnu@1.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @rolldown/binding-linux-x64-gnu, viz https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.2.4.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@rolldown/binding-linux-x64-musl@1.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@rolldown/binding-linux-x64-musl/-/binding-linux-x64-musl-1.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @rolldown/binding-linux-x64-musl, viz https://registry.npmjs.org/@rolldown/binding-linux-x64-musl/-/binding-linux-x64-musl-1.2.4.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@rolldown/binding-openharmony-arm64@1.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@rolldown/binding-openharmony-arm64/-/binding-openharmony-arm64-1.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @rolldown/binding-openharmony-arm64, viz https://registry.npmjs.org/@rolldown/binding-openharmony-arm64/-/binding-openharmony-arm64-1.2.4.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@rolldown/binding-win32-arm64-msvc@1.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@rolldown/binding-win32-arm64-msvc/-/binding-win32-arm64-msvc-1.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @rolldown/binding-win32-arm64-msvc, viz https://registry.npmjs.org/@rolldown/binding-win32-arm64-msvc/-/binding-win32-arm64-msvc-1.2.4.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@rolldown/binding-win32-x64-msvc@1.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@rolldown/binding-win32-x64-msvc/-/binding-win32-x64-msvc-1.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k @rolldown/binding-win32-x64-msvc, viz https://registry.npmjs.org/@rolldown/binding-win32-x64-msvc/-/binding-win32-x64-msvc-1.2.4.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "@rolldown/pluginutils@1.0.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.0.1.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2026-present, rolldown/plugins repository contributors",
+      "scope": "dev"
+    },
+    {
+      "name": "@standard-schema/spec@1.1.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@standard-schema/spec/-/spec-1.1.0.tgz",
+      "authorOrProvider": "Colin McDonnell",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2024 Colin McDonnell",
+      "scope": "dev"
+    },
+    {
+      "name": "@swc/helpers@0.5.15",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@swc/helpers/-/helpers-0.5.15.tgz",
+      "authorOrProvider": "강동윤",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "\"Licensor\" shall mean the copyright owner or entity authorized by",
+      "scope": "prod"
+    },
+    {
+      "name": "@tweenjs/tween.js@23.1.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@tweenjs/tween.js/-/tween.js-23.1.3.tgz",
+      "authorOrProvider": "tween.js contributors (https://github.com/tweenjs/tween.js/graphs/contributors)",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2010-2012 Tween.js authors.",
+      "scope": "dev"
+    },
+    {
+      "name": "@types/deep-eql@4.0.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@types/deep-eql/-/deep-eql-4.0.2.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Microsoft Corporation.",
+      "scope": "dev"
+    },
+    {
+      "name": "@types/estree@1.0.9",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@types/estree/-/estree-1.0.9.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Microsoft Corporation.",
+      "scope": "dev"
+    },
+    {
+      "name": "@types/chai@5.2.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@types/chai/-/chai-5.2.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Microsoft Corporation.",
+      "scope": "dev"
+    },
+    {
+      "name": "@types/node@26.2.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@types/node/-/node-26.2.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Microsoft Corporation.",
+      "scope": "dev"
+    },
+    {
+      "name": "@types/react-dom@19.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@types/react-dom/-/react-dom-19.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Microsoft Corporation.",
+      "scope": "dev"
+    },
+    {
+      "name": "@types/react-reconciler@0.28.9",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@types/react-reconciler/-/react-reconciler-0.28.9.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Microsoft Corporation.",
+      "scope": "prod"
+    },
+    {
+      "name": "@types/react@19.2.18",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@types/react/-/react-19.2.18.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Microsoft Corporation.",
+      "scope": "prod"
+    },
+    {
+      "name": "@types/stats.js@0.17.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@types/stats.js/-/stats.js-0.17.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Microsoft Corporation.",
+      "scope": "dev"
+    },
+    {
+      "name": "@types/three@0.185.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@types/three/-/three-0.185.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Microsoft Corporation.",
+      "scope": "dev"
+    },
+    {
+      "name": "@types/webxr@0.5.24",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@types/webxr/-/webxr-0.5.24.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Microsoft Corporation.",
+      "scope": "prod"
+    },
+    {
+      "name": "@vitest/expect@4.1.10",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@vitest/expect/-/expect-4.1.10.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2021-Present VoidZero Inc. and Vitest contributors",
+      "scope": "dev"
+    },
+    {
+      "name": "@vitest/mocker@4.1.10",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@vitest/mocker/-/mocker-4.1.10.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2021-Present VoidZero Inc. and Vitest contributors",
+      "scope": "dev"
+    },
+    {
+      "name": "@vitest/pretty-format@4.1.10",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@vitest/pretty-format/-/pretty-format-4.1.10.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2021-Present VoidZero Inc. and Vitest contributors",
+      "scope": "dev"
+    },
+    {
+      "name": "@vitest/runner@4.1.10",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@vitest/runner/-/runner-4.1.10.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2021-Present VoidZero Inc. and Vitest contributors",
+      "scope": "dev"
+    },
+    {
+      "name": "@vitest/snapshot@4.1.10",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@vitest/snapshot/-/snapshot-4.1.10.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2021-Present VoidZero Inc. and Vitest contributors",
+      "scope": "dev"
+    },
+    {
+      "name": "@vitest/spy@4.1.10",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@vitest/spy/-/spy-4.1.10.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2021-Present VoidZero Inc. and Vitest contributors",
+      "scope": "dev"
+    },
+    {
+      "name": "@vitest/utils@4.1.10",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@vitest/utils/-/utils-4.1.10.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2021-Present VoidZero Inc. and Vitest contributors",
+      "scope": "dev"
+    },
+    {
+      "name": "acorn-walk@8.3.5",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/acorn-walk/-/acorn-walk-8.3.5.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (C) 2012-2020 by various contributors (see AUTHORS)",
+      "scope": "dev"
+    },
+    {
+      "name": "acorn@8.18.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/acorn/-/acorn-8.18.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (C) 2012-2022 by various contributors (see AUTHORS)",
+      "scope": "dev"
+    },
+    {
+      "name": "assertion-error@2.0.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/assertion-error/-/assertion-error-2.0.1.tgz",
+      "authorOrProvider": "Jake Luer (http://qualiancy.com)",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2013 Jake Luer jake@qualiancy.com (http://qualiancy.com)",
+      "scope": "dev"
+    },
+    {
+      "name": "base64-js@1.5.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/base64-js/-/base64-js-1.5.1.tgz",
+      "authorOrProvider": "T. Jameson Little",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2014 Jameson Little",
+      "scope": "prod"
+    },
+    {
+      "name": "baseline-browser-mapping@2.11.13",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/baseline-browser-mapping/-/baseline-browser-mapping-2.11.13.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "\"Licensor\" shall mean the copyright owner or entity authorized by",
+      "scope": "prod"
+    },
+    {
+      "name": "buffer@6.0.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/buffer/-/buffer-6.0.3.tgz",
+      "authorOrProvider": "Feross Aboukhadijeh",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Feross Aboukhadijeh, and other contributors.",
+      "scope": "prod"
+    },
+    {
+      "name": "caniuse-lite@1.0.30001809",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001809.tgz",
+      "authorOrProvider": "Ben Briggs",
+      "license": "CC-BY-4.0",
+      "requiredNotices": [
+        "atribuce autora",
+        "odkaz na licenci",
+        "označení změn"
+      ],
+      "attribution": "original works of authorship and other material subject to copyright",
+      "scope": "prod",
+      "reviewNote": "Build-time dataset o podpoře v prohlížečích (browserslist). Do produktu nevstupuje jako obsah, jen ovlivňuje cíle transpilace. Atribuce je vedená v tomhle registru."
+    },
+    {
+      "name": "client-only@0.0.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/client-only/-/client-only-0.0.1.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k client-only, viz https://registry.npmjs.org/client-only/-/client-only-0.0.1.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "commander@7.2.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/commander/-/commander-7.2.0.tgz",
+      "authorOrProvider": "TJ Holowaychuk",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca>",
+      "scope": "dev"
+    },
+    {
+      "name": "convert-source-map@2.0.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/convert-source-map/-/convert-source-map-2.0.0.tgz",
+      "authorOrProvider": "Thorsten Lorenz",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright 2013 Thorsten Lorenz.",
+      "scope": "dev"
+    },
+    {
+      "name": "csstype@3.2.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz",
+      "authorOrProvider": "Fredrik Nicol",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2017-2018 Fredrik Nicol",
+      "scope": "prod"
+    },
+    {
+      "name": "debounce@1.2.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/debounce/-/debounce-1.2.1.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2012-2018 The Debounce Contributors. See CONTRIBUTORS.",
+      "scope": "dev"
+    },
+    {
+      "name": "detect-libc@2.1.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/detect-libc/-/detect-libc-2.1.2.tgz",
+      "authorOrProvider": "Lovell Fuller",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "\"Licensor\" shall mean the copyright owner or entity authorized by",
+      "scope": "prod"
+    },
+    {
+      "name": "duplexer@0.1.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/duplexer/-/duplexer-0.1.2.tgz",
+      "authorOrProvider": "Raynos",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2012 Raynos.",
+      "scope": "dev"
+    },
+    {
+      "name": "es-module-lexer@2.3.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-2.3.1.tgz",
+      "authorOrProvider": "Guy Bedford",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (C) 2018-2022 Guy Bedford",
+      "scope": "dev"
+    },
+    {
+      "name": "escape-string-regexp@4.0.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz",
+      "authorOrProvider": "Sindre Sorhus",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)",
+      "scope": "dev"
+    },
+    {
+      "name": "estree-walker@3.0.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/estree-walker/-/estree-walker-3.0.3.tgz",
+      "authorOrProvider": "Rich Harris",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2015-20 [these people](https://github.com/Rich-Harris/estree-walker/graphs/contributors)",
+      "scope": "dev"
+    },
+    {
+      "name": "expect-type@1.4.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/expect-type/-/expect-type-1.4.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "Copyright 2024 Misha Kaletsky",
+      "scope": "dev"
+    },
+    {
+      "name": "fdir@6.5.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/fdir/-/fdir-6.5.0.tgz",
+      "authorOrProvider": "thecodrr",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright 2023 Abdullah Atta",
+      "scope": "dev"
+    },
+    {
+      "name": "fflate@0.8.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/fflate/-/fflate-0.8.3.tgz",
+      "authorOrProvider": "Arjun Barrett",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2026 Arjun Barrett",
+      "scope": "dev"
+    },
+    {
+      "name": "fsevents@2.3.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k fsevents, viz https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "gzip-size@6.0.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/gzip-size/-/gzip-size-6.0.0.tgz",
+      "authorOrProvider": "Sindre Sorhus",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)",
+      "scope": "dev"
+    },
+    {
+      "name": "html-escaper@2.0.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/html-escaper/-/html-escaper-2.0.2.tgz",
+      "authorOrProvider": "Andrea Giammarchi",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (C) 2017-present by Andrea Giammarchi - @WebReflection",
+      "scope": "dev"
+    },
+    {
+      "name": "chai@6.2.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/chai/-/chai-6.2.2.tgz",
+      "authorOrProvider": "Jake Luer",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2017 Chai.js Assertion Library",
+      "scope": "dev"
+    },
+    {
+      "name": "ieee754@1.2.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/ieee754/-/ieee754-1.2.1.tgz",
+      "authorOrProvider": "Feross Aboukhadijeh",
+      "license": "BSD-3-Clause",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "disclaimer",
+        "zákaz použití jména autora k propagaci"
+      ],
+      "attribution": "Copyright 2008 Fair Oaks Labs, Inc.",
+      "scope": "prod"
+    },
+    {
+      "name": "is-plain-object@5.0.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/is-plain-object/-/is-plain-object-5.0.0.tgz",
+      "authorOrProvider": "Jon Schlinkert (https://github.com/jonschlinkert)",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2014-2017, Jon Schlinkert.",
+      "scope": "dev"
+    },
+    {
+      "name": "its-fine@2.0.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/its-fine/-/its-fine-2.0.0.tgz",
+      "authorOrProvider": "Cody Bennett (https://github.com/codyjasonbennett)",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2022-2025 Poimandres",
+      "scope": "prod"
+    },
+    {
+      "name": "lightningcss-android-arm64@1.33.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/lightningcss-android-arm64/-/lightningcss-android-arm64-1.33.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MPL-2.0",
+      "requiredNotices": [
+        "plné znění licence",
+        "zdroje modifikovaných souborů, pokud se modifikují"
+      ],
+      "attribution": "držitelé práv k lightningcss-android-arm64, viz https://registry.npmjs.org/lightningcss-android-arm64/-/lightningcss-android-arm64-1.33.0.tgz",
+      "scope": "dev",
+      "reviewNote": "Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká."
+    },
+    {
+      "name": "lightningcss-darwin-arm64@1.33.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.33.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MPL-2.0",
+      "requiredNotices": [
+        "plné znění licence",
+        "zdroje modifikovaných souborů, pokud se modifikují"
+      ],
+      "attribution": "držitelé práv k lightningcss-darwin-arm64, viz https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.33.0.tgz",
+      "scope": "dev",
+      "reviewNote": "Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká."
+    },
+    {
+      "name": "lightningcss-darwin-x64@1.33.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/lightningcss-darwin-x64/-/lightningcss-darwin-x64-1.33.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MPL-2.0",
+      "requiredNotices": [
+        "plné znění licence",
+        "zdroje modifikovaných souborů, pokud se modifikují"
+      ],
+      "attribution": "držitelé práv k lightningcss-darwin-x64, viz https://registry.npmjs.org/lightningcss-darwin-x64/-/lightningcss-darwin-x64-1.33.0.tgz",
+      "scope": "dev",
+      "reviewNote": "Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká."
+    },
+    {
+      "name": "lightningcss-freebsd-x64@1.33.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/lightningcss-freebsd-x64/-/lightningcss-freebsd-x64-1.33.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MPL-2.0",
+      "requiredNotices": [
+        "plné znění licence",
+        "zdroje modifikovaných souborů, pokud se modifikují"
+      ],
+      "attribution": "držitelé práv k lightningcss-freebsd-x64, viz https://registry.npmjs.org/lightningcss-freebsd-x64/-/lightningcss-freebsd-x64-1.33.0.tgz",
+      "scope": "dev",
+      "reviewNote": "Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká."
+    },
+    {
+      "name": "lightningcss-linux-arm-gnueabihf@1.33.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/lightningcss-linux-arm-gnueabihf/-/lightningcss-linux-arm-gnueabihf-1.33.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MPL-2.0",
+      "requiredNotices": [
+        "plné znění licence",
+        "zdroje modifikovaných souborů, pokud se modifikují"
+      ],
+      "attribution": "držitelé práv k lightningcss-linux-arm-gnueabihf, viz https://registry.npmjs.org/lightningcss-linux-arm-gnueabihf/-/lightningcss-linux-arm-gnueabihf-1.33.0.tgz",
+      "scope": "dev",
+      "reviewNote": "Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká."
+    },
+    {
+      "name": "lightningcss-linux-arm64-gnu@1.33.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/lightningcss-linux-arm64-gnu/-/lightningcss-linux-arm64-gnu-1.33.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MPL-2.0",
+      "requiredNotices": [
+        "plné znění licence",
+        "zdroje modifikovaných souborů, pokud se modifikují"
+      ],
+      "attribution": "držitelé práv k lightningcss-linux-arm64-gnu, viz https://registry.npmjs.org/lightningcss-linux-arm64-gnu/-/lightningcss-linux-arm64-gnu-1.33.0.tgz",
+      "scope": "dev",
+      "reviewNote": "Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká."
+    },
+    {
+      "name": "lightningcss-linux-arm64-musl@1.33.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/lightningcss-linux-arm64-musl/-/lightningcss-linux-arm64-musl-1.33.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MPL-2.0",
+      "requiredNotices": [
+        "plné znění licence",
+        "zdroje modifikovaných souborů, pokud se modifikují"
+      ],
+      "attribution": "držitelé práv k lightningcss-linux-arm64-musl, viz https://registry.npmjs.org/lightningcss-linux-arm64-musl/-/lightningcss-linux-arm64-musl-1.33.0.tgz",
+      "scope": "dev",
+      "reviewNote": "Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká."
+    },
+    {
+      "name": "lightningcss-linux-x64-gnu@1.33.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/lightningcss-linux-x64-gnu/-/lightningcss-linux-x64-gnu-1.33.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MPL-2.0",
+      "requiredNotices": [
+        "plné znění licence",
+        "zdroje modifikovaných souborů, pokud se modifikují"
+      ],
+      "attribution": "držitelé práv k lightningcss-linux-x64-gnu, viz https://registry.npmjs.org/lightningcss-linux-x64-gnu/-/lightningcss-linux-x64-gnu-1.33.0.tgz",
+      "scope": "dev",
+      "reviewNote": "Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká."
+    },
+    {
+      "name": "lightningcss-linux-x64-musl@1.33.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/lightningcss-linux-x64-musl/-/lightningcss-linux-x64-musl-1.33.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MPL-2.0",
+      "requiredNotices": [
+        "plné znění licence",
+        "zdroje modifikovaných souborů, pokud se modifikují"
+      ],
+      "attribution": "držitelé práv k lightningcss-linux-x64-musl, viz https://registry.npmjs.org/lightningcss-linux-x64-musl/-/lightningcss-linux-x64-musl-1.33.0.tgz",
+      "scope": "dev",
+      "reviewNote": "Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká."
+    },
+    {
+      "name": "lightningcss-win32-arm64-msvc@1.33.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/lightningcss-win32-arm64-msvc/-/lightningcss-win32-arm64-msvc-1.33.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MPL-2.0",
+      "requiredNotices": [
+        "plné znění licence",
+        "zdroje modifikovaných souborů, pokud se modifikují"
+      ],
+      "attribution": "držitelé práv k lightningcss-win32-arm64-msvc, viz https://registry.npmjs.org/lightningcss-win32-arm64-msvc/-/lightningcss-win32-arm64-msvc-1.33.0.tgz",
+      "scope": "dev",
+      "reviewNote": "Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká."
+    },
+    {
+      "name": "lightningcss-win32-x64-msvc@1.33.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/lightningcss-win32-x64-msvc/-/lightningcss-win32-x64-msvc-1.33.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MPL-2.0",
+      "requiredNotices": [
+        "plné znění licence",
+        "zdroje modifikovaných souborů, pokud se modifikují"
+      ],
+      "attribution": "applicable copyright doctrines of fair use, fair dealing, or other",
+      "scope": "dev",
+      "reviewNote": "Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká."
+    },
+    {
+      "name": "lightningcss@1.33.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/lightningcss/-/lightningcss-1.33.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MPL-2.0",
+      "requiredNotices": [
+        "plné znění licence",
+        "zdroje modifikovaných souborů, pokud se modifikují"
+      ],
+      "attribution": "applicable copyright doctrines of fair use, fair dealing, or other",
+      "scope": "dev",
+      "reviewNote": "Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká."
+    },
+    {
+      "name": "magic-string@0.30.21",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz",
+      "authorOrProvider": "Rich Harris",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright 2018 Rich Harris",
+      "scope": "dev"
+    },
+    {
+      "name": "meshoptimizer@1.1.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/meshoptimizer/-/meshoptimizer-1.1.1.tgz",
+      "authorOrProvider": "Arseny Kapoulkine",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2016-2026 Arseny Kapoulkine",
+      "scope": "dev"
+    },
+    {
+      "name": "mrmime@2.0.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/mrmime/-/mrmime-2.0.1.tgz",
+      "authorOrProvider": "Luke Edwards",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Luke Edwards <luke.edwards05@gmail.com> (https://lukeed.com)",
+      "scope": "dev"
+    },
+    {
+      "name": "nanoid@3.3.18",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.18.tgz",
+      "authorOrProvider": "Andrey Sitnik",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright 2017 Andrey Sitnik <andrey@sitnik.ru>",
+      "scope": "prod"
+    },
+    {
+      "name": "next@16.3.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/next/-/next-16.3.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2025 Vercel, Inc.",
+      "scope": "prod"
+    },
+    {
+      "name": "obug@2.1.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/obug/-/obug-2.1.4.tgz",
+      "authorOrProvider": "Kevin Deng",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright © 2025-PRESENT Kevin Deng (https://github.com/sxzz)",
+      "scope": "dev"
+    },
+    {
+      "name": "opener@1.5.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/opener/-/opener-1.5.2.tgz",
+      "authorOrProvider": "Domenic Denicola (https://domenic.me/)",
+      "license": "(WTFPL OR MIT)",
+      "requiredNotices": [
+        "žádné — WTFPL notice nevyžaduje",
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright © 2012–2020 Domenic Denicola <d@domenic.me>",
+      "scope": "dev",
+      "reviewNote": "Duální licence (WTFPL OR MIT). Bereme větev MIT, která má jasné znění i notice; WTFPL se neuplatňuje."
+    },
+    {
+      "name": "pathe@2.0.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/pathe/-/pathe-2.0.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Pooya Parsa <pooya@pi0.io> - Daniel Roe <daniel@roe.dev>",
+      "scope": "dev"
+    },
+    {
+      "name": "picocolors@1.1.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz",
+      "authorOrProvider": "Alexey Raspopov",
+      "license": "ISC",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2021-2024 Oleksii Raspopov, Kostiantyn Denysov, Anton Verinov",
+      "scope": "prod"
+    },
+    {
+      "name": "picomatch@4.0.5",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/picomatch/-/picomatch-4.0.5.tgz",
+      "authorOrProvider": "Jon Schlinkert (https://github.com/jonschlinkert)",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2017-present, Jon Schlinkert.",
+      "scope": "dev"
+    },
+    {
+      "name": "playwright-core@1.62.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/playwright-core/-/playwright-core-1.62.1.tgz",
+      "authorOrProvider": "Microsoft Corporation",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "\"Licensor\" shall mean the copyright owner or entity authorized by",
+      "scope": "prod"
+    },
+    {
+      "name": "playwright@1.62.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/playwright/-/playwright-1.62.1.tgz",
+      "authorOrProvider": "Microsoft Corporation",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "\"Licensor\" shall mean the copyright owner or entity authorized by",
+      "scope": "prod"
+    },
+    {
+      "name": "postcss@8.5.23",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/postcss/-/postcss-8.5.23.tgz",
+      "authorOrProvider": "Andrey Sitnik",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright 2013 Andrey Sitnik <andrey@sitnik.es>",
+      "scope": "prod"
+    },
+    {
+      "name": "pure-rand@8.4.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/pure-rand/-/pure-rand-8.4.2.tgz",
+      "authorOrProvider": "Nicolas DUBIEN",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2018 Nicolas DUBIEN",
+      "scope": "prod"
+    },
+    {
+      "name": "react-dom@19.2.8",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/react-dom/-/react-dom-19.2.8.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Meta Platforms, Inc. and affiliates.",
+      "scope": "prod"
+    },
+    {
+      "name": "react-use-measure@2.1.7",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/react-use-measure/-/react-use-measure-2.1.7.tgz",
+      "authorOrProvider": "Paul Henschel",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2019-2025 Poimandres",
+      "scope": "prod"
+    },
+    {
+      "name": "react@19.2.8",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/react/-/react-19.2.8.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Meta Platforms, Inc. and affiliates.",
+      "scope": "prod"
+    },
+    {
+      "name": "rfc6902@5.3.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/rfc6902/-/rfc6902-5.3.0.tgz",
+      "authorOrProvider": "Christopher Brown (http://henrian.com)",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k rfc6902, viz https://registry.npmjs.org/rfc6902/-/rfc6902-5.3.0.tgz",
+      "scope": "prod"
+    },
+    {
+      "name": "rolldown@1.2.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.4.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2024-present VoidZero Inc. & Contributors",
+      "scope": "dev"
+    },
+    {
+      "name": "semver@7.8.5",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/semver/-/semver-7.8.5.tgz",
+      "authorOrProvider": "GitHub Inc.",
+      "license": "ISC",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Isaac Z. Schlueter and Contributors",
+      "scope": "prod"
+    },
+    {
+      "name": "sharp@0.35.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/sharp/-/sharp-0.35.3.tgz",
+      "authorOrProvider": "Lovell Fuller",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "\"Licensor\" shall mean the copyright owner or entity authorized by the copyright",
+      "scope": "prod"
+    },
+    {
+      "name": "scheduler@0.27.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/scheduler/-/scheduler-0.27.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Meta Platforms, Inc. and affiliates.",
+      "scope": "prod"
+    },
+    {
+      "name": "siginfo@2.0.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/siginfo/-/siginfo-2.0.0.tgz",
+      "authorOrProvider": "Emil Bay",
+      "license": "ISC",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2017, Emil Bay <github@tixz.dk>",
+      "scope": "dev"
+    },
+    {
+      "name": "sirv@2.0.4",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/sirv/-/sirv-2.0.4.tgz",
+      "authorOrProvider": "Luke Edwards",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k sirv, viz https://registry.npmjs.org/sirv/-/sirv-2.0.4.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "source-map-js@1.2.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.1.tgz",
+      "authorOrProvider": "Valentin 7rulnik Semirulnik",
+      "license": "BSD-3-Clause",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "disclaimer",
+        "zákaz použití jména autora k propagaci"
+      ],
+      "attribution": "Copyright (c) 2009-2011, Mozilla Foundation and contributors",
+      "scope": "prod"
+    },
+    {
+      "name": "stackback@0.0.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/stackback/-/stackback-0.0.2.tgz",
+      "authorOrProvider": "Roman Shtylman",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k stackback, viz https://registry.npmjs.org/stackback/-/stackback-0.0.2.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "std-env@4.2.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/std-env/-/std-env-4.2.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Pooya Parsa <pooya@pi0.io>",
+      "scope": "dev"
+    },
+    {
+      "name": "styled-jsx@5.1.6",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/styled-jsx/-/styled-jsx-5.1.6.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2016-present Vercel, Inc.",
+      "scope": "prod"
+    },
+    {
+      "name": "suspend-react@0.1.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/suspend-react/-/suspend-react-0.1.3.tgz",
+      "authorOrProvider": "Paul Henschel",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2021 Paul Henschel",
+      "scope": "prod"
+    },
+    {
+      "name": "three@0.185.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/three/-/three-0.185.1.tgz",
+      "authorOrProvider": "mrdoob",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright © 2010-2026 three.js authors",
+      "scope": "prod"
+    },
+    {
+      "name": "tinybench@2.9.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/tinybench/-/tinybench-2.9.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2022 Tinylibs",
+      "scope": "dev"
+    },
+    {
+      "name": "tinyexec@1.3.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/tinyexec/-/tinyexec-1.3.0.tgz",
+      "authorOrProvider": "James Garbutt (https://github.com/43081j)",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2024 Tinylibs",
+      "scope": "dev"
+    },
+    {
+      "name": "tinyglobby@0.2.17",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/tinyglobby/-/tinyglobby-0.2.17.tgz",
+      "authorOrProvider": "Superchupu",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2024 Madeline Gurriarán",
+      "scope": "dev"
+    },
+    {
+      "name": "tinyrainbow@3.1.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/tinyrainbow/-/tinyrainbow-3.1.1.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2022 Tinylibs",
+      "scope": "dev"
+    },
+    {
+      "name": "totalist@3.0.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/totalist/-/totalist-3.0.1.tgz",
+      "authorOrProvider": "Luke Edwards",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Luke Edwards <luke.edwards05@gmail.com> (lukeed.com)",
+      "scope": "dev"
+    },
+    {
+      "name": "tslib@2.8.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz",
+      "authorOrProvider": "Microsoft Corp.",
+      "license": "0BSD",
+      "requiredNotices": [
+        "žádné — 0BSD notice nevyžaduje"
+      ],
+      "attribution": "Copyright (c) Microsoft Corporation.",
+      "scope": "prod"
+    },
+    {
+      "name": "typescript@6.0.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/typescript/-/typescript-6.0.3.tgz",
+      "authorOrProvider": "Microsoft Corp.",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "\"Licensor\" shall mean the copyright owner or entity authorized by the copyright owner that is granting the License.",
+      "scope": "dev"
+    },
+    {
+      "name": "undici-types@8.3.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/undici-types/-/undici-types-8.3.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Matteo Collina and Undici contributors",
+      "scope": "dev"
+    },
+    {
+      "name": "use-sync-external-store@1.6.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/use-sync-external-store/-/use-sync-external-store-1.6.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Meta Platforms, Inc. and affiliates.",
+      "scope": "prod"
+    },
+    {
+      "name": "vite › fsevents@2.3.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k vite › fsevents, viz https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz",
+      "scope": "dev"
+    },
+    {
+      "name": "vite › postcss@8.5.26",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/postcss/-/postcss-8.5.26.tgz",
+      "authorOrProvider": "Andrey Sitnik",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright 2013 Andrey Sitnik <andrey@sitnik.es>",
+      "scope": "dev"
+    },
+    {
+      "name": "vite@8.2.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/vite/-/vite-8.2.1.tgz",
+      "authorOrProvider": "Evan You",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2019-present, VoidZero Inc. and Vite contributors",
+      "scope": "dev"
+    },
+    {
+      "name": "vitest@4.1.10",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/vitest/-/vitest-4.1.10.tgz",
+      "authorOrProvider": "Anthony Fu",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2021-Present VoidZero Inc. and Vitest contributors",
+      "scope": "dev"
+    },
+    {
+      "name": "webpack-bundle-analyzer@4.10.1",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/webpack-bundle-analyzer/-/webpack-bundle-analyzer-4.10.1.tgz",
+      "authorOrProvider": "Yury Grunin",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright JS Foundation and other contributors",
+      "scope": "dev"
+    },
+    {
+      "name": "why-is-node-running@2.3.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/why-is-node-running/-/why-is-node-running-2.3.0.tgz",
+      "authorOrProvider": "Mathias Buus (@mafintosh)",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2016 Mathias Buus",
+      "scope": "dev"
+    },
+    {
+      "name": "ws@7.5.13",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/ws/-/ws-7.5.13.tgz",
+      "authorOrProvider": "Einar Otto Stangvik (http://2x.io)",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2011 Einar Otto Stangvik <einaros@gmail.com>",
+      "scope": "dev"
+    },
+    {
+      "name": "zod@4.4.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/zod/-/zod-4.4.3.tgz",
+      "authorOrProvider": "Colin McDonnell",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2025 Colin McDonnell",
+      "scope": "prod"
+    },
+    {
+      "name": "zustand@5.0.14",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/zustand/-/zustand-5.0.14.tgz",
+      "authorOrProvider": "Paul Henschel",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) 2019 Paul Henschel",
+      "scope": "prod"
+    },
+    {
+      "name": "npm registry",
+      "kind": "api",
+      "source": "https://registry.npmjs.org",
+      "authorOrProvider": "npm, Inc. (GitHub)",
+      "license": "npm Open-Source Terms of Use",
+      "requiredNotices": [
+        "žádné pro konzumenta registru"
+      ],
+      "attribution": "npm, Inc., https://docs.npmjs.com/policies/terms",
+      "reviewNote": "Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá."
+    },
+    {
+      "name": "OpenAI Chat Completions API",
+      "kind": "api",
+      "source": "https://api.openai.com/v1/chat/completions",
+      "authorOrProvider": "OpenAI",
+      "license": "komerční podmínky služby (OpenAI Business Terms)",
+      "requiredNotices": [
+        "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
+      ],
+      "attribution": "OpenAI, https://openai.com/policies/business-terms",
+      "reviewNote": "Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Podle rozhodnutí ze 14. 8. 2026 se placený běh nespouští a OPENAI_API_KEY se nevkládá; položka je tu proto, že adresa v kódu je, ne proto, že se volá."
+    }
+  ]
+}
