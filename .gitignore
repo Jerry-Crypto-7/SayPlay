@@ -44,6 +44,13 @@ secrets.json
 node_modules/
 .next/
 out/
+# Reporty z `ANALYZE=true`. Klientský končí v `.next/analyze/`, serverový podle
+# výstupního adresáře webpacku v kořeni – proto oba vzory.
+/analyze/
+# Odstavené jádro během `npm run prove:fallback`. Za normálního běhu adresář
+# nepřežije jednu vteřinu; po tvrdém zabití procesu je to jediná kopie, kterou
+# vrátí `node scripts/prove-fallback-isolation.mjs --restore`.
+.isolation-quarantine/
 build/
 dist/
 *.tsbuildinfo

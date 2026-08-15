@@ -12,7 +12,8 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "prove:fallback": "node scripts/prove-fallback-isolation.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "9.7.x",
@@ -25,6 +26,7 @@
     "zod": "4.4.x"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "16.3.x",
     "@next/env": "16.3.x",
     "@playwright/test": "1.62.x",
     "@types/node": "26.2.x",
