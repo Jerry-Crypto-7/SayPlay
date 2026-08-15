@@ -191,6 +191,37 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
     expect(failedChecks(result.out)).toEqual([6]);
   });
 
+  it('[6] credentials vzniklé PŘEJMENOVÁNÍM, ne přidáním', () => {
+    // `git mv notes.txt .env.local` je pro diff `R`, ne `A`. Bez `--no-renames`
+    // se `.env.local` v seznamu cest neobjeví — přestože v HEAD je a nahraje se.
+    const dir = makeRepo({ extraFile: { name: 'notes.txt', body: 'DB_PASSWORD=tajne\n' } });
+    run(dir, ['mv', 'notes.txt', '.env.local']);
+    run(dir, [...CLEAN_AUTHOR, 'commit', '-m', 'chore: rename']);
+
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([6]);
+  });
+
+  it('[6] cesta přidaná jen v merge commitu', () => {
+    // Bez `-m` nevypíše `--name-only` u merge commitu nic, takže evil merge
+    // propašuje cestu, kterou nenese ani jedna větev.
+    const dir = makeRepo();
+    run(dir, ['checkout', '-qb', 'vetev']);
+    writeFileSync(join(dir, 'jine.md'), 'nic\n', 'utf8');
+    run(dir, ['add', '-A']);
+    run(dir, [...CLEAN_AUTHOR, 'commit', '-m', 'docs: branch']);
+    run(dir, ['checkout', '-q', 'main']);
+    run(dir, [...CLEAN_AUTHOR, 'merge', '--no-ff', '--no-commit', 'vetev']);
+    writeFileSync(join(dir, '.env.local'), 'AWS_SECRET_ACCESS_KEY=tajne\n', 'utf8');
+    run(dir, ['add', '-f', '.env.local']);
+    run(dir, [...CLEAN_AUTHOR, 'commit', '-m', 'chore: merge']);
+
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([6]);
+  });
+
   it('[6] tvar API klíče přežívá ve smazaném souboru', () => {
     const shaped = `${'sk'}-abcdefghijklmnopqrstuvwxyz0123`;
     const dir = makeRepo({ extraFile: { name: 'config.ts', body: `const key = '${shaped}';\n` } });

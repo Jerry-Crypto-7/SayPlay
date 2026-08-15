@@ -53,7 +53,13 @@ const PROVISIONING = 'ops/cleanroom-provisioning.md';
  * Přiznat ale nestačí: direktiva sama končila nulou, takže brána nad prázdným
  * seznamem hlásila počet prohledaných souborů a pouštěla dál úplně všechno.
  * Nenaplněný seznam proto **selhává** stejně jako chybějící a průchod si musí
- * vyžádat ten, kdo commituje — proměnnou prostředí níž, kterou hook nenastavuje.
+ * vyžádat proměnná prostředí níž.
+ *
+ * **Kdo ji nastavuje: `.githooks/pre-commit`, a nikdo jiný.** Ať to nikdo nečte
+ * jako „na commitu je brána zavřená" — právě na commitu je jediná prominutá.
+ * Důvod je u té řádky v hooku: alternativou nebyl přísnější commit, ale
+ * `--no-verify`, který vypne i licenční bránu. Samostatný běh
+ * (`npm run gate:cleanroom`) a CI proměnnou nedostanou a selžou.
  *
  * Proti záměru tahle brána neobstojí tak jako tak (viz hlavička).
  */

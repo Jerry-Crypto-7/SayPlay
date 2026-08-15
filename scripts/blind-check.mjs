@@ -83,6 +83,9 @@ function grepHistory(patterns, pathspec, { extended = false } = {}) {
   const requested = Number(process.env.BLIND_CHECK_REV_CHUNK);
   const CHUNK = Number.isInteger(requested) && requested > 0 ? Math.min(150, requested) : 150;
 
+  // Dávky se sčítají, nevrací se první nalezená. Počet zásahů čte člověk, aby
+  // odhadl, kolik toho musí z historie vyndat; číslo z jedné dávky by ho podhodnotilo.
+  const hits = [];
   for (let start = 0; start < revisions.length; start += CHUNK) {
     const args = ['grep', extended ? '-IinE' : '-Iin'];
     for (const pattern of patterns) args.push('-e', pattern);
@@ -108,10 +111,10 @@ function grepHistory(patterns, pathspec, { extended = false } = {}) {
     }
     if (result.status === 0) {
       const output = String(result.stdout ?? '').trim();
-      if (output) return output;
+      if (output) hits.push(output);
     }
   }
-  return '';
+  return hits.join('\n');
 }
 
 /**
@@ -119,14 +122,40 @@ function grepHistory(patterns, pathspec, { extended = false } = {}) {
  * ve stromu `HEAD`. Soubor přidaný a v dalším commitu smazaný se nahraje stejně
  * jistě jako ten, co zůstal; `git ls-tree HEAD` o něm neví.
  *
- * `--diff-filter=A` (přidání) stačí: cesta, která nikdy nebyla přidaná, v žádném
- * commitu není. `-z` kvůli cestám s diakritikou, které by git jinak uvozoval a
- * vedoucí uvozovka by rozbila porovnání vzorů.
+ * **`--no-renames` a `-m` nejsou kosmetika, bez nich to lže.** `--diff-filter=A`
+ * čte diffy, ne stromy, a diff dvě věci mlčky vynechá:
+ *
+ * 1. **Přejmenování.** `git mv notes.txt .env.local` je pro git status `R`, ne
+ *    `A`, takže `.env.local` se v seznamu neobjeví — přestože v `HEAD` je a
+ *    nahraje se. Naměřeno: soubor s `DB_PASSWORD` a `AWS_SECRET_ACCESS_KEY`
+ *    prošel všemi šesti kontrolami. `--no-renames` z toho udělá zase `A`.
+ * 2. **Merge commity.** Bez `-m` u nich `--name-only` nevypíše nic, takže cesta
+ *    přidaná jen v merge commitu (evil merge) v seznamu chybí ze stejného důvodu.
+ *
+ * Pravidla kontroly 6 jsou čistě podle cesty, takže vynechanou cestu už nic
+ * jiného nechytí. `-z` kvůli diakritice: jinak git cesty uvozuje a vedoucí
+ * uvozovka rozbije porovnání vzorů.
+ *
+ * BEZ `allowFail` — ze stejného důvodu jako `rev-list` v `grepHistory`. Useknutý
+ * výpis (chybějící objekt, `maxBuffer`) by se jinak četl jako úplná historie.
+ * **Vlastní test na to není a mutant tady přežije:** každou porušenou historii,
+ * kterou jde v tomhle repu postavit, shodí až `grepHistory` na konci kontroly, a
+ * tvar, který by ji neshodil, potřebuje výpis přes 64 MB. Je to obrana do
+ * hloubky, ne doložené tvrzení, a tahle věta to říká místo zelené, která by
+ * netvrdila nic.
  */
 function historyPaths() {
-  const listing = git(['log', '--all', '--full-history', '--diff-filter=A', '--name-only', '--format=', '-z'], {
-    allowFail: true,
-  });
+  const listing = git([
+    'log',
+    '--all',
+    '--full-history',
+    '--no-renames',
+    '-m',
+    '--diff-filter=A',
+    '--name-only',
+    '--format=',
+    '-z',
+  ]);
   return [...new Set(listing.split('\0').map((line) => line.trim()).filter(Boolean))];
 }
 
