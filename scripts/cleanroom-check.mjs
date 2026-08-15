@@ -2,11 +2,10 @@
 /**
  * Clean-room kontrola: neobjevil se v repu identifikátor z proprietárního modulu?
  *
- * `DESIGN-BOOK.md` §12 o `VR-Builder-for-Games`: *„Jen doktrína, clean-room.
- * 8 353 řádků ECA modulu pod proprietární licencí AcmeCorp. Hodnota je v tom,
- * který výběr událostí, podmínek a akcí se osvědčil u neprogramátorů — ne v
- * názvech."* Repozitář půjde ven jako veřejný, takže přenesený název není
- * licenční detail — je to diskvalifikace a firemní problém zároveň.
+ * Část návrhu vychází z doktríny — z toho, **který výběr událostí, podmínek a
+ * akcí se osvědčil u neprogramátorů**. Doktrína se přenášet smí, názvy ne.
+ * Repozitář půjde ven jako veřejný, takže přenesený název není licenční detail —
+ * je to diskvalifikace a zároveň problém pro držitele práv.
  *
  * ## Co tahle kontrola měří, a co ne — čtěte dřív, než se na ni spolehnete
  *
@@ -83,11 +82,14 @@ export function isUnprovisioned(text) {
 export function findHits(text, identifiers) {
   const hits = [];
   const lines = text.split('\n');
-  for (const identifier of identifiers) {
+  for (let index = 0; index < identifiers.length; index += 1) {
+    const identifier = identifiers[index];
     const escaped = identifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const pattern = new RegExp(`(^|[^A-Za-z0-9_$])${escaped}($|[^A-Za-z0-9_$])`);
-    for (let index = 0; index < lines.length; index += 1) {
-      if (pattern.test(lines[index])) hits.push({ identifier, line: index + 1 });
+    for (let row = 0; row < lines.length; row += 1) {
+      // `index` je pozice v seznamu — hlásí se místo jména, aby se do logu
+      // nedostal proprietární identifikátor. `identifier` zůstává pro testy.
+      if (pattern.test(lines[row])) hits.push({ identifier, index, line: row + 1 });
     }
   }
   return hits;
@@ -98,51 +100,143 @@ export function findHits(text, identifiers) {
  * trackované plus untrackované neignorované (`git ls-files -c -o
  * --exclude-standard`). Ne celý pracovní strom, a to ze dvou důvodů:
  *
- * 1. **Ignorované soubory tuhle bránu zajímat nesmějí.** `SECURITY-FINDINGS.md`
- *    je firemní dokument AcmeCorp a klidně může nést jméno z ECA modulu. Při
- *    skenu celého stromu by hlásil nález při každém commitu — a jediná cesta k
- *    zelené by bylo ten soubor smazat nebo bránu vypnout. Commitnout se stejně
- *    nedá, takže hlídat ho není k čemu.
+ * 1. **Ignorované soubory tuhle bránu zajímat nesmějí.** Pracovní strom nese
+ *    vedle produktu i interní podklady, které klidně můžou nést jméno z
+ *    proprietárního modulu. Při skenu celého stromu by hlásily nález při každém
+ *    commitu — a jediná cesta k zelené by bylo je smazat nebo bránu vypnout.
+ *    Commitnout se stejně nedají, takže hlídat je není k čemu.
  * 2. Sken celého stromu je řádově dražší a `pre-commit` běží při každém commitu.
  *
  * `--no-replace-objects` ze stejného důvodu jako v `blind-check.mjs`: `git
  * replace` umí podstrčit jiné bajty pod nezměněné OID.
  */
+function git(args) {
+  return execFileSync('git', ['--no-replace-objects', ...args], {
+    cwd: REPO,
+    encoding: 'buffer',
+    maxBuffer: 256 * 1024 * 1024,
+  });
+}
+
+/**
+ * Obsah se čte z **indexu**, ne z pracovního stromu — commituje se index.
+ *
+ * Naměřeno reviewem nad `47e0b02`: brána brala jména z `git ls-files`, ale bajty
+ * z disku. Stačilo `git add` souboru se zakázaným jménem a pak ten soubor na
+ * disku opravit; gate hlásil `žádný nález`, exit 0, a `git show :<cesta>` přitom
+ * to jméno pořád držel. Nejde o exotický útok — je to obyčejné pořadí kroků:
+ * brána zaječí, člověk soubor opraví, zapomene `git add`, commitne znovu, zelená.
+ *
+ * Netrackované neignorované soubory se čtou z disku, protože v indexu nejsou a
+ * `git add -A` je tam za chvíli dostane.
+ */
 function scannedFiles() {
-  let listing;
+  let stagedListing;
+  let untrackedListing;
   try {
-    listing = execFileSync('git', ['--no-replace-objects', 'ls-files', '-c', '-o', '--exclude-standard', '-z'], {
-      cwd: REPO,
-      encoding: 'utf8',
-      maxBuffer: 64 * 1024 * 1024,
-    });
+    stagedListing = git(['ls-files', '-s', '-z']).toString('utf8');
+    untrackedListing = git(['ls-files', '-o', '--exclude-standard', '-z']).toString('utf8');
   } catch (error) {
     // Fail-closed i tady: bez seznamu souborů kontrola neví, co skenovala, a
     // tichý průchod nad prázdnou množinou by vypadal jako čistý strom.
     return { error: `git ls-files selhal (${error.message.split('\n')[0]}) — bez seznamu souborů se nedá skenovat` };
   }
 
-  const files = [];
-  for (const shown of listing.split('\0')) {
-    if (!shown || BINARY.test(shown)) continue;
+  const staged = [];
+  for (const record of stagedListing.split('\0')) {
+    if (!record) continue;
+    const tab = record.indexOf('\t');
+    if (tab < 0) continue;
+    const shown = record.slice(tab + 1);
+    const oid = record.slice(0, tab).split(/\s+/)[1];
     // Seznam sám ty identifikátory nese z definice. Kdyby se skenoval, hlásil
     // by nález na každém spuštění a jediná cesta k zelené by bylo ho vyprázdnit.
-    if (shown === LIST_FILE) continue;
-    files.push({ path: join(REPO, shown), shown });
+    if (!oid || BINARY.test(shown) || shown === LIST_FILE) continue;
+    staged.push({ shown, oid });
+  }
+
+  const files = [];
+  if (staged.length > 0) {
+    // Jedno volání místo jednoho procesu na soubor: 190 spawnů by z `pre-commit`
+    // udělalo něco, co lidi vypínají.
+    const contents = readBlobs(staged.map((entry) => entry.oid));
+    if (contents.error) return contents;
+    for (let index = 0; index < staged.length; index += 1) {
+      files.push({ shown: staged[index].shown, text: contents.blobs[index] });
+    }
+  }
+
+  for (const shown of untrackedListing.split('\0')) {
+    if (!shown || BINARY.test(shown) || shown === LIST_FILE) continue;
+    try {
+      files.push({ shown, text: readFileSync(join(REPO, shown), 'utf8') });
+    } catch {
+      // Nečitelný netrackovaný soubor se počítá jako přeskočený, ne jako čistý.
+      files.push({ shown, text: null });
+    }
   }
   return { files };
+}
+
+/** Obsah blobů v pořadí zadaných oidů, jedním `git cat-file --batch`. */
+function readBlobs(oids) {
+  try {
+    const out = execFileSync('git', ['--no-replace-objects', 'cat-file', '--batch', '--buffer'], {
+      cwd: REPO,
+      // `input` musí být Buffer: se stringem si ho Node vyrábí přes
+      // `Buffer.from(input, encoding)` a na `encoding: 'buffer'` padne.
+      input: Buffer.from(`${oids.join('\n')}\n`, 'utf8'),
+      encoding: 'buffer',
+      maxBuffer: 256 * 1024 * 1024,
+    });
+    const blobs = [];
+    let offset = 0;
+    while (offset < out.length && blobs.length < oids.length) {
+      const newline = out.indexOf(0x0a, offset);
+      if (newline < 0) break;
+      const header = out.slice(offset, newline).toString('utf8');
+      const size = Number(header.split(' ')[2]);
+      const start = newline + 1;
+      blobs.push(out.slice(start, start + size).toString('utf8'));
+      offset = start + size + 1;
+    }
+    if (blobs.length !== oids.length) {
+      return { error: `git cat-file vrátil ${blobs.length} objektů místo ${oids.length}` };
+    }
+    return { blobs };
+  } catch (error) {
+    return { error: `git cat-file selhal (${error.message.split('\n')[0]})` };
+  }
+}
+
+/**
+ * Seznam nesmí být trackovaný. `.gitignore` je proti `git add -f` bezmocný a
+ * `blind-check.mjs:54` má přesně tuhle pojistku pro svůj vlastní config —
+ * tenhle soubor je citlivější a neměl ji.
+ */
+function listIsTracked() {
+  try {
+    execFileSync('git', ['--no-replace-objects', 'ls-files', '--error-unmatch', LIST_FILE], {
+      cwd: REPO,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function main(argv = []) {
   if (argv.includes('--help') || argv.includes('-h')) {
     console.log(
       [
-        'cleanroom-check — hlídá identifikátory z proprietárního ECA modulu',
+        'cleanroom-check — hlídá identifikátory z proprietárního modulu třetí strany',
         '',
         '  node scripts/cleanroom-check.mjs',
         '',
         'JE TO LEXIKÁLNÍ SHODA PROTI SEZNAMU JMEN, ne měření podobnosti obsahu.',
-        'Hledá celá slova ze seznamu v pracovním stromě. Přepsaný kód se stejnou',
+        'Hledá celá slova ze seznamu v obsahu INDEXU (commituje se index, ne disk).',
+        'Netrackované neignorované soubory se čtou z disku. Přepsaný kód se stejnou',
         'strukturou a jinými názvy tímhle NEPROJDE JAKO NÁLEZ — a nesmí se na to',
         'spoléhat, jako by prošel kontrolou podobnosti. Žádný „práh podobnosti"',
         'se nepočítá a žádný se neslibuje.',
@@ -156,7 +250,18 @@ export function main(argv = []) {
     return 0;
   }
 
-  console.log('cleanroom-check — DESIGN-BOOK.md §12, lexikální shoda proti seznamu jmen\n');
+  console.log('cleanroom-check — clean-room doktrína, lexikální shoda proti seznamu jmen\n');
+
+  // Dřív než cokoli jiného: seznam sám se nesmí ocitnout v repu. `.gitignore` je
+  // proti `git add -f` bezmocný a tenhle soubor je to nejcitlivější v celém stromě.
+  if (listIsTracked()) {
+    console.log(
+      `FAIL  ${LIST_FILE} je TRACKOVANÝ.\n` +
+        '        Nese proprietární jména a repozitář půjde ven — commitnutý seznam vynáší\n' +
+        `        přesně to, čemu má bránit. Vyndej ho: git rm --cached ${LIST_FILE}`,
+    );
+    return 1;
+  }
 
   const listPath = join(REPO, LIST_FILE);
   if (!existsSync(listPath)) {
@@ -189,20 +294,29 @@ export function main(argv = []) {
   }
 
   let files = 0;
+  const skipped = [];
   const findings = [];
   for (const file of scanned.files) {
-    let text;
-    try {
-      text = readFileSync(file.path, 'utf8');
-    } catch {
+    if (file.text === null) {
+      skipped.push(file.shown);
       continue;
     }
     files += 1;
-    for (const hit of findHits(text, identifiers)) findings.push({ ...hit, file: file.shown });
+    for (const hit of findHits(file.text, identifiers)) findings.push({ ...hit, file: file.shown });
   }
 
+  // Identifikátor se nevypisuje. Skript se dá spustit i mimo lokální terminál
+  // (`npm run gate:cleanroom`) a jeho výstup skončí v logu; tisknout do logu ta
+  // jména by bylo totéž co commitnout seznam. Index do seznamu stačí na opravu —
+  // ten seznam má u sebe každý, kdo tuhle bránu vůbec může spustit.
   for (const finding of findings) {
-    console.log(`FAIL  ${finding.file}:${finding.line} nese zakázaný identifikátor "${finding.identifier}"`);
+    console.log(`FAIL  ${finding.file}:${finding.line} nese zakázaný identifikátor č. ${finding.index + 1} ze seznamu`);
+  }
+
+  if (skipped.length > 0) {
+    console.log(
+      `\nPOZOR  ${skipped.length} souborů se nepodařilo přečíst a NEBYLY zkontrolované: ${skipped.slice(0, 3).join(', ')}`,
+    );
   }
 
   if (unprovisioned && identifiers.length === 0) {

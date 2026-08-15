@@ -10,7 +10,7 @@ SECURITY-FINDINGS.md
 # proto SELŽE, kdyby se tenhle soubor ocitl mezi trackovanými.
 blind-check.config.json
 
-# Seznam zakázaných identifikátorů z proprietárního ECA modulu AcmeCorp.
+# Seznam zakázaných identifikátorů z proprietárního modulu třetí strany.
 # Sám nese ta jména, takže commitnout ho znamená vynést přesně to, čemu má bránit
 # – stejný důvod a stejná přísnost jako u SECURITY-FINDINGS.md.
 # `cleanroom-check.mjs` je proto fail-closed: bez seznamu SELŽE, nepřeskočí se.

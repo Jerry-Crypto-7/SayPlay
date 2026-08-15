@@ -7,7 +7,7 @@ nedostane. Tenhle dokument říká jak.
 
 ## Proč to není v gitu
 
-Seznam nese názvy tříd, metod a konstant z proprietárního ECA modulu AcmeCorp.
+Seznam nese názvy tříd, metod a konstant z proprietárního modulu třetí strany.
 Repozitář je podle `RULES.md` §2 povinně veřejný. Commitnout seznam by znamenalo
 zveřejnit přesně to, čemu má bránit — stejný důvod a stejná přísnost jako u
 `SECURITY-FINDINGS.md`.

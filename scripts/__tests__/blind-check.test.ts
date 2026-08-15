@@ -150,6 +150,22 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
     expect(failedChecks(result.out)).toEqual([3]);
   });
 
+  it('[3] výjimka je přesně dva soubory, ne celé scripts/', () => {
+    const dir = makeRepo({ extraFile: { name: 'scripts/jiny.mjs', body: '// Postaveno pro AcmeCorp.\n' } });
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([3]);
+  });
+
+  it('[3] vlastní tokeny brány se nepočítají jako únik', () => {
+    // Skript a jeho test ta jména nést MUSÍ — hledá je. Bez výjimky je kontrola
+    // nenulová vždycky a přestane se lišit od skutečného úniku.
+    const dir = makeRepo({ extraFile: { name: 'scripts/blind-check.mjs', body: '// hledá AcmeCorp a ACME\n' } });
+    const result = blindCheck(dir);
+    expect(failedChecks(result.out)).toEqual([]);
+    expect(result.code).toBe(0);
+  });
+
   it('[4] SECURITY-FINDINGS.md v historii', () => {
     // Bez `acmecorp`/`acme` uvnitř, jinak by shodil i kontrolu 3 a tenhle test
     // by netvrdil nic o kontrole 4.

@@ -10,7 +10,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -51,8 +51,13 @@ function write(dir: string, name: string, body: string): void {
  * Minimální strom: lockfile se dvěma balíčky a jedním voláním ven. `--sync` z něj
  * udělá platný registr, takže výchozí stav testu je zelený a každý případ níž
  * kazí právě jednu věc.
+ *
+ * **Fixtura musí mít skutečný `node_modules/`.** Bez něj se autor ani copyright
+ * řádek nemají odkud přečíst a do registru se dosadí náhradní texty — a přesně
+ * to byla vada, kterou testy nemohly vidět, dokud fixtura `node_modules` neměla.
+ * Teď jím prochází stejnou cestou jako ostrý běh.
  */
-function makeRepo(lockExtra: Record<string, unknown> = {}): string {
+function makeRepo(lockExtra: Record<string, unknown> = {}, withModules = true): string {
   const dir = mkdtempSync(join(tmpdir(), 'license-gate-'));
   created.push(dir);
 
@@ -77,6 +82,11 @@ function makeRepo(lockExtra: Record<string, unknown> = {}): string {
       },
     }),
   );
+  if (withModules) {
+    write(dir, 'node_modules/left-pad/package.json', JSON.stringify({ name: 'left-pad', author: 'Pad Author <a@b.io>' }));
+    write(dir, 'node_modules/left-pad/LICENSE', 'MIT License\n\nCopyright (c) 2016 Pad Author\n');
+    write(dir, 'node_modules/copyleft-thing/package.json', JSON.stringify({ name: 'copyleft-thing' }));
+  }
   write(dir, 'src/client.ts', "export const url = 'https://api.fixture-provider.io/v1';\n");
   return dir;
 }
@@ -134,6 +144,26 @@ describe('license-gate: zelený výchozí stav', () => {
     for (const title of ['Knihovny', 'Assety', 'Modely', 'Datasety', 'Externí služby']) {
       expect(rendered).toContain(`## ${title}`);
     }
+  });
+});
+
+describe('license-gate: --sync nesmí tiše nahradit skutečná data', () => {
+  it('bez node_modules odmítne běžet, místo aby dosadil náhradní texty', () => {
+    const dir = makeRepo({}, false);
+
+    const { code, out } = run(LICENSE_GATE, dir, ['--sync']);
+    expect(code).toBe(1);
+    expect(out).toContain('potřebuje node_modules');
+    expect(existsSync(join(dir, 'disclosure.json'))).toBe(false);
+  });
+
+  it('s node_modules zapíše SKUTEČNÉHO autora a copyright, ne náhradní text', () => {
+    const dir = makeRepo();
+    run(LICENSE_GATE, dir, ['--sync']);
+
+    const entry = readRegistry(dir).entries.find((item) => String(item.name).startsWith('left-pad'));
+    expect(entry!.authorOrProvider).toBe('Pad Author');
+    expect(entry!.attribution).toContain('Copyright (c) 2016 Pad Author');
   });
 });
 
@@ -284,6 +314,35 @@ describe('license-gate: pokrytí (kontroly 3 a 5)', () => {
     expect(code).toBe(1);
   });
 
+  it('podřetězec registrovaného hostu neprojde — pi.openai.com není api.openai.com', () => {
+    const dir = makeGreenRepo();
+    // `pi.fixture-provider.io` je podřetězcem registrovaného zdroje. Porovnání
+    // přes `includes` ho propouštělo, přestože je to jiný hostitel.
+    write(dir, 'src/exfil.ts', "await fetch('https://pi.fixture-provider.io/v1');\n");
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('pi.fixture-provider.io');
+    expect(code).toBe(1);
+  });
+
+  it('selže, když kód jmenuje model bez položky kind: model', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/model.ts', "export const MODEL = 'claude-opus-5';\n");
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([7]);
+    expect(out).toContain('claude-opus-5');
+    expect(code).toBe(1);
+  });
+
+  it('model jmenovaný jen v komentáři položku nevyžaduje', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/note.ts', '// dřív to jel claude-opus-5\nexport const x = 1;\n');
+
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([]);
+  });
+
   it('hostitel jen v komentáři volání není, takže bránu neshodí', () => {
     const dir = makeGreenRepo();
     write(dir, 'src/doc.ts', "// viz https://jen-v-komentari.io/docs\nexport const x = 1;\n");
@@ -401,12 +460,12 @@ describe('cleanroom-check: nenaplněný seznam se musí přiznat', () => {
   });
 
   it('naplněný seznam s zapomenutou direktivou hlásí, že direktiva lže', () => {
-    const { out } = run(CLEANROOM, repo('#!unprovisioned\nAcmeEcaActionRunner\n'));
+    const { out } = run(CLEANROOM, repo('#!unprovisioned\nProprietaryActionRunner\n'));
     expect(out).toContain('pořád je označený');
   });
 
   it('naplněný seznam bez direktivy nehlásí nic', () => {
-    const { code, out } = run(CLEANROOM, repo('AcmeEcaActionRunner\n'));
+    const { code, out } = run(CLEANROOM, repo('ProprietaryActionRunner\n'));
     expect(code).toBe(0);
     expect(out).not.toContain('POZOR');
   });
@@ -429,8 +488,8 @@ describe('cleanroom-check: nálezy', () => {
   }
 
   it('ignorovaný soubor se neskenuje — jinak by nález nešlo nikdy opravit', () => {
-    const dir = repoWith('AcmeEcaActionRunner\n', 'export const x = 1;\n', 'tajne.md\n');
-    write(dir, 'tajne.md', 'Interní dokument, zmiňuje AcmeEcaActionRunner.\n');
+    const dir = repoWith('ProprietaryActionRunner\n', 'export const x = 1;\n', 'tajne.md\n');
+    write(dir, 'tajne.md', 'Interní dokument, zmiňuje ProprietaryActionRunner.\n');
 
     const { code, out } = run(CLEANROOM, dir);
     expect(code).toBe(0);
@@ -440,8 +499,8 @@ describe('cleanroom-check: nálezy', () => {
   it('mimo git repozitář je to selhání, ne sken prázdné množiny', () => {
     const dir = mkdtempSync(join(tmpdir(), 'cleanroom-nogit-'));
     created.push(dir);
-    write(dir, 'scripts/cleanroom-forbidden.txt', 'AcmeEcaActionRunner\n');
-    write(dir, 'src/a.ts', 'new AcmeEcaActionRunner();\n');
+    write(dir, 'scripts/cleanroom-forbidden.txt', 'ProprietaryActionRunner\n');
+    write(dir, 'src/a.ts', 'new ProprietaryActionRunner();\n');
 
     const { code, out } = run(CLEANROOM, dir);
     expect(code).toBe(1);
@@ -449,10 +508,37 @@ describe('cleanroom-check: nálezy', () => {
   });
 
   it('najde zakázaný identifikátor a vypíše soubor i řádek', () => {
-    const { code, out } = run(CLEANROOM, repoWith('AcmeEcaActionRunner\n', 'const a = 1;\nnew AcmeEcaActionRunner();\n'));
+    const { code, out } = run(CLEANROOM, repoWith('ProprietaryActionRunner\n', 'const a = 1;\nnew ProprietaryActionRunner();\n'));
     expect(code).toBe(1);
     expect(out).toContain('src/a.ts:2');
-    expect(out).toContain('AcmeEcaActionRunner');
+  });
+
+  it('do výstupu se identifikátor NEVYPISUJE — výstup končí v logu', () => {
+    const { out } = run(CLEANROOM, repoWith('ProprietaryActionRunner\n', 'new ProprietaryActionRunner();\n'));
+    expect(out).not.toContain('ProprietaryActionRunner');
+    expect(out).toContain('identifikátor č. 1 ze seznamu');
+  });
+
+  it('čte INDEX, ne disk: opravený soubor na disku neschová zakázané jméno v indexu', () => {
+    const dir = repoWith('ProprietaryActionRunner\n', 'export const x = 1;\n');
+    write(dir, 'src/staged.ts', 'new ProprietaryActionRunner();\n');
+    execFileSync('git', ['add', 'src/staged.ts'], { cwd: dir, stdio: 'ignore' });
+    // Přesně to obvyklé pořadí kroků: brána zaječí, člověk soubor opraví,
+    // zapomene `git add`, commitne znovu. Index tam to jméno pořád má.
+    write(dir, 'src/staged.ts', 'export const ok = 1;\n');
+
+    const { code, out } = run(CLEANROOM, dir);
+    expect(code).toBe(1);
+    expect(out).toContain('src/staged.ts:1');
+  });
+
+  it('trackovaný seznam je selhání — .gitignore neubrání `git add -f`', () => {
+    const dir = repoWith('ProprietaryActionRunner\n', 'export const x = 1;\n', 'scripts/cleanroom-forbidden.txt\n');
+    execFileSync('git', ['add', '-f', 'scripts/cleanroom-forbidden.txt'], { cwd: dir, stdio: 'ignore' });
+
+    const { code, out } = run(CLEANROOM, dir);
+    expect(code).toBe(1);
+    expect(out).toContain('je TRACKOVANÝ');
   });
 
   it('shoduje celá slova, takže Reactor netrefí identifikátor Actor', () => {
@@ -462,7 +548,7 @@ describe('cleanroom-check: nálezy', () => {
   });
 
   it('sám seznam se neskenuje, jinak by hlásil nález pokaždé', () => {
-    const { code } = run(CLEANROOM, repoWith('AcmeEcaActionRunner\n', 'export const x = 1;\n'));
+    const { code } = run(CLEANROOM, repoWith('ProprietaryActionRunner\n', 'export const x = 1;\n'));
     expect(code).toBe(0);
   });
 
@@ -474,7 +560,7 @@ describe('cleanroom-check: čisté funkce', () => {
   });
 
   it('findHits vrací číslo řádku od jedničky', () => {
-    expect(findHits('nic\nAlfa tady\n', ['Alfa'])).toEqual([{ identifier: 'Alfa', line: 2 }]);
+    expect(findHits('nic\nAlfa tady\n', ['Alfa'])).toEqual([{ identifier: 'Alfa', index: 0, line: 2 }]);
   });
 
   it('findHits nebere podřetězec uvnitř delšího identifikátoru', () => {
@@ -482,6 +568,6 @@ describe('cleanroom-check: čisté funkce', () => {
   });
 
   it('findHits bere identifikátor oddělený tečkou nebo závorkou', () => {
-    expect(findHits('eca.Alfa(1);\n', ['Alfa'])).toEqual([{ identifier: 'Alfa', line: 1 }]);
+    expect(findHits('eca.Alfa(1);\n', ['Alfa'])).toEqual([{ identifier: 'Alfa', index: 0, line: 1 }]);
   });
 });

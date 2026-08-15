@@ -107,9 +107,21 @@ check(3, 'committed content mentions neither AcmeCorp nor ACME', () => {
   // Nad `HEAD`, ne nad pracovním stromem: nahrávají se commity. Interní podklady
   // (`plans/`, kořenové `*.md`, `.claude/`) jsou v `.gitignore`, takže trackované
   // nejsou a do commitu se nedostanou.
+  // Dva soubory se vylučují, protože ty tokeny obsahovat MUSÍ: skript sám je má
+  // v `PUBLIC_TOKENS` a v názvu kontroly, jeho test je má ve fixturách. Bez téhle
+  // výjimky hlásí kontrola 3 nenulový počet vždycky — a když je nenulová pořád,
+  // přestane se rozlišovat od skutečného úniku a člověk pushne s `--no-verify`.
+  // Naměřeno: 6 vlastních zásahů maskovalo 13 skutečných.
   const args = ['grep', '-Iin'];
   for (const token of PUBLIC_TOKENS) args.push('-e', token);
-  args.push('HEAD', '--', '.', ':(exclude)SECURITY-FINDINGS.md');
+  args.push(
+    'HEAD',
+    '--',
+    '.',
+    ':(exclude)SECURITY-FINDINGS.md',
+    ':(exclude)scripts/blind-check.mjs',
+    ':(exclude)scripts/__tests__/blind-check.test.ts',
+  );
 
   const output = git(args, { allowFail: true }).trim();
   if (!output) return null;

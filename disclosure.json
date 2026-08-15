@@ -2299,6 +2299,79 @@
       "scope": "prod"
     },
     {
+      "name": "claude-opus-5",
+      "kind": "model",
+      "source": "https://docs.anthropic.com/en/docs/about-claude/models",
+      "authorOrProvider": "Anthropic",
+      "license": "komerční podmínky služby (Anthropic Commercial Terms)",
+      "requiredNotices": [
+        "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
+      ],
+      "attribution": "Anthropic, https://www.anthropic.com/legal/commercial-terms",
+      "reviewNote": "Model emisní cesty (src/model/prompt.ts, EMISSION_MODEL). Produkční endpoint je v režimu záznamu a živé volání neprovádí."
+    },
+    {
+      "name": "gpt-5.6",
+      "kind": "model",
+      "source": "https://platform.openai.com/docs/models",
+      "authorOrProvider": "OpenAI",
+      "license": "komerční podmínky služby (OpenAI Business Terms)",
+      "requiredNotices": [
+        "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
+      ],
+      "attribution": "OpenAI, https://openai.com/policies/business-terms",
+      "reviewNote": "Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je."
+    },
+    {
+      "name": "gpt-5.6-mini",
+      "kind": "model",
+      "source": "https://platform.openai.com/docs/models",
+      "authorOrProvider": "OpenAI",
+      "license": "komerční podmínky služby (OpenAI Business Terms)",
+      "requiredNotices": [
+        "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
+      ],
+      "attribution": "OpenAI, https://openai.com/policies/business-terms",
+      "reviewNote": "Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je."
+    },
+    {
+      "name": "gpt-5.6-sol",
+      "kind": "model",
+      "source": "https://platform.openai.com/docs/models",
+      "authorOrProvider": "OpenAI",
+      "license": "komerční podmínky služby (OpenAI Business Terms)",
+      "requiredNotices": [
+        "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
+      ],
+      "attribution": "OpenAI, https://openai.com/policies/business-terms",
+      "reviewNote": "Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je."
+    },
+    {
+      "name": "gpt-5.6-terra",
+      "kind": "model",
+      "source": "https://platform.openai.com/docs/models",
+      "authorOrProvider": "OpenAI",
+      "license": "komerční podmínky služby (OpenAI Business Terms)",
+      "requiredNotices": [
+        "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
+      ],
+      "attribution": "OpenAI, https://openai.com/policies/business-terms",
+      "reviewNote": "Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je."
+    },
+    {
+      "name": "zmrazený korpus promptů a kontraktů (evals/frozen, evals/gold.jsonl)",
+      "kind": "dataset",
+      "source": "vlastní tvorba v tomhle repozitáři, zmrazená tagem evals-frozen-v2",
+      "authorOrProvider": "worldsmith",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "worldsmith, tenhle repozitář",
+      "reviewNote": "Vlastní data, žádný externí zdroj. Uvedeno proto, že RULES.md §2 žádá disclosure datasetů bez ohledu na to, kdo je autor."
+    },
+    {
       "name": "npm registry",
       "kind": "api",
       "source": "https://registry.npmjs.org",
@@ -2320,7 +2393,7 @@
         "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
       ],
       "attribution": "OpenAI, https://openai.com/policies/business-terms",
-      "reviewNote": "Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Podle rozhodnutí ze 14. 8. 2026 se placený běh nespouští a OPENAI_API_KEY se nevkládá; položka je tu proto, že adresa v kódu je, ne proto, že se volá."
+      "reviewNote": "Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá."
     }
   ]
 }

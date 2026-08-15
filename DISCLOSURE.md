@@ -319,13 +319,33 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 
 _Žádná položka._
 
-## Modely (0)
+## Modely (5)
 
-_Žádná položka._
+| Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
+|---|---|---|---|---|---|
+| claude-opus-5 | https://docs.anthropic.com/en/docs/about-claude/models | Anthropic | komerční podmínky služby (Anthropic Commercial Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | Anthropic, https://www.anthropic.com/legal/commercial-terms |
+| gpt-5.6 | https://platform.openai.com/docs/models | OpenAI | komerční podmínky služby (OpenAI Business Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
+| gpt-5.6-mini | https://platform.openai.com/docs/models | OpenAI | komerční podmínky služby (OpenAI Business Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
+| gpt-5.6-sol | https://platform.openai.com/docs/models | OpenAI | komerční podmínky služby (OpenAI Business Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
+| gpt-5.6-terra | https://platform.openai.com/docs/models | OpenAI | komerční podmínky služby (OpenAI Business Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
 
-## Datasety (0)
+### Modely — licence posouzené jednotlivě
 
-_Žádná položka._
+- **claude-opus-5** (komerční podmínky služby (Anthropic Commercial Terms)): Model emisní cesty (src/model/prompt.ts, EMISSION_MODEL). Produkční endpoint je v režimu záznamu a živé volání neprovádí.
+- **gpt-5.6** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
+- **gpt-5.6-mini** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
+- **gpt-5.6-sol** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
+- **gpt-5.6-terra** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
+
+## Datasety (1)
+
+| Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
+|---|---|---|---|---|---|
+| zmrazený korpus promptů a kontraktů (evals/frozen, evals/gold.jsonl) | vlastní tvorba v tomhle repozitáři, zmrazená tagem evals-frozen-v2 | worldsmith | MIT | copyright notice; plné znění licence | worldsmith, tenhle repozitář |
+
+### Datasety — licence posouzené jednotlivě
+
+- **zmrazený korpus promptů a kontraktů (evals/frozen, evals/gold.jsonl)** (MIT): Vlastní data, žádný externí zdroj. Uvedeno proto, že RULES.md §2 žádá disclosure datasetů bez ohledu na to, kdo je autor.
 
 ## Externí služby (2)
 
@@ -337,4 +357,4 @@ _Žádná položka._
 ### Externí služby — licence posouzené jednotlivě
 
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
-- **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Podle rozhodnutí ze 14. 8. 2026 se placený běh nespouští a OPENAI_API_KEY se nevkládá; položka je tu proto, že adresa v kódu je, ne proto, že se volá.
+- **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá.

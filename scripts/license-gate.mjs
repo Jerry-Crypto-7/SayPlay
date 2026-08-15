@@ -203,6 +203,23 @@ export function stripComments(source) {
   return out;
 }
 
+/**
+ * Identifikátory modelů v kódu. **Je to lexikální shoda proti tvaru jména**, ne
+ * seznam poskytovatelů — stejně skromné tvrzení jako u `cleanroom-check`. Model
+ * vyskládaný za běhu z proměnných tahle kontrola nevidí.
+ *
+ * Existuje proto, že `RULES.md` §2 vyžaduje disclosure **modelů**, a bez ní byla
+ * třída `model` prázdná a nefalzifikovatelná: registr hlásil „disclosure je
+ * úplná", zatímco kód jmenoval pět modelů, o kterých v něm nestálo nic.
+ */
+export function modelIdsIn(source) {
+  const found = new Set();
+  for (const match of stripComments(source).matchAll(/\b(?:gpt|claude|gemini|llama|mistral|deepseek)-[a-z0-9][-a-z0-9.]*/gi)) {
+    found.add(match[0].toLowerCase().replace(/[.\-]+$/, ''));
+  }
+  return found;
+}
+
 export function hostsIn(source) {
   const found = new Set();
   for (const match of stripComments(source).matchAll(/https?:\/\/([A-Za-z0-9.\-]+)/g)) {
@@ -212,7 +229,8 @@ export function hostsIn(source) {
   return found;
 }
 
-function calledHosts() {
+/** Projde produkční kód a sesbírá, co v něm `extract` najde: host → první soubor. */
+function scanCode(extract) {
   const hits = new Map();
   const walk = (dir) => {
     if (!existsSync(dir)) return;
@@ -224,14 +242,17 @@ function calledHosts() {
       }
       if (!CODE_FILE.test(entry.name) || TEST_FILE.test(entry.name)) continue;
       const shown = relative(REPO, full).split(sep).join(posix.sep);
-      for (const host of hostsIn(readFileSync(full, 'utf8'))) {
-        if (!hits.has(host)) hits.set(host, shown);
+      for (const value of extract(readFileSync(full, 'utf8'))) {
+        if (!hits.has(value)) hits.set(value, shown);
       }
     }
   };
   for (const root of CODE_ROOTS) walk(join(REPO, root));
   return hits;
 }
+
+const calledHosts = () => scanCode(hostsIn);
+const namedModels = () => scanCode(modelIdsIn);
 
 // ---------------------------------------------------------------------------
 // Odvození položek pro `--sync`
@@ -497,15 +518,43 @@ check(4, 'registr sedí na public/ v obou směrech', ({ registry }) => {
  */
 check(5, 'každý volaný endpoint má v registru položku kind: api', ({ registry }) => {
   if (registry.error) return registry.error;
-  const known = new Set(
-    registry.entries.filter((entry) => entry.kind === 'api').map((entry) => String(entry.source).toLowerCase()),
-  );
+  // Host se porovnává jako celý host z rozparsované URL, ne podřetězcem.
+  // Podřetězcové porovnání propouštělo `pi.openai.com` proti registrovanému
+  // `https://api.openai.com/...`, protože je to jeho podřetězec — tedy přesně
+  // exfiltrační host, který vypadá jako disclosovaný.
+  const known = new Set();
+  for (const entry of registry.entries) {
+    if (entry.kind !== 'api') continue;
+    const source = String(entry.source ?? '').trim();
+    try {
+      known.add(new URL(source).host.toLowerCase());
+    } catch {
+      // Zdroj, který není URL, se bere jako holý host — jinak by položka mlčky
+      // nekryla nic a kontrola by hlásila host, který v registru je.
+      known.add(source.toLowerCase());
+    }
+  }
   const unknown = [];
   for (const [host, file] of calledHosts()) {
-    const listed = [...known].some((source) => source === host || source.includes(`//${host}`) || source.includes(host));
-    if (!listed) unknown.push(`${host} (${file})`);
+    if (!known.has(host)) unknown.push(`${host} (${file})`);
   }
   // Každý neznámý host potřebuje vlastní ruční položku, takže první nález nestačí.
+  return summarize(unknown);
+});
+
+/**
+ * Bez téhle kontroly byla třída `model` prázdná a nikdo se to nedozvěděl:
+ * `RULES.md` §2 disclosure modelů vyžaduje, kód jich jmenoval pět a registr
+ * hlásil úplnost. Prázdná povinná třída, kterou nic nefalzifikuje, je horší než
+ * chybějící položka — vypadá jako splněná.
+ */
+check(7, 'každý model jmenovaný v kódu má v registru položku kind: model', ({ registry }) => {
+  if (registry.error) return registry.error;
+  const known = new Set(
+    registry.entries.filter((entry) => entry.kind === 'model').map((entry) => String(entry.name).toLowerCase()),
+  );
+  const unknown = [];
+  for (const [model, file] of namedModels()) if (!known.has(model)) unknown.push(`${model} (${file})`);
   return summarize(unknown);
 });
 
@@ -524,6 +573,21 @@ check(6, 'DISCLOSURE.md odpovídá registru', ({ registry }) => {
 // ---------------------------------------------------------------------------
 
 function sync() {
+  // Autor a copyright řádek se čtou z `node_modules/`. Bez nich obojí vyjde
+  // prázdné a dosadí se náhradní text, který kontrolou 1 projde — takže `--sync`
+  // na čerstvém klonu tiše smaže skutečná jména autorů a nechá registr, který
+  // vypadá úplný. Naměřeno reviewem nad `47e0b02`: 99/168 skutečných autorů →
+  // 0/168, a brána přitom vypsala „disclosure je úplná".
+  if (!existsSync(join(REPO, 'node_modules'))) {
+    console.log(
+      'FAIL  --sync potřebuje node_modules/, ale ten tu není.\n' +
+        '        Autor a copyright se čtou z balíčků; bez nich by se do registru zapsaly\n' +
+        '        náhradní texty MÍSTO skutečných jmen a brána by to nepoznala.\n' +
+        '        Spusť `npm ci` a zkus to znovu.',
+    );
+    process.exit(1);
+  }
+
   const previous = existsSync(join(REPO, REGISTRY_FILE)) ? readJson(REGISTRY_FILE) : { entries: [] };
   const manual = (previous.entries ?? []).filter((entry) => !DERIVED_KINDS.includes(entry.kind));
 
