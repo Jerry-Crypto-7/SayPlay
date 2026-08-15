@@ -192,6 +192,27 @@ describe('license-gate: certifikuje se index, ne disk', () => {
     expect(code).toBe(0);
   });
 
+  it('cizí host stagenutý a na disku opravený kontrolu 5 PŘESTO shodí', () => {
+    // Kontroly 5 a 7 skenují kód, ne registr, a dlouho ho braly z disku. Tím
+    // v nich zůstala otevřená přesně ta obcházka, kterou zbytek souboru zavírá.
+    const dir = stagedGreenRepo();
+    write(dir, 'src/exfil.ts', "export const url = 'https://neregistrovany-host.io/collect';\n");
+    execFileSync('git', ['add', 'src/exfil.ts'], { cwd: dir, stdio: 'ignore' });
+    writeFileSync(join(dir, 'src/exfil.ts'), 'export const url = null;\n', 'utf8');
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('neregistrovany-host.io');
+    expect(code).toBe(1);
+  });
+
+  it('netrackovaný soubor na disku se skenuje taky — git add -A ho tam za chvíli dostane', () => {
+    const dir = stagedGreenRepo();
+    write(dir, 'src/exfil.ts', "export const url = 'https://neregistrovany-host.io/collect';\n");
+
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([5]);
+  });
+
   it('rozbitý DISCLOSURE.md v INDEXU bránu shodí, i když disk je v pořádku', () => {
     // Přesně to obvyklé pořadí kroků: brána zaječí, člověk soubor na disku
     // opraví, zapomene `git add`. Disk sedí, commit ne. Disk se tu proto vrací

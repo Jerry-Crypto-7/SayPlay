@@ -287,9 +287,48 @@ export function hostsIn(source) {
   return found;
 }
 
-/** Projde produkční kód a sesbírá, co v něm `extract` najde: host → první soubor. */
+/**
+ * Projde produkční kód a sesbírá, co v něm `extract` najde: hodnota → první soubor.
+ *
+ * Čte se **týmž zdrojem jako registr** — v ověřovacím režimu index, ne pracovní
+ * strom. Bez toho zbyla přesně ta obcházka, kterou zbytek souboru zavírá: stagenout
+ * soubor s cizím hostem, opravit ho na disku, `git add` zapomenout — a všech sedm
+ * kontrol zezelená nad kódem, který se do commitu nedostane.
+ *
+ * Netrackované soubory se berou taky: `git add -A` je tam za chvíli dostane.
+ */
 function scanCode(extract) {
   const hits = new Map();
+  const record = (shown, source) => {
+    for (const value of extract(source)) if (!hits.has(value)) hits.set(value, shown);
+  };
+
+  for (const shown of codePaths()) {
+    let source;
+    try {
+      source = readTracked(shown);
+    } catch {
+      // Nepřečtený soubor je neznámý soubor. Mlčky ho přeskočit by znamenalo
+      // hlásit „žádný neznámý host" nad kódem, který nikdo nečetl.
+      throw new Error(`${shown} se nepodařilo přečíst — kontrola by nad ním tvrdila nepravdu`);
+    }
+    record(shown, source);
+  }
+  return hits;
+}
+
+/** Cesty ke skenovanému kódu: co je v indexu, plus co na disku čeká na `git add`. */
+function codePaths() {
+  const paths = new Set();
+  const wanted = (shown) =>
+    CODE_ROOTS.some((root) => shown.startsWith(`${root}/`)) &&
+    CODE_FILE.test(shown) &&
+    !TEST_FILE.test(shown) &&
+    !shown.split('/').some((segment) => CODE_SKIP_DIR.test(segment));
+
+  const tracked = sourceMode === 'index' ? trackedPaths() : null;
+  if (tracked) for (const shown of tracked) if (wanted(shown)) paths.add(shown);
+
   const walk = (dir) => {
     if (!existsSync(dir)) return;
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -299,14 +338,11 @@ function scanCode(extract) {
         continue;
       }
       if (!CODE_FILE.test(entry.name) || TEST_FILE.test(entry.name)) continue;
-      const shown = relative(REPO, full).split(sep).join(posix.sep);
-      for (const value of extract(readFileSync(full, 'utf8'))) {
-        if (!hits.has(value)) hits.set(value, shown);
-      }
+      paths.add(relative(REPO, full).split(sep).join(posix.sep));
     }
   };
   for (const root of CODE_ROOTS) walk(join(REPO, root));
-  return hits;
+  return [...paths].sort((a, b) => a.localeCompare(b));
 }
 
 const calledHosts = () => scanCode(hostsIn);
