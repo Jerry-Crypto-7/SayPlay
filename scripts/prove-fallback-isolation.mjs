@@ -42,8 +42,22 @@ export const CORE_DIRS = ['src/sim', 'src/ir', 'src/verify', 'src/patch'];
  */
 export const PROTECTED_DIRS = ['src/fallback', 'src/kit', 'src/app/fallback'];
 
+/**
+ * Smoke korpus a routa se čtou z `ops/fallback-smoke.json`, ne z konstanty tady.
+ *
+ * Konzumenti jsou tři — tenhle důkaz, hermetický build z tagu a e2e spec, který
+ * v T205b poběží proti nasazené URL — a ten třetí je Playwright, který projektové
+ * `.mjs` překládá do CommonJS, takže `import.meta` v tomhle souboru je pro něj
+ * syntaktická chyba. Sdílet seznam jinak než souborem by tedy znamenalo mít jeho
+ * druhou kopii, a druhá kopie je místo, kde se dá jedna změnit a druhá ne.
+ *
+ * Cesta se skládá z `import.meta.url`, ne z `process.cwd()`: skript se pouští z
+ * kořene repozitáře, ale i z rozbaleného archivu tagu.
+ */
+const SMOKE = JSON.parse(readFileSync(new URL('../ops/fallback-smoke.json', import.meta.url), 'utf-8'));
+
 /** Routa, kterou musí izolovaný artefakt servírovat. Bez ní by byl důkaz vakuózní. */
-export const FALLBACK_ROUTE = '/fallback/play';
+export const FALLBACK_ROUTE = SMOKE.route;
 
 const SKIP_DIRS = new Set([
   'node_modules',
@@ -63,32 +77,7 @@ const QUARANTINE_DIR = '.isolation-quarantine';
 const BASELINE_FILE = 'ops/fallback-chunk-baseline.json';
 
 /** Prompty, jejichž routování ověřuje smoke. Verdikt počítá server, ne test. */
-export const SMOKE_CASES = [
-  {
-    prompt: 'collect three keys and reach the gate before the timer runs out',
-    kind: 'archetype',
-    who: 'collect_unlock',
-    layout: 'thicket-clearing',
-  },
-  {
-    prompt: 'sort the coloured blocks into the right bins by dragging them',
-    kind: 'archetype',
-    who: 'sort_match',
-    layout: 'foundry-hall',
-  },
-  {
-    prompt: 'guide the wandering robot through the maze and steer it around the enemy path',
-    kind: 'archetype',
-    who: 'guide_avoid',
-    layout: 'frost-plateau',
-  },
-  {
-    prompt: 'a bouncing marble rolls down ramps with physics and gravity, momentum matters',
-    kind: 'no_fit',
-    who: 'collect_unlock',
-    layout: 'thicket-clearing',
-  },
-];
+export const SMOKE_CASES = SMOKE.cases;
 
 // ---------------------------------------------------------------------------
 // Import graf

@@ -1,0 +1,90 @@
+# Prostředí hermetického buildu fallbacku (P2 T205a, krok 2b).
+#
+# Build z tagu vidí VÝHRADNĚ proměnné vyjmenované tady. Není to blocklist ani
+# vzor — je to jmenný seznam a `scripts/build-from-tag.mjs` proti němu porovnává
+# množinu, kterou build SKUTEČNĚ viděl (hlásí ji `next.config.mjs`, tedy soubor
+# uvnitř tagu). Cokoli navíc je selhání úlohy.
+#
+# Proč jmenný seznam: kolo 4 review nad T205 ukázalo, že strom tagu artefakt
+# neurčuje sám — určuje ho strom PLUS prostředí. `prebuild` skript uvnitř tagu
+# umí z nelistované proměnné (`BUILD_VARIANT`) vygenerovat server-only modul a
+# oba nezávislé buildy ve stejné kompromitované konfiguraci vyrobí totožný
+# pozměněný výstup. Reprodukovatelnost proto nestačí; musí se zúžit vstup.
+#
+# Tenhle soubor je uvnitř tagu ZÁMĚRNĚ. Kdyby ležel vedle něj, byl by allowlist
+# vstupem, který zapečetěný strom nekryje — a to je přesně ta díra, kterou má
+# zavřít.
+#
+# ---------------------------------------------------------------------------
+# Dvě sekce, protože jsou to dvě různá tvrzení
+# ---------------------------------------------------------------------------
+#
+# `[host]` je to, co pipeline VĚDOMĚ předává. Tady je minimalita vlastnost, o
+# kterou jde: každé jméno navíc je vstup buildu, který nikdo nezkoumal.
+#
+# `[platform]` je to, co si přidá operační systém nebo samotný toolchain a
+# pipeline to neumí odebrat. **Je to naměřené, ne odhadnuté:** `CreateProcessW`
+# na Windows přimíchá do každého potomka pevnou skupinu identity proměnných i
+# tehdy, když se předá prostředí o třech jménech — ověřeno spuštěním potomka s
+# `{PATH, SYSTEMROOT, TEMP}`, který ohlásil jedenáct. Zbytek sekce jsou vlastní
+# proměnné `next build` pro jeho workery.
+#
+# **Co ta měřená hranice znamená:** `BUILD_VARIANT` z prostředí rodiče se do
+# potomka NEDOSTANE. Windows přidává svoje, ne cizí. Filtr tedy drží přesně to,
+# co má držet, a `[platform]` není zadní vrátka — je to přiznaná mez.
+#
+# Falsifikovatelnou částí zůstává druhý build: běží v okolním prostředí, do
+# kterého pipeline schválně přidá `BUILD_VARIANT` a spol., a ani jedno z těch
+# jmen se ve viditelné množině objevit nesmí.
+
+[host]
+
+# --- operační systém: bez tohohle se nespustí ani `node` ---
+PATH
+PATHEXT
+SYSTEMROOT
+SYSTEMDRIVE
+WINDIR
+COMSPEC
+
+# --- dočasné soubory: webpack a `os.tmpdir()` ---
+TEMP
+TMP
+TMPDIR
+
+# --- domovský adresář: `npm` a `next` tam hledají konfiguraci ---
+HOME
+USERPROFILE
+APPDATA
+LOCALAPPDATA
+
+# --- režim buildu ---
+NODE_ENV
+# Bez tohohle se `next build` pokusí odeslat telemetrii, což je síťový požadavek
+# uprostřed sekvence, která tvrdí, že žádný nedělá.
+NEXT_TELEMETRY_DISABLED
+
+# --- vstupy téhle pipeline ---
+# Hash stromu čerstvého checkoutu. Next ho zapéká do bundlu a artefakt ho
+# vystavuje na `GET /api/build-id`.
+WORLDSMITH_BUILD_TREE
+# Kam `next.config.mjs` připisuje množinu proměnných, kterou build doopravdy vidí.
+WORLDSMITH_ENV_REPORT
+
+[platform]
+
+# --- přimíchá Windows do každého potomka, i s vlastním prostředím ---
+HOMEDRIVE
+HOMEPATH
+LOGONSERVER
+USERDOMAIN
+USERNAME
+
+# --- nastavuje si `next build` sám pro svoje workery ---
+IS_NEXT_WORKER
+NEXT_PRIVATE_BUILD_WORKER
+NEXT_PRIVATE_START_TIME
+NEXT_RUNTIME
+NEXT_DEPLOYMENT_ID
+NODE_OPTIONS
+RUST_MIN_STACK

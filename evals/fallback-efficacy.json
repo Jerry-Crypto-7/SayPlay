@@ -1,0 +1,184 @@
+{
+  "promptSet": "createNonVacuous",
+  "denominator": 11,
+  "cases": [
+    {
+      "id": "C01",
+      "prompt": "a puzzle room where I have to find three keys to open the exit door",
+      "decision": "archetype",
+      "archetype": "collect_unlock",
+      "sceneLayout": "thicket-clearing",
+      "drawCalls": 19,
+      "playedToWin": true,
+      "outcome": "fallback",
+      "verdict": "ROBUST",
+      "gates": [
+        "fallback: použitelný výsledek, ale ne splněný kontrakt"
+      ],
+      "detail": "collect_unlock, n-tice 93, výhra v 28 ticích"
+    },
+    {
+      "id": "C02",
+      "prompt": "an escape room in a submarine that floods slowly, I have 60 seconds",
+      "decision": "no_fit",
+      "archetype": "collect_unlock",
+      "sceneLayout": "thicket-clearing",
+      "drawCalls": 19,
+      "playedToWin": false,
+      "outcome": "declined",
+      "verdict": "NO_FIT",
+      "gates": [],
+      "detail": "Neumím vydržet danou dobu (`GOAL_SURVIVE_T`). Tady je ohraničená aréna, sbírání do prahu, brána a cíl."
+    },
+    {
+      "id": "C03",
+      "prompt": "a stealth level where guards patrol and see me if I stand in the light",
+      "decision": "no_fit",
+      "archetype": "collect_unlock",
+      "sceneLayout": "thicket-clearing",
+      "drawCalls": 19,
+      "playedToWin": false,
+      "outcome": "declined",
+      "verdict": "NO_FIT",
+      "gates": [],
+      "detail": "Neumím entity, které jednají samy (`ACT_AUTONOMOUS`). Tady je ohraničená aréna, sbírání do prahu, brána a cíl."
+    },
+    {
+      "id": "C04",
+      "prompt": "a dungeon with a chest that only opens if I bring the torch from the other room",
+      "decision": "archetype",
+      "archetype": "collect_unlock",
+      "sceneLayout": "thicket-clearing",
+      "drawCalls": 19,
+      "playedToWin": true,
+      "outcome": "fallback",
+      "verdict": "ROBUST",
+      "gates": [
+        "fallback: použitelný výsledek, ale ne splněný kontrakt"
+      ],
+      "detail": "collect_unlock, n-tice 109, výhra v 20 ticích"
+    },
+    {
+      "id": "C05",
+      "prompt": "a door that needs three people standing on three pressure plates at the same time",
+      "decision": "no_fit",
+      "archetype": "collect_unlock",
+      "sceneLayout": "thicket-clearing",
+      "drawCalls": 19,
+      "playedToWin": false,
+      "outcome": "declined",
+      "verdict": "NO_FIT",
+      "gates": [],
+      "detail": "Neumím několik nezávislých ovladačů jednoho automatu (`REQ_MULTI_SOURCE_INPUT`). Tady je ohraničená aréna, sbírání do prahu, brána a cíl."
+    },
+    {
+      "id": "C06",
+      "prompt": "a day counter that goes up each time I sleep, and on day 5 something changes",
+      "decision": "no_fit",
+      "archetype": "collect_unlock",
+      "sceneLayout": "thicket-clearing",
+      "drawCalls": 19,
+      "playedToWin": false,
+      "outcome": "declined",
+      "verdict": "NO_FIT",
+      "gates": [],
+      "detail": "Neumím přehnat číselnou veličinu přes práh (`GOAL_THRESHOLD`) ani paměť napříč epizodami (`STATE_PERSISTENT_MEMORY`). Tady je ohraničená aréna, sbírání do prahu, brána a cíl."
+    },
+    {
+      "id": "C07",
+      "prompt": "a torch that burns down over two minutes and goes out unless I refuel it",
+      "decision": "archetype",
+      "archetype": "collect_unlock",
+      "sceneLayout": "thicket-clearing",
+      "drawCalls": 19,
+      "playedToWin": false,
+      "outcome": "fault",
+      "verdict": "FAULT",
+      "gates": [],
+      "detail": "řešitel archetypu nenašel vítěznou stopu"
+    },
+    {
+      "id": "C08",
+      "prompt": "ein Labyrinth aus Hecken mit einem Minotaurus in der Mitte",
+      "decision": "archetype",
+      "archetype": "guide_avoid",
+      "sceneLayout": "frost-plateau",
+      "drawCalls": 23,
+      "playedToWin": true,
+      "outcome": "fallback",
+      "verdict": "ROBUST",
+      "gates": [
+        "fallback: použitelný výsledek, ale ne splněný kontrakt"
+      ],
+      "detail": "guide_avoid, n-tice 117, výhra v 10 ticích"
+    },
+    {
+      "id": "C09",
+      "prompt": "a shooting gallery with targets that pop up randomly and a score counter",
+      "decision": "no_fit",
+      "archetype": "collect_unlock",
+      "sceneLayout": "thicket-clearing",
+      "drawCalls": 19,
+      "playedToWin": false,
+      "outcome": "declined",
+      "verdict": "NO_FIT",
+      "gates": [],
+      "detail": "Neumím přehnat číselnou veličinu přes práh (`GOAL_THRESHOLD`) ani míření a střelbu (`IN_AIM`). Tady je ohraničená aréna, sbírání do prahu, brána a cíl."
+    },
+    {
+      "id": "C14",
+      "prompt": "a data visualisation of quarterly sales as a 3D bar chart I can rotate",
+      "decision": "no_fit",
+      "archetype": "collect_unlock",
+      "sceneLayout": "thicket-clearing",
+      "drawCalls": 19,
+      "playedToWin": false,
+      "outcome": "declined",
+      "verdict": "NO_FIT",
+      "gates": [
+        "strop ROBUST: §10.3 — datová vizualizace není v gramatice, takže správná odpověď je poctivý NO_FIT, a ten se z definice nepočítá jako FULFILLED. Kontrakt přesto vyžaduje OBOJÍ: NO_FIT na `sim` A postavenou scénu. Implementace, která vrátí NO_FIT a bílé plátno, kontrakt PORUŠÍ.",
+        "prázdný vektor požadavků — není co splnit"
+      ],
+      "detail": "Neumím reálná čísla mapovaná na vizuál s čitelnými osami (`REQ_DATA_BINDING`). Tady je ohraničená aréna, sbírání do prahu, brána a cíl."
+    },
+    {
+      "id": "C15",
+      "prompt": "a physics playground with bouncing balls I can throw at stacked boxes",
+      "decision": "no_fit",
+      "archetype": "sort_match",
+      "sceneLayout": "foundry-hall",
+      "drawCalls": 25,
+      "playedToWin": false,
+      "outcome": "declined",
+      "verdict": "NO_FIT",
+      "gates": [
+        "strop ROBUST: §10.1 — rigid body fyzika je mimo gramatiku i mimo rozpočet, takže správná odpověď je NO_FIT. Zákaz `applyForce` je tu proto, že nejpravděpodobnější podvod je předstíraná pseudofyzika propašovaná jako nová akce."
+      ],
+      "detail": "Neumím spojitou dynamiku a hybnost (`STATE_CONTINUOUS`) ani fyziku, stohování ani nárazy (`REQ_PHYSICS_SIM`). Tady je předměty, označené sokety a párovací pravidlo."
+    }
+  ],
+  "fulfilled": 0,
+  "robust": 3,
+  "noFit": 7,
+  "fault": 1,
+  "noFitShare": 0.6363636363636364,
+  "floors": {
+    "consumer": "plans/P2-fallback-tri-hry.md T205",
+    "frozenHere": true,
+    "rationale": "P2 si je nesmí nastavit sám. Bez nich by fallback vracející stabilně NO_FIT na všechno prošel všemi ostatními AC (nález review P2, kolo 1).",
+    "denominator": {
+      "rule": "Počítá se VÝHRADNĚ nad podmnožinou promptů s NEPRÁZDNÝM vektorem požadavků v contracts.v1.jsonl.",
+      "promptSetInP1": "createNonVacuous",
+      "minDenominator": 8
+    },
+    "minFulfilled": 5,
+    "maxNoFitShare": 0.25,
+    "nonVacuityAssertion": "Router nebo fallback, který vrací NO_FIT na víc než 25 % nevakuózních promptů, bránu NEPROJDE, i kdyby splnil všechna ostatní AC."
+  },
+  "passes": {
+    "denominator": true,
+    "minFulfilled": false,
+    "maxNoFitShare": false
+  },
+  "passed": false
+}

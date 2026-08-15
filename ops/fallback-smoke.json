@@ -1,0 +1,30 @@
+{
+  "note": "Smoke korpus fallbacku. Jeden zdroj pro tři konzumenty: důkaz izolace (T204), hermetický build z tagu (T205a) a nasazený artefakt (T205b). Data, ne kód, protože Playwright projektové .mjs překládá do CommonJS a `import.meta` je tam syntaktická chyba — sdílet je jinak než souborem by znamenalo mít druhou kopii seznamu.",
+  "route": "/fallback/play",
+  "cases": [
+    {
+      "prompt": "collect three keys and reach the gate before the timer runs out",
+      "kind": "archetype",
+      "who": "collect_unlock",
+      "layout": "thicket-clearing"
+    },
+    {
+      "prompt": "sort the coloured blocks into the right bins by dragging them",
+      "kind": "archetype",
+      "who": "sort_match",
+      "layout": "foundry-hall"
+    },
+    {
+      "prompt": "guide the wandering robot through the maze and steer it around the enemy path",
+      "kind": "archetype",
+      "who": "guide_avoid",
+      "layout": "frost-plateau"
+    },
+    {
+      "prompt": "a bouncing marble rolls down ramps with physics and gravity, momentum matters",
+      "kind": "no_fit",
+      "who": "collect_unlock",
+      "layout": "thicket-clearing"
+    }
+  ]
+}
