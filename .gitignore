@@ -32,6 +32,11 @@ evals/live/*
 # Vyhrazené jméno kill-gate-report.json commitnutelné zůstává.
 evals/dev-report.*.json
 
+# Vazba tagu na artefakt, výstup `npm run build:from-tag`. Necommituje se ze dvou
+# důvodů: nese hash commitu, ve kterém by musel ležet, a pipeline sama vyžaduje
+# čistý strom – trackovaný by po každém běhu shodil ten další na vlastním výstupu.
+ops/fallback-v1-lock.json
+
 # Secrets obecně
 .env
 .env.*
