@@ -20,7 +20,7 @@ import { uniformInt } from 'pure-rand/distribution/uniformInt';
 import { xoroshiro128plus } from 'pure-rand/generator/xoroshiro128plus';
 import type { JumpableRandomGenerator } from 'pure-rand/types/JumpableRandomGenerator';
 
-import type { ArchetypeId, Manifest } from './manifests';
+import type { ArchetypeId, CapabilityToken, Manifest } from './manifests';
 
 /** 20 Hz, `VERIFY.md` §3.3. Simulovaný tik je jediná jednotka času ve hře. */
 export const TICK_HZ = 20;
@@ -68,6 +68,31 @@ export type Intent =
 
 export type Phase = 'running' | 'won' | 'lost';
 
+/**
+ * Natočení entity po mřížce. Čtyři směry, celočíselné — je to stav, ne úhel.
+ *
+ * **Kde se to jinak vymstí** (`DESIGN-BOOK.md` §12, řádek UE her, `REUSE.md`):
+ * kusy kitu nemají společně normalizovaný „dopředu", takže se to u čtyřiceti
+ * kusů zjistí až u dvanáctého. Konvence se proto píše na jedno místo a tady
+ * je: **actor kusy kitu míří na +Z**, takže `yaw` pro `north` je 0 a roste po
+ * čtvrtinách otáčky. Hry drží směr, vykreslení k němu přičte offset kusu.
+ */
+export const FACINGS = {
+  north: { dx: 0, dy: 1, yaw: 0 },
+  east: { dx: 1, dy: 0, yaw: 1 },
+  south: { dx: 0, dy: -1, yaw: 2 },
+  west: { dx: -1, dy: 0, yaw: 3 },
+} as const;
+
+export type Facing = keyof typeof FACINGS;
+
+/** Směr z posunu o jedno pole. Nulový posun směr nemění, proto vrací `null`. */
+export function facingFromDelta(dx: number, dy: number): Facing | null {
+  if (dx === 0 && dy === 0) return null;
+  if (Math.abs(dx) >= Math.abs(dy)) return dx > 0 ? 'east' : 'west';
+  return dy > 0 ? 'north' : 'south';
+}
+
 export type Counter = {
   readonly label: string;
   readonly value: number;
@@ -101,8 +126,27 @@ export interface Game<S> {
   project(state: S): GameView;
 }
 
-/** Stopa: jeden záznam na tik, uvnitř nula až N záměrů. */
+/** Stopa: jeden záznam na tik, uvnitř nula až N záměrů. Prázdné pole = čekání. */
 export type Trace = readonly (readonly Intent[])[];
+
+/**
+ * Archetyp = manifest + doména parametrů + hra + řešitel.
+ *
+ * `solve` je tu proto, že tvrzení „žádná n-tice nevede k nedohratelnému světu"
+ * se nedá doložit ručně psanou stopou pro 624 n-tic. Řešitel ji vyrobí a
+ * enumerace ji přehraje; když neprojde, je to nález, ne chybějící test.
+ */
+export interface Archetype<P = unknown, S = unknown> {
+  readonly id: ArchetypeId;
+  readonly manifest: Manifest;
+  /** Tokeny, které hra skutečně používá. Musí sedět do `supported` manifestu. */
+  readonly uses: readonly CapabilityToken[];
+  /** Všechny n-tice parametrické domény z `ARCHETYPES.md` §6. */
+  tuples(): readonly P[];
+  game(params: P): Game<S>;
+  /** Vítězná stopa pro danou n-tici a seed, nebo `null`, když neexistuje. */
+  solve(params: P, seed: number): Trace | null;
+}
 
 export type TraceResult<S> = {
   readonly state: S;
