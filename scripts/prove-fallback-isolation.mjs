@@ -618,29 +618,38 @@ async function smoke(port) {
  * server — klientský končí v `.next/analyze/`, serverový podle výstupního
  * adresáře webpacku o dvě úrovně výš. Hledá se proto na obou místech.
  */
-function readReport(name) {
+function readReport(name, optional = false) {
   const file = [join(ROOT, '.next', 'analyze', `${name}.json`), join(ROOT, 'analyze', `${name}.json`)].find(
     (candidate) => existsSync(candidate),
   );
   if (file === undefined) {
+    if (optional) return [];
     throw new Error(`chybí report ${name}.json — build neběžel s ANALYZE=true`);
   }
   return analyzerModules(JSON.parse(readFileSync(file, 'utf-8')));
 }
 
+/**
+ * Tři runtimy, ne dva. `edge.json` je dnes prázdný, protože žádná routa
+ * nenastavuje edge runtime — jenže právě proto by se na něj zapomnělo, a routa,
+ * která ho zapne a přitáhne jádro, by prošla oběma kontrolám neviditelně.
+ */
+const RUNTIMES = ['client', 'nodejs', 'edge'];
+
 function analyze() {
   const measured = {};
-  for (const name of ['client', 'nodejs']) {
-    const modules = readReport(name);
+  for (const name of RUNTIMES) {
+    const modules = readReport(name, name === 'edge');
     const contaminated = coreModulesIn(modules);
     if (contaminated.length > 0) {
       const sample = contaminated.slice(0, 5).map((module) => `${module.chunk}: ${module.path}`);
       throw new Error(`bundle ${name} obsahuje moduly jádra:\n  ${sample.join('\n  ')}`);
     }
-    measured[name] = fallbackBytes(modules);
+    const own = fallbackBytes(modules);
+    if (name !== 'edge') measured[name] = own;
     process.stdout.write(
-      `      ${name}: fallback+kit ${measured[name].moduleCount} modulů, ` +
-        `${measured[name].statBytes} B z ${measured[name].totalStatBytes} B celkem\n`,
+      `      ${name}: fallback+kit ${own.moduleCount} modulů, ` +
+        `${own.statBytes} B z ${own.totalStatBytes} B celkem\n`,
     );
   }
 
@@ -769,11 +778,12 @@ async function main() {
     NODE_ENV: 'production',
   });
 
-  for (const name of ['client', 'nodejs']) {
-    const modules = readReport(name);
+  for (const name of RUNTIMES) {
+    const modules = readReport(name, name === 'edge');
     const own = modules.filter((module) => isUnder(module.path, PROTECTED_DIRS)).length;
     const core = coreModulesIn(modules).length;
-    if (own === 0 || core === 0) {
+    // Edge report je dnes prázdný, takže na něm „obojí musí být" neplatí.
+    if (name !== 'edge' && (own === 0 || core === 0)) {
       throw new Error(
         `${name}: úplný build musí nést obojí, jinak kontrola nic netvrdí ` +
           `(fallback ${own}, jádro ${core})`,
