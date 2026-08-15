@@ -43,8 +43,8 @@ Následek je záměrný a je potřeba ho znát dopředu:
    node scripts/cleanroom-check.mjs
    ```
 
-   Nesmí hlásit `POZOR`. Když hlásí, buď je seznam pořád prázdný, nebo v něm
-   zůstala ta direktiva.
+   Nesmí hlásit `POZOR` ani `FAIL`. Když hlásí, buď je seznam pořád prázdný,
+   nebo v něm zůstala ta direktiva.
 6. Zapni hooky, jestli to ještě nikdo na tomhle stroji neudělal:
 
    ```
@@ -54,8 +54,20 @@ Následek je záměrný a je potřeba ho znát dopředu:
 ## Když seznam ještě není naplněný
 
 Soubor se rodí s direktivou `#!unprovisioned` a bez jediného identifikátoru.
-Kontrola v tom stavu **projde**, ale na každém běhu hlásí `POZOR` a říká, že
-clean-room záruka je zatím **procesní, ne strojová**.
+Kontrola v tom stavu **selže** (`exit 1`) a řekne, že clean-room záruka je zatím
+**procesní, ne strojová**. Commitovat se v tom stavu dá jen s vědomým obejitím:
+
+```
+CLEANROOM_ALLOW_UNPROVISIONED=1 git commit -m "..."
+```
+
+Hook tu proměnnou nenastavuje a nastavovat nesmí — pak by ji nastavil za všechny
+a obejití by přestalo být vědomé.
+
+**Proč to nestačilo přiznat.** Do 15. 8. 2026 tenhle stav skončil nulou a vypsal
+jen `POZOR`. Nula je nula: hook nad ní pustil dál cokoli a výstup u toho hlásil
+počet prohledaných souborů, takže log vypadal jako práce brány, která nehlídala
+nic. Přiznat se k prázdné bráně není totéž co ji mít.
 
 Proč direktiva a ne zástupné jméno: první verze tady měla zástupný *identifikátor*
 a shodila si vlastní commit. To jméno totiž stálo ve skriptu, v tomhle dokumentu i
@@ -67,9 +79,10 @@ Naplnit seznam může jen člověk s přístupem k ECA modulu. **Do té doby se 
 nesmí tvrdit, že clean-room je vynucený strojově** — v přihlášce, v reportu ani
 v `DISCLOSURE.md`.
 
-Obejít se to dá: kdo seznam vyprázdní a dopíše direktivu, dostane zelenou. Je to
-vědomý zápis do souboru a hlásí se při každém commitu. Proti záměru tahle brána
-neobstojí tak jako tak — viz poslední odstavec.
+Obejít se to dá: kdo seznam vyprázdní, dopíše direktivu a nastaví tu proměnnou,
+dostane zelenou. Je to vědomý zápis do souboru plus vědomý příkaz a hlásí se při
+každém commitu. Proti záměru tahle brána neobstojí tak jako tak — viz poslední
+odstavec.
 
 ## Co tahle kontrola neumí
 

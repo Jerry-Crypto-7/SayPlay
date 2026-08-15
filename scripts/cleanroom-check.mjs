@@ -50,11 +50,17 @@ const PROVISIONING = 'ops/cleanroom-provisioning.md';
  * (projde čímkoli, tedy žádná kontrola) a **na nenaplněném repu se musí dát
  * commitovat**. Nenaplněný stav se proto musí *přiznat*, ne mlčet.
  *
- * Obejít se to dá — kdo seznam vyprázdní a dopíše tuhle direktivu, dostane
- * zelenou. Je to vědomý, viditelný zápis do souboru a hlásí se na každém běhu;
- * proti záměru tahle brána neobstojí tak jako tak (viz hlavička).
+ * Přiznat ale nestačí: direktiva sama končila nulou, takže brána nad prázdným
+ * seznamem hlásila počet prohledaných souborů a pouštěla dál úplně všechno.
+ * Nenaplněný seznam proto **selhává** stejně jako chybějící a průchod si musí
+ * vyžádat ten, kdo commituje — proměnnou prostředí níž, kterou hook nenastavuje.
+ *
+ * Proti záměru tahle brána neobstojí tak jako tak (viz hlavička).
  */
 const UNPROVISIONED = '#!unprovisioned';
+
+/** Vědomé, na jedno spuštění platné obejití nenaplněného seznamu. */
+const UNPROVISIONED_WAIVER = 'CLEANROOM_ALLOW_UNPROVISIONED';
 
 const BINARY = /\.(png|jpe?g|gif|webp|avif|ico|woff2?|ttf|otf|eot|mp[34]|wav|ogg|webm|mov|glb|gltf|bin|zip|gz|pdf|node|wasm|tsbuildinfo)$/i;
 
@@ -178,6 +184,32 @@ function scannedFiles() {
   return { files };
 }
 
+/**
+ * Roztřídí přečtené soubory na nálezy a na ty, které se přečíst nepodařilo.
+ *
+ * Vytažené ven kvůli testu: nečitelný soubor (exkluzivní zámek, EACCES, visící
+ * symlink, soubor smazaný mezi výpisem a čtením) se na Windows nedá vyrobit
+ * spolehlivě, takže integrační cesta by tuhle větev buď netestovala vůbec, nebo
+ * jen na Linuxu — a zelená, která na téhle mašině netvrdí nic, je horší než
+ * žádná. Testuje se proto rozhodnutí, ne způsob, jak soubor znečitelnit.
+ */
+function verdict(scannedFilesList, identifiers) {
+  let files = 0;
+  const skipped = [];
+  const findings = [];
+  for (const file of scannedFilesList) {
+    if (file.text === null) {
+      skipped.push(file.shown);
+      continue;
+    }
+    files += 1;
+    for (const hit of findHits(file.text, identifiers)) findings.push({ ...hit, file: file.shown });
+  }
+  // `blocked` je celé rozhodnutí brány nad naskenovanou množinou, ne jen počet
+  // nálezů: nepřečtený soubor musí běh zastavit stejně jako nález.
+  return { files, skipped, findings, blocked: findings.length > 0 || skipped.length > 0 };
+}
+
 /** Obsah blobů v pořadí zadaných oidů, jedním `git cat-file --batch`. */
 function readBlobs(oids) {
   try {
@@ -293,17 +325,7 @@ export function main(argv = []) {
     return 1;
   }
 
-  let files = 0;
-  const skipped = [];
-  const findings = [];
-  for (const file of scanned.files) {
-    if (file.text === null) {
-      skipped.push(file.shown);
-      continue;
-    }
-    files += 1;
-    for (const hit of findHits(file.text, identifiers)) findings.push({ ...hit, file: file.shown });
-  }
+  const { files, skipped, findings, blocked } = verdict(scanned.files, identifiers);
 
   // Identifikátor se nevypisuje. Skript se dá spustit i mimo lokální terminál
   // (`npm run gate:cleanroom`) a jeho výstup skončí v logu; tisknout do logu ta
@@ -313,18 +335,30 @@ export function main(argv = []) {
     console.log(`FAIL  ${finding.file}:${finding.line} nese zakázaný identifikátor č. ${finding.index + 1} ze seznamu`);
   }
 
+  // Nepřečtený soubor je neznámý soubor. Dokud se počítal jen do varování, končil
+  // běh nulou s větou „žádný nález" nad množinou, o které brána nic neví — a to je
+  // ten tichý průchod, kterému se všude jinde v tomhle skriptu brání.
   if (skipped.length > 0) {
     console.log(
-      `\nPOZOR  ${skipped.length} souborů se nepodařilo přečíst a NEBYLY zkontrolované: ${skipped.slice(0, 3).join(', ')}`,
+      `\nFAIL  ${skipped.length} souborů se nepodařilo přečíst a NEBYLY zkontrolované: ${skipped.slice(0, 3).join(', ')}`,
     );
   }
 
   if (unprovisioned && identifiers.length === 0) {
+    // Fail-closed i tady. Nenaplněný seznam není měkčí stav než chybějící seznam:
+    // hlídá stejné nic, jen u toho vypíše počet prohledaných souborů, takže výstup
+    // vypadá jako práce. Kdo bránu potřebuje dočasně obejít, řekne to nahlas
+    // proměnnou prostředí — hook ji nenastavuje.
+    const waived = process.env[UNPROVISIONED_WAIVER] === '1';
     console.log(
-      `\nPOZOR  seznam je označený jako nenaplněný (${UNPROVISIONED}) a nehlídá nic.\n` +
+      `\n${waived ? 'POZOR' : 'FAIL'}  seznam je označený jako nenaplněný (${UNPROVISIONED}) a nehlídá nic.\n` +
         '       Clean-room záruka je zatím PROCESNÍ, ne strojová, a nikde se nesmí\n' +
-        `       tvrdit opak. Doplň identifikátory podle ${PROVISIONING}.`,
+        `       tvrdit opak. Doplň identifikátory podle ${PROVISIONING}.\n` +
+        (waived
+          ? `       Průchod povolen proměnnou ${UNPROVISIONED_WAIVER}=1.`
+          : `       Vědomé obejití: ${UNPROVISIONED_WAIVER}=1.`),
     );
+    if (!waived) return 1;
   } else if (unprovisioned) {
     console.log(
       `\nPOZOR  seznam nese ${identifiers.length} identifikátorů, ale pořád je označený\n` +
@@ -337,11 +371,11 @@ export function main(argv = []) {
       ? `\n${files} souborů proti ${identifiers.length} identifikátorům — žádný nález.`
       : `\n${findings.length} nálezů v ${files} souborech.`,
   );
-  return findings.length === 0 ? 0 : 1;
+  return blocked ? 1 : 0;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   process.exit(main(process.argv.slice(2)));
 }
 
-export { LIST_FILE, UNPROVISIONED };
+export { LIST_FILE, UNPROVISIONED, UNPROVISIONED_WAIVER, verdict };

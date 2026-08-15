@@ -27,6 +27,7 @@
  * někdo ověřil, ne co nikdo nevyplnil.
  */
 
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, posix, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -39,8 +40,11 @@ const LOCK_FILE = 'package-lock.json';
 /** Pět tříd z AC. Registr nesmí nést nic jiného — neznámý `kind` je selhání, ne varování. */
 const KINDS = ['library', 'asset', 'model', 'dataset', 'api'];
 
-/** Odvoditelné ze stromu, takže je `--sync` přepisuje. Zbytek je ruční a nedotčený. */
-const DERIVED_KINDS = ['library', 'asset'];
+/**
+ * Odvoditelné ze stromu, takže je `--sync` přepisuje. Zbytek je ruční a nedotčený.
+ * `asset` mezi nimi **není**: z lockfilu se licence přečíst dá, z cesty v `public/` ne.
+ */
+const DERIVED_KINDS = ['library'];
 
 const REQUIRED_FIELDS = ['name', 'kind', 'source', 'authorOrProvider', 'license', 'requiredNotices', 'attribution'];
 
@@ -105,12 +109,54 @@ const TEST_FILE = /\.test\.(ts|tsx)$/;
 // Čtení stromu
 // ---------------------------------------------------------------------------
 
+/**
+ * Ověřuje se **index**, ne pracovní strom — commituje se index. Klasické pořadí
+ * kroků jinak bránu obejde: `--sync` přepíše `disclosure.json` i `DISCLOSURE.md`
+ * na disku, člověk stagene jen jeden z nich, a brána certifikuje dvojici, která
+ * se do commitu nikdy nedostane. Stejná vada, jakou vedle uzavřel `cleanroom-check`.
+ *
+ * `--sync` si disk vynutí: jeho úkolem je disk PŘEPSAT a pak nad ním rovnou
+ * hlásit výsledek, takže čtení z indexu by mu ukazovalo obsah před jeho vlastní
+ * prací. Mimo git repozitář (tarball, čerstvý rozbalený archiv) se čte disk taky —
+ * index tam neexistuje a fail-closed by znamenalo, že brána nejde spustit vůbec.
+ */
+let sourceMode = 'index';
+let trackedCache = null;
+
+function trackedPaths() {
+  if (trackedCache !== null) return trackedCache;
+  try {
+    const listing = execFileSync('git', ['--no-replace-objects', 'ls-files', '-z'], {
+      cwd: REPO,
+      encoding: 'utf8',
+      maxBuffer: 256 * 1024 * 1024,
+    });
+    trackedCache = new Set(listing.split('\0').filter(Boolean));
+  } catch {
+    trackedCache = null;
+  }
+  return trackedCache;
+}
+
+/** Obsah cesty tak, jak půjde do commitu. Netrackovaná cesta se čte z disku. */
+function readTracked(path) {
+  const tracked = sourceMode === 'index' ? trackedPaths() : null;
+  if (!tracked || !tracked.has(path)) return readFileSync(join(REPO, path), 'utf8');
+  return execFileSync('git', ['--no-replace-objects', 'show', `:${path}`], {
+    cwd: REPO,
+    encoding: 'utf8',
+    maxBuffer: 256 * 1024 * 1024,
+  });
+}
+
 function readJson(path) {
-  return JSON.parse(readFileSync(join(REPO, path), 'utf8'));
+  return JSON.parse(readTracked(path));
 }
 
 function loadRegistry() {
-  if (!existsSync(join(REPO, REGISTRY_FILE))) return { error: `${REGISTRY_FILE} chybí — spusť \`--sync\`` };
+  const tracked = sourceMode === 'index' ? trackedPaths() : null;
+  const present = tracked?.has(REGISTRY_FILE) || existsSync(join(REPO, REGISTRY_FILE));
+  if (!present) return { error: `${REGISTRY_FILE} chybí — spusť \`--sync\`` };
   try {
     const parsed = readJson(REGISTRY_FILE);
     if (!Array.isArray(parsed.entries)) return { error: `${REGISTRY_FILE} nemá pole "entries"` };
@@ -143,6 +189,18 @@ function lockPackages() {
 }
 
 function listAssets() {
+  const tracked = sourceMode === 'index' ? trackedPaths() : null;
+  if (tracked) {
+    // Index i disk: stagený asset se musí deklarovat, a netrackovaný soubor
+    // v `public/` je asset, který se do commitu chystá.
+    const out = new Set([...tracked].filter((path) => path.startsWith('public/')));
+    for (const path of walkAssets()) out.add(path);
+    return [...out].sort((a, b) => a.localeCompare(b));
+  }
+  return walkAssets();
+}
+
+function walkAssets() {
   const root = join(REPO, 'public');
   if (!existsSync(root)) return [];
   const out = [];
@@ -313,17 +371,15 @@ function deriveLibraries() {
   });
 }
 
-function deriveAssets() {
-  return listAssets().map((path) => ({
-    name: path,
-    kind: 'asset',
-    source: 'vlastní tvorba v tomhle repozitáři',
-    authorOrProvider: 'worldsmith',
-    license: 'MIT',
-    requiredNotices: NOTICES.MIT,
-    attribution: 'worldsmith, tenhle repozitář',
-  }));
-}
+/**
+ * Assety se **neodvozují**. Cesta v `public/` neříká, kdo soubor vyrobil ani pod
+ * jakou licencí — a dřív si tenhle skript dosazoval `worldsmith` / `MIT` na
+ * všechno, co tam leželo. Cizí HDRI nebo font shozený do `public/` tím dostal
+ * v generovaném `DISCLOSURE.md` nepravdivou licenci a brána nad ním zezelenala;
+ * `RULES.md` §2 přitom existuje přesně proti tomuhle.
+ *
+ * Seznam cest se odvozuje dál (kontrola 4 hlídá obě strany), pole se píšou ručně.
+ */
 
 // ---------------------------------------------------------------------------
 // Vykreslení DISCLOSURE.md
@@ -500,8 +556,12 @@ check(4, 'registr sedí na public/ v obou směrech', ({ registry }) => {
   const actual = new Set(registry.entries.filter((entry) => entry.kind === 'asset').map((entry) => entry.name));
   const missing = [...expected].filter((name) => !actual.has(name));
   const extra = [...actual].filter((name) => !expected.has(name));
-  if (missing.length) return `${missing.length} assetů není v registru, první: ${missing[0]} (spusť --sync)`;
-  if (extra.length) return `${extra.length} položek registru už v public/ není, první: ${extra[0]} (spusť --sync)`;
+  // `--sync` tady nepomůže a nesmí to nabízet: licenci assetu odvodit nejde,
+  // položku musí napsat člověk, který ví, odkud ten soubor je.
+  if (missing.length) {
+    return `${missing.length} assetů není v registru, první: ${missing[0]} (doplň položku ručně, licence se neodvozuje)`;
+  }
+  if (extra.length) return `${extra.length} položek registru už v public/ není, první: ${extra[0]} (smaž je z registru)`;
   return null;
 });
 
@@ -560,12 +620,14 @@ check(7, 'každý model jmenovaný v kódu má v registru položku kind: model',
 
 check(6, 'DISCLOSURE.md odpovídá registru', ({ registry }) => {
   if (registry.error) return registry.error;
-  const path = join(REPO, RENDERED_FILE);
-  if (!existsSync(path)) return `${RENDERED_FILE} chybí — spusť \`--sync\``;
-  const onDisk = readFileSync(path, 'utf8');
+  const tracked = sourceMode === 'index' ? trackedPaths() : null;
+  if (!tracked?.has(RENDERED_FILE) && !existsSync(join(REPO, RENDERED_FILE))) {
+    return `${RENDERED_FILE} chybí — spusť \`--sync\``;
+  }
+  const committed = readTracked(RENDERED_FILE);
   const expected = renderDisclosure(registry.entries);
-  if (onDisk === expected) return null;
-  return `${RENDERED_FILE} se rozešel s registrem — byl editovaný ručně? Spusť \`--sync\``;
+  if (committed === expected) return null;
+  return `${RENDERED_FILE} se rozešel s registrem — byl editovaný ručně, nebo se stagenul jen jeden ze dvou souborů? Spusť \`--sync\` a stagene obojí`;
 });
 
 // ---------------------------------------------------------------------------
@@ -597,7 +659,7 @@ function sync() {
   for (const entry of previous.entries ?? []) {
     if (DERIVED_KINDS.includes(entry.kind) && entry.reviewNote) carried.set(`${entry.kind}/${entry.name}`, entry.reviewNote);
   }
-  const derived = [...deriveLibraries(), ...deriveAssets()].map((entry) => {
+  const derived = deriveLibraries().map((entry) => {
     const note = carried.get(`${entry.kind}/${entry.name}`);
     return note ? { ...entry, reviewNote: note } : entry;
   });
@@ -611,7 +673,7 @@ function sync() {
     `${JSON.stringify(
       {
         $comment:
-          'Generováno `node scripts/license-gate.mjs --sync`. library a asset se odvozují ze stromu; model, dataset a api se píšou ručně a sync je nechává být.',
+          'Generováno `node scripts/license-gate.mjs --sync`. library se odvozuje z lockfilu; asset, model, dataset a api se píšou ručně a sync je nechává být.',
         entries,
       },
       null,
@@ -640,7 +702,12 @@ function main(argv) {
     return 0;
   }
 
-  if (argv.includes('--sync')) sync();
+  // `--sync` právě přepsal disk; kontroly za ním musí číst ten disk, jinak by
+  // hlásily stav indexu, tedy obsah před vlastní prací syncu.
+  if (argv.includes('--sync')) {
+    sourceMode = 'disk';
+    sync();
+  }
 
   const context = { registry: loadRegistry() };
   let failed = 0;

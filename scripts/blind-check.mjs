@@ -112,10 +112,17 @@ check(3, 'committed content mentions neither AcmeCorp nor ACME', () => {
   // výjimky hlásí kontrola 3 nenulový počet vždycky — a když je nenulová pořád,
   // přestane se rozlišovat od skutečného úniku a člověk pushne s `--no-verify`.
   // Naměřeno: 6 vlastních zásahů maskovalo 13 skutečných.
+  // Nad VŠEMI dosažitelnými commity, ne jen nad `HEAD`. Push nahrává historii,
+  // ne snímek: jméno vyškrtnuté v posledním commitu drží jeho rodič dál a
+  // `git log -p` ho ukáže komukoli. Kontrola 4 vedle chodí přes `--all` ze
+  // stejného důvodu.
+  const revisions = git(['rev-list', '--all'], { allowFail: true }).trim().split('\n').filter(Boolean);
+  if (revisions.length === 0) return null;
+
   const args = ['grep', '-Iin'];
   for (const token of PUBLIC_TOKENS) args.push('-e', token);
   args.push(
-    'HEAD',
+    ...revisions,
     '--',
     '.',
     ':(exclude)SECURITY-FINDINGS.md',
@@ -126,7 +133,7 @@ check(3, 'committed content mentions neither AcmeCorp nor ACME', () => {
   const output = git(args, { allowFail: true }).trim();
   if (!output) return null;
   const lines = output.split('\n');
-  return `${lines.length} zásahů v commitnutém obsahu, první: ${lines[0].slice(0, 160)}`;
+  return `${lines.length} zásahů v commitnuté historii, první: ${lines[0].slice(0, 160)}`;
 });
 
 check(4, 'SECURITY-FINDINGS.md never entered history', () => {
@@ -154,7 +161,16 @@ check(5, 'every remote points at the anonymous account', (config) => {
     const url = (line.split(/\s+/)[1] ?? '').toLowerCase();
     return !(url.includes(`github.com/${expected}/`) || url.includes(`github.com:${expected}/`));
   });
-  return wrong.length ? `remote nemíří na očekávaný účet: ${wrong[0]}` : null;
+  if (wrong.length) return `remote nemíří na očekávaný účet: ${wrong[0]}`;
+
+  // Účet je jen půlka adresy. Jméno repozitáře je ta druhá a jde ven se stejnou
+  // jistotou — hodnotitel dostane URL dřív než obsah. Kontrola 3 čte strom, takže
+  // token v názvu repa jí projde: strom o svém vlastním URL nic neví.
+  const named = lines.filter((line) => {
+    const url = (line.split(/\s+/)[1] ?? '').toLowerCase();
+    return PUBLIC_TOKENS.some((token) => url.includes(token.toLowerCase()));
+  });
+  return named.length ? `adresa remote sama nese zakázaný token: ${named[0]}` : null;
 });
 
 /**

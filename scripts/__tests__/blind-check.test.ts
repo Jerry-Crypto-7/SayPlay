@@ -166,6 +166,27 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
     expect(result.code).toBe(0);
   });
 
+  it('[3] jméno vyškrtnuté v HEAD, ale živé v rodiči', () => {
+    // Push nahrává historii, ne snímek. Sken jen nad HEAD tenhle stav prohlásí
+    // za čistý, zatímco `git log -p` to jméno ukáže komukoli.
+    const dir = makeRepo({ extraFile: { name: 'notes.md', body: 'Postaveno pro AcmeCorp.\n' } });
+    writeFileSync(join(dir, 'notes.md'), 'Postaveno pro nikoho konkrétního.\n', 'utf8');
+    run(dir, ['add', '-A']);
+    run(dir, [...CLEAN_AUTHOR, 'commit', '-m', 'docs: scrub']);
+
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([3]);
+  });
+
+  it('[5] token v NÁZVU repozitáře, účet přitom správný', () => {
+    // Adresu dostane hodnotitel dřív než obsah, a strom o svém vlastním URL nic
+    // neví — kontrola 3 ho proto najít nemůže.
+    const result = blindCheck(makeRepo({ remote: `https://github.com/${ACCOUNT}/Hackathon-AcmeCorp.git` }));
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([5]);
+  });
+
   it('[4] SECURITY-FINDINGS.md v historii', () => {
     // Bez `acmecorp`/`acme` uvnitř, jinak by shodil i kontrolu 3 a tenhle test
     // by netvrdil nic o kontrole 4.

@@ -16,7 +16,7 @@ import { dirname, join } from 'node:path';
 
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { findHits, parseList } from '../cleanroom-check.mjs';
+import { findHits, parseList, verdict } from '../cleanroom-check.mjs';
 import { hostsIn, noticesFor, stripComments } from '../license-gate.mjs';
 
 const LICENSE_GATE = join(process.cwd(), 'scripts', 'license-gate.mjs');
@@ -27,9 +27,15 @@ interface Registry {
   entries: Record<string, unknown>[];
 }
 
-function run(script: string, cwd: string, args: string[] = []): { code: number; out: string } {
+function run(
+  script: string,
+  cwd: string,
+  args: string[] = [],
+  env: Record<string, string> = {},
+): { code: number; out: string } {
   try {
-    return { code: 0, out: execFileSync(process.execPath, [script, ...args], { cwd, encoding: 'utf8' }) };
+    const options = { cwd, encoding: 'utf8' as const, env: { ...process.env, ...env } };
+    return { code: 0, out: execFileSync(process.execPath, [script, ...args], options) };
   } catch (error) {
     const failure = error as { status?: number; stdout?: string; stderr?: string };
     return { code: failure.status ?? 1, out: `${failure.stdout ?? ''}${failure.stderr ?? ''}` };
@@ -164,6 +170,82 @@ describe('license-gate: --sync nesmí tiše nahradit skutečná data', () => {
     const entry = readRegistry(dir).entries.find((item) => String(item.name).startsWith('left-pad'));
     expect(entry!.authorOrProvider).toBe('Pad Author');
     expect(entry!.attribution).toContain('Copyright (c) 2016 Pad Author');
+  });
+});
+
+describe('license-gate: certifikuje se index, ne disk', () => {
+  /** Zelený strom, ve kterém je všechno trackované a stagenuté. */
+  function stagedGreenRepo(): string {
+    const dir = makeGreenRepo();
+    execFileSync('git', ['init', '-b', 'main'], { cwd: dir, stdio: 'ignore' });
+    write(dir, '.gitignore', 'node_modules/\n');
+    execFileSync('git', ['add', '-A'], { cwd: dir, stdio: 'ignore' });
+    return dir;
+  }
+
+  it('rozbitý DISCLOSURE.md jen na disku bránu neshodí — commituje se index', () => {
+    const dir = stagedGreenRepo();
+    writeFileSync(join(dir, 'DISCLOSURE.md'), '# ručně přepsaný nesmysl\n', 'utf8');
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([]);
+    expect(code).toBe(0);
+  });
+
+  it('rozbitý DISCLOSURE.md v INDEXU bránu shodí, i když disk je v pořádku', () => {
+    // Přesně to obvyklé pořadí kroků: brána zaječí, člověk soubor na disku
+    // opraví, zapomene `git add`. Disk sedí, commit ne. Disk se tu proto vrací
+    // do pořádku schválně — kdyby zůstal rozbitý, test by prošel i bráně,
+    // která čte disk, a o indexu by netvrdil nic.
+    const dir = stagedGreenRepo();
+    const correct = readFileSync(join(dir, 'DISCLOSURE.md'), 'utf8');
+    writeFileSync(join(dir, 'DISCLOSURE.md'), '# ručně přepsaný nesmysl\n', 'utf8');
+    execFileSync('git', ['add', 'DISCLOSURE.md'], { cwd: dir, stdio: 'ignore' });
+    writeFileSync(join(dir, 'DISCLOSURE.md'), correct, 'utf8');
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([6]);
+    expect(code).toBe(1);
+  });
+});
+
+describe('license-gate: licenci assetu nelze odvodit z cesty', () => {
+  it('nový soubor v public/ shodí kontrolu 4 a --sync mu licenci NEVYMYSLÍ', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'public/cizi-hdri.hdr', 'binární data\n');
+
+    const before = run(LICENSE_GATE, dir);
+    expect(failedChecks(before.out)).toEqual([4]);
+
+    // Dřív právě tohle vyrobilo položku „worldsmith / MIT" nad cizím souborem
+    // a brána nad ní zezelenala. Sync ho teď nechá být a kontrola drží.
+    run(LICENSE_GATE, dir, ['--sync']);
+    const after = run(LICENSE_GATE, dir);
+    expect(failedChecks(after.out)).toEqual([4]);
+    expect(after.out).toContain('doplň položku ručně');
+    expect(readRegistry(dir).entries.some((entry) => entry.kind === 'asset')).toBe(false);
+  });
+
+  it('ručně zapsaný asset projde a --sync ho nesmaže', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'public/cizi-hdri.hdr', 'binární data\n');
+    const registry = readRegistry(dir);
+    registry.entries.push({
+      name: 'public/cizi-hdri.hdr',
+      kind: 'asset',
+      source: 'https://polyhaven.com/a/kloofendal',
+      authorOrProvider: 'Poly Haven',
+      license: 'CC0-1.0',
+      requiredNotices: ['žádné'],
+      attribution: 'Poly Haven, CC0',
+    });
+    writeRegistry(dir, registry);
+    run(LICENSE_GATE, dir, ['--sync']);
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([]);
+    expect(code).toBe(0);
+    expect(readRegistry(dir).entries.filter((entry) => entry.kind === 'asset')).toHaveLength(1);
   });
 });
 
@@ -431,6 +513,33 @@ describe('cleanroom-check: fail-closed', () => {
   });
 });
 
+describe('cleanroom-check: nepřečtený soubor je neznámý soubor', () => {
+  // Nečitelný soubor se na Windows spolehlivě vyrobit nedá (chmod tam čtení
+  // nezakáže, visící symlink chce oprávnění), takže se testuje rozhodnutí, ne
+  // způsob, jak soubor znečitelnit. Kdyby to jelo přes CLI, byla by tahle větev
+  // zelená jen na Linuxu — a na téhle mašině by netvrdila nic.
+  it('soubor, který se nepodařilo přečíst, brání průchodu stejně jako nález', () => {
+    const result = verdict([{ shown: 'src/zamceny.ts', text: null }], ['ProprietaryActionRunner']);
+    expect(result.skipped).toEqual(['src/zamceny.ts']);
+    expect(result.files).toBe(0);
+    expect(result.blocked).toBe(true);
+  });
+
+  it('přečtený čistý soubor průchodu nebrání', () => {
+    const result = verdict([{ shown: 'src/a.ts', text: 'export const x = 1;\n' }], ['ProprietaryActionRunner']);
+    expect(result.skipped).toEqual([]);
+    expect(result.blocked).toBe(false);
+  });
+
+  it('nález blokuje i bez jediného nepřečteného souboru', () => {
+    const result = verdict([{ shown: 'src/a.ts', text: 'new ProprietaryActionRunner();\n' }], [
+      'ProprietaryActionRunner',
+    ]);
+    expect(result.blocked).toBe(true);
+    expect(result.findings).toHaveLength(1);
+  });
+});
+
 describe('cleanroom-check: nenaplněný seznam se musí přiznat', () => {
   function repo(list: string): string {
     const dir = mkdtempSync(join(tmpdir(), 'cleanroom-'));
@@ -441,8 +550,19 @@ describe('cleanroom-check: nenaplněný seznam se musí přiznat', () => {
     return dir;
   }
 
-  it('prázdný seznam s direktivou projde, ale hlásí, že nehlídá nic', () => {
+  it('prázdný seznam s direktivou SELŽE — přiznat se nestačí', () => {
+    // Dřív tenhle stav končil nulou. Přiznaná nula je pořád nula: hook nad ní
+    // pustí dál cokoli a výstup u toho vypíše počet prohledaných souborů.
     const { code, out } = run(CLEANROOM, repo('# hlavička\n#!unprovisioned\n'));
+    expect(code).toBe(1);
+    expect(out).toContain('nehlídá nic');
+    expect(out).toContain('CLEANROOM_ALLOW_UNPROVISIONED');
+  });
+
+  it('projít smí jen s vědomým obejitím, a i tak to hlásí', () => {
+    const { code, out } = run(CLEANROOM, repo('# hlavička\n#!unprovisioned\n'), [], {
+      CLEANROOM_ALLOW_UNPROVISIONED: '1',
+    });
     expect(code).toBe(0);
     expect(out).toContain('POZOR');
     expect(out).toContain('nehlídá nic');
@@ -451,10 +571,11 @@ describe('cleanroom-check: nenaplněný seznam se musí přiznat', () => {
   it('direktiva se nehledá jako identifikátor, jinak by shodila vlastní commit', () => {
     const dir = repo('#!unprovisioned\n');
     // Přesně ta situace, která shodila první verzi: řetězec direktivy stojí ve
-    // skenovaném souboru. Nálezem být nesmí.
+    // skenovaném souboru. Nálezem být nesmí. Obejití je tu jen proto, aby test
+    // měřil nález, ne nenaplněnost seznamu.
     write(dir, 'src/b.ts', "export const marker = '#!unprovisioned';\n");
 
-    const { code, out } = run(CLEANROOM, dir);
+    const { code, out } = run(CLEANROOM, dir, [], { CLEANROOM_ALLOW_UNPROVISIONED: '1' });
     expect(code).toBe(0);
     expect(out).not.toContain('src/b.ts');
   });
