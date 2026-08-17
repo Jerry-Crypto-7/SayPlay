@@ -84,6 +84,41 @@ dostane zelenou. Je to vědomý zápis do souboru plus vědomý příkaz a hlás
 každém commitu. Proti záměru tahle brána neobstojí tak jako tak — viz poslední
 odstavec.
 
+## Vendorovaný kód v registru: `"manual": true`
+
+Tohle pole píše **člověk** a `--sync` ho nikdy nedoplní, proto je popsané tady a
+ne jen v kódu.
+
+`disclosure.json` má třídu `library` odvozenou z `package-lock.json` — `--sync`
+ji celou přegeneruje. **Zkopírovaný nebo vendorovaný kód v lockfilu není**, takže
+odvodit se nedá a `--sync` ho z registru mazal, přestože je to jediná třída
+závislosti, která je zároveň licenčně riziková a pro lockfile neviditelná.
+
+Záznam, který má přežít, dostane příznak:
+
+```json
+{
+  "name": "vendorovany-eca-runner",
+  "kind": "library",
+  "manual": true,
+  "source": "zkopírováno do src/vendor/, v package-lock.json není",
+  "authorOrProvider": "Někdo Jiný",
+  "license": "GPL-3.0-only",
+  "requiredNotices": ["plný text GPL-3.0 v src/vendor/LICENSE"],
+  "attribution": "© 2020 Někdo Jiný"
+}
+```
+
+Co příznak dělá a co nedělá:
+
+- **`--sync` ho nechá být** a `DISCLOSURE.md` ho pořád jmenuje.
+- **Kontrola 3 ho nepočítá** mezi položky, které v lockfilu chybí.
+- **Nic neumlčí.** Licence pořád prochází whitelistem — `GPL-3.0-only` výš je
+  nález kontroly 2 a musí ho někdo posoudit, příznak s tím nehne.
+- **Na balíčku, který lockfile odvozuje, je to rozpor a kontrola 3 selže.** Jinak
+  by šlo příznakem zmrazit skutečnou závislost: `--sync` by ji přestal přepisovat
+  a její licence by se tiše přestala aktualizovat.
+
 ## Co tahle kontrola neumí
 
 Je to lexikální shoda proti seznamu jmen. **Přepsaný kód se stejnou strukturou a

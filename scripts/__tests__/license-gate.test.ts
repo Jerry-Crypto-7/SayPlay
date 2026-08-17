@@ -343,6 +343,101 @@ describe('license-gate: chůze po disku respektuje .gitignore', () => {
   });
 });
 
+/**
+ * Vendorovaný a zkopírovaný kód je jediná třída závislosti, která je zároveň
+ * licenčně riziková a pro `package-lock.json` neviditelná. `--sync` ho mazal
+ * a kontrola 3 přitom `--sync` sama doporučovala jako opravu — brána tím
+ * dělala nezveřejnitelným právě to, kvůli čemu existuje.
+ */
+describe('license-gate: --sync nesmí smazat, co může vědět jen člověk', () => {
+  const VENDORED = {
+    name: 'vendorovany-eca-runner',
+    kind: 'library',
+    manual: true,
+    source: 'zkopírováno do src/vendor/, v package-lock.json není',
+    authorOrProvider: 'Někdo Jiný',
+    license: 'GPL-3.0-only',
+    requiredNotices: ['plný text GPL-3.0 v src/vendor/LICENSE'],
+    attribution: '© 2020 Někdo Jiný',
+  };
+
+  function repoWithVendored(overrides: Record<string, unknown> = {}): string {
+    const dir = makeGreenRepo();
+    const registry = readRegistry(dir);
+    registry.entries.push({ ...VENDORED, ...overrides });
+    writeRegistry(dir, registry);
+    return dir;
+  }
+
+  it('celý cyklus z nálezu: registr → FAIL → --sync → záznam je pořád tam', () => {
+    const dir = repoWithVendored();
+
+    // Kontrola 2 hlásí GPL správně — je mimo whitelist a někdo to musí posoudit.
+    // Kontrola 6 taky správně: ruční zásah do registru zatím není promítnutý do
+    // DISCLOSURE.md. **Kontrola 3 už ale mlčí** — ruční položka v lockfilu není
+    // a být nemá, a to je ta půlka, kterou tenhle test hlídá.
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([2, 6]);
+
+    // `--sync` veřejný výpis dorovná a záznam přitom nechá být.
+    const { out } = run(LICENSE_GATE, dir, ['--sync']);
+    expect(failedChecks(out)).toEqual([2]);
+
+    // Tohle je ta půlka, která před opravou padala: záznam zmizel z registru
+    // i z veřejného výpisu a všech sedm kontrol pak prošlo.
+    expect(readRegistry(dir).entries.some((entry) => entry.name === VENDORED.name)).toBe(true);
+    const rendered = readFileSync(join(dir, 'DISCLOSURE.md'), 'utf8');
+    expect(rendered).toContain(VENDORED.name);
+    expect(rendered).toContain('GPL-3.0-only');
+  });
+
+  it('bez příznaku ho --sync pořád uklidí — ten příznak je celý rozdíl', () => {
+    const dir = repoWithVendored({ manual: undefined, license: 'MIT' });
+
+    run(LICENSE_GATE, dir, ['--sync']);
+    expect(readRegistry(dir).entries.some((entry) => entry.name === VENDORED.name)).toBe(false);
+  });
+
+  it('library mimo lockfile bez příznaku kontrolu 3 pořád shodí', () => {
+    const dir = repoWithVendored({ manual: undefined, license: 'MIT' });
+
+    // Kontrola 6 tu je ze stejného důvodu jako výš: ruční zásah do registru bez
+    // `--sync`. Nosné je [3] — bez příznaku je záznam mimo lockfile pořád nález.
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([3, 6]);
+    expect(out).toContain(VENDORED.name);
+    expect(code).toBe(1);
+  });
+
+  it('manual: true na balíčku, který lockfile odvozuje, je rozpor', () => {
+    // Jinak by šlo příznakem umlčet skutečnou závislost: `--sync` by ji přestal
+    // přepisovat a její licence by se tiše přestala aktualizovat.
+    const dir = makeGreenRepo();
+    const registry = readRegistry(dir);
+    // Registr jmenuje balíčky i s verzí (`left-pad@1.0.0`) — dvě verze téhož
+    // balíčku jsou dvě licenční položky.
+    const derived = registry.entries.find((entry) => String(entry.name).startsWith('left-pad@'));
+    expect(derived).toBeDefined();
+    derived!.manual = true;
+    writeRegistry(dir, registry);
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([3]);
+    expect(out).toContain('left-pad@');
+    expect(code).toBe(1);
+  });
+
+  it('--sync spuštěný dvakrát dá bitově týž registr i DISCLOSURE.md', () => {
+    const dir = repoWithVendored();
+    run(LICENSE_GATE, dir, ['--sync']);
+    const firstRegistry = readFileSync(join(dir, 'disclosure.json'), 'utf8');
+    const firstRendered = readFileSync(join(dir, 'DISCLOSURE.md'), 'utf8');
+
+    run(LICENSE_GATE, dir, ['--sync']);
+    expect(readFileSync(join(dir, 'disclosure.json'), 'utf8')).toBe(firstRegistry);
+    expect(readFileSync(join(dir, 'DISCLOSURE.md'), 'utf8')).toBe(firstRendered);
+  });
+});
+
 describe('license-gate: licenci assetu nelze odvodit z cesty', () => {
   it('nový soubor v public/ shodí kontrolu 4 a --sync mu licenci NEVYMYSLÍ', () => {
     const dir = makeGreenRepo();

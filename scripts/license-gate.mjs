@@ -46,6 +46,22 @@ const KINDS = ['library', 'asset', 'model', 'dataset', 'api'];
  */
 const DERIVED_KINDS = ['library'];
 
+/**
+ * Ručně psaná položka: `kind` mimo odvozované třídy, **nebo** odvozovaná třída
+ * s explicitním `manual: true`.
+ *
+ * Ta druhá polovina je jediný způsob, jak do registru dostat **vendorovaný nebo
+ * zkopírovaný kód** — jedinou třídu závislosti, která je zároveň licenčně
+ * riziková a pro `package-lock.json` neviditelná. Dokud `--sync` držel jako
+ * ruční jen `kind` mimo `library`, takový záznam mazal — a kontrola 3 přitom
+ * `--sync` sama doporučovala jako opravu. Naměřeno: vendorovaná `GPL-3.0-only`
+ * knihovna zmizela z registru i z veřejného `DISCLOSURE.md` a všech sedm
+ * kontrol pak prošlo.
+ */
+function isManual(entry) {
+  return !DERIVED_KINDS.includes(entry?.kind) || entry?.manual === true;
+}
+
 const REQUIRED_FIELDS = ['name', 'kind', 'source', 'authorOrProvider', 'license', 'requiredNotices', 'attribution'];
 
 /**
@@ -1002,11 +1018,27 @@ check(2, 'každá licence je na whitelistu nebo má zapsané posouzení', ({ reg
 check(3, 'registr sedí na package-lock.json v obou směrech', ({ registry }) => {
   if (registry.error) return registry.error;
   const expected = new Set(deriveLibraries().map((entry) => entry.name));
-  const actual = new Set(registry.entries.filter((entry) => entry.kind === 'library').map((entry) => entry.name));
+  const libraries = registry.entries.filter((entry) => entry.kind === 'library');
+  const actual = new Set(libraries.map((entry) => entry.name));
+  const manual = new Set(libraries.filter((entry) => entry.manual === true).map((entry) => entry.name));
+
   const missing = [...expected].filter((name) => !actual.has(name));
-  const extra = [...actual].filter((name) => !expected.has(name));
+  // Ruční položka je vendorovaný kód. V lockfilu není a být nemá, takže ji
+  // nesmí strhnout dolů kontrola, která lockfile bere jako úplný seznam.
+  const extra = [...actual].filter((name) => !expected.has(name) && !manual.has(name));
+  // `manual: true` na balíčku, který lockfile odvozuje, je rozpor. Přijmout
+  // obojí najednou znamená pustit do registru položku, kterou `--sync` nikdy
+  // nepřepíše — tedy licenci, která se přestane aktualizovat, a nikdo se to
+  // nedozví.
+  const contradictory = [...manual].filter((name) => expected.has(name));
+
   if (missing.length) return `${missing.length} závislostí není v registru, první: ${missing[0]} (spusť --sync)`;
-  if (extra.length) return `${extra.length} položek registru už není v lockfilu, první: ${extra[0]} (spusť --sync)`;
+  if (extra.length) {
+    return `${extra.length} položek registru už není v lockfilu, první: ${extra[0]} (spusť --sync; u vendorovaného kódu místo toho "manual": true)`;
+  }
+  if (contradictory.length) {
+    return `${contradictory.length} položek má "manual": true, ale lockfile je odvozuje, první: ${contradictory[0]} (odeber ten příznak)`;
+  }
   return null;
 });
 
@@ -1121,13 +1153,13 @@ function sync() {
   }
 
   const previous = existsSync(join(REPO, REGISTRY_FILE)) ? readJson(REGISTRY_FILE) : { entries: [] };
-  const manual = (previous.entries ?? []).filter((entry) => !DERIVED_KINDS.includes(entry.kind));
+  const manual = (previous.entries ?? []).filter(isManual);
 
   // Ruční pole u odvozených položek (typicky `reviewNote` u copyleftu) by se
   // regenerací ztratila, a brána by pak žádala, aby je někdo dopsal znovu.
   const carried = new Map();
   for (const entry of previous.entries ?? []) {
-    if (DERIVED_KINDS.includes(entry.kind) && entry.reviewNote) carried.set(`${entry.kind}/${entry.name}`, entry.reviewNote);
+    if (!isManual(entry) && entry.reviewNote) carried.set(`${entry.kind}/${entry.name}`, entry.reviewNote);
   }
   const derived = deriveLibraries().map((entry) => {
     const note = carried.get(`${entry.kind}/${entry.name}`);
