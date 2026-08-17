@@ -24,8 +24,17 @@ export declare interface DisclosureEntry {
 /** Odstraní řádkové i blokové komentáře, obsah řetězců nechá být. */
 export declare function stripComments(source: string): string;
 
-/** Hostitelé z URL v kódu, bez loopbacku a jmen vyhrazených pro dokumentaci. */
+/**
+ * Hostitelé z URL v kódu, bez loopbacku a jmen vyhrazených pro dokumentaci.
+ * Host se bere z rozparsované URL, takže userinfo před `@` skutečný cíl neskryje.
+ */
 export declare function hostsIn(source: string): Set<string>;
+
+/** URL nesoucí userinfo, s vymazaným údajem. Nález sám o sobě, bez ohledu na host. */
+export declare function credentialUrlsIn(source: string): Set<string>;
+
+/** Identifikátory modelů jmenované v kódu, lexikálně podle tvaru jména. */
+export declare function modelIdsIn(source: string): Set<string>;
 
 /** Povinné notices pro licenci, včetně složených výrazů `A AND B`. */
 export declare function noticesFor(license: string): string[];

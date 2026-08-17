@@ -102,7 +102,12 @@ const NOT_EXTERNAL = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?|example\.(co
 /** Kde se hledají volané endpointy. Testy ne — ty volají fixtury, ne službu. */
 const CODE_ROOTS = ['src', 'evals', 'scripts'];
 const CODE_SKIP_DIR = /^(node_modules|\.next|__tests__|__snapshots__|live)$/;
-const CODE_FILE = /\.(ts|tsx|mjs|js)$/;
+/**
+ * `mts` a `cts` tu jsou, protože bez nich se `scripts/*.d.mts` a jakýkoli `.mts`
+ * zdroj neskenoval vůbec — kontroly 5 a 7 nad nimi mlčely a mlčení vypadalo
+ * stejně jako čistý výsledek.
+ */
+const CODE_FILE = /\.(ts|tsx|mts|cts|mjs|cjs|js)$/;
 const TEST_FILE = /\.test\.(ts|tsx)$/;
 
 // ---------------------------------------------------------------------------
@@ -216,15 +221,66 @@ function walkAssets() {
 }
 
 /**
+ * Znaky, po kterých `/` začíná regulární literál a ne dělení. Standardní
+ * heuristika: po nich nemůže stát operand, takže `/` musí otevírat regex.
+ */
+const REGEX_MAY_FOLLOW = new Set(['', '(', ',', '=', ':', '[', '!', '&', '|', '?', '{', '}', ';', '+', '-', '*', '%', '~', '^', '<', '>']);
+
+/** Klíčová slova, po kterých platí totéž, jen končí písmenem (`return /x/`). */
+const REGEX_MAY_FOLLOW_WORD = new Set(['return', 'typeof', 'case', 'in', 'of', 'do', 'else', 'yield', 'await', 'delete', 'void', 'instanceof', 'new']);
+
+/**
+ * Konec regulárního literálu začínajícího na `start`, nebo `-1`, když to literál
+ * nebyl. Třídu `[...]` sleduje zvlášť: `/[//]/` má uvnitř dva lomítka a bez toho
+ * by se braly jako začátek komentáře.
+ */
+function endOfRegex(source, start) {
+  let i = start + 1;
+  let inClass = false;
+  while (i < source.length) {
+    const c = source[i];
+    if (c === '\\') {
+      i += 2;
+      continue;
+    }
+    // Regulární literál nepřeteče řádek. Když jsme na konci řádku, nebyl to on.
+    if (c === '\n') return -1;
+    if (c === '[') inClass = true;
+    else if (c === ']') inClass = false;
+    else if (c === '/' && !inClass) return i + 1;
+    i += 1;
+  }
+  return -1;
+}
+
+/**
  * Odstraní komentáře, řetězce nechá. Rozhoduje to o tom, co je *volaný* endpoint:
  * URL v dokumentačním komentáři nikdo nezavolá, URL v řetězci ano. Regulárním
  * výrazem to nejde — `'http://x' // pozn.` má obojí na jednom řádku a naivní
  * `//` matcher by uřízl půlku řetězce.
+ *
+ * **Regulární literály se přeskakují celé**, protože jinak `//` uvnitř nich
+ * spustí režim komentáře a zbytek řádku zmizí. Naměřeno reviewem nad `1c173bc`:
+ * `const r = /https:\/\//; const u = 'https://evil-exfil.net/v1';` vrátilo z
+ * `hostsIn` prázdno, takže kontroly 5 a 7 nad tím řádkem tvrdily, že je čistý.
+ * Tenhle soubor sám takový řádek obsahuje.
  */
 export function stripComments(source) {
   let out = '';
   let i = 0;
   let quote = null;
+
+  // Poslední znak mimo bílé místo a slovo, které mu bezprostředně předchází.
+  // Čte se zpětně z už zapsaného výstupu, ne z průběžně udržovaného stavu —
+  // ten se u mezer mezi slovem a lomítkem plete.
+  const preceding = () => {
+    let j = out.length - 1;
+    while (j >= 0 && /\s/.test(out[j])) j -= 1;
+    let k = j;
+    while (k >= 0 && /[A-Za-z0-9_$]/.test(out[k])) k -= 1;
+    return { char: j >= 0 ? out[j] : '', word: out.slice(k + 1, j + 1) };
+  };
+
   while (i < source.length) {
     const c = source[i];
     const next = source[i + 1];
@@ -245,14 +301,27 @@ export function stripComments(source) {
       i += 1;
       continue;
     }
-    if (c === '/' && next === '/') {
-      while (i < source.length && source[i] !== '\n') i += 1;
-      continue;
-    }
     if (c === '/' && next === '*') {
       i += 2;
       while (i < source.length && !(source[i] === '*' && source[i + 1] === '/')) i += 1;
       i += 2;
+      continue;
+    }
+    // Regex se zkouší dřív než `//`, ale `//` samo regex být nemůže (prázdný
+    // literál v JS neexistuje), takže se pořadí o komentáře nepřipraví.
+    if (c === '/' && next !== '/') {
+      const { char, word } = preceding();
+      if (REGEX_MAY_FOLLOW.has(char) || REGEX_MAY_FOLLOW_WORD.has(word)) {
+        const end = endOfRegex(source, i);
+        if (end !== -1) {
+          out += source.slice(i, end);
+          i = end;
+          continue;
+        }
+      }
+    }
+    if (c === '/' && next === '/') {
+      while (i < source.length && source[i] !== '\n') i += 1;
       continue;
     }
     out += c;
@@ -278,11 +347,64 @@ export function modelIdsIn(source) {
   return found;
 }
 
+/**
+ * URL tak, jak stojí ve zdroji. Třída znaků končí tam, kde v kódu končí literál.
+ * `$` a `{` jsou vyloučené schválně: `` `https://${provider}.example/` `` je host
+ * složený za běhu a tenhle skript ho vidět nemá — kdyby se přiřadil host `$`,
+ * kontrola 5 by hlásila nesmysl místo přiznané mezery.
+ */
+const URL_IN_SOURCE = /https?:\/\/[^\s"'`<>\\(){}[\]$,;]+/gi;
+
+/**
+ * Hosty **z rozparsované URL**, ne podřetězcem. Lexikální výřez `[A-Za-z0-9.\-]+`
+ * se zastavil na `@`, takže userinfo skryla skutečný cíl: z
+ * `https://api.openai.com@evil-exfil.net/v1` vyšel `api.openai.com`, který v
+ * registru je, a kontrola 5 zezelenala nad voláním na `evil-exfil.net`.
+ *
+ * Neparsovatelná URL se **hlásí**, ne zahazuje. Prefix `https?://` už padl, takže
+ * co se za ním nedá přečíst, je nález, ne šum.
+ */
 export function hostsIn(source) {
   const found = new Set();
-  for (const match of stripComments(source).matchAll(/https?:\/\/([A-Za-z0-9.\-]+)/g)) {
-    const host = match[1];
-    if (!NOT_EXTERNAL.test(host)) found.add(host.toLowerCase());
+  for (const match of stripComments(source).matchAll(URL_IN_SOURCE)) {
+    const raw = match[0].replace(/[.,;:]+$/, '');
+    let url;
+    try {
+      url = new URL(raw);
+    } catch {
+      found.add(`${raw.toLowerCase()} (nedá se rozparsovat jako URL)`);
+      continue;
+    }
+    // `hostname`, ne `host`: port do disclosure nepatří — `RULES.md` §2 se ptá,
+    // na jaké službě to stojí, ne na kterém jejím portu. `NOT_EXTERNAL` na hostu
+    // s portem navíc nesedne a loopback by prošel jako externí služba.
+    const host = url.hostname.toLowerCase();
+    if (!host || NOT_EXTERNAL.test(host)) continue;
+    found.add(host);
+  }
+  return found;
+}
+
+/**
+ * URL s userinfo (`user@host`, `user:heslo@host`). Je to samostatný nález i tehdy,
+ * když je host v registru: v produkčním kódu to buď skrývá skutečný cíl, nebo
+ * veze přihlašovací údaj, a obojí má brána zastavit.
+ *
+ * **Heslo se do výstupu nepíše.** Brána běží v git hooku a její výstup končí v
+ * terminálu i v logu; vypsat nalezený údaj by z kontroly udělala druhý únik.
+ */
+export function credentialUrlsIn(source) {
+  const found = new Set();
+  for (const match of stripComments(source).matchAll(URL_IN_SOURCE)) {
+    const raw = match[0].replace(/[.,;:]+$/, '');
+    let url;
+    try {
+      url = new URL(raw);
+    } catch {
+      continue;
+    }
+    if (!url.username && !url.password) continue;
+    found.add(`${url.protocol}//***@${url.hostname.toLowerCase()}${url.pathname}`);
   }
   return found;
 }
@@ -347,6 +469,7 @@ function codePaths() {
 
 const calledHosts = () => scanCode(hostsIn);
 const namedModels = () => scanCode(modelIdsIn);
+const credentialUrls = () => scanCode(credentialUrlsIn);
 
 // ---------------------------------------------------------------------------
 // Odvození položek pro `--sync`
@@ -618,12 +741,16 @@ check(5, 'každý volaný endpoint má v registru položku kind: api', ({ regist
   // Podřetězcové porovnání propouštělo `pi.openai.com` proti registrovanému
   // `https://api.openai.com/...`, protože je to jeho podřetězec — tedy přesně
   // exfiltrační host, který vypadá jako disclosovaný.
+  //
+  // **Obě strany parsují stejně.** Do 17. 8. 2026 tuhle větu plnil jen registr;
+  // strana kódu brala host regulárním výrazem, který se zastavil na `@`, takže
+  // `https://api.openai.com@evil-exfil.net/v1` se porovnávalo jako `api.openai.com`.
   const known = new Set();
   for (const entry of registry.entries) {
     if (entry.kind !== 'api') continue;
     const source = String(entry.source ?? '').trim();
     try {
-      known.add(new URL(source).host.toLowerCase());
+      known.add(new URL(source).hostname.toLowerCase());
     } catch {
       // Zdroj, který není URL, se bere jako holý host — jinak by položka mlčky
       // nekryla nic a kontrola by hlásila host, který v registru je.
@@ -631,6 +758,11 @@ check(5, 'každý volaný endpoint má v registru položku kind: api', ({ regist
     }
   }
   const unknown = [];
+  // Userinfo je nález sám o sobě, a hlásí se dřív než neznámé hosty: URL, která ho
+  // nese, není nedodělaný registr, je to skrytý cíl nebo uniklý údaj.
+  for (const [shown, file] of credentialUrls()) {
+    unknown.push(`${shown} (${file}) — URL nese userinfo před hostem, to brána nepropustí`);
+  }
   for (const [host, file] of calledHosts()) {
     if (!known.has(host)) unknown.push(`${host} (${file})`);
   }

