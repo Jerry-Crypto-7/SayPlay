@@ -223,8 +223,16 @@ function walkAssets() {
 /**
  * Znaky, po kterých `/` začíná regulární literál a ne dělení. Standardní
  * heuristika: po nich nemůže stát operand, takže `/` musí otevírat regex.
+ *
+ * **`<`, `>` a `}` tu schválně NEJSOU.** S `<` v sadě otevřela uzavírací JSX
+ * značka `</div>` falešný literál, ten doběhl k dalšímu `/` v následující URL,
+ * spolkl přitom jednu uvozovku, stav uvozovek se rozešel a `//` v cestě se pak
+ * čtlo jako komentář — takže zbytek řádku zmizel. Naměřeno reviewem nad
+ * `a52bb71`: nedeklarovaný host za JSX na témž řádku prošel zeleně, zatímco
+ * verze bez přeskakování regexů ho našla. Zneviditelnit víc zdroje než předtím
+ * není oprava, je to nová slepá skvrna.
  */
-const REGEX_MAY_FOLLOW = new Set(['', '(', ',', '=', ':', '[', '!', '&', '|', '?', '{', '}', ';', '+', '-', '*', '%', '~', '^', '<', '>']);
+const REGEX_MAY_FOLLOW = new Set(['', '(', ',', '=', ':', '[', '!', '&', '|', '?', '{', ';', '+', '-', '*', '%', '~', '^']);
 
 /** Klíčová slova, po kterých platí totéž, jen končí písmenem (`return /x/`). */
 const REGEX_MAY_FOLLOW_WORD = new Set(['return', 'typeof', 'case', 'in', 'of', 'do', 'else', 'yield', 'await', 'delete', 'void', 'instanceof', 'new']);
@@ -245,12 +253,53 @@ function endOfRegex(source, start) {
     }
     // Regulární literál nepřeteče řádek. Když jsme na konci řádku, nebyl to on.
     if (c === '\n') return -1;
+    // **Uvozovka uvnitř literál nediskvalifikuje.** Zkoušené to bylo a byla to
+    // horší varianta: `/[^\]\s"'`]*\]/` v tomhle souboru se tím přestal
+    // přeskakovat, jeho `"` otevřela režim řetězce, stav uvozovek se rozešel a
+    // následující blokový komentář se přečetl jako obsah řetězce — takže brána
+    // hlásila host z vlastní dokumentace. Falešný literál hlídá výběr
+    // předcházejícího znaku, ne obsah spanu.
     if (c === '[') inClass = true;
     else if (c === ']') inClass = false;
     else if (c === '/' && !inClass) return i + 1;
     i += 1;
   }
   return -1;
+}
+
+/** Krátké escapy s vlastním významem. Zbytek (`\'`, `\\`, `\/`) je znak sám za sebe. */
+const SHORT_ESCAPES = { n: '\n', r: '\r', t: '\t', b: '\b', f: '\f', v: '\v' };
+
+/**
+ * Dekóduje escape sekvenci v řetězcovém literálu na znak, který znamená.
+ *
+ * **Proč to nestačí zaslepit:** dřív se `\X` nahrazovalo dvěma mezerami, takže
+ * `'https://api.openai.com@evil-exfil.net/v1'` skončilo pro skener na
+ * mezeře a zbyl z něj registrovaný host. Naměřeno reviewem nad `a52bb71`:
+ * kontrola 5 prošla zeleně nad voláním na `evil-exfil.net` napsaným takhle.
+ */
+function decodeEscape(source, i) {
+  const c = source[i + 1];
+  if (c === 'u') {
+    if (source[i + 2] === '{') {
+      const end = source.indexOf('}', i + 3);
+      const body = end === -1 ? '' : source.slice(i + 3, end);
+      if (/^[0-9a-f]{1,6}$/i.test(body)) {
+        const code = Number.parseInt(body, 16);
+        if (code <= 0x10ffff) return { text: String.fromCodePoint(code), length: end - i + 1 };
+      }
+    }
+    const hex = source.slice(i + 2, i + 6);
+    if (/^[0-9a-f]{4}$/i.test(hex)) return { text: String.fromCharCode(Number.parseInt(hex, 16)), length: 6 };
+  }
+  if (c === 'x') {
+    const hex = source.slice(i + 2, i + 4);
+    if (/^[0-9a-f]{2}$/i.test(hex)) return { text: String.fromCharCode(Number.parseInt(hex, 16)), length: 4 };
+  }
+  const octal = /^[0-7]{1,3}/.exec(source.slice(i + 1, i + 4));
+  if (octal) return { text: String.fromCharCode(Number.parseInt(octal[0], 8)), length: 1 + octal[0].length };
+  if (c in SHORT_ESCAPES) return { text: SHORT_ESCAPES[c], length: 2 };
+  return { text: c ?? '', length: 2 };
 }
 
 /**
@@ -286,8 +335,9 @@ export function stripComments(source) {
     const next = source[i + 1];
     if (quote) {
       if (c === '\\') {
-        out += '  ';
-        i += 2;
+        const { text, length } = decodeEscape(source, i);
+        out += text;
+        i += length;
         continue;
       }
       if (c === quote) quote = null;
@@ -352,8 +402,14 @@ export function modelIdsIn(source) {
  * `$` a `{` jsou vyloučené schválně: `` `https://${provider}.example/` `` je host
  * složený za běhu a tenhle skript ho vidět nemá — kdyby se přiřadil host `$`,
  * kontrola 5 by hlásila nesmysl místo přiznané mezery.
+ *
+ * **První alternativa je IPv6 v hranatých závorkách.** Bez ní `https://[2606:4700::1111]/v1`
+ * nedalo žádnou shodu — tedy ticho, ne chybu — a kontrola 5 nad tím voláním prošla.
+ * Zpětné lomítko se do shody **pouští schválně**, aby se dalo nahlásit: v hostu
+ * legitimní escape není a `https://a.io\@zly.net` je přesně ten tvar, který má brána
+ * zastavit.
  */
-const URL_IN_SOURCE = /https?:\/\/[^\s"'`<>\\(){}[\]$,;]+/gi;
+const URL_IN_SOURCE = /https?:\/\/(?:\[[^\]\s"'`]*\][^\s"'`<>(){}[\]$,;]*|[^\s"'`<>(){}[\]$,;]+)/gi;
 
 /**
  * Hosty **z rozparsované URL**, ne podřetězcem. Lexikální výřez `[A-Za-z0-9.\-]+`
@@ -364,15 +420,30 @@ const URL_IN_SOURCE = /https?:\/\/[^\s"'`<>\\(){}[\]$,;]+/gi;
  * Neparsovatelná URL se **hlásí**, ne zahazuje. Prefix `https?://` už padl, takže
  * co se za ním nedá přečíst, je nález, ne šum.
  */
+/**
+ * Co se z nálezu smí vypsat. Brána běží v git hooku a její výstup jde do
+ * terminálu i do CI logu, takže **cesta ani query se netisknou nikdy** — reset
+ * token ve cestě nebo `?token=` v query je přesně ten údaj, který by tím unikl.
+ * Zbývá schéma, host a soubor, a to na dohledání stačí.
+ */
+function safeShape(raw) {
+  const scheme = /^https?:/i.exec(raw)?.[0]?.toLowerCase() ?? 'http(s):';
+  return `${scheme}//…`;
+}
+
 export function hostsIn(source) {
   const found = new Set();
   for (const match of stripComments(source).matchAll(URL_IN_SOURCE)) {
     const raw = match[0].replace(/[.,;:]+$/, '');
+    if (raw.includes('\\')) {
+      found.add(`${safeShape(raw)} — URL nese zpětné lomítko, host se z ní nedá určit`);
+      continue;
+    }
     let url;
     try {
       url = new URL(raw);
     } catch {
-      found.add(`${raw.toLowerCase()} (nedá se rozparsovat jako URL)`);
+      found.add(`${safeShape(raw)} — nedá se rozparsovat jako URL`);
       continue;
     }
     // `hostname`, ne `host`: port do disclosure nepatří — `RULES.md` §2 se ptá,
@@ -401,10 +472,12 @@ export function credentialUrlsIn(source) {
     try {
       url = new URL(raw);
     } catch {
+      // Nerozparsovatelnou URL hlásí `hostsIn`, a hlásí ji bez cesty a query.
+      // Kdyby se sem dopisoval druhý výpis, byl by to druhý průsak téhož údaje.
       continue;
     }
     if (!url.username && !url.password) continue;
-    found.add(`${url.protocol}//***@${url.hostname.toLowerCase()}${url.pathname}`);
+    found.add(`${url.protocol}//***@${url.hostname.toLowerCase()}/…`);
   }
   return found;
 }
@@ -419,12 +492,17 @@ export function credentialUrlsIn(source) {
  *
  * Netrackované soubory se berou taky: `git add -A` je tam za chvíli dostane.
  */
-function scanCode(extract) {
-  const hits = new Map();
-  const record = (shown, source) => {
-    for (const value of extract(source)) if (!hits.has(value)) hits.set(value, shown);
-  };
+/**
+ * Zdroje se čtou **jednou pro všechny extraktory**. Tři nezávislé průchody
+ * znamenaly tři `git show` na každý soubor a hook se tím prodloužil z 13 na 21
+ * sekund — a hlavička hooku sama píše, že jediná cesta kolem je `--no-verify`,
+ * která vypne obě brány. Latence tlačí právě tam, takže je to součást brány.
+ */
+let sourceCache = null;
 
+function loadSources() {
+  if (sourceCache) return sourceCache;
+  sourceCache = [];
   for (const shown of codePaths()) {
     let source;
     try {
@@ -434,7 +512,15 @@ function scanCode(extract) {
       // hlásit „žádný neznámý host" nad kódem, který nikdo nečetl.
       throw new Error(`${shown} se nepodařilo přečíst — kontrola by nad ním tvrdila nepravdu`);
     }
-    record(shown, source);
+    sourceCache.push([shown, source]);
+  }
+  return sourceCache;
+}
+
+function scanCode(extract) {
+  const hits = new Map();
+  for (const [shown, source] of loadSources()) {
+    for (const value of extract(source)) if (!hits.has(value)) hits.set(value, shown);
   }
   return hits;
 }

