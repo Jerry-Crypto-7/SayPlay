@@ -143,6 +143,72 @@ function trackedPaths() {
   return trackedCache;
 }
 
+/**
+ * Je cesta v tom zdroji, který brána certifikuje? V režimu `index` rozhoduje
+ * **výhradně index** — dokud se přítomnost testovala jako „index NEBO disk",
+ * stačilo `git rm --cached disclosure.json DISCLOSURE.md` a obě kontroly si
+ * soubory přečetly z disku a prošly, zatímco commit celý registr smazal.
+ *
+ * Fallback na disk zůstává jen tam, kde index neexistuje: `--sync` (disk právě
+ * přepsal) a strom mimo git repozitář.
+ */
+function presentInSource(path) {
+  const tracked = sourceMode === 'index' ? trackedPaths() : null;
+  if (tracked) return tracked.has(path);
+  return existsSync(join(REPO, path));
+}
+
+/**
+ * Odkud brána četla. Tiskne se, protože pád na disk je **slabší tvrzení** než
+ * čtení indexu — a do teď se děl mlčky: jakákoli chyba gitu v `trackedPaths()`
+ * vrátí `null` a všechny kontroly se tiše přepnou na pracovní strom. Běh, který
+ * o tom nic neřekne, vypadá stejně jako běh, který certifikoval index.
+ */
+function sourceReport() {
+  if (sourceMode === 'disk') return 'disk — `--sync` právě přepsal strom, kontroly čtou jeho výsledek';
+  const tracked = trackedPaths();
+  if (tracked) return `index — ${tracked.size} trackovaných cest, certifikuje se to, co půjde do commitu`;
+  return 'disk — git neodpověděl, index se nedal přečíst (mimo repozitář, nebo rozbitý git)';
+}
+
+/**
+ * Které z předložených cest `.gitignore` vylučuje. Bez tohohle filtru se
+ * ignorovaný `scripts/.tmp-review.mjs` nebo vygenerovaný `public/sw.js` počítá
+ * jako artefakt k odevzdání a **blokuje každý commit**, dokud ho někdo nesmaže
+ * — a dokumentovaná úniková cesta `--no-verify` vypne obě brány najednou.
+ *
+ * `check-ignore` se **dívá do indexu**, takže trackovaná cesta se mezi nálezy
+ * neobjeví ani tehdy, když na její vzor `.gitignore` sedí (`git add -f`). Tím
+ * z filtru nemůže vypadnout soubor, který je v commitu.
+ *
+ * **Exit 1 a selhání gitu se tu vědomě nerozlišují** a je to naměřené, ne
+ * přehlédnuté: exit 1 znamená „žádná cesta není ignorovaná", tedy prázdná
+ * množina, a filtrovat prázdnou množinou je totéž jako nefiltrovat. Obě větve
+ * proto vracejí `null`. Rozlišení, které nikde nic nezmění, je dekorace — a
+ * dekorace v bráně je horší než její absence, protože vypadá jako pojistka.
+ */
+function ignoredAmong(paths) {
+  if (paths.length === 0) return null;
+  try {
+    const listing = execFileSync('git', ['--no-replace-objects', 'check-ignore', '-z', '--stdin'], {
+      cwd: REPO,
+      input: paths.join('\0'),
+      encoding: 'utf8',
+      maxBuffer: 256 * 1024 * 1024,
+    });
+    return new Set(listing.split('\0').filter(Boolean));
+  } catch {
+    return null;
+  }
+}
+
+/** Chůze po disku bez toho, co `.gitignore` vylučuje. */
+function notIgnored(paths) {
+  const ignored = ignoredAmong(paths);
+  if (!ignored) return paths;
+  return paths.filter((path) => !ignored.has(path));
+}
+
 /** Obsah cesty tak, jak půjde do commitu. Netrackovaná cesta se čte z disku. */
 function readTracked(path) {
   const tracked = sourceMode === 'index' ? trackedPaths() : null;
@@ -159,9 +225,14 @@ function readJson(path) {
 }
 
 function loadRegistry() {
-  const tracked = sourceMode === 'index' ? trackedPaths() : null;
-  const present = tracked?.has(REGISTRY_FILE) || existsSync(join(REPO, REGISTRY_FILE));
-  if (!present) return { error: `${REGISTRY_FILE} chybí — spusť \`--sync\`` };
+  if (!presentInSource(REGISTRY_FILE)) {
+    return {
+      error:
+        sourceMode === 'index' && trackedPaths()
+          ? `${REGISTRY_FILE} není v indexu — commit by registr smazal (spusť \`--sync\` a stagene ho)`
+          : `${REGISTRY_FILE} chybí — spusť \`--sync\``,
+    };
+  }
   try {
     const parsed = readJson(REGISTRY_FILE);
     if (!Array.isArray(parsed.entries)) return { error: `${REGISTRY_FILE} nemá pole "entries"` };
@@ -217,7 +288,7 @@ function walkAssets() {
     }
   };
   walk(root);
-  return out;
+  return notIgnored(out);
 }
 
 /**
@@ -679,6 +750,7 @@ function codePaths() {
   const tracked = sourceMode === 'index' ? trackedPaths() : null;
   if (tracked) for (const shown of tracked) if (wanted(shown)) paths.add(shown);
 
+  const onDisk = [];
   const walk = (dir) => {
     if (!existsSync(dir)) return;
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -688,10 +760,11 @@ function codePaths() {
         continue;
       }
       if (!CODE_FILE.test(entry.name) || TEST_FILE.test(entry.name)) continue;
-      paths.add(relative(REPO, full).split(sep).join(posix.sep));
+      onDisk.push(relative(REPO, full).split(sep).join(posix.sep));
     }
   };
   for (const root of CODE_ROOTS) walk(join(REPO, root));
+  for (const shown of notIgnored(onDisk)) paths.add(shown);
   return [...paths].sort((a, b) => a.localeCompare(b));
 }
 
@@ -1016,9 +1089,10 @@ check(7, 'každý model jmenovaný v kódu má v registru položku kind: model',
 
 check(6, 'DISCLOSURE.md odpovídá registru', ({ registry }) => {
   if (registry.error) return registry.error;
-  const tracked = sourceMode === 'index' ? trackedPaths() : null;
-  if (!tracked?.has(RENDERED_FILE) && !existsSync(join(REPO, RENDERED_FILE))) {
-    return `${RENDERED_FILE} chybí — spusť \`--sync\``;
+  if (!presentInSource(RENDERED_FILE)) {
+    return sourceMode === 'index' && trackedPaths()
+      ? `${RENDERED_FILE} není v indexu — commit by veřejný výpis smazal (spusť \`--sync\` a stagene ho)`
+      : `${RENDERED_FILE} chybí — spusť \`--sync\``;
   }
   const committed = readTracked(RENDERED_FILE);
   const expected = renderDisclosure(registry.entries);
@@ -1108,7 +1182,8 @@ function main(argv) {
   const context = { registry: loadRegistry() };
   let failed = 0;
 
-  console.log('license-gate — RULES.md §2 disclosure, §4 kontrola před npm install\n');
+  console.log('license-gate — RULES.md §2 disclosure, §4 kontrola před npm install');
+  console.log(`zdroj: ${sourceReport()}\n`);
   for (const { id, title, run } of checks) {
     let detail;
     try {

@@ -228,6 +228,119 @@ describe('license-gate: certifikuje se index, ne disk', () => {
     expect(failedChecks(out)).toEqual([6]);
     expect(code).toBe(1);
   });
+
+  /**
+   * `git rm --cached` je ta tichá cesta ven: soubor zůstane na disku, zmizí
+   * z indexu, a dokud se přítomnost testovala jako „index NEBO disk", brána si
+   * ho přečetla z disku a prošla — zatímco commit registr smazal.
+   */
+  it('registr odstagenutý z indexu je SELHÁNÍ, i když na disku pořád leží', () => {
+    const dir = stagedGreenRepo();
+    execFileSync('git', ['rm', '--cached', 'disclosure.json'], { cwd: dir, stdio: 'ignore' });
+    expect(existsSync(join(dir, 'disclosure.json'))).toBe(true);
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(out).toContain('disclosure.json není v indexu');
+    expect(code).toBe(1);
+  });
+
+  it('DISCLOSURE.md odstagenutý z indexu shodí kontrolu 6, ne nic jiného', () => {
+    const dir = stagedGreenRepo();
+    execFileSync('git', ['rm', '--cached', 'DISCLOSURE.md'], { cwd: dir, stdio: 'ignore' });
+    expect(existsSync(join(dir, 'DISCLOSURE.md'))).toBe(true);
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([6]);
+    expect(out).toContain('DISCLOSURE.md není v indexu');
+    expect(code).toBe(1);
+  });
+
+  /**
+   * Pád na disk je slabší tvrzení než čtení indexu a do teď se děl mlčky.
+   * Běh, který o zdroji nic neřekne, vypadá stejně jako běh, který certifikoval
+   * index — tak se pozná jen podle toho, co zrovna nespadlo.
+   */
+  it('běh vypíše, ze kterého zdroje četl', () => {
+    const dir = stagedGreenRepo();
+    expect(run(LICENSE_GATE, dir).out).toMatch(/^zdroj: index —/m);
+  });
+
+  it('mimo git repozitář se přizná pád na disk', () => {
+    const dir = makeGreenRepo();
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(out).toMatch(/^zdroj: disk — git neodpověděl/m);
+    expect(code).toBe(0);
+  });
+});
+
+/**
+ * Ignorovaná cesta se nesmí počítat jako artefakt k odevzdání. Blokovala by
+ * každý commit, dokud ji někdo nesmaže — a dokumentovaná úniková cesta
+ * `--no-verify` vypne clean-room bránu vedle ní.
+ */
+describe('license-gate: chůze po disku respektuje .gitignore', () => {
+  function ignoreRepo(patterns: string): string {
+    const dir = makeGreenRepo();
+    execFileSync('git', ['init', '-b', 'main'], { cwd: dir, stdio: 'ignore' });
+    write(dir, '.gitignore', `node_modules/\n${patterns}`);
+    execFileSync('git', ['add', '-A'], { cwd: dir, stdio: 'ignore' });
+    return dir;
+  }
+
+  it('ignorovaný zdroják s nedeklarovaným hostem bránu NEshodí', () => {
+    const dir = ignoreRepo('src/.tmp-review.mjs\n');
+    write(dir, 'src/.tmp-review.mjs', "export const url = 'https://neregistrovany-host.io/collect';\n");
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([]);
+    expect(code).toBe(0);
+  });
+
+  it('týž soubor trackovaný bránu shodí — filtr se nesmí stát dírou', () => {
+    const dir = ignoreRepo('src/.tmp-review.mjs\n');
+    write(dir, 'src/.tmp-review.mjs', "export const url = 'https://neregistrovany-host.io/collect';\n");
+    execFileSync('git', ['add', '-f', 'src/.tmp-review.mjs'], { cwd: dir, stdio: 'ignore' });
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('neregistrovany-host.io');
+    expect(code).toBe(1);
+  });
+
+  it('ignorovaný vygenerovaný asset se nepočítá do public/', () => {
+    const dir = ignoreRepo('public/sw.js\n');
+    write(dir, 'public/sw.js', '// vygenerovaný service worker\n');
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([]);
+    expect(code).toBe(0);
+  });
+
+  /**
+   * `check-ignore` se dívá do indexu, takže `git add -f` na ignorovanou cestu ji
+   * z nálezů vyndá. Při běžném běhu je to jen pás k šlím — trackovanou půlku
+   * `listAssets()` bere z indexu tak jako tak. **Při `--sync` index nečte nikdo**,
+   * takže tady je to jediné, co drží force-addnutý soubor v dohledu.
+   */
+  it('force-addnutý asset zůstává v dohledu i při --sync, kde ho index nekryje', () => {
+    const dir = ignoreRepo('public/sw.js\n');
+    write(dir, 'public/sw.js', '// vygenerovaný service worker\n');
+    execFileSync('git', ['add', '-f', 'public/sw.js'], { cwd: dir, stdio: 'ignore' });
+
+    const { code, out } = run(LICENSE_GATE, dir, ['--sync']);
+    expect(failedChecks(out)).toEqual([4]);
+    expect(out).toContain('public/sw.js');
+    expect(code).toBe(1);
+  });
+
+  it('neignorovaný asset v public/ kontrolu 4 pořád shodí', () => {
+    const dir = ignoreRepo('public/sw.js\n');
+    write(dir, 'public/cizi-hdri.hdr', 'binární data\n');
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([4]);
+    expect(code).toBe(1);
+  });
 });
 
 describe('license-gate: licenci assetu nelze odvodit z cesty', () => {
