@@ -7,4 +7,15 @@
 # Po prvním pushi se prozrazení autora zpětně nespraví, proto se push
 # nedokončí, dokud kontrola neprojde. Vynutit se dá `--no-verify`, což je
 # vědomé rozhodnutí, ne omyl.
-exec node scripts/blind-check.mjs
+#
+# `"$@"` je celý smysl tohohle řádku: git sem podává jméno cíle ($1) a jeho
+# adresu ($2), a `git push https://github.com/<jméno>/x.git HEAD` je adresa,
+# kterou žádný nastavený remote nezná. Bez těch dvou argumentů by kontrola
+# soudila remote, na který se nepushuje. `exec` navíc nechává stdin průchozí,
+# takže skript vidí i řádky s refy, které git posílá na vstup.
+#
+# Proměnná říká skriptu, že běží jako hook — podle ní pozná, že chybějící
+# adresa je selhání, ne ruční spuštění.
+BLIND_CHECK_HOOK=pre-push
+export BLIND_CHECK_HOOK
+exec node scripts/blind-check.mjs "$@"

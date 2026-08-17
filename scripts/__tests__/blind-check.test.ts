@@ -10,7 +10,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -82,14 +82,34 @@ function makeRepo(fixture: Fixture = {}): string {
   return dir;
 }
 
-function blindCheck(cwd: string, env: Record<string, string> = {}): { code: number; out: string } {
+function blindCheck(
+  cwd: string,
+  env: Record<string, string> = {},
+  args: string[] = [],
+): { code: number; out: string } {
   try {
-    const out = execFileSync(process.execPath, [SCRIPT], { cwd, encoding: 'utf8', env: { ...process.env, ...env } });
+    const out = execFileSync(process.execPath, [SCRIPT, ...args], {
+      cwd,
+      encoding: 'utf8',
+      env: { ...process.env, ...env },
+    });
     return { code: 0, out };
   } catch (error) {
     const failure = error as { status?: number; stdout?: string; stderr?: string };
     return { code: failure.status ?? -1, out: `${failure.stdout ?? ''}${failure.stderr ?? ''}` };
   }
+}
+
+/**
+ * Spustí skript tak, jak ho spouští `pre-push`: s proměnnou režimu a s dvojicí
+ * argumentů, kterou git hooku podává (jméno cíle, adresa cíle).
+ *
+ * Adresa se předává **zvlášť od nastaveného remote** — celý smysl kontroly 5 je,
+ * že tyhle dvě věci nemusí být totéž.
+ */
+function pushHook(cwd: string, target: string | null): { code: number; out: string } {
+  const args = target === null ? [] : ['origin', target];
+  return blindCheck(cwd, { BLIND_CHECK_HOOK: 'pre-push' }, args);
 }
 
 /** Vrátí id kontrol, které v tom výstupu selhaly. */
@@ -108,11 +128,27 @@ afterAll(() => {
 });
 
 describe('blind-check propustí čistý repozitář', () => {
-  it('vrátí 0 a všech šest kontrol projde', () => {
-    const result = blindCheck(makeRepo());
-    expect(result.out).toContain('Všech 6 kontrol prošlo');
+  it('z hooku vrátí 0 a proběhne všech šest kontrol', () => {
+    const result = pushHook(makeRepo(), `https://github.com/${ACCOUNT}/world.git`);
+    expect(result.out).toContain('6 z 6 kontrol prošlo');
+    expect(result.out).not.toContain('SKIP');
     expect(failedChecks(result.out)).toEqual([]);
     expect(result.code).toBe(0);
+  });
+
+  /**
+   * Ruční běh zůstává použitelný — jinak by si ho nikdo nespustil a brána by
+   * existovala jen v okamžiku pushe. Cíl pushe ale ručně znát nejde, takže se
+   * kontrola 5 přeskočí a **shrnutí to musí říct**: „všech 6 prošlo" nad během,
+   * kde jedna kontrola neběžela, je přesně to tvrzení, na které se někdo spolehne.
+   */
+  it('ručně spuštěný vrátí 0, ale kontrolu cíle přeskočí a napíše to', () => {
+    const result = blindCheck(makeRepo());
+    expect(result.code).toBe(0);
+    expect(failedChecks(result.out)).toEqual([]);
+    expect(result.out).toContain('SKIP  [5]');
+    expect(result.out).toContain('5 z 6 kontrol prošlo');
+    expect(result.out).toContain('1 přeskočeno');
   });
 });
 
@@ -285,7 +321,7 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
   it('[5] skutečné jméno autora v adrese, organizátor nikde', () => {
     // `identityTokens` z configu, ne jen PUBLIC_TOKENS: účet sedí, jméno
     // organizátora v URL není, a jméno autora přesto jde ven.
-    const result = blindCheck(makeRepo({ remote: `https://github.com/${ACCOUNT}/johndoe-hackathon.git` }));
+    const result = pushHook(makeRepo(), `https://github.com/${ACCOUNT}/johndoe-hackathon.git`);
     expect(result.code).toBe(1);
     expect(failedChecks(result.out)).toEqual([5]);
   });
@@ -293,7 +329,7 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
   it('[5] token v NÁZVU repozitáře, účet přitom správný', () => {
     // Adresu dostane hodnotitel dřív než obsah, a strom o svém vlastním URL nic
     // neví — kontrola 3 ho proto najít nemůže.
-    const result = blindCheck(makeRepo({ remote: `https://github.com/${ACCOUNT}/Hackathon-AcmeCorp.git` }));
+    const result = pushHook(makeRepo(), `https://github.com/${ACCOUNT}/Hackathon-AcmeCorp.git`);
     expect(result.code).toBe(1);
     expect(failedChecks(result.out)).toEqual([5]);
   });
@@ -307,16 +343,49 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
     expect(failedChecks(result.out)).toEqual([4]);
   });
 
-  it('[5] remote míří na jiný účet', () => {
-    const result = blindCheck(makeRepo({ remote: 'https://github.com/real-name/world.git' }));
+  it('[5] cíl pushe míří na jiný účet', () => {
+    const result = pushHook(makeRepo(), 'https://github.com/real-name/world.git');
     expect(result.code).toBe(1);
     expect(failedChecks(result.out)).toEqual([5]);
   });
 
-  it('[5] repozitář bez remote se neprohlásí za v pořádku', () => {
-    const result = blindCheck(makeRepo({ remote: null }));
+  /**
+   * Tohle je ten nález celý: `git push https://github.com/<jméno>/x.git HEAD`.
+   * Nastavený remote je čistý a zůstává čistý — kontrola, která čte `git remote -v`,
+   * tady projde a push jde ven pod adresou se skutečným jménem.
+   */
+  it('[5] podvržená adresa v argv projde, i když nastavený remote je čistý', () => {
+    const dir = makeRepo({ remote: `https://github.com/${ACCOUNT}/world.git` });
+    const result = pushHook(dir, 'https://github.com/johndoe/worldsmith.git');
     expect(result.code).toBe(1);
     expect(failedChecks(result.out)).toEqual([5]);
+    expect(result.out).toContain('johndoe/worldsmith.git');
+  });
+
+  /**
+   * Fail-closed. Hook, který argumenty zahodí, je rozbitý hook — a mlčení by
+   * znamenalo push bez jediné kontroly cíle. Rozhoduje prostředí, ne počet
+   * argumentů, takže tenhle běh nesmí spadnout do „ruční spuštění, přeskočit".
+   */
+  it('[5] hook bez předané adresy selže, nepřeskočí se', () => {
+    const result = pushHook(makeRepo(), null);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([5]);
+    expect(result.out).not.toContain('SKIP');
+    expect(result.out).toContain('hook nepředal adresu');
+  });
+
+  /**
+   * Nastavený remote už se nesoudí vůbec — kontrola má právě jeden vstup, a to
+   * ten od gitu. Bez tohohle případu by prošla i implementace, která k adrese
+   * přidá `git remote -v` „pro jistotu", a ta by hlásila cizí remote, na který
+   * se nepushuje. Falešný nález v hooku = `--no-verify`, tedy obě brány pryč.
+   */
+  it('[5] špinavý NASTAVENÝ remote nález nedělá, když se pushuje jinam', () => {
+    const dir = makeRepo({ remote: 'https://github.com/johndoe/soukromy-fork.git' });
+    const result = pushHook(dir, `https://github.com/${ACCOUNT}/world.git`);
+    expect(result.code).toBe(0);
+    expect(failedChecks(result.out)).toEqual([]);
   });
 
   // Kontrola 6 přibyla s T18: repozitář od té chvíle poprvé sousedí se
@@ -399,5 +468,27 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
     const result = blindCheck(makeRepo({ extraFile: { name: 'config.ts', body: `const key = '${shaped}';\n` } }));
     expect(result.code).toBe(1);
     expect(failedChecks(result.out)).toEqual([6]);
+  });
+});
+
+/**
+ * Kontrola 5 je jen tak silná, jak silné je její napojení: adresu jí může podat
+ * výhradně hook. Testy výš dokazují, co skript s podanou adresou udělá — tenhle
+ * dokazuje, že mu ji hook vůbec podá.
+ *
+ * **Co tenhle test nedokazuje:** že sh ten řádek opravdu provede. Skutečný push
+ * se otestovat nedá — každá adresa, na kterou by šel poslat, kontrolou 5 padá,
+ * takže by běh dopadl stejně i s rozbitým hookem a test by neměřil nic.
+ */
+describe('pre-push hook napojí kontrolu na cíl, který mu podal git', () => {
+  const hook = readFileSync(join(process.cwd(), '.githooks', 'pre-push'), 'utf8');
+
+  it('předá skriptu své argumenty', () => {
+    expect(hook).toMatch(/node scripts\/blind-check\.mjs "\$@"/);
+  });
+
+  it('označí běh jako hook, aby chybějící adresa byla selhání', () => {
+    expect(hook).toMatch(/BLIND_CHECK_HOOK=pre-push/);
+    expect(hook).toMatch(/export BLIND_CHECK_HOOK/);
   });
 });

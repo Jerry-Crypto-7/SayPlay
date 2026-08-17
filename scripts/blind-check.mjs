@@ -7,7 +7,12 @@
  * historie je veřejná a přepis zanechá viditelnou stopu. Tenhle skript je
  * proto brána, ne úklid, a běží v `pre-push` hooku (`.githooks/pre-push`).
  *
- * Skončí `0`, když projde všech šest kontrol, jinak `1`.
+ * Skončí `0`, když neselže žádná kontrola, jinak `1`.
+ *
+ * **Dva režimy.** Z hooku (`BLIND_CHECK_HOOK` nastavená, argumenty od gitu)
+ * běží všech šest kontrol včetně cíle pushe. Ručně spuštěný skript cíl pushe
+ * nezná, takže kontrola 5 se přeskočí a napíše to — zbylých pět je pořád
+ * užitečná odpověď na „je repozitář čistý".
  *
  * **Skript sám je veřejný, takže v něm nesmí stát skutečné jméno autora.**
  * Zakázané tokeny pro identitu se proto čtou z `blind-check.config.json`,
@@ -24,6 +29,26 @@ const CONFIG_FILE = 'blind-check.config.json';
 
 /** Tyhle dva se nekonfigurují — vypnout je by znamenalo vypnout smysl kontroly 3. */
 const PUBLIC_TOKENS = ['acmecorp', 'acme'];
+
+/**
+ * Běží skript jako `pre-push` hook, nebo ho někdo spustil rukou?
+ *
+ * Rozhoduje **prostředí, ne přítomnost argumentů**. Kdyby se hookem rozumělo
+ * „přišel aspoň jeden argument", stačilo by hook rozbít tak, aby argumenty
+ * zahodil, a kontrola cíle by se tiše proměnila v ruční běh, který nekontroluje
+ * nic. Takhle je chybějící adresa uvnitř hooku selhání.
+ */
+const HOOK_MODE = Boolean(process.env.BLIND_CHECK_HOOK);
+
+/**
+ * `$2` z `pre-push`: adresa, na kterou git skutečně pushuje. Honoruje i
+ * `remote.<jméno>.pushurl`, takže je to přesnější zdroj než `git remote -v`.
+ * `$1` je jen lokální jméno remote a ven nejde, proto se nesoudí.
+ */
+const PUSH_TARGET = (process.argv[3] ?? '').trim();
+
+/** Kontrola, která v tomhle režimu nemá co měřit. Není to PASS ani FAIL. */
+const skip = (reason) => ({ skipped: reason });
 
 /**
  * `--no-replace-objects` na KAŽDÉM volání, jako pre-subcommand flag.
@@ -251,22 +276,28 @@ check(4, 'SECURITY-FINDINGS.md never entered history', () => {
   return `soubor je v ${hits.split('\n').length} commitech, mazání ho z historie neodstraní`;
 });
 
-check(5, 'every remote points at the anonymous account', (config) => {
+check(5, 'push target points at the anonymous account', (config) => {
+  // Ruční spuštění cíl pushe nezná a vymyslet si ho nesmí. `git remote -v` tu
+  // dřív stál jako náhrada a byl to průchod: `git push https://github.com/
+  // <skutečné-jméno>/x.git HEAD` prohlédne nastavený čistý remote, projde, a
+  // push jde ven pod adresou se jménem. Soudí se výhradně to, co podal git.
+  if (!HOOK_MODE) {
+    return skip('spuštěno ručně, ne z hooku — cíl pushe zná jen git a nedá se odhadnout');
+  }
   if (config.error) return config.error;
   if (!config.account) return `${CONFIG_FILE} neuvádí "account", není proti čemu porovnat`;
 
-  const lines = git(['remote', '-v'], { allowFail: true })
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean);
-  if (lines.length === 0) return 'repozitář nemá remote, cíl pushe se ověřit nedá';
+  // Fail-closed: hook běží, ale adresu nepodal. To je rozbitý hook, ne čistý
+  // repozitář — a mlčení by tady znamenalo push bez jediné kontroly cíle.
+  if (!PUSH_TARGET) {
+    return 'hook nepředal adresu cíle (`$2`), cíl pushe se ověřit nedá';
+  }
 
+  const url = PUSH_TARGET.toLowerCase();
   const expected = config.account.toLowerCase();
-  const wrong = lines.filter((line) => {
-    const url = (line.split(/\s+/)[1] ?? '').toLowerCase();
-    return !(url.includes(`github.com/${expected}/`) || url.includes(`github.com:${expected}/`));
-  });
-  if (wrong.length) return `remote nemíří na očekávaný účet: ${wrong[0]}`;
+  if (!(url.includes(`github.com/${expected}/`) || url.includes(`github.com:${expected}/`))) {
+    return `cíl pushe nemíří na očekávaný účet: ${PUSH_TARGET}`;
+  }
 
   // Účet je jen půlka adresy. Jméno repozitáře je ta druhá a jde ven se stejnou
   // jistotou — hodnotitel dostane URL dřív než obsah. Kontrola 3 čte strom, takže
@@ -276,11 +307,8 @@ check(5, 'every remote points at the anonymous account', (config) => {
   // `PUBLIC_TOKENS` nechá projít `github.com/<správný-účet>/<jméno-autora>-hra.git`:
   // účet sedí, jméno organizátora tam není, a jméno autora přesto jde ven.
   const tokens = [...PUBLIC_TOKENS, ...config.identityTokens].filter(Boolean);
-  const named = lines.filter((line) => {
-    const url = (line.split(/\s+/)[1] ?? '').toLowerCase();
-    return tokens.some((token) => url.includes(token.toLowerCase()));
-  });
-  return named.length ? `adresa remote sama nese zakázaný token: ${named[0]}` : null;
+  const named = tokens.filter((token) => url.includes(token.toLowerCase()));
+  return named.length ? `adresa cíle sama nese zakázaný token: ${PUSH_TARGET}` : null;
 });
 
 /**
@@ -337,6 +365,7 @@ check(6, 'no credentials or raw run artefacts entered history', () => {
 
 const config = loadConfig();
 let failed = 0;
+let skipped = 0;
 
 console.log('blind-check — RULES.md §6, kontrola před nahráním\n');
 for (const { id, title, run } of checks) {
@@ -346,7 +375,10 @@ for (const { id, title, run } of checks) {
   } catch (error) {
     detail = `kontrola spadla: ${error.message}`;
   }
-  if (detail) {
+  if (detail && detail.skipped) {
+    skipped += 1;
+    console.log(`SKIP  [${id}] ${title}\n        ${detail.skipped}`);
+  } else if (detail) {
     failed += 1;
     console.log(`FAIL  [${id}] ${title}\n        ${detail}`);
   } else {
@@ -356,9 +388,14 @@ for (const { id, title, run } of checks) {
 
 // Počet se bere z `checks`, ne z konstanty: zapsané číslo se při přidání
 // kontroly rozejde se skutečností a hláška pak lže o rozsahu brány.
+//
+// Přeskočené se jmenují v obou větvích. „Všech 6 kontrol prošlo" nad během,
+// kde jedna z nich vůbec neběžela, je přesně to tvrzení, kvůli kterému se na
+// bránu někdo spolehne.
+const scope = skipped ? ` (${skipped} přeskočeno, neběžela nad tímhle během)` : '';
 console.log(
   failed === 0
-    ? `\nVšech ${checks.length} kontrol prošlo — push je z hlediska slepého hodnocení v pořádku.`
-    : `\n${failed} z ${checks.length} kontrol selhalo. Push se NEPROVEDE.`,
+    ? `\n${checks.length - skipped} z ${checks.length} kontrol prošlo${scope} — push je z hlediska slepého hodnocení v pořádku.`
+    : `\n${failed} z ${checks.length} kontrol selhalo${scope}. Push se NEPROVEDE.`,
 );
 process.exit(failed === 0 ? 0 : 1);
