@@ -32,6 +32,12 @@ interface Fixture {
   readonly extraFile?: { readonly name: string; readonly body: string };
   /** URL remote; `null` znamená žádný remote. */
   readonly remote?: string | null;
+  /** Zakázané tokeny identity v configu. Default je jeden dlouhý (`johndoe`). */
+  readonly identityTokens?: readonly string[];
+  /** Config vůbec nevznikne — brána nemá proti čemu identitu hledat. */
+  readonly noConfig?: boolean;
+  /** Obsah `README.md`; jinak neutrální text bez jakéhokoli jména. */
+  readonly readme?: string;
 }
 
 // `Record<string, string>`, ne `NodeJS.ProcessEnv` — ten je v tomhle projektu
@@ -47,12 +53,14 @@ function makeRepo(fixture: Fixture = {}): string {
   run(dir, ['init', '-b', 'main']);
   // Config skriptu je v `.gitignore`, přesně jako v ostrém repu.
   writeFileSync(join(dir, '.gitignore'), 'blind-check.config.json\n', 'utf8');
-  writeFileSync(
-    join(dir, 'blind-check.config.json'),
-    JSON.stringify({ account: ACCOUNT, identityTokens: ['johndoe'] }),
-    'utf8',
-  );
-  writeFileSync(join(dir, 'README.md'), '# world builder\n\nNic, co by jmenovalo autora.\n', 'utf8');
+  if (!fixture.noConfig) {
+    writeFileSync(
+      join(dir, 'blind-check.config.json'),
+      JSON.stringify({ account: ACCOUNT, identityTokens: fixture.identityTokens ?? ['johndoe'] }),
+      'utf8',
+    );
+  }
+  writeFileSync(join(dir, 'README.md'), fixture.readme ?? '# world builder\n\nNic, co by jmenovalo autora.\n', 'utf8');
   if (fixture.extraFile) {
     // Jméno smí být cesta (`evals/live/RUN/responses/C01.json`) — kontrola 6 se
     // ptá právě na trackované soubory pod konkrétním adresářem.
@@ -468,6 +476,126 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
     const result = blindCheck(makeRepo({ extraFile: { name: 'config.ts', body: `const key = '${shaped}';\n` } }));
     expect(result.code).toBe(1);
     expect(failedChecks(result.out)).toEqual([6]);
+  });
+});
+
+/**
+ * Kontrola 3 hledala do 17. 8. 2026 v obsahu jen `acmecorp|acme`. Identitu autora
+ * kryla kontrola 1 (`%an`/`%ae`) a kontrola 5 (adresa remote) — **obsah nekryl
+ * nikdo**, takže commit se skutečným jménem v `README.md`, v `package.json` →
+ * `author` nebo v komentáři prošel všemi šesti kontrolami zeleně.
+ *
+ * Testy níž drží tři různá tvrzení a je potřeba mít je oddělená: že se jméno
+ * hledá **v celé historii**, že se **krátký token nehledá jako podřetězec**
+ * (jinak by brána hlásila nález pořád a někdo by ji vypnul), a že se nalezené
+ * jméno **nedostane do výpisu**.
+ */
+describe('kontrola 3 hledá i skutečné jméno autora, ne jen jméno organizátora', () => {
+  it('[3] jméno autora v README.md', () => {
+    const dir = makeRepo({ readme: '# world builder\n\nAutor: johndoe\n' });
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([3]);
+    expect(result.out).toContain('nese jméno autora');
+  });
+
+  /**
+   * **Výpis brány je sám kanál úniku.** Nález se hlásí cestou (`git grep -l`),
+   * nikdy nalezeným řádkem — ten řádek je právě to jméno, které se schovává, a
+   * výstup jde do terminálu, do logu hooku a do artefaktu, který si někdo
+   * rozbalí. Kontrola, která svůj nález vytiskne, ho tím zveřejní.
+   */
+  it('[3] nález jméno nevypíše, hlásí jen cestu', () => {
+    const dir = makeRepo({ readme: '# world builder\n\nAutor: johndoe\n' });
+    const result = blindCheck(dir);
+    expect(failedChecks(result.out)).toEqual([3]);
+    expect(result.out).not.toContain('johndoe');
+    expect(result.out).toContain('README.md');
+  });
+
+  it('[3] jméno jen v rodičovském commitu, HEAD čistý', () => {
+    // Push nahrává historii, ne snímek. Přesně tenhle tvar leží v ostrém repu:
+    // soubor přidaný jedním commitem a smazaný druhým. Šest kontrol ho nevidělo.
+    const dir = makeRepo({ extraFile: { name: 'diag.test.ts', body: '// fixture: johndoe\n' } });
+    run(dir, ['rm', 'diag.test.ts']);
+    run(dir, [...CLEAN_AUTHOR, 'commit', '-m', 'chore: drop the throwaway diagnostic test']);
+
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([3]);
+    expect(result.out).not.toContain('johndoe');
+  });
+
+  /**
+   * Výjimka pro `scripts/blind-check.mjs` a jeho test platí jen na jméno
+   * organizátora — ty tokeny mít MUSÍ, hledá je. Skutečné jméno autora v nich
+   * nemá co dělat, a kdyby ho neslo, je to nález jako každý jiný.
+   */
+  it('[3] jméno autora ve vlastním skriptu brány je nález taky', () => {
+    const dir = makeRepo({ extraFile: { name: 'scripts/blind-check.mjs', body: '// johndoe\n' } });
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([3]);
+  });
+
+  /**
+   * Naměřeno v ostrém repu: tříznakový token sedí jako podřetězec na 540 míst,
+   * jako celé slovo na 2. Brána, která hlásí 540 zásahů pokaždé, se přestane
+   * rozlišovat od skutečného úniku a někdo ji obejde `--no-verify` — což vypne
+   * i clean-room kontrolu vedle. Proto se krátký token hledá `git grep -w`.
+   */
+  it('[3] krátký token jako podřetězec uvnitř slova PROJDE', () => {
+    const dir = makeRepo({
+      identityTokens: ['zqx'],
+      extraFile: { name: 'notes.md', body: 'Slovo bezqxovy token neobsahuje samostatně.\n' },
+    });
+    const result = blindCheck(dir);
+    expect(result.code).toBe(0);
+    expect(failedChecks(result.out)).toEqual([]);
+  });
+
+  it('[3] týž krátký token jako celé slovo SPADNE', () => {
+    // Druhá polovina předchozího případu. Bez ní by prošla i implementace, která
+    // krátké tokeny přeskočí úplně — a to je kontrola, co nekontroluje nic.
+    const dir = makeRepo({
+      identityTokens: ['zqx'],
+      extraFile: { name: 'notes.md', body: 'Podepsáno: zqx, konec.\n' },
+    });
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([3]);
+  });
+
+  it('[3] hranice je pět znaků: pětiznakový token se hledá jako podřetězec', () => {
+    const dir = makeRepo({
+      identityTokens: ['zqxvw'],
+      extraFile: { name: 'notes.md', body: 'Slitý tvar bezqxvwovy.\n' },
+    });
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([3]);
+  });
+
+  it('[3] hranice je pět znaků: čtyřznakový už jen na hranici slova', () => {
+    const dir = makeRepo({
+      identityTokens: ['zqxv'],
+      extraFile: { name: 'notes.md', body: 'Slitý tvar bezqxvovy.\n' },
+    });
+    const result = blindCheck(dir);
+    expect(result.code).toBe(0);
+    expect(failedChecks(result.out)).toEqual([]);
+  });
+
+  /**
+   * Fail-closed. Bez configu se identita nedá hledat vůbec, a kontrola, která
+   * to mlčky vezme jako „nic jsem nenašla", je zelená nad polovinou nevykonané
+   * práce. Kontrola 1 padá ze stejného důvodu — proto se čeká přesně dvojice.
+   */
+  it('[3] bez configu selže, nemlčí', () => {
+    const result = blindCheck(makeRepo({ noConfig: true }));
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([1, 3]);
+    expect(result.out).toContain('blind-check.config.json chybí');
   });
 });
 

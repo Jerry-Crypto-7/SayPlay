@@ -31,6 +31,24 @@ const CONFIG_FILE = 'blind-check.config.json';
 const PUBLIC_TOKENS = ['acmecorp', 'acme'];
 
 /**
+ * **Od jaké délky se token hledá jako podřetězec.** Kratší se hledá na hranici
+ * slova (`git grep -w`). Pravidlo stojí tady, ne aby se odvozovalo z chování,
+ * protože bez něj se seznam tiše zúží — a zúžený seznam vypadá jako čistý repo.
+ *
+ * **Naměřeno 17. 8. 2026 nad celou historií** (139 revizí, jednotka je dvojice
+ * `revize:cesta`): `identityTokens` mají délky 9, 8, 7, 7, 5 a 3. Tříznakový
+ * token sedí jako **podřetězec na 540 míst**, jako **celé slovo na 2** — a ta
+ * dvě místa jsou tatáž, na kterých ho najdou i oba dlouhé tokeny, tedy skutečný
+ * nález. Brána, která hlásí 540 zásahů pokaždé, se přestane rozlišovat od
+ * úniku a někdo ji obejde `--no-verify` — což vypne i clean-room kontrolu vedle.
+ *
+ * **Co se tím vzdává, řečeno nahlas:** u tokenu kratšího než pět znaků projde
+ * slitý tvar (`<token>hackathon`). U delších ne — ty se pořád hledají jako
+ * podřetězec, takže `jmenoautora-hra.git` i `jmenoautora@x.io` jsou nález.
+ */
+const SUBSTRING_MIN_LEN = 5;
+
+/**
  * Běží skript jako `pre-push` hook, nebo ho někdo spustil rukou?
  *
  * Rozhoduje **prostředí, ne přítomnost argumentů**. Kdyby se hookem rozumělo
@@ -83,7 +101,7 @@ function git(args, { allowFail = false } = {}) {
  *    chybě. Slít obojí do prázdného řetězce znamená číst rozbitý běh jako čistý.
  *    Chyba se proto vyhazuje a hlásí jako selhání kontroly.
  */
-function grepHistory(patterns, pathspec, { extended = false } = {}) {
+function grepHistory(patterns, pathspec, { extended = false, word = false, namesOnly = false } = {}) {
   // BEZ `allowFail`. Prázdný výstup smí znamenat „repozitář nemá commity" jenom
   // tehdy, když git skončil nulou; rozbitý ref nebo chybějící objekt by se jinak
   // četl jako čistá historie — a to je právě ta tichá zelená, kterou tahle
@@ -112,7 +130,11 @@ function grepHistory(patterns, pathspec, { extended = false } = {}) {
   // odhadl, kolik toho musí z historie vyndat; číslo z jedné dávky by ho podhodnotilo.
   const hits = [];
   for (let start = 0; start < revisions.length; start += CHUNK) {
-    const args = ['grep', extended ? '-IinE' : '-Iin'];
+    // `-l` místo `-n`: u hledání identity se nesmí vypsat nalezený řádek. Ten
+    // řádek je právě to jméno, které se schovává, a výpis brány jde do
+    // terminálu, do logu hooku a do CI. Nález se hlásí cestou, ne obsahem.
+    const args = ['grep', `-I${namesOnly ? 'l' : 'n'}i${extended ? 'E' : ''}`];
+    if (word) args.push('-w');
     for (const pattern of patterns) args.push('-e', pattern);
     args.push(...revisions.slice(start, start + CHUNK), '--', ...pathspec);
 
@@ -242,7 +264,11 @@ check(2, 'repo-local identity overrides the global one', () => {
   return null;
 });
 
-check(3, 'committed content mentions neither AcmeCorp nor ACME', () => {
+check(3, 'committed content mentions neither AcmeCorp nor the real author', (config) => {
+  // Fail-closed: bez configu se identita nedá hledat vůbec. Mlčení by tady
+  // znamenalo zelenou nad kontrolou, která polovinu své práce neudělala.
+  if (config.error) return config.error;
+
   // Nad `HEAD`, ne nad pracovním stromem: nahrávají se commity. Interní podklady
   // (`plans/`, kořenové `*.md`, `.claude/`) jsou v `.gitignore`, takže trackované
   // nejsou a do commitu se nedostanou.
@@ -261,9 +287,41 @@ check(3, 'committed content mentions neither AcmeCorp nor ACME', () => {
     ':(exclude)scripts/blind-check.mjs',
     ':(exclude)scripts/__tests__/blind-check.test.ts',
   ]);
-  if (!output) return null;
-  const lines = output.split('\n');
-  return `${lines.length} zásahů v commitnuté historii, první: ${lines[0].slice(0, 160)}`;
+
+  /**
+   * **Jméno autora se hledá tady, ne jen v identitě commitu.** Kontrola 1 kryje
+   * `%an`/`%ae`, kontrola 5 adresu remote — obsah zůstal do 17. 8. 2026 na
+   * `acmecorp|acme`, takže commit se skutečným jménem v `README.md`, v
+   * `package.json` → `author` nebo v komentáři prošel všemi šesti kontrolami
+   * zeleně. **A neprošel hypoteticky:** první běh s touhle částí našel v historii
+   * dvě místa, která šest kontrol před ním nevidělo — soubor smazaný v `HEAD`,
+   * ale živý ve svém rodiči. Nad trackovaným stromem je zásahů pořád nula, takže
+   * hledat jen v `HEAD` by nenašlo nic a tvářilo se to jako čistý repozitář.
+   *
+   * Výjimky pro vlastní soubory se tu **nedělají**: skript ani jeho test skutečné
+   * jméno obsahovat nemají, a kdyby ho obsahovaly, je to nález.
+   */
+  const identity = (config.identityTokens ?? []).filter(Boolean);
+  const long = identity.filter((token) => token.length >= SUBSTRING_MIN_LEN);
+  const short = identity.filter((token) => token.length < SUBSTRING_MIN_LEN);
+  const identityHits = [
+    ...(long.length ? [grepHistory(long, ['.'], { namesOnly: true })] : []),
+    ...(short.length ? [grepHistory(short, ['.'], { namesOnly: true, word: true })] : []),
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  const problems = [];
+  if (output) {
+    const lines = output.split('\n');
+    problems.push(`${lines.length} zásahů jména organizátora v historii, první: ${lines[0].slice(0, 160)}`);
+  }
+  if (identityHits) {
+    // Jen `<revize>:<cesta>`, nikdy nalezený řádek — viz `namesOnly` v grepHistory.
+    const places = [...new Set(identityHits.split('\n').filter(Boolean))];
+    problems.push(`${places.length} míst v historii nese jméno autora, první: ${places[0]}`);
+  }
+  return problems.length ? problems.join('; ') : null;
 });
 
 check(4, 'SECURITY-FINDINGS.md never entered history', () => {
