@@ -1,5 +1,5 @@
 {
-  "$comment": "Generováno `node scripts/license-gate.mjs --sync`. library a asset se odvozují ze stromu; model, dataset a api se píšou ručně a sync je nechává být.",
+  "$comment": "Generováno `node scripts/license-gate.mjs --sync`. library se odvozuje z lockfilu; asset, model, dataset a api se píšou ručně a sync je nechává být.",
   "entries": [
     {
       "name": "@babel/runtime@7.29.7",

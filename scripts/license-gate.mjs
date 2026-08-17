@@ -62,10 +62,6 @@ function isManual(entry) {
   return !DERIVED_KINDS.includes(entry?.kind) || entry?.manual === true;
 }
 
-/** `left-pad@1.0.0` → `left-pad`, `@scope/pkg@2.0.0` → `@scope/pkg`. */
-function baseName(name) {
-  return String(name).replace(/@[^@]*$/, '');
-}
 
 const REQUIRED_FIELDS = ['name', 'kind', 'source', 'authorOrProvider', 'license', 'requiredNotices', 'attribution'];
 
@@ -1029,7 +1025,6 @@ check(3, 'registr sedí na package-lock.json v obou směrech', ({ registry }) =>
   const libraries = registry.entries.filter((entry) => entry.kind === 'library');
   const actual = new Set(libraries.map((entry) => entry.name));
   const manual = new Set(libraries.filter((entry) => entry.manual === true).map((entry) => entry.name));
-  const derivedBase = new Set([...expected.keys()].map(baseName));
 
   const problems = [];
   for (const name of expected.keys()) {
@@ -1045,12 +1040,16 @@ check(3, 'registr sedí na package-lock.json v obou směrech', ({ registry }) =>
     // `manual: true` na balíčku, který lockfile odvozuje, je rozpor. Přijmout
     // obojí najednou znamená pustit do registru položku, kterou `--sync` nikdy
     // nepřepíše — tedy licenci, která se přestane aktualizovat.
+    // ODEBRÁNA 17. 8. 2026 druhá větev, která hlásila i posunutou verzi pod
+    // zmrazenou položkou. Znovuotevírala nález, kvůli kterému `manual: true`
+    // vzniklo: vendorovaný fork (`left-pad@0.9.0-vendored-fork`) vedle
+    // lockfilového `left-pad@1.0.0` se lišil jen verzí, hláška radila příznak
+    // odebrat, a `--sync` pak záznam smazal z registru i z veřejného výpisu.
+    // `baseName` navíc u holého scoped jména (`@react-three/drei`) vracelo
+    // prázdný řetězec, takže celou třídu jmen míjela. Původní nález (zmrazená
+    // položka pod posunutou verzí) zůstává otevřený a je zapsaný u T300e.
     if (expected.has(name)) {
       problems.push(`${name}: má "manual": true, ale lockfile ho odvozuje (odeber ten příznak)`);
-    } else if (derivedBase.has(baseName(name))) {
-      // Verze se posunula pod zmrazenou položkou: nová se odvodí normálně, stará
-      // není ani `expected`, ani `extra`, a zůstane ve veřejné tabulce navždy.
-      problems.push(`${name}: má "manual": true, ale lockfile odvozuje jinou verzi téhož balíčku (odeber ten příznak)`);
     }
   }
   /**
@@ -1183,26 +1182,13 @@ function sync() {
     process.exit(1);
   }
 
-  /**
-   * **Existence adresáře je proxy, ne oracle.** `npm ci --omit=dev`,
-   * `npm prune --production` i nedoběhnutá instalace nechají `node_modules/`
-   * stát a balíčky v něm ne — a `--sync` pak přepíše skutečné autory na
-   * `neuvedeno upstreamem` a copyright řádek na náhradní text. Žádná kontrola
-   * ta pole nepřeodvozuje, takže následný běh je zelený. Naměřeno reviewem nad
-   * `939442c`: `Pad Author` → `neuvedeno upstreamem` a ověření čisté.
-   */
-  const absent = lockPackages().filter((pkg) => !existsSync(join(REPO, pkg.path)));
-  if (absent.length > 0) {
-    console.log(
-      `FAIL  --sync našel ${absent.length} balíčků z lockfilu, které v node_modules/ nejsou.\n` +
-        `        První: ${absent[0].path}\n` +
-        '        Autor a copyright se čtou z nich; bez nich by se do registru zapsaly\n' +
-        '        náhradní texty MÍSTO skutečných jmen a žádná kontrola by to nepoznala.\n' +
-        '        Nejčastější příčina je `npm ci --omit=dev` nebo `npm prune --production`.\n' +
-        '        Spusť plné `npm ci` a zkus to znovu.',
-    );
-    process.exit(1);
-  }
+  // ODEBRÁNO 17. 8. 2026: kontrola, že každý balíček z lockfilu leží na disku.
+  // Byla správná v úmyslu a katastrofální v praxi — 56 `optional: true`
+  // platformních binárek (`@img/sharp-darwin-arm64`, `@next/swc-*`) npm na
+  // jednom stroji nikdy nenainstaluje, takže `npm run disclosure` přestal jít
+  // spustit vůbec a jediná cesta dál byla `--no-verify`, která vypne obě brány.
+  // Díra, kterou měla zavřít (`npm ci --omit=dev` tiše přepíše autory na
+  // náhradní text), zůstává otevřená a je zapsaná u T300e v plánu.
 
   const previous = existsSync(join(REPO, REGISTRY_FILE)) ? readJson(REGISTRY_FILE) : { entries: [] };
   const manual = (previous.entries ?? []).filter(isManual);

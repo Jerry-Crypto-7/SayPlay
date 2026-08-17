@@ -478,36 +478,6 @@ describe('license-gate: --sync nesmí smazat, co může vědět jen člověk', (
     expect(out).toContain('"manual": true');
   });
 
-  it('--sync odmítne běžet, když balíček z lockfilu v node_modules chybí', () => {
-    // `npm ci --omit=dev` nechá adresář stát a balíčky ne. Existence adresáře
-    // je proxy; oracle je, že se autor a copyright mají odkud přečíst.
-    const dir = makeGreenRepo();
-    rmSync(join(dir, 'node_modules/left-pad'), { recursive: true, force: true });
-
-    const { code, out } = run(LICENSE_GATE, dir, ['--sync']);
-    expect(out).toContain('node_modules/left-pad');
-    expect(out).toContain('npm ci');
-    expect(code).toBe(1);
-
-    // A hlavně: registr zůstal nedotčený, ne přepsaný náhradními texty.
-    expect(readRegistry(dir).entries.some((entry) => entry.authorOrProvider === 'Pad Author')).toBe(true);
-  });
-
-  it('zmrazená ruční položka pod posunutou verzí je taky rozpor', () => {
-    const dir = makeGreenRepo();
-    const registry = readRegistry(dir);
-    const derived = registry.entries.find((entry) => String(entry.name).startsWith('left-pad@'));
-    derived!.name = 'left-pad@0.9.0';
-    derived!.manual = true;
-    writeRegistry(dir, registry);
-
-    // 6 je tu proto, že přejmenování položky mění i vygenerovaný veřejný výpis.
-    const { code, out } = run(LICENSE_GATE, dir);
-    expect(failedChecks(out)).toEqual([3, 6]);
-    expect(out).toContain('jinou verzi téhož balíčku');
-    expect(code).toBe(1);
-  });
-
   it('--sync spuštěný dvakrát dá bitově týž registr i DISCLOSURE.md', () => {
     const dir = repoWithVendored();
     run(LICENSE_GATE, dir, ['--sync']);
