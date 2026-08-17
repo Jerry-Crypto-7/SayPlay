@@ -45,11 +45,28 @@ Následek je záměrný a je potřeba ho znát dopředu:
 
    Nesmí hlásit `POZOR` ani `FAIL`. Když hlásí, buď je seznam pořád prázdný,
    nebo v něm zůstala ta direktiva.
-6. Zapni hooky, jestli to ještě nikdo na tomhle stroji neudělal:
+6. Hooky si zapíná `npm install` sám (skript `prepare` v `package.json`). Ručně
+   je potřeba jen tehdy, když se závislosti neinstalovaly:
 
    ```
    git config core.hooksPath .githooks
    ```
+
+   Ověření: `git config core.hooksPath` musí vypsat `.githooks`. Když nevypíše
+   nic, **hooky neběží** — a `git commit` i `git push` projdou bez brány a bez
+   jediného řádku výstupu. Do 17. 8. 2026 to byl výchozí stav každého nového
+   klonu.
+
+## Před `npm install` brána NEběží, a je to rozhodnutí
+
+`RULES.md` §4 popisuje licenční kontrolu jako blokující **před každým
+`npm install`**. Skript `preinstall`, který by to splnil doslova, se **nezavádí**
+— rozhodnutí uživatele ze 17. 8. 2026. Instalace balíčků, která spadne na
+licenčním nálezu, se obchází, a to obejití vypne brány všechny. Brána proto stojí
+na `git commit`, tedy v okamžiku, který dělá věc nevratnou.
+
+Hlavička `scripts/license-gate.mjs` to říká stejně; kdyby se rozhodnutí někdy
+otočilo, musí se změnit obě místa.
 
 ## Když seznam ještě není naplněný
 

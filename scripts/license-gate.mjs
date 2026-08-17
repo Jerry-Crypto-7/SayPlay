@@ -4,9 +4,16 @@
  *
  * `RULES.md` §2 vyžaduje disclosure **každé knihovny, assetu, modelu a datasetu**
  * se zdrojem, autorem, licencí a povinnými notices — a repozitář půjde ven jako
- * veřejný. `RULES.md` §4 to má jako blokující kontrolu **před každým `npm install`**.
- * Ruční seznam by tu podmínku nepřežil šedesát dní, proto je registr strojový a
- * `DISCLOSURE.md` se z něj generuje.
+ * veřejný. Ruční seznam by tu podmínku nepřežil šedesát dní, proto je registr
+ * strojový a `DISCLOSURE.md` se z něj generuje.
+ *
+ * **Kdy tahle brána běží, řečeno přesně.** Na `git commit` (`.githooks/pre-commit`)
+ * a na vyžádání (`npm run gate:license`). **NEběží před `npm install`**, přestože
+ * `RULES.md` §4 to tak popisuje — rozhodnutí uživatele ze 17. 8. 2026. Důvod je
+ * ten samý, jaký vyhnal `set -e` z pre-commit hooku: instalace balíčků, která
+ * spadne na licenčním nálezu, se obchází a to obejití vypne brány všechny.
+ * Commit je pozdější, ale je to ten okamžik, který dělá věc nevratnou — a
+ * nevratnost je to jediné, co má smysl hlídat brankou.
  *
  * ## Dva režimy
  *

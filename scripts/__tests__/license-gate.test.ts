@@ -1535,3 +1535,59 @@ describe('cleanroom-check: čisté funkce', () => {
     expect(findHits('eca.Alfa(1);\n', ['Alfa'])).toEqual([{ identifier: 'Alfa', index: 0, line: 1 }]);
   });
 });
+
+/**
+ * Dosah obou bran je jen tak velký, jak velký je jejich instalační krok.
+ *
+ * Do 17. 8. 2026 se `core.hooksPath` nastavovala **rukou**, takže na čerstvém
+ * klonu, ve druhém worktree po rebase nebo na cizím stroji proběhl `git commit`
+ * i `git push` bez brány a **bez jediného řádku výstupu** — mlčení, ne selhání.
+ * Repozitář přitom půjde ven veřejně a chybějící disclosure je diskvalifikace.
+ */
+describe('brány se na čerstvém klonu nainstalují samy', () => {
+  const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')) as {
+    scripts: Record<string, string>;
+  };
+
+  it('package.json má `prepare`, který hooky zapíná', () => {
+    expect(pkg.scripts.prepare).toBe('git config core.hooksPath .githooks');
+  });
+
+  /**
+   * **Co tenhle test dokazuje:** že ten příkaz v čerstvém repozitáři skutečně
+   * nastaví `core.hooksPath`, a že se jeho znění bere z `package.json` — kdyby
+   * `prepare` zmizel nebo se změnil na nefunkční, test zčervená.
+   *
+   * **Co nedokazuje:** že `npm ci` ten skript zavolá. To je dokumentované chování
+   * npm, ne naše, a `npm ci` ve fixtuře by na tenhle strom stahoval Next, React
+   * i Three — minuty běhu za tvrzení o cizí implementaci.
+   */
+  it('příkaz z `prepare` v čerstvém repozitáři core.hooksPath opravdu nastaví', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'prepare-'));
+    created.push(dir);
+    execFileSync('git', ['init', '-b', 'main'], { cwd: dir, stdio: 'ignore' });
+
+    execFileSync(pkg.scripts.prepare, { cwd: dir, shell: true, stdio: 'ignore' });
+
+    const value = execFileSync('git', ['config', 'core.hooksPath'], { cwd: dir, encoding: 'utf8' });
+    expect(value.trim()).toBe('.githooks');
+  });
+
+  /**
+   * Mód `100755` v indexu, ne jen na disku. Hooky byly commitnuté jako `100644`
+   * a POSIX klon je proto přeskočil s jedinou radou v logu — tedy přesně to
+   * mlčení, které `prepare` výš zavírá z druhé strany.
+   */
+  it('oba hooky jsou v indexu spustitelné', () => {
+    const listing = execFileSync('git', ['ls-files', '-s', '.githooks'], {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+    }).trim();
+    const modes = listing.split('\n').map((line) => line.split(' ')[0]);
+
+    expect(modes.length).toBeGreaterThanOrEqual(2);
+    expect(listing).toContain('.githooks/pre-commit');
+    expect(listing).toContain('.githooks/pre-push');
+    expect(new Set(modes)).toEqual(new Set(['100755']));
+  });
+});
