@@ -675,6 +675,23 @@ describe('license-gate: pokrytí (kontroly 3 a 5)', () => {
     expect(out).toContain('po-ternaru.io');
   });
 
+  // Dvojtečka **těsně** před `//`, bez mezery — jediný tvar, na kterém se pozná,
+  // jak úzká ta výjimka je. S mezerou (test výš) se rozdíl neprojeví, takže sám
+  // o sobě nic nedokazuje: mutant, který výjimku rozšíří na libovolné `:`, ho
+  // přežije. Obojí níž je legální kód a v obou případech je to komentář, ne
+  // adresa — kdyby se nesetřel, jeho obsah by se skenoval jako volaný endpoint.
+  it.each([
+    ['klíč v objektu', "const o = { klic:// viz https://v-komentari.io/v1\n  1 };\n"],
+    ['ternární bez mezery', "const u = cond ? 1 :// viz https://v-komentari.io/v1\n  2;\n"],
+  ])('dvojtečka těsně před // (%s) schéma není', (_jmeno, zdroj) => {
+    const dir = makeGreenRepo();
+    write(dir, 'src/tight.ts', zdroj);
+
+    const { out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([]);
+    expect(out).not.toContain('v-komentari.io');
+  });
+
   it('šipková funkce s regulárním výrazem neoslepí kontrolu na host pod ní', () => {
     const dir = makeGreenRepo();
     // `=> /['"]/` se bez `>` v sadě četlo jako dělení, uvozovka uvnitř otevřela

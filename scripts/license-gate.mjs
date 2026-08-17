@@ -272,15 +272,6 @@ function endOfRegex(source, start) {
 }
 
 /**
- * Značka za znak, který **prohlížeč z URL zahodí** (`\t`, `\r`, `\n`) — WHATWG
- * URL je odstraňuje, takže `fetch('https://a.io\n@zly.net/v1')` jde na `zly.net`.
- * Kdyby se dekódovaly na skutečné bílé místo, nešly by odlišit od mezery, kterou
- * někdo do věty v řetězci napsal schválně, a brána by hlásila každou takovou větu.
- * Značka není bílé místo ani znak URL, takže shodu ukončí a jde se podle ní poznat.
- */
-const INVISIBLE = '\u0001';
-
-/**
  * Značka **konce řetězcového literálu**. Autorita URL pokračuje přes každý znak
  * kromě `/ ? # \` — naměřeno nad WHATWG pro celé tisknutelné ASCII, včetně
  * mezery, `<`, `)` i uvozovky. Vyjmenovat „znaky, které autoritu ukončí" tedy
@@ -294,11 +285,6 @@ const LITERAL_END = '\u0002';
 
 /**
  * Krátké escapy s vlastním významem. Zbytek (`\'`, `\\`, `\/`) je znak sám za sebe.
- *
- * `\n`, `\r` a `\t` tu mají **skutečný znak**, ne značku. Značku nasazuje jedno
- * jediné místo, `decodeEscapeMarked`, protože totéž jde napsat i unicode zápisem
- * a dvě místa se stejným úkolem znamenají, že mutační kontrola nad jedním z nich
- * nic neprokáže — jeden mutant tady přežil právě proto.
  */
 const SHORT_ESCAPES = { n: '\n', r: '\r', t: '\t', b: '\b', f: '\f', v: '\v' };
 
@@ -335,19 +321,6 @@ function decodeEscape(source, i) {
 }
 
 /**
- * Dekódovaný znak, který `fetch` z URL zahodí, dostane značku — ať byl zapsaný
- * krátkým escapem, nebo jeho unicode zápisem. Bez toho by druhý zápis obcházel
- * to, co první hlídá, a obcházel by ho stejným způsobem.
- */
-function decodeEscapeMarked(source, i) {
-  const decoded = decodeEscape(source, i);
-  if (decoded.text === '\n' || decoded.text === '\r' || decoded.text === '\t') {
-    return { text: INVISIBLE, length: decoded.length };
-  }
-  return decoded;
-}
-
-/**
  * Odstraní komentáře, řetězce nechá. Rozhoduje to o tom, co je *volaný* endpoint:
  * URL v dokumentačním komentáři nikdo nezavolá, URL v řetězci ano. Regulárním
  * výrazem to nejde — `'http://x' // pozn.` má obojí na jednom řádku a naivní
@@ -380,7 +353,7 @@ export function stripComments(source) {
     const next = source[i + 1];
     if (quote) {
       if (c === '\\') {
-        const { text, length } = decodeEscapeMarked(source, i);
+        const { text, length } = decodeEscape(source, i);
         out += text;
         i += length;
         continue;
@@ -398,10 +371,7 @@ export function stripComments(source) {
         i += 1;
         continue;
       }
-      // Skutečný konec řádku uvnitř šablonového literálu je totéž, co `\n` v
-      // apostrofech: `fetch` ho z URL zahodí. Musí dostat stejnou značku, jinak
-      // by se stejná obcházka napsala o řádek níž a prošla.
-      out += c === '\n' || c === '\r' || c === '\t' ? INVISIBLE : c;
+      out += c;
       i += 1;
       continue;
     }
@@ -437,9 +407,12 @@ export function stripComments(source) {
     // reviewem nad `66ba833`: `hostsIn` vrátilo prázdno nad voláním na
     // `evil-exfil.net` a brána hlásila 7/7 PASS.
     //
-    // Rozsah výjimky je schválně úzký: musí těsně předcházet schéma podle RFC
-    // 3986 (`[a-z][a-z0-9+.-]*:`), takže `x ? a : // pozn.` do ní nespadne.
-    if (c === '/' && next === '/' && !/[a-z][a-z0-9+.-]*:$/i.test(out.slice(-40))) {
+    // Rozsah výjimky je schválně úzký: **jen `http:` a `https:`**, ne libovolné
+    // schéma podle RFC 3986. Obecný tvar `[a-z][a-z0-9+.-]*:` totiž sedne i na
+    // klíč v objektu (`{ url:// pozn. }`) a na návěští, a tam by pak komentář
+    // zůstal ve zdroji a jeho obsah by se skenoval jako kód. Brána nic jiného
+    // než `https?://` stejně nehledá.
+    if (c === '/' && next === '/' && !/https?:$/i.test(out.slice(-40))) {
       while (i < source.length && source[i] !== '\n') i += 1;
       continue;
     }
@@ -478,7 +451,7 @@ export function modelIdsIn(source) {
  * legitimní escape není a `https://a.io\@zly.net` je přesně ten tvar, který má brána
  * zastavit.
  */
-const URL_IN_SOURCE = /https?:\/\/(?:\[[^\]\s"'`]*\][^\s"'`<>(){}[\]$,;\u0001\u0002]*|[^\s"'`<>(){}[\]$,;\u0001\u0002]+)/gi;
+const URL_IN_SOURCE = /https?:\/\/(?:\[[^\]\s"'`]*\][^\s"'`<>(){}[\]$,;]*|[^\s"'`<>(){}[\]$,;]+)/gi;
 
 /**
  * Co se z nálezu smí vypsat. Brána běží v git hooku a její výstup jde do
