@@ -62,6 +62,11 @@ function isManual(entry) {
   return !DERIVED_KINDS.includes(entry?.kind) || entry?.manual === true;
 }
 
+/** `left-pad@1.0.0` → `left-pad`, `@scope/pkg@2.0.0` → `@scope/pkg`. */
+function baseName(name) {
+  return String(name).replace(/@[^@]*$/, '');
+}
+
 const REQUIRED_FIELDS = ['name', 'kind', 'source', 'authorOrProvider', 'license', 'requiredNotices', 'attribution'];
 
 /**
@@ -211,6 +216,9 @@ function ignoredAmong(paths) {
       input: paths.join('\0'),
       encoding: 'utf8',
       maxBuffer: 256 * 1024 * 1024,
+      // Mimo git repozitář (odevzdaný zip, rozbalený tarball) by `fatal: not a
+      // git repository` přistálo doprostřed výpisu PASS/FAIL.
+      stdio: ['pipe', 'pipe', 'ignore'],
     });
     return new Set(listing.split('\0').filter(Boolean));
   } catch {
@@ -1017,29 +1025,52 @@ check(2, 'každá licence je na whitelistu nebo má zapsané posouzení', ({ reg
 
 check(3, 'registr sedí na package-lock.json v obou směrech', ({ registry }) => {
   if (registry.error) return registry.error;
-  const expected = new Set(deriveLibraries().map((entry) => entry.name));
+  const expected = new Map(deriveLibraries().map((entry) => [entry.name, entry]));
   const libraries = registry.entries.filter((entry) => entry.kind === 'library');
   const actual = new Set(libraries.map((entry) => entry.name));
   const manual = new Set(libraries.filter((entry) => entry.manual === true).map((entry) => entry.name));
+  const derivedBase = new Set([...expected.keys()].map(baseName));
 
-  const missing = [...expected].filter((name) => !actual.has(name));
-  // Ruční položka je vendorovaný kód. V lockfilu není a být nemá, takže ji
-  // nesmí strhnout dolů kontrola, která lockfile bere jako úplný seznam.
-  const extra = [...actual].filter((name) => !expected.has(name) && !manual.has(name));
-  // `manual: true` na balíčku, který lockfile odvozuje, je rozpor. Přijmout
-  // obojí najednou znamená pustit do registru položku, kterou `--sync` nikdy
-  // nepřepíše — tedy licenci, která se přestane aktualizovat, a nikdo se to
-  // nedozví.
-  const contradictory = [...manual].filter((name) => expected.has(name));
-
-  if (missing.length) return `${missing.length} závislostí není v registru, první: ${missing[0]} (spusť --sync)`;
-  if (extra.length) {
-    return `${extra.length} položek registru už není v lockfilu, první: ${extra[0]} (spusť --sync; u vendorovaného kódu místo toho "manual": true)`;
+  const problems = [];
+  for (const name of expected.keys()) {
+    if (!actual.has(name)) problems.push(`${name}: závislost není v registru (spusť --sync)`);
   }
-  if (contradictory.length) {
-    return `${contradictory.length} položek má "manual": true, ale lockfile je odvozuje, první: ${contradictory[0]} (odeber ten příznak)`;
+  for (const name of actual) {
+    // Ruční položka je vendorovaný kód. V lockfilu není a být nemá, takže ji
+    // nesmí strhnout dolů kontrola, která lockfile bere jako úplný seznam.
+    if (expected.has(name) || manual.has(name)) continue;
+    problems.push(`${name}: už není v lockfilu (spusť --sync; u vendorovaného kódu místo toho "manual": true)`);
   }
-  return null;
+  for (const name of manual) {
+    // `manual: true` na balíčku, který lockfile odvozuje, je rozpor. Přijmout
+    // obojí najednou znamená pustit do registru položku, kterou `--sync` nikdy
+    // nepřepíše — tedy licenci, která se přestane aktualizovat.
+    if (expected.has(name)) {
+      problems.push(`${name}: má "manual": true, ale lockfile ho odvozuje (odeber ten příznak)`);
+    } else if (derivedBase.has(baseName(name))) {
+      // Verze se posunula pod zmrazenou položkou: nová se odvodí normálně, stará
+      // není ani `expected`, ani `extra`, a zůstane ve veřejné tabulce navždy.
+      problems.push(`${name}: má "manual": true, ale lockfile odvozuje jinou verzi téhož balíčku (odeber ten příznak)`);
+    }
+  }
+  /**
+   * **Licence se porovnává, ne přebírá.** Do 17. 8. 2026 kontrola 2 soudila
+   * `license` tak, jak si ho registr sám deklaroval, a kontrola 3 srovnávala
+   * jen jména — takže jednořádková editace (`GPL-3.0-only` → `MIT`) nebo
+   * zastaralý registr, který nikdo nepřesynchronizoval, obešly celý whitelist
+   * a veřejné `DISCLOSURE.md` tvrdilo nepravdu. Naměřeno reviewem nad `939442c`.
+   */
+  for (const entry of libraries) {
+    if (entry.manual === true) continue;
+    const derived = expected.get(entry.name);
+    if (!derived) continue;
+    const declared = String(entry.license ?? '').trim();
+    const truth = String(derived.license ?? '').trim();
+    if (declared !== truth) {
+      problems.push(`${entry.name}: registr hlásí licenci "${declared}", lockfile odvozuje "${truth}" (spusť --sync)`);
+    }
+  }
+  return summarize(problems);
 });
 
 check(4, 'registr sedí na public/ v obou směrech', ({ registry }) => {
@@ -1152,6 +1183,27 @@ function sync() {
     process.exit(1);
   }
 
+  /**
+   * **Existence adresáře je proxy, ne oracle.** `npm ci --omit=dev`,
+   * `npm prune --production` i nedoběhnutá instalace nechají `node_modules/`
+   * stát a balíčky v něm ne — a `--sync` pak přepíše skutečné autory na
+   * `neuvedeno upstreamem` a copyright řádek na náhradní text. Žádná kontrola
+   * ta pole nepřeodvozuje, takže následný běh je zelený. Naměřeno reviewem nad
+   * `939442c`: `Pad Author` → `neuvedeno upstreamem` a ověření čisté.
+   */
+  const absent = lockPackages().filter((pkg) => !existsSync(join(REPO, pkg.path)));
+  if (absent.length > 0) {
+    console.log(
+      `FAIL  --sync našel ${absent.length} balíčků z lockfilu, které v node_modules/ nejsou.\n` +
+        `        První: ${absent[0].path}\n` +
+        '        Autor a copyright se čtou z nich; bez nich by se do registru zapsaly\n' +
+        '        náhradní texty MÍSTO skutečných jmen a žádná kontrola by to nepoznala.\n' +
+        '        Nejčastější příčina je `npm ci --omit=dev` nebo `npm prune --production`.\n' +
+        '        Spusť plné `npm ci` a zkus to znovu.',
+    );
+    process.exit(1);
+  }
+
   const previous = existsSync(join(REPO, REGISTRY_FILE)) ? readJson(REGISTRY_FILE) : { entries: [] };
   const manual = (previous.entries ?? []).filter(isManual);
 
@@ -1169,6 +1221,30 @@ function sync() {
   const entries = [...derived, ...manual].sort(
     (a, b) => KINDS.indexOf(a.kind) - KINDS.indexOf(b.kind) || a.name.localeCompare(b.name),
   );
+
+  /**
+   * **Co `--sync` zahazuje, musí říct nahlas.** Do 17. 8. 2026 tiskl jen počty,
+   * takže ruční `library` záznam beze stopy zmizel — a protože kontrola 3
+   * hlásila jako první „závislost není v registru (spusť --sync)", byl `--sync`
+   * to jediné, co člověku poradila. Naměřeno reviewem nad `939442c`:
+   * vendorovaná `GPL-3.0-only` položka zmizela z registru i z veřejného výpisu
+   * a kontrola 2 přeskočila z FAIL na PASS.
+   *
+   * Zahodit je správně u balíčku, který z lockfilu opravdu zmizel; proto se
+   * nesmí odmítnout, jen vypsat — i s příznakem, kterým to jde zastavit.
+   */
+  const derivedNames = new Set(derived.map((entry) => entry.name));
+  const dropped = (previous.entries ?? []).filter(
+    (entry) => DERIVED_KINDS.includes(entry?.kind) && !isManual(entry) && !derivedNames.has(entry.name),
+  );
+  if (dropped.length > 0) {
+    console.log(
+      `POZOR  --sync zahodil ${dropped.length} položek třídy library, které lockfile neodvozuje:\n` +
+        dropped.map((entry) => `         - ${entry.name} (${entry.license || 'licence neuvedena'})`).join('\n') +
+        '\n       Když je některá z nich vendorovaný nebo zkopírovaný kód, vrať ji zpátky\n' +
+        '       s `"manual": true` — jinak zmizí i z veřejného DISCLOSURE.md.\n',
+    );
+  }
 
   writeFileSync(
     join(REPO, REGISTRY_FILE),

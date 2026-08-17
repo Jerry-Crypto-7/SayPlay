@@ -92,6 +92,12 @@ function makeRepo(lockExtra: Record<string, unknown> = {}, withModules = true): 
     write(dir, 'node_modules/left-pad/package.json', JSON.stringify({ name: 'left-pad', author: 'Pad Author <a@b.io>' }));
     write(dir, 'node_modules/left-pad/LICENSE', 'MIT License\n\nCopyright (c) 2016 Pad Author\n');
     write(dir, 'node_modules/copyleft-thing/package.json', JSON.stringify({ name: 'copyleft-thing' }));
+    // Balíček, který je v lockfilu a na disku ne, `--sync` odmítne — a má proč:
+    // autor a copyright se čtou z jeho adresáře. Fixtura proto zakládá adresář
+    // pro každý balíček, který si test do lockfilu přidá.
+    for (const path of Object.keys(lockExtra)) {
+      write(dir, `${path}/package.json`, JSON.stringify({ name: path.replace(/^node_modules\//, '') }));
+    }
   }
   write(dir, 'src/client.ts', "export const url = 'https://api.fixture-provider.io/v1';\n");
   return dir;
@@ -423,6 +429,82 @@ describe('license-gate: --sync nesmí smazat, co může vědět jen člověk', (
     const { code, out } = run(LICENSE_GATE, dir);
     expect(failedChecks(out)).toEqual([3]);
     expect(out).toContain('left-pad@');
+    expect(code).toBe(1);
+  });
+
+  /**
+   * Nálezy čerstvého review nad `939442c`. Tři z nich mířily na to, že příznak
+   * sám o sobě nestačí: k opravě se člověk nesmí dostat jen náhodou.
+   */
+  it('kontrola 3 hlásí VŠECHNY nálezy najednou, ne jen ten první', () => {
+    // Stav po každém `npm install`: v lockfilu přibyl balíček, a v registru
+    // zároveň leží ruční záznam bez příznaku. Dokud kontrola vypisovala jen
+    // první nález, člověk viděl pouze „spusť --sync" — a ten záznam tím smazal.
+    const dir = repoWithVendored({ manual: undefined, license: 'MIT' });
+    const lock = JSON.parse(readFileSync(join(dir, 'package-lock.json'), 'utf8')) as {
+      packages: Record<string, unknown>;
+    };
+    lock.packages['node_modules/pribyl-pozdeji'] = { version: '3.0.0', license: 'MIT', resolved: 'https://r.io/x.tgz' };
+    writeFileSync(join(dir, 'package-lock.json'), JSON.stringify(lock), 'utf8');
+
+    const { out } = run(LICENSE_GATE, dir);
+    expect(out).toContain('pribyl-pozdeji@3.0.0');
+    expect(out).toContain(VENDORED.name);
+    expect(out).toContain('"manual": true');
+  });
+
+  it('registr, který si licenci deklaruje jinak než lockfile, kontrolu 3 shodí', () => {
+    // Jednořádková editace jinak obešla celý whitelist: kontrola 2 soudila to,
+    // co si registr sám napsal, a kontrola 3 srovnávala jen jména.
+    const dir = makeGreenRepo();
+    const lock = JSON.parse(readFileSync(join(dir, 'package-lock.json'), 'utf8')) as {
+      packages: Record<string, { license?: string }>;
+    };
+    lock.packages['node_modules/left-pad'].license = 'GPL-3.0-only';
+    writeFileSync(join(dir, 'package-lock.json'), JSON.stringify(lock), 'utf8');
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([3]);
+    expect(out).toContain('GPL-3.0-only');
+    expect(code).toBe(1);
+  });
+
+  it('--sync vypíše každý library záznam, který zahazuje, i s příznakem', () => {
+    const dir = repoWithVendored({ manual: undefined, license: 'MIT' });
+
+    const { out } = run(LICENSE_GATE, dir, ['--sync']);
+    expect(out).toContain('zahodil 1 položek třídy library');
+    expect(out).toContain(VENDORED.name);
+    expect(out).toContain('"manual": true');
+  });
+
+  it('--sync odmítne běžet, když balíček z lockfilu v node_modules chybí', () => {
+    // `npm ci --omit=dev` nechá adresář stát a balíčky ne. Existence adresáře
+    // je proxy; oracle je, že se autor a copyright mají odkud přečíst.
+    const dir = makeGreenRepo();
+    rmSync(join(dir, 'node_modules/left-pad'), { recursive: true, force: true });
+
+    const { code, out } = run(LICENSE_GATE, dir, ['--sync']);
+    expect(out).toContain('node_modules/left-pad');
+    expect(out).toContain('npm ci');
+    expect(code).toBe(1);
+
+    // A hlavně: registr zůstal nedotčený, ne přepsaný náhradními texty.
+    expect(readRegistry(dir).entries.some((entry) => entry.authorOrProvider === 'Pad Author')).toBe(true);
+  });
+
+  it('zmrazená ruční položka pod posunutou verzí je taky rozpor', () => {
+    const dir = makeGreenRepo();
+    const registry = readRegistry(dir);
+    const derived = registry.entries.find((entry) => String(entry.name).startsWith('left-pad@'));
+    derived!.name = 'left-pad@0.9.0';
+    derived!.manual = true;
+    writeRegistry(dir, registry);
+
+    // 6 je tu proto, že přejmenování položky mění i vygenerovaný veřejný výpis.
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([3, 6]);
+    expect(out).toContain('jinou verzi téhož balíčku');
     expect(code).toBe(1);
   });
 
