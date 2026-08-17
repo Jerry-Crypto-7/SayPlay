@@ -281,6 +281,18 @@ function endOfRegex(source, start) {
 const INVISIBLE = '\u0001';
 
 /**
+ * Značka **konce řetězcového literálu**. Autorita URL pokračuje přes každý znak
+ * kromě `/ ? # \` — naměřeno nad WHATWG pro celé tisknutelné ASCII, včetně
+ * mezery, `<`, `)` i uvozovky. Vyjmenovat „znaky, které autoritu ukončí" tedy
+ * nejde a každý takový výčet je jen seznam děr, které zatím nikdo nezkusil.
+ * Jediná skutečná hranice ve zdrojáku je konec literálu, ve kterém adresa stojí.
+ *
+ * Uvozovka sama hranice není: `\'` se dekóduje na obyčejný apostrof uvnitř
+ * řetězce, takže by se skenování zastavilo o znak dřív, než má.
+ */
+const LITERAL_END = '\u0002';
+
+/**
  * Krátké escapy s vlastním významem. Zbytek (`\'`, `\\`, `\/`) je znak sám za sebe.
  *
  * `\n`, `\r` a `\t` tu mají **skutečný znak**, ne značku. Značku nasazuje jedno
@@ -373,7 +385,19 @@ export function stripComments(source) {
         i += length;
         continue;
       }
-      if (c === quote) quote = null;
+      if (c === quote) {
+        // Konec literálu je jediná hranice, na které smí skenování autority
+        // zastavit — viz `LITERAL_END`. Uvozovka sama se do výstupu píše dál,
+        // aby se nezměnilo, co vidí `modelIdsIn`.
+        quote = null;
+        // Značka jde **před** uzavírací uvozovku, ne za ni. Za ní by se do
+        // autority stihla připsat sama uvozovka, takže `'https://neregistrovany.io'`
+        // bez cesty by dalo host `neregistrovany.io'` — u registrovaného hostu
+        // falešný nález, u neregistrovaného správný verdikt z nesprávného jména.
+        out += LITERAL_END + c;
+        i += 1;
+        continue;
+      }
       // Skutečný konec řádku uvnitř šablonového literálu je totéž, co `\n` v
       // apostrofech: `fetch` ho z URL zahodí. Musí dostat stejnou značku, jinak
       // by se stejná obcházka napsala o řádek níž a prošla.
@@ -406,7 +430,16 @@ export function stripComments(source) {
         }
       }
     }
-    if (c === '/' && next === '/') {
+    // `//` za schématem je adresa, ne komentář. Bez téhle výjimky stačí jediný
+    // lichý apostrof v kódové pozici — `<p>Let's go</p>` v JSX je běžný text —
+    // aby se stav uvozovek rozešel; `https:` pak stojí mimo řetězec, jeho `//`
+    // spustí režim komentáře a **zbytek řádku i s hostem zmizí úplně**. Naměřeno
+    // reviewem nad `66ba833`: `hostsIn` vrátilo prázdno nad voláním na
+    // `evil-exfil.net` a brána hlásila 7/7 PASS.
+    //
+    // Rozsah výjimky je schválně úzký: musí těsně předcházet schéma podle RFC
+    // 3986 (`[a-z][a-z0-9+.-]*:`), takže `x ? a : // pozn.` do ní nespadne.
+    if (c === '/' && next === '/' && !/[a-z][a-z0-9+.-]*:$/i.test(out.slice(-40))) {
       while (i < source.length && source[i] !== '\n') i += 1;
       continue;
     }
@@ -445,7 +478,7 @@ export function modelIdsIn(source) {
  * legitimní escape není a `https://a.io\@zly.net` je přesně ten tvar, který má brána
  * zastavit.
  */
-const URL_IN_SOURCE = /https?:\/\/(?:\[[^\]\s"'`]*\][^\s"'`<>(){}[\]$,;\u0001]*|[^\s"'`<>(){}[\]$,;\u0001]+)/gi;
+const URL_IN_SOURCE = /https?:\/\/(?:\[[^\]\s"'`]*\][^\s"'`<>(){}[\]$,;\u0001\u0002]*|[^\s"'`<>(){}[\]$,;\u0001\u0002]+)/gi;
 
 /**
  * Co se z nálezu smí vypsat. Brána běží v git hooku a její výstup jde do
@@ -459,41 +492,31 @@ function safeShape(raw) {
 }
 
 /**
- * Skončila shoda uprostřed autority? Znaková třída končí i na znacích, které
- * v hostu klidně pokračují — `$ , ; ( { [` a `INVISIBLE`. Když se za shodou
- * takový znak objeví a shoda přitom **nedošla ani k první `/` za autoritou**,
- * host se určit nedá a odhadnout ho je horší než to přiznat.
+ * Znaky, které autoritu URL **skutečně** ukončí. Naměřeno nad WHATWG pro celé
+ * tisknutelné ASCII: složí se do autority úplně všechno kromě těchhle čtyř —
+ * mezera, `<`, `)`, `,`, `;` i uvozovka. Proto tu není výčet znaků, které
+ * autoritu *neukončí*: takový výčet nejde dopsat do konce a každá jeho verze je
+ * jen seznam děr, na které zatím nikdo nesáhl. Dvě remediační kola se o to
+ * pokusila a obě nechala průchodnou cestu.
  *
- * Přesně tudy vedly obě cesty, které přežily první remediaci:
- * `'https://api.openai.com\n@evil-exfil.net/v1'` a
- * `'https://api.openai.com$@evil-exfil.net/v1'` obojí vrátilo `api.openai.com`,
- * což je registrovaný host — a `fetch` přitom `\n` z URL zahazuje a jde na
- * `evil-exfil.net`.
- *
- * **Skutečná mezera v sadě není**, a to je ten rozdíl: `'viz https://a.io a dál'`
- * je věta v řetězci, ne useknutá autorita. Rozlišit je jde jen proto, že
- * neviditelné znaky mají po dekódování vlastní značku.
- *
- * `` `https://a.io/${id}` `` taky projde: shoda došla za autoritu, takže se za
- * běhu skládá cesta, ne host.
+ * `\u0002` je konec literálu, viz `LITERAL_END`.
  */
-const AUTHORITY_MAY_CONTINUE = new Set(['$', ',', ';', '(', '{', '[', '@', INVISIBLE]);
+const AUTHORITY_ENDS = /[\/?#\\\u0002]/;
 
-function authorityTruncated(stripped, match) {
-  const raw = match[0];
-  const afterScheme = raw.slice(raw.indexOf('//') + 2);
-  if (/[/?#]/.test(afterScheme)) return false;
-  if (!AUTHORITY_MAY_CONTINUE.has(stripped[match.index + raw.length] ?? '')) return false;
-
-  // `http://127.0.0.1:${port}` je useknuté v portu, ne v hostu, a ten host je
-  // loopback. Hlásit ho by znamenalo nález na každém lokálním serveru v repu —
-  // a nález, který se nedá umlčet jinak než `--no-verify`, tlačí přesně tam.
-  //
-  // **Co se tím vzdává, řečeno nahlas:** `http://127.0.0.1:${x}@zly.net/` tahle
-  // výjimka propustí. Je to ale týž případ, který kontrola 5 v hlavičce už
-  // přiznává — host složený za běhu nevidí — ne nový ústupek.
-  const determinable = afterScheme.slice(afterScheme.lastIndexOf('@') + 1).split(':')[0];
-  return !NOT_EXTERNAL.test(determinable);
+/**
+ * Celá autorita tak, jak ji uvidí `fetch` — od konce `://` po první skutečný
+ * konec autority, ne po konec shody. Znaková třída v `URL_IN_SOURCE` končí i na
+ * znacích, které WHATWG do autority složí, takže **shoda sama o hostu
+ * nerozhoduje**: z `'https://api.openai.com<@evil-exfil.net/v1'` dá shoda
+ * `api.openai.com`, což je registrovaný host, a `fetch` přitom jde na
+ * `evil-exfil.net`.
+ */
+function authorityIn(stripped, match) {
+  const scheme = /^https?:\/\//i.exec(match[0])[0];
+  const start = match.index + scheme.length;
+  let end = start;
+  while (end < stripped.length && !AUTHORITY_ENDS.test(stripped[end])) end += 1;
+  return { scheme, authority: stripped.slice(start, end) };
 }
 
 /**
@@ -515,15 +538,22 @@ export function hostsIn(source) {
       found.add(`${safeShape(raw)} — URL nese zpětné lomítko, host se z ní nedá určit`);
       continue;
     }
-    if (authorityTruncated(stripped, match)) {
-      found.add(`${safeShape(raw)} — autorita URL pokračuje za koncem literálu, host se nedá určit`);
-      continue;
-    }
+    const { scheme, authority } = authorityIn(stripped, match);
     let url;
     try {
-      url = new URL(raw);
+      url = new URL(`${scheme}${authority}/`);
     } catch {
-      found.add(`${safeShape(raw)} — nedá se rozparsovat jako URL`);
+      // Autoritu, kterou WHATWG odmítne, nejde zavolat — `fetch` na ní skončí
+      // výjimkou, ne požadavkem. Je to věta v řetězci, ve které adresa jen stojí
+      // (`'viz https://a.io a dál'`), ne volaný endpoint. Hlásit ji by znamenalo
+      // nález bez cíle, a brána, která hlásí věty, se obejde přes `--no-verify`
+      // — čímž se vypne i ta druhá.
+      //
+      // Adresa, kterou znaková třída **neusekla** a přesto se nedá přečíst, je
+      // pořád nález: tam okolní text vinu nenese.
+      if (scheme.length + authority.length <= match[0].length) {
+        found.add(`${safeShape(raw)} — nedá se rozparsovat jako URL`);
+      }
       continue;
     }
     // `hostname`, ne `host`: port do disclosure nepatří — `RULES.md` §2 se ptá,
@@ -546,11 +576,16 @@ export function hostsIn(source) {
  */
 export function credentialUrlsIn(source) {
   const found = new Set();
-  for (const match of stripComments(source).matchAll(URL_IN_SOURCE)) {
-    const raw = match[0].replace(/[.,;:]+$/, '');
+  const stripped = stripComments(source);
+  for (const match of stripped.matchAll(URL_IN_SOURCE)) {
+    // Táž autorita jako v `hostsIn`, a ze stejného důvodu: znaková třída skončí
+    // na `<`, takže z `'https://user:pass<@registrovany.io/v1'` by se parsovalo
+    // jen `https://user:pass` — bez `@`, tedy bez údaje. A `hostsIn` nad tím
+    // vrátí registrovaný host, takže **údaj by neohlásila ani jedna kontrola**.
+    const { scheme, authority } = authorityIn(stripped, match);
     let url;
     try {
-      url = new URL(raw);
+      url = new URL(`${scheme}${authority}/`);
     } catch {
       // Nerozparsovatelnou URL hlásí `hostsIn`, a hlásí ji bez cesty a query.
       // Kdyby se sem dopisoval druhý výpis, byl by to druhý průsak téhož údaje.

