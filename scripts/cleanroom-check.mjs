@@ -56,10 +56,12 @@ const PROVISIONING = 'ops/cleanroom-provisioning.md';
  * vyžádat proměnná prostředí níž.
  *
  * **Kdo ji nastavuje: `.githooks/pre-commit`, a nikdo jiný.** Ať to nikdo nečte
- * jako „na commitu je brána zavřená" — právě na commitu je jediná prominutá.
- * Důvod je u té řádky v hooku: alternativou nebyl přísnější commit, ale
- * `--no-verify`, který vypne i licenční bránu. Samostatný běh
- * (`npm run gate:cleanroom`) a CI proměnnou nedostanou a selžou.
+ * jako „na commitu jsou brány zavřené" — prominutá je **jedna z nich, ne obě**:
+ * licenční brána proměnnou nedostane a hlídá na commitu dál (drží to test
+ * v `scripts/__tests__/pre-commit-hook.test.ts`). Důvod je u té řádky v hooku:
+ * alternativou nebyl přísnější commit, ale `--no-verify`, který vypne i tu
+ * licenční. Samostatný běh (`npm run gate:cleanroom`) a CI proměnnou nedostanou
+ * a selžou.
  *
  * Proti záměru tahle brána neobstojí tak jako tak (viz hlavička).
  */
@@ -353,8 +355,9 @@ export function main(argv = []) {
   if (unprovisioned && identifiers.length === 0) {
     // Fail-closed i tady. Nenaplněný seznam není měkčí stav než chybějící seznam:
     // hlídá stejné nic, jen u toho vypíše počet prohledaných souborů, takže výstup
-    // vypadá jako práce. Kdo bránu potřebuje dočasně obejít, řekne to nahlas
-    // proměnnou prostředí — hook ji nenastavuje.
+    // vypadá jako práce. Průchod si musí vyžádat proměnná prostředí, a nastavuje
+    // si ji `.githooks/pre-commit` — sám sobě, na jeden běh. Důvod je u té řádky
+    // v hooku a v hlavičce tohohle souboru; samostatný běh a CI ji nedostanou.
     const waived = process.env[UNPROVISIONED_WAIVER] === '1';
     console.log(
       `\n${waived ? 'POZOR' : 'FAIL'}  seznam je označený jako nenaplněný (${UNPROVISIONED}) a nehlídá nic.\n` +

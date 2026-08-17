@@ -55,14 +55,34 @@ Následek je záměrný a je potřeba ho znát dopředu:
 
 Soubor se rodí s direktivou `#!unprovisioned` a bez jediného identifikátoru.
 Kontrola v tom stavu **selže** (`exit 1`) a řekne, že clean-room záruka je zatím
-**procesní, ne strojová**. Commitovat se v tom stavu dá jen s vědomým obejitím:
+**procesní, ne strojová**.
+
+**Commit ale zastavený není, a je potřeba vědět proč.** `.githooks/pre-commit`
+si prominutí nastavuje sám, jen pro tenhle jeden běh:
 
 ```
-CLEANROOM_ALLOW_UNPROVISIONED=1 git commit -m "..."
+CLEANROOM_ALLOW_UNPROVISIONED=1 node scripts/cleanroom-check.mjs || status=1
 ```
 
-Hook tu proměnnou nenastavuje a nastavovat nesmí — pak by ji nastavil za všechny
-a obejití by přestalo být vědomé.
+| Kde | Prominutí | Výsledek nad nenaplněným seznamem |
+|---|---|---|
+| `git commit` (hook) | ano, nastavuje si ho hook | `POZOR` na každém commitu, commit projde |
+| `npm run gate:cleanroom` | ne | `FAIL`, `exit 1` |
+| CI | ne | `FAIL`, `exit 1` |
+
+**Proč zrovna na commitu, kde je brána nejblíž chybě.** Původní znění tady
+hooku prominutí zakazovalo, s odůvodněním, že by obejití přestalo být vědomé.
+Naměřená alternativa je ale horší: nenaplněný seznam je
+stav, ve kterém tenhle repozitář bude, dokud k ECA modulu někdo nedostane
+přístup, takže by na každém commitu selhávala brána, se kterou se nedá nic
+udělat. Jediná rutinní cesta dál je `git commit --no-verify` — a ta vypne **obě**
+brány, tedy i licenční, která hlídá věc, se kterou udělat něco jde. Prominutí je
+proto **užší než to obejití, které by si člověk vzal místo něj**: platí na jednu
+bránu, na jeden běh, a je vidět jako banner v každém commitu.
+
+Zdůvodnění u té řádky je v `.githooks/pre-commit`, dosah prominutí drží testy
+v `scripts/__tests__/pre-commit-hook.test.ts` (licenční brána proměnnou
+nedostane).
 
 **Proč to nestačilo přiznat.** Do 15. 8. 2026 tenhle stav skončil nulou a vypsal
 jen `POZOR`. Nula je nula: hook nad ní pustil dál cokoli a výstup u toho hlásil
