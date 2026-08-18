@@ -31,11 +31,20 @@ const MIN_BELOW_RECOLOR_PAIRS = 2;
 /**
  * Nejmenší přípustný rozdíl palety u dvojice označené jako přebarvení.
  *
- * **Bez tohohle je celá negativní kontrola vykuchatelná beze stopy.** Stačilo by
- * u `P01` posunout odstín z 205 na 30,0001: „liší se paletou" by pořád platilo,
- * obě aserce by zůstaly zelené, a dvojice, která má metriku shodit, by nemohla
- * spadnout pod žádný práh, protože by nebylo co měřit. Čísla dvojic navíc leží
- * mimo enumeraci zámku (jsou v jiných souborech), takže je nehlídá ani ta.
+ * **Co drží:** dvojici označenou za přebarvení nejde srovnat na shodnou paletu.
+ * Bez toho by u `P01` stačilo posunout odstín z 205 na 30,0001 — „liší se
+ * paletou" by pořád platilo, obě aserce by zůstaly zelené a dvojice, která má
+ * metriku shodit, by neměla co měřit. Čísla dvojic navíc leží mimo enumeraci
+ * zámku (jsou v jiných souborech), takže je nehlídá ani ta.
+ *
+ * **Co NEdrží, a nikde se nesmí tvrdit opak (nález review 18. 8. 2026).** Práh
+ * je slabý: naměřeno `P01` = 0,972 a `P02` = 0,550, takže `P01` jde seříznout
+ * na necelou třetinu a nic nezčervená. Vyšší práh se odvodit dá — složka 3
+ * (histogram) nese váhu 0,2 a práh přebarvení je 0,12, takže pod rozdílem 0,6
+ * nemůže paleta složenou metriku k prahu přebarvení dotlačit ani teoreticky —
+ * jenže **na 0,6 nedosáhne `P02` (0,550)**, a zvednout práh tak, aby data těsně
+ * prošla, je dolaďování podle výsledku. Zůstává 0,25 a slabina je zapsaná;
+ * zavře ji až dvojice s poctivě větší barevnou vzdáleností.
  *
  * Měří se největší rozdíl přes tři kanály, každý normalizovaný na svůj rozsah;
  * odstín se počítá po kruhu, aby 350 a 10 byly blízko, ne na opačných koncích.
@@ -284,8 +293,15 @@ describe('evals/gates — v definici není číselná páka mimo výčet', () =>
   it('žádná páka se neschovala do jiného typu', () => {
     expect(typeHidingOffenders(lock)).toEqual([]);
     // Výjimka, která nic nekryje, je mrtvá výjimka – a mrtvá výjimka se časem
-    // rozšíří na něco živého, protože ji nikdo neuvidí padnout.
+    // rozšíří na něco živého, protože ji nikdo neuvidí padnout. Existence klíče
+    // na to nestačí: kdyby v něm bylo `"v1"`, `Number()` dá NaN, výjimka by
+    // nekryla nic a aserce by přesto zůstala zelená. Doloží se to sondou nad
+    // TOUŽE hodnotou o úroveň níž – tam výjimka neplatí, takže musí být nález.
     expect(Object.keys(lock), 'výjimka /lockVersion nemá co krýt').toContain('lockVersion');
+    expect(
+      typeHidingOffenders({ nested: { lockVersion: lock.lockVersion } }),
+      'hodnota /lockVersion se nedá přečíst jako číslo – výjimka nic nekryje a je mrtvá',
+    ).toHaveLength(1);
   });
 
   /**
@@ -337,8 +353,18 @@ describe('evals/gates — disk se rovná commitnutému stromu', () => {
     return createHash('sha256').update(Buffer.from(raw.toString('utf8').replace(/\r\n/g, '\n'), 'utf8')).digest('hex');
   };
 
+  // **Prázdný `headFiles` nesmí projít.** `git ls-tree` nad neexistující cestou
+  // skončí nulou a nevypíše nic, takže překlep v cestě o pár řádků výš by obě
+  // aserce nechal vrátit se naprázdno nad libovolně přepsaným zámkem. Množina
+  // se proto porovnává s manifestem — druhým, nezávislým seznamem těch souborů.
+  const manifestFiles = Object.keys(manifest.files).sort();
+
+  it('HEAD skutečně nese zamčené soubory', () => {
+    expect(headFiles, 'git nevrátil pod evals/gates nic — cesta je špatně nebo git chybí').toEqual(manifestFiles);
+  });
+
   it('množina zamčených souborů na disku se rovná té v HEADu', () => {
-    if (headFiles.length === 0) return;
+    expect(headFiles).toEqual(manifestFiles);
     const onDisk = listFilesRecursive(gatesDir)
       .map((abs) => relative(gatesDir, abs).split(sep).join(posix.sep))
       .filter((rel) => rel === 'divergence.lock.json' || rel.startsWith('divergence-pairs/'))
@@ -347,7 +373,7 @@ describe('evals/gates — disk se rovná commitnutému stromu', () => {
   });
 
   it('každý zamčený soubor má na disku bajty svého commitnutého protějšku', () => {
-    if (headFiles.length === 0) return;
+    expect(headFiles).toEqual(manifestFiles);
     for (const rel of headFiles) {
       expect(
         normalisedSha256(join(gatesDir, rel)),
@@ -459,6 +485,19 @@ describe('evals/gates — holdout prompty jsou odvozené, ne vybrané', () => {
         CALIBRATION_SPLITS.has(baseRecord!.split),
         `${id} staví na ${record.baseWorld}, který je v kalibrační sadě (${baseRecord!.split})`,
       ).toBe(false);
+      // **Split základního světa je jen půlka.** Kontrola o blok výš existuje
+      // právě proto, že `split: 'holdout'` může sedět nad `source` mířícím do
+      // kalibrační sady základního korpusu; u základního světa platí totéž
+      // a bez tohohle by ta cesta zůstala otevřená o jednu úroveň hlouběji.
+      if (baseRecord!.source) {
+        const baseSourceId = baseRecord!.source!.split('#')[1];
+        const baseSourceRecord = base.get(baseSourceId);
+        expect(baseSourceRecord, `${record.baseWorld} odkazuje na neexistující ${baseRecord!.source}`).toBeDefined();
+        expect(
+          CALIBRATION_SPLITS.has(baseSourceRecord!.split),
+          `${id} staví na ${record.baseWorld}, který pochází z kalibračního ${baseSourceId}`,
+        ).toBe(false);
+      }
       checked.push(id);
     }
     // Bez tohohle by aserce mlčky prošla naprázdno, kdyby `baseWorld` z korpusu zmizel.
@@ -537,6 +576,38 @@ describe('evals/gates — zámek je zamčený a nepoužitý, a říká to nahlas
     expect(
       consumers.map((abs) => relative(repoRoot, abs)),
       'zámek dostal odběratele — zpráva brány (P7b T704) tvrdí opak a musí se přepsat',
+    ).toEqual([]);
+  });
+});
+
+/**
+ * **`git replace` obchází celý aparát historie, a jediná obrana je vlajka na
+ * KAŽDÉM volání.** Dvě náhrady blobů (`refs/replace/*`, defaultně zapnuté)
+ * nechají OID, tree hashe i tagy bitově shodné, zatímco `git show HEAD:<cesta>`
+ * vrátí podvržené bajty; reprodukováno nad celou sadou (`CLAUDE.md`, rozpor 5).
+ * Volání bez `--no-replace-objects` je proto díra bez ohledu na to, co čte.
+ *
+ * Hlídá se to nad `evals/`, protože tam leží testy, které z historie odvozují
+ * zmrazení. Naměřeno 18. 8. 2026: pět volání gitu ve třech souborech, všech pět
+ * vlajku má — tahle aserce tedy dnes nezakazuje nic, co v repu je. Zavírá cestu
+ * pro to šesté, které někdo napíše zítra.
+ */
+describe('evals — každé volání gitu obchází refs/replace', () => {
+  it('žádné volání gitu pod evals/ nechybí --no-replace-objects', () => {
+    const calls = listFilesRecursive(join(repoRoot, 'evals'))
+      .filter((f) => f.endsWith('.ts'))
+      .flatMap((abs) => {
+        const source = readFileSync(abs, 'utf8');
+        return [...source.matchAll(/execFileSync\('git',\s*\[([^\]]*)\]/g)].map((m) => ({
+          where: relative(repoRoot, abs),
+          args: m[1],
+        }));
+      });
+    // Bez tohohle by aserce prošla naprázdno, kdyby se volání přesunula jinam.
+    expect(calls.length, 'pod evals/ není jediné volání gitu — kontrola běží naprázdno').toBeGreaterThan(0);
+    expect(
+      calls.filter((c) => !c.args.includes('--no-replace-objects')).map((c) => c.where),
+      'volání gitu bez vlajky',
     ).toEqual([]);
   });
 });

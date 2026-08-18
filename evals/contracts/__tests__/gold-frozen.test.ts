@@ -533,7 +533,10 @@ describe('evals/contracts — provenience je vykázaná tak, jak je', () => {
   });
 
   it('žádný commit s kontrakty není podepsaný — a dokument to tvrdí taky', () => {
-    if (goldCommits.length === 0) return;
+    expect(
+      goldCommits.length,
+      'historie evals/contracts/gold je prázdná – cesta je špatně nebo git není k dispozici',
+    ).toBeGreaterThan(0);
     const signed = goldCommits.filter((line) => !line.endsWith(' N'));
     expect(signed, 'commit s kontrakty je podepsaný — AUTHORSHIP.md tvrdí opak').toEqual([]);
     expect(authorship).toContain('signedCommit: false');
@@ -553,7 +556,10 @@ describe('evals/contracts — provenience je vykázaná tak, jak je', () => {
    * – `.gitignore` mu schválně nechává vyhrazené jméno. Na něj kotva míří teď.
    */
   it('naměřený běh je starší než kontrakty, a dokument to tvrdí taky', () => {
-    if (goldCommits.length === 0) return;
+    expect(
+      goldCommits.length,
+      'historie evals/contracts/gold je prázdná – cesta je špatně nebo git není k dispozici',
+    ).toBeGreaterThan(0);
     const goldFirstAt = Number(goldCommits[0].split(' ')[1]);
 
     // **„Něco trackovaného pod tou cestou" je slabá podmínka a `evals/live` ji
@@ -564,6 +570,19 @@ describe('evals/contracts — provenience je vykázaná tak, jak je', () => {
       git('ls-files', '--', RUN_ARTIFACT),
       `${RUN_ARTIFACT} není jeden trackovaný soubor – kotva by měřila zástupce, ne běh`,
     ).toBe(RUN_ARTIFACT);
+
+    // **Trackovaný soubor pod tou cestou pořád není běh.** `evals/live/.gitkeep`
+    // je jeden trackovaný soubor, jmenuje se sám sebou a rovnost výš by prošla –
+    // kotva by zase měřila založení prázdného adresáře. Drží se to obsahem: to,
+    // na co kotva ukazuje, musí být report toho běhu a nést jeho identifikátory.
+    const anchored = JSON.parse(readFileSync(join(repoRoot, RUN_ARTIFACT), 'utf8')) as {
+      schema?: string;
+      run?: { createRunId?: string; editRunId?: string };
+    };
+    expect(anchored.schema, `${RUN_ARTIFACT} není report naměřeného běhu`).toBe('kill-gate-report.v1');
+    for (const runId of [anchored.run?.createRunId, anchored.run?.editRunId]) {
+      expect(runId, `${RUN_ARTIFACT} nenese identifikátor běhu`).toMatch(/^[0-9a-f-]{36}$/);
+    }
 
     const runCommits = git('log', '--full-history', '--reverse', '--format=%ct', '--', RUN_ARTIFACT)
       .split('\n')
@@ -577,11 +596,16 @@ describe('evals/contracts — provenience je vykázaná tak, jak je', () => {
   });
 
   it('do gold/ nepřibyl commit po tom, který zapsal manifest', () => {
-    if (goldCommits.length === 0) return;
+    expect(
+      goldCommits.length,
+      'historie evals/contracts/gold je prázdná – cesta je špatně nebo git není k dispozici',
+    ).toBeGreaterThan(0);
     const manifestCommits = git('log', '--full-history', '--format=%H', '--', 'evals/contracts/MANIFEST.lock')
       .split('\n')
       .filter(Boolean);
-    if (manifestCommits.length === 0) return;
+    expect(manifestCommits.length, 'MANIFEST.lock nemá v historii commit – kontrola by běžela naprázdno').toBeGreaterThan(
+      0,
+    );
     const newest = manifestCommits[0];
     const after = git('log', '--full-history', '--format=%H', `${newest}..HEAD`, '--', 'evals/contracts/gold')
       .split('\n')
