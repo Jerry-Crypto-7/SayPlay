@@ -20,7 +20,7 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import { AdmissionQueue, admit, type AdmissionPolicy } from '../admission';
-import { checkReadiness, nodeReadinessDeps, nodeReadinessFs, type ReadinessFs } from '../readiness';
+import { checkReadiness, nodeReadinessDeps, nodeReadinessFs, syncIfSupported, type ReadinessFs } from '../readiness';
 
 const POLICY: AdmissionPolicy = { budgetMs: 10_000, minServiceMs: 2_000, maxQueued: 4 };
 
@@ -622,5 +622,139 @@ describe('AdmissionQueue — časovač, který dosedne přesně na hranici', () 
 
     release();
     await busy;
+  });
+});
+
+describe('AdmissionQueue — plánovač, který se doopravdy nasazuje', () => {
+  it('čekající se probudí i bez vloženého plánovače', async () => {
+    // Nález nezávislé revize: všechny fronty nad tímhle blokem si plánovač
+    // vkládají, takže výchozí `setTimeout` větev nikdy neběžela. Revize jí
+    // nahradila tělo za „nenaplánuj nic" a celý soubor zůstal zelený — sada
+    // tedy potvrzovala vlastnost, kterou neměřila. Tohle je jediné místo, kde
+    // jede kód, který se nasazuje: skutečné hodiny, skutečný časovač.
+    const queue = new AdmissionQueue(
+      { budgetMs: 150, minServiceMs: 60, maxQueued: 4 },
+      { now: () => Date.now(), concurrency: 1 },
+    );
+
+    let release = (): void => undefined;
+    const busy = queue.submit('busy', async () => {
+      await new Promise<void>((resolve) => (release = resolve));
+      return 'hotovo';
+    });
+    await settle();
+
+    const doomed = queue.submit('doomed', async () => 'nikdy');
+    await settle();
+    expect(queue.queued).toBe(1);
+
+    // Nic se nepodává a slot se neuvolňuje. Verdikt může přijít jedině z
+    // časovače, který si fronta naplánovala sama.
+    const outcome = await doomed;
+    expect(outcome.verdict).toMatchObject({ admitted: false, reason: 'DEADLINE_EXCEEDED' });
+    expect(queue.running).toBe(1);
+
+    release();
+    expect(await busy).toMatchObject({ value: 'hotovo' });
+  }, 10_000);
+});
+
+describe('AdmissionQueue — čas přijetí přichází zvenčí, takže může být nesmysl', () => {
+  // Nález nezávislé revize, reprodukovaný proti výchozímu plánovači: `NaN`
+  // projde porovnáním „vypršel?" jako nepravda a nekonečno i čas v budoucnosti
+  // vyrobí odklad delší, než `setTimeout` umí. Node ho přetočí na 1 ms a
+  // probuzení se změní ve vytížené čekání na celé dny — čekající přitom verdikt
+  // nedostane vůbec nikdy. Nic takového dneska nikdo neposílá, protože frontu
+  // zatím nikdo nevolá; vzniklo to ale tou úpravou, která ten parametr zavedla.
+  const NONSENSE: ReadonlyArray<readonly [string, (nowMs: number) => number]> = [
+    ['NaN', () => Number.NaN],
+    ['nekonečno', () => Number.POSITIVE_INFINITY],
+    ['čas v budoucnosti (záměna vteřin za milisekundy)', (nowMs) => nowMs + 3_000_000_000],
+  ];
+
+  it.each(NONSENSE)('%s se bere jako „dorazilo teď" a čekající verdikt dostane', async (_label, value) => {
+    const clock = manualClock();
+    const delays: number[] = [];
+    const queue = new AdmissionQueue(POLICY, {
+      now: clock.now,
+      concurrency: 1,
+      schedule: (fn, delayMs) => {
+        delays.push(delayMs);
+        return clock.schedule(fn, delayMs);
+      },
+    });
+
+    let release = (): void => undefined;
+    const busy = queue.submit('busy', async () => {
+      await new Promise<void>((resolve) => (release = resolve));
+      return 'hotovo';
+    });
+    await settle();
+
+    const doomed = queue.submit('doomed', async () => 'nikdy', value(clock.now()));
+    await settle();
+    expect(queue.queued).toBe(1);
+
+    // Každý naplánovaný odklad musí být konečný a v mezích, které `setTimeout`
+    // umí. Bez oříznutí je tady `NaN` nebo víc než měsíc.
+    expect(delays.length).toBeGreaterThan(0);
+    for (const delay of delays) {
+      expect(Number.isFinite(delay)).toBe(true);
+      expect(delay).toBeLessThanOrEqual(2_147_483_647);
+    }
+
+    // A hlavně: verdikt přijde. Bez opravy se tenhle `await` nedočká.
+    clock.advance(9_000);
+    expect((await doomed).verdict).toMatchObject({ admitted: false, reason: 'DEADLINE_EXCEEDED' });
+
+    release();
+    await busy;
+  });
+
+  it('minulý čas přijetí zůstává minulý — oříznutí platí jen na nesmysly', async () => {
+    // Rozlišovací polovina. Bez ní by aserce nahoře prošly i nad implementací,
+    // která parametr zahodí vždycky — a to je právě ta vada, kterou zavedení
+    // toho parametru mělo odstranit.
+    const clock = manualClock();
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+
+    const outcome = await queue.submit('late', async () => 'nikdy', clock.now() - 9_000);
+
+    expect(outcome.verdict).toMatchObject({ admitted: false, reason: 'DEADLINE_EXCEEDED', waitedMs: 9_000 });
+  });
+});
+
+describe('vynucení zápisu na zařízení — „nepodporuji" není „nepovedlo se"', () => {
+  // Nález nezávislé revize. `sync()` přidalo cestu, kterou sonda předtím neměla:
+  // sdílené svazky pod kontejnerem a některé síťové disky `fsync` neimplementují
+  // a odmítnou ho `EINVAL`. Bez rozlišení by z toho byl `WRITE_FAILED` na
+  // dokonale zapisovatelném svazku — tedy trvalá 503 a vyřazení instance z
+  // vyvažovače kvůli DRUHU disku, ne kvůli jeho stavu.
+  const throwing = (code: string): { sync: () => Promise<void> } => ({
+    sync: async () => {
+      const error = new Error(`fsync: ${code}`) as Error & { code: string };
+      error.code = code;
+      throw error;
+    },
+  });
+
+  it.each(['EINVAL', 'ENOTSUP', 'EOPNOTSUPP', 'ENOSYS'])('%s znamená „tenhle svazek to neumí" a projde', async (code) => {
+    await expect(syncIfSupported(throwing(code))).resolves.toBeUndefined();
+  });
+
+  it.each(['EIO', 'ENOSPC', 'EDQUOT'])('%s je naopak skutečné selhání a propadne dál', async (code) => {
+    // Tohle je přesně ta třída „zápis se tvářil úspěšně a nic neuložil", kvůli
+    // které `sync()` v sondě vůbec je. Spolknout ji by zrušilo celý ten krok.
+    await expect(syncIfSupported(throwing(code))).rejects.toThrow(code);
+  });
+
+  it('chyba bez kódu se propouští dál — neznámé se nepovažuje za neškodné', async () => {
+    await expect(syncIfSupported({ sync: async () => Promise.reject(new Error('bez kódu')) })).rejects.toThrow(
+      'bez kódu',
+    );
+  });
+
+  it('svazek, který sync umí, projde bez výjimky', async () => {
+    await expect(syncIfSupported({ sync: async () => undefined })).resolves.toBeUndefined();
   });
 });

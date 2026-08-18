@@ -159,7 +159,7 @@ export function nodeReadinessFs(): ReadinessFs {
       const handle = await open(path, 'w');
       try {
         await handle.write(bytes, 0, 'utf-8');
-        await handle.sync();
+        await syncIfSupported(handle);
       } finally {
         await handle.close();
       }
@@ -173,6 +173,32 @@ export function nodeReadinessFs(): ReadinessFs {
       await unlink(path);
     },
   };
+}
+
+/**
+ * Souborové systémy, které `fsync` neimplementují, ho odmítnou těmihle kódy.
+ * Není to zpráva o zdraví svazku, je to zpráva o jeho druhu.
+ */
+const SYNC_UNSUPPORTED = new Set(['EINVAL', 'ENOTSUP', 'EOPNOTSUPP', 'ENOSYS']);
+
+/**
+ * Vynutí zápis na zařízení — **a rozliší „nepodporuji" od „nepovedlo se".**
+ *
+ * Bez tohohle rozlišení je `sync()` nebezpečnější než jeho absence: sdílené
+ * svazky pod kontejnerem a některé síťové disky `fsync` neimplementují a vrátí
+ * `EINVAL`, takže by sonda hlásila `WRITE_FAILED` na dokonale zapisovatelném
+ * svazku — tedy trvalou 503 a vyřazení instance z vyvažovače kvůli druhu disku.
+ *
+ * `EIO` a `ENOSPC` se naopak propouštějí dál schválně: to je přesně ta třída
+ * „zápis se tvářil úspěšně a nic neuložil", kvůli které tu `sync()` je.
+ */
+export async function syncIfSupported(handle: { sync: () => Promise<void> }): Promise<void> {
+  try {
+    await handle.sync();
+  } catch (error) {
+    const code = (error as { code?: string }).code;
+    if (code === undefined || !SYNC_UNSUPPORTED.has(code)) throw error;
+  }
 }
 
 /** Odlišení sond v tomhle procesu. Roste, nikdy se neopakuje. */

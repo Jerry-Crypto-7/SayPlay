@@ -110,6 +110,29 @@ export interface QueueDeps {
   readonly schedule?: (fn: () => void, delayMs: number) => () => void;
 }
 
+/** Nejdelší odklad, který `setTimeout` umí. Přes něj se přetáčí na 1 ms. */
+const MAX_DELAY_MS = 2_147_483_647;
+
+/**
+ * Čas přijetí, kterému se dá věřit.
+ *
+ * `receivedAtMs` přichází z HTTP vrstvy, tedy zvenčí — typicky z hlavičky, kterou
+ * postavil někdo jiný. Nesmysl v ní nesmí frontu rozbít:
+ *
+ * - **`NaN` nebo nekonečno** projde porovnáním ve `#wakeExpired()` jako
+ *   „nevypršel" (porovnání s `NaN` je vždycky nepravda), takže by takový
+ *   požadavek nedostal verdikt vůbec nikdy;
+ * - **čas v budoucnosti** — záměna vteřin za milisekundy je nejběžnější — vyrobí
+ *   odklad delší, než `setTimeout` umí, a ten se přetočí na 1 ms. Z probuzení se
+ *   stane vytížené čekání na celé dny.
+ *
+ * Obojí se řeší stejně: čemu se nedá věřit, bereme jako „dorazilo teď". Je to
+ * bezpečné selhání — požadavek dostane celý rozpočet místo žádného.
+ */
+function trustedReceipt(claimedMs: number, nowMs: number): number {
+  return Number.isFinite(claimedMs) && claimedMs <= nowMs ? claimedMs : nowMs;
+}
+
 /**
  * Výchozí plánovač. `unref()` je tu schválně: probuzení čekajícího nesmí být
  * důvod, proč proces nejde ukončit.
@@ -169,6 +192,8 @@ export class AdmissionQueue {
     work: (deadlineMs: number) => Promise<T>,
     receivedAtMs: number = this.#now(),
   ): Promise<AdmissionOutcome<T>> {
+    const receipt = trustedReceipt(receivedAtMs, this.#now());
+
     // Odsouzené požadavky se uvolní DŘÍV, než se na jejich místo někdo odmítne.
     // Požadavek, kterému rozpočet vypršel ve frontě, `DEADLINE_EXCEEDED` stejně
     // dostane — až se dostane na řadu. Kdyby si do té doby držel místo, byla by
@@ -181,7 +206,7 @@ export class AdmissionQueue {
       // Čekání se počítá i tady. Nula by byla pravda jen pro požadavek podaný
       // v tomtéž okamžiku, kdy dorazil — a to je právě ten předpoklad, který
       // `receivedAtMs` ruší.
-      const waitedMs = this.#now() - receivedAtMs;
+      const waitedMs = this.#now() - receipt;
       return {
         verdict: {
           admitted: false,
@@ -194,19 +219,19 @@ export class AdmissionQueue {
       };
     }
 
-    const why = await this.#slot(receivedAtMs);
+    const why = await this.#slot(receipt);
 
     // Probuzený kvůli vypršení slot nikdy nedostal, takže ho ani nevrací. Kdyby
     // prošel `finally` s `#release()`, snížil by `#running` za někoho jiného a
     // fronta by pustila víc práce, než dovoluje `concurrency`.
     if (why === 'expired') {
-      return { verdict: admit(id, receivedAtMs, this.#now(), this.#policy), value: null };
+      return { verdict: admit(id, receipt, this.#now(), this.#policy), value: null };
     }
 
     try {
       // Tady je celý rozdíl proti naivní verzi: `receivedAtMs` je z podání,
       // `this.#now()` je z tohohle okamžiku, a rozhoduje se z jejich rozdílu.
-      const verdict = admit(id, receivedAtMs, this.#now(), this.#policy);
+      const verdict = admit(id, receipt, this.#now(), this.#policy);
       if (!verdict.admitted) return { verdict, value: null };
 
       return { verdict, value: await work(verdict.deadlineMs) };
@@ -255,7 +280,7 @@ export class AdmissionQueue {
 
     const earliestReceivedAtMs = Math.min(...this.#waiting.map((entry) => entry.receivedAtMs));
     const expiresAtMs = earliestReceivedAtMs + this.#policy.budgetMs - this.#policy.minServiceMs;
-    const delayMs = Math.max(1, expiresAtMs - this.#now());
+    const delayMs = Math.min(MAX_DELAY_MS, Math.max(1, expiresAtMs - this.#now()));
 
     this.#cancelExpiry = this.#schedule(() => {
       this.#cancelExpiry = null;

@@ -65,9 +65,13 @@ writeFileSync(
   KILL_STUB,
   [
     'const code = process.env.WATCHDOG_TEST_KILL_CODE;',
+    'const watched = Number(process.env.WATCHDOG_TEST_KILL_PID);',
     'const real = process.kill.bind(process);',
     'process.kill = (pid, signal) => {',
-    '  if (signal === 0) {',
+    // Jen hlídaný PID, ne každý. Předehra, která odpoví na cokoliv, dělá
+    // z argumentu `--pid` ozdobu: test by pak prošel i nad watchdogem, který
+    // se ptá na úplně jiný proces.
+    '  if (signal === 0 && pid === watched) {',
     '    const error = new Error("watchdog test stub: " + code);',
     '    error.code = code;',
     '    throw error;',
@@ -81,13 +85,17 @@ writeFileSync(
   'utf-8',
 );
 
-/** Watchdog, jehož sonda na existenci procesu vždycky selže zadaným `errno`. */
-function watchdogWithKillErrno(errno: string, args: string[]): ChildProcess {
+/** Watchdog, jehož sonda na JEDEN zadaný PID selže zadaným `errno`. */
+function watchdogWithKillErrno(errno: string, watchedPid: number, args: string[]): ChildProcess {
   return track(
-    spawn(process.execPath, ['--import', pathToFileURL(KILL_STUB).href, WATCHDOG, ...args], {
-      stdio: 'ignore',
-      env: { ...process.env, WATCHDOG_TEST_KILL_CODE: errno },
-    }),
+    spawn(
+      process.execPath,
+      ['--import', pathToFileURL(KILL_STUB).href, WATCHDOG, '--pid', String(watchedPid), ...args],
+      {
+        stdio: 'ignore',
+        env: { ...process.env, WATCHDOG_TEST_KILL_CODE: errno, WATCHDOG_TEST_KILL_PID: String(watchedPid) },
+      },
+    ),
   );
 }
 
@@ -230,16 +238,7 @@ describe('watchdog', () => {
     // by libuv odepřený `OpenProcess` mapoval takhle. Obě větve se měří stejně,
     // protože obě jsou v `alive()` napsané a ani jedna nemá vlastní důkaz.
     const logPath = join(scratch, `odepreno-${errno}.jsonl`);
-    watchdogWithKillErrno(errno, [
-      '--pid',
-      String(process.pid),
-      '--log',
-      logPath,
-      '--interval-ms',
-      '50',
-      '--max-ms',
-      '300',
-    ]);
+    watchdogWithKillErrno(errno, process.pid, ['--log', logPath, '--interval-ms', '50', '--max-ms', '300']);
 
     expect(await waitForRecord(logPath, (record) => record.event === 'gave-up')).not.toBeNull();
     expect(records(logPath).some((record) => record.event === 'process-gone')).toBe(false);
@@ -251,21 +250,72 @@ describe('watchdog', () => {
     // jen `errno`. Watchdog, který by prostě všechno považoval za živé, projde
     // oběma testy nad tímhle a spadne až tady.
     const logPath = join(scratch, 'esrch.jsonl');
-    watchdogWithKillErrno('ESRCH', [
-      '--pid',
-      String(process.pid),
-      '--log',
-      logPath,
-      '--interval-ms',
-      '50',
-      '--max-ms',
-      '300',
-    ]);
+    watchdogWithKillErrno('ESRCH', process.pid, ['--log', logPath, '--interval-ms', '50', '--max-ms', '300']);
 
     const gone = await waitForRecord(logPath, (record) => record.event === 'process-gone');
     expect(gone).toMatchObject({ detected: 'at-start' });
     expect(records(logPath).some((record) => record.event === 'gave-up')).toBe(false);
   }, 30_000);
+
+  it('předehra odpovídá jen za hlídaný PID — na cizí se ptá skutečného jádra', async () => {
+    // Kdyby předehra odpovídala na cokoliv, byl by argument `--pid` ozdoba: oba
+    // testy nad tímhle by prošly i nad watchdogem, který se ptá na úplně jiný
+    // proces. Tady je `errno` nastavené pro PID, který se NEhlídá — hlídaný
+    // běží a živý ho musí vrátit skutečné `process.kill`.
+    const logPath = join(scratch, 'jen-hlidany.jsonl');
+    const watched = idleProcess();
+
+    track(
+      spawn(
+        process.execPath,
+        [
+          '--import',
+          pathToFileURL(KILL_STUB).href,
+          WATCHDOG,
+          '--pid',
+          String(watched.pid),
+          '--log',
+          logPath,
+          '--interval-ms',
+          '50',
+          '--max-ms',
+          '300',
+        ],
+        {
+          stdio: 'ignore',
+          env: { ...process.env, WATCHDOG_TEST_KILL_CODE: 'ESRCH', WATCHDOG_TEST_KILL_PID: String(process.pid) },
+        },
+      ),
+    );
+
+    expect(await waitForRecord(logPath, (record) => record.event === 'gave-up')).not.toBeNull();
+    expect(records(logPath).some((record) => record.event === 'process-gone')).toBe(false);
+  }, 30_000);
+
+  // **Skutečné `EPERM` z jádra, tam kde ho jádro umí vyrobit.** Předehra nad
+  // tímhle testem je poctivá, ale vyrábí si chybu sama, takže sada `alive()`
+  // by se jinak měřila jen proti errnům, které si test vymyslel. Windows umí
+  // `EPERM` doopravdy (systémový proces PID 4), Linux, macOS ani kontejner ne —
+  // PID 4 tam běžně neexistuje a vrátil by `ESRCH`. Přeskakuje se proto podle
+  // platformy a s uvedeným důvodem, ne mlčky.
+  const kernelEperm = process.platform === 'win32' ? it : it.skip;
+  kernelEperm(
+    'skutečné EPERM z jádra se počítá jako živý proces (jen Windows — jinde ho nejde vyrobit)',
+    async () => {
+      const logPath = join(scratch, 'kernel-eperm.jsonl');
+      track(
+        spawn(
+          process.execPath,
+          [WATCHDOG, '--pid', '4', '--log', logPath, '--interval-ms', '50', '--max-ms', '300'],
+          { stdio: 'ignore' },
+        ),
+      );
+
+      expect(await waitForRecord(logPath, (record) => record.event === 'gave-up')).not.toBeNull();
+      expect(records(logPath).some((record) => record.event === 'process-gone')).toBe(false);
+    },
+    30_000,
+  );
 
   it('bez `--max-ms` watchdog nehlídá jen chvíli — výchozí je bez omezení', async () => {
     // Hlídač, který se po minutě sám vypne, přestane hlídat přesně v tu chvíli,
