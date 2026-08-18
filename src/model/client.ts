@@ -180,18 +180,36 @@ export interface FrozenPrompt {
 }
 
 /**
+ * Všechny zmrazené prompty, ověřené hashem proti `MANIFEST.lock`.
+ *
+ * Exportované kvůli offline větvi v `src/server/mock/`, která hledá podle textu
+ * promptu, ne podle id. Vlastní čtení téhož souboru by tam znamenalo druhou
+ * cestu ke korpusu — a přesně tahle třída vady tady jednou byla: jedna cesta
+ * hash ověřovala, druhá ne, a rozdíl neuhlídal nikdo.
+ */
+export function frozenPrompts(): Read<FrozenPrompt[]> {
+  const records = readJsonl('prompts.v1.jsonl');
+  if (!records.ok) return records;
+  return {
+    ok: true,
+    value: records.value.flatMap((record) =>
+      typeof record.id === 'string' && typeof record.prompt === 'string' && typeof record.kind === 'string'
+        ? [{ id: record.id, kind: record.kind, prompt: record.prompt }]
+        : [],
+    ),
+  };
+}
+
+/**
  * Zmrazený prompt podle id.
  *
  * `null` znamená **neznámé id** (endpoint z toho dělá 404). Nečitelný nebo
  * podvržený korpus je oproti tomu `ClientFailure` — jiná věc, jiná odpověď.
  */
 export function frozenPrompt(id: string): Read<FrozenPrompt | null> {
-  const records = readJsonl('prompts.v1.jsonl');
+  const records = frozenPrompts();
   if (!records.ok) return records;
-  const found = records.value.find((record) => record.id === id);
-  if (found === undefined || typeof found.prompt !== 'string' || typeof found.kind !== 'string')
-    return { ok: true, value: null };
-  return { ok: true, value: { id, kind: found.kind, prompt: found.prompt } };
+  return { ok: true, value: records.value.find((record) => record.id === id) ?? null };
 }
 
 /**
