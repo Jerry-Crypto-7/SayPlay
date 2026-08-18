@@ -1,0 +1,20 @@
+{
+  "id": "P02",
+  "label": "recolor",
+  "expect": "below_recolor",
+  "rationale": "Druhé přebarvení, tentokrát na organické rodině a se změnou sytosti i světlosti, ne jen odstínu. Jedna dvojice by pokryla jen jeden tvar přebarvení; tahle chytá metriku, která rozdíl v odstínu ignoruje, ale na posun sytosti reaguje.",
+  "a": {
+    "layout": { "type": "cave", "spaces": 3, "portals": 3 },
+    "modules": [
+      { "family": "organic", "params": { "sweepCurvature": 0.7, "segments": 24, "taper": 0.5, "twistTurns": 1.5, "waviness": 0.6, "branchDepth": 2 } }
+    ],
+    "palette": { "hueDeg": 150, "satPct": 20, "litPct": 35 }
+  },
+  "b": {
+    "layout": { "type": "cave", "spaces": 3, "portals": 3 },
+    "modules": [
+      { "family": "organic", "params": { "sweepCurvature": 0.7, "segments": 24, "taper": 0.5, "twistTurns": 1.5, "waviness": 0.6, "branchDepth": 2 } }
+    ],
+    "palette": { "hueDeg": 152, "satPct": 75, "litPct": 68 }
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "lockVersion": "1",
+  "lockedOn": "2026-08-18",
+  "writtenBy": "P7a T703 (plans/P7-brany-a-evaluace.md); závazné znění DESIGN-BOOK.md §18 #8",
+  "status": "unused",
+  "statusReason": "Odběratel téhle metriky byl P5 T504 (scénová brána §15b, 13. 10. 2026). P5 je od 15. 8. 2026 zrušený a s ním i scénová brána, takže zámek dnes nikdo nečte. Zůstává záměrně: oracle bez odběratele je pořád zámek proti tomu, aby si ho někdo zítra napsal sám podle výsledku. Zpráva brány (P7b T704) to musí napsat nahlas.",
+  "aPrioriWarning": "Všechny prahy a váhy níž jsou zvolené PŘED jakýmkoli měřením a nemají za sebou jedinou naměřenou hodnotu. To je celý smysl zámku, ne jeho vada. Metrika na nich může selhat; když selže, mění se závěr, ne číslo.",
+  "numericEnumerationRule": "Tenhle soubor smí obsahovat číselnou hodnotu VÝHRADNĚ na ukazatelích, které enumeruje evals/gates/__tests__/divergence-lock.test.ts. Všechna ostatní pole jsou řetězce, i tam, kde by číslo bylo přirozenější (lockVersion). Důvod je nález review P5, kolo 1: zámek na výčtu je děravý, protože přidaná páka do výčtu nepatří a nikdo si jí nevšimne. Zamyká se proto soubor jako celek.",
+
+  "metric": {
+    "definition": "DESIGN-BOOK.md §13.5 — vizuální divergence ze tří nezávislých složek, vážený součet podle /weights.",
+    "component1": "Hash topologie layoutu: typ prostoru, počet prostorů a zapojení portálů. Vzdálenost je nula při shodě hashe, jedna jinak.",
+    "component2": "Vzdálenost vektoru parametrů modulů, normalizovaná per rodina podle /normalization. Parametr mimo deklarovaný rozsah se ořízne na hranici, nikdy neextrapoluje.",
+    "component3": "Vzdálenost histogramů podvzorkovaného snímku ze dvou pevných úhlů kamery. Počítá se MIMO hashovaný stav a nikdy neblokuje commit (§13.5) — je to měřicí nástroj, ne verifikátor.",
+    "range": "Každá složka i výsledek leží v uzavřeném intervalu nula až jedna."
+  },
+
+  "weights": {
+    "topology": 0.4,
+    "parameters": 0.4,
+    "histogram": 0.2
+  },
+  "weightsRule": "Součtem přesně jedna. Složka 3 nese nejmenší váhu záměrně: §13.5 ji sama označuje za měřicí nástroj mimo hashovaný stav, takže nesmí sama přehlasit dvě složky, které se počítají z hashovaného stavu.",
+
+  "seed": 20260813,
+  "seedRule": "Datum zmrazení korpusu (evals/frozen/FROZEN). Odvozené datum, ne vybrané číslo — seed vybraný po prvním měření je přesně ta volnost, kterou tenhle soubor zavírá.",
+
+  "thresholds": {
+    "divergence": 0.35,
+    "recolor": 0.12
+  },
+  "thresholdsRule": "Práh přebarvení musí být ostře menší než práh divergence. Dvojice pod prahem přebarvení je „týž svět v jiné barvě\"; dvojice nad prahem divergence je „skutečně odlišný svět\". Pásmo mezi nimi je „nerozhodnuto\" a do verdiktu brány nevstupuje.",
+
+  "histogram": {
+    "binCount": 16,
+    "binEdges": [0, 0.0625, 0.125, 0.1875, 0.25, 0.3125, 0.375, 0.4375, 0.5, 0.5625, 0.625, 0.6875, 0.75, 0.8125, 0.875, 0.9375, 1],
+    "subsampleFactor": 4
+  },
+  "histogramRule": "Kanály sRGB R, G a B zvlášť, histogramy zřetězené za sebe. Podvzorkování bere každý n-tý pixel v obou osách, kde n je subsampleFactor. Histogram se normalizuje na součet jedna PŘED měřením vzdálenosti — proto rozlišení snímku není páka: mění šumovost vzorku, ne rozdělení. Vzdálenost je L1 přes všechny biny všech tří kanálů, dělená dvěma, aby ležela v intervalu nula až jedna.",
+
+  "camera": {
+    "angles": [
+      { "azimuthDeg": 45, "elevationDeg": 30 },
+      { "azimuthDeg": 225, "elevationDeg": 15 }
+    ]
+  },
+  "cameraRule": "Přesně dva pevné úhly, protilehlé, aby sklon nezakryl polovinu světa pod stejnou geometrií. Projekce je ortografická a rámování je odvozené pravidlo, ne číslo: kamera se vždy vejde přesně na opsanou kouli světa. Perspektivní zorný úhel ani vzdálenost kamery tím pádem neexistují jako páky — kdyby existovaly, patřily by do výčtu výš a nejsou v něm.",
+
+  "normalization": {
+    "mass": {
+      "footprintM": { "min": 1, "max": 24 },
+      "heightM": { "min": 1, "max": 30 },
+      "taper": { "min": 0, "max": 0.6 },
+      "bevelM": { "min": 0, "max": 0.5 },
+      "floors": { "min": 1, "max": 8 },
+      "corniceM": { "min": 0, "max": 1.2 }
+    },
+    "panel": {
+      "openingPitchM": { "min": 0.3, "max": 4 },
+      "openingRadiusM": { "min": 0.05, "max": 1.5 },
+      "thicknessM": { "min": 0.05, "max": 0.8 },
+      "frameM": { "min": 0, "max": 0.6 },
+      "breachRatio": { "min": 0, "max": 0.5 },
+      "openingRows": { "min": 1, "max": 12 }
+    },
+    "tower": {
+      "floors": { "min": 2, "max": 14 },
+      "taperPerFloor": { "min": 0, "max": 0.25 },
+      "galleryRadiusM": { "min": 0, "max": 3 },
+      "crownHeightM": { "min": 0, "max": 6 },
+      "crownEmissive": { "min": 0, "max": 1 },
+      "shaftRadiusM": { "min": 0.5, "max": 6 }
+    },
+    "organic": {
+      "sweepCurvature": { "min": 0, "max": 1 },
+      "segments": { "min": 3, "max": 48 },
+      "taper": { "min": 0, "max": 0.9 },
+      "twistTurns": { "min": 0, "max": 3 },
+      "waviness": { "min": 0, "max": 1 },
+      "branchDepth": { "min": 0, "max": 4 }
+    }
+  },
+  "normalizationRule": "Čtyři financované rodiny podle DESIGN-BOOK.md §13.8. Šest ohraničených parametrů na rodinu, dolní hranice §13.2. Rodina ani parametr se do tohohle objektu nedá přidat, aniž by šla červeně enumerace v testu — rozšíření normalizace je totiž nejlevnější způsob, jak změnit vzdálenost, aniž by se sáhlo na práh.",
+
+  "holdoutPrompts": ["C02", "C09", "C11", "C12", "E01", "E08", "E10", "E14", "E19", "E22"],
+  "holdoutSelectionRule": "Odvozené, ne vybrané: vezmi z evals/frozen/prompts.v1.jsonl všechny záznamy se split rovným holdout, seřaď id lexikograficky vzestupně a vezmi prvních deset. Zmrazený korpus jich má jedenáct a §18 #8 žádá deset, takže jeden vypadá — a vypadá podle pořadí, ne podle autorovy ruky. Test tenhle výpočet opakuje a porovnává s polem výš, takže ruční změna pole jde červeně.",
+  "holdoutCalibrationRule": "Žádný z deseti se nesmí objevit v žádné kalibrační sadě. Kontroluje se na dvou úrovních: ve zmrazeném korpusu musí mít split holdout, a kde záznam deklaruje source do evals/prompts.jsonl, musí i zdrojový řádek být split holdout — nikdy dev, což je jméno kalibrační sady v základním korpusu.",
+
+  "pairs": [
+    "divergence-pairs/P01.json",
+    "divergence-pairs/P02.json",
+    "divergence-pairs/P03.json",
+    "divergence-pairs/P04.json",
+    "divergence-pairs/P05.json",
+    "divergence-pairs/P06.json"
+  ],
+  "pairsRule": "Šest předem označených dvojic, z toho dvě mají skončit POD prahem přebarvení. Dvojice, které mají všechny projít, metriku nekalibrují — jen potvrzují, že něco vrací. Až dvojice, která má spadnout, odhalí metriku nastavenou tak volně, že projde přebarvení. Dvojice leží ve vlastních souborech schválně: jejich parametry jsou čísla, a v tomhle souboru by rozbily enumeraci.",
+
+  "aggregationRule": "Verdikt brány §15b nad holdout sadou: každý z deseti světů se porovná s každým dalším a prompt se počítá jako „nad prahem\" teprve tehdy, když je jeho NEJMENŠÍ párová divergence nad prahem divergence. Nejmenší, ne průměrná — průměr schová jednu dvojici světů, které jsou si podobné, za osm, které si podobné nejsou. Agregace je páka jako každá jiná, proto je zamčená tady a ne v implementaci."
+}

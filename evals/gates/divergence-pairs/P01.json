@@ -1,0 +1,22 @@
+{
+  "id": "P01",
+  "label": "recolor",
+  "expect": "below_recolor",
+  "rationale": "Týž svět, jediný rozdíl je paleta. Metrika, která tuhle dvojici pustí nad práh přebarvení, prohlašuje přebarvení za nový svět — a přesně to je vada, kterou verze 1.0 měla (DESIGN-BOOK.md §13.2: „Tytéž prompty ve verzi 1.0 daly dvakrát tentýž kit v jiné barvě.\").",
+  "a": {
+    "layout": { "type": "grid", "spaces": 4, "portals": 4 },
+    "modules": [
+      { "family": "mass", "params": { "footprintM": 6, "heightM": 4, "taper": 0.1, "bevelM": 0.05, "floors": 2, "corniceM": 0.2 } },
+      { "family": "panel", "params": { "openingPitchM": 1.2, "openingRadiusM": 0.4, "thicknessM": 0.15, "frameM": 0.1, "breachRatio": 0.0, "openingRows": 3 } }
+    ],
+    "palette": { "hueDeg": 30, "satPct": 45, "litPct": 52 }
+  },
+  "b": {
+    "layout": { "type": "grid", "spaces": 4, "portals": 4 },
+    "modules": [
+      { "family": "mass", "params": { "footprintM": 6, "heightM": 4, "taper": 0.1, "bevelM": 0.05, "floors": 2, "corniceM": 0.2 } },
+      { "family": "panel", "params": { "openingPitchM": 1.2, "openingRadiusM": 0.4, "thicknessM": 0.15, "frameM": 0.1, "breachRatio": 0.0, "openingRows": 3 } }
+    ],
+    "palette": { "hueDeg": 205, "satPct": 45, "litPct": 52 }
+  }
+}

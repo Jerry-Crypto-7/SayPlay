@@ -1,0 +1,20 @@
+{
+  "id": "P06",
+  "label": "distinct-worlds-same-palette",
+  "expect": "above_divergence",
+  "rationale": "Zrcadlo k P01 a P02: stejná paleta, jiný svět. Bez téhle dvojice by prošla metrika, která ve skutečnosti měří jenom barvu — obě dvojice přebarvení by spadly správně a všechny kladné taky, protože se barvou lišily i ony.",
+  "a": {
+    "layout": { "type": "maze", "spaces": 9, "portals": 12 },
+    "modules": [
+      { "family": "mass", "params": { "footprintM": 2, "heightM": 24, "taper": 0.55, "bevelM": 0.45, "floors": 7, "corniceM": 1.1 } }
+    ],
+    "palette": { "hueDeg": 175, "satPct": 25, "litPct": 48 }
+  },
+  "b": {
+    "layout": { "type": "ring", "spaces": 4, "portals": 4 },
+    "modules": [
+      { "family": "panel", "params": { "openingPitchM": 3.6, "openingRadiusM": 1.4, "thicknessM": 0.08, "frameM": 0.0, "breachRatio": 0.45, "openingRows": 2 } }
+    ],
+    "palette": { "hueDeg": 175, "satPct": 25, "litPct": 48 }
+  }
+}
