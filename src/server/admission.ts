@@ -99,11 +99,36 @@ export interface AdmissionOutcome<T> {
   readonly value: T | null;
 }
 
+/**
+ * Jedno srovnání času přijetí, ohlášené ve chvíli, kdy k němu došlo.
+ *
+ * Jde do logu, ne do odpovědi — verdikt požadavku se tím nemění, protože
+ * srovnání je bezpečné selhání. Mění se jen to, jestli se o něm dá vědět.
+ */
+export interface CoercedReceipt {
+  readonly id: string;
+  /** Co přišlo od volajícího. Nesmysl, proto se nepoužilo. */
+  readonly claimedMs: number;
+  /** Co fronta vzala místo toho. Vždycky „teď". */
+  readonly usedMs: number;
+}
+
 export interface QueueDeps {
   /** Nástěnné hodiny. Fronta není na replay cestě. */
   readonly now: () => number;
   /** Kolik požadavků se zpracovává současně. */
   readonly concurrency: number;
+  /**
+   * Ohlásí srovnání času přijetí ve chvíli, kdy nastalo.
+   *
+   * **Povinné schválně, a je to celý rozdíl proti pouhému čítači.**
+   * `coercedReceipts` musí někdo přečíst, a „kdo frontu zapojuje, tohle číslo
+   * loguje" je přání, ne mechanismus: zapojení, které na něj zapomene, vypadá
+   * naprosto zdravě — `waitedMs: 0` u každého požadavku a nikde ani řádek.
+   * Povinná závislost je jediný tvar, který zapomenout nejde, protože bez ní
+   * frontu nelze postavit.
+   */
+  readonly onCoercedReceipt: (coercion: CoercedReceipt) => void;
   /**
    * Naplánuje probuzení za `delayMs` a vrátí funkci, která ho zruší.
    *
@@ -147,12 +172,24 @@ export function trustedReceipt(claimedMs: number, nowMs: number, earliestMs = Nu
 }
 
 /**
- * Výchozí plánovač. `unref()` je tu schválně: probuzení čekajícího nesmí být
- * důvod, proč proces nejde ukončit.
+ * Výchozí plánovač. **Časovač drží smyčku událostí schválně.**
+ *
+ * Dřív tu bylo `unref()` s odůvodněním „probuzení čekajícího nesmí být důvod,
+ * proč proces nejde ukončit". To platí o časovači, který tiká pořád. Tenhle
+ * stojí jen tehdy, když někdo čeká na verdikt: `#armExpiry()` ho po vyprázdnění
+ * fronty nepřeplánuje, takže doba, po kterou proces drží, je shora omezená na
+ * `budgetMs - minServiceMs`.
+ *
+ * S `unref()` nastane tohle: požadavek, jehož jediným čekajícím handlem je
+ * tenhle časovač, smyčku neudrží — Node skončí kódem 0 a `submit()` se nedočká
+ * verdiktu ani chyby. Za posluchajícím socketem se to nestane, protože smyčku
+ * drží socket; ve skriptu, ve workeru nebo v jednorázové úloze ano. Fronta,
+ * jejíž celý smysl je „každý požadavek dostane verdikt", si nesmí nechat cestu,
+ * kde ho nedostane žádný. Ohraničené držení procesu je levnější než ztracená
+ * odpověď.
  */
 function timeoutSchedule(fn: () => void, delayMs: number): () => void {
-  const handle = setTimeout(fn, delayMs) as ReturnType<typeof setTimeout> & { unref?: () => void };
-  handle.unref?.();
+  const handle = setTimeout(fn, delayMs);
   return () => clearTimeout(handle);
 }
 
@@ -168,6 +205,7 @@ export class AdmissionQueue {
   readonly #now: () => number;
   readonly #concurrency: number;
   readonly #schedule: (fn: () => void, delayMs: number) => () => void;
+  readonly #onCoercedReceipt: (coercion: CoercedReceipt) => void;
   /** Kdy fronta vznikla. Dřív než tohle žádný její požadavek dorazit nemohl. */
   readonly #createdAtMs: number;
   #coerced = 0;
@@ -181,6 +219,7 @@ export class AdmissionQueue {
     this.#now = deps.now;
     this.#concurrency = deps.concurrency;
     this.#schedule = deps.schedule ?? timeoutSchedule;
+    this.#onCoercedReceipt = deps.onCoercedReceipt;
     this.#createdAtMs = deps.now();
   }
 
@@ -192,7 +231,11 @@ export class AdmissionQueue {
    * záměna vteřin za milisekundy. Fronta se z ní zotaví, ale tím se z ní stane
    * naivní verze „od začátku našeho zpracování", které se celý tenhle soubor
    * snaží zabránit, a bez čítače by to vypadalo úplně zdravě: `waitedMs: 0` u
-   * každého požadavku. Kdo frontu zapojuje, tohle číslo loguje.
+   * každého požadavku.
+   *
+   * **Čítač je souhrn, ne hlášení.** Někdo ho musí přečíst, a zapojení, které
+   * na to zapomene, je zpátky v tichém režimu. Hlásí se proto navíc každé
+   * jednotlivé srovnání, hned jak nastane — `QueueDeps.onCoercedReceipt`.
    */
   get coercedReceipts(): number {
     return this.#coerced;
@@ -224,7 +267,10 @@ export class AdmissionQueue {
     receivedAtMs: number = this.#now(),
   ): Promise<AdmissionOutcome<T>> {
     const receipt = trustedReceipt(receivedAtMs, this.#now(), this.#createdAtMs);
-    if (receipt !== receivedAtMs) this.#coerced += 1;
+    if (receipt !== receivedAtMs) {
+      this.#coerced += 1;
+      this.#onCoercedReceipt({ id, claimedMs: receivedAtMs, usedMs: receipt });
+    }
 
     // Odsouzené požadavky se uvolní DŘÍV, než se na jejich místo někdo odmítne.
     // Požadavek, kterému rozpočet vypršel ve frontě, `DEADLINE_EXCEEDED` stejně

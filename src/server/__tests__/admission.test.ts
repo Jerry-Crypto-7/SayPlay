@@ -13,13 +13,14 @@
  * pouští několik a nejpomalejší soubor jede desítky vteřin.
  */
 
-import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { AdmissionQueue, admit, type AdmissionPolicy } from '../admission';
+import { AdmissionQueue, admit, type AdmissionPolicy, type CoercedReceipt } from '../admission';
 import { checkReadiness, nodeReadinessDeps, nodeReadinessFs, syncIfSupported, type ReadinessFs } from '../readiness';
 
 const POLICY: AdmissionPolicy = { budgetMs: 10_000, minServiceMs: 2_000, maxQueued: 4 };
@@ -65,6 +66,18 @@ const settle = async (): Promise<void> => {
   for (let i = 0; i < 4; i += 1) await Promise.resolve();
 };
 
+/**
+ * Fronta si o hlášení srovnaných časů říká povinně, takže ho musí dodat každý
+ * test. Ty, které srovnání neměří, dodávají tohle.
+ */
+const ignoreCoercions = (): void => undefined;
+
+/** Zápisník ohlášených srovnání pro testy, které je měří. */
+function coercionLog(): { readonly seen: CoercedReceipt[]; readonly onCoercedReceipt: (c: CoercedReceipt) => void } {
+  const seen: CoercedReceipt[] = [];
+  return { seen, onCoercedReceipt: (c) => void seen.push(c) };
+}
+
 describe('admit', () => {
   it('požadavek přijatý právě teď má celý rozpočet', () => {
     const verdict = admit('a', 1_000, 1_000, POLICY);
@@ -102,7 +115,7 @@ describe('admit', () => {
 describe('AdmissionQueue', () => {
   it('požadavek, který stráví většinu rozpočtu ve frontě, se odmítne místo aby doběhl pozdě', async () => {
     const clock = manualClock();
-    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule, onCoercedReceipt: ignoreCoercions });
 
     // První požadavek slot obsadí a drží ho, dokud mu to nedovolíme pustit.
     let releaseFirst = (): void => undefined;
@@ -138,7 +151,7 @@ describe('AdmissionQueue', () => {
 
   it('týž požadavek se pustí, když ve frontě strávil málo', async () => {
     const clock = manualClock();
-    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule, onCoercedReceipt: ignoreCoercions });
 
     let releaseFirst = (): void => undefined;
     const first = queue.submit('first', async () => {
@@ -159,7 +172,7 @@ describe('AdmissionQueue', () => {
 
   it('práce dostane absolutní deadline, ne rozpočet', async () => {
     const clock = manualClock();
-    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule, onCoercedReceipt: ignoreCoercions });
 
     // Rozpočet by po 3 s čekání znamenal „ještě 10 s"; absolutní deadline je
     // pořád 11 000. Ten rozdíl je to, co brání téže vadě o úroveň níž.
@@ -187,7 +200,7 @@ describe('AdmissionQueue', () => {
 
   it('plná fronta se odmítá při podání, ne po čekání', async () => {
     const clock = manualClock();
-    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 1 }, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 1 }, { now: clock.now, concurrency: 1, schedule: clock.schedule, onCoercedReceipt: ignoreCoercions });
 
     let release = (): void => undefined;
     const first = queue.submit('first', async () => {
@@ -211,7 +224,10 @@ describe('AdmissionQueue', () => {
 });
 
 /** Souborový systém, který si pamatuje obsah a umí selhat na vyžádání. */
-function fakeFs(broken: Partial<Record<'write' | 'read' | 'remove', string>> = {}): ReadinessFs & {
+function fakeFs(
+  broken: Partial<Record<'write' | 'read' | 'remove', string>> = {},
+  durabilityVerified = true,
+): ReadinessFs & {
   files: Map<string, string>;
 } {
   const files = new Map<string, string>();
@@ -220,6 +236,7 @@ function fakeFs(broken: Partial<Record<'write' | 'read' | 'remove', string>> = {
     async write(path, bytes) {
       if (broken.write !== undefined) throw new Error(broken.write);
       files.set(path, bytes);
+      return { durabilityVerified };
     },
     async read(path) {
       if (broken.read !== undefined) throw new Error(broken.read);
@@ -309,6 +326,10 @@ describe('checkReadiness nad skutečným souborovým systémem', () => {
 
     expect(result.ready).toBe(true);
     expect(readdirSync(real)).toEqual([]);
+    // Dočasný adresář `fsync` umí, takže tady musí projít PLNÁ kontrola. Kdyby
+    // ne, je to nález o téhle mašině, ne planý poplach: soubor výš tvrdí, že
+    // zápis se vynutí na zařízení, a tady by to přestalo platit.
+    expect(result).toMatchObject({ durabilityVerified: true });
   });
 
   it('adresář, který neexistuje, je NEPŘIPRAVENÝ a nic po sobě nenechá', async () => {
@@ -386,7 +407,7 @@ describe('AdmissionQueue — vypršelé požadavky nedrží místo ve frontě', 
     // místa a čerstvý požadavek s CELÝM rozpočtem dostal `QUEUE_FULL`. Tedy
     // patologie, kterou tenhle soubor v hlavičce popisuje jako důvod existence.
     const clock = manualClock();
-    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 2 }, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 2 }, { now: clock.now, concurrency: 1, schedule: clock.schedule, onCoercedReceipt: ignoreCoercions });
 
     let release = (): void => undefined;
     const busy = queue.submit('busy', async () => {
@@ -431,7 +452,7 @@ describe('AdmissionQueue — vypršelé požadavky nedrží místo ve frontě', 
     // stejnou cestou jako propuštěný, snížil by `#running` za někoho jiného a
     // fronta by pustila dvě práce naráz při `concurrency: 1`.
     const clock = manualClock();
-    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 3 }, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 3 }, { now: clock.now, concurrency: 1, schedule: clock.schedule, onCoercedReceipt: ignoreCoercions });
     const peak: number[] = [];
 
     let release = (): void => undefined;
@@ -466,7 +487,7 @@ describe('AdmissionQueue — vypršelé požadavky nedrží místo ve frontě', 
     // vědět má. Co se nesmí stát je, že si s sebou vezme i slot — jedna vadná
     // odpověď by pak frontu zadusila.
     const clock = manualClock();
-    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule, onCoercedReceipt: ignoreCoercions });
 
     await expect(
       queue.submit('vadny', async () => {
@@ -487,7 +508,7 @@ describe('AdmissionQueue — čas přijetí a probuzení bez dalšího provozu',
     // zadarmo, takže deadline zůstal „od začátku našeho zpracování", jen o
     // patro výš.
     const clock = manualClock();
-    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule, onCoercedReceipt: ignoreCoercions });
 
     // Fronta je prázdná a slot volný. O verdiktu tedy nerozhoduje čekání v ní —
     // rozhoduje jediná věc: že požadavek dorazil o devět vteřin dřív, než se
@@ -530,7 +551,7 @@ describe('AdmissionQueue — čas přijetí a probuzení bez dalšího provozu',
     // To je pravda jen pro požadavek podaný v tomtéž okamžiku, kdy dorazil —
     // tedy pro ten předpoklad, který čas přijetí ruší.
     const clock = manualClock();
-    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 1 }, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 1 }, { now: clock.now, concurrency: 1, schedule: clock.schedule, onCoercedReceipt: ignoreCoercions });
 
     let release = (): void => undefined;
     const busy = queue.submit('busy', async () => {
@@ -564,7 +585,7 @@ describe('AdmissionQueue — čas přijetí a probuzení bez dalšího provozu',
     // dozvěděl `DEADLINE_EXCEEDED` teprve, až někdo přišel — u naměřeného
     // rozpočtu 60 s tedy celou minutu poté, co jeho odpověď přestala mít smysl.
     const clock = manualClock();
-    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule, onCoercedReceipt: ignoreCoercions });
 
     let release = (): void => undefined;
     const busy = queue.submit('busy', async () => {
@@ -604,7 +625,7 @@ describe('AdmissionQueue — časovač, který dosedne přesně na hranici', () 
     // by pak seděl ve frontě navždy, protože další podání už nepřijde. Tenhle
     // test drží ten druhý pokus, ne první.
     const clock = manualClock();
-    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule, onCoercedReceipt: ignoreCoercions });
 
     let release = (): void => undefined;
     const busy = queue.submit('busy', async () => {
@@ -643,7 +664,7 @@ describe('AdmissionQueue — plánovač, který se doopravdy nasazuje', () => {
     // jede kód, který se nasazuje: skutečné hodiny, skutečný časovač.
     const queue = new AdmissionQueue(
       { budgetMs: 150, minServiceMs: 60, maxQueued: 4 },
-      { now: () => Date.now(), concurrency: 1 },
+      { now: () => Date.now(), concurrency: 1, onCoercedReceipt: ignoreCoercions },
     );
 
     let release = (): void => undefined;
@@ -687,6 +708,7 @@ describe('AdmissionQueue — čas přijetí přichází zvenčí, takže může 
     const queue = new AdmissionQueue(POLICY, {
       now: clock.now,
       concurrency: 1,
+      onCoercedReceipt: ignoreCoercions,
       schedule: (fn, delayMs) => {
         delays.push(delayMs);
         return clock.schedule(fn, delayMs);
@@ -725,7 +747,7 @@ describe('AdmissionQueue — čas přijetí přichází zvenčí, takže může 
     // která parametr zahodí vždycky — a to je právě ta vada, kterou zavedení
     // toho parametru mělo odstranit.
     const clock = manualClock();
-    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule, onCoercedReceipt: ignoreCoercions });
 
     const receivedAtMs = clock.now();
     clock.advance(9_000);
@@ -750,9 +772,14 @@ describe('vynucení zápisu na zařízení — „nepodporuji" není „nepovedl
     },
   });
 
-  it.each(['EINVAL', 'ENOTSUP', 'EOPNOTSUPP', 'ENOSYS'])('%s znamená „tenhle svazek to neumí" a projde', async (code) => {
-    await expect(syncIfSupported(throwing(code))).resolves.toBeUndefined();
-  });
+  it.each(['EINVAL', 'ENOTSUP', 'EOPNOTSUPP', 'ENOSYS'])(
+    '%s znamená „tenhle svazek to neumí" a hlásí se jako NEOVĚŘENO',
+    async (code) => {
+      // `false`, ne `undefined`: spolknout odmítnutí a mlčet by znamenalo, že
+      // přeskočený krok vypadá zvenčí stejně jako provedený.
+      await expect(syncIfSupported(throwing(code))).resolves.toBe(false);
+    },
+  );
 
   it.each(['EIO', 'ENOSPC', 'EDQUOT'])('%s je naopak skutečné selhání a propadne dál', async (code) => {
     // Tohle je přesně ta třída „zápis se tvářil úspěšně a nic neuložil", kvůli
@@ -766,8 +793,8 @@ describe('vynucení zápisu na zařízení — „nepodporuji" není „nepovedl
     );
   });
 
-  it('svazek, který sync umí, projde bez výjimky', async () => {
-    await expect(syncIfSupported({ sync: async () => undefined })).resolves.toBeUndefined();
+  it('svazek, který sync umí, hlásí OVĚŘENO', async () => {
+    await expect(syncIfSupported({ sync: async () => undefined })).resolves.toBe(true);
   });
 });
 
@@ -781,7 +808,7 @@ describe('AdmissionQueue — čas přijetí před vznikem fronty', () => {
     // nebyl řádek. Chybějící hlavička je přitom vada u volajícího, ne důvod
     // vypnout provoz.
     const clock = manualClock();
-    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule, onCoercedReceipt: ignoreCoercions });
 
     clock.advance(5_000);
     const outcome = await queue.submit('bez-hlavicky', async () => 'prošel', Number(null));
@@ -796,7 +823,7 @@ describe('AdmissionQueue — čas přijetí před vznikem fronty', () => {
     // a `waitedMs: 0` u každého požadavku vypadá naprosto zdravě. Bez čítače
     // není ta degradace odkud poznat.
     const clock = manualClock();
-    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule, onCoercedReceipt: ignoreCoercions });
     clock.advance(5_000);
 
     expect(queue.coercedReceipts).toBe(0);
@@ -842,5 +869,121 @@ describe('vynucení zápisu — odmítnutí, které není objekt', () => {
 
   it('odmítnutí řetězcem se taky propustí dál', async () => {
     await expect(syncIfSupported({ sync: async () => Promise.reject('EINVAL') })).rejects.toBe('EINVAL');
+  });
+});
+
+describe('AdmissionQueue — proces nesmí skončit dřív, než čekající dostane verdikt', () => {
+  // Nález druhé nezávislé revize, a je to jediná vlastnost v tomhle souboru,
+  // kterou uvnitř vitestu změřit NEJDE: vitest sám drží smyčku událostí naživu,
+  // takže by test prošel i nad `unref()`. Oracle je proto skutečný proces.
+  //
+  // Scéna je postavená tak, aby časovač vypršení byl jediný živý handle:
+  // slot obsadí práce, která se sama nedokončí (nesplněný `Promise` žádný handle
+  // nedrží), a druhý požadavek proto může verdikt dostat jedině z něj.
+  //
+  // S `unref()` Node skončí kódem 0 a nevypíše nic — `submit()` se nedočká
+  // verdiktu ani chyby. Bez něj časovač doběhne, verdikt se vypíše, a fronta
+  // se po vyprázdnění nepřeplánuje, takže proces skončí hned po něm.
+  it('čekající verdikt dostane i tehdy, když je časovač vypršení jediný živý handle', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'worldsmith-loop-'));
+    const child = join(dir, 'child.mjs');
+    const source = new URL('../admission.ts', import.meta.url).href;
+
+    writeFileSync(
+      child,
+      [
+        `import { AdmissionQueue } from ${JSON.stringify(source)};`,
+        'const queue = new AdmissionQueue(',
+        '  { budgetMs: 300, minServiceMs: 120, maxQueued: 4 },',
+        '  { now: () => Date.now(), concurrency: 1, onCoercedReceipt: () => undefined },',
+        ');',
+        "void queue.submit('busy', () => new Promise(() => undefined));",
+        "queue.submit('doomed', async () => 'nikdy').then((outcome) => {",
+        '  process.stdout.write(JSON.stringify(outcome.verdict));',
+        '});',
+      ].join('\n'),
+      'utf-8',
+    );
+
+    try {
+      const run = spawnSync(process.execPath, ['--experimental-strip-types', '--no-warnings', child], {
+        encoding: 'utf-8',
+        timeout: 15_000,
+      });
+
+      expect(run.stdout.trim(), 'proces skončil dřív, než verdikt dorazil').not.toBe('');
+      expect(JSON.parse(run.stdout.trim())).toMatchObject({
+        admitted: false,
+        id: 'doomed',
+        reason: 'DEADLINE_EXCEEDED',
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 30_000);
+});
+
+describe('checkReadiness — přeskočená trvanlivost se pozná z verdiktu', () => {
+  // Nález druhé nezávislé revize: `syncIfSupported()` odmítnutí `EINVAL`
+  // správně spolkne, jenže sonda pak trvale hlásí záruku, kterou přestala
+  // kontrolovat — a z verdiktu to nešlo poznat, protože obě větve vracely
+  // tutéž větu o zdraví.
+  it('svazek, který fsync neumí, je PŘIPRAVENÝ, ale trvanlivost hlásí jako neověřenou', async () => {
+    const result = await checkReadiness('/var/tmp', deps(fakeFs({}, false)));
+
+    // `ready: true` je schválně: druh svazku není nemoc a instanci vyřadit nesmí.
+    expect(result).toMatchObject({ ready: true, durabilityVerified: false });
+  });
+
+  it('plná kontrola se od ní odliší', async () => {
+    // Rozlišovací polovina. Bez ní by aserce nahoře prošla i nad implementací,
+    // která hlásí `false` vždycky — tedy nad sondou, co si nevěří nikdy.
+    const result = await checkReadiness('/var/tmp', deps(fakeFs({}, true)));
+
+    expect(result).toMatchObject({ ready: true, durabilityVerified: true });
+  });
+});
+
+describe('AdmissionQueue — srovnání času přijetí se hlásí, ne jen počítá', () => {
+  // Čítač je souhrn: někdo ho musí přečíst, a zapojení, které na to zapomene,
+  // je zpátky v tichém režimu. Hlášení je proto povinná závislost — frontu bez
+  // něj nejde postavit — a jde ven ve chvíli, kdy k srovnání došlo.
+  it('každé srovnání se ohlásí hned, s hodnotou, kterou volající poslal', async () => {
+    const clock = manualClock();
+    const log = coercionLog();
+    const queue = new AdmissionQueue(POLICY, {
+      now: clock.now,
+      concurrency: 1,
+      schedule: clock.schedule,
+      onCoercedReceipt: log.onCoercedReceipt,
+    });
+    clock.advance(5_000);
+
+    await queue.submit('a', async () => 'x', Number.NaN);
+    await queue.submit('b', async () => 'x', 0);
+
+    expect(log.seen).toEqual([
+      { id: 'a', claimedMs: Number.NaN, usedMs: 6_000 },
+      { id: 'b', claimedMs: 0, usedMs: 6_000 },
+    ]);
+    // Hlášení a čítač musí říkat totéž — jinak by se dalo věřit tomu horšímu z nich.
+    expect(queue.coercedReceipts).toBe(log.seen.length);
+  });
+
+  it('poctivý čas přijetí se neohlásí — jinak by hlášení ukazovalo na provoz, ne na vadu', async () => {
+    const clock = manualClock();
+    const log = coercionLog();
+    const queue = new AdmissionQueue(POLICY, {
+      now: clock.now,
+      concurrency: 1,
+      schedule: clock.schedule,
+      onCoercedReceipt: log.onCoercedReceipt,
+    });
+    clock.advance(5_000);
+
+    await queue.submit('poctivy', async () => 'x', clock.now() - 1_000);
+
+    expect(log.seen).toEqual([]);
+    expect(queue.coercedReceipts).toBe(0);
   });
 });

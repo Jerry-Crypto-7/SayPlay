@@ -30,9 +30,22 @@
  * „jsem rozbitý". Sonda proto vrací verdikt a nevyhazuje nikdy.
  */
 
+/**
+ * Co zápis prokázal — **a co neprokázal.**
+ *
+ * Krok trvanlivosti se na některých svazcích přeskočí (viz `syncIfSupported`).
+ * Zápis se povede, takže verdikt bude `ready: true`, jenže jedna ze čtyř tříd,
+ * kvůli kterým tahle sonda existuje, zůstane neověřená. Verdikt to musí unést
+ * dál, jinak sonda trvale hlásí záruku, kterou přestala kontrolovat.
+ */
+export interface WriteOutcome {
+  /** `true` = zápis se vynutil na zařízení. `false` = svazek `fsync` neumí. */
+  readonly durabilityVerified: boolean;
+}
+
 /** Souborové operace, které sonda potřebuje. Parametr, aby šlo testovat selhání. */
 export interface ReadinessFs {
-  write(path: string, bytes: string): Promise<void>;
+  write(path: string, bytes: string): Promise<WriteOutcome>;
   read(path: string): Promise<string>;
   remove(path: string): Promise<void>;
 }
@@ -51,6 +64,15 @@ export interface Ready {
   readonly ready: true;
   readonly probePath: string;
   readonly elapsedMs: number;
+  /**
+   * Jestli sonda ověřila i trvanlivost, nebo jen zápis do cache stránek.
+   *
+   * **`false` není chyba a nesmí vyřadit instanci** — svazek, který `fsync`
+   * neumí, je zdravý, jen jiného druhu. Je to ale slabší kontrola než plná, a
+   * z verdiktu se to musí dát poznat: bez tohohle pole hlásí sonda tutéž větu
+   * o zdraví v obou případech, a rozdíl mezi „ověřeno" a „neověřeno" zmizí.
+   */
+  readonly durabilityVerified: boolean;
 }
 
 export interface NotReady {
@@ -93,8 +115,9 @@ export async function checkReadiness(directory: string, deps: ReadinessDeps): Pr
   const payload = `worldsmith readiness ${token}`;
   const elapsed = (): number => deps.now() - started;
 
+  let written: WriteOutcome;
   try {
-    await deps.fs.write(probePath, payload);
+    written = await deps.fs.write(probePath, payload);
   } catch (error) {
     // Uklízí se i tady, a není to opatrnost navíc. `ENOSPC` i vyčerpaná kvóta
     // položku **nejdřív založí** a teprve pak selžou, takže bez tohohle by sonda
@@ -130,7 +153,7 @@ export async function checkReadiness(directory: string, deps: ReadinessDeps): Pr
     };
   }
 
-  return { ready: true, probePath, elapsedMs: elapsed() };
+  return { ready: true, probePath, elapsedMs: elapsed(), durabilityVerified: written.durabilityVerified };
 }
 
 /**
@@ -159,7 +182,7 @@ export function nodeReadinessFs(): ReadinessFs {
       const handle = await open(path, 'w');
       try {
         await handle.write(bytes, 0, 'utf-8');
-        await syncIfSupported(handle);
+        return { durabilityVerified: await syncIfSupported(handle) };
       } finally {
         await handle.close();
       }
@@ -191,10 +214,16 @@ const SYNC_UNSUPPORTED = new Set(['EINVAL', 'ENOTSUP', 'EOPNOTSUPP', 'ENOSYS']);
  *
  * `EIO` a `ENOSPC` se naopak propouštějí dál schválně: to je přesně ta třída
  * „zápis se tvářil úspěšně a nic neuložil", kvůli které tu `sync()` je.
+ *
+ * **Vrací, jestli se to povedlo, a to je ta druhá půlka rozlišení.** Spolknout
+ * `EINVAL` a mlčet znamená, že přeskočený krok vypadá zvenčí stejně jako
+ * provedený — sonda pak hlásí záruku, kterou přestala kontrolovat. `false`
+ * jde až do verdiktu, viz `Ready.durabilityVerified`.
  */
-export async function syncIfSupported(handle: { sync: () => Promise<void> }): Promise<void> {
+export async function syncIfSupported(handle: { sync: () => Promise<void> }): Promise<boolean> {
   try {
     await handle.sync();
+    return true;
   } catch (error) {
     // `error` nemusí být objekt — export téhle funkce ji otevřel i handlerům,
     // které nejsou `fs`, a `Promise.reject(null)` by na čtení `.code` shodil
@@ -204,6 +233,7 @@ export async function syncIfSupported(handle: { sync: () => Promise<void> }): Pr
     // `typeof code !== 'string'` je zúžení typu, ne druhá kontrola: `Set<string>`
     // by neznámý tvar stejně nenašel. Rozhoduje řádek nad ním.
     if (typeof code !== 'string' || !SYNC_UNSUPPORTED.has(code)) throw error;
+    return false;
   }
 }
 
