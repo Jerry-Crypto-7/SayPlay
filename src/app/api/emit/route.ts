@@ -1,10 +1,10 @@
 /**
  * `POST /api/emit` — emise celého světa proti zmrazenému promptu.
  *
- * Řetěz je celý tady, v jednom čitelném pořadí, protože pořadí je součást
- * kontraktu: **odkazy se rozpouštějí dřív, než se cokoli sníží do IR**. Osiřelý
- * counter je odmítnutí s adresou, ne výjimka z hloubky snižování — `references.ts`
- * kvůli tomu vznikl v T8b a do téhle úlohy neměl produkčního volajícího.
+ * Řetěz sám leží v `chain.ts`, protože ho vedle tohohle endpointu čte i jeho
+ * SSE varianta (`stream/route.ts`); pořadí kroků je součást kontraktu a druhá
+ * kopie by byla druhé místo, kde se dá změnit. Tady zbývá čtení těla a překlad
+ * verdiktu na `Response`.
  *
  * ## Co je chyba a co je výsledek
  *
@@ -39,7 +39,7 @@
  * ## Anotace obálky
  *
  * `simOutcome`, `refusedBeforeModel` a `clampedFrom` jedou **vedle** dokumentu
- * (`ENVELOPE_ANNOTATIONS` ve `worlddoc.ts`) a endpoint je oloupe dřív, než
+ * (`ENVELOPE_ANNOTATIONS` ve `worlddoc.ts`) a řetěz je oloupe dřív, než
  * cokoli validuje. Jmenovitá větev na dvou z nich tuhle třídu nezavřela —
  * pole navíc nesou **4 z 15** zmrazených create emisí, ne 2.
  *
@@ -47,7 +47,7 @@
  *
  * Zmrazený protokol (`look.p1Status`) říká, že v P1 vzhled emituje **systém**,
  * ne model. Zmrazené odpovědi ho nesou, protože je autorovala T2 jako systémový
- * default — endpoint ho tedy jen validuje schématem a kontrolou konečnosti všech
+ * default — řetěz ho tedy jen validuje schématem a kontrolou konečnosti všech
  * číselných hodnot a připojí nezměněný. Tvrzení „scénu autoruje model" smí padnout
  * až po P5.
  */
@@ -55,19 +55,8 @@
 import { randomUUID } from 'node:crypto';
 
 import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
-import { buildRuntimeWorld } from '../../../ir/build';
-import { findDanglingReferences } from '../../../ir/references';
-import {
-  declinedEmissionSchema,
-  peelEnvelope,
-  sealSimHash,
-  validateLook,
-  worldEmissionSchema,
-} from '../../../ir/worlddoc';
-import { emitWorld, frozenGrammar, frozenPrompt, type ClientFailure } from '../../../model/client';
-import { buildEmissionRequest } from '../../../model/prompt';
 import { withRequest } from '../../../obs/trace';
-import { verifyWitness } from '../../../verify/witness';
+import { runEmission } from './chain';
 
 /** `AsyncLocalStorage` i čtení zmrazeného korpusu potřebují Node, ne edge. */
 export const runtime = 'nodejs';
@@ -79,78 +68,57 @@ export const runtime = 'nodejs';
  */
 export { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody };
 
-type Stage = 'schema' | 'references' | 'lowering' | 'witness' | 'look' | 'declined';
-
-interface Rejection {
-  readonly stage: Stage;
-  readonly reason: string;
-  readonly detail: string;
-  readonly issues: readonly string[];
-}
-
-function rejected(requestId: string, promptId: string, rejection: Rejection, extra: object = {}): Response {
-  return Response.json({ requestId, promptId, outcome: 'REJECTED', rejection, doc: null, ...extra });
-}
-
-/** Neznámé pole je pořád `SCHEMA_VIOLATION` — obálka nic nepovoluje navíc. */
-function rejectionFromSchema(issues: readonly { message: string; path: PropertyKey[] }[]): Rejection {
-  return {
-    stage: 'schema',
-    reason: 'SCHEMA_VIOLATION',
-    detail: issues[0].message,
-    issues: issues.map((issue) => `/${issue.path.join('/')}: ${issue.message}`),
-  };
-}
-
 /**
- * Zmrazený korpus je nečitelný nebo se rozešel s `MANIFEST.lock`.
+ * Přečte tělo a vytáhne z něj `promptId`, nebo rovnou vrátí chybovou odpověď.
  *
- * **Není to verdikt a nesmí se skórovat.** Start z jiného pracovního adresáře
- * nebo podvržený soubor nevypovídají o modelu nic; kdyby to endpoint vydal jako
- * 200 s odmítnutím, T17 by to započítal jako vadnou emisi.
+ * Sdílí to s `stream/route.ts`: obě cesty přijímají tentýž požadavek a mez
+ * velikosti i času musí být na obou stejná, jinak by se dala jedna z nich
+ * použít k obejití druhé.
  */
-function corpusUnavailable(requestId: string, failure: ClientFailure): Response {
-  return Response.json(
-    { requestId, error: { code: failure.reason, message: failure.detail } },
-    { status: 503 },
-  );
-}
+export async function readPromptId(
+  request: Request,
+  requestId: string,
+): Promise<{ readonly ok: true; readonly promptId: string } | { readonly ok: false; readonly response: Response }> {
+  const raw = await readBody(request);
+  if (!raw.ok)
+    return {
+      ok: false,
+      response:
+        raw.reason === 'TOO_LARGE'
+          ? Response.json(
+              {
+                requestId,
+                error: { code: 'PAYLOAD_TOO_LARGE', message: `request body exceeds ${MAX_BODY_BYTES} bytes` },
+              },
+              { status: 413 },
+            )
+          : Response.json(
+              {
+                requestId,
+                error: { code: 'BODY_TIMEOUT', message: `request body did not arrive within ${BODY_DEADLINE_MS} ms` },
+              },
+              { status: 408 },
+            ),
+    };
 
-export async function POST(request: Request): Promise<Response> {
-  const requestId = randomUUID();
-
-  return withRequest(requestId, async () => {
-    const raw = await readBody(request);
-    if (!raw.ok)
-      return raw.reason === 'TOO_LARGE'
-        ? Response.json(
-            {
-              requestId,
-              error: { code: 'PAYLOAD_TOO_LARGE', message: `request body exceeds ${MAX_BODY_BYTES} bytes` },
-            },
-            { status: 413 },
-          )
-        : Response.json(
-            {
-              requestId,
-              error: { code: 'BODY_TIMEOUT', message: `request body did not arrive within ${BODY_DEADLINE_MS} ms` },
-            },
-            { status: 408 },
-          );
-
-    let body: unknown;
-    try {
-      body = JSON.parse(raw.text);
-    } catch {
-      return Response.json(
+  let body: unknown;
+  try {
+    body = JSON.parse(raw.text);
+  } catch {
+    return {
+      ok: false,
+      response: Response.json(
         { requestId, error: { code: 'MALFORMED_BODY', message: 'request body is not JSON' } },
         { status: 400 },
-      );
-    }
+      ),
+    };
+  }
 
-    const promptId = (body as { promptId?: unknown } | null)?.promptId;
-    if (typeof promptId !== 'string' || promptId.length === 0)
-      return Response.json(
+  const promptId = (body as { promptId?: unknown } | null)?.promptId;
+  if (typeof promptId !== 'string' || promptId.length === 0)
+    return {
+      ok: false,
+      response: Response.json(
         {
           requestId,
           error: {
@@ -160,156 +128,47 @@ export async function POST(request: Request): Promise<Response> {
           },
         },
         { status: 400 },
+      ),
+    };
+
+  return { ok: true, promptId };
+}
+
+export async function POST(request: Request): Promise<Response> {
+  const requestId = randomUUID();
+
+  return withRequest(requestId, async () => {
+    const parsed = await readPromptId(request, requestId);
+    if (!parsed.ok) return parsed.response;
+
+    const outcome = runEmission(parsed.promptId);
+
+    /**
+     * Zmrazený korpus je nečitelný nebo se rozešel s `MANIFEST.lock`.
+     *
+     * **Není to verdikt a nesmí se skórovat.** Start z jiného pracovního adresáře
+     * nebo podvržený soubor nevypovídají o modelu nic; kdyby to endpoint vydal jako
+     * 200 s odmítnutím, T17 by to započítal jako vadnou emisi.
+     */
+    if (outcome.kind === 'unavailable')
+      return Response.json(
+        { requestId, error: { code: outcome.failure.reason, message: outcome.failure.detail } },
+        { status: 503 },
       );
 
-    const prompt = frozenPrompt(promptId);
-    if (!prompt.ok) return corpusUnavailable(requestId, prompt);
-    if (prompt.value === null || prompt.value.kind !== 'create')
+    if (outcome.kind === 'unknown-prompt')
       return Response.json(
         {
           requestId,
-          error: { code: 'UNKNOWN_PROMPT', message: `no frozen create prompt named ${promptId}`, field: 'promptId' },
+          error: {
+            code: 'UNKNOWN_PROMPT',
+            message: `no frozen create prompt named ${parsed.promptId}`,
+            field: 'promptId',
+          },
         },
         { status: 404 },
       );
 
-    const grammar = frozenGrammar();
-    if (!grammar.ok) return corpusUnavailable(requestId, grammar);
-
-    const upstream = buildEmissionRequest(prompt.value.prompt, grammar.value);
-    const emission = emitWorld(promptId, upstream);
-    if (!emission.ok) return corpusUnavailable(requestId, emission);
-
-    // Anotace se loupou **před** vším ostatním. Dokument je to, co zbude —
-    // a jen na něj se ptá schéma, protože jen on se pečetí a hashuje.
-    const peeled = peelEnvelope(emission.body);
-    if (peeled === null)
-      return rejected(
-        requestId,
-        promptId,
-        {
-          stage: 'schema',
-          reason: 'NOT_A_DOCUMENT',
-          detail: 'the emission body is not a JSON object',
-          issues: [],
-        },
-        { upstream, provenance: emission.provenance, annotations: {}, emission: null },
-      );
-
-    // `emission` je v odpovědi **vždy**, i u odmítnutí. Odmítnutí se podle
-    // §13.4 vztahuje výhradně na `sim`; scéna a emitované entity se s ním
-    // zahazovat nesmějí, protože z nich se skórují `sceneMustBuild`
-    // i `minEntitiesByRole`.
-    const envelope = {
-      upstream,
-      provenance: emission.provenance,
-      annotations: peeled.annotations,
-      emission: peeled.document,
-    };
-
-    // Poctivé odmítnutí `sim` části, ne vada emise. Říká to anotace na obálce,
-    // ne pole dokumentu — pod ní zbývá jen tvar `sim: null` plus platný `look`.
-    if (peeled.annotations.simOutcome === 'NO_FIT') {
-      const declined = declinedEmissionSchema.safeParse(peeled.document);
-      if (!declined.success)
-        return rejected(requestId, promptId, rejectionFromSchema(declined.error.issues), envelope);
-
-      const declinedLook = validateLook(declined.data.look);
-      if (!declinedLook.ok)
-        return rejected(
-          requestId,
-          promptId,
-          { stage: 'look', reason: 'LOOK_INVALID', detail: declinedLook.issues[0], issues: declinedLook.issues },
-          envelope,
-        );
-
-      return Response.json({
-        requestId,
-        promptId,
-        ...envelope,
-        outcome: 'NO_FIT',
-        certificate: null,
-        rejection: {
-          stage: 'declined',
-          reason: 'NO_FIT_DECLARED',
-          detail: 'the emission declined the sim part; the scene is still built from look',
-          issues: [],
-        },
-        // `doc` je zapečetěný dokument, a ten tu nevznikl — není co hashovat.
-        // Scéna se tím neztrácí, jede v `emission`.
-        doc: null,
-      });
-    }
-
-    const parsed = worldEmissionSchema.safeParse(peeled.document);
-    if (!parsed.success)
-      return rejected(requestId, promptId, rejectionFromSchema(parsed.error.issues), envelope);
-
-    // Před snížením do IR, ne po něm: povrchová jména (countery, sockety, zóny)
-    // se do IR vůbec nedostanou, takže osiřelý odkaz se za nimi už nedá najít.
-    const dangling = findDanglingReferences(parsed.data);
-    if (dangling.length > 0)
-      return rejected(
-        requestId,
-        promptId,
-        {
-          stage: 'references',
-          reason: 'DANGLING_REFERENCE',
-          detail: `${dangling[0].where} names no declared ${dangling[0].namespace} ${dangling[0].name}`,
-          issues: dangling.map((found) => `${found.where}: unknown ${found.namespace} ${found.name}`),
-        },
-        envelope,
-      );
-
-    const look = validateLook(parsed.data.look);
-    if (!look.ok)
-      return rejected(
-        requestId,
-        promptId,
-        { stage: 'look', reason: 'LOOK_INVALID', detail: look.issues[0], issues: look.issues },
-        envelope,
-      );
-
-    // Hash pečetí SYSTÉM, ne model — zmrazené odpovědi ho proto nenesou a
-    // dokument ho dostává až tady, ze `sim`, kterou právě prošel schématem.
-    const doc = sealSimHash(parsed.data);
-
-    const built = buildRuntimeWorld(parsed.data.sim);
-    if (!built.ok)
-      return rejected(
-        requestId,
-        promptId,
-        {
-          stage: 'lowering',
-          reason: built.reason,
-          detail: built.issues[0] ?? 'no detail',
-          issues: built.issues,
-        },
-        { ...envelope, doc },
-      );
-
-    const verdict = verifyWitness(built.world, built.world.trace);
-    if (verdict.verdict === 'REJECTED')
-      return rejected(
-        requestId,
-        promptId,
-        {
-          stage: 'witness',
-          reason: verdict.reason,
-          detail: verdict.detail,
-          issues: verdict.atStep === null ? [] : [`witness step ${verdict.atStep}`],
-        },
-        { ...envelope, doc },
-      );
-
-    return Response.json({
-      requestId,
-      promptId,
-      ...envelope,
-      outcome: 'CERTIFIED',
-      certificate: verdict,
-      rejection: null,
-      doc,
-    });
+    return Response.json({ requestId, ...outcome.body });
   });
 }
