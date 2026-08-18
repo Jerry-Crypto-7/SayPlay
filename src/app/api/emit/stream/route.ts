@@ -99,9 +99,16 @@ export async function POST(request: Request): Promise<Response> {
     return new Response(stream, {
       headers: {
         'content-type': 'text/event-stream; charset=utf-8',
-        'cache-control': 'no-store',
-        // Bez tohohle si obrácený proxy pár rámců schová do vyrovnávací paměti
-        // a průběh dorazí naráz s verdiktem — tedy k ničemu.
+        // **`no-transform` je nosné, ne opis `no-store`.** `next start` prohání
+        // každou odpověď svou vestavěnou kompresí a `text/event-stream` spadne
+        // pod pravidlo `^text/`, takže se zabalí gzipem — a zlib pak malé rámce
+        // drží, dokud nenaplní svou vyrovnávací paměť. Naměřeno: sedm rámců
+        // psaných po 30 ms odešlo jako jeden kus po 243 ms, tedy přesně to
+        // „průběh dorazí naráz s verdiktem", proti kterému je tenhle soubor
+        // napsaný. Komprese `no-transform` respektuje.
+        'cache-control': 'no-store, no-transform',
+        // Tohle je proti obrácenému proxy, ne proti kompresi v procesu — jeden
+        // druhého nenahrazuje a bez obou je průběh k ničemu.
         'x-accel-buffering': 'no',
       },
     });

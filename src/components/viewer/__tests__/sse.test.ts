@@ -8,9 +8,9 @@
  * jako údajně rychlejší emise.
  */
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { SseDecoder } from '../sse';
+import { SseDecoder, streamEmission } from '../sse';
 
 describe('SseDecoder', () => {
   it('přečte rámec s událostí i daty', () => {
@@ -62,5 +62,34 @@ describe('SseDecoder', () => {
 
   it('bez `event:` je událost `message`', () => {
     expect(new SseDecoder().push('data: x\n\n')).toEqual([{ event: 'message', data: 'x' }]);
+  });
+});
+
+describe('streamEmission', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('odmítnutý požadavek je chyba, ne emise bez výsledku', async () => {
+    // Chybové stavy odcházejí jako JSON, ne jako proud rámců. Bez kontroly stavu
+    // se dekóduje nula rámců a volající dostane `result: null` — tedy „emise
+    // doběhla a nic nevrátila" místo „server požadavek odmítl".
+    vi.stubGlobal('fetch', async () => new Response('{"error":{"code":"PAYLOAD_TOO_LARGE"}}', { status: 413 }));
+
+    await expect(streamEmission('C01')).rejects.toThrow(/HTTP 413/);
+  });
+
+  it('přečte fáze i verdikt z proudu', async () => {
+    const frame = (event: string, data: string) => `event: ${event}\ndata: ${data}\n\n`;
+    const body = [
+      frame('progress', '{"phase":"requested","step":1}'),
+      frame('progress', '{"phase":"emitted","step":2}'),
+      frame('result', '{"outcome":"CERTIFIED"}'),
+    ].join('');
+    vi.stubGlobal('fetch', async () => new Response(body, { status: 200 }));
+
+    const seen: string[] = [];
+    const stream = await streamEmission('C01', { onProgress: (step) => seen.push(step.phase) });
+
+    expect(seen).toEqual(['requested', 'emitted']);
+    expect(stream.result).toEqual({ outcome: 'CERTIFIED' });
   });
 });

@@ -46,6 +46,26 @@ function render(palette: Record<string, string>): Uint8Array {
   return rgb;
 }
 
+/**
+ * Hotové obrázky, jeden na layout.
+ *
+ * Vykreslení je 756 tisíc iterací plus synchronní `deflateSync`, naměřeně
+ * 23–29 ms — a je to **čistá funkce layoutu**, kterých je šest. Bez téhle mapy
+ * platí ta cena každý veřejný požadavek a stačí pár desítek za sekundu, aby
+ * jediná smyčka událostí neměla čas na `/api/emit` ani na vykreslení stránky.
+ * Hlavička `immutable` pomůže až za CDN, kterou nasazení mít nemusí.
+ */
+const RENDERED = new Map<string, Uint8Array<ArrayBuffer>>();
+
+export function pngFor(layoutId: string, palette: Record<string, string>): Uint8Array<ArrayBuffer> {
+  const ready = RENDERED.get(layoutId);
+  if (ready !== undefined) return ready;
+
+  const png = encodePng(WIDTH, HEIGHT, render(palette));
+  RENDERED.set(layoutId, png);
+  return png;
+}
+
 export function GET(request: Request): Response {
   const requested = new URL(request.url).searchParams.get('layout');
   const layout = requested === null ? LAYOUTS[0] : layoutById(requested);
@@ -53,7 +73,7 @@ export function GET(request: Request): Response {
   if (layout === undefined)
     return Response.json({ error: { code: 'UNKNOWN_LAYOUT', message: `no layout named ${requested}` } }, { status: 404 });
 
-  const png = encodePng(WIDTH, HEIGHT, render(PALETTES[layout.palette]));
+  const png = pngFor(layout.id, PALETTES[layout.palette]);
 
   return new Response(png, {
     headers: {

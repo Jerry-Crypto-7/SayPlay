@@ -93,6 +93,10 @@ export async function streamEmission(
     signal: options.signal,
   });
 
+  // Chybové stavy (400, 408, 413) odcházejí jako JSON, ne jako proud rámců.
+  // Bez téhle kontroly se dekóduje nula rámců a volající dostane `result: null`,
+  // tedy „emise doběhla a nic nevrátila" místo „požadavek byl odmítnut".
+  if (!response.ok) throw new Error(`emisní kanál odmítl požadavek: HTTP ${response.status}`);
   if (response.body === null) throw new Error('emisní kanál nedodal tělo');
 
   const decoder = new SseDecoder();

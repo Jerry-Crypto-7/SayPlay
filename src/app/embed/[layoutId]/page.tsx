@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { LAYOUTS, layoutById } from '@/kit';
@@ -18,11 +19,23 @@ import EmbedView from './EmbedView';
  */
 
 /**
- * Kde artefakt běží. Nasazení proměnnou nastaví; bez ní platí adresa, na které
- * jede e2e — relativní `og:image` je totiž pro sdílení k ničemu, čtečky odkazů
- * ho nemají proti čemu rozvinout.
+ * Kde artefakt běží — **čte se z požadavku, ne z proměnné prostředí**.
+ *
+ * Relativní `og:image` je pro sdílení k ničemu: čtečka odkazů ho nemá proti čemu
+ * rozvinout. Absolutní adresa se ale nesmí brát z `NEXT_PUBLIC_SITE_URL`, jak
+ * to tady stálo předtím — Next takovou proměnnou zapéká při **buildu**, a
+ * zapečetěný build z tagu (`scripts/build-from-tag.mjs`) povoluje jen proměnné
+ * z `ops/build-env.allow`. Nasazený artefakt by tedy nesl adresu, se kterou se
+ * build postavil, tedy loopback z e2e, a každý sdílený odkaz by ukazoval na
+ * `127.0.0.1`. Hlavička požadavku je naproti tomu ta adresa, na kterou se
+ * čtenář skutečně dívá.
  */
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://127.0.0.1:3100';
+async function siteUrl(): Promise<string> {
+  const incoming = await headers();
+  const host = incoming.get('x-forwarded-host') ?? incoming.get('host') ?? '127.0.0.1:3100';
+  const proto = incoming.get('x-forwarded-proto') ?? (host.startsWith('127.0.0.1') || host.startsWith('localhost') ? 'http' : 'https');
+  return `${proto}://${host}`;
+}
 
 export async function generateMetadata({
   params,
@@ -34,7 +47,7 @@ export async function generateMetadata({
   if (layout === undefined) return { title: 'worldsmith' };
 
   return {
-    metadataBase: new URL(SITE),
+    metadataBase: new URL(await siteUrl()),
     title: `${layout.title} — worldsmith`,
     openGraph: {
       title: layout.title,

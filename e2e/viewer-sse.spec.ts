@@ -82,6 +82,34 @@ test('SSE kanál doručí průběh emise dřív než verdikt', async ({ page }) 
   expect(phases.indexOf('witness')).toBeGreaterThan(phases.indexOf('lowering'));
 });
 
+test('proud se nesmí zabalit kompresí, jinak se rámce zdrží ve vyrovnávací paměti', async ({ request }) => {
+  // `next start` prohání odpovědi vestavěnou kompresí a `text/event-stream`
+  // spadne pod její pravidlo `^text/`. Zlib pak drobné rámce drží, dokud
+  // nenaplní vyrovnávací paměť — naměřeno: sedm rámců psaných po 30 ms odešlo
+  // jako jeden kus po 243 ms, tedy naráz s verdiktem. Vidět to jde jen proti
+  // skutečnému serveru; volání `POST()` jako funkce touhle vrstvou neprochází.
+  const response = await request.post('/api/emit/stream', {
+    headers: { 'content-type': 'application/json', 'accept-encoding': 'gzip, deflate, br' },
+    data: { promptId: 'C01' },
+  });
+
+  expect(response.status()).toBe(200);
+  expect(response.headers()['content-encoding']).toBeUndefined();
+  expect(response.headers()['cache-control']).toContain('no-transform');
+});
+
+test('og:image je absolutní adresa toho hostitele, který požadavek obsloužil', async ({ request }) => {
+  // Adresa se dřív brala z `NEXT_PUBLIC_SITE_URL`, jenže tu Next zapéká při
+  // buildu a zapečetěný build z tagu ji povolenou nemá — nasazený artefakt by
+  // tedy do každého sdíleného odkazu psal loopback z e2e. Cizí hostitel v
+  // hlavičce je jediný způsob, jak ten rozdíl v testu vidět.
+  const response = await request.get(`/embed/${LAYOUT}`, {
+    headers: { 'x-forwarded-host': 'demo.example', 'x-forwarded-proto': 'https' },
+  });
+
+  expect(await response.text()).toContain(`https://demo.example/api/og?layout=${LAYOUT}`);
+});
+
 test('embed je celý výřez a nic z něj nevede ven', async ({ page }) => {
   await page.goto(`/embed/${LAYOUT}`);
   await page.waitForFunction(() => window.__viewer !== undefined, undefined, { timeout: 60_000 });

@@ -10,7 +10,7 @@ import { inflateSync } from 'node:zlib';
 
 import { describe, expect, it } from 'vitest';
 
-import { GET } from '../route';
+import { GET, pngFor } from '../route';
 import { crc32, encodePng, hexToRgb } from '../png';
 
 const SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
@@ -114,6 +114,14 @@ describe('GET /api/og', () => {
     const first = await png('http://127.0.0.1/api/og?layout=kiln-court');
     const second = await png('http://127.0.0.1/api/og?layout=kiln-court');
     expect(Buffer.from(first.bytes).equals(Buffer.from(second.bytes))).toBe(true);
+  });
+
+  it('týž layout se kóduje jednou, ne při každém požadavku', () => {
+    // 23–29 ms čistého CPU na požadavek bez uložení stačí k tomu, aby pár
+    // desítek požadavků za sekundu zabralo jedinou smyčku událostí i pro
+    // `/api/emit`. Shodná identita objektu je důkaz, že se podruhé nekódovalo.
+    const palette = { deep: '#31444b', moss: '#5f8a6b', shell: '#8d9ba1', sand: '#cbbc98', accent: '#2f9e8f', warm: '#c8823c' };
+    expect(pngFor('test-cache', palette)).toBe(pngFor('test-cache', palette));
   });
 
   it('neznámý layout je 404, ne cizí svět', async () => {
