@@ -99,6 +99,25 @@ export interface QueueDeps {
   readonly now: () => number;
   /** Kolik požadavků se zpracovává současně. */
   readonly concurrency: number;
+  /**
+   * Naplánuje probuzení za `delayMs` a vrátí funkci, která ho zruší.
+   *
+   * **Musí měřit týmž časem jako `now`.** Výchozí `setTimeout` měří nástěnnými
+   * hodinami, takže sedí k výchozímu `Date.now`; test s ručními hodinami sem
+   * musí poslat plánovač, který se hýbe s nimi, jinak by fronta čekala na
+   * skutečné vteřiny, zatímco její vlastní čas stojí.
+   */
+  readonly schedule?: (fn: () => void, delayMs: number) => () => void;
+}
+
+/**
+ * Výchozí plánovač. `unref()` je tu schválně: probuzení čekajícího nesmí být
+ * důvod, proč proces nejde ukončit.
+ */
+function timeoutSchedule(fn: () => void, delayMs: number): () => void {
+  const handle = setTimeout(fn, delayMs) as ReturnType<typeof setTimeout> & { unref?: () => void };
+  handle.unref?.();
+  return () => clearTimeout(handle);
 }
 
 /** Proč se čekající probudil: uvolnil se slot, nebo mu vypršel rozpočet. */
@@ -112,13 +131,17 @@ export class AdmissionQueue {
   readonly #policy: AdmissionPolicy;
   readonly #now: () => number;
   readonly #concurrency: number;
+  readonly #schedule: (fn: () => void, delayMs: number) => () => void;
   #running = 0;
+  /** Zrušení naplánovaného probuzení, nebo `null`, když žádné nestojí. */
+  #cancelExpiry: (() => void) | null = null;
   readonly #waiting: Array<{ readonly receivedAtMs: number; readonly wake: (why: Wakeup) => void }> = [];
 
   constructor(policy: AdmissionPolicy, deps: QueueDeps) {
     this.#policy = policy;
     this.#now = deps.now;
     this.#concurrency = deps.concurrency;
+    this.#schedule = deps.schedule ?? timeoutSchedule;
   }
 
   /** Kolik požadavků právě čeká na slot. */
@@ -131,9 +154,21 @@ export class AdmissionQueue {
     return this.#running;
   }
 
-  async submit<T>(id: string, work: (deadlineMs: number) => Promise<T>): Promise<AdmissionOutcome<T>> {
-    const receivedAtMs = this.#now();
-
+  /**
+   * Podá požadavek do fronty.
+   *
+   * **`receivedAtMs` patří volajícímu, ne frontě.** Výchozí hodnota je `now()`,
+   * ale HTTP vrstva sem má poslat čas, kdy požadavek DORAZIL. Všechno mezi tím
+   * — načtení těla, moderace, a hlavně čekání ve smyčce událostí, kterou fronta
+   * pod zátěží ve skutečnosti je — by jinak bylo zadarmo, a deadline by zůstal
+   * „od začátku našeho zpracování", jen o patro výš. Tedy přesně ta vada, kterou
+   * hlavička tohohle souboru popisuje jako důvod své existence.
+   */
+  async submit<T>(
+    id: string,
+    work: (deadlineMs: number) => Promise<T>,
+    receivedAtMs: number = this.#now(),
+  ): Promise<AdmissionOutcome<T>> {
     // Odsouzené požadavky se uvolní DŘÍV, než se na jejich místo někdo odmítne.
     // Požadavek, kterému rozpočet vypršel ve frontě, `DEADLINE_EXCEEDED` stejně
     // dostane — až se dostane na řadu. Kdyby si do té doby držel místo, byla by
@@ -143,8 +178,18 @@ export class AdmissionQueue {
     this.#wakeExpired();
 
     if (this.#waiting.length >= this.#policy.maxQueued && this.#running >= this.#concurrency) {
+      // Čekání se počítá i tady. Nula by byla pravda jen pro požadavek podaný
+      // v tomtéž okamžiku, kdy dorazil — a to je právě ten předpoklad, který
+      // `receivedAtMs` ruší.
+      const waitedMs = this.#now() - receivedAtMs;
       return {
-        verdict: { admitted: false, id, waitedMs: 0, reason: 'QUEUE_FULL', remainingMs: this.#policy.budgetMs },
+        verdict: {
+          admitted: false,
+          id,
+          waitedMs,
+          reason: 'QUEUE_FULL',
+          remainingMs: this.#policy.budgetMs - waitedMs,
+        },
         value: null,
       };
     }
@@ -178,9 +223,46 @@ export class AdmissionQueue {
       return 'slot';
     }
 
-    const why = await new Promise<Wakeup>((wake) => this.#waiting.push({ receivedAtMs, wake }));
+    const why = await new Promise<Wakeup>((wake) => {
+      this.#waiting.push({ receivedAtMs, wake });
+      this.#armExpiry();
+    });
     if (why === 'slot') this.#running += 1;
     return why;
+  }
+
+  /**
+   * Naplánuje probuzení na okamžik, kdy vyprší nejstarší čekající.
+   *
+   * **Bez tohohle se `#wakeExpired()` volá jen z `submit()`, tedy jen když
+   * dorazí další provoz.** Po nárazu a následném tichu tak čekající sedí ve
+   * frontě, dokud někdo nepřijde — u naměřeného rozpočtu 60 s to je celá minuta
+   * po tom, co jeho odpověď přestala mít smysl. Odmítnutí, které přijde, až
+   * když má kdo se ho zeptat, je totéž jako žádné.
+   *
+   * **Odklad má podlahu jedné milisekundy, a ta podlaha je nosná.** Časovač,
+   * který dosedne přesně na hranici, nikoho neuvolní — v tu chvíli `minServiceMs`
+   * ještě zbývá. Bez podlahy by se naplánoval znovu s nulovým odkladem a bylo by
+   * z toho vytížené čekání místo probuzení; s ní se posune o milisekundu dál a
+   * uvolní na další otočce. To druhé probuzení plánuje `#wakeExpired()`, i když
+   * neuvolnilo nikoho — bez toho by čekající po dosednutí na hranici zůstal ve
+   * frontě navždy.
+   */
+  #armExpiry(): void {
+    this.#cancelExpiry?.();
+    this.#cancelExpiry = null;
+    if (this.#waiting.length === 0) return;
+
+    const earliestReceivedAtMs = Math.min(...this.#waiting.map((entry) => entry.receivedAtMs));
+    const expiresAtMs = earliestReceivedAtMs + this.#policy.budgetMs - this.#policy.minServiceMs;
+    const delayMs = Math.max(1, expiresAtMs - this.#now());
+
+    this.#cancelExpiry = this.#schedule(() => {
+      this.#cancelExpiry = null;
+      // `#wakeExpired()` si nové probuzení naplánuje samo, i když tohle nikoho
+      // neuvolnilo.
+      this.#wakeExpired();
+    }, delayMs);
   }
 
   /** Uvolní z fronty ty, kterým rozpočet vypršel dřív, než se na ně dostalo. */
@@ -193,11 +275,17 @@ export class AdmissionQueue {
       this.#waiting.splice(this.#waiting.indexOf(entry), 1);
       entry.wake('expired');
     }
+
+    this.#armExpiry();
   }
 
   #release(): void {
     this.#running -= 1;
     const next = this.#waiting.shift();
     if (next !== undefined) next.wake('slot');
+    // Jednotné pravidlo „kdo sáhne na frontu, přeplánuje", ne samostatné
+    // chování: stará plánovaná chvíle patřila tomu, kdo právě odešel, takže je
+    // dřív než u zbylých a `#wakeExpired()` by se z ní zotavilo samo.
+    this.#armExpiry();
   }
 }

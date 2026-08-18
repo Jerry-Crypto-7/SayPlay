@@ -143,9 +143,26 @@ export async function checkReadiness(directory: string, deps: ReadinessDeps): Pr
  */
 export function nodeReadinessFs(): ReadinessFs {
   return {
+    /**
+     * Zápis se **vynutí na zařízení**, ne jen do cache stránek.
+     *
+     * `writeFile` následované `readFile` přečte to, co drží jádro v paměti, a
+     * to se povede i tehdy, když se na disk nedostalo nic. Třída „zápis se
+     * tvářil úspěšně a nic neuložil" — tedy jedna ze čtyř, kvůli kterým tahle
+     * sonda existuje — byla proti skutečnému souborovému systému nezjistitelná
+     * a ověřovala se jen proti `Map` v testu. `sync()` je to, co ji vrátí do
+     * hry: plný disk a vyčerpaná kvóta se na řadě souborových systémů ohlásí
+     * teprve tady.
+     */
     async write(path, bytes) {
-      const { writeFile } = await import('node:fs/promises');
-      await writeFile(path, bytes, 'utf-8');
+      const { open } = await import('node:fs/promises');
+      const handle = await open(path, 'w');
+      try {
+        await handle.write(bytes, 0, 'utf-8');
+        await handle.sync();
+      } finally {
+        await handle.close();
+      }
     },
     async read(path) {
       const { readFile } = await import('node:fs/promises');
@@ -155,5 +172,29 @@ export function nodeReadinessFs(): ReadinessFs {
       const { unlink } = await import('node:fs/promises');
       await unlink(path);
     },
+  };
+}
+
+/** Odlišení sond v tomhle procesu. Roste, nikdy se neopakuje. */
+let probesIssued = 0;
+
+/**
+ * Kompletní závislosti sondy nad skutečným souborovým systémem — **včetně
+ * nonce, který je pokaždé jiný.**
+ *
+ * `ReadinessDeps` si o jedinečný nonce říká v dokumentaci, ale `nodeReadinessFs()`
+ * k němu žádnou továrnu nedodával, takže každý příklad v repu použil konstantu.
+ * Naměřeno proti skutečnému disku: dvě souběžné sondy se sdíleným nonce míří na
+ * tentýž soubor, jedna ho smaže první a druhá skončí na `CLEANUP_FAILED
+ * (ENOENT unlink)`. Sonda volaná vyvažovačem každých pár vteřin by tak na
+ * zdravém železe blikala 503.
+ *
+ * `pid` odlišuje procesy, čítač sondy uvnitř jednoho.
+ */
+export function nodeReadinessDeps(): ReadinessDeps {
+  return {
+    fs: nodeReadinessFs(),
+    now: () => Date.now(),
+    nonce: () => `${process.pid}-${(probesIssued += 1)}`,
   };
 }

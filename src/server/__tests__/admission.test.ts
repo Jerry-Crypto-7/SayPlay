@@ -20,14 +20,44 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import { AdmissionQueue, admit, type AdmissionPolicy } from '../admission';
-import { checkReadiness, nodeReadinessFs, type ReadinessFs } from '../readiness';
+import { checkReadiness, nodeReadinessDeps, nodeReadinessFs, type ReadinessFs } from '../readiness';
 
 const POLICY: AdmissionPolicy = { budgetMs: 10_000, minServiceMs: 2_000, maxQueued: 4 };
 
-/** Hodiny, které se pohnou jen když jim to někdo řekne. */
-function manualClock(start = 1_000): { now: () => number; advance: (ms: number) => void } {
+/**
+ * Hodiny, které se pohnou jen když jim to někdo řekne — **a plánovač, který se
+ * hýbe s nimi.**
+ *
+ * Fronta si probuzení vypršelých plánuje sama. Kdyby ho plánovala skutečným
+ * `setTimeout`, čekala by na skutečné vteřiny, zatímco její vlastní čas by
+ * stál — takže by v testu nikdy nepřišlo. `advance()` proto vedle posunu času
+ * spustí i všechna probuzení, která tím dozrála.
+ */
+function manualClock(start = 1_000): {
+  now: () => number;
+  advance: (ms: number) => void;
+  schedule: (fn: () => void, delayMs: number) => () => void;
+} {
   let current = start;
-  return { now: () => current, advance: (ms) => void (current += ms) };
+  let issued = 0;
+  const pending = new Map<number, { readonly at: number; readonly fn: () => void }>();
+
+  return {
+    now: () => current,
+    advance: (ms) => {
+      current += ms;
+      // Snímek schválně: probuzení, které si naplánuje další, nesmí doběhnout
+      // ve stejném posunu — jinak by se `advance` zacyklil.
+      for (const [id, timer] of [...pending]) {
+        if (timer.at <= current && pending.delete(id)) timer.fn();
+      }
+    },
+    schedule: (fn, delayMs) => {
+      const id = (issued += 1);
+      pending.set(id, { at: current + delayMs, fn });
+      return () => void pending.delete(id);
+    },
+  };
 }
 
 /** Uvolní smyčku událostí, aby se čekající požadavek stihl posunout dál. */
@@ -72,7 +102,7 @@ describe('admit', () => {
 describe('AdmissionQueue', () => {
   it('požadavek, který stráví většinu rozpočtu ve frontě, se odmítne místo aby doběhl pozdě', async () => {
     const clock = manualClock();
-    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1 });
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
 
     // První požadavek slot obsadí a drží ho, dokud mu to nedovolíme pustit.
     let releaseFirst = (): void => undefined;
@@ -108,7 +138,7 @@ describe('AdmissionQueue', () => {
 
   it('týž požadavek se pustí, když ve frontě strávil málo', async () => {
     const clock = manualClock();
-    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1 });
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
 
     let releaseFirst = (): void => undefined;
     const first = queue.submit('first', async () => {
@@ -129,7 +159,7 @@ describe('AdmissionQueue', () => {
 
   it('práce dostane absolutní deadline, ne rozpočet', async () => {
     const clock = manualClock();
-    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1 });
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
 
     // Rozpočet by po 3 s čekání znamenal „ještě 10 s"; absolutní deadline je
     // pořád 11 000. Ten rozdíl je to, co brání téže vadě o úroveň níž.
@@ -157,7 +187,7 @@ describe('AdmissionQueue', () => {
 
   it('plná fronta se odmítá při podání, ne po čekání', async () => {
     const clock = manualClock();
-    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 1 }, { now: clock.now, concurrency: 1 });
+    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 1 }, { now: clock.now, concurrency: 1, schedule: clock.schedule });
 
     let release = (): void => undefined;
     const first = queue.submit('first', async () => {
@@ -292,6 +322,34 @@ describe('checkReadiness nad skutečným souborovým systémem', () => {
     expect(result).toMatchObject({ ready: false, reason: 'WRITE_FAILED' });
     expect(readdirSync(real)).toEqual([]);
   });
+
+  it('dvě souběžné sondy nad týmž adresářem jsou OBĚ připravené', async () => {
+    // Sonda běží každých pár vteřin pod vyvažovačem, takže dvě naráz nad týmž
+    // adresářem není okrajový případ, ale běžný provoz. Se sdíleným nonce míří
+    // obě na tentýž soubor: jedna ho smaže první a druhá skončí na
+    // `CLEANUP_FAILED (ENOENT unlink)` — tedy 503 na zdravém železe.
+    const [first, second] = await Promise.all([
+      checkReadiness(real, nodeReadinessDeps()),
+      checkReadiness(real, nodeReadinessDeps()),
+    ]);
+
+    expect(first).toMatchObject({ ready: true });
+    expect(second).toMatchObject({ ready: true });
+    // Obě uspěly proto, že si nesáhly na tentýž soubor — ne náhodou.
+    expect(first.probePath).not.toBe(second.probePath);
+    expect(readdirSync(real)).toEqual([]);
+  });
+
+  it('továrna vydá pokaždé jiný nonce, i mezi dvěma nezávislými závislostmi', () => {
+    // Vlastnost, na které ten test nad tímhle stojí, měřená přímo. Souběh na
+    // disku je pravděpodobnostní — dvě sondy se za příznivého prokládání minou
+    // i se sdíleným nonce — takže tvrzení „nesrazí se" nesmí viset jen na něm.
+    const deps = nodeReadinessDeps();
+    const issued = new Set(Array.from({ length: 100 }, () => deps.nonce()));
+
+    expect(issued.size).toBe(100);
+    expect(nodeReadinessDeps().nonce()).not.toBe(nodeReadinessDeps().nonce());
+  });
 });
 
 describe('checkReadiness — úklid po selhaném zápisu', () => {
@@ -328,7 +386,7 @@ describe('AdmissionQueue — vypršelé požadavky nedrží místo ve frontě', 
     // místa a čerstvý požadavek s CELÝM rozpočtem dostal `QUEUE_FULL`. Tedy
     // patologie, kterou tenhle soubor v hlavičce popisuje jako důvod existence.
     const clock = manualClock();
-    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 2 }, { now: clock.now, concurrency: 1 });
+    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 2 }, { now: clock.now, concurrency: 1, schedule: clock.schedule });
 
     let release = (): void => undefined;
     const busy = queue.submit('busy', async () => {
@@ -373,7 +431,7 @@ describe('AdmissionQueue — vypršelé požadavky nedrží místo ve frontě', 
     // stejnou cestou jako propuštěný, snížil by `#running` za někoho jiného a
     // fronta by pustila dvě práce naráz při `concurrency: 1`.
     const clock = manualClock();
-    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 3 }, { now: clock.now, concurrency: 1 });
+    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 3 }, { now: clock.now, concurrency: 1, schedule: clock.schedule });
     const peak: number[] = [];
 
     let release = (): void => undefined;
@@ -408,7 +466,7 @@ describe('AdmissionQueue — vypršelé požadavky nedrží místo ve frontě', 
     // vědět má. Co se nesmí stát je, že si s sebou vezme i slot — jedna vadná
     // odpověď by pak frontu zadusila.
     const clock = manualClock();
-    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1 });
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
 
     await expect(
       queue.submit('vadny', async () => {
@@ -418,5 +476,151 @@ describe('AdmissionQueue — vypršelé požadavky nedrží místo ve frontě', 
 
     expect(queue.running).toBe(0);
     expect(await queue.submit('dalsi', async () => 'prošel')).toMatchObject({ value: 'prošel' });
+  });
+});
+
+describe('AdmissionQueue — čas přijetí a probuzení bez dalšího provozu', () => {
+  it('čas přijetí patří volajícímu: požadavek, který čekal PŘED podáním, se odmítne', async () => {
+    // Nález recenze nad předchozí verzí: `receivedAtMs` se bralo z okamžiku,
+    // kdy se zavolá `submit()`. Všechno před tím — načtení těla, moderace a
+    // hlavně fronta ve smyčce událostí, kterou zátěž ve skutečnosti je — bylo
+    // zadarmo, takže deadline zůstal „od začátku našeho zpracování", jen o
+    // patro výš.
+    const clock = manualClock();
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+
+    // Fronta je prázdná a slot volný. O verdiktu tedy nerozhoduje čekání v ní —
+    // rozhoduje jediná věc: že požadavek dorazil o devět vteřin dřív, než se
+    // sem dostal.
+    const started: string[] = [];
+    const late = await queue.submit(
+      'late',
+      async () => {
+        started.push('late');
+        return 'x';
+      },
+      clock.now() - 9_000,
+    );
+
+    expect(late.verdict).toMatchObject({ admitted: false, reason: 'DEADLINE_EXCEEDED', waitedMs: 9_000 });
+    expect(late.value).toBeNull();
+    expect(started).toEqual([]);
+
+    // Rozlišovací polovina, a je to ta, kvůli které aserce nahoře něco tvrdí.
+    // TENTÝŽ požadavek bez času přijetí projde; bez tohohle by nahoře prošla i
+    // implementace, která parametr ignoruje a odmítá všechno.
+    const fresh = await queue.submit('fresh', async () => {
+      started.push('fresh');
+      return 'x';
+    });
+
+    expect(fresh.verdict).toMatchObject({ admitted: true, waitedMs: 0 });
+    expect(started).toEqual(['fresh']);
+  });
+
+  it('plná fronta hlásí skutečné čekání, ne nulu', async () => {
+    // `QUEUE_FULL` se vracelo s `waitedMs: 0` a celým rozpočtem jako zbytkem.
+    // To je pravda jen pro požadavek podaný v tomtéž okamžiku, kdy dorazil —
+    // tedy pro ten předpoklad, který čas přijetí ruší.
+    const clock = manualClock();
+    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 1 }, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+
+    let release = (): void => undefined;
+    const busy = queue.submit('busy', async () => {
+      await new Promise<void>((resolve) => (release = resolve));
+      return 'hotovo';
+    });
+    await settle();
+
+    const waiting = queue.submit('waiting', async () => 've frontě');
+    await settle();
+    expect(queue.queued).toBe(1);
+
+    const rejected = await queue.submit('rejected', async () => 'nikdy', clock.now() - 4_000);
+    expect(rejected.verdict).toMatchObject({
+      admitted: false,
+      reason: 'QUEUE_FULL',
+      waitedMs: 4_000,
+      remainingMs: 6_000,
+    });
+
+    release();
+    await busy;
+    await waiting;
+  });
+
+  it('čekající dostane verdikt sám od sebe, bez dalšího provozu', async () => {
+    // Nález recenze: `#wakeExpired()` se volalo jen ze `submit()`, takže žádný
+    // časovač neexistoval. Po nárazu provozu a následném tichu se čekající
+    // dozvěděl `DEADLINE_EXCEEDED` teprve, až někdo přišel — u naměřeného
+    // rozpočtu 60 s tedy celou minutu poté, co jeho odpověď přestala mít smysl.
+    const clock = manualClock();
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+
+    let release = (): void => undefined;
+    const busy = queue.submit('busy', async () => {
+      await new Promise<void>((resolve) => (release = resolve));
+      return 'hotovo';
+    });
+    await settle();
+
+    const doomed = queue.submit('doomed', async () => 'nikdy');
+    await settle();
+    expect(queue.queued).toBe(1);
+
+    // Devět vteřin ticha. Žádné podání, žádné uvolnění slotu — jediné, co se
+    // stalo, je že čas došel.
+    clock.advance(9_000);
+
+    // Bez časovače se tenhle `await` nedočká vůbec a test spadne na vypršení.
+    const outcome = await doomed;
+    expect(outcome.verdict).toMatchObject({ admitted: false, reason: 'DEADLINE_EXCEEDED' });
+    expect(outcome.value).toBeNull();
+
+    // Nejtvrdší část tvrzení: `busy` slot pořád drží. Nikdo ho neuvolnil, takže
+    // probuzení nemohlo přijít odjinud než z časovače. Bez téhle aserce by test
+    // prošel i nad frontou, která čekající probouzí uvolněním slotu.
+    expect(queue.running).toBe(1);
+    expect(queue.queued).toBe(0);
+
+    release();
+    expect(await busy).toMatchObject({ value: 'hotovo' });
+  });
+});
+
+describe('AdmissionQueue — časovač, který dosedne přesně na hranici', () => {
+  it('probuzení na hranici nikoho neuvolní, ale musí si naplánovat další', async () => {
+    // Na hranici rozpočtu zbývá přesně `minServiceMs`, takže se nic neuvolní.
+    // To je v pořádku — vadné by bylo, kdyby se tím plánování zastavilo: čekající
+    // by pak seděl ve frontě navždy, protože další podání už nepřijde. Tenhle
+    // test drží ten druhý pokus, ne první.
+    const clock = manualClock();
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+
+    let release = (): void => undefined;
+    const busy = queue.submit('busy', async () => {
+      await new Promise<void>((resolve) => (release = resolve));
+      return 'hotovo';
+    });
+    await settle();
+
+    const doomed = queue.submit('doomed', async () => 'nikdy');
+    await settle();
+
+    // Přijetí v 1 000, rozpočet 10 000, nejkratší práce 2 000 → hranice je
+    // přesně v 9 000. Sem se doskočí na jeden zátah, takže časovač dosedne na ni.
+    clock.advance(8_000);
+    await settle();
+    expect(queue.queued, 'na hranici ještě `minServiceMs` zbývá — uvolnit se nesmí nikdo').toBe(1);
+
+    // Jediná milisekunda navíc, žádné podání, žádné uvolnění slotu.
+    clock.advance(1);
+
+    const outcome = await doomed;
+    expect(outcome.verdict).toMatchObject({ admitted: false, reason: 'DEADLINE_EXCEEDED' });
+    expect(queue.running).toBe(1);
+
+    release();
+    await busy;
   });
 });
