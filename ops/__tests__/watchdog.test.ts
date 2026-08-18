@@ -302,6 +302,18 @@ describe('watchdog', () => {
   kernelEperm(
     'skutečné EPERM z jádra se počítá jako živý proces (jen Windows — jinde ho nejde vyrobit)',
     async () => {
+      // **Předpoklad se pojmenuje, jinak test neměří, co tvrdí.** `gave-up` samo
+      // nerozliší „prošla se větev odepřeného přístupu" od „proces byl prostě
+      // dostupný" — dostupný proces je taky živý. Kdyby PID 4 jednou dostupný
+      // byl, tenhle test má zčervenat, ne tiše přestat měřit.
+      let errno: string | undefined;
+      try {
+        process.kill(4, 0);
+      } catch (error) {
+        errno = (error as NodeJS.ErrnoException).code;
+      }
+      expect(errno, 'PID 4 musí být nedostupný, jinak tenhle test nic neměří').toBe('EPERM');
+
       const logPath = join(scratch, 'kernel-eperm.jsonl');
       track(
         spawn(

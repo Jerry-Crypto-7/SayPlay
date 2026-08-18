@@ -492,6 +492,13 @@ describe('AdmissionQueue — čas přijetí a probuzení bez dalšího provozu',
     // Fronta je prázdná a slot volný. O verdiktu tedy nerozhoduje čekání v ní —
     // rozhoduje jediná věc: že požadavek dorazil o devět vteřin dřív, než se
     // sem dostal.
+    //
+    // Čas přijetí je z okamžiku, kdy fronta vznikla, a hodiny se posunou až
+    // potom. Požadavek přijatý dřív, než fronta existovala, je nesmysl a fronta
+    // ho schválně nebere — viz sada „čas přijetí před vznikem fronty".
+    const receivedAtMs = clock.now();
+    clock.advance(9_000);
+
     const started: string[] = [];
     const late = await queue.submit(
       'late',
@@ -499,7 +506,7 @@ describe('AdmissionQueue — čas přijetí a probuzení bez dalšího provozu',
         started.push('late');
         return 'x';
       },
-      clock.now() - 9_000,
+      receivedAtMs,
     );
 
     expect(late.verdict).toMatchObject({ admitted: false, reason: 'DEADLINE_EXCEEDED', waitedMs: 9_000 });
@@ -536,7 +543,9 @@ describe('AdmissionQueue — čas přijetí a probuzení bez dalšího provozu',
     await settle();
     expect(queue.queued).toBe(1);
 
-    const rejected = await queue.submit('rejected', async () => 'nikdy', clock.now() - 4_000);
+    const receivedAtMs = clock.now();
+    clock.advance(4_000);
+    const rejected = await queue.submit('rejected', async () => 'nikdy', receivedAtMs);
     expect(rejected.verdict).toMatchObject({
       admitted: false,
       reason: 'QUEUE_FULL',
@@ -718,9 +727,12 @@ describe('AdmissionQueue — čas přijetí přichází zvenčí, takže může 
     const clock = manualClock();
     const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
 
-    const outcome = await queue.submit('late', async () => 'nikdy', clock.now() - 9_000);
+    const receivedAtMs = clock.now();
+    clock.advance(9_000);
+    const outcome = await queue.submit('late', async () => 'nikdy', receivedAtMs);
 
     expect(outcome.verdict).toMatchObject({ admitted: false, reason: 'DEADLINE_EXCEEDED', waitedMs: 9_000 });
+    expect(queue.coercedReceipts, 'poctivý čas se srovnávat nesmí').toBe(0);
   });
 });
 
@@ -756,5 +768,79 @@ describe('vynucení zápisu na zařízení — „nepodporuji" není „nepovedl
 
   it('svazek, který sync umí, projde bez výjimky', async () => {
     await expect(syncIfSupported({ sync: async () => undefined })).resolves.toBeUndefined();
+  });
+});
+
+describe('AdmissionQueue — čas přijetí před vznikem fronty', () => {
+  it('chybějící hlavička se nesmí tvářit jako požadavek z roku 1970', async () => {
+    // Nález druhé nezávislé revize, a je to ta nebezpečnější polovina kontroly.
+    // `Number(null)` i `Number('')` dávají `0` — konečné číslo v minulosti,
+    // takže původní kontrola „konečné a ne v budoucnosti" ho pustila dál.
+    // Rozpočet takového požadavku je vyčerpaný o padesát let, takže by se
+    // odmítl **každý** požadavek, propustnost by byla nulová a nikde by o tom
+    // nebyl řádek. Chybějící hlavička je přitom vada u volajícího, ne důvod
+    // vypnout provoz.
+    const clock = manualClock();
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+
+    clock.advance(5_000);
+    const outcome = await queue.submit('bez-hlavicky', async () => 'prošel', Number(null));
+
+    expect(outcome.verdict).toMatchObject({ admitted: true, waitedMs: 0 });
+    expect(outcome.value).toBe('prošel');
+  });
+
+  it('srovnání se počítá — tiché zotavení není totéž co zdraví', async () => {
+    // Fronta se z nesmyslu zotaví, ale tím se z ní stane naivní verze „od
+    // začátku našeho zpracování", které se celý ten soubor snaží zabránit —
+    // a `waitedMs: 0` u každého požadavku vypadá naprosto zdravě. Bez čítače
+    // není ta degradace odkud poznat.
+    const clock = manualClock();
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1, schedule: clock.schedule });
+    clock.advance(5_000);
+
+    expect(queue.coercedReceipts).toBe(0);
+
+    await queue.submit('a', async () => 'x', Number.NaN);
+    await queue.submit('b', async () => 'x', 0);
+    await queue.submit('c', async () => 'x', clock.now() + 3_000_000_000);
+
+    expect(queue.coercedReceipts).toBe(3);
+
+    // Poctivý čas přijetí čítač nezvedne — jinak by ukazoval na provoz, ne na vadu.
+    await queue.submit('d', async () => 'x', clock.now() - 1_000);
+    expect(queue.coercedReceipts).toBe(3);
+  });
+});
+
+describe('admit — je exportovaná, takže má tutéž kontrolu jako fronta', () => {
+  it('nesmyslný čas přijetí nevyrobí deadline, který nikdy nevyprší', () => {
+    // Nález druhé nezávislé revize: kontrola byla jen ve `submit()`, přitom
+    // `admit()` je exportovaná a dokumentovaná jako čistá rozhodovací funkce.
+    // Bez kontroly vrací `admitted: true` s `deadlineMs: NaN` — a ten by se
+    // předal do práce jako deadline, který nikdy nenastane.
+    const verdict = admit('x', Number.NaN, 10_000, POLICY);
+
+    expect(verdict).toMatchObject({ admitted: true, waitedMs: 0 });
+    expect(verdict.admitted && Number.isFinite(verdict.deadlineMs)).toBe(true);
+    expect(verdict.admitted && verdict.deadlineMs).toBe(20_000);
+  });
+
+  it('poctivý čas přijetí zůstává nedotčený', () => {
+    const verdict = admit('x', 1_000, 10_000, POLICY);
+
+    expect(verdict).toMatchObject({ admitted: false, reason: 'DEADLINE_EXCEEDED', waitedMs: 9_000 });
+  });
+});
+
+describe('vynucení zápisu — odmítnutí, které není objekt', () => {
+  it('`Promise.reject(null)` se propustí dál, ne jako TypeError přes původní chybu', async () => {
+    // Export téhle funkce ji otevřel i handlerům, které nejsou `fs`. Čtení
+    // `.code` na `null` by shodilo `TypeError` a ten by původní příčinu zakryl.
+    await expect(syncIfSupported({ sync: async () => Promise.reject(null) })).rejects.toBeNull();
+  });
+
+  it('odmítnutí řetězcem se taky propustí dál', async () => {
+    await expect(syncIfSupported({ sync: async () => Promise.reject('EINVAL') })).rejects.toBe('EINVAL');
   });
 });

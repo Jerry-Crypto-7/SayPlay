@@ -196,8 +196,14 @@ export async function syncIfSupported(handle: { sync: () => Promise<void> }): Pr
   try {
     await handle.sync();
   } catch (error) {
-    const code = (error as { code?: string }).code;
-    if (code === undefined || !SYNC_UNSUPPORTED.has(code)) throw error;
+    // `error` nemusí být objekt — export téhle funkce ji otevřel i handlerům,
+    // které nejsou `fs`, a `Promise.reject(null)` by na čtení `.code` shodil
+    // `TypeError` PŘES původní chybu. Neznámý tvar se propouští dál: neznámé se
+    // nepovažuje za neškodné.
+    const code = typeof error === 'object' && error !== null ? (error as { code?: unknown }).code : undefined;
+    // `typeof code !== 'string'` je zúžení typu, ne druhá kontrola: `Set<string>`
+    // by neznámý tvar stejně nenašel. Rozhoduje řádek nad ním.
+    if (typeof code !== 'string' || !SYNC_UNSUPPORTED.has(code)) throw error;
   }
 }
 

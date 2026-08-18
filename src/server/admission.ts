@@ -78,14 +78,19 @@ export function admit(
   nowMs: number,
   policy: AdmissionPolicy,
 ): AdmissionVerdict {
-  const waitedMs = nowMs - receivedAtMs;
+  // Táž kontrola jako ve frontě, a je tu proto, že tahle funkce je taky
+  // exportovaná. Bez ní vrátí `admit(id, NaN, …)` verdikt `admitted: true`
+  // s `deadlineMs: NaN` — tedy deadline, který nikdy nevyprší, předaný dál do
+  // práce jako by byl v pořádku.
+  const receipt = trustedReceipt(receivedAtMs, nowMs);
+  const waitedMs = nowMs - receipt;
   const remainingMs = policy.budgetMs - waitedMs;
 
   if (remainingMs < policy.minServiceMs) {
     return { admitted: false, id, waitedMs, reason: 'DEADLINE_EXCEEDED', remainingMs };
   }
 
-  return { admitted: true, id, waitedMs, deadlineMs: receivedAtMs + policy.budgetMs };
+  return { admitted: true, id, waitedMs, deadlineMs: receipt + policy.budgetMs };
 }
 
 export interface AdmissionOutcome<T> {
@@ -110,27 +115,35 @@ export interface QueueDeps {
   readonly schedule?: (fn: () => void, delayMs: number) => () => void;
 }
 
-/** Nejdelší odklad, který `setTimeout` umí. Přes něj se přetáčí na 1 ms. */
-const MAX_DELAY_MS = 2_147_483_647;
-
 /**
  * Čas přijetí, kterému se dá věřit.
  *
  * `receivedAtMs` přichází z HTTP vrstvy, tedy zvenčí — typicky z hlavičky, kterou
- * postavil někdo jiný. Nesmysl v ní nesmí frontu rozbít:
+ * postavil někdo jiný. Nesmysl v ní nesmí frontu rozbít, a nesmysl má **tři**
+ * tvary, ne jeden:
  *
- * - **`NaN` nebo nekonečno** projde porovnáním ve `#wakeExpired()` jako
- *   „nevypršel" (porovnání s `NaN` je vždycky nepravda), takže by takový
- *   požadavek nedostal verdikt vůbec nikdy;
- * - **čas v budoucnosti** — záměna vteřin za milisekundy je nejběžnější — vyrobí
- *   odklad delší, než `setTimeout` umí, a ten se přetočí na 1 ms. Z probuzení se
- *   stane vytížené čekání na celé dny.
+ * - **`NaN` nebo nekonečno.** Porovnání s `NaN` je vždycky nepravda, takže by
+ *   takový požadavek prošel testem „vypršel?" jako živý a verdikt by nedostal
+ *   nikdy. Sem patří i výsledek `Number(null)` u chybějící hlavičky — ten je ale
+ *   `0`, tedy případ níž.
+ * - **Čas v budoucnosti**, typicky záměnou vteřin za milisekundy. Odklad vyjde
+ *   delší, než `setTimeout` umí, a přetočí se na 1 ms — z probuzení je vytížené
+ *   čekání na celé dny.
+ * - **Čas před tím, než tahle fronta vůbec vznikla.** Tenhle je nejzákeřnější a
+ *   je opačný k předchozímu: `Number(null)` i `Number('')` dávají `0`, což je
+ *   konečné číslo v minulosti, takže by prošlo. Požadavek přijatý roku 1970 má
+ *   rozpočet vyčerpaný o padesát let, takže by se odmítl **každý požadavek**,
+ *   fronta by měla nulovou propustnost a nikde by o tom nebyl řádek.
  *
- * Obojí se řeší stejně: čemu se nedá věřit, bereme jako „dorazilo teď". Je to
- * bezpečné selhání — požadavek dostane celý rozpočet místo žádného.
+ * Řeší se to u všech tří stejně: čemu se nedá věřit, bereme jako „dorazilo teď".
+ * Je to bezpečné selhání — požadavek dostane celý rozpočet místo žádného.
+ * **Mlčky se to ale neděje**, viz `coercedReceipts`.
+ *
+ * `earliestMs` je dolní mez, kterou zná jen volající. Čistá `admit()` ji nemá
+ * odkud vzít, tak ji nedává; fronta ji zná (vznikla někdy) a dává ji vždycky.
  */
-function trustedReceipt(claimedMs: number, nowMs: number): number {
-  return Number.isFinite(claimedMs) && claimedMs <= nowMs ? claimedMs : nowMs;
+export function trustedReceipt(claimedMs: number, nowMs: number, earliestMs = Number.NEGATIVE_INFINITY): number {
+  return Number.isFinite(claimedMs) && claimedMs <= nowMs && claimedMs >= earliestMs ? claimedMs : nowMs;
 }
 
 /**
@@ -155,6 +168,9 @@ export class AdmissionQueue {
   readonly #now: () => number;
   readonly #concurrency: number;
   readonly #schedule: (fn: () => void, delayMs: number) => () => void;
+  /** Kdy fronta vznikla. Dřív než tohle žádný její požadavek dorazit nemohl. */
+  readonly #createdAtMs: number;
+  #coerced = 0;
   #running = 0;
   /** Zrušení naplánovaného probuzení, nebo `null`, když žádné nestojí. */
   #cancelExpiry: (() => void) | null = null;
@@ -165,6 +181,21 @@ export class AdmissionQueue {
     this.#now = deps.now;
     this.#concurrency = deps.concurrency;
     this.#schedule = deps.schedule ?? timeoutSchedule;
+    this.#createdAtMs = deps.now();
+  }
+
+  /**
+   * Kolikrát fronta nedokázala uvěřit času přijetí a vzala místo něj „teď".
+   *
+   * **Tiché srovnání je horší než hlasitý pád.** Vada, která tenhle čítač
+   * rozjede, je vždycky u volajícího — rozbitý parser hlavičky, jiný zdroj času,
+   * záměna vteřin za milisekundy. Fronta se z ní zotaví, ale tím se z ní stane
+   * naivní verze „od začátku našeho zpracování", které se celý tenhle soubor
+   * snaží zabránit, a bez čítače by to vypadalo úplně zdravě: `waitedMs: 0` u
+   * každého požadavku. Kdo frontu zapojuje, tohle číslo loguje.
+   */
+  get coercedReceipts(): number {
+    return this.#coerced;
   }
 
   /** Kolik požadavků právě čeká na slot. */
@@ -192,7 +223,8 @@ export class AdmissionQueue {
     work: (deadlineMs: number) => Promise<T>,
     receivedAtMs: number = this.#now(),
   ): Promise<AdmissionOutcome<T>> {
-    const receipt = trustedReceipt(receivedAtMs, this.#now());
+    const receipt = trustedReceipt(receivedAtMs, this.#now(), this.#createdAtMs);
+    if (receipt !== receivedAtMs) this.#coerced += 1;
 
     // Odsouzené požadavky se uvolní DŘÍV, než se na jejich místo někdo odmítne.
     // Požadavek, kterému rozpočet vypršel ve frontě, `DEADLINE_EXCEEDED` stejně
@@ -280,7 +312,7 @@ export class AdmissionQueue {
 
     const earliestReceivedAtMs = Math.min(...this.#waiting.map((entry) => entry.receivedAtMs));
     const expiresAtMs = earliestReceivedAtMs + this.#policy.budgetMs - this.#policy.minServiceMs;
-    const delayMs = Math.min(MAX_DELAY_MS, Math.max(1, expiresAtMs - this.#now()));
+    const delayMs = Math.max(1, expiresAtMs - this.#now());
 
     this.#cancelExpiry = this.#schedule(() => {
       this.#cancelExpiry = null;
