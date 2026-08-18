@@ -1,0 +1,12 @@
+{
+  "$comment": "Vstup pro `node scripts/submission-check.mjs`. Hodnoty s prefixem TODO: brána odmítá — nevyplněné pole musí kontrolu shodit, ne projít jako pravdivá hodnota.",
+  "repositoryUrl": "TODO: veřejná adresa repozitáře (P0 T100 + první push)",
+  "demoUrl": "TODO: hostovaný browser demo link (P2 T205b)",
+  "backendUrl": "TODO: adresa, na které backend odpovídá (P2 T205b)",
+  "videoPath": "video/final.mp4",
+  "descriptionPath": "docs/submission/description.md",
+  "modelTablePath": "src/model/prompt.ts",
+  "monitoringPath": "ops/monitoring/uptime.json",
+  "dataDirs": ["evals/frozen", "evals/contracts/gold"],
+  "measurementReports": ["evals/gates/kill-gate-2026-09-15.md"]
+}

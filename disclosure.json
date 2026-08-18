@@ -2369,7 +2369,12 @@
         "plné znění licence"
       ],
       "attribution": "worldsmith, tenhle repozitář",
-      "reviewNote": "Vlastní data, žádný externí zdroj. Uvedeno proto, že RULES.md §2 žádá disclosure datasetů bez ohledu na to, kdo je autor."
+      "reviewNote": "Vlastní data, žádný externí zdroj. Uvedeno proto, že RULES.md §2 žádá disclosure datasetů bez ohledu na to, kdo je autor.",
+      "paths": [
+        "evals/frozen",
+        "evals/gold.jsonl",
+        "evals/contracts/gold"
+      ]
     },
     {
       "name": "npm registry",
