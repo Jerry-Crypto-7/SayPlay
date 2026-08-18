@@ -20,7 +20,7 @@ import { join } from 'node:path';
 
 import { afterAll, describe, expect, it, vi } from 'vitest';
 
-import { AdmissionQueue, admit, checkPolicy, type AdmissionPolicy, type CoercedReceipt } from '../admission';
+import { AdmissionQueue, admit, checkPolicy, MAX_DELAY_MS, type AdmissionPolicy, type CoercedReceipt } from '../admission';
 import { checkReadiness, nodeReadinessDeps, nodeReadinessFs, syncIfSupported, type ReadinessFs } from '../readiness';
 
 const POLICY: AdmissionPolicy = { budgetMs: 10_000, minServiceMs: 2_000, maxQueued: 4 };
@@ -1214,4 +1214,166 @@ describe('AdmissionQueue — zavření měřené na procesu, ne na hodinách v t
       rmSync(dir, { recursive: true, force: true });
     }
   }, 30_000);
+});
+
+describe('AdmissionPolicy — konečné číslo nestačí, rozpočet musí být i dost malý', () => {
+  // Nález druhé recenze, a je to díra v kontrole z T302f: mez byla jen zdola.
+  // Naměřeno — `budgetMs: 2_147_483_648` prošlo `checkPolicy()` a plánovači
+  // dorazil odklad 2147483648, který Node ořízne na 1 ms. Tedy přesně ta smyčka,
+  // kterou ta kontrola měla zavřít. Commit `da7f62b` navíc smazal clamp
+  // v `#armExpiry()` s odůvodněním „ohraničený čas přijetí ho zneplatní" — to
+  // krylo `receivedAtMs`, nikdy `budgetMs`, a nikdo ho neměřil.
+  it('rozpočet přes nejdelší odklad, který setTimeout umí, se odmítne', () => {
+    const tooBig = { budgetMs: MAX_DELAY_MS + 1, minServiceMs: 0, maxQueued: 4 };
+
+    expect(() => checkPolicy(tooBig)).toThrow(RangeError);
+    expect(() => admit('x', 1_000, 1_000, tooBig)).toThrow(RangeError);
+  });
+
+  it('rozpočet přesně na té hranici projde — mez nesmí ukrojit legitimní nastavení', () => {
+    expect(() => checkPolicy({ budgetMs: MAX_DELAY_MS, minServiceMs: 0, maxQueued: 4 })).not.toThrow();
+  });
+
+  it('po kontrole je odklad dokazatelně v rozsahu, takže clamp by byl mrtvý kód', async () => {
+    // Z `earliestReceipt <= now` plyne `delayMs <= budgetMs - minServiceMs`.
+    // Test to měří na největší politice, jakou kontrola pustí — kdyby mez chyběla,
+    // tady by se objevilo číslo nad `MAX_DELAY_MS`.
+    const delays: number[] = [];
+    const clock = manualClock();
+    const queue = new AdmissionQueue(
+      { budgetMs: MAX_DELAY_MS, minServiceMs: 1, maxQueued: 4 },
+      {
+        now: clock.now,
+        concurrency: 1,
+        onCoercedReceipt: ignoreCoercions,
+        schedule: (fn, delayMs) => {
+          delays.push(delayMs);
+          return clock.schedule(fn, delayMs);
+        },
+      },
+    );
+
+    let release = (): void => undefined;
+    const busy = queue.submit('busy', async () => {
+      await new Promise<void>((resolve) => (release = resolve));
+      return 'hotovo';
+    });
+    await settle();
+    void queue.submit('waiting', async () => 'nikdy');
+    await settle();
+
+    expect(delays.length).toBeGreaterThan(0);
+    for (const delay of delays) expect(delay).toBeLessThanOrEqual(MAX_DELAY_MS);
+
+    queue.close();
+    release();
+    await busy;
+  });
+});
+
+describe('QueueDeps.concurrency — nekontrolovaná soubežnost udělá frontu, co nikdy nic nespustí', () => {
+  // Nález druhé recenze: `checkPolicy()` řešilo politiku a o pole vedle stálo
+  // `concurrency` bez jakékoli kontroly. `this.#running < NaN` je vždycky
+  // nepravda, takže se nepustí nikdo a všechno skončí na `DEADLINE_EXCEEDED`.
+  it.each([
+    ['NaN', Number.NaN],
+    ['nula', 0],
+    ['záporná', -1],
+    ['zlomek', 1.5],
+    ['Infinity', Number.POSITIVE_INFINITY],
+  ])('%s: fronta se nepostaví', (_label, concurrency) => {
+    const clock = manualClock();
+
+    expect(
+      () =>
+        new AdmissionQueue(POLICY, {
+          now: clock.now,
+          concurrency,
+          schedule: clock.schedule,
+          onCoercedReceipt: ignoreCoercions,
+        }),
+    ).toThrow(RangeError);
+  });
+
+  it('jedna je legitimní minimum, ne hraniční případ', () => {
+    const clock = manualClock();
+
+    expect(
+      () =>
+        new AdmissionQueue(POLICY, {
+          now: clock.now,
+          concurrency: 1,
+          schedule: clock.schedule,
+          onCoercedReceipt: ignoreCoercions,
+        }),
+    ).not.toThrow();
+  });
+});
+
+describe('AdmissionQueue — obsluha srovnání smí frontu zavřít, a čekající o verdikt nepřijde', () => {
+  // Nález druhé recenze, a **vyvrací odůvodnění, kterým jsem v `77f3b16` smazal
+  // podmínku `#closed` z `#armExpiry()`.** Argument „po zavření je čekárna
+  // prázdná a `submit` nikoho nového nepustí" neplatil: `onCoercedReceipt` běží
+  // synchronně MEZI čtením `#closed` a zařazením do čekárny, takže obsluha, která
+  // rozbité hodiny bere jako fatální, tu díru otevře. Naměřeno na re-entrantní
+  // obsluze: čekající verdikt nedostal a fronta hlásila `queued: 1`.
+  //
+  // Oprava ale NENÍ ta smazaná podmínka — ta by časovač nenaplánovala vůbec,
+  // takže by čekajícího neprobudil nikdo a z ohraničeného držení procesu by bylo
+  // nekonečné. Změřeno taky. Správně je přečíst `#closed` znovu, až po obsluze.
+  it('zavření z obsluhy srovnání dá čekajícímu SHUTTING_DOWN, ne mlčení', async () => {
+    const clock = manualClock();
+    const seen: CoercedReceipt[] = [];
+    let queue!: AdmissionQueue;
+    queue = new AdmissionQueue(POLICY, {
+      now: clock.now,
+      concurrency: 1,
+      schedule: clock.schedule,
+      onCoercedReceipt: (c) => {
+        seen.push(c);
+        queue.close();
+      },
+    });
+
+    let release = (): void => undefined;
+    const busy = queue.submit('busy', async () => {
+      await new Promise<void>((resolve) => (release = resolve));
+      return 'hotovo';
+    });
+    await settle();
+
+    // Slot je obsazený, takže bez opravy by se tenhle požadavek zařadil do už
+    // vyprázdněné čekárny a verdikt by dostal až po `budgetMs - minServiceMs`.
+    const outcome = await queue.submit('obet', async () => 'nikdy', Number.NaN);
+
+    expect(seen).toHaveLength(1);
+    expect(outcome.verdict).toMatchObject({ admitted: false, id: 'obet', reason: 'SHUTTING_DOWN' });
+    expect(outcome.value).toBeNull();
+    expect(queue.queued).toBe(0);
+
+    release();
+    await busy;
+  });
+
+  it('srovnání během vypínání se hlásí — mlčky se to neděje ani na téhle cestě', async () => {
+    // Druhá polovina téhož nálezu: kontrola `#closed` stála PŘED hlášením, takže
+    // požadavek, který dorazil do vypínající se fronty s rozbitým časem, se
+    // srovnal potichu — čítač se nehnul a obsluha se nedozvěděla nic.
+    const clock = manualClock();
+    const log = coercionLog();
+    const queue = new AdmissionQueue(POLICY, {
+      now: clock.now,
+      concurrency: 1,
+      schedule: clock.schedule,
+      onCoercedReceipt: log.onCoercedReceipt,
+    });
+    queue.close();
+    clock.advance(5_000);
+
+    const outcome = await queue.submit('pozdni', async () => 'nikdy', Number.NaN);
+
+    expect(outcome.verdict).toMatchObject({ admitted: false, reason: 'SHUTTING_DOWN' });
+    expect(log.seen).toEqual([{ id: 'pozdni', claimedMs: Number.NaN, usedMs: 6_000 }]);
+    expect(queue.coercedReceipts).toBe(1);
+  });
 });

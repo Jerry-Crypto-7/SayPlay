@@ -90,6 +90,8 @@ export type AdmissionVerdict = Admitted | Refused;
  * nechat běžet naprázdno. Konfigurace je okraj a validace patří na okraj — táž
  * doktrína, jakou má `trustedReceipt` u času přijetí.
  */
+export const MAX_DELAY_MS = 2_147_483_647;
+
 export function checkPolicy(policy: AdmissionPolicy): void {
   const finite = (label: string, value: number, lowest: number): void => {
     if (!Number.isFinite(value) || value < lowest) {
@@ -99,15 +101,37 @@ export function checkPolicy(policy: AdmissionPolicy): void {
 
   // Nulový rozpočet je nulová propustnost, ne konzervativní nastavení.
   finite('budgetMs', policy.budgetMs, 1);
+
+  // **Horní mez, a je stejně nosná jako ta dolní.** `setTimeout` delší odklad
+  // neumí a přetočí ho na 1 ms, takže rozpočet 2 147 483 648 ms (necelých 25
+  // dní) vyrobí přesně tu smyčku, kterou tahle kontrola má zavřít: odklad se
+  // ořízne na milisekundu, nikdo nevyprší, `#armExpiry()` se přeplánuje znovu.
+  // Konečné číslo tedy nestačí, musí být i dost malé.
+  //
+  // Commit `da7f62b` tenhle clamp z `#armExpiry()` smazal s odůvodněním, že
+  // „když je ohraničený čas přijetí, nemůže nikdy zabrat". To odůvodnění krylo
+  // jen `receivedAtMs`, nikdy `budgetMs`, a nikdo ho neměřil. **Nevrací se jako
+  // clamp, ale jako mez na vstupu** — z `earliestReceipt <= now` plyne
+  // `delayMs <= budgetMs - minServiceMs <= MAX_DELAY_MS`, takže po téhle
+  // kontrole je odklad dokazatelně v rozsahu a clamp by byl mrtvý kód. Tentokrát
+  // je to změřené, ne odvozené.
+  if (policy.budgetMs > MAX_DELAY_MS) {
+    throw new RangeError(
+      `AdmissionPolicy.budgetMs (${policy.budgetMs}) přesahuje nejdelší odklad, který setTimeout umí (${MAX_DELAY_MS})`,
+    );
+  }
   finite('minServiceMs', policy.minServiceMs, 0);
 
   if (!Number.isInteger(policy.maxQueued) || policy.maxQueued < 0) {
     throw new RangeError(`AdmissionPolicy.maxQueued musí být celé nezáporné číslo, dostalo ${policy.maxQueued}`);
   }
 
-  // Delší minimum než celý rozpočet odmítne **každý** požadavek, včetně toho
-  // podaného v tomtéž okamžiku, kdy dorazil. Fronta by měla nulovou propustnost
-  // a nikde by o tom nebyl řádek — táž třída jako čas přijetí z roku 1970.
+  // Delší minimum než celý rozpočet odmítne **každý** požadavek bez výjimky,
+  // fronta má nulovou propustnost a nikde o tom není řádek — táž třída jako čas
+  // přijetí z roku 1970. **Rovnost se propouští schválně a mez je tím `>`, ne
+  // `>=`:** při `minServiceMs === budgetMs` projde požadavek s nulovým čekáním,
+  // takže propustnost nulová není. Je to degenerované nastavení, ne rozbité, a
+  // odmítat ho by znamenalo zakázat i legitimní `budgetMs: 1, minServiceMs: 1`.
   if (policy.minServiceMs > policy.budgetMs) {
     throw new RangeError(
       `AdmissionPolicy.minServiceMs (${policy.minServiceMs}) nesmí přesáhnout budgetMs (${policy.budgetMs})`,
@@ -267,6 +291,16 @@ export class AdmissionQueue {
 
   constructor(policy: AdmissionPolicy, deps: QueueDeps) {
     checkPolicy(policy);
+
+    // **Táž třída jako politika, jen o pole vedle.** `Number(process.env.X)` u
+    // chybějící proměnné je `NaN`, a `this.#running < NaN` je vždycky nepravda:
+    // do práce se nepustí nikdo, všechno se zařadí do fronty a všechno nakonec
+    // vrátí `DEADLINE_EXCEEDED`. Nula a záporné číslo dělají totéž. Fronta, která
+    // nikdy nic nespustí, se nemá postavit.
+    if (!Number.isInteger(deps.concurrency) || deps.concurrency < 1) {
+      throw new RangeError(`QueueDeps.concurrency musí být celé číslo od 1, dostalo ${deps.concurrency}`);
+    }
+
     this.#policy = policy;
     this.#now = deps.now;
     this.#concurrency = deps.concurrency;
@@ -319,11 +353,29 @@ export class AdmissionQueue {
     receivedAtMs: number = this.#now(),
   ): Promise<AdmissionOutcome<T>> {
     const receipt = trustedReceipt(receivedAtMs, this.#now(), this.#createdAtMs);
-    if (this.#closed) return { verdict: this.#shuttingDown(id, receipt), value: null };
+
+    // Hlásí se DŘÍV, než se řeší zavření. Požadavek, který dorazí do vypínající
+    // se fronty s rozbitým časem, je pořád vada u volajícího — a „mlčky se to
+    // neděje" platí i během vypínání, jinak je to tichá cesta, jak srovnání
+    // schovat.
     if (receipt !== receivedAtMs) {
       this.#coerced += 1;
       this.#onCoercedReceipt({ id, claimedMs: receivedAtMs, usedMs: receipt });
     }
+
+    // **Až tady, a to je celý rozdíl.** `onCoercedReceipt` je kód, který dodává
+    // ten, kdo frontu zapojuje, a běží synchronně — smí tedy frontu zavřít, což
+    // u obsluhy, která rozbité hodiny bere jako fatální, není nic divného. Kdyby
+    // se `#closed` čtlo jen před ním, tenhle `submit()` by pokračoval do už
+    // vyprázdněné čekárny, zařadil by se do ní a `close()` by ho už neprobudilo:
+    // verdikt by přišel až z vlastního vypršení, tedy `budgetMs - minServiceMs`
+    // po zavření. Naměřeno na re-entrantní obsluze — čekající verdikt nedostal a
+    // fronta hlásila `queued: 1`.
+    //
+    // Návrat sem není podmínka v `#armExpiry()`. Ta by časovač nenaplánovala
+    // vůbec, takže by čekající neprobudil nikdo a z ohraničeného držení procesu
+    // by bylo nekonečné. Změřeno taky.
+    if (this.#closed) return { verdict: this.#shuttingDown(id, receipt), value: null };
 
     // Odsouzené požadavky se uvolní DŘÍV, než se na jejich místo někdo odmítne.
     // Požadavek, kterému rozpočet vypršel ve frontě, `DEADLINE_EXCEEDED` stejně
