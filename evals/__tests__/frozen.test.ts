@@ -64,7 +64,10 @@ function frozenRelativePaths(): string[] {
 }
 
 function git(...args: string[]): string {
-  return execFileSync('git', args, { cwd: repoRoot, encoding: 'utf8' }).trim();
+  // `--no-replace-objects` na KAŽDÉM volání, ne jen u `show`: náhrada nad stromem
+  // nebo nad objektem tagu obejde ancestry i čtení anotace. Doplněno 18. 8. 2026 —
+  // byly to poslední dvě volání gitu v repu bez tohohle příznaku.
+  return execFileSync('git', ['--no-replace-objects', ...args], { cwd: repoRoot, encoding: 'utf8' }).trim();
 }
 
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as Manifest;
@@ -138,7 +141,10 @@ describe('evals/frozen — disk se rovná commitnutému stromu', () => {
   })();
 
   const headNormalisedSha256 = (repoRelative: string): string => {
-    const raw = execFileSync('git', ['show', `HEAD:${repoRelative}`], { cwd: repoRoot, maxBuffer: 1 << 28 });
+    const raw = execFileSync('git', ['--no-replace-objects', 'show', `HEAD:${repoRelative}`], {
+      cwd: repoRoot,
+      maxBuffer: 1 << 28,
+    });
     const normalised = raw.toString('utf8').replace(/\r\n/g, '\n');
     return createHash('sha256').update(Buffer.from(normalised, 'utf8')).digest('hex');
   };

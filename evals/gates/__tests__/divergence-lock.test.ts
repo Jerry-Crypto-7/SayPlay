@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, posix, relative, sep } from 'node:path';
@@ -28,6 +29,20 @@ const MIN_PAIRS = 5;
 const MIN_BELOW_RECOLOR_PAIRS = 2;
 
 /**
+ * Nejmenší přípustný rozdíl palety u dvojice označené jako přebarvení.
+ *
+ * **Bez tohohle je celá negativní kontrola vykuchatelná beze stopy.** Stačilo by
+ * u `P01` posunout odstín z 205 na 30,0001: „liší se paletou" by pořád platilo,
+ * obě aserce by zůstaly zelené, a dvojice, která má metriku shodit, by nemohla
+ * spadnout pod žádný práh, protože by nebylo co měřit. Čísla dvojic navíc leží
+ * mimo enumeraci zámku (jsou v jiných souborech), takže je nehlídá ani ta.
+ *
+ * Měří se největší rozdíl přes tři kanály, každý normalizovaný na svůj rozsah;
+ * odstín se počítá po kruhu, aby 350 a 10 byly blízko, ne na opačných koncích.
+ */
+const MIN_PALETTE_DELTA = 0.25;
+
+/**
  * Hash se počítá nad obsahem normalizovaným na LF, stejně jako u `evals/frozen`.
  * Bez toho by týž soubor dal na Windows jiný hash než na Linuxu a zámek by
  * neznamenal nic ověřitelného.
@@ -35,6 +50,51 @@ const MIN_BELOW_RECOLOR_PAIRS = 2;
 function normalisedSha256(absolutePath: string): string {
   const normalised = readFileSync(absolutePath).toString('utf8').replace(/\r\n/g, '\n');
   return createHash('sha256').update(Buffer.from(normalised, 'utf8')).digest('hex');
+}
+
+/**
+ * Ukazatele, na kterých se páka schovala do jiného typu než `number`.
+ *
+ * Vytažené z aserce ven, aby se dalo doložit, že výjimka `/lockVersion` je
+ * ukazatel a ne jméno klíče – nad samotným zámkem to doložit nejde, ten vnořený
+ * `lockVersion` nemá.
+ */
+const TYPE_HIDING_EXEMPT = new Set(['/lockVersion']);
+
+function typeHidingOffenders(root: unknown): string[] {
+  const offenders: string[] = [];
+  const walk = (value: unknown, path: string): void => {
+    if (TYPE_HIDING_EXEMPT.has(path)) return;
+    if (typeof value === 'boolean') offenders.push(`${path} (boolean)`);
+    else if (typeof value === 'string' && value.trim() !== '' && Number.isFinite(Number(value)))
+      offenders.push(`${path} (řetězec „${value}" je číslo)`);
+    else if (Array.isArray(value)) value.forEach((item, i) => walk(item, `${path}/${i}`));
+    else if (value !== null && typeof value === 'object')
+      for (const [key, child] of Object.entries(value as Record<string, unknown>)) walk(child, `${path}/${key}`);
+  };
+  walk(root, '');
+  return offenders;
+}
+
+/** Viz `gold-frozen.test.ts` – `--no-replace-objects` patří na každé volání gitu. */
+function git(...args: string[]): string {
+  return execFileSync('git', ['--no-replace-objects', ...args], { cwd: repoRoot, encoding: 'utf8' }).trim();
+}
+
+interface Palette {
+  hueDeg: number;
+  satPct: number;
+  litPct: number;
+}
+
+/** Největší rozdíl přes kanály, normalizovaný; odstín po kruhu. */
+function paletteDelta(a: Palette, b: Palette): number {
+  const hue = Math.abs(a.hueDeg - b.hueDeg);
+  return Math.max(
+    Math.min(hue, 360 - hue) / 180,
+    Math.abs(a.satPct - b.satPct) / 100,
+    Math.abs(a.litPct - b.litPct) / 100,
+  );
 }
 
 function listFilesRecursive(dir: string): string[] {
@@ -77,6 +137,7 @@ interface FrozenPrompt {
   id: string;
   split: string;
   source?: string;
+  baseWorld?: string;
 }
 
 interface BasePrompt {
@@ -87,7 +148,7 @@ interface BasePrompt {
 interface PairSide {
   layout: unknown;
   modules: unknown;
-  palette: unknown;
+  palette: Palette;
 }
 
 interface Pair {
@@ -204,6 +265,96 @@ describe('evals/gates — v definici není číselná páka mimo výčet', () =>
   it('metadata nejsou čísla', () => {
     expect(typeof lock.lockVersion).toBe('string');
   });
+
+  /**
+   * **Enumerace vidí jen `typeof === 'number'`, takže páka schovaná do jiného
+   * typu jí projde pod rukama.** `"minSampleCount": "512"` je číslo pro každého,
+   * kdo ho čte, a řetězec pro `numericPointers`; `"histogramEnabled": false`
+   * je vypínač celé třetí složky. Zámek si přitom sám předepisuje, že všechno
+   * mimo výčet je řetězec — čímž je řetězcová páka k nerozeznání od prózy.
+   * Zavírá se to shora: booleany se nesmějí vyskytnout vůbec a řetězec se nesmí
+   * dát přečíst jako číslo.
+   *
+   * Jediná výjimka je `/lockVersion`. Zámek si sám předepisuje, že je řetězec
+   * (`numericEnumerationRule`), a aserce o blok výš to vynucuje — číslo by tam
+   * muselo do výčtu a výčet by pak nesl položku, která páka není. Výjimka je
+   * proto celý ukazatel, ne jméno klíče: `/nested/lockVersion` jde dál červeně,
+   * což hlídá sonda hned za touhle asercí.
+   */
+  it('žádná páka se neschovala do jiného typu', () => {
+    expect(typeHidingOffenders(lock)).toEqual([]);
+    // Výjimka, která nic nekryje, je mrtvá výjimka – a mrtvá výjimka se časem
+    // rozšíří na něco živého, protože ji nikdo neuvidí padnout.
+    expect(Object.keys(lock), 'výjimka /lockVersion nemá co krýt').toContain('lockVersion');
+  });
+
+  /**
+   * **Výjimka výš je ukazatel, ne jméno klíče – a dokud to nic nezkusí, je to
+   * jen tvrzení v komentáři.** Napsat `path.endsWith('/lockVersion')` projde
+   * dnes zeleně, protože zámek žádný vnořený `lockVersion` nemá; teprve tahle
+   * sonda ten rozdíl uvidí. Zkouší se na vyrobených objektech, ne na zámku,
+   * aby aserce nezávisela na tom, co v zámku zrovna je.
+   */
+  it('výjimka platí na kořeni a nikde jinde', () => {
+    expect(typeHidingOffenders({ lockVersion: '1' })).toEqual([]);
+    expect(typeHidingOffenders({ nested: { lockVersion: '7' } })).toHaveLength(1);
+    expect(typeHidingOffenders({ minSampleCount: '512' })).toHaveLength(1);
+    expect(typeHidingOffenders({ histogramEnabled: false })).toHaveLength(1);
+    expect(typeHidingOffenders({ pairsRule: 'šest dvojic' })).toEqual([]);
+  });
+});
+
+/**
+ * **Most mezi bajty a historií.** Hash lock výš čte zámek z disku a manifest taky
+ * z disku, takže „přepiš zámek a přepočítej manifest" projde zeleně bez jediného
+ * git příkazu. `evals/frozen` má na tohle vlastní blok od commitu `1e81dac`;
+ * bez něj by tady zůstala tatáž díra o dva adresáře vedle.
+ *
+ * **Co to NEdokazuje, a nikde se nesmí tvrdit opak:** commit, který zámek i
+ * manifest změní najednou, je pořád zelený. Vynutitelnost zmrazení je otevřená
+ * věc (`CLAUDE.md`, rozpor 5) a tenhle blok ji nezavírá — zavírá jen tichý
+ * přepis pracovního stromu.
+ */
+describe('evals/gates — disk se rovná commitnutému stromu', () => {
+  const headFiles = (() => {
+    try {
+      return git('ls-tree', '-r', '--name-only', 'HEAD', '--', 'evals/gates')
+        .split('\n')
+        .filter(Boolean)
+        .map((path) => path.replace(/^evals\/gates\//, ''))
+        .filter((rel) => rel === 'divergence.lock.json' || rel.startsWith('divergence-pairs/'))
+        .sort();
+    } catch {
+      return [];
+    }
+  })();
+
+  const headSha = (repoRelative: string): string => {
+    const raw = execFileSync('git', ['--no-replace-objects', 'show', `HEAD:${repoRelative}`], {
+      cwd: repoRoot,
+      maxBuffer: 1 << 28,
+    });
+    return createHash('sha256').update(Buffer.from(raw.toString('utf8').replace(/\r\n/g, '\n'), 'utf8')).digest('hex');
+  };
+
+  it('množina zamčených souborů na disku se rovná té v HEADu', () => {
+    if (headFiles.length === 0) return;
+    const onDisk = listFilesRecursive(gatesDir)
+      .map((abs) => relative(gatesDir, abs).split(sep).join(posix.sep))
+      .filter((rel) => rel === 'divergence.lock.json' || rel.startsWith('divergence-pairs/'))
+      .sort();
+    expect(onDisk).toEqual(headFiles);
+  });
+
+  it('každý zamčený soubor má na disku bajty svého commitnutého protějšku', () => {
+    if (headFiles.length === 0) return;
+    for (const rel of headFiles) {
+      expect(
+        normalisedSha256(join(gatesDir, rel)),
+        `${rel}: bajty na disku se liší od commitnutých — zámek je přepsaný v pracovním stromu`,
+      ).toBe(headSha(`evals/gates/${rel}`));
+    }
+  });
 });
 
 describe('evals/gates — zamčené páky drží vztahy, na kterých stojí verdikt', () => {
@@ -285,6 +436,34 @@ describe('evals/gates — holdout prompty jsou odvozené, ne vybrané', () => {
       ).toBe(false);
     }
   });
+
+  /**
+   * **Kontrola výš přeskočí každý záznam bez `source`, a to je šest z deseti.**
+   * Editační prompty žádný `source` nenesou — jejich vazba na korpus jde přes
+   * `baseWorld`, tedy přes svět, nad kterým se úprava provádí. Kdyby ten svět
+   * byl kalibrační, prosákne kalibrace do holdoutu cestou, na kterou se první
+   * kontrola vůbec nedívá, a strukturálně ji nemá jak vidět.
+   *
+   * Naměřeno 18. 8. 2026: šest editačních holdoutů (`E01`, `E08`, `E10`, `E14`,
+   * `E19`, `E22`) staví na `C02` a `C09`, obojí `holdout`. Aserce tedy dnes
+   * nezakazuje nic, co v korpusu je — zavírá cestu, ne existující vadu.
+   */
+  it('ani základní svět editačního holdoutu není kalibrační', () => {
+    const checked: string[] = [];
+    for (const id of lock.holdoutPrompts) {
+      const record = frozen.find((prompt) => prompt.id === id)!;
+      if (!record.baseWorld) continue;
+      const baseRecord = frozen.find((prompt) => prompt.id === record.baseWorld);
+      expect(baseRecord, `${id} staví na neexistujícím světě ${record.baseWorld}`).toBeDefined();
+      expect(
+        CALIBRATION_SPLITS.has(baseRecord!.split),
+        `${id} staví na ${record.baseWorld}, který je v kalibrační sadě (${baseRecord!.split})`,
+      ).toBe(false);
+      checked.push(id);
+    }
+    // Bez tohohle by aserce mlčky prošla naprázdno, kdyby `baseWorld` z korpusu zmizel.
+    expect(checked.length, 'žádný z deseti nedeklaruje baseWorld — kontrola by běžela naprázdno').toBeGreaterThan(0);
+  });
 });
 
 describe('evals/gates — označené dvojice mají jak selhat', () => {
@@ -326,6 +505,18 @@ describe('evals/gates — označené dvojice mají jak selhat', () => {
       expect(world(pair.a), `${pair.id}: „přebarvení", které mění i svět`).toBe(world(pair.b));
       expect(JSON.stringify(pair.a.palette), `${pair.id}: „přebarvení" beze změny palety`).not.toBe(
         JSON.stringify(pair.b.palette),
+      );
+    }
+  });
+
+  // „Liší se paletou" bez dolní meze je splnitelné rozdílem, který nikdo nezměří.
+  // Viz MIN_PALETTE_DELTA — tohle je jediná aserce, která drží negativní kontrolu
+  // při životě, a zámek ji vlastní enumerací pokrýt nemůže (dvojice jsou jinde).
+  it('přebarvení je znatelné, ne kosmetické', () => {
+    for (const pair of pairs.filter((candidate) => candidate.expect === 'below_recolor')) {
+      const delta = paletteDelta(pair.a.palette, pair.b.palette);
+      expect(delta, `${pair.id}: rozdíl palety ${delta.toFixed(3)} je pod ${MIN_PALETTE_DELTA}`).toBeGreaterThanOrEqual(
+        MIN_PALETTE_DELTA,
       );
     }
   });

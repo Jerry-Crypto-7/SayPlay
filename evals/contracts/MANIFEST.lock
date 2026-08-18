@@ -5,7 +5,7 @@
   "scope": "Zamčené jsou gold kontrakty, nic víc. evals/contracts/__tests__/ se nehashuje: test je enumerátor zámku, ne zamčený artefakt.",
   "coverageRule": "Manifest musí krýt KAŽDÝ soubor v gold/. Chybějící soubor je stejné selhání jako nesouhlasný hash — jinak by šlo kontrakt nepozorovaně přidat.",
   "writtenBy": "P7a T702 (plans/P7-brany-a-evaluace.md)",
-  "orderingProof": "NEDOSTUPNÝ. Zámek dokazuje jen obsah, ne pořadí. Commit není podepsaný a běhy v evals/live jsou o čtyři dny starší než kontrakty — podrobně v AUTHORSHIP.md. Nikde se nesmí tvrdit opak.",
+  "orderingProof": "NEDOSTUPNÝ. Zámek dokazuje jen obsah, ne pořadí. Commit není podepsaný a naměřený běh (evals/kill-gate-report.json) je o čtyři dny starší než kontrakty — podrobně v AUTHORSHIP.md. Nikde se nesmí tvrdit opak.",
   "files": {
     "gold/E01.json": "31e2044b5dfdfff59195553c2da4147ccdbe74e6417ffd08760e336d6ee52b8e",
     "gold/E02.json": "53d1a7fd01813f45e611d5848d053e3ed0ac82116926ce904b5b5760ad72d65f",

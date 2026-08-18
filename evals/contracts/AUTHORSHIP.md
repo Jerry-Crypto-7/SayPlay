@@ -23,11 +23,19 @@ odhadnuté:
    commit není podepsaný** (`git log --format=%G?` vrací `N` na všech). Klíč je
    lidská závislost, která patří do P0 spolu s účtem — kód na ni nečeká a čekat
    nemůže.
-2. **Předchůdnost před během modelu.** `evals/live/` nese běhy z **14. 8. 2026**
-   (kill gate, 27 případů). Tyhle kontrakty vznikly **18. 8. 2026**, tedy o čtyři
-   dny později. **Běh, který se už odehrál, nejde předběhnout** a žádná pozdější
+2. **Předchůdnost před během modelu.** Živý běh kill gate (27 případů) proběhl
+   **14. 8. 2026**, tyhle kontrakty vznikly **18. 8. 2026**, tedy o čtyři dny
+   později. **Běh, který se už odehrál, nejde předběhnout** a žádná pozdější
    práce to nespraví. Přepsat historii by znamenalo udělat přesně to, co doktrína
    zmrazení zakazuje.
+
+   **Doložené je to na `evals/kill-gate-report.json`, ne na `evals/live/`, a je
+   to podstatný rozdíl.** Syrové odpovědi v `evals/live/` jsou gitignorované
+   (`evals/live/*`, trackovaný zůstává jediný `.gitkeep`), takže z běhu samotného
+   není v historii ani jeden commit a nemůže na něm stát žádné tvrzení o pořadí.
+   Kotva v testu proto míří na commitnutou zprávu z toho běhu (`289f14d`,
+   14. 8. 20:31) a odmítne cestu, která není přesně jeden trackovaný soubor –
+   jinak by šla splnit ukázáním na zástupný `.gitkeep` místo na běh.
 
 Provenience se tedy **netvrdí**. Plán s tím ostatně počítá vlastními slovy:
 *„provenance se u jednočlenného týmu dokázat nedá. Obrana proto necílí na to, kdo

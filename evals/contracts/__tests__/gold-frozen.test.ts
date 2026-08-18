@@ -15,6 +15,13 @@ const manifestPath = join(contractsDir, 'MANIFEST.lock');
 const authorshipPath = join(contractsDir, 'AUTHORSHIP.md');
 
 /**
+ * Commitnutý artefakt živého běhu. Syrové odpovědi v `evals/live/` jsou
+ * gitignorované, takže na nich žádné tvrzení o pořadí stát nemůže – viz kotvu
+ * provenience níž.
+ */
+const RUN_ARTIFACT = 'evals/kill-gate-report.json';
+
+/**
  * `--no-replace-objects` na KAŽDÉM volání gitu, ne jen u `show`.
  *
  * `refs/replace/*` jsou defaultně zapnuté a nahrazují objekt jiným objektem se
@@ -243,6 +250,53 @@ describe('evals/contracts — každá benchmarková úprava má gold kontrakt', 
       ] as const) {
         expect(contract[field], `${contract.id}: chybí ${field}`).toBeDefined();
       }
+    }
+  });
+
+  /**
+   * **Tři ze sedmi polí se výš kontrolují jen na existenci, a to je díra, ne
+   * kontrola.** `requiredPostconditions: []`, `protectedObservations: []` a
+   * `preservedWitnesses: null` projdou `toBeDefined()` ve všech 25 souborech,
+   * takže tři sedminy anotace by mohly být prázdné a sada by zůstala zelená.
+   * Rozsah (`allowedWrites`/`Creates`/`Deletes`) se přitom porovnává s druhým
+   * zdrojem už dnes – tyhle tři na to čekaly.
+   *
+   * Druhý zdroj je zmrazený korpus: postcondition, protectedObservation a
+   * witnessPreserved jsou v něm samostatné `requirements`, autorované jindy a
+   * jinde než gold anotace. Odvození je tím pádem doslovné a bez volnosti –
+   * `preservedWitnesses` je `null` právě tehdy, když zmrazený kontrakt takový
+   * požadavek nemá, ne když se autorovi nechtělo.
+   *
+   * Naměřeno 18. 8. 2026: shoda 25/25 na všech třech polích. Aserce tedy
+   * nezakazuje nic, co v korpusu je – zavírá cestu, kudy by anotace mohla
+   * tiše vyschnout.
+   */
+  it('postcondition, observace a svědek jsou odvozené ze zmrazeného korpusu', () => {
+    const byKind = (contract: FrozenContract, kind: string): unknown[] =>
+      contract.requirements.filter((requirement) => requirement.kind === kind).map((requirement) => requirement.value);
+
+    for (const frozenContract of frozenContracts) {
+      const contract = gold.get(frozenContract.id)!;
+      const witness = byKind(frozenContract, 'witnessPreserved');
+
+      expect(contract.requiredPostconditions, `${contract.id}: requiredPostconditions`).toEqual(
+        byKind(frozenContract, 'postcondition'),
+      );
+      expect(contract.protectedObservations, `${contract.id}: protectedObservations`).toEqual(
+        byKind(frozenContract, 'protectedObservation'),
+      );
+      expect(contract.preservedWitnesses, `${contract.id}: preservedWitnesses`).toEqual(
+        witness.length === 0 ? null : witness[0],
+      );
+    }
+  });
+
+  // Aserce výš by prošla naprázdno nad korpusem, kde tyhle požadavky nikde nejsou.
+  // Tohle je jediné místo, které drží, že se opravdu má co porovnávat.
+  it('zmrazený korpus ty tři požadavky vůbec nese', () => {
+    const kinds = new Set(frozenContracts.flatMap((contract) => contract.requirements.map((r) => r.kind)));
+    for (const kind of ['postcondition', 'protectedObservation', 'witnessPreserved']) {
+      expect(kinds.has(kind), `zmrazený korpus nenese ani jeden požadavek ${kind}`).toBe(true);
     }
   });
 
@@ -485,16 +539,39 @@ describe('evals/contracts — provenience je vykázaná tak, jak je', () => {
     expect(authorship).toContain('signedCommit: false');
   });
 
-  it('běhy v evals/live jsou starší než kontrakty, a dokument to tvrdí taky', () => {
+  /**
+   * **Kotva musí sedět na souboru, který je v historii – `evals/live/` v ní není.**
+   *
+   * Původní znění téhle aserce se ptalo gitu na `evals/live`, jenže `.gitignore`
+   * vylučuje `evals/live/*` a nechává trackovaný jediný `.gitkeep`. Aserce tedy
+   * neměřila stáří běhů, ale okamžik, kdy někdo založil prázdný adresář – a nad
+   * skutečně gitignorovanou cestou by `git log` vrátil nula řádků a `return`
+   * o dva řádky níž by ji nechal tiše projít. Naměřeno 18. 8. 2026: jeden commit
+   * (`.gitkeep`, 14. 8. 12:23), ne běhy.
+   *
+   * Commitnutý artefakt toho běhu je `evals/kill-gate-report.json` (14. 8. 20:31)
+   * – `.gitignore` mu schválně nechává vyhrazené jméno. Na něj kotva míří teď.
+   */
+  it('naměřený běh je starší než kontrakty, a dokument to tvrdí taky', () => {
     if (goldCommits.length === 0) return;
     const goldFirstAt = Number(goldCommits[0].split(' ')[1]);
-    const liveFirst = git('log', '--full-history', '--reverse', '--format=%ct', '--', 'evals/live')
+
+    // **„Něco trackovaného pod tou cestou" je slabá podmínka a `evals/live` ji
+    // splňuje** – `git ls-files` tam vrátí `.gitkeep`, takže by kotva směla
+    // ukázat zpátky přesně na adresář, kvůli kterému se přepisovala. Drží se to
+    // až rovností: cesta musí být JEDEN trackovaný soubor, a to ten samý.
+    expect(
+      git('ls-files', '--', RUN_ARTIFACT),
+      `${RUN_ARTIFACT} není jeden trackovaný soubor – kotva by měřila zástupce, ne běh`,
+    ).toBe(RUN_ARTIFACT);
+
+    const runCommits = git('log', '--full-history', '--reverse', '--format=%ct', '--', RUN_ARTIFACT)
       .split('\n')
       .filter(Boolean);
-    if (liveFirst.length === 0) return;
+    expect(runCommits.length, `${RUN_ARTIFACT} nemá v historii commit`).toBeGreaterThan(0);
     expect(
-      Number(liveFirst[0]) < goldFirstAt,
-      'běhy v evals/live už nejsou starší než kontrakty — AUTHORSHIP.md je potřeba přepsat',
+      Number(runCommits[0]) < goldFirstAt,
+      'naměřený běh už není starší než kontrakty – AUTHORSHIP.md je potřeba přepsat',
     ).toBe(true);
     expect(authorship).toContain('liveRunsPredateContracts: true');
   });
