@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { LAYOUTS, layoutById } from '@/kit';
 
 import EmbedView from './EmbedView';
+import { siteUrlFrom } from './site-url';
 
 /**
  * `/embed/<layoutId>` — svět bez okolní stránky, k vložení do iframe.
@@ -18,23 +19,9 @@ import EmbedView from './EmbedView';
  * odpovědět, že takový svět není, ne ukázat cizí.
  */
 
-/**
- * Kde artefakt běží — **čte se z požadavku, ne z proměnné prostředí**.
- *
- * Relativní `og:image` je pro sdílení k ničemu: čtečka odkazů ho nemá proti čemu
- * rozvinout. Absolutní adresa se ale nesmí brát z `NEXT_PUBLIC_SITE_URL`, jak
- * to tady stálo předtím — Next takovou proměnnou zapéká při **buildu**, a
- * zapečetěný build z tagu (`scripts/build-from-tag.mjs`) povoluje jen proměnné
- * z `ops/build-env.allow`. Nasazený artefakt by tedy nesl adresu, se kterou se
- * build postavil, tedy loopback z e2e, a každý sdílený odkaz by ukazoval na
- * `127.0.0.1`. Hlavička požadavku je naproti tomu ta adresa, na kterou se
- * čtenář skutečně dívá.
- */
+/** Adresa pro `og:image`. Pořadí a jeho důvod jsou v `site-url.ts`. */
 async function siteUrl(): Promise<string> {
-  const incoming = await headers();
-  const host = incoming.get('x-forwarded-host') ?? incoming.get('host') ?? '127.0.0.1:3100';
-  const proto = incoming.get('x-forwarded-proto') ?? (host.startsWith('127.0.0.1') || host.startsWith('localhost') ? 'http' : 'https');
-  return `${proto}://${host}`;
+  return siteUrlFrom(process.env, await headers());
 }
 
 export async function generateMetadata({
