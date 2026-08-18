@@ -12,6 +12,21 @@
  * Tenhle soubor se proto spouští jako **samostatný proces**. Když hlídaný
  * proces zabijete, tenhle běží dál a zápis provede.
  *
+ * ## Ticho není v tomhle souboru nikdy dobrá zpráva
+ *
+ * Watchdog se spouští s `stdio: 'ignore'` a nikdo se na něj nedívá, takže každá
+ * cesta, na které umře bez zápisu, vypadá zvenčí přesně jako klidný provoz —
+ * tedy jako to jediné, co má tenhle soubor vyloučit. Proto:
+ *
+ * - **zapisovatelnost logu se ověří na startu**, ne až u prvního záznamu. Bez
+ *   toho by chybný adresář shodil watchdog až ve chvíli poruchy, kterou měl
+ *   ohlásit;
+ * - **selhání zápisu končí nenulovým návratovým kódem a hláškou na `stderr`**,
+ *   nikdy tichým pádem;
+ * - **návratové kódy se rozlišují**: `2` špatné parametry, `3` nezapisovatelný
+ *   log, `4` zápis selhal za běhu. Spouštěč tak pozná, co se stalo, i když
+ *   výstup nikam nevede.
+ *
  * ## Proč `process.kill(pid, 0)` a ne dotaz na HTTP
  *
  * Signál 0 se neposílá — jádro jen ověří, že proces existuje a že na něj máme
@@ -43,40 +58,59 @@ const pid = Number(argument('pid'));
 const logPath = argument('log');
 const intervalMs = Number(argument('interval-ms', '250'));
 const label = argument('label', 'unnamed');
-/** Kdy to vzdát, když hlídaný proces žije dál. Bez toho by watchdog přežil běh. */
-const maxMs = Number(argument('max-ms', '60000'));
+/**
+ * Kdy to vzdát, když hlídaný proces žije dál. **`0` znamená nikdy**, a je to
+ * výchozí hodnota: hlídač, který se po minutě sám vypne, přestane hlídat přesně
+ * v tu chvíli, kdy je provoz nejdelší. Omezení je pro testy a pro ruční běh.
+ */
+const maxMs = Number(argument('max-ms', '0'));
 
 if (!Number.isInteger(pid) || pid <= 0 || logPath === undefined) {
   process.stderr.write('watchdog: --pid <n> a --log <cesta> jsou povinné\n');
   process.exit(2);
 }
 
-function record(event, extra = {}) {
-  appendFileSync(logPath, `${JSON.stringify({ event, pid, label, at: Date.now(), ...extra })}\n`, 'utf-8');
+/** Zápis, který selže nahlas. Tichý pád by byl k nerozeznání od klidného provozu. */
+function record(event, extra = {}, exitCodeOnFailure = 4) {
+  try {
+    appendFileSync(logPath, `${JSON.stringify({ event, pid, label, at: Date.now(), ...extra })}\n`, 'utf-8');
+  } catch (error) {
+    process.stderr.write(`watchdog: zápis do ${logPath} selhal: ${error.message}\n`);
+    process.exit(exitCodeOnFailure);
+  }
 }
 
 /**
  * Žije hlídaný proces?
  *
- * `EPERM` znamená „existuje, ale není náš" — tedy žije. Kdyby se to počítalo
- * jako smrt, watchdog by ohlásil pád pokaždé, když ho někdo spustí pod jiným
- * uživatelem než hlídanou službu, což je běžné nasazení.
+ * `EPERM` i `EACCES` znamenají „existuje, ale není náš" — tedy žije. Kdyby se
+ * odepřený přístup počítal jako smrt, watchdog by ohlásil pád pokaždé, když ho
+ * někdo spustí pod jiným účtem než hlídanou službu, což je běžné nasazení.
+ *
+ * **Naměřeno na téhle Windows stanici** (`process.kill(4, 0)` na systémový
+ * proces): vrací `EPERM`, ne `EACCES`. Recenze tvrdila opak — že libuv mapuje
+ * odepřený `OpenProcess` na `EACCES` — a pro tuhle cestu to neplatí. `EACCES` se
+ * proto přijímá jako pojistka pro platformy, kde by to platit mohlo, ne jako
+ * popis toho, co se tady děje. Test `chráněný proces se počítá jako živý` jede
+ * přes `EPERM`, protože to je to, co jde na tomhle stroji doopravdy vyrobit.
  */
 function alive() {
   try {
     process.kill(pid, 0);
     return true;
   } catch (error) {
-    return error.code === 'EPERM';
+    return error.code === 'EPERM' || error.code === 'EACCES';
   }
 }
+
+// Zapisovatelnost se ověřuje TEĎ, ne až u poruchy. Kód 3 se liší od 4 schválně:
+// „nikdy jsem nezačal" je jiný stav než „přestal jsem uprostřed".
+record('watching', { intervalMs, maxMs }, 3);
 
 if (!alive()) {
   record('process-gone', { detected: 'at-start' });
   process.exit(0);
 }
-
-record('watching', { intervalMs, maxMs });
 
 const startedAt = Date.now();
 const timer = setInterval(() => {
@@ -86,7 +120,7 @@ const timer = setInterval(() => {
     process.exit(0);
   }
 
-  if (Date.now() - startedAt >= maxMs) {
+  if (maxMs > 0 && Date.now() - startedAt >= maxMs) {
     clearInterval(timer);
     record('gave-up', { watchedForMs: Date.now() - startedAt });
     process.exit(0);

@@ -96,6 +96,11 @@ export async function checkReadiness(directory: string, deps: ReadinessDeps): Pr
   try {
     await deps.fs.write(probePath, payload);
   } catch (error) {
+    // Uklízí se i tady, a není to opatrnost navíc. `ENOSPC` i vyčerpaná kvóta
+    // položku **nejdřív založí** a teprve pak selžou, takže bez tohohle by sonda
+    // na plném disku nechávala soubor při každém volání — tedy přesně ten
+    // scénář, kvůli kterému je úklid součástí cyklu.
+    await deps.fs.remove(probePath).catch(() => undefined);
     return { ready: false, probePath, elapsedMs: elapsed(), reason: 'WRITE_FAILED', detail: message(error) };
   }
 
@@ -126,4 +131,29 @@ export async function checkReadiness(directory: string, deps: ReadinessDeps): Pr
   }
 
   return { ready: true, probePath, elapsedMs: elapsed() };
+}
+
+/**
+ * Sonda nad skutečným souborovým systémem.
+ *
+ * Bez tohohle adaptéru je `checkReadiness` splněná jen tvarem: jediná
+ * implementace `ReadinessFs` by byla `Map` v testu, takže tvrzení „provede
+ * skutečný zápis" by nikdy žádný zápis neprovedlo. Testy proti němu sahají na
+ * opravdový dočasný adresář.
+ */
+export function nodeReadinessFs(): ReadinessFs {
+  return {
+    async write(path, bytes) {
+      const { writeFile } = await import('node:fs/promises');
+      await writeFile(path, bytes, 'utf-8');
+    },
+    async read(path) {
+      const { readFile } = await import('node:fs/promises');
+      return readFile(path, 'utf-8');
+    },
+    async remove(path) {
+      const { unlink } = await import('node:fs/promises');
+      await unlink(path);
+    },
+  };
 }

@@ -13,10 +13,14 @@
  * pouští několik a nejpomalejší soubor jede desítky vteřin.
  */
 
-import { describe, expect, it } from 'vitest';
+import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterAll, describe, expect, it } from 'vitest';
 
 import { AdmissionQueue, admit, type AdmissionPolicy } from '../admission';
-import { checkReadiness, type ReadinessFs } from '../readiness';
+import { checkReadiness, nodeReadinessFs, type ReadinessFs } from '../readiness';
 
 const POLICY: AdmissionPolicy = { budgetMs: 10_000, minServiceMs: 2_000, maxQueued: 4 };
 
@@ -260,5 +264,159 @@ describe('checkReadiness', () => {
     await expect(checkReadiness('/var/tmp', deps(fakeFs({ write: 'ENOSPC' })))).resolves.toMatchObject({
       ready: false,
     });
+  });
+});
+
+describe('checkReadiness nad skutečným souborovým systémem', () => {
+  // Bez tohohle bloku je „provede skutečný zápis" splněné jen tvarem: jediná
+  // implementace `ReadinessFs` by byla `Map` v testu nad ním, takže by se v
+  // celé sadě nikdy nic nezapsalo. Tady se sahá na opravdový disk.
+  const real = mkdtempSync(join(tmpdir(), 'readiness-real-'));
+  afterAll(() => rmSync(real, { recursive: true, force: true }));
+
+  it('zapíše, přečte a uklidí skutečný soubor', async () => {
+    const result = await checkReadiness(real, { fs: nodeReadinessFs(), now: () => Date.now(), nonce: () => 'skutecny' });
+
+    expect(result.ready).toBe(true);
+    expect(readdirSync(real)).toEqual([]);
+  });
+
+  it('adresář, který neexistuje, je NEPŘIPRAVENÝ a nic po sobě nenechá', async () => {
+    const missing = join(real, 'neexistuje');
+    const result = await checkReadiness(missing, {
+      fs: nodeReadinessFs(),
+      now: () => Date.now(),
+      nonce: () => 'chybejici',
+    });
+
+    expect(result).toMatchObject({ ready: false, reason: 'WRITE_FAILED' });
+    expect(readdirSync(real)).toEqual([]);
+  });
+});
+
+describe('checkReadiness — úklid po selhaném zápisu', () => {
+  it('položka založená před selháním zápisu se smaže', async () => {
+    // `ENOSPC` i vyčerpaná kvóta soubor NEJDŘÍV založí a teprve pak selžou.
+    // Sonda běží každých pár vteřin, takže bez úklidu na téhle cestě by plný
+    // disk plnila dál — tedy přesně to, čemu má úklid bránit.
+    const files = new Map<string, string>();
+    const fs: ReadinessFs = {
+      async write(path, bytes) {
+        files.set(path, bytes);
+        throw new Error('ENOSPC: no space left on device');
+      },
+      async read(path) {
+        const found = files.get(path);
+        if (found === undefined) throw new Error('ENOENT');
+        return found;
+      },
+      async remove(path) {
+        files.delete(path);
+      },
+    };
+
+    const result = await checkReadiness('/var/tmp', { fs, now: () => 0, nonce: () => 'x' });
+
+    expect(result).toMatchObject({ ready: false, reason: 'WRITE_FAILED' });
+    expect(files.size).toBe(0);
+  });
+});
+
+describe('AdmissionQueue — vypršelé požadavky nedrží místo ve frontě', () => {
+  it('čerstvý požadavek se nesmí odmítnout kvůli mrtvolám ve frontě', async () => {
+    // Naměřeno recenzí nad předchozí verzí: dva vypršelé požadavky si držely obě
+    // místa a čerstvý požadavek s CELÝM rozpočtem dostal `QUEUE_FULL`. Tedy
+    // patologie, kterou tenhle soubor v hlavičce popisuje jako důvod existence.
+    const clock = manualClock();
+    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 2 }, { now: clock.now, concurrency: 1 });
+
+    let release = (): void => undefined;
+    const busy = queue.submit('busy', async () => {
+      await new Promise<void>((resolve) => (release = resolve));
+      return 'hotovo';
+    });
+    await settle();
+
+    const doomed = [queue.submit('doomed-1', async () => 'a'), queue.submit('doomed-2', async () => 'b')];
+    await settle();
+    expect(queue.queued).toBe(2);
+
+    // Devět vteřin z rozpočtu deseti. Oba čekající jsou odsouzení.
+    clock.advance(9_000);
+
+    // Čerstvý požadavek se **nečeká** — má celý rozpočet, takže správná odpověď
+    // není odmítnutí, ale místo ve frontě. Čekat na něj tady by byl zámek: slot
+    // pořád drží `busy`.
+    const fresh = queue.submit('fresh', async () => 'c');
+    await settle();
+
+    for (const outcome of await Promise.all(doomed)) {
+      expect(outcome.verdict).toMatchObject({ admitted: false, reason: 'DEADLINE_EXCEEDED' });
+      expect(outcome.value).toBeNull();
+    }
+
+    // Mrtvoly frontu opustily a čerstvý požadavek v ní stojí místo nich.
+    expect(queue.queued).toBe(1);
+
+    release();
+    await busy;
+
+    // A doopravdy doběhne. Předchozí verze mu vrátila `QUEUE_FULL` a nikdy ho
+    // nepustila, takže tahle aserce je ta, která obě chování rozliší.
+    expect(await fresh).toMatchObject({ verdict: { admitted: true }, value: 'c' });
+    expect(queue.running).toBe(0);
+    expect(queue.queued).toBe(0);
+  });
+
+  it('uvolnění vypršelých nepustí víc práce, než dovoluje concurrency', async () => {
+    // Nejjemnější past téhle opravy: kdyby probuzený vypršelý požadavek prošel
+    // stejnou cestou jako propuštěný, snížil by `#running` za někoho jiného a
+    // fronta by pustila dvě práce naráz při `concurrency: 1`.
+    const clock = manualClock();
+    const queue = new AdmissionQueue({ ...POLICY, maxQueued: 3 }, { now: clock.now, concurrency: 1 });
+    const peak: number[] = [];
+
+    let release = (): void => undefined;
+    const busy = queue.submit('busy', async () => {
+      peak.push(queue.running);
+      await new Promise<void>((resolve) => (release = resolve));
+      return null;
+    });
+    await settle();
+
+    const doomed = queue.submit('doomed', async () => null);
+    await settle();
+    clock.advance(9_000);
+
+    const later = queue.submit('later', async () => {
+      peak.push(queue.running);
+      return null;
+    });
+    await settle();
+
+    await doomed;
+    release();
+    await busy;
+    await later;
+
+    expect(Math.max(...peak)).toBe(1);
+    expect(queue.running).toBe(0);
+  });
+
+  it('výjimka z práce propadne volajícímu, ale slot se vrátí', async () => {
+    // Výjimka se schválně nepolyká: volající o vadné odpovědi poskytovatele
+    // vědět má. Co se nesmí stát je, že si s sebou vezme i slot — jedna vadná
+    // odpověď by pak frontu zadusila.
+    const clock = manualClock();
+    const queue = new AdmissionQueue(POLICY, { now: clock.now, concurrency: 1 });
+
+    await expect(
+      queue.submit('vadny', async () => {
+        throw new Error('poskytovatel vrátil nesmysl');
+      }),
+    ).rejects.toThrow('poskytovatel vrátil nesmysl');
+
+    expect(queue.running).toBe(0);
+    expect(await queue.submit('dalsi', async () => 'prošel')).toMatchObject({ value: 'prošel' });
   });
 });

@@ -101,6 +101,9 @@ export interface QueueDeps {
   readonly concurrency: number;
 }
 
+/** Proč se čekající probudil: uvolnil se slot, nebo mu vypršel rozpočet. */
+type Wakeup = 'slot' | 'expired';
+
 /**
  * Fronta s omezenou soubežností, která nad každým požadavkem rozhodne až ve
  * chvíli, kdy se pro něj uvolní slot — a rozhoduje podle času **přijetí**.
@@ -110,8 +113,7 @@ export class AdmissionQueue {
   readonly #now: () => number;
   readonly #concurrency: number;
   #running = 0;
-  #queued = 0;
-  readonly #waiting: Array<() => void> = [];
+  readonly #waiting: Array<{ readonly receivedAtMs: number; readonly wake: (why: Wakeup) => void }> = [];
 
   constructor(policy: AdmissionPolicy, deps: QueueDeps) {
     this.#policy = policy;
@@ -121,10 +123,10 @@ export class AdmissionQueue {
 
   /** Kolik požadavků právě čeká na slot. */
   get queued(): number {
-    return this.#queued;
+    return this.#waiting.length;
   }
 
-  /** Kolik se jich právě zpracovává. */
+  /** Kolik se jich právě zpracovává. Nikdy víc než `concurrency`. */
   get running(): number {
     return this.#running;
   }
@@ -132,14 +134,29 @@ export class AdmissionQueue {
   async submit<T>(id: string, work: (deadlineMs: number) => Promise<T>): Promise<AdmissionOutcome<T>> {
     const receivedAtMs = this.#now();
 
-    if (this.#queued >= this.#policy.maxQueued && this.#running >= this.#concurrency) {
+    // Odsouzené požadavky se uvolní DŘÍV, než se na jejich místo někdo odmítne.
+    // Požadavek, kterému rozpočet vypršel ve frontě, `DEADLINE_EXCEEDED` stejně
+    // dostane — až se dostane na řadu. Kdyby si do té doby držel místo, byla by
+    // fronta plná odsouzených a odmítal by se čerstvý požadavek, který má celý
+    // rozpočet před sebou. Tedy přesně ta patologie, kterou tenhle soubor
+    // popisuje nahoře jako důvod své existence.
+    this.#wakeExpired();
+
+    if (this.#waiting.length >= this.#policy.maxQueued && this.#running >= this.#concurrency) {
       return {
         verdict: { admitted: false, id, waitedMs: 0, reason: 'QUEUE_FULL', remainingMs: this.#policy.budgetMs },
         value: null,
       };
     }
 
-    await this.#slot();
+    const why = await this.#slot(receivedAtMs);
+
+    // Probuzený kvůli vypršení slot nikdy nedostal, takže ho ani nevrací. Kdyby
+    // prošel `finally` s `#release()`, snížil by `#running` za někoho jiného a
+    // fronta by pustila víc práce, než dovoluje `concurrency`.
+    if (why === 'expired') {
+      return { verdict: admit(id, receivedAtMs, this.#now(), this.#policy), value: null };
+    }
 
     try {
       // Tady je celý rozdíl proti naivní verzi: `receivedAtMs` je z podání,
@@ -149,25 +166,38 @@ export class AdmissionQueue {
 
       return { verdict, value: await work(verdict.deadlineMs) };
     } finally {
+      // Běží i když `work` vyhodí — výjimka propadne volajícímu, ale slot se
+      // vrátí. Bez toho by jedna vadná odpověď poskytovatele frontu zadusila.
       this.#release();
     }
   }
 
-  async #slot(): Promise<void> {
+  async #slot(receivedAtMs: number): Promise<Wakeup> {
     if (this.#running < this.#concurrency) {
       this.#running += 1;
-      return;
+      return 'slot';
     }
 
-    this.#queued += 1;
-    await new Promise<void>((resolve) => this.#waiting.push(resolve));
-    this.#queued -= 1;
-    this.#running += 1;
+    const why = await new Promise<Wakeup>((wake) => this.#waiting.push({ receivedAtMs, wake }));
+    if (why === 'slot') this.#running += 1;
+    return why;
+  }
+
+  /** Uvolní z fronty ty, kterým rozpočet vypršel dřív, než se na ně dostalo. */
+  #wakeExpired(): void {
+    const nowMs = this.#now();
+    const expired = (entry: { readonly receivedAtMs: number }): boolean =>
+      this.#policy.budgetMs - (nowMs - entry.receivedAtMs) < this.#policy.minServiceMs;
+
+    for (const entry of this.#waiting.filter(expired)) {
+      this.#waiting.splice(this.#waiting.indexOf(entry), 1);
+      entry.wake('expired');
+    }
   }
 
   #release(): void {
     this.#running -= 1;
     const next = this.#waiting.shift();
-    if (next !== undefined) next();
+    if (next !== undefined) next.wake('slot');
   }
 }
