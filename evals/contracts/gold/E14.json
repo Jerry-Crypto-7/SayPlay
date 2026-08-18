@@ -1,0 +1,49 @@
+{
+  "id": "E14",
+  "editClass": "rule_delete",
+  "baseWorld": "C09",
+  "baseRevision": 0,
+  "derivable": true,
+  "allowedWrites": [],
+  "allowedCreates": [],
+  "allowedDeletes": [
+    "/sim/rules/pop/actions/0/kind",
+    "/sim/rules/pop/actions/0/poolTag",
+    "/sim/rules/pop/actions/0/socket",
+    "/sim/rules/pop/condition",
+    "/sim/rules/pop/event/kind",
+    "/sim/rules/pop/event/timer",
+    "/sim/rules/pop/id",
+    "/sim/rules/pop/phase",
+    "/sim/rules/pop/priority",
+    "/sim/state/timers/round/durationTicks",
+    "/sim/state/timers/round/init"
+  ],
+  "withinFrozenAllowedPaths": false,
+  "escapingLeaves": [
+    "/sim/rules/pop/actions/0/kind",
+    "/sim/rules/pop/actions/0/poolTag",
+    "/sim/rules/pop/actions/0/socket",
+    "/sim/rules/pop/condition",
+    "/sim/rules/pop/event/kind",
+    "/sim/rules/pop/event/timer",
+    "/sim/rules/pop/id",
+    "/sim/rules/pop/phase",
+    "/sim/rules/pop/priority"
+  ],
+  "requiredPostconditions": [
+    {
+      "expr": "timerExists('round')",
+      "op": "==",
+      "rhs": false
+    },
+    {
+      "expr": "danglingRefCount()",
+      "op": "==",
+      "rhs": 0
+    }
+  ],
+  "protectedObservations": [],
+  "preservedWitnesses": true,
+  "note": "Kontrakt deklaruje smazání `/sim/rules/roundEnd`, patch ale maže `/sim/rules/pop`. Neshoduje se jméno pravidla, ne rozsah — kontrakt míří na pravidlo, kterého se patch nedotkne."
+}

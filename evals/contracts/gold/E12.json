@@ -1,0 +1,35 @@
+{
+  "id": "E12",
+  "editClass": "rule_insert",
+  "baseWorld": "C05",
+  "baseRevision": 0,
+  "derivable": true,
+  "allowedWrites": [],
+  "allowedCreates": [
+    {
+      "kind": "rule",
+      "parentId": "/sim/rules",
+      "semanticRole": "alarm"
+    },
+    {
+      "kind": "flag",
+      "parentId": "/sim/state/flags",
+      "semanticRole": "alarmed"
+    }
+  ],
+  "allowedDeletes": [],
+  "withinFrozenAllowedPaths": true,
+  "requiredPostconditions": [
+    {
+      "expr": "rule('alarm').event.kind",
+      "op": "==",
+      "rhs": "onExitZone"
+    }
+  ],
+  "protectedObservations": [
+    {
+      "expr": "rule('open').condition"
+    }
+  ],
+  "preservedWitnesses": true
+}

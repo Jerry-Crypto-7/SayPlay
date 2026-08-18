@@ -1,0 +1,25 @@
+{
+  "id": "E20",
+  "editClass": "topology_rewire",
+  "baseWorld": "C03",
+  "baseRevision": 0,
+  "derivable": false,
+  "applyFailure": "Value required at path: /sim/rules/patrol/actions/0/route",
+  "allowedWrites": [],
+  "allowedCreates": [],
+  "allowedDeletes": [],
+  "requiredPostconditions": [
+    {
+      "expr": "layout().kind",
+      "op": "==",
+      "rhs": "corridor"
+    }
+  ],
+  "protectedObservations": [
+    {
+      "expr": "rule('detect').condition"
+    }
+  ],
+  "preservedWitnesses": false,
+  "note": "Patch se neaplikuje: `replace /sim/rules/patrol/actions/0/route` nad akcí, která `route` nemá. Druhá půlka rozporu 4a."
+}

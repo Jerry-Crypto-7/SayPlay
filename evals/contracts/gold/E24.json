@@ -1,0 +1,31 @@
+{
+  "id": "E24",
+  "editClass": "goal_swap",
+  "baseWorld": "C09",
+  "baseRevision": 0,
+  "derivable": false,
+  "applyFailure": "Value required at path: /sim/state/counters/streak/-",
+  "allowedWrites": [],
+  "allowedCreates": [],
+  "allowedDeletes": [],
+  "requiredPostconditions": [
+    {
+      "expr": "rule('win').condition.ref",
+      "op": "==",
+      "rhs": "streak"
+    },
+    {
+      "expr": "rule('miss').actions[0].kind",
+      "op": "==",
+      "rhs": "lose"
+    },
+    {
+      "expr": "counterResetOnMiss('streak')",
+      "op": "==",
+      "rhs": true
+    }
+  ],
+  "protectedObservations": [],
+  "preservedWitnesses": false,
+  "note": "Patch se neaplikuje: `add /sim/state/counters/streak/-` nad counterem, který v základním světě `C09` není. Pointer umírá o úroveň dřív, než kam míří."
+}

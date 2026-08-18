@@ -1,0 +1,41 @@
+{
+  "id": "E13",
+  "editClass": "rule_delete",
+  "baseWorld": "C03",
+  "baseRevision": 0,
+  "derivable": true,
+  "allowedWrites": [
+    "/sim/rules/detect/condition",
+    "/sim/rules/detect/condition/kind",
+    "/sim/rules/detect/condition/operands/0/entity",
+    "/sim/rules/detect/condition/operands/0/kind",
+    "/sim/rules/detect/condition/operands/0/zone",
+    "/sim/rules/detect/condition/operands/1/kind",
+    "/sim/rules/detect/condition/operands/1/target",
+    "/sim/rules/detect/condition/operands/1/value"
+  ],
+  "allowedCreates": [],
+  "allowedDeletes": [],
+  "withinFrozenAllowedPaths": false,
+  "escapingLeaves": [
+    "/sim/rules/detect/condition",
+    "/sim/rules/detect/condition/kind",
+    "/sim/rules/detect/condition/operands/0/entity",
+    "/sim/rules/detect/condition/operands/0/kind",
+    "/sim/rules/detect/condition/operands/0/zone"
+  ],
+  "requiredPostconditions": [
+    {
+      "expr": "ruleConditionOperandCount('detect')",
+      "op": "==",
+      "rhs": 1
+    }
+  ],
+  "protectedObservations": [
+    {
+      "expr": "entityCountByRole('agent')"
+    }
+  ],
+  "preservedWitnesses": true,
+  "note": "Patch mění i `/sim/rules/detect/condition` a jeho podstrom, které kontrakt nezmiňuje. Jediný ze osmi uniků s deklarovaným verdiktem jiným než `FULFILLED`."
+}

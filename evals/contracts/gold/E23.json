@@ -1,0 +1,63 @@
+{
+  "id": "E23",
+  "editClass": "goal_swap",
+  "baseWorld": "C06",
+  "baseRevision": 0,
+  "derivable": true,
+  "allowedWrites": [
+    "/sim/rules/day5Branch/condition",
+    "/sim/rules/day5Branch/condition/kind",
+    "/sim/rules/day5Branch/condition/op",
+    "/sim/rules/day5Branch/condition/ref",
+    "/sim/rules/day5Branch/condition/value",
+    "/sim/rules/day5Branch/event/ref",
+    "/sim/rules/day5Branch/event/threshold"
+  ],
+  "allowedCreates": [
+    {
+      "kind": "rule",
+      "parentId": "/sim/rules",
+      "semanticRole": "earn"
+    },
+    {
+      "kind": "counter",
+      "parentId": "/sim/state/counters",
+      "semanticRole": "coins"
+    }
+  ],
+  "allowedDeletes": [],
+  "withinFrozenAllowedPaths": false,
+  "escapingLeaves": [
+    "/sim/rules/day5Branch/condition",
+    "/sim/rules/day5Branch/condition/kind",
+    "/sim/rules/day5Branch/condition/op",
+    "/sim/rules/day5Branch/condition/ref",
+    "/sim/rules/day5Branch/condition/value",
+    "/sim/rules/day5Branch/event/ref",
+    "/sim/rules/day5Branch/event/threshold"
+  ],
+  "requiredPostconditions": [
+    {
+      "expr": "rule('win').condition.ref",
+      "op": "==",
+      "rhs": "coins"
+    },
+    {
+      "expr": "rule('win').condition.rhs",
+      "op": "==",
+      "rhs": 10
+    },
+    {
+      "expr": "winRuleCount()",
+      "op": "==",
+      "rhs": 1
+    }
+  ],
+  "protectedObservations": [
+    {
+      "expr": "counter('day')"
+    }
+  ],
+  "preservedWitnesses": false,
+  "note": "Krom deklarovaného hýbe celým `/sim/rules/day5Branch`. Sedmý a poslední únik s deklarovaným verdiktem `FULFILLED`."
+}

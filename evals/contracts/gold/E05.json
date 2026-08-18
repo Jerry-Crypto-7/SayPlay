@@ -1,0 +1,26 @@
+{
+  "id": "E05",
+  "editClass": "predicate_flip",
+  "baseWorld": "C05",
+  "baseRevision": 0,
+  "derivable": true,
+  "allowedWrites": [
+    "/sim/rules/open/condition/value"
+  ],
+  "allowedCreates": [],
+  "allowedDeletes": [],
+  "withinFrozenAllowedPaths": true,
+  "requiredPostconditions": [
+    {
+      "expr": "rule('open').condition.value",
+      "op": "==",
+      "rhs": 0
+    }
+  ],
+  "protectedObservations": [
+    {
+      "expr": "entityCountByRole('plate')"
+    }
+  ],
+  "preservedWitnesses": false
+}

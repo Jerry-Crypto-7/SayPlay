@@ -1,0 +1,34 @@
+{
+  "id": "E04",
+  "editClass": "predicate_flip",
+  "baseWorld": "C03",
+  "baseRevision": 0,
+  "derivable": true,
+  "allowedWrites": [],
+  "allowedCreates": [
+    {
+      "kind": "field",
+      "parentId": "/sim/rules/detect/condition/operands/0",
+      "semanticRole": "negated"
+    }
+  ],
+  "allowedDeletes": [],
+  "withinFrozenAllowedPaths": false,
+  "escapingLeaves": [
+    "/sim/rules/detect/condition/operands/0/negated"
+  ],
+  "requiredPostconditions": [
+    {
+      "expr": "rule('detect').condition.operands[1].negated",
+      "op": "==",
+      "rhs": true
+    }
+  ],
+  "protectedObservations": [
+    {
+      "expr": "agentPatrolRoutes()"
+    }
+  ],
+  "preservedWitnesses": false,
+  "note": "Kontrakt žádá negaci operandu **1**, patch neguje operand **0**, a dělá to `add` (klíč `negated` tam dřív nebyl), ne `replace`. Rozcházejí se tedy adresa i účinek."
+}

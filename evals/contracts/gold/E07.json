@@ -1,0 +1,28 @@
+{
+  "id": "E07",
+  "editClass": "action_swap",
+  "baseWorld": "C01",
+  "baseRevision": 0,
+  "derivable": true,
+  "allowedWrites": [
+    "/sim/rules/unlock/actions/0/kind"
+  ],
+  "allowedCreates": [],
+  "allowedDeletes": [
+    "/sim/rules/unlock/actions/0/locked"
+  ],
+  "withinFrozenAllowedPaths": true,
+  "requiredPostconditions": [
+    {
+      "expr": "rule('unlock').actions[0].kind",
+      "op": "==",
+      "rhs": "despawn"
+    }
+  ],
+  "protectedObservations": [
+    {
+      "expr": "counter('keysHeld').max"
+    }
+  ],
+  "preservedWitnesses": false
+}

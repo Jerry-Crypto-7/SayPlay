@@ -1,0 +1,57 @@
+{
+  "id": "E25",
+  "editClass": "goal_swap",
+  "baseWorld": "C03",
+  "baseRevision": 0,
+  "derivable": true,
+  "allowedWrites": [
+    "/sim/rules/win/condition",
+    "/sim/rules/win/condition/kind",
+    "/sim/rules/win/condition/op",
+    "/sim/rules/win/condition/tag",
+    "/sim/rules/win/condition/value",
+    "/sim/rules/win/condition/zone",
+    "/sim/rules/win/event/kind"
+  ],
+  "allowedCreates": [
+    {
+      "kind": "rule",
+      "parentId": "/sim/rules",
+      "semanticRole": "tag"
+    },
+    {
+      "kind": "field",
+      "parentId": "/sim/rules/win/event",
+      "semanticRole": "name"
+    },
+    {
+      "kind": "counter",
+      "parentId": "/sim/state/counters",
+      "semanticRole": "tagged"
+    }
+  ],
+  "allowedDeletes": [
+    "/sim/rules/win/event/entity",
+    "/sim/rules/win/event/zone"
+  ],
+  "withinFrozenAllowedPaths": true,
+  "requiredPostconditions": [
+    {
+      "expr": "rule('win').condition.kind",
+      "op": "==",
+      "rhs": "countInZone"
+    },
+    {
+      "expr": "winRuleCount()",
+      "op": "==",
+      "rhs": 1
+    }
+  ],
+  "protectedObservations": [
+    {
+      "expr": "rule('detect').condition"
+    }
+  ],
+  "preservedWitnesses": false,
+  "note": "Legální nekanonické pořadí: RFC 6902 `add` připojuje na konec, takže výsledek nese klíče v jiném pořadí, než by dala kanonická emise. Není to vada patche."
+}

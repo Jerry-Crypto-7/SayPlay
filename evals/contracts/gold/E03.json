@@ -1,0 +1,22 @@
+{
+  "id": "E03",
+  "editClass": "param_change",
+  "baseWorld": "C07",
+  "baseRevision": 0,
+  "derivable": true,
+  "allowedWrites": [
+    "/sim/state/timers/torch/durationTicks"
+  ],
+  "allowedCreates": [],
+  "allowedDeletes": [],
+  "withinFrozenAllowedPaths": true,
+  "requiredPostconditions": [
+    {
+      "expr": "timer('torch').durationTicks",
+      "op": "==",
+      "rhs": 4800
+    }
+  ],
+  "protectedObservations": [],
+  "preservedWitnesses": true
+}

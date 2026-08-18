@@ -1,0 +1,35 @@
+{
+  "id": "E11",
+  "editClass": "rule_insert",
+  "baseWorld": "C08",
+  "baseRevision": 0,
+  "derivable": true,
+  "allowedWrites": [],
+  "allowedCreates": [
+    {
+      "kind": "entity",
+      "parentId": "/sim/entities",
+      "semanticRole": "minotaur2"
+    },
+    {
+      "kind": "rule",
+      "parentId": "/sim/rules",
+      "semanticRole": "patrol2"
+    }
+  ],
+  "allowedDeletes": [],
+  "withinFrozenAllowedPaths": true,
+  "requiredPostconditions": [
+    {
+      "expr": "entityCountByRole('agent')",
+      "op": "==",
+      "rhs": 2
+    }
+  ],
+  "protectedObservations": [
+    {
+      "expr": "layoutTopologyHash()"
+    }
+  ],
+  "preservedWitnesses": false
+}

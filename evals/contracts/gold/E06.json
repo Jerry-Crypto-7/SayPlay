@@ -1,0 +1,21 @@
+{
+  "id": "E06",
+  "editClass": "predicate_flip",
+  "baseWorld": "C04",
+  "baseRevision": 0,
+  "derivable": false,
+  "applyFailure": "Value required at path: /sim/rules/openChest/condition/negated",
+  "allowedWrites": [],
+  "allowedCreates": [],
+  "allowedDeletes": [],
+  "requiredPostconditions": [
+    {
+      "expr": "rule('openChest').condition.negated",
+      "op": "==",
+      "rhs": true
+    }
+  ],
+  "protectedObservations": [],
+  "preservedWitnesses": false,
+  "note": "Patch se neaplikuje: `replace /sim/rules/openChest/condition/negated` nad kondicí, která klíč `negated` nemá. Bezchybná emise to nespraví — vada je v korpusu."
+}

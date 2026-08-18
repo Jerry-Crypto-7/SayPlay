@@ -1,0 +1,59 @@
+{
+  "id": "E21",
+  "editClass": "goal_swap",
+  "baseWorld": "C01",
+  "baseRevision": 0,
+  "derivable": true,
+  "allowedWrites": [
+    "/sim/rules/win/condition/kind",
+    "/sim/rules/win/condition/value",
+    "/sim/rules/win/event/kind"
+  ],
+  "allowedCreates": [
+    {
+      "kind": "field",
+      "parentId": "/sim/rules/win/condition",
+      "semanticRole": "op"
+    },
+    {
+      "kind": "field",
+      "parentId": "/sim/rules/win/condition",
+      "semanticRole": "ref"
+    },
+    {
+      "kind": "field",
+      "parentId": "/sim/rules/win/event",
+      "semanticRole": "ref"
+    },
+    {
+      "kind": "field",
+      "parentId": "/sim/rules/win/event",
+      "semanticRole": "threshold"
+    },
+    {
+      "kind": "counter",
+      "parentId": "/sim/state/counters",
+      "semanticRole": "keysReturned"
+    }
+  ],
+  "allowedDeletes": [
+    "/sim/rules/win/condition/target",
+    "/sim/rules/win/event/entity",
+    "/sim/rules/win/event/zone"
+  ],
+  "withinFrozenAllowedPaths": true,
+  "requiredPostconditions": [
+    {
+      "expr": "rule('win').condition.ref",
+      "op": "==",
+      "rhs": "keysReturned"
+    },
+    {
+      "expr": "winRuleCount()",
+      "op": "==",
+      "rhs": 1
+    }
+  ],
+  "protectedObservations": [],
+  "preservedWitnesses": false
+}

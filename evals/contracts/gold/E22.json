@@ -1,0 +1,56 @@
+{
+  "id": "E22",
+  "editClass": "goal_swap",
+  "baseWorld": "C02",
+  "baseRevision": 0,
+  "derivable": true,
+  "allowedWrites": [
+    "/sim/rules/win/condition",
+    "/sim/rules/win/condition/kind",
+    "/sim/rules/win/condition/target",
+    "/sim/rules/win/condition/value",
+    "/sim/rules/win/event/kind"
+  ],
+  "allowedCreates": [
+    {
+      "kind": "field",
+      "parentId": "/sim/rules/win/event",
+      "semanticRole": "timer"
+    }
+  ],
+  "allowedDeletes": [
+    "/sim/rules/drown/actions/0/kind",
+    "/sim/rules/drown/condition",
+    "/sim/rules/drown/event/kind",
+    "/sim/rules/drown/event/timer",
+    "/sim/rules/drown/id",
+    "/sim/rules/drown/phase",
+    "/sim/rules/drown/priority",
+    "/sim/rules/win/event/entity",
+    "/sim/rules/win/event/zone"
+  ],
+  "withinFrozenAllowedPaths": false,
+  "escapingLeaves": [
+    "/sim/rules/drown/condition",
+    "/sim/rules/drown/event/kind",
+    "/sim/rules/drown/event/timer",
+    "/sim/rules/drown/id",
+    "/sim/rules/drown/phase",
+    "/sim/rules/drown/priority"
+  ],
+  "requiredPostconditions": [
+    {
+      "expr": "rule('win').event.kind",
+      "op": "==",
+      "rhs": "onTimerEnd"
+    },
+    {
+      "expr": "winRuleCount()",
+      "op": "==",
+      "rhs": 1
+    }
+  ],
+  "protectedObservations": [],
+  "preservedWitnesses": false,
+  "note": "Krom deklarovaného hýbe celým `/sim/rules/drown` — pravidlem, které kontrakt nejmenuje."
+}
