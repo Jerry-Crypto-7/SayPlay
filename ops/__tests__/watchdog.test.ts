@@ -14,10 +14,10 @@
  */
 
 import { spawn, type ChildProcess } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, existsSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { afterAll, afterEach, describe, expect, it } from 'vitest';
 
@@ -42,6 +42,53 @@ function track(child: ChildProcess): ChildProcess {
 /** Potomek, který nic nedělá a sám od sebe neskončí. */
 function idleProcess(): ChildProcess {
   return track(spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' }));
+}
+
+/**
+ * **Chyba `process.kill(pid, 0)` se v testu VYROBÍ, ne půjčí od cizího procesu.**
+ *
+ * Dřív se ta vlastnost měřila přes `--pid 4`, tedy systémový proces Windows.
+ * To má dvě vady najednou. Za prvé je to jediné místo v celé sadě závislé na
+ * stroji, na kterém vzniklo: PID 4 na Linuxu, na macOS ani v kontejneru běžně
+ * neexistuje, `process.kill` tam vrátí `ESRCH` a test 15 s čeká na `gave-up`,
+ * kterého se nedočká. Za druhé — a to je horší — aserce je tam, kde ten proces
+ * je **dostupný**, splněná i bez `EPERM`: dostupný proces je taky živý, takže
+ * větev, kvůli které test existuje, se vůbec nemusí projít.
+ *
+ * Předehra proto `process.kill` pro signál 0 nahradí a hodí přesně ten errno,
+ * který se testuje. Hlídaný PID je vlastní PID testu, takže na existenci ničeho
+ * cizího nezávisí ani jeden běh. Nic se nepředstírá o watchdogu samotném —
+ * pořád je to skutečný druhý proces, který si zapisuje na skutečný disk.
+ */
+const KILL_STUB = join(scratch, 'kill-stub.mjs');
+writeFileSync(
+  KILL_STUB,
+  [
+    'const code = process.env.WATCHDOG_TEST_KILL_CODE;',
+    'const real = process.kill.bind(process);',
+    'process.kill = (pid, signal) => {',
+    '  if (signal === 0) {',
+    '    const error = new Error("watchdog test stub: " + code);',
+    '    error.code = code;',
+    '    throw error;',
+    '  }',
+    '  return real(pid, signal);',
+    '};',
+    '',
+    // Konec řádku přes `String.fromCharCode(10)` — zpětné lomítko by tenhle
+    // soubor prošlo jako escape sekvence a rozpadlo řetězec.
+  ].join(String.fromCharCode(10)),
+  'utf-8',
+);
+
+/** Watchdog, jehož sonda na existenci procesu vždycky selže zadaným `errno`. */
+function watchdogWithKillErrno(errno: string, args: string[]): ChildProcess {
+  return track(
+    spawn(process.execPath, ['--import', pathToFileURL(KILL_STUB).href, WATCHDOG, ...args], {
+      stdio: 'ignore',
+      env: { ...process.env, WATCHDOG_TEST_KILL_CODE: errno },
+    }),
+  );
 }
 
 /** Řádkový JSON, který watchdog zatím zapsal. */
@@ -175,23 +222,49 @@ describe('watchdog', () => {
     expect(records(logPath).some((record) => record.event === 'process-gone')).toBe(false);
   }, 30_000);
 
-  it('chráněný proces se počítá jako živý, ne jako mrtvý', async () => {
-    // PID 4 je systémový proces Windows: existuje, ale `OpenProcess` na něj
-    // běžný účet nedostane. Naměřeno: `process.kill(4, 0)` hlásí `EPERM`. Kdyby
-    // watchdog odepřený přístup četl jako smrt, ohlásil by pád procesu, který
-    // se má dobře — a to je celá třída falešných poplachů u nasazení, kde
-    // watchdog běží pod jiným uživatelem než hlídaná služba.
-    const logPath = join(scratch, 'chraneny.jsonl');
-    track(
-      spawn(
-        process.execPath,
-        [WATCHDOG, '--pid', '4', '--log', logPath, '--interval-ms', '50', '--max-ms', '300'],
-        { stdio: 'ignore' },
-      ),
-    );
+  it.each(['EPERM', 'EACCES'])('odepřený přístup (%s) se počítá jako živý proces, ne jako mrtvý', async (errno) => {
+    // Kdyby watchdog četl odepřený přístup jako smrt, ohlásil by pád procesu,
+    // který se má dobře — a to je celá třída falešných poplachů u nasazení, kde
+    // watchdog běží pod jiným uživatelem než hlídaná služba. `EPERM` je to, co
+    // vrací Windows na systémový proces; `EACCES` je pojistka pro platformy, kde
+    // by libuv odepřený `OpenProcess` mapoval takhle. Obě větve se měří stejně,
+    // protože obě jsou v `alive()` napsané a ani jedna nemá vlastní důkaz.
+    const logPath = join(scratch, `odepreno-${errno}.jsonl`);
+    watchdogWithKillErrno(errno, [
+      '--pid',
+      String(process.pid),
+      '--log',
+      logPath,
+      '--interval-ms',
+      '50',
+      '--max-ms',
+      '300',
+    ]);
 
     expect(await waitForRecord(logPath, (record) => record.event === 'gave-up')).not.toBeNull();
     expect(records(logPath).some((record) => record.event === 'process-gone')).toBe(false);
+  }, 30_000);
+
+  it('neexistující proces (ESRCH) se naopak počítá jako mrtvý', async () => {
+    // Kontrolní skupina k oběma testům nad ní, a je to ta část, bez které by
+    // netvrdily nic. Tentýž PID, tentýž způsob, jak se chyba vyrobí — liší se
+    // jen `errno`. Watchdog, který by prostě všechno považoval za živé, projde
+    // oběma testy nad tímhle a spadne až tady.
+    const logPath = join(scratch, 'esrch.jsonl');
+    watchdogWithKillErrno('ESRCH', [
+      '--pid',
+      String(process.pid),
+      '--log',
+      logPath,
+      '--interval-ms',
+      '50',
+      '--max-ms',
+      '300',
+    ]);
+
+    const gone = await waitForRecord(logPath, (record) => record.event === 'process-gone');
+    expect(gone).toMatchObject({ detected: 'at-start' });
+    expect(records(logPath).some((record) => record.event === 'gave-up')).toBe(false);
   }, 30_000);
 
   it('bez `--max-ms` watchdog nehlídá jen chvíli — výchozí je bez omezení', async () => {

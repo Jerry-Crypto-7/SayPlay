@@ -91,8 +91,9 @@ function record(event, extra = {}, exitCodeOnFailure = 4) {
  * proces): vrací `EPERM`, ne `EACCES`. Recenze tvrdila opak — že libuv mapuje
  * odepřený `OpenProcess` na `EACCES` — a pro tuhle cestu to neplatí. `EACCES` se
  * proto přijímá jako pojistka pro platformy, kde by to platit mohlo, ne jako
- * popis toho, co se tady děje. Test `chráněný proces se počítá jako živý` jede
- * přes `EPERM`, protože to je to, co jde na tomhle stroji doopravdy vyrobit.
+ * popis toho, co se tady děje. **Obě větve mají vlastní test** a ani jedna se
+ * neopírá o cizí PID: test si chybu vyrobí předehrou, která `process.kill`
+ * nahradí, takže `ESRCH` vedle nich měří rozdíl, ne shodu.
  */
 function alive() {
   try {
