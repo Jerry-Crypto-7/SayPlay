@@ -18,9 +18,9 @@ import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 
-import { AdmissionQueue, admit, type AdmissionPolicy, type CoercedReceipt } from '../admission';
+import { AdmissionQueue, admit, checkPolicy, type AdmissionPolicy, type CoercedReceipt } from '../admission';
 import { checkReadiness, nodeReadinessDeps, nodeReadinessFs, syncIfSupported, type ReadinessFs } from '../readiness';
 
 const POLICY: AdmissionPolicy = { budgetMs: 10_000, minServiceMs: 2_000, maxQueued: 4 };
@@ -986,4 +986,232 @@ describe('AdmissionQueue — srovnání času přijetí se hlásí, ne jen poč�
     expect(log.seen).toEqual([]);
     expect(queue.coercedReceipts).toBe(0);
   });
+});
+
+describe('nodeReadinessFs — krok trvanlivosti se měří na adaptéru, který se NASAZUJE', () => {
+  // Nález čerstvého recenzenta nad `eee9e1f`, a je to díra v důkazu, ne v kódu:
+  // `durabilityVerified` se dosud ověřovalo jen přes `Map` v testu a přes
+  // `syncIfSupported()` krmenou podvrženým handlem. Nad skutečným adaptérem
+  // stála jediná aserce — „na tmpdir vyjde `true`" — a tu splní i implementace,
+  // která `syncIfSupported()` nezavolá vůbec a `true` si napíše natvrdo.
+  //
+  // `write()` si `node:fs/promises` importuje až za běhu, takže se dá podstrčit
+  // a s ním i handle, jehož `sync()` odmítne `EINVAL`. To je disk, který zápis
+  // přijme a trvanlivost nepotvrdí — přesně ten, který se v tmpdiru vyrobit nedá.
+  const handleCalls: string[] = [];
+
+  function mockFsPromises(syncFails: boolean): void {
+    handleCalls.length = 0;
+    vi.doMock('node:fs/promises', () => ({
+      open: async () => ({
+        async write() {
+          handleCalls.push('write');
+        },
+        async sync() {
+          handleCalls.push('sync');
+          if (syncFails) throw Object.assign(new Error('fsync: EINVAL'), { code: 'EINVAL' });
+        },
+        async close() {
+          handleCalls.push('close');
+        },
+      }),
+    }));
+  }
+
+  afterAll(() => {
+    vi.doUnmock('node:fs/promises');
+    vi.resetModules();
+  });
+
+  it('svazek, který fsync odmítne, se zapíše — a nasazovaný adaptér to přizná', async () => {
+    mockFsPromises(true);
+    vi.resetModules();
+    const { nodeReadinessFs: fresh } = await import('../readiness');
+
+    const outcome = await fresh().write('/nikde/x.probe', 'ahoj');
+
+    // Pořadí je součást tvrzení: `sync` musí padnout mezi zápis a zavření
+    // deskriptoru, jinak vynucuje trvanlivost nad už zavřeným handlem.
+    expect(handleCalls).toEqual(['write', 'sync', 'close']);
+    expect(outcome).toEqual({ durabilityVerified: false });
+  });
+
+  it('svazek, který fsync umí, hlásí ověřeno — a je to týž kód, ne jiná větev', async () => {
+    // Rozlišovací polovina: bez ní by aserce nahoře prošla i nad adaptérem,
+    // který hlásí `false` vždycky.
+    mockFsPromises(false);
+    vi.resetModules();
+    const { nodeReadinessFs: fresh } = await import('../readiness');
+
+    const outcome = await fresh().write('/nikde/x.probe', 'ahoj');
+
+    expect(handleCalls).toEqual(['write', 'sync', 'close']);
+    expect(outcome).toEqual({ durabilityVerified: true });
+  });
+});
+
+describe('AdmissionPolicy — nesmyslná politika se odmítne při stavbě, ne za běhu', () => {
+  // Nález čerstvého recenzenta nad `eee9e1f`. Politika se nekontrolovala nikde,
+  // a zrušení `unref()` tu cestu zhoršilo: dřív mohl proces aspoň skončit, teď
+  // ho fronta drží a tiká po milisekundě navždy, zatímco čekající verdikt
+  // nedostane. Je to táž třída jako čas přijetí zvenčí, jen vyrobená
+  // konfigurací — `Number(process.env.BUDGET_MS)` u chybějící proměnné je `NaN`.
+  const BAD: ReadonlyArray<readonly [string, AdmissionPolicy]> = [
+    ['budgetMs NaN', { budgetMs: Number.NaN, minServiceMs: 2_000, maxQueued: 4 }],
+    ['budgetMs Infinity', { budgetMs: Number.POSITIVE_INFINITY, minServiceMs: 2_000, maxQueued: 4 }],
+    ['budgetMs záporný', { budgetMs: -1, minServiceMs: 0, maxQueued: 4 }],
+    ['budgetMs nulový', { budgetMs: 0, minServiceMs: 0, maxQueued: 4 }],
+    ['minServiceMs NaN', { budgetMs: 10_000, minServiceMs: Number.NaN, maxQueued: 4 }],
+    ['minServiceMs Infinity', { budgetMs: 10_000, minServiceMs: Number.POSITIVE_INFINITY, maxQueued: 4 }],
+    ['minServiceMs záporný', { budgetMs: 10_000, minServiceMs: -1, maxQueued: 4 }],
+    ['minServiceMs přes rozpočet', { budgetMs: 1_000, minServiceMs: 1_001, maxQueued: 4 }],
+    ['maxQueued NaN', { budgetMs: 10_000, minServiceMs: 2_000, maxQueued: Number.NaN }],
+    ['maxQueued záporný', { budgetMs: 10_000, minServiceMs: 2_000, maxQueued: -1 }],
+    ['maxQueued zlomek', { budgetMs: 10_000, minServiceMs: 2_000, maxQueued: 1.5 }],
+  ];
+
+  it.each(BAD)('%s: fronta se nepostaví', (_label, policy) => {
+    const clock = manualClock();
+
+    expect(
+      () =>
+        new AdmissionQueue(policy, {
+          now: clock.now,
+          concurrency: 1,
+          schedule: clock.schedule,
+          onCoercedReceipt: ignoreCoercions,
+        }),
+    ).toThrow(RangeError);
+  });
+
+  it.each(BAD)('%s: `admit()` je exportovaná, takže má tutéž kontrolu', (_label, policy) => {
+    // Bez ní vrátí `admit` u `budgetMs: NaN` verdikt `admitted: true` s
+    // `deadlineMs: NaN` — deadline, který nikdy nevyprší, předaný dál do práce.
+    expect(() => admit('x', 1_000, 1_000, policy)).toThrow(RangeError);
+  });
+
+  it('poctivá politika projde, včetně hraničních hodnot na obou koncích', () => {
+    // Rozlišovací polovina: bez ní by aserce nahoře prošly i nad kontrolou,
+    // která odmítá všechno, a fronta by nešla postavit vůbec.
+    const clock = manualClock();
+
+    expect(() => checkPolicy(POLICY)).not.toThrow();
+    // `maxQueued: 0` je legitimní — fronta bez čekárny odmítá hned, jakmile je plno.
+    expect(() => checkPolicy({ budgetMs: 1, minServiceMs: 0, maxQueued: 0 })).not.toThrow();
+    // Minimum přesně na rozpočtu ještě projde; o milisekundu víc už ne.
+    expect(() => checkPolicy({ budgetMs: 1_000, minServiceMs: 1_000, maxQueued: 4 })).not.toThrow();
+    expect(
+      () =>
+        new AdmissionQueue(POLICY, {
+          now: clock.now,
+          concurrency: 1,
+          schedule: clock.schedule,
+          onCoercedReceipt: ignoreCoercions,
+        }),
+    ).not.toThrow();
+  });
+});
+
+describe('AdmissionQueue — zavření zkrátí hold, aniž by kdokoli přišel o verdikt', () => {
+  // Nález čerstvého recenzenta nad `eee9e1f`: zrušení `unref()` vyměnilo
+  // „proces skončí dřív než verdikt" za „čekající drží proces až do svého
+  // vypršení", a tu druhou mez neměl kdo zkrátit. Po `SIGTERM` je to u rozpočtu
+  // 60 s celá minuta po zavření posluchače.
+  function openQueue(clock: ReturnType<typeof manualClock>): AdmissionQueue {
+    return new AdmissionQueue(POLICY, {
+      now: clock.now,
+      concurrency: 1,
+      schedule: clock.schedule,
+      onCoercedReceipt: ignoreCoercions,
+    });
+  }
+
+  it('čekající dostane verdikt hned a NIKDY ne `admitted: true` s prázdnou hodnotou', async () => {
+    // Tohle je celý důvod, proč zavření není `expired`: rozpočet ještě neuplynul,
+    // takže `admit()` by vrátilo `admitted: true` — a `admitted: true` vedle
+    // `value: null` je verdikt, který lže, protože práce se nespustila.
+    const clock = manualClock();
+    const queue = openQueue(clock);
+
+    let release = (): void => undefined;
+    const busy = queue.submit('busy', async () => {
+      await new Promise<void>((resolve) => (release = resolve));
+      return 'hotovo';
+    });
+    await settle();
+
+    const waiting = queue.submit('waiting', async () => 'nikdy');
+    await settle();
+    expect(queue.queued).toBe(1);
+
+    queue.close();
+
+    const outcome = await waiting;
+    expect(outcome.verdict).toMatchObject({ admitted: false, id: 'waiting', reason: 'SHUTTING_DOWN' });
+    expect(outcome.value).toBeNull();
+    expect(queue.queued).toBe(0);
+
+    // Běžící práce se nepřerušuje — drží skutečný slot a dokončí se.
+    release();
+    expect(await busy).toMatchObject({ value: 'hotovo' });
+  });
+
+  it('zavřená fronta nepřijímá nic nového a znovu už nikoho nenechá čekat', async () => {
+    const clock = manualClock();
+    const queue = openQueue(clock);
+    queue.close();
+
+    const outcome = await queue.submit('pozdni', async () => 'nikdy');
+
+    expect(outcome.verdict).toMatchObject({ admitted: false, reason: 'SHUTTING_DOWN' });
+    expect(outcome.value).toBeNull();
+    expect(queue.queued).toBe(0);
+    // Druhé zavolání nemá koho probudit a nesmí spadnout.
+    expect(() => queue.close()).not.toThrow();
+  });
+});
+
+describe('AdmissionQueue — zavření měřené na procesu, ne na hodinách v testu', () => {
+  // Rozšíření podprocesového oracle z T302d, a měří přesně tu mez, kterou
+  // `close()` zkracuje. Rozpočet je 60 s schválně: bez funkčního `close()` by
+  // čekající držel proces skoro minutu, `spawnSync` by ho po 15 s zabil a
+  // nepřišel by ŽÁDNÝ výstup. S ním verdikt dorazí v řádu milisekund.
+  it('zavření sundá hold na nulu, i když do vypršení chybí ještě minuta', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'worldsmith-close-'));
+    const child = join(dir, 'child.mjs');
+    const source = new URL('../admission.ts', import.meta.url).href;
+
+    writeFileSync(
+      child,
+      [
+        `import { AdmissionQueue } from ${JSON.stringify(source)};`,
+        'const queue = new AdmissionQueue(',
+        '  { budgetMs: 60000, minServiceMs: 1000, maxQueued: 4 },',
+        '  { now: () => Date.now(), concurrency: 1, onCoercedReceipt: () => undefined },',
+        ');',
+        "void queue.submit('busy', () => new Promise(() => undefined));",
+        "queue.submit('waiting', async () => 'nikdy').then((outcome) => {",
+        '  process.stdout.write(JSON.stringify(outcome.verdict));',
+        '});',
+        'setImmediate(() => queue.close());',
+      ].join('\n'),
+      'utf-8',
+    );
+
+    try {
+      const run = spawnSync(process.execPath, ['--experimental-strip-types', '--no-warnings', child], {
+        encoding: 'utf-8',
+        timeout: 15_000,
+      });
+
+      expect(run.stdout.trim(), 'proces držel hold až do vypršení rozpočtu').not.toBe('');
+      expect(JSON.parse(run.stdout.trim())).toMatchObject({
+        admitted: false,
+        id: 'waiting',
+        reason: 'SHUTTING_DOWN',
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 30_000);
 });

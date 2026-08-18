@@ -46,7 +46,12 @@ export type AdmissionRefusal =
   /** Do deadlinu zbývá míň, než kolik zpracování potřebuje. */
   | 'DEADLINE_EXCEEDED'
   /** Fronta je plná. Odmítá se při podání, ne po čekání. */
-  | 'QUEUE_FULL';
+  | 'QUEUE_FULL'
+  /**
+   * Fronta se zavírá. Čekající dostane verdikt hned, místo aby čekal na svoje
+   * vypršení — a proces se tím nedrží déle, než musí.
+   */
+  | 'SHUTTING_DOWN';
 
 export interface Admitted {
   readonly admitted: true;
@@ -69,6 +74,48 @@ export interface Refused {
 export type AdmissionVerdict = Admitted | Refused;
 
 /**
+ * Kontrola politiky. **Nesmyslná politika neudělá nesmyslný verdikt — udělá
+ * trvalé vytížené čekání, ze kterého se nikdo nevrátí.**
+ *
+ * Rozpočet přečtený jako `Number(process.env.X)` je u chybějící proměnné `NaN`.
+ * Co se stane pak: `Math.max(1, NaN)` je `NaN`, Node ho u `setTimeout` ořízne na
+ * 1 ms, predikát „vypršel?" (`NaN - x < minServiceMs`) je nepravda, takže se
+ * neuvolní **nikdo** — a `#armExpiry()` se přeplánuje po milisekundě znovu.
+ * Fronta tím tiká navždy, drží proces (časovač se od zrušení `unref()` už
+ * neodrefuje) a čekající verdikt nedostane. Tedy přesně ta vada, kvůli které
+ * tenhle soubor existuje, jen vyrobená konfigurací místo hlavičky.
+ *
+ * Proto se kontroluje **při stavbě**, ne za běhu: fronta s takovou politikou
+ * nemůže fungovat vůbec, takže odmítnout ji postavit je striktně lepší než ji
+ * nechat běžet naprázdno. Konfigurace je okraj a validace patří na okraj — táž
+ * doktrína, jakou má `trustedReceipt` u času přijetí.
+ */
+export function checkPolicy(policy: AdmissionPolicy): void {
+  const finite = (label: string, value: number, lowest: number): void => {
+    if (!Number.isFinite(value) || value < lowest) {
+      throw new RangeError(`AdmissionPolicy.${label} musí být konečné číslo od ${lowest}, dostalo ${value}`);
+    }
+  };
+
+  // Nulový rozpočet je nulová propustnost, ne konzervativní nastavení.
+  finite('budgetMs', policy.budgetMs, 1);
+  finite('minServiceMs', policy.minServiceMs, 0);
+
+  if (!Number.isInteger(policy.maxQueued) || policy.maxQueued < 0) {
+    throw new RangeError(`AdmissionPolicy.maxQueued musí být celé nezáporné číslo, dostalo ${policy.maxQueued}`);
+  }
+
+  // Delší minimum než celý rozpočet odmítne **každý** požadavek, včetně toho
+  // podaného v tomtéž okamžiku, kdy dorazil. Fronta by měla nulovou propustnost
+  // a nikde by o tom nebyl řádek — táž třída jako čas přijetí z roku 1970.
+  if (policy.minServiceMs > policy.budgetMs) {
+    throw new RangeError(
+      `AdmissionPolicy.minServiceMs (${policy.minServiceMs}) nesmí přesáhnout budgetMs (${policy.budgetMs})`,
+    );
+  }
+}
+
+/**
  * Rozhodnutí nad jedním požadavkem. Čistá funkce — fronta ji volá ve chvíli,
  * kdy se uvolní slot, a předává jí čas přijetí, ne čas volání.
  */
@@ -81,7 +128,10 @@ export function admit(
   // Táž kontrola jako ve frontě, a je tu proto, že tahle funkce je taky
   // exportovaná. Bez ní vrátí `admit(id, NaN, …)` verdikt `admitted: true`
   // s `deadlineMs: NaN` — tedy deadline, který nikdy nevyprší, předaný dál do
-  // práce jako by byl v pořádku.
+  // práce jako by byl v pořádku. Politika má tutéž díru z téhož důvodu:
+  // `budgetMs: NaN` vyrobí `remainingMs: NaN`, porovnání je nepravda, a ven jde
+  // zase `admitted: true` s `deadlineMs: NaN`.
+  checkPolicy(policy);
   const receipt = trustedReceipt(receivedAtMs, nowMs);
   const waitedMs = nowMs - receipt;
   const remainingMs = policy.budgetMs - waitedMs;
@@ -193,8 +243,8 @@ function timeoutSchedule(fn: () => void, delayMs: number): () => void {
   return () => clearTimeout(handle);
 }
 
-/** Proč se čekající probudil: uvolnil se slot, nebo mu vypršel rozpočet. */
-type Wakeup = 'slot' | 'expired';
+/** Proč se čekající probudil: uvolnil se slot, vypršel rozpočet, nebo se zavírá. */
+type Wakeup = 'slot' | 'expired' | 'closed';
 
 /**
  * Fronta s omezenou soubežností, která nad každým požadavkem rozhodne až ve
@@ -208,6 +258,7 @@ export class AdmissionQueue {
   readonly #onCoercedReceipt: (coercion: CoercedReceipt) => void;
   /** Kdy fronta vznikla. Dřív než tohle žádný její požadavek dorazit nemohl. */
   readonly #createdAtMs: number;
+  #closed = false;
   #coerced = 0;
   #running = 0;
   /** Zrušení naplánovaného probuzení, nebo `null`, když žádné nestojí. */
@@ -215,6 +266,7 @@ export class AdmissionQueue {
   readonly #waiting: Array<{ readonly receivedAtMs: number; readonly wake: (why: Wakeup) => void }> = [];
 
   constructor(policy: AdmissionPolicy, deps: QueueDeps) {
+    checkPolicy(policy);
     this.#policy = policy;
     this.#now = deps.now;
     this.#concurrency = deps.concurrency;
@@ -267,6 +319,7 @@ export class AdmissionQueue {
     receivedAtMs: number = this.#now(),
   ): Promise<AdmissionOutcome<T>> {
     const receipt = trustedReceipt(receivedAtMs, this.#now(), this.#createdAtMs);
+    if (this.#closed) return { verdict: this.#shuttingDown(id, receipt), value: null };
     if (receipt !== receivedAtMs) {
       this.#coerced += 1;
       this.#onCoercedReceipt({ id, claimedMs: receivedAtMs, usedMs: receipt });
@@ -302,6 +355,13 @@ export class AdmissionQueue {
     // Probuzený kvůli vypršení slot nikdy nedostal, takže ho ani nevrací. Kdyby
     // prošel `finally` s `#release()`, snížil by `#running` za někoho jiného a
     // fronta by pustila víc práce, než dovoluje `concurrency`.
+    if (why === 'closed') {
+      // NE přes `admit()`: nevypršelému požadavku by vrátilo `admitted: true`,
+      // a `admitted: true` s `value: null` je verdikt, který lže — práce se
+      // nespustila. Zavření je vlastní důvod odmítnutí, ne vypršení.
+      return { verdict: this.#shuttingDown(id, receipt), value: null };
+    }
+
     if (why === 'expired') {
       return { verdict: admit(id, receipt, this.#now(), this.#policy), value: null };
     }
@@ -318,6 +378,41 @@ export class AdmissionQueue {
       // vrátí. Bez toho by jedna vadná odpověď poskytovatele frontu zadusila.
       this.#release();
     }
+  }
+
+  /**
+   * Zavře frontu: zruší naplánované probuzení a všem čekajícím dá verdikt hned.
+   *
+   * **Je to druhá polovina zrušeného `unref()`.** Časovač teď smyčku událostí
+   * drží schválně, takže bez zavření by čekající po `SIGTERM` držel proces až do
+   * svého vypršení — u rozpočtu 60 s, který si tenhle soubor sám cituje, tedy
+   * minutu po tom, co posluchač zavřel. Terminační lhůta 30 s by ho mezitím
+   * zabila uprostřed, takže by o verdikt přišel stejně, jen o vteřinu později a
+   * bez stopy. Zavření ten hold zkrátí na nulu, **aniž by kdokoli přišel o
+   * verdikt** — což je celý rozdíl proti `unref()`, které ho zkracovalo tím, že
+   * o něj čekající připravilo.
+   *
+   * Běžící práce se nepřerušuje: drží skutečný slot a její `finally` ho vrátí.
+   * Zavřená fronta jen nepřijímá nic nového a nikoho nenechává čekat.
+   *
+   * Volat se smí opakovaně — druhé zavolání nemá koho probudit.
+   */
+  close(): void {
+    this.#closed = true;
+    this.#cancelExpiry?.();
+    this.#cancelExpiry = null;
+    for (const entry of this.#waiting.splice(0)) entry.wake('closed');
+  }
+
+  #shuttingDown(id: string, receivedAtMs: number): Refused {
+    const waitedMs = this.#now() - receivedAtMs;
+    return {
+      admitted: false,
+      id,
+      waitedMs,
+      reason: 'SHUTTING_DOWN',
+      remainingMs: this.#policy.budgetMs - waitedMs,
+    };
   }
 
   async #slot(receivedAtMs: number): Promise<Wakeup> {
