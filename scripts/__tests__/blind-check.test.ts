@@ -19,6 +19,18 @@ import { afterAll, describe, expect, it } from 'vitest';
 const SCRIPT = join(process.cwd(), 'scripts', 'blind-check.mjs');
 const CLEAN_AUTHOR = ['-c', 'user.name=worldsmith', '-c', 'user.email=worldsmith@users.noreply.github.com'];
 const ACCOUNT = 'anon-account';
+
+/**
+ * **Zástupná jména organizátora — `AcmeCorp` ve fixturách.** Skutečná žijí od
+ * 19. 8. 2026 už jen v `blind-check.config.json`, který je v `.gitignore`. Test,
+ * který by je nesl, by je vrátil zpátky do veřejného repozitáře, tedy přesně
+ * tam, odkud je kontrola 3 má držet venku.
+ *
+ * Dvojice je schválně dlouhý i krátký token: `acmecorp` se hledá jako
+ * podřetězec, `acme` na hranici slova. Pokrývá obě větve `SUBSTRING_MIN_LEN`.
+ */
+const PUBLIC_TOKENS = ['acmecorp', 'acme'] as const;
+
 const created: string[] = [];
 
 interface Fixture {
@@ -34,6 +46,8 @@ interface Fixture {
   readonly remote?: string | null;
   /** Zakázané tokeny identity v configu. Default je jeden dlouhý (`johndoe`). */
   readonly identityTokens?: readonly string[];
+  /** Zakázaná jména organizátora v configu. Default je `PUBLIC_TOKENS`. */
+  readonly publicTokens?: readonly string[];
   /** Config vůbec nevznikne — brána nemá proti čemu identitu hledat. */
   readonly noConfig?: boolean;
   /** Obsah `README.md`; jinak neutrální text bez jakéhokoli jména. */
@@ -56,7 +70,11 @@ function makeRepo(fixture: Fixture = {}): string {
   if (!fixture.noConfig) {
     writeFileSync(
       join(dir, 'blind-check.config.json'),
-      JSON.stringify({ account: ACCOUNT, identityTokens: fixture.identityTokens ?? ['johndoe'] }),
+      JSON.stringify({
+        account: ACCOUNT,
+        publicTokens: fixture.publicTokens ?? PUBLIC_TOKENS,
+        identityTokens: fixture.identityTokens ?? ['johndoe'],
+      }),
       'utf8',
     );
   }
@@ -343,7 +361,7 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
   });
 
   it('[4] SECURITY-FINDINGS.md v historii', () => {
-    // Bez `acmecorp`/`acme` uvnitř, jinak by shodil i kontrolu 3 a tenhle test
+    // Bez zakázaných jmen organizátora uvnitř, jinak by shodil i kontrolu 3 a tenhle test
     // by netvrdil nic o kontrole 4.
     const dir = makeRepo({ extraFile: { name: 'SECURITY-FINDINGS.md', body: 'interní nález\n' } });
     const result = blindCheck(dir);
@@ -480,7 +498,7 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
 });
 
 /**
- * Kontrola 3 hledala do 17. 8. 2026 v obsahu jen `acmecorp|acme`. Identitu autora
+ * Kontrola 3 hledala do 17. 8. 2026 v obsahu jen jména organizátora. Identitu autora
  * kryla kontrola 1 (`%an`/`%ae`) a kontrola 5 (adresa remote) — **obsah nekryl
  * nikdo**, takže commit se skutečným jménem v `README.md`, v `package.json` →
  * `author` nebo v komentáři prošel všemi šesti kontrolami zeleně.

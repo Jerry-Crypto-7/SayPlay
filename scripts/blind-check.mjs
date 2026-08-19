@@ -27,8 +27,19 @@ import { join } from 'node:path';
 const REPO = process.cwd();
 const CONFIG_FILE = 'blind-check.config.json';
 
-/** Tyhle dva se nekonfigurují — vypnout je by znamenalo vypnout smysl kontroly 3. */
-const PUBLIC_TOKENS = ['acmecorp', 'acme'];
+/**
+ * **Jména organizátora se čtou z configu, ne odsud.**
+ *
+ * Zapsaná v tomhle souboru by je nesl každý, kdo si repozitář stáhne — a skript,
+ * který jmenuje to, co má schovat, prozrazuje víc než všechny zmínky, které
+ * hledá. `blind-check.config.json` je v `.gitignore` ze stejného důvodu, z
+ * jakého tam je `SETUP.md`: playbook anonymity sám o sobě prozrazuje, že se
+ * něco skrývá.
+ *
+ * **Vypnout je pořád nejde.** Chybějící ani prázdný seznam není povolení, je to
+ * selhání configu — `loadConfig` na něm skončí a fail-closed větev na začátku
+ * každé kontroly ho vrátí jako chybu.
+ */
 
 /**
  * **Od jaké délky se token hledá jako podřetězec.** Kratší se hledá na hranici
@@ -217,8 +228,15 @@ function loadConfig() {
 
   try {
     const parsed = JSON.parse(readFileSync(path, 'utf8'));
+    // Fail-closed i tady: prázdný seznam by z kontroly 3 udělal hledání ničeho
+    // a zelená by pak znamenala jen to, že se nehledalo.
+    const publicTokens = Array.isArray(parsed.publicTokens) ? parsed.publicTokens.filter(Boolean) : [];
+    if (publicTokens.length === 0) {
+      return { error: `${CONFIG_FILE} nemá publicTokens — bez nich kontrola 3 jméno organizátora nehledá` };
+    }
     return {
       account: typeof parsed.account === 'string' ? parsed.account : '',
+      publicTokens,
       identityTokens: Array.isArray(parsed.identityTokens) ? parsed.identityTokens : [],
     };
   } catch (error) {
@@ -246,7 +264,7 @@ check(1, 'commit identity carries no author trace', (config) => {
   // Autor i committer zvlášť: `--amend` cizím strojem přepíše jen committera.
   const [pair] = pairs;
   const [author, committer] = pair.split('|');
-  const tokens = [...PUBLIC_TOKENS, ...config.identityTokens].filter(Boolean);
+  const tokens = [...config.publicTokens, ...config.identityTokens].filter(Boolean);
   const hits = [];
   for (const [role, value] of [['author', author], ['committer', committer]]) {
     for (const token of tokens) {
@@ -264,7 +282,7 @@ check(2, 'repo-local identity overrides the global one', () => {
   return null;
 });
 
-check(3, 'committed content mentions neither AcmeCorp nor the real author', (config) => {
+check(3, 'committed content mentions neither the organiser nor the real author', (config) => {
   // Fail-closed: bez configu se identita nedá hledat vůbec. Mlčení by tady
   // znamenalo zelenou nad kontrolou, která polovinu své práce neudělala.
   if (config.error) return config.error;
@@ -272,8 +290,8 @@ check(3, 'committed content mentions neither AcmeCorp nor the real author', (con
   // Nad `HEAD`, ne nad pracovním stromem: nahrávají se commity. Interní podklady
   // (`plans/`, kořenové `*.md`, `.claude/`) jsou v `.gitignore`, takže trackované
   // nejsou a do commitu se nedostanou.
-  // Dva soubory se vylučují, protože ty tokeny obsahovat MUSÍ: skript sám je má
-  // v `PUBLIC_TOKENS` a v názvu kontroly, jeho test je má ve fixturách. Bez téhle
+  // Dva soubory zůstávají vyloučené i po přesunu seznamu do configu: test brány
+  // potřebuje fixtury, které hledaný tvar nesou, jinak nedokáže, že se najde. Bez téhle
   // výjimky hlásí kontrola 3 nenulový počet vždycky — a když je nenulová pořád,
   // přestane se rozlišovat od skutečného úniku a člověk pushne s `--no-verify`.
   // Naměřeno: 6 vlastních zásahů maskovalo 13 skutečných.
@@ -281,7 +299,7 @@ check(3, 'committed content mentions neither AcmeCorp nor the real author', (con
   // ne snímek: jméno vyškrtnuté v posledním commitu drží jeho rodič dál a
   // `git log -p` ho ukáže komukoli. Kontrola 4 vedle chodí přes `--all` ze
   // stejného důvodu.
-  const output = grepHistory(PUBLIC_TOKENS, [
+  const output = grepHistory(config.publicTokens, [
     '.',
     ':(exclude)SECURITY-FINDINGS.md',
     ':(exclude)scripts/blind-check.mjs',
@@ -290,8 +308,8 @@ check(3, 'committed content mentions neither AcmeCorp nor the real author', (con
 
   /**
    * **Jméno autora se hledá tady, ne jen v identitě commitu.** Kontrola 1 kryje
-   * `%an`/`%ae`, kontrola 5 adresu remote — obsah zůstal do 17. 8. 2026 na
-   * `acmecorp|acme`, takže commit se skutečným jménem v `README.md`, v
+   * `%an`/`%ae`, kontrola 5 adresu remote — obsah zůstal do 17. 8. 2026 jen na
+   * jménech organizátora, takže commit se skutečným jménem v `README.md`, v
    * `package.json` → `author` nebo v komentáři prošel všemi šesti kontrolami
    * zeleně. **A neprošel hypoteticky:** první běh s touhle částí našel v historii
    * dvě místa, která šest kontrol před ním nevidělo — soubor smazaný v `HEAD`,
@@ -361,10 +379,10 @@ check(5, 'push target points at the anonymous account', (config) => {
   // jistotou — hodnotitel dostane URL dřív než obsah. Kontrola 3 čte strom, takže
   // token v názvu repa jí projde: strom o svém vlastním URL nic neví.
   //
-  // Hledá se TÝŽ seznam jako v kontrole 1, tedy i skutečné jméno autora. Samotné
-  // `PUBLIC_TOKENS` nechá projít `github.com/<správný-účet>/<jméno-autora>-hra.git`:
-  // účet sedí, jméno organizátora tam není, a jméno autora přesto jde ven.
-  const tokens = [...PUBLIC_TOKENS, ...config.identityTokens].filter(Boolean);
+  // Hledá se TÝŽ seznam jako v kontrole 1, tedy i skutečné jméno autora. Samotná
+  // jména organizátora nechají projít `github.com/<účet>/<jméno-autora>-hra.git`:
+  // účet sedí, organizátor tam není, a jméno autora přesto jde ven.
+  const tokens = [...config.publicTokens, ...config.identityTokens].filter(Boolean);
   const named = tokens.filter((token) => url.includes(token.toLowerCase()));
   return named.length ? `adresa cíle sama nese zakázaný token: ${PUSH_TARGET}` : null;
 });
