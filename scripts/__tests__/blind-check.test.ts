@@ -48,6 +48,8 @@ interface Fixture {
   readonly identityTokens?: readonly string[];
   /** Zakázaná jména organizátora v configu. Default je `PUBLIC_TOKENS`. */
   readonly publicTokens?: readonly string[];
+  /** Config vznikne, ale klíč `publicTokens` v něm vůbec nebude. */
+  readonly omitPublicTokens?: boolean;
   /** Config vůbec nevznikne — brána nemá proti čemu identitu hledat. */
   readonly noConfig?: boolean;
   /** Obsah `README.md`; jinak neutrální text bez jakéhokoli jména. */
@@ -72,7 +74,7 @@ function makeRepo(fixture: Fixture = {}): string {
       join(dir, 'blind-check.config.json'),
       JSON.stringify({
         account: ACCOUNT,
-        publicTokens: fixture.publicTokens ?? PUBLIC_TOKENS,
+        ...(fixture.omitPublicTokens ? {} : { publicTokens: fixture.publicTokens ?? PUBLIC_TOKENS }),
         identityTokens: fixture.identityTokens ?? ['johndoe'],
       }),
       'utf8',
@@ -614,6 +616,33 @@ describe('kontrola 3 hledá i skutečné jméno autora, ne jen jméno organizát
     expect(result.code).toBe(1);
     expect(failedChecks(result.out)).toEqual([1, 3]);
     expect(result.out).toContain('blind-check.config.json chybí');
+  });
+
+  /**
+   * **Nová díra, kterou otevřel přesun jmen organizátora do configu (19. 8. 2026).**
+   *
+   * Dokud byla v kódu, nešla vypnout. Teď jdou z configu — a config se dá
+   * upravit. Prázdný seznam by z kontroly 3 udělal hledání ničeho a zelená by
+   * pak znamenala jen to, že se nehledalo; přesně ta tichá zelená, kvůli které
+   * se brána staví. Proto je prázdný i chybějící seznam **selhání configu**, ne
+   * povolení, a padá na něm stejná dvojice kontrol jako u chybějícího souboru.
+   *
+   * Obě větve zvlášť: klíč s prázdným polem a klíč, který tam vůbec není. Sejdou
+   * se až v `loadConfig`, takže jedna z nich by sama o sobě druhou nepokryla,
+   * kdyby se ta funkce rozdělila.
+   */
+  it('[3] prázdný seznam jmen organizátora je selhání, ne povolení', () => {
+    const result = blindCheck(makeRepo({ publicTokens: [] }));
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([1, 3]);
+    expect(result.out).toContain('nemá publicTokens');
+  });
+
+  it('[3] chybějící klíč publicTokens je selhání, ne povolení', () => {
+    const result = blindCheck(makeRepo({ omitPublicTokens: true }));
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([1, 3]);
+    expect(result.out).toContain('nemá publicTokens');
   });
 });
 
