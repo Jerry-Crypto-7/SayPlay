@@ -23,10 +23,14 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DataTexture, LinearFilter, Mesh, MeshToonMaterial, RedFormat, type Group } from 'three';
 
+import { buildRuntimeWorld } from '@/ir/build';
 import { buildLayoutScene, layoutById } from '@/kit';
+import type { RunState, WorldDocRuntime } from '@/sim/interpreter';
 
 import { disposeSubtree } from './dispose';
+import type { ProjectedEntity } from './projection';
 import { streamEmission, type EmitProgress } from './sse';
+import WorldScene, { type RunnerRef, type WorldRunner } from './WorldScene';
 
 declare global {
   interface Window {
@@ -38,6 +42,24 @@ declare global {
       /** Kolik snímků plátno vykreslilo. Test podle toho pozná, že přepnutí došlo na GPU. */
       frames: () => number;
       layouts: readonly string[];
+      /**
+       * Entity běžícího světa ve světových souřadnicích — v pořadí deklarace a
+       * v plné délce, včetně despawnutých. Prázdné pole znamená, že plátno
+       * žádný svět nedrží, ne že svět žádné entity nemá.
+       */
+      entities: () => readonly ProjectedEntity[];
+      /** Kolik tiků svět odkrokoval. */
+      tick: () => number;
+      /**
+       * Posune svět o `count` tiků bez čekání na nástěnný čas.
+       *
+       * Není to testovací zkratka vedle produkční cesty: je to tatáž cesta, jen
+       * bez hodin. `pump()` z nástěnného času nedělá nic jiného, než že spočítá
+       * celý počet tiků, a ty se pak krokují úplně stejně. Test, který by čekal
+       * na skutečné vteřiny, by měřil rychlost stroje, ne chování světa.
+       */
+      step: (count: number) => void;
+      runState: () => RunState | null;
     };
   }
 }
@@ -89,7 +111,15 @@ function World({ layoutId }: { layoutId: string }) {
   return <primitive object={scene} />;
 }
 
-function Bridge({ onSwitch, layouts }: { onSwitch: (index: number) => void; layouts: readonly string[] }) {
+function Bridge({
+  onSwitch,
+  layouts,
+  runnerRef,
+}: {
+  onSwitch: (index: number) => void;
+  layouts: readonly string[];
+  runnerRef: RunnerRef;
+}) {
   const gl = useThree((state) => state.gl);
   const frames = useRef(0);
 
@@ -103,11 +133,18 @@ function Bridge({ onSwitch, layouts }: { onSwitch: (index: number) => void; layo
       switchTo: onSwitch,
       frames: () => frames.current,
       layouts,
+      // Přes `runnerRef`, ne přes zachycenou hodnotu: běh vzniká až se světem
+      // a plátno ho mění za života mostu. Zachycená hodnota by tu zamrzla na
+      // `null` z prvního snímku a `entities()` by navždy vracelo prázdno.
+      entities: () => runnerRef.current?.entities() ?? [],
+      tick: () => runnerRef.current?.tick() ?? 0,
+      step: (count: number) => runnerRef.current?.step(count),
+      runState: () => runnerRef.current?.runState() ?? null,
     };
     return () => {
       delete window.__viewer;
     };
-  }, [gl, onSwitch, layouts]);
+  }, [gl, onSwitch, layouts, runnerRef]);
 
   return null;
 }
@@ -128,16 +165,43 @@ const PROGRESS: React.CSSProperties = {
   pointerEvents: 'none',
 };
 
+/**
+ * Ze zapečetěného dokumentu na běhový svět.
+ *
+ * `POST /api/emit` vrací `doc` s povrchovou částí `sim`; běh z ní staví
+ * `buildRuntimeWorld` — **tentýž** vstupní bod, jakým prošel certifikát na
+ * serveru. Kdyby si plátno stavělo svět po svém, kreslilo by něco jiného, než
+ * co verifikátor prohlásil za platné.
+ *
+ * Odmítnutá emise nevrací svět a je to normální stav, ne výjimka: kanál dorazí
+ * s verdiktem `REJECTED` a plátno zůstane na layoutu z kitu.
+ */
+function worldFromVerdict(result: unknown): WorldDocRuntime | null {
+  const doc = (result as { doc?: { sim?: unknown } | null } | null)?.doc;
+  if (doc === null || doc === undefined) return null;
+
+  const built = buildRuntimeWorld(doc.sim);
+  return built.ok ? built.world : null;
+}
+
 export default function Viewer({
   layouts,
   promptId = null,
+  world = null,
 }: {
   readonly layouts: readonly string[];
   /** Když je zadaný, viewer si vyžádá emisi a vypisuje její průběh. */
   readonly promptId?: string | null;
+  /**
+   * Hotový běhový svět. Má přednost před emisí — tudy vede produktová cesta
+   * z T5, kde svět přijde z `/api/generate`, ne ze zmrazeného korpusu.
+   */
+  readonly world?: WorldDocRuntime | null;
 }) {
   const [index, setIndex] = useState(0);
   const [progress, setProgress] = useState<readonly EmitProgress[]>([]);
+  const [emitted, setEmitted] = useState<WorldDocRuntime | null>(null);
+  const runnerRef = useRef<WorldRunner | null>(null);
 
   const switchTo = useCallback(
     (next: number) => setIndex(((next % layouts.length) + layouts.length) % layouts.length),
@@ -148,15 +212,20 @@ export default function Viewer({
     if (promptId === null) return;
     const abort = new AbortController();
     setProgress([]);
+    setEmitted(null);
     streamEmission(promptId, {
       signal: abort.signal,
       onProgress: (step) => setProgress((seen) => [...seen, step]),
-    }).catch(() => {
-      // Přerušení odchodem ze stránky není stav k vykreslení. Vada emise je
-      // verdikt, ne výjimka — ta jde v posledním rámci a čte ji volající.
-    });
+    })
+      .then((stream) => setEmitted(worldFromVerdict(stream.result)))
+      .catch(() => {
+        // Přerušení odchodem ze stránky není stav k vykreslení. Vada emise je
+        // verdikt, ne výjimka — ta jde v posledním rámci a čte ji volající.
+      });
     return () => abort.abort();
   }, [promptId]);
+
+  const active = world ?? emitted;
 
   return (
     <div style={{ position: 'relative', height: '100%', width: '100%' }}>
@@ -167,8 +236,12 @@ export default function Viewer({
       >
         <ambientLight intensity={0.65} />
         <directionalLight position={[5, 8, 4]} intensity={1.3} />
-        <Bridge onSwitch={switchTo} layouts={layouts} />
-        <World layoutId={layouts[index]} />
+        <Bridge onSwitch={switchTo} layouts={layouts} runnerRef={runnerRef} />
+        {active === null ? (
+          <World layoutId={layouts[index]} />
+        ) : (
+          <WorldScene world={active} runnerRef={runnerRef} />
+        )}
       </Canvas>
       {progress.length === 0 ? null : (
         <ul style={PROGRESS} data-testid="viewer-progress">
