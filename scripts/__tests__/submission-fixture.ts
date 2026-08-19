@@ -302,7 +302,17 @@ export function buildTemplate(): string {
 
   // Netrackovaný schválně: nese jména, která se nesmí nahrát. Kontrola 1
   // blind-checku selže, kdyby se ocitl v indexu.
-  write(dir, 'blind-check.config.json', JSON.stringify({ account: 'anonymous-builder', identityTokens: ['realname'] }));
+  write(
+    dir,
+    'blind-check.config.json',
+    // `publicTokens` je povinné: bez něj je config neplatný a blind-check
+    // selže na configu, ne na tom, co má fixtura zkoumat.
+    JSON.stringify({
+      account: 'anonymous-builder',
+      publicTokens: ['acmecorp', 'acme'],
+      identityTokens: ['realname'],
+    }),
+  );
   return dir;
 }
 
