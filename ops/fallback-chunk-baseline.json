@@ -1,14 +1,14 @@
 {
   "note": "Velikost fallbacku v izolovaném produkčním buildu, ve zdrojových bajtech (webpack statSize). Píše scripts/prove-fallback-isolation.mjs.",
-  "commit": "f9ff617e343299b2103ef4f57597e9b8e4c3a16c",
+  "commit": "74b09d6e6e1a7600ba99a90c8c4982d27b96bd48",
   "client": {
     "moduleCount": 29,
-    "statBytes": 134020,
-    "totalStatBytes": 5855227
+    "statBytes": 135480,
+    "totalStatBytes": 5856687
   },
   "server": {
     "moduleCount": 52,
-    "statBytes": 219407,
-    "totalStatBytes": 7085436
+    "statBytes": 222327,
+    "totalStatBytes": 7088356
   }
 }

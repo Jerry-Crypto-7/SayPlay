@@ -17,7 +17,7 @@ export {
   type PieceCategory,
   type SwatchName,
 } from './pieces/primitives';
-export { KIT_BUDGETS, measureScene, trianglesOf, type SceneMeasurement } from './budgets';
+export { KIT_BUDGETS, VIEWER_BUDGETS, measureScene, trianglesOf, type SceneMeasurement } from './budgets';
 export {
   LAYOUTS,
   footprintSignature,

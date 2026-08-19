@@ -4,6 +4,7 @@ import { Canvas } from '@react-three/fiber';
 import { useRef, useState } from 'react';
 
 import FollowCamera from '@/components/viewer/FollowCamera';
+import Lighting, { VIEWER_GL, VIEWER_SHADOWS } from '@/components/viewer/Lighting';
 import type { ProjectedEntity } from '@/components/viewer/projection';
 import WorldScene, { type RunnerRef } from '@/components/viewer/WorldScene';
 import type { TraceInput, WorldDocRuntime } from '@/sim/interpreter';
@@ -46,10 +47,9 @@ declare global {
  * uživatel nenapsal prompt, nemá plátno co ukazovat a předstírat obsah by bylo
  * horší než přiznat prázdno.
  *
- * Žádný `<Environment preset>` z drei — TOOLING.md past #2: `useEnvironment.js`
- * má zadrátovaný `CUBEMAP_ROOT` na raw.githack.com a stahoval by HDRI za běhu,
- * čímž rozbije jak „žádný loading screen", tak service worker. Světlo je tady
- * ruční a lokální.
+ * Světlo, stíny, mlha a tone mapping jsou od T6 sdílené s `Viewer.tsx`
+ * (`viewer/Lighting.tsx`). Úvodní stránka a embed musí vypadat stejně — dokud
+ * měla každá vlastní dvojici světel, lišily se a nikdo to nehlídal.
  */
 export default function Stage({ world = null }: { readonly world?: WorldDocRuntime | null }) {
   const [, setReady] = useState(false);
@@ -58,7 +58,8 @@ export default function Stage({ world = null }: { readonly world?: WorldDocRunti
   return (
     <Canvas
       data-testid="stage-canvas"
-      gl={{ antialias: false, powerPreference: 'high-performance' }}
+      shadows={VIEWER_SHADOWS}
+      gl={VIEWER_GL}
       camera={{ position: [7, 7, 9], fov: 45 }}
       onCreated={({ gl }) => {
         const ctx = gl.getContext();
@@ -77,8 +78,7 @@ export default function Stage({ world = null }: { readonly world?: WorldDocRunti
         setReady(true);
       }}
     >
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[4, 6, 3]} intensity={1.4} />
+      <Lighting />
       {world === null ? (
         <gridHelper args={[12, 12, '#1d2b2f', '#162023']} position={[0, -1.2, 0]} />
       ) : (

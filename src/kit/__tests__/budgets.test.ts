@@ -4,7 +4,7 @@ import { join, relative } from 'node:path';
 import { BoxGeometry, Group, Mesh, MeshBasicMaterial } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import { KIT, KIT_BUDGETS, buildKitScene, measureScene, trianglesOf } from '../index';
+import { KIT, KIT_BUDGETS, VIEWER_BUDGETS, buildKitScene, measureScene, trianglesOf } from '../index';
 
 const SRC_ROOT = join(process.cwd(), 'src');
 
@@ -53,6 +53,44 @@ describe('kit se vejde do rozpočtu', () => {
     group.add(new Mesh(new BoxGeometry(1, 1, 1), [new MeshBasicMaterial(), new MeshBasicMaterial()]));
 
     expect(measureScene(group)).toEqual({ drawCalls: 2, triangles: 12 });
+  });
+});
+
+describe('rozpočet plátna sedí s profilem', () => {
+  // Profil je zdroj čísel, `VIEWER_BUDGETS` je jejich runtime kopie. Import do
+  // kódu není možný (kit se staví i ve stromu fallbacku bez adresáře `data/`),
+  // takže tenhle test je jediné, co drží obě kopie u sebe. Bez něj by se profil
+  // dal přepsat a nikdo by se to nedozvěděl.
+  const profile = JSON.parse(
+    readFileSync(join(process.cwd(), 'data/profiles/web-viewer.json'), 'utf-8'),
+  ) as Record<string, unknown>;
+
+  it('každé číslo profilu má v kódu tutéž hodnotu', () => {
+    expect({
+      maxDrawCallsPerFrame: profile.maxDrawCallsPerFrame,
+      maxTrianglesPerFrame: profile.maxTrianglesPerFrame,
+      maxLights: profile.maxLights,
+      shadowMapSize: profile.shadowMapSize,
+    }).toEqual({
+      maxDrawCallsPerFrame: VIEWER_BUDGETS.maxDrawCallsPerFrame,
+      maxTrianglesPerFrame: VIEWER_BUDGETS.maxTrianglesPerFrame,
+      maxLights: VIEWER_BUDGETS.maxLights,
+      shadowMapSize: VIEWER_BUDGETS.shadowMapSize,
+    });
+  });
+
+  it('strop snímku je nad stropem kitu, ne pod ním', () => {
+    // Stínová mapa kreslí vrhající objekty podruhé, takže snímek nikdy nemůže
+    // mít míň volání než scéna, ze které vznikl. Profil pod stropem kitu by byl
+    // rozpočet, který nejde splnit ani prázdnou scénou.
+    expect(VIEWER_BUDGETS.maxDrawCallsPerFrame).toBeGreaterThan(KIT_BUDGETS.maxDrawCallsPerWorld);
+    expect(VIEWER_BUDGETS.maxTrianglesPerFrame).toBeGreaterThan(KIT_BUDGETS.maxTrianglesPerWorld);
+  });
+
+  it('rig se do stropu světel vejde přesně, ne s rezervou', () => {
+    // Tři směrová a jedno polokulové. Kdyby tu byla rezerva, přestal by strop
+    // hlídat rig a začal by hlídat nic.
+    expect(VIEWER_BUDGETS.maxLights).toBe(4);
   });
 });
 

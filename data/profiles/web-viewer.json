@@ -1,0 +1,10 @@
+{
+  "id": "web-viewer",
+  "what": "Rozpočet JEDNOHO SNÍMKU prohlížečového plátna. Není to popis současné scény — je to strop, pod kterým se smí pohybovat i nejtěžší layout kitu se zapnutými stíny.",
+  "source": "Odvozeno v tomhle repozitáři, nepřevzato odjinud. Plán P9 T6 uvádí jako zdroj VR-Builder-for-Games; profil toho jména tam 19. 8. 2026 nebyl (hledáno na jméno souboru i na jména klíčů drawCall/maxTriangles), takže se nekopírovalo nic a čísla jsou stropy zapsané v AC úlohy T6.",
+  "authority": "Tenhle soubor je zdroj čísel. Kód je drží v src/kit/budgets.ts jako VIEWER_BUDGETS a src/kit/__tests__/budgets.test.ts jde červeně, jakmile se obojí rozejde. Import do bundlu záměrně není: src/kit/** se staví i ve stromu fallbacku bez adresáře data/.",
+  "maxDrawCallsPerFrame": 300,
+  "maxTrianglesPerFrame": 500000,
+  "maxLights": 4,
+  "shadowMapSize": 2048
+}

@@ -12,8 +12,9 @@
  * 2. **Průběh emise jde po SSE**, ne až s verdiktem. Fáze se vypisují tak, jak
  *    docházejí, takže obrazovka nikdy není prázdná ani při replayi svědka.
  *
- * Žádný `<Environment preset>` z drei (past #2 z `TOOLING.md`): stahoval by HDRI
- * za běhu a rozbil by „žádný loading screen" i service worker. Světlo je ruční.
+ * Světlo, stíny, mlha a tone mapping jsou od T6 v `Lighting.tsx` — jeden rig
+ * pro tohle plátno i pro `Stage.tsx`, protože dvě kopie znamenají dvě místa,
+ * kde se vzhled rozejde.
  *
  * Na `src/fallback/**` se odsud nesahá a hlídá to test — fallback je samostatný
  * artefakt, který se musí dát postavit bez jádra i bez tohohle plátna.
@@ -21,7 +22,7 @@
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { DataTexture, LinearFilter, Mesh, MeshToonMaterial, RedFormat, type Group } from 'three';
+import { Fog, Light, Mesh, MeshToonMaterial, type Group } from 'three';
 
 import { buildRuntimeWorld } from '@/ir/build';
 import { buildLayoutScene, layoutById } from '@/kit';
@@ -29,9 +30,25 @@ import type { RunState, WorldDocRuntime } from '@/sim/interpreter';
 
 import { disposeSubtree } from './dispose';
 import FollowCamera from './FollowCamera';
+import Lighting, { VIEWER_GL, VIEWER_SHADOWS, toonRamp } from './Lighting';
 import type { ProjectedEntity } from './projection';
 import { streamEmission, type EmitProgress } from './sse';
 import WorldScene, { type RunnerRef, type WorldRunner } from './WorldScene';
+
+/** Změřený stav rendereru. Čte `e2e/render-quality.spec.ts`, plní `Bridge` níž. */
+export interface RenderStats {
+  readonly toneMapping: number;
+  readonly toneMappingExposure: number;
+  readonly shadowMapEnabled: boolean;
+  readonly shadowMapType: number;
+  /** Skutečný atribut kontextu, ne to, co si plátno vyžádalo. */
+  readonly antialias: boolean;
+  readonly fog: { readonly color: string; readonly near: number; readonly far: number } | null;
+  /** Kreslicí volání posledního snímku, včetně stínového průchodu. */
+  readonly calls: number;
+  readonly triangles: number;
+  readonly lights: number;
+}
 
 declare global {
   interface Window {
@@ -69,25 +86,17 @@ declare global {
        */
       step: (count: number) => void;
       runState: () => RunState | null;
+      /**
+       * Co renderer doopravdy dostal a co za poslední snímek udělal.
+       *
+       * Jediná cesta, jak se z prohlížeče zeptat na vlastnosti, které nejde
+       * odvodit ze zdrojáku: `antialias` je atribut kontextu a ovladač ho může
+       * odmítnout, `calls` a `triangles` sčítají i stínový průchod, který ve
+       * scéně vidět není. Rozpočet se tedy měří, ne dopočítává.
+       */
+      render: () => RenderStats;
     };
   }
-}
-
-/**
- * Toon rampa jako skutečná textura.
- *
- * Není to ozdoba: bez ní nese scéna nula textur a padesátinásobné přepnutí by
- * o jejich úklidu netvrdilo nic — a přitom je to právě zapomenutá textura, na
- * kterou má ten oracle mířit. Čtyři stupně jsou ruční, generují se kódem
- * a nic se nestahuje.
- */
-function toonRamp(): DataTexture {
-  const levels = new Uint8Array([40, 110, 190, 255]);
-  const texture = new DataTexture(levels, levels.length, 1, RedFormat);
-  texture.minFilter = LinearFilter;
-  texture.magFilter = LinearFilter;
-  texture.needsUpdate = true;
-  return texture;
 }
 
 /** Scéna z kitu s vlastní rampou. Neznámý layout je vada dat, ne stav k vykreslení. */
@@ -100,6 +109,13 @@ function buildWorld(layoutId: string): Group {
   const group = buildLayoutScene(layout);
   const ramp = toonRamp();
   group.traverse((object) => {
+    // Stíny se zapínají tady, ne v kitu: `src/kit/**` se staví i ve stromu
+    // fallbacku, který žádný stínový průchod nemá. Bez tohohle nevrhal v layoutu
+    // stín ani jeden kus — naměřeno na snímku, kde deska mola byla úplně čistá.
+    if (object instanceof Mesh) {
+      object.castShadow = true;
+      object.receiveShadow = true;
+    }
     const material = (object as Mesh).material;
     if (material instanceof MeshToonMaterial) {
       material.gradientMap = ramp;
@@ -131,6 +147,7 @@ function Bridge({
 }) {
   const gl = useThree((state) => state.gl);
   const camera = useThree((state) => state.camera);
+  const scene = useThree((state) => state.scene);
   const frames = useRef(0);
 
   useFrame(() => {
@@ -151,11 +168,34 @@ function Bridge({
       camera: () => ({ x: camera.position.x, y: camera.position.y, z: camera.position.z }),
       step: (count: number) => runnerRef.current?.step(count),
       runState: () => runnerRef.current?.runState() ?? null,
+      render: () => {
+        let lights = 0;
+        scene.traverse((node) => {
+          if (node instanceof Light) lights += 1;
+        });
+        const fog = scene.fog;
+        return {
+          toneMapping: gl.toneMapping,
+          toneMappingExposure: gl.toneMappingExposure,
+          shadowMapEnabled: gl.shadowMap.enabled,
+          shadowMapType: gl.shadowMap.type,
+          // `getContextAttributes()` vrací, co kontext OPRAVDU má. Vyžádaná
+          // hodnota z `VIEWER_GL` by tvrdila jen to, co jsme napsali do kódu.
+          antialias: gl.getContext().getContextAttributes()?.antialias === true,
+          fog:
+            fog instanceof Fog
+              ? { color: `#${fog.color.getHexString()}`, near: fog.near, far: fog.far }
+              : null,
+          calls: gl.info.render.calls,
+          triangles: gl.info.render.triangles,
+          lights,
+        };
+      },
     };
     return () => {
       delete window.__viewer;
     };
-  }, [gl, camera, onSwitch, layouts, runnerRef]);
+  }, [gl, camera, scene, onSwitch, layouts, runnerRef]);
 
   return null;
 }
@@ -242,11 +282,11 @@ export default function Viewer({
     <div style={{ position: 'relative', height: '100%', width: '100%' }}>
       <Canvas
         data-testid="viewer-canvas"
-        gl={{ antialias: false, powerPreference: 'high-performance' }}
+        shadows={VIEWER_SHADOWS}
+        gl={VIEWER_GL}
         camera={{ position: [7, 7, 9], fov: 45 }}
       >
-        <ambientLight intensity={0.65} />
-        <directionalLight position={[5, 8, 4]} intensity={1.3} />
+        <Lighting />
         <Bridge onSwitch={switchTo} layouts={layouts} runnerRef={runnerRef} />
         {active === null ? (
           <World layoutId={layouts[index]} />

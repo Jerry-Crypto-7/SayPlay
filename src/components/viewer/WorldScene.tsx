@@ -32,17 +32,14 @@ import {
   CapsuleGeometry,
   ConeGeometry,
   CylinderGeometry,
-  DataTexture,
   DoubleSide,
   Group,
   InstancedMesh,
-  LinearFilter,
   Matrix4,
   Mesh,
   MeshToonMaterial,
   OctahedronGeometry,
   PlaneGeometry,
-  RedFormat,
   type BufferGeometry,
 } from 'three';
 
@@ -57,6 +54,7 @@ import {
   type WorldDocRuntime,
 } from '@/sim/interpreter';
 
+import { toonRamp } from './Lighting';
 import {
   CELL_SIZE,
   WALL_HEIGHT,
@@ -90,20 +88,6 @@ const COLORS: Readonly<Record<VisualRole | 'wall' | 'floor' | 'zone', string>> =
 
 /** Podoby v pevném pořadí — jedna instancovaná dávka na podobu, tedy sedm kreslicích volání. */
 const VISUALS: readonly VisualRole[] = ['avatar', 'agent', 'collectible', 'goal', 'gate', 'trigger', 'prop'];
-
-/**
- * Toon rampa. Kit si ji staví taky (`Viewer.tsx`) a je to vědomá duplikace osmi
- * řádků: sdílení by znamenalo import mezi `Viewer` a `WorldScene`, které se
- * importují navzájem. Sloučení patří do T6, kde se staví společný světelný rig.
- */
-function toonRamp(): DataTexture {
-  const levels = new Uint8Array([40, 110, 190, 255]);
-  const texture = new DataTexture(levels, levels.length, 1, RedFormat);
-  texture.minFilter = LinearFilter;
-  texture.magFilter = LinearFilter;
-  texture.needsUpdate = true;
-  return texture;
-}
 
 /**
  * Tvar podle podoby.
