@@ -28,6 +28,7 @@ import { buildLayoutScene, layoutById } from '@/kit';
 import type { RunState, WorldDocRuntime } from '@/sim/interpreter';
 
 import { disposeSubtree } from './dispose';
+import FollowCamera from './FollowCamera';
 import type { ProjectedEntity } from './projection';
 import { streamEmission, type EmitProgress } from './sse';
 import WorldScene, { type RunnerRef, type WorldRunner } from './WorldScene';
@@ -50,6 +51,14 @@ declare global {
       entities: () => readonly ProjectedEntity[];
       /** Kolik tiků svět odkrokoval. */
       tick: () => number;
+      /**
+       * Kde stojí kamera ve světových souřadnicích.
+       *
+       * Vzdálenost k postavě je jediné, čím se dá zvenčí ověřit, že kamera hru
+       * opravdu sleduje — sama o sobě je kamera mimo hashovaný stav, takže ji
+       * replay ani řetěz hashů nezachytí.
+       */
+      camera: () => { x: number; y: number; z: number };
       /**
        * Posune svět o `count` tiků bez čekání na nástěnný čas.
        *
@@ -121,6 +130,7 @@ function Bridge({
   runnerRef: RunnerRef;
 }) {
   const gl = useThree((state) => state.gl);
+  const camera = useThree((state) => state.camera);
   const frames = useRef(0);
 
   useFrame(() => {
@@ -138,13 +148,14 @@ function Bridge({
       // `null` z prvního snímku a `entities()` by navždy vracelo prázdno.
       entities: () => runnerRef.current?.entities() ?? [],
       tick: () => runnerRef.current?.tick() ?? 0,
+      camera: () => ({ x: camera.position.x, y: camera.position.y, z: camera.position.z }),
       step: (count: number) => runnerRef.current?.step(count),
       runState: () => runnerRef.current?.runState() ?? null,
     };
     return () => {
       delete window.__viewer;
     };
-  }, [gl, onSwitch, layouts, runnerRef]);
+  }, [gl, camera, onSwitch, layouts, runnerRef]);
 
   return null;
 }
@@ -242,6 +253,7 @@ export default function Viewer({
         ) : (
           <WorldScene world={active} runnerRef={runnerRef} />
         )}
+        <FollowCamera runnerRef={runnerRef} />
       </Canvas>
       {progress.length === 0 ? null : (
         <ul style={PROGRESS} data-testid="viewer-progress">
