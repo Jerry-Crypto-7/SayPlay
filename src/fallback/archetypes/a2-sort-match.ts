@@ -165,6 +165,8 @@ function a2View(state: A2State): GameView {
     timeLeftTicks: state.timeLeftTicks,
     message: null,
     sceneLayout: MANIFEST.sceneLayout,
+    // Tahle hra se hraje tahem do soketu, ne chozenim po mrizce.
+    avatar: null,
   };
 }
 

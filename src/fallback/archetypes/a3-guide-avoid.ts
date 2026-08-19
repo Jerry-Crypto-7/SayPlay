@@ -188,6 +188,8 @@ function a3View(state: A3State): GameView {
     timeLeftTicks: null,
     message: null,
     sceneLayout: MANIFEST.sceneLayout,
+    // Chodec jde po pevne ceste; jeho bunka je polozka na aktualnim indexu.
+    avatar: state.path[state.walkerIndex] ?? null,
   };
 }
 

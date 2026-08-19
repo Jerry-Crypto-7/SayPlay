@@ -188,6 +188,7 @@ function a1View(state: A1State): GameView {
     timeLeftTicks: state.timeLeftTicks,
     message: null,
     sceneLayout: MANIFEST.sceneLayout,
+    avatar: state.avatar,
   };
 }
 

@@ -111,6 +111,17 @@ export type GameView = {
   readonly timeLeftTicks: number | null;
   readonly message: string | null;
   readonly sceneLayout: string;
+  /**
+   * Buňka, na které stojí postava hráče, nebo `null` u hry, která žádnou nemá.
+   *
+   * `null` je poctivá odpověď, ne chybějící údaj: třídění do soketů se hraje
+   * ukazováním a tahem, takže tam žádná postava po mřížce nechodí. Kdyby se
+   * místo toho vracela nula, vypadalo by to jako postava v rohu arény.
+   *
+   * Je to projekce, ne stav — hra si buňku drží po svém a ven ji dává tudy,
+   * takže se na ni dá zeptat zvenčí, aniž by kdokoli sahal do vnitřku hry.
+   */
+  readonly avatar: readonly [number, number] | null;
 };
 
 /**
