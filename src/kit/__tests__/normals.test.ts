@@ -2,17 +2,30 @@ import { BoxGeometry, BufferGeometry, Color, SRGBColorSpace, Vector3 } from 'thr
 import { describe, expect, it } from 'vitest';
 
 import { KIT, SWATCHES, srgbHexToLinear } from '../index';
+import { SMOOTH_ANGLE_DEGREES } from '../pieces/primitives';
+
+const COS_LIMIT = Math.cos((SMOOTH_ANGLE_DEGREES * Math.PI) / 180);
 
 /**
- * Vrátí popis každého porušení plochého stínování. Prázdné pole = kus má
- * zapečené ploché normály.
+ * Vrátí popis každého porušení kontraktu normál. Prázdné pole = kus je v pořádku.
  *
- * Netestuje se jen „normály se dají přepočítat" — to by splnila i vyhlazená
- * geometrie. Testuje se to, co AC úlohy myslí doslova: **žádná normála se
- * nesdílí mezi trojúhelníky**, tedy uvnitř trojúhelníku jsou všechny tři
- * shodné a rovné normále jeho plochy.
+ * **Do 20. 8. 2026 tenhle soubor žádal ploché stínování všude** a byl to jediný
+ * strážce toho, že stínování nese geometrie a ne materiál. T8 fasetování zrušila
+ * jen tam, kde je plocha zaoblená, takže „všechny tři normály trojúhelníku jsou
+ * shodné" už neplatí — a nahradit to nulovou kontrolou by byla tichá díra.
+ *
+ * Zůstávají tři vlastnosti, které platí dál a každá něco chrání:
+ *
+ * 1. **Geometrie je neindexovaná.** Indexovaná by sdílela normály přes hrany,
+ *    které mají zůstat ostré, a míchané stínování by nešlo vyrobit vůbec.
+ * 2. **Každá normála je jednotková.** Nenormalizovaný součet ploch ztmaví kus.
+ * 3. **Žádná normála neuhne od své plochy o víc, než dovoluje práh.** Tohle je
+ *    nová hranice místo staré rovnosti: normála se smí složit ze sousedů, ale
+ *    jen z těch blízkých, takže výsledek zůstane v kuželu kolem vlastní plochy.
+ *
+ * Které kusy se vyhladily a které zůstaly hranaté, měří `shading.test.ts`.
  */
-function flatNormalViolations(geometry: BufferGeometry): string[] {
+function normalViolations(geometry: BufferGeometry): string[] {
   const problems: string[] = [];
 
   if (geometry.index !== null) {
@@ -54,9 +67,9 @@ function flatNormalViolations(geometry: BufferGeometry): string[] {
       if (Math.abs(stored.length() - 1) > 1e-4) {
         problems.push(`trojúhelník ${tri}, vrchol ${vertex}: normála není jednotková`);
       }
-      if (stored.dot(face) < 1 - 1e-4) {
+      if (stored.dot(face) < COS_LIMIT - 1e-4) {
         problems.push(
-          `trojúhelník ${tri}, vrchol ${vertex}: normála neodpovídá ploše (dot ${stored.dot(face).toFixed(4)})`,
+          `trojúhelník ${tri}, vrchol ${vertex}: normála uhnula od plochy za práh (dot ${stored.dot(face).toFixed(4)})`,
         );
       }
     }
@@ -65,48 +78,26 @@ function flatNormalViolations(geometry: BufferGeometry): string[] {
   return problems;
 }
 
-describe('kit má zapečené ploché normály', () => {
+describe('kit má zapečené normály a nesdílí je za práh úhlu', () => {
   it.each(KIT.map((piece) => [piece.id, piece] as const))(
-    '%s nesdílí normálu mezi trojúhelníky',
+    '%s má jednotkové normály v kuželu kolem své plochy',
     (_id, piece) => {
       const geometry = piece.build();
-      expect(flatNormalViolations(geometry)).toEqual([]);
+      expect(normalViolations(geometry)).toEqual([]);
       geometry.dispose();
     },
   );
 
-  it.each(KIT.map((piece) => [piece.id, piece] as const))(
-    '%s má normály shodné s toNonIndexed() + computeVertexNormals()',
-    (_id, piece) => {
-      const geometry = piece.build();
-      const clone = geometry.clone();
-      // `toNonIndexed()` na neindexované geometrii jen varuje a vrátí totéž;
-      // že index chybí, tvrdí test výš.
-      const recomputed = clone.index === null ? clone : clone.toNonIndexed();
-      recomputed.deleteAttribute('normal');
-      recomputed.computeVertexNormals();
-
-      const stored = geometry.getAttribute('normal').array;
-      const expected = recomputed.getAttribute('normal').array;
-      expect(stored.length).toBe(expected.length);
-      for (let i = 0; i < stored.length; i += 1) {
-        expect(stored[i]).toBeCloseTo(expected[i] as number, 5);
-      }
-
-      geometry.dispose();
-      recomputed.dispose();
-    },
-  );
-
-  it('kontrola není vakuózní — vyhlazená geometrie ji neprojde', () => {
-    // Indexovaná krychle: rohový vrchol patří třem stěnám, takže mu
-    // `computeVertexNormals()` normály zprůměruje. Kdyby tohle prošlo,
+  it('kontrola není vakuózní — plně vyhlazená geometrie ji neprojde', () => {
+    // Indexovaná krychle: rohový vrchol patří třem stěnám v pravém úhlu, takže
+    // mu `computeVertexNormals()` normály zprůměruje na (±1,±1,±1)/√3. Od
+    // vlastní stěny je to 54,7°, tedy za prahem. Kdyby tohle prošlo,
     // neprokazuje test nad kitem vůbec nic.
     const smooth = new BoxGeometry(1, 1, 1);
     smooth.deleteAttribute('normal');
     smooth.computeVertexNormals();
 
-    expect(flatNormalViolations(smooth)).not.toEqual([]);
+    expect(normalViolations(smooth)).not.toEqual([]);
     smooth.dispose();
   });
 });
