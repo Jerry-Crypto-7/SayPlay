@@ -65,7 +65,19 @@ větu.** Slib „do dvou sekund se staví svět" model sám o sobě splnit nemů
 by psal jakkoli dobře. Rozpoznávač odpovídá bez GPU a okamžitě; model je tím
 pádem doplněk pro věty mimo rozpoznané tvary, ne první housle.
 
-## 5. Co z toho plyne dál — dvě naměřené páky
+## 5. Měření je reprodukovatelné — naměřeno, ne předpokládáno
+
+Běh se pustil dvakrát za sebou nad týmž kódem (18:57 a 19:34 UTC, tentýž stroj).
+**Všech 28 rozpársovatelných odpovědí přišlo bajt po bajtu stejně**, a s nimi
+i každá klasifikace: `git diff` nad reportem a archivem ukazuje jediné dva
+rozdíly, časové razítko a medián latence (36 694 vs. 36 735 ms).
+
+Není to samozřejmost a nebylo to zadané: znamená to, že `temperature: 0` a
+`seed: 1` ve WebLLM drží slovo, takže se dá o modelu tvrdit něco, co se dá
+zopakovat. Pro projekt postavený na determinismu je to silnější doklad než
+kterékoli číslo výš.
+
+## 6. Co z toho plyne dál — dvě naměřené páky
 
 1. **Odvodit `collisionAabb` na straně systému.** Naměřeno výš: 0 → 12 ze 40
    certifikovaných světů. Zatím **není postavené**; pozor na to, že se to musí
