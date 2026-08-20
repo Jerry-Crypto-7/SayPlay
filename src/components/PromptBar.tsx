@@ -17,29 +17,22 @@
  * obyčejný POST bez kanálu událostí — průběh emise po SSE patří měřicí cestě a
  * ta má vlastní obrazovku. Vypisuje se tedy to, co se doopravdy děje tady:
  * odeslání, čekání na odpověď, stavba světa. Nic z toho není odhad času.
+ *
+ * **Odmítnutí není slepá ulička.** Když generátor na větu zdroj nemá, nabídne
+ * se odkaz do záložní větve — ta umí lexikální routování, takže obslouží i text
+ * mimo zmrazený korpus. Rozhoduje o tom `promptOutcome.ts`, ne tahle
+ * komponenta, a jde o **odkaz, ne o přesměrování**: uživatel musí vidět, že
+ * odchází do jiné větve produktu. Odůvodnění obojího je v hlavičce toho modulu.
  */
 
 import { useState } from 'react';
+
+import { outcomeFor, type PromptOutcome } from './promptOutcome';
 
 /** Fáze, kterými požadavek projde. Pořadí je pořadí výpisu. */
 export const PHASES = ['odesláno', 'generuje se', 'staví se'] as const;
 
 export type Phase = (typeof PHASES)[number];
-
-/**
- * Co se zobrazí, když to nevyjde.
- *
- * Server odpovídá poctivým `NO_SOURCE`, když na danou větu odpověď nemá — u
- * offline větve je to normální stav, ne porucha, protože ta umí právě texty ze
- * zmrazeného korpusu. Hláška to tedy říká rovnou místo aby předstírala výpadek.
- */
-function messageFor(status: number, code: string, detail: string): string {
-  if (code === 'NO_SOURCE')
-    return 'Na tuhle větu offline větev odpověď nemá. Zkus některý z promptů zmrazeného korpusu.';
-  if (code === 'PROMPT_REFUSED') return `Prompt neprošel moderací: ${detail}`;
-  if (status === 429) return 'Rozpočet na generování je vyčerpaný. Zkus to později.';
-  return detail === '' ? `Generování selhalo (${code}).` : detail;
-}
 
 export default function PromptBar({
   onWorld,
@@ -51,7 +44,7 @@ export default function PromptBar({
 }) {
   const [text, setText] = useState('');
   const [phase, setPhase] = useState<Phase | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [outcome, setOutcome] = useState<PromptOutcome | null>(null);
 
   const busy = phase !== null;
 
@@ -60,7 +53,7 @@ export default function PromptBar({
     // Prázdný vstup není chyba, na kterou se nadává — prostě se nic nestane.
     if (text.trim() === '' || busy || disabled) return;
 
-    setError(null);
+    setOutcome(null);
     setPhase('odesláno');
 
     try {
@@ -77,8 +70,13 @@ export default function PromptBar({
       };
 
       if (!response.ok || payload.emission === undefined) {
-        setError(
-          messageFor(response.status, payload.error?.code ?? 'UNKNOWN', payload.error?.message ?? ''),
+        setOutcome(
+          outcomeFor(
+            response.status,
+            payload.error?.code ?? 'UNKNOWN',
+            payload.error?.message ?? '',
+            text,
+          ),
         );
         setPhase(null);
         return;
@@ -89,7 +87,7 @@ export default function PromptBar({
     } catch {
       // Síť spadla nebo uživatel odešel ze stránky. Obojí je stav k vypsání,
       // ne výjimka k propadnutí — plátno má zůstat, na čem bylo.
-      setError('Požadavek se nepodařilo odeslat.');
+      setOutcome({ message: 'Požadavek se nepodařilo odeslat.', fallbackHref: null });
     } finally {
       setPhase(null);
     }
@@ -124,9 +122,17 @@ export default function PromptBar({
         </ol>
       )}
 
-      {error === null ? null : (
+      {outcome === null ? null : (
         <p data-testid="prompt-error" role="alert" style={ERROR}>
-          {error}
+          {outcome.message}
+          {outcome.fallbackHref === null ? null : (
+            <>
+              {' '}
+              <a data-testid="prompt-fallback-link" href={outcome.fallbackHref} style={FALLBACK}>
+                Zahrát v záložní větvi
+              </a>
+            </>
+          )}
         </p>
       )}
     </form>
@@ -181,6 +187,12 @@ const PROGRESS: React.CSSProperties = {
   gap: '0.75rem',
   color: '#9fc0c2',
   fontSize: '0.85rem',
+};
+
+const FALLBACK: React.CSSProperties = {
+  color: '#2f9e8f',
+  fontWeight: 600,
+  whiteSpace: 'nowrap',
 };
 
 const ERROR: React.CSSProperties = {

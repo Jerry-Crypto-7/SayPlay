@@ -28,6 +28,12 @@ const FROZEN_PROMPT = 'a stealth level where guards patrol and see me if I stand
 /** Věta, kterou zmrazený korpus nezná. Musí skončit poctivou hláškou, ne pádem. */
 const UNKNOWN_PROMPT = 'a world that the frozen corpus has never heard of';
 
+/**
+ * Doslovná věta, kterou uživatel napsal na demu 20. 8. 2026 a dostal slepou
+ * uličku. Zůstává tu doslovně, aby test hlídal ten nález, ne jeho parafrázi.
+ */
+const REPORTED_PROMPT = 'i want arcade jumping game';
+
 /** Posbírá adresy, na které stránka sáhla. Aserce se ptá jich, ne dojmu. */
 function recordRequests(page: Page): string[] {
   const seen: string[] = [];
@@ -86,7 +92,7 @@ test('napsaná věta vyrobí scénu, a jde přes /api/generate', async ({ page }
   ).toEqual([]);
 });
 
-test('věta mimo korpus skončí hláškou, ne prázdnou obrazovkou', async ({ page }) => {
+test('věta mimo korpus skončí nabídkou záložní větve, ne slepou uličkou', async ({ page }) => {
   test.setTimeout(120_000);
 
   await page.goto('/');
@@ -96,9 +102,50 @@ test('věta mimo korpus skončí hláškou, ne prázdnou obrazovkou', async ({ p
   await page.getByTestId('prompt-submit').click();
 
   await expect(page.getByTestId('prompt-error')).toBeVisible({ timeout: 60_000 });
-  await expect(page.getByTestId('prompt-error')).toContainText('offline větev');
   // A plátno zůstalo, na čem bylo — odmítnutí není pád.
   expect(await page.evaluate(() => window.__worldsmith!.entities().length)).toBe(0);
+
+  // Do 20. 8. 2026 tady cesta končila. Naměřeno na živém demu: uživatel napsal
+  // „i want arcade jumping game" a dostal hlášku, přestože záložní větev tu
+  // větu směruje na hratelný archetyp. Aserce níž je celý ten nález.
+  const offer = page.getByTestId('prompt-fallback-link');
+  await expect(offer, 'věta mimo korpus nedostala nabídku záložní větve').toBeVisible();
+  await expect(offer).toHaveAttribute('href', `/fallback/play?prompt=${encodeURIComponent(UNKNOWN_PROMPT)}`);
+});
+
+test('nabídnutá záložní větev tu samou větu opravdu odehraje', async ({ page }) => {
+  test.setTimeout(180_000);
+
+  await page.goto('/');
+  await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
+
+  await page.getByTestId('prompt-input').fill(REPORTED_PROMPT);
+  await page.getByTestId('prompt-submit').click();
+  await page.getByTestId('prompt-fallback-link').click();
+
+  // 1. Věta došla celá, ne useknutá na prvním mezerníku nebo ampersandu.
+  await expect(page.getByTestId('route-prompt')).toHaveText(REPORTED_PROMPT);
+
+  // 2. Router z ní udělal archetyp, ne odmítnutí. Kdyby ne, nabídka na úvodní
+  //    stránce by uživatele posílala do prázdna a byla by horší než hláška.
+  await expect(page.getByTestId('route-kind')).toHaveText('archetype');
+
+  // 3. Hraje se ručně. Tohle je druhá půlka nálezu: hlavička tvrdila, že ruční
+  //    ovládání zapojené není, a tvrdila to od commitu, který ho zapojil. Test
+  //    se ptá pohybu postavy, ne textu hlavičky — text je jen popisek.
+  await page.waitForFunction(() => window.__fallback !== undefined, undefined, { timeout: 60_000 });
+  const start = await page.evaluate(() => window.__fallback!.avatar());
+  expect(start, 'archetyp bez postavy se ovládat nedá').not.toBeNull();
+
+  for (let press = 0; press < 6; press += 1) await page.keyboard.press('ArrowRight');
+  await page.waitForFunction(
+    (from) => {
+      const now = window.__fallback!.avatar();
+      return now !== null && (now[0] !== from![0] || now[1] !== from![1]);
+    },
+    start,
+    { timeout: 20_000 },
+  );
 });
 
 test('prázdný vstup neodešle nic', async ({ page }) => {
