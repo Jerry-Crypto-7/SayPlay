@@ -27,54 +27,36 @@ import { join } from 'node:path';
 
 import { declinedEmissionSchema, peelEnvelope, worldEmissionSchema } from '../../src/ir/worlddoc';
 import { frozenGrammar } from '../../src/model/client';
+import { stripThinking } from '../../src/model/local/emit';
+import { FORCED_SHAPE_SCHEMA, LARGE_MODEL, MAX_OUTPUT_TOKENS, SMALL_MODEL } from '../../src/model/local/engine';
 import { buildEmissionRequest } from '../../src/model/prompt';
+
+/**
+ * Konstanty požadavku se **berou z produkce**, neopisují se.
+ *
+ * Naměřená hodnota `schemaValid` popisuje produkci jen tehdy, když měření posílá
+ * týž požadavek jako ona: tentýž svázaný tvar, tentýž strop tokenů, tytéž váhy.
+ * Vlastní kopie by se rozešla a číslo by pak platilo o něčem, co uživatel nikdy
+ * nedostane. Zdroj je `src/model/local/engine.ts`.
+ */
+export { FORCED_SHAPE_SCHEMA, MAX_OUTPUT_TOKENS } from '../../src/model/local/engine';
+export { stripThinking } from '../../src/model/local/emit';
 
 /** Kolik vět se měří. AC úlohy T5 říká prvních 40 z `corpus-v3`. */
 export const MEASURED_SENTENCES = 40;
 
 /** Model, na kterém stojí hlavní cesta (`CLAUDE.md`, tech stack P11). */
-export const PRIMARY_MODEL = 'Qwen3-1.7B-q4f16_1-MLC';
+export const PRIMARY_MODEL = LARGE_MODEL;
 
 /**
  * Model z hlášení `mlc-ai/web-llm#807`. Měří se **jen když hlavní model spadne**,
  * a jen proto, aby se dalo napsat, jestli je ten pád tahle známá chyba, nebo něco
- * jiného. Hlášení jmenuje přesně tuhle váhu.
+ * jiného. Hlášení jmenuje přesně tuhle váhu — a je to táž, na kterou padne větev
+ * `small`, takže je napsaná jednou.
  */
-export const REPRODUCTION_MODEL = 'Qwen3-0.6B-q4f16_1-MLC';
+export const REPRODUCTION_MODEL = SMALL_MODEL;
 
 export const REPORT_PATH = join('evals', 'local-model', 'grammar-report.json');
-
-/**
- * Strop odpovědi. Emise celého světa se do 1400 tokenů vejde (příklad
- * v `src/model/prompt.ts` má řádově stovky tokenů), a co se nevejde, skončí
- * useknuté — což je poctivá odpověď „tvar neudržel", ne vada měření. Bez stropu
- * by jediná zacyklená odpověď spolkla celý běh.
- */
-export const MAX_OUTPUT_TOKENS = 1400;
-
-/**
- * Tvar, na který se sváže dekodér.
- *
- * Je to **obálka, kterou vyjmenovává systémový prompt** (`src/model/prompt.ts`:
- * „Its top-level fields are exactly: irVersion, simRevision, lookRevision, sim,
- * look"), ne celé schéma světa. Rozvinout do gramatiky celý `simSchema` by
- * měřilo něco jiného: ne jestli model udrží tvar, ale jestli xgrammar zvládne
- * schéma o stovkách uzlů. Vnitřek `sim` a `look` zůstává na modelu, a právě ten
- * vnitřek pak soudí produkční validátor.
- *
- * `sim` smí být `null` — tak se v tomhle kontraktu píše poctivé odmítnutí.
- */
-export const FORCED_SHAPE_SCHEMA = JSON.stringify({
-  type: 'object',
-  properties: {
-    irVersion: { type: 'string' },
-    simRevision: { type: 'integer' },
-    lookRevision: { type: 'integer' },
-    sim: { anyOf: [{ type: 'object' }, { type: 'null' }] },
-    look: { type: 'object' },
-  },
-  required: ['irVersion', 'simRevision', 'lookRevision', 'sim', 'look'],
-});
 
 export interface MeasuredSentence {
   readonly id: string;
@@ -110,16 +92,6 @@ export type OutcomeKind = 'fulfilled' | 'declined' | 'invalid' | 'unparsable';
 export interface Outcome {
   readonly kind: OutcomeKind;
   readonly detail: string;
-}
-
-/**
- * Qwen3 umí odpověď uvést blokem `<think>`. Šablona ho vkládá i tam, kde je
- * prázdný, takže by `JSON.parse` spadl na uvozujícím textu a měření by hlásilo
- * „neudržel tvar" u odpovědi, která tvar udržela. Blok se proto odřízne, a jen
- * on — cokoli jiného před `{` je skutečná vada odpovědi a nechá se být.
- */
-export function stripThinking(raw: string): string {
-  return raw.replace(/^\s*<think>[\s\S]*?<\/think>/, '').trim();
 }
 
 /** Kolik rozporů se vypíše jmenovitě, než se zbytek shrne do počtu. */
