@@ -494,6 +494,21 @@
       "scope": "dev"
     },
     {
+      "name": "@mlc-ai/web-llm@0.2.84",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@mlc-ai/web-llm/-/web-llm-0.2.84.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "\"Licensor\" shall mean the copyright owner or entity authorized by",
+      "scope": "prod"
+    },
+    {
       "name": "@next/bundle-analyzer@16.3.1",
       "kind": "library",
       "source": "https://registry.npmjs.org/@next/bundle-analyzer/-/bundle-analyzer-16.3.1.tgz",
@@ -1664,6 +1679,19 @@
       "reviewNote": "Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká."
     },
     {
+      "name": "loglevel@1.9.2",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/loglevel/-/loglevel-1.9.2.tgz",
+      "authorOrProvider": "Tim Perry",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "držitelé práv k loglevel, viz https://registry.npmjs.org/loglevel/-/loglevel-1.9.2.tgz",
+      "scope": "prod"
+    },
+    {
       "name": "magic-string@0.30.21",
       "kind": "library",
       "source": "https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz",
@@ -2357,6 +2385,21 @@
       ],
       "attribution": "OpenAI, https://openai.com/policies/business-terms",
       "reviewNote": "Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je."
+    },
+    {
+      "name": "Qwen3-1.7B-q4f16_1-MLC",
+      "kind": "model",
+      "source": "https://huggingface.co/mlc-ai/Qwen3-1.7B-q4f16_1-MLC",
+      "authorOrProvider": "Qwen Team, Alibaba Cloud (váhy), MLC AI (kvantovaná konverze pro WebLLM)",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "Qwen3 © Alibaba Group, Apache-2.0; konverze do MLC formátu mlc-ai, https://huggingface.co/mlc-ai/Qwen3-1.7B-q4f16_1-MLC",
+      "reviewNote": "Váhy modelu emisní cesty, které si prohlížeč stáhne za běhu (src/model/local/**, WebLLM). Nejsou v repozitáři ani v bundlu, proto to není položka kind: asset. Kvantizace q4f16_1, 979 MB. Sync je nechává být — z package-lock.json se váhy odvodit nedají."
     },
     {
       "name": "zmrazený korpus promptů a kontraktů (evals/frozen, evals/gold.jsonl)",

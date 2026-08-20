@@ -6,7 +6,7 @@
 Seznam všeho, co projekt používá a nenapsal si sám, podle `RULES.md` §2:
 zdroj, autor nebo poskytovatel, licence a povinné notices.
 
-## Knihovny (168)
+## Knihovny (170)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
@@ -42,6 +42,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | @img/sharp-win32-ia32@0.35.3 | https://registry.npmjs.org/@img/sharp-win32-ia32/-/sharp-win32-ia32-0.35.3.tgz | neuvedeno upstreamem | Apache-2.0 AND LGPL-3.0-or-later | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn; právo příjemce knihovnu nahradit nebo přelinkovat; dostupnost zdrojů knihovny | držitelé práv k @img/sharp-win32-ia32, viz https://registry.npmjs.org/@img/sharp-win32-ia32/-/sharp-win32-ia32-0.35.3.tgz |
 | @img/sharp-win32-x64@0.35.3 | https://registry.npmjs.org/@img/sharp-win32-x64/-/sharp-win32-x64-0.35.3.tgz | Lovell Fuller | Apache-2.0 AND LGPL-3.0-or-later | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn; právo příjemce knihovnu nahradit nebo přelinkovat; dostupnost zdrojů knihovny | "Licensor" shall mean the copyright owner or entity authorized by the copyright |
 | @jridgewell/sourcemap-codec@1.5.5 | https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz | Justin Ridgewell | MIT | copyright notice; plné znění licence | Copyright 2024 Justin Ridgewell <justin@ridgewell.name> |
+| @mlc-ai/web-llm@0.2.84 | https://registry.npmjs.org/@mlc-ai/web-llm/-/web-llm-0.2.84.tgz | neuvedeno upstreamem | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | @next/bundle-analyzer@16.3.1 | https://registry.npmjs.org/@next/bundle-analyzer/-/bundle-analyzer-16.3.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @next/bundle-analyzer, viz https://registry.npmjs.org/@next/bundle-analyzer/-/bundle-analyzer-16.3.1.tgz |
 | @next/env@16.3.0 | https://registry.npmjs.org/@next/env/-/env-16.3.0.tgz | Next.js Team | MIT | copyright notice; plné znění licence | držitelé práv k @next/env, viz https://registry.npmjs.org/@next/env/-/env-16.3.0.tgz |
 | @next/swc-darwin-arm64@16.3.0 | https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-16.3.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @next/swc-darwin-arm64, viz https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-16.3.0.tgz |
@@ -130,6 +131,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | lightningcss-win32-arm64-msvc@1.33.0 | https://registry.npmjs.org/lightningcss-win32-arm64-msvc/-/lightningcss-win32-arm64-msvc-1.33.0.tgz | neuvedeno upstreamem | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | držitelé práv k lightningcss-win32-arm64-msvc, viz https://registry.npmjs.org/lightningcss-win32-arm64-msvc/-/lightningcss-win32-arm64-msvc-1.33.0.tgz |
 | lightningcss-win32-x64-msvc@1.33.0 | https://registry.npmjs.org/lightningcss-win32-x64-msvc/-/lightningcss-win32-x64-msvc-1.33.0.tgz | neuvedeno upstreamem | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | applicable copyright doctrines of fair use, fair dealing, or other |
 | lightningcss@1.33.0 | https://registry.npmjs.org/lightningcss/-/lightningcss-1.33.0.tgz | neuvedeno upstreamem | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | applicable copyright doctrines of fair use, fair dealing, or other |
+| loglevel@1.9.2 | https://registry.npmjs.org/loglevel/-/loglevel-1.9.2.tgz | Tim Perry | MIT | copyright notice; plné znění licence | držitelé práv k loglevel, viz https://registry.npmjs.org/loglevel/-/loglevel-1.9.2.tgz |
 | magic-string@0.30.21 | https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz | Rich Harris | MIT | copyright notice; plné znění licence | Copyright 2018 Rich Harris |
 | meshoptimizer@1.1.1 | https://registry.npmjs.org/meshoptimizer/-/meshoptimizer-1.1.1.tgz | Arseny Kapoulkine | MIT | copyright notice; plné znění licence | Copyright (c) 2016-2026 Arseny Kapoulkine |
 | mrmime@2.0.1 | https://registry.npmjs.org/mrmime/-/mrmime-2.0.1.tgz | Luke Edwards | MIT | copyright notice; plné znění licence | Copyright (c) Luke Edwards <luke.edwards05@gmail.com> (https://lukeed.com) |
@@ -210,7 +212,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 - **lightningcss@1.33.0** (MPL-2.0): Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká.
 - **opener@1.5.2** ((WTFPL OR MIT)): Duální licence (WTFPL OR MIT). Bereme větev MIT, která má jasné znění i notice; WTFPL se neuplatňuje.
 
-### Knihovny — bez deklarovaného autora (99)
+### Knihovny — bez deklarovaného autora (100)
 
 Tyhle balíčky autora ve svém `package.json` neuvádějí. Atribuce se proto opírá
 o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
@@ -241,6 +243,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - @img/sharp-webcontainers-wasm32@0.35.3
 - @img/sharp-win32-arm64@0.35.3
 - @img/sharp-win32-ia32@0.35.3
+- @mlc-ai/web-llm@0.2.84
 - @next/bundle-analyzer@16.3.1
 - @next/swc-darwin-arm64@16.3.0
 - @next/swc-darwin-x64@16.3.0
@@ -319,7 +322,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 
 _Žádná položka._
 
-## Modely (5)
+## Modely (6)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
@@ -328,6 +331,7 @@ _Žádná položka._
 | gpt-5.6-mini | https://platform.openai.com/docs/models | OpenAI | komerční podmínky služby (OpenAI Business Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
 | gpt-5.6-sol | https://platform.openai.com/docs/models | OpenAI | komerční podmínky služby (OpenAI Business Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
 | gpt-5.6-terra | https://platform.openai.com/docs/models | OpenAI | komerční podmínky služby (OpenAI Business Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
+| Qwen3-1.7B-q4f16_1-MLC | https://huggingface.co/mlc-ai/Qwen3-1.7B-q4f16_1-MLC | Qwen Team, Alibaba Cloud (váhy), MLC AI (kvantovaná konverze pro WebLLM) | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | Qwen3 © Alibaba Group, Apache-2.0; konverze do MLC formátu mlc-ai, https://huggingface.co/mlc-ai/Qwen3-1.7B-q4f16_1-MLC |
 
 ### Modely — licence posouzené jednotlivě
 
@@ -336,6 +340,7 @@ _Žádná položka._
 - **gpt-5.6-mini** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
 - **gpt-5.6-sol** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
 - **gpt-5.6-terra** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
+- **Qwen3-1.7B-q4f16_1-MLC** (Apache-2.0): Váhy modelu emisní cesty, které si prohlížeč stáhne za běhu (src/model/local/**, WebLLM). Nejsou v repozitáři ani v bundlu, proto to není položka kind: asset. Kvantizace q4f16_1, 979 MB. Sync je nechává být — z package-lock.json se váhy odvodit nedají.
 
 ## Datasety (1)
 

@@ -21,6 +21,7 @@
     "disclosure": "node scripts/license-gate.mjs --sync"
   },
   "dependencies": {
+    "@mlc-ai/web-llm": "0.2.84",
     "@react-three/fiber": "9.7.x",
     "next": "16.3.x",
     "pure-rand": "8.4.x",
