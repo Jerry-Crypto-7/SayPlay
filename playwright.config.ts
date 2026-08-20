@@ -34,7 +34,29 @@ export default defineConfig({
       args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
     },
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    // `webgpu-detect` sem nepatří: běží výhradně v projektu bez akcelerace níž,
+    // jinak by tentýž soubor jednou tvrdil „WebGPU tu není" v prostředí, kde je.
+    { name: 'chromium', testIgnore: /webgpu-detect\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
+    /**
+     * Stroj bez akcelerace (P11 T4). Nedědí `launchOptions` z `use` výš — ty
+     * SwiftShader naopak zapínají — a přidává `--disable-gpu`, takže WebGPU
+     * v prohlížeči není.
+     *
+     * Je to jediné prostředí, ve kterém jde dokázat, že se **nestáhne jediný
+     * bajt vah**, když je stroj nemá čím spustit. Testy pro něj jsou omezené
+     * na `webgpu-detect`, protože zbytek sady WebGL2 kontext potřebuje a tady
+     * ho nedostane.
+     */
+    {
+      name: 'no-acceleration',
+      testMatch: /webgpu-detect\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: { args: ['--disable-gpu', '--disable-features=WebGPU,Vulkan'] },
+      },
+    },
+  ],
   webServer: target
     ? undefined
     : {
