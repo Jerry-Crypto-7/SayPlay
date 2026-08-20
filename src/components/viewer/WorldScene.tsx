@@ -43,6 +43,7 @@ import {
   type BufferGeometry,
 } from 'three';
 
+import { SCENE_ROLES } from '@/kit';
 import { createClock, pump, runTicks } from '@/sim/clock';
 import {
   createRuntime,
@@ -67,24 +68,13 @@ import {
 } from './projection';
 
 /**
- * Sémantické barvy scény.
+ * Sémantické barvy scény přicházejí od T9 z kitu (`SCENE_ROLES`), ne odsud.
  *
- * Žádný fialový ani purpurový odstín — globální pravidlo designu, stejné jako
- * v `src/kit/palettes.ts`. Sjednocení téhle mapy s paletou kitu je úloha T9;
- * do té doby je tady, aby scéna nebyla šedivá dřív, než vizuální průchod začne.
+ * Do té doby tu byla vlastní kopie s komentářem, že sjednocení patří do T9 —
+ * a lišila se: `goal` byl zelený vedle oranžového agenta, což je právě ta
+ * dvojice, kterou červeno-zelená barvoslepost zamění. V kitu je modrý.
  */
-const COLORS: Readonly<Record<VisualRole | 'wall' | 'floor' | 'zone', string>> = {
-  avatar: '#2f9e8f',
-  agent: '#e2622c',
-  collectible: '#e6c14a',
-  goal: '#8fbf4a',
-  gate: '#8d9ba1',
-  trigger: '#cbbc98',
-  prop: '#5f6f74',
-  wall: '#31444b',
-  floor: '#203034',
-  zone: '#4aa3c9',
-};
+const COLORS: Readonly<Record<VisualRole | 'wall' | 'floor' | 'zone', string>> = SCENE_ROLES;
 
 /** Podoby v pevném pořadí — jedna instancovaná dávka na podobu, tedy sedm kreslicích volání. */
 const VISUALS: readonly VisualRole[] = ['avatar', 'agent', 'collectible', 'goal', 'gate', 'trigger', 'prop'];

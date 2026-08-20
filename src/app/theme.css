@@ -1,0 +1,112 @@
+/*
+ * Jedno téma pro celý produkt.
+ *
+ * **Hodnoty jsou kopie, ne originál.** Zdroj je `UI_TOKENS` v
+ * `src/kit/palettes.ts` a `src/app/__tests__/theme.test.ts` jde červeně, jakmile
+ * se obojí rozejde. Kopie tu je proto, že CSS proměnná se z TypeScriptu vyrobit
+ * nedá bez běhového zápisu do `<style>`, a ten by při každém načtení stránky
+ * blikl nenastyloványm HUD.
+ *
+ * `data-palette="cvd"` na `<html>` přepne dvojici výhra/prohra na modrou a
+ * rumělkovou — zelená s oranžovou jsou při červeno-zelené barvosleposti skoro
+ * totéž, takže by stav hry nesla jen slovem.
+ */
+
+:root {
+  --ws-background: #0b1114;
+  --ws-text: #dfe8ea;
+  --ws-muted: #9fb0b3;
+  --ws-positive: #8fbf4a;
+  --ws-negative: #e2622c;
+  --ws-accent: #2f9e8f;
+
+  /* Stín pod textem HUD. Text leží na 3D scéně, jejíž jas nikdo neřídí, takže
+     bez něj je nad světlou podlahou nečitelný. */
+  --ws-text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+  --ws-ui-font: ui-sans-serif, system-ui, sans-serif;
+}
+
+:root[data-palette='cvd'] {
+  --ws-positive: #56b4e9;
+  --ws-negative: #d55e00;
+}
+
+body {
+  margin: 0;
+  height: 100dvh;
+  background: var(--ws-background);
+  color: var(--ws-text);
+  font-family: var(--ws-ui-font);
+}
+
+/* --- HUD ------------------------------------------------------------------
+   Překryv nad plátnem. `pointer-events: none` je nutnost, ne detail: HUD kryje
+   celou plochu, takže by jinak spolkl každé kliknutí do scény. */
+
+.ws-overlay {
+  position: absolute;
+  inset: 0;
+  padding: 0.9rem;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--ws-text);
+  text-shadow: var(--ws-text-shadow);
+}
+
+.ws-hud-goal {
+  font-size: 1.05rem;
+}
+
+.ws-hud-row {
+  display: flex;
+  gap: 1rem;
+  color: var(--ws-muted);
+}
+
+.ws-hud-banner {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.ws-hud-banner[data-phase='won'] {
+  color: var(--ws-positive);
+}
+
+.ws-hud-banner[data-phase='lost'] {
+  color: var(--ws-negative);
+}
+
+.ws-hud-message {
+  margin: 0;
+  color: var(--ws-muted);
+}
+
+.ws-no-fit-reason {
+  margin: 0;
+  max-width: 46ch;
+}
+
+.ws-no-fit-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--ws-muted);
+}
+
+/* Průběh emise vlevo dole nad plátnem. Stejná vrstva jako HUD, tedy i stejné
+   barvy — do T9 měl vlastní odstín textu, který nikde jinde nebyl. */
+.ws-progress {
+  position: absolute;
+  left: 0.9rem;
+  bottom: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  color: var(--ws-muted);
+  text-shadow: var(--ws-text-shadow);
+  pointer-events: none;
+}

@@ -200,22 +200,6 @@ function Bridge({
   return null;
 }
 
-const PROGRESS: React.CSSProperties = {
-  position: 'absolute',
-  left: '0.9rem',
-  bottom: '0.9rem',
-  margin: 0,
-  padding: 0,
-  listStyle: 'none',
-  display: 'flex',
-  gap: '0.6rem',
-  fontFamily: 'system-ui, sans-serif',
-  fontSize: '0.8rem',
-  color: '#dfeae8',
-  textShadow: '0 1px 3px rgba(0,0,0,0.75)',
-  pointerEvents: 'none',
-};
-
 /**
  * Ze zapečetěného dokumentu na běhový svět.
  *
@@ -296,7 +280,7 @@ export default function Viewer({
         <FollowCamera runnerRef={runnerRef} />
       </Canvas>
       {progress.length === 0 ? null : (
-        <ul style={PROGRESS} data-testid="viewer-progress">
+        <ul className="ws-progress" data-testid="viewer-progress">
           {progress.map((step) => (
             <li key={step.step} data-testid={`viewer-phase-${step.phase}`}>
               {step.phase}

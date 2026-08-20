@@ -65,6 +65,103 @@ export const PALETTES = {
 
 export type PaletteName = keyof typeof PALETTES;
 
+/**
+ * Role, které scéna kreslí. Jména jsou sémantická, ne barevná — `goal` zůstane
+ * `goal`, i kdyby zítra zmodral.
+ */
+export type SceneRole =
+  | 'avatar'
+  | 'agent'
+  | 'collectible'
+  | 'goal'
+  | 'gate'
+  | 'trigger'
+  | 'prop'
+  | 'wall'
+  | 'floor'
+  | 'zone';
+
+/**
+ * Sémantická paleta scény — jedna kopie pro celý produkt.
+ *
+ * Do T9 žila tahle mapa v `components/viewer/WorldScene.tsx` s komentářem, že
+ * sjednocení patří sem. Odstíny drží slovník kitu (`PALETTES.harbor`,
+ * `PALETTES.frost`), takže postavená scéna a ručně skládaný layout nevypadají
+ * jako dva různé produkty.
+ *
+ * **Vybírané s ohledem na barvoslepost, ne až dodatečně.** Nejčastější vada je
+ * záměna červené a zelené (deuteranopie a protanopie, cca 8 % mužů), a přesně
+ * takovou trojici tu paleta měla: `agent` oranžový, `collectible` žlutý,
+ * `goal` zelený. Cíl je proto **modrý** — modrožlutá osa zůstává čitelná i pro
+ * ně a odliší se i luminancí. Zóna je proti němu tlumená a poloprůhledná.
+ *
+ * **Žádný fialový ani purpurový odstín** (globální pravidlo designu). Hlídá to
+ * strojově `src/app/__tests__/theme.test.ts`, ne tenhle komentář.
+ */
+export const SCENE_ROLES = {
+  /** Hráč. Tyrkys z palety `harbor` — jediná sytá studená barva mezi entitami. */
+  avatar: '#2f9e8f',
+  /** Co se hýbe samo a nechceš do toho vrazit. */
+  agent: '#e2622c',
+  /** Ke sebrání. */
+  collectible: '#e6c14a',
+  /** Cíl. Modrý schválně — proti oranžovému agentovi a žlutému sběru je to
+   *  jediná dvojice, kterou nezamění ani červeno-zelená vada. */
+  goal: '#56b4e9',
+  /** Brána nebo dveře. Neutrální, protože samy o sobě nic neslibují. */
+  gate: '#8d9ba1',
+  /** Tlaková deska a spouštěče. */
+  trigger: '#cbbc98',
+  /** Kulisa. Nejtmavší z entit, aby nepřetahovala pozornost. */
+  prop: '#5f6f74',
+  wall: '#31444b',
+  floor: '#203034',
+  /** Vyznačená plocha. Kreslí se poloprůhledně pod entitami, proto tlumená. */
+  zone: '#3f7f99',
+} as const satisfies Record<SceneRole, string>;
+
+/**
+ * Barvy rozhraní — HUD, text, stavy hry, plocha stránky.
+ *
+ * Je to **zdroj** hodnot; `src/app/theme.css` je nese jako CSS proměnné a
+ * `src/app/__tests__/theme.test.ts` jde červeně, jakmile se obojí rozejde.
+ * Import CSS do TypeScriptu tady schválně není — styl se z Reactu nenačítá,
+ * načítá ho kořenový layout.
+ */
+export const UI_TOKENS = {
+  /** Plocha stránky. Stejná barva má i mlha ve scéně, jinak by vzdálený kus zbělal. */
+  background: '#0b1114',
+  text: '#dfe8ea',
+  /** Druhotný text — počítadla, jednotky, popisky. */
+  muted: '#9fb0b3',
+  /** Výhra. */
+  positive: '#8fbf4a',
+  /** Prohra a chyby. */
+  negative: '#e2622c',
+  accent: '#2f9e8f',
+} as const;
+
+export type UiToken = keyof typeof UI_TOKENS;
+
+/**
+ * Varianta rozhraní pro červeno-zelenou barvoslepost.
+ *
+ * Mění se **jen dvojice, která nese význam sama o sobě** — výhra a prohra.
+ * Zelená a oranžová jsou pro deuteranopa skoro totéž, takže by stav hry sdělovala
+ * pouze slovem. Modrá a rumělková se liší i pro ně, a liší se i luminancí, takže
+ * fungují i na černobílém snímku.
+ *
+ * Zapíná se atributem `data-palette="cvd"` na `<html>`. **Přepínač v UI k tomu
+ * zatím není** — T9 ho nežádá; tohle je ta polovina, která musí existovat dřív,
+ * než bude co přepínat, a e2e ji ověřuje nastavením atributu.
+ */
+export const UI_TOKENS_CVD = {
+  ...UI_TOKENS,
+  positive: '#56b4e9',
+  negative: '#d55e00',
+} as const satisfies Record<UiToken, string>;
+
+
 function colorKey(rgb: readonly [number, number, number]): string {
   // Atribut je `Float32Array`, takže se porovnává až po zaokrouhlení na float32.
   // Bez `fround` by se hodnoty lišily o poslední bity a žádná by se netrefila.

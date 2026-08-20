@@ -25,7 +25,17 @@ export {
   type Layout,
   type Placement,
 } from './layouts';
-export { PALETTES, repaint, type Palette, type PaletteName } from './palettes';
+export {
+  PALETTES,
+  SCENE_ROLES,
+  UI_TOKENS,
+  UI_TOKENS_CVD,
+  repaint,
+  type Palette,
+  type PaletteName,
+  type SceneRole,
+  type UiToken,
+} from './palettes';
 
 /** Jediný index kitu. Nic jiného než tenhle soubor kusy nevydává. */
 export const KIT = [
