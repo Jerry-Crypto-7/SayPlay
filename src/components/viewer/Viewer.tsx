@@ -33,7 +33,7 @@ import FollowCamera from './FollowCamera';
 import Lighting, { VIEWER_GL, VIEWER_SHADOWS, toonRamp } from './Lighting';
 import type { ProjectedEntity } from './projection';
 import { streamEmission, type EmitProgress } from './sse';
-import WorldScene, { type RunnerRef, type WorldRunner } from './WorldScene';
+import WorldScene, { type DressingBatch, type RunnerRef, type WorldRunner } from './WorldScene';
 
 /** Změřený stav rendereru. Čte `e2e/render-quality.spec.ts`, plní `Bridge` níž. */
 export interface RenderStats {
@@ -66,6 +66,12 @@ declare global {
        * žádný svět nedrží, ne že svět žádné entity nemá.
        */
       entities: () => readonly ProjectedEntity[];
+      /**
+       * Co scéna postavila z kitu — jedna položka na id kusu, s počtem instancí,
+       * které dávka právě kreslí. Ze zdrojáku se to spočítat nedá: co kde stojí
+       * rozhoduje semínko odvozené z konkrétního světa.
+       */
+      dressing: () => readonly DressingBatch[];
       /** Kolik tiků svět odkrokoval. */
       tick: () => number;
       /**
@@ -164,6 +170,7 @@ function Bridge({
       // a plátno ho mění za života mostu. Zachycená hodnota by tu zamrzla na
       // `null` z prvního snímku a `entities()` by navždy vracelo prázdno.
       entities: () => runnerRef.current?.entities() ?? [],
+      dressing: () => runnerRef.current?.dressing() ?? [],
       tick: () => runnerRef.current?.tick() ?? 0,
       camera: () => ({ x: camera.position.x, y: camera.position.y, z: camera.position.z }),
       step: (count: number) => runnerRef.current?.step(count),

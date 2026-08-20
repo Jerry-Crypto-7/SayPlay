@@ -43,7 +43,7 @@ import {
   type BufferGeometry,
 } from 'three';
 
-import { SCENE_ROLES } from '@/kit';
+import { SCENE_ROLES, pieceById } from '@/kit';
 import { createClock, pump, runTicks } from '@/sim/clock';
 import {
   createRuntime,
@@ -55,10 +55,11 @@ import {
   type WorldDocRuntime,
 } from '@/sim/interpreter';
 
+import { planDressing, type DressingKind, type DressingPlan } from './dressing';
 import { toonRamp } from './Lighting';
 import {
   CELL_SIZE,
-  WALL_HEIGHT,
+  cellToWorld,
   elevationOf,
   projectEntities,
   projectStatic,
@@ -115,10 +116,33 @@ interface RoleBatch {
   readonly ids: string[];
 }
 
+/**
+ * Jedna instancovaná dávka na **id kusu** kitu — ne na kategorii a ne na roli.
+ *
+ * Podlaha o dvou stech dlaždicích je tak jedno kreslicí volání. Statika sedí na
+ * začátku dávky a zapíše se jednou při stavbě; propy se dopisují za ni po
+ * každém tiku, protože se s entitou hýbou.
+ */
+interface KitBatch {
+  readonly mesh: InstancedMesh;
+  readonly staticCount: number;
+  /** O kolik se kus musí zvednout, aby stál na podlaze a ne v ní. */
+  readonly lift: number;
+}
+
 interface BuiltScene {
   readonly group: Group;
   readonly batches: ReadonlyMap<VisualRole, RoleBatch>;
+  readonly kit: ReadonlyMap<string, KitBatch>;
+  readonly plan: DressingPlan;
   readonly dispose: () => void;
+}
+
+/** Čtvrtiny otáčky kolem osy Y a posun v jedné matici. */
+function place(matrix: Matrix4, yaw: number, x: number, y: number, z: number): Matrix4 {
+  matrix.makeRotationY((yaw * Math.PI) / 2);
+  matrix.setPosition(x, y, z);
+  return matrix;
 }
 
 /**
@@ -146,13 +170,17 @@ function buildScene(world: WorldDocRuntime): BuiltScene {
   };
 
   const projected = projectStatic(world);
+  const plan = planDressing(world);
+  const grid = { width: world.ir.limits.gridWidth, height: world.ir.limits.gridHeight };
 
+  // Rovina pod dlaždicemi, ne místo nich. Leží uprostřed jejich tloušťky, takže
+  // se s ničím nepere o hloubku a je vidět jen tam, kde by jinak byla díra.
   const floor = new Mesh(
     geometry(new PlaneGeometry(projected.floor.width, projected.floor.depth)),
     material(COLORS.floor),
   );
   floor.rotation.x = -Math.PI / 2;
-  floor.position.set(projected.floor.center.x, projected.floor.center.y, projected.floor.center.z);
+  floor.position.set(projected.floor.center.x, -0.06, projected.floor.center.z);
   floor.receiveShadow = true;
   group.add(floor);
 
@@ -169,28 +197,68 @@ function buildScene(world: WorldDocRuntime): BuiltScene {
     group.add(patch);
   }
 
-  if (projected.walls.length > 0) {
-    const walls = new InstancedMesh(
-      geometry(new BoxGeometry(CELL_SIZE, WALL_HEIGHT, CELL_SIZE)),
-      material(COLORS.wall),
-      projected.walls.length,
+  // Kit má jediný materiál, protože barvu nese geometrie (`vertexColors`).
+  // Kdyby ho měl každý kus vlastní, přibyl by materiál na dávku a nic by se tím
+  // nezískalo — dávky se stejně nesloučí, každá má jinou geometrii.
+  const kitMaterial = material('#ffffff', { vertexColors: true });
+
+  const wornBy = new Map<string, number>();
+  for (const piece of Object.values(plan.props)) {
+    wornBy.set(piece, (wornBy.get(piece) ?? 0) + 1);
+  }
+
+  const kit = new Map<string, KitBatch>();
+  const matrix = new Matrix4();
+
+  for (const id of plan.pieces) {
+    const piece = pieceById(id);
+    // Neznámé id je vada výzdoby, ne stav k vykreslení — a `dressing.ts`
+    // vybírá jen z pevných seznamů, takže sem to nemá jak dojít.
+    if (piece === undefined) continue;
+
+    const shape = geometry(piece.build());
+    shape.computeBoundingBox();
+    const box = shape.boundingBox!;
+    // Dlaždice se zapouští HORNÍ plochou do nuly — je to ta pochozí rovina, na
+    // které stojí všechno ostatní. Zbytek kitu na ní stojí spodkem.
+    const lift = -box.min.y;
+    const liftOf = (kind: DressingKind) => (kind === 'floor' ? -box.max.y : lift);
+
+    const placements = plan.statics.filter((placement) => placement.piece === id);
+    const mesh = new InstancedMesh(
+      shape,
+      kitMaterial,
+      placements.length + (wornBy.get(id) ?? 0),
     );
-    walls.castShadow = true;
-    walls.receiveShadow = true;
-    const matrix = new Matrix4();
-    projected.walls.forEach((wall, index) => {
-      matrix.makeTranslation(wall.position.x, wall.position.y, wall.position.z);
-      walls.setMatrixAt(index, matrix);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.frustumCulled = false;
+    mesh.name = `kit:${id}`;
+
+    placements.forEach((placement, index) => {
+      const at = cellToWorld(placement.cell, grid, liftOf(placement.kind));
+      mesh.setMatrixAt(index, place(matrix, placement.yaw, at.x, at.y, at.z));
     });
-    walls.instanceMatrix.needsUpdate = true;
-    group.add(walls);
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.count = placements.length;
+
+    kit.set(id, { mesh, staticCount: placements.length, lift });
+    group.add(mesh);
   }
 
   const capacity = Math.max(world.ir.entities.length, world.ir.limits.maxEntities);
   const counts = new Map<VisualRole, number>();
   for (const decl of world.ir.entities) {
+    // Entita, která na sobě nese kus kitu, se kreslí v jeho dávce. Do dávky
+    // podle role by se pak zapsala podruhé a stála by ve scéně dvakrát.
+    if (plan.props[decl.stableId] !== undefined) continue;
     const visual = visualRoleOf(decl.role);
     counts.set(visual, (counts.get(visual) ?? 0) + 1);
+  }
+  // `spawn` umí za běhu přidat entitu, kterou výzdoba nezná — ta spadne do
+  // dávky podle role, takže ta dávka musí existovat i když teď nikoho nemá.
+  if (capacity > world.ir.entities.length) {
+    counts.set('prop', (counts.get('prop') ?? 0) + 1);
   }
 
   const batches = new Map<VisualRole, RoleBatch>();
@@ -211,22 +279,46 @@ function buildScene(world: WorldDocRuntime): BuiltScene {
   return {
     group,
     batches,
+    kit,
+    plan,
     dispose: () => {
       for (const resource of owned) resource.dispose();
       for (const batch of batches.values()) batch.mesh.dispose();
+      for (const batch of kit.values()) batch.mesh.dispose();
     },
   };
 }
 
-/** Zapíše polohy entit do matic instancí. Volá se po každém tiku, ne každý snímek. */
+/**
+ * Zapíše polohy entit do matic instancí. Volá se po každém tiku, ne každý snímek.
+ *
+ * Entita s rolí kulisy jde do dávky **svého kusu z kitu**, za jeho nehybnou
+ * část; ostatní do dávky podle podoby. Statika se nepřepisuje, jen se za ni
+ * dopisuje — proto se počet vrací na `staticCount` a ne na nulu.
+ */
 function writeInstances(scene: BuiltScene, entities: readonly ProjectedEntity[], matrix: Matrix4): void {
   for (const batch of scene.batches.values()) {
     batch.ids.length = 0;
     batch.mesh.count = 0;
   }
+  for (const batch of scene.kit.values()) batch.mesh.count = batch.staticCount;
 
   for (const entity of entities) {
     if (!entity.active) continue;
+
+    const worn = scene.plan.props[entity.stableId];
+    const dressed = worn === undefined ? undefined : scene.kit.get(worn);
+    if (dressed !== undefined) {
+      const index = dressed.mesh.count;
+      if (index >= dressed.mesh.instanceMatrix.count) continue;
+      dressed.mesh.setMatrixAt(
+        index,
+        place(matrix, 0, entity.position.x, dressed.lift, entity.position.z),
+      );
+      dressed.mesh.count = index + 1;
+      continue;
+    }
+
     const batch = scene.batches.get(entity.visual);
     if (batch === undefined) continue;
     const index = batch.ids.length;
@@ -238,6 +330,7 @@ function writeInstances(scene: BuiltScene, entities: readonly ProjectedEntity[],
   }
 
   for (const batch of scene.batches.values()) batch.mesh.instanceMatrix.needsUpdate = true;
+  for (const batch of scene.kit.values()) batch.mesh.instanceMatrix.needsUpdate = true;
 }
 
 /**
@@ -245,9 +338,22 @@ function writeInstances(scene: BuiltScene, entities: readonly ProjectedEntity[],
  * `window.__viewer` — jediná cesta, jak se z prohlížeče zeptat skutečného běhu
  * místo jeho napodobeniny.
  */
+export interface DressingBatch {
+  /** Id kusu z `KIT`. Každé se v seznamu objeví právě jednou. */
+  readonly piece: string;
+  /** Kolik instancí dávka právě kreslí — nehybná výzdoba plus kulisové entity. */
+  readonly instances: number;
+}
+
 export interface WorldRunner {
   /** Entity ve světových souřadnicích, v pořadí deklarace a v plné délce. */
   readonly entities: () => readonly ProjectedEntity[];
+  /**
+   * Dávky kitu, jedna na id kusu. Jediná cesta, jak se z prohlížeče zeptat, co
+   * scéna doopravdy postavila — ze zdrojáku se to spočítat nedá, protože co kde
+   * stojí rozhoduje semínko odvozené z konkrétního světa.
+   */
+  readonly dressing: () => readonly DressingBatch[];
   /** Kolik tiků svět odkrokoval. */
   readonly tick: () => number;
   /** Posune běh o `count` tiků bez čekání na nástěnný čas. */
@@ -309,6 +415,8 @@ export default function WorldScene({
   useEffect(() => {
     runnerRef.current = {
       entities: () => projectEntities(world, entityPlacements(runtime)),
+      dressing: () =>
+        [...scene.kit.entries()].map(([piece, batch]) => ({ piece, instances: batch.mesh.count })),
       tick: () => runtime.tick,
       step: (count: number) => advance.run(count),
       runState: () => runtime.runState,
@@ -316,7 +424,7 @@ export default function WorldScene({
     return () => {
       runnerRef.current = null;
     };
-  }, [advance, runnerRef, runtime, world]);
+  }, [advance, runnerRef, runtime, scene, world]);
 
   useEffect(() => () => scene.dispose(), [scene]);
 
