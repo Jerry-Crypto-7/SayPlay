@@ -55,6 +55,7 @@ describe('emitLocally', () => {
   it('platnou emisi certifikuje týmž verdiktem jako server', async () => {
     const outcome = await emitLocally({
       sentence: 'páka otevře bránu',
+      recognize: () => null,
       engine: scriptedEngine(JSON.stringify(EXAMPLE_WORLD)),
     });
 
@@ -68,6 +69,7 @@ describe('emitLocally', () => {
     const broken = { ...EXAMPLE_WORLD, sim: { layout: { width: 1, height: 1 } } };
     const outcome = await emitLocally({
       sentence: 'páka otevře bránu',
+      recognize: () => null,
       engine: scriptedEngine(JSON.stringify(broken)),
     });
 
@@ -89,6 +91,7 @@ describe('emitLocally', () => {
     };
     const outcome = await emitLocally({
       sentence: 'páka otevře bránu',
+      recognize: () => null,
       engine: scriptedEngine(JSON.stringify(noWin)),
     });
 
@@ -101,6 +104,7 @@ describe('emitLocally', () => {
   it('odpověď, která není JSON, je pořád verdikt o emisi', async () => {
     const outcome = await emitLocally({
       sentence: 'páka otevře bránu',
+      recognize: () => null,
       engine: scriptedEngine('promiňte, tomu nerozumím'),
     });
 
@@ -113,6 +117,7 @@ describe('emitLocally', () => {
   it('spadlý model je rozbité prostředí, ne verdikt o světě', async () => {
     const outcome = await emitLocally({
       sentence: 'páka otevře bránu',
+      recognize: () => null,
       engine: {
         modelId: LARGE_MODEL,
         complete: () => Promise.reject(new Error('Unable to find a compatible GPU')),
@@ -154,6 +159,7 @@ describe('emitLocally', () => {
     const phases: string[] = [];
     await emitLocally({
       sentence: 'páka otevře bránu',
+      recognize: () => null,
       engine: scriptedEngine(JSON.stringify(EXAMPLE_WORLD)),
       onProgress: (phase) => phases.push(phase),
     });
@@ -164,6 +170,7 @@ describe('emitLocally', () => {
   it('nepřipíše svět modelu, který se ho nedotkl', async () => {
     const outcome = await emitLocally({
       sentence: 'páka otevře bránu',
+      recognize: () => null,
       engine: scriptedEngine(JSON.stringify(EXAMPLE_WORLD)),
     });
 
@@ -177,6 +184,7 @@ describe('emitLocally', () => {
   it('věta se do verdiktu propíše, aby bylo vidět, co porotce napsal', async () => {
     const outcome = await emitLocally({
       sentence: 'páka otevře bránu',
+      recognize: () => null,
       engine: scriptedEngine(JSON.stringify(EXAMPLE_WORLD)),
     });
 

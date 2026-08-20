@@ -21,6 +21,9 @@ import {
   loadSentences,
   measurementShortfall,
   median,
+  mergeRecords,
+  SHAPES_MARKER,
+  splitByRecognizer,
   stripThinking,
   summarize,
   type AttemptRecord,
@@ -289,5 +292,56 @@ describe('archiv syrových odpovědí', () => {
 
     expect(archive.runs.map((r) => r.model)).toEqual(['big', 'small']);
     expect(archive.measuredAt).toBe('2026-08-20T00:00:00.000Z');
+  });
+});
+
+/**
+ * Měření jede v produkčním pořadí: rozpoznávač první, model na zbytek.
+ *
+ * Kdyby report měřil jen model, měřil by cestu, kterou produkt nepoužívá — a AC
+ * T7 se ptá právě na to, o kolik se `schemaValid` zvedne, když se rozpoznávač
+ * zapojí. Proto se ta hranice testuje tady, ne až v půlhodinovém e2e běhu.
+ */
+describe('rozdělení mezi rozpoznávač a model', () => {
+  it('nechá modelu jen věty, které rozpoznávač nezná', () => {
+    const sentences = loadSentences();
+    const { handled, forModel } = splitByRecognizer(sentences);
+
+    expect(handled.length + forModel.length).toBe(sentences.length);
+    expect(handled.length).toBeGreaterThan(0);
+    // Kdyby rozpoznávač obsloužil všechno, měření o modelu už nic neříká —
+    // a `CLAUDE.md` rozpor 9 přesně tímhle tvarem popisuje vakuózní mechanismus.
+    expect(forModel.length).toBeGreaterThan(0);
+  });
+
+  it('pokusy z rozpoznávače jsou v reportu poznat', () => {
+    const { handled } = splitByRecognizer(loadSentences());
+    expect(handled.every((record) => record.finishReason === SHAPES_MARKER)).toBe(true);
+
+    const summary = summarize('m', handled);
+    expect(summary.shapesHandled).toBe(handled.length);
+    // Rozpoznávač staví platné světy, takže se počítají do `schemaValid`.
+    expect(summary.fulfilled).toBe(handled.length);
+  });
+
+  it('nulová latence rozpoznávače nestahuje medián modelu', () => {
+    const model = attempt({ id: 'P002', raw: '{}', latencyMs: 30000 });
+    const shaped = { id: 'P001', latencyMs: 0, finishReason: SHAPES_MARKER, raw: '{}', error: '' };
+    const summary = summarize('m', [shaped, model]);
+
+    // Kdyby se nula počítala, medián by spadl na 15 000 a přestal by být
+    // srovnatelný s během bez rozpoznávače.
+    expect(summary.medianLatencyMs).toBe(30000);
+  });
+
+  it('sloučené záznamy jdou v pořadí korpusu, ne v pořadí doběhnutí', () => {
+    const sentences = loadSentences(3);
+    const shuffled = [
+      attempt({ id: sentences[2]!.id, raw: '{}' }),
+      attempt({ id: sentences[0]!.id, raw: '{}' }),
+      attempt({ id: sentences[1]!.id, raw: '{}' }),
+    ];
+
+    expect(mergeRecords(sentences, shuffled).map((record) => record.id)).toEqual(sentences.map((s) => s.id));
   });
 });

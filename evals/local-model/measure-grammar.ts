@@ -28,6 +28,7 @@ import { join } from 'node:path';
 import { declinedEmissionSchema, peelEnvelope, worldEmissionSchema } from '../../src/ir/worlddoc';
 import { frozenGrammar } from '../../src/model/client';
 import { stripThinking } from '../../src/model/local/emit';
+import { recognize } from '../../src/model/local/shapes';
 import { FORCED_SHAPE_SCHEMA, LARGE_MODEL, MAX_OUTPUT_TOKENS, SMALL_MODEL } from '../../src/model/local/engine';
 import { buildEmissionRequest } from '../../src/model/prompt';
 
@@ -189,6 +190,8 @@ export interface RunSummary {
   readonly crashes: number;
   readonly schemaValid: number;
   readonly medianLatencyMs: number;
+  /** Kolik pokusů obsloužil rozpoznávač z T7 místo modelu. */
+  readonly shapesHandled: number;
   readonly bug807: boolean;
   readonly crashDetails: readonly string[];
   readonly perSentence: readonly {
@@ -249,6 +252,54 @@ export function buildRawArchive(
   };
 }
 
+/**
+ * Značka v `finishReason` pro pokus, který obsloužil rozpoznávač.
+ *
+ * Je to `finishReason`, a ne další pole záznamu, schválně: záznam je tvar, který
+ * přichází z prohlížeče, a přidat do něj pole, které prohlížeč nikdy nevyplní,
+ * by bylo pozvání k tomu ho někde tiše minout. Report ho pak vede jako
+ * `shapesHandled`, takže z čísla `schemaValid` je vždycky vidět, kolik z něj je
+ * rozpoznávač a kolik model.
+ */
+export const SHAPES_MARKER = 'shapes';
+
+/**
+ * Rozdělí věty na ty, které obslouží rozpoznávač, a na zbytek pro model.
+ *
+ * Tohle je **produkční pořadí** (`src/model/local/emit.ts`: rozpoznávač první),
+ * takže report měří to, co uživatel dostane. Kdyby se měřil jen model, měřila by
+ * se cesta, kterou produkt nepoužívá.
+ */
+export function splitByRecognizer(sentences: readonly MeasuredSentence[]): {
+  readonly handled: AttemptRecord[];
+  readonly forModel: MeasuredSentence[];
+} {
+  const handled: AttemptRecord[] = [];
+  const forModel: MeasuredSentence[] = [];
+  for (const sentence of sentences) {
+    const world = recognize(sentence.text);
+    if (world === null) forModel.push(sentence);
+    else
+      handled.push({
+        id: sentence.id,
+        latencyMs: 0,
+        finishReason: SHAPES_MARKER,
+        raw: JSON.stringify(world),
+        error: '',
+      });
+  }
+  return { handled, forModel };
+}
+
+/** Sloučí obě poloviny běhu zpátky do pořadí korpusu. */
+export function mergeRecords(
+  sentences: readonly MeasuredSentence[],
+  records: readonly AttemptRecord[],
+): AttemptRecord[] {
+  const byId = new Map(records.map((record) => [record.id, record]));
+  return sentences.map((sentence) => byId.get(sentence.id)).filter((record): record is AttemptRecord => record !== undefined);
+}
+
 export function summarize(model: string, records: readonly AttemptRecord[]): RunSummary {
   const counts: Record<OutcomeKind, number> = { fulfilled: 0, declined: 0, invalid: 0, unparsable: 0 };
   const crashDetails: string[] = [];
@@ -262,7 +313,10 @@ export function summarize(model: string, records: readonly AttemptRecord[]): Run
       perSentence.push({ id: record.id, kind: 'crash', detail: record.error, rawExcerpt: '' });
       continue;
     }
-    latencies.push(record.latencyMs);
+    // Latence rozpoznávače se do mediánu nepočítá. Je nulová, takže by ho
+    // stáhla dolů a číslo by přestalo být srovnatelné s během bez rozpoznávače —
+    // a přitom právě to srovnání je v AC T7.
+    if (record.finishReason !== SHAPES_MARKER) latencies.push(record.latencyMs);
     if (record.finishReason === 'length') truncated += 1;
     const outcome = classifyOutput(record.raw);
     counts[outcome.kind] += 1;
@@ -285,6 +339,7 @@ export function summarize(model: string, records: readonly AttemptRecord[]): Run
     crashes: crashDetails.length,
     schemaValid: attempts === 0 ? 0 : Number((accepted / attempts).toFixed(4)),
     medianLatencyMs: median(latencies),
+    shapesHandled: records.filter((record) => record.finishReason === SHAPES_MARKER).length,
     bug807: crashDetails.some(isBug807),
     crashDetails,
     perSentence,

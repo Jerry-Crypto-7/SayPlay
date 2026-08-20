@@ -47,6 +47,8 @@ import {
   REPRODUCTION_MODEL,
   buildRawArchive,
   loadSentences,
+  mergeRecords,
+  splitByRecognizer,
   summarize,
   type AttemptRecord,
   type MeasuredSentence,
@@ -275,24 +277,30 @@ test('@measure Qwen3 v prohlížeči drží vynucený tvar emise', async () => {
   const { context, page, adapter } = await openMeasurementBrowser(hostUrl, bundle);
 
   try {
+    // Produkcni poradi: rozpoznavac prvni, model az na zbytek. Kdyby se meril
+    // jen model, merila by se cesta, kterou produkt nepouziva.
+    const { handled, forModel } = splitByRecognizer(sentences);
+    console.log(`[shapes] ${handled.length}/${sentences.length} vet obslouzil rozpoznavac, ${forModel.length} jde modelu`);
+
     let done = 0;
     const primaryRun = await runModel(page, {
       modelId: PRIMARY_MODEL,
-      sentences,
+      sentences: forModel,
       stopAtFirstBug: false,
       onAttempt: (record) => {
         done += 1;
-        console.log(`[${PRIMARY_MODEL}] ${done}/${sentences.length} ${record.id} ${record.latencyMs}ms ${record.error || record.finishReason}`);
+        console.log(`[${PRIMARY_MODEL}] ${done}/${forModel.length} ${record.id} ${record.latencyMs}ms ${record.error || record.finishReason}`);
       },
       onProgress: (text) => console.log(`[${PRIMARY_MODEL}] ${text}`),
     });
-    const primary = summarize(PRIMARY_MODEL, primaryRun.records);
+    const primaryRecords = mergeRecords(sentences, [...handled, ...primaryRun.records]);
+    const primary = summarize(PRIMARY_MODEL, primaryRecords);
 
     // Podúloha T5: „proměřit Qwen3-1.7B; při pádu proměřit i 0.6B kvůli
     // reprodukci známé chyby". Bez pádu se 0.6B nespouští — reprodukovat by
     // nebylo co a stálo by to další stažení vah.
     let reproduction = null;
-    const runs = [{ model: PRIMARY_MODEL, records: primaryRun.records }];
+    const runs = [{ model: PRIMARY_MODEL, records: primaryRun.records }];  // jen odpovedi modelu
     if (primary.crashes > 0) {
       const page2 = await context.newPage();
       await page2.goto(hostUrl);

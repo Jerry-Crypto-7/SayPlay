@@ -29,6 +29,8 @@ import protocol from '../../../evals/frozen/protocol.v1.json';
 import { certifySteps, type ProgressSink, type Verdict } from '../certify';
 import { buildEmissionRequest, type Grammar } from '../prompt';
 
+import { recognize as recognizeShape } from './shapes';
+
 import type { ChatEngine } from './engine';
 
 export type { Verdict } from '../certify';
@@ -65,6 +67,11 @@ export type Recognizer = (sentence: string) => unknown | null;
 export interface LocalEmitInput {
   readonly sentence: string;
   readonly engine: ChatEngine;
+  /**
+   * Rozpoznávač. Výchozí je ten z `./shapes` — tak to podle `decision.md` jede
+   * v produkci. Test, který chce cestu přes model, musí předat `() => null`,
+   * aby nezáležel na tom, jestli zrovna některý tvar na jeho větu sedne.
+   */
   readonly recognize?: Recognizer;
   readonly onProgress?: ProgressSink;
 }
@@ -82,7 +89,7 @@ export async function emitLocally(input: LocalEmitInput): Promise<LocalOutcome> 
   // jinak by verdikt připsal svět modelu, který se ho ani nedotkl.
   const upstream = { ...buildEmissionRequest(input.sentence, localGrammar()), model: input.engine.modelId };
 
-  const recognized = input.recognize?.(input.sentence) ?? null;
+  const recognized = (input.recognize ?? recognizeShape)(input.sentence);
   let body: unknown;
   let provenance: Record<string, unknown>;
 
