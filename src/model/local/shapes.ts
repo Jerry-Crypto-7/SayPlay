@@ -313,6 +313,19 @@ export const SHAPES: readonly ShapeDefinition[] = [
     }),
   },
   {
+    id: 'beat-the-clock',
+    matches: /\b(seconds?|minutes?|timer|countdown|before time|floods?|rises?)\b/i,
+    plan: (sentence) => ({
+      items: [],
+      goal: 'hatch',
+      lever: null,
+      // Věta mluví v sekundách, simulace v ticích — 20 Hz podle `VERIFY.md` §3.3.
+      timerTicks: Math.min(H_CERT, countIn(sentence, 30) * 20),
+      palette: 'steel',
+      atmosphere: 'fog',
+    }),
+  },
+  {
     id: 'fetch-then-open',
     matches: /\b(chest|torch|bring|carry)\b/i,
     plan: (sentence) => ({
@@ -337,21 +350,8 @@ export const SHAPES: readonly ShapeDefinition[] = [
     }),
   },
   {
-    id: 'beat-the-clock',
-    matches: /\b(seconds?|minutes?|timer|countdown|before time|floods?|rises?)\b/i,
-    plan: (sentence) => ({
-      items: [],
-      goal: 'hatch',
-      lever: null,
-      // Věta mluví v sekundách, simulace v ticích — 20 Hz podle `VERIFY.md` §3.3.
-      timerTicks: Math.min(H_CERT, countIn(sentence, 30) * 20),
-      palette: 'steel',
-      atmosphere: 'fog',
-    }),
-  },
-  {
     id: 'collect-to-score',
-    matches: /\b(collect|harvest|gather|coins?|score|points?)\b/i,
+    matches: /\b(collect|harvest|gather|coins?|score)\b/i,
     plan: (sentence) => ({
       items: named('token', countIn(sentence, 3, MAX_ENTITIES)),
       goal: 'podium',
