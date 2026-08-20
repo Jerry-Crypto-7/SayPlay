@@ -42,8 +42,10 @@ import {
   MEASURED_SENTENCES,
   measurementShortfall,
   PRIMARY_MODEL,
+  RAW_ARCHIVE_PATH,
   REPORT_PATH,
   REPRODUCTION_MODEL,
+  buildRawArchive,
   loadSentences,
   summarize,
   type AttemptRecord,
@@ -290,6 +292,7 @@ test('@measure Qwen3 v prohlížeči drží vynucený tvar emise', async () => {
     // reprodukci známé chyby". Bez pádu se 0.6B nespouští — reprodukovat by
     // nebylo co a stálo by to další stažení vah.
     let reproduction = null;
+    const runs = [{ model: PRIMARY_MODEL, records: primaryRun.records }];
     if (primary.crashes > 0) {
       const page2 = await context.newPage();
       await page2.goto(hostUrl);
@@ -301,18 +304,17 @@ test('@measure Qwen3 v prohlížeči drží vynucený tvar emise', async () => {
         onProgress: (text) => console.log(`[${REPRODUCTION_MODEL}] ${text}`),
       });
       reproduction = summarize(REPRODUCTION_MODEL, repro.records);
+      runs.push({ model: REPRODUCTION_MODEL, records: repro.records });
     }
 
-    const report = buildReport({
-      primary,
-      reproduction,
-      adapter,
-      measuredAt: new Date().toISOString(),
-    });
+    const measuredAt = new Date().toISOString();
+    const report = buildReport({ primary, reproduction, adapter, measuredAt });
 
     // Report se zapisuje DŘÍV, než se o něm cokoli tvrdí. Běh, který skončí
-    // nenulově, je pořád naměřený fakt a nesmí zmizet s procesem.
+    // nenulově, je pořád naměřený fakt a nesmí zmizet s procesem. Archiv jde
+    // s ním, aby se klasifikace dala přepočítat bez dalšího půlhodinového běhu.
     writeFileSync(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+    writeFileSync(RAW_ARCHIVE_PATH, `${JSON.stringify(buildRawArchive(measuredAt, runs), null, 2)}\n`, 'utf8');
 
     expect(report.adapter, 'WebGPU adaptér nebyl k dispozici — měřilo by se něco jiného než AC').not.toBe('none');
     expect(measurementShortfall(report)).toBeNull();

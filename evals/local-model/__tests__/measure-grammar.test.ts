@@ -11,7 +11,10 @@ import { describe, expect, it } from 'vitest';
 import { EXAMPLE_MARKER } from '../../../src/model/prompt';
 import {
   FORCED_SHAPE_SCHEMA,
+  LISTED_ISSUES,
   MEASURED_SENTENCES,
+  RAW_EXCERPT_LIMIT,
+  buildRawArchive,
   buildReport,
   classifyOutput,
   isBug807,
@@ -197,14 +200,40 @@ describe('report se dá přečíst i po běhu', () => {
     const detail = classifyOutput(JSON.stringify(broken)).detail;
 
     // Hláška samotná je pořád k dispozici, ale musí ji uvozovat cesta.
-    expect(detail).toMatch(/^sim(\.|:)/);
+    expect(detail).toMatch(/sim\.\w+: /);
     expect(detail.length).toBeGreaterThan(0);
   });
 
   it('u chyby v kořeni dokumentu cestu nevymýšlí', () => {
     const { irVersion: _dropped, ...withoutVersion } = MINIMAL_WORLD;
     const detail = classifyOutput(JSON.stringify(withoutVersion)).detail;
-    expect(detail).toMatch(/^irVersion:/);
+    expect(detail).toMatch(/^1× rozpor — irVersion:/);
+  });
+
+  it('nezastaví se u prvního rozporu — počítá obě větve najednou', () => {
+    // Zod vrací seznam; `issues[0]` z něj vybere jedno pole a zbytek zamlčí.
+    // Report by pak u celého chybějícího dokumentu jmenoval jediné pole.
+    const count = (body: Record<string, unknown>): number =>
+      Number(/^(\d+)× rozpor/.exec(classifyOutput(JSON.stringify(body)).detail)![1]);
+
+    const simOnly = count({ ...MINIMAL_WORLD, sim: { layout: {} } });
+    const both = count({ ...MINIMAL_WORLD, sim: { layout: {} }, look: { palette: 'x' } });
+
+    expect(simOnly).toBeGreaterThan(1);
+    expect(both).toBeGreaterThan(simOnly);
+  });
+
+  it('pojmenuje i větev vzhledu, ne jen simulaci', () => {
+    const detail = classifyOutput(JSON.stringify({ ...MINIMAL_WORLD, look: { palette: 'x' } })).detail;
+    expect(detail).toContain('look.');
+  });
+
+  it('dlouhý seznam ořízne, ale řekne kolik zbylo', () => {
+    const broken = { ...MINIMAL_WORLD, sim: { layout: {} }, look: { palette: 'x' } };
+    const detail = classifyOutput(JSON.stringify(broken)).detail;
+
+    expect(detail.split('; ').length).toBeLessThanOrEqual(LISTED_ISSUES);
+    expect(detail).toMatch(/\(\+\d+ dalších\)$/);
   });
 
   it('nese ukázku toho, co model doopravdy napsal', () => {
@@ -224,5 +253,41 @@ describe('report se dá přečíst i po běhu', () => {
   it('u pádu ukázku nepředstírá', () => {
     const summary = summarize('m', [attempt({ id: 'P001', error: 'RuntimeError: Aborted()' })]);
     expect(summary.perSentence[0]!.rawExcerpt).toBe('');
+  });
+});
+
+/**
+ * Proč se syrové odpovědi ukládají celé, vedle reportu.
+ *
+ * Měření trvá půl hodiny na skutečném GPU. Když se pak ukáže, že se report ptal
+ * na špatnou věc, není z čeho odpovědět jinak než dalším půlhodinovým během —
+ * ukázka v reportu je oříznutá schválně. Archiv drží to, co model napsal, celé,
+ * takže každá další otázka nad týmž během je zadarmo.
+ */
+describe('archiv syrových odpovědí', () => {
+  it('drží odpověď celou, ne oříznutou jako ukázka v reportu', () => {
+    const raw = `{"irVersion":"${'x'.repeat(5000)}"}`;
+    const archive = buildRawArchive('2026-08-20T00:00:00.000Z', [{ model: 'm', records: [attempt({ id: 'P001', raw })] }]);
+
+    expect(archive.runs[0]!.outputs[0]!.raw).toBe(raw);
+    expect(archive.runs[0]!.outputs[0]!.raw.length).toBeGreaterThan(RAW_EXCERPT_LIMIT);
+  });
+
+  it('pád do archivu nezapisuje — žádná odpověď nevznikla', () => {
+    const archive = buildRawArchive('2026-08-20T00:00:00.000Z', [
+      { model: 'm', records: [attempt({ id: 'P001', error: 'RuntimeError: Aborted()' }), attempt({ id: 'P002', raw: '{}' })] },
+    ]);
+
+    expect(archive.runs[0]!.outputs.map((o) => o.id)).toEqual(['P002']);
+  });
+
+  it('oba modely drží zvlášť, ať je poznat čí je která odpověď', () => {
+    const archive = buildRawArchive('2026-08-20T00:00:00.000Z', [
+      { model: 'big', records: [attempt({ id: 'P001', raw: '{"a":1}' })] },
+      { model: 'small', records: [attempt({ id: 'P001', raw: '{"b":2}' })] },
+    ]);
+
+    expect(archive.runs.map((r) => r.model)).toEqual(['big', 'small']);
+    expect(archive.measuredAt).toBe('2026-08-20T00:00:00.000Z');
   });
 });

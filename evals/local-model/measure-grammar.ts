@@ -122,19 +122,34 @@ export function stripThinking(raw: string): string {
   return raw.replace(/^\s*<think>[\s\S]*?<\/think>/, '').trim();
 }
 
+/** Kolik rozporů se vypíše jmenovitě, než se zbytek shrne do počtu. */
+export const LISTED_ISSUES = 4;
+
 /**
- * Cesta k poli, na kterém schéma selhalo, před hláškou schématu.
+ * Všechny cesty, na kterých schéma selhalo — ne jen první.
  *
  * Zod sám hlásí jen důvod (`expected nonoptional, received undefined`), a ten je
  * u čtyřiceti vět čtyřicetkrát stejný. Bez cesty report říká, že něco chybí, a
  * zamlčuje co — což je přesně ta otázka, na kterou se T6 ptá.
+ *
+ * A jen první cesta nestačí: `issues[0]` z chybějícího celého dokumentu vybere
+ * jedno pole a devět dalších zamlčí, takže report vypadá, jako by emisi scházel
+ * jediný detail. Proto se vypisuje seznam a počet.
  */
-function describeIssue(
-  issue: { readonly path: readonly PropertyKey[]; readonly message: string } | undefined,
+function describeIssues(
+  issues: readonly { readonly path: readonly PropertyKey[]; readonly message: string }[],
 ): string {
-  if (!issue) return 'neznámý rozpor se schématem';
-  const path = issue.path.map(String).join('.');
-  return path ? `${path}: ${issue.message}` : issue.message;
+  const byPath = new Map<string, string>();
+  for (const issue of issues) {
+    const path = issue.path.map(String).join('.');
+    if (!byPath.has(path)) byPath.set(path, path ? `${path}: ${issue.message}` : issue.message);
+  }
+  if (byPath.size === 0) return 'neznámý rozpor se schématem';
+
+  const listed = [...byPath.values()].slice(0, LISTED_ISSUES);
+  const rest = byPath.size - listed.length;
+  const tail = rest > 0 ? ` (+${rest} dalších)` : '';
+  return `${byPath.size}× rozpor — ${listed.join('; ')}${tail}`;
 }
 
 /** Přijal by produkční validátor tohle jako emisi? */
@@ -156,7 +171,7 @@ export function classifyOutput(raw: string): Outcome {
     return { kind: 'declined', detail: 'sim je poctivě null' };
   }
 
-  return { kind: 'invalid', detail: describeIssue(world.error.issues[0]) };
+  return { kind: 'invalid', detail: describeIssues(world.error.issues) };
 }
 
 /**
@@ -229,6 +244,37 @@ export const RAW_EXCERPT_LIMIT = 600;
  */
 export function rawExcerpt(raw: string): string {
   return raw.length <= RAW_EXCERPT_LIMIT ? raw : `${raw.slice(0, RAW_EXCERPT_LIMIT)}`;
+}
+
+export const RAW_ARCHIVE_PATH = join('evals', 'local-model', 'grammar-raw.json');
+
+export interface RawArchive {
+  readonly measuredAt: string;
+  readonly runs: readonly {
+    readonly model: string;
+    readonly outputs: readonly { readonly id: string; readonly raw: string }[];
+  }[];
+}
+
+/**
+ * Syrové odpovědi celé, vedle reportu.
+ *
+ * Běh trvá půl hodiny na skutečném GPU, takže každá otázka, na kterou report
+ * neodpovídá, jinak stojí další půlhodinu. Ukázka v reportu je oříznutá schválně
+ * (`RAW_EXCERPT_LIMIT`); archiv drží text celý, aby se dala klasifikace přepočítat
+ * offline. Pád se do něj nezapisuje — žádná odpověď nevznikla.
+ */
+export function buildRawArchive(
+  measuredAt: string,
+  runs: readonly { readonly model: string; readonly records: readonly AttemptRecord[] }[],
+): RawArchive {
+  return {
+    measuredAt,
+    runs: runs.map((run) => ({
+      model: run.model,
+      outputs: run.records.filter((record) => !record.error).map((record) => ({ id: record.id, raw: record.raw })),
+    })),
+  };
 }
 
 export function summarize(model: string, records: readonly AttemptRecord[]): RunSummary {
