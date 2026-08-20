@@ -177,3 +177,52 @@ describe('loadSentences', () => {
     expect(sentences[0]?.user).toContain(sentences[0]?.text ?? '');
   });
 });
+
+/**
+ * Proč tyhle dva testy vznikly až po prvním měření.
+ *
+ * První běh (20. 8. 2026, nvidia/ampere, 40 vět) vrátil `schemaValid: 0` a
+ * u 28 z nich **doslova stejnou** hlášku `expected nonoptional, received
+ * undefined`. Ta věta říká, že chybí povinné pole, ale neříká **které** — a
+ * `decision.md` v T6 se má rozhodovat právě podle toho, co model vynechává.
+ * Report tedy naměřil číslo, ze kterého nešlo přečíst příčinu.
+ *
+ * Cesta k poli i ukázka syrové odpovědi jsou proto součástí měřidla, ne
+ * pozdější diagnostiky: bez nich by se musel dvouhodinový běh opakovat pokaždé,
+ * když se někdo zeptá „a co tam vlastně chybělo".
+ */
+describe('report se dá přečíst i po běhu', () => {
+  it('u vadné emise jmenuje cestu k poli, ne jen hlášku schématu', () => {
+    const broken = { ...MINIMAL_WORLD, sim: { layout: { width: 0, height: 0 } } };
+    const detail = classifyOutput(JSON.stringify(broken)).detail;
+
+    // Hláška samotná je pořád k dispozici, ale musí ji uvozovat cesta.
+    expect(detail).toMatch(/^sim(\.|:)/);
+    expect(detail.length).toBeGreaterThan(0);
+  });
+
+  it('u chyby v kořeni dokumentu cestu nevymýšlí', () => {
+    const { irVersion: _dropped, ...withoutVersion } = MINIMAL_WORLD;
+    const detail = classifyOutput(JSON.stringify(withoutVersion)).detail;
+    expect(detail).toMatch(/^irVersion:/);
+  });
+
+  it('nese ukázku toho, co model doopravdy napsal', () => {
+    const raw = `{"irVersion":"world-ir-v1","sim":{"broken":true}}`;
+    const summary = summarize('m', [attempt({ id: 'P001', raw })]);
+
+    expect(summary.perSentence[0]!.rawExcerpt).toContain('world-ir-v1');
+  });
+
+  it('ukázku ořízne, aby jedna zacyklená odpověď nezaplavila report', () => {
+    const raw = `{"irVersion":"${'x'.repeat(5000)}"}`;
+    const summary = summarize('m', [attempt({ id: 'P001', raw })]);
+
+    expect(summary.perSentence[0]!.rawExcerpt.length).toBeLessThanOrEqual(600);
+  });
+
+  it('u pádu ukázku nepředstírá', () => {
+    const summary = summarize('m', [attempt({ id: 'P001', error: 'RuntimeError: Aborted()' })]);
+    expect(summary.perSentence[0]!.rawExcerpt).toBe('');
+  });
+});

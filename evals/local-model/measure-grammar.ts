@@ -122,6 +122,21 @@ export function stripThinking(raw: string): string {
   return raw.replace(/^\s*<think>[\s\S]*?<\/think>/, '').trim();
 }
 
+/**
+ * Cesta k poli, na kterém schéma selhalo, před hláškou schématu.
+ *
+ * Zod sám hlásí jen důvod (`expected nonoptional, received undefined`), a ten je
+ * u čtyřiceti vět čtyřicetkrát stejný. Bez cesty report říká, že něco chybí, a
+ * zamlčuje co — což je přesně ta otázka, na kterou se T6 ptá.
+ */
+function describeIssue(
+  issue: { readonly path: readonly PropertyKey[]; readonly message: string } | undefined,
+): string {
+  if (!issue) return 'neznámý rozpor se schématem';
+  const path = issue.path.map(String).join('.');
+  return path ? `${path}: ${issue.message}` : issue.message;
+}
+
 /** Přijal by produkční validátor tohle jako emisi? */
 export function classifyOutput(raw: string): Outcome {
   let body: unknown;
@@ -141,7 +156,7 @@ export function classifyOutput(raw: string): Outcome {
     return { kind: 'declined', detail: 'sim je poctivě null' };
   }
 
-  return { kind: 'invalid', detail: world.error.issues[0]?.message ?? 'neznámý rozpor se schématem' };
+  return { kind: 'invalid', detail: describeIssue(world.error.issues[0]) };
 }
 
 /**
@@ -189,27 +204,51 @@ export interface RunSummary {
   readonly medianLatencyMs: number;
   readonly bug807: boolean;
   readonly crashDetails: readonly string[];
-  readonly perSentence: readonly { readonly id: string; readonly kind: OutcomeKind | 'crash'; readonly detail: string }[];
+  readonly perSentence: readonly {
+    readonly id: string;
+    readonly kind: OutcomeKind | 'crash';
+    readonly detail: string;
+    /** Začátek syrové odpovědi. U pádu prázdný — žádná odpověď nevznikla. */
+    readonly rawExcerpt: string;
+  }[];
+}
+
+/**
+ * Kolik znaků syrové odpovědi si report nechá.
+ *
+ * Dost na to, aby bylo vidět, jak model začíná a kde se láme, a málo na to, aby
+ * jedna zacyklená odpověď (strop je 1400 tokenů) nafoukla report na megabajty.
+ */
+export const RAW_EXCERPT_LIMIT = 600;
+
+/**
+ * Začátek toho, co model **doopravdy napsal** — včetně případného bloku `<think>`.
+ *
+ * Neoříznává se tu nic kromě délky: kdyby report ukazoval až uklizený text, nešlo
+ * by z něj poznat, že model před JSON přidal ještě něco vlastního.
+ */
+export function rawExcerpt(raw: string): string {
+  return raw.length <= RAW_EXCERPT_LIMIT ? raw : `${raw.slice(0, RAW_EXCERPT_LIMIT)}`;
 }
 
 export function summarize(model: string, records: readonly AttemptRecord[]): RunSummary {
   const counts: Record<OutcomeKind, number> = { fulfilled: 0, declined: 0, invalid: 0, unparsable: 0 };
   const crashDetails: string[] = [];
-  const perSentence: { id: string; kind: OutcomeKind | 'crash'; detail: string }[] = [];
+  const perSentence: { id: string; kind: OutcomeKind | 'crash'; detail: string; rawExcerpt: string }[] = [];
   const latencies: number[] = [];
   let truncated = 0;
 
   for (const record of records) {
     if (record.error) {
       crashDetails.push(`${record.id}: ${record.error}`);
-      perSentence.push({ id: record.id, kind: 'crash', detail: record.error });
+      perSentence.push({ id: record.id, kind: 'crash', detail: record.error, rawExcerpt: '' });
       continue;
     }
     latencies.push(record.latencyMs);
     if (record.finishReason === 'length') truncated += 1;
     const outcome = classifyOutput(record.raw);
     counts[outcome.kind] += 1;
-    perSentence.push({ id: record.id, kind: outcome.kind, detail: outcome.detail });
+    perSentence.push({ id: record.id, kind: outcome.kind, detail: outcome.detail, rawExcerpt: rawExcerpt(record.raw) });
   }
 
   const attempts = records.length;
