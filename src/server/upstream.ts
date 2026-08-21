@@ -85,6 +85,37 @@ export function upstreamConfigFromEnv(env: Record<string, string | undefined>): 
 }
 
 /**
+ * **Existuje cloudová cesta vůbec?** Jediná odpověď na tuhle otázku v celém repu.
+ *
+ * Musí platit obojí: někdo živou větev **objednal** (`WORLDSMITH_BRANCH=live`) a
+ * zároveň je **čím jet** (koncový bod i klíč). Ani jedno samo nestačí, a každý
+ * z těch dvou důvodů je jiný:
+ *
+ * - Objednávka bez klíče by nabídla cestu, která nemá čím jet — uživatel by
+ *   dostal 503 místo světa.
+ * - Klíč bez objednávky by znamenal, že proměnná zděděná z jiného projektu
+ *   tiše přepne produkt na **placenou** cestu. To je ta dražší chyba z těch dvou.
+ *
+ * ## Tohle NENÍ výběr větve v `/api/generate`, a nesmí se tím stát
+ *
+ * Routa se ptá na **objednávku** (`WORLDSMITH_BRANCH === 'live'`), tahle funkce
+ * na **dostupnost**. Vypadají podobně a liší se přesně v jednom případě, který
+ * rozhoduje: objednaná živá větev **bez klíče**. Tady je to `false` (cloud se
+ * nenabízí), v routě to pořád znamená živou větev, která odpoví 503
+ * `BRANCH_UNCONFIGURED`.
+ *
+ * Naměřeno 21. 8. 2026: sjednotit obojí do téhle funkce shodí
+ * `src/app/api/generate/__tests__/route.test.ts` („živá větev bez konfigurace je
+ * 503"), a je to ten test, kdo má pravdu. Server, kterému chybí klíč, by jinak
+ * tiše sjel na offline větev a **vydával mock za model** — operátor s překlepem
+ * v klíči by se to nedozvěděl nikdy. Vadné nastavení selhává nahlas, stejně jako
+ * u rozbitého vypínače stropu v `./spend-cap.ts`.
+ */
+export function cloudBranchAvailable(env: Record<string, string | undefined>): boolean {
+  return env.WORLDSMITH_BRANCH === 'live' && upstreamConfigFromEnv(env) !== null;
+}
+
+/**
  * Živá větev. `config: null` znamená nenakonfigurovaný poskytovatel — větev
  * existuje, drží kontrakt a každé volání odmítne, aniž by kamkoli sáhla.
  */

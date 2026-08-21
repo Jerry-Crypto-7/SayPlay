@@ -51,6 +51,17 @@ const CAP = spendCapFromEnv(process.env);
 
 export const runtime = 'nodejs';
 
+/**
+ * Která větev pojede. Ptá se na **objednávku**, ne na dostupnost, a ten rozdíl
+ * je naměřený: `cloudBranchAvailable()` (viz `src/server/upstream.ts`) odpovídá
+ * `false`, když je objednaná živá větev bez klíče — a kdyby se routa řídila jím,
+ * takový server by tiše sjel na offline větev a **vydával mock za model**.
+ * Operátor s překlepem v klíči by se to nedozvěděl nikdy.
+ *
+ * Tady se proto selhává nahlas: objednal jsi živou větev bez klíče, dostaneš
+ * 503 `BRANCH_UNCONFIGURED`. Táž doktrína jako u rozbitého vypínače stropu
+ * (`src/server/spend-cap.ts`) — vadné nastavení nikdy neznamená tichý průchod.
+ */
 function branchFor(env: NodeJS.ProcessEnv): GenerationBranch {
   return env.WORLDSMITH_BRANCH === 'live' ? upstreamBranch(upstreamConfigFromEnv(env)) : mockBranch();
 }
