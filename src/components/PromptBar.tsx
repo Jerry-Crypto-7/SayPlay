@@ -34,11 +34,23 @@
  * náhrada je, a **nabídka záložní větve zůstává vedle ní**: uživatel dostane
  * obojí, ne jedno místo druhého. Záložní větev totiž pořád může tu větu zahrát
  * líp než jedna univerzální místnost.
+ *
+ * **Větu jde nadiktovat (P11 T23).** Rozhoduje o tom `@/input/speech`, ne tahle
+ * komponenta. Dvě věci na tom nejsou samozřejmé:
+ *
+ * 1. **Tlačítko se v prohlížeči bez rozpoznávání vůbec nevykreslí.** Vypnuté
+ *    tlačítko slibuje něco, co nikdy nepůjde — Firefox to rozhraní nemá a nikdy
+ *    ho mít nezačne kliknutím.
+ * 2. **Dostupnost se čte až po připojení komponenty.** Na serveru `window` není,
+ *    takže by první vykreslení tlačítko nemělo a to druhé už ano — a to je přesně
+ *    ta neshoda, kterou React 19 při hydrataci hlásí. Proto `useEffect`, ne
+ *    počáteční hodnota stavu.
  */
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { guaranteeWorld } from '@/game/guarantee';
+import { startDictation, supportsDictation, type DictationSession } from '@/input/speech';
 
 import { outcomeFor, type PromptOutcome } from './promptOutcome';
 
@@ -60,8 +72,47 @@ export default function PromptBar({
   const [outcome, setOutcome] = useState<PromptOutcome | null>(null);
   /** Vada, se kterou přišla náhradní místnost. `null`, když žádná nestojí. */
   const [substitute, setSubstitute] = useState<string | null>(null);
+  /** Umí prohlížeč diktovat? Čte se až po připojení — viz bod 2 v hlavičce. */
+  const [canDictate, setCanDictate] = useState(false);
+  const [listening, setListening] = useState(false);
+  const dictation = useRef<DictationSession | null>(null);
+
+  useEffect(() => setCanDictate(supportsDictation()), []);
 
   const busy = phase !== null;
+
+  function toggleDictation(): void {
+    if (listening) {
+      dictation.current?.stop();
+      return;
+    }
+
+    setOutcome(null);
+    const session = startDictation({
+      // Nadiktovaná věta se k napsané **přidá**, nepřepíše ji. Přepsat text,
+      // který někdo napsal, je ztráta jeho práce kvůli jednomu kliknutí.
+      onText: (spoken) =>
+        setText((previous) => (previous.trim() === '' ? spoken : `${previous.trimEnd()} ${spoken}`)),
+      onError: (code) =>
+        setOutcome({
+          message:
+            code === 'not-allowed'
+              ? 'Mikrofon je pro tuhle stránku zakázaný. Větu jde napsat.'
+              : `Diktování se nepovedlo (${code}). Větu jde napsat.`,
+          fallbackHref: null,
+        }),
+      onEnd: () => {
+        dictation.current = null;
+        setListening(false);
+      },
+    });
+
+    // `null` znamená, že se relace nerozeběhla. Stav „poslouchám" by pak zůstal
+    // viset napořád, protože konec už nepřijde.
+    if (session === null) return;
+    dictation.current = session;
+    setListening(true);
+  }
 
   async function submit(event: React.FormEvent): Promise<void> {
     event.preventDefault();
@@ -134,6 +185,21 @@ export default function PromptBar({
         onChange={(event) => setText(event.target.value)}
         style={INPUT}
       />
+      {!canDictate ? null : (
+        // `type="button"` je nutnost, ne zvyk: tlačítko bez typu ve formuláři
+        // odesílá, takže by kliknutí na mikrofon poslalo rozepsanou větu pryč.
+        <button
+          type="button"
+          data-testid="prompt-dictate"
+          aria-pressed={listening}
+          disabled={busy || disabled}
+          onClick={toggleDictation}
+          style={listening ? { ...DICTATE, ...DICTATE_ON } : DICTATE}
+        >
+          {listening ? 'Poslouchám…' : 'Nadiktovat'}
+        </button>
+      )}
+
       <button type="submit" data-testid="prompt-submit" disabled={busy || disabled} style={BUTTON}>
         {busy ? 'Pracuju…' : 'Postav svět'}
       </button>
@@ -220,6 +286,22 @@ const BUTTON: React.CSSProperties = {
   font: 'inherit',
   fontWeight: 600,
   cursor: 'pointer',
+};
+
+/** Diktování je druhá cesta ke stejné věci, ne hlavní akce — proto obrys, ne plocha. */
+const DICTATE: React.CSSProperties = {
+  padding: '0.55rem 0.9rem',
+  borderRadius: '0.4rem',
+  border: '1px solid #2f4a50',
+  background: 'transparent',
+  color: '#9fc0c2',
+  font: 'inherit',
+  cursor: 'pointer',
+};
+
+const DICTATE_ON: React.CSSProperties = {
+  borderColor: '#e8a33d',
+  color: '#e8a33d',
 };
 
 const PROGRESS: React.CSSProperties = {
