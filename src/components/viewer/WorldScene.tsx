@@ -45,6 +45,7 @@ import {
 
 import { SCENE_ROLES, pieceById } from '@/kit';
 import { createClock, pump, runTicks } from '@/sim/clock';
+import { hashHex } from '@/sim/hash';
 import {
   createRuntime,
   entityPlacements,
@@ -426,6 +427,12 @@ export interface WorldRunner {
   /** Posune běh o `count` tiků bez čekání na nástěnný čas. */
   readonly step: (count: number) => void;
   readonly runState: () => RunState;
+  /**
+   * Hash stavu **hraného** běhu. Ne pomůcka pro testy: restart musí dokázat, že
+   * začal ve stejném stavu jako první hra, a hash z jiného runtimu (třeba z osy
+   * času, která si drží vlastní) by o tomhle běhu netvrdil nic.
+   */
+  readonly hash: () => string;
 }
 
 export type RunnerRef = { current: WorldRunner | null };
@@ -433,9 +440,10 @@ export type RunnerRef = { current: WorldRunner | null };
 /**
  * Vstup jednoho tiku.
  *
- * V T2 je to zaznamenaná stopa světa — svět si přehraje vlastního svědka, takže
- * je vidět, že se entity opravdu hýbou. Ovládání hráčem přijde v T3 a nahradí
- * tenhle zdroj vstupem z `src/sim/input.ts`; podpis se kvůli tomu nezmění.
+ * Výchozí zdroj je zaznamenaná stopa světa — svět si přehraje vlastního svědka,
+ * takže je vidět, že se entity opravdu hýbou. Od T19 může volající poslat vlastní
+ * zdroj (`inputs`) a hrát rukou; podpis se kvůli tomu nezměnil, jak slibovala
+ * poznámka z T2.
  */
 function inputsForTick(trace: readonly TraceInput[], tick: number): TraceInput[] {
   return trace.filter((input) => input.tick === tick);
@@ -444,10 +452,17 @@ function inputsForTick(trace: readonly TraceInput[], tick: number): TraceInput[]
 export default function WorldScene({
   world,
   runnerRef,
+  inputs,
 }: {
   readonly world: WorldDocRuntime;
   /** Plní ho tahle komponenta; čte `Bridge` ve `Viewer.tsx`. */
   readonly runnerRef: RunnerRef;
+  /**
+   * Vstupy jednoho tiku. Bez něj svět přehrává vlastního svědka; s ním ho hraje
+   * hráč. **Volá se právě jednou na tik a smí mít vedlejší účinek** — ovládání
+   * si od něj bere razítko tiku a zapisuje si stisk do stopy (`src/game/flow.ts`).
+   */
+  readonly inputs?: (tick: number) => readonly TraceInput[];
 }) {
   const scene = useMemo(() => buildScene(world), [world]);
   const runtime = useMemo<Runtime>(() => createRuntime(world), [world]);
@@ -482,12 +497,12 @@ export default function WorldScene({
       run: (count: number) => {
         runTicks(clock, count, (tick) => {
           if (runtime.runState !== 'running') return;
-          step(runtime, inputsForTick(world.trace, tick));
+          step(runtime, inputs === undefined ? inputsForTick(world.trace, tick) : [...inputs(tick)]);
         });
         drawFromState();
       },
     };
-  }, [assembly, clock, runtime, scene, world]);
+  }, [assembly, clock, inputs, runtime, scene, world]);
 
   // První snímek kreslí výchozí stav, ne prázdno. Bez toho je scéna do prvního
   // tiku prázdná, což vypadá jako vada vykreslení, ne jako svět před startem.
@@ -504,6 +519,7 @@ export default function WorldScene({
       assembly: () => assemblySnapshot(assembly.log, assembly.plan),
       step: (count: number) => advance.run(count),
       runState: () => runtime.runState,
+      hash: () => hashHex(runtime.state),
     };
     return () => {
       runnerRef.current = null;

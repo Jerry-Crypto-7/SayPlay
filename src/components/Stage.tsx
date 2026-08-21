@@ -51,9 +51,24 @@ declare global {
  * (`viewer/Lighting.tsx`). Úvodní stránka a embed musí vypadat stejně — dokud
  * měla každá vlastní dvojici světel, lišily se a nikdo to nehlídal.
  */
-export default function Stage({ world = null }: { readonly world?: WorldDocRuntime | null }) {
+export default function Stage({
+  world = null,
+  inputs,
+  runnerRef: shared,
+}: {
+  readonly world?: WorldDocRuntime | null;
+  /** Vstupy jednoho tiku; bez něj si svět přehrává vlastního svědka. */
+  readonly inputs?: (tick: number) => readonly TraceInput[];
+  /**
+   * Reference na běh **ven**. Stránka z ní čte `runState`, `tick` a rozvrh stavby,
+   * ze kterých skládá fázi hry. Bez sdílení by musela mít vlastní běh — a hrálo by
+   * se pak něco jiného, než co je na plátně vidět.
+   */
+  readonly runnerRef?: RunnerRef;
+}) {
   const [, setReady] = useState(false);
-  const runnerRef = useRef<RunnerRef['current']>(null);
+  const own = useRef<RunnerRef['current']>(null);
+  const runnerRef = shared ?? own;
 
   return (
     <Canvas
@@ -83,7 +98,7 @@ export default function Stage({ world = null }: { readonly world?: WorldDocRunti
         <gridHelper args={[12, 12, '#1d2b2f', '#162023']} position={[0, -1.2, 0]} />
       ) : (
         <>
-          <WorldScene world={world} runnerRef={runnerRef} />
+          <WorldScene world={world} runnerRef={runnerRef} inputs={inputs} />
           <FollowCamera runnerRef={runnerRef} />
         </>
       )}
