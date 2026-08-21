@@ -372,6 +372,8 @@ const OFF_TICK_PATH: Readonly<Record<string, number>> = {
   'sim/rng.ts:createStreams': 1, // čtyři pevné streamy z konstanty
   'sim/state.ts:createState': 1, // počáteční hodnoty layoutu
   'sim/state.ts:defineLayout': 1, // rozvržení slotů ve stavovém poli
+  'sim/timeline.ts:baseFor': 1, // výběr snímku, mez je kapacita kruhu
+  'sim/timeline.ts:replayTo': 2, // druhý replay driver, mez je cílový tik od volajícího
 };
 
 describe('podmínka 5 — rozsah pravidla je tiková cesta, ne adresář', () => {
