@@ -62,6 +62,21 @@ export interface Certificate {
   readonly runtimeVersion: string;
   /** Hash zabaleného stavu v tiku výhry. */
   readonly snapshotHash: string;
+  /**
+   * Hash stopy, kterou replay odkrokoval (P11 T15).
+   *
+   * Je to jediná věc, kterou se dá zvenčí ověřit, že náhled vítězné cesty
+   * přehrává tutéž stopu, jakou certifikát potvrdil. Bez ní by UI mohlo pouštět
+   * cokoli a tvrdit u toho „takhle to systém vyhrál"; hash z toho tvrzení dělá
+   * kontrolovatelný fakt.
+   *
+   * **Hashuje se `witness`, a je to totéž jako „co se doopravdy odehrálo".** Ne
+   * proto, že by na tom nezáleželo, ale proto, že výhra se zbylým nedohraným
+   * krokem se o pár řádků níž odmítá (`step lies after the run ended`) — na
+   * certifikované cestě tedy žádný krok zbýt nemůže. Sbírat vedle toho ještě
+   * seznam doručených vstupů by byla druhá odpověď na tutéž otázku.
+   */
+  readonly witnessHash: string;
 }
 
 export interface Rejection {
@@ -79,6 +94,41 @@ export type VerifiableWorld = WorldDocRuntime & { readonly certification?: Certi
 
 function reject(reason: RejectReason, atStep: number | null, detail: string): Rejection {
   return { verdict: 'REJECTED', reason, atStep, detail };
+}
+
+/**
+ * Řetězec do slov, **s délkou napřed**.
+ *
+ * Bez prefixu délky by `"ab" + "c"` a `"a" + "bc"` daly tatáž slova, takže dvě
+ * různé stopy by měly týž hash a aserce na shodu by přestala něco tvrdit.
+ */
+function pushString(words: number[], text: string): void {
+  words.push(text.length);
+  for (let i = 0; i < text.length; i += 1) words.push(text.charCodeAt(i));
+}
+
+/**
+ * Kanonický hash stopy — táž FNV-1a jako u stavu (`src/sim/hash.ts`), žádný
+ * druhý hasher.
+ *
+ * Chybějící `target` se hashuje jako `NO_TARGET`, tedy stejným zástupcem, jaký
+ * v replayi zastupuje nepřítomný cíl. Kdyby se vynechal, stopa s cílem `none`
+ * a stopa bez cíle by se přestaly rozlišovat.
+ */
+export function hashWitness(witness: readonly TraceInput[]): string {
+  // Délka stopy se dopředu NEPÍŠE, a je to úmysl: každý vstup je čtyři slova,
+  // z toho tři s prefixem délky, takže zápis se dá zleva doprava jednoznačně
+  // rozebrat a konec stopy je konec slov. Vedoucí počet by byl druhá pojistka
+  // téhož, kterou žádná stopa nedokáže porušit — a nedokazatelná pojistka je
+  // jen řádek navíc.
+  const words: number[] = [];
+  for (const input of witness) {
+    words.push(input.tick);
+    pushString(words, input.actor);
+    pushString(words, input.actionId);
+    pushString(words, input.target ?? NO_TARGET);
+  }
+  return hashHex(Uint32Array.from(words));
 }
 
 /**
@@ -216,6 +266,7 @@ export function verifyWitness(doc: VerifiableWorld, witness: readonly TraceInput
         inputCount: witness.length,
         runtimeVersion: RUNTIME_VERSION,
         snapshotHash: hashHex(runtime.state),
+        witnessHash: hashWitness(witness),
       };
     }
   }
