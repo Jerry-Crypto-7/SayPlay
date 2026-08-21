@@ -1,14 +1,15 @@
 {
   "model": "Qwen3-1.7B-q4f16_1-MLC",
   "attempts": 40,
-  "fulfilled": 0,
+  "fulfilled": 15,
   "declined": 0,
-  "invalid": 28,
-  "unparsable": 12,
-  "truncated": 12,
+  "invalid": 17,
+  "unparsable": 8,
+  "truncated": 8,
   "crashes": 0,
-  "schemaValid": 0,
-  "medianLatencyMs": 36694,
+  "schemaValid": 0.375,
+  "medianLatencyMs": 36704,
+  "shapesHandled": 15,
   "bug807": false,
   "crashDetails": [],
   "perSentence": [
@@ -20,9 +21,9 @@
     },
     {
       "id": "P002",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"key1\": [\n          1,\n          4\n        ],\n        \"key2\": [\n          3,\n          4\n        ],\n        \"key3\": [\n          5,\n          4\n        ],\n        \"door\": [\n          10,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"key1\",\n          \"state\": \"idle\"\n        },\n        \"key1\": {\n        "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"key1\":[3,4],\"key2\":[5,4],\"key3\":[7,4],\"exitDoor\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"key1\":[3,4,1,1],\"key2\":[5,4,1,1],\"key3\":[7,4,1,1],\"exitDoor\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"key1\":{\"role\":\"collectible\",\"socket\":\"key1\",\"state\":\"present\"},\"key2\":{\"role\":\"collectible\",\"socket\":\"key2\",\"state\":\"present\"},\"key3\":{\"role\":\"collectible\",\"socket\":\"key3\",\"state\":\"present\""
     },
     {
       "id": "P003",
@@ -50,9 +51,9 @@
     },
     {
       "id": "P007",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"vendingMachine\": [\n          3,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"vendingMachine\",\n          \"state\": \"idle\"\n        },\n        \"vendingMachine\": {\n          \"role\": \"prop\",\n          \"socket\": \"vendingMachine\",\n          \"state\": \"active\",\n          \"locked\": false\n        }\n      },\n   "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"button\":[3,4],\"hatch\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"button\":[3,4,1,1],\"hatch\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"button\":{\"role\":\"prop\",\"socket\":\"button\",\"state\":\"down\"},\"hatch\":{\"role\":\"goal\",\"socket\":\"hatch\",\"state\":\"closed\",\"locked\":true}},\"rules\":{\"unlock\":{\"id\":\"unlock\",\"phase\":1,\"priority\":0,\"event\":{\"kind\":\"onAction\",\"actionId\":\"use\",\"target\":\"button\"},\"c"
     },
     {
       "id": "P008",
@@ -62,15 +63,15 @@
     },
     {
       "id": "P009",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"spawnPad\": [\n          1,\n          4\n        ],\n        \"cardPad\": [\n          3,\n          4\n        ],\n        \"leverPad\": [\n          5,\n          4\n        ],\n        \"gatePad\": [\n          10,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"spawnPad\",\n          \"state\": \"idle\"\n        },\n        "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"hatch\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"hatch\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"hatch\":{\"role\":\"goal\",\"socket\":\"hatch\",\"state\":\"closed\",\"locked\":true}},\"rules\":{\"unlock\":{\"id\":\"unlock\",\"phase\":1,\"priority\":0,\"event\":{\"kind\":\"onStart\"},\"condition\":null,\"actions\":[{\"kind\":\"setLocked\",\"target\":\"hatch\",\"locked\":false},{\"kind\":\"setState\",\"target\":\"hatch\",\"value\":\"open"
     },
     {
       "id": "P010",
-      "kind": "unparsable",
-      "detail": "Expected double-quoted property name in JSON at position 5313 (line 241 column 34)",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"seedPots\": [\n          1,\n          4\n        ],\n        \"harvestSpot\": [\n          3,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"seedPots\",\n          \"state\": \"idle\"\n        },\n        \"seedPot\": {\n          \"role\": \"pickup\",\n          \"socket\": \"seedPots\",\n          \"state\": \"loose\"\n        },\n "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"token1\":[3,4],\"token2\":[5,4],\"token3\":[7,4],\"podium\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"token1\":[3,4,1,1],\"token2\":[5,4,1,1],\"token3\":[7,4,1,1],\"podium\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"token1\":{\"role\":\"collectible\",\"socket\":\"token1\",\"state\":\"present\"},\"token2\":{\"role\":\"collectible\",\"socket\":\"token2\",\"state\":\"present\"},\"token3\":{\"role\":\"collectible\",\"socket\":\"token"
     },
     {
       "id": "P011",
@@ -86,9 +87,9 @@
     },
     {
       "id": "P013",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"lever\": [\n        1,\n        4\n      ],\n      \"gate\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"lever\",\n        \"state\": \"idle\"\n      },\n      \"lever\": {\n        \"role\": \"prop\",\n        \"socket\": \"lever\"\n      },\n      \"gate\": {\n        \"role\": \"goal\",\n        \"socket\": \"gate\",\n        \"state\": \"shut\",\n        \"locked\": tru"
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"lever\":[3,4],\"gate\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"lever\":[3,4,1,1],\"gate\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"lever\":{\"role\":\"prop\",\"socket\":\"lever\",\"state\":\"down\"},\"gate\":{\"role\":\"goal\",\"socket\":\"gate\",\"state\":\"closed\",\"locked\":true}},\"rules\":{\"unlock\":{\"id\":\"unlock\",\"phase\":1,\"priority\":0,\"event\":{\"kind\":\"onAction\",\"actionId\":\"use\",\"target\":\"lever\"},\"condition\""
     },
     {
       "id": "P014",
@@ -98,9 +99,9 @@
     },
     {
       "id": "P015",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"spawnPad\": [\n          1,\n          4\n        ],\n        \"cardPad\": [\n          3,\n          4\n        ],\n        \"leverPad\": [\n          5,\n          4\n        ],\n        \"gatePad\": [\n          10,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"spawnPad\",\n          \"state\": \"idle\"\n        },\n        "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"finish\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"finish\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"finish\":{\"role\":\"goal\",\"socket\":\"finish\",\"state\":\"closed\",\"locked\":true}},\"rules\":{\"unlock\":{\"id\":\"unlock\",\"phase\":1,\"priority\":0,\"event\":{\"kind\":\"onStart\"},\"condition\":null,\"actions\":[{\"kind\":\"setLocked\",\"target\":\"finish\",\"locked\":false},{\"kind\":\"setState\",\"target\":\"finish\",\"value\""
     },
     {
       "id": "P016",
@@ -140,15 +141,15 @@
     },
     {
       "id": "P022",
-      "kind": "unparsable",
-      "detail": "Expected double-quoted property name in JSON at position 5804 (line 259 column 25)",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"targetSocket\": [\n          1,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"targetSocket\",\n          \"state\": \"idle\"\n        },\n        \"target\": {\n          \"role\": \"pickup\",\n          \"socket\": \"targetSocket\",\n          \"state\": \"loose\"\n        }\n      },\n      \"state\": {\n        \"counters\": {\n    "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"token1\":[3,4],\"token2\":[5,4],\"token3\":[7,4],\"podium\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"token1\":[3,4,1,1],\"token2\":[5,4,1,1],\"token3\":[7,4,1,1],\"podium\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"token1\":{\"role\":\"collectible\",\"socket\":\"token1\",\"state\":\"present\"},\"token2\":{\"role\":\"collectible\",\"socket\":\"token2\",\"state\":\"present\"},\"token3\":{\"role\":\"collectible\",\"socket\":\"token"
     },
     {
       "id": "P023",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"torch\": [\n          1,\n          4\n        ],\n        \"chest\": [\n          3,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"torch\",\n          \"state\": \"idle\"\n        },\n        \"torch\": {\n          \"role\": \"pickup\",\n          \"socket\": \"torch\"\n        },\n        \"chest\": {\n          \"role\": \"goal\",\n "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"item1\":[3,4],\"chest\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"item1\":[3,4,1,1],\"chest\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"item1\":{\"role\":\"collectible\",\"socket\":\"item1\",\"state\":\"present\"},\"chest\":{\"role\":\"goal\",\"socket\":\"chest\",\"state\":\"closed\",\"locked\":true}},\"rules\":{\"pick\":{\"id\":\"pick\",\"phase\":0,\"priority\":0,\"event\":{\"kind\":\"onPickup\",\"role\":\"collectible\"},\"condition\":nu"
     },
     {
       "id": "P024",
@@ -164,15 +165,15 @@
     },
     {
       "id": "P026",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"spawnPad\": [\n          1,\n          4\n        ],\n        \"cardPad\": [\n          3,\n          4\n        ],\n        \"leverPad\": [\n          5,\n          4\n        ],\n        \"gatePad\": [\n          10,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"spawnPad\",\n          \"state\": \"idle\"\n        },\n        "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"hatch\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"hatch\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"hatch\":{\"role\":\"goal\",\"socket\":\"hatch\",\"state\":\"closed\",\"locked\":true}},\"rules\":{\"unlock\":{\"id\":\"unlock\",\"phase\":1,\"priority\":0,\"event\":{\"kind\":\"onStart\"},\"condition\":null,\"actions\":[{\"kind\":\"setLocked\",\"target\":\"hatch\",\"locked\":false},{\"kind\":\"setState\",\"target\":\"hatch\",\"value\":\"open"
     },
     {
       "id": "P027",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"coinSlot\": [\n        1,\n        4\n      ],\n      \"changeSlot\": [\n        3,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"coinSlot\",\n        \"state\": \"idle\"\n      },\n      \"coin\": {\n        \"role\": \"pickup\",\n        \"socket\": \"coinSlot\",\n        \"state\": \"loose\"\n      },\n      \"change\": {\n        \"role\": \"pickup\",\n        \"socket\": \"changeSl"
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"button\":[3,4],\"hatch\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"button\":[3,4,1,1],\"hatch\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"button\":{\"role\":\"prop\",\"socket\":\"button\",\"state\":\"down\"},\"hatch\":{\"role\":\"goal\",\"socket\":\"hatch\",\"state\":\"closed\",\"locked\":true}},\"rules\":{\"unlock\":{\"id\":\"unlock\",\"phase\":1,\"priority\":0,\"event\":{\"kind\":\"onAction\",\"actionId\":\"use\",\"target\":\"button\"},\"c"
     },
     {
       "id": "P028",
@@ -182,15 +183,15 @@
     },
     {
       "id": "P029",
-      "kind": "unparsable",
-      "detail": "Unterminated string in JSON at position 5068 (line 245 column 22)",
-      "rawExcerpt": "{\n\n\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"pressurePad1\": [\n        1,\n        4\n      ],\n      \"pressurePad2\": [\n        3,\n        4\n      ],\n      \"pressurePad3\": [\n        5,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"pressurePad1\",\n        \"state\": \"idle\"\n      },\n      \"pressurePad1\": {\n        \"role\": \"prop\",\n        \"socket\": \"pressurePad1\",\n        \"state\": \"down\"\n      }"
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"plate1\":[3,4],\"plate2\":[5,4],\"plate3\":[7,4],\"heavyDoor\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"plate1\":[3,4,1,1],\"plate2\":[5,4,1,1],\"plate3\":[7,4,1,1],\"heavyDoor\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"plate1\":{\"role\":\"collectible\",\"socket\":\"plate1\",\"state\":\"present\"},\"plate2\":{\"role\":\"collectible\",\"socket\":\"plate2\",\"state\":\"present\"},\"plate3\":{\"role\":\"collectible\",\"socket\":"
     },
     {
       "id": "P030",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"itemSlot\": [\n          1,\n          4\n        ],\n        \"inventory\": [\n          3,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"itemSlot\",\n          \"state\": \"idle\"\n        },\n        \"item1\": {\n          \"role\": \"pickup\",\n          \"socket\": \"itemSlot\",\n          \"state\": \"loose\"\n        },\n     "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"item1\":[3,4],\"chest\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"item1\":[3,4,1,1],\"chest\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"item1\":{\"role\":\"collectible\",\"socket\":\"item1\",\"state\":\"present\"},\"chest\":{\"role\":\"goal\",\"socket\":\"chest\",\"state\":\"closed\",\"locked\":true}},\"rules\":{\"pick\":{\"id\":\"pick\",\"phase\":0,\"priority\":0,\"event\":{\"kind\":\"onPickup\",\"role\":\"collectible\"},\"condition\":nu"
     },
     {
       "id": "P031",
@@ -206,9 +207,9 @@
     },
     {
       "id": "P033",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"torch\": [\n        1,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"torch\",\n        \"state\": \"idle\"\n      },\n      \"torch\": {\n        \"role\": \"pickup\",\n        \"socket\": \"torch\",\n        \"state\": \"loose\"\n      }\n    },\n    \"state\": {\n      \"counters\": {\n        \"torch\": {\n          \"init\": 100,\n          \"min\": 0,\n          \"max\": 100\n       "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"hatch\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"hatch\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"hatch\":{\"role\":\"goal\",\"socket\":\"hatch\",\"state\":\"closed\",\"locked\":true}},\"rules\":{\"unlock\":{\"id\":\"unlock\",\"phase\":1,\"priority\":0,\"event\":{\"kind\":\"onStart\"},\"condition\":null,\"actions\":[{\"kind\":\"setLocked\",\"target\":\"hatch\",\"locked\":false},{\"kind\":\"setState\",\"target\":\"hatch\",\"value\":\"open"
     },
     {
       "id": "P034",
@@ -218,9 +219,9 @@
     },
     {
       "id": "P035",
-      "kind": "unparsable",
-      "detail": "Unterminated string in JSON at position 5331 (line 260 column 30)",
-      "rawExcerpt": "{\n\n\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"lockSocket\": [\n        1,\n        4\n      ],\n      \"alarmSocket\": [\n        3,\n        4\n      ]\n    },\n    \"entities\": {\n      \"lock\": {\n        \"role\": \"actor\",\n        \"socket\": \"lockSocket\",\n        \"state\": \"idle\"\n      },\n      \"alarm\": {\n        \"role\": \"prop\",\n        \"socket\": \"alarmSocket\",\n        \"state\": \"idle\"\n      }\n    },\n    \"state\": {\n      \"counters\": {},\n      \"flags\": {\n       "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"keypad\":[3,4],\"vault\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"keypad\":[3,4,1,1],\"vault\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"keypad\":{\"role\":\"prop\",\"socket\":\"keypad\",\"state\":\"down\"},\"vault\":{\"role\":\"goal\",\"socket\":\"vault\",\"state\":\"closed\",\"locked\":true}},\"rules\":{\"unlock\":{\"id\":\"unlock\",\"phase\":1,\"priority\":0,\"event\":{\"kind\":\"onAction\",\"actionId\":\"use\",\"target\":\"keypad\"},\"c"
     },
     {
       "id": "P036",
@@ -248,12 +249,12 @@
     },
     {
       "id": "P040",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"spawnPad\": [\n          1,\n          4\n        ],\n        \"cardPad\": [\n          3,\n          4\n        ],\n        \"leverPad\": [\n          5,\n          4\n        ],\n        \"gatePad\": [\n          10,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"spawnPad\",\n          \"state\": \"idle\"\n        },\n        "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"finish\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"finish\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"finish\":{\"role\":\"goal\",\"socket\":\"finish\",\"state\":\"closed\",\"locked\":true}},\"rules\":{\"unlock\":{\"id\":\"unlock\",\"phase\":1,\"priority\":0,\"event\":{\"kind\":\"onStart\"},\"condition\":null,\"actions\":[{\"kind\":\"setLocked\",\"target\":\"finish\",\"locked\":false},{\"kind\":\"setState\",\"target\":\"finish\",\"value\""
     }
   ],
-  "measuredAt": "2026-08-20T18:57:48.004Z",
+  "measuredAt": "2026-08-20T19:53:11.185Z",
   "corpusVersion": "v3",
   "forcedShapeSchema": "{\"type\":\"object\",\"properties\":{\"irVersion\":{\"type\":\"string\"},\"simRevision\":{\"type\":\"integer\"},\"lookRevision\":{\"type\":\"integer\"},\"sim\":{\"anyOf\":[{\"type\":\"object\"},{\"type\":\"null\"}]},\"look\":{\"type\":\"object\"}},\"required\":[\"irVersion\",\"simRevision\",\"lookRevision\",\"sim\",\"look\"]}",
   "maxOutputTokens": 1400,

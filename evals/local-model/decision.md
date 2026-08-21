@@ -1,9 +1,18 @@
 # Rozhodnutí o modelu v prohlížeči (P11 T6)
 
-Zdroj čísel: `evals/local-model/grammar-report.json`, běh **20. 8. 2026 18:57 UTC**,
-adaptér `nvidia/ampere`, prvních 40 vět z `evals/corpus-v3`. Syrové odpovědi
-celého běhu jsou v `evals/local-model/grammar-raw.json`, takže se dá cokoli
-z toho přepočítat bez opakování běhu.
+Zdroj čísel: `evals/local-model/grammar-report.json` a `grammar-raw.json`,
+adaptér `nvidia/ampere`, prvních 40 vět z `evals/corpus-v3`. Syrové odpovědi jsou
+v archivu celé, takže se dá cokoli z toho přepočítat bez opakování běhu.
+
+**Běhy jsou dva a nesmí se míchat.** Oba jsou nad týmž korpusem i strojem:
+
+| Běh | Kdy | Co měřil | `schemaValid` |
+|---|---|---|---|
+| **Základní** | 20. 8. 2026 **18:57 UTC** | jen model, rozpoznávač tvarů ještě neexistoval | **0** |
+| **T7** | 20. 8. 2026 **19:53 UTC** | produkční pořadí: rozpoznávač první, model na zbytek | **0,375** |
+
+Soubory na disku nesou **T7 běh**; základní běh je v historii gitu u commitu
+`410cff1`. Sekce 2 až 6 mluví o základním běhu, sekce 7 o T7.
 
 ## 1. Vybraný model
 
@@ -16,7 +25,7 @@ z toho přepočítat bez opakování běhu.
 Měřidlo si jméno modelu, strop tokenů i svázaný tvar bere z téhož souboru, takže
 naměřené číslo platí o tom, co doopravdy poběží uživateli.
 
-## 2. Co běh naměřil
+## 2. Co naměřil základní běh (jen model)
 
 | Veličina | Hodnota |
 |---|---|
@@ -90,3 +99,31 @@ kterékoli číslo výš.
 
 Ani jedna z nich není součástí T6 a ani jedna se nesmí započítat do žádného
 tvrzení, dokud nebude naměřená ze živého běhu, ne z archivu.
+
+## 7. Co naměřil běh T7 — rozpoznávač první, model na zbytek
+
+Běh **20. 8. 2026 19:53 UTC**, tentýž stroj a tentýž korpus, ale v pořadí, které
+produkt doopravdy používá (`src/model/local/emit.ts`): nejdřív deterministický
+rozpoznávač tvarů, model až na věty, které nepoznal.
+
+| Veličina | Základní běh | Běh T7 |
+|---|---|---|
+| `attempts` | 40 | 40 |
+| `schemaValid` | 0 | **0,375** |
+| `fulfilled` | 0 | 15 |
+| `shapesHandled` (z toho rozpoznávač) | — | 15 |
+| `invalid` | 28 | 17 |
+| `unparsable` (z toho `truncated`) | 12 (12) | 8 (8) |
+| `medianLatencyMs` (jen model) | 36 694 | 36 704 |
+
+**Přírůstek je 0,375**, práh v AC T7 je 0,15.
+
+**Co to číslo neříká, a je to podstatnější než ono samo:** všech 15 splněných vět
+obsloužil rozpoznávač. Model dostal zbylých 25 vět a **ani jednu z nich neposlal
+v platném tvaru** (17 neprošlo schématem, 8 se nedalo rozpársovat). Zvednutí
+`schemaValid` z 0 na 0,375 tedy neměří, že by se model zlepšil — měří, jakou část
+korpusu umí systém obsloužit bez něj. Páky ze sekce 6 tím nezanikají, naopak: pořád
+jsou to jediné dvě naměřené cesty, jak zvednout tu část, kde model rozhoduje.
+
+Latence rozpoznávače se do mediánu nepočítá schválně, aby zůstal srovnatelný se
+základním během; rozpoznávač odpovídá bez GPU a v řádu milisekund.
