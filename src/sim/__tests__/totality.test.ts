@@ -372,6 +372,17 @@ const OFF_TICK_PATH: Readonly<Record<string, number>> = {
   'sim/rng.ts:createStreams': 1, // čtyři pevné streamy z konstanty
   'sim/state.ts:createState': 1, // počáteční hodnoty layoutu
   'sim/state.ts:defineLayout': 1, // rozvržení slotů ve stavovém poli
+  // Kontroly tvaru světa před odbočením. Běží jednou při větvení, ne v tiku, a
+  // meze mají v deklaraci obou porovnávaných dokumentů. Čtyři jména z prostoru
+  // jsou lokální funkce uvnitř `sameSpace` — každá pojmenovává tu část, která se
+  // hnula, protože „něco v prostoru se změnilo" není odpověď, se kterou se dá
+  // něco udělat.
+  'sim/rebranch.ts:sameLayout': 1,
+  'sim/rebranch.ts:sameSymbols': 2,
+  'sim/rebranch.ts:sockets': 2,
+  'sim/rebranch.ts:zones': 2,
+  'sim/rebranch.ts:blocked': 2,
+  'sim/rebranch.ts:tags': 2,
   'sim/timeline.ts:baseFor': 1, // výběr snímku, mez je kapacita kruhu
   'sim/timeline.ts:replayTo': 2, // druhý replay driver, mez je cílový tik od volajícího
 };

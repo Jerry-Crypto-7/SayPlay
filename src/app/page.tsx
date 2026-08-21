@@ -16,6 +16,7 @@ import dynamic from 'next/dynamic';
 import { useState } from 'react';
 
 import Program from '@/components/pipeline/Program';
+import Timeline from '@/components/pipeline/Timeline';
 import WitnessPreview from '@/components/pipeline/WitnessPreview';
 import PromptBar from '@/components/PromptBar';
 import { buildRuntimeWorld } from '@/ir/build';
@@ -70,6 +71,7 @@ export default function Page() {
       ) : null}
       <Program emission={programs.current} previous={programs.previous} />
       <WitnessPreview world={world} />
+      <Timeline world={world} />
       <Stage world={world} />
     </main>
   );
