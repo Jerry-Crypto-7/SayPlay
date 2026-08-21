@@ -471,3 +471,34 @@ export function recognize(sentence: string): unknown | null {
 export function shapeIdFor(sentence: string): string | null {
   return SHAPES.find((shape) => shape.matches.test(sentence))?.id ?? null;
 }
+
+/**
+ * Pevná náhradní místnost — svět pro větu, ze které žádný svět neplyne.
+ *
+ * **Staví ji `buildEmission`, týž jako každý rozpoznaný tvar**, a je to
+ * podmínka, ne úspora. Druhá cesta ke světu by byla druhé schéma, a rozešla by
+ * se s tímhle přesně tam, kde se nikdo nedívá: náhradní místnost se ze všech
+ * světů ukáže nejméně často, takže by se rozcházela tiše a dlouho.
+ *
+ * **Netváří se jako odpověď na větu.** Vydává ji `src/game/guarantee.ts` s
+ * příznakem `kind: 'seed'` a s vadou, která ji vyvolala. Náhrada bez té stopy by
+ * o nesmyslné větě tvrdila, že jí systém rozuměl — a to je horší než prázdná
+ * scéna, protože se to nepozná.
+ *
+ * Jeden sbíratelný předmět, ne nula: bez něj je cíl podle `rulesOf` odemčený už
+ * z `onStart`, takže by místnost byly dvě entity vedle sebe a nedalo by se v ní
+ * nic udělat.
+ */
+const SEED: Blueprint = {
+  items: ['relic'],
+  goal: 'exitDoor',
+  lever: null,
+  timerTicks: null,
+  palette: 'stone',
+  atmosphere: 'clear',
+};
+
+/** Emise náhradní místnosti. Nezávisí na vstupu — pro každou větu je táž. */
+export function seedEmission(): Record<string, unknown> {
+  return buildEmission(SEED);
+}
