@@ -211,7 +211,16 @@ export class SpendCap {
       if (settled) return;
       settled = true;
       this.#reservedUsd -= worstCaseUsd;
-      this.#spentUsd += actualUsd === 'unknown' ? worstCaseUsd : Math.max(0, actualUsd);
+      // Číslu od poskytovatele se tady NEVĚŘÍ, a je to naměřené: `Math.max(0, NaN)`
+      // je zase `NaN`, takže jediná vadná účtenka otráví součet a od té chvíle je
+      // `wouldHold > capUsd` napořád nepravda — strop je do konce běhu procesu
+      // vypnutý a nikdo se to nedozví. `reserve()` svůj vstup kontroluje o pár
+      // řádků výš; tady ta kontrola chyběla a byla to jediná asymetrie mezi nimi.
+      //
+      // Když účtenka nedává smysl, účtuje se celá **rezervace**: je to horní odhad,
+      // který kontrolou už jednou prošel, takže strop spíš přestřelí než povolí.
+      const usable = typeof actualUsd === 'number' && Number.isFinite(actualUsd) && actualUsd >= 0;
+      this.#spentUsd += usable ? actualUsd : worstCaseUsd;
     };
 
     return { ok: true, reservedUsd: worstCaseUsd, settle: release };

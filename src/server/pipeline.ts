@@ -65,7 +65,14 @@ export interface GenerationSuccess {
   readonly ok: true;
   /** Tělo emise tak, jak přišlo. Validaci dělá až volající. */
   readonly body: unknown;
-  readonly usage: Usage;
+  /**
+   * `null` znamená „spotřebu neumíme přečíst" — účtuje se nejhorší případ,
+   * přesně jako u selhání níž. **Nula tady být nesmí:** úspěšné volání, jehož
+   * účtenku neumíme přečíst, tokeny spálilo, takže nulová útrata je volání
+   * zadarmo a strop ho neuvidí. Naměřeno 21. 8. 2026 — poskytovatel, který
+   * `usage` vynechá nebo pošle nečíslo, takhle projde stropem donekonečna.
+   */
+  readonly usage: Usage | null;
   /** Odkud odpověď je. Jde do odpovědi endpointu, aby byl běh auditovatelný. */
   readonly provenance: Readonly<Record<string, string | boolean>>;
 }
@@ -188,14 +195,17 @@ export async function runPipeline(prompt: unknown, deps: PipelineDeps): Promise<
   }
 
   if (generated.ok) {
-    const spent = costUsd(generated.usage, deps.branch.pricing);
-    reservation.settle(spent);
+    // Neznámá spotřeba se účtuje rezervací, ne nulou — táž cesta, kterou jde
+    // vyhozená výjimka výš. Nula by znamenala, že poskytovatel, který `usage`
+    // vynechá, volá zadarmo a strop ho nikdy neuvidí.
+    const spent = generated.usage === null ? null : costUsd(generated.usage, deps.branch.pricing);
+    reservation.settle(spent ?? 'unknown');
     return {
       outcome: 'GENERATED',
       branch: deps.branch.id,
       body: generated.body,
-      usage: generated.usage,
-      costUsd: spent,
+      usage: generated.usage ?? { inputTokens: 0, outputTokens: 0 },
+      costUsd: spent ?? reservation.reservedUsd,
       provenance: generated.provenance,
     };
   }

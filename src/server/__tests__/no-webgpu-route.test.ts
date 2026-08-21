@@ -97,6 +97,34 @@ describe('bez klíče se cloudová cesta vůbec nenabídne', () => {
     expect(upstreamConfigFromEnv(withoutPrice)).toBeNull();
   });
 
+  it('nevyplněná cena vstupu se dopočítá z ceny výstupu, ne z nuly', () => {
+    // Naměřeno 21. 8. 2026: tichá nula na vstupu podhodnotila rezervaci o celý
+    // vstup (~3000 tokenů na volání). Při ceníku vstup 3 / výstup 15 to strop
+    // přestřelil o 61 %. Náhradou je proto cena výstupu — přestřelená rezervace
+    // je u stropu bezpečná strana.
+    for (const missing of [undefined, '', '0,003', 'zdarma', '-2']) {
+      const env: Record<string, string | undefined> = {
+        ...CONFIGURED_ENV,
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        WORLDSMITH_USD_PER_MTOK_IN: missing,
+      };
+      if (missing === undefined) delete env.WORLDSMITH_USD_PER_MTOK_IN;
+      expect(
+        upstreamConfigFromEnv(env)?.pricing.usdPerMTokIn,
+        `cena vstupu ${JSON.stringify(missing)} se nedopočítala`,
+      ).toBe(15);
+    }
+  });
+
+  it('výslovná nula na vstupu se respektuje — je to rozhodnutí, ne tichá výchozí hodnota', () => {
+    const cfg = upstreamConfigFromEnv({
+      ...CONFIGURED_ENV,
+      WORLDSMITH_USD_PER_MTOK_OUT: '15',
+      WORLDSMITH_USD_PER_MTOK_IN: '0',
+    });
+    expect(cfg?.pricing.usdPerMTokIn).toBe(0);
+  });
+
   it('nula ani překlep v ceně výstupu cloud nenabídne', () => {
     // `0,003` s desetinnou čárkou je `NaN`. Tichá náhrada za nulu je přesně to,
     // co strop vypne, takže se odmítá obojí.
@@ -191,6 +219,58 @@ describe('s klíčem jde emise přes server a strop ji vidí', () => {
 
     const body = JSON.parse(String(fetchImpl.mock.calls[0]![1]!.body)) as { model?: unknown };
     expect(body.model).toBe(EMISSION_MODEL);
+  });
+
+  it('nečitelná účtenka účtuje rezervaci, ne nulu', async () => {
+    // Úspěšné volání, jehož `usage` se nedá přečíst. Tokeny se spálily, takže
+    // nulová útrata by znamenala volání zadarmo a strop by ho nikdy neuviděl.
+    // Naměřeno 21. 8. 2026: `usage` se sráželo na `{0, 0}` a účtovalo 0 USD.
+    const unreadable = new Response(
+      JSON.stringify({ content: [{ type: 'text', text: '{"entities":[]}' }], usage: { input_tokens: null } }),
+      { headers: { 'content-type': 'application/json' } },
+    );
+    // Nad jedním nejhorším případem: 1000 výstupních × 15 + ~3000 vstupních × 3
+    // za Mtok je ~0,024 USD, jinak by se rezervace odmítla a nikam by se nešlo.
+    const cap = new SpendCap({ enabled: true, capUsd: 0.05 });
+
+    const result = await runPipeline(PROMPT, {
+      branch: upstreamBranch(
+        upstreamConfigFromEnv(CONFIGURED_ENV),
+        vi.fn<typeof fetch>(async () => unreadable),
+      ),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    expect(result.outcome).toBe('GENERATED');
+    expect(cap.snapshot().spentUsd, 'nečitelná účtenka se zaúčtovala nulou').toBeGreaterThan(0);
+    expect(cap.reserve(0.05).ok, 'po nečitelné účtence strop pustil další volání').toBe(false);
+  });
+
+  it('Infinity v účtence strop nevypne', async () => {
+    // `1e400` musí přijít jako SYROVÝ JSON — `JSON.stringify(Infinity)` je
+    // `null`, takže přes `stringify` se tenhle případ vůbec nepostaví.
+    // `JSON.parse` z něj udělá `Infinity`, `typeof Infinity === 'number'`, a
+    // cena pak vyjde `Infinity` nebo `NaN`. Dřív `NaN` otrávilo součet útraty a
+    // podmínka `wouldHold > capUsd` byla napořád nepravda — strop vypnutý.
+    const poisoned = new Response(
+      '{"content":[{"type":"text","text":"{\\"entities\\":[]}"}],"usage":{"input_tokens":1e400,"output_tokens":1e400}}',
+      { headers: { 'content-type': 'application/json' } },
+    );
+    const cap = new SpendCap({ enabled: true, capUsd: 0.05 });
+
+    await runPipeline(PROMPT, {
+      branch: upstreamBranch(
+        upstreamConfigFromEnv(CONFIGURED_ENV),
+        vi.fn<typeof fetch>(async () => poisoned),
+      ),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    const spent = cap.snapshot().spentUsd;
+    expect(Number.isFinite(spent), `útrata je ${String(spent)} — součet je otrávený`).toBe(true);
+    expect(cap.reserve(0.05).ok, 'po otrávené účtence strop pustil další volání').toBe(false);
   });
 
   it('klíč se nedostane do výsledku, který jde volajícímu', async () => {

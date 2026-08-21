@@ -90,12 +90,34 @@ describe('strop rezervuje dopředu, nezaznamenává zpětně', () => {
     expect(cap.snapshot().reservedUsd).toBe(0);
   });
 
-  it('záporná ohlášená cena se účtuje nulou, ne zápornou útratou', () => {
+  it('záporná ohlášená cena účtuje rezervaci, ne nulu', () => {
     const cap = new SpendCap({ enabled: true, capUsd: 1 });
     const reservation = cap.reserve(0.5);
     if (!reservation.ok) throw new Error('unreachable');
     reservation.settle(-5);
-    expect(cap.snapshot().spentUsd).toBe(0);
+    // Dřív se tady účtovala nula a test to tvrdil jako vlastnost. Nula ale
+    // znamená, že poskytovatel, který ohlásí nesmysl, volá **zadarmo** — táž
+    // díra jako u NaN, jen mírnější. Nesmyslná účtenka proto účtuje celou
+    // rezervaci. Původní vlastnost (nikdy záporná útrata) platí dál.
+    expect(cap.snapshot().spentUsd).toBe(0.5);
+    expect(cap.snapshot().spentUsd).toBeGreaterThanOrEqual(0);
+  });
+
+  it('NaN ani Infinity v účtence strop nevypnou', () => {
+    // Naměřeno revizí 21. 8. 2026: `Math.max(0, NaN)` je `NaN`, takže jediná
+    // vadná účtenka otrávila součet a od té chvíle byla podmínka
+    // `wouldHold > capUsd` napořád nepravda — strop byl do konce běhu procesu
+    // vypnutý. Poskytovatel to spustí jediným `1e400` v `usage`.
+    for (const poison of [Number.NaN, Number.POSITIVE_INFINITY]) {
+      const cap = new SpendCap({ enabled: true, capUsd: 1 });
+      const first = cap.reserve(0.5);
+      if (!first.ok) throw new Error('unreachable');
+      first.settle(poison);
+
+      expect(Number.isFinite(cap.snapshot().spentUsd), `${String(poison)} otrávil součet`).toBe(true);
+      const second = cap.reserve(0.9);
+      expect(second.ok, `po účtence ${String(poison)} strop pustil další volání`).toBe(false);
+    }
   });
 
   it('odhad, který není konečné nezáporné číslo, volání odmítne', () => {

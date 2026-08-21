@@ -135,6 +135,11 @@ describe('POST /api/generate', () => {
       WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
       WORLDSMITH_MODEL_KEY: 'test-key',
       WORLDSMITH_USD_PER_MTOK_OUT: '15',
+      // Výslovná nula, protože připíchnutých 0,12 USD níž má znamenat PŘESNĚ
+      // jeden nejhorší případ. Nevyplněná cena vstupu se od 21. 8. 2026
+      // dopočítá z ceny výstupu (dřív byla nula), takže bez tohohle řádku by
+      // rezervace zahrnula i ~3000 vstupních tokenů a odmítla už první volání.
+      WORLDSMITH_USD_PER_MTOK_IN: '0',
       WORLDSMITH_MAX_OUTPUT_TOKENS: '8000',
       // 8000 tokenů × 15 USD/Mtok = 0,12 USD, tedy přesně jeden nejhorší případ.
       WORLDSMITH_SPEND_CAP_USD: '0.12',

@@ -60,6 +60,24 @@ function positiveNumber(raw: string | undefined, fallback: number): number {
 }
 
 /**
+ * Cena vstupu. **Nevyplněná se dopočítá z ceny výstupu, výslovná nula se
+ * respektuje** — a přesně ten rozdíl je jádro vady naměřené 21. 8. 2026.
+ *
+ * `positiveNumber` se tu použít nedá: ta žádá `> 0`, takže by neuměla odlišit
+ * „operátor napsal nulu" od „operátor nenapsal nic". Tichá výchozí nula
+ * podhodnocovala rezervaci o celý vstup (~3000 tokenů na volání); nula, kterou
+ * někdo napsal, je naproti tomu rozhodnutí a je vidět v konfiguraci.
+ *
+ * Vadná hodnota (překlep, desetinná čárka, záporné číslo) se chová jako
+ * chybějící a dopočítá se — u stropu je přestřelená rezervace bezpečná strana.
+ */
+function inputPrice(raw: string | undefined, usdPerMTokOut: number): number {
+  if (raw === undefined || raw.trim() === '') return usdPerMTokOut;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : usdPerMTokOut;
+}
+
+/**
  * Konfigurace z prostředí, nebo `null`, když chybí klíč, koncový bod **nebo
  * cena výstupu**.
  *
@@ -86,10 +104,19 @@ function positiveNumber(raw: string | undefined, fallback: number): number {
  * té proměnné se sem nepíše schválně — hranici mezi oběma stropy drží lexikální
  * test v `./__tests__/pipeline.test.ts` a ten ji hlídá i v komentářích.
  *
- * **Cena vstupu kladná být nemusí, a je to vědomé.** Rezervaci ovládá výstup
- * (8000 tokenů proti pár stovkám vstupních), takže nula na vstupu cenu jen
- * nepatrně podhodnotí — strop pořád drží. Vyžadovat obojí by navíc shodilo dva
- * existující zelené testy, které vědomě nastavují jen výstup.
+ * **Cena vstupu se nevyžaduje, ale její náhradou je cena výstupu — ne nula.**
+ * Původní znění tady tvrdilo, že vstup je „pár stovek tokenů" a nula ho tedy
+ * podhodnotí jen nepatrně. **To bylo měřením vyvráceno 21. 8. 2026:** systémová
+ * zpráva má ~7000 znaků a prompt až 2000, tedy ~3000 vstupních tokenů. Při
+ * ceníku, který používají vlastní testy repozitáře (1000 výstupních tokenů,
+ * vstup 3 / výstup 15 USD za Mtok), rezervace kryla 0,015 USD ze skutečných
+ * 0,0243 USD — strop 5 USD by pustil ~333 volání za ~8,04 USD, tedy **o 61 %
+ * přes**. Při výchozích hodnotách (8000 výstupních, Opus) je přestřel 7,6 %.
+ *
+ * Náhrada za chybějící cenu vstupu je proto cena výstupu: rezervace tím spíš
+ * přestřelí, což je u stropu ta bezpečná strana. Výslovná nula se pořád přijme —
+ * to je vědomé rozhodnutí operátora, ne tichá výchozí hodnota, a právě tichá
+ * výchozí hodnota byla ta vada.
  */
 export function upstreamConfigFromEnv(env: Record<string, string | undefined>): UpstreamConfig | null {
   const endpoint = env.WORLDSMITH_MODEL_ENDPOINT;
@@ -111,7 +138,7 @@ export function upstreamConfigFromEnv(env: Record<string, string | undefined>): 
     // předepisuje (naměřeno toutéž revizí).
     model: (env.WORLDSMITH_MODEL ?? '').trim() === '' ? EMISSION_MODEL : env.WORLDSMITH_MODEL!.trim(),
     pricing: {
-      usdPerMTokIn: positiveNumber(env.WORLDSMITH_USD_PER_MTOK_IN, 0),
+      usdPerMTokIn: inputPrice(env.WORLDSMITH_USD_PER_MTOK_IN, usdPerMTokOut),
       // Ověřená výš, tady se jen dosazuje — jiná cesta sem hodnotu nepustí.
       usdPerMTokOut,
     },
@@ -192,6 +219,13 @@ function worstCaseUsd(call: GenerationCall, config: UpstreamConfig): number {
 function usageOf(payload: unknown): Usage | null {
   const usage = (payload as { usage?: { input_tokens?: unknown; output_tokens?: unknown } } | null)?.usage;
   if (typeof usage?.input_tokens !== 'number' || typeof usage.output_tokens !== 'number') return null;
+  // **Non-finite a záporné počty se tu schválně NEODMÍTAJÍ** — vypadá to jako
+  // chybějící kontrola a není. Zkusilo se to 21. 8. 2026 a bylo to horší:
+  // `null` se totiž na úspěšné cestě sráží na `{0, 0}` (níž v tomhle souboru),
+  // takže z otrávené spotřeby vznikne účtenka na **nula dolarů** a volání je
+  // zadarmo. Bez téhle kontroly vyjde cena `Infinity` nebo `NaN`, tu odmítne
+  // `release()` v `spend-cap.ts` a účtuje celou rezervaci — bezpečná strana.
+  // Chytil to až mutant M2, který kontrolu odstranil a sada zůstala zelená.
   return { inputTokens: usage.input_tokens, outputTokens: usage.output_tokens };
 }
 
@@ -277,7 +311,9 @@ async function generate(
   return {
     ok: true,
     body,
-    usage: usage ?? { inputTokens: 0, outputTokens: 0 },
+    // NEsrážet na `{0, 0}`: `null` znamená „účtenku neumíme přečíst" a strop na
+    // to musí účtovat rezervaci. Nula znamenala volání zdarma.
+    usage,
     provenance: {
       branch: UPSTREAM_BRANCH_ID,
       source: 'upstream-http',
