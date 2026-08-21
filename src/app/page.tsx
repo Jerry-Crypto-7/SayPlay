@@ -17,11 +17,25 @@
  * se hrálo jedno a měřilo druhé. Stránka proto drží frontu stisků
  * (`src/game/flow.ts`) a plátno si od ní bere vstupy tik po tiku; běh zůstává
  * funkcí `(dokument, stopa)` a restart se dá přehrát na tentýž hash.
+ *
+ * ## Model se stahuje vedle, ne místo
+ *
+ * `<ModelProgress />` je jediná věc, která na téhle stránce sahá na váhy — a
+ * sahá na ně **až po prvním snímku**, ve vlastním efektu. Stránka na něj nikde
+ * nečeká: rozpoznávač tvarů model nepotřebuje, takže věta se dá napsat a svět
+ * postavit dřív, než se stáhne první bajt.
+ *
+ * **Hotový model zatím nikdo nepoužívá**, a je to tak napsané schválně, ne
+ * omylem: `onReady` se nepředává a `emitWith()` nemá v produktu volajícího.
+ * Jestli se model má do hlavní cesty zapojit, nebo se má naopak přestat
+ * stahovat, je otevřené produktové rozhodnutí — souvisí s tím, co má stránka
+ * udělat s větou, kterou rozpoznávač nezná.
  */
 
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import ModelProgress from '@/components/hud/ModelProgress';
 import Program from '@/components/pipeline/Program';
 import Timeline from '@/components/pipeline/Timeline';
 import WitnessPreview from '@/components/pipeline/WitnessPreview';
@@ -207,6 +221,7 @@ export default function Page() {
         </p>
       ) : null}
       {world === null ? null : <GameControls targets={targets} onRestart={restart} />}
+      <ModelProgress />
       <Program emission={programs.current} previous={programs.previous} />
       <WitnessPreview world={world} />
       <Timeline world={world} />

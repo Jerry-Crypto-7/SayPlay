@@ -136,6 +136,12 @@ export async function loadEngine(runtime: Runtime, onProgress: (text: string) =>
   const model = modelForRuntime(runtime);
   if (model === null) throw new Error(`runtime ${runtime} nespouští model v prohlížeči`);
 
+  // Žádost o trvalé úložiště odchází PŘED stahováním, ne po něm: prohlížeč se
+  // rozhoduje podle toho, kolik místa je zabráno, a po stažení gigabajtu je
+  // odpověď méně pravděpodobná než před ním. Nečeká se na ni — je to žádost,
+  // ne podmínka, a načítání modelu se kvůli ní nesmí zdržet.
+  void requestPersistentStorage();
+
   const webllm = (await import('@mlc-ai/web-llm')) as unknown as MlcModule;
   const engine = await webllm.CreateMLCEngine(model, {
     initProgressCallback: (report) => onProgress(report.text),
@@ -152,4 +158,74 @@ export async function loadEngine(runtime: Runtime, onProgress: (text: string) =>
     },
     unload: () => engine.unload(),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Trvalé úložiště pro stažené váhy
+// ---------------------------------------------------------------------------
+
+/**
+ * Co z `navigator.storage` doopravdy potřebujeme. Celý `StorageManager` sem
+ * netaháme, aby šlo rozhraní podstrčit v testu jedním objektem.
+ */
+export interface StorageLike {
+  persist(): Promise<boolean>;
+}
+
+/**
+ * Požádá prohlížeč, aby mezipaměť s vahami nevyhazoval.
+ *
+ * ## Proč se o to vůbec žádá
+ *
+ * WebLLM ukládá skoro gigabajt do Cache API. Bez téhle žádosti je to úložiště
+ * „best-effort": prohlížeč ho smí vyhodit, kdykoli mu dojde místo — a další
+ * návštěva pak stahuje znovu. Slib „podruhé se nestahuje" je tedy přesně tak
+ * pevný jako tahle žádost.
+ *
+ * ## Co se vrací a proč to nejsou jen `true`/`false`
+ *
+ * `null` znamená **prohlížeč se nezeptal**, protože rozhraní nemá (Safari do
+ * 16.4, staré Chromium, jakýkoli kontext bez `navigator.storage`). To je něco
+ * jiného než `false`, což je odmítnutí. Slít obojí do `false` by v logu tvrdilo,
+ * že prohlížeč odmítl, ačkoli se ho nikdo nezeptal.
+ *
+ * Výjimka z `persist()` se počítá taky jako `null`: rozhraní tam je, ale
+ * odpověď nedalo. Pád při žádosti o úložiště nesmí shodit načítání modelu.
+ */
+export async function askForPersistence(
+  storage: StorageLike | undefined,
+  log: (message: string) => void,
+): Promise<boolean | null> {
+  if (storage?.persist === undefined) {
+    log('[storage] persist() není v tomhle prohlížeči — mezipaměť vah může být vyhozena');
+    return null;
+  }
+  try {
+    const granted = await storage.persist();
+    log(
+      granted
+        ? '[storage] persist() povolen — mezipaměť vah přežije tlak na místo'
+        : '[storage] persist() zamítnut — váhy se možná budou stahovat znovu',
+    );
+    return granted;
+  } catch (thrown) {
+    log(`[storage] persist() selhal: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
+    return null;
+  }
+}
+
+/**
+ * Zapamatovaná odpověď. Žádost odejde **nejvýš jednou za život stránky**, protože
+ * druhá by na tutéž otázku dostala tutéž odpověď a v Chrome navíc umí vyvolat
+ * další vyskakovací dotaz na uživatele.
+ */
+let persistence: Promise<boolean | null> | null = null;
+
+/** Produkční obálka nad `askForPersistence`: zeptá se jednou, pak vrací totéž. */
+export function requestPersistentStorage(): Promise<boolean | null> {
+  persistence ??= askForPersistence(
+    typeof navigator === 'undefined' ? undefined : (navigator.storage as StorageLike | undefined),
+    (message) => console.info(message),
+  );
+  return persistence;
 }

@@ -1,0 +1,158 @@
+'use client';
+
+/**
+ * Stahování modelu jako oznámení v rohu, ne jako brána přes celou obrazovku (P11 T22).
+ *
+ * ## Co se tu rozhoduje
+ *
+ * Váhy mají skoro gigabajt. Kdyby na ně produkt čekal, porotce by první dvě
+ * minuty koukal na ukazatel a **teze projektu by se za tu dobu nestihla ukázat**
+ * — přitom hlavní cestou je deterministický rozpoznávač tvarů, který model
+ * nepotřebuje vůbec (`src/model/local/shapes.ts`, rozhodnutí v
+ * `evals/local-model/decision.md`). Model je doplněk pro věty mimo rozpoznané
+ * tvary, a doplněk nesmí blokovat.
+ *
+ * Proto tahle komponenta **nic nevrací nahoru synchronně a nic nezdržuje**:
+ * pověsí se na `useEffect`, běží vedle a hlásí, jak jí to jde.
+ *
+ * ## Proč se stav vystavuje atributem, ne jen barvou
+ *
+ * `data-phase` čte e2e (`e2e/first-click.spec.ts`) a ptá se ho na jedinou
+ * otázku, na kterou se ptát má: **dá se kliknout, zatímco se model stahuje?**
+ * Bez strojově čitelné fáze by se ta otázka dala zodpovědět jen odhadem z toho,
+ * co je zrovna na obrazovce.
+ *
+ * ## Proč se panel po načtení schová
+ *
+ * Hotový model není novinka, je to výchozí stav. Trvalý ukazatel „model
+ * připraven" by zabíral roh obrazovky navždy a nic nesděloval. Uzel v DOM
+ * zůstává (kvůli `data-phase`), viditelný obsah ne.
+ */
+
+import { useEffect, useRef, useState } from 'react';
+
+import { detectRuntime, probeEnvironment, type Runtime } from '@/model/local/capability';
+import { loadEngine, modelForRuntime, type ChatEngine } from '@/model/local/engine';
+
+/** Kde je model teď. Pořadí je pořadí, ve kterém se fáze střídají. */
+export type ModelPhase =
+  /** Zjišťuje se, jestli tenhle stroj model vůbec utáhne. */
+  | 'probing'
+  /** Váhy se stahují nebo nahrávají do GPU. */
+  | 'loading'
+  /** Model odpovídá. */
+  | 'ready'
+  /** Na tomhle stroji model neběží, nebo se ho nepodařilo nahrát. */
+  | 'unavailable';
+
+export interface ModelState {
+  readonly phase: ModelPhase;
+  /** Větev z `detectRuntime()`; `null`, dokud se neprobralo prostředí. */
+  readonly runtime: Runtime | null;
+  /** Poslední hlášení WebLLM, nebo důvod, proč to nevyšlo. Prázdné na začátku. */
+  readonly detail: string;
+}
+
+const INITIAL: ModelState = { phase: 'probing', runtime: null, detail: '' };
+
+/**
+ * Text pro diváka.
+ *
+ * Hlášení WebLLM je technické (`Fetching param cache[12/38]: 402MB fetched`) a
+ * mění se každou chvíli, takže se **nevypisuje samo**: stojí za vlastní větou,
+ * která říká, co se děje a proč to nikomu nevadí.
+ */
+export function captionFor(state: ModelState): string | null {
+  if (state.phase === 'probing') return 'Zjišťuji, jestli tenhle stroj utáhne model…';
+  if (state.phase === 'loading') return 'Model se stahuje na pozadí. Hrát můžeš hned.';
+  return null;
+}
+
+export default function ModelProgress({
+  /** Dostane hotový model. Nepovinné — komponenta funguje i tehdy, když ho nikdo nechce. */
+  onReady,
+}: {
+  readonly onReady?: (engine: ChatEngine) => void;
+} = {}) {
+  const [state, setState] = useState<ModelState>(INITIAL);
+  // Odpojená komponenta nesmí sahat na stav: stahování běží déle než leckterá
+  // návštěva stránky a React by na to nadával do konzole.
+  const alive = useRef(true);
+
+  useEffect(() => {
+    alive.current = true;
+    const set = (next: ModelState): void => {
+      if (alive.current) setState(next);
+    };
+
+    void (async () => {
+      const runtime = detectRuntime(await probeEnvironment());
+      if (modelForRuntime(runtime) === null) {
+        set({ phase: 'unavailable', runtime, detail: 'tenhle prohlížeč model nespouští' });
+        return;
+      }
+
+      set({ phase: 'loading', runtime, detail: '' });
+      try {
+        const engine = await loadEngine(runtime, (text) => set({ phase: 'loading', runtime, detail: text }));
+        set({ phase: 'ready', runtime, detail: engine.modelId });
+        onReady?.(engine);
+      } catch (thrown) {
+        // Nenačtený model **není pád produktu**: rozpoznávač tvarů je hlavní
+        // cesta a ta jede dál. Vypíše se to a jde se dál.
+        set({
+          phase: 'unavailable',
+          runtime,
+          detail: thrown instanceof Error ? `${thrown.name}: ${thrown.message}` : String(thrown),
+        });
+      }
+    })();
+
+    return () => {
+      alive.current = false;
+    };
+  }, [onReady]);
+
+  const caption = captionFor(state);
+
+  return (
+    <div
+      data-testid="model-progress"
+      data-phase={state.phase}
+      data-runtime={state.runtime ?? ''}
+      // `pointerEvents: none` je celý ten slib v jedné vlastnosti: panel nesmí
+      // stát mezi kurzorem a produktem, ani kdyby se překryl s čímkoli jiným.
+      style={{ ...PANEL, pointerEvents: 'none', visibility: caption === null ? 'hidden' : 'visible' }}
+    >
+      {caption === null ? null : (
+        <>
+          <p style={{ margin: 0 }}>{caption}</p>
+          {state.detail === '' ? null : (
+            <p data-testid="model-progress-detail" style={DETAIL}>
+              {state.detail}
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+const PANEL: React.CSSProperties = {
+  position: 'absolute',
+  right: '1rem',
+  bottom: '1rem',
+  zIndex: 2,
+  maxWidth: '20rem',
+  padding: '0.5rem 0.7rem',
+  borderRadius: 6,
+  background: 'rgba(11, 18, 20, 0.82)',
+  color: '#9fc0c2',
+  font: '12px/1.5 ui-monospace, monospace',
+};
+
+const DETAIL: React.CSSProperties = {
+  margin: '0.25rem 0 0',
+  color: '#2f9e8f',
+  overflowWrap: 'anywhere',
+};
