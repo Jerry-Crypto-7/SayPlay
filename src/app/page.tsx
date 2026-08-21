@@ -15,6 +15,7 @@
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 
+import Program from '@/components/pipeline/Program';
 import PromptBar from '@/components/PromptBar';
 import { buildRuntimeWorld } from '@/ir/build';
 import type { WorldDocRuntime } from '@/sim/interpreter';
@@ -41,14 +42,24 @@ function worldFrom(emission: unknown): WorldDocRuntime | null {
 export default function Page() {
   const [world, setWorld] = useState<WorldDocRuntime | null>(null);
   const [broken, setBroken] = useState(false);
+  // Dvě emise v JEDNOM stavu, ne dva stavy vedle sebe: panel překladu ukazuje
+  // ROZDÍL proti minulé větě, a posun „současná se stane minulou" musí být jeden
+  // atomický krok. Dvě `useState` by ho složily ze dvou zápisů čtoucích zachycenou
+  // hodnotu z minulého renderu — tedy z místa, kde se dá minout právě ta emise,
+  // proti které se má porovnávat.
+  const [programs, setPrograms] = useState<{ readonly current: unknown; readonly previous: unknown }>({
+    current: null,
+    previous: null,
+  });
 
   return (
     <main style={{ position: 'relative', height: '100dvh', width: '100vw' }}>
       <PromptBar
-        onWorld={(emission) => {
-          const built = worldFrom(emission);
+        onWorld={(next) => {
+          const built = worldFrom(next);
           setBroken(built === null);
           setWorld(built);
+          setPrograms((was) => ({ current: next, previous: was.current }));
         }}
       />
       {broken ? (
@@ -56,6 +67,7 @@ export default function Page() {
           Model vrátil svět, který se nedá spustit.
         </p>
       ) : null}
+      <Program emission={programs.current} previous={programs.previous} />
       <Stage world={world} />
     </main>
   );
