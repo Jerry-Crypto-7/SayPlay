@@ -18,24 +18,27 @@
  * (`src/game/flow.ts`) a plátno si od ní bere vstupy tik po tiku; běh zůstává
  * funkcí `(dokument, stopa)` a restart se dá přehrát na tentýž hash.
  *
- * ## Model se stahuje vedle, ne místo
+ * ## Model se odsud nestahuje — rozhodnuto 21. 8. 2026 (P11 T22q)
  *
- * `<ModelProgress />` je jediná věc, která na téhle stránce sahá na váhy — a
- * sahá na ně **až po prvním snímku**, ve vlastním efektu. Stránka na něj nikde
- * nečeká: rozpoznávač tvarů model nepotřebuje, takže věta se dá napsat a svět
- * postavit dřív, než se stáhne první bajt.
+ * `<ModelProgress />` tu stálo a spouštělo stažení skoro gigabajtu vah. Je
+ * **odpojené**, protože ten model nikdo nepoužíval: `onReady` nikam nevedlo a
+ * `emitWith()` nemělo v produktu volajícího. Platila se tedy cena bez výnosu.
  *
- * **Hotový model zatím nikdo nepoužívá**, a je to tak napsané schválně, ne
- * omylem: `onReady` se nepředává a `emitWith()` nemá v produktu volajícího.
- * Jestli se model má do hlavní cesty zapojit, nebo se má naopak přestat
- * stahovat, je otevřené produktové rozhodnutí — souvisí s tím, co má stránka
- * udělat s větou, kterou rozpoznávač nezná.
+ * Zpátky se zapojí teprve, až budou pravdivé dvě věci, které dnes pravdivé
+ * nejsou. Za prvé jedna svázaná emise trvá na téhle grafice ~185 s, což je
+ * v živém demu nepoužitelné. Za druhé samotný model dá `schemaValid` 0 ze 40 —
+ * s dopočítáním `collisionAabb` ze soketu je naměřeno 27 z 28, takže **ta
+ * oprava jde první**. Hlavní cestou je zatím deterministický rozpoznávač tvarů
+ * a `guaranteeWorld()`, které model nepotřebují.
+ *
+ * Kód modelu se nemazal (`src/model/local/**` včetně `ModelProgress`) — chybí
+ * jenom drát, ne schopnost. Že se odsud doopravdy nic nestahuje, měří
+ * `e2e/first-click.spec.ts`.
  */
 
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import ModelProgress from '@/components/hud/ModelProgress';
 import Program from '@/components/pipeline/Program';
 import Timeline from '@/components/pipeline/Timeline';
 import WitnessPreview from '@/components/pipeline/WitnessPreview';
@@ -121,7 +124,12 @@ const CORNER_BASE: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: '0.5rem',
-  maxHeight: 'calc(100dvh - 2rem)',
+  // Horní pruh patří vstupu, ne panelům. `PromptBar` roste dolů, kdykoli k větě
+  // něco říká — po nepřečtené větě přibude řádek o náhradní místnosti i nabídka
+  // záložní větve — a zároveň teď taková věta staví svět, takže panely stojí.
+  // Naměřeno `e2e/prompt-to-world.spec.ts`: nadpis panelu programu zachytával
+  // klik do odkazu na záložní větev.
+  maxHeight: 'calc(100dvh - 17rem)',
   pointerEvents: 'none',
 };
 
@@ -257,7 +265,6 @@ export default function Page() {
       </div>
       <div style={CORNER_RIGHT}>
         <WitnessPreview world={world} />
-        <ModelProgress />
       </div>
       <Stage world={world} inputs={inputs} runnerRef={runnerRef} />
     </main>

@@ -23,11 +23,22 @@
  * mimo zmrazený korpus. Rozhoduje o tom `promptOutcome.ts`, ne tahle
  * komponenta, a jde o **odkaz, ne o přesměrování**: uživatel musí vidět, že
  * odchází do jiné větve produktu. Odůvodnění obojího je v hlavičce toho modulu.
+ *
+ * **Plátno po odmítnutí nezůstane prázdné (P11 T20q, rozhodnuto 21. 8. 2026).**
+ * Slovo dostane `guaranteeWorld()` z `@/game/guarantee`: rozpozná-li tvar věty,
+ * je to odpověď a nic se k ní nedodává; když ne, vydá **náhradní místnost** a
+ * důvod, proč z věty svět nevznikl.
+ *
+ * Náhradní místnost se přitom **nesmí tvářit jako odpověď** — tichá náhrada je
+ * horší vada než prázdná scéna, protože se nepozná. Proto se k ní vypíše, že
+ * náhrada je, a **nabídka záložní větve zůstává vedle ní**: uživatel dostane
+ * obojí, ne jedno místo druhého. Záložní větev totiž pořád může tu větu zahrát
+ * líp než jedna univerzální místnost.
  */
 
 import { useState } from 'react';
 
-import { recognize } from '@/model/local/shapes';
+import { guaranteeWorld } from '@/game/guarantee';
 
 import { outcomeFor, type PromptOutcome } from './promptOutcome';
 
@@ -47,6 +58,8 @@ export default function PromptBar({
   const [text, setText] = useState('');
   const [phase, setPhase] = useState<Phase | null>(null);
   const [outcome, setOutcome] = useState<PromptOutcome | null>(null);
+  /** Vada, se kterou přišla náhradní místnost. `null`, když žádná nestojí. */
+  const [substitute, setSubstitute] = useState<string | null>(null);
 
   const busy = phase !== null;
 
@@ -56,6 +69,7 @@ export default function PromptBar({
     if (text.trim() === '' || busy || disabled) return;
 
     setOutcome(null);
+    setSubstitute(null);
     setPhase('odesláno');
 
     try {
@@ -72,15 +86,19 @@ export default function PromptBar({
       };
 
       if (!response.ok || payload.emission === undefined) {
-        // Zmrazený korpus na tuhle větu zdroj nemá (`NO_SOURCE` je 404). Než se
-        // nabídne záložní větev, dostane slovo deterministický rozpoznávač tvarů
-        // z T7: běží v prohlížeči, odpoví okamžitě a vrací `null`, kdykoli větu
-        // nezná — takže poctivá slepá ulička zůstává poctivou slepou uličkou.
-        const local = response.status === 404 ? recognize(text.trim()) : null;
+        // Zmrazený korpus na tuhle větu zdroj nemá (`NO_SOURCE` je 404). Slovo
+        // dostane záruka světa z T20: běží v prohlížeči, odpoví okamžitě a svět
+        // vydá vždycky — buď z rozpoznaného tvaru věty, nebo jako náhradní
+        // místnost s pojmenovanou vadou.
+        const local = response.status === 404 ? guaranteeWorld(text.trim()) : null;
         if (local !== null) {
           setPhase('staví se');
-          onWorld(local);
-          return;
+          onWorld(local.emission);
+          // Rozpoznaný tvar JE odpověď na větu — nic se k němu nedodává.
+          if (local.kind === 'shape') return;
+          // Náhradní místnost odpověď NENÍ, a propadá proto dolů k hlášce
+          // i k nabídce záložní větve.
+          setSubstitute(local.fault);
         }
         setOutcome(
           outcomeFor(
@@ -134,6 +152,16 @@ export default function PromptBar({
         </ol>
       )}
 
+      {substitute === null ? null : (
+        <p data-testid="prompt-substitute" style={SUBSTITUTE}>
+          Tuhle větu jsem nepřečetl, takže na plátně stojí <strong>náhradní místnost</strong>. Hrát v ní
+          jde, ale svět z tvé věty to není{' '}
+          <span data-testid="prompt-substitute-fault" style={FAULT}>
+            ({substitute})
+          </span>
+        </p>
+      )}
+
       {outcome === null ? null : (
         <p data-testid="prompt-error" role="alert" style={ERROR}>
           {outcome.message}
@@ -156,7 +184,11 @@ const FORM: React.CSSProperties = {
   top: '1rem',
   left: '50%',
   transform: 'translateX(-50%)',
-  zIndex: 2,
+  // O patro výš než panely v rozích. Ty si horní pruh nechávají volný
+  // (`CORNER_BASE` v `src/app/page.tsx`), ale hláška může být delší, než s čím
+  // ten pruh počítá — a vstup s odkazem na záložní větev musí být klikatelný
+  // vždycky, ne jen když se text vejde.
+  zIndex: 3,
   display: 'flex',
   gap: '0.6rem',
   alignItems: 'flex-start',
@@ -212,4 +244,18 @@ const ERROR: React.CSSProperties = {
   margin: 0,
   color: '#e8a33d',
   fontSize: '0.9rem',
+};
+
+const SUBSTITUTE: React.CSSProperties = {
+  flexBasis: '100%',
+  margin: 0,
+  color: '#9fc0c2',
+  fontSize: '0.9rem',
+};
+
+/** Kód vady je pro čtenáře, který ho chce vidět — ne hlavní sdělení. */
+const FAULT: React.CSSProperties = {
+  color: '#6d8b8e',
+  fontFamily: 'ui-monospace, monospace',
+  fontSize: '0.82rem',
 };

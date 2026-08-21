@@ -3,6 +3,15 @@
 /**
  * Stahování modelu jako oznámení v rohu, ne jako brána přes celou obrazovku (P11 T22).
  *
+ * ## ⚠ Tahle komponenta NENÍ na stránce — a je to schválně (P11 T22q)
+ *
+ * Rozhodnuto 21. 8. 2026: `src/app/page.tsx` ji přestalo vykreslovat, protože
+ * hotový model nikdo nepoužíval — stahoval se skoro gigabajt vah a `onReady`
+ * nikam nevedlo. Zapojí se zpátky teprve, až se `collisionAabb` bude dopočítávat
+ * ze soketu (naměřeno 27 z 28 proti dnešním 0 ze 40) a až bude čím zkrátit
+ * ~185 s na jednu emisi. Do té doby ji **nevracej do stromu stránky** — hlídá to
+ * `e2e/first-click.spec.ts` a zčervená.
+ *
  * ## Co se tu rozhoduje
  *
  * Váhy mají skoro gigabajt. Kdyby na ně produkt čekal, porotce by první dvě

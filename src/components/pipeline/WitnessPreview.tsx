@@ -133,8 +133,9 @@ export default function WitnessPreview({ world }: { readonly world: WorldDocRunt
 }
 
 const STRIP: React.CSSProperties = {
-  // Ukotvení nese pravý sloupec v `src/app/page.tsx`; sám by stál na témž místě
-  // jako ukazatel stahování modelu.
+  // Ukotvení nese pravý sloupec v `src/app/page.tsx`. Sám by si nárokoval roh,
+  // což bylo 21. 8. 2026 naměřeno jako vada — ukazatel stahování modelu tehdy
+  // stál na tomtéž místě.
   pointerEvents: 'auto',
   width: 'min(20rem, calc(100vw - 2rem))',
   padding: '0.6rem 0.75rem',

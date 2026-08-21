@@ -92,7 +92,27 @@ test('napsaná věta vyrobí scénu, a jde přes /api/generate', async ({ page }
   ).toEqual([]);
 });
 
-test('věta mimo korpus skončí nabídkou záložní větve, ne slepou uličkou', async ({ page }) => {
+/**
+ * Věta mimo korpus dostane **obojí** — náhradní místnost i nabídku záložní
+ * větve (P11 T20q, varianta (b), rozhodnuto 21. 8. 2026).
+ *
+ * ## Co se změnilo proti stavu do 21. 8. 2026
+ *
+ * Tenhle test měl na tomhle místě zelenou aserci `entities().length === 0` a
+ * byla to pravda o produktu: `guaranteeWorld()` uměl vydat svět pro každou
+ * větu, ale hlavní větev ho nevolala, takže záruka platila o knihovně a ne o
+ * tom, co uživatel uvidí. Teď je zapojený a plátno prázdné nezůstane.
+ *
+ * ## Proč se testuje obojí naráz, a ne každé zvlášť
+ *
+ * Protože se to dá pokazit právě jejich vzájemným vytlačením. Náhradní místnost
+ * bez hlášky by byla **tichá náhrada** — produkt by o nepřečtené větě tvrdil,
+ * že jí postavil svět, a nikdo by to nepoznal, protože scéna vypadá v pořádku.
+ * A náhradní místnost, která by nabídku záložní větve zahodila, by vzala
+ * uživateli tu lepší cestu: fallback umí lexikální routování a leckterou větu
+ * zahraje blíž, než univerzální místnost.
+ */
+test('věta mimo korpus dostane náhradní místnost i nabídku záložní větve', async ({ page }) => {
   test.setTimeout(120_000);
 
   await page.goto('/');
@@ -101,13 +121,22 @@ test('věta mimo korpus skončí nabídkou záložní větve, ne slepou uličkou
   await page.getByTestId('prompt-input').fill(UNKNOWN_PROMPT);
   await page.getByTestId('prompt-submit').click();
 
-  await expect(page.getByTestId('prompt-error')).toBeVisible({ timeout: 60_000 });
-  // A plátno zůstalo, na čem bylo — odmítnutí není pád.
-  expect(await page.evaluate(() => window.__worldsmith!.entities().length)).toBe(0);
+  // 1. Scéna není prázdná. Tohle je ta věta, kvůli které T20q vznikla.
+  await page.waitForFunction(() => window.__worldsmith!.entities().length > 0, undefined, {
+    timeout: 60_000,
+  });
 
-  // Do 20. 8. 2026 tady cesta končila. Naměřeno na živém demu: uživatel napsal
-  // „i want arcade jumping game" a dostal hlášku, přestože záložní větev tu
-  // větu směruje na hratelný archetyp. Aserce níž je celý ten nález.
+  // 2. A produkt nahlas říká, že to je náhrada — i s důvodem, proč z věty svět
+  //    nevznikl. Bez toho by šlo o tichou náhradu, tedy horší vadu než prázdno.
+  const notice = page.getByTestId('prompt-substitute');
+  await expect(notice, 'náhradní místnost se vydávala za odpověď').toBeVisible();
+  await expect(page.getByTestId('prompt-substitute-fault')).not.toBeEmpty();
+
+  // 3. Nabídka záložní větve zůstává vedle ní, ne místo ní.
+  //    Do 20. 8. 2026 tady cesta končila hláškou. Naměřeno na živém demu:
+  //    uživatel napsal „i want arcade jumping game" a dostal slepou uličku,
+  //    přestože záložní větev tu větu směruje na hratelný archetyp.
+  await expect(page.getByTestId('prompt-error')).toBeVisible();
   const offer = page.getByTestId('prompt-fallback-link');
   await expect(offer, 'věta mimo korpus nedostala nabídku záložní větve').toBeVisible();
   await expect(offer).toHaveAttribute('href', `/fallback/play?prompt=${encodeURIComponent(UNKNOWN_PROMPT)}`);
