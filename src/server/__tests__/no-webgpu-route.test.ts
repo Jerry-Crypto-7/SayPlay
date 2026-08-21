@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { detectRuntime } from '../../model/local/capability';
 import { frozenGrammar } from '../../model/client';
+import { EMISSION_MODEL } from '../../model/prompt';
 import type { Grammar } from '../../model/prompt';
 import { runPipeline } from '../pipeline';
 import { SpendCap } from '../spend-cap';
@@ -86,6 +87,41 @@ describe('bez klíče se cloudová cesta vůbec nenabídne', () => {
     expect(detectRuntime({ ...NO_WEBGPU, cloudConfigured: cloudBranchAvailable({}) })).toBe('none');
   });
 
+  it('bez ceny výstupu se cloud nenabídne, protože strop by nedržel nic', () => {
+    // Naměřeno nezávislou revizí 21. 8. 2026: bez ceny vyjde rezervace nula,
+    // projde i při stropu nula, a 25 z 25 požadavků odešlo k poskytovateli, aniž
+    // by se zůstatek hnul. Vzniká to zkopírováním `.env.example`, kde je cena
+    // prázdná — tedy cestou, kterou dokumentace přímo předepisuje.
+    const { WORLDSMITH_USD_PER_MTOK_OUT: _omitted, ...withoutPrice } = CONFIGURED_ENV;
+    expect(cloudBranchAvailable(withoutPrice)).toBe(false);
+    expect(upstreamConfigFromEnv(withoutPrice)).toBeNull();
+  });
+
+  it('nula ani překlep v ceně výstupu cloud nenabídne', () => {
+    // `0,003` s desetinnou čárkou je `NaN`. Tichá náhrada za nulu je přesně to,
+    // co strop vypne, takže se odmítá obojí.
+    for (const price of ['0', '', '0,003', '-1', 'zdarma']) {
+      expect(
+        cloudBranchAvailable({ ...CONFIGURED_ENV, WORLDSMITH_USD_PER_MTOK_OUT: price }),
+        `cena výstupu ${JSON.stringify(price)} prošla jako platná`,
+      ).toBe(false);
+    }
+  });
+
+  it('konfigurace bez ceny nepustí ven jediný požadavek', async () => {
+    const fetchImpl = vi.fn<typeof fetch>();
+    const { WORLDSMITH_USD_PER_MTOK_OUT: _omitted, ...withoutPrice } = CONFIGURED_ENV;
+
+    const result = await runPipeline(PROMPT, {
+      branch: upstreamBranch(upstreamConfigFromEnv(withoutPrice), fetchImpl),
+      cap: new SpendCap({ enabled: true, capUsd: 0 }),
+      grammar: GRAMMAR,
+    });
+
+    expect(fetchImpl, 'bez ceny výstupu odešel požadavek ven').not.toHaveBeenCalled();
+    expect(result.outcome).toBe('FAILED');
+  });
+
   it('nenakonfigurovaná živá větev nesáhne na síť ani jednou', async () => {
     const fetchImpl = vi.fn<typeof fetch>();
     const branch = upstreamBranch(upstreamConfigFromEnv({}), fetchImpl);
@@ -137,6 +173,24 @@ describe('s klíčem jde emise přes server a strop ji vidí', () => {
     expect(cap.snapshot().remainingUsd).toBeCloseTo(before - 0.006, 10);
     // Rezervace se musí vyrovnat, jinak by strop držel nejhorší případ navždy.
     expect(cap.snapshot().reservedUsd).toBe(0);
+  });
+
+  it('prázdné jméno modelu se nahradí výchozím, ne prázdným řetězcem', async () => {
+    // `.env.example` `WORLDSMITH_MODEL=` je prázdné schválně. `??` prázdný
+    // řetězec propustí, takže k poskytovateli odejde `{"model": ""}` a ten na to
+    // odpoví 400 — živá větev je mrtvá přesně v dokumentované konfiguraci.
+    const fetchImpl = vi.fn<typeof fetch>(async () => providerAnswer(10, 10));
+    await runPipeline(PROMPT, {
+      branch: upstreamBranch(
+        upstreamConfigFromEnv({ ...CONFIGURED_ENV, WORLDSMITH_MODEL: '' }),
+        fetchImpl,
+      ),
+      cap: new SpendCap({ enabled: true, capUsd: 10 }),
+      grammar: GRAMMAR,
+    });
+
+    const body = JSON.parse(String(fetchImpl.mock.calls[0]![1]!.body)) as { model?: unknown };
+    expect(body.model).toBe(EMISSION_MODEL);
   });
 
   it('klíč se nedostane do výsledku, který jde volajícímu', async () => {

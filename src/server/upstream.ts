@@ -60,10 +60,36 @@ function positiveNumber(raw: string | undefined, fallback: number): number {
 }
 
 /**
- * Konfigurace z prostředí, nebo `null`, když chybí klíč či koncový bod.
+ * Konfigurace z prostředí, nebo `null`, když chybí klíč, koncový bod **nebo
+ * cena výstupu**.
  *
  * `env` je parametr, ne `process.env` uvnitř — testovat globální čtení jde jen
  * saháním na proces.
+ *
+ * ## Chybějící cena výstupu je nekonfigurace, ne nula
+ *
+ * **Naměřeno 21. 8. 2026 nezávislou revizí a je to nejhorší nález téhle úlohy.**
+ * Bez ceny vyjde `worstCaseUsd()` nula, `SpendCap.reserve(0)` projde i při
+ * stropu nula (`0 > 0` je nepravda) a strop tím **nedrží vůbec nic**: 25 z 25
+ * požadavků odešlo k poskytovateli, každý s 8000 výstupními tokeny, zůstatek se
+ * ani nehnul a žádný nedostal 429. `/api/generate` přitom nechce přihlášení, tak
+ * účet omezuje jen návštěvnost. Vzniklo to zkopírováním `.env.example`, kde ceny
+ * schválně prázdné jsou — tedy přesně tou cestou, kterou dokumentace předepisuje.
+ *
+ * Odmítnutí je proto tady, na úrovni konfigurace, a ne ve stropu: `reserve(0)`
+ * je legitimní pro offline větev, která nic nestojí, takže nula sama o sobě
+ * vadná není. Vadná je **placená** větev bez ceny. `cloudBranchAvailable()` tím
+ * odpoví `false`, což je poctivá odpověď: takhle nastavený cloud nemá jak jet.
+ *
+ * Táž doktrína jako u dvojčete pro měřicí běhy: `.env.example` i tam říká
+ * o ceně výstupu „musí být KLADNÁ" a jeho preflight bez ní běh odmítne. Jméno
+ * té proměnné se sem nepíše schválně — hranici mezi oběma stropy drží lexikální
+ * test v `./__tests__/pipeline.test.ts` a ten ji hlídá i v komentářích.
+ *
+ * **Cena vstupu kladná být nemusí, a je to vědomé.** Rezervaci ovládá výstup
+ * (8000 tokenů proti pár stovkám vstupních), takže nula na vstupu cenu jen
+ * nepatrně podhodnotí — strop pořád drží. Vyžadovat obojí by navíc shodilo dva
+ * existující zelené testy, které vědomě nastavují jen výstup.
  */
 export function upstreamConfigFromEnv(env: Record<string, string | undefined>): UpstreamConfig | null {
   const endpoint = env.WORLDSMITH_MODEL_ENDPOINT;
@@ -71,13 +97,23 @@ export function upstreamConfigFromEnv(env: Record<string, string | undefined>): 
   if (endpoint === undefined || endpoint.length === 0) return null;
   if (apiKey === undefined || apiKey.length === 0) return null;
 
+  // `positiveNumber` by tu nestačila: ta vadnou hodnotu tiše nahradí náhradou,
+  // a náhrada za cenu je právě ta nula, která strop vypíná.
+  const usdPerMTokOut = Number(env.WORLDSMITH_USD_PER_MTOK_OUT);
+  if (!Number.isFinite(usdPerMTokOut) || usdPerMTokOut <= 0) return null;
+
   return {
     endpoint,
     apiKey,
-    model: env.WORLDSMITH_MODEL ?? EMISSION_MODEL,
+    // Prázdný řetězec NENÍ chybějící hodnota, dokud to někdo nenapíše: `??` ho
+    // propustí a k poskytovateli odejde `{"model": ""}`, na což odpoví 400 a
+    // živá větev je mrtvá přesně v té konfiguraci, kterou `.env.example`
+    // předepisuje (naměřeno toutéž revizí).
+    model: (env.WORLDSMITH_MODEL ?? '').trim() === '' ? EMISSION_MODEL : env.WORLDSMITH_MODEL!.trim(),
     pricing: {
       usdPerMTokIn: positiveNumber(env.WORLDSMITH_USD_PER_MTOK_IN, 0),
-      usdPerMTokOut: positiveNumber(env.WORLDSMITH_USD_PER_MTOK_OUT, 0),
+      // Ověřená výš, tady se jen dosazuje — jiná cesta sem hodnotu nepustí.
+      usdPerMTokOut,
     },
     maxOutputTokens: positiveNumber(env.WORLDSMITH_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS),
     timeoutMs: positiveNumber(env.WORLDSMITH_UPSTREAM_TIMEOUT_MS, DEFAULT_TIMEOUT_MS),
