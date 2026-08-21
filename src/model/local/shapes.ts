@@ -30,6 +30,8 @@
  * ne z vlastní představy o schématu.
  */
 
+import type { AgentDisposition, AgentMind } from '@/ir/types';
+
 /** Kolik tiků trvá jeden krok svědka. Stopa musí být rostoucí a vejít se do horizontu. */
 const STEP_TICKS = 60;
 
@@ -47,7 +49,25 @@ interface Blueprint {
   readonly timerTicks: number | null;
   readonly palette: string;
   readonly atmosphere: string;
+  /**
+   * Postava, které věta napsala povahu a trasu. Chybí u tvarů, které o nikom
+   * nemluví — prázdná mysl u každého světa by byla deklarace, kterou nic nečte.
+   */
+  readonly agent?: AgentMind;
 }
+
+/**
+ * Zastávky trasy postavy. **Netvoří přímku** a je to podmínka, ne vkus: kdyby
+ * ležely v řadě, cesta ke krajní zastávce by procházela prostřední, obě povahy
+ * s jinou trasou by navštívily tytéž zóny a rozdíl v chování by nebyl vidět.
+ * Trojúhelník je nejmenší tvar, ve kterém se `bold`, `wary` i `restless` liší
+ * navštívenou množinou, ne jen pořadím.
+ */
+const AGENT_STOPS: Readonly<Record<string, [number, number]>> = {
+  post: [3, 1],
+  hall: [6, 6],
+  alcove: [9, 1],
+};
 
 /** Vodorovná řada soketů: hráč vlevo, cíl vpravo, sbíratelné mezi tím. */
 function layoutOf(blueprint: Blueprint): { width: number; height: number } {
@@ -68,6 +88,9 @@ function socketsOf(blueprint: Blueprint): Record<string, [number, number]> {
     x += 2;
   }
   sockets[blueprint.goal] = [width - 2, 4];
+  if (blueprint.agent) {
+    for (const stop of blueprint.agent.goals) sockets[stop] = AGENT_STOPS[stop];
+  }
   return sockets;
 }
 
@@ -82,6 +105,9 @@ function entitiesOf(blueprint: Blueprint): Record<string, Record<string, unknown
     entities[blueprint.lever] = { role: 'prop', socket: blueprint.lever, state: 'down' };
   }
   entities[blueprint.goal] = { role: 'goal', socket: blueprint.goal, state: 'closed', locked: true };
+  if (blueprint.agent) {
+    entities[blueprint.agent.id] = { role: 'agent', socket: blueprint.agent.goals[0], state: 'idle' };
+  }
   return entities;
 }
 
@@ -218,6 +244,9 @@ function buildEmission(blueprint: Blueprint): Record<string, unknown> {
         timers: blueprint.timerTicks === null ? {} : { deadline: { durationTicks: blueprint.timerTicks } },
         zones: {},
         slots: Math.max(1, blueprint.items.length),
+        // Mysl je stav, ne kořenové pole `sim` — zmrazený protokol má kořen
+        // `sim` uzavřený a paměťové sloty výslovně řadí do `state`.
+        ...(blueprint.agent ? { agents: [blueprint.agent] } : {}),
       },
       witness: witnessOf(blueprint),
     },
@@ -261,6 +290,23 @@ const MAX_ENTITIES = 6;
 
 function named(stem: string, count: number): string[] {
   return Array.from({ length: count }, (_, index) => `${stem}${index + 1}`);
+}
+
+/**
+ * Povaha z přídavného jména ve větě.
+ *
+ * Čte se **z věty**, ne z tvaru: dvě věty o témž strážci se liší jedním slovem
+ * a musí dát jinak se chovající postavu, jinak by povaha byla konstanta tvaru a
+ * model by o postavě nerozhodoval o nic víc než o barvě zdi.
+ */
+const DISPOSITION_WORDS: readonly (readonly [RegExp, AgentDisposition])[] = [
+  [/\b(wary|cautious|timid|shy|nervous|careful|scared)\b/i, 'wary'],
+  [/\b(restless|pacing|frantic|twitchy|erratic|jumpy)\b/i, 'restless'],
+  [/\b(bold|fearless|brave|relentless|aggressive|tireless)\b/i, 'bold'],
+];
+
+function dispositionIn(sentence: string): AgentDisposition {
+  return DISPOSITION_WORDS.find(([pattern]) => pattern.test(sentence))?.[1] ?? 'bold';
 }
 
 export interface ShapeDefinition {
@@ -371,6 +417,29 @@ export const SHAPES: readonly ShapeDefinition[] = [
       timerTicks: null,
       palette: 'steel',
       atmosphere: 'clear',
+    }),
+  },
+  {
+    /**
+     * Věta mluví o postavě, ne o mechanice. Stojí až za mechanickými tvary
+     * schválně: „strážce drží tři klíče od dveří" je pořád hlavolam s klíči,
+     * jen s postavou navíc, a odebrat mu klíče kvůli slovu „strážce" by z užší
+     * shody udělalo širší.
+     */
+    id: 'patrolling-character',
+    matches: /\b(guards?|sentry|sentries|patrols?|patrolling|wolf|robots?|creature|monster|watchman)\b/i,
+    plan: (sentence) => ({
+      items: [],
+      goal: 'exit',
+      // Páka je tu proto, aby hráč nedošel k východu na první krok svědka. Svět,
+      // ve kterém se vyhraje kolem desátého tiku, o hlídce nic neukáže — běh
+      // skončí dřív, než postava dojde na druhou zastávku, a povaha by tak byla
+      // deklarace bez pozorovatelného následku.
+      lever: 'switchbox',
+      timerTicks: null,
+      palette: 'stone',
+      atmosphere: 'fog',
+      agent: { id: 'watcher', disposition: dispositionIn(sentence), goals: ['post', 'hall', 'alcove'] },
     }),
   },
   {

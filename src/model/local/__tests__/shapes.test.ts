@@ -36,6 +36,7 @@ const SENTENCES: Record<string, string> = {
   'beat-the-clock': 'an escape room in a submarine that floods slowly, I have 60 seconds',
   'collect-to-score': 'a farm where I plant seeds, they grow over time, and I can harvest them for coins',
   'code-lock': 'a lock with a four digit code where wrong entries make an alarm sound',
+  'patrolling-character': 'a stealth level where guards patrol and see me if I stand in the light',
   'reach-the-goal': 'a marble run where I place ramps and the marble has to reach the goal',
 };
 

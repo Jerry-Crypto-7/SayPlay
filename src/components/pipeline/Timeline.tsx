@@ -27,6 +27,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
+import { visitedZones } from '@/sim/agents';
 import { hashHex } from '@/sim/hash';
 import { createRuntime, step, type Runtime, type WorldDocRuntime } from '@/sim/interpreter';
 import { rebranchAt, type RebranchReason } from '@/sim/rebranch';
@@ -59,6 +60,15 @@ declare global {
       hash: () => string;
       /** `ruleId` vypnutého pravidla, nebo `null`, dokud se neodbočilo. */
       branchedRule: () => string | null;
+      /**
+       * Zóny, kterými entita prošla za prvních `ticks` tiků běhu, seřazené.
+       *
+       * Horizont je **argument**, ne pozice posuvníku: odpověď se tím nedá
+       * změnit tím, jak kdo předtím přetáčel čas. Počítá se čerstvým během nad
+       * dokumentem, na kterém běh právě jede — po odbočení tedy nad tím
+       * změněným, což je přesně to, na co se člověk po změně pravidla ptá.
+       */
+      visited: (entity: string, ticks: number) => readonly string[];
     };
   }
 }
@@ -211,6 +221,7 @@ export default function Timeline({ world }: { readonly world: WorldDocRuntime | 
       tick: () => controller.runtime.tick,
       hash: () => hashHex(controller.runtime.state),
       branchedRule: () => controller.branchedRule,
+      visited: (entity: string, ticks: number) => visitedZones(controller.doc, entity, ticks),
     };
   }, [controller]);
 

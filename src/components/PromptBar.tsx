@@ -27,6 +27,8 @@
 
 import { useState } from 'react';
 
+import { recognize } from '@/model/local/shapes';
+
 import { outcomeFor, type PromptOutcome } from './promptOutcome';
 
 /** Fáze, kterými požadavek projde. Pořadí je pořadí výpisu. */
@@ -70,6 +72,16 @@ export default function PromptBar({
       };
 
       if (!response.ok || payload.emission === undefined) {
+        // Zmrazený korpus na tuhle větu zdroj nemá (`NO_SOURCE` je 404). Než se
+        // nabídne záložní větev, dostane slovo deterministický rozpoznávač tvarů
+        // z T7: běží v prohlížeči, odpoví okamžitě a vrací `null`, kdykoli větu
+        // nezná — takže poctivá slepá ulička zůstává poctivou slepou uličkou.
+        const local = response.status === 404 ? recognize(text.trim()) : null;
+        if (local !== null) {
+          setPhase('staví se');
+          onWorld(local);
+          return;
+        }
         setOutcome(
           outcomeFor(
             response.status,

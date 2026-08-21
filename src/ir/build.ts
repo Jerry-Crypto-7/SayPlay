@@ -16,6 +16,7 @@
  * akci `moveTo` promění v efekt `moveTo` na její soket.
  */
 
+import { expandAgentMinds, memorySlotsFor } from '../sim/agents';
 import type { SpaceDecl, TraceInput, WorldDocRuntime } from '../sim/interpreter';
 import { TIER_POLICY, isTier, type CertificationRequest } from '../verify/tiers';
 import { lowerEvent, predicateIdFor, type SurfaceEventSpec } from './lower';
@@ -269,6 +270,10 @@ export function buildRuntimeWorld(sim: unknown): BuildResult {
     }
   }
 
+  // Mysli postav se snižují na paměťové sloty a pravidla, ne na nové primitivum
+  // — viz `sim/agents.ts`. Až tady, protože potřebují hotový `world` i sokety.
+  const minds = expandAgentMinds(state.agents, world, sockets, builder);
+
   if (builder.issues.length > 0) return { ok: false, reason: 'UNSUPPORTED_SURFACE', issues: builder.issues };
 
   const ir: IrDoc = {
@@ -282,8 +287,11 @@ export function buildRuntimeWorld(sim: unknown): BuildResult {
       maxRules: Math.max(builder.rules.length, 1),
       maxRuleFiringsPerTick: Math.max(MIN_FIRINGS_PER_TICK, builder.rules.length),
       maxQueueDepth: QUEUE_DEPTH,
-      maxAgents: entitiesWithRole(world, 'agent').length,
-      memorySlotsPerAgent: 0,
+      // Agent je entita s rolí `agent` NEBO entita, které model napsal mysl —
+      // `validateIrDoc` porovnává tuhle mez s počtem různých agentů v paměti,
+      // takže mysl na entitě s jinou rolí by jinak dokument shodila.
+      maxAgents: Math.max(entitiesWithRole(world, 'agent').length, minds.length),
+      memorySlotsPerAgent: memorySlotsFor(minds),
       gridWidth,
       gridHeight,
     },

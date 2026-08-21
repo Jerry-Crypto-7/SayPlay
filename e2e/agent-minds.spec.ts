@@ -1,0 +1,93 @@
+import { expect, test, type Page } from '@playwright/test';
+
+/**
+ * Oracle úlohy T18 — **model napíše postavě povahu, interpret ji odchodí**.
+ *
+ * Test se neptá, co model napsal, ani co panel vypíše. Ptá se na jedinou věc,
+ * kterou o mysli jde poznat zvenčí: **kudy postava za sto tiků chodila**. Zóny
+ * se čtou z běhu v prohlížeči přes `window.__timeline.visited`, tedy z týchž
+ * odvozených faktů (`inZone`), na kterých stojí pravidla — ne z pozice pixelů
+ * a ne z čísla, které by si stránka mohla napsat sama.
+ *
+ * ## Proč zrovna tyhle dvě věty
+ *
+ * Liší se **jedním přídavným jménem**. Kdyby se lišily světem — jiná místnost,
+ * jiné zastávky — byl by rozdíl v trasách vysvětlitelný geografií a o povaze by
+ * nedokazoval nic. Takhle je svět bajt po bajtu týž a mění se jediný symbol
+ * v paměti postavy.
+ *
+ * Ani jedna věta **není ve zmrazeném korpusu**, a to je záměr: offline generátor
+ * hledá doslovnou shodu, takže obě skončí `NO_SOURCE` a obslouží je
+ * deterministický rozpoznávač tvarů z T7 běžící v prohlížeči. Testuje se tím
+ * cesta, kterou pojede porotce s vlastní větou, ne cesta přes zaznamenanou
+ * odpověď.
+ *
+ * ## Proč každá věta ve vlastním načtení stránky
+ *
+ * Druhá věta staví druhý svět a `window.__timeline` se přepisuje až v efektu po
+ * překreslení. Číst obojí v jednom načtení znamená závodit s Reactem o to, který
+ * běh zrovna visí na `window` — a prohrát ten závod vypadá jako „obě povahy
+ * chodí stejně", tedy přesně jako nález, který test hledá.
+ */
+
+/** Kolik tiků se pozoruje. Táž mez, jakou měří `src/sim/__tests__/agents.test.ts`. */
+const HORIZON = 100;
+
+/** Postava, které rozpoznávač píše mysl. Jméno je v `shapes.ts`, ne vymyšlené tady. */
+const CHARACTER = 'watcher';
+
+const BOLD = 'a bold guard who patrols the whole corridor without stopping';
+const WARY = 'a wary guard who never strays far from his post';
+
+async function routeOf(page: Page, sentence: string): Promise<readonly string[]> {
+  await page.goto('/');
+  await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
+
+  await page.getByTestId('prompt-input').fill(sentence);
+  await page.getByTestId('prompt-submit').click();
+  await page.waitForFunction(() => window.__worldsmith!.entities().length > 0, undefined, { timeout: 60_000 });
+  await page.waitForFunction(() => window.__timeline !== undefined, undefined, { timeout: 60_000 });
+
+  return page.evaluate(
+    ({ entity, ticks }) => window.__timeline!.visited(entity, ticks),
+    { entity: CHARACTER, ticks: HORIZON },
+  );
+}
+
+test('dvě věty o téže hlídce dají dvě různé trasy', async ({ page }) => {
+  test.setTimeout(180_000);
+
+  const bold = await routeOf(page, BOLD);
+  const wary = await routeOf(page, WARY);
+
+  // Obě postavy se doopravdy hýbou. Bez tohohle by prošly i dvě nehybné sochy,
+  // pokud by se náhodou lišila výchozí zóna.
+  expect(bold.length).toBeGreaterThan(1);
+  expect(wary.length).toBeGreaterThan(1);
+
+  // Jádro AC: jiná povaha, jiné navštívené zóny.
+  expect(bold).not.toEqual(wary);
+
+  // A rozdíl je ten, který povaha slibuje — `bold` projde trasu celou, `wary` se
+  // drží u své první zastávky. Kdyby se testovala jen nerovnost, prošla by ji
+  // i implementace, která povahu čte a chová se podle ní náhodně.
+  expect(bold).toContain('alcove');
+  expect(wary).not.toContain('alcove');
+  expect(wary).toContain('post');
+});
+
+test('mysl neběží na dynamicky vyhodnoceném kódu — svět se postaví z deklarace', async ({ page }) => {
+  test.setTimeout(120_000);
+
+  // Stránka běží pod produkčním CSP bez `unsafe-eval`; kdyby snížení mysli
+  // potřebovalo dynamické vyhodnocení, spadlo by to sem jako chyba konzole a
+  // svět by nevznikl. Je to druhá polovina třetí AC — grep nad `src/sim/`
+  // hlídá zdroj, tohle hlídá běh.
+  const failures: string[] = [];
+  page.on('pageerror', (error) => failures.push(String(error)));
+
+  const route = await routeOf(page, BOLD);
+
+  expect(failures).toEqual([]);
+  expect(route.length).toBeGreaterThan(1);
+});
