@@ -268,12 +268,16 @@ test('@measure Qwen3 v prohlížeči drží vynucený tvar emise', async () => {
   // 0.6B — a je to strop, ne odhad: když ho běh vyčerpá, je to odpověď pro T6.
   test.setTimeout(4 * 60 * 60 * 1000);
 
-  const baseUrl = test.info().project.use.baseURL ?? 'http://127.0.0.1:3100';
+  // Port se bere z konfigurace, nikdy se sem nepíše podruhé — `playwright.config.ts`
+  // ho čte z `E2E_PORT` a druhé číslo tady by měření tiše poslalo jinam, než kam
+  // se spustil server.
+  const baseUrl = test.info().project.use.baseURL;
+  expect(baseUrl, 'projekt nemá baseURL — bez ní není kam se připojit').toBeTruthy();
   const sentences = loadSentences(MEASURED_SENTENCES);
   expect(sentences, 'zmrazená sada nedala 40 vět').toHaveLength(MEASURED_SENTENCES);
 
   const bundle = readFileSync(WEBLLM_BUNDLE, 'utf8');
-  const hostUrl = new URL(HOST_ROUTE, baseUrl).toString();
+  const hostUrl = new URL(HOST_ROUTE, baseUrl as string).toString();
   const { context, page, adapter } = await openMeasurementBrowser(hostUrl, bundle);
 
   try {

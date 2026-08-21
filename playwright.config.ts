@@ -20,6 +20,22 @@ import { defineConfig, devices } from '@playwright/test';
  */
 const target = process.env.FALLBACK_SMOKE_URL;
 
+/**
+ * Port, na kterém běží testovaný artefakt. **Naměřeno 21. 8. 2026:** 3100 na
+ * tomhle stroji drží vývojový server jiného projektu, a celá sada se pak
+ * zastaví na `http://127.0.0.1:3100 is already used` — nenulově a pravdivě, ale
+ * pustit ji nejde vůbec, dokud cizí server běží. Cizí server se nezabíjí, je to
+ * cizí práce; jediné, co chybělo, byl způsob, jak se mu vyhnout.
+ *
+ * Výchozí hodnota zůstává 3100, aby se `npm run test:e2e` ani CI nemusely měnit.
+ * Port se čte na **jednom** místě a rozvádí se do adresy i do příkazu serveru:
+ * dvě čísla by se rozešla a sada by pak startovala server jinde, než kam se
+ * dívá — což je přesně to tiché selhání, kvůli kterému tenhle blok vznikl.
+ */
+const PORT = process.env.E2E_PORT ?? '3100';
+
+const LOCAL_URL = `http://127.0.0.1:${PORT}`;
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -28,7 +44,7 @@ export default defineConfig({
   workers: 1,
   reporter: [['list']],
   use: {
-    baseURL: target ?? 'http://127.0.0.1:3100',
+    baseURL: target ?? LOCAL_URL,
     trace: 'off',
     launchOptions: {
       args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
@@ -65,8 +81,8 @@ export default defineConfig({
         // certifikovat bundle z dřívějšího commitu — a oracle by pak měřil jiný kód,
         // než jaký se právě commituje. Deklarované prostředí úloh je `next build &&
         // next start`; tady se to vynucuje, ne jen popisuje.
-        command: 'npm run build && npx next start --port 3100 --hostname 127.0.0.1',
-        url: 'http://127.0.0.1:3100',
+        command: `npm run build && npx next start --port ${PORT} --hostname 127.0.0.1`,
+        url: LOCAL_URL,
         reuseExistingServer: false,
         // Build je teď uvnitř příkazu, takže strop musí pokrýt build i start.
         timeout: 240_000,
