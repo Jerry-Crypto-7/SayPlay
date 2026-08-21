@@ -21,7 +21,8 @@
     "disclosure": "node scripts/license-gate.mjs --sync",
     "measure:grammar": "playwright test e2e/local-model-grammar.spec.ts --grep @measure",
     "prove:budgets": "node scripts/prove-budgets.mjs",
-    "measure:divergence": "playwright test e2e/divergence.spec.ts --grep @measure"
+    "measure:divergence": "playwright test e2e/divergence.spec.ts --grep @measure",
+    "measure:rejects": "vitest run evals/__tests__/reject-causes.test.ts"
   },
   "dependencies": {
     "@mlc-ai/web-llm": "0.2.84",
