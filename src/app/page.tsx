@@ -99,6 +99,36 @@ function worldFrom(emission: unknown): WorldDocRuntime | null {
   return built.ok ? built.world : null;
 }
 
+/**
+ * Dolní rohy jsou **sloupce, ne hromada**.
+ *
+ * Čtyři panely se dřív kotvily samy a dva páry z nich seděly na stejném místě se
+ * stejným `zIndex`: program s časovou osou vlevo, náhled vítězné cesty s
+ * ukazatelem stahování modelu vpravo. U levého páru to nebyla kosmetika —
+ * **sbalený panel programu se schoval pod časovou osu a nešel rozbalit**, což je
+ * na demu přesně ten pohyb, kvůli kterému se panel sbaluje. Naměřeno
+ * `e2e/pipeline-panel.spec.ts`: klik na přepínač hlásil, že ho `timeline-branch`
+ * přebírá.
+ *
+ * Sloupec je průchozí pro kurzor (`pointerEvents: 'none'`) a každý panel si
+ * průchodnost vypíná sám. Bez toho by mezera mezi panely byla neviditelný pruh,
+ * který bere kliknutí do plátna — táž vada o patro níž.
+ */
+const CORNER_BASE: React.CSSProperties = {
+  position: 'absolute',
+  bottom: '1rem',
+  zIndex: 2,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '0.5rem',
+  maxHeight: 'calc(100dvh - 2rem)',
+  pointerEvents: 'none',
+};
+
+const CORNER_LEFT: React.CSSProperties = { ...CORNER_BASE, left: '1rem', alignItems: 'flex-start' };
+
+const CORNER_RIGHT: React.CSSProperties = { ...CORNER_BASE, right: '1rem', alignItems: 'flex-end' };
+
 export default function Page() {
   const [world, setWorld] = useState<WorldDocRuntime | null>(null);
   const [broken, setBroken] = useState(false);
@@ -221,10 +251,14 @@ export default function Page() {
         </p>
       ) : null}
       {world === null ? null : <GameControls targets={targets} onRestart={restart} />}
-      <ModelProgress />
-      <Program emission={programs.current} previous={programs.previous} />
-      <WitnessPreview world={world} />
-      <Timeline world={world} />
+      <div style={CORNER_LEFT}>
+        <Program emission={programs.current} previous={programs.previous} />
+        <Timeline world={world} />
+      </div>
+      <div style={CORNER_RIGHT}>
+        <WitnessPreview world={world} />
+        <ModelProgress />
+      </div>
       <Stage world={world} inputs={inputs} runnerRef={runnerRef} />
     </main>
   );

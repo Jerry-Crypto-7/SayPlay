@@ -122,7 +122,10 @@ export default function ModelProgress({
       data-runtime={state.runtime ?? ''}
       // `pointerEvents: none` je celý ten slib v jedné vlastnosti: panel nesmí
       // stát mezi kurzorem a produktem, ani kdyby se překryl s čímkoli jiným.
-      style={{ ...PANEL, pointerEvents: 'none', visibility: caption === null ? 'hidden' : 'visible' }}
+      // `display: none`, ne `visibility: hidden`: ve sloupci pravého rohu by skrytý
+      // panel pořád zabíral svou výšku a odstrčil náhled vítězné cesty o kus nahoru.
+      // Uzel v DOM zůstává tak jako tak, takže `data-phase` jde číst dál.
+      style={{ ...PANEL, pointerEvents: 'none', display: caption === null ? 'none' : 'block' }}
     >
       {caption === null ? null : (
         <>
@@ -139,10 +142,8 @@ export default function ModelProgress({
 }
 
 const PANEL: React.CSSProperties = {
-  position: 'absolute',
-  right: '1rem',
-  bottom: '1rem',
-  zIndex: 2,
+  // Ukotvení nese pravý sloupec v `src/app/page.tsx`. `pointerEvents: 'none'` se
+  // dosazuje až v JSX, protože je to slib, ne kosmetika, a měří ho e2e.
   maxWidth: '20rem',
   padding: '0.5rem 0.7rem',
   borderRadius: 6,

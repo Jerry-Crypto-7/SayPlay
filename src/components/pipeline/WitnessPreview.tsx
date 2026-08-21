@@ -133,10 +133,9 @@ export default function WitnessPreview({ world }: { readonly world: WorldDocRunt
 }
 
 const STRIP: React.CSSProperties = {
-  position: 'absolute',
-  bottom: '1rem',
-  right: '1rem',
-  zIndex: 2,
+  // Ukotvení nese pravý sloupec v `src/app/page.tsx`; sám by stál na témž místě
+  // jako ukazatel stahování modelu.
+  pointerEvents: 'auto',
   width: 'min(20rem, calc(100vw - 2rem))',
   padding: '0.6rem 0.75rem',
   borderRadius: '0.6rem',

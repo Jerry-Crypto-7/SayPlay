@@ -299,10 +299,8 @@ export default function Timeline({ world }: { readonly world: WorldDocRuntime | 
 }
 
 const PANEL: React.CSSProperties = {
-  position: 'absolute',
-  bottom: '1rem',
-  left: '1rem',
-  zIndex: 2,
+  // Ukotvení nese sloupec v `src/app/page.tsx` — viz tentýž komentář v `Program`.
+  pointerEvents: 'auto',
   width: 'min(22rem, calc(100vw - 2rem))',
   padding: '0.6rem 0.75rem',
   borderRadius: '0.6rem',

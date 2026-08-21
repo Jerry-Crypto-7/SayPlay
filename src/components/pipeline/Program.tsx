@@ -122,10 +122,10 @@ function Section({ section, lines }: { readonly section: SectionId; readonly lin
 }
 
 const PANEL: React.CSSProperties = {
-  position: 'absolute',
-  bottom: '1rem',
-  left: '1rem',
-  zIndex: 2,
+  // Ukotvení nese sloupec v `src/app/page.tsx`, ne panel sám. Dokud si ho panel
+  // kotvil sám, stál na témž `bottom: 1rem; left: 1rem; zIndex: 2` jako časová
+  // osa — a po sbalení se schoval pod ni tak, že už nešel rozbalit.
+  pointerEvents: 'auto',
   width: 'min(24rem, calc(100vw - 2rem))',
   maxHeight: '62dvh',
   display: 'flex',

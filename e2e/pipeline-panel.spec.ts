@@ -22,10 +22,40 @@ const FIRST_PROMPT = 'a puzzle room where I have to find three keys to open the 
 /** `C02` — ponorka, která se zaplavuje. Jiný tvar světa, tedy jistě jiné řádky. */
 const SECOND_PROMPT = 'an escape room in a submarine that floods slowly, I have 60 seconds';
 
+/**
+ * Napíše větu a počká, až na plátně stojí **svět z téhle věty**.
+ *
+ * ## Naměřená past, kvůli které byl tenhle soubor od T15 červený
+ *
+ * Původní čekání znělo `entities().length > 0`. To je po **první** větě splněné
+ * pořád, takže druhé volání nečekalo vůbec na nic — vrátilo se okamžitě a
+ * aserce pod ním závodily s přestavbou světa. Podle toho, kdo závod vyhrál,
+ * umíral test pokaždé jinde (jednou na značkách rozdílu, jednou na rozbalení
+ * panelu), což je přesně ten pohyblivý symptom, který se v plánu popisoval.
+ *
+ * ## Proč zrovna `snapshotHash`
+ *
+ * Je to hash zabaleného stavu v tiku výhry, tedy identita **světa**, ne jeho
+ * vykreslení. Čeká se na to, až se změní proti hodnotě před odesláním — tím se
+ * čeká na tenhle konkrétní svět, a ne na „nějaký". Počet entit ani počet řádků
+ * panelu by to nesvedly: obojí může u dvou různých světů vyjít stejně, a řádky
+ * panelu jsou navíc to, co se pod tím teprve měří — čekat na ně by znamenalo
+ * ověřovat aserci sebou samou.
+ */
 async function sentence(page: Page, text: string): Promise<void> {
+  const before = await page.evaluate(() => window.__pipeline?.certificate()?.snapshotHash ?? null);
+
   await page.getByTestId('prompt-input').fill(text);
   await page.getByTestId('prompt-submit').click();
-  await page.waitForFunction(() => window.__worldsmith!.entities().length > 0, undefined, { timeout: 60_000 });
+
+  await page.waitForFunction(
+    (was) => {
+      const now = window.__pipeline?.certificate()?.snapshotHash ?? null;
+      return now !== null && now !== was && window.__worldsmith!.entities().length > 0;
+    },
+    before,
+    { timeout: 60_000 },
+  );
 }
 
 /** Texty řádků panelu, v pořadí, ve kterém stojí. */
