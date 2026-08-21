@@ -163,7 +163,7 @@ describe('evals/measure-rejects — histogram sedí na to, co se naměřilo', ()
       const measured = report.cases.find((entry) => entry.id === row.forPrompt);
       if (baseDoc === null) continue;
 
-      const routed = routePatch({ operations: row.body as readonly Operation[] });
+      const routed = routePatch({ operations: row.body as readonly Operation[] }, baseDoc);
       if (routed.verdict === 'REJECTED') {
         expect(measured?.stage, row.forPrompt).toBe('routing');
         expect(measured?.reason, row.forPrompt).toBe(routed.reason);

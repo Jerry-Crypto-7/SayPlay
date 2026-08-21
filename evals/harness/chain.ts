@@ -597,7 +597,7 @@ async function runEdit(
     failures.push({ caseId: id, kind: 'first-hash', detail: 'vrácený patch se rozešel se zmrazeným tělem' });
 
   // 2 — validace: dráhu rozhodují normalizované cesty, ne štítek (T22)
-  const routed = routePatch({ operations: patch as never });
+  const routed = routePatch({ operations: patch as never }, baseDoc);
   log.write(
     'validate',
     routed.verdict === 'ROUTED'

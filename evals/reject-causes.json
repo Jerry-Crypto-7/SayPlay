@@ -1,27 +1,27 @@
 {
   "source": "evals/frozen/responses/index.jsonl",
   "total": 40,
-  "applied": 14,
+  "applied": 16,
   "declined": 2,
-  "rejected": 24,
+  "rejected": 22,
   "byReason": {
     "NO_WIN": 10,
-    "MALFORMED_OPERATION": 4,
-    "STEP_UNREACHABLE": 4,
+    "STEP_UNREACHABLE": 5,
     "UNSUPPORTED_SURFACE": 3,
     "DANGLING_REFERENCE": 2,
+    "MALFORMED_OPERATION": 1,
     "SCHEMA_VIOLATION": 1
   },
   "byStage": {
-    "witness": 14,
-    "apply": 4,
+    "witness": 15,
     "lowering": 3,
     "references": 2,
+    "routing": 1,
     "schema": 1
   },
   "byCause": {
-    "unwinnable": 14,
-    "imprecise": 10
+    "unwinnable": 15,
+    "imprecise": 7
   },
   "causeStages": {
     "unwinnable": [
@@ -48,15 +48,42 @@
     },
     "edit": {
       "total": 25,
-      "applied": 8,
+      "applied": 10,
       "declined": 0,
-      "rejected": 17,
-      "unwinnable": 9,
-      "imprecise": 8,
-      "appliedShare": 0.32
+      "rejected": 15,
+      "unwinnable": 10,
+      "imprecise": 5,
+      "appliedShare": 0.4
     }
   },
-  "appliedShare": 0.35,
+  "appliedShare": 0.4,
+  "baseline": {
+    "appliedShare": 0.35,
+    "branches": {
+      "create": {
+        "total": 15,
+        "applied": 6,
+        "declined": 2,
+        "rejected": 7,
+        "unwinnable": 5,
+        "imprecise": 2,
+        "appliedShare": 0.4
+      },
+      "edit": {
+        "total": 25,
+        "applied": 8,
+        "declined": 0,
+        "rejected": 17,
+        "unwinnable": 9,
+        "imprecise": 8,
+        "appliedShare": 0.32
+      }
+    },
+    "rescued": [
+      "E19",
+      "E20"
+    ]
+  },
   "cases": [
     {
       "id": "C01",
@@ -242,10 +269,10 @@
       "id": "E06",
       "branch": "edit",
       "outcome": "rejected",
-      "stage": "apply",
+      "stage": "routing",
       "reason": "MALFORMED_OPERATION",
       "cause": "imprecise",
-      "detail": "/rules/openChest/condition/negated: operation 0 (replace /rules/openChest/condition/negated): \"openChest\" does not exist, so the path has no parent to write into (expected an existing member)"
+      "detail": "/sim/rules/openChest/condition/negated: no operation of this patch has a legal variant against the world it targets: replace /rules/openChest/condition/negated (\"openChest\" does not exist, so the path has no parent to write into)"
     },
     {
       "id": "E07",
@@ -358,20 +385,20 @@
     {
       "id": "E19",
       "branch": "edit",
-      "outcome": "rejected",
-      "stage": "apply",
-      "reason": "MALFORMED_OPERATION",
-      "cause": "imprecise",
-      "detail": "/layout/levels/1: operation 0 (add /layout/levels/1): \"1\" has no container to live in — the path runs through a primitive (expected an object or array to descend into)"
+      "outcome": "applied",
+      "stage": null,
+      "reason": "CERTIFIED",
+      "cause": null,
+      "detail": "sim, 8 listů, doletěno: dropped add /layout/levels/1"
     },
     {
       "id": "E20",
       "branch": "edit",
-      "outcome": "rejected",
-      "stage": "apply",
-      "reason": "MALFORMED_OPERATION",
-      "cause": "imprecise",
-      "detail": "/rules/patrol/actions/0/route: operation 2 (replace /rules/patrol/actions/0/route): Value required at path: /rules/patrol/actions/0/route (expected an applicable replace target)"
+      "outcome": "applied",
+      "stage": null,
+      "reason": "CERTIFIED",
+      "cause": null,
+      "detail": "sim, 5 listů, doletěno: reshaped replace /rules/patrol/actions/0/route"
     },
     {
       "id": "E21",
@@ -404,10 +431,10 @@
       "id": "E24",
       "branch": "edit",
       "outcome": "rejected",
-      "stage": "apply",
-      "reason": "MALFORMED_OPERATION",
-      "cause": "imprecise",
-      "detail": "/state/counters/streak/-: operation 0 (add /state/counters/streak/-): \"streak\" does not exist, so the path has no parent to write into (expected an existing member)"
+      "stage": "witness",
+      "reason": "STEP_UNREACHABLE",
+      "cause": "unwinnable",
+      "detail": "/sim/witness: target target0 is neither an active entity nor a declared socket or zone at tick 240"
     },
     {
       "id": "E25",

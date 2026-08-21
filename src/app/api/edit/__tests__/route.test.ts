@@ -163,9 +163,34 @@ function diffLeaves(before: unknown, after: unknown, tokens: string[], out: Map<
  * Dosah patche, změřený **aplikací a diffem stavu** — tak, jak to žádá
  * `editContract.changedLeafRule`, a bez jediného pohledu do operací.
  */
+/**
+ * Operace, které endpoint po T13 doopravdy provede.
+ *
+ * Doletění na nejbližší legální variantu (`src/patch/nearest.ts`) může operaci
+ * přepsat nebo zahodit, takže dosah syrového patche a dosah provedeného patche
+ * **nejsou totéž** — nad `E19` se syrový patch dokonce vůbec neaplikuje
+ * (`add /sim/layout/levels/1` do skaláru) a měření by spadlo místo aby změřilo.
+ *
+ * Křížová kontrola tím o nic nepřichází: porovnává se **rozvinutí listů**, ne
+ * to, které operace se provedly. Obě strany si listy pořád počítají vlastním
+ * kódem a musí se sejít; kdyby test měřil jiný patch než endpoint, neporovnával
+ * by dvě čtení téže věci, ale dvě různé věci.
+ */
+function performedOperations(before: WorldDoc, operations: readonly Operation[]): readonly Operation[] {
+  const routed = routePatch({ operations }, before);
+  if (routed.verdict !== 'ROUTED') return [];
+  return routed.patches.flatMap(
+    (patch) =>
+      patch.operations.map((operation) => ({
+        ...(operation as unknown as Record<string, unknown>),
+        path: `/${patch.part}${operation.path}`,
+      })) as unknown as Operation[],
+  );
+}
+
 function measuredLeafEffects(before: WorldDoc, operations: readonly Operation[]): readonly MeasuredLeaf[] {
   const draft = structuredClone(before) as unknown as Record<string, unknown>;
-  applyPatch(draft, structuredClone(operations) as Operation[]);
+  applyPatch(draft, structuredClone(performedOperations(before, operations)) as Operation[]);
   const out = new Map<string, LeafEffect>();
   diffLeaves(before.sim, draft.sim, ['sim'], out);
   diffLeaves(before.look, draft.look, ['look'], out);
@@ -314,8 +339,31 @@ describe('dosah patche — rozvinutá množina listů proti `allowedPaths`', () 
    */
   const CONTRACT_OVERRUN = ['E01', 'E04', 'E13', 'E14', 'E15', 'E16', 'E22', 'E23'];
 
-  /** Záznamy, jejichž patch se na svůj základní svět vůbec nedá aplikovat. */
-  const UNAPPLICABLE = ['E06', 'E19', 'E20', 'E24'];
+  /**
+   * Záznamy, jejichž patch se na svůj základní svět **v původním tvaru** provést
+   * nedá — a co s nimi endpoint po T13 udělá.
+   *
+   * Do T13 tu stál plochý seznam čtyř jmen a všechna čtyři končila stejně:
+   * `apply/MALFORMED_OPERATION`. Doletění na nejbližší legální variantu je
+   * rozdělilo na tři různé konce, a **ten rozdíl je celý přínos T13**, takže se
+   * asertuje jmenovitě místo jako množina. Hodnota je fáze odmítnutí, `null`
+   * znamená, že se patch po doletění commitl.
+   */
+  const NOT_DIRECTLY_APPLICABLE: Readonly<Record<string, string | null>> = {
+    // Pravidlo `openChest` v `C04` není a jméno se nehledá podobné, takže
+    // nezbude legální operace ani jedna a router patch odmítne.
+    E06: 'routing',
+    // `add /sim/layout/levels/1` do skaláru `levels: 1` má dvě čtení, takže se
+    // zahodí; zbylé tři operace se provedou a svět se commitne.
+    E19: null,
+    // `replace /sim/rules/patrol/actions/0/route` míří na člen, který tam ještě
+    // není — jediné legální čtení je `add`, a s ním se patch commitne.
+    E20: null,
+    // `add /sim/state/counters/streak/-` doletí na `add .../streak`, patch se
+    // provede a rozhodne až ověřovač. Přesně to, co AC žádá: odmítnutí zůstává
+    // jen pro nedohratelnost.
+    E24: 'witness',
+  };
 
   it('endpoint počítá dosah stejně jako nezávislé měření testu', async () => {
     // Křížová kontrola, ne zdroj pravdy: obě strany počítají rozvinuté listy
@@ -332,19 +380,46 @@ describe('dosah patche — rozvinutá množina listů proti `allowedPaths`', () 
     }
   });
 
-  it('neaplikovatelné záznamy jsou naměřené odmítnutí, ne 5xx a ne tichý průchod', async () => {
+  it('neprovedený patch je naměřené odmítnutí nebo doletění, ne 5xx a ne tichý průchod', async () => {
+    // **Klíče seznamu se odvozují z korpusu, ne z tohohle souboru.** Kdyby se
+    // vyjmenovaly ručně, byl by to výčet, který se sám rozšiřuje o cokoli, co
+    // se rozbije. Takhle sadu shodí nový neprovedený záznam i zmizelý.
     const measured: string[] = [];
     for (const id of ids) {
-      const body = await edit(id);
-      if (body.rejection?.stage === 'apply') measured.push(id);
+      const world = baseDoc(contractOf(id).baseWorld as string);
+      const draft = structuredClone(world) as unknown as Record<string, unknown>;
+      let applies = true;
+      try {
+        applies = applyPatch(draft, structuredClone(responseOf(id).body) as Operation[]).every((e) => e === null);
+      } catch {
+        applies = false;
+      }
+      if (!applies) measured.push(id);
     }
-    expect(measured.sort()).toEqual([...UNAPPLICABLE].sort());
+    expect(measured.sort()).toEqual(Object.keys(NOT_DIRECTLY_APPLICABLE).sort());
+
+    for (const [id, stage] of Object.entries(NOT_DIRECTLY_APPLICABLE)) {
+      const body = await edit(id);
+      expect(body.rejection?.stage ?? null, `${id}`).toBe(stage);
+      expect(body.applied.includes('sim'), `${id}: commit nesouhlasí s fází`).toBe(stage === null);
+    }
+  });
+
+  it('doletění nikdy nedoletí do prázdna — commitnutý patch změní aspoň jeden list', async () => {
+    // Bez tohohle by „doletěl a commitl se" mohl znamenat patch, ze kterého
+    // zbylo nic: `commitPart` by zvedl revizi za změnu, která se nestala, a
+    // hráč by nad nezměněným světem viděl hotovo.
+    for (const [id, stage] of Object.entries(NOT_DIRECTLY_APPLICABLE)) {
+      if (stage !== null) continue;
+      const body = await edit(id);
+      expect(body.changedLeaves.length, `${id}`).toBeGreaterThan(0);
+    }
   });
 
   it('rozvinutý dosah leží uvnitř `allowedPaths` — mimo přesně osm naměřených rozporů korpusu', async () => {
     const overrun: string[] = [];
     for (const id of ids) {
-      if (UNAPPLICABLE.includes(id)) continue;
+      if (NOT_DIRECTLY_APPLICABLE[id]) continue;
       const contract = contractOf(id);
       const world = baseDoc(contract.baseWorld as string);
       const leaves = measuredLeafEffects(world, responseOf(id).body as Operation[]);
@@ -439,7 +514,11 @@ describe('dráhu rozhodují cesty, ne štítek', () => {
     for (const id of ids) {
       const body = await edit(id);
       const parts = new Set((responseOf(id).body as Operation[]).map((operation) => operation.path.split('/')[1]));
-      const expected = [...parts].map((part) => (part === 'sim' ? 'rules' : 'look'));
+      // Odmítnutý patch žádnou dráhu nevydá — po T13 se to týká `E06`, ze
+      // kterého po doletění nezbyla legální operace ani jedna. Cesty pořád
+      // rozhodují: kdyby se dráha brala odjinud, byla by tu i tak.
+      const expected =
+        body.rejection?.stage === 'routing' ? [] : [...parts].map((part) => (part === 'sim' ? 'rules' : 'look'));
       expect([...body.lanes].sort(), id).toEqual(expected.sort());
     }
   });
@@ -578,7 +657,10 @@ describe('svědek se po editaci ověřuje znovu', () => {
     }
 
     // Kontrakt ztrátu svědka POVOLUJE, endpoint patch přesto neaplikuje.
-    expect(permitted.sort()).toEqual(['E02', 'E07', 'E08', 'E17', 'E21', 'E22', 'E23']);
+    // `E24` sem přibyl s T13: dřív padal dřív, na neprovedené operaci, a na
+    // svědka vůbec nedošel. Doletění ho k němu pustilo — rozpor se tím
+    // nezhoršil ani nespravil, jen je nad ním o jeden záznam vidět líp.
+    expect(permitted.sort()).toEqual(['E02', 'E07', 'E08', 'E17', 'E21', 'E22', 'E23', 'E24']);
     // Kontrakt zachování svědka VYŽADUJE a zmrazený patch ho stejně ztratí —
     // tohle je rozpor uvnitř korpusu a na volbě endpointu nezávisí.
     expect(contradicts.sort()).toEqual(['E13', 'E14']);

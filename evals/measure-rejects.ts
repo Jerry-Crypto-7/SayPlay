@@ -129,6 +129,18 @@ export interface RejectReport {
   readonly causeStages: Readonly<Record<RejectCause, readonly RejectStage[]>>;
   readonly branches: Readonly<Record<'create' | 'edit', BranchSummary>>;
   readonly appliedShare: number;
+  /**
+   * Totéž měření s **vypnutým doletěním** (T13) — stav, ve kterém systém byl,
+   * když ho T12 poprvé změřila. Je tady, a ne v historii gitu, protože AC T13
+   * porovnává podíl aplikovaných proti hodnotě z tohohle souboru; se dvěma
+   * soubory by se porovnávaly dva různé běhy.
+   */
+  readonly baseline: {
+    readonly appliedShare: number;
+    readonly branches: Readonly<Record<'create' | 'edit', BranchSummary>>;
+    /** Případy, které se commitnou jen díky doletění. */
+    readonly rescued: readonly string[];
+  };
   readonly cases: readonly CaseOutcome[];
 }
 
@@ -152,11 +164,13 @@ function createOutcome(frozen: FrozenResponse): CaseOutcome {
   return { ...base, outcome: 'rejected', stage, cause: causeOf(stage) };
 }
 
-function editOutcome(frozen: FrozenResponse, baseDoc: WorldDoc): CaseOutcome {
+function editOutcome(frozen: FrozenResponse, baseDoc: WorldDoc, landing: boolean): CaseOutcome {
   const id = frozen.forPrompt;
   const branch = 'edit' as const;
 
-  const routed = routePatch({ operations: frozen.body as readonly Operation[] });
+  // Bez dokumentu router doletět nemůže, takže `landing: false` je přesně to,
+  // co systém dělal před T13 — základna, ne druhá implementace.
+  const routed = routePatch({ operations: frozen.body as readonly Operation[] }, landing ? baseDoc : undefined);
   if (routed.verdict === 'REJECTED')
     return {
       id,
@@ -185,7 +199,9 @@ function editOutcome(frozen: FrozenResponse, baseDoc: WorldDoc): CaseOutcome {
       stage: null,
       reason: 'CERTIFIED',
       cause: null,
-      detail: `${committed.applied.join('+')}, ${committed.changedLeaves.length} listů`,
+      detail: `${committed.applied.join('+')}, ${committed.changedLeaves.length} listů${
+        routed.landings.length === 0 ? '' : `, doletěno: ${routed.landings.map((l) => `${l.kind} ${l.from}`).join(' · ')}`
+      }`,
     };
 
   const rejection = committed.rejections[0];
@@ -232,8 +248,7 @@ function histogram(keys: readonly string[]): Record<string, number> {
   );
 }
 
-export function measureRejects(): RejectReport {
-  const responses = frozenResponses();
+function runOver(responses: readonly FrozenResponse[], landing: boolean): readonly CaseOutcome[] {
   const byId = new Map(responses.map((response) => [response.forPrompt, response]));
 
   // Základní světy se certifikují jednou, i když na nich stojí víc úprav.
@@ -265,9 +280,18 @@ export function measureRejects(): RejectReport {
         cause: causeOf('references'),
         detail: `základní svět ${baseWorld} se nezapečetil, takže patch nemá nad čím běžet`,
       };
-    return editOutcome(frozen, baseDoc);
+    return editOutcome(frozen, baseDoc, landing);
   });
 
+  return cases;
+}
+
+export function measureRejects(): RejectReport {
+  const responses = frozenResponses();
+  // Produkční čtení jede s doletěním; základna je totéž měření s vypnutým
+  // doletěním, tedy stav, ve kterém T12 systém zastihla.
+  const cases = runOver(responses, true);
+  const before = runOver(responses, false);
   const rejected = cases.filter((entry) => entry.outcome === 'rejected');
   const all = summarize(cases);
 
@@ -292,6 +316,19 @@ export function measureRejects(): RejectReport {
       edit: summarize(cases.filter((entry) => entry.branch === 'edit')),
     },
     appliedShare: all.appliedShare,
+    baseline: {
+      appliedShare: summarize(before).appliedShare,
+      branches: {
+        create: summarize(before.filter((entry) => entry.branch === 'create')),
+        edit: summarize(before.filter((entry) => entry.branch === 'edit')),
+      },
+      // Případy, které se dnes commitnou jen díky doletění. Jmenovitě, aby se
+      // dal každý otevřít a přečíst, co se s ním muselo stát.
+      rescued: cases
+        .filter((entry) => entry.outcome === 'applied')
+        .filter((entry) => before.find((row) => row.id === entry.id)?.outcome !== 'applied')
+        .map((entry) => entry.id),
+    },
     cases,
   };
 }
