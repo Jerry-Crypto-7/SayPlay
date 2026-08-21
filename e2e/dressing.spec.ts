@@ -40,13 +40,21 @@ async function settle(page: Page, frames = SETTLE_FRAMES): Promise<void> {
   });
 }
 
-/** Načte svět a počká, až most i výzdoba stojí. */
+/**
+ * Načte svět a počká, až most i výzdoba stojí.
+ *
+ * Od T11 se svět **staví po dávkách** (`Assembly.tsx`), takže `dressing()` po
+ * načtení hlásí jen odhalenou předponu každé dávky. Tenhle test se ptá na to,
+ * co scéna postavila, ne na to, kam se dostala stavba — proto se čeká na její
+ * konec. Bez toho by se počty instancí měřily v náhodném okamžiku stavby.
+ */
 async function openWorld(page: Page): Promise<void> {
   await page.goto(`/embed/harbor-pier?emit=${PROMPT}`);
   await page.waitForFunction(() => window.__viewer !== undefined, undefined, { timeout: 60_000 });
   await page.waitForFunction(() => window.__viewer!.dressing().length > 0, undefined, {
     timeout: 60_000,
   });
+  await page.waitForFunction(() => window.__viewer!.assembly().done, undefined, { timeout: 60_000 });
   await settle(page);
 }
 

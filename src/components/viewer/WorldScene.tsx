@@ -55,6 +55,17 @@ import {
   type WorldDocRuntime,
 } from '@/sim/interpreter';
 
+import {
+  assemblySnapshot,
+  createAssemblyLog,
+  createAssemblyPlan,
+  prefersReducedMotion,
+  recordReveal,
+  orderForReveal,
+  revealRanks,
+  revealedInBatch,
+  type AssemblySnapshot,
+} from './Assembly';
 import { planDressing, type DressingKind, type DressingPlan } from './dressing';
 import { toonRamp } from './Lighting';
 import {
@@ -128,6 +139,11 @@ interface KitBatch {
   readonly staticCount: number;
   /** O kolik se kus musí zvednout, aby stál na podlaze a ne v ní. */
   readonly lift: number;
+  /**
+   * Pořadí odhalování instancí téhle dávky v celkovém pořadí stavby, vzestupně.
+   * Instance jsou zapsané v témž pořadí, takže odhalená část je předpona dávky.
+   */
+  readonly ranks: readonly number[];
 }
 
 interface BuiltScene {
@@ -135,6 +151,8 @@ interface BuiltScene {
   readonly batches: ReadonlyMap<VisualRole, RoleBatch>;
   readonly kit: ReadonlyMap<string, KitBatch>;
   readonly plan: DressingPlan;
+  /** Kolik nehybných kusů se celkem odhaluje. Vstup rozvrhu stavby. */
+  readonly revealTotal: number;
   readonly dispose: () => void;
 }
 
@@ -210,6 +228,10 @@ function buildScene(world: WorldDocRuntime): BuiltScene {
   const kit = new Map<string, KitBatch>();
   const matrix = new Matrix4();
 
+  // Pořadí stavby je globální přes všechny dávky, ne uvnitř každé zvlášť —
+  // jinak by se svět stavěl po druzích kusů, ne od středu ven.
+  const revealRankOf = revealRanks(plan.statics, grid);
+
   for (const id of plan.pieces) {
     const piece = pieceById(id);
     // Neznámé id je vada výzdoby, ne stav k vykreslení — a `dressing.ts`
@@ -224,7 +246,10 @@ function buildScene(world: WorldDocRuntime): BuiltScene {
     const lift = -box.min.y;
     const liftOf = (kind: DressingKind) => (kind === 'floor' ? -box.max.y : lift);
 
-    const placements = plan.statics.filter((placement) => placement.piece === id);
+    // Instance se zapisují v pořadí odhalování, ne v pořadí plánu. Dávka kreslí
+    // instance [0, count), takže odhalená část musí být její předpona.
+    const placements = orderForReveal(plan.statics, revealRankOf, (placement) => placement.piece === id);
+
     const mesh = new InstancedMesh(
       shape,
       kitMaterial,
@@ -235,14 +260,19 @@ function buildScene(world: WorldDocRuntime): BuiltScene {
     mesh.frustumCulled = false;
     mesh.name = `kit:${id}`;
 
-    placements.forEach((placement, index) => {
+    placements.forEach(({ item: placement }, index) => {
       const at = cellToWorld(placement.cell, grid, liftOf(placement.kind));
       mesh.setMatrixAt(index, place(matrix, placement.yaw, at.x, at.y, at.z));
     });
     mesh.instanceMatrix.needsUpdate = true;
     mesh.count = placements.length;
 
-    kit.set(id, { mesh, staticCount: placements.length, lift });
+    kit.set(id, {
+      mesh,
+      staticCount: placements.length,
+      lift,
+      ranks: placements.map((entry) => entry.rank),
+    });
     group.add(mesh);
   }
 
@@ -281,6 +311,9 @@ function buildScene(world: WorldDocRuntime): BuiltScene {
     batches,
     kit,
     plan,
+    // Součet dávek, ne délka plánu: kus, který kit nezná, žádnou dávku nedostal
+    // a nakreslit se nemá jak — stavba by na něj čekala navždy.
+    revealTotal: [...kit.values()].reduce((sum, batch) => sum + batch.staticCount, 0),
     dispose: () => {
       for (const resource of owned) resource.dispose();
       for (const batch of batches.values()) batch.mesh.dispose();
@@ -295,18 +328,42 @@ function buildScene(world: WorldDocRuntime): BuiltScene {
  * Entita s rolí kulisy jde do dávky **svého kusu z kitu**, za jeho nehybnou
  * část; ostatní do dávky podle podoby. Statika se nepřepisuje, jen se za ni
  * dopisuje — proto se počet vrací na `staticCount` a ne na nulu.
+ *
+ * `revealed` je hranice stavby (viz `Assembly.tsx`): dávka kreslí jen ty své
+ * instance, jejichž pořadí je pod ní. **Dokud dávka není odhalená celá, nenese
+ * ani kulisovou entitu** — ta se zapisuje až za nehybnou část, tedy na index,
+ * který by se v nedostavěné dávce nekreslil, a psát ji na uvolněné místo by
+ * přepsalo matici kusu, který se teprve objeví. Po dostavění se scéna chová
+ * přesně jako před tím, než stavba existovala.
  */
-function writeInstances(scene: BuiltScene, entities: readonly ProjectedEntity[], matrix: Matrix4): void {
+function writeInstances(
+  scene: BuiltScene,
+  entities: readonly ProjectedEntity[],
+  matrix: Matrix4,
+  revealed: number,
+): number {
   for (const batch of scene.batches.values()) {
     batch.ids.length = 0;
     batch.mesh.count = 0;
   }
-  for (const batch of scene.kit.values()) batch.mesh.count = batch.staticCount;
+  const built = new Map<string, boolean>();
+  let shownTotal = 0;
+  for (const [id, batch] of scene.kit) {
+    const shown = revealedInBatch(batch.ranks, revealed);
+    batch.mesh.count = shown;
+    shownTotal += shown;
+    built.set(id, shown >= batch.staticCount);
+  }
 
   for (const entity of entities) {
     if (!entity.active) continue;
 
     const worn = scene.plan.props[entity.stableId];
+    // Nedostavěná dávka kulisu nenese — a entita se v tu chvíli nekreslí vůbec.
+    // Spadnout zatím do dávky podle role by ji na okamžik ukázalo jako krychli,
+    // což je přesně to probliknutí, které má stavba odstranit.
+    if (worn !== undefined && scene.kit.has(worn) && built.get(worn) !== true) continue;
+
     const dressed = worn === undefined ? undefined : scene.kit.get(worn);
     if (dressed !== undefined) {
       const index = dressed.mesh.count;
@@ -331,6 +388,10 @@ function writeInstances(scene: BuiltScene, entities: readonly ProjectedEntity[],
 
   for (const batch of scene.batches.values()) batch.mesh.instanceMatrix.needsUpdate = true;
   for (const batch of scene.kit.values()) batch.mesh.instanceMatrix.needsUpdate = true;
+
+  // Vrací se, co dávky OPRAVDU kreslí, ne co rozvrh chtěl. Zápisník stavby na
+  // tom stojí — viz `recordReveal` v `Assembly.tsx`.
+  return shownTotal;
 }
 
 /**
@@ -356,6 +417,12 @@ export interface WorldRunner {
   readonly dressing: () => readonly DressingBatch[];
   /** Kolik tiků svět odkrokoval. */
   readonly tick: () => number;
+  /**
+   * Jak daleko je stavba světa — a hlavně, ve kterém tiku se objevil první a
+   * poslední kus. Obojí je **pozorované za běhu**, ne opsané z rozvrhu, takže
+   * se z prohlížeče dá poznat rozvrh, který stavbu jen předstírá.
+   */
+  readonly assembly: () => AssemblySnapshot;
   /** Posune běh o `count` tiků bez čekání na nástěnný čas. */
   readonly step: (count: number) => void;
   readonly runState: () => RunState;
@@ -387,10 +454,26 @@ export default function WorldScene({
   const clock = useMemo(() => createClock(), [world]);
   const matrix = useRef(new Matrix4());
 
+  // Rozvrh se čte jednou při stavbě scény. Tlumený pohyb je volba diváka, ne
+  // stav, který by se měl uprostřed stavby přepínat.
+  const assembly = useMemo(
+    () => ({
+      plan: createAssemblyPlan(scene.revealTotal, { reducedMotion: prefersReducedMotion() }),
+      log: createAssemblyLog(),
+    }),
+    [scene],
+  );
+
   const advance = useMemo(() => {
     const drawFromState = () => {
       const entities = projectEntities(world, entityPlacements(runtime));
-      writeInstances(scene, entities, matrix.current);
+      const shown = writeInstances(
+        scene,
+        entities,
+        matrix.current,
+        assembly.plan.revealedAt(clock.tick),
+      );
+      recordReveal(assembly.log, assembly.plan, clock.tick, shown);
       return entities;
     };
 
@@ -404,7 +487,7 @@ export default function WorldScene({
         drawFromState();
       },
     };
-  }, [clock, runtime, scene, world]);
+  }, [assembly, clock, runtime, scene, world]);
 
   // První snímek kreslí výchozí stav, ne prázdno. Bez toho je scéna do prvního
   // tiku prázdná, což vypadá jako vada vykreslení, ne jako svět před startem.
@@ -418,13 +501,14 @@ export default function WorldScene({
       dressing: () =>
         [...scene.kit.entries()].map(([piece, batch]) => ({ piece, instances: batch.mesh.count })),
       tick: () => runtime.tick,
+      assembly: () => assemblySnapshot(assembly.log, assembly.plan),
       step: (count: number) => advance.run(count),
       runState: () => runtime.runState,
     };
     return () => {
       runnerRef.current = null;
     };
-  }, [advance, runnerRef, runtime, scene, world]);
+  }, [advance, assembly, runnerRef, runtime, scene, world]);
 
   useEffect(() => () => scene.dispose(), [scene]);
 

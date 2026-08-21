@@ -28,6 +28,7 @@ import { buildRuntimeWorld } from '@/ir/build';
 import { buildLayoutScene, layoutById } from '@/kit';
 import type { RunState, WorldDocRuntime } from '@/sim/interpreter';
 
+import type { AssemblySnapshot } from './Assembly';
 import { disposeSubtree } from './dispose';
 import FollowCamera from './FollowCamera';
 import Lighting, { VIEWER_GL, VIEWER_SHADOWS, toonRamp } from './Lighting';
@@ -74,6 +75,13 @@ declare global {
       dressing: () => readonly DressingBatch[];
       /** Kolik tiků svět odkrokoval. */
       tick: () => number;
+      /**
+       * Jak daleko je stavba světa (`Assembly.tsx`). `firstRevealTick` a
+       * `lastRevealTick` scéna **pozoruje za běhu**, takže se z prohlížeče dá
+       * poznat rozvrh, který stavbu jen předstírá a odhalí všechno naráz.
+       * Prázdné plátno vrací nulový snímek, ne `undefined`.
+       */
+      assembly: () => AssemblySnapshot;
       /**
        * Kde stojí kamera ve světových souřadnicích.
        *
@@ -172,6 +180,16 @@ function Bridge({
       entities: () => runnerRef.current?.entities() ?? [],
       dressing: () => runnerRef.current?.dressing() ?? [],
       tick: () => runnerRef.current?.tick() ?? 0,
+      assembly: () =>
+        runnerRef.current?.assembly() ?? {
+          revealed: 0,
+          total: 0,
+          firstRevealTick: null,
+          lastRevealTick: null,
+          plannedSpanTicks: 0,
+          done: false,
+          reducedMotion: false,
+        },
       camera: () => ({ x: camera.position.x, y: camera.position.y, z: camera.position.z }),
       step: (count: number) => runnerRef.current?.step(count),
       runState: () => runnerRef.current?.runState() ?? null,
