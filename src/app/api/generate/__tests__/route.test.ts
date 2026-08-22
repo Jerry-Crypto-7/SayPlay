@@ -120,6 +120,32 @@ describe('POST /api/generate', () => {
     expect(json.error?.code).toBe('CAP_EXHAUSTED');
   });
 
+  it('vyčerpaný počet volání je taky 429, i když dolary zbývají', async () => {
+    // Druhá pojistka vedle dolarové: ta stojí na ceníku opsaném ručně, takže
+    // překlep o tři řády ji roztáhne milionkrát. Rozpočet je tu schválně
+    // obrovský — odmítnout musí počítadlo, ne peníze.
+    vi.stubGlobal('fetch', () =>
+      Promise.resolve(
+        Response.json({ content: [{ type: 'text', text: '{"emitted":true}' }], usage: { input_tokens: 10, output_tokens: 10 } }),
+      ),
+    );
+
+    const call = await loadRoute({
+      WORLDSMITH_BRANCH: 'live',
+      WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+      WORLDSMITH_MODEL_KEY: 'test-key',
+      WORLDSMITH_USD_PER_MTOK_OUT: '15',
+      WORLDSMITH_SPEND_CAP_USD: '1000',
+      WORLDSMITH_CALL_CAP: '1',
+    });
+
+    expect((await call(JSON.stringify({ prompt: 'bludiště s klíčem' }))).status).toBe(200);
+
+    const second = await call(JSON.stringify({ prompt: 'bludiště s klíčem' }));
+    expect(second.status).toBe(429);
+    expect(second.json.error?.code).toBe('CALL_CAP_EXHAUSTED');
+  });
+
   it('útrata se sčítá přes požadavky — strop je stav procesu, ne požadavku', async () => {
     // Strop, který se rodí s každým požadavkem, je dekorace: první volání by ho
     // nikdy nevyčerpalo a další by o něm nevědělo. Rozpočet je proto nastavený

@@ -22,6 +22,7 @@
  * | emise | 200 | |
  * | moderace odmítla | 400 | vada dotazu, ne serveru |
  * | rozpočet vyčerpán | 429 | dočasné, dá se zopakovat později |
+ * | vyčerpaný počet volání | 429 | týž tvar, jen to nedrží ceník, ale počítadlo |
  * | vypínač rozbitý, špatný odhad | 503 | provozní stav, ne dotaz |
  * | větev nemá zdroj (`NO_SOURCE`) | 404 | poctivé „na tohle odpověď nemám" |
  * | větev nenakonfigurovaná | 503 | |
@@ -112,7 +113,12 @@ export async function POST(request: Request): Promise<Response> {
             { requestId, error: { code: 'PROMPT_REFUSED', message: result.detail, category: result.category } },
             { status: 400 },
           )
-        : error(requestId, result.reason === 'CAP_EXHAUSTED' ? 429 : 503, result.reason, result.detail);
+        : error(
+            requestId,
+            result.reason === 'CAP_EXHAUSTED' || result.reason === 'CALL_CAP_EXHAUSTED' ? 429 : 503,
+            result.reason,
+            result.detail,
+          );
 
     const status = result.reason === 'NO_SOURCE' ? 404 : result.reason === 'BRANCH_UNCONFIGURED' ? 503 : 502;
     return Response.json(
