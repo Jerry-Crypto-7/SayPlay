@@ -53,7 +53,14 @@ export default defineConfig({
   projects: [
     // `webgpu-detect` sem nepatří: běží výhradně v projektu bez akcelerace níž,
     // jinak by tentýž soubor jednou tvrdil „WebGPU tu není" v prostředí, kde je.
-    { name: 'chromium', testIgnore: /webgpu-detect\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
+    // `deployed-smoke` sem nepatří ze stejného důvodu jako `webgpu-detect`: běží
+    // výhradně proti nasazené adrese přes `playwright.deployed.ts`. Tady by mířil
+    // na lokální server a certifikoval by `localhost` místo nasazení.
+    {
+      name: 'chromium',
+      testIgnore: /(webgpu-detect|deployed-smoke)\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
     /**
      * Stroj bez akcelerace (P11 T4). Nedědí `launchOptions` z `use` výš — ty
      * SwiftShader naopak zapínají — a přidává `--disable-gpu`, takže WebGPU
