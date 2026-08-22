@@ -215,11 +215,23 @@ export default function Page() {
 
   const restart = useCallback(() => {
     controls.reset();
+    // **Uvolnit starý běh dřív, než se vymění svět.** `phaseOf()` odpovídá `won`
+    // dřív, než se vůbec podívá na rozvrh stavby (a je to tak schválně, drží to
+    // zelený test v `src/game/__tests__/flow.test.ts`). Restart se ale dělá po
+    // dohrané partii, takže dokud tady visí vyhraný běh, čte se fáze z něj:
+    // záznam zůstane stát na `won`, druhé `building` se nikdy nezapíše a
+    // `e2e/playable-loop.spec.ts` na něj čeká marně. Bez běhu vyjde `building`,
+    // protože `hasWorld` je nepravda a stav se čte jako `running`.
+    runnerRef.current = null;
+    // Zapsat hned, ne až po snímcích. Rozvrh stavby může doběhnout uvnitř jedné
+    // dávky tiků a fáze, která začne a skončí mezi dvěma snímky, v záznamu není —
+    // týž důvod, proč `record()` zapisuje i při dotazu zvenčí.
+    record();
     // Nový OBJEKT téhož dokumentu. `WorldScene` si běh, scénu i rozvrh stavby drží
     // podle identity `world`, takže restart bez nové identity by jen vysypal frontu
     // a nechal rozehraný svět běžet dál.
     setWorld((was) => (was === null ? null : { ...was }));
-  }, [controls]);
+  }, [controls, record]);
 
   useEffect(() => {
     window.__game = {

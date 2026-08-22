@@ -155,6 +155,14 @@ describe('fáze hry', () => {
     expect(phaseOf({ ...base, revealed: 0, runState: 'won' })).toBe('won');
   });
 
+  it('svět bez běhu se čte jako building, i když ten předchozí skončil výhrou', () => {
+    // Na téhle kombinaci stojí restart: `page.tsx` při něm uvolní odkaz na starý
+    // vyhraný běh právě proto, aby se fáze nečetla z něj. Kdyby tohle vracelo
+    // `won`, restart by se v záznamu fází neprojevil vůbec a `building` by se
+    // podruhé nezapsalo — přesně ta vada, kterou měřila T23q.
+    expect(phaseOf({ hasWorld: false, revealed: 0, total: 1, runState: 'running' })).toBe('building');
+  });
+
   it('prohra i běhová vada jsou prohra', () => {
     expect(phaseOf({ ...base, runState: 'lost' })).toBe('lost');
     expect(phaseOf({ ...base, runState: 'runtimeFault' })).toBe('lost');
