@@ -235,9 +235,11 @@ export class SpendCap {
       return {
         ok: false,
         reason: 'CALL_CAP_EXHAUSTED',
-        // Bez čísel: `detail` jde volajícímu, který se nemusí dozvědět, kolik
-        // provozu operátorovi zbývá.
-        detail: 'the call cap for this process is used up; no further calls will be made',
+        // Čísla tu být SMÍ a mají: tenhle text je pro operátora, je to jediná
+        // diagnostika, kterou má (logovací kanál pod tímhle není). Ořez pro
+        // veřejnost dělá `PUBLIC_REFUSAL` v `src/app/api/generate/route.ts` —
+        // dělí se to tam, aby žádná příčina neodešla ven omylem.
+        detail: `the call cap of ${callCap} calls is used up (made ${this.#callsMade}); this call was not made`,
         snapshot: this.snapshot(),
       };
 

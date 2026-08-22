@@ -120,6 +120,48 @@ describe('POST /api/generate', () => {
     expect(json.error?.code).toBe('CAP_EXHAUSTED');
   });
 
+  it('odmítnutí stropem neposílá ven čísla ani cestu na disk', async () => {
+    // `/api/generate` nechce přihlášení (AC T301), takže „ven" znamená komukoli
+    // na internetu. Přesný zbytek rozpočtu umožňuje načasovat zneužití a
+    // absolutní cesta prozradí rozvržení souborů serveru včetně jména účtu.
+    // Text pro operátora čísla nese dál — ořezává se až tady, viz PUBLIC_REFUSAL.
+    const { status, json } = await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+      WORLDSMITH_BRANCH: 'live',
+      WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+      WORLDSMITH_MODEL_KEY: 'test-key',
+      WORLDSMITH_USD_PER_MTOK_OUT: '15',
+      WORLDSMITH_SPEND_CAP_USD: '0',
+    });
+
+    expect(status).toBe(429);
+    expect(json.error?.code).toBe('CAP_EXHAUSTED');
+    const message = String(json.error?.message);
+    expect(message, 'ven odešlo číslo').not.toMatch(/\d/);
+    expect(message, 'ven odešla cesta na disk').not.toMatch(/[\/]/);
+  });
+
+  it('rozbitý vypínač neprozradí cestu k ovládacímu souboru', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'worldsmith-route-'));
+    const path = join(dir, 'spend-cap.json');
+    writeFileSync(path, 'tohle není JSON', 'utf8');
+
+    try {
+      const { status, json } = await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        WORLDSMITH_SPEND_CAP_FILE: path,
+      });
+
+      expect(status).toBe(503);
+      expect(json.error?.code).toBe('CONTROL_UNREADABLE');
+      expect(String(json.error?.message), 'ven odešla cesta k souboru').not.toContain(dir);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it('vyčerpaný počet volání je taky 429, i když dolary zbývají', async () => {
     // Druhá pojistka vedle dolarové: ta stojí na ceníku opsaném ručně, takže
     // překlep o tři řády ji roztáhne milionkrát. Rozpočet je tu schválně

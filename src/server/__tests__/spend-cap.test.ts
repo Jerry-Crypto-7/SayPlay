@@ -227,12 +227,15 @@ describe('strop na počet volání drží i tehdy, když je ceník opsaný špat
     expect(cap.snapshot().callsMade).toBe(1);
   });
 
-  it('detail odmítnutí neprozradí čísla — jde anonymnímu volajícímu', () => {
+  it('detail pro operátora čísla nese — ořez pro veřejnost dělá routa', () => {
+    // Vlastnost „ven nejdou čísla" se testuje na routě, ne tady: tenhle text je
+    // jediná diagnostika, kterou operátor má, a kdyby si ho ořezával strop sám,
+    // nepřišel by o ni jen útočník. Viz `PUBLIC_REFUSAL` v route.ts.
     const cap = new SpendCap({ enabled: true, capUsd: 10, callCap: 1 });
     cap.reserve(0.001);
     const refused = cap.reserve(0.001);
     if (refused.ok) throw new Error('unreachable');
-    expect(refused.detail).not.toMatch(/\d/);
+    expect(refused.detail).toMatch(/\d/);
   });
 
   it('vypnutý vypínač počet volání neomezuje, ale pořád ho počítá', () => {
