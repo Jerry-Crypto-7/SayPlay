@@ -363,3 +363,15 @@ _Žádná položka._
 
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá.
+
+## Vlastní, ne třetí strana (5)
+
+Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
+`RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
+aby se registrací nedalo nic z výpisu odstranit.
+
+- **gemini-9-pro** (model): vymyšlený identifikátor v scripts/__tests__/submission-check-gate.test.ts. Produkt žádný model Google nevolá; zapsat ho jako třetí stranu by bylo nepravdivé tvrzení o tom, co projekt používá.
+- **gpt-neexistuje** (model): vymyšlený identifikátor v evals/harness/__tests__/live.test.ts: oracle větve „poskytovatel takový model nemá". Žádný model tohoto jména neexistuje.
+- **gpt-test** (model): vymyšlený identifikátor v evals/harness/__tests__/kill-gate.test.ts. Existuje právě proto, aby ho registr NEznal — přejmenovat ho na tvar mimo `modelIdsIn` by test nechalo zeleně měřit nic.
+- **mistral-42-large** (model): vymyšlený identifikátor v scripts/__tests__/submission-check-gate.test.ts: oracle větve „model jmenovaný v testu, který registr nezná". Produkt žádný model Mistral AI nevolá a model tohoto jména neexistuje.
+- **vlastní zdroje nad prahem literálů** (dataset): Testy, fixtury a samotné skripty brány, které nesou víc než 4 096 B literálů. Napsané v tomhle repozitáři, nikdo třetí je nevlastní. V registru jsou proto, že `submission-check` kontrola 6 (d) žádá položku pro každý soubor nad prahem — váha literálů neumí odlišit první stranu od třetí, a to je vlastnost prahu, ne vada zápisu.

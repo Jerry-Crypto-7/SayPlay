@@ -2339,6 +2339,12 @@
       "reviewNote": "Model emisní cesty (src/model/prompt.ts, EMISSION_MODEL). Produkční endpoint je v režimu záznamu a živé volání neprovádí."
     },
     {
+      "name": "gemini-9-pro",
+      "kind": "model",
+      "firstParty": true,
+      "reason": "vymyšlený identifikátor v scripts/__tests__/submission-check-gate.test.ts. Produkt žádný model Google nevolá; zapsat ho jako třetí stranu by bylo nepravdivé tvrzení o tom, co projekt používá."
+    },
+    {
       "name": "gpt-5.6",
       "kind": "model",
       "source": "https://platform.openai.com/docs/models",
@@ -2387,6 +2393,24 @@
       "reviewNote": "Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je."
     },
     {
+      "name": "gpt-neexistuje",
+      "kind": "model",
+      "firstParty": true,
+      "reason": "vymyšlený identifikátor v evals/harness/__tests__/live.test.ts: oracle větve „poskytovatel takový model nemá\". Žádný model tohoto jména neexistuje."
+    },
+    {
+      "name": "gpt-test",
+      "kind": "model",
+      "firstParty": true,
+      "reason": "vymyšlený identifikátor v evals/harness/__tests__/kill-gate.test.ts. Existuje právě proto, aby ho registr NEznal — přejmenovat ho na tvar mimo `modelIdsIn` by test nechalo zeleně měřit nic."
+    },
+    {
+      "name": "mistral-42-large",
+      "kind": "model",
+      "firstParty": true,
+      "reason": "vymyšlený identifikátor v scripts/__tests__/submission-check-gate.test.ts: oracle větve „model jmenovaný v testu, který registr nezná\". Produkt žádný model Mistral AI nevolá a model tohoto jména neexistuje."
+    },
+    {
       "name": "Qwen3-1.7B-q4f16_1-MLC",
       "kind": "model",
       "source": "https://huggingface.co/mlc-ai/Qwen3-1.7B-q4f16_1-MLC",
@@ -2400,6 +2424,34 @@
       ],
       "attribution": "Qwen3 © Alibaba Group, Apache-2.0; konverze do MLC formátu mlc-ai, https://huggingface.co/mlc-ai/Qwen3-1.7B-q4f16_1-MLC",
       "reviewNote": "Váhy modelu emisní cesty, které si prohlížeč stáhne za běhu (src/model/local/**, WebLLM). Nejsou v repozitáři ani v bundlu, proto to není položka kind: asset. Kvantizace q4f16_1, 979 MB. Sync je nechává být — z package-lock.json se váhy odvodit nedají."
+    },
+    {
+      "name": "vlastní zdroje nad prahem literálů",
+      "kind": "dataset",
+      "firstParty": true,
+      "reason": "Testy, fixtury a samotné skripty brány, které nesou víc než 4 096 B literálů. Napsané v tomhle repozitáři, nikdo třetí je nevlastní. V registru jsou proto, že `submission-check` kontrola 6 (d) žádá položku pro každý soubor nad prahem — váha literálů neumí odlišit první stranu od třetí, a to je vlastnost prahu, ne vada zápisu.",
+      "paths": [
+        "evals/contracts/__tests__/gold-frozen.test.ts",
+        "evals/gates/__tests__/divergence-lock.test.ts",
+        "evals/gates/run/kill-gate.ts",
+        "evals/harness/__tests__/live.test.ts",
+        "evals/scorer/__tests__/mutations.ts",
+        "evals/scorer/semantic.ts",
+        "scripts/__tests__/blind-check.test.ts",
+        "scripts/__tests__/license-gate.test.ts",
+        "scripts/__tests__/submission-check-gate.test.ts",
+        "scripts/license-gate.mjs",
+        "scripts/submission-check.mjs",
+        "src/app/api/edit/__tests__/route.test.ts",
+        "src/fallback/__tests__/isolation.test.ts",
+        "src/ir/__tests__/two-revisions.test.ts",
+        "src/model/prompt.ts",
+        "src/patch/__tests__/repair.test.ts",
+        "src/patch/__tests__/router.test.ts",
+        "src/patch/__tests__/transaction.test.ts",
+        "src/server/__tests__/admission.test.ts",
+        "src/sim/__tests__/totality.test.ts"
+      ]
     },
     {
       "name": "zmrazený korpus promptů a kontraktů (evals/frozen, evals/gold.jsonl)",

@@ -5,7 +5,7 @@
   "backendUrl": "TODO: adresa, na které backend odpovídá (P2 T205b)",
   "videoPath": "video/final.mp4",
   "descriptionPath": "docs/submission/description.md",
-  "modelTablePath": "src/model/prompt.ts",
+  "modelTablePaths": ["src/model/prompt.ts", "evals/harness/preflight.ts"],
   "monitoringPath": "ops/monitoring/uptime.json",
   "dataDirs": ["evals/frozen", "evals/contracts/gold"],
   "measurementReports": ["evals/gates/kill-gate-2026-09-15.md"]
