@@ -3,6 +3,7 @@ import { ACESFilmicToneMapping, Matrix4, PCFSoftShadowMap, PerspectiveCamera, Ve
 
 import { compileGeomProgram } from '../src/geom/compile';
 import { FAMILIES } from '../src/geom/families';
+import { GEOM_VERSION, type GeomProgram } from '../src/geom/program';
 import { KIT_BUDGETS, VIEWER_BUDGETS, trianglesOf } from '../src/kit/budgets';
 import { MIN_FIGURE_GROUND_SEPARATION, PALETTES, repaint } from '../src/kit/palettes';
 import { FOG, KEY_LIGHT, SHADOW_MAP_TYPE, TOON_LEVELS } from '../src/components/viewer/Lighting';
@@ -145,6 +146,34 @@ const FAMILY_SEED = 101;
 const MIN_FRAME_COVERAGE = 0.05;
 
 /**
+ * Podlaha podílu plochy, kterou zabírá **postavený obsah** — všechno kromě zemi.
+ *
+ * Naměřená vada z 24. 8. 2026: zem zabírala 65 až 91 % snímku a to, co na ní
+ * stálo, 1 až 9 %. Rodiny se četly jako prázdná placka, protože deska terénu
+ * přebila všechno ostatní.
+ *
+ * **Neměří se „druhá nejčastější barva", i když tak zní zadání úlohy.** Ta
+ * metrika má naměřenou díru: u Háje je druhá nejčastější barva pořád zem (dva
+ * stupně téže zelené), takže by ji šlo splnit dvoubarevným terénem a obrázek
+ * by se nezměnil. Měří se proto plocha, která **není žádná z barev terénu** —
+ * a barvy terénu se berou z druhého kreslení téhož programu bez všeho, co na
+ * něm stojí. Nic se neodhaduje: je to týž shader a týž pixel.
+ *
+ * Kus figury, který má barvu zemi, se počítá jako zem. Podlaha je tím přísnější,
+ * ne shovívavější — a odpovídá tomu, co oko vidí: co má barvu podkladu, na
+ * podkladu není vidět.
+ */
+const MIN_FIGURE_AREA_SHARE = 0.15;
+
+/**
+ * Strop téhož podílu. Svět musí stát na zemi, kterou je vidět — a měření, které
+ * by za figuru označilo celý snímek, by podlahu výš splnilo, aniž by o obrázku
+ * cokoli tvrdilo. Tohle je ta druhá strana: podlaha hlídá scénu, strop hlídá
+ * měření.
+ */
+const MAX_FIGURE_AREA_SHARE = 0.9;
+
+/**
  * Kolik stupňů musí rampa přes snímek najít.
  *
  * Měří se **poměr stínovaného jasu k plochému na témž pixelu**, ne počet jasů ve
@@ -163,6 +192,8 @@ interface FamilyFrame {
   readonly groundLuminance: number;
   /** Jas druhé nejčastější. To je, co na zemi stojí. */
   readonly figureLuminance: number;
+  /** Podíl osvětlené plochy, který nemá žádnou z barev terénu. */
+  readonly figureShare: number;
 }
 
 const FAMILY_VERTEX_SHADER = `#version 300 es
@@ -207,10 +238,25 @@ test('čtyři rodiny se vejdou do rozpočtu a na snímku se čtou jako svět', a
   await page.goto('about:blank');
 
   const light = new Vector3(...KEY_LIGHT.position).normalize();
+  // Podíl figury se sbírá a soudí až za smyčkou, aby jeden běh vydal všechny
+  // čtyři rodiny. Aserce uvnitř zastaví na první a o zbylých třech neřekne nic,
+  // což je u čísla, které se ladí kompozicí, ten dražší způsob měření.
+  const shares: { id: string; share: number }[] = [];
 
   for (const family of FAMILIES) {
-    const geometry = compileGeomProgram(family.compose(FAMILY_SEED));
+    const program = family.compose(FAMILY_SEED);
+    const geometry = compileGeomProgram(program);
     repaint(geometry, PALETTES[family.palette]);
+
+    // Týž program bez všeho, co na zemi stojí. Slouží k jedinému: říct, které
+    // barvy na snímku JSOU zem. Odvodit je z palety nejde — shader píše pixel
+    // přes vlastní gamma korekci, takže bajt v obrázku se s hexem palety
+    // nerovná a porovnání by tiše selhalo na zaokrouhlení.
+    const terrain = program.nodes.find((node) => node.kind === 'terrain');
+    expect(terrain, `${family.id} nemá terén — bez něj se zem od figury neodliší`).toBeDefined();
+    const groundOnly: GeomProgram = { version: GEOM_VERSION, nodes: [terrain!], root: 0 };
+    const groundGeometry = compileGeomProgram(groundOnly);
+    repaint(groundGeometry, PALETTES[family.palette]);
 
     // Rozpočet. Program se kompiluje do JEDNÉ `BufferGeometry`, takže svět
     // rodiny je jedno kreslicí volání — proto se počítá zvlášť a ne přes
@@ -225,19 +271,25 @@ test('čtyři rodiny se vejdou do rozpočtu a na snímku se čtou jako svět', a
       `${family.id} se musí vejít do stropu kreslicích volání na snímek`,
     ).toBeLessThanOrEqual(VIEWER_BUDGETS.maxDrawCallsPerFrame);
 
-    const base64 = (name: string) =>
-      Buffer.from((geometry.getAttribute(name).array as Float32Array).buffer).toString('base64');
-    const packed = {
-      position: base64('position'),
-      color: base64('color'),
-      normal: base64('normal'),
-      vertices: geometry.getAttribute('position').count,
+    const pack = (source: typeof geometry) => {
+      const base64 = (name: string) =>
+        Buffer.from((source.getAttribute(name).array as Float32Array).buffer).toString('base64');
+      return {
+        position: base64('position'),
+        color: base64('color'),
+        normal: base64('normal'),
+        vertices: source.getAttribute('position').count,
+      };
     };
+    const packed = pack(geometry);
+    const packedGround = pack(groundGeometry);
     geometry.dispose();
+    groundGeometry.dispose();
 
     const measured = await page.evaluate(
       async ({
         packed,
+        packedGround,
         size,
         viewProjection,
         light,
@@ -281,17 +333,20 @@ test('čtyři rodiny se vejdou do rozpočtu a na snímku se čtou jako svět', a
         }
         gl.useProgram(program);
 
-        for (const [name, value] of [
-          ['aPosition', packed.position],
-          ['aColor', packed.color],
-          ['aNormal', packed.normal],
-        ] as const) {
-          const location = gl.getAttribLocation(program, name);
-          gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-          gl.bufferData(gl.ARRAY_BUFFER, decode(value), gl.STATIC_DRAW);
-          gl.enableVertexAttribArray(location);
-          gl.vertexAttribPointer(location, 3, gl.FLOAT, false, 0, 0);
-        }
+        const upload = (source: typeof packed): void => {
+          for (const [name, value] of [
+            ['aPosition', source.position],
+            ['aColor', source.color],
+            ['aNormal', source.normal],
+          ] as const) {
+            const location = gl.getAttribLocation(program, name);
+            gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+            gl.bufferData(gl.ARRAY_BUFFER, decode(value), gl.STATIC_DRAW);
+            gl.enableVertexAttribArray(location);
+            gl.vertexAttribPointer(location, 3, gl.FLOAT, false, 0, 0);
+          }
+        };
+        upload(packed);
 
         gl.uniformMatrix4fv(
           gl.getUniformLocation(program, 'uViewProjection'),
@@ -306,11 +361,11 @@ test('čtyři rodiny se vejdou do rozpočtu a na snímku se čtou jako svět', a
         gl.enable(gl.DEPTH_TEST);
 
         /** Jedno kreslení a odečet pixelů. Alfa 0 na pozadí nese siluetu. */
-        const draw = (shade: number): Uint8Array => {
+        const draw = (shade: number, vertices: number): Uint8Array => {
           gl.uniform1f(shadeAt, shade);
           gl.clearColor(0, 0, 0, 0);
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-          gl.drawArrays(gl.TRIANGLES, 0, packed.vertices);
+          gl.drawArrays(gl.TRIANGLES, 0, vertices);
           const pixels = new Uint8Array(size * size * 4);
           gl.readPixels(0, 0, size, size, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
           return pixels;
@@ -318,13 +373,13 @@ test('čtyři rodiny se vejdou do rozpočtu a na snímku se čtou jako svět', a
 
         const luminance = (r: number, g: number, b: number) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
 
-        const shaded = draw(1);
+        const shaded = draw(1, packed.vertices);
         let lit = 0;
         for (let index = 0; index < size * size; index += 1) {
           if (shaded[index * 4 + 3] !== 0) lit += 1;
         }
 
-        const flat = draw(0);
+        const flat = draw(0, packed.vertices);
 
         // Stupeň rampy = poměr stínovaného jasu k plochému na témž pixelu.
         // Odstín se vykrátí, takže zbude jen to, co udělalo světlo.
@@ -352,15 +407,35 @@ test('čtyři rodiny se vejdou do rozpočtu a na snímku se čtou jako svět', a
           return luminance(r, g, b);
         };
 
+        // Druhé kreslení: jenom zem, táž kamera, týž shader. Barvy, které se
+        // v něm objeví, jsou zem — a všechno ostatní ve snímku výš je figura.
+        const keyAt = (pixels: Uint8Array, index: number) =>
+          `${pixels[index * 4]},${pixels[index * 4 + 1]},${pixels[index * 4 + 2]}`;
+
+        upload(packedGround);
+        const groundFrame = draw(0, packedGround.vertices);
+        const groundColors = new Set<string>();
+        for (let index = 0; index < size * size; index += 1) {
+          if (groundFrame[index * 4 + 3] !== 0) groundColors.add(keyAt(groundFrame, index));
+        }
+
+        let figure = 0;
+        for (let index = 0; index < size * size; index += 1) {
+          if (flat[index * 4 + 3] === 0) continue;
+          if (!groundColors.has(keyAt(flat, index))) figure += 1;
+        }
+
         return {
           coverage: lit / (size * size),
           rampSteps: rampSteps.size,
           groundLuminance: ranked.length > 0 ? luminanceOfKey(ranked[0][0]) : 0,
           figureLuminance: ranked.length > 1 ? luminanceOfKey(ranked[1][0]) : 0,
+          figureShare: lit > 0 ? figure / lit : 0,
         };
       },
       {
         packed,
+        packedGround,
         size: FRAME,
         viewProjection: familyCamera(family.proportions.footprint, family.proportions.height),
         light: [light.x, light.y, light.z],
@@ -385,6 +460,8 @@ test('čtyři rodiny se vejdou do rozpočtu a na snímku se čtou jako svět', a
     // Háj 38, takže obojí se četlo jako jedna plocha. Tahle aserce je ta podlaha —
     // a je to ona, kdo chytil, že první oprava Háje mířila podle podílu vrcholů
     // na kmeny místo na porost, který zabírá plochu.
+    shares.push({ id: family.id, share: measured.figureShare });
+
     const separation = Math.abs(measured.groundLuminance - measured.figureLuminance);
     expect(
       separation,
@@ -392,6 +469,21 @@ test('čtyři rodiny se vejdou do rozpočtu a na snímku se čtou jako svět', a
         `(jas ${measured.figureLuminance.toFixed(0)}), jsou od sebe jen ${separation.toFixed(0)} bodů`,
     ).toBeGreaterThanOrEqual(MIN_FIGURE_GROUND_SEPARATION);
   }
+
+  // Naměřená vada z 24. 8. 2026: zem 65 až 91 % snímku, postavený obsah 1 až 9 %.
+  const report = shares.map((entry) => `${entry.id} ${(entry.share * 100).toFixed(1)} %`).join(', ');
+  const thin = shares.filter((entry) => entry.share < MIN_FIGURE_AREA_SHARE);
+  expect(
+    thin.map((entry) => entry.id),
+    `postavený obsah zabírá míň než ${(MIN_FIGURE_AREA_SHARE * 100).toFixed(0)} % ` +
+      `osvětlené plochy — naměřeno: ${report}`,
+  ).toEqual([]);
+
+  const groundless = shares.filter((entry) => entry.share > MAX_FIGURE_AREA_SHARE);
+  expect(
+    groundless.map((entry) => entry.id),
+    `ze snímku zmizela zem, na které svět stojí — naměřeno: ${report}`,
+  ).toEqual([]);
 });
 
 /**

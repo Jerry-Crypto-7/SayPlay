@@ -13,13 +13,18 @@ export const spires: Family = {
   title: 'Věže',
   palette: 'frost',
   silhouette: 'sloupy na sobě, svislé pásy, brána vysoko nad zemí',
-  proportions: { footprint: 12, height: 18, pieces: 32 },
+  proportions: { footprint: 16, height: 29, pieces: 32 },
 
   compose(seed: number): GeomProgram {
     const stream = familyStream(seed);
-    const floors = nextInt(stream, 4, 5);
-    const towers = nextInt(stream, 3, 4);
-    const outliers = nextInt(stream, 5, 7);
+    // Kolik pater a kolik věží stojí v řadě je vlastnost rodiny, ne semínka.
+    // Když to losoval seed, měnil výšku a šířku celé siluety a dvě semínka Věží
+    // se rozešla víc než dvě rodiny — naměřeno 24. 8. 2026 profilem 0,066 proti
+    // stropu 0,012. Semínku zůstává terén a rozmístění sloupů kolem, tedy
+    // rozmístění kusů; silueta rodiny je pevná.
+    const floors = 5;
+    const towers = 5;
+    const outliers = nextInt(stream, 8, 10);
 
     return {
       version: GEOM_VERSION,
@@ -27,21 +32,21 @@ export const spires: Family = {
         {
           kind: 'terrain',
           variant: 'ridge',
-          extent: [26, 26],
-          amplitude: 5,
+          extent: [22.4, 22.4],
+          amplitude: 8,
           seed: nextInt(stream, 0, 100_000),
         },
-        { kind: 'column', variant: 'pillar', at: [-6, 2, 0], scale: [1, 4, 1] },
-        { kind: 'repeat', child: 1, count: floors, step: [0, 3.9, 0] },
-        { kind: 'repeat', child: 2, count: towers, step: [4, 0, 0] },
-        { kind: 'mirror', child: 3, axis: 'z', about: 2 },
-        { kind: 'arch', variant: 'portal', at: [0, 15, 1], scale: [1.6, 1.6, 1.6] },
-        { kind: 'column', variant: 'twisted', at: [0, 1.5, 0], scale: [1, 3, 1] },
+        { kind: 'column', variant: 'pillar', at: [-9.6, 3.2, 0], scale: [6.4, 6.4, 6.4] },
+        { kind: 'repeat', child: 1, count: floors, step: [0, 6.2, 0] },
+        { kind: 'repeat', child: 2, count: towers, step: [3.8, 0, 0] },
+        { kind: 'mirror', child: 3, axis: 'z', about: 3.2 },
+        { kind: 'arch', variant: 'portal', at: [0, 24, 1.6], scale: [5.8, 5.8, 5.8] },
+        { kind: 'column', variant: 'twisted', at: [0, 2.4, 0], scale: [4.8, 4.8, 4.8] },
         {
           kind: 'scatter',
           child: 6,
           count: outliers,
-          radius: 10,
+          radius: 7.2,
           seed: nextInt(stream, 0, 100_000),
         },
         { kind: 'group', children: [0, 4, 5, 7] },
