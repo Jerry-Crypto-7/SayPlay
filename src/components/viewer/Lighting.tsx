@@ -87,6 +87,26 @@ export const SHADOW_MAP_TYPE: number = VSMShadowMap;
 const SHADOW_EXTENT = 16;
 
 /**
+ * Hlavní světlo jako **data, ne jen jako atributy v JSX**.
+ *
+ * Vyváží se schválně. Do T25 si každé měření siluety psalo vlastní směr světla —
+ * `e2e/divergence.spec.ts` má `Vector3(0.4, 0.85, 0.3)`, nikde neodvozený od
+ * rigu — takže snímek, nad kterým se soudil vzhled rodin, byl nasvícený jinak
+ * než produkt. Dvě čísla pro totéž rozhodnutí se rozejdou; tohle je to jedno.
+ */
+export const KEY_LIGHT = {
+  position: [7, 12, 5],
+  intensity: 1.55,
+  color: '#ffeccd',
+} as const;
+
+/**
+ * Stupně toon rampy. Vyváží se ze stejného důvodu jako `KEY_LIGHT` — měření,
+ * které si stupně napíše po svém, soudí jiné stínování než produkt.
+ */
+export const TOON_LEVELS: readonly number[] = [40, 110, 190, 255];
+
+/**
  * Toon rampa jako skutečná textura.
  *
  * Bydlí u rigu, protože je to druhá polovina téhož rozhodnutí: rampa říká, jak
@@ -98,7 +118,7 @@ const SHADOW_EXTENT = 16;
  * úklidu po padesátinásobném přepnutí by o jejich uvolnění netvrdil nic.
  */
 export function toonRamp(): DataTexture {
-  const levels = new Uint8Array([40, 110, 190, 255]);
+  const levels = new Uint8Array(TOON_LEVELS);
   const texture = new DataTexture(levels, levels.length, 1, RedFormat);
   texture.minFilter = LinearFilter;
   texture.magFilter = LinearFilter;
@@ -133,9 +153,9 @@ export default function Lighting() {
       <hemisphereLight args={['#8fc9c2', '#12191c', 0.5]} />
       <directionalLight
         castShadow
-        position={[7, 12, 5]}
-        intensity={1.55}
-        color="#ffeccd"
+        position={[...KEY_LIGHT.position]}
+        intensity={KEY_LIGHT.intensity}
+        color={KEY_LIGHT.color}
         shadow-mapSize={[VIEWER_BUDGETS.shadowMapSize, VIEWER_BUDGETS.shadowMapSize]}
         shadow-camera-left={-SHADOW_EXTENT}
         shadow-camera-right={SHADOW_EXTENT}

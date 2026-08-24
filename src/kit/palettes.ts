@@ -30,7 +30,15 @@ export const PALETTES = {
     moss: '#7d8b4a',
   },
   thicket: {
-    shell: '#7d8a72',
+    // Světlejší než původní `#7d8a72`. V rodině **Háj** je zem `moss` a druhou
+    // největší PLOCHU na snímku zabírá `shell` — široké plochy porostu. Naměřeno
+    // 24. 8. 2026 jen **38 bodů jasu** mezi nimi, pod podlahou 40, a scéna se čte
+    // jako jedna zelená plocha. Teď je odstup 61.
+    //
+    // Měří se plocha na snímku, ne podíl vrcholů. První oprava mířila podle
+    // vrcholů na `warm` (kmeny, 24 % vrcholů) a minula: kmeny jsou tenké a na
+    // obrazovce jich skoro není. Zachytil to až `e2e/render-quality.spec.ts`.
+    shell: '#93a086',
     deep: '#2f3d2e',
     accent: '#8fbf4a',
     warm: '#a5713a',
@@ -42,7 +50,11 @@ export const PALETTES = {
     deep: '#2b3237',
     accent: '#e2622c',
     warm: '#8a5a33',
-    sand: '#b9b2a3',
+    // Tmavší než původní `#b9b2a3`. V rodině **Hutě** nese `sand` zem a `shell`
+    // bloky, které na ní stojí — naměřeno 24. 8. 2026 jen **17 bodů jasu** mezi
+    // nimi, nejtěsnější dvojice ze všech čtyř rodin, a scéna se čte jako šedé
+    // krabice na béžovém stole. Teď je odstup 42.
+    sand: '#7d776b',
     moss: '#4f6a5c',
   },
   dunes: {
@@ -64,6 +76,39 @@ export const PALETTES = {
 } as const satisfies Record<string, Palette>;
 
 export type PaletteName = keyof typeof PALETTES;
+
+/**
+ * Jas odstínu, 0 až 255. Váhy jsou z BT.709, tedy tytéž, kterými se počítá
+ * jas na obrazovce — ne prostý průměr kanálů, protože zelená se do dojmu
+ * ze světlosti promítá zhruba sedmkrát silněji než modrá.
+ *
+ * Počítá se ze **zápisu v sRGB**, ne z lineární hodnoty: rozhoduje se tu o
+ * tom, co člověk uvidí, a to je ta čísla, která stojí v paletě.
+ */
+export function luminanceOf(hex: string): number {
+  const value = Number.parseInt(hex.slice(1), 16);
+  return 0.2126 * ((value >> 16) & 255) + 0.7152 * ((value >> 8) & 255) + 0.0722 * (value & 255);
+}
+
+/**
+ * Nejmenší odstup jasu mezi **zemí a tím, co na ní stojí**.
+ *
+ * Není to estetické přání, je to naměřená podlaha. 24. 8. 2026 se všechny čtyři
+ * rodiny vyrenderovaly a změřila se **plocha na snímku** podle odstínu: největší
+ * plochu nese v každé rodině zem, druhou největší to, co na ní stojí. Odstup
+ * těch dvou vyšel **129** (Věže), **96** (Terasy), **38** (Háj) a **17** (Hutě)
+ * — a přesně ty dvě rodiny s nejmenším odstupem se na snímku četly jako jedna
+ * plocha bez obsahu. 40 je pod nejnižší dvojicí, která ještě čitelná byla.
+ *
+ * **Plocha na snímku, ne podíl vrcholů.** U Háje se ty dvě míry rozcházejí:
+ * podle vrcholů vychází jako figura `warm` (kmeny, 24 % vrcholů), podle plochy
+ * `shell` (porost). Kmeny jsou tenké, takže na obrazovce skoro nejsou — a
+ * rozhoduje to, co je vidět. Které jméno slotu je zem, rozhoduje geometrie
+ * rodiny, ne název.
+ *
+ * Hlídá to `e2e/render-quality.spec.ts` nad vyrenderovaným snímkem.
+ */
+export const MIN_FIGURE_GROUND_SEPARATION = 40;
 
 /**
  * Role, které scéna kreslí. Jména jsou sémantická, ne barevná — `goal` zůstane

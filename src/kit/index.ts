@@ -26,10 +26,12 @@ export {
   type Placement,
 } from './layouts';
 export {
+  MIN_FIGURE_GROUND_SEPARATION,
   PALETTES,
   SCENE_ROLES,
   UI_TOKENS,
   UI_TOKENS_CVD,
+  luminanceOf,
   repaint,
   type Palette,
   type PaletteName,

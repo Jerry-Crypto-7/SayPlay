@@ -39,6 +39,7 @@
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import FirstRun from '@/components/hud/FirstRun';
 import Program from '@/components/pipeline/Program';
 import Timeline from '@/components/pipeline/Timeline';
 import WitnessPreview from '@/components/pipeline/WitnessPreview';
@@ -265,6 +266,12 @@ export default function Page() {
           setPrograms((was) => ({ current: next, previous: was.current }));
         }}
       />
+      {/* Prázdný stav plátna. Mizí, jakmile návštěvník poprvé odešle větu — i
+          když se z ní svět postavit nepodařilo, protože pak mluví hláška o
+          chybě a dvě sdělení přes sebe by si braly pozornost. Stojí AŽ ZA
+          `PromptBar`, aby prvním interaktivním prvkem stránky zůstal vstup
+          pro větu; hlídá to `e2e/render-quality.spec.ts`. */}
+      {world === null && programs.current === null ? <FirstRun /> : null}
       {broken ? (
         <p data-testid="world-broken" role="alert" style={BROKEN}>
           Model vrátil svět, který se nedá spustit.
