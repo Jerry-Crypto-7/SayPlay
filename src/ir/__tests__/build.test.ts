@@ -256,3 +256,88 @@ describe('systémové vazby, které model neautoruje', () => {
     });
   });
 });
+
+describe('soket mimo mřížku', () => {
+  /**
+   * Soket mimo rozvržení je **tichý průchod vadné emise**, ne kosmetika.
+   *
+   * `stepToward` odmítne krok mimo mřížku, takže `moveTo` na takový soket nikdy
+   * nedojde, hrana příchodu nikdy nenastane a entita stojí do konce běhu. Nic
+   * nespadne a nic se nenahlásí — svět se přijme a nedá se dohrát.
+   *
+   * **Oracle je ručně psaný, protože zmrazený korpus tuhle vadu nemá.**
+   * Naměřeno nad všemi 40 zmrazenými záznamy: 13 create těl nese rozvržení
+   * i sokety a **0 z nich má soket mimo mřížku**. Kontrola tedy nemění, co
+   * korpus vydá — a právě proto ji korpus sám neuhlídá.
+   */
+  function simWithSocket(cell: readonly [number, number]) {
+    return {
+      layout: { width: 12, height: 8 },
+      sockets: { spawn: [1, 3], far: cell },
+      entities: {
+        player: { role: 'actor', socket: 'spawn', state: 'idle' },
+        goalPost: { role: 'goal', socket: 'far', state: 'idle' },
+      },
+      state: { counters: {}, flags: {}, timers: {}, zones: {} },
+      rules: {
+        arrive: {
+          phase: 0,
+          priority: 0,
+          event: { kind: 'onAction', actionId: 'moveTo', target: 'goalPost' },
+          condition: null,
+          actions: [{ kind: 'win' }],
+        },
+      },
+      witness: { tier: 'short', H_cert: 600, ops: [{ tick: 0, actionId: 'moveTo', target: 'goalPost' }] },
+    };
+  }
+
+  /**
+   * Každá ze čtyř hran má vlastní případ, a to schválně.
+   *
+   * Kdyby se testovalo jen `[50, 50]`, přežila by mutace, která kontroluje
+   * pouhou osu X — porušené jsou tam obě zároveň. Tahle tabulka drží každou
+   * mez samostatně, takže vypadlá polovina podmínky se ozve.
+   */
+  const mimoMrizku: readonly (readonly [string, readonly [number, number]])[] = [
+    ['za pravým okrajem', [13, 3]],
+    ['pod spodním okrajem', [3, 9]],
+    ['záporné x', [-1, 3]],
+    ['záporné y', [3, -1]],
+  ];
+
+  for (const [kde, cell] of mimoMrizku) {
+    it(`soket ${kde} se odmítne a hláška ho pojmenuje`, () => {
+      const built = buildRuntimeWorld(simWithSocket(cell));
+      expect(built.ok).toBe(false);
+      if (built.ok) return;
+      expect(built.reason).toBe('UNSUPPORTED_SURFACE');
+      // Jméno soketu v hlášce je součást AC: bez něj se ve světě o dvaceti
+      // socketech nedá dohledat, který z nich je ten vadný.
+      expect(built.issues.join(' | ')).toContain('far');
+      expect(built.issues.join(' | ')).toContain(`[${cell[0]}, ${cell[1]}]`);
+    });
+  }
+
+  /**
+   * Hranice se měří, ne odhaduje.
+   *
+   * `stepToward` pouští krok při `nx <= gridWidth` a `createRuntime` dosazuje
+   * slotům entit `max: gridWidth`, takže poslední průchozí buňka je `gridWidth`
+   * SAMA, ne `gridWidth - 1`. Přísnější kontrola (`>= gridWidth`) by prošla
+   * všemi případy výš a přitom odmítala světy, které dnes fungují — proto
+   * tenhle test drží obě strany hrany, ne jen tu vadnou.
+   */
+  it('poslední průchozí buňka projde na obou osách', () => {
+    expect(buildRuntimeWorld(simWithSocket([12, 8])).ok).toBe(true);
+    expect(buildRuntimeWorld(simWithSocket([12, 3])).ok).toBe(true);
+    expect(buildRuntimeWorld(simWithSocket([3, 8])).ok).toBe(true);
+  });
+
+  it('bez vady se týž svět postaví a dohraje — kontrola nic neubrala', () => {
+    const built = buildRuntimeWorld(simWithSocket([10, 3]));
+    expect(built.ok).toBe(true);
+    if (!built.ok) return;
+    expect(verifyWitness(built.world, built.world.trace).verdict).toBe('CERTIFIED');
+  });
+});

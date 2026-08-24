@@ -113,6 +113,19 @@ export function buildRuntimeWorld(sim: unknown): BuildResult {
   for (const [name, cell] of Object.entries(asRecord(part.sockets))) {
     const pair = asArray(cell).map(asInt);
     if (pair.length !== 2 || pair[0] === null || pair[1] === null) continue;
+    // Meze jsou tytéž, jaké drží `layoutFits` v editační větvi a jaké dosazuje
+    // `createRuntime` do slotů entit: `0 … gridWidth` včetně. Bez téhle kontroly
+    // projde soket mimo mřížku přijetím, `stepToward` na něj nikdy neudělá krok
+    // a entita stojí do konce běhu — tichý průchod vadné emise.
+    //
+    // Soket zůstává v mapě schválně: návrat je stejně `UNSUPPORTED_SURFACE`
+    // a vyhozený soket by nad sebou vyrobil kaskádu druhotných hlášek
+    // o neznámém cíli, které zakryjí skutečnou příčinu.
+    if (pair[0] < 0 || pair[1] < 0 || pair[0] > gridWidth || pair[1] > gridHeight) {
+      builder.fail(
+        `socket ${name} at [${pair[0]}, ${pair[1]}] lies outside the declared grid 0..${gridWidth} x 0..${gridHeight}`,
+      );
+    }
     sockets[name] = [pair[0], pair[1]];
   }
 
