@@ -35,6 +35,15 @@
  * obojí, ne jedno místo druhého. Záložní větev totiž pořád může tu větu zahrát
  * líp než jedna univerzální místnost.
  *
+ * **Spadlá síť dostane svět taky (P11 T27q, 24. 8. 2026).** Do té doby visela
+ * lokální stavba výhradně na větvi `response.status === 404`, takže potřebovala
+ * **dosažitelný server** — vytažený kabel, mrtvá Wi-Fi i DevTools „Offline"
+ * spadly do `catch` a produkt vypsal hlášku. Záruka „každá věta vydá hratelný
+ * svět" tam tím pádem neplatila, přestože ji `evals/hostile-report.json` měří
+ * na 70 ze 70. Teď platí: rozhoduje `outcomeForUnreachable()`, které odliší
+ * spadlou síť (`TypeError`) od odchodu ze stránky (`AbortError`) — u druhého
+ * plátno správně zůstane, na čem bylo.
+ *
  * **Větu jde nadiktovat (P11 T23).** Rozhoduje o tom `@/input/speech`, ne tahle
  * komponenta. Dvě věci na tom nejsou samozřejmé:
  *
@@ -52,7 +61,7 @@ import { useEffect, useRef, useState } from 'react';
 import { guaranteeWorld } from '@/game/guarantee';
 import { startDictation, supportsDictation, type DictationSession } from '@/input/speech';
 
-import { outcomeFor, type PromptOutcome } from './promptOutcome';
+import { outcomeFor, outcomeForUnreachable, type PromptOutcome } from './promptOutcome';
 
 /** Fáze, kterými požadavek projde. Pořadí je pořadí výpisu. */
 export const PHASES = ['odesláno', 'generuje se', 'staví se'] as const;
@@ -123,19 +132,38 @@ export default function PromptBar({
     setSubstitute(null);
     setPhase('odesláno');
 
+    // Požadavek má **vlastní** `try`, a stavba světa je až za ním. Kdyby byly
+    // v jednom, `TypeError` z `onWorld()` by se tady vydával za spadlou síť a
+    // náhradní místnost by lhala o tom, proč stojí.
+    let response: Response;
+    let payload: {
+      emission?: unknown;
+      error?: { code?: string; message?: string };
+    };
     try {
-      const response = await fetch('/api/generate', {
+      response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ prompt: text.trim() }),
       });
       setPhase('generuje se');
+      payload = (await response.json()) as typeof payload;
+    } catch (thrown) {
+      const fallen = outcomeForUnreachable(thrown);
+      if (fallen.buildLocally) {
+        // Tady se záruka z T20 vyrovnává s větví 404 níž: síť je pryč, ale svět
+        // je pořád vidět, protože ho postavil prohlížeč.
+        const local = guaranteeWorld(text.trim());
+        setPhase('staví se');
+        onWorld(local.emission);
+        if (local.kind === 'seed') setSubstitute(local.fault);
+      }
+      if (fallen.outcome !== null) setOutcome(fallen.outcome);
+      setPhase(null);
+      return;
+    }
 
-      const payload = (await response.json()) as {
-        emission?: unknown;
-        error?: { code?: string; message?: string };
-      };
-
+    try {
       if (!response.ok || payload.emission === undefined) {
         // Zmrazený korpus na tuhle větu zdroj nemá (`NO_SOURCE` je 404). Slovo
         // dostane záruka světa z T20: běží v prohlížeči, odpoví okamžitě a svět
@@ -165,10 +193,6 @@ export default function PromptBar({
 
       setPhase('staví se');
       onWorld(payload.emission);
-    } catch {
-      // Síť spadla nebo uživatel odešel ze stránky. Obojí je stav k vypsání,
-      // ne výjimka k propadnutí — plátno má zůstat, na čem bylo.
-      setOutcome({ message: 'Požadavek se nepodařilo odeslat.', fallbackHref: null });
     } finally {
       setPhase(null);
     }

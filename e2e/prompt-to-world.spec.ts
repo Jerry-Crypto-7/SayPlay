@@ -194,3 +194,43 @@ test('prázdný vstup neodešle nic', async ({ page }) => {
     'prázdný vstup se odeslal na server',
   ).toEqual([]);
 });
+
+/**
+ * Oracle T27q — **odpojená síť svět postaví.**
+ *
+ * Tenhle test je jediné místo, kde se ta věta dá dokázat: jednotkový test
+ * `promptOutcome.test.ts` říká, co se má rozhodnout, ale ne že z toho na plátně
+ * doopravdy stojí svět. Cesta vede přes `guaranteeWorld()`, tedy přes
+ * `buildRuntimeWorld` — a emise, kterou by ten odmítl, by prošla každou
+ * kontrolou nad svým vlastním tvarem a plátno by zůstalo prázdné.
+ *
+ * `route.abort('failed')` je totéž, co vytažený kabel: požadavek nedoletí a
+ * `fetch` v stránce odmítne `TypeError`em. Do 24. 8. 2026 se v tu chvíli vypsalo
+ * „Požadavek se nepodařilo odeslat." a **žádný svět se nepostavil**, takže beat
+ * `offline` ve scénáři videa musel jít přes 404 místo odpojení.
+ */
+test('odpojená síť svět přesto postaví', async ({ page }) => {
+  test.setTimeout(120_000);
+
+  await page.goto('/');
+  await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
+
+  // Až teď — stránka se musí nejdřív načíst, teprve pak se „vytáhne kabel".
+  await page.route('**/api/generate', async (route) => route.abort('failed'));
+
+  await page.getByTestId('prompt-input').fill(UNKNOWN_PROMPT);
+  await page.getByTestId('prompt-submit').click();
+
+  // 1. Scéna není prázdná. Tohle je celá ta věta.
+  await page.waitForFunction(() => window.__worldsmith!.entities().length > 0, undefined, {
+    timeout: 60_000,
+  });
+
+  // 2. A produkt řekne, kdo ten svět postavil. Bez toho by to byla tichá
+  //    náhrada: scéna vypadá v pořádku a nikdo se nedozví, že server mlčel.
+  await expect(page.getByTestId('prompt-error')).toContainText('prohlížeč');
+
+  // 3. Nabídka záložní větve se offline **nenabízí** — je to jiná adresa na tom
+  //    samém serveru, takže by odkaz vedl do prázdna.
+  await expect(page.getByTestId('prompt-fallback-link')).toHaveCount(0);
+});

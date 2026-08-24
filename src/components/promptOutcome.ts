@@ -79,3 +79,50 @@ export function outcomeFor(
     fallbackHref: null,
   };
 }
+
+/**
+ * Co udělat s výjimkou, se kterou požadavek na `/api/generate` skončil.
+ *
+ * Rozlišují se tu dvě věci, které `fetch` vrací stejným kanálem a produkt na ně
+ * musí reagovat opačně:
+ *
+ * - **spadlá síť** — `fetch` odmítne `TypeError`em, protože požadavek vůbec
+ *   nedoletěl. Tady platí záruka z T20 stejně jako u 404: svět postaví
+ *   prohlížeč. Do 24. 8. 2026 tady záruka neplatila a produkt vypsal hlášku,
+ *   takže doslovné „odpojím síť a svět se přesto postaví" bylo nepravdivé.
+ * - **odchod ze stránky** — navigace pryč přeruší běžící `fetch` a ten odmítne
+ *   `AbortError`em. To je normální konec, ne porucha: stavět svět do plátna,
+ *   které se právě zahazuje, nemá komu pomoct.
+ *
+ * Cokoli jiného zůstává hláškou bez světa. `TypeError` je záměrně **jediný**
+ * tvar, na který se svět staví — kdyby se stavěl na každou výjimku, schoval by
+ * se pod něj i pád ve stavbě světa a náhradní místnost by tvrdila, že spadla
+ * síť.
+ */
+export type UnreachableOutcome = {
+  /** Postavit svět v prohlížeči? Pravda jen u spadlé sítě. */
+  readonly buildLocally: boolean;
+  /** Co vypsat, nebo `null`, když se nevypisuje nic. */
+  readonly outcome: PromptOutcome | null;
+};
+
+export function outcomeForUnreachable(thrown: unknown): UnreachableOutcome {
+  // `DOMException` dědí z `Error`, takže jméno stačí — a je stabilnější než
+  // typ, protože prostředí, ve kterých test běží, `DOMException` mít nemusí.
+  if (thrown instanceof Error && thrown.name === 'AbortError')
+    return { buildLocally: false, outcome: null };
+
+  if (thrown instanceof TypeError)
+    return {
+      buildLocally: true,
+      outcome: {
+        message: 'Server je nedostupný, takže tenhle svět postavil prohlížeč sám.',
+        fallbackHref: null,
+      },
+    };
+
+  return {
+    buildLocally: false,
+    outcome: { message: 'Požadavek se nepodařilo odeslat.', fallbackHref: null },
+  };
+}

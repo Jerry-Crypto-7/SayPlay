@@ -19,7 +19,7 @@ protože ho čte ten, kdo točí.
 | 0:40–1:00 | `playable` | Hra: číslicemi chůze k cílům, mezerníkem sběr. Postava se hýbe, počítadlo cíle se mění. | `Hand-written deterministic interpreter runs it. Twenty ticks a second, no wall clock anywhere in the hashed state.` |
 | 1:00–1:32 | `winning-path` | Panel vpravo dole „Jak to systém vyhrál". Postupuje počítadlo „3 / 5 · výhra v tiku 240", řádky kroků typu „2. tik 60 — player: pickup → key1". Na konci tlačítko „Přehrát znovu". | `Nobody scripted this route. The verifier searched for it, certified it, and the replay's hash equals the certificate's.` |
 | 1:32–2:10 | `rule-rewind` | Panel vlevo dole „Čas". Táhlo „Přetočit čas" jede zpět, počítadlo „tik N / 200" klesá. Klik na „Vypnout jedno pravidlo a přepočítat budoucnost". Objeví se věta „Bez pravidla … Budoucnost se přepočítala." a druhý hash „· původní …". | `Rewind, switch one rule off, and the future is recomputed from that tick. Two state hashes, side by side: the old one and the one that exists now.` |
-| 2:10–2:34 | `offline` | Otevřený Network panel v prohlížeči. Druhá neviděná věta. `/api/generate` vrátí **404** — a svět se přesto postaví. V seznamu požadavků není jediný bajt modelových vah. | `The server has no answer for this sentence and says so. The world is built here, in the browser. No weights downloaded, no model call, nothing to be offline from.` |
+| 2:10–2:34 | `offline` | Otevřený Network panel v prohlížeči, v něm se přepne **Offline**. Druhá neviděná věta. Požadavek na `/api/generate` je červený a **nedoletí** — a svět se přesto postaví. Nad polem se objeví „Server je nedostupný, takže tenhle svět postavil prohlížeč sám." V seznamu požadavků není jediný bajt modelových vah. | `The network is off. Nothing left to ask. The world is built here, in the browser — no weights downloaded, no model call, nothing to be offline from.` |
 | 2:34–2:44 | `close` | Veřejná adresa dema na plátně, pod ní postavený svět z posledního beatu. | `Type your own sentence.` |
 
 **Součet 2:44.** Sedm úseků, čtyři povinné beaty (`world-builds`, `rule-rewind`,
@@ -38,16 +38,13 @@ předvádí své vlastní ukázky, nedokazuje nic.
    líp. Nemusí být rozpoznaná; když nebude, postaví se náhradní místnost a nad polem
    se objeví věta, která to přizná. **To je taky dobrý záběr**, ne vada — jen se u něj
    titulek změní na `Even a sentence it cannot read yields a playable room, and says so.`
+   **Offline se v DevTools zapíná až po načtení stránky**, ne před ním: záruka je o
+   větě, ne o prvním načtení, a service worker tu žádný není.
 
 ---
 
 ## Co se netočí, a proč
 
-- **Nevytahuj kabel a nezapínej v DevTools „Offline".** Zní to jako nejsilnější důkaz
-  a **není pravda, že to funguje**: požadavek pak spadne s výjimkou a nad polem se
-  objeví „Požadavek se nepodařilo odeslat." — žádný nový svět. Lokální stavba se dnes
-  spustí jen tehdy, když **server odpoví** 404. Tenhle rozdíl je zapsaný v plánu jako
-  úloha; dokud se neuzavře, beat `offline` se točí přes 404, ne přes odpojení.
 - **U beatu `rule-rewind` drž záběr na panelu, ne na 3D scéně.** Panel času si počítá
   vlastní simulaci vedle plátna, takže se po přepočtu **nepřeanimuje svět** — změní se
   počítadlo tiku, přibude druhý hash a napíše se výsledková věta. Záběr na plátno by
