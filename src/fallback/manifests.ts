@@ -271,7 +271,7 @@ export function manifestById(id: string): Manifest | undefined {
  * **každý token slovníku tu musí mít větu** — chybějící řádek by znamenal
  * `NO_FIT`, který zamlčí, co ho zablokovalo. Hlídá to test.
  *
- * Věty jsou psané tak, aby dávaly smysl za „Neumím ...".
+ * Věty jsou psané tak, aby dávaly smysl za „I cannot do ...".
  */
 export const TOKEN_SENTENCES: Readonly<Record<CapabilityToken, string>> = {
   GOAL_COLLECT_N: 'collecting N of something',
@@ -289,7 +289,7 @@ export const TOKEN_SENTENCES: Readonly<Record<CapabilityToken, string>> = {
   STATE_COUNTER: 'a bounded integer',
   STATE_TIMER: 'a countdown or elapsed time',
   STATE_QUEUE: 'a queue of waiting requests',
-  STATE_CONTINUOUS: 'spojitou dynamiku a hybnost',
+  STATE_CONTINUOUS: 'continuous dynamics and momentum',
   STATE_INVENTORY: 'held items that keep their identity',
   STATE_PERSISTENT_MEMORY: 'memory across episodes',
   IN_CLICK: 'point and click',

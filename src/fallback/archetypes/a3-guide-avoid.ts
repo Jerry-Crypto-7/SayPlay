@@ -183,7 +183,7 @@ function a3View(state: A3State): GameView {
     tick: state.tick,
     counters: [
       { label: 'tools', value: state.toolsLeft, max: state.params.tool_budget },
-      { label: 'pole', value: state.walkerIndex, max: state.path.length - 1 },
+      { label: 'step', value: state.walkerIndex, max: state.path.length - 1 },
     ],
     timeLeftTicks: null,
     message: null,

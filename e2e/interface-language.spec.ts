@@ -40,8 +40,24 @@ const CZECH_LETTERS = /[ěščřžýáíéúůňťďóĚŠČŘŽÝÁÍÉÚŮŇŤ
 /**
  * Česká slova bez diakritiky, která na téhle obrazovce doopravdy stála.
  * Seznam je krátký schválně — je to doplněk k diakritice, ne slovník češtiny.
+ *
+ * Fyzikální trojice přibyla 24. 8. 2026. `NO_FIT` na větu o odrazu a hybnosti
+ * vypisoval „I cannot do spojitou dynamiku a hybnost" a brána nad tou hláškou
+ * svítila zeleně: ani jedno z těch tří slov nenese diakritiku.
  */
-const CZECH_WORDS = ['stavba', 'pravidla', 'cil', 'tik', 'stav', 'nic', 'hrac', 'svet'];
+const CZECH_WORDS = [
+  'stavba',
+  'pravidla',
+  'cil',
+  'tik',
+  'stav',
+  'nic',
+  'hrac',
+  'svet',
+  'spojitou',
+  'dynamiku',
+  'hybnost',
+];
 
 function findCzech(html: string): readonly string[] {
   const found: string[] = [];
@@ -55,6 +71,35 @@ function findCzech(html: string): readonly string[] {
 async function expectEnglish(panel: Locator, what: string): Promise<void> {
   const html = await panel.evaluate((node) => node.outerHTML);
   expect(findCzech(html), `panel ${what} nese české řetězce`).toEqual([]);
+}
+
+/**
+ * Popisky počítadel v HUD fallbacku — uzavřená množina, ne volný text.
+ *
+ * Vlastní kontrola, protože seznam nahoře na ně nedosáhne. Popisek `pole` (z A3)
+ * je **anglické slovo**, takže do seznamu českých slov nepatří: dopsat ho tam jde
+ * jen za cenu falešného poplachu na každém příštím anglickém „pole". A `chyby`
+ * (z A2) diakritiku nemá. Obojí prošlo diakritickou branou beze škrtnutí a stálo
+ * na obrazovce od 20. do 24. 8. 2026.
+ *
+ * Popisek jde i do `data-testid`, takže se čte přesně a nemusí se hádat z textu.
+ * Uzavřená množina je tu na místě: tři archetypy jich mají dohromady šest a nový
+ * popisek se má do seznamu dopsat, ne detekovat.
+ */
+const HUD_COUNTER_LABELS = ['collected', 'gate', 'placed', 'mistakes', 'tools', 'step'];
+
+async function expectEnglishCounters(hud: Locator, what: string): Promise<void> {
+  const labels = await hud
+    .locator('[data-testid^="hud-counter-"]')
+    .evaluateAll((nodes) =>
+      nodes.map((node) => (node.getAttribute('data-testid') ?? '').replace('hud-counter-', '')),
+    );
+
+  expect(labels.length, `HUD ${what} nevykreslil ani jedno počítadlo`).toBeGreaterThan(0);
+  expect(
+    labels.filter((label) => !HUD_COUNTER_LABELS.includes(label)),
+    `HUD ${what} nese popisek počítadla mimo anglický slovník`,
+  ).toEqual([]);
 }
 
 test('žádný panel na demo cestě nemluví česky', async ({ page }) => {
@@ -121,20 +166,68 @@ test('náhradní místnost i nabídka záložní větve mluví anglicky', async 
  * napsal vlastní větu — takže česká měď v ní ruší tutéž vlastnost, kvůli které
  * T27r vznikla. Sama větev je architektonicky nezávislá (P2 T204), ale jazyk je
  * vlastnost produktu, ne modulu.
+ *
+ * ## Proč tři věty, a ne jedna
+ *
+ * Do 24. 8. 2026 se měřila jediná věta a ta vedla na `collect_unlock` — tedy na
+ * jediný archetyp, který byl přeložený. Zbylé dva měly v HUD český popisek
+ * (`chyby` v A2, `pole` v A3) a brána o nich nevěděla, protože je nikdy
+ * nevykreslila. Věty níž jsou naměřené routerem, ne odhadnuté; `route-archetype`
+ * to v testu potvrdí, aby se ta trojice nerozpadla tiše, až se lexikon pohne.
  */
-test('záložní větev mluví anglicky taky', async ({ page }) => {
+const FALLBACK_ARCHETYPE_PROMPTS: readonly (readonly [string, string])[] = [
+  ['collect_unlock', 'i want arcade jumping game'],
+  ['sort_match', 'a puzzle where I sort coloured blocks into the right bins'],
+  ['guide_avoid', 'guide the walker to the exit by placing tools on the grid'],
+];
+
+for (const [archetype, prompt] of FALLBACK_ARCHETYPE_PROMPTS) {
+  test(`záložní větev mluví anglicky taky — ${archetype}`, async ({ page }) => {
+    test.setTimeout(180_000);
+
+    await page.goto(`/fallback/play?prompt=${encodeURIComponent(prompt)}`);
+
+    await expect(page.getByTestId('route-reason')).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByTestId('route-kind')).toHaveText('archetype');
+    await expect(
+      page.getByTestId('route-archetype'),
+      `věta už nevede na ${archetype}, takže se měří jiná obrazovka`,
+    ).toHaveText(archetype);
+
+    await expectEnglish(page.getByTestId('route-reason'), `route-reason (${archetype})`);
+
+    const hud = page.getByTestId('fallback-hud');
+    await expect(hud, 'HUD fallbacku se nevykreslil, takže se neměří').toBeVisible({
+      timeout: 60_000,
+    });
+    await expectEnglish(hud, `fallback-hud (${archetype})`);
+    await expectEnglishCounters(hud, archetype);
+  });
+}
+
+/**
+ * Čtvrtá obrazovka: **přiznané `NO_FIT`**. Porotce ji uvidí nejspíš dřív než
+ * kterýkoli archetyp — je to odpověď na větu, kterou si vymyslí sám, a fyzika je
+ * první věc, na kterou u 3D světa přijde řeč.
+ *
+ * Text hlášky se skládá z tabulky `TOKEN_SENTENCES`, takže jeden neanglický
+ * řádek té tabulky projde do dvou míst naráz: do `route-reason` v hlavičce a do
+ * panelu nad scénou. Měří se obě, protože se vykreslují nezávisle na sobě.
+ */
+test('odmítnutí NO_FIT mluví anglicky', async ({ page }) => {
   test.setTimeout(180_000);
 
-  // Věta z nálezu 20. 8. 2026 — router z ní udělá hratelný archetyp, takže se
-  // vykreslí cíl i počítadla, ne jen hlavička.
-  await page.goto('/fallback/play?prompt=i%20want%20arcade%20jumping%20game');
+  // Naměřeno sondou 24. 8. 2026: router z téhle věty udělá `NO_FIT` na
+  // `STATE_CONTINUOUS`, tedy na řádek tabulky, který byl do té doby česky.
+  const prompt = 'a ball that bounces with momentum and gravity';
+  await page.goto(`/fallback/play?prompt=${encodeURIComponent(prompt)}`);
 
-  await expect(page.getByTestId('route-reason')).toBeVisible({ timeout: 60_000 });
-  await expectEnglish(page.getByTestId('route-reason'), 'route-reason');
+  await expect(page.getByTestId('route-kind')).toHaveText('no_fit');
+  await expectEnglish(page.getByTestId('route-reason'), 'route-reason (no_fit)');
 
-  const hud = page.getByTestId('fallback-hud');
-  await expect(hud, 'HUD fallbacku se nevykreslil, takže se neměří').toBeVisible({
+  const notice = page.getByTestId('fallback-no-fit');
+  await expect(notice, 'panel NO_FIT se nevykreslil, takže se neměří').toBeVisible({
     timeout: 60_000,
   });
-  await expectEnglish(hud, 'fallback-hud');
+  await expectEnglish(notice, 'fallback-no-fit');
 });

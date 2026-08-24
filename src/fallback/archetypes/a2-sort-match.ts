@@ -160,7 +160,7 @@ function a2View(state: A2State): GameView {
     tick: state.tick,
     counters: [
       { label: 'placed', value: state.placed, max: state.params.n_items },
-      { label: 'chyby', value: state.mistakes, max: state.params.mistakes_allowed },
+      { label: 'mistakes', value: state.mistakes, max: state.params.mistakes_allowed },
     ],
     timeLeftTicks: state.timeLeftTicks,
     message: null,
