@@ -43,19 +43,19 @@ const EXAMPLES: readonly string[] = [
 export default function FirstRun() {
   return (
     <div data-testid="first-run" style={PANEL}>
-      <p style={LEAD}>Napiš větu. Postaví se z ní svět, který se dá hrát.</p>
+      <p style={LEAD}>Write a sentence. A playable world gets built from it.</p>
       <ol style={STEPS}>
         <li>
-          <span style={ORDINAL}>1</span> Popiš místnost anglicky do pole nahoře.
+          <span style={ORDINAL}>1</span> Describe a room in the field above.
         </li>
         <li>
-          <span style={ORDINAL}>2</span> Svět se před tebou postaví po kusech.
+          <span style={ORDINAL}>2</span> The world assembles in front of you, piece by piece.
         </li>
         <li>
-          <span style={ORDINAL}>3</span> Číslicemi chodíš k cílům, mezerníkem sbíráš.
+          <span style={ORDINAL}>3</span> Number keys walk to the targets, space picks things up.
         </li>
       </ol>
-      <p style={TRY}>Zkus třeba:</p>
+      <p style={TRY}>Try one of these:</p>
       <ul style={SAMPLES}>
         {EXAMPLES.map((example) => (
           <li key={example} data-testid="first-run-example" style={SAMPLE}>

@@ -127,7 +127,7 @@ test('posuvník i tlačítko panelu hýbou týmž během, který měří hash', 
   // Přetočení posuvníkem, ne voláním API — panel je ovládací prvek, ne výpis.
   await page.getByTestId('timeline-scrub').fill(String(BRANCH_TICK));
   await expect(panel).toHaveAttribute('data-tick', String(BRANCH_TICK));
-  await expect(page.getByTestId('timeline-tick')).toContainText(`tik ${String(BRANCH_TICK)}`);
+  await expect(page.getByTestId('timeline-tick')).toContainText(`tick ${String(BRANCH_TICK)}`);
   const atBranch = await page.evaluate(() => window.__timeline!.hash());
   expect(atBranch).not.toBe(atHorizon);
 
@@ -135,7 +135,7 @@ test('posuvník i tlačítko panelu hýbou týmž během, který měří hash', 
   await page.getByTestId('timeline-branch').click();
   await expect(panel).toHaveAttribute('data-tick', String(HORIZON));
   await expect(panel).not.toHaveAttribute('data-branched', '');
-  await expect(page.getByTestId('timeline-outcome')).toContainText('přepočítala');
+  await expect(page.getByTestId('timeline-outcome')).toContainText('was recomputed');
 
   const branched = await page.evaluate(() => window.__timeline!.hash());
   expect(branched).not.toBe(atHorizon);

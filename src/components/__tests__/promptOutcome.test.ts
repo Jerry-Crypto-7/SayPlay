@@ -27,7 +27,7 @@ describe('věta bez zdroje dostane cestu dál', () => {
     expect(outcome.fallbackHref, 'věta z nálezu zůstala bez nabídky').toBe(
       '/fallback/play?prompt=i%20want%20arcade%20jumping%20game',
     );
-    expect(outcome.message).toContain('Záložní větev');
+    expect(outcome.message).toContain('fallback branch');
   });
 
   it('věta se zakóduje celá, i s diakritikou a ampersandem', () => {
@@ -66,7 +66,7 @@ describe('poruchy záložní větev nenabízejí', () => {
 
   it('moderace i strop mluví o své vlastní příčině', () => {
     expect(outcomeFor(400, 'PROMPT_REFUSED', 'násilí', REPORTED).message).toContain('násilí');
-    expect(outcomeFor(429, 'BUDGET_EXHAUSTED', '', REPORTED).message).toContain('Rozpočet');
+    expect(outcomeFor(429, 'BUDGET_EXHAUSTED', '', REPORTED).message).toContain('budget');
   });
 
   it('neznámý kód bez detailu se pozná podle kódu, ne podle prázdné hlášky', () => {
@@ -99,7 +99,7 @@ describe('nedoručený požadavek se rozliší podle toho, co ho zabilo', () => 
     const fallen = outcomeForUnreachable(new TypeError('Failed to fetch'));
 
     expect(fallen.buildLocally, 'spadlá síť nechala plátno bez světa').toBe(true);
-    expect(fallen.outcome?.message).toContain('prohlížeč');
+    expect(fallen.outcome?.message).toContain('built by the browser');
     // Záložní větev je jiná adresa na tom samém serveru — když je nedosažitelný
     // server, je nedosažitelná i ona, takže odkaz by vedl do prázdna.
     expect(fallen.outcome?.fallbackHref, 'offline se nabízí cesta na mrtvý server').toBeNull();

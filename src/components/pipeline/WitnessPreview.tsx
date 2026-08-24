@@ -94,7 +94,7 @@ export default function WitnessPreview({ world }: { readonly world: WorldDocRunt
     return (
       <section data-testid="witness-preview" data-certified="false" style={STRIP}>
         <span data-testid="witness-uncertified" style={MUTED}>
-          Tenhle svět nenese vítěznou cestu — ověřovač ho necertifikoval.
+          This world carries no winning path — the verifier did not certify it.
         </span>
       </section>
     );
@@ -107,9 +107,9 @@ export default function WitnessPreview({ world }: { readonly world: WorldDocRunt
   return (
     <section data-testid="witness-preview" data-certified="true" data-done={done ? 'true' : 'false'} style={STRIP}>
       <div style={HEAD}>
-        <strong>Jak to systém vyhrál</strong>
+        <strong>How the system won</strong>
         <span data-testid="witness-count" style={MUTED}>
-          {String(shown)} / {String(trace.length)} · výhra v tiku {String(certified.witnessLength)}
+          {String(shown)} / {String(trace.length)} · win at tick {String(certified.witnessLength)}
         </span>
       </div>
 
@@ -119,13 +119,13 @@ export default function WitnessPreview({ world }: { readonly world: WorldDocRunt
 
       <p data-testid="witness-step" style={STEP_TEXT}>
         {current === null
-          ? 'Přehrávám nalezenou stopu…'
-          : `${String(step + 1)}. tik ${String(current.tick)} — ${describeStep(current)}`}
+          ? 'Replaying the trace it found…'
+          : `${String(step + 1)}. tick ${String(current.tick)} — ${describeStep(current)}`}
       </p>
 
       {done ? (
         <button type="button" data-testid="witness-replay" onClick={() => setRun((was) => was + 1)} style={REPLAY}>
-          Přehrát znovu
+          Replay
         </button>
       ) : null}
     </section>

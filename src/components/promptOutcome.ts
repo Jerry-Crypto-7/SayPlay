@@ -56,8 +56,8 @@ export function outcomeFor(
     const trimmed = prompt.trim();
     return {
       message:
-        'Offline generátor umí jenom doslovné prompty ze zmrazeného korpusu. ' +
-        'Záložní větev tuhle větu zahrát umí:',
+        'The offline generator only knows verbatim prompts from the frozen corpus. ' +
+        'The fallback branch can play this sentence:',
       // Prázdná věta by na fallbacku spadla do jeho výchozího promptu, což by
       // vypadalo jako by systém odpověděl na něco jiného, než co se ptalo.
       // Sem se ale prázdný text nedostane — `PromptBar` ho neodešle.
@@ -69,13 +69,13 @@ export function outcomeFor(
   }
 
   if (code === 'PROMPT_REFUSED')
-    return { message: `Prompt neprošel moderací: ${detail}`, fallbackHref: null };
+    return { message: `The prompt did not pass moderation: ${detail}`, fallbackHref: null };
 
   if (status === 429)
-    return { message: 'Rozpočet na generování je vyčerpaný. Zkus to později.', fallbackHref: null };
+    return { message: 'The generation budget is used up. Try again later.', fallbackHref: null };
 
   return {
-    message: detail === '' ? `Generování selhalo (${code}).` : detail,
+    message: detail === '' ? `Generation failed (${code}).` : detail,
     fallbackHref: null,
   };
 }
@@ -116,13 +116,13 @@ export function outcomeForUnreachable(thrown: unknown): UnreachableOutcome {
     return {
       buildLocally: true,
       outcome: {
-        message: 'Server je nedostupný, takže tenhle svět postavil prohlížeč sám.',
+        message: 'The server is unreachable, so this world was built by the browser itself.',
         fallbackHref: null,
       },
     };
 
   return {
     buildLocally: false,
-    outcome: { message: 'Požadavek se nepodařilo odeslat.', fallbackHref: null },
+    outcome: { message: 'The request could not be sent.', fallbackHref: null },
   };
 }

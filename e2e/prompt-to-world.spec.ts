@@ -64,7 +64,7 @@ test('napsaná věta vyrobí scénu, a jde přes /api/generate', async ({ page }
 
   // 1. Fáze průběhu jsou vidět, dokud se čeká.
   await expect(page.getByTestId('prompt-progress')).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByTestId('prompt-phase-odesláno')).toBeVisible();
+  await expect(page.getByTestId('prompt-phase-sent')).toBeVisible();
 
   // 2. Scéna nakonec drží entity běžícího světa.
   await page.waitForFunction(() => window.__worldsmith!.entities().length > 0, undefined, {
@@ -228,7 +228,7 @@ test('odpojená síť svět přesto postaví', async ({ page }) => {
 
   // 2. A produkt řekne, kdo ten svět postavil. Bez toho by to byla tichá
   //    náhrada: scéna vypadá v pořádku a nikdo se nedozví, že server mlčel.
-  await expect(page.getByTestId('prompt-error')).toContainText('prohlížeč');
+  await expect(page.getByTestId('prompt-error')).toContainText('built by the browser');
 
   // 3. Nabídka záložní větve se offline **nenabízí** — je to jiná adresa na tom
   //    samém serveru, takže by odkaz vedl do prázdna.

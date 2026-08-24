@@ -75,39 +75,41 @@ const keysWorld = (threshold = 3) => ({
 
 describe('describeEmission — věty, ne dokument', () => {
   it('pravidla jdou v pořadí vykonání, ne v pořadí klíčů', () => {
-    const lines = describeEmission(keysWorld()).filter((line) => line.section === 'pravidla');
+    const lines = describeEmission(keysWorld()).filter((line) => line.section === 'rules');
 
-    expect(lines.map((line) => line.id)).toEqual(['pravidla/pick', 'pravidla/unlock', 'pravidla/win']);
+    expect(lines.map((line) => line.id)).toEqual(['rules/pick', 'rules/unlock', 'rules/win']);
     expect(lines[0].text.startsWith('1. ')).toBe(true);
   });
 
   it('událost, podmínka i akce se přeloží do věty', () => {
     const lines = describeEmission(keysWorld());
 
-    expect(byId(lines, 'pravidla/pick')).toBe('1. Když hráč sebere sběratelský předmět → keysHeld +1');
-    expect(byId(lines, 'pravidla/unlock')).toBe(
-      '2. Když keysHeld dosáhne 3, a keysHeld je aspoň 3 → odemkni exit; přepni exit na „open“',
+    expect(byId(lines, 'rules/pick')).toBe('1. When the player picks up a collectible → keysHeld +1');
+    expect(byId(lines, 'rules/unlock')).toBe(
+      '2. When keysHeld reaches 3, and keysHeld is at least 3 → unlock exit; set exit to “open”',
     );
-    expect(byId(lines, 'pravidla/win')).toBe(
-      '3. Když player vejde do zóny exit, a exit je „open“ → výhra',
+    expect(byId(lines, 'rules/win')).toBe(
+      '3. When player enters zone exit, and exit is “open” → win',
     );
   });
 
   it('cíl se čte z pravidla, které vyhrává — a nese spouštěč, ne akci', () => {
     const lines = describeEmission(keysWorld());
 
-    expect(byId(lines, 'cil/vyhra')).toBe('Vyhraješ, když player vejde do zóny exit, a exit je „open“.');
-    expect(byId(lines, 'cil/svedek')).toBe('Systém k tomu nese stopu: 2 tahy, výhra v tiku 268 z 600.');
+    expect(byId(lines, 'goal/win')).toBe('You win when player enters zone exit, and exit is “open”.');
+    expect(byId(lines, 'goal/witness')).toBe(
+      'The system carries a trace for it: 2 moves, win at tick 268 of 600.',
+    );
   });
 
   it('tvar stavby vypíše mřížku, kotvy, role i stav', () => {
     const lines = describeEmission(keysWorld());
 
-    expect(byId(lines, 'stavba/mrizka')).toBe('Mřížka 12 × 12 buněk');
-    expect(byId(lines, 'stavba/kotvy')).toBe('3 kotvy: spawn, k1, exit');
-    expect(byId(lines, 'stavba/role/collectible')).toBe('2× sběratelský předmět: key1, key2');
-    expect(byId(lines, 'stavba/counter/keysHeld')).toBe('Čítač keysHeld 0–3, začíná na 0');
-    expect(byId(lines, 'stavba/paleta')).toBe('Paleta slate, světlo key');
+    expect(byId(lines, 'build/grid')).toBe('Grid 12 × 12 cells');
+    expect(byId(lines, 'build/sockets')).toBe('3 sockets: spawn, k1, exit');
+    expect(byId(lines, 'build/role/collectible')).toBe('2× collectible: key1, key2');
+    expect(byId(lines, 'build/counter/keysHeld')).toBe('Counter keysHeld 0–3, starts at 0');
+    expect(byId(lines, 'build/palette')).toBe('Palette slate, light key');
   });
 
   it('aliasy polí se čtou stejně jako ve snížení, ne jen ta první varianta', () => {
@@ -127,8 +129,8 @@ describe('describeEmission — věty, ne dokument', () => {
       },
     };
 
-    expect(byId(describeEmission(aliased), 'pravidla/r')).toBe(
-      '1. Když door přejde do stavu „open“, a coins je víc než 2 → coins −1',
+    expect(byId(describeEmission(aliased), 'rules/r')).toBe(
+      '1. When door enters state “open”, and coins is more than 2 → coins −1',
     );
   });
 
@@ -152,16 +154,16 @@ describe('describeEmission — věty, ne dokument', () => {
       },
     };
 
-    expect(byId(describeEmission(world), 'pravidla/r')).toBe(
-      '1. Na začátku, a hráč má torch a zároveň neplatí, že časovač fuse běží → prohra',
+    expect(byId(describeEmission(world), 'rules/r')).toBe(
+      '1. At the start, and the player has torch and it is not true that timer fuse is running → lose',
     );
   });
 });
 
 describe('describeEmission — vstup zvenčí se nepředpokládá', () => {
   it('emise bez sim řekne, co se stalo, a nespadne', () => {
-    expect(text(describeEmission({ look: {} }))).toBe('Model na tuhle větu svět nenapsal.');
-    expect(text(describeEmission(null))).toBe('Model na tuhle větu svět nenapsal.');
+    expect(text(describeEmission({ look: {} }))).toBe('The model wrote no world for this sentence.');
+    expect(text(describeEmission(null))).toBe('The model wrote no world for this sentence.');
   });
 
   it('rozbité typy nespadnou a chybějící kus se přizná', () => {
@@ -173,13 +175,13 @@ describe('describeEmission — vstup zvenčí se nepředpokládá', () => {
     };
     const lines = describeEmission(broken);
 
-    expect(lines.find((line) => line.id === 'stavba/mrizka')).toBeUndefined();
-    expect(byId(lines, 'pravidla/r')).toBe('1. Když přijde signál ? → nic');
-    expect(byId(lines, 'cil/vyhra')).toBe('Žádné pravidlo nevede k výhře.');
+    expect(lines.find((line) => line.id === 'build/grid')).toBeUndefined();
+    expect(byId(lines, 'rules/r')).toBe('1. When signal ? arrives → nothing');
+    expect(byId(lines, 'goal/win')).toBe('No rule leads to a win.');
   });
 
   it('svět bez jediného pravidla to řekne místo prázdné sekce', () => {
-    expect(byId(describeEmission({ sim: { rules: {} } }), 'pravidla/zadna')).toBe('Svět nemá žádné pravidlo.');
+    expect(byId(describeEmission({ sim: { rules: {} } }), 'rules/none')).toBe('This world has no rules.');
   });
 });
 
@@ -195,7 +197,7 @@ describe('diffPrograms — druhá věta ukáže rozdíl', () => {
     const after = describeEmission(keysWorld(5));
     const diff = diffPrograms(before, after);
 
-    const unlock = diff.filter((entry) => entry.line.id === 'pravidla/unlock');
+    const unlock = diff.filter((entry) => entry.line.id === 'rules/unlock');
     expect(unlock).toHaveLength(1);
     expect(unlock[0].change).toBe('changed');
     expect(diff.some((entry) => entry.change === 'removed')).toBe(false);
@@ -209,7 +211,7 @@ describe('diffPrograms — druhá věta ukáže rozdíl', () => {
     const diff = diffPrograms(before, describeEmission(trimmed));
 
     const gone = diff.filter((entry) => entry.change === 'removed');
-    expect(gone.map((entry) => entry.line.id)).toEqual(['pravidla/unlock']);
+    expect(gone.map((entry) => entry.line.id)).toEqual(['rules/unlock']);
   });
 
   it('nové pravidlo je přidané, a beze změny zůstane beze změny', () => {
@@ -224,9 +226,9 @@ describe('diffPrograms — druhá věta ukáže rozdíl', () => {
     const diff = diffPrograms(before, describeEmission(grown));
 
     expect(diff.filter((entry) => entry.change === 'added').map((entry) => entry.line.id)).toEqual([
-      'pravidla/hint',
+      'rules/hint',
     ]);
-    expect(diff.find((entry) => entry.line.id === 'stavba/mrizka')?.change).toBe('same');
+    expect(diff.find((entry) => entry.line.id === 'build/grid')?.change).toBe('same');
   });
 });
 
@@ -235,10 +237,10 @@ describe('proti skutečnému zmrazenému korpusu, ne proti vlastní fixture', ()
     const first = readFileSync('evals/frozen/responses/index.jsonl', 'utf8').split('\n')[0];
     const lines = describeEmission((JSON.parse(first) as { body: unknown }).body);
 
-    expect(byId(lines, 'stavba/role/collectible')).toBe('3× sběratelský předmět: key1, key2, key3');
-    expect(byId(lines, 'cil/vyhra')).toBe('Vyhraješ, když player vejde do zóny exit, a exit je „open“.');
-    expect(byId(lines, 'pravidla/pick')).toBe('1. Když hráč sebere sběratelský předmět → keysHeld +1');
+    expect(byId(lines, 'build/role/collectible')).toBe('3× collectible: key1, key2, key3');
+    expect(byId(lines, 'goal/win')).toBe('You win when player enters zone exit, and exit is “open”.');
+    expect(byId(lines, 'rules/pick')).toBe('1. When the player picks up a collectible → keysHeld +1');
     // Panel nesmí být prázdný ani u světa, který nese jen dva vizuální moduly.
-    expect(byId(lines, 'stavba/moduly')).toBe('Vzhled: player → actor, exit → arch');
+    expect(byId(lines, 'build/modules')).toBe('Look: player → actor, exit → arch');
   });
 });

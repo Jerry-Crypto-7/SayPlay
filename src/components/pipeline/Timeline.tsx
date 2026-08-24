@@ -246,9 +246,9 @@ export default function Timeline({ world }: { readonly world: WorldDocRuntime | 
   return (
     <section data-testid="timeline" data-tick={String(tick)} data-branched={branchedRule ?? ''} style={PANEL}>
       <div style={HEAD}>
-        <strong>Čas</strong>
+        <strong>Time</strong>
         <span data-testid="timeline-tick" style={MUTED}>
-          tik {String(tick)} / {String(HORIZON)}
+          tick {String(tick)} / {String(HORIZON)}
         </span>
       </div>
 
@@ -258,16 +258,16 @@ export default function Timeline({ world }: { readonly world: WorldDocRuntime | 
         max={HORIZON}
         value={tick}
         data-testid="timeline-scrub"
-        aria-label="Přetočit čas"
+        aria-label="Rewind time"
         onChange={(event) => api.seek(Number(event.target.value))}
         style={SCRUB}
       />
 
       <p data-testid="timeline-hash" style={ROW}>
-        stav <code style={CODE}>{hash}</code>
+        state <code style={CODE}>{hash}</code>
         {branchedRule === null ? null : (
           <>
-            {' · '}původní <code style={CODE}>{controller.originalHash}</code>
+            {' · '}was <code style={CODE}>{controller.originalHash}</code>
           </>
         )}
       </p>
@@ -282,16 +282,16 @@ export default function Timeline({ world }: { readonly world: WorldDocRuntime | 
         }}
         style={ACTION}
       >
-        Vypnout jedno pravidlo a přepočítat budoucnost
+        Switch one rule off and recompute the future
       </button>
 
       {outcome === null ? null : (
         <p data-testid="timeline-outcome" role="status" style={ROW}>
           {outcome.verdict === 'BRANCHED'
-            ? `Bez pravidla ${outcome.ruleId} (spustilo ${String(outcome.firings)}×). Budoucnost ${changed ? 'se přepočítala' : 'vyšla stejně'}.`
+            ? `Without rule ${outcome.ruleId} (it fired ${String(outcome.firings)}×). The future ${changed ? 'was recomputed' : 'came out the same'}.`
             : outcome.verdict === 'NOTHING_FIRES'
-              ? 'Od tohohle tiku už žádné pravidlo nespustí — vypnout kterékoli by nezměnilo nic.'
-              : `Odbočit tady nejde: ${outcome.detail}`}
+              ? 'From this tick on no rule fires — switching any of them off would change nothing.'
+              : `No branch from here: ${outcome.detail}`}
         </p>
       )}
     </section>

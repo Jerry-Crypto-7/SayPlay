@@ -72,8 +72,8 @@ const INITIAL: ModelState = { phase: 'probing', runtime: null, detail: '' };
  * která říká, co se děje a proč to nikomu nevadí.
  */
 export function captionFor(state: ModelState): string | null {
-  if (state.phase === 'probing') return 'Zjišťuji, jestli tenhle stroj utáhne model…';
-  if (state.phase === 'loading') return 'Model se stahuje na pozadí. Hrát můžeš hned.';
+  if (state.phase === 'probing') return 'Checking whether this machine can run the model…';
+  if (state.phase === 'loading') return 'The model is downloading in the background. You can play right now.';
   return null;
 }
 
@@ -97,7 +97,7 @@ export default function ModelProgress({
     void (async () => {
       const runtime = detectRuntime(await probeEnvironment());
       if (modelForRuntime(runtime) === null) {
-        set({ phase: 'unavailable', runtime, detail: 'tenhle prohlížeč model nespouští' });
+        set({ phase: 'unavailable', runtime, detail: 'this browser does not run the model' });
         return;
       }
 

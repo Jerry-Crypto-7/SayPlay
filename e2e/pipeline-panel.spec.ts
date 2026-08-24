@@ -76,16 +76,16 @@ test('panel ukáže program, po druhé větě rozdíl, a jde sbalit', async ({ p
 
   // 1. Panel stojí a mluví ve větách. Sekce jsou všechny tři.
   await expect(page.getByTestId('pipeline-panel')).toBeVisible();
-  await expect(page.getByTestId('pipeline-section-stavba')).toBeVisible();
-  await expect(page.getByTestId('pipeline-section-pravidla')).toBeVisible();
-  await expect(page.getByTestId('pipeline-section-cil')).toBeVisible();
+  await expect(page.getByTestId('pipeline-section-build')).toBeVisible();
+  await expect(page.getByTestId('pipeline-section-rules')).toBeVisible();
+  await expect(page.getByTestId('pipeline-section-goal')).toBeVisible();
 
   const first = await lines(page);
   expect(first.length).toBeGreaterThan(3);
   // Ani jeden řádek nesmí vypadat jako vypsaný dokument.
   expect(first.some((line) => line.includes('{') || line.includes('"'))).toBe(false);
   // Cíl je věta o výhře, ne o tom, že nějaká existuje.
-  expect(first.some((line) => line.startsWith('Vyhraješ, když '))).toBe(true);
+  expect(first.some((line) => line.startsWith('You win when '))).toBe(true);
 
   // 2. První svět není samá novinka — porovnávat nebylo s čím.
   expect(await page.getByTestId('pipeline-line').evaluateAll((nodes) =>

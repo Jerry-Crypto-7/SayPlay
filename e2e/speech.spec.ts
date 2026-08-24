@@ -86,10 +86,10 @@ test('nadiktovaná věta se přidá do pole a formulář se tím neodešle', asy
   await expect(dictate).toBeVisible();
   await dictate.click();
 
-  await expect(dictate).toHaveText('Poslouchám…');
+  await expect(dictate).toHaveText('Listening…');
   await expect(input).toHaveValue(`${TYPED} ${SPOKEN}`);
   // Konec relace musí stav vrátit zpátky, jinak tlačítko visí v poslouchání.
-  await expect(dictate).toHaveText('Nadiktovat');
+  await expect(dictate).toHaveText('Dictate');
 
   expect(generateCalls, `klik na diktování odeslal formulář: ${generateCalls.join(', ')}`).toEqual([]);
 });

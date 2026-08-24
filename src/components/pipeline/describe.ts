@@ -30,15 +30,15 @@
  * texty by z každé přepsané číslovky udělalo dvojici a rozdíl by se v ní ztratil.
  */
 
-export type SectionId = 'stavba' | 'pravidla' | 'cil';
+export type SectionId = 'build' | 'rules' | 'goal';
 
 /** Pořadí je pořadí výpisu. */
-export const SECTIONS: readonly SectionId[] = ['stavba', 'pravidla', 'cil'];
+export const SECTIONS: readonly SectionId[] = ['build', 'rules', 'goal'];
 
 export const SECTION_TITLES: Readonly<Record<SectionId, string>> = {
-  stavba: 'Tvar stavby',
-  pravidla: 'Pravidla',
-  cil: 'Cíl',
+  build: 'What is built',
+  rules: 'Rules',
+  goal: 'Goal',
 };
 
 export interface ProgramLine {
@@ -100,19 +100,20 @@ function name(value: string | null): string {
 }
 
 function quoted(value: string | null): string {
-  return value === null ? '?' : `„${value}“`;
+  return value === null ? '?' : `“${value}”`;
 }
 
-/** Množné číslo česky — 1 kotva, 2 kotvy, 5 kotev. */
-function plural(count: number, one: string, few: string, many: string): string {
-  if (count === 1) return `${String(count)} ${one}`;
-  if (count >= 2 && count <= 4) return `${String(count)} ${few}`;
-  return `${String(count)} ${many}`;
+/**
+ * Množné číslo. Anglické má dva tvary, ne tři jako české — s překladem
+ * rozhraní (T27r) tedy odpadl prostřední tvar pro dvě až čtyři.
+ */
+function plural(count: number, one: string, many: string): string {
+  return `${String(count)} ${count === 1 ? one : many}`;
 }
 
 function listOf(names: readonly string[], limit = 6): string {
   if (names.length <= limit) return names.join(', ');
-  return `${names.slice(0, limit).join(', ')} a další ${String(names.length - limit)}`;
+  return `${names.slice(0, limit).join(', ')} and ${String(names.length - limit)} more`;
 }
 
 // ---------------------------------------------------------------------------
@@ -120,12 +121,12 @@ function listOf(names: readonly string[], limit = 6): string {
 // ---------------------------------------------------------------------------
 
 const ROLE_NAMES: Readonly<Record<string, string>> = {
-  actor: 'postava',
-  collectible: 'sběratelský předmět',
-  goal: 'cíl',
-  obstacle: 'překážka',
+  actor: 'character',
+  collectible: 'collectible',
+  goal: 'goal',
+  obstacle: 'obstacle',
   agent: 'agent',
-  prop: 'rekvizita',
+  prop: 'prop',
 };
 
 function roleName(role: string, count: number): string {
@@ -136,15 +137,15 @@ function roleName(role: string, count: number): string {
 }
 
 const COMPARE_WORDS: Readonly<Record<string, string>> = {
-  '=': 'je',
-  '==': 'je',
-  '===': 'je',
-  '!=': 'není',
-  '!==': 'není',
-  '>': 'je víc než',
-  '>=': 'je aspoň',
-  '<': 'je míň než',
-  '<=': 'je nejvýš',
+  '=': 'is',
+  '==': 'is',
+  '===': 'is',
+  '!=': 'is not',
+  '!==': 'is not',
+  '>': 'is more than',
+  '>=': 'is at least',
+  '<': 'is less than',
+  '<=': 'is at most',
 };
 
 function compareWord(value: unknown): string {
@@ -159,46 +160,46 @@ function describeEvent(value: unknown): string {
 
   switch (kind) {
     case 'onStart':
-      return 'Na začátku';
+      return 'At the start';
     case 'onClick':
-      return `Když se klikne na ${name(firstName(event, 'entity', 'target'))}`;
+      return `When ${name(firstName(event, 'entity', 'target'))} is clicked`;
     case 'onEnterZone':
-      return `Když ${firstName(event, 'entity') ?? 'hráč'} vejde do zóny ${name(asString(event.zone))}`;
+      return `When ${firstName(event, 'entity') ?? 'the player'} enters zone ${name(asString(event.zone))}`;
     case 'onExitZone':
-      return `Když ${firstName(event, 'entity') ?? 'hráč'} opustí zónu ${name(asString(event.zone))}`;
+      return `When ${firstName(event, 'entity') ?? 'the player'} leaves zone ${name(asString(event.zone))}`;
     case 'onCollide':
-      return `Když do sebe narazí ${name(asString(event.a))} a ${name(asString(event.b))}`;
+      return `When ${name(asString(event.a))} and ${name(asString(event.b))} collide`;
     case 'onPickup': {
       const named = firstName(event, 'entity', 'item', 'target');
       const role = asString(event.role);
-      if (named !== null) return `Když hráč sebere ${named}`;
-      if (role !== null) return `Když hráč sebere ${ROLE_NAMES[role] ?? role}`;
-      return 'Když hráč něco sebere';
+      if (named !== null) return `When the player picks up ${named}`;
+      if (role !== null) return `When the player picks up a ${ROLE_NAMES[role] ?? role}`;
+      return 'When the player picks something up';
     }
     case 'onDrop':
-      return `Když hráč odloží ${name(firstName(event, 'item', 'entity', 'target'))}`;
+      return `When the player drops ${name(firstName(event, 'item', 'entity', 'target'))}`;
     case 'onTimerEnd':
-      return `Když doběhne časovač ${name(firstName(event, 'timer', 'ref'))}`;
+      return `When timer ${name(firstName(event, 'timer', 'ref'))} runs out`;
     case 'onCounterReaches': {
       const threshold = firstNumber(event, 'threshold', 'n');
-      return `Když ${name(firstName(event, 'ref', 'counter'))} dosáhne ${
+      return `When ${name(firstName(event, 'ref', 'counter'))} reaches ${
         threshold === null ? '?' : String(threshold)
       }`;
     }
     case 'onStateEnter':
-      return `Když ${name(firstName(event, 'entity', 'target'))} přejde do stavu ${quoted(
+      return `When ${name(firstName(event, 'entity', 'target'))} enters state ${quoted(
         firstName(event, 'state', 'value'),
       )}`;
     case 'onSignal':
-      return `Když přijde signál ${name(firstName(event, 'name', 'signal'))}`;
+      return `When signal ${name(firstName(event, 'name', 'signal'))} arrives`;
     case 'onSeen':
-      return `Když ${name(asString(event.agent))} uvidí ${name(asString(event.target))}`;
+      return `When ${name(asString(event.agent))} sees ${name(asString(event.target))}`;
     case 'onAction':
-      return `Když hráč použije ${name(asString(event.actionId))} na ${asString(event.target) ?? 'cokoli'}`;
+      return `When the player uses ${name(asString(event.actionId))} on ${asString(event.target) ?? 'anything'}`;
     case 'onCommandComplete':
-      return `Když ${name(firstName(event, 'entity', 'target'))} dokončí ${name(asString(event.commandId))}`;
+      return `When ${name(firstName(event, 'entity', 'target'))} finishes ${name(asString(event.commandId))}`;
     default:
-      return kind === null ? 'Bez události' : `Při ${kind}`;
+      return kind === null ? 'No event' : `On ${kind}`;
   }
 }
 
@@ -216,24 +217,24 @@ function describeCondition(value: unknown): string | null {
       }`;
     }
     case 'flagIs':
-      return `vlaječka ${name(firstName(node, 'ref', 'flag'))} je ${node.value === false ? 'vypnutá' : 'zapnutá'}`;
+      return `flag ${name(firstName(node, 'ref', 'flag'))} is ${node.value === false ? 'off' : 'on'}`;
     case 'timerRunning':
-      return `časovač ${name(firstName(node, 'ref', 'timer'))} běží`;
+      return `timer ${name(firstName(node, 'ref', 'timer'))} is running`;
     case 'stateIs':
-      return `${name(firstName(node, 'target', 'entity'))} je ${quoted(firstName(node, 'value', 'state'))}`;
+      return `${name(firstName(node, 'target', 'entity'))} is ${quoted(firstName(node, 'value', 'state'))}`;
     case 'lockedIs':
-      return `${name(firstName(node, 'target', 'entity'))} je ${
-        node.value === false || node.locked === false ? 'odemčený' : 'zamčený'
+      return `${name(firstName(node, 'target', 'entity'))} is ${
+        node.value === false || node.locked === false ? 'unlocked' : 'locked'
       }`;
     case 'inZone':
-      return `${firstName(node, 'entity') ?? 'hráč'} je v zóně ${name(asString(node.zone))}`;
+      return `${firstName(node, 'entity') ?? 'the player'} is in zone ${name(asString(node.zone))}`;
     case 'hasItem':
-      return `hráč má ${name(asString(node.item))}`;
+      return `the player has ${name(asString(node.item))}`;
     case 'countInZone': {
       const rhs = asNumber(node.value);
-      return `v zóně ${name(asString(node.zone))} ${compareWord(node.op)} ${
+      return `zone ${name(asString(node.zone))} ${compareWord(node.op)} ${
         rhs === null ? '?' : String(rhs)
-      } objektů s tagem ${name(asString(node.tag))}`;
+      } objects tagged ${name(asString(node.tag))}`;
     }
     case 'allOf':
     case 'anyOf': {
@@ -241,14 +242,14 @@ function describeCondition(value: unknown): string | null {
         .map((operand) => describeCondition(operand))
         .filter((part): part is string => part !== null);
       if (parts.length === 0) return null;
-      return parts.join(kind === 'allOf' ? ' a zároveň ' : ' nebo ');
+      return parts.join(kind === 'allOf' ? ' and ' : ' or ');
     }
     case 'not': {
       const inner = describeCondition(node.operand ?? node.of);
-      return inner === null ? null : `neplatí, že ${inner}`;
+      return inner === null ? null : `it is not true that ${inner}`;
     }
     default:
-      return kind === null ? null : `podmínka ${kind}`;
+      return kind === null ? null : `condition ${kind}`;
   }
 }
 
@@ -259,50 +260,50 @@ function describeAction(value: unknown): string {
 
   switch (kind) {
     case 'setState':
-      return `přepni ${name(firstName(action, 'target', 'entity'))} na ${quoted(
+      return `set ${name(firstName(action, 'target', 'entity'))} to ${quoted(
         firstName(action, 'value', 'state'),
       )}`;
     case 'setLocked':
-      return `${action.locked === true || action.value === true ? 'zamkni' : 'odemkni'} ${name(
+      return `${action.locked === true || action.value === true ? 'lock' : 'unlock'} ${name(
         firstName(action, 'target', 'entity'),
       )}`;
     case 'setFlag':
-      return `${action.value === false ? 'vypni' : 'zapni'} vlaječku ${name(firstName(action, 'ref', 'flag'))}`;
+      return `turn flag ${name(firstName(action, 'ref', 'flag'))} ${action.value === false ? 'off' : 'on'}`;
     case 'addCounter': {
       const slot = name(firstName(action, 'ref', 'counter'));
       const delta = firstNumber(action, 'by', 'delta');
-      if (delta === null) return `změň ${slot}`;
+      if (delta === null) return `change ${slot}`;
       return delta < 0 ? `${slot} −${String(Math.abs(delta))}` : `${slot} +${String(delta)}`;
     }
     case 'startTimer': {
       const slot = name(firstName(action, 'ref', 'timer'));
       const ticks = asNumber(action.durationTicks);
-      return ticks === null ? `spusť časovač ${slot}` : `spusť časovač ${slot} na ${String(ticks)} tiků`;
+      return ticks === null ? `start timer ${slot}` : `start timer ${slot} for ${String(ticks)} ticks`;
     }
     case 'stopTimer':
-      return `zastav časovač ${name(firstName(action, 'ref', 'timer'))}`;
+      return `stop timer ${name(firstName(action, 'ref', 'timer'))}`;
     case 'spawn':
-      return `postav ${name(firstName(action, 'poolTag', 'tag'))} na ${name(asString(action.socket))}`;
+      return `place ${name(firstName(action, 'poolTag', 'tag'))} at ${name(asString(action.socket))}`;
     case 'despawn':
-      return `odstraň ${name(firstName(action, 'target', 'entity'))}`;
+      return `remove ${name(firstName(action, 'target', 'entity'))}`;
     case 'moveTo':
-      return `přesuň ${name(firstName(action, 'target', 'entity'))} na ${name(asString(action.socket))}`;
+      return `move ${name(firstName(action, 'target', 'entity'))} to ${name(asString(action.socket))}`;
     case 'freeze':
-      return `zmraz ${name(firstName(action, 'target', 'entity'))}`;
+      return `freeze ${name(firstName(action, 'target', 'entity'))}`;
     case 'giveItem':
-      return `dej ${name(asString(action.item))}`;
+      return `give ${name(asString(action.item))}`;
     case 'takeItem':
-      return `seber ${name(asString(action.item))}`;
+      return `take ${name(asString(action.item))}`;
     case 'emit':
-      return `vyšli signál ${name(firstName(action, 'signal', 'name'))}`;
+      return `emit signal ${name(firstName(action, 'signal', 'name'))}`;
     case 'playEffect':
-      return `přehraj efekt ${name(firstName(action, 'id', 'effectId'))}`;
+      return `play effect ${name(firstName(action, 'id', 'effectId'))}`;
     case 'win':
-      return 'výhra';
+      return 'win';
     case 'lose':
-      return 'prohra';
+      return 'lose';
     default:
-      return kind === null ? 'neznámá akce' : `akce ${kind}`;
+      return kind === null ? 'unknown action' : `action ${kind}`;
   }
 }
 
@@ -337,17 +338,17 @@ function rulesInOrder(sim: Record<string, unknown>): readonly Rule[] {
 function conditionSentence(rule: Rule): string {
   const condition = describeCondition(rule.body.condition);
   const when = describeEvent(rule.body.event);
-  return condition === null ? when : `${when}, a ${condition}`;
+  return condition === null ? when : `${when}, and ${condition}`;
 }
 
 function describeRule(rule: Rule): string {
   const actions = asArray(rule.body.actions).map((action) => describeAction(action));
-  return `${conditionSentence(rule)} → ${actions.length === 0 ? 'nic' : actions.join('; ')}`;
+  return `${conditionSentence(rule)} → ${actions.length === 0 ? 'nothing' : actions.join('; ')}`;
 }
 
-/** „Když hráč…" uvnitř věty musí začínat malým písmenem. */
+/** „When the player…" uvnitř věty musí začínat malým písmenem. */
 function lowerFirst(text: string): string {
-  const stripped = text.startsWith('Když ') ? text.slice('Když '.length) : text;
+  const stripped = text.startsWith('When ') ? text.slice('When '.length) : text;
   return stripped.charAt(0).toLowerCase() + stripped.slice(1);
 }
 
@@ -368,25 +369,25 @@ function buildLines(sim: Record<string, unknown>, look: Record<string, unknown>)
   const levels = asNumber(layout.levels) ?? 1;
   if (width !== null && height !== null)
     push(
-      'stavba',
-      'stavba/mrizka',
-      `Mřížka ${String(width)} × ${String(height)} buněk${
-        levels > 1 ? `, ${plural(levels, 'patro', 'patra', 'pater')}` : ''
+      'build',
+      'build/grid',
+      `Grid ${String(width)} × ${String(height)} cells${
+        levels > 1 ? `, ${plural(levels, 'level', 'levels')}` : ''
       }`,
     );
 
   const sockets = Object.keys(asRecord(sim.sockets));
   if (sockets.length > 0)
-    push('stavba', 'stavba/kotvy', `${plural(sockets.length, 'kotva', 'kotvy', 'kotev')}: ${listOf(sockets)}`);
+    push('build', 'build/sockets', `${plural(sockets.length, 'socket', 'sockets')}: ${listOf(sockets)}`);
 
   const entities = asRecord(sim.entities);
   const byRole = new Map<string, string[]>();
   for (const id of Object.keys(entities)) {
-    const role = asString(asRecord(entities[id]).role) ?? 'bez role';
+    const role = asString(asRecord(entities[id]).role) ?? 'no role';
     byRole.set(role, [...(byRole.get(role) ?? []), id]);
   }
   for (const [role, ids] of [...byRole.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1)))
-    push('stavba', `stavba/role/${role}`, `${roleName(role, ids.length)}: ${listOf(ids)}`);
+    push('build', `build/role/${role}`, `${roleName(role, ids.length)}: ${listOf(ids)}`);
 
   const state = asRecord(sim.state);
   for (const [slot, body] of Object.entries(asRecord(state.counters))) {
@@ -394,31 +395,31 @@ function buildLines(sim: Record<string, unknown>, look: Record<string, unknown>)
     const min = asNumber(counter.min);
     const max = asNumber(counter.max);
     const range = min !== null && max !== null ? ` ${String(min)}–${String(max)}` : '';
-    push('stavba', `stavba/counter/${slot}`, `Čítač ${slot}${range}, začíná na ${String(asNumber(counter.init) ?? 0)}`);
+    push('build', `build/counter/${slot}`, `Counter ${slot}${range}, starts at ${String(asNumber(counter.init) ?? 0)}`);
   }
   for (const [slot, body] of Object.entries(asRecord(state.timers))) {
     const ticks = asNumber(asRecord(body).durationTicks);
-    push('stavba', `stavba/timer/${slot}`, `Časovač ${slot}${ticks === null ? '' : ` na ${String(ticks)} tiků`}`);
+    push('build', `build/timer/${slot}`, `Timer ${slot}${ticks === null ? '' : ` for ${String(ticks)} ticks`}`);
   }
   const flags = Object.keys(asRecord(state.flags));
-  if (flags.length > 0) push('stavba', 'stavba/flags', `Vlaječky: ${listOf(flags)}`);
+  if (flags.length > 0) push('build', 'build/flags', `Flags: ${listOf(flags)}`);
 
   // Vzhled patří ke stavbě: je to druhá větev téže emise, ne cizí dokument.
   const modules = asRecord(look.modules);
   const families = Object.keys(modules).map((id) => `${id} → ${name(asString(asRecord(modules[id]).family))}`);
-  if (families.length > 0) push('stavba', 'stavba/moduly', `Vzhled: ${listOf(families)}`);
+  if (families.length > 0) push('build', 'build/modules', `Look: ${listOf(families)}`);
 
   const palette = asString(look.palette);
   const lightRig = asString(look.lightRig);
   if (palette !== null || lightRig !== null)
-    push('stavba', 'stavba/paleta', `Paleta ${name(palette)}, světlo ${name(lightRig)}`);
+    push('build', 'build/palette', `Palette ${name(palette)}, light ${name(lightRig)}`);
 
   // --- Pravidla ------------------------------------------------------------
   const rules = rulesInOrder(sim);
   rules.forEach((rule, index) => {
-    push('pravidla', `pravidla/${rule.id}`, `${String(index + 1)}. ${describeRule(rule)}`);
+    push('rules', `rules/${rule.id}`, `${String(index + 1)}. ${describeRule(rule)}`);
   });
-  if (rules.length === 0) push('pravidla', 'pravidla/zadna', 'Svět nemá žádné pravidlo.');
+  if (rules.length === 0) push('rules', 'rules/none', 'This world has no rules.');
 
   // --- Cíl -----------------------------------------------------------------
   const outcome = (op: string): Rule | undefined =>
@@ -426,15 +427,15 @@ function buildLines(sim: Record<string, unknown>, look: Record<string, unknown>)
 
   const winning = outcome('win');
   push(
-    'cil',
-    'cil/vyhra',
+    'goal',
+    'goal/win',
     winning === undefined
-      ? 'Žádné pravidlo nevede k výhře.'
-      : `Vyhraješ, když ${lowerFirst(conditionSentence(winning))}.`,
+      ? 'No rule leads to a win.'
+      : `You win when ${lowerFirst(conditionSentence(winning))}.`,
   );
 
   const losing = outcome('lose');
-  if (losing !== undefined) push('cil', 'cil/prohra', `Prohraješ, když ${lowerFirst(conditionSentence(losing))}.`);
+  if (losing !== undefined) push('goal', 'goal/lose', `You lose when ${lowerFirst(conditionSentence(losing))}.`);
 
   const witness = asRecord(sim.witness);
   const ops = asArray(witness.ops);
@@ -442,10 +443,10 @@ function buildLines(sim: Record<string, unknown>, look: Record<string, unknown>)
   const horizon = asNumber(witness.H_cert);
   if (ops.length > 0)
     push(
-      'cil',
-      'cil/svedek',
-      `Systém k tomu nese stopu: ${plural(ops.length, 'tah', 'tahy', 'tahů')}, výhra v tiku ${String(at ?? 0)}${
-        horizon === null ? '' : ` z ${String(horizon)}`
+      'goal',
+      'goal/witness',
+      `The system carries a trace for it: ${plural(ops.length, 'move', 'moves')}, win at tick ${String(at ?? 0)}${
+        horizon === null ? '' : ` of ${String(horizon)}`
       }.`,
     );
 
@@ -460,7 +461,7 @@ export function describeEmission(emission: unknown): readonly ProgramLine[] {
   const body = asRecord(emission);
   const sim = body.sim;
   if (sim === null || sim === undefined)
-    return [{ id: 'stavba/zadny', section: 'stavba', text: 'Model na tuhle větu svět nenapsal.' }];
+    return [{ id: 'build/none', section: 'build', text: 'The model wrote no world for this sentence.' }];
 
   return buildLines(asRecord(sim), asRecord(body.look));
 }

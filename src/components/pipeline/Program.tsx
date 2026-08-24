@@ -39,10 +39,10 @@ const MARKERS: Readonly<Record<Change, string>> = {
 };
 
 const CHANGE_LABELS: Readonly<Record<Change, string>> = {
-  same: 'beze změny',
-  added: 'přibylo',
-  changed: 'změněno',
-  removed: 'zmizelo',
+  same: 'unchanged',
+  added: 'added',
+  changed: 'changed',
+  removed: 'gone',
 };
 
 export default function Program({
@@ -76,9 +76,9 @@ export default function Program({
         onClick={() => setOpen((was) => !was)}
         style={TOGGLE}
       >
-        <span>Co model napsal</span>
+        <span>What the model wrote</span>
         <span style={BADGE}>
-          {changes === 0 ? (open ? 'skrýt' : 'ukázat') : `${String(changes)} změn`}
+          {changes === 0 ? (open ? 'hide' : 'show') : `${String(changes)} changed`}
           {open ? ' ▾' : ' ▸'}
         </span>
       </button>

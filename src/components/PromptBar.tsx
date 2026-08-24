@@ -64,7 +64,7 @@ import { startDictation, supportsDictation, type DictationSession } from '@/inpu
 import { outcomeFor, outcomeForUnreachable, type PromptOutcome } from './promptOutcome';
 
 /** Fáze, kterými požadavek projde. Pořadí je pořadí výpisu. */
-export const PHASES = ['odesláno', 'generuje se', 'staví se'] as const;
+export const PHASES = ['sent', 'generating', 'building'] as const;
 
 export type Phase = (typeof PHASES)[number];
 
@@ -106,8 +106,8 @@ export default function PromptBar({
         setOutcome({
           message:
             code === 'not-allowed'
-              ? 'Mikrofon je pro tuhle stránku zakázaný. Větu jde napsat.'
-              : `Diktování se nepovedlo (${code}). Větu jde napsat.`,
+              ? 'The microphone is blocked for this page. You can type the sentence.'
+              : `Dictation failed (${code}). You can type the sentence.`,
           fallbackHref: null,
         }),
       onEnd: () => {
@@ -130,7 +130,7 @@ export default function PromptBar({
 
     setOutcome(null);
     setSubstitute(null);
-    setPhase('odesláno');
+    setPhase('sent');
 
     // Požadavek má **vlastní** `try`, a stavba světa je až za ním. Kdyby byly
     // v jednom, `TypeError` z `onWorld()` by se tady vydával za spadlou síť a
@@ -146,7 +146,7 @@ export default function PromptBar({
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ prompt: text.trim() }),
       });
-      setPhase('generuje se');
+      setPhase('generating');
       payload = (await response.json()) as typeof payload;
     } catch (thrown) {
       const fallen = outcomeForUnreachable(thrown);
@@ -154,7 +154,7 @@ export default function PromptBar({
         // Tady se záruka z T20 vyrovnává s větví 404 níž: síť je pryč, ale svět
         // je pořád vidět, protože ho postavil prohlížeč.
         const local = guaranteeWorld(text.trim());
-        setPhase('staví se');
+        setPhase('building');
         onWorld(local.emission);
         if (local.kind === 'seed') setSubstitute(local.fault);
       }
@@ -171,7 +171,7 @@ export default function PromptBar({
         // místnost s pojmenovanou vadou.
         const local = response.status === 404 ? guaranteeWorld(text.trim()) : null;
         if (local !== null) {
-          setPhase('staví se');
+          setPhase('building');
           onWorld(local.emission);
           // Rozpoznaný tvar JE odpověď na větu — nic se k němu nedodává.
           if (local.kind === 'shape') return;
@@ -191,7 +191,7 @@ export default function PromptBar({
         return;
       }
 
-      setPhase('staví se');
+      setPhase('building');
       onWorld(payload.emission);
     } finally {
       setPhase(null);
@@ -202,8 +202,8 @@ export default function PromptBar({
     <form onSubmit={submit} data-testid="prompt-form" style={FORM}>
       <textarea
         data-testid="prompt-input"
-        aria-label="Popiš svět, který chceš"
-        placeholder="Popiš svět, který chceš — třeba: a puzzle room where I have to find three keys to open the exit door"
+        aria-label="Describe the world you want"
+        placeholder="Describe the world you want — for example: a puzzle room where I have to find three keys to open the exit door"
         value={text}
         rows={2}
         onChange={(event) => setText(event.target.value)}
@@ -220,12 +220,12 @@ export default function PromptBar({
           onClick={toggleDictation}
           style={listening ? { ...DICTATE, ...DICTATE_ON } : DICTATE}
         >
-          {listening ? 'Poslouchám…' : 'Nadiktovat'}
+          {listening ? 'Listening…' : 'Dictate'}
         </button>
       )}
 
       <button type="submit" data-testid="prompt-submit" disabled={busy || disabled} style={BUTTON}>
-        {busy ? 'Pracuju…' : 'Postav svět'}
+        {busy ? 'Working…' : 'Build the world'}
       </button>
 
       {phase === null ? null : (
@@ -244,8 +244,9 @@ export default function PromptBar({
 
       {substitute === null ? null : (
         <p data-testid="prompt-substitute" style={SUBSTITUTE}>
-          Tuhle větu jsem nepřečetl, takže na plátně stojí <strong>náhradní místnost</strong>. Hrát v ní
-          jde, ale svět z tvé věty to není{' '}
+          I could not read this sentence, so what stands on the canvas is a{' '}
+          <strong>substitute room</strong>. It is playable, but it is not the world from your
+          sentence{' '}
           <span data-testid="prompt-substitute-fault" style={FAULT}>
             ({substitute})
           </span>
@@ -259,7 +260,7 @@ export default function PromptBar({
             <>
               {' '}
               <a data-testid="prompt-fallback-link" href={outcome.fallbackHref} style={FALLBACK}>
-                Zahrát v záložní větvi
+                Play it in the fallback branch
               </a>
             </>
           )}

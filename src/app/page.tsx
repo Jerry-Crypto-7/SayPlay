@@ -274,7 +274,7 @@ export default function Page() {
       {world === null && programs.current === null ? <FirstRun /> : null}
       {broken ? (
         <p data-testid="world-broken" role="alert" style={BROKEN}>
-          Model vrátil svět, který se nedá spustit.
+          The model returned a world that cannot be run.
         </p>
       ) : null}
       {world === null ? null : <GameControls targets={targets} onRestart={restart} />}
@@ -309,15 +309,15 @@ function GameControls({
       <ol style={{ margin: 0, padding: 0, listStyle: 'none' }}>
         {targets.map((target, at) => (
           <li key={target} data-testid="game-target">
-            <kbd style={KEY}>{at + 1}</kbd> jdi k <strong>{target}</strong>
+            <kbd style={KEY}>{at + 1}</kbd> walk to <strong>{target}</strong>
           </li>
         ))}
       </ol>
       <p style={{ margin: '0.4rem 0 0' }}>
-        <kbd style={KEY}>mezerník</kbd> seber &middot; <kbd style={KEY}>E</kbd> použij
+        <kbd style={KEY}>space</kbd> pick up &middot; <kbd style={KEY}>E</kbd> use
       </p>
       <button type="button" data-testid="game-restart" onClick={onRestart} style={BUTTON}>
-        Od začátku
+        Restart
       </button>
     </div>
   );
