@@ -43,7 +43,7 @@ export default function KitLayoutView({ layoutId }: { layoutId: string }) {
   const scene = useMemo(() => (layout ? buildLayoutScene(layout) : null), [layout]);
 
   if (layout === undefined || scene === null) {
-    return <p data-testid="layout-missing">Layout {layoutId} v kitu není.</p>;
+    return <p data-testid="layout-missing">Layout {layoutId} is not in the kit.</p>;
   }
 
   return (

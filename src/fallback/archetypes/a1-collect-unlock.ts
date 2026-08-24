@@ -178,12 +178,12 @@ function a1View(state: A1State): GameView {
   return {
     archetype: 'collect_unlock',
     title: MANIFEST.title,
-    goal: `Posbírej ${state.params.n_collect} a projdi bránou do cíle`,
+    goal: `Collect ${state.params.n_collect} and walk through the gate to the goal`,
     phase: state.won ? 'won' : state.alive ? 'running' : 'lost',
     tick: state.tick,
     counters: [
-      { label: 'sebráno', value: state.collected, max: state.params.n_collect },
-      { label: 'brána', value: state.gateOpen ? 1 : 0, max: 1 },
+      { label: 'collected', value: state.collected, max: state.params.n_collect },
+      { label: 'gate', value: state.gateOpen ? 1 : 0, max: 1 },
     ],
     timeLeftTicks: state.timeLeftTicks,
     message: null,
@@ -195,7 +195,7 @@ function a1View(state: A1State): GameView {
 export function a1Game(params: A1Params): Game<A1State> {
   return {
     manifest: MANIFEST,
-    goal: `Posbírej ${params.n_collect} a projdi bránou do cíle`,
+    goal: `Collect ${params.n_collect} and walk through the gate to the goal`,
     create: (seed) => a1Create(params, seed),
     advance: a1Advance,
     project: a1View,

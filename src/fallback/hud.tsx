@@ -52,8 +52,8 @@ export function FallbackScene({ layoutId }: { layoutId: string }) {
 
 const BANNER: Record<GameView['phase'], string> = {
   running: '',
-  won: 'Vyhráno',
-  lost: 'Prohráno',
+  won: 'You win',
+  lost: 'You lose',
 };
 
 /** Cíl, počítadla, čas a stav hry. Čte jen `GameView`, nikdy vnitřní stav hry. */
@@ -70,7 +70,7 @@ export function Hud({ view }: { view: GameView }) {
             {counter.max === null ? '' : ` / ${counter.max}`}
           </span>
         ))}
-        {seconds === null ? null : <span data-testid="hud-time">Čas: {seconds} s</span>}
+        {seconds === null ? null : <span data-testid="hud-time">Time: {seconds} s</span>}
       </div>
       {view.phase === 'running' ? null : (
         <p className="ws-hud-banner" data-phase={view.phase} data-testid="hud-banner">
@@ -93,7 +93,7 @@ export function Hud({ view }: { view: GameView }) {
 export function NoFitNotice({ decision }: { decision: NoFitDecision }) {
   return (
     <div className="ws-overlay" data-testid="fallback-no-fit">
-      <strong>Tenhle prompt neumím celý</strong>
+      <strong>I cannot do all of this prompt</strong>
       <p className="ws-no-fit-reason" data-testid="no-fit-reason">
         {decision.reason}
       </p>

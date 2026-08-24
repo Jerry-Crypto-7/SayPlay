@@ -205,7 +205,7 @@ function goalOverlap(manifest: Manifest, required: readonly CapabilityToken[]): 
 function humanList(tokens: readonly CapabilityToken[]): string {
   const sentences = tokens.map((token) => `${TOKEN_SENTENCES[token]} (\`${token}\`)`);
   if (sentences.length <= 1) return sentences[0] ?? '';
-  return `${sentences.slice(0, -1).join(', ')} ani ${sentences[sentences.length - 1]}`;
+  return `${sentences.slice(0, -1).join(', ')} or ${sentences[sentences.length - 1]}`;
 }
 
 /**
@@ -246,7 +246,7 @@ export function route(required: readonly CapabilityToken[], prompt: string): Rou
       blocking: nearest.blocking,
       required: vector,
       sceneLayout: nearest.manifest.sceneLayout,
-      reason: `Neumím ${humanList(nearest.blocking)}. Tady je ${nearest.manifest.offer}.`,
+      reason: `I cannot do ${humanList(nearest.blocking)}. Here is ${nearest.manifest.offer}.`,
     };
   }
 
@@ -275,7 +275,7 @@ export function route(required: readonly CapabilityToken[], prompt: string): Rou
     sceneLayout: winner.manifest.sceneLayout,
     reason:
       tied.length > 1
-        ? `${winner.manifest.title}: ${winner.manifest.offer}. Proveditelných archetypů bylo ${tied.length}, rozhodl hash promptu.`
+        ? `${winner.manifest.title}: ${winner.manifest.offer}. ${tied.length} archetypes were feasible; the prompt hash decided.`
         : `${winner.manifest.title}: ${winner.manifest.offer}.`,
   };
 }

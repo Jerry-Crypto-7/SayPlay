@@ -114,3 +114,27 @@ test('náhradní místnost i nabídka záložní větve mluví anglicky', async 
   await expectEnglish(page.getByTestId('prompt-substitute'), 'prompt-substitute');
   await expectEnglish(page.getByTestId('prompt-error'), 'prompt-error');
 });
+
+/**
+ * Třetí obrazovka, a ta nejsnáz zapomenutá: **záložní větev**. Vede do ní odkaz
+ * přímo z demo cesty a je to nejpravděpodobnější druhé kliknutí porotce, který
+ * napsal vlastní větu — takže česká měď v ní ruší tutéž vlastnost, kvůli které
+ * T27r vznikla. Sama větev je architektonicky nezávislá (P2 T204), ale jazyk je
+ * vlastnost produktu, ne modulu.
+ */
+test('záložní větev mluví anglicky taky', async ({ page }) => {
+  test.setTimeout(180_000);
+
+  // Věta z nálezu 20. 8. 2026 — router z ní udělá hratelný archetyp, takže se
+  // vykreslí cíl i počítadla, ne jen hlavička.
+  await page.goto('/fallback/play?prompt=i%20want%20arcade%20jumping%20game');
+
+  await expect(page.getByTestId('route-reason')).toBeVisible({ timeout: 60_000 });
+  await expectEnglish(page.getByTestId('route-reason'), 'route-reason');
+
+  const hud = page.getByTestId('fallback-hud');
+  await expect(hud, 'HUD fallbacku se nevykreslil, takže se neměří').toBeVisible({
+    timeout: 60_000,
+  });
+  await expectEnglish(hud, 'fallback-hud');
+});
