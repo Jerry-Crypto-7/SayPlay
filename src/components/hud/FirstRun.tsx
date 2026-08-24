@@ -26,11 +26,17 @@ import { UI_TOKENS } from '@/kit';
 /**
  * Věty, které tady stojí jako ukázka.
  *
- * Jsou to tvary, které rozpoznávač umí — ne libovolné hezké věty. Kdyby tu
- * stálo něco, co produkt nepostaví, byla by nápověda past.
+ * Jsou to tvary, které rozpoznávač umí (`SHAPES` v `src/model/local/shapes.ts`) —
+ * ne libovolné hezké věty. Kdyby tu stálo něco, co produkt nepostaví, byla by
+ * nápověda past.
+ *
+ * **Ani jedna není opsaná z placeholderu vstupu.** Ta věta už na obrazovce je;
+ * zopakovaná o kus níž jen zabírá místo a vypadá jako chyba.
  */
 const EXAMPLES: readonly string[] = [
-  'a puzzle room where I have to find three keys to open the exit door',
+  // `beat-the-clock` — věta o čase vyrobí svět s odpočtem.
+  'a flooded vault I must escape in sixty seconds before the water rises',
+  // `patrolling-character` — hlídka, které se hráč musí vyhnout.
   'a courtyard with two guards patrolling between four pillars',
 ];
 
@@ -124,6 +130,7 @@ const SAMPLES: React.CSSProperties = {
 
 const SAMPLE: React.CSSProperties = {
   padding: '0.35rem 0.6rem',
+  textAlign: 'left',
   borderRadius: 4,
   border: '1px solid #24383d',
   background: 'rgba(12, 22, 26, 0.72)',
