@@ -8,5 +8,14 @@
   "modelTablePaths": ["src/model/prompt.ts", "evals/harness/preflight.ts"],
   "monitoringPath": "ops/monitoring/uptime.json",
   "dataDirs": ["evals/frozen", "evals/contracts/gold"],
-  "measurementReports": ["evals/gates/kill-gate-2026-09-15.md"]
+  "measurementReports": [
+    "evals/gates/kill-gate-2026-09-15.md",
+    "evals/hostile-report.json",
+    "evals/geom-budgets.json",
+    "evals/gates/divergence.lock.json",
+    "evals/local-model/grammar-report.json",
+    "evals/local-model/decision.md",
+    "evals/reject-causes.json",
+    "evals/fallback-efficacy.json"
+  ]
 }
