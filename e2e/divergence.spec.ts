@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { expect, test } from '@playwright/test';
@@ -254,4 +254,34 @@ test('@measure čtyři rodiny se od sebe liší a dvě semínka jedné rodiny ne
       `${pair.first} vs ${pair.second}: semínko smí přesunout kusy, ne změnit siluetu rodiny`,
     ).toBeLessThan(THRESHOLD.maxSameFamilyProfile);
   }
+
+  // Report na disk, ne jenom na `stdout`. Do 24. 8. 2026 tahle metrika existovala
+  // výhradně jako výpis do konzole — a přihláška se na ni odkazovala jako na
+  // „report v repozitáři", což nebyla pravda. Číslo, které nikde neleží, se
+  // navíc nedá vyvrátit ani přeměřit bez opakování celého běhu.
+  writeFileSync(
+    resolve(process.cwd(), 'evals/family-divergence.json'),
+    `${JSON.stringify(
+      {
+        note: 'Generováno `npm run measure:divergence`. Needituj ručně — běh soubor přepíše.',
+        thresholds: THRESHOLD,
+        crossFamilyMean: Number(crossMean.toFixed(3)),
+        weakestCrossFamilyProfile: Number(weakestProfile.toFixed(3)),
+        sameFamilyTotalRange: [
+          Number(Math.min(...same.map((pair) => pair.divergence.total)).toFixed(3)),
+          Number(Math.max(...same.map((pair) => pair.divergence.total)).toFixed(3)),
+        ],
+        pairs: [...cross, ...same].map((pair) => ({
+          first: pair.first,
+          second: pair.second,
+          palette: Number(pair.divergence.palette.toFixed(3)),
+          profile: Number(pair.divergence.profile.toFixed(3)),
+          total: Number(pair.divergence.total.toFixed(3)),
+        })),
+      },
+      null,
+      2,
+    )}\n`,
+    'utf8',
+  );
 });
