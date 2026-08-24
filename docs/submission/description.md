@@ -95,10 +95,14 @@ section says which file each one is in.
 - **Geometry budgets.** 20 of 20 programs under the caps. Heaviest world 2 272
   triangles against a cap of 120 000; slowest compile 16.6 ms against a cap of
   120 ms.
-- **The four visual families are actually different.** Mean pixel divergence
-  across families 0.514 against a threshold of 0.3, measured on real WebGL2 with
-  one fixed camera. Inside a family, pairs sit between 0.002 and 0.033 against a
-  ceiling of 0.15 – so a family reads as a style, not as noise.
+- **The four visual families are actually different.** Mean divergence across
+  families 0.435 against a threshold of 0.3, over 28 pairs rendered on real
+  WebGL2 from two fixed camera angles. Inside a family, pairs sit between 0.003
+  and 0.068 against a ceiling of 0.15 – so a family reads as a style, not as
+  noise. Palette alone does not carry it: the weakest cross-family silhouette
+  profile is 0.028 against a floor of 0.02, and that floor exists because a
+  measurement on 21 August showed two families could share a silhouette and still
+  pass on colour.
 - **In-browser model.** Zero of 40 schema-valid on its own; 0.375 with the
   recogniser in front; median latency 36 704 ms; 0 crashes.
 - **Rejected edits.** Retargeting a patch to its nearest legal variant moved the
@@ -146,7 +150,7 @@ worth looking at.
 
 - Hostile input: `evals/hostile-report.json`
 - Geometry budgets: `evals/geom-budgets.json`
-- Visual family divergence: `evals/gates/divergence.lock.json`
+- Visual family divergence: `evals/family-divergence.json`
 - In-browser model: `evals/local-model/grammar-report.json` and
   `evals/local-model/decision.md`
 - Rejected edits: `evals/reject-causes.json`

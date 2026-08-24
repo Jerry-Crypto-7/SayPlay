@@ -12,7 +12,7 @@
     "evals/gates/kill-gate-2026-09-15.md",
     "evals/hostile-report.json",
     "evals/geom-budgets.json",
-    "evals/gates/divergence.lock.json",
+    "evals/family-divergence.json",
     "evals/local-model/grammar-report.json",
     "evals/local-model/decision.md",
     "evals/reject-causes.json",
