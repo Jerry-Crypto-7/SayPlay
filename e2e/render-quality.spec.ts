@@ -144,14 +144,21 @@ const FAMILY_SEED = 101;
 /** Podlaha zaplnění snímku. Svět, který zabírá míň, se na rámování nevejde. */
 const MIN_FRAME_COVERAGE = 0.05;
 
-/** Kolik různých jasů musí mít stínovaný snímek. Rig, který nerozlišuje, má jeden. */
-const MIN_SHADED_LEVELS = 3;
+/**
+ * Kolik stupňů musí rampa přes snímek najít.
+ *
+ * Měří se **poměr stínovaného jasu k plochému na témž pixelu**, ne počet jasů ve
+ * stínovaném snímku. To je rozdíl mezi asercí, která něco tvrdí, a asercí, která
+ * projde vždycky: různých jasů má snímek spoustu i s mrtvou rampou, protože je
+ * v něm víc odstínů. Poměr odstín vykrátí a zbude z něj čistě stupeň rampy.
+ */
+const MIN_RAMP_STEPS = 2;
 
 interface FamilyFrame {
   /** Podíl plochy, na které je vidět svět. */
   readonly coverage: number;
-  /** Kolik různých jasů má stínovaný snímek. */
-  readonly shadedLevels: number;
+  /** Kolik různých stupňů rampy je přes snímek vidět. */
+  readonly rampSteps: number;
   /** Jas nejčastější barvy plochého snímku. To je zem. */
   readonly groundLuminance: number;
   /** Jas druhé nejčastější. To je, co na zemi stojí. */
@@ -312,17 +319,27 @@ test('čtyři rodiny se vejdou do rozpočtu a na snímku se čtou jako svět', a
         const luminance = (r: number, g: number, b: number) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
 
         const shaded = draw(1);
-        const shadedLevels = new Set<number>();
         let lit = 0;
         for (let index = 0; index < size * size; index += 1) {
-          if (shaded[index * 4 + 3] === 0) continue;
-          lit += 1;
-          shadedLevels.add(
-            Math.round(luminance(shaded[index * 4], shaded[index * 4 + 1], shaded[index * 4 + 2])),
-          );
+          if (shaded[index * 4 + 3] !== 0) lit += 1;
         }
 
         const flat = draw(0);
+
+        // Stupeň rampy = poměr stínovaného jasu k plochému na témž pixelu.
+        // Odstín se vykrátí, takže zbude jen to, co udělalo světlo.
+        const rampSteps = new Set<number>();
+        for (let index = 0; index < size * size; index += 1) {
+          if (shaded[index * 4 + 3] === 0) continue;
+          const flatLuminance = luminance(flat[index * 4], flat[index * 4 + 1], flat[index * 4 + 2]);
+          if (flatLuminance < 1) continue;
+          const shadedLuminance = luminance(
+            shaded[index * 4],
+            shaded[index * 4 + 1],
+            shaded[index * 4 + 2],
+          );
+          rampSteps.add(Math.round((shadedLuminance / flatLuminance) * 20) / 20);
+        }
         const areas = new Map<string, number>();
         for (let index = 0; index < size * size; index += 1) {
           if (flat[index * 4 + 3] === 0) continue;
@@ -337,7 +354,7 @@ test('čtyři rodiny se vejdou do rozpočtu a na snímku se čtou jako svět', a
 
         return {
           coverage: lit / (size * size),
-          shadedLevels: shadedLevels.size,
+          rampSteps: rampSteps.size,
           groundLuminance: ranked.length > 0 ? luminanceOfKey(ranked[0][0]) : 0,
           figureLuminance: ranked.length > 1 ? luminanceOfKey(ranked[1][0]) : 0,
         };
@@ -358,12 +375,11 @@ test('čtyři rodiny se vejdou do rozpočtu a na snímku se čtou jako svět', a
       `${family.id} nezaplnil skoro nic ze snímku: ${(measured.coverage * 100).toFixed(1)} %`,
     ).toBeGreaterThan(MIN_FRAME_COVERAGE);
 
-    // Rig, který nerozlišuje povrchy, vydá jeden jas. Čtyřstupňová rampa přes
-    // scénu s vodorovnou zemí a svislými stěnami musí vydat aspoň tři.
+    // Rampa se stejnými stupni vydá jediný poměr, tedy plochý svět bez světla.
     expect(
-      measured.shadedLevels,
+      measured.rampSteps,
       `${family.id} je nasvícený naplocho — rampa nerozlomila povrch na stupně`,
-    ).toBeGreaterThanOrEqual(MIN_SHADED_LEVELS);
+    ).toBeGreaterThanOrEqual(MIN_RAMP_STEPS);
 
     // Naměřená vada z 24. 8. 2026: Hutě měly zem a bloky 17 bodů jasu od sebe a
     // Háj 38, takže obojí se četlo jako jedna plocha. Tahle aserce je ta podlaha —
