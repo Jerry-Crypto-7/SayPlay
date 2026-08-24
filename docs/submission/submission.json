@@ -1,6 +1,6 @@
 {
   "$comment": "Vstup pro `node scripts/submission-check.mjs`. Hodnoty s prefixem TODO: brána odmítá — nevyplněné pole musí kontrolu shodit, ne projít jako pravdivá hodnota.",
-  "repositoryUrl": "TODO: veřejná adresa repozitáře (P0 T100 + první push)",
+  "repositoryUrl": "https://github.com/Jerry-Crypto-7/Hackathon",
   "demoUrl": "TODO: hostovaný browser demo link (P2 T205b)",
   "backendUrl": "TODO: adresa, na které backend odpovídá (P2 T205b)",
   "videoPath": "video/final.mp4",
