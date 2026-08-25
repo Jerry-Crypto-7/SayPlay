@@ -27,9 +27,16 @@ import { join } from 'node:path';
 
 import { declinedEmissionSchema, peelEnvelope, worldEmissionSchema } from '../../src/ir/worlddoc';
 import { frozenGrammar } from '../../src/model/client';
+import { deriveCollisionAabb } from '../../src/model/local/aabb';
 import { stripThinking } from '../../src/model/local/emit';
 import { recognize } from '../../src/model/local/shapes';
-import { FORCED_SHAPE_SCHEMA, LARGE_MODEL, MAX_OUTPUT_TOKENS, SMALL_MODEL } from '../../src/model/local/engine';
+import {
+  completionRequest,
+  FORCED_SHAPE_SCHEMA,
+  LARGE_MODEL,
+  MAX_OUTPUT_TOKENS,
+  SMALL_MODEL,
+} from '../../src/model/local/engine';
 import { buildEmissionRequest } from '../../src/model/prompt';
 
 /**
@@ -42,6 +49,16 @@ import { buildEmissionRequest } from '../../src/model/prompt';
  */
 export { FORCED_SHAPE_SCHEMA, MAX_OUTPUT_TOKENS } from '../../src/model/local/engine';
 export { stripThinking } from '../../src/model/local/emit';
+
+/** Produkční požadavek rozšířený pouze o diagnostický rozpad latence. */
+export function measurementRequest(system: string, user: string): Record<string, unknown> {
+  const request = completionRequest(system, user);
+  const extraBody =
+    request.extra_body !== null && typeof request.extra_body === 'object' && !Array.isArray(request.extra_body)
+      ? (request.extra_body as Record<string, unknown>)
+      : {};
+  return { ...request, extra_body: { ...extraBody, enable_latency_breakdown: true } };
+}
 
 /** Kolik vět se měří. AC úlohy T5 říká prvních 40 z `corpus-v3`. */
 export const MEASURED_SENTENCES = 40;
@@ -137,10 +154,16 @@ export function classifyOutput(raw: string): Outcome {
   const peeled = peelEnvelope(body);
   if (!peeled) return { kind: 'invalid', detail: 'tělo emise není JSON objekt' };
 
-  const world = worldEmissionSchema.safeParse(peeled.document);
+  const rawSim = peeled.document.sim;
+  const document =
+    rawSim !== null && typeof rawSim === 'object' && !Array.isArray(rawSim)
+      ? { ...peeled.document, sim: deriveCollisionAabb(rawSim as Record<string, unknown>) }
+      : peeled.document;
+
+  const world = worldEmissionSchema.safeParse(document);
   if (world.success) return { kind: 'fulfilled', detail: '' };
 
-  if (declinedEmissionSchema.safeParse(peeled.document).success) {
+  if (declinedEmissionSchema.safeParse(document).success) {
     return { kind: 'declined', detail: 'sim je poctivě null' };
   }
 

@@ -19,6 +19,7 @@ import {
   classifyOutput,
   isBug807,
   loadSentences,
+  measurementRequest,
   measurementShortfall,
   median,
   mergeRecords,
@@ -68,6 +69,14 @@ describe('classifyOutput', () => {
     expect(classifyOutput(JSON.stringify(MINIMAL_WORLD)).kind).toBe('fulfilled');
   });
 
+  it('odvodí chybějící collisionAabb stejně jako produkční lokální emise', () => {
+    const sim = MINIMAL_WORLD.sim as Record<string, unknown>;
+    const { collisionAabb: _missing, ...withoutAabb } = sim;
+    const emission = { ...MINIMAL_WORLD, sim: withoutAabb };
+
+    expect(classifyOutput(JSON.stringify(emission)).kind).toBe('fulfilled');
+  });
+
   it('odliší poctivé odmítnutí od vadné emise', () => {
     const declined = { ...MINIMAL_WORLD, sim: null };
     expect(classifyOutput(JSON.stringify(declined)).kind).toBe('declined');
@@ -86,6 +95,20 @@ describe('classifyOutput', () => {
     const withThinking = `<think>\nlet me plan\n</think>\n${JSON.stringify(MINIMAL_WORLD)}`;
     expect(classifyOutput(withThinking).kind).toBe('fulfilled');
     expect(stripThinking('Sure! {"a":1}')).toBe('Sure! {"a":1}');
+  });
+});
+
+describe('measurementRequest', () => {
+  it('rozšiřuje produkční požadavek jen o měření latence', () => {
+    const request = measurementRequest('system', 'user') as {
+      messages: { role: string; content: string }[];
+      max_tokens: number;
+      extra_body: { enable_thinking: boolean; enable_latency_breakdown: boolean };
+    };
+
+    expect(request.messages[0]?.content).toBe('system\n\n/no_think');
+    expect(request.extra_body).toEqual({ enable_thinking: false, enable_latency_breakdown: true });
+    expect(request.max_tokens).toBeGreaterThan(1400);
   });
 });
 

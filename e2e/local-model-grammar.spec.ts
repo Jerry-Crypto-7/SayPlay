@@ -37,9 +37,8 @@ import { chromium, expect, test, type BrowserContext, type Page } from '@playwri
 
 import {
   buildReport,
-  FORCED_SHAPE_SCHEMA,
-  MAX_OUTPUT_TOKENS,
   MEASURED_SENTENCES,
+  measurementRequest,
   measurementShortfall,
   PRIMARY_MODEL,
   RAW_ARCHIVE_PATH,
@@ -216,21 +215,7 @@ async function runModel(
         const started = performance.now();
         let record: (typeof records)[number];
         try {
-          const reply = await engine.chat.completions.create({
-            messages: [
-              { role: 'system', content: sentence.system },
-              { role: 'user', content: sentence.user },
-            ],
-            response_format: { type: 'json_object', schema: input.schema },
-            max_tokens: input.maxTokens,
-            temperature: 0,
-            seed: 1,
-            // Zapíná rozpad latence po tokenech. Bez toho knihovna pole
-            // `latencyBreakdown` vůbec neplní a zůstane jen součet, ze kterého
-            // se nepozná, jestli je pomalý model nebo kontrola kolem něj.
-            // Cena je dvě volání `performance.now()` na token, tedy nic.
-            extra_body: { enable_latency_breakdown: true },
-          });
+          const reply = await engine.chat.completions.create(sentence.request);
           const usage = reply.usage;
           const breakdown = usage?.extra?.latencyBreakdown;
           const sumOf = (values: number[] | undefined): number =>
@@ -291,9 +276,10 @@ async function runModel(
     {
       moduleUrl: WEBLLM_ROUTE,
       modelId: options.modelId,
-      sentences: options.sentences as MeasuredSentence[],
-      schema: FORCED_SHAPE_SCHEMA,
-      maxTokens: MAX_OUTPUT_TOKENS,
+      sentences: options.sentences.map((sentence) => ({
+        id: sentence.id,
+        request: measurementRequest(sentence.system, sentence.user),
+      })),
       stopAtFirstBug: options.stopAtFirstBug,
     },
   );
