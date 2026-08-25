@@ -214,12 +214,16 @@ describe('engine', () => {
       temperature: number;
       seed: number;
       max_tokens: number;
+      messages: { role: string; content: string }[];
+      extra_body: { enable_thinking: boolean };
       response_format: { type: string; schema: string };
     };
 
     expect(request.temperature).toBe(0);
     expect(request.seed).toBe(1);
     expect(request.max_tokens).toBe(MAX_OUTPUT_TOKENS);
+    expect(request.extra_body.enable_thinking).toBe(false);
+    expect(request.messages[0]).toEqual({ role: 'system', content: 'systém\n\n/no_think' });
     expect(request.response_format.type).toBe('json_object');
     expect(JSON.parse(request.response_format.schema).required).toEqual([
       'irVersion',

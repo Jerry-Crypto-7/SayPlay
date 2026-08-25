@@ -96,13 +96,17 @@ export interface ChatEngine {
 export function completionRequest(system: string, user: string): Record<string, unknown> {
   return {
     messages: [
-      { role: 'system', content: system },
+      // Qwen3 rozumí direktivě i tehdy, když klient nepředá vlastní parametr
+      // šabloně. Obě cesty držíme schválně: WebLLM už parametr podporuje, ale
+      // systémová zpráva zůstává kompatibilní pojistkou.
+      { role: 'system', content: `${system}\n\n/no_think` },
       { role: 'user', content: user },
     ],
     response_format: { type: 'json_object', schema: FORCED_SHAPE_SCHEMA },
     max_tokens: MAX_OUTPUT_TOKENS,
     temperature: 0,
     seed: 1,
+    extra_body: { enable_thinking: false },
   };
 }
 
