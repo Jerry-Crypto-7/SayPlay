@@ -3,25 +3,23 @@ import { expect, test, type Page, type Response } from '@playwright/test';
 import { isWeightRequest } from '../src/model/local/capability';
 
 /**
- * Produkt je ovladatelný hned a **model se odsud nestahuje** (P11 T22, T22q).
+ * Produkt je ovladatelný hned a capability gate předchází stahování modelu
+ * (P11 T22, P12 V1 T9).
  *
  * ## Co se změnilo a proč tenhle soubor vypadá jinak než v T22
  *
- * V T22 se měřilo „dá se hrát, **zatímco** se model stahuje". Rozhodnutím T22q
- * z 21. 8. 2026 se model z hlavní stránky odpojil, protože ho nikdo nepoužíval:
- * stahoval se skoro gigabajt vah a hotový engine nikam nevedl. Test proto
- * přestal měřit „stahování na pozadí" a měří **jeho nepřítomnost** — což je
- * tvrzení, které jde porušit jediným nedopatřeným importem, takže se hlídat
- * musí.
+ * Rozhodnutím T22q z 21. 8. 2026 se model dočasně odpojil, protože hotový engine
+ * nikam nevedl. T9 ho vrací spolu se skutečným volajícím, ale zachovává levnou
+ * hranici: nejdřív se ověří použitelný WebGPU adaptér, teprve potom se smí
+ * stáhnout WebLLM a váhy.
  *
- * ## Proč se stroj pořád vydává za schopný, když se nic nestahuje
+ * ## Proč se tady WebGPU nepodstrkuje
  *
- * To je celý ten test. Playwrightí Chromium WebGPU nedostane, takže by
- * `detectRuntime()` sám od sebe vrátil větev bez modelu a **nula stažených
- * bajtů by byla pravda z nudného důvodu** — model by se nespustil ani tehdy,
- * kdyby ho stránka poctivě zapojila. `navigator.gpu` se proto podstrčí a stroj
- * se tváří jako takový, který model utáhne. Když se za těch podmínek pořád nic
- * nestáhne, je to vlastnost produktu, ne prostředí.
+ * Playwrightí Chromium běží přes SwiftShader kvůli WebGL scéně, ale použitelný
+ * WebGPU adaptér nemá. Právě to je reálná záporná větev capability gate:
+ * `ModelProgress` musí dojít do `unavailable`, svět musí vzniknout a jediný
+ * bajt vah nesmí odejít. Kladnou větev nad systémovým Chrome a skutečným GPU
+ * měří samostatně `e2e/model-wired.spec.ts`.
  *
  * ## Jak se pozná balík modelu
  *
@@ -55,27 +53,8 @@ const FIRST_CLICK_BUDGET_MS = 3_000;
 /** Od jaké délky zdrojového textu je skript balíkem modelu. Viz hlavička. */
 const MODEL_BUNDLE_MIN_SIZE = 1_000_000;
 
-/**
- * Vydává stroj za takový, který model utáhne.
- *
- * `requestAdapter()` vrací objekt, protože `probeEnvironment()` se ptá právě
- * jeho — `null` by znamenalo „WebGPU tu není", tedy přesně ten stav, který
- * tenhle test vyrábět nechce.
- */
-async function pretendCapableMachine(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    Object.defineProperty(navigator, 'gpu', {
-      configurable: true,
-      value: { requestAdapter: () => Promise.resolve({ info: { vendor: 'test', architecture: 'test' } }) },
-    });
-    Object.defineProperty(navigator, 'deviceMemory', { configurable: true, value: 8 });
-  });
-}
-
-test('produkt je ovladatelný do tří sekund a model se nestahuje vůbec', async ({ page }) => {
+test('produkt je ovladatelný do tří sekund a stroj bez WebGPU nestáhne váhy', async ({ page }) => {
   test.setTimeout(120_000);
-
-  await pretendCapableMachine(page);
 
   const weightRequests: string[] = [];
   const scripts: Response[] = [];
@@ -109,22 +88,24 @@ test('produkt je ovladatelný do tří sekund a model se nestahuje vůbec', asyn
     timeout: 60_000,
   });
 
-  // 1. Ukazatel stahování na stránce vůbec není. To je to rozhodnutí samo.
-  await expect(page.getByTestId('model-progress')).toHaveCount(0);
+  // 1. Stavový uzel je skutečně vyrenderovaný a levný probe pravdivě uzavřel
+  //    větev bez modelu. Není to záměrně odpojený komponent.
+  await expect(page.getByTestId('model-progress')).toHaveAttribute('data-phase', 'unavailable', {
+    timeout: 20_000,
+  });
 
-  // 2. Váhy si nikdo nevyžádal. Sama o sobě je to slabá aserce — v tomhle
-  //    prohlížeči se WebGPU zařízení nedostane, takže by platila i pro stránku,
-  //    která se model stáhnout POKOUŠÍ. Silná je až s bodem 3.
+  // 2. Váhy si nikdo nevyžádal. Spolu s bodem 1 to dokazuje pořadí probe →
+  //    případný download; pouhá absence síťového provozu by neřekla, zda je
+  //    komponent vůbec zapojený.
   expect(weightRequests, 'stránka si vyžádala váhy modelu').toEqual([]);
 
-  // 3. Balík WebLLM se nenačetl. Tohle je ta aserce, která rozhodnutí hlídá:
-  //    kdyby se `ModelProgress` vrátilo do stromu stránky, chunk se stáhne dřív,
-  //    než se zjistí, že zařízení není.
+  // 3. Balík WebLLM se nenačetl. Capability modul a naše malá obálka se načíst
+  //    smějí; šestimegabajtový runtime až po kladném probe.
   const heavy: string[] = [];
   for (const response of scripts) {
     const body = await response.body().catch(() => Buffer.alloc(0));
     if (body.length > MODEL_BUNDLE_MIN_SIZE && body.includes('CreateMLCEngine'))
       heavy.push(`${response.url()} (${body.length} B)`);
   }
-  expect(heavy, 'stránka načetla balík WebLLM, ačkoli ho nemá k čemu použít').toEqual([]);
+  expect(heavy, 'stránka načetla balík WebLLM bez použitelného WebGPU').toEqual([]);
 });

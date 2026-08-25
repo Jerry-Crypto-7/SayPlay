@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Panel překladu — **co model doopravdy napsal** (P11 T14).
+ * Panel překladu — **co systém doopravdy spouští** (P11 T14, P12 V1 T9).
  *
  * Vedle světa běží čitelně jeho zdroj: tvar stavby, pravidla v pořadí, ve kterém
  * je interpret vykoná, a cíl. Není to log a není to výpis JSONu — porotce má za
@@ -18,6 +18,8 @@
  */
 
 import { useMemo, useState } from 'react';
+
+import { SOURCE_LABEL, type EmissionSource } from '@/model/source';
 
 import {
   describeEmission,
@@ -48,11 +50,14 @@ const CHANGE_LABELS: Readonly<Record<Change, string>> = {
 export default function Program({
   emission,
   previous = null,
+  source,
 }: {
-  /** Emise, kterou model právě napsal. `null` = ještě žádná věta nepadla. */
+  /** Emise, která právě běží. `null` = ještě žádná věta nepadla. */
   readonly emission: unknown;
   /** Emise předchozí věty. `null` u první — první svět není samá novinka. */
   readonly previous?: unknown;
+  /** Pravdivý původ právě hraného dokumentu. */
+  readonly source: EmissionSource | null;
 }) {
   const [open, setOpen] = useState(true);
 
@@ -76,8 +81,13 @@ export default function Program({
         onClick={() => setOpen((was) => !was)}
         style={TOGGLE}
       >
-        <span>What the model wrote</span>
+        <span>{source === 'model' ? 'What the model wrote' : 'What the system runs'}</span>
         <span style={BADGE}>
+          {source === null ? null : (
+            <span data-testid="emission-source" data-source={source} style={SOURCE}>
+              {SOURCE_LABEL[source]}
+            </span>
+          )}
           {changes === 0 ? (open ? 'hide' : 'show') : `${String(changes)} changed`}
           {open ? ' ▾' : ' ▸'}
         </span>
@@ -163,6 +173,11 @@ const BADGE: React.CSSProperties = {
   color: '#9fc0c2',
   fontWeight: 400,
   whiteSpace: 'nowrap',
+};
+
+const SOURCE: React.CSSProperties = {
+  marginRight: '0.6rem',
+  color: '#5fd3bd',
 };
 
 const BODY: React.CSSProperties = {

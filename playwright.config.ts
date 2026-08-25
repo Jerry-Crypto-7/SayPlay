@@ -73,7 +73,7 @@ export default defineConfig({
      */
     {
       name: 'no-acceleration',
-      testMatch: /webgpu-detect\.spec\.ts/,
+      testMatch: /(webgpu-detect|model-wired)\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         launchOptions: { args: ['--disable-gpu', '--disable-features=WebGPU,Vulkan'] },

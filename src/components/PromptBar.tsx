@@ -56,10 +56,13 @@
  *    počáteční hodnota stavu.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { guaranteeWorld } from '@/game/guarantee';
 import { startDictation, supportsDictation, type DictationSession } from '@/input/speech';
+import type { ModelPhase } from '@/components/hud/ModelProgress';
+import type { ChatEngine } from '@/model/local/engine';
+import type { EmissionSource } from '@/model/source';
 
 import { outcomeFor, outcomeForUnreachable, type PromptOutcome } from './promptOutcome';
 
@@ -70,10 +73,14 @@ export type Phase = (typeof PHASES)[number];
 
 export default function PromptBar({
   onWorld,
+  engine,
+  modelPhase,
   disabled = false,
 }: {
   /** Dostane surovou emisi; svět z ní staví volající, ne tahle komponenta. */
-  readonly onWorld: (emission: unknown) => void;
+  readonly onWorld: (emission: unknown, source: EmissionSource) => void;
+  readonly engine: ChatEngine | null;
+  readonly modelPhase: ModelPhase;
   readonly disabled?: boolean;
 }) {
   const [text, setText] = useState('');
@@ -84,11 +91,75 @@ export default function PromptBar({
   /** Umí prohlížeč diktovat? Čte se až po připojení — viz bod 2 v hlavičce. */
   const [canDictate, setCanDictate] = useState(false);
   const [listening, setListening] = useState(false);
+  const [pendingModel, setPendingModel] = useState<{ readonly id: number; readonly sentence: string } | null>(null);
+  const [modelBusy, setModelBusy] = useState(false);
+  const [modelNotice, setModelNotice] = useState<string | null>(null);
   const dictation = useRef<DictationSession | null>(null);
+  const requestId = useRef(0);
 
   useEffect(() => setCanDictate(supportsDictation()), []);
 
-  const busy = phase !== null;
+  const busy = phase !== null || modelBusy;
+
+  const completeFromModel = useCallback(
+    async (pending: { readonly id: number; readonly sentence: string }): Promise<void> => {
+      if (engine === null) return;
+      setModelBusy(true);
+      setModelNotice('The substitute is playable. The browser model is writing a replacement…');
+      try {
+        // Lokální emisní řetěz se načte až ve chvíli, kdy má hotový engine a
+        // skutečnou neznámou větu. Těžký WebLLM balík načítá sám ModelProgress
+        // až po kladném WebGPU probe.
+        const { emitLocally } = await import('@/model/local/emit');
+        const result = await emitLocally({
+          sentence: pending.sentence,
+          engine,
+          // Rozpoznávač už slovo dostal v `guaranteeWorld`; model je třetí cesta,
+          // ne druhý průchod tou první.
+          recognize: () => null,
+        });
+        if (requestId.current !== pending.id) return;
+
+        if (result.kind === 'verdict' && result.body.outcome === 'CERTIFIED' && result.body.doc !== null) {
+          setPhase('building');
+          onWorld(result.body.doc, 'model');
+          setSubstitute(null);
+          setOutcome(null);
+          setModelNotice('The browser model certified the world now running on the canvas.');
+          setPhase(null);
+          return;
+        }
+
+        const detail =
+          result.kind === 'unavailable'
+            ? result.detail
+            : String((result.body.rejection as { reason?: unknown } | null)?.reason ?? result.body.outcome);
+        setModelNotice(`The browser model could not certify a replacement (${detail}); the substitute stays.`);
+      } catch (thrown) {
+        if (requestId.current === pending.id) {
+          setModelNotice(
+            `The browser model failed (${thrown instanceof Error ? thrown.message : String(thrown)}); the substitute stays.`,
+          );
+        }
+      } finally {
+        if (requestId.current === pending.id) {
+          setPendingModel(null);
+          setModelBusy(false);
+        }
+      }
+    },
+    [engine, onWorld],
+  );
+
+  useEffect(() => {
+    if (engine !== null && pendingModel !== null && !modelBusy) void completeFromModel(pendingModel);
+  }, [completeFromModel, engine, modelBusy, pendingModel]);
+
+  useEffect(() => {
+    if (modelPhase !== 'unavailable' || pendingModel === null) return;
+    setPendingModel(null);
+    setModelNotice('This machine cannot run the browser model; the immediate world stays playable.');
+  }, [modelPhase, pendingModel]);
 
   function toggleDictation(): void {
     if (listening) {
@@ -123,11 +194,28 @@ export default function PromptBar({
     setListening(true);
   }
 
+  function queueModel(id: number, sentence: string): void {
+    if (modelPhase === 'unavailable') {
+      setModelNotice('This machine cannot run the browser model; the immediate world stays playable.');
+      return;
+    }
+    setPendingModel({ id, sentence });
+    setModelNotice(
+      engine === null
+        ? 'The immediate world is playable while the browser model loads in the background.'
+        : 'The immediate world is playable while the browser model writes a replacement.',
+    );
+  }
+
   async function submit(event: React.FormEvent): Promise<void> {
     event.preventDefault();
     // Prázdný vstup není chyba, na kterou se nadává — prostě se nic nestane.
     if (text.trim() === '' || busy || disabled) return;
 
+    const id = requestId.current + 1;
+    requestId.current = id;
+    setPendingModel(null);
+    setModelNotice(null);
     setOutcome(null);
     setSubstitute(null);
     setPhase('sent');
@@ -155,8 +243,11 @@ export default function PromptBar({
         // je pořád vidět, protože ho postavil prohlížeč.
         const local = guaranteeWorld(text.trim());
         setPhase('building');
-        onWorld(local.emission);
-        if (local.kind === 'seed') setSubstitute(local.fault);
+        onWorld(local.emission, local.kind === 'shape' ? 'recognizer' : 'substitute');
+        if (local.kind === 'seed') {
+          setSubstitute(local.fault);
+          queueModel(id, text.trim());
+        }
       }
       if (fallen.outcome !== null) setOutcome(fallen.outcome);
       setPhase(null);
@@ -172,12 +263,13 @@ export default function PromptBar({
         const local = response.status === 404 ? guaranteeWorld(text.trim()) : null;
         if (local !== null) {
           setPhase('building');
-          onWorld(local.emission);
+          onWorld(local.emission, local.kind === 'shape' ? 'recognizer' : 'substitute');
           // Rozpoznaný tvar JE odpověď na větu — nic se k němu nedodává.
           if (local.kind === 'shape') return;
           // Náhradní místnost odpověď NENÍ, a propadá proto dolů k hlášce
           // i k nabídce záložní větve.
           setSubstitute(local.fault);
+          queueModel(id, text.trim());
         }
         setOutcome(
           outcomeFor(
@@ -192,7 +284,7 @@ export default function PromptBar({
       }
 
       setPhase('building');
-      onWorld(payload.emission);
+      onWorld(payload.emission, 'frozen');
     } finally {
       setPhase(null);
     }
@@ -225,7 +317,7 @@ export default function PromptBar({
       )}
 
       <button type="submit" data-testid="prompt-submit" disabled={busy || disabled} style={BUTTON}>
-        {busy ? 'Working…' : 'Build the world'}
+        {modelBusy ? 'Model writing…' : busy ? 'Working…' : 'Build the world'}
       </button>
 
       {phase === null ? null : (
@@ -240,6 +332,12 @@ export default function PromptBar({
             </li>
           ))}
         </ol>
+      )}
+
+      {modelNotice === null ? null : (
+        <p data-testid="prompt-model-status" style={MODEL_NOTICE}>
+          {modelNotice}
+        </p>
       )}
 
       {substitute === null ? null : (
@@ -357,6 +455,13 @@ const SUBSTITUTE: React.CSSProperties = {
   flexBasis: '100%',
   margin: 0,
   color: '#9fc0c2',
+  fontSize: '0.9rem',
+};
+
+const MODEL_NOTICE: React.CSSProperties = {
+  flexBasis: '100%',
+  margin: 0,
+  color: '#5fd3bd',
   fontSize: '0.9rem',
 };
 

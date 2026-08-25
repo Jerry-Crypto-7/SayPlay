@@ -3,14 +3,12 @@
 /**
  * Stahování modelu jako oznámení v rohu, ne jako brána přes celou obrazovku (P11 T22).
  *
- * ## ⚠ Tahle komponenta NENÍ na stránce — a je to schválně (P11 T22q)
+ * ## Od T9 je to skutečný stav skutečného modelu
  *
- * Rozhodnuto 21. 8. 2026: `src/app/page.tsx` ji přestalo vykreslovat, protože
- * hotový model nikdo nepoužíval — stahoval se skoro gigabajt vah a `onReady`
- * nikam nevedlo. Zapojí se zpátky teprve, až se `collisionAabb` bude dopočítávat
- * ze soketu (naměřeno 27 z 28 proti dnešním 0 ze 40) a až bude čím zkrátit
- * ~185 s na jednu emisi. Do té doby ji **nevracej do stromu stránky** — hlídá to
- * `e2e/first-click.spec.ts` a zčervená.
+ * P11 T22q komponentu správně odpojila, dokud hotový engine nikdo nepoužíval.
+ * P12 V1 T9 ji vrací až spolu s volajícím: `onReady` předá engine cestě emise a
+ * `onState` drží UI ve shodě s tím, zda se model zkoumá, načítá nebo není
+ * dostupný. Naměřený medián je 33,9 s, takže panel nesmí blokovat náhradní svět.
  *
  * ## Co se tu rozhoduje
  *
@@ -80,8 +78,12 @@ export function captionFor(state: ModelState): string | null {
 export default function ModelProgress({
   /** Dostane hotový model. Nepovinné — komponenta funguje i tehdy, když ho nikdo nechce. */
   onReady,
+  onState,
 }: {
+  /** Dostane hotový model; stránka ho předá promptové cestě. */
   readonly onReady?: (engine: ChatEngine) => void;
+  /** Dostane každý pravdivý stav, včetně `unavailable`. */
+  readonly onState?: (state: ModelState) => void;
 } = {}) {
   const [state, setState] = useState<ModelState>(INITIAL);
   // Odpojená komponenta nesmí sahat na stav: stahování běží déle než leckterá
@@ -91,8 +93,12 @@ export default function ModelProgress({
   useEffect(() => {
     alive.current = true;
     const set = (next: ModelState): void => {
-      if (alive.current) setState(next);
+      if (!alive.current) return;
+      setState(next);
+      onState?.(next);
     };
+
+    onState?.(INITIAL);
 
     void (async () => {
       const runtime = detectRuntime(await probeEnvironment());
@@ -120,7 +126,7 @@ export default function ModelProgress({
     return () => {
       alive.current = false;
     };
-  }, [onReady]);
+  }, [onReady, onState]);
 
   const caption = captionFor(state);
 

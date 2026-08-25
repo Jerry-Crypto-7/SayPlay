@@ -4,8 +4,8 @@
  * Úvodní stránka — věta dovnitř, svět ven, a od T19 se ten svět dá hrát.
  *
  * Prompt a plátno drží jedna komponenta, protože mezi nimi teče přesně jedna
- * hodnota: emise. `PromptBar` ji přinese z `/api/generate`, tady se z ní postaví
- * běh a `Stage` ho hraje.
+ * hodnota: emise. `PromptBar` ji vybere z korpusu, rozpoznávače nebo lokálního
+ * modelu, tady se z ní postaví běh a `Stage` ho hraje.
  *
  * Svět se staví `buildRuntimeWorld`, tedy **tímtéž vstupním bodem**, jakým prošel
  * certifikát na serveru. Kdyby si stránka stavěla svět po svém, hrála by něco
@@ -18,28 +18,24 @@
  * (`src/game/flow.ts`) a plátno si od ní bere vstupy tik po tiku; běh zůstává
  * funkcí `(dokument, stopa)` a restart se dá přehrát na tentýž hash.
  *
- * ## Model se odsud nestahuje — rozhodnuto 21. 8. 2026 (P11 T22q)
+ * ## Model je třetí cesta, ne vstupní závora (P12 V1 T9)
  *
- * `<ModelProgress />` tu stálo a spouštělo stažení skoro gigabajtu vah. Je
- * **odpojené**, protože ten model nikdo nepoužíval: `onReady` nikam nevedlo a
- * `emitWith()` nemělo v produktu volajícího. Platila se tedy cena bez výnosu.
+ * Po zmrazeném korpusu a deterministickém rozpoznávači dostane neznámou větu
+ * model v prohlížeči. Jeho naměřený medián je 33,9 s, takže se na něj nesmí
+ * čekat s prvním světem: nejdřív stojí hratelná a pravdivě označená náhradní
+ * místnost, kterou certifikovaná modelová emise později transakčně nahradí.
  *
- * Zpátky se zapojí teprve, až budou pravdivé dvě věci, které dnes pravdivé
- * nejsou. Za prvé jedna svázaná emise trvá na téhle grafice ~185 s, což je
- * v živém demu nepoužitelné. Za druhé samotný model dá `schemaValid` 0 ze 40 —
- * s dopočítáním `collisionAabb` ze soketu je naměřeno 27 z 28, takže **ta
- * oprava jde první**. Hlavní cestou je zatím deterministický rozpoznávač tvarů
- * a `guaranteeWorld()`, které model nepotřebují.
- *
- * Kód modelu se nemazal (`src/model/local/**` včetně `ModelProgress`) — chybí
- * jenom drát, ne schopnost. Že se odsud doopravdy nic nestahuje, měří
- * `e2e/first-click.spec.ts`.
+ * `ModelProgress` nejdřív zdarma ověří WebGPU. Teprve kladný probe smí načíst
+ * WebLLM a váhy; na stroji bez akcelerace neodejde jediný jejich bajt. Hotový
+ * engine vede přes `PromptBar` do produkčního `emitLocally()`, takže panel už
+ * neplatí cenu bez volajícího. Měří to `e2e/model-wired.spec.ts`.
  */
 
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import FirstRun from '@/components/hud/FirstRun';
+import ModelProgress, { type ModelPhase, type ModelState } from '@/components/hud/ModelProgress';
 import Program from '@/components/pipeline/Program';
 import Timeline from '@/components/pipeline/Timeline';
 import WitnessPreview from '@/components/pipeline/WitnessPreview';
@@ -54,6 +50,8 @@ import {
   type GamePhase,
 } from '@/game/flow';
 import { buildRuntimeWorld } from '@/ir/build';
+import type { ChatEngine } from '@/model/local/engine';
+import type { EmissionSource } from '@/model/source';
 import type { TraceInput, WorldDocRuntime } from '@/sim/interpreter';
 
 declare global {
@@ -91,9 +89,9 @@ const Stage = dynamic(() => import('@/components/Stage'), { ssr: false });
 /**
  * Emise → běh, nebo `null`.
  *
- * Emise, ze které se svět postavit nedá, je normální odpověď modelu, ne výjimka:
- * `/api/generate` vrací emisi tak, jak přišla, a validuje se až tady. Plátno pak
- * zůstane prázdné a uživatel dostane hlášku místo pádu.
+ * Emise, ze které se svět postavit nedá, je normální odpověď některé vstupní
+ * cesty, ne výjimka: dokument se validuje až tady. Plátno pak zůstane prázdné
+ * a uživatel dostane hlášku místo pádu.
  */
 function worldFrom(emission: unknown): WorldDocRuntime | null {
   const sim = (emission as { sim?: unknown } | null)?.sim;
@@ -149,19 +147,43 @@ const CORNER_RIGHT: React.CSSProperties = { ...CORNER_BASE, right: '1rem', align
 export default function Page() {
   const [world, setWorld] = useState<WorldDocRuntime | null>(null);
   const [broken, setBroken] = useState(false);
+  const [engine, setEngine] = useState<ChatEngine | null>(null);
+  const [modelPhase, setModelPhase] = useState<ModelPhase>('probing');
   // Dvě emise v JEDNOM stavu, ne dva stavy vedle sebe: panel překladu ukazuje
   // ROZDÍL proti minulé větě, a posun "současná se stane minulou" musí být jeden
   // atomický krok. Dvě `useState` by ho složily ze dvou zápisů čtoucích zachycenou
   // hodnotu z minulého renderu — tedy z místa, kde se dá minout právě ta emise,
   // proti které se má porovnávat.
-  const [programs, setPrograms] = useState<{ readonly current: unknown; readonly previous: unknown }>({
+  const [programs, setPrograms] = useState<{
+    readonly current: unknown;
+    readonly previous: unknown;
+    readonly source: EmissionSource | null;
+  }>({
     current: null,
     previous: null,
+    source: null,
   });
 
   const runnerRef = useRef<RunnerRef['current']>(null);
   const controls = useMemo(createControls, []);
   const seen = useRef<GamePhase[]>([]);
+
+  const acceptWorld = useCallback(
+    (next: unknown, nextSource: EmissionSource): void => {
+      const built = worldFrom(next);
+      controls.reset();
+      setBroken(built === null);
+      setWorld(built);
+      setPrograms((was) => ({ current: next, previous: was.current, source: nextSource }));
+    },
+    [controls],
+  );
+
+  // Stabilní identity jsou součást správnosti: `ModelProgress` má callbacky v
+  // závislostech efektu. Inline funkce by při každém renderu zrušila právě
+  // běžící probe nebo download a začala znovu.
+  const acceptEngine = useCallback((next: ChatEngine): void => setEngine(next), []);
+  const acceptModelState = useCallback((next: ModelState): void => setModelPhase(next.phase), []);
 
   const actor = world === null ? null : actorOf(world);
   const targets = useMemo(() => (world === null ? [] : playableTargets(world)), [world]);
@@ -266,13 +288,9 @@ export default function Page() {
   return (
     <main style={{ position: 'relative', height: '100dvh', width: '100vw' }}>
       <PromptBar
-        onWorld={(next) => {
-          const built = worldFrom(next);
-          controls.reset();
-          setBroken(built === null);
-          setWorld(built);
-          setPrograms((was) => ({ current: next, previous: was.current }));
-        }}
+        onWorld={acceptWorld}
+        engine={engine}
+        modelPhase={modelPhase}
       />
       {/* Prázdný stav plátna. Mizí, jakmile návštěvník poprvé odešle větu — i
           když se z ní svět postavit nepodařilo, protože pak mluví hláška o
@@ -286,12 +304,13 @@ export default function Page() {
         </p>
       ) : null}
       <div style={CORNER_LEFT}>
-        <Program emission={programs.current} previous={programs.previous} />
+        <Program emission={programs.current} previous={programs.previous} source={programs.source} />
         <Timeline world={world} />
         {world === null ? null : <GameControls targets={targets} onRestart={restart} />}
       </div>
       <div style={CORNER_RIGHT}>
         <WitnessPreview world={world} />
+        <ModelProgress onReady={acceptEngine} onState={acceptModelState} />
       </div>
       <Stage world={world} inputs={inputs} runnerRef={runnerRef} />
     </main>
