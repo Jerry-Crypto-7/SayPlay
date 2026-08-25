@@ -169,6 +169,55 @@ export function median(values: readonly number[]): number {
   return sorted.length % 2 === 1 ? sorted[middle]! : Math.round((sorted[middle - 1]! + sorted[middle]!) / 2);
 }
 
+/**
+ * Kam v jedné odpovědi teče čas.
+ *
+ * ## Na jakou otázku to je
+ *
+ * `latencyMs` říká, že odpověď trvala 37 sekund. Neříká, jestli je pomalý
+ * **model**, nebo **kontrola, která ho svazuje** — a to jsou dvě úplně různá
+ * rozhodnutí: první se řeší menším modelem, druhé se řeší tím, že se kontrola
+ * zlevní nebo zruší. Bez rozpadu se to dá jen hádat, a hádalo se.
+ *
+ * ## Odkud čísla jsou
+ *
+ * Z `usage.extra`, které WebLLM vrací u každé odpovědi. Nic se tu neměří vlastní
+ * stopkou: `performance.now()` kolem volání vidí jen součet, kdežto knihovna
+ * měří zevnitř smyčky, token po tokenu. Rozpad po tokenech (`perTokenMs`,
+ * `grammarMs`, `sampleMs`) je podmíněný `extra_body.enable_latency_breakdown`
+ * v požadavku — bez něj knihovna ta pole neplní.
+ *
+ * ## Co která hodnota kryje, protože se to jinak snadno přečte obráceně
+ *
+ * `perTokenMs` je **veškerá práce mezi dvěma tokeny** — sestavení masky
+ * povolených tokenů, vzorkování, přijetí tokenu — ale **ne** samotný průchod
+ * modelem. Rozdíl `e2eMs - timeToFirstTokenMs - perTokenMs` je tedy zhruba to,
+ * co spotřeboval model sám. Když je `perTokenMs` velký podíl `e2eMs`, je úzkým
+ * hrdlem obsluha kolem modelu, ne model.
+ *
+ * `grammarMs` je z toho jen sestavení a nasazení masky. **Nekryje** přijetí
+ * tokenu gramatikou, které padá do `perTokenMs`, takže je to spodní odhad ceny
+ * vynuceného tvaru, ne její celek.
+ */
+export interface AttemptTiming {
+  /** Tokenů v zadání. Skutečný počet od modelu, ne odhad ze znaků. */
+  readonly promptTokens: number;
+  /** Tokenů, které model napsal. */
+  readonly completionTokens: number;
+  /** Celý požadavek, od odeslání po poslední token. */
+  readonly e2eMs: number;
+  /** Do prvního tokenu, tedy hlavně přečtení zadání. */
+  readonly timeToFirstTokenMs: number;
+  /** Součet přes všechny tokeny: práce mezi tokeny, mimo průchod modelem. */
+  readonly perTokenMs: number;
+  /** Součet přes všechny tokeny: sestavení a nasazení masky vynuceného tvaru. */
+  readonly grammarMs: number;
+  /** Součet přes všechny tokeny: samotné vzorkování tokenu z logitů. */
+  readonly sampleMs: number;
+  /** Jednou za požadavek: sestavení kontroly tvaru. */
+  readonly grammarInitMs: number;
+}
+
 /** Jeden pokus tak, jak ho vrátil prohlížeč. */
 export interface AttemptRecord {
   readonly id: string;
@@ -177,6 +226,48 @@ export interface AttemptRecord {
   readonly raw: string;
   /** Prázdný řetězec znamená, že pokus doběhl. Cokoli jiného je pád. */
   readonly error: string;
+  /**
+   * Rozpad latence. Chybí u pokusů, které obsloužil rozpoznávač (žádný model
+   * neběžel) a u pádů (žádná odpověď nevznikla).
+   */
+  readonly timing?: AttemptTiming;
+}
+
+/**
+ * Rozpad latence za celý běh.
+ *
+ * **Podíly jsou součty, ne mediány podílů.** Medián podílu odpovídá na „jak to
+ * vypadalo u prostřední věty", což je jiná otázka než „kam šel čas toho běhu" —
+ * a ta druhá je ta, kvůli které měření vzniklo. Součet navíc obchází past
+ * v `median()`: ta u sudého počtu zaokrouhluje na celé číslo, což je u
+ * milisekund neškodné a u podílu mezi 0 a 1 by to bylo zničující.
+ *
+ * `decodeTokensPerS` se počítá stejně — celkem napsaných tokenů děleno celkovým
+ * časem psaní, ne průměr rychlostí. Průměr rychlostí by dal krátkým odpovědím
+ * stejnou váhu jako dlouhým.
+ */
+export interface TimingSummary {
+  /** Kolik pokusů rozpad neslo. Bez tohohle čísla se zbytek nedá číst. */
+  readonly samples: number;
+  readonly medianE2eMs: number;
+  readonly medianPromptTokens: number;
+  readonly medianCompletionTokens: number;
+  /** Tokenů za sekundu při psaní. Tohle je číslo, kvůli kterému měření vzniklo. */
+  readonly decodeTokensPerS: number;
+  /** Podíl běhu strávený prací mezi tokeny místo průchodů modelem. 0 až 1. */
+  readonly perTokenShare: number;
+  /** Podíl běhu strávený sestavením a nasazením masky vynuceného tvaru. 0 až 1. */
+  readonly grammarShare: number;
+  /**
+   * Podíl běhu strávený vzorkováním tokenu z logitů. 0 až 1.
+   *
+   * Je tu proto, že bez něj `perTokenShare` odpovídá jen půlku otázky: naměřeno
+   * 25. 8. 2026, že režie mezi tokeny je 80 % běhu a vynucený tvar z toho 0,9 %,
+   * takže zbývalo 79 % bez jména. Vzorkování je jediný další velký kandidát —
+   * WebLLM stahuje logity celého slovníku z GPU do paměti procesoru a čeká na
+   * synchronizaci, a to jednou za každý napsaný token.
+   */
+  readonly sampleShare: number;
 }
 
 export interface RunSummary {
@@ -190,6 +281,8 @@ export interface RunSummary {
   readonly crashes: number;
   readonly schemaValid: number;
   readonly medianLatencyMs: number;
+  /** Kam v tom čase teklo. `samples: 0` znamená, že rozpad nedorazil. */
+  readonly timing: TimingSummary;
   /** Kolik pokusů obsloužil rozpoznávač z T7 místo modelu. */
   readonly shapesHandled: number;
   readonly bug807: boolean;
@@ -227,7 +320,18 @@ export interface RawArchive {
   readonly measuredAt: string;
   readonly runs: readonly {
     readonly model: string;
-    readonly outputs: readonly { readonly id: string; readonly raw: string }[];
+    readonly outputs: readonly {
+      readonly id: string;
+      readonly raw: string;
+      /**
+       * Rozpad latence té jedné odpovědi. Do archivu patří ze stejného důvodu
+       * jako syrový text: souhrn odpovídá na otázku, která se kladla při psaní
+       * skriptu, a každá další otázka nad týmž během by jinak stála dalších
+       * třináct minut na GPU. Naměřeno, že stojí — 25. 8. 2026 chyběl v archivu
+       * podíl vzorkování a musel se kvůli němu pustit celý běh znovu.
+       */
+      readonly timing?: AttemptTiming;
+    }[];
   }[];
 }
 
@@ -247,7 +351,9 @@ export function buildRawArchive(
     measuredAt,
     runs: runs.map((run) => ({
       model: run.model,
-      outputs: run.records.filter((record) => !record.error).map((record) => ({ id: record.id, raw: record.raw })),
+      outputs: run.records
+        .filter((record) => !record.error)
+        .map((record) => ({ id: record.id, raw: record.raw, timing: record.timing })),
     })),
   };
 }
@@ -300,6 +406,44 @@ export function mergeRecords(
   return sentences.map((sentence) => byId.get(sentence.id)).filter((record): record is AttemptRecord => record !== undefined);
 }
 
+/** Podíl na tři desetinná místa. Nula ve jmenovateli je odpověď, ne pád. */
+function share(part: number, whole: number): number {
+  return whole === 0 ? 0 : Number((part / whole).toFixed(3));
+}
+
+/**
+ * Sečte rozpady latence do jednoho obrázku o běhu.
+ *
+ * Pokusy bez rozpadu (rozpoznávač, pády) se **vynechají celé**, ne že by se
+ * započetly jako nula: nula sekund u věty, kterou model nikdy neviděl, by
+ * stáhla každý podíl dolů a tvrdila by, že je režie menší, než je.
+ */
+export function summarizeTiming(records: readonly AttemptRecord[]): TimingSummary {
+  const timings = records
+    .map((record) => record.timing)
+    .filter((timing): timing is AttemptTiming => timing !== undefined);
+
+  const total = (pick: (timing: AttemptTiming) => number): number =>
+    timings.reduce((sum, timing) => sum + pick(timing), 0);
+
+  const e2eMs = total((timing) => timing.e2eMs);
+  // Čas psaní je celý požadavek bez čekání na první token. Ten první token nese
+  // přečtení zadání, které s rychlostí psaní nemá co dělat.
+  const decodeMs = e2eMs - total((timing) => timing.timeToFirstTokenMs);
+  const completionTokens = total((timing) => timing.completionTokens);
+
+  return {
+    samples: timings.length,
+    medianE2eMs: median(timings.map((timing) => timing.e2eMs)),
+    medianPromptTokens: median(timings.map((timing) => timing.promptTokens)),
+    medianCompletionTokens: median(timings.map((timing) => timing.completionTokens)),
+    decodeTokensPerS: decodeMs <= 0 ? 0 : Number((completionTokens / (decodeMs / 1000)).toFixed(1)),
+    perTokenShare: share(total((timing) => timing.perTokenMs), e2eMs),
+    grammarShare: share(total((timing) => timing.grammarMs), e2eMs),
+    sampleShare: share(total((timing) => timing.sampleMs), e2eMs),
+  };
+}
+
 export function summarize(model: string, records: readonly AttemptRecord[]): RunSummary {
   const counts: Record<OutcomeKind, number> = { fulfilled: 0, declined: 0, invalid: 0, unparsable: 0 };
   const crashDetails: string[] = [];
@@ -339,6 +483,7 @@ export function summarize(model: string, records: readonly AttemptRecord[]): Run
     crashes: crashDetails.length,
     schemaValid: attempts === 0 ? 0 : Number((accepted / attempts).toFixed(4)),
     medianLatencyMs: median(latencies),
+    timing: summarizeTiming(records),
     shapesHandled: records.filter((record) => record.finishReason === SHAPES_MARKER).length,
     bug807: crashDetails.some(isBug807),
     crashDetails,

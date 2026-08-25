@@ -162,4 +162,29 @@ describe('zpráva nese slovník i tvar', () => {
     const request = buildEmissionRequest('a tower that falls over', grammar());
     expect(request.user).toContain('a tower that falls over');
   });
+
+  /**
+   * Odsazení příkladu vypadá jako plýtvání a **není**. Je to jediná aserce
+   * v tomhle souboru, která nehlídá obsah zprávy, ale její formát — protože
+   * formát je tu naměřeně nosný.
+   *
+   * Zkompaktnit příklad je lákavé: ušetří 1937 znaků zadání, zkrátí odpověď
+   * a naměřeně srazí medián latence z 36,7 s na 24,3 s. Zaplatí se to ale tím,
+   * co model napíše. Naměřeno 25. 8. 2026 dvěma běhy nad týmž strojem
+   * i korpusem (`../../../evals/local-model/decision.md` §8):
+   *
+   *   odsazený příklad   emise padají na JEDINÉM poli, doplnění opraví 16 z nich
+   *   kompaktní příklad  padají navíc na `sim.grid` a `look.materialRoles`,
+   *                      opravit nejde ani jedna
+   *
+   * Řádky příkladu slouží modelu jako seznam polí, který si projde. Na jednom
+   * dlouhém řádku tu oporu ztratí. Tenhle test je tu proto, aby se ta zkratka
+   * nezkusila potřetí — vada po ní totiž **není vidět na zprávě ani na světě**,
+   * ukáže se až po třinácti minutách na GPU.
+   */
+  it('příklad zůstává odsazený, protože model podle řádků kontroluje pole', () => {
+    const system = buildEmissionRequest('anything', grammar()).system;
+    const tail = system.slice(system.indexOf(EXAMPLE_MARKER) + EXAMPLE_MARKER.length).trim();
+    expect(tail, 'příklad se zkompaktnil — emise pak vynechávají pole a nejdou opravit').toContain('\n');
+  });
 });

@@ -275,6 +275,27 @@ export function buildEmissionRequest(prompt: string, grammar: Grammar): Upstream
     'entity you name, and it does take {target, socket, ticks}.',
     '',
     EXAMPLE_MARKER,
+    // **Odsazení tu musí zůstat. Zkompaktnění se zkusilo a naměřeně uškodilo.**
+    //
+    // Úvaha byla: model kopíruje formát toho, co vidí, a naměřeně bylo 52,5 %
+    // znaků jeho odpovědi jen odsazení, takže kompaktní příklad měl zkrátit
+    // odpověď a s ní i čas. Zkráceno to bylo (medián 36,7 s → 24,3 s, useknutých
+    // odpovědí 8 → 5), ale **zaplatilo se strukturou emise**, a to je horší
+    // obchod. Naměřeno 25. 8. 2026, dva běhy nad týmž strojem a korpusem:
+    //
+    //   příklad odsazený   16 z 25 emisí padlo na JEDINÉM poli (collisionAabb),
+    //                      doplnění toho pole je opraví -> 16 platných, 8 dohraje
+    //   příklad kompaktní  emise padají na collisionAabb A NAVÍC na sim.grid (15x)
+    //                      a look.materialRoles (5x) -> opravit nejde ani jedna
+    //
+    // Odsazený příklad tedy modelu neslouží jako vzor formátu, ale jako **seznam
+    // polí, který si může projít po řádcích**. Na jednom řádku o 1800 znacích tu
+    // oporu ztratí a pole vynechává. Úspora času nebyla zadarmo — byla to táž
+    // událost jako ta ztráta kvality: model psal rychleji, protože psal míň.
+    //
+    // Ta rychlost je pořád reálný problém, ale řeší se jinde: naměřeno, že 80 %
+    // času požadavku padne na režii mezi tokeny uvnitř WebLLM, a vynucený tvar
+    // odpovědi z toho je 0,9 %. Podrobně v `evals/local-model/decision.md` §8.
     JSON.stringify(EXAMPLE_WORLD, null, 2),
   ].join('\n');
 

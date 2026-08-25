@@ -4,15 +4,22 @@ Zdroj čísel: `evals/local-model/grammar-report.json` a `grammar-raw.json`,
 adaptér `nvidia/ampere`, prvních 40 vět z `evals/corpus-v3`. Syrové odpovědi jsou
 v archivu celé, takže se dá cokoli z toho přepočítat bez opakování běhu.
 
-**Běhy jsou dva a nesmí se míchat.** Oba jsou nad týmž korpusem i strojem:
+**Běhů je několik a nesmí se míchat.** Všechny jsou nad týmž korpusem i strojem:
 
 | Běh | Kdy | Co měřil | `schemaValid` |
 |---|---|---|---|
 | **Základní** | 20. 8. 2026 **18:57 UTC** | jen model, rozpoznávač tvarů ještě neexistoval | **0** |
 | **T7** | 20. 8. 2026 **19:53 UTC** | produkční pořadí: rozpoznávač první, model na zbytek | **0,375** |
+| **A** | 25. 8. 2026 | totéž s **kompaktním** příkladem v promptu — vráceno, viz §8.2 | 0,425 |
+| **B** | 25. 8. 2026 **10:53 UTC** | totéž s odsazeným příkladem, tedy shodně s kódem, + rozpad latence | **0,400** |
 
-Soubory na disku nesou **T7 běh**; základní běh je v historii gitu u commitu
-`410cff1`. Sekce 2 až 6 mluví o základním běhu, sekce 7 o T7.
+**Soubory na disku nesou běh B.** Starší běhy jsou v historii gitu: základní
+u `410cff1`, T7 u `b937353`. Běh A se nezachoval jinak než čísly v §8.2, protože
+konfigurace, kterou měřil, se vrátila.
+
+Sekce 2 až 6 mluví o základním běhu, sekce 7 o T7, sekce 8 o obou z 25. 8.
+**Než odsud budeš citovat číslo, přečti §8.3 — dvě čísla v sekci 3 jsou
+zastaralá.**
 
 ## 1. Vybraný model
 
@@ -43,6 +50,11 @@ Chyba `mlc-ai/web-llm#807` se **nereprodukovala** — model ani jednou nespadl,
 takže se běh na 0.6B podle zadání T5 vůbec nespouštěl.
 
 ## 3. Proč je `schemaValid` nula — a co to NEznamená
+
+> ⚠ **Čísla „27 z 28" a „12 ze 40" v téhle sekci jsou zastaralá.** Nad dnešním
+> kódem a týmž archivem vychází **16 z 25 a 8 dohraných** (přeměřeno 25. 8. 2026,
+> §8.3). Posunulo je schéma a snížení, ne archiv. Závěr sekce platí beze změny,
+> jen ta dvě čísla se necitují.
 
 Neznamená to, že malý model neumí napsat produkční IR. **27 z 28
 rozpársovaných emisí selhalo na jediném poli:** `sim.collisionAabb` (dvacátá
@@ -127,3 +139,102 @@ jsou to jediné dvě naměřené cesty, jak zvednout tu část, kde model rozhod
 
 Latence rozpoznávače se do mediánu nepočítá schválně, aby zůstal srovnatelný se
 základním během; rozpoznávač odpovídá bez GPU a v řádu milisekund.
+
+## 8. Kam těch ~37 sekund teče — rozpad latence (25. 8. 2026)
+
+Do téhle sekce patří tři věci: naměřený rozpad latence, **vyvrácená hypotéza**
+o vynuceném tvaru, a **vyvrácený zásah**, který se zkusil a musel se vrátit.
+
+Dva běhy téhož dne, tentýž stroj (`nvidia/ampere`), tentýž korpus. Rozpad měří
+knihovna zevnitř dekódovací smyčky (`usage.extra`, zapnuto
+`extra_body.enable_latency_breakdown`), ne stopky kolem volání — vlastní stopky
+vidí jen součet.
+
+### 8.1 Kde je úzké hrdlo (a kde není)
+
+| Veličina | Naměřeno |
+|---|---|
+| medián celého požadavku | 40 814 ms |
+| medián tokenů v odpovědi | 959 |
+| medián tokenů v zadání | 2 729 |
+| rychlost psaní | 24,9 tok/s |
+| **podíl režie mezi tokeny** | **0,814** |
+| z toho vzorkování tokenu | **0,804** |
+| z toho vynucený tvar odpovědi | **0,009** |
+| nepojmenovaný zbytek | 0,001 |
+
+**Model sám je 18,6 % běhu.** Zbytek je obsluha kolem něj. Přepočteno: model
+píše rychlostí ~126 tok/s, ale na každý token se navrch platí **~34 ms za
+vzorkování** — WebLLM stahuje logity celého slovníku (Qwen3 má 151 936 tokenů)
+z GPU do paměti procesoru a čeká na synchronizaci, jednou za každý napsaný token.
+
+**Vynucený tvar odpovědi stojí 0,9 % a není co na něm zlevňovat.** Hypotéza, že
+za pomalostí stojí kontrola JSON schématu při každém tokenu, je tímhle vyvrácená
+— zapisuje se sem proto, aby se nezkoušela znovu. Totéž platí pro zkracování
+zadání: 2 729 tokenů prefillu se vejde do 18,6 %, ve kterých je i celý model.
+
+**Co z toho plyne pro rozhodnutí o zapojení modelu:** ~37 s na emisi není vlastnost
+modelu ani našeho promptu, je to vlastnost dekódovací smyčky WebLLM 0.2.84, a
+z tohohle repozitáře se nedá opravit bez zásahu do knihovny. Menší model zkrátí
+jen těch 18,6 %.
+
+### 8.2 Zkompaktnění příkladu v promptu — zkusilo se, uškodilo, vráceno
+
+Úvaha: model kopíruje formát toho, co vidí, a naměřeně bylo **52,5 % znaků jeho
+odpovědi** jen odsazení (60 361 znaků syrově proti 28 655 týchž dokumentů
+kompaktně, 17 rozpársovatelných odpovědí běhu T7). Kompaktní příklad měl odpověď
+zkrátit a s ní i čas.
+
+Zkrátil. A rozbil strukturu emise:
+
+| | příklad odsazený | příklad kompaktní |
+|---|---|---|
+| medián latence | 40 814 ms | **24 270 ms** |
+| medián tokenů odpovědi | 959 | **626** |
+| useknuto na stropu 1400 | 8 | **5** |
+| emise padají na | **jediném poli** `sim.collisionAabb` (16 ze 17) | `collisionAabb` **a navíc** `sim.grid` (15×), `look.materialRoles` (5×) |
+| po doplnění `collisionAabb` platných | **16** | **0** |
+| z toho dojde do výhry | **8** | **0** |
+
+**Zrychlení a ztráta kvality jsou táž událost:** model psal rychleji, protože psal
+míň — a to, co vynechal, byla povinná pole. Odsazený příklad mu tedy neslouží jako
+vzor formátu, ale jako **seznam polí, který si projde po řádcích**; na jednom
+řádku o 1 800 znacích tu oporu ztratí.
+
+Cena je páka ze sekce 6, tedy ta jediná, kterou tenhle projekt na model naměřil.
+Vyměnit ji za 12 sekund je špatný obchod, takže **`src/model/prompt.ts` je vrácený
+na odsazený příklad** a `src/model/__tests__/prompt.test.ts` to drží asercí —
+vada po téhle zkratce totiž není vidět ani na zprávě, ani na světě, ukáže se až
+po třinácti minutách na GPU.
+
+**Kontrolní měření, aby se ztráta nepřipsala nesprávné příčině:** táž oprava
+`collisionAabb` puštěná nad **starým** archivem (běh 20. 8.) dnešním kódem dává
+16 platných a 8 dohraných, tedy funguje dál. Rozdíl tedy nezpůsobil posun kódu
+mezi srpnovými daty, ale ta změna promptu.
+
+### 8.3 Dvě čísla v tomhle dokumentu jsou zastaralá
+
+- **„27 z 28" a „12 ze 40" ze sekce 3 už nad dnešním kódem neplatí.** Přeměřeno
+  25. 8. 2026 nad týmž archivem: **16 z 25 platných a 8 dohraných**. Posunulo to
+  schéma a snížení mezi 20. a 25. 8., ne archiv — ten je bitově týž. Směr, kvůli
+  kterému sekce 3 vznikla, platí beze změny: doplnění jednoho odvozeného pole
+  posune emise z „neplatná" na „certifikovaná". **Cituj 16 z 25, ne 27 z 28.**
+- **Rozdělení rozpoznávač / model je dnes 16 / 24, ne 15 / 25.** Rozpoznávač se
+  po měření dvakrát změnil (commity z 21. 8.). `schemaValid` proto **není** mezi
+  srpnovým a srpnovým během porovnatelné head-to-head; porovnatelné jsou
+  veličiny nad odpověďmi modelu (tokeny, latence, useknutí, na čem padají).
+- **Model sám dodal 0 platných emisí i dnes** (16 splněných = 16 od rozpoznávače).
+  Jediná výjimka za celé měření je `P024` v kompaktním běhu, tedy v konfiguraci,
+  která se vrátila.
+
+### 8.4 Běhy 25. 8. 2026
+
+| Běh | Prompt | `schemaValid` | medián | Artefakt |
+|---|---|---|---|---|
+| A | kompaktní příklad | 0,425 | 24 270 ms | jen v tomhle zápisu, vráceno |
+| B | odsazený příklad (shodný s kódem) | 0,400 | 40 814 ms | **soubory na disku nesou tenhle** |
+
+Medián běhu B je o 11 % vyšší než u srpnového běhu nad týmž promptem (40 814 proti
+36 704 ms). Rozdíl se nevysvětluje — je to kolísání stroje mezi běhy, ne naměřený
+efekt, a nesmí se z něj nic vyvozovat. Rozpad latence v 8.1 je na něm nezávislý:
+jsou to podíly téhož běhu, ne srovnání dvou.

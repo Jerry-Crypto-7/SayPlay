@@ -1,15 +1,25 @@
 {
   "model": "Qwen3-1.7B-q4f16_1-MLC",
   "attempts": 40,
-  "fulfilled": 15,
+  "fulfilled": 16,
   "declined": 0,
-  "invalid": 17,
+  "invalid": 16,
   "unparsable": 8,
   "truncated": 8,
   "crashes": 0,
-  "schemaValid": 0.375,
-  "medianLatencyMs": 36704,
-  "shapesHandled": 15,
+  "schemaValid": 0.4,
+  "medianLatencyMs": 40814,
+  "timing": {
+    "samples": 24,
+    "medianE2eMs": 40814,
+    "medianPromptTokens": 2729,
+    "medianCompletionTokens": 959,
+    "decodeTokensPerS": 24.9,
+    "perTokenShare": 0.814,
+    "grammarShare": 0.009,
+    "sampleShare": 0.804
+  },
+  "shapesHandled": 16,
   "bug807": false,
   "crashDetails": [],
   "perSentence": [
@@ -111,9 +121,9 @@
     },
     {
       "id": "P017",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"spawnPad\": [\n          1,\n          4\n        ],\n        \"cardPad\": [\n          3,\n          4\n        ],\n        \"leverPad\": [\n          5,\n          4\n        ],\n        \"gatePad\": [\n          10,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"spawnPad\",\n          \"state\": \"idle\"\n        },\n        "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"switchbox\":[3,4],\"exit\":[10,4],\"post\":[3,1],\"hall\":[6,6],\"alcove\":[9,1]},\"collisionAabb\":{\"player\":[1,4,1,1],\"switchbox\":[3,4,1,1],\"exit\":[10,4,1,2],\"watcher\":[3,1,1,1]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"switchbox\":{\"role\":\"prop\",\"socket\":\"switchbox\",\"state\":\"down\"},\"exit\":{\"role\":\"goal\",\"socket\":\"exit\",\"state\":\"closed\",\"locked\":true},\"watcher\":{\"role\":\"agent\",\"socket\":\"post\",\"state\":\"id"
     },
     {
       "id": "P018",
@@ -137,7 +147,7 @@
       "id": "P021",
       "kind": "invalid",
       "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"roof\": [\n        1,\n        4\n      ],\n      \"gate\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"roof\",\n        \"state\": \"idle\"\n      },\n      \"gate\": {\n        \"role\": \"goal\",\n        \"socket\": \"gate\",\n        \"state\": \"shut\",\n        \"locked\": true\n      },\n      \"rain\": {\n        \"role\": \"agent\",\n        \"socket\": \"roof\""
+      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"roof\": [\n          1,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"roof\",\n          \"state\": \"idle\"\n        },\n        \"rain\": {\n          \"role\": \"agent\",\n          \"socket\": \"roof\",\n          \"state\": \"active\"\n        },\n        \"plants\": {\n          \"role\": \"agent\",\n          \"socket\": \"roof\",\n  "
     },
     {
       "id": "P022",
@@ -254,7 +264,7 @@
       "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"finish\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"finish\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"finish\":{\"role\":\"goal\",\"socket\":\"finish\",\"state\":\"closed\",\"locked\":true}},\"rules\":{\"unlock\":{\"id\":\"unlock\",\"phase\":1,\"priority\":0,\"event\":{\"kind\":\"onStart\"},\"condition\":null,\"actions\":[{\"kind\":\"setLocked\",\"target\":\"finish\",\"locked\":false},{\"kind\":\"setState\",\"target\":\"finish\",\"value\""
     }
   ],
-  "measuredAt": "2026-08-20T19:53:11.185Z",
+  "measuredAt": "2026-08-25T10:40:05.839Z",
   "corpusVersion": "v3",
   "forcedShapeSchema": "{\"type\":\"object\",\"properties\":{\"irVersion\":{\"type\":\"string\"},\"simRevision\":{\"type\":\"integer\"},\"lookRevision\":{\"type\":\"integer\"},\"sim\":{\"anyOf\":[{\"type\":\"object\"},{\"type\":\"null\"}]},\"look\":{\"type\":\"object\"}},\"required\":[\"irVersion\",\"simRevision\",\"lookRevision\",\"sim\",\"look\"]}",
   "maxOutputTokens": 1400,

@@ -26,7 +26,9 @@ import {
   splitByRecognizer,
   stripThinking,
   summarize,
+  summarizeTiming,
   type AttemptRecord,
+  type AttemptTiming,
 } from '../measure-grammar';
 
 /**
@@ -148,6 +150,75 @@ describe('summarize', () => {
     const summary = summarize('m', records);
     expect(summary.truncated).toBe(1);
     expect(summary.bug807).toBe(true);
+  });
+});
+
+/**
+ * Rozpad latence je číslo, podle kterého se rozhodne, jestli se model do dema
+ * vrátí. Vada v něm nevypadá jako vada: podíl 0,15 a podíl 0,42 jsou obojí
+ * uvěřitelná čísla a nikdo je na obrazovce nerozezná. Proto je tu na každou
+ * vlastnost jedna aserce, a schválně i na ty cesty, které se spustí jen tehdy,
+ * když je něco jinak — pokus bez rozpadu a prázdný běh.
+ */
+describe('summarizeTiming', () => {
+  const timing = (overrides: Partial<AttemptTiming>): AttemptTiming => ({
+    promptTokens: 2000,
+    completionTokens: 0,
+    e2eMs: 0,
+    timeToFirstTokenMs: 200,
+    perTokenMs: 0,
+    grammarMs: 0,
+    sampleMs: 0,
+    grammarInitMs: 10,
+    ...overrides,
+  });
+
+  const measured: AttemptRecord[] = [
+    attempt({
+      id: 'P001',
+      timing: timing({ e2eMs: 1000, completionTokens: 80, perTokenMs: 400, grammarMs: 300, sampleMs: 100 }),
+    }),
+    attempt({
+      id: 'P002',
+      timing: timing({ e2eMs: 3000, completionTokens: 320, perTokenMs: 600, grammarMs: 300, sampleMs: 300 }),
+    }),
+  ];
+
+  it('podíly počítá ze součtů, ne jako medián podílů', () => {
+    const summary = summarizeTiming(measured);
+    // Součty: režie mezi tokeny 400+600 = 1000 z 4000 ms celkem.
+    expect(summary.perTokenShare).toBe(0.25);
+    expect(summary.grammarShare).toBe(0.15);
+    // Vzorkování je vlastní podíl, ne dopočet do `perTokenShare`: 100+300 = 400.
+    expect(summary.sampleShare).toBe(0.1);
+    // Medián podílů by tu dal něco úplně jiného (0,4 a 0,2 → 0,3), takže tahle
+    // aserce zabíjí právě záměnu obou způsobů počítání.
+  });
+
+  it('rychlost psaní nepočítá do času čekání na první token', () => {
+    const summary = summarizeTiming(measured);
+    // 400 tokenů za 4000 − 400 = 3600 ms. Kdyby se počítalo z celého e2e,
+    // vyšlo by 100,0 a model by vypadal pomalejší, než je.
+    expect(summary.decodeTokensPerS).toBe(111.1);
+  });
+
+  it('pokus bez rozpadu se vynechá, nezapočte se jako nula', () => {
+    const withShapes = [...measured, attempt({ id: 'P003', finishReason: SHAPES_MARKER, latencyMs: 0 })];
+    const summary = summarizeTiming(withShapes);
+    expect(summary.samples).toBe(2);
+    // Nula ve vzorku by medián stáhla na 1000 a tvrdila by, že jsou odpovědi
+    // rychlejší, než jsou — přitom u té věty žádný model neběžel.
+    expect(summary.medianE2eMs).toBe(2000);
+    expect(summary.medianCompletionTokens).toBe(200);
+  });
+
+  it('běh bez jediného rozpadu nedělí nulou', () => {
+    const summary = summarizeTiming([attempt({ id: 'P001' })]);
+    expect(summary.samples).toBe(0);
+    expect(summary.decodeTokensPerS).toBe(0);
+    expect(summary.perTokenShare).toBe(0);
+    expect(summary.grammarShare).toBe(0);
+    expect(summary.sampleShare).toBe(0);
   });
 });
 

@@ -3,11 +3,16 @@
  *
  * První dva běhy vrátily `schemaValid: 0` a daly se přečíst jako „malý model
  * neumí napsat produkční IR". **Není to pravda a tenhle test to drží.** Emise
- * z běhu 20. 8. 2026 padají skoro všechny na jediném poli, které model nikdy
- * nenapíše: `sim.collisionAabb`. Když se to pole odvodí z toho, co model napsal
- * (sokety plus entity, které na nich stojí), projde schématem 27 z 28
- * rozpársovaných a **12 dojde až k certifikaci** — svět se postaví, odkazy sedí
- * a svědek dojde do výhry.
+ * padají skoro všechny na jediném poli, které model nikdy nenapíše:
+ * `sim.collisionAabb`. Když se to pole odvodí z toho, co model napsal (sokety
+ * plus entity, které na nich stojí), projde schématem většina z nich a část
+ * **dojde až k certifikaci** — svět se postaví, odkazy sedí a svědek dojde do
+ * výhry. Naměřeno nad během 25. 8. 2026: **15 z 24 platných, 7 dohraných.**
+ *
+ * ⚠ **Starší čísla „27 z 28" a „12 ze 40" už neplatí** a v repozitáři se dál
+ * necitují. Posunulo je schéma a snížení mezi 20. a 25. 8., ne archiv — nad
+ * srpnovým archivem dnešní kód vrací 16 z 25 a 8 dohraných. Podrobně
+ * v `../decision.md` §8.3.
  *
  * Přesná čísla toho běhu jsou v `../decision.md`. Tady se schválně netvrdí
  * počty: archiv se přeměřením přepíše a test s pevným číslem by pak hlídal

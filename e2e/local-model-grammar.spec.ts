@@ -178,6 +178,22 @@ async function runModel(
             completions: {
               create(request: unknown): Promise<{
                 choices: { finish_reason?: string; message?: { content?: string | null } }[];
+                // Rozpad latence vrací WebLLM tady, ne zvlášť. `latencyBreakdown`
+                // je pole na token a dorazí jen s `enable_latency_breakdown`.
+                usage?: {
+                  prompt_tokens?: number;
+                  completion_tokens?: number;
+                  extra?: {
+                    e2e_latency_s?: number;
+                    time_to_first_token_s?: number;
+                    grammar_init_s?: number;
+                    latencyBreakdown?: {
+                      totalTime?: number[];
+                      grammarBitmaskTime?: number[];
+                      sampleTime?: number[];
+                    };
+                  };
+                };
               }>;
             };
           };
@@ -190,13 +206,11 @@ async function runModel(
         initProgressCallback: (report) => void scope.__measureProgress(report.text),
       });
 
-      const records: {
-        id: string;
-        latencyMs: number;
-        finishReason: string;
-        raw: string;
-        error: string;
-      }[] = [];
+      // Tvar záznamu se sem **nepíše podruhé**. Vlastní ho měřidlo, a dokud tu
+      // stála jeho kopie, každé nové pole se muselo doplnit na dvou místech —
+      // což při přidání rozpadu latence hned napoprvé neproběhlo. Typ je při
+      // překladu smazaný, takže do prohlížeče nic navíc neodchází.
+      const records: AttemptRecord[] = [];
 
       for (const sentence of input.sentences) {
         const started = performance.now();
@@ -211,13 +225,37 @@ async function runModel(
             max_tokens: input.maxTokens,
             temperature: 0,
             seed: 1,
+            // Zapíná rozpad latence po tokenech. Bez toho knihovna pole
+            // `latencyBreakdown` vůbec neplní a zůstane jen součet, ze kterého
+            // se nepozná, jestli je pomalý model nebo kontrola kolem něj.
+            // Cena je dvě volání `performance.now()` na token, tedy nic.
+            extra_body: { enable_latency_breakdown: true },
           });
+          const usage = reply.usage;
+          const breakdown = usage?.extra?.latencyBreakdown;
+          const sumOf = (values: number[] | undefined): number =>
+            Math.round(1000 * (values ?? []).reduce((sum, value) => sum + value, 0));
           record = {
             id: sentence.id,
             latencyMs: Math.round(performance.now() - started),
             finishReason: reply.choices[0]?.finish_reason ?? '',
             raw: reply.choices[0]?.message?.content ?? '',
             error: '',
+            // Rozpad se přikládá jen tehdy, když ho odpověď opravdu nesla.
+            // Vyrobit ho z nul by vypadalo jako naměřená nulová režie.
+            timing:
+              usage === undefined
+                ? undefined
+                : {
+                    promptTokens: usage.prompt_tokens ?? 0,
+                    completionTokens: usage.completion_tokens ?? 0,
+                    e2eMs: Math.round(1000 * (usage.extra?.e2e_latency_s ?? 0)),
+                    timeToFirstTokenMs: Math.round(1000 * (usage.extra?.time_to_first_token_s ?? 0)),
+                    perTokenMs: sumOf(breakdown?.totalTime),
+                    grammarMs: sumOf(breakdown?.grammarBitmaskTime),
+                    sampleMs: sumOf(breakdown?.sampleTime),
+                    grammarInitMs: Math.round(1000 * (usage.extra?.grammar_init_s ?? 0)),
+                  },
           };
         } catch (thrown) {
           const message = thrown instanceof Error ? `${thrown.name}: ${thrown.message}` : String(thrown);
@@ -293,7 +331,12 @@ test('@measure Qwen3 v prohlížeči drží vynucený tvar emise', async () => {
       stopAtFirstBug: false,
       onAttempt: (record) => {
         done += 1;
-        console.log(`[${PRIMARY_MODEL}] ${done}/${forModel.length} ${record.id} ${record.latencyMs}ms ${record.error || record.finishReason}`);
+        // Rychlost psaní patří do živého výpisu, ne jen do reportu: běh trvá
+        // desítky minut a bez ní se u něj sedí naslepo.
+        const rate = record.timing === undefined ? '' : ` ${String(record.timing.completionTokens)}tok`;
+        console.log(
+          `[${PRIMARY_MODEL}] ${done}/${forModel.length} ${record.id} ${record.latencyMs}ms${rate} ${record.error || record.finishReason}`,
+        );
       },
       onProgress: (text) => console.log(`[${PRIMARY_MODEL}] ${text}`),
     });
