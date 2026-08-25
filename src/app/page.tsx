@@ -117,6 +117,14 @@ function worldFrom(emission: unknown): WorldDocRuntime | null {
  * Sloupec je průchozí pro kurzor (`pointerEvents: 'none'`) a každý panel si
  * průchodnost vypíná sám. Bez toho by mezera mezi panely byla neviditelný pruh,
  * který bere kliknutí do plátna — táž vada o patro níž.
+ *
+ * **Potřetí, 25. 8. 2026: herní HUD (`GameControls`) do sloupce nepatřil.** Kotvil
+ * se sám na `bottom/left: 1rem`, tedy do téhož rohu, a protože sloupec stojí
+ * v DOM za ním, lehla si časová osa navrch: `elementFromPoint` ve středu
+ * `game-restart` vracel `timeline-outcome`, takže **restart nešlo kliknout**.
+ * Vada přežila proto, že se soudila jako kosmetika. Hlídá ji od té doby
+ * `e2e/pipeline-panel.spec.ts` zásahovou zkouškou nad celým rohem — nový panel
+ * patří do sloupce a do toho seznamu, ne na vlastní `position: absolute`.
  */
 const CORNER_BASE: React.CSSProperties = {
   position: 'absolute',
@@ -277,10 +285,10 @@ export default function Page() {
           The model returned a world that cannot be run.
         </p>
       ) : null}
-      {world === null ? null : <GameControls targets={targets} onRestart={restart} />}
       <div style={CORNER_LEFT}>
         <Program emission={programs.current} previous={programs.previous} />
         <Timeline world={world} />
+        {world === null ? null : <GameControls targets={targets} onRestart={restart} />}
       </div>
       <div style={CORNER_RIGHT}>
         <WitnessPreview world={world} />
@@ -334,10 +342,11 @@ const BROKEN: React.CSSProperties = {
 };
 
 const PANEL: React.CSSProperties = {
-  position: 'absolute',
-  bottom: '1rem',
-  left: '1rem',
-  zIndex: 2,
+  // Žádné vlastní ukotvení do rohu — panel je členem `CORNER_LEFT` a roh drží
+  // sloupec. Dokud se kotvil sám (`bottom`/`left: 1rem`, `zIndex: 2`), lehl si
+  // přesně pod časovou osu a `game-restart` nešlo kliknout: `elementFromPoint`
+  // ve středu tlačítka vracel `timeline-outcome`.
+  pointerEvents: 'auto',
   padding: '0.6rem 0.75rem',
   borderRadius: 6,
   background: 'rgba(11, 18, 20, 0.82)',

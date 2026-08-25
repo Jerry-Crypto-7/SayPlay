@@ -128,6 +128,12 @@ const PANEL: React.CSSProperties = {
   pointerEvents: 'auto',
   width: 'min(24rem, calc(100vw - 2rem))',
   maxHeight: '62dvh',
+  // Squeeze celého sloupce padá sem, protože tělo panelu roluje. Bez `minHeight`
+  // to ale nejde: položka flexboxu má `min-height: auto`, tedy se nesmršťuje pod
+  // výšku svého obsahu, a přebytek pak sloupci vyteče **pod spodní okraj okna**.
+  // Naměřeno na 1280×720 po přidání třetího panelu: `elementFromPoint` ve středu
+  // `game-restart` i `timeline-branch` vracel `null` — tlačítka byla mimo obraz.
+  minHeight: 0,
   display: 'flex',
   flexDirection: 'column',
   borderRadius: '0.6rem',

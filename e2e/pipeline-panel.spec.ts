@@ -115,3 +115,64 @@ test('panel ukáže program, po druhé větě rozdíl, a jde sbalit', async ({ p
   await page.getByTestId('pipeline-toggle').click();
   await expect(page.getByTestId('pipeline-body')).toBeVisible();
 });
+
+/**
+ * Oracle vady z 25. 8. 2026 — **levý dolní roh nesmí kliknutí polykat**.
+ *
+ * Panely toho rohu se skládají do jednoho sloupce (`CORNER_LEFT`
+ * v `src/app/page.tsx`). Kdykoli se některý ukotvil sám, lehl si přes sousedy a
+ * jejich ovládání přestalo brát kurzor. Stalo se to už dvakrát a potřetí to byl
+ * herní HUD: `game-restart` byl vidět, ale `elementFromPoint` v jeho středu
+ * vracel `timeline-outcome`, takže restart nešel kliknout.
+ *
+ * **Proč zásahová zkouška a ne screenshot.** Překryv je vidět jen tehdy, když
+ * překrývající panel není průhledný a zrovna se dívá člověk na správný roh při
+ * správné výšce okna. Otázka, o kterou tu jde, je jiná a strojová: *dostane
+ * tohle tlačítko svoje kliknutí?* `elementFromPoint` na ni odpovídá přímo.
+ *
+ * **Proč ne `click()`.** Playwright by kliknutí provedl, jenže polovina těch
+ * ovladačů něco vykoná — restart zahodí rozehraný svět, `timeline-branch`
+ * přepočítá budoucnost. Test by pak měřil následek, ne dosažitelnost, a musel by
+ * po sobě uklízet. Zásah je čtení.
+ */
+const CORNER_CONTROLS = ['pipeline-toggle', 'timeline-branch', 'game-restart'] as const;
+
+test('ovládání v levém dolním rohu si nebere kliknutí navzájem', async ({ page }) => {
+  test.setTimeout(180_000);
+
+  await page.goto('/');
+  await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
+
+  // HUD i osa existují teprve nad postaveným světem.
+  await sentence(page, FIRST_PROMPT);
+
+  for (const id of CORNER_CONTROLS) {
+    await expect(page.getByTestId(id)).toBeVisible();
+  }
+
+  const hits = await page.evaluate((ids) => {
+    return ids.map((id) => {
+      const node = document.querySelector(`[data-testid="${id}"]`)!;
+      const box = node.getBoundingClientRect();
+      const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+      return {
+        id,
+        reached: top !== null && (top === node || node.contains(top)),
+        // Kdo zásah sebral. Bez toho hlásí pád jen `false` a příčina se hledá ručně.
+        blockedBy: top === null ? 'nic' : (top.closest('[data-testid]')?.getAttribute('data-testid') ?? top.tagName),
+      };
+    });
+  }, [...CORNER_CONTROLS]);
+
+  expect(hits.filter((hit) => !hit.reached)).toEqual([]);
+
+  // Posuvník osy je hlavní pohyb dema a je to jediný ovladač bez `data-testid`.
+  const slider = await page.evaluate(() => {
+    const node = document.querySelector('[data-testid="timeline"] input[type="range"]')!;
+    const box = node.getBoundingClientRect();
+    const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+    return { reached: top === node, blockedBy: top?.closest('[data-testid]')?.getAttribute('data-testid') ?? null };
+  });
+
+  expect(slider.reached, `posuvník osy si bere ${slider.blockedBy}`).toBe(true);
+});
