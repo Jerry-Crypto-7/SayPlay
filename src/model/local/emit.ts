@@ -29,6 +29,7 @@ import protocol from '../../../evals/frozen/protocol.v1.json';
 import { certifySteps, type ProgressSink, type Verdict } from '../certify';
 import { buildEmissionRequest, type Grammar } from '../prompt';
 
+import { deriveCollisionAabb } from './aabb';
 import { recognize as recognizeShape } from './shapes';
 
 import type { ChatEngine } from './engine';
@@ -112,6 +113,14 @@ export async function emitLocally(input: LocalEmitInput): Promise<LocalOutcome> 
       body = completion.raw;
     }
     provenance = { source: 'model', model: upstream.model, finishReason: completion.finishReason };
+  }
+
+  if (body !== null && typeof body === 'object' && !Array.isArray(body)) {
+    const document = body as Record<string, unknown>;
+    if (document.sim !== null && typeof document.sim === 'object' && !Array.isArray(document.sim)) {
+      const sim = deriveCollisionAabb(document.sim as Record<string, unknown>);
+      if (sim !== document.sim) body = { ...document, sim };
+    }
   }
 
   const steps = certifySteps({ promptId: input.sentence, upstream, provenance, body });

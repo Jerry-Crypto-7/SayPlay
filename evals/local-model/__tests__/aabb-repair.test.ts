@@ -25,27 +25,12 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { peelEnvelope, worldEmissionSchema } from '../../../src/ir/worlddoc';
+import { deriveCollisionAabb } from '../../../src/model/local/aabb';
 import { emitLocally } from '../../../src/model/local/emit';
 import { RAW_ARCHIVE_PATH, stripThinking } from '../measure-grammar';
 
 interface RawArchiveFile {
   readonly runs: readonly { readonly model: string; readonly outputs: readonly { readonly id: string; readonly raw: string }[] }[];
-}
-
-/**
- * Kolizní obálky odvozené z toho, co model napsal. Každá entita dostane políčko
- * soketu, na kterém stojí. Je to **odvození, ne vymýšlení**: nic tu nevzniká
- * z ničeho, jen se dopočítá, co ze soketů a entit plyne.
- */
-function deriveCollisionAabb(sim: Record<string, unknown>): Record<string, unknown> {
-  const sockets = (sim.sockets ?? {}) as Record<string, [number, number]>;
-  const entities = (sim.entities ?? {}) as Record<string, { socket?: string }>;
-  const boxes: Record<string, number[]> = {};
-  for (const [name, entity] of Object.entries(entities)) {
-    const at = entity.socket === undefined ? undefined : sockets[entity.socket];
-    if (at) boxes[name] = [at[0], at[1], 1, 1];
-  }
-  return { ...sim, collisionAabb: boxes };
 }
 
 function scriptedEngine(raw: string) {
