@@ -38,12 +38,12 @@ export function modelForRuntime(runtime: Runtime): string | null {
 }
 
 /**
- * Strop odpovědi. Emise celého světa se do 1400 tokenů vejde (příklad
- * v `../prompt.ts` má řádově stovky tokenů), a co se nevejde, skončí useknuté —
- * což je poctivá odpověď „tvar neudržel". Bez stropu by jediná zacyklená odpověď
- * spolkla celý běh.
+ * Strop odpovědi. Produkční příklad má konzervativně 1 246 rozpočtových tokenů;
+ * 2 560 drží nejméně dvojnásobnou rezervu a pořád omezuje zacyklenou odpověď.
+ * Vyšší strop sám o sobě čas nestojí — T2 vypíná uvažování a platná emise skončí
+ * na vlastním koncovém tokenu.
  */
-export const MAX_OUTPUT_TOKENS = 1400;
+export const MAX_OUTPUT_TOKENS = 2560;
 
 /**
  * Tvar, na který se sváže dekodér.
