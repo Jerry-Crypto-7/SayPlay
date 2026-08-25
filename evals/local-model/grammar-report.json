@@ -1,23 +1,23 @@
 {
   "model": "Qwen3-1.7B-q4f16_1-MLC",
   "attempts": 40,
-  "fulfilled": 16,
+  "fulfilled": 39,
   "declined": 0,
-  "invalid": 16,
-  "unparsable": 8,
-  "truncated": 8,
+  "invalid": 0,
+  "unparsable": 1,
+  "truncated": 1,
   "crashes": 0,
-  "schemaValid": 0.4,
-  "medianLatencyMs": 40814,
+  "schemaValid": 0.975,
+  "medianLatencyMs": 35080,
   "timing": {
     "samples": 24,
-    "medianE2eMs": 40814,
-    "medianPromptTokens": 2729,
-    "medianCompletionTokens": 959,
-    "decodeTokensPerS": 24.9,
-    "perTokenShare": 0.814,
-    "grammarShare": 0.009,
-    "sampleShare": 0.804
+    "medianE2eMs": 35080,
+    "medianPromptTokens": 2736,
+    "medianCompletionTokens": 957,
+    "decodeTokensPerS": 28.3,
+    "perTokenShare": 0.788,
+    "grammarShare": 0.01,
+    "sampleShare": 0.778
   },
   "shapesHandled": 16,
   "bug807": false,
@@ -25,9 +25,9 @@
   "perSentence": [
     {
       "id": "P001",
-      "kind": "invalid",
-      "detail": "3× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined; sim.witness: Invalid input: expected nonoptional, received undefined; sim: Unrecognized key: \"look\"",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"merchant\": [\n          1,\n          4\n        ],\n        \"shop\": [\n          3,\n          4\n        ],\n        \"theft\": [\n          5,\n          4\n        ],\n        \"gate\": [\n          10,\n          4\n        ]\n      },\n      \"entities\": {\n        \"merchant\": {\n          \"role\": \"actor\",\n          \"socket\": \"merchant\",\n          \"state\": \"idle\"\n        },\n        \"shop\":"
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"merchantShop\": [\n        1,\n        4\n      ],\n      \"merchantHut\": [\n        3,\n        4\n      ],\n      \"theftSpot\": [\n        5,\n        4\n      ]\n    },\n    \"entities\": {\n      \"merchant\": {\n        \"role\": \"actor\",\n        \"socket\": \"merchantShop\",\n        \"state\": \"idle\"\n      },\n      \"theft\": {\n        \"role\": \"prop\",\n        \"socket\": \"theftSpot\",\n        \"state\": \"idle\"\n  "
     },
     {
       "id": "P002",
@@ -37,27 +37,27 @@
     },
     {
       "id": "P003",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"spawnPad\": [\n        1,\n        4\n      ],\n      \"cardPad\": [\n        3,\n        4\n      ],\n      \"leverPad\": [\n        5,\n        4\n      ],\n      \"gatePad\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"spawnPad\",\n        \"state\": \"idle\"\n      },\n      \"card\": {\n        \"role\": \"pickup\",\n        \"socket\": \"cardPad\",\n        \""
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"spawnPad\": [\n        1,\n        4\n      ],\n      \"cardPad\": [\n        3,\n        4\n      ],\n      \"leverPad\": [\n        5,\n        4\n      ],\n      \"gatePad\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"spawnPad\",\n        \"state\": \"idle\"\n      },\n      \"card\": {\n        \"role\": \"pickup\",\n        \"socket\": \"ca"
     },
     {
       "id": "P004",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"spawnPad\": [\n          1,\n          4\n        ],\n        \"cardPad\": [\n          3,\n          4\n        ],\n        \"leverPad\": [\n          5,\n          4\n        ],\n        \"gatePad\": [\n          10,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"spawnPad\",\n          \"state\": \"idle\"\n        },\n        "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"spawnPad\": [\n        1,\n        4\n      ],\n      \"cardPad\": [\n        3,\n        4\n      ],\n      \"leverPad\": [\n        5,\n        4\n      ],\n      \"gatePad\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"spawnPad\",\n        \"state\": \"idle\"\n      },\n      \"card\": {\n        \"role\": \"pickup\",\n        \"socket\": \"ca"
     },
     {
       "id": "P005",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"painting1\": [\n        1,\n        4\n      ],\n      \"painting2\": [\n        3,\n        4\n      ],\n      \"painting3\": [\n        5,\n        4\n      ],\n      \"painting4\": [\n        7,\n        4\n      ]\n    },\n    \"entities\": {\n      \"painting1\": {\n        \"role\": \"actor\",\n        \"socket\": \"painting1\",\n        \"state\": \"idle\"\n      },\n      \"painting2\": {\n        \"role\": \"actor\",\n        \"socket\": \"painti"
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"painting1\": [\n        1,\n        4\n      ],\n      \"painting2\": [\n        3,\n        4\n      ],\n      \"painting3\": [\n        5,\n        4\n      ],\n      \"painting4\": [\n        7,\n        4\n      ]\n    },\n    \"entities\": {\n      \"painting1\": {\n        \"role\": \"actor\",\n        \"socket\": \"painting1\",\n        \"state\": \"idle\"\n      },\n      \"painting2\": {\n        \"role\": \"actor\",\n        "
     },
     {
       "id": "P006",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"spawnPad\": [\n          1,\n          4\n        ],\n        \"cardPad\": [\n          3,\n          4\n        ],\n        \"leverPad\": [\n          5,\n          4\n        ],\n        \"gatePad\": [\n          10,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"spawnPad\",\n          \"state\": \"idle\"\n        },\n        "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"spawnPad\": [\n        1,\n        4\n      ],\n      \"boxPad\": [\n        3,\n        4\n      ],\n      \"leverPad\": [\n        5,\n        4\n      ],\n      \"gatePad\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"spawnPad\",\n        \"state\": \"idle\"\n      },\n      \"box1\": {\n        \"role\": \"pickup\",\n        \"socket\": \"box"
     },
     {
       "id": "P007",
@@ -67,9 +67,9 @@
     },
     {
       "id": "P008",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"flower1\": [\n          1,\n          4\n        ],\n        \"flower2\": [\n          3,\n          4\n        ],\n        \"flower3\": [\n          5,\n          4\n        ],\n        \"flower4\": [\n          7,\n          4\n        ]\n      },\n      \"entities\": {\n        \"bee\": {\n          \"role\": \"actor\",\n          \"socket\": \"flower1\",\n          \"state\": \"idle\"\n        },\n        \"flower"
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"flower1\": [\n        1,\n        4\n      ],\n      \"flower2\": [\n        3,\n        4\n      ],\n      \"flower3\": [\n        5,\n        4\n      ],\n      \"flower4\": [\n        7,\n        4\n      ]\n    },\n    \"entities\": {\n      \"bee\": {\n        \"role\": \"actor\",\n        \"socket\": \"flower1\",\n        \"state\": \"idle\"\n      },\n      \"flower1\": {\n        \"role\": \"pickup\",\n        \"socket\": \"flower"
     },
     {
       "id": "P009",
@@ -85,15 +85,15 @@
     },
     {
       "id": "P011",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"lighthouse\": [\n          1,\n          4\n        ],\n        \"beam\": [\n          3,\n          4\n        ]\n      },\n      \"entities\": {\n        \"lighthouse\": {\n          \"role\": \"actor\",\n          \"socket\": \"lighthouse\",\n          \"state\": \"idle\"\n        },\n        \"beam\": {\n          \"role\": \"prop\",\n          \"socket\": \"beam\",\n          \"state\": \"idle\"\n        }\n      },\n  "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"lighthouse\": [\n        1,\n        4\n      ],\n      \"beam\": [\n        3,\n        4\n      ]\n    },\n    \"entities\": {\n      \"lighthouse\": {\n        \"role\": \"actor\",\n        \"socket\": \"lighthouse\",\n        \"state\": \"idle\"\n      },\n      \"beam\": {\n        \"role\": \"prop\",\n        \"socket\": \"beam\",\n        \"state\": \"idle\"\n      }\n    },\n    \"state\": {\n      \"counters\": {},\n      \"flags\": {"
     },
     {
       "id": "P012",
-      "kind": "unparsable",
-      "detail": "Expected property name or '}' in JSON at position 5384 (line 260 column 25)",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 8,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"chessBoard\": [\n          1,\n          4\n        ],\n        \"whitePawn\": [\n          3,\n          4\n        ],\n        \"blackPawn\": [\n          3,\n          4\n        ],\n        \"whiteRook\": [\n          5,\n          4\n        ],\n        \"blackRook\": [\n          5,\n          4\n        ],\n        \"whiteKnight\": [\n          7,\n          4\n        ],\n        \"blackKnight\": [\n  "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 8,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"chessBoard\": [\n        1,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"chessBoard\",\n        \"state\": \"idle\"\n      },\n      \"whitePawn\": {\n        \"role\": \"prop\",\n        \"socket\": \"chessBoard\",\n        \"state\": \"idle\"\n      },\n      \"blackPawn\": {\n        \"role\": \"prop\",\n        \"socket\": \"chessBoard\",\n        \"state\": \"idle"
     },
     {
       "id": "P013",
@@ -103,9 +103,9 @@
     },
     {
       "id": "P014",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"spawnPad\": [\n        1,\n        4\n      ],\n      \"cardPad\": [\n        3,\n        4\n      ],\n      \"leverPad\": [\n        5,\n        4\n      ],\n      \"gatePad\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"spawnPad\",\n        \"state\": \"idle\"\n      },\n      \"card\": {\n        \"role\": \"pickup\",\n        \"socket\": \"cardPad\",\n        \""
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"spawnPad\": [\n        1,\n        4\n      ],\n      \"cardPad\": [\n        3,\n        4\n      ],\n      \"leverPad\": [\n        5,\n        4\n      ],\n      \"gatePad\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"spawnPad\",\n        \"state\": \"idle\"\n      },\n      \"card\": {\n        \"role\": \"pickup\",\n        \"socket\": \"ca"
     },
     {
       "id": "P015",
@@ -115,9 +115,9 @@
     },
     {
       "id": "P016",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"spawnPad\": [\n        1,\n        4\n      ],\n      \"cardPad\": [\n        3,\n        4\n      ],\n      \"leverPad\": [\n        5,\n        4\n      ],\n      \"gatePad\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"spawnPad\",\n        \"state\": \"idle\"\n      },\n      \"card\": {\n        \"role\": \"pickup\",\n        \"socket\": \"cardPad\",\n        \""
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"campfire\": [\n        1,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"campfire\",\n        \"state\": \"idle\"\n      },\n      \"wood\": {\n        \"role\": \"pickup\",\n        \"socket\": \"campfire\",\n        \"state\": \"loose\"\n      }\n    },\n    \"state\": {\n      \"counters\": {},\n      \"flags\": {},\n      \"timers\": {},\n      \"zones\": {},\n     "
     },
     {
       "id": "P017",
@@ -127,27 +127,27 @@
     },
     {
       "id": "P018",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"glass\": [\n          1,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"glass\",\n          \"state\": \"idle\"\n        },\n        \"fish\": {\n          \"role\": \"agent\",\n          \"socket\": \"glass\",\n          \"state\": \"idle\"\n        }\n      },\n      \"state\": {\n        \"counters\": {},\n        \"flags\": {},\n      "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"glass\": [\n        1,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"glass\",\n        \"state\": \"idle\"\n      },\n      \"fish\": {\n        \"role\": \"agent\",\n        \"socket\": \"glass\",\n        \"state\": \"idle\"\n      }\n    },\n    \"state\": {\n      \"counters\": {},\n      \"flags\": {},\n      \"timers\": {},\n      \"zones\": {},\n      \"slots\": 1"
     },
     {
       "id": "P019",
-      "kind": "unparsable",
-      "detail": "Unterminated string in JSON at position 5145 (line 251 column 15)",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"drum1\": [\n          1,\n          4\n        ],\n        \"drum2\": [\n          3,\n          4\n        ],\n        \"drum3\": [\n          5,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"drum1\",\n          \"state\": \"idle\"\n        },\n        \"drum1\": {\n          \"role\": \"prop\",\n          \"socket\": \"drum1\",\n   "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"drum1\": [\n        1,\n        4\n      ],\n      \"drum2\": [\n        3,\n        4\n      ],\n      \"drum3\": [\n        5,\n        4\n      ]\n    },\n    \"entities\": {\n      \"drum1\": {\n        \"role\": \"actor\",\n        \"socket\": \"drum1\",\n        \"state\": \"idle\"\n      },\n      \"drum2\": {\n        \"role\": \"actor\",\n        \"socket\": \"drum2\",\n        \"state\": \"idle\"\n      },\n      \"drum3\": {\n      "
     },
     {
       "id": "P020",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"trafficLight\": [\n          2,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"trafficLight\",\n          \"state\": \"idle\"\n        },\n        \"trafficLight\": {\n          \"role\": \"prop\",\n          \"socket\": \"trafficLight\",\n          \"state\": \"red\"\n        }\n      },\n      \"state\": {\n        \"counters\": {},\n"
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"spawnPad\": [\n        1,\n        4\n      ],\n      \"cardPad\": [\n        3,\n        4\n      ],\n      \"leverPad\": [\n        5,\n        4\n      ],\n      \"gatePad\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"spawnPad\",\n        \"state\": \"idle\"\n      },\n      \"card\": {\n        \"role\": \"pickup\",\n        \"socket\": \"ca"
     },
     {
       "id": "P021",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"roof\": [\n          1,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"roof\",\n          \"state\": \"idle\"\n        },\n        \"rain\": {\n          \"role\": \"agent\",\n          \"socket\": \"roof\",\n          \"state\": \"active\"\n        },\n        \"plants\": {\n          \"role\": \"agent\",\n          \"socket\": \"roof\",\n  "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"roof\": [\n        5,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"roof\",\n        \"state\": \"idle\"\n      },\n      \"rain\": {\n        \"role\": \"agent\",\n        \"socket\": \"roof\"\n      },\n      \"plants\": {\n        \"role\": \"agent\",\n        \"socket\": \"roof\"\n      }\n    },\n    \"state\": {\n      \"counters\": {},\n      \"flags\": {},\n      "
     },
     {
       "id": "P022",
@@ -163,15 +163,15 @@
     },
     {
       "id": "P024",
-      "kind": "unparsable",
-      "detail": "Expected ',' or '}' after property value in JSON at position 2975 (line 151 column 4)",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"windmill\": [\n          1,\n          4\n        ],\n        \"flag\": [\n          5,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"windmill\",\n          \"state\": \"idle\"\n        },\n        \"windmill\": {\n          \"role\": \"actor\",\n          \"socket\": \"windmill\",\n          \"state\": \"idle\"\n        },\n        \""
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"windmill\": [\n        1,\n        4\n      ],\n      \"flag\": [\n        3,\n        4\n      ]\n    },\n    \"entities\": {\n      \"windmill\": {\n        \"role\": \"actor\",\n        \"socket\": \"windmill\",\n        \"state\": \"idle\"\n      },\n      \"flag\": {\n        \"role\": \"pickup\",\n        \"socket\": \"flag\",\n        \"state\": \"loose\"\n      }\n    },\n    \"state\": {\n      \"counters\": {},\n      \"flags\": {\n  "
     },
     {
       "id": "P025",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"spawnPad\": [\n        1,\n        4\n      ],\n      \"cardPad\": [\n        3,\n        4\n      ],\n      \"leverPad\": [\n        5,\n        4\n      ],\n      \"gatePad\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"spawnPad\",\n        \"state\": \"idle\"\n      },\n      \"cat\": {\n        \"role\": \"actor\",\n        \"socket\": \"leverPad\",\n        \"s"
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"catSocket\": [\n        1,\n        4\n      ]\n    },\n    \"entities\": {\n      \"cat\": {\n        \"role\": \"actor\",\n        \"socket\": \"catSocket\",\n        \"state\": \"idle\"\n      }\n    },\n    \"state\": {\n      \"counters\": {},\n      \"flags\": {},\n      \"timers\": {},\n      \"zones\": {},\n      \"slots\": 1\n    },\n    \"rules\": {\n      \"follow\": {\n        \"phase\": 0,\n        \"priority\": 0,\n        \"eve"
     },
     {
       "id": "P026",
@@ -187,9 +187,9 @@
     },
     {
       "id": "P028",
-      "kind": "unparsable",
-      "detail": "Unterminated string in JSON at position 5670 (line 257 column 25)",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"floor1\": [\n          1,\n          4\n        ],\n        \"floor2\": [\n          3,\n          4\n        ],\n        \"floor3\": [\n          5,\n          4\n        ],\n        \"outsideButton\": [\n          1,\n          4\n        ],\n        \"insideButton\": [\n          3,\n          4\n        ]\n      },\n      \"entities\": {\n        \"elevator\": {\n          \"role\": \"actor\",\n          \"so"
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"floor1\": [\n        1,\n        4\n      ],\n      \"floor2\": [\n        3,\n        4\n      ],\n      \"floor3\": [\n        5,\n        4\n      ]\n    },\n    \"entities\": {\n      \"elevator\": {\n        \"role\": \"actor\",\n        \"socket\": \"floor1\",\n        \"state\": \"idle\"\n      },\n      \"floor1Button\": {\n        \"role\": \"pickup\",\n        \"socket\": \"floor1\"\n      },\n      \"floor2Button\": {\n        "
     },
     {
       "id": "P029",
@@ -206,14 +206,14 @@
     {
       "id": "P031",
       "kind": "unparsable",
-      "detail": "Unexpected end of JSON input",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"sleepPad\": [\n          1,\n          4\n        ],\n        \"dayCounter\": [\n          3,\n          4\n        ],\n        \"dayDisplay\": [\n          5,\n          4\n        ],\n        \"something\": [\n          7,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"sleepPad\",\n          \"state\": \"idle\"\n        },\n  "
+      "detail": "Expected ',' or '}' after property value in JSON at position 4901 (line 250 column 20)",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"spawnPad\": [\n        1,\n        4\n      ],\n      \"cardPad\": [\n        3,\n        4\n      ],\n      \"leverPad\": [\n        5,\n        4\n      ],\n      \"gatePad\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"spawnPad\",\n        \"state\": \"idle\"\n      },\n      \"card\": {\n        \"role\": \"pickup\",\n        \"socket\": \"ca"
     },
     {
       "id": "P032",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n      \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"spawnPad\": [\n          1,\n          4\n        ],\n        \"cardPad\": [\n          3,\n          4\n        ],\n        \"leverPad\": [\n          5,\n          4\n        ],\n        \"gatePad\": [\n          10,\n          4\n        ]\n      },\n      \"entities\": {\n        \"player\": {\n          \"role\": \"actor\",\n          \"socket\": \"spawnPad\",\n          \"state\": \"idle\"\n        },\n        \"c"
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"spawnPad\": [\n        1,\n        4\n      ],\n      \"cardPad\": [\n        3,\n        4\n      ],\n      \"leverPad\": [\n        5,\n        4\n      ],\n      \"gatePad\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"spawnPad\",\n        \"state\": \"idle\"\n      },\n      \"card\": {\n        \"role\": \"pickup\",\n        \"socket\": \"ca"
     },
     {
       "id": "P033",
@@ -223,9 +223,9 @@
     },
     {
       "id": "P034",
-      "kind": "unparsable",
-      "detail": "Expected double-quoted property name in JSON at position 438 (line 29 column 28)",
-      "rawExcerpt": "{\n\n\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"bridge\": [\n        1,\n        4\n      ]\n    },\n    \"entities\": {\n      \"bridge\": {\n        \"role\": \"actor\",\n        \"socket\": \"bridge\",\n        \"state\": \"idle\"\n      },\n      \"crate1\": {\n        \"role\": \"pickup\",\n        \"socket\": \"bridge\",\n      \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"bridge\": [\n        1,\n        4\n      ]\n    },\n    \"entities\": {\n      \"bridge\": {\n        \"role\": \"actor\",\n        \"socket\": \"bridge\",\n        \"state\": \"idle\"\n      }\n    },\n    \"state\": {\n      \"counters\": {},\n      \"flags\": {},\n      \"timers\": {},\n      \"zones\": {},\n      \"slots\": 1\n    },\n    \"rules\": {\n      \"bridge\": {\n        \"phase\": 0,\n        \"priority\": 0,\n        \"event\""
     },
     {
       "id": "P035",
@@ -235,27 +235,27 @@
     },
     {
       "id": "P036",
-      "kind": "unparsable",
-      "detail": "Unterminated string in JSON at position 5417 (line 256 column 10)",
-      "rawExcerpt": "{\n\n\n \n    \"irVersion\": \"v1\",\n    \"simRevision\": 0,\n    \"lookRevision\": 0,\n    \"sim\": {\n      \"layout\": {\n        \"width\": 12,\n        \"height\": 8\n      },\n      \"grid\": {\n        \"cell\": 1\n      },\n      \"sockets\": {\n        \"teamA\": [\n          1,\n          4\n        ],\n        \"teamB\": [\n          3,\n          4\n        ]\n      },\n      \"entities\": {\n        \"NPC1\": {\n          \"role\": \"agent\",\n          \"socket\": \"teamA\",\n          \"state\": \"idle\"\n        },\n        \"NPC2\": {\n          \"role\": \"agent\",\n          \"socket\": \"teamB\",\n          \"state\": \"idle\"\n        },\n        \"NPC3\": {\n     "
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"spawnPad\": [\n        1,\n        4\n      ],\n      \"cardPad\": [\n        3,\n        4\n      ],\n      \"leverPad\": [\n        5,\n        4\n      ],\n      \"gatePad\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"spawnPad\",\n        \"state\": \"idle\"\n      },\n      \"npc1\": {\n        \"role\": \"npc\",\n        \"socket\": \"lever"
     },
     {
       "id": "P037",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"savePoint\": [\n        1,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"savePoint\",\n        \"state\": \"idle\"\n      }\n    },\n    \"state\": {\n      \"counters\": {},\n      \"flags\": {\n        \"saved\": {\n          \"init\": false\n        }\n      },\n      \"timers\": {},\n      \"zones\": {},\n      \"slots\": 1\n    },\n    \"rules\": {\n      \"save\": {\n        \"ph"
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"savePoint\": [\n        1,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"savePoint\",\n        \"state\": \"idle\"\n      }\n    },\n    \"state\": {\n      \"counters\": {},\n      \"flags\": {},\n      \"timers\": {},\n      \"zones\": {},\n      \"slots\": 1\n    },\n    \"rules\": {\n      \"save\": {\n        \"phase\": 0,\n        \"priority\": 0,\n        \"ev"
     },
     {
       "id": "P038",
-      "kind": "unparsable",
-      "detail": "Unexpected end of JSON input",
-      "rawExcerpt": "{\n\n\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"plantPad\": [\n        1,\n        4\n      ],\n      \"waterSocket\": [\n        2,\n        4\n      ],\n      \"sunSocket\": [\n        3,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"waterSocket\",\n        \"state\": \"idle\"\n      },\n      \"plant\": {\n        \"role\": \"agent\",\n        \"socket\": \"plantPad\",\n        \"state\": \"idle\"\n      }\n    },\n    \"state\""
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"plantPad\": [\n        1,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"plantPad\",\n        \"state\": \"idle\"\n      },\n      \"plant\": {\n        \"role\": \"plant\",\n        \"socket\": \"plantPad\",\n        \"state\": \"idle\"\n      }\n    },\n    \"state\": {\n      \"counters\": {},\n      \"flags\": {\n        \"sunUp\": {\n          \"init\": false\n    "
     },
     {
       "id": "P039",
-      "kind": "invalid",
-      "detail": "1× rozpor — sim.collisionAabb: Invalid input: expected nonoptional, received undefined",
-      "rawExcerpt": "{\n\n\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"spawnPad\": [\n        1,\n        4\n      ],\n      \"cardPad\": [\n        3,\n        4\n      ],\n      \"leverPad\": [\n        5,\n        4\n      ],\n      \"gatePad\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"spawnPad\",\n        \"state\": \"idle\"\n      },\n      \"card\": {\n        \"role\": \"pickup\",\n        \"socket\": \"cardPad\",\n        \""
+      "kind": "fulfilled",
+      "detail": "",
+      "rawExcerpt": "<think>\n\n</think>\n\n{\n  \"irVersion\": \"v1\",\n  \"simRevision\": 0,\n  \"lookRevision\": 0,\n  \"sim\": {\n    \"layout\": {\n      \"width\": 12,\n      \"height\": 8\n    },\n    \"grid\": {\n      \"cell\": 1\n    },\n    \"sockets\": {\n      \"spawnPad\": [\n        1,\n        4\n      ],\n      \"cardPad\": [\n        3,\n        4\n      ],\n      \"leverPad\": [\n        5,\n        4\n      ],\n      \"gatePad\": [\n        10,\n        4\n      ]\n    },\n    \"entities\": {\n      \"player\": {\n        \"role\": \"actor\",\n        \"socket\": \"spawnPad\",\n        \"state\": \"idle\"\n      },\n      \"card\": {\n        \"role\": \"pickup\",\n        \"socket\": \"ca"
     },
     {
       "id": "P040",
@@ -264,10 +264,10 @@
       "rawExcerpt": "{\"irVersion\":\"v1\",\"simRevision\":0,\"lookRevision\":0,\"sim\":{\"layout\":{\"kind\":\"grid\",\"width\":12,\"height\":8,\"levels\":1,\"portals\":[]},\"grid\":{\"cell\":1},\"sockets\":{\"spawn\":[1,4],\"finish\":[10,4]},\"collisionAabb\":{\"player\":[1,4,1,1],\"finish\":[10,4,1,2]},\"entities\":{\"player\":{\"role\":\"actor\",\"socket\":\"spawn\",\"state\":\"idle\"},\"finish\":{\"role\":\"goal\",\"socket\":\"finish\",\"state\":\"closed\",\"locked\":true}},\"rules\":{\"unlock\":{\"id\":\"unlock\",\"phase\":1,\"priority\":0,\"event\":{\"kind\":\"onStart\"},\"condition\":null,\"actions\":[{\"kind\":\"setLocked\",\"target\":\"finish\",\"locked\":false},{\"kind\":\"setState\",\"target\":\"finish\",\"value\""
     }
   ],
-  "measuredAt": "2026-08-25T10:40:05.839Z",
+  "measuredAt": "2026-08-25T15:21:17.499Z",
   "corpusVersion": "v3",
   "forcedShapeSchema": "{\"type\":\"object\",\"properties\":{\"irVersion\":{\"type\":\"string\"},\"simRevision\":{\"type\":\"integer\"},\"lookRevision\":{\"type\":\"integer\"},\"sim\":{\"anyOf\":[{\"type\":\"object\"},{\"type\":\"null\"}]},\"look\":{\"type\":\"object\"}},\"required\":[\"irVersion\",\"simRevision\",\"lookRevision\",\"sim\",\"look\"]}",
-  "maxOutputTokens": 1400,
+  "maxOutputTokens": 2560,
   "adapter": "nvidia/ampere",
   "bug807Reproduced": false,
   "reproduction": null

@@ -238,3 +238,37 @@ Medián běhu B je o 11 % vyšší než u srpnového běhu nad týmž promptem (
 36 704 ms). Rozdíl se nevysvětluje — je to kolísání stroje mezi běhy, ne naměřený
 efekt, a nesmí se z něj nic vyvozovat. Rozpad latence v 8.1 je na něm nezávislý:
 jsou to podíly téhož běhu, ne srovnání dvou.
+
+## 9. T4 po třech levných pákách — běh C (25. 8. 2026)
+
+Běh v `2026-08-25T15:21:17.499Z` měřil stejných prvních 40 vět a stejné
+produkční pořadí jako běh B: 16 vět vyřešil rozpoznávač a 24 dostal model.
+Měřidlo už ale používá produkční cestu T1–T3: před klasifikací volá
+`deriveCollisionAabb()`, požadavek odvozuje z `completionRequest()` s vypnutým
+thinkingem a používá produkční strop 2 560 tokenů. Proti produkci přidává pouze
+rozpad latence.
+
+| Veličina | Běh B | Běh C po T1–T3 |
+|---|---:|---:|
+| `attempts` | 40 | 40 |
+| rozpoznávač / model | 16 / 24 | 16 / 24 |
+| `schemaValid` | 0,400 | **0,975** |
+| `fulfilled` | 16 | **39** |
+| `invalid` | 16 | **0** |
+| `unparsable` | 8 | **1** |
+| `truncated` | 8 | **1** |
+| `crashes` | 0 | 0 |
+| medián latence modelu | 40 814 ms | **35 080 ms** |
+
+**Rozpad jen nad 24 odpověďmi modelu:** 23 skončilo jako `fulfilled`, 0 padlo
+na schématu, 1 na stropu, 1 se nedala rozpársovat a 0 spadlo. Useknutí a chyba
+parsování nejsou dvě různé odpovědi: obojí je `P031`, která skončila
+`finish_reason: length` uprostřed JSON. Všech 16 odpovědí rozpoznávače bylo
+`fulfilled`.
+
+Práh `schemaValid >= 0,85` je překročen bez hlubokého emisního JSON Schema.
+Podle datového rozhodnutí v P12 V1 se proto T5 přeskočí; T6 nemá po přeskočené
+změně co přeměřovat a podmíněná T7 se rovněž nespouští. Nevzniká prázdný commit
+ani třetí ruční popis emisního kontraktu. Dalším krokem je T8 nad celými 200
+větami. Výsledek ale nesplnil druhou část cíle vlny: medián **35,08 s** zůstává
+nad limitem 5 s a T8 ho musí vykázat bez kosmetiky.
