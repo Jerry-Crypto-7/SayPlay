@@ -190,7 +190,7 @@ export function isExampleEmission(value: unknown): boolean {
   return value !== null && typeof value === 'object' && canonical(value) === EXAMPLE_CANONICAL;
 }
 
-const EXAMPLE_ONLY_IDENTIFIERS = [
+export const EXAMPLE_ONLY_IDENTIFIERS = [
   ...Object.keys(EXAMPLE_WORLD.sim.sockets).filter((identifier) => identifier !== 'spawnPad'),
   ...Object.keys(EXAMPLE_WORLD.sim.entities).filter((identifier) => identifier !== 'player'),
   ...Object.keys(EXAMPLE_WORLD.sim.state.flags),

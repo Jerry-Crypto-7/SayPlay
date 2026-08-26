@@ -27,6 +27,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
+// `describeStep` sdílí náhled s větou pro model (vlna 2 T2). Dvě kopie téhož
+// popisu tahu by se rozešly a porotce by četl jiný text, než dostane model.
+import { describeStep } from '@/model/local/rejection-prompt';
 import type { TraceInput, WorldDocRuntime } from '@/sim/interpreter';
 import { hashWitness, verifyWitness, type Certificate } from '@/verify/witness';
 
@@ -45,12 +48,6 @@ declare global {
       hashWitness: (witness: readonly TraceInput[]) => string;
     };
   }
-}
-
-/** Jeden tah stopy česky. `none` je kanonický zástupce za nepřítomný cíl. */
-function describeStep(input: TraceInput): string {
-  const target = input.target === undefined || input.target === 'none' ? null : input.target;
-  return target === null ? `${input.actor}: ${input.actionId}` : `${input.actor}: ${input.actionId} → ${target}`;
 }
 
 /** Jeden tah za tuhle dobu. Pět tahů tedy proběhne pod dvě sekundy. */

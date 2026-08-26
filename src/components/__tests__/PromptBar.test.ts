@@ -13,6 +13,7 @@ describe('modelRejectionNotice', () => {
             reason: 'DANGLING_REFERENCE',
             detail: 'look.modules.moonArch names no declared entity moonArch',
             issues: ['look.modules.moonArch: unknown entity moonArch'],
+            atStep: null,
           },
         },
       }),

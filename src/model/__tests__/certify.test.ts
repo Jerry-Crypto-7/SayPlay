@@ -75,6 +75,8 @@ describe('rozlišení podle outcome', () => {
     expect(stage).toBe('references');
     expect(reason).toBe('DANGLING_REFERENCE');
     expect(issues.length).toBeGreaterThan(0);
+    // Mimo kroky svědka je `atStep` `null`, ne `0` — nula je platný index.
+    expect(verdict.body.rejection.atStep).toBeNull();
   });
 
   it('u certifikovaného verdiktu je `rejection` typově `null`, ne „možná objekt"', () => {
@@ -104,7 +106,11 @@ describe('tvar dat se nehnul', () => {
     );
     expect(verdict.kind).toBe('verdict');
     if (verdict.body.outcome !== 'REJECTED') return;
-    expect(Object.keys(verdict.body.rejection).sort()).toEqual(['detail', 'issues', 'reason', 'stage']);
+    // `atStep` přibylo ve vlně 2 T2 a je to **jediný** klíč, o který se tvar
+    // odmítnutí od vlny 1 rozrostl. Důvod: ověřovač index kroku počítá, ale
+    // certifikace ho zahazovala do věty `witness step 3` uvnitř `issues` —
+    // a věta pro model by ho z ní musela parsovat zpátky.
+    expect(Object.keys(verdict.body.rejection).sort()).toEqual(['atStep', 'detail', 'issues', 'reason', 'stage']);
   });
 
   it('certifikovaný verdikt nese `certificate` a zapečetěný dokument', () => {
@@ -136,6 +142,7 @@ describe('Stage', () => {
       readonly reason: string;
       readonly detail: string;
       readonly issues: readonly string[];
+      readonly atStep: number | null;
     }>();
   });
 });

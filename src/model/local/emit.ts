@@ -146,6 +146,7 @@ export async function emitLocally(input: LocalEmitInput): Promise<LocalOutcome> 
           reason: 'EXAMPLE_COPY',
           detail: 'the model copied the syntax example instead of answering the request',
           issues: [],
+          atStep: null,
         },
         doc: null,
       },

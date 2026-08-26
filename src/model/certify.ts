@@ -65,6 +65,15 @@ export interface Rejection {
   readonly reason: string;
   readonly detail: string;
   readonly issues: readonly string[];
+  /**
+   * Index kroku svědka, na kterém se to zlomilo; `null` mimo kroky.
+   *
+   * **Přidáno ve vlně 2 T2.** Ověřovač ho počítá odjakživa, certifikace ho ale
+   * zahodila do věty `witness step 3` uvnitř `issues` — a věta pro model by ho
+   * z ní musela vyparsovat zpátky. Číslo se proto nese jako číslo. Je to
+   * jediný klíč, o který se tvar odmítnutí od vlny 1 rozrostl.
+   */
+  readonly atStep: number | null;
 }
 
 /** Emise po schématu — odvozeno ze schématu, aby se s ním nedalo rozejít. */
@@ -165,6 +174,7 @@ function rejectionFromSchema(issues: readonly { message: string; path: PropertyK
     reason: 'SCHEMA_VIOLATION',
     detail: issues[0].message,
     issues: issues.map((issue) => `/${issue.path.join('/')}: ${issue.message}`),
+    atStep: null,
   };
 }
 
@@ -191,7 +201,13 @@ export function* certifySteps(input: CertifyInput): Generator<EmitPhase, Verdict
   if (peeled === null)
     return rejected(
       promptId,
-      { stage: 'schema', reason: 'NOT_A_DOCUMENT', detail: 'the emission body is not a JSON object', issues: [] },
+      {
+        stage: 'schema',
+        reason: 'NOT_A_DOCUMENT',
+        detail: 'the emission body is not a JSON object',
+        issues: [],
+        atStep: null,
+      },
       { upstream, provenance, annotations: {}, emission: null },
     );
 
@@ -216,7 +232,13 @@ export function* certifySteps(input: CertifyInput): Generator<EmitPhase, Verdict
     if (!declinedLook.ok)
       return rejected(
         promptId,
-        { stage: 'look', reason: 'LOOK_INVALID', detail: declinedLook.issues[0], issues: declinedLook.issues },
+        {
+          stage: 'look',
+          reason: 'LOOK_INVALID',
+          detail: declinedLook.issues[0],
+          issues: declinedLook.issues,
+          atStep: null,
+        },
         envelope,
       );
 
@@ -232,6 +254,7 @@ export function* certifySteps(input: CertifyInput): Generator<EmitPhase, Verdict
           reason: 'NO_FIT_DECLARED',
           detail: 'the emission declined the sim part; the scene is still built from look',
           issues: [],
+          atStep: null,
         },
         // `doc` je zapečetěný dokument, a ten tu nevznikl — není co hashovat.
         // Scéna se tím neztrácí, jede v `emission`.
@@ -255,6 +278,7 @@ export function* certifySteps(input: CertifyInput): Generator<EmitPhase, Verdict
         reason: 'DANGLING_REFERENCE',
         detail: `${dangling[0].where} names no declared ${dangling[0].namespace} ${dangling[0].name}`,
         issues: dangling.map((found) => `${found.where}: unknown ${found.namespace} ${found.name}`),
+        atStep: null,
       },
       envelope,
     );
@@ -264,7 +288,7 @@ export function* certifySteps(input: CertifyInput): Generator<EmitPhase, Verdict
   if (!look.ok)
     return rejected(
       promptId,
-      { stage: 'look', reason: 'LOOK_INVALID', detail: look.issues[0], issues: look.issues },
+      { stage: 'look', reason: 'LOOK_INVALID', detail: look.issues[0], issues: look.issues, atStep: null },
       envelope,
     );
   yield 'look';
@@ -277,7 +301,13 @@ export function* certifySteps(input: CertifyInput): Generator<EmitPhase, Verdict
   if (!built.ok)
     return rejected(
       promptId,
-      { stage: 'lowering', reason: built.reason, detail: built.issues[0] ?? 'no detail', issues: built.issues },
+      {
+        stage: 'lowering',
+        reason: built.reason,
+        detail: built.issues[0] ?? 'no detail',
+        issues: built.issues,
+        atStep: null,
+      },
       { ...envelope, doc },
     );
   yield 'lowering';
@@ -291,6 +321,7 @@ export function* certifySteps(input: CertifyInput): Generator<EmitPhase, Verdict
         reason: verdict.reason,
         detail: verdict.detail,
         issues: verdict.atStep === null ? [] : [`witness step ${verdict.atStep}`],
+        atStep: verdict.atStep,
       },
       { ...envelope, doc },
     );
