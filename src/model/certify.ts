@@ -28,9 +28,10 @@ import {
   validateLook,
   worldEmissionSchema,
 } from '../ir/worlddoc';
-import { verifyWitness } from '../verify/witness';
+import { verifyWitness, type Certificate } from '../verify/witness';
 
 import type { UpstreamRequest } from './prompt';
+import type { RepairNote } from './repair';
 
 /** Fáze průběhu. Jména jsou shodná s `rejection.stage`, aby průběh a verdikt mluvily stejně. */
 export type EmitPhase = 'emitted' | 'schema' | 'references' | 'look' | 'lowering' | 'witness';
@@ -38,12 +39,100 @@ export type EmitPhase = 'emitted' | 'schema' | 'references' | 'look' | 'lowering
 export type ProgressSink = (phase: EmitPhase) => void;
 
 /**
+ * Fáze, ve které emise skončila.
+ *
+ * Sedm hodnot, ne šest: `request` vydává prohlížečová větev, když model doslova
+ * opíše ukázku ze systémové zprávy (`./local/emit.ts`). Je to odmítnutí, které
+ * vzniká **před** certifikací, ale nese tentýž tvar — jinak by se ten jediný
+ * verdikt musel sestavit přetypováním a přestal by platit pro čtenáře.
+ *
+ * ⚠ Nepleť si to s `Rejection` z `../verify/witness.ts`. Ta je o **svědkovi**
+ * (`verdict`, `atStep`), tahle o **celé emisi**. Certifikace tu witnessovou
+ * zabalí do `stage: 'witness'`.
+ */
+export type Stage = 'schema' | 'references' | 'lowering' | 'witness' | 'look' | 'declined' | 'request';
+
+/**
+ * Důvod odmítnutí — **typ, ne `Record<string, unknown>`**.
+ *
+ * Nese ho každý neúspěšný verdikt a čte ho produkce (hláška pro porotce),
+ * evaluace (třídy odmítnutí) i vlna 2 (věta zpátky do modelu). Dokud byl
+ * schovaný v netypovaném `body`, každý z těch tří čtenářů si ho zúžil sám a
+ * chyba v tom zúžení prošla překladačem.
+ */
+export interface Rejection {
+  readonly stage: Stage;
+  readonly reason: string;
+  readonly detail: string;
+  readonly issues: readonly string[];
+}
+
+/** Emise po schématu — odvozeno ze schématu, aby se s ním nedalo rozejít. */
+type ParsedEmission = Extract<ReturnType<typeof worldEmissionSchema.safeParse>, { success: true }>['data'];
+
+/** Dokument, jak ho zapečetil systém. `simHash` přidává `sealSimHash()`. */
+export type SealedEmission = ParsedEmission & { readonly simHash: string };
+
+/** Co nese každý verdikt bez ohledu na výsledek. */
+interface VerdictEnvelope {
+  readonly promptId: string;
+  readonly upstream: UpstreamRequest;
+  /** Odkud emise přišla. Prochází beze změny. */
+  readonly provenance: unknown;
+  readonly annotations: Record<string, unknown>;
+  /** Co doopravdy napsal model, včetně anotací — i u odmítnutí. */
+  readonly emission: unknown;
+  /**
+   * Vyplňuje **jen prohlížečová větev**: dokument po deterministické opravě a
+   * seznam zásahů (`./repair.ts`). Server neopravuje, takže je nemá.
+   */
+  readonly repairedEmission?: unknown;
+  readonly repairs?: readonly RepairNote[];
+}
+
+/**
+ * Tělo verdiktu, **rozlišené podle `outcome`**.
+ *
+ * Rozlišení je celý smysl typu: `if (body.outcome === 'REJECTED')` zúží
+ * `rejection` na `Rejection`, takže se čte bez přetypování, a naopak na
+ * certifikovaném verdiktu je `rejection` typově `null` — nedá se na něj ptát.
+ *
+ * **Data se tím nemění ani o bajt.** Klíče, pořadí i hodnoty jsou tytéž, jaké
+ * `certifySteps()` vracelo předtím; pinuje to `__tests__/certify.test.ts`.
+ */
+export type VerdictBody =
+  | (VerdictEnvelope & {
+      readonly outcome: 'CERTIFIED';
+      readonly certificate: Certificate;
+      readonly rejection: null;
+      readonly doc: SealedEmission;
+    })
+  | (VerdictEnvelope & {
+      readonly outcome: 'NO_FIT';
+      readonly certificate: null;
+      readonly rejection: Rejection;
+      readonly doc: null;
+    })
+  | (VerdictEnvelope & {
+      readonly outcome: 'REJECTED';
+      readonly rejection: Rejection;
+      /**
+       * `null` píše jen prohlížečová větev u `stage: 'request'`; serverová cesta
+       * klíč vůbec nemá. Volitelný je proto, aby se **data nehnula** — obě
+       * podoby existují dnes a obě musí projít beze změny.
+       */
+      readonly certificate?: null;
+      /** Zapečetěný dokument existuje jen u odmítnutí po `sealSimHash()`. */
+      readonly doc: SealedEmission | null;
+    });
+
+/**
  * Verdikt nad jednou emisí. **Tohle je ten sdílený tvar**: server i prohlížeč
  * vracejí tenhle typ a nic jiného, takže se jejich odpovědi nedají rozejít.
  */
 export interface Verdict {
   readonly kind: 'verdict';
-  readonly body: Record<string, unknown>;
+  readonly body: VerdictBody;
 }
 
 export interface CertifyInput {
@@ -57,16 +146,15 @@ export interface CertifyInput {
   readonly body: unknown;
 }
 
-type Stage = 'schema' | 'references' | 'lowering' | 'witness' | 'look' | 'declined';
-
-interface Rejection {
-  readonly stage: Stage;
-  readonly reason: string;
-  readonly detail: string;
-  readonly issues: readonly string[];
-}
-
-function rejected(promptId: string, rejection: Rejection, extra: object = {}): Verdict {
+/**
+ * Odmítnutý verdikt. `extra` je obálka, ne libovolný objekt — dokud byla
+ * `object`, spread ji roztavil na nic a `doc` se dal přepsat čímkoli.
+ */
+function rejected(
+  promptId: string,
+  rejection: Rejection,
+  extra: Omit<VerdictEnvelope, 'promptId'> & { readonly doc?: SealedEmission },
+): Verdict {
   return { kind: 'verdict', body: { promptId, outcome: 'REJECTED', rejection, doc: null, ...extra } };
 }
 

@@ -40,7 +40,6 @@ describe('repairLines', () => {
   it('vydá text každého zásahu v pořadí, v jakém proběhl', () => {
     expect(
       repairLines({
-        outcome: 'CERTIFIED',
         repairs: [
           { kind: 'collideToZone', detail: 'rule touch: onCollide(player, dockPad) names the place dockPad' },
           { kind: 'witnessSolved', detail: 'the system searched 812 replays and found a winning path' },
@@ -53,13 +52,13 @@ describe('repairLines', () => {
   });
 
   it('nevydá nic, když verdikt žádný zásah nenese', () => {
-    expect(repairLines({ outcome: 'CERTIFIED' })).toEqual([]);
-    expect(repairLines({ outcome: 'CERTIFIED', repairs: [] })).toEqual([]);
+    expect(repairLines({})).toEqual([]);
+    expect(repairLines({ repairs: [] })).toEqual([]);
   });
 
-  it('zahodí záznam bez čitelného textu místo aby ukázal prázdnou odrážku', () => {
-    expect(repairLines({ repairs: [{ kind: 'witnessKept' }, null, 'nonsense', { detail: 'the only real one' }] })).toEqual(
-      ['the only real one'],
-    );
-  });
+  // Test „zahodí záznam bez čitelného textu" je od T1 pryč, a je to záměr:
+  // pinoval ruční zúžení každé položky `repairs` nad netypovaným verdiktem.
+  // `repairs` plní `repairEmission()` ve stejném procesu a od T1 je to
+  // `readonly RepairNote[]`, takže záznam bez `detail` už nejde ani sestavit —
+  // překladač ho odmítne dřív, než by ho měl kdo zahazovat.
 });

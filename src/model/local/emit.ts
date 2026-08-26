@@ -30,7 +30,7 @@ import { certifySteps, type ProgressSink, type Verdict } from '../certify';
 import { buildEmissionRequest, isExampleEmission, type Grammar } from '../prompt';
 import { repairEmission } from '../repair';
 
-import { deriveCollisionAabb } from './aabb';
+import { deriveCollisionAabb, isRecord } from './aabb';
 import { recognize as recognizeShape } from './shapes';
 
 import type { ChatEngine } from './engine';
@@ -116,12 +116,11 @@ export async function emitLocally(input: LocalEmitInput): Promise<LocalOutcome> 
     provenance = { source: 'model', model: upstream.model, finishReason: completion.finishReason };
   }
 
-  if (body !== null && typeof body === 'object' && !Array.isArray(body)) {
-    const document = body as Record<string, unknown>;
-    if (document.sim !== null && typeof document.sim === 'object' && !Array.isArray(document.sim)) {
-      const sim = deriveCollisionAabb(document.sim as Record<string, unknown>);
-      if (sim !== document.sim) body = { ...document, sim };
-    }
+  // Zúžení strážcem, ne přetypováním. Přetypování tvrdí tvar, který nikdo
+  // neověřil — a nad odpovědí modelu to tvrzení neplatí.
+  if (isRecord(body) && isRecord(body.sim)) {
+    const sim = deriveCollisionAabb(body.sim);
+    if (sim !== body.sim) body = { ...body, sim };
   }
 
   // Doslovná ukázka je výukový tah, ne odpověď na novou větu. První ruční

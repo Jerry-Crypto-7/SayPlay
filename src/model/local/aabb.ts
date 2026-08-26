@@ -1,7 +1,7 @@
 /** Jedna deklarovaná kolizní obálka ve tvaru `[x, y, width, height]`. */
 type CollisionAabb = readonly [number, number, number, number];
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+export function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
