@@ -19,6 +19,7 @@ import { expect, test } from '@playwright/test';
  */
 
 const FROZEN_PROMPT = 'a puzzle room where I have to find three keys to open the exit door';
+const SHORTER_TRACE_PROMPT = 'an escape room in a submarine that floods slowly, I have 60 seconds';
 
 test('náhled přehraje vítěznou cestu a nese TÝŽ hash jako certifikát', async ({ page }) => {
   test.setTimeout(180_000);
@@ -71,4 +72,38 @@ test('náhled přehraje vítěznou cestu a nese TÝŽ hash jako certifikát', as
   await page.getByTestId('witness-replay').click();
   await expect(strip).toHaveAttribute('data-done', 'false');
   await expect(strip).toHaveAttribute('data-done', 'true', { timeout: 30_000 });
+});
+
+test('dokončený náhled přežije nahrazení světem s kratší stopou', async ({ page }) => {
+  test.setTimeout(180_000);
+  const pageErrors: string[] = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+
+  await page.goto('/');
+  await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
+
+  await page.getByTestId('prompt-input').fill(FROZEN_PROMPT);
+  await page.getByTestId('prompt-submit').click();
+  await expect(page.getByTestId('witness-preview')).toHaveAttribute('data-done', 'true', { timeout: 30_000 });
+
+  const before = await page.evaluate(() => {
+    const api = window.__pipeline!;
+    return { hash: api.certificate()!.snapshotHash, steps: api.witness().length };
+  });
+  expect(before.steps).toBe(5);
+
+  await page.getByTestId('prompt-input').fill(SHORTER_TRACE_PROMPT);
+  await page.getByTestId('prompt-submit').click();
+  await page.waitForTimeout(1_000);
+
+  expect(pageErrors).toEqual([]);
+  await page.waitForFunction(
+    (was) => {
+      const api = window.__pipeline;
+      return api !== undefined && api.certificate()?.snapshotHash !== was && api.witness().length === 3;
+    },
+    before.hash,
+    { timeout: 60_000 },
+  );
+  await expect(page.getByTestId('witness-step')).toBeVisible();
 });

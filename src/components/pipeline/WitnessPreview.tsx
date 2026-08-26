@@ -99,9 +99,14 @@ export default function WitnessPreview({ world }: { readonly world: WorldDocRunt
       </section>
     );
 
-  const done = step >= trace.length - 1;
-  const current = step < 0 ? null : trace[step];
-  const shown = Math.max(step + 1, 0);
+  // Při výměně světa se nová stopa vyrenderuje dřív, než efekt výš stihne
+  // resetovat index starého náhledu. Stará stopa může být delší; její poslední
+  // index pak v nové stopě neexistuje. Přechodový render proto bere index mimo
+  // rozsah stejně jako stav před startem a nikdy z něj nečte tah.
+  const activeStep = step >= 0 && step < trace.length ? step : -1;
+  const done = trace.length === 0 || activeStep >= trace.length - 1;
+  const current = activeStep < 0 ? null : trace[activeStep]!;
+  const shown = activeStep + 1;
   const progress = trace.length === 0 ? 0 : (shown / trace.length) * 100;
 
   return (
@@ -120,7 +125,7 @@ export default function WitnessPreview({ world }: { readonly world: WorldDocRunt
       <p data-testid="witness-step" style={STEP_TEXT}>
         {current === null
           ? 'Replaying the trace it found…'
-          : `${String(step + 1)}. tick ${String(current.tick)} — ${describeStep(current)}`}
+          : `${String(activeStep + 1)}. tick ${String(current.tick)} — ${describeStep(current)}`}
       </p>
 
       {done ? (
