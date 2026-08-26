@@ -26,7 +26,7 @@
  */
 
 import { TIER_POLICY, isTier, smallestTierFor } from '../../verify/tiers';
-import { EXAMPLE_ONLY_IDENTIFIERS } from '../prompt';
+import { EXAMPLE_MARKER, EXAMPLE_ONLY_IDENTIFIERS } from '../prompt';
 
 import { isRecord } from './aabb';
 
@@ -248,13 +248,44 @@ export function retryRequest(
 }
 
 /**
- * Emise zpátky do textu. Nerozpársovatelná odpověď se vrátí tak, jak přišla —
- * modelu se ukazuje to, co doopravdy napsal, ne náhražka.
+ * Systémová zpráva opravného kola — **bez ukázky syntaxe**.
+ *
+ * ⚠ **Naměřeno 26. 8. 2026 a je to důvod, proč smyčka bez téhle úpravy nemohla
+ * fungovat.** Okno modelu je 4 096 tokenů (`context_window_size` v prebuiltu
+ * `Qwen3-1.7B-q4f16_1-MLC`). Požadavek prvního kola má 11 752 znaků a odpověď
+ * bere kolem 3 450, takže se do okna vejdou tak akorát. Opravné kolo k tomu
+ * přikládá předchozí emisi, čímž vyroste na 14 324 až 15 459 znaků — o 2 572
+ * až 3 707 víc než kolo první. O tolik se zkrátí prostor pro odpověď, tedy
+ * skoro o celou odpověď: v ověřovacím běhu tří vět skončila jedna emise se
+ * `finish_reason: length` a dvě spadly na schématu, které v kole 1 prošly.
+ *
+ * Ukázka je z toho zdaleka největší kus (3 223 znaků) a v opravném kole je
+ * nejmíň potřebná: model **má před sebou vlastní svět**, který má opravit, a
+ * ten je konkrétnější vzor tvaru než cizí příklad. Bez ní má kolo 2 celkem
+ * 10 087 až 10 923 znaků, tedy **méně** než kolo 1 — a odpověď se do okna vejde.
+ *
+ * Seznam polí, který ukázku doplňoval, zůstává: nese ho zbytek instrukcí.
+ */
+export function retrySystem(system: string): string {
+  const markerAt = system.indexOf(EXAMPLE_MARKER);
+  return markerAt < 0 ? system : system.slice(0, markerAt).trimEnd();
+}
+
+/**
+ * Emise zpátky do textu, **kompaktně**.
+ *
+ * Odsazení má v systémové ukázce naměřený smysl (`../prompt.ts`): model si
+ * podle něj čte seznam polí po řádcích. Tady je situace opačná — tohle není
+ * vzor ke čtení, ale vlastní odpověď k opravě, a odsazení na ní stojí 1 014 až
+ * 1 313 znaků z okna, které chybí odpovědi.
+ *
+ * Nerozpársovatelná odpověď se vrátí tak, jak přišla — modelu se ukazuje to,
+ * co doopravdy napsal, ne náhražka.
  */
 function safeJson(value: unknown): string {
   if (typeof value === 'string') return value;
   try {
-    return JSON.stringify(value, null, 1);
+    return JSON.stringify(value);
   } catch {
     return String(value);
   }

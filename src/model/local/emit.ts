@@ -31,7 +31,7 @@ import { buildEmissionRequest, isExampleEmission, type Grammar, type UpstreamReq
 import { repairEmission } from '../repair';
 
 import { deriveCollisionAabb, isRecord } from './aabb';
-import { contextFromEmission, retryRequest } from './rejection-prompt';
+import { contextFromEmission, retryRequest, retrySystem } from './rejection-prompt';
 import { recognize as recognizeShape } from './shapes';
 
 import type { ChatEngine } from './engine';
@@ -161,16 +161,19 @@ export async function emitLocally(input: LocalEmitInput): Promise<LocalOutcome> 
     const startedAt = clock();
 
     // Kolo 1 dostane holý požadavek, další kola k němu přiloží vlastní vadu a
-    // předchozí odpověď. Systémová zpráva se mezi koly **nemění** — je v ní
-    // gramatika a ukázka, a měnit je uprostřed by měnilo i to, čím se emise soudí.
-    const user =
-      attempt === 1 || last === null || last.body.rejection === null
-        ? upstream.user
-        : retryRequest(input.sentence, previous, last.body.rejection, contextFromEmission(previous));
+    // předchozí odpověď. Gramatika se mezi koly **nemění** — je to totéž, čím
+    // se emise soudí. Mizí jedině ukázka syntaxe, a to z naměřeného důvodu:
+    // předchozí emise a ukázka se do okna 4 096 tokenů nevejdou obě a odpověď
+    // se pak usekne (`retrySystem()` v `./rejection-prompt.ts`).
+    const repairing = attempt > 1 && last !== null && last.body.rejection !== null;
+    const system = repairing ? retrySystem(upstream.system) : upstream.system;
+    const user = repairing
+      ? retryRequest(input.sentence, previous, last!.body.rejection!, contextFromEmission(previous))
+      : upstream.user;
 
     let completion;
     try {
-      completion = await input.engine.complete(upstream.system, user);
+      completion = await input.engine.complete(system, user);
     } catch (thrown) {
       // Rozbité prostředí není verdikt o světě. Kola, která už proběhla, se
       // ale nezahazují — porotce má právo vidět, kam se to dostalo.
@@ -188,7 +191,9 @@ export async function emitLocally(input: LocalEmitInput): Promise<LocalOutcome> 
     }
 
     const provenance = { source: 'model', model: upstream.model, finishReason: completion.finishReason };
-    const verdict = certifyOnce(input, upstream, body, provenance);
+    // Verdikt nese požadavek **toho kola**, ne prvního. Vlna 0 zakazuje tvrdit
+    // o modelu něco, co nedostal, a od opravného kola se obojí liší.
+    const verdict = certifyOnce(input, { ...upstream, system, user }, body, provenance);
     rounds.push(round(attempt, verdict, clock() - startedAt));
 
     if (verdict.body.rejection === null) return { ...verdict, rounds };

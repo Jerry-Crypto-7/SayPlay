@@ -42,14 +42,24 @@ function danglingWorld(zone: string): Record<string, unknown> {
   return { ...doc, sim: { ...sim, rules } };
 }
 
-/** Stroj, který postupně vydá předepsané odpovědi. Poslední se opakuje. */
-function scriptedEngine(answers: readonly string[]): ChatEngine & { readonly seen: string[] } {
+/**
+ * Stroj, který postupně vydá předepsané odpovědi. Poslední se opakuje.
+ *
+ * `seen` jsou uživatelské zprávy, `systems` systémové. Od úpravy rozpočtu okna
+ * se mezi koly liší obojí, takže obojí musí být vidět.
+ */
+function scriptedEngine(
+  answers: readonly string[],
+): ChatEngine & { readonly seen: string[]; readonly systems: string[] } {
   const seen: string[] = [];
+  const systems: string[] = [];
   return {
     seen,
+    systems,
     modelId: LARGE_MODEL,
-    complete: (_system: string, user: string) => {
+    complete: (system: string, user: string) => {
       seen.push(user);
+      systems.push(system);
       const raw = answers[Math.min(seen.length - 1, answers.length - 1)];
       return Promise.resolve({ raw, finishReason: 'stop' });
     },
@@ -262,5 +272,76 @@ describe('doslovná kopie ukázky', () => {
     expect(outcome.kind).toBe('verdict');
     if (outcome.kind !== 'verdict') return;
     expect(outcome.body.outcome).toBe('CERTIFIED');
+  });
+});
+
+/**
+ * Rozpočet okna modelu (naměřeno 26. 8. 2026).
+ *
+ * Model má okno **4 096 tokenů** a požadavek prvního kola z něj zabírá skoro
+ * všechno. Opravné kolo k němu přikládá předchozí emisi, takže bez úspory jinde
+ * nezbude místo na odpověď — a naměřeně se pak usekne. Tyhle testy hlídají obě
+ * úspory, protože obě jsou neviditelné: prompt, který se nevejde, vypadá jako
+ * fungující smyčka a vydá horší svět.
+ */
+describe('rozpočet okna v opravném kole', () => {
+  it('opravné kolo neposílá ukázku syntaxe, první kolo ano', async () => {
+    const engine = scriptedEngine([
+      JSON.stringify(danglingWorld('nikdyDeklarovanaA')),
+      JSON.stringify(validWorld('cobalt')),
+    ]);
+
+    await emitLocally({ sentence: 'věta porotce', engine, recognize: noRecognizer });
+
+    expect(engine.systems).toHaveLength(2);
+    expect(engine.systems[0]).toContain(EXAMPLE_MARKER);
+    expect(engine.systems[1]).not.toContain(EXAMPLE_MARKER);
+    // Slovník a pravidla zůstávají — mizí ukázka, ne to, čím se emise soudí.
+    expect(engine.systems[1]).toContain('irVersion, simRevision, lookRevision, sim, look');
+  });
+
+  it('opravné kolo se vejde do menšího prostoru než první, ne do většího', async () => {
+    const engine = scriptedEngine([
+      JSON.stringify(danglingWorld('nikdyDeklarovanaA')),
+      JSON.stringify(validWorld('cobalt')),
+    ]);
+
+    await emitLocally({ sentence: 'věta porotce', engine, recognize: noRecognizer });
+
+    const first = engine.systems[0]!.length + engine.seen[0]!.length;
+    const repair = engine.systems[1]!.length + engine.seen[1]!.length;
+    expect(repair).toBeLessThan(first);
+  });
+
+  it('předchozí emise jde do promptu kompaktně, bez odsazení', async () => {
+    const rejected = danglingWorld('nikdyDeklarovanaA');
+    const engine = scriptedEngine([JSON.stringify(rejected), JSON.stringify(validWorld('cobalt'))]);
+
+    await emitLocally({ sentence: 'věta porotce', engine, recognize: noRecognizer });
+
+    const retry = engine.seen[1]!;
+    // Odsazená podoba téhož dokumentu je o tisíce znaků delší a v okně chybí
+    // přesně odpovědi. Stačí ověřit, že tam není ani její začátek.
+    expect(retry).not.toContain(JSON.stringify(rejected, null, 1).slice(0, 60));
+    expect(retry).toContain('"irVersion":');
+  });
+});
+
+describe('verdikt nese požadavek svého kola', () => {
+  it('po opravě sedí upstream na to, co model doopravdy dostal', async () => {
+    const engine = scriptedEngine([
+      JSON.stringify(danglingWorld('nikdyDeklarovanaA')),
+      JSON.stringify(validWorld('cobalt')),
+    ]);
+
+    const outcome = await emitLocally({ sentence: 'věta porotce', engine, recognize: noRecognizer });
+
+    expect(outcome.kind).toBe('verdict');
+    if (outcome.kind !== 'verdict') return;
+    // Vlna 0: o modelu se nesmí tvrdit nic, co nedostal. Verdikt vzniká v kole
+    // 2, takže musí nést požadavek kola 2 — jinak stopa ukazuje cizí prompt.
+    expect(outcome.body.upstream.user).toBe(engine.seen[1]);
+    expect(outcome.body.upstream.system).toBe(engine.systems[1]);
+    expect(outcome.body.upstream.system).not.toContain(EXAMPLE_MARKER);
   });
 });
