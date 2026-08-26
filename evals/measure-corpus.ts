@@ -14,8 +14,8 @@ import { wilsonInterval, type Interval } from './harness/wilson';
 import { frozenGrammar } from '../src/model/client';
 import { certifySteps } from '../src/model/certify';
 import { deriveCollisionAabb } from '../src/model/local/aabb';
-import { LARGE_MODEL } from '../src/model/local/engine';
-import { stripThinking } from '../src/model/local/emit';
+import { LARGE_MODEL, type ChatEngine, type Completion } from '../src/model/local/engine';
+import { emitLocally, stripThinking } from '../src/model/local/emit';
 import { repairEmission } from '../src/model/repair';
 import { recognize } from '../src/model/local/shapes';
 import { buildEmissionRequest } from '../src/model/prompt';
@@ -90,16 +90,47 @@ export interface CorpusCaseMeasurement {
   readonly latencyMs: number;
   readonly finishReason: string;
   readonly detail: string;
+  /** Kolik kol opravy tahle věta spotřebovala. Rozpoznaná věta má vždy 1. */
+  readonly rounds: number;
+  /**
+   * Prošla emise branou hned napoprvé?
+   *
+   * **Tohle je základna měřená ve stejném běhu.** Kolo 1 je přesně to, co by
+   * vydal řetěz bez smyčky, takže rozdíl proti konečnému stavu je přínos
+   * smyčky — bez srovnávání dvou běhů, mezi kterými se hnul model, prompt i
+   * oprava.
+   */
+  readonly firstRoundPassed: boolean;
   readonly observations: readonly ObservationMeasurement[];
+}
+
+/**
+ * Jedno kolo opravné smyčky tak, jak se zapisuje do reportu.
+ *
+ * Je to zúžený `Round` z `src/model/local/emit.ts`: celé odmítnutí by do
+ * reportu vneslo tělo emise, a report se čte po stovkách řádků. Zůstává to,
+ * podle čeho se dá kolo zařadit do třídy — fáze a důvod.
+ */
+export interface AttemptRound {
+  /** 1 pro první pokus. Kola se počítají od jedničky. */
+  readonly attempt: number;
+  readonly ms: number;
+  /** `null` znamená kolo, které branou prošlo. Je nanejvýš jedno a je poslední. */
+  readonly stage: string | null;
+  readonly reason: string | null;
 }
 
 export interface CorpusAttempt {
   readonly id: string;
   readonly source: 'recognizer' | 'model';
+  /** Součet přes všechna kola — cena, kterou by za tuhle větu zaplatil porotce. */
   readonly latencyMs: number;
   readonly finishReason: string;
+  /** Odpověď **posledního** kola. Podle ní se sudí, protože ta je na plátně. */
   readonly raw: string;
   readonly error: string;
+  /** Vždy aspoň jedno kolo. Prázdné pole má jen běh, ve kterém spadlo prostředí. */
+  readonly rounds: readonly AttemptRound[];
 }
 
 export interface CorpusIntegrity {
@@ -126,7 +157,28 @@ export interface CorpusReport {
   readonly shapesHandled: number;
   readonly modelAttempts: number;
   readonly confidenceInterval: Interval;
+  readonly rounds: RoundsSummary;
   readonly perSentence: readonly CorpusCaseMeasurement[];
+}
+
+/**
+ * Co stálo za opravnou smyčku (P12 V2 T4).
+ *
+ * `histogram` říká, kolik vět spotřebovalo jedno, dvě nebo tři kola.
+ * Kdyby všechno vyšlo v kole 1, smyčka je zbytečná a patří pryč; kdyby po kole
+ * 2 nepřibylo nic, strop tří kol je zbytečně vysoký. Obojí se pozná až odsud.
+ */
+export interface RoundsSummary {
+  /** Klíč je počet kol jako řetězec (`"1"`, `"2"`, `"3"`), hodnota počet vět. */
+  readonly histogram: Readonly<Record<string, number>>;
+  /** Kolik vět prošlo branou hned v kole 1 — základna bez smyčky, týž běh. */
+  readonly passedFirstRound: number;
+  /** Kolik jich prošlo nakonec. */
+  readonly passedAfterRepair: number;
+  /** Kolik vět zachránila až oprava. Rozdíl obou čísel výše. */
+  readonly repaired: number;
+  /** Přínos smyčky v procentních bodech nad celou sadou. Brána vlny žádá ≥ 15. */
+  readonly gainPoints: number;
 }
 
 function normalisedSha256(absolutePath: string): string {
@@ -295,7 +347,36 @@ export function buildCorpusReport(input: {
     shapesHandled: input.cases.filter((entry) => entry.source === 'recognizer').length,
     modelAttempts: modelCases.length,
     confidenceInterval: wilsonInterval(valid, attempts),
+    rounds: summariseRounds(input.cases),
     perSentence: input.cases,
+  };
+}
+
+/**
+ * Přínos smyčky ze **stejného běhu**, ne ze srovnání dvou.
+ *
+ * Základnou je kolo 1 každé věty: je to bajt po bajtu to, co by vydal řetěz
+ * bez smyčky, na tomtéž modelu a tomtéž promptu. Porovnávat konečný stav
+ * s reportem z gitu by přičetlo smyčce i všechno ostatní, co se mezi běhy
+ * změnilo — ve vlně 1 to byla deterministická oprava emise a dvě opravy
+ * promptu.
+ */
+export function summariseRounds(cases: readonly CorpusCaseMeasurement[]): RoundsSummary {
+  const histogram: Record<string, number> = {};
+  for (const entry of cases) {
+    const key = String(entry.rounds);
+    histogram[key] = (histogram[key] ?? 0) + 1;
+  }
+  const passedFirstRound = cases.filter((entry) => entry.firstRoundPassed).length;
+  const passedAfterRepair = cases.filter((entry) => entry.emissionValid).length;
+  const total = cases.length;
+
+  return {
+    histogram,
+    passedFirstRound,
+    passedAfterRepair,
+    repaired: passedAfterRepair - passedFirstRound,
+    gainPoints: total === 0 ? 0 : Number((((passedAfterRepair - passedFirstRound) / total) * 100).toFixed(2)),
   };
 }
 
@@ -532,13 +613,31 @@ function faultMeasurement(entry: CorpusCase, attempt: CorpusAttempt, detail: str
     latencyMs: attempt.latencyMs,
     finishReason: attempt.finishReason,
     detail,
+    rounds: roundCount(attempt),
+    // FAULT neprošel branou nikdy, tedy ani v kole 1. Druhé kolo navíc vzniká
+    // jedině po odmítnutí, takže tvrdit tu cokoli jiného nejde.
+    firstRoundPassed: false,
     observations: [],
   };
+}
+
+/** Kolik kol se odehrálo. Běh, ve kterém spadlo prostředí, počítá jedno. */
+function roundCount(attempt: CorpusAttempt): number {
+  return Math.max(1, attempt.rounds.length);
 }
 
 /** Prožene syrovou odpověď stejnou T1–T3 opravou a produkční certifikační branou. */
 export function scoreCorpusAttempt(entry: CorpusCase, attempt: CorpusAttempt): CorpusCaseMeasurement {
   if (attempt.error) return faultMeasurement(entry, attempt, attempt.error);
+
+  // Fáze `request` je odmítnutí, které vzniká PŘED certifikací — dnes jediné
+  // takové je doslovná kopie ukázky (`src/model/local/emit.ts`). Certifikátor
+  // ji nezná a ukázka je platný svět, takže bez téhle větve by ji měřidlo
+  // spočítalo jako úspěch tam, kde produkce odmítá.
+  const last = attempt.rounds[attempt.rounds.length - 1];
+  if (last !== undefined && last.stage === 'request') {
+    return faultMeasurement(entry, attempt, `${last.stage}: ${String(last.reason)}`);
+  }
 
   let body: unknown;
   try {
@@ -603,6 +702,79 @@ export function scoreCorpusAttempt(entry: CorpusCase, attempt: CorpusAttempt): C
     latencyMs: attempt.latencyMs,
     finishReason: attempt.finishReason,
     detail: outcome === 'NO_FIT' ? 'model declared NO_FIT' : allMet ? 'all observations met' : 'one or more observations unmet',
+    rounds: roundCount(attempt),
+    // Druhé kolo vzniká jedině po odmítnutí, takže jediné kolo znamená, že
+    // tenhle úspěch nestál žádnou opravu. Nic se tu netvrdí dopředu — čte se
+    // to, co smyčka doopravdy odehrála.
+    firstRoundPassed: attempt.rounds.length <= 1,
     observations,
+  };
+}
+
+/**
+ * Jedna věta celou produkční cestou, včetně opravné smyčky (P12 V2 T4).
+ *
+ * ⚠ **Do 26. 8. 2026 tudy měřidlo nešlo.** Volalo `certifySteps()` samo a
+ * protočilo emisi právě jednou, takže přínos smyčky nešel změřit — report by
+ * vydal tatáž čísla jako běh před ní a vypadalo by to, že smyčka nedělá nic.
+ * Teď je jediným zdrojem verdiktu `emitLocally()`, tedy týž kód, který běží
+ * porotci v prohlížeči; druhá implementace smyčky, která by se s ní mohla
+ * rozejít, tu neexistuje.
+ *
+ * Rozpoznávač se **vypíná** (`recognize: () => null`), protože rozpoznané věty
+ * si měřidlo odděluje samo a zná jejich počet dopředu.
+ */
+export async function driveCorpusCase(entry: CorpusCase, engine: ChatEngine): Promise<CorpusAttempt> {
+  // Odposlech, ne druhá cesta: `emitLocally()` vrací verdikt, ale ne text, ze
+  // kterého vznikl, a scorer parsuje text. Obálka proto zachytí poslední
+  // dokončení a nic jiného nedělá.
+  let last: Completion = { raw: '', finishReason: '' };
+  const recorded: ChatEngine = {
+    modelId: engine.modelId,
+    async complete(system, user) {
+      last = await engine.complete(system, user);
+      return last;
+    },
+    unload: () => engine.unload(),
+  };
+
+  const outcome = await emitLocally({ sentence: entry.text, engine: recorded, recognize: () => null });
+  const rounds: AttemptRound[] = outcome.rounds.map((round) => ({
+    attempt: round.attempt,
+    ms: round.ms,
+    stage: round.rejection === null ? null : round.rejection.stage,
+    reason: round.rejection === null ? null : round.rejection.reason,
+  }));
+  const latencyMs = rounds.reduce((total, round) => total + round.ms, 0);
+
+  return {
+    id: entry.id,
+    source: 'model',
+    latencyMs,
+    finishReason: outcome.kind === 'unavailable' ? '' : last.finishReason,
+    raw: outcome.kind === 'unavailable' ? '' : last.raw,
+    error: outcome.kind === 'unavailable' ? outcome.detail : '',
+    rounds,
+  };
+}
+
+/**
+ * Rozpoznaná věta jako pokus. Právě jedno kolo — přesně to, co udělá
+ * `emitLocally()`, když rozpoznávač větu zná: model se nespustí a druhé kolo
+ * by vrátilo bajt po bajtu totéž.
+ *
+ * `stage: null` tu **není tvrzení, že to prošlo** — jak to dopadlo, rozhodne
+ * až scorer. Je to jen zápis toho, že kolo doběhlo bez odmítnutí od smyčky,
+ * protože žádná smyčka neběžela.
+ */
+export function recognizerAttempt(entry: CorpusCase, body: unknown): CorpusAttempt {
+  return {
+    id: entry.id,
+    source: 'recognizer',
+    latencyMs: 0,
+    finishReason: 'shapes',
+    raw: JSON.stringify(body),
+    error: '',
+    rounds: [{ attempt: 1, ms: 0, stage: null, reason: null }],
   };
 }

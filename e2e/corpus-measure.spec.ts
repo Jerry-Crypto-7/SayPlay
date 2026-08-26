@@ -9,9 +9,11 @@ import { chromium, expect, test, type BrowserContext, type Page } from '@playwri
 import {
   CORPUS_REPORT_PATH,
   buildCorpusReport,
+  driveCorpusCase,
   inspectCorpusIntegrity,
   loadCorpusCases,
   measurementFailure,
+  recognizerAttempt,
   scoreCorpusAttempt,
   splitCorpusCases,
   type CorpusAttempt,
@@ -19,6 +21,18 @@ import {
 } from '../evals/measure-corpus';
 import { measurementRequest, PRIMARY_MODEL } from '../evals/local-model/measure-grammar';
 import { recognize } from '../src/model/local/shapes';
+
+import type { ChatEngine, Completion } from '../src/model/local/engine';
+
+/**
+ * Zkrácený běh pro ověření samotného řetězu, ne pro měření (`CORPUS_SMOKE=3`).
+ *
+ * Celá sada stojí přes dvě hodiny GPU, takže chyba v lepidle na model se jinak
+ * pozná až na jejím konci. Zkrácený běh **report nezapisuje a nikdy neuspěje**:
+ * kdyby uměl obojí, jednou by přepsal commitnutá čísla třemi větami a tři
+ * dokumenty by si dál myslely, že platí.
+ */
+const SMOKE_CASES = Number(process.env.CORPUS_SMOKE ?? '0');
 
 const WEBLLM_ROUTE = '/__webllm-corpus.js';
 const HOST_ROUTE = '/__webllm-corpus-host.html';
@@ -59,71 +73,107 @@ async function openMeasurementBrowser(hostUrl: string, bundle: string): Promise<
   return { context, page, adapter };
 }
 
+/**
+ * Model na stránce jako `ChatEngine`, tedy přesně to rozhraní, které bere
+ * `emitLocally()`.
+ *
+ * ⚠ **Smyčku řídí Node, ne prohlížeč — a musí to tak být.** Druhé kolo se ptá,
+ * co bylo špatně, a to ví jen certifikace (`src/model/certify.ts`) s větou z
+ * `rejection-prompt.ts`. Vtáhnout obojí do `page.evaluate` by znamenalo druhou
+ * kopii produkční cesty uvnitř měřidla. Cena je jedno kolečko mezi procesy na
+ * emisi, tedy jednotky milisekund proti ~34 sekundám, které stojí sama emise.
+ */
+async function loadPageEngine(page: Page, onProgress: (text: string) => void): Promise<ChatEngine> {
+  await page.exposeFunction('__corpusProgress', onProgress);
+  await page.evaluate(
+    async (input) => {
+      const scope = window as unknown as {
+        __corpusProgress(text: string): Promise<void>;
+        __corpusEngine: unknown;
+        __corpusModule: unknown;
+      };
+      const webllm = (await import(/* webpackIgnore: true */ input.moduleUrl)) as {
+        CreateMLCEngine(model: string, config: { initProgressCallback(report: { text: string }): void }): Promise<unknown>;
+      };
+      scope.__corpusModule = webllm;
+      scope.__corpusEngine = await webllm.CreateMLCEngine(input.modelId, {
+        initProgressCallback: (report) => void scope.__corpusProgress(report.text),
+      });
+    },
+    { moduleUrl: WEBLLM_ROUTE, modelId: PRIMARY_MODEL },
+  );
+
+  return {
+    modelId: PRIMARY_MODEL,
+    complete: (system, user) =>
+      page.evaluate(async (request) => {
+        const scope = window as unknown as {
+          __corpusEngine: {
+            chat: {
+              completions: {
+                create(request: unknown): Promise<{
+                  choices: { finish_reason?: string; message?: { content?: string | null } }[];
+                }>;
+              };
+            };
+          };
+        };
+        const reply = await scope.__corpusEngine.chat.completions.create(request);
+        return {
+          raw: reply.choices[0]?.message?.content ?? '',
+          finishReason: reply.choices[0]?.finish_reason ?? '',
+        };
+      }, measurementRequest(system, user)) as Promise<Completion>,
+    unload: () =>
+      page.evaluate(async () => {
+        const scope = window as unknown as { __corpusEngine: { unload(): Promise<void> } };
+        await scope.__corpusEngine.unload().catch(() => undefined);
+      }),
+  };
+}
+
+/** Po pádu vah se model postaví znovu — jinak by na něm ztroskotal celý zbytek sady. */
+async function reloadPageEngine(page: Page): Promise<void> {
+  await page.evaluate(
+    async (input) => {
+      const scope = window as unknown as {
+        __corpusProgress(text: string): Promise<void>;
+        __corpusEngine: { reload(model: string): Promise<void> };
+        __corpusModule: {
+          CreateMLCEngine(model: string, config: { initProgressCallback(report: { text: string }): void }): Promise<unknown>;
+        };
+      };
+      try {
+        await scope.__corpusEngine.reload(input.modelId);
+      } catch {
+        scope.__corpusEngine = (await scope.__corpusModule.CreateMLCEngine(input.modelId, {
+          initProgressCallback: (report) => void scope.__corpusProgress(report.text),
+        })) as { reload(model: string): Promise<void> };
+      }
+    },
+    { modelId: PRIMARY_MODEL },
+  );
+}
+
+/** Každá věta jde celou produkční cestou včetně opravné smyčky (`driveCorpusCase`). */
 async function runModel(
   page: Page,
   cases: readonly CorpusCase[],
   onAttempt: (attempt: CorpusAttempt) => void,
   onProgress: (text: string) => void,
 ): Promise<CorpusAttempt[]> {
-  await page.exposeFunction('__corpusAttempt', onAttempt);
-  await page.exposeFunction('__corpusProgress', onProgress);
-  return page.evaluate(
-    async (input) => {
-      const scope = window as unknown as {
-        __corpusAttempt(attempt: CorpusAttempt): Promise<void>;
-        __corpusProgress(text: string): Promise<void>;
-      };
-      const webllm = (await import(/* webpackIgnore: true */ input.moduleUrl)) as {
-        CreateMLCEngine(model: string, config: { initProgressCallback(report: { text: string }): void }): Promise<{
-          chat: { completions: { create(request: unknown): Promise<{
-            choices: { finish_reason?: string; message?: { content?: string | null } }[];
-          }> } };
-          reload(model: string): Promise<void>;
-          unload(): Promise<void>;
-        }>;
-      };
-      let engine = await webllm.CreateMLCEngine(input.modelId, {
-        initProgressCallback: (report) => void scope.__corpusProgress(report.text),
-      });
-      const attempts: CorpusAttempt[] = [];
-      for (const entry of input.cases) {
-        const started = performance.now();
-        let attempt: CorpusAttempt;
-        try {
-          const reply = await engine.chat.completions.create(entry.request);
-          attempt = {
-            id: entry.id, source: 'model', latencyMs: Math.round(performance.now() - started),
-            finishReason: reply.choices[0]?.finish_reason ?? '',
-            raw: reply.choices[0]?.message?.content ?? '', error: '',
-          };
-        } catch (thrown) {
-          attempt = {
-            id: entry.id, source: 'model', latencyMs: Math.round(performance.now() - started),
-            finishReason: '', raw: '',
-            error: thrown instanceof Error ? `${thrown.name}: ${thrown.message}` : String(thrown),
-          };
-        }
-        attempts.push(attempt);
-        await scope.__corpusAttempt(attempt);
-        if (attempt.error) {
-          try {
-            await engine.reload(input.modelId);
-          } catch {
-            engine = await webllm.CreateMLCEngine(input.modelId, {
-              initProgressCallback: (report) => void scope.__corpusProgress(report.text),
-            });
-          }
-        }
-      }
-      await engine.unload().catch(() => undefined);
-      return attempts;
-    },
-    {
-      moduleUrl: WEBLLM_ROUTE,
-      modelId: PRIMARY_MODEL,
-      cases: cases.map((entry) => ({ id: entry.id, request: measurementRequest(entry.system, entry.user) })),
-    },
-  );
+  const engine = await loadPageEngine(page, onProgress);
+  const attempts: CorpusAttempt[] = [];
+
+  for (const entry of cases) {
+    const attempt = await driveCorpusCase(entry, engine);
+    attempts.push(attempt);
+    onAttempt(attempt);
+    if (attempt.error) await reloadPageEngine(page);
+  }
+
+  await engine.unload().catch(() => undefined);
+  return attempts;
 }
 
 test('@measure celý zmrazený korpus projde produkční lokální cestou', async () => {
@@ -132,10 +182,12 @@ test('@measure celý zmrazený korpus projde produkční lokální cestou', asyn
   const before = inspectCorpusIntegrity();
   expect(measurementFailure(before, 200), 'korpus se před během rozešel se zámkem nebo HEAD').toBeNull();
   const allCases = loadCorpusCases();
-  const { handled, forModel } = splitCorpusCases(allCases);
+  const routed = splitCorpusCases(allCases);
+  const handled = routed.handled;
+  const forModel = SMOKE_CASES > 0 ? routed.forModel.slice(0, SMOKE_CASES) : routed.forModel;
   expect(allCases).toHaveLength(200);
   expect(handled).toHaveLength(26);
-  expect(forModel).toHaveLength(174);
+  if (SMOKE_CASES === 0) expect(forModel).toHaveLength(174);
 
   const baseUrl = test.info().project.use.baseURL;
   expect(baseUrl, 'projekt nemá baseURL').toBeTruthy();
@@ -151,8 +203,9 @@ test('@measure celý zmrazený korpus projde produkční lokální cestou', asyn
       forModel,
       (attempt) => {
         done += 1;
+        const rounds = attempt.rounds.map((round) => round.stage ?? 'passed').join('>');
         console.log(
-          `[${PRIMARY_MODEL}] ${done}/${forModel.length} ${attempt.id} ${attempt.latencyMs}ms ${attempt.error || attempt.finishReason}`,
+          `[${PRIMARY_MODEL}] ${done}/${forModel.length} ${attempt.id} ${attempt.latencyMs}ms ${rounds} ${attempt.error || attempt.finishReason}`,
         );
       },
       (text) => console.log(`[${PRIMARY_MODEL}] ${text}`),
@@ -162,14 +215,7 @@ test('@measure celý zmrazený korpus projde produkční lokální cestou', asyn
     for (const entry of handled) {
       const body = recognize(entry.text);
       if (body === null) throw new Error(`${entry.id}: routing se mezi dvěma průchody rozešel`);
-      attempts.set(entry.id, {
-        id: entry.id,
-        source: 'recognizer',
-        latencyMs: 0,
-        finishReason: 'shapes',
-        raw: JSON.stringify(body),
-        error: '',
-      });
+      attempts.set(entry.id, recognizerAttempt(entry, body));
     }
 
     const measured = allCases
@@ -189,9 +235,17 @@ test('@measure celý zmrazený korpus projde produkční lokální cestou', asyn
 
     // Zápis je před asercí úplnosti: neúplný běh je pořád evidence. Nízké skóre
     // žádnou aserci nemá a proces kvůli němu nekončí nenulově.
-    writeFileSync(CORPUS_REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+    // Zkrácený běh se do reportu nedostane. Zapsat tři věty tam, kde stálo
+    // dvě stě, by přepsalo číslo, které cituje `decision.md`, plán i report.
+    if (SMOKE_CASES === 0) writeFileSync(CORPUS_REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+    console.log(
+      `[rounds] histogram=${JSON.stringify(report.rounds.histogram)} kolo1=${report.rounds.passedFirstRound}` +
+        ` konec=${report.rounds.passedAfterRepair} zisk=${report.rounds.gainPoints} p.b.`,
+    );
     expect(adapter, 'WebGPU adaptér nebyl dostupný; nešlo o měření modelu').not.toBe('none');
-    expect(measurementFailure(after, report.attempts)).toBeNull();
+    // Zkrácený běh nikdy neuspěje — je to kontrola řetězu, ne měření, a zelená
+    // by se od skutečného běhu nedala rozeznat.
+    expect(measurementFailure(after, SMOKE_CASES > 0 ? 0 : report.attempts)).toBeNull();
   } finally {
     await context.close();
   }

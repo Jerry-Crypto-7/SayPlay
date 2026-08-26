@@ -15,16 +15,21 @@ import {
   CORPUS_REPORT_PATH,
   CORPUS_TOTAL,
   buildCorpusReport,
+  driveCorpusCase,
   inspectCorpusIntegrity,
   integrityFailure,
   loadCorpusCases,
   measurementFailure,
+  recognizerAttempt,
   scoreCorpusAttempt,
   splitCorpusCases,
+  summariseRounds,
   type CorpusCase,
   type CorpusAttempt,
   type CorpusCaseMeasurement,
 } from '../measure-corpus';
+
+import type { ChatEngine } from '../../src/model/local/engine';
 
 const scratch: string[] = [];
 
@@ -41,6 +46,7 @@ function measured(
   source: CorpusCaseMeasurement['source'],
   emissionValid: boolean,
   latencyMs: number,
+  rounds = 1,
 ): CorpusCaseMeasurement {
   return {
     id,
@@ -52,6 +58,8 @@ function measured(
     latencyMs,
     finishReason: 'stop',
     detail: '',
+    rounds,
+    firstRoundPassed: emissionValid && rounds <= 1,
     observations: [],
   };
 }
@@ -81,6 +89,7 @@ function attempt(raw: unknown, overrides: Partial<CorpusAttempt> = {}): CorpusAt
     finishReason: 'stop',
     raw: typeof raw === 'string' ? raw : JSON.stringify(raw),
     error: '',
+    rounds: [{ attempt: 1, ms: 10, stage: null, reason: null }],
     ...overrides,
   };
 }
@@ -199,7 +208,18 @@ describe('report T8', () => {
     });
 
     expect(rebuilt).toEqual(stored);
-    expect(stored).toMatchObject({ attempts: 200, schemaValid: 0.99, fulfilled: 1, robust: 146, noFit: 0, fault: 53 });
+    // ⚠ **Čísla se 26. 8. 2026 pohnula a je to nález, ne přepis pinu.**
+    // Stará hodnota `schemaValid 0.99, fulfilled 1, robust 146, fault 53`
+    // pochází z běhu 25. 8. 17:36. Po něm přišly tři změny promptu z vlny 1
+    // (`f1c9d03`, `f122ea1`, `8f9767e`, všechny 26. 8.), které modelu zakázaly
+    // opisovat jména z ukázky. Nikdo je nezměřil. Tenhle běh je jejich první
+    // měření a **kolo 1 spadlo ze 121/174 na 48/174**. Kolo 1 je přitom
+    // požadavek byte po bytu shodný s tím starým — pine to test o pár řádků
+    // níž — takže to nemůže být opravnou smyčkou vlny 2.
+    expect(stored).toMatchObject({ attempts: 200, schemaValid: 0.79, fulfilled: 0, robust: 75, noFit: 0, fault: 125 });
+    // Přínos smyčky: 1 věta z 200. Brána vlny žádala +15 procentních bodů.
+    expect(stored.rounds).toMatchObject({ passedFirstRound: 74, passedAfterRepair: 75, repaired: 1, gainPoints: 0.5 });
+    expect(stored.rounds.histogram).toEqual({ '1': 74, '2': 79, '3': 47 });
     expect(stored.corpusManifestSha256).toBe(inspectCorpusIntegrity().manifestSha256);
   });
 });
@@ -262,5 +282,170 @@ describe('konzervativní verdikt T8', () => {
       verdict: 'FAULT',
       emissionValid: false,
     });
+  });
+});
+
+/**
+ * P12 V2 T4 — měřidlo prochází opravnou smyčkou, ne jen certifikací.
+ *
+ * Testuje se `driveCorpusCase()` s podstrčeným strojem, protože to je jediné
+ * místo, kde se dá kolo vyrobit bez GPU. Tím se pokryje všechno kromě lepidla
+ * na `page.evaluate` v `e2e/corpus-measure.spec.ts`, které jen přeposílá řetězce.
+ */
+describe('opravná smyčka v měřidle T4', () => {
+  /** Svět, který projde branou a **není** doslovnou ukázkou ze systémové zprávy. */
+  const OWN_WORLD = { ...EXAMPLE_WORLD, simRevision: 1 };
+
+  function engineReplying(replies: readonly string[]): ChatEngine {
+    let at = 0;
+    return {
+      modelId: 'fake-model',
+      async complete() {
+        const raw = replies[Math.min(at, replies.length - 1)]!;
+        at += 1;
+        if (raw === '__throw__') throw new Error('GPU device lost');
+        return { raw, finishReason: 'stop' };
+      },
+      async unload() {},
+    };
+  }
+
+  const entry = (): CorpusCase => loadCorpusCases()[0]!;
+
+  it('odmítnutá emise dostane další kolo a měří se ta, která nakonec prošla', async () => {
+    const attempt = await driveCorpusCase(entry(), engineReplying(['{}', JSON.stringify(OWN_WORLD)]));
+
+    expect(attempt.rounds).toHaveLength(2);
+    expect(attempt.rounds[0]).toMatchObject({ attempt: 1, stage: 'schema' });
+    expect(attempt.rounds[1]).toMatchObject({ attempt: 2, stage: null, reason: null });
+    expect(JSON.parse(attempt.raw)).toMatchObject({ simRevision: 1 });
+    expect(attempt.error).toBe('');
+
+    const scored = scoreCorpusAttempt(entry(), attempt);
+    expect(scored).toMatchObject({ emissionValid: true, rounds: 2, firstRoundPassed: false });
+  });
+
+  it('emise, která projde napoprvé, se neopakuje a hlásí základnu bez smyčky', async () => {
+    const attempt = await driveCorpusCase(entry(), engineReplying([JSON.stringify(OWN_WORLD)]));
+
+    expect(attempt.rounds).toHaveLength(1);
+    const scored = scoreCorpusAttempt(entry(), attempt);
+    expect(scored).toMatchObject({ emissionValid: true, rounds: 1, firstRoundPassed: true });
+  });
+
+  it('nepohnuté odmítnutí smyčku zastaví a věta zůstane FAULT', async () => {
+    const attempt = await driveCorpusCase(entry(), engineReplying(['{}']));
+
+    expect(attempt.rounds).toHaveLength(2);
+    expect(attempt.rounds.every((round) => round.stage === 'schema')).toBe(true);
+    expect(scoreCorpusAttempt(entry(), attempt)).toMatchObject({
+      verdict: 'FAULT',
+      rounds: 2,
+      firstRoundPassed: false,
+    });
+  });
+
+  it('pád stroje je chyba prostředí, ne verdikt — a odehraná kola zůstanou', async () => {
+    const attempt = await driveCorpusCase(entry(), engineReplying(['{}', '__throw__']));
+
+    expect(attempt.error).toContain('GPU device lost');
+    expect(attempt.rounds).toHaveLength(1);
+    expect(scoreCorpusAttempt(entry(), attempt)).toMatchObject({ verdict: 'FAULT', firstRoundPassed: false });
+  });
+
+  it('doslovná kopie ukázky je FAULT, i když je to sám o sobě platný svět', async () => {
+    // Bez větve na fázi `request` by měřidlo tenhle případ spočítalo jako
+    // úspěch: certifikátor ukázku zná jen jako korektní svět a pustí ji dál.
+    const attempt = await driveCorpusCase(entry(), engineReplying([JSON.stringify(EXAMPLE_WORLD)]));
+
+    expect(attempt.rounds[0]).toMatchObject({ stage: 'request', reason: 'EXAMPLE_COPY' });
+    expect(scoreCorpusAttempt(entry(), attempt)).toMatchObject({
+      verdict: 'FAULT',
+      emissionValid: false,
+      detail: 'request: EXAMPLE_COPY',
+    });
+  });
+
+  it('rozpoznaná věta je jedno kolo a model se v ní nespustí', () => {
+    const attempt = recognizerAttempt(entry(), OWN_WORLD);
+
+    expect(attempt).toMatchObject({ source: 'recognizer', latencyMs: 0, error: '' });
+    expect(attempt.rounds).toHaveLength(1);
+    expect(scoreCorpusAttempt(entry(), attempt)).toMatchObject({ rounds: 1, firstRoundPassed: true });
+  });
+});
+
+describe('histogram kol T4', () => {
+  it('rozpad kol a přínos smyčky se čte z jednoho běhu, ne ze dvou', () => {
+    const cases = [
+      measured('P001', 'ROBUST', 'recognizer', true, 0, 1),
+      measured('P002', 'ROBUST', 'model', true, 10, 1),
+      measured('P003', 'FULFILLED', 'model', true, 60, 2),
+      measured('P004', 'NO_FIT', 'model', true, 90, 3),
+      measured('P005', 'FAULT', 'model', false, 100, 3),
+    ];
+
+    expect(summariseRounds(cases)).toEqual({
+      histogram: { '1': 2, '2': 1, '3': 2 },
+      passedFirstRound: 2,
+      passedAfterRepair: 4,
+      repaired: 2,
+      gainPoints: 40,
+    });
+  });
+
+  it('běh, ve kterém smyčka nic nezachránila, hlásí nulový přínos', () => {
+    const cases = [
+      measured('P001', 'ROBUST', 'model', true, 10, 1),
+      measured('P002', 'FAULT', 'model', false, 100, 3),
+    ];
+    const summary = summariseRounds(cases);
+
+    expect(summary).toMatchObject({ repaired: 0, gainPoints: 0, passedFirstRound: 1, passedAfterRepair: 1 });
+  });
+
+  it('report nese histogram a jde ho přepočítat z perSentence', () => {
+    const cases = [measured('P001', 'ROBUST', 'model', true, 10, 2)];
+    const report = buildCorpusReport({
+      measuredAt: 'x',
+      adapter: 'nvidia/ampere',
+      model: 'test-model',
+      manifestSha256: 'd'.repeat(64),
+      cases,
+    });
+
+    expect(typeof report.rounds).toBe('object');
+    expect(report.rounds.histogram).toEqual({ '2': 1 });
+    expect(report.rounds).toMatchObject({ passedFirstRound: 0, passedAfterRepair: 1, repaired: 1, gainPoints: 100 });
+  });
+});
+
+describe('kolo 1 je pořád tentýž požadavek jako dřív T4', () => {
+  /**
+   * Měřidlo si od 26. 8. 2026 nestaví prompt samo — staví ho `emitLocally()`.
+   * Kdyby se ty dvě cesty rozešly, běh nad 200 větami by trval tři hodiny a
+   * měřil by jiný prompt, než jaký měřil ten předchozí. Rozdíl by se přitom
+   * projevil jen jako horší čísla, tedy jako výsledek, ne jako chyba.
+   */
+  it('emitLocally pošle v prvním kole přesně system a user ze zamčené věty', async () => {
+    const entry = loadCorpusCases()[0]!;
+    const sent: { system: string; user: string }[] = [];
+    const engine: ChatEngine = {
+      modelId: 'fake-model',
+      async complete(system, user) {
+        sent.push({ system, user });
+        return { raw: '{}', finishReason: 'stop' };
+      },
+      async unload() {},
+    };
+
+    await driveCorpusCase(entry, engine);
+
+    // Rozhoduje **první** volání. Další kola posílají prompt schválně jiný
+    // (T4a: bez ukázky, s předchozí emisí), takže poslední volání by tuhle
+    // vlastnost neměřilo.
+    expect(sent[0]!.system).toBe(entry.system);
+    expect(sent[0]!.user).toBe(entry.user);
+    expect(sent[1]!.system.length).toBeLessThan(entry.system.length);
   });
 });
