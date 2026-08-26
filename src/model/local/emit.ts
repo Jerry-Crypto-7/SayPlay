@@ -27,7 +27,7 @@
 
 import protocol from '../../../evals/frozen/protocol.v1.json';
 import { certifySteps, type ProgressSink, type Verdict } from '../certify';
-import { buildEmissionRequest, type Grammar } from '../prompt';
+import { buildEmissionRequest, isExampleEmission, type Grammar } from '../prompt';
 
 import { deriveCollisionAabb } from './aabb';
 import { recognize as recognizeShape } from './shapes';
@@ -121,6 +121,35 @@ export async function emitLocally(input: LocalEmitInput): Promise<LocalOutcome> 
       const sim = deriveCollisionAabb(document.sim as Record<string, unknown>);
       if (sim !== document.sim) body = { ...document, sim };
     }
+  }
+
+  // Doslovná ukázka je výukový tah, ne odpověď na novou větu. První ruční
+  // HALT ji po opravě renderu dostal dvakrát (podruhé i s výslovným zákazem
+  // kopie), zatímco
+  // sdílený certifikátor poctivě ověřil jen její tvar a dohratelnost. Lokální
+  // hranice proto kopii zastaví ještě před certifikací a zachová ji ve verdiktu
+  // jako auditovatelnou emisi; zmrazené protokoly se tím nemění.
+  if (provenance.source === 'model' && isExampleEmission(body)) {
+    input.onProgress?.('emitted');
+    return {
+      kind: 'verdict',
+      body: {
+        promptId: input.sentence,
+        upstream,
+        provenance,
+        annotations: {},
+        emission: body,
+        outcome: 'REJECTED',
+        certificate: null,
+        rejection: {
+          stage: 'request',
+          reason: 'EXAMPLE_COPY',
+          detail: 'the model copied the syntax example instead of answering the request',
+          issues: [],
+        },
+        doc: null,
+      },
+    };
   }
 
   const steps = certifySteps({ promptId: input.sentence, upstream, provenance, body });

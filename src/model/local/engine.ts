@@ -19,6 +19,8 @@
  * si je proto bere odsud.
  */
 
+import { EXAMPLE_MARKER } from '../prompt';
+
 import type { Runtime } from './capability';
 
 /** Váhy pro větev `large`. 979 MB, WebGPU, ~8 GB paměti. */
@@ -94,14 +96,28 @@ export interface ChatEngine {
  * se týž vstup chová stejně.
  */
 export function completionRequest(system: string, user: string): Record<string, unknown> {
+  const markerAt = system.indexOf(EXAMPLE_MARKER);
+  const example = markerAt < 0 ? null : system.slice(markerAt + EXAMPLE_MARKER.length).trim();
+  const instructions = markerAt < 0 ? system : system.slice(0, markerAt).trimEnd();
+  const messages = [
+    // Qwen3 rozumí direktivě i tehdy, když klient nepředá vlastní parametr
+    // šabloně. Obě cesty držíme schválně: WebLLM už parametr podporuje, ale
+    // systémová zpráva zůstává kompatibilní pojistkou.
+    { role: 'system', content: `${instructions}\n\n/no_think` },
+    ...(example === null
+      ? []
+      : [
+          {
+            role: 'user',
+            content: 'Build a room where the player finds a card, uses it at a lever, and exits through a gate.',
+          },
+          { role: 'assistant', content: example },
+        ]),
+    { role: 'user', content: user },
+  ];
+
   return {
-    messages: [
-      // Qwen3 rozumí direktivě i tehdy, když klient nepředá vlastní parametr
-      // šabloně. Obě cesty držíme schválně: WebLLM už parametr podporuje, ale
-      // systémová zpráva zůstává kompatibilní pojistkou.
-      { role: 'system', content: `${system}\n\n/no_think` },
-      { role: 'user', content: user },
-    ],
+    messages,
     response_format: { type: 'json_object', schema: FORCED_SHAPE_SCHEMA },
     max_tokens: MAX_OUTPUT_TOKENS,
     temperature: 0,

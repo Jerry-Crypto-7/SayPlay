@@ -74,6 +74,8 @@
  *    role je nositel významu. Věta „prop everything else" ten prostor zavírala.
  */
 
+import { canonical } from '../ir/worlddoc';
+
 /** Slovník ze zmrazeného protokolu. Čte ho `./client`, sem se jen předává. */
 export interface Grammar {
   readonly surfaceEvents: readonly string[];
@@ -191,6 +193,13 @@ const EXAMPLE_WORLD = {
     audio: {},
   },
 } as const;
+
+const EXAMPLE_CANONICAL = canonical(EXAMPLE_WORLD);
+
+/** Doslovný obsah ukázky není nezávislá odpověď modelu na novou větu. */
+export function isExampleEmission(value: unknown): boolean {
+  return value !== null && typeof value === 'object' && canonical(value) === EXAMPLE_CANONICAL;
+}
 
 const EXAMPLE_ONLY_IDENTIFIERS = [
   ...Object.keys(EXAMPLE_WORLD.sim.sockets).filter((identifier) => identifier !== 'spawnPad'),
@@ -312,7 +321,7 @@ export function buildEmissionRequest(prompt: string, grammar: Grammar): Upstream
   // aktuálního příkladu přímo a zadání opakuje až za ním: kopie může být
   // strukturálně platná, ale pořád není odpovědí na větu.
   const user = [
-    'REQUEST-SPECIFIC CONTENT is authoritative. The complete JSON in the system message demonstrates syntax only.',
+    'REQUEST-SPECIFIC CONTENT is authoritative. The assistant example demonstrates syntax only.',
     'Its card/lever/gate scenario is semantically wrong for any unrelated request.',
     `Do not copy these example-only identifiers unless the request itself calls for them: ${EXAMPLE_ONLY_IDENTIFIERS.join(', ')}.`,
     'A structurally valid world that does not implement the request-specific nouns, actions, constraints, and goal is an invalid answer.',

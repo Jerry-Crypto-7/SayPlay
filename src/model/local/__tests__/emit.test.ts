@@ -23,6 +23,11 @@ const EXAMPLE_WORLD: Record<string, unknown> = (() => {
   return JSON.parse(system.slice(system.indexOf('{', at))) as Record<string, unknown>;
 })();
 
+const MODEL_WORLD = {
+  ...EXAMPLE_WORLD,
+  look: { ...(EXAMPLE_WORLD.look as Record<string, unknown>), palette: 'cobalt' },
+};
+
 /** Model, který vrátí, co se mu předepíše. Žádné GPU, žádná síť. */
 function scriptedEngine(raw: string, finishReason = 'stop'): ChatEngine {
   return {
@@ -52,11 +57,25 @@ describe('gramatika v prohlížeči', () => {
 });
 
 describe('emitLocally', () => {
+  it('necertifikuje doslovnou ukázku jako odpověď na nesouvisející větu', async () => {
+    const outcome = await emitLocally({
+      sentence: 'jumping arcade game with obstacles',
+      recognize: () => null,
+      engine: scriptedEngine(JSON.stringify(EXAMPLE_WORLD)),
+    });
+
+    expect(outcome.kind).toBe('verdict');
+    if (outcome.kind !== 'verdict') return;
+    expect(outcome.body.outcome).toBe('REJECTED');
+    expect(outcome.body.rejection).toMatchObject({ stage: 'request', reason: 'EXAMPLE_COPY' });
+    expect(outcome.body.doc).toBeNull();
+  });
+
   it('platnou emisi certifikuje týmž verdiktem jako server', async () => {
     const outcome = await emitLocally({
       sentence: 'páka otevře bránu',
       recognize: () => null,
-      engine: scriptedEngine(JSON.stringify(EXAMPLE_WORLD)),
+      engine: scriptedEngine(JSON.stringify(MODEL_WORLD)),
     });
 
     expect(outcome.kind).toBe('verdict');
@@ -146,7 +165,7 @@ describe('emitLocally', () => {
   it('nerozpoznanou větu předá modelu, `null` není chyba', async () => {
     const outcome = await emitLocally({
       sentence: 'něco, co rozpoznávač nezná',
-      engine: scriptedEngine(JSON.stringify(EXAMPLE_WORLD)),
+      engine: scriptedEngine(JSON.stringify(MODEL_WORLD)),
       recognize: () => null,
     });
 
@@ -160,7 +179,7 @@ describe('emitLocally', () => {
     await emitLocally({
       sentence: 'páka otevře bránu',
       recognize: () => null,
-      engine: scriptedEngine(JSON.stringify(EXAMPLE_WORLD)),
+      engine: scriptedEngine(JSON.stringify(MODEL_WORLD)),
       onProgress: (phase) => phases.push(phase),
     });
 
@@ -171,7 +190,7 @@ describe('emitLocally', () => {
     const outcome = await emitLocally({
       sentence: 'páka otevře bránu',
       recognize: () => null,
-      engine: scriptedEngine(JSON.stringify(EXAMPLE_WORLD)),
+      engine: scriptedEngine(JSON.stringify(MODEL_WORLD)),
     });
 
     if (outcome.kind !== 'verdict') return;
@@ -185,7 +204,7 @@ describe('emitLocally', () => {
     const outcome = await emitLocally({
       sentence: 'páka otevře bránu',
       recognize: () => null,
-      engine: scriptedEngine(JSON.stringify(EXAMPLE_WORLD)),
+      engine: scriptedEngine(JSON.stringify(MODEL_WORLD)),
     });
 
     if (outcome.kind !== 'verdict') return;
@@ -199,6 +218,21 @@ describe('emitLocally', () => {
 });
 
 describe('engine', () => {
+  it('posílá ukázku jako skutečný few-shot před aktuální větou', () => {
+    const upstream = buildEmissionRequest('jumping arcade game with obstacles', localGrammar());
+    const request = completionRequest(upstream.system, upstream.user) as {
+      messages: { role: string; content: string }[];
+    };
+
+    expect(request.messages.map(({ role }) => role)).toEqual(['system', 'user', 'assistant', 'user']);
+    expect(request.messages[0].content).not.toContain(EXAMPLE_MARKER);
+    expect(request.messages[0].content).not.toContain('cardPad');
+    expect(request.messages[1].content).toContain('card');
+    expect(request.messages[1].content).toContain('lever');
+    expect(JSON.parse(request.messages[2].content)).toEqual(EXAMPLE_WORLD);
+    expect(request.messages[3].content).toContain('jumping arcade game with obstacles');
+  });
+
   it('každá větev s modelem má právě jedny váhy', () => {
     expect(modelForRuntime('large')).toBe(LARGE_MODEL);
     expect(modelForRuntime('small')).toBe(SMALL_MODEL);
