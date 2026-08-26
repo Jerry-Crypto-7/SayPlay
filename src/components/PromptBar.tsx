@@ -71,6 +71,26 @@ export const PHASES = ['sent', 'generating', 'building'] as const;
 
 export type Phase = (typeof PHASES)[number];
 
+/**
+ * Přeloží strukturované odmítnutí do viditelné diagnostiky. Certifikátor už
+ * přesnou cestu vrací; zahodit ji a ukázat jen obecný kód by znemožnilo odlišit
+ * vadu modelu od vady promptu bez dalšího GPU běhu naslepo.
+ */
+export function modelRejectionNotice(result: { readonly body: Record<string, unknown> }): string {
+  const candidate = result.body.rejection;
+  const rejection =
+    candidate !== null && typeof candidate === 'object' && !Array.isArray(candidate)
+      ? (candidate as Record<string, unknown>)
+      : null;
+  const stage = typeof rejection?.stage === 'string' ? rejection.stage : null;
+  const reason = typeof rejection?.reason === 'string' ? rejection.reason : null;
+  const detail = typeof rejection?.detail === 'string' ? rejection.detail : null;
+  const fallback = typeof result.body.outcome === 'string' ? result.body.outcome : 'REJECTED';
+  const code = stage !== null && reason !== null ? `${stage}/${reason}` : (reason ?? stage ?? fallback);
+  const explanation = detail === null || detail === '' ? '' : `: ${detail}`;
+  return `The browser model could not certify a replacement (${code}${explanation}); the substitute stays.`;
+}
+
 export default function PromptBar({
   onWorld,
   engine,
@@ -130,11 +150,11 @@ export default function PromptBar({
           return;
         }
 
-        const detail =
+        setModelNotice(
           result.kind === 'unavailable'
-            ? result.detail
-            : String((result.body.rejection as { reason?: unknown } | null)?.reason ?? result.body.outcome);
-        setModelNotice(`The browser model could not certify a replacement (${detail}); the substitute stays.`);
+            ? `The browser model could not certify a replacement (${result.detail}); the substitute stays.`
+            : modelRejectionNotice(result),
+        );
       } catch (thrown) {
         if (requestId.current === pending.id) {
           setModelNotice(
