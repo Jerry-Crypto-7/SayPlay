@@ -16,6 +16,7 @@ import { certifySteps } from '../src/model/certify';
 import { deriveCollisionAabb } from '../src/model/local/aabb';
 import { LARGE_MODEL } from '../src/model/local/engine';
 import { stripThinking } from '../src/model/local/emit';
+import { repairEmission } from '../src/model/repair';
 import { recognize } from '../src/model/local/shapes';
 import { buildEmissionRequest } from '../src/model/prompt';
 import { hashHex } from '../src/sim/hash';
@@ -552,11 +553,17 @@ export function scoreCorpusAttempt(entry: CorpusCase, attempt: CorpusAttempt): C
     }
   }
 
+  // Oprava patří do měření z téhož důvodu, z jakého sem patří produkční
+  // schéma: bez ní měří harness řetěz, který nikdo nepouští. Produkce ji od
+  // 26. 8. 2026 volá mezi `deriveCollisionAabb()` a certifikací
+  // (`src/model/local/emit.ts`), tady stojí na tomtéž místě.
+  const repaired = repairEmission(body);
+
   const steps = certifySteps({
     promptId: entry.id,
     upstream: { model: LARGE_MODEL, system: entry.system, user: entry.user },
     provenance: { source: attempt.source, finishReason: attempt.finishReason },
-    body,
+    body: repaired.document,
   });
   let next = steps.next();
   while (!next.done) next = steps.next();

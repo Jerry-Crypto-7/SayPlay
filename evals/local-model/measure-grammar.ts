@@ -30,6 +30,7 @@ import { frozenGrammar } from '../../src/model/client';
 import { deriveCollisionAabb } from '../../src/model/local/aabb';
 import { stripThinking } from '../../src/model/local/emit';
 import { recognize } from '../../src/model/local/shapes';
+import { repairEmission } from '../../src/model/repair';
 import {
   completionRequest,
   FORCED_SHAPE_SCHEMA,
@@ -160,7 +161,12 @@ export function classifyOutput(raw: string): Outcome {
       ? { ...peeled.document, sim: deriveCollisionAabb(rawSim as Record<string, unknown>) }
       : peeled.document;
 
-  const world = worldEmissionSchema.safeParse(document);
+  // Táž oprava, jakou mezi odvozením AABB a certifikací volá produkční
+  // `emitLocally()`. Bez ní by `schemaValid` popisovalo řetěz, který v
+  // prohlížeči neběží — a od 26. 8. 2026 by ho popisovalo špatně: prompt
+  // svědka modelu výslovně zakazuje, zatímco schéma emise ho vyžaduje, protože
+  // ho dodává systém.
+  const world = worldEmissionSchema.safeParse(repairEmission(document).document);
   if (world.success) return { kind: 'fulfilled', detail: '' };
 
   if (declinedEmissionSchema.safeParse(document).success) {
