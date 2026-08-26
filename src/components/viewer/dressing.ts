@@ -29,6 +29,7 @@
  * jádro je. Kit musí jít postavit ve stromu, kde `src/sim/` není.
  */
 
+import { FAMILIES } from '@/geom/families';
 import type { WorldDocRuntime } from '@/sim/interpreter';
 import { hashWords } from '@/sim/hash';
 import { createStreams, nextInt } from '@/sim/rng';
@@ -56,6 +57,8 @@ export interface DressingPlan {
   readonly props: Readonly<Record<string, string>>;
   /** Všechna použitá id kusů, každé právě jednou, seřazená. Jedno id = jedna dávka. */
   readonly pieces: readonly string[];
+  /** Id výtvarné rodiny, ze které se postaví kulisa za hrací plochou. */
+  readonly family: string;
 }
 
 /**
@@ -87,6 +90,20 @@ const SCATTER_PIECES = ['organic.pebble', 'organic.reed', 'organic.shrub'] as co
 
 /** Na kolika volných buňkách z devíti se objeví drobnost. */
 const SCATTER_ODDS = 9;
+
+/**
+ * Výtvarná rodina kulisy.
+ *
+ * Počítá se ze **semínka**, ne ze streamu. Odběr navíc by posunul všechny
+ * následující losy, takže by tatáž věta dala jinou výzdobu než včera — a pořadí
+ * odběrů je podle `planDressing` součást kontraktu, ne detail.
+ *
+ * Vlna 3 T3 tenhle výběr nahradí volbou podle **věty**; do té doby je rodina
+ * vlastnost světa, ne vlastnost objednávky, a plán to říká nahlas.
+ */
+export function familyForSeed(seed: number): string {
+  return FAMILIES[seed % FAMILIES.length].id;
+}
 
 function pick<T>(pool: readonly T[], stream: Parameters<typeof nextInt>[0]): T {
   return pool[nextInt(stream, 0, pool.length - 1)];
@@ -202,5 +219,5 @@ export function planDressing(world: WorldDocRuntime): DressingPlan {
   const used = new Set(statics.map((placement) => placement.piece));
   for (const piece of Object.values(props)) used.add(piece);
 
-  return { seed, statics, props, pieces: [...used].sort() };
+  return { seed, statics, props, pieces: [...used].sort(), family: familyForSeed(seed) };
 }

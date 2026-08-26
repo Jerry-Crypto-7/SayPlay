@@ -34,7 +34,12 @@ import FollowCamera from './FollowCamera';
 import Lighting, { VIEWER_GL, VIEWER_SHADOWS, toonRamp } from './Lighting';
 import type { ProjectedEntity } from './projection';
 import { streamEmission, type EmitProgress } from './sse';
-import WorldScene, { type DressingBatch, type RunnerRef, type WorldRunner } from './WorldScene';
+import WorldScene, {
+  type DressingBatch,
+  type RunnerRef,
+  type SceneryReport,
+  type WorldRunner,
+} from './WorldScene';
 
 /** Změřený stav rendereru. Čte `e2e/render-quality.spec.ts`, plní `Bridge` níž. */
 export interface RenderStats {
@@ -73,6 +78,8 @@ declare global {
        * rozhoduje semínko odvozené z konkrétního světa.
        */
       dressing: () => readonly DressingBatch[];
+      /** Co postavila kulisa z programu geometrie — rodina a její cena ve snímku. */
+      scenery: () => SceneryReport;
       /** Kolik tiků svět odkrokoval. */
       tick: () => number;
       /**
@@ -179,6 +186,8 @@ function Bridge({
       // `null` z prvního snímku a `entities()` by navždy vracelo prázdno.
       entities: () => runnerRef.current?.entities() ?? [],
       dressing: () => runnerRef.current?.dressing() ?? [],
+      scenery: () =>
+        runnerRef.current?.scenery() ?? { family: '', drawCalls: 0, triangles: 0 },
       tick: () => runnerRef.current?.tick() ?? 0,
       assembly: () =>
         runnerRef.current?.assembly() ?? {

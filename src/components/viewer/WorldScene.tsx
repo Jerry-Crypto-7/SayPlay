@@ -69,6 +69,7 @@ import {
 } from './Assembly';
 import { planDressing, type DressingKind, type DressingPlan } from './dressing';
 import { toonRamp } from './Lighting';
+import { buildScenery, type SceneryBuild } from './scenery';
 import {
   CELL_SIZE,
   cellToWorld,
@@ -152,6 +153,8 @@ interface BuiltScene {
   readonly batches: ReadonlyMap<VisualRole, RoleBatch>;
   readonly kit: ReadonlyMap<string, KitBatch>;
   readonly plan: DressingPlan;
+  /** Kulisa za hrací plochou — program geometrie, ne kit. */
+  readonly scenery: SceneryBuild;
   /** Kolik nehybných kusů se celkem odhaluje. Vstup rozvrhu stavby. */
   readonly revealTotal: number;
   readonly dispose: () => void;
@@ -220,6 +223,12 @@ function buildScene(world: WorldDocRuntime): BuiltScene {
   // Kdyby ho měl každý kus vlastní, přibyl by materiál na dávku a nic by se tím
   // nezískalo — dávky se stejně nesloučí, každá má jinou geometrii.
   const kitMaterial = material('#ffffff', { vertexColors: true });
+
+  // Kulisa je třetí vrstva scény: za hrací plochou, z programu geometrie, ne
+  // z kitu. Stojí až za `kitMaterial`, protože ho sdílí — barvu nese geometrie.
+  const scenery = buildScenery(plan.family, plan.seed, grid, kitMaterial);
+  if (scenery.object !== null) group.add(scenery.object);
+  owned.push(scenery);
 
   const wornBy = new Map<string, number>();
   for (const piece of Object.values(plan.props)) {
@@ -312,6 +321,7 @@ function buildScene(world: WorldDocRuntime): BuiltScene {
     batches,
     kit,
     plan,
+    scenery,
     // Součet dávek, ne délka plánu: kus, který kit nezná, žádnou dávku nedostal
     // a nakreslit se nemá jak — stavba by na něj čekala navždy.
     revealTotal: [...kit.values()].reduce((sum, batch) => sum + batch.staticCount, 0),
@@ -407,9 +417,18 @@ export interface DressingBatch {
   readonly instances: number;
 }
 
+/** Co kulisa přidala. Rodinu vybírá semínko světa, takže ze zdrojáku se to nespočítá. */
+export interface SceneryReport {
+  readonly family: string;
+  readonly drawCalls: number;
+  readonly triangles: number;
+}
+
 export interface WorldRunner {
   /** Entity ve světových souřadnicích, v pořadí deklarace a v plné délce. */
   readonly entities: () => readonly ProjectedEntity[];
+  /** Kulisa za hrací plochou — jediná cesta, jak se z prohlížeče zeptat, co postavil geom. */
+  readonly scenery: () => SceneryReport;
   /**
    * Dávky kitu, jedna na id kusu. Jediná cesta, jak se z prohlížeče zeptat, co
    * scéna doopravdy postavila — ze zdrojáku se to spočítat nedá, protože co kde
@@ -513,6 +532,11 @@ export default function WorldScene({
   useEffect(() => {
     runnerRef.current = {
       entities: () => projectEntities(world, entityPlacements(runtime)),
+      scenery: () => ({
+        family: scene.scenery.family,
+        drawCalls: scene.scenery.drawCalls,
+        triangles: scene.scenery.triangles,
+      }),
       dressing: () =>
         [...scene.kit.entries()].map(([piece, batch]) => ({ piece, instances: batch.mesh.count })),
       tick: () => runtime.tick,

@@ -22,7 +22,9 @@ import { KIT } from '@/kit';
 import type { EntityDecl, IrDoc, IrLimits } from '@/ir/types';
 import type { WorldDocRuntime } from '@/sim/interpreter';
 
-import { dressingSeed, planDressing, type DressingPlacement } from '../dressing';
+import { FAMILIES } from '@/geom/families';
+
+import { dressingSeed, familyForSeed, planDressing, type DressingPlacement } from '../dressing';
 
 function limits(width: number, height: number): IrLimits {
   return {
@@ -103,6 +105,9 @@ function signature(placements: readonly DressingPlacement[]): string {
 
 const KIT_IDS = new Set(KIT.map((piece) => piece.id));
 
+/** Předpona podpisu výzdoby naměřená 26. 8. 2026, před přidáním rodiny do plánu. */
+const PINNED_STATICS_PREFIX = 'wall:mass.bevel@1,1/2|wall:mass.block@2,1/1|wall:mass.block@3,1/';
+
 describe('dressingSeed', () => {
   it('tentýž svět dá totéž semínko', () => {
     expect(dressingSeed(world())).toBe(dressingSeed(world()));
@@ -157,6 +162,29 @@ describe('planDressing – determinismus', () => {
 
     const walls = planDressing(wide).statics.filter((p) => p.kind === 'wall');
     expect(new Set(walls.map((p) => p.piece)).size).toBeGreaterThan(1);
+  });
+});
+
+describe('planDressing – výtvarná rodina kulisy', () => {
+  it('je z registru rodin a týž svět ji nemění', () => {
+    expect(FAMILIES.map((family) => family.id)).toContain(planDressing(world()).family);
+    expect(planDressing(world()).family).toBe(planDressing(world()).family);
+  });
+
+  it('rodina se opravdu vybírá — semínka nedávají pořád tutéž', () => {
+    // Mutace „vracej pořád první rodinu" projde registrem i determinismem a
+    // vypadá jako funkční systém s jedním stylem. Shodí ji až tohle: čtyři
+    // rodiny přes sto semínek musí dát víc než jednu.
+    const chosen = new Set(Array.from({ length: 100 }, (_unused, seed) => familyForSeed(seed)));
+    expect(chosen.size).toBeGreaterThan(1);
+  });
+
+  it('výběr rodiny nespotřeboval los — výzdoba sedí na hodnotu z doby před rodinou', () => {
+    // **Připnuto schválně.** Kdyby rodina brala hodnotu ze streamu, posunuly by
+    // se všechny následující losy a tenhle podpis by se změnil. Naměřeno
+    // 26. 8. 2026, ještě než `family` do plánu přibyla — když se pohne, zapiš
+    // proč, nikdy ho jen nepřepiš.
+    expect(signature(planDressing(world()).statics).slice(0, 64)).toBe(PINNED_STATICS_PREFIX);
   });
 });
 
