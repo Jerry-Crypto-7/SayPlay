@@ -163,6 +163,18 @@ describe('zpráva nese slovník i tvar', () => {
     expect(request.user).toContain('a tower that falls over');
   });
 
+  it('označí kopii ukázkového scénáře za neplatnou odpověď', () => {
+    const request = buildEmissionRequest('jumping arcade game with obstacles', grammar());
+
+    expect(request.user).toContain('REQUEST-SPECIFIC CONTENT');
+    expect(request.user).toContain('structurally valid');
+    expect(request.user).toContain('invalid answer');
+    for (const identifier of ['cardPad', 'leverPad', 'gatePad', 'card', 'lever', 'gate', 'powered', 'grab', 'pull', 'escape']) {
+      expect(request.system).toContain(identifier);
+      expect(request.user, 'uživatelská zpráva nevaruje před kopií ' + identifier).toContain(identifier);
+    }
+  });
+
   /**
    * Odsazení příkladu vypadá jako plýtvání a **není**. Je to jediná aserce
    * v tomhle souboru, která nehlídá obsah zprávy, ale její formát — protože

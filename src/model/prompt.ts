@@ -192,6 +192,13 @@ const EXAMPLE_WORLD = {
   },
 } as const;
 
+const EXAMPLE_ONLY_IDENTIFIERS = [
+  ...Object.keys(EXAMPLE_WORLD.sim.sockets).filter((identifier) => identifier !== 'spawnPad'),
+  ...Object.keys(EXAMPLE_WORLD.sim.entities).filter((identifier) => identifier !== 'player'),
+  ...Object.keys(EXAMPLE_WORLD.sim.state.flags),
+  ...Object.keys(EXAMPLE_WORLD.sim.rules),
+];
+
 export function buildEmissionRequest(prompt: string, grammar: Grammar): UpstreamRequest {
   const system = [
     'You emit a declarative world graph. You never write code, control flow, or expressions to be evaluated.',
@@ -299,10 +306,21 @@ export function buildEmissionRequest(prompt: string, grammar: Grammar): Upstream
     JSON.stringify(EXAMPLE_WORLD, null, 2),
   ].join('\n');
 
-  // Text promptu jde do zprávy **doslova**. AC T13 se ptá právě na tohle:
-  // zaznamenaný požadavek musí prompt obsahovat, jinak se nedá prokázat, že
-  // odpověď patří k němu a ne k jinému běhu.
-  const user = `Build a playable world for this request:\n\n${prompt}`;
+  // Text promptu jde do zprávy **doslova** a stojí poslední. Malý model se v
+  // živých bězích naučil tvar příkladu tak doslova, že jeho kartu, páku a bránu
+  // opsal i pro zenovou zahradu a skákací arkádu. Zákaz proto jmenuje obsah
+  // aktuálního příkladu přímo a zadání opakuje až za ním: kopie může být
+  // strukturálně platná, ale pořád není odpovědí na větu.
+  const user = [
+    'REQUEST-SPECIFIC CONTENT is authoritative. The complete JSON in the system message demonstrates syntax only.',
+    'Its card/lever/gate scenario is semantically wrong for any unrelated request.',
+    `Do not copy these example-only identifiers unless the request itself calls for them: ${EXAMPLE_ONLY_IDENTIFIERS.join(', ')}.`,
+    'A structurally valid world that does not implement the request-specific nouns, actions, constraints, and goal is an invalid answer.',
+    'Choose request-specific stableIds, entity roles, rules, look, and a winning witness.',
+    '',
+    'Build a playable world for exactly this request:',
+    prompt,
+  ].join('\n');
 
   return { model: EMISSION_MODEL, system, user };
 }
