@@ -148,6 +148,15 @@ describe('zpráva nese slovník i tvar', () => {
       expect(system, `zpráva mlčí o ${named}`).toContain(named);
   });
 
+  it('sváže každou událost vstupu s deklarovanou zónou', () => {
+    const system = buildEmissionRequest('anything', grammar()).system;
+
+    expect(system).toContain('Every onEnterZone or onExitZone event.zone MUST exactly name');
+    expect(system).toContain('sim.sockets or sim.state.zones');
+    expect(system).toContain('{ entity: player, zone: goalPad }');
+    expect(system).toContain('not the goal entity stableId');
+  });
+
   it('neříká o rolích a inventáři nepravdu', () => {
     const system = buildEmissionRequest('anything', grammar()).system;
     // Role je volný řetězec: `build.ts` čte `actor` a `agent`, nic dalšího.
