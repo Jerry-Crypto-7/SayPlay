@@ -30,6 +30,11 @@ import {
  * Vrchní barvy jdou do atributu `color` už z kitu v **lineárním** prostoru
  * (`srgbHexToLinear`), takže je `repaint()` z palet umí přebarvit. Terén proto
  * používá odstíny kitu, ne vlastní: `repaint()` na barvě mimo kit vyhodí.
+ *
+ * **Pět pomocníků je exportovaných kvůli `placements.ts`** — `concat`,
+ * `flipWinding`, `placementMatrix`, `terrainGeometry` a `carve`. Druhá cesta
+ * kompilátoru z nich staví plán rozmístění místo jedné sloučené sítě; sám
+ * `compileGeomProgram()` se tím nemění, protože na něm stojí zmrazená měření.
  */
 
 /** Odstín kitu pro každý druh terénu. Musí to být odstín z `SWATCHES` — viz `repaint()`. */
@@ -63,7 +68,7 @@ function fromAttributes(attributes: Attributes): BufferGeometry {
 }
 
 /** Sloučí geometrie do jedné a **vstupy uvolní** — volající je už nepotřebuje. */
-function concat(parts: readonly BufferGeometry[]): BufferGeometry {
+export function concat(parts: readonly BufferGeometry[]): BufferGeometry {
   const lengths = parts.map((part) => (part.getAttribute('position').array as Float32Array).length);
   const total = lengths.reduce((sum, length) => sum + length, 0);
   const merged: Attributes = {
@@ -93,7 +98,7 @@ function concat(parts: readonly BufferGeometry[]): BufferGeometry {
  * odřízl jako odvrácenou. Normály se přitom nechávají tak, jak je nechal
  * `applyMatrix4` — po obrácení vinutí zase míří ven.
  */
-function flipWinding(geometry: BufferGeometry): void {
+export function flipWinding(geometry: BufferGeometry): void {
   const { position, color, normal } = attributesOf(geometry);
   for (let vertex = 0; vertex < position.length; vertex += 9) {
     for (const array of [position, color, normal]) {
@@ -108,7 +113,7 @@ function flipWinding(geometry: BufferGeometry): void {
   }
 }
 
-function placementMatrix(
+export function placementMatrix(
   at: readonly [number, number, number] | undefined,
   yaw: number | undefined,
   scale: readonly [number, number, number] | undefined,
@@ -162,7 +167,7 @@ function terrainHeight(variant: string, u: number, v: number): number {
  * mřížky vrcholů, takže sousední trojúhelníky sdílejí tutéž výšku a v zemi
  * nevznikne trhlina.
  */
-function terrainGeometry(node: Extract<GeomNode, { kind: 'terrain' }>): BufferGeometry {
+export function terrainGeometry(node: Extract<GeomNode, { kind: 'terrain' }>): BufferGeometry {
   const [width, depth] = node.extent;
   // Jeden dílek na dvě pole mřížky. Strop `extent` v schématu je 64, takže
   // nejhustší zem má 32 dílků na osu = 2048 trojúhelníků — vlastní strop dílků
@@ -251,7 +256,7 @@ function flatNormals(position: readonly number[]): Float32Array {
  * trojúhelníků a stěna se nedopočítá. Na průchod prosekaný do zdi to stačí a
  * nestojí to novou závislost, což CSG stálo by.
  */
-function carve(
+export function carve(
   source: BufferGeometry,
   at: readonly [number, number, number],
   size: readonly [number, number, number],
