@@ -64,6 +64,7 @@ import type { ModelPhase } from '@/components/hud/ModelProgress';
 import type { ChatEngine } from '@/model/local/engine';
 import type { EmissionSource } from '@/model/source';
 import type { VerdictBody } from '@/model/certify';
+import type { Round } from '@/model/local/emit';
 
 /**
  * Co z verdiktu čte hláška o odmítnutí. Užší než celý `VerdictBody` schválně:
@@ -109,12 +110,21 @@ export function repairLines(body: Pick<VerdictBody, 'repairs'>): readonly string
 
 export default function PromptBar({
   onWorld,
+  onRounds,
   engine,
   modelPhase,
   disabled = false,
 }: {
   /** Dostane surovou emisi; svět z ní staví volající, ne tahle komponenta. */
   readonly onWorld: (emission: unknown, source: EmissionSource) => void;
+  /**
+   * Kola opravné smyčky z posledního běhu modelu.
+   *
+   * Panel s nimi kotví sloupec v `src/app/page.tsx`, ne tahle komponenta —
+   * panel, který si sáhne na vlastní roh, si lehne na jiný. Kola se proto
+   * hlásí nahoru, místo aby se tu rovnou vykreslila.
+   */
+  readonly onRounds?: (rounds: readonly Round[]) => void;
   readonly engine: ChatEngine | null;
   readonly modelPhase: ModelPhase;
   readonly disabled?: boolean;
@@ -157,6 +167,9 @@ export default function PromptBar({
           recognize: () => null,
         });
         if (requestId.current !== pending.id) return;
+        // Kola jdou nahoru bez ohledu na verdikt: neúspěšná oprava je pro
+        // porotce stejná zpráva jako úspěšná, jen končí jinak.
+        onRounds?.(result.rounds);
 
         if (result.kind === 'verdict' && result.body.outcome === 'CERTIFIED' && result.body.doc !== null) {
           setPhase('building');
@@ -194,7 +207,7 @@ export default function PromptBar({
         }
       }
     },
-    [engine, onWorld],
+    [engine, onRounds, onWorld],
   );
 
   useEffect(() => {
@@ -263,6 +276,8 @@ export default function PromptBar({
     setPendingModel(null);
     setModelNotice(null);
     setModelRepairs([]);
+    // Kola předchozí věty nesmí přežít do nové. Panel je zpráva o TÉHLE větě.
+    onRounds?.([]);
     setOutcome(null);
     setSubstitute(null);
     setPhase('sent');

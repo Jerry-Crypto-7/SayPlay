@@ -36,6 +36,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import FirstRun from '@/components/hud/FirstRun';
 import ModelProgress, { type ModelPhase, type ModelState } from '@/components/hud/ModelProgress';
+import RepairRounds from '@/components/hud/RepairRounds';
 import Program from '@/components/pipeline/Program';
 import Timeline from '@/components/pipeline/Timeline';
 import WitnessPreview from '@/components/pipeline/WitnessPreview';
@@ -52,6 +53,7 @@ import {
 import { buildRuntimeWorld } from '@/ir/build';
 import type { ChatEngine } from '@/model/local/engine';
 import type { EmissionSource } from '@/model/source';
+import type { Round } from '@/model/local/emit';
 import type { TraceInput, WorldDocRuntime } from '@/sim/interpreter';
 
 declare global {
@@ -149,6 +151,14 @@ export default function Page() {
   const [broken, setBroken] = useState(false);
   const [engine, setEngine] = useState<ChatEngine | null>(null);
   const [modelPhase, setModelPhase] = useState<ModelPhase>('probing');
+  /**
+   * Kola opravné smyčky poslední věty. Prázdné, dokud model neběžel.
+   *
+   * Bydlí tady, ne v `PromptBar`, protože panel patří do pravého sloupce —
+   * kotvit se sám mu `CORNER_RIGHT` zakazuje a dvakrát to už stálo několik dní
+   * červené e2e sady.
+   */
+  const [rounds, setRounds] = useState<readonly Round[]>([]);
   // Dvě emise v JEDNOM stavu, ne dva stavy vedle sebe: panel překladu ukazuje
   // ROZDÍL proti minulé větě, a posun "současná se stane minulou" musí být jeden
   // atomický krok. Dvě `useState` by ho složily ze dvou zápisů čtoucích zachycenou
@@ -289,6 +299,7 @@ export default function Page() {
     <main style={{ position: 'relative', height: '100dvh', width: '100vw' }}>
       <PromptBar
         onWorld={acceptWorld}
+        onRounds={setRounds}
         engine={engine}
         modelPhase={modelPhase}
       />
@@ -310,6 +321,7 @@ export default function Page() {
       </div>
       <div style={CORNER_RIGHT}>
         <WitnessPreview world={world} />
+        <RepairRounds rounds={rounds} />
         <ModelProgress onReady={acceptEngine} onState={acceptModelState} />
       </div>
       <Stage world={world} inputs={inputs} runnerRef={runnerRef} />
