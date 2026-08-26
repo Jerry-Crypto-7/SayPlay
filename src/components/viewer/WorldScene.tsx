@@ -422,6 +422,12 @@ export interface SceneryReport {
   readonly family: string;
   readonly drawCalls: number;
   readonly triangles: number;
+  /**
+   * Visí uzel kulisy doopravdy ve scéně? Počty výš si kulisa hlásí sama při
+   * stavbě, takže přežijí i to, když se zapomene zavěsit — a zkouška nad nimi
+   * by pak měřila jen samu sebe. Tohle je jediný údaj, který o zavěšení mluví.
+   */
+  readonly attached: boolean;
 }
 
 export interface WorldRunner {
@@ -536,6 +542,7 @@ export default function WorldScene({
         family: scene.scenery.family,
         drawCalls: scene.scenery.drawCalls,
         triangles: scene.scenery.triangles,
+        attached: scene.scenery.object !== null && scene.scenery.object.parent !== null,
       }),
       dressing: () =>
         [...scene.kit.entries()].map(([piece, batch]) => ({ piece, instances: batch.mesh.count })),

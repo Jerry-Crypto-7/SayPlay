@@ -187,7 +187,7 @@ function Bridge({
       entities: () => runnerRef.current?.entities() ?? [],
       dressing: () => runnerRef.current?.dressing() ?? [],
       scenery: () =>
-        runnerRef.current?.scenery() ?? { family: '', drawCalls: 0, triangles: 0 },
+        runnerRef.current?.scenery() ?? { family: '', drawCalls: 0, triangles: 0, attached: false },
       tick: () => runnerRef.current?.tick() ?? 0,
       assembly: () =>
         runnerRef.current?.assembly() ?? {

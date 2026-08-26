@@ -57,6 +57,12 @@ test('kulisa z výtvarné rodiny stojí ve scéně a vejde se do rozpočtu sním
     0,
   );
   expect(scenery.drawCalls, 'kulisa se nekreslí vůbec').toBeGreaterThan(0);
+  // Počty výš si kulisa hlásí sama při stavbě, takže je nezmění ani zapomenuté
+  // zavěšení do scény. Bez téhle zkoušky projde i běh, kde geom nic nevykreslí.
+  expect(
+    scenery.attached,
+    'kulisa se postavila, ale nikdo ji nezavěsil do scény — geom je odpojený a počty výš to nepoznají',
+  ).toBe(true);
 
   // Rozpočet se měří na tom, co renderer za snímek doopravdy udělal, včetně
   // stínového průchodu — ze zdrojáku se to spočítat nedá.
