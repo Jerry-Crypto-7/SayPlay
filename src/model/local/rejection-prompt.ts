@@ -214,3 +214,48 @@ function witnessTodo(rejection: Rejection, context: RejectionContext): string {
       return 'Fix the winning route in sim.witness.ops and send the whole world back.';
   }
 }
+
+/**
+ * Zpráva pro další kolo — původní věta, důvod odmítnutí a předchozí emise.
+ *
+ * Všechny tři části jsou nutné a každá z jiného důvodu. **Původní věta** proto,
+ * že bez ní model opravuje naslepo a druhé kolo klidně napíše svět o něčem
+ * jiném. **Důvod** proto, že jinak nemá co opravovat. **Předchozí emise** proto,
+ * že opravit se má ta jeho, ne napsat nová — jinak je to jen druhý pokus a
+ * smyčka nic nezlepšuje, jen protáčí čas.
+ *
+ * Aktuální požadavek zůstává **na konci**, stejně jako v prvním kole: to je
+ * pořadí, na které se model chytá, a měnit ho mezi koly by změnilo i to, co
+ * považuje za odpověď.
+ */
+export function retryRequest(
+  original: string,
+  previous: unknown,
+  rejection: Rejection,
+  context: RejectionContext = {},
+): string {
+  return [
+    'Your previous answer was rejected by the system that runs these worlds.',
+    '',
+    rejectionSentence(rejection, context),
+    '',
+    'This is the answer that was rejected. Repair it — keep every part that was already right:',
+    safeJson(previous),
+    '',
+    'Answer again with one JSON object and nothing else. The request was:',
+    original,
+  ].join('\n');
+}
+
+/**
+ * Emise zpátky do textu. Nerozpársovatelná odpověď se vrátí tak, jak přišla —
+ * modelu se ukazuje to, co doopravdy napsal, ne náhražka.
+ */
+function safeJson(value: unknown): string {
+  if (typeof value === 'string') return value;
+  try {
+    return JSON.stringify(value, null, 1);
+  } catch {
+    return String(value);
+  }
+}
