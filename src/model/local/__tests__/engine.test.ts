@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { askForPersistence, requestPersistentStorage, type StorageLike } from '@/model/local/engine';
+import {
+  FORCED_SHAPE_SCHEMA,
+  askForPersistence,
+  requestPersistentStorage,
+  type StorageLike,
+} from '@/model/local/engine';
 
 /**
  * Žádost o trvalé úložiště (P11 T22).
@@ -81,5 +86,38 @@ describe('requestPersistentStorage — zeptá se nejvýš jednou za život strá
       info.mockRestore();
       vi.unstubAllGlobals();
     }
+  });
+});
+
+/**
+ * Svázaný tvar zůstává **volnou obálkou** — a je to naměřené rozhodnutí.
+ *
+ * 26. 8. 2026 se zkoušelo vynutit dekodérem povinné pravidlo výhry, protože
+ * 15 z 24 zaznamenaných emisí žádnou akci `win` nemá. Na živém modelu to
+ * shodilo překlad gramatiky (`BindingError`, 4 věty ze 4) a mírnější varianty
+ * vydaly emise, které padly na produkčním schématu. Odůvodnění a čísla jsou
+ * v hlavičce `FORCED_SHAPE_SCHEMA`.
+ *
+ * Bez tohohle testu je to jen komentář: příště někdo přidá `properties` o
+ * úroveň hloub, jednotky zůstanou zelené a model se v prohlížeči přestane
+ * spouštět — což se pozná až rukou, protože stránka poctivě spadne na náhradní
+ * místnost a nikde není chyba.
+ */
+describe('svázaný tvar', () => {
+  const schema = JSON.parse(FORCED_SHAPE_SCHEMA) as {
+    required: string[];
+    properties: Record<string, unknown>;
+  };
+
+  it('žádá pět polí obálky a nic z jejich obsahu', () => {
+    expect(schema.required.sort()).toEqual(['irVersion', 'look', 'lookRevision', 'sim', 'simRevision']);
+  });
+
+  it('nechává vnitřek `sim` a `look` otevřený, protože je to odpověď na větu', () => {
+    // xgrammar překládá schéma striktně: deklarované `properties` jsou celý
+    // seznam povolených klíčů, ne minimum. Jakýkoli částečný tvar uvnitř by
+    // modelu zakázal napsat zbytek světa.
+    expect(schema.properties.sim).toEqual({ anyOf: [{ type: 'object' }, { type: 'null' }] });
+    expect(schema.properties.look).toEqual({ type: 'object' });
   });
 });

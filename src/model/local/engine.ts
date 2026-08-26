@@ -52,11 +52,39 @@ export const MAX_OUTPUT_TOKENS = 2560;
  *
  * Je to **obálka, kterou vyjmenovává systémový prompt** (`../prompt.ts`: „Its
  * top-level fields are exactly: irVersion, simRevision, lookRevision, sim,
- * look"), ne celé schéma světa. Rozvinout do gramatiky celý `simSchema` by
- * svázalo dekodér schématem o stovkách uzlů. Vnitřek `sim` a `look` zůstává na
- * modelu, a právě ten vnitřek pak soudí produkční validátor.
+ * look"), ne celé schéma světa. Vnitřek `sim` a `look` zůstává na modelu, a
+ * právě ten vnitřek pak soudí produkční validátor.
  *
  * `sim` smí být `null` — tak se v tomhle kontraktu píše poctivé odmítnutí.
+ *
+ * ## Proč se sem vítězné pravidlo NEVYNUCUJE — naměřeno 26. 8. 2026
+ *
+ * Ze 24 zaznamenaných emisí jich 15 nemá jedinou akci `win`, takže se svět
+ * nedá dohrát. Nabízelo se to vynutit dekodérem: `sim.rules` s
+ * `required: ['win']` a vítězné pravidlo s `actions: [{ kind: 'win' }]`.
+ * **V prohlížeči to nefunguje a je to změřené na živém modelu**, čtyři věty
+ * ke každé variantě:
+ *
+ * 1. Celá kostra (`layout`/`sockets`/`entities`/`state`/`rules` + tvar
+ *    vítězného pravidla) → `BindingError: Expected null or instance of
+ *    VectorInt` do dvou sekund, **4 ze 4**. Model se vůbec nerozeběhne;
+ *    gramatika se rozbije při překladu schématu.
+ * 2. Jen `required` nad `sim` a `rules.required: ['win']` → přeloží se, ale
+ *    emise padá na `schema/SCHEMA_VIOLATION`, 2 ze 2.
+ * 3. Totéž s `additionalProperties: true` → přeloží se, běží **pomaleji**
+ *    (55–65 s proti 41 s) a vydá useknuté tělo, 2 ze 2.
+ *
+ * Mechanismus sedí na všechny tři: xgrammar překládá JSON schéma ve striktním
+ * režimu, kde deklarované `properties` jsou **celý** seznam povolených klíčů.
+ * Částečný tvar se tím nestává minimem, ale maximem — `rules` s jedinou
+ * deklarovanou vlastností `win` je mapa, do které nejde napsat druhé pravidlo.
+ * Vynutit vítězné pravidlo by proto znamenalo rozvinout do gramatiky celý
+ * `simSchema`, tedy stovky uzlů, a to je přesně ten obsah, který je odpovědí
+ * na větu.
+ *
+ * Volná obálka drží naměřených `schemaValid 198/200 = 0,990` (T8). Povinnost
+ * vítězného pravidla proto nese **prompt** (`../prompt.ts`, „THE WORLD MUST BE
+ * WINNABLE") a vymáhá ji certifikace, ne dekodér.
  */
 export const FORCED_SHAPE_SCHEMA = JSON.stringify({
   type: 'object',
