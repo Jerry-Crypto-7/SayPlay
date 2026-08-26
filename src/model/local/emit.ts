@@ -28,6 +28,7 @@
 import protocol from '../../../evals/frozen/protocol.v1.json';
 import { certifySteps, type ProgressSink, type Verdict } from '../certify';
 import { buildEmissionRequest, isExampleEmission, type Grammar } from '../prompt';
+import { repairEmission } from '../repair';
 
 import { deriveCollisionAabb } from './aabb';
 import { recognize as recognizeShape } from './shapes';
@@ -152,13 +153,29 @@ export async function emitLocally(input: LocalEmitInput): Promise<LocalOutcome> 
     };
   }
 
-  const steps = certifySteps({ promptId: input.sentence, upstream, provenance, body });
+  // Oprava stojí PŘED certifikací a certifikátor se jí nedotýká — soudí dál
+  // týž kód, jaký soudí server. Smí jen zásahy, které nemění význam; co dělá a
+  // proč, je v `../repair.ts`.
+  const repaired = repairEmission(body);
+
+  const steps = certifySteps({
+    promptId: input.sentence,
+    upstream,
+    provenance,
+    body: repaired.document,
+  });
   let next = steps.next();
   while (!next.done) {
     input.onProgress?.(next.value);
     next = steps.next();
   }
-  return next.value;
+  // Emise ve verdiktu je to, co doopravdy poslal model. Opravený dokument běží
+  // na plátně, ale tvrdit o něm, že ho napsal model, by byla vada vlny 0.
+  const body_ = next.value.body;
+  return {
+    kind: 'verdict',
+    body: { ...body_, emission: body, repairedEmission: repaired.document, repairs: repaired.notes },
+  };
 }
 
 /**

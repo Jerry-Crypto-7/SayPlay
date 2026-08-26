@@ -97,27 +97,51 @@ describe('emitLocally', () => {
     expect(outcome.body.outcome).toBe('REJECTED');
   });
 
-  it('svět, jehož svědek nedojde do výhry, v prohlížeči neprojde', async () => {
-    // Tvrzení „nic vadného neprojde přijetím" platí i tady, ne jen na serveru.
-    // Bez téhle aserce by prohlížečová větev spoléhala na to, že sdílený řetěz
-    // někdo otestoval jinde — a to je přesně ta díra, kterou nikdo neuvidí.
-    // Stopa je tvarem v pořádku, jen skončí dřív, než dojde k bráně — tedy
-    // přesně ten případ, který musí projít schématem a padnout až na svědkovi.
-    const sim = EXAMPLE_WORLD.sim as { witness: { ops: unknown[] } };
-    const noWin = {
-      ...EXAMPLE_WORLD,
-      sim: { ...sim, witness: { ...sim.witness, ops: sim.witness.ops.slice(0, 2) } },
-    };
+  it('svět, který se vyhrát NEDÁ, v prohlížeči neprojde', async () => {
+    // Tvrzení „nic vadného neprojde přijetím" platí i tady, ne jen na serveru,
+    // a hledač svědka na něj nesmí sáhnout. Od 26. 8. 2026 se ale ta věta měří
+    // jinak: vadný **důkaz** systém nahradí vlastním, takže zkrácená stopa už
+    // vadou světa není. Vadou je svět, ve kterém výhra není dosažitelná —
+    // a přesně ten se tu staví: pravidlo `win` se z něj vyjme.
+    const sim = EXAMPLE_WORLD.sim as { rules: Record<string, unknown> };
+    const rules = { ...sim.rules };
+    delete rules.win;
+    const unwinnable = { ...EXAMPLE_WORLD, sim: { ...sim, rules } };
+
     const outcome = await emitLocally({
       sentence: 'páka otevře bránu',
       recognize: () => null,
-      engine: scriptedEngine(JSON.stringify(noWin)),
+      engine: scriptedEngine(JSON.stringify(unwinnable)),
     });
 
     expect(outcome.kind).toBe('verdict');
     if (outcome.kind !== 'verdict') return;
     expect(outcome.body.outcome).toBe('REJECTED');
     expect(outcome.body.rejection).toMatchObject({ stage: 'witness' });
+    // Hledač se pokusil a nenašel — nesmí to zamlčet tím, že by o sobě mlčel.
+    expect(outcome.body.repairs).not.toContainEqual(expect.objectContaining({ kind: 'witnessSolved' }));
+  });
+
+  it('svět s vadným důkazem projde, protože důkaz najde systém', async () => {
+    // Druhá strana téže mince. Svět je dohratelný, jen stopa od modelu končí
+    // dřív, než dojde k bráně — přesně ten případ, na kterém 26. 8. 2026 padly
+    // tři ze čtyř vět v ruční bráně vlny.
+    const sim = EXAMPLE_WORLD.sim as Record<string, unknown>;
+    const brokenProof = {
+      ...EXAMPLE_WORLD,
+      sim: { ...sim, witness: { tier: 'short', H_cert: 600, ops: [{ tick: 0, actionId: 'moveTo', target: 'card' }] } },
+    };
+
+    const outcome = await emitLocally({
+      sentence: 'páka otevře bránu',
+      recognize: () => null,
+      engine: scriptedEngine(JSON.stringify(brokenProof)),
+    });
+
+    expect(outcome.kind).toBe('verdict');
+    if (outcome.kind !== 'verdict') return;
+    expect(outcome.body.outcome).toBe('CERTIFIED');
+    expect(outcome.body.repairs).toContainEqual(expect.objectContaining({ kind: 'witnessSolved' }));
   });
 
   it('odpověď, která není JSON, je pořád verdikt o emisi', async () => {
