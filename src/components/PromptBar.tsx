@@ -91,6 +91,26 @@ export function modelRejectionNotice(result: { readonly body: Record<string, unk
   return `The browser model could not certify a replacement (${code}${explanation}); the substitute stays.`;
 }
 
+/**
+ * Co na světě změnil systém, než ho pustil k certifikaci.
+ *
+ * Vlna 0 zavřela produkt, který tvrdil, že odpovídal model. Oprava, o které se
+ * mlčí, je tatáž vada znovu: na plátně by stál svět, jehož část napsal
+ * `src/model/repair.ts`, a hláška by ho celý připsala modelu. Verdikt ty zásahy
+ * nese od T-opravy, tohle je jejich jediná cesta na obrazovku.
+ */
+export function repairLines(body: Record<string, unknown>): readonly string[] {
+  const notes = body.repairs;
+  if (!Array.isArray(notes)) return [];
+  return notes
+    .map((note) =>
+      note !== null && typeof note === 'object' && typeof (note as { detail?: unknown }).detail === 'string'
+        ? (note as { detail: string }).detail
+        : null,
+    )
+    .filter((detail): detail is string => detail !== null);
+}
+
 export default function PromptBar({
   onWorld,
   engine,
@@ -114,6 +134,8 @@ export default function PromptBar({
   const [pendingModel, setPendingModel] = useState<{ readonly id: number; readonly sentence: string } | null>(null);
   const [modelBusy, setModelBusy] = useState(false);
   const [modelNotice, setModelNotice] = useState<string | null>(null);
+  /** Zásahy opravy z posledního verdiktu. Prázdné pole = model napsal svět sám. */
+  const [modelRepairs, setModelRepairs] = useState<readonly string[]>([]);
   const dictation = useRef<DictationSession | null>(null);
   const requestId = useRef(0);
 
@@ -145,11 +167,18 @@ export default function PromptBar({
           onWorld(result.body.doc, 'model');
           setSubstitute(null);
           setOutcome(null);
-          setModelNotice('The browser model certified the world now running on the canvas.');
+          const repairs = repairLines(result.body);
+          setModelRepairs(repairs);
+          setModelNotice(
+            repairs.length === 0
+              ? 'The browser model certified the world now running on the canvas.'
+              : 'The browser model wrote this world; the system certified it after the changes below.',
+          );
           setPhase(null);
           return;
         }
 
+        setModelRepairs([]);
         setModelNotice(
           result.kind === 'unavailable'
             ? `The browser model could not certify a replacement (${result.detail}); the substitute stays.`
@@ -157,6 +186,7 @@ export default function PromptBar({
         );
       } catch (thrown) {
         if (requestId.current === pending.id) {
+          setModelRepairs([]);
           setModelNotice(
             `The browser model failed (${thrown instanceof Error ? thrown.message : String(thrown)}); the substitute stays.`,
           );
@@ -236,6 +266,7 @@ export default function PromptBar({
     requestId.current = id;
     setPendingModel(null);
     setModelNotice(null);
+    setModelRepairs([]);
     setOutcome(null);
     setSubstitute(null);
     setPhase('sent');
@@ -358,6 +389,14 @@ export default function PromptBar({
         <p data-testid="prompt-model-status" style={MODEL_NOTICE}>
           {modelNotice}
         </p>
+      )}
+
+      {modelRepairs.length === 0 ? null : (
+        <ul data-testid="prompt-model-repairs" style={REPAIRS}>
+          {modelRepairs.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
       )}
 
       {substitute === null ? null : (
@@ -483,6 +522,16 @@ const MODEL_NOTICE: React.CSSProperties = {
   margin: 0,
   color: '#5fd3bd',
   fontSize: '0.9rem',
+};
+
+/** Zásahy opravy stojí pod hláškou a čtou se jako její pokračování. */
+const REPAIRS: React.CSSProperties = {
+  flexBasis: '100%',
+  margin: 0,
+  paddingLeft: '1.1rem',
+  color: '#9fc0c2',
+  fontSize: '0.82rem',
+  lineHeight: 1.5,
 };
 
 /** Kód vady je pro čtenáře, který ho chce vidět — ne hlavní sdělení. */
