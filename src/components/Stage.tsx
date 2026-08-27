@@ -53,10 +53,16 @@ declare global {
  */
 export default function Stage({
   world = null,
+  look = null,
   inputs,
   runnerRef: shared,
 }: {
   readonly world?: WorldDocRuntime | null;
+  /**
+   * Část `look` téže emise, ze které je svět. Vybírá výtvarnou rodinu kulisy —
+   * viz `WorldScene`. Plátno ji jen podává dál.
+   */
+  readonly look?: unknown;
   /** Vstupy jednoho tiku; bez něj si svět přehrává vlastního svědka. */
   readonly inputs?: (tick: number) => readonly TraceInput[];
   /**
@@ -98,7 +104,7 @@ export default function Stage({
         <gridHelper args={[12, 12, '#1d2b2f', '#162023']} position={[0, -1.2, 0]} />
       ) : (
         <>
-          <WorldScene world={world} runnerRef={runnerRef} inputs={inputs} />
+          <WorldScene world={world} look={look} runnerRef={runnerRef} inputs={inputs} />
           <FollowCamera runnerRef={runnerRef} />
         </>
       )}

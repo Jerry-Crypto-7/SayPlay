@@ -245,12 +245,14 @@ function Bridge({
  * Odmítnutá emise nevrací svět a je to normální stav, ne výjimka: kanál dorazí
  * s verdiktem `REJECTED` a plátno zůstane na layoutu z kitu.
  */
-function worldFromVerdict(result: unknown): WorldDocRuntime | null {
-  const doc = (result as { doc?: { sim?: unknown } | null } | null)?.doc;
+function worldFromVerdict(result: unknown): { world: WorldDocRuntime; look: unknown } | null {
+  const doc = (result as { doc?: { sim?: unknown; look?: unknown } | null } | null)?.doc;
   if (doc === null || doc === undefined) return null;
 
   const built = buildRuntimeWorld(doc.sim);
-  return built.ok ? built.world : null;
+  // `look` cestuje spolu se světem, ne vedle něj: kulisa se vybírá z něj a dva
+  // stavy by šly rozejít na jednu emisi navíc.
+  return built.ok ? { world: built.world, look: doc.look ?? null } : null;
 }
 
 export default function Viewer({
@@ -269,7 +271,7 @@ export default function Viewer({
 }) {
   const [index, setIndex] = useState(0);
   const [progress, setProgress] = useState<readonly EmitProgress[]>([]);
-  const [emitted, setEmitted] = useState<WorldDocRuntime | null>(null);
+  const [emitted, setEmitted] = useState<{ world: WorldDocRuntime; look: unknown } | null>(null);
   const runnerRef = useRef<WorldRunner | null>(null);
 
   const switchTo = useCallback(
@@ -294,7 +296,10 @@ export default function Viewer({
     return () => abort.abort();
   }, [promptId]);
 
-  const active = world ?? emitted;
+  // Hotový svět z prop má přednost před emisí, a `look` ho následuje: prop ho
+  // nenese, takže tou cestou rozhodne semínko světa — stejně jako do vlny 3.
+  const active = world ?? emitted?.world ?? null;
+  const activeLook = world === null ? (emitted?.look ?? null) : null;
 
   return (
     <div style={{ position: 'relative', height: '100%', width: '100%' }}>
@@ -309,7 +314,7 @@ export default function Viewer({
         {active === null ? (
           <World layoutId={layouts[index]} />
         ) : (
-          <WorldScene world={active} runnerRef={runnerRef} />
+          <WorldScene world={active} look={activeLook} runnerRef={runnerRef} />
         )}
         <FollowCamera runnerRef={runnerRef} />
       </Canvas>

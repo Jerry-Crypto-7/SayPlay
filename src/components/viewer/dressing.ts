@@ -29,7 +29,7 @@
  * jádro je. Kit musí jít postavit ve stromu, kde `src/sim/` není.
  */
 
-import { FAMILIES } from '@/geom/families';
+import { familyForSeed as familyFromSeed } from '@/geom/family-choice';
 import type { WorldDocRuntime } from '@/sim/interpreter';
 import { hashWords } from '@/sim/hash';
 import { createStreams, nextInt } from '@/sim/rng';
@@ -92,17 +92,19 @@ const SCATTER_PIECES = ['organic.pebble', 'organic.reed', 'organic.shrub'] as co
 const SCATTER_ODDS = 9;
 
 /**
- * Výtvarná rodina kulisy.
+ * Výtvarná rodina kulisy **pro svět bez věty**.
  *
  * Počítá se ze **semínka**, ne ze streamu. Odběr navíc by posunul všechny
  * následující losy, takže by tatáž věta dala jinou výzdobu než včera — a pořadí
  * odběrů je podle `planDressing` součást kontraktu, ne detail.
  *
- * Vlna 3 T3 tenhle výběr nahradí volbou podle **věty**; do té doby je rodina
- * vlastnost světa, ne vlastnost objednávky, a plán to říká nahlas.
+ * Od vlny 3 T3 je to **záloha, ne hlavní cesta**: rodinu vybírá `look` emise
+ * (`chooseFamily` v `@/geom/family-choice`) a na semínko se padá teprve tehdy,
+ * když v něm není jediné známé slovo. Tělo je proto přeposlání — druhá definice
+ * téhož výpočtu by se rozešla přesně tam, kam se nikdo nedívá.
  */
 export function familyForSeed(seed: number): string {
-  return FAMILIES[seed % FAMILIES.length].id;
+  return familyFromSeed(seed);
 }
 
 function pick<T>(pool: readonly T[], stream: Parameters<typeof nextInt>[0]): T {

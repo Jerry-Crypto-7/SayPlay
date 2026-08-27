@@ -1,6 +1,9 @@
+import { readFileSync } from 'node:fs';
+
 import { expect, test, type Page } from '@playwright/test';
 
 import { FAMILIES } from '../src/geom/families';
+import { chooseFamily } from '../src/geom/family-choice';
 import { VIEWER_BUDGETS } from '../src/kit/budgets';
 
 /**
@@ -30,8 +33,8 @@ async function settle(page: Page, frames = SETTLE_FRAMES): Promise<void> {
   });
 }
 
-async function openWorld(page: Page): Promise<void> {
-  await page.goto(`/embed/harbor-pier?emit=${PROMPT}`);
+async function openWorld(page: Page, prompt = PROMPT): Promise<void> {
+  await page.goto(`/embed/harbor-pier?emit=${prompt}`);
   await page.waitForFunction(() => window.__viewer !== undefined, undefined, { timeout: 60_000 });
   await page.waitForFunction(() => window.__viewer!.dressing().length > 0, undefined, {
     timeout: 60_000,
@@ -92,4 +95,45 @@ test('týž svět dá tutéž rodinu i podruhé', async ({ page }) => {
   const second = await page.evaluate(() => window.__viewer!.scenery());
 
   expect(second, 'kulisa se mezi dvěma načteními téhož světa změnila').toEqual(first);
+});
+
+/**
+ * Oracle úlohy T3 vlny 3 — **rodinu vybírá emise, ne semínko mřížky**.
+ *
+ * Bez tohohle testu se vada nepozná: kulisa by pořád stála, pořád by se vešla do
+ * rozpočtu a pořád by hlásila známou rodinu. Jen by ji vybíralo semínko světa,
+ * tedy zdi a mřížka, a dvě různé objednávky by mohly dostat tutéž krajinu.
+ * Jednotkové testy na to nedosáhnou — `WorldScene` je komponenta rendereru.
+ *
+ * Dva zmrazené světy s **různým `look`** proti sobě: `C02` má `atmosphere: fog`,
+ * `C04` má `palette: amber`. Očekávaná rodina se nedopočítává v testu podruhé,
+ * bere se z `chooseFamily` — test tvrdí, že produkt dojde k témuž rozhodnutí,
+ * ne že rozhodnutí je správné.
+ */
+const LOOKS: Readonly<Record<string, unknown>> = Object.fromEntries(
+  readFileSync('evals/frozen/responses/index.jsonl', 'utf8')
+    .split('\n')
+    .filter((line) => line.trim() !== '')
+    .map((line) => JSON.parse(line) as { forPrompt: string; body?: { look?: unknown } })
+    .map((entry) => [entry.forPrompt, entry.body?.look]),
+);
+
+test('dvě různé emise dají dvě různé výtvarné rodiny', async ({ page }) => {
+  test.setTimeout(180_000);
+
+  // Semínko kulisy je hash světa a v testu ho neznáme; `fog` i `orange` ale
+  // rozhodnou samy a na semínko se nespadne, takže očekávání na něm nezávisí.
+  const expected = ['C02', 'C04'].map((prompt) => chooseFamily(LOOKS[prompt], 0));
+  expect(new Set(expected).size, 'zvolené zmrazené světy chtějí tutéž rodinu').toBe(2);
+
+  const seen: string[] = [];
+  for (const prompt of ['C02', 'C04']) {
+    await openWorld(page, prompt);
+    seen.push((await page.evaluate(() => window.__viewer!.scenery())).family);
+  }
+
+  expect(
+    seen,
+    `emise chtěly ${expected.join(' a ')}, scéna postavila ${seen.join(' a ')} — rodinu vybírá něco jiného než věta`,
+  ).toEqual(expected);
 });

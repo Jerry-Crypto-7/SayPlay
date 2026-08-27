@@ -104,6 +104,15 @@ function worldFrom(emission: unknown): WorldDocRuntime | null {
 }
 
 /**
+ * Výtvarná část emise. Vybírá rodinu kulisy (`chooseFamily`) a je to **odkaz do
+ * uloženého objektu**, ne nová hodnota — kdyby vznikala při každém renderu,
+ * `WorldScene` by přestavovala scénu pořád dokola.
+ */
+function lookOf(emission: unknown): unknown {
+  return (emission as { look?: unknown } | null)?.look ?? null;
+}
+
+/**
  * Dolní rohy jsou **sloupce, ne hromada**.
  *
  * Čtyři panely se dřív kotvily samy a dva páry z nich seděly na stejném místě se
@@ -324,7 +333,10 @@ export default function Page() {
         <RepairRounds rounds={rounds} />
         <ModelProgress onReady={acceptEngine} onState={acceptModelState} />
       </div>
-      <Stage world={world} inputs={inputs} runnerRef={runnerRef} />
+      {/* `look` jde z TÉŽE emise jako svět, ne z vedlejšího stavu: obojí zapisuje
+          `acceptWorld` jedním krokem, takže si kulisa a hra nemůžou patřit dvěma
+          různým větám. Vybírá výtvarnou rodinu kulisy (`chooseFamily`). */}
+      <Stage world={world} look={lookOf(programs.current)} inputs={inputs} runnerRef={runnerRef} />
     </main>
   );
 }

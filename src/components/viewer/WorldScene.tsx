@@ -43,6 +43,7 @@ import {
   type BufferGeometry,
 } from 'three';
 
+import { chooseFamily } from '@/geom/family-choice';
 import { SCENE_ROLES, pieceById } from '@/kit';
 import { createClock, pump, runTicks } from '@/sim/clock';
 import { hashHex } from '@/sim/hash';
@@ -67,7 +68,7 @@ import {
   revealedInBatch,
   type AssemblySnapshot,
 } from './Assembly';
-import { planDressing, type DressingKind, type DressingPlan } from './dressing';
+import { dressingSeed, planDressing, type DressingKind, type DressingPlan } from './dressing';
 import { toonRamp } from './Lighting';
 import { buildScenery, type SceneryBuild } from './scenery';
 import {
@@ -175,7 +176,7 @@ function place(matrix: Matrix4, yaw: number, x: number, y: number, z: number): M
  * nedá zvětšit. Bez toho by spawnutá entita tiše zmizela ze scény, zatímco
  * simulace by s ní dál počítala.
  */
-function buildScene(world: WorldDocRuntime): BuiltScene {
+function buildScene(world: WorldDocRuntime, family: string): BuiltScene {
   const group = new Group();
   const ramp = toonRamp();
   const owned: { dispose: () => void }[] = [ramp];
@@ -226,7 +227,11 @@ function buildScene(world: WorldDocRuntime): BuiltScene {
 
   // Kulisa je třetí vrstva scény: za hrací plochou, z programu geometrie, ne
   // z kitu. Stojí až za `kitMaterial`, protože ho sdílí — barvu nese geometrie.
-  const scenery = buildScenery(plan.family, plan.seed, grid, kitMaterial);
+  //
+  // **Rodinu vybírá věta, ne mřížka** — dorazí sem hotová od volajícího.
+  // `plan.family` ze semínka je od vlny 3 T3 jen záloha, na kterou spadne
+  // `chooseFamily` sám, když v `look` není jediné známé slovo.
+  const scenery = buildScenery(family, plan.seed, grid, kitMaterial);
   if (scenery.object !== null) group.add(scenery.object);
   owned.push(scenery);
 
@@ -476,10 +481,20 @@ function inputsForTick(trace: readonly TraceInput[], tick: number): TraceInput[]
 
 export default function WorldScene({
   world,
+  look = null,
   runnerRef,
   inputs,
 }: {
   readonly world: WorldDocRuntime;
+  /**
+   * Část `look` téže emise, ze které je svět. Vybírá **výtvarnou rodinu kulisy**
+   * (`chooseFamily`), takže dvě věty o dvou různých krajinách dostanou dvě různé.
+   *
+   * Nejde do `WorldDocRuntime`: `look` je mimo hashovaný stav schválně
+   * (`src/ir/worlddoc.ts:7`) a `src/sim` nemění tvar. Bez něj rozhodne semínko
+   * světa — tedy stav před vlnou 3, ne pád.
+   */
+  readonly look?: unknown;
   /** Plní ho tahle komponenta; čte `Bridge` ve `Viewer.tsx`. */
   readonly runnerRef: RunnerRef;
   /**
@@ -489,7 +504,12 @@ export default function WorldScene({
    */
   readonly inputs?: (tick: number) => readonly TraceInput[];
 }) {
-  const scene = useMemo(() => buildScene(world), [world]);
+  // Rodina se počítá zvlášť a do stavby jde jako **řetězec**. Kdyby do závislostí
+  // memoizace vstoupil `look`, stačil by volající, který ho píše inline, a scéna
+  // by se přestavovala při každém renderu — tedy koktala by, ne spadla, a nikdo
+  // by to nespojil s prop, která se jen jinak jmenuje.
+  const family = useMemo(() => chooseFamily(look, dressingSeed(world)), [look, world]);
+  const scene = useMemo(() => buildScene(world, family), [world, family]);
   const runtime = useMemo<Runtime>(() => createRuntime(world), [world]);
   const clock = useMemo(() => createClock(), [world]);
   const matrix = useRef(new Matrix4());
