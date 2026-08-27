@@ -68,7 +68,13 @@ import {
   revealedInBatch,
   type AssemblySnapshot,
 } from './Assembly';
-import { dressingSeed, planDressing, type DressingKind, type DressingPlan } from './dressing';
+import {
+  dressingSeed,
+  planDressing,
+  FILL_RINGS,
+  type DressingKind,
+  type DressingPlan,
+} from './dressing';
 import { interpolateEntities } from './interpolate';
 import { toonRamp } from './Lighting';
 import { buildScenery, type SceneryBuild } from './scenery';
@@ -199,8 +205,13 @@ function buildScene(world: WorldDocRuntime, family: string): BuiltScene {
 
   // Rovina pod dlaždicemi, ne místo nich. Leží uprostřed jejich tloušťky, takže
   // se s ničím nepere o hloubku a je vidět jen tam, kde by jinak byla díra.
+  //
+  // Sahá i pod výplň za hranou mřížky — bez toho by kusy výplně stály nad
+  // prázdnem a vypadaly by, že se vznášejí. Dlaždice pod ně nepatří: dlaždice
+  // je pochozí plocha a výplň pochozí není.
+  const ground = FILL_RINGS * 2 * CELL_SIZE;
   const floor = new Mesh(
-    geometry(new PlaneGeometry(projected.floor.width, projected.floor.depth)),
+    geometry(new PlaneGeometry(projected.floor.width + ground, projected.floor.depth + ground)),
     material(COLORS.floor),
   );
   floor.rotation.x = -Math.PI / 2;

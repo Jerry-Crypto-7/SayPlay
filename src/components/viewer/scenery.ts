@@ -4,6 +4,7 @@ import { familyById } from '@/geom/families';
 import { bakePlacements, compilePlacements, type GeomPlacement } from '@/geom/placements';
 import { PALETTES, pieceById, repaint, trianglesOf } from '@/kit';
 
+import { FILL_RINGS } from './dressing';
 import { CELL_SIZE, type GridSize } from './projection';
 
 /**
@@ -33,8 +34,14 @@ import { CELL_SIZE, type GridSize } from './projection';
  * kreslil podruhé a nezískal by tím jediný pixel.
  */
 
-/** Mezera mezi vzdálenou hranou mřížky a nejbližší hranou kulisy, v polích. */
-const GRID_MARGIN = 1;
+/**
+ * Mezera mezi vzdálenou hranou mřížky a nejbližší hranou kulisy, v polích.
+ *
+ * **Odvozená z hloubky výplně, ne zvolená.** Výplň (`dressing.ts`) staví kusy
+ * na `FILL_RINGS` prstencích za mřížkou; kdyby tohle číslo zůstalo 1, ležela by
+ * krajina na nich. Jedno pole navrch je ta mezera, kterou tu byla vždycky.
+ */
+const GRID_MARGIN = FILL_RINGS + 1;
 
 /**
  * Kulisa sedí o vlásek pod pochozí rovinou (`floor` je na −0,06), aby zem

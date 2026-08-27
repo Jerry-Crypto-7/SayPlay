@@ -3,6 +3,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 
 import { buildScenery } from '@/components/viewer/scenery';
 import { CELL_SIZE } from '@/components/viewer/projection';
+import { FILL_RINGS } from '@/components/viewer/dressing';
 import { FAMILIES } from '@/geom/families';
 import { KIT_BUDGETS } from '@/kit';
 
@@ -25,18 +26,29 @@ const GRID = { width: 12, height: 8 };
 const SEED = 20_260_826;
 
 /**
- * Naměřená cena kulisy, 26. 8. 2026, semínko `SEED` a mřížka 12×8.
+ * Naměřená cena kulisy, 27. 8. 2026, semínko `SEED` a mřížka 12×8.
  *
- * **Připnuté schválně, ať se každý pohyb ozve.** Tahle čísla čte vlna 3 T6,
- * která má hustotu zvednout z jednotek procent rozpočtu na 15–20 %; kdyby se
- * beze slova posunula, mířila by na cíl, který už neplatí. Když se ozvou,
- * **zapiš proč**, nikdy je jen nepřepiš.
+ * **Připnuté schválně, ať se každý pohyb ozve.** Když se ozvou, **zapiš proč**,
+ * nikdy je jen nepřepiš.
+ *
+ * **Proč se pohnula z 26. 8. 2026** (`4/1 598`, `4/3 042`, `5/3 194`,
+ * `3/1 222`): vlna 3 T6 zahustila rodiny, protože kulisa nesla jednotky procent
+ * rozpočtu. Terasy dostaly pás zábradlí a rozseté zkosené kvádry, Věže o patro
+ * a o věž víc a dvakrát tolik sloupů kolem, Háj podrost ze shluků, Hutě `window`
+ * místo `wall` (tytéž rozměry, pětkrát víc trojúhelníků) a pevný počet lodí.
+ * Kreslicí volání přibyla jen tam, kde přibylo **nové id kusu** — Terasy 4 → 6,
+ * Háj 5 → 6; Věže a Hutě žádné nové id nemají a stojí na svém.
+ *
+ * Háj se v téže úloze hnul **podruhé**, `4 982 → 5 062`: `e2e/divergence.spec.ts`
+ * naměřil profil dvou semínek 0,0129 proti stropu 0,012, takže se počty porostu
+ * ustálily na pevných a losuje se jen počet balvanů. Práh se nehnul, hnula se
+ * rodina.
  */
 const MEASURED: Readonly<Record<string, { readonly drawCalls: number; readonly triangles: number }>> = {
-  terraces: { drawCalls: 4, triangles: 1_598 },
-  spires: { drawCalls: 4, triangles: 3_042 },
-  grove: { drawCalls: 5, triangles: 3_194 },
-  works: { drawCalls: 3, triangles: 1_222 },
+  terraces: { drawCalls: 6, triangles: 4_186 },
+  spires: { drawCalls: 4, triangles: 4_298 },
+  grove: { drawCalls: 6, triangles: 5_062 },
+  works: { drawCalls: 3, triangles: 3_482 },
 };
 
 /**
@@ -99,14 +111,18 @@ describe('buildScenery', () => {
         built.dispose();
       });
 
-      it('leží celá za vzdálenou hranou mřížky', () => {
+      it('leží celá za posledním prstencem výplně, ne jen za mřížkou', () => {
+        // Od vlny 3 T6 nekončí svět hranou mřížky: `FILL_RINGS` prstenců kusů
+        // stojí za ní. Kdyby se tahle hranice počítala jen z mřížky, ležela by
+        // krajina na výplni — a byla by to vada, kterou v Node nikdo nevidí,
+        // protože obě vrstvy se staví zvlášť.
         const built = buildScenery(family.id, SEED, GRID, material);
         const box = boundsOf(built.object as Group);
-        const farEdge = -(GRID.height * CELL_SIZE) / 2;
+        const farEdge = -(GRID.height * CELL_SIZE) / 2 - FILL_RINGS * CELL_SIZE;
         expect(
           box.max.z,
-          `${family.id} zasahuje na hrací plochu: nejbližší hrana ${box.max.z.toFixed(2)}, ` +
-            `vzdálená hrana mřížky ${farEdge.toFixed(2)}`,
+          `${family.id} zasahuje na výplň nebo na hrací plochu: nejbližší hrana ` +
+            `${box.max.z.toFixed(2)}, vzdálená hrana výplně ${farEdge.toFixed(2)}`,
         ).toBeLessThan(farEdge);
         built.dispose();
       });

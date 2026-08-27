@@ -13,7 +13,7 @@ export const spires: Family = {
   title: 'Věže',
   palette: 'frost',
   silhouette: 'sloupy na sobě, svislé pásy, brána vysoko nad zemí',
-  proportions: { footprint: 16, height: 29, pieces: 32 },
+  proportions: { footprint: 16, height: 29, pieces: 89 },
 
   compose(seed: number): GeomProgram {
     const stream = familyStream(seed);
@@ -22,9 +22,9 @@ export const spires: Family = {
     // se rozešla víc než dvě rodiny — naměřeno 24. 8. 2026 profilem 0,066 proti
     // stropu 0,012. Semínku zůstává terén a rozmístění sloupů kolem, tedy
     // rozmístění kusů; silueta rodiny je pevná.
-    const floors = 5;
-    const towers = 5;
-    const outliers = nextInt(stream, 8, 10);
+    const floors = 6;
+    const towers = 6;
+    const outliers = nextInt(stream, 15, 16);
 
     return {
       version: GEOM_VERSION,
