@@ -3,7 +3,7 @@
 import { Canvas } from '@react-three/fiber';
 import { useRef, useState } from 'react';
 
-import FollowCamera from '@/components/viewer/FollowCamera';
+import FollowCamera, { type CameraMode } from '@/components/viewer/FollowCamera';
 import Lighting, { VIEWER_GL, VIEWER_SHADOWS } from '@/components/viewer/Lighting';
 import type { ProjectedEntity } from '@/components/viewer/projection';
 import WorldScene, { type RunnerRef } from '@/components/viewer/WorldScene';
@@ -30,6 +30,14 @@ declare global {
       entities: () => readonly ProjectedEntity[];
       /** Kolik tiků svět odkrokoval. */
       tick: () => number;
+      /**
+       * Kde stojí kamera ve světových souřadnicích.
+       *
+       * Embed má totéž pod `window.__viewer`, úvodní stránka do T5 neměla nic —
+       * a přepínač volného režimu je právě tady, takže jinak se z prohlížeče
+       * nedá zeptat, jestli s kamerou tažení vůbec pohnulo.
+       */
+      camera: () => { x: number; y: number; z: number };
     };
   }
 }
@@ -56,6 +64,7 @@ export default function Stage({
   look = null,
   inputs,
   runnerRef: shared,
+  cameraMode = 'follow',
 }: {
   readonly world?: WorldDocRuntime | null;
   /**
@@ -71,6 +80,11 @@ export default function Stage({
    * se pak něco jiného, než co je na plátně vidět.
    */
   readonly runnerRef?: RunnerRef;
+  /**
+   * Sledovací, nebo volný. Stav drží stránka, protože přepínač stojí v jejím
+   * herním HUD — plátno o něm jen ví, aby se kamera měla podle čeho zařídit.
+   */
+  readonly cameraMode?: CameraMode;
 }) {
   const [, setReady] = useState(false);
   const own = useRef<RunnerRef['current']>(null);
@@ -82,7 +96,7 @@ export default function Stage({
       shadows={VIEWER_SHADOWS}
       gl={VIEWER_GL}
       camera={{ position: [7, 7, 9], fov: 45 }}
-      onCreated={({ gl }) => {
+      onCreated={({ gl, camera }) => {
         const ctx = gl.getContext();
         // Playwright to čte v e2e/smoke.spec.ts. Je to jediný způsob, jak z
         // prohlížeče dostat odpověď na „je kontext OPRAVDU WebGL2", protože
@@ -95,6 +109,7 @@ export default function Stage({
           // tedy dlouho po vytvoření plátna.
           entities: () => runnerRef.current?.entities() ?? [],
           tick: () => runnerRef.current?.tick() ?? 0,
+          camera: () => ({ x: camera.position.x, y: camera.position.y, z: camera.position.z }),
         };
         setReady(true);
       }}
@@ -105,7 +120,7 @@ export default function Stage({
       ) : (
         <>
           <WorldScene world={world} look={look} runnerRef={runnerRef} inputs={inputs} />
-          <FollowCamera runnerRef={runnerRef} />
+          <FollowCamera runnerRef={runnerRef} mode={cameraMode} />
         </>
       )}
     </Canvas>

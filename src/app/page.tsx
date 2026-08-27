@@ -41,6 +41,7 @@ import Program from '@/components/pipeline/Program';
 import Timeline from '@/components/pipeline/Timeline';
 import WitnessPreview from '@/components/pipeline/WitnessPreview';
 import PromptBar from '@/components/PromptBar';
+import type { CameraMode } from '@/components/viewer/FollowCamera';
 import type { RunnerRef } from '@/components/viewer/WorldScene';
 import {
   actorOf,
@@ -158,6 +159,9 @@ const CORNER_RIGHT: React.CSSProperties = { ...CORNER_BASE, right: '1rem', align
 export default function Page() {
   const [world, setWorld] = useState<WorldDocRuntime | null>(null);
   const [broken, setBroken] = useState(false);
+  // Výchozí stav je sledovací a je to rozhodnutí, ne shoda okolností: divák,
+  // který o přepínači neví, musí vidět hru, ne prázdno vedle ní.
+  const [cameraMode, setCameraMode] = useState<CameraMode>('follow');
   const [engine, setEngine] = useState<ChatEngine | null>(null);
   const [modelPhase, setModelPhase] = useState<ModelPhase>('probing');
   /**
@@ -326,7 +330,14 @@ export default function Page() {
       <div style={CORNER_LEFT}>
         <Program emission={programs.current} previous={programs.previous} source={programs.source} />
         <Timeline world={world} />
-        {world === null ? null : <GameControls targets={targets} onRestart={restart} />}
+        {world === null ? null : (
+          <GameControls
+            targets={targets}
+            onRestart={restart}
+            cameraMode={cameraMode}
+            onCameraMode={() => setCameraMode((now) => (now === 'follow' ? 'free' : 'follow'))}
+          />
+        )}
       </div>
       <div style={CORNER_RIGHT}>
         <WitnessPreview world={world} />
@@ -336,7 +347,13 @@ export default function Page() {
       {/* `look` jde z TÉŽE emise jako svět, ne z vedlejšího stavu: obojí zapisuje
           `acceptWorld` jedním krokem, takže si kulisa a hra nemůžou patřit dvěma
           různým větám. Vybírá výtvarnou rodinu kulisy (`chooseFamily`). */}
-      <Stage world={world} look={lookOf(programs.current)} inputs={inputs} runnerRef={runnerRef} />
+      <Stage
+        world={world}
+        look={lookOf(programs.current)}
+        inputs={inputs}
+        runnerRef={runnerRef}
+        cameraMode={cameraMode}
+      />
     </main>
   );
 }
@@ -351,9 +368,13 @@ export default function Page() {
 function GameControls({
   targets,
   onRestart,
+  cameraMode,
+  onCameraMode,
 }: {
   readonly targets: readonly string[];
   readonly onRestart: () => void;
+  readonly cameraMode: CameraMode;
+  readonly onCameraMode: () => void;
 }) {
   return (
     <div data-testid="game-controls" style={PANEL}>
@@ -369,6 +390,18 @@ function GameControls({
       </p>
       <button type="button" data-testid="game-restart" onClick={onRestart} style={BUTTON}>
         Restart
+      </button>
+      {/* Přepínač stojí vedle restartu, ne ve vlastní komponentě: ovládání hry
+          žije tady a druhý panel v témž rohu je ta vada, kvůli které sloupce
+          vznikly. `aria-pressed` nese stav i pro toho, kdo popisek neuvidí. */}
+      <button
+        type="button"
+        data-testid="camera-mode"
+        aria-pressed={cameraMode === 'free'}
+        onClick={onCameraMode}
+        style={{ ...BUTTON, marginLeft: '0.4rem' }}
+      >
+        {cameraMode === 'free' ? 'Follow the hero' : 'Turn the world'}
       </button>
     </div>
   );
