@@ -123,6 +123,34 @@ describe('krajní hodnoty vracejí přesný tik', () => {
     expect(interpolateEntities(before, after, Number.NaN)).toBe(before);
   });
 
+  it('tik, ve kterém se nikdo nehnul, vrací starší projekci beze změny', () => {
+    // Vykreslení na tom pozná, že matice přepisovat nemusí. Ve zmrazených
+    // světech je takových tiků většina — postavou hýbe jen `moveTo`.
+    const before = [entity({ stableId: 'gate', visual: 'gate', state: 'shut', locked: true })];
+    const after = [{ ...before[0], state: 'open', locked: false }];
+
+    expect(interpolateEntities(before, after, 0.5)).toBe(before);
+  });
+
+  it('ale jakmile se někdo hne, dopočítává se dál', () => {
+    const before = [entity(), entity({ stableId: 'coin', visual: 'collectible' })];
+    const after = [before[0], moved(before[1], 1, 0)];
+
+    const out = interpolateEntities(before, after, 0.5);
+
+    expect(out).not.toBe(before);
+    expect(out[1].position.x).toBeCloseTo(0.5, 10);
+  });
+
+  it('dohraný svět má obě projekce tytéž a dopočet je nulový', () => {
+    // Po výhře se svět nemění, ale snímky běží dál a zlomek tiku se dál houpe.
+    // Kdyby se z něj něco počítalo, postava by mezi posledními dvěma poli kmitala.
+    const frozen = [entity()];
+
+    expect(interpolateEntities(frozen, frozen, 0.5)).toBe(frozen);
+    expect(interpolateEntities(frozen, frozen, 0.9)).toBe(frozen);
+  });
+
   it('zlomek nad jedničkou nepřestřelí za novější polohu', () => {
     const before = [entity()];
     const after = [moved(before[0], 1, 0)];
@@ -131,20 +159,30 @@ describe('krajní hodnoty vracejí přesný tik', () => {
   });
 });
 
+/**
+ * Postava se v obou případech **musí hýbat**: tik, ve kterém nikdo neušel ani
+ * krok, se dopočítávat nemá a vrací starší projekci celou. Bez pohybu vedle by
+ * obě zkoušky měřily tu zkratku, ne pravidlo o nespojitých údajích — naměřeno
+ * mutací 27. 8. 2026, která tudy prošla zeleně.
+ */
 describe('nespojité údaje se berou ze staršího tiku', () => {
   it('sebraná mince zmizí až na konci tiku, ne zatímco k ní postava klouže', () => {
-    const before = [entity({ stableId: 'coin', visual: 'collectible', active: true })];
-    const after = [{ ...before[0], active: false }];
+    const hero = entity();
+    const coin = entity({ stableId: 'coin', visual: 'collectible', active: true });
+    const before = [hero, coin];
+    const after = [moved(hero, 1, 0), { ...coin, active: false }];
 
-    expect(interpolateEntities(before, after, 0.5)[0].active).toBe(true);
-    expect(interpolateEntities(before, after, 1)[0].active).toBe(false);
+    expect(interpolateEntities(before, after, 0.5)[1].active).toBe(true);
+    expect(interpolateEntities(before, after, 1)[1].active).toBe(false);
   });
 
   it('stav a zámek jdou taky ze staršího tiku, aby zpoždění bylo jednotné', () => {
-    const before = [entity({ stableId: 'gate', visual: 'gate', state: 'shut', locked: true })];
-    const after = [{ ...before[0], state: 'open', locked: false }];
+    const hero = entity();
+    const gate = entity({ stableId: 'gate', visual: 'gate', state: 'shut', locked: true });
+    const before = [hero, gate];
+    const after = [moved(hero, 1, 0), { ...gate, state: 'open', locked: false }];
 
-    const [mid] = interpolateEntities(before, after, 0.5);
+    const mid = interpolateEntities(before, after, 0.5)[1];
 
     expect(mid.state).toBe('shut');
     expect(mid.locked).toBe(true);

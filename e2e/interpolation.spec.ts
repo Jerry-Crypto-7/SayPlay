@@ -22,6 +22,8 @@ const ON_GRID_EPS = 1e-6;
 interface Sample {
   readonly drawn: readonly (readonly [number, number])[];
   readonly ticks: readonly (readonly [number, number])[];
+  /** Kolik vzorků padlo do doby, kdy svět ještě běžel. */
+  readonly running: number;
   readonly tickSpan: number;
 }
 
@@ -43,6 +45,7 @@ async function sampleFrames(page: Page, frames: number): Promise<Sample> {
     const drawn: [number, number][] = [];
     const ticks: [number, number][] = [];
     const firstTick = window.__viewer!.tick();
+    let running = 0;
 
     for (let i = 0; i < count; i += 1) {
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
@@ -50,9 +53,10 @@ async function sampleFrames(page: Page, frames: number): Promise<Sample> {
       const exact = avatarOf(window.__viewer!.entities());
       if (painted !== undefined) drawn.push([painted.position.x, painted.position.z]);
       if (exact !== undefined) ticks.push([exact.position.x, exact.position.z]);
+      if (window.__viewer!.runState() === 'running') running += 1;
     }
 
-    return { drawn, ticks, tickSpan: window.__viewer!.tick() - firstTick };
+    return { drawn, ticks, running, tickSpan: window.__viewer!.tick() - firstTick };
   }, frames);
 }
 
@@ -70,11 +74,20 @@ test('mezi dvěma tiky stojí postava jinde než na mřížce', async ({ page })
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
-  await openWorld(page);
-  const { drawn, ticks, tickSpan } = await sampleFrames(page, 90);
+  // `C03` má nejdelší svědka ze všech zmrazených světů (výhra až na tiku 653),
+  // takže se do okna vejde měření nad **běžícím** světem. Nad `C02` (výhra na
+  // 440) doběhla hra podle rychlosti stroje někdy dřív, než se stihlo vzorkovat,
+  // a v dohraném světě se z definice nic nedopočítává — test pak nepadal na
+  // vadě, ale na tom, že neměl co měřit. Naměřeno 27. 8. 2026.
+  await openWorld(page, 'C03');
+  const { drawn, ticks, running, tickSpan } = await sampleFrames(page, 90);
 
   expect(ticks.length, 'svět nemá postavu, na které by se dal pohyb měřit').toBeGreaterThan(0);
   expect(tickSpan, 'během měření neuběhl ani jeden tik — test by netvrdil nic').toBeGreaterThan(1);
+  expect(
+    running,
+    `svět dohrál dřív, než se stihlo měřit: běžel jen ${running} z ${drawn.length} vzorků`,
+  ).toBeGreaterThan(drawn.length / 2);
 
   const moved = new Set(ticks.map(([x, z]) => `${x},${z}`));
   expect(moved.size, 'postava se během měření nehnula z místa').toBeGreaterThan(1);
@@ -108,6 +121,62 @@ test('mezi dvěma tiky stojí postava jinde než na mřížce', async ({ page })
   ).toBeLessThan(1.5);
 
   expect(errors, `stránka spadla: ${errors.join(' | ')}`).toEqual([]);
+});
+
+test('po dohrání se obraz zastaví, místo aby kmital mezi posledními dvěma poli', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+
+  // `C04` schválně, a je to naměřená volba, ne odhad. Zaseknutý dopočet se
+  // projeví **jen** ve světě, jehož poslední odkrokovaný tik ještě něčím hnul;
+  // ve světě, který dohraje v klidu, jsou obě projekce shodné a zkouška by byla
+  // zelená i nad vadou. Ze zmrazených světů to platí o `C04` (výhra na tiku 390)
+  // a `C06`; `C01`, `C02`, `C03`, `C07` i `C08` končí beze změny.
+  await openWorld(page, 'C04');
+
+  // Dohrát svědka až do konce. Pak se svět nemění, ale hodiny tikají dál a
+  // zlomek tiku se dál houpe mezi 0 a 1 — a přesně tam vznikla vada, kterou
+  // tenhle test hlídá: postava kmitala mezi svými posledními dvěma poli.
+  await page.evaluate(() => {
+    for (let round = 0; round < 40 && window.__viewer!.runState() === 'running'; round += 1) {
+      window.__viewer!.step(50);
+    }
+  });
+  expect(
+    await page.evaluate(() => window.__viewer!.runState()),
+    'svědek do konce nedošel, takže se klid po dohrání nedá změřit',
+  ).not.toBe('running');
+
+  const { drawn } = await sampleFrames(page, 30);
+  const distinct = new Set(drawn.map(([x, z]) => `${x},${z}`));
+
+  expect(
+    distinct.size,
+    `po dohrání se nakreslená poloha měnila přes ${distinct.size} hodnot: ${[...distinct].slice(0, 4).join(' | ')}`,
+  ).toBe(1);
+
+  // Zkouška výš pozná jen kmitání postavy, a poslední tah svědka postavou hýbat
+  // nemusí. Tahle pozná zaseknutí u kterékoli entity a v kterémkoli údaji:
+  // v klidu musí být nakreslený obraz **shodný** se stavem, který svět hlásí.
+  const stalled = await page.evaluate(() => {
+    const shape = (list: readonly { stableId: string; position: { x: number; y: number; z: number }; active: boolean; state: string; locked: boolean }[]) =>
+      list.map((each) => [
+        each.stableId,
+        each.position.x,
+        each.position.y,
+        each.position.z,
+        each.active,
+        each.state,
+        each.locked,
+      ]);
+    return { drawn: shape(window.__viewer!.drawn()), exact: shape(window.__viewer!.entities()) };
+  });
+
+  expect(
+    stalled.drawn,
+    'dohraný svět kreslí pořád ještě předposlední tik — dopočet se po konci nezastavil',
+  ).toEqual(stalled.exact);
 });
 
 test('krokování bez nástěnného času kreslí přesný stav po tiku', async ({ page }) => {

@@ -29,6 +29,27 @@ function lerp(from: Vec3, to: Vec3, alpha: number): Vec3 {
 }
 
 /**
+ * Hnul se mezi dvěma tiky někdo?
+ *
+ * Porovnává se **jen poloha**, ne stav ani zámek: dopočítává se poloha, takže
+ * tik, ve kterém se otevřely dveře, ale nikdo neušel ani krok, žádnou mezipolohu
+ * nemá. Různě dlouhá pole znamenají, že se změnilo složení světa — to je pohyb
+ * v tom smyslu, o který tu jde.
+ */
+function moves(prev: readonly ProjectedEntity[], next: readonly ProjectedEntity[]): boolean {
+  if (prev.length !== next.length) return true;
+
+  for (let at = 0; at < next.length; at += 1) {
+    const from = prev[at].position;
+    const to = next[at].position;
+    if (prev[at].stableId !== next[at].stableId) return true;
+    if (from.x !== to.x || from.y !== to.y || from.z !== to.z) return true;
+  }
+
+  return false;
+}
+
+/**
  * Projekce ve zlomku `alpha` cesty z `prev` do `next`.
  *
  * `alpha <= 0` vrací starší tik beze změny, `alpha >= 1` novější — obojí je
@@ -49,6 +70,16 @@ export function interpolateEntities(
   // neuběhlo", ne „dopočítej neznámo kam".
   if (!(alpha > 0)) return prev;
   if (alpha >= 1) return next;
+  // Dohraný svět má obě projekce tytéž a snímky běží dál. Bez téhle zkratky by
+  // se každý z nich přepočítával na týž výsledek — a je jich po dohrání nejvíc.
+  if (prev === next) return next;
+  // **Tik, ve kterém se nikdo nehnul, nemá co dopočítávat** — a takových je ve
+  // zmrazených světech většina: postavou hýbe jen tah `moveTo` a těch je ve
+  // svědkovi pár. Vrací se starší tik, tedy táž hodnota jako minule, takže na ní
+  // vykreslení pozná, že přepisovat matice a posílat je na GPU nemusí. Bez toho
+  // stálo dopočítávání celý snímek i ve světě, kde se nic nedělo — naměřeno
+  // 27. 8. 2026 na `e2e/camera.spec.ts`, které kvůli tomu přestalo stíhat.
+  if (!moves(prev, next)) return prev;
 
   const before = new Map(prev.map((entity) => [entity.stableId, entity]));
 

@@ -547,16 +547,21 @@ export default function WorldScene({
     // nedá — zlomek tiku v něm schválně neexistuje — a je to jediný údaj,
     // kterým se dá zvenčí poznat mezipoloha od polohy po tiku.
     let painted: readonly ProjectedEntity[] = before;
+    let paintedReveal = -1;
 
     const draw = (alpha: number) => {
       const entities = interpolateEntities(before, after, alpha);
+      const revealed = assembly.plan.revealedAt(clock.tick);
+      // **Snímek, ve kterém se nic nezměnilo, se nekreslí.** `writeInstances`
+      // označí matice každé dávky za změněné, takže by se každý takový snímek
+      // platil novým nahráním celého instančního pole na GPU — a od T4 se kreslí
+      // šedesátkrát za sekundu místo dvacetkrát. Stavba se počítá jako změna:
+      // během odhalování se nikdo nehýbe a bez ní by se scéna přestala stavět.
+      if (entities === painted && revealed === paintedReveal) return entities;
+
       painted = entities;
-      const shown = writeInstances(
-        scene,
-        entities,
-        matrix.current,
-        assembly.plan.revealedAt(clock.tick),
-      );
+      paintedReveal = revealed;
+      const shown = writeInstances(scene, entities, matrix.current, revealed);
       recordReveal(assembly.log, assembly.plan, clock.tick, shown);
       return entities;
     };
@@ -569,7 +574,14 @@ export default function WorldScene({
       // znamenalo zahodit právě tu mezipolohu, kvůli které úloha vznikla.
       run: (count: number) => {
         runTicks(clock, count, (tick) => {
-          if (runtime.runState !== 'running') return;
+          if (runtime.runState !== 'running') {
+            // Po výhře nebo prohře se svět nemění, ale hodiny tikají dál a zlomek
+            // tiku se dál houpe mezi 0 a 1. Kdyby tu obě projekce zůstaly různé,
+            // postava by mezi svými posledními dvěma poli **kmitala donekonečna**
+            // — naměřeno 27. 8. 2026. Srovnáním se dopočet stane nulovým.
+            before = after;
+            return;
+          }
           before = after;
           step(runtime, inputs === undefined ? inputsForTick(world.trace, tick) : [...inputs(tick)]);
           after = projectEntities(world, entityPlacements(runtime));
