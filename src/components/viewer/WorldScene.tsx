@@ -45,7 +45,7 @@ import {
 
 import { chooseFamily } from '@/geom/family-choice';
 import { SCENE_ROLES, pieceById } from '@/kit';
-import { createClock, pump, runTicks } from '@/sim/clock';
+import { TICK_MS, createClock, pump, runTicks } from '@/sim/clock';
 import { hashHex } from '@/sim/hash';
 import {
   createRuntime,
@@ -69,6 +69,7 @@ import {
   type AssemblySnapshot,
 } from './Assembly';
 import { dressingSeed, planDressing, type DressingKind, type DressingPlan } from './dressing';
+import { interpolateEntities } from './interpolate';
 import { toonRamp } from './Lighting';
 import { buildScenery, type SceneryBuild } from './scenery';
 import {
@@ -339,7 +340,9 @@ function buildScene(world: WorldDocRuntime, family: string): BuiltScene {
 }
 
 /**
- * Zapíše polohy entit do matic instancí. Volá se po každém tiku, ne každý snímek.
+ * Zapíše polohy entit do matic instancí. Volá se **každý snímek** — dostává
+ * dopočítanou projekci, ne stav runtimu, takže mezi dvěma tiky přepisuje matice
+ * mezipolohami. Do tiku ani do hashovaného stavu odsud nevede nic.
  *
  * Entita s rolí kulisy jde do dávky **svého kusu z kitu**, za jeho nehybnou
  * část; ostatní do dávky podle podoby. Statika se nepřepisuje, jen se za ni
@@ -438,6 +441,15 @@ export interface SceneryReport {
 export interface WorldRunner {
   /** Entity ve světových souřadnicích, v pořadí deklarace a v plné délce. */
   readonly entities: () => readonly ProjectedEntity[];
+  /**
+   * Co scéna naposledy NAKRESLILA, ne co si myslí simulace.
+   *
+   * Mezi dvěma tiky se ty dvě věci liší, a je to ten rozdíl, kvůli kterému
+   * se entity přestaly pohybovat po celých polích. `entities()` zůstává
+   * přesný stav po tiku — na něm stojí každé měření řetězu hashů — takže
+   * mezipoloha potřebuje vlastní okno ven.
+   */
+  readonly drawn: () => readonly ProjectedEntity[];
   /** Kulisa za hrací plochou — jediná cesta, jak se z prohlížeče zeptat, co postavil geom. */
   readonly scenery: () => SceneryReport;
   /**
@@ -525,8 +537,20 @@ export default function WorldScene({
   );
 
   const advance = useMemo(() => {
-    const drawFromState = () => {
-      const entities = projectEntities(world, entityPlacements(runtime));
+    // Stav před tikem dnes nikde neleží — `entityPlacements` čte živé sloty a
+    // historii nedrží. Tyhle dvě projekce v uzávěru jsou jediné místo, kde je
+    // k dispozici, a leží schválně MIMO runtime: hashuje se `runtime.state`,
+    // takže se odsud do hashe nedostane nic ani omylem.
+    let before = projectEntities(world, entityPlacements(runtime));
+    let after = before;
+    // Co šlo naposledy do matic instancí. Ze stavu runtimu se to dopočítat
+    // nedá — zlomek tiku v něm schválně neexistuje — a je to jediný údaj,
+    // kterým se dá zvenčí poznat mezipoloha od polohy po tiku.
+    let painted: readonly ProjectedEntity[] = before;
+
+    const draw = (alpha: number) => {
+      const entities = interpolateEntities(before, after, alpha);
+      painted = entities;
       const shown = writeInstances(
         scene,
         entities,
@@ -538,13 +562,18 @@ export default function WorldScene({
     };
 
     return {
-      drawFromState,
+      draw,
+      drawn: () => painted,
+      // Odkrokuje a **nekreslí**. Kreslení je věc snímku, ne tiku: v jednom
+      // snímku může doběhnout několik tiků a překreslit po každém z nich by
+      // znamenalo zahodit právě tu mezipolohu, kvůli které úloha vznikla.
       run: (count: number) => {
         runTicks(clock, count, (tick) => {
           if (runtime.runState !== 'running') return;
+          before = after;
           step(runtime, inputs === undefined ? inputsForTick(world.trace, tick) : [...inputs(tick)]);
+          after = projectEntities(world, entityPlacements(runtime));
         });
-        drawFromState();
       },
     };
   }, [assembly, clock, inputs, runtime, scene, world]);
@@ -552,12 +581,13 @@ export default function WorldScene({
   // První snímek kreslí výchozí stav, ne prázdno. Bez toho je scéna do prvního
   // tiku prázdná, což vypadá jako vada vykreslení, ne jako svět před startem.
   useEffect(() => {
-    advance.drawFromState();
+    advance.draw(1);
   }, [advance]);
 
   useEffect(() => {
     runnerRef.current = {
       entities: () => projectEntities(world, entityPlacements(runtime)),
+      drawn: () => advance.drawn(),
       scenery: () => ({
         family: scene.scenery.family,
         drawCalls: scene.scenery.drawCalls,
@@ -568,7 +598,13 @@ export default function WorldScene({
         [...scene.kit.entries()].map(([piece, batch]) => ({ piece, instances: batch.mesh.count })),
       tick: () => runtime.tick,
       assembly: () => assemblySnapshot(assembly.log, assembly.plan),
-      step: (count: number) => advance.run(count),
+      // `step(n)` je deterministické krokování bez nástěnného času, takže po
+      // něm musí stát přesný stav po tiku (`alpha = 1`), ne mezipoloha. Na tom
+      // stojí každé měření z prohlížeče.
+      step: (count: number) => {
+        advance.run(count);
+        advance.draw(1);
+      },
       runState: () => runtime.runState,
       hash: () => hashHex(runtime.state),
     };
@@ -584,6 +620,9 @@ export default function WorldScene({
     // počet tiků. Zbytek pod tikem zůstává v akumulátoru — dělený tik neexistuje.
     const due = pump(clock, delta * 1000);
     if (due > 0) advance.run(due);
+    // Ten zbytek je zároveň jediné, k čemu je nástěnný čas ve vykreslení dobrý:
+    // jak daleko mezi dvěma tiky snímek leží. Simulace ho nevidí.
+    advance.draw(clock.accumulatorMs / TICK_MS);
   });
 
   return <primitive object={scene.group} />;

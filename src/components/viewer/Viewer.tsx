@@ -73,6 +73,14 @@ declare global {
        */
       entities: () => readonly ProjectedEntity[];
       /**
+       * Co plátno naposledy nakreslilo. Mezi dvěma tiky to není totéž co
+       * `entities()`: simulace stojí na celých polích, kreslení mezi nimi
+       * dopočítává. Jediná cesta, jak se z prohlížeče zeptat, jestli se
+       * mezipolohy opravdu kreslí, nebo se svět jen dvacetkrát za sekundu
+       * překlápí o celé pole.
+       */
+      drawn: () => readonly ProjectedEntity[];
+      /**
        * Co scéna postavila z kitu — jedna položka na id kusu, s počtem instancí,
        * které dávka právě kreslí. Ze zdrojáku se to spočítat nedá: co kde stojí
        * rozhoduje semínko odvozené z konkrétního světa.
@@ -185,6 +193,7 @@ function Bridge({
       // a plátno ho mění za života mostu. Zachycená hodnota by tu zamrzla na
       // `null` z prvního snímku a `entities()` by navždy vracelo prázdno.
       entities: () => runnerRef.current?.entities() ?? [],
+      drawn: () => runnerRef.current?.drawn() ?? [],
       dressing: () => runnerRef.current?.dressing() ?? [],
       scenery: () =>
         runnerRef.current?.scenery() ?? { family: '', drawCalls: 0, triangles: 0, attached: false },
