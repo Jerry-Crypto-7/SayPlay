@@ -184,6 +184,31 @@ export const UI_TOKENS = {
   /** Prohra a chyby. */
   negative: '#e2622c',
   accent: '#2f9e8f',
+
+  // --- Paleta WORLDSTREAM (design book §15.1) -----------------------------
+  // Sedm tokenů jedné výtvarné teze: „živá kartografie hmoty". Tokeny nad nimi
+  // zůstávají, protože je nese HUD záložní větve i stávající scéna; tyhle nese
+  // skořápka produktu a všechno, co po ní přijde.
+  //
+  // **Fialová tu není a nebude.** Revize 1 návrhu měla `#7857A8` jako akcent;
+  // fialová je výchozí barva AI-generovaného designu, tedy přesně ten dojem,
+  // kterému se vyhýbáme. Nahrazuje ji **verdigris**, patina mědi. Hlídá to
+  // `src/app/__tests__/theme.test.ts` pásmem odstínu 250–320°.
+
+  /** Prostor, mlha, hluboké pozadí. */
+  pelagic: '#07141f',
+  /** Plochy, panely, stíny. */
+  basalt: '#16262f',
+  /** Hrubá hmota a nehotové objekty. Ne šedý placeholder — první fáze světa. */
+  clay: '#c8a987',
+  /** Text a jemné prostorové linky. */
+  nacre: '#d8e7e2',
+  /** Aktivní generativní vazby a výběr. */
+  verdigris: '#2e8f86',
+  /** Hotová kotva, potvrzená interakce. */
+  amber: '#f1b24a',
+  /** Lokální selhání bez alarmistické červené plochy. */
+  coral: '#df6b62',
 } as const;
 
 export type UiToken = keyof typeof UI_TOKENS;

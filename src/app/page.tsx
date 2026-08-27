@@ -29,6 +29,18 @@
  * WebLLM a váhy; na stroji bez akcelerace neodejde jediný jejich bajt. Hotový
  * engine vede přes `PromptBar` do produkčního `emitLocally()`, takže panel už
  * neplatí cenu bez volajícího. Měří to `e2e/model-wired.spec.ts`.
+ *
+ * ## Rozvržení odešlo do skořápky (P13 vlna 0 T1)
+ *
+ * Do 27. 8. 2026 tahle stránka rozvržení i držela: dva sloupce v rozích, pole na
+ * větu v horním pruhu a pět průsvitných karet s vnitřnostmi potrubí, které
+ * viděl každý, kdo přišel napsat větu. Design book §15.3 to obrací — plátno má
+ * celý viewport a rozhraní jsou tři věci u spodní hrany. Rozvržení teď dělá
+ * `WorldstreamApp`, tady zůstal **stav**: svět, emise, fáze hry, `window.__game`.
+ *
+ * Pět panelů se **nemaže**, stěhuje se do Inspect zásuvky. Jediná výjimka je
+ * `ModelProgress`, který je současně panel i motor stahování modelu; drží ho
+ * proto `inspectBackground` připojený pořád a vykreslí se až po otevření.
  */
 
 import dynamic from 'next/dynamic';
@@ -41,6 +53,8 @@ import Program from '@/components/pipeline/Program';
 import Timeline from '@/components/pipeline/Timeline';
 import WitnessPreview from '@/components/pipeline/WitnessPreview';
 import PromptBar from '@/components/PromptBar';
+import WorldStatus, { type WorldStatusState } from '@/components/worldstream/WorldStatus';
+import WorldstreamApp from '@/components/worldstream/WorldstreamApp';
 import type { CameraMode } from '@/components/viewer/FollowCamera';
 import type { RunnerRef } from '@/components/viewer/WorldScene';
 import {
@@ -113,49 +127,6 @@ function lookOf(emission: unknown): unknown {
   return (emission as { look?: unknown } | null)?.look ?? null;
 }
 
-/**
- * Dolní rohy jsou **sloupce, ne hromada**.
- *
- * Čtyři panely se dřív kotvily samy a dva páry z nich seděly na stejném místě se
- * stejným `zIndex`: program s časovou osou vlevo, náhled vítězné cesty s
- * ukazatelem stahování modelu vpravo. U levého páru to nebyla kosmetika —
- * **sbalený panel programu se schoval pod časovou osu a nešel rozbalit**, což je
- * na demu přesně ten pohyb, kvůli kterému se panel sbaluje. Naměřeno
- * `e2e/pipeline-panel.spec.ts`: klik na přepínač hlásil, že ho `timeline-branch`
- * přebírá.
- *
- * Sloupec je průchozí pro kurzor (`pointerEvents: 'none'`) a každý panel si
- * průchodnost vypíná sám. Bez toho by mezera mezi panely byla neviditelný pruh,
- * který bere kliknutí do plátna — táž vada o patro níž.
- *
- * **Potřetí, 25. 8. 2026: herní HUD (`GameControls`) do sloupce nepatřil.** Kotvil
- * se sám na `bottom/left: 1rem`, tedy do téhož rohu, a protože sloupec stojí
- * v DOM za ním, lehla si časová osa navrch: `elementFromPoint` ve středu
- * `game-restart` vracel `timeline-outcome`, takže **restart nešlo kliknout**.
- * Vada přežila proto, že se soudila jako kosmetika. Hlídá ji od té doby
- * `e2e/pipeline-panel.spec.ts` zásahovou zkouškou nad celým rohem — nový panel
- * patří do sloupce a do toho seznamu, ne na vlastní `position: absolute`.
- */
-const CORNER_BASE: React.CSSProperties = {
-  position: 'absolute',
-  bottom: '1rem',
-  zIndex: 2,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '0.5rem',
-  // Horní pruh patří vstupu, ne panelům. `PromptBar` roste dolů, kdykoli k větě
-  // něco říká — po nepřečtené větě přibude řádek o náhradní místnosti i nabídka
-  // záložní větve — a zároveň teď taková věta staví svět, takže panely stojí.
-  // Naměřeno `e2e/prompt-to-world.spec.ts`: nadpis panelu programu zachytával
-  // klik do odkazu na záložní větev.
-  maxHeight: 'calc(100dvh - 17rem)',
-  pointerEvents: 'none',
-};
-
-const CORNER_LEFT: React.CSSProperties = { ...CORNER_BASE, left: '1rem', alignItems: 'flex-start' };
-
-const CORNER_RIGHT: React.CSSProperties = { ...CORNER_BASE, right: '1rem', alignItems: 'flex-end' };
-
 export default function Page() {
   const [world, setWorld] = useState<WorldDocRuntime | null>(null);
   const [broken, setBroken] = useState(false);
@@ -167,9 +138,9 @@ export default function Page() {
   /**
    * Kola opravné smyčky poslední věty. Prázdné, dokud model neběžel.
    *
-   * Bydlí tady, ne v `PromptBar`, protože panel patří do pravého sloupce —
-   * kotvit se sám mu `CORNER_RIGHT` zakazuje a dvakrát to už stálo několik dní
-   * červené e2e sady.
+   * Bydlí tady, ne v `PromptBar`, protože panel patří do Inspect zásuvky —
+   * kotvit se sám mu `.ws-inspect-panels` zakazuje a dvakrát to už stálo několik
+   * dní červené e2e sady.
    */
   const [rounds, setRounds] = useState<readonly Round[]>([]);
   // Dvě emise v JEDNOM stavu, ne dva stavy vedle sebe: panel překladu ukazuje
@@ -186,6 +157,16 @@ export default function Page() {
     previous: null,
     source: null,
   });
+
+  /**
+   * Je Inspect otevřený?
+   *
+   * Bydlí to tady, ne v `WorldstreamApp`, kvůli `ModelProgress`: ten je současně
+   * panel i motor stahování modelu, takže se nesmí odpojit se zavřenou zásuvkou.
+   * Stránka mu proto podává `visible` a on zůstává připojený pořád.
+   */
+  const [inspecting, setInspecting] = useState(false);
+  const toggleInspect = useCallback(() => setInspecting((was) => !was), []);
 
   const runnerRef = useRef<RunnerRef['current']>(null);
   const controls = useMemo(createControls, []);
@@ -210,6 +191,11 @@ export default function Page() {
 
   const actor = world === null ? null : actorOf(world);
   const targets = useMemo(() => (world === null ? [] : playableTargets(world)), [world]);
+
+  // Jedna věta o stavu světa, ne panel logů (design book §15.3). Rozbitý svět má
+  // přednost před živým: kdyby se poslední věta nedala postavit, je to to jediné,
+  // co uživatel v tu chvíli potřebuje vědět.
+  const statusState: WorldStatusState = broken ? 'broken' : world === null ? 'empty' : 'live';
 
   const inputs = useCallback(
     (tick: number) => (actor === null ? [] : controls.take(tick, actor)),
@@ -309,52 +295,63 @@ export default function Page() {
   }, [actor, controls, record, restart, targets]);
 
   return (
-    <main style={{ position: 'relative', height: '100dvh', width: '100vw' }}>
-      <PromptBar
-        onWorld={acceptWorld}
-        onRounds={setRounds}
-        engine={engine}
-        modelPhase={modelPhase}
-      />
-      {/* Prázdný stav plátna. Mizí, jakmile návštěvník poprvé odešle větu — i
-          když se z ní svět postavit nepodařilo, protože pak mluví hláška o
-          chybě a dvě sdělení přes sebe by si braly pozornost. Stojí AŽ ZA
-          `PromptBar`, aby prvním interaktivním prvkem stránky zůstal vstup
-          pro větu; hlídá to `e2e/render-quality.spec.ts`. */}
-      {world === null && programs.current === null ? <FirstRun /> : null}
-      {broken ? (
-        <p data-testid="world-broken" role="alert" style={BROKEN}>
-          The model returned a world that cannot be run.
-        </p>
-      ) : null}
-      <div style={CORNER_LEFT}>
-        <Program emission={programs.current} previous={programs.previous} source={programs.source} />
-        <Timeline world={world} />
-        {world === null ? null : (
+    <WorldstreamApp
+      inspecting={inspecting}
+      onInspect={toggleInspect}
+      prompt={
+        <PromptBar
+          onWorld={acceptWorld}
+          onRounds={setRounds}
+          engine={engine}
+          modelPhase={modelPhase}
+        />
+      }
+      status={<WorldStatus state={statusState} />}
+      /* Prázdný stav plátna. Mizí, jakmile návštěvník poprvé odešle větu — i
+         když se z ní svět postavit nepodařilo, protože pak mluví stavová věta o
+         chybě a dvě sdělení přes sebe by si braly pozornost. */
+      empty={world === null && programs.current === null ? <FirstRun /> : null}
+      controls={
+        world === null ? null : (
           <GameControls
             targets={targets}
             onRestart={restart}
             cameraMode={cameraMode}
             onCameraMode={() => setCameraMode((now) => (now === 'follow' ? 'free' : 'follow'))}
           />
-        )}
-      </div>
-      <div style={CORNER_RIGHT}>
-        <WitnessPreview world={world} />
-        <RepairRounds rounds={rounds} />
-        <ModelProgress onReady={acceptEngine} onState={acceptModelState} />
-      </div>
-      {/* `look` jde z TÉŽE emise jako svět, ne z vedlejšího stavu: obojí zapisuje
-          `acceptWorld` jedním krokem, takže si kulisa a hra nemůžou patřit dvěma
-          různým větám. Vybírá výtvarnou rodinu kulisy (`chooseFamily`). */}
-      <Stage
-        world={world}
-        look={lookOf(programs.current)}
-        inputs={inputs}
-        runnerRef={runnerRef}
-        cameraMode={cameraMode}
-      />
-    </main>
+        )
+      }
+      /* Pět panelů, které do vlny 0 stály v rozích a vidělo je i to, kdo přišel
+         jenom napsat větu. Nemažou se — jsou to důkazy, na kterých produkt stojí
+         (design book §15.5). Do stromu se dostanou teprve po otevření zásuvky. */
+      inspect={
+        <>
+          <Program
+            emission={programs.current}
+            previous={programs.previous}
+            source={programs.source}
+          />
+          <Timeline world={world} />
+          <WitnessPreview world={world} />
+          <RepairRounds rounds={rounds} />
+        </>
+      }
+      inspectBackground={
+        <ModelProgress onReady={acceptEngine} onState={acceptModelState} visible={inspecting} />
+      }
+      /* `look` jde z TÉŽE emise jako svět, ne z vedlejšího stavu: obojí zapisuje
+         `acceptWorld` jedním krokem, takže si kulisa a hra nemůžou patřit dvěma
+         různým větám. Vybírá výtvarnou rodinu kulisy (`chooseFamily`). */
+      stage={
+        <Stage
+          world={world}
+          look={lookOf(programs.current)}
+          inputs={inputs}
+          runnerRef={runnerRef}
+          cameraMode={cameraMode}
+        />
+      }
+    />
   );
 }
 
@@ -407,21 +404,11 @@ function GameControls({
   );
 }
 
-const BROKEN: React.CSSProperties = {
-  position: 'absolute',
-  bottom: '1rem',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  zIndex: 2,
-  margin: 0,
-  color: '#e8a33d',
-};
-
 const PANEL: React.CSSProperties = {
-  // Žádné vlastní ukotvení do rohu — panel je členem `CORNER_LEFT` a roh drží
-  // sloupec. Dokud se kotvil sám (`bottom`/`left: 1rem`, `zIndex: 2`), lehl si
-  // přesně pod časovou osu a `game-restart` nešlo kliknout: `elementFromPoint`
-  // ve středu tlačítka vracel `timeline-outcome`.
+  // Žádné vlastní ukotvení do rohu — panel je členem `.ws-controls` a roh drží
+  // ten sloupec. Dokud se kotvil sám (`bottom`/`left: 1rem`, `zIndex: 2`), lehl
+  // si přesně pod časovou osu a `game-restart` nešlo kliknout:
+  // `elementFromPoint` ve středu tlačítka vracel `timeline-outcome`.
   pointerEvents: 'auto',
   padding: '0.6rem 0.75rem',
   borderRadius: 6,

@@ -1,5 +1,7 @@
 import { expect, test, type Locator } from '@playwright/test';
 
+import { openInspect } from './inspect';
+
 /**
  * Oracle T27r — **rozhraní na demo cestě je anglicky.**
  *
@@ -111,8 +113,11 @@ test('žádný panel na demo cestě nemluví česky', async ({ page }) => {
   // 1. `lang` odpovídá skutečnosti. Do 24. 8. 2026 tvrdil `en` nad českým UI.
   expect(await page.locator('html').getAttribute('lang')).toBe('en');
 
-  // 2. Prázdná obrazovka — první věc, kterou porotce uvidí.
+  // 2. Prázdná obrazovka — první věc, kterou porotce uvidí. Od P13 vlny 0 T1
+  //    k ní patří i stavová věta a přepínač Inspectu; obojí je viditelná měď.
   await expectEnglish(page.getByTestId('first-run'), 'first-run');
+  await expectEnglish(page.getByTestId('world-status'), 'world-status');
+  await expectEnglish(page.getByTestId('inspect-toggle'), 'inspect-toggle');
 
   await page.getByTestId('prompt-input').fill(FROZEN_PROMPT);
   await page.getByTestId('prompt-submit').click();
@@ -121,7 +126,10 @@ test('žádný panel na demo cestě nemluví česky', async ({ page }) => {
   });
 
   // 3. Panely, na kterých stojí celé demo. Kdyby některý chyběl, test by prošel
-  //    tím, že neměří nic — proto se nejdřív počká, až budou vidět.
+  //    tím, že neměří nic — proto se nejdřív počká, až budou vidět. Tři ze čtyř
+  //    bydlí od P13 vlny 0 T1 v Inspect zásuvce a ta je zavřená.
+  await openInspect(page);
+
   const panels: readonly (readonly [string, Locator])[] = [
     ['pipeline-panel', page.getByTestId('pipeline-panel')],
     ['timeline', page.getByTestId('timeline')],

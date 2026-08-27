@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { openInspect } from './inspect';
+
 /**
  * Oracle úlohy T14 — **vidět, co model napsal, a co se druhou větou změnilo**.
  *
@@ -69,7 +71,11 @@ test('panel ukáže program, po druhé větě rozdíl, a jde sbalit', async ({ p
   await page.goto('/');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
-  // Dokud nepadla věta, panel nic nepředstírá.
+  // Od P13 vlny 0 T1 panel nestojí na výchozí obrazovce — plátno má celý
+  // viewport a vnitřnosti potrubí se otevírají z Inspectu.
+  await openInspect(page);
+
+  // Dokud nepadla věta, panel nic nepředstírá ani otevřený.
   await expect(page.getByTestId('pipeline-panel')).toHaveCount(0);
 
   await sentence(page, FIRST_PROMPT);
@@ -117,13 +123,18 @@ test('panel ukáže program, po druhé větě rozdíl, a jde sbalit', async ({ p
 });
 
 /**
- * Oracle vady z 25. 8. 2026 — **levý dolní roh nesmí kliknutí polykat**.
+ * Oracle vady z 25. 8. 2026 — **dolní rohy nesmí kliknutí polykat**.
  *
- * Panely toho rohu se skládají do jednoho sloupce (`CORNER_LEFT`
- * v `src/app/page.tsx`). Kdykoli se některý ukotvil sám, lehl si přes sousedy a
- * jejich ovládání přestalo brát kurzor. Stalo se to už dvakrát a potřetí to byl
- * herní HUD: `game-restart` byl vidět, ale `elementFromPoint` v jeho středu
- * vracel `timeline-outcome`, takže restart nešel kliknout.
+ * Panely se skládají do sloupců, které drží rozvržení, ne ony samy. Kdykoli se
+ * některý ukotvil sám, lehl si přes sousedy a jejich ovládání přestalo brát
+ * kurzor. Stalo se to už dvakrát a potřetí to byl herní HUD: `game-restart` byl
+ * vidět, ale `elementFromPoint` v jeho středu vracel `timeline-outcome`, takže
+ * restart nešel kliknout.
+ *
+ * **Od P13 vlny 0 T1 jsou ty sloupce dva a jinde:** herní ovládání drží
+ * `.ws-controls` vlevo dole, panely potrubí `.ws-inspect-panels` v otevřené
+ * zásuvce vpravo dole (`src/app/theme.css`). Otázka se tím nemění — zásuvka je
+ * nový překryv nad plátnem, tedy nová příležitost sebrat kliknutí sousedovi.
  *
  * **Proč zásahová zkouška a ne screenshot.** Překryv je vidět jen tehdy, když
  * překrývající panel není průhledný a zrovna se dívá člověk na správný roh při
@@ -142,6 +153,11 @@ test('ovládání v levém dolním rohu si nebere kliknutí navzájem', async ({
 
   await page.goto('/');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
+
+  // Zásuvka se otevírá PŘED větou, ne po ní: `sentence()` čeká na
+  // `window.__pipeline`, a to publikuje `WitnessPreview` — panel, který zavřená
+  // zásuvka doopravdy odpojí. Po větě by se čekalo na API, které neexistuje.
+  await openInspect(page);
 
   // HUD i osa existují teprve nad postaveným světem.
   await sentence(page, FIRST_PROMPT);

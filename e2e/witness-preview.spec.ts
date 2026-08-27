@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { openInspect } from './inspect';
+
 /**
  * Oracle úlohy T15 — **náhled přehrává tutéž stopu, jakou ověřovač certifikoval**.
  *
@@ -27,7 +29,10 @@ test('náhled přehraje vítěznou cestu a nese TÝŽ hash jako certifikát', as
   await page.goto('/');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
-  // Bez světa se žádná vítězná cesta nepředstírá.
+  // Od P13 vlny 0 T1 pruh nestojí na výchozí obrazovce — otevírá se z Inspectu.
+  await openInspect(page);
+
+  // Bez světa se žádná vítězná cesta nepředstírá ani otevřená.
   await expect(page.getByTestId('witness-preview')).toHaveCount(0);
 
   await page.getByTestId('prompt-input').fill(FROZEN_PROMPT);
@@ -81,6 +86,7 @@ test('dokončený náhled přežije nahrazení světem s kratší stopou', async
 
   await page.goto('/');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
+  await openInspect(page);
 
   await page.getByTestId('prompt-input').fill(FROZEN_PROMPT);
   await page.getByTestId('prompt-submit').click();

@@ -8,6 +8,8 @@ import { basename, join, resolve, sep } from 'node:path';
 
 import { chromium, expect, test, type BrowserContext, type Page } from '@playwright/test';
 
+import { openInspect } from './inspect';
+
 import { isWeightRequest } from '../src/model/local/capability';
 
 const UNKNOWN = 'a world that the frozen corpus and recogniser have never heard of';
@@ -55,6 +57,9 @@ test('bez akcelerace zůstane okamžitá náhradní místnost a neodejde jediný
   const seen = observe(page);
 
   await page.goto('/');
+  // Panel bydlí od P13 vlny 0 T1 v Inspect zásuvce. Motor modelu tím odpojený
+  // není — probe běží od načtení stránky, `visible` řídí jenom vykreslení.
+  await openInspect(page);
   await expect(page.getByTestId('model-progress')).toHaveAttribute('data-phase', 'unavailable', { timeout: 20_000 });
   await submit(page, UNKNOWN);
   await expectWorld(page, INITIAL_WORLD_BUDGET_MS);
@@ -145,6 +150,7 @@ test('skutečný prohlížečový model nahradí okamžitý svět certifikovanou
 
     const seen = observe(page);
     await page.goto(baseUrl as string);
+    await openInspect(page);
     await expect
       .poll(() => page.getByTestId('model-progress').getAttribute('data-phase'), {
         timeout: 20_000,
