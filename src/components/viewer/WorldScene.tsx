@@ -461,6 +461,15 @@ export interface WorldRunner {
   /** Kolik tiků svět odkrokoval. */
   readonly tick: () => number;
   /**
+   * Kde mezi tiky běh právě je, jako desetinné číslo tiků.
+   *
+   * `tick()` je celé číslo, takže dvě třetiny snímků stojí na místě — a kamera,
+   * která se jím řídí, pod klouzajícími entitami poskakuje. Tohle je táž veličina
+   * spojitě: celý tik plus zlomek z akumulátoru hodin. Roste i po dohrání,
+   * protože hodiny tikají dál, i když stav světa už ne.
+   */
+  readonly progress: () => number;
+  /**
    * Jak daleko je stavba světa — a hlavně, ve kterém tiku se objevil první a
    * poslední kus. Obojí je **pozorované za běhu**, ne opsané z rozvrhu, takže
    * se z prohlížeče dá poznat rozvrh, který stavbu jen předstírá.
@@ -609,6 +618,10 @@ export default function WorldScene({
       dressing: () =>
         [...scene.kit.entries()].map(([piece, batch]) => ({ piece, instances: batch.mesh.count })),
       tick: () => runtime.tick,
+      // Z HODIN, ne z runtimu: po výhře `runtime.tick` zamrzne, kdežto hodiny
+      // tikají dál. Dojezd kamery se tím pádem nemusí po konci partie přepínat
+      // na snímky, což byl jediný důvod, proč to kdy dělal.
+      progress: () => clock.tick + clock.accumulatorMs / TICK_MS,
       assembly: () => assemblySnapshot(assembly.log, assembly.plan),
       // `step(n)` je deterministické krokování bez nástěnného času, takže po
       // něm musí stát přesný stav po tiku (`alpha = 1`), ne mezipoloha. Na tom
@@ -623,7 +636,7 @@ export default function WorldScene({
     return () => {
       runnerRef.current = null;
     };
-  }, [advance, assembly, runnerRef, runtime, scene, world]);
+  }, [advance, assembly, clock, runnerRef, runtime, scene, world]);
 
   useEffect(() => () => scene.dispose(), [scene]);
 

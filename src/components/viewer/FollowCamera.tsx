@@ -71,6 +71,27 @@ export function easeToward(from: Vec3, to: Vec3, alpha = FOLLOW_ALPHA): Vec3 {
 }
 
 /**
+ * Dojezd za **necelý** tik.
+ *
+ * `easeToward` ujede pevný podíl za jeden tik, takže se dá volat jen celočíselně
+ * — a kamera se pak hýbe dvacetkrát za sekundu, zatímco entity od T4 kloužou
+ * šedesátkrát. Je to tentýž dojezd spojitě: pro celé `ticks` vyjde totéž jako
+ * tolikrát opakovaný `easeToward`, protože zbylý podíl `(1 − α)^ticks` je přesně
+ * to, co z opakování vznikne. Tím je nezávislý na snímkové frekvenci: tři třetiny
+ * tiku ujedou tolik co jeden celý, ať už jsou rozložené jakkoli.
+ */
+export function easeOver(from: Vec3, to: Vec3, ticks: number, alpha = FOLLOW_ALPHA): Vec3 {
+  if (ticks <= 0) return from;
+
+  const closed = 1 - (1 - alpha) ** ticks;
+  return {
+    x: from.x + (to.x - from.x) * closed,
+    y: from.y + (to.y - from.y) * closed,
+    z: from.z + (to.z - from.z) * closed,
+  };
+}
+
+/**
  * Postava, kterou kamera sleduje.
  *
  * Přednost má živá postava; despawnutá se bere až jako druhá volba, aby kamera
@@ -163,7 +184,7 @@ export default function FollowCamera({
   // proto nedojíždí, ale skočí: dojezd z výchozí pozice plátna by prvních pár
   // tiků strávil mimo pásmo, ve kterém má vzdálenost zůstat.
   const at = useRef<Vec3 | null>(null);
-  const lastTick = useRef(0);
+  const lastProgress = useRef(0);
 
   useEffect(() => {
     if (mode !== 'free') {
@@ -225,35 +246,27 @@ export default function FollowCamera({
     const runner = runnerRef.current;
     if (runner === null) {
       at.current = null;
-      lastTick.current = 0;
+      lastProgress.current = 0;
       return;
     }
 
-    const avatar = avatarOf(runner.entities());
+    // NAKRESLENÁ projekce, ne stav po tiku. Mezi dvěma tiky leží postava jinde a
+    // kamera mířící na tikovou polohu by pod ní poskakovala — přesně ta vada,
+    // kterou T4 vyrobila tím, že entity rozhýbala a kameru nechala být. Před
+    // prvním nakresleným snímkem se sáhne po přesném stavu, jinak není na co.
+    const painted = runner.drawn();
+    const avatar = avatarOf(painted.length > 0 ? painted : runner.entities());
     if (avatar === null) return;
 
-    const tick = runner.tick();
-    const elapsed = Math.max(0, tick - lastTick.current);
-    lastTick.current = tick;
-
-    // Dokud svět běží, dojíždí se po tikách. Až doběhne — výhrou nebo prohrou —
-    // se tik zastaví, a kdyby se kamera řídila jen jím, zůstala by trčet přesně
-    // tam, kde ji poslední tik zastihl: naměřeno 19. 8. 2026, kamera dosedla o
-    // 0,23 políčka vedle a už se nehnula. Po konci partie se proto dojíždí po
-    // snímcích. Nic to nerozbíjí — po konci se svět nemění, takže tady žádná
-    // veličina, na kterou by se kdokoli ptal, na snímcích viset nezačne.
-    const steps = runner.runState() === 'running' ? elapsed : 1;
+    // Zlomek tiku, ne celý tik: při 60 snímcích a 20 tikách přiteče ⅓ tiku na
+    // snímek, takže se kamera hýbe každý snímek. Součet je za tik týž jako
+    // dřív, jen rozložený — a po dohrání roste dál, protože hodiny tikají.
+    const progress = runner.progress();
+    const elapsed = Math.max(0, progress - lastProgress.current);
+    lastProgress.current = progress;
 
     const target = desiredPosition(avatar.position);
-    if (at.current === null) {
-      at.current = target;
-    } else {
-      // Tolikrát, kolik tiků uběhlo — ne jednou za snímek. Sto tiků odkrokovaných
-      // najednou tak dojede stejně daleko jako sto tiků odtikaných v reálném čase.
-      let next = at.current;
-      for (let i = 0; i < steps; i += 1) next = easeToward(next, target);
-      at.current = next;
-    }
+    at.current = at.current === null ? target : easeOver(at.current, target, elapsed);
 
     camera.position.set(at.current.x, at.current.y, at.current.z);
     camera.lookAt(avatar.position.x, avatar.position.y, avatar.position.z);
