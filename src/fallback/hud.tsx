@@ -42,23 +42,18 @@ export function FallbackScene({ layoutId }: { layoutId: string }) {
   );
 }
 
-const OVERLAY: React.CSSProperties = {
-  position: 'absolute',
-  inset: 0,
-  padding: '0.9rem',
-  pointerEvents: 'none',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '0.5rem',
-  fontFamily: 'system-ui, sans-serif',
-  color: '#e8efee',
-  textShadow: '0 1px 3px rgba(0,0,0,0.75)',
-};
+/**
+ * Třídy z `theme.css`, ne inline styl.
+ *
+ * Jméno třídy je obyčejný řetězec, takže tenhle soubor pořád nic neimportuje
+ * mimo kit — důkaz izolace platí dál. Barvy tím ale drží tatáž paleta jako
+ * zbytek produktu, včetně varianty pro barvoslepé.
+ */
 
 const BANNER: Record<GameView['phase'], string> = {
   running: '',
-  won: 'Vyhráno',
-  lost: 'Prohráno',
+  won: 'You win',
+  lost: 'You lose',
 };
 
 /** Cíl, počítadla, čas a stav hry. Čte jen `GameView`, nikdy vnitřní stav hry. */
@@ -66,23 +61,23 @@ export function Hud({ view }: { view: GameView }) {
   const seconds = view.timeLeftTicks === null ? null : Math.ceil(view.timeLeftTicks / TICK_HZ);
 
   return (
-    <div style={OVERLAY} data-testid="fallback-hud">
-      <strong data-testid="hud-goal">{view.goal}</strong>
-      <div style={{ display: 'flex', gap: '1rem' }}>
+    <div className="ws-overlay" data-testid="fallback-hud">
+      <strong className="ws-hud-goal" data-testid="hud-goal">{view.goal}</strong>
+      <div className="ws-hud-row">
         {view.counters.map((counter) => (
           <span key={counter.label} data-testid={`hud-counter-${counter.label}`}>
             {counter.label}: {counter.value}
             {counter.max === null ? '' : ` / ${counter.max}`}
           </span>
         ))}
-        {seconds === null ? null : <span data-testid="hud-time">Čas: {seconds} s</span>}
+        {seconds === null ? null : <span data-testid="hud-time">Time: {seconds} s</span>}
       </div>
       {view.phase === 'running' ? null : (
-        <p data-testid="hud-banner" style={{ fontSize: '1.5rem', margin: 0 }}>
+        <p className="ws-hud-banner" data-phase={view.phase} data-testid="hud-banner">
           {BANNER[view.phase]}
         </p>
       )}
-      {view.message === null ? null : <p style={{ margin: 0 }}>{view.message}</p>}
+      {view.message === null ? null : <p className="ws-hud-message">{view.message}</p>}
     </div>
   );
 }
@@ -97,12 +92,12 @@ export function Hud({ view }: { view: GameView }) {
  */
 export function NoFitNotice({ decision }: { decision: NoFitDecision }) {
   return (
-    <div style={OVERLAY} data-testid="fallback-no-fit">
-      <strong>Tenhle prompt neumím celý</strong>
-      <p style={{ margin: 0, maxWidth: '46ch' }} data-testid="no-fit-reason">
+    <div className="ws-overlay" data-testid="fallback-no-fit">
+      <strong>I cannot do all of this prompt</strong>
+      <p className="ws-no-fit-reason" data-testid="no-fit-reason">
         {decision.reason}
       </p>
-      <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
+      <ul className="ws-no-fit-list">
         {decision.blocking.map((token) => (
           <li key={token} data-testid={`no-fit-token-${token}`}>
             {token}

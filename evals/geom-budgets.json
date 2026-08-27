@@ -1,0 +1,129 @@
+{
+  "caps": {
+    "maxPieces": 120,
+    "maxTriangles": 120000,
+    "maxCompileMilliseconds": 120
+  },
+  "programs": [
+    {
+      "id": "jediny-kus",
+      "pieces": 1,
+      "triangles": 12,
+      "milliseconds": 9.111
+    },
+    {
+      "id": "sloup",
+      "pieces": 1,
+      "triangles": 44,
+      "milliseconds": 7.043
+    },
+    {
+      "id": "branka",
+      "pieces": 1,
+      "triangles": 48,
+      "milliseconds": 2.89
+    },
+    {
+      "id": "strom",
+      "pieces": 1,
+      "triangles": 52,
+      "milliseconds": 3.636
+    },
+    {
+      "id": "rada-sloupu",
+      "pieces": 8,
+      "triangles": 448,
+      "milliseconds": 16.6
+    },
+    {
+      "id": "schodiste",
+      "pieces": 12,
+      "triangles": 432,
+      "milliseconds": 6.765
+    },
+    {
+      "id": "zrcadlena-fasada",
+      "pieces": 8,
+      "triangles": 96,
+      "milliseconds": 3.724
+    },
+    {
+      "id": "zrcadleni-kolem-roviny",
+      "pieces": 2,
+      "triangles": 120,
+      "milliseconds": 2.027
+    },
+    {
+      "id": "prosekana-zed",
+      "pieces": 5,
+      "triangles": 48,
+      "milliseconds": 2.329
+    },
+    {
+      "id": "rozsety-les",
+      "pieces": 18,
+      "triangles": 936,
+      "milliseconds": 3.771
+    },
+    {
+      "id": "balvany",
+      "pieces": 9,
+      "triangles": 180,
+      "milliseconds": 3.903
+    },
+    {
+      "id": "zem-rovina",
+      "pieces": 1,
+      "triangles": 512,
+      "milliseconds": 3.954
+    },
+    {
+      "id": "zem-hreben",
+      "pieces": 1,
+      "triangles": 480,
+      "milliseconds": 1.865
+    },
+    {
+      "id": "zem-panev",
+      "pieces": 1,
+      "triangles": 648,
+      "milliseconds": 2.836
+    },
+    {
+      "id": "zem-plosina",
+      "pieces": 1,
+      "triangles": 1152,
+      "milliseconds": 5.579
+    },
+    {
+      "id": "nadvori",
+      "pieces": 14,
+      "triangles": 1040,
+      "milliseconds": 15.334
+    },
+    {
+      "id": "vez",
+      "pieces": 11,
+      "triangles": 388,
+      "milliseconds": 3.436
+    },
+    {
+      "id": "most",
+      "pieces": 14,
+      "triangles": 816,
+      "milliseconds": 4.638
+    },
+    {
+      "id": "vesnice",
+      "pieces": 35,
+      "triangles": 2272,
+      "milliseconds": 7.44
+    },
+    {
+      "id": "blizko-stropu",
+      "pieces": 112,
+      "triangles": 1344,
+      "milliseconds": 1.768
+    }
+  ]
+}

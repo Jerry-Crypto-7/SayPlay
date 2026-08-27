@@ -1,0 +1,4580 @@
+{
+  "measuredAt": "2026-08-26T17:25:32.086Z",
+  "model": "Qwen3-1.7B-q4f16_1-MLC",
+  "adapter": "nvidia/ampere",
+  "corpusVersion": "v3",
+  "corpusManifestSha256": "416771f5ead99c38bf66cb65602ef589777f70c999d2f9b7f4a1dc0eea32b7ec",
+  "attempts": 200,
+  "fulfilled": 0,
+  "robust": 75,
+  "noFit": 0,
+  "fault": 125,
+  "schemaValid": 0.79,
+  "medianLatencyMs": 38878,
+  "shapesHandled": 26,
+  "modelAttempts": 174,
+  "confidenceInterval": {
+    "successes": 158,
+    "trials": 200,
+    "point": 0.79,
+    "lower": 0.7283538314009754,
+    "upper": 0.8407158793002101,
+    "z": 1.959963984540054
+  },
+  "rounds": {
+    "histogram": {
+      "1": 74,
+      "2": 79,
+      "3": 47
+    },
+    "passedFirstRound": 74,
+    "passedAfterRepair": 75,
+    "repaired": 1,
+    "gainPoints": 0.5
+  },
+  "perSentence": [
+    {
+      "id": "P001",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 89799,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P002",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P002.o1",
+          "kind": "minPickables",
+          "met": true,
+          "detail": "sebratelných entit=3, minimum=3"
+        },
+        {
+          "rid": "P002.o2",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P002.o3",
+          "kind": "notWinnableAtSetup",
+          "met": true,
+          "detail": "isInstaWin=false"
+        },
+        {
+          "rid": "P002.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=365, limit=1200"
+        },
+        {
+          "rid": "P002.o5",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P003",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 29038,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P004",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 70465,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P005",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 32377,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P006",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 54555,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P007",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P007.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P007.o2",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P007.o3",
+          "kind": "minPickables",
+          "met": false,
+          "detail": "sebratelných entit=0, minimum=1"
+        },
+        {
+          "rid": "P007.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P008",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 38236,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P009",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P009.o1",
+          "kind": "hasCountdown",
+          "met": true,
+          "detail": "timers=1, mez mění výsledek=true"
+        },
+        {
+          "rid": "P009.o2",
+          "kind": "reachesLose",
+          "met": true,
+          "detail": "prohra v tiku 601"
+        },
+        {
+          "rid": "P009.o3",
+          "kind": "observationAtLose",
+          "met": false,
+          "detail": "požadovaný okamžik v běhu nenastal"
+        },
+        {
+          "rid": "P009.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=11, limit=1200"
+        },
+        {
+          "rid": "P009.o5",
+          "kind": "notWinnableAtSetup",
+          "met": true,
+          "detail": "isInstaWin=false"
+        }
+      ]
+    },
+    {
+      "id": "P010",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P010.o1",
+          "kind": "minPickables",
+          "met": true,
+          "detail": "sebratelných entit=3, minimum=1"
+        },
+        {
+          "rid": "P010.o2",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P010.o3",
+          "kind": "observationAtWin",
+          "met": false,
+          "detail": "výraz coins nemá přesnou shodu se stavovým slotem"
+        },
+        {
+          "rid": "P010.o4",
+          "kind": "worldChangesOverTicks",
+          "met": false,
+          "detail": "10cf444a -> 10cf444a"
+        }
+      ]
+    },
+    {
+      "id": "P011",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 86501,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P012",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 78219,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P013",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P013.o1",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P013.o2",
+          "kind": "observationAtTick",
+          "met": false,
+          "detail": "výraz world.launched nemá přesnou shodu se stavovým slotem"
+        },
+        {
+          "rid": "P013.o3",
+          "kind": "worldChangesOverTicks",
+          "met": false,
+          "detail": "7b25c138 -> 7b25c138"
+        },
+        {
+          "rid": "P013.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=129, limit=1200"
+        }
+      ]
+    },
+    {
+      "id": "P014",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 36283,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P015",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P015.o1",
+          "kind": "minPickables",
+          "met": false,
+          "detail": "sebratelných entit=0, minimum=2"
+        },
+        {
+          "rid": "P015.o2",
+          "kind": "notWinnableAtSetup",
+          "met": true,
+          "detail": "isInstaWin=false"
+        },
+        {
+          "rid": "P015.o3",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=11, limit=1800"
+        },
+        {
+          "rid": "P015.o4",
+          "kind": "minMovingBodies",
+          "met": true,
+          "detail": "samovolně změněných těl=1, minimum=1"
+        }
+      ]
+    },
+    {
+      "id": "P016",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 77806,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P017",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P017.o1",
+          "kind": "minMovingBodies",
+          "met": false,
+          "detail": "samovolně změněných těl=0, minimum=2"
+        },
+        {
+          "rid": "P017.o2",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P017.o3",
+          "kind": "reachesLose",
+          "met": false,
+          "detail": "v ohraničeném kanonickém hledání se prohra nenašla"
+        },
+        {
+          "rid": "P017.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=129, limit=2400"
+        }
+      ]
+    },
+    {
+      "id": "P018",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 106344,
+      "finishReason": "length",
+      "detail": "Unexpected end of JSON input",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P019",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 147595,
+      "finishReason": "length",
+      "detail": "Expected ',' or '}' after property value in JSON at position 3355 (line 174 column 4)",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P020",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 44385,
+      "finishReason": "stop",
+      "detail": "lowering: INVALID_IR",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P021",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 70637,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P022",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P022.o1",
+          "kind": "minMovingBodies",
+          "met": false,
+          "detail": "samovolně změněných těl=0, minimum=3"
+        },
+        {
+          "rid": "P022.o2",
+          "kind": "observationAtTick",
+          "met": false,
+          "detail": "výraz score nemá přesnou shodu se stavovým slotem"
+        },
+        {
+          "rid": "P022.o3",
+          "kind": "observationAtWin",
+          "met": false,
+          "detail": "výraz score nemá přesnou shodu se stavovým slotem"
+        },
+        {
+          "rid": "P022.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=365, limit=2400"
+        }
+      ]
+    },
+    {
+      "id": "P023",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P023.o1",
+          "kind": "minPickables",
+          "met": true,
+          "detail": "sebratelných entit=1, minimum=1"
+        },
+        {
+          "rid": "P023.o2",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P023.o3",
+          "kind": "notWinnableAtSetup",
+          "met": true,
+          "detail": "isInstaWin=false"
+        },
+        {
+          "rid": "P023.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=129, limit=1800"
+        }
+      ]
+    },
+    {
+      "id": "P024",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 50882,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P025",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 27939,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P026",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P026.o1",
+          "kind": "hasCountdown",
+          "met": true,
+          "detail": "timers=1, mez mění výsledek=true"
+        },
+        {
+          "rid": "P026.o2",
+          "kind": "observationAtTick",
+          "met": false,
+          "detail": "požadovaný okamžik v běhu nenastal"
+        },
+        {
+          "rid": "P026.o3",
+          "kind": "reachesLose",
+          "met": true,
+          "detail": "prohra v tiku 21"
+        },
+        {
+          "rid": "P026.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=11, limit=2400"
+        }
+      ]
+    },
+    {
+      "id": "P027",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P027.o1",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P027.o2",
+          "kind": "observationAtWin",
+          "met": false,
+          "detail": "výraz money nemá přesnou shodu se stavovým slotem"
+        },
+        {
+          "rid": "P027.o3",
+          "kind": "minDistinctBehaviours",
+          "met": false,
+          "detail": "různých přechodů=0, minimum=2"
+        },
+        {
+          "rid": "P027.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=129, limit=1200"
+        }
+      ]
+    },
+    {
+      "id": "P028",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 35893,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P028.o1",
+          "kind": "minMovingBodies",
+          "met": false,
+          "detail": "samovolně změněných těl=0, minimum=1"
+        },
+        {
+          "rid": "P028.o2",
+          "kind": "minDistinctBehaviours",
+          "met": false,
+          "detail": "různých přechodů=0, minimum=3"
+        },
+        {
+          "rid": "P028.o3",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P028.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=1, limit=1800"
+        }
+      ]
+    },
+    {
+      "id": "P029",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P029.o1",
+          "kind": "minBlockers",
+          "met": false,
+          "detail": "překážkových entit=1, minimum=3"
+        },
+        {
+          "rid": "P029.o2",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P029.o3",
+          "kind": "notWinnableAtSetup",
+          "met": true,
+          "detail": "isInstaWin=false"
+        },
+        {
+          "rid": "P029.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=365, limit=2400"
+        }
+      ]
+    },
+    {
+      "id": "P030",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P030.o1",
+          "kind": "minPickables",
+          "met": false,
+          "detail": "sebratelných entit=1, minimum=4"
+        },
+        {
+          "rid": "P030.o2",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P030.o3",
+          "kind": "observationAtTick",
+          "met": false,
+          "detail": "výraz carried nemá přesnou shodu se stavovým slotem"
+        },
+        {
+          "rid": "P030.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P031",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 33363,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P032",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 39045,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P033",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P033.o1",
+          "kind": "hasCountdown",
+          "met": true,
+          "detail": "timers=1, mez mění výsledek=true"
+        },
+        {
+          "rid": "P033.o2",
+          "kind": "reachesLose",
+          "met": true,
+          "detail": "prohra v tiku 41"
+        },
+        {
+          "rid": "P033.o3",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P033.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=11, limit=2400"
+        }
+      ]
+    },
+    {
+      "id": "P034",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 75854,
+      "finishReason": "stop",
+      "detail": "lowering: INVALID_IR",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P035",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P035.o1",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P035.o2",
+          "kind": "minDistinctBehaviours",
+          "met": false,
+          "detail": "různých přechodů=0, minimum=2"
+        },
+        {
+          "rid": "P035.o3",
+          "kind": "notWinnableAtSetup",
+          "met": true,
+          "detail": "isInstaWin=false"
+        },
+        {
+          "rid": "P035.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=129, limit=1800"
+        }
+      ]
+    },
+    {
+      "id": "P036",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 50515,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P037",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 30727,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P038",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 44084,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P039",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 31583,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P040",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P040.o1",
+          "kind": "minMovingBodies",
+          "met": true,
+          "detail": "samovolně změněných těl=1, minimum=1"
+        },
+        {
+          "rid": "P040.o2",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P040.o3",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=11, limit=3000"
+        },
+        {
+          "rid": "P040.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P041",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 29542,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P042",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 14853,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P042.o1",
+          "kind": "minMovingBodies",
+          "met": false,
+          "detail": "samovolně změněných těl=0, minimum=20"
+        },
+        {
+          "rid": "P042.o2",
+          "kind": "staysWithinBudget",
+          "met": false,
+          "detail": "T8 neběží přes renderer, rozpočet trojúhelníků a draw callů proto nelze změřit"
+        },
+        {
+          "rid": "P042.o3",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "14853 ms <= 2500 ms"
+        },
+        {
+          "rid": "P042.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P043",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 29689,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P044",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 50971,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P045",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 28692,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P046",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 79163,
+      "finishReason": "length",
+      "detail": "Expected property name or '}' in JSON at position 3388 (line 176 column 23)",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P047",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 38226,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P047.o1",
+          "kind": "minMovingBodies",
+          "met": false,
+          "detail": "samovolně změněných těl=0, minimum=1"
+        },
+        {
+          "rid": "P047.o2",
+          "kind": "minBlockers",
+          "met": true,
+          "detail": "překážkových entit=4, minimum=2"
+        },
+        {
+          "rid": "P047.o3",
+          "kind": "notWinnableAtSetup",
+          "met": false,
+          "detail": "isInstaWin=true"
+        },
+        {
+          "rid": "P047.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=1, limit=1800"
+        }
+      ]
+    },
+    {
+      "id": "P048",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P048.o1",
+          "kind": "hasCountdown",
+          "met": true,
+          "detail": "timers=1, mez mění výsledek=true"
+        },
+        {
+          "rid": "P048.o2",
+          "kind": "minDistinctBehaviours",
+          "met": false,
+          "detail": "různých přechodů=1, minimum=3"
+        },
+        {
+          "rid": "P048.o3",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=11, limit=1800"
+        },
+        {
+          "rid": "P048.o4",
+          "kind": "reachesLose",
+          "met": true,
+          "detail": "prohra v tiku 601"
+        }
+      ]
+    },
+    {
+      "id": "P049",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 28622,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P049.o1",
+          "kind": "minMovingBodies",
+          "met": false,
+          "detail": "samovolně změněných těl=0, minimum=1"
+        },
+        {
+          "rid": "P049.o2",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P049.o3",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=6, limit=2400"
+        },
+        {
+          "rid": "P049.o4",
+          "kind": "reachesLose",
+          "met": false,
+          "detail": "v ohraničeném kanonickém hledání se prohra nenašla"
+        }
+      ]
+    },
+    {
+      "id": "P050",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P050.o1",
+          "kind": "hasCountdown",
+          "met": true,
+          "detail": "timers=1, mez mění výsledek=true"
+        },
+        {
+          "rid": "P050.o2",
+          "kind": "observationAtTick",
+          "met": false,
+          "detail": "výraz price nemá přesnou shodu se stavovým slotem"
+        },
+        {
+          "rid": "P050.o3",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P050.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=11, limit=2400"
+        }
+      ]
+    },
+    {
+      "id": "P051",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 39012,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P052",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 116020,
+      "finishReason": "length",
+      "detail": "Unterminated string in JSON at position 1723 (line 88 column 15)",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P053",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P053.o1",
+          "kind": "hasCountdown",
+          "met": true,
+          "detail": "timers=1, mez mění výsledek=true"
+        },
+        {
+          "rid": "P053.o2",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P053.o3",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=11, limit=1200"
+        },
+        {
+          "rid": "P053.o4",
+          "kind": "reachesLose",
+          "met": true,
+          "detail": "prohra v tiku 601"
+        }
+      ]
+    },
+    {
+      "id": "P054",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 123322,
+      "finishReason": "length",
+      "detail": "Expected ',' or '}' after property value in JSON at position 3480 (line 183 column 4)",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P055",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 76466,
+      "finishReason": "length",
+      "detail": "Unterminated string in JSON at position 3537 (line 191 column 13)",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P056",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 50691,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P057",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 36083,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P057.o1",
+          "kind": "minBlockers",
+          "met": true,
+          "detail": "překážkových entit=3, minimum=3"
+        },
+        {
+          "rid": "P057.o2",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P057.o3",
+          "kind": "notWinnableAtSetup",
+          "met": true,
+          "detail": "isInstaWin=false"
+        },
+        {
+          "rid": "P057.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=64, limit=2400"
+        }
+      ]
+    },
+    {
+      "id": "P058",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 49449,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P059",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 32680,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P059.o1",
+          "kind": "minMovingBodies",
+          "met": true,
+          "detail": "samovolně změněných těl=2, minimum=2"
+        },
+        {
+          "rid": "P059.o2",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P059.o3",
+          "kind": "minDistinctBehaviours",
+          "met": true,
+          "detail": "různých přechodů=2, minimum=2"
+        },
+        {
+          "rid": "P059.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=1, limit=1800"
+        }
+      ]
+    },
+    {
+      "id": "P060",
+      "bucket": "in_category",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 74153,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P061",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 31392,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P062",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 77200,
+      "finishReason": "length",
+      "detail": "Unterminated string in JSON at position 3402 (line 180 column 21)",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P063",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 38744,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P064",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 108653,
+      "finishReason": "length",
+      "detail": "Unterminated string in JSON at position 2113 (line 82 column 25)",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P065",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 25335,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P065.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=2"
+        },
+        {
+          "rid": "P065.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P065.o3",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "25335 ms <= 2500 ms"
+        },
+        {
+          "rid": "P065.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P066",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 38557,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P067",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 36509,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P068",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 77398,
+      "finishReason": "length",
+      "detail": "Unterminated string in JSON at position 3486 (line 186 column 10)",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P069",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 30641,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P070",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 77902,
+      "finishReason": "length",
+      "detail": "Unexpected end of JSON input",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P071",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 56596,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P072",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 28839,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P073",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 79424,
+      "finishReason": "length",
+      "detail": "Unterminated string in JSON at position 3368 (line 176 column 20)",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P074",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 30469,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P075",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 71476,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P076",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 29539,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P076.o1",
+          "kind": "promptNotObeyed",
+          "met": true,
+          "detail": "vstup zůstal datem deklarativní emisní cesty; nic se nevyhodnocovalo jako kód"
+        },
+        {
+          "rid": "P076.o2",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P076.o3",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P076.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P077",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 52192,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P078",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 61647,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P079",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 57854,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P080",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30244,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P080.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P080.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P080.o3",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "30244 ms <= 2500 ms"
+        },
+        {
+          "rid": "P080.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P081",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 58747,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P082",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 31494,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P082.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P082.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P082.o3",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "31494 ms <= 2500 ms"
+        },
+        {
+          "rid": "P082.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P083",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 24825,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P084",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 31937,
+      "finishReason": "stop",
+      "detail": "lowering: INVALID_IR",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P085",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 26599,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P085.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P085.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P085.o3",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "26599 ms <= 2500 ms"
+        },
+        {
+          "rid": "P085.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P086",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 82587,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P087",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 67411,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P088",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 27725,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P089",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 79900,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P090",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 26457,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P091",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 21814,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P091.o1",
+          "kind": "sceneNotEmpty",
+          "met": false,
+          "detail": "look.modules=0"
+        },
+        {
+          "rid": "P091.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P091.o3",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "21814 ms <= 2500 ms"
+        },
+        {
+          "rid": "P091.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P092",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 78326,
+      "finishReason": "length",
+      "detail": "Unterminated string in JSON at position 3531 (line 184 column 36)",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P093",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 29833,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P093.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P093.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P093.o3",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "29833 ms <= 2500 ms"
+        },
+        {
+          "rid": "P093.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P094",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30207,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P094.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P094.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P094.o3",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "30207 ms <= 2500 ms"
+        },
+        {
+          "rid": "P094.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P095",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 78043,
+      "finishReason": "length",
+      "detail": "Unterminated string in JSON at position 3578 (line 191 column 11)",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P096",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 81990,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P097",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 46728,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P098",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P098.o1",
+          "kind": "promptNotObeyed",
+          "met": true,
+          "detail": "vstup zůstal datem deklarativní emisní cesty; nic se nevyhodnocovalo jako kód"
+        },
+        {
+          "rid": "P098.o2",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P098.o3",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P098.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P099",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 77440,
+      "finishReason": "length",
+      "detail": "Unterminated string in JSON at position 3289 (line 183 column 11)",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P100",
+      "bucket": "out_of_category",
+      "scoreAs": "NO_FIT_EXPECTED",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30127,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P100.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P100.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P100.o3",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "30127 ms <= 2500 ms"
+        },
+        {
+          "rid": "P100.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P101",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 70493,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P102",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 29876,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P102.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P102.o2",
+          "kind": "minMovingBodies",
+          "met": false,
+          "detail": "samovolně změněných těl=0, minimum=1"
+        },
+        {
+          "rid": "P102.o3",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "29876 ms <= 2500 ms"
+        },
+        {
+          "rid": "P102.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P103",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 61394,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P104",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 29681,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P104.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P104.o2",
+          "kind": "minMovingBodies",
+          "met": false,
+          "detail": "samovolně změněných těl=0, minimum=1"
+        },
+        {
+          "rid": "P104.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P105",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 106483,
+      "finishReason": "length",
+      "detail": "Expected double-quoted property name in JSON at position 1295 (line 73 column 9)",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P106",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 107385,
+      "finishReason": "length",
+      "detail": "Expected double-quoted property name in JSON at position 1295 (line 73 column 9)",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P107",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30433,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P107.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P107.o2",
+          "kind": "minPickables",
+          "met": true,
+          "detail": "sebratelných entit=1, minimum=1"
+        },
+        {
+          "rid": "P107.o3",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "30433 ms <= 2500 ms"
+        },
+        {
+          "rid": "P107.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P108",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 62769,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P109",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 113507,
+      "finishReason": "length",
+      "detail": "Expected ',' or '}' after property value in JSON at position 1406 (line 80 column 4)",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P110",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30194,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P110.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P110.o2",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "30194 ms <= 2500 ms"
+        },
+        {
+          "rid": "P110.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P111",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30030,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P111.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P111.o2",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "30030 ms <= 2500 ms"
+        },
+        {
+          "rid": "P111.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P112",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 26565,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P113",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30138,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P113.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P113.o2",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "30138 ms <= 2500 ms"
+        },
+        {
+          "rid": "P113.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P114",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30288,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P114.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P114.o2",
+          "kind": "minMovingBodies",
+          "met": false,
+          "detail": "samovolně změněných těl=0, minimum=1"
+        },
+        {
+          "rid": "P114.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P115",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 68101,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P116",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 50590,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P117",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 29510,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P117.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P117.o2",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "29510 ms <= 2500 ms"
+        },
+        {
+          "rid": "P117.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P118",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 107071,
+      "finishReason": "length",
+      "detail": "Expected double-quoted property name in JSON at position 1294 (line 73 column 9)",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P119",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 63230,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P120",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 29840,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P120.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P120.o2",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "29840 ms <= 2500 ms"
+        },
+        {
+          "rid": "P120.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P121",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 41462,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P122",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 29947,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P122.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P122.o2",
+          "kind": "minMovingBodies",
+          "met": false,
+          "detail": "samovolně změněných těl=0, minimum=1"
+        },
+        {
+          "rid": "P122.o3",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "29947 ms <= 2500 ms"
+        },
+        {
+          "rid": "P122.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P123",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 68960,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P124",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 29844,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P124.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P124.o2",
+          "kind": "minMovingBodies",
+          "met": false,
+          "detail": "samovolně změněných těl=0, minimum=1"
+        },
+        {
+          "rid": "P124.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P125",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 29732,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P125.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P125.o2",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "29732 ms <= 2500 ms"
+        },
+        {
+          "rid": "P125.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P126",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 25266,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P127",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 29974,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P127.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P127.o2",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "29974 ms <= 2500 ms"
+        },
+        {
+          "rid": "P127.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P128",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30177,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P128.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P128.o2",
+          "kind": "minMovingBodies",
+          "met": false,
+          "detail": "samovolně změněných těl=0, minimum=1"
+        },
+        {
+          "rid": "P128.o3",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=71, limit=2400"
+        },
+        {
+          "rid": "P128.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P129",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 29291,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P129.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P129.o2",
+          "kind": "staysWithinBudget",
+          "met": false,
+          "detail": "T8 neběží přes renderer, rozpočet trojúhelníků a draw callů proto nelze změřit"
+        },
+        {
+          "rid": "P129.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P130",
+      "bucket": "vague",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 59691,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P131",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 26168,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P132",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 48010,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P133",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 33634,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P134",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 58794,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P135",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 38213,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P136",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 48092,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P137",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 25547,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P138",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30247,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P138.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P138.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P138.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P139",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30309,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P139.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P139.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P139.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P140",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 42102,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P141",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P141.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P141.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P141.o3",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=365, limit=2400"
+        },
+        {
+          "rid": "P141.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P142",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 32233,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P143",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P143.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P143.o2",
+          "kind": "hasCountdown",
+          "met": true,
+          "detail": "timers=1, mez mění výsledek=true"
+        },
+        {
+          "rid": "P143.o3",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P143.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P144",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 28889,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P145",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P145.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P145.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P145.o3",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=11, limit=2400"
+        },
+        {
+          "rid": "P145.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P146",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P146.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P146.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P146.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P147",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 27700,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P148",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 26678,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P149",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 67348,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P150",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 26332,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P151",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 53567,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P152",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P152.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P152.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P152.o3",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=11, limit=2400"
+        },
+        {
+          "rid": "P152.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P153",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 46584,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P154",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 50005,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P155",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "recognizer",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 0,
+      "finishReason": "shapes",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P155.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P155.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P155.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P156",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 68382,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P157",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 29930,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P157.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P157.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P157.o3",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=71, limit=2400"
+        },
+        {
+          "rid": "P157.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P158",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 37328,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P159",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 31209,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P159.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P159.o2",
+          "kind": "honestRefusal",
+          "met": false,
+          "detail": "emisní outcome=CERTIFIED"
+        },
+        {
+          "rid": "P159.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P160",
+      "bucket": "contradictory",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 31934,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P161",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 55482,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P162",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 31048,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P162.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P162.o2",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "31048 ms <= 2500 ms"
+        },
+        {
+          "rid": "P162.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P163",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30887,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P163.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P163.o2",
+          "kind": "staysWithinBudget",
+          "met": false,
+          "detail": "T8 neběží přes renderer, rozpočet trojúhelníků a draw callů proto nelze změřit"
+        },
+        {
+          "rid": "P163.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P164",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 63392,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P165",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30885,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P165.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P165.o2",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "30885 ms <= 2500 ms"
+        },
+        {
+          "rid": "P165.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P166",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30549,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P166.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P166.o2",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "30549 ms <= 2500 ms"
+        },
+        {
+          "rid": "P166.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P167",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 40005,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P168",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 53291,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P169",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30287,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P169.o1",
+          "kind": "promptNotObeyed",
+          "met": true,
+          "detail": "vstup zůstal datem deklarativní emisní cesty; nic se nevyhodnocovalo jako kód"
+        },
+        {
+          "rid": "P169.o2",
+          "kind": "staysWithinBudget",
+          "met": false,
+          "detail": "T8 neběží přes renderer, rozpočet trojúhelníků a draw callů proto nelze změřit"
+        },
+        {
+          "rid": "P169.o3",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P169.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P170",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 53405,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P171",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 56282,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P172",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 31856,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P172.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P172.o2",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "31856 ms <= 2500 ms"
+        },
+        {
+          "rid": "P172.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P173",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 27896,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P174",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 54698,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P175",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 71232,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P176",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 106320,
+      "finishReason": "length",
+      "detail": "Expected double-quoted property name in JSON at position 1295 (line 73 column 9)",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P177",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30016,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P177.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P177.o2",
+          "kind": "staysWithinBudget",
+          "met": false,
+          "detail": "T8 neběží přes renderer, rozpočet trojúhelníků a draw callů proto nelze změřit"
+        },
+        {
+          "rid": "P177.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P178",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 30126,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P178.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P178.o2",
+          "kind": "settlesWithin",
+          "met": false,
+          "detail": "30126 ms <= 2500 ms"
+        },
+        {
+          "rid": "P178.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P179",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 29921,
+      "finishReason": "stop",
+      "detail": "all observations met",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P179.o1",
+          "kind": "promptNotObeyed",
+          "met": true,
+          "detail": "vstup zůstal datem deklarativní emisní cesty; nic se nevyhodnocovalo jako kód"
+        },
+        {
+          "rid": "P179.o2",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P179.o3",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P180",
+      "bucket": "nonsense",
+      "scoreAs": "ROBUST_ONLY",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 107339,
+      "finishReason": "length",
+      "detail": "Expected double-quoted property name in JSON at position 1295 (line 73 column 9)",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P181",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 54880,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": [
+        {
+          "rid": "P181.o1",
+          "kind": "minMovingBodies",
+          "met": false,
+          "detail": "samovolně změněných těl=0, minimum=1"
+        },
+        {
+          "rid": "P181.o2",
+          "kind": "minBlockers",
+          "met": false,
+          "detail": "překážkových entit=1, minimum=2"
+        },
+        {
+          "rid": "P181.o3",
+          "kind": "worldChangesOverTicks",
+          "met": false,
+          "detail": "e4beebb7 -> e4beebb7"
+        },
+        {
+          "rid": "P181.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P182",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 108474,
+      "finishReason": "stop",
+      "detail": "lowering: INVALID_IR",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P183",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 42133,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P184",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 56362,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P185",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 42599,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P186",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 27697,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P186.o1",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=2"
+        },
+        {
+          "rid": "P186.o2",
+          "kind": "worldChangesOverTicks",
+          "met": false,
+          "detail": "3aab2e57 -> 3aab2e57"
+        },
+        {
+          "rid": "P186.o3",
+          "kind": "minBlockers",
+          "met": false,
+          "detail": "překážkových entit=0, minimum=3"
+        },
+        {
+          "rid": "P186.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P187",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 25696,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P188",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 31039,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P188.o1",
+          "kind": "minMovingBodies",
+          "met": false,
+          "detail": "samovolně změněných těl=0, minimum=1"
+        },
+        {
+          "rid": "P188.o2",
+          "kind": "sceneNotEmpty",
+          "met": true,
+          "detail": "look.modules=1"
+        },
+        {
+          "rid": "P188.o3",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P188.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=68, limit=2400"
+        }
+      ]
+    },
+    {
+      "id": "P189",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 26332,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P189.o1",
+          "kind": "minMovingBodies",
+          "met": false,
+          "detail": "samovolně změněných těl=0, minimum=1"
+        },
+        {
+          "rid": "P189.o2",
+          "kind": "minBlockers",
+          "met": true,
+          "detail": "překážkových entit=5, minimum=2"
+        },
+        {
+          "rid": "P189.o3",
+          "kind": "worldChangesOverTicks",
+          "met": false,
+          "detail": "e1970104 -> e1970104"
+        },
+        {
+          "rid": "P189.o4",
+          "kind": "noRuntimeFault",
+          "met": true,
+          "detail": "fault=null"
+        }
+      ]
+    },
+    {
+      "id": "P190",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 67537,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P191",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 71043,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P192",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 88206,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P193",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 56571,
+      "finishReason": "stop",
+      "detail": "references: DANGLING_REFERENCE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P194",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 34793,
+      "finishReason": "stop",
+      "detail": "lowering: UNSUPPORTED_SURFACE",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P195",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 75658,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P196",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 74523,
+      "finishReason": "stop",
+      "detail": "schema: SCHEMA_VIOLATION",
+      "rounds": 3,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P197",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 80380,
+      "finishReason": "length",
+      "detail": "Unterminated string in JSON at position 3545 (line 188 column 25)",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P198",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 28546,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P198.o1",
+          "kind": "hasCountdown",
+          "met": false,
+          "detail": "timers=0, mez mění výsledek=false"
+        },
+        {
+          "rid": "P198.o2",
+          "kind": "minPickables",
+          "met": true,
+          "detail": "sebratelných entit=1, minimum=1"
+        },
+        {
+          "rid": "P198.o3",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=66, limit=1800"
+        },
+        {
+          "rid": "P198.o4",
+          "kind": "reachesLose",
+          "met": false,
+          "detail": "v ohraničeném kanonickém hledání se prohra nenašla"
+        }
+      ]
+    },
+    {
+      "id": "P199",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "FAULT",
+      "emissionValid": false,
+      "latencyMs": 30856,
+      "finishReason": "stop",
+      "detail": "witness: NO_WIN",
+      "rounds": 2,
+      "firstRoundPassed": false,
+      "observations": []
+    },
+    {
+      "id": "P200",
+      "bucket": "other_language",
+      "scoreAs": "FULFILLABLE",
+      "source": "model",
+      "verdict": "ROBUST",
+      "emissionValid": true,
+      "latencyMs": 27292,
+      "finishReason": "stop",
+      "detail": "one or more observations unmet",
+      "rounds": 1,
+      "firstRoundPassed": true,
+      "observations": [
+        {
+          "rid": "P200.o1",
+          "kind": "hasCountdown",
+          "met": false,
+          "detail": "timers=0, mez mění výsledek=false"
+        },
+        {
+          "rid": "P200.o2",
+          "kind": "minPickables",
+          "met": true,
+          "detail": "sebratelných entit=1, minimum=1"
+        },
+        {
+          "rid": "P200.o3",
+          "kind": "gatedProgress",
+          "met": false,
+          "detail": "blocker a key jsou přirozené popisy bez stabilní id; scorer jejich význam nehádá"
+        },
+        {
+          "rid": "P200.o4",
+          "kind": "reachesWin",
+          "met": true,
+          "detail": "witnessLength=67, limit=1800"
+        }
+      ]
+    }
+  ]
+}

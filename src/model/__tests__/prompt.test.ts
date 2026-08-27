@@ -19,6 +19,7 @@ import { buildRuntimeWorld } from '../../ir/build';
 import { peelEnvelope, validateLook, worldEmissionSchema } from '../../ir/worlddoc';
 import { verifyWitness } from '../../verify/witness';
 import { EXAMPLE_MARKER, buildEmissionRequest, type Grammar } from '../prompt';
+import { repairEmission } from '../repair';
 
 /**
  * Slovník je tu doslova ten zmrazený, ale **čtený ze souboru**, ne opsaný —
@@ -51,21 +52,32 @@ function exampleFromMessage(): unknown {
 }
 
 describe('příklad ve zprávě je platná emise', () => {
-  it('projde schématem emise', () => {
-    const parsed = worldEmissionSchema.safeParse(peelEnvelope(exampleFromMessage())?.document);
+  // Příklad se od 26. 8. 2026 posuzuje **po opravné vrstvě**, protože přesně tak
+  // putuje i v produkci: model svědka nepíše, systém ho dohledá. Kdyby se tenhle
+  // soubor ptal na holý příklad, ptal by se na dokument, který nikdy nikam nejde.
+  const asSent = () => repairEmission(exampleFromMessage()).document;
+
+  it('model ho posílá bez svědka', () => {
+    const sim = (exampleFromMessage() as { sim: Record<string, unknown> }).sim;
+    expect(sim.witness, 'příklad pořád učí model psát svědka, kterého psát nemá').toBeUndefined();
+  });
+
+  it('projde schématem emise, jakmile systém doplní důkaz', () => {
+    const parsed = worldEmissionSchema.safeParse(peelEnvelope(asSent())?.document);
     expect(parsed.success ? [] : parsed.error.issues.map((i) => `/${i.path.join('/')}: ${i.message}`)).toEqual([]);
   });
 
   it('sníží se do běhového světa', () => {
-    const sim = (exampleFromMessage() as { sim: unknown }).sim;
+    const sim = (asSent() as { sim: unknown }).sim;
     const built = buildRuntimeWorld(sim);
     expect(built.ok ? [] : built.issues).toEqual([]);
   });
 
-  it('jeho svědek dojde do výhry', () => {
-    const built = buildRuntimeWorld((exampleFromMessage() as { sim: unknown }).sim);
+  it('systém pro něj najde vítěznou cestu', () => {
+    const built = buildRuntimeWorld((asSent() as { sim: unknown }).sim);
     expect(built.ok).toBe(true);
     if (!built.ok) return;
+    expect(built.world.trace.length, 'hledač nenašel ani jeden tah').toBeGreaterThan(0);
     expect(verifyWitness(built.world, built.world.trace).verdict).toBe('CERTIFIED');
   });
 
@@ -91,28 +103,15 @@ describe('příklad učí, kam smí mířit svědek', () => {
     expect(collide, 'příklad je dvojznačný: soket se jmenuje stejně jako entita').toEqual([]);
   });
 
-  it('každý cíl svědka je deklarovaná entita', () => {
-    const sim = example().sim;
-    const ops = (sim.witness as { ops: readonly { target: string }[] }).ops;
-    expect(ops.length, 'příklad nemá jediný op — test by neměřil nic').toBeGreaterThan(0);
-    for (const op of ops) expect(sim.entities, `cíl ${op.target} není entita`).toHaveProperty(op.target);
-  });
-
-  it('cíl na soketu opravdu nedojde do výhry', () => {
-    // Tvrzení zprávy proti skutečnému chování. Kdyby se povrch změnil a soket
-    // v cíli začal fungovat, zčervená tenhle test — a věta ve zprávě je pak
-    // zbytečně strašící, ne popis systému.
-    const doc = example();
-    const socketOf = doc.sim.entities as Record<string, { socket: string }>;
-    const ops = (doc.sim.witness as { ops: readonly { target: string }[] }).ops;
-    const sim = {
-      ...doc.sim,
-      witness: { ...doc.sim.witness, ops: ops.map((op) => ({ ...op, target: socketOf[op.target].socket })) },
-    };
-    const built = buildRuntimeWorld(sim);
-    expect(built.ok, 'svět se soketem v cíli se nepostavil — test měří něco jiného, než měl').toBe(true);
-    if (!built.ok) return;
-    expect(verifyWitness(built.world, built.world.trace).verdict).not.toBe('CERTIFIED');
+  it('nese povinné pravidlo výhry, a to jediné', () => {
+    // Naměřený důvod: 15 z 24 zaznamenaných emisí nemá jedinou akci `win`.
+    // Vynutit to dekodérem nejde (viz `FORCED_SHAPE_SCHEMA`), takže povinnost
+    // nese zpráva — a příklad je jediné místo, kde je ten tvar vidět.
+    const rules = example().sim.rules as Record<string, { actions: readonly { kind: string }[] }>;
+    expect(rules.win, 'příklad nemá pravidlo `win`, které schéma vynucuje').toBeDefined();
+    expect(rules.win.actions).toEqual([{ kind: 'win' }]);
+    const winning = Object.entries(rules).filter(([, rule]) => rule.actions.some((a) => a.kind === 'win'));
+    expect(winning.map(([id]) => id), 'výhra je ve víc pravidlech než v `win`').toEqual(['win']);
   });
 
   it('příklad projde inventářem, ne jen kolem něj', () => {
@@ -141,11 +140,49 @@ describe('zpráva nese slovník i tvar', () => {
       expect(system, `zpráva mlčí o ${named}`).toContain(named);
   });
 
+  /**
+   * Povinnost vítězného pravidla nese od 26. 8. 2026 **jen** tahle zpráva.
+   * Vynutit ji dekodérem se zkusilo a na živém modelu to shodilo překlad
+   * gramatiky (viz `FORCED_SHAPE_SCHEMA`), takže když věta ze zprávy vypadne,
+   * nezůstane po ní žádná druhá pojistka — jen 15 z 24 světů bez výhry.
+   */
+  it('žádá vítězné pravidlo a zakazuje modelu psát svědka', () => {
+    const system = buildEmissionRequest('anything', grammar()).system;
+    expect(system).toContain('THE WORLD MUST BE WINNABLE');
+    expect(system).toContain('sim.rules MUST contain a rule named "win"');
+    expect(system, 'zpráva pořád nechává model psát důkaz, který dohledává systém').toContain(
+      'You do NOT write sim.witness',
+    );
+  });
+
+  /**
+   * Naměřeno 26. 8. 2026 na živém modelu: ze šesti odmítnutí byla **tři**
+   * `lowering/UNSUPPORTED_SURFACE: … is missing a required argument`
+   * (dvakrát `moveTo`, jednou `stateIs`). Seznam argumentů ve zprávě přitom
+   * celou dobu byl — chyběla u něj věta, že vyjmenované argumenty jsou
+   * **povinné**. Nadpis říkal jen to, co se zahazuje navíc, což se dá číst jako
+   * nabídka.
+   */
+  it('říká, že vyjmenované argumenty jsou povinné, ne nabízené', () => {
+    const system = buildEmissionRequest('anything', grammar()).system;
+    expect(system).toContain('Every argument listed below is REQUIRED');
+    expect(system, 'zpráva neukazuje, jak vypadá neúplné volání').toContain('it is a broken one');
+  });
+
   it('pojmenuje obě vady druhého živého běhu', () => {
     const system = buildEmissionRequest('anything', grammar()).system;
     // Ne libovolná formulace: obojí je vlastnost, kterou model nemá odkud vzít.
-    for (const named of ['names an ENTITY stableId', 'Never a socket name', 'key of look.modules'])
+    for (const named of ['onCollide is strictly between two declared ENTITIES', 'key of look.modules'])
       expect(system, `zpráva mlčí o ${named}`).toContain(named);
+  });
+
+  it('sváže každou událost vstupu s deklarovanou zónou', () => {
+    const system = buildEmissionRequest('anything', grammar()).system;
+
+    expect(system).toContain('Every onEnterZone or onExitZone event.zone MUST exactly name');
+    expect(system).toContain('sim.sockets or sim.state.zones');
+    expect(system).toContain('{ entity: player, zone: goalPad }');
+    expect(system).toContain('not the goal entity stableId');
   });
 
   it('neříká o rolích a inventáři nepravdu', () => {
@@ -161,5 +198,47 @@ describe('zpráva nese slovník i tvar', () => {
   it('nese uživatelský prompt doslova', () => {
     const request = buildEmissionRequest('a tower that falls over', grammar());
     expect(request.user).toContain('a tower that falls over');
+  });
+
+  it('označí kopii ukázkového scénáře za neplatnou odpověď', () => {
+    const request = buildEmissionRequest('jumping arcade game with obstacles', grammar());
+
+    expect(request.user).toContain('REQUEST-SPECIFIC CONTENT');
+    expect(request.user).toContain('structurally valid');
+    expect(request.user).toContain('invalid answer');
+    for (const identifier of ['cardPad', 'leverPad', 'gatePad', 'card', 'lever', 'gate', 'powered', 'grab', 'pull']) {
+      expect(request.system).toContain(identifier);
+      expect(request.user, 'uživatelská zpráva nevaruje před kopií ' + identifier).toContain(identifier);
+    }
+    // `win` je povinné jméno, ne ukázkové. Kdyby spadlo na seznam zakázaných,
+    // zpráva by si v jednom odstavci odporovala s druhým.
+    const banned = request.user.slice(request.user.indexOf('Do not copy these example-only identifiers'));
+    const firstLine = banned.split(String.fromCharCode(10))[0];
+    expect(firstLine, 'zpráva zakazuje jméno, které sama vyžaduje').not.toContain('win');
+  });
+
+  /**
+   * Odsazení příkladu vypadá jako plýtvání a **není**. Je to jediná aserce
+   * v tomhle souboru, která nehlídá obsah zprávy, ale její formát — protože
+   * formát je tu naměřeně nosný.
+   *
+   * Zkompaktnit příklad je lákavé: ušetří 1937 znaků zadání, zkrátí odpověď
+   * a naměřeně srazí medián latence z 36,7 s na 24,3 s. Zaplatí se to ale tím,
+   * co model napíše. Naměřeno 25. 8. 2026 dvěma běhy nad týmž strojem
+   * i korpusem (`../../../evals/local-model/decision.md` §8):
+   *
+   *   odsazený příklad   emise padají na JEDINÉM poli, doplnění opraví 16 z nich
+   *   kompaktní příklad  padají navíc na `sim.grid` a `look.materialRoles`,
+   *                      opravit nejde ani jedna
+   *
+   * Řádky příkladu slouží modelu jako seznam polí, který si projde. Na jednom
+   * dlouhém řádku tu oporu ztratí. Tenhle test je tu proto, aby se ta zkratka
+   * nezkusila potřetí — vada po ní totiž **není vidět na zprávě ani na světě**,
+   * ukáže se až po třinácti minutách na GPU.
+   */
+  it('příklad zůstává odsazený, protože model podle řádků kontroluje pole', () => {
+    const system = buildEmissionRequest('anything', grammar()).system;
+    const tail = system.slice(system.indexOf(EXAMPLE_MARKER) + EXAMPLE_MARKER.length).trim();
+    expect(tail, 'příklad se zkompaktnil — emise pak vynechávají pole a nejdou opravit').toContain('\n');
   });
 });

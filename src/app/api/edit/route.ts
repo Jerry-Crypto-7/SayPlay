@@ -238,7 +238,10 @@ export async function POST(request: Request): Promise<Response> {
     // patch rozdělí na dva se stejným pořadím operací uvnitř každého. Přetypování
     // je poctivé právě proto, že router tvar obálky i operací kontroluje sám —
     // `readonly Operation[]` platí jen při překladu a tělo přišlo jako JSON.
-    const routing = routePatch({ label: emission.label, operations: emission.body as readonly Operation[] });
+    // Dokument se předává, takže router smí doletět na nejbližší legální variantu
+    // (T13). Dráhu to nemění — rozhoduje se z cest, než se cokoli přepíše — a
+    // `certifySim` v `commitRoutedParts` zůstává beze změny jediným rozhodčím.
+    const routing = routePatch({ label: emission.label, operations: emission.body as readonly Operation[] }, doc);
     if (routing.verdict === 'REJECTED')
       return verdict(
         {

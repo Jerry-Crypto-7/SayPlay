@@ -28,7 +28,7 @@
       "outcome": "declined",
       "verdict": "NO_FIT",
       "gates": [],
-      "detail": "Neumím vydržet danou dobu (`GOAL_SURVIVE_T`). Tady je ohraničená aréna, sbírání do prahu, brána a cíl."
+      "detail": "I cannot do surviving for a given time (`GOAL_SURVIVE_T`). Here is a bounded arena, collecting up to a threshold, a gate and a goal."
     },
     {
       "id": "C03",
@@ -41,7 +41,7 @@
       "outcome": "declined",
       "verdict": "NO_FIT",
       "gates": [],
-      "detail": "Neumím entity, které jednají samy (`ACT_AUTONOMOUS`). Tady je ohraničená aréna, sbírání do prahu, brána a cíl."
+      "detail": "I cannot do entities that act on their own (`ACT_AUTONOMOUS`). Here is a bounded arena, collecting up to a threshold, a gate and a goal."
     },
     {
       "id": "C04",
@@ -69,7 +69,7 @@
       "outcome": "declined",
       "verdict": "NO_FIT",
       "gates": [],
-      "detail": "Neumím několik nezávislých ovladačů jednoho automatu (`REQ_MULTI_SOURCE_INPUT`). Tady je ohraničená aréna, sbírání do prahu, brána a cíl."
+      "detail": "I cannot do several independent controllers of one machine (`REQ_MULTI_SOURCE_INPUT`). Here is a bounded arena, collecting up to a threshold, a gate and a goal."
     },
     {
       "id": "C06",
@@ -82,7 +82,7 @@
       "outcome": "declined",
       "verdict": "NO_FIT",
       "gates": [],
-      "detail": "Neumím přehnat číselnou veličinu přes práh (`GOAL_THRESHOLD`) ani paměť napříč epizodami (`STATE_PERSISTENT_MEMORY`). Tady je ohraničená aréna, sbírání do prahu, brána a cíl."
+      "detail": "I cannot do pushing a number past a threshold (`GOAL_THRESHOLD`) or memory across episodes (`STATE_PERSISTENT_MEMORY`). Here is a bounded arena, collecting up to a threshold, a gate and a goal."
     },
     {
       "id": "C07",
@@ -123,7 +123,7 @@
       "outcome": "declined",
       "verdict": "NO_FIT",
       "gates": [],
-      "detail": "Neumím přehnat číselnou veličinu přes práh (`GOAL_THRESHOLD`) ani míření a střelbu (`IN_AIM`). Tady je ohraničená aréna, sbírání do prahu, brána a cíl."
+      "detail": "I cannot do pushing a number past a threshold (`GOAL_THRESHOLD`) or aiming and shooting (`IN_AIM`). Here is a bounded arena, collecting up to a threshold, a gate and a goal."
     },
     {
       "id": "C14",
@@ -139,7 +139,7 @@
         "strop ROBUST: §10.3 — datová vizualizace není v gramatice, takže správná odpověď je poctivý NO_FIT, a ten se z definice nepočítá jako FULFILLED. Kontrakt přesto vyžaduje OBOJÍ: NO_FIT na `sim` A postavenou scénu. Implementace, která vrátí NO_FIT a bílé plátno, kontrakt PORUŠÍ.",
         "prázdný vektor požadavků — není co splnit"
       ],
-      "detail": "Neumím reálná čísla mapovaná na vizuál s čitelnými osami (`REQ_DATA_BINDING`). Tady je ohraničená aréna, sbírání do prahu, brána a cíl."
+      "detail": "I cannot do real numbers mapped to a visual with readable axes (`REQ_DATA_BINDING`). Here is a bounded arena, collecting up to a threshold, a gate and a goal."
     },
     {
       "id": "C15",
@@ -154,7 +154,7 @@
       "gates": [
         "strop ROBUST: §10.1 — rigid body fyzika je mimo gramatiku i mimo rozpočet, takže správná odpověď je NO_FIT. Zákaz `applyForce` je tu proto, že nejpravděpodobnější podvod je předstíraná pseudofyzika propašovaná jako nová akce."
       ],
-      "detail": "Neumím spojitou dynamiku a hybnost (`STATE_CONTINUOUS`) ani fyziku, stohování ani nárazy (`REQ_PHYSICS_SIM`). Tady je předměty, označené sokety a párovací pravidlo."
+      "detail": "I cannot do continuous dynamics and momentum (`STATE_CONTINUOUS`) or physics, stacking or impacts (`REQ_PHYSICS_SIM`). Here is items, labelled sockets and a matching rule."
     }
   ],
   "fulfilled": 0,

@@ -74,6 +74,8 @@
  *    role je nositel významu. Věta „prop everything else" ten prostor zavírala.
  */
 
+import { canonical } from '../ir/worlddoc';
+
 /** Slovník ze zmrazeného protokolu. Čte ho `./client`, sem se jen předává. */
 export interface Grammar {
   readonly surfaceEvents: readonly string[];
@@ -161,24 +163,13 @@ const EXAMPLE_WORLD = {
           { kind: 'setLocked', target: 'gate', locked: false },
         ],
       },
-      escape: {
+      win: {
         phase: 1,
         priority: 0,
         event: { kind: 'onEnterZone', entity: 'player', zone: 'gatePad' },
         condition: { kind: 'flagIs', flag: 'powered', value: true },
         actions: [{ kind: 'win' }],
       },
-    },
-    witness: {
-      tier: 'short',
-      H_cert: 600,
-      ops: [
-        { tick: 0, actionId: 'moveTo', target: 'card' },
-        { tick: 30, actionId: 'pickup', target: 'card' },
-        { tick: 60, actionId: 'moveTo', target: 'lever' },
-        { tick: 90, actionId: 'use', target: 'lever' },
-        { tick: 120, actionId: 'moveTo', target: 'gate' },
-      ],
     },
   },
   look: {
@@ -191,6 +182,23 @@ const EXAMPLE_WORLD = {
     audio: {},
   },
 } as const;
+
+const EXAMPLE_CANONICAL = canonical(EXAMPLE_WORLD);
+
+/** Doslovný obsah ukázky není nezávislá odpověď modelu na novou větu. */
+export function isExampleEmission(value: unknown): boolean {
+  return value !== null && typeof value === 'object' && canonical(value) === EXAMPLE_CANONICAL;
+}
+
+export const EXAMPLE_ONLY_IDENTIFIERS = [
+  ...Object.keys(EXAMPLE_WORLD.sim.sockets).filter((identifier) => identifier !== 'spawnPad'),
+  ...Object.keys(EXAMPLE_WORLD.sim.entities).filter((identifier) => identifier !== 'player'),
+  ...Object.keys(EXAMPLE_WORLD.sim.state.flags),
+  // `win` je z tohohle seznamu vyňaté schválně: je to jediné pravidlo, které
+  // příklad NEdemonstruje jako volbu, ale jako povinnost. Zakázat jeho jméno by
+  // odporovalo požadavku o pár řádků výš.
+  ...Object.keys(EXAMPLE_WORLD.sim.rules).filter((identifier) => identifier !== 'win'),
+];
 
 export function buildEmissionRequest(prompt: string, grammar: Grammar): UpstreamRequest {
   const system = [
@@ -215,19 +223,33 @@ export function buildEmissionRequest(prompt: string, grammar: Grammar): Upstream
     `Effects use these actions: ${grammar.actions.join(', ')}.`,
     'Nothing outside those three lists exists. Every counter, timer and inventory slot is bounded.',
     '',
-    'sim.witness is a finite admissible input trace in canonical sim actions. It must reach win()',
-    'inside the horizon of the tier it asks for. You may request a tier; you may not declare the',
-    'horizon — the system does that.',
+    'THE WORLD MUST BE WINNABLE. This is the one requirement that is never optional.',
+    'sim.rules MUST contain a rule named "win" whose actions are exactly [{ kind: "win" }]. You write its',
+    'event and its condition — that is you deciding what winning MEANS in this world. A world with no',
+    'win rule is a room nobody can finish, and it is rejected however good the rest of it is.',
     '',
-    'WALKING, and the single most expensive mistake you can make here.',
-    'Every op target in sim.witness names an ENTITY stableId from sim.entities. Never a socket name,',
-    'never a zone name. { actionId: "moveTo", target: "redKey" } walks the actor to whatever socket the',
-    'entity redKey sits on. { actionId: "moveTo", target: "redKeySocket" } matches no rule at all: the',
-    'actor does not move, the trace still runs to the end of the horizon, and the world is rejected as',
-    'NO_WIN even though every rule in it was right. To send the actor to a place that holds no entity,',
-    'declare an entity there and walk to that.',
-    'Each socket is also a 1x1 zone of the same name, so onEnterZone may name a socket — that is the',
-    'one place a socket name belongs. Zones in sim.state.zones are for anything larger.',
+    'You do NOT write sim.witness. Leave it out entirely.',
+    'The winning path is a PROOF, not content: the system searches for it itself, replays it, and',
+    'certifies it. Your job is to make winning possible and to say when it happens. Every op you would',
+    'have written there is one more thing that can be wrong, and none of it describes the request.',
+    '',
+    'PLACES AND THINGS are different namespaces, and mixing them is the most common way to lose a world.',
+    'A socket is a named CELL. An entity is a THING standing on a socket. Each socket is also a 1x1 zone',
+    'of the same name; zones in sim.state.zones are for anything larger.',
+    'Every onEnterZone or onExitZone event.zone MUST exactly name a key declared in',
+    'sim.sockets or sim.state.zones. It never names an entity stableId. If goalArch sits at',
+    'goalPad, use { entity: player, zone: goalPad }, not the goal entity stableId goalArch.',
+    'onCollide is strictly between two declared ENTITIES, both of them named under sim.entities.',
+    'Reaching a PLACE is onEnterZone, never onCollide. { kind: "onCollide", a: "player", b: "dockPad" }',
+    'is wrong when dockPad is a socket; { kind: "onEnterZone", entity: "player", zone: "dockPad" } is the',
+    'same event written the way the interpreter reads it.',
+    '',
+    'EVERY NAME YOU USE MUST BE DECLARED FIRST. There is no implicit creation anywhere.',
+    'A timer named in onTimerEnd, startTimer or timerRunning must exist in sim.state.timers with its',
+    'durationTicks. A counter named in addCounter, counterIs or onCounterReaches must exist in',
+    'sim.state.counters with min, max and init. A flag must exist in sim.state.flags. An entity named',
+    'anywhere must exist in sim.entities. A name that is only mentioned and never declared rejects the',
+    'whole emission, and the system will not guess what you meant by it.',
     '',
     'SHAPE. The interpreter reads these exact containers and field names. A world that renames them',
     'is discarded whole, however sensible the alternative looks.',
@@ -250,11 +272,14 @@ export function buildEmissionRequest(prompt: string, grammar: Grammar): Upstream
     '               slots:    <count>,                             inventory slots the actor may hold',
     '               pool:     { <idPrefix>: { size, tag } } }      for spawn and countInZone',
     '             A world whose rules use giveItem or hasItem declares state.slots. Slot indexes run from 0.',
-    'sim.witness  { tier: "short" | "standard" | "long", H_cert, ops: [{ tick, actionId, target }] }',
+    'sim.witness  omitted — the system writes it. If you do send one it is replaced by the proof it finds.',
     'sim.grid and sim.collisionAabb are declared and carried, and this version does not read them.',
     'look.<field> is free-form as long as every number in it is finite.',
     '',
-    'ARGUMENTS, beside "kind". Anything not listed here is dropped.',
+    'ARGUMENTS, beside "kind". Every argument listed below is REQUIRED for that kind, and anything not',
+    'listed is dropped. { kind: "moveTo", target: "cat" } is not a shorter moveTo — it is a broken one,',
+    'and the world is rejected before it ever runs. Count the arguments against this list for every',
+    'event, condition and action you write.',
     'events      onStart {} · onClick {entity} · onEnterZone/onExitZone {entity, zone} · onCollide {a, b}',
     '            onPickup {entity} or {role} · onDrop {item, socket} or {entity} · onTimerEnd {timer}',
     '            onCounterReaches {counter, threshold} · onStateEnter {entity, state} · onSignal {name}',
@@ -268,20 +293,52 @@ export function buildEmissionRequest(prompt: string, grammar: Grammar): Upstream
     '            despawn {target} · moveTo {target, socket, ticks} · freeze {target, ticks}',
     '            giveItem/takeItem {slot, item} · emit {signal} · playEffect {id, target} · win {} · lose {}',
     '',
-    'The clock runs at 20 ticks per second, so a 60-second timer is durationTicks 1200. Horizon caps are',
-    'short 600 ticks, standard 1200, long 3600 — ask for the tier that fits the witness you wrote.',
+    'The clock runs at 20 ticks per second, so a 60-second timer is durationTicks 1200. The system proves',
+    'the world within 600 ticks, so a puzzle that needs longer than 30 seconds of play cannot be proved.',
     'The system already binds the canonical moveTo action for every entity that sits on a socket, so you',
     'never write a rule for walking. The moveTo ACTION inside a rule is the other thing: it moves some',
     'entity you name, and it does take {target, socket, ticks}.',
     '',
     EXAMPLE_MARKER,
+    // **Odsazení tu musí zůstat. Zkompaktnění se zkusilo a naměřeně uškodilo.**
+    //
+    // Úvaha byla: model kopíruje formát toho, co vidí, a naměřeně bylo 52,5 %
+    // znaků jeho odpovědi jen odsazení, takže kompaktní příklad měl zkrátit
+    // odpověď a s ní i čas. Zkráceno to bylo (medián 36,7 s → 24,3 s, useknutých
+    // odpovědí 8 → 5), ale **zaplatilo se strukturou emise**, a to je horší
+    // obchod. Naměřeno 25. 8. 2026, dva běhy nad týmž strojem a korpusem:
+    //
+    //   příklad odsazený   16 z 25 emisí padlo na JEDINÉM poli (collisionAabb),
+    //                      doplnění toho pole je opraví -> 16 platných, 8 dohraje
+    //   příklad kompaktní  emise padají na collisionAabb A NAVÍC na sim.grid (15x)
+    //                      a look.materialRoles (5x) -> opravit nejde ani jedna
+    //
+    // Odsazený příklad tedy modelu neslouží jako vzor formátu, ale jako **seznam
+    // polí, který si může projít po řádcích**. Na jednom řádku o 1800 znacích tu
+    // oporu ztratí a pole vynechává. Úspora času nebyla zadarmo — byla to táž
+    // událost jako ta ztráta kvality: model psal rychleji, protože psal míň.
+    //
+    // Ta rychlost je pořád reálný problém, ale řeší se jinde: naměřeno, že 80 %
+    // času požadavku padne na režii mezi tokeny uvnitř WebLLM, a vynucený tvar
+    // odpovědi z toho je 0,9 %. Podrobně v `evals/local-model/decision.md` §8.
     JSON.stringify(EXAMPLE_WORLD, null, 2),
   ].join('\n');
 
-  // Text promptu jde do zprávy **doslova**. AC T13 se ptá právě na tohle:
-  // zaznamenaný požadavek musí prompt obsahovat, jinak se nedá prokázat, že
-  // odpověď patří k němu a ne k jinému běhu.
-  const user = `Build a playable world for this request:\n\n${prompt}`;
+  // Text promptu jde do zprávy **doslova** a stojí poslední. Malý model se v
+  // živých bězích naučil tvar příkladu tak doslova, že jeho kartu, páku a bránu
+  // opsal i pro zenovou zahradu a skákací arkádu. Zákaz proto jmenuje obsah
+  // aktuálního příkladu přímo a zadání opakuje až za ním: kopie může být
+  // strukturálně platná, ale pořád není odpovědí na větu.
+  const user = [
+    'REQUEST-SPECIFIC CONTENT is authoritative. The assistant example demonstrates syntax only.',
+    'Its card/lever/gate scenario is semantically wrong for any unrelated request.',
+    `Do not copy these example-only identifiers unless the request itself calls for them: ${EXAMPLE_ONLY_IDENTIFIERS.join(', ')}.`,
+    'A structurally valid world that does not implement the request-specific nouns, actions, constraints, and goal is an invalid answer.',
+    'Choose request-specific stableIds, entity roles, rules, look, and a winning witness.',
+    '',
+    'Build a playable world for exactly this request:',
+    prompt,
+  ].join('\n');
 
   return { model: EMISSION_MODEL, system, user };
 }

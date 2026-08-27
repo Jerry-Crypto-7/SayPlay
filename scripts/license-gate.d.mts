@@ -12,13 +12,23 @@ export declare const ALLOWED_WITH_NOTE: Set<string>;
 export declare interface DisclosureEntry {
   readonly name: string;
   readonly kind: string;
-  readonly source: string;
-  readonly authorOrProvider: string;
-  readonly license: string;
-  readonly requiredNotices: readonly string[];
-  readonly attribution: string;
+  /**
+   * Pole třetí strany jsou nepovinná, protože **první strana je nemá od koho
+   * vzít**: vlastní testovací fixtura nemá upstream, licenci ani autora. Brána
+   * to nepromíjí — `license-gate` kontrola 1 žádá u `firstParty: true` místo
+   * nich `reason` a u všeho ostatního celou sedmičku dál.
+   */
+  readonly source?: string;
+  readonly authorOrProvider?: string;
+  readonly license?: string;
+  readonly requiredNotices?: readonly string[];
+  readonly attribution?: string;
   readonly reviewNote?: string;
   readonly scope?: string;
+  /** Není to třetí strana: vlastní data, vlastní kód, vymyšlený identifikátor. */
+  readonly firstParty?: boolean;
+  /** Proč to není třetí strana. Povinné právě tehdy, když `firstParty` platí. */
+  readonly reason?: string;
 }
 
 /** Odstraní řádkové i blokové komentáře, obsah řetězců nechá být. */

@@ -17,7 +17,7 @@ export {
   type PieceCategory,
   type SwatchName,
 } from './pieces/primitives';
-export { KIT_BUDGETS, measureScene, trianglesOf, type SceneMeasurement } from './budgets';
+export { KIT_BUDGETS, VIEWER_BUDGETS, measureScene, trianglesOf, type SceneMeasurement } from './budgets';
 export {
   LAYOUTS,
   footprintSignature,
@@ -25,7 +25,19 @@ export {
   type Layout,
   type Placement,
 } from './layouts';
-export { PALETTES, repaint, type Palette, type PaletteName } from './palettes';
+export {
+  MIN_FIGURE_GROUND_SEPARATION,
+  PALETTES,
+  SCENE_ROLES,
+  UI_TOKENS,
+  UI_TOKENS_CVD,
+  luminanceOf,
+  repaint,
+  type Palette,
+  type PaletteName,
+  type SceneRole,
+  type UiToken,
+} from './palettes';
 
 /** Jediný index kitu. Nic jiného než tenhle soubor kusy nevydává. */
 export const KIT = [

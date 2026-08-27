@@ -31,6 +31,36 @@ export const KIT_BUDGETS = {
   maxTrianglesPerPiece: 1_200,
 } as const;
 
+/**
+ * Rozpočet jednoho snímku plátna v prohlížeči.
+ *
+ * **Jiná jednotka než `KIT_BUDGETS`, a to je celý důvod, proč to stojí vedle.**
+ * `KIT_BUDGETS` počítá scénu poskládanou z kitu — jeden umístěný kus = jeden
+ * draw call, měřeno v Node bez GPU. `VIEWER_BUDGETS` počítá, co renderer
+ * doopravdy udělá za snímek, a tam přibývá to, co se z kitu spočítat nedá:
+ *
+ * - **stínová mapa je druhý průchod.** Každý vrhající objekt se kreslí dvakrát,
+ *   jednou do hloubkové mapy a jednou na obrazovku, a `renderer.info.render.calls`
+ *   sčítá obojí. Strop kitu (120) by tím byl přečtený jako dvojnásobek a nebyl
+ *   by to jeho strop.
+ * - **instancování jde opačným směrem** — `WorldScene` kreslí každou podobu
+ *   entity jednou dávkou, takže sto entit je pořád sedm volání.
+ *
+ * Čísla drží `data/profiles/web-viewer.json` a `budgets.test.ts` hlídá, že se
+ * obojí nerozejde. Profil se sem záměrně neimportuje: `src/kit/**` se staví i
+ * ve stromu fallbacku, kde adresář `data/` není.
+ *
+ * `maxLights` je strop rigu, ne rendereru. Tři směrová světla a jedno
+ * polokulové ambientní jsou celý rig z T6; páté světlo je změna návrhu, kterou
+ * má někdo obhájit, ne věc, co přiteče mimochodem.
+ */
+export const VIEWER_BUDGETS = {
+  maxDrawCallsPerFrame: 300,
+  maxTrianglesPerFrame: 500_000,
+  maxLights: 4,
+  shadowMapSize: 2048,
+} as const;
+
 export type SceneMeasurement = {
   readonly drawCalls: number;
   readonly triangles: number;

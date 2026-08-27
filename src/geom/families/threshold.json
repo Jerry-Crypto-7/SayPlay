@@ -1,0 +1,9 @@
+{
+  "note": "Prah odlišnosti rodin. Metrika je v evals/measure-divergence.ts, brána v e2e/divergence.spec.ts. Všechna čísla jsou v rozsahu 0 až 1. První dvojice stojí proti celkové odlišnosti ze dvou stran: napříč rodinami musí být průměr nad minMeanCrossFamily, uvnitř jedné rodiny musí každá dvojice zůstat pod maxSameFamily. Mezera mezi nimi je to, co dělá z prahu laťku a ne detektor změn.",
+  "minMeanCrossFamily": 0.3,
+  "maxSameFamily": 0.15,
+
+  "profileNote": "Druhá dvojice stojí výhradně proti profilu siluety, a to po dvojicích, ne na průměru. Bez ní o bráně rozhoduje paleta: naměřeno 21. 8. 2026 tak, že Věže dostaly bajt po bajtu geometrii Teras a nechaly si vlastní paletu — průměr klesl z 0,514 jen na 0,507 a brána zůstala zelená, protože paleta dává 0,85 až 1,00 a profil jen 0,03 až 0,12. Slovo silueta bylo do té doby dekorace. Naměřené hodnoty čisté sady: nejslabší dvojice napříč rodinami 0,029, nejsilnější dvojice uvnitř rodiny 0,006 — prahy leží v té mezeře. Průměr by tu nestačil, jedna splynulá dvojice se v něm schová za zbylých 23.",
+  "minCrossFamilyProfile": 0.02,
+  "maxSameFamilyProfile": 0.012
+}

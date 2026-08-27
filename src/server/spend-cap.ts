@@ -72,17 +72,36 @@ export function costUsd(usage: Usage, pricing: Pricing): number {
 export interface CapControl {
   readonly enabled: boolean;
   readonly capUsd: number;
+  /**
+   * Strop na počet volání. Nevyplněný znamená `DEFAULT_CALL_CAP`.
+   *
+   * Je **volitelný schválně**: ovládací soubory a volání konstruktoru, které
+   * vznikly dřív, musí dál platit. Vyplněný ale musí být celé kladné číslo —
+   * nesmysl se odmítne stejně jako u zbytku souboru, tedy zavřeně.
+   */
+  readonly callCap?: number;
 }
 
 export interface CapSnapshot extends CapControl {
   readonly spentUsd: number;
   readonly reservedUsd: number;
   readonly remainingUsd: number;
+  readonly callsMade: number;
+  readonly callsRemaining: number;
 }
 
 export type RefusalReason =
   /** Rozpočet by rezervací přetekl. Volání se neuskuteční. */
   | 'CAP_EXHAUSTED'
+  /**
+   * Vyčerpaný strop na **počet** volání.
+   *
+   * Nezávisí na žádné ceně, a v tom je celý smysl. Dolarový strop stojí na
+   * ceníku, který operátor opisuje ručně, takže překlep o tři řády (`0.000015`
+   * místo `15`) ho tiše roztáhne milionkrát a nic si toho nevšimne — cena se
+   * nedá ověřit na správnost, jen na tvar. Počet volání se ověřit dá.
+   */
+  | 'CALL_CAP_EXHAUSTED'
   /** Ovládací soubor existuje a nedá se přečíst nebo mu nesedí tvar. */
   | 'CONTROL_UNREADABLE'
   /**
@@ -130,12 +149,23 @@ function parseControl(raw: string): CapControl | null {
   const { enabled, capUsd } = parsed as { enabled?: unknown; capUsd?: unknown };
   if (typeof enabled !== 'boolean') return null;
   if (typeof capUsd !== 'number' || !Number.isFinite(capUsd) || capUsd < 0) return null;
-  return { enabled, capUsd };
+  const { callCap } = parsed as { callCap?: unknown };
+  if (callCap === undefined) return { enabled, capUsd };
+  // Vyplněný, ale nesmyslný strop je rozbitý vypínač, ne „bez stropu".
+  if (typeof callCap !== 'number' || !Number.isInteger(callCap) || callCap < 0) return null;
+  return { enabled, capUsd, callCap };
 }
 
 export class SpendCap {
   #spentUsd = 0;
   #reservedUsd = 0;
+  /**
+   * Povolená volání. Roste při **rezervaci**, ne při vyrovnání, a zpátky se
+   * nevrací: volání, které se smělo uskutečnit, se uskutečnilo. Kdyby se
+   * počítalo až po úspěchu, byl by padající poskytovatel cesta, jak strop
+   * obejít — týž důvod, proč se neznámá cena účtuje nejhorším případem.
+   */
+  #callsMade = 0;
   readonly #defaults: CapControl;
   readonly #controlPath: string | null;
 
@@ -160,12 +190,16 @@ export class SpendCap {
   }
 
   snapshot(): CapSnapshot {
-    const control = this.#control() ?? { enabled: true, capUsd: 0 };
+    const control = this.#control() ?? { enabled: true, capUsd: 0, callCap: 0 };
+    const callCap = control.callCap ?? DEFAULT_CALL_CAP;
     return {
       ...control,
+      callCap,
       spentUsd: this.#spentUsd,
       reservedUsd: this.#reservedUsd,
       remainingUsd: control.capUsd - this.#spentUsd - this.#reservedUsd,
+      callsMade: this.#callsMade,
+      callsRemaining: callCap - this.#callsMade,
     };
   }
 
@@ -194,6 +228,21 @@ export class SpendCap {
         snapshot: this.snapshot(),
       };
 
+    // Před dolarovým stropem schválně: tenhle drží i tehdy, když je ceník
+    // opsaný špatně, a právě proto tu je.
+    const callCap = control.callCap ?? DEFAULT_CALL_CAP;
+    if (control.enabled && this.#callsMade >= callCap)
+      return {
+        ok: false,
+        reason: 'CALL_CAP_EXHAUSTED',
+        // Čísla tu být SMÍ a mají: tenhle text je pro operátora, je to jediná
+        // diagnostika, kterou má (logovací kanál pod tímhle není). Ořez pro
+        // veřejnost dělá `PUBLIC_REFUSAL` v `src/app/api/generate/route.ts` —
+        // dělí se to tam, aby žádná příčina neodešla ven omylem.
+        detail: `the call cap of ${callCap} calls is used up (made ${this.#callsMade}); this call was not made`,
+        snapshot: this.snapshot(),
+      };
+
     const wouldHold = this.#spentUsd + this.#reservedUsd + worstCaseUsd;
     if (control.enabled && wouldHold > control.capUsd)
       return {
@@ -206,12 +255,22 @@ export class SpendCap {
       };
 
     this.#reservedUsd += worstCaseUsd;
+    this.#callsMade += 1;
     let settled = false;
     const release = (actualUsd: number | 'unknown'): void => {
       if (settled) return;
       settled = true;
       this.#reservedUsd -= worstCaseUsd;
-      this.#spentUsd += actualUsd === 'unknown' ? worstCaseUsd : Math.max(0, actualUsd);
+      // Číslu od poskytovatele se tady NEVĚŘÍ, a je to naměřené: `Math.max(0, NaN)`
+      // je zase `NaN`, takže jediná vadná účtenka otráví součet a od té chvíle je
+      // `wouldHold > capUsd` napořád nepravda — strop je do konce běhu procesu
+      // vypnutý a nikdo se to nedozví. `reserve()` svůj vstup kontroluje o pár
+      // řádků výš; tady ta kontrola chyběla a byla to jediná asymetrie mezi nimi.
+      //
+      // Když účtenka nedává smysl, účtuje se celá **rezervace**: je to horní odhad,
+      // který kontrolou už jednou prošel, takže strop spíš přestřelí než povolí.
+      const usable = typeof actualUsd === 'number' && Number.isFinite(actualUsd) && actualUsd >= 0;
+      this.#spentUsd += usable ? actualUsd : worstCaseUsd;
     };
 
     return { ok: true, reservedUsd: worstCaseUsd, settle: release };
@@ -220,6 +279,16 @@ export class SpendCap {
 
 /** Výchozí strop, když prostředí neříká jinak. */
 export const DEFAULT_CAP_USD = 5;
+
+/**
+ * Výchozí strop na počet volání.
+ *
+ * 200 je `DEFAULT_CAP_USD` vydělené jedním nejhorším případem (~0,024 USD při
+ * 8000 výstupních tokenech), takže při **správně** opsaném ceníku se nikdy
+ * neozve dřív než dolarový strop a nikomu nepřekáží. Ozve se přesně tehdy, když
+ * je ceník opsaný špatně — a to je jediná situace, na kterou tu je.
+ */
+export const DEFAULT_CALL_CAP = 200;
 
 /**
  * Strop poskládaný z prostředí.
@@ -236,5 +305,10 @@ export function spendCapFromEnv(env: Record<string, string | undefined>): SpendC
   const raw = env.WORLDSMITH_SPEND_CAP_USD;
   const parsed = raw === undefined ? DEFAULT_CAP_USD : Number(raw);
   const capUsd = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
-  return new SpendCap({ enabled: true, capUsd }, env.WORLDSMITH_SPEND_CAP_FILE ?? null);
+  // Táž doktrína jako u dolarů: chybějící proměnná je výchozí hodnota, vadná je
+  // NULA. Překlep jinak tiše zvedne strop, kdežto nula zastaví provoz a je vidět.
+  const rawCalls = env.WORLDSMITH_CALL_CAP;
+  const parsedCalls = rawCalls === undefined ? DEFAULT_CALL_CAP : Number(rawCalls);
+  const callCap = Number.isInteger(parsedCalls) && parsedCalls >= 0 ? parsedCalls : 0;
+  return new SpendCap({ enabled: true, capUsd, callCap }, env.WORLDSMITH_SPEND_CAP_FILE ?? null);
 }

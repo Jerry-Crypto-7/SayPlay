@@ -120,6 +120,74 @@ describe('POST /api/generate', () => {
     expect(json.error?.code).toBe('CAP_EXHAUSTED');
   });
 
+  it('odmítnutí stropem neposílá ven čísla ani cestu na disk', async () => {
+    // `/api/generate` nechce přihlášení (AC T301), takže „ven" znamená komukoli
+    // na internetu. Přesný zbytek rozpočtu umožňuje načasovat zneužití a
+    // absolutní cesta prozradí rozvržení souborů serveru včetně jména účtu.
+    // Text pro operátora čísla nese dál — ořezává se až tady, viz PUBLIC_REFUSAL.
+    const { status, json } = await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+      WORLDSMITH_BRANCH: 'live',
+      WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+      WORLDSMITH_MODEL_KEY: 'test-key',
+      WORLDSMITH_USD_PER_MTOK_OUT: '15',
+      WORLDSMITH_SPEND_CAP_USD: '0',
+    });
+
+    expect(status).toBe(429);
+    expect(json.error?.code).toBe('CAP_EXHAUSTED');
+    const message = String(json.error?.message);
+    expect(message, 'ven odešlo číslo').not.toMatch(/\d/);
+    expect(message, 'ven odešla cesta na disk').not.toMatch(/[\/]/);
+  });
+
+  it('rozbitý vypínač neprozradí cestu k ovládacímu souboru', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'worldsmith-route-'));
+    const path = join(dir, 'spend-cap.json');
+    writeFileSync(path, 'tohle není JSON', 'utf8');
+
+    try {
+      const { status, json } = await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        WORLDSMITH_SPEND_CAP_FILE: path,
+      });
+
+      expect(status).toBe(503);
+      expect(json.error?.code).toBe('CONTROL_UNREADABLE');
+      expect(String(json.error?.message), 'ven odešla cesta k souboru').not.toContain(dir);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('vyčerpaný počet volání je taky 429, i když dolary zbývají', async () => {
+    // Druhá pojistka vedle dolarové: ta stojí na ceníku opsaném ručně, takže
+    // překlep o tři řády ji roztáhne milionkrát. Rozpočet je tu schválně
+    // obrovský — odmítnout musí počítadlo, ne peníze.
+    vi.stubGlobal('fetch', () =>
+      Promise.resolve(
+        Response.json({ content: [{ type: 'text', text: '{"emitted":true}' }], usage: { input_tokens: 10, output_tokens: 10 } }),
+      ),
+    );
+
+    const call = await loadRoute({
+      WORLDSMITH_BRANCH: 'live',
+      WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+      WORLDSMITH_MODEL_KEY: 'test-key',
+      WORLDSMITH_USD_PER_MTOK_OUT: '15',
+      WORLDSMITH_SPEND_CAP_USD: '1000',
+      WORLDSMITH_CALL_CAP: '1',
+    });
+
+    expect((await call(JSON.stringify({ prompt: 'bludiště s klíčem' }))).status).toBe(200);
+
+    const second = await call(JSON.stringify({ prompt: 'bludiště s klíčem' }));
+    expect(second.status).toBe(429);
+    expect(second.json.error?.code).toBe('CALL_CAP_EXHAUSTED');
+  });
+
   it('útrata se sčítá přes požadavky — strop je stav procesu, ne požadavku', async () => {
     // Strop, který se rodí s každým požadavkem, je dekorace: první volání by ho
     // nikdy nevyčerpalo a další by o něm nevědělo. Rozpočet je proto nastavený
@@ -135,6 +203,11 @@ describe('POST /api/generate', () => {
       WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
       WORLDSMITH_MODEL_KEY: 'test-key',
       WORLDSMITH_USD_PER_MTOK_OUT: '15',
+      // Výslovná nula, protože připíchnutých 0,12 USD níž má znamenat PŘESNĚ
+      // jeden nejhorší případ. Nevyplněná cena vstupu se od 21. 8. 2026
+      // dopočítá z ceny výstupu (dřív byla nula), takže bez tohohle řádku by
+      // rezervace zahrnula i ~3000 vstupních tokenů a odmítla už první volání.
+      WORLDSMITH_USD_PER_MTOK_IN: '0',
       WORLDSMITH_MAX_OUTPUT_TOKENS: '8000',
       // 8000 tokenů × 15 USD/Mtok = 0,12 USD, tedy přesně jeden nejhorší případ.
       WORLDSMITH_SPEND_CAP_USD: '0.12',

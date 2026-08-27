@@ -52,10 +52,10 @@ const MANIFEST: Manifest = MANIFESTS.find((entry) => entry.id === 'sort_match')!
 
 /** Domény atributů. Jména jdou do HUD, index je hodnota, na kterou se páruje. */
 export const RULE_VALUES: Readonly<Record<MatchRule, readonly string[]>> = {
-  color: ['písková', 'mechová', 'teplá', 'hluboká', 'lasturová', 'akcentní'],
-  shape: ['krychle', 'klín', 'válec', 'oblouk', 'deska', 'jehlan'],
-  size: ['drobný', 'malý', 'střední', 'velký', 'mohutný', 'obří'],
-  category: ['nástroj', 'nádoba', 'svítidlo', 'oděv', 'zbraň', 'nerost'],
+  color: ['sand', 'moss', 'warm', 'deep', 'shell', 'accent'],
+  shape: ['cube', 'wedge', 'cylinder', 'arch', 'slab', 'pyramid'],
+  size: ['tiny', 'small', 'medium', 'large', 'huge', 'giant'],
+  category: ['tool', 'vessel', 'lamp', 'garment', 'weapon', 'mineral'],
 };
 
 const RULE_SALT: Readonly<Record<MatchRule, number>> = {
@@ -155,23 +155,25 @@ function a2View(state: A2State): GameView {
   return {
     archetype: 'sort_match',
     title: MANIFEST.title,
-    goal: `Roztřiď ${state.params.n_items} kusů podle pravidla ${state.params.match_rule}`,
+    goal: `Sort ${state.params.n_items} pieces by the rule ${state.params.match_rule}`,
     phase: state.won ? 'won' : state.alive ? 'running' : 'lost',
     tick: state.tick,
     counters: [
-      { label: 'umístěno', value: state.placed, max: state.params.n_items },
-      { label: 'chyby', value: state.mistakes, max: state.params.mistakes_allowed },
+      { label: 'placed', value: state.placed, max: state.params.n_items },
+      { label: 'mistakes', value: state.mistakes, max: state.params.mistakes_allowed },
     ],
     timeLeftTicks: state.timeLeftTicks,
     message: null,
     sceneLayout: MANIFEST.sceneLayout,
+    // Tahle hra se hraje tahem do soketu, ne chozenim po mrizce.
+    avatar: null,
   };
 }
 
 export function a2Game(params: A2Params): Game<A2State> {
   return {
     manifest: MANIFEST,
-    goal: `Roztřiď ${params.n_items} kusů podle pravidla ${params.match_rule}`,
+    goal: `Sort ${params.n_items} pieces by the rule ${params.match_rule}`,
     create: (seed) => a2Create(params, seed),
     advance: a2Advance,
     project: a2View,

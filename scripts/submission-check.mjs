@@ -424,6 +424,39 @@ export function coveredByPaths(path, registered) {
   return false;
 }
 
+/**
+ * Tabulky, ve kterých smí stát jméno modelu. **Množné číslo je naměřený tvar,
+ * ne obecnost pro jistotu:** produkt má tabulku `src/model/prompt.ts`, měřicí
+ * řetězec má vlastní (`LIVE_MODELS` v `evals/harness/preflight.ts`) a jedna
+ * tabulka pro obojí neexistuje — jsou to dvě různé sady modelů pro dvě různé
+ * cesty. Dokud tu stálo jedno pole, hlásila kontrola tu druhou jako nález, i
+ * když všechny čtyři její identifikátory v registru byly.
+ *
+ * Starý klíč `modelTablePath` se pořád přečte: manifest je vstup a mlčky ho
+ * ignorovat by znamenalo bránu vypnout přejmenováním pole.
+ */
+export function modelTablePaths(manifest) {
+  const many = Array.isArray(manifest?.modelTablePaths) ? manifest.modelTablePaths : [];
+  const one = manifest?.modelTablePath;
+  const all = [...many, ...(typeof one === 'string' ? [one] : [])]
+    .map((path) => String(path))
+    .filter((path) => !isPlaceholder(path));
+  return [...new Set(all)];
+}
+
+/**
+ * Test nebo fixtura, tedy kód, který se nikam nenasazuje.
+ *
+ * Smí jmenovat model mimo tabulku, protože **rozptýlený literál v testu není ta
+ * díra, kvůli které kontrola vzniká**: test se nevolá za běhu a jeho účelem
+ * bývá právě identifikátor, který tabulka nezná. Registraci to nepromíjí —
+ * podmínka výš platí i tady, takže třetí strana jmenovaná jenom v testu
+ * z disclosure neuteče.
+ */
+export function isFixturePath(path) {
+  return /(^|\/)__tests__(\/|$)/.test(path) || /\.test\.(ts|tsx|mts|mjs|js)$/.test(path);
+}
+
 /** Cesty deklarované položkami `kind: dataset`. */
 export function datasetPaths(registry) {
   const paths = [];
@@ -608,30 +641,42 @@ check(6, 'disclosure je úplná napříč pěti třídami', false, ({ repo, mani
     problems.push(...(failures.length > 0 ? failures : [`license-gate skončil kódem ${gate.status}`]));
   }
 
-  // (b) `model` — jediná allowlistovaná tabulka konstant.
-  const table = manifest.modelTablePath;
-  if (isPlaceholder(table)) {
-    problems.push(`${MANIFEST_FILE} neurčuje "modelTablePath" — bez ní není co allowlistovat`);
-  } else if (!sources.has(table)) {
-    problems.push(`modelTablePath "${table}" není sledovaný zdrojový soubor`);
-  } else {
-    const known = new Set(
-      (registry.entries ?? [])
-        .filter((entry) => entry?.kind === 'model')
-        .map((entry) => String(entry.name).toLowerCase()),
-    );
-    for (const [path, source] of sources) {
-      const ids = modelIdsIn(source);
-      if (ids.size === 0) continue;
-      if (path !== table) {
-        // Rozptýlený literál je ta díra, kvůli které kontrola existuje: model
-        // pojmenovaný mimo tabulku se do registru nikdy nedostane, protože ho
-        // nikdo nevidí. Hlásí se cesta, ne jen jméno — jinak se nedá opravit.
-        problems.push(`${path} jmenuje model ${[...ids].join(', ')} mimo tabulku ${table}`);
-        continue;
-      }
-      for (const id of ids) if (!known.has(id)) problems.push(`${table}: model "${id}" není v registru jako kind: model`);
+  // (b) `model` — registr napřed, umístění potom.
+  //
+  // Do 24. 8. 2026 se tu ptalo **jenom na umístění**: model jmenovaný mimo
+  // tabulku byl nález, a proti registru se kontrolovaly výhradně identifikátory
+  // uvnitř té tabulky. Naměřeno v T28: 7 nálezů, z toho **0 nezveřejněných
+  // třetích stran** — šest testovacích fixtur a jedna druhá tabulka. Přitom
+  // identifikátor v testu se do registru nedostane úplně stejně jako
+  // identifikátor v produkci, a na ten se stará podoba neptala vůbec.
+  //
+  // Nová podoba se ptá na obojí a v tomhle pořadí:
+  //  1. **každý** identifikátor kdekoli musí být v registru jako `kind: model`
+  //     — to je disclosure otázka a je přísnější než dřív;
+  //  2. mimo deklarované tabulky ho smí jmenovat jen test nebo fixtura —
+  //     to je otázka pořádku v kódu a zůstává, protože právě rozptýlený
+  //     literál v produkci je ta díra, kvůli které kontrola vznikla.
+  const tables = modelTablePaths(manifest);
+  if (tables.length === 0) {
+    problems.push(`${MANIFEST_FILE} neurčuje "modelTablePaths" — bez nich není co allowlistovat`);
+  }
+  for (const table of tables) {
+    if (!sources.has(table)) problems.push(`modelTablePaths "${table}" není sledovaný zdrojový soubor`);
+  }
+  const known = new Set(
+    (registry.entries ?? [])
+      .filter((entry) => entry?.kind === 'model')
+      .map((entry) => String(entry.name).toLowerCase()),
+  );
+  for (const [path, source] of sources) {
+    const ids = modelIdsIn(source);
+    if (ids.size === 0) continue;
+    for (const id of ids) {
+      if (!known.has(id)) problems.push(`${path}: model "${id}" není v registru jako kind: model`);
     }
+    if (tables.includes(path) || isFixturePath(path)) continue;
+    // Hlásí se cesta, ne jen jméno — jinak se nedá opravit.
+    problems.push(`${path} jmenuje model ${[...ids].join(', ')} mimo tabulky ${tables.join(', ')}`);
   }
 
   // (c) `dataset` (i) — každý soubor v datových adresářích má registrovanou cestu.

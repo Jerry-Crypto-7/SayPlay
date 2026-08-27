@@ -16,7 +16,7 @@ import type { IrEffect, IrRule } from '../../ir/types';
 import { createStreams, nextInt } from '../../sim/rng';
 import { RUNTIME_VERSION, type TraceInput } from '../../sim/interpreter';
 import { TIER_POLICY } from '../tiers';
-import { verifyWitness, type Certificate, type VerifiableWorld } from '../witness';
+import { hashWitness, verifyWitness, type Certificate, type VerifiableWorld } from '../witness';
 
 import badWitness from '../__fixtures__/bad-witness.json';
 import horizonGreedyWorld from '../__fixtures__/horizon-greedy.world.json';
@@ -389,5 +389,64 @@ describe('replay cesta nesahá na nástěnné hodiny', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'verify', 'witness.ts'), 'utf8');
     for (const specifier of ['../sim/hash', '../sim/interpreter', './tiers'])
       expect(source, specifier).toContain(specifier);
+  });
+});
+
+/**
+ * Hash stopy (P11 T15) — jediná věc, kterou se dá zvenčí ověřit, že náhled
+ * vítězné cesty přehrává tutéž stopu, jakou certifikát potvrdil.
+ *
+ * Aserce na shodu hashů má cenu jen tehdy, když se dvě různé stopy doopravdy
+ * rozejdou. Testuje se proto hlavně to, **co všechno hash rozliší** — kdyby
+ * kolidoval, „náhled sedí s certifikátem" by platilo i o náhledu, který lže.
+ */
+describe('hashWitness — dvě různé stopy se musí rozejít', () => {
+  const step = (over: Partial<TraceInput> = {}): TraceInput => ({
+    tick: 10,
+    actor: 'player',
+    actionId: 'moveTo',
+    target: 'exit',
+    ...over,
+  });
+
+  it('má tvar hashe a je deterministický', () => {
+    expect(hashWitness([step()])).toMatch(/^[0-9a-f]{8}$/);
+    expect(hashWitness([step()])).toBe(hashWitness([step()]));
+  });
+
+  it('rozliší tik, herce, akci i cíl — každý zvlášť', () => {
+    const base = hashWitness([step()]);
+    expect(hashWitness([step({ tick: 11 })])).not.toBe(base);
+    expect(hashWitness([step({ actor: 'guard' })])).not.toBe(base);
+    expect(hashWitness([step({ actionId: 'pickup' })])).not.toBe(base);
+    expect(hashWitness([step({ target: 'k1' })])).not.toBe(base);
+  });
+
+  it('rozliší pořadí a délku, ne jen množinu tahů', () => {
+    const a = step({ tick: 1, actionId: 'pickup' });
+    const b = step({ tick: 2, actionId: 'moveTo' });
+    expect(hashWitness([a, b])).not.toBe(hashWitness([b, a]));
+    expect(hashWitness([a, b])).not.toBe(hashWitness([a]));
+    expect(hashWitness([])).not.toBe(hashWitness([a]));
+  });
+
+  it('délka řetězce jde do hashe, takže posunutá hranice slov nekoliduje', () => {
+    // Bez prefixu délky by z obojího vyšla táž slova a dvě různé stopy by měly
+    // týž hash — přesně ta tichá kolize, kvůli které by aserce nic netvrdila.
+    const left = hashWitness([step({ actor: 'ab', actionId: 'c', target: 'd' })]);
+    const right = hashWitness([step({ actor: 'a', actionId: 'bc', target: 'd' })]);
+    expect(left).not.toBe(right);
+  });
+
+  it('nepřítomný cíl je týž zástupce jako `none` — vědomě, ne omylem', () => {
+    const absent = step();
+    delete (absent as { target?: string }).target;
+    expect(hashWitness([absent])).toBe(hashWitness([step({ target: 'none' })]));
+  });
+
+  it('certifikát nese hash TÉ stopy, kterou dostal', () => {
+    const cert = verifyWitness(vault, WINNING) as Certificate;
+    expect(cert.witnessHash).toBe(hashWitness(WINNING));
+    expect(cert.witnessHash).not.toBe(cert.snapshotHash);
   });
 });

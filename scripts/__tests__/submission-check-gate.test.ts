@@ -28,6 +28,7 @@ import {
   buildContext,
   runChecks,
 } from '../submission-check.mjs';
+import { renderDisclosure, type DisclosureEntry } from '../license-gate.mjs';
 import {
   BACKEND_URL,
   DEMO_URL,
@@ -276,13 +277,63 @@ describe('[6] disclosure napříč pěti třídami', () => {
     expect(detailOf(results, 6)).toContain('license-gate');
   });
 
-  it('selže na identifikátoru modelu mimo jedinou allowlistovanou tabulku', async () => {
+  it('selže na identifikátoru modelu mimo deklarované tabulky', async () => {
     const dir = repo();
     write(dir, 'src/other.ts', "export const fallback = 'claude-opus-5';\n");
     stage(dir);
     const results = await check(dir);
     expect(failed(results)).toEqual([6]);
-    expect(detailOf(results, 6)).toContain('mimo tabulku');
+    expect(detailOf(results, 6)).toContain('mimo tabulky');
+  });
+
+  /**
+   * Tahle trojice drží tvar, který kontrola dostala 24. 8. 2026 v T28.
+   *
+   * Do té doby se ptala **jenom na umístění** a proti registru měřila výhradně
+   * identifikátory uvnitř tabulky — takže model jmenovaný v testu se hlásil
+   * jako nepořádek, ale jestli je v disclosure se nikdo neptal. Naměřeno na
+   * skutečném stromě: 7 nálezů, z toho 0 nezveřejněných třetích stran.
+   */
+  it('neregistrovaný model v TESTU je nález, i když se test nikam nenasazuje', async () => {
+    const dir = repo();
+    write(dir, 'src/thing.test.ts', "export const used = 'mistral-42-large';\n");
+    stage(dir);
+    const results = await check(dir);
+    expect(failed(results)).toEqual([6]);
+    expect(detailOf(results, 6)).toContain('mistral-42-large');
+  });
+
+  it('registrovaný model v testu projde — fixtura smí stát mimo tabulku', async () => {
+    const dir = repo();
+    write(dir, 'src/thing.test.ts', "export const used = 'claude-opus-5';\n");
+    stage(dir);
+    expect(failed(await check(dir))).toEqual([]);
+  });
+
+  it('položka první strany registraci splní — a nic víc po ní chtít nejde', async () => {
+    const dir = repo();
+    // Vymyšlený identifikátor ve fixtuře. Přejmenovat ho nejde (existuje proto,
+    // aby ho registr neznal) a zapsat ho jako třetí stranu by byla nepravda —
+    // proto `firstParty`, a proto bez licence a atribuce.
+    write(dir, 'src/thing.test.ts', "export const absent = 'gpt-neexistuje';\n");
+    const registry = readRegistry(dir);
+    registry.entries.push({
+      name: 'gpt-neexistuje',
+      kind: 'model',
+      firstParty: true,
+      reason: 'vymyšlený identifikátor ve fixtuře, žádný takový model neexistuje',
+    });
+    writeRegistry(dir, registry);
+    // Výpis se musí přegenerovat spolu s registrem — license-gate kontrola 6
+    // hlídá, že se ty dva soubory nerozejdou, a je to ta půlka, která brání
+    // tichému vyškrtnutí z veřejného dokumentu.
+    const rendered = renderDisclosure(registry.entries as unknown as readonly DisclosureEntry[]);
+    write(dir, 'DISCLOSURE.md', rendered);
+    stage(dir);
+    expect(failed(await check(dir))).toEqual([]);
+    // A první strana se do výpisu dostane — svojí sekcí, ne mezi třetí strany.
+    expect(rendered).toContain('Vlastní, ne třetí strana');
+    expect(rendered).toContain('gpt-neexistuje');
   });
 
   it('selže, když model v tabulce není v registru', async () => {
@@ -306,6 +357,34 @@ describe('[6] disclosure napříč pěti třídami', () => {
     const dir = repo();
     patchManifest(dir, { modelTablePath: 'src/neexistuje.ts' });
     expect(failed(await check(dir))).toEqual([6]);
+  });
+
+  /**
+   * Dvojice drží **množné číslo** klíče `modelTablePaths`, kvůli kterému se
+   * manifest 24. 8. 2026 měnil: produkt má tabulku `src/model/prompt.ts`,
+   * měřicí řetězec vlastní (`evals/harness/preflight.ts`) a jedna společná
+   * neexistuje. Dokud se četl jen jeden klíč, hlásila kontrola tu druhou jako
+   * nález — přestože všechny její identifikátory v registru byly.
+   *
+   * Testy jsou dva schválně: první ukazuje, že druhá tabulka projde, druhý nad
+   * TÝMŽ stromem ukazuje, že bez ní je to nález. Bez té druhé půlky by první
+   * prošel i bráně, která na umístění rezignovala úplně.
+   */
+  it('druhá deklarovaná tabulka modelů projde', async () => {
+    const dir = repo();
+    write(dir, 'src/second-table.ts', "export const LIVE = 'claude-opus-5';\n");
+    patchManifest(dir, { modelTablePath: undefined, modelTablePaths: ['src/model/prompt.ts', 'src/second-table.ts'] });
+    stage(dir);
+    expect(failed(await check(dir))).toEqual([]);
+  });
+
+  it('nedeklarovaná druhá tabulka je nález — allowlist platí jen na to, co v manifestu stojí', async () => {
+    const dir = repo();
+    write(dir, 'src/second-table.ts', "export const LIVE = 'claude-opus-5';\n");
+    stage(dir);
+    const results = await check(dir);
+    expect(failed(results)).toEqual([6]);
+    expect(detailOf(results, 6)).toContain('src/second-table.ts');
   });
 
   it('selže na souboru v datovém adresáři, který žádný dataset nepokrývá', async () => {

@@ -218,9 +218,15 @@ test('replay v prohlížeči dá tentýž hash jako offline předpověď', async
   const report = await chain(page, request);
 
   // Kontrola polarity první: kdyby se v prohlížeči nepřehrál ani jeden svět,
-  // zbytek téhle aserce by byl prázdný. Naměřeno 19 ze 40 — svět se staví jen
+  // zbytek téhle aserce by byl prázdný. Naměřeno **21 ze 40** — svět se staví jen
   // tam, kde emise prošla snížením do IR, u editace navíc jen po commitnuté `sim`.
-  expect(report.browserReplays, 'v prohlížeči se nepřehrál jediný svět').toBe(19);
+  //
+  // **Číslo se 21. 8. 2026 pohnulo z 19 na 21 a je to chtěný pohyb.** T13 přidala
+  // doletění na nejbližší legální variantu patche (`nearestLegal`, volané odsud
+  // přes `routePatch` v `evals/harness/chain.ts`), a to zachránilo přesně dva
+  // editační záznamy: `E19` a `E20`. Připíchnuté je to proto, aby se každý další
+  // pohyb ozval — nikoli proto, že by 21 byl cíl.
+  expect(report.browserReplays, 'v prohlížeči se nepřehrál jediný svět').toBe(21);
 
   // A totéž ze dvou míst, která harness nedrží: kolikrát se sáhlo na dopravu, a
   // kolik `verify` doopravdy proběhlo **uvnitř prohlížeče**. Bez téhle trojice by
@@ -284,7 +290,20 @@ test('sémantický verdikt: běh selže na zmrazeném prahu a mezery jsou pojmen
   // `ROBUST` a `FULFILLED` odděleně (`evalSet.reportSeparation`) — žádná
   // sloučená míra.
   expect(report.counts.FULFILLED + report.counts.ROBUST + report.counts.NO_FIT + report.counts.FAULT).toBe(40);
-  expect(report.counts).toEqual({ FULFILLED: 6, ROBUST: 24, NO_FIT: 4, FAULT: 6 });
+  //
+  // **Posunuto 21. 8. 2026 z `{6, 24, 4, 6}` a je to chtěný pohyb — s jedním
+  // nepříjemným detailem.** Doletění na nejbližší legální variantu patche z T13
+  // (`nearestLegal`) přesunulo **tři** záznamy z `FAULT` do `ROBUST`: `E19` a
+  // `E20` se od té doby dají aplikovat a přehrají se v prohlížeči, `E24` se
+  // aplikovat dá taky, ale zastaví ho brána svědka, takže se nepřehraje. Odtud
+  // `browserReplays` 19 → 21 výš, kde přibyly jen dva.
+  //
+  // Naměřeno A/B, ne odvozeno: s `nearestLegal` nahrazenou průchozí variantou
+  // vydá tentýž běh přesně staré `{6, 24, 4, 6}` a `browserReplays` 19.
+  //
+  // **`FULFILLED` se přitom nehnulo z 6.** T13 nezlepšila to, co se vykazuje —
+  // posunula jen tvar odmítnutí. Ta věta patří do reportu, ne pod koberec.
+  expect(report.counts).toEqual({ FULFILLED: 6, ROBUST: 27, NO_FIT: 4, FAULT: 3 });
 
   const idsOf = (predicate: (result: ChainReport['cases'][number]) => boolean): string[] =>
     report.cases.filter(predicate).map((result) => result.id);
@@ -317,11 +336,21 @@ test('sémantický verdikt: běh selže na zmrazeném prahu a mezery jsou pojmen
   expect(edits).toHaveLength(25);
   expect(idsOf((result) => result.branch === 'edit' && result.verdict === 'FULFILLED')).toEqual(['E09', 'E10']);
 
+  // **Posunuto 21. 8. 2026 spolu s distribucí výš, a je vidět přesně jeden
+  // účinek T13:** třída „patch nešel aplikovat" je **pryč celá** (4 → 0).
+  // Doletění na nejbližší legální variantu ji vyprázdnilo — čtyři záznamy se
+  // rozešly do tří míst: `E19` a `E20` se commitnou, `E24` doletí až k bráně
+  // svědka a tam skončí, `E06` se posune o stadium výš na `routing`, protože
+  // žádná z jeho operací legální variantu nemá.
+  //
+  // Nula se tu tvrdí schválně: je to jediná aserce v souboru, která říká, že
+  // nějaká třída odmítnutí přestala existovat. Kdyby se vrátila, ozve se to tady.
   const stoppedAt = (stage: string | null): number => edits.filter((result) => result.stoppedAt === stage).length;
-  expect(stoppedAt(null), 'commitnutých editací').toBe(8);
-  expect(stoppedAt('witness'), 'zastaveno bránou svědka').toBe(9);
+  expect(stoppedAt(null), 'commitnutých editací').toBe(10);
+  expect(stoppedAt('witness'), 'zastaveno bránou svědka').toBe(10);
   expect(stoppedAt('lowering'), 'nesnížitelný základní svět').toBe(2);
-  expect(stoppedAt('apply'), 'patch nešel aplikovat').toBe(4);
+  expect(stoppedAt('apply'), 'patch nešel aplikovat').toBe(0);
+  expect(stoppedAt('routing'), 'žádná operace nemá legální variantu').toBe(1);
   expect(stoppedAt('references'), 'osiřelý odkaz').toBe(2);
 
   // Obě `lowering` dědí `C05` — tedy tutéž mezeru v IR, ne vlastní vadu.
@@ -343,8 +372,10 @@ test('sémantický verdikt: běh selže na zmrazeném prahu a mezery jsou pojmen
     'nějaký patch přece jen svědka přepisuje — rozpor je tím pádem jinde',
   ).toEqual([]);
 
-  // Naměřený dopad: sedm z devíti zastavení na svědkovi je přesně tenhle tvar.
-  // Zbylé dvě (`E13`, `E14`) svědka zachovat CHTĚJÍ a stejně tam padnou.
+  // Naměřený dopad: **osm z deseti** zastavení na svědkovi je přesně tenhle tvar
+  // (od 21. 8. 2026 sedm z devíti — `E24` přibylo tím, že jeho patch teď jde
+  // aplikovat, takže se dostane až sem). Zbylé dvě (`E13`, `E14`) svědka zachovat
+  // CHTĚJÍ a stejně tam padnou.
   const brokenSet = new Set(wantsWitnessBroken);
-  expect(idsOf((result) => result.stoppedAt === 'witness' && brokenSet.has(result.id))).toHaveLength(7);
+  expect(idsOf((result) => result.stoppedAt === 'witness' && brokenSet.has(result.id))).toHaveLength(8);
 });

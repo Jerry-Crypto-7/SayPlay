@@ -346,6 +346,8 @@ describe('sdílená herní vrstva', () => {
         timeLeftTicks: null,
         message: null,
         sceneLayout: MANIFESTS[0].sceneLayout,
+        // Sonda se hraje klikáním, po mřížce se v ní nikdo nehýbe.
+        avatar: null,
       };
     },
   };

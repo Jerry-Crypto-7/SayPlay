@@ -273,6 +273,83 @@ export interface EntityDecl {
   readonly initialLocked: boolean;
 }
 
+// ---------------------------------------------------------------------------
+// Mysli postav — povrchová deklarace, která se snižuje na paměť a na pravidla
+// ---------------------------------------------------------------------------
+
+/**
+ * Povaha postavy.
+ *
+ * **Není to nálepka.** Každá hodnota je jiná *následnická funkce* nad seznamem
+ * cílů, takže povaha rozhoduje, kam postava po dosažení cíle půjde dál — a to je
+ * pozorovatelné zvenčí jako jiná množina navštívených zón.
+ *
+ * Povaha bydlí v paměti agenta (`AGENT_MOOD_INDEX`), ne v kódu pravidla, a je to
+ * rozhodnutí, ne detail: pravidla pohybu se na ni ptají **strážemi**, takže o
+ * trase rozhoduje stav. Kdyby se následník zapekl při snížení, byl by paměťový
+ * slot dekorace, kterou nic nečte.
+ *
+ * Změnit povahu **běžícímu** světu ale dnes nejde — proč, stojí v `src/sim/agents.ts`.
+ */
+export const AGENT_DISPOSITIONS = ['bold', 'wary', 'restless'] as const;
+export type AgentDisposition = (typeof AGENT_DISPOSITIONS)[number];
+
+/** Paměťový index, ve kterém agent nese povahu. */
+export const AGENT_MOOD_INDEX = 0;
+/** Paměťový index, ve kterém agent nese cíl, ke kterému právě jde. */
+export const AGENT_GOAL_INDEX = 1;
+/** Kolik paměťových slotů jedna mysl obsadí. Dosazuje se do `memorySlotsPerAgent`. */
+export const AGENT_MEMORY_SLOTS = 2;
+
+/**
+ * Strop cílů jedné mysli.
+ *
+ * Trasa se snižuje na `goals.length * AGENT_DISPOSITIONS.length` pravidel, takže
+ * bez stropu by vstupní dokument sám určoval, kolik pravidel svět má. Nad stropem
+ * se mysl **odmítá**, neořezává — tiše zkrácená trasa je jiný svět, než jaký
+ * model napsal.
+ */
+export const MAX_AGENT_GOALS = 6;
+
+/** Mysl jedné postavy, jak ji píše model do `sim.state.agents`. */
+export interface AgentMind {
+  /** `stableId` entity, které mysl patří. */
+  readonly id: string;
+  readonly disposition: AgentDisposition;
+  /** Sokety, mezi kterými se postava pohybuje. Pořadí je trasa. */
+  readonly goals: readonly string[];
+}
+
+/**
+ * Kam postava zamíří po dosažení cíle na pozici `at`.
+ *
+ * Čistá funkce pozice — mysl si nenese žádnou skrytou historii, takže tentýž cíl
+ * dá vždy tentýž následující bez ohledu na to, kudy k němu postava došla. Tři
+ * povahy proto dávají tři **různé množiny** navštívených cílů, ne tři různá
+ * pořadí téže množiny: `bold` projde trasu celou, `wary` se drží prvních dvou
+ * zastávek a `restless` pobíhá mezi krajními body.
+ *
+ * **Od tří zastávek výš.** Nad dvěma splynou všechny tři povahy v tutéž funkci
+ * (0→1, 1→0), protože přes dvě položky vede jediný cyklus, a nad jednou se každá
+ * točí na místě. Není to vada, je to mez slovníku — a je to důvod, proč
+ * rozpoznávač tvarů z T7 píše hlídce zastávky tři.
+ */
+export function nextGoalIndex(disposition: AgentDisposition, at: number, count: number): number {
+  if (count < 2) return 0;
+  switch (disposition) {
+    case 'bold':
+      return (at + 1) % count;
+    case 'wary':
+      return at === 0 ? 1 : 0;
+    case 'restless':
+      return at === 0 ? count - 1 : 0;
+    default: {
+      const exhaustive: never = disposition;
+      return exhaustive;
+    }
+  }
+}
+
 /**
  * Pojmenovaný predikát. `onEdge` sleduje výhradně tohle — hodnotu `expr`
  * z minulého a z aktuálního tiku. `source` je provenience: která povrchová

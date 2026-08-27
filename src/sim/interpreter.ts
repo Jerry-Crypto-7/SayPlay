@@ -334,6 +334,50 @@ export function entityActive(runtime: Runtime, stableId: string): boolean {
   return readSlot(runtime.layout, runtime.state, entitySlotId(stableId, 'active')) === 1;
 }
 
+/** Kde entita v tuhle chvíli stojí a v jakém je stavu. Čtení, ne krok přechodu. */
+export interface EntityPlacement {
+  readonly stableId: string;
+  readonly x: number;
+  readonly y: number;
+  readonly active: boolean;
+  readonly state: string;
+  readonly locked: boolean;
+}
+
+/**
+ * Poloha všech entit v pořadí deklarace.
+ *
+ * Existuje proto, že `Observation` polohu nenese — `sense` si `x` a `y` čte,
+ * ale ven z tiku posílá jen odvozené fakty (`inZone`, `overlapping`). Vykreslení
+ * přitom potřebuje přesně tu buňku, a jediná alternativa by byla zopakovat
+ * konvenci jmen slotů (`e:<id>:x`) ve vykreslovací vrstvě — tedy druhý zdroj
+ * pravdy pro privátní kódování, které se tiše rozejde.
+ *
+ * **Mimo tikovou cestu a mimo hash.** Nic nezapisuje a nikdo z `step()` ji
+ * nevolá. Smyčka přesto nese mez `limits.maxEntities` v podmínce, aby se
+ * nemusela zapisovat na pinutý seznam výjimek v `__tests__/totality.test.ts` —
+ * ohraničená smyčka je levnější než výjimka, kterou musí někdo hlídat.
+ */
+export function entityPlacements(runtime: Runtime): EntityPlacement[] {
+  const placements: EntityPlacement[] = [];
+  const order = runtime.entityOrder;
+
+  for (let i = 0; i < runtime.limits.maxEntities && i < order.length; i += 1) {
+    const id = order[i];
+    const table = runtime.entityStates.get(id);
+    placements.push({
+      stableId: id,
+      x: readSlot(runtime.layout, runtime.state, entitySlotId(id, 'x')),
+      y: readSlot(runtime.layout, runtime.state, entitySlotId(id, 'y')),
+      active: readSlot(runtime.layout, runtime.state, entitySlotId(id, 'active')) === 1,
+      state: table?.values[readSlot(runtime.layout, runtime.state, entitySlotId(id, 'state'))] ?? SYMBOL_NONE,
+      locked: readSlot(runtime.layout, runtime.state, entitySlotId(id, 'locked')) === 1,
+    });
+  }
+
+  return placements;
+}
+
 function emptyObservation(): Observation {
   return {
     counters: {},

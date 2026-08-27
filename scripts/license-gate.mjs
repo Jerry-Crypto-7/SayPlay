@@ -69,6 +69,33 @@ function isManual(entry) {
   return !DERIVED_KINDS.includes(entry?.kind) || entry?.manual === true;
 }
 
+/**
+ * Položka, která **není třetí strana** — vlastní data, vlastní kód, nebo
+ * identifikátor, který si projekt sám vymyslel do testovací fixtury.
+ *
+ * Vznikla proto, že brána a deliverable si až do 24. 8. 2026 odporovaly.
+ * `submission-check` kontrola 6 žádá registraci pro každý soubor nad prahem
+ * literálů — jenže 20 z 20 takových souborů jsou naše vlastní testy a skripty,
+ * a zapsat je do registru jako `kind: dataset` znamenalo udělat z
+ * `DISCLOSURE.md` dokument, ve kterém porotce třetí stranu nenajde. Naměřeno
+ * v T28: 27 nálezů, z toho **0 nezveřejněných třetích stran**.
+ *
+ * `firstParty: true` ten spor rozvazuje: brána položku vidí, veřejný výpis ji
+ * drží **stranou od tabulek třetích stran**, ale nezahazuje ji — vlastní sekce
+ * na konci. Zmizet by znamenalo udělat z příznaku únikovou cestu, po které se
+ * dá z disclosure vypsat cokoli a nikdo to nepozná.
+ *
+ * Cenou je pole `reason`: u první strany je povinné místo licence a atribuce,
+ * protože to je jediná informace, kterou o ní musí někdo napsat ručně —
+ * **proč to není třetí strana**.
+ */
+function isFirstParty(entry) {
+  return entry?.firstParty === true;
+}
+
+/** Co musí nést první strana. Licenci ani atribuci nemá od koho vzít. */
+const FIRST_PARTY_FIELDS = ['name', 'kind', 'reason'];
+
 
 const REQUIRED_FIELDS = ['name', 'kind', 'source', 'authorOrProvider', 'license', 'requiredNotices', 'attribution'];
 
@@ -897,8 +924,10 @@ export function renderDisclosure(entries) {
     '',
   ];
 
+  const ours = entries.filter((entry) => isFirstParty(entry));
+
   for (const kind of KINDS) {
-    const group = entries.filter((entry) => entry.kind === kind);
+    const group = entries.filter((entry) => entry.kind === kind && !isFirstParty(entry));
     lines.push(`## ${KIND_TITLES[kind]} (${group.length})`, '');
     if (group.length === 0) {
       lines.push('_Žádná položka._', '');
@@ -937,6 +966,24 @@ export function renderDisclosure(entries) {
     }
   }
 
+  // Vlastní věci stojí stranou, ne mimo. Tabulky výš odpovídají na otázku
+  // `RULES.md` §2 — „co používáte a nenapsali si sami" — a první strana do nich
+  // nepatří. Zmizet ale nesmí: registrace je jediná úniková cesta z brány, a
+  // úniková cesta, po které věci mizí z veřejného výpisu, je díra.
+  lines.push(`## Vlastní, ne třetí strana (${ours.length})`, '');
+  lines.push(
+    'Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli',
+    '`RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,',
+    'aby se registrací nedalo nic z výpisu odstranit.',
+    '',
+  );
+  if (ours.length === 0) {
+    lines.push('_Žádná položka._', '');
+  } else {
+    for (const entry of ours) lines.push(`- **${entry.name}** (${entry.kind}): ${entry.reason}`);
+    lines.push('');
+  }
+
   return `${lines.join('\n').trimEnd()}\n`;
 }
 
@@ -967,7 +1014,7 @@ check(1, 'registr má tvar a žádné pole není prázdné', ({ registry }) => {
   for (const entry of registry.entries) {
     const label = entry?.name ? `${entry.kind ?? '?'}/${entry.name}` : JSON.stringify(entry).slice(0, 60);
     if (!KINDS.includes(entry?.kind)) problems.push(`${label}: kind "${entry?.kind}" není jedna z ${KINDS.join(', ')}`);
-    for (const field of REQUIRED_FIELDS) {
+    for (const field of isFirstParty(entry) ? FIRST_PARTY_FIELDS : REQUIRED_FIELDS) {
       const value = entry?.[field];
       const empty =
         value === undefined || value === null || (typeof value === 'string' && value.trim() === '') ||
@@ -998,6 +1045,10 @@ check(2, 'každá licence je na whitelistu nebo má zapsané posouzení', ({ reg
   if (registry.error) return registry.error;
   const problems = [];
   for (const entry of registry.entries) {
+    // První strana nemá upstream, takže nemá licenci, kterou by šlo posoudit.
+    // Žádat ji znamená vyrobit prázdné pole, které kontrolou 1 projde a nic
+    // neříká — a to je horší než přiznaná mezera.
+    if (isFirstParty(entry)) continue;
     const license = String(entry?.license ?? '').trim();
     if (!license) {
       problems.push(`${entry?.name}: licence není deklarovaná`);

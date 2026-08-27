@@ -364,6 +364,16 @@ const OFF_TICK_PATH: Readonly<Record<string, number>> = {
   // `nodeValueKind` bere ze `types.ts`, takže validátor vypadl z uzávěru importů
   // tikové cesty. Rozsah pravidla se tím zúžil na to, co replay volá — a
   // klientský balíček přestal táhnout `zod`.
+  // Snížení myslí postav na sloty a pravidla. Běží jednou při stavbě světa,
+  // stejně jako `createRuntime`, a meze má v deklaraci dokumentu: počet myslí a
+  // `MAX_AGENT_GOALS` na trasu. Na tikovou cestu se nedostane — interpret o
+  // myslích neví, běží pravidla, která z nich vznikla.
+  'sim/agents.ts:readMind': 2,
+  'sim/agents.ts:lowerMind': 2,
+  'sim/agents.ts:expandAgentMinds': 1,
+  // Třetí replay driver, vedle `run` a `replayTo`. Mez je počet tiků od
+  // volajícího; je to pozorování běhu, ne krok přechodu.
+  'sim/agents.ts:visitedZones': 4,
   'sim/clock.ts:runTicks': 1, // pumpa tiků, mez je `MAX_CATCHUP_TICKS` v `pump`
   'sim/hash.ts:hashWords': 1, // hash je pozorování stavu, ne krok přechodu
   'sim/interpreter.ts:createRuntime': 4, // stavba layoutu, entit, predikátů a pořadí pravidel
@@ -372,6 +382,19 @@ const OFF_TICK_PATH: Readonly<Record<string, number>> = {
   'sim/rng.ts:createStreams': 1, // čtyři pevné streamy z konstanty
   'sim/state.ts:createState': 1, // počáteční hodnoty layoutu
   'sim/state.ts:defineLayout': 1, // rozvržení slotů ve stavovém poli
+  // Kontroly tvaru světa před odbočením. Běží jednou při větvení, ne v tiku, a
+  // meze mají v deklaraci obou porovnávaných dokumentů. Čtyři jména z prostoru
+  // jsou lokální funkce uvnitř `sameSpace` — každá pojmenovává tu část, která se
+  // hnula, protože „něco v prostoru se změnilo" není odpověď, se kterou se dá
+  // něco udělat.
+  'sim/rebranch.ts:sameLayout': 1,
+  'sim/rebranch.ts:sameSymbols': 2,
+  'sim/rebranch.ts:sockets': 2,
+  'sim/rebranch.ts:zones': 2,
+  'sim/rebranch.ts:blocked': 2,
+  'sim/rebranch.ts:tags': 2,
+  'sim/timeline.ts:baseFor': 1, // výběr snímku, mez je kapacita kruhu
+  'sim/timeline.ts:replayTo': 2, // druhý replay driver, mez je cílový tik od volajícího
 };
 
 describe('podmínka 5 — rozsah pravidla je tiková cesta, ne adresář', () => {

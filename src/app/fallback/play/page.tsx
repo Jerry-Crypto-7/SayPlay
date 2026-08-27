@@ -59,7 +59,7 @@ export default async function PlayPage({
         <span data-testid="route-reason">{decision.reason}</span>
         {decision.kind === 'archetype' ? (
           <span data-testid="play-mode">
-            Přehrává se vítězná stopa od řešitele archetypu — ruční ovládání zatím není zapojené.
+            Played by hand — arrows or WASD, one move per tick.
           </span>
         ) : null}
       </header>

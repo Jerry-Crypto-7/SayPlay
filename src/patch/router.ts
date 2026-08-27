@@ -29,6 +29,7 @@ import type { Operation } from 'rfc6902';
 import { commitPart, type Part, type PartPatch } from '../ir/revision';
 import type { LookPart, WorldDoc } from '../ir/worlddoc';
 import { currentRequestId } from '../obs/trace';
+import { nearestLegal, type Landing } from './nearest';
 import { describeThrown, operationSchema, pointerOf, pointerTokens, reject, type PatchRejection } from './reject';
 
 /** §7 mluví o dráhách, dokument o částech. Je to totéž rozdělení dvěma slovníky. */
@@ -81,6 +82,14 @@ export interface Routing {
   /** Jeden patch, nebo dva u smíšeného. Pořadí operací uvnitř každého zůstává. */
   readonly patches: readonly RoutedPatch[];
   readonly anomalies: readonly RoutingAnomaly[];
+  /**
+   * Co bylo potřeba přepsat nebo zahodit, aby patch šel provést (T13).
+   *
+   * Prázdné, když se routovalo bez dokumentu — bez něj se legálnost cesty
+   * posoudit nedá a router zůstává tím, čím byl. Prázdné i tehdy, když patch
+   * seděl rovnou; to je běžný případ a nemá o čem vypovídat.
+   */
+  readonly landings: readonly Landing[];
 }
 
 export type RoutingResult = Routing | PatchRejection;
@@ -176,14 +185,25 @@ function rehomed(operation: Operation): Operation {
  * s pointerem. **Odmítá se jen to, co nemá kam jít**: cesta mimo obě části,
  * kořen dokumentu, a `move`/`copy` přes hranici částí. Neshoda štítku mezi ně
  * nepatří — o té rozhodly cesty a zůstává po ní záznam.
+ *
+ * **`doc` je nepovinný a mění jednu jedinou věc: doletění na nejbližší legální
+ * variantu** (T13, `./nearest`). Bez dokumentu se legálnost cesty posoudit nedá
+ * a router se chová přesně jako dřív. S ním se operace, kterou nad tímhle světem
+ * nejde provést, buď přepíše do jediného legálního tvaru, nebo zahodí — a co se
+ * stalo, jde ven v `landings`.
+ *
+ * **Dráhu to nerozhoduje a rozhodovat nesmí.** Přepsání běží až nad operacemi
+ * rozřazenými do částí, tedy po tom, co o dráze rozhodly cesty; `simWinsRule`
+ * tím zůstává splněný ze stejného důvodu jako dřív — neexistuje větev, která by
+ * operaci posunula jinam, než kam míří.
  */
-export function routePatch(patch: LabelledPatch): RoutingResult {
+export function routePatch(patch: LabelledPatch, doc?: WorldDoc): RoutingResult {
   // **Jeden záchyt kolem celého zbytku** — tentýž kontrakt, jaký drží `commitPart`
   // a `applyWorldPatch`, a ze stejného důvodu: výjimka odsud není odmítnutí, je to
   // odpověď bez verdiktu. U smíšeného požadavku navíc sebere i tu půlku, která se
   // mezitím commitla a ukázala hráči.
   try {
-    return routeChecked(patch);
+    return routeChecked(patch, doc);
   } catch (error) {
     return reject(
       'MALFORMED_OPERATION',
@@ -202,7 +222,7 @@ function shapeOf(value: unknown): string {
   return typeof value === 'object' ? 'an object' : `a ${typeof value}`;
 }
 
-function routeChecked(patch: LabelledPatch): RoutingResult {
+function routeChecked(patch: LabelledPatch, doc?: WorldDoc): RoutingResult {
   // **Tvar OBÁLKY dřív než tvar operací**, a je to táž třída vady, jakou o pár
   // řádků níž řeší kontrola `path` — jen o úroveň výš. `readonly Operation[]` platí
   // jen při překladu; obálka přichází jako JSON od modelu úplně stejně jako
@@ -291,11 +311,36 @@ function routeChecked(patch: LabelledPatch): RoutingResult {
     if (mismatch === null && patch.label !== undefined && patch.label !== part) mismatch = pointers[0];
   }
 
-  const patches: RoutedPatch[] = order.map((part) => ({
-    lane: LANE_OF_PART[part],
-    part,
-    operations: byPart.get(part) as Operation[],
-  }));
+  // Doletění na nejbližší legální variantu (T13). Bez dokumentu se nespouští:
+  // legálnost cesty je vlastnost světa, ne patche, a hádat ji bez něj nejde.
+  const landings: Landing[] = [];
+  const patches: RoutedPatch[] = [];
+  for (const part of order) {
+    const operations = byPart.get(part) as Operation[];
+    if (doc === undefined) {
+      patches.push({ lane: LANE_OF_PART[part], part, operations });
+      continue;
+    }
+    const nearest = nearestLegal(doc[part], operations);
+    landings.push(...nearest.landings);
+    // Část, ze které nezbyla ani jedna operace, se nevydává jako prázdný patch:
+    // `commitPart` by ho přijal a zvedl revizi za změnu, která se nestala.
+    if (nearest.operations.length > 0)
+      patches.push({ lane: LANE_OF_PART[part], part, operations: nearest.operations });
+  }
+
+  // Nezbylo nic — patch se nedotkl ničeho, co na tomhle světě existuje. Je to
+  // odmítnutí, ne úspěch popisující nulovou práci; táž věta jako u prázdné
+  // obálky o pár řádků výš.
+  if (doc !== undefined && patches.length === 0)
+    return reject(
+      'MALFORMED_OPERATION',
+      operations.length > 0 ? String((operations[0] as { path?: unknown }).path ?? '') : '',
+      'at least one operation that can be performed on this world',
+      `no operation of this patch has a legal variant against the world it targets: ${landings
+        .map((landing) => `${landing.from} (${landing.reason})`)
+        .join('; ')}`,
+    );
 
   const anomalies: RoutingAnomaly[] = [];
   if (mismatch !== null) {
@@ -310,7 +355,7 @@ function routeChecked(patch: LabelledPatch): RoutingResult {
     record(anomaly);
   }
 
-  return { verdict: 'ROUTED', patches, anomalies };
+  return { verdict: 'ROUTED', patches, anomalies, landings };
 }
 
 // ---------------------------------------------------------------------------

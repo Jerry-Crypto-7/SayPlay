@@ -1,0 +1,215 @@
+{
+  "note": "Generováno `npm run measure:divergence`. Needituj ručně — běh soubor přepíše.",
+  "thresholds": {
+    "note": "Prah odlišnosti rodin. Metrika je v evals/measure-divergence.ts, brána v e2e/divergence.spec.ts. Všechna čísla jsou v rozsahu 0 až 1. První dvojice stojí proti celkové odlišnosti ze dvou stran: napříč rodinami musí být průměr nad minMeanCrossFamily, uvnitř jedné rodiny musí každá dvojice zůstat pod maxSameFamily. Mezera mezi nimi je to, co dělá z prahu laťku a ne detektor změn.",
+    "minMeanCrossFamily": 0.3,
+    "maxSameFamily": 0.15,
+    "profileNote": "Druhá dvojice stojí výhradně proti profilu siluety, a to po dvojicích, ne na průměru. Bez ní o bráně rozhoduje paleta: naměřeno 21. 8. 2026 tak, že Věže dostaly bajt po bajtu geometrii Teras a nechaly si vlastní paletu — průměr klesl z 0,514 jen na 0,507 a brána zůstala zelená, protože paleta dává 0,85 až 1,00 a profil jen 0,03 až 0,12. Slovo silueta bylo do té doby dekorace. Naměřené hodnoty čisté sady: nejslabší dvojice napříč rodinami 0,029, nejsilnější dvojice uvnitř rodiny 0,006 — prahy leží v té mezeře. Průměr by tu nestačil, jedna splynulá dvojice se v něm schová za zbylých 23.",
+    "minCrossFamilyProfile": 0.02,
+    "maxSameFamilyProfile": 0.012
+  },
+  "crossFamilyMean": 0.435,
+  "weakestCrossFamilyProfile": 0.028,
+  "sameFamilyTotalRange": [
+    0.003,
+    0.068
+  ],
+  "pairs": [
+    {
+      "first": "terraces#101",
+      "second": "spires#101",
+      "palette": 0.988,
+      "profile": 0.151,
+      "total": 0.57
+    },
+    {
+      "first": "terraces#101",
+      "second": "spires#202",
+      "palette": 0.988,
+      "profile": 0.151,
+      "total": 0.57
+    },
+    {
+      "first": "terraces#101",
+      "second": "grove#101",
+      "palette": 0.832,
+      "profile": 0.053,
+      "total": 0.443
+    },
+    {
+      "first": "terraces#101",
+      "second": "grove#202",
+      "palette": 0.817,
+      "profile": 0.053,
+      "total": 0.435
+    },
+    {
+      "first": "terraces#101",
+      "second": "works#101",
+      "palette": 0.294,
+      "profile": 0.028,
+      "total": 0.161
+    },
+    {
+      "first": "terraces#101",
+      "second": "works#202",
+      "palette": 0.294,
+      "profile": 0.029,
+      "total": 0.161
+    },
+    {
+      "first": "terraces#202",
+      "second": "spires#101",
+      "palette": 0.983,
+      "profile": 0.146,
+      "total": 0.565
+    },
+    {
+      "first": "terraces#202",
+      "second": "spires#202",
+      "palette": 0.983,
+      "profile": 0.146,
+      "total": 0.564
+    },
+    {
+      "first": "terraces#202",
+      "second": "grove#101",
+      "palette": 0.896,
+      "profile": 0.048,
+      "total": 0.472
+    },
+    {
+      "first": "terraces#202",
+      "second": "grove#202",
+      "palette": 0.881,
+      "profile": 0.048,
+      "total": 0.465
+    },
+    {
+      "first": "terraces#202",
+      "second": "works#101",
+      "palette": 0.175,
+      "profile": 0.03,
+      "total": 0.103
+    },
+    {
+      "first": "terraces#202",
+      "second": "works#202",
+      "palette": 0.175,
+      "profile": 0.031,
+      "total": 0.103
+    },
+    {
+      "first": "spires#101",
+      "second": "grove#101",
+      "palette": 0.73,
+      "profile": 0.133,
+      "total": 0.432
+    },
+    {
+      "first": "spires#101",
+      "second": "grove#202",
+      "palette": 0.724,
+      "profile": 0.138,
+      "total": 0.431
+    },
+    {
+      "first": "spires#101",
+      "second": "works#101",
+      "palette": 0.912,
+      "profile": 0.144,
+      "total": 0.528
+    },
+    {
+      "first": "spires#101",
+      "second": "works#202",
+      "palette": 0.907,
+      "profile": 0.145,
+      "total": 0.526
+    },
+    {
+      "first": "spires#202",
+      "second": "grove#101",
+      "palette": 0.73,
+      "profile": 0.132,
+      "total": 0.431
+    },
+    {
+      "first": "spires#202",
+      "second": "grove#202",
+      "palette": 0.724,
+      "profile": 0.137,
+      "total": 0.43
+    },
+    {
+      "first": "spires#202",
+      "second": "works#101",
+      "palette": 0.912,
+      "profile": 0.144,
+      "total": 0.528
+    },
+    {
+      "first": "spires#202",
+      "second": "works#202",
+      "palette": 0.907,
+      "profile": 0.145,
+      "total": 0.526
+    },
+    {
+      "first": "grove#101",
+      "second": "works#101",
+      "palette": 0.921,
+      "profile": 0.077,
+      "total": 0.499
+    },
+    {
+      "first": "grove#101",
+      "second": "works#202",
+      "palette": 0.916,
+      "profile": 0.077,
+      "total": 0.497
+    },
+    {
+      "first": "grove#202",
+      "second": "works#101",
+      "palette": 0.923,
+      "profile": 0.077,
+      "total": 0.5
+    },
+    {
+      "first": "grove#202",
+      "second": "works#202",
+      "palette": 0.917,
+      "profile": 0.078,
+      "total": 0.498
+    },
+    {
+      "first": "terraces#101",
+      "second": "terraces#202",
+      "palette": 0.131,
+      "profile": 0.006,
+      "total": 0.068
+    },
+    {
+      "first": "spires#101",
+      "second": "spires#202",
+      "palette": 0.003,
+      "profile": 0.002,
+      "total": 0.003
+    },
+    {
+      "first": "grove#101",
+      "second": "grove#202",
+      "palette": 0.043,
+      "profile": 0.011,
+      "total": 0.027
+    },
+    {
+      "first": "works#101",
+      "second": "works#202",
+      "palette": 0.012,
+      "profile": 0.003,
+      "total": 0.007
+    }
+  ]
+}

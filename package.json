@@ -13,14 +13,21 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --grep-invert @measure",
     "prove:fallback": "node scripts/prove-fallback-isolation.mjs",
     "build:from-tag": "node scripts/build-from-tag.mjs",
     "gate:license": "node scripts/license-gate.mjs",
     "gate:cleanroom": "node scripts/cleanroom-check.mjs",
-    "disclosure": "node scripts/license-gate.mjs --sync"
+    "disclosure": "node scripts/license-gate.mjs --sync",
+    "measure:grammar": "playwright test e2e/local-model-grammar.spec.ts --grep @measure",
+    "measure:corpus": "playwright test e2e/corpus-measure.spec.ts --grep @measure",
+    "prove:budgets": "node scripts/prove-budgets.mjs",
+    "measure:divergence": "playwright test e2e/divergence.spec.ts --grep @measure",
+    "measure:rejects": "vitest run evals/__tests__/reject-causes.test.ts",
+    "measure:hostile": "vitest run evals/__tests__/hostile-report.test.ts"
   },
   "dependencies": {
+    "@mlc-ai/web-llm": "0.2.84",
     "@react-three/fiber": "9.7.x",
     "next": "16.3.x",
     "pure-rand": "8.4.x",

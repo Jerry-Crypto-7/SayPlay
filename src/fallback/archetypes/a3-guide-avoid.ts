@@ -178,23 +178,25 @@ function a3View(state: A3State): GameView {
   return {
     archetype: 'guide_avoid',
     title: MANIFEST.title,
-    goal: 'Proveď chodce do cíle, máš omezený počet nástrojů',
+    goal: 'Guide the walker to the goal with a limited number of tools',
     phase: state.won ? 'won' : state.alive ? 'running' : 'lost',
     tick: state.tick,
     counters: [
-      { label: 'nástroje', value: state.toolsLeft, max: state.params.tool_budget },
-      { label: 'pole', value: state.walkerIndex, max: state.path.length - 1 },
+      { label: 'tools', value: state.toolsLeft, max: state.params.tool_budget },
+      { label: 'step', value: state.walkerIndex, max: state.path.length - 1 },
     ],
     timeLeftTicks: null,
     message: null,
     sceneLayout: MANIFEST.sceneLayout,
+    // Chodec jde po pevne ceste; jeho bunka je polozka na aktualnim indexu.
+    avatar: state.path[state.walkerIndex] ?? null,
   };
 }
 
 export function a3Game(params: A3Params): Game<A3State> {
   return {
     manifest: MANIFEST,
-    goal: 'Proveď chodce do cíle, máš omezený počet nástrojů',
+    goal: 'Guide the walker to the goal with a limited number of tools',
     create: (seed) => a3Create(params, seed),
     advance: a3Advance,
     project: a3View,

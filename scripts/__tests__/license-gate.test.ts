@@ -17,7 +17,7 @@ import { dirname, join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import { findHits, parseList, verdict } from '../cleanroom-check.mjs';
-import { credentialUrlsIn, hostsIn, noticesFor, stripComments } from '../license-gate.mjs';
+import { credentialUrlsIn, hostsIn, noticesFor, renderDisclosure, stripComments } from '../license-gate.mjs';
 
 const LICENSE_GATE = join(process.cwd(), 'scripts', 'license-gate.mjs');
 const CLEANROOM = join(process.cwd(), 'scripts', 'cleanroom-check.mjs');
@@ -573,6 +573,88 @@ describe('license-gate: tvar registru (kontrola 1)', () => {
     const { out } = run(LICENSE_GATE, dir);
     expect(failedChecks(out)).toContain(1);
     expect(out).toContain('není jedna z');
+  });
+});
+
+/**
+ * Příznak `firstParty` je jediná úniková cesta z brány `submission-check`
+ * kontrola 6: kdo položku zapíše, přestane po ní muset dodat licenci, zdroj a
+ * atribuci. Testy níž drží obě strany té výměny — co se promíjí a co se za to
+ * platí — protože bez nich je z příznaku vypínač kontroly.
+ */
+describe('license-gate: první strana není třetí strana (kontrola 1)', () => {
+  /** Položka první strany tak, jak smí vypadat: bez licence, s důvodem. */
+  const firstParty = (over: Record<string, unknown> = {}): Record<string, unknown> => ({
+    name: 'vymyšlený identifikátor ve fixtuře',
+    kind: 'model',
+    firstParty: true,
+    reason: 'nikdo třetí ho nevlastní — existuje jen v našem testu',
+    ...over,
+  });
+
+  it('promine první straně licenci, zdroj i atribuci', () => {
+    const dir = makeGreenRepo();
+    const registry = readRegistry(dir);
+    registry.entries.push(firstParty());
+    writeRegistry(dir, registry);
+    run(LICENSE_GATE, dir, ['--sync']);
+
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([]);
+  });
+
+  it('selže, když první strana neřekne, PROČ není třetí strana', () => {
+    // `reason` je celá cena za prominutou licenci: u vlastní věci je to jediný
+    // údaj, který musí někdo napsat ručně. Bez něj je `firstParty: true` jen
+    // vypnutá kontrola.
+    const dir = makeGreenRepo();
+    const registry = readRegistry(dir);
+    registry.entries.push(firstParty({ reason: undefined }));
+    writeRegistry(dir, registry);
+    run(LICENSE_GATE, dir, ['--sync']);
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toContain(1);
+    expect(out).toContain('pole "reason" chybí nebo je prázdné');
+    expect(code).toBe(1);
+  });
+
+  it('selže i na prázdném řetězci v reason, ne jen na chybějícím poli', () => {
+    const dir = makeGreenRepo();
+    const registry = readRegistry(dir);
+    registry.entries.push(firstParty({ reason: '   ' }));
+    writeRegistry(dir, registry);
+    run(LICENSE_GATE, dir, ['--sync']);
+
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toContain(1);
+  });
+
+  it('nechá první stranu ve výpisu, ale mimo tabulky třetích stran', () => {
+    // Kdyby zmizela, byla by registrace cesta, jak z veřejného dokumentu
+    // vypsat cokoli. Kdyby stála v tabulce, odpovídá `DISCLOSURE.md` na otázku
+    // `RULES.md` §2 nepravdivě — porotce by naši vlastní fixturu četl jako
+    // cizí závislost.
+    const rendered = renderDisclosure([
+      firstParty({ name: 'naše fixtura' }),
+      {
+        name: 'cizí knihovna',
+        kind: 'library',
+        source: 'https://example.test/lib',
+        authorOrProvider: 'Example Inc.',
+        license: 'MIT',
+        requiredNotices: ['copyright notice'],
+        attribution: 'Example Inc.',
+      },
+    ] as never);
+
+    const modelTable = rendered.slice(rendered.indexOf('## Modely'), rendered.indexOf('## Datasety'));
+    expect(modelTable).toContain('_Žádná položka._');
+    expect(modelTable).not.toContain('naše fixtura');
+
+    const ownSection = rendered.slice(rendered.indexOf('## Vlastní, ne třetí strana'));
+    expect(ownSection).toContain('naše fixtura');
+    expect(ownSection).toContain('nikdo třetí ho nevlastní');
+    // Třetí strana zůstává tam, kde ji porotce hledá.
+    expect(rendered.slice(rendered.indexOf('## Knihovny'))).toContain('cizí knihovna');
   });
 });
 
