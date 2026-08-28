@@ -2,7 +2,8 @@ import { Box3, Group, InstancedMesh, Matrix4, Mesh, type Material, type Object3D
 
 import { familyById } from '@/geom/families';
 import { bakePlacements, compilePlacements, type GeomPlacement } from '@/geom/placements';
-import { PALETTES, pieceById, repaint, trianglesOf } from '@/kit';
+import type { GeomProgram } from '@/geom/program';
+import { PALETTES, pieceById, repaint, trianglesOf, type Palette } from '@/kit';
 
 import { FILL_RINGS } from './dressing';
 import { CELL_SIZE, type GridSize } from './projection';
@@ -89,31 +90,52 @@ function split(placements: readonly GeomPlacement[]): {
   return { instanced, baked };
 }
 
+/** Hotová skupina z programu, ještě bez posunu za hrací mřížku. */
+export interface ProgramBuild {
+  readonly object: Group;
+  /** Naměřený obal, ne deklarovaný — z něj se počítá posun kulisy. */
+  readonly bounds: Box3;
+  readonly drawCalls: number;
+  readonly triangles: number;
+  readonly dispose: () => void;
+}
+
+/** Co si volající řídí sám, protože se to mezi kulisou a scénou liší. */
+export interface ProgramBuildOptions {
+  /**
+   * Vrhá a přijímá scéna stín? **Kulisa ne** — leží za dosahem stínové kamery,
+   * takže by ji stínový průchod kreslil podruhé bez jediného získaného pixelu.
+   * Cílový snímek naopak ano, tam je stín polovina obrazu.
+   */
+  readonly shadows?: boolean;
+  /** Předpona jmen uzlů. Ulehčuje hledání ve scéně i v testech. */
+  readonly name?: string;
+}
+
 /**
- * Postaví kulisu jedné rodiny pro daný svět.
+ * Program geometrie → skupina k zavěšení do scény.
+ *
+ * Vydělené z `buildScenery` 28. 8. 2026, když cílový snímek přestal být ručně
+ * psaným `three` a stal se programem: obě cesty musí kusy instancovat, zrcadlené
+ * zapékat a přebarvovat paletou **stejně**, jinak by se snímek, na který produkt
+ * míří, kreslil jinou cestou než produkt sám.
  *
  * `material` si drží volající — kit má jediný materiál, protože barvu nese
- * geometrie (`vertexColors`), a kulisa je přebarvená paletou rodiny toutéž
- * cestou jako kit (`repaint`).
+ * geometrie (`vertexColors`), a přebarvuje se paletou (`repaint`).
  */
-export function buildScenery(
-  familyId: string,
-  seed: number,
-  grid: GridSize,
+export function buildProgramGroup(
+  program: GeomProgram,
+  palette: Palette,
   material: Material,
-): SceneryBuild {
-  const family = familyById(familyId);
-  // Neznámá rodina je vada výběru, ne stav k vykreslení — kulisa prostě
-  // nevznikne. Prázdná hrací plocha je horší vada než chybějící krajina, takže
-  // se tu nic nevyhazuje a hra běží dál.
-  if (family === undefined) return EMPTY(familyId);
-
-  const placements = compilePlacements(family.compose(seed));
+  options: ProgramBuildOptions = {},
+): ProgramBuild {
+  const placements = compilePlacements(program);
   const { instanced, baked } = split(placements);
-  const palette = PALETTES[family.palette];
+  const shadows = options.shadows ?? false;
+  const name = options.name ?? 'program';
 
   const group = new Group();
-  group.name = `scenery:${family.id}`;
+  group.name = name;
   const owned: { dispose: () => void }[] = [];
   const bounds = new Box3();
   let drawCalls = 0;
@@ -131,10 +153,10 @@ export function buildScenery(
     owned.push(geometry);
 
     const mesh = new InstancedMesh(geometry, material, matrices.length);
-    mesh.castShadow = false;
-    mesh.receiveShadow = false;
+    mesh.castShadow = shadows;
+    mesh.receiveShadow = shadows;
     mesh.frustumCulled = false;
-    mesh.name = `scenery:${pieceId}`;
+    mesh.name = `${name}:${pieceId}`;
     matrices.forEach((matrix, index) => {
       mesh.setMatrixAt(index, matrix);
       bounds.union(geometry.boundingBox!.clone().applyMatrix4(matrix));
@@ -154,10 +176,10 @@ export function buildScenery(
     owned.push(geometry);
 
     const mesh = new Mesh(geometry, material);
-    mesh.castShadow = false;
-    mesh.receiveShadow = false;
+    mesh.castShadow = shadows;
+    mesh.receiveShadow = shadows;
     mesh.frustumCulled = false;
-    mesh.name = `scenery:${family.id}:baked`;
+    mesh.name = `${name}:baked`;
     // Prostá síť sama `dispose()` nemá; uvolňuje se její geometrie, ta v `owned` je.
     group.add(mesh);
 
@@ -166,19 +188,49 @@ export function buildScenery(
     triangles += trianglesOf(geometry);
   }
 
-  // Za mřížku, ne přes ni. Bere se naměřená hrana obalu, takže rodina se
-  // širokou deskou se odsune dál než rodina úzká.
-  const behind = (grid.height * CELL_SIZE) / 2 + GRID_MARGIN;
-  group.position.set(0, SCENERY_DEPTH, -(behind + bounds.max.z));
-
   return {
-    family: family.id,
     object: group,
+    bounds,
     drawCalls,
     triangles,
     dispose: () => {
       for (const resource of owned) resource.dispose();
     },
+  };
+}
+
+/**
+ * Postaví kulisu jedné rodiny pro daný svět.
+ *
+ * Nad `buildProgramGroup` zbývá jediná věc navíc: posun **za** hrací mřížku.
+ */
+export function buildScenery(
+  familyId: string,
+  seed: number,
+  grid: GridSize,
+  material: Material,
+): SceneryBuild {
+  const family = familyById(familyId);
+  // Neznámá rodina je vada výběru, ne stav k vykreslení — kulisa prostě
+  // nevznikne. Prázdná hrací plocha je horší vada než chybějící krajina, takže
+  // se tu nic nevyhazuje a hra běží dál.
+  if (family === undefined) return EMPTY(familyId);
+
+  const built = buildProgramGroup(family.compose(seed), PALETTES[family.palette], material, {
+    name: `scenery:${family.id}`,
+  });
+
+  // Za mřížku, ne přes ni. Bere se naměřená hrana obalu, takže rodina se
+  // širokou deskou se odsune dál než rodina úzká.
+  const behind = (grid.height * CELL_SIZE) / 2 + GRID_MARGIN;
+  built.object.position.set(0, SCENERY_DEPTH, -(behind + built.bounds.max.z));
+
+  return {
+    family: family.id,
+    object: built.object,
+    drawCalls: built.drawCalls,
+    triangles: built.triangles,
+    dispose: built.dispose,
   };
 }
 

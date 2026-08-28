@@ -65,6 +65,32 @@ export const PALETTES = {
     sand: '#efe2c2',
     moss: '#8f9a5e',
   },
+  /**
+   * Paleta cílového snímku — **sedm tokenů WORLDSTREAM přeložených na šest
+   * slotů kitu**, ne sedmá vymyšlená sada barev.
+   *
+   * Design book §15.1 říká, na čem scéna stojí; kit ale barví po swatchích,
+   * takže tohle je ta mapa mezi nimi:
+   * - `shell` = **clay**, hrubá hmota: zdi, skála, útes,
+   * - `deep` = **basalt**, stíny a spodní desky,
+   * - `accent` = **amber**, jediné svítící sklo v obraze — okna a lampa majáku.
+   *   Studený `verdigris` sem nepatří: rozsvícené okno má být pozvání dovnitř,
+   *   ne signální světlo,
+   * - `warm` = **verdigris**, měděné střechy. Patina mědi je doslova to, co ten
+   *   token pojmenovává, takže střechy dostaly barvu, kterou v reálu mají,
+   * - `sand` = **nacre**, mostovka a podlahy,
+   * - `moss` — jediný slot, který token nemá. Bere se odstín z palety `harbor`
+   *   místo vymyšleného hexu, protože zeleň porostu žádný token WORLDSTREAM
+   *   nepokrývá a sedmý hex navíc by byl přesně to, co §15.1 zakazuje.
+   */
+  worldstream: {
+    shell: '#c8a987',
+    deep: '#16262f',
+    accent: '#f1b24a',
+    warm: '#2e8f86',
+    sand: '#d8e7e2',
+    moss: '#5f8a6b',
+  },
   frost: {
     shell: '#c3d2da',
     deep: '#3d525e',

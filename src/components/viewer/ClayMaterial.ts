@@ -61,6 +61,16 @@ export interface ClayOverrides {
   readonly emissiveShare?: number;
   /** Ploché normály pro fasetovaný, sekaný povrch. Výchozí je hladký. */
   readonly flatShading?: boolean;
+  /**
+   * Barvu nese geometrie, ne materiál.
+   *
+   * Kusy kitu si odstín vezou ve vrcholech a paleta je přebarvuje (`repaint`),
+   * takže scéna složená z programu potřebuje **bílý** základ a `vertexColors`.
+   * Bez toho se celá vykreslí jediným odstínem hlíny — naměřeno 28. 8. 2026 na
+   * cílovém snímku, kde tím splynula skála se zdmi a obraz ztratil hodnotovou
+   * stavbu.
+   */
+  readonly vertexColors?: boolean;
 }
 
 /**
@@ -81,5 +91,6 @@ export function clayMaterial(overrides: ClayOverrides = {}): MeshStandardMateria
     metalness: CLAY.metalness,
     emissive: color.clone().multiplyScalar(share),
     flatShading: overrides.flatShading ?? false,
+    vertexColors: overrides.vertexColors ?? false,
   });
 }
