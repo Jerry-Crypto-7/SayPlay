@@ -26,8 +26,13 @@
  * V programu je všechno, co má tvar — útes, skála, most, brána, schody,
  * zástavba, věž, porost. **Mimo program zůstává světlo, mlha, prach a záře.**
  * Není to úhybný manévr: kit nemá kus pro světelný kužel ani pro zrnko prachu
- * a mít ho nebude, protože to nejsou objekty světa. Produkt je bude řídit
- * stejně jako tady — jako vrstvu vykreslení nad geometrií.
+ * a mít ho nebude, protože to nejsou objekty světa.
+ *
+ * Od P14 T1 ta druhá polovina bydlí v `Atmosphere.tsx` a produkt ji používá
+ * **tutéž**. Do té doby uměla oblohu, vodu a prach jedině tahle stránka, takže
+ * polovina toho, co dělá z modelu na stole místo, se porotci nikdy neukázala.
+ * Tenhle soubor zůstal tím, čím byl — kompozicí: říká, jaké barvy, kolik
+ * sloupů a jak vysoko je hladina, nikoli jak se obloha kreslí.
  *
  * ## Náhodnost je deterministická
  *
@@ -45,37 +50,13 @@
  */
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { uniformInt } from 'pure-rand/distribution/uniformInt';
-import { xoroshiro128plus } from 'pure-rand/generator/xoroshiro128plus';
 import { useEffect, useMemo, useRef } from 'react';
-import {
-  AdditiveBlending,
-  BackSide,
-  BoxGeometry,
-  BufferAttribute,
-  BufferGeometry,
-  CatmullRomCurve3,
-  Color,
-  CylinderGeometry,
-  IcosahedronGeometry,
-  InstancedMesh,
-  Matrix4,
-  Mesh,
-  MeshStandardMaterial,
-  Quaternion,
-  PlaneGeometry,
-  Points,
-  ShaderMaterial,
-  SphereGeometry,
-  TorusGeometry,
-  TubeGeometry,
-  Vector3,
-} from 'three';
+import { Color } from 'three';
 
 import { PALETTES, UI_TOKENS } from '@/kit';
 
+import { Halo, LightShafts, Motes, Sky, Water } from './Atmosphere';
 import { clayMaterial } from './ClayMaterial';
-import { haloMaterial, moteMaterial, shaftMaterial } from './GlowMaterial';
 import { buildProgramGroup } from './scenery';
 import { TARGET_PROGRAM } from './target-program';
 import { disposeSubtree } from './dispose';
@@ -123,27 +104,8 @@ const DEEP_SEED = 0x0cea_11e5;
 /** Kolik zrnek prachu visí ve vzduchu. Jedno kreslicí volání pro všechna. */
 const MOTE_COUNT = 700;
 
-/**
- * Poloviční šířka pásma, ve kterém prach visí.
- *
- * Odvozená z kompozice, ne zvolená: scéna je v `x` od −15 (okraj útesu) do +15
- * a prach musí sahat za obě hrany obrazu, jinak by se na krajích objevil ostrý
- * konec mlhy.
- */
-const MOTE_FIELD = 34;
-
 /** Kolik světelných kuželů prochází vodou. */
 const SHAFT_COUNT = 3;
-
-/**
- * Sklon světelných sloupů od svislice, v radiánech.
- *
- * Není vymyšlený: hlavní světlo stojí na `[26, 34, 18]`, takže svírá se svislicí
- * `atan(sqrt(26² + 18²) / 34)` ≈ 43°. Sloupy jdou o něco strměji (32°), protože
- * při plném sklonu vyjdou z obrazu dřív, než dosáhnou na kostru — je to jediné
- * místo, kde se obraz upřednostnil před fyzikou, a proto to stojí tady.
- */
-const SHAFT_TILT = 0.36;
 
 /**
  * Scéna postavená **programem geometrie**.
@@ -193,221 +155,29 @@ function Place() {
 const WATER_LEVEL = -3.2;
 
 /**
- * Obloha při soumraku.
+ * Barvy, které tenhle snímek předá atmosféře.
  *
- * **Bez ní má snímek půlku plochy černou** a scéna se čte jako model ve
- * vitríně, ne jako místo pod otevřeným nebem. Přesně to bylo na první verzi
- * nejvíc vidět: pozadí nebylo dálka, byla to prázdnota.
+ * Stojí tady, ne v `Atmosphere.tsx`, a je to celý smysl vyjmutí: paleta je
+ * rozhodnutí **snímku**, ne vrstvy. Kdyby si atmosféra sáhla na `UI_TOKENS`
+ * sama, dostal by od ní tuhle oblohu i každý vygenerovaný svět a produkt by
+ * měl jedno počasí navždy.
  *
- * Koule s `BackSide` a spádem ve třech tokenech: `pelagic` v zenitu,
- * ztmavený `verdigris` u obzoru a `amber` jako zapadající světlo nízko vpravo
- * za věží. Žádná mlha (`fog: false`) — obloha je nekonečno, mlha by ji obarvila
- * do jedné plochy a spád by zmizel.
+ * Spád je ve třech tokenech WORLDSTREAM: `pelagic` v zenitu, ztmavený
+ * `verdigris` u obzoru a `amber` jako zapadající světlo nízko vpravo za věží.
+ * Studený `verdigris` v zenitu nepatří — rozsvícené okno má být pozvání
+ * dovnitř, ne signální světlo.
  */
-function Sky() {
-  const material = useMemo(
-    () =>
-      new ShaderMaterial({
-        side: BackSide,
-        depthWrite: false,
-        fog: false,
-        uniforms: {
-          uZenith: { value: new Color(UI_TOKENS.pelagic) },
-          uHorizon: { value: new Color(UI_TOKENS.pelagic).lerp(new Color(UI_TOKENS.verdigris), 0.16) },
-          uGlow: { value: new Color(UI_TOKENS.amber).multiplyScalar(0.55) },
-        },
-        vertexShader: `
-          varying vec3 vDirection;
-          void main() {
-            vDirection = normalize(position);
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }
-        `,
-        fragmentShader: `
-          uniform vec3 uZenith;
-          uniform vec3 uHorizon;
-          uniform vec3 uGlow;
-          varying vec3 vDirection;
-          void main() {
-            float height = clamp(vDirection.y * 1.5 + 0.12, 0.0, 1.0);
-            vec3 sky = mix(uHorizon, uZenith, pow(height, 0.5));
-            float sun = max(0.0, dot(vDirection, normalize(vec3(0.5, 0.05, -0.86))));
-            sky += uGlow * pow(sun, 7.0) * (1.0 - height);
-            gl_FragColor = vec4(sky, 1.0);
-          }
-        `,
-      }),
-    [],
-  );
+const SKY = {
+  zenith: new Color(UI_TOKENS.pelagic),
+  horizon: new Color(UI_TOKENS.pelagic).lerp(new Color(UI_TOKENS.verdigris), 0.16),
+  glow: new Color(UI_TOKENS.amber).multiplyScalar(0.55),
+} as const;
 
-  return (
-    <mesh material={material} renderOrder={-1}>
-      <sphereGeometry args={[180, 32, 20]} />
-    </mesh>
-  );
-}
+/** Hladina: `pelagic` posunutý k patině mědi, aby po ní přeběhl odlesk. */
+const WATER_COLOR = new Color(UI_TOKENS.pelagic).lerp(new Color(UI_TOKENS.verdigris), 0.2);
 
-/**
- * Hladina.
- *
- * **Není v programu geometrie a je to rozhodnutí, ne mezera** — viz hlavičku
- * `target-program.ts`. Kit kus pro vodu nemá; voda je vrstva vykreslení jako
- * mlha nebo záře.
- *
- * Nízká drsnost a trochu kovovosti stačí na to, aby po hladině přeběhl odlesk
- * hlavního světla — a odlesk je jediná věc, která plochu udělá mokrou.
- * Deska je 600 jednotek široká, takže mlha (`far = 120`) ji sama rozpustí do
- * barvy oblohy a obzor vznikne bez jediné další vrstvy.
- */
-function Water() {
-  const material = useMemo(
-    () =>
-      new MeshStandardMaterial({
-        color: new Color(UI_TOKENS.pelagic).lerp(new Color(UI_TOKENS.verdigris), 0.2),
-        roughness: 0.42,
-        metalness: 0.15,
-      }),
-    [],
-  );
-  const geometry = useMemo(() => new PlaneGeometry(600, 600), []);
-
-  return (
-    <mesh
-      geometry={geometry}
-      material={material}
-      position={[0, WATER_LEVEL, -60]}
-      rotation={[-Math.PI / 2, 0, 0]}
-    />
-  );
-}
-
-/**
- * Světelné sloupy procházející vodou.
- *
- * **Tohle je ta jediná vrstva, která z modelu na stole udělá místo.** Bez ní
- * scéna nemá čím ukázat, že mezi kamerou a kostrou je voda — objekty prostě
- * stojí v černu. Sloup není objem, je to kužel s additivním shaderem
- * (`shaftMaterial`), jehož jas se řídí tím, kolik plochy je v daném pixelu
- * vidět skrz; vypadá to jako světlo v kalné vodě a stojí to jedno kreslicí
- * volání na sloup.
- *
- * Sklon i směr jdou z polohy hlavního světla, ne z oka — viz `SHAFT_TILT`.
- * Rozestupy jsou nepravidelné schválně: pravidelné sloupy čtou jako plot.
- */
-function LightShafts() {
-  // Naměřeno okem 27. 8.: při 0,26 vyšly sloupy jako bílé pruhy přes celou
-  // levou třetinu a přebily kostru. Světlo v kalné vodě je závoj, ne reflektor.
-  const material = useMemo(() => shaftMaterial(UI_TOKENS.nacre, 0.05), []);
-  const warm = useMemo(() => shaftMaterial('#ffe4b5', 0.04), []);
-
-  // Šířka u dna, šířka u zdroje, posun podél kostry, hloubka, síla.
-  const shafts = useMemo(
-    () =>
-      [
-        { at: -26, z: -14, top: 0.7, bottom: 3.4, height: 46, warm: false },
-        { at: -15, z: 2, top: 0.5, bottom: 2.2, height: 40, warm: true },
-        { at: -6, z: -16, top: 0.9, bottom: 4.6, height: 48, warm: false },
-        { at: 2, z: 9, top: 0.4, bottom: 1.8, height: 36, warm: true },
-        { at: 10, z: -11, top: 0.8, bottom: 3.8, height: 45, warm: false },
-        { at: 21, z: 4, top: 0.5, bottom: 2.6, height: 41, warm: true },
-        { at: 31, z: -13, top: 1.0, bottom: 4.8, height: 48, warm: false },
-      ].slice(0, SHAFT_COUNT),
-    [],
-  );
-
-  return (
-    <group position={[0, 7, 0]} rotation={[0, 0.42, SHAFT_TILT]}>
-      {shafts.map((shaft) => (
-        <mesh
-          key={`shaft-${String(shaft.at)}`}
-          position={[shaft.at, shaft.height * 0.42, shaft.z]}
-          material={shaft.warm ? warm : material}
-        >
-          <cylinderGeometry args={[shaft.top, shaft.bottom, shaft.height, 18, 1, true]} />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
-/**
- * Záře kolem svítících míst — ruční náhrada bloomu.
- *
- * Čtverec s radiálním spádem, otočený čelem ke kameře. **Billboard se počítá
- * každý snímek**, protože jinak by se záře při otočení scény zploštila do
- * čárky. Kopíruje se rovnou kvaternion kamery, což je totéž co `lookAt` na
- * kameru, jen bez trigonometrie.
- *
- * Bez záře čte emisivní materiál jako světlá barva, ne jako zdroj světla —
- * a rozdíl mezi „žlutý válec" a „ta věc svítí" je celý tenhle komponent.
- */
-function Halo({
-  position,
-  size,
-  color,
-  intensity,
-}: {
-  readonly position: readonly [number, number, number];
-  readonly size: number;
-  readonly color: string;
-  readonly intensity: number;
-}) {
-  const mesh = useRef<Mesh>(null);
-  const material = useMemo(() => haloMaterial(color, intensity), [color, intensity]);
-
-  useFrame((state) => {
-    if (mesh.current !== null) mesh.current.quaternion.copy(state.camera.quaternion);
-  });
-
-  return (
-    <mesh ref={mesh} position={[...position]} material={material}>
-      <planeGeometry args={[size, size]} />
-    </mesh>
-  );
-}
-
-/**
- * Prach ve vodě.
- *
- * `Points` s vlastním shaderem: **sedm set zrnek v jednom kreslicím volání**.
- * Instancované čtverce by stály sedm set matic a stejně by se musely otáčet ke
- * kameře; bod je čelem ke kameře zadarmo.
- *
- * Zrnka se pomalu snášejí — pohyb je z `uTime`, tedy z nástěnného času, což
- * je tady ta správná jednotka: stránka nemá simulaci a je celá mimo hashovaný
- * stav (`CLAUDE.md`).
- */
-function Motes() {
-  const material = useMemo(() => moteMaterial(UI_TOKENS.nacre, 1.5), []);
-
-  const geometry = useMemo(() => {
-    const source = xoroshiro128plus(DEEP_SEED);
-    const between = (from: number, to: number): number =>
-      (uniformInt(source, 0, 10_000) / 10_000) * (to - from) + from;
-
-    const position = new Float32Array(MOTE_COUNT * 3);
-    const phase = new Float32Array(MOTE_COUNT);
-    for (let at = 0; at < MOTE_COUNT; at += 1) {
-      position[at * 3] = between(-MOTE_FIELD, MOTE_FIELD);
-      // Hustěji dole, řidčeji nahoře: mlha nad hladinou sedá k vodě.
-      position[at * 3 + 1] = between(0, 1) ** 1.6 * 22 - 2;
-      position[at * 3 + 2] = between(-34, 26);
-      phase[at] = between(0, Math.PI * 2);
-    }
-
-    const buffer = new BufferGeometry();
-    buffer.setAttribute('position', new BufferAttribute(position, 3));
-    buffer.setAttribute('aPhase', new BufferAttribute(phase, 1));
-    return buffer;
-  }, []);
-
-  const points = useRef<Points>(null);
-  useFrame((state) => {
-    material.uniforms.uTime.value = state.clock.elapsedTime;
-  });
-
-  return <points ref={points} geometry={geometry} material={material} />;
-}
+/** Teplý sloup světla. Není z palety — je to barva slunce nad hladinou. */
+const SHAFT_WARM = '#ffe4b5';
 
 /**
  * Měřidlo snímku.
@@ -530,10 +300,14 @@ export default function TargetFrame() {
       {/* Neprůhledné vrstvy odzadu dopředu, additivní až nakonec: záře a prach
           mají `depthWrite: false`, takže by jinak zmizely za tím, co se
           nakreslí po nich. */}
-      <Sky />
-      <Water />
+      <Sky
+        zenith={SKY.zenith}
+        horizon={SKY.horizon}
+        glow={SKY.glow}
+      />
+      <Water color={WATER_COLOR} level={WATER_LEVEL} />
       <Place />
-      <LightShafts />
+      <LightShafts color={UI_TOKENS.nacre} warmColor={SHAFT_WARM} count={SHAFT_COUNT} />
       {/* Záře kolem svítících míst. Lampa na věži je nejjasnější bod obrazu —
           a jediný, který nese větu „tam někdo je". */}
       <Halo position={[2.6, 12.6, -8.4]} size={9} color={UI_TOKENS.amber} intensity={0.9} />
@@ -543,7 +317,7 @@ export default function TargetFrame() {
       <Halo position={[-3.7, 2.64, -6.1]} size={2.4} color={UI_TOKENS.amber} intensity={0.32} />
       <Halo position={[-1, 2.64, -6.1]} size={2.4} color={UI_TOKENS.amber} intensity={0.32} />
       <Halo position={[0, 3.6, -4]} size={3} color={UI_TOKENS.amber} intensity={0.22} />
-      <Motes />
+      <Motes color={UI_TOKENS.nacre} count={MOTE_COUNT} seed={DEEP_SEED} />
       <Probe />
       <Cleanup />
     </Canvas>

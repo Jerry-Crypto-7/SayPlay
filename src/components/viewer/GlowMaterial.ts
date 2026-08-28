@@ -1,12 +1,15 @@
 /**
- * Additivní materiály pro atmosféru cílového snímku — kužely světla, záře
- * a plovoucí prach.
+ * Additivní materiály atmosféry — kužely světla, záře a plovoucí prach.
+ *
+ * Do P14 T1 patřily cílovému snímku a hlavička to tak i říkala. Teď je volá
+ * `Atmosphere.tsx`, tedy vrstva, kterou používá **i produktový prohlížeč** —
+ * barva a síla proto chodí parametrem a v tomhle souboru není jediná paleta.
  *
  * ## Proč ručně psaný shader a ne knihovna
  *
  * `@react-three/postprocessing` by dal bloom jedním řádkem a `CLAUDE.md` ho
  * zakazuje: má tvrdou závislost na `n8ao`, což je **90,9 kB gzip v jednom
- * netreeshakovatelném souboru**. Cílový snímek má být důkaz, že produkt umí
+ * netreeshakovatelném souboru**. Atmosféra má být důkaz, že produkt umí
  * vypadat dobře v rozpočtu, který si sám stanovil — dotáhnout ho balíkem, který
  * se do produktu stejně nesmí dostat, by ten důkaz zrušilo.
  *
@@ -143,7 +146,8 @@ export function haloMaterial(color: ColorRepresentation, intensity: number): Sha
  * ručně, protože `sizeAttenuation` je vlastnost `PointsMaterial`, ne shaderu.
  *
  * `uTime` posouvá zrnka po malé smyčce. Je to nástěnný čas a smí to tak být —
- * cílový snímek nemá simulaci a je celý mimo hashovaný stav (`CLAUDE.md`).
+ * atmosféra stojí mimo hashovaný stav (`CLAUDE.md`), stejně jako částice,
+ * zvuk, kamera a postprocessing.
  */
 export function moteMaterial(color: ColorRepresentation, size: number): ShaderMaterial {
   return new ShaderMaterial({
