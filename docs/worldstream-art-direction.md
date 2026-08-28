@@ -90,3 +90,66 @@ fáze 3 čekají:
 Odvození vzhledu (`src/worldstream/look.ts`), pět vlastností soudce a jejich prahy,
 odemčené kusy kitu ani figury v rodinách. Všechno z fáze 1 a 2 zůstává, jak je –
 brána nenašla vadu v ničem z toho. Vada je v tom, **kam se kamera dívá**.
+
+---
+
+# Druhé kolo brány (H2) – rozhodnutí
+
+**Rozhodnuto:** 28. 8. 2026, uživatelem, nad přerenderovaným
+`docs/contact-sheet.png` po spočítaném rámování (T8).
+
+## Verdikt
+
+**List obstál podmíněně.** Rámování opravilo šest světů z vět a tři ruční
+layouty; tři zbývající ležely na 90–96 % oblohy a rámování s nimi nesvedlo nic.
+Uživatel rozhodl: **doplnit zem jako pole popisu vzhledu, pak spustit T9–T11.**
+Zem se doplnila týž den a druhé kolo tím prošlo.
+
+## Co rámování změřitelně udělalo
+
+Klopení osy pohledu z **38,7° na 9,41°**. Postava sedí na spodní třetině.
+
+| Svět | Obloha do T8 | Po T8 | Po zemi |
+|---|---|---|---|
+| `harbor-pier` | 0,0 % | 32,0 % | 32,0 % |
+| `dunes-terrace` | 94,9 % | 96,2 % | **32,5 %** |
+| `frost-plateau` | 0,0 % | 31,8 % | 31,8 % |
+| `kiln-court` | 91,5 % | 90,2 % | **32,0 %** |
+| `foundry-hall` | 92,3 % | 90,1 % | **32,0 %** |
+| šest světů z vět | 0–14 % | 26,7–32,6 % | 23,1–25,4 % |
+
+**Jedenáct z dvanácti světů má oblohu v pásmu 15–45 %.** Mimo pásmo zůstal
+jediný, `C02` (*„escape room in a submarine"*) s 5,5 % – opačný konec téže osy,
+kulisa vyplní celý výřez. Prochází přitom všemi pěti prahy s nejnižší mrtvou
+plochou celého listu (0,03), takže to nemusí být vada.
+
+**Deset z dvanácti světů projde všemi pěti prahy**, proti osmi před T8. Oba
+zbylé propadají **jen na počtu odstínů**: `dunes-terrace` má jediný,
+`frost-plateau` dva proti prahu tři. To je vlastnost palety, ne kompozice, a
+opravuje ji T11.
+
+## Co první běh T8 naučil
+
+**Rámování zhoršilo všech šest ručních layoutů a kontaktní list to propustil
+zeleně.** Do obalu scény se počítal prach (80 × 22 × 60 jednotek), kamera odjela
+o desítky jednotek a světy se scvrkly na tečku – mrtvá plocha z 0,28 na 0,88.
+List má aserce na **rozdílnost** světů, a šest stejně pokažených světů má pořád
+šest různých otisků.
+
+Poučení pro zbytek plánu: **soudce, který hodnotí každý snímek zvlášť, nezachytí
+vadu společnou všem snímkům.** Nejlevnější protilátka není další práh, ale test
+té konkrétní vady na úrovni, kde vzniká – tady `camera-framing.test.ts` nad
+obalem scény, ne nad obrazem.
+
+## Co zůstává otevřené
+
+1. **Šest světů z vět čte pořád jako varianty jednoho.** Atmosféra se mezi nimi
+   liší viditelně (mráz, soumrak, teplé odpoledne), kompozice ne: týž prstenec
+   kulisy kolem téže mřížky. Routováno jako `T7-sameness`, rozhoduje se o něm až
+   po T11.
+2. **Ruční layouty jsou drobné objekty na velké prázdné ploše.** Zem je zlepšila
+   měřitelně, ale malý objekt uprostřed zůstal malým objektem. Je to práce T11.
+3. **Nesvítí nic.** Ze čtyř dalších vlastností cílového snímku – emisivní
+   ohnisko, noc, teplotní kontrast, cesta vedoucí oko – nemá generovaný svět ani
+   jednu. Tohle je největší zbývající rozdíl proti `docs/target-frame.png` a
+   plán na něj úlohu nemá.
