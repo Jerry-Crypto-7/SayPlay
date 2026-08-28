@@ -68,9 +68,20 @@ export const terraces: Family = {
           radius: 15,
           seed: nextInt(stream, 0, 100_000),
         },
-        { kind: 'group', children: [0, 3, 5, 7, 10, 12] },
+        // **Měřítko.** Do dneška nebylo v žádné rodině nic, podle čeho se dá
+        // odhadnout, jak je stupeň velký — deska o hraně 7,6 vypadá stejně jako
+        // deska o hraně 76. Postava stojí na desce, ne v prázdnu, a je vysoká
+        // zhruba jako člověk, takže tu desku změří okem.
+        //
+        // **Počty a polohy jsou pevné, nelosuje se tu nic.** Profil siluety má
+        // uvnitř rodiny strop 0,012 a Terasy na něm mají rezervu 0,010; jeden
+        // kolísající kus by ji spolykal.
+        { kind: 'actor', variant: 'squat', at: [-6, 1.9, 10.5], scale: [1.9, 1.9, 1.9] },
+        { kind: 'fixture', variant: 'crate', at: [-2.8, 1.6, 10.2], scale: [1.6, 1.6, 1.6] },
+        { kind: 'fixture', variant: 'barrel', at: [-1.4, 1.7, 10.9], scale: [1.6, 1.6, 1.6] },
+        { kind: 'group', children: [0, 3, 5, 7, 10, 12, 13, 14, 15] },
       ],
-      root: 13,
+      root: 16,
     };
   },
 };

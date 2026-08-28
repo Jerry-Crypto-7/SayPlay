@@ -8,11 +8,11 @@
     "minCrossFamilyProfile": 0.02,
     "maxSameFamilyProfile": 0.012
   },
-  "crossFamilyMean": 0.44,
+  "crossFamilyMean": 0.439,
   "weakestCrossFamilyProfile": 0.031,
   "sameFamilyTotalRange": [
     0.004,
-    0.057
+    0.056
   ],
   "pairs": [
     {
@@ -41,7 +41,7 @@
       "second": "grove#202",
       "palette": 0.825,
       "profile": 0.066,
-      "total": 0.446
+      "total": 0.445
     },
     {
       "first": "terraces#101",
@@ -74,7 +74,7 @@
     {
       "first": "terraces#202",
       "second": "grove#101",
-      "palette": 0.806,
+      "palette": 0.805,
       "profile": 0.067,
       "total": 0.436
     },
@@ -88,14 +88,14 @@
     {
       "first": "terraces#202",
       "second": "works#101",
-      "palette": 0.369,
+      "palette": 0.368,
       "profile": 0.032,
       "total": 0.2
     },
     {
       "first": "terraces#202",
       "second": "works#202",
-      "palette": 0.369,
+      "palette": 0.368,
       "profile": 0.031,
       "total": 0.2
     },
@@ -109,7 +109,7 @@
     {
       "first": "spires#101",
       "second": "grove#202",
-      "palette": 0.724,
+      "palette": 0.723,
       "profile": 0.165,
       "total": 0.444
     },
@@ -137,7 +137,7 @@
     {
       "first": "spires#202",
       "second": "grove#202",
-      "palette": 0.724,
+      "palette": 0.723,
       "profile": 0.164,
       "total": 0.444
     },
@@ -200,9 +200,9 @@
     {
       "first": "grove#101",
       "second": "grove#202",
-      "palette": 0.106,
+      "palette": 0.105,
       "profile": 0.008,
-      "total": 0.057
+      "total": 0.056
     },
     {
       "first": "works#101",

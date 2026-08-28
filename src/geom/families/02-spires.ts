@@ -49,9 +49,16 @@ export const spires: Family = {
           radius: 7.2,
           seed: nextInt(stream, 0, 100_000),
         },
-        { kind: 'group', children: [0, 4, 5, 7] },
+        // Postava stojí u paty věže, ve výšce, kde věž začíná — bez ní se
+        // nedá poznat, jestli je sloup vysoký šest jednotek nebo šedesát.
+        // **Vysoká postava do Věží patří i tvarem:** rodina je svislá, a svislá
+        // silueta u paty svislé stavby profil nerozmělní.
+        { kind: 'actor', variant: 'tall', at: [-7.7, 3.4, 2], scale: [2, 2, 2] },
+        { kind: 'fixture', variant: 'lamp', at: [-11.4, 4, 1], scale: [2.2, 2.2, 2.2] },
+        { kind: 'fixture', variant: 'sign', at: [-5.9, 3.6, 4.2], scale: [2, 2, 2] },
+        { kind: 'group', children: [0, 4, 5, 7, 8, 9, 10] },
       ],
-      root: 8,
+      root: 11,
     };
   },
 };

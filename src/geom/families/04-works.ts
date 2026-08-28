@@ -45,9 +45,17 @@ export const works: Family = {
         { kind: 'mass', variant: 'block', at: [-14.4, 1.5, 13.6], scale: [4.4, 3.1, 4.4] },
         { kind: 'repeat', child: 5, count: blocks, step: [5.1, 0, 0] },
         { kind: 'arch', variant: 'flat', at: [0, 0, -15.3], scale: [4.1, 4.1, 4.1] },
-        { kind: 'group', children: [0, 4, 6, 7] },
+        // Hutě dostávají dron, ne člověka: rodina je průmyslová a dron smí
+        // viset nad zemí, což u rovného terénu s amplitudou 0,9 znamená, že se
+        // nemusí trefovat do výšky půdy. Drobnosti jsou tři, všechny provozní —
+        // roura, terminál a poklop stojí u řady bloků před halou.
+        { kind: 'actor', variant: 'drone', at: [-9, 2.6, 12], scale: [2, 2, 2] },
+        { kind: 'fixture', variant: 'pipe', at: [-12, 1.4, 10.2], scale: [2.2, 2.2, 2.2] },
+        { kind: 'fixture', variant: 'terminal', at: [-6.5, 1.3, 12.6], scale: [1.8, 1.8, 1.8] },
+        { kind: 'fixture', variant: 'hatch', at: [-3, 0.6, 13.2], scale: [2, 2, 2] },
+        { kind: 'group', children: [0, 4, 6, 7, 8, 9, 10, 11] },
       ],
-      root: 8,
+      root: 12,
     };
   },
 };

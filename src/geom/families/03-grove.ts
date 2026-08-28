@@ -72,9 +72,17 @@ export const grove: Family = {
           radius: 9.2,
           seed: nextInt(stream, 0, 100_000),
         },
-        { kind: 'group', children: [0, 2, 4, 6, 8, 10] },
+        // Háj nemá stavbu, takže postava stojí u balvanů a lavičky — jediného
+        // místa v rodině, které čte jako „sem někdo chodí". **Čtyřnožec, ne
+        // člověk:** do porostu patří zvíře, a hlavně je to jiný druh postavy
+        // než ve zbylých třech rodinách. Stejná postava všude by rodiny
+        // sblížila, a průměr odlišnosti má nad prahem rezervu jen 0,14.
+        { kind: 'actor', variant: 'quadruped', at: [2.4, 1.6, 4], scale: [2.2, 2.2, 2.2] },
+        { kind: 'fixture', variant: 'bench', at: [-2.6, 1.5, 5.4], scale: [2, 2, 2] },
+        { kind: 'fixture', variant: 'lamp', at: [-1, 2.2, 3.2], scale: [2.4, 2.4, 2.4] },
+        { kind: 'group', children: [0, 2, 4, 6, 8, 10, 11, 12, 13] },
       ],
-      root: 11,
+      root: 14,
     };
   },
 };
