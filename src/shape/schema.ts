@@ -38,7 +38,9 @@ import {
   TRANSFORM_KINDS,
   childIndicesOf,
   depths,
+  evaluationCounts,
   instanceCounts,
+  reachableFrom,
   type ShapeNode,
   type ShapeProgram,
 } from './types';
@@ -66,8 +68,12 @@ const angle = z.number().min(-32).max(32);
 const scaleFactor = z.number().min(0.05).max(20);
 const scale3 = z.tuple([scaleFactor, scaleFactor, scaleFactor]);
 
-/** Plynulost kombinace. `0` je ostrá hrana, větší číslo delší přechod. */
-const smoothness = z.number().min(0).max(4);
+/**
+ * Plynulost kombinace. Ostrá hrana se píše **vynecháním** `k`, ne nulou:
+ * polynomiální smooth-min dělí `k`, takže nula je `0/0` = `NaN` přesně na té
+ * ploše, kvůli které se uzel píše. Táž kázeň jako `scaleFactor.min(0.05)`.
+ */
+const smoothness = z.number().gt(0).max(4);
 
 /** Kolik kopií pole udělá. Součin přes celý strom hlídá `maxInstances`. */
 const copyCount = z.int().min(2).max(64);
@@ -298,9 +304,19 @@ export interface ShapeValidation {
   readonly issues: readonly string[];
 }
 
-/** Nulový vektor by se ve vyhodnocovači normalizoval na `NaN`, ne na chybu. */
-function isZeroVector(vector: readonly number[]): boolean {
-  return vector.every((component) => component === 0);
+/**
+ * Nejmenší délka vektoru, se kterou se dá dál počítat.
+ *
+ * Je to **délka, ne rovnost s nulou**, a rozhodlo o tom nezávislé review:
+ * `normal: [1e-200, 0, 0]` není nulový vektor, ale `x * x` v druhé mocnině
+ * podteče na nulu, odmocnina je nula, dělení jí dá nekonečno a součin
+ * `Infinity * 0` je `NaN`. Práh je zároveň nejmenší rozměr, který schéma
+ * u těles vůbec pustí (`extent`), takže nezakazuje nic použitelného.
+ */
+const MIN_VECTOR_LENGTH = 0.01;
+
+function isTooShort(vector: readonly number[]): boolean {
+  return Math.hypot(...vector) < MIN_VECTOR_LENGTH;
 }
 
 /**
@@ -326,18 +342,41 @@ function structuralIssues(program: z.infer<typeof shapeProgramSchema>): string[]
         fail(`node ${index} references node ${child} outside the table of ${program.nodes.length}`);
       }
     }
-    if (node.kind === 'plane' && isZeroVector(node.normal)) {
+    if (node.kind === 'plane' && isTooShort(node.normal)) {
       fail(`node ${index} is a plane with a zero normal`);
     }
-    if (node.kind === 'clip' && node.region.kind === 'halfSpace' && isZeroVector(node.region.normal)) {
+    if (node.kind === 'clip' && node.region.kind === 'halfSpace' && isTooShort(node.region.normal)) {
       fail(`node ${index} clips against a half space with a zero normal`);
+    }
+    // Doménové opakování dělí krokem. Nulový krok je dělení nulou přes celou
+    // mřížku, a smyčková varianta zaplatí `count` vyhodnocení za jednu kouli.
+    if (node.kind === 'repeat' && isTooShort(node.step)) {
+      fail(`node ${index} repeats with a step of no length`);
+    }
+    // Splývající kontrolní body dají křivku nulové délky a s ní nulovou tečnu,
+    // ze které se normalizací stane `NaN` pozice všech kopií.
+    if (node.kind === 'arrayAlongCurve') {
+      const stuck = node.points.findIndex(
+        (point, at) =>
+          at > 0 &&
+          isTooShort([
+            point[0] - node.points[at - 1][0],
+            point[1] - node.points[at - 1][1],
+            point[2] - node.points[at - 1][2],
+          ]),
+      );
+      if (stuck > 0) fail(`node ${index} has curve points ${stuck - 1} and ${stuck} on top of each other`);
     }
   });
 
+  // Rovnost se odmítá spolu s obrácením, a je to oprava po review: podle
+  // `targetBounds` potrubí tvar normalizuje a mřížkuje, takže plochý kvádr
+  // (`min[1] === max[1]`, naprosto pravděpodobná emise pro list nebo desku)
+  // dá krok buňky `(max - min) / N = 0`, dělení nulou a prázdný mesh.
   const [minX, minY, minZ] = program.targetBounds.min;
   const [maxX, maxY, maxZ] = program.targetBounds.max;
-  if (minX > maxX || minY > maxY || minZ > maxZ) {
-    fail('targetBounds has a min above its max on at least one axis');
+  if (minX >= maxX || minY >= maxY || minZ >= maxZ) {
+    fail('targetBounds is flat or inverted on at least one axis');
   }
 
   const anchorNames = new Set<string>();
@@ -353,6 +392,15 @@ function structuralIssues(program: z.infer<typeof shapeProgramSchema>): string[]
 
   const nodes = program.nodes as readonly ShapeNode[];
 
+  // Mrtvý řádek se odmítá, ne přehlíží. Rozpočty se čtou z `[root]`, takže
+  // uzel mimo strom je z nich vynechaný — a než se tahle kontrola přidala,
+  // tvrdil komentář u `depths`, že se takový řádek „řeší jinde".
+  const reached = reachableFrom(nodes, program.root);
+  const orphans = nodes.map((_node, index) => index).filter((index) => !reached.has(index));
+  if (orphans.length > 0) {
+    fail(`nodes ${orphans.join(', ')} cannot be reached from root ${program.root}`);
+  }
+
   const depth = depths(nodes)[program.root];
   if (depth > SHAPE_LIMITS.maxDepth) {
     fail(`program is ${depth} nodes deep, above maxDepth ${SHAPE_LIMITS.maxDepth}`);
@@ -362,6 +410,13 @@ function structuralIssues(program: z.infer<typeof shapeProgramSchema>): string[]
   if (expanded > SHAPE_LIMITS.maxInstances) {
     fail(
       `program expands to ${expanded} copies, above maxInstances ${SHAPE_LIMITS.maxInstances}`,
+    );
+  }
+
+  const evaluations = evaluationCounts(nodes)[program.root];
+  if (evaluations > SHAPE_LIMITS.maxEvaluations) {
+    fail(
+      `program costs ${evaluations} evaluations per cell, above maxEvaluations ${SHAPE_LIMITS.maxEvaluations}`,
     );
   }
 

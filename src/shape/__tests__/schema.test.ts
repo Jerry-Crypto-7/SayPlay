@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 
 import {
   SCHEMA_NODE_KINDS,
@@ -11,10 +12,17 @@ import {
   SHAPE_NODE_KINDS,
   childIndicesOf,
   depths,
+  evaluationCounts,
   instanceCounts,
   type ShapeNode,
 } from '../types';
-import { arrayProgram, chainProgram, coveringProgram, wideProgram } from '../__fixtures__/programs';
+import {
+  arrayProgram,
+  chainProgram,
+  coveringProgram,
+  sharedSubtreeProgram,
+  wideProgram,
+} from '../__fixtures__/programs';
 
 /**
  * Porouchaná kopie programu.
@@ -112,7 +120,8 @@ describe('odkazy mezi uzly', () => {
   it('odmítne cyklus, protože cyklus nutně porušuje pořadí indexů', () => {
     // Dvojice uzlů, které ukazují jeden na druhý. V ploché tabulce s pravidlem
     // "potomek má nižší index" se cyklus nedá napsat jinak, takže tahle jediná
-    // kontrola pokrývá celou třídu — a hlášky to říkají o obou koncích.
+    // kontrola pokrývá celou třídu. Hláška je jedna, ne dvě: druhý konec už
+    // podmínku splňuje, protože ukazuje dolů.
     const result = validateShapeProgram({
       shapeId: 'cycle',
       stableId: 'cycle-object',
@@ -143,7 +152,9 @@ describe('odkazy mezi uzly', () => {
 
 describe('stropy jazyka', () => {
   it('přijme program přesně na stropu uzlů a odmítne o jeden větší', () => {
-    expect(validateShapeProgram(wideProgram(SHAPE_LIMITS.maxNodes)).ok).toBe(true);
+    const atLimit = wideProgram(SHAPE_LIMITS.maxNodes);
+    expect(atLimit.nodes).toHaveLength(SHAPE_LIMITS.maxNodes);
+    expect(validateShapeProgram(atLimit)).toEqual({ ok: true, issues: [] });
 
     const oversized = wideProgram(SHAPE_LIMITS.maxNodes + 1);
     const result = validateShapeProgram(oversized);
@@ -152,6 +163,44 @@ describe('stropy jazyka', () => {
     // Odmítnout, ne oříznout: kdyby brána tabulku zkrátila na 48 řádků, byl by
     // to jiný program než ten, který model napsal, a nikde by to nebylo vidět.
     expect(oversized.nodes).toHaveLength(49);
+  });
+
+  it('odmítne řádek, na který se z kořene nedá dostat', () => {
+    // Rozpočty se čtou z `[root]`, takže mrtvý řádek do žádného z nich nespadne.
+    // Buď se odmítne tady, nebo se nekontroluje vůbec.
+    const result = validateShapeProgram(
+      broken((draft) => {
+        nodesOf(draft).push({ kind: 'sphere', radius: 9 });
+      }),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.issues.join(' ')).toContain('cannot be reached from root');
+  });
+
+  it('odmítne program, který je pod stropem kopií a přesto stojí přes tisíc vyhodnocení', () => {
+    const shared = sharedSubtreeProgram();
+
+    // Nejdřív důkaz, že starý rozpočet sám by ho propustil: sedm řádků,
+    // hloubka 7, kopie přesně na stropu 256.
+    expect(shared.nodes).toHaveLength(7);
+    expect(instanceCounts(shared.nodes)[shared.root]).toBe(SHAPE_LIMITS.maxInstances);
+    expect(depths(shared.nodes)[shared.root]).toBeLessThanOrEqual(SHAPE_LIMITS.maxDepth);
+
+    const result = validateShapeProgram(shared);
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContain(
+      'program costs 1061 evaluations per cell, above maxEvaluations 512',
+    );
+  });
+
+  it('vyhodnocení počítá sdílený podstrom tolikrát, kolikrát se na něj ukazuje', () => {
+    const nodes: ShapeNode[] = [
+      { kind: 'sphere', radius: 0.5 },
+      { kind: 'union', children: [0, 0, 0] },
+    ];
+    // Kopie: tři listy. Vyhodnocení: tři koule plus samo sjednocení.
+    expect(instanceCounts(nodes)[1]).toBe(3);
+    expect(evaluationCounts(nodes)[1]).toBe(4);
   });
 
   it('přijme strom přesně na stropu hloubky a odmítne o jeden hlubší', () => {
@@ -205,6 +254,15 @@ describe('tvar jednoho řádku', () => {
       }),
     );
     expect(result.ok).toBe(false);
+  });
+
+  it('konečnost drží `zod` sám, ne meze schématu', () => {
+    // Hlavička `schema.ts` na tomhle tvrzení stojí, tak ať se ozve, kdyby
+    // `zod` chování změnil. Testy níž ho neověří: každé pole tam odmítne
+    // vlastní horní mez dřív, než se na konečnost vůbec dojde.
+    expect(z.number().safeParse(Number.POSITIVE_INFINITY).success).toBe(false);
+    expect(z.number().safeParse(Number.NEGATIVE_INFINITY).success).toBe(false);
+    expect(z.number().safeParse(Number.NaN).success).toBe(false);
   });
 
   it('odmítne nekonečno v každém čísle, na které se dá sáhnout', () => {
@@ -263,6 +321,62 @@ describe('tvar jednoho řádku', () => {
     expect(result.issues).toContain('node 7 is a plane with a zero normal');
   });
 
+  it('odmítne i normálu, která je nenulová a přesto podteče', () => {
+    // `1e-200` není nula, ale druhá mocnina podteče na nulu, odmocnina taky,
+    // dělení jí dá nekonečno a `Infinity * 0` je NaN. Kontrola proto měří
+    // délku, ne rovnost s nulou.
+    const result = validateShapeProgram(
+      broken((draft) => {
+        nodesOf(draft)[7].normal = [1e-200, 0, 0];
+      }),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContain('node 7 is a plane with a zero normal');
+  });
+
+  it('odmítne opakování s nulovým krokem, které dělí nulou', () => {
+    const result = validateShapeProgram(
+      broken((draft) => {
+        nodesOf(draft)[18].step = [0, 0, 0];
+      }),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContain('node 18 repeats with a step of no length');
+  });
+
+  it('odmítne křivku, jejíž dva sousední body leží na sobě', () => {
+    const result = validateShapeProgram(
+      broken((draft) => {
+        nodesOf(draft)[20].points = [
+          [1, 1, 1],
+          [1, 1, 1],
+        ];
+      }),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContain('node 20 has curve points 0 and 1 on top of each other');
+  });
+
+  it('ostrá hrana se píše vynecháním `k`, ne nulou', () => {
+    // `k = 0` je v polynomiálním smooth-min dělení nulou přesně na ploše, kde
+    // se potomci potkají — tedy tam, kvůli čemu se ten uzel píše.
+    expect(
+      validateShapeProgram(
+        broken((draft) => {
+          nodesOf(draft)[22].k = 0;
+        }),
+      ).ok,
+    ).toBe(false);
+
+    expect(
+      validateShapeProgram(
+        broken((draft) => {
+          delete nodesOf(draft)[22].k;
+        }),
+      ).ok,
+    ).toBe(true);
+  });
+
   it('odmítne víc kontrolních bodů křivky, než jich jazyk dovolí', () => {
     const result = validateShapeProgram(
       broken((draft) => {
@@ -297,7 +411,20 @@ describe('obálka programu', () => {
       }),
     );
     expect(result.ok).toBe(false);
-    expect(result.issues).toContain('targetBounds has a min above its max on at least one axis');
+    expect(result.issues).toContain('targetBounds is flat or inverted on at least one axis');
+  });
+
+  it('odmítne i kvádr plochý v jedné ose', () => {
+    // List nebo deska je naprosto pravděpodobná emise, a přitom podle
+    // `targetBounds` potrubí tvar mřížkuje: nulová tloušťka je krok buňky
+    // `(max - min) / N = 0`, tedy dělení nulou a prázdný mesh.
+    const result = validateShapeProgram(
+      broken((draft) => {
+        draft.targetBounds = { min: [-2, 0, -2], max: [2, 0, 2] };
+      }),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContain('targetBounds is flat or inverted on at least one axis');
   });
 
   it('odmítne dvě kotvy téhož jména', () => {

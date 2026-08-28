@@ -90,16 +90,64 @@ export function chainProgram(depth: number): ShapeProgram {
 }
 
 /**
- * `nodeCount` řádků: samé koule a nad nimi jedno sjednocení. Hloubka je 2
- * a rozvinutých kopií osm, takže jediné, na co takový program může narazit,
- * je strop počtu uzlů.
+ * `nodeCount` řádků: koule, nad nimi sjednocení po sedmi a nad těmi kořen.
+ *
+ * **Každý řádek visí pod kořenem, a to je celý důvod téhle konstrukce.**
+ * První verze byla plochý seznam koulí a jedno sjednocení nad prvními osmi,
+ * takže 39 ze 48 řádků bylo mrtvých — a test „přijme program přesně na stropu
+ * uzlů" tím tvrdil pravý opak toho, co brána od 28. 8. 2026 vynucuje.
+ * Hloubka je 3 a vyhodnocení `nodeCount`, takže jediný strop, na který takový
+ * program dosáhne, je pořád ten zamýšlený: počet uzlů.
  */
 export function wideProgram(nodeCount: number): ShapeProgram {
+  const perGroup = 8;
+  // Řádků je `listy + skupiny + kořen`. Hledá se největší počet listů, který
+  // se do zadaného počtu řádků vejde přesně.
+  let leaves = nodeCount - 2;
+  while (leaves + Math.ceil(leaves / perGroup) + 1 > nodeCount) leaves -= 1;
+  const groups = Math.ceil(leaves / perGroup);
+
   const nodes: ShapeNode[] = [];
-  for (let index = 0; index < nodeCount - 1; index += 1) {
+  for (let index = 0; index < leaves; index += 1) {
     nodes.push({ kind: 'sphere', radius: 0.2 + index * 0.01 });
   }
-  nodes.push({ kind: 'union', children: [0, 1, 2, 3, 4, 5, 6, 7] });
+
+  // Listy se rozdělí co nejrovnoměrněji: skupina o jediném potomkovi by
+  // neprošla schématem, které od kombinace žádá aspoň dva.
+  const unions: number[] = [];
+  let taken = 0;
+  for (let group = 0; group < groups; group += 1) {
+    const size = Math.floor(leaves / groups) + (group < leaves % groups ? 1 : 0);
+    nodes.push({
+      kind: 'union',
+      children: Array.from({ length: size }, (_unused, offset) => taken + offset),
+    });
+    taken += size;
+    unions.push(nodes.length - 1);
+  }
+
+  nodes.push({ kind: 'union', children: unions });
+  return { ...envelope, nodes, root: nodes.length - 1 };
+}
+
+/**
+ * Sedm řádků, které projdou stropem kopií a přitom stojí přes tisíc vyhodnocení.
+ *
+ * Tvar podle nezávislého review z 28. 8. 2026: tři deformace nad koulí a nad
+ * nimi tři sjednocení, která **ukazují pořád na týž uzel**. `instanceCounts`
+ * počítá listové kopie, takže sdílený podstrom je v něm zdarma a vyjde přesně
+ * 256, tedy na stropu. Vyhodnocení je 1061.
+ */
+export function sharedSubtreeProgram(): ShapeProgram {
+  const nodes: ShapeNode[] = [
+    { kind: 'sphere', radius: 0.5 },
+    { kind: 'displace', child: 0, amplitude: 0.1, frequency: 4, seed: 1 },
+    { kind: 'displace', child: 1, amplitude: 0.1, frequency: 8, seed: 2 },
+    { kind: 'displace', child: 2, amplitude: 0.1, frequency: 16, seed: 3 },
+    { kind: 'union', children: [3, 3, 3, 3, 3, 3, 3, 3] },
+    { kind: 'union', children: [4, 4, 4, 4, 4, 4, 4, 4] },
+    { kind: 'union', children: [5, 5, 5, 5] },
+  ];
   return { ...envelope, nodes, root: nodes.length - 1 };
 }
 

@@ -115,12 +115,20 @@ export type ShapeNodeKind = (typeof SHAPE_NODE_KINDS)[number];
  *   `maxNodes` nechrání nic: `repeat` 32 nad `radialArray` 32 je 1024 kopií
  *   ze dvou řádků.
  * - `maxCurvePoints` **8** — kontrolních bodů Catmull-Rom křivky.
+ * - `maxEvaluations` **512** — kolikrát se **doopravdy zavolá vzdálenostní
+ *   funkce** na jednu buňku mřížky. Přibylo 28. 8. 2026 po nezávislém review
+ *   a je to jediný z pěti stropů, který měří cenu: `maxInstances` počítá
+ *   listové kopie, takže **sdílený podstrom je v něm zdarma**. Naměřený
+ *   protipříklad měl 8 řádků, hloubku 8 a `maxInstances` přesně 256 — a stál
+ *   **1317 vyhodnocení na buňku, z toho 1024 šumů**, tedy při 96³ devět set
+ *   milionů vzorků šumu za program, který brána ocenila jako „256 kopií koule".
  */
 export const SHAPE_LIMITS = {
   maxNodes: 48,
   maxDepth: 8,
   maxInstances: 256,
   maxCurvePoints: 8,
+  maxEvaluations: 512,
 } as const;
 
 /* ------------------------------------------------------------------ *
@@ -212,9 +220,14 @@ export type PrimitiveNode =
   | EllipsoidNode;
 
 /**
- * Sjednocení. `k > 0` je plynulé sčítání (smooth min) — přechod, který vypadá
+ * Sjednocení. `k` je plynulé sčítání (smooth min) — přechod, který vypadá
  * modelovaně, ne slepeně. Je to ten uzel, kvůli kterému SDF umí organiku
  * a kit kusy ne.
+ *
+ * **Ostrá hrana se píše vynecháním `k`, ne nulou.** Polynomiální smooth-min
+ * dělí `k`, takže `k = 0` je `0/0` = `NaN` na celé ploše, kde se dva potomci
+ * potkají — a to je právě ta plocha, kvůli které se uzel píše. Schéma proto
+ * nulu nepustí; `k` chybí = obyčejné minimum.
  */
 export interface UnionNode {
   readonly kind: 'union';
@@ -266,9 +279,15 @@ export interface RotateNode {
  *
  * **Nerovnoměrné měřítko dělá z pole vzdáleností odhad, ne vzdálenost** — po
  * dělení souřadnic různými čísly už funkce nevrací nejkratší vzdálenost
- * k povrchu. Vyhodnocovač proto výsledek dělí **největší** složkou, čímž
- * vzdálenost podstřelí. Podstřelená vzdálenost je bezpečná (meshovač si povrch
- * najde o krok později), nadstřelená by povrch přeskočila a udělala do tvaru díru.
+ * k povrchu. Vyhodnocovač proto výsledek **násobí nejmenší** složkou `factor`:
+ * to je jediný činitel, který vzdálenost zaručeně nenadstřelí, a nadstřelená
+ * vzdálenost je ta nebezpečná — přeskočila by povrch a udělala do tvaru díru.
+ *
+ * **Do 28. 8. 2026 tu stálo „dělí největší složkou" a bylo to obráceně.**
+ * Nezávislé review to spočítalo na spodní mezi schématu: pro
+ * `factor [0,05, 0,05, 0,05]` vrátí dělení maximem **čtyřistanásobek**
+ * skutečné vzdálenosti, tedy přesně ten směr, který si tenhle odstavec
+ * zakazuje. Zápis, který zní jako opatrnost a je to opak, je horší než žádný.
  */
 export interface ScaleNode {
   readonly kind: 'scale';
@@ -306,8 +325,16 @@ export interface BendNode {
 }
 
 /**
- * Zúžení podél osy. Průřez se násobí `1 / (1 + amount * t)`, kde `t` je
- * souřadnice na ose v metrech. Kladné `amount` zužuje ve směru osy.
+ * Zúžení podél osy. Průřez se násobí `clamp(1 + amount * t, 0,05, 20)`, kde
+ * `t` je souřadnice na ose v metrech. Kladné `amount` rozšiřuje ve směru osy,
+ * záporné zužuje.
+ *
+ * **To sevření není opatrnost navíc, je součást kontraktu.** Původní zápis
+ * `1 / (1 + amount * t)` má pól v `t = -1/amount` a nezávislé review ukázalo,
+ * že rozsah `amount` ten pól nevyloučí: při `amount = 4` nad válcem vysokým
+ * 2 m leží pól na `y = -0,25`, tedy **uprostřed tělesa**, a vyhodnocení tam
+ * dělí nulou. Mimo souřadnicový rozsah ±64 by se pól dostal až pro
+ * `|amount| < 0,0156`, což už není zúžení. Řeší to tedy tvar vzorce, ne mez.
  */
 export interface TaperNode {
   readonly kind: 'taper';
@@ -455,9 +482,11 @@ export function instanceCounts(nodes: readonly ShapeNode[]): readonly number[] {
 /**
  * Nejdelší cesta od uzlu dolů, v uzlech. Primitivum je 1.
  *
- * Stejný průchod odspodu nahoru. Hloubka se počítá nad **celou** tabulkou, ne
- * jen nad tím, co visí pod `root` — uzel mimo strom je mrtvý řádek a ten se
- * řeší jinde, ne tichým vynecháním z rozpočtu.
+ * Stejný průchod odspodu nahoru. Hodnota se počítá pro každý řádek, ale
+ * rozpočet čte jen `[root]` — a to je poctivé jenom proto, že brána odmítá
+ * program s řádkem, na který se z kořene nedá dostat (`structuralIssues`).
+ * Dokud to neodmítala, tvrdil tenhle komentář, že se mrtvé řádky „řeší jinde",
+ * a nikde se neřešily.
  */
 export function depths(nodes: readonly ShapeNode[]): readonly number[] {
   const result: number[] = [];
@@ -467,4 +496,55 @@ export function depths(nodes: readonly ShapeNode[]): readonly number[] {
       children.length === 0 ? 1 : 1 + Math.max(...children.map((child) => result[child]));
   });
   return result;
+}
+
+/**
+ * Kolikrát se vyhodnotí vzdálenostní funkce, když se program spočítá **v jedné
+ * buňce mřížky**.
+ *
+ * Tohle je jediný z pěti stropů, který měří cenu. `instanceCounts` počítá
+ * listové kopie a **sdílený podstrom v něm nestojí nic**: uzel, na který
+ * ukazují tři rodiče, se vyhodnotí třikrát, ale do kopií se započítá jednou.
+ * `displace` je v kopiích za tutéž cenu jako `sphere`, přestože jedno je šum
+ * a druhé odmocnina.
+ *
+ * Průchod je opačný než u kopií: hodnota uzlu je **jeho vlastní vyhodnocení
+ * plus všechno, co si k němu vyžádají potomci**, u polí vynásobené počtem
+ * kopií. Součet pro `root` je tedy počet volání na buňku, tedy přesně to
+ * číslo, kterým se násobí 32³ až 96³.
+ */
+export function evaluationCounts(nodes: readonly ShapeNode[]): readonly number[] {
+  const counts: number[] = [];
+  nodes.forEach((node, index) => {
+    switch (node.kind) {
+      case 'union':
+      case 'subtract':
+      case 'intersect':
+        counts[index] = 1 + node.children.reduce((sum, child) => sum + counts[child], 0);
+        break;
+      case 'repeat':
+      case 'radialArray':
+      case 'arrayAlongCurve':
+        counts[index] = 1 + node.count * counts[node.child];
+        break;
+      default:
+        counts[index] = 1 + ('child' in node ? counts[node.child] : 0);
+    }
+  });
+  return counts;
+}
+
+/**
+ * Indexy řádků, na které se z `root` dá dojít.
+ *
+ * Průchod odshora dolů, protože dosažitelnost se šíří opačně než rozpočty.
+ * Bez rekurze: potomek má vždy nižší index, takže stačí jeden sestup polem.
+ */
+export function reachableFrom(nodes: readonly ShapeNode[], root: number): ReadonlySet<number> {
+  const reached = new Set<number>([root]);
+  for (let index = nodes.length - 1; index >= 0; index -= 1) {
+    if (!reached.has(index)) continue;
+    for (const child of childIndicesOf(nodes[index])) reached.add(child);
+  }
+  return reached;
 }
