@@ -83,8 +83,20 @@ const REST_SAMPLES = 6;
 /** Kolik takových klidových vzorků musí běh nabídnout, aby test něco tvrdil. */
 const MIN_SETTLED = 10;
 
-/** Odstup, na který je kamera navržená — musí sedět s `FollowCamera.tsx`. */
-const OFFSET = { x: 0, y: 6, z: 7.5 };
+/**
+ * Odstup, na který je kamera navržená — musí sedět s `FollowCamera.tsx`.
+ *
+ * **Pohnulo se to v P14 T8 a tady je proč.** Do té doby stálo `{0, 6, 7.5}`,
+ * což je osa klopená o 38,7° pod vodorovnou — při svislém poloúhlu 22,5° tím
+ * obzor vyjel nad horní hranu snímku a hra se hrála v jámě bez oblohy. T8 tutéž
+ * vzdálenost (9,6047, beze změny, aby pásmo 6–14 platilo dál) rozdělila jinak:
+ * osa klesá o 9,41°, paprsek k postavě o 17,27°, takže obzor spadl do obrazu a
+ * postava na spodní třetinu.
+ *
+ * Kopie, ne import, schválně: kdyby se `followSeat` přepočítala jinak, tenhle
+ * test se ozve. Import by tiše souhlasil s čímkoli.
+ */
+const OFFSET = { x: 0, y: 2.8512, z: 9.1717 };
 
 /**
  * Jak daleko se musí postava hnout, aby test něco dokazoval.

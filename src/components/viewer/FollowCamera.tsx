@@ -28,7 +28,11 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
+import { Box3, type Object3D } from 'three';
 
+import { FRAMING_FOV, followSeat, frameScene } from '@/worldstream/framing';
+
+import { ATMOSPHERE_PREFIX } from './Atmosphere';
 import type { ProjectedEntity, Vec3 } from './projection';
 import type { RunnerRef } from './WorldScene';
 
@@ -36,14 +40,41 @@ import type { RunnerRef } from './WorldScene';
 export type CameraMode = 'follow' | 'free';
 
 /**
- * Odstup kamery od postavy.
+ * Jak daleko kamera od postavy stojí.
  *
- * Míří se **nad a za** postavu, ne do její roviny: pohled shora dopředu ukáže
- * mřížku, po které se hraje, a přitom nechá vidět, kam postava kouká. Délka
- * odstupu (≈ 9,6) je schválně uprostřed pásma, ve kterém má vzdálenost zůstat —
- * z prostředku má dojezd stejnou rezervu na obě strany.
+ * Zůstává, co bylo: `hypot(6, 7.5) ≈ 9,6`, schválně uprostřed pásma 6–14, ve
+ * kterém má vzdálenost zůstat — z prostředku má dojezd stejnou rezervu na obě
+ * strany. **Mění se jen to, jak je ta vzdálenost rozdělená mezi výšku a dálku.**
  */
-export const FOLLOW_OFFSET: Vec3 = { x: 0, y: 6, z: 7.5 };
+export const FOLLOW_DISTANCE = Math.hypot(6, 7.5);
+
+/**
+ * Odstup kamery od postavy a zvednutí bodu, kam se dívá.
+ *
+ * **Od P14 T8 se počítá, ne píše.** Do brány K0 tu stálo `{0, 6, 7.5}`, což je
+ * klopení 38,7° pod vodorovnou — při svislém poloúhlu 22,5° tím obzor vyjel nad
+ * horní hranu snímku a hra se hrála na dně jámy. `followSeat` rozdělí tutéž
+ * vzdálenost tak, aby osa pohledu klesala jen o tolik, kolik nechá obloze
+ * zhruba třetinu snímku, a postava přitom sedla na spodní třetinu.
+ *
+ * Naměřeno: `{0, 2.85, 9.17}`, klopení osy 9,4°, postava na třetině.
+ *
+ * `FOLLOW_LIFT` není kosmetika — bez něj by se osa vrátila k původnímu klopení.
+ * Kamera se dívá **nad** postavu, ne na ni, a právě to pustí obzor do obrazu.
+ */
+const SEAT = followSeat(FOLLOW_DISTANCE, FRAMING_FOV);
+export const FOLLOW_OFFSET: Vec3 = SEAT.offset;
+export const FOLLOW_LIFT = SEAT.lift;
+
+/**
+ * Jak často se přeměří obal statické scény, ve snímcích.
+ *
+ * Statický svět (`/embed` bez běžící hry) nemá koho sledovat, takže se rámuje z
+ * obalu scény — jenže ten se během sestavování světa mění. Přeměřuje se proto
+ * po dávkách, ne každý snímek: `Box3.setFromObject` projde všechny uzly a při
+ * ustálené scéně by to byla práce, ze které nic nevzejde.
+ */
+const STATIC_INTERVAL = 15;
 
 /**
  * Kolik zbývající vzdálenosti kamera ujede za jeden tik.
@@ -102,6 +133,39 @@ export function easeOver(from: Vec3, to: Vec3, ticks: number, alpha = FOLLOW_ALP
 export function avatarOf(entities: readonly ProjectedEntity[]): ProjectedEntity | null {
   const avatars = entities.filter((entity) => entity.visual === 'avatar');
   return avatars.find((entity) => entity.active) ?? avatars[0] ?? null;
+}
+
+/**
+ * Obal toho, co ve scéně doopravdy stojí.
+ *
+ * **Celá atmosférická vrstva se vynechává, a není to detail.** Koule oblohy má
+ * poloměr 180, deska vody stranu 600 a pole prachu 80 × 22 × 60 — obal scény by
+ * vyšel jako obal atmosféry a kamera by odjela o desítky jednotek dozadu.
+ * Naměřeno 28. 8. 2026 na prvním běhu téhle úlohy: ruční layouty spadly z mrtvé
+ * plochy 0,28 na 0,88 a silueta z 0,18 na 0,012, protože se svět scvrkl na
+ * tečku uprostřed prázdna. Věty se přitom zlepšily — ty jdou sledovací cestou
+ * a obalu se nedotknou.
+ *
+ * Vynechává se podle **předpony jména**, ne podle velikosti nebo typu: jméno je
+ * záměr, velikost je náhoda a čtvrtá vrstva přidaná zítra by se do obalu
+ * připletla znovu.
+ *
+ * Prázdná scéna vrací `null`, což `frameScene` bere jako platný vstup a přizná
+ * se k němu. Před sestavením světa je to ta poctivá odpověď.
+ */
+export function sceneBounds(root: Object3D): Box3 | null {
+  const box = new Box3();
+  let found = false;
+
+  for (const child of root.children) {
+    if (child.name.startsWith(ATMOSPHERE_PREFIX)) continue;
+    const part = new Box3().setFromObject(child);
+    if (part.isEmpty()) continue;
+    box.union(part);
+    found = true;
+  }
+
+  return found ? box : null;
 }
 
 /** Kolik radiánů ujede obíhání na jeden posunutý pixel. */
@@ -185,6 +249,11 @@ export default function FollowCamera({
   // tiků strávil mimo pásmo, ve kterém má vzdálenost zůstat.
   const at = useRef<Vec3 | null>(null);
   const lastProgress = useRef(0);
+  const scene = useThree((state) => state.scene);
+  const size = useThree((state) => state.size);
+  // Statická cesta si drží vlastní počítadlo snímků, protože `runner.progress()`
+  // ve světě bez běžící hry neexistuje — a právě takový svět se rámuje z obalu.
+  const staticFrames = useRef(0);
 
   useEffect(() => {
     if (mode !== 'free') {
@@ -244,19 +313,38 @@ export default function FollowCamera({
     if (mode === 'free') return;
 
     const runner = runnerRef.current;
-    if (runner === null) {
-      at.current = null;
-      lastProgress.current = 0;
-      return;
-    }
 
     // NAKRESLENÁ projekce, ne stav po tiku. Mezi dvěma tiky leží postava jinde a
     // kamera mířící na tikovou polohu by pod ní poskakovala — přesně ta vada,
     // kterou T4 vyrobila tím, že entity rozhýbala a kameru nechala být. Před
     // prvním nakresleným snímkem se sáhne po přesném stavu, jinak není na co.
-    const painted = runner.drawn();
-    const avatar = avatarOf(painted.length > 0 ? painted : runner.entities());
-    if (avatar === null) return;
+    const painted = runner === null ? [] : runner.drawn();
+    const avatar =
+      runner === null ? null : avatarOf(painted.length > 0 ? painted : runner.entities());
+
+    // **Svět bez postavy se rámuje z obalu, ne z konstanty.** Do brány K0 se
+    // tady jen `return`lo a kamera zůstala tam, kam ji posadilo plátno —
+    // `[7, 7, 9]` do počátku, tedy 31,5° dolů. Ručně skládané layouty a každý
+    // snímek kontaktního listu před sestavením hry šly touhle cestou, takže se
+    // celý list fotil pohledem do podlahy.
+    if (runner === null || avatar === null) {
+      at.current = null;
+      lastProgress.current = 0;
+
+      staticFrames.current += 1;
+      if (staticFrames.current % STATIC_INTERVAL !== 1) return;
+
+      const framing = frameScene({
+        bounds: sceneBounds(scene),
+        aspect: size.height > 0 ? size.width / size.height : undefined,
+        fov: FRAMING_FOV,
+      });
+      camera.position.set(framing.eye.x, framing.eye.y, framing.eye.z);
+      camera.lookAt(framing.target.x, framing.target.y, framing.target.z);
+      return;
+    }
+
+    staticFrames.current = 0;
 
     // Zlomek tiku, ne celý tik: při 60 snímcích a 20 tikách přiteče ⅓ tiku na
     // snímek, takže se kamera hýbe každý snímek. Součet je za tik týž jako
@@ -269,7 +357,11 @@ export default function FollowCamera({
     at.current = at.current === null ? target : easeOver(at.current, target, elapsed);
 
     camera.position.set(at.current.x, at.current.y, at.current.z);
-    camera.lookAt(avatar.position.x, avatar.position.y, avatar.position.z);
+    // **Nad postavu, ne na ni.** Míření přímo na postavu vrací osu zpátky k
+    // původnímu klopení, takže by se odstup přepočítal a obzor zase zmizel;
+    // `FOLLOW_LIFT` je přesně to, co z odstupu udělá mělký pohled a postavu
+    // přitom nechá na spodní třetině.
+    camera.lookAt(avatar.position.x, avatar.position.y + FOLLOW_LIFT, avatar.position.z);
   });
 
   return null;

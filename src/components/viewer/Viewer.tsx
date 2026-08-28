@@ -30,6 +30,7 @@ import { buildRuntimeWorld } from '@/ir/build';
 import { canonicalHash } from '@/ir/worlddoc';
 import { buildLayoutScene, layoutById } from '@/kit';
 import type { RunState, WorldDocRuntime } from '@/sim/interpreter';
+import { FRAMING_FOV } from '@/worldstream/framing';
 import { deriveLook, terrainOfProgram, type LookDescriptor } from '@/worldstream/look';
 
 import type { AssemblySnapshot } from './Assembly';
@@ -512,7 +513,7 @@ export default function Viewer({
         data-testid="viewer-canvas"
         shadows={VIEWER_SHADOWS}
         gl={VIEWER_GL}
-        camera={{ position: [7, 7, 9], fov: 45 }}
+        camera={{ position: [7, 7, 9], fov: FRAMING_FOV }}
       >
         <Lighting look={atmosphere.look} />
         <Atmosphere look={atmosphere.look} seed={atmosphere.seed} />

@@ -55,18 +55,49 @@ import { IMAGE_THRESHOLDS, measureImage } from '../src/worldstream/image-judge';
 const SETTLE_FRAMES = 5;
 
 /**
- * Kolik světů smí soudce označit za mrtvá plocha, dokud rámování nespočítá T8.
+ * Kolik světů smí soudce označit za mrtvá plocha.
  *
  * Není to cíl, je to **připíchnutý stav**: naměřeno 28. 8. 2026 propadá jediný
- * ze tří, `dunes-terrace` s 0,88 mrtvé plochy — kamera ho zarámovala jako
- * prázdnou oblohu. Až T8 spočítá rámování ze scény, tohle číslo musí klesnout
- * na nulu a aserce se ozve. Kdyby se pin zvedl, ubyl svět, který obstojí.
+ * ze tří, `dunes-terrace` — kamera ho zarámovala jako prázdnou oblohu.
  *
  * **Odhad byl dva, měření řeklo jedna.** `frost-plateau` vyšlo na 0,31, tedy
  * hluboko pod prahem; propadá jen jedním odstínem, a to soudce mrtvou plochou
  * neměří. Číslo je tady proto, že ho vrátil běh, ne proto, že se čekalo.
+ *
+ * ## Po T8 se to číslo NEPOHNULO a tady je proč
+ *
+ * Plán čekal pokles na nulu, jakmile se rámování spočítá ze scény. Rámování se
+ * spočítalo a všechny tři světy se zlepšily — `harbor-pier` z 0,28 na 0,34 při
+ * pásmech jasu z 0,80 na **1,00**, `frost-plateau` z 0,30 na **0,19** — ale
+ * `dunes-terrace` zůstalo na 0,84 proti prahu 0,55.
+ *
+ * **Kamera za to nemůže, protože v tom světě není nač se dívat.** Popis vzhledu
+ * pouštní palety vodu nemá (`deriveLook`, naměřeno v T3: hladina maluje 0,00 %
+ * plochy) a kit sám žádnou zem pod svět nestaví. Pod obzorem tedy neleží
+ * podlaha, leží tam koule oblohy — a to je pravda pro každý úhel, ze kterého se
+ * kamera podívá. Oprava patří do vzhledu, ne do rámování; je routovaná jako
+ * `T8-ground` v `plans/P14-2026-08-28-vizualni-vrstva.md`.
  */
 const DEAD_WORLDS_UNTIL_FRAMING = 1;
+
+/**
+ * Pásmo, ve kterém má obloha zabírat plochu snímku — AC úlohy T8.
+ *
+ * Nad ním je svět model na nekonečném pozadí, pod ním je pohled do jámy bez
+ * obzoru, jak vypadal celý produkt do brány K0.
+ */
+const SKY_BAND = { min: 0.15, max: 0.45 } as const;
+
+/**
+ * Světy, které do pásma zatím nespadnou — **jménem, ne počtem**.
+ *
+ * Počet by prošel i tehdy, kdyby z pásma vypadl jiný svět a tenhle se spravil,
+ * což je přesně ta výměna, kterou nikdo nechce přehlédnout.
+ *
+ * `dunes-terrace` je uvnitř ze stejného důvodu jako u mrtvé plochy výš: nemá
+ * zem, takže pod obzorem je obloha. Naměřeno po T8: **96,2 %**.
+ */
+const SKY_OUT_OF_BAND: readonly string[] = ['dunes-terrace'];
 
 /** Svět, na kterém se produkt otevírá. Ten musí obstát celý, ne částečně. */
 const DEFAULT_WORLD = 'harbor-pier';
@@ -231,7 +262,35 @@ test('produktové plátno má tonální rozsah, vlastní vzduch a vejde se do ro
     ).toBeGreaterThanOrEqual(MIN_WORLD_COLOUR_DISTANCE);
   }
 
-  // 3. Připíchnutý stav rámování. Není to cíl, je to dluh — viz hlavičku.
+  // 3. Obloha v pásmu, které žádá AC úlohy T8. Soudí se od T8; do ní se podíl
+  //    jen vypisoval, protože o něm rozhoduje rámování, a to T8 vlastní.
+  for (const world of measured) {
+    if (SKY_OUT_OF_BAND.includes(world.layout)) {
+      // **Mimo pásmo znamená pod ním NEBO nad ním.** První verze téhle aserce
+      // uměla jen „pod" a naměřených 95,2 % prohlásila za opravu — přitom je to
+      // ta horší polovina vady. Naměřeno 28. 8. 2026 při běhu T8.
+      expect(
+        world.sky < SKY_BAND.min || world.sky > SKY_BAND.max,
+        `${world.layout} je vedený jako svět mimo pásmo, ale obloha je v pásmu ` +
+          `(${(world.sky * 100).toFixed(1)} %). Spravilo se to — vyškrtni ho ze ` +
+          'SKY_OUT_OF_BAND a zapiš proč.',
+      ).toBe(true);
+      continue;
+    }
+
+    expect(
+      world.sky,
+      `${world.layout}: obloha zabírá ${(world.sky * 100).toFixed(1)} % plochy, ` +
+        `pásmo je ${String(SKY_BAND.min * 100)}–${String(SKY_BAND.max * 100)} %`,
+    ).toBeGreaterThanOrEqual(SKY_BAND.min);
+    expect(
+      world.sky,
+      `${world.layout}: obloha zabírá ${(world.sky * 100).toFixed(1)} % plochy, ` +
+        `pásmo je ${String(SKY_BAND.min * 100)}–${String(SKY_BAND.max * 100)} %`,
+    ).toBeLessThanOrEqual(SKY_BAND.max);
+  }
+
+  // 4. Připíchnutý stav rámování. Není to cíl, je to dluh — viz hlavičku.
   const dead = measured.filter((world) => world.dead > IMAGE_THRESHOLDS.maxDead);
   expect(
     dead.length,

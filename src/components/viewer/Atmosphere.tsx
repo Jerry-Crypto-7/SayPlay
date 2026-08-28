@@ -54,8 +54,30 @@ import type { LookDescriptor } from '@/worldstream/look';
 
 import { haloMaterial, moteMaterial, shaftMaterial } from './GlowMaterial';
 
+/**
+ * Předpona jmen celé atmosférické vrstvy.
+ *
+ * **Není to ozdoba, je to hranice.** Rámování kamery (`sceneBounds` ve
+ * `FollowCamera`) podle ní z obalu scény vyřazuje všechno, co není geometrie
+ * světa. Naměřeno 28. 8. 2026: dokud se prach nejmenoval, počítal se do obalu —
+ * a zabírá 80 × 22 × 60 jednotek, takže obal scény vyšel jako obal prachu.
+ * Kamera odjela na devadesát jednotek, ruční layout se scvrkl na tečku a mrtvá
+ * plocha vyskočila z 0,28 na 0,88. Nová vrstva, která se nebude jmenovat
+ * `atmosphere:*`, tu vadu vyrobí znovu.
+ */
+export const ATMOSPHERE_PREFIX = 'atmosphere:';
+
 /** Jméno oblohy ve scéně. Čte ho měření podílu oblohy na snímku. */
-export const SKY_NAME = 'atmosphere:sky';
+export const SKY_NAME = `${ATMOSPHERE_PREFIX}sky`;
+
+/** Jméno prachu. Bez něj se prach počítal do obalu scény — viz `ATMOSPHERE_PREFIX`. */
+export const MOTES_NAME = `${ATMOSPHERE_PREFIX}motes`;
+
+/** Jméno skupiny světelných sloupů. */
+export const SHAFTS_NAME = `${ATMOSPHERE_PREFIX}shafts`;
+
+/** Jméno záře. Billboard se otáčí ke kameře, takže by obal scény nafukoval každý snímek jinak. */
+export const HALO_NAME = `${ATMOSPHERE_PREFIX}halo`;
 
 /**
  * Jméno hladiny ve scéně. Ze stejného důvodu jako `SKY_NAME`.
@@ -65,7 +87,7 @@ export const SKY_NAME = 'atmosphere:sky';
  * geometrii a jedna hladina v tom zanikne. Podle jména se dá schovat a z
  * rozdílu dvou čtení je vidět, kolik plochy doopravdy maluje.
  */
-export const WATER_NAME = 'atmosphere:water';
+export const WATER_NAME = `${ATMOSPHERE_PREFIX}water`;
 
 /**
  * Kde stálo slunce, dokud ho nikdo nepopisoval.
@@ -277,7 +299,7 @@ export function LightShafts({
   );
 
   return (
-    <group position={[0, 7, 0]} rotation={[0, 0.42, tilt]}>
+    <group position={[0, 7, 0]} rotation={[0, 0.42, tilt]} name={SHAFTS_NAME}>
       {shafts.map((shaft) => (
         <mesh
           key={`shaft-${String(shaft.at)}`}
@@ -323,7 +345,7 @@ export function Halo({
   });
 
   return (
-    <mesh ref={mesh} position={[...position]} material={material}>
+    <mesh ref={mesh} position={[...position]} material={material} name={HALO_NAME}>
       <planeGeometry args={[size, size]} />
     </mesh>
   );
@@ -398,7 +420,7 @@ export function Motes({
     material.uniforms.uTime.value = state.clock.elapsedTime;
   });
 
-  return <points ref={points} geometry={geometry} material={material} />;
+  return <points ref={points} geometry={geometry} material={material} name={MOTES_NAME} />;
 }
 
 /**
