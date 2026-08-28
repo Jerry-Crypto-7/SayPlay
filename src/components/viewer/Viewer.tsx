@@ -24,12 +24,18 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Fog, Light, Mesh, MeshToonMaterial, type Group } from 'three';
 
+import { chooseFamily } from '@/geom/family-choice';
+import { familyById } from '@/geom/families';
 import { buildRuntimeWorld } from '@/ir/build';
+import { canonicalHash } from '@/ir/worlddoc';
 import { buildLayoutScene, layoutById } from '@/kit';
 import type { RunState, WorldDocRuntime } from '@/sim/interpreter';
+import { deriveLook, terrainOfProgram, type LookDescriptor } from '@/worldstream/look';
 
 import type { AssemblySnapshot } from './Assembly';
+import { Atmosphere, SKY_NAME, WATER_NAME } from './Atmosphere';
 import { disposeSubtree } from './dispose';
+import { dressingSeed } from './dressing';
 import FollowCamera from './FollowCamera';
 import Lighting, { VIEWER_GL, VIEWER_SHADOWS, toonRamp } from './Lighting';
 import type { ProjectedEntity } from './projection';
@@ -124,6 +130,40 @@ declare global {
        * scéně vidět není. Rozpočet se tedy měří, ne dopočítává.
        */
       render: () => RenderStats;
+      /**
+       * Co plátno **doopravdy nakreslilo**, po pixelech.
+       *
+       * Jediná cesta, jak se z prohlížeče zeptat, jestli má obraz tmy, středy
+       * i světla — a jediná, kterou umí soudit `src/worldstream/image-judge.ts`.
+       * Ze zdrojáku se to spočítat nedá vůbec: rozhoduje o tom shader oblohy,
+       * mlha, tone mapping i to, kde zrovna stojí kamera.
+       *
+       * **Vrací slib, ne obraz**, a to je celý vtip: odečet čeká na nejbližší
+       * snímek a proběhne uvnitř něj. Kreslicí buffer se po složení stránky
+       * zahazuje (`preserveDrawingBuffer` je vypnutý), takže čtení mimo snímek
+       * vrací poslední složený obraz a vlastní vykreslení do něj nedosáhne —
+       * měření by tiše vracelo pořád totéž. Podrobnosti u implementace.
+       *
+       * Součástí odečtu jsou `sky` a `water`: podíly plochy, které maluje
+       * obloha a hladina. Uvnitř jednoho snímku se čte třikrát, pokaždé s jednou
+       * z nich schovanou, a pixely, které se mezi čteními změnily, JSOU ta věc —
+       * přesně, ne odhadem podle barvy, který by u mrazivé palety tvrdil, že
+       * obloha je celý obraz. **Na hladinu jiná cesta nevede:** v počtu
+       * kreslicích volání ji přebije rozdíl geometrie mezi dvěma layouty.
+       *
+       * Řádky se otáčejí: WebGL má počátek vlevo **dole**, `getImageData`
+       * i obrazový soudce vlevo nahoře. Bez otočení by „obloha je nahoře"
+       * znamenalo pokaždé něco jiného.
+       */
+      pixels: (options?: { scale?: number }) => Promise<{
+        data: number[];
+        width: number;
+        height: number;
+        /** Podíl plochy, který maluje obloha, 0–1. Měřeno, ne odhadnuto. */
+        sky: number;
+        /** Podíl plochy, který maluje hladina, 0–1. Nula znamená, že se nekreslí. */
+        water: number;
+      }>;
     };
   }
 }
@@ -153,6 +193,61 @@ function buildWorld(layoutId: string): Group {
   });
 
   return group;
+}
+
+/**
+ * Vzhled toho, co plátno právě drží.
+ *
+ * Dvě cesty, jeden popis. Postavený svět má rodinu, kterou vybrala věta
+ * (`chooseFamily`), a ta nese paletu i terén; ručně skládaný layout nese paletu
+ * přímo a terén nemá, takže stojí na rovině.
+ *
+ * **`chooseFamily` se tu volá podruhé — vědomě.** Poprvé ho volá `WorldScene`,
+ * aby postavil kulisu. Je to čistá funkce nad týmiž dvěma vstupy, takže obě
+ * volání vrátí totéž a rozejít se nemůžou; alternativa by byla protáhnout
+ * rozhodnutí přes signaturu `WorldScene`, tedy přepsat komponentu, která se
+ * v téhle úloze jinak vůbec nemění.
+ *
+ * Semínko atmosféry je hash toho, co plátno drží. Prach se tak rozsype pro týž
+ * svět pokaždé stejně a pro dva různé jinak — bez toho by dva světy vedle sebe
+ * měly zrnko po zrnku tentýž vzduch.
+ */
+function atmosphereOf(
+  world: WorldDocRuntime | null,
+  look: unknown,
+  layoutId: string,
+): { look: LookDescriptor; seed: number } {
+  if (world === null) {
+    const layout = layoutById(layoutId);
+    const seed = seedFrom(layoutId);
+    return {
+      look: deriveLook({ palette: layout?.palette ?? 'harbor', terrain: 'flat', seed }),
+      seed,
+    };
+  }
+
+  const seed = dressingSeed(world);
+  const family = familyById(chooseFamily(look, seed));
+  if (family === undefined) {
+    // Neznámá rodina je vada výběru, ne stav k vykreslení — `buildScenery` na
+    // ni reaguje prázdnou kulisou a atmosféra stejně tak: svět dostane počasí,
+    // jen ne to svoje.
+    return { look: deriveLook({ palette: 'harbor', terrain: 'flat', seed }), seed };
+  }
+
+  return {
+    look: deriveLook({
+      palette: family.palette,
+      terrain: terrainOfProgram(family.compose(seed)),
+      seed,
+    }),
+    seed,
+  };
+}
+
+/** Semínko z řetězce. Tatáž hashovací rodina jako stav světa, ne druhá. */
+function seedFrom(text: string): number {
+  return Number.parseInt(canonicalHash(text), 16) & 0x7fff_ffff;
 }
 
 function World({ layoutId }: { layoutId: string }) {
@@ -211,6 +306,102 @@ function Bridge({
       camera: () => ({ x: camera.position.x, y: camera.position.y, z: camera.position.z }),
       step: (count: number) => runnerRef.current?.step(count),
       runState: () => runnerRef.current?.runState() ?? null,
+      pixels: (options = {}) =>
+      new Promise((resolve) => {
+        // **Odečet musí proběhnout uvnitř snímku, ne mezi snímky.** Kreslicí
+        // buffer se po složení stránky zahazuje (`preserveDrawingBuffer` je
+        // vypnutý a zapínat ho kvůli měření by zdražilo produkt), takže
+        // `readPixels` zavolaný mimo `requestAnimationFrame` vrací poslední
+        // **složený** snímek a vlastní `render()` do něj nedosáhne vůbec.
+        //
+        // Naměřeno 28. 8. 2026: pět čtení za sebou, mezi nimi schovaná obloha,
+        // vrátilo pětkrát bajt po bajtu tentýž obraz — a přitom v `info.render`
+        // ubylo přesně jedno kreslicí volání. Kreslilo se tedy správně a četlo
+        // se něco jiného. Callback zaregistrovaný tady běží až po tom, který si
+        // R3F zaregistroval při připojení, tedy po vykreslení snímku a před
+        // jeho složením — a to je jediné místo, kde je buffer platný.
+        requestAnimationFrame(() => {
+          const pixelCount = gl.domElement.width * gl.domElement.height;
+
+          const grab = (hide?: string): Uint8Array => {
+            const hidden = hide === undefined ? undefined : scene.getObjectByName(hide);
+            if (hidden !== undefined) hidden.visible = false;
+            gl.render(scene, camera);
+            if (hidden !== undefined) hidden.visible = true;
+
+            const context = gl.getContext();
+            const buffer = new Uint8Array(pixelCount * 4);
+            context.readPixels(
+              0,
+              0,
+              gl.domElement.width,
+              gl.domElement.height,
+              context.RGBA,
+              context.UNSIGNED_BYTE,
+              buffer,
+            );
+            return buffer;
+          };
+
+          // Účetnictví rendereru se vrací tam, kde bylo. Bez toho by `render()`
+          // popisoval měřicí průchod místo snímku produktu: každé čtení přidá
+          // celou scénu k počítadlu a rozpočet kreslicích volání pak měří,
+          // kolikrát se měřilo — naměřeno 219 místo 74.
+          const accounting = { ...gl.info.render };
+          const full = grab();
+          // **Všechna čtení v jednom snímku, ne ve třech.** Prach se snáší
+          // a hladina se vlní z `useFrame`, který mezi vykresleními uvnitř
+          // jednoho callbacku neběží. Dva snímky by se lišily i animací, a ta by
+          // se do podílu oblohy započítala jako obloha.
+          const withoutSky = grab(SKY_NAME);
+          const withoutWater = grab(WATER_NAME);
+          Object.assign(gl.info.render, accounting);
+
+          // Podíly se počítají **v plném rozlišení a tady**, ne z vráceného
+          // náhledu: pixely, které se mezi čteními změnily, JSOU ta schovaná
+          // věc. Odhad podle barvy by u mrazivé palety tvrdil, že obloha je
+          // celý obraz, a hladinu by od mokré dlažby neodlišil vůbec.
+          const share = (without: Uint8Array): number => {
+            let painted = 0;
+            for (let at = 0; at < full.length; at += 4) {
+              if (
+                full[at] !== without[at] ||
+                full[at + 1] !== without[at + 1] ||
+                full[at + 2] !== without[at + 2] ||
+                full[at + 3] !== without[at + 3]
+              ) {
+                painted += 1;
+              }
+            }
+            return painted / pixelCount;
+          };
+
+          // Podvzorkuje se nejbližším sousedem, protože průměr by hrany
+          // rozmazal a soudce měří právě je. Celý snímek by se přes ladicí
+          // protokol přenášel jednotky sekund; 480 pixelů na šířku stačí na
+          // pásma jasu, odstíny i hrany a přenese se okamžitě.
+          const scale = Math.min(1, (options.scale ?? 480) / gl.domElement.width);
+          const width = Math.max(1, Math.round(gl.domElement.width * scale));
+          const height = Math.max(1, Math.round(gl.domElement.height * scale));
+          const data = new Array<number>(width * height * 4);
+          for (let y = 0; y < height; y += 1) {
+            // Otočení řádků: `gl.readPixels` čte odspodu.
+            const source =
+              gl.domElement.height - 1 - Math.floor((y / height) * gl.domElement.height);
+            for (let x = 0; x < width; x += 1) {
+              const from =
+                (source * gl.domElement.width + Math.floor((x / width) * gl.domElement.width)) * 4;
+              const to = (y * width + x) * 4;
+              data[to] = full[from];
+              data[to + 1] = full[from + 1];
+              data[to + 2] = full[from + 2];
+              data[to + 3] = full[from + 3];
+            }
+          }
+
+          resolve({ data, width, height, sky: share(withoutSky), water: share(withoutWater) });
+        });
+      }),
       render: () => {
         let lights = 0;
         scene.traverse((node) => {
@@ -310,6 +501,11 @@ export default function Viewer({
   const active = world ?? emitted?.world ?? null;
   const activeLook = world === null ? (emitted?.look ?? null) : null;
 
+  const atmosphere = useMemo(
+    () => atmosphereOf(active, activeLook, layouts[index]),
+    [active, activeLook, layouts, index],
+  );
+
   return (
     <div style={{ position: 'relative', height: '100%', width: '100%' }}>
       <Canvas
@@ -318,7 +514,8 @@ export default function Viewer({
         gl={VIEWER_GL}
         camera={{ position: [7, 7, 9], fov: 45 }}
       >
-        <Lighting />
+        <Lighting look={atmosphere.look} />
+        <Atmosphere look={atmosphere.look} seed={atmosphere.seed} />
         <Bridge onSwitch={switchTo} layouts={layouts} runnerRef={runnerRef} />
         {active === null ? (
           <World layoutId={layouts[index]} />

@@ -47,9 +47,37 @@ import {
   PlaneGeometry,
   Points,
   ShaderMaterial,
+  Vector3,
 } from 'three';
 
+import type { LookDescriptor } from '@/worldstream/look';
+
 import { haloMaterial, moteMaterial, shaftMaterial } from './GlowMaterial';
+
+/** Jméno oblohy ve scéně. Čte ho měření podílu oblohy na snímku. */
+export const SKY_NAME = 'atmosphere:sky';
+
+/**
+ * Jméno hladiny ve scéně. Ze stejného důvodu jako `SKY_NAME`.
+ *
+ * Že se voda kreslí jen tam, kde ji popis vzhledu žádá, se **nedá poznat z
+ * počtu kreslicích volání**: dva různé layouty se jich liší o desítky kvůli
+ * geometrii a jedna hladina v tom zanikne. Podle jména se dá schovat a z
+ * rozdílu dvou čtení je vidět, kolik plochy doopravdy maluje.
+ */
+export const WATER_NAME = 'atmosphere:water';
+
+/**
+ * Kde stálo slunce, dokud ho nikdo nepopisoval.
+ *
+ * Nízko nad obzorem a mírně za scénou — soumrak cílového snímku. Zůstává
+ * výchozí hodnotou, aby `/target` po zavedení popisu vzhledu vypadal na pixel
+ * stejně; svět z produktu si azimut bere ze svého klíčového světla.
+ */
+const SUNSET_SUN: readonly [number, number, number] = [0.5, 0.05, -0.86];
+
+/** Výška obzoru, která odpovídá původnímu spádu `vDirection.y * 1.5`. */
+const SKY_HEIGHT = 1 / 1.5;
 
 /**
  * Obloha při soumraku.
@@ -66,11 +94,17 @@ export function Sky({
   zenith,
   horizon,
   glow,
+  sun = SUNSET_SUN,
+  height = SKY_HEIGHT,
   radius = 180,
 }: {
   readonly zenith: ColorRepresentation;
   readonly horizon: ColorRepresentation;
   readonly glow: ColorRepresentation;
+  /** Směr ke slunci. Nemusí být jednotkový, shader si ho normalizuje. */
+  readonly sun?: readonly [number, number, number];
+  /** Kde leží přechod obzoru, 0 = u nohou, 1 = v zenitu. */
+  readonly height?: number;
   readonly radius?: number;
 }) {
   const material = useMemo(
@@ -83,6 +117,8 @@ export function Sky({
           uZenith: { value: new Color(zenith) },
           uHorizon: { value: new Color(horizon) },
           uGlow: { value: new Color(glow) },
+          uSun: { value: new Vector3(...sun) },
+          uHeight: { value: Math.max(0.05, height) },
         },
         vertexShader: `
           varying vec3 vDirection;
@@ -95,23 +131,29 @@ export function Sky({
           uniform vec3 uZenith;
           uniform vec3 uHorizon;
           uniform vec3 uGlow;
+          uniform vec3 uSun;
+          uniform float uHeight;
           varying vec3 vDirection;
           void main() {
-            float height = clamp(vDirection.y * 1.5 + 0.12, 0.0, 1.0);
+            float height = clamp(vDirection.y / uHeight + 0.12, 0.0, 1.0);
             vec3 sky = mix(uHorizon, uZenith, pow(height, 0.5));
-            float sun = max(0.0, dot(vDirection, normalize(vec3(0.5, 0.05, -0.86))));
+            float sun = max(0.0, dot(vDirection, normalize(uSun)));
             sky += uGlow * pow(sun, 7.0) * (1.0 - height);
             gl_FragColor = vec4(sky, 1.0);
           }
         `,
       }),
-    [zenith, horizon, glow],
+    [zenith, horizon, glow, sun, height],
   );
 
   useEffect(() => () => void material.dispose(), [material]);
 
   return (
-    <mesh material={material} renderOrder={-1}>
+    // Jméno není ozdoba: `window.__viewer.pixels({ withoutSky: true })` podle
+    // něj oblohu na jeden snímek schová a z rozdílu dvou čtení spočítá, kolik
+    // plochy obloha doopravdy zabírá. Barevná heuristika by tvrdila totéž
+    // a mýlila se pokaždé, když se paleta přiblíží obloze.
+    <mesh material={material} renderOrder={-1} name={SKY_NAME}>
       <sphereGeometry args={[radius, 32, 20]} />
     </mesh>
   );
@@ -158,6 +200,7 @@ export function Water({
     <mesh
       geometry={geometry}
       material={material}
+      name={WATER_NAME}
       position={[0, level, depth]}
       rotation={[-Math.PI / 2, 0, 0]}
     />
@@ -356,4 +399,104 @@ export function Motes({
   });
 
   return <points ref={points} geometry={geometry} material={material} />;
+}
+
+/**
+ * Hladina produktu leží **těsně pod zemí**, ne na ní.
+ *
+ * Kusy kitu stojí na `y = 0`. Deska na téže výšce by se s nimi prala o hloubku
+ * a plocha by blikala. O třetinu jednotky níž je voda vidět jen tam, kde svět
+ * nesahá — tedy kolem něj, což je přesně to, co má dělat: udělat z ostrova
+ * ostrov.
+ */
+const WATER_SURFACE = -0.35;
+
+/** Nejvíc zrnek prachu, které dostane svět s `dust` na jedničce. */
+const MOTE_MAX = 700;
+
+/** Pod touhle hustotou se prach nekreslí vůbec — tři zrnka nejsou vzduch. */
+const MOTE_FLOOR = 0.05;
+
+function clamp(value: number, low: number, high: number): number {
+  return Math.min(high, Math.max(low, value));
+}
+
+/**
+ * Barva světla nízko nad obzorem, odvozená z teploty klíčového světla.
+ *
+ * Přibližná náhrada za barvu černého tělesa: 2 900 K je pouštní západ, 7 800 K
+ * je zatažený mráz. Přesná křivka by byla tabulka navíc a na obloze, kterou
+ * ještě násobí `pow(sun, 7.0)`, by ji nikdo nerozeznal.
+ *
+ * **Oba konce jsou schválně mimo fialové pásmo** a míchají se v sRGB, takže
+ * nemůže vzniknout ani mezi nimi: teplý konec je oranžový (h ≈ 26°), studený
+ * světle modrý (h ≈ 213°), a přímka mezi nimi vede přes teplou šeď.
+ */
+function glowOf(temperature: number): Color {
+  const cold = clamp((temperature - 2900) / (7800 - 2900), 0, 1);
+  return new Color('#ffb066').lerp(new Color('#cfe4ff'), cold);
+}
+
+/**
+ * Celá atmosféra jednoho světa, řízená jeho popisem vzhledu.
+ *
+ * Tohle je ta vrstva, kterou měl do 28. 8. 2026 **jen cílový snímek**. Produkt
+ * měl proti němu plochou mlhu a jedno pozadí, takže se každý vygenerovaný svět
+ * četl jako model ve vitríně — a porotce se na `/target` nikdy nedostane.
+ *
+ * Nic tu není pevná hodnota: obloha bere barvu z `look.sky`, obzor z `look.fog`
+ * (jinak by na obzoru vznikla hrana mezi dvěma nesouvisejícími barvami),
+ * hladina se kreslí **jen když ji popis žádá** a prach jen když je co
+ * rozptylovat. Poušť tak vodu nedostane, i kdyby ji kamera mířila hledat.
+ *
+ * Celá vrstva stojí **mimo hashovaný stav** (design book §14), stejně jako
+ * částice, zvuk, kamera a postprocessing: přetáčení času ji nepřepočítává,
+ * protože nerozhoduje o ničem, co by se dalo odehrát znovu.
+ */
+/**
+ * Kam v obraze padne sluneční záře.
+ *
+ * Bere se **azimut klíčového světla**, ne celý jeho směr: záře je vlastnost
+ * obzoru, a světlo odvozené ze světa stojí vysoko (elevace 0,45–0,80 rad), kde
+ * by z ní byla svítící skvrna nad hlavou. Takhle každý svět svítí z jiné
+ * světové strany a přitom si drží soumrak, kvůli kterému ta záře vznikla.
+ */
+function sunOf(direction: readonly [number, number, number]): [number, number, number] {
+  const [x, , z] = direction;
+  const flat = Math.hypot(x, z);
+  // Světlo přesně v zenitu azimut nemá. Je to hodnota, kterou `deriveLook`
+  // nevyrábí (elevace končí na 0,80 rad), ale popis smí přijít i odjinud.
+  return flat === 0 ? [...SUNSET_SUN] : [x / flat, HORIZON_SUN_Y, z / flat];
+}
+
+/** Jak vysoko nad obzorem záře leží. Soumrak, ne poledne. */
+const HORIZON_SUN_Y = 0.05;
+
+export function Atmosphere({ look, seed }: { readonly look: LookDescriptor; readonly seed: number }) {
+  const glow = useMemo(() => glowOf(look.key.temperature), [look.key.temperature]);
+  // Nová trojice na každé vykreslení by přestavěla shader oblohy každý snímek.
+  const sun = useMemo(() => sunOf(look.key.direction), [look.key.direction]);
+
+  return (
+    <>
+      <Sky
+        zenith={look.sky.color}
+        horizon={look.fog.color}
+        glow={glow}
+        sun={sun}
+        height={look.sky.height}
+      />
+      {look.water.present ? (
+        <Water color={look.water.color} level={WATER_SURFACE} depth={0} />
+      ) : null}
+      {look.dust < MOTE_FLOOR ? null : (
+        <Motes
+          color={glow}
+          count={Math.round(look.dust * MOTE_MAX)}
+          field={MOTE_FIELD}
+          seed={seed}
+        />
+      )}
+    </>
+  );
 }
