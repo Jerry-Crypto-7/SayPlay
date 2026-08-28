@@ -45,8 +45,15 @@ function coveringProgram(): GeomProgram {
       { kind: 'arrayAlongCurve', child: 8, count: 5, points: [[0, 0, 0], [4, 0, 3], [8, 0, 0]] },
       { kind: 'anchorTo', child: 9, target: 1, site: 'top' },
       { kind: 'group', children: [10, 11, 12] },
+
+      // P14 T4. Zase **za** dosavadní tabulku, ze stejného důvodu jako výš:
+      // zamítavé testy sahají na uzly indexem. Délku tabulky proto žádný test
+      // neopisuje číslem — čte ji z tohohle programu.
+      { kind: 'fixture', variant: 'crate', at: [3, 0, 3] },
+      { kind: 'actor', variant: 'tall', at: [2, 0, 2] },
+      { kind: 'group', children: [13, 14, 15] },
     ],
-    root: 13,
+    root: 16,
   };
 }
 
@@ -77,13 +84,32 @@ describe('slovník programu je slovník kitu', () => {
     }
   });
 
-  it('kit nemá kategorii, o které by program nevěděl — kromě fixture a actor', () => {
-    // `fixture` a `actor` vkládá simulace, ne výtvarný program. Nová kategorie
-    // v kitu se tímhle testem ohlásí místo aby tiše zmizela z emise.
-    const known = new Set<string>([...Object.keys(PIECE_VARIANTS), 'fixture', 'actor']);
+  it('kit nemá kategorii, o které by program nevěděl', () => {
+    // Do P14 T4 tu stála výjimka pro `fixture` a `actor`. Padla s nimi:
+    // program teď umí každou kategorii, kterou kit vydává, a nová kategorie
+    // se tímhle testem ohlásí místo aby tiše zmizela z emise.
+    const known = new Set<string>(Object.keys(PIECE_VARIANTS));
     const categories = [...new Set(KIT.map((piece) => piece.category))];
 
     expect(categories.filter((category) => !known.has(category))).toEqual([]);
+  });
+
+  it('každý kus kitu je z programu dosažitelný', () => {
+    // **Tohle je ta vada, kterou oko nechytí.** Dvanáct kusů (osm `fixture`,
+    // čtyři `actor`) leželo v kitu celé týdny a žádný program je neuměl
+    // postavit — testy výš se ptaly jen na to, jestli sedí varianty kategorií,
+    // které program **zná**, takže o chybějící kategorii mlčely.
+    //
+    // Aserce jde přes celý `KIT`, ne přes `PIECE_VARIANTS`: kdyby se ptala
+    // z mapy, měřila by mapu proti sobě samé.
+    const reachable = new Set<string>(
+      (Object.keys(PIECE_VARIANTS) as PieceKind[]).flatMap((kind) =>
+        PIECE_VARIANTS[kind].map((variant) => pieceIdOf(kind, variant)),
+      ),
+    );
+
+    expect(KIT.filter((piece) => !reachable.has(piece.id)).map((piece) => piece.id)).toEqual([]);
+    expect(reachable.size, 'kit má 42 kusů a všechny musí být dosažitelné').toBe(KIT.length);
   });
 
   it('terrain je jediný tvar bez kusu v kitu', () => {
@@ -272,7 +298,9 @@ describe('vadný program se odmítne a řekne proč', () => {
       // `arrayAlongCurve`, `anchorTo` a skupina, která je drží. Kdyby se
       // pohnulo bez toho, aby tabulka vyrostla, znamená to, že se z fixture
       // něco ztratilo.
-      /root references node 40 outside the table of 14/,
+      // Délka se čte z programu, ne opisuje: pin je na hlášku s důvodem, ne na
+      // to, kolik uzlů zrovna má pokrývající program.
+      new RegExp(`root references node 40 outside the table of ${String(coveringProgram().nodes.length)}`),
     );
   });
 

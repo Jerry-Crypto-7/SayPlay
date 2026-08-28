@@ -18,9 +18,19 @@ import { z } from 'zod';
  * ke `KIT`, takže přidaný kus se buď objeví tady, nebo spadne test. Jediná
  * kategorie navíc je `terrain` — zem, pro kterou kit kus nemá.
  *
- * **Kategorie `fixture` a `actor` v programu záměrně nejsou.** Rekvizity a
- * postavy do světa vkládá simulace přes `src/ir`, ne výtvarný program; kdyby
- * je uměly obě větve, přestalo by být jednoznačné, kdo je vlastní.
+ * **`fixture` a `actor` program od P14 T4 umí a je to oprava, ne rozšíření.**
+ * Do 28. 8. 2026 tu obě kategorie chyběly s odůvodněním, že rekvizity a postavy
+ * vkládá simulace přes `src/ir`. Jenže `src/ir` je jazyk **běžícího** světa —
+ * kulisa, kterou staví `family.compose(seed)`, přes něj neprochází. Dvanáct ze
+ * čtyřiceti dvou kusů kitu tedy nebylo dosažitelných z ničeho, co svět staví,
+ * a v žádné vygenerované scéně nemohla stát postava. **S postavou zmizelo
+ * i měřítko**: bez figury se z obrazu nedá odhadnout, jestli je věž tři metry
+ * vysoká nebo třicet.
+ *
+ * Vlastnictví zůstává jednoznačné a dělí se podle role, ne podle kategorie:
+ * program staví **kulisu** (postava jako měřítko, bedna jako drobnost),
+ * `src/ir` staví **entity, které se hýbou a mají stav**. Táž kategorie kitu
+ * může posloužit oběma, stejně jako `mass` slouží zdi i překážce.
  *
  * Tenhle soubor **neimportuje `three`** — stejná kázeň jako `src/kit/layouts`.
  * Schéma se musí dát ověřit i tam, kde renderer není: v Node, ve fallbacku a
@@ -79,6 +89,17 @@ export const COLUMN_VARIANTS = ['pillar', 'capital', 'fluted', 'post', 'twisted'
 export const ARCH_VARIANTS = ['round', 'flat', 'doorway', 'portal', 'buttress'] as const;
 export const PANEL_VARIANTS = ['wall', 'half', 'floor', 'ramp', 'railing', 'window', 'roof'] as const;
 export const ORGANIC_VARIANTS = ['pebble', 'boulder', 'cluster', 'shrub', 'tree', 'reed'] as const;
+export const FIXTURE_VARIANTS = [
+  'crate',
+  'barrel',
+  'lamp',
+  'sign',
+  'terminal',
+  'hatch',
+  'pipe',
+  'bench',
+] as const;
+export const ACTOR_VARIANTS = ['tall', 'squat', 'drone', 'quadruped'] as const;
 
 /** Zem. Jediný tvar, který nemá kus v kitu — generuje se výškovým polem. */
 export const TERRAIN_VARIANTS = ['flat', 'ridge', 'basin', 'plateau'] as const;
@@ -93,11 +114,22 @@ export const PIECE_VARIANTS = {
   arch: ARCH_VARIANTS,
   panel: PANEL_VARIANTS,
   organic: ORGANIC_VARIANTS,
+  fixture: FIXTURE_VARIANTS,
+  actor: ACTOR_VARIANTS,
 } as const;
 
 export type PieceKind = keyof typeof PIECE_VARIANTS;
 
-export const SHAPE_KINDS = ['mass', 'column', 'arch', 'panel', 'organic', 'terrain'] as const;
+export const SHAPE_KINDS = [
+  'mass',
+  'column',
+  'arch',
+  'panel',
+  'organic',
+  'fixture',
+  'actor',
+  'terrain',
+] as const;
 
 /**
  * Operace nad tvary.
@@ -188,6 +220,18 @@ const panelNode = z
   .strict();
 const organicNode = z
   .object({ kind: z.literal('organic'), variant: z.enum(ORGANIC_VARIANTS), ...placement })
+  .strict();
+
+/**
+ * Drobnosti a postavy. Tvarem se od ostatních kusů neliší ničím — je to týž
+ * uzel s jiným slovníkem variant, takže pro ně kompilátor nemá vlastní větev
+ * a nemůže se rozejít s tím, jak staví zeď.
+ */
+const fixtureNode = z
+  .object({ kind: z.literal('fixture'), variant: z.enum(FIXTURE_VARIANTS), ...placement })
+  .strict();
+const actorNode = z
+  .object({ kind: z.literal('actor'), variant: z.enum(ACTOR_VARIANTS), ...placement })
   .strict();
 
 /**
@@ -312,6 +356,8 @@ const geomNodeSchema = z.discriminatedUnion('kind', [
   archNode,
   panelNode,
   organicNode,
+  fixtureNode,
+  actorNode,
   terrainNode,
   groupNode,
   repeatNode,
