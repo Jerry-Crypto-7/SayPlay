@@ -23,6 +23,16 @@ import { expect, test } from '@playwright/test';
  * postava po mřížce nevzdálí dost na to, aby se kamera z pásma vysunula. Pásmo
  * tu tedy je kvůli AC; důkaz sledování nese dosednutí za klidu.
  *
+ * **Naměřeno 28. 8. 2026 a je to oprava lhoucího měřidla:** pásmo vzdálenosti
+ * se do té doby měřilo proti **tikové** poloze postavy, zatímco kamera sleduje
+ * **nakreslenou**. Rozdíl je za chůze nula, ale hned po tahu `moveTo` je dvanáct
+ * jednotek — a test tak jednou za běh ohlásil vzdálenost 15,37 u kamery, která
+ * doopravdy držela 9,60. Vada je stará a s rámováním nesouvisí: naměřeno
+ * s oběma odstupy, starým `{0, 6, 7.5}` i novým, na tiku 654 vyšlo **totéž
+ * číslo na patnáct desetinných míst**, protože obě mají tutéž délku. Měří se
+ * proto `drawn()`, což je přísnější pozorování, ne volnější: hlídá, co kamera
+ * doopravdy dělá, místo aby jí přičítalo dojezd entity.
+ *
  * **Co tu naopak NENÍ a proč:** paušální strop na odchylku odstupu za chůze.
  * Byl tu a shodil ho vlastní svět — `moveTo` postavu nepřesune o políčko, ale
  * rovnou o dvanáct jednotek, takže po takovém skoku kamera zákonitě chvíli
@@ -140,6 +150,13 @@ test('kamera sleduje postavu a nespadne pod podlahu', async ({ page, request }) 
       await settle();
 
       const avatar = viewer.entities().find((entity) => entity.visual === 'avatar');
+      // **Odstup se měří proti NAKRESLENÉ postavě, ne proti tikové.** Kamera
+      // sleduje `drawn()` — přesně proto, aby mezi dvěma tiky pod postavou
+      // neposkakovala. Tikový stav je jinde: `moveTo` postavu přesune rovnou
+      // o dvanáct jednotek a nakreslená se tam teprve sune, takže hned po
+      // takovém skoku vyjde odstup o dvanáct větší, než jaký kamera doopravdy
+      // drží.
+      const seen = viewer.drawn().find((entity) => entity.visual === 'avatar') ?? avatar;
       const camera = viewer.camera();
       out.push({
         tick: viewer.tick(),
@@ -147,20 +164,20 @@ test('kamera sleduje postavu a nespadne pod podlahu', async ({ page, request }) 
         cameraY: camera.y,
         cell: avatar === undefined ? '' : avatar.cell.join(','),
         distance:
-          avatar === undefined
+          seen === undefined
             ? Number.NaN
             : Math.hypot(
-                camera.x - avatar.position.x,
-                camera.y - avatar.position.y,
-                camera.z - avatar.position.z,
+                camera.x - seen.position.x,
+                camera.y - seen.position.y,
+                camera.z - seen.position.z,
               ),
         offset:
-          avatar === undefined
+          seen === undefined
             ? { x: Number.NaN, y: Number.NaN, z: Number.NaN }
             : {
-                x: camera.x - avatar.position.x,
-                y: camera.y - avatar.position.y,
-                z: camera.z - avatar.position.z,
+                x: camera.x - seen.position.x,
+                y: camera.y - seen.position.y,
+                z: camera.z - seen.position.z,
               },
         travel:
           avatar === undefined
