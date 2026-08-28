@@ -1,0 +1,354 @@
+import { describe, expect, it } from 'vitest';
+
+import {
+  SCHEMA_NODE_KINDS,
+  SHAPE_NODE_GROUPS,
+  parseShapeProgram,
+  validateShapeProgram,
+} from '../schema';
+import {
+  SHAPE_LIMITS,
+  SHAPE_NODE_KINDS,
+  childIndicesOf,
+  depths,
+  instanceCounts,
+  type ShapeNode,
+} from '../types';
+import { arrayProgram, chainProgram, coveringProgram, wideProgram } from '../__fixtures__/programs';
+
+/**
+ * Porouchaná kopie programu.
+ *
+ * Vrací `Record<string, unknown>`, ne `ShapeProgram`, a je to schválně: brána
+ * bere `unknown`, protože vstup přichází od modelu a v tu chvíli o něm typový
+ * systém nic neví. Kdyby si testy chystaly vadné programy jako typované
+ * `ShapeProgram`, musely by kolem každé vady obcházet `tsc` a měřily by pak
+ * něco jiného než to, co branou doopravdy prochází.
+ *
+ * `structuredClone` a ne rozprostření: vady sedí i uvnitř uzlů a mělká kopie by
+ * je nechala prosáknout do dalšího testu.
+ */
+function broken(mutate: (draft: Record<string, unknown>) => void): Record<string, unknown> {
+  const draft = structuredClone(coveringProgram()) as unknown as Record<string, unknown>;
+  mutate(draft);
+  return draft;
+}
+
+/** Uzly porouchané kopie, aby se nemusel opisovat přetyp na každém řádku. */
+function nodesOf(draft: Record<string, unknown>): Record<string, unknown>[] {
+  return draft.nodes as Record<string, unknown>[];
+}
+
+describe('slovník ShapeProgram', () => {
+  it('má právě ty skupiny a počty, které předepisuje design book §7.2', () => {
+    expect(SHAPE_NODE_GROUPS.primitive).toHaveLength(10);
+    expect(SHAPE_NODE_GROUPS.combination).toHaveLength(3);
+    expect(SHAPE_NODE_GROUPS.transform).toHaveLength(4);
+    expect(SHAPE_NODE_GROUPS.deformation).toHaveLength(4);
+    expect(SHAPE_NODE_GROUPS.array).toHaveLength(3);
+    expect(SHAPE_NODE_GROUPS.mask).toHaveLength(1);
+    expect(SHAPE_NODE_KINDS).toHaveLength(25);
+  });
+
+  it('schéma zná přesně ty uzly, které slovník jmenuje', () => {
+    expect([...SCHEMA_NODE_KINDS].sort()).toEqual([...SHAPE_NODE_KINDS].sort());
+  });
+
+  it('otáčení je volné ve třech osách, ne po kvadrantech', () => {
+    const program = validateShapeProgram(
+      broken((draft) => {
+        nodesOf(draft)[11] = { kind: 'rotate', child: 1, yaw: 0.37, pitch: -1.11, roll: 2.9 };
+      }),
+    );
+    expect(program.ok).toBe(true);
+  });
+});
+
+describe('platný program', () => {
+  it('projde a použije při tom každý druh uzlu', () => {
+    const program = coveringProgram();
+    const used = new Set(program.nodes.map((node) => node.kind));
+
+    expect(validateShapeProgram(program)).toEqual({ ok: true, issues: [] });
+    expect([...used].sort()).toEqual([...SHAPE_NODE_KINDS].sort());
+  });
+
+  it('`parseShapeProgram` vrátí tentýž dokument', () => {
+    const program = coveringProgram();
+    expect(parseShapeProgram(program)).toEqual(program);
+  });
+
+  it('zůstane pod všemi třemi stropy naráz', () => {
+    const program = coveringProgram();
+    expect(program.nodes.length).toBeLessThanOrEqual(SHAPE_LIMITS.maxNodes);
+    expect(depths(program.nodes)[program.root]).toBeLessThanOrEqual(SHAPE_LIMITS.maxDepth);
+    expect(instanceCounts(program.nodes)[program.root]).toBeLessThanOrEqual(
+      SHAPE_LIMITS.maxInstances,
+    );
+  });
+});
+
+describe('odkazy mezi uzly', () => {
+  it('odmítne potomka s indexem vyšším, než má rodič sám', () => {
+    const result = validateShapeProgram(
+      broken((draft) => {
+        nodesOf(draft)[10].child = 20;
+      }),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContain('node 10 references node 20 at or above itself');
+  });
+
+  it('odmítne potomka, kterým je uzel sám', () => {
+    const result = validateShapeProgram(
+      broken((draft) => {
+        nodesOf(draft)[10].child = 10;
+      }),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContain('node 10 references node 10 at or above itself');
+  });
+
+  it('odmítne cyklus, protože cyklus nutně porušuje pořadí indexů', () => {
+    // Dvojice uzlů, které ukazují jeden na druhý. V ploché tabulce s pravidlem
+    // "potomek má nižší index" se cyklus nedá napsat jinak, takže tahle jediná
+    // kontrola pokrývá celou třídu — a hlášky to říkají o obou koncích.
+    const result = validateShapeProgram({
+      shapeId: 'cycle',
+      stableId: 'cycle-object',
+      nodes: [
+        { kind: 'translate', child: 1, offset: [0, 0, 0] },
+        { kind: 'translate', child: 0, offset: [0, 0, 0] },
+      ],
+      root: 1,
+      targetBounds: { min: [-1, -1, -1], max: [1, 1, 1] },
+      anchors: [],
+      materialIntent: 'bone',
+      priority: 1,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContain('node 0 references node 1 at or above itself');
+  });
+
+  it('odmítne kořen mimo tabulku', () => {
+    const result = validateShapeProgram(
+      broken((draft) => {
+        draft.root = 40;
+      }),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.issues[0]).toContain('root references node 40 outside the table');
+  });
+});
+
+describe('stropy jazyka', () => {
+  it('přijme program přesně na stropu uzlů a odmítne o jeden větší', () => {
+    expect(validateShapeProgram(wideProgram(SHAPE_LIMITS.maxNodes)).ok).toBe(true);
+
+    const oversized = wideProgram(SHAPE_LIMITS.maxNodes + 1);
+    const result = validateShapeProgram(oversized);
+
+    expect(result.ok).toBe(false);
+    // Odmítnout, ne oříznout: kdyby brána tabulku zkrátila na 48 řádků, byl by
+    // to jiný program než ten, který model napsal, a nikde by to nebylo vidět.
+    expect(oversized.nodes).toHaveLength(49);
+  });
+
+  it('přijme strom přesně na stropu hloubky a odmítne o jeden hlubší', () => {
+    expect(validateShapeProgram(chainProgram(SHAPE_LIMITS.maxDepth)).ok).toBe(true);
+
+    const result = validateShapeProgram(chainProgram(SHAPE_LIMITS.maxDepth + 1));
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContain('program is 9 nodes deep, above maxDepth 8');
+  });
+
+  it('přijme rozvinutí přesně na stropu kopií a odmítne o jedno větší', () => {
+    expect(validateShapeProgram(arrayProgram(16, 16)).ok).toBe(true);
+
+    const result = validateShapeProgram(arrayProgram(17, 16));
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContain('program expands to 272 copies, above maxInstances 256');
+  });
+
+  it('počítá kopie po rozvinutí, ne řádky tabulky', () => {
+    // Tři řádky, 512 kopií. Kdyby rozpočet měřil tabulku, projde to.
+    const exploding = arrayProgram(32, 16);
+    expect(exploding.nodes).toHaveLength(3);
+    expect(validateShapeProgram(exploding).ok).toBe(false);
+  });
+
+  it('zrcadlo se do stropu kopií nezapočítává, protože nic nestojí', () => {
+    const nodes: ShapeNode[] = [
+      { kind: 'sphere', radius: 0.5 },
+      { kind: 'mirror', child: 0, axis: 'x' },
+      { kind: 'mirror', child: 1, axis: 'z' },
+    ];
+    expect(instanceCounts(nodes)).toEqual([1, 1, 1]);
+  });
+});
+
+describe('tvar jednoho řádku', () => {
+  it('odmítne pole, o kterém slovník neví', () => {
+    const result = validateShapeProgram(
+      broken((draft) => {
+        nodesOf(draft)[0].radius2 = 3;
+      }),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.issues.join(' ')).toContain('schema:/nodes/0');
+  });
+
+  it('odmítne uzel, o kterém slovník neví', () => {
+    const result = validateShapeProgram(
+      broken((draft) => {
+        nodesOf(draft)[0] = { kind: 'metaball', radius: 1 };
+      }),
+    );
+    expect(result.ok).toBe(false);
+  });
+
+  it('odmítne nekonečno v každém čísle, na které se dá sáhnout', () => {
+    for (const [index, field] of [
+      [0, 'radius'],
+      [4, 'height'],
+      [17, 'amplitude'],
+      [18, 'count'],
+    ] as const) {
+      const result = validateShapeProgram(
+        broken((draft) => {
+          nodesOf(draft)[index][field] = Number.POSITIVE_INFINITY;
+        }),
+      );
+      expect(result.ok, `${field} přijalo nekonečno`).toBe(false);
+    }
+  });
+
+  it('odmítne konečný nesmysl, ne jen nekonečno', () => {
+    // Tohle je vlastnost, kterou hlídají horní meze. Nekonečno zastaví `zod`
+    // sám (viz komentář v `schema.ts`), ale poloměr 10⁶ je platné číslo: projde
+    // vyhodnocovačem, zabere celou mřížku a v obraze z něj nezůstane nic.
+    const result = validateShapeProgram(
+      broken((draft) => {
+        nodesOf(draft)[0].radius = 1_000_000;
+      }),
+    );
+    expect(result.ok).toBe(false);
+  });
+
+  it('odmítne NaN', () => {
+    const result = validateShapeProgram(
+      broken((draft) => {
+        nodesOf(draft)[0].radius = Number.NaN;
+      }),
+    );
+    expect(result.ok).toBe(false);
+  });
+
+  it('odmítne nulový poloměr, ze kterého je díra místo tvaru', () => {
+    const result = validateShapeProgram(
+      broken((draft) => {
+        nodesOf(draft)[0].radius = 0;
+      }),
+    );
+    expect(result.ok).toBe(false);
+  });
+
+  it('odmítne nulovou normálu, která by se normalizovala na NaN', () => {
+    const result = validateShapeProgram(
+      broken((draft) => {
+        nodesOf(draft)[7].normal = [0, 0, 0];
+      }),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContain('node 7 is a plane with a zero normal');
+  });
+
+  it('odmítne víc kontrolních bodů křivky, než jich jazyk dovolí', () => {
+    const result = validateShapeProgram(
+      broken((draft) => {
+        nodesOf(draft)[20].points = Array.from({ length: SHAPE_LIMITS.maxCurvePoints + 1 }, () => [
+          0, 0, 0,
+        ]);
+      }),
+    );
+    expect(result.ok).toBe(false);
+  });
+});
+
+describe('obálka programu', () => {
+  it('odmítne rozlišení mřížky, kvalitu i pořadí meshingu', () => {
+    // Design book §9.5: tohle jsou rozhodnutí potrubí. Kdyby si je model psal
+    // sám, nešlo by tentýž objekt přemeshovat v jiné přesnosti beze změny
+    // programu — a hot-swap by přestal být tentýž objekt.
+    for (const field of ['resolution', 'quality', 'meshOrder']) {
+      const result = validateShapeProgram(
+        broken((draft) => {
+          draft[field] = 64;
+        }),
+      );
+      expect(result.ok, `${field} prošlo do programu`).toBe(false);
+    }
+  });
+
+  it('odmítne kvádr, který má minimum nad maximem', () => {
+    const result = validateShapeProgram(
+      broken((draft) => {
+        draft.targetBounds = { min: [1, 0, 0], max: [-1, 1, 1] };
+      }),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContain('targetBounds has a min above its max on at least one axis');
+  });
+
+  it('odmítne dvě kotvy téhož jména', () => {
+    const result = validateShapeProgram(
+      broken((draft) => {
+        draft.anchors = [
+          { name: 'mouth', at: [0, 1, 0] },
+          { name: 'mouth', at: [0, 2, 0] },
+        ];
+      }),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContain('anchor mouth is declared twice');
+  });
+
+  it('odmítne celou větu místo identifikátoru', () => {
+    const result = validateShapeProgram(
+      broken((draft) => {
+        draft.stableId = 'the whale skeleton with a cathedral inside it';
+      }),
+    );
+    expect(result.ok).toBe(false);
+  });
+
+  it('vrátí všechny nálezy naráz, ne první', () => {
+    // Sebeoprava dostane jeden seznam a napíše program znovu. Kdyby brána
+    // vracela první chybu, stálo by odmítnutí tolik kol, kolik je v programu vad.
+    const result = validateShapeProgram(
+      broken((draft) => {
+        draft.targetBounds = { min: [1, 1, 1], max: [-1, -1, -1] };
+        draft.anchors = [
+          { name: 'mouth', at: [0, 1, 0] },
+          { name: 'mouth', at: [0, 2, 0] },
+        ];
+      }),
+    );
+    expect(result.issues.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('`parseShapeProgram` vyhodí s důvodem, ne s prázdnou hláškou', () => {
+    expect(() => parseShapeProgram(broken((draft) => (draft.root = 40)))).toThrow(
+      /invalid shape program: root references node 40/,
+    );
+  });
+});
+
+describe('průchody nad tabulkou', () => {
+  it('kombinace nese víc potomků, transformace jednoho, primitivum žádné', () => {
+    const program = coveringProgram();
+    expect(childIndicesOf(program.nodes[0])).toEqual([]);
+    expect(childIndicesOf(program.nodes[10])).toEqual([0]);
+    expect(childIndicesOf(program.nodes[25])).toEqual([19, 20, 21, 22, 23, 24]);
+  });
+});
