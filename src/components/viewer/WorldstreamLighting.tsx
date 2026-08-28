@@ -61,8 +61,15 @@ export const WORLDSTREAM_SHADOW_MAP_TYPE: number = VSMShadowMap;
  *
  * `near` je za předním okrajem kompozice, takže hrdinský tvar zůstane ostrý;
  * `far` je až za nejzazším žebrem, takže se svět neztratí, jen ustoupí.
+ *
+ * **`far` je 120, ne 96, a je to důsledek měření.** Mlha má barvu pozadí, takže
+ * `far` není „kde se věc ztratí v oparu", ale **kde přestane existovat** — za
+ * ním se kreslí přesně barva pozadí. Při 96 spadly všechny skály z `Spires`
+ * pod tu hranici a v obraze po nich nezbylo nic, dvakrát po sobě. Posun na 120
+ * jim otevře pásmo, ve kterém z nich zůstane silueta, a nejzazší žebro to stojí
+ * pár procent kontrastu.
  */
-export const WORLDSTREAM_FOG = { color: UI_TOKENS.pelagic, near: 22, far: 96 } as const;
+export const WORLDSTREAM_FOG = { color: UI_TOKENS.pelagic, near: 22, far: 120 } as const;
 
 /**
  * Hlavní světlo. Zprava shora a zezadu, teplé — jantar (`amber`) je v paletě

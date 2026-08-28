@@ -55,15 +55,22 @@ import { uniformInt } from 'pure-rand/distribution/uniformInt';
 import { xoroshiro128plus } from 'pure-rand/generator/xoroshiro128plus';
 import { useEffect, useMemo, useRef } from 'react';
 import {
+  AdditiveBlending,
+  BackSide,
   BoxGeometry,
+  BufferAttribute,
+  BufferGeometry,
   CatmullRomCurve3,
   Color,
   CylinderGeometry,
   IcosahedronGeometry,
   InstancedMesh,
   Matrix4,
+  Mesh,
   MeshStandardMaterial,
   Quaternion,
+  PlaneGeometry,
+  Points,
   SphereGeometry,
   TorusGeometry,
   TubeGeometry,
@@ -73,6 +80,7 @@ import {
 import { UI_TOKENS } from '@/kit';
 
 import { clayMaterial } from './ClayMaterial';
+import { haloMaterial, moteMaterial, shaftMaterial } from './GlowMaterial';
 import { disposeSubtree } from './dispose';
 import WorldstreamLighting, {
   WORLDSTREAM_GL,
@@ -132,14 +140,61 @@ const RIB_GAP = { from: 7, to: 13 } as const;
 /** Kolik obratlů. Hustěji než žebra, takže páteř čte jako souvislý oblouk. */
 const VERTEBRA_COUNT = 41;
 
-/** Sloupy katedrály uvnitř klenby. */
+/** Sloupy ochozu vně zdí lodi. */
 const COLUMN_COUNT = 16;
 
-/** Kamení rozesypané po hladině. Semínko níž je jediný zdroj jeho polohy. */
-const DEBRIS_COUNT = 26;
+/** Opěráky. Sudý počet — na každé straně lodi jich stojí polovina. */
+const BUTTRESS_COUNT = 14;
+
+/** Kde v lodi svítí okna: `[x, z]`. Sedí na líci zdi, proto `|z| = 4,78`. */
+const WINDOWS: readonly (readonly [number, number])[] = [
+  [-12, 4.78],
+  [-8, 4.78],
+  [-4, 4.78],
+  [0, 4.78],
+  [4, 4.78],
+  [-12, -4.78],
+  [-8, -4.78],
+  [-4, -4.78],
+  [0, -4.78],
+  [4, -4.78],
+];
+
+/** Kamení rozesypané po dně. Semínko níž je jediný zdroj jeho polohy. */
+const DEBRIS_COUNT = 48;
 
 /** Semínko rozsypu. Pevné — cílový snímek se musí složit pokaždé stejně. */
 const DEBRIS_SEED = 0x5eed_1337;
+
+/** Semínko vzdálených skal a prachu. Vlastní stream, ne sdílený s rozsypem. */
+const DEEP_SEED = 0x0cea_11e5;
+
+/** Kolik zrnek prachu visí ve vodě. Jedno kreslicí volání pro všechna. */
+const MOTE_COUNT = 700;
+
+/** Kolik světelných kuželů prochází vodou. */
+const SHAFT_COUNT = 7;
+
+/** Kolik skal stojí v mlze za kostrou. */
+const SPIRE_COUNT = 11;
+
+/** Balvany v popředí: `[x, z, velikost]`. Ručně rozmístěné, je jich pět. */
+const FOREGROUND: readonly (readonly [number, number, number])[] = [
+  [-24, 20, 4.6],
+  [-17, 27, 3.0],
+  [23, 18, 4.4],
+  [28, 26, 3.4],
+];
+
+/**
+ * Sklon světelných sloupů od svislice, v radiánech.
+ *
+ * Není vymyšlený: hlavní světlo stojí na `[26, 34, 18]`, takže svírá se svislicí
+ * `atan(sqrt(26² + 18²) / 34)` ≈ 43°. Sloupy jdou o něco strměji (32°), protože
+ * při plném sklonu vyjdou z obrazu dřív, než dosáhnou na kostru — je to jediné
+ * místo, kde se obraz upřednostnil před fyzikou, a proto to stojí tady.
+ */
+const SHAFT_TILT = 0.36;
 
 /** Poloviční délka kostry ve světových jednotkách. */
 const SPAN = 25;
@@ -275,10 +330,26 @@ function Leviathan() {
 }
 
 /**
- * Katedrála uvnitř klenby — plošina, sloupy, oblouky a věž.
+ * Katedrála uvnitř klenby — plošina, loď, sedlová střecha, opěráky a věž.
  *
  * Čedič proti hlíně: chladný, pravidelný, hotový. Ten kontrast je celá pointa
  * kompozice — **stavba roste uvnitř něčeho, co ji nepostavilo**.
+ *
+ * ## Proč tu přibyly zdi a střecha
+ *
+ * První verze byla sloupořadí: šestnáct sloupů, osm oblouků a věž. Na snímku
+ * z toho byla **změť světlých tyček** a katedrálu v ní nikdo nenašel — z věty
+ * *„a cathedral growing inside the skeleton"* tak zbyla jen kostra, protože ta
+ * druhá půlka neměla siluetu. Silueta budovy je **loď se sedlovou střechou**;
+ * dokud tam nebyla, nebylo co poznat. Sloupy zůstaly, ale stojí venku jako
+ * ochoz, kde dělají rytmus místo aby zastupovaly celou stavbu.
+ *
+ * ## Okna nesou teplo, ne světlo
+ *
+ * `VIEWER_BUDGETS.maxLights` je 4 a rig je vyčerpal, takže okna jsou emisivní
+ * plochy se září (`Halo`), ne zdroje. Vypadá to stejně a strop drží — táž
+ * úvaha jako u varhan, a je to i důvod, proč okna sedí **na líci zdi**: kdyby
+ * byla za ní, neměla by co prosvítit.
  */
 function Cathedral() {
   // **Čistý `basalt` je od pozadí vzdálený osm bodů jasu**, takže stavba uvnitř
@@ -295,74 +366,174 @@ function Cathedral() {
       }),
     [],
   );
+  // Střecha je o stupeň tmavší než zdi. Bez toho splyne se stěnou a sedlo,
+  // kvůli kterému tu je, přestane být v siluetě vidět.
+  const roofStone = useMemo(
+    () =>
+      new MeshStandardMaterial({
+        color: new Color(UI_TOKENS.basalt).lerp(new Color(UI_TOKENS.nacre), 0.3),
+        roughness: 0.72,
+        metalness: 0.04,
+      }),
+    [],
+  );
   const trim = useMemo(
     () => new MeshStandardMaterial({ color: UI_TOKENS.nacre, roughness: 0.45, metalness: 0.1 }),
     [],
   );
+  // Sklo je emisivní, ne prosvícené — pátý zdroj světla by rozbil
+  // `VIEWER_BUDGETS.maxLights`, a okno stejně nemá co osvítit: stojí uvnitř lodi.
+  const glass = useMemo(
+    () =>
+      new MeshStandardMaterial({
+        color: UI_TOKENS.amber,
+        emissive: new Color(UI_TOKENS.amber),
+        emissiveIntensity: 0.62,
+        roughness: 0.4,
+      }),
+    [],
+  );
 
-  const column = useMemo(() => new CylinderGeometry(0.44, 0.58, 7.4, 12), []);
-  const arch = useMemo(() => new TorusGeometry(2.5, 0.26, 8, 22, Math.PI), []);
+  const column = useMemo(() => new CylinderGeometry(0.4, 0.52, 6.4, 10), []);
+  const buttress = useMemo(() => new BoxGeometry(0.7, 5.6, 0.55), []);
   const columnRef = useRef<InstancedMesh>(null);
-  const archRef = useRef<InstancedMesh>(null);
+  const buttressRef = useRef<InstancedMesh>(null);
 
   useEffect(() => {
     const matrix = new Matrix4();
     const spin = new Quaternion();
     const scale = new Vector3(1, 1, 1);
-    const axisY = new Vector3(0, 1, 0);
+    const axisX = new Vector3(1, 0, 0);
 
+    // Ochoz: dvě řady vně zdí lodi, aby mezi nimi a stěnou zůstala mezera,
+    // kterou projde světlo z oken. Sloup nalepený na zeď by jen ztloustil zeď.
     const columnMesh = columnRef.current;
     if (columnMesh !== null) {
       for (let at = 0; at < COLUMN_COUNT; at += 1) {
         const row = at % 2 === 0 ? 1 : -1;
         const along = Math.floor(at / 2) / (COLUMN_COUNT / 2 - 1);
         spin.identity();
-        matrix.compose(new Vector3((along * 2 - 1) * 13.5, 4.9, row * 4.2), spin, scale);
+        matrix.compose(new Vector3((along * 2 - 1) * 14.2, 5.3, row * 6.3), spin, scale);
         columnMesh.setMatrixAt(at, matrix);
       }
       columnMesh.instanceMatrix.needsUpdate = true;
     }
 
-    const archMesh = archRef.current;
-    if (archMesh !== null) {
-      for (let at = 0; at < COLUMN_COUNT / 2; at += 1) {
-        const along = at / (COLUMN_COUNT / 2 - 1);
-        // Oblouk stojí napříč lodí, tedy otočený kolem svislé osy.
-        spin.setFromAxisAngle(axisY, Math.PI / 2);
-        matrix.compose(new Vector3((along * 2 - 1) * 13.5, 8.6, 0), spin, scale);
-        archMesh.setMatrixAt(at, matrix);
+    // Opěráky: šikmé vzpěry od zdi k ochozu. Jsou to ony, co ze zdi udělá
+    // gotickou stavbu místo krabice — a stojí jeden box na kus.
+    const buttressMesh = buttressRef.current;
+    if (buttressMesh !== null) {
+      for (let at = 0; at < BUTTRESS_COUNT; at += 1) {
+        const row = at % 2 === 0 ? 1 : -1;
+        const along = Math.floor(at / 2) / (BUTTRESS_COUNT / 2 - 1);
+        spin.setFromAxisAngle(axisX, row * 0.42);
+        matrix.compose(new Vector3((along * 2 - 1) * 13.6, 4.9, row * 5.6), spin, scale);
+        buttressMesh.setMatrixAt(at, matrix);
       }
-      archMesh.instanceMatrix.needsUpdate = true;
+      buttressMesh.instanceMatrix.needsUpdate = true;
     }
   }, []);
 
   return (
     <group>
       {/* Stupňovitá plošina. Tři kvádry, ne jeden — schod je to, čím stavba
-          dosedne na vodu místo aby z ní trčela. */}
+          dosedne na dno místo aby z něj trčela. */}
       <mesh position={[0, 0.55, 0]} material={stone} castShadow receiveShadow>
-        <boxGeometry args={[34, 1.1, 13]} />
+        <boxGeometry args={[34, 1.1, 15]} />
       </mesh>
       <mesh position={[0, 1.35, 0]} material={stone} castShadow receiveShadow>
-        <boxGeometry args={[31, 0.6, 11]} />
+        <boxGeometry args={[31, 0.6, 13]} />
       </mesh>
       <mesh position={[0, 1.9, 0]} material={trim} castShadow receiveShadow>
-        <boxGeometry args={[29, 0.5, 9.6]} />
+        <boxGeometry args={[29, 0.5, 11.4]} />
       </mesh>
+
+      {/* Loď: dvě zdi a mezi nimi prostor. Tohle je ta silueta, která z tyček
+          udělá budovu. */}
+      <mesh position={[0, 5.9, 4.3]} material={stone} castShadow receiveShadow>
+        <boxGeometry args={[28, 7.4, 0.9]} />
+      </mesh>
+      <mesh position={[0, 5.9, -4.3]} material={stone} castShadow receiveShadow>
+        <boxGeometry args={[28, 7.4, 0.9]} />
+      </mesh>
+      {/* Apsida na vzdáleném konci. Půlválec, aby loď nekončila useknutě. */}
+      <mesh position={[-14, 5.9, 0]} material={stone} castShadow receiveShadow>
+        <cylinderGeometry args={[4.75, 4.75, 7.4, 14, 1, false, Math.PI / 2, Math.PI]} />
+      </mesh>
+
+      {/* Sedlová střecha: dvě desky opřené o sebe v hřebeni. */}
+      <mesh position={[0, 11.1, 2.15]} rotation={[-0.72, 0, 0]} material={roofStone} castShadow>
+        <boxGeometry args={[28.4, 0.5, 6.1]} />
+      </mesh>
+      <mesh position={[0, 11.1, -2.15]} rotation={[0.72, 0, 0]} material={roofStone} castShadow>
+        <boxGeometry args={[28.4, 0.5, 6.1]} />
+      </mesh>
+      {/* Hřeben z perleti. Jediná vodorovná světlá linka v celé stavbě, takže
+          oko po ní projde loď od apsidy k věži. */}
+      <mesh position={[0, 12.6, 0]} material={trim} castShadow>
+        <boxGeometry args={[28.6, 0.28, 0.4]} />
+      </mesh>
+
       <instancedMesh ref={columnRef} args={[column, stone, COLUMN_COUNT]} castShadow receiveShadow />
       <instancedMesh
-        ref={archRef}
-        args={[arch, stone, COLUMN_COUNT / 2]}
+        ref={buttressRef}
+        args={[buttress, stone, BUTTRESS_COUNT]}
         castShadow
         receiveShadow
       />
-      {/* Věž uprostřed. Jediný svislý prvek, který prorazí klenbu žeber — bez něj
-          je kompozice jen vodorovná a nemá kam vést oko. */}
-      <mesh position={[0, 11.5, 0]} material={stone} castShadow receiveShadow>
-        <cylinderGeometry args={[1.05, 1.75, 12.5, 10]} />
+
+      {/* Okna lodi. Jediné místo, kde je zvenku vidět, že stavba je obydlená —
+          a druhý zdroj tepla v obraze po varhanách. Sedí na líci zdi, ne za ní. */}
+      {WINDOWS.map((window) => (
+        <group key={`window-${String(window[0])}-${String(window[1])}`}>
+          <mesh position={[window[0], 6.1, window[1]]} material={glass}>
+            <boxGeometry args={[0.95, 3.8, 0.14]} />
+          </mesh>
+          {/* Lomený vrchol. Bez něj je okno obdélník a stavba čte jako sklad. */}
+          <mesh
+            position={[window[0], 8.0, window[1]]}
+            rotation={[Math.PI / 2, 0, 0]}
+            material={glass}
+          >
+            <cylinderGeometry args={[0.475, 0.475, 0.14, 10, 1, false, 0, Math.PI]} />
+          </mesh>
+          <Halo
+            position={[window[0], 6.6, window[1] + Math.sign(window[1]) * 0.55]}
+            size={3.4}
+            color={UI_TOKENS.amber}
+            intensity={0.24}
+          />
+        </group>
+      ))}
+
+      {/* Věž. Jediný svislý prvek, který prorazí klenbu žeber — bez něj je
+          kompozice jen vodorovná a nemá kam vést oko. Stojí mimo střed, aby
+          silueta nebyla souměrná. */}
+      <mesh position={[9.5, 8.6, 0]} material={stone} castShadow receiveShadow>
+        <boxGeometry args={[5.2, 13, 5.2]} />
       </mesh>
-      <mesh position={[0, 18.4, 0]} material={trim} castShadow receiveShadow>
-        <cylinderGeometry args={[0, 1.2, 3.2, 10]} />
+      <mesh position={[9.5, 15.4, 0]} material={trim} castShadow>
+        <boxGeometry args={[5.8, 0.6, 5.8]} />
+      </mesh>
+      {/* Zvonice: prosvětlený otvor pod špicí. Nese oko na vrchol stavby. */}
+      <mesh position={[9.5, 13.4, 2.66]} material={glass}>
+        <boxGeometry args={[2.4, 3.2, 0.14]} />
+      </mesh>
+      <Halo position={[9.5, 13.4, 3.3]} size={7} color={UI_TOKENS.amber} intensity={0.3} />
+      {/* Rozeta nad hlavním průčelím. Kruh je jediný v celé stavbě, takže se
+          nedá přehlédnout — a je to znak, po kterém se katedrála pozná. */}
+      <mesh position={[9.5, 10.2, 2.66]} rotation={[Math.PI / 2, 0, 0]} material={trim}>
+        <torusGeometry args={[1.15, 0.16, 8, 20]} />
+      </mesh>
+      <mesh position={[9.5, 10.2, 2.62]} material={glass}>
+        <cylinderGeometry args={[1.05, 1.05, 0.12, 16]} />
+      </mesh>
+      <Halo position={[9.5, 10.2, 3.2]} size={5.2} color={UI_TOKENS.amber} intensity={0.26} />
+      <mesh position={[9.5, 18.6, 0]} material={roofStone} castShadow>
+        <cylinderGeometry args={[0, 3.4, 6.4, 4]} />
+      </mesh>
+      <mesh position={[9.5, 22.4, 0]} material={trim} castShadow>
+        <cylinderGeometry args={[0, 0.55, 1.6, 4]} />
       </mesh>
     </group>
   );
@@ -472,6 +643,11 @@ function Organs() {
           <mesh position={[0, -2.1, 0]} material={ring} castShadow>
             <torusGeometry args={[0.76, 0.12, 8, 20]} />
           </mesh>
+          {/* Dvě záře, ne jedna: úzká drží jádro ostré, široká dělá dosvit ve
+              vodě. Jedna střední by musela být obojí a vyšla by jako flek. */}
+          <Halo position={[0, 4.4, 0]} size={7.2} color={UI_TOKENS.amber} intensity={0.5} />
+          <Halo position={[0, 4.4, 0]} size={2.6} color="#fff0cf" intensity={0.85} />
+          <Halo position={[0, 0.2, 0]} size={5.4} color={UI_TOKENS.amber} intensity={0.22} />
         </group>
       ))}
     </group>
@@ -479,11 +655,28 @@ function Organs() {
 }
 
 /**
+ * Výška dna v daném místě.
+ *
+ * Součet tří sinusovek, ne šum z generátoru: je **deterministická bez semínka**,
+ * takže dno vyjde stejně i kdyby se pořadí volání PRNG kdekoli jinde změnilo.
+ * Amplitudy klesají a frekvence rostou, což dá dlouhou vlnu s drobnější kresbou
+ * navrch — přesně to, po čem světlo pod ostrým úhlem klouže.
+ */
+function seabedHeight(x: number, z: number): number {
+  return (
+    2.1 * Math.sin(x * 0.052) * Math.cos(z * 0.047) +
+    0.95 * Math.sin(x * 0.131 + 1.7) * Math.cos(z * 0.113 - 0.6) +
+    0.38 * Math.sin(x * 0.287 - 0.4) * Math.cos(z * 0.311 + 2.1)
+  );
+}
+
+/**
  * Černá voda a kamení na ní.
  *
- * Voda není průhledná ani animovaná — je to **plocha, která odráží jen světla**.
- * Odlesk hlavního světla po hladině je jediné, co v dolní třetině obrazu drží
- * hloubku, a stojí dva trojúhelníky.
+ * **Dno není placka.** Rovina o dvou trojúhelnících neměla co nastavit světlu,
+ * takže spodní třetina obrazu byla mrtvá černá plocha a scéna se četla jako
+ * model na stole. Mřížka `96 × 96` s reliéfem z `seabedHeight` stojí 18 432
+ * trojúhelníků a je to jediné, co dolní třetině dá kresbu.
  *
  * Kamení jde z `pure-rand` se semínkem `DEBRIS_SEED`, ne z `Math.random()`.
  */
@@ -496,6 +689,21 @@ function BlackWater() {
     [],
   );
   const rock = useMemo(() => clayMaterial({ color: '#6d6152', roughness: 0.9, flatShading: true }), []);
+
+  // Dno se skládá jednou a drží se; přepočítávat ho každý snímek by nic nezměnilo.
+  const floor = useMemo(() => {
+    const grid = new PlaneGeometry(320, 320, 96, 96);
+    grid.rotateX(-Math.PI / 2);
+    const position = grid.getAttribute('position');
+    for (let at = 0; at < position.count; at += 1) {
+      const x = position.getX(at);
+      const z = position.getZ(at);
+      position.setY(at, seabedHeight(x, z) - 0.2);
+    }
+    position.needsUpdate = true;
+    grid.computeVertexNormals();
+    return grid;
+  }, []);
   const stone = useMemo(() => new IcosahedronGeometry(1, 0), []);
   const debrisRef = useRef<InstancedMesh>(null);
 
@@ -514,13 +722,12 @@ function BlackWater() {
     for (let at = 0; at < DEBRIS_COUNT; at += 1) {
       axis.set(between(-1, 1), between(-1, 1), between(-1, 1)).normalize();
       spin.setFromAxisAngle(axis, between(0, Math.PI * 2));
-      const size = between(0.35, 1.15);
+      const size = between(0.3, 1.9);
       scale.set(size, size * between(0.4, 0.8), size);
-      matrix.compose(
-        new Vector3(between(-SPAN - 6, SPAN + 6), between(-0.15, 0.35), between(-22, 22)),
-        spin,
-        scale,
-      );
+      const x = between(-SPAN - 8, SPAN + 8);
+      const z = between(-26, 26);
+      // Kámen sedí na dně, ne v rovině nuly — jinak by půlka visela ve vodě.
+      matrix.compose(new Vector3(x, seabedHeight(x, z) - 0.2 + size * 0.25, z), spin, scale);
       mesh.setMatrixAt(at, matrix);
     }
     mesh.instanceMatrix.needsUpdate = true;
@@ -528,12 +735,265 @@ function BlackWater() {
 
   return (
     <group>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} material={surface} receiveShadow>
-        <planeGeometry args={[260, 260]} />
-      </mesh>
+      <mesh geometry={floor} material={surface} receiveShadow />
       <instancedMesh ref={debrisRef} args={[stone, rock, DEBRIS_COUNT]} castShadow receiveShadow />
     </group>
   );
+}
+
+/**
+ * Balvany v popředí.
+ *
+ * **Rámují obraz a dávají mu měřítko.** Bez nich má snímek dva plány — kostru
+ * a mlhu — a čte se jako exponát ve vitríně: nic není blíž než hlavní objekt,
+ * takže není z čeho poznat, jak je ta kostra veliká. Balvan třicet jednotek od
+ * kamery je ta třetí rovina; zároveň zaplní dolní rohy, které byly mrtvá černá
+ * plocha.
+ *
+ * **Napoprvé stály na `z = 24..37` a v obraze nebyly vůbec.** Kamera je na
+ * `y = 16` a dívá se mírně dolů, takže kámen ležící na dně patnáct jednotek
+ * před ní padne pod spodní hranu záběru: svislý úhel k němu je při té
+ * vzdálenosti větší než polovina zorného úhlu. Rám musí stát **dál** a být
+ * větší, ne blíž — což je přesně naopak, než jak se popředí intuitivně staví.
+ *
+ * Jsou schválně **tmavé a bez detailu**: hlavní světlo je nad scénou a na
+ * přivrácenou stranu skoro nedopadá. Kdyby byly čitelné, staly by se z rámu
+ * další objekt, o který oko zakopne dřív než o katedrálu.
+ */
+function Foreground() {
+  // **Ne `clayMaterial`.** Hlína má podlahu jasu (`emissiveShare`), aby se
+  // odvrácená strana neztratila — jenže popředí se ztratit MÁ. S ní vyšly
+  // balvany jako světlé desky a četly se jako zeď přes celý dolní roh.
+  const rock = useMemo(
+    () =>
+      new MeshStandardMaterial({
+        color: new Color(UI_TOKENS.pelagic).lerp(new Color('#6d6152'), 0.28),
+        roughness: 1,
+        metalness: 0,
+        flatShading: true,
+      }),
+    [],
+  );
+  const geometry = useMemo(() => new IcosahedronGeometry(1, 0), []);
+  const boulders = useRef<InstancedMesh>(null);
+
+  useEffect(() => {
+    const mesh = boulders.current;
+    if (mesh === null) return;
+
+    const source = xoroshiro128plus(DEEP_SEED ^ 0x1d);
+    const between = (from: number, to: number): number =>
+      (uniformInt(source, 0, 10_000) / 10_000) * (to - from) + from;
+
+    const matrix = new Matrix4();
+    const spin = new Quaternion();
+    const axis = new Vector3();
+    const scale = new Vector3();
+
+    for (let at = 0; at < FOREGROUND.length; at += 1) {
+      const [x, z, size] = FOREGROUND[at];
+      axis.set(between(-1, 1), between(-1, 1), between(-1, 1)).normalize();
+      spin.setFromAxisAngle(axis, between(0, Math.PI * 2));
+      scale.set(size, size * between(0.55, 0.85), size * between(0.8, 1.15));
+      matrix.compose(new Vector3(x, seabedHeight(x, z) - 0.2 + size * 0.3, z), spin, scale);
+      mesh.setMatrixAt(at, matrix);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+  }, []);
+
+  return <instancedMesh ref={boulders} args={[geometry, rock, FOREGROUND.length]} castShadow />;
+}
+
+/**
+ * Světelné sloupy procházející vodou.
+ *
+ * **Tohle je ta jediná vrstva, která z modelu na stole udělá místo.** Bez ní
+ * scéna nemá čím ukázat, že mezi kamerou a kostrou je voda — objekty prostě
+ * stojí v černu. Sloup není objem, je to kužel s additivním shaderem
+ * (`shaftMaterial`), jehož jas se řídí tím, kolik plochy je v daném pixelu
+ * vidět skrz; vypadá to jako světlo v kalné vodě a stojí to jedno kreslicí
+ * volání na sloup.
+ *
+ * Sklon i směr jdou z polohy hlavního světla, ne z oka — viz `SHAFT_TILT`.
+ * Rozestupy jsou nepravidelné schválně: pravidelné sloupy čtou jako plot.
+ */
+function LightShafts() {
+  // Naměřeno okem 27. 8.: při 0,26 vyšly sloupy jako bílé pruhy přes celou
+  // levou třetinu a přebily kostru. Světlo v kalné vodě je závoj, ne reflektor.
+  const material = useMemo(() => shaftMaterial(UI_TOKENS.nacre, 0.115), []);
+  const warm = useMemo(() => shaftMaterial('#ffe4b5', 0.085), []);
+
+  // Šířka u dna, šířka u zdroje, posun podél kostry, hloubka, síla.
+  const shafts = useMemo(
+    () =>
+      [
+        { at: -26, z: -14, top: 0.7, bottom: 3.4, height: 46, warm: false },
+        { at: -15, z: 2, top: 0.5, bottom: 2.2, height: 40, warm: true },
+        { at: -6, z: -16, top: 0.9, bottom: 4.6, height: 48, warm: false },
+        { at: 2, z: 9, top: 0.4, bottom: 1.8, height: 36, warm: true },
+        { at: 10, z: -11, top: 0.8, bottom: 3.8, height: 45, warm: false },
+        { at: 21, z: 4, top: 0.5, bottom: 2.6, height: 41, warm: true },
+        { at: 31, z: -13, top: 1.0, bottom: 4.8, height: 48, warm: false },
+      ].slice(0, SHAFT_COUNT),
+    [],
+  );
+
+  return (
+    <group rotation={[0, 0.42, SHAFT_TILT]}>
+      {shafts.map((shaft) => (
+        <mesh
+          key={`shaft-${String(shaft.at)}`}
+          position={[shaft.at, shaft.height * 0.42, shaft.z]}
+          material={shaft.warm ? warm : material}
+        >
+          <cylinderGeometry args={[shaft.top, shaft.bottom, shaft.height, 18, 1, true]} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/**
+ * Záře kolem svítících míst — ruční náhrada bloomu.
+ *
+ * Čtverec s radiálním spádem, otočený čelem ke kameře. **Billboard se počítá
+ * každý snímek**, protože jinak by se záře při otočení scény zploštila do
+ * čárky. Kopíruje se rovnou kvaternion kamery, což je totéž co `lookAt` na
+ * kameru, jen bez trigonometrie.
+ *
+ * Bez záře čte emisivní materiál jako světlá barva, ne jako zdroj světla —
+ * a rozdíl mezi „žlutý válec" a „ta věc svítí" je celý tenhle komponent.
+ */
+function Halo({
+  position,
+  size,
+  color,
+  intensity,
+}: {
+  readonly position: readonly [number, number, number];
+  readonly size: number;
+  readonly color: string;
+  readonly intensity: number;
+}) {
+  const mesh = useRef<Mesh>(null);
+  const material = useMemo(() => haloMaterial(color, intensity), [color, intensity]);
+
+  useFrame((state) => {
+    if (mesh.current !== null) mesh.current.quaternion.copy(state.camera.quaternion);
+  });
+
+  return (
+    <mesh ref={mesh} position={[...position]} material={material}>
+      <planeGeometry args={[size, size]} />
+    </mesh>
+  );
+}
+
+/**
+ * Prach ve vodě.
+ *
+ * `Points` s vlastním shaderem: **sedm set zrnek v jednom kreslicím volání**.
+ * Instancované čtverce by stály sedm set matic a stejně by se musely otáčet ke
+ * kameře; bod je čelem ke kameře zadarmo.
+ *
+ * Zrnka se pomalu snášejí — pohyb je z `uTime`, tedy z nástěnného času, což
+ * je tady ta správná jednotka: stránka nemá simulaci a je celá mimo hashovaný
+ * stav (`CLAUDE.md`).
+ */
+function Motes() {
+  const material = useMemo(() => moteMaterial(UI_TOKENS.nacre, 1.5), []);
+
+  const geometry = useMemo(() => {
+    const source = xoroshiro128plus(DEEP_SEED);
+    const between = (from: number, to: number): number =>
+      (uniformInt(source, 0, 10_000) / 10_000) * (to - from) + from;
+
+    const position = new Float32Array(MOTE_COUNT * 3);
+    const phase = new Float32Array(MOTE_COUNT);
+    for (let at = 0; at < MOTE_COUNT; at += 1) {
+      position[at * 3] = between(-SPAN - 18, SPAN + 18);
+      // Hustěji dole, řidčeji nahoře: kal se drží u dna.
+      position[at * 3 + 1] = between(0, 1) ** 1.6 * 26 + 0.4;
+      position[at * 3 + 2] = between(-34, 30);
+      phase[at] = between(0, Math.PI * 2);
+    }
+
+    const buffer = new BufferGeometry();
+    buffer.setAttribute('position', new BufferAttribute(position, 3));
+    buffer.setAttribute('aPhase', new BufferAttribute(phase, 1));
+    return buffer;
+  }, []);
+
+  const points = useRef<Points>(null);
+  useFrame((state) => {
+    material.uniforms.uTime.value = state.clock.elapsedTime;
+  });
+
+  return <points ref={points} geometry={geometry} material={material} />;
+}
+
+/**
+ * Skály v mlze za kostrou.
+ *
+ * **Dělají ze scény svět, ne exponát.** Dokud za kostrou nebylo nic, neměl
+ * obraz čím říct, jak je velká — mlha končila v prázdnu a hloubka se dala jen
+ * tušit. **Dvakrát stály moc daleko a dvakrát po nich v obraze
+ * nezbylo nic.** Mlha má `far = 96` a **barvu pozadí**, takže cokoliv dál než
+ * 96 jednotek od kamery není slabá silueta, ale doslova pozadí — táž barva.
+ * Kamera stojí na `z = 49`, takže i skála na `z = −40` je od ní 90 jednotek
+ * daleko. Pásmo je proto `z` od −34 do −6 a `far` mlhy se posunul na 120.
+ * Píše se to sem proto, že ten výpočet je neintuitivní a jinak by se udělal
+ * potřetí. Skály se navíc vyhýbají koridoru kostry (`|x| < 28`), aby jí
+ * nestály za zády.
+ */
+function Spires() {
+  const stone = useMemo(
+    () =>
+      new MeshStandardMaterial({
+        color: new Color(UI_TOKENS.basalt).lerp(new Color(UI_TOKENS.nacre), 0.16),
+        roughness: 0.95,
+        flatShading: true,
+      }),
+    [],
+  );
+  // Pět stěn místo sedmi: hrubší silueta, která v mlze čte jako skála, ne kužel.
+  const geometry = useMemo(() => new CylinderGeometry(0.5, 5.2, 1, 5, 1), []);
+  const spires = useRef<InstancedMesh>(null);
+
+  useEffect(() => {
+    const mesh = spires.current;
+    if (mesh === null) return;
+
+    const source = xoroshiro128plus(DEEP_SEED ^ 0x77);
+    const between = (from: number, to: number): number =>
+      (uniformInt(source, 0, 10_000) / 10_000) * (to - from) + from;
+
+    const matrix = new Matrix4();
+    const spin = new Quaternion();
+    const axisY = new Vector3(0, 1, 0);
+    const scale = new Vector3();
+
+    for (let at = 0; at < SPIRE_COUNT; at += 1) {
+      const height = between(18, 46);
+      // Koridor kostry se přeskočí posunem, ne opakovaným losováním: druhý los
+      // by posunul stream a rozsyp by se změnil při každé úpravě rozsahu.
+      const raw = between(-64, 64);
+      const x = raw + Math.sign(raw || 1) * 32;
+      const z = between(-34, -6);
+      // Náklon kolem vodorovné osy rozbije jehlan v pravidelný kužel; bez něj
+      // stojí za kostrou řada souměrných špiček a čte se to jako kulisa.
+      spin.setFromAxisAngle(axisY, between(0, Math.PI * 2));
+      spin.multiply(
+        new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0.4).normalize(), between(-0.18, 0.18)),
+      );
+      scale.set(between(0.6, 1.9), height, between(0.6, 1.9));
+      matrix.compose(new Vector3(x, height * 0.5 + seabedHeight(x, z) - 0.6, z), spin, scale);
+      mesh.setMatrixAt(at, matrix);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+  }, []);
+
+  return <instancedMesh ref={spires} args={[geometry, stone, SPIRE_COUNT]} />;
 }
 
 /**
@@ -654,10 +1114,17 @@ export default function TargetFrame() {
     >
       <Framing />
       <WorldstreamLighting />
+      {/* Neprůhledné vrstvy odzadu dopředu, additivní až nakonec: záře a prach
+          mají `depthWrite: false`, takže by jinak zmizely za tím, co se
+          nakreslí po nich. */}
+      <Spires />
       <BlackWater />
+      <Foreground />
       <Leviathan />
       <Cathedral />
       <Organs />
+      <LightShafts />
+      <Motes />
       <Probe />
       <Cleanup />
     </Canvas>

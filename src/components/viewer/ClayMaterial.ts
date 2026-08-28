@@ -30,7 +30,7 @@
  * jedna kopie, kterou hlídá `src/app/__tests__/theme.test.ts`.
  */
 
-import { Color, MeshStandardMaterial } from 'three';
+import { Color, type ColorRepresentation, MeshStandardMaterial } from 'three';
 
 import { UI_TOKENS } from '@/kit';
 
@@ -49,8 +49,14 @@ export const CLAY = {
 } as const;
 
 export interface ClayOverrides {
-  /** Jiný odstín téže hmoty. Výchozí je token `clay`. */
-  readonly color?: string;
+  /**
+   * Jiný odstín téže hmoty. Výchozí je token `clay`.
+   *
+   * `ColorRepresentation`, ne `string`: volající často odstín teprve míchá
+   * (`new Color(a).lerp(b, t)`) a převádět výsledek zpátky na hex jen kvůli
+   * téhle signatuře znamená ztratit přesnost a připsat řádek, který nic neřeší.
+   */
+  readonly color?: ColorRepresentation;
   readonly roughness?: number;
   readonly emissiveShare?: number;
   /** Ploché normály pro fasetovaný, sekaný povrch. Výchozí je hladký. */
