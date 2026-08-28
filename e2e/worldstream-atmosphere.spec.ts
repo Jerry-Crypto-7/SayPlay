@@ -12,27 +12,26 @@ import { IMAGE_THRESHOLDS, measureImage } from '../src/worldstream/image-judge';
  * existuje — čte **pixely, které plátno doopravdy nakreslilo**, přes
  * `window.__viewer.pixels()`.
  *
- * ## Podíl oblohy dnes neměří atmosféru, měří rámování
+ * ## Podíl oblohy: nejdřív měřil rámování, teď soudí obojí
  *
- * **Kamera produktu míří celým snímkem do země.** Statický pohled sedí na
- * `[7, 7, 9]` a míří do počátku, tedy 31,5° pod vodorovnou, při svislém
- * poloúhlu objektivu 22,5°: horní hrana snímku leží 9° POD obzorem. Herní
- * pohled je horší, `FOLLOW_OFFSET {0, 6, 7,5}` klopí o 38,7°.
+ * **Do 28. 8. 2026 mířila kamera produktu celým snímkem do země.** Statický
+ * pohled seděl na `[7, 7, 9]` a mířil do počátku, tedy 31,5° pod vodorovnou
+ * při svislém poloúhlu 22,5°: horní hrana snímku ležela 9° POD obzorem. Herní
+ * pohled byl horší, odstup `{0, 6, 7.5}` klopil o 38,7°. Podíl oblohy se tady
+ * proto **měřil a vypisoval, ale nesoudil** — vypovídal o kameře, ne o vzduchu.
  *
- * Naměřeno 28. 8. 2026, a ta dvě čísla jsou celý problém:
+ * Tři kroky, každý se svým naměřeným číslem:
  *
- * | Svět | Obloha | Mrtvá plocha | Odstíny |
+ * | Svět | Do T8 | Po T8 (rámování) | Po zemi (H2) |
  * |---|---|---|---|
- * | `harbor-pier` | **0,0 %** — podlaha kitu zakryje pozadí beze zbytku | 0,28 | 3 |
- * | `dunes-terrace` | **94,9 %** — podlaha dojde a zbytek je prázdná koule | **0,88** | 1 |
- * | `frost-plateau` | **0,0 %** | 0,31 | 1 |
+ * | `harbor-pier` | 0,0 % · mrtvá 0,28 | 32,0 % · 0,34 | 32,0 % · 0,34 |
+ * | `dunes-terrace` | 94,9 % · **0,88** | 96,2 % · **0,84** | **32,5 % · 0,55** |
+ * | `frost-plateau` | 0,0 % · 0,31 | 31,8 % · 0,21 | 31,8 % · 0,19 |
  *
- * Atmosféra je v obou případech tatáž a pracuje správně. Liší se jen to, kam
- * se kamera dívá — a **rámování vlastní T8**, ne tahle úloha: `FollowCamera.tsx`
- * je v jejím seznamu souborů a její AC žádá oblohu na 15–45 % plochy nad všemi
- * dvaceti světy. Podíl oblohy se tu proto **měří a vypisuje, ale nesoudí**;
- * soudí se počet světů, které soudce označí za mrtvé, a ten je připíchnutý.
- * Viz `Findings routed by the run` v `plans/P14-2026-08-28-vizualni-vrstva.md`.
+ * **T8 spravila dva světy ze tří a na třetí nestačila**, protože `dunes-terrace`
+ * nemá vodu a kit pod svět podlahu nestaví — pod obzorem tam nebylo nic, a to
+ * platí pro každý úhel. Doplnila to zem jako samostatné pole popisu vzhledu.
+ * Od té doby se podíl oblohy **soudí** pásmem 15–45 %.
  *
  * ## Co tedy tenhle soubor doopravdy hlídá
  *
@@ -57,28 +56,18 @@ const SETTLE_FRAMES = 5;
 /**
  * Kolik světů smí soudce označit za mrtvá plocha.
  *
- * Není to cíl, je to **připíchnutý stav**: naměřeno 28. 8. 2026 propadá jediný
- * ze tří, `dunes-terrace` — kamera ho zarámovala jako prázdnou oblohu.
+ * **Nula, a je to naměřené číslo, ne cíl.** Historie: do rámování propadal
+ * jediný ze tří, `dunes-terrace` s 0,88. Po spočítaném rámování (T8) zůstal na
+ * 0,84 — kamera za to nemohla, ten svět neměl **zem**. Po zavedení země
+ * (rozhodnutí uživatele v bráně H2) spadl na 0,55.
  *
- * **Odhad byl dva, měření řeklo jedna.** `frost-plateau` vyšlo na 0,31, tedy
- * hluboko pod prahem; propadá jen jedním odstínem, a to soudce mrtvou plochou
- * neměří. Číslo je tady proto, že ho vrátil běh, ne proto, že se čekalo.
- *
- * ## Po T8 se to číslo NEPOHNULO a tady je proč
- *
- * Plán čekal pokles na nulu, jakmile se rámování spočítá ze scény. Rámování se
- * spočítalo a všechny tři světy se zlepšily — `harbor-pier` z 0,28 na 0,34 při
- * pásmech jasu z 0,80 na **1,00**, `frost-plateau` z 0,30 na **0,19** — ale
- * `dunes-terrace` zůstalo na 0,84 proti prahu 0,55.
- *
- * **Kamera za to nemůže, protože v tom světě není nač se dívat.** Popis vzhledu
- * pouštní palety vodu nemá (`deriveLook`, naměřeno v T3: hladina maluje 0,00 %
- * plochy) a kit sám žádnou zem pod svět nestaví. Pod obzorem tedy neleží
- * podlaha, leží tam koule oblohy — a to je pravda pro každý úhel, ze kterého se
- * kamera podívá. Oprava patří do vzhledu, ne do rámování; je routovaná jako
- * `T8-ground` v `plans/P14-2026-08-28-vizualni-vrstva.md`.
+ * ⚠ **`dunes-terrace` je pořád nejtěsnější svět v sadě.** Práh je 0,55; tady
+ * naměřeno **0,53**, na kontaktním listu **0,549** — týž svět, jiný výřez.
+ * Když tenhle test zčervená právě na něm, není to regrese o milimetr od nuly,
+ * je to ten svět, který stojí na hraně. Opravit ho má T11 (opravná vrstva), ne
+ * zvednutí pinu. Propadá i tak na počtu odstínů, takže hotový není.
  */
-const DEAD_WORLDS_UNTIL_FRAMING = 1;
+const DEAD_WORLDS_UNTIL_FRAMING = 0;
 
 /**
  * Pásmo, ve kterém má obloha zabírat plochu snímku — AC úlohy T8.
@@ -89,15 +78,18 @@ const DEAD_WORLDS_UNTIL_FRAMING = 1;
 const SKY_BAND = { min: 0.15, max: 0.45 } as const;
 
 /**
- * Světy, které do pásma zatím nespadnou — **jménem, ne počtem**.
+ * Světy, které do pásma nespadnou — **jménem, ne počtem**.
  *
  * Počet by prošel i tehdy, kdyby z pásma vypadl jiný svět a tenhle se spravil,
  * což je přesně ta výměna, kterou nikdo nechce přehlédnout.
  *
- * `dunes-terrace` je uvnitř ze stejného důvodu jako u mrtvé plochy výš: nemá
- * zem, takže pod obzorem je obloha. Naměřeno po T8: **96,2 %**.
+ * **Dnes je prázdný a stálo to dva kroky.** `dunes-terrace` tu stálo s 96,2 %
+ * oblohy: nemělo vodu a kit pod svět podlahu nestaví, takže pod obzorem svítila
+ * koule oblohy. Zem ho srovnala na **32,5 %**. Mimo pásmo zůstává jediný svět
+ * celého listu, `C02` — 5,5 %, opačný konec téže osy, kulisa vyplní celý výřez.
+ * Ten se tudy neměří, je routovaný jako `T8-c02`.
  */
-const SKY_OUT_OF_BAND: readonly string[] = ['dunes-terrace'];
+const SKY_OUT_OF_BAND: readonly string[] = [];
 
 /** Svět, na kterém se produkt otevírá. Ten musí obstát celý, ne částečně. */
 const DEFAULT_WORLD = 'harbor-pier';

@@ -24,12 +24,12 @@
   },
   "worlds": 12,
   "fromSentence": 6,
-  "passing": 8,
+  "passing": 10,
   "worst": {
     "luminanceSpread": {
       "id": "kiln-court",
       "index": 7,
-      "value": 0.4
+      "value": 0.6
     },
     "focusClarity": {
       "id": "C02",
@@ -39,7 +39,7 @@
     "silhouette": {
       "id": "thicket-clearing",
       "index": 8,
-      "value": 0.08180555555555556
+      "value": 0.08125
     },
     "hues": {
       "id": "dunes-terrace",
@@ -49,7 +49,7 @@
     "dead": {
       "id": "dunes-terrace",
       "index": 10,
-      "value": 0.8402777777777778
+      "value": 0.5486111111111112
     }
   },
   "records": [
@@ -63,14 +63,14 @@
       "url": "/embed/harbor-pier?emit=C01",
       "measured": {
         "luminanceSpread": 0.8,
-        "focusClarity": 0.5566888177463741,
-        "silhouette": 0.12433023510114817,
+        "focusClarity": 0.5018821372714348,
+        "silhouette": 0.12356478950246036,
         "hues": 5,
-        "dead": 0.19444444444444445
+        "dead": 0.16666666666666666
       },
       "failed": [],
       "ok": true,
-      "sky": 0.32296766493055556,
+      "sky": 0.25119032118055556,
       "water": 0
     },
     {
@@ -91,7 +91,7 @@
       "failed": [],
       "ok": true,
       "sky": 0.055328776041666666,
-      "water": 0.022330729166666667
+      "water": 0.011668836805555555
     },
     {
       "index": 2,
@@ -103,14 +103,14 @@
       "url": "/embed/harbor-pier?emit=C03",
       "measured": {
         "luminanceSpread": 0.8,
-        "focusClarity": 0.546001631886793,
-        "silhouette": 0.38555555555555554,
+        "focusClarity": 0.5387257885485612,
+        "silhouette": 0.27275985663082436,
         "hues": 6,
-        "dead": 0.20833333333333334
+        "dead": 0.1597222222222222
       },
       "failed": [],
       "ok": true,
-      "sky": 0.32619791666666664,
+      "sky": 0.254287109375,
       "water": 0
     },
     {
@@ -124,13 +124,13 @@
       "measured": {
         "luminanceSpread": 0.8,
         "focusClarity": 0.5236999935292882,
-        "silhouette": 0.316875,
+        "silhouette": 0.3170138888888889,
         "hues": 5,
-        "dead": 0.18055555555555555
+        "dead": 0.16666666666666666
       },
       "failed": [],
       "ok": true,
-      "sky": 0.280908203125,
+      "sky": 0.2448828125,
       "water": 0
     },
     {
@@ -144,13 +144,13 @@
       "measured": {
         "luminanceSpread": 0.8,
         "focusClarity": 0.5342756693374637,
-        "silhouette": 0.25055555555555553,
+        "silhouette": 0.2509722222222222,
         "hues": 5,
-        "dead": 0.1597222222222222
+        "dead": 0.1527777777777778
       },
       "failed": [],
       "ok": true,
-      "sky": 0.2671028645833333,
+      "sky": 0.23100260416666665,
       "water": 0
     },
     {
@@ -164,13 +164,13 @@
       "measured": {
         "luminanceSpread": 0.8,
         "focusClarity": 0.5123982383018862,
-        "silhouette": 0.2607638888888889,
+        "silhouette": 0.25708333333333333,
         "hues": 7,
-        "dead": 0.05555555555555555
+        "dead": 0.0625
       },
       "failed": [],
       "ok": true,
-      "sky": 0.29729600694444447,
+      "sky": 0.2461187065972222,
       "water": 0
     },
     {
@@ -184,14 +184,14 @@
       "measured": {
         "luminanceSpread": 1,
         "focusClarity": 0.487196353847384,
-        "silhouette": 0.16291666666666665,
+        "silhouette": 0.16333333333333333,
         "hues": 3,
         "dead": 0.3402777777777778
       },
       "failed": [],
       "ok": true,
       "sky": 0.3198904079861111,
-      "water": 0.6302159288194444
+      "water": 0.5370345052083333
     },
     {
       "index": 7,
@@ -202,19 +202,15 @@
       "origin": "Pecní dvůr",
       "url": "/embed/kiln-court",
       "measured": {
-        "luminanceSpread": 0.4,
-        "focusClarity": 0.358387645454791,
-        "silhouette": 0.12208333333333334,
-        "hues": 2,
-        "dead": 0.7569444444444444
+        "luminanceSpread": 0.6,
+        "focusClarity": 0.470540781338589,
+        "silhouette": 0.120625,
+        "hues": 3,
+        "dead": 0.4791666666666667
       },
-      "failed": [
-        "luminanceSpread",
-        "hues",
-        "dead"
-      ],
-      "ok": false,
-      "sky": 0.9019759114583333,
+      "failed": [],
+      "ok": true,
+      "sky": 0.3199739583333333,
       "water": 0
     },
     {
@@ -227,15 +223,15 @@
       "url": "/embed/thicket-clearing",
       "measured": {
         "luminanceSpread": 1,
-        "focusClarity": 0.3325010083066339,
-        "silhouette": 0.08180555555555556,
+        "focusClarity": 0.31430277295653636,
+        "silhouette": 0.08125,
         "hues": 4,
-        "dead": 0.3263888888888889
+        "dead": 0.3125
       },
       "failed": [],
       "ok": true,
       "sky": 0.3184950086805556,
-      "water": 0.6338953993055556
+      "water": 0.5325944010416667
     },
     {
       "index": 9,
@@ -246,19 +242,15 @@
       "origin": "Slévárenská hala",
       "url": "/embed/foundry-hall",
       "measured": {
-        "luminanceSpread": 0.4,
-        "focusClarity": 0.5848322054691518,
-        "silhouette": 0.12868055555555555,
-        "hues": 2,
-        "dead": 0.7361111111111112
+        "luminanceSpread": 0.6,
+        "focusClarity": 0.5133167121769757,
+        "silhouette": 0.13166666666666665,
+        "hues": 5,
+        "dead": 0.5277777777777778
       },
-      "failed": [
-        "luminanceSpread",
-        "hues",
-        "dead"
-      ],
-      "ok": false,
-      "sky": 0.9011697048611111,
+      "failed": [],
+      "ok": true,
+      "sky": 0.3197612847222222,
       "water": 0
     },
     {
@@ -270,19 +262,17 @@
       "origin": "Dunová terasa",
       "url": "/embed/dunes-terrace",
       "measured": {
-        "luminanceSpread": 0.4,
-        "focusClarity": 0.3350291703237131,
-        "silhouette": 0.10430555555555555,
+        "luminanceSpread": 0.8,
+        "focusClarity": 0.48901337188290567,
+        "silhouette": 0.10930555555555556,
         "hues": 1,
-        "dead": 0.8402777777777778
+        "dead": 0.5486111111111112
       },
       "failed": [
-        "luminanceSpread",
-        "hues",
-        "dead"
+        "hues"
       ],
       "ok": false,
-      "sky": 0.9622536892361111,
+      "sky": 0.32455186631944444,
       "water": 0
     },
     {
@@ -296,7 +286,7 @@
       "measured": {
         "luminanceSpread": 1,
         "focusClarity": 0.5121727010094481,
-        "silhouette": 0.16104166666666667,
+        "silhouette": 0.16131944444444443,
         "hues": 2,
         "dead": 0.19444444444444445
       },
@@ -305,7 +295,7 @@
       ],
       "ok": false,
       "sky": 0.3184950086805556,
-      "water": 0.61203125
+      "water": 0.5055208333333333
     }
   ]
 }

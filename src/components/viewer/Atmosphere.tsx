@@ -70,6 +70,15 @@ export const ATMOSPHERE_PREFIX = 'atmosphere:';
 /** Jméno oblohy ve scéně. Čte ho měření podílu oblohy na snímku. */
 export const SKY_NAME = `${ATMOSPHERE_PREFIX}sky`;
 
+/**
+ * Jméno země.
+ *
+ * Je v atmosférické vrstvě, i když zem není počasí: je to **deska vykreslení**
+ * jako hladina, ne kus kitu, a hlavně **nesmí do obalu scény** — deska o straně
+ * 600 by kameru odsunula stejně jako obloha.
+ */
+export const GROUND_NAME = `${ATMOSPHERE_PREFIX}ground`;
+
 /** Jméno prachu. Bez něj se prach počítal do obalu scény — viz `ATMOSPHERE_PREFIX`. */
 export const MOTES_NAME = `${ATMOSPHERE_PREFIX}motes`;
 
@@ -225,6 +234,52 @@ export function Water({
       name={WATER_NAME}
       position={[0, level, depth]}
       rotation={[-Math.PI / 2, 0, 0]}
+    />
+  );
+}
+
+/**
+ * Zem pod světem.
+ *
+ * Táž deska jako hladina, jen neprůhledná, matná a **níž**. Že leží pod
+ * hladinou, je celý trik: svět s vodou se jejím zavedením nezmění o pixel,
+ * protože voda je nad ní a neprůhledná. Svět bez vody dostane poprvé něco pod
+ * obzorem — do 28. 8. 2026 mu tam svítila koule oblohy na 90–96 % plochy.
+ *
+ * Drsnost je vysoká a kovovost nulová, opak hladiny: zem odlesk mít nesmí,
+ * jinak by z ní byla druhá voda.
+ */
+export function Ground({
+  color,
+  level,
+  size = 600,
+}: {
+  readonly color: ColorRepresentation;
+  readonly level: number;
+  readonly size?: number;
+}) {
+  const material = useMemo(
+    () => new MeshStandardMaterial({ color: new Color(color), roughness: 0.95, metalness: 0 }),
+    [color],
+  );
+  const geometry = useMemo(() => new PlaneGeometry(size, size), [size]);
+
+  useEffect(
+    () => () => {
+      material.dispose();
+      geometry.dispose();
+    },
+    [material, geometry],
+  );
+
+  return (
+    <mesh
+      geometry={geometry}
+      material={material}
+      name={GROUND_NAME}
+      position={[0, level, 0]}
+      rotation={[-Math.PI / 2, 0, 0]}
+      receiveShadow
     />
   );
 }
@@ -433,6 +488,15 @@ export function Motes({
  */
 const WATER_SURFACE = -0.35;
 
+/**
+ * Zem leží **pod hladinou**, ne na její úrovni.
+ *
+ * Kdyby seděly na téže výšce, praly by se o hloubku a plocha by blikala.
+ * Patnáct setin pod vodou stačí a je to zároveň důvod, proč zavedení země
+ * nezměnilo ani jeden svět, který už obstál.
+ */
+const GROUND_SURFACE = -0.5;
+
 /** Nejvíc zrnek prachu, které dostane svět s `dust` na jedničce. */
 const MOTE_MAX = 700;
 
@@ -508,6 +572,9 @@ export function Atmosphere({ look, seed }: { readonly look: LookDescriptor; read
         sun={sun}
         height={look.sky.height}
       />
+      {look.ground.present ? (
+        <Ground color={look.ground.color} level={GROUND_SURFACE} />
+      ) : null}
       {look.water.present ? (
         <Water color={look.water.color} level={WATER_SURFACE} depth={0} />
       ) : null}

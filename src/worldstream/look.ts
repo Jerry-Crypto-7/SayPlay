@@ -77,6 +77,32 @@ export interface WaterLook {
   readonly color: string;
 }
 
+/**
+ * Zem pod světem.
+ *
+ * **Přidáno 28. 8. 2026 rozhodnutím uživatele v bráně H2**, a je to oprava
+ * naměřené vady, ne nové pole pro jistotu. Do té doby byla jediná zem, kterou
+ * svět mohl mít, **hladina** — kit podlahu pod scénu nestaví. Světy, jejichž
+ * paleta vodu nemá (`kiln`, `foundry`, `dunes`), tak neměly pod obzorem nic
+ * a koule oblohy jim zabírala 90–96 % snímku proti pásmu 15–45 %. Naměřeno na
+ * kontaktním listu po spočítaném rámování: rámování s tím nesvede nic, protože
+ * je to pravda pro každý úhel.
+ *
+ * Leží **pod hladinou**, ne nad ní, takže ve světě s vodou není vidět vůbec
+ * a jeho zavedení nemění ani jeden svět, který už obstál.
+ */
+export interface GroundLook {
+  /**
+   * Kreslí se zem?
+   *
+   * Dnes ji dostane každý svět a nic ji nevypíná — je to pole kontraktu, ne
+   * větev. Otevírá ho T9 pro případ, kdy si model řekne o interiér; do té doby
+   * je `false` platná hodnota, kterou nikdo neposílá.
+   */
+  readonly present: boolean;
+  readonly color: string;
+}
+
 export interface FogLook {
   /** 0 = čirý vzduch, 1 = neprůhledná stěna ve dvou třetinách dohledu. */
   readonly density: number;
@@ -95,6 +121,7 @@ export interface LookDescriptor {
   readonly palette: PaletteName;
   readonly sky: SkyLook;
   readonly water: WaterLook;
+  readonly ground: GroundLook;
   readonly fog: FogLook;
   readonly key: KeyLightLook;
   /** Síla protisvětla, 0–1. Ono odděluje siluetu od pozadí. */
@@ -105,8 +132,17 @@ export interface LookDescriptor {
   readonly dust: number;
 }
 
-/** Sedm polí, nad kterými se soudí rozmanitost. `palette` mezi ně nepatří. */
-export const LOOK_FIELDS = ['sky', 'water', 'fog', 'key', 'rim', 'exposure', 'dust'] as const;
+/** Osm polí, nad kterými se soudí rozmanitost. `palette` mezi ně nepatří. */
+export const LOOK_FIELDS = [
+  'sky',
+  'water',
+  'ground',
+  'fog',
+  'key',
+  'rim',
+  'exposure',
+  'dust',
+] as const;
 
 export type LookField = (typeof LOOK_FIELDS)[number];
 
@@ -287,7 +323,7 @@ function jitter(value: number, spread: number, roll: number): number {
 export function deriveLook(input: LookInput): LookDescriptor {
   const palette: Palette = PALETTES[input.palette];
   const air = BY_PALETTE[input.palette];
-  const ground = BY_TERRAIN[input.terrain];
+  const terrain = BY_TERRAIN[input.terrain];
 
   // Vlastní stream vzhledu. Semínko se posouvá o konstantu, aby se vzhled
   // nelosoval ze stejné posloupnosti jako rozmístění kusů — jinak by přidání
@@ -311,10 +347,14 @@ export function deriveLook(input: LookInput): LookDescriptor {
 
   return {
     palette: input.palette,
-    sky: { color: sky, height: clamp(air.skyHeight + ground.skyHeight, 0.1, 0.9) },
+    sky: { color: sky, height: clamp(air.skyHeight + terrain.skyHeight, 0.1, 0.9) },
     water: { present: air.water, color: mix(palette.deep, palette.accent, 0.28) },
+    // Zem je hmota světa ztmavená do stínu — příbuzná obloze, ale o hodnotu
+    // níž, aby na obzoru vznikl schod. Zem barvy oblohy by vadu neopravila:
+    // soudce by pořád viděl jednu plochu jednoho jasu.
+    ground: { present: true, color: shade(mix(palette.deep, palette.shell, 0.16), -0.3) },
     fog: {
-      density: clamp(jitter(air.fog * ground.fog, 0.08, fogRoll), 0.05, 1),
+      density: clamp(jitter(air.fog * terrain.fog, 0.08, fogRoll), 0.05, 1),
       color: fogColor,
     },
     key: {
@@ -325,9 +365,9 @@ export function deriveLook(input: LookInput): LookDescriptor {
       ],
       temperature: air.temperature,
     },
-    rim: clamp(air.rim * ground.rim, 0.1, 1),
+    rim: clamp(air.rim * terrain.rim, 0.1, 1),
     exposure: clamp(jitter(air.exposure, 0.05, exposureRoll), 0.8, 1.8),
-    dust: clamp(jitter(air.dust * ground.dust, 0.1, dustRoll), 0, 1),
+    dust: clamp(jitter(air.dust * terrain.dust, 0.1, dustRoll), 0, 1),
   };
 }
 

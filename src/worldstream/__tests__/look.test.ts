@@ -215,14 +215,42 @@ describe('pravidla, která odvození nesmí porušit', () => {
     }
   });
 
-  it('sedm polí je sedm a jsou to ta, která popis nese', () => {
+  it('osm polí je osm a jsou to ta, která popis nese', () => {
     const look = deriveLook({ palette: 'worldstream', terrain: 'flat', seed: 1 });
 
-    expect(LOOK_FIELDS.length).toBe(7);
-    // `palette` je vstup, ne osmé pole — a `LOOK_FIELDS` ho proto nesmí nést.
+    // **Bylo sedm, je osm — a tady je proč.** `ground` přibylo 28. 8. 2026
+    // rozhodnutím uživatele v bráně H2. Do té doby byla jediná zem, kterou svět
+    // mohl mít, hladina, takže tři palety bez vody neměly pod obzorem nic
+    // a obloha jim brala 90–96 % snímku. Číslo se nepřepsalo, aby test zezelenal
+    // — pohnulo se, protože se popis rozrostl o pole, které mu chybělo.
+    expect(LOOK_FIELDS.length).toBe(8);
+    // `palette` je vstup, ne deváté pole — a `LOOK_FIELDS` ho proto nesmí nést.
     expect(Object.keys(look).filter((key) => !LOOK_FIELDS.includes(key as never))).toEqual([
       'palette',
     ]);
+  });
+
+  it('každý svět má zem, a ta je tmavší než jeho obloha', () => {
+    // Zem barvy oblohy by vadu neopravila: soudce by pořád viděl jednu plochu
+    // jednoho jasu, jen by ji maloval jiný objekt. Rozdíl hodnot je celý smysl.
+    const luminance = (hex: string): number => {
+      const value = Number.parseInt(hex.slice(1), 16);
+      return (
+        (0.2126 * ((value >> 16) & 0xff) + 0.7152 * ((value >> 8) & 0xff) + 0.0722 * (value & 0xff)) /
+        255
+      );
+    };
+
+    for (const palette of ['harbor', 'kiln', 'thicket', 'foundry', 'dunes', 'frost'] as const) {
+      const look = deriveLook({ palette, terrain: 'flat', seed: 7 });
+
+      expect(look.ground.present, `${palette} nemá zem`).toBe(true);
+      expect(look.ground.color).toMatch(/^#[0-9a-f]{6}$/);
+      expect(
+        luminance(look.ground.color),
+        `${palette}: zem ${look.ground.color} není tmavší než obloha ${look.sky.color}`,
+      ).toBeLessThan(luminance(look.sky.color));
+    }
   });
 
   it('jediná PRNG je pure-rand', () => {
