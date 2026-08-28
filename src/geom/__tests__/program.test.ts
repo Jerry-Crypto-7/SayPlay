@@ -4,6 +4,7 @@ import { KIT, KIT_BUDGETS } from '@/kit';
 import {
   GEOM_LIMITS,
   GEOM_VERSION,
+  MAX_CURVE_POINTS,
   OPERATION_KINDS,
   PIECE_VARIANTS,
   SHAPE_KINDS,
@@ -37,8 +38,15 @@ function coveringProgram(): GeomProgram {
       { kind: 'arch', variant: 'doorway', at: [0, 0, -4] },
       { kind: 'organic', variant: 'tree', at: [6, 0, 6] },
       { kind: 'group', children: [0, 3, 5, 7, 8, 9] },
+
+      // P13 vlna 1 T6. Připsané **za** dosavadní skupinu, ne doprostřed:
+      // zamítavé testy níž si na uzly sahají indexem, a posunutá tabulka by
+      // z nich udělala testy něčeho jiného, aniž by zčervenaly.
+      { kind: 'arrayAlongCurve', child: 8, count: 5, points: [[0, 0, 0], [4, 0, 3], [8, 0, 0]] },
+      { kind: 'anchorTo', child: 9, target: 1, site: 'top' },
+      { kind: 'group', children: [10, 11, 12] },
     ],
-    root: 10,
+    root: 13,
   };
 }
 
@@ -259,7 +267,12 @@ describe('vadný program se odmítne a řekne proč', () => {
       broken((program) => {
         (program as { root: number }).root = 40;
       }),
-      /root references node 40 outside the table of 11/,
+      // Číslo se pohnulo z 11 na 14 v P13 vlně 1 T6 a je to zapsané, ne
+      // přepsané: pokrývající program musí obsahovat každý druh uzlu, a přibyly
+      // `arrayAlongCurve`, `anchorTo` a skupina, která je drží. Kdyby se
+      // pohnulo bez toho, aby tabulka vyrostla, znamená to, že se z fixture
+      // něco ztratilo.
+      /root references node 40 outside the table of 14/,
     );
   });
 
@@ -311,5 +324,102 @@ describe('vadný program se odmítne a řekne proč', () => {
         }),
       ),
     ).toThrow(/invalid geom program: root references node 40/);
+  });
+});
+
+/**
+ * P13 vlna 1 T6 — co jazyk umí navíc a co u toho nesmí povolit.
+ *
+ * Tři vlastnosti, na kterých ta úloha stojí: kotva je odkaz a musí mířit dolů,
+ * křivkové pole platí do rozpočtu jako každé jiné, a volné otáčení je
+ * **nadmnožina** kvadrantů, ne jejich náhrada.
+ */
+describe('rozšíření jazyka o křivku, kotvu a volné otáčení', () => {
+  it('strop uzlů je 96 a devadesát sedm se odmítne', () => {
+    expect(GEOM_LIMITS.maxNodes).toBe(96);
+
+    const nodes: GeomNode[] = Array.from({ length: 97 }, () => ({
+      kind: 'mass',
+      variant: 'block',
+    }));
+
+    expect(validateGeomProgram({ version: GEOM_VERSION, nodes, root: 0 }).ok).toBe(false);
+  });
+
+  it('kotva na uzel nad sebou nebo na sebe se odmítne', () => {
+    for (const target of [12, 13]) {
+      const result = validateGeomProgram(
+        broken((program) => {
+          (program.nodes[12] as { target: number }).target = target;
+        }),
+      );
+
+      expect(result.ok, `target ${target} prošel`).toBe(false);
+      expect(result.issues.join(' | ')).toMatch(
+        new RegExp(`node 12 references node ${target} at or above itself`),
+      );
+    }
+  });
+
+  it('kotva se počítá jako posun, ne jako druhý kus', () => {
+    const counts = instanceCounts(parseGeomProgram(coveringProgram()).nodes);
+
+    // Uzel 12 kotví jediný strom (uzel 9) na plošinu (uzel 1). Cíl se do
+    // výsledku nedostane, takže z kotvy vyleze právě jeden kus.
+    expect(counts[12]).toBe(1);
+  });
+
+  it('křivkové pole započítává rozvinuté kopie do stropu kusů', () => {
+    const explosive = {
+      version: GEOM_VERSION,
+      nodes: [
+        { kind: 'mass', variant: 'block' },
+        { kind: 'repeat', child: 0, count: 6, step: [1, 0, 0] },
+        {
+          kind: 'arrayAlongCurve',
+          child: 1,
+          count: 24,
+          points: [
+            [0, 0, 0],
+            [10, 4, 0],
+            [20, 0, 0],
+          ],
+        },
+      ],
+      root: 2,
+    };
+
+    const result = validateGeomProgram(explosive);
+    expect(result.ok).toBe(false);
+    expect(result.issues.join(' | ')).toMatch(
+      /expands to 144 placed pieces, above maxInstances 120/,
+    );
+  });
+
+  it('křivka nesmí mít víc kontrolních bodů, než jazyk dovolí', () => {
+    const result = validateGeomProgram(
+      broken((program) => {
+        (program.nodes[11] as { points: number[][] }).points = Array.from(
+          { length: MAX_CURVE_POINTS + 1 },
+          (_unused, index) => [index, 0, 0],
+        );
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+  });
+
+  it('volné otáčení je nadmnožina kvadrantů: yak 0,37 projde, celá otáčka ne', () => {
+    const fractional = broken((program) => {
+      program.nodes[1] = { kind: 'mass', variant: 'block', yaw: 0.37, pitch: -1.2, roll: 2.9 };
+    });
+
+    expect(validateGeomProgram(fractional).ok).toBe(true);
+
+    const fullTurn = broken((program) => {
+      program.nodes[1] = { kind: 'mass', variant: 'block', yaw: 4 };
+    });
+
+    expect(validateGeomProgram(fullTurn).ok).toBe(false);
   });
 });

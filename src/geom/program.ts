@@ -32,8 +32,11 @@ export const GEOM_VERSION = 'geom-program-v1';
 /**
  * Stropy programu.
  *
- * - `maxNodes` **64** — kolik řádků tabulky model napíše. Dost na budovu
- *   složenou z opakovaných částí, málo na to, aby se emise rozutekla.
+ * - `maxNodes` **96** — kolik řádků tabulky model napíše. Zvednuto z 64
+ *   v P13 vlně 1: `arrayAlongCurve` a `anchorTo` znamenají, že se kompozice
+ *   skládá z vazeb mezi uzly, ne z opsaných souřadnic, a na to je 64 řádků
+ *   málo. Strop chrání pořád tentýž rozpočet, protože skutečnou cenu drží
+ *   `maxInstances` — ten se nezvedl.
  * - `maxInstances` **120** — kolik umístěných kusů z programu **vyleze po
  *   rozvinutí** operací. Není to nový rozpočet: je to `maxDrawCallsPerWorld`
  *   z `src/kit/budgets.ts`, kde jeden umístěný kus = jeden draw call. Test tu
@@ -41,9 +44,34 @@ export const GEOM_VERSION = 'geom-program-v1';
  *   nechrání — `repeat` 16 nad `scatter` 24 je 384 kusů ze dvou řádků.
  */
 export const GEOM_LIMITS = {
-  maxNodes: 64,
+  maxNodes: 96,
   maxInstances: 120,
 } as const;
+
+/**
+ * Kontrolních bodů Catmull-Rom křivky. Táž mez jako u `ShapeProgram`
+ * (`src/shape/types.ts`), protože je to týž uzel v druhé větvi jazyka.
+ */
+export const MAX_CURVE_POINTS = 8;
+
+/**
+ * Kam na cílovém uzlu `anchorTo` míří.
+ *
+ * Kotva je bod na **kvádru opsaném** hotovému podstromu cíle, ne kus geometrie:
+ * kusy kitu žádné kotvy nemají a dopisovat je do všech třiceti by byl druhý
+ * slovník. `top` je střed horní stěny, `center` střed kvádru a tak dál.
+ */
+export const ANCHOR_SITES = [
+  'top',
+  'bottom',
+  'north',
+  'south',
+  'east',
+  'west',
+  'center',
+] as const;
+
+export type AnchorSite = (typeof ANCHOR_SITES)[number];
 
 /** Kategorie kitu, které program umí postavit. Pořadí = pořadí v `KIT`. */
 export const MASS_VARIANTS = ['block', 'wedge', 'step', 'plinth', 'stack', 'bevel'] as const;
@@ -80,7 +108,15 @@ export const SHAPE_KINDS = ['mass', 'column', 'arch', 'panel', 'organic', 'terra
  * což je přesně to, co po kompilátoru chce T9 i výtvarné rodiny v T10. Je to
  * sjednocení scény, ne nový slovník tvarů.
  */
-export const OPERATION_KINDS = ['group', 'repeat', 'mirror', 'carve', 'scatter'] as const;
+export const OPERATION_KINDS = [
+  'group',
+  'repeat',
+  'mirror',
+  'carve',
+  'scatter',
+  'arrayAlongCurve',
+  'anchorTo',
+] as const;
 
 /** Z uzlu kitu na `Piece.id`. Kompilátor si tím sahá do `pieceById`. */
 export function pieceIdOf(kind: PieceKind, variant: string): string {
@@ -98,8 +134,22 @@ const scale3 = z.tuple([scaleFactor, scaleFactor, scaleFactor]);
 
 const span = z.number().min(0.1).max(64);
 
-/** Otočení kolem osy Y ve čtvrtinách otáčky — táž jednotka jako `Placement.yaw`. */
-const yawTurns = z.int().min(0).max(3);
+/**
+ * Otočení ve **čtvrtinách otáčky** — táž jednotka jako `Placement.yaw`.
+ *
+ * **P13 vlna 1 T6 uvolnila typ z celého čísla na reálné, ne jednotku.** Byla to
+ * jediná cesta, jak splnit obojí: „volné otáčení ve třech osách" a „staré
+ * programy dají bitově stejný výsledek". Kdyby se přešlo na radiány, znamenal
+ * by zápis `yaw: 1` v každém dosavadním programu i v každém zmrazeném měření
+ * najednou 57°, ne 90° — a nikde by to nebylo vidět, protože obojí je platné
+ * číslo. Čtvrtiny otáčky zůstávají, jen se do nich vejde `0,37`.
+ *
+ * **Meze jsou otevřené, takže celá otáčka `4` je pořád mimo.** Plná otáčka je
+ * identita, takže canonický rozsah ji neobsahuje, a `program.test.ts` na tom
+ * má připnuté očekávání od P11. Uvolnění, které by ho tiše otočilo na zelenou,
+ * by z toho testu udělalo dekoraci.
+ */
+const turns = z.number().gt(-4).lt(4);
 
 const nodeIndex = z.int().min(0).max(GEOM_LIMITS.maxNodes - 1);
 
@@ -108,10 +158,19 @@ const nodeIndex = z.int().min(0).max(GEOM_LIMITS.maxNodes - 1);
 // v prohlížeči zaokrouhlí jinak.
 const seedValue = z.int().min(0).max(2_147_483_647);
 
-/** Umístění, které nese každý tvarový uzel. Vše volitelné = model nemusí psát nuly. */
+/**
+ * Umístění, které nese každý tvarový uzel. Vše volitelné = model nemusí psát nuly.
+ *
+ * `pitch` a `roll` přibyly v P13 vlně 1. Skládají se v pořadí `XYZ`, tedy
+ * `pitch` kolem `x`, `yaw` kolem `y`, `roll` kolem `z`; program, který je
+ * nenapíše, projde přesně týmž výpočtem jako dřív, protože nula je v `Euler`
+ * neutrální prvek a jde o tutéž funkci.
+ */
 const placement = {
   at: vector3.optional(),
-  yaw: yawTurns.optional(),
+  yaw: turns.optional(),
+  pitch: turns.optional(),
+  roll: turns.optional(),
   scale: scale3.optional(),
 };
 
@@ -143,7 +202,7 @@ const terrainNode = z
     amplitude: z.number().min(0).max(8),
     seed: seedValue,
     at: vector3.optional(),
-    yaw: yawTurns.optional(),
+    yaw: turns.optional(),
   })
   .strict();
 
@@ -205,6 +264,48 @@ const scatterNode = z
   })
   .strict();
 
+/**
+ * Řada kopií podél Catmull-Rom křivky. `count` počítá **včetně** obou konců.
+ *
+ * Tohle je uzel, kterým se ze slovníku dostane most, schodiště nebo řada
+ * pilířů podél zatáčky — dosud musel model každou kopii vypsat souřadnicí,
+ * což je přesně to, na co mu nestačí `maxNodes`.
+ *
+ * Kopie se **jen posunou, neotočí se po tečně.** Je to méně, než by šlo, a je
+ * to schválně: otočení po tečně mění, jak kus vypadá, a bez měření by se
+ * nepoznalo, jestli je hezčí. Otáčení má model k dispozici jako `yaw`/`pitch`/
+ * `roll` na kusu samém.
+ */
+const arrayAlongCurveNode = z
+  .object({
+    kind: z.literal('arrayAlongCurve'),
+    child: nodeIndex,
+    count: z.int().min(2).max(24),
+    points: z.array(vector3).min(2).max(MAX_CURVE_POINTS),
+  })
+  .strict();
+
+/**
+ * Umístí podstrom na kotvu **jiného** uzlu.
+ *
+ * Model tím skládá vztahy („varhany stojí na plošině") místo souřadnic, které
+ * si musí spočítat sám. Kotva je bod na kvádru opsaném cílovému podstromu, viz
+ * `ANCHOR_SITES`.
+ *
+ * **Cíl je odkaz, ne rodičovství — do výsledku se nedostane.** Kdo chce vidět
+ * obojí, dá cíl i `anchorTo` do téhož `group`. Kdyby `anchorTo` vracelo obojí,
+ * počítal by se cíl v každém `group` dvakrát a rozpočet draw callů by lhal.
+ */
+const anchorToNode = z
+  .object({
+    kind: z.literal('anchorTo'),
+    child: nodeIndex,
+    target: nodeIndex,
+    site: z.enum(ANCHOR_SITES),
+    offset: vector3.optional(),
+  })
+  .strict();
+
 const geomNodeSchema = z.discriminatedUnion('kind', [
   massNode,
   columnNode,
@@ -217,6 +318,8 @@ const geomNodeSchema = z.discriminatedUnion('kind', [
   mirrorNode,
   carveNode,
   scatterNode,
+  arrayAlongCurveNode,
+  anchorToNode,
 ]);
 
 export const geomProgramSchema = z
@@ -235,10 +338,30 @@ export interface GeomValidation {
   readonly issues: readonly string[];
 }
 
-/** Potomci uzlu. Tvarové uzly nemají žádné, `group` několik, ostatní operace jednoho. */
+/**
+ * Potomci uzlu — to, co se z něj **postaví**. Tvarové uzly nemají žádné,
+ * `group` několik, ostatní operace jednoho.
+ *
+ * `anchorTo.target` mezi ně nepatří: cíl se do výsledku nedostane, je to jen
+ * odkaz na souřadnici. Kdo kontroluje pořadí indexů, musí použít
+ * `referencedIndicesOf`, ne tuhle funkci.
+ */
 export function childIndicesOf(node: GeomNode): readonly number[] {
   if (node.kind === 'group') return node.children;
   return 'child' in node ? [node.child] : [];
+}
+
+/**
+ * Všechno, na co uzel ukazuje — potomci **i** cíl kotvy.
+ *
+ * Tohle je seznam, který musí být striktně pod uzlem. Kdyby se pořadí indexů
+ * hlídalo jen přes `childIndicesOf`, dala by se kotvou napsat vazba na uzel
+ * výš nebo cyklus a průchod odspodu nahoru by četl `undefined`.
+ */
+export function referencedIndicesOf(node: GeomNode): readonly number[] {
+  return node.kind === 'anchorTo'
+    ? [node.child, node.target]
+    : childIndicesOf(node);
 }
 
 /**
@@ -257,12 +380,16 @@ export function instanceCounts(nodes: readonly GeomNode[]): readonly number[] {
         break;
       case 'repeat':
       case 'scatter':
+      case 'arrayAlongCurve':
         counts[index] = node.count * counts[node.child];
         break;
       case 'mirror':
         counts[index] = 2 * counts[node.child];
         break;
       case 'carve':
+      case 'anchorTo':
+        // Kotva kus posune, nepřidá ho. Cíl se nepočítá, protože se do
+        // výsledku nedostane — počítá se tam, kde je do světa doopravdy vložen.
         counts[index] = counts[node.child];
         break;
       default:
@@ -284,8 +411,11 @@ function structuralIssues(program: GeomProgram): string[] {
     fail(`root references node ${program.root} outside the table of ${program.nodes.length}`);
 
   program.nodes.forEach((node, index) => {
-    for (const child of childIndicesOf(node)) {
+    for (const child of referencedIndicesOf(node)) {
       if (child >= index) fail(`node ${index} references node ${child} at or above itself`);
+      if (child >= program.nodes.length) {
+        fail(`node ${index} references node ${child} outside the table of ${program.nodes.length}`);
+      }
     }
   });
 

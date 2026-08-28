@@ -1,11 +1,11 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
-import { Vector3 } from 'three';
+import { Euler, Matrix4, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
 import { KIT_BUDGETS, PALETTES, repaint } from '@/kit';
-import { compileGeomProgram, trianglesOfGeometry } from '../compile';
+import { compileGeomProgram, placementMatrix, trianglesOfGeometry } from '../compile';
 import { GEOM_LIMITS, GEOM_VERSION, instanceCounts, type GeomProgram } from '../program';
 
 const program = (nodes: GeomProgram['nodes'], root: number): GeomProgram => ({
@@ -480,5 +480,44 @@ describe('dvacet programů se vejde do rozpočtu kitu', () => {
     );
 
     expect(GEOM_LIMITS.maxInstances).toBe(KIT_BUDGETS.maxDrawCallsPerWorld);
+  });
+});
+
+/**
+ * P13 vlna 1 T6 — volné otáčení musí být nadmnožina, ne náhrada.
+ *
+ * Kdyby se jednotka změnila z čtvrtin otáčky na radiány, znamenal by zápis
+ * `yaw: 1` v každém dosavadním programu i v každém zmrazeném měření najednou
+ * 57° místo 90° — a nic by nezčervenalo, protože obojí je platné číslo.
+ * Tenhle test je jediné místo, kde se to pozná.
+ */
+describe('volné otáčení sedí na kvadrantech bit po bitu', () => {
+  const quarterTurnMatrix = (turns: number): readonly number[] => [
+    ...new Matrix4()
+      .compose(
+        new Vector3(1.5, 2, -3),
+        new Quaternion().setFromEuler(new Euler(0, (turns * Math.PI) / 2, 0)),
+        new Vector3(2, 0.5, 1.25),
+      )
+      .elements,
+  ];
+
+  it.each([0, 1, 2, 3])('yaw %i dá tutéž matici jako před rozšířením', (turns) => {
+    const now = placementMatrix([1.5, 2, -3], { yaw: turns }, [2, 0.5, 1.25]);
+
+    expect([...now.elements]).toEqual(quarterTurnMatrix(turns));
+  });
+
+  it('nenapsaný pitch a roll se chovají jako nula, ne jako chybějící osa', () => {
+    const implicit = placementMatrix([1.5, 2, -3], { yaw: 1 }, [2, 0.5, 1.25]);
+    const explicit = placementMatrix([1.5, 2, -3], { yaw: 1, pitch: 0, roll: 0 }, [2, 0.5, 1.25]);
+
+    expect([...implicit.elements]).toEqual([...explicit.elements]);
+  });
+
+  it('zlomkový úhel dá jinou matici, takže se doopravdy otáčí volně', () => {
+    const fractional = placementMatrix([1.5, 2, -3], { yaw: 0.37 }, [2, 0.5, 1.25]);
+
+    expect([...fractional.elements]).not.toEqual(quarterTurnMatrix(0));
   });
 });

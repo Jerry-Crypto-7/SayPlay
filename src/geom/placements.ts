@@ -4,10 +4,14 @@ import { Matrix4, type BufferGeometry } from 'three';
 
 import { pieceById } from '../kit';
 import {
+  anchorTranslation,
+  boundsOfGeometry,
   carve,
   concat,
+  curveOffsets,
   flipWinding,
   placementMatrix,
+  rotationOf,
   terrainGeometry,
   trianglesOfGeometry,
 } from './compile';
@@ -86,7 +90,7 @@ function placeNode(
         {
           kind: 'mesh',
           geometry: terrainGeometry(node),
-          matrix: placementMatrix(node.at, node.yaw, undefined),
+          matrix: placementMatrix(node.at, rotationOf(node), undefined),
           mirrored: false,
         },
       ];
@@ -134,11 +138,29 @@ function placeNode(
         const yaw = uniformInt(stream, 0, 3);
         const matrix = placementMatrix(
           [Math.cos(angle) * distance, 0, Math.sin(angle) * distance],
-          yaw,
+          { yaw },
           undefined,
         );
         return built[node.child].map((placement) => transformed(placement, matrix));
       }).flat();
+    }
+
+    case 'arrayAlongCurve':
+      return curveOffsets(node.points, node.count).flatMap((offset) => {
+        const matrix = new Matrix4().makeTranslation(offset.x, offset.y, offset.z);
+        return built[node.child].map((placement) => transformed(placement, matrix));
+      });
+
+    case 'anchorTo': {
+      // Kvádr se bere z **upečeného** cíle, ne ze součtu kvádrů jednotlivých
+      // kusů. Je to dražší o jedno slepení, ale je to jediný způsob, jak dát
+      // touž kotvu jako slučující cesta: obalový kvádr otočeného kusu je menší
+      // než otočený obalový kvádr, a od P13 vlny 1 se otáčí volně, takže by se
+      // ty dvě čísla u každého programu s `pitch` nebo `roll` rozešla.
+      const baked = bakePlacements(built[node.target]);
+      const matrix = anchorTranslation(boundsOfGeometry(baked), node.site, node.offset);
+      baked.dispose();
+      return built[node.child].map((placement) => transformed(placement, matrix));
     }
 
     default: {
@@ -149,7 +171,7 @@ function placeNode(
         {
           kind: 'piece',
           pieceId: id,
-          matrix: placementMatrix(node.at, node.yaw, node.scale),
+          matrix: placementMatrix(node.at, rotationOf(node), node.scale),
           mirrored: false,
         },
       ];
