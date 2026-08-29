@@ -7,6 +7,7 @@ import { LOOK_BUDGETS, deriveLook, type LookDescriptor, type TerrainKind } from 
 import { PURPLE_BAND, acceptLook, hueOf, isPurple } from '../look-schema';
 import {
   ALLOWED_HUE_BUCKETS,
+  COLOURLESS_SKY_HUE,
   HUE_BUCKET_WIDTH,
   HUE_STEP_BUCKETS,
   LOOK_FLOOR,
@@ -510,5 +511,54 @@ describe('kotvy se váží na oblohu toho světa, ne na tři pevné odstíny', (
         ).toBeGreaterThanOrEqual(HUE_BUCKET_WIDTH * 2);
       }
     }
+  });
+});
+
+describe('páka oblohy — jediná, kterou 140 odvozených světů nespustí', () => {
+  /**
+   * **Naměřeno 29. 8. 2026 mutací, která přežila.** Test „obloha nikdy
+   * neopustí svůj koš" nad `WORLDS` prošel i tehdy, když se páce oblohy
+   * podstrčil cíl o koš vedle — protože na žádném z těch 140 světů se k ní
+   * oprava nedostane. Opar a plocha pod obzorem stačí vždy, páka oblohy je
+   * poslední a smyčka se do ní neprokouše.
+   *
+   * Vlastnost tím nezmizela, jen ji nešlo měřit tam, kde se měřila. Tenhle
+   * blok ji proto zkouší na dvou vzhledech, které tu páku **spustit musí**.
+   */
+
+  it('bezbarvá obloha se posadí na odstín, ze kterého se prstenec odpíchne', () => {
+    // Šedá obloha koš nemaluje, takže se od ní odpíchnout nedá a začátek
+    // prstence je volba. Je to chladná modř — ta, na které stála absolutní
+    // kotva do 29. 8. 2026, aby se šedý svět tou změnou nehnul.
+    const before = deriveLook({ palette: 'worldstream', terrain: 'flat', seed: 1 });
+    expect(judgedHueBucket(before.sky.color), 'obloha odstín má, test měří něco jiného').toBeNull();
+
+    const after = repairLook(before);
+
+    expect(after.repairs.some((repair) => repair.path === 'sky/color'), 'páka oblohy nespustila').toBe(true);
+    expect(judgedHueBucket(after.look.sky.color)).toBe(
+      Math.floor(COLOURLESS_SKY_HUE / HUE_BUCKET_WIDTH),
+    );
+  });
+
+  it('barevná obloha, které se oprava dotkne, zůstane ve svém koši', () => {
+    // Vzhled postavený tak, aby se smyčka k obloze dostala: zem je černá, a tu
+    // rotace odstínu nevytáhne (sytost se počítá z jasu, nula krát cokoliv je
+    // nula). Opar tedy zbarví jednu plochu, zem žádnou, a na tři koše to pořád
+    // nestačí — takže přijde na řadu obloha.
+    const sky = '#66473a';
+    const before: LookDescriptor = {
+      ...flatLook(sky),
+      ground: { present: true, color: '#000000' },
+    };
+    const skyBucket = judgedHueBucket(sky);
+    expect(skyBucket, 'obloha testu nemá odstín').not.toBeNull();
+
+    const after = repairLook(before);
+
+    expect(after.repairs.some((repair) => repair.path === 'sky/color'), 'páka oblohy nespustila').toBe(true);
+    expect(judgedHueBucket(after.look.sky.color), 'obloha se odstěhovala do cizího koše').toBe(
+      skyBucket,
+    );
   });
 });
