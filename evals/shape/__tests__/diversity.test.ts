@@ -23,7 +23,7 @@
  * nad `/gallery`; stroj umí odpovědět jen na „jsou různé", ne na „jsou hezké".
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -59,6 +59,24 @@ describe('evals/shape — dvanáct tvarů je dvanáct různých tvarů', () => {
   let report: DiversityReport;
 
   beforeAll(() => {
+    // **Brána jazyka běží před meshingem.** Program, který odkáže na uzel mimo
+    // tabulku, spadne až hluboko ve vyhodnocovači na
+    // `Cannot read properties of undefined (reading 'kind')`; `beforeAll` tím
+    // shodí celý soubor, všech sedm testů se **přeskočí** a aserce, která tu
+    // vadu umí pojmenovat, se nikdy nespustí. Naměřeno mutací 29. 8. 2026.
+    const rejected = GALLERY.filter((item) => !validateShapeProgram(item.program).ok).map(
+      (item) => item.id,
+    );
+    if (rejected.length > 0) {
+      throw new Error(`gallery has programs the language rejects: ${rejected.join(', ')}`);
+    }
+
+    // **Artefakt se napřed smaže.** Commitnutý `diversity.json` na disku leží,
+    // takže aserce „vyrobí report na dohodnuté cestě" bez tohohle přečte starý
+    // soubor a projde i tehdy, když běh nezapsal vůbec nic. Naměřeno mutací
+    // 29. 8. 2026: vypnutý zápis nechal celou sadu zelenou.
+    rmSync(ARTIFACT, { force: true });
+
     report = buildDiversityReport(GALLERY, GALLERY_SEED, new Date().toISOString().slice(0, 10));
     writeFileSync(ARTIFACT, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
   });
@@ -76,6 +94,10 @@ describe('evals/shape — dvanáct tvarů je dvanáct různých tvarů', () => {
   });
 
   it('všech dvanáct programů projde bránou jazyka', () => {
+    // Není to zdvojení stráže v `beforeAll`. Ta chytá jen programy, které se
+    // **nedají vymeshovat**; tenhle test chytá i ty, které se vymeshují docela
+    // dobře a bránou přesto neprojdou — hloubka nad 8, přes 48 uzlů, neznámé
+    // pole. Tam by `beforeAll` prošel a vada by zůstala nevidět.
     const rejected = GALLERY.filter((item) => !validateShapeProgram(item.program).ok).map(
       (item) => item.id,
     );
