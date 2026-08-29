@@ -146,6 +146,37 @@ export const LOOK_FIELDS = [
 
 export type LookField = (typeof LOOK_FIELDS)[number];
 
+/**
+ * Rozpočty každého čísla, které vzhled nese.
+ *
+ * **Jsou tady, protože je čtou dvě strany.** Odvození (`deriveLook`) do nich
+ * osekává, co spočítá, a brána autorovaného vzhledu (`look-schema.ts`) do nich
+ * oseká, co napíše model. Kdyby si obě strany držely vlastní čísla, rozešly by
+ * se při první změně a odvozený vzhled by přestal procházet vlastním
+ * kontraktem — což je přesně ta vada, kterou `look-schema.test.ts` hlídá
+ * zpáteční jízdou přes všechny palety a terény.
+ *
+ * Meze nejsou opatrnost proti nekonečnu: `zod` v4 `NaN` ani `Infinity` sám
+ * nepustí. Chrání před **konečným nesmyslem** — expozice 40 je platné číslo,
+ * projde tone-mappingem a udělá bílý obdélník.
+ */
+export const LOOK_BUDGETS = {
+  /** Poloha obzoru na kouli. Krajní hodnoty by daly svět bez země, nebo bez nebe. */
+  skyHeight: { min: 0.1, max: 0.9 },
+  /** Nula je zakázaná: vzduch úplně bez mlhy nemá kam schovat vzdálenou hranu scény. */
+  fogDensity: { min: 0.05, max: 1 },
+  /** Protisvětlo se nedá vypnout — bez něj silueta splyne s pozadím a soudce to zabije. */
+  rim: { min: 0.1, max: 1 },
+  /** Expozice ACES. Pod 0,8 je scéna nečitelně tmavá, nad 1,8 vypálená. */
+  exposure: { min: 0.8, max: 1.8 },
+  /** Prach se vypnout dá — nula znamená, že se nekreslí vůbec. */
+  dust: { min: 0, max: 1 },
+  /** Teplota klíčového světla v kelvinech: svíčka až zamračená obloha. */
+  temperature: { min: 1500, max: 12_000 },
+} as const;
+
+export type LookBudget = keyof typeof LOOK_BUDGETS;
+
 export interface LookInput {
   readonly palette: PaletteName;
   readonly terrain: TerrainKind;
@@ -270,6 +301,12 @@ function clamp(value: number, low: number, high: number): number {
   return Math.min(high, Math.max(low, value));
 }
 
+/** Oseknutí do rozpočtu daného pole. Jediné místo, kde se meze čtou. */
+export function budgeted(field: LookBudget, value: number): number {
+  const budget = LOOK_BUDGETS[field];
+  return clamp(value, budget.min, budget.max);
+}
+
 /** Kanály sRGB hexu, 0–255. */
 function channels(hex: string): readonly [number, number, number] {
   const value = Number.parseInt(hex.slice(1), 16);
@@ -347,14 +384,14 @@ export function deriveLook(input: LookInput): LookDescriptor {
 
   return {
     palette: input.palette,
-    sky: { color: sky, height: clamp(air.skyHeight + terrain.skyHeight, 0.1, 0.9) },
+    sky: { color: sky, height: budgeted('skyHeight', air.skyHeight + terrain.skyHeight) },
     water: { present: air.water, color: mix(palette.deep, palette.accent, 0.28) },
     // Zem je hmota světa ztmavená do stínu — příbuzná obloze, ale o hodnotu
     // níž, aby na obzoru vznikl schod. Zem barvy oblohy by vadu neopravila:
     // soudce by pořád viděl jednu plochu jednoho jasu.
     ground: { present: true, color: shade(mix(palette.deep, palette.shell, 0.16), -0.3) },
     fog: {
-      density: clamp(jitter(air.fog * terrain.fog, 0.08, fogRoll), 0.05, 1),
+      density: budgeted('fogDensity', jitter(air.fog * terrain.fog, 0.08, fogRoll)),
       color: fogColor,
     },
     key: {
@@ -363,11 +400,11 @@ export function deriveLook(input: LookInput): LookDescriptor {
         Math.sin(elevation),
         Math.sin(azimuth) * Math.cos(elevation),
       ],
-      temperature: air.temperature,
+      temperature: budgeted('temperature', air.temperature),
     },
-    rim: clamp(air.rim * terrain.rim, 0.1, 1),
-    exposure: clamp(jitter(air.exposure, 0.05, exposureRoll), 0.8, 1.8),
-    dust: clamp(jitter(air.dust * terrain.dust, 0.1, dustRoll), 0, 1),
+    rim: budgeted('rim', air.rim * terrain.rim),
+    exposure: budgeted('exposure', jitter(air.exposure, 0.05, exposureRoll)),
+    dust: budgeted('dust', jitter(air.dust * terrain.dust, 0.1, dustRoll)),
   };
 }
 
