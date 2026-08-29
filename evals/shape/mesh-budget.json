@@ -32,20 +32,52 @@
     "warmupResolution": 32,
     "timedIn": "worker"
   },
-  "budget": {
-    "maxMs": 400,
-    "maxTriangles": 32000
+  "ladder": {
+    "rough": {
+      "resolution": 32,
+      "maxMs": 350,
+      "maxTriangles": 16000
+    },
+    "high": {
+      "resolution": 48,
+      "maxMs": 900,
+      "maxTriangles": 32000
+    }
   },
   "verdict": {
-    "withinMs": false,
-    "withinTriangles": false
+    "rough": {
+      "resolution": 32,
+      "workerMs": 155,
+      "triangles": 12016,
+      "withinMs": true,
+      "withinTriangles": true
+    },
+    "high": {
+      "resolution": 48,
+      "workerMs": 462,
+      "triangles": 26992,
+      "withinMs": true,
+      "withinTriangles": true
+    },
+    "outOfLadder": [
+      {
+        "resolution": 64,
+        "workerMs": 1071,
+        "triangles": 47680
+      },
+      {
+        "resolution": 96,
+        "workerMs": 3386,
+        "triangles": 106696
+      }
+    ]
   },
   "grids": [
     {
       "resolution": 32,
       "browser": {
-        "workerMs": 159,
-        "roundTripMs": 158.9,
+        "workerMs": 155,
+        "roundTripMs": 155.5,
         "vertices": 5995,
         "triangles": 12016
       },
@@ -54,14 +86,14 @@
         "vertices": 5995,
         "triangles": 12016
       },
-      "driftFromNode": -0.141,
+      "driftFromNode": -0.162,
       "driftExplained": true
     },
     {
       "resolution": 48,
       "browser": {
-        "workerMs": 514,
-        "roundTripMs": 514.4,
+        "workerMs": 462,
+        "roundTripMs": 462.3,
         "vertices": 13477,
         "triangles": 26992
       },
@@ -70,14 +102,14 @@
         "vertices": 13477,
         "triangles": 26992
       },
-      "driftFromNode": 0.943,
+      "driftFromNode": 0.746,
       "driftExplained": false
     },
     {
       "resolution": 64,
       "browser": {
-        "workerMs": 1456,
-        "roundTripMs": 1456.5,
+        "workerMs": 1071,
+        "roundTripMs": 1071,
         "vertices": 23830,
         "triangles": 47680
       },
@@ -86,14 +118,14 @@
         "vertices": 23830,
         "triangles": 47680
       },
-      "driftFromNode": 1.381,
+      "driftFromNode": 0.751,
       "driftExplained": false
     },
     {
       "resolution": 96,
       "browser": {
-        "workerMs": 3958,
-        "roundTripMs": 3957.8,
+        "workerMs": 3386,
+        "roundTripMs": 3385.7,
         "vertices": 53335,
         "triangles": 106696
       },
@@ -102,7 +134,7 @@
         "vertices": 53335,
         "triangles": 106696
       },
-      "driftFromNode": 0.526,
+      "driftFromNode": 0.306,
       "driftExplained": false
     }
   ],
@@ -127,8 +159,8 @@
     }
   ],
   "workerOverhead64": {
-    "workerMs": 1456,
-    "mainThreadMs": 865.7,
+    "workerMs": 1071,
+    "mainThreadMs": 763.6,
     "nodeMs": 611.6
   }
 }

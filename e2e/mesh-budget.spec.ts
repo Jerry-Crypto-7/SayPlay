@@ -15,9 +15,11 @@
  * 2. **Nejlepší ze tří běhů po zahřátí**, stejná metodika jako §11.2. Medián by
  *    tu byl horší volba: měří se strop schopnosti stroje, ne typický běh pod
  *    cizí zátěží, a jediný běh by na sdíleném notebooku skákal o desítky procent.
- * 3. **Soudí se jen 64³.** Ostatní tři mřížky se měří a zapisují, protože bez
- *    nich by nešlo poznat, jestli se pohnul stroj, nebo tvar — ale AC úlohy T5
- *    dává strop jedné z nich a druhý strop by byl číslo, které nikdo neodvodil.
+ * 3. **Soudí se obě příčky žebříku (32³ a 48³), měří se čtyři mřížky.** 64³ a 96³
+ *    zůstávají v reportu bez rozsudku: první proto, že rozhodnutí o žebříku
+ *    z 29. 8. 2026 stojí právě na jeho čísle, druhá proto, že §11.2 ji vždycky
+ *    vedla jen pro export. Kdyby se přestaly měřit, nešlo by za rok poznat,
+ *    jestli se žebřík snížil kvůli měření, nebo kvůli náladě.
  * 4. **Odchylka od Node se hlásí, nepadá na ní.** Důvod ke změně čísla umí
  *    napsat jen člověk; aserce by ho jen zamlčela nebo přepsala.
  *
@@ -33,9 +35,10 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
+import { MESH_DETAIL } from '../src/shape/types';
 import {
   COST_CLASSES,
-  GRID_64_BUDGET,
+  OUT_OF_LADDER_GRIDS,
   NODE_BASELINE,
   NODE_DRIFT_TOLERANCE,
   REFERENCE_BOUNDS,
@@ -111,7 +114,7 @@ test.describe('rozpočet meshingu v prohlížeči', () => {
   // kterému CLAUDE.md předepisuje `git status` po každé e2e sadě. Příkaz z AC
   // (`npx playwright test e2e/mesh-budget.spec.ts`) ho pouští dál, značka
   // filtruje jen sadu.
-  test('@measure změří referenční tvar ve čtyřech mřížkách a připne 64³', async ({
+  test('@measure změří referenční tvar ve čtyřech mřížkách a připne obě příčky žebříku', async ({
     page,
     browserName,
   }) => {
@@ -177,6 +180,18 @@ test.describe('rozpočet meshingu v prohlížeči', () => {
     }
 
     const grid64 = grids.find((row) => row.resolution === 64)!;
+
+    /** Sedí ta úroveň detailu ve svém stropu? Jeden tvar pro obě příčky žebříku. */
+    const verdictFor = (level: (typeof MESH_DETAIL)[keyof typeof MESH_DETAIL]) => {
+      const row = grids.find((entry) => entry.resolution === level.resolution)!;
+      return {
+        resolution: level.resolution,
+        workerMs: row.browser.workerMs,
+        triangles: row.browser.triangles,
+        withinMs: row.browser.workerMs <= level.maxMs,
+        withinTriangles: row.browser.triangles <= level.maxTriangles,
+      };
+    };
     const report = {
       measuredAt: new Date().toISOString().slice(0, 10),
       task: 'P13 vlna 1 T5',
@@ -199,10 +214,19 @@ test.describe('rozpočet meshingu v prohlížeči', () => {
         warmupResolution: WARMUP_RESOLUTION,
         timedIn: 'worker',
       },
-      budget: GRID_64_BUDGET,
+      ladder: MESH_DETAIL,
       verdict: {
-        withinMs: grid64.browser.workerMs <= GRID_64_BUDGET.maxMs,
-        withinTriangles: grid64.browser.triangles <= GRID_64_BUDGET.maxTriangles,
+        rough: verdictFor(MESH_DETAIL.rough),
+        high: verdictFor(MESH_DETAIL.high),
+        // 64³ se neposuzuje, jen dokládá, proč z žebříku vypadlo.
+        outOfLadder: OUT_OF_LADDER_GRIDS.map((resolution) => {
+          const row = grids.find((entry) => entry.resolution === resolution)!;
+          return {
+            resolution,
+            workerMs: row.browser.workerMs,
+            triangles: row.browser.triangles,
+          };
+        }),
       },
       grids,
       nodeCostClasses: COST_CLASSES,
@@ -235,7 +259,14 @@ test.describe('rozpočet meshingu v prohlížeči', () => {
         `${grid64.browser.workerMs} ms · Node ${NODE_BASELINE[64].ms} ms`,
     );
 
-    expect(grid64.browser.triangles).toBeLessThanOrEqual(GRID_64_BUDGET.maxTriangles);
-    expect(grid64.browser.workerMs).toBeLessThanOrEqual(GRID_64_BUDGET.maxMs);
+    // Soudí se obě příčky žebříku, ne jen jedna. Kdyby se soudila jen `high`,
+    // hrubá podoba by mohla tiše zdražit až k ní a první snímek by se opozdil,
+    // aniž by se cokoli ozvalo — a hrubá podoba je to jediné, co porotce vidí
+    // v první vteřině.
+    for (const level of [MESH_DETAIL.rough, MESH_DETAIL.high]) {
+      const row = grids.find((entry) => entry.resolution === level.resolution)!;
+      expect(row.browser.triangles).toBeLessThanOrEqual(level.maxTriangles);
+      expect(row.browser.workerMs).toBeLessThanOrEqual(level.maxMs);
+    }
   });
 });

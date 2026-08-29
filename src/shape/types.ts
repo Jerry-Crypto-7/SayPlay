@@ -131,6 +131,38 @@ export const SHAPE_LIMITS = {
   maxEvaluations: 512,
 } as const;
 
+/**
+ * Žebřík detailu — v jaké mřížce se tvar meshuje a co to smí stát.
+ *
+ * **Rozhodnuto uživatelem 29. 8. 2026 po měření v P13 vlně 1 T5.** Design book
+ * §11.2 měl `hrubá = 32³, vysoká = 64³`; naměřeno v produkčním buildu
+ * a v prohlížeči **64³ nejde**, a to ze dvou nezávislých důvodů naráz:
+ *
+ * - **čas** — 1 254 až 1 456 ms na jeden hrdinský objekt, měřeno uvnitř workeru;
+ * - **trojúhelníky** — 47 680 na objekt, takže **tři objekty samy o sobě
+ *   přetečou strop celé scény** (120 000 z úlohy T2).
+ *
+ * Fronta v `mesh-client.ts` je navíc sériová schválně („Tvary chodí po jednom",
+ * pořadí podle `priority` je vlastnost produktu), takže se tři objekty nedají
+ * schovat za paralelní pracovníky.
+ *
+ * **Odkud jsou stropy.** `maxMs` je nejhorší naměřený běh plus polovina navíc
+ * na porotcův notebook, o kterém nic nevíme — 228 → 350 a 607 → 900. Nejsou
+ * odvozené ze slibu „hratelné do tří sekund", ale obstojí proti němu: hrubý
+ * svět o třech objektech se vejde do 1,05 s a zpevnění do dalších 2,7 s, a to
+ * zpevnění běží až nad světem, který je hratelný.
+ *
+ * `maxTriangles` u `high` drží tři objekty na 96 000 pod stropem scény; u
+ * `rough` je to naměřených 12 016 se stejnou rezervou.
+ *
+ * ⚠ **96³ zůstává mimo žebřík**, jak §11.2 říkala — 3 593 až 4 033 ms a
+ * 106 696 trojúhelníků je jen pro export, nikdy pro scénu.
+ */
+export const MESH_DETAIL = {
+  rough: { resolution: 32, maxMs: 350, maxTriangles: 16_000 },
+  high: { resolution: 48, maxMs: 900, maxTriangles: 32_000 },
+} as const;
+
 /* ------------------------------------------------------------------ *
  * Uzly.
  * ------------------------------------------------------------------ */

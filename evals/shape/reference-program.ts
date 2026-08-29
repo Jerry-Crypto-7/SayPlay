@@ -71,15 +71,17 @@ export const REFERENCE_SEED = 20260827;
 export const REFERENCE_GRIDS = [32, 48, 64, 96] as const;
 
 /**
- * Strop, na kterém spec padá. Z AC úlohy T5: **64³ nesmí přesáhnout 400 ms ani
- * 32 000 trojúhelníků.**
+ * Mřížka, která je mimo žebřík a měří se jen pro doklad. AC úlohy T5 původně
+ * žádalo strop **400 ms / 32 000 trojúhelníků při 64³**; naměřeno 1 254–1 456 ms
+ * a 47 680 trojúhelníků, tedy trojnásobek času a půldruhého násobku
+ * trojúhelníků. Uživatel proto 29. 8. 2026 snížil žebřík na 32³/48³ a strop
+ * bydlí v `MESH_DETAIL` v `src/shape/types.ts`, protože je to rozhodnutí
+ * produktu, ne evaluační sady.
  *
- * 400 ms je 185 ms z design booku plus víc než dvojnásobná rezerva — §11.2 čeká
- * rozptyl ±30 % a dodává, že „i dvojnásobek je pořád o dva řády lepší než
- * externí služba". Je to tedy hranice použitelnosti produktu, ne odhad naměřené
- * hodnoty.
+ * Číslo tu zůstává v reportu schválně: bez něj by se za rok nedalo poznat,
+ * jestli se žebřík snížil kvůli měření, nebo kvůli náladě.
  */
-export const GRID_64_BUDGET = { maxMs: 400, maxTriangles: 32_000 } as const;
+export const OUT_OF_LADDER_GRIDS = [64, 96] as const;
 
 /**
  * Kolik smí browserové číslo utéct od Node, než se to musí vysvětlit. Spec na
