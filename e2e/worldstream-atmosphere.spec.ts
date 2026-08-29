@@ -54,20 +54,37 @@ import { IMAGE_THRESHOLDS, measureImage } from '../src/worldstream/image-judge';
 const SETTLE_FRAMES = 5;
 
 /**
- * Kolik světů smí soudce označit za mrtvá plocha.
+ * Světy, kterým se mrtvá plocha toleruje — **jménem, ne počtem**, a jako horní
+ * mez, ne jako rovnost.
  *
- * **Nula, a je to naměřené číslo, ne cíl.** Historie: do rámování propadal
- * jediný ze tří, `dunes-terrace` s 0,88. Po spočítaném rámování (T8) zůstal na
- * 0,84 — kamera za to nemohla, ten svět neměl **zem**. Po zavedení země
- * (rozhodnutí uživatele v bráně H2) spadl na 0,55.
+ * Historie čísla: do rámování propadal jediný ze tří, `dunes-terrace` s 0,88.
+ * Po spočítaném rámování (T8) zůstal na 0,84 — kamera za to nemohla, ten svět
+ * neměl **zem**. Po zavedení země (brána H2) spadl na 0,53 a seznam se
+ * vyprázdnil.
  *
- * ⚠ **`dunes-terrace` je pořád nejtěsnější svět v sadě.** Práh je 0,55; tady
- * naměřeno **0,53**, na kontaktním listu **0,549** — týž svět, jiný výřez.
- * Když tenhle test zčervená právě na něm, není to regrese o milimetr od nuly,
- * je to ten svět, který stojí na hraně. Opravit ho má T11 (opravná vrstva), ne
- * zvednutí pinu. Propadá i tak na počtu odstínů, takže hotový není.
+ * ⚠ **Od 29. 8. 2026 stojí `dunes-terrace` na 0,55, tedy přesně na prahu.**
+ * Do té doby mířily opravné kotvy odstínů na tři pevné odstíny (195 / 45 / 165)
+ * rozdané podle role, takže **každý** opravený svět skončil v téže trojici
+ * košů; přístav a poušť pak měly průměrnou barvu snímku vzdálenou **2,7** proti
+ * prahu 8. Kotvy se proto vážou na oblohu toho konkrétního světa (T11-anchors)
+ * a vzdálenost stoupla na **14**. Poušť za to zaplatila 0,53 → 0,55.
+ *
+ * **Proto je to seznam tolerovaných, ne očekávaných.** Svět přesně na prahu
+ * překlopí rozptyl mezi běhy; aserce na rovnost by červenala střídavě podle
+ * toho, jak vyšlo zaokrouhlení, a nikdo by ji po třetím falešném poplachu
+ * nečetl. Naměřeno v pěti bězích 29. 8. 2026: 0,55 · 0,56 · 0,57 na tomhle
+ * výřezu, 0,556 na kontaktním listu. **Číslo se vypisuje každý běh**, takže
+ * skutečný pohyb je vidět i bez toho, aby ho hlídala aserce.
+ *
+ * Co aserce hlídá dál v plné síle: že mrtvý nezčerná **jiný** svět. Práh
+ * soudce (`IMAGE_THRESHOLDS.maxDead`) se nezvedl ani o setinu.
+ *
+ * **Rozhodl uživatel 29. 8. 2026: vyhrávají rozpoznatelně různé světy.** Plochý
+ * pouštní snímek je vědomá cena za to, že přístav a poušť nejsou tatáž barva.
+ * Poušť má z celé sady nejmíň odstínů (5), takže hotová není: adresou je výběr
+ * rodiny a kompozice v P13 vlně 2, ne další látání vzhledu.
  */
-const DEAD_WORLDS_UNTIL_FRAMING = 0;
+const DEAD_WORLDS_TOLERATED: readonly string[] = ['dunes-terrace'];
 
 /**
  * Pásmo, ve kterém má obloha zabírat plochu snímku — AC úlohy T8.
@@ -282,14 +299,15 @@ test('produktové plátno má tonální rozsah, vlastní vzduch a vejde se do ro
     ).toBeLessThanOrEqual(SKY_BAND.max);
   }
 
-  // 4. Připíchnutý stav rámování. Není to cíl, je to dluh — viz hlavičku.
+  // 4. Připíchnutý dluh, jménem. Není to cíl — viz hlavičku u
+  //    `DEAD_WORLDS_TOLERATED`.
   const dead = measured.filter((world) => world.dead > IMAGE_THRESHOLDS.maxDead);
+  const unexpected = dead.filter((world) => !DEAD_WORLDS_TOLERATED.includes(world.layout));
   expect(
-    dead.length,
-    `soudce označil za mrtvé ${String(dead.length)} světy (${dead.map((w) => w.layout).join(', ')}). ` +
-      'Když tohle číslo kleslo, spočítala T8 rámování — sniž pin a zapiš proč se pohnul. ' +
-      'Když stouplo, přestal obstát svět, který obstát měl.',
-  ).toBe(DEAD_WORLDS_UNTIL_FRAMING);
+    unexpected.map((world) => world.layout),
+    `soudce označil za mrtvé: ${dead.map((w) => `${w.layout} ${w.dead.toFixed(3)}`).join(', ') || 'nic'}. ` +
+      'Přibylo-li jméno, přestal obstát svět, který obstát měl.',
+  ).toEqual([]);
 });
 
 test('poušť vodu nedostane, mráz ano — a je to na ploše snímku vidět', async ({ page }) => {

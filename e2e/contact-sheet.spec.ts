@@ -83,6 +83,34 @@ const GUTTER = 2;
 
 const SETTLE_FRAMES = 3;
 
+/**
+ * Světy, kterým se propadnutí toleruje — **jménem a s vlastností**, ne počtem.
+ *
+ * **Prázdné to bylo do 29. 8. 2026 a jeden zápis to stálo.** Do té doby mířily
+ * opravné kotvy odstínů na tři pevné odstíny (195 / 45 / 165) rozdané podle
+ * role, takže **každý** opravený svět skončil v téže trojici košů. Přístav
+ * a poušť pak měly průměrnou barvu snímku vzdálenou 2,7 proti prahu 8
+ * v `e2e/worldstream-atmosphere.spec.ts` — dva světy, jeden vzduch. Kotvy se
+ * proto vážou na oblohu toho konkrétního světa (T11-anchors) a vzdálenost
+ * stoupla na 14.
+ *
+ * Zaplatila to poušť: mrtvá plocha 0,549 → **0,556** proti prahu 0,55.
+ * **Rozhodl uživatel 29. 8. 2026: vyhrávají rozpoznatelně různé světy**, plochý
+ * pouštní snímek je vědomá cena za to, že přístav a poušť nejsou tatáž barva.
+ *
+ * ⚠ **Cenu zaplatil jeden svět, ne dva, a taky to bylo naměřené.** Nejdřív
+ * propadl i `foundry-hall` (0,528 → 0,597) — jenže to nebyla cena za nic, byla
+ * to vada: `withHue` držel při rotaci HSV *value* (nejvyšší kanál), zatímco
+ * `dead` se počítá z jasu podle Rec. 709, kde zelená váží 0,715 a červená
+ * 0,213. Otočení odstínu tak jas tiše měnilo až o 27 %, přestože hlavička
+ * `look-repair.ts` tvrdila opak. Po opravě jas drží a foundry je zpátky na
+ * 0,528. **Nezvedl se ani jeden práh soudce.**
+ *
+ * Poušť má z celé sady nejmíň odstínů (5), takže hotová není: adresou je výběr
+ * rodiny a kompozice v P13 vlně 2, ne další látání vzhledu.
+ */
+const TOLERATED_FLOPS: readonly string[] = ['dunes-terrace (dead)'];
+
 interface FrozenPrompt {
   readonly id: string;
   readonly kind: string;
@@ -420,7 +448,7 @@ test('kontaktní list všech dosažitelných světů vznikne a jeho světy se od
   );
 
   /**
-   * **Podlaha z T11: ani jeden svět nesmí propadnout.**
+   * **Podlaha z T11: propadnout smí jen to, co je jmenovitě zapsané níž.**
    *
    * Až sem byl list měřidlem — vypsal čísla a nechal rozhodnout člověka v bráně.
    * `repairLook` je ale záruka, ne měřidlo: běží nad každým vzhledem dřív, než
@@ -435,8 +463,10 @@ test('kontaktní list všech dosažitelných světů vznikne a jeho světy se od
   const flopped = records.filter((record) => !record.ok);
   expect(
     flopped.map((record) => `${record.id} (${record.failed.join(',')})`),
-    'podlaha z T11 neplatí — vzhled prošel repairLook a obraz z něj přesto propadl',
-  ).toEqual([]);
+    'podlaha z T11 neplatí — vzhled prošel repairLook a obraz z něj přesto propadl. ' +
+      'Přibylo-li jméno, přestal obstát svět, který obstát měl; zmizelo-li, ' +
+      'něco ho spravilo — škrtni ho ze seznamu a zapiš proč.',
+  ).toEqual(TOLERATED_FLOPS);
 
   console.log(
     `[contact-sheet] ${String(records.filter((record) => record.ok).length)}/` +
