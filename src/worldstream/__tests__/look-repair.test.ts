@@ -562,3 +562,50 @@ describe('páka oblohy — jediná, kterou 140 odvozených světů nespustí', (
     );
   });
 });
+
+describe('rotace odstínu nese jas beze změny', () => {
+  /**
+   * **Hlavička modulu to tvrdila od začátku a do 29. 8. 2026 to nebyla pravda.**
+   * `withHue` držel při rotaci HSV *value*, tedy nejvyšší kanál — jenže jas
+   * podle Rec. 709 váží zelenou 0,715 a červenou 0,213. Otočení tyrkysu do
+   * červené proto snížilo jas až o 27 %, aniž o tom kdokoliv věděl.
+   *
+   * Naměřený následek: `foundry-hall` propadl na kontaktním listu mrtvou
+   * plochou **0,528 → 0,597**, přestože se mu měnil jen odstín oparu. `dead`
+   * se přitom počítá **výhradně z jasu** — buňka je mrtvá, když má rozpětí jasu
+   * pod `deadRange`. Oprava, která má srovnat odstíny, tak tiše rozhodovala
+   * o prahu, se kterým nemá nic společného.
+   */
+
+  it('žádná opravená plocha nezmění jas o víc, než co spolkne osm bitů', () => {
+    const EIGHT_BIT_NOISE = 0.01;
+    for (const world of WORLDS) {
+      for (const repair of repairLook(deriveLook(world)).repairs) {
+        if (repair.property !== 'hues') continue;
+        const from = luminanceOf(String(repair.from));
+        const to = luminanceOf(String(repair.to));
+        expect(
+          Math.abs(to - from),
+          world.palette + '/' + repair.path + ': ' + from.toFixed(3) + ' -> ' + to.toFixed(3),
+        ).toBeLessThanOrEqual(EIGHT_BIT_NOISE);
+      }
+    }
+  });
+
+  it('nedosažitelný jas se ořízne dolů, nikdy nahoru', () => {
+    // Sytou zeleň nelze v Rec. 709 přebarvit na stejně jasnou červeň — ta má
+    // při plné sytosti strop 0,213 proti 0,715. Oprava tedy musí ustoupit,
+    // ne dorovnat jas rozsvícením barvy, kterou svět nikdy neměl.
+    const green = repairLook(flatLook('#00ff00'));
+    const ceiling = luminanceOf('#00ff00');
+
+    const rotated = green.repairs.filter((repair) => repair.property === 'hues');
+    expect(rotated.length, 'jednobarevný vzhled musí opravu vyvolat').toBeGreaterThan(0);
+    for (const repair of rotated) {
+      expect(
+        luminanceOf(String(repair.to)),
+        repair.path + ' se rozsvítilo nad předlohu',
+      ).toBeLessThanOrEqual(ceiling + 0.01);
+    }
+  });
+});
