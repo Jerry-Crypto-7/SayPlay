@@ -12,6 +12,13 @@
  *    naprázdno**. Prázdný mesh je tichá vada: siluety by byly samé nuly, dva
  *    prázdné tvary by měly vzdálenost 0 a duplicitní otisk — vypadalo by to
  *    jako shoda tvarů, i když je to shoda ničeho.
+ *
+ *    **Brána jazyka je jediná věc, která nemá vlastní `it`, a je to schválně.**
+ *    Musí proběhnout dřív než meshing, jinak neplatný program spadne uvnitř
+ *    vyhodnocovače a shodí `beforeAll` — a s ním i ten `it`, který ho měl
+ *    pojmenovat. Zkoušeno mutací 29. 8. 2026: pojmenovaný test se v tom případě
+ *    **přeskočí**, takže by byl ozdobný. Stráž v `beforeAll` selže hlasitěji,
+ *    protože vypíše, který tvar a proč.
  * 2. Žádné dva tvary nemají **shodný otisk geometrie** (detektor duplikátu).
  * 3. Všech 66 dvojic je **nad prahem** `DIVERSITY_THRESHOLD`.
  * 4. **Semínko nevyrobí jiný tvar** — tentýž program pod posunutým semínkem musí
@@ -91,18 +98,6 @@ describe('evals/shape — dvanáct tvarů je dvanáct různých tvarů', () => {
 
   it('má právě dvanáct předepsaných jmen', () => {
     expect(GALLERY.map((item) => item.id)).toEqual([...GALLERY_IDS]);
-  });
-
-  it('všech dvanáct programů projde bránou jazyka', () => {
-    // Není to zdvojení stráže v `beforeAll`. Ta chytá jen programy, které se
-    // **nedají vymeshovat**; tenhle test chytá i ty, které se vymeshují docela
-    // dobře a bránou přesto neprojdou — hloubka nad 8, přes 48 uzlů, neznámé
-    // pole. Tam by `beforeAll` prošel a vada by zůstala nevidět.
-    const rejected = GALLERY.filter((item) => !validateShapeProgram(item.program).ok).map(
-      (item) => item.id,
-    );
-
-    expect(rejected).toEqual([]);
   });
 
   it('žádný tvar se nevymeshuje naprázdno', () => {
