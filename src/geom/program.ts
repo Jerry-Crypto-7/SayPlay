@@ -65,6 +65,36 @@ export const GEOM_LIMITS = {
 export const MAX_CURVE_POINTS = 8;
 
 /**
+ * Kolik dílků `sweep` po dráze vygeneruje. Prstenců je o jeden víc.
+ *
+ * Strop je rozpočet, ne vkus. Nejdražší možný sweep je osmibodový profil na
+ * 64 dílcích: plášť `64 × 8 × 2 = 1 024` trojúhelníků a obě víka
+ * `2 × (8 − 2) = 12`, dohromady **1 036** proti
+ * `KIT_BUDGETS.maxTrianglesPerPiece` = 1 200. `program.test.ts` ten součin
+ * počítá, takže zvednutí kteréhokoli z těch tří čísel spadne tam, a ne až
+ * v rozpočtu celého světa, kde by se ztratilo mezi sto dvaceti kusy.
+ */
+export const MAX_SWEEP_SEGMENTS = 64;
+
+/**
+ * Odstíny, kterými smí `sweep` barvit vrcholy — uzavřená množina kitu.
+ *
+ * **Opsaná, ne importovaná**, ze stejného důvodu jako `PIECE_VARIANTS`: tenhle
+ * soubor neimportuje `three` ani nic, co ho táhne, aby se program dal ověřit
+ * v Node, ve fallbacku i v ověřovači. `program.test.ts` seznam drží připnutý
+ * ke `SWATCHES`, takže odstín přidaný do kitu se ohlásí červeným testem místo
+ * aby ze `sweep` tiše zmizel.
+ *
+ * **Uzavřenost je záměr, ne omezení.** `repaint()` přebarvuje kusy podle
+ * přesné shody barvy vrcholu s odstínem kitu a na cizí barvě vyhodí výjimku.
+ * Vlastní barva ve `sweep` by tedy nebyla svoboda — byl by to pád při první
+ * změně palety.
+ */
+export const SWATCH_NAMES = ['shell', 'deep', 'accent', 'warm', 'sand', 'moss'] as const;
+
+export type GeomSwatch = (typeof SWATCH_NAMES)[number];
+
+/**
  * Kam na cílovém uzlu `anchorTo` míří.
  *
  * Kotva je bod na **kvádru opsaném** hotovému podstromu cíle, ne kus geometrie:
@@ -101,7 +131,7 @@ export const FIXTURE_VARIANTS = [
 ] as const;
 export const ACTOR_VARIANTS = ['tall', 'squat', 'drone', 'quadruped'] as const;
 
-/** Zem. Jediný tvar, který nemá kus v kitu — generuje se výškovým polem. */
+/** Zem. Jeden ze dvou tvarů bez kusu v kitu — generuje se výškovým polem. */
 export const TERRAIN_VARIANTS = ['flat', 'ridge', 'basin', 'plateau'] as const;
 
 /**
@@ -129,6 +159,7 @@ export const SHAPE_KINDS = [
   'fixture',
   'actor',
   'terrain',
+  'sweep',
 ] as const;
 
 /**
@@ -250,6 +281,42 @@ const terrainNode = z
   })
   .strict();
 
+/**
+ * **Profil tažený po křivce** — jediná zakřivená forma, kterou jazyk umí sám.
+ *
+ * Kit staví z hotových kusů a jeho `arch` je pět předem vymodelovaných variant.
+ * Klenba, žebro, oblouk mostu ani trubka vedená obloukem se z nich složit nedá:
+ * kus se dá otočit a zvětšit, ale ne ohnout. Cílový snímek to obcházel ručně
+ * psaným `three` (žebra jako trubky po Catmull-Rom křivce, 1132 řádků mimo
+ * jazyk) — a přesně tenhle rozdíl je důvod, proč generovaný svět nikdy nevypadá
+ * jako ten ručně napsaný.
+ *
+ * **Dráha je táž Catmull-Rom křivka jako u `arrayAlongCurve`** a sdílí s ní
+ * i strop `MAX_CURVE_POINTS`. Dvě různá čísla by byly dvě různé pravdy o tomtéž
+ * uzlu ve dvou větvích jazyka; `curveOffsets()` je jediný sampler obou.
+ *
+ * **Rozdíl mezi `sweep` a `arrayAlongCurve` je souvislost.** `arrayAlongCurve`
+ * rozsadí po dráze kopie kusu, mezi kterými zůstanou mezery. `sweep` z profilu
+ * udělá **jedno uzavřené těleso** — plášť plus víka na obou koncích — takže
+ * z něj je oblouk, ne řetěz korálků.
+ *
+ * Profil je uzavřený mnohoúhelník v rovině kolmé na tečnu dráhy, zapsaný jako
+ * dvojice `[u, v]`. Jeho pořadí se **nemusí** hlídat: kompilátor si profil
+ * otočí do kladného směru sám, protože jinak by celé těleso mělo normály
+ * dovnitř a v prohlížeči by zmizelo. Nulová plocha profilu je naopak odmítnutí
+ * — z ní nevznikne tenký tvar, ale neviditelný.
+ */
+const sweepNode = z
+  .object({
+    kind: z.literal('sweep'),
+    profile: z.array(z.tuple([coordinate, coordinate])).min(3).max(MAX_CURVE_POINTS),
+    path: z.array(vector3).min(2).max(MAX_CURVE_POINTS),
+    segments: z.int().min(2).max(MAX_SWEEP_SEGMENTS),
+    swatch: z.enum(SWATCH_NAMES),
+    ...placement,
+  })
+  .strict();
+
 /** Sjednocení. Jediný uzel, který nese víc potomků — proto se z něj skládá scéna. */
 const groupNode = z
   .object({
@@ -359,6 +426,7 @@ const geomNodeSchema = z.discriminatedUnion('kind', [
   fixtureNode,
   actorNode,
   terrainNode,
+  sweepNode,
   groupNode,
   repeatNode,
   mirrorNode,
@@ -446,8 +514,23 @@ export function instanceCounts(nodes: readonly GeomNode[]): readonly number[] {
 }
 
 /**
- * To, co schéma neumí: rozsah a monotonii indexů a rozpočet po rozvinutí.
- * Vrací **všechny** nálezy, ne první — program se odmítá s důvodem.
+ * Plocha uzavřeného mnohoúhelníku, se znaménkem (shoelace). Kladná znamená
+ * pořadí proti směru hodinových ručiček v rovině `[u, v]`.
+ */
+export function profileArea(profile: readonly (readonly [number, number])[]): number {
+  let twice = 0;
+  for (let index = 0; index < profile.length; index += 1) {
+    const [u1, v1] = profile[index];
+    const [u2, v2] = profile[(index + 1) % profile.length];
+    twice += u1 * v2 - u2 * v1;
+  }
+  return twice / 2;
+}
+
+/**
+ * To, co schéma neumí: rozsah a monotonii indexů, rozpočet po rozvinutí a dva
+ * druhy zdegenerovaného `sweep`. Vrací **všechny** nálezy, ne první — program
+ * se odmítá s důvodem.
  */
 function structuralIssues(program: GeomProgram): string[] {
   const issues: string[] = [];
@@ -462,6 +545,23 @@ function structuralIssues(program: GeomProgram): string[] {
       if (child >= program.nodes.length) {
         fail(`node ${index} references node ${child} outside the table of ${program.nodes.length}`);
       }
+    }
+  });
+
+  // Dvě degenerace `sweep`, které schéma z jednoho řádku nevidí, protože jsou
+  // to vlastnosti celého pole, ne jednoho čísla. Obě vyrobí těleso, které
+  // projde vším ostatním a v obraze po něm nezůstane nic — a to je horší než
+  // pád, protože se to nemá kde ohlásit.
+  program.nodes.forEach((node, index) => {
+    if (node.kind !== 'sweep') return;
+
+    if (Math.abs(profileArea(node.profile)) < 1e-9) {
+      fail(`node ${index} sweeps a profile with no area, so it would build nothing visible`);
+    }
+
+    const [first] = node.path;
+    if (node.path.every((point) => point.every((value, axis) => value === first[axis]))) {
+      fail(`node ${index} sweeps along ${node.path.length} identical points, which is not a path`);
     }
   });
 

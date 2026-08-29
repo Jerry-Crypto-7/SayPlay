@@ -1,17 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
-import { KIT, KIT_BUDGETS } from '@/kit';
+import { KIT, KIT_BUDGETS, SWATCHES } from '@/kit';
 import {
   GEOM_LIMITS,
   GEOM_VERSION,
   MAX_CURVE_POINTS,
+  MAX_SWEEP_SEGMENTS,
   OPERATION_KINDS,
   PIECE_VARIANTS,
   SHAPE_KINDS,
+  SWATCH_NAMES,
   childIndicesOf,
   instanceCounts,
   parseGeomProgram,
   pieceIdOf,
+  profileArea,
   validateGeomProgram,
   type GeomNode,
   type GeomProgram,
@@ -52,8 +55,30 @@ function coveringProgram(): GeomProgram {
       { kind: 'fixture', variant: 'crate', at: [3, 0, 3] },
       { kind: 'actor', variant: 'tall', at: [2, 0, 2] },
       { kind: 'group', children: [13, 14, 15] },
+
+      // P14 T10. Zase **za** dosavadní tabulku, ze stejného důvodu jako výš.
+      // Kořen se tím posouvá z 16 na 18 — žádný test ho neopisuje číslem,
+      // čtou ho z tohohle programu.
+      {
+        kind: 'sweep',
+        profile: [
+          [-0.4, -0.4],
+          [0.4, -0.4],
+          [0.4, 0.4],
+          [-0.4, 0.4],
+        ],
+        path: [
+          [0, 0, 0],
+          [0, 3, 2],
+          [0, 0, 4],
+        ],
+        segments: 12,
+        swatch: 'shell',
+        at: [-6, 0, 0],
+      },
+      { kind: 'group', children: [16, 17] },
     ],
-    root: 16,
+    root: 18,
   };
 }
 
@@ -112,10 +137,142 @@ describe('slovník programu je slovník kitu', () => {
     expect(reachable.size, 'kit má 42 kusů a všechny musí být dosažitelné').toBe(KIT.length);
   });
 
-  it('terrain je jediný tvar bez kusu v kitu', () => {
+  it('generované tvary bez kusu v kitu jsou právě terrain a sweep', () => {
+    // Do P14 T10 tu stál jen `terrain`. `sweep` přibyl a je to druhý tvar
+    // téhož druhu: kus kitu se dá otočit a zvětšit, ale ne ohnout, takže
+    // klenba se z něj složit nedá a musí se spočítat. **Seznam je uzavřený
+    // schválně** — třetí generovaný tvar znamená třetí generátor sítí a ten
+    // má někdo obhájit, ne ho přidat mimochodem.
     const withoutPiece = SHAPE_KINDS.filter((kind) => !(kind in PIECE_VARIANTS));
 
-    expect(withoutPiece).toEqual(['terrain']);
+    expect(withoutPiece).toEqual(['terrain', 'sweep']);
+  });
+});
+
+
+describe('profil tažený po křivce má meze, které nejsou nové', () => {
+  const sweepNode = (patch: Record<string, unknown> = {}): GeomNode =>
+    ({
+      kind: 'sweep',
+      profile: [
+        [-0.5, -0.5],
+        [0.5, -0.5],
+        [0.5, 0.5],
+        [-0.5, 0.5],
+      ],
+      path: [
+        [0, 0, 0],
+        [0, 2, 2],
+        [0, 0, 4],
+      ],
+      segments: 8,
+      swatch: 'deep',
+      ...patch,
+    }) as GeomNode;
+
+  const sweepProgram = (patch: Record<string, unknown> = {}): unknown => ({
+    version: GEOM_VERSION,
+    nodes: [sweepNode(patch)],
+    root: 0,
+  });
+
+  it('odstíny sweepu jsou přesně odstíny kitu', () => {
+    // Opsaný seznam v `program.ts` proti skutečnému kitu. Kdyby se rozešly,
+    // model by mohl emitovat odstín, na kterém `repaint()` vyhodí — nebo by
+    // mu naopak zmizel odstín, který kit vydává.
+    expect([...SWATCH_NAMES]).toEqual(Object.keys(SWATCHES));
+  });
+
+  it('dráha sdílí strop bodů s arrayAlongCurve, nemá vlastní', () => {
+    const points = (count: number) =>
+      Array.from({ length: count }, (_unused, index) => [index, 0, index] as const);
+
+    // Obojí na tomtéž čísle: jeden uzel jazyka ve dvou větvích nesmí mít dvě
+    // meze, protože pak platí ta menší a druhá je dekorace.
+    expect(validateGeomProgram(sweepProgram({ path: points(MAX_CURVE_POINTS) })).ok).toBe(true);
+    expect(validateGeomProgram(sweepProgram({ path: points(MAX_CURVE_POINTS + 1) })).ok).toBe(false);
+
+    const alongCurve = (count: number) => ({
+      version: GEOM_VERSION,
+      nodes: [
+        { kind: 'mass', variant: 'block' },
+        { kind: 'arrayAlongCurve', child: 0, count: 3, points: points(count) },
+      ],
+      root: 1,
+    });
+
+    expect(validateGeomProgram(alongCurve(MAX_CURVE_POINTS)).ok).toBe(true);
+    expect(validateGeomProgram(alongCurve(MAX_CURVE_POINTS + 1)).ok).toBe(false);
+  });
+
+  it('nejdražší povolený sweep se vejde do rozpočtu jednoho kusu', () => {
+    // Plášť je `dílky × body profilu × 2` trojúhelníků, obě víka
+    // `2 × (body − 2)`. Součin tří stropů se počítá tady, aby zvednutí
+    // kteréhokoli z nich spadlo dřív, než se objeví v rozpočtu světa.
+    const shell = MAX_SWEEP_SEGMENTS * MAX_CURVE_POINTS * 2;
+    const caps = 2 * (MAX_CURVE_POINTS - 2);
+
+    expect(shell + caps).toBeLessThanOrEqual(KIT_BUDGETS.maxTrianglesPerPiece);
+  });
+
+  it('plocha profilu má znaménko podle pořadí bodů', () => {
+    const square = [
+      [-1, -1],
+      [1, -1],
+      [1, 1],
+      [-1, 1],
+    ] as const;
+
+    expect(profileArea(square)).toBeCloseTo(4, 12);
+    expect(profileArea([...square].reverse())).toBeCloseTo(-4, 12);
+  });
+
+  it.each([
+    ['profil o dvou bodech', { profile: [[0, 0], [1, 1]] }],
+    ['profil nad stropem', { profile: Array.from({ length: MAX_CURVE_POINTS + 1 }, (_u, i) => [i, i]) }],
+    ['dráha o jediném bodu', { path: [[0, 0, 0]] }],
+    ['jediný dílek', { segments: 1 }],
+    ['dílky nad stropem', { segments: MAX_SWEEP_SEGMENTS + 1 }],
+    ['zlomkový počet dílků', { segments: 8.5 }],
+    ['odstín mimo kit', { swatch: 'lilac' }],
+    ['pole navíc', { thickness: 0.2 }],
+    ['NaN v profilu', { profile: [[0, 0], [1, Number.NaN], [1, 1]] }],
+    ['souřadnice dráhy mimo rozsah', { path: [[0, 0, 0], [900, 0, 0]] }],
+  ])('%s se odmítne', (_name, patch) => {
+    expect(validateGeomProgram(sweepProgram(patch)).ok).toBe(false);
+  });
+
+  it('profil s nulovou plochou se odmítne, protože by nebyl tenký, ale neviditelný', () => {
+    // Tři body na přímce projdou schématem — je to platné pole platných čísel.
+    // Vadu vidí až pohled na celé pole, takže patří do strukturální kontroly.
+    const collinear = validateGeomProgram(
+      sweepProgram({ profile: [[0, 0], [1, 1], [2, 2]] }),
+    );
+
+    expect(collinear.ok).toBe(false);
+    expect(collinear.issues.join(' ')).toContain('no area');
+  });
+
+  it('dráha ze samých stejných bodů se odmítne, protože to není dráha', () => {
+    const still = validateGeomProgram(
+      sweepProgram({ path: [[2, 1, 3], [2, 1, 3], [2, 1, 3]] }),
+    );
+
+    expect(still.ok).toBe(false);
+    expect(still.issues.join(' ')).toContain('identical points');
+  });
+
+  it('dráha, kde se shoduje jen část bodů, projde', () => {
+    // Zdvojený bod je legitimní způsob, jak křivku u konce přibrzdit. Odmítnutí
+    // by tady zakázalo tvar, na kterém není nic špatného.
+    expect(validateGeomProgram(sweepProgram({ path: [[0, 0, 0], [0, 0, 0], [0, 2, 3]] })).ok).toBe(
+      true,
+    );
+  });
+
+  it('sweep je tvar, ne operace — do rozpočtu instancí se počítá jako jeden kus', () => {
+    expect(instanceCounts([sweepNode()])).toEqual([1]);
+    expect(childIndicesOf(sweepNode())).toEqual([]);
   });
 });
 

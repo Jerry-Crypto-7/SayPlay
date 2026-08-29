@@ -12,6 +12,7 @@ import {
   flipWinding,
   placementMatrix,
   rotationOf,
+  sweepGeometry,
   terrainGeometry,
   trianglesOfGeometry,
 } from './compile';
@@ -31,8 +32,10 @@ import { parseGeomProgram, pieceIdOf, type GeomNode, type GeomProgram } from './
  * kusů týmiž maticemi musí vyjít vrchol po vrcholu totéž, což pinuje
  * `__tests__/placement.test.ts` nad každým uzlem i nad všemi čtyřmi rodinami.
  *
- * **Dva uzly se na umístěný kus převést nedají** a zůstávají sítí:
+ * **Tři uzly se na umístěný kus převést nedají** a zůstávají sítí:
  * - `terrain` — zem je výškové pole, kus v kitu pro ni není,
+ * - `sweep` — profil tažený po křivce je také generovaný tvar; kit se ohnout
+ *   nedá, a právě proto ten uzel vznikl,
  * - `carve` — řez zahazuje trojúhelníky, takže podstrom po něm přestane být
  *   složeninou kusů.
  *
@@ -57,7 +60,7 @@ export interface PiecePlacement extends PlacementBase {
   readonly pieceId: string;
 }
 
-/** Co kus kitu není: zem a prosekaný podstrom. */
+/** Co kus kitu není: zem, tažený profil a prosekaný podstrom. */
 export interface MeshPlacement extends PlacementBase {
   readonly kind: 'mesh';
   readonly geometry: BufferGeometry;
@@ -91,6 +94,19 @@ function placeNode(
           kind: 'mesh',
           geometry: terrainGeometry(node),
           matrix: placementMatrix(node.at, rotationOf(node), undefined),
+          mirrored: false,
+        },
+      ];
+
+    case 'sweep':
+      return [
+        {
+          kind: 'mesh',
+          geometry: sweepGeometry(node),
+          // Na rozdíl od terénu si `sweep` bere i `scale`: terén má vlastní
+          // `extent`, takže by měl dvě cesty k téže velikosti, tažený profil
+          // žádnou takovou nemá.
+          matrix: placementMatrix(node.at, rotationOf(node), node.scale),
           mirrored: false,
         },
       ];

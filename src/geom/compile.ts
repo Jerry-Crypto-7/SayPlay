@@ -15,6 +15,7 @@ import { SWATCHES, pieceById, srgbHexToLinear, type SwatchName } from '../kit';
 import {
   parseGeomProgram,
   pieceIdOf,
+  profileArea,
   type AnchorSite,
   type GeomNode,
   type GeomProgram,
@@ -41,8 +42,9 @@ import {
  * (`srgbHexToLinear`), takže je `repaint()` z palet umí přebarvit. Terén proto
  * používá odstíny kitu, ne vlastní: `repaint()` na barvě mimo kit vyhodí.
  *
- * **Pět pomocníků je exportovaných kvůli `placements.ts`** — `concat`,
- * `flipWinding`, `placementMatrix`, `terrainGeometry` a `carve`. Druhá cesta
+ * **Šest pomocníků je exportovaných kvůli `placements.ts`** — `concat`,
+ * `flipWinding`, `placementMatrix`, `terrainGeometry`, `sweepGeometry`
+ * a `carve`. Druhá cesta
  * kompilátoru z nich staví plán rozmístění místo jedné sloučené sítě; sám
  * `compileGeomProgram()` se tím nemění, protože na něm stojí zmrazená měření.
  */
@@ -348,6 +350,151 @@ function flatNormals(position: readonly number[]): Float32Array {
   return normal;
 }
 
+
+/**
+ * Tečny v každém vzorku dráhy, spočítané ze sousedů.
+ *
+ * Degenerovaný krok (dva vzorky na témž místě) si **nese předchozí tečnu**
+ * místo aby sáhl po konstantě: jinak by se rám v tom jediném prstenci prudce
+ * otočil a v tělese by vznikl uzel. Úplně první tečna nemá co zdědit, takže
+ * padne na osu `z` — cesta složená z jediného bodu je odmítnutá už ve
+ * `structuralIssues`, takže se sem taková dráha nedostane.
+ */
+function tangentsOf(samples: readonly Vector3[]): Vector3[] {
+  const tangents: Vector3[] = [];
+  let carried = new Vector3(0, 0, 1);
+
+  for (let index = 0; index < samples.length; index += 1) {
+    const previous = samples[Math.max(0, index - 1)];
+    const next = samples[Math.min(samples.length - 1, index + 1)];
+    const tangent = new Vector3().subVectors(next, previous);
+    if (tangent.lengthSq() > 1e-18) carried = tangent.normalize();
+    tangents.push(carried.clone());
+  }
+
+  return tangents;
+}
+
+/**
+ * Rám v každém vzorku — dvojice os kolmých na tečnu, ve kterých leží profil.
+ *
+ * **Paralelní přenos, ne pevný vektor „nahoru".** Frenetův rám z druhé derivace
+ * se v rovném úseku převrátí, a Gram-Schmidt proti světové svislici degeneruje
+ * přesně tam, kde dráha míří nahoru — tedy u klenby, kvůli které tenhle uzel
+ * vůbec vzniká. Přenos místo toho otočí předchozí normálu o tentýž úhel, o jaký
+ * se otočila tečna, takže se profil po dráze **nekroutí**.
+ *
+ * Po každém kroku se normála znovu srovná do kolmice: přes šedesát čtyři kroků
+ * by ji zaokrouhlení jinak pomalu vyklonilo a plášť by se rozjel.
+ */
+function framesOf(tangents: readonly Vector3[]): readonly { normal: Vector3; binormal: Vector3 }[] {
+  const first = tangents[0];
+  const least =
+    Math.abs(first.x) <= Math.abs(first.y) && Math.abs(first.x) <= Math.abs(first.z)
+      ? new Vector3(1, 0, 0)
+      : Math.abs(first.y) <= Math.abs(first.z)
+        ? new Vector3(0, 1, 0)
+        : new Vector3(0, 0, 1);
+  const normal = new Vector3().crossVectors(first, least).normalize();
+
+  return tangents.map((tangent, index) => {
+    if (index > 0) {
+      const axis = new Vector3().crossVectors(tangents[index - 1], tangent);
+      if (axis.lengthSq() > 1e-18) {
+        const cosine = Math.min(1, Math.max(-1, tangents[index - 1].dot(tangent)));
+        normal.applyAxisAngle(axis.normalize(), Math.acos(cosine));
+      }
+      normal.sub(tangent.clone().multiplyScalar(normal.dot(tangent))).normalize();
+    }
+    return {
+      normal: normal.clone(),
+      binormal: new Vector3().crossVectors(tangent, normal),
+    };
+  });
+}
+
+/**
+ * Profil tažený po dráze — uzavřené těleso, plášť plus obě víka.
+ *
+ * **Uzavřené doslova:** každá hrana patří přesně dvěma trojúhelníkům a všechny
+ * mají vinutí ven. Nekontroluje se to komentářem — `program.test.ts` počítá
+ * hrany a znaménko objemu, protože zrovna tenhle uzel umí vyrobit těleso, které
+ * má správný počet trojúhelníků a přitom je obrácené naruby, a v testu na počet
+ * by prošlo.
+ *
+ * **Profil se otáčí do kladného směru, nesoudí se.** Model, který napíše body
+ * po směru hodinových ručiček, dostane týž oblouk jako model, který je napíše
+ * proti — normalizace do rozpočtu, jak ji dovoluje design book §7.5. Odmítnout
+ * se dá jen profil s nulovou plochou, a to dělá `structuralIssues`.
+ *
+ * **Normály jsou ploché a zapečené do vrcholů.** `MeshToonMaterial` nemá
+ * `flatShading`, takže hladké normály by z klenby udělaly rozmazanou skvrnu.
+ * Je to táž `flatNormals()` jako u terénu, tedy přesně to, co by nad
+ * nezaindexovanou geometrií udělalo `toNonIndexed()` + `computeVertexNormals()`
+ * — druhá implementace téhož by byla druhá pravda o normálách; test to drží
+ * připnuté porovnáním obou cest.
+ */
+export function sweepGeometry(node: Extract<GeomNode, { kind: 'sweep' }>): BufferGeometry {
+  const profile =
+    profileArea(node.profile) < 0 ? [...node.profile].reverse() : [...node.profile];
+  const samples = curveOffsets(node.path, node.segments + 1);
+  const frames = framesOf(tangentsOf(samples));
+
+  // Prstence vrcholů: bod dráhy plus profil rozložený do os jeho rámu.
+  const rings = samples.map((point, index) => {
+    const { normal, binormal } = frames[index];
+    return profile.map(([u, v]) =>
+      new Vector3(
+        point.x + normal.x * u + binormal.x * v,
+        point.y + normal.y * u + binormal.y * v,
+        point.z + normal.z * u + binormal.z * v,
+      ),
+    );
+  });
+
+  const position: number[] = [];
+  const push = (a: Vector3, b: Vector3, c: Vector3) => {
+    position.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+  };
+
+  // Plášť. Pořadí `a → b → c` je proti směru hodinových ručiček při pohledu
+  // zvenčí, takže normála z vektorového součinu míří ven.
+  for (let ring = 0; ring < rings.length - 1; ring += 1) {
+    for (let corner = 0; corner < profile.length; corner += 1) {
+      const next = (corner + 1) % profile.length;
+      const a = rings[ring][corner];
+      const b = rings[ring][next];
+      const c = rings[ring + 1][next];
+      const d = rings[ring + 1][corner];
+      push(a, b, c);
+      push(a, c, d);
+    }
+  }
+
+  // Víka jako vějíř z nultého vrcholu. Přední se obrací, protože se na něj
+  // dívá opačná strana tělesa.
+  const start = rings[0];
+  const end = rings[rings.length - 1];
+  for (let corner = 1; corner < profile.length - 1; corner += 1) {
+    push(start[0], start[corner + 1], start[corner]);
+    push(end[0], end[corner], end[corner + 1]);
+  }
+
+  const [r, g, b] = srgbHexToLinear(SWATCHES[node.swatch]);
+  const color = new Float32Array(position.length);
+  for (let index = 0; index < color.length; index += 3) {
+    color[index] = r;
+    color[index + 1] = g;
+    color[index + 2] = b;
+  }
+
+  return fromAttributes({
+    position: new Float32Array(position),
+    color,
+    normal: flatNormals(position),
+  });
+}
+
 /**
  * Řez kvádrem: zahodí trojúhelníky, jejichž těžiště padne dovnitř.
  *
@@ -393,6 +540,9 @@ function buildNode(node: GeomNode, built: readonly BufferGeometry[]): BufferGeom
   switch (node.kind) {
     case 'terrain':
       return place(terrainGeometry(node), node.at, rotationOf(node), undefined);
+
+    case 'sweep':
+      return place(sweepGeometry(node), node.at, rotationOf(node), node.scale);
 
     case 'group':
       return concat(node.children.map((child) => built[child].clone()));

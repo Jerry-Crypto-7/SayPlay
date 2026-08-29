@@ -1,12 +1,26 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
-import { Euler, Matrix4, Quaternion, Vector3 } from 'three';
+import { BufferAttribute, BufferGeometry, Euler, Matrix4, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
 import { KIT_BUDGETS, PALETTES, repaint } from '@/kit';
-import { compileGeomProgram, placementMatrix, trianglesOfGeometry } from '../compile';
-import { GEOM_LIMITS, GEOM_VERSION, instanceCounts, type GeomProgram } from '../program';
+import {
+  compileGeomProgram,
+  placementMatrix,
+  sweepGeometry,
+  trianglesOfGeometry,
+} from '../compile';
+import {
+  GEOM_LIMITS,
+  GEOM_VERSION,
+  MAX_CURVE_POINTS,
+  MAX_SWEEP_SEGMENTS,
+  SWATCH_NAMES,
+  instanceCounts,
+  type GeomNode,
+  type GeomProgram,
+} from '../program';
 
 const program = (nodes: GeomProgram['nodes'], root: number): GeomProgram => ({
   version: GEOM_VERSION,
@@ -410,6 +424,222 @@ describe('terén je zem, ne deska', () => {
     }
 
     expect([...byColumn.values()].filter((bucket) => bucket.size > 1)).toEqual([]);
+  });
+});
+
+
+/**
+ * Uzel `sweep` z P14 T10 — jediná zakřivená forma, kterou jazyk umí sám.
+ *
+ * **Proč se tady měří tvar a ne počet.** Tažení profilu po křivce umí vyrobit
+ * těleso, které má správný počet trojúhelníků, drží rozpočet a přitom je
+ * děravé, obrácené naruby nebo zkroucené kolem vlastní osy. Test na počet
+ * trojúhelníků by všechny tři vady propustil, takže se tu počítají **hrany**
+ * (uzavřenost) a **znaménko objemu** (orientace).
+ */
+describe('profil tažený po křivce je uzavřené těleso', () => {
+  const SQUARE: [number, number][] = [
+    [-0.5, -0.5],
+    [0.5, -0.5],
+    [0.5, 0.5],
+    [-0.5, 0.5],
+  ];
+
+  const sweep = (patch: Record<string, unknown> = {}) =>
+    sweepGeometry({
+      kind: 'sweep',
+      profile: SQUARE,
+      path: [
+        [-3, 0, 0],
+        [0, 4, 0],
+        [3, 0, 0],
+      ],
+      segments: 12,
+      swatch: 'shell',
+      ...patch,
+    } as Extract<GeomNode, { kind: 'sweep' }>);
+
+  const positionsOf = (geometry: BufferGeometry) =>
+    geometry.getAttribute('position').array as Float32Array;
+
+  /** Klíč vrcholu. Zaokrouhlení je nutné: sousední trojúhelníky počítají týž
+   *  roh dvěma cestami a ve `Float32Array` se rozejdou v poslední číslici. */
+  const key = (position: Float32Array, at: number) =>
+    [position[at], position[at + 1], position[at + 2]]
+      .map((value) => Math.round(value * 1e5) / 1e5)
+      .join(',');
+
+  /** Každou orientovanou hranu spočítá zvlášť. */
+  function edgeCensus(geometry: BufferGeometry): Map<string, number> {
+    const position = positionsOf(geometry);
+    const edges = new Map<string, number>();
+
+    for (let triangle = 0; triangle < position.length; triangle += 9) {
+      const corners = [0, 3, 6].map((offset) => key(position, triangle + offset));
+      for (let corner = 0; corner < 3; corner += 1) {
+        const edge = `${corners[corner]}->${corners[(corner + 1) % 3]}`;
+        edges.set(edge, (edges.get(edge) ?? 0) + 1);
+      }
+    }
+
+    return edges;
+  }
+
+  /** Objem přes divergenční větu. Kladný = vinutí ven, záporný = naruby. */
+  function signedVolume(geometry: BufferGeometry): number {
+    const position = positionsOf(geometry);
+    let volume = 0;
+
+    for (let triangle = 0; triangle < position.length; triangle += 9) {
+      const a = new Vector3(position[triangle], position[triangle + 1], position[triangle + 2]);
+      const b = new Vector3(position[triangle + 3], position[triangle + 4], position[triangle + 5]);
+      const c = new Vector3(position[triangle + 6], position[triangle + 7], position[triangle + 8]);
+      volume += a.dot(new Vector3().crossVectors(b, c)) / 6;
+    }
+
+    return volume;
+  }
+
+  it('každá hrana patří přesně dvěma trojúhelníkům, a to opačně orientovaným', () => {
+    const edges = edgeCensus(sweep());
+
+    // Každá orientovaná hrana právě jednou = souvislá orientace bez překrytí.
+    expect([...edges.values()].filter((count) => count !== 1)).toEqual([]);
+
+    // A ke každé musí existovat opačná = v plášti ani ve víkách není díra.
+    const missing = [...edges.keys()].filter((edge) => {
+      const [from, to] = edge.split('->');
+      return !edges.has(`${to}->${from}`);
+    });
+    expect(missing).toEqual([]);
+  });
+
+  it('normály míří ven, i když model napíše profil obráceně', () => {
+    // Znaménko objemu je jediná levná kontrola orientace celého tělesa.
+    // Druhá polovina je ta podstatná: profil po směru hodinových ručiček si
+    // kompilátor otočí sám, takže se model nemusí trefit do konvence, o které
+    // se nikde nedozví.
+    expect(signedVolume(sweep())).toBeGreaterThan(0);
+    expect(signedVolume(sweep({ profile: [...SQUARE].reverse() }))).toBeGreaterThan(0);
+  });
+
+  it('obrácený profil dá tytéž vrcholy, jen jinak zapsané', () => {
+    expect(signedVolume(sweep({ profile: [...SQUARE].reverse() }))).toBeCloseTo(
+      signedVolume(sweep()),
+      6,
+    );
+  });
+
+  it('počet trojúhelníků sedí na vzorec plášť + víka', () => {
+    for (const segments of [2, 7, 12, MAX_SWEEP_SEGMENTS]) {
+      const triangles = trianglesOfGeometry(sweep({ segments }));
+
+      expect(triangles, `${segments} dílků`).toBe(segments * SQUARE.length * 2 + 2 * (SQUARE.length - 2));
+    }
+  });
+
+  it('nejdražší povolený sweep drží rozpočet jednoho kusu', () => {
+    const widest = Array.from({ length: MAX_CURVE_POINTS }, (_unused, index) => {
+      const angle = (index / MAX_CURVE_POINTS) * Math.PI * 2;
+      return [Math.cos(angle), Math.sin(angle)] as [number, number];
+    });
+
+    const triangles = trianglesOfGeometry(
+      sweep({ profile: widest, segments: MAX_SWEEP_SEGMENTS }),
+    );
+
+    expect(triangles).toBeLessThanOrEqual(KIT_BUDGETS.maxTrianglesPerPiece);
+  });
+
+  it('oblouk má jiný obal než týž profil bez tažení', () => {
+    // AC úlohy. Kdyby se dráha ignorovala a profil se jen protáhl mezi konci,
+    // vyšly by oba obaly stejné — a všechno ostatní by prošlo.
+    const arch = sweep();
+    const straight = sweep({
+      path: [
+        [-3, 0, 0],
+        [3, 0, 0],
+      ],
+    });
+
+    arch.computeBoundingBox();
+    straight.computeBoundingBox();
+
+    expect(arch.boundingBox).not.toBeNull();
+    expect(straight.boundingBox).not.toBeNull();
+    expect(arch.boundingBox?.max.y).toBeGreaterThan((straight.boundingBox?.max.y ?? 0) + 1);
+    expect(arch.boundingBox?.equals(straight.boundingBox!)).toBe(false);
+  });
+
+  it('svislá dráha rám nepřevrátí — proto se přenáší, ne staví z osy nahoru', () => {
+    // Přesně ta dráha, na které by Gram-Schmidt proti světové svislici
+    // degeneroval: tečna je s ní rovnoběžná. Klenba je zrovna tenhle případ.
+    const vertical = sweep({
+      path: [
+        [0, 0, 0],
+        [0, 3, 0],
+        [0, 6, 0],
+      ],
+    });
+
+    expect([...edgeCensus(vertical).values()].filter((count) => count !== 1)).toEqual([]);
+    expect(signedVolume(vertical)).toBeGreaterThan(0);
+    expect([...positionsOf(vertical)].every(Number.isFinite)).toBe(true);
+  });
+
+  it('normály jsou zapečené ploché, tedy totéž co computeVertexNormals nad nezaindexovanou sítí', () => {
+    // `MeshToonMaterial` nemá `flatShading`, takže ploché normály musí být
+    // v geometrii. Druhá implementace téhož výpočtu by byla druhá pravda —
+    // tenhle test drží obě cesty na sobě.
+    const geometry = sweep();
+    const reference = new BufferGeometry();
+    reference.setAttribute('position', new BufferAttribute(positionsOf(geometry).slice(), 3));
+    reference.computeVertexNormals();
+
+    const ours = geometry.getAttribute('normal').array as Float32Array;
+    const theirs = reference.getAttribute('normal').array as Float32Array;
+
+    expect(ours.length).toBe(theirs.length);
+    for (let index = 0; index < ours.length; index += 1) {
+      expect(ours[index]).toBeCloseTo(theirs[index], 5);
+    }
+  });
+
+  it('vrcholy nesou odstín kitu, takže je paleta umí přebarvit', () => {
+    for (const swatch of SWATCH_NAMES) {
+      expect(() => repaint(sweep({ swatch }), PALETTES.harbor), swatch).not.toThrow();
+    }
+  });
+
+  it('dvojí tažení téhož uzlu dá bajt po bajtu totéž', () => {
+    // Uzel nesahá na PRNG vůbec, takže tohle není o semínku — je to o tom, že
+    // se do výpočtu nedostal ani čas, ani pořadí iterace mapy.
+    expect([...positionsOf(sweep())]).toEqual([...positionsOf(sweep())]);
+  });
+
+  it('program se sweepem projde celým kompilátorem, ne jen generátorem', () => {
+    const geometry = compileGeomProgram({
+      version: GEOM_VERSION,
+      nodes: [
+        {
+          kind: 'sweep',
+          profile: SQUARE,
+          path: [
+            [-3, 0, 0],
+            [0, 4, 0],
+            [3, 0, 0],
+          ],
+          segments: 10,
+          swatch: 'accent',
+          at: [0, 1, 0],
+          scale: [1, 1, 2],
+        },
+      ],
+      root: 0,
+    });
+
+    expect(trianglesOfGeometry(geometry)).toBeGreaterThan(0);
+    expect(() => repaint(geometry, PALETTES.frost)).not.toThrow();
   });
 });
 
