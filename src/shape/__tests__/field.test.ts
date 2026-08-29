@@ -654,14 +654,28 @@ describe('pole nikdy nevrátí NaN ani nekonečno', () => {
     );
   });
 
-  it('jeden NaN uvnitř stromu se ven nedostane', () => {
-    // Kdyby se hlídalo jen primitivum a ne hranice, prošlo by to — a mesh by
-    // zmizel beze slova, protože `Math.min(NaN, x)` je `NaN`.
-    const field = fieldOf([
-      { kind: 'plane', normal: [0, 0, 0], offset: 0 },
+  it('plynulé sjednocení v nekonečnu vyrobí NaN, a hranice ho zachytí', () => {
+    // Tohle je jediné místo, kam **nedosáhne** pojistka uvnitř primitiva, a
+    // proto tu ta na hranici je. Naměřeno: v souřadnici 1e200 přeteče
+    // `x·x` na nekonečno, obě větve sjednocení jsou pak `Infinity` a plynulé
+    // minimum počítá `(∞ − ∞)/k`, tedy `NaN`. Bez pojistky v `at()` by se
+    // `NaN` přes `Math.min` rozlilo do celé mřížky a hrdina by zmizel — beze
+    // slova, protože nikde nepadne výjimka.
+    //
+    // Schéma souřadnice omezuje na ±64, takže se sem produkt nedostane.
+    // Vyhodnocovač je ale druhá obrana a nesmí spoléhat na to, že první drží;
+    // právě proto neimportuje `zod` a kontroluje si výsledek sám.
+    const nodes: readonly ShapeNode[] = [
       { kind: 'sphere', radius: 1 },
-      { kind: 'union', children: [0, 1] },
-    ]);
-    expect(Number.isFinite(field.at(0.3, 0.2, 0.1))).toBe(true);
+      { kind: 'box', size: [1, 1, 1] },
+      { kind: 'union', children: [0, 1], k: 0.5 },
+    ];
+    expect(fieldOf(nodes).at(1e200, 1e200, 1e200)).toBe(FAR_DISTANCE);
+  });
+
+  it('samo nekonečno se taky nedostane ven', () => {
+    // Bez `NaN`, jen přetečení: koule ve vzdálenosti 1e200 vrátí `Infinity`,
+    // což je pro meshovač stejně nepoužitelné jako `NaN`.
+    expect(fieldOf([{ kind: 'sphere', radius: 1 }]).at(1e200, 0, 0)).toBe(FAR_DISTANCE);
   });
 });
