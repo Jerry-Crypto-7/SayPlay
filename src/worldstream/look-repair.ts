@@ -88,10 +88,10 @@ import {
   HUE_BUCKETS,
   IMAGE_THRESHOLDS,
   type ImageProperty,
-  judgedHue,
   judgedHueBucket,
 } from './image-judge';
 import { type LookDescriptor } from './look';
+import { PURPLE_BAND } from './look-schema';
 
 /* ------------------------------------------------------------------ *
  * Prahy podlahy.
@@ -130,23 +130,66 @@ export const LOOK_FLOOR = {
 } as const;
 
 /**
- * Tři cílové odstíny, každý ve **středu** svého koše.
+ * Střed koše ve stupních.
  *
  * Střed schválně: barva na hraně koše by se při zaokrouhlení do osmi bitů mohla
  * přelít k sousedovi a oprava by přestala platit, aniž by to bylo z čeho poznat.
- *
- * Všechny tři leží **mimo fialové pásmo** — hlídá to test, ne tenhle komentář.
- * Kdyby se některý posunul do 250–320°, vyrobila by oprava fialovou na cestě,
- * kterou nikdo ručně nepíše a nikdo se na ni nedívá.
  */
-export const HUE_ANCHORS = {
-  /** Chladná obloha. */
-  cool: 195,
-  /** Teplá zem. */
-  warm: 45,
-  /** Opar o koš chladnější než obloha — tam, kam ho posouvá rozptyl. */
-  haze: 165,
-} as const;
+export function bucketCentre(bucket: number): number {
+  return bucket * HUE_BUCKET_WIDTH + HUE_BUCKET_WIDTH / 2;
+}
+
+/**
+ * Prstenec košů, do kterých oprava smí mířit — dvanáct minus ty, jejichž střed
+ * padne do fialového pásma.
+ *
+ * **Počítá se, neopisuje se.** Kdyby tu stál ručně napsaný seznam devíti čísel,
+ * rozšíření `PURPLE_BAND` by ho nechalo být a oprava by fialovou vyrobila na
+ * cestě, kterou nikdo ručně nepíše a nikdo se na ni nedívá.
+ */
+export const ALLOWED_HUE_BUCKETS: readonly number[] = Array.from(
+  { length: HUE_BUCKETS },
+  (_unused, bucket) => bucket,
+).filter((bucket) => {
+  const centre = bucketCentre(bucket);
+  return centre < PURPLE_BAND.min || centre > PURPLE_BAND.max;
+});
+
+/**
+ * O kolik košů po prstenci dál leží další plocha pozadí.
+ *
+ * **Dva, protože to je nejmenší krok, který mezi sousedy nechá celý prázdný
+ * koš** — 60° při šířce koše 30°, tedy rezerva, kterou zaokrouhlení do osmi
+ * bitů nesebere. Menší krok tu rezervu nemá, větší platí rozlišitelností.
+ *
+ * Naměřeno 29. 8. 2026 nad devítiprvkovým prstencem, kolik různých trojic
+ * který krok vůbec umí vyrobit:
+ *
+ * | Krok | Různých trojic | Nejmenší rozestup |
+ * |---|---|---|
+ * | 1 | 9 | 30° (bez mezery) |
+ * | **2** | **9** | **60°** |
+ * | 3 | 3 | 90° |
+ * | 4 | 9 | 30° |
+ *
+ * Třetina prstence vypadá jako správná volba a není: trojice pak závisí jen na
+ * `skyIndex mod 3`, takže z devíti možných sad zbydou tři a pět ze šesti palet
+ * repozitáře skončí v téže. To je přesně ta sbíhavost, kvůli které se absolutní
+ * kotvy rušily.
+ *
+ * **Která ze dvou zbylých ploch bere jeden krok a která dva, na rozestupu nic
+ * nemění**; co mění, je pořadí pák, a to je naměřené (viz níž).
+ */
+export const HUE_STEP_BUCKETS = 2;
+
+/**
+ * Odstín, ze kterého se prstenec odpíchne, když obloha žádný vlastní nemá.
+ *
+ * Šedá plocha nemaluje žádný koš, takže se od ní měřit nedá a nějaký začátek
+ * zvolit musíme. Chladná obloha je ten, na kterém stála absolutní kotva do
+ * 29. 8. 2026, takže se šedý svět touhle změnou nehne.
+ */
+export const COLOURLESS_SKY_HUE = 195;
 
 /**
  * O kolik se míří výš, než kam sahá práh. Platí pro sytost i pro odstup jasu.
@@ -305,6 +348,48 @@ function visibleBackground(look: LookDescriptor): readonly string[] {
     : [look.sky.color, look.ground.color, look.fog.color];
 }
 
+/**
+ * Kam po prstenci míří tři plochy pozadí toho konkrétního světa.
+ *
+ * **Obloha si nechá svůj koš**, zbylé dvě jdou o pevný počet košů dál. Tím se
+ * trojice svět od světa liší, a přitom si mezi sebou drží týž rozestup.
+ *
+ * Naměřeno 29. 8. 2026, proč to nesmí být tři absolutní odstíny: přístav
+ * (obloha 196°, s vodou) dostával 195 / 166 / 44 a poušť (obloha 37°, bez vody)
+ * 37 / 195 / 165 — **tytéž tři koše, jen jinak rozdané**. Průměrná barva obou
+ * snímků pak stála 2,7 od sebe proti prahu 8. Pět ze šesti palet skončilo
+ * v koši 5 i v koši 6; čím víc světů oprava potkala, tím víc se sbíhaly.
+ */
+function hueAnchorsFor(skyColor: string): { sky: number; fog: number; floor: number } {
+  const skyBucket = judgedHueBucket(skyColor);
+  // Šedá obloha koš nemaluje a fialová se za svůj koš schovat nesmí — oprava,
+  // která zamíří doprostřed fialového koše, by fialovou vyrobila sama.
+  const start =
+    skyBucket !== null && ALLOWED_HUE_BUCKETS.includes(skyBucket)
+      ? ALLOWED_HUE_BUCKETS.indexOf(skyBucket)
+      : nearestAllowedIndex(skyBucket === null ? COLOURLESS_SKY_HUE : bucketCentre(skyBucket));
+
+  const at = (steps: number) =>
+    bucketCentre(ALLOWED_HUE_BUCKETS[(start + steps) % ALLOWED_HUE_BUCKETS.length]!);
+
+  return { sky: at(0), fog: at(HUE_STEP_BUCKETS), floor: at(HUE_STEP_BUCKETS * 2) };
+}
+
+/** Index nejbližšího povoleného koše, měřeno po kruhu odstínů. */
+function nearestAllowedIndex(hue: number): number {
+  let best = 0;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  ALLOWED_HUE_BUCKETS.forEach((bucket, index) => {
+    const raw = Math.abs(bucketCentre(bucket) - hue);
+    const distance = Math.min(raw, 360 - raw);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = index;
+    }
+  });
+  return best;
+}
+
 function distinctBuckets(look: LookDescriptor): number {
   return new Set(visibleBackground(look).map(bucketOf).filter((bucket) => bucket !== null)).size;
 }
@@ -377,35 +462,10 @@ export function repairLook(input: LookDescriptor): LookFloor {
   /* --- odstíny: tři plochy, tři kotvy ---------------------------------- */
 
   if (distinctBuckets(look) < LOOK_FLOOR.minHueBuckets) {
-    // Obloha si nechá stranu, na které stojí. Otočit ji na tu druhou by z pouště
-    // udělalo led a z pece večer u moře — je to největší plocha snímku a nese
-    // charakter světa, ne jeho vadu.
-    const skyHue = judgedHue(look.sky.color);
-    const skyIsCool =
-      skyHue === null ||
-      Math.abs(skyHue - HUE_ANCHORS.cool) <= Math.abs(skyHue - HUE_ANCHORS.warm);
-
-    /*
-     * Zbylé dvě kotvy dostanou zbylé dvě viditelné plochy, a která kterou,
-     * rozhoduje voda:
-     *
-     * - **bez vody** je dole zem, ta bere protilehlou stranu oblohy a opar
-     *   zbývající opar. Chladná obloha, teplá zem, mlha mezi nimi.
-     * - **s vodou** je dole hladina. Ta bere **chladnější** ze dvou zbylých
-     *   kotev, protože teplé moře je barva, kterou nikdo nechce; teplá kotva
-     *   pak zbývá na opar, a to je nízké slunce na obzoru.
-     *
-     * Tři různé kotvy ve třech různých koších — ať už se rozhodne jakkoliv.
-     */
-    const anchors = look.water.present
-      ? {
-          floor: skyIsCool ? HUE_ANCHORS.haze : HUE_ANCHORS.cool,
-          fog: skyIsCool ? HUE_ANCHORS.warm : HUE_ANCHORS.haze,
-        }
-      : {
-          floor: skyIsCool ? HUE_ANCHORS.warm : HUE_ANCHORS.cool,
-          fog: HUE_ANCHORS.haze,
-        };
+    // Obloha si nechá koš, ve kterém stojí. Otočit ji jinam by z pouště udělalo
+    // led a z pece večer u moře — je to největší plocha snímku a nese charakter
+    // světa, ne jeho vadu.
+    const anchors = hueAnchorsFor(look.sky.color);
 
     /*
      * **Pořadí je od nejlevnější plochy k nejdražší, ne shora dolů.** Opar je
@@ -424,7 +484,7 @@ export function repairLook(input: LookDescriptor): LookFloor {
         hue: anchors.fog,
         get: (l: LookDescriptor) => l.fog.color,
         set: (l: LookDescriptor, color: string) => ({ ...l, fog: { ...l.fog, color } }),
-        reason: 'the haze takes the anchor the sky and the surface below it left over',
+        reason: 'the haze steps one bucket on from the sky, into the gap the other two leave',
       },
       look.water.present
         ? {
@@ -432,21 +492,21 @@ export function repairLook(input: LookDescriptor): LookFloor {
             hue: anchors.floor,
             get: (l: LookDescriptor) => l.water.color,
             set: (l: LookDescriptor, color: string) => ({ ...l, water: { ...l.water, color } }),
-            reason: 'the water takes the cooler of the two anchors the sky did not take',
+            reason: 'the water steps two buckets on from the sky, so the two big areas stand furthest apart',
           }
         : {
             path: 'ground/color',
             hue: anchors.floor,
             get: (l: LookDescriptor) => l.ground.color,
             set: (l: LookDescriptor, color: string) => ({ ...l, ground: { ...l.ground, color } }),
-            reason: 'the ground takes the side opposite the sky, so earth and sky stop being one colour',
+            reason: 'the ground steps two buckets on from the sky, so earth and sky stop being one colour',
           },
       {
         path: 'sky/color',
-        hue: skyIsCool ? HUE_ANCHORS.cool : HUE_ANCHORS.warm,
+        hue: anchors.sky,
         get: (l: LookDescriptor) => l.sky.color,
         set: (l: LookDescriptor, color: string) => ({ ...l, sky: { ...l.sky, color } }),
-        reason: 'the sky keeps its own side, pulled onto the anchor at the centre of the bucket',
+        reason: 'the sky keeps its own bucket, pulled onto the centre of it',
       },
     ] as const;
 

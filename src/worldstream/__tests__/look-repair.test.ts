@@ -6,9 +6,11 @@ import { IMAGE_PROPERTIES, IMAGE_THRESHOLDS, judgedHueBucket } from '../image-ju
 import { LOOK_BUDGETS, deriveLook, type LookDescriptor, type TerrainKind } from '../look';
 import { PURPLE_BAND, acceptLook, hueOf, isPurple } from '../look-schema';
 import {
-  HUE_ANCHORS,
+  ALLOWED_HUE_BUCKETS,
   HUE_BUCKET_WIDTH,
+  HUE_STEP_BUCKETS,
   LOOK_FLOOR,
+  bucketCentre,
   luminanceOf,
   repairLook,
   saturationOf,
@@ -228,10 +230,30 @@ describe('oprava sahá jen do vzhledu', () => {
 });
 
 describe('fialová se neopraví ani omylem', () => {
-  it('žádná ze tří kotev odstínu neleží ve fialovém pásmu', () => {
-    for (const anchor of Object.values(HUE_ANCHORS)) {
-      expect(anchor < PURPLE_BAND.min || anchor > PURPLE_BAND.max, String(anchor)).toBe(true);
+  it('žádný koš, do kterého oprava smí mířit, neleží ve fialovém pásmu', () => {
+    // Od 29. 8. 2026 se necílí na tři pevné odstíny, ale kamkoli po prstenci
+    // povolených košů — takže se tenhle test musí ptát na **všechny**, ne na tři.
+    expect(ALLOWED_HUE_BUCKETS.length).toBeGreaterThan(0);
+    for (const bucket of ALLOWED_HUE_BUCKETS) {
+      const centre = bucketCentre(bucket);
+      expect(centre < PURPLE_BAND.min || centre > PURPLE_BAND.max, String(centre)).toBe(true);
     }
+  });
+
+  it('prstenec fialové koše vynechává, nezmenšuje se o ně jen počtem', () => {
+    // Mutace, kterou tenhle test zabíjí: prstenec sestavený jako `slice(0, 9)`
+    // má taky devět prvků a taky projde testem nad středy — ale vypustí koš 11
+    // (345°, ta nejteplejší červeň) a jeden fialový si nechá.
+    const purple = Array.from({ length: 360 / HUE_BUCKET_WIDTH }, (_unused, b) => b).filter((b) => {
+      const centre = bucketCentre(b);
+      return centre >= PURPLE_BAND.min && centre <= PURPLE_BAND.max;
+    });
+    expect(purple.length, 'fialové pásmo nepokrývá žádný koš, test nic neměří').toBeGreaterThan(0);
+    expect([...ALLOWED_HUE_BUCKETS].sort((a, b) => a - b)).toEqual(
+      Array.from({ length: 360 / HUE_BUCKET_WIDTH }, (_unused, b) => b).filter(
+        (b) => !purple.includes(b),
+      ),
+    );
   });
 
   it('ani jedna barva žádného opraveného světa nesahá do fialové', () => {
@@ -387,6 +409,106 @@ describe('tři vady, kvůli kterým podlaha neplatila', () => {
     expect(grey.ok, grey.failed.join(', ')).toBe(true);
     for (const hex of backgroundOf(grey.look)) {
       expect(judgedHueBucket(hex), `${hex} nemá odstín`).not.toBeNull();
+    }
+  });
+});
+
+describe('kotvy se váží na oblohu toho světa, ne na tři pevné odstíny', () => {
+  /**
+   * Vada, kterou tenhle blok hlídá, je **sbíhavost**: oprava, která běží,
+   * splní všech pět prahů u každého snímku zvlášť, a přitom rozdá všem světům
+   * tytéž tři barvy. Soudce ji nechytí, protože soudí jeden snímek po druhém a
+   * pojem „jiný než ostatní" nezná — je to vlastnost dvojice, ne snímku.
+   *
+   * Naměřeno 29. 8. 2026 nad absolutními kotvami: přístav dostal 196 / 166 / 44
+   * a poušť 37 / 195 / 165, tedy **tytéž tři koše, jen jinak rozdané**. Průměrná
+   * barva obou snímků pak stála 2,7 od sebe proti prahu 8 v e2e sadě.
+   */
+
+  it('přístav a poušť sdílejí nejvýš jeden koš ze tří', () => {
+    // Ta naměřená vada, přišpendlená na dvojici, na které se ukázala.
+    //
+    // **Do 29. 8. 2026 sdílely všechny tři** — {1, 5, 6} obojí, jen jinak
+    // rozdané. Práh je jeden, protože při jednom sdíleném koši nese každý ze
+    // dvou světů dvě plochy v odstínu, který ten druhý nemá; při dvou už je to
+    // jedna plocha a snímky se v průměru barvy začnou sbíhat zpátky.
+    const harbor = bucketsOf(
+      repairLook(deriveLook({ palette: 'harbor', terrain: 'flat', seed: 1 })).look,
+    );
+    const dunes = bucketsOf(
+      repairLook(deriveLook({ palette: 'dunes', terrain: 'flat', seed: 1 })).look,
+    );
+
+    expect(harbor.size, 'přístav nemá tři koše, test měří něco jiného').toBe(3);
+    expect(dunes.size, 'poušť nemá tři koše, test měří něco jiného').toBe(3);
+    const shared = [...harbor].filter((bucket) => dunes.has(bucket));
+    expect(shared.length, 'sdílené koše: ' + shared.join(', ')).toBeLessThanOrEqual(1);
+  });
+
+  it('dva světy s různou oblohou nedostanou tutéž trojici košů', () => {
+    // Obecná podoba téhož: koš oblohy určuje celou trojici, takže dva světy,
+    // které se liší oblohou, se musí lišit i pozadím. Světy se **stejnou**
+    // oblohou tutéž trojici dostat smí a mají — rozlišuje je jas a sytost,
+    // kterých se oprava nedotkne.
+    const bySky = new Map<number, Set<string>>();
+    for (const world of WORLDS) {
+      const repaired = repairLook(deriveLook(world)).look;
+      const sky = judgedHueBucket(repaired.sky.color);
+      if (sky === null) continue;
+      const triple = [...bucketsOf(repaired)].sort((a, b) => a - b).join('-');
+      if (!bySky.has(sky)) bySky.set(sky, new Set());
+      bySky.get(sky)!.add(triple);
+    }
+
+    expect(bySky.size, 'měří se míň než dvě oblohy, invariant se nedá porušit').toBeGreaterThan(1);
+    const triples = [...bySky.values()].flatMap((set) => [...set]);
+    expect(
+      new Set(triples).size,
+      String(bySky.size) + ' obloh dalo jen ' + String(new Set(triples).size) + ' trojic',
+    ).toBe(triples.length);
+  });
+
+  it('obloha nikdy neopustí svůj koš', () => {
+    // Nosná vlastnost celého návrhu — a zároveň to, co drží pec teplou. Kdyby
+    // se obloha směla otočit jinam, byla by z ní studená modř a mrtvá plocha
+    // světa kiln-court by vyskočila na 0,597, tedy nad práh soudce.
+    for (const world of WORLDS) {
+      const before = deriveLook(world);
+      const skyBefore = judgedHueBucket(before.sky.color);
+      if (skyBefore === null) continue;
+      const after = repairLook(before).look;
+      expect(
+        judgedHueBucket(after.sky.color),
+        world.palette + '/' + world.terrain + '/' + String(world.seed),
+      ).toBe(skyBefore);
+    }
+  });
+
+  it('trojice drží rozestup, který zaokrouhlení do osmi bitů nesebere', () => {
+    // 60° při šířce koše 30° znamená celý prázdný koš mezi sousedy. Bez tohohle
+    // testu by prošel i krok o jeden koš — devět různých trojic dá taky, jenže
+    // bez rezervy, a barva spočítaná na hranu koše se po zaokrouhlení do osmi
+    // bitů přelije k sousedovi.
+    expect(HUE_STEP_BUCKETS).toBeGreaterThanOrEqual(2);
+    const gap = (a: number, b: number) => {
+      const raw = Math.abs(bucketCentre(a) - bucketCentre(b));
+      return Math.min(raw, 360 - raw);
+    };
+    for (let index = 0; index < ALLOWED_HUE_BUCKETS.length; index += 1) {
+      const at = (steps: number) =>
+        ALLOWED_HUE_BUCKETS[(index + steps) % ALLOWED_HUE_BUCKETS.length]!;
+      const [sky, fog, floor] = [at(0), at(HUE_STEP_BUCKETS), at(HUE_STEP_BUCKETS * 2)];
+      expect(new Set([sky, fog, floor]).size, 'koš ' + String(sky) + ' nedá tři různé').toBe(3);
+      for (const [a, b] of [
+        [sky, fog],
+        [fog, floor],
+        [sky, floor],
+      ] as const) {
+        expect(
+          gap(a, b),
+          'koše ' + String(a) + ' a ' + String(b) + ' stojí příliš blízko',
+        ).toBeGreaterThanOrEqual(HUE_BUCKET_WIDTH * 2);
+      }
     }
   });
 });
