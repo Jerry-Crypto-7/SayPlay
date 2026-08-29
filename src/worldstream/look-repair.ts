@@ -31,7 +31,7 @@
  * - `luminanceSpread` → obloha a zem musí stát v odlišných hodnotách,
  *   a expozice v pásmu, kde se z obrazu nestane bílá ani černá plocha.
  *
- * ## Tři viditelné plochy, tři kotvy
+ * ## Tři viditelné plochy, prstenec kotvený na oblohu toho světa
  *
  * Barvy se **otáčejí v odstínu, jas si nesou svůj**. Právě proto dva opravené
  * světy nevypadají stejně: každý si nese vlastní jas a vlastní sytost, mění se
@@ -39,17 +39,37 @@
  * stejných snímků a rozbila by přesně to, co kontaktní list měří.
  *
  * Plochy jsou tři, ne čtyři, a která je třetí rozhoduje voda: **deska země leží
- * pod hladinou**, takže ve světě s vodou nemaluje ani pixel. Kotvy se rozdají
- * tak, aby ležely ve třech různých koších:
+ * pod hladinou**, takže ve světě s vodou nemaluje ani pixel.
  *
- * - **bez vody** — obloha si nechá stranu, na které stojí, zem bere protilehlou
- *   a opar zbytek. Chladná obloha, teplá zem, mlha mezi nimi.
- * - **s vodou** — dole je hladina a ta bere **chladnější** ze dvou zbylých
- *   kotev; teplé moře je barva, kterou nikdo nechce. Teplá kotva zbude na opar,
- *   a to je nízké slunce na obzoru.
+ * **Obloha si nechá koš, ve kterém stojí; zbylé dvě plochy jdou o dva koše dál
+ * po prstenci povolených.** Trojice se tím svět od světa liší, a přitom si mezi
+ * sebou drží rozestup 60°, tedy celý prázdný koš.
+ *
+ * Naměřeno 29. 8. 2026, proč to nesmí být tři pevné odstíny: kotvy 195 / 45 /
+ * 165 se rozdávaly podle role, takže přístav (obloha 196°, s vodou) dostal
+ * 195 / 166 / 44 a poušť (obloha 37°, bez vody) 37 / 195 / 165 — **tytéž tři
+ * koše, jen jinak rozdané**. Průměrná barva obou snímků pak stála **2,7** od
+ * sebe proti prahu 8 v `e2e/worldstream-atmosphere.spec.ts`; po zavedení
+ * prstence **14**. Pět ze šesti palet repozitáře přitom končilo v koši 5 i 6:
+ * čím víc světů oprava potkala, tím víc se sbíhaly.
  *
  * Otáčí se **nejmenší počet ploch, který stačí**, a jakmile jsou tři koše
  * obsazené, oprava přestane. Svět, který tři koše má, se nedotkne vůbec.
+ *
+ * ## Rotace odstínu nesmí hnout jasem
+ *
+ * `dead` — nejtěsnější z pěti prahů — se počítá **výhradně z jasu**: buňka je
+ * mrtvá, když má rozpětí jasu pod `deadRange`. Rotace odstínu s ním proto nemá
+ * co dělat, a do 29. 8. 2026 přesto měla. `withHue` držel HSV *value*, tedy
+ * nejvyšší kanál, zatímco jas podle Rec. 709 váží zelenou 0,715 a červenou
+ * 0,213; otočení tyrkysu do červené tak jas srazilo o 27 %. Naměřený následek:
+ * `foundry-hall` propadl na kontaktním listu mrtvou plochou **0,528 → 0,597**,
+ * přestože se mu měnil jen odstín oparu.
+ *
+ * `withHue` proto dopočítá měřítko tak, aby jas zůstal. Když je cílový jas
+ * v tom odstínu nedosažitelný (sytou zeleň na stejně jasnou červeň přebarvit
+ * nelze), **ořízne se dolů** — nikdy se nedorovnává rozsvícením barvy, kterou
+ * svět nikdy neměl.
  *
  * ## Pořadí je od nejlevnější plochy k nejdražší
  *
@@ -223,10 +243,13 @@ function toHex(rgb: readonly [number, number, number]): string {
   return `#${parts.join('')}`;
 }
 
+/** Váhy Rec. 709. Napsané jednou, protože `withHue` musí počítat týmž jasem. */
+const LUMA_709 = { r: 0.2126, g: 0.7152, b: 0.0722 } as const;
+
 /** Jas podle Rec. 709 — táž váha, jakou počítá soudce pásma jasu. */
 export function luminanceOf(hex: string): number {
   const [r, g, b] = channels(hex);
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return LUMA_709.r * r + LUMA_709.g * g + LUMA_709.b * b;
 }
 
 /** Sytost jako `(max − min) / max`, stejně jako ji počítá soudce. */
@@ -261,25 +284,39 @@ function withHue(hex: string, hue: number): string {
     IMAGE_THRESHOLDS.minSaturation * MARGIN,
   );
 
+  const shape = hueShape(hue, saturation);
+  // Jas jednotkové barvy toho odstínu. Zelená ho má 0,715, červená 0,213 —
+  // proto se nedá otočit odstín a nechat `value` být.
+  const unit = LUMA_709.r * shape[0] + LUMA_709.g * shape[1] + LUMA_709.b * shape[2];
+  const wanted = luminanceOf(hex);
+  // Nedosažitelný jas se ořízne, ne dorovná: barva s `value` nad 1 neexistuje
+  // a tiché rozsvícení sytosti by z opravy udělalo přemalování.
+  const scale = unit === 0 ? 0 : Math.min(1, wanted / unit);
+
+  return toHex([shape[0] * scale, shape[1] * scale, shape[2] * scale]);
+}
+
+/** Barva daného odstínu a sytosti s `value` = 1. Jas si dopočítá volající. */
+function hueShape(hue: number, saturation: number): readonly [number, number, number] {
   const sector = (((hue % 360) + 360) % 360) / 60;
   const fraction = sector - Math.floor(sector);
-  const p = value * (1 - saturation);
-  const q = value * (1 - saturation * fraction);
-  const t = value * (1 - saturation * (1 - fraction));
+  const p = 1 - saturation;
+  const q = 1 - saturation * fraction;
+  const t = 1 - saturation * (1 - fraction);
 
   switch (Math.floor(sector) % 6) {
     case 0:
-      return toHex([value, t, p]);
+      return [1, t, p];
     case 1:
-      return toHex([q, value, p]);
+      return [q, 1, p];
     case 2:
-      return toHex([p, value, t]);
+      return [p, 1, t];
     case 3:
-      return toHex([p, q, value]);
+      return [p, q, 1];
     case 4:
-      return toHex([t, p, value]);
+      return [t, p, 1];
     default:
-      return toHex([value, p, q]);
+      return [1, p, q];
   }
 }
 
