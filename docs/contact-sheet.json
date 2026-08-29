@@ -34,12 +34,12 @@
     "focusClarity": {
       "id": "C02",
       "index": 1,
-      "value": 0.3059686000563854
+      "value": 0.30481643376441014
     },
     "silhouette": {
       "id": "thicket-clearing",
       "index": 8,
-      "value": 0.081875
+      "value": 0.08152777777777778
     },
     "hues": {
       "id": "kiln-court",
@@ -63,7 +63,7 @@
       "url": "/embed/harbor-pier?emit=C01",
       "measured": {
         "luminanceSpread": 0.8,
-        "focusClarity": 0.5039254399085281,
+        "focusClarity": 0.505348037944811,
         "silhouette": 0.14122191011235954,
         "hues": 6,
         "dead": 0.1736111111111111
@@ -83,15 +83,15 @@
       "url": "/embed/harbor-pier?emit=C02",
       "measured": {
         "luminanceSpread": 0.8,
-        "focusClarity": 0.3059686000563854,
-        "silhouette": 0.29486111111111113,
-        "hues": 9,
-        "dead": 0.027777777777777776
+        "focusClarity": 0.30481643376441014,
+        "silhouette": 0.2947222222222222,
+        "hues": 6,
+        "dead": 0.034722222222222224
       },
       "failed": [],
       "ok": true,
       "sky": 0.055328776041666666,
-      "water": 0.011861979166666667
+      "water": 0.011672092013888889
     },
     {
       "index": 2,
@@ -103,10 +103,10 @@
       "url": "/embed/harbor-pier?emit=C03",
       "measured": {
         "luminanceSpread": 0.8,
-        "focusClarity": 0.543832729925511,
-        "silhouette": 0.2725806451612903,
+        "focusClarity": 0.5426186830939587,
+        "silhouette": 0.2724910394265233,
         "hues": 6,
-        "dead": 0.1597222222222222
+        "dead": 0.1527777777777778
       },
       "failed": [],
       "ok": true,
@@ -123,10 +123,10 @@
       "url": "/embed/harbor-pier?emit=C04",
       "measured": {
         "luminanceSpread": 0.8,
-        "focusClarity": 0.5253393440748011,
-        "silhouette": 0.3173611111111111,
+        "focusClarity": 0.5262229731780608,
+        "silhouette": 0.31743055555555555,
         "hues": 6,
-        "dead": 0.1736111111111111
+        "dead": 0.16666666666666666
       },
       "failed": [],
       "ok": true,
@@ -143,10 +143,10 @@
       "url": "/embed/harbor-pier?emit=C06",
       "measured": {
         "luminanceSpread": 0.8,
-        "focusClarity": 0.5364764194635502,
+        "focusClarity": 0.5355941452804966,
         "silhouette": 0.2507638888888889,
         "hues": 6,
-        "dead": 0.1597222222222222
+        "dead": 0.1527777777777778
       },
       "failed": [],
       "ok": true,
@@ -163,8 +163,8 @@
       "url": "/embed/harbor-pier?emit=C07",
       "measured": {
         "luminanceSpread": 0.8,
-        "focusClarity": 0.514211277391715,
-        "silhouette": 0.25722222222222224,
+        "focusClarity": 0.5145766176984076,
+        "silhouette": 0.25708333333333333,
         "hues": 7,
         "dead": 0.05555555555555555
       },
@@ -183,15 +183,15 @@
       "url": "/embed/harbor-pier",
       "measured": {
         "luminanceSpread": 1,
-        "focusClarity": 0.49193955062768185,
-        "silhouette": 0.16395833333333334,
-        "hues": 11,
-        "dead": 0.3333333333333333
+        "focusClarity": 0.48822303366294406,
+        "silhouette": 0.16333333333333333,
+        "hues": 6,
+        "dead": 0.3263888888888889
       },
       "failed": [],
       "ok": true,
       "sky": 0.3198904079861111,
-      "water": 0.5372970920138889
+      "water": 0.537158203125
     },
     {
       "index": 7,
@@ -203,10 +203,10 @@
       "url": "/embed/kiln-court",
       "measured": {
         "luminanceSpread": 0.6,
-        "focusClarity": 0.44974324360808887,
-        "silhouette": 0.12097222222222222,
+        "focusClarity": 0.42379329895515544,
+        "silhouette": 0.12104166666666667,
         "hues": 5,
-        "dead": 0.4722222222222222
+        "dead": 0.4791666666666667
       },
       "failed": [],
       "ok": true,
@@ -223,15 +223,15 @@
       "url": "/embed/thicket-clearing",
       "measured": {
         "luminanceSpread": 1,
-        "focusClarity": 0.3325236668826785,
-        "silhouette": 0.081875,
+        "focusClarity": 0.3321078820122627,
+        "silhouette": 0.08152777777777778,
         "hues": 6,
         "dead": 0.3125
       },
       "failed": [],
       "ok": true,
       "sky": 0.3184950086805556,
-      "water": 0.5348318142361111
+      "water": 0.5338205295138889
     },
     {
       "index": 9,
@@ -243,9 +243,9 @@
       "url": "/embed/foundry-hall",
       "measured": {
         "luminanceSpread": 0.6,
-        "focusClarity": 0.5104904370654267,
-        "silhouette": 0.1313888888888889,
-        "hues": 7,
+        "focusClarity": 0.510905856713916,
+        "silhouette": 0.13166666666666665,
+        "hues": 5,
         "dead": 0.5277777777777778
       },
       "failed": [],
@@ -263,7 +263,7 @@
       "url": "/embed/dunes-terrace",
       "measured": {
         "luminanceSpread": 0.8,
-        "focusClarity": 0.4668573314945592,
+        "focusClarity": 0.5160023735405759,
         "silhouette": 0.10895833333333334,
         "hues": 5,
         "dead": 0.5555555555555556
@@ -285,15 +285,15 @@
       "url": "/embed/frost-plateau",
       "measured": {
         "luminanceSpread": 1,
-        "focusClarity": 0.5112235399655638,
-        "silhouette": 0.16125,
-        "hues": 10,
+        "focusClarity": 0.5123665845153635,
+        "silhouette": 0.16152777777777777,
+        "hues": 6,
         "dead": 0.2013888888888889
       },
       "failed": [],
       "ok": true,
       "sky": 0.3184950086805556,
-      "water": 0.5066124131944445
+      "water": 0.5062174479166667
     }
   ]
 }

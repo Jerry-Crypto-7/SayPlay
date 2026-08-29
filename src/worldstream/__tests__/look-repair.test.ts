@@ -241,20 +241,28 @@ describe('fialová se neopraví ani omylem', () => {
     }
   });
 
-  it('prstenec fialové koše vynechává, nezmenšuje se o ně jen počtem', () => {
-    // Mutace, kterou tenhle test zabíjí: prstenec sestavený jako `slice(0, 9)`
-    // má taky devět prvků a taky projde testem nad středy — ale vypustí koš 11
-    // (345°, ta nejteplejší červeň) a jeden fialový si nechá.
-    const purple = Array.from({ length: 360 / HUE_BUCKET_WIDTH }, (_unused, b) => b).filter((b) => {
-      const centre = bucketCentre(b);
-      return centre >= PURPLE_BAND.min && centre <= PURPLE_BAND.max;
-    });
-    expect(purple.length, 'fialové pásmo nepokrývá žádný koš, test nic neměří').toBeGreaterThan(0);
-    expect([...ALLOWED_HUE_BUCKETS].sort((a, b) => a - b)).toEqual(
-      Array.from({ length: 360 / HUE_BUCKET_WIDTH }, (_unused, b) => b).filter(
-        (b) => !purple.includes(b),
-      ),
-    );
+  it('prstenec sahá až po fialovou a ani o koš míň', () => {
+    // Dvě mutace naráz. Kdyby se prstenec jen usekl na počet, prošel by test
+    // nad středy taky — a kdyby se usekl o koš navíc, přišla by oprava o odstín,
+    // který jí nikdo nezakázal, a světy by se sbíhaly rychleji.
+    //
+    // Meze se **nečtou z modulu**, jsou napsané tady znovu: test, který si
+    // hranici půjčí od kódu, potvrdí každou hranici, kterou si kód zvolí.
+    const PLUM_FROM = 320;
+    for (const bucket of ALLOWED_HUE_BUCKETS) {
+      const centre = bucketCentre(bucket);
+      expect(centre, 'koš ' + String(bucket) + ' míří do fialové').toBeLessThan(PURPLE_BAND.min);
+      expect(centre, 'koš ' + String(bucket) + ' míří za fialovou, do švestkové').toBeLessThan(
+        PLUM_FROM,
+      );
+    }
+    for (let bucket = 0; bucket < 360 / HUE_BUCKET_WIDTH; bucket += 1) {
+      if (bucketCentre(bucket) >= PURPLE_BAND.min) continue;
+      expect(
+        ALLOWED_HUE_BUCKETS,
+        'koš ' + String(bucket) + ' (' + String(bucketCentre(bucket)) + '°) nikdo nezakázal',
+      ).toContain(bucket);
+    }
   });
 
   it('ani jedna barva žádného opraveného světa nesahá do fialové', () => {

@@ -160,10 +160,27 @@ export function bucketCentre(bucket: number): number {
 }
 
 /**
- * Prstenec košů, do kterých oprava smí mířit — dvanáct minus ty, jejichž střed
- * padne do fialového pásma.
+ * Odstíny, na které oprava mířit nesmí — **širší pásmo než zákaz fialové**.
  *
- * **Počítá se, neopisuje se.** Kdyby tu stál ručně napsaný seznam devíti čísel,
+ * `PURPLE_BAND` (250–320°) je zákaz platný pro celý repozitář a soudí barvu
+ * jakoukoliv. Tohle pásmo je navíc a patří jen opravě, protože oprava barvu
+ * nejen posuzuje, ale sama vyrábí — a vyrábí ji **skoro šedou**: sytost tlačí
+ * na `minSaturation * MARGIN`, tedy kolem 0,22. Odstín 345° je při plné
+ * sytosti karmín, při 0,22 je to zaprášená švestková.
+ *
+ * **Naměřeno okem 29. 8. 2026 na `docs/contact-sheet.png`:** dokud tu koš 11
+ * (střed 345°) byl, měly `harbor-pier` a `foundry-hall` přes třetinu snímku
+ * široký šeříkový pruh oparu. Prošlo to `PURPLE_BAND` i všemi pěti prahy
+ * soudce — je to vlastnost, kterou žádný stroj v tomhle repu neměří, a
+ * porušovalo to barevné pravidlo projektu. Pásmo proto sahá až na konec kola.
+ */
+const REPAIR_HUE_BAN = { min: PURPLE_BAND.min, max: 360 } as const;
+
+/**
+ * Prstenec košů, do kterých oprava smí mířit — dvanáct minus ty, jejichž střed
+ * padne do zakázaného pásma.
+ *
+ * **Počítá se, neopisuje se.** Kdyby tu stál ručně napsaný seznam osmi čísel,
  * rozšíření `PURPLE_BAND` by ho nechalo být a oprava by fialovou vyrobila na
  * cestě, kterou nikdo ručně nepíše a nikdo se na ni nedívá.
  */
@@ -172,7 +189,7 @@ export const ALLOWED_HUE_BUCKETS: readonly number[] = Array.from(
   (_unused, bucket) => bucket,
 ).filter((bucket) => {
   const centre = bucketCentre(bucket);
-  return centre < PURPLE_BAND.min || centre > PURPLE_BAND.max;
+  return centre < REPAIR_HUE_BAN.min || centre > REPAIR_HUE_BAN.max;
 });
 
 /**
@@ -198,7 +215,12 @@ export const ALLOWED_HUE_BUCKETS: readonly number[] = Array.from(
  * kotvy rušily.
  *
  * **Která ze dvou zbylých ploch bere jeden krok a která dva, na rozestupu nic
- * nemění**; co mění, je pořadí pák, a to je naměřené (viz níž).
+ * nemění — na barvě snímku ano.** Naměřeno 29. 8. 2026 přes všech patnáct
+ * dvojic kroků a všech patnáct dvojic ze šesti palet: opar o **dva** kroky
+ * dál než plocha pod obzorem drží nejhorší dvojici na 9,9, opačné přiřazení
+ * na 8,8. Rozestup 60° splňuje obojí, takže se to nedá odvodit, jen změřit.
+ *
+ * Co jde odvodit, je pořadí pák, a to je naměřené zvlášť (viz níž).
  */
 export const HUE_STEP_BUCKETS = 2;
 
@@ -409,7 +431,7 @@ function hueAnchorsFor(skyColor: string): { sky: number; fog: number; floor: num
   const at = (steps: number) =>
     bucketCentre(ALLOWED_HUE_BUCKETS[(start + steps) % ALLOWED_HUE_BUCKETS.length]!);
 
-  return { sky: at(0), fog: at(HUE_STEP_BUCKETS), floor: at(HUE_STEP_BUCKETS * 2) };
+  return { sky: at(0), fog: at(HUE_STEP_BUCKETS * 2), floor: at(HUE_STEP_BUCKETS) };
 }
 
 /** Index nejbližšího povoleného koše, měřeno po kruhu odstínů. */
