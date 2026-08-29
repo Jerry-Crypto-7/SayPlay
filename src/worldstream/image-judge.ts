@@ -54,8 +54,15 @@ const LUMA = { r: 0.2126, g: 0.7152, b: 0.0722 } as const;
  */
 export const JUDGE_GRID = { columns: 16, rows: 9 } as const;
 
-/** Odstínových košů. Dvanáct po 30° — jemnější dělení by dvě sousední barvy počítalo jako dvě. */
-const HUE_BUCKETS = 12;
+/**
+ * Odstínových košů. Dvanáct po 30° — jemnější dělení by dvě sousední barvy
+ * počítalo jako dvě.
+ *
+ * **Exportované kvůli `look-repair.ts`**, který musí počítat odstíny vzhledu
+ * v týchž koších jako soudce obraz. Dvě různá dělení by znamenala, že oprava
+ * míří vedle prahu, který má splnit.
+ */
+export const HUE_BUCKETS = 12;
 
 /** Pásem jasu. Pět, protože přesně tolik jich žádá brána atmosféry v T3. */
 const LUMINANCE_BANDS = 5;
@@ -178,7 +185,7 @@ function luminanceAt(data: Pixels['data'], at: number): number {
 }
 
 /** Odstín 0–360 a sytost 0–1 z kanálů 0–255. Odstín šedé barvy nic neznamená. */
-function hueSaturation(r: number, g: number, b: number): { hue: number; saturation: number } {
+export function hueSaturation(r: number, g: number, b: number): { hue: number; saturation: number } {
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   const span = max - min;
@@ -190,6 +197,36 @@ function hueSaturation(r: number, g: number, b: number): { hue: number; saturati
   else hue = (r - g) / span + 4;
 
   return { hue: (((hue * 60) % 360) + 360) % 360, saturation: span / max };
+}
+
+/**
+ * Odstín barvy `#rrggbb` tak, jak ho vidí soudce — nebo `null`, když ji za
+ * barvu nepovažuje.
+ *
+ * **Pozor na dvojče.** `hueOf` v `look-schema.ts` počítá odstín taky, jenže
+ * odmítá barvu podle **absolutního** rozpětí kanálů (span < 0,04), zatímco
+ * soudce podle **poměrné** sytosti (span / max < 0,15). Na tmavých barvách se
+ * ta dvě pravidla rozcházejí: kovová zem `#2b3033` je pro soudce barva
+ * (sytost 0,157), pro `hueOf` šedá (rozpětí 0,031). `look-schema.hueOf` je
+ * pravda o **zákazu fialové**, tahle funkce je pravda o **prahu odstínů** —
+ * a oprava vzhledu musí čerpat odtud, jinak míří vedle prahu, který má splnit.
+ */
+export function judgedHue(hex: string): number | null {
+  const n = Number.parseInt(hex.slice(1), 16);
+  const { hue, saturation } = hueSaturation((n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff);
+  return saturation < IMAGE_THRESHOLDS.minSaturation ? null : hue;
+}
+
+/**
+ * Do kterého z dvanácti košů barva patří, nebo `null`, když do žádného.
+ *
+ * Jediná pravda o koších pro celý repozitář — `look-repair.ts` počítá odstíny
+ * vzhledu touhle funkcí, aby počítal v týchž koších, ve kterých soudce počítá
+ * odstíny obrazu.
+ */
+export function judgedHueBucket(hex: string): number | null {
+  const hue = judgedHue(hex);
+  return hue === null ? null : Math.min(HUE_BUCKETS - 1, Math.floor((hue / 360) * HUE_BUCKETS));
 }
 
 interface Cell {

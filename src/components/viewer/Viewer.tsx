@@ -32,6 +32,7 @@ import { buildLayoutScene, layoutById } from '@/kit';
 import type { RunState, WorldDocRuntime } from '@/sim/interpreter';
 import { FRAMING_FOV } from '@/worldstream/framing';
 import { deriveLook, terrainOfProgram, type LookDescriptor } from '@/worldstream/look';
+import { repairLook, type LookFloor } from '@/worldstream/look-repair';
 
 import type { AssemblySnapshot } from './Assembly';
 import { Atmosphere, SKY_NAME, WATER_NAME } from './Atmosphere';
@@ -95,6 +96,16 @@ declare global {
       dressing: () => readonly DressingBatch[];
       /** Co postavila kulisa z programu geometrie — rodina a její cena ve snímku. */
       scenery: () => SceneryReport;
+      /**
+       * Vzhled, který scéna doopravdy kreslí, i s tím, co na něm opravila
+       * podlaha z `look-repair.ts`.
+       *
+       * Bez tohohle je oprava neviditelná: opravený vzhled vypadá jako
+       * odvozený a nedá se z prohlížeče poznat, jestli se něco stalo, nebo
+       * jestli podlaha jen nic nedělá. `repairs` nese u každé změny vlastnost,
+       * cestu, obě hodnoty i důvod — je to ten zápis, na kterém stojí Inspect.
+       */
+      look: () => LookFloor;
       /** Kolik tiků svět odkrokoval. */
       tick: () => number;
       /**
@@ -265,10 +276,12 @@ function Bridge({
   onSwitch,
   layouts,
   runnerRef,
+  floor,
 }: {
   onSwitch: (index: number) => void;
   layouts: readonly string[];
   runnerRef: RunnerRef;
+  floor: LookFloor;
 }) {
   const gl = useThree((state) => state.gl);
   const camera = useThree((state) => state.camera);
@@ -293,6 +306,7 @@ function Bridge({
       dressing: () => runnerRef.current?.dressing() ?? [],
       scenery: () =>
         runnerRef.current?.scenery() ?? { family: '', drawCalls: 0, triangles: 0, attached: false },
+      look: () => floor,
       tick: () => runnerRef.current?.tick() ?? 0,
       assembly: () =>
         runnerRef.current?.assembly() ?? {
@@ -430,7 +444,7 @@ function Bridge({
     return () => {
       delete window.__viewer;
     };
-  }, [gl, camera, scene, onSwitch, layouts, runnerRef]);
+  }, [gl, camera, scene, onSwitch, layouts, runnerRef, floor]);
 
   return null;
 }
@@ -502,10 +516,19 @@ export default function Viewer({
   const active = world ?? emitted?.world ?? null;
   const activeLook = world === null ? (emitted?.look ?? null) : null;
 
-  const atmosphere = useMemo(
-    () => atmosphereOf(active, activeLook, layouts[index]),
-    [active, activeLook, layouts, index],
-  );
+  /**
+   * Odvozený vzhled projde **podlahou** dřív, než se z něj něco nakreslí.
+   *
+   * Pořadí je záměr: `deriveLook` umí vrátit vzhled, ze kterého vyjde plochý
+   * obraz — naměřeno na kontaktním listu, kde dva světy z dvanácti propadly
+   * prahu odstínů. `repairLook` je čistá a idempotentní, takže tenhle průchod
+   * nic nestojí u světa, kterému nic nechybí, a u ostatních je to jediné místo,
+   * kde se to dá spravit dřív, než to porotce uvidí.
+   */
+  const atmosphere = useMemo(() => {
+    const derived = atmosphereOf(active, activeLook, layouts[index]);
+    return { floor: repairLook(derived.look), seed: derived.seed };
+  }, [active, activeLook, layouts, index]);
 
   return (
     <div style={{ position: 'relative', height: '100%', width: '100%' }}>
@@ -515,9 +538,14 @@ export default function Viewer({
         gl={VIEWER_GL}
         camera={{ position: [7, 7, 9], fov: FRAMING_FOV }}
       >
-        <Lighting look={atmosphere.look} />
-        <Atmosphere look={atmosphere.look} seed={atmosphere.seed} />
-        <Bridge onSwitch={switchTo} layouts={layouts} runnerRef={runnerRef} />
+        <Lighting look={atmosphere.floor.look} />
+        <Atmosphere look={atmosphere.floor.look} seed={atmosphere.seed} />
+        <Bridge
+          onSwitch={switchTo}
+          layouts={layouts}
+          runnerRef={runnerRef}
+          floor={atmosphere.floor}
+        />
         {active === null ? (
           <World layoutId={layouts[index]} />
         ) : (

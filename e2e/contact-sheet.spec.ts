@@ -419,6 +419,25 @@ test('kontaktní list všech dosažitelných světů vznikne a jeho světy se od
     )}\n`,
   );
 
+  /**
+   * **Podlaha z T11: ani jeden svět nesmí propadnout.**
+   *
+   * Až sem byl list měřidlem — vypsal čísla a nechal rozhodnout člověka v bráně.
+   * `repairLook` je ale záruka, ne měřidlo: běží nad každým vzhledem dřív, než
+   * se z něj něco nakreslí, a tvrdí, že po ní všech pět prahů platí. Bez téhle
+   * aserce by se to tvrzení nedalo z ničeho ověřit — a přesně tudy propadly
+   * `dunes-terrace` a `frost-plateau`, které v běhu z 28. 8. 2026 shodily práh
+   * odstínů a list zůstal zelený.
+   *
+   * Aserce stojí **za zápisem obou artefaktů schválně**: když spadne, má člověk
+   * v `docs/contact-sheet.png` vidět, který svět to byl a jak vypadá.
+   */
+  const flopped = records.filter((record) => !record.ok);
+  expect(
+    flopped.map((record) => `${record.id} (${record.failed.join(',')})`),
+    'podlaha z T11 neplatí — vzhled prošel repairLook a obraz z něj přesto propadl',
+  ).toEqual([]);
+
   console.log(
     `[contact-sheet] ${String(records.filter((record) => record.ok).length)}/` +
       `${String(records.length)} světů prošlo všemi pěti prahy ` +
