@@ -22,6 +22,7 @@
     "measure:grammar": "playwright test e2e/local-model-grammar.spec.ts --grep @measure",
     "measure:corpus": "playwright test e2e/corpus-measure.spec.ts --grep @measure",
     "prove:budgets": "node scripts/prove-budgets.mjs",
+    "measure:mesh": "playwright test e2e/mesh-budget.spec.ts --project=chromium --grep @measure",
     "measure:divergence": "playwright test e2e/divergence.spec.ts --grep @measure",
     "measure:rejects": "vitest run evals/__tests__/reject-causes.test.ts",
     "measure:hostile": "vitest run evals/__tests__/hostile-report.test.ts"
