@@ -9,6 +9,7 @@ import { MIN_FIGURE_GROUND_SEPARATION, PALETTES, repaint } from '../src/kit/pale
 import { FOG, KEY_LIGHT, SHADOW_MAP_TYPE, TOON_LEVELS } from '../src/components/viewer/Lighting';
 import { layoutById } from '../src/kit';
 import { deriveLook } from '../src/worldstream/look';
+import { repairLook } from '../src/worldstream/look-repair';
 
 /**
  * Oracle úlohy T6 — **rig je opravdu zapnutý a snímek se vejde do rozpočtu**.
@@ -72,11 +73,19 @@ test('plátno má zapnutý rig a vejde se do rozpočtu snímku', async ({ page }
   // Pin je odvozená barva, ne konstanta: kdyby se prohlížeč vrátil k pevné
   // hodnotě nebo popis vzhledu obešel, tahle aserce zčervená. Barva mlhy závisí
   // jen na paletě, ne na semínku, takže se smí odvodit s libovolným.
-  const derived = deriveLook({
-    palette: layoutById('harbor-pier')!.palette,
-    terrain: 'flat',
-    seed: 1,
-  });
+  //
+  // **Od P14 T11 se odvozený vzhled porovnává až po podlaze** (`repairLook`).
+  // Scéna kreslí opravený popis, takže porovnání se syrovým `deriveLook` by
+  // tvrdilo vadu tam, kde je oprava — naměřeno 29. 8. 2026: mlha `#504a39`
+  // proti odvozené `#394a50`. Řetěz zůstává celý: pin pořád drží, že barva
+  // mlhy vzniká z popisu vzhledu, jen se ptá té jeho podoby, která jde na plátno.
+  const derived = repairLook(
+    deriveLook({
+      palette: layoutById('harbor-pier')!.palette,
+      terrain: 'flat',
+      seed: 1,
+    }),
+  ).look;
   expect(stats.fog!.color, 'mlha má barvu obzoru z popisu vzhledu, ne barvu stránky').toBe(
     derived.fog.color,
   );
