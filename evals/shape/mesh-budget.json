@@ -45,7 +45,7 @@
       "resolution": 32,
       "browser": {
         "workerMs": 159,
-        "roundTripMs": 160.3,
+        "roundTripMs": 158.9,
         "vertices": 5995,
         "triangles": 12016
       },
@@ -60,8 +60,8 @@
     {
       "resolution": 48,
       "browser": {
-        "workerMs": 520,
-        "roundTripMs": 519.7,
+        "workerMs": 514,
+        "roundTripMs": 514.4,
         "vertices": 13477,
         "triangles": 26992
       },
@@ -70,14 +70,14 @@
         "vertices": 13477,
         "triangles": 26992
       },
-      "driftFromNode": 0.965,
+      "driftFromNode": 0.943,
       "driftExplained": false
     },
     {
       "resolution": 64,
       "browser": {
-        "workerMs": 1254,
-        "roundTripMs": 1254.7,
+        "workerMs": 1456,
+        "roundTripMs": 1456.5,
         "vertices": 23830,
         "triangles": 47680
       },
@@ -86,14 +86,14 @@
         "vertices": 23830,
         "triangles": 47680
       },
-      "driftFromNode": 1.05,
+      "driftFromNode": 1.381,
       "driftExplained": false
     },
     {
       "resolution": 96,
       "browser": {
-        "workerMs": 3701,
-        "roundTripMs": 3701.3,
+        "workerMs": 3958,
+        "roundTripMs": 3957.8,
         "vertices": 53335,
         "triangles": 106696
       },
@@ -102,7 +102,7 @@
         "vertices": 53335,
         "triangles": 106696
       },
-      "driftFromNode": 0.427,
+      "driftFromNode": 0.526,
       "driftExplained": false
     }
   ],
@@ -125,5 +125,10 @@
       "ms": 1086.6,
       "triangles": 44452
     }
-  ]
+  ],
+  "workerOverhead64": {
+    "workerMs": 1456,
+    "mainThreadMs": 865.7,
+    "nodeMs": 611.6
+  }
 }

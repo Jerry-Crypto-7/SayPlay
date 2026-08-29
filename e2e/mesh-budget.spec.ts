@@ -164,6 +164,18 @@ test.describe('rozpočet meshingu v prohlížeči', () => {
       };
     });
 
+    // Diagnostika k odchylce od Node: týž tvar, totéž V8, jen bez workeru.
+    // Bez tohohle čísla by se rozdíl proti Node dal jen hádat, a plán žádá
+    // zapsaný důvod, ne zapsané pozorování.
+    let mainThreadMs = Number.POSITIVE_INFINITY;
+    for (let run = 0; run < RUNS; run += 1) {
+      const ms = await page.evaluate(
+        (value) => window.__meshBudget!.measureOnMainThread(value),
+        64,
+      );
+      if (ms < mainThreadMs) mainThreadMs = ms;
+    }
+
     const grid64 = grids.find((row) => row.resolution === 64)!;
     const report = {
       measuredAt: new Date().toISOString().slice(0, 10),
@@ -194,6 +206,14 @@ test.describe('rozpočet meshingu v prohlížeči', () => {
       },
       grids,
       nodeCostClasses: COST_CLASSES,
+      // Kde je rozdíl proti Node: `worker` je produkční cesta, `mainThread` je
+      // týž kód bez workeru. Když jsou si ta dvě čísla blízko, worker za nic
+      // nemůže a zbývá samo V8 v prohlížeči.
+      workerOverhead64: {
+        workerMs: grid64.browser.workerMs,
+        mainThreadMs: Number(mainThreadMs.toFixed(1)),
+        nodeMs: NODE_BASELINE[64].ms,
+      },
     };
 
     mkdirSync(dirname(REPORT_PATH), { recursive: true });
@@ -209,6 +229,11 @@ test.describe('rozpočet meshingu v prohlížeči', () => {
           (row.driftExplained ? '' : '  ← nad tolerancí, důvod patří do plánu'),
       );
     }
+
+    console.log(
+      `64³ bez workeru: ${mainThreadMs.toFixed(0)} ms · ve workeru ` +
+        `${grid64.browser.workerMs} ms · Node ${NODE_BASELINE[64].ms} ms`,
+    );
 
     expect(grid64.browser.triangles).toBeLessThanOrEqual(GRID_64_BUDGET.maxTriangles);
     expect(grid64.browser.workerMs).toBeLessThanOrEqual(GRID_64_BUDGET.maxMs);

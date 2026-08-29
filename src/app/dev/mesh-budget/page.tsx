@@ -29,6 +29,7 @@
 import { useEffect, useState } from 'react';
 
 import { createMeshClient } from '@/shape/mesh-client';
+import { meshShapeProgram } from '@/shape/surface-nets';
 import {
   REFERENCE_BOUNDS,
   REFERENCE_SEED,
@@ -53,6 +54,13 @@ declare global {
       measure: (resolution: number) => Promise<MeshBudgetSample>;
       /** Kolik uzlů referenční program má — kontrola, že se měří, co se čeká. */
       nodeCount: () => number;
+      /**
+       * Týž tvar spočítaný **na hlavním vlákně**, bez workeru a bez předání
+       * bufferu. Není to způsob, jak produkt meshuje — je to diagnostika:
+       * odpovídá na otázku, jestli za rozdílem proti Node stojí worker, nebo
+       * samo V8 v prohlížeči. Rozdíl mezi `measure` a tímhle je cena workeru.
+       */
+      measureOnMainThread: (resolution: number) => number;
     };
   }
 }
@@ -68,6 +76,11 @@ export default function MeshBudgetPage(): React.JSX.Element {
 
     window.__meshBudget = {
       nodeCount: () => program.nodes.length,
+      measureOnMainThread: (resolution) => {
+        const startedAt = performance.now();
+        meshShapeProgram(program, REFERENCE_SEED, { resolution, bounds: REFERENCE_BOUNDS });
+        return performance.now() - startedAt;
+      },
       measure: async (resolution) => {
         // `performance.now()` je tady v pořádku: měření není replay cesta a
         // žádná z těch hodnot nevstupuje do hashovaného stavu.
