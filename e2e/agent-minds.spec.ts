@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { openInspect } from './inspect';
+
 /**
  * Oracle úlohy T18 — **model napíše postavě povahu, interpret ji odchodí**.
  *
@@ -42,6 +44,16 @@ const WARY = 'a wary guard who never strays far from his post';
 async function routeOf(page: Page, sentence: string): Promise<readonly string[]> {
   await page.goto('/');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
+
+  // **Bez tohohle je `window.__timeline` navždy `undefined`.** Publikuje ho
+  // panel `Timeline`, a ten od P13 vlny 0 T1 ve výchozím DOM nestojí — zavřená
+  // zásuvka ho doopravdy odpojí. Sada tím ležela červená a nikdo si toho
+  // nevšiml, protože T1 se ověřovala jinými soubory; je to podruhé, co přestavba
+  // rozvržení potichu shodila sadu, která na panel sahá.
+  //
+  // Otevírá se **před** napsáním věty, ne po ní: `e2e/inspect.ts` to u
+  // `window.__pipeline` vysvětluje týmž důvodem a pro `__timeline` platí totéž.
+  await openInspect(page);
 
   await page.getByTestId('prompt-input').fill(sentence);
   await page.getByTestId('prompt-submit').click();
