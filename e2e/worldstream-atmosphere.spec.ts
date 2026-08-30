@@ -67,7 +67,13 @@ const SETTLE_FRAMES = 5;
  * rozdané podle role, takže **každý** opravený svět skončil v téže trojici
  * košů; přístav a poušť pak měly průměrnou barvu snímku vzdálenou **2,7** proti
  * prahu 8. Kotvy se proto vážou na oblohu toho konkrétního světa (T11-anchors)
- * a vzdálenost stoupla na **14**. Poušť za to zaplatila 0,53 → 0,55.
+ * a vzdálenost stoupla na **17,0** (naměřeno 30. 8. 2026: přístav 56/58/51,
+ * poušť 56/75/50). Poušť za to zaplatila 0,53 → 0,55.
+ *
+ * ⚠ **Do 30. 8. 2026 tu stálo 14.** To číslo se měřilo, když ještě páka jasu
+ * ztmavovala desku pod hladinou místo hladiny samotné; po té opravě je
+ * skutečná vzdálenost 17,0. Nepohnul se práh, jen se přestalo měřit proti
+ * ploše, kterou snímek neukazuje.
  *
  * **Proto je to seznam tolerovaných, ne očekávaných.** Svět přesně na prahu
  * překlopí rozptyl mezi běhy; aserce na rovnost by červenala střídavě podle

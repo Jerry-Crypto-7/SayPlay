@@ -563,6 +563,36 @@ describe('kotvy se váží na oblohu toho světa, ne na tři pevné odstíny', (
    * barva obou snímků pak stála 2,7 od sebe proti prahu 8 v e2e sadě.
    */
 
+  it('krok po prstenci nechá mezi každými dvěma plochami celý prázdný koš', () => {
+    // **Tohle je ta tabulka u `HUE_STEP_BUCKETS`, jen strojově.** Ta tabulka
+    // se jednou už rozešla s kódem: byla naměřená nad devítiprvkovým prstencem
+    // a commit, který z ringu vyhodil koš 11, ji nechal být — po něm neplatil
+    // ani jeden její řádek, a nikdo se to nedozvěděl, protože komentář nikdo
+    // nespustí.
+    //
+    // Drží se vlastnost, ne čísla: ať má prstenec kolik chce košů, trojice
+    // musí vyjít **různá** a s rezervou celého prázdného koše, kterou
+    // zaokrouhlení do osmi bitů nesebere. Krok 4 nad osmi koši ji poruší —
+    // `start` a `start + 4` je po dvojím kroku tentýž koš.
+    for (let start = 0; start < ALLOWED_HUE_BUCKETS.length; start += 1) {
+      const trio = [0, HUE_STEP_BUCKETS, HUE_STEP_BUCKETS * 2].map(
+        (steps) => ALLOWED_HUE_BUCKETS[(start + steps) % ALLOWED_HUE_BUCKETS.length]!,
+      );
+
+      expect(new Set(trio).size, `start ${String(start)}: trojice ${trio.join('/')} není trojice`).toBe(3);
+
+      for (let i = 0; i < trio.length; i += 1) {
+        for (let j = i + 1; j < trio.length; j += 1) {
+          const raw = Math.abs(bucketCentre(trio[i]!) - bucketCentre(trio[j]!));
+          expect(
+            Math.min(raw, 360 - raw),
+            `start ${String(start)}: koše ${String(trio[i])} a ${String(trio[j])} stojí bez mezery`,
+          ).toBeGreaterThanOrEqual(HUE_BUCKET_WIDTH * 2);
+        }
+      }
+    }
+  });
+
   it('přístav a poušť sdílejí nejvýš jeden koš ze tří', () => {
     // Ta naměřená vada, přišpendlená na dvojici, na které se ukázala.
     //

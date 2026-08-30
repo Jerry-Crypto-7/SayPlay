@@ -199,26 +199,42 @@ export const ALLOWED_HUE_BUCKETS: readonly number[] = Array.from(
  * koš** — 60° při šířce koše 30°, tedy rezerva, kterou zaokrouhlení do osmi
  * bitů nesebere. Menší krok tu rezervu nemá, větší platí rozlišitelností.
  *
- * Naměřeno 29. 8. 2026 nad devítiprvkovým prstencem, kolik různých trojic
- * který krok vůbec umí vyrobit:
+ * **Přeměřeno 30. 8. 2026 nad osmiprvkovým prstencem**, který tu je od
+ * vyhození koše 11. Předchozí tabulka popisovala prstenec o devíti koších
+ * a po tom commitu **neplatil ani jeden její řádek** — proto se tady měří
+ * znovu a proto na to níž stojí test, ne jen tabulka.
  *
- * | Krok | Různých trojic | Nejmenší rozestup |
- * |---|---|---|
- * | 1 | 9 | 30° (bez mezery) |
- * | **2** | **9** | **60°** |
- * | 3 | 3 | 90° |
- * | 4 | 9 | 30° |
+ * Poslední sloupec je vzdálenost průměrné barvy pozadí u **nejhorší z 21
+ * dvojic** sedmi palet repozitáře; je to odhad z popisu vzhledu, ne z hotového
+ * snímku, takže rozhoduje o pořadí, ne o absolutní hodnotě.
  *
- * Třetina prstence vypadá jako správná volba a není: trojice pak závisí jen na
- * `skyIndex mod 3`, takže z devíti možných sad zbydou tři a pět ze šesti palet
- * repozitáře skončí v téže. To je přesně ta sbíhavost, kvůli které se absolutní
- * kotvy rušily.
+ * | Krok | Různých trojic | Nejmenší rozestup | Nejhorší dvojice |
+ * |---|---|---|---|
+ * | 1 | 8 | 30° (bez mezery) | 14,7 |
+ * | **2** | **8** | **60°** | **10,4** |
+ * | 3 | 8 | 60° | 4,5 |
+ * | 4 | 4 | 0° (dva koše místo tří) | – |
+ * | 5 | 8 | 60° | 5,2 |
+ * | 6 | 8 | 60° | 6,7 |
+ *
+ * **Dvojka je nejlepší z těch, které rezervu 60° drží.** Jednička rozliší
+ * světy nejvíc ze všech, jenže sousední koše nechává bez mezery a přesně tu
+ * rezervu zaokrouhlení do osmi bitů sebere. Čtyřka na osmiprvkovém prstenci
+ * kolabuje: `start` a `start + 4` je po dvojím kroku tentýž koš, takže
+ * z trojice zbydou dva odstíny.
+ *
+ * ⚠ **Zamítnutí trojky uvedené do 30. 8. 2026 o tomhle kódu neplatilo.** Znělo
+ * „třetina prstence dá jen tři různé sady", což byla pravda o devíti koších;
+ * nad osmi dá trojka osm sad a týchž 60°. Zamítá ji až ta poslední kolonka.
  *
  * **Která ze dvou zbylých ploch bere jeden krok a která dva, na rozestupu nic
- * nemění — na barvě snímku ano.** Naměřeno 29. 8. 2026 přes všech patnáct
- * dvojic kroků a všech patnáct dvojic ze šesti palet: opar o **dva** kroky
- * dál než plocha pod obzorem drží nejhorší dvojici na 9,9, opačné přiřazení
- * na 8,8. Rozestup 60° splňuje obojí, takže se to nedá odvodit, jen změřit.
+ * nemění — na barvě snímku ano.** Naměřeno 30. 8. 2026: dnešní přiřazení
+ * (opar o **dva** kroky dál než plocha pod obzorem) drží nejhorší dvojici na
+ * **10,4**, prohozené na **11,3**. ⚠ **Je to obrácené pořadí, než jaké tu
+ * stálo do 30. 8. 2026** (9,9 proti 8,8) — ta čísla se měřila nad šesti
+ * paletami a devíti koši, takže se s těmihle nedají srovnávat. Přiřazení
+ * zůstalo, protože 9 % na odhadu z popisu vzhledu nestojí za překreslení všech
+ * dvanácti políček; rozhodnout to má měření nad hotovým snímkem.
  *
  * Co jde odvodit, je pořadí pák, a to je naměřené zvlášť (viz níž).
  */

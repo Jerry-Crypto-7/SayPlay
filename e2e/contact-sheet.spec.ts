@@ -92,7 +92,8 @@ const SETTLE_FRAMES = 3;
  * a poušť pak měly průměrnou barvu snímku vzdálenou 2,7 proti prahu 8
  * v `e2e/worldstream-atmosphere.spec.ts` — dva světy, jeden vzduch. Kotvy se
  * proto vážou na oblohu toho konkrétního světa (T11-anchors) a vzdálenost
- * stoupla na 14.
+ * stoupla na **17,0** (naměřeno 30. 8. 2026; do té doby tu stálo 14, měřené
+ * ještě před tím, než páka jasu přestala ztmavovat desku pod hladinou).
  *
  * Zaplatila to poušť: mrtvá plocha 0,549 → **0,556** proti prahu 0,55.
  * **Rozhodl uživatel 29. 8. 2026: vyhrávají rozpoznatelně různé světy**, plochý
