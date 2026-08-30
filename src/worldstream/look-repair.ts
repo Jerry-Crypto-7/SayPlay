@@ -41,9 +41,11 @@
  * Plochy jsou tři, ne čtyři, a která je třetí rozhoduje voda: **deska země leží
  * pod hladinou**, takže ve světě s vodou nemaluje ani pixel.
  *
- * **Obloha si nechá koš, ve kterém stojí; zbylé dvě plochy jdou o dva koše dál
- * po prstenci povolených.** Trojice se tím svět od světa liší, a přitom si mezi
- * sebou drží rozestup 60°, tedy celý prázdný koš.
+ * **Obloha si nechá koš, ve kterém stojí; plocha pod obzorem jde o dva koše dál
+ * po prstenci povolených a opar o čtyři.** Trojice se tím svět od světa liší,
+ * a přitom si každé dvě sousední plochy drží rozestup 60°, tedy celý prázdný
+ * koš. Opar je z těch tří od oblohy nejdál (120°), plocha pod obzorem leží
+ * mezi nimi.
  *
  * Naměřeno 29. 8. 2026, proč to nesmí být tři pevné odstíny: kotvy 195 / 45 /
  * 165 se rozdávaly podle role, takže přístav (obloha 196°, s vodou) dostal
@@ -655,7 +657,10 @@ export function repairLook(input: LookDescriptor): LookFloor {
         hue: anchors.fog,
         get: (l: LookDescriptor) => l.fog.color,
         set: (l: LookDescriptor, color: string) => ({ ...l, fog: { ...l.fog, color } }),
-        reason: 'the haze steps one bucket on from the sky, into the gap the other two leave',
+        // Číslo v textu se počítá, neopisuje: `LookRepair.reason` čte člověk
+        // v Inspect vedle propadlého prahu, a prohození kotev 29. 8. 2026 ho
+        // tady nechalo tvrdit „one bucket", zatímco kód šel o čtyři.
+        reason: `the haze steps ${String(HUE_STEP_BUCKETS * 2)} buckets on from the sky, the furthest of the three`,
       },
       {
         // Táž deska, kterou o pár řádků níž ztmavuje páka jasu. Kdyby si každá
@@ -666,8 +671,8 @@ export function repairLook(input: LookDescriptor): LookFloor {
         get: (l: LookDescriptor) => visibleFloor(l).color,
         set: (l: LookDescriptor, color: string) => visibleFloor(l).set(l, color),
         reason: look.water.present
-          ? 'the water steps two buckets on from the sky, so the two big areas stand furthest apart'
-          : 'the ground steps two buckets on from the sky, so earth and sky stop being one colour',
+          ? `the water steps ${String(HUE_STEP_BUCKETS)} buckets on from the sky, so sky and surface stop being one colour`
+          : `the ground steps ${String(HUE_STEP_BUCKETS)} buckets on from the sky, so earth and sky stop being one colour`,
       },
       {
         path: 'sky/color',

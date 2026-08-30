@@ -563,6 +563,40 @@ describe('kotvy se váží na oblohu toho světa, ne na tři pevné odstíny', (
    * barva obou snímků pak stála 2,7 od sebe proti prahu 8 v e2e sadě.
    */
 
+  it('vysvětlivka jmenuje tentýž počet košů, o kolik se barva doopravdy hnula', () => {
+    // `LookRepair.reason` se v Inspect ukazuje vedle propadlého prahu, takže to
+    // čte porotce. Prohození kotev 29. 8. 2026 nechalo texty být: páka oparu
+    // pořád tvrdila „one bucket", zatímco kód šel o čtyři, a páka vody slibovala
+    // „furthest apart", přestože je z těch dvou ta bližší.
+    //
+    // Text se proto počítá z `HUE_STEP_BUCKETS` a tenhle test měří, že to
+    // číslo souhlasí s **naměřenou** vzdáleností po prstenci — ne se sebou samým.
+    const after = repairLook(flatLook());
+    const skyBucket = judgedHueBucket(after.look.sky.color);
+    expect(skyBucket, 'obloha nemá koš, od kterého se dá měřit').not.toBeNull();
+    const start = ALLOWED_HUE_BUCKETS.indexOf(skyBucket!);
+    expect(start, 'obloha stojí mimo prstenec, test měří něco jiného').toBeGreaterThanOrEqual(0);
+
+    const moved = after.repairs.filter(
+      (repair) => repair.property === 'hues' && repair.path !== 'sky/color',
+    );
+    expect(moved.length, 'nic se neotočilo, text není z čeho soudit').toBeGreaterThan(0);
+
+    for (const repair of moved) {
+      const bucket = judgedHueBucket(String(repair.to));
+      expect(bucket, `${repair.path} skončil bez odstínu`).not.toBeNull();
+
+      const steps =
+        (ALLOWED_HUE_BUCKETS.indexOf(bucket!) - start + ALLOWED_HUE_BUCKETS.length) %
+        ALLOWED_HUE_BUCKETS.length;
+      const claimed = /steps ([0-9]+) buckets on/.exec(repair.reason)?.[1];
+
+      expect(claimed, `${repair.path}: text nejmenuje počet košů — "${repair.reason}"`).toBe(
+        String(steps),
+      );
+    }
+  });
+
   it('krok po prstenci nechá mezi každými dvěma plochami celý prázdný koš', () => {
     // **Tohle je ta tabulka u `HUE_STEP_BUCKETS`, jen strojově.** Ta tabulka
     // se jednou už rozešla s kódem: byla naměřená nad devítiprvkovým prstencem
