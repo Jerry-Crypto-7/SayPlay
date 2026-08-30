@@ -825,35 +825,128 @@ describe('rotace odstínu nese jas beze změny', () => {
    * o prahu, se kterým nemá nic společného.
    */
 
+  const EIGHT_BIT_NOISE = 0.01;
+
+  /** Nejvyšší kanál. Na 255 stojí barva na stropu svého odstínu — tam se ořezává. */
+  function peakChannel(hex: string): number {
+    const value = Number.parseInt(hex.slice(1), 16);
+    return Math.max((value >> 16) & 255, (value >> 8) & 255, value & 255);
+  }
+
   it('žádná opravená plocha nezmění jas o víc, než co spolkne osm bitů', () => {
-    const EIGHT_BIT_NOISE = 0.01;
+    // ⚠ **Tohle je vlastnost téhle sady světů, ne záruka kódu** — a stálo to
+    // jeden nález. Nad 140 odvozenými světy se otočí 300 ploch a ani jedna
+    // z nich nedosáhne na oříznutí, takže jas vyjde vždycky přesně. Kdyby
+    // aserce níž zůstala sama, četla by se jako „rotace jas nikdy nezmění",
+    // což pravda není: nad vzhledy, které projdou branou, se ořízne skoro
+    // každá pátá a jedna z nich ztratí 0,61.
+    //
+    // Druhá aserce proto **měří ten předpoklad**, ne jen důsledek. Kdyby se
+    // odvozené světy jednou posunuly do jasů, na které odstín nedosáhne,
+    // spadne tady — a ne o dvě sady dál na nesrozumitelném čísle.
+    let rotations = 0;
     for (const world of WORLDS) {
       for (const repair of repairLook(deriveLook(world)).repairs) {
         if (repair.property !== 'hues') continue;
+        rotations += 1;
         const from = luminanceOf(String(repair.from));
         const to = luminanceOf(String(repair.to));
+
+        expect(
+          peakChannel(String(repair.to)),
+          world.palette + '/' + repair.path + ': tenhle svět na oříznutí dosáhl, ' +
+            'takže se nad ním jas přenášet nedá a aserce níž měří něco jiného',
+        ).toBeLessThan(255);
         expect(
           Math.abs(to - from),
           world.palette + '/' + repair.path + ': ' + from.toFixed(3) + ' -> ' + to.toFixed(3),
         ).toBeLessThanOrEqual(EIGHT_BIT_NOISE);
       }
     }
+
+    expect(rotations, 'sada přestala otáčet plochy, test neměří nic').toBeGreaterThan(0);
   });
 
-  it('nedosažitelný jas se ořízne dolů, nikdy nahoru', () => {
-    // Sytou zeleň nelze v Rec. 709 přebarvit na stejně jasnou červeň — ta má
-    // při plné sytosti strop 0,213 proti 0,715. Oprava tedy musí ustoupit,
-    // ne dorovnat jas rozsvícením barvy, kterou svět nikdy neměl.
+  it('na stropu odstínu ustoupí až na jeho nejjasnější barvu — a tam skončí', () => {
+    // Cesta, na kterou 140 odvozených světů nedojde. Sytá zeleň má v Rec. 709
+    // jas 0,715; červená při plné sytosti nejvýš 0,213, takže stejně jasnou
+    // červeň z ní udělat nelze a `Math.min(1, wanted / unit)` se uplatní.
+    //
+    // Co se v tom případě slibuje: oprava **ustoupí, nedorovná**. Vezme
+    // nejjasnější barvu, kterou ten odstín má — tedy `value` na stropu — a víc
+    // z ní nevytáhne. Rozsvítit ji přes předlohu by znamenalo vymyslet barvu,
+    // kterou svět nikdy neměl.
     const green = repairLook(flatLook('#00ff00'));
     const ceiling = luminanceOf('#00ff00');
-
     const rotated = green.repairs.filter((repair) => repair.property === 'hues');
+
     expect(rotated.length, 'jednobarevný vzhled musí opravu vyvolat').toBeGreaterThan(0);
-    for (const repair of rotated) {
+
+    const clamped = rotated.filter((repair) => peakChannel(String(repair.to)) === 255);
+    expect(
+      clamped.length,
+      'ani jedna plocha na oříznutí nedosáhla — test měří tutéž větev jako ten nad ním',
+    ).toBeGreaterThan(0);
+
+    for (const repair of clamped) {
       expect(
         luminanceOf(String(repair.to)),
-        repair.path + ' se rozsvítilo nad předlohu',
-      ).toBeLessThanOrEqual(ceiling + 0.01);
+        repair.path + ': jas se dorovnal nahoru místo ústupu',
+      ).toBeLessThan(ceiling);
     }
   });
+
+  it('a ať se ořízne, nebo ne, žádná rotace jas nezvedne', () => {
+    // Jediná půlka, která platí **vždycky** — a proto se měří nad vzhledy,
+    // které projdou branou, ne nad odvozenými světy. Naměřeno 30. 8. 2026:
+    // z 12 777 rotací nad 25 410 vzhledy se 2 284 ořízlo (skoro každá pátá),
+    // nejhorší ztratila 0,61 jasu (`#e3f606 → #0644ff`, 0,881 → 0,268),
+    // a **ani jedna** jas nezvedla.
+    let state = 555_777;
+    const random = () => {
+      state = (state * 1_103_515_245 + 12_345) & 0x7fff_ffff;
+      return state / 0x7fff_ffff;
+    };
+    const color = () =>
+      `#${Array.from({ length: 3 }, () =>
+        Math.floor(random() * 256)
+          .toString(16)
+          .padStart(2, '0'),
+      ).join('')}`;
+
+    let rotations = 0;
+    let clamped = 0;
+    let checked = 0;
+    for (let attempt = 0; attempt < 40_000 && checked < 5_000; attempt += 1) {
+      const gate = acceptLook(
+        {
+          ...flatLook(),
+          sky: { color: color(), height: 0.4 },
+          water: { present: random() < 0.5, color: color() },
+          ground: { present: true, color: color() },
+          fog: { density: 0.4, color: color() },
+        },
+        { palette: 'dunes', terrain: 'flat', seed: 1 },
+      );
+      if (!gate.ok) continue;
+      checked += 1;
+
+      for (const repair of repairLook(gate.look).repairs) {
+        if (repair.property !== 'hues') continue;
+        rotations += 1;
+        if (peakChannel(String(repair.to)) === 255) clamped += 1;
+
+        expect(
+          luminanceOf(String(repair.to)),
+          `${repair.path} ${String(repair.from)} -> ${String(repair.to)}: rotace jas zvedla`,
+        ).toBeLessThanOrEqual(luminanceOf(String(repair.from)) + EIGHT_BIT_NOISE);
+      }
+    }
+
+    expect(rotations, 'nic se neotočilo').toBeGreaterThan(0);
+    expect(clamped, 'ani jedna rotace nedosáhla na oříznutí — sada tu větev míjí').toBeGreaterThan(
+      0,
+    );
+  });
+
 });
