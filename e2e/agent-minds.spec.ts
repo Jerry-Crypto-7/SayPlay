@@ -91,15 +91,49 @@ test('dvě věty o téže hlídce dají dvě různé trasy', async ({ page }) =>
 test('mysl neběží na dynamicky vyhodnoceném kódu — svět se postaví z deklarace', async ({ page }) => {
   test.setTimeout(120_000);
 
-  // Stránka běží pod produkčním CSP bez `unsafe-eval`; kdyby snížení mysli
-  // potřebovalo dynamické vyhodnocení, spadlo by to sem jako chyba konzole a
-  // svět by nevznikl. Je to druhá polovina třetí AC — grep nad `src/sim/`
-  // hlídá zdroj, tohle hlídá běh.
+  // **CSP si nasazuje tenhle test, produkce žádné nemá** — naměřeno 30. 8. 2026
+  // jako nález `T1-cspclaim`: `next.config.mjs` nemá `headers()`, `middleware.ts`
+  // v repu není a `vercel.json` nese jen framework a region. Do té doby tady
+  // stála věta „stránka běží pod produkčním CSP bez `unsafe-eval`", což pravda
+  // nebyla — takže druhá polovina té věty („spadlo by to sem") nehlídala nic:
+  // `pageerror` chytá pády, ale `eval` nikdo nezakazoval.
+  //
+  // Hlavička se proto vkládá do odpovědi na dokument. Tvrzení tím není
+  // „produkce běží pod CSP" (neběží), ale to slabší a pravdivé: **mysl by pod
+  // CSP bez `unsafe-eval` fungovala dál**. Rozhodnutí, jestli se CSP nasadí, je
+  // součást deploye a patří uživateli; až padne, tenhle blok se smaže a bude
+  // platit ta silnější věta.
+  //
+  // `unsafe-inline` zůstává povolený schválně: Next posílá hydratační data
+  // inline skriptem, takže bez něj by stránka nevznikla vůbec a test by padal
+  // na Nextu, ne na mysli. Zakázané je právě a jenom dynamické vyhodnocení.
+  await page.route('**/*', async (route) => {
+    const response = await route.fetch();
+    const type = response.headers()['content-type'] ?? '';
+    if (!type.includes('text/html')) return route.fulfill({ response });
+    return route.fulfill({
+      response,
+      headers: {
+        ...response.headers(),
+        'content-security-policy': "script-src 'self' 'unsafe-inline'; worker-src 'self' blob:",
+      },
+    });
+  });
+
   const failures: string[] = [];
   page.on('pageerror', (error) => failures.push(String(error)));
 
+  // Porušení CSP se neohlásí jako `pageerror`, ale jako zpráva konzole — takže
+  // bez tohohle by test hlídku propásl a zůstal by zase ozdobný.
+  const violations: string[] = [];
+  page.on('console', (message) => {
+    const text = message.text();
+    if (text.includes('Content Security Policy')) violations.push(text);
+  });
+
   const route = await routeOf(page, BOLD);
 
+  expect(violations).toEqual([]);
   expect(failures).toEqual([]);
   expect(route.length).toBeGreaterThan(1);
 });
