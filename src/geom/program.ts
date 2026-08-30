@@ -541,9 +541,13 @@ function structuralIssues(program: GeomProgram): string[] {
 
   program.nodes.forEach((node, index) => {
     for (const child of referencedIndicesOf(node)) {
-      if (child >= index) fail(`node ${index} references node ${child} at or above itself`);
+      // **Vzájemně výlučné, a v tomhle pořadí** — týž důvod jako ve
+      // `shape/schema.ts`: potomek mimo tabulku je vždycky i nad vlastním
+      // řádkem, takže obrácené pořadí nechá hlášku o tabulce navždy mrtvou.
       if (child >= program.nodes.length) {
         fail(`node ${index} references node ${child} outside the table of ${program.nodes.length}`);
+      } else if (child >= index) {
+        fail(`node ${index} references node ${child} at or above itself`);
       }
     }
   });

@@ -337,9 +337,17 @@ function structuralIssues(program: z.infer<typeof shapeProgramSchema>): string[]
 
   program.nodes.forEach((node, index) => {
     for (const child of childIndicesOf(node)) {
-      if (child >= index) fail(`node ${index} references node ${child} at or above itself`);
+      // **Vzájemně výlučné, a v tomhle pořadí.** Index potomka mimo tabulku je
+      // vždycky ≥ index vlastního řádku, protože ten je z definice menší než
+      // délka tabulky — obrácené pořadí proto nechá hlášku o tabulce u potomka
+      // navždy mrtvou a model dostane do sebeopravy „posuň ho pod sebe" i tam,
+      // kde je vada „ukazuje na řádek, který neexistuje". To jsou dvě různé
+      // opravy. U kořene je kontrola jen jedna, protože kořen vlastní index
+      // nemá; tahle výlučnost se ho netýká.
       if (child >= program.nodes.length) {
         fail(`node ${index} references node ${child} outside the table of ${program.nodes.length}`);
+      } else if (child >= index) {
+        fail(`node ${index} references node ${child} at or above itself`);
       }
     }
     if (node.kind === 'plane' && isTooShort(node.normal)) {

@@ -105,6 +105,26 @@ describe('odkazy mezi uzly', () => {
     );
     expect(result.ok).toBe(false);
     expect(result.issues).toContain('node 10 references node 20 at or above itself');
+    // Uzel 20 v tabulce **je** — proto se tady o tabulce mluvit nemá.
+    expect(result.issues.join('\n')).not.toContain('node 10 references node 20 outside');
+  });
+
+  it('potomek mimo tabulku jmenuje tabulku, a jenom to', () => {
+    // Nález `T7-gate-deadcheck`: obě hlášky se vydávaly za sebou, takže ta
+    // o tabulce se u potomka neozvala nikdy sama. Model dostával do sebeopravy
+    // návod „posuň ho pod sebe" i tam, kde ukazoval na řádek, který neexistuje.
+    // Test proto soudí obě strany: co zaznít má, i co zaznít nesmí.
+    const size = coveringProgram().nodes.length;
+    const result = validateShapeProgram(
+      broken((draft) => {
+        nodesOf(draft)[10].child = size + 14;
+      }),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContain(
+      `node 10 references node ${String(size + 14)} outside the table of ${String(size)}`,
+    );
+    expect(result.issues.join('\n')).not.toContain('at or above itself');
   });
 
   it('odmítne potomka, kterým je uzel sám', () => {

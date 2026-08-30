@@ -427,6 +427,24 @@ describe('vadný program se odmítne a řekne proč', () => {
     );
   });
 
+  it('potomek mimo tabulku jmenuje tabulku, a jenom to', () => {
+    // Nález `T7-gate-deadcheck`: hlášky se vydávaly za sebou, takže ta
+    // o tabulce se u potomka nikdy neozvala sama — potomek mimo tabulku je
+    // vždycky i nad vlastním řádkem. Délka se čte z programu, neopisuje se.
+    const size = coveringProgram().nodes.length;
+    const result = validateGeomProgram(
+      broken((program) => {
+        (program.nodes[3] as { child: number }).child = size + 6;
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.issues.join(' | ')).toContain(
+      `node 3 references node ${String(size + 6)} outside the table of ${String(size)}`,
+    );
+    expect(result.issues.join(' | ')).not.toContain('at or above itself');
+  });
+
   it('potomek pod kořenem, ale nad rodičem', () => {
     rejects(
       broken((program) => {

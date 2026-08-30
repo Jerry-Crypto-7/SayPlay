@@ -338,13 +338,14 @@ describe('brána workeru odmítne neplatný program s důvodem', () => {
     const reason = refuse(
       programOf([{ kind: 'sphere', radius: 1 }, { kind: 'translate', child: 5, offset: [1, 0, 0] }]),
     );
-    // **Odmítnutí nese `at or above itself`, ne `outside the table`** — a je to
-    // naměřené, ne odhad: hláška o tabulce se u potomka nikdy neozve sama.
-    // Index potomka mimo tabulku je vždycky ≥ index vlastního řádku, protože
-    // ten je z definice menší než délka tabulky. Aserce na `references node 5`
-    // by proto byla ozdobná; sedla by na obě hlášky a nepoznala by, že jednu
-    // z nich nechrání nic. Zapsané jako nález `T7-gate-deadcheck`.
-    expect(reason).toContain('node 1 references node 5 at or above itself');
+    // **Odmítnutí nese `outside the table`, a jenom to** — od opravy nálezu
+    // `T7-gate-deadcheck` (30. 8. 2026) jsou obě hlášky vzájemně výlučné.
+    // Předtím se tenhle program odmítal větou „at or above itself", protože se
+    // pořadí ptalo obráceně a hláška o tabulce se u potomka neozvala nikdy.
+    // Aserce na pouhé `references node 5` by byla ozdobná: sedla by na obě
+    // hlášky a nepoznala by, kterou z nich brána doopravdy vydala.
+    expect(reason).toContain('node 1 references node 5 outside the table of 2');
+    expect(reason).not.toContain('at or above itself');
   });
 
   it('soudí se celý program, ne jen tabulka uzlů', () => {
