@@ -107,10 +107,13 @@ test('mysl neběží na dynamicky vyhodnoceném kódu — svět se postaví z de
   // `unsafe-inline` zůstává povolený schválně: Next posílá hydratační data
   // inline skriptem, takže bez něj by stránka nevznikla vůbec a test by padal
   // na Nextu, ne na mysli. Zakázané je právě a jenom dynamické vyhodnocení.
-  await page.route('**/*', async (route) => {
+  //
+  // **Zachytává se jen dokument.** `route.fallback()` pustí zbytek beze změny;
+  // původní verze protahovala přes `route.fetch()` každý požadavek a padala na
+  // `Fetch response has been disposed`, jakmile něco dojelo po konci testu.
+  await page.route('**/*', async (route, request) => {
+    if (request.resourceType() !== 'document') return route.fallback();
     const response = await route.fetch();
-    const type = response.headers()['content-type'] ?? '';
-    if (!type.includes('text/html')) return route.fulfill({ response });
     return route.fulfill({
       response,
       headers: {
@@ -123,13 +126,26 @@ test('mysl neběží na dynamicky vyhodnoceném kódu — svět se postaví z de
   const failures: string[] = [];
   page.on('pageerror', (error) => failures.push(String(error)));
 
-  // Porušení CSP se neohlásí jako `pageerror`, ale jako zpráva konzole — takže
-  // bez tohohle by test hlídku propásl a zůstal by zase ozdobný.
+  // Druhá síť: porušení CSP se neohlásí jako `pageerror`, ale jako zpráva
+  // konzole. **Zabíjí ale ta první** — naměřeno mutací níž.
   const violations: string[] = [];
   page.on('console', (message) => {
     const text = message.text();
     if (text.includes('Content Security Policy')) violations.push(text);
   });
+
+  // ## Jak se ověřilo, že tahle brána doopravdy kouše (30. 8. 2026)
+  //
+  // **`new Function('return 1')` vložené do `expandAgentMinds`** — tedy do
+  // cesty, kterou tenhle test jede — sadu **zčervenalo**: svět se nepostavil
+  // a čekání na entity vypršelo. **Kontrola k tomu:** týž mutant pod testem
+  // „dvě věty o téže hlídce", který CSP nevkládá, **prošel**. Rozdíl mezi
+  // těmi dvěma běhy je jen ta hlavička, takže zabíjí ona, ne mutant sám.
+  //
+  // **Co naopak nezkoušet, protože je to změřené a nefunguje to:** `eval`
+  // vložený přes `page.addInitScript` nebo `page.evaluate`. Naměřeno — vrátí
+  // `2` a CSP se neozve, protože kód vstříknutý Playwrightem přes CDP
+  // politice stránky nepodléhá. Tuhle bránu umí zkoušet jen kód aplikace.
 
   const route = await routeOf(page, BOLD);
 
