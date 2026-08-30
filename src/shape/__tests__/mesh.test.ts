@@ -315,8 +315,13 @@ describe('brána workeru odmítne neplatný program s důvodem', () => {
     const { response, transfer } = handleMeshJob({ ...base, program });
     expect(response.ok).toBe(false);
     if (response.ok) throw new Error('gate let an invalid program through');
-    // Prázdný seznam přenosů dokazuje, že se nemeshovalo: kdyby brána stála až
-    // za polem, byly by tu tři buffery.
+    // Odmítnutá práce nesmí nabídnout k přenosu **žádnou** paměť. `postMessage`
+    // uvedený buffer odpojí, takže buffer v seznamu u odpovědi, která ho
+    // neposílá, je odpojená paměť, kterou pak nikdo nevlastní.
+    //
+    // Pozor, co tahle aserce **nedokazuje**: že se nemeshovalo. Pád uprostřed
+    // meshingu skončí v `catch` a vrátí prázdný seznam taky. Že brána stojí
+    // před polem, je vidět na hlášce, ne tady.
     expect(transfer).toHaveLength(0);
     return response.error;
   }
