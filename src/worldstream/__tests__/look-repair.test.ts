@@ -172,6 +172,76 @@ describe('oprava je deterministická, idempotentní a zapsaná', () => {
     expect(twice.look).toStrictEqual(once.look);
   });
 
+  it('krok jasu nesmí sebrat odstín, který krok odstínů právě započítal', () => {
+    // **Doložený vstup, ne vymyšlený.** Nezávislé review 29. 8. 2026 protáhlo
+    // branou `acceptLook` 25 410 fuzzovaných vzhledů a 174 z nich se při
+    // druhém průchodu pohnulo — všech 174 z téhle jediné příčiny: koše se
+    // počítají ze země, a krok jasu o pár řádků níž tutéž zem ztmavil do
+    // černé, takže jí koš vzal. Průchod dva pak viděl míň než tři koše a
+    // otáčel barvy znovu; ze tří průchodů vyšly **tři různé obrazy**.
+    //
+    // Odvozené světy sem nevedou, takže na tuhle cestu musí vzhled napsaný
+    // ručně: obloha tmavší než zem, a zem, která nese jediný koš pozadí.
+    const dark: LookDescriptor = {
+      ...flatLook(),
+      sky: { color: '#0908c1', height: 0.4 },
+      ground: { color: '#f63a14', present: true },
+      fog: { density: 0.4, color: '#035fff' },
+    };
+
+    const once = repairLook(dark);
+    const twice = repairLook(once.look);
+    const thrice = repairLook(twice.look);
+
+    expect(once.repairs.some((repair) => repair.property === 'luminanceSpread')).toBe(true);
+    expect(twice.repairs, JSON.stringify(twice.repairs)).toEqual([]);
+    expect(twice.look).toStrictEqual(once.look);
+    expect(thrice.look).toStrictEqual(once.look);
+
+    // A to, co tu drží: plocha, kterou krok jasu ztmavil, si koš nechala.
+    expect(judgedHueBucket(once.look.ground.color)).toBe(judgedHueBucket(dark.ground.color));
+  });
+
+  it('ani jeden z pěti tisíc vzhledů, které projdou branou, se podruhé nepohne', () => {
+    // Jediná sada, která tu vadu vidí. Odvozené světy i `flatLook` chodí
+    // stejnou úzkou cestou, takže nad nimi stála idempotence zelená celou dobu,
+    // co byla rozbitá.
+    let state = 987_654_321;
+    const random = () => {
+      state = (state * 1_103_515_245 + 12_345) & 0x7fff_ffff;
+      return state / 0x7fff_ffff;
+    };
+    const color = () =>
+      `#${Array.from({ length: 3 }, () =>
+        Math.floor(random() * 256)
+          .toString(16)
+          .padStart(2, '0'),
+      ).join('')}`;
+
+    let checked = 0;
+    for (let attempt = 0; attempt < 40_000 && checked < 5_000; attempt += 1) {
+      const gate = acceptLook(
+        {
+          ...flatLook(),
+          sky: { color: color(), height: 0.4 },
+          water: { present: random() < 0.5, color: color() },
+          ground: { present: true, color: color() },
+          fog: { density: 0.4, color: color() },
+        },
+        { palette: 'dunes', terrain: 'flat', seed: 1 },
+      );
+      if (!gate.ok) continue;
+      checked += 1;
+
+      const once = repairLook(gate.look);
+      const twice = repairLook(once.look);
+      expect(twice.repairs, `${JSON.stringify(gate.look)} se opravuje pořád dokola`).toEqual([]);
+      expect(twice.look).toStrictEqual(once.look);
+    }
+
+    expect(checked).toBe(5_000);
+  });
+
   it('každá změna nese vlastnost, cestu, obě hodnoty i důvod', () => {
     // Bez tohohle by se v Inspect dalo ukázat jen „něco se opravilo".
     const after = repairLook(flatLook());
@@ -376,6 +446,65 @@ describe('tři vady, kvůli kterým podlaha neplatila', () => {
         .filter((bucket) => bucket !== null),
     );
     expect(visible.size).toBeGreaterThanOrEqual(LOOK_FLOOR.minHueBuckets);
+  });
+
+  it('odstup jasu se měří proti hladině, ne proti desce pod ní', () => {
+    // **Táž vada o jedno patro níž.** Pro odstíny se deska pod hladinou
+    // nepočítala, pro jas ano: krok jasu porovnával oblohu vždycky se zemí.
+    // Naměřeno 30. 8. 2026 nad 25 410 fuzzovanými vzhledy, které projdou
+    // branou: **7 390 světů s vodou** vyšlo jako `ok: true` se dvěma
+    // viditelnými plochami blíž, než práh dovolí.
+    //
+    // Vzhled níž je doložený vstup review. Obloha a voda stojí 0,048 od sebe
+    // proti podlaze 0,06, ale zem má jas 0,006, takže staré měření nevidělo
+    // vadu nikde.
+    const lagoon: LookDescriptor = {
+      ...flatLook(),
+      sky: { color: '#6f97b4', height: 0.4 },
+      water: { present: true, color: '#a97f4e' },
+      ground: { present: true, color: '#101010' },
+      fog: { density: 0.4, color: '#12c20b' },
+    };
+
+    expect(
+      luminanceOf(lagoon.sky.color) - luminanceOf(lagoon.water.color),
+      'vstup už tu vadu nemá — test by měřil nic',
+    ).toBeLessThan(LOOK_FLOOR.minValueStep);
+
+    const after = repairLook(lagoon);
+
+    expect(after.repairs.map((repair) => repair.path)).toContain('water/color');
+    expect(
+      luminanceOf(after.look.sky.color) - luminanceOf(after.look.water.color),
+      'obloha a hladina pořád stojí v téže hodnotě',
+    ).toBeGreaterThanOrEqual(LOOK_FLOOR.minValueStep);
+    expect(
+      after.look.ground.color,
+      'ztmavila se deska pod hladinou, která nemaluje ani pixel',
+    ).toBe(lagoon.ground.color);
+  });
+
+  it('a nehlásí vadu obrazu, kterému nic není', () => {
+    // Opačný konec téže osy: deska pod hladinou stojí obloze v jasu blízko,
+    // hladina má odstup. Staré měření tu ohlásilo `failed: ['luminanceSpread']`
+    // u snímku, na kterém ta deska není vidět.
+    const shallow: LookDescriptor = {
+      ...flatLook(),
+      sky: { color: '#a0c8dd', height: 0.4 },
+      water: { present: true, color: '#4a3620' },
+      ground: { present: true, color: '#c8d2d8' },
+      fog: { density: 0.4, color: '#3d7a6a' },
+    };
+
+    expect(
+      luminanceOf(shallow.sky.color) - luminanceOf(shallow.ground.color),
+      'vstup musí mít neviditelnou zem blízko obloze, jinak test neměří nic',
+    ).toBeLessThan(LOOK_FLOOR.minValueStep);
+
+    const after = repairLook(shallow);
+
+    expect(after.failed).not.toContain('luminanceSpread');
+    expect(after.repairs.map((repair) => repair.path)).not.toContain('ground/color');
   });
 
   it('obloha je poslední plocha, které se oprava dotkne', () => {

@@ -402,9 +402,77 @@ export interface LookFloor {
  * tři koše, obraz dva, a soudce ho poslal do červené.
  */
 function visibleBackground(look: LookDescriptor): readonly string[] {
+  return [look.sky.color, visibleFloor(look).color, look.fog.color];
+}
+
+/**
+ * Plocha pod obzorem, kterou snímek doopravdy ukazuje — a jak na ni sáhnout.
+ *
+ * **Rozhodnutí „která ze dvou desek to je" padne jednou, tady.** Řídí se podle
+ * něj tři různá místa: kolik odstínů pozadí nese, kterou plochu otáčí páka
+ * odstínů a kterou ztmavuje páka jasu. Naměřeno 30. 8. 2026, co stálo jeho
+ * rozkopírování — páka jasu ho neznala a porovnávala oblohu vždycky se zemí:
+ * ze 25 410 fuzzovaných vzhledů, které projdou branou, prošlo **7 390 světů
+ * s vodou** jako `ok: true` se dvěma viditelnými plochami blíž, než práh
+ * dovolí, protože odstup se měřil proti desce pod hladinou.
+ */
+function visibleFloor(look: LookDescriptor): {
+  readonly path: string;
+  readonly color: string;
+  readonly set: (l: LookDescriptor, color: string) => LookDescriptor;
+} {
   return look.water.present
-    ? [look.sky.color, look.water.color, look.fog.color]
-    : [look.sky.color, look.ground.color, look.fog.color];
+    ? {
+        path: 'water/color',
+        color: look.water.color,
+        set: (l, color) => ({ ...l, water: { ...l.water, color } }),
+      }
+    : {
+        path: 'ground/color',
+        color: look.ground.color,
+        set: (l, color) => ({ ...l, ground: { ...l.ground, color } }),
+      };
+}
+
+/**
+ * Ztmavení, které ploše nesmí vzít odstín.
+ *
+ * `darken` škáluje všechny tři kanály stejně, takže sytost si drží — až na
+ * dně, kde ji osm bitů na kanál rozdrtí na nulu. Jenže tahle plocha je **jeden
+ * ze tří košů, které krok odstínů o pár řádků výš právě dopočítal**: ztmavit ji
+ * do černé znamená vzít mu jeden koš zpátky a nechat další průchod otáčet barvy
+ * znovu.
+ *
+ * Naměřeno 30. 8. 2026 nad 25 410 fuzzovanými vzhledy, které projdou branou:
+ * bez téhle brzdy se **174 z nich** při druhém průchodu posunulo a všech 174
+ * mělo tuhle jedinou příčinu. Doložený vstup `{sky #300f17, ground #f1b0a7,
+ * fog #eaf783, bez vody}` dal tři různé obrazy ze tří průchodů.
+ *
+ * Míří se na `wanted`; když se v tom jasu koš ztratí, hledá se půlením
+ * nejtmavší jas, ve kterém plocha svůj koš ještě nese.
+ */
+function darkenKeepingHue(hex: string, wanted: number): string {
+  const value = luminanceOf(hex);
+  if (value === 0) return hex;
+
+  const aimed = darken(hex, 1 - wanted / value);
+  const bucket = bucketOf(hex);
+  if (bucket === null || bucketOf(aimed) === bucket) return aimed;
+
+  let lost = wanted;
+  let kept = value;
+  let best = hex;
+  for (let halving = 0; halving < 12; halving += 1) {
+    const middle = (lost + kept) / 2;
+    const tried = darken(hex, 1 - middle / value);
+    if (bucketOf(tried) === bucket) {
+      best = tried;
+      kept = middle;
+    } else {
+      lost = middle;
+    }
+  }
+  return best;
 }
 
 /**
@@ -545,21 +613,18 @@ export function repairLook(input: LookDescriptor): LookFloor {
         set: (l: LookDescriptor, color: string) => ({ ...l, fog: { ...l.fog, color } }),
         reason: 'the haze steps one bucket on from the sky, into the gap the other two leave',
       },
-      look.water.present
-        ? {
-            path: 'water/color',
-            hue: anchors.floor,
-            get: (l: LookDescriptor) => l.water.color,
-            set: (l: LookDescriptor, color: string) => ({ ...l, water: { ...l.water, color } }),
-            reason: 'the water steps two buckets on from the sky, so the two big areas stand furthest apart',
-          }
-        : {
-            path: 'ground/color',
-            hue: anchors.floor,
-            get: (l: LookDescriptor) => l.ground.color,
-            set: (l: LookDescriptor, color: string) => ({ ...l, ground: { ...l.ground, color } }),
-            reason: 'the ground steps two buckets on from the sky, so earth and sky stop being one colour',
-          },
+      {
+        // Táž deska, kterou o pár řádků níž ztmavuje páka jasu. Kdyby si každá
+        // z nich vybírala vlastním pravidlem, rozejdou se — a přesně tak vznikl
+        // svět, kde oprava otočila zem pod hladinou a na snímku se nezměnilo nic.
+        path: visibleFloor(look).path,
+        hue: anchors.floor,
+        get: (l: LookDescriptor) => visibleFloor(l).color,
+        set: (l: LookDescriptor, color: string) => visibleFloor(l).set(l, color),
+        reason: look.water.present
+          ? 'the water steps two buckets on from the sky, so the two big areas stand furthest apart'
+          : 'the ground steps two buckets on from the sky, so earth and sky stop being one colour',
+      },
       {
         path: 'sky/color',
         hue: anchors.sky,
@@ -582,24 +647,30 @@ export function repairLook(input: LookDescriptor): LookFloor {
     }
   }
 
-  /* --- hodnoty: obloha, opar a zem nesmí stát v téže hodnotě ----------- */
+  /* --- hodnoty: obloha a plocha pod obzorem nesmí stát v téže hodnotě -- */
 
+  const floor = visibleFloor(look);
   const skyValue = luminanceOf(look.sky.color);
-  const groundValue = luminanceOf(look.ground.color);
-  if (skyValue - groundValue < LOOK_FLOOR.minValueStep) {
-    // Ztmavuje se **zem**, ne obloha: obloha je světlo, které do světa svítí,
-    // a ztmavit ji znamená ztmavit celý obraz. Zem je hmota ve stínu.
+  const floorValue = luminanceOf(floor.color);
+  if (skyValue - floorValue < LOOK_FLOOR.minValueStep) {
+    // Ztmavuje se **plocha pod obzorem**, ne obloha: obloha je světlo, které do
+    // světa svítí, a ztmavit ji znamená ztmavit celý obraz. Země i hladina jsou
+    // hmota ve stínu — a která z nich je na snímku, rozhoduje `visibleFloor`.
     const wanted = Math.max(0, skyValue - LOOK_FLOOR.minValueStep * MARGIN);
-    const ground = darken(look.ground.color, groundValue === 0 ? 0 : 1 - wanted / groundValue);
-    if (ground !== look.ground.color) {
+    const darkened = darkenKeepingHue(floor.color, wanted);
+    // Ztmavení, které na práh nedosáhne, se **nezapíše**. Není to oprava, jen
+    // posun barvy bez užitku — a druhý průchod by ho zopakoval o kousek dál.
+    // Takhle je krok pevný bod: buď odstup platí a podruhé se sem nevejde, nebo
+    // se nezměnilo nic. `failed` to pojmenuje tak jako tak.
+    if (darkened !== floor.color && skyValue - luminanceOf(darkened) >= LOOK_FLOOR.minValueStep) {
       note(
         'luminanceSpread',
-        'ground/color',
-        look.ground.color,
-        ground,
-        `sky and ground stood within ${LOOK_FLOOR.minValueStep} of each other, so the horizon had no step`,
+        floor.path,
+        floor.color,
+        darkened,
+        `sky and ${floor.path === 'water/color' ? 'water' : 'ground'} stood within ${LOOK_FLOOR.minValueStep} of each other, so the horizon had no step`,
       );
-      look = { ...look, ground: { ...look.ground, color: ground } };
+      look = floor.set(look, darkened);
     }
   }
 
@@ -607,7 +678,10 @@ export function repairLook(input: LookDescriptor): LookFloor {
 
   const failed: ImageProperty[] = [];
   if (distinctBuckets(look) < LOOK_FLOOR.minHueBuckets) failed.push('hues');
-  if (luminanceOf(look.sky.color) - luminanceOf(look.ground.color) < LOOK_FLOOR.minValueStep) {
+  if (
+    luminanceOf(look.sky.color) - luminanceOf(visibleFloor(look).color) <
+    LOOK_FLOOR.minValueStep
+  ) {
     failed.push('luminanceSpread');
   }
 
