@@ -499,7 +499,35 @@ function hueAnchorsFor(skyColor: string): { sky: number; fog: number; floor: num
   const at = (steps: number) =>
     bucketCentre(ALLOWED_HUE_BUCKETS[(start + steps) % ALLOWED_HUE_BUCKETS.length]!);
 
-  return { sky: at(0), fog: at(HUE_STEP_BUCKETS * 2), floor: at(HUE_STEP_BUCKETS) };
+  /*
+   * **Prstenec omezuje ty dvě plochy, které oprava vyrábí — ne oblohu.**
+   *
+   * Prstenec je užší než zákaz fialové: sahá až na konec kola, aby oprava
+   * nevyrobila zaprášenou švestkovou (viz `REPAIR_HUE_BAN`). Jenže obloha není
+   * plocha, kterou oprava vyrábí — je to plocha, kterou **zdědila po světě**,
+   * a na ni se ten širší zákaz vztahovat nemá. Bez téhle výjimky vypadl z ringu
+   * i koš 11 (střed 345°), takže karmínový západ prošel branou a oprava ho
+   * poslala do koše 0, tedy do hnědé.
+   *
+   * Naměřeno 30. 8. 2026: nad 25 410 vzhledy branou se to nestalo **ani
+   * jednou** — páku oblohy spustí až svět, kde obě zbylé plochy nemají co
+   * otočit. Zato v tom jediném doloženém případě (`#bf5f8f` s černým oparem
+   * i zemí → `#ab6b55`) je ta ztráta **čistá**: černé plochy žádný koš
+   * nenesou, takže oprava vrátí `failed: ['hues']` tak jako tak. Zaplatí se
+   * největší plocha snímku a nekoupí se za to nic.
+   *
+   * Hranice je zákaz fialové, ne prstenec: koše 8–10 (255°, 285°, 315°) leží
+   * uvnitř `PURPLE_BAND` a odstěhují se dál, koš 11 zůstává doma.
+   */
+  const skyCentre = skyBucket === null ? null : bucketCentre(skyBucket);
+  const skyKeepsOwn =
+    skyCentre !== null && (skyCentre < PURPLE_BAND.min || skyCentre > PURPLE_BAND.max);
+
+  return {
+    sky: skyKeepsOwn ? skyCentre : at(0),
+    fog: at(HUE_STEP_BUCKETS * 2),
+    floor: at(HUE_STEP_BUCKETS),
+  };
 }
 
 /** Index nejbližšího povoleného koše, měřeno po kruhu odstínů. */

@@ -698,6 +698,53 @@ describe('páka oblohy — jediná, kterou 140 odvozených světů nespustí', (
       skyBucket,
     );
   });
+
+  it('a zůstane i v koši, který prstenec nemá — dokud není fialový', () => {
+    // **Prstenec je užší než zákaz fialové a obloha do něj nepatří.** Koš 11
+    // (střed 345°) z něj vypadl kvůli zaprášené švestkové, kterou oprava sama
+    // vyrábí. Obloha je ale plocha zděděná po světě, ne vyrobená opravou —
+    // `acceptLook` karmínovou pustí a nic ji zakazovat nemá.
+    //
+    // Naměřeno 30. 8. 2026: nad 25 410 vzhledy branou se tahle cesta neotevřela
+    // ani jednou, protože páku oblohy spustí až svět, kde obě zbylé plochy
+    // nemají co otočit. V tom jediném doloženém případě je ale ztráta čistá —
+    // černé plochy koš nenesou, takže `failed` hlásí `hues` tak jako tak
+    // a za přemalovaný západ se nekoupí nic.
+    const crimson = '#bf5f8f';
+    expect(judgedHueBucket(crimson), 'test měří jiný koš, než o který jde').toBe(11);
+    expect(ALLOWED_HUE_BUCKETS, 'koš 11 je v prstenci, test neměří nic').not.toContain(11);
+    expect(isPurple(crimson), 'karmín je fialový — pak se stěhovat má').toBe(false);
+
+    const after = repairLook({
+      ...flatLook(crimson),
+      sky: { color: crimson, height: 0.4 },
+      ground: { present: true, color: '#000000' },
+      fog: { density: 0.4, color: '#000000' },
+    });
+
+    // Doráz doprostřed koše je v pořádku a dělá se i uvnitř prstence — drží se
+    // **koš**, ne přesný odstín. Co se stát nesmí, je stěhování do koše 0.
+    expect(judgedHueBucket(after.look.sky.color), 'karmínový západ zhnědl').toBe(11);
+    expect(isPurple(after.look.sky.color)).toBe(false);
+  });
+
+  it('ale fialová obloha se odstěhuje, i když je to jediná plocha s odstínem', () => {
+    // Druhá strana téhož: koše 8–10 leží uvnitř zákazu fialové, takže si je
+    // obloha nechat nesmí. Bez tohohle testu by výjimka pro koš 11 šla napsat
+    // jako „obloha si nechá koš vždycky" a fialová by prošla.
+    const plum = '#bf5fd0';
+    expect(isPurple(plum), 'test měří barvu, která fialová není').toBe(true);
+
+    const after = repairLook({
+      ...flatLook(plum),
+      sky: { color: plum, height: 0.4 },
+      ground: { present: true, color: '#000000' },
+      fog: { density: 0.4, color: '#000000' },
+    });
+
+    expect(after.repairs.map((repair) => repair.path)).toContain('sky/color');
+    expect(isPurple(after.look.sky.color), 'fialová obloha zůstala fialová').toBe(false);
+  });
 });
 
 describe('rotace odstínu nese jas beze změny', () => {
