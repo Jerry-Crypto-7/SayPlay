@@ -86,7 +86,15 @@ export interface MeshJobOutcome {
  *
  * Brána běží **před** `try`, ne uvnitř. Vypadá to jako detail, ale je to celý
  * rozdíl mezi odmítnutím a pádem: `catch` umí jen zopakovat, co řekla výjimka,
- * kdežto brána vypíše všechny vady najednou a jmenuje řádky, na kterých jsou.
+ * kdežto brána vadu pojmenuje a řekne, na kterém řádku tabulky je.
+ *
+ * **Jedno kolo ale nemusí stačit, a je to naměřené.** `validateShapeProgram`
+ * se při vadě schématu ke strukturální kontrole vůbec nedostane a strukturální
+ * kontrola se po indexových vadách utne před rozpočty. Program s velkým
+ * poloměrem, kořenem mimo tabulku a plochým `targetBounds` naráz vrátí
+ * 30. 8. 2026 **jediný** důvod: `schema:/nodes/0/radius: Too big`. Sebeoprava
+ * proto může potřebovat několik kol — brána zaručuje pojmenovaný důvod, ne
+ * úplný seznam.
  */
 export function handleMeshJob(request: MeshJobRequest): MeshJobOutcome {
   const startedAt = Date.now();

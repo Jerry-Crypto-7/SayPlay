@@ -338,13 +338,22 @@ describe('brána workeru odmítne neplatný program s důvodem', () => {
     const reason = refuse(
       programOf([{ kind: 'sphere', radius: 1 }, { kind: 'translate', child: 5, offset: [1, 0, 0] }]),
     );
-    expect(reason).toContain('node 1 references node 5');
+    // **Odmítnutí nese `at or above itself`, ne `outside the table`** — a je to
+    // naměřené, ne odhad: hláška o tabulce se u potomka nikdy neozve sama.
+    // Index potomka mimo tabulku je vždycky ≥ index vlastního řádku, protože
+    // ten je z definice menší než délka tabulky. Aserce na `references node 5`
+    // by proto byla ozdobná; sedla by na obě hlášky a nepoznala by, že jednu
+    // z nich nechrání nic. Zapsané jako nález `T7-gate-deadcheck`.
+    expect(reason).toContain('node 1 references node 5 at or above itself');
   });
 
   it('soudí se celý program, ne jen tabulka uzlů', () => {
     // Tenhle případ je důvod, proč `MeshOrder` nese celý program: plochý
-    // `targetBounds` je vada obálky a ořezaný `Pick` by na ni nedosáhl. Krok
-    // buňky by vyšel na nulu a mesh by tiše vyšel prázdný.
+    // `targetBounds` je vada obálky a ořezaný `Pick` by na ni nedosáhl.
+    //
+    // Pozor na to, co `targetBounds` **není**: mřížkuje se podle `request.bounds`,
+    // což je jiné pole, a brána na něj nedosáhne vůbec. `targetBounds` je kvádr,
+    // do kterého potrubí hotový tvar normalizuje.
     const reason = refuse({
       ...programOf(SPHERE),
       targetBounds: { min: [-1, 2, -1], max: [1, 2, 1] },
