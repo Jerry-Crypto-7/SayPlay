@@ -460,14 +460,49 @@ test('kontaktní list všech dosažitelných světů vznikne a jeho světy se od
    *
    * Aserce stojí **za zápisem obou artefaktů schválně**: když spadne, má člověk
    * v `docs/contact-sheet.png` vidět, který svět to byl a jak vypadá.
+   *
+   * **Tolerovaný, ne očekávaný — srovnáno 30. 8. 2026 s `worldstream-atmosphere`.**
+   * Do té doby se tahle sada ptala `toEqual`, tedy červenala i tehdy, když se
+   * `dunes-terrace` **zlepší** — zatímco druhá sada nad týmž světem používala
+   * tolerantní filtr a zdůvodňovala ho pěti naměřenými běhy (0,55 · 0,56 ·
+   * 0,57 proti prahu 0,55). Dvě sady se tak o téže poušti rozhodovaly opačně
+   * a člověk se dozvěděl dvě různé pravdy podle toho, kterou pustil.
+   *
+   * Vyhrála ta volba, za kterou stojí měření: svět přesně na prahu překlopí
+   * rozptyl mezi běhy, takže `toEqual` tu nehlídá regresi, jen hází mincí.
+   *
+   * **Naměřeno 30. 8. 2026 přímo na tomhle listu, dvěma běhy nad týmž kódem:**
+   * `dead` se hnulo až o **0,021** (`C04` 0,153 → 0,174) a `focusClarity` až
+   * o **0,137** (`dunes-terrace` 0,488 → 0,625). Práh `dead` je 0,55 a poušť
+   * na něm stojí, takže jeden běh ji propadnout nechá a druhý ne — čistě podle
+   * toho, jak vyšel render. ⚠ **Pozor na to při čtení rozdílů mezi dvěma
+   * verzemi listu:** posun o setinu v `dead` je šum, ne účinek změny. Co šum
+   * není, jsou celá čísla (`hues`) a překlopení `ok`.
+   * **Regrese zůstává červená v plné síle** — cokoliv, co není jmenovitě
+   * zapsané v `TOLERATED_FLOPS`, sadu shodí, a to včetně téže pouště, když
+   * propadne na **jiné** vlastnosti. Zlepšení se místo červené vypisuje do
+   * logu, protože jinak by ho spolkl přesně ten rozptyl, kvůli kterému se
+   * `toEqual` ruší.
    */
   const flopped = records.filter((record) => !record.ok);
+  const labelOf = (record: (typeof records)[number]) =>
+    `${record.id} (${record.failed.join(',')})`;
+
   expect(
-    flopped.map((record) => `${record.id} (${record.failed.join(',')})`),
+    flopped.map(labelOf).filter((label) => !TOLERATED_FLOPS.includes(label)),
     'podlaha z T11 neplatí — vzhled prošel repairLook a obraz z něj přesto propadl. ' +
-      'Přibylo-li jméno, přestal obstát svět, který obstát měl; zmizelo-li, ' +
-      'něco ho spravilo — škrtni ho ze seznamu a zapiš proč.',
-  ).toEqual(TOLERATED_FLOPS);
+      'Přibylo jméno, takže přestal obstát svět, který obstát měl.',
+  ).toEqual([]);
+
+  const mended = TOLERATED_FLOPS.filter(
+    (label) => !flopped.map(labelOf).includes(label),
+  );
+  if (mended.length > 0) {
+    console.log(
+      `[contact-sheet] ⚠ tolerovaný propad zmizel: ${mended.join(', ')} — něco ho spravilo. ` +
+        'Škrtni ho z TOLERATED_FLOPS a zapiš proč, nebo ho tam nech s tím, že překlápí.',
+    );
+  }
 
   console.log(
     `[contact-sheet] ${String(records.filter((record) => record.ok).length)}/` +

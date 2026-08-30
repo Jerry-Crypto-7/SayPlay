@@ -82,6 +82,11 @@ const SETTLE_FRAMES = 5;
  * výřezu, 0,556 na kontaktním listu. **Číslo se vypisuje každý běh**, takže
  * skutečný pohyb je vidět i bez toho, aby ho hlídala aserce.
  *
+ * **Od 30. 8. 2026 se stejně rozhoduje i `e2e/contact-sheet.spec.ts`.** Do té
+ * doby pinoval tentýž svět přes `toEqual`, takže se dvě sady o téže poušti
+ * rozhodovaly opačně a člověk se dozvěděl dvě různé pravdy podle toho, kterou
+ * pustil. Vyhrála tahle volba, protože za ní stojí těch pět běhů.
+ *
  * Co aserce hlídá dál v plné síle: že mrtvý nezčerná **jiný** svět. Práh
  * soudce (`IMAGE_THRESHOLDS.maxDead`) se nezvedl ani o setinu.
  *
