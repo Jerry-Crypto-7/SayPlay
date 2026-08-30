@@ -78,6 +78,39 @@ export interface MeshJobOutcome {
 }
 
 /**
+ * Vady **zadání práce**, na které brána programu nedosáhne.
+ *
+ * `bounds` a `resolution` nejsou pole `ShapeProgram` — skládá je volající,
+ * takže `validateShapeProgram` o nich neví a vědět nemá. Bez téhle kontroly je
+ * degenerovaná mřížka **tichý úspěch**: naměřeno 30. 8. 2026, plochý kvádr
+ * i `resolution: 0` vrátí `ok: true` a nula trojúhelníků. Klient slib splní,
+ * stránka si napočítá hotový tvar a na plátně není nic.
+ *
+ * Strop mřížky tu schválně **není**. Nesmyslně velká mřížka spadne na alokaci
+ * a vrátí se jako pojmenované selhání už dnes; zakázat ji tady by jen zakrylo
+ * jedinou cestu k `catch` níž, kterou má tenhle soubor otestovanou.
+ */
+function meshRequestIssues(request: MeshJobRequest): string[] {
+  const issues: string[] = [];
+
+  if (!Number.isInteger(request.resolution) || request.resolution < 1) {
+    issues.push(`resolution ${request.resolution} is not a whole number of at least 1`);
+  }
+
+  (['x', 'y', 'z'] as const).forEach((axis, index) => {
+    const min = request.bounds.min[index];
+    const max = request.bounds.max[index];
+    if (!Number.isFinite(min) || !Number.isFinite(max)) {
+      issues.push(`bounds on ${axis} are not finite numbers`);
+    } else if (min >= max) {
+      issues.push(`bounds on ${axis} are flat or inverted: ${min} to ${max}`);
+    }
+  });
+
+  return issues;
+}
+
+/**
  * Celá práce workeru jako čistá funkce.
  *
  * Výjimku nepropouští ven: pád jednoho tvaru nesmí shodit worker, protože pak
@@ -111,12 +144,46 @@ export function handleMeshJob(request: MeshJobRequest): MeshJobOutcome {
     };
   }
 
+  const requestIssues = meshRequestIssues(request);
+  if (requestIssues.length > 0) {
+    return {
+      response: {
+        jobId: request.jobId,
+        ok: false,
+        error: `invalid mesh request: ${requestIssues.join('; ')}`,
+      },
+      transfer: [],
+    };
+  }
+
   try {
     const meshRequest: MeshRequest = {
       resolution: request.resolution,
       bounds: request.bounds,
     };
     const mesh: ShapeMesh = meshShapeProgram(request.program, request.sessionSeed, meshRequest);
+
+    // **Práce, ze které nevyleze ani jeden trojúhelník, je selhání, ne úspěch.**
+    // Pro `meshShapeProgram()` je prázdno správná odpověď a má na to vlastní
+    // testy — povrch v tom výřezu prostě není. Pro objednávku tvaru je ale
+    // prázdno „zmizelý hrdina": volající slib splní, započítá si hotový objekt
+    // a nevykreslí nic.
+    //
+    // Kontrola je tady schválně **na výsledku, ne na vstupu**. Cest, jak
+    // vyrobit prázdno, je víc, než jde vyjmenovat: kvádr mimo tvar, kvádr celý
+    // uvnitř tvaru (viz `paddedBounds`), tvar odsunutý deformací. Vyjmenovaný
+    // seznam by jednu z nich vždycky minul.
+    if (mesh.triangleCount === 0) {
+      return {
+        response: {
+          jobId: request.jobId,
+          ok: false,
+          error:
+            'empty mesh: no surface inside the requested box (the shape sits outside it, or the box lies entirely inside the shape)',
+        },
+        transfer: [],
+      };
+    }
 
     return {
       response: {

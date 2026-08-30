@@ -369,6 +369,89 @@ describe('brána workeru odmítne neplatný program s důvodem', () => {
 });
 
 /* ------------------------------------------------------------------ *
+ * 4c. Práce, ze které nic nevyleze, je selhání — ne úspěch s prázdnem.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Vlastnost: **objednaný tvar, který na plátně není, se pozná tady a ne až
+ * okem.**
+ *
+ * Naměřeno 30. 8. 2026: platný program s plochým `bounds` i s `resolution: 0`
+ * vracel `ok: true` a nula trojúhelníků. Slib se splnil, počítadlo hotových
+ * tvarů se zvýšilo a nekreslilo se nic — „zmizelý hrdina", tedy ta třída
+ * selhání, kvůli které existuje `paddedBounds`.
+ *
+ * Dvě poloviny, obě potřeba: zadání se soudí **před** prací, aby vada mřížky
+ * měla vlastní jméno, a výsledek **po** ní, protože cest k prázdnu je víc, než
+ * jde vyjmenovat.
+ */
+describe('prázdná práce se vrací jako selhání', () => {
+  const base = {
+    jobId: 'empty',
+    sessionSeed: SEED,
+    resolution: 12,
+    bounds: paddedBounds(UNIT_BOUNDS, 12),
+    program: programOf(SPHERE),
+  };
+
+  function refuse(request: MeshJobRequest): string {
+    const { response, transfer } = handleMeshJob(request);
+    expect(response.ok).toBe(false);
+    if (response.ok) throw new Error('an empty job was reported as success');
+    expect(transfer).toHaveLength(0);
+    return response.error;
+  }
+
+  it('plochý kvádr se pozná před prací a jmenuje osu', () => {
+    const reason = refuse({ ...base, bounds: { min: [-2, 2, -2], max: [2, 2, 2] } });
+    expect(reason).toContain('invalid mesh request');
+    // Osa v hlášce je to, co dělá rozdíl mezi opravitelným a neopravitelným
+    // důvodem: „něco je špatně s kvádrem" model nikam neposune.
+    expect(reason).toContain('bounds on y are flat or inverted');
+  });
+
+  it('obrácený kvádr propadne toutéž kontrolou', () => {
+    const reason = refuse({ ...base, bounds: { min: [2, -2, -2], max: [-2, 2, 2] } });
+    expect(reason).toContain('bounds on x are flat or inverted');
+  });
+
+  it('mřížka pod jedničkou se pozná taky', () => {
+    expect(refuse({ ...base, resolution: 0 })).toContain(
+      'resolution 0 is not a whole number of at least 1',
+    );
+    expect(refuse({ ...base, resolution: 12.5 })).toContain('resolution 12.5 is not a whole number');
+  });
+
+  it('tvar mimo kvádr projde zadáním a spadne až na výsledku', () => {
+    // Tohle je ta cesta, kterou kontrola vstupu chytit nemůže: zadání je
+    // v pořádku po všech stránkách, jen je koule jinde než výřez.
+    const reason = refuse({
+      ...base,
+      program: programOf([
+        { kind: 'sphere', radius: 0.5 },
+        { kind: 'translate', child: 0, offset: [40, 0, 0] },
+      ]),
+    });
+    expect(reason).toContain('empty mesh');
+  });
+
+  it('kvádr celý uvnitř tělesa taky', () => {
+    // Druhá polovina téhož: povrch existuje, jen ne uvnitř výřezu. Přesně
+    // případ, který `paddedBounds` popisuje jako „objekt se nerozbije, on není".
+    const reason = refuse({ ...base, program: programOf([{ kind: 'sphere', radius: 50 }]) });
+    expect(reason).toContain('empty mesh');
+  });
+
+  it('poctivá práce zůstane úspěchem', () => {
+    // Bez tohohle by celý blok prošel i s „odmítej všechno".
+    const { response } = handleMeshJob(base);
+    expect(response.ok).toBe(true);
+    if (!response.ok) return;
+    expect(response.triangleCount).toBeGreaterThan(0);
+  });
+});
+
+/* ------------------------------------------------------------------ *
  * 5. Klient: fronta, chyby a zákaz tichého ústupu.
  * ------------------------------------------------------------------ */
 
