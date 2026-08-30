@@ -437,7 +437,14 @@ export function validateShapeProgram(input: unknown): ShapeValidation {
 }
 
 /**
- * Přijme, nebo vyhodí s pojmenovaným důvodem. Meshovač bere jen tenhle vstup.
+ * Přijme neznámý vstup, nebo vyhodí s pojmenovaným důvodem. Tudy vede **emisní
+ * cesta** — tvar přišel zvenčí a ještě není `ShapeProgram`.
+ *
+ * **Meshovač tuhle funkci nevolá.** Do 30. 8. 2026 tu stálo, že „meshovač bere
+ * jen tenhle vstup", a nebyla to pravda: `mesh-worker.ts` ji nevolal a program
+ * s odkazem mimo tabulku prošel až do pole. Worker dnes volá
+ * `validateShapeProgram()` sám, protože potřebuje **seznam vad**, ne výjimku —
+ * ten seznam je vstup sebeopravy. Brána je táž, liší se jen odpověď.
  *
  * Návratový typ je ručně psaný `ShapeProgram` z `types.ts`, ne `z.infer`.
  * Je to jediná pojistka proti tomu, aby se schéma a kontrakt, který čte worker,

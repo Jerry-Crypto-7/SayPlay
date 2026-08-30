@@ -20,9 +20,16 @@
 import { handleMeshJob, type MeshJobRequest, type MeshJobResponse } from './mesh-worker';
 import type { Bounds3, ShapeProgram } from './types';
 
-/** To, co si o tvar říká zbytek produktu. `jobId` doplní klient. */
+/**
+ * To, co si o tvar říká zbytek produktu. `jobId` doplní klient.
+ *
+ * Program je tu **celý**, ne trojice `nodes` / `root` / `shapeId`. Ořezaný
+ * `Pick` vypadal skromněji, ale bránu ve workeru zúžil na to, co mu zbylo:
+ * `targetBounds`, `anchors` ani rozpočty by neměla nad čím soudit. Oba dnešní
+ * volající celý program stejně mají.
+ */
 export interface MeshOrder {
-  readonly program: Pick<ShapeProgram, 'nodes' | 'root' | 'shapeId'>;
+  readonly program: ShapeProgram;
   readonly sessionSeed: number;
   readonly resolution: number;
   readonly bounds: Bounds3;
@@ -171,8 +178,7 @@ export function createMeshClient(options: MeshClientOptions = {}): MeshClient {
       nextJobId += 1;
       const request: MeshJobRequest = {
         jobId: `mesh-${nextJobId}`,
-        nodes: order.program.nodes,
-        root: order.program.root,
+        program: order.program,
         sessionSeed: order.sessionSeed,
         resolution: order.resolution,
         bounds: order.bounds,

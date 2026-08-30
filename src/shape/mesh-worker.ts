@@ -19,16 +19,32 @@
  * pauzu na obou vláknech. Se seznamem se přenese vlastnictví paměti a kopie
  * nevznikne. Cena je, že buffery jsou po odeslání ve workeru **odpojené** —
  * proto se v `handleMeshJob()` po sestavení odpovědi už nesmějí číst.
+ *
+ * ## Worker svému vstupu nevěří
+ *
+ * Brána `validateShapeProgram()` je **první řádek** práce, a to i když program
+ * dnes píše ruční galerie, která jí prokazatelně projde. Naměřeno 29. 8. 2026
+ * mutací: program s odkazem na uzel mimo tabulku se do té doby nezastavil
+ * nikde, propadl až do `field.ts` a vrátil se jako
+ * `TypeError: Cannot read properties of undefined (reading 'kind')`.
+ *
+ * **Ta hláška je ta vada, ne ten pád.** Od vlny 2 píše `ShapeProgram` model a
+ * důvod odmítnutí je vstup sebeopravy — z „nemůžu přečíst vlastnost undefined"
+ * se opravit nedá, z „node 3 references node 7 outside the table of 4" ano.
+ * Proto se sem posílá **celý** program, ne jen `nodes` a `root`: brána soudí
+ * i obálku (`targetBounds`, `anchors`, rozpočty) a je to **táž jediná brána**,
+ * jakou používá emisní cesta. Druhý, zjednodušený validátor uvnitř workeru by
+ * se s ní dřív nebo později rozešel.
  */
 
+import { validateShapeProgram } from './schema';
 import { meshShapeProgram, type MeshRequest, type ShapeMesh } from './surface-nets';
-import type { Bounds3, ShapeNode } from './types';
+import type { Bounds3, ShapeProgram } from './types';
 
 /** Zadání jedné práce. Program se posílá jako data, ne jako funkce. */
 export interface MeshJobRequest {
   readonly jobId: string;
-  readonly nodes: readonly ShapeNode[];
-  readonly root: number;
+  readonly program: ShapeProgram;
   readonly sessionSeed: number;
   readonly resolution: number;
   readonly bounds: Bounds3;
@@ -67,19 +83,32 @@ export interface MeshJobOutcome {
  * Výjimku nepropouští ven: pád jednoho tvaru nesmí shodit worker, protože pak
  * by s ním padly i všechny tvary ve frontě za ním. Chyba se vrací jako
  * odpověď, kterou klient přeloží na odmítnutý slib.
+ *
+ * Brána běží **před** `try`, ne uvnitř. Vypadá to jako detail, ale je to celý
+ * rozdíl mezi odmítnutím a pádem: `catch` umí jen zopakovat, co řekla výjimka,
+ * kdežto brána vypíše všechny vady najednou a jmenuje řádky, na kterých jsou.
  */
 export function handleMeshJob(request: MeshJobRequest): MeshJobOutcome {
   const startedAt = Date.now();
+
+  const validation = validateShapeProgram(request.program);
+  if (!validation.ok) {
+    return {
+      response: {
+        jobId: request.jobId,
+        ok: false,
+        error: `invalid shape program: ${validation.issues.join('; ')}`,
+      },
+      transfer: [],
+    };
+  }
+
   try {
     const meshRequest: MeshRequest = {
       resolution: request.resolution,
       bounds: request.bounds,
     };
-    const mesh: ShapeMesh = meshShapeProgram(
-      { nodes: request.nodes, root: request.root },
-      request.sessionSeed,
-      meshRequest,
-    );
+    const mesh: ShapeMesh = meshShapeProgram(request.program, request.sessionSeed, meshRequest);
 
     return {
       response: {

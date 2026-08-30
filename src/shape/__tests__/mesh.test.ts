@@ -27,8 +27,24 @@ const UNIT_BOUNDS: Bounds3 = { min: [-2, -2, -2], max: [2, 2, 2] };
 
 const SPHERE: readonly ShapeNode[] = [{ kind: 'sphere', radius: 1 }];
 
-function programOf(nodes: readonly ShapeNode[]): Pick<ShapeProgram, 'nodes' | 'root'> {
-  return { nodes, root: nodes.length - 1 };
+/**
+ * Platný program kolem podané tabulky.
+ *
+ * Obálka je tu celá schválně: od brány ve workeru (30. 8. 2026) není `nodes` +
+ * `root` platný program, a test, který by si obálku odpustil, by bránu měřil
+ * proti vstupu, jaký produkt nikdy nepošle.
+ */
+function programOf(nodes: readonly ShapeNode[]): ShapeProgram {
+  return {
+    shapeId: 'test-shape',
+    stableId: 'test-object',
+    nodes,
+    root: nodes.length - 1,
+    targetBounds: UNIT_BOUNDS,
+    anchors: [],
+    materialIntent: 'clay',
+    priority: 0,
+  };
 }
 
 function meshOf(nodes: readonly ShapeNode[], resolution: number, bounds = UNIT_BOUNDS): ShapeMesh {
@@ -228,8 +244,7 @@ describe('meshovač nespadne na okrajových zadáních', () => {
 describe('worker vrací mesh a předává vlastnictví paměti', () => {
   const request: MeshJobRequest = {
     jobId: 'job-1',
-    nodes: SPHERE,
-    root: 0,
+    program: programOf(SPHERE),
     sessionSeed: SEED,
     resolution: 20,
     bounds: paddedBounds(UNIT_BOUNDS, 20),
@@ -252,8 +267,12 @@ describe('worker vrací mesh a předává vlastnictví paměti', () => {
 
   it('výjimka uvnitř se vrátí jako odpověď, ne jako pád workeru', () => {
     // Pád by vzal s sebou i tvary, které čekají ve frontě za tímhle.
-    const broken = { ...request, root: 99 } as MeshJobRequest;
-    const { response, transfer } = handleMeshJob(broken);
+    //
+    // Mřížka o hraně 100 000 je 1e15 vzorků, tedy alokace, kterou žádný stroj
+    // neunese. Je to jediná cesta k `catch`, která zbyla poté, co se před něj
+    // postavila brána — a je to cesta **reálná**: `resolution` posílá volající,
+    // brána programu na něj nedosáhne.
+    const { response, transfer } = handleMeshJob({ ...request, resolution: 100_000 });
     expect(response.ok).toBe(false);
     if (response.ok) return;
     expect(response.jobId).toBe('job-1');
@@ -266,6 +285,72 @@ describe('worker vrací mesh a předává vlastnictví paměti', () => {
     expect(response.ok).toBe(true);
     if (!response.ok) return;
     expect(response.elapsedMs).toBeGreaterThanOrEqual(0);
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * 4b. Brána workeru: neplatný program se odmítne s důvodem, ne pádem.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Vlastnost, kterou tenhle blok chrání: **z odpovědi na neplatný program se dá
+ * ten program opravit.**
+ *
+ * Není to totéž co „worker nespadl". Do 30. 8. 2026 worker nepadal, protože
+ * `catch` chytal všechno — jenže vracel
+ * `TypeError: Cannot read properties of undefined (reading 'kind')`, což je
+ * hláška o `field.ts`, ne o programu. Od vlny 2 píše programy model a tahle
+ * odpověď je jeho jediná zpětná vazba; věta o `undefined` mu neřekne, co
+ * přepsat. Aserce proto míří na **obsah důvodu**, ne na jeho délku.
+ */
+describe('brána workeru odmítne neplatný program s důvodem', () => {
+  const base = {
+    jobId: 'gated',
+    sessionSeed: SEED,
+    resolution: 12,
+    bounds: paddedBounds(UNIT_BOUNDS, 12),
+  };
+
+  function refuse(program: ShapeProgram): string {
+    const { response, transfer } = handleMeshJob({ ...base, program });
+    expect(response.ok).toBe(false);
+    if (response.ok) throw new Error('gate let an invalid program through');
+    // Prázdný seznam přenosů dokazuje, že se nemeshovalo: kdyby brána stála až
+    // za polem, byly by tu tři buffery.
+    expect(transfer).toHaveLength(0);
+    return response.error;
+  }
+
+  it('kořen mimo tabulku pojmenuje řádek i velikost tabulky', () => {
+    // Přesně ta mutace z 29. 8. 2026, která nález odhalila.
+    const reason = refuse({ ...programOf(SPHERE), root: 3 });
+    expect(reason).toContain('root references node 3 outside the table of 1');
+    // Hláška z `field.ts` je ta vada, kterou tahle brána nahrazuje.
+    expect(reason).not.toContain('Cannot read properties of undefined');
+  });
+
+  it('uzel odkazující mimo tabulku se pozná taky', () => {
+    const reason = refuse(
+      programOf([{ kind: 'sphere', radius: 1 }, { kind: 'translate', child: 5, offset: [1, 0, 0] }]),
+    );
+    expect(reason).toContain('node 1 references node 5');
+  });
+
+  it('soudí se celý program, ne jen tabulka uzlů', () => {
+    // Tenhle případ je důvod, proč `MeshOrder` nese celý program: plochý
+    // `targetBounds` je vada obálky a ořezaný `Pick` by na ni nedosáhl. Krok
+    // buňky by vyšel na nulu a mesh by tiše vyšel prázdný.
+    const reason = refuse({
+      ...programOf(SPHERE),
+      targetBounds: { min: [-1, 2, -1], max: [1, 2, 1] },
+    });
+    expect(reason).toContain('targetBounds is flat or inverted');
+  });
+
+  it('platný program branou projde', () => {
+    // Bez tohohle by branou prošlo i „odmítej všechno".
+    const { response } = handleMeshJob({ ...base, program: programOf(SPHERE) });
+    expect(response.ok).toBe(true);
   });
 });
 
