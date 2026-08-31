@@ -234,10 +234,24 @@ export function retryRequest(
   rejection: Rejection,
   context: RejectionContext = {},
 ): string {
+  return repairRequest(original, previous, rejectionSentence(rejection, context));
+}
+
+/**
+ * Totéž rozvržení pro fázi, která **nevydává** `Rejection`.
+ *
+ * Compiler blueprintu (P13 T12) odmítá vlastním svazkem důvodů: nese
+ * `{reason, detail, issues}` a žádný `stage`. Bez tohohle rozdělení by pro
+ * něj musela vzniknout druhá opravná zpráva, a **dvě rozvržení jsou dvě místa,
+ * kde se dá rozejít**. Model se chytá na pořadí — vada, odmítnutá odpověď,
+ * a požadavek naposledy — ne na to, která fáze mu píše. Rozvržení proto
+ * zůstává jedno a fáze dodává jen větu.
+ */
+export function repairRequest(original: string, previous: unknown, sentence: string): string {
   return [
     'Your previous answer was rejected by the system that runs these worlds.',
     '',
-    rejectionSentence(rejection, context),
+    sentence,
     '',
     'This is the answer that was rejected. Repair it — keep every part that was already right:',
     safeJson(previous),
@@ -265,6 +279,11 @@ export function retryRequest(
  * 10 087 až 10 923 znaků, tedy **méně** než kolo 1 — a odpověď se do okna vejde.
  *
  * Seznam polí, který ukázku doplňoval, zůstává: nese ho zbytek instrukcí.
+ *
+ * **Blueprintová fáze (P13 T12) tenhle řez nepřebírá** a značku si sem tedy
+ * nikdo neposílá: okno cloudového modelu není vázající omezení, takže by řez
+ * platil za nic a rozbil by odkaz „the example above" v požadavku. Důvod je
+ * u `buildRepairRequest()` v `../worldstream-repair.ts`.
  */
 export function retrySystem(system: string): string {
   const markerAt = system.indexOf(EXAMPLE_MARKER);
