@@ -285,7 +285,15 @@ describe('4. při vypnutém přepínači neodejde žádný požadavek', () => {
 describe('5. secret se nedostane do klientského bundlu', () => {
   /** Jména, u kterých Next vpisuje HODNOTU do klientského bundlu. */
   it('žádná proměnná modelu nemá předponu NEXT_PUBLIC_', () => {
-    const hits = grepRepo(/NEXT_PUBLIC_[A-Z0-9_]*(WORLDSMITH|MODEL|KEY|SECRET)/);
+    // `__tests__` se vynechává ze stejného důvodu jako u aserce pod tímhle:
+    // do klientského bundlu se nepřekládá a jméno v próze je fixture, ne čtení.
+    // Bez filtru se aserce trefí do vlastního doc komentáře nahoře v souboru —
+    // a všimne si toho až po commitu, protože `git grep` nesledované soubory
+    // vůbec nevidí. Sada byla zelená přesně do chvíle, kdy se sama stala
+    // sledovanou. Kdyby tenhle filtr někdo zrušil, spadne to zas.
+    const hits = grepRepo(/NEXT_PUBLIC_[A-Z0-9_]*(WORLDSMITH|MODEL|KEY|SECRET)/).filter(
+      (path) => !path.includes('__tests__'),
+    );
     expect(hits).toEqual([]);
   });
 
