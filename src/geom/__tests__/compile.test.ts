@@ -1,11 +1,13 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
-import { BufferAttribute, BufferGeometry, Euler, Matrix4, Quaternion, Vector3 } from 'three';
+import { Box3, BufferAttribute, BufferGeometry, Euler, Matrix4, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
 import { KIT_BUDGETS, PALETTES, repaint } from '@/kit';
 import {
+  anchorPointOf,
+  boundsOfGeometry,
   compileGeomProgram,
   placementMatrix,
   sweepGeometry,
@@ -16,8 +18,10 @@ import {
   GEOM_VERSION,
   MAX_CURVE_POINTS,
   MAX_SWEEP_SEGMENTS,
+  ANCHOR_SITES,
   SWATCH_NAMES,
   instanceCounts,
+  type AnchorSite,
   type GeomNode,
   type GeomProgram,
 } from '../program';
@@ -749,5 +753,58 @@ describe('volné otáčení sedí na kvadrantech bit po bitu', () => {
     const fractional = placementMatrix([1.5, 2, -3], { yaw: 0.37 }, [2, 0.5, 1.25]);
 
     expect([...fractional.elements]).not.toEqual(quarterTurnMatrix(0));
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Kotvy: sedm míst na kvádru, každé proti ručně spočítanému bodu.
+ * ------------------------------------------------------------------ */
+
+describe('anchorPointOf – každé místo zvlášť', () => {
+  /**
+   * Nález nezávislého review: šest ze sedmi míst kotvy neprocházel žádný test
+   * a to sedmé (`top`) se ověřovalo porovnáním `compilePlacements` proti
+   * `compileGeomProgram`. Obě cesty volají **tutéž** `anchorTranslation`, takže
+   * prohozené `box.min.y` / `box.max.y` nebo `north` ↔ `south` posune obě
+   * stejně a zůstane zeleno. Očekávané body jsou proto **napsané ručně**, ne
+   * dopočítané toutéž úvahou — týž postup, jaký `placement.test.ts` používá
+   * pro `placementMatrix`.
+   *
+   * Kvádr je schválně nesouměrný a mimo počátek: na krychli v počátku by se
+   * `min` a `max` lišily jen znaménkem a půlka záměn by se schovala.
+   */
+  const box = new Box3(new Vector3(-3, 1, -8), new Vector3(5, 7, 2));
+  // Střed: x = (−3+5)/2 = 1, y = (1+7)/2 = 4, z = (−8+2)/2 = −3.
+  const cases: Array<[AnchorSite, [number, number, number]]> = [
+    ['top', [1, 7, -3]],
+    ['bottom', [1, 1, -3]],
+    ['north', [1, 4, -8]],
+    ['south', [1, 4, 2]],
+    ['east', [5, 4, -3]],
+    ['west', [-3, 4, -3]],
+    ['center', [1, 4, -3]],
+  ];
+
+  for (const [site, expected] of cases) {
+    it(`${site} sedí na ručně spočítaném bodě`, () => {
+      const point = anchorPointOf(box, site);
+      expect([point.x, point.y, point.z], `kotva ${site} je jinde`).toEqual(expected);
+    });
+  }
+
+  it('sedm míst dá sedm různých bodů', () => {
+    // Kdyby dvě větve `switch` spadly na tutéž (třeba přes `default`), tabulka
+    // výš by to ukázala jen u toho místa, které se zkopírovalo — tohle to
+    // ukáže vždycky.
+    const points = ANCHOR_SITES.map((site) => anchorPointOf(box, site).toArray().join(','));
+    expect(new Set(points).size).toBe(ANCHOR_SITES.length);
+  });
+
+  it('`anchorTo` na prázdný podstrom se jmenuje, ne posune o nekonečno', () => {
+    // `Box3` prázdné geometrie má `min` na +Infinity; bez téhle výjimky by
+    // z toho vznikl posun o nekonečno a kus by z obrazu zmizel beze stopy.
+    expect(() => boundsOfGeometry(new BufferGeometry())).toThrow(
+      /no geometry to anchor against/,
+    );
   });
 });
