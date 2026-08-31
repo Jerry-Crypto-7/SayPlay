@@ -52,6 +52,7 @@ import { rejectionSentence, repairRequest } from './local/rejection-prompt';
 import {
   buildCompilerRequest,
   compileBlueprint,
+  systemInputIssue,
   type CompilerRejection,
   type CompilerResult,
   type WorldRejection,
@@ -87,6 +88,19 @@ export type BlueprintOutcome =
   /** Model neodpověděl. O takovém běhu se nesmí nic skórovat. */
   | {
       readonly kind: 'unavailable';
+      readonly detail: string;
+      readonly rounds: readonly BlueprintRound[];
+    }
+  /**
+   * Vada byla na **naší** straně a model se kvůli ní nevolal ani jednou.
+   *
+   * Vlastní druh, ne `rejected`: odmítnutí je verdikt o odpovědi modelu a tady
+   * žádná odpověď není. A ne `unavailable`: ten druh znamená „zeptali jsme se
+   * a nedostali jsme nic", což by v produktu vydalo větu „the model did not
+   * answer" o běhu, kde se nikdo neptal. `rounds` je vždycky prázdné.
+   */
+  | {
+      readonly kind: 'invalidInput';
       readonly detail: string;
       readonly rounds: readonly BlueprintRound[];
     }
@@ -304,6 +318,13 @@ export interface RepairInput {
  * kol, a ten je vymahatelný bez hodin.
  */
 export async function compileWithRepair(input: RepairInput): Promise<BlueprintOutcome> {
+  // **Před prvním voláním, ne po třech.** Vadné semínko nebo prázdný záměr jsou
+  // pole, která píše systém; model je neumí opravit, protože je vůbec nepíše.
+  // Poslat mu je znamená zaplatit třikrát za nic — a report by to pak četl
+  // jako neschopnost modelu.
+  const systemIssue = systemInputIssue(input.sessionSeed, input.plan.intent);
+  if (systemIssue !== null) return { kind: 'invalidInput', detail: systemIssue, rounds: [] };
+
   const first = buildCompilerRequest(input.plan, input.grammar);
   const clock = input.now ?? Date.now;
 

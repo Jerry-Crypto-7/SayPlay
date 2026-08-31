@@ -292,6 +292,7 @@ function drive(
     readonly plan?: unknown;
     readonly mesh?: (order: MeshOrder) => Promise<MeshResult>;
     readonly entry?: CreateCase;
+    readonly sessionSeed?: number;
   } = {},
 ) {
   const script = model({
@@ -304,7 +305,7 @@ function drive(
       emit: script.emit,
       mesh: overrides.mesh ?? meshOk,
       grammar,
-      sessionSeed: SEED,
+      sessionSeed: overrides.sessionSeed ?? SEED,
       now: () => 0,
     }),
   };
@@ -384,6 +385,19 @@ describe('every kind of failure lands in its own bucket', () => {
     expect(await stageOf({ shapes: [{ ...shapeOfAnswer, stableId: 'smokerBox' }] })).toBe(
       'reference',
     );
+  });
+
+  it('scores nothing when the request was built wrong on our side', async () => {
+    // Vadné semínko píše měřidlo, ne model. Musí skončit **nula koly** — a
+    // v reportu se nesmí tvářit jako výpadek poskytovatele, jinak se to hledá
+    // v síti místo v tom, co se do běhu poslalo.
+    const { script, outcome } = drive({ sessionSeed: -1 });
+    const done = await outcome;
+
+    expect(script.seen).toHaveLength(0);
+    expect(done.rounds).toBe(0);
+    expect(done.failure?.stage).toBe('unavailable');
+    expect(done.failure?.detail).toContain('before the model saw it');
   });
 
   it('reads the certification stage off the field, not off the wording', async () => {

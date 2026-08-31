@@ -707,3 +707,83 @@ describe('a broken model is not a verdict about the blueprint', () => {
     expect(done.rounds).toHaveLength(1);
   });
 });
+
+/* ================================================================== *
+ * 4. Za vadu na naší straně se modelu neplatí.
+ * ================================================================== */
+
+/**
+ * **Pin, a soudí se na něm počet volání, ne text.** Vadné `sessionSeed` projde
+ * celou smyčkou zeleně: tři kola proběhnou, report ukáže `BLUEPRINT_INVALID`
+ * a vypadá to jako neschopnost modelu. Jediné, co tu vadu prozradí, je
+ * **kolikrát se zaplatilo** — a to je číslo, na které se nikdo nedívá, dokud
+ * ho někdo neasertuje.
+ */
+describe('a fault in a field the system writes never reaches the model', () => {
+  /** Emitor, jehož zavolání je samo o sobě selhání testu. */
+  const neverCalled = (): { emit: () => Promise<unknown>; calls: () => number } => {
+    let calls = 0;
+    return {
+      emit: () => {
+        calls += 1;
+        return Promise.resolve(OWN_ANSWER);
+      },
+      calls: () => calls,
+    };
+  };
+
+  it('spends nothing on a session seed the model does not write', async () => {
+    const model = neverCalled();
+    const done = await compileWithRepair({
+      plan: PLAN,
+      grammar,
+      sessionSeed: -1,
+      emit: model.emit,
+    });
+
+    expect(model.calls()).toBe(0);
+    expect(done.rounds).toHaveLength(0);
+    expect(done.kind).toBe('invalidInput');
+    if (done.kind !== 'invalidInput') throw new Error(done.kind);
+    expect(done.detail).toContain('sessionSeed');
+  });
+
+  it('spends nothing on an intent that would leave the blueprint untitled', async () => {
+    const model = neverCalled();
+    const done = await compileWithRepair({
+      plan: { ...PLAN, intent: { ...PLAN.intent, setting: '' } },
+      grammar,
+      sessionSeed: SEED,
+      emit: model.emit,
+    });
+
+    expect(model.calls()).toBe(0);
+    expect(done.kind).toBe('invalidInput');
+    if (done.kind !== 'invalidInput') throw new Error(done.kind);
+    expect(done.detail).toContain('title');
+  });
+
+  it('is not a verdict about the model, so it is not a rejection', async () => {
+    // `rejected` říká „model odpověděl a odpověď neprošla". Kdyby sem spadla
+    // vada vstupu, report by ji spočítal do neúspěchů modelu.
+    const model = neverCalled();
+    const done = await compileWithRepair({
+      plan: PLAN,
+      grammar,
+      sessionSeed: 2 ** 31,
+      emit: model.emit,
+    });
+
+    expect(done.kind).not.toBe('rejected');
+    expect(done.kind).not.toBe('unavailable');
+  });
+
+  it('lets a seed the schema accepts through to the model', async () => {
+    // Protipůlka: kontrola nesmí zavřít cestu, která je v pořádku. `0` je
+    // krajní hodnota rozsahu a přesně ta, kterou by „> 0" chybně odmítla.
+    const model = neverCalled();
+    await compileWithRepair({ plan: PLAN, grammar, sessionSeed: 0, emit: model.emit });
+
+    expect(model.calls()).toBe(1);
+  });
+});

@@ -181,6 +181,58 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /* ------------------------------------------------------------------ *
+ * Pole, která píše systém.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Titulek obálky. **Jedno místo**, protože ho potřebuje i kontrola vstupu níž
+ * a dvě různá useknutí by znamenala, že kontrola prohlásí za dobré něco, co
+ * `blueprintSchema` pak odmítne.
+ */
+function titleOf(intent: PlannerEmission['intent']): string {
+  return intent.setting.slice(0, 120);
+}
+
+/**
+ * Vada v poli, které do blueprintu píše **systém**. `null` = vstup je v pořádku.
+ *
+ * ⚠ **Existuje proto, aby se za takovou vadu neplatilo modelu.** `sessionSeed`
+ * a `title` model nepíše — kdyby je napsal, odmítne je compiler jako
+ * `WRONG_SHAPE`. Jenže ověří se až na hotové obálce, takže vadné semínko vyjde
+ * jako `BLUEPRINT_INVALID`, opravná smyčka ho pošle modelu a poslušný model
+ * kmitá `BLUEPRINT_INVALID` → `WRONG_SHAPE` → `BLUEPRINT_INVALID`. Tři placená
+ * volání u **každé** věty, za vadu, kterou model nemá jak opravit.
+ *
+ * **Meze se neopisují, čtou se ze `blueprintSchema`.** Druhý zápis rozsahu by
+ * se dřív nebo později rozešel s tím prvním a kontrola by pouštěla dál něco,
+ * co obálka stejně odmítne.
+ */
+export function systemInputIssue(
+  sessionSeed: number,
+  intent: PlannerEmission['intent'],
+): string | null {
+  const seed = sessionSeedIssue(sessionSeed);
+  if (seed !== null) return seed;
+
+  const title = blueprintSchema.shape.title.safeParse(titleOf(intent));
+  if (!title.success) return `title (from intent.setting): ${title.error.issues[0].message}`;
+
+  return null;
+}
+
+/**
+ * Půlka téhož, která **nepotřebuje plán**.
+ *
+ * Semínko s plánem nesouvisí, takže se dá ověřit ještě před voláním plannera —
+ * a tam se to vyplatí: jinak by každá věta běhu za jednu překlepnutou konstantu
+ * zaplatila jedno volání navíc, než se k compileru vůbec dojde.
+ */
+export function sessionSeedIssue(sessionSeed: number): string | null {
+  const seed = blueprintSchema.shape.sessionSeed.safeParse(sessionSeed);
+  return seed.success ? null : `sessionSeed: ${seed.error.issues[0].message}`;
+}
+
+/* ------------------------------------------------------------------ *
  * Opsaná ukázka.
  * ------------------------------------------------------------------ */
 
@@ -514,7 +566,7 @@ export function compileBlueprint(
   const draft = {
     version: 'worldstream-v1',
     sessionSeed: options.sessionSeed,
-    title: plan.intent.setting.slice(0, 120),
+    title: titleOf(plan.intent),
     intent: plan.intent,
     world: verdict.body.doc,
     geometry,

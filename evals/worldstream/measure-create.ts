@@ -35,6 +35,7 @@
 import { performance } from 'node:perf_hooks';
 
 import { compileWithRepair, type BlueprintOutcome } from '@/model/worldstream-repair';
+import { sessionSeedIssue } from '@/model/worldstream-compiler';
 import {
   buildIntentRequest,
   readPlannerEmission,
@@ -343,9 +344,14 @@ export interface CaseDeps {
  * Fáze `look`, `declined` a `request` padají do `schema` schválně — v reportu
  * pro ně příčka není a vyrobit ji by znamenalo měřit něco, o čem vlna 2
  * nerozhoduje.
+ *
+ * **`invalidInput` se počítá pod `unavailable`, a je to záměr.** Ta příčka
+ * znamená „o modelu se v tomhle případě nic nezměřilo", a to platí i tady:
+ * model se nevolal, protože vstup byl vadný ještě před ním. Rozdíl se
+ * neztrácí — nese ho `failure.detail`, který začíná jinou větou.
  */
 export function stageOfOutcome(outcome: BlueprintOutcome): FailureStage {
-  if (outcome.kind === 'unavailable') return 'unavailable';
+  if (outcome.kind === 'unavailable' || outcome.kind === 'invalidInput') return 'unavailable';
   if (outcome.kind === 'compiled') return 'schema';
 
   switch (outcome.fault.reason) {
@@ -399,6 +405,23 @@ export async function driveCreateCase(entry: CreateCase, deps: CaseDeps): Promis
     profile: null,
   };
 
+  // Semínko píše měřidlo a s plánem nemá co dělat, takže se ověří **před**
+  // voláním plannera. Kdyby se čekalo na compiler, každá z třiceti vět by za
+  // jednu překlepnutou konstantu zaplatila jedno volání navíc.
+  const seedIssue = sessionSeedIssue(deps.sessionSeed);
+  if (seedIssue !== null) {
+    return {
+      ...empty,
+      intentValid: false,
+      latencyMs: clock() - started,
+      rounds: 0,
+      failure: {
+        stage: 'unavailable',
+        detail: `the request was built wrong before the model saw it: ${seedIssue}`,
+      },
+    };
+  }
+
   let plan: PlannerEmission;
   try {
     const emitted = await deps.emit(buildIntentRequest(entry.prompt));
@@ -442,7 +465,15 @@ export async function driveCreateCase(entry: CreateCase, deps: CaseDeps): Promis
       rounds: outcome.rounds.length,
       failure: {
         stage: stageOfOutcome(outcome),
-        detail: outcome.kind === 'unavailable' ? outcome.detail : outcome.fault.detail,
+        // `invalidInput` se pojmenuje vlastní větou. Pod `unavailable` by se
+        // jinak četlo jako výpadek poskytovatele a hledalo by se v síti místo
+        // v tom, co se do měřidla poslalo.
+        detail:
+          outcome.kind === 'invalidInput'
+            ? `the request was built wrong before the model saw it: ${outcome.detail}`
+            : outcome.kind === 'unavailable'
+              ? outcome.detail
+              : outcome.fault.detail,
       },
     };
   }

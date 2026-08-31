@@ -203,9 +203,11 @@ function declined(reason: string): ProxyWorld {
 
 /** Věta o tom, proč svět nevznikl. Bere se z kola, které ho odmítlo. */
 function outcomeReason(outcome: Exclude<BlueprintOutcome, { kind: 'compiled' }>): string {
-  return outcome.kind === 'unavailable'
-    ? `the model did not answer: ${outcome.detail}`
-    : blueprintRejectionSentence(outcome.fault);
+  if (outcome.kind === 'unavailable') return `the model did not answer: ${outcome.detail}`;
+  // Vlastní věta, a je to důležité právě proto, že ji čte porotce: „the model
+  // did not answer" by o běhu, ve kterém se model nevolal, tvrdilo nepravdu.
+  if (outcome.kind === 'invalidInput') return `the request was built wrong before the model saw it: ${outcome.detail}`;
+  return blueprintRejectionSentence(outcome.fault);
 }
 
 /**

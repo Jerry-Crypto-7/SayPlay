@@ -632,4 +632,19 @@ describe('the fallback ladder is a closed list, not a guess', () => {
     expect(rejected.kind).toBe('declined');
     expect(rejected.kind === 'declined' && rejected.reason.length).toBeGreaterThan(0);
   });
+
+  it('does not blame the model for a request that never reached it', async () => {
+    // Tuhle větu čte porotce. „The model did not answer" by o běhu, ve kterém
+    // se model nevolal, tvrdilo nepravdu — a hledalo by se to v síti.
+    const ours = await build({
+      kind: 'invalidInput',
+      detail: 'sessionSeed: Too small: expected int to be >=0',
+      rounds: [],
+    });
+
+    expect(ours.kind).toBe('declined');
+    if (ours.kind !== 'declined') throw new Error(ours.kind);
+    expect(ours.reason).not.toContain('the model did not answer');
+    expect(ours.reason).toContain('sessionSeed');
+  });
 });
