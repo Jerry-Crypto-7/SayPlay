@@ -494,6 +494,48 @@ describe('vadný program se odmítne a řekne proč', () => {
     rejects(explosive, /expands to 384 placed pieces, above maxInstances 120/);
   });
 
+  it('řádek mimo strom se odmítne, protože rozpočet ho nevidí a kompilátor ho staví', () => {
+    // Nález nezávislého review: rozpočet se čte z `[root]`, ale
+    // `compileGeomProgram` i `compilePlacements` staví **každý** řádek
+    // tabulky. Řetěz nedosažitelných `repeat` řádků tak ohlásil jeden kus
+    // proti stropu 120 a postavil jich 65 536.
+    const smuggled = {
+      version: GEOM_VERSION,
+      nodes: [
+        { kind: 'mass', variant: 'block' },
+        { kind: 'repeat', child: 0, count: 16, step: [1, 0, 0] },
+        { kind: 'repeat', child: 1, count: 16, step: [0, 1, 0] },
+        { kind: 'repeat', child: 2, count: 16, step: [0, 0, 1] },
+        { kind: 'repeat', child: 3, count: 16, step: [1, 1, 0] },
+      ],
+      root: 0,
+    };
+
+    // Co brána viděla, než tahle kontrola přibyla: rozpočet z `[root]` je 1.
+    expect(instanceCounts(smuggled.nodes as readonly GeomNode[])[0]).toBe(1);
+    // A co by kompilátor postavil: čtvrtý řádek už je 65 536 kusů.
+    expect(instanceCounts(smuggled.nodes as readonly GeomNode[])[4]).toBe(65_536);
+
+    rejects(smuggled, /nodes 1, 2, 3, 4 cannot be reached from root 0/);
+  });
+
+  it('cíl `anchorTo` je dosažitelný, i když se do výsledku nevkládá', () => {
+    // Failure path té samé kontroly: kdyby se dosažitelnost počítala po
+    // `childIndicesOf` místo `referencedIndicesOf`, stal by se z každého cíle
+    // kotvy sirotek a brána by odmítla 161 programů, které repo dneska staví.
+    const anchored = {
+      version: GEOM_VERSION,
+      nodes: [
+        { kind: 'mass', variant: 'block', at: [0, 0, 0] },
+        { kind: 'column', variant: 'pillar', scale: [1, 1.6, 1] },
+        { kind: 'anchorTo', child: 1, target: 0, site: 'top' },
+      ],
+      root: 2,
+    };
+
+    expect(validateGeomProgram(anchored).ok).toBe(true);
+  });
+
   it('program přesně na stropu kusů projde', () => {
     const atLimit = {
       version: GEOM_VERSION,

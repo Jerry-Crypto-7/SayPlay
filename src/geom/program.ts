@@ -479,6 +479,25 @@ export function referencedIndicesOf(node: GeomNode): readonly number[] {
 }
 
 /**
+ * Indexy řádků, na které se z `root` dá dojít.
+ *
+ * Průchod odshora dolů, protože dosažitelnost se šíří opačně než rozpočty.
+ * Bez rekurze: potomek má vždy nižší index, což vynucuje `structuralIssues`,
+ * takže stačí jeden sestup polem.
+ *
+ * Jde se po `referencedIndicesOf`, ne po `childIndicesOf`: cíl `anchorTo` se
+ * do výsledku nevkládá, ale kompilátor z něj čte kvádr, takže dosažitelný je.
+ */
+export function reachableFrom(nodes: readonly GeomNode[], root: number): ReadonlySet<number> {
+  const reached = new Set<number>([root]);
+  for (let index = nodes.length - 1; index >= 0; index -= 1) {
+    if (!reached.has(index)) continue;
+    for (const child of referencedIndicesOf(nodes[index])) reached.add(child);
+  }
+  return reached;
+}
+
+/**
  * Kolik umístěných kusů vyleze z každého uzlu po rozvinutí operací.
  *
  * Průchod odspodu nahoru — potomek má vždy nižší index než rodič, což vynucuje
@@ -572,6 +591,20 @@ function structuralIssues(program: GeomProgram): string[] {
   // Rozpočet se počítá až nad neporušenou tabulkou; nad cyklem nebo nad
   // odkazem mimo tabulku by `instanceCounts` četlo `undefined`.
   if (issues.length > 0) return issues;
+
+  // Mrtvý řádek se odmítá, ne přehlíží — týž důvod jako v `shape/schema.ts`.
+  // Rozpočet níž se čte z `[root]`, ale **kompilátor staví každý řádek
+  // tabulky** (`compileGeomProgram`, `compilePlacements`), takže uzel mimo
+  // strom projde bránou nezapočítaný a postaví se stejně. Řetěz čtyř
+  // nedosažitelných `repeat` řádků ohlásil 1 kus proti stropu 120 a vyrobil
+  // jich 65 536; každý další řádek to násobí znovu.
+  const reached = reachableFrom(program.nodes, program.root);
+  const orphans = program.nodes
+    .map((_node, index) => index)
+    .filter((index) => !reached.has(index));
+  if (orphans.length > 0) {
+    fail(`nodes ${orphans.join(', ')} cannot be reached from root ${program.root}`);
+  }
 
   const expanded = instanceCounts(program.nodes)[program.root];
   if (expanded > GEOM_LIMITS.maxInstances)
