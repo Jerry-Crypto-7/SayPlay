@@ -137,12 +137,55 @@ export function toWorld(transform: SlotTransform, point: Vec3): Vec3 {
  * Poznat je od napsaných jde podle příčky žebříku (`ProxyRung`), ne podle
  * příznaku na kotvě — jeden zdroj pravdy o původu podoby, ne dva.
  */
-export function derivedAnchors(localBounds: Bounds3): readonly AnchorSpec[] {
-  const center = boundsCenter(localBounds);
+export function derivedAnchors(
+  localBounds: Bounds3,
+  pieces: readonly Bounds3[] = [],
+): readonly AnchorSpec[] {
+  const on = nearestPiece(localBounds, pieces) ?? localBounds;
+  const center = boundsCenter(on);
   return [
-    { name: 'base', at: [center[0], localBounds.min[1], center[2]], normal: [0, -1, 0] },
-    { name: 'top', at: [center[0], localBounds.max[1], center[2]], normal: [0, 1, 0] },
+    { name: 'base', at: [center[0], on.min[1], center[2]], normal: [0, -1, 0] },
+    { name: 'top', at: [center[0], on.max[1], center[2]], normal: [0, 1, 0] },
   ];
+}
+
+/**
+ * Kus, na kterém kotvy sednou — ten nejbližší středu celku.
+ *
+ * ⚠ **Bez tohohle by kotva rozmnoženého vlastníka ležela v prázdnu.** Naměřeno
+ * nezávislou revizí 31. 8. 2026: `mirror` nad kusem na `x = +8` dá kopie na
+ * ±8, obal je tedy −8..8 a jeho střed `x = 0`, kde není nic; `scatter count 5
+ * radius 9,5` totéž přes devatenáct metrů. Na jednom snímku to vypadá úplně
+ * stejně jako kotva na místě — a §13.2 dělá z transformace slotu invariant
+ * hot-swapu, takže se ta chyba **zamrzne** a přenese i na podrobnou podobu.
+ *
+ * Obě kotvy jdou na **týž** kus schválně. `base` z jednoho a `top` z jiného by
+ * daly dvojici, která spolu svisle nesouvisí, a „na tomhle stojí" a „tohle si
+ * na něj polož" pak mluví každá o jiné části objektu.
+ *
+ * Vzdálenost se měří mezi středy a shodu rozhoduje **pořadí**, ne souřadnice:
+ * u zrcadlené dvojice jsou obě vzdálenosti stejné a náhoda by v ní vyrobila
+ * dva různé světy z jednoho semínka. U jednoho kusu vyjde tentýž bod jako
+ * dřív, protože ten kus **je** celek.
+ */
+function nearestPiece(localBounds: Bounds3, pieces: readonly Bounds3[]): Bounds3 | null {
+  if (pieces.length === 0) return null;
+
+  const center = boundsCenter(localBounds);
+  let best = pieces[0];
+  let bestDistance = Number.POSITIVE_INFINITY;
+
+  for (const piece of pieces) {
+    const at = boundsCenter(piece);
+    const distance =
+      (at[0] - center[0]) ** 2 + (at[1] - center[1]) ** 2 + (at[2] - center[2]) ** 2;
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = piece;
+    }
+  }
+
+  return best;
 }
 
 /* ------------------------------------------------------------------ *
@@ -205,9 +248,21 @@ export function slotFromForm(object: SemanticObject, form: SlotForm): SemanticSl
  * světa. Kusy kompozice se do prostoru slotu přepočítají
  * (`intoSlotSpace()` v `./proxy.ts`) přesně proto, aby to platilo i o nich.
  */
-export function slotFromWorldForm(object: SemanticObject, worldBounds: Bounds3): SemanticSlot {
+export function slotFromWorldForm(
+  object: SemanticObject,
+  worldBounds: Bounds3,
+  /**
+   * Kvádry jednotlivých kusů **ve světě**. Nepovinné, protože hlína žádné
+   * kusy nemá — je to jeden plný kvádr, jehož střed v prázdnu ležet nemůže.
+   */
+  worldPieces: readonly Bounds3[] = [],
+): SemanticSlot {
   const localBounds = centeredBounds(worldBounds);
   const center = boundsCenter(worldBounds);
+  const localPieces = worldPieces.map((piece) => ({
+    min: [piece.min[0] - center[0], piece.min[1] - center[1], piece.min[2] - center[2]] as Vec3,
+    max: [piece.max[0] - center[0], piece.max[1] - center[1], piece.max[2] - center[2]] as Vec3,
+  }));
 
   return {
     stableId: object.stableId,
@@ -218,6 +273,6 @@ export function slotFromWorldForm(object: SemanticObject, worldBounds: Bounds3):
     localBounds,
     worldBounds,
     transform: { scale: [1, 1, 1], translation: center },
-    anchors: derivedAnchors(localBounds),
+    anchors: derivedAnchors(localBounds, localPieces),
   };
 }

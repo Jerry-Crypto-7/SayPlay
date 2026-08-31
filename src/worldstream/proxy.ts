@@ -161,6 +161,35 @@ function measureBounds(placements: readonly GeomPlacement[]): Bounds3 | null {
 }
 
 /**
+ * Týž kvádr, ale **po kusech**, aby se kotva měla čeho chytit.
+ *
+ * Obal celku sám nestačí: rozmnožený vlastník má střed obalu v prázdnu mezi
+ * kopiemi (viz `nearestPiece()` v `./slots.ts`). Kusy se proto pečou po jednom
+ * — je to táž práce jako jedno upečení celku, jen se nespojí do jedné sítě,
+ * takže se tím nic nezdraží.
+ *
+ * Prázdný kus se **přeskakuje, ne vrací jako prázdno**: řádek může mít vedle
+ * pěti plných kusů jeden slepený do ničeho a kotva má sednout na těch pět.
+ */
+function measurePieces(placements: readonly GeomPlacement[]): readonly Bounds3[] {
+  const pieces: Bounds3[] = [];
+
+  for (const placement of placements) {
+    const baked = bakePlacements([placement]);
+    baked.computeBoundingBox();
+    const box: Box3 | null = baked.boundingBox;
+    if (box !== null && !box.isEmpty())
+      pieces.push({
+        min: [box.min.x, box.min.y, box.min.z] as Vec3,
+        max: [box.max.x, box.max.y, box.max.z] as Vec3,
+      });
+    baked.dispose();
+  }
+
+  return pieces;
+}
+
+/**
  * Kusy přepočítané do prostoru slotu.
  *
  * **Podoba je na každé příčce v prostoru slotu, nikdy ve světě.** Mesh z tvaru
@@ -358,7 +387,7 @@ export async function buildProxyWorld(
 
     taken.add(node);
     return {
-      slot: slotFromWorldForm(object, bounds),
+      slot: slotFromWorldForm(object, bounds, measurePieces(placements)),
       form: {
         rung: 'g2-rich',
         kind: 'placements',
