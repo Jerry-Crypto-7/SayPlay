@@ -153,6 +153,8 @@ export default function GalleryPage(): React.JSX.Element {
   const [meshes, setMeshes] = useState<readonly MeshResult[]>([]);
   const [failed, setFailed] = useState<readonly string[]>([]);
   const [placed, setPlaced] = useState<readonly string[]>([]);
+  /** Kolik tvarů vynechalo `?skip=`. Bez toho by `done` nikdy nenastalo. */
+  const [skipped, setSkipped] = useState(0);
 
   const onPlaced = useCallback((shapeId: string, cell: number) => {
     setPlaced((current) => [...current, `${shapeId}:${cell}`]);
@@ -162,8 +164,28 @@ export default function GalleryPage(): React.JSX.Element {
     const client = createMeshClient();
     let live = true;
 
+    /**
+     * `?skip=root,shell` vynechá jmenované tvary. Popisky zůstanou všechny.
+     *
+     * **Dvě použití, obě potřebná.** U brány dovolí odložit tvar, který táhne
+     * pozornost, a podívat se na zbytek. A hlavně dovolí testu vyrobit
+     * **záměrnou díru**: buňka se počítá z jména, ne z pořadí příchodu, a ten
+     * rozdíl se pozná jedině tehdy, když nějaký tvar chybí. Dokud se díra brala
+     * z toho, co zrovna přetáhlo rozpočet, měřil test náhodu — a po zvednutí
+     * stropu 31. 8. 2026 by nepoznal nic.
+     *
+     * Čte se z `location.search` až v efektu, tedy po připojení: hydratace tím
+     * nemá jak neladit, protože server vykreslí stránku bez tvarů tak jako tak.
+     */
+    const skip = new Set(
+      new URLSearchParams(window.location.search).get('skip')?.split(',').filter(Boolean) ?? [],
+    );
+
+    setSkipped(GALLERY.filter((item) => skip.has(item.id)).length);
+
     void (async () => {
       for (const item of GALLERY) {
+        if (skip.has(item.id)) continue;
         try {
           const mesh = await client.mesh({
             program: item.program,
@@ -191,7 +213,7 @@ export default function GalleryPage(): React.JSX.Element {
     };
   }, []);
 
-  const done = meshes.length + failed.length === GALLERY.length;
+  const done = meshes.length + failed.length + skipped === GALLERY.length;
 
   return (
     <main
@@ -203,6 +225,12 @@ export default function GalleryPage(): React.JSX.Element {
          brána K1 potřebuje mít jistou: člověk soudí tvar podle popisku pod
          ním. Viz `e2e/gallery.spec.ts` a `gallery-cells.test.ts`. */
       data-cells={placed.join(',')}
+      /* Kolik který tvar stál ve workeru. Rozpočet `MESH_DETAIL.high` se
+         kalibroval na stránce **bez plátna** (`/dev/mesh-budget` schválně nic
+         nekreslí), kdežto v produktu meshing běží vedle živé renderovací
+         smyčky. Tady je ta druhá podmínka, a je to jediné místo, kde se dá
+         změřit. Viz `T7-meshbudget`. */
+      data-times={meshes.map((mesh) => `${mesh.shapeId}:${Math.round(mesh.elapsedMs)}`).join(',')}
       style={{
         position: 'relative',
         height: '100dvh',
@@ -243,7 +271,9 @@ export default function GalleryPage(): React.JSX.Element {
       >
         Twelve hand-written shape programs
         <span style={{ color: UI_TOKENS.muted, marginLeft: '0.75rem', textTransform: 'none' }}>
-          {done ? `${meshes.length} of ${GALLERY.length} meshed` : 'meshing…'}
+          {done
+            ? `${meshes.length} of ${GALLERY.length} meshed${skipped > 0 ? `, ${skipped} skipped` : ''}`
+            : 'meshing…'}
         </span>
       </header>
 

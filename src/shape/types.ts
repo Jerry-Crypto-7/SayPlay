@@ -146,11 +146,35 @@ export const SHAPE_LIMITS = {
  * pořadí podle `priority` je vlastnost produktu), takže se tři objekty nedají
  * schovat za paralelní pracovníky.
  *
- * **Odkud jsou stropy.** `maxMs` je nejhorší naměřený běh plus polovina navíc
- * na porotcův notebook, o kterém nic nevíme — 228 → 350 a 607 → 900. Nejsou
- * odvozené ze slibu „hratelné do tří sekund", ale obstojí proti němu: hrubý
- * svět o třech objektech se vejde do 1,05 s a zpevnění do dalších 2,7 s, a to
- * zpevnění běží až nad světem, který je hratelný.
+ * **Odkud jsou stropy.** `maxMs` je nejhorší naměřený běh plus rezerva na
+ * porotcův notebook, o kterém nic nevíme — 228 → 350 a 2 285 → 2 600.
+ *
+ * ⚠ **`high.maxMs` se 31. 8. 2026 zvedlo z 900 na 2 600 a stojí za tím oprava
+ * metody, ne posun laťky.** Původních 900 vzniklo z 607 ms naměřených na
+ * `/dev/mesh-budget`, což je stránka, která **schválně nic nevykresluje** —
+ * jenže v produktu meshing běží vedle živé renderovací smyčky, a to je jiná
+ * cena. Přeměřeno na `/gallery` nad dvanácti ručními tvary:
+ *
+ * | Podmínka | Nejdražší tvar (`root`) |
+ * |---|---:|
+ * | bez plátna, hlavní vlákno, nejlepší ze tří | 927 ms |
+ * | s běžící renderovací smyčkou, ve workeru | 1 273 – 2 285 ms |
+ *
+ * Starý strop tedy odmítal **tři až šest z dvanácti ručně napsaných tvarů**,
+ * tedy legitimní obsah, a odmítal zrovna ty nejsložitější. Nová hodnota je
+ * nejhorší naměřený běh (2 285 ms) plus ~14 %.
+ *
+ * **Co se tím ztratilo, ať to nikdo nemusí odvozovat:** wall-clock strop je na
+ * hlídání ceny slabý nástroj — měří stroj a zátěž kolem, ne program. Monstra
+ * drží `maxTriangles`, což je míra nezávislá na stroji (tři legální uzly daly
+ * 190 442 trojúhelníků). Skutečná oprava je soudit cenu v **počtu vyhodnocení**,
+ * a ta patří do vlny 3 T20 / vlny 5 T26 spolu s `T5-evalcap` — obojí je totéž
+ * selhání: rozpočet naměřený v jiné podmínce, než v jaké se vynucuje.
+ *
+ * Stropy nejsou odvozené ze slibu „hratelné do tří sekund", ale obstojí proti
+ * němu: **rozhoduje `rough`**, a ten se nehnul — hrubý svět o třech objektech
+ * se vejde do 1,05 s. Zpevnění na `high` běží až nad světem, který je hratelný,
+ * a smí proto trvat déle.
  *
  * `maxTriangles` u `high` drží tři objekty na 96 000 pod stropem scény; u
  * `rough` je to naměřených 12 016 se stejnou rezervou.
@@ -160,7 +184,7 @@ export const SHAPE_LIMITS = {
  */
 export const MESH_DETAIL = {
   rough: { resolution: 32, maxMs: 350, maxTriangles: 16_000 },
-  high: { resolution: 48, maxMs: 900, maxTriangles: 32_000 },
+  high: { resolution: 48, maxMs: 2_600, maxTriangles: 32_000 },
 } as const;
 
 /* ------------------------------------------------------------------ *

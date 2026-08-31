@@ -30,11 +30,20 @@ import { useEffect, useState } from 'react';
 
 import { createMeshClient } from '@/shape/mesh-client';
 import { meshShapeProgram } from '@/shape/surface-nets';
+import { GALLERY, GALLERY_SEED } from '../../../../evals/shape/gallery';
 import {
   REFERENCE_BOUNDS,
   REFERENCE_SEED,
   referenceProgram,
 } from '../../../../evals/shape/reference-program';
+
+/** Cena jednoho tvaru galerie. Bez workeru a **bez rozpočtu**, viz níž. */
+export interface GallerySample {
+  readonly id: string;
+  readonly ms: number;
+  readonly triangles: number;
+  readonly nodes: number;
+}
 
 /** Co si spec ze stránky odnese. Jeden běh jedné mřížky. */
 export interface MeshBudgetSample {
@@ -61,6 +70,22 @@ declare global {
        * samo V8 v prohlížeči. Rozdíl mezi `measure` a tímhle je cena workeru.
        */
       measureOnMainThread: (resolution: number) => number;
+      /**
+       * Cena **všech dvanácti tvarů galerie**, ne jen referenčního programu.
+       *
+       * Strop `MESH_DETAIL.high.maxMs` vznikl z jediného referenčního tvaru se
+       * ~20 uzly a na galerii ho tři až šest tvarů přetahovalo — naměřeno
+       * 31. 8. 2026. Tohle měření je důvod, proč se strop zvedl z 900 na 2 600;
+       * odůvodnění je u `MESH_DETAIL`. Zůstává tu proto, aby se příští změna
+       * čísla zase neopřela o jediný tvar.
+       *
+       * Měří se **na hlavním vlákně a mimo worker**, tedy mimo rozpočet: kdyby
+       * to šlo přes `client.mesh()`, dnešní strop by dražší tvary odmítl dřív,
+       * než by řekly, kolik stojí — a to je přesně ta hodnota, která se hledá.
+       * Poměr worker/hlavní vlákno dává `measure` proti `measureOnMainThread`
+       * nad týmž referenčním tvarem.
+       */
+      measureGallery: (resolution: number) => readonly GallerySample[];
     };
   }
 }
@@ -81,6 +106,20 @@ export default function MeshBudgetPage(): React.JSX.Element {
         meshShapeProgram(program, REFERENCE_SEED, { resolution, bounds: REFERENCE_BOUNDS });
         return performance.now() - startedAt;
       },
+      measureGallery: (resolution) =>
+        GALLERY.map((item) => {
+          const startedAt = performance.now();
+          const mesh = meshShapeProgram(item.program, GALLERY_SEED, {
+            resolution,
+            bounds: item.program.targetBounds,
+          });
+          return {
+            id: item.id,
+            ms: performance.now() - startedAt,
+            triangles: mesh.triangleCount,
+            nodes: item.program.nodes.length,
+          };
+        }),
       measure: async (resolution) => {
         // `performance.now()` je tady v pořádku: měření není replay cesta a
         // žádná z těch hodnot nevstupuje do hashovaného stavu.

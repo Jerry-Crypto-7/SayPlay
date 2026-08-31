@@ -36,6 +36,7 @@ import { dirname, join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
 import { MESH_DETAIL } from '../src/shape/types';
+import { GALLERY_IDS } from '../evals/shape/gallery';
 import {
   COST_CLASSES,
   OUT_OF_LADDER_GRIDS,
@@ -48,6 +49,7 @@ import {
 } from '../evals/shape/reference-program';
 
 const REPORT_PATH = join('evals', 'shape', 'mesh-budget.json');
+const GALLERY_COST_PATH = join('evals', 'shape', 'gallery-cost.json');
 
 /** Kolikrát se mřížka změří. Nejlepší z toho jde do reportu. */
 const RUNS = 3;
@@ -268,5 +270,102 @@ test.describe('rozpočet meshingu v prohlížeči', () => {
       expect(row.browser.triangles).toBeLessThanOrEqual(level.maxTriangles);
       expect(row.browser.workerMs).toBeLessThanOrEqual(level.maxMs);
     }
+  });
+
+  /**
+   * Cena **dvanácti tvarů galerie**, ne jednoho referenčního (P13 `T7-meshbudget`).
+   *
+   * Test výš připíná strop na jednom tvaru se ~20 uzly. Ten strop ale platí pro
+   * cokoli, co model napíše, a galerie je jediná sada složitějších programů,
+   * jakou repo má — proto se měří ta. Report je vstup pro rozhodnutí o čísle,
+   * ne rozsudek: soudí se až v testu výš, nad referenčním tvarem.
+   *
+   * Měří se na hlavním vlákně a **mimo rozpočet**, jinak by dnešní strop dražší
+   * tvary odmítl dřív, než by řekly, kolik stojí.
+   */
+  test('@measure změří cenu dvanácti tvarů galerie na obou příčkách žebříku', async ({
+    page,
+    browserName,
+  }) => {
+    test.setTimeout(300_000);
+
+    await page.goto('/dev/mesh-budget');
+    await page.waitForFunction(() => window.__meshBudget !== undefined, undefined, {
+      timeout: 60_000,
+    });
+
+    await page.evaluate((resolution) => window.__meshBudget!.measureGallery(resolution), WARMUP_RESOLUTION);
+
+    const rungs = [MESH_DETAIL.rough.resolution, MESH_DETAIL.high.resolution];
+    const best = new Map<string, { ms: number; triangles: number; nodes: number }>();
+
+    for (const resolution of rungs) {
+      for (let run = 0; run < RUNS; run += 1) {
+        const samples = await page.evaluate(
+          (value) => window.__meshBudget!.measureGallery(value),
+          resolution,
+        );
+        for (const sample of samples) {
+          const key = `${resolution}:${sample.id}`;
+          const previous = best.get(key);
+          if (previous === undefined || sample.ms < previous.ms) {
+            best.set(key, { ms: sample.ms, triangles: sample.triangles, nodes: sample.nodes });
+          }
+        }
+      }
+    }
+
+    const shapes = rungs.map((resolution) => ({
+      resolution,
+      maxMs: MESH_DETAIL[resolution === MESH_DETAIL.rough.resolution ? 'rough' : 'high'].maxMs,
+      rows: GALLERY_IDS.map((id) => {
+        const sample = best.get(`${resolution}:${id}`)!;
+        return {
+          id,
+          nodes: sample.nodes,
+          ms: Number(sample.ms.toFixed(1)),
+          triangles: sample.triangles,
+        };
+      }),
+    }));
+
+    const report = {
+      measuredAt: new Date().toISOString().slice(0, 10),
+      task: 'P13 T7-meshbudget',
+      browser: browserName,
+      adapter: await readAdapter(page),
+      buildId: readBuildId(),
+      hardwareConcurrency: await page.evaluate(() => navigator.hardwareConcurrency),
+      method: {
+        runs: RUNS,
+        pick: 'best',
+        warmupResolution: WARMUP_RESOLUTION,
+        timedIn: 'mainThread',
+        budgetEnforced: false,
+      },
+      ladder: MESH_DETAIL,
+      shapes,
+    };
+
+    mkdirSync(dirname(GALLERY_COST_PATH), { recursive: true });
+    writeFileSync(GALLERY_COST_PATH, `${JSON.stringify(report, null, 2)}
+`, 'utf8');
+
+    for (const rung of shapes) {
+      const sorted = [...rung.rows].sort((a, b) => b.ms - a.ms);
+      const over = sorted.filter((row) => row.ms > rung.maxMs);
+      console.log(
+        `${rung.resolution}³ (strop ${rung.maxMs} ms): nejdražší ` +
+          sorted
+            .slice(0, 4)
+            .map((row) => `${row.id} ${row.ms.toFixed(0)} ms / ${row.nodes} uzlů`)
+            .join(' · ') +
+          `  → nad stropem ${over.length} z ${rung.rows.length}`,
+      );
+    }
+
+    // Report musí vzniknout celý; rozsudek nad číslem patří člověku a plánu.
+    expect(shapes).toHaveLength(2);
+    for (const rung of shapes) expect(rung.rows).toHaveLength(GALLERY_IDS.length);
   });
 });

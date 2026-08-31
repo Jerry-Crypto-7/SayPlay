@@ -1,0 +1,68 @@
+{
+  "measuredAt": "2026-08-31",
+  "task": "P13 T7-meshbudget",
+  "condition": "gallery page, live render loop, mesh worker",
+  "resolution": 48,
+  "rows": [
+    {
+      "id": "root",
+      "ms": 2016,
+      "ok": true
+    },
+    {
+      "id": "shell",
+      "ms": 1776,
+      "ok": true
+    },
+    {
+      "id": "column",
+      "ms": 1101,
+      "ok": true
+    },
+    {
+      "id": "fruit",
+      "ms": 811,
+      "ok": true
+    },
+    {
+      "id": "cauldron",
+      "ms": 631,
+      "ok": true
+    },
+    {
+      "id": "machine",
+      "ms": 606,
+      "ok": true
+    },
+    {
+      "id": "staircase",
+      "ms": 458,
+      "ok": true
+    },
+    {
+      "id": "net",
+      "ms": 402,
+      "ok": true
+    },
+    {
+      "id": "vault",
+      "ms": 352,
+      "ok": true
+    },
+    {
+      "id": "bone",
+      "ms": 334,
+      "ok": true
+    },
+    {
+      "id": "cloud",
+      "ms": 295,
+      "ok": true
+    },
+    {
+      "id": "wave",
+      "ms": 179,
+      "ok": true
+    }
+  ]
+}
