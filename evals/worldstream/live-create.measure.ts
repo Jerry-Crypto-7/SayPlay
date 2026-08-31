@@ -68,6 +68,7 @@ describe('the live create path over the frozen set', () => {
       const mesh = createMeshClient({ allowMainThread: true });
 
       const cases: CaseOutcome[] = [];
+      let report: ReturnType<typeof buildCreateReport> | null = null;
       try {
         for (const entry of corpus.create as CreateCase[]) {
           upstream.caseId = entry.id;
@@ -84,16 +85,23 @@ describe('the live create path over the frozen set', () => {
         }
       } finally {
         mesh.dispose();
-        // Archiv se zapíše i po pádu uprostřed — je to jediný záznam toho, co
-        // se za peníze doopravdy odehrálo.
-        writeFileSync(ARCHIVE_FILE, `${JSON.stringify(upstream.archive, null, 2)}\n`, 'utf8');
+        report = buildCreateReport(cases, {
+          sessionSeed: SESSION_SEED,
+          measuredAt: new Date().toISOString(),
+        });
+        // **Obojí se zapíše i po pádu uprostřed.** Meshing ani profil nejsou
+        // v `driveCreateCase` chráněné, takže výjimka u dvacáté deváté věty by
+        // jinak znamenala 29 zaplacených vět a žádný report.
+        //
+        // **A obojí projde scrubbingem emitoru**, ne jen archiv: hlášky `fetch`e
+        // nesou celou adresu koncového bodu a doputují až do `failure.detail`.
+        writeFileSync(
+          ARCHIVE_FILE,
+          `${JSON.stringify(upstream.scrub(upstream.archive), null, 2)}\n`,
+          'utf8',
+        );
+        writeFileSync(REPORT_FILE, `${JSON.stringify(upstream.scrub(report), null, 2)}\n`, 'utf8');
       }
-
-      const report = buildCreateReport(cases, {
-        sessionSeed: SESSION_SEED,
-        measuredAt: new Date().toISOString(),
-      });
-      writeFileSync(REPORT_FILE, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 
       process.stdout.write(
         `\n${String(report.totals.geometryAuthored)}/${String(report.totals.attempted)} authored, p95 ${String(Math.round(report.latencyP95Ms))} ms, closest pair ${report.closestPair?.distance.toFixed(4) ?? 'n/a'}, ${String(upstream.paidCalls)} paid calls\n`,

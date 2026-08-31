@@ -551,6 +551,19 @@ export function buildCreateReport(
   const closestPair = pairs[0] ?? null;
 
   const gateFailures: string[] = [];
+
+  // **Strop, který během běhu spadl, se hlásí jako první a vlastní větou.**
+  // Bez toho se běh useknutý účetnictvím čte jako vada modelu: nedoběhlé věty
+  // skončí jako `unavailable`, `geometryAuthored` spadne pod práh a brána K2 by
+  // z toho vyvodila, že model neumí psát geometrii. Naměřeno nezávislou revizí
+  // 31. 8. 2026.
+  const cappedAt = cases.filter((entry) => (entry.failure?.detail ?? '').includes('CAP_EXHAUSTED'));
+  if (cappedAt.length > 0) {
+    gateFailures.push(
+      `the spend cap stopped the run at ${String(cases.length - cappedAt.length)} of ${String(cases.length)} sentences: the numbers below measure an interrupted run, not the model`,
+    );
+  }
+
   if (geometryAuthoredRate < GEOMETRY_AUTHORED_FLOOR) {
     gateFailures.push(
       `geometryAuthored ${geometryAuthoredRate.toFixed(3)} is below the floor ${GEOMETRY_AUTHORED_FLOOR}`,
@@ -601,6 +614,18 @@ export interface LiveEmitter {
   readonly archive: readonly ArchiveEntry[];
   /** Kolik volání strop propustil. Roste i u těch, která pak selhala. */
   readonly paidCalls: number;
+  /**
+   * **Cokoli, co jde na disk, projde tudy.** Ne jen archiv.
+   *
+   * Naměřeno nezávislou revizí 31. 8. 2026: hlášky `fetch`e nesou **celou
+   * adresu koncového bodu** („Failed to parse URL from …", „URL that includes
+   * credentials: …"), doputují přes `unavailable` až do `failure.detail`
+   * a odtud do reportu — který se do té chvíle nescruboval vůbec. Jeden
+   * překlep v adrese s klíčem v query stringu tak zapsal ten klíč do souboru
+   * mířícího do veřejného repa. Emitor to umí jako jediný, protože jediný zná
+   * klíč i adresu; volající je nikdy nedostane do ruky.
+   */
+  scrub(value: unknown): unknown;
 }
 
 /**
@@ -629,7 +654,10 @@ export function liveEmitter(
   const archive: ArchiveEntry[] = [];
   // Klíč se maže i doslova, ne jen podle vzoru: poskytovatel, který ho vrátí
   // v chybové hlášce, by jinak prošel, kdyby měl jiný tvar než ty čtyři výš.
-  const secrets = [config.apiKey];
+  // **Adresa je tu se stejnou vahou jako klíč** — nese jméno vnitřního stroje
+  // a umí nést i pověření (`?key=`, `https://user:heslo@…`), a `fetch` ji píše
+  // do chybových hlášek celou.
+  const secrets = [config.apiKey, config.endpoint];
   let paidCalls = 0;
 
   return {
@@ -639,6 +667,9 @@ export function liveEmitter(
     },
     get paidCalls() {
       return paidCalls;
+    },
+    scrub(value: unknown): unknown {
+      return scrubDeep(value, secrets);
     },
     async emit(request: UpstreamRequest): Promise<unknown> {
       const call: GenerationCall = { prompt: request.user, request };

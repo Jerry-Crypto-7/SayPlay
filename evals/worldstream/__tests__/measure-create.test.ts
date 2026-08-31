@@ -908,3 +908,85 @@ describe('the call that costs money', () => {
     expect(provider.calls).toHaveLength(1);
   });
 });
+
+/* ================================================================== *
+ * 9. Co jde na disk. Nález nezávislé revize 31. 8. 2026.
+ * ================================================================== */
+
+describe('nothing reaches the disk with a credential still in it', () => {
+  const ENDPOINT_SECRET = 'gw.internal.example/v1/messages?key=URLKEY0f7a2b';
+
+  /** Poskytovatel, na který se `fetch` ani nedovolá — a hlásí to celou adresou. */
+  const unreachable = (): typeof fetch =>
+    ((input: unknown) =>
+      Promise.reject(new Error(`Failed to parse URL from ${String(input)}`))) as unknown as typeof fetch;
+
+  const withEndpoint = liveEmitter(
+    {
+      WORLDSMITH_MODEL_ENDPOINT: ENDPOINT_SECRET,
+      WORLDSMITH_MODEL_KEY: `sk-ant-${KEY_TAIL}`,
+      WORLDSMITH_USD_PER_MTOK_OUT: '15',
+    },
+    unreachable(),
+  );
+
+  it('scrubs the endpoint, not just the key', async () => {
+    // Klíč v query stringu ani jméno vnitřního stroje nesedí na žádný ze čtyř
+    // vzorů — chytí je jedině doslovný seznam, a ten musí adresu obsahovat.
+    await expect(
+      withEndpoint.emit({ model: 'm', system: 's', user: 'u' }),
+    ).rejects.toThrow();
+
+    expect(JSON.stringify(withEndpoint.archive)).not.toContain('URLKEY');
+  });
+
+  it('scrubs the report too, not only the archive', async () => {
+    // Tohle je ta cesta, která do 31. 8. 2026 nebyla krytá vůbec: hláška
+    // `fetch`e → `unavailable` → `failure.detail` → `create-report.json`.
+    const done = await driveCreateCase(CASE, {
+      emit: (request) => withEndpoint.emit(request),
+      mesh: meshOk,
+      grammar,
+      sessionSeed: SEED,
+      now: () => 0,
+    });
+
+    expect(done.failure?.stage).toBe('unavailable');
+    // Bez scrubbingu report ten klíč nese — proto se ověřuje obojí.
+    expect(JSON.stringify(done)).toContain('URLKEY');
+    expect(JSON.stringify(withEndpoint.scrub(report([done])))).not.toContain('URLKEY');
+  });
+});
+
+describe('an accounting stop must not read as a model failure', () => {
+  it('names the cap before it names the model', () => {
+    const cut = [
+      ...spread(10),
+      ...Array.from({ length: 20 }, (_unused, index) =>
+        outcome({
+          id: `cap${String(index)}`,
+          geometryAuthored: false,
+          profile: null,
+          failure: { stage: 'unavailable', detail: 'CAP_EXHAUSTED: the budget is spent' },
+        }),
+      ),
+    ];
+
+    const failures = report(cut).gateFailures;
+    expect(failures[0]).toContain('spend cap');
+    expect(failures[0]).toContain('10 of 30');
+    // Číslo o autorství se přitom nepotlačuje — jen se čte za tou větou.
+    expect(failures.some((line) => line.includes('geometryAuthored'))).toBe(true);
+  });
+});
+
+describe('the raw archive never reaches the public repo', () => {
+  it('is ignored by name, and the report deliberately is not', () => {
+    const rules = readFileSync(
+      fileURLToPath(new URL('../../../.gitignore', import.meta.url)),
+      'utf8',
+    );
+    expect(rules).toContain('evals/worldstream/create-raw.json');
+    expect(rules).not.toContain('evals/worldstream/create-report.json');
+  });
+});

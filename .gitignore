@@ -33,6 +33,12 @@ plans/
 evals/live/*
 !evals/live/.gitkeep
 
+# Totéž o vlnu později a pod jiným jménem: archiv živého create běhu (P13 T14).
+# Nese plné znění promptů i odpovědí, tedy tutéž třídu dat jako evals/live.
+# `create-report.json` vedle něj se commituje schválně – je to naměřené číslo,
+# na kterém stojí brána K2, a scrubuje ho `LiveEmitter.scrub()`.
+evals/worldstream/create-raw.json
+
 # Report z vývojového profilu (předplatné). Leží ve stejném adresáři jako
 # oficiální evals/kill-gate-report.json a je to přesně ta záměna, které má
 # celý profil bránit: levné číslo vedle toho, na kterém stojí rozhodnutí.
