@@ -48,12 +48,13 @@
  * kolik jich je.
  */
 
-import { repairRequest } from './local/rejection-prompt';
+import { rejectionSentence, repairRequest } from './local/rejection-prompt';
 import {
   buildCompilerRequest,
   compileBlueprint,
   type CompilerRejection,
   type CompilerResult,
+  type WorldRejection,
 } from './worldstream-compiler';
 import type { Grammar, UpstreamRequest } from './prompt';
 import type { PlannerEmission } from './worldstream-intent';
@@ -66,6 +67,8 @@ export interface BlueprintFault {
   readonly reason: CompilerRejection;
   readonly detail: string;
   readonly issues: readonly string[];
+  /** Jen u `WORLD_REJECTED`: odmítnutí certifikace celé, i s fází a svědkem. */
+  readonly world?: WorldRejection;
 }
 
 /**
@@ -147,6 +150,12 @@ const WHAT_TO_DO: Readonly<Record<CompilerRejection, string>> = {
     'Make the link run both ways: a shape names its object in stableId, and that object sources from that shape.',
   BLUEPRINT_INVALID:
     'Fix that field and send the whole answer back, keeping every part that was already right.',
+  /**
+   * ⚠ **Záloha, ne hlavní cesta.** Když odmítnutí nese `world`, radu píše
+   * `rejectionSentence()` a je jiná pro každou ze sedmi fází certifikace. Tahle
+   * věta zbývá pro jediný případ, kdy certifikace skončí neúspěchem bez
+   * `Rejection` — a i tam má být použitelná.
+   */
   WORLD_REJECTED:
     'Repair the world field only. Declare every name you reference, use only the listed events, conditions and actions, and keep the geometry you already wrote.',
 };
@@ -176,8 +185,24 @@ function extraIssues(fault: BlueprintFault): readonly string[] {
  *
  * Kód je tam pro **člověka i pro model**: porotce ho vidí v Inspect zásuvce
  * (design book §16) a model podle něj pozná, že jde o tutéž vadu jako minule.
+ *
+ * ## Svět má vlastní slovník a ten se sem neopisuje
+ *
+ * Certifikace odmítá v **sedmi fázích** a `local/rejection-prompt.ts` má radu
+ * pro každou zvlášť — u `NO_FIT` dokonce spočítá, který tier by se hodil.
+ * Kdyby se nad ni pověsila jedna obecná věta z `WHAT_TO_DO`, dostal by svět,
+ * jehož cesta nevyhrává, radu „deklaruj jména a používej jen povolené akce" —
+ * tedy odpověď na úplně jinou vadu. Fáze proto sentence **předá dál**, a je
+ * to táž funkce, kterou používá lokální smyčka: jeden slovník, ne dva.
+ *
+ * Seznam nálezů se u té větve **nepřipisuje**. `rejectionSentence()` sama
+ * rozhoduje, které adresy ukáže, a druhý výpis by tytéž nálezy zopakoval —
+ * přesně ta vada, kvůli které níž existuje `squash()`.
  */
 export function blueprintRejectionSentence(fault: BlueprintFault): string {
+  if (fault.world !== undefined)
+    return `${fault.reason} · ${rejectionSentence(fault.world.rejection, fault.world.context)}`;
+
   const extra = extraIssues(fault);
   const listed = extra.slice(0, MAX_ISSUES_IN_SENTENCE);
   const rest = extra.length - listed.length;
@@ -317,6 +342,7 @@ export async function compileWithRepair(input: RepairInput): Promise<BlueprintOu
       reason: result.reason,
       detail: result.detail,
       issues: result.issues,
+      ...(result.world === undefined ? {} : { world: result.world }),
     };
     rounds.push({ attempt, fault, ms });
 

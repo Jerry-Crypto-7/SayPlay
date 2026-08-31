@@ -386,6 +386,19 @@ describe('every kind of failure lands in its own bucket', () => {
     );
   });
 
+  it('reads the certification stage off the field, not off the wording', async () => {
+    // Svět, jehož vítězné pravidlo míří na nedeklarovaný socket, patří pod
+    // `reference`. Do 31. 8. 2026 se ta fáze parsovala z předpony `detail`u,
+    // takže by ji přeformulovaná hláška tiše přesunula pod `schema` — celá
+    // kategorie vad by v reportu zmizela a nikdo by si toho nevšiml.
+    const world = structuredClone(answerFor(0).world) as {
+      sim: { rules: { win: { event: { zone: string } } } };
+    };
+    world.sim.rules.win.event.zone = 'noSuchPad';
+
+    expect(await stageOf({ world })).toBe('reference');
+  });
+
   it('files an unaffordable shape under shape', async () => {
     const swarm = {
       ...shapeOfAnswer,

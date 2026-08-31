@@ -221,7 +221,15 @@ function faultFrom(answer: unknown): BlueprintFault {
     upstream: buildCompilerRequest(PLAN, grammar),
   });
   if (result.ok) throw new Error('the fixture was supposed to be rejected and compiled instead');
-  return { reason: result.reason, detail: result.detail, issues: result.issues };
+  // `world` se **musí** přenést. Kdyby ho tahle fixtura upustila, sada by
+  // soudila obecnou zálohu místo věty, kterou model doopravdy dostane — a
+  // právě to je vlastnost, kterou pin níž hlídá.
+  return {
+    reason: result.reason,
+    detail: result.detail,
+    issues: result.issues,
+    ...(result.world === undefined ? {} : { world: result.world }),
+  };
 }
 
 /** Tvar, který se rozbalí na 4 096 kopií — 64 × 64 proti stropu 256. */
@@ -245,11 +253,62 @@ const ORPHAN_SHAPE: Record<string, unknown> = {
   stableId: 'smokerBox',
 };
 
+/** Svět, jehož vítězné pravidlo míří na socket, který nikdo nedeklaroval. */
+const DANGLING_WORLD = (): Record<string, unknown> => {
+  const world = structuredClone(OWN_WORLD) as {
+    sim: { rules: { win: { event: { zone: string } } } };
+  };
+  world.sim.rules.win.event.zone = 'noSuchPad';
+  return world as unknown as Record<string, unknown>;
+};
+
+/** Svět, jehož `sim` nemá mřížku — praskne na schématu, ne na referencích. */
+const MALFORMED_WORLD = (): Record<string, unknown> => {
+  const world = structuredClone(OWN_WORLD) as { sim: Record<string, unknown> };
+  delete world.sim.grid;
+  return world as unknown as Record<string, unknown>;
+};
+
+/**
+ * Svět, jehož vlastní stopa začíná za horizontem — `STEP_UNREACHABLE` na kroku 0.
+ *
+ * Vítězné pravidlo se maže schválně: dokud svět vyhrát jde, hledač svědka si
+ * cestu najde sám a stopu modelu **přepíše** (`repair.ts` → `witnessSolved`),
+ * takže by se k odmítnutí nikdy nedošlo. Tohle je tedy jediná cesta, jak přes
+ * bránu dostat vadu s **indexem kroku**, a proto na ní stojí adresa v testu níž.
+ */
+const UNREACHABLE_STEP_WORLD = (): Record<string, unknown> => {
+  const world = structuredClone(OWN_WORLD) as {
+    sim: { rules: Record<string, unknown>; witness?: unknown };
+  };
+  delete world.sim.rules.win;
+  world.sim.witness = {
+    tier: 'short',
+    ops: [{ tick: 5000, actor: 'walker', actionId: 'move', target: 'gatePad' }],
+  };
+  return world as unknown as Record<string, unknown>;
+};
+
 const FAULTS = {
   schema: () => faultFrom(answerWith({ title: 'a hillside terrace' })),
   geometry: () => faultFrom(answerWith({ geometry: 'cathedral' })),
   budget: () => faultFrom(answerWith({ shapes: [SWARM_SHAPE] })),
   reference: () => faultFrom(answerWith({ shapes: [STOLEN_SHAPE, ORPHAN_SHAPE] })),
+} as const;
+
+/**
+ * Odmítnutí **světového grafu**, a proto zvlášť od `FAULTS`.
+ *
+ * U těch čtyř nahoře je `detail` z brány zároveň větou pro model a sada to tak
+ * i soudí (`toContain(fault.detail)`). Svět má vlastní slovník vět — compilerův
+ * `detail` je u něj jen předponovaná zpráva pro člověka a věta pro model se
+ * skládá jinak. Slít je do jednoho `it.each` by znamenalo tu asserci uvolnit,
+ * takže mají vlastní sekci s vlastními tvrzeními.
+ */
+const WORLD_FAULTS = {
+  dangling: () => faultFrom(answerWith({ world: DANGLING_WORLD() })),
+  malformed: () => faultFrom(answerWith({ world: MALFORMED_WORLD() })),
+  unreachableStep: () => faultFrom(answerWith({ world: UNREACHABLE_STEP_WORLD() })),
 } as const;
 
 /* ================================================================== *
@@ -366,6 +425,99 @@ describe('every gate that rejects turns into a sentence', () => {
       expect(instruction.length).toBeGreaterThan(40);
       expect(instruction).not.toContain(reason);
     }
+  });
+});
+
+/* ================================================================== *
+ * 1b. Odmítnutý svět dostane radu své fáze, ne jednu pro všechny.
+ * ================================================================== */
+
+/**
+ * **Pin, a je to ten druh vady, kterou oko nechytí.** Rada k jiné vadě se čte
+ * úplně stejně dobře jako ta správná: věta je anglicky, celá, končí tečkou a
+ * jde modelu poslat. Nepozná se, dokud někdo neporovná dvě různé vady — a pak
+ * je vidět, že dostaly týž text. Certifikace jich rozlišuje **sedm**.
+ */
+describe('a rejected world gets the advice of its own stage', () => {
+  /** Obecná záloha z `WHAT_TO_DO`. Ve větě se stagí ji nikdo vidět nesmí. */
+  const GENERIC = 'Repair the world field only.';
+
+  it('reaches the certification stage as a field, not as a text prefix', () => {
+    expect(WORLD_FAULTS.dangling().world?.rejection.stage).toBe('references');
+    expect(WORLD_FAULTS.malformed().world?.rejection.stage).toBe('schema');
+    expect(WORLD_FAULTS.unreachableStep().world?.rejection.stage).toBe('witness');
+  });
+
+  it('gives three different world faults three different instructions', () => {
+    const sentences = [
+      blueprintRejectionSentence(WORLD_FAULTS.dangling()),
+      blueprintRejectionSentence(WORLD_FAULTS.malformed()),
+      blueprintRejectionSentence(WORLD_FAULTS.unreachableStep()),
+    ];
+
+    // Tři fáze, tři rady. Jedna společná by prošla úplně stejně zeleně jako
+    // tři různé, dokud je někdo nepoloží vedle sebe.
+    expect(new Set(sentences).size).toBe(3);
+    for (const sentence of sentences) expect(sentence).not.toContain(GENERIC);
+
+    expect(sentences[0]).toContain('Declare that name in the world first');
+    expect(sentences[2]).toContain('Remove or reorder that move');
+    expect(sentences[1]).not.toContain('Declare that name in the world first');
+  });
+
+  it('carries the step the model actually wrote, not just its number', () => {
+    // Adresa kroku je jediné, co k odmítnutí přidává sama emise — `Rejection`
+    // nese index, nikoli tah. Bez kontextu z opraveného dokumentu by věta
+    // řekla „at step 0" a model by musel hádat, který tah to byl.
+    const sentence = blueprintRejectionSentence(WORLD_FAULTS.unreachableStep());
+
+    expect(sentence).toContain('at step 0 (walker: move → gatePad)');
+  });
+
+  it('still opens with the code, so the model sees the same fault twice', () => {
+    const sentence = blueprintRejectionSentence(WORLD_FAULTS.dangling());
+
+    expect(sentence.startsWith('WORLD_REJECTED · ')).toBe(true);
+    // Adresa, kterou certifikace naměřila, ne jen „the world was rejected".
+    expect(sentence).toContain('noSuchPad');
+  });
+
+  it('falls back to the generic advice only when there is no rejection to read', () => {
+    // Certifikace umí skončit neúspěchem bez `Rejection`; tam je obecná rada
+    // jediná, kterou lze poctivě napsat, a musí zůstat použitelná.
+    const sentence = blueprintRejectionSentence({
+      reason: 'WORLD_REJECTED',
+      detail: 'the world graph did not certify',
+      issues: [],
+    });
+
+    expect(sentence).toContain(GENERIC);
+  });
+
+  it('recommends the tier that would fit instead of a general instruction', () => {
+    // ⚠ **Ručně složené odmítnutí, a je to naměřený důvod, ne pohodlí.**
+    // `NO_FIT` se přes `compileBlueprint` vyrobit nedá: `witnessEnvelope()`
+    // v `repair.ts:222` přepíše `H_cert` stropem tieru dřív, než se
+    // certifikuje, takže `resolvePolicy()` politiku vždycky najde. Rada, která
+    // tier počítá, se proto testuje na vstupu do věty, ne přes bránu.
+    const sentence = blueprintRejectionSentence({
+      reason: 'WORLD_REJECTED',
+      detail: 'witness: horizon 1200 does not fit tier short',
+      issues: [],
+      world: {
+        rejection: {
+          stage: 'witness',
+          reason: 'NO_FIT',
+          detail: 'horizon 1200 does not fit tier short',
+          issues: [],
+          atStep: null,
+        },
+        context: { horizonTicks: 1200 },
+      },
+    });
+
+    expect(sentence).toContain('"standard"');
+    expect(sentence).not.toContain(GENERIC);
   });
 });
 

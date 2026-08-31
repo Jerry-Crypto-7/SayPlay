@@ -335,10 +335,14 @@ export interface CaseDeps {
 /**
  * Fáze, na které to prasklo.
  *
- * `WORLD_REJECTED` nese fázi certifikace jen jako **předponu v textu**
- * (`worldstream-compiler.ts` skládá `${stage}: ${detail}`), takže se odsud
- * čte řetězcem. Je to křehké a je to zapsané: až routovaná úloha
- * `T12-worldstage` propustí `Rejection` celý, přečte se pole místo předpony.
+ * `WORLD_REJECTED` nese fázi certifikace **jako pole** (`fault.world.rejection.stage`),
+ * ne jako předponu ve větě pro člověka. Do 31. 8. 2026 se odsud parsovala
+ * z řetězce a stačilo přeformulovat `detail`, aby report tiše přesunul celou
+ * kategorii vad do `schema`; opravila to routovaná úloha `T12-worldstage`.
+ *
+ * Fáze `look`, `declined` a `request` padají do `schema` schválně — v reportu
+ * pro ně příčka není a vyrobit ji by znamenalo měřit něco, o čem vlna 2
+ * nerozhoduje.
  */
 export function stageOfOutcome(outcome: BlueprintOutcome): FailureStage {
   if (outcome.kind === 'unavailable') return 'unavailable';
@@ -360,10 +364,10 @@ export function stageOfOutcome(outcome: BlueprintOutcome): FailureStage {
     case 'REFERENCE_BROKEN':
       return 'reference';
     case 'WORLD_REJECTED': {
-      const prefix = outcome.fault.detail.split(':')[0]?.trim();
-      if (prefix === 'lowering') return 'lowering';
-      if (prefix === 'witness') return 'witness';
-      if (prefix === 'references') return 'reference';
+      const stage = outcome.fault.world?.rejection.stage;
+      if (stage === 'lowering') return 'lowering';
+      if (stage === 'witness') return 'witness';
+      if (stage === 'references') return 'reference';
       return 'schema';
     }
     default:

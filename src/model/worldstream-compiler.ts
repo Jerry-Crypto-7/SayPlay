@@ -66,7 +66,8 @@ import {
 } from '../worldstream/schema';
 import { findBlueprintReferenceIssues } from '../worldstream/references';
 
-import { certifySteps, type Verdict } from './certify';
+import { certifySteps, type Rejection, type Verdict } from './certify';
+import { contextFromEmission, type RejectionContext } from './local/rejection-prompt';
 import { repairEmission, type RepairNote } from './repair';
 import { buildCompilerRequest, COMPILER_STAGE, EXAMPLE_BLUEPRINT_ANSWER } from './worldstream-prompt';
 import { isExampleEmission, type Grammar, type UpstreamRequest } from './prompt';
@@ -112,6 +113,25 @@ export interface BlueprintAdjustment {
   readonly to?: number;
 }
 
+/**
+ * Odmítnutí světového grafu tak, jak ho vydala certifikace — celé.
+ *
+ * ⚠ **Bez tohohle pole dostane sedm různých vad tutéž radu.** `reason`,
+ * `atStep` a hlavně `stage` se do `detail` nevejdou: řetězec `${stage}: ${detail}`
+ * je věta pro člověka a fáze se z něj dá jen hádat předponou. `rejection-prompt.ts`
+ * přitom má radu pro každou fázi zvlášť a u `NO_FIT` i doporučený tier — a ta
+ * rada se bez struktury zahodí. Nese se proto **objekt, ne předpona**.
+ *
+ * `context` je to, co k odmítnutí přidává sama emise: kroky svědka pro adresu
+ * `at step 2 (player: enter → arch)` a horizont pro doporučení tieru. Bere se
+ * z **opraveného** dokumentu, protože `atStep` indexuje do něj, ne do toho,
+ * co model poslal.
+ */
+export interface WorldRejection {
+  readonly rejection: Rejection;
+  readonly context: RejectionContext;
+}
+
 export type CompilerResult =
   | {
       readonly ok: true;
@@ -128,6 +148,12 @@ export type CompilerResult =
       readonly reason: CompilerRejection;
       readonly detail: string;
       readonly issues: readonly string[];
+      /**
+       * Jen u `WORLD_REJECTED`, a ani tam ne vždycky — certifikace umí skončit
+       * bez `Rejection` (nezpečetěný dokument nad `CERTIFIED` verdiktem).
+       * Věta pro model si na to sáhne strážcem a jinak spadne na obecnou radu.
+       */
+      readonly world?: WorldRejection;
     };
 
 export interface CompileOptions {
@@ -141,8 +167,13 @@ function reject(
   reason: CompilerRejection,
   detail: string,
   issues: readonly string[] = [],
+  world?: WorldRejection,
 ): CompilerResult {
-  return { ok: false, reason, detail, issues };
+  // Klíč se nepřipisuje s `undefined`, protože rovnost odmítnutí se porovnává
+  // po polích a přítomný prázdný klíč je jiný objekt než nepřítomný.
+  return world === undefined
+    ? { ok: false, reason, detail, issues }
+    : { ok: false, reason, detail, issues, world };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -463,12 +494,18 @@ export function compileBlueprint(
 
   if (verdict.body.outcome !== 'CERTIFIED' || verdict.body.doc === null) {
     const rejection = verdict.body.rejection;
+    // `detail` zůstává předponovanou větou schválně: čte ji člověk v Inspect
+    // zásuvce a porovnává se jí nepohnuté odmítnutí. Fázi si ale odteď nikdo
+    // neparsuje zpátky — jede vedle jako pole.
     return reject(
       'WORLD_REJECTED',
       rejection === null
         ? 'the world graph did not certify'
         : `${rejection.stage}: ${rejection.detail}`,
       rejection === null ? [] : rejection.issues,
+      rejection === null
+        ? undefined
+        : { rejection, context: contextFromEmission(repaired.document) },
     );
   }
 
