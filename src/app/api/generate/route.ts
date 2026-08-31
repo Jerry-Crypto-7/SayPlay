@@ -150,9 +150,27 @@ function error(requestId: string, status: number, code: string, message: string)
  * nic neloguje, takže pod tím doopravdy nebyl žádný kanál (viz hlavička
  * `PUBLIC_REFUSAL`). Tenhle je: stderr procesu vidí ten, kdo server provozuje,
  * a nikdo jiný. `requestId` je stejné jako v odpovědi, takže se dvojice spáruje.
+ *
+ * ⚠ **„Operátorův stderr" není tak úzký kanál, jak to zní** — nález nezávislé
+ * revize 31. 8. 2026. Na cílové platformě jdou runtime logy každému členovi
+ * projektu a do všech nastavených odtoků, takže adresa s přihlašovacími údaji
+ * (`https://user:heslo@host/...`) by se v nich objevila v čitelné podobě.
+ * Heslo se proto **před zápisem odstraní**. Zbytek adresy zůstává, protože bez
+ * něj tenhle řádek nediagnostikuje nic.
  */
 function logForOperator(requestId: string, code: string, detail: string): void {
-  console.error(`[generate] ${requestId} ${code}: ${detail}`);
+  console.error(`[generate] ${requestId} ${code}: ${withoutCredentials(detail)}`);
+}
+
+/**
+ * `user:heslo@host` → `host`, kdekoli v textu.
+ *
+ * Vzor je úmyslně širší než URL: hlášky `fetch`e adresu přeformátovávají a
+ * dvakrát ji nesou stejně („Failed to parse URL from …", „…URL that includes
+ * credentials: …"). Hledá se proto **dvojice před zavináčem**, ne platná URL.
+ */
+export function withoutCredentials(text: string): string {
+  return text.replace(/(^|[\s(/@])[^\s/@:]+:[^\s/@]*@/g, '$1<credentials>@');
 }
 
 export async function POST(request: Request): Promise<Response> {

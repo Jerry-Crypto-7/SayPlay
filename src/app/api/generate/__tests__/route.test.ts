@@ -13,6 +13,8 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { withoutCredentials } from '../route';
+
 import { frozenPrompts } from '../../../../model/client';
 
 const promptsRead = frozenPrompts();
@@ -285,6 +287,32 @@ describe('POST /api/generate', () => {
     // našel. Kanál je stderr procesu, který vidí jen ten, kdo server provozuje.
     expect(logged.join('\n')).toContain(endpoint);
     expect(logged.join('\n')).toContain(String(json.requestId));
+  });
+
+  it('ani operátorův log nenese heslo z adresy', async () => {
+    // „Operátorův stderr" je na cílové platformě runtime log viditelný celému
+    // projektu a všem odtokům — nález nezávislé revize 31. 8. 2026. Adresa se
+    // do něj píše dál, protože bez ní ten řádek nic nediagnostikuje; heslo ne.
+    const logged: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+      logged.push(String(line));
+    });
+
+    await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+      WORLDSMITH_BRANCH: 'live',
+      WORLDSMITH_MODEL_ENDPOINT: 'operator:hunter2@upstream.invalid/v1/messages',
+      WORLDSMITH_MODEL_KEY: 'test-key',
+      WORLDSMITH_USD_PER_MTOK_OUT: '15',
+    });
+
+    expect(logged.join('\n'), 'do logu odešlo heslo').not.toContain('hunter2');
+
+    // Že hostitel v logu naopak **zůstat má**, drží test nad adresou bez
+    // schématu výš. Tady ho `fetch` do hlášky nedá vůbec (vrací holé „fetch
+    // failed"), takže by se tu nedalo měřit — naměřeno, ne odhadnuto.
+    expect(withoutCredentials('at https://operator:hunter2@upstream.invalid/v1')).toBe(
+      'at https://<credentials>@upstream.invalid/v1',
+    );
   });
 
   /**
