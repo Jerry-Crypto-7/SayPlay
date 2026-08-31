@@ -135,8 +135,25 @@ describe('chooseFamily – failure paths', () => {
   });
 
   it('semínko mimo obor hodnot pořád vydá rodinu', () => {
-    for (const seed of [0, -1, -20_260_826, 2 ** 31, 1.5, -0.5]) {
+    for (const seed of [0, -1, -20_260_826, 2 ** 31, 1.5, -0.5, NaN, Infinity, -Infinity]) {
       expect(FAMILY_IDS, `semínko ${seed} vydalo neznámou rodinu`).toContain(familyForSeed(seed));
+    }
+  });
+
+  it('slovo z prototypu Objectu není rodina', () => {
+    // Nález nezávislého review: vyhledávalo se `table[word]`, což prochází
+    // prototyp — a `constructor` je přesně malými písmeny, takže věta s tím
+    // slovem vrátila funkci `Object` místo rodiny. `familyById` na ni pak
+    // vydal `undefined` a svět se vykreslil **bez kulisy**. Selhalo to tiše,
+    // protože zálohu na semínko to obešlo: hodnota `!== undefined` byla.
+    for (const word of ['constructor', 'valueOf', 'hasOwnProperty', 'toString', '__proto__']) {
+      expect(
+        FAMILY_IDS,
+        `slovo ${word} v atmosphere vydalo neznámou rodinu`,
+      ).toContain(chooseFamily({ palette: 'stone', atmosphere: `a ${word} yard in the fog` }, 7));
+      expect(FAMILY_IDS, `slovo ${word} v palette vydalo neznámou rodinu`).toContain(
+        chooseFamily({ palette: word, atmosphere: 'unremarkable' }, 7),
+      );
     }
   });
 });

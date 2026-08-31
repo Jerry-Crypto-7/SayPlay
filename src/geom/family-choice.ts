@@ -122,9 +122,16 @@ const BY_MATERIAL: Readonly<Record<string, string>> = {
   industrial: 'works',
 };
 
-/** Záloha bez věty: rodina ze semínka světa, aby zůstala rozmanitost. */
+/**
+ * Záloha bez věty: rodina ze semínka světa, aby zůstala rozmanitost.
+ *
+ * `NaN` a nekonečno spadnou na nultou rodinu, ne na výjimku: `NaN % n` je
+ * `NaN`, `FAMILIES[NaN]` je `undefined` a `.id` na něm padá. Tohle je poslední
+ * záloha volby — když spadne ona, nemá to kam spadnout dál.
+ */
 export function familyForSeed(seed: number): string {
-  return FAMILIES[Math.abs(Math.trunc(seed)) % FAMILIES.length].id;
+  const index = Math.abs(Math.trunc(seed)) % FAMILIES.length;
+  return FAMILIES[Number.isFinite(index) ? index : 0].id;
 }
 
 function stringAt(look: unknown, key: string): string {
@@ -138,8 +145,12 @@ function stringAt(look: unknown, key: string): string {
  */
 function firstKnownWord(text: string, table: Readonly<Record<string, string>>): string | null {
   for (const word of text.toLowerCase().match(/[a-z]+/g) ?? []) {
-    const family = table[word];
-    if (family !== undefined) return family;
+    // **`Object.hasOwn`, ne `table[word] !== undefined`.** Indexace prochází
+    // prototyp, a `constructor` je přesně malými písmeny — věta „a constructor
+    // yard in the fog" tak vracela funkci `Object` jako id rodiny. Zálohu na
+    // semínko to obešlo (hodnota nebyla `undefined`), `familyById` na ni vydal
+    // `undefined` a svět se vykreslil bez kulisy.
+    if (Object.hasOwn(table, word)) return table[word];
   }
   return null;
 }
