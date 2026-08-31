@@ -7,7 +7,7 @@
  * v žádném jiném testu neprojeví.
  */
 
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -246,5 +246,63 @@ describe('POST /api/generate', () => {
     expect(typeof ok.json.requestId).toBe('string');
     expect(typeof bad.json.requestId).toBe('string');
     expect(ok.json.requestId).not.toBe(bad.json.requestId);
+  });
+
+  /**
+   * Adresa v odpovědi vypadá jako poctivá diagnostika a čte se úplně stejně
+   * dobře jako věta bez ní — proto se to soudí strojově, ne okem. Spouštěč je
+   * dosažitelný **bez útočníka**: adresa bez schématu je běžný překlep při
+   * kopírování z `.env.example` a `fetch` z ní složí
+   * `Failed to parse URL from <celá adresa včetně query>`.
+   */
+  it('selhání generování neposílá ven nakonfigurovanou adresu', async () => {
+    const endpoint = 'upstream.invalid/v1/messages?tenant=acme-worldsmith';
+    const logged: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+      logged.push(String(line));
+    });
+
+    const { status, json } = await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+      WORLDSMITH_BRANCH: 'live',
+      WORLDSMITH_MODEL_ENDPOINT: endpoint,
+      WORLDSMITH_MODEL_KEY: 'test-key',
+      WORLDSMITH_USD_PER_MTOK_OUT: '15',
+    });
+
+    expect(status).toBe(502);
+    expect(json.error?.code).toBe('UPSTREAM_UNAVAILABLE');
+
+    const message = String(json.error?.message);
+    expect(message).not.toContain(endpoint);
+    // Ne jen celá adresa: kterýkoli devítiznakový kus z ní stačí, aby se
+    // hostitel nebo tenant dal poskládat zpátky.
+    for (let at = 0; at + 9 <= endpoint.length; at += 1)
+      expect(message, `ven odešel kus adresy „${endpoint.slice(at, at + 9)}"`).not.toContain(
+        endpoint.slice(at, at + 9),
+      );
+
+    // Druhá půlka téhož: ořezat ven se smí jen tak, aby to operátor pořád
+    // našel. Kanál je stderr procesu, který vidí jen ten, kdo server provozuje.
+    expect(logged.join('\n')).toContain(endpoint);
+    expect(logged.join('\n')).toContain(String(json.requestId));
+  });
+
+  /**
+   * Druhý vchod k téže kořisti, a proto vlastní tvrzení.
+   *
+   * `readFrozen()` skládá detail jako „<soubor> is not readable under <cesta>",
+   * kde ta cesta je **absolutní, včetně jména účtu** — přesně to, co si test
+   * o vypínači stropu výš zakazuje posílat ven. Spustit ten stav za běhu by
+   * znamenalo rozbít `evals/frozen/` na disku, což je zmrazená sada a nesahá
+   * se na ni, takže se to soudí **nad zdrojem**: v routě nesmí zůstat místo,
+   * kde `grammar.detail` teče do odpovědi.
+   */
+  it('detail od zmrazeného korpusu nikam do odpovědi neteče', () => {
+    const source = readFileSync(new URL('../route.ts', import.meta.url), 'utf8');
+    const uses = source.match(/grammar\.detail/g) ?? [];
+
+    expect(uses).toHaveLength(1);
+    expect(source).toContain('logForOperator(requestId, grammar.reason, grammar.detail)');
+    expect(source).toContain('PUBLIC_CORPUS_FAULT[grammar.reason]');
   });
 });

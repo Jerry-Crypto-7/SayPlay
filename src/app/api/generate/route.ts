@@ -42,10 +42,14 @@
 import { randomUUID } from 'node:crypto';
 
 import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
-import { frozenGrammar } from '../../../model/client';
+import { frozenGrammar, type ClientReason } from '../../../model/client';
 import { withRequest } from '../../../obs/trace';
 import { mockBranch } from '../../../server/mock';
-import { runPipeline, type GenerationBranch } from '../../../server/pipeline';
+import {
+  runPipeline,
+  type GenerationBranch,
+  type GenerationFailureReason,
+} from '../../../server/pipeline';
 import { spendCapFromEnv, type RefusalReason } from '../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../server/upstream';
 
@@ -93,8 +97,62 @@ const PUBLIC_REFUSAL: Record<RefusalReason, string> = {
   INVALID_ESTIMATE: 'the spend cap could not price this call; it was not made',
 };
 
+/**
+ * Totéž pro **selhání generování**, a je to druhá polovina téže doktríny.
+ *
+ * ⚠ **Naměřeno 31. 8. 2026, ne odhadnuto.** Do té doby se sem předával
+ * `result.detail` doslova. Koncový bod bez schématu v `.env` (`api.example.com/v1`
+ * místo `https://api.example.com/v1`) — běžný překlep při kopírování
+ * z `.env.example`, tedy spouštěč dosažitelný bez útočníka — dá hlášku
+ * `Failed to parse URL from <celá adresa včetně query>`, a ta odešla
+ * neověřenému volajícímu. Kdyby brána poskytovatele nesla klíč v query,
+ * odešel by s ní; naše hlavičková varianta ho tam nemá, takže leak zůstal
+ * u adresy. To je rozdíl mezi „vážné" a „katastrofa", ne mezi „vada" a „nic".
+ *
+ * `Record<GenerationFailureReason, string>` znovu kvůli **úplnosti**: nový
+ * důvod bez veřejného textu neprojde přes `tsc`. Detail zůstává operátorovi
+ * ve stopě požadavku, ven jde jen tohle.
+ */
+const PUBLIC_FAILURE: Record<GenerationFailureReason, string> = {
+  UPSTREAM_UNAVAILABLE: 'the model could not be reached; nothing was generated',
+  UPSTREAM_REJECTED: 'the model provider rejected the request; nothing was generated',
+  MALFORMED_RESPONSE: 'the model answered with something this server cannot read',
+  NO_SOURCE: 'this deployment has no answer for that prompt',
+  BRANCH_UNCONFIGURED: 'this deployment is not configured to generate; no call was made',
+};
+
+/**
+ * A totéž pro zmrazený korpus, ze stejného důvodu a s jinou kořistí.
+ *
+ * `readFrozen()` skládá detail jako „<soubor> is not readable under <FROZEN_DIR>",
+ * a `FROZEN_DIR` je **absolutní cesta na disku serveru včetně jména účtu** —
+ * přesně to, co si hlavička `PUBLIC_REFUSAL` výš zakazuje posílat ven.
+ */
+const PUBLIC_CORPUS_FAULT: Record<ClientReason, string> = {
+  MANIFEST_MISMATCH: 'the frozen corpus does not match its manifest; no answers will be served',
+  CORPUS_UNREADABLE: 'the frozen corpus cannot be read on this server',
+  NO_FROZEN_RESPONSE: 'the frozen corpus has no answer for that prompt',
+  RESPONSE_TAMPERED: 'a frozen answer failed its own checksum; it will not be served',
+  BASE_WORLD_MISMATCH: 'the edit names a different base world than the one that arrived',
+  BASE_WORLD_MISSING: 'the frozen corpus is missing the base world that edit names',
+};
+
 function error(requestId: string, status: number, code: string, message: string): Response {
   return Response.json({ requestId, error: { code, message } }, { status });
+}
+
+/**
+ * Diagnostika, která nesmí ven — ale nesmí ani zmizet.
+ *
+ * Bez tohohle řádku by ořezání textů výš vyměnilo jednu vadu za druhou:
+ * operátor s překlepem v adrese by dostal „the model could not be reached" a
+ * **žádný způsob, jak zjistit proč**. `withRequest()` nese jen korelační ID,
+ * nic neloguje, takže pod tím doopravdy nebyl žádný kanál (viz hlavička
+ * `PUBLIC_REFUSAL`). Tenhle je: stderr procesu vidí ten, kdo server provozuje,
+ * a nikdo jiný. `requestId` je stejné jako v odpovědi, takže se dvojice spáruje.
+ */
+function logForOperator(requestId: string, code: string, detail: string): void {
+  console.error(`[generate] ${requestId} ${code}: ${detail}`);
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -115,7 +173,10 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     const grammar = frozenGrammar();
-    if (!grammar.ok) return error(requestId, 503, grammar.reason, grammar.detail);
+    if (!grammar.ok) {
+      logForOperator(requestId, grammar.reason, grammar.detail);
+      return error(requestId, 503, grammar.reason, PUBLIC_CORPUS_FAULT[grammar.reason]);
+    }
 
     const result = await runPipeline((body as { prompt?: unknown } | null)?.prompt, {
       branch: branchFor(process.env),
@@ -146,9 +207,14 @@ export async function POST(request: Request): Promise<Response> {
             PUBLIC_REFUSAL[result.reason],
           );
 
+    logForOperator(requestId, result.reason, result.detail);
     const status = result.reason === 'NO_SOURCE' ? 404 : result.reason === 'BRANCH_UNCONFIGURED' ? 503 : 502;
     return Response.json(
-      { requestId, error: { code: result.reason, message: result.detail }, branch: result.branch },
+      {
+        requestId,
+        error: { code: result.reason, message: PUBLIC_FAILURE[result.reason] },
+        branch: result.branch,
+      },
       { status },
     );
   });
