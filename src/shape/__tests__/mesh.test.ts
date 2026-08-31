@@ -610,4 +610,42 @@ describe('klient meshovacího workeru', () => {
     await expect(waiting).rejects.toThrow('mesh client is disposed');
     expect(worker.terminate).toHaveBeenCalled();
   });
+
+  it('pád workeru odmítne běžící práci a frontu dojede na novém', async () => {
+    // Nález nezávislého review: tahle větev byla **nedosažitelná z testů** —
+    // `onerror` se v atrapě jen nastavoval na `null` a nikdo ho nezavolal.
+    // Přitom dělá čtyři věci najednou a vypadnutí kterékoli z nich je tichá
+    // vada: bez `pump()` každý tvar zařazený za pádem visí navždy, bez
+    // `worker = null` se práce pošle mrtvému workerovi.
+    const workers: ReturnType<typeof fakeWorker>[] = [];
+    const client = createMeshClient({
+      createWorker: () => {
+        const made = fakeWorker();
+        workers.push(made);
+        return made;
+      },
+    });
+
+    const running = client.mesh(order);
+    const queued = client.mesh({ ...order, program: { ...order.program, shapeId: 'after-crash' } });
+    expect(workers).toHaveLength(1);
+    expect(workers[0].queue).toHaveLength(1);
+
+    workers[0].onerror?.(new Error('boom'));
+
+    // 1. Běžící práce se odmítne, a to důvodem, který přišel z workeru.
+    await expect(running).rejects.toThrow('boom');
+    // 2. Mrtvý worker se ukončí, ať už spadl jakkoli.
+    expect(workers[0].terminate).toHaveBeenCalled();
+    // 3. Fronta se rozjede na **novém** workeru, ne na tom, co spadl.
+    expect(workers).toHaveLength(2);
+    expect(workers[1].queue).toHaveLength(1);
+    expect(workers[1].queue[0].program.shapeId).toBe('after-crash');
+
+    // 4. A dojede až do hotového meshe — pád jednoho tvaru nesmí vzít svět.
+    workers[1].flush();
+    const recovered = await queued;
+    expect(recovered.shapeId).toBe('after-crash');
+    expect(recovered.triangleCount).toBeGreaterThan(0);
+  });
 });
