@@ -39,7 +39,18 @@
 
 import { validateShapeProgram } from './schema';
 import { meshShapeProgram, type MeshRequest, type ShapeMesh } from './surface-nets';
-import type { Bounds3, ShapeProgram } from './types';
+import { MESH_DETAIL, type Bounds3, type ShapeProgram } from './types';
+
+/**
+ * Strop pro danou mřížku — příčka žebříku, nebo ta nejvyšší.
+ *
+ * Rozlišení mimo žebřík (měřicí stránka umí 64 i 96) soudí `high`. Je to
+ * nejmírnější strop, jaký produkt deklaruje; mlčky propustit cokoliv jen proto,
+ * že si někdo řekl o neobvyklou mřížku, by tu bránu zrušilo.
+ */
+function budgetFor(resolution: number): (typeof MESH_DETAIL)[keyof typeof MESH_DETAIL] {
+  return resolution <= MESH_DETAIL.rough.resolution ? MESH_DETAIL.rough : MESH_DETAIL.high;
+}
 
 /** Zadání jedné práce. Program se posílá jako data, ne jako funkce. */
 export interface MeshJobRequest {
@@ -185,6 +196,43 @@ export function handleMeshJob(request: MeshJobRequest): MeshJobOutcome {
       };
     }
 
+    // **Rozpočty se soudí na výsledku, ze stejného důvodu jako prázdno o kus
+    // výš.** Vstupní brána váží řádky, kopie a vyhodnocení na buňku — ale ani
+    // jedno z nich neváže povrch, který vyleze. Tři legální uzly (koule plus
+    // dvě `displace`) daly 29. 8. 2026 v mřížce 48 **190 442 trojúhelníků**,
+    // šestinásobek stropu tvaru a 1,6násobek rozpočtu celého světa; do vlny 3
+    // to `MESH_DETAIL` deklaroval a nikdo to nečetl.
+    //
+    // Čas se soudí **až po doběhnutí**: práci to nepřeruší, takže jednu pomalou
+    // objednávku fronta pořád odstojí. Ubrání to opakování a hlavně to dá
+    // modelu pojmenovaný důvod k sebeopravě. Přerušení uprostřed by znamenalo
+    // hodiny ve vzorkovací smyčce, což je změna ceny meshování — vlastní úloha,
+    // ne oprava u review.
+    const budget = budgetFor(request.resolution);
+    const elapsedMs = Date.now() - startedAt;
+
+    if (mesh.triangleCount > budget.maxTriangles) {
+      return {
+        response: {
+          jobId: request.jobId,
+          ok: false,
+          error: `mesh is ${mesh.triangleCount} triangles, above maxTriangles ${budget.maxTriangles} for resolution ${request.resolution}`,
+        },
+        transfer: [],
+      };
+    }
+
+    if (elapsedMs > budget.maxMs) {
+      return {
+        response: {
+          jobId: request.jobId,
+          ok: false,
+          error: `mesh took ${elapsedMs} ms, above maxMs ${budget.maxMs} for resolution ${request.resolution}`,
+        },
+        transfer: [],
+      };
+    }
+
     return {
       response: {
         jobId: request.jobId,
@@ -195,7 +243,7 @@ export function handleMeshJob(request: MeshJobRequest): MeshJobOutcome {
         vertexCount: mesh.vertexCount,
         triangleCount: mesh.triangleCount,
         bounds: mesh.bounds,
-        elapsedMs: Date.now() - startedAt,
+        elapsedMs,
       },
       transfer: [mesh.positions.buffer, mesh.normals.buffer, mesh.indices.buffer] as ArrayBuffer[],
     };

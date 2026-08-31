@@ -17,9 +17,10 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { createMeshClient, type MeshWorkerLike } from '../mesh-client';
+import { validateShapeProgram } from '../schema';
 import { handleMeshJob, type MeshJobRequest, type MeshJobResponse } from '../mesh-worker';
 import { meshShapeProgram, paddedBounds, type ShapeMesh } from '../surface-nets';
-import type { Bounds3, ShapeNode, ShapeProgram } from '../types';
+import { MESH_DETAIL, type Bounds3, type ShapeNode, type ShapeProgram } from '../types';
 
 const SEED = 20260829;
 
@@ -285,6 +286,52 @@ describe('worker vrací mesh a předává vlastnictví paměti', () => {
     expect(response.ok).toBe(true);
     if (!response.ok) return;
     expect(response.elapsedMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it('mesh nad stropem trojúhelníků se odmítne, i když program bránou prošel', () => {
+    // Nález nezávislého review. Vstupní brána váží řádky, kopie a vyhodnocení
+    // na buňku — povrch neváže žádné z nich. Tyhle **tři legální uzly** daly
+    // v mřížce 48 přes 190 000 trojúhelníků: šestinásobek stropu tvaru
+    // (32 000) a 1,6násobku rozpočtu celého světa (120 000).
+    const bounds: Bounds3 = { min: [-1.2, -1.2, -1.2], max: [1.2, 1.2, 1.2] };
+    const crinkled: readonly ShapeNode[] = [
+      { kind: 'sphere', radius: 0.75 },
+      { kind: 'displace', child: 0, amplitude: 0.35, frequency: 14, seed: 3 },
+      { kind: 'displace', child: 1, amplitude: 0.2, frequency: 9, seed: 5 },
+    ];
+    const program = { ...programOf(crinkled), targetBounds: bounds };
+
+    // Brána programu ho pustí — tohle je ten důvod, proč strop musí být na
+    // výsledku. Kdyby ho odmítla, tenhle test by neměřil nic.
+    expect(validateShapeProgram(program).ok).toBe(true);
+
+    const { response, transfer } = handleMeshJob({
+      jobId: 'job-fat',
+      program,
+      sessionSeed: SEED,
+      resolution: MESH_DETAIL.high.resolution,
+      bounds: paddedBounds(bounds, MESH_DETAIL.high.resolution),
+    });
+
+    expect(response.ok).toBe(false);
+    if (response.ok) return;
+    // Důvod jmenuje obě čísla, protože je vstupem sebeopravy modelu.
+    expect(response.error).toMatch(
+      new RegExp(`above maxTriangles ${MESH_DETAIL.high.maxTriangles}`),
+    );
+    expect(response.error).toMatch(/^mesh is \d+ triangles/);
+    expect(transfer).toHaveLength(0);
+  });
+
+  it('mesh pod stropem projde, takže strop neodmítá to, co produkt staví', () => {
+    // Failure path té samé brány. Naměřeno 29. 8. 2026 (`evals/shape/
+    // mesh-budget.json`): nejtěžší z dvanácti ručních tvarů dá v mřížce 48
+    // 26 992 trojúhelníků proti stropu 32 000. Kdyby se strop utáhl pod
+    // naměřené, produkt by přestal stavět a tenhle test to řekne.
+    const { response } = handleMeshJob(request);
+    expect(response.ok).toBe(true);
+    if (!response.ok) return;
+    expect(response.triangleCount).toBeLessThanOrEqual(MESH_DETAIL.rough.maxTriangles);
   });
 });
 
