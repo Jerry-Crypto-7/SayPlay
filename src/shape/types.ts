@@ -79,8 +79,8 @@ export const COMBINATION_KINDS = ['union', 'subtract', 'intersect'] as const;
 /** Čtyři transformace. `rotate` je volné, ve třech osách — konec kvadrantů. */
 export const TRANSFORM_KINDS = ['translate', 'rotate', 'scale', 'mirror'] as const;
 
-/** Čtyři deformace. Ohýbají prostor, ne tabulku. */
-export const DEFORMATION_KINDS = ['twist', 'bend', 'taper', 'displace'] as const;
+/** Pět deformací. Ohýbají prostor, ne tabulku. */
+export const DEFORMATION_KINDS = ['twist', 'bend', 'taper', 'displace', 'revolve'] as const;
 
 /** Tři pole. Tohle jsou uzly, které dělají žebra, kořeny, mosty i schodiště. */
 export const ARRAY_KINDS = ['repeat', 'radialArray', 'arrayAlongCurve'] as const;
@@ -415,7 +415,35 @@ export interface DisplaceNode {
   readonly seed: number;
 }
 
-export type DeformationNode = TwistNode | BendNode | TaperNode | DisplaceNode;
+/**
+ * Otočení profilu kolem osy — jediný způsob, jak jazyk řekne **oblouk**.
+ *
+ * **Proč to nešlo bez nového uzlu.** Přidáno 31. 8. 2026 po bráně K1, kde
+ * `vault` jako jediný tvar galerie nesplnil své vlastní jméno: klenba se
+ * skládala z `bend` nad kvádrem, a `bend` ohýbá pole jednou křivostí, takže
+ * z rovného sloupu udělá **hák**, ne půlkruh. `torus` je celý prstenec bez
+ * možnosti výseku. Klenba, kupole, oblouk mostu, akvadukt ani tunel proto
+ * v jazyce neexistovaly, a architektura na obloucích stojí.
+ *
+ * - `axis` je osa otáčení.
+ * - `radius` je vzdálenost profilu od osy. Profil leží v rovině, kterou osa
+ *   svírá s **první** zbylou souřadnicí v pořadí `x, y, z` — pro `axis: 'y'`
+ *   tedy v rovině `x–y`, na `x = radius`.
+ * - `sweep` je **celý** úhel výseku v radiánech, symetrický kolem profilu.
+ *   `2π` je uzavřený prstenec, `π` je klenba, `π/2` čtvrtoblouk.
+ *
+ * Otáčení je izometrie, takže se tu **nedělí Lipschitzem** — na rozdíl od
+ * ostatních čtyř deformací pole nenatahuje.
+ */
+export interface RevolveNode {
+  readonly kind: 'revolve';
+  readonly child: number;
+  readonly axis: Axis;
+  readonly radius: number;
+  readonly sweep: number;
+}
+
+export type DeformationNode = TwistNode | BendNode | TaperNode | DisplaceNode | RevolveNode;
 
 /** Řada kopií po pravidelném kroku. `count` počítá **včetně** originálu. */
 export interface RepeatNode {

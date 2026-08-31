@@ -214,6 +214,24 @@ const displaceNode = z
   })
   .strict();
 
+/**
+ * `sweep` je **celý** úhel výseku, ne polovina: `2π` uzavřený prstenec,
+ * `π` klenba. Dolní mez 0,05 rad je asi 3° — pod tím už výsek není oblouk,
+ * ale plátek, který mřížka 48³ stejně nezachytí.
+ *
+ * `radius` je `extent`, tedy nejméně 0,01: profil **na ose** (`radius = 0`)
+ * by se sám protínal a vzdálenostní pole by kolem osy dalo nesmysl.
+ */
+const revolveNode = z
+  .object({
+    kind: z.literal('revolve'),
+    child: nodeIndex,
+    axis,
+    radius: extent,
+    sweep: z.number().min(0.05).max(Math.PI * 2),
+  })
+  .strict();
+
 /* ------------------------------------------------------------------ *
  * Pole a maskování.
  * ------------------------------------------------------------------ */
@@ -270,6 +288,7 @@ export const shapeNodeSchema = z.discriminatedUnion('kind', [
   bendNode,
   taperNode,
   displaceNode,
+  revolveNode,
   repeatNode,
   radialArrayNode,
   arrayAlongCurveNode,

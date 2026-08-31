@@ -27,8 +27,8 @@ const envelope = {
 /**
  * Program, ve kterém je **každý** druh uzlu aspoň jednou.
  *
- * Tabulka je záměrně mělká: prvních deset řádků jsou primitiva, dalších devět
- * jsou operace nad nimi a poslední ji sjednotí. Hloubka je 4, rozvinuté kopie
+ * Tabulka je záměrně mělká: prvních deset řádků jsou primitiva, zbytek jsou
+ * operace nad nimi a poslední řádek je sjednotí. Hloubka je 4, rozvinuté kopie
  * 19 — obojí hluboko pod stropem, takže testy stropů si ho můžou porouchat
  * jedním polem, aniž by narazily na druhý limit a měřily něco jiného.
  */
@@ -71,7 +71,12 @@ export function coveringProgram(): ShapeProgram {
     { kind: 'subtract', children: [16, 17], k: 0.1 },
     { kind: 'intersect', children: [7, 18] },
 
-    { kind: 'union', children: [19, 20, 21, 22, 23, 24] },
+    // Oblouk se připíná **na konec tabulky**, ne mezi operace: zamítavé testy
+    // jmenují uzly indexem, takže vložení doprostřed by je posunulo pod cizí
+    // řádek. Přidáno 31. 8. 2026 s uzlem `revolve`.
+    { kind: 'revolve', child: 2, axis: 'y', radius: 1.2, sweep: Math.PI },
+
+    { kind: 'union', children: [19, 20, 21, 22, 23, 24, 25] },
   ];
 
   return { ...envelope, nodes, root: nodes.length - 1 };

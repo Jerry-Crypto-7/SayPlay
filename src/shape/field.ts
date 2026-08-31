@@ -597,6 +597,37 @@ export function createField(
         return evaluate(node.child, tx, ty, tz) / stretch;
       }
 
+      case 'revolve': {
+        // Rovina profilu: osa a **první** zbylá souřadnice v pořadí x, y, z.
+        // Pro 'y' je to rovina x–y, tedy profil na `x = radius` — to je ta
+        // orientace, ve které klenba stojí a nekouká naležato.
+        const axis = axisIndex(node.axis);
+        const a = axis === 0 ? y : x;
+        const b = axis === 2 ? y : z;
+        const along = axis === 0 ? x : axis === 1 ? y : z;
+
+        const radial = Math.sqrt(a * a + b * b);
+        const angle = Math.atan2(b, a);
+        // Sevření je **půlka** `sweep`, protože výsek je symetrický kolem
+        // profilu. Odečet poloroviny by tu byl špatně: řezal by celé pole, tedy
+        // i to, co leží za osou, a z klenby by ukrojil i její druhou patku.
+        const half = node.sweep / 2;
+        const clamped = angle < -half ? -half : angle > half ? half : angle;
+        const rest = angle - clamped;
+
+        // Zbytek úhlu se nese jako poloha **v rovině profilu**: uvnitř výseku je
+        // nulový a uzel se chová jako celý prstenec, za koncem odnáší bod od
+        // čela oblouku po kružnici. Otáčení je izometrie, takže se tu na rozdíl
+        // od ostatních deformací nedělí Lipschitzem.
+        const profileA = radial * Math.cos(rest) - node.radius;
+        const profileB = radial * Math.sin(rest);
+
+        const tx = axis === 0 ? along : profileA;
+        const ty = axis === 0 ? profileA : axis === 1 ? along : profileB;
+        const tz = axis === 2 ? along : profileB;
+        return evaluate(node.child, tx, ty, tz);
+      }
+
       case 'displace': {
         const perm = permutations.get(index);
         // Bez tabulky by uzel tiše nedělal nic. Program bez ní sem nedojde,

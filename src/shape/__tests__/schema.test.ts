@@ -52,10 +52,12 @@ describe('slovník ShapeProgram', () => {
     expect(SHAPE_NODE_GROUPS.primitive).toHaveLength(10);
     expect(SHAPE_NODE_GROUPS.combination).toHaveLength(3);
     expect(SHAPE_NODE_GROUPS.transform).toHaveLength(4);
-    expect(SHAPE_NODE_GROUPS.deformation).toHaveLength(4);
+    expect(SHAPE_NODE_GROUPS.deformation).toHaveLength(5);
     expect(SHAPE_NODE_GROUPS.array).toHaveLength(3);
     expect(SHAPE_NODE_GROUPS.mask).toHaveLength(1);
-    expect(SHAPE_NODE_KINDS).toHaveLength(25);
+    // 25 → 26 dne 31. 8. 2026: přibyl `revolve`, protože bez něj jazyk neuměl
+    // říct oblouk (P13 `T7-revolve`, nález brány K1).
+    expect(SHAPE_NODE_KINDS).toHaveLength(26);
   });
 
   it('schéma zná přesně ty uzly, které slovník jmenuje', () => {
@@ -496,6 +498,9 @@ describe('průchody nad tabulkou', () => {
     const program = coveringProgram();
     expect(childIndicesOf(program.nodes[0])).toEqual([]);
     expect(childIndicesOf(program.nodes[10])).toEqual([0]);
-    expect(childIndicesOf(program.nodes[25])).toEqual([19, 20, 21, 22, 23, 24]);
+    // Kořen se jmenuje `program.root`, ne indexem: připnuté číslo se posunulo
+    // hned s prvním uzlem, který do fixture přibyl (`revolve`, 31. 8. 2026).
+    expect(childIndicesOf(program.nodes[program.root])).toEqual([19, 20, 21, 22, 23, 24, 25]);
+    expect(childIndicesOf(program.nodes[25]), 'revolve nese jednoho potomka').toEqual([2]);
   });
 });

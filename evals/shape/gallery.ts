@@ -120,15 +120,26 @@ export const GALLERY: readonly GalleryEntry[] = [
     { kind: 'union', children: [3, 5], k: 0.15 },
   ]),
 
-  // 3 — klenba. `bend` je tu jediná operace, která z rovného sloupu udělá
-  // oblouk; bez ní by se klenba musela poskládat z dvaceti otočených kusů.
-  entry('vault', 'Vault', 'stone', { min: [-1.65, -1.45, -0.65], max: [1.65, 1.45, 2.65] }, [
-    { kind: 'box', size: [0.22, 2.2, 0.5] },
-    { kind: 'bend', child: 0, axis: 'z', curvature: 1.15 },
-    { kind: 'repeat', child: 1, count: 3, step: [0, 0, 0.9] },
+  // 3 — klenba. **Přepsaná 31. 8. 2026 na `revolve`** a je to jediný tvar
+  // galerie, který se kvůli bráně K1 měnil. Dokud stála na `bend`, nesplňovala
+  // své vlastní jméno: `bend` ohýbá pole jednou křivostí, takže z rovného
+  // sloupu udělá **hák**, ne půlkruh, a tři háky vedle sebe četly jako trojzubec.
+  //
+  // Oblouk je půlkruhový výsek (`sweep = π`) kolem osy `z`, otočený o 90°,
+  // aby symetrie výseku mířila vzhůru — bez toho stojí půlkruh na boku. Nohy
+  // pod patkami jsou tam proto, aby se oblouk nedotýkal desky jediným bodem.
+  entry('vault', 'Vault', 'stone', { min: [-1.6, -1.3, -0.65], max: [1.6, 1.6, 2.5] }, [
+    { kind: 'box', size: [0.24, 0.24, 0.5] },
+    { kind: 'revolve', child: 0, axis: 'z', radius: 1.25, sweep: Math.PI },
+    { kind: 'rotate', child: 1, yaw: 0, pitch: 0, roll: Math.PI / 2 },
+    { kind: 'box', size: [0.24, 0.9, 0.5] },
+    { kind: 'translate', child: 3, offset: [1.25, -0.45, 0] },
+    { kind: 'mirror', child: 4, axis: 'x' },
+    { kind: 'union', children: [2, 5], k: 0.02 },
+    { kind: 'repeat', child: 6, count: 3, step: [0, 0, 0.9] },
     { kind: 'box', size: [3.0, 0.18, 2.6] },
-    { kind: 'translate', child: 3, offset: [0, -1.15, 0.9] },
-    { kind: 'union', children: [2, 4], k: 0.06 },
+    { kind: 'translate', child: 8, offset: [0, -0.99, 0.9] },
+    { kind: 'union', children: [7, 9], k: 0.06 },
   ]),
 
   // 4 — mušle. Zkroucení kužele plus devět zkroucených žeber po obvodu, celé

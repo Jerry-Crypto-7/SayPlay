@@ -301,6 +301,20 @@ describe('žádný uzel nenadstřelí vzdálenost', () => {
       ],
     },
     {
+      name: 'revolve celý prstenec',
+      nodes: [
+        { kind: 'box', size: [0.4, 0.4, 0.4] },
+        { kind: 'revolve', child: 0, axis: 'y', radius: 1.1, sweep: Math.PI * 2 },
+      ],
+    },
+    {
+      name: 'revolve výsek',
+      nodes: [
+        { kind: 'box', size: [0.4, 0.4, 0.4] },
+        { kind: 'revolve', child: 0, axis: 'y', radius: 1.1, sweep: Math.PI },
+      ],
+    },
+    {
       name: 'clip poloprostorem',
       nodes: [
         { kind: 'sphere', radius: 1.2 },
@@ -325,6 +339,75 @@ describe('žádný uzel nenadstřelí vzdálenost', () => {
       expect(overestimations(fieldOf(nodes), points, directions)).toBe(0);
     });
   }
+});
+
+/* ------------------------------------------------------------------ *
+ * 2b. Oblouk — jediný uzel, kterým jazyk umí říct klenbu.
+ * ------------------------------------------------------------------ */
+
+describe('revolve otočí profil kolem osy a umí ho utnout', () => {
+  /**
+   * Profil je kvádr 0,3 × 0,3 × 0,3 na `x = 1,2`, otočený kolem `y`.
+   * Výsledkem je prstenec o poloměru 1,2 a tloušťce 0,3.
+   */
+  const ring = (sweep: number): readonly ShapeNode[] => [
+    { kind: 'box', size: [0.3, 0.3, 0.3] },
+    { kind: 'revolve', child: 0, axis: 'y', radius: 1.2, sweep },
+  ];
+
+  /** Bod na kružnici o poloměru 1,2 pod úhlem `angle` od osy `+x`. */
+  const on = (angle: number): Vec3 => [1.2 * Math.cos(angle), 0, 1.2 * Math.sin(angle)];
+
+  it('celý prstenec je uvnitř na všech osmi směrech', () => {
+    const field = fieldOf(ring(Math.PI * 2));
+    for (let step = 0; step < 8; step += 1) {
+      const [x, y, z] = on((step * Math.PI) / 4);
+      expect(field.at(x, y, z), `úhel ${String(step * 45)}°`).toBeLessThan(0);
+    }
+  });
+
+  it('osa zůstává prázdná, jinak by z prstence byl válec', () => {
+    const field = fieldOf(ring(Math.PI * 2));
+    expect(field.at(0, 0, 0)).toBeGreaterThan(0);
+  });
+
+  it('klenba končí tam, kde jí končí výsek', () => {
+    // sweep = π je půlkruh: od -90° do +90° kolem profilu na +x.
+    const field = fieldOf(ring(Math.PI));
+
+    for (const angle of [0, Math.PI / 4, -Math.PI / 4, Math.PI / 2 - 0.05]) {
+      const [x, y, z] = on(angle);
+      expect(field.at(x, y, z), `uvnitř výseku, ${angle.toFixed(2)} rad`).toBeLessThan(0);
+    }
+    for (const angle of [Math.PI / 2 + 0.3, Math.PI, -Math.PI * 0.75]) {
+      const [x, y, z] = on(angle);
+      expect(field.at(x, y, z), `za koncem výseku, ${angle.toFixed(2)} rad`).toBeGreaterThan(0);
+    }
+  });
+
+  it('vzdálenost za čelem oblouku roste po kružnici, ne po tětivě', () => {
+    const field = fieldOf(ring(Math.PI));
+    // Čtvrt radiánu za čelem na poloměru 1,2 je po oblouku 0,3 m; profil je
+    // 0,15 široký, takže od povrchu zbývá 0,15. Tětiva by dala 0,296, tedy
+    // znatelně míň — a to je ten rozdíl, který dělá odečet poloroviny špatně.
+    const [x, y, z] = on(Math.PI / 2 + 0.25);
+    expect(field.at(x, y, z)).toBeGreaterThan(0.1);
+    expect(field.at(x, y, z)).toBeLessThan(0.2);
+  });
+
+  it('osa otáčení rozhoduje o rovině, ve které klenba stojí', () => {
+    // Kolem 'y' leží prstenec naplocho v rovině x–z, kolem 'z' stojí v x–y.
+    const flat = fieldOf(ring(Math.PI * 2));
+    const upright = fieldOf([
+      { kind: 'box', size: [0.3, 0.3, 0.3] },
+      { kind: 'revolve', child: 0, axis: 'z', radius: 1.2, sweep: Math.PI * 2 },
+    ]);
+
+    expect(flat.at(0, 0, 1.2), 'naplocho: bod v z je uvnitř').toBeLessThan(0);
+    expect(flat.at(0, 1.2, 0), 'naplocho: bod v y je venku').toBeGreaterThan(0);
+    expect(upright.at(0, 1.2, 0), 'nastojato: bod v y je uvnitř').toBeLessThan(0);
+    expect(upright.at(0, 0, 1.2), 'nastojato: bod v z je venku').toBeGreaterThan(0);
+  });
 });
 
 /* ------------------------------------------------------------------ *
