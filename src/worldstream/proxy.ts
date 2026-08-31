@@ -1,0 +1,313 @@
+/**
+ * **Hrubý svět — blueprint na sloty a to, co je v nich hned teď.**
+ *
+ * Tohle je krok mezi „model dopsal" a „porotce něco vidí". Z blueprintu vzniká
+ * pro **každý** `SemanticObject` jeden `SemanticSlot` (`./slots.ts`) a k němu
+ * ta nejlepší podoba, která se dá vyrobit do tří sekund. Hrdinský tvar se
+ * mešuje v mřížce 32³, řádek kompozice se vezme tak, jak je, a když ani jedno
+ * nevyjde, zbude prostorově poctivá hlína.
+ *
+ * ## Prázdný slot neexistuje
+ *
+ * To je celá teze téhle úlohy. Chybějící tvar, odmítnutý tvar, prázdný mesh,
+ * řádek slepený řezem — z každé z těch cest musí vylézt objekt, který někde
+ * stojí, něco zabírá a dá se na něj ukázat druhou větou. Objekt, který
+ * z potrubí tiše vypadne, je horší než ošklivý objekt: ošklivý se dá zpevnit
+ * (§13, hot-swap), chybějící se nedá ani najít.
+ *
+ * ## Žebřík je zavřený seznam, ne odhad
+ *
+ * `PROXY_RUNGS` je šest příček z design booku §27 v jeho pořadí. Hrubý svět
+ * z nich obsazuje tři (`ROUGH_RUNGS`) a je to **záměr, ne mezera**:
+ *
+ * - `g3-ready` (48³) je výsledek materializace, kterou dělá hot-swap ve vlně 3;
+ *   hrubý svět ji vyrobit nemůže, protože by na ni porotce čekal.
+ * - `g2-reduced` je snížení počtu instancí, a to je nástroj adaptivní kvality
+ *   (vlna 5). Tady by se neměl o co opřít: `parseGeomProgram` program nad
+ *   `GEOM_LIMITS.maxInstances` (120 kusů) odmítne už na vstupu, takže
+ *   zkompilovaný blueprint je v rozpočtu **vždycky**. Příčka, která by se
+ *   tady snažila snižovat, by snižovala něco, co se nikdy nepřeteklo.
+ *
+ * Že hrubá cesta obsadí právě ty tři, drží test. Až vlna 3 nebo 5 přidá svoji
+ * příčku, spadne tam — a to je smysl toho testu: nová příčka se má **dopsat**
+ * do seznamu, ne se v něm objevit sama.
+ *
+ * ## Co tenhle soubor nedělá
+ *
+ * Nekreslí. Vrací plán a data; `three` se tu objevuje jen kvůli maticím
+ * v `GeomPlacement`. Vlastníkem slotů za běhu je `RepresentationRegistry`
+ * (§13.1, vlna 3 T18) — tenhle soubor mu dodává první obsah a pak nic.
+ */
+
+import { Box3, Vector3 } from 'three';
+
+import { bakePlacements, compilePlacements, type GeomPlacement } from '@/geom/placements';
+import { blueprintRejectionSentence, type BlueprintOutcome } from '@/model/worldstream-repair';
+import type { MeshOrder, MeshResult } from '@/shape/mesh-client';
+import { MESH_DETAIL, type Bounds3, type ShapeProgram, type Vec3 } from '@/shape/types';
+
+import type { WorldstreamBlueprint } from './schema';
+import { slotFromForm, slotFromWorldForm, type SemanticSlot } from './slots';
+
+/* ------------------------------------------------------------------ *
+ * Žebřík — design book §27, v jeho pořadí.
+ * ------------------------------------------------------------------ */
+
+export const PROXY_RUNGS = [
+  'g3-ready',
+  'g3-reduced',
+  'g2-rich',
+  'g2-reduced',
+  'semantic-clay',
+  'declined',
+] as const;
+
+export type ProxyRung = (typeof PROXY_RUNGS)[number];
+
+/**
+ * Co která příčka znamená. **Anglicky, protože to porotce čte** — hlášky,
+ * popisky a `data-testid` produktu jsou anglicky (`CLAUDE.md`, Konvence).
+ */
+export const PROXY_RUNG_LABELS: Readonly<Record<ProxyRung, string>> = {
+  'g3-ready': 'authored shape, full detail',
+  'g3-reduced': 'authored shape, rough grid',
+  'g2-rich': 'authored composition',
+  'g2-reduced': 'authored composition, fewer instances',
+  'semantic-clay': 'semantic clay',
+  declined: 'declined',
+};
+
+/** Příčky, které umí obsadit hrubý svět. Zbytek patří vlnám 3 a 5. */
+export const ROUGH_RUNGS = ['g3-reduced', 'g2-rich', 'semantic-clay'] as const;
+
+export type RoughRung = (typeof ROUGH_RUNGS)[number];
+
+/** Mřížka hrubého světa. Jediné číslo, na kterém tahle úloha stojí. */
+export const ROUGH_RESOLUTION = MESH_DETAIL.rough.resolution;
+
+/* ------------------------------------------------------------------ *
+ * Výsledek.
+ * ------------------------------------------------------------------ */
+
+export type ProxyForm =
+  | { readonly rung: 'g3-reduced'; readonly kind: 'mesh'; readonly mesh: MeshResult }
+  | {
+      readonly rung: 'g2-rich';
+      readonly kind: 'placements';
+      readonly placements: readonly GeomPlacement[];
+    }
+  /**
+   * Hlína. Podoba je kvádr slotu — nic se nepřikládá, protože `localBounds`
+   * ho už nese. `reason` je věta pro porotce, ne kód: říká, proč tenhle objekt
+   * zatím vypadá jako bedna.
+   */
+  | { readonly rung: 'semantic-clay'; readonly kind: 'clay'; readonly reason: string };
+
+export interface ProxySlot {
+  readonly slot: SemanticSlot;
+  readonly form: ProxyForm;
+}
+
+export type ProxyWorld =
+  | {
+      readonly kind: 'built';
+      readonly title: string;
+      readonly sessionSeed: number;
+      readonly resolution: number;
+      /** Jeden na každý `SemanticObject`, v pořadí blueprintu. */
+      readonly slots: readonly ProxySlot[];
+      /** Kompozice bez toho, co si nárokoval některý slot. */
+      readonly scenery: readonly GeomPlacement[];
+    }
+  /** Ani hlína nešla vyrobit, protože žádný blueprint není (§27, příčka 6). */
+  | { readonly kind: 'declined'; readonly rung: 'declined'; readonly reason: string };
+
+export interface ProxyDeps {
+  /**
+   * Objednávka meshe. Vstřikuje se, aby tenhle soubor nemusel znát worker —
+   * v produktu je to `createMeshClient().mesh`, v testu atrapa.
+   */
+  readonly mesh: (order: MeshOrder) => Promise<MeshResult>;
+}
+
+/* ------------------------------------------------------------------ *
+ * Kvádr naměřený na kusech.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Kvádr, který kusy doopravdy zabírají.
+ *
+ * Počítá se z upečené kopie a ta se hned zahodí — je to týž postup, jaký
+ * používá `anchorTo` v `placements.ts`, a ze stejného důvodu: obalový kvádr
+ * otočeného kusu je menší než otočený obalový kvádr, takže součet kvádrů
+ * jednotlivých kusů by dal jiné číslo než to, co je vidět.
+ *
+ * `boundsOfGeometry()` se sem nepřebírá schválně: hlásí prázdno větou
+ * o `anchorTo`, a ta by tady lhala o tom, co se zrovna dělo.
+ */
+function measureBounds(placements: readonly GeomPlacement[]): Bounds3 | null {
+  const baked = bakePlacements(placements);
+  baked.computeBoundingBox();
+  const box: Box3 | null = baked.boundingBox;
+  const empty = box === null || box.isEmpty();
+  const min = empty ? new Vector3() : box.min;
+  const max = empty ? new Vector3() : box.max;
+  const bounds: Bounds3 = {
+    min: [min.x, min.y, min.z] as Vec3,
+    max: [max.x, max.y, max.z] as Vec3,
+  };
+  baked.dispose();
+  return empty ? null : bounds;
+}
+
+/* ------------------------------------------------------------------ *
+ * Stavba.
+ * ------------------------------------------------------------------ */
+
+function declined(reason: string): ProxyWorld {
+  return { kind: 'declined', rung: 'declined', reason };
+}
+
+/** Věta o tom, proč svět nevznikl. Bere se z kola, které ho odmítlo. */
+function outcomeReason(outcome: Exclude<BlueprintOutcome, { kind: 'compiled' }>): string {
+  return outcome.kind === 'unavailable'
+    ? `the model did not answer: ${outcome.detail}`
+    : blueprintRejectionSentence(outcome.fault);
+}
+
+/**
+ * Kusy kompozice rozdělené podle toho, komu patří.
+ *
+ * Když `compilePlacements()` spadne, vrací se prázdno a důvod. Selhat umí:
+ * program, ze kterého po řezech nezbude ani trojúhelník, a odkaz na kus,
+ * který v kitu není. Ani jedno nechytí schéma, protože obojí je vlastnost
+ * **výsledku**, ne zápisu.
+ */
+interface Composition {
+  readonly owned: ReadonlyMap<number, readonly GeomPlacement[]>;
+  readonly scenery: readonly GeomPlacement[];
+}
+
+function splitComposition(blueprint: WorldstreamBlueprint): Composition | string {
+  const owners = new Set(
+    blueprint.objects.flatMap((object) =>
+      object.source.kind === 'geom' ? [object.source.node] : [],
+    ),
+  );
+
+  let root: readonly GeomPlacement[];
+  try {
+    root = compilePlacements(blueprint.geometry, owners);
+  } catch (error) {
+    return error instanceof Error ? error.message : String(error);
+  }
+
+  const owned = new Map<number, GeomPlacement[]>();
+  const scenery: GeomPlacement[] = [];
+  for (const placement of root) {
+    if (placement.owner === undefined) {
+      scenery.push(placement);
+      continue;
+    }
+    const group = owned.get(placement.owner);
+    if (group === undefined) owned.set(placement.owner, [placement]);
+    else group.push(placement);
+  }
+  return { owned, scenery };
+}
+
+/**
+ * Hrdinské tvary v pořadí, ve kterém se mají mešovat.
+ *
+ * `priority` je pole programu a znamená přesně tohle (`ShapeProgram`). Fronta
+ * klienta je sériová schválně, takže pořadí odeslání **je** pořadí, ve kterém
+ * se objekty objeví — a hrdina, na kterého věta míří, se má objevit první.
+ */
+function meshingOrder(shapes: readonly ShapeProgram[]): readonly ShapeProgram[] {
+  return [...shapes].sort((left, right) => right.priority - left.priority);
+}
+
+export async function buildProxyWorld(
+  outcome: BlueprintOutcome,
+  deps: ProxyDeps,
+): Promise<ProxyWorld> {
+  if (outcome.kind !== 'compiled') return declined(outcomeReason(outcome));
+
+  const blueprint = outcome.result.value;
+  const composition = splitComposition(blueprint);
+  const compositionFailure = typeof composition === 'string' ? composition : null;
+  const owned = typeof composition === 'string' ? new Map<number, readonly GeomPlacement[]>() : composition.owned;
+  const scenery = typeof composition === 'string' ? [] : composition.scenery;
+
+  // Tvary jdou napřed a po jednom: dokud neskončí, není co do slotů dát.
+  // Selhání jednoho tvaru je věta pro ten jeden objekt, ne konec světa.
+  const meshes = new Map<string, MeshResult | string>();
+  for (const program of meshingOrder(blueprint.shapes)) {
+    try {
+      meshes.set(
+        program.shapeId,
+        await deps.mesh({
+          program,
+          sessionSeed: blueprint.sessionSeed,
+          resolution: ROUGH_RESOLUTION,
+          bounds: program.targetBounds,
+        }),
+      );
+    } catch (error) {
+      meshes.set(program.shapeId, error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  const shapesById = new Map(blueprint.shapes.map((program) => [program.shapeId, program]));
+
+  const slots: ProxySlot[] = blueprint.objects.map((object) => {
+    const clay = (reason: string): ProxySlot => ({
+      slot: slotFromWorldForm(object, object.targetBounds),
+      form: { rung: 'semantic-clay', kind: 'clay', reason },
+    });
+
+    if (object.source.kind === 'shape') {
+      const program = shapesById.get(object.source.shapeId);
+      // Odkazy jsou oboustranně ověřené (`findBlueprintReferenceIssues`), takže
+      // sem se dostane jen tvar, který existuje; `meshes` je proto vždy plné.
+      const result = program === undefined ? 'the shape is missing' : meshes.get(program.shapeId);
+      if (program === undefined || typeof result === 'string' || result === undefined) {
+        return clay(typeof result === 'string' ? result : 'the shape is missing');
+      }
+      return {
+        slot: slotFromForm(object, {
+          localBounds: program.targetBounds,
+          anchors: program.anchors,
+        }),
+        form: { rung: 'g3-reduced', kind: 'mesh', mesh: result },
+      };
+    }
+
+    const placements = owned.get(object.source.node);
+    if (placements === undefined || placements.length === 0) {
+      return clay(
+        compositionFailure ??
+          `composition row ${object.source.node} produced no piece of its own, so there is nothing to hand this object`,
+      );
+    }
+
+    const bounds = measureBounds(placements);
+    if (bounds === null) {
+      return clay(`composition row ${object.source.node} occupies no space`);
+    }
+
+    return {
+      slot: slotFromWorldForm(object, bounds),
+      form: { rung: 'g2-rich', kind: 'placements', placements },
+    };
+  });
+
+  return {
+    kind: 'built',
+    title: blueprint.title,
+    sessionSeed: blueprint.sessionSeed,
+    resolution: ROUGH_RESOLUTION,
+    slots,
+    scenery,
+  };
+}
