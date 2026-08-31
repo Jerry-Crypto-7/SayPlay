@@ -57,9 +57,27 @@ sebe čtou jako trojzubec. Chybí jedna ze dvou operací:
 - **`sweep` po oblouku** — profil tažený po kružnicovém segmentu.
 
 Dopad je větší než jeden tvar galerie: **architektura stojí na obloucích.**
-Věta „a cathedral", „a bridge", „an aqueduct", „a tunnel" dnes nemá čím
-vzniknout. Doporučení: doplnit `revolve` ve vlně 1, před tím, než se ve vlně 2
-píše prompt.
+Věta „a cathedral", „a bridge", „an aqueduct", „a tunnel" neměla čím vzniknout.
+
+**Doplněno týž den, ještě ve vlně 1.** `revolve { child, axis, radius, sweep }`
+otočí profil kolem osy; `sweep = 2π` je uzavřený prstenec, `π` klenba. Výsek
+se dělá **sevřením úhlu, ne odečtem poloroviny** — ten by řezal celé pole včetně
+toho, co leží za osou, a klenbě by ukrojil druhou patku. Otáčení je izometrie,
+takže se na rozdíl od ostatních čtyř deformací nedělí Lipschitzem.
+
+Naměřeno po přepsání `vault`:
+
+- **16 688 → 22 160 trojúhelníků**, pořád pod stropem vysoké příčky (32 000).
+- **Deset z jedenácti dvojic s `vault` se vzdálilo**, nejvíc `vault`/`fruit`
+  z 0,2794 na 0,3858. Nejbližší dvojice galerie se nehnula (`cloud`/`fruit`
+  0,1663), takže se rezerva nad prahem nezmenšila.
+- Slovník jazyka je **26 uzlů** místo 25; pět deformací místo čtyř.
+- Tři mutace, tři zabité: vyhozené sevření úhlu, ploché čelo místo kružnice,
+  zaměněná rovina profilu.
+
+Na `/gallery` čte `vault` od té chvíle jako tři valené oblouky na desce.
+Tabulka výš popisuje stav **před** tou opravou, protože to je stav, nad kterým
+se brána soudila.
 
 ### Užitečné, ale ne blokující
 
