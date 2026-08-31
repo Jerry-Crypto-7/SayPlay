@@ -1,0 +1,416 @@
+/**
+ * **Compiler (P13 T11): záměr → blueprint.**
+ *
+ * Druhá ze dvou modelových fází (design book §10.1). Planner odpověděl na
+ * otázku „o jakém místě to je"; compiler odpovídá na „jak se to postaví".
+ *
+ * ## Compiler nedostane větu uživatele. Vůbec.
+ *
+ * Vstupem je **kanonický záměr** — `canonical()` nad tím, co planner napsal
+ * a co prošlo `readPlannerEmission()`. Ne syrová odpověď modelu a ne původní
+ * věta. Jsou pro to tři důvody a všechny jsou z §10.1:
+ *
+ * 1. Sémantika je na jednom kanonickém místě. Kdyby ji compiler četl znovu
+ *    z věty, byly by dva výklady jedné věty a nikdo by nevěděl, který platí.
+ * 2. Při opravě formální vady (T12) se nesmí znovu interpretovat zadání —
+ *    jinak druhé kolo postaví jiný svět než první.
+ * 3. Syrová odpověď plannera může nést pole navíc, komentář nebo poloviční
+ *    JSON. Do tohohle promptu jde jen to, co branou prošlo.
+ *
+ * Vynucuje to **typ**: `buildCompilerRequest` bere `PlannerEmission`, což je
+ * návratový typ brány. Syrový `unknown` se sem nedá předat, aniž by se to
+ * nejdřív provalidovalo.
+ *
+ * ## Kontrakt světového grafu se sem NEOPISUJE
+ *
+ * `world` v odpovědi je celá emise světového grafu — týž kontrakt, jaký měří
+ * `buildEmissionRequest()`. Jeho text se sem proto **vkládá doslova**, ne
+ * přepisuje. `src/model/prompt.ts` v hlavičce popisuje, proč: ten tvar není
+ * z ničeho odvoditelný, model ho nemá odkud vzít, a **první živý běh na něm
+ * padl 3× ze 3**. Druhá formulace téhož by se s originálem rozešla tiše a
+ * poznalo by se to až na tom, že model přestane trefovat `layout.width`.
+ *
+ * ## Manifest schopností se odvozuje ze schémat
+ *
+ * Slovník uzlů, varianty kusů, kotvy, odstíny i všechny stropy se čtou
+ * z `src/geom/program.ts` a `src/shape/schema.ts`. Argumenty jednotlivých uzlů
+ * odvodit nejdou — ty stojí v tabulkách níž, a **jejich úplnost hlídá
+ * překladač**: `Record<ShapeNodeKind, string>` bez jednoho klíče se nepřeloží.
+ * To je pojistka, kterou test nepotřebuje; test navíc hlídá, že se každé jméno
+ * do hotového textu doopravdy dostalo.
+ */
+
+import {
+  ANCHOR_SITES,
+  GEOM_LIMITS,
+  GEOM_VERSION,
+  MAX_CURVE_POINTS,
+  MAX_SWEEP_SEGMENTS,
+  OPERATION_KINDS,
+  PIECE_VARIANTS,
+  SHAPE_KINDS,
+  SWATCH_NAMES,
+  TERRAIN_VARIANTS,
+  type PieceKind,
+} from '../geom/program';
+import { canonical } from '../ir/worlddoc';
+import { SHAPE_NODE_GROUPS } from '../shape/schema';
+import { SHAPE_LIMITS, type ShapeNodeKind } from '../shape/types';
+
+import { EMISSION_MODEL, buildEmissionRequest, type Grammar, type UpstreamRequest } from './prompt';
+import type { PlannerEmission } from './worldstream-intent';
+
+/** Značka fáze. Odlišuje blueprint od plánu i od staré emise v logu i v provenance. */
+export const COMPILER_STAGE = 'worldstream-blueprint';
+
+/**
+ * Řádek, za kterým ve zprávě stojí vložený kontrakt světového grafu.
+ *
+ * Exportovaný, aby ho test našel v **hotovém textu**, ne v konstantě vedle něj.
+ * Kdyby se ověřovala konstanta, prošla by i zpráva, do které se vložení
+ * nedostalo.
+ */
+export const WORLD_CONTRACT_MARKER = 'BEGIN WORLD CONTRACT — this describes the "world" field only';
+export const WORLD_CONTRACT_END = 'END WORLD CONTRACT';
+
+/** Řádek, za kterým stojí ukázková odpověď a nic jiného. */
+export const BLUEPRINT_EXAMPLE_MARKER =
+  'An example answer for a request unrelated to yours. Copy the SHAPE and nothing else.';
+
+/* ------------------------------------------------------------------ *
+ * Argumenty uzlů. Odvodit ze zod schématu nejdou; úplnost drží překladač.
+ * ------------------------------------------------------------------ */
+
+/** Umístění, které nese každý tvarový uzel kompozice. Volitelné — nuly se nepíšou. */
+const GEOM_PLACEMENT =
+  'at [x,y,z], yaw, pitch, roll (quarter turns, -4 < t < 4), scale [sx,sy,sz] (0.1 to 8)';
+
+type GeomNodeKind = (typeof SHAPE_KINDS)[number] | (typeof OPERATION_KINDS)[number];
+
+const GEOM_NODE_ARGUMENTS: Readonly<Record<GeomNodeKind, string>> = {
+  mass: `variant, ${GEOM_PLACEMENT}`,
+  column: `variant, ${GEOM_PLACEMENT}`,
+  arch: `variant, ${GEOM_PLACEMENT}`,
+  panel: `variant, ${GEOM_PLACEMENT}`,
+  organic: `variant, ${GEOM_PLACEMENT}`,
+  fixture: `variant, ${GEOM_PLACEMENT}`,
+  actor: `variant, ${GEOM_PLACEMENT}`,
+  terrain: 'variant, extent [w,d], amplitude (0 to 8), seed, at, yaw — no scale, extent IS the size',
+  sweep: `profile [[u,v], ...] (3 to ${MAX_CURVE_POINTS}, a closed outline with area), path [[x,y,z], ...] (2 to ${MAX_CURVE_POINTS}, not all the same point), segments (2 to ${MAX_SWEEP_SEGMENTS}), swatch, ${GEOM_PLACEMENT}`,
+  group: 'children [i, ...] (1 to 16) — the ONLY node that carries several children, so the scene is a group',
+  repeat: 'child, count (2 to 16, the original included), step [x,y,z]',
+  mirror: 'child, axis ("x" or "z" — never "y", the world stands on the ground), about',
+  carve: 'child, at [x,y,z], size [w,h,d] — drops triangles whose centre falls inside the box',
+  scatter: 'child, count (2 to 24), radius (0.5 to 32), seed',
+  arrayAlongCurve: `child, count (2 to 24), points [[x,y,z], ...] (2 to ${MAX_CURVE_POINTS}) — copies are moved, never turned along the tangent`,
+  anchorTo: `child, target (another node), site (${ANCHOR_SITES.join('|')}), offset — the TARGET is a reference and is not built, so put it in the same group if you want to see it`,
+};
+
+const SHAPE_NODE_ARGUMENTS: Readonly<Record<ShapeNodeKind, string>> = {
+  sphere: 'radius',
+  box: 'size [w,h,d] — the FULL size, not the half-extent',
+  roundBox: 'size [w,h,d], radius',
+  capsule: 'height, radius',
+  cylinder: 'height, radius',
+  cone: 'height, radius',
+  torus: 'majorRadius, minorRadius',
+  plane: 'normal [x,y,z], offset',
+  prism: 'sides (3 to 12), radius, height',
+  ellipsoid: 'radii [rx,ry,rz]',
+  union: 'children [i, ...] (2 to 8), k — k is the blend radius; LEAVE IT OUT for a sharp edge, never write 0',
+  subtract: 'children [i, ...] — the first child minus the rest, k optional',
+  intersect: 'children [i, ...], k optional',
+  translate: 'child, offset [x,y,z]',
+  rotate: 'child, yaw, pitch, roll (radians)',
+  scale: 'child, factor [sx,sy,sz] (0.05 to 20, never negative — use mirror to flip)',
+  mirror: 'child, axis, about',
+  twist: 'child, axis, radiansPerUnit (-8 to 8)',
+  bend: 'child, axis, curvature (-8 to 8)',
+  taper: 'child, axis, amount (-4 to 4)',
+  displace: 'child, amplitude (0 to 8), frequency (0.01 to 16), seed — surface noise, the expensive node',
+  revolve: 'child, axis, radius, sweep (0.05 to 2*PI radians, the WHOLE angle: PI is a half arch)',
+  repeat: 'child, count (2 to 64), step [x,y,z]',
+  radialArray: 'child, count, axis, radius',
+  arrayAlongCurve: `child, count, points [[x,y,z], ...] (2 to ${SHAPE_LIMITS.maxCurvePoints})`,
+  clip: 'child, region { kind: "halfSpace", normal, offset } or { kind: "box", center, size }',
+};
+
+/* ------------------------------------------------------------------ *
+ * Ukázková odpověď.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Ukázka musí být **sémanticky vzdálená celé zmrazené sadě i ukázce
+ * plannera**, jinak nejde poznat opisování. `evals/worldstream/create.jsonl`
+ * má katedrálu z kontejnerů, spirálovou knihovnu, orloj a majáky;
+ * `worldstream-examples.ts` má observatoř na ledě. Včelín na stráni nemá
+ * s ničím z toho společnou ani rodinu tvarů.
+ */
+export const EXAMPLE_BLUEPRINT_ANSWER = {
+  geometry: {
+    version: GEOM_VERSION,
+    nodes: [
+      { kind: 'terrain', variant: 'ridge', extent: [26, 18], amplitude: 0.7, seed: 91 },
+      { kind: 'panel', variant: 'wall', at: [-9, 0.6, -5], scale: [3, 1.2, 1] },
+      { kind: 'repeat', child: 1, count: 6, step: [3.4, 0, 0] },
+      { kind: 'mass', variant: 'plinth', at: [-5, 0.3, 2], scale: [1.4, 0.6, 1.4] },
+      { kind: 'repeat', child: 3, count: 3, step: [5, 0, 0] },
+      { kind: 'fixture', variant: 'crate', at: [4.5, 0.3, 5.5], scale: [0.8, 0.8, 0.8] },
+      { kind: 'organic', variant: 'shrub', at: [-10, 0, 7] },
+      { kind: 'scatter', child: 6, count: 9, radius: 8, seed: 4021 },
+      { kind: 'group', children: [0, 2, 4, 5, 7] },
+    ],
+    root: 8,
+  },
+  shapes: [
+    {
+      shapeId: 'tallHiveShape',
+      stableId: 'tallHive',
+      nodes: [
+        { kind: 'cylinder', height: 0.42, radius: 0.62 },
+        { kind: 'translate', child: 0, offset: [0, -0.5, 0] },
+        { kind: 'translate', child: 0, offset: [0, -0.06, 0] },
+        { kind: 'translate', child: 0, offset: [0, 0.38, 0] },
+        { kind: 'cone', height: 0.5, radius: 0.72 },
+        { kind: 'translate', child: 4, offset: [0, 0.85, 0] },
+        { kind: 'union', children: [1, 2, 3, 5], k: 0.05 },
+      ],
+      root: 6,
+      targetBounds: { min: [-0.8, -0.8, -0.8], max: [0.8, 1.2, 0.8] },
+      anchors: [{ name: 'lid', at: [0, 1.1, 0], normal: [0, 1, 0] }],
+      materialIntent: 'straw',
+      priority: 10,
+    },
+  ],
+  placements: [
+    {
+      stableId: 'hillsideTerrace',
+      source: { kind: 'geom', node: 0 },
+      targetBounds: { min: [-13, -1, -9], max: [13, 1, 9] },
+    },
+    {
+      stableId: 'drystoneWall',
+      source: { kind: 'geom', node: 2 },
+      targetBounds: { min: [-10.5, 0, -5.6], max: [9.5, 1.4, -4.4] },
+    },
+    {
+      stableId: 'tallHive',
+      source: { kind: 'shape', shapeId: 'tallHiveShape' },
+      targetBounds: { min: [-0.9, 0.6, 1.1], max: [0.9, 2.4, 2.9] },
+    },
+    {
+      stableId: 'smokerBox',
+      source: { kind: 'geom', node: 5 },
+      targetBounds: { min: [4.1, 0, 5.1], max: [4.9, 0.7, 5.9] },
+    },
+  ],
+  world: {
+    irVersion: 'v1',
+    simRevision: 0,
+    lookRevision: 0,
+    sim: {
+      layout: { width: 14, height: 9 },
+      grid: { cell: 1 },
+      sockets: { pathStart: [1, 4], smokerPad: [4, 6], hivePad: [9, 4], gatePad: [12, 4] },
+      collisionAabb: {
+        keeper: [1, 4, 1, 1],
+        smoker: [4, 6, 1, 1],
+        tallHive: [9, 4, 1, 2],
+        apiaryGate: [12, 4, 1, 2],
+      },
+      entities: {
+        keeper: { role: 'actor', socket: 'pathStart', state: 'idle' },
+        smoker: { role: 'pickup', socket: 'smokerPad', state: 'loose' },
+        tallHive: { role: 'prop', socket: 'hivePad', state: 'sealed' },
+        apiaryGate: { role: 'goal', socket: 'gatePad', state: 'shut', locked: true },
+      },
+      state: {
+        counters: {},
+        flags: { hiveCalm: { init: false } },
+        timers: {},
+        zones: {},
+        slots: 1,
+      },
+      rules: {
+        liftSmoker: {
+          phase: 0,
+          priority: 0,
+          event: { kind: 'onPickup', role: 'pickup' },
+          condition: null,
+          actions: [
+            { kind: 'giveItem', slot: 0, item: 'smoker' },
+            { kind: 'despawn', target: 'smoker' },
+          ],
+        },
+        calmHive: {
+          phase: 0,
+          priority: 1,
+          event: { kind: 'onAction', actionId: 'use', target: 'tallHive' },
+          condition: { kind: 'hasItem', slot: 0, item: 'smoker' },
+          actions: [
+            { kind: 'setState', target: 'tallHive', value: 'open' },
+            { kind: 'setFlag', flag: 'hiveCalm', value: true },
+            { kind: 'setLocked', target: 'apiaryGate', locked: false },
+          ],
+        },
+        win: {
+          phase: 1,
+          priority: 0,
+          event: { kind: 'onEnterZone', entity: 'keeper', zone: 'gatePad' },
+          condition: { kind: 'flagIs', flag: 'hiveCalm', value: true },
+          actions: [{ kind: 'win' }],
+        },
+      },
+    },
+    look: {
+      modules: { apiaryGate: { family: 'panel', params: { thickness: 0.2 } } },
+      palette: 'sand',
+      lightRig: 'rim',
+      atmosphere: 'clear',
+      materialRoles: {},
+      camera: { kind: 'orbit' },
+      audio: {},
+    },
+  },
+} as const;
+
+/**
+ * Jména, která patří výhradně ukázce.
+ *
+ * Táž doktrína jako o patro výš u plannera. Většinu z nich zachytí už spojení
+ * s plánem — placement na neznámé `stableId` se odmítne sám — ale `shapeId`
+ * a `materialIntent` v plánu nikde nestojí, takže je nic jiného nechytne.
+ */
+export const EXAMPLE_ONLY_IDENTIFIERS: readonly string[] = [
+  ...EXAMPLE_BLUEPRINT_ANSWER.placements.map((placement) => placement.stableId),
+  ...EXAMPLE_BLUEPRINT_ANSWER.shapes.map((shape) => shape.shapeId),
+];
+
+/* ------------------------------------------------------------------ *
+ * Manifest schopností.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Co jazyk umí, odvozené ze schémat.
+ *
+ * Kdyby se to opsalo, přidaná varianta kusu by ve slovníku modelu chyběla
+ * a nikdo by se to nedozvěděl — model by ji prostě nikdy nepoužil a vypadalo by
+ * to jako jeho volba.
+ */
+export function capabilityManifest(): string {
+  const pieceLines = (Object.keys(PIECE_VARIANTS) as PieceKind[]).map(
+    (kind) => `  ${kind}: ${PIECE_VARIANTS[kind].join(' | ')}`,
+  );
+
+  const geomLines = SHAPE_KINDS.map(
+    (kind) => `  ${kind} — ${GEOM_NODE_ARGUMENTS[kind]}`,
+  ).concat(OPERATION_KINDS.map((kind) => `  ${kind} — ${GEOM_NODE_ARGUMENTS[kind]}`));
+
+  const shapeLines = Object.entries(SHAPE_NODE_GROUPS).flatMap(([group, kinds]) => [
+    `  ${group}:`,
+    ...kinds.map((kind) => `    ${kind} — ${SHAPE_NODE_ARGUMENTS[kind]}`),
+  ]);
+
+  return [
+    'GEOMETRY — the composition. One flat table of nodes; every child index points STRICTLY LOWER',
+    'than the row using it, and root is the last thing built. Every row must be reachable from root:',
+    'an unreachable row is still built by the compiler and would blow the budget uncounted.',
+    `version is "${GEOM_VERSION}". At most ${GEOM_LIMITS.maxNodes} rows, and at most`,
+    `${GEOM_LIMITS.maxInstances} placed pieces AFTER the arrays expand — repeat 16 over scatter 24 is`,
+    '384 pieces from two rows, and that is rejected.',
+    '',
+    'Kit pieces and their variants:',
+    ...pieceLines,
+    `  terrain: ${TERRAIN_VARIANTS.join(' | ')}`,
+    '',
+    `Vertex swatches for sweep: ${SWATCH_NAMES.join(' | ')}. Nothing outside that list exists.`,
+    '',
+    'Geometry nodes:',
+    ...geomLines,
+    '',
+    'SHAPES — hero objects, written as a distance field the browser meshes itself. Same table rule:',
+    'children point strictly lower, root is last, every row reachable.',
+    `At most ${SHAPE_LIMITS.maxNodes} rows, depth ${SHAPE_LIMITS.maxDepth}, ${SHAPE_LIMITS.maxInstances} copies after arrays expand,`,
+    `and ${SHAPE_LIMITS.maxEvaluations} distance evaluations per grid cell. That last one is the real cost:`,
+    'a shared subtree is free in the copy count and is not free here.',
+    '',
+    'Shape nodes:',
+    ...shapeLines,
+    '',
+    'A shape carries: shapeId, stableId (the object it belongs to), nodes, root, targetBounds',
+    '{ min, max } in SHAPE space, anchors [{ name, at, normal }] where sockets sit, materialIntent',
+    '(a name, never a colour), priority (higher is meshed first).',
+    'You do NOT write grid resolution, quality, cost or meshing order. Those are pipeline decisions.',
+  ].join('\n');
+}
+
+/* ------------------------------------------------------------------ *
+ * Požadavek.
+ * ------------------------------------------------------------------ */
+
+export function buildCompilerRequest(plan: PlannerEmission, grammar: Grammar): UpstreamRequest {
+  const heroIds = plan.objects
+    .filter((object) => object.role === 'hero')
+    .map((object) => object.stableId);
+  const placeableIds = plan.objects
+    .filter((object) => object.role !== 'effect')
+    .map((object) => object.stableId);
+
+  const system = [
+    'You are given a finished description of a place and you write the geometry that builds it.',
+    'Somebody else already decided WHAT the place is. You decide how it stands up.',
+    '',
+    'Answer with a single JSON object and nothing else. Its top-level fields are exactly:',
+    'geometry, shapes, placements, world. Anything else is rejected, including a title —',
+    'the system writes that from the intent you were given.',
+    '',
+    capabilityManifest(),
+    '',
+    'PLACEMENTS bind the two together. One entry per object you were given, except objects whose role',
+    'is "effect" — air, light and weather have no geometry and are carried by the look layer.',
+    'Each entry carries: stableId (one of the ids you were given, never a new one),',
+    'source ({ kind: "geom", node: <row index> } or { kind: "shape", shapeId: <one of yours> }),',
+    'targetBounds { min, max } in WORLD space — the box the object occupies on the ground.',
+    '',
+    'THE LINK RUNS BOTH WAYS. A shape names its object in stableId and that object must source from',
+    'that shape. A shape nobody sources from is meshed and never shown, and the object stays a rough',
+    'lump for ever with nothing reporting it.',
+    '',
+    `Write a shape, not kit pieces, for the object the sentence is really about: ${heroIds.length > 0 ? heroIds.join(', ') : 'the object with the highest importance'}.`,
+    'That is what the distance field is for — the kit builds architecture and cannot build a bone,',
+    'a root, a hull or a hive. Everything else is cheaper and steadier as composition.',
+    '',
+    'You never answer with the name of a style, a family or a preset. There is no library of finished',
+    'places to pick from. If you write a string where a program belongs, the answer is rejected as',
+    'geometry you did not author, because that is exactly what it is.',
+    '',
+    WORLD_CONTRACT_MARKER,
+    // Vloženo doslova z `buildEmissionRequest`. Prompt je prázdný schválně:
+    // bere se jen systémová část, do které se text zadání nikdy nedostane.
+    buildEmissionRequest('', grammar).system,
+    WORLD_CONTRACT_END,
+    '',
+    BLUEPRINT_EXAMPLE_MARKER,
+    // **Odsazení tu musí zůstat**, ze stejného naměřeného důvodu jako
+    // u ukázky v `./prompt.ts`: kompaktní ukázka zkrátila odpovědi a zaplatila
+    // se vynechanými poli. Model si odsazený příklad prochází po řádcích jako
+    // seznam polí; na jednom dlouhém řádku tu oporu ztratí.
+    JSON.stringify(EXAMPLE_BLUEPRINT_ANSWER, null, 2),
+  ].join('\n');
+
+  const user = [
+    'REQUEST-SPECIFIC CONTENT is authoritative. The example above demonstrates shape only.',
+    'Its beehive terrace is semantically wrong for any unrelated request, and copying its geometry',
+    'table or its shape table is rejected even if you rename everything around them.',
+    `Do not reuse these example-only names: ${EXAMPLE_ONLY_IDENTIFIERS.join(', ')}.`,
+    '',
+    `Every one of these objects needs a placement: ${placeableIds.join(', ')}.`,
+    'An object you were given and did not place is an object the sentence asked for and the world',
+    'does not contain.',
+    '',
+    'Build this place. This is the whole brief; there is no other text behind it:',
+    canonical(plan),
+  ].join('\n');
+
+  return { model: EMISSION_MODEL, system, user };
+}

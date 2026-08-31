@@ -188,7 +188,16 @@ function nonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
-function readIntent(value: unknown): IntentSummary | string {
+/**
+ * Přečte `intent` jako `IntentSummary`, nebo vrátí větu o tom, co mu chybí.
+ *
+ * **Exportované schválně, a je to jediná definice toho kontraktu.** Blueprint
+ * (`src/worldstream/schema.ts`) `intent` validuje taky — nese ho dál a musí
+ * ustát načtení z disku. Kdyby si na to napsal vlastní zod schéma, byly by to
+ * dvě definice jedné vlastnosti a jedna z nich by se dřív nebo později
+ * přestala trefovat, aniž by o tom kdokoli věděl.
+ */
+export function readIntent(value: unknown): IntentSummary | string {
   if (value === null || typeof value !== 'object') return 'intent is not an object';
   const intent = value as Record<string, unknown>;
 
