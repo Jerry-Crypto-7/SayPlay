@@ -20,6 +20,14 @@
  *   ať už jako uzel `rotate` v programu tvaru, nebo jako matice kusu
  *   v kompozici.
  *
+ * **Podoba je v prostoru slotu na každé příčce žebříku, bez výjimky**, takže
+ * `transform` znamená pořád totéž a kdo kreslí, nemusí se ptát, odkud objekt
+ * je. Kusy kompozice nesou světové matice, takže se před vložením do slotu
+ * přepočítají (`intoSlotSpace()` v `./proxy.ts`). Kdyby se to nedělalo, měla
+ * by jedna příčka jiný význam transformace než ostatní — a při hot-swapu by
+ * se musel přepočítat rám slotu, tedy přesně to, co design book §13.2 jmenuje
+ * jako invariant.
+ *
  * ## Proč dvě pravidla, a ne jedno
  *
  * `slotFromForm()` a `slotFromWorldForm()` se liší v jediné otázce: **kdo ví,
@@ -53,12 +61,6 @@ export interface SlotTransform {
   readonly scale: Vec3;
   readonly translation: Vec3;
 }
-
-/** Jednotková transformace — podoba už ve světě stojí. */
-export const IDENTITY_TRANSFORM: SlotTransform = {
-  scale: [1, 1, 1],
-  translation: [0, 0, 0],
-};
 
 export interface SemanticSlot {
   /** Identita objektu. Přežívá výměnu podoby i druhou větu (§13.2). */
@@ -190,16 +192,18 @@ export function slotFromForm(object: SemanticObject, form: SlotForm): SemanticSl
 }
 
 /**
- * Podoba už ve světě stojí; slot se k ní jen připne.
+ * Podoba **si svoji velikost nese sama**; slot ji jen posadí, kam patří.
  *
- * Tohle je cesta řádku kompozice a hlíny. `worldBounds` je to, co se
- * doopravdy kreslí — u kompozice naměřený kvádr jejích kusů, u hlíny
- * `targetBounds`, protože hlína nic jiného nemá.
+ * Tohle je cesta řádku kompozice a hlíny. `worldBounds` je to, co se doopravdy
+ * kreslí — u kompozice naměřený kvádr jejích kusů, u hlíny `targetBounds`,
+ * protože hlína nic jiného nemá. Měřítko je proto jednotkové: nic se
+ * nenormalizuje, protože kvádr **vznikl z té podoby**, ne naopak.
  *
  * `localBounds` je týž kvádr posunutý do počátku a `transform` je ten posun.
  * Není to obřad navíc: díky němu má **každý** slot počátek uprostřed sebe,
- * takže odhalení, škálování při materializaci i kotvy se počítají jednou
- * cestou pro všechny příčky žebříku.
+ * a `transform` znamená na všech příčkách žebříku totéž — prostor slotu do
+ * světa. Kusy kompozice se do prostoru slotu přepočítají
+ * (`intoSlotSpace()` v `./proxy.ts`) přesně proto, aby to platilo i o nich.
  */
 export function slotFromWorldForm(object: SemanticObject, worldBounds: Bounds3): SemanticSlot {
   const localBounds = centeredBounds(worldBounds);
@@ -213,7 +217,7 @@ export function slotFromWorldForm(object: SemanticObject, worldBounds: Bounds3):
     source: object.source,
     localBounds,
     worldBounds,
-    transform: { scale: IDENTITY_TRANSFORM.scale, translation: center },
+    transform: { scale: [1, 1, 1], translation: center },
     anchors: derivedAnchors(localBounds),
   };
 }

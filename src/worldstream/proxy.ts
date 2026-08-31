@@ -39,7 +39,7 @@
  * (§13.1, vlna 3 T18) — tenhle soubor mu dodává první obsah a pak nic.
  */
 
-import { Box3, Vector3 } from 'three';
+import { Box3, Matrix4, Vector3 } from 'three';
 
 import { bakePlacements, compilePlacements, type GeomPlacement } from '@/geom/placements';
 import { blueprintRejectionSentence, type BlueprintOutcome } from '@/model/worldstream-repair';
@@ -47,7 +47,7 @@ import type { MeshOrder, MeshResult } from '@/shape/mesh-client';
 import { MESH_DETAIL, type Bounds3, type ShapeProgram, type Vec3 } from '@/shape/types';
 
 import type { WorldstreamBlueprint } from './schema';
-import { slotFromForm, slotFromWorldForm, type SemanticSlot } from './slots';
+import { boundsCenter, slotFromForm, slotFromWorldForm, type SemanticSlot } from './slots';
 
 /* ------------------------------------------------------------------ *
  * Žebřík — design book §27, v jeho pořadí.
@@ -160,6 +160,46 @@ function measureBounds(placements: readonly GeomPlacement[]): Bounds3 | null {
   return empty ? null : bounds;
 }
 
+/**
+ * Kusy přepočítané do prostoru slotu.
+ *
+ * **Podoba je na každé příčce v prostoru slotu, nikdy ve světě.** Mesh z tvaru
+ * v něm vyleze sám (worker počítá v `program.targetBounds`), kusy kompozice
+ * ne — ty už světové matice nesou, protože je model napsal rovnou na jejich
+ * místo. Odečte se jim tedy střed slotu a do světa je vrátí `slot.transform`,
+ * úplně stejně jako mesh.
+ *
+ * Jednotný význam `transform` **není úklid, je to podmínka hot-swapu**: až
+ * zeď dostane vlastní `ShapeProgram`, vymění se jen obsah slotu. Kdyby kusy
+ * zůstaly ve světě a transformace u té příčky znamenala něco jiného, musel by
+ * se při výměně přepočítat i rám slotu — a `world transform slotu` je podle
+ * design booku §13.2 přesně to, co se hnout nesmí.
+ */
+function intoSlotSpace(
+  placements: readonly GeomPlacement[],
+  worldBounds: Bounds3,
+): readonly GeomPlacement[] {
+  const center = boundsCenter(worldBounds);
+  const shift = new Matrix4().makeTranslation(-center[0], -center[1], -center[2]);
+  // Rozepsané po polích jako `transformed()` v `placements.ts`, a ze stejného
+  // důvodu: rozprostření sjednocení by z kusu udělalo objekt s oběma sadami
+  // polí, který se do `GeomPlacement` nevejde.
+  return placements.map((placement) => {
+    const matrix = new Matrix4().multiplyMatrices(shift, placement.matrix);
+    const { mirrored, owner } = placement;
+    return placement.kind === 'piece'
+      ? { kind: 'piece' as const, pieceId: placement.pieceId, matrix, mirrored, owner }
+      : { kind: 'mesh' as const, geometry: placement.geometry, matrix, mirrored, owner };
+  });
+}
+
+/** Buffery kusů, které nikdo nedostane. Kit si své kusy staví sám, mesh ne. */
+function release(placements: readonly GeomPlacement[]): void {
+  for (const placement of placements) {
+    if (placement.kind === 'mesh') placement.geometry.dispose();
+  }
+}
+
 /* ------------------------------------------------------------------ *
  * Stavba.
  * ------------------------------------------------------------------ */
@@ -260,6 +300,18 @@ export async function buildProxyWorld(
 
   const shapesById = new Map(blueprint.shapes.map((program) => [program.shapeId, program]));
 
+  /**
+   * Řádky, které si už někdo vzal. **Nároky jsou nepřenosné.**
+   *
+   * `findBlueprintReferenceIssues()` hlídá druhý nárok na týž **tvar**
+   * (`references.ts`), na řádek kompozice ale ne — tam se soudí jen
+   * dosažitelnost. Dva objekty tedy smějí napsat `source: { node: 2 }` oba
+   * a projít vším. Bez tohohle záznamu by pak oba dostaly **tentýž objekt
+   * pole**: zeď by se vykreslila dvakrát a hot-swap jednoho slotu by odpojil
+   * kusy, které pořád vlastní ten druhý.
+   */
+  const taken = new Set<number>();
+
   const slots: ProxySlot[] = blueprint.objects.map((object) => {
     const clay = (reason: string): ProxySlot => ({
       slot: slotFromWorldForm(object, object.targetBounds),
@@ -269,8 +321,9 @@ export async function buildProxyWorld(
     if (object.source.kind === 'shape') {
       const program = shapesById.get(object.source.shapeId);
       // Odkazy jsou oboustranně ověřené (`findBlueprintReferenceIssues`), takže
-      // sem se dostane jen tvar, který existuje; `meshes` je proto vždy plné.
-      const result = program === undefined ? 'the shape is missing' : meshes.get(program.shapeId);
+      // objekt míří na tvar, který v `shapes` je. Prázdné `shapes` na tomhle
+      // dokumentu ale tuhle větev pouští — proto se `undefined` čte, ne tvrdí.
+      const result = program === undefined ? undefined : meshes.get(program.shapeId);
       if (program === undefined || typeof result === 'string' || result === undefined) {
         return clay(typeof result === 'string' ? result : 'the shape is missing');
       }
@@ -283,22 +336,33 @@ export async function buildProxyWorld(
       };
     }
 
-    const placements = owned.get(object.source.node);
+    const node = object.source.node;
+    const placements = taken.has(node) ? undefined : owned.get(node);
     if (placements === undefined || placements.length === 0) {
       return clay(
         compositionFailure ??
-          `composition row ${object.source.node} produced no piece of its own, so there is nothing to hand this object`,
+          (taken.has(node)
+            ? `composition row ${node} already belongs to another object, so this one has no pieces of its own`
+            : `composition row ${node} produced no piece of its own, so there is nothing to hand this object`),
       );
     }
 
     const bounds = measureBounds(placements);
     if (bounds === null) {
-      return clay(`composition row ${object.source.node} occupies no space`);
+      // Kusy, které nikdo nedostane, tu končí — nikdo jiný je neuvolní, protože
+      // `compilePlacements()` uklízí jen to, co se do kořene nedostalo.
+      release(placements);
+      return clay(`composition row ${node} occupies no space`);
     }
 
+    taken.add(node);
     return {
       slot: slotFromWorldForm(object, bounds),
-      form: { rung: 'g2-rich', kind: 'placements', placements },
+      form: {
+        rung: 'g2-rich',
+        kind: 'placements',
+        placements: intoSlotSpace(placements, bounds),
+      },
     };
   });
 

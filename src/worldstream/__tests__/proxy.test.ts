@@ -286,8 +286,13 @@ describe('the hero object is meshed from its own shape program', () => {
    * a hot-swap z 32³ na 48³ by socketu posunul místo, přestože design book
    * §13.2 ho jmenuje jako invariant. Dva běhy proto vrátí **jinak velké
    * meshe** a kotva se nesmí hnout ani v prostoru slotu, ani ve světě.
+   *
+   * **Co tenhle test NEpouští:** dvě různá rozlišení. `buildProxyWorld()` má
+   * hrubou mřížku napevno, takže se sem druhé rozlišení nedá vpravit — pinuje
+   * se tedy „slot mesh nečte", což je ta příčina. Že se s rozlišením
+   * nepohnou ani trojúhelníky, měří vlna 3 na skutečném hot-swapu (T20).
    */
-  it('keeps the anchor in slot space, so two resolutions give the same socket', async () => {
+  it('reads no part of the slot off the mesh, whatever the mesh turns out to be', async () => {
     const rough = slotOf(await build(), 'tallHive').slot;
     const dense = slotOf(
       await build(compiled(blueprint()), async (order) => ({
@@ -441,24 +446,126 @@ describe('the composition splits into slots and the scenery around them', () => 
     expect(spanOf(terrace.worldBounds, 2)).toBeCloseTo(18, 6);
   });
 
-  it('centres the slot on what it holds, so the form needs no second transform', async () => {
+  /**
+   * **`transform` znamená na každé příčce totéž: prostor slotu → svět.**
+   *
+   * Kusy kompozice nesou světové matice, takže by se bez přepočtu vykreslily
+   * správně jen tehdy, kdyby se na ně transformace **neuplatnila** — jedna
+   * příčka s obráceným významem než ostatní. Tenhle test to zavírá z obou
+   * stran: upečená podoba sedí na `localBounds` (je tedy v prostoru slotu)
+   * a `transform` ji vrátí přesně na `worldBounds`.
+   *
+   * Doplněno 31. 8. 2026 po nezávislé revizi; do té doby se tu porovnávala
+   * upečená podoba se **světovým** kvádrem, což tu záměnu nechalo projít.
+   */
+  it('hands the form over in slot space, so one transform fits every rung', async () => {
     const wall = slotOf(await build(), 'drystoneWall');
     if (wall.form.kind !== 'placements') throw new Error('expected the composition rung');
 
     const baked = bakePlacements(wall.form.placements);
     baked.computeBoundingBox();
     const box = baked.boundingBox!;
-    expect(wall.slot.worldBounds.min[0]).toBeCloseTo(box.min.x, 6);
-    expect(wall.slot.worldBounds.max[1]).toBeCloseTo(box.max.y, 6);
+    expect(box.min.x).toBeCloseTo(wall.slot.localBounds.min[0], 6);
+    expect(box.max.y).toBeCloseTo(wall.slot.localBounds.max[1], 6);
+    expect(box.min.z).toBeCloseTo(wall.slot.localBounds.min[2], 6);
     baked.dispose();
 
-    // Prostor slotu je týž kvádr posunutý do počátku; kusy už ve světě stojí.
+    // Ta podoba sama o sobě tedy stojí kolem počátku, ne na svém místě ve světě.
+    expect(box.min.z).toBeLessThan(0);
+    expect(box.max.z).toBeGreaterThan(0);
+
     expect(wall.slot.transform.scale).toEqual([1, 1, 1]);
     for (const axis of [0, 1, 2] as const) {
       expect(toWorld(wall.slot.transform, wall.slot.localBounds.min)[axis]).toBeCloseTo(
         wall.slot.worldBounds.min[axis],
         6,
       );
+      expect(toWorld(wall.slot.transform, wall.slot.localBounds.max)[axis]).toBeCloseTo(
+        wall.slot.worldBounds.max[axis],
+        6,
+      );
+    }
+  });
+
+  /**
+   * Dva objekty smějí napsat `source: { node: 2 }` oba — `references.ts` hlídá
+   * druhý nárok jen u tvarů. Bez záznamu o rozebraných řádcích by pak oba
+   * dostaly **tentýž objekt pole**: zeď dvakrát v obraze a hot-swap jednoho
+   * slotu odpojující kusy toho druhého.
+   *
+   * Přidáno 31. 8. 2026 po nezávislé revizi.
+   */
+  it('lets only the first claim take a row, and never hands the same pieces twice', async () => {
+    const objects = blueprint().objects.map((object) =>
+      object.stableId === 'smokerBox'
+        ? { ...object, source: { kind: 'geom' as const, node: 2 } }
+        : object,
+    );
+    const world = built(await build(compiled(blueprint({ objects }))));
+
+    const wall = slotOf(world, 'drystoneWall');
+    const box = slotOf(world, 'smokerBox');
+    expect(wall.form.rung).toBe('g2-rich');
+    expect(box.form.rung).toBe('semantic-clay');
+    expect(box.form.kind === 'clay' && box.form.reason).toContain('already belongs');
+
+    const owned = world.slots.flatMap((entry) =>
+      entry.form.kind === 'placements' ? [...entry.form.placements] : [],
+    );
+    expect(new Set(owned).size).toBe(owned.length);
+    expect(world.slots).toHaveLength(4);
+  });
+
+  /**
+   * Řez, který spolkne celý řádek. Dvě různá selhání, obě z výsledku, ne ze
+   * zápisu — schéma je nevidí a vidět nemůže. Přidáno 31. 8. 2026 po nezávislé
+   * revizi, která obě cesty našla jako neotestované.
+   */
+  it('turns a row that was carved to nothing into clay, not into a hole', async () => {
+    const geometry = {
+      version: EXAMPLE_BLUEPRINT_ANSWER.geometry.version,
+      nodes: [
+        { kind: 'fixture', variant: 'crate', at: [0, 0.3, 0] },
+        { kind: 'carve', child: 0, at: [0, 0, 0], size: [40, 40, 40] },
+        { kind: 'fixture', variant: 'crate', at: [12, 0.3, 0] },
+        { kind: 'group', children: [1, 2] },
+      ],
+      root: 3,
+    };
+    const objects = blueprint().objects.slice(0, 2).map((object, index) => ({
+      ...object,
+      source: { kind: 'geom' as const, node: index === 0 ? 1 : 2 },
+    }));
+
+    const world = built(await build(compiled(blueprint({ geometry, objects, shapes: [] }))));
+    expect(world.slots[0].form.rung).toBe('semantic-clay');
+    expect(world.slots[0].form.kind === 'clay' && world.slots[0].form.reason).toContain(
+      'occupies no space',
+    );
+    expect(world.slots[1].form.rung).toBe('g2-rich');
+  });
+
+  it('still hands back a world when the whole composition compiles to nothing', async () => {
+    const geometry = {
+      version: EXAMPLE_BLUEPRINT_ANSWER.geometry.version,
+      nodes: [
+        { kind: 'fixture', variant: 'crate', at: [0, 0.3, 0] },
+        { kind: 'carve', child: 0, at: [0, 0, 0], size: [40, 40, 40] },
+      ],
+      root: 1,
+    };
+    const objects = blueprint().objects.slice(0, 2).map((object, index) => ({
+      ...object,
+      source: { kind: 'geom' as const, node: index },
+    }));
+
+    const world = built(await build(compiled(blueprint({ geometry, objects, shapes: [] }))));
+    expect(world.scenery).toEqual([]);
+    expect(world.slots).toHaveLength(2);
+    for (const entry of world.slots) {
+      expect(entry.form.rung).toBe('semantic-clay');
+      expect(entry.form.kind === 'clay' && entry.form.reason).toContain('empty geometry');
+      expect(spanOf(entry.slot.worldBounds, 1)).toBeGreaterThan(0);
     }
   });
 
