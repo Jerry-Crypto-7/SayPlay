@@ -160,10 +160,26 @@ export class SpendCap {
   #spentUsd = 0;
   #reservedUsd = 0;
   /**
-   * Povolená volání. Roste při **rezervaci**, ne při vyrovnání, a zpátky se
+   * Povolená **placená** volání. Roste při **rezervaci**, ne při vyrovnání, a zpátky se
    * nevrací: volání, které se smělo uskutečnit, se uskutečnilo. Kdyby se
    * počítalo až po úspěchu, byl by padající poskytovatel cesta, jak strop
    * obejít — týž důvod, proč se neznámá cena účtuje nejhorším případem.
+   *
+   * **Rezervace za nula dolarů se nepočítá, a je to oprava naměřené vady**
+   * (nezávislá revize 31. 8. 2026). Obě větve zdarma — offline `mock`
+   * (`src/server/mock/index.ts`) i nenakonfigurovaný upstream — hlásí
+   * `worstCaseUsd: () => 0`, a offline větev je **výchozí**. Dokud se počítaly,
+   * dvousetkrát napsaná věta do nasazeného dema vyčerpala strop, který na
+   * nulových voláních nemohl nic uspořit: od 201. požadavku dostal každý
+   * návštěvník 429 `CALL_CAP_EXHAUSTED` při útratě 0 USD a nula volání
+   * k poskytovateli. U živé větve bez klíče je to ještě horší — poctivá 503
+   * `BRANCH_UNCONFIGURED` se po dvou stech pokusech změní na zavádějící 429.
+   *
+   * **Placené volání takhle proklouznout nemůže.** Nejhorší případ živé větve
+   * je vždy kladný: `upstreamConfigFromEnv` bez kladné ceny výstupu vrací
+   * `null` a `maxOutputTokens` prochází `positiveNumber`. Nula tedy znamená
+   * „tahle větev nestojí nic", nikdy „ceník je opsaný špatně" — a přesně na ten
+   * druhý případ tenhle strop je.
    */
   #callsMade = 0;
   readonly #defaults: CapControl;
@@ -255,7 +271,8 @@ export class SpendCap {
       };
 
     this.#reservedUsd += worstCaseUsd;
-    this.#callsMade += 1;
+    // Jen placená volání, viz `#callsMade`. Větev zdarma nemá co ušetřit.
+    if (worstCaseUsd > 0) this.#callsMade += 1;
     let settled = false;
     const release = (actualUsd: number | 'unknown'): void => {
       if (settled) return;

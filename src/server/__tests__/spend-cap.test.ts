@@ -4,6 +4,9 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { mockBranch } from '../mock';
+import type { GenerationCall } from '../pipeline';
+
 import { costUsd, DEFAULT_CALL_CAP, DEFAULT_CAP_USD, SpendCap, spendCapFromEnv } from '../spend-cap';
 
 const PRICING = { usdPerMTokIn: 3, usdPerMTokOut: 15 };
@@ -268,5 +271,62 @@ describe('strop na počet volání drží i tehdy, když je ceník opsaný špat
     const cap = new SpendCap({ enabled: true, capUsd: 1 }, path);
     expect(cap.reserve(0.001).ok).toBe(true);
     expect(cap.snapshot().callCap).toBe(DEFAULT_CALL_CAP);
+  });
+});
+
+/**
+ * **Volání zdarma nesmí spotřebovat strop na placená volání.**
+ *
+ * Nález nezávislé revize 31. 8. 2026 nad commitem `df6f997`. `mock/index.ts`
+ * o sobě v komentáři tvrdí, že „strop tuhle větev nikdy neodmítne, protože
+ * odmítat cestu, která neutrácí, by demo jen shodilo" — a to tvrzení bylo
+ * nepravdivé: `#callsMade` rostl při **každé** povolené rezervaci, tedy i při
+ * nulové. Offline větev je přitom výchozí, takže nasazené demo umřelo po dvou
+ * stech větách při útratě 0 USD.
+ *
+ * Nulu si sada nepíše sama — bere ji z **opravdové** offline větve. Kdyby jí
+ * někdo cenu dal, tahle sada se ozve, místo aby dál měřila konstantu.
+ */
+describe('strop na počet volání počítá jen placená volání', () => {
+  const FREE_CALL: GenerationCall = {
+    prompt: 'a spiral library where the stairs are the shelves',
+    request: { model: 'mock', system: 'system', user: 'user' },
+  };
+  const freeWorstCase = mockBranch().worstCaseUsd(FREE_CALL);
+
+  it('offline větev doopravdy nic nestojí — jinak tenhle popis neplatí', () => {
+    expect(freeWorstCase).toBe(0);
+  });
+
+  it('dvě stě vět do offline dema strop nevyčerpá', () => {
+    const cap = new SpendCap({ enabled: true, capUsd: DEFAULT_CAP_USD, callCap: DEFAULT_CALL_CAP });
+    for (let i = 0; i <= DEFAULT_CALL_CAP; i++)
+      expect(cap.reserve(freeWorstCase).ok, `věta ${i + 1} dostala 429`).toBe(true);
+
+    expect(cap.snapshot().callsMade, 'volání zdarma se započítala').toBe(0);
+    expect(cap.snapshot().callsRemaining).toBe(DEFAULT_CALL_CAP);
+  });
+
+  it('placené volání se počítá dál a strop pořád drží', () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 1000, callCap: 3 });
+    for (let i = 0; i < 3; i++) expect(cap.reserve(0.000_001).ok, `volání ${i + 1}`).toBe(true);
+
+    const refused = cap.reserve(0.000_001);
+    expect(refused.ok).toBe(false);
+    if (refused.ok) throw new Error('unreachable');
+    expect(refused.reason).toBe('CALL_CAP_EXHAUSTED');
+  });
+
+  it('volání zdarma nezkrátí rozpočet těm placeným', () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 1000, callCap: 2 });
+    for (let i = 0; i < 50; i++) cap.reserve(freeWorstCase);
+
+    expect(cap.reserve(0.001).ok, 'první placené').toBe(true);
+    expect(cap.reserve(0.001).ok, 'druhé placené').toBe(true);
+    const refused = cap.reserve(0.001);
+    expect(refused.ok, 'třetí placené mělo být odmítnuto').toBe(false);
+    if (refused.ok) throw new Error('unreachable');
+    expect(refused.reason).toBe('CALL_CAP_EXHAUSTED');
+    expect(cap.snapshot().callsMade).toBe(2);
   });
 });
