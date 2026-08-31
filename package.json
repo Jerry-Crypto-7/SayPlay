@@ -25,7 +25,8 @@
     "measure:mesh": "playwright test e2e/mesh-budget.spec.ts --project=chromium --grep @measure",
     "measure:divergence": "playwright test e2e/divergence.spec.ts --grep @measure",
     "measure:rejects": "vitest run evals/__tests__/reject-causes.test.ts",
-    "measure:hostile": "vitest run evals/__tests__/hostile-report.test.ts"
+    "measure:hostile": "vitest run evals/__tests__/hostile-report.test.ts",
+    "measure:worldstream-create": "vitest run --config vitest.measure.mts evals/worldstream/live-create.measure.ts"
   },
   "dependencies": {
     "@mlc-ai/web-llm": "0.2.84",

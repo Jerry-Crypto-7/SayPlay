@@ -41,6 +41,9 @@ import {
   type PlannerEmission,
 } from '@/model/worldstream-intent';
 import type { Grammar, UpstreamRequest } from '@/model/prompt';
+import type { GenerationCall } from '@/server/pipeline';
+import { costUsd, spendCapFromEnv } from '@/server/spend-cap';
+import { upstreamBranch, upstreamConfigFromEnv } from '@/server/upstream';
 import type { MeshOrder, MeshResult } from '@/shape/mesh-client';
 import type { GeomProgram } from '@/geom/program';
 import { buildProxyWorld, type ProxyRung, type ProxyWorld } from '@/worldstream/proxy';
@@ -76,21 +79,31 @@ export const ROUGH_WORLD_P95_MS = 3_000;
 export const WORLD_DISTANCE_FLOOR = 0.05;
 
 /**
- * Fáze, na které se selhání rozpadá. Šest, jak je jmenuje úloha.
+ * Fáze, na které se selhání rozpadá. Šest z úlohy a čtyři navíc.
  *
  * `geom` a `shape` jsou dvě větve mezijazyka, `schema` je tvar odpovědi,
  * `reference` vazby uvnitř dokumentu, `lowering` a `witness` dva konce
- * certifikace světa. `planner` je sedmá a stojí mimo tu šestici schválně:
- * když selže planner, o compileru se nic nezměřilo.
+ * certifikace světa. Ty čtyři navíc stojí mimo tu šestici schválně, protože
+ * **každá se opravuje jinde** a slít je dohromady by z reportu udělalo jednu
+ * hromádku „nefunguje to":
+ *
+ * - `planner` — když selže planner, o compileru se nic nezměřilo.
+ * - `copied` — model vrátil ukázku. Opravuje se few-shot, ne schéma.
+ * - `clay` — blueprint prošel vším a **na obrazovku se model nedostal**:
+ *   svět vznikl, jen je celý z beden. Nejnebezpečnější řádek reportu, protože
+ *   se jinak čte jako úspěch.
+ * - `unavailable` — nikdo neodpověděl. Není to vada modelu ani měřidla.
  */
 export const FAILURE_STAGES = [
   'planner',
   'schema',
+  'copied',
   'reference',
   'geom',
   'shape',
   'lowering',
   'witness',
+  'clay',
   'unavailable',
 ] as const;
 
@@ -127,9 +140,23 @@ const SECRET_HEADERS: ReadonlySet<string> = new Set([
 
 export const REDACTED = '[redacted]';
 
-/** Klíče v textu. Vrací nový řetězec; vstup se nemění. */
-export function scrubText(text: string): string {
-  return SECRET_PATTERNS.reduce((carry, pattern) => carry.replace(pattern, REDACTED), text);
+/**
+ * Klíče v textu. Vrací nový řetězec; vstup se nemění.
+ *
+ * `literals` jsou řetězce, o kterých volající **ví**, že jsou tajné — v praxi
+ * klíč z konfigurace. Vzory výš umí jen tvary, které někdo předem uhodl;
+ * poskytovatel s klíčem jiného tvaru, který ho vrátí v chybové hlášce, by
+ * jimi prošel. Prázdné řetězce se zahazují: nahradit prázdno znamená nahradit
+ * všechno.
+ */
+export function scrubText(text: string, literals: readonly string[] = []): string {
+  const byPattern = SECRET_PATTERNS.reduce(
+    (carry, pattern) => carry.replace(pattern, REDACTED),
+    text,
+  );
+  return literals
+    .filter((literal) => literal.length > 0)
+    .reduce((carry, literal) => carry.split(literal).join(REDACTED), byPattern);
 }
 
 /**
@@ -150,13 +177,13 @@ export function scrubHeaders(
 }
 
 /** Cokoli, co jde do archivu. Projde stromem a vyčistí každý řetězec. */
-export function scrubDeep(value: unknown): unknown {
-  if (typeof value === 'string') return scrubText(value);
-  if (Array.isArray(value)) return value.map((item) => scrubDeep(item));
+export function scrubDeep(value: unknown, literals: readonly string[] = []): unknown {
+  if (typeof value === 'string') return scrubText(value, literals);
+  if (Array.isArray(value)) return value.map((item) => scrubDeep(item, literals));
   if (value !== null && typeof value === 'object') {
     const clean: Record<string, unknown> = {};
     for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
-      clean[key] = SECRET_HEADERS.has(key.toLowerCase()) ? REDACTED : scrubDeep(nested);
+      clean[key] = SECRET_HEADERS.has(key.toLowerCase()) ? REDACTED : scrubDeep(nested, literals);
     }
     return clean;
   }
@@ -318,8 +345,15 @@ export function stageOfOutcome(outcome: BlueprintOutcome): FailureStage {
   if (outcome.kind === 'compiled') return 'schema';
 
   switch (outcome.fault.reason) {
+    // **`GEOMETRY_NOT_AUTHORED` je `geom`, ne `schema`.** Je to ta jediná vada,
+    // kvůli které tohle měřidlo existuje: model místo programu vrátil jméno.
+    // Pod `schema` by report o hlavní otázce vlny 2 mlčel a tvrdil, že šlo
+    // o špatný tvar odpovědi — a opravovalo by se schéma místo promptu.
     case 'GEOM_INVALID':
+    case 'GEOMETRY_NOT_AUTHORED':
       return 'geom';
+    case 'EXAMPLE_COPIED':
+      return 'copied';
     case 'SHAPE_INVALID':
       return 'shape';
     case 'PLACEMENT_MISMATCH':
@@ -427,8 +461,9 @@ export async function driveCreateCase(entry: CreateCase, deps: CaseDeps): Promis
       ? null
       : {
           // Blueprint prošel, ale na obrazovku se model nedostal. Je to jiné
-          // selhání než odmítnutí a nesmí se s ním sloučit.
-          stage: 'shape',
+          // selhání než odmítnutí a nesmí se s ním sloučit: pod `shape` by
+          // splynulo s tvarem, který neprošel bránou, a to se opravuje jinde.
+          stage: 'clay',
           detail:
             world.kind === 'built'
               ? `${world.slots.filter((entry_) => entry_.form.rung === 'semantic-clay').length} of ${world.slots.length} objects fell back to clay`
@@ -543,5 +578,105 @@ export function buildCreateReport(
     pairs,
     closestPair,
     gateFailures,
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * Placené volání.
+ * ------------------------------------------------------------------ */
+
+/** Jeden požadavek a jedna odpověď, obojí po scrubbingu. */
+export interface ArchiveEntry {
+  readonly caseId: string;
+  /** Pořadí placeného volání v celém běhu, od jedničky. */
+  readonly call: number;
+  readonly request: unknown;
+  readonly answer: unknown;
+}
+
+export interface LiveEmitter {
+  /** Který případ se zrovna měří. Píše se do archivu. */
+  caseId: string;
+  emit(request: UpstreamRequest): Promise<unknown>;
+  readonly archive: readonly ArchiveEntry[];
+  /** Kolik volání strop propustil. Roste i u těch, která pak selhala. */
+  readonly paidCalls: number;
+}
+
+/**
+ * Emitor, který mluví s poskytovatelem a **platí za to**.
+ *
+ * Bydlí tady, ne ve spouštěči, právě proto, že je to jediná cesta v úloze,
+ * která utrácí: `fetchImpl` a `env` jsou parametry, takže se celá dá projet
+ * v jednotkovém testu proti atrapě — počítání volání, chování stropu i to,
+ * že se klíč nedostane do archivu.
+ *
+ * **Strop drží rezervace.** Každé volání si nejdřív rezervuje nejhorší
+ * případ; když strop odmítne, k poskytovateli se nesáhne vůbec.
+ */
+export function liveEmitter(
+  env: Record<string, string | undefined>,
+  fetchImpl?: typeof fetch,
+): LiveEmitter {
+  const config = upstreamConfigFromEnv(env);
+  if (config === null)
+    throw new Error(
+      'no upstream is configured: set WORLDSMITH_MODEL_ENDPOINT, WORLDSMITH_MODEL_KEY and a positive WORLDSMITH_USD_PER_MTOK_OUT before spending money',
+    );
+
+  const branch = fetchImpl === undefined ? upstreamBranch(config) : upstreamBranch(config, fetchImpl);
+  const cap = spendCapFromEnv(env);
+  const archive: ArchiveEntry[] = [];
+  // Klíč se maže i doslova, ne jen podle vzoru: poskytovatel, který ho vrátí
+  // v chybové hlášce, by jinak prošel, kdyby měl jiný tvar než ty čtyři výš.
+  const secrets = [config.apiKey];
+  let paidCalls = 0;
+
+  return {
+    caseId: 'unknown',
+    get archive() {
+      return archive;
+    },
+    get paidCalls() {
+      return paidCalls;
+    },
+    async emit(request: UpstreamRequest): Promise<unknown> {
+      const call: GenerationCall = { prompt: request.user, request };
+      const reservation = cap.reserve(branch.worstCaseUsd(call));
+      // Odmítnutý strop znamená, že se nikam nevolalo. Věta o tom doputuje do
+      // reportu jako `unavailable`, ne jako vada modelu.
+      if (!reservation.ok) throw new Error(`${reservation.reason}: ${reservation.detail}`);
+
+      paidCalls += 1;
+      let outcome;
+      try {
+        outcome = await branch.generate(call);
+      } catch (thrown) {
+        reservation.settle('unknown');
+        throw thrown;
+      }
+
+      // Neznámá spotřeba se účtuje rezervací, ne nulou — táž doktrína jako
+      // v `runPipeline`. Nula by znamenala volání zdarma.
+      reservation.settle(
+        outcome.usage === null ? 'unknown' : costUsd(outcome.usage, branch.pricing),
+      );
+
+      archive.push({
+        caseId: this.caseId,
+        call: paidCalls,
+        request: scrubDeep(
+          { model: request.model, system: request.system, user: request.user },
+          secrets,
+        ),
+        answer: scrubDeep(
+          outcome.ok ? outcome.body : { error: outcome.reason, detail: outcome.detail },
+          secrets,
+        ),
+      });
+
+      if (!outcome.ok) throw new Error(`${outcome.reason}: ${outcome.detail}`);
+      return outcome.body;
+    },
   };
 }
