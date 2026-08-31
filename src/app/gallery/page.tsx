@@ -31,7 +31,7 @@
  */
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BufferAttribute, BufferGeometry, type Group } from 'three';
 
 import { UI_TOKENS } from '@/kit';
@@ -39,7 +39,7 @@ import { createMeshClient, type MeshResult } from '@/shape/mesh-client';
 
 import { clayMaterial } from '../../components/viewer/ClayMaterial';
 import WorldstreamLighting from '../../components/viewer/WorldstreamLighting';
-import { GALLERY, GALLERY_SEED } from '../../../evals/shape/gallery';
+import { GALLERY, GALLERY_SEED, galleryIndex } from '../../../evals/shape/gallery';
 import { DIVERSITY_RESOLUTION } from '../../../evals/shape/measure-diversity';
 
 /** Sloupců v mřížce. Dvanáct kusů tak vyjde na 4 × 3. */
@@ -61,6 +61,11 @@ function geometryOf(mesh: MeshResult): BufferGeometry {
 
 /**
  * Kam a jak velký kus patří.
+ *
+ * **`index` je pořadí v `GALLERY`, ne pořadí, ve kterém kus došel z fronty.**
+ * Popisky se kreslí z celé galerie na pevných dvanácti buňkách, takže kus,
+ * který by se sázel podle délky hotového pole, by po každém selhání stál pod
+ * cizím jménem.
  *
  * Tvar se posadí středem svého **naměřeného** kvádru do počátku buňky a zmenší
  * tak, aby se jeho největší rozměr vešel do buňky. Normalizuje se **jedním**
@@ -92,7 +97,23 @@ function placement(mesh: MeshResult, index: number) {
   };
 }
 
-function Piece({ mesh, index }: { readonly mesh: MeshResult; readonly index: number }) {
+function Piece({
+  mesh,
+  index,
+  onPlaced,
+}: {
+  readonly mesh: MeshResult;
+  readonly index: number;
+  /**
+   * Ohlásí buňku, do které se kus **doopravdy** posadil.
+   *
+   * Kusy jsou uvnitř plátna, takže z DOM je nepřečte nikdo. Kdyby si stránka
+   * dopočítala rozmístění podruhé vedle plátna, měřila by vlastní výpočet, ne
+   * scénu — vyzkoušeno mutací 31. 8. 2026: paralelně počítaný atribut nechal
+   * vadu projít zelenou. Ohlašuje se proto ta hodnota, kterou kus použil.
+   */
+  readonly onPlaced: (shapeId: string, cell: number) => void;
+}) {
   const spin = useRef<Group>(null);
   const geometry = useMemo(() => geometryOf(mesh), [mesh]);
   const material = useMemo(() => clayMaterial(), []);
@@ -104,6 +125,10 @@ function Piece({ mesh, index }: { readonly mesh: MeshResult; readonly index: num
       material.dispose();
     };
   }, [geometry, material]);
+
+  useEffect(() => {
+    onPlaced(mesh.shapeId, index);
+  }, [onPlaced, mesh.shapeId, index]);
 
   useFrame((_, delta) => {
     if (spin.current !== null) spin.current.rotation.y += delta * TURNS_PER_SECOND * Math.PI * 2;
@@ -127,6 +152,11 @@ function Piece({ mesh, index }: { readonly mesh: MeshResult; readonly index: num
 export default function GalleryPage(): React.JSX.Element {
   const [meshes, setMeshes] = useState<readonly MeshResult[]>([]);
   const [failed, setFailed] = useState<readonly string[]>([]);
+  const [placed, setPlaced] = useState<readonly string[]>([]);
+
+  const onPlaced = useCallback((shapeId: string, cell: number) => {
+    setPlaced((current) => [...current, `${shapeId}:${cell}`]);
+  }, []);
 
   useEffect(() => {
     const client = createMeshClient();
@@ -168,6 +198,11 @@ export default function GalleryPage(): React.JSX.Element {
       data-testid="gallery-root"
       data-ready={done ? 'yes' : 'no'}
       data-meshed={meshes.length}
+      /* Které jméno stojí ve které buňce — ohlášené kusy samotnými, ne
+         dopočítané vedle nich. Je to jediná vlastnost téhle stránky, kterou
+         brána K1 potřebuje mít jistou: člověk soudí tvar podle popisku pod
+         ním. Viz `e2e/gallery.spec.ts` a `gallery-cells.test.ts`. */
+      data-cells={placed.join(',')}
       style={{
         position: 'relative',
         height: '100dvh',
@@ -185,8 +220,13 @@ export default function GalleryPage(): React.JSX.Element {
         camera={{ position: [0, 0, 16], fov: 42, near: 0.1, far: 100 }}
       >
         <WorldstreamLighting />
-        {meshes.map((mesh, index) => (
-          <Piece key={mesh.shapeId} mesh={mesh} index={index} />
+        {meshes.map((mesh) => (
+          <Piece
+            key={mesh.shapeId}
+            mesh={mesh}
+            index={galleryIndex(mesh.shapeId)}
+            onPlaced={onPlaced}
+          />
         ))}
       </Canvas>
 

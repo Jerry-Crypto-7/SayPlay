@@ -286,6 +286,22 @@ export const GALLERY_IDS = [
 /** Semínko relace pro galerii. Meshing je deterministický. */
 export const GALLERY_SEED = 20260829;
 
+/**
+ * Kolikátá buňka mřížky tomu tvaru patří.
+ *
+ * **Buňku určuje jméno, ne pořadí v dodaném poli.** Stránka `/gallery` skládá
+ * popisky z celé galerie, ale kusy přidává po jednom, jak dojdou z fronty —
+ * a když se některý nezmešuje, zbytek se v mřížce posune o buňku doleva, pod
+ * cizí popisek. Naměřeno 31. 8. 2026: při třech selháních (`root`, `shell`,
+ * `column`) stál kotel pod popiskem `Column` a síť pod `Cauldron`. Brána K1
+ * by pak soudila tvary pod cizími jmény.
+ */
+export function galleryIndex(id: string): number {
+  const at = GALLERY.findIndex((item) => item.id === id);
+  if (at === -1) throw new Error(`gallery has no shape ${id}`);
+  return at;
+}
+
 export function galleryEntry(id: string): GalleryEntry {
   const found = GALLERY.find((item) => item.id === id);
   if (found === undefined) throw new Error(`gallery has no shape ${id}`);
