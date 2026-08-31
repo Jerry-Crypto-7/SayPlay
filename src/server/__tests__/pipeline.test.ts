@@ -114,6 +114,7 @@ const LIVE_CONFIG: UpstreamConfig = {
   endpoint: 'https://upstream.invalid/v1/messages',
   apiKey: 'test-key',
   model: 'test-model',
+  effort: 'low',
   pricing: { usdPerMTokIn: 3, usdPerMTokOut: 15 },
   maxOutputTokens: 1000,
   timeoutMs: 1000,

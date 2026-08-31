@@ -4,16 +4,18 @@
  * Druhá implementace `GenerationBranch`. Prochází stejnou kontraktovou sadou
  * jako offline větev v `src/server/mock/`; liší se jen fixture, nikdy tvrzení.
  *
- * ## Dnes se nevolá, a přesto tu je
+ * ## Cloud je od P13 hlavní cesta, ne zakázaná
  *
- * Rozhodnutí ze 14. 8. 2026: placený model se volat nebude, `OPENAI_API_KEY` ani
- * jiný klíč se nevkládá. Bez konfigurace proto tahle větev **nikam nevolá** a
- * vrací `BRANCH_UNCONFIGURED` — to je dnešní produkční stav, ne chyba. Kontrakt
- * ale drží celý, aby zapojení poskytovatele byla jedna proměnná prostředí a ne
- * další kolo návrhu.
+ * **Rozhodnutí ze 14. 8. 2026 („placený model se volat nebude") je od 27. 8.
+ * 2026 překonané** — P13 dělá z cloudového modelu hlavní cestu, protože lokální
+ * Qwen3-1.7B má medián 35–39 s na větu a to porotce nevydrží. Vypínač zůstává
+ * beze změny: bez `WORLDSMITH_BRANCH=live` a bez klíče tahle větev **nikam
+ * nevolá** a vrací `BRANCH_UNCONFIGURED`. Změnilo se, že ten stav už není cíl,
+ * jen výchozí hodnota.
  *
  * Koncový bod nemá výchozí hodnotu schválně. Zapsaná adresa v kódu je způsob,
- * jak se jednou omylem zavolá ven.
+ * jak se jednou omylem zavolá ven. Adresa, kterou sem patří dosadit, je
+ * v `.env.example` u `WORLDSMITH_MODEL_ENDPOINT`.
  *
  * ## Transport se vstřikuje
  *
@@ -41,10 +43,21 @@ export const UPSTREAM_BRANCH_ID = 'live';
 /** Konzervativní počet znaků na token pro **horní** odhad vstupu. */
 const CHARS_PER_TOKEN = 3;
 
+/**
+ * Úrovně úsilí, které Messages API zná. **Zavřený seznam schválně:** neznámou
+ * hodnotu odmítne poskytovatel čtyřistovkou a živá větev je mrtvá přesně v té
+ * konfiguraci, kterou někdo opsal z dokumentace s překlepem. Táž vada jako
+ * `{"model": ""}` naměřená 21. 8. 2026, jen o jedno pole vedle.
+ */
+const EFFORT_LEVELS = ['low', 'medium', 'high', 'xhigh', 'max'] as const;
+
+export type Effort = (typeof EFFORT_LEVELS)[number];
+
 export interface UpstreamConfig {
   readonly endpoint: string;
   readonly apiKey: string;
   readonly model: string;
+  readonly effort: Effort;
   readonly pricing: Pricing;
   readonly maxOutputTokens: number;
   readonly timeoutMs: number;
@@ -52,6 +65,27 @@ export interface UpstreamConfig {
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 8000;
 const DEFAULT_TIMEOUT_MS = 120_000;
+
+/**
+ * **Proč `low` a ne výchozí hodnota poskytovatele.**
+ *
+ * Na `claude-opus-5` běží uvažování **zapnuté i tehdy, když se pole `thinking`
+ * vůbec nepošle**, a výchozí úsilí je `high`. Tahle větev ale emituje jeden
+ * JSON podle zavřené gramatiky, ne řešení úlohy — a brána K2 chce p95 do
+ * hrubého světa **pod 3 sekundy**. Výchozí hodnota poskytovatele je proto pro
+ * tuhle cestu špatná, i když je pro většinu volání správná.
+ *
+ * **Uvažování se nevypíná**, přestože by to vypadalo jako přímější páka:
+ * s `thinking: {type: "disabled"}` na Opus 5 model občas napíše volání nástroje
+ * do viditelného textu místo do bloku a umí protéct značkami `<thinking>` —
+ * obojí je zdokumentované chování, ne dohad. Snížené úsilí dá totéž zrychlení
+ * bez těch dvou.
+ *
+ * **Není to naměřené a nikde to netvrď.** Je to hodnota vybraná z popsaného
+ * chování; jestli sedí, rozhodne T14 nad zmrazenou sadou. Proto je přebytelná
+ * proměnnou prostředí — aby se dala přeměřit bez zásahu do kódu.
+ */
+const DEFAULT_EFFORT: Effort = 'low';
 
 function positiveNumber(raw: string | undefined, fallback: number): number {
   if (raw === undefined) return fallback;
@@ -71,6 +105,17 @@ function positiveNumber(raw: string | undefined, fallback: number): number {
  * Vadná hodnota (překlep, desetinná čárka, záporné číslo) se chová jako
  * chybějící a dopočítá se — u stropu je přestřelená rezervace bezpečná strana.
  */
+/**
+ * Úsilí z prostředí. Neznámá i prázdná hodnota padá na `DEFAULT_EFFORT` — na
+ * rozdíl od ceny se tady tichá náhrada smí: špatné úsilí stojí latenci, ne
+ * peníze navíc, a odmítnout kvůli němu celou cloudovou větev by bylo dražší než
+ * ta vada sama.
+ */
+function effortLevel(raw: string | undefined): Effort {
+  const value = (raw ?? '').trim().toLowerCase();
+  return (EFFORT_LEVELS as readonly string[]).includes(value) ? (value as Effort) : DEFAULT_EFFORT;
+}
+
 function inputPrice(raw: string | undefined, usdPerMTokOut: number): number {
   if (raw === undefined || raw.trim() === '') return usdPerMTokOut;
   const parsed = Number(raw);
@@ -137,6 +182,7 @@ export function upstreamConfigFromEnv(env: Record<string, string | undefined>): 
     // živá větev je mrtvá přesně v té konfiguraci, kterou `.env.example`
     // předepisuje (naměřeno toutéž revizí).
     model: (env.WORLDSMITH_MODEL ?? '').trim() === '' ? EMISSION_MODEL : env.WORLDSMITH_MODEL!.trim(),
+    effort: effortLevel(env.WORLDSMITH_MODEL_EFFORT),
     pricing: {
       usdPerMTokIn: inputPrice(env.WORLDSMITH_USD_PER_MTOK_IN, usdPerMTokOut),
       // Ověřená výš, tady se jen dosazuje — jiná cesta sem hodnotu nepustí.
@@ -246,6 +292,9 @@ async function generate(
       body: JSON.stringify({
         model: config.model,
         max_tokens: config.maxOutputTokens,
+        // `effort` bydlí uvnitř `output_config`, ne nahoře — nahoře ho API
+        // neuvidí a mlčky pojede na výchozím `high`.
+        output_config: { effort: config.effort },
         system: call.request.system,
         messages: [{ role: 'user', content: call.request.user }],
       }),

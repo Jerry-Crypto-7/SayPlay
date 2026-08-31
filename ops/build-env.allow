@@ -71,6 +71,14 @@ WORLDSMITH_BUILD_TREE
 # Kam `next.config.mjs` připisuje množinu proměnných, kterou build doopravdy vidí.
 WORLDSMITH_ENV_REPORT
 
+# --- co se sem nikdy nedopisuje ---
+# `WORLDSMITH_MODEL_KEY` ani žádný jiný secret poskytovatele. Tenhle seznam
+# určuje, co build VIDÍ, a co build vidí, může skončit v klientském bundlu —
+# stačí jediné `process.env.X` v komponentě, kterou Next předrenderuje. Klíč
+# k placenému modelu čte výhradně serverová cesta za běhu
+# (`upstreamConfigFromEnv` v `src/server/upstream.ts`), nikdy build.
+# Hlídá to `src/server/__tests__/upstream.test.ts`.
+
 [platform]
 
 # --- přimíchá Windows do každého potomka, i s vlastním prostředím ---
