@@ -20,6 +20,10 @@
  *    z 29. 8. 2026 stojí právě na jeho čísle, druhá proto, že §11.2 ji vždycky
  *    vedla jen pro export. Kdyby se přestaly měřit, nešlo by za rok poznat,
  *    jestli se žebřík snížil kvůli měření, nebo kvůli náladě.
+ *    **Rozsudek dělá tenhle soubor, ne worker.** Stránka si proto říká
+ *    o `unbudgeted` klienta: jinak by `budgetFor(64)` sáhl po příčce `high`
+ *    a worker by odmítl vlastní měření. Šest dní se to nikdo nedozvěděl,
+ *    protože značka `@measure` drží tenhle spec mimo `npm run test:e2e`.
  * 4. **Odchylka od Node se hlásí, nepadá na ní.** Důvod ke změně čísla umí
  *    napsat jen člověk; aserce by ho jen zamlčela nebo přepsala.
  *
@@ -215,6 +219,10 @@ test.describe('rozpočet meshingu v prohlížeči', () => {
         pick: 'best',
         warmupResolution: WARMUP_RESOLUTION,
         timedIn: 'worker',
+        // Měří se ve workeru, ale bez rozpočtu — jinak by příčka `high` (48³)
+        // odmítla 64³ i 96³, tedy právě ty řádky, které report vede bez
+        // rozsudku. Soudí se až tady dole, nad hotovými čísly.
+        budgetEnforced: false,
       },
       ladder: MESH_DETAIL,
       verdict: {

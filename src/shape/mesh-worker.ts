@@ -44,9 +44,13 @@ import { MESH_DETAIL, type Bounds3, type ShapeProgram } from './types';
 /**
  * Strop pro danou mřížku — příčka žebříku, nebo ta nejvyšší.
  *
- * Rozlišení mimo žebřík (měřicí stránka umí 64 i 96) soudí `high`. Je to
- * nejmírnější strop, jaký produkt deklaruje; mlčky propustit cokoliv jen proto,
- * že si někdo řekl o neobvyklou mřížku, by tu bránu zrušilo.
+ * Rozlišení mimo žebřík soudí `high`. Je to nejmírnější strop, jaký produkt
+ * deklaruje; mlčky propustit cokoliv jen proto, že si někdo řekl o neobvyklou
+ * mřížku, by tu bránu zrušilo.
+ *
+ * **Měření tudy nechodí.** Mřížky, které report vede bez rozsudku (64³, 96³),
+ * si říkají o `unbudgeted` a k téhle funkci se nedostanou — soudit je příčkou,
+ * do které nepatří, znamenalo šest dní červené měření, viz `MeshJobRequest`.
  */
 function budgetFor(resolution: number): (typeof MESH_DETAIL)[keyof typeof MESH_DETAIL] {
   return resolution <= MESH_DETAIL.rough.resolution ? MESH_DETAIL.rough : MESH_DETAIL.high;
@@ -59,6 +63,30 @@ export interface MeshJobRequest {
   readonly sessionSeed: number;
   readonly resolution: number;
   readonly bounds: Bounds3;
+  /**
+   * Změřit, ale nesoudit. **Jediné dveře ven z rozpočtu, a jsou pojmenované.**
+   *
+   * Měřicí stránka `/dev/mesh-budget` si říká o mřížky **mimo žebřík** (64³
+   * a 96³), které report vede schválně bez rozsudku — nemá je tedy co soudit
+   * příčka, do které nepatří. Naměřeno 31. 8. 2026: `budgetFor(64)` vrátí
+   * `high`, tedy strop 48³, a worker vlastní měření odmítl s
+   * `mesh is 47680 triangles, above maxTriangles 32000`. Report tím šlo od
+   * 29. 8. jen číst, ne přeměřit — vynucování rozpočtů přišlo až po jeho
+   * posledním běhu a značka `@measure` drží ten spec mimo `npm run test:e2e`,
+   * takže šest dní nebylo co by se ozvalo.
+   *
+   * **Výchozí hodnota je ta přísná**, takže se sem nedá dostat zapomenutím —
+   * jen tím, že si o to někdo řekne, stejně jako o `allowMainThread`. Produkt
+   * si o to říct nemůže: `MeshOrder` tohle pole nemá, nese ho až
+   * `createMeshClient({ unbudgeted: true })`, tedy celý klient měřicí stránky.
+   *
+   * **Co to nevypíná:** bránu programu, kontrolu zadání ani prázdný mesh.
+   * Vypnout jde jen rozpočet, protože jen rozpočet je vlastnost příčky.
+   * A hlavně to **nemění, kde se měří** — práce dál běží ve workeru a
+   * `elapsedMs` dál znamená totéž co u souzených řádků. Kdyby se měřilo mimo
+   * worker, dvě čísla v jednom sloupci reportu by se přestala dát srovnat.
+   */
+  readonly unbudgeted?: boolean;
 }
 
 export interface MeshJobSuccess {
@@ -208,29 +236,32 @@ export function handleMeshJob(request: MeshJobRequest): MeshJobOutcome {
     // modelu pojmenovaný důvod k sebeopravě. Přerušení uprostřed by znamenalo
     // hodiny ve vzorkovací smyčce, což je změna ceny meshování — vlastní úloha,
     // ne oprava u review.
-    const budget = budgetFor(request.resolution);
     const elapsedMs = Date.now() - startedAt;
 
-    if (mesh.triangleCount > budget.maxTriangles) {
-      return {
-        response: {
-          jobId: request.jobId,
-          ok: false,
-          error: `mesh is ${mesh.triangleCount} triangles, above maxTriangles ${budget.maxTriangles} for resolution ${request.resolution}`,
-        },
-        transfer: [],
-      };
-    }
+    if (request.unbudgeted !== true) {
+      const budget = budgetFor(request.resolution);
 
-    if (elapsedMs > budget.maxMs) {
-      return {
-        response: {
-          jobId: request.jobId,
-          ok: false,
-          error: `mesh took ${elapsedMs} ms, above maxMs ${budget.maxMs} for resolution ${request.resolution}`,
-        },
-        transfer: [],
-      };
+      if (mesh.triangleCount > budget.maxTriangles) {
+        return {
+          response: {
+            jobId: request.jobId,
+            ok: false,
+            error: `mesh is ${mesh.triangleCount} triangles, above maxTriangles ${budget.maxTriangles} for resolution ${request.resolution}`,
+          },
+          transfer: [],
+        };
+      }
+
+      if (elapsedMs > budget.maxMs) {
+        return {
+          response: {
+            jobId: request.jobId,
+            ok: false,
+            error: `mesh took ${elapsedMs} ms, above maxMs ${budget.maxMs} for resolution ${request.resolution}`,
+          },
+          transfer: [],
+        };
+      }
     }
 
     return {

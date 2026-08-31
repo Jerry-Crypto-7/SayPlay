@@ -62,6 +62,20 @@ export interface MeshClientOptions {
   readonly createWorker?: () => MeshWorkerLike;
   /** Povolit počítání na hlavním vlákně, když worker není. Výchozí `false`. */
   readonly allowMainThread?: boolean;
+  /**
+   * Měřit bez rozpočtu. Výchozí `false`, tedy rozpočet platí.
+   *
+   * Je to volba **celého klienta**, ne jedné objednávky, a schválně: klient
+   * s tímhle přepínačem má `/dev/mesh-budget` a nikdo jiný. Kdyby to bylo
+   * pole `MeshOrder`, mohla by si o něj říct jedna objednávka kdekoli
+   * v produktu — a rozpočet by se dal obejít omylem, ne rozhodnutím.
+   *
+   * **Nevypíná worker.** Práce dál běží mimo hlavní vlákno, takže `elapsedMs`
+   * znamená u souzených i nesouzených řádků reportu totéž. Ústup na hlavní
+   * vlákno je jiná volba s jiným jménem (`allowMainThread`) a ta dvě se
+   * nesmějí zaměnit: měření mimo worker by dva sloupce reportu tiše rozešlo.
+   */
+  readonly unbudgeted?: boolean;
 }
 
 export interface MeshClient {
@@ -182,6 +196,10 @@ export function createMeshClient(options: MeshClientOptions = {}): MeshClient {
         sessionSeed: order.sessionSeed,
         resolution: order.resolution,
         bounds: order.bounds,
+        // Vždycky vypsané, i když je `false`: pak se dá na jedné odchycené
+        // zprávě přečíst, co si klient o rozpočtu myslí, místo aby se to
+        // muselo dovozovat z chybějícího pole.
+        unbudgeted: options.unbudgeted === true,
       };
       return new Promise<MeshResult>((resolve, reject) => {
         queue.push({ request, shapeId: order.program.shapeId, resolve, reject });

@@ -96,7 +96,14 @@ export default function MeshBudgetPage(): React.JSX.Element {
   useEffect(() => {
     // Jeden klient na celou stránku. Fronta v něm je sériová, takže se měření
     // mřížek nemůžou překrýt ani kdyby je spec pustil naráz.
-    const client = createMeshClient();
+    //
+    // **`unbudgeted`, protože měřidlo nesmí soudit.** Report vede 64³ a 96³
+    // schválně bez rozsudku, jenže `budgetFor()` je stejně soudilo příčkou
+    // `high` (48³) a worker vlastní měření odmítal — spec byl od 29. 8. 2026
+    // červený na `mesh is 47680 triangles, above maxTriangles 32000`. Rozsudek
+    // nad příčkami žebříku dělá **spec**, nad hotovým reportem, takže se tím
+    // nikam neztratil; jen se přestal plést do jeho pořizování.
+    const client = createMeshClient({ unbudgeted: true });
     const program = referenceProgram();
 
     window.__meshBudget = {

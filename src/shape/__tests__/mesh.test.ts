@@ -500,6 +500,97 @@ describe('prázdná práce se vrací jako selhání', () => {
 });
 
 /* ------------------------------------------------------------------ *
+ * 4d. Měřit se dá i bez rozsudku — a nic jiného se tím nevypne.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Vlastnost: **měřidlo se nesmí soudit rozpočtem, který teprve měří.**
+ *
+ * Naměřeno 31. 8. 2026: `e2e/mesh-budget.spec.ts` byl červený od 29. 8. na
+ * `mesh is 47680 triangles, above maxTriangles 32000 for resolution 64`.
+ * Report vede 64³ a 96³ schválně **bez rozsudku**, jenže `budgetFor(64)` sáhne
+ * po příčce `high`, tedy po stropu mřížky 48³ — a worker odmítl vlastní měření.
+ * Šest dní se to nikdo nedozvěděl, protože značka `@measure` drží ten spec mimo
+ * `npm run test:e2e`.
+ *
+ * Ty dveře jsou proto **jedny a úzké**: vypínají rozpočet a nic víc. Kdyby
+ * vypnuly i bránu programu nebo prázdný mesh, měřilo by se něco, co produkt
+ * nepostaví — a to je horší než neměřit vůbec.
+ */
+describe('nesouzená práce se změří, ale zbylé brány platí dál', () => {
+  /** Tři legální uzly, které v mřížce 48 dají přes 190 000 trojúhelníků. */
+  const CRINKLED: readonly ShapeNode[] = [
+    { kind: 'sphere', radius: 0.75 },
+    { kind: 'displace', child: 0, amplitude: 0.35, frequency: 14, seed: 3 },
+    { kind: 'displace', child: 1, amplitude: 0.2, frequency: 9, seed: 5 },
+  ];
+  const FAT_BOUNDS: Bounds3 = { min: [-1.2, -1.2, -1.2], max: [1.2, 1.2, 1.2] };
+
+  const fatJob: MeshJobRequest = {
+    jobId: 'job-unbudgeted',
+    program: { ...programOf(CRINKLED), targetBounds: FAT_BOUNDS },
+    sessionSeed: SEED,
+    resolution: MESH_DETAIL.high.resolution,
+    bounds: paddedBounds(FAT_BOUNDS, MESH_DETAIL.high.resolution),
+  };
+
+  it('týž mesh se souzený odmítne a nesouzený vrátí', () => {
+    // Obě poloviny v jednom testu schválně: samotné „nesouzený projde" by
+    // prošlo i tehdy, kdyby se rozpočet zrušil úplně.
+    const judged = handleMeshJob(fatJob).response;
+    expect(judged.ok).toBe(false);
+
+    const measured = handleMeshJob({ ...fatJob, unbudgeted: true }).response;
+    expect(measured.ok).toBe(true);
+    if (!measured.ok) return;
+    // Nad stropem příčky `high`, jinak by tenhle test nedokazoval nic.
+    expect(measured.triangleCount).toBeGreaterThan(MESH_DETAIL.high.maxTriangles);
+  });
+
+  it('nesouzená práce se pořád měří, takže sloupec reportu drží význam', () => {
+    // Past, kterou si úloha předepsala: kdyby se `unbudgeted` „opravilo"
+    // počítáním mimo worker, `workerMs` by u čtyř řádků reportu znamenalo
+    // dvě různé věci a čísla by se přestala dát srovnat.
+    const { response } = handleMeshJob({ ...fatJob, unbudgeted: true });
+    expect(response.ok).toBe(true);
+    if (!response.ok) return;
+    expect(response.elapsedMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it('brána programu platí i bez rozpočtu', () => {
+    const broken = {
+      ...fatJob,
+      unbudgeted: true,
+      program: { ...programOf(SPHERE), root: 9 },
+    };
+    const { response } = handleMeshJob(broken);
+    expect(response.ok).toBe(false);
+    if (response.ok) return;
+    expect(response.error).toContain('invalid shape program');
+  });
+
+  it('vadné zadání i prázdný výsledek platí i bez rozpočtu', () => {
+    const flat = handleMeshJob({
+      ...fatJob,
+      unbudgeted: true,
+      bounds: { min: [-2, 2, -2], max: [2, 2, 2] },
+    }).response;
+    expect(flat.ok).toBe(false);
+    if (!flat.ok) expect(flat.error).toContain('invalid mesh request');
+
+    const empty = handleMeshJob({
+      ...fatJob,
+      unbudgeted: true,
+      program: programOf([{ kind: 'sphere', radius: 50 }]),
+      bounds: paddedBounds(UNIT_BOUNDS, 12),
+      resolution: 12,
+    }).response;
+    expect(empty.ok).toBe(false);
+    if (!empty.ok) expect(empty.error).toContain('empty mesh');
+  });
+});
+
+/* ------------------------------------------------------------------ *
  * 5. Klient: fronta, chyby a zákaz tichého ústupu.
  * ------------------------------------------------------------------ */
 
@@ -596,6 +687,42 @@ describe('klient meshovacího workeru', () => {
     const client = createMeshClient({ allowMainThread: true });
     const result = await client.mesh(order);
     expect(result.triangleCount).toBeGreaterThan(0);
+  });
+
+  it('výchozí klient posílá práci k rozsudku, ne k pouhému změření', async () => {
+    // `unbudgeted` se vypisuje vždycky, i když je `false` — jinak by se tenhle
+    // test musel spokojit s „pole tam není", což je slabší tvrzení.
+    const worker = fakeWorker();
+    const client = createMeshClient({ createWorker: () => worker });
+
+    const promise = client.mesh(order);
+    expect(worker.queue[0].unbudgeted).toBe(false);
+    worker.flush();
+
+    expect((await promise).triangleCount).toBeGreaterThan(0);
+  });
+
+  it('měřicí klient si o nesouzenou práci řekne', async () => {
+    const worker = fakeWorker();
+    const client = createMeshClient({ createWorker: () => worker, unbudgeted: true });
+
+    const promise = client.mesh(order);
+    expect(worker.queue).toHaveLength(1);
+    expect(worker.queue[0].unbudgeted).toBe(true);
+    worker.flush();
+
+    expect((await promise).triangleCount).toBeGreaterThan(0);
+  });
+
+  it('bez workeru selže i měřicí klient, místo aby ustoupil na hlavní vlákno', async () => {
+    // **Tenhle test vznikl proto, že mutace přežila.** První podoba předchozího
+    // testu dosazovala atrapu workeru, takže se k ústupovému `if` nedostala —
+    // a `unbudgeted` směl klidně znamenat i `allowMainThread`, aniž by se něco
+    // ozvalo. `unbudgeted` je volba **o rozsudku**, ne o vlákně: kdyby měřidlo
+    // spadlo na hlavní vlákno, `workerMs` v reportu by u části řádků přestalo
+    // znamenat „čas ve workeru" a sloupec by se tiše rozešel sám se sebou.
+    const client = createMeshClient({ createWorker: undefined, unbudgeted: true });
+    await expect(client.mesh(order)).rejects.toThrow(/mesh worker unavailable/);
   });
 
   it('dispose odmítne i to, co ještě čeká ve frontě', async () => {
