@@ -193,13 +193,6 @@ function intoSlotSpace(
   });
 }
 
-/** Buffery kusů, které nikdo nedostane. Kit si své kusy staví sám, mesh ne. */
-function release(placements: readonly GeomPlacement[]): void {
-  for (const placement of placements) {
-    if (placement.kind === 'mesh') placement.geometry.dispose();
-  }
-}
-
 /* ------------------------------------------------------------------ *
  * Stavba.
  * ------------------------------------------------------------------ */
@@ -349,9 +342,15 @@ export async function buildProxyWorld(
 
     const bounds = measureBounds(placements);
     if (bounds === null) {
-      // Kusy, které nikdo nedostane, tu končí — nikdo jiný je neuvolní, protože
-      // `compilePlacements()` uklízí jen to, co se do kořene nedostalo.
-      release(placements);
+      // **Buffery se tu schválně neuvolňují.** Nabízí se to — kusy, které
+      // nikdo nedostane, už nikdo neuklidí, protože `compilePlacements()`
+      // uklízí jen to, co se do kořene nedostalo. Jenže sem se dojde jedině
+      // tehdy, když se řádek spekl do **prázdna**, takže je to buffer
+      // o nula trojúhelnících; a `group` vrací tytéž záznamy dvěma rodičům,
+      // takže by `dispose()` mohl sáhnout na geometrii, kterou pořád drží
+      // kulisa. Naměřeno nezávislou revizí 31. 8. 2026: úklid vyrobil dvojí
+      // uvolnění a uvolněnou geometrii v `scenery`. Nula ušetřených bajtů
+      // za dvě nová selhání se neplatí.
       return clay(`composition row ${node} occupies no space`);
     }
 
