@@ -547,14 +547,28 @@ describe('nesouzená práce se změří, ale zbylé brány platí dál', () => {
     expect(measured.triangleCount).toBeGreaterThan(MESH_DETAIL.high.maxTriangles);
   });
 
-  it('nesouzená práce se pořád měří, takže sloupec reportu drží význam', () => {
-    // Past, kterou si úloha předepsala: kdyby se `unbudgeted` „opravilo"
-    // počítáním mimo worker, `workerMs` by u čtyř řádků reportu znamenalo
-    // dvě různé věci a čísla by se přestala dát srovnat.
+  it('nesouzený čas pokrývá meshing, takže sloupec reportu drží význam', () => {
+    // **Tenhle test má dvě předchozí podoby a obě byly ozdobné** — nezávislá
+    // revize je zabila dvěma mutacemi, které přežily: `elapsedMs = 0` na
+    // nesouzené cestě, a `startedAt` posunuté až za `meshShapeProgram()`.
+    // `toBeGreaterThanOrEqual(0)` platí pro jakýkoli rozdíl dvou `Date.now()`,
+    // takže neměřilo nic. Ani `toBeGreaterThan(0)` by nestačilo: rozlišení
+    // `Date.now()` je milisekunda a druhá mutace by se do ní občas vešla.
+    //
+    // Vlastnost, o kterou tu jde: `elapsedMs` **pokrývá tu drahou práci**, ne
+    // úklid kolem ní. Report vedle sebe staví `workerMs` souzených
+    // i nesouzených řádků a v obou sloupcích to musí být totéž číslo o tomtéž.
+    // Měří se proto zvenčí a porovnává: čas uvnitř je většina času venku.
+    const outerStart = Date.now();
     const { response } = handleMeshJob({ ...fatJob, unbudgeted: true });
+    const outerMs = Date.now() - outerStart;
+
     expect(response.ok).toBe(true);
     if (!response.ok) return;
-    expect(response.elapsedMs).toBeGreaterThanOrEqual(0);
+    // Práce sama stojí stovky milisekund (190 000 trojúhelníků), takže dolní
+    // hranice je volná a přesto o tři řády nad tím, co dá posunuté měření.
+    expect(outerMs).toBeGreaterThan(20);
+    expect(response.elapsedMs).toBeGreaterThan(outerMs / 2);
   });
 
   it('brána programu platí i bez rozpočtu', () => {

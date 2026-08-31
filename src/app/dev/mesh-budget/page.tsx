@@ -103,6 +103,11 @@ export default function MeshBudgetPage(): React.JSX.Element {
     // červený na `mesh is 47680 triangles, above maxTriangles 32000`. Rozsudek
     // nad příčkami žebříku dělá **spec**, nad hotovým reportem, takže se tím
     // nikam neztratil; jen se přestal plést do jeho pořizování.
+    //
+    // Je to volba **celého klienta**, takže bez rozpočtu se měří i 32³ a 48³.
+    // Nabízelo by se pustit ji jen na mřížky mimo žebřík, ale bylo by to horší:
+    // měřidlo, které smí odmítnout vlastní vzorek, měří jen ty vzorky, které
+    // se vešly, a přesně tak vznikl červený spec, co tady leželo šest dní.
     const client = createMeshClient({ unbudgeted: true });
     const program = referenceProgram();
 

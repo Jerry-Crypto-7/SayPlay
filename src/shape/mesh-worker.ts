@@ -48,9 +48,13 @@ import { MESH_DETAIL, type Bounds3, type ShapeProgram } from './types';
  * deklaruje; mlčky propustit cokoliv jen proto, že si někdo řekl o neobvyklou
  * mřížku, by tu bránu zrušilo.
  *
- * **Měření tudy nechodí.** Mřížky, které report vede bez rozsudku (64³, 96³),
- * si říkají o `unbudgeted` a k téhle funkci se nedostanou — soudit je příčkou,
- * do které nepatří, znamenalo šest dní červené měření, viz `MeshJobRequest`.
+ * **Měření tudy nechodí, a to celé.** `unbudgeted` je volba klienta, ne jedné
+ * objednávky, takže měřicí stránka obchází rozpočet u **všech čtyř** mřížek,
+ * i u obou příček žebříku — ne jen u 64³ a 96³, které report vede bez rozsudku.
+ * Rozsudek nad příčkami se tím neztratil, jen se přesunul za pořízení čísel do
+ * `e2e/mesh-budget.spec.ts`. Pozor, že ten spec je značkou `@measure` mimo
+ * `npm run test:e2e`: příčky se tedy soudí jen při ručním měření. Viz
+ * `MeshJobRequest.unbudgeted`.
  */
 function budgetFor(resolution: number): (typeof MESH_DETAIL)[keyof typeof MESH_DETAIL] {
   return resolution <= MESH_DETAIL.rough.resolution ? MESH_DETAIL.rough : MESH_DETAIL.high;
@@ -79,6 +83,13 @@ export interface MeshJobRequest {
    * jen tím, že si o to někdo řekne, stejně jako o `allowMainThread`. Produkt
    * si o to říct nemůže: `MeshOrder` tohle pole nemá, nese ho až
    * `createMeshClient({ unbudgeted: true })`, tedy celý klient měřicí stránky.
+   *
+   * **Platí to pro celého klienta, ne pro jednu mřížku.** Měřicí stránka tedy
+   * obejde rozpočet i u 32³ a 48³, tedy u obou příček, které `MESH_DETAIL`
+   * doopravdy definuje. Je to schválně — měřidlo, které smí odmítnout vlastní
+   * vzorek, měří jen ty vzorky, co se povedly. Rozsudek nad příčkami dělá
+   * `e2e/mesh-budget.spec.ts` nad hotovým reportem, a **je to jediné místo,
+   * kde se dnes soudí**; `npm run test:e2e` ho značkou `@measure` vynechává.
    *
    * **Co to nevypíná:** bránu programu, kontrolu zadání ani prázdný mesh.
    * Vypnout jde jen rozpočet, protože jen rozpočet je vlastnost příčky.
