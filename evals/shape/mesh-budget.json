@@ -1,10 +1,10 @@
 {
-  "measuredAt": "2026-08-29",
+  "measuredAt": "2026-08-31",
   "task": "P13 vlna 1 T5",
   "browser": "chromium",
   "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.7922.34 Safari/537.36",
   "adapter": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
-  "buildId": "manifest:34262776ac5b",
+  "buildId": "manifest:c1b5301eb1c8",
   "hardwareConcurrency": 16,
   "adapterAffectsResult": false,
   "program": {
@@ -30,7 +30,8 @@
     "runs": 3,
     "pick": "best",
     "warmupResolution": 32,
-    "timedIn": "worker"
+    "timedIn": "worker",
+    "budgetEnforced": false
   },
   "ladder": {
     "rough": {
@@ -40,21 +41,21 @@
     },
     "high": {
       "resolution": 48,
-      "maxMs": 900,
+      "maxMs": 2600,
       "maxTriangles": 32000
     }
   },
   "verdict": {
     "rough": {
       "resolution": 32,
-      "workerMs": 155,
+      "workerMs": 269,
       "triangles": 12016,
       "withinMs": true,
       "withinTriangles": true
     },
     "high": {
       "resolution": 48,
-      "workerMs": 462,
+      "workerMs": 737,
       "triangles": 26992,
       "withinMs": true,
       "withinTriangles": true
@@ -62,12 +63,12 @@
     "outOfLadder": [
       {
         "resolution": 64,
-        "workerMs": 1071,
+        "workerMs": 1563,
         "triangles": 47680
       },
       {
         "resolution": 96,
-        "workerMs": 3386,
+        "workerMs": 4464,
         "triangles": 106696
       }
     ]
@@ -76,8 +77,8 @@
     {
       "resolution": 32,
       "browser": {
-        "workerMs": 155,
-        "roundTripMs": 155.5,
+        "workerMs": 269,
+        "roundTripMs": 269.3,
         "vertices": 5995,
         "triangles": 12016
       },
@@ -86,14 +87,14 @@
         "vertices": 5995,
         "triangles": 12016
       },
-      "driftFromNode": -0.162,
-      "driftExplained": true
+      "driftFromNode": 0.454,
+      "driftExplained": false
     },
     {
       "resolution": 48,
       "browser": {
-        "workerMs": 462,
-        "roundTripMs": 462.3,
+        "workerMs": 737,
+        "roundTripMs": 737.5,
         "vertices": 13477,
         "triangles": 26992
       },
@@ -102,14 +103,14 @@
         "vertices": 13477,
         "triangles": 26992
       },
-      "driftFromNode": 0.746,
+      "driftFromNode": 1.785,
       "driftExplained": false
     },
     {
       "resolution": 64,
       "browser": {
-        "workerMs": 1071,
-        "roundTripMs": 1071,
+        "workerMs": 1563,
+        "roundTripMs": 1563.6,
         "vertices": 23830,
         "triangles": 47680
       },
@@ -118,14 +119,14 @@
         "vertices": 23830,
         "triangles": 47680
       },
-      "driftFromNode": 0.751,
+      "driftFromNode": 1.556,
       "driftExplained": false
     },
     {
       "resolution": 96,
       "browser": {
-        "workerMs": 3386,
-        "roundTripMs": 3385.7,
+        "workerMs": 4464,
+        "roundTripMs": 4464.2,
         "vertices": 53335,
         "triangles": 106696
       },
@@ -134,7 +135,7 @@
         "vertices": 53335,
         "triangles": 106696
       },
-      "driftFromNode": 0.306,
+      "driftFromNode": 0.721,
       "driftExplained": false
     }
   ],
@@ -159,8 +160,8 @@
     }
   ],
   "workerOverhead64": {
-    "workerMs": 1071,
-    "mainThreadMs": 763.6,
+    "workerMs": 1563,
+    "mainThreadMs": 1268.4,
     "nodeMs": 611.6
   }
 }
