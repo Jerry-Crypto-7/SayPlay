@@ -36,6 +36,95 @@ const PAGE_COST_PATH = join('evals', 'shape', 'gallery-page-cost.json');
 
 const QUARTER_TURN_MS = 4_170;
 
+/**
+ * Nejnižší jas, od kterého se pixel počítá za hlínu. Pozadí je `pelagic`
+ * (#07141f, jas 18), nejtmavší odvrácená stěna tvaru je pořád nad 50.
+ */
+const INK_LUMINANCE = 70;
+
+/**
+ * Kolik pixelů smí být mezi těžištěm hlíny a středem popisku. Buňka je při
+ * 1280×720 široká 199 px, takže čtvrtina buňky je hranice, za kterou už tvar
+ * čte pod cizím jménem. Tvary nejsou souměrné a otáčejí se, takže pár desítek
+ * pixelů je vlastní pohyb tvaru, ne posun mřížky.
+ */
+const INK_TOLERANCE = 45;
+
+/** Pod tolika pixely hlíny se buňka nesoudí — znamená to, že tam tvar není. */
+const INK_MINIMUM = 400;
+
+/**
+ * Kde leží hlína proti popiskům — odečtené z plátna, ne dopočítané z rozvržení.
+ *
+ * Každý dost světlý pixel se přidělí **nejbližšímu popisku** a spočítá se
+ * těžiště po sloupcích. Je to Voronoi nad dvanácti body, takže test nezná ani
+ * rozteč buněk, ani kameru: ptá se přesně na to, co se ptá člověk v bráně K1 —
+ * *je ten tvar, co vidím, pod svým vlastním jménem?* Kus posunutý k sousedovi
+ * spadne do sousedovy buňky a těžiště se hne o desítky pixelů.
+ */
+async function measureInk(page: import('@playwright/test').Page) {
+  return page.evaluate((threshold) => {
+    const canvas = document.querySelector('canvas');
+    if (canvas === null) throw new Error('gallery has no canvas');
+    const frame = canvas.getBoundingClientRect();
+
+    const labels = [...document.querySelectorAll('[data-testid^="gallery-label-"]')].map((node) => {
+      const box = node.getBoundingClientRect();
+      return {
+        id: (node.getAttribute('data-testid') ?? '').replace('gallery-label-', ''),
+        x: box.left + box.width / 2 - frame.left,
+        y: box.top + box.height / 2 - frame.top,
+      };
+    });
+
+    const copy = document.createElement('canvas');
+    copy.width = canvas.width;
+    copy.height = canvas.height;
+    const context = copy.getContext('2d');
+    if (context === null) throw new Error('no 2d context');
+    context.drawImage(canvas, 0, 0);
+    const image = context.getImageData(0, 0, copy.width, copy.height);
+
+    // Plátno má vlastní rozlišení (dpr), popisky leží v CSS pixelech.
+    const scaleX = frame.width / copy.width;
+    const scaleY = frame.height / copy.height;
+
+    const sums = labels.map(() => ({ x: 0, count: 0 }));
+    for (let y = 0; y < copy.height; y += 1) {
+      for (let x = 0; x < copy.width; x += 1) {
+        const at = (y * copy.width + x) * 4;
+        const luminance =
+          0.2126 * image.data[at] + 0.7152 * image.data[at + 1] + 0.0722 * image.data[at + 2];
+        if (luminance < threshold) continue;
+        const cssX = x * scaleX;
+        const cssY = y * scaleY;
+        let best = 0;
+        let bestDistance = Number.POSITIVE_INFINITY;
+        for (let index = 0; index < labels.length; index += 1) {
+          const dx = labels[index].x - cssX;
+          const dy = labels[index].y - cssY;
+          const distance = dx * dx + dy * dy;
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            best = index;
+          }
+        }
+        sums[best].x += cssX;
+        sums[best].count += 1;
+      }
+    }
+
+    return labels.map((label, index) => ({
+      id: label.id,
+      labelX: label.x,
+      inkX: sums[index].count === 0 ? -1 : sums[index].x / sums[index].count,
+      pixels: sums[index].count,
+    }));
+  }, INK_LUMINANCE);
+}
+
+
+
 test('every meshed shape sits in the cell its own label sits in', async ({ page }) => {
   test.setTimeout(240_000);
 
@@ -96,9 +185,42 @@ test('every meshed shape sits in the cell its own label sits in', async ({ page 
     expect(GALLERY_IDS[Number(cell)]).toBe(id);
   }
 
+  // Odečet hlíny jede **uvnitř téhle smyčky**, ne ve vlastním testu: jedno
+  // načtení galerie stojí meshování dvanácti tvarů, a čtvrtiny otáčky jsou
+  // přesně to, co je u posunutého popisku potřeba proměřit. Tvar se otáčí, takže
+  // se soudí **nejhorší** ze čtyř odečtů, ne první.
+  const worst = new Map<string, { labelX: number; inkX: number; pixels: number }>();
+
   for (let quarter = 0; quarter < 4; quarter += 1) {
     await page.screenshot({ path: `docs/gallery-${quarter * 90}.png` });
+
+    for (const cell of await measureInk(page)) {
+      const drift = Math.abs(cell.inkX - cell.labelX);
+      const held = worst.get(cell.id);
+      if (held === undefined || drift > Math.abs(held.inkX - held.labelX)) {
+        worst.set(cell.id, { labelX: cell.labelX, inkX: cell.inkX, pixels: cell.pixels });
+      }
+    }
+
     if (quarter < 3) await page.waitForTimeout(QUARTER_TURN_MS);
+  }
+
+  for (const [id, cell] of worst) {
+    console.log(
+      `[gallery] ${id}: label x=${cell.labelX.toFixed(1)} ink x=${cell.inkX.toFixed(1)} ` +
+        `drift=${Math.abs(cell.inkX - cell.labelX).toFixed(1)} px=${cell.pixels}`,
+    );
+  }
+
+  // Vynechané tvary nemají co měřit — jejich buňka je prázdná schválně.
+  for (const id of placed.map((item) => item.split(':')[0])) {
+    const cell = worst.get(id);
+    expect(cell, `${id} nemá popisek`).toBeDefined();
+    expect(cell!.pixels, `${id}: v buňce popisku není hlína`).toBeGreaterThan(INK_MINIMUM);
+    expect(
+      Math.abs(cell!.inkX - cell!.labelX),
+      `${id}: tvar nesedí nad svým popiskem`,
+    ).toBeLessThan(INK_TOLERANCE);
   }
 });
 

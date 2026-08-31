@@ -30,9 +30,9 @@
  * mimo hashovaný stav a mimo replay cestu, přesně jak `CLAUDE.md` žádá.
  */
 
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BufferAttribute, BufferGeometry, type Group } from 'three';
+import { BufferAttribute, BufferGeometry, Vector3, type Group } from 'three';
 
 import { UI_TOKENS } from '@/kit';
 import { createMeshClient, type MeshResult } from '@/shape/mesh-client';
@@ -47,6 +47,20 @@ const COLUMNS = 4;
 
 /** Rozteč buněk. Tvar se do buňky zmenší, takže je to i jeho největší rozměr. */
 const CELL = 3.4;
+
+/** Řádků v mřížce. Dvanáct kusů na čtyřech sloupcích dá tři. */
+const ROWS = Math.ceil(GALLERY.length / COLUMNS);
+
+/**
+ * O kolik pixelů popisky spadnou pod svou buňku.
+ *
+ * Tvar se do buňky zmenší na 0,78 její strany, jenže zmenšuje se podle
+ * **největšího** rozměru — kdo je široký a nízký jako `machine`, sáhne na
+ * spodní hranu buňky téměř celou výškou a popisek se mu opře o podstavec.
+ * Deset pixelů je mezera, ne posun: vodorovné sazení, o které bráně jde,
+ * se tím nemění.
+ */
+const LABEL_DROP = 10;
 
 /** Otáček za vteřinu. Pomalu — brána se soudí okem, ne stopkami. */
 const TURNS_PER_SECOND = 0.06;
@@ -80,7 +94,6 @@ function placement(mesh: MeshResult, index: number) {
     mesh.bounds.max[2] - mesh.bounds.min[2],
     1e-6,
   );
-  const rows = Math.ceil(GALLERY.length / COLUMNS);
 
   return {
     scale: (CELL * 0.78) / span,
@@ -91,10 +104,71 @@ function placement(mesh: MeshResult, index: number) {
     ] as const,
     cell: [
       (index % COLUMNS) * CELL - ((COLUMNS - 1) * CELL) / 2,
-      ((rows - 1) * CELL) / 2 - Math.floor(index / COLUMNS) * CELL,
+      ((ROWS - 1) * CELL) / 2 - Math.floor(index / COLUMNS) * CELL,
       0,
     ] as const,
   };
+}
+
+/** Obdélník mřížky na obrazovce, v pixelech plátna. */
+interface Frame {
+  readonly left: number;
+  readonly top: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/**
+ * Kam mřížka kusů doopravdy dopadla — a tím i kam patří popisky.
+ *
+ * **Popisky se do plátna netrefovaly a nikdo si toho nevšiml, protože se to
+ * nedalo poznat z indexu.** HTML mřížka stála na čtyřech dílech šířky okna
+ * (320 px při 1280), kdežto kusy stojí 3,4 světové jednotky od sebe, což při
+ * kameře na `z = 16` a zorném úhlu 42° dělá 199 px. Kost tak vyšla blíž
+ * k popisku `Root` než ke svému vlastnímu — přesně to, co brána K1 potřebuje
+ * mít jisté, protože člověk soudí tvar podle jména pod ním.
+ *
+ * Obdélník se **nedopočítává vedle scény**, ale promítá skutečnou kamerou, do
+ * které se kreslí. Vlastní vzorec pro „kolik pixelů je jednotka" by byl druhá
+ * kopie projekce a rozešel by se s ní při první změně objektivu nebo vzdálenosti.
+ *
+ * Počítá se v `useFrame`, ne v efektu: po změně velikosti okna R3F přepočítá
+ * matici kamery až ve smyčce, takže efekt by promítal ještě tou starou.
+ */
+function LabelFrame({ onFrame }: { readonly onFrame: (frame: Frame) => void }): null {
+  const last = useRef<Frame | null>(null);
+
+  useFrame(({ camera, size }) => {
+    const halfWidth = (COLUMNS * CELL) / 2;
+    const halfHeight = (ROWS * CELL) / 2;
+    const topLeft = new Vector3(-halfWidth, halfHeight, 0).project(camera);
+    const bottomRight = new Vector3(halfWidth, -halfHeight, 0).project(camera);
+    const left = ((topLeft.x + 1) / 2) * size.width;
+    const top = ((1 - topLeft.y) / 2) * size.height;
+    const frame: Frame = {
+      left,
+      top,
+      width: ((bottomRight.x + 1) / 2) * size.width - left,
+      height: ((1 - bottomRight.y) / 2) * size.height - top,
+    };
+
+    // Půl pixelu: pod tím se popisek nemá kam pohnout a přepis stavu by jel
+    // každý snímek.
+    const previous = last.current;
+    if (
+      previous !== null &&
+      Math.abs(previous.left - frame.left) < 0.5 &&
+      Math.abs(previous.top - frame.top) < 0.5 &&
+      Math.abs(previous.width - frame.width) < 0.5 &&
+      Math.abs(previous.height - frame.height) < 0.5
+    ) {
+      return;
+    }
+    last.current = frame;
+    onFrame(frame);
+  });
+
+  return null;
 }
 
 function Piece({
@@ -155,6 +229,11 @@ export default function GalleryPage(): React.JSX.Element {
   const [placed, setPlaced] = useState<readonly string[]>([]);
   /** Kolik tvarů vynechalo `?skip=`. Bez toho by `done` nikdy nenastalo. */
   const [skipped, setSkipped] = useState(0);
+  /** Kam mřížka dopadla. Do prvního snímku se popisky nekreslí — je jasnější
+      žádný popisek než popisek na odhadnutém místě. */
+  const [frame, setFrame] = useState<Frame | null>(null);
+
+  const onFrame = useCallback((next: Frame) => setFrame(next), []);
 
   const onPlaced = useCallback((shapeId: string, cell: number) => {
     setPlaced((current) => [...current, `${shapeId}:${cell}`]);
@@ -244,10 +323,15 @@ export default function GalleryPage(): React.JSX.Element {
       <Canvas
         data-testid="gallery-canvas"
         shadows={false}
-        gl={{ antialias: true, powerPreference: 'high-performance' }}
+        /* `preserveDrawingBuffer` je tu kvůli bráně, ne kvůli obrazu: bez něj je
+           obsah plátna mimo vykreslovací smyčku nedefinovaný a test, který se ptá
+           „leží ten tvar nad svým popiskem?", by četl prázdno. Je to stránka brány,
+           ne produkt — cena za držený buffer se tu platí jednou a jinde nikde. */
+        gl={{ antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
         camera={{ position: [0, 0, 16], fov: 42, near: 0.1, far: 100 }}
       >
         <WorldstreamLighting />
+        <LabelFrame onFrame={onFrame} />
         {meshes.map((mesh) => (
           <Piece
             key={mesh.shapeId}
@@ -277,13 +361,20 @@ export default function GalleryPage(): React.JSX.Element {
         </span>
       </header>
 
-      {/* Popisky nejsou v 3D: bez `drei` by to znamenalo vlastní atlas písma,
-          a mřížka je pevná, takže HTML mřížka nad plátnem přesně sedne. */}
+      {/* Popisky nejsou v 3D: bez `drei` by to znamenalo vlastní atlas písma.
+          Mřížka je pevná, ale **pevná ve světě, ne v pixelech** — kolik z okna
+          zabere, rozhoduje kamera. HTML mřížka proto sedí na obdélníku, který
+          promítla ta kamera, ne na čtyřech dílech šířky okna. */}
       <ul
         aria-label="Shape names"
+        data-testid="gallery-labels"
         style={{
           position: 'absolute',
-          inset: '3.5rem 0 1rem',
+          left: frame === null ? 0 : `${frame.left}px`,
+          top: frame === null ? 0 : `${frame.top + LABEL_DROP}px`,
+          width: frame === null ? 0 : `${frame.width}px`,
+          height: frame === null ? 0 : `${frame.height}px`,
+          visibility: frame === null ? 'hidden' : 'visible',
           display: 'grid',
           gridTemplateColumns: `repeat(${COLUMNS}, 1fr)`,
           gridAutoRows: '1fr',
