@@ -501,11 +501,35 @@ export async function POST(request: Request): Promise<Response> {
      * veřejný. Ceník nasazení je přitom smlouva s poskytovatelem, ne vlastnost
      * světa, který porotce dostal.
      *
-     * **Zůstává `usage`, mizí `costUsd`**, a ta volba není libovolná: počet
-     * tokenů je vlastnost **toho volání** a porotci poctivě říká, kolik toho
-     * model na ten svět napsal. `costUsd` je vlastnost **ceníku** — sám o sobě
-     * neříká nic o světě a zároveň je to jediná polovina dvojice, bez které se
-     * ceník dopočítat nedá.
+     * **Zůstává `usage`, mizí `costUsd`**, a ta volba není libovolná: `costUsd`
+     * je vlastnost **ceníku** — sám o sobě neříká nic o světě a zároveň je to
+     * jediná polovina dvojice, bez které se ceník dopočítat nedá. Počet tokenů
+     * je proti tomu vlastnost **toho volání**.
+     *
+     * ⚠ **Není to ale spálená spotřeba, a od 1. 9. 2026 se to tak nesmí
+     * popisovat.** Do té doby se tohle pole odůvodňovalo jako poctivá vlastnost
+     * volání, a to přestalo platit o tři úlohy dřív. `usage` je **účetní
+     * základ** — číslo, ze kterého se počítal účet — a od účtenky poskytovatele
+     * se liší třemi způsoby:
+     *
+     * - **Zvedá se na hranici.** Podhlášený výstup se přepočítá z délky textu,
+     *   který odpověď nese (`readableUsage()` v `src/server/upstream.ts`).
+     *   Naměřeno: poskytovatel pošle `{0, 1}`, ven jde `outputTokens: 250`.
+     * - **Nečitelná účtenka jde ven jako `{0, 0}`.** Záporná složka, chybějící
+     *   `usage` i dvojitá nula znamenají „účet se přečíst nedal, strhla se
+     *   rezervace". `{0, 0}` je tenhle stav, ne nula spálených tokenů.
+     * - **Nekonečná se vrací syrová.** Je čitelná, jen nesmyslná: strop ji
+     *   odmítne a naúčtuje rezervaci, hlášené číslo se přitom nemění.
+     *
+     * **Rozhodnuto: přepsat tuhle větu, ne rozdělit pole.** Oddělit účetní
+     * základ od hlášené účtenky znamená druhé pole v `GenerationOutcome` a sáhnout
+     * na `pipeline.ts`. Koupilo by se za to jediné: ven by šla čísla, kterým
+     * server sám nevěří — přesně ty tvary (`{0, 1}`, záporné složky), kvůli
+     * kterým hranice a znaménkové pravidlo vznikly. Publikovat účtenku, kterou
+     * si server odmítl nechat pro účet, je horší odpověď než popsat, co to číslo
+     * je. **Únik to není ani takhle:** `costUsd` ven pořád nejde a jediné, co
+     * z čísla jde dopočítat, je dělitel hranice (`outputTokens === ceil(délka
+     * emise / 12)`), tedy konstanta ve veřejném zdrojáku.
      *
      * ⚠ **Do 1. 9. 2026 tady stálo, že řádek omezuje „to, co ho vyrábí" — a to
      * bylo nepravdivé.** Argument zněl: účtovat je co jen u placeného volání

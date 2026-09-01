@@ -710,6 +710,52 @@ describe('POST /api/generate', () => {
      * libovolné hloubky. Přesunout tutéž hodnotu o patro jinam je totiž přesně
      * to, co by opravu obešlo, aniž by se kterýkoli test ozval.
      */
+    /**
+     * **Číslo, které jde ven, není účtenka poskytovatele** — nález nezávislé
+     * revize 1. 9. 2026 (`T9-usagereport`, LOW). Routa to pole odůvodňovala
+     * jako poctivou vlastnost volání, jenže `readableUsage()` podhlášený výstup
+     * zvedne na hranici odvozenou z délky textu. Rozhodnutí bylo přepsat popis,
+     * ne rozdělit pole: publikovat účtenku, kterou si server odmítl nechat pro
+     * účet, je horší odpověď než popsat, co to číslo je.
+     *
+     * Testuje se to obojí naráz, protože ani jedna půlka sama nestačí. Chování
+     * ukazuje, že se číslo dopočítává; lexikální aserce hlídá, že to routa
+     * nepopisuje jinak — a to je celý ten nález, protože vada nebyla v čísle.
+     */
+    it('hlášená spotřeba je účetní základ, a routa to tak i popisuje', async () => {
+      // 3000 znaků textu dá hranici 250 výstupních tokenů (dělitel 12).
+      const pad = 'x'.repeat(3000 - JSON.stringify({ emitted: true, pad: '' }).length);
+      const emission = JSON.stringify({ emitted: true, pad });
+      expect(emission).toHaveLength(3000);
+
+      vi.stubGlobal('fetch', () =>
+        Promise.resolve(
+          Response.json({
+            content: [{ type: 'text', text: emission }],
+            usage: { input_tokens: 0, output_tokens: 1 },
+          }),
+        ),
+      );
+
+      const { status, json } = await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_USD_PER_MTOK_IN: '3',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        WORLDSMITH_SPEND_CAP_USD: '1000',
+      });
+
+      expect(status).toBe(200);
+      // Poskytovatel řekl 1. Ven jde 250 — účetní základ, ne spálená spotřeba.
+      expect(json.usage).toEqual({ inputTokens: 0, outputTokens: 250 });
+
+      const source = readFileSync(new URL('../route.ts', import.meta.url), 'utf8');
+      // Věta, která tu stála do 1. 9. 2026 a slibovala spálené tokeny.
+      expect(source, 'routa pořád slibuje spotřebu, kterou nevrací').not.toContain('kolik toho model');
+      expect(source, 'popis účetního základu z routy zmizel').toContain('ze kterého se počítal účet');
+    });
+
     it('úspěch nevydá ceník ani jméno modelu, a poctivost si nechá', async () => {
       const model = 'privately-pinned-model-7c1f';
       vi.stubGlobal('fetch', () =>
