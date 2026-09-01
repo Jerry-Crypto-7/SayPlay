@@ -293,13 +293,27 @@ function worstCaseUsd(call: GenerationCall, config: UpstreamConfig): number {
 function usageOf(payload: unknown): Usage | null {
   const usage = (payload as { usage?: { input_tokens?: unknown; output_tokens?: unknown } } | null)?.usage;
   if (typeof usage?.input_tokens !== 'number' || typeof usage.output_tokens !== 'number') return null;
-  // **Non-finite a záporné počty se tu schválně NEODMÍTAJÍ** — vypadá to jako
-  // chybějící kontrola a není. Zkusilo se to 21. 8. 2026 a bylo to horší:
-  // `null` se totiž na úspěšné cestě sráží na `{0, 0}` (níž v tomhle souboru),
-  // takže z otrávené spotřeby vznikne účtenka na **nula dolarů** a volání je
-  // zadarmo. Bez téhle kontroly vyjde cena `Infinity` nebo `NaN`, tu odmítne
-  // `release()` v `spend-cap.ts` a účtuje celou rezervaci — bezpečná strana.
-  // Chytil to až mutant M2, který kontrolu odstranil a sada zůstala zelená.
+  // **Záporná složka (a `NaN`) je nečitelná účtenka, ne sleva.** `costUsd()`
+  // obě složky **sčítá**, takže dost záporný vstup zaplatí kladný výstup a
+  // součet vyjde těsně nad nulou, kde ho `release()` přijme jako poctivou
+  // cenu: `{-1249, 250}` nad textem o 3000 znacích se zaúčtovalo 0,000005 USD
+  // proti rezervaci 0,219505 USD, tedy **44 000× méně**. `!(x >= 0)` chytá
+  // i `NaN`.
+  //
+  // **Bydlí to tady, ne u čtenáře textu**, a to je oprava z 1. 9. 2026: první
+  // znění sedělo v `readableUsage()`, kterou `generate()` volá jen na dvou
+  // návratech nesoucích text. Třetí návrat („odpověď nenese textový blok")
+  // předával účtenku syrovou, takže tatáž otrávená dvojice byla přes
+  // `MALFORMED_RESPONSE` **levnější než neposlat nic** (0,000005 proti
+  // rezervaci, kterou jinak `BILLED_ON_FAILURE` na téhle příčině účtuje).
+  // Naměřeno nezávislou revizí nad commitem `df4a6b5`.
+  //
+  // **Nekonečno se tu naopak schválně NEODMÍTÁ.** Zkusilo se to 21. 8. 2026
+  // a bylo to horší; dnes už `null` zadarmo neúčtuje (`pipeline.ts` na něj
+  // strhne rezervaci), ale `Infinity` se stejně dostane na tutéž rezervaci
+  // přes `costUsd()` → `release()`, takže by změna nekoupila nic a jen by
+  // zahodila jediné číslo, které o té odpovědi ven jde.
+  if (!(usage.input_tokens >= 0) || !(usage.output_tokens >= 0)) return null;
 
   return { inputTokens: usage.input_tokens, outputTokens: usage.output_tokens };
 }
@@ -362,11 +376,13 @@ function usageOf(payload: unknown): Usage | null {
  * `release()` to jako kladné konečné číslo přijme. Naměřeno nezávislou revizí
  * 1. 9. 2026; vada je starší než hranice, ta ji jen nezavřela.
  *
- * Kterákoli záporná složka proto padá na `null`, tedy na rezervaci. **Bydlí to
- * tady, ne u `release()`:** ten soudí jednu částku a ta je v tomhle případě
- * legitimně kladná; rozpad na složky vidí jen tenhle soubor. Doktrínu
- * `usageOf()` to nemění — ta záporná čísla schválně propouští, aby je odmítl
- * strop; tohle ji jen dotahuje na případ, kdy se dvě vadné složky vyruší.
+ * Kterákoli záporná složka proto padá na `null`, tedy na rezervaci — ale
+ * **rozhoduje se to o patro výš, v `usageOf()`**, a to je oprava téhož dne.
+ * Když pravidlo bydlelo tady, chránilo jen dva ze tří návratů `generate()`:
+ * třetí („odpověď nenese textový blok") sem nikdy nedojde a předával účtenku
+ * syrovou. U `release()` naopak bydlet nemůže — ten soudí jednu částku a ta je
+ * v tomhle případě legitimně kladná; rozpad na složky vidí jen tenhle soubor.
+ * Tahle funkce proto od té chvíle dostává zaručeně nezáporné složky.
  *
  * ## Co tím zavřít NEJDE
  *
@@ -388,18 +404,11 @@ function readableUsage(usage: Usage | null, text: string, maxOutputTokens: numbe
   // Pořadí je podstatné: dvojitá nula je nečitelná účtenka a musí spadnout na
   // rezervaci, ne na hranici, která je o dva řády levnější.
   if (usage.inputTokens === 0 && usage.outputTokens === 0) return null;
-  // Záporná složka je nečitelná účtenka, ne sleva. `costUsd()` obě složky
-  // **sčítá**, takže dost záporný vstup zaplatí kladný výstup a součet vyjde
-  // těsně nad nulou, kde ho `release()` přijme jako poctivou cenu. `!(x >= 0)`
-  // chytá i `NaN`; nekonečno prochází dál schválně, protože z něj `costUsd()`
-  // udělá `Infinity` a to `release()` odmítne — dráž.
-  if (!(usage.inputTokens >= 0) || !(usage.outputTokens >= 0)) return null;
-
   // Delší text, než na kolik se rezervovalo, znamená poskytovatele, který
   // ignoroval `max_tokens`. Hranice z něj nesmí vyrůst nad výstupní půlku
   // rezervace — jinak se strhne víc, než se na to volání drželo.
   const floorTokens = Math.min(Math.ceil(text.length / FLOOR_CHARS_PER_TOKEN), maxOutputTokens);
-  // `< floorTokens` vyřadí nekonečno; záporná čísla a `NaN` sem už nedojdou.
+  // `< floorTokens` vyřadí nekonečno; záporná čísla a `NaN` zastavil `usageOf()`.
   // Nesmyslná účtenka tak projde dál nedotčená a zaplatí rezervaci, dražší.
   if (usage.outputTokens < floorTokens) return { inputTokens: usage.inputTokens, outputTokens: floorTokens };
   return usage;

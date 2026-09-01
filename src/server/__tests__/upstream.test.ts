@@ -514,6 +514,27 @@ describe('3. neznámá cena se neúčtuje nulou', () => {
     }
   });
 
+  it('účtenka se zápornou složkou padne i tam, kde odpověď žádný text nenese', async () => {
+    // **Třetí návrat `generate()`.** První znění téhle opravy sedělo
+    // v `readableUsage()`, kterou volají jen dva návraty nesoucí text; návrat
+    // „odpověď nenese textový blok" předával účtenku syrovou. Otrávená dvojice
+    // tak byla přes `MALFORMED_RESPONSE` **levnější než neposlat nic**: 0,000005
+    // USD proti rezervaci, kterou `BILLED_ON_FAILURE` na téhle příčině účtuje.
+    // Naměřeno nezávislou revizí nad `df4a6b5`.
+    const cap = openCap();
+    const { calls, fetchImpl } = recordingFetch(cap, () =>
+      contentlessResponse({ input_tokens: -1249, output_tokens: FLOOR_TOKENS }),
+    );
+    const result = await runPipeline(PROMPT, {
+      branch: upstreamBranch(liveConfig(), fetchImpl),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    expect(result.outcome).toBe('FAILED');
+    expect(cap.snapshot().spentUsd).toBeCloseTo(calls[0]!.reservedAtCallUsd, 10);
+  });
+
   it('hranice platí i na vadném JSON, ne jen na úspěchu', async () => {
     const cap = openCap();
     // Zrcadlová díra, kterou tenhle soubor jednou zavíral už u pravidla dvojité

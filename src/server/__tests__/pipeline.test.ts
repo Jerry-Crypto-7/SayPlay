@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { frozenGrammar, frozenPrompts } from '../../model/client';
-import type { Grammar } from '../../model/prompt';
+import { buildEmissionRequest, type Grammar } from '../../model/prompt';
 import { moderatePrompt, type DeniedTopic } from '../moderation';
 import { mockBranch } from '../mock';
 import { runPipeline, type GenerationBranch, type GenerationFailureReason } from '../pipeline';
@@ -392,6 +392,16 @@ describe('co se účtuje, když se volání nepovede', () => {
  * `Infinity`, a to nekonečno pak rušilo mez operátorského logu úplně.
  */
 describe('hlášená cena se rovná té, kterou strop doopravdy strhl', () => {
+  /** Kolik strop na tenhle prompt drží. Jediné číslo, které se dá znát nezávisle. */
+  function reservationFor(prompt: string): number {
+    return upstreamBranch(LIVE_CONFIG, (() => {
+      throw new Error('worstCaseUsd nikam nevolá');
+    }) as unknown as typeof fetch).worstCaseUsd({
+      prompt,
+      request: buildEmissionRequest(prompt, GRAMMAR),
+    });
+  }
+
   /** Účtenka, kterou `release()` odmítne, ať je nesmysl v kterékoli složce. */
   function poisonedFetch(rawUsage: string): typeof fetch {
     // Tělo jde jako text, ne přes `Response.json`: to by `Infinity` uložilo
@@ -414,7 +424,13 @@ describe('hlášená cena se rovná té, kterou strop doopravdy strhl', () => {
 
     if (result.outcome !== 'GENERATED') throw new Error('expected a generated world');
     expect(result.costUsd).toBe(cap.snapshot().spentUsd);
-    expect(result.costUsd).toBeGreaterThan(0);
+    // **Proti rezervaci, ne proti nule.** `toBeGreaterThan(0)` tady stálo do
+    // 1. 9. 2026 a nedokázalo nic: prošlo by i účtence za 0,000005 USD, tedy
+    // přesně tomu podhlášení, kvůli kterému tenhle blok vznikl. A `costUsd`
+    // JE návratová hodnota `settle()`, takže rovnost o řádek výš je taky jen
+    // pojmenování téhož čísla dvakrát. Jediné nezávisle známé číslo je
+    // rezervace. Nález nezávislé revize 1. 9. 2026 nad `df4a6b5`.
+    expect(result.costUsd).toBeCloseTo(reservationFor('bludiště s klíčem'), 10);
     // **Hlášená spotřeba je od 1. 9. 2026 nečitelná, ne záporná.** Dřív tady
     // stálo, že se ven vrací to, co poskytovatel řekl; pak se ukázalo, že
     // záporná složka umí zaplatit kladnou a součet projde `release()` jako
