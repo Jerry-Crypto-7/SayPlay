@@ -71,6 +71,14 @@ function messagesResponse(body: unknown, usage: { input_tokens: number; output_t
   );
 }
 
+/** Odpověď 200 s textovým blokem, jehož obsah se dá zvolit — i nevalidní JSON. */
+function textBlockResponse(text: string, usage: { input_tokens: number; output_tokens: number }) {
+  return new Response(JSON.stringify({ content: [{ type: 'text', text }], usage }), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  });
+}
+
 /** Odpověď 200, která projde jako JSON, ale nenese žádný textový blok. */
 function contentlessResponse(usage: { input_tokens: number; output_tokens: number }) {
   return new Response(JSON.stringify({ content: [], usage }), {
@@ -275,6 +283,28 @@ describe('3. neznámá cena se neúčtuje nulou', () => {
     expect(cap.snapshot().reservedUsd).toBe(0);
   });
 
+  it('vadný JSON v textovém bloku je pořád odpověď, která text nesla', async () => {
+    const config = liveConfig();
+    const cap = openCap();
+
+    // Zrcadlová díra k té výš: text tady **je**, takže vynulovaná účtenka je
+    // i tady nečitelná. Kdyby se pravidlo použilo jen na úspěšné cestě, hnul by
+    // se jen počet volání a dolarový strop by ukazoval nulu.
+    const result = await runPipeline(PROMPT, {
+      branch: upstreamBranch(
+        config,
+        recordingFetch(cap, () => textBlockResponse('tohle není JSON', { input_tokens: 0, output_tokens: 0 }))
+          .fetchImpl,
+      ),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    expect(result.outcome).toBe('FAILED');
+    expect(result.outcome === 'FAILED' && result.reason).toBe('MALFORMED_RESPONSE');
+    expect(cap.snapshot().spentUsd).toBeGreaterThan(0);
+  });
+
   it('nula jen na jedné straně účtenky je pořád čitelná účtenka', async () => {
     const config = liveConfig();
     const cap = openCap();
@@ -402,21 +432,26 @@ describe('5. secret se nedostane do klientského bundlu', () => {
     for (const path of readers) expect(path.startsWith('src/server/'), path).toBe(true);
   });
 
-  it('kořenový next.config.mjs nevpisuje do bundlu nic, co nese tajemství', () => {
+  it('kořenový next.config.mjs vpisuje do bundlu jen jednu povolenou proměnnou', async () => {
     // **Prefix `NEXT_PUBLIC_` tady není potřeba, a to je celý ten nález.**
     // Blok `env:` vpisuje hodnotu do každého klientského chunku pod jménem, jaké
     // se mu napíše, takže `env: { WORLDSMITH_MODEL_KEY: … }` je únik, který
-    // aserce nad `NEXT_PUBLIC_` nevidí — a druhá ho zahodí filtrem na `src/`.
-    // Nález nezávislé revize 1. 9. 2026, reprodukovaný v jednorázovém repozitáři.
+    // aserce nad `NEXT_PUBLIC_` nevidí — a ta o čtenářích klíče ho zahodí
+    // filtrem na `src/`. Nález nezávislé revize 1. 9. 2026.
     //
-    // Soudí se **uzavřeným seznamem slov, týmž jako u `build-env.allow` níž**:
-    // obojí jsou dveře, kterými se hodnota dostane tam, kde ji nechceme, a mají
-    // proto mít jedno pravidlo, ne dvě.
-    const config = readFileSync(`${repoRoot}next.config.mjs`, 'utf8');
-    const names = [...config.matchAll(/\b[A-Z][A-Z0-9_]{3,}\b/g)].map(([name]) => name);
+    // **Seznam povolených nad rozparsovaným objektem, ne zakázaná slova nad
+    // textem souboru** — druhý nález téže revize, a ten první pokus byl obojí
+    // špatně: `env: { ...process.env }` i přejmenování (`WS_UPSTREAM:
+    // process.env.WORLDSMITH_MODEL_ENDPOINT`) mu prošly, zatímco *varovný
+    // komentář* o tom, že se sem klíč psát nemá, ho položil. Seznam povolených
+    // se přejmenováním obejít nedá a komentáře nečte.
+    //
+    // Specifikátor se skládá za běhu schválně: `tsc` pro `.mjs` v kořeni typy
+    // nemá, a tohle je jediný tvar, u kterého si o ně neřekne.
+    const configUrl = new URL('../../../next.config.mjs', import.meta.url).href;
+    const loaded = (await import(configUrl)) as { readonly default: { readonly env?: Record<string, string> } };
 
-    expect(names.length, 'v konfiguraci nejsou žádná jména — vzor přestal sedět').toBeGreaterThan(0);
-    for (const name of names) expect(/KEY|SECRET|TOKEN|PASSWORD/.test(name), name).toBe(false);
+    expect(Object.keys(loaded.default.env ?? {})).toEqual(['WORLDSMITH_BUILD_TREE']);
   });
 
   it('hermetický build klíč vůbec nevidí — není na allowlistu', () => {

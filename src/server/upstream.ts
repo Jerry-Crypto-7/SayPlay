@@ -302,6 +302,12 @@ function usageOf(payload: unknown): Usage | null {
  * účtuje, takže volání zadarmo nevznikne. **Rovnost na (0, 0) je bod, ne mez** —
  * poskytovatel, který podhlásí o jeden token, ji obejde. Tu díru zavírá až
  * spodní hranice na zaúčtovanou částku, routovaná jako `T9-usagefloor`.
+ *
+ * **Používá se na obou návratech, kde text existuje**, ne jen na tom úspěšném —
+ * druhý nález téže revize. Kritérium je „odpověď nese text", takže i vadný JSON
+ * uvnitř textového bloku sem patří; jinak by zbyla zrcadlová díra téhož tvaru,
+ * kterou tahle funkce vznikla zavřít (naměřeno: strop 5 USD se nehne, běh
+ * omezuje jen počítadlo volání, tedy až ~44 USD skutečné nejhorší útraty).
  */
 function readableUsage(usage: Usage | null): Usage | null {
   if (usage === null) return null;
@@ -387,7 +393,11 @@ async function generate(
       ok: false,
       reason: 'MALFORMED_RESPONSE',
       detail: `the upstream text block is not JSON: ${(thrown as Error).message}`,
-      usage,
+      // **Rozhoduje text, ne úspěch.** Sem se dojde jen s textovým blokem
+      // v ruce, takže nula spálených výstupních tokenů je i tady nečitelná
+      // účtenka. Návrat výš (`carries no text block`) tuhle podmínku nesplňuje
+      // a účtenku si nechává, jak dorazila.
+      usage: readableUsage(usage),
     };
   }
 
