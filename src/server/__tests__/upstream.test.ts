@@ -476,6 +476,44 @@ describe('3. neznámá cena se neúčtuje nulou', () => {
     expect(cap.snapshot().spentUsd).toBeGreaterThan(FLOOR_TOKENS * USD_PER_TOKEN_OUT);
   });
 
+  it('účtenka, jejíž složky se vyruší, se nesečte na drobné — platí rezervaci', async () => {
+    // Rovnost na (0, 0) i hranice zdola sahají každá jen na **jedno** ze dvou
+    // polí, která `costUsd()` sčítá, takže ani jedna nevidí účtenku, jejíž
+    // složky se vyruší. `{-1249, 250}` má výstup přesně na hranici, takže
+    // hranice vůbec nespustí, a záporný vstup pak součet stlačí těsně nad nulu,
+    // kde ho `release()` přijme jako poctivou cenu. Naměřeno nezávislou revizí
+    // 1. 9. 2026: 0,000005 USD proti rezervaci 0,2195 USD, tedy 44 000× méně.
+    //
+    // `{-1000, 3}` je vedle toho **regrese, která se nesmí vrátit**: výstup pod
+    // hranicí, takže by ho hranice zvedla na 250 a součet by se z −0,0049 USD
+    // vrátil nad nulu, kde už ho `release()` neodmítne (0,0013 USD, 176×).
+    const receipts = [
+      { input_tokens: -1249, output_tokens: FLOOR_TOKENS },
+      { input_tokens: -1000, output_tokens: 3 },
+    ];
+
+    for (const usage of receipts) {
+      const cap = openCap();
+      const { calls, fetchImpl } = recordingFetch(cap, () =>
+        messagesResponse(worldOfTextLength(FLOORED_TEXT_CHARS), usage),
+      );
+      const result = await runPipeline(PROMPT, {
+        branch: upstreamBranch(liveConfig(), fetchImpl),
+        cap,
+        grammar: GRAMMAR,
+      });
+
+      expect(result.outcome).toBe('GENERATED');
+      expect(cap.snapshot().spentUsd).toBeCloseTo(calls[0]!.reservedAtCallUsd, 10);
+
+      // A řádově, ať je vidět, o kolik jde. Jen u té vyrušené — u druhé je
+      // součet záporný, takže se dá říct jen „menší než nula", což je zpátky
+      // podmínka téhle větve a nic to netvrdí.
+      const summedUsd = (usage.input_tokens * 5 + usage.output_tokens * 25) / 1_000_000;
+      if (summedUsd > 0) expect(cap.snapshot().spentUsd).toBeGreaterThan(summedUsd * 1000);
+    }
+  });
+
   it('hranice platí i na vadném JSON, ne jen na úspěchu', async () => {
     const cap = openCap();
     // Zrcadlová díra, kterou tenhle soubor jednou zavíral už u pravidla dvojité

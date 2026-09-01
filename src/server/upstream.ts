@@ -352,6 +352,31 @@ function usageOf(payload: unknown): Usage | null {
  * i když se pole, které se mění, jen zvedá.
  * Vedlejším účinkem hranice padá i `{n, 0}`, které dřív účtovalo jen vstup.
  *
+ * ## Záporná složka je nečitelná účtenka, ne rozdíl
+ *
+ * Rovnost na (0, 0) a hranice zdola sahají obě jen na **jedno** ze dvou polí,
+ * která `costUsd()` sčítá. Účtenku, jejíž jedna složka je záporná, tím ani
+ * jedna z nich nezavírá: `{-1249, 250}` nad textem o 3000 znacích má výstup
+ * přesně na hranici (250), takže hranice nespustí, a záporný vstup pak celý
+ * součet stlačí na 0,000005 USD — **44 000× pod rezervaci 0,2195 USD**, a
+ * `release()` to jako kladné konečné číslo přijme. Naměřeno nezávislou revizí
+ * 1. 9. 2026; vada je starší než hranice, ta ji jen nezavřela.
+ *
+ * Kterákoli záporná složka proto padá na `null`, tedy na rezervaci. **Bydlí to
+ * tady, ne u `release()`:** ten soudí jednu částku a ta je v tomhle případě
+ * legitimně kladná; rozpad na složky vidí jen tenhle soubor. Doktrínu
+ * `usageOf()` to nemění — ta záporná čísla schválně propouští, aby je odmítl
+ * strop; tohle ji jen dotahuje na případ, kdy se dvě vadné složky vyruší.
+ *
+ * ## Co tím zavřít NEJDE
+ *
+ * **Délku textu volí poskytovatel**, takže dvouznakový textový blok srazí
+ * hranici na jediný token a účtenka `{0, 1}` je pak od hranice k nerozeznání.
+ * Proti nepoctivému poskytovateli dolarový strop neplatí nikdy — platí jen
+ * počítadlo volání, a to se na serverless resetuje s chladným startem
+ * (`T9-capcoldstart`). Hranice je obrana proti podhlášení, ne proti lhaní; tak
+ * se o ní musí i mluvit.
+ *
  * **Používá se na obou návratech, kde text existuje**, ne jen na tom úspěšném —
  * druhý nález téže revize. Kritérium je „odpověď nese text", takže i vadný JSON
  * uvnitř textového bloku sem patří; jinak by zbyla zrcadlová díra téhož tvaru,
@@ -363,16 +388,20 @@ function readableUsage(usage: Usage | null, text: string, maxOutputTokens: numbe
   // Pořadí je podstatné: dvojitá nula je nečitelná účtenka a musí spadnout na
   // rezervaci, ne na hranici, která je o dva řády levnější.
   if (usage.inputTokens === 0 && usage.outputTokens === 0) return null;
+  // Záporná složka je nečitelná účtenka, ne sleva. `costUsd()` obě složky
+  // **sčítá**, takže dost záporný vstup zaplatí kladný výstup a součet vyjde
+  // těsně nad nulou, kde ho `release()` přijme jako poctivou cenu. `!(x >= 0)`
+  // chytá i `NaN`; nekonečno prochází dál schválně, protože z něj `costUsd()`
+  // udělá `Infinity` a to `release()` odmítne — dráž.
+  if (!(usage.inputTokens >= 0) || !(usage.outputTokens >= 0)) return null;
 
   // Delší text, než na kolik se rezervovalo, znamená poskytovatele, který
   // ignoroval `max_tokens`. Hranice z něj nesmí vyrůst nad výstupní půlku
   // rezervace — jinak se strhne víc, než se na to volání drželo.
   const floorTokens = Math.min(Math.ceil(text.length / FLOOR_CHARS_PER_TOKEN), maxOutputTokens);
-  // `>= 0` na **obou** složkách vyřazuje záporná čísla i `NaN`; `< floorTokens`
-  // vyřadí nekonečno. Nesmyslná účtenka tak projde dál nedotčená a zaplatí
-  // rezervaci, která je dražší.
-  if (usage.inputTokens >= 0 && usage.outputTokens >= 0 && usage.outputTokens < floorTokens)
-    return { inputTokens: usage.inputTokens, outputTokens: floorTokens };
+  // `< floorTokens` vyřadí nekonečno; záporná čísla a `NaN` sem už nedojdou.
+  // Nesmyslná účtenka tak projde dál nedotčená a zaplatí rezervaci, dražší.
+  if (usage.outputTokens < floorTokens) return { inputTokens: usage.inputTokens, outputTokens: floorTokens };
   return usage;
 }
 

@@ -415,8 +415,16 @@ describe('hlášená cena se rovná té, kterou strop doopravdy strhl', () => {
     if (result.outcome !== 'GENERATED') throw new Error('expected a generated world');
     expect(result.costUsd).toBe(cap.snapshot().spentUsd);
     expect(result.costUsd).toBeGreaterThan(0);
-    // Hlášená spotřeba zůstává poctivá — mění se účet, ne to, co poskytovatel řekl.
-    expect(result.usage).toEqual({ inputTokens: -1e9, outputTokens: 1 });
+    // **Hlášená spotřeba je od 1. 9. 2026 nečitelná, ne záporná.** Dřív tady
+    // stálo, že se ven vrací to, co poskytovatel řekl; pak se ukázalo, že
+    // záporná složka umí zaplatit kladnou a součet projde `release()` jako
+    // drobné (`readableUsage()` v `../upstream.ts`). Účtenka se zápornou
+    // složkou se proto zahazuje celá a ven jde totéž `{0, 0}` jako u každé
+    // jiné nečitelné. Jediné číslo, které tu něco tvrdí, je `costUsd` výš.
+    //
+    // ⚠ Nekonečná účtenka o dva testy níž se ven pořád vrací tak, jak přišla —
+    // je „čitelná, ale nesmyslná". Ten rozpor patří `T9-usagereport`, ne sem.
+    expect(result.usage).toEqual({ inputTokens: 0, outputTokens: 0 });
   });
 
   it('nekonečná účtenka se ohlásí konečným číslem', async () => {
