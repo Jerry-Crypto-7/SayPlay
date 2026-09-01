@@ -272,6 +272,23 @@ function usageOf(payload: unknown): Usage | null {
   // zadarmo. Bez téhle kontroly vyjde cena `Infinity` nebo `NaN`, tu odmítne
   // `release()` v `spend-cap.ts` a účtuje celou rezervaci — bezpečná strana.
   // Chytil to až mutant M2, který kontrolu odstranil a sada zůstala zelená.
+
+  // **Dvojitá nula je poslední roh téže doktríny** a jediný, který se musí
+  // odmítat výslovně. `null`, `NaN` i záporná čísla už rezervaci účtují; nula
+  // je oproti nim *známá* hodnota, projde každou kontrolou a `costUsd()` z ní
+  // vyjde přesně 0. `settle(0)` pak dolarovým stropem nehne vůbec a placené
+  // volání je zadarmo — zbývá jen počítadlo volání.
+  //
+  // Odpověď, ze které tahle funkce vůbec čte, přitom **nese text**: nula
+  // spálených výstupních tokenů k němu neexistuje. To není účtenka na nulu, to
+  // je účtenka, kterou neumíme přečíst, a tak se sem taky zapisuje.
+  //
+  // Schválně jen dvojitá nula, ne `output_tokens === 0` samo: tam by se vstup
+  // pořád účtoval, takže volání zadarmo nevznikne, a širší kontrola by odmítala
+  // účtenky, které nikdo neviděl. Vyžaduje to, aby poskytovatel hlásil spotřebu
+  // špatně — proto je to roh, ne hlavní cesta.
+  if (usage.input_tokens === 0 && usage.output_tokens === 0) return null;
+
   return { inputTokens: usage.input_tokens, outputTokens: usage.output_tokens };
 }
 

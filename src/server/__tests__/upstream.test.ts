@@ -208,6 +208,66 @@ describe('3. neznámá cena se neúčtuje nulou', () => {
     );
   });
 
+  it('účtenka na dvojitou nulu je nečitelná účtenka, ne volání zdarma', async () => {
+    const config = liveConfig();
+
+    const withReceipt = openCap();
+    await runPipeline(PROMPT, {
+      branch: upstreamBranch(
+        config,
+        recordingFetch(withReceipt, () => messagesResponse(MINIMAL_WORLD, { input_tokens: 1, output_tokens: 1 }))
+          .fetchImpl,
+      ),
+      cap: withReceipt,
+      grammar: GRAMMAR,
+    });
+
+    const zeroed = openCap();
+    // Odpověď nese text, ale hlásí nula spálených tokenů. Takový běh
+    // neexistuje — je to špatně vyplněná účtenka, ne volání zdarma.
+    const result = await runPipeline(PROMPT, {
+      branch: upstreamBranch(
+        config,
+        recordingFetch(zeroed, () => messagesResponse(MINIMAL_WORLD, { input_tokens: 0, output_tokens: 0 }))
+          .fetchImpl,
+      ),
+      cap: zeroed,
+      grammar: GRAMMAR,
+    });
+
+    expect(result.outcome).toBe('GENERATED');
+    // Tohle je celé to tvrzení: doslovná nula by tady nechala strop stát.
+    expect(zeroed.snapshot().spentUsd).toBeGreaterThan(0);
+    expect(zeroed.snapshot().spentUsd).toBeGreaterThan(withReceipt.snapshot().spentUsd);
+    // Účtuje se rezervací, tedy stejně jako odpověď úplně bez pole `usage`.
+    expect(zeroed.snapshot().spentUsd).toBe(result.outcome === 'GENERATED' ? result.costUsd : Number.NaN);
+    // Hlášená spotřeba zůstává poctivá nula — mění se účet, ne to, co se říká.
+    if (result.outcome === 'GENERATED') expect(result.usage).toEqual({ inputTokens: 0, outputTokens: 0 });
+  });
+
+  it('nula jen na jedné straně účtenky je pořád čitelná účtenka', async () => {
+    const config = liveConfig();
+    const cap = openCap();
+
+    // Nula na vstupu je legitimní (celý prompt z cache), a výstup se spálil.
+    // Kdyby se odmítala i tahle účtenka, účtovala by se rezervace a operátor
+    // by za levné volání platil horní odhad — vada opačným směrem.
+    const result = await runPipeline(PROMPT, {
+      branch: upstreamBranch(
+        config,
+        recordingFetch(cap, () => messagesResponse(MINIMAL_WORLD, { input_tokens: 0, output_tokens: 900 }))
+          .fetchImpl,
+      ),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    expect(result.outcome).toBe('GENERATED');
+    expect(result.outcome === 'GENERATED' && result.usage).toEqual({ inputTokens: 0, outputTokens: 900 });
+    // 900 tokenů po 25 USD/Mtok = 0,0225 USD. Účtuje se skutečnost, ne rezervace.
+    expect(cap.snapshot().spentUsd).toBeCloseTo(0.0225, 10);
+  });
+
   it('chybějící cena výstupu cloudovou větev vůbec nepustí', () => {
     const { WORLDSMITH_USD_PER_MTOK_OUT: _omitted, ...withoutPrice } = LIVE_ENV;
     expect(upstreamConfigFromEnv(withoutPrice)).toBeNull();
