@@ -126,8 +126,11 @@ export interface Reserved {
    *
    * Druhé a další vyrovnání téže rezervace nedělá nic.
    *
-   * **Vrací dolary, které se doopravdy strhly** — tedy `actualUsd`, když se dá
-   * použít, a jinak celou rezervaci. Bez toho volající neměl jak zjistit, které
+   * **Vrací dolary, které se doopravdy strhly** — tedy `actualUsd` **oříznuté
+   * rezervací**, když se dá použít, a jinak celou rezervaci. Ořez tu od
+   * 1. 9. 2026 je a je vidět: `/api/generate` z návratové hodnoty píše jediný
+   * účetní řádek nasazení, takže „vrací actualUsd" by u účtenky nad rezervací
+   * ukazovalo na jiné číslo, než jaké odejde. Bez toho volající neměl jak zjistit, které
    * z těch dvou čísel platí, a hlásil dál to, které poslal: naměřeno 1. 9. 2026,
    * že účtenka `{input_tokens: -1e9}` strhla správně 0,2195 USD a operátorovi
    * ohlásila `costUsd=-5000`. Opakované vyrovnání vrátí totéž číslo jako to
@@ -324,9 +327,13 @@ export const DEFAULT_CAP_USD = 5;
 /**
  * Výchozí strop na počet volání.
  *
- * 200 je `DEFAULT_CAP_USD` vydělené jedním nejhorším případem (~0,024 USD při
- * 8000 výstupních tokenech), takže při **správně** opsaném ceníku se nikdy
- * neozve dřív než dolarový strop a nikomu nepřekáží. Ozve se přesně tehdy, když
+ * 200 je `DEFAULT_CAP_USD` vydělené jedním nejhorším případem, takže při
+ * **správně** opsaném ceníku se nikdy neozve dřív než dolarový strop a nikomu
+ * nepřekáží. Ta dělenka dnes vychází jinak: nejhorší případ je na výchozím
+ * ceníku ~0,2585 USD (rezervace se od 1. 9. 2026 počítá po jednom tokenu na
+ * znak, viz `worstCaseUsd()` v `./upstream.ts`), tedy 5 / 0,2585 ≈ **19**.
+ * Konstanta zůstává 200 schválně — 200 je pořád nad devatenácti, takže závěr
+ * „dolarový strop se ozve dřív" platí dál a nemá cenu s ní hýbat. Ozve se přesně tehdy, když
  * je ceník opsaný špatně — a to je jediná situace, na kterou tu je.
  */
 export const DEFAULT_CALL_CAP = 200;
