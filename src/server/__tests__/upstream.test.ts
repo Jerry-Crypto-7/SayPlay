@@ -287,11 +287,16 @@ describe('5. secret se nedostane do klientského bundlu', () => {
   it('žádná proměnná modelu nemá předponu NEXT_PUBLIC_', () => {
     // `__tests__` se vynechává ze stejného důvodu jako u aserce pod tímhle:
     // do klientského bundlu se nepřekládá a jméno v próze je fixture, ne čtení.
-    // Bez filtru se aserce trefí do vlastního doc komentáře nahoře v souboru —
-    // a všimne si toho až po commitu, protože `git grep` nesledované soubory
-    // vůbec nevidí. Sada byla zelená přesně do chvíle, kdy se sama stala
-    // sledovanou. Kdyby tenhle filtr někdo zrušil, spadne to zas.
-    const hits = grepRepo(/NEXT_PUBLIC_[A-Z0-9_]*(WORLDSMITH|MODEL|KEY|SECRET)/).filter(
+    // Bez filtru se aserce trefí do vlastního doc komentáře nahoře v souboru.
+    // Že se to poznalo až po commitu, byla druhá vada téhož nástroje: hledání
+    // tehdy nesledované soubory vůbec nevidělo, takže sada byla zelená přesně
+    // do chvíle, kdy se sama stala sledovanou. Dnes vidí obojí — ale filtr
+    // `__tests__` musí zůstat, jinak spadne znovu na vlastní próze.
+    //
+    // Slovní alternativa je táž jako u aserce o `build-env.allow` níž a musí
+    // taková zůstat: bez `TOKEN` projde `NEXT_PUBLIC_ANTHROPIC_TOKEN`, což je
+    // hodnota vepsaná do klientského bundlu úplně stejně jako klíč.
+    const hits = grepRepo(/NEXT_PUBLIC_[A-Z0-9_]*(WORLDSMITH|MODEL|KEY|SECRET|TOKEN|PASSWORD)/).filter(
       (path) => !path.includes('__tests__'),
     );
     expect(hits).toEqual([]);
@@ -322,17 +327,27 @@ describe('5. secret se nedostane do klientského bundlu', () => {
 });
 
 /**
- * Lexikální hledání nad sledovanými zdrojáky. `git grep` schválně, ne vlastní
- * procházení stromu: `node_modules` a `.next` tím vypadnou samy a nemůže se stát,
- * že by aserce byla zelená jen proto, že se dívala jinam.
+ * Lexikální hledání nad zdrojáky — **sledovanými i nesledovanými**. `git grep`
+ * schválně, ne vlastní procházení stromu: `node_modules` a `.next` tím vypadnou
+ * samy a nemůže se stát, že by aserce byla zelená jen proto, že se dívala jinam.
+ *
+ * Dvě věci tady drží celou hodnotu hledání a obě jsou naměřené vady, ne obezřetnost:
+ *
+ * - **`--untracked`.** Bez něj se nesledované soubory nekontrolují vůbec, a
+ *   nesledované zdrojáky v tomhle stromě právě teď jsou. Ignorované soubory tím
+ *   nepřibývají — `.gitignore` platí dál, takže `node_modules` a `.next` zůstávají venku.
+ * - **`next.config.mjs`.** Leží mimo `src ops scripts` a jeho blok `env:` vpisuje
+ *   hodnoty do klientského bundlu pro **všechen** kód. Je to tedy jediné místo
+ *   v repozitáři, kde se dá secret vystavit prohlížeči jedním řádkem mimo `src`.
  */
 function grepRepo(pattern: RegExp): string[] {
   const { execFileSync } = require('node:child_process') as typeof import('node:child_process');
   try {
-    return execFileSync('git', ['grep', '-lE', pattern.source, '--', 'src', 'ops', 'scripts'], {
-      cwd: repoRoot,
-      encoding: 'utf8',
-    })
+    return execFileSync(
+      'git',
+      ['grep', '--untracked', '-lE', pattern.source, '--', 'src', 'ops', 'scripts', 'next.config.mjs'],
+      { cwd: repoRoot, encoding: 'utf8' },
+    )
       .split('\n')
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
