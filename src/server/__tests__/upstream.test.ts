@@ -591,31 +591,31 @@ describe('4. při vypnutém přepínači neodejde žádný požadavek', () => {
 });
 
 describe('5. secret se nedostane do klientského bundlu', () => {
-  /** Jména, u kterých Next vpisuje HODNOTU do klientského bundlu. */
-  it('žádná proměnná modelu nemá předponu NEXT_PUBLIC_', () => {
-    // `__tests__` se vynechává ze stejného důvodu jako u aserce pod tímhle:
-    // do klientského bundlu se nepřekládá a jméno v próze je fixture, ne čtení.
-    // Bez filtru se aserce trefí do vlastního doc komentáře nahoře v souboru.
-    // Že se to poznalo až po commitu, byla druhá vada téhož nástroje: hledání
-    // tehdy nesledované soubory vůbec nevidělo, takže sada byla zelená přesně
-    // do chvíle, kdy se sama stala sledovanou. Dnes vidí obojí — ale filtr
-    // `__tests__` musí zůstat, jinak spadne znovu na vlastní próze.
+  it('každé jméno s předponou NEXT_PUBLIC_ je na uzavřeném seznamu povolených', () => {
+    // **Seznam povolených, ne zakázaných slov — a to je celý ten nález.**
+    // Předchozí znění hledalo `NEXT_PUBLIC_[A-Z0-9_]*(WORLDSMITH|MODEL|KEY|
+    // SECRET|TOKEN|PASSWORD)`, tedy jméno proti seznamu zakázaných slov. Takové
+    // hledání se obejde pojmenováním a nezávislá revize 1. 9. 2026 naměřila tři
+    // jména, která jím projdou: `NEXT_PUBLIC_ANTHROPIC_CREDENTIAL`,
+    // `NEXT_PUBLIC_UPSTREAM_ENDPOINT` a `NEXT_PUBLIC_API_URL`. Každé z nich
+    // vpisuje hodnotu do klientského bundlu úplně stejně jako klíč.
     //
-    // Slovní alternativa je táž jako u aserce o `build-env.allow` níž a musí
-    // taková zůstat: bez `TOKEN` projde `NEXT_PUBLIC_ANTHROPIC_TOKEN`, což je
-    // hodnota vepsaná do klientského bundlu úplně stejně jako klíč.
-    const hits = grepRepo(/NEXT_PUBLIC_[A-Z0-9_]*(WORLDSMITH|MODEL|KEY|SECRET|TOKEN|PASSWORD)/).filter(
-      (path) => !path.includes('__tests__'),
-    );
-    expect(hits).toEqual([]);
+    // Seznam povolených se přejmenováním obejít nedá a veřejných proměnných má
+    // tenhle projekt hrstku. Táž doktrína jako u `next.config.mjs` výš.
+    const found = grepNames(/NEXT_PUBLIC_[A-Z0-9_]+/).filter((name) => !(name in PUBLIC_NAMES_ALLOWED));
+    expect(found).toEqual([]);
+
+    // A druhá půlka, jinak by se seznam dal obejít tím, že se na něj něco
+    // dopíše: povolené jméno samo nesmí být tvarem secretu. Táž aserce jako
+    // u `build-env.allow` níž a ze stejného důvodu.
+    for (const name of Object.keys(PUBLIC_NAMES_ALLOWED))
+      expect(/KEY|SECRET|TOKEN|PASSWORD|CREDENTIAL/.test(name), name).toBe(false);
   });
 
   it('klíč se čte jedině na serverové cestě', () => {
     // Testy se vynechávají schválně: jméno proměnné v testu je fixture, ne
     // čtení. Do bundlu se `__tests__` nepřekládá.
-    const readers = grepRepo(/WORLDSMITH_MODEL_KEY/).filter(
-      (path) => path.startsWith('src/') && !path.includes('__tests__'),
-    );
+    const readers = grepRepo(/WORLDSMITH_MODEL_KEY/).filter((path) => path.startsWith('src/'));
     expect(readers.length).toBeGreaterThan(0);
     for (const path of readers) expect(path.startsWith('src/server/'), path).toBe(true);
   });
@@ -669,15 +669,52 @@ describe('5. secret se nedostane do klientského bundlu', () => {
  * - **`next.config.mjs`.** Leží mimo `src ops scripts` a jeho blok `env:` vpisuje
  *   hodnoty do klientského bundlu pro **všechen** kód. Je to tedy jediné místo
  *   v repozitáři, kde se dá secret vystavit prohlížeči jedním řádkem mimo `src`.
+ * - **`.env.example`.** Nese `WORLDSMITH_MODEL_KEY=` a komentáře v kódu říkají
+ *   operátorovi, ať si ho odsud zkopíruje. Řádek s předponou `NEXT_PUBLIC_`
+ *   v tomhle souboru je tedy **návod, jak si klíč vystavit prohlížeči** — a do
+ *   1. 9. 2026 ho hledání nevidělo, protože soubor ležel mimo cestu.
+ *
+ * **Ignorované soubory zůstávají neviditelné a je to tak správně.**
+ * `--untracked` do nich nesahá a vzory `tmp-*`, `scratch-*`, `*.key` a `.env.*`
+ * z `.gitignore` platí v jakékoli hloubce. Do nasazeného bundlu se ale ze
+ * stromu, který build klonuje z gitu, nedostanou — revize to označila jako
+ * PLAUSIBLE, ne CONFIRMED. Zapsané jako vědomé rozhodnutí, ne jako mezera.
+ *
+ * **Co tímhle zavřít NEJDE, a nepředstírej to:** doslova vepsaná hodnota
+ * klíče v kódu nesedne na žádný z těch vzorů. To umí až grep nad `.next/`
+ * po buildu, tedy vlna 7.
  */
-function grepRepo(pattern: RegExp): string[] {
+const SWEPT_PATHS = [
+  'src',
+  'ops',
+  'scripts',
+  'next.config.mjs',
+  '.env.example',
+  // `__tests__` ven už na úrovni gitu, ne filtrem po něm: do klientského
+  // bundlu se nepřekládá a jméno v próze je fixture, ne čtení. Bez toho se
+  // aserce trefí do vlastního doc komentáře nahoře v tomhle souboru — což se
+  // jednou stalo a poznalo se to až ve chvíli, kdy se soubor stal sledovaným.
+  ':!*__tests__*',
+];
+
+/** Jména proměnných, u kterých Next vpisuje HODNOTU do klientského bundlu. */
+const PUBLIC_NAMES_ALLOWED: Record<string, string> = {
+  // Fixture znečištění: `scripts/build-from-tag.mjs` ji vstřikuje do okolního
+  // prostředí, aby dokázal, že ji hermetický build **neuvidí**. Nikde se
+  // nenastavuje a v žádném artefaktu neskončí.
+  NEXT_PUBLIC_INJECTED: 'fixture, kterou hermetický build musí ignorovat',
+  // Jen v próze: `src/app/embed/[layoutId]/site-url.ts` vysvětluje, proč se
+  // absolutní adresa **nesmí** brát odsud (zapekla by se při buildu z tagu).
+  NEXT_PUBLIC_SITE_URL: 'jmenovaná v komentáři jako zakázaná cesta',
+};
+
+function gitGrep(flags: string, pattern: RegExp): string[] {
   const { execFileSync } = require('node:child_process') as typeof import('node:child_process');
   try {
-    return execFileSync(
-      'git',
-      ['grep', '--untracked', '-lE', pattern.source, '--', 'src', 'ops', 'scripts', 'next.config.mjs'],
-      { cwd: repoRoot, encoding: 'utf8' },
-    )
+    return execFileSync('git', ['grep', '--untracked', flags, pattern.source, '--', ...SWEPT_PATHS], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+    })
       .split('\n')
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
@@ -686,4 +723,14 @@ function grepRepo(pattern: RegExp): string[] {
     if ((thrown as { status?: number }).status === 1) return [];
     throw thrown;
   }
+}
+
+/** Cesty souborů, ve kterých se vzor vyskytuje. */
+function grepRepo(pattern: RegExp): string[] {
+  return gitGrep('-lE', pattern);
+}
+
+/** Samotná nalezená jména, bez cest a bez opakování. */
+function grepNames(pattern: RegExp): string[] {
+  return [...new Set(gitGrep('-hoE', pattern))].sort();
 }
