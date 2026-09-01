@@ -41,6 +41,7 @@ import {
   MAX_DETAILS_PER_WINDOW,
   PUBLIC_CORPUS_FAULT,
   RATE_LIMIT_WINDOW_MS,
+  STICKY_WINDOW_MS,
   withoutCredentials,
 } from '../public-faults';
 
@@ -381,6 +382,45 @@ describe('the sticky bound keys on the fault, not on its code', () => {
     expect(log.join('\n'), 'bound neplatí — opakování téže vady se zapsalo znovu').not.toContain(
       'flood-',
     );
+  });
+
+  /**
+   * **Opravená vada, která se vrátí, není táž událost.**
+   *
+   * Nález nezávislé revize 1. 9. 2026 (`VERDICT: routed`, LOW): „jednou za
+   * proces" mlčí i po opravě, takže operátor, který rozbitý zmrazený záznam
+   * spraví a ten se v témž procesu rozejde znovu se stejným textem, nedostane
+   * **nic** — a mlčící kanál vypadá v logu přesně jako zdravý server.
+   *
+   * Ten bound se přitom rušit nesmí: tisíc požadavků na jeden rozbitý záznam
+   * je pořád jeden řádek. Obojí se proto soudí v jednom testu, protože každá
+   * půlka bez té druhé je vada.
+   */
+  it('names a fault again once it was repaired and came back', async () => {
+    const { log, write } = await sticky();
+    let now = 1_700_000_000_000;
+    vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+    const broken = 'responses/index.jsonl is not readable';
+    write('emit', 'req-1', 'CORPUS_UNREADABLE', broken);
+    for (let attempt = 0; attempt < 1000; attempt += 1)
+      write('emit', `flood-${attempt}`, 'CORPUS_UNREADABLE', broken);
+    expect(log, 'bound neplatí — opakování téže vady se zapsalo znovu').toHaveLength(1);
+
+    // Těsně pod hranou okna pořád ticho. Tenhle zápis navíc soudí, že okno
+    // běží od posledního ZÁPISU, ne od posledního výskytu: kdyby ho posouval
+    // každý potlačený požadavek, trvalá porucha pod trvalým provozem by se
+    // nepřipomněla nikdy — táž vada, jen naruby.
+    now += STICKY_WINDOW_MS - 1;
+    write('emit', 'inside-window', 'CORPUS_UNREADABLE', broken);
+    expect(log, 'lepivá mez se rozpadla na řádek za požadavek').toHaveLength(1);
+
+    // Oprava, návrat — a operátor se to dozví.
+    now += 1;
+    write('emit', 'came-back', 'CORPUS_UNREADABLE', broken);
+    expect(log, 'vada se vrátila a operátor se to nedozvěděl').toHaveLength(2);
+    expect(log[1]).toContain('came-back');
+    expect(log[1]).toContain(broken);
   });
 
   it('and on the door, so one broken corpus is still named by each door that hits it', async () => {

@@ -84,49 +84,6 @@ export function logForOperator(
   console.error(`[${route}] ${requestId} ${code}: ${withoutCredentials(detail)}`);
 }
 
-/** Vady, které tenhle proces už zapsal. Klíčem je dvojice (dveře, `detail`). */
-const STICKY_LOGGED = new Set<string>();
-
-/**
- * **Jeden řádek za vadu, ne za požadavek** — pro stavy, které jsou *lepivé*.
- *
- * Lepivá vada je taková, u které první řádek a tisící říkají doslova totéž:
- * rozbitý zmrazený záznam je rozbitý napořád, nečitelný korpus je nečitelný
- * napořád. Řádek na požadavek by z toho udělal log, který si kdokoli natáhne
- * donekonečna — a žádné z těch čtyř dveří nechtějí přihlášení.
- *
- * **Klíčem je `detail`, ne kód.** `detail` jmenuje konkrétní záznam, takže tři
- * rozbité záznamy dají tři řádky, ale tisíc požadavků na jeden dá pořád jeden.
- * Počet je tím shora omezený velikostí korpusu — commitnutého artefaktu, který
- * volající nafouknout nemůže. Kdyby se klíčovalo kódem, druhý a třetí rozbitý
- * záznam by mlčely napořád; `public-faults.test.ts` to drží mutací.
- *
- * **Do `detail` proto nesmí nic od volajícího.** Kdyby tam tekl prompt nebo
- * cokoli jiného z těla požadavku, byla by tahle množina neomezený růst paměti
- * v dlouho běžícím procesu — a bound by se vyměnil za horší vadu. Dnes je
- * každá hodnota, která sem doteče, odvozená ze serveru: hlášky `readFrozen()`,
- * `promptId` vzatý ze shody v korpusu, a konstanty.
- *
- * ⚠ **Ten strop je na jednu instanci, ne na nasazení** — táž výhrada jako
- * u `logRateLimited()` níž. Trvale to zavře až sdílený stav (T29).
- *
- * Bydlí to tady, a ne v jedné z těch rout, protože **stejná mez má platit na
- * všech čtverých dveřích naráz**. Do 1. 9. 2026 byla soukromá v `/api/generate`
- * a `/api/emit`, `/api/emit/stream` i `/api/edit` psaly řádek na požadavek —
- * přesně ta třída vady, kvůli které je v tomhle souboru i `PUBLIC_CORPUS_FAULT`.
- */
-export function logStickyFault(
-  route: string,
-  requestId: string,
-  code: string,
-  detail: string,
-): void {
-  const key = `${route} ${detail}`;
-  if (STICKY_LOGGED.has(key)) return;
-  STICKY_LOGGED.add(key);
-  logForOperator(route, requestId, code, detail);
-}
-
 /**
  * **Okno, ve kterém se výskyty počítají.** Patnáct minut je **volba uvnitř
  * rozpětí**, ne odvozená hodnota — a stojí to tu takhle schválně: předstíraná
@@ -154,6 +111,82 @@ export function logStickyFault(
  * `MAX_DETAILS_PER_WINDOW` řetězců.
  */
 export const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+
+/**
+ * **Jak dlouho smí mlčet vada, která se opravila a vrátila.** Hodina, a je
+ * odvozená **z okna nad ní**, ne vybraná zvlášť — jinak by tenhle soubor nesl
+ * dva volné parametry místo jednoho.
+ *
+ * Čtyřnásobek proto, že ty dva kanály hlídají věci s jinou rychlostí. Vady,
+ * které omezuje `logRateLimited`, jsou stav **spojení** a mění se po minutách.
+ * Lepivá vada je stav **korpusu**: mění se jen tehdy, když někdo nasadí nebo
+ * sáhne na soubor, takže častější připomínka není informace, ale šum. Hodina
+ * je zároveň nejdelší doba, po kterou po opravě zůstane nepovšimnutý návrat
+ * téže vady — a to je jediná cena, kterou tenhle poměr platí.
+ */
+export const STICKY_WINDOW_MS = 4 * RATE_LIMIT_WINDOW_MS;
+
+/** Kdy tenhle proces vadu naposled zapsal. Klíčem je dvojice (dveře, `detail`). */
+const STICKY_LOGGED = new Map<string, number>();
+
+/**
+ * **Jeden řádek za vadu, ne za požadavek** — pro stavy, které jsou *lepivé*.
+ *
+ * Lepivá vada je taková, u které první řádek a tisící říkají doslova totéž:
+ * rozbitý zmrazený záznam je rozbitý napořád, nečitelný korpus je nečitelný
+ * napořád. Řádek na požadavek by z toho udělal log, který si kdokoli natáhne
+ * donekonečna — a žádné z těch čtyř dveří nechtějí přihlášení.
+ *
+ * **Klíčem je `detail`, ne kód.** `detail` jmenuje konkrétní záznam, takže tři
+ * rozbité záznamy dají tři řádky, ale tisíc požadavků na jeden dá pořád jeden.
+ * Počet je tím shora omezený velikostí korpusu — commitnutého artefaktu, který
+ * volající nafouknout nemůže. Kdyby se klíčovalo kódem, druhý a třetí rozbitý
+ * záznam by mlčely napořád; `public-faults.test.ts` to drží mutací.
+ *
+ * **Do `detail` proto nesmí nic od volajícího.** Kdyby tam tekl prompt nebo
+ * cokoli jiného z těla požadavku, byla by tahle množina neomezený růst paměti
+ * v dlouho běžícím procesu — a bound by se vyměnil za horší vadu. Dnes je
+ * každá hodnota, která sem doteče, odvozená ze serveru: hlášky `readFrozen()`,
+ * `promptId` vzatý ze shody v korpusu, a konstanty.
+ *
+ * ## Proč okno, a ne „jednou za proces" — nález nezávislé revize 1. 9. 2026
+ *
+ * „Jednou za proces" mlčí i tehdy, když se vada **opraví a vrátí**. Operátor
+ * dostane řádek, rozbitý zmrazený záznam spraví, ten se v témž procesu rozejde
+ * znovu se stejným `detail`em — a nedozví se o tom nic. Je to tatáž třída vady,
+ * kvůli které se den předtím `logOncePerProcess()` měnilo na `logRateLimited()`
+ * u `BODY_UNREADABLE`, jen o dveře vedle: tam byl spouštěč volající, tady je
+ * provozní.
+ *
+ * Zapisuje se proto **nejvýš jednou za `STICKY_WINDOW_MS` na klíč**, a to okno
+ * se kotví na **posledním zápisu**, ne na posledním výskytu. Kdyby ho posouval
+ * každý potlačený požadavek, trvalá porucha pod trvalým provozem by se už
+ * nepřipomněla nikdy — a to je přesně ta vada, jen naruby.
+ *
+ * ⚠ **Ten strop je na jednu instanci, ne na nasazení** — táž výhrada jako
+ * u `logRateLimited()` níž. Trvale to zavře až sdílený stav (T29). **Čekat na
+ * něj se ale nemá:** T29 řeší sdílení stavu mezi instancemi a visí na volbě
+ * hostingu, která ještě nepadla, kdežto tahle vada je špatně **uvnitř jednoho
+ * procesu**. Sdílený store by ji jen rozšířil na všechny.
+ *
+ * Bydlí to tady, a ne v jedné z těch rout, protože **stejná mez má platit na
+ * všech čtverých dveřích naráz**. Do 1. 9. 2026 byla soukromá v `/api/generate`
+ * a `/api/emit`, `/api/emit/stream` i `/api/edit` psaly řádek na požadavek —
+ * přesně ta třída vady, kvůli které je v tomhle souboru i `PUBLIC_CORPUS_FAULT`.
+ */
+export function logStickyFault(
+  route: string,
+  requestId: string,
+  code: string,
+  detail: string,
+): void {
+  const key = `${route} ${detail}`;
+  const now = Date.now();
+  const written = STICKY_LOGGED.get(key);
+  if (written !== undefined && now - written < STICKY_WINDOW_MS) return;
+  STICKY_LOGGED.set(key, now);
+  logForOperator(route, requestId, code, detail);
+}
 
 /**
  * **Kolik různých příčin smí jedno okno pojmenovat nad rámec milníků.**
