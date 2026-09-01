@@ -5,13 +5,19 @@
  * dorazily. Dvě cesty ke stejnému řetězu se rozejdou tiše: streamovaná verze
  * začne vracet o pole míň, viewer podle toho postaví scénu a nikdo se nedozví,
  * že se to liší od toho, co změřil offline běh.
+ *
+ * Druhá půlka souboru soudí **pád uvnitř proudu**, a je to jiná třída tvrzení:
+ * tam se neměří, co dorazilo, ale že vůbec něco dorazilo. Hlavičky jsou v tu
+ * chvíli dávno u klienta, takže mlčící proud vypadá zvenčí jako úspěch.
  */
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { POST as emit } from '../route';
 import { SseDecoder } from '../../../../components/viewer/sse';
 import { POST as stream } from '../stream/route';
+
+type Route = (request: Request) => Promise<Response>;
 
 interface Collected {
   readonly status: number;
@@ -28,8 +34,8 @@ function request(body: unknown): Request {
   });
 }
 
-async function collect(body: unknown): Promise<Collected> {
-  const response = await stream(request(body));
+async function collect(body: unknown, post: Route = stream): Promise<Collected> {
+  const response = await post(request(body));
   const contentType = response.headers.get('content-type');
   if (response.body === null) return { status: response.status, contentType, phases: [], result: null };
 
@@ -138,5 +144,109 @@ describe('kanál s průběhem', () => {
     const response = await stream(request({ nope: 1 }));
     expect(response.status).toBe(400);
     expect(response.headers.get('content-type')).toContain('application/json');
+  });
+});
+
+/**
+ * Podvrhne řetěz tak, že první krok emise vyhodí — tedy **za** odeslanými
+ * hlavičkami a za prvním rámcem `progress`, což je přesně to okno, ve kterém
+ * do 1. 9. 2026 nevznikla ani odpověď, ani řádek v logu.
+ *
+ * Modul se načítá znovu, protože `logRateLimited` si počítadlo drží jako stav
+ * modulu: bez `resetModules()` by druhý test v tomhle souboru byl už druhým
+ * výskytem téhož klíče, mez by ho zahodila a test by měřil počítadlo místo
+ * opravy.
+ *
+ * `beforeThrow` běží uvnitř generátoru, tedy synchronně před výjimkou. Test
+ * s ním ruší proud — a smí ho nastavit až po `POST`, protože generátor se poprvé
+ * protočí až za `flush()`, tedy o celý tik smyčky událostí později.
+ */
+async function loadBrokenStream(
+  beforeThrow?: () => void,
+): Promise<{ readonly post: Route; readonly log: string[] }> {
+  vi.resetModules();
+  vi.doMock('../chain', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('../chain')>();
+    let calls = 0;
+    return {
+      ...actual,
+      emissionSteps: function* (): Generator<never, never, void> {
+        beforeThrow?.();
+        calls += 1;
+        throw new Error(`the chain came apart (${calls})`);
+      },
+    };
+  });
+
+  const log: string[] = [];
+  vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+    log.push(String(line));
+  });
+
+  const { POST } = await import('../stream/route');
+  return { post: POST, log };
+}
+
+describe('pád uvnitř proudu', () => {
+  afterEach(() => {
+    vi.doUnmock('../chain');
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it('skončí rámcem result, který se dá spárovat s řádkem operátora', async () => {
+    const { post, log } = await loadBrokenStream();
+    const collected = await collect({ promptId: 'C01' }, post);
+
+    // Zvenčí to pořád vypadá jako úspěch, a to je celý ten problém: 200,
+    // hlavičky proudu, první rámec průběhu. Nosné je, co přijde po nich.
+    expect(collected.status).toBe(200);
+    expect(collected.phases).toEqual(['requested']);
+
+    const result = collected.result as { requestId: string; error: { code: string; message: string } };
+    expect(result.error.code).toBe('STREAM_FAILED');
+    // Text výjimky je diagnostika serveru a ven nepatří — táž doktrína jako
+    // u `PUBLIC_CORPUS_FAULT`.
+    expect(result.error.message).not.toContain('the chain came apart');
+    expect(typeof result.requestId).toBe('string');
+
+    // A druhá půlka téhož: operátor dostane přesně jeden řádek, nese text
+    // výjimky a **totéž `requestId`**, takže podpora má co dohledat.
+    expect(log).toHaveLength(1);
+    expect(log[0]).toContain('STREAM_FAILED');
+    expect(log[0]).toContain('the chain came apart (1)');
+    expect(log[0]).toContain(result.requestId);
+  });
+
+  it('napíše operátorovi i tehdy, když klient proud zruší dřív, než pád nastane', async () => {
+    // Tohle je ten případ, kvůli kterému je zápis **před** `enqueue`: na
+    // zrušeném proudu `enqueue` vyhodí, takže řádek psaný za ním by nevznikl
+    // právě u požadavku, o kterém se operátor potřebuje dozvědět nejvíc.
+    const holder: { response: Response | null } = { response: null };
+    const { post, log } = await loadBrokenStream(() => {
+      void holder.response?.body?.cancel();
+    });
+
+    const response = await post(request({ promptId: 'C01' }));
+    holder.response = response;
+
+    // Generátor se protočí až za `flush()`, tedy o tik dál; tohle na něj počká.
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(log).toHaveLength(1);
+    expect(log[0]).toContain('STREAM_FAILED');
+  });
+
+  it('dva různé pády v jednom procesu dají jeden řádek, ne dva', async () => {
+    // `logRateLimited` klíčuje `(dveře, kód)`, a je to schválně: `detail` je
+    // tady text výjimky, tedy hodnota, kterou volající umí ovlivnit. Lepivá mez
+    // klíčovaná `detail`em by z toho udělala neomezený růst paměti.
+    const { post, log } = await loadBrokenStream();
+    await collect({ promptId: 'C01' }, post);
+    await collect({ promptId: 'C05' }, post);
+
+    expect(log).toHaveLength(1);
+    expect(log[0]).toContain('occurrence 1');
+    expect(log[0]).toContain('the chain came apart (1)');
   });
 });
