@@ -66,7 +66,11 @@ import { migrateWorldDoc, type WorldDoc } from '../../../ir/worlddoc';
 import { emitPatch, frozenGrammar, frozenPrompt, type ClientFailure } from '../../../model/client';
 import { buildEditRequest } from '../../../model/edit-prompt';
 import { withRequest } from '../../../obs/trace';
-import { PUBLIC_CORPUS_FAULT, logForOperator } from '../../../server/public-faults';
+import {
+  PUBLIC_CORPUS_FAULT,
+  logForOperator,
+  logOncePerProcess,
+} from '../../../server/public-faults';
 import { routePatch, type Lane, type RoutedPatch, type RoutingAnomaly } from '../../../patch/router';
 import { commitRoutedParts, staleRevision, type BaseRevision, type CommitOutcome } from './commit';
 
@@ -117,7 +121,26 @@ export async function POST(request: Request): Promise<Response> {
   const requestId = randomUUID();
 
   return withRequest(requestId, async () => {
-    const raw = await readBody(request);
+    /**
+     * **Čtení těla je uvnitř `try`, a je to jediný důvod, proč tenhle handler
+     * odpoví vždycky.** `readBody()` vrací svoje meze jako hodnotu, ale samo
+     * `reader.read()` se odmítnout může — přerušené spojení, vadná komprese —
+     * a odpověď by pak složil Next.js: pětistovka bez `requestId`, tedy jediný
+     * požadavek v provozu, který se nedá spárovat s řádkem v logu. Naměřeno
+     * nezávislou revizí 1. 9. 2026, týž vzor jako v `/api/generate`.
+     */
+    let raw;
+    try {
+      raw = await readBody(request);
+    } catch (thrown) {
+      logOncePerProcess(
+        'edit',
+        requestId,
+        'BODY_UNREADABLE',
+        thrown instanceof Error ? thrown.message : String(thrown),
+      );
+      return badRequest(requestId, 'BODY_UNREADABLE', 'the request body could not be read');
+    }
     if (!raw.ok)
       return raw.reason === 'TOO_LARGE'
         ? Response.json(

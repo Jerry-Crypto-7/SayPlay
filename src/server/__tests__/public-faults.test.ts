@@ -201,6 +201,96 @@ describe('a corpus fault says the same public sentence at every door', () => {
 });
 
 /* ------------------------------------------------------------------ *
+ * Druhá vada týchž dveří: tělo, které se rozpadne uprostřed čtení.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Požadavek, jehož tělo se **odmítne** místo aby dorazilo.
+ *
+ * `readBody()` vrací svoje meze — velikost i čas — jako hodnotu, takže vypadá,
+ * že vyhodit nemá co. Samotné `reader.read()` se ale odmítnout může: přerušené
+ * spojení, vadná komprese. Dokud bylo volání mimo `try`, proletělo to odmítnutí
+ * z handleru ven a odpověď složil Next.js — pětistovka **bez `requestId`**,
+ * tedy jediný požadavek v provozu, který se nedá spárovat s řádkem v logu.
+ */
+function brokenBody(url: string): Request {
+  const body = new ReadableStream({
+    pull(controller) {
+      controller.error(new Error('the connection went away mid-body'));
+    },
+  });
+  return new Request(url, { method: 'POST', body, duplex: 'half' } as RequestInit & {
+    duplex: 'half';
+  });
+}
+
+function captureLog(): string[] {
+  const lines: string[] = [];
+  vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+    lines.push(String(line));
+  });
+  return lines;
+}
+
+describe('a body that breaks mid-read answers with a correlated 400 at every door', () => {
+  /**
+   * Všechny čtvery dveře v **jednom** procesu, protože se tím soudí i to druhé:
+   * bound na zápis je klíčovaný dvojicí (dveře, kód), takže čtvery dveře dají
+   * čtyři řádky. Jeden společný klíč by první dveře nechal zapsat a tři zbylé
+   * umlčel — a ta ztráta by se na jedněch dveřích poznat nedala.
+   */
+  it('and writes the operator exactly one line per door', async () => {
+    const log = captureLog();
+
+    const doors: { readonly name: string; readonly url: string; readonly POST: (r: Request) => Promise<Response> }[] = [
+      { name: 'generate', url: 'http://127.0.0.1/api/generate', POST: (await import('../../app/api/generate/route')).POST },
+      { name: 'emit', url: 'http://127.0.0.1/api/emit', POST: (await import('../../app/api/emit/route')).POST },
+      { name: 'emit/stream', url: 'http://127.0.0.1/api/emit/stream', POST: (await import('../../app/api/emit/stream/route')).POST },
+      { name: 'edit', url: 'http://127.0.0.1/api/edit', POST: (await import('../../app/api/edit/route')).POST },
+    ];
+
+    for (const door of doors) {
+      const response = await door.POST(brokenBody(door.url));
+      const sent = (await response.json()) as { requestId?: string; error?: { code?: string } };
+
+      expect(response.status, `${door.name}: odpověď složil framework, ne routa`).toBe(400);
+      expect(sent.error?.code, `${door.name}: chybí kód důvodu`).toBe('BODY_UNREADABLE');
+      expect(typeof sent.requestId, `${door.name}: pětistovka bez korelačního ID`).toBe('string');
+      expect(
+        log.join('\n'),
+        `${door.name}: řádek v logu nejde spárovat s odpovědí`,
+      ).toContain(String(sent.requestId));
+    }
+
+    expect(
+      log.filter((line) => line.includes('BODY_UNREADABLE')),
+      'čtvery dveře nenapsaly čtyři řádky — bound je klíčovaný moc hrubě',
+    ).toHaveLength(4);
+  });
+
+  /**
+   * **Bound, ne opatrnost.** Žádná z těch rout nechce přihlášení a přerušit
+   * vlastní spojení umí volající kolikrát chce, takže řádek na požadavek je
+   * log, který si kdokoli natáhne donekonečna. Táž vada jako u lepivého
+   * odmítnutí stropem v `/api/generate`, jen jiným vchodem.
+   */
+  it('and stops writing after the first one, however many arrive', async () => {
+    const log = captureLog();
+    const { POST } = await import('../../app/api/emit/route');
+
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const response = await POST(brokenBody('http://127.0.0.1/api/emit'));
+      expect(response.status).toBe(400);
+    }
+
+    expect(
+      log.filter((line) => line.includes('BODY_UNREADABLE')),
+      '20 přerušených spojení napsalo operátorovi víc než jeden řádek',
+    ).toHaveLength(1);
+  });
+});
+
+/* ------------------------------------------------------------------ *
  * Vlastnosti sdíleného modulu.
  * ------------------------------------------------------------------ */
 

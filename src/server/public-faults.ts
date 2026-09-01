@@ -83,3 +83,33 @@ export function logForOperator(
 ): void {
   console.error(`[${route}] ${requestId} ${code}: ${withoutCredentials(detail)}`);
 }
+
+/** Dvojice (dveře, kód), které už tenhle proces zapsal. */
+const LOGGED_ONCE = new Set<string>();
+
+/**
+ * Totéž, ale **nejvýš jednou za proces na dvojici dveří a kódu**.
+ *
+ * Je to pro vady, které si volající umí vyrobit sám a kolikrát chce — typicky
+ * přerušené spojení uprostřed těla. Žádná z těch rout nechce přihlášení, takže
+ * řádek na požadavek znamená log, který kdokoli natáhne donekonečna; táž vada,
+ * kvůli které `/api/generate` neloguje vady dotazu a odmítnutí stropem píše
+ * jen jednou.
+ *
+ * Mlčet úplně by ale bylo taky špatně: „tělo se nedá přečíst" hromadně znamená
+ * rozbitou proxy nebo kompresi před serverem, a to je jediné, co operátorovi
+ * o téhle třídě stojí za vědění. **První výskyt nese všechno**, protože další
+ * nebude — a počet řádků je shora omezený počtem dveří krát počtem kódů, tedy
+ * konstantou, ne provozem.
+ */
+export function logOncePerProcess(
+  route: string,
+  requestId: string,
+  code: string,
+  detail: string,
+): void {
+  const key = `${route} ${code}`;
+  if (LOGGED_ONCE.has(key)) return;
+  LOGGED_ONCE.add(key);
+  logForOperator(route, requestId, code, detail);
+}

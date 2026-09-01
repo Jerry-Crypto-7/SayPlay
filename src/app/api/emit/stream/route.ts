@@ -46,7 +46,7 @@ export async function POST(request: Request): Promise<Response> {
   const requestId = randomUUID();
 
   return withRequest(requestId, async () => {
-    const parsed = await readPromptId(request, requestId);
+    const parsed = await readPromptId(request, requestId, 'emit/stream');
     if (!parsed.ok) return parsed.response;
 
     const promptId = parsed.promptId;

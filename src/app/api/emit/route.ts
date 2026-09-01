@@ -56,7 +56,11 @@ import { randomUUID } from 'node:crypto';
 
 import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
 import { withRequest } from '../../../obs/trace';
-import { PUBLIC_CORPUS_FAULT, logForOperator } from '../../../server/public-faults';
+import {
+  PUBLIC_CORPUS_FAULT,
+  logForOperator,
+  logOncePerProcess,
+} from '../../../server/public-faults';
 import { runEmission } from './chain';
 
 /** `AsyncLocalStorage` i čtení zmrazeného korpusu potřebují Node, ne edge. */
@@ -74,13 +78,40 @@ export { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody };
  *
  * Sdílí to s `stream/route.ts`: obě cesty přijímají tentýž požadavek a mez
  * velikosti i času musí být na obou stejná, jinak by se dala jedna z nich
- * použít k obejití druhé.
+ * použít k obejití druhé. `route` je jméno těch dveří — jde jen do logu, aby
+ * se v něm poznalo, která z těch dvou cest mluví.
+ *
+ * ⚠ **Čtení těla je uvnitř `try`, a je to jediný důvod, proč obě ty cesty
+ * odpovědí vždycky.** `readBody()` vrací svoje meze jako hodnotu, ale samo
+ * `reader.read()` se **odmítnout** může — přerušené spojení, vadná komprese —
+ * a to odmítnutí by proletělo ven. Odpověď by pak složil Next.js: pětistovka
+ * bez `requestId`, tedy jediný požadavek v provozu, který se nedá spárovat
+ * s řádkem v logu. Naměřeno nezávislou revizí 1. 9. 2026; `/api/generate` má
+ * tutéž opravu od `d5970e7`.
  */
 export async function readPromptId(
   request: Request,
   requestId: string,
+  route: string,
 ): Promise<{ readonly ok: true; readonly promptId: string } | { readonly ok: false; readonly response: Response }> {
-  const raw = await readBody(request);
+  let raw;
+  try {
+    raw = await readBody(request);
+  } catch (thrown) {
+    logOncePerProcess(
+      route,
+      requestId,
+      'BODY_UNREADABLE',
+      thrown instanceof Error ? thrown.message : String(thrown),
+    );
+    return {
+      ok: false,
+      response: Response.json(
+        { requestId, error: { code: 'BODY_UNREADABLE', message: 'the request body could not be read' } },
+        { status: 400 },
+      ),
+    };
+  }
   if (!raw.ok)
     return {
       ok: false,
@@ -139,7 +170,7 @@ export async function POST(request: Request): Promise<Response> {
   const requestId = randomUUID();
 
   return withRequest(requestId, async () => {
-    const parsed = await readPromptId(request, requestId);
+    const parsed = await readPromptId(request, requestId, 'emit');
     if (!parsed.ok) return parsed.response;
 
     const outcome = runEmission(parsed.promptId);
