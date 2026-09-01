@@ -59,7 +59,7 @@ import { withRequest } from '../../../obs/trace';
 import {
   PUBLIC_CORPUS_FAULT,
   logForOperator,
-  logOncePerProcess,
+  logRateLimited,
 } from '../../../server/public-faults';
 import { runEmission } from './chain';
 
@@ -98,7 +98,7 @@ export async function readPromptId(
   try {
     raw = await readBody(request);
   } catch (thrown) {
-    logOncePerProcess(
+    logRateLimited(
       route,
       requestId,
       'BODY_UNREADABLE',

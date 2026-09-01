@@ -273,26 +273,90 @@ describe('a body that breaks mid-read answers with a correlated 400 at every doo
    * vlastní spojení umí volající kolikrát chce, takže řádek na požadavek je
    * log, který si kdokoli natáhne donekonečna. Táž vada jako u lepivého
    * odmítnutí stropem v `/api/generate`, jen jiným vchodem.
+   *
+   * **Dvacet požadavků = dva řádky, ne jeden.** Vydává se 1. a 10. výskyt;
+   * mlčení po prvním by šlo koupit jedním požadavkem hned po nasazení a
+   * skutečná porucha ve dvanácté hodině by pak neměla čím se ozvat.
+   *
+   * Smyčka jde přes **všechny** dveře, které tím boundem jdou. Dokud běžela jen
+   * přes `emit`, nic nepřipínalo, že ty ostatní bound vůbec mají.
    */
-  it('and stops writing after the first one, however many arrive', async () => {
+  it('and slows down to milestones, however many arrive', async () => {
     const log = captureLog();
-    const { POST } = await import('../../app/api/emit/route');
 
-    for (let attempt = 0; attempt < 20; attempt += 1) {
-      const response = await POST(brokenBody('http://127.0.0.1/api/emit'));
-      expect(response.status).toBe(400);
-    }
+    const doors = [
+      { name: 'emit', url: 'http://127.0.0.1/api/emit', POST: (await import('../../app/api/emit/route')).POST },
+      { name: 'emit/stream', url: 'http://127.0.0.1/api/emit/stream', POST: (await import('../../app/api/emit/stream/route')).POST },
+      { name: 'edit', url: 'http://127.0.0.1/api/edit', POST: (await import('../../app/api/edit/route')).POST },
+    ];
 
-    expect(
-      log.filter((line) => line.includes('BODY_UNREADABLE')),
-      '20 přerušených spojení napsalo operátorovi víc než jeden řádek',
-    ).toHaveLength(1);
+    for (const door of doors)
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        const response = await door.POST(brokenBody(door.url));
+        expect(response.status).toBe(400);
+      }
+
+    for (const door of doors)
+      expect(
+        log.filter((line) => line.startsWith(`[${door.name}] `) && line.includes('BODY_UNREADABLE')),
+        `${door.name}: 20 přerušených spojení nedalo dva řádky`,
+      ).toHaveLength(2);
   });
 });
 
 /* ------------------------------------------------------------------ *
  * Vlastnosti sdíleného modulu.
  * ------------------------------------------------------------------ */
+
+describe('the operator log is rate-limited, never silenced for good', () => {
+  /**
+   * Měří se přímo na funkci, ne přes routu: přes routu se nedá dojet ke stému
+   * výskytu v rozumném čase a klíč by se soudil jen nepřímo.
+   */
+  async function limiter(): Promise<{ readonly log: string[]; readonly write: typeof import('../public-faults').logRateLimited }> {
+    const log: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+      log.push(String(line));
+    });
+    vi.resetModules();
+    return { log, write: (await import('../public-faults')).logRateLimited };
+  }
+
+  it('writes the 1st, 10th and 100th of the same fault and nothing between', async () => {
+    const { log, write } = await limiter();
+
+    for (let attempt = 0; attempt < 250; attempt += 1)
+      write('emit', `req-${attempt}`, 'BODY_UNREADABLE', 'the body ended mid-read');
+
+    // 250 požadavků, tři řádky. Milion by dal šest — logaritmus provozu.
+    expect(log).toHaveLength(3);
+    expect(log[0]).toContain('(occurrence 1)');
+    expect(log[1]).toContain('(occurrence 10)');
+    expect(log[2]).toContain('(occurrence 100)');
+    // Číslo výskytu je v textu schválně: bez něj vypadá desátý řádek jako
+    // první a operátor záplavu nepozná.
+    expect(log[1]).toContain('the body ended mid-read');
+  });
+
+  it('keys on the code as well as the door, so a second fault is never swallowed', async () => {
+    const { log, write } = await limiter();
+
+    write('emit', 'req-1', 'BODY_UNREADABLE', 'first');
+    // Jiný kód týchž dveří: kdyby se klíčovalo jen podle dveří, tenhle řádek
+    // zmizí a s ním celá druhá třída poruch.
+    write('emit', 'req-2', 'CORPUS_UNREADABLE', 'second');
+    // A jiné dveře s týmž kódem, ze stejného důvodu opačným směrem.
+    write('edit', 'req-3', 'BODY_UNREADABLE', 'third');
+    // Opakování prvního klíče se už nevydá — bound doopravdy platí.
+    write('emit', 'req-4', 'BODY_UNREADABLE', 'first again');
+
+    expect(log).toHaveLength(3);
+    expect(log.join('\n')).toContain('req-1');
+    expect(log.join('\n')).toContain('req-2');
+    expect(log.join('\n')).toContain('req-3');
+    expect(log.join('\n')).not.toContain('req-4');
+  });
+});
 
 describe('the shared table is the only thing four doors are allowed to say', () => {
   /**

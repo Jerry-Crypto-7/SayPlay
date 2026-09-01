@@ -84,11 +84,17 @@ export function logForOperator(
   console.error(`[${route}] ${requestId} ${code}: ${withoutCredentials(detail)}`);
 }
 
-/** Dvojice (dveře, kód), které už tenhle proces zapsal. */
-const LOGGED_ONCE = new Set<string>();
+/** Kolikrát tenhle proces viděl dvojici (dveře, kód). */
+const SEEN_PER_KEY = new Map<string, number>();
+
+/** 1, 10, 100, 1000 … — výskyty, na kterých se řádek vydá. */
+function isMilestone(occurrence: number): boolean {
+  return /^10*$/.test(String(occurrence));
+}
 
 /**
- * Totéž, ale **nejvýš jednou za proces na dvojici dveří a kódu**.
+ * Totéž, ale **s omezenou rychlostí**: vydá se 1., 10., 100., 1000. … výskyt
+ * dvojice (dveře, kód).
  *
  * Je to pro vady, které si volající umí vyrobit sám a kolikrát chce — typicky
  * přerušené spojení uprostřed těla. Žádná z těch rout nechce přihlášení, takže
@@ -98,18 +104,39 @@ const LOGGED_ONCE = new Set<string>();
  *
  * Mlčet úplně by ale bylo taky špatně: „tělo se nedá přečíst" hromadně znamená
  * rozbitou proxy nebo kompresi před serverem, a to je jediné, co operátorovi
- * o téhle třídě stojí za vědění. **První výskyt nese všechno**, protože další
- * nebude — a počet řádků je shora omezený počtem dveří krát počtem kódů, tedy
- * konstantou, ne provozem.
+ * o téhle třídě stojí za vědění.
+ *
+ * ## Proč rychlost, a ne životnost — vada v původním nápadu, naměřená revizí
+ *
+ * Do 1. 9. 2026 se zapisoval **jen první výskyt za proces**, a to bylo špatně.
+ * Precedens, ze kterého to vzniklo (lepivá vada korpusu), platí proto, že tam
+ * první řádek a tisící říkají totéž. `BODY_UNREADABLE` je ale stav
+ * **spojení**, ne serveru: jeden anonymní požadavek s přerušeným tělem hned po
+ * nasazení zapsal klíč napořád, a když se ve dvanácté hodině rozbila komprese
+ * nebo proxy před serverem, dostal operátor **nula řádků** — přesně ten signál,
+ * o kterém tenhle komentář tvrdil, že je jediný, co za to stojí. Umlčet kanál
+ * si tak mohl kdokoli, a mohl si to vybrat dopředu.
+ *
+ * Milníky po desítkách drží obojí: strop je logaritmus provozu (milion
+ * požadavků = šest řádků), takže natáhnout se log pořád nedá, a přesto se
+ * porucha ozve znovu, kdykoli se rozjede naostro. Číslo výskytu jde do textu,
+ * protože jinak vypadá desátý řádek jako první a záplavu z něj nikdo nepozná.
+ *
+ * ⚠ **Ten strop je na jednu instanci, ne na nasazení.** `SEEN_PER_KEY` je stav
+ * modulu, takže na serverless je skutečná mez **instance × dveře × kódy**
+ * a počet instancí roste s provozem. Konstanta to tedy není; logaritmus na
+ * instanci ano. Trvale to zavře až sdílený stav (T29, tentýž důvod jako
+ * u dolarového stropu).
  */
-export function logOncePerProcess(
+export function logRateLimited(
   route: string,
   requestId: string,
   code: string,
   detail: string,
 ): void {
   const key = `${route} ${code}`;
-  if (LOGGED_ONCE.has(key)) return;
-  LOGGED_ONCE.add(key);
-  logForOperator(route, requestId, code, detail);
+  const occurrence = (SEEN_PER_KEY.get(key) ?? 0) + 1;
+  SEEN_PER_KEY.set(key, occurrence);
+  if (!isMilestone(occurrence)) return;
+  logForOperator(route, requestId, code, `${detail} (occurrence ${occurrence})`);
 }

@@ -69,7 +69,7 @@ import { withRequest } from '../../../obs/trace';
 import {
   PUBLIC_CORPUS_FAULT,
   logForOperator,
-  logOncePerProcess,
+  logRateLimited,
 } from '../../../server/public-faults';
 import { routePatch, type Lane, type RoutedPatch, type RoutingAnomaly } from '../../../patch/router';
 import { commitRoutedParts, staleRevision, type BaseRevision, type CommitOutcome } from './commit';
@@ -133,7 +133,7 @@ export async function POST(request: Request): Promise<Response> {
     try {
       raw = await readBody(request);
     } catch (thrown) {
-      logOncePerProcess(
+      logRateLimited(
         'edit',
         requestId,
         'BODY_UNREADABLE',
