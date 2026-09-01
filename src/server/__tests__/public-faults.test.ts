@@ -423,7 +423,19 @@ describe('a hole in the corpus is told apart from a caller mistake at the edit d
         baseRevision: { sim: BASE_DOC.simRevision, look: BASE_DOC.lookRevision },
       });
 
-    expect((await POST(ask('E02'))).status, 'fixtura nedělá díru v korpusu').toBe(404);
+    // Ne jen stav: `UNKNOWN_PROMPT` je taky 404, takže samotná čtyřstovka by
+    // prošla i nad fixturou, která ten záznam odebrat zapomněla, a diagnostika
+    // by ukazovala na špatnou příčinu. Soudí se proto **kód i věta** — a věta
+    // je zároveň jediné místo, kde je vidět, že ty dva stavy zvenčí rozeznat
+    // JDOU (`PUBLIC_CORPUS_FAULT`, starší než tahle úloha).
+    const hole = (await (await POST(ask('E02'))).json()) as {
+      readonly error: { readonly code: string; readonly message: string };
+    };
+    expect(hole.error.code).toBe('UNKNOWN_PAIR');
+    expect(
+      hole.error.message,
+      'fixtura nedělá díru v korpusu — tohle není chybějící odpověď',
+    ).toBe(PUBLIC_CORPUS_FAULT.NO_FROZEN_RESPONSE);
     expect((await POST(ask('E03'))).status).toBe(404);
     for (let attempt = 0; attempt < 50; attempt += 1) await POST(ask('E02'));
 
@@ -438,7 +450,14 @@ describe('a hole in the corpus is told apart from a caller mistake at the edit d
 
     // A vedle toho omyl volajícího na **zdravém** záznamu. Kdyby oba důvody
     // sdílely jedno počítadlo, byl by tenhle až druhý výskyt, tedy žádný řádek.
-    expect((await POST(ask(editRecord.forPrompt))).status).toBe(404);
+    const mistake = (await (await POST(ask(editRecord.forPrompt))).json()) as {
+      readonly error: { readonly code: string; readonly message: string };
+    };
+    // **Týž kód jako u díry** — rozdělení se odpovědi ven nedotklo. A **jiná
+    // věta**, protože ji dává `PUBLIC_CORPUS_FAULT` podle důvodu; sjednocovat
+    // ji sem nepatří, důvod je v `edit/route.ts`.
+    expect(mistake.error.code).toBe('UNKNOWN_PAIR');
+    expect(mistake.error.message).toBe(PUBLIC_CORPUS_FAULT.BASE_WORLD_MISMATCH);
     const mistakes = doors.log.filter((line) => line.includes('BASE_WORLD_MISMATCH'));
     expect(mistakes, 'omyl volajícího se ztratil pod počítadlem děr').toHaveLength(1);
     expect(mistakes[0]).toContain('(occurrence 1)');

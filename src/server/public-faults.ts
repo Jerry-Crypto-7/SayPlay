@@ -121,8 +121,14 @@ export const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
  * které omezuje `logRateLimited`, jsou stav **spojení** a mění se po minutách.
  * Lepivá vada je stav **korpusu**: mění se jen tehdy, když někdo nasadí nebo
  * sáhne na soubor, takže častější připomínka není informace, ale šum. Hodina
- * je zároveň nejdelší doba, po kterou po opravě zůstane nepovšimnutý návrat
- * téže vady — a to je jediná cena, kterou tenhle poměr platí.
+ * Ceny toho poměru jsou dvě, ne jedna:
+ *
+ * 1. **návrat téže vady zůstane nepovšimnutý nejvýš hodinu**;
+ * 2. **trvale rozbité dveře napíšou 24 řádků za den místo jednoho** — do
+ *    1. 9. 2026 to byl jeden řádek za proces. Nasazení bez `evals/frozen/**`
+ *    má dvanáct dosažitelných klíčů, tedy 288 řádků za den proti dvanácti.
+ *    Je to zanedbatelné množstvím a **není to zanedbatelné jako tvrzení**,
+ *    protože tenhle soubor má za sebou čtyři kola komentářů, které přežily kód.
  */
 export const STICKY_WINDOW_MS = 4 * RATE_LIMIT_WINDOW_MS;
 

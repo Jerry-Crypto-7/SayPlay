@@ -129,8 +129,21 @@ function corpusUnavailable(requestId: string, failure: ClientFailure): Response 
      * `promptId` je tady už porovnaný se zmrazenými id: do klíče neteče nic od
      * volajícího a počet je omezený velikostí korpusu.
      *
-     * **Odpověď ven se tím nemění** — obojí zůstává 404 `UNKNOWN_PAIR`. Kdo se
-     * ptá zvenčí, se o rozdílu dozvědět nemá; je to stav serveru.
+     * **Rozdělení nemění odpověď ven ani o bajt** — obojí je pořád 404
+     * s kódem `UNKNOWN_PAIR`. Co se ale nesmí tvrdit (a první verze tohohle
+     * odstavce to tvrdila) je, že volající ty dva stavy od sebe nerozezná:
+     * `message` je `PUBLIC_CORPUS_FAULT[failure.reason]` o třicet řádků výš,
+     * a ty dvě věty se liší doslova. Dvacet pět dotazů tedy vyjmenuje, které
+     * editační odpovědi tomuhle nasazení chybí.
+     *
+     * **Sjednotit ten text by tu třídu nezavřelo — změřeno, ne odhadnuto.**
+     * `/api/emit` vrací neověřenému volajícímu `code: outcome.failure.reason`
+     * (`emit/route.ts:199`), tedy tentýž důvod rovnou jako kód, ne jen jako
+     * větu. Vyjmenovat tak jde i tam, jen pro tvořivou větev. A protože
+     * `evals/frozen/**` je commitnutý artefakt v repu, které jde podle
+     * `RULES.md` §2 ven, není tím prozrazený obsah korpusu, ale **rozdíl
+     * nasazení proti repu**. Kdyby se to jednou zavírat mělo, patří to na
+     * všechny dveře naráz a do `PUBLIC_CORPUS_FAULT`, ne sem.
      */
     if (failure.reason === 'BASE_WORLD_MISMATCH')
       logRateLimited('edit', requestId, failure.reason, failure.detail);
