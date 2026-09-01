@@ -336,16 +336,30 @@ const REFUSALS_LOGGED = new Set<RefusalReason>();
  * ať přijde kolik požadavků chce, a **počet řádků je pořád omezený**, protože
  * peníze omezuje `SpendCap` — nejvýš `capUsd / krok` řádků za proces.
  *
- * Krok je setina výchozího stropu, ne opsané číslo: nad `DEFAULT_CAP_USD` (5 USD)
- * to je 5 centů, tedy nejvýš sto řádků za proces — týž řád jako u milníků, jen
- * s mezí, která znamená peníze. Když se strop zvedne, zvedne se s ním.
+ * Krok je **procento skutečného stropu**, ne setina toho výchozího — oprava
+ * podle kontrolní revize 1. 9. 2026, která tu naměřila 200násobek. Do té chvíle
+ * tu stálo `DEFAULT_CAP_USD / 100`, tedy pevných 5 centů odvozených z literálu
+ * v `spend-cap.ts`, zatímco skutečný strop nese `WORLDSMITH_SPEND_CAP_USD` nebo
+ * `capUsd` z řídicího souboru. Nad `WORLDSMITH_SPEND_CAP_USD=1000` — což je
+ * prostředí, ve kterém tohle testujeme — to dávalo `1000 / 0,05` = **20 000
+ * řádků za proces** proti slíbené stovce, a komentář u toho tvrdil „když se
+ * strop zvedne, zvedne se s ním". Teď se zvedne doopravdy.
+ *
+ * Setina stropu drží tu větu na obou koncích: **nejvýš sto řádků za proces**
+ * při jakémkoli stropu, a přesnost je úměrná sázce — nad stropem 1000 USD nikdo
+ * nechce vědět o pěti centech, nad stropem 1 USD ano. Vypnutý nebo nečitelný
+ * strop je nula, a ta by znamenala řádek na požadavek; proto se v tom případě
+ * vrací setina výchozího stropu, tedy dnešní chování.
  *
  * ⚠ **Pořád je to stav procesu, ne nasazení** — táž výhrada jako u
  * `logRateLimited()` (`src/server/public-faults.ts`). Chladný start obojí
- * vynuluje, takže skutečná mez je `instance × capUsd / krok`. Zavře to teprve
+ * vynuluje, takže skutečná mez je `instance × 100` řádků. Zavře to teprve
  * sdílený stav z vlny 7 (T29), tentýž, který potřebuje i strop utrácení.
  */
-const ACCOUNTING_STEP_USD = DEFAULT_CAP_USD / 100;
+function accountingStepUsd(): number {
+  const { capUsd } = CAP.snapshot();
+  return (capUsd > 0 ? capUsd : DEFAULT_CAP_USD) / 100;
+}
 
 /** Utracené dolary za tenhle proces. Roste u **každého** placeného volání. */
 let accountedUsd = 0;
@@ -363,11 +377,31 @@ let reportedUsd = 0;
  *
  * Není to druhý strop a nic neomezuje — skutečný zůstává `SpendCap`. Tohle je
  * jen to, co se o něm dá přečíst z logu.
+ *
+ * ⚠ **Účtenka, která není konečné číslo, se do součtu nepustí** — nález
+ * kontrolní revize 1. 9. 2026. `usageOf()` (`src/server/upstream.ts`) pouští
+ * `Infinity` i záporná čísla od poskytovatele dál schválně, protože je zahodí
+ * `release()` ve stropu; jenže tohle je **druhý** konzument téhož čísla a
+ * takovou pojistku neměl. Jediné `{"input_tokens":1e999}` by udělalo
+ * z `accountedUsd` `Infinity`, načež `Infinity - Infinity` je `NaN`, porovnání
+ * s krokem je napořád nepravda a **každý další placený požadavek napíše řádek**
+ * — naměřeno 6 požadavků, 6 řádků, s nečitelným součtem. Mez by tím zmizela
+ * přesně u toho poskytovatele, kvůli kterému se log čte.
+ *
+ * Součet proto zůstane stát a operátor dostane **jeden** řádek za proces
+ * o tom, že od téhle chvíle je součet spodní odhad, ne částka. Peníze si
+ * poradily samy: `release()` v takovém případě strhne celou rezervaci, takže
+ * strop drží dál. Srovnat to, co hlásí výsledek, s tím, co strop doopravdy
+ * strhl, je úloha `T9-costreport` — tady se zavírá jen ta mez.
  */
 function logAccounting(requestId: string, costUsd: number): void {
-  if (costUsd <= 0) return;
+  if (!Number.isFinite(costUsd) || costUsd <= 0) {
+    // Nula je normální stav (offline větev, neúčtované selhání) a mlčí.
+    if (costUsd !== 0) logStickyFault(requestId, 'RECEIPT_UNUSABLE', `costUsd=${String(costUsd)}`);
+    return;
+  }
   accountedUsd += costUsd;
-  if (reportedUsd > 0 && accountedUsd - reportedUsd < ACCOUNTING_STEP_USD) return;
+  if (reportedUsd > 0 && accountedUsd - reportedUsd < accountingStepUsd()) return;
   reportedUsd = accountedUsd;
   logForOperator(
     requestId,
@@ -484,12 +518,15 @@ export async function POST(request: Request): Promise<Response> {
      *   `control.enabled`, takže nad `{"enabled":false,"capUsd":0}` dá **250 požadavků 250
      *   řádků**, každý se jménem modelu z prostředí.
      *
-     * Bound je proto stejný jako u ostatních řádků téhle routy: milníky.
-     * **Účetnictví se tím ale neztrácí** — sampling by sám o sobě zahodil cenu
+     * Bound je proto **krok v dolarech**, ne milníky — viz `logAccounting()`.
+     * Milníky tu stály první a byly druhá špatná odpověď na tutéž otázku:
+     * omezily, jak často se píše, ale ne, o kolik peněz smí log zaostat.
+     * **Účetnictví se tím neztrácí** — sampling by sám o sobě zahodil cenu
      * devíti volání z deseti, takže řádek nese vedle ceny toho volání i
-     * **průběžný součet za proces**. Z jediného milníku se tak dá přečíst
-     * utracená částka i počet volání, což je pro srovnání s ceníkem víc, než
-     * dávalo dvě stě samostatných řádků.
+     * **průběžný součet za proces**, který roste u každého placeného volání.
+     * Z jednoho řádku se tak přečte utracená částka, a to s chybou nejvýš
+     * o jeden krok. **Počet volání z něj přečíst nejde** a je to vědomé:
+     * `logForOperator` nemá počítadlo `(occurrence N)`, které měl `logRateLimited`.
      *
      * Offline větev má `costUsd` nulové a v `provenance` nezadržuje nic, takže
      * nezapíše nikdy — to platí dál.

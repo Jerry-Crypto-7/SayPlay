@@ -774,11 +774,22 @@ describe('POST /api/generate', () => {
         WORLDSMITH_MODEL: 'privately-pinned-model-7c1f',
         WORLDSMITH_USD_PER_MTOK_IN: '3',
         WORLDSMITH_USD_PER_MTOK_OUT: '15',
-        WORLDSMITH_SPEND_CAP_USD: '1000',
+        // **Strop je pět dolarů, ne tisíc, a je to součást měření**: krok je
+        // setina skutečného stropu, takže nad tisícem by byl 10 USD a sto
+        // padesát volání za 0,50 USD by nenapsalo nic než první řádek.
+        WORLDSMITH_SPEND_CAP_USD: '5',
       });
 
       // Jedno volání stojí (100 × 3 + 200 × 15) / 1e6 = 0,0033 USD.
-      const CALLS = 100;
+      //
+      // **150, a nesmí to být milník.** Do 1. 9. 2026 tu stálo 100 a test tím
+      // nedokázal chytit implementaci, kterou měl hlídat — nález kontrolní
+      // revize, ověřený mutací. 100 je totiž samo milníkem (1., 10., 100.),
+      // takže milníková verze napsala poslední řádek přesně na posledním volání
+      // a zaostala o 0,000 USD; všech šest tvrzení pod tím prošlo i nad kódem,
+      // který tenhle commit odstraňuje. Při 150 zaostane o 0,165 USD, tedy
+      // 3,3násobek kroku, a test zčervená.
+      const CALLS = 150;
       const PER_CALL = 0.0033;
       for (let attempt = 0; attempt < CALLS; attempt += 1) {
         const { status } = await ask(JSON.stringify({ prompt: 'bludiště s klíčem' }));
@@ -789,12 +800,14 @@ describe('POST /api/generate', () => {
       const totalOf = (line: string): number =>
         Number(/totalUsd=([0-9.]+)/.exec(line)?.[1] ?? Number.NaN);
 
-      // **Mez je v dolarech, ne v požadavcích** — krok je `DEFAULT_CAP_USD / 100`,
-      // tedy 5 centů. Sto volání za 0,33 USD proto dá nejvýš osm řádků…
+      // **Mez je v dolarech, ne v požadavcích** — krok je setina stropu, tedy
+      // nad stropem 5 USD pět centů. Sto padesát volání za 0,495 USD proto dá
+      // nejvýš jedenáct řádků…
       const step = 5 / 100;
-      expect(lines.length, '100 volání napsalo operátorovi řádek na požadavek').toBeLessThanOrEqual(
-        Math.ceil((CALLS * PER_CALL) / step) + 1,
-      );
+      expect(
+        lines.length,
+        `${CALLS} volání napsalo operátorovi řádek na požadavek`,
+      ).toBeLessThanOrEqual(Math.ceil((CALLS * PER_CALL) / step) + 1);
       expect(lines.length, 'operátor se o utrácení nedozvěděl vůbec').toBeGreaterThan(1);
 
       // …a hlavně: **poslední řádek nesmí zaostat za skutečností o víc než krok**.
@@ -810,6 +823,99 @@ describe('POST /api/generate', () => {
       // Cena toho jednoho volání zůstává vedle součtu; bez ní se z řádku nepozná
       // ceník, jen celková útrata.
       expect(lines[0]).toContain('costUsd=0.0033');
+    });
+
+    /**
+     * **Zvednutý strop nesmí znásobit počet řádků** — nález kontrolní revize
+     * 1. 9. 2026, naměřený 200násobek.
+     *
+     * Krok byl `DEFAULT_CAP_USD / 100`, tedy pevných 5 centů z literálu
+     * v `spend-cap.ts`, jenže skutečný strop nese prostředí. Nad stropem
+     * 1000 USD to dávalo mez `1000 / 0,05` = **20 000 řádků za proces** proti
+     * slíbené stovce — a komentář u toho tvrdil „když se strop zvedne, zvedne
+     * se s ním". Teď je krok setina **skutečného** stropu, takže mez v počtu
+     * řádků na stropu nezávisí vůbec.
+     */
+    it('dvěstěkrát vyšší strop nedá dvěstěkrát víc účetních řádků', async () => {
+      const logged = captureOperatorLog();
+      vi.stubGlobal('fetch', () =>
+        Promise.resolve(
+          Response.json({
+            content: [{ type: 'text', text: '{"emitted":true}' }],
+            usage: { input_tokens: 100, output_tokens: 200 },
+          }),
+        ),
+      );
+
+      const ask = await loadRoute({
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_MODEL: 'privately-pinned-model-7c1f',
+        WORLDSMITH_USD_PER_MTOK_IN: '3',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        // Týž běh jako test nad tímhle, jen strop je dvěstěkrát vyšší.
+        WORLDSMITH_SPEND_CAP_USD: '1000',
+      });
+
+      for (let attempt = 0; attempt < 150; attempt += 1) {
+        const { status } = await ask(JSON.stringify({ prompt: 'bludiště s klíčem' }));
+        expect(status).toBe(200);
+      }
+
+      // Sto padesát volání za 0,495 USD proti kroku 10 USD: **jediný** řádek,
+      // ten povinný první. S pevným krokem jich bylo jedenáct, tedy tolik, co
+      // při dvěstěkrát nižším stropu — což je právě ta neúměra.
+      const lines = logged.filter((line) => line.includes('ACCOUNTING'));
+      expect(lines, 'krok se neodvozuje ze skutečného stropu').toHaveLength(1);
+    });
+
+    /**
+     * **Účtenka, která není konečné číslo, nesmí mez zrušit** — nález kontrolní
+     * revize 1. 9. 2026.
+     *
+     * `usageOf()` (`src/server/upstream.ts`) pouští `Infinity` od poskytovatele
+     * dál schválně, protože ho zahodí `release()` ve stropu. `logAccounting` je
+     * ale **druhý** konzument téhož čísla: jediné `1e999` udělá z běžícího
+     * součtu `Infinity`, `Infinity - Infinity` je `NaN`, porovnání s krokem je
+     * napořád nepravda — a od té chvíle píše řádek **každý** placený požadavek.
+     * Mez by zmizela přesně u toho poskytovatele, kvůli kterému se log čte.
+     */
+    it('otrávená účtenka nezruší mez a nepřepíše součet na nečíslo', async () => {
+      const logged = captureOperatorLog();
+      // `Response.json` by `Infinity` uložilo jako `null`, takže tělo musí jít
+      // jako text — `JSON.parse('1e999')` dá `Infinity` typu number.
+      vi.stubGlobal('fetch', () =>
+        Promise.resolve(
+          new Response(
+            '{"content":[{"type":"text","text":"{\\"emitted\\":true}"}],"usage":{"input_tokens":1e999,"output_tokens":1}}',
+            { headers: { 'content-type': 'application/json' } },
+          ),
+        ),
+      );
+
+      const ask = await loadRoute({
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_MODEL: 'privately-pinned-model-7c1f',
+        WORLDSMITH_USD_PER_MTOK_IN: '3',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        WORLDSMITH_SPEND_CAP_USD: '1000',
+      });
+
+      for (let attempt = 0; attempt < 6; attempt += 1) {
+        const { status } = await ask(JSON.stringify({ prompt: 'bludiště s klíčem' }));
+        expect(status).toBe(200);
+      }
+
+      // Bez pojistky: šest požadavků, šest řádků. S ní: žádný, protože do
+      // součtu se otrávené číslo nepustí a součet zůstal na nule.
+      const accounting = logged.filter((line) => line.includes('ACCOUNTING'));
+      expect(accounting, 'otrávená účtenka píše řádek na požadavek').toHaveLength(0);
+      // A operátor se o tom dozví — jednou za proces, ne šestkrát.
+      const unusable = logged.filter((line) => line.includes('RECEIPT_UNUSABLE'));
+      expect(unusable, 'nečitelná účtenka zmizela beze stopy, nebo dala řádek na požadavek').toHaveLength(1);
     });
 
     /**
@@ -845,10 +951,18 @@ describe('POST /api/generate', () => {
 
       const accounting = logged.filter((line) => line.includes('ACCOUNTING'));
       expect(accounting, 'zaplacené selhání se do účetnictví nedostalo').toHaveLength(1);
+
+      // **Musí to být celá rezervace, ne „nějaké číslo nad nulou".** Pouhé
+      // `> 0` tady stálo do 1. 9. 2026 a kontrolní revize na něm ukázala
+      // přeživšího mutanta: implementace, která by účtovala pár tokenů místo
+      // rezervace, by tou asercí prošla. Dolní hranice se odvozuje, ne opisuje —
+      // rezervace je `vstupní tokeny × cena_in + maxOutputTokens × cena_out`,
+      // takže i bez znalosti délky promptu je nejméně 8000 × 15 / 1e6.
+      const RESERVATION_FLOOR = (8000 * 15) / 1_000_000;
       expect(
         Number(/totalUsd=([0-9.]+)/.exec(accounting[0])?.[1] ?? 0),
-        'součet zůstal na nule, přestože se rezervace zaúčtovala',
-      ).toBeGreaterThan(0);
+        'účtované selhání se zaúčtovalo méně než celou rezervací',
+      ).toBeGreaterThanOrEqual(RESERVATION_FLOOR);
     });
 
     it('zmrazená větev si nechá celou svoji stopu, protože je to veřejný artefakt', async () => {
