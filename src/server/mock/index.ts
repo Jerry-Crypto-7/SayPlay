@@ -64,11 +64,16 @@ function generate(call: GenerationCall): GenerationOutcome {
       usage: null,
     };
 
+  // Sem se dojde jen s promptem, který v korpusu **je**. Chybějící odpověď
+  // proto není „na tohle odpověď nemám" jako o pár řádků výš, ale díra ve
+  // zmrazené sadě — a od 1. 9. 2026 to má vlastní důvod, aby se ty dvě věci
+  // daly rozlišit tam, kde na tom záleží: v logu operátora. Ven jdou pořád
+  // stejně, viz `PUBLIC_FAILURE` v `/api/generate`.
   const emission = emitWorld(match.id, call.request);
   if (!emission.ok)
     return {
       ok: false,
-      reason: emission.reason === 'NO_FROZEN_RESPONSE' ? 'NO_SOURCE' : 'UPSTREAM_UNAVAILABLE',
+      reason: emission.reason === 'NO_FROZEN_RESPONSE' ? 'NO_FROZEN_ANSWER' : 'UPSTREAM_UNAVAILABLE',
       detail: `${emission.reason}: ${emission.detail}`,
       usage: null,
     };

@@ -124,8 +124,64 @@ const PUBLIC_FAILURE: Record<GenerationFailureReason, string> = {
   UPSTREAM_REJECTED: 'the model provider rejected the request; nothing was generated',
   MALFORMED_RESPONSE: 'the model answered with something this server cannot read',
   NO_SOURCE: 'this deployment has no answer for that prompt',
+  // **Doslova týž text jako `NO_SOURCE`, a je to celý smysl toho rozdělení.**
+  // Uvnitř je to porucha korpusu a operátor se o ní dozvědět má; ven se nesmí
+  // dát poznat, protože „mám rozbitý korpus" je stav serveru. Odlišný text by
+  // z toho udělal ukazatel, kterým jde korpus obcházet po záznamech.
+  NO_FROZEN_ANSWER: 'this deployment has no answer for that prompt',
   BRANCH_UNCONFIGURED: 'this deployment is not configured to generate; no call was made',
 };
+
+/**
+ * **Stavový kód na důvod, tabulkou a ne řetězem `if`ů.**
+ *
+ * Táž doktrína jako u `BILLED_ON_FAILURE` (`src/server/pipeline.ts`): dokud to
+ * byl ternární výraz, propadl nový důvod tiše do 502. `NO_FROZEN_ANSWER` by tak
+ * dostal jiný kód než `NO_SOURCE` — a rozdíl, který se schválně nesmí poznat
+ * z textu, by šel přečíst ze stavu.
+ */
+const FAILURE_STATUS: Record<GenerationFailureReason, number> = {
+  UPSTREAM_UNAVAILABLE: 502,
+  UPSTREAM_REJECTED: 502,
+  MALFORMED_RESPONSE: 502,
+  NO_SOURCE: 404,
+  NO_FROZEN_ANSWER: 404,
+  BRANCH_UNCONFIGURED: 503,
+};
+
+/**
+ * **Co z toho dostane operátor — podle příčiny, ne podle kódu.**
+ *
+ * `NO_SOURCE` mlčí schválně: u offline větve je to normální odpověď na prompt
+ * mimo zmrazený korpus, takže by každý pokus porotce o vlastní větu zapsal
+ * chybový řádek (`RULES.md` §3.3 mu ty pokusy výslovně dovoluje). Log operátora
+ * by tím zaplnila nejběžnější odpověď dema a skutečné `UPSTREAM_*` by se v ní
+ * ztratilo přesně ve chvíli, kdy je někdo hledá.
+ *
+ * ⚠ **Do 1. 9. 2026 tohle mlčení pohlcovalo i poruchu.** Chybějící odpověď na
+ * prompt, který v korpusu **je**, nesla týž důvod, takže filtr neměl jak ty dvě
+ * věci rozlišit. Nález nezávislé revize; oprava je vlastní důvod, ne výjimka ve
+ * filtru — filtr se od té doby ptá na příčinu.
+ *
+ * `once` je bound, ne opatrnost: endpoint nechce přihlášení (AC T301) a vada
+ * korpusu je **lepivá** — jednou rozbitý záznam je rozbitý napořád, takže řádek
+ * na požadavek znamená log, který si kdokoli natáhne donekonečna. Klíčem je
+ * `detail`, ne důvod: ten jmenuje **konkrétní záznam**, takže tři rozbité
+ * záznamy dají tři řádky, ale tisíc požadavků na jeden dá pořád jeden. Počet je
+ * tím shora omezený velikostí korpusu, tedy commitnutého artefaktu, který
+ * volající nafouknout nemůže.
+ */
+const OPERATOR_LOG: Record<GenerationFailureReason, 'always' | 'once' | 'never'> = {
+  UPSTREAM_UNAVAILABLE: 'always',
+  UPSTREAM_REJECTED: 'always',
+  MALFORMED_RESPONSE: 'always',
+  BRANCH_UNCONFIGURED: 'always',
+  NO_SOURCE: 'never',
+  NO_FROZEN_ANSWER: 'once',
+};
+
+/** Vady korpusu, které už tenhle proces zapsal. Klíčem je záznam, ne důvod. */
+const CORPUS_FAULTS_LOGGED = new Set<string>();
 
 /**
  * A totéž pro **moderaci** — poslední místo, kde `detail` z řetězu tekl ven.
@@ -378,22 +434,30 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    /**
-     * **`NO_SOURCE` se neloguje, a není to výjimka z opatrnosti — je to jeho
-     * význam.** U offline větve je to normální odpověď na prompt mimo zmrazený
-     * korpus, takže by každý pokus porotce o vlastní větu zapsal chybový řádek.
-     * Log operátora by tím zaplnila nejběžnější odpověď dema a skutečné
-     * `UPSTREAM_*` by se v ní ztratilo přesně ve chvíli, kdy je někdo hledá.
-     */
-    if (result.reason !== 'NO_SOURCE') logForOperator(requestId, result.reason, result.detail);
-    const status = result.reason === 'NO_SOURCE' ? 404 : result.reason === 'BRANCH_UNCONFIGURED' ? 503 : 502;
+    // Kdo co dostane, rozhodují `OPERATOR_LOG` a `FAILURE_STATUS` výš — obě
+    // tabulky nad `GenerationFailureReason`, takže nový důvod bez rozhodnutí
+    // neprojde přes `tsc`.
+    if (OPERATOR_LOG[result.reason] === 'always')
+      logForOperator(requestId, result.reason, result.detail);
+    else if (OPERATOR_LOG[result.reason] === 'once' && !CORPUS_FAULTS_LOGGED.has(result.detail)) {
+      CORPUS_FAULTS_LOGGED.add(result.detail);
+      logForOperator(requestId, result.reason, result.detail);
+    }
+
     return Response.json(
       {
         requestId,
-        error: { code: result.reason, message: PUBLIC_FAILURE[result.reason] },
+        // **Kód důvodu jde ven schválně** — je to kontrakt klienta, který na
+        // 404 staví svět v prohlížeči. `NO_FROZEN_ANSWER` sem proto NESMÍ:
+        // rozdíl by se dal přečíst odsud místo z textu. Překládá se na
+        // `NO_SOURCE`, protože zvenku to jedna a táž odpověď je.
+        error: {
+          code: result.reason === 'NO_FROZEN_ANSWER' ? 'NO_SOURCE' : result.reason,
+          message: PUBLIC_FAILURE[result.reason],
+        },
         branch: result.branch,
       },
-      { status },
+      { status: FAILURE_STATUS[result.reason] },
     );
   });
 }

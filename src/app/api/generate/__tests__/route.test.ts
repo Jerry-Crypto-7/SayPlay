@@ -7,7 +7,8 @@
  * v žádném jiném testu neprojeví.
  */
 
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -27,6 +28,10 @@ const temporary: string[] = [];
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
+  // **Nutné od 1. 9. 2026, kdy sem přibyl podvržený `process.cwd()`.** Bez
+  // toho by špionáž na `cwd` přežila do dalších testů a ty by běžely nad
+  // dočasným adresářem místo nad repozitářem — zelené z úplně jiného důvodu.
+  vi.restoreAllMocks();
   vi.resetModules();
   for (const dir of temporary.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
@@ -85,6 +90,65 @@ function controlFile(contents: string): string {
   const path = join(dir, 'spend-cap.json');
   writeFileSync(path, contents, 'utf8');
   return path;
+}
+
+/* ------------------------------------------------------------------ *
+ * Korpus, který je celý v pořádku a jednu odpověď přesto nemá.
+ * ------------------------------------------------------------------ */
+
+const GAP_PROMPT = 'a room whose frozen answer went missing';
+const GAP_ID = 'gap-create-1';
+
+/**
+ * Postaví ve **dočasném** adresáři zmrazený korpus, který projde všemi
+ * kontrolami — hash souboru proti `MANIFEST.lock` i tvar záznamů — a přitom
+ * v `responses/index.jsonl` odpověď na `GAP_ID` nemá.
+ *
+ * Nesahá se tím na `evals/frozen/`: `FROZEN_DIR` vzniká z `process.cwd()` při
+ * načtení modulu, takže stačí podvrhnout `cwd` a shodit cache modulů. Je to týž
+ * postup jako v `src/server/__tests__/public-faults.test.ts`, jen tam je
+ * adresář prázdný a tady je korpus platný a neúplný — což je přesně ten rozdíl,
+ * který se měří.
+ */
+function corpusWithoutOneAnswer(): { readonly log: string[] } {
+  const dir = mkdtempSync(join(tmpdir(), 'worldsmith-gap-'));
+  temporary.push(dir);
+  const frozen = join(dir, 'evals', 'frozen');
+  mkdirSync(join(frozen, 'responses'), { recursive: true });
+
+  // Protokol se opisuje ze skutečného korpusu, protože z něj `frozenGrammar()`
+  // skládá slovník a routa se bez něj k větvi vůbec nedostane.
+  const protocol = readFileSync('evals/frozen/protocol.v1.json', 'utf8').replace(/\r\n/g, '\n');
+  const prompts = `${JSON.stringify({ id: GAP_ID, kind: 'create', prompt: GAP_PROMPT })}\n`;
+
+  // Soubor odpovědí existuje, hashuje se správně a nese platný záznam — jen
+  // pro JINÝ prompt. Prázdný soubor by se choval jako nečitelný korpus, což je
+  // vada, kterou už měří jiná sada.
+  const other = { branch: 'create', forPrompt: 'some-other-prompt', synthetic: true, body: { emitted: true } };
+  const responses = `${JSON.stringify({
+    ...other,
+    sha256: createHash('sha256').update(JSON.stringify(other.body)).digest('hex'),
+  })}\n`;
+
+  const files: Record<string, string> = {
+    'protocol.v1.json': protocol,
+    'prompts.v1.jsonl': prompts,
+    'responses/index.jsonl': responses,
+  };
+  const manifest: Record<string, string> = {};
+  for (const [relative, contents] of Object.entries(files)) {
+    writeFileSync(join(frozen, relative), contents, 'utf8');
+    manifest[relative] = createHash('sha256').update(Buffer.from(contents, 'utf8')).digest('hex');
+  }
+  writeFileSync(join(frozen, 'MANIFEST.lock'), JSON.stringify({ files: manifest }), 'utf8');
+
+  vi.spyOn(process, 'cwd').mockReturnValue(dir);
+  const log: string[] = [];
+  vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+    log.push(String(line));
+  });
+  vi.resetModules();
+  return { log };
 }
 
 describe('POST /api/generate', () => {
@@ -661,6 +725,92 @@ describe('POST /api/generate', () => {
         expect((await call(JSON.stringify({ prompt: FROZEN_CREATE.prompt }))).status).toBe(200);
 
       expect(logged, 'úspěch zdarma dokáže psát operátorovi na stderr').toEqual([]);
+    });
+
+    /**
+     * **`NO_SOURCE` mlčel za dvě různé věci, a jedna z nich je porucha** —
+     * nález nezávislé revize 1. 9. 2026.
+     *
+     * „Porotce napsal vlastní větu" je u offline větve normální odpověď a
+     * logovat se nemá; `RULES.md` §3.3 mu ty pokusy výslovně dovoluje. „Prompt
+     * v korpusu je, ale odpověď k němu chybí" je proti tomu díra ve zmrazené
+     * sadě, o které se nikdo nedozví, dokud ji někdo netrefí. Do téhle opravy
+     * nesly obě situace **týž důvod**, takže filtr logu neměl podle čeho je
+     * rozlišit a mlčel na obě.
+     */
+    it('chybějící odpověď na známý prompt dojde operátorovi, neznámá věta ne', async () => {
+      const { log } = corpusWithoutOneAnswer();
+      const { POST } = await import('../route');
+      const ask = async (prompt: string) => {
+        const response = await POST(
+          new Request('http://127.0.0.1/api/generate', { method: 'POST', body: JSON.stringify({ prompt }) }),
+        );
+        return { status: response.status, json: (await response.json()) as ResponseBody };
+      };
+
+      const gap = await ask(GAP_PROMPT);
+      expect(gap.status).toBe(404);
+      const operator = log.join('\n');
+      expect(operator, 'díra v korpusu se nedozvěděl nikdo').toContain('NO_FROZEN_ANSWER');
+      expect(operator, 'operátorovi chybí záznam, který má doplnit').toContain(GAP_ID);
+      expect(operator).toContain(String(gap.json.requestId));
+
+      // A ticho u té benigní musí zůstat tichem.
+      const before = log.length;
+      const unknown = await ask('a sentence this corpus has never heard of');
+      expect(unknown.status).toBe(404);
+      expect(log.length, 'vlastní věta porotce napsala operátorovi řádek').toBe(before);
+    });
+
+    /**
+     * **Zvenku se ty dvě situace rozeznat nesmí.** „Mám rozbitý korpus" je stav
+     * serveru; kdyby ho odpověď prozradila kódem nebo textem, dal by se korpus
+     * obcházet po záznamech a zjistit, které chybí. Soudí se proto celá
+     * odpověď, ne jen její kus — jediné, co se smí lišit, je korelační ID.
+     */
+    it('díra v korpusu vypadá zvenku přesně jako neznámá věta', async () => {
+      corpusWithoutOneAnswer();
+      const { POST } = await import('../route');
+      const ask = async (prompt: string) => {
+        const response = await POST(
+          new Request('http://127.0.0.1/api/generate', { method: 'POST', body: JSON.stringify({ prompt }) }),
+        );
+        const { requestId, ...rest } = (await response.json()) as ResponseBody & Record<string, unknown>;
+        expect(typeof requestId).toBe('string');
+        return { status: response.status, body: rest };
+      };
+
+      const gap = await ask(GAP_PROMPT);
+      const unknown = await ask('a sentence this corpus has never heard of');
+      expect(gap.status).toBe(unknown.status);
+      expect(gap.body).toEqual(unknown.body);
+      expect(gap.body).toMatchObject({ error: { code: 'NO_SOURCE' } });
+    });
+
+    /**
+     * **Vada korpusu je lepivá**, takže řádek na požadavek by byl log, který si
+     * kdokoli natáhne donekonečna — táž vada jako u odmítnutí stropem výš.
+     * Klíčem je konkrétní záznam, ne důvod: tisíc požadavků na jednu díru dá
+     * jeden řádek, ale tři díry dají tři.
+     */
+    it('vada korpusu se zapíše jednou za záznam, ne jednou za požadavek', async () => {
+      const { log } = corpusWithoutOneAnswer();
+      const { POST } = await import('../route');
+
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        const response = await POST(
+          new Request('http://127.0.0.1/api/generate', {
+            method: 'POST',
+            body: JSON.stringify({ prompt: GAP_PROMPT }),
+          }),
+        );
+        expect(response.status).toBe(404);
+      }
+
+      expect(
+        log.filter((line) => line.includes('NO_FROZEN_ANSWER')),
+        '20 požadavků napsalo operátorovi víc než jeden řádek',
+      ).toHaveLength(1);
     });
   });
 });

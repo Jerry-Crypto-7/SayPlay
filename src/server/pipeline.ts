@@ -58,6 +58,21 @@ export type GenerationFailureReason =
   | 'MALFORMED_RESPONSE'
   /** Větev pro tenhle prompt žádný zdroj odpovědi nemá. */
   | 'NO_SOURCE'
+  /**
+   * Zdroj ten prompt **zná**, ale odpověď k němu chybí.
+   *
+   * Zvenku je to totéž co `NO_SOURCE` a zůstat to tak musí — rozdíl mezi
+   * „neznám tvou větu" a „mám rozbitý korpus" je stav serveru a volajícímu do
+   * něj nic není. Uvnitř je to ale opak: `NO_SOURCE` je u offline větve
+   * **normální odpověď** na vlastní větu porotce, kdežto tohle je **vada
+   * zmrazené sady**, kterou se nikdo nedozví, dokud ji někdo netrefí.
+   *
+   * Do 1. 9. 2026 nesly obě situace tentýž důvod, takže filtr logu v
+   * `/api/generate` musel mlčet na obě — a mlčel na tu, která je porucha.
+   * Naměřeno nezávislou revizí; zatím **latentní**: 15 create promptů,
+   * 0 chybějících odpovědí.
+   */
+  | 'NO_FROZEN_ANSWER'
   /** Větvi chybí konfigurace, takže se nevolalo nikam. */
   | 'BRANCH_UNCONFIGURED';
 
@@ -106,6 +121,8 @@ const BILLED_ON_FAILURE: Record<GenerationFailureReason, 'estimate' | 'nothing'>
   MALFORMED_RESPONSE: 'estimate',
   UPSTREAM_REJECTED: 'nothing',
   NO_SOURCE: 'nothing',
+  // Nikam se nevolalo, jen se to poznalo o krok později než u `NO_SOURCE`.
+  NO_FROZEN_ANSWER: 'nothing',
   BRANCH_UNCONFIGURED: 'nothing',
 };
 
