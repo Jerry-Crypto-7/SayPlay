@@ -30,7 +30,8 @@
  *    bez toho by vyměnilo jednu vadu za druhou.
  */
 
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -342,6 +343,105 @@ describe('a corpus fault is one line per fault, not one per request, at every do
     // a operátor záplavu nepozná.
     expect(lines[0]).toContain('(occurrence 1)');
     expect(lines[1]).toContain('(occurrence 10)');
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Díra v korpusu proti omylu volajícího — týmiž dveřmi, týmž stavovým kódem.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Zmrazený korpus **s dírou**, postavený stranou.
+ *
+ * Editačním promptům z `missing` se odebere odpověď a `MANIFEST.lock` se
+ * přepočítá, aby hash seděl — bez toho by korpus spadl na `MANIFEST_MISMATCH`
+ * a test by měřil úplně jinou vadu. Hash se počítá **přesně tak, jak ho počítá
+ * `readFrozen()`**: sha256 nad textem s LF.
+ *
+ * Proč kopie a ne mock `emitPatch`: mock by tu hodnotu vymyslel, a fixtura,
+ * která vyrábí jiný svět než provoz, projde i nad vadným kódem. Takhle jede
+ * routa celou svou skutečnou cestou — `frozenPrompt()` doopravdy ověří, že to
+ * id v korpusu **je**, a `verifiedRecord()` doopravdy nenajde odpověď. Zmrazená
+ * sada se přitom nedotkne: sahá se na kopii přes `process.cwd()`.
+ */
+function corpusWithHoles(missing: readonly string[]): Doors {
+  const dir = mkdtempSync(join(tmpdir(), 'worldsmith-holes-'));
+  temporary.push(dir);
+  const frozen = join(dir, 'evals', 'frozen');
+  cpSync('evals/frozen', frozen, { recursive: true });
+
+  const file = join(frozen, 'responses', 'index.jsonl');
+  const kept = readFileSync(file, 'utf8')
+    .replace(/\r\n/g, '\n')
+    .trim()
+    .split('\n')
+    .filter((line) => {
+      const record = JSON.parse(line) as FrozenResponse;
+      return !(record.branch === 'edit' && missing.includes(record.forPrompt));
+    });
+  const text = `${kept.join('\n')}\n`;
+  writeFileSync(file, text);
+
+  const lock = join(frozen, 'MANIFEST.lock');
+  const manifest = JSON.parse(readFileSync(lock, 'utf8')) as { files: Record<string, string> };
+  manifest.files['responses/index.jsonl'] = createHash('sha256')
+    .update(Buffer.from(text, 'utf8'))
+    .digest('hex');
+  writeFileSync(lock, JSON.stringify(manifest, null, 2));
+
+  vi.spyOn(process, 'cwd').mockReturnValue(dir);
+  const log: string[] = [];
+  vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+    log.push(String(line));
+  });
+  vi.resetModules();
+  return { dir, log };
+}
+
+/**
+ * **Dva důvody, jedny dveře, tentýž 404 — a přesto jiný stav.**
+ *
+ * Nález kontrolní revize 1. 9. 2026: `cdf2c06` poslal oba důvody na
+ * `logRateLimited`, protože oba končí jako `UNKNOWN_PAIR`. Jenže
+ * `NO_FROZEN_RESPONSE` si na těchhle dveřích volající vybrat neumí —
+ * `frozenPrompt()` neznámé id odmítne dřív jako `UNKNOWN_PROMPT` — takže sem
+ * dojde jen tehdy, když v korpusu chybí odpověď. `logRateLimited` přitom
+ * klíčuje `(dveře, kód)`, takže několik různých děr sdílí jedno počítadlo
+ * a druhá i třetí mlčí navždy.
+ */
+describe('a hole in the corpus is told apart from a caller mistake at the edit door', () => {
+  it('two holes give two lines, fifty requests on one give one, and the mistake keeps its own', async () => {
+    // E01 zůstane celý — je to `editRecord.forPrompt`, na kterém se dole soudí
+    // omyl volajícího. Díry jsou proto na dvou jiných.
+    const doors = corpusWithHoles(['E02', 'E03']);
+    const { POST } = await import('../../app/api/edit/route');
+
+    const ask = (promptId: string): Request =>
+      post('http://127.0.0.1/api/edit', {
+        promptId,
+        worldDoc: BASE_DOC,
+        baseRevision: { sim: BASE_DOC.simRevision, look: BASE_DOC.lookRevision },
+      });
+
+    expect((await POST(ask('E02'))).status, 'fixtura nedělá díru v korpusu').toBe(404);
+    expect((await POST(ask('E03'))).status).toBe(404);
+    for (let attempt = 0; attempt < 50; attempt += 1) await POST(ask('E02'));
+
+    const holes = doors.log.filter((line) => line.includes('NO_FROZEN_RESPONSE'));
+    expect(holes, 'druhá díra v korpusu se neohlásila — sdílené počítadlo').toHaveLength(2);
+    expect(holes[0]).toContain('E02');
+    expect(holes[1]).toContain('E03');
+    expect(
+      holes.filter((line) => line.includes('E02')),
+      'lepivá mez neplatí — padesát požadavků na jednu díru napsalo víc řádků',
+    ).toHaveLength(1);
+
+    // A vedle toho omyl volajícího na **zdravém** záznamu. Kdyby oba důvody
+    // sdílely jedno počítadlo, byl by tenhle až druhý výskyt, tedy žádný řádek.
+    expect((await POST(ask(editRecord.forPrompt))).status).toBe(404);
+    const mistakes = doors.log.filter((line) => line.includes('BASE_WORLD_MISMATCH'));
+    expect(mistakes, 'omyl volajícího se ztratil pod počítadlem děr').toHaveLength(1);
+    expect(mistakes[0]).toContain('(occurrence 1)');
   });
 });
 

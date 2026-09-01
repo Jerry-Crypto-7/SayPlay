@@ -102,10 +102,10 @@ function corpusUnavailable(requestId: string, failure: ClientFailure): Response 
      * **Tohle není vada serveru, a proto se nesmí zapisovat jako by byla** —
      * nález dvou nezávislých revizí 1. 9. 2026, obě `blocking`.
      *
-     * Ty dva důvody vybírá **volající** tím, jaký `worldDoc` a `promptId`
-     * pošle: „pro tuhle dvojici zmrazený záznam není" je běžný omyl klienta,
-     * ne porucha. Do 1. 9. 2026 se logovaly bezpodmínečně spolu s vadami
-     * korpusu, takže na **zdravém** korpusu stačilo poslat platný svět
+     * `BASE_WORLD_MISMATCH` vybírá **volající** tím, jaký `worldDoc` a
+     * `promptId` pošle: „pro tuhle dvojici zmrazený záznam není" je běžný omyl
+     * klienta, ne porucha. Do 1. 9. 2026 se logoval bezpodmínečně spolu
+     * s vadami korpusu, takže na **zdravém** korpusu stačilo poslat platný svět
      * s cizím `promptId` a log rostl o řádek na požadavek. Naměřeno: čtrnáct
      * z patnácti zmrazených světů tu dvojici nesplní, a demo je samo vydává.
      *
@@ -113,8 +113,28 @@ function corpusUnavailable(requestId: string, failure: ClientFailure): Response 
      * rozešly, takže milníky: 1., 10., 100. výskyt. Rozdíl proti vadě korpusu
      * níž je v tom, **čí je to stav** — tenhle je volajícího, takže bound musí
      * být na rychlosti, ne na lepivosti.
+     *
+     * ## Proč `NO_FROZEN_RESPONSE` odbočuje jinam — kontrolní revize 1. 9. 2026
+     *
+     * **Na těchhle dveřích si ho volající vybrat neumí.** `frozenPrompt(promptId)`
+     * odmítne neznámé i nesprávně otypované id o sto řádků níž jako
+     * `UNKNOWN_PROMPT`, takže sem ten důvod dojde **jen** tehdy, když
+     * v korpusu chybí odpověď na prompt, který v něm je. To je stav serveru —
+     * díra ve zmrazeném artefaktu — a patří mu lepivá mez.
+     *
+     * Následek sdíleného boundu byl přesně ten, proti kterému je lepivá mez
+     * psaná: `logRateLimited` klíčuje `(dveře, kód)`, takže několik různých děr
+     * sdílí jedno počítadlo a druhá ani třetí se neohlásí nikdy. Lepivá mez
+     * klíčuje `detail`, tedy konkrétní záznam, a její strop drží, protože
+     * `promptId` je tady už porovnaný se zmrazenými id: do klíče neteče nic od
+     * volajícího a počet je omezený velikostí korpusu.
+     *
+     * **Odpověď ven se tím nemění** — obojí zůstává 404 `UNKNOWN_PAIR`. Kdo se
+     * ptá zvenčí, se o rozdílu dozvědět nemá; je to stav serveru.
      */
-    logRateLimited('edit', requestId, failure.reason, failure.detail);
+    if (failure.reason === 'BASE_WORLD_MISMATCH')
+      logRateLimited('edit', requestId, failure.reason, failure.detail);
+    else logStickyFault('edit', requestId, failure.reason, failure.detail);
     return Response.json(
       { requestId, error: { code: 'UNKNOWN_PAIR', message, field: 'worldDoc' } },
       { status: 404 },
