@@ -156,14 +156,8 @@ describe('kanál s průběhem', () => {
  * modulu: bez `resetModules()` by druhý test v tomhle souboru byl už druhým
  * výskytem téhož klíče, mez by ho zahodila a test by měřil počítadlo místo
  * opravy.
- *
- * `beforeThrow` běží uvnitř generátoru, tedy synchronně před výjimkou. Test
- * s ním ruší proud — a smí ho nastavit až po `POST`, protože generátor se poprvé
- * protočí až za `flush()`, tedy o celý tik smyčky událostí později.
  */
-async function loadBrokenStream(
-  beforeThrow?: () => void,
-): Promise<{ readonly post: Route; readonly log: string[] }> {
+async function loadBrokenStream(): Promise<{ readonly post: Route; readonly log: string[] }> {
   vi.resetModules();
   vi.doMock('../chain', async (importOriginal) => {
     const actual = await importOriginal<typeof import('../chain')>();
@@ -171,7 +165,6 @@ async function loadBrokenStream(
     return {
       ...actual,
       emissionSteps: function* (): Generator<never, never, void> {
-        beforeThrow?.();
         calls += 1;
         throw new Error(`the chain came apart (${calls})`);
       },
@@ -185,6 +178,21 @@ async function loadBrokenStream(
 
   const { POST } = await import('../stream/route');
   return { post: POST, log };
+}
+
+/**
+ * Klient, který odejde uprostřed emise — `Viewer.tsx` to dělá při každé změně
+ * promptu.
+ *
+ * Zrušit se musí **hned po `POST`**, a je to deterministické: `start()` v tu
+ * chvíli čeká na `flush()`, tedy na časovač, a mikroúlohy se vyprázdní dřív než
+ * kterýkoli časovač. Řetěz se proto poprvé protočí až po tomhle zrušení.
+ */
+async function leaveMidStream(post: Route, promptId: string): Promise<void> {
+  const response = await post(request({ promptId }));
+  await response.body!.cancel();
+  // A pak nechat `start()` doběhnout až do výjimky.
+  await new Promise((resolve) => setTimeout(resolve, 20));
 }
 
 describe('pád uvnitř proudu', () => {
@@ -218,29 +226,44 @@ describe('pád uvnitř proudu', () => {
     expect(log[0]).toContain(result.requestId);
   });
 
-  it('napíše operátorovi i tehdy, když klient proud zruší dřív, než pád nastane', async () => {
+  it('napíše operátorovi i tehdy, když klient proud zruší — a jmenuje to zrušením', async () => {
     // Tohle je ten případ, kvůli kterému je zápis **před** `enqueue`: na
     // zrušeném proudu `enqueue` vyhodí, takže řádek psaný za ním by nevznikl
-    // právě u požadavku, o kterém se operátor potřebuje dozvědět nejvíc.
-    const holder: { response: Response | null } = { response: null };
-    const { post, log } = await loadBrokenStream(() => {
-      void holder.response?.body?.cancel();
-    });
-
-    const response = await post(request({ promptId: 'C01' }));
-    holder.response = response;
-
-    // Generátor se protočí až za `flush()`, tedy o tik dál; tohle na něj počká.
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    // právě u požadavku, o kterém se operátor potřebuje dozvědět.
+    const { post, log } = await loadBrokenStream();
+    await leaveMidStream(post, 'C01');
 
     expect(log).toHaveLength(1);
-    expect(log[0]).toContain('STREAM_FAILED');
+    // A jmenuje to **zrušením**, ne pádem: odchod klienta není porucha.
+    expect(log[0]).toContain('STREAM_CANCELLED');
+    expect(log[0]).not.toContain('STREAM_FAILED');
+  });
+
+  it('odchod klienta nespotřebuje výskyt, na kterém by se ohlásil skutečný pád', async () => {
+    // **Nález nezávislé revize, `VERDICT: blocking`.** `logRateLimited` vydá 1.,
+    // 10. a 100. výskyt klíče, takže se sdíleným kódem by první odchod klienta
+    // spotřeboval výskyt číslo jedna a pád hned po něm by byl druhý — tedy
+    // žádný řádek. A odchod klienta je běžný provoz: `Viewer.tsx` volá `abort()`
+    // při každé změně promptu i při odchodu ze stránky.
+    const { post, log } = await loadBrokenStream();
+
+    // Nejdřív obyčejné proklikání: klient odejde uprostřed emise.
+    await leaveMidStream(post, 'C01');
+    // A hned nato skutečný pád řetězu, který se ohlásit musí.
+    await collect({ promptId: 'C05' }, post);
+
+    expect(log).toHaveLength(2);
+    expect(log[0]).toContain('STREAM_CANCELLED');
+    expect(log[1]).toContain('STREAM_FAILED');
+    // Oba jsou první svého druhu — pád nezdědil rozpočet po zrušení.
+    expect(log[1]).toContain('occurrence 1');
   });
 
   it('dva různé pády v jednom procesu dají jeden řádek, ne dva', async () => {
     // `logRateLimited` klíčuje `(dveře, kód)`, a je to schválně: `detail` je
-    // tady text výjimky, tedy hodnota, kterou volající umí ovlivnit. Lepivá mez
-    // klíčovaná `detail`em by z toho udělala neomezený růst paměti.
+    // tady text výjimky, tedy hodnota bez uzavřeného oboru. Lepivá mez
+    // klíčovaná `detail`em by z toho udělala růst paměti daný počtem cest
+    // v kódu, ne velikostí korpusu.
     const { post, log } = await loadBrokenStream();
     await collect({ promptId: 'C01' }, post);
     await collect({ promptId: 'C05' }, post);

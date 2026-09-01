@@ -33,16 +33,29 @@
  * nemá ani co odcitovat, protože `requestId` nese výhradně rámec `result`, tedy
  * ten, který nedorazil. Naměřeno nezávislou revizí 1. 9. 2026.
  *
- * Tělo `start()` je proto celé v `try`, a v `catch` platí dvě pravidla:
+ * Tělo `start()` je proto celé v `try`, a v `catch` platí tři pravidla:
  *
- * 1. **Řádek operátorovi jde první, `enqueue` až po něm.** Na proudu, který
+ * 1. **Zrušený proud se počítá zvlášť od spadlého.** `logRateLimited` klíčuje
+ *    `(dveře, kód)` a vydá 1., 10., 100. výskyt — takže kdyby obě příčiny
+ *    sdílely jeden kód, **první odchod klienta by spotřeboval výskyt číslo
+ *    jedna** a skutečný pád hned po něm by byl druhý, tedy žádný řádek. Odchod
+ *    klienta přitom není porucha a děje se pořád: `Viewer.tsx` volá `abort()`
+ *    při každé změně `promptId` i při odchodu ze stránky, a `reactStrictMode`
+ *    to ve vývoji zdvojí. Nález nezávislé revize 1. 9. 2026, `VERDICT: blocking`
+ *    — bez rozdělení kódu tahle oprava tentýž stav, který zavírá, vyrábí zpátky
+ *    obyčejným proklikáním.
+ * 2. **Řádek operátorovi jde první, `enqueue` až po něm.** Na proudu, který
  *    protistrana zrušila, `enqueue` vyhodí — kdyby byl zápis až za ním, právě
- *    ten případ, o kterém se operátor potřebuje dozvědět (klient zmizel
- *    uprostřed emise), by řádek nevyrobil vůbec.
- * 2. **`logRateLimited`, ne `logStickyFault`.** Lepivá mez klíčuje `detail`,
- *    a `detail` je tady text výjimky, tedy hodnota, kterou volající umí
- *    ovlivnit. `STICKY_LOGGED` by rostl bez mezí; `logRateLimited` klíčuje
- *    `(dveře, kód)` a text jen tiskne.
+ *    ten případ, o kterém se operátor potřebuje dozvědět, by řádek nevyrobil
+ *    vůbec.
+ * 3. **`logRateLimited`, ne `logStickyFault`.** Lepivá mez klíčuje `detail`,
+ *    a `detail` je tady **text výjimky, tedy hodnota bez uzavřeného oboru**:
+ *    každý nový `throw` kdekoli v řetězu je nová hodnota, takže by velikost
+ *    `STICKY_LOGGED` byla funkcí cest v kódu, ne velikosti korpusu, který ji
+ *    dnes shora omezuje. `logRateLimited` klíčuje dvěma kódy níž a text jen
+ *    tiskne. **Není to o volajícím** — revize 1. 9. 2026 změřila, že `promptId`
+ *    se porovná se zmrazenými id dřív, než se dostane kamkoli, odkud by mohl
+ *    vyletět, takže do textu výjimky nic zvenčí neteče.
  *
  * `requestId` se do rámců `progress` **nepřidává**, ačkoli si o to nález říkal.
  * S tímhle `try/catch` neexistuje stav, kdy klient dostane `progress` a nikdy
@@ -63,13 +76,30 @@ import { readPromptId } from '../route';
 export const runtime = 'nodejs';
 
 /**
+ * Dvě příčiny, kvůli kterým proud skončí bez verdiktu — a **jsou to dva různé
+ * stavy, ne dvě jména téhož**.
+ *
+ * `STREAM_CANCELLED` je odchod protistrany: běžný, častý a ničí porucha.
+ * `STREAM_FAILED` je pád řetězu: vzácný a jediný, kvůli kterému má operátor
+ * vstávat. Sdílený kód by z toho prvního udělal umlčovač toho druhého — viz
+ * pravidlo 1 v hlavičce.
+ */
+type StreamFault = 'STREAM_CANCELLED' | 'STREAM_FAILED';
+
+/**
  * Co se o pádu proudu řekne **ven**.
  *
  * Bez čísel, cest a jmen, ze stejného důvodu jako `PUBLIC_CORPUS_FAULT`: text
  * výjimky je diagnostika serveru a patří do operátorova logu, ne do rámce, který
  * čte neověřený volající. Ven jde `requestId`, aby šla ta dvojice spárovat.
+ *
+ * `Record<StreamFault, string>` znovu kvůli **úplnosti**: nová příčina bez
+ * veřejného textu neprojde přes `tsc`.
  */
-const PUBLIC_STREAM_FAILURE = 'the stream failed before the verdict was ready';
+const PUBLIC_STREAM_FAULT: Record<StreamFault, string> = {
+  STREAM_CANCELLED: 'the stream was cancelled before the verdict was ready',
+  STREAM_FAILED: 'the stream failed before the verdict was ready',
+};
 
 function frame(event: string, payload: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`;
@@ -90,7 +120,22 @@ export async function POST(request: Request): Promise<Response> {
     const promptId = parsed.promptId;
     const encoder = new TextEncoder();
 
+    /**
+     * Zrušil proud ten druhý konec?
+     *
+     * Ptát se na to jde jen takhle. `ReadableStreamDefaultController` stav
+     * nezveřejňuje a `desiredSize` vrací nulu i při obyčejném protitlaku, takže
+     * by se to nedalo odlišit; sniffovat text `TypeError`u by zase záviselo na
+     * hlášce běhového prostředí. `cancel()` na zdroji je jediný signál, který
+     * spec dává — a přijde **dřív** než výjimka z `enqueue`, protože zrušení
+     * proud nejdřív zavře a hned nato zavolá tuhle metodu.
+     */
+    let cancelled = false;
+
     const stream = new ReadableStream<Uint8Array>({
+      cancel() {
+        cancelled = true;
+      },
       async start(controller) {
         try {
           let step = 0;
@@ -146,14 +191,17 @@ export async function POST(request: Request): Promise<Response> {
           controller.close();
         }
         catch (thrown) {
-          // **Pořadí je nosné, ne kosmetické** — viz pravidlo 1 v hlavičce.
-          // Zápis musí předcházet `enqueue`, protože na zrušeném proudu `enqueue`
-          // vyhodí a řádek by nevznikl právě v tom případě, kvůli kterému tenhle
-          // blok existuje.
+          // Odchod klienta a pád řetězu dostanou **každý svůj klíč**, jinak ten
+          // častý umlčí ten vzácný — pravidlo 1 v hlavičce.
+          const cause: StreamFault = cancelled ? 'STREAM_CANCELLED' : 'STREAM_FAILED';
+          // **Pořadí je nosné, ne kosmetické** — pravidlo 2. Zápis musí
+          // předcházet `enqueue`, protože na zrušeném proudu `enqueue` vyhodí
+          // a řádek by nevznikl právě v tom případě, kvůli kterému tenhle blok
+          // existuje.
           logRateLimited(
             'emit/stream',
             requestId,
-            'STREAM_FAILED',
+            cause,
             thrown instanceof Error ? thrown.message : String(thrown),
           );
           try {
@@ -161,7 +209,7 @@ export async function POST(request: Request): Promise<Response> {
               encoder.encode(
                 frame('result', {
                   requestId,
-                  error: { code: 'STREAM_FAILED', message: PUBLIC_STREAM_FAILURE },
+                  error: { code: cause, message: PUBLIC_STREAM_FAULT[cause] },
                 }),
               ),
             );
@@ -169,7 +217,8 @@ export async function POST(request: Request): Promise<Response> {
           }
           catch {
             // Proud už nikdo nedrží — řádek výš je jediná stopa, která zbyla,
-            // a to je přesně ten důvod, proč jde první.
+            // a to je přesně ten důvod, proč jde první. U `STREAM_CANCELLED` je
+            // to dokonce normální průběh: rámec nemá komu dorazit.
           }
         }
       },
