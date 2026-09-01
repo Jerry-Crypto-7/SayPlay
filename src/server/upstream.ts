@@ -27,10 +27,23 @@
  *
  * ## Odhad nejhoršího případu
  *
- * Rezervuje se **celý** povolený výstup za plnou cenu a vstup přepočtený
- * z počtu znaků. Dělí se třemi, ne čtyřmi: čtyři znaky na token je průměr, a
- * průměr je pro horní odhad špatná jednotka. Odhad nižší než skutečnost by
- * strop tiše prodloužil.
+ * Rezervuje se **celý** povolený výstup za plnou cenu a vstup po **jednom
+ * tokenu na znak**. Je to strop, ne odhad, a ten rozdíl je celý smysl:
+ * `SpendCap` od 1. 9. 2026 nestrhne víc, než na to volání držel, takže
+ * rezervace nižší než skutečnost by poctivé volání **podúčtovala**.
+ *
+ * Do té doby se vstup dělil třemi (~3 znaky na token). Naměřeno: poctivá
+ * účtenka `{8000, 8000}` stála 0,240000 USD proti rezervaci 0,219505 USD,
+ * tedy **o 9,3 % víc, než se drželo** — a tvrdý ořez na rezervaci by ten
+ * rozdíl tiše zahodil. Jeden token na znak dá rezervaci 0,258515 USD (+17,8 %),
+ * pod kterou se tatáž účtenka vejde celá.
+ *
+ * ⚠ **Není to důkaz, jen mez, která v praxi drží.** Token bývá delší než znak,
+ * ale `String.length` počítá kódové jednotky UTF-16, takže vzácný vícebajtový
+ * znak (emoji, řídké písmo) se může rozpadnout na několik tokenů a rezervaci
+ * přerůst. Systémový prompt, který tvoří většinu vstupu, je náš a je ASCII;
+ * porotcova věta je proti němu zlomek. Ořez je obrana proti nesmyslu, ne proti
+ * nepoctivému poskytovateli — to platí i tady.
  */
 
 import { EMISSION_MODEL } from '../model/prompt';
@@ -40,19 +53,17 @@ import type { Pricing, Usage } from './spend-cap';
 
 export const UPSTREAM_BRANCH_ID = 'live';
 
-/** Konzervativní počet znaků na token pro **horní** odhad vstupu. */
-const CHARS_PER_TOKEN = 3;
 
 /**
- * Znaků na token pro **dolní** odhad výstupu — a je schválně jiný než
- * `CHARS_PER_TOKEN`.
+ * Znaků na token pro **dolní** odhad výstupu — a je schválně jiný než mez,
+ * kterou se počítá rezervace.
  *
  * **Dva odhady téže veličiny nesmějí sdílet konstantu, když jejich bezpečná
- * strana míří opačně.** Horní odhad rezervace se dělí třemi, aby spíš
- * přestřelil (viz hlavička souboru). Dolní hranice účtu musí naopak spíš
+ * strana míří opačně.** Horní mez rezervace bere jeden token na znak, aby spíš
+ * přestřelila (viz hlavička souboru). Dolní hranice účtu musí naopak spíš
  * podstřelit: kdyby vyšla nad skutečnou účtenku, přeúčtovala by **každé
  * poctivé volání**, a hlášená cena by přestala být tou, která se strhla.
- * Zdědit sem trojku by tu vadu vyrobilo systematicky, na každém požadavku.
+ * Zdědit sem tu mez by tu vadu vyrobilo systematicky, na každém požadavku.
  *
  * Dvanáct je zhruba trojnásobek běžných ~4 znaků na token. **Není to naměřené
  * a nikde to netvrď** — tokenizér poskytovatele neznáme, tohle je vědomě
@@ -283,7 +294,9 @@ export function upstreamBranch(
 }
 
 function worstCaseUsd(call: GenerationCall, config: UpstreamConfig): number {
-  const inputTokens = Math.ceil((call.request.system.length + call.request.user.length) / CHARS_PER_TOKEN);
+  // Jeden token na znak. Viz hlavička souboru: je to strop, o který se opírá
+  // ořez v `SpendCap.release()`, ne odhad průměru.
+  const inputTokens = call.request.system.length + call.request.user.length;
   return (
     (inputTokens * config.pricing.usdPerMTokIn + config.maxOutputTokens * config.pricing.usdPerMTokOut) /
     1_000_000

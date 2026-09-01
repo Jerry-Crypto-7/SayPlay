@@ -293,7 +293,23 @@ export class SpendCap {
       // Když účtenka nedává smysl, účtuje se celá **rezervace**: je to horní odhad,
       // který kontrolou už jednou prošel, takže strop spíš přestřelí než povolí.
       const usable = typeof actualUsd === 'number' && Number.isFinite(actualUsd) && actualUsd >= 0;
-      settledUsd = usable ? actualUsd : worstCaseUsd;
+      // **A nesmí to být víc, než se na to volání drželo.** `reserve()` hlídá
+      // jen to, co se rezervuje; čísla, která pošle poskytovatel, nehlídalo
+      // nic. Naměřeno nezávislou revizí 1. 9. 2026 celou cestou přes
+      // `runPipeline`: odpověď 200 s platnou emisí a účtenkou
+      // `{input_tokens: 1e12, output_tokens: 0}` strhla **5 000 000 USD** proti
+      // rezervaci 0,2195 USD a stropu 5 USD, `{0, 1e12}` pak 25 000 000 USD —
+      // a každý další požadavek dostal do konce života procesu 429
+      // `CAP_EXHAUSTED`. Konečné kladné číslo projde kontrolou nad tímhle
+      // řádkem, ať je jakkoli velké.
+      //
+      // **Ořez smí být tvrdý jen proto, že je rezervace strop, ne odhad.**
+      // Dokud se vstup odhadoval po ~3 znacích na token, poctivá účtenka
+      // `{8000, 8000}` stála o 9,3 % víc než rezervace a tvrdý ořez by ten
+      // rozdíl tiše zahodil — proto `worstCaseUsd()` v `./upstream.ts` od
+      // téhož dne rezervuje jeden token na znak. Kdyby se tam mez vrátila
+      // k průměru, začne tenhle řádek podúčtovat každé poctivé volání.
+      settledUsd = usable ? Math.min(actualUsd, worstCaseUsd) : worstCaseUsd;
       this.#spentUsd += settledUsd;
       return settledUsd;
     };

@@ -537,3 +537,98 @@ describe('strop endpointu a strop měřicích běhů o sobě nesmějí vědět',
     expect(offenders).toEqual([]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Strop na jednu účtenku
+// ---------------------------------------------------------------------------
+
+/**
+ * **Jedna účtenka nesmí strhnout částku, kterou strop nikdy nedržel.**
+ *
+ * `reserve()` hlídá to, co se rezervuje; čísla, která pošle poskytovatel,
+ * nehlídalo do 1. 9. 2026 nic. `release()` odmítá záporná a nekonečná, ale
+ * `1e12` je konečné kladné číslo a prošlo: naměřeno nezávislou revizí celou
+ * cestou přes `runPipeline`, že `{1e12, 0}` strhlo **5 000 000 USD** proti
+ * rezervaci 0,2195 USD a stropu 5 USD (`{0, 1e12}` pak 25 000 000 USD), takže
+ * každý další požadavek dostal do konce života procesu 429 `CAP_EXHAUSTED`.
+ *
+ * **Ořez je tvrdý a smí být, protože rezervace je od téhož dne strop, ne odhad.**
+ * Zřejmá oprava `Math.min(spent, reservedUsd)` sama o sobě podúčtovala poctivé
+ * volání: při odhadu vstupu po třech znacích na token stála účtenka
+ * `{8000, 8000}` 0,240000 USD proti rezervaci 0,219505 USD, tedy legitimně
+ * o 9,3 % víc. Proto se vstup rezervuje po **jednom** tokenu na znak; druhý
+ * test to drží, a bez něj by se dala mez v `worstCaseUsd()` vrátit k průměru,
+ * aniž by se cokoli ozvalo.
+ */
+describe('jedna účtenka nestrhne víc, než se na ni drželo', () => {
+  const PROMPT = 'bludiště s klíčem';
+
+  /** Kolik strop na tenhle prompt drží. Počítá se, neopisuje. */
+  function reservationUsd(): number {
+    return upstreamBranch(LIVE_CONFIG, (() => {
+      throw new Error('worstCaseUsd nikam nevolá');
+    }) as unknown as typeof fetch).worstCaseUsd({
+      prompt: PROMPT,
+      request: buildEmissionRequest(PROMPT, GRAMMAR),
+    });
+  }
+
+  function answering(usage: string): typeof fetch {
+    const world = JSON.stringify({ irVersion: 'v1', simRevision: 0, lookRevision: 0, sim: null, look: {} });
+    return (() =>
+      Promise.resolve(
+        new Response(`{"content":[{"type":"text","text":${JSON.stringify(world)}}],"usage":${usage}}`, {
+          headers: { 'content-type': 'application/json' },
+        }),
+      )) as unknown as typeof fetch;
+  }
+
+  it.each([
+    ['{"input_tokens":1e12,"output_tokens":0}', 5_000_000],
+    ['{"input_tokens":0,"output_tokens":1e12}', 25_000_000],
+  ])('řádový nesmysl %s se ořízne na rezervaci', async (usage, unclampedUsd) => {
+    const cap = new SpendCap({ enabled: true, capUsd: 5 });
+    const result = await runPipeline(PROMPT, {
+      branch: upstreamBranch(LIVE_CONFIG, answering(usage)),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    if (result.outcome !== 'GENERATED') throw new Error('expected a generated world');
+    expect(result.costUsd).toBeCloseTo(reservationUsd(), 10);
+    // A hlavně: strop tím nesmí být vyčerpaný. Tohle je ten skutečný následek —
+    // bez ořezu odpoví nasazení 429 každému dalšímu porotci až do restartu.
+    expect(cap.snapshot().spentUsd).toBeLessThan(1);
+    expect(cap.reserve(reservationUsd()).ok).toBe(true);
+    // Ať je vidět, o kolik šlo, a ať to číslo nikdo nemusí dopočítávat.
+    expect(unclampedUsd).toBeGreaterThan(cap.snapshot().spentUsd * 1_000_000);
+  });
+
+  it('poctivá účtenka až po strop rezervace se zaúčtuje celá', async () => {
+    // Jeden token na znak vstupu a celý povolený výstup: přesně to, co
+    // `worstCaseUsd()` drží. Kdyby se mez vrátila k ~3 znakům na token,
+    // rezervace spadne pod cenu téhle účtenky, ořez ji utne a tenhle test
+    // zčervená — což je přesně ta vada, kterou plán označil za vyvrácenou
+    // zřejmou opravu.
+    const request = buildEmissionRequest(PROMPT, GRAMMAR);
+    const inputTokens = request.system.length + request.user.length;
+    const honestUsd =
+      (inputTokens * LIVE_CONFIG.pricing.usdPerMTokIn +
+        LIVE_CONFIG.maxOutputTokens * LIVE_CONFIG.pricing.usdPerMTokOut) /
+      1_000_000;
+
+    const cap = new SpendCap({ enabled: true, capUsd: 5 });
+    const result = await runPipeline(PROMPT, {
+      branch: upstreamBranch(
+        LIVE_CONFIG,
+        answering(`{"input_tokens":${inputTokens},"output_tokens":${LIVE_CONFIG.maxOutputTokens}}`),
+      ),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    if (result.outcome !== 'GENERATED') throw new Error('expected a generated world');
+    expect(result.costUsd).toBeCloseTo(honestUsd, 10);
+    expect(honestUsd).toBeCloseTo(reservationUsd(), 10);
+  });
+});
