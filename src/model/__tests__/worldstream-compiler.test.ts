@@ -647,6 +647,31 @@ describe('the answer shape', () => {
     if (!result.ok) expect(result.reason).toBe('SHAPE_INVALID');
   });
 
+  /**
+   * **Poměr objemů z brány musí dojít až do věty pro model, slovo za slovem.**
+   *
+   * Brána `T12-boundsratio` počítá číslo, ze kterého jde napsat opravná věta —
+   * a to je k ničemu, když ho compiler cestou zkrátí nebo přepíše. Tady se
+   * pinuje celý řetěz: `validateShapeProgram` → `SHAPE_INVALID` →
+   * `blueprintRejectionSentence`, který `detail` propouští doslova.
+   */
+  it('passes the bounds overflow ratio through to the fault, word for word', () => {
+    const result = compile(
+      answerWith({
+        shapes: [{ ...OWN_SHAPE, nodes: [{ kind: 'sphere', radius: 5 }], root: 0, anchors: [] }],
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.reason).toBe('SHAPE_INVALID');
+    // Kvádr tvaru je 1,4 × 1,8 × 1,4 = 3,528; koule o poloměru 5 zabere 1000.
+    expect(result.detail).toBe(
+      'shapes[0]: shape overflows its own targetBounds on x, y, z: ' +
+        'generated bounds were 283.4× the requested volume',
+    );
+  });
+
   it('accepts an answer with no hero shape at all', () => {
     const placements = OWN_PLACEMENTS.map((placement) =>
       placement.stableId === 'tallHive'

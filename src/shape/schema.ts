@@ -36,6 +36,7 @@ import {
   PRIMITIVE_KINDS,
   SHAPE_LIMITS,
   TRANSFORM_KINDS,
+  certainHulls,
   childIndicesOf,
   depths,
   evaluationCounts,
@@ -346,6 +347,54 @@ function isTooShort(vector: readonly number[]): boolean {
  * jde napsat lepší, a jeden důvod po druhém by znamenal tolik kol sebeopravy,
  * kolik je v programu chyb.
  */
+/**
+ * **Program smí přetéct kvádr, který si sám deklaruje — a tohle to změří.**
+ *
+ * Bez toho se to pozná až v meshovači, a to špatně: `paddedBounds` naměřilo, že
+ * tvar přetékající svůj kvádr o 1e-6 **bez rezervy zmizí úplně** (0 trojúhelníků).
+ * Model se tak dozví „nic nevzniklo" místo „přestřelil jsi o tolik", a to až po
+ * zaplaceném volání.
+ *
+ * Počítá se **uvnitř souřadnic tvaru**. `targetBounds` a kvádr placementu jsou
+ * dvě různé věci — první je v souřadnicích tvaru, druhý ve světových a potrubí
+ * mezi nimi normalizuje — takže srovnávat je proti sobě by byla vada, ne kontrola.
+ *
+ * `null` znamená **nic netvrdím**: obal se nedal spočítat (viz `certainHulls`),
+ * nebo se tvar vejde. Odmítá se jen to, co je jisté.
+ *
+ * Poměr objemů je v hlášce proto, aby z ní šla napsat opravná věta — „přetéká"
+ * bez čísla nedává model, o kolik má ubrat. Kritérium je ale **přesah po osách**,
+ * ne ten poměr: tvar posunutý ven může mít objem menší než kvádr a přesto z něj
+ * čouhat, takže hláška nese obojí.
+ */
+function boundsIssue(
+  nodes: readonly ShapeNode[],
+  root: number,
+  target: { min: readonly number[]; max: readonly number[] },
+): string | null {
+  const hull = certainHulls(nodes)[root];
+  if (hull === null) return null;
+
+  const AXES = ['x', 'y', 'z'] as const;
+  const over = AXES.filter(
+    (_name, axis) => hull.min[axis] < target.min[axis] || hull.max[axis] > target.max[axis],
+  );
+  if (over.length === 0) return null;
+
+  const volume = (min: readonly number[], max: readonly number[]) =>
+    (max[0] - min[0]) * (max[1] - min[1]) * (max[2] - min[2]);
+  const ratio = volume(hull.min, hull.max) / volume(target.min, target.max);
+  // Pod jedničkou se zaokrouhluje na platné číslice, ne na desetinu: tvar
+  // odsunutý ven má poměr klidně 0,023 a `toFixed(1)` by z něj udělalo „0.0×",
+  // tedy větu „tvar je nulový" o tvaru, který jen leží jinde.
+  const shown = ratio >= 1 ? ratio.toFixed(1) : ratio.toPrecision(2);
+
+  return (
+    `shape overflows its own targetBounds on ${over.join(', ')}: ` +
+    `generated bounds were ${shown}× the requested volume`
+  );
+}
+
 function structuralIssues(program: z.infer<typeof shapeProgramSchema>): string[] {
   const issues: string[] = [];
   const fail = (message: string) => issues.push(message);
@@ -446,6 +495,9 @@ function structuralIssues(program: z.infer<typeof shapeProgramSchema>): string[]
       `program costs ${evaluations} evaluations per cell, above maxEvaluations ${SHAPE_LIMITS.maxEvaluations}`,
     );
   }
+
+  const overflow = boundsIssue(nodes, program.root, program.targetBounds);
+  if (overflow !== null) fail(overflow);
 
   return issues;
 }

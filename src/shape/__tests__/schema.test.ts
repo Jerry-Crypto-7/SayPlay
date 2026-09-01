@@ -504,3 +504,111 @@ describe('průchody nad tabulkou', () => {
     expect(childIndicesOf(program.nodes[25]), 'revolve nese jednoho potomka').toEqual([2]);
   });
 });
+
+/* ------------------------------------------------------------------ *
+ * Přesah vlastního kvádru. `T12-boundsratio`.
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Program smí přetéct kvádr, který si sám deklaruje, a do 1. 9. 2026 to nikdo
+ * neměřil.** `structuralIssues` soudilo `targetBounds` jen na plochost
+ * a obrácení; rozsah programu se s ním nesrovnával vůbec, takže koule o poloměru
+ * 5 v kvádru ±0,7 byla platný program.
+ *
+ * Praskne to až v meshovači, a to špatně: `paddedBounds` naměřilo, že tvar
+ * přetékající svůj kvádr o 1e-6 **bez rezervy zmizí úplně** (0 trojúhelníků).
+ * Model se tedy dozví „nic nevzniklo" místo „přestřelil jsi o tolik", a až po
+ * zaplaceném volání.
+ */
+describe('přesah vlastního kvádru', () => {
+  function programWith(
+    nodes: readonly ShapeNode[],
+    targetBounds: { min: [number, number, number]; max: [number, number, number] },
+  ) {
+    return {
+      shapeId: 'bounds-case',
+      stableId: 'bounds-object',
+      nodes,
+      root: nodes.length - 1,
+      targetBounds,
+      anchors: [],
+      materialIntent: 'clay',
+      priority: 0,
+    };
+  }
+
+  const SMALL_BOX = { min: [-0.7, -0.7, -0.7] as [number, number, number], max: [0.7, 0.7, 0.7] as [number, number, number] };
+
+  it('koule o poloměru 5 v kvádru ±0,7 se odmítne s poměrem objemů', () => {
+    const result = validateShapeProgram(programWith([{ kind: 'sphere', radius: 5 }], SMALL_BOX));
+
+    expect(result.ok).toBe(false);
+    // 10³ proti 1,4³ je 364,4 — číslo je v hlášce proto, aby z ní šla napsat
+    // opravná věta. „Přetéká" bez čísla neřekne modelu, o kolik má ubrat.
+    expect(result.issues).toContain(
+      'shape overflows its own targetBounds on x, y, z: generated bounds were 364.4× the requested volume',
+    );
+  });
+
+  it('tvar přesně na hranici projde', () => {
+    // Rovnost není přesah. Kdyby brána soudila `<=`, odmítla by přesně ten
+    // tvar, o který se snaží každá poctivá emise: vyplnit svůj kvádr.
+    const result = validateShapeProgram(programWith([{ kind: 'sphere', radius: 0.7 }], SMALL_BOX));
+    expect(result).toEqual({ ok: true, issues: [] });
+  });
+
+  it('kritérium je přesah po osách, ne poměr objemů', () => {
+    // Malá koule odsunutá ven: objem je **menší** než kvádr, a přesto z něj
+    // čouhá. Kdyby se soudil poměr, tenhle případ projde.
+    const result = validateShapeProgram(
+      programWith(
+        [
+          { kind: 'sphere', radius: 0.2 },
+          { kind: 'translate', child: 0, offset: [3, 0, 0] },
+        ],
+        SMALL_BOX,
+      ),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.issues[0]).toContain('targetBounds on x');
+    expect(result.issues[0], 'poměr se počítá z objemu tvaru, ne z přesahu').toContain('0.023×');
+  });
+
+  it('co se spočítat nedá, se neodmítá — otočený tvar projde', () => {
+    // **Tohle není mezera, je to celý návrh.** Ze samotného kvádru potomka
+    // skutečný obal otočeného tvaru spočítat nejde; horní odhad by odmítal
+    // tvary, které se vejdou, a to je horší vada než neodhalený přesah —
+    // model by dostal opravnou větu k něčemu, co bylo správně.
+    const result = validateShapeProgram(
+      programWith(
+        [
+          { kind: 'sphere', radius: 5 },
+          { kind: 'rotate', child: 0, yaw: 0.5, pitch: 0, roll: 0 },
+        ],
+        SMALL_BOX,
+      ),
+    );
+    expect(result).toEqual({ ok: true, issues: [] });
+  });
+
+  it('sjednocení soudí podle potomka, kterého spočítat umí', () => {
+    // Jeden potomek je otočený (nespočítatelný), druhý je obyčejná koule.
+    // Obal sjednocení obsahuje obal každého potomka, takže z toho známého se
+    // přesah pozná — abstinence u sourozence ho nesmí umlčet.
+    const result = validateShapeProgram(
+      programWith(
+        [
+          { kind: 'sphere', radius: 0.3 },
+          { kind: 'rotate', child: 0, yaw: 0.5, pitch: 0, roll: 0 },
+          { kind: 'sphere', radius: 4 },
+          { kind: 'union', children: [1, 2] },
+        ],
+        SMALL_BOX,
+      ),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.issues[0]).toContain('shape overflows its own targetBounds');
+  });
+});

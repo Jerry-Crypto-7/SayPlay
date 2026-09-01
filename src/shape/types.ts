@@ -632,3 +632,186 @@ export function reachableFrom(nodes: readonly ShapeNode[], root: number): Readon
   }
   return reached;
 }
+
+/**
+ * **Kvádr, který tvar zaručeně zaplní** — nebo `null`, když se to spočítat nedá.
+ *
+ * Slouží jedinému účelu: `structuralIssues` v `schema.ts` z něj pozná program,
+ * který přetéká svůj vlastní `targetBounds`, ještě **před** meshingem. Dnes se
+ * to pozná až v meshovači, a to tak, že tvar bez rezervy zmizí úplně (naměřeno
+ * u `paddedBounds`: přesah o 1e-6 dal 0 trojúhelníků) — tedy po zaplaceném
+ * volání modelu a bez čísla, ze kterého by model poznal, o kolik přestřelil.
+ *
+ * ## Proč `null` a ne odhad
+ *
+ * Hodnota se používá k **odmítnutí**, takže musí být `⊆` skutečného obalu:
+ * jen pak z „můj kvádr přetéká" plyne „tvar přetéká". Nadhodnocený obal by
+ * zahazoval tvary, které se ve skutečnosti vejdou, a to je horší vada než
+ * neodhalený přesah — model by dostal opravnou větu k něčemu, co bylo správně.
+ *
+ * Proto se počítá jen tam, kde je výsledek **přesný**:
+ *
+ * | Uzel | Proč jde |
+ * |---|---|
+ * | primitiva | obal se čte přímo ze vzorce v `field.ts` |
+ * | `translate`, `scale` | afinní po osách, obal se posune a natáhne s nimi |
+ * | `mirror` | přeložení souřadnice, výsledný interval je `[2·about − max, max]` |
+ * | `union` | obal sjednocení je sjednocení obalů |
+ *
+ * A `null` všude jinde, **včetně `rotate`**. U rotace to není lenost: ze
+ * samotného obalu potomka skutečný obal otočeného tvaru spočítat **nejde**.
+ * Obal je jen kvádr; tvar uvnitř může být od koule po tenkou úhlopříčku a každý
+ * z nich dá po otočení jiný výsledek. Obal otočeného kvádru je horní odhad,
+ * který by odmítal to, co se vejde. Totéž `intersect`, `subtract` a `clip`
+ * (zmenšují, takže dolní odhad z potomků neplyne), všechny deformace (nejsou
+ * afinní) a všechna pole (kopie se skládají otáčením a posunem po křivce).
+ * `plane` je poloprostor, tedy nekonečný obal — počítat ho jako `null` je
+ * schválně: jinak by každý program, který jím řeže, přetékal z definice.
+ *
+ * `union` s `k` (hladké sjednocení) se vyboulí **ven** z ostrého sjednocení,
+ * takže spočtený obal je u něj dolní odhad. Pořád platí, co má: přetéká-li on,
+ * přetéká i tvar.
+ *
+ * Průchod odspodu nahoru jako `instanceCounts` — potomek má nižší index.
+ */
+export function certainHulls(nodes: readonly ShapeNode[]): readonly (Bounds3 | null)[] {
+  const hulls: (Bounds3 | null)[] = [];
+  nodes.forEach((node, index) => {
+    hulls[index] = hullOf(node, hulls);
+  });
+  return hulls;
+}
+
+function box3(hx: number, hy: number, hz: number): Bounds3 {
+  return { min: [-hx, -hy, -hz], max: [hx, hy, hz] };
+}
+
+function hullOf(node: ShapeNode, hulls: readonly (Bounds3 | null)[]): Bounds3 | null {
+  switch (node.kind) {
+    case 'sphere':
+      return box3(node.radius, node.radius, node.radius);
+    case 'box':
+      return box3(node.size[0] / 2, node.size[1] / 2, node.size[2] / 2);
+    case 'roundBox':
+      return box3(
+        node.size[0] / 2 + node.radius,
+        node.size[1] / 2 + node.radius,
+        node.size[2] / 2 + node.radius,
+      );
+    // Podél `y`, `height` je celá výška — viz `sdCapsule` a spol. ve `field.ts`.
+    case 'capsule':
+      return box3(node.radius, node.height / 2 + node.radius, node.radius);
+    case 'cylinder':
+      return box3(node.radius, node.height / 2, node.radius);
+    // Podstava dole má `radius`, špička nahoře nulový — obal je přesto celý válec.
+    case 'cone':
+      return box3(node.radius, node.height / 2, node.radius);
+    case 'torus':
+      return box3(
+        node.majorRadius + node.minorRadius,
+        node.minorRadius,
+        node.majorRadius + node.minorRadius,
+      );
+    case 'ellipsoid':
+      return box3(node.radii[0], node.radii[1], node.radii[2]);
+    // Vrchol 0 leží na `+x`, takže obal v rovině čte přímo vrcholy. Opsaná
+    // kružnice by byla horní odhad: u lichého počtu stran ho žádný vrchol
+    // v ose `z` nedosáhne.
+    case 'prism': {
+      const segment = (2 * Math.PI) / node.sides;
+      let maxX = -Infinity;
+      let minX = Infinity;
+      let maxZ = -Infinity;
+      let minZ = Infinity;
+      for (let vertex = 0; vertex < node.sides; vertex += 1) {
+        const x = node.radius * Math.cos(vertex * segment);
+        const z = node.radius * Math.sin(vertex * segment);
+        maxX = Math.max(maxX, x);
+        minX = Math.min(minX, x);
+        maxZ = Math.max(maxZ, z);
+        minZ = Math.min(minZ, z);
+      }
+      return { min: [minX, -node.height / 2, minZ], max: [maxX, node.height / 2, maxZ] };
+    }
+
+    case 'union': {
+      const known = node.children.map((child) => hulls[child]).filter((hull) => hull !== null);
+      if (known.length === 0) return null;
+      return known.reduce(mergeHulls);
+    }
+
+    case 'translate': {
+      const child = hulls[node.child];
+      if (child === null) return null;
+      return {
+        min: [
+          child.min[0] + node.offset[0],
+          child.min[1] + node.offset[1],
+          child.min[2] + node.offset[2],
+        ],
+        max: [
+          child.max[0] + node.offset[0],
+          child.max[1] + node.offset[1],
+          child.max[2] + node.offset[2],
+        ],
+      };
+    }
+
+    // Činitele jsou kladné (`scaleFactor` má minimum 0,05), takže se `min`
+    // a `max` nemůžou prohodit.
+    case 'scale': {
+      const child = hulls[node.child];
+      if (child === null) return null;
+      return {
+        min: [
+          child.min[0] * node.factor[0],
+          child.min[1] * node.factor[1],
+          child.min[2] * node.factor[2],
+        ],
+        max: [
+          child.max[0] * node.factor[0],
+          child.max[1] * node.factor[1],
+          child.max[2] * node.factor[2],
+        ],
+      };
+    }
+
+    /**
+     * `fx = about + |x − about|` je přeložení: tvar je ta část potomka nad
+     * `about` plus její zrcadlo. Interval je proto `[2·about − max, max]`.
+     * Když potomek nad `about` nesahá vůbec, je výsledek prázdný a obal
+     * neexistuje — `null`, ne kvádr o záporné šířce.
+     */
+    case 'mirror': {
+      const child = hulls[node.child];
+      if (child === null) return null;
+      const axis = node.axis === 'x' ? 0 : node.axis === 'y' ? 1 : 2;
+      const about = node.about ?? 0;
+      const high = child.max[axis];
+      if (high < about) return null;
+      const min = [...child.min] as [number, number, number];
+      const max = [...child.max] as [number, number, number];
+      min[axis] = 2 * about - high;
+      max[axis] = high;
+      return { min, max };
+    }
+
+    default:
+      return null;
+  }
+}
+
+function mergeHulls(left: Bounds3, right: Bounds3): Bounds3 {
+  return {
+    min: [
+      Math.min(left.min[0], right.min[0]),
+      Math.min(left.min[1], right.min[1]),
+      Math.min(left.min[2], right.min[2]),
+    ],
+    max: [
+      Math.max(left.max[0], right.max[0]),
+      Math.max(left.max[1], right.max[1]),
+      Math.max(left.max[2], right.max[2]),
+    ],
+  };
+}

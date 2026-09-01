@@ -35,13 +35,13 @@ const SPHERE: readonly ShapeNode[] = [{ kind: 'sphere', radius: 1 }];
  * `root` platný program, a test, který by si obálku odpustil, by bránu měřil
  * proti vstupu, jaký produkt nikdy nepošle.
  */
-function programOf(nodes: readonly ShapeNode[]): ShapeProgram {
+function programOf(nodes: readonly ShapeNode[], targetBounds: Bounds3 = UNIT_BOUNDS): ShapeProgram {
   return {
     shapeId: 'test-shape',
     stableId: 'test-object',
     nodes,
     root: nodes.length - 1,
-    targetBounds: UNIT_BOUNDS,
+    targetBounds,
     anchors: [],
     materialIntent: 'clay',
     priority: 0,
@@ -473,12 +473,22 @@ describe('prázdná práce se vrací jako selhání', () => {
   it('tvar mimo kvádr projde zadáním a spadne až na výsledku', () => {
     // Tohle je ta cesta, kterou kontrola vstupu chytit nemůže: zadání je
     // v pořádku po všech stránkách, jen je koule jinde než výřez.
+    //
+    // ⚠ **`targetBounds` se sem dopsalo 1. 9. 2026 a je to podstata testu, ne
+    // formalita.** Do `T12-boundsratio` fixtura deklarovala jednotkový kvádr
+    // a kouli 40 metrů od něj, takže program byl **sám v sobě rozporný** — od
+    // té úlohy ho brána programu odmítne dřív, než se k meshingu dojde, a test
+    // by měřil ji místo prázdného výsledku. Kvádr tvaru proto obepíná kouli
+    // tam, kde doopravdy je; jinde než výřez je pořád, a přesně o tom to je.
     const reason = refuse({
       ...base,
-      program: programOf([
-        { kind: 'sphere', radius: 0.5 },
-        { kind: 'translate', child: 0, offset: [40, 0, 0] },
-      ]),
+      program: programOf(
+        [
+          { kind: 'sphere', radius: 0.5 },
+          { kind: 'translate', child: 0, offset: [40, 0, 0] },
+        ],
+        { min: [39, -1, -1], max: [41, 1, 1] },
+      ),
     });
     expect(reason).toContain('empty mesh');
   });
@@ -486,7 +496,14 @@ describe('prázdná práce se vrací jako selhání', () => {
   it('kvádr celý uvnitř tělesa taky', () => {
     // Druhá polovina téhož: povrch existuje, jen ne uvnitř výřezu. Přesně
     // případ, který `paddedBounds` popisuje jako „objekt se nerozbije, on není".
-    const reason = refuse({ ...base, program: programOf([{ kind: 'sphere', radius: 50 }]) });
+    // `targetBounds` obepíná kouli ze stejného důvodu jako o test výš.
+    const reason = refuse({
+      ...base,
+      program: programOf([{ kind: 'sphere', radius: 50 }], {
+        min: [-50, -50, -50],
+        max: [50, 50, 50],
+      }),
+    });
     expect(reason).toContain('empty mesh');
   });
 
@@ -595,7 +612,11 @@ describe('nesouzená práce se změří, ale zbylé brány platí dál', () => {
     const empty = handleMeshJob({
       ...fatJob,
       unbudgeted: true,
-      program: programOf([{ kind: 'sphere', radius: 50 }]),
+      // Kvádr tvaru obepíná kouli — viz `T12-boundsratio` o dva bloky výš.
+      program: programOf([{ kind: 'sphere', radius: 50 }], {
+        min: [-50, -50, -50],
+        max: [50, 50, 50],
+      }),
       bounds: paddedBounds(UNIT_BOUNDS, 12),
       resolution: 12,
     }).response;
