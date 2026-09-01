@@ -12,7 +12,8 @@
  *   2. kotva je v prostoru slotu — dvě různá rozlišení dají tutéž kotvu;
  *   3. odmítnutý i chybějící tvar končí hlínou, která něco zabírá;
  *   4. kusy kompozice patří tomu, kdo si je nárokoval, a zbytek je kulisa;
- *   5. hrubý svět obsazuje jen tři příčky žebříku, ne libovolnou.
+ *   5. hrubý svět obsazuje jen tři příčky žebříku, ne libovolnou;
+ *   6. kotva rozmnoženého vlastníka sedí na kusu, ne v mezeře mezi kopiemi.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -35,7 +36,7 @@ import {
   type ProxyWorld,
 } from '../proxy';
 import { blueprintSchema, type WorldstreamBlueprint } from '../schema';
-import { toWorld } from '../slots';
+import { boundsCenter, toWorld } from '../slots';
 
 /* ------------------------------------------------------------------ *
  * Fixtura.
@@ -573,6 +574,76 @@ describe('the composition splits into slots and the scenery around them', () => 
     const plain = compilePlacements(EXAMPLE_BLUEPRINT_ANSWER.geometry);
     expect(plain).toHaveLength(20);
     expect(plain.every((placement) => placement.owner === undefined)).toBe(true);
+  });
+
+  /**
+   * **Kotva rozmnoženého vlastníka sedí na kusu, ne v mezeře mezi kopiemi.**
+   *
+   * `mirror` nad kusem na `x = +8` dá kopie na ±8, takže obal celku sahá
+   * −8,33..8,33 a jeho střed je `x = 0` — bod, ve kterém není nic. Kotva
+   * odvozená ze středu obalu tam tedy visí v prázdnu, a **na obraze to
+   * vypadá úplně stejně jako kotva na místě**, protože kotva se nekreslí.
+   * Ozve se až o vlnu dál: `base` je „na tomhle stojí" a `top` „tohle si na
+   * něj polož", takže druhá věta postaví lucernu doprostřed průchodu.
+   *
+   * A ozve se **napořád**: design book §13.2 dělá z transformace slotu
+   * a z kotev invariant hot-swapu, takže se chybná poloha zamrzne a přenese
+   * i na podrobnou podobu, kterou do slotu vymění vlna 3.
+   *
+   * Pin k opravě `bae3838`, dopsaný 1. 9. 2026 — do té doby byla oprava
+   * commitnutá bez testu, který by ji soudil.
+   *
+   * **Proč `+8`, a ne `|8|`.** Obě kopie jsou od středu stejně daleko, takže
+   * o shodě rozhoduje **pořadí**, ne souřadnice: originál je v poli před svým
+   * odrazem. Kdyby se remíza lámala náhodou, dalo by jedno semínko dva různé
+   * světy — proto se pinuje ta konkrétní strana.
+   */
+  it('seats a mirrored owner on one of its pieces, not in the gap between them', async () => {
+    const geometry = {
+      version: EXAMPLE_BLUEPRINT_ANSWER.geometry.version,
+      nodes: [
+        { kind: 'fixture', variant: 'crate', at: [8, 0.3, 0] },
+        { kind: 'mirror', child: 0, axis: 'x' },
+        { kind: 'fixture', variant: 'crate', at: [0, 0.3, 6] },
+        { kind: 'group', children: [1, 2] },
+      ],
+      root: 3,
+    };
+    const objects = blueprint().objects.slice(0, 2).map((object, index) => ({
+      ...object,
+      source: { kind: 'geom' as const, node: index === 0 ? 1 : 2 },
+    }));
+
+    const world = built(await build(compiled(blueprint({ geometry, objects, shapes: [] }))));
+    const [mirrored, single] = world.slots.map((entry) => entry.slot);
+
+    // Dvě kopie, jeden vlastník, a střed jeho obalu je doopravdy v prázdnu.
+    expect(world.slots[0].form.kind === 'placements' && world.slots[0].form.placements).toHaveLength(2);
+    expect(boundsCenter(mirrored.worldBounds)[0]).toBeCloseTo(0, 6);
+    expect(mirrored.localBounds.max[0]).toBeCloseTo(8.33, 2);
+
+    const base = mirrored.anchors.find((anchor) => anchor.name === 'base')!;
+    const top = mirrored.anchors.find((anchor) => anchor.name === 'top')!;
+
+    // Tady to celé stojí: ne na nule, ale na kusu.
+    expect(base.at[0]).toBeCloseTo(8, 5);
+    expect(top.at[0]).toBeCloseTo(8, 5);
+    // Obě na TÉMŽ kusu — `base` z jednoho a `top` z druhého by byla dvojice,
+    // která spolu svisle nesouvisí.
+    expect(top.at[0]).toBe(base.at[0]);
+    expect(top.at[2]).toBe(base.at[2]);
+    // A ve světě padnou dovnitř toho kusu, ne jen mimo počátek.
+    expect(toWorld(mirrored.transform, base.at)[0]).toBeCloseTo(8, 5);
+
+    /**
+     * Jednokusový vlastník se hnout nesmí: jeho kus **je** celek, takže
+     * platí pořád pravidlo ze středu obalu — přesně to, co dělal
+     * `derivedAnchors()` před `bae3838`.
+     */
+    const soleBase = single.anchors.find((anchor) => anchor.name === 'base')!;
+    const soleTop = single.anchors.find((anchor) => anchor.name === 'top')!;
+    expect(soleBase.at).toEqual([0, single.localBounds.min[1], 0]);
+    expect(soleTop.at).toEqual([0, single.localBounds.max[1], 0]);
   });
 });
 
