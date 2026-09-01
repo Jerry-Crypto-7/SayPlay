@@ -340,6 +340,34 @@ describe('POST /api/generate', () => {
     expect(offline.status).toBe(200);
   });
 
+  /**
+   * **Naměřeno nezávislou revizí 1. 9. 2026: 250 požadavků = 250 řádků.**
+   * `BRANCH_UNCONFIGURED` mělo v tabulce `always`, jenže tady se nikam nevolá,
+   * cena je nula a `SpendCap` nulové rezervace do počtu volání nepočítá —
+   * strop, o který se ten řádek opíral, se tedy nikdy nezapojil. Spouštěč je
+   * překlep operátora v klíči: nasazené demo pak píše řádek na každý požadavek
+   * porotce.
+   */
+  it('živá větev bez konfigurace napíše operátorovi jednou, ne na každý požadavek', async () => {
+    const logged: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+      logged.push(String(line));
+    });
+
+    // Jedno načtení, dvacet požadavků — bound je stav procesu, takže druhé
+    // načtení by ho zahodilo a test by měřil jenom sám sebe.
+    const call = await loadRoute({ WORLDSMITH_BRANCH: 'live' });
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const { status } = await call(JSON.stringify({ prompt: FROZEN_CREATE.prompt }));
+      expect(status).toBe(503);
+    }
+
+    expect(
+      logged.filter((line) => line.includes('BRANCH_UNCONFIGURED')),
+      '20 požadavků na nenakonfigurovanou větev napsalo víc než jeden řádek',
+    ).toHaveLength(1);
+  });
+
   it('každá odpověď nese korelační ID', async () => {
     const ok = await post(JSON.stringify({ prompt: FROZEN_CREATE.prompt }));
     const bad = await post(JSON.stringify({ prompt: '' }));
@@ -428,7 +456,10 @@ describe('POST /api/generate', () => {
     const uses = source.match(/grammar\.detail/g) ?? [];
 
     expect(uses).toHaveLength(1);
-    expect(source).toContain('logForOperator(requestId, grammar.reason, grammar.detail)');
+    // Jméno funkce se 1. 9. 2026 změnilo z `logForOperator` na
+    // `logStickyFault`, protože ten zápis od té doby nese bound. Tvrzení je
+    // pořád totéž: jediné užití `grammar.detail` je zápis operátorovi.
+    expect(source).toContain('logStickyFault(requestId, grammar.reason, grammar.detail)');
     expect(source).toContain('PUBLIC_CORPUS_FAULT[grammar.reason]');
   });
 

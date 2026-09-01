@@ -55,6 +55,7 @@ import {
 import {
   PUBLIC_CORPUS_FAULT,
   logForOperator as logForRoute,
+  logRateLimited,
 } from '../../../server/public-faults';
 import { spendCapFromEnv, type RefusalReason } from '../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../server/upstream';
@@ -170,18 +171,50 @@ const FAILURE_STATUS: Record<GenerationFailureReason, number> = {
  * záznamy dají tři řádky, ale tisíc požadavků na jeden dá pořád jeden. Počet je
  * tím shora omezený velikostí korpusu, tedy commitnutého artefaktu, který
  * volající nafouknout nemůže.
+ *
+ * ## Co rozhoduje mezi `always` a `once`: co ten bound doopravdy drží
+ *
+ * **`always` patří jen selháním, která vyrobila placená větev** — ta je
+ * omezená stropem na počet volání, takže „řádek na požadavek" je ve skutečnosti
+ * „řádek na zaplacené volání" a strop ho omezuje za nás. `UPSTREAM_UNAVAILABLE`,
+ * `UPSTREAM_REJECTED` a `MALFORMED_RESPONSE` tuhle podmínku splňují: bez
+ * odchozího volání nevzniknou.
+ *
+ * **`BRANCH_UNCONFIGURED` ji nesplňuje a do 1. 9. 2026 tam přesto stálo
+ * `always`.** Nikam se nevolá, cena je nula — a `SpendCap` **nulové rezervace
+ * do počtu volání nepočítá**, takže se strop nezapojí vůbec. Bound, o který se
+ * ten řádek opíral, tedy neexistoval. Naměřeno nezávislou revizí: živá větev bez
+ * klíče, **250 požadavků = 250 řádků**, strop netknutý. Spouštěč je překlep
+ * operátora v klíči, ne útočník — nasazené demo pak píše řádek na každý
+ * požadavek porotce. Je to lepivý stav nastavení, takže patří k `once`.
  */
 const OPERATOR_LOG: Record<GenerationFailureReason, 'always' | 'once' | 'never'> = {
   UPSTREAM_UNAVAILABLE: 'always',
   UPSTREAM_REJECTED: 'always',
   MALFORMED_RESPONSE: 'always',
-  BRANCH_UNCONFIGURED: 'always',
+  BRANCH_UNCONFIGURED: 'once',
   NO_SOURCE: 'never',
   NO_FROZEN_ANSWER: 'once',
 };
 
 /** Vady korpusu, které už tenhle proces zapsal. Klíčem je záznam, ne důvod. */
 const CORPUS_FAULTS_LOGGED = new Set<string>();
+
+/**
+ * `once` z tabulky výš, na jednom místě.
+ *
+ * Volají to dvě cesty a **žádná z nich není ta z potrubí**: rozbitý korpus se
+ * pozná ještě před `runPipeline()`, takže by jinak zůstal jediným řádkem
+ * v souboru, který bound nemá — a je to zároveň nejlepivější stav, jaký tahle
+ * routa umí. Selže před moderací i před stropem, tedy na **každém** požadavku,
+ * a varianta `CORPUS_UNREADABLE` nese absolutní cestu na disku serveru včetně
+ * jména účtu. Naměřeno nezávislou revizí: 20 požadavků = 20 řádků.
+ */
+function logStickyFault(requestId: string, code: string, detail: string): void {
+  if (CORPUS_FAULTS_LOGGED.has(detail)) return;
+  CORPUS_FAULTS_LOGGED.add(detail);
+  logForOperator(requestId, code, detail);
+}
 
 /**
  * A totéž pro **moderaci** — poslední místo, kde `detail` z řetězu tekl ven.
@@ -316,7 +349,15 @@ export async function POST(request: Request): Promise<Response> {
     try {
       raw = await readBody(request);
     } catch (thrown) {
-      logForOperator(requestId, 'BODY_UNREADABLE', thrown instanceof Error ? thrown.message : String(thrown));
+      // Omezená rychlost, ne lepivý bound: přerušit vlastní spojení umí
+      // volající kolikrát chce, ale „těla přestala chodit" je porucha, která se
+      // musí ozvat i podesáté. Táž cesta jako u tří sesterských rout.
+      logRateLimited(
+        'generate',
+        requestId,
+        'BODY_UNREADABLE',
+        thrown instanceof Error ? thrown.message : String(thrown),
+      );
       return error(requestId, 400, 'BODY_UNREADABLE', 'the request body could not be read');
     }
     if (!raw.ok)
@@ -333,7 +374,7 @@ export async function POST(request: Request): Promise<Response> {
 
     const grammar = frozenGrammar();
     if (!grammar.ok) {
-      logForOperator(requestId, grammar.reason, grammar.detail);
+      logStickyFault(requestId, grammar.reason, grammar.detail);
       return error(requestId, 503, grammar.reason, PUBLIC_CORPUS_FAULT[grammar.reason]);
     }
 
@@ -439,9 +480,8 @@ export async function POST(request: Request): Promise<Response> {
     // neprojde přes `tsc`.
     if (OPERATOR_LOG[result.reason] === 'always')
       logForOperator(requestId, result.reason, result.detail);
-    else if (OPERATOR_LOG[result.reason] === 'once' && !CORPUS_FAULTS_LOGGED.has(result.detail)) {
-      CORPUS_FAULTS_LOGGED.add(result.detail);
-      logForOperator(requestId, result.reason, result.detail);
+    else if (OPERATOR_LOG[result.reason] === 'once') {
+      logStickyFault(requestId, result.reason, result.detail);
     }
 
     return Response.json(

@@ -150,6 +150,31 @@ describe('a corpus fault says the same public sentence at every door', () => {
     judge('generate', sent, doors, (JSON.parse(sent) as { requestId: string }).requestId);
   });
 
+  /**
+   * **Rozbitý korpus je nejlepivější stav v tom souboru** — selže před moderací
+   * i před stropem, tedy na **každém** požadavku, a varianta `CORPUS_UNREADABLE`
+   * nese absolutní cestu na disku serveru včetně jména účtu. Do 1. 9. 2026ho
+   * neomezovalo nic: naměřeno nezávislou revizí, 20 požadavků = 20 řádků,
+   * každý s oběma hashi.
+   *
+   * Klíčem je `detail`, ne důvod, takže tenhle bound nezakryje **druhý**
+   * rozbitý záznam — jen tisíc požadavků na tentýž.
+   */
+  it('/api/generate napíše vadu korpusu jednou, ne na každý požadavek', async () => {
+    const doors = withoutCorpus();
+    const { POST } = await import('../../app/api/generate/route');
+
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const response = await POST(post('http://127.0.0.1/api/generate', { prompt: 'a walled garden' }));
+      expect(response.status).toBe(503);
+    }
+
+    expect(
+      doors.log.filter((line) => line.startsWith('[generate] ')),
+      '20 požadavků na rozbitý korpus napsalo víc než jeden řádek',
+    ).toHaveLength(1);
+  });
+
   it('/api/emit', async () => {
     const doors = withoutCorpus();
     const { POST } = await import('../../app/api/emit/route');
@@ -278,13 +303,15 @@ describe('a body that breaks mid-read answers with a correlated 400 at every doo
    * mlčení po prvním by šlo koupit jedním požadavkem hned po nasazení a
    * skutečná porucha ve dvanácté hodině by pak neměla čím se ozvat.
    *
-   * Smyčka jde přes **všechny** dveře, které tím boundem jdou. Dokud běžela jen
-   * přes `emit`, nic nepřipínalo, že ty ostatní bound vůbec mají.
+   * Smyčka jde přes **všechny čtvery** dveře, které tím boundem jdou. Dokud
+   * běžela jen přes `emit`, nic nepřipínalo, že ty ostatní bound vůbec mají —
+   * a `/api/generate` ho doopravdy neměl.
    */
   it('and slows down to milestones, however many arrive', async () => {
     const log = captureLog();
 
     const doors = [
+      { name: 'generate', url: 'http://127.0.0.1/api/generate', POST: (await import('../../app/api/generate/route')).POST },
       { name: 'emit', url: 'http://127.0.0.1/api/emit', POST: (await import('../../app/api/emit/route')).POST },
       { name: 'emit/stream', url: 'http://127.0.0.1/api/emit/stream', POST: (await import('../../app/api/emit/stream/route')).POST },
       { name: 'edit', url: 'http://127.0.0.1/api/edit', POST: (await import('../../app/api/edit/route')).POST },
