@@ -226,6 +226,173 @@ describe('a corpus fault says the same public sentence at every door', () => {
 });
 
 /* ------------------------------------------------------------------ *
+ * Bound. Ne „říká se to stejně", ale „píše se to jednou".
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Do 1. 9. 2026 měl bound jen `/api/generate`, a byl v něm soukromý.**
+ *
+ * Dvě nezávislé revize téhož dne našly totéž a obě to označily za `blocking`:
+ * zbylé troje dveře psaly operátorovi **řádek na požadavek** s absolutní cestou
+ * na disku serveru včetně jména účtu. Sada výš to nechytila, protože soudila
+ * jediný požadavek — jeden řádek vypadá stejně, ať je bound jakýkoli.
+ */
+describe('a corpus fault is one line per fault, not one per request, at every door', () => {
+  const REQUESTS = 20;
+
+  it('/api/emit', async () => {
+    const doors = withoutCorpus();
+    const { POST } = await import('../../app/api/emit/route');
+
+    for (let attempt = 0; attempt < REQUESTS; attempt += 1) {
+      const response = await POST(post('http://127.0.0.1/api/emit', { promptId: 'C01' }));
+      expect(response.status).toBe(503);
+    }
+
+    expect(
+      doors.log.filter((line) => line.startsWith('[emit] ')),
+      `${REQUESTS} požadavků napsalo operátorovi víc než jeden řádek`,
+    ).toHaveLength(1);
+  });
+
+  it('/api/emit/stream', async () => {
+    const doors = withoutCorpus();
+    const { POST } = await import('../../app/api/emit/stream/route');
+
+    for (let attempt = 0; attempt < REQUESTS; attempt += 1) {
+      // Tyhle dveře odpovídají 200 a vada přijde až rámcem uvnitř proudu, takže
+      // se tělo musí dočíst — jinak se log zapíše až po aserci.
+      const response = await POST(post('http://127.0.0.1/api/emit/stream', { promptId: 'C01' }));
+      expect(await response.text()).toContain('CORPUS_UNREADABLE');
+    }
+
+    expect(
+      doors.log.filter((line) => line.startsWith('[emit/stream] ')),
+      `${REQUESTS} požadavků napsalo operátorovi víc než jeden řádek`,
+    ).toHaveLength(1);
+  });
+
+  it('/api/edit', async () => {
+    const doors = withoutCorpus();
+    const { POST } = await import('../../app/api/edit/route');
+
+    for (let attempt = 0; attempt < REQUESTS; attempt += 1) {
+      const response = await POST(
+        post('http://127.0.0.1/api/edit', {
+          promptId: editRecord.forPrompt,
+          worldDoc: BASE_DOC,
+          baseRevision: { sim: 0, look: 0 },
+        }),
+      );
+      expect(response.status).toBe(503);
+    }
+
+    expect(
+      doors.log.filter((line) => line.startsWith('[edit] ')),
+      `${REQUESTS} požadavků napsalo operátorovi víc než jeden řádek`,
+    ).toHaveLength(1);
+  });
+
+  /**
+   * **A tenhle případ nepotřebuje rozbitý korpus vůbec** — je to ten nejlevnější
+   * ze všech a revize ho našla na **zdravém** commitnutém artefaktu.
+   *
+   * `BASE_WORLD_MISMATCH` neříká nic o serveru: říká, že volající poslal platný
+   * svět a k němu `promptId` autorovaný proti jinému. To je běžný omyl klienta,
+   * který si kdokoli zopakuje kolikrát chce, a demo ty světy samo vydává —
+   * čtrnáct z patnácti dvojic tu podmínku splní. Do 1. 9. 2026 se logovalo
+   * bezpodmínečně spolu s vadami korpusu, takže log rostl o řádek na požadavek.
+   *
+   * Bound je tu **na rychlosti, ne na lepivosti**, protože stav je volajícího:
+   * kdyby byl lepivý, první omyl by kanál umlčel napořád a operátor by se
+   * o skutečném rozchodu klienta s korpusem nedozvěděl nikdy.
+   */
+  it('/api/edit: rozešlá dvojice na zdravém korpusu taky, a rychlostí', async () => {
+    const log = captureLog();
+    vi.resetModules();
+    const { POST } = await import('../../app/api/edit/route');
+
+    for (let attempt = 0; attempt < REQUESTS; attempt += 1) {
+      const response = await POST(
+        post('http://127.0.0.1/api/edit', {
+          promptId: editRecord.forPrompt,
+          worldDoc: BASE_DOC,
+          baseRevision: { sim: BASE_DOC.simRevision, look: BASE_DOC.lookRevision },
+        }),
+      );
+      expect(response.status, 'fixtura přestala být rozešlou dvojicí').toBe(404);
+    }
+
+    // Dva, ne dvacet: milníky jsou 1., 10., 100. výskyt, takže dvacet
+    // požadavků dá dva řádky a milion by dal šest. Ani nula — kanál se nesmí
+    // zavřít úplně, jinak zmizí jediný signál o tom, že se klient a korpus
+    // rozešly.
+    const lines = log.filter((line) => line.startsWith('[edit] '));
+    expect(lines, `${REQUESTS} omylů klienta napsalo operátorovi řádek na požadavek`).toHaveLength(
+      2,
+    );
+    expect(lines[0]).toContain('BASE_WORLD_MISMATCH');
+    // Číslo výskytu je v textu schválně: bez něj vypadá desátý řádek jako první
+    // a operátor záplavu nepozná.
+    expect(lines[0]).toContain('(occurrence 1)');
+    expect(lines[1]).toContain('(occurrence 10)');
+  });
+});
+
+/**
+ * **Klíč lepivého zápisu je `detail`, ne kód** — a tohle je jediné místo, kde
+ * se to dá soudit přímo.
+ *
+ * Nezávislá revize to změřila jako mrtvou vlastnost: mutace `has(detail)` →
+ * `has(code)` nechala celou tehdejší sadu zelenou, přestože pod tím mutantem
+ * **druhý a třetí rozbitý záznam mlčí napořád**. Šlo to jen proto, že funkce
+ * byla soukromá uvnitř routy a nikdo ji nevolal přímo. Od 1. 9. 2026 bydlí
+ * v `public-faults.ts`, takže tenhle test existovat může.
+ */
+describe('the sticky bound keys on the fault, not on its code', () => {
+  async function sticky(): Promise<{
+    readonly log: string[];
+    readonly write: typeof import('../public-faults').logStickyFault;
+  }> {
+    const log = captureLog();
+    vi.resetModules();
+    return { log, write: (await import('../public-faults')).logStickyFault };
+  }
+
+  it('two broken records give two lines, a thousand requests on one give one', async () => {
+    const { log, write } = await sticky();
+
+    write('generate', 'req-1', 'NO_FROZEN_ANSWER', 'no frozen create response for C01');
+    // Týž kód, týž vchod, **jiný záznam**. Kdyby se klíčovalo kódem, tenhle
+    // řádek zmizí — a s ním každá další díra ve zmrazené sadě.
+    write('generate', 'req-2', 'NO_FROZEN_ANSWER', 'no frozen create response for C02');
+    // A tisíc požadavků na ten první pořád jeden řádek.
+    for (let attempt = 0; attempt < 1000; attempt += 1)
+      write('generate', `flood-${attempt}`, 'NO_FROZEN_ANSWER', 'no frozen create response for C01');
+
+    expect(log).toHaveLength(2);
+    expect(log[0]).toContain('req-1');
+    expect(log[1]).toContain('req-2');
+    expect(log.join('\n'), 'bound neplatí — opakování téže vady se zapsalo znovu').not.toContain(
+      'flood-',
+    );
+  });
+
+  it('and on the door, so one broken corpus is still named by each door that hits it', async () => {
+    const { log, write } = await sticky();
+
+    write('emit', 'req-1', 'CORPUS_UNREADABLE', 'responses/index.jsonl is not readable');
+    // Táž vada, jiné dveře. Řádek jmenuje **které dveře mluví**, takže sdílet
+    // klíč napříč vchody by tu informaci zahodilo hned u druhého z nich.
+    write('edit', 'req-2', 'CORPUS_UNREADABLE', 'responses/index.jsonl is not readable');
+
+    expect(log).toHaveLength(2);
+    expect(log[0]).toContain('[emit]');
+    expect(log[1]).toContain('[edit]');
+  });
+});
+
+/* ------------------------------------------------------------------ *
  * Druhá vada týchž dveří: tělo, které se rozpadne uprostřed čtení.
  * ------------------------------------------------------------------ */
 

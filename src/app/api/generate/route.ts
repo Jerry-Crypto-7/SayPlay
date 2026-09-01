@@ -56,6 +56,7 @@ import {
   PUBLIC_CORPUS_FAULT,
   logForOperator as logForRoute,
   logRateLimited,
+  logStickyFault as logStickyForRoute,
 } from '../../../server/public-faults';
 import { spendCapFromEnv, type RefusalReason } from '../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../server/upstream';
@@ -172,33 +173,43 @@ const FAILURE_STATUS: Record<GenerationFailureReason, number> = {
  * tím shora omezený velikostí korpusu, tedy commitnutého artefaktu, který
  * volající nafouknout nemůže.
  *
- * ## Co rozhoduje mezi `always` a `once`: co ten bound doopravdy drží
+ * ## Co rozhoduje mezi `rate-limited` a `once`: co ten bound doopravdy drží
  *
- * **`always` patří jen selháním, která vyrobila placená větev** — ta je
- * omezená stropem na počet volání, takže „řádek na požadavek" je ve skutečnosti
- * „řádek na zaplacené volání" a strop ho omezuje za nás. `UPSTREAM_UNAVAILABLE`,
- * `UPSTREAM_REJECTED` a `MALFORMED_RESPONSE` tuhle podmínku splňují: bez
- * odchozího volání nevzniknou.
+ * **Žádná hodnota téhle tabulky už neznamená „řádek na požadavek".** Do
+ * 1. 9. 2026 znamenala — jmenovala se `always` a stála na pravidle, které bylo
+ * **nepravdivé**: „patří jen selháním, která vyrobila placená větev, a ta je
+ * omezená stropem na počet volání". Dvě nezávislé revize téhož dne to vyvrátily
+ * a shodly se na tomtéž protipříkladu:
  *
- * **`BRANCH_UNCONFIGURED` ji nesplňuje a do 1. 9. 2026 tam přesto stálo
- * `always`.** Nikam se nevolá, cena je nula — a `SpendCap` **nulové rezervace
- * do počtu volání nepočítá**, takže se strop nezapojí vůbec. Bound, o který se
- * ten řádek opíral, tedy neexistoval. Naměřeno nezávislou revizí: živá větev bez
- * klíče, **250 požadavků = 250 řádků**, strop netknutý. Spouštěč je překlep
- * operátora v klíči, ne útočník — nasazené demo pak píše řádek na každý
- * požadavek porotce. Je to lepivý stav nastavení, takže patří k `once`.
+ * - `UPSTREAM_UNAVAILABLE` vyrábí i **větev zdarma** (`src/server/mock/index.ts`
+ *   ho vrací u rozbitého korpusu) a `src/server/pipeline.ts` na něj překládá
+ *   **jakoukoli** výjimku z generování. `worstCaseUsd()` je tam nula a `SpendCap`
+ *   **nulové rezervace do počtu volání nepočítá**, takže se strop nezapojí.
+ *   Naměřeno: chybějící `responses/index.jsonl` na jinak zdravém nasazení,
+ *   **20 požadavků = 20 řádků**, každý s absolutní cestou na disku serveru.
+ * - I u opravdu placených důvodů (`UPSTREAM_REJECTED`, `MALFORMED_RESPONSE`)
+ *   ten bound zmizí, jakmile je strop vypnutý řídicím souborem
+ *   (`spend-cap.ts`: obě meze visí na `control.enabled`). „Strop to omezí za nás"
+ *   tedy neplatilo ani tam, kde vypadalo, že platí.
+ *
+ * Stejnou vadu měl `BRANCH_UNCONFIGURED` a opravila se den předtím — jenže jako
+ * výjimka pro jeden důvod, ne jako pravidlo. Proto se tahle hodnota přejmenovala:
+ * **jméno musí říkat, čím je řádek omezený**, aby další důvod nedostal `always`
+ * na základě věty, kterou nikdo nezměřil.
+ *
+ * Zbývají tedy dvě meze a liší se tím, **čí je to stav**:
+ * `rate-limited` je porucha, která se může rozjet a zase přestat (milníky 1.,
+ * 10., 100. výskyt, aby se ozvala znovu), `once` je stav, který je od první
+ * chvíle napořád stejný (jeden řádek za konkrétní vadu).
  */
-const OPERATOR_LOG: Record<GenerationFailureReason, 'always' | 'once' | 'never'> = {
-  UPSTREAM_UNAVAILABLE: 'always',
-  UPSTREAM_REJECTED: 'always',
-  MALFORMED_RESPONSE: 'always',
+const OPERATOR_LOG: Record<GenerationFailureReason, 'rate-limited' | 'once' | 'never'> = {
+  UPSTREAM_UNAVAILABLE: 'rate-limited',
+  UPSTREAM_REJECTED: 'rate-limited',
+  MALFORMED_RESPONSE: 'rate-limited',
   BRANCH_UNCONFIGURED: 'once',
   NO_SOURCE: 'never',
   NO_FROZEN_ANSWER: 'once',
 };
-
-/** Vady korpusu, které už tenhle proces zapsal. Klíčem je záznam, ne důvod. */
-const CORPUS_FAULTS_LOGGED = new Set<string>();
 
 /**
  * `once` z tabulky výš, na jednom místě.
@@ -209,11 +220,14 @@ const CORPUS_FAULTS_LOGGED = new Set<string>();
  * routa umí. Selže před moderací i před stropem, tedy na **každém** požadavku,
  * a varianta `CORPUS_UNREADABLE` nese absolutní cestu na disku serveru včetně
  * jména účtu. Naměřeno nezávislou revizí: 20 požadavků = 20 řádků.
+ *
+ * ⚠ **Od 1. 9. 2026 to bydlí v `src/server/public-faults.ts`**, protože táž mez
+ * má platit na všech čtverých dveřích. Dokud byla soukromá tady, `/api/emit`,
+ * `/api/emit/stream` i `/api/edit` psaly řádek na požadavek — nález dvou
+ * nezávislých revizí téhož dne, obou nezávisle na sobě.
  */
 function logStickyFault(requestId: string, code: string, detail: string): void {
-  if (CORPUS_FAULTS_LOGGED.has(detail)) return;
-  CORPUS_FAULTS_LOGGED.add(detail);
-  logForOperator(requestId, code, detail);
+  logStickyForRoute('generate', requestId, code, detail);
 }
 
 /**
@@ -449,8 +463,22 @@ export async function POST(request: Request): Promise<Response> {
         // k neomezenému psaní na stderr za cenu jednoho prázdného těla.
         // `DISALLOWED` zůstává: je to jediné, co znamená, že někdo zkouší,
         // kam až smí.
+        //
+        // **Ale s omezenou rychlostí** — nález dvou nezávislých revizí
+        // 1. 9. 2026, obou `blocking`. Rozhoduje o tom **text od volajícího**,
+        // odmítnutí je zadarmo a padne před stropem, takže tenhle řádek byl
+        // ze všech čtverých dveří ten nejlevnější na zesílení: žádný stav
+        // korpusu, žádný platný `worldDoc`, jen prompt v cyklu. Komentář nad
+        // tím přitom o dva odstavce výš argumentuje přesně proti tomu, čemu
+        // sám podlehl. Klíč je `route + code`, takže se milníky počítají zvlášť
+        // pro každou kategorii pravidla.
         if (result.category === 'DISALLOWED')
-          logForOperator(requestId, `PROMPT_REFUSED ${result.category}`, result.ruleId ?? 'structural');
+          logRateLimited(
+            'generate',
+            requestId,
+            `PROMPT_REFUSED ${result.category}`,
+            result.ruleId ?? 'structural',
+          );
         return Response.json(
           {
             requestId,
@@ -478,8 +506,8 @@ export async function POST(request: Request): Promise<Response> {
     // Kdo co dostane, rozhodují `OPERATOR_LOG` a `FAILURE_STATUS` výš — obě
     // tabulky nad `GenerationFailureReason`, takže nový důvod bez rozhodnutí
     // neprojde přes `tsc`.
-    if (OPERATOR_LOG[result.reason] === 'always')
-      logForOperator(requestId, result.reason, result.detail);
+    if (OPERATOR_LOG[result.reason] === 'rate-limited')
+      logRateLimited('generate', requestId, result.reason, result.detail);
     else if (OPERATOR_LOG[result.reason] === 'once') {
       logStickyFault(requestId, result.reason, result.detail);
     }

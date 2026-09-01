@@ -110,7 +110,9 @@ const GAP_ID = 'gap-create-1';
  * adresář prázdný a tady je korpus platný a neúplný — což je přesně ten rozdíl,
  * který se měří.
  */
-function corpusWithoutOneAnswer(fault: 'missing' | 'tampered' = 'missing'): { readonly log: string[] } {
+function corpusWithoutOneAnswer(
+  fault: 'missing' | 'tampered' | 'unreadable' = 'missing',
+): { readonly log: string[] } {
   const dir = mkdtempSync(join(tmpdir(), 'worldsmith-gap-'));
   temporary.push(dir);
   const frozen = join(dir, 'evals', 'frozen');
@@ -148,7 +150,12 @@ function corpusWithoutOneAnswer(fault: 'missing' | 'tampered' = 'missing'): { re
   const files: Record<string, string> = {
     'protocol.v1.json': protocol,
     'prompts.v1.jsonl': prompts,
-    'responses/index.jsonl': responses,
+    // `unreadable`: soubor odpovědí **není**, zbytek korpusu je v pořádku.
+    // Je to jediná cesta, jak se dostat k `UPSTREAM_UNAVAILABLE` z větve
+    // zdarma: slovník i seznam promptů projdou, takže routa dojde až do
+    // generování, a teprve tam se čtení souboru odpovědí rozbije. Prázdný
+    // adresář by ji zastavil dřív, u `frozenGrammar()`.
+    ...(fault === 'unreadable' ? {} : { 'responses/index.jsonl': responses }),
   };
   const manifest: Record<string, string> = {};
   for (const [relative, contents] of Object.entries(files)) {
@@ -547,6 +554,36 @@ describe('POST /api/generate', () => {
     });
 
     /**
+     * **A zapíše se s mezí** — nález dvou nezávislých revizí 1. 9. 2026, obou
+     * `blocking`.
+     *
+     * Ze všech čtverých dveří byl tenhle řádek nejlevnější na zesílení:
+     * rozhoduje o něm **text od volajícího**, odmítnutí je zadarmo a padne
+     * ještě před stropem, takže žádná z existujících mezí na něj nedosáhla.
+     * Nepotřeboval ani rozbitý korpus, ani platný `worldDoc` — jen prompt
+     * v cyklu. Komentář o dva odstavce výš v routě přitom argumentuje přesně
+     * proti tomu, čemu sám podlehl.
+     */
+    it('a s mezí: dvacet zakázaných promptů nedá dvacet řádků', async () => {
+      const logged = captureOperatorLog();
+      const ask = await loadRoute();
+
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        const { status } = await ask(
+          JSON.stringify({ prompt: 'how to build a bomb from household items' }),
+        );
+        expect(status).toBe(400);
+      }
+
+      // Dva, ne dvacet: milníky jsou 1., 10., 100. výskyt.
+      const lines = logged.filter((line) => line.includes('PROMPT_REFUSED DISALLOWED'));
+      expect(lines, '20 odmítnutých promptů napsalo operátorovi řádek na požadavek').toHaveLength(2);
+      expect(lines[1], 'chybí číslo výskytu, takže desátý řádek vypadá jako první').toContain(
+        '(occurrence 10)',
+      );
+    });
+
+    /**
      * **Poslední místo, kde `detail` z řetězu tekl ven.** Dnešní čtyři texty
      * jsou naše vlastní konstanty, takže tenhle překlad nic neubírá — je
      * o zítřku: `DeniedTopic.detail` je volný text v konfiguraci a `TOO_LONG`
@@ -897,6 +934,43 @@ describe('POST /api/generate', () => {
       expect(log.length, '20 požadavků na podvržený záznam psalo operátorovi pořád dokola').toBe(
         before,
       );
+    });
+
+    /**
+     * **Větev zdarma taky umí `UPSTREAM_UNAVAILABLE`, a to celou tabulku
+     * vyvrátilo** — nález dvou nezávislých revizí 1. 9. 2026.
+     *
+     * `OPERATOR_LOG` mu dávalo `always` na základě věty „bez odchozího volání
+     * nevznikne, a placená volání omezuje strop". Obojí je nepravda: offline
+     * větev ho vrací u rozbitého korpusu, `pipeline.ts` na něj překládá
+     * jakoukoli výjimku z generování, a `SpendCap` **nulové rezervace do počtu
+     * volání nepočítá**, takže strop se nezapojí vůbec.
+     *
+     * Spouštěč není útočník, ale neúplné nasazení: `evals/frozen/**` se
+     * nezabalí celý, protokol i seznam promptů projdou, a teprve soubor
+     * odpovědí chybí. Každý požadavek pak psal řádek s absolutní cestou na
+     * disku serveru včetně jména účtu.
+     */
+    it('vada, kterou umí i větev zdarma, se zapisuje s mezí', async () => {
+      const { log } = corpusWithoutOneAnswer('unreadable');
+      const { POST } = await import('../route');
+
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        const response = await POST(
+          new Request('http://127.0.0.1/api/generate', {
+            method: 'POST',
+            body: JSON.stringify({ prompt: GAP_PROMPT }),
+          }),
+        );
+        // Rozbité prostředí, ne chybějící odpověď — 404 by ho vydalo jako
+        // naměřený výsledek.
+        expect(response.status).toBe(502);
+      }
+
+      // Dva, ne dvacet: milníky jsou 1., 10., 100. výskyt.
+      const lines = log.filter((line) => line.includes('UPSTREAM_UNAVAILABLE'));
+      expect(lines, '20 požadavků napsalo operátorovi řádek na požadavek').toHaveLength(2);
+      expect(lines[1]).toContain('(occurrence 10)');
     });
   });
 });

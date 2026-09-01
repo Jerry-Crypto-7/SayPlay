@@ -84,6 +84,49 @@ export function logForOperator(
   console.error(`[${route}] ${requestId} ${code}: ${withoutCredentials(detail)}`);
 }
 
+/** Vady, které tenhle proces už zapsal. Klíčem je dvojice (dveře, `detail`). */
+const STICKY_LOGGED = new Set<string>();
+
+/**
+ * **Jeden řádek za vadu, ne za požadavek** — pro stavy, které jsou *lepivé*.
+ *
+ * Lepivá vada je taková, u které první řádek a tisící říkají doslova totéž:
+ * rozbitý zmrazený záznam je rozbitý napořád, nečitelný korpus je nečitelný
+ * napořád. Řádek na požadavek by z toho udělal log, který si kdokoli natáhne
+ * donekonečna — a žádné z těch čtyř dveří nechtějí přihlášení.
+ *
+ * **Klíčem je `detail`, ne kód.** `detail` jmenuje konkrétní záznam, takže tři
+ * rozbité záznamy dají tři řádky, ale tisíc požadavků na jeden dá pořád jeden.
+ * Počet je tím shora omezený velikostí korpusu — commitnutého artefaktu, který
+ * volající nafouknout nemůže. Kdyby se klíčovalo kódem, druhý a třetí rozbitý
+ * záznam by mlčely napořád; `public-faults.test.ts` to drží mutací.
+ *
+ * **Do `detail` proto nesmí nic od volajícího.** Kdyby tam tekl prompt nebo
+ * cokoli jiného z těla požadavku, byla by tahle množina neomezený růst paměti
+ * v dlouho běžícím procesu — a bound by se vyměnil za horší vadu. Dnes je
+ * každá hodnota, která sem doteče, odvozená ze serveru: hlášky `readFrozen()`,
+ * `promptId` vzatý ze shody v korpusu, a konstanty.
+ *
+ * ⚠ **Ten strop je na jednu instanci, ne na nasazení** — táž výhrada jako
+ * u `logRateLimited()` níž. Trvale to zavře až sdílený stav (T29).
+ *
+ * Bydlí to tady, a ne v jedné z těch rout, protože **stejná mez má platit na
+ * všech čtverých dveřích naráz**. Do 1. 9. 2026 byla soukromá v `/api/generate`
+ * a `/api/emit`, `/api/emit/stream` i `/api/edit` psaly řádek na požadavek —
+ * přesně ta třída vady, kvůli které je v tomhle souboru i `PUBLIC_CORPUS_FAULT`.
+ */
+export function logStickyFault(
+  route: string,
+  requestId: string,
+  code: string,
+  detail: string,
+): void {
+  const key = `${route} ${detail}`;
+  if (STICKY_LOGGED.has(key)) return;
+  STICKY_LOGGED.add(key);
+  logForOperator(route, requestId, code, detail);
+}
+
 /** Kolikrát tenhle proces viděl dvojici (dveře, kód). */
 const SEEN_PER_KEY = new Map<string, number>();
 

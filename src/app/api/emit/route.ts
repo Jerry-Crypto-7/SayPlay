@@ -58,8 +58,8 @@ import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
 import { withRequest } from '../../../obs/trace';
 import {
   PUBLIC_CORPUS_FAULT,
-  logForOperator,
   logRateLimited,
+  logStickyFault,
 } from '../../../server/public-faults';
 import { runEmission } from './chain';
 
@@ -186,7 +186,12 @@ export async function POST(request: Request): Promise<Response> {
       // Ven veřejný text, operátorovi ten pravý — viz `src/server/public-faults.ts`.
       // `failure.detail` nese u `CORPUS_UNREADABLE` absolutní cestu na disku
       // včetně jména účtu, a tyhle dveře jsou stejně veřejné jako `/api/generate`.
-      logForOperator('emit', requestId, outcome.failure.reason, outcome.failure.detail);
+      //
+      // **Lepivě, ne na požadavek** — nález dvou nezávislých revizí 1. 9. 2026.
+      // Bound byl do té chvíle jen v `/api/generate`, takže na nasazení bez
+      // `evals/frozen/**` psaly tyhle dveře jeden řádek s absolutní cestou na
+      // každý požadavek. Vada korpusu je jeden stav, tedy jeden řádek.
+      logStickyFault('emit', requestId, outcome.failure.reason, outcome.failure.detail);
       return Response.json(
         {
           requestId,

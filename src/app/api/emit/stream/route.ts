@@ -27,7 +27,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { withRequest } from '../../../../obs/trace';
-import { PUBLIC_CORPUS_FAULT, logForOperator } from '../../../../server/public-faults';
+import { PUBLIC_CORPUS_FAULT, logStickyFault } from '../../../../server/public-faults';
 import { emissionSteps, type EmitPhase } from '../chain';
 import { readPromptId } from '../route';
 
@@ -75,7 +75,8 @@ export async function POST(request: Request): Promise<Response> {
         if (outcome.kind === 'unavailable') {
           // Týž ořez jako u `/api/emit`, jen jinou trubkou. Rámec proudu je
           // odpověď jako každá jiná — že jde po kouscích, na kořist nic nemění.
-          logForOperator('emit/stream', requestId, outcome.failure.reason, outcome.failure.detail);
+          // A **týž bound**: vada korpusu je jeden stav, tedy jeden řádek.
+          logStickyFault('emit/stream', requestId, outcome.failure.reason, outcome.failure.detail);
           controller.enqueue(
             encoder.encode(
               frame('result', {

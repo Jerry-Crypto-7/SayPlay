@@ -68,8 +68,8 @@ import { buildEditRequest } from '../../../model/edit-prompt';
 import { withRequest } from '../../../obs/trace';
 import {
   PUBLIC_CORPUS_FAULT,
-  logForOperator,
   logRateLimited,
+  logStickyFault,
 } from '../../../server/public-faults';
 import { routePatch, type Lane, type RoutedPatch, type RoutingAnomaly } from '../../../patch/router';
 import { commitRoutedParts, staleRevision, type BaseRevision, type CommitOutcome } from './commit';
@@ -95,17 +95,36 @@ function badRequest(requestId: string, code: string, message: string, field?: st
  */
 function corpusUnavailable(requestId: string, failure: ClientFailure): Response {
   // Ven veřejný text, operátorovi ten pravý — viz `src/server/public-faults.ts`.
-  // Platí to i pro 404 níž: `detail` je táž hodnota z téhož zdroje a rozdíl
-  // mezi „vada dotazu" a „vada korpusu" je ve stavovém kódu, ne v tom, co se
-  // o serveru prozradí.
-  logForOperator('edit', requestId, failure.reason, failure.detail);
   const message = PUBLIC_CORPUS_FAULT[failure.reason];
 
-  if (failure.reason === 'BASE_WORLD_MISMATCH' || failure.reason === 'NO_FROZEN_RESPONSE')
+  if (failure.reason === 'BASE_WORLD_MISMATCH' || failure.reason === 'NO_FROZEN_RESPONSE') {
+    /**
+     * **Tohle není vada serveru, a proto se nesmí zapisovat jako by byla** —
+     * nález dvou nezávislých revizí 1. 9. 2026, obě `blocking`.
+     *
+     * Ty dva důvody vybírá **volající** tím, jaký `worldDoc` a `promptId`
+     * pošle: „pro tuhle dvojici zmrazený záznam není" je běžný omyl klienta,
+     * ne porucha. Do 1. 9. 2026 se logovaly bezpodmínečně spolu s vadami
+     * korpusu, takže na **zdravém** korpusu stačilo poslat platný svět
+     * s cizím `promptId` a log rostl o řádek na požadavek. Naměřeno: čtrnáct
+     * z patnácti zmrazených světů tu dvojici nesplní, a demo je samo vydává.
+     *
+     * Mlčet úplně by ale zahodilo jediný signál o tom, že klient a korpus se
+     * rozešly, takže milníky: 1., 10., 100. výskyt. Rozdíl proti vadě korpusu
+     * níž je v tom, **čí je to stav** — tenhle je volajícího, takže bound musí
+     * být na rychlosti, ne na lepivosti.
+     */
+    logRateLimited('edit', requestId, failure.reason, failure.detail);
     return Response.json(
       { requestId, error: { code: 'UNKNOWN_PAIR', message, field: 'worldDoc' } },
       { status: 404 },
     );
+  }
+
+  // Vada korpusu je naopak lepivý stav serveru: jednou nečitelný soubor je
+  // nečitelný napořád a `detail` u `CORPUS_UNREADABLE` nese absolutní cestu na
+  // disku včetně jména účtu. Jeden řádek za vadu, ne za požadavek.
+  logStickyFault('edit', requestId, failure.reason, failure.detail);
   return Response.json({ requestId, error: { code: failure.reason, message } }, { status: 503 });
 }
 
