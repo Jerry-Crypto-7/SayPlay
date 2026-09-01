@@ -89,6 +89,25 @@ function contentlessResponse(usage: { input_tokens: number; output_tokens: numbe
 
 const MINIMAL_WORLD = { irVersion: 'v1', simRevision: 0, lookRevision: 0, sim: null, look: {} };
 
+/**
+ * Svět, jehož JSON má **přesně** zadanou délku ve znacích.
+ *
+ * Spodní hranice účtu se odvozuje z délky textu, který odpověď nese, takže
+ * test, který na ni sahá, musí tu délku držet v ruce. `MINIMAL_WORLD` má 72
+ * znaků a hranici 6 tokenů — to je pro aritmetiku příliš malé číslo na to, aby
+ * se dalo odlišit od šumu. Tři tisíce znaků je řádově skutečná emise.
+ */
+function worldOfTextLength(chars: number) {
+  const base = { ...MINIMAL_WORLD, look: { note: '' } };
+  return { ...base, look: { note: 'x'.repeat(chars - JSON.stringify(base).length) } };
+}
+
+/** Délka textu a hranice, kterou z ní `FLOOR_CHARS_PER_TOKEN = 12` udělá. */
+const FLOORED_TEXT_CHARS = 3000;
+const FLOOR_TOKENS = 250;
+/** Cena výstupního tokenu z `LIVE_ENV`. Ne konstanta v kódu — konfigurace. */
+const USD_PER_TOKEN_OUT = 25 / 1_000_000;
+
 /** Zaznamenává každé volání transportu i to, co drží strop v okamžiku volání. */
 function recordingFetch(cap: SpendCap | null, response: () => Response) {
   const calls: { url: string; init: RequestInit; reservedAtCallUsd: number }[] = [];
@@ -326,6 +345,111 @@ describe('3. neznámá cena se neúčtuje nulou', () => {
     expect(result.outcome === 'GENERATED' && result.usage).toEqual({ inputTokens: 0, outputTokens: 900 });
     // 900 tokenů po 25 USD/Mtok = 0,0225 USD. Účtuje se skutečnost, ne rezervace.
     expect(cap.snapshot().spentUsd).toBeCloseTo(0.0225, 10);
+  });
+
+  it('účtenka pod tím, co text odpovědi unese, se zvedne na hranici', async () => {
+    const world = worldOfTextLength(FLOORED_TEXT_CHARS);
+    // Kdyby pomocník ujel, přestala by aritmetika níž měřit hranici a začala
+    // by měřit délku fixtury. Ať se to ozve tady, ne v číslech.
+    expect(JSON.stringify(world)).toHaveLength(FLOORED_TEXT_CHARS);
+
+    const cap = openCap();
+    // Rovnost na (0, 0) je bod, ne mez: podhlásit o jediný token stačilo, aby
+    // se celé pravidlo obešlo. {0, 1} stálo 0,000025 USD, tedy 7300× méně než
+    // sousední {0, 0}, které padá na rezervaci.
+    const result = await runPipeline(PROMPT, {
+      branch: upstreamBranch(
+        liveConfig(),
+        recordingFetch(cap, () => messagesResponse(world, { input_tokens: 0, output_tokens: 1 })).fetchImpl,
+      ),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    expect(result.outcome).toBe('GENERATED');
+    expect(cap.snapshot().spentUsd).toBeCloseTo(FLOOR_TOKENS * USD_PER_TOKEN_OUT, 10);
+    // A pro pořádek řádově: hranice je 250× dražší než ta podhlášená jednička.
+    expect(cap.snapshot().spentUsd).toBeGreaterThan(200 * USD_PER_TOKEN_OUT);
+  });
+
+  it('nula na výstupu se zvedne i tehdy, když se vstup účtuje', async () => {
+    const cap = openCap();
+    // Dřív se {n, 0} pouštělo beze změny s odůvodněním „vstup se pořád účtuje,
+    // takže volání zadarmo nevznikne". Jenže vstup se legitimně cachuje a
+    // výstupní tokeny ne — text bez nich neexistuje.
+    await runPipeline(PROMPT, {
+      branch: upstreamBranch(
+        liveConfig(),
+        recordingFetch(cap, () =>
+          messagesResponse(worldOfTextLength(FLOORED_TEXT_CHARS), { input_tokens: 100, output_tokens: 0 }),
+        ).fetchImpl,
+      ),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    // 100 vstupních po 5 USD/Mtok plus hranice 250 výstupních po 25 USD/Mtok.
+    expect(cap.snapshot().spentUsd).toBeCloseTo(100 * (5 / 1_000_000) + FLOOR_TOKENS * USD_PER_TOKEN_OUT, 10);
+  });
+
+  it('poctivá účtenka nad hranicí se hranicí nepřepisuje', async () => {
+    const cap = openCap();
+    // 800 výstupních tokenů na 3000 znaků je běžný poměr ~3,75 znaku na token.
+    // Hranice (250) je pod ním schválně: kdyby ho přerostla, přeúčtovalo by se
+    // **každé** poctivé volání, a hlášená cena by přestala být tou strženou.
+    const result = await runPipeline(PROMPT, {
+      branch: upstreamBranch(
+        liveConfig(),
+        recordingFetch(cap, () =>
+          messagesResponse(worldOfTextLength(FLOORED_TEXT_CHARS), { input_tokens: 0, output_tokens: 800 }),
+        ).fetchImpl,
+      ),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    expect(result.outcome === 'GENERATED' && result.usage).toEqual({ inputTokens: 0, outputTokens: 800 });
+    expect(cap.snapshot().spentUsd).toBeCloseTo(800 * USD_PER_TOKEN_OUT, 10);
+  });
+
+  it('hranice je v tokenech, takže její cena roste s ceníkem', async () => {
+    // Tohle je celá ta AC: hranice není částka opsaná do kódu. Kdyby byla,
+    // zdvojnásobení ceny výstupu by s účtem nehnulo.
+    const spentAt = async (usdPerMTokOut: string) => {
+      const cap = openCap();
+      await runPipeline(PROMPT, {
+        branch: upstreamBranch(
+          liveConfig({ WORLDSMITH_USD_PER_MTOK_OUT: usdPerMTokOut }),
+          recordingFetch(cap, () =>
+            messagesResponse(worldOfTextLength(FLOORED_TEXT_CHARS), { input_tokens: 0, output_tokens: 1 }),
+          ).fetchImpl,
+        ),
+        cap,
+        grammar: GRAMMAR,
+      });
+      return cap.snapshot().spentUsd;
+    };
+
+    expect(await spentAt('50')).toBeCloseTo(2 * (await spentAt('25')), 10);
+  });
+
+  it('nesmyslná účtenka se hranicí nezlevňuje — pořád platí rezervaci', async () => {
+    const cap = openCap();
+    // Záporný, `NaN` i nekonečný výstup dnes stojí **celou rezervaci**, protože
+    // je `release()` odmítne. Hranice je proti tomu o dva řády levnější, takže
+    // kdyby účtenku přepsala, otrávená spotřeba by se tím stala výhodnou.
+    const { calls, fetchImpl } = recordingFetch(cap, () =>
+      messagesResponse(worldOfTextLength(FLOORED_TEXT_CHARS), { input_tokens: 0, output_tokens: -5 }),
+    );
+    const result = await runPipeline(PROMPT, {
+      branch: upstreamBranch(liveConfig(), fetchImpl),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    expect(result.outcome).toBe('GENERATED');
+    expect(cap.snapshot().spentUsd).toBeCloseTo(calls[0]!.reservedAtCallUsd, 10);
+    expect(cap.snapshot().spentUsd).toBeGreaterThan(FLOOR_TOKENS * USD_PER_TOKEN_OUT);
   });
 
   it('chybějící cena výstupu cloudovou větev vůbec nepustí', () => {

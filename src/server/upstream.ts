@@ -44,6 +44,27 @@ export const UPSTREAM_BRANCH_ID = 'live';
 const CHARS_PER_TOKEN = 3;
 
 /**
+ * Znaků na token pro **dolní** odhad výstupu — a je schválně jiný než
+ * `CHARS_PER_TOKEN`.
+ *
+ * **Dva odhady téže veličiny nesmějí sdílet konstantu, když jejich bezpečná
+ * strana míří opačně.** Horní odhad rezervace se dělí třemi, aby spíš
+ * přestřelil (viz hlavička souboru). Dolní hranice účtu musí naopak spíš
+ * podstřelit: kdyby vyšla nad skutečnou účtenku, přeúčtovala by **každé
+ * poctivé volání**, a hlášená cena by přestala být tou, která se strhla.
+ * Zdědit sem trojku by tu vadu vyrobilo systematicky, na každém požadavku.
+ *
+ * Dvanáct je zhruba trojnásobek běžných ~4 znaků na token. **Není to naměřené
+ * a nikde to netvrď** — tokenizér poskytovatele neznáme, tohle je vědomě
+ * velkorysá mez. Cena té velkorysosti je, že hranice pokryje jen asi čtvrtinu
+ * skutečné útraty; to stačí, protože úkolem není účtenku zrekonstruovat, ale
+ * zařídit, aby se podhlášení nevyplatilo. Vedlejší jistota z téhož poměru:
+ * text delší, než kolik `maxOutputTokens` unese, nevznikne, takže hranice
+ * nikdy nepřeroste rezervaci.
+ */
+const FLOOR_CHARS_PER_TOKEN = 12;
+
+/**
  * Úrovně úsilí, které Messages API zná. **Zavřený seznam schválně:** neznámou
  * hodnotu odmítne poskytovatel čtyřistovkou a živá větev je mrtvá přesně v té
  * konfiguraci, kterou někdo opsal z dokumentace s překlepem. Táž vada jako
@@ -298,10 +319,25 @@ function usageOf(payload: unknown): Usage | null {
  * dolaru skutečné spotřeby — a nasazené demo pak každému dalšímu porotci
  * odpoví 429. Odmítnutá odpověď se proto účtuje dál podle `BILLED_ON_FAILURE`.
  *
- * Schválně jen dvojitá nula, ne `outputTokens === 0` samo: tam se vstup pořád
- * účtuje, takže volání zadarmo nevznikne. **Rovnost na (0, 0) je bod, ne mez** —
- * poskytovatel, který podhlásí o jeden token, ji obejde. Tu díru zavírá až
- * spodní hranice na zaúčtovanou částku, routovaná jako `T9-usagefloor`.
+ * ## Rovnost na (0, 0) byla bod, ne mez — proto ta druhá půlka
+ *
+ * Dvojitá nula sama je jen jediný zakázaný bod v celém prostoru účtenek a
+ * **poskytovatel nebo brána, která podhlásí o jeden token, ji obejde celou**:
+ * `{0, 1}` se při ceníku 3/15 zaúčtuje 0,000025 USD, tedy 7300× levněji než
+ * sousední `{0, 0}`, a dál se hne jen počítadlo volání — které se na serverless
+ * resetuje s chladným startem. Naměřeno nezávislou revizí 1. 9. 2026.
+ *
+ * Hranice se proto **odvozuje z textu, který ta odpověď doopravdy nese**: kolik
+ * výstupních tokenů si vůbec lze pro tolik znaků představit
+ * (`FLOOR_CHARS_PER_TOKEN`). Jen výstup — vstup se legitimně cachuje, takže
+ * `{0, 900}` je poctivá účtenka a musí se jí dál účtovat; hranice patří **pod**
+ * ni. Konstanta v dolarech by tu byla špatná odpověď: ceník je konfigurace a
+ * cenu z tokenů dělá až `costUsd()` nad `pricing` té větve.
+ *
+ * **Zvedá se, nikdy nesanuje.** Záporná, `NaN` i nekonečná účtenka projde
+ * beze změny — ty už si `release()` v `./spend-cap.ts` účtuje celou rezervací,
+ * což je dražší než hranice, a přepsat je na hranici by je tím zlevnilo.
+ * Vedlejším účinkem tím padá i `{n, 0}`, které dřív účtovalo jen vstup.
  *
  * **Používá se na obou návratech, kde text existuje**, ne jen na tom úspěšném —
  * druhý nález téže revize. Kritérium je „odpověď nese text", takže i vadný JSON
@@ -309,9 +345,18 @@ function usageOf(payload: unknown): Usage | null {
  * kterou tahle funkce vznikla zavřít (naměřeno: strop 5 USD se nehne, běh
  * omezuje jen počítadlo volání, tedy až ~44 USD skutečné nejhorší útraty).
  */
-function readableUsage(usage: Usage | null): Usage | null {
+function readableUsage(usage: Usage | null, text: string): Usage | null {
   if (usage === null) return null;
+  // Pořadí je podstatné: dvojitá nula je nečitelná účtenka a musí spadnout na
+  // rezervaci, ne na hranici, která je o dva řády levnější.
   if (usage.inputTokens === 0 && usage.outputTokens === 0) return null;
+
+  const floorTokens = Math.ceil(text.length / FLOOR_CHARS_PER_TOKEN);
+  // `>= 0` vyřazuje záporná čísla i `NaN` (obojí je s nulou nesrovnatelné nebo
+  // menší) a `< floorTokens` vyřadí nekonečno. Nesmyslná účtenka tak projde
+  // dál nedotčená a zaplatí rezervaci.
+  if (usage.outputTokens >= 0 && usage.outputTokens < floorTokens)
+    return { inputTokens: usage.inputTokens, outputTokens: floorTokens };
   return usage;
 }
 
@@ -397,7 +442,7 @@ async function generate(
       // v ruce, takže nula spálených výstupních tokenů je i tady nečitelná
       // účtenka. Návrat výš (`carries no text block`) tuhle podmínku nesplňuje
       // a účtenku si nechává, jak dorazila.
-      usage: readableUsage(usage),
+      usage: readableUsage(usage, text),
     };
   }
 
@@ -407,7 +452,7 @@ async function generate(
     // NEsrážet na `{0, 0}`: `null` znamená „účtenku neumíme přečíst" a strop na
     // to musí účtovat rezervaci. Nula znamenala volání zdarma — a vynulovaná
     // účtenka pod textovým blokem je totéž, viz `readableUsage()`.
-    usage: readableUsage(usage),
+    usage: readableUsage(usage, text),
     provenance: {
       branch: UPSTREAM_BRANCH_ID,
       source: 'upstream-http',
