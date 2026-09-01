@@ -162,6 +162,27 @@ const PUBLIC_MODERATION: Record<ModerationCategory, string> = {
   DISALLOWED: 'the prompt asks for something this deployment will not generate',
 };
 
+/**
+ * **Příčiny odmítnutí, které už tenhle proces operátorovi zapsal.**
+ *
+ * Endpoint je bez přihlašování (AC T301), takže rychlost zápisu na stderr řídí
+ * kdokoli na internetu — a odmítnutí stropem je **lepivý stav**: jakmile
+ * `CAP_EXHAUSTED` jednou padne, padá na každý další požadavek už napořád.
+ * Naměřeno nezávislou revizí 1. 9. 2026: 25 požadavků proti rozbitému
+ * ovládacímu souboru = 25 řádků, každý s absolutní cestou k němu. To je táž
+ * vada, kvůli které se o pár řádků níž neloguje `NO_SOURCE`, jen z druhé strany.
+ *
+ * Bound je proto **na tom, co to vyrobí**, ne na tom, kdo to volá: čtyři příčiny
+ * odmítnutí = nejvýš čtyři řádky za celý život procesu. Diagnostika se tím
+ * neztrácí, protože první výskyt nese všechno, co operátor potřebuje.
+ *
+ * ⚠ **Co to vědomě nedělá:** není to sledování přechodů. Když se vypínač opraví
+ * a **v témž procesu** rozbije znovu, druhé rozbití se nezapíše. Vědět to by
+ * znamenalo zapisovat i každý úspěch, tedy práci navíc na horké cestě za stav,
+ * který se na serverless nasazení stejně resetuje s každým chladným startem.
+ */
+const REFUSALS_LOGGED = new Set<RefusalReason>();
+
 function error(requestId: string, status: number, code: string, message: string): Response {
   return Response.json({ requestId, error: { code, message } }, { status });
 }
@@ -262,7 +283,15 @@ export async function POST(request: Request): Promise<Response> {
      */
     if (result.outcome === 'REFUSED') {
       if (result.stage === 'moderation') {
-        logForOperator(requestId, `PROMPT_REFUSED ${result.category}`, result.ruleId ?? 'structural');
+        // **Jen `DISALLOWED`.** Zbylé tři kategorie jsou vady dotazu —
+        // chybějící pole, prázdný text, přes strop délky — a odpověď je
+        // popisuje celé, takže operátorovi neříkají nic, co by neviděl
+        // volající sám. Zapisovat je znamená pustit anonymního volajícího
+        // k neomezenému psaní na stderr za cenu jednoho prázdného těla.
+        // `DISALLOWED` zůstává: je to jediné, co znamená, že někdo zkouší,
+        // kam až smí.
+        if (result.category === 'DISALLOWED')
+          logForOperator(requestId, `PROMPT_REFUSED ${result.category}`, result.ruleId ?? 'structural');
         return Response.json(
           {
             requestId,
@@ -275,7 +304,10 @@ export async function POST(request: Request): Promise<Response> {
           { status: 400 },
         );
       }
-      logForOperator(requestId, result.reason, result.detail);
+      if (!REFUSALS_LOGGED.has(result.reason)) {
+        REFUSALS_LOGGED.add(result.reason);
+        logForOperator(requestId, result.reason, result.detail);
+      }
       return error(
         requestId,
         result.reason === 'CAP_EXHAUSTED' || result.reason === 'CALL_CAP_EXHAUSTED' ? 429 : 503,

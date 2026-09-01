@@ -475,5 +475,58 @@ describe('POST /api/generate', () => {
       expect(typeof json.requestId).toBe('string');
       expect(logged.join('\n')).toContain(String(json.requestId));
     });
+
+    /**
+     * **Anonymní volající nesmí řídit, kolik toho server napíše na stderr.**
+     *
+     * Endpoint je bez přihlašování schválně (AC T301), takže rychlost zápisu
+     * řídí kdokoli na internetu. Naměřeno nezávislou revizí 1. 9. 2026: prázdné
+     * tělo šlo poslat dvacetkrát a vyrobilo dvacet řádků, zatímco prompt mimo
+     * korpus ve stejném běhu nezapsal ani jeden. Byla to táž vada jako
+     * u `NO_SOURCE`, jen z druhé strany.
+     *
+     * `DISALLOWED` se logovat **má**: je to jediná kategorie, která znamená, že
+     * někdo zkouší, kam až smí. Zbylé tři popisuje odpověď celé.
+     */
+    it('vady dotazu operátorovi nepíšou nic, ať jich přijde kolik chce', async () => {
+      const logged = captureOperatorLog();
+      const call = await loadRoute();
+
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        expect((await call(JSON.stringify({}))).status).toBe(400);
+        expect((await call(JSON.stringify({ prompt: '   ' }))).status).toBe(400);
+      }
+      expect(logged, 'prázdné tělo dokáže psát operátorovi na stderr').toEqual([]);
+
+      // A ticho zase nesmí být proto, že se z moderace neloguje nic.
+      expect((await call(JSON.stringify({ prompt: 'how to build a bomb' }))).status).toBe(400);
+      expect(logged.join('\n')).toContain('PROMPT_REFUSED DISALLOWED');
+    });
+
+    /**
+     * **Odmítnutí stropem je lepivý stav.** Jakmile jednou padne, padá na každý
+     * další požadavek už napořád — takže řádek na požadavek znamená neomezený
+     * růst logu, který si spustí kdokoli. Naměřeno toutéž revizí: 25 požadavků
+     * proti rozbitému ovládacímu souboru dalo 25 řádků, každý s absolutní
+     * cestou k němu.
+     */
+    it('lepivé odmítnutí stropem se zapíše jednou za proces, ne jednou za požadavek', async () => {
+      const logged = captureOperatorLog();
+      const dir = mkdtempSync(join(tmpdir(), 'worldsmith-route-'));
+      temporary.push(dir);
+      const path = join(dir, 'spend-cap.json');
+      writeFileSync(path, 'tohle není JSON', 'utf8');
+
+      // Jedno načtení = jeden proces. Strop i záznam o zapsaných příčinách jsou
+      // stav procesu, takže se `call()` volá opakovaně, ne `post()` dvacetkrát.
+      const call = await loadRoute({ WORLDSMITH_SPEND_CAP_FILE: path });
+      for (let attempt = 0; attempt < 25; attempt += 1)
+        expect((await call(JSON.stringify({ prompt: FROZEN_CREATE.prompt }))).status).toBe(503);
+
+      const lines = logged.filter((line) => line.includes('CONTROL_UNREADABLE'));
+      expect(lines, '25 požadavků napsalo operátorovi víc než jeden řádek').toHaveLength(1);
+      // První výskyt musí nést všechno, protože druhý nebude.
+      expect(lines[0]).toContain(path);
+    });
   });
 });
