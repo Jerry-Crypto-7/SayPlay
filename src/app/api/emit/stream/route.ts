@@ -57,6 +57,14 @@
  *    se porovná se zmrazenými id dřív, než se dostane kamkoli, odkud by mohl
  *    vyletět, takže do textu výjimky nic zvenčí neteče.
  *
+ *    ⚠ **Ta volba platí dál, ale jeden její důsledek se 1. 9. 2026 změnil.**
+ *    `logRateLimited` od té doby vydá i **první výskyt každé nové příčiny
+ *    v okně**, nejvýš `MAX_DETAILS_PER_WINDOW` na okno. Dva různé pády v jednom
+ *    procesu proto dají **dva** řádky, ne jeden. Námitka výš tím nepadá — mířila
+ *    na *lepivou* množinu, která neroste s ničím a nikdy se nezahodí; tenhle
+ *    rozpočet je konstanta na okno. A padnout by neměla ani ta premisa: dva
+ *    různé pády jsou dvě různé poruchy a operátor o obou potřebuje vědět.
+ *
  * `requestId` se do rámců `progress` **nepřidává**, ačkoli si o to nález říkal.
  * S tímhle `try/catch` neexistuje stav, kdy klient dostane `progress` a nikdy
  * `result`, takže by to byla změna kontraktu bez následku, který by zavírala.

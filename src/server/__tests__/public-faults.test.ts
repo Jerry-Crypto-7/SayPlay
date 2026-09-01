@@ -37,7 +37,12 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { peelEnvelope, sealSimHash, type WorldDoc } from '../../ir/worlddoc';
-import { PUBLIC_CORPUS_FAULT, RATE_LIMIT_WINDOW_MS, withoutCredentials } from '../public-faults';
+import {
+  MAX_DETAILS_PER_WINDOW,
+  PUBLIC_CORPUS_FAULT,
+  RATE_LIMIT_WINDOW_MS,
+  withoutCredentials,
+} from '../public-faults';
 
 /* ------------------------------------------------------------------ *
  * Fixtura. Čte se ze SKUTEČNÉHO adresáře, tedy dřív, než se `cwd` podvrhne.
@@ -324,7 +329,7 @@ describe('a corpus fault is one line per fault, not one per request, at every do
     }
 
     // Dva, ne dvacet: milníky jsou 1., 10., 100. výskyt, takže dvacet
-    // požadavků dá dva řádky a milion by dal šest. Ani nula — kanál se nesmí
+    // požadavků dá dva řádky a milion by dal sedm. Ani nula — kanál se nesmí
     // zavřít úplně, jinak zmizí jediný signál o tom, že se klient a korpus
     // rozešly.
     const lines = log.filter((line) => line.startsWith('[edit] '));
@@ -522,7 +527,7 @@ describe('the operator log is rate-limited, never silenced for good', () => {
     for (let attempt = 0; attempt < 250; attempt += 1)
       write('emit', `req-${attempt}`, 'BODY_UNREADABLE', 'the body ended mid-read');
 
-    // 250 požadavků, tři řádky. Milion by dal šest — logaritmus provozu.
+    // 250 požadavků, tři řádky. Milion by dal sedm — logaritmus provozu.
     expect(log).toHaveLength(3);
     expect(log[0]).toContain('(occurrence 1)');
     expect(log[1]).toContain('(occurrence 10)');
@@ -533,17 +538,15 @@ describe('the operator log is rate-limited, never silenced for good', () => {
   });
 
   /**
-   * **Mez, kterou nejde předplatit.**
-   *
-   * Milníky omezují dávku, ale počítadlo na celý proces se dá nakoupit dopředu:
-   * sto přerušených těl stojí volajícího nic a posunou klíč na stý výskyt, po
-   * kterém devět desetin dalšího řádu skutečných selhání zmizí. Okno z toho
-   * dělá takt — první výskyt v každém dalším okně se vydá vždycky.
+   * **Ticho vyprší.** Ne „nedá se koupit" — to by tvrdilo víc, než kód umí, a
+   * nezávislá revize přesně tenhle rozdíl 1. 9. 2026 změřila: 100 požadavků na
+   * začátku každého okna (400 req/h) drží klíč umlčený natrvalo. Co je tady
+   * doložené, je že jedna dávka umlčí kanál nejvýš na jedno okno.
    *
    * Hodiny se podvrhují `Date.now()`, protože přesně to okno čte. Na replay
    * cestě by to byl zákaz z `CLAUDE.md`; tady je to operátorův log serveru.
    */
-  it('counts inside a window, so a flood cannot buy silence for the fault that follows', async () => {
+  it('lets a bought silence expire with the window instead of standing for the process', async () => {
     const { log, write } = await limiter();
     let now = 1_700_000_000_000;
     vi.spyOn(Date, 'now').mockImplementation(() => now);
@@ -553,19 +556,86 @@ describe('the operator log is rate-limited, never silenced for good', () => {
       write('emit', `paid-${attempt}`, 'BODY_UNREADABLE', 'the body ended mid-read');
     expect(log).toHaveLength(3);
 
-    // Těsně pod hranou okna kanál pořád mlčí — jinak by mez neexistovala vůbec.
+    // Táž příčina těsně pod hranou okna pořád mlčí — jinak by mez neexistovala.
     // Tenhle zápis zároveň soudí, že se okno kotví na svém PRVNÍM výskytu:
     // kdyby ho posouval každý další, útočník by ho držel otevřený napořád.
     now += RATE_LIMIT_WINDOW_MS - 1;
-    write('emit', 'inside-window', 'BODY_UNREADABLE', 'a real proxy fault');
+    write('emit', 'inside-window', 'BODY_UNREADABLE', 'the body ended mid-read');
     expect(log, 'okno neplatí — mez se rozpadla na řádek na požadavek').toHaveLength(3);
 
-    // A hned za ní se skutečná porucha ohlásí PRVNÍM řádkem, ne stým prvním.
+    // A hned za ní se táž příčina ohlásí PRVNÍM řádkem, ne stým prvním.
     now += 1;
-    write('emit', 'after-window', 'BODY_UNREADABLE', 'a real proxy fault');
-    expect(log, 'porucha po okně se neozvala — počítadlo jde předplatit').toHaveLength(4);
+    write('emit', 'after-window', 'BODY_UNREADABLE', 'the body ended mid-read');
+    expect(log, 'ticho nevypršelo — počítadlo je zase na celý proces').toHaveLength(4);
     expect(log[3]).toContain('after-window');
     expect(log[3]).toContain('(occurrence 1)');
+  });
+
+  /**
+   * **Příčina, kterou operátor ještě neviděl, se vydá i uvnitř koupeného ticha.**
+   *
+   * Tohle je to, co z vypršení dělá obranu i během okna: útočník drží počítadlo
+   * nahoře **jednou** příčinou („aborted"), ale rozbitá proxy nese jinou hlášku,
+   * takže projde hned. Bez tohohle pravidla dostal operátor v osmihodinovém
+   * měření revize 96 řádků útočníka a nula o poruše, která padla 28 768krát.
+   */
+  it('always names a cause it has not seen in this window, even while another is flooding', async () => {
+    const { log, write } = await limiter();
+    let now = 1_700_000_000_000;
+    vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+    for (let attempt = 0; attempt < 100; attempt += 1)
+      write('emit', `paid-${attempt}`, 'BODY_UNREADABLE', 'aborted');
+    expect(log).toHaveLength(3);
+
+    // Uprostřed okna, dávno za posledním milníkem, a přece slyšet.
+    now += 60_000;
+    write('emit', 'proxy-1', 'BODY_UNREADABLE', 'Premature close');
+    expect(log, 'nová příčina se ztratila pod cizím počítadlem').toHaveLength(4);
+    expect(log[3]).toContain('proxy-1');
+    expect(log[3]).toContain('Premature close');
+
+    // Ale opakování téže příčiny už ne — jinak by pravidlo mez zrušilo.
+    write('emit', 'proxy-2', 'BODY_UNREADABLE', 'Premature close');
+    expect(log, 'opakovaná příčina obchází mez').toHaveLength(4);
+  });
+
+  /**
+   * **A ten rozpočet je omezený, ale patří oknu** — obojí v jednom testu,
+   * protože každá půlka bez té druhé je vada:
+   *
+   * - bez stropu by stačilo měnit hlášku a pravidlo o nové příčině by z meze
+   *   udělalo řádek na požadavek;
+   * - bez vrácení s oknem by osm příčin umlčelo devátou **napořád**, tedy táž
+   *   předplacená tichost o patro níž. Mutace, která množinu příčin ponese
+   *   přes hranu okna, musí položit druhou půlku — a nesmí položit první.
+   */
+  it('spends at most a fixed budget of causes per window, and gets it back with the window', async () => {
+    const { log, write } = await limiter();
+    let now = 1_700_000_000_000;
+    vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+    const causes = MAX_DETAILS_PER_WINDOW * 2 + 4;
+    for (let attempt = 0; attempt < causes; attempt += 1)
+      write('emit', `req-${attempt}`, 'BODY_UNREADABLE', `cause ${attempt}`);
+
+    // Osm příčin (0..7) plus desátý výskyt jako milník — devět řádků z dvaceti.
+    expect(log, `${causes} různých příčin nesmí dát řádek na požadavek`).toHaveLength(
+      MAX_DETAILS_PER_WINDOW + 1,
+    );
+    expect(log.join('\n')).toContain('cause 7');
+    expect(log.join('\n'), 'rozpočet příčin neplatí').not.toContain('cause 19');
+
+    // Nové okno. První zápis je milník, takže se vydá tak či tak — je tu jen
+    // proto, aby ten druhý padl na výskyt, který milník NENÍ, a rozhodovalo
+    // o něm výhradně to, jestli se rozpočet příčin vrátil.
+    now += RATE_LIMIT_WINDOW_MS;
+    write('emit', 'fresh-1', 'BODY_UNREADABLE', 'cause 0');
+    const spent = log.length;
+    write('emit', 'fresh-2', 'BODY_UNREADABLE', 'a cause never seen before');
+
+    expect(log, 'rozpočet příčin se s oknem nevrátil').toHaveLength(spent + 1);
+    expect(log[log.length - 1]).toContain('fresh-2');
   });
 
   it('keeps each key on its own window, so one noisy door cannot mute another', async () => {
@@ -578,9 +648,11 @@ describe('the operator log is rate-limited, never silenced for good', () => {
     now += RATE_LIMIT_WINDOW_MS - 1;
     write('edit', 'req-2', 'BODY_UNREADABLE', 'second');
     now += 2;
-    // První klíč je za hranou (nové okno), druhý pořád ve svém.
-    write('emit', 'req-3', 'BODY_UNREADABLE', 'third');
-    write('edit', 'req-4', 'BODY_UNREADABLE', 'fourth');
+    // První klíč je za hranou (nové okno), druhý pořád ve svém. Obojí opakuje
+    // příčinu, kterou ten klíč už v tomhle okně vydal — jinak by o tom, co se
+    // vydá, rozhodlo pravidlo o nové příčině a ne okno.
+    write('emit', 'req-3', 'BODY_UNREADABLE', 'first');
+    write('edit', 'req-4', 'BODY_UNREADABLE', 'second');
 
     expect(log).toHaveLength(3);
     expect(log.join('\n')).toContain('req-3');
@@ -596,8 +668,9 @@ describe('the operator log is rate-limited, never silenced for good', () => {
     write('emit', 'req-2', 'CORPUS_UNREADABLE', 'second');
     // A jiné dveře s týmž kódem, ze stejného důvodu opačným směrem.
     write('edit', 'req-3', 'BODY_UNREADABLE', 'third');
-    // Opakování prvního klíče se už nevydá — bound doopravdy platí.
-    write('emit', 'req-4', 'BODY_UNREADABLE', 'first again');
+    // Opakování prvního klíče **s touž příčinou** se už nevydá — bound platí.
+    // (Jiná příčina by se vydala schválně; to soudí test o rozpočtu příčin.)
+    write('emit', 'req-4', 'BODY_UNREADABLE', 'first');
 
     expect(log).toHaveLength(3);
     expect(log.join('\n')).toContain('req-1');

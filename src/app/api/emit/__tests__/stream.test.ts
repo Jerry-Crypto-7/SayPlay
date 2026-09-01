@@ -259,17 +259,28 @@ describe('pád uvnitř proudu', () => {
     expect(log[1]).toContain('occurrence 1');
   });
 
-  it('dva různé pády v jednom procesu dají jeden řádek, ne dva', async () => {
-    // `logRateLimited` klíčuje `(dveře, kód)`, a je to schválně: `detail` je
-    // tady text výjimky, tedy hodnota bez uzavřeného oboru. Lepivá mez
-    // klíčovaná `detail`em by z toho udělala růst paměti daný počtem cest
-    // v kódu, ne velikostí korpusu.
+  it('dva různé pády v jednom procesu dají dva řádky, ne jeden', async () => {
+    // `logRateLimited` klíčuje `(dveře, kód)` a **lepivou** mez tady mít nesmí:
+    // `detail` je text výjimky, tedy hodnota bez uzavřeného oboru, a lepivá
+    // množina by z paměti udělala funkci počtu cest v kódu. Ta volba platí.
+    //
+    // **Co se 1. 9. 2026 změnilo, je počet řádků, který z ní plyne.** Do té doby
+    // se druhý pád ztratil pod počítadlem prvního; od té doby `logRateLimited`
+    // vydá první výskyt každé **nové příčiny** v okně, nejvýš
+    // `MAX_DETAILS_PER_WINDOW` na okno (`src/server/public-faults.ts`). Strop je
+    // pořád konstanta, jen o řád vyšší než jedna — a dva různé pády jsou dvě
+    // různé poruchy, o kterých operátor potřebuje vědět obě.
+    //
+    // Že se **opakování téže příčiny** pořád nevydá, se soudí v
+    // `src/server/__tests__/public-faults.test.ts`: tahle fixtura to ukázat
+    // nemůže, protože každý pád očísluje vlastním textem.
     const { post, log } = await loadBrokenStream();
     await collect({ promptId: 'C01' }, post);
     await collect({ promptId: 'C05' }, post);
 
-    expect(log).toHaveLength(1);
+    expect(log).toHaveLength(2);
     expect(log[0]).toContain('occurrence 1');
     expect(log[0]).toContain('the chain came apart (1)');
+    expect(log[1]).toContain('the chain came apart (2)');
   });
 });

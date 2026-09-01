@@ -128,29 +128,59 @@ export function logStickyFault(
 }
 
 /**
- * **Okno, ve kterém se výskyty počítají.** Patnáct minut, a to číslo je
- * odvozené, ne vybrané:
+ * **Okno, ve kterém se výskyty počítají.** Patnáct minut je **volba uvnitř
+ * rozpětí**, ne odvozená hodnota — a stojí to tu takhle schválně: předstíraná
+ * derivace je horší než přiznaná volba, a první verze tohohle komentáře si
+ * odporovala v sousedních větách (nezávislá revize 1. 9. 2026).
  *
- * - **Zdola je držené tím, jak často se má trvající porucha připomenout.** Okno
- *   o délce `W` dává `3600/W` zaručených řádků za hodinu a klíč, tedy **čtyři**
- *   při 900 s. Za den je to zhruba **stovka řádků na klíč** proti dnešním šesti
- *   za celý proces — pořád o pět řádů méně než řádek na požadavek, a poprvé je
- *   to číslo, které volající nemůže koupit dopředu.
- * - **Shora je držené délkou jednoho selhání nahoře.** Jedno volání modelu běží
- *   až `DEFAULT_TIMEOUT_MS = 120 000` (`src/server/upstream.ts:106`). Okno musí
- *   být o řád delší, jinak by se jediný výpadek proudu vyhlásil jako nová
- *   porucha v každém okně a mez by se rozpustila zpátky do záplavy. 900 s je
- *   7,5násobek toho stropu.
- * - **Cena za umlčení** je tím omezená na **jedno okno na klíč**, a platí se
- *   v každém dalším znovu.
+ * - **Zdola to drží délka jednoho volání nahoru.** Volání modelu běží ve
+ *   výchozím nastavení až 120 s (`DEFAULT_TIMEOUT_MS`, `src/server/upstream.ts:106`)
+ *   a `WORLDSMITH_UPSTREAM_TIMEOUT_MS` to smí zvednout (`upstream.ts:231`). Okno
+ *   kratší než několik takových volání by jeden výpadek nahoře vyhlašovalo
+ *   pořád dokola jako novou poruchu. 900 s je 7,5násobek **výchozí** hodnoty,
+ *   ne té nastavené: **kdo ten timeout zvedne nad ~450 s, má zvednout i tohle
+ *   okno.**
+ * - **Shora to drží doba, po kterou smí stát koupené ticho.** Okno je zároveň
+ *   nejdelší pauza, po kterou umlčený klíč mlčí, takže delší okno je levnější
+ *   útok.
+ * - **Mezi tím** dává 900 s `3600/W` = **čtyři** zaručené řádky za hodinu a klíč
+ *   a je to perioda, kterou operátor přečte bez počítání.
  *
- * Paměť to nezvětšuje: klíč je dvojice (dveře, kód), tedy uzavřená množina, a
- * ukládá se o jedno číslo víc.
+ * Kratší okno není bezpečnější, jen upovídanější — `W` = 120 s dá 30 řádků za
+ * hodinu a klíč, což pořád není záplava. Rozpětí je široké a tohle je bod v něm.
+ *
+ * Paměť to nezvětšuje o řád: klíč je dvojice (dveře, kód), tedy uzavřená
+ * množina dvanácti hodnot, a k počítadlu přibylo `windowStart` a nejvýš
+ * `MAX_DETAILS_PER_WINDOW` řetězců.
  */
 export const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 
-/** Kolikrát tenhle proces viděl dvojici (dveře, kód) a kdy to počítání začalo. */
-const SEEN_PER_KEY = new Map<string, { readonly windowStart: number; readonly occurrences: number }>();
+/**
+ * **Kolik různých příčin smí jedno okno pojmenovat nad rámec milníků.**
+ *
+ * Milníky počítají výskyty klíče `(dveře, kód)`, jenže `detail` u téhož kódu
+ * jmenuje **příčinu**: „aborted" od volajícího, který zavřel spojení, a
+ * „Premature close" od rozbité proxy jsou dva různé světy pod jedním
+ * `BODY_UNREADABLE`. Bez tohohle pravidla umlčí první příčina druhou — přesně
+ * to nezávislá revize 1. 9. 2026 změřila jako běh, ve kterém operátor dostal
+ * 96 řádků útočníka a nula řádků o poruše, která mezitím padla 28 768krát.
+ *
+ * **Osm** proto, že je to týž řád jako milníková řada (nejvýš sedm řádků na
+ * okno při milionu výskytů), takže rozpočet řádků na okno zůstává ve stejném
+ * řádu, a přitom to s rezervou pokryje množinu hlášek, kterou runtime na
+ * přerušeném čtení těla vůbec vyrábí.
+ */
+export const MAX_DETAILS_PER_WINDOW = 8;
+
+/** Co tenhle proces viděl u dvojice (dveře, kód) v běžícím okně. */
+interface KeyWindow {
+  readonly windowStart: number;
+  readonly occurrences: number;
+  /** Příčiny, které tohle okno už pojmenovalo. Nejvýš `MAX_DETAILS_PER_WINDOW`. */
+  readonly details: Set<string>;
+}
+
+const SEEN_PER_KEY = new Map<string, KeyWindow>();
 
 /** 1, 10, 100, 1000 … — výskyty, na kterých se řádek vydá. */
 function isMilestone(occurrence: number): boolean {
@@ -183,7 +213,8 @@ function isMilestone(occurrence: number): boolean {
  * si tak mohl kdokoli, a mohl si to vybrat dopředu.
  *
  * Milníky po desítkách drží dávku: strop je logaritmus provozu (milion
- * požadavků v jednom okně = šest řádků), takže natáhnout se log nedá. Číslo
+ * požadavků v jednom okně = sedm řádků, `log10(N)+1`), takže natáhnout se log
+ * nedá. Číslo
  * výskytu jde do textu, protože jinak vypadá desátý řádek jako první a záplavu
  * z něj nikdo nepozná.
  *
@@ -199,12 +230,33 @@ function isMilestone(occurrence: number): boolean {
  *
  * Počítá se proto **uvnitř okna**, které začíná prvním výskytem klíče a trvá
  * `RATE_LIMIT_WINDOW_MS`. První výskyt v každém dalším okně se vydá vždycky,
- * takže ticho po delší pauze je vždycky ticho poctivé.
+ * takže koupené ticho **vyprší**.
  *
  * **Okno se kotví na svém prvním výskytu, ne na posledním.** Zapomínání po
  * N minutách *ticha* by tuhle vadu nezavřelo: útočník, který pošle jeden
  * požadavek za okno, by klíč držel naživu napořád a stá porucha by mlčela dál.
  * Kotva na prvním výskytu dělá z okna pevný takt, který nikdo neposune.
+ *
+ * A protože klíč je `(dveře, kód)`, vydá se navíc **první výskyt každé nové
+ * příčiny v okně** — nejvýš `MAX_DETAILS_PER_WINDOW` na okno. Bez toho stačí
+ * držet počítadlo nahoře jednou příčinou a ta druhá, skutečná, pod týmž kódem
+ * nevyleze nikdy.
+ *
+ * ## Co okno nezavírá — naměřeno nezávislou revizí 1. 9. 2026
+ *
+ * **Ticho vyprší, ale dá se koupit znovu, a v tom je celý rozdíl.** Sto
+ * přerušených těl na začátku **každého** okna je 400 požadavků za hodinu
+ * (0,111 req/s) a drží klíč `emit BODY_UNREADABLE` umlčený natrvalo. Revize to
+ * změřila přes osm hodin: operátor dostal 96 řádků, **všechny s textem
+ * útočníka** a ani jeden s textem skutečné poruchy, která mezitím padla
+ * 28 768krát. Pravidlo o nové příčině přesně tenhle běh zavírá (skutečná
+ * porucha nese jinou hlášku), ale kdo si v jednom okně vyrobí víc než
+ * `MAX_DETAILS_PER_WINDOW` různých příčin, vyčerpá i ten rozpočet.
+ *
+ * **Na téhle vrstvě to nejde zavřít úplně.** Bez přihlášení se cena za umlčení
+ * jednoho klíče drží na stovkách požadavků za hodinu; zvedne ji až sdílený
+ * stav a mez na zdroj (T29), ne další počítadlo v procesu. Nikde se proto
+ * netvrdí, že se ta mez **nedá předplatit** — tvrdí se, že **vyprší**.
  *
  * ⚠ **Ten strop je na jednu instanci, ne na nasazení.** `SEEN_PER_KEY` je stav
  * modulu, takže na serverless je skutečná mez **instance × dveře × kódy × okna**
@@ -227,7 +279,10 @@ export function logRateLimited(
   const seen = SEEN_PER_KEY.get(key);
   const open = seen !== undefined && now - seen.windowStart < RATE_LIMIT_WINDOW_MS ? seen : undefined;
   const occurrence = (open?.occurrences ?? 0) + 1;
-  SEEN_PER_KEY.set(key, { windowStart: open?.windowStart ?? now, occurrences: occurrence });
-  if (!isMilestone(occurrence)) return;
+  const details = open?.details ?? new Set<string>();
+  const newCause = !details.has(detail) && details.size < MAX_DETAILS_PER_WINDOW;
+  if (newCause) details.add(detail);
+  SEEN_PER_KEY.set(key, { windowStart: open?.windowStart ?? now, occurrences: occurrence, details });
+  if (!isMilestone(occurrence) && !newCause) return;
   logForOperator(route, requestId, code, `${detail} (occurrence ${occurrence})`);
 }
