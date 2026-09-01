@@ -454,6 +454,24 @@ describe('hlášená cena se rovná té, kterou strop doopravdy strhl', () => {
     expect(result.costUsd).toBeGreaterThan(0);
   });
 
+  it('výjimka, ze které nejde přečíst zpráva, nenechá rezervaci viset', async () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 100 });
+    // `Promise.reject(null)` je jediný tvar, u kterého sestavení odpovědi spadne
+    // dřív, než se stihne vyrovnat — `(null as Error).message` je TypeError.
+    // Rezervace se přesto musí uvolnit: visící rezervace strop trvale zmenší,
+    // takže nasazení začne odmítat 429 na rozpočtu, který nic neutratil.
+    const branch: GenerationBranch = {
+      id: 'live',
+      pricing: { usdPerMTokIn: 3, usdPerMTokOut: 15 },
+      worstCaseUsd: () => 0.02,
+      generate: () => Promise.reject(null),
+    };
+
+    await expect(runPipeline('bludiště s klíčem', { branch, cap, grammar: GRAMMAR })).rejects.toThrow();
+    expect(cap.snapshot().reservedUsd).toBe(0);
+    expect(cap.snapshot().spentUsd).toBeCloseTo(0.02, 12);
+  });
+
   it('poctivá účtenka se ohlásí sama sebou, ne rezervací', async () => {
     // Druhý směr téhož tvrzení: rovnost se nesmí zařídit tím, že se vždycky
     // hlásí rezervace. To by strop nafouklo u každého levného volání.

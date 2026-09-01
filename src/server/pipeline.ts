@@ -200,13 +200,20 @@ export async function runPipeline(prompt: unknown, deps: PipelineDeps): Promise<
   try {
     generated = await deps.branch.generate(call);
   } catch (thrown) {
+    // **Vyrovnat na vlastním řádku, ne uvnitř literálu.** Vlastnosti objektu se
+    // vyhodnocují v pořadí zápisu, takže vyrovnání za `detail` by u výjimky,
+    // ze které `.message` přečíst nejde (`Promise.reject(null)`), neproběhlo
+    // vůbec — TypeError by vylétl dřív a rezervace by visela až do konce
+    // procesu. Nasazení by pak odmítalo 429 na stropu, který nic neutratil.
+    // Naměřeno nezávislou revizí 1. 9. 2026 nad `10e8b8b`.
+    const settledUsd = reservation.settle('unknown');
     return {
       outcome: 'FAILED',
       stage: 'generation',
       branch: deps.branch.id,
       reason: 'UPSTREAM_UNAVAILABLE',
       detail: `the ${deps.branch.id} branch threw: ${(thrown as Error).message}`,
-      costUsd: reservation.settle('unknown'),
+      costUsd: settledUsd,
     };
   }
 

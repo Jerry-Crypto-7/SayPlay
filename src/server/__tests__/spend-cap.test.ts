@@ -330,3 +330,19 @@ describe('strop na počet volání počítá jen placená volání', () => {
     expect(cap.snapshot().callsMade).toBe(2);
   });
 });
+
+describe('druhé vyrovnání téže rezervace', () => {
+  it('vrátí totéž číslo jako to první a stropem nehne', () => {
+    // Kontrakt, který od 1. 9. 2026 stojí v docstringu `settle()`. Bez tohohle
+    // testu ho nedrželo nic: mutace na `return 0` nechala celou sadu zelenou.
+    const cap = new SpendCap({ enabled: true, capUsd: 10 });
+    const reservation = cap.reserve(1);
+    if (!reservation.ok) throw new Error('rezervace měla projít');
+
+    expect(reservation.settle(0.25)).toBe(0.25);
+    // Druhé vyrovnání s úplně jiným číslem nesmí přepsat ani odpověď, ani strop.
+    expect(reservation.settle(9)).toBe(0.25);
+    expect(cap.snapshot().spentUsd).toBe(0.25);
+    expect(cap.snapshot().reservedUsd).toBe(0);
+  });
+});
