@@ -27,6 +27,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { withRequest } from '../../../../obs/trace';
+import { PUBLIC_CORPUS_FAULT, logForOperator } from '../../../../server/public-faults';
 import { emissionSteps, type EmitPhase } from '../chain';
 import { readPromptId } from '../route';
 
@@ -71,12 +72,22 @@ export async function POST(request: Request): Promise<Response> {
         }
         const outcome = next.value;
 
-        if (outcome.kind === 'unavailable')
+        if (outcome.kind === 'unavailable') {
+          // Týž ořez jako u `/api/emit`, jen jinou trubkou. Rámec proudu je
+          // odpověď jako každá jiná — že jde po kouscích, na kořist nic nemění.
+          logForOperator('emit/stream', requestId, outcome.failure.reason, outcome.failure.detail);
           controller.enqueue(
             encoder.encode(
-              frame('result', { requestId, error: { code: outcome.failure.reason, message: outcome.failure.detail } }),
+              frame('result', {
+                requestId,
+                error: {
+                  code: outcome.failure.reason,
+                  message: PUBLIC_CORPUS_FAULT[outcome.failure.reason],
+                },
+              }),
             ),
           );
+        }
         else if (outcome.kind === 'unknown-prompt')
           controller.enqueue(
             encoder.encode(

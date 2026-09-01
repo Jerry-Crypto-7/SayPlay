@@ -43,7 +43,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
-import { frozenGrammar, type ClientReason } from '../../../model/client';
+import { frozenGrammar } from '../../../model/client';
 import { withRequest } from '../../../obs/trace';
 import { mockBranch } from '../../../server/mock';
 import { MAX_PROMPT_CHARS, type ModerationCategory } from '../../../server/moderation';
@@ -52,6 +52,10 @@ import {
   type GenerationBranch,
   type GenerationFailureReason,
 } from '../../../server/pipeline';
+import {
+  PUBLIC_CORPUS_FAULT,
+  logForOperator as logForRoute,
+} from '../../../server/public-faults';
 import { spendCapFromEnv, type RefusalReason } from '../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../server/upstream';
 
@@ -124,22 +128,6 @@ const PUBLIC_FAILURE: Record<GenerationFailureReason, string> = {
 };
 
 /**
- * A totéž pro zmrazený korpus, ze stejného důvodu a s jinou kořistí.
- *
- * `readFrozen()` skládá detail jako „<soubor> is not readable under <FROZEN_DIR>",
- * a `FROZEN_DIR` je **absolutní cesta na disku serveru včetně jména účtu** —
- * přesně to, co si hlavička `PUBLIC_REFUSAL` výš zakazuje posílat ven.
- */
-const PUBLIC_CORPUS_FAULT: Record<ClientReason, string> = {
-  MANIFEST_MISMATCH: 'the frozen corpus does not match its manifest; no answers will be served',
-  CORPUS_UNREADABLE: 'the frozen corpus cannot be read on this server',
-  NO_FROZEN_RESPONSE: 'the frozen corpus has no answer for that prompt',
-  RESPONSE_TAMPERED: 'a frozen answer failed its own checksum; it will not be served',
-  BASE_WORLD_MISMATCH: 'the edit names a different base world than the one that arrived',
-  BASE_WORLD_MISSING: 'the frozen corpus is missing the base world that edit names',
-};
-
-/**
  * A totéž pro **moderaci** — poslední místo, kde `detail` z řetězu tekl ven.
  *
  * Dnešní čtyři texty jsou konstanty z našich vlastních pravidel, takže tenhle
@@ -205,18 +193,7 @@ function error(requestId: string, status: number, code: string, message: string)
  * něj tenhle řádek nediagnostikuje nic.
  */
 function logForOperator(requestId: string, code: string, detail: string): void {
-  console.error(`[generate] ${requestId} ${code}: ${withoutCredentials(detail)}`);
-}
-
-/**
- * `user:heslo@host` → `host`, kdekoli v textu.
- *
- * Vzor je úmyslně širší než URL: hlášky `fetch`e adresu přeformátovávají a
- * dvakrát ji nesou stejně („Failed to parse URL from …", „…URL that includes
- * credentials: …"). Hledá se proto **dvojice před zavináčem**, ne platná URL.
- */
-export function withoutCredentials(text: string): string {
-  return text.replace(/(^|[\s(/@])[^\s/@:]+:[^\s/@]*@/g, '$1<credentials>@');
+  logForRoute('generate', requestId, code, detail);
 }
 
 export async function POST(request: Request): Promise<Response> {

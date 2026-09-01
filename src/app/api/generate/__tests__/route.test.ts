@@ -13,7 +13,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { withoutCredentials } from '../route';
+import { withoutCredentials } from '../../../../server/public-faults';
 
 import { frozenPrompts } from '../../../../model/client';
 

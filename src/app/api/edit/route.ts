@@ -66,6 +66,7 @@ import { migrateWorldDoc, type WorldDoc } from '../../../ir/worlddoc';
 import { emitPatch, frozenGrammar, frozenPrompt, type ClientFailure } from '../../../model/client';
 import { buildEditRequest } from '../../../model/edit-prompt';
 import { withRequest } from '../../../obs/trace';
+import { PUBLIC_CORPUS_FAULT, logForOperator } from '../../../server/public-faults';
 import { routePatch, type Lane, type RoutedPatch, type RoutingAnomaly } from '../../../patch/router';
 import { commitRoutedParts, staleRevision, type BaseRevision, type CommitOutcome } from './commit';
 
@@ -89,12 +90,19 @@ function badRequest(requestId: string, code: string, message: string, field?: st
  * nad ním, rozbitý korpus by se vydával za naměřený výsledek.
  */
 function corpusUnavailable(requestId: string, failure: ClientFailure): Response {
+  // Ven veřejný text, operátorovi ten pravý — viz `src/server/public-faults.ts`.
+  // Platí to i pro 404 níž: `detail` je táž hodnota z téhož zdroje a rozdíl
+  // mezi „vada dotazu" a „vada korpusu" je ve stavovém kódu, ne v tom, co se
+  // o serveru prozradí.
+  logForOperator('edit', requestId, failure.reason, failure.detail);
+  const message = PUBLIC_CORPUS_FAULT[failure.reason];
+
   if (failure.reason === 'BASE_WORLD_MISMATCH' || failure.reason === 'NO_FROZEN_RESPONSE')
     return Response.json(
-      { requestId, error: { code: 'UNKNOWN_PAIR', message: failure.detail, field: 'worldDoc' } },
+      { requestId, error: { code: 'UNKNOWN_PAIR', message, field: 'worldDoc' } },
       { status: 404 },
     );
-  return Response.json({ requestId, error: { code: failure.reason, message: failure.detail } }, { status: 503 });
+  return Response.json({ requestId, error: { code: failure.reason, message } }, { status: 503 });
 }
 
 function parseBaseRevision(value: unknown): BaseRevision | null {

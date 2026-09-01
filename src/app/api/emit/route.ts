@@ -56,6 +56,7 @@ import { randomUUID } from 'node:crypto';
 
 import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
 import { withRequest } from '../../../obs/trace';
+import { PUBLIC_CORPUS_FAULT, logForOperator } from '../../../server/public-faults';
 import { runEmission } from './chain';
 
 /** `AsyncLocalStorage` i čtení zmrazeného korpusu potřebují Node, ne edge. */
@@ -150,11 +151,22 @@ export async function POST(request: Request): Promise<Response> {
      * nebo podvržený soubor nevypovídají o modelu nic; kdyby to endpoint vydal jako
      * 200 s odmítnutím, T17 by to započítal jako vadnou emisi.
      */
-    if (outcome.kind === 'unavailable')
+    if (outcome.kind === 'unavailable') {
+      // Ven veřejný text, operátorovi ten pravý — viz `src/server/public-faults.ts`.
+      // `failure.detail` nese u `CORPUS_UNREADABLE` absolutní cestu na disku
+      // včetně jména účtu, a tyhle dveře jsou stejně veřejné jako `/api/generate`.
+      logForOperator('emit', requestId, outcome.failure.reason, outcome.failure.detail);
       return Response.json(
-        { requestId, error: { code: outcome.failure.reason, message: outcome.failure.detail } },
+        {
+          requestId,
+          error: {
+            code: outcome.failure.reason,
+            message: PUBLIC_CORPUS_FAULT[outcome.failure.reason],
+          },
+        },
         { status: 503 },
       );
+    }
 
     if (outcome.kind === 'unknown-prompt')
       return Response.json(
