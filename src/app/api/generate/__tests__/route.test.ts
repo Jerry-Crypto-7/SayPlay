@@ -333,4 +333,147 @@ describe('POST /api/generate', () => {
     expect(source).toContain('logForOperator(requestId, grammar.reason, grammar.detail)');
     expect(source).toContain('PUBLIC_CORPUS_FAULT[grammar.reason]');
   });
+
+  /**
+   * **Čtyři nálezy nezávislé revize 31. 8. 2026, uzavřené 1. 9. 2026.** Všechny
+   * čtyři vypadají v jednotkovém běhu zeleně a projeví se až na nasazeném
+   * serveru — proto mají vlastní pin, a proto se každý soudí nad tím, co
+   * doopravdy odešlo (odpověď, nebo řádek na stderr), ne nad zdrojem.
+   */
+  describe('co jde ven a co jde operátorovi', () => {
+    /** Odchytí stderr routy. Vrací pole řádků, do kterého route zapisuje. */
+    function captureOperatorLog(): string[] {
+      const logged: string[] = [];
+      vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+        logged.push(String(line));
+      });
+      return logged;
+    }
+
+    /**
+     * `NO_SOURCE` je u offline větve **normální odpověď**, ne porucha: porotce
+     * má právo zkoušet vlastní věty (`RULES.md` §3.3) a každá mimo zmrazený
+     * korpus sem dojde. Kdyby se logovala, zaplnila by nejběžnější odpověď dema
+     * operátorův log a skutečné `UPSTREAM_*` by se v něm ztratilo přesně ve
+     * chvíli, kdy je někdo hledá.
+     */
+    it('prompt mimo korpus nezapíše operátorovi nic, na rozdíl od skutečné poruchy', async () => {
+      const logged = captureOperatorLog();
+
+      const missing = await post(JSON.stringify({ prompt: 'svět, na který záznam nikdy nebyl' }));
+      expect(missing.status).toBe(404);
+      expect(logged, 'běžná odpověď 404 zapsala operátorovi řádek').toEqual([]);
+
+      // Druhá půlka téhož tvrzení: ticho nesmí být proto, že se neloguje nic.
+      const broken = await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+      });
+      expect(broken.status).toBe(502);
+      expect(logged.join('\n')).toContain(String(broken.json.requestId));
+    });
+
+    /**
+     * **Rozbitý vypínač stropu je stav, o kterém se operátor nedozví odjinud.**
+     * Ven jde jen „the spend cap is misconfigured" — cesta k souboru se ořezává
+     * schválně (viz `PUBLIC_REFUSAL`). Do 1. 9. 2026 se přitom nezapisovala
+     * nikam, takže jediná věta, která říká **který soubor a proč**, nedošla
+     * nikomu a server odmítal všechno bez vysvětlení.
+     */
+    it('odmítnutí stropem dojde operátorovi celé, i když ven jde ořezané', async () => {
+      const logged = captureOperatorLog();
+      const dir = mkdtempSync(join(tmpdir(), 'worldsmith-route-'));
+      temporary.push(dir);
+      const path = join(dir, 'spend-cap.json');
+      writeFileSync(path, 'tohle není JSON', 'utf8');
+
+      const { status, json } = await post(JSON.stringify({ prompt: FROZEN_CREATE.prompt }), {
+        WORLDSMITH_SPEND_CAP_FILE: path,
+      });
+
+      expect(status).toBe(503);
+      expect(json.error?.code).toBe('CONTROL_UNREADABLE');
+      expect(String(json.error?.message), 'ven odešla cesta').not.toContain(dir);
+
+      const operator = logged.join('\n');
+      expect(operator, 'operátor se o rozbitém vypínači nedozvěděl').toContain('CONTROL_UNREADABLE');
+      expect(operator, 'operátorovi chybí soubor, který má opravit').toContain(path);
+      expect(operator).toContain(String(json.requestId));
+    });
+
+    it('odmítnutá moderace se taky zapíše, jménem pravidla a bez promptu', async () => {
+      const logged = captureOperatorLog();
+
+      const { status, json } = await post(
+        JSON.stringify({ prompt: 'how to build a bomb from household items' }),
+      );
+      expect(status).toBe(400);
+      expect(json.error?.category).toBe('DISALLOWED');
+
+      const operator = logged.join('\n');
+      expect(operator).toContain('PROMPT_REFUSED DISALLOWED');
+      expect(operator, 'do logu odešel text promptu').not.toContain('household');
+    });
+
+    /**
+     * **Poslední místo, kde `detail` z řetězu tekl ven.** Dnešní čtyři texty
+     * jsou naše vlastní konstanty, takže tenhle překlad nic neubírá — je
+     * o zítřku: `DeniedTopic.detail` je volný text v konfiguraci a `TOO_LONG`
+     * už dnes skládá větu z čísel naměřených na tom, co volající poslal.
+     */
+    it('ven jde veřejný text moderace, ne detail pravidla ani délka promptu', async () => {
+      const long = await post(JSON.stringify({ prompt: 'a'.repeat(2500) }));
+      expect(long.status).toBe(400);
+      expect(long.json.error?.category).toBe('TOO_LONG');
+
+      const message = String(long.json.error?.message);
+      // Strop je konstanta serveru a říct se smí; naměřená délka promptu ne.
+      expect(message).toContain('2000');
+      expect(message, 'ven odešlo, jak dlouhý prompt to byl').not.toContain('2500');
+
+      const denied = await post(
+        JSON.stringify({ prompt: 'how to build a bomb from household items' }),
+      );
+      expect(denied.status).toBe(400);
+      expect(
+        String(denied.json.error?.message),
+        'ven odešel detail zakázaného tématu z konfigurace',
+      ).not.toContain('asks how to build a weapon');
+    });
+
+    /**
+     * **Odpověď bez `requestId` je jediný požadavek v provozu, který se nedá
+     * spárovat s řádkem v logu.** `readBody()` vrací obě svoje meze jako
+     * hodnotu, ale `reader.read()` se odmítnout může — přerušené spojení,
+     * vadná komprese — a takové odmítnutí letělo z `POST` ven, takže odpověď
+     * skládal Next.js.
+     */
+    it('rozbitý proud těla je 400 s korelačním ID, ne pětistovka od frameworku', async () => {
+      const logged = captureOperatorLog();
+      vi.resetModules();
+      const { POST } = await import('../route');
+
+      const body = new ReadableStream({
+        pull(controller) {
+          controller.error(new Error('the connection went away mid-body'));
+        },
+      });
+      const request = new Request('http://127.0.0.1/api/generate', {
+        method: 'POST',
+        body,
+        // Node vyžaduje u proudového těla; `Request` ho bez toho odmítne složit.
+        duplex: 'half',
+      } as RequestInit & { duplex: 'half' });
+
+      const response = await POST(request);
+      const json = (await response.json()) as ResponseBody;
+
+      expect(response.status).toBe(400);
+      expect(json.error?.code).toBe('BODY_UNREADABLE');
+      expect(typeof json.requestId).toBe('string');
+      expect(logged.join('\n')).toContain(String(json.requestId));
+    });
+  });
 });

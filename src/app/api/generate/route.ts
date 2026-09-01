@@ -21,6 +21,7 @@
  * |---|---|---|
  * | emise | 200 | |
  * | moderace odmítla | 400 | vada dotazu, ne serveru |
+ * | tělo se nedalo přečíst | 400 | spojení, ne server |
  * Text odmítnutí stropem se ven posílá **oříznutý** — viz `PUBLIC_REFUSAL` níž.
  *
  * | rozpočet vyčerpán | 429 | dočasné, dá se zopakovat později |
@@ -45,6 +46,7 @@ import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
 import { frozenGrammar, type ClientReason } from '../../../model/client';
 import { withRequest } from '../../../obs/trace';
 import { mockBranch } from '../../../server/mock';
+import { MAX_PROMPT_CHARS, type ModerationCategory } from '../../../server/moderation';
 import {
   runPipeline,
   type GenerationBranch,
@@ -137,6 +139,29 @@ const PUBLIC_CORPUS_FAULT: Record<ClientReason, string> = {
   BASE_WORLD_MISSING: 'the frozen corpus is missing the base world that edit names',
 };
 
+/**
+ * A totéž pro **moderaci** — poslední místo, kde `detail` z řetězu tekl ven.
+ *
+ * Dnešní čtyři texty jsou konstanty z našich vlastních pravidel, takže tenhle
+ * překlad zatím nic neubírá. Je tu kvůli **zítřku**: `DeniedTopic.detail` je
+ * volný text v konfiguraci a `TOO_LONG` už dnes skládá větu z čísel. Jakmile
+ * někdo do pravidla napíše, čím přesně prompt sedl, odešla by ta věta
+ * neověřenému volajícímu — a poznalo by se to až na nasazeném serveru.
+ *
+ * Strop délky se ven **říct smí a má**: je to konstanta serveru, ne stav, a bez
+ * něj nemá volající jak prompt zkrátit. Číslo se proto bere z `MAX_PROMPT_CHARS`,
+ * ne z odpovědi moderace, aby ven nešlo nic naměřeného na tom, co poslal.
+ *
+ * `Record<ModerationCategory, string>` znovu kvůli **úplnosti**: nová kategorie
+ * bez veřejného textu neprojde přes `tsc`.
+ */
+const PUBLIC_MODERATION: Record<ModerationCategory, string> = {
+  NOT_TEXT: 'the request carries no prompt text',
+  EMPTY: 'the prompt is empty',
+  TOO_LONG: `the prompt is longer than the limit of ${MAX_PROMPT_CHARS} characters`,
+  DISALLOWED: 'the prompt asks for something this deployment will not generate',
+};
+
 function error(requestId: string, status: number, code: string, message: string): Response {
   return Response.json({ requestId, error: { code, message } }, { status });
 }
@@ -177,7 +202,22 @@ export async function POST(request: Request): Promise<Response> {
   const requestId = randomUUID();
 
   return withRequest(requestId, async () => {
-    const raw = await readBody(request);
+    /**
+     * **Čtení těla je uvnitř `try`, a je to jediný důvod, proč tenhle handler
+     * odpoví vždycky.** `readBody()` vrací meze jako hodnotu, ale samo
+     * `reader.read()` se **odmítnout** může — přerušené spojení, vadná
+     * komprese — a to odmítnutí by proletělo z `POST` ven. Odpověď by pak
+     * složil Next.js: pětistovka bez `requestId`, tedy jediný požadavek
+     * v celém provozu, který se nedá spárovat s řádkem v logu. Naměřeno
+     * nezávislou revizí 31. 8. 2026.
+     */
+    let raw;
+    try {
+      raw = await readBody(request);
+    } catch (thrown) {
+      logForOperator(requestId, 'BODY_UNREADABLE', thrown instanceof Error ? thrown.message : String(thrown));
+      return error(requestId, 400, 'BODY_UNREADABLE', 'the request body could not be read');
+    }
     if (!raw.ok)
       return raw.reason === 'TOO_LARGE'
         ? error(requestId, 413, 'PAYLOAD_TOO_LARGE', `request body exceeds ${MAX_BODY_BYTES} bytes`)
@@ -212,20 +252,46 @@ export async function POST(request: Request): Promise<Response> {
         provenance: result.provenance,
       });
 
-    if (result.outcome === 'REFUSED')
-      return result.stage === 'moderation'
-        ? Response.json(
-            { requestId, error: { code: 'PROMPT_REFUSED', message: result.detail, category: result.category } },
-            { status: 400 },
-          )
-        : error(
+    /**
+     * **Odmítnutí se logují taky, a u stropu je to celý rozdíl mezi provozem
+     * a hádáním.** `CONTROL_UNREADABLE` znamená rozbitý ovládací soubor —
+     * server odmítá všechno a operátor se z odpovědi dozví jen „the spend cap
+     * is misconfigured", protože cesta k souboru se ven ořezává. Do 1. 9. 2026
+     * se přitom nikam nezapisovala, takže ten jediný text, který říká **který
+     * soubor a proč**, nedošel nikomu.
+     */
+    if (result.outcome === 'REFUSED') {
+      if (result.stage === 'moderation') {
+        logForOperator(requestId, `PROMPT_REFUSED ${result.category}`, result.ruleId ?? 'structural');
+        return Response.json(
+          {
             requestId,
-            result.reason === 'CAP_EXHAUSTED' || result.reason === 'CALL_CAP_EXHAUSTED' ? 429 : 503,
-            result.reason,
-            PUBLIC_REFUSAL[result.reason],
-          );
+            error: {
+              code: 'PROMPT_REFUSED',
+              message: PUBLIC_MODERATION[result.category],
+              category: result.category,
+            },
+          },
+          { status: 400 },
+        );
+      }
+      logForOperator(requestId, result.reason, result.detail);
+      return error(
+        requestId,
+        result.reason === 'CAP_EXHAUSTED' || result.reason === 'CALL_CAP_EXHAUSTED' ? 429 : 503,
+        result.reason,
+        PUBLIC_REFUSAL[result.reason],
+      );
+    }
 
-    logForOperator(requestId, result.reason, result.detail);
+    /**
+     * **`NO_SOURCE` se neloguje, a není to výjimka z opatrnosti — je to jeho
+     * význam.** U offline větve je to normální odpověď na prompt mimo zmrazený
+     * korpus, takže by každý pokus porotce o vlastní větu zapsal chybový řádek.
+     * Log operátora by tím zaplnila nejběžnější odpověď dema a skutečné
+     * `UPSTREAM_*` by se v ní ztratilo přesně ve chvíli, kdy je někdo hledá.
+     */
+    if (result.reason !== 'NO_SOURCE') logForOperator(requestId, result.reason, result.detail);
     const status = result.reason === 'NO_SOURCE' ? 404 : result.reason === 'BRANCH_UNCONFIGURED' ? 503 : 502;
     return Response.json(
       {
