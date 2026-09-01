@@ -110,7 +110,7 @@ const GAP_ID = 'gap-create-1';
  * adresář prázdný a tady je korpus platný a neúplný — což je přesně ten rozdíl,
  * který se měří.
  */
-function corpusWithoutOneAnswer(): { readonly log: string[] } {
+function corpusWithoutOneAnswer(fault: 'missing' | 'tampered' = 'missing'): { readonly log: string[] } {
   const dir = mkdtempSync(join(tmpdir(), 'worldsmith-gap-'));
   temporary.push(dir);
   const frozen = join(dir, 'evals', 'frozen');
@@ -121,14 +121,29 @@ function corpusWithoutOneAnswer(): { readonly log: string[] } {
   const protocol = readFileSync('evals/frozen/protocol.v1.json', 'utf8').replace(/\r\n/g, '\n');
   const prompts = `${JSON.stringify({ id: GAP_ID, kind: 'create', prompt: GAP_PROMPT })}\n`;
 
-  // Soubor odpovědí existuje, hashuje se správně a nese platný záznam — jen
-  // pro JINÝ prompt. Prázdný soubor by se choval jako nečitelný korpus, což je
-  // vada, kterou už měří jiná sada.
+  // Soubor odpovědí existuje a hashuje se správně; rozbitá je jen odpověď na
+  // `GAP_ID`, a to dvěma způsoby, které se soudí oba. Prázdný soubor by se
+  // choval jako nečitelný korpus, což je vada, kterou už měří jiná sada.
   const other = { branch: 'create', forPrompt: 'some-other-prompt', synthetic: true, body: { emitted: true } };
-  const responses = `${JSON.stringify({
-    ...other,
-    sha256: createHash('sha256').update(JSON.stringify(other.body)).digest('hex'),
-  })}\n`;
+  const lines = [
+    JSON.stringify({
+      ...other,
+      sha256: createHash('sha256').update(JSON.stringify(other.body)).digest('hex'),
+    }),
+  ];
+  // `tampered`: záznam **je** na místě, jen se rozešel s vlastním otiskem —
+  // podvržená odpověď, ne chybějící. Zvenku to musí být totéž.
+  if (fault === 'tampered')
+    lines.push(
+      JSON.stringify({
+        branch: 'create',
+        forPrompt: GAP_ID,
+        synthetic: true,
+        body: { emitted: true },
+        sha256: '0'.repeat(64),
+      }),
+    );
+  const responses = `${lines.join('\n')}\n`;
 
   const files: Record<string, string> = {
     'protocol.v1.json': protocol,
@@ -811,6 +826,46 @@ describe('POST /api/generate', () => {
         log.filter((line) => line.includes('NO_FROZEN_ANSWER')),
         '20 požadavků napsalo operátorovi víc než jeden řádek',
       ).toHaveLength(1);
+    });
+
+    /**
+     * **Sourozenec téže vady, naměřený nezávislou revizí 1. 9. 2026.**
+     *
+     * „Odpověď chybí" a „odpověď je na místě, ale rozešla se s vlastním
+     * otiskem" jsou obojí díra v jednom záznamu zmrazené sady. Dokud o tom
+     * rozhodoval ternár na jediném důvodu, spadl ten druhý do „nedovolali jsme
+     * se k modelu": **502 a řádek na každý požadavek**, tedy přesně to, čemu se
+     * u jeho dvojčete zabraňovalo — a k tomu vzkaz „tenhle prompt tvůj korpus
+     * zná", který je stav serveru.
+     */
+    it('podvržený záznam vypadá zvenku stejně jako chybějící, a taky se zapíše jen jednou', async () => {
+      const { log } = corpusWithoutOneAnswer('tampered');
+      const { POST } = await import('../route');
+      const ask = async (prompt: string) => {
+        const response = await POST(
+          new Request('http://127.0.0.1/api/generate', { method: 'POST', body: JSON.stringify({ prompt }) }),
+        );
+        const { requestId, ...rest } = (await response.json()) as ResponseBody & Record<string, unknown>;
+        return { status: response.status, body: rest };
+      };
+
+      const tampered = await ask(GAP_PROMPT);
+      const unknown = await ask('a sentence this corpus has never heard of');
+      expect(tampered.status, 'podvržený záznam odpovídá jinak než neznámá věta').toBe(404);
+      expect(tampered.body).toEqual(unknown.body);
+
+      // Operátor to naopak vědět má — a je to vada záznamu, ne modelu.
+      const operator = log.join('\n');
+      expect(operator, 'operátor dostal „nedovolali jsme se k modelu"').not.toContain(
+        'UPSTREAM_UNAVAILABLE',
+      );
+      expect(operator).toContain('RESPONSE_TAMPERED');
+
+      const before = log.length;
+      for (let attempt = 0; attempt < 20; attempt += 1) await ask(GAP_PROMPT);
+      expect(log.length, '20 požadavků na podvržený záznam psalo operátorovi pořád dokola').toBe(
+        before,
+      );
     });
   });
 });
