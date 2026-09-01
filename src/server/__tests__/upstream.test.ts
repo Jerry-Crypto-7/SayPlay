@@ -430,6 +430,10 @@ describe('3. neznámá cena se neúčtuje nulou', () => {
       return cap.snapshot().spentUsd;
     };
 
+    // Samotný poměr nestačí: `costUsd` je v ceně lineární pro **jakýkoli**
+    // počet tokenů, takže dvojnásobek vyjde i bez hranice, z holé jedničky.
+    // Absolutní hodnota u jedné ceny je to, co umírá oběma směry.
+    expect(await spentAt('25')).toBeCloseTo(FLOOR_TOKENS * (25 / 1_000_000), 10);
     expect(await spentAt('50')).toBeCloseTo(2 * (await spentAt('25')), 10);
   });
 
@@ -470,6 +474,27 @@ describe('3. neznámá cena se neúčtuje nulou', () => {
 
     expect(cap.snapshot().spentUsd).toBeCloseTo(calls[0]!.reservedAtCallUsd, 10);
     expect(cap.snapshot().spentUsd).toBeGreaterThan(FLOOR_TOKENS * USD_PER_TOKEN_OUT);
+  });
+
+  it('hranice platí i na vadném JSON, ne jen na úspěchu', async () => {
+    const cap = openCap();
+    // Zrcadlová díra, kterou tenhle soubor jednou zavíral už u pravidla dvojité
+    // nuly: druhý návrat nese text taky, takže se na něj hranice musí vztáhnout.
+    // Bez vlastní aserce ji tam mutant sundá a celá sada zůstane zelená —
+    // jediné dva testy, které sem dosud došly, měly buď `{0, 0}` (spadne na
+    // pravidlo dvojité nuly dřív), nebo text tak krátký, že hranice nespustí.
+    await runPipeline(PROMPT, {
+      branch: upstreamBranch(
+        liveConfig(),
+        recordingFetch(cap, () =>
+          textBlockResponse('x'.repeat(FLOORED_TEXT_CHARS), { input_tokens: 0, output_tokens: 1 }),
+        ).fetchImpl,
+      ),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    expect(cap.snapshot().spentUsd).toBeCloseTo(FLOOR_TOKENS * USD_PER_TOKEN_OUT, 10);
   });
 
   it('nesmyslná účtenka se hranicí nezlevňuje — pořád platí rezervaci', async () => {
