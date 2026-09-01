@@ -749,7 +749,7 @@ describe('POST /api/generate', () => {
      *
      * Opíral se přesně o tu větu, kterou ten commit vyvrátil: „účtovat je co jen
      * u placeného volání a ta omezuje strop". Jenže strop je paměť procesu,
-     * kterou chladný start nuluje, a nad `{"enabled":false}` neplatí vůbec —
+     * kterou chladný start nuluje, a nad `{"enabled":false,"capUsd":0}` neplatí vůbec (samotné `enabled:false` je rozbitý vypínač, ne vypnutý strop) —
      * naměřeno 250 požadavků = 250 řádků, každý se jménem modelu z prostředí.
      *
      * **Dopsat `model` do `PUBLIC_PROVENANCE` by to nezavřelo** a je to slepá
@@ -777,26 +777,78 @@ describe('POST /api/generate', () => {
         WORLDSMITH_SPEND_CAP_USD: '1000',
       });
 
-      for (let attempt = 0; attempt < 20; attempt += 1) {
+      // Jedno volání stojí (100 × 3 + 200 × 15) / 1e6 = 0,0033 USD.
+      const CALLS = 100;
+      const PER_CALL = 0.0033;
+      for (let attempt = 0; attempt < CALLS; attempt += 1) {
         const { status } = await ask(JSON.stringify({ prompt: 'bludiště s klíčem' }));
         expect(status).toBe(200);
       }
 
-      // Dva, ne dvacet: milníky jsou 1., 10., 100. výskyt.
       const lines = logged.filter((line) => line.includes('ACCOUNTING'));
-      expect(lines, '20 úspěšných volání napsalo operátorovi řádek na požadavek').toHaveLength(2);
+      const totalOf = (line: string): number =>
+        Number(/totalUsd=([0-9.]+)/.exec(line)?.[1] ?? Number.NaN);
 
-      // A součet je za **všechna** volání, ne jen za ta zapsaná: jedno volání
-      // stojí 100/1e6 × 3 + 200/1e6 × 15 = 0,0033 USD, takže na desátém řádku
-      // musí stát desetinásobek. Kdyby se přičítalo až při zápisu, stálo by tam
-      // 0,0066 — tedy náhodný vzorek vydávaný za účetnictví.
-      expect(lines[1]).toContain('(occurrence 10)');
-      expect(lines[1], 'součet se počítá až při zápisu, ne při volání').toContain(
-        'totalUsd=0.033000',
+      // **Mez je v dolarech, ne v požadavcích** — krok je `DEFAULT_CAP_USD / 100`,
+      // tedy 5 centů. Sto volání za 0,33 USD proto dá nejvýš osm řádků…
+      const step = 5 / 100;
+      expect(lines.length, '100 volání napsalo operátorovi řádek na požadavek').toBeLessThanOrEqual(
+        Math.ceil((CALLS * PER_CALL) / step) + 1,
       );
+      expect(lines.length, 'operátor se o utrácení nedozvěděl vůbec').toBeGreaterThan(1);
+
+      // …a hlavně: **poslední řádek nesmí zaostat za skutečností o víc než krok**.
+      // Tohle je ta vlastnost, kterou milníky neuměly — u nich stál poslední
+      // řádek na 40 % skutečné útraty a nic to nepoznalo.
+      const spent = CALLS * PER_CALL;
+      expect(spent - totalOf(lines[lines.length - 1])).toBeLessThanOrEqual(step + 1e-9);
+
+      // A součet je za **všechna** volání, ne jen za zapsaná: první řádek se
+      // píše vždycky (že nasazení začalo utrácet, se propásnout nesmí), takže
+      // stojí přesně na jednom volání.
+      expect(lines[0]).toContain(`totalUsd=${PER_CALL.toFixed(6)}`);
       // Cena toho jednoho volání zůstává vedle součtu; bez ní se z řádku nepozná
       // ceník, jen celková útrata.
-      expect(lines[1]).toContain('costUsd=0.0033');
+      expect(lines[0]).toContain('costUsd=0.0033');
+    });
+
+    /**
+     * **Selhání, které stálo peníze, se do součtu počítá taky** — nález
+     * nezávislé revize 1. 9. 2026, `VERDICT: blocking`.
+     *
+     * `BILLED_ON_FAILURE` (`src/server/pipeline.ts`) účtuje `MALFORMED_RESPONSE`
+     * i `UPSTREAM_UNAVAILABLE` rezervací, protože poskytovatel odpověděl a to se
+     * platí. Dokud se přičítalo jen z úspěchů, `totalUsd` podhlašovalo právě
+     * tehdy, když poskytovatel zlobí — tedy směrem, který peníze schovává, a
+     * v logu nebylo čím ten rozdíl vysvětlit.
+     */
+    it('a selhání, které se účtuje, se do součtu započítá', async () => {
+      const logged = captureOperatorLog();
+      // Odpoví 200 s tělem, které server nepřečte → `MALFORMED_RESPONSE`,
+      // účtované rezervací.
+      vi.stubGlobal('fetch', () =>
+        Promise.resolve(Response.json({ content: [{ type: 'text', text: 'not json at all' }] })),
+      );
+
+      const ask = await loadRoute({
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_MODEL: 'privately-pinned-model-7c1f',
+        WORLDSMITH_USD_PER_MTOK_IN: '3',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        WORLDSMITH_SPEND_CAP_USD: '1000',
+      });
+
+      const { status } = await ask(JSON.stringify({ prompt: 'bludiště s klíčem' }));
+      expect(status, 'fixtura přestala být účtovaným selháním').toBe(502);
+
+      const accounting = logged.filter((line) => line.includes('ACCOUNTING'));
+      expect(accounting, 'zaplacené selhání se do účetnictví nedostalo').toHaveLength(1);
+      expect(
+        Number(/totalUsd=([0-9.]+)/.exec(accounting[0])?.[1] ?? 0),
+        'součet zůstal na nule, přestože se rezervace zaúčtovala',
+      ).toBeGreaterThan(0);
     });
 
     it('zmrazená větev si nechá celou svoji stopu, protože je to veřejný artefakt', async () => {

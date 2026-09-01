@@ -58,7 +58,7 @@ import {
   logRateLimited,
   logStickyFault as logStickyForRoute,
 } from '../../../server/public-faults';
-import { spendCapFromEnv, type RefusalReason } from '../../../server/spend-cap';
+import { DEFAULT_CAP_USD, spendCapFromEnv, type RefusalReason } from '../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../server/upstream';
 
 /** Strop je stav procesu, ne požadavku — jedna instance na celý běh serveru. */
@@ -322,14 +322,59 @@ function splitProvenance(provenance: Readonly<Record<string, string | boolean>>)
 const REFUSALS_LOGGED = new Set<RefusalReason>();
 
 /**
- * Utracené dolary za tenhle proces, pro účetní řádek.
+ * **Účetní řádek je omezený v dolarech, ne v počtu požadavků.**
  *
- * Roste u **každého** placeného volání, i u toho, jehož řádek milník zahodí —
- * jinak by mez z účetnictví udělala náhodný vzorek. Není to druhý strop
- * a nic neomezuje: skutečný zůstává `SpendCap`, tohle je jen to, co se
- * o něm dá přečíst z jednoho řádku v logu.
+ * První pokus o tuhle mez byly milníky (1., 10., 100. volání) a **byl špatně** —
+ * nález nezávislé revize 1. 9. 2026. Milníky omezují, jak často se píše, ale ne,
+ * o kolik peněz může log zaostat: 250 zaplacených volání v jednom procesu
+ * nechalo poslední řádek stát na 0,33 USD proti skutečně utraceným 0,825 USD
+ * (**40 %**), a při 25 chladných startech po devíti voláních dal součet všech
+ * řádků 0,0825 proti 0,7425 USD (**11 %**). Komentář u toho tvrdil, že se
+ * „účetnictví neztrácí". Neplatilo to.
+ *
+ * Krok v dolarech drží obojí naráz: **zaostat smí nejvýš o `ACCOUNTING_STEP_USD`**,
+ * ať přijde kolik požadavků chce, a **počet řádků je pořád omezený**, protože
+ * peníze omezuje `SpendCap` — nejvýš `capUsd / krok` řádků za proces.
+ *
+ * Krok je setina výchozího stropu, ne opsané číslo: nad `DEFAULT_CAP_USD` (5 USD)
+ * to je 5 centů, tedy nejvýš sto řádků za proces — týž řád jako u milníků, jen
+ * s mezí, která znamená peníze. Když se strop zvedne, zvedne se s ním.
+ *
+ * ⚠ **Pořád je to stav procesu, ne nasazení** — táž výhrada jako u
+ * `logRateLimited()` (`src/server/public-faults.ts`). Chladný start obojí
+ * vynuluje, takže skutečná mez je `instance × capUsd / krok`. Zavře to teprve
+ * sdílený stav z vlny 7 (T29), tentýž, který potřebuje i strop utrácení.
  */
+const ACCOUNTING_STEP_USD = DEFAULT_CAP_USD / 100;
+
+/** Utracené dolary za tenhle proces. Roste u **každého** placeného volání. */
 let accountedUsd = 0;
+
+/** `accountedUsd` tak, jak ho naposledy viděl operátor v logu. */
+let reportedUsd = 0;
+
+/**
+ * Zapíše účetní řádek, když od posledního zápisu přibyl aspoň krok.
+ *
+ * Součet roste vždycky, i když se řádek nenapíše — jinak by z účetnictví byl
+ * náhodný vzorek. **První zaplacené volání se zapíše vždycky**: že nasazení
+ * začalo utrácet, je jediná zpráva, kterou operátor nesmí propásnout, a čekat
+ * na první celý krok by ji o ten krok opozdilo.
+ *
+ * Není to druhý strop a nic neomezuje — skutečný zůstává `SpendCap`. Tohle je
+ * jen to, co se o něm dá přečíst z logu.
+ */
+function logAccounting(requestId: string, costUsd: number): void {
+  if (costUsd <= 0) return;
+  accountedUsd += costUsd;
+  if (reportedUsd > 0 && accountedUsd - reportedUsd < ACCOUNTING_STEP_USD) return;
+  reportedUsd = accountedUsd;
+  logForOperator(
+    requestId,
+    'ACCOUNTING',
+    `costUsd=${costUsd} totalUsd=${accountedUsd.toFixed(6)}`,
+  );
+}
 
 function error(requestId: string, status: number, code: string, message: string): Response {
   return Response.json({ requestId, error: { code, message } }, { status });
@@ -436,7 +481,7 @@ export async function POST(request: Request): Promise<Response> {
      *   takže na serverless dostane volající celý strop řádků **za každý studený
      *   proces**. Naměřeno nad `WORLDSMITH_CALL_CAP=2`.
      * - **A když je strop vypnutý, není žádný.** Obě meze visí na
-     *   `control.enabled`, takže nad `{"enabled":false}` dá **250 požadavků 250
+     *   `control.enabled`, takže nad `{"enabled":false,"capUsd":0}` dá **250 požadavků 250
      *   řádků**, každý se jménem modelu z prostředí.
      *
      * Bound je proto stejný jako u ostatních řádků téhle routy: milníky.
@@ -457,15 +502,12 @@ export async function POST(request: Request): Promise<Response> {
      */
     if (result.outcome === 'GENERATED') {
       const { shown, withheld } = splitProvenance(result.provenance);
-      if (result.costUsd > 0 || withheld.length > 0) {
-        accountedUsd += result.costUsd;
-        logRateLimited(
-          'generate',
-          requestId,
-          'ACCOUNTING',
-          [`costUsd=${result.costUsd}`, `totalUsd=${accountedUsd.toFixed(6)}`, ...withheld].join(' '),
-        );
-      }
+      // Dvě půlky jednoho řádku, každá s mezí podle toho, čí je to stav.
+      // Zadržený klíč provenience je **nastavení nasazení** — u každého
+      // požadavku týž, takže lepivě. Peníze jsou stav, který roste, takže
+      // krokem v dolarech.
+      if (withheld.length > 0) logStickyFault(requestId, 'PROVENANCE_WITHHELD', withheld.join(' '));
+      logAccounting(requestId, result.costUsd);
       return Response.json({
         requestId,
         branch: result.branch,
@@ -531,6 +573,14 @@ export async function POST(request: Request): Promise<Response> {
         PUBLIC_REFUSAL[result.reason],
       );
     }
+
+    // **Účtuje se i selhání, které stálo peníze.** `BILLED_ON_FAILURE`
+    // (`src/server/pipeline.ts`) účtuje `UPSTREAM_UNAVAILABLE` a
+    // `MALFORMED_RESPONSE` rezervací, protože poskytovatel odpověděl a to se
+    // platí. Kdyby se sem přičítalo jen z úspěchů, `totalUsd` by podhlašovalo
+    // právě ve chvíli, kdy poskytovatel zlobí — tedy směrem, který peníze
+    // schovává. Nález nezávislé revize 1. 9. 2026.
+    logAccounting(requestId, result.costUsd);
 
     // Kdo co dostane, rozhodují `OPERATOR_LOG` a `FAILURE_STATUS` výš — obě
     // tabulky nad `GenerationFailureReason`, takže nový důvod bez rozhodnutí
