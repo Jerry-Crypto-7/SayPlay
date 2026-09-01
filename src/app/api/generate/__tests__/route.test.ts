@@ -35,8 +35,23 @@ interface ResponseBody {
   readonly requestId: string;
   readonly branch?: string;
   readonly emission?: unknown;
+  /** Zůstat MÁ: počet tokenů je vlastnost volání, ne ceníku. */
+  readonly usage?: { readonly inputTokens: number; readonly outputTokens: number };
+  /** Zmizet MÁ: druhá polovina dvojice, ze které jde ceník dopočítat. */
   readonly costUsd?: number;
+  readonly provenance?: Record<string, string | boolean>;
   readonly error?: { readonly code: string; readonly message: string; readonly category?: string };
+}
+
+/** Všechna jména klíčů v odpovědi, do libovolné hloubky. */
+function keysDeep(value: unknown, into: string[] = []): string[] {
+  if (Array.isArray(value)) for (const item of value) keysDeep(item, into);
+  else if (value !== null && typeof value === 'object')
+    for (const [key, inner] of Object.entries(value)) {
+      into.push(key);
+      keysDeep(inner, into);
+    }
+  return into;
 }
 
 /**
@@ -78,7 +93,11 @@ describe('POST /api/generate', () => {
     expect(status).toBe(200);
     expect(json.branch).toBe('mock');
     expect(typeof json.emission).toBe('object');
-    expect(json.costUsd).toBe(0);
+    // Že offline větev nic nestojí, se od 1. 9. 2026 nesoudí přes `costUsd` —
+    // ten se ven neposílá vůbec (viz blok o ceníku dole). Tvrzení zůstalo,
+    // jen ho nese spotřeba, a ta je u zmrazené odpovědi nulová.
+    expect(json.usage).toEqual({ inputTokens: 0, outputTokens: 0 });
+    expect(json.costUsd).toBeUndefined();
   });
 
   it('prompt mimo zmrazený korpus je 404, ne chyba serveru', async () => {
@@ -527,6 +546,121 @@ describe('POST /api/generate', () => {
       expect(lines, '25 požadavků napsalo operátorovi víc než jeden řádek').toHaveLength(1);
       // První výskyt musí nést všechno, protože druhý nebude.
       expect(lines[0]).toContain(path);
+    });
+
+    /**
+     * **Úspěšná odpověď vypadá jako poctivá auditovatelnost a je to únik
+     * nastavení** — nález nezávislé revize 31. 8. 2026.
+     *
+     * Dvě věci naráz, každá jinou cestou. `provenance.model` je doslova hodnota
+     * `WORLDSMITH_MODEL` tohohle nasazení. A `usage` s `costUsd` jsou **dvě
+     * rovnice o dvou neznámých**: `costUsd()` je lineární a její tvar je
+     * veřejný, takže dva prompty s různým poměrem vstupu a výstupu vydají
+     * `usdPerMTokIn` i `usdPerMTokOut` přesně.
+     *
+     * Soudí se to **nad celým tělem, ne nad jedním klíčem**: jméno modelu se
+     * hledá jako řetězec kdekoli v odpovědi a `costUsd` jako jméno klíče do
+     * libovolné hloubky. Přesunout tutéž hodnotu o patro jinam je totiž přesně
+     * to, co by opravu obešlo, aniž by se kterýkoli test ozval.
+     */
+    it('úspěch nevydá ceník ani jméno modelu, a poctivost si nechá', async () => {
+      const model = 'privately-pinned-model-7c1f';
+      vi.stubGlobal('fetch', () =>
+        Promise.resolve(
+          Response.json({
+            content: [{ type: 'text', text: '{"emitted":true}' }],
+            usage: { input_tokens: 100, output_tokens: 200 },
+          }),
+        ),
+      );
+
+      const { status, json } = await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_MODEL: model,
+        WORLDSMITH_USD_PER_MTOK_IN: '3',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        WORLDSMITH_SPEND_CAP_USD: '1000',
+      });
+
+      expect(status).toBe(200);
+      expect(JSON.stringify(json), 'ven odešlo jméno modelu z prostředí').not.toContain(model);
+      expect(keysDeep(json), 'ven odešla druhá polovina dvojice na ceník').not.toContain('costUsd');
+
+      // A ticho nesmí být proto, že se ořezalo všechno. Doklad o původu je
+      // důvod, proč `provenance` v odpovědi vůbec je (RUN-01).
+      expect(json.provenance?.source).toBe('upstream-http');
+      expect(json.provenance?.synthetic).toBe(false);
+      expect(json.usage).toEqual({ inputTokens: 100, outputTokens: 200 });
+    });
+
+    it('zmrazená větev si nechá celou svoji stopu, protože je to veřejný artefakt', async () => {
+      // Druhá půlka téhož: výčet povolených klíčů se nesmí splést s „ořízni
+      // provenance". Čtveřice zmrazené větve popisuje commitnutý soubor
+      // v repozitáři, ne nastavení serveru, a bez ní není čím doložit, že
+      // odpověď nevznikla za běhu.
+      const { status, json } = await post(JSON.stringify({ prompt: FROZEN_CREATE.prompt }));
+
+      expect(status).toBe(200);
+      expect(json.provenance?.source).toBe('frozen-manifest');
+      expect(json.provenance?.file).toBe('responses/index.jsonl');
+      expect(typeof json.provenance?.bodySha256).toBe('string');
+      expect(typeof json.provenance?.declaredVerdict).toBe('string');
+      expect(json.provenance?.promptId).toBe(FROZEN_CREATE.id);
+    });
+
+    it('co se z odpovědi zahodí, dojde operátorovi celé', async () => {
+      // Ořezat ven se smí jen tak, aby to operátor pořád našel — táž doktrína
+      // jako u adresy poskytovatele. Bez tohohle řádku by nasazení, které jede
+      // na jiném modelu, než si operátor myslí, nešlo poznat odnikud.
+      const logged = captureOperatorLog();
+      const model = 'privately-pinned-model-7c1f';
+      vi.stubGlobal('fetch', () =>
+        Promise.resolve(
+          Response.json({
+            content: [{ type: 'text', text: '{"emitted":true}' }],
+            usage: { input_tokens: 100, output_tokens: 200 },
+          }),
+        ),
+      );
+
+      const { status, json } = await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_MODEL: model,
+        WORLDSMITH_USD_PER_MTOK_IN: '3',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        WORLDSMITH_SPEND_CAP_USD: '1000',
+      });
+      expect(status).toBe(200);
+
+      const operator = logged.join('\n');
+      expect(operator, 'operátor se nedozvěděl, na jakém modelu to běží').toContain(model);
+      // (100 × 3 + 200 × 15) / 1e6
+      expect(operator, 'operátorovi chybí cena volání').toContain('costUsd=0.0033');
+      expect(operator).toContain(String(json.requestId));
+    });
+
+    /**
+     * **Ten účetní řádek je omezený tím, co ho vyrábí, ne tím, kdo ho volá.**
+     *
+     * Endpoint nechce přihlášení (AC T301), takže řádek na úspěšný požadavek by
+     * znamenal neomezený růst logu, který si spustí kdokoli — táž vada jako
+     * u lepivého odmítnutí stropem o kus výš. Offline větev ale nic nestojí
+     * a v `provenance` nezadržuje nic, takže **nemá co účtovat** a mlčí; na
+     * placené větvi je počet těch řádků shora omezený stropem počtu volání,
+     * tedy týmž mechanismem, který omezuje peníze.
+     */
+    it('úspěch na offline větvi nenapíše operátorovi nic, ať jich přijde kolik chce', async () => {
+      const logged = captureOperatorLog();
+      const call = await loadRoute();
+
+      for (let attempt = 0; attempt < 20; attempt += 1)
+        expect((await call(JSON.stringify({ prompt: FROZEN_CREATE.prompt }))).status).toBe(200);
+
+      expect(logged, 'úspěch zdarma dokáže psát operátorovi na stderr').toEqual([]);
     });
   });
 });

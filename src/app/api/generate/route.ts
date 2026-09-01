@@ -151,6 +151,53 @@ const PUBLIC_MODERATION: Record<ModerationCategory, string> = {
 };
 
 /**
+ * **Co z `provenance` smí ven — jmenovitě, ne co nesmí.**
+ *
+ * `provenance` je v odpovědi kvůli auditovatelnosti běhu (RUN-01): porotce má
+ * mít v ruce doklad, že svět je odtud, odkud tvrdíme. Jenže ho obě větve
+ * skládají samy a jeho typ je otevřený `Record<string, string | boolean>`.
+ * Kdo do něj příště přidá klíč, přidá ho **rovnou na veřejnou cestu** a nikdo
+ * to nepozná — úplnost překladačem, na které stojí tabulky výš, se u otevřeného
+ * záznamu postavit nedá.
+ *
+ * ⚠ **Naměřeno 31. 8. 2026 nezávislou revizí, ne odhadnuto.** Živá větev
+ * takový klíč už měla: `provenance.model` je doslova hodnota `WORLDSMITH_MODEL`
+ * (`src/server/upstream.ts:184`). Nejde o to, že by jméno modelu bylo tajné —
+ * odevzdání ho podle `RULES.md` §2 stejně zveřejňuje. Jde o to, že je to
+ * **živá hodnota proměnné prostředí tohohle nasazení**, kterou si kdokoli na
+ * internetu přečte zpátky: překlep, upgrade i dočasně přepnutý model jsou
+ * vidět zvenčí dřív než v logu, a to je nastavení serveru, ne vlastnost světa.
+ *
+ * Dveře se proto zavírají **výčtem toho, co projde**. Nový klíč tudy neprojde,
+ * dokud ho sem někdo vědomě nedopíše, a do té doby jde operátorovi do logu.
+ * Dnešní sedmička jsou vlastnosti **commitnutých veřejných artefaktů** —
+ * který soubor zmrazeného korpusu, jeho hash, jeho deklarovaný verdikt — ne
+ * nastavení běhu.
+ */
+const PUBLIC_PROVENANCE: ReadonlySet<string> = new Set([
+  'branch',
+  'source',
+  'synthetic',
+  'promptId',
+  'file',
+  'bodySha256',
+  'declaredVerdict',
+]);
+
+/** Rozdělí `provenance` na to, co jde ven, a na to, co jde operátorovi. */
+function splitProvenance(provenance: Readonly<Record<string, string | boolean>>): {
+  readonly shown: Record<string, string | boolean>;
+  readonly withheld: readonly string[];
+} {
+  const shown: Record<string, string | boolean> = {};
+  const withheld: string[] = [];
+  for (const [key, value] of Object.entries(provenance))
+    if (PUBLIC_PROVENANCE.has(key)) shown[key] = value;
+    else withheld.push(`${key}=${String(value)}`);
+  return { shown, withheld };
+}
+
+/**
  * **Příčiny odmítnutí, které už tenhle proces operátorovi zapsal.**
  *
  * Endpoint je bez přihlašování (AC T301), takže rychlost zápisu na stderr řídí
@@ -240,15 +287,43 @@ export async function POST(request: Request): Promise<Response> {
       grammar: grammar.value,
     });
 
-    if (result.outcome === 'GENERATED')
+    /**
+     * **Úspěch neúčtuje ven.**
+     *
+     * Do 1. 9. 2026 nesla odpověď 200 `usage` i `costUsd` naráz, a to jsou
+     * **dvě rovnice o dvou neznámých**: dva prompty s různým poměrem vstupu
+     * a výstupu z nich dají `usdPerMTokIn` i `usdPerMTokOut` přesně, protože
+     * `costUsd()` (`src/server/spend-cap.ts:65`) je lineární a její tvar je
+     * veřejný. Ceník nasazení je přitom smlouva s poskytovatelem, ne vlastnost
+     * světa, který porotce dostal.
+     *
+     * **Zůstává `usage`, mizí `costUsd`**, a ta volba není libovolná: počet
+     * tokenů je vlastnost **toho volání** a porotci poctivě říká, kolik toho
+     * model na ten svět napsal. `costUsd` je vlastnost **ceníku** — sám o sobě
+     * neříká nic o světě a zároveň je to jediná polovina dvojice, bez které se
+     * ceník dopočítat nedá.
+     *
+     * ⚠ **Ten řádek do logu je omezený tím, co ho vyrábí.** Endpoint nechce
+     * přihlášení (AC T301), takže by rychlost zápisu na stderr jinak řídil
+     * kdokoli na internetu — táž vada, kvůli které o kus výš existuje
+     * `REFUSALS_LOGGED`. Bound je tady jiný a nepotřebuje stav: řádek vzniká
+     * jen tehdy, **když je co účtovat**, a to umí jedině placené volání. Ta
+     * jsou omezená stropem počtu volání (`DEFAULT_CALL_CAP`, dnes 200 na
+     * proces), tedy týmž mechanismem, který omezuje peníze. Offline větev má
+     * `costUsd` nulové a v `provenance` nezadržuje nic, takže nezapíše nikdy.
+     */
+    if (result.outcome === 'GENERATED') {
+      const { shown, withheld } = splitProvenance(result.provenance);
+      if (result.costUsd > 0 || withheld.length > 0)
+        logForOperator(requestId, 'ACCOUNTING', [`costUsd=${result.costUsd}`, ...withheld].join(' '));
       return Response.json({
         requestId,
         branch: result.branch,
         emission: result.body,
         usage: result.usage,
-        costUsd: result.costUsd,
-        provenance: result.provenance,
+        provenance: shown,
       });
+    }
 
     /**
      * **Odmítnutí se logují taky, a u stropu je to celý rozdíl mezi provozem
