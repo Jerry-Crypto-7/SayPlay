@@ -433,6 +433,45 @@ describe('3. neznámá cena se neúčtuje nulou', () => {
     expect(await spentAt('50')).toBeCloseTo(2 * (await spentAt('25')), 10);
   });
 
+  it('hranice nikdy nepřeroste rezervaci, kterou nahrazuje', async () => {
+    const cap = openCap();
+    // **Délku textu volí poskytovatel, ne my.** Odpověď delší, než kolik
+    // `maxOutputTokens` unese, je porušení protokolu — a přesně takové porušení
+    // tenhle soubor jinde odmítá předpokládat, že nenastane. Bez stropu na
+    // hranici vyjde ze 200 kB textu 16 667 tokenů, tedy 0,42 USD proti
+    // rezervaci 0,22 USD: jedna odpověď by strhla víc, než se na ni drželo,
+    // a dost velká odpověď by vyčerpala celý dolarový strop naráz.
+    const { calls, fetchImpl } = recordingFetch(cap, () =>
+      messagesResponse(worldOfTextLength(200_000), { input_tokens: 0, output_tokens: 1 }),
+    );
+    const result = await runPipeline(PROMPT, {
+      branch: upstreamBranch(liveConfig(), fetchImpl),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    expect(result.outcome).toBe('GENERATED');
+    expect(cap.snapshot().spentUsd).toBeLessThanOrEqual(calls[0]!.reservedAtCallUsd);
+    // Strop hranice je výstupní půlka rezervace: 8000 tokenů po 25 USD/Mtok.
+    expect(cap.snapshot().spentUsd).toBeCloseTo(8000 * USD_PER_TOKEN_OUT, 10);
+  });
+
+  it('záporný vstup na účtence hranice nezlevní — pořád platí rezervaci', async () => {
+    const cap = openCap();
+    // Záporná složka účtenky se dřív propočítala do záporné ceny, tu `release()`
+    // odmítl a strhl celou rezervaci. Zvednutím výstupu by se součet vrátil nad
+    // nulu, `release()` by ho přijal a otrávená účtenka by tím **zlevnila**:
+    // naměřeno 0,2195 → 0,0062 USD, tedy 35× méně. Hranice se proto nepoužije,
+    // dokud je druhá složka nesmyslná.
+    const { calls, fetchImpl } = recordingFetch(cap, () =>
+      messagesResponse(worldOfTextLength(FLOORED_TEXT_CHARS), { input_tokens: -1, output_tokens: 0 }),
+    );
+    await runPipeline(PROMPT, { branch: upstreamBranch(liveConfig(), fetchImpl), cap, grammar: GRAMMAR });
+
+    expect(cap.snapshot().spentUsd).toBeCloseTo(calls[0]!.reservedAtCallUsd, 10);
+    expect(cap.snapshot().spentUsd).toBeGreaterThan(FLOOR_TOKENS * USD_PER_TOKEN_OUT);
+  });
+
   it('nesmyslná účtenka se hranicí nezlevňuje — pořád platí rezervaci', async () => {
     const cap = openCap();
     // Záporný, `NaN` i nekonečný výstup dnes stojí **celou rezervaci**, protože
