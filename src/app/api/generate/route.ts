@@ -395,11 +395,15 @@ let reportedUsd = 0;
  * strhl, je úloha `T9-costreport` — tady se zavírá jen ta mez.
  */
 function logAccounting(requestId: string, costUsd: number): void {
-  if (!Number.isFinite(costUsd) || costUsd <= 0) {
-    // Nula je normální stav (offline větev, neúčtované selhání) a mlčí.
-    if (costUsd !== 0) logStickyFault(requestId, 'RECEIPT_UNUSABLE', `costUsd=${String(costUsd)}`);
-    return;
-  }
+  // **Tady stávala pojistka proti záporné a nekonečné částce a je pryč
+  // schválně.** Byla to oprava u konzumenta místo u zdroje: `costUsd` z
+  // `runPipeline` je od 1. 9. 2026 to, co `settle()` doopravdy strhlo, a to je
+  // buď použitelná účtenka, nebo rezervace — obojí konečné a nezáporné, obojí
+  // ověřené v `reserve()`. Kontrola, která nemůže spadnout, jen tvrdí, že něco
+  // hlídá. Drží to test „hlášená cena se rovná strženému" v `pipeline.test.ts`.
+  //
+  // Nula zůstává normální stav (offline větev, neúčtované selhání) a mlčí.
+  if (costUsd === 0) return;
   accountedUsd += costUsd;
   if (reportedUsd > 0 && accountedUsd - reportedUsd < accountingStepUsd()) return;
   reportedUsd = accountedUsd;

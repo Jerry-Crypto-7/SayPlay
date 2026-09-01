@@ -200,14 +200,13 @@ export async function runPipeline(prompt: unknown, deps: PipelineDeps): Promise<
   try {
     generated = await deps.branch.generate(call);
   } catch (thrown) {
-    reservation.settle('unknown');
     return {
       outcome: 'FAILED',
       stage: 'generation',
       branch: deps.branch.id,
       reason: 'UPSTREAM_UNAVAILABLE',
       detail: `the ${deps.branch.id} branch threw: ${(thrown as Error).message}`,
-      costUsd: reservation.reservedUsd,
+      costUsd: reservation.settle('unknown'),
     };
   }
 
@@ -216,13 +215,18 @@ export async function runPipeline(prompt: unknown, deps: PipelineDeps): Promise<
     // vyhozená výjimka výš. Nula by znamenala, že poskytovatel, který `usage`
     // vynechá, volá zadarmo a strop ho nikdy neuvidí.
     const spent = generated.usage === null ? null : costUsd(generated.usage, deps.branch.pricing);
-    reservation.settle(spent ?? 'unknown');
     return {
       outcome: 'GENERATED',
       branch: deps.branch.id,
       body: generated.body,
       usage: generated.usage ?? { inputTokens: 0, outputTokens: 0 },
-      costUsd: spent ?? reservation.reservedUsd,
+      // **Hlásí se stržené, ne poslané.** `settle()` účtenku, která nedává
+      // smysl, zahodí a strhne celou rezervaci — a do 1. 9. 2026 se to nikdo
+      // nedozvěděl: `{input_tokens: -1e9}` strhlo 0,2195 USD a vrátilo sem
+      // `-5000`, `{input_tokens: 1e999}` vrátilo `Infinity`. Je to jediný
+      // účetní údaj, který produkt vydává, takže operátor hledající, kam se
+      // rozpočet poděl, dostal součet, který se stropem nesedí.
+      costUsd: reservation.settle(spent ?? 'unknown'),
       provenance: generated.provenance,
     };
   }
@@ -233,14 +237,13 @@ export async function runPipeline(prompt: unknown, deps: PipelineDeps): Promise<
       : BILLED_ON_FAILURE[generated.reason] === 'estimate'
         ? reservation.reservedUsd
         : 0;
-  reservation.settle(billed);
-
   return {
     outcome: 'FAILED',
     stage: 'generation',
     branch: deps.branch.id,
     reason: generated.reason,
     detail: generated.detail,
-    costUsd: billed,
+    // Táž věc jako u úspěchu: `billed` je návrh, `settle()` je rozhodnutí.
+    costUsd: reservation.settle(billed),
   };
 }

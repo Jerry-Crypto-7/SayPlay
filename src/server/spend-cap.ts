@@ -125,8 +125,15 @@ export interface Reserved {
    * peníze by přitom odcházely.
    *
    * Druhé a další vyrovnání téže rezervace nedělá nic.
+   *
+   * **Vrací dolary, které se doopravdy strhly** — tedy `actualUsd`, když se dá
+   * použít, a jinak celou rezervaci. Bez toho volající neměl jak zjistit, které
+   * z těch dvou čísel platí, a hlásil dál to, které poslal: naměřeno 1. 9. 2026,
+   * že účtenka `{input_tokens: -1e9}` strhla správně 0,2195 USD a operátorovi
+   * ohlásila `costUsd=-5000`. Opakované vyrovnání vrátí totéž číslo jako to
+   * první, protože strop se podruhé nehnul.
    */
-  settle(actualUsd: number | 'unknown'): void;
+  settle(actualUsd: number | 'unknown'): number;
 }
 
 export interface Refused {
@@ -273,10 +280,9 @@ export class SpendCap {
     this.#reservedUsd += worstCaseUsd;
     // Jen placená volání, viz `#callsMade`. Větev zdarma nemá co ušetřit.
     if (worstCaseUsd > 0) this.#callsMade += 1;
-    let settled = false;
-    const release = (actualUsd: number | 'unknown'): void => {
-      if (settled) return;
-      settled = true;
+    let settledUsd: number | null = null;
+    const release = (actualUsd: number | 'unknown'): number => {
+      if (settledUsd !== null) return settledUsd;
       this.#reservedUsd -= worstCaseUsd;
       // Číslu od poskytovatele se tady NEVĚŘÍ, a je to naměřené: `Math.max(0, NaN)`
       // je zase `NaN`, takže jediná vadná účtenka otráví součet a od té chvíle je
@@ -287,7 +293,9 @@ export class SpendCap {
       // Když účtenka nedává smysl, účtuje se celá **rezervace**: je to horní odhad,
       // který kontrolou už jednou prošel, takže strop spíš přestřelí než povolí.
       const usable = typeof actualUsd === 'number' && Number.isFinite(actualUsd) && actualUsd >= 0;
-      this.#spentUsd += usable ? actualUsd : worstCaseUsd;
+      settledUsd = usable ? actualUsd : worstCaseUsd;
+      this.#spentUsd += settledUsd;
+      return settledUsd;
     };
 
     return { ok: true, reservedUsd: worstCaseUsd, settle: release };

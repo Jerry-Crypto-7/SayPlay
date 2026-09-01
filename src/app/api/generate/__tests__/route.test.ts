@@ -881,7 +881,7 @@ describe('POST /api/generate', () => {
      * napořád nepravda — a od té chvíle píše řádek **každý** placený požadavek.
      * Mez by zmizela přesně u toho poskytovatele, kvůli kterému se log čte.
      */
-    it('otrávená účtenka nezruší mez a nepřepíše součet na nečíslo', async () => {
+    it('otrávená účtenka se do součtu dostane jako to, co strop strhl', async () => {
       const logged = captureOperatorLog();
       // `Response.json` by `Infinity` uložilo jako `null`, takže tělo musí jít
       // jako text — `JSON.parse('1e999')` dá `Infinity` typu number.
@@ -909,13 +909,21 @@ describe('POST /api/generate', () => {
         expect(status).toBe(200);
       }
 
-      // Bez pojistky: šest požadavků, šest řádků. S ní: žádný, protože do
-      // součtu se otrávené číslo nepustí a součet zůstal na nule.
+      // **Šest požadavků, jeden řádek** — mez drží krok v dolarech (setina
+      // stropu, tedy 10 USD), a šest rezervací po ~0,13 USD ho nepřekročí.
       const accounting = logged.filter((line) => line.includes('ACCOUNTING'));
-      expect(accounting, 'otrávená účtenka píše řádek na požadavek').toHaveLength(0);
-      // A operátor se o tom dozví — jednou za proces, ne šestkrát.
-      const unusable = logged.filter((line) => line.includes('RECEIPT_UNUSABLE'));
-      expect(unusable, 'nečitelná účtenka zmizela beze stopy, nebo dala řádek na požadavek').toHaveLength(1);
+      expect(accounting, 'otrávená účtenka píše řádek na požadavek').toHaveLength(1);
+
+      // **A tohle je ta změna z 1. 9. 2026, ne jen jiné číslo výš.** Dokud se
+      // otrávená částka ořezávala až tady u konzumenta, řádek nevznikl vůbec
+      // (`Infinity` se do součtu nepustil) — takže těch ~0,8 USD, které strop
+      // doopravdy strhl, nebylo v logu **nikde**. Součet teď nese strženou
+      // rezervaci, protože `runPipeline` hlásí to, co `settle()` odečetl.
+      const totalUsd = Number(/totalUsd=([0-9.]+)/.exec(accounting[0]!)?.[1]);
+      expect(Number.isFinite(totalUsd), accounting[0]).toBe(true);
+      expect(totalUsd).toBeGreaterThan(0);
+      // Ne cena té otrávené účtenky, ale rezervace jednoho volání.
+      expect(totalUsd).toBeLessThan(1);
     });
 
     /**

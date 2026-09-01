@@ -380,6 +380,98 @@ describe('co se účtuje, když se volání nepovede', () => {
 // Hranice proti měřicí vrstvě
 // ---------------------------------------------------------------------------
 
+/**
+ * **Hlášená cena se musí rovnat té stržené.** Je to jediný účetní údaj, který
+ * produkt vydává — `/api/generate` z něj píše `ACCOUNTING costUsd=…` — takže
+ * operátor, který hledá, kam se rozpočet poděl, nemá jak si ho ověřit jinde.
+ *
+ * Do 1. 9. 2026 to neplatilo a vada byla starší než pravidlo dvojité nuly:
+ * `settle()` účtenku, která nedává smysl, zahodí a strhne celou rezervaci, ale
+ * nikomu to neřekl — `runPipeline` vracel dál to číslo, které poslal. Naměřeno:
+ * `{input_tokens: -1e9}` strhlo 0,2195 USD a ohlásilo `-5000`; `1e999` ohlásilo
+ * `Infinity`, a to nekonečno pak rušilo mez operátorského logu úplně.
+ */
+describe('hlášená cena se rovná té, kterou strop doopravdy strhl', () => {
+  /** Účtenka, kterou `release()` odmítne, ať je nesmysl v kterékoli složce. */
+  function poisonedFetch(rawUsage: string): typeof fetch {
+    // Tělo jde jako text, ne přes `Response.json`: to by `Infinity` uložilo
+    // jako `null`. `JSON.parse('1e999')` dá `Infinity` typu number.
+    return (() =>
+      Promise.resolve(
+        new Response(`{"content":[{"type":"text","text":${JSON.stringify(JSON.stringify(LIVE_WORLD))}}],"usage":${rawUsage}}`, {
+          headers: { 'content-type': 'application/json' },
+        }),
+      )) as unknown as typeof fetch;
+  }
+
+  it('záporná účtenka se ohlásí rezervací, ne záporným číslem', async () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 100 });
+    const result = await runPipeline('bludiště s klíčem', {
+      branch: upstreamBranch(LIVE_CONFIG, poisonedFetch('{"input_tokens":-1e9,"output_tokens":1}')),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    if (result.outcome !== 'GENERATED') throw new Error('expected a generated world');
+    expect(result.costUsd).toBe(cap.snapshot().spentUsd);
+    expect(result.costUsd).toBeGreaterThan(0);
+    // Hlášená spotřeba zůstává poctivá — mění se účet, ne to, co poskytovatel řekl.
+    expect(result.usage).toEqual({ inputTokens: -1e9, outputTokens: 1 });
+  });
+
+  it('nekonečná účtenka se ohlásí konečným číslem', async () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 100 });
+    const result = await runPipeline('bludiště s klíčem', {
+      branch: upstreamBranch(LIVE_CONFIG, poisonedFetch('{"input_tokens":1e999,"output_tokens":1}')),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    if (result.outcome !== 'GENERATED') throw new Error('expected a generated world');
+    expect(Number.isFinite(result.costUsd), String(result.costUsd)).toBe(true);
+    expect(result.costUsd).toBe(cap.snapshot().spentUsd);
+  });
+
+  it('platí to i na cestě selhání, ne jen na úspěchu', async () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 100 });
+    // Textový blok, který není JSON, plus otrávená účtenka: `BILLED_ON_FAILURE`
+    // dá přednost účtence před odhadem, takže sem teče totéž otrávené číslo.
+    const fetchImpl = (() =>
+      Promise.resolve(
+        new Response('{"content":[{"type":"text","text":"tohle není JSON"}],"usage":{"input_tokens":-1e9,"output_tokens":1}}', {
+          headers: { 'content-type': 'application/json' },
+        }),
+      )) as unknown as typeof fetch;
+
+    const result = await runPipeline('bludiště s klíčem', {
+      branch: upstreamBranch(LIVE_CONFIG, fetchImpl),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    if (result.outcome !== 'FAILED') throw new Error('expected a failure');
+    expect(result.costUsd).toBe(cap.snapshot().spentUsd);
+    expect(result.costUsd).toBeGreaterThan(0);
+  });
+
+  it('poctivá účtenka se ohlásí sama sebou, ne rezervací', async () => {
+    // Druhý směr téhož tvrzení: rovnost se nesmí zařídit tím, že se vždycky
+    // hlásí rezervace. To by strop nafouklo u každého levného volání.
+    const cap = new SpendCap({ enabled: true, capUsd: 100 });
+    const branch = upstreamBranch(LIVE_CONFIG, stubFetch());
+    const worstCase = branch.worstCaseUsd({
+      prompt: 'bludiště',
+      request: { model: 'test-model', system: '', user: 'bludiště' },
+    });
+    const result = await runPipeline('bludiště s klíčem', { branch, cap, grammar: GRAMMAR });
+
+    if (result.outcome !== 'GENERATED') throw new Error('expected a generated world');
+    expect(result.costUsd).toBe(cap.snapshot().spentUsd);
+    expect(result.costUsd).toBeCloseTo((100 * 3 + 200 * 15) / 1_000_000, 12);
+    expect(result.costUsd).toBeLessThan(worstCase);
+  });
+});
+
 describe('strop endpointu a strop měřicích běhů o sobě nesmějí vědět', () => {
   // Skenují se jen produkční soubory. Tenhle test sám prefix proměnných jmenuje,
   // takže kdyby se skenoval i on, shodil by sám sebe — táž past jako zástupné
