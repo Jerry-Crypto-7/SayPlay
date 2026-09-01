@@ -273,23 +273,40 @@ function usageOf(payload: unknown): Usage | null {
   // `release()` v `spend-cap.ts` a účtuje celou rezervaci — bezpečná strana.
   // Chytil to až mutant M2, který kontrolu odstranil a sada zůstala zelená.
 
-  // **Dvojitá nula je poslední roh téže doktríny** a jediný, který se musí
-  // odmítat výslovně. `null`, `NaN` i záporná čísla už rezervaci účtují; nula
-  // je oproti nim *známá* hodnota, projde každou kontrolou a `costUsd()` z ní
-  // vyjde přesně 0. `settle(0)` pak dolarovým stropem nehne vůbec a placené
-  // volání je zadarmo — zbývá jen počítadlo volání.
-  //
-  // Odpověď, ze které tahle funkce vůbec čte, přitom **nese text**: nula
-  // spálených výstupních tokenů k němu neexistuje. To není účtenka na nulu, to
-  // je účtenka, kterou neumíme přečíst, a tak se sem taky zapisuje.
-  //
-  // Schválně jen dvojitá nula, ne `output_tokens === 0` samo: tam by se vstup
-  // pořád účtoval, takže volání zadarmo nevznikne, a širší kontrola by odmítala
-  // účtenky, které nikdo neviděl. Vyžaduje to, aby poskytovatel hlásil spotřebu
-  // špatně — proto je to roh, ne hlavní cesta.
-  if (usage.input_tokens === 0 && usage.output_tokens === 0) return null;
-
   return { inputTokens: usage.input_tokens, outputTokens: usage.output_tokens };
+}
+
+/**
+ * Účtenka **úspěšné** odpovědi. Dvojitá nula je na ní nečitelná účtenka, ne
+ * volání zadarmo.
+ *
+ * `null`, `NaN` i záporná čísla už rezervaci účtují; nula je oproti nim
+ * *známá* hodnota, projde každou kontrolou a `costUsd()` z ní vyjde přesně 0.
+ * `settle(0)` pak dolarovým stropem nehne vůbec a placené volání je zadarmo —
+ * zbývá jen počítadlo volání, které se na serverless resetuje s chladným startem.
+ *
+ * Odpověď, na kterou se tohle použije, **nese text**: nula spálených výstupních
+ * tokenů k němu neexistuje.
+ *
+ * ⚠ **A právě proto to nesmí platit na celou funkci** — nález nezávislé revize
+ * 1. 9. 2026, který opravuje tentýž den starou vadu. `usageOf()` se čte
+ * **před** kontrolou textového bloku, takže dokud tohle pravidlo bydlelo uvnitř
+ * ní, chytalo i `MALFORMED_RESPONSE`. Naměřeno: odpověď 200 s prázdným
+ * `content` a vynulovanou spotřebou účtovala **celou rezervaci** (0,2195 USD
+ * proti 0,00003 USD u téže vady s účtenkou `{1,1}`), takže bránou, kterou
+ * nikdo nehlídá, se dá strop 5 USD vyčerpat asi 23 odpověďmi bez jediného
+ * dolaru skutečné spotřeby — a nasazené demo pak každému dalšímu porotci
+ * odpoví 429. Odmítnutá odpověď se proto účtuje dál podle `BILLED_ON_FAILURE`.
+ *
+ * Schválně jen dvojitá nula, ne `outputTokens === 0` samo: tam se vstup pořád
+ * účtuje, takže volání zadarmo nevznikne. **Rovnost na (0, 0) je bod, ne mez** —
+ * poskytovatel, který podhlásí o jeden token, ji obejde. Tu díru zavírá až
+ * spodní hranice na zaúčtovanou částku, routovaná jako `T9-usagefloor`.
+ */
+function readableUsage(usage: Usage | null): Usage | null {
+  if (usage === null) return null;
+  if (usage.inputTokens === 0 && usage.outputTokens === 0) return null;
+  return usage;
 }
 
 async function generate(
@@ -378,8 +395,9 @@ async function generate(
     ok: true,
     body,
     // NEsrážet na `{0, 0}`: `null` znamená „účtenku neumíme přečíst" a strop na
-    // to musí účtovat rezervaci. Nula znamenala volání zdarma.
-    usage,
+    // to musí účtovat rezervaci. Nula znamenala volání zdarma — a vynulovaná
+    // účtenka pod textovým blokem je totéž, viz `readableUsage()`.
+    usage: readableUsage(usage),
     provenance: {
       branch: UPSTREAM_BRANCH_ID,
       source: 'upstream-http',

@@ -71,6 +71,14 @@ function messagesResponse(body: unknown, usage: { input_tokens: number; output_t
   );
 }
 
+/** Odpověď 200, která projde jako JSON, ale nenese žádný textový blok. */
+function contentlessResponse(usage: { input_tokens: number; output_tokens: number }) {
+  return new Response(JSON.stringify({ content: [], usage }), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  });
+}
+
 const MINIMAL_WORLD = { irVersion: 'v1', simRevision: 0, lookRevision: 0, sim: null, look: {} };
 
 /** Zaznamenává každé volání transportu i to, co drží strop v okamžiku volání. */
@@ -245,6 +253,28 @@ describe('3. neznámá cena se neúčtuje nulou', () => {
     if (result.outcome === 'GENERATED') expect(result.usage).toEqual({ inputTokens: 0, outputTokens: 0 });
   });
 
+  it('odmítnutá odpověď se neúčtuje rezervací jen proto, že nese nuly', async () => {
+    const config = liveConfig();
+    const cap = openCap();
+
+    // Pravidlo dvojité nuly platí jen pro **úspěšnou** odpověď. Kdyby platilo
+    // i tady, dala by se rezervace vyčerpat odpověďmi, které nic nestály:
+    // naměřeno 0,2195 USD na jednu, tedy strop 5 USD asi za 23 odpovědí.
+    const result = await runPipeline(PROMPT, {
+      branch: upstreamBranch(
+        config,
+        recordingFetch(cap, () => contentlessResponse({ input_tokens: 0, output_tokens: 0 })).fetchImpl,
+      ),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    expect(result.outcome).toBe('FAILED');
+    expect(result.outcome === 'FAILED' && result.reason).toBe('MALFORMED_RESPONSE');
+    expect(cap.snapshot().spentUsd).toBe(0);
+    expect(cap.snapshot().reservedUsd).toBe(0);
+  });
+
   it('nula jen na jedné straně účtenky je pořád čitelná účtenka', async () => {
     const config = liveConfig();
     const cap = openCap();
@@ -370,6 +400,23 @@ describe('5. secret se nedostane do klientského bundlu', () => {
     );
     expect(readers.length).toBeGreaterThan(0);
     for (const path of readers) expect(path.startsWith('src/server/'), path).toBe(true);
+  });
+
+  it('kořenový next.config.mjs nevpisuje do bundlu nic, co nese tajemství', () => {
+    // **Prefix `NEXT_PUBLIC_` tady není potřeba, a to je celý ten nález.**
+    // Blok `env:` vpisuje hodnotu do každého klientského chunku pod jménem, jaké
+    // se mu napíše, takže `env: { WORLDSMITH_MODEL_KEY: … }` je únik, který
+    // aserce nad `NEXT_PUBLIC_` nevidí — a druhá ho zahodí filtrem na `src/`.
+    // Nález nezávislé revize 1. 9. 2026, reprodukovaný v jednorázovém repozitáři.
+    //
+    // Soudí se **uzavřeným seznamem slov, týmž jako u `build-env.allow` níž**:
+    // obojí jsou dveře, kterými se hodnota dostane tam, kde ji nechceme, a mají
+    // proto mít jedno pravidlo, ne dvě.
+    const config = readFileSync(`${repoRoot}next.config.mjs`, 'utf8');
+    const names = [...config.matchAll(/\b[A-Z][A-Z0-9_]{3,}\b/g)].map(([name]) => name);
+
+    expect(names.length, 'v konfiguraci nejsou žádná jména — vzor přestal sedět').toBeGreaterThan(0);
+    for (const name of names) expect(/KEY|SECRET|TOKEN|PASSWORD/.test(name), name).toBe(false);
   });
 
   it('hermetický build klíč vůbec nevidí — není na allowlistu', () => {
