@@ -321,6 +321,16 @@ function splitProvenance(provenance: Readonly<Record<string, string | boolean>>)
  */
 const REFUSALS_LOGGED = new Set<RefusalReason>();
 
+/**
+ * Utracené dolary za tenhle proces, pro účetní řádek.
+ *
+ * Roste u **každého** placeného volání, i u toho, jehož řádek milník zahodí —
+ * jinak by mez z účetnictví udělala náhodný vzorek. Není to druhý strop
+ * a nic neomezuje: skutečný zůstává `SpendCap`, tohle je jen to, co se
+ * o něm dá přečíst z jednoho řádku v logu.
+ */
+let accountedUsd = 0;
+
 function error(requestId: string, status: number, code: string, message: string): Response {
   return Response.json({ requestId, error: { code, message } }, { status });
 }
@@ -414,29 +424,48 @@ export async function POST(request: Request): Promise<Response> {
      * neříká nic o světě a zároveň je to jediná polovina dvojice, bez které se
      * ceník dopočítat nedá.
      *
-     * ⚠ **Ten řádek do logu je omezený tím, co ho vyrábí.** Endpoint nechce
-     * přihlášení (AC T301), takže by rychlost zápisu na stderr jinak řídil
-     * kdokoli na internetu — táž vada, kvůli které o kus výš existuje
-     * `REFUSALS_LOGGED`. Bound je tady jiný a nepotřebuje stav: řádek vzniká
-     * jen tehdy, **když je co účtovat**, a to umí jedině placené volání. Ta
-     * jsou omezená stropem počtu volání (`DEFAULT_CALL_CAP`, dnes 200), tedy
-     * týmž mechanismem, který omezuje peníze. Offline větev má `costUsd`
-     * nulové a v `provenance` nezadržuje nic, takže nezapíše nikdy.
+     * ⚠ **Do 1. 9. 2026 tady stálo, že řádek omezuje „to, co ho vyrábí" — a to
+     * bylo nepravdivé.** Argument zněl: účtovat je co jen u placeného volání
+     * a ta omezuje strop počtu volání, tedy týž mechanismus, který omezuje
+     * peníze. Vyvrátila ho kontrolní revize `cdf2c06`, tedy commitu, který
+     * tutéž větu vyvracel o dvě stě řádků výš u `OPERATOR_LOG` a **tady se o ni
+     * opřel dál**. Dvě měření:
      *
-     * ⚠ **Ten strop je ale „na proces", ne „na nasazení", a na cílové platformě
-     * to není totéž** — nález nezávislé revize 1. 9. 2026, změřený nad
-     * `WORLDSMITH_CALL_CAP=2`. `#callsMade` (`src/server/spend-cap.ts`) je
-     * paměť procesu a chladný start ji vynuluje, takže na serverless dostane
-     * volající 200 řádků **za každý studený proces**, každý se jménem modelu.
-     * Není to vada tohohle řádku: stejně tak se resetuje samotné omezení peněz,
-     * a je to táž vada, kterou `CLAUDE.md` zaznamenává u stropu utrácení. Drží
-     * to teprve persistentní strop z vlny 7 (T29) — a do té doby tenhle
-     * komentář neslibuje víc, než co platí.
+     * - **Strop je na proces, ne na nasazení.** `#callsMade`
+     *   (`src/server/spend-cap.ts`) je paměť procesu a chladný start ji vynuluje,
+     *   takže na serverless dostane volající celý strop řádků **za každý studený
+     *   proces**. Naměřeno nad `WORLDSMITH_CALL_CAP=2`.
+     * - **A když je strop vypnutý, není žádný.** Obě meze visí na
+     *   `control.enabled`, takže nad `{"enabled":false}` dá **250 požadavků 250
+     *   řádků**, každý se jménem modelu z prostředí.
+     *
+     * Bound je proto stejný jako u ostatních řádků téhle routy: milníky.
+     * **Účetnictví se tím ale neztrácí** — sampling by sám o sobě zahodil cenu
+     * devíti volání z deseti, takže řádek nese vedle ceny toho volání i
+     * **průběžný součet za proces**. Z jediného milníku se tak dá přečíst
+     * utracená částka i počet volání, což je pro srovnání s ceníkem víc, než
+     * dávalo dvě stě samostatných řádků.
+     *
+     * Offline větev má `costUsd` nulové a v `provenance` nezadržuje nic, takže
+     * nezapíše nikdy — to platí dál.
+     *
+     * ⚠ **Jméno modelu sem patří a ven nesmí.** Nabízelo se dopsat `model` do
+     * `PUBLIC_PROVENANCE`, čímž by `withheld` zůstalo prázdné — jenže to ten
+     * řádek nezavře (`costUsd > 0` ho vyrobí stejně) a zároveň by to zrušilo
+     * rozhodnutí, které stojí o kus výš a má vlastní test: `WORLDSMITH_MODEL` je
+     * **živá hodnota prostředí tohohle nasazení**, ne vlastnost světa.
      */
     if (result.outcome === 'GENERATED') {
       const { shown, withheld } = splitProvenance(result.provenance);
-      if (result.costUsd > 0 || withheld.length > 0)
-        logForOperator(requestId, 'ACCOUNTING', [`costUsd=${result.costUsd}`, ...withheld].join(' '));
+      if (result.costUsd > 0 || withheld.length > 0) {
+        accountedUsd += result.costUsd;
+        logRateLimited(
+          'generate',
+          requestId,
+          'ACCOUNTING',
+          [`costUsd=${result.costUsd}`, `totalUsd=${accountedUsd.toFixed(6)}`, ...withheld].join(' '),
+        );
+      }
       return Response.json({
         requestId,
         branch: result.branch,

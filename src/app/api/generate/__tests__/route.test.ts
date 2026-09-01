@@ -742,6 +742,63 @@ describe('POST /api/generate', () => {
       expect(json.usage).toEqual({ inputTokens: 100, outputTokens: 200 });
     });
 
+    /**
+     * **Účetní řádek byl pátá cesta téže třídy** — nález kontrolní revize nad
+     * `cdf2c06` (tedy nad commitem, který ty první čtyři zavřel), `VERDICT:
+     * blocking`.
+     *
+     * Opíral se přesně o tu větu, kterou ten commit vyvrátil: „účtovat je co jen
+     * u placeného volání a ta omezuje strop". Jenže strop je paměť procesu,
+     * kterou chladný start nuluje, a nad `{"enabled":false}` neplatí vůbec —
+     * naměřeno 250 požadavků = 250 řádků, každý se jménem modelu z prostředí.
+     *
+     * **Dopsat `model` do `PUBLIC_PROVENANCE` by to nezavřelo** a je to slepá
+     * ulička, ne menší varianta: řádek vyrobí už samo `costUsd > 0`, takže by
+     * se rozhodnutí o schovaném jménu modelu zrušilo za nic.
+     */
+    it('účetní řádek má mez, a součet se tím neztratí', async () => {
+      const logged = captureOperatorLog();
+      vi.stubGlobal('fetch', () =>
+        Promise.resolve(
+          Response.json({
+            content: [{ type: 'text', text: '{"emitted":true}' }],
+            usage: { input_tokens: 100, output_tokens: 200 },
+          }),
+        ),
+      );
+
+      const ask = await loadRoute({
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_MODEL: 'privately-pinned-model-7c1f',
+        WORLDSMITH_USD_PER_MTOK_IN: '3',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        WORLDSMITH_SPEND_CAP_USD: '1000',
+      });
+
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        const { status } = await ask(JSON.stringify({ prompt: 'bludiště s klíčem' }));
+        expect(status).toBe(200);
+      }
+
+      // Dva, ne dvacet: milníky jsou 1., 10., 100. výskyt.
+      const lines = logged.filter((line) => line.includes('ACCOUNTING'));
+      expect(lines, '20 úspěšných volání napsalo operátorovi řádek na požadavek').toHaveLength(2);
+
+      // A součet je za **všechna** volání, ne jen za ta zapsaná: jedno volání
+      // stojí 100/1e6 × 3 + 200/1e6 × 15 = 0,0033 USD, takže na desátém řádku
+      // musí stát desetinásobek. Kdyby se přičítalo až při zápisu, stálo by tam
+      // 0,0066 — tedy náhodný vzorek vydávaný za účetnictví.
+      expect(lines[1]).toContain('(occurrence 10)');
+      expect(lines[1], 'součet se počítá až při zápisu, ne při volání').toContain(
+        'totalUsd=0.033000',
+      );
+      // Cena toho jednoho volání zůstává vedle součtu; bez ní se z řádku nepozná
+      // ceník, jen celková útrata.
+      expect(lines[1]).toContain('costUsd=0.0033');
+    });
+
     it('zmrazená větev si nechá celou svoji stopu, protože je to veřejný artefakt', async () => {
       // Druhá půlka téhož: výčet povolených klíčů se nesmí splést s „ořízni
       // provenance". Čtveřice zmrazené větve popisuje commitnutý soubor
