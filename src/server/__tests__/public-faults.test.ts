@@ -37,7 +37,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { peelEnvelope, sealSimHash, type WorldDoc } from '../../ir/worlddoc';
-import { PUBLIC_CORPUS_FAULT, withoutCredentials } from '../public-faults';
+import { PUBLIC_CORPUS_FAULT, RATE_LIMIT_WINDOW_MS, withoutCredentials } from '../public-faults';
 
 /* ------------------------------------------------------------------ *
  * Fixtura. Čte se ze SKUTEČNÉHO adresáře, tedy dřív, než se `cwd` podvrhne.
@@ -530,6 +530,61 @@ describe('the operator log is rate-limited, never silenced for good', () => {
     // Číslo výskytu je v textu schválně: bez něj vypadá desátý řádek jako
     // první a operátor záplavu nepozná.
     expect(log[1]).toContain('the body ended mid-read');
+  });
+
+  /**
+   * **Mez, kterou nejde předplatit.**
+   *
+   * Milníky omezují dávku, ale počítadlo na celý proces se dá nakoupit dopředu:
+   * sto přerušených těl stojí volajícího nic a posunou klíč na stý výskyt, po
+   * kterém devět desetin dalšího řádu skutečných selhání zmizí. Okno z toho
+   * dělá takt — první výskyt v každém dalším okně se vydá vždycky.
+   *
+   * Hodiny se podvrhují `Date.now()`, protože přesně to okno čte. Na replay
+   * cestě by to byl zákaz z `CLAUDE.md`; tady je to operátorův log serveru.
+   */
+  it('counts inside a window, so a flood cannot buy silence for the fault that follows', async () => {
+    const { log, write } = await limiter();
+    let now = 1_700_000_000_000;
+    vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+    // Předplacené umlčení: sto laciných selhání, tři řádky (1., 10., 100.).
+    for (let attempt = 0; attempt < 100; attempt += 1)
+      write('emit', `paid-${attempt}`, 'BODY_UNREADABLE', 'the body ended mid-read');
+    expect(log).toHaveLength(3);
+
+    // Těsně pod hranou okna kanál pořád mlčí — jinak by mez neexistovala vůbec.
+    // Tenhle zápis zároveň soudí, že se okno kotví na svém PRVNÍM výskytu:
+    // kdyby ho posouval každý další, útočník by ho držel otevřený napořád.
+    now += RATE_LIMIT_WINDOW_MS - 1;
+    write('emit', 'inside-window', 'BODY_UNREADABLE', 'a real proxy fault');
+    expect(log, 'okno neplatí — mez se rozpadla na řádek na požadavek').toHaveLength(3);
+
+    // A hned za ní se skutečná porucha ohlásí PRVNÍM řádkem, ne stým prvním.
+    now += 1;
+    write('emit', 'after-window', 'BODY_UNREADABLE', 'a real proxy fault');
+    expect(log, 'porucha po okně se neozvala — počítadlo jde předplatit').toHaveLength(4);
+    expect(log[3]).toContain('after-window');
+    expect(log[3]).toContain('(occurrence 1)');
+  });
+
+  it('keeps each key on its own window, so one noisy door cannot mute another', async () => {
+    const { log, write } = await limiter();
+    let now = 1_700_000_000_000;
+    vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+    write('emit', 'req-1', 'BODY_UNREADABLE', 'first');
+    // Druhý klíč začíná své okno až tady, takže o hranu toho prvního nezavadí.
+    now += RATE_LIMIT_WINDOW_MS - 1;
+    write('edit', 'req-2', 'BODY_UNREADABLE', 'second');
+    now += 2;
+    // První klíč je za hranou (nové okno), druhý pořád ve svém.
+    write('emit', 'req-3', 'BODY_UNREADABLE', 'third');
+    write('edit', 'req-4', 'BODY_UNREADABLE', 'fourth');
+
+    expect(log).toHaveLength(3);
+    expect(log.join('\n')).toContain('req-3');
+    expect(log.join('\n')).not.toContain('req-4');
   });
 
   it('keys on the code as well as the door, so a second fault is never swallowed', async () => {

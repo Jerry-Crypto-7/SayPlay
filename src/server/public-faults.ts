@@ -127,8 +127,30 @@ export function logStickyFault(
   logForOperator(route, requestId, code, detail);
 }
 
-/** Kolikrát tenhle proces viděl dvojici (dveře, kód). */
-const SEEN_PER_KEY = new Map<string, number>();
+/**
+ * **Okno, ve kterém se výskyty počítají.** Patnáct minut, a to číslo je
+ * odvozené, ne vybrané:
+ *
+ * - **Zdola je držené tím, jak často se má trvající porucha připomenout.** Okno
+ *   o délce `W` dává `3600/W` zaručených řádků za hodinu a klíč, tedy **čtyři**
+ *   při 900 s. Za den je to zhruba **stovka řádků na klíč** proti dnešním šesti
+ *   za celý proces — pořád o pět řádů méně než řádek na požadavek, a poprvé je
+ *   to číslo, které volající nemůže koupit dopředu.
+ * - **Shora je držené délkou jednoho selhání nahoře.** Jedno volání modelu běží
+ *   až `DEFAULT_TIMEOUT_MS = 120 000` (`src/server/upstream.ts:106`). Okno musí
+ *   být o řád delší, jinak by se jediný výpadek proudu vyhlásil jako nová
+ *   porucha v každém okně a mez by se rozpustila zpátky do záplavy. 900 s je
+ *   7,5násobek toho stropu.
+ * - **Cena za umlčení** je tím omezená na **jedno okno na klíč**, a platí se
+ *   v každém dalším znovu.
+ *
+ * Paměť to nezvětšuje: klíč je dvojice (dveře, kód), tedy uzavřená množina, a
+ * ukládá se o jedno číslo víc.
+ */
+export const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+
+/** Kolikrát tenhle proces viděl dvojici (dveře, kód) a kdy to počítání začalo. */
+const SEEN_PER_KEY = new Map<string, { readonly windowStart: number; readonly occurrences: number }>();
 
 /** 1, 10, 100, 1000 … — výskyty, na kterých se řádek vydá. */
 function isMilestone(occurrence: number): boolean {
@@ -137,7 +159,7 @@ function isMilestone(occurrence: number): boolean {
 
 /**
  * Totéž, ale **s omezenou rychlostí**: vydá se 1., 10., 100., 1000. … výskyt
- * dvojice (dveře, kód).
+ * dvojice (dveře, kód) **v běžícím okně**.
  *
  * Je to pro vady, které si volající umí vyrobit sám a kolikrát chce — typicky
  * přerušené spojení uprostřed těla. Žádná z těch rout nechce přihlášení, takže
@@ -160,16 +182,39 @@ function isMilestone(occurrence: number): boolean {
  * o kterém tenhle komentář tvrdil, že je jediný, co za to stojí. Umlčet kanál
  * si tak mohl kdokoli, a mohl si to vybrat dopředu.
  *
- * Milníky po desítkách drží obojí: strop je logaritmus provozu (milion
- * požadavků = šest řádků), takže natáhnout se log pořád nedá, a přesto se
- * porucha ozve znovu, kdykoli se rozjede naostro. Číslo výskytu jde do textu,
- * protože jinak vypadá desátý řádek jako první a záplavu z něj nikdo nepozná.
+ * Milníky po desítkách drží dávku: strop je logaritmus provozu (milion
+ * požadavků v jednom okně = šest řádků), takže natáhnout se log nedá. Číslo
+ * výskytu jde do textu, protože jinak vypadá desátý řádek jako první a záplavu
+ * z něj nikdo nepozná.
+ *
+ * ## Proč okno, a ne počítadlo na celý proces — druhá vada téhož nápadu
+ *
+ * Milníky samy o sobě omezují **dávku**, ne kanál. Počítadlo, které se za celý
+ * proces nikdy nezahodí, jde totiž **předplatit**: sto přerušených těl
+ * (zadarmo, bez přihlášení) posune klíč `emit BODY_UNREADABLE` na stý výskyt
+ * a skutečná rozbitá proxy pak vyrobí **nula řádků** dalších 899 selhání.
+ * Umlčet si kanál mohl zase kdokoli, jen o patro výš než před `62eab7c` —
+ * a předchozí verze tohohle komentáře přitom tvrdila opak („porucha se ozve
+ * znovu, kdykoli se rozjede naostro").
+ *
+ * Počítá se proto **uvnitř okna**, které začíná prvním výskytem klíče a trvá
+ * `RATE_LIMIT_WINDOW_MS`. První výskyt v každém dalším okně se vydá vždycky,
+ * takže ticho po delší pauze je vždycky ticho poctivé.
+ *
+ * **Okno se kotví na svém prvním výskytu, ne na posledním.** Zapomínání po
+ * N minutách *ticha* by tuhle vadu nezavřelo: útočník, který pošle jeden
+ * požadavek za okno, by klíč držel naživu napořád a stá porucha by mlčela dál.
+ * Kotva na prvním výskytu dělá z okna pevný takt, který nikdo neposune.
  *
  * ⚠ **Ten strop je na jednu instanci, ne na nasazení.** `SEEN_PER_KEY` je stav
- * modulu, takže na serverless je skutečná mez **instance × dveře × kódy**
+ * modulu, takže na serverless je skutečná mez **instance × dveře × kódy × okna**
  * a počet instancí roste s provozem. Konstanta to tedy není; logaritmus na
- * instanci ano. Trvale to zavře až sdílený stav (T29, tentýž důvod jako
+ * instanci a okno ano. Trvale to zavře až sdílený stav (T29, tentýž důvod jako
  * u dolarového stropu).
+ *
+ * ⚠ **Hodiny jsou tu `Date.now()` schválně.** Zákaz z `CLAUDE.md` platí na
+ * replay cestě, kde je jedinou jednotkou simulovaný tik; tohle je operátorův
+ * log serveru, který na simulaci nesahá.
  */
 export function logRateLimited(
   route: string,
@@ -178,8 +223,11 @@ export function logRateLimited(
   detail: string,
 ): void {
   const key = `${route} ${code}`;
-  const occurrence = (SEEN_PER_KEY.get(key) ?? 0) + 1;
-  SEEN_PER_KEY.set(key, occurrence);
+  const now = Date.now();
+  const seen = SEEN_PER_KEY.get(key);
+  const open = seen !== undefined && now - seen.windowStart < RATE_LIMIT_WINDOW_MS ? seen : undefined;
+  const occurrence = (open?.occurrences ?? 0) + 1;
+  SEEN_PER_KEY.set(key, { windowStart: open?.windowStart ?? now, occurrences: occurrence });
   if (!isMilestone(occurrence)) return;
   logForOperator(route, requestId, code, `${detail} (occurrence ${occurrence})`);
 }
