@@ -51,15 +51,38 @@ import type { Grammar, UpstreamRequest } from './prompt';
 const FROZEN_DIR = join(process.cwd(), 'evals', 'frozen');
 const RESPONSES_FILE = 'responses/index.jsonl';
 
-export type ClientReason =
+/**
+ * Vada **celého zmrazeného souboru**, ne jednoho záznamu v něm.
+ *
+ * Obě znamenají rozbité prostředí: server v tomhle stavu neobsluhuje nikoho.
+ */
+export type CorpusReason =
   /** Zmrazený soubor se rozešel s `MANIFEST.lock`. */
   | 'MANIFEST_MISMATCH'
   /** Soubor zmrazeného korpusu nejde přečíst — rozbité prostředí, ne emise. */
-  | 'CORPUS_UNREADABLE'
-  /** Pro tenhle prompt zmrazená odpověď neexistuje. */
-  | 'NO_FROZEN_RESPONSE'
-  /** Tělo se rozešlo s vlastním `sha256`, nebo mu chybí hlavička. */
-  | 'RESPONSE_TAMPERED'
+  | 'CORPUS_UNREADABLE';
+
+/**
+ * **Přesně ty důvody, které umí vyrobit `emitWorld()`** — nic víc.
+ *
+ * Ta úzkost je celý smysl typu a je naměřená: dokud `emitWorld()` deklaroval
+ * celý `ClientReason`, musela tabulka `BRANCH_FAULT` (`src/server/mock`)
+ * rozhodnout i o dvou editačních důvodech, které jí nikdy nemohly přijít — a
+ * **rozhodla je opačně, než jak to stojí na obou místech, která je definují**
+ * (nález nezávislé revize 1. 9. 2026). `BASE_WORLD_MISSING` tam mířil na
+ * `NO_FROZEN_ANSWER`, tedy na 404, přestože komentář o pár řádků níž říká, že
+ * schovat ho pod chybějící odpověď znamená vydat rozbité prostředí jako 404,
+ * a `/api/edit` ho z větve 404 schválně vyjímá a vrací 503.
+ *
+ * Rozhodnutí „předem" o důvodu, který se dnes nedá vyrobit, není záruka: je to
+ * odpověď na otázku, kterou nikdo nepoložil, a nemá ji kdo zkontrolovat. Když
+ * se množina jednou rozšíří, má **spadnout `tsc`** a rozhodnout to člověk,
+ * který u toho bude mít kontext.
+ */
+export type EmitReason = CorpusReason | 'NO_FROZEN_RESPONSE' | 'RESPONSE_TAMPERED';
+
+export type ClientReason =
+  | EmitReason
   /** Editační záznam existuje, ale je vázaný na jiný svět, než jaký přišel. */
   | 'BASE_WORLD_MISMATCH'
   /**
@@ -71,9 +94,14 @@ export type ClientReason =
    */
   | 'BASE_WORLD_MISSING';
 
-export interface ClientFailure {
+/**
+ * Selhání klienta. Parametr `R` je **množina důvodů, které to konkrétní volání
+ * umí vrátit** — bez něj je to celý `ClientReason`, tedy dnešní chování všude,
+ * kde na užší množině nezáleží.
+ */
+export interface ClientFailure<R extends ClientReason = ClientReason> {
   readonly ok: false;
-  readonly reason: ClientReason;
+  readonly reason: R;
   readonly detail: string;
 }
 
@@ -95,7 +123,12 @@ export interface ClientSuccess {
 
 export type ClientResult = ClientSuccess | ClientFailure;
 
-type Read<T> = { readonly ok: true; readonly value: T } | ClientFailure;
+/** Výsledek `emitWorld()`. Užší než `ClientResult`, viz `EmitReason`. */
+export type EmitResult = ClientSuccess | ClientFailure<EmitReason>;
+
+type Read<T, R extends ClientReason = ClientReason> =
+  | { readonly ok: true; readonly value: T }
+  | ClientFailure<R>;
 
 /**
  * Přečte zmrazený soubor a **ověří jeho hash proti `MANIFEST.lock`**.
@@ -103,7 +136,7 @@ type Read<T> = { readonly ok: true; readonly value: T } | ClientFailure;
  * `MANIFEST.lock` normalizuje CRLF na LF **před** hashováním. Bez toho by hash
  * téhož souboru závisel na stroji, na kterém se repo checkoutovalo.
  */
-function readFrozen(relativePath: string): Read<string> {
+function readFrozen(relativePath: string): Read<string, CorpusReason> {
   let manifest: { files?: Record<string, string> };
   let text: string;
   try {
@@ -131,7 +164,7 @@ function readFrozen(relativePath: string): Read<string> {
   return { ok: true, value: text };
 }
 
-function readJsonl(relativePath: string): Read<Record<string, unknown>[]> {
+function readJsonl(relativePath: string): Read<Record<string, unknown>[], CorpusReason> {
   const file = readFrozen(relativePath);
   if (!file.ok) return file;
   try {
@@ -220,7 +253,7 @@ export function frozenPrompt(id: string): Read<FrozenPrompt | null> {
  * funkce skutečným voláním, tvar téhle hranice se nezmění a záznam bude pořád
  * ten, který se doopravdy odeslal.
  */
-export function emitWorld(promptId: string, request: UpstreamRequest): ClientResult {
+export function emitWorld(promptId: string, request: UpstreamRequest): EmitResult {
   const record = verifiedRecord(promptId, 'create');
   if (!record.ok) return record;
 
@@ -244,7 +277,7 @@ interface VerifiedRecord {
  * kopie kontrol je přesně ta třída vady, kterou brána nad T13 našla u čtení
  * promptů — jedna cesta hash ověřovala, druhá ne, a rozdíl neuhlídal nikdo.
  */
-function verifiedRecord(promptId: string, branch: 'create' | 'edit'): Read<VerifiedRecord> {
+function verifiedRecord(promptId: string, branch: 'create' | 'edit'): Read<VerifiedRecord, EmitReason> {
   const records = readJsonl(RESPONSES_FILE);
   if (!records.ok) return records;
 

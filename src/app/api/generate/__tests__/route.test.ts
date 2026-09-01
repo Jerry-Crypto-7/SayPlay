@@ -1150,7 +1150,14 @@ describe('POST /api/generate', () => {
       expect(operator, 'operátor dostal „nedovolali jsme se k modelu"').not.toContain(
         'UPSTREAM_UNAVAILABLE',
       );
-      expect(operator).toContain('RESPONSE_TAMPERED');
+      // **Musí to být dvojice, ne samotné slovo.** `toContain('RESPONSE_TAMPERED')`
+      // tu stálo do 1. 9. 2026 a bylo bezvýznamné: i před opravou zněl řádek
+      // `UPSTREAM_UNAVAILABLE RESPONSE_TAMPERED: …`, tedy to slovo obsahoval taky.
+      // Ověřeno mutací — celý test drží dvě jiné aserce. Tuhle dvojici umí
+      // vyrobit jen tabulka, která podvržený záznam posílá na `NO_FROZEN_ANSWER`.
+      expect(operator, 'vada záznamu se operátorovi ohlásila jiným důvodem').toMatch(
+        /NO_FROZEN_ANSWER\W+RESPONSE_TAMPERED/,
+      );
 
       const before = log.length;
       for (let attempt = 0; attempt < 20; attempt += 1) await ask(GAP_PROMPT);

@@ -26,7 +26,7 @@
  * správně — odmítat cestu, která neutrácí, by demo jen shodilo.
  */
 
-import { emitWorld, frozenPrompts, type ClientReason } from '../../model/client';
+import { emitWorld, frozenPrompts, type EmitReason } from '../../model/client';
 import type { GenerationBranch, GenerationCall, GenerationOutcome } from '../pipeline';
 
 export const MOCK_BRANCH_ID = 'mock';
@@ -52,24 +52,43 @@ export function mockBranch(): GenerationBranch {
  *   musí, a dostane ji **jednou za záznam** (`OPERATOR_LOG` v `/api/generate`).
  * - **Vada celého korpusu** (nečitelný soubor, rozešlý manifest) je rozbité
  *   prostředí, ne chybějící odpověď. Z toho volající dostane 502 a operátor
- *   řádek, protože server v tom stavu neobsluhuje nikoho.
+ *   řádek, protože server v tom stavu neobsluhuje nikoho. **Ten řádek má mez
+ *   a je to podstatné:** vada celého korpusu je *jeden* stav, ale požadavků na
+ *   něj může anonymní volající poslat kolik chce. Bez meze to bylo 20 POSTů =
+ *   20 řádků, každý se dvěma 64znakovými hashi (naměřeno). Omezuje ho
+ *   `logRateLimited` v `/api/generate` (commit `cdf2c06`), ne tenhle soubor.
  *
  * ⚠ **`RESPONSE_TAMPERED` sem přibyl 1. 9. 2026 po nezávislé revizi, která to
  * změřila:** dokud to byl ternár na `NO_FROZEN_RESPONSE`, spadl podvržený
  * záznam do druhé půlky. 20 anonymních požadavků na týž prompt dalo **502
  * a dvacet řádků na stderr** — tedy přesně to, čemu se u jeho dvojčete
  * zabraňovalo, a k tomu vzkaz „tenhle prompt tvůj korpus zná". Tabulka nad
- * `ClientReason` je tu proto, aby další důvod bez rozhodnutí neprošel přes
+ * `EmitReason` je tu proto, aby další důvod bez rozhodnutí neprošel přes
  * `tsc`; ternár tuhle vadu vyrobil právě tím, že to dovolil.
  *
- * Editační důvody sem taky patří: `emitWorld()` je dnes nevrací, ale kdyby
- * `verifiedRecord()` někdy sdílel víc, je rozhodnuto předem.
+ * ⚠ **Do 1. 9. 2026 tu byly i dva editační důvody a byly rozhodnuté špatně** —
+ * nález nezávislé revize. Stálo tu, že „`emitWorld()` je dnes nevrací, ale kdyby
+ * `verifiedRecord()` někdy sdílel víc, je rozhodnuto předem". Rozhodnuto to bylo,
+ * jenže **naopak, než jak to stojí na obou místech, která ty důvody definují**:
+ *
+ * - `BASE_WORLD_MISSING` mířil na `NO_FROZEN_ANSWER`, tedy na 404, přestože
+ *   `src/model/client.ts` u něj výslovně říká, že schovat ho pod chybějící
+ *   odpověď znamená vydat rozbité prostředí jako 404, a `/api/edit` ho z větve
+ *   404 schválně vyjímá a vrací 503. Nasazení bez základních světů by tedy
+ *   odpovědělo „nemám odpověď" a napsalo **jeden** řádek za celý život procesu.
+ * - `BASE_WORLD_MISMATCH` je jediný důvod, o kterém rozhodují **data od
+ *   volajícího**, a je to ten poplach, kvůli kterému `simFingerprint` existuje
+ *   (funkční padělek na 11,6 M kandidátů za 215 ms). Skončil v kbelíku
+ *   „jednou za proces": neomezené pokusy o padělek by daly **jeden** řádek.
+ *
+ * Tabulka je proto klíčovaná `EmitReason`, tedy **přesně tím, co `emitWorld()`
+ * umí vrátit**. Rozhodnutí „předem" o důvodu, který se nedá vyrobit, není
+ * záruka — nemá ho kdo zkontrolovat. Až se ta množina rozšíří, spadne `tsc`
+ * a rozhodne to člověk, který u toho bude mít kontext.
  */
-const BRANCH_FAULT: Record<ClientReason, 'NO_FROZEN_ANSWER' | 'UPSTREAM_UNAVAILABLE'> = {
+const BRANCH_FAULT: Record<EmitReason, 'NO_FROZEN_ANSWER' | 'UPSTREAM_UNAVAILABLE'> = {
   NO_FROZEN_RESPONSE: 'NO_FROZEN_ANSWER',
   RESPONSE_TAMPERED: 'NO_FROZEN_ANSWER',
-  BASE_WORLD_MISMATCH: 'NO_FROZEN_ANSWER',
-  BASE_WORLD_MISSING: 'NO_FROZEN_ANSWER',
   CORPUS_UNREADABLE: 'UPSTREAM_UNAVAILABLE',
   MANIFEST_MISMATCH: 'UPSTREAM_UNAVAILABLE',
 };
