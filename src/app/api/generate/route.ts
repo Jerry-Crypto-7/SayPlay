@@ -308,9 +308,19 @@ export async function POST(request: Request): Promise<Response> {
      * kdokoli na internetu — táž vada, kvůli které o kus výš existuje
      * `REFUSALS_LOGGED`. Bound je tady jiný a nepotřebuje stav: řádek vzniká
      * jen tehdy, **když je co účtovat**, a to umí jedině placené volání. Ta
-     * jsou omezená stropem počtu volání (`DEFAULT_CALL_CAP`, dnes 200 na
-     * proces), tedy týmž mechanismem, který omezuje peníze. Offline větev má
-     * `costUsd` nulové a v `provenance` nezadržuje nic, takže nezapíše nikdy.
+     * jsou omezená stropem počtu volání (`DEFAULT_CALL_CAP`, dnes 200), tedy
+     * týmž mechanismem, který omezuje peníze. Offline větev má `costUsd`
+     * nulové a v `provenance` nezadržuje nic, takže nezapíše nikdy.
+     *
+     * ⚠ **Ten strop je ale „na proces", ne „na nasazení", a na cílové platformě
+     * to není totéž** — nález nezávislé revize 1. 9. 2026, změřený nad
+     * `WORLDSMITH_CALL_CAP=2`. `#callsMade` (`src/server/spend-cap.ts`) je
+     * paměť procesu a chladný start ji vynuluje, takže na serverless dostane
+     * volající 200 řádků **za každý studený proces**, každý se jménem modelu.
+     * Není to vada tohohle řádku: stejně tak se resetuje samotné omezení peněz,
+     * a je to táž vada, kterou `CLAUDE.md` zaznamenává u stropu utrácení. Drží
+     * to teprve persistentní strop z vlny 7 (T29) — a do té doby tenhle
+     * komentář neslibuje víc, než co platí.
      */
     if (result.outcome === 'GENERATED') {
       const { shown, withheld } = splitProvenance(result.provenance);
