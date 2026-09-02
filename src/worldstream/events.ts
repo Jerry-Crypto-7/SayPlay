@@ -100,6 +100,20 @@ export interface SessionEventLog {
   /** Rámce s `sequence > after`, v pořadí. Prázdné pole, když klient předběhl. */
   since(after: number): readonly SessionEvent[];
   all(): readonly SessionEvent[];
+  /**
+   * Živý odběr. Vrací funkci, která ho zruší.
+   *
+   * **Sloučený rámec se posílá taky**, takže odběratel může dostat `sequence`,
+   * které už jednou viděl, s novějším obsahem. Je to přímý důsledek §20 —
+   * průběh se slučuje — a je to přesně ten důvod, proč klientský reducer musí
+   * být idempotentní na duplicitní rámec (T17).
+   *
+   * Odběratel, který vyhodí, se **odhlásí**. Typický odběratel je zápis do
+   * SSE proudu a ten vyhodí právě tehdy, když protistrana odešla; nechat tu
+   * výjimku proletět znamená, že odchod jednoho diváka zabije generaci
+   * uprostřed pro všechny ostatní.
+   */
+  subscribe(listener: (event: SessionEvent) => void): () => void;
 }
 
 interface LoggedEvent {
@@ -128,7 +142,19 @@ export interface EventLogOptions {
 export function createEventLog(sessionId: string, options: EventLogOptions = {}): SessionEventLog {
   const now = options.now ?? (() => new Date().toISOString());
   const entries: LoggedEvent[] = [];
+  const listeners = new Set<(event: SessionEvent) => void>();
   let sequence = options.startAt ?? 0;
+
+  function publish(event: SessionEvent): SessionEvent {
+    for (const listener of [...listeners]) {
+      try {
+        listener(event);
+      } catch {
+        listeners.delete(listener);
+      }
+    }
+    return event;
+  }
 
   return {
     get sequence() {
@@ -154,13 +180,13 @@ export function createEventLog(sessionId: string, options: EventLogOptions = {})
         // stejně přichází snapshotem, ne průběhem.
         const merged: SessionEvent = { ...tail.event, at: now(), payload };
         tail.event = merged;
-        return merged;
+        return publish(merged);
       }
 
       sequence += 1;
       const event: SessionEvent = { sessionId, sequence, type, at: now(), payload };
       entries.push({ event, subject });
-      return event;
+      return publish(event);
     },
 
     since(after) {
@@ -169,6 +195,13 @@ export function createEventLog(sessionId: string, options: EventLogOptions = {})
 
     all() {
       return entries.map((entry) => entry.event);
+    },
+
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
     },
   };
 }
