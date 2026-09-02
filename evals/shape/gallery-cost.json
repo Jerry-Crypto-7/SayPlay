@@ -32,73 +32,73 @@
         {
           "id": "bone",
           "nodes": 9,
-          "ms": 19.3,
+          "ms": 27.2,
           "triangles": 1484
         },
         {
           "id": "root",
           "nodes": 7,
-          "ms": 258.3,
+          "ms": 262.4,
           "triangles": 3452
         },
         {
           "id": "vault",
           "nodes": 11,
-          "ms": 137.6,
+          "ms": 184.2,
           "triangles": 8720
         },
         {
           "id": "shell",
           "nodes": 9,
-          "ms": 114.3,
+          "ms": 166,
           "triangles": 3336
         },
         {
           "id": "machine",
           "nodes": 10,
-          "ms": 32.3,
+          "ms": 45.9,
           "triangles": 6760
         },
         {
           "id": "column",
           "nodes": 8,
-          "ms": 143,
+          "ms": 146.1,
           "triangles": 5084
         },
         {
           "id": "cloud",
           "nodes": 9,
-          "ms": 38.7,
+          "ms": 28.6,
           "triangles": 5032
         },
         {
           "id": "staircase",
           "nodes": 7,
-          "ms": 53.5,
+          "ms": 46.3,
           "triangles": 5504
         },
         {
           "id": "cauldron",
           "nodes": 11,
-          "ms": 60.6,
+          "ms": 52,
           "triangles": 8608
         },
         {
           "id": "fruit",
           "nodes": 8,
-          "ms": 152.5,
+          "ms": 123.1,
           "triangles": 4788
         },
         {
           "id": "wave",
           "nodes": 7,
-          "ms": 42.1,
+          "ms": 36.2,
           "triangles": 5592
         },
         {
           "id": "net",
           "nodes": 9,
-          "ms": 60,
+          "ms": 51.3,
           "triangles": 4892
         }
       ]
@@ -110,13 +110,13 @@
         {
           "id": "bone",
           "nodes": 9,
-          "ms": 109.6,
+          "ms": 94.6,
           "triangles": 3396
         },
         {
           "id": "root",
           "nodes": 7,
-          "ms": 788.4,
+          "ms": 729.5,
           "triangles": 8472
         },
         {
@@ -128,55 +128,55 @@
         {
           "id": "shell",
           "nodes": 9,
-          "ms": 538,
+          "ms": 515.5,
           "triangles": 8304
         },
         {
           "id": "machine",
           "nodes": 10,
-          "ms": 159.6,
+          "ms": 141,
           "triangles": 15640
         },
         {
           "id": "column",
           "nodes": 8,
-          "ms": 444.4,
+          "ms": 482.8,
           "triangles": 12956
         },
         {
           "id": "cloud",
           "nodes": 9,
-          "ms": 93.8,
+          "ms": 104.6,
           "triangles": 11852
         },
         {
           "id": "staircase",
           "nodes": 7,
-          "ms": 157.5,
+          "ms": 132.8,
           "triangles": 12660
         },
         {
           "id": "cauldron",
           "nodes": 11,
-          "ms": 175.6,
+          "ms": 151.4,
           "triangles": 19672
         },
         {
           "id": "fruit",
           "nodes": 8,
-          "ms": 358.1,
+          "ms": 337.7,
           "triangles": 11020
         },
         {
           "id": "wave",
           "nodes": 7,
-          "ms": 98.8,
+          "ms": 104.2,
           "triangles": 12660
         },
         {
           "id": "net",
           "nodes": 9,
-          "ms": 130.5,
+          "ms": 173.3,
           "triangles": 13484
         }
       ]

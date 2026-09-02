@@ -48,14 +48,14 @@
   "verdict": {
     "rough": {
       "resolution": 32,
-      "workerMs": 249,
+      "workerMs": 166,
       "triangles": 10044,
       "withinMs": true,
       "withinTriangles": true
     },
     "high": {
       "resolution": 48,
-      "workerMs": 547,
+      "workerMs": 524,
       "triangles": 24616,
       "withinMs": true,
       "withinTriangles": true
@@ -63,12 +63,12 @@
     "outOfLadder": [
       {
         "resolution": 64,
-        "workerMs": 1175,
+        "workerMs": 1225,
         "triangles": 45020
       },
       {
         "resolution": 96,
-        "workerMs": 3682,
+        "workerMs": 3687,
         "triangles": 103128
       }
     ]
@@ -77,8 +77,8 @@
     {
       "resolution": 32,
       "browser": {
-        "workerMs": 249,
-        "roundTripMs": 249.6,
+        "workerMs": 166,
+        "roundTripMs": 172.5,
         "vertices": 5003,
         "triangles": 10044
       },
@@ -87,14 +87,14 @@
         "vertices": 5003,
         "triangles": 10044
       },
-      "driftFromNode": 0.383,
-      "driftExplained": false
+      "driftFromNode": -0.078,
+      "driftExplained": true
     },
     {
       "resolution": 48,
       "browser": {
-        "workerMs": 547,
-        "roundTripMs": 547.3,
+        "workerMs": 524,
+        "roundTripMs": 524.4,
         "vertices": 12244,
         "triangles": 24616
       },
@@ -103,14 +103,14 @@
         "vertices": 12244,
         "triangles": 24616
       },
-      "driftFromNode": 0.929,
+      "driftFromNode": 0.848,
       "driftExplained": false
     },
     {
       "resolution": 64,
       "browser": {
-        "workerMs": 1175,
-        "roundTripMs": 1176.5,
+        "workerMs": 1225,
+        "roundTripMs": 1225.6,
         "vertices": 22500,
         "triangles": 45020
       },
@@ -119,14 +119,14 @@
         "vertices": 22500,
         "triangles": 45020
       },
-      "driftFromNode": 0.438,
+      "driftFromNode": 0.499,
       "driftExplained": false
     },
     {
       "resolution": 96,
       "browser": {
-        "workerMs": 3682,
-        "roundTripMs": 3683.2,
+        "workerMs": 3687,
+        "roundTripMs": 3686.6,
         "vertices": 51556,
         "triangles": 103128
       },
@@ -135,33 +135,40 @@
         "vertices": 51556,
         "triangles": 103128
       },
-      "driftFromNode": 0.561,
+      "driftFromNode": 0.563,
       "driftExplained": false
     }
   ],
-  "nodeCostClasses": [
-    {
-      "name": "light",
-      "evaluationsPerCell": 10,
-      "ms": 232.7,
-      "triangles": 30652
-    },
-    {
-      "name": "reference",
-      "evaluationsPerCell": 30,
-      "ms": 611.6,
-      "triangles": 47680
-    },
-    {
-      "name": "heavy",
-      "evaluationsPerCell": 55,
-      "ms": 1086.6,
-      "triangles": 44452
-    }
-  ],
+  "nodeCostClasses": {
+    "measuredAt": "2026-08-29",
+    "environment": "node",
+    "resolution": 64,
+    "sampledBounds": "raw",
+    "note": "Naměřeno v Node 29. 8. 2026 při 64³ nad syrovým kvádrem, tedy před rezervou jedné buňky z úlohy T13-meshpadding (2. 9. 2026). Řádek `reference` je týž program a táž mřížka jako `grids[64]`, ale z předrezervového běhu: rozdíl proti `grids[64].node` (817.2 ms / 45020 trojúhelníků) je rezerva a rozptyl stroje, NE režie workeru. Programy za řádky `light` a `heavy` nejsou uložené, takže přeměřit jde jen jedna třetina tabulky. Čti z ní tvar křivky, ne absolutní čísla, a nepinuj na ni rozpočty, dokud se nepřeměří celá.",
+    "rows": [
+      {
+        "name": "light",
+        "evaluationsPerCell": 10,
+        "ms": 232.7,
+        "triangles": 30652
+      },
+      {
+        "name": "reference",
+        "evaluationsPerCell": 30,
+        "ms": 611.6,
+        "triangles": 47680
+      },
+      {
+        "name": "heavy",
+        "evaluationsPerCell": 55,
+        "ms": 1086.6,
+        "triangles": 44452
+      }
+    ]
+  },
   "workerOverhead64": {
-    "workerMs": 1175,
-    "mainThreadMs": 1079.4,
+    "workerMs": 1225,
+    "mainThreadMs": 1109.8,
     "nodeMs": 817.2
   }
 }

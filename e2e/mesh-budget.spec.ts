@@ -42,7 +42,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { MESH_DETAIL } from '../src/shape/types';
 import { GALLERY_IDS } from '../evals/shape/gallery';
 import {
-  COST_CLASSES,
+  NODE_COST_CLASSES,
   OUT_OF_LADDER_GRIDS,
   NODE_BASELINE,
   NODE_DRIFT_TOLERANCE,
@@ -239,7 +239,7 @@ test.describe('rozpočet meshingu v prohlížeči', () => {
         }),
       },
       grids,
-      nodeCostClasses: COST_CLASSES,
+      nodeCostClasses: NODE_COST_CLASSES,
       // Kde je rozdíl proti Node: `worker` je produkční cesta, `mainThread` je
       // týž kód bez workeru. Když jsou si ta dvě čísla blízko, worker za nic
       // nemůže a zbývá samo V8 v prohlížeči.

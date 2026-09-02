@@ -7,9 +7,14 @@
  * samotné měření je e2e a to se pouští ručně.
  */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
+  NODE_BASELINE,
+  NODE_COST_CLASSES,
   OUT_OF_LADDER_GRIDS,
   REFERENCE_BOUNDS,
   REFERENCE_GRIDS,
@@ -85,6 +90,68 @@ describe('referenční program pro rozpočet meshingu', () => {
     expect(measured.has(MESH_DETAIL.high.resolution)).toBe(true);
     for (const resolution of OUT_OF_LADDER_GRIDS) {
       expect(measured.has(resolution)).toBe(true);
+    }
+  });
+
+  it('nenese v jednom artefaktu dvě odpovědi na totéž měření bez důvodu', () => {
+    // Dvě čísla pro **týž program v téže mřížce** vypadají v JSONu obě jako
+    // pravda a nic je od sebe neodliší. Tenhle pin nezakazuje, aby se rozešla —
+    // to je legitimní, když jedno je z předrezervového běhu. Zakazuje, aby se
+    // rozešla **mlčky**: provenience musí být v témže souboru jako čísla,
+    // protože komentář v `.ts` se do artefaktu nikdy nedostane.
+    const report = JSON.parse(
+      readFileSync(join('evals', 'shape', 'mesh-budget.json'), 'utf8'),
+    ) as {
+      readonly measuredAt: string;
+      readonly nodeCostClasses: {
+        readonly measuredAt: string;
+        readonly resolution: number;
+        readonly sampledBounds: string;
+        readonly note: string;
+        readonly rows: readonly { readonly name: string; readonly ms: number; readonly triangles: number }[];
+      };
+      readonly grids: readonly {
+        readonly resolution: number;
+        readonly node: { readonly ms: number; readonly triangles: number };
+      }[];
+    };
+
+    const classes = report.nodeCostClasses;
+    const reference = classes.rows.find((row) => row.name === 'reference')!;
+    const sameGrid = report.grids.find((grid) => grid.resolution === classes.resolution)!;
+
+    expect(reference).toBeDefined();
+    expect(sameGrid).toBeDefined();
+
+    // Sedí na sebe → tabulka se přeměřila nad toutéž mřížkou jako základna,
+    // takže to musí přiznat i `sampledBounds`. Poznámka o rezervě by tu lhala.
+    if (reference.ms === sameGrid.node.ms && reference.triangles === sameGrid.node.triangles) {
+      expect(classes.sampledBounds).toBe('padded');
+      return;
+    }
+
+    // Rozešla se → artefakt to musí říct sám, a musí pojmenovat to číslo,
+    // které by si čtenář jinak přečetl jako režii workeru.
+    expect(classes.measuredAt).not.toBe(report.measuredAt);
+    expect(classes.sampledBounds).toBe('raw');
+    expect(classes.note).toContain(String(sameGrid.node.triangles));
+    expect(classes.note).toContain(String(sameGrid.node.ms));
+    expect(classes.note).toMatch(/T13-meshpadding/);
+  });
+
+  it('drží provenienci tabulky tříd oddělenou od základny Node', () => {
+    // Kdyby se `NODE_COST_CLASSES` přeměřily, tahle dvojice se srovná a řádek
+    // `reference` se musí trefit do `NODE_BASELINE[64]`. Do té doby platí
+    // opak — a pin hlídá, že se to nesmí zamlčet ani v jednom směru.
+    const reference = NODE_COST_CLASSES.rows.find((row) => row.name === 'reference')!;
+    const baseline = NODE_BASELINE[NODE_COST_CLASSES.resolution];
+
+    if (NODE_COST_CLASSES.sampledBounds === 'raw') {
+      expect(reference.ms).not.toBe(baseline.ms);
+      expect(reference.triangles).not.toBe(baseline.triangles);
+    } else {
+      expect(reference.ms).toBe(baseline.ms);
+      expect(reference.triangles).toBe(baseline.triangles);
     }
   });
 

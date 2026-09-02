@@ -35,7 +35,7 @@
  * píše žebrované, zkroucené a polem opakované objekty — proto ten jazyk
  * `repeat`, `radialArray` a `twist` vůbec má. Reference bez nich měří rozpočet
  * pro objekt, který produkt nikdy nepostaví. Naměřený rozdíl mezi oběma třídami
- * není malý a je v `COST_CLASSES` níž: 10 vyhodnocení na buňku stojí 233 ms,
+ * není malý a je v `NODE_COST_CLASSES` níž: 10 vyhodnocení na buňku stojí 233 ms,
  * 30 jich stojí 612 ms a 55 už 1 087 ms.
  *
  * ## Připnutá čísla nejsou dekorace
@@ -136,11 +136,20 @@ export const NODE_BASELINE: Readonly<Record<number, MeshCostRow>> = {
 };
 
 /**
+ * Kdy vznikla čísla v `NODE_BASELINE`. Není to den zápisu do reportu — report
+ * si píše vlastní `measuredAt` při každém běhu prohlížeče, zatímco tahle řada
+ * se hýbe jen tehdy, když někdo přeměří Node.
+ */
+export const NODE_BASELINE_MEASURED_AT = '2026-09-02';
+
+/**
  * Jak cena roste se složitostí programu. Naměřeno v Node 29. 8. 2026 při 64³
  * nad týmiž mezemi, aby se vědělo, **kterou třídu tvarů rozpočet 400 ms unese**.
  *
  * Není to lineární a fixní podlaha je velká: vzorkování mřížky, surface nets
  * a normály stojí přes 200 ms samy o sobě, ať je program jakkoli prostý.
+ *
+ * ## Proč to není holé pole a proč provenience jede jako data
  *
  * ⚠ **Naměřeno nad syrovým kvádrem, tedy před rezervou z `T13-meshpadding`
  * (2. 9. 2026), a nepřeměřilo se to.** Řádek `reference` je tentýž program
@@ -150,12 +159,39 @@ export const NODE_BASELINE: Readonly<Record<number, MeshCostRow>> = {
  * řádek měří jinou mřížku než dva zbylé, je horší než tabulka o jedno kolo
  * starší. **Čti z ní tvar křivky, ne absolutní čísla**, a než na ni někdo
  * začne pinovat rozpočty, musí se přeměřit celá i s těmi dvěma programy.
+ *
+ * **Ta výhrada musela přestat být komentářem.** `e2e/mesh-budget.spec.ts`
+ * kopíruje tenhle export do `mesh-budget.json` doslova, takže dokud to bylo
+ * pole čtyř čísel, čtenář artefaktu dostal `reference` = 611,6 ms / 47 680
+ * vedle `grids[64].node` = 817,2 ms / 45 020 pro **tentýž program v téže
+ * mřížce**, a v souboru nebylo nic, co by ten rozdíl vysvětlilo. Kdo si z něj
+ * odvozoval režii workeru, četl fantomových 206 ms a 2 660 trojúhelníků.
+ * Provenience proto jede jako data vedle řádků — poznámka v `.ts` se do JSONu
+ * nikdy nedostane.
  */
-export const COST_CLASSES = [
-  { name: 'light', evaluationsPerCell: 10, ms: 232.7, triangles: 30_652 },
-  { name: 'reference', evaluationsPerCell: 30, ms: 611.6, triangles: 47_680 },
-  { name: 'heavy', evaluationsPerCell: 55, ms: 1_086.6, triangles: 44_452 },
-] as const;
+export const NODE_COST_CLASSES = {
+  measuredAt: '2026-08-29',
+  environment: 'node',
+  resolution: 64,
+  /**
+   * `raw` = vzorkovalo se přímo v `REFERENCE_BOUNDS`. Produkční cesta i
+   * `NODE_BASELINE` od 2. 9. 2026 vzorkují v `paddedBounds(bounds, resolution)`,
+   * tedy o buňku širší mřížce; hodnota `padded` sem patří teprve po přeměření.
+   */
+  sampledBounds: 'raw',
+  note:
+    'Naměřeno v Node 29. 8. 2026 při 64³ nad syrovým kvádrem, tedy před rezervou jedné buňky ' +
+    'z úlohy T13-meshpadding (2. 9. 2026). Řádek `reference` je týž program a táž mřížka jako ' +
+    '`grids[64]`, ale z předrezervového běhu: rozdíl proti `grids[64].node` (817.2 ms / 45020 ' +
+    'trojúhelníků) je rezerva a rozptyl stroje, NE režie workeru. Programy za řádky `light` ' +
+    'a `heavy` nejsou uložené, takže přeměřit jde jen jedna třetina tabulky. Čti z ní tvar ' +
+    'křivky, ne absolutní čísla, a nepinuj na ni rozpočty, dokud se nepřeměří celá.',
+  rows: [
+    { name: 'light', evaluationsPerCell: 10, ms: 232.7, triangles: 30_652 },
+    { name: 'reference', evaluationsPerCell: 30, ms: 611.6, triangles: 47_680 },
+    { name: 'heavy', evaluationsPerCell: 55, ms: 1_086.6, triangles: 44_452 },
+  ],
+} as const;
 
 /** Invarianty tvaru. Pin v `__tests__/reference-program.test.ts`. */
 export const REFERENCE_SHAPE_FACTS = {
