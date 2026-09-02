@@ -105,7 +105,13 @@ type ResumePoint =
 export function readResumePoint(request: Request): ResumePoint {
   const query = new URL(request.url).searchParams.get('since');
   const header = request.headers.get('last-event-id');
-  const raw = query ?? header;
+  // **`?since=` bez hodnoty není odpověď, je to prázdné pole.** `??` by ho
+  // propustilo jako přítomné (`''` není `null`), a tím by udělalo obojí naráz:
+  // umlčelo `Last-Event-ID`, který klient poslal, a spadlo na `after: 0` —
+  // tedy přehrálo celou relaci od začátku právě tomu, kdo se obnovoval.
+  // Naměřeno nezávislou revizí 2. 9. 2026 nad `?since=` + `last-event-id: 3`:
+  // proud vydal 1–5 místo 4–5.
+  const raw = query !== null && query !== '' ? query : header;
   if (raw === null || raw === '') return { ok: true, after: 0 };
 
   if (!/^\d+$/.test(raw))
@@ -158,6 +164,15 @@ export async function GET(
     if (beat !== null) clearInterval(beat);
     beat = null;
   }
+
+  // **Druhé dveře k úklidu, ne opis těch prvních.** `cancel()` na proudu zavolá
+  // až ten, kdo proud čte — a `next` ho podle `dist/server/pipe-readable.js`
+  // nezačne číst vůbec, když je odpověď v tu chvíli už zničená. Požadavek
+  // useknutý dřív, než se čtení rozjelo, by tedy nechal běžet časovač i odběr
+  // logu do restartu procesu, a to je stav, který si nechráněná route umí
+  // vyrobit sama tolikrát, kolikrát ji někdo zavolá. Nález nezávislé revize
+  // 2. 9. 2026. `release()` je idempotentní, takže dvoje dveře nevadí.
+  request.signal.addEventListener('abort', () => release());
 
   const stream = new ReadableStream<Uint8Array>({
     cancel() {

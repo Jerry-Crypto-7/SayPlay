@@ -114,6 +114,22 @@ async function open(page: Page, prompt: string): Promise<Opened> {
   };
 }
 
+/**
+ * ⛔ **Proti nasazené adrese tenhle soubor běžet nesmí.**
+ *
+ * `playwright.config.ts` přesměruje celý projekt `chromium` na
+ * `FALLBACK_SMOKE_URL`, jakmile je nastavená. Každý test níž zakládá **skutečnou
+ * relaci**, takže na nasazení s klíčem by jeden běh koupil čtyři generace
+ * z živého stropu utrácení — a nikde by to nebylo vidět, protože sada by
+ * zůstala zelená. Lokálně je to zadarmo (`cloudEmitter()` bez `.env` vrátí
+ * `null`), a to je jediná konfigurace, ve které se to smí pouštět.
+ * Nález nezávislé revize 2. 9. 2026.
+ */
+test.skip(
+  process.env.FALLBACK_SMOKE_URL !== undefined,
+  'zakládá skutečné relace, takže proti nasazené adrese by utrácel',
+);
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/api/build-id');
 });

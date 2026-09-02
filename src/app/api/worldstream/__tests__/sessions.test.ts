@@ -31,7 +31,7 @@ import { GEOM_VERSION } from '../../../../geom/program';
 import { SseDecoder } from '../../../../components/viewer/sse';
 import type { PlannerEmission } from '../../../../model/worldstream-intent';
 import type { UpstreamRequest } from '../../../../model/prompt';
-import type { SessionEvent } from '../../../../worldstream/events';
+import type { SessionEvent, SessionEventLog } from '../../../../worldstream/events';
 import {
   clearSessions,
   openSession,
@@ -457,6 +457,66 @@ describe('proud relace', () => {
     );
 
     expect(frames.map((frame) => frame.sequence)).toEqual([5]);
+  });
+
+  it('`?since=` bez hodnoty neumlčí hlavičku a nepřehraje relaci od nuly', async () => {
+    // Nález nezávislé revize 2. 9. 2026, ověřený nad handlerem: `??` bere `''`
+    // jako přítomnou odpověď, takže prázdný dotaz udělal obojí naráz —
+    // zahodil `Last-Event-ID`, který klient poslal, a spadl na nulu. Klient,
+    // který se obnovoval, tak dostal každý stavový přechod podruhé.
+    const stored = await generated();
+    stored.session.fail('done for the test');
+    const frames = await readFrames(
+      await events(stored.session.sessionId, '?since=', { 'last-event-id': '3' }),
+    );
+
+    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5]);
+  });
+
+  it('prázdný dotaz i prázdná hlavička znamenají první připojení, ne chybu', async () => {
+    // Druhá polovina téhož: klient bez kurzoru relaci od začátku dostat MÁ.
+    const stored = await generated();
+    stored.session.fail('done for the test');
+    const frames = await readFrames(
+      await events(stored.session.sessionId, '?since=', { 'last-event-id': '' }),
+    );
+
+    expect(frames.map((frame) => frame.sequence)).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('useknutý požadavek vrátí odběr logu, ne až čtenář proudu', async () => {
+    // `next` proud podle `dist/server/pipe-readable.js` nezačne číst vůbec,
+    // když je odpověď v tu chvíli už zničená — takže `cancel()` nemusí přijít
+    // nikdy a bez druhých dveří by odběr i časovač přežily požadavek.
+    // Soudí se **vrácení odběru**, ne počet odběratelů: ten log zvenčí
+    // nezveřejňuje, a tvrzení nad vlastní sondou by neměřilo route.
+    const stored = await generated();
+    const log = stored.session.events;
+    const subscribe = log.subscribe.bind(log);
+    let released = false;
+    (log as { subscribe: SessionEventLog['subscribe'] }).subscribe = (listener) => {
+      const off = subscribe(listener);
+      return () => {
+        released = true;
+        off();
+      };
+    };
+
+    const controller = new AbortController();
+    const response = await readEvents(
+      new Request(`http://127.0.0.1/api/worldstream/sessions/${stored.session.sessionId}/events`, {
+        signal: controller.signal,
+      }),
+      params(stored.session.sessionId),
+    );
+    expect(response.status).toBe(200);
+    expect(released, 'odběr se vrátil dřív, než klient odešel').toBe(false);
+
+    controller.abort();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(released, 'odběr logu přežil useknutý požadavek').toBe(true);
+    await response.body?.cancel().catch(() => undefined);
   });
 
   it('klient, který předběhl proud, nedostane nic — ne relaci od nuly', async () => {
