@@ -165,15 +165,6 @@ export async function GET(
     beat = null;
   }
 
-  // **Druhé dveře k úklidu, ne opis těch prvních.** `cancel()` na proudu zavolá
-  // až ten, kdo proud čte — a `next` ho podle `dist/server/pipe-readable.js`
-  // nezačne číst vůbec, když je odpověď v tu chvíli už zničená. Požadavek
-  // useknutý dřív, než se čtení rozjelo, by tedy nechal běžet časovač i odběr
-  // logu do restartu procesu, a to je stav, který si nechráněná route umí
-  // vyrobit sama tolikrát, kolikrát ji někdo zavolá. Nález nezávislé revize
-  // 2. 9. 2026. `release()` je idempotentní, takže dvoje dveře nevadí.
-  request.signal.addEventListener('abort', () => release());
-
   const stream = new ReadableStream<Uint8Array>({
     cancel() {
       release();
@@ -227,6 +218,25 @@ export async function GET(
       beat.unref();
     },
   });
+
+  // **Druhé dveře k úklidu, ne opis těch prvních.** `cancel()` na proudu zavolá
+  // až ten, kdo proud čte — a `next` ho podle `dist/server/pipe-readable.js`
+  // nezačne číst vůbec, když je odpověď v tu chvíli už zničená. Požadavek
+  // useknutý dřív, než se čtení rozjelo, by tedy nechal běžet časovač i odběr
+  // logu do restartu procesu, a to je stav, který si nechráněná route umí
+  // vyrobit sama tolikrát, kolikrát ji někdo zavolá. Nález nezávislé revize
+  // 2. 9. 2026. `release()` je idempotentní, takže dvoje dveře nevadí.
+  //
+  // ⚠ **Až za konstruktorem, a s dotazem na `aborted`.** `start()` běží
+  // synchronně uvnitř `new ReadableStream`, takže dřív tu ještě není co
+  // uklidit — `release()` by proběhl naprázdno a odběr by po něm teprve
+  // vznikl. A na signálu, který dorazil zrušený, se `abort` už nikdy
+  // nevystřelí: posluchač zaregistrovaný na hotovou událost nedostane nic,
+  // takže by odběr i patnáctivteřinový časovač přežily požadavek, který se
+  // nikdy nezačal číst. Doměřeno nezávislou revizí 2. 9. 2026 nad předem
+  // zrušeným signálem (stav 200, odběr zapsaný, úklid neproběhl).
+  if (request.signal.aborted) release();
+  else request.signal.addEventListener('abort', () => release(), { once: true });
 
   return new Response(stream, {
     headers: {

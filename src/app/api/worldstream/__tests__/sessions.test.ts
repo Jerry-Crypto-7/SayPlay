@@ -519,6 +519,41 @@ describe('proud relace', () => {
     await response.body?.cancel().catch(() => undefined);
   });
 
+  it('požadavek, který dorazí už useknutý, odběr nedostane vůbec', async () => {
+    // Druhá polovina téhož nálezu, a ta dražší: na signálu, který je zrušený
+    // dřív, než se route rozběhne, se `abort` už nikdy nevystřelí — posluchač
+    // zapsaný na hotovou událost nedostane nic. `start()` přitom běží
+    // synchronně uvnitř `new ReadableStream`, takže odběr i patnáctivteřinový
+    // časovač v tu chvíli existují a bez dotazu na `aborted` by přežily do
+    // restartu procesu. Zvenčí to nejde poznat: odpověď je 200 jako každá jiná.
+    const stored = await generated();
+    const log = stored.session.events;
+    const subscribe = log.subscribe.bind(log);
+    let subscribed = false;
+    let released = false;
+    (log as { subscribe: SessionEventLog['subscribe'] }).subscribe = (listener) => {
+      subscribed = true;
+      const off = subscribe(listener);
+      return () => {
+        released = true;
+        off();
+      };
+    };
+
+    const controller = new AbortController();
+    controller.abort();
+    const response = await readEvents(
+      new Request(`http://127.0.0.1/api/worldstream/sessions/${stored.session.sessionId}/events`, {
+        signal: controller.signal,
+      }),
+      params(stored.session.sessionId),
+    );
+
+    expect(subscribed, 'odběr vůbec nevznikl, takže test neměří, co si myslí').toBe(true);
+    expect(released, 'odběr logu přežil požadavek, který dorazil zrušený').toBe(true);
+    await response.body?.cancel().catch(() => undefined);
+  });
+
   it('klient, který předběhl proud, nedostane nic — ne relaci od nuly', async () => {
     const stored = await generated();
     stored.session.fail('done for the test');
