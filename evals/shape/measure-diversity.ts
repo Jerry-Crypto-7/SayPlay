@@ -33,7 +33,7 @@
  * z druhé strany: tentýž program pod jiným semínkem musí spadnout **pod** něj.
  */
 
-import { meshShapeProgram, type ShapeMesh } from '../../src/shape/surface-nets';
+import { meshShapeProgram, paddedBounds, type ShapeMesh } from '../../src/shape/surface-nets';
 import type { ShapeProgram, Vec3 } from '../../src/shape/types';
 
 /** Mřížka, ve které se galerie meshuje. Vysoká příčka žebříku z T5. */
@@ -165,7 +165,11 @@ function topologyProfile(mesh: ShapeMesh): readonly number[] {
 export function profileShape(program: ShapeProgram, sessionSeed: number): ShapeProfile {
   const mesh = meshShapeProgram(program, sessionSeed, {
     resolution: DIVERSITY_RESOLUTION,
-    bounds: program.targetBounds,
+    // **Měří se ta síť, kterou produkt vykreslí.** Od `T13-meshpadding`
+    // (2. 9. 2026) přidává `handleMeshJob()` rezervu jedné buňky, a `/gallery`
+    // chodí přes něj. Odlišnost tvarů souzená nad syrovým kvádrem by soudila
+    // obraz, který na plátně není.
+    bounds: paddedBounds(program.targetBounds, DIVERSITY_RESOLUTION),
   });
 
   return {

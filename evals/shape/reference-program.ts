@@ -98,18 +98,41 @@ export interface MeshCostRow {
 }
 
 /**
- * Základna naměřená v Node/V8 **29. 8. 2026** nad tímhle programem, jedno
- * vlákno, nejlepší ze tří běhů po zahřátí JIT — tedy stejnou metodikou jako
- * §11.2, jen nad commitnutým meshovačem.
+ * Základna naměřená v Node/V8 nad tímhle programem, jedno vlákno, nejlepší ze
+ * tří běhů po zahřátí JIT — tedy stejnou metodikou jako §11.2, jen nad
+ * commitnutým meshovačem.
  *
  * ⚠ **Není to řada z design booku a není s ní srovnatelná.** Ta měřila
  * necommitnutý prototyp nad neznámým tvarem.
+ *
+ * ## Přeměřeno 2. 9. 2026 — a nebyla to volba, byla to podmínka smyslu
+ *
+ * `T13-meshpadding` přesunula rezervu jedné buňky do `handleMeshJob()`, takže
+ * prohlížeč od té chvíle vzorkuje v `paddedBounds(bounds, resolution)`.
+ * Základna z 29. 8. měřila **syrový kvádr**, tedy jinou mřížku a jinou práci.
+ * `driftFromNode` v `mesh-budget.json` by pak nesrovnával worker s hlavním
+ * vláknem, ale rezervu s jejím vlastním chybějícím obrazem — číslo, které tři
+ * dokumenty čtou jako „o kolik je prohlížeč pomalejší".
+ *
+ * | Mřížka | Trojúhelníky 29. 8. (syrový kvádr) | 2. 9. (s rezervou) |
+ * |---|---|---|
+ * | 32³ | 12 016 | **10 044** |
+ * | 48³ | 26 992 | **24 616** |
+ * | 64³ | 47 680 | **45 020** |
+ * | 96³ | 106 696 | **103 128** |
+ *
+ * Časy z téhož běhu: 185,0 → 180,0 · 264,6 → 283,5 · 611,6 → 817,2 ·
+ * 2 593,5 → 2 358,7 ms. **Časy se pohnuly oběma směry a rozptyl jednoho
+ * stroje je v nich větší než efekt rezervy** — čti z nich řád, ne trend.
+ * Počty trojúhelníků jsou naopak deterministické a **sedí na browserový
+ * sloupec `mesh-budget.json` na kus přesně**; to je zároveň důkaz, že obě
+ * cesty melou tutéž mřížku.
  */
 export const NODE_BASELINE: Readonly<Record<number, MeshCostRow>> = {
-  32: { ms: 185.0, vertices: 5_995, triangles: 12_016 },
-  48: { ms: 264.6, vertices: 13_477, triangles: 26_992 },
-  64: { ms: 611.6, vertices: 23_830, triangles: 47_680 },
-  96: { ms: 2_593.5, vertices: 53_335, triangles: 106_696 },
+  32: { ms: 180.0, vertices: 5_003, triangles: 10_044 },
+  48: { ms: 283.5, vertices: 12_244, triangles: 24_616 },
+  64: { ms: 817.2, vertices: 22_500, triangles: 45_020 },
+  96: { ms: 2_358.7, vertices: 51_556, triangles: 103_128 },
 };
 
 /**
@@ -118,6 +141,15 @@ export const NODE_BASELINE: Readonly<Record<number, MeshCostRow>> = {
  *
  * Není to lineární a fixní podlaha je velká: vzorkování mřížky, surface nets
  * a normály stojí přes 200 ms samy o sobě, ať je program jakkoli prostý.
+ *
+ * ⚠ **Naměřeno nad syrovým kvádrem, tedy před rezervou z `T13-meshpadding`
+ * (2. 9. 2026), a nepřeměřilo se to.** Řádek `reference` je tentýž program
+ * jako `NODE_BASELINE[64]`, a ten se s rezervou posunul na 817,2 ms /
+ * 45 020 trojúhelníků. Programy pro `light` a `heavy` ale nikde uložené
+ * nejsou, takže přeměřit jde jedna třetina tabulky — a tabulka, ve které jeden
+ * řádek měří jinou mřížku než dva zbylé, je horší než tabulka o jedno kolo
+ * starší. **Čti z ní tvar křivky, ne absolutní čísla**, a než na ni někdo
+ * začne pinovat rozpočty, musí se přeměřit celá i s těmi dvěma programy.
  */
 export const COST_CLASSES = [
   { name: 'light', evaluationsPerCell: 10, ms: 232.7, triangles: 30_652 },

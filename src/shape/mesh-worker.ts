@@ -38,7 +38,7 @@
  */
 
 import { validateShapeProgram } from './schema';
-import { meshShapeProgram, type MeshRequest, type ShapeMesh } from './surface-nets';
+import { meshShapeProgram, paddedBounds, type MeshRequest, type ShapeMesh } from './surface-nets';
 import { MESH_DETAIL, type Bounds3, type ShapeProgram } from './types';
 
 /**
@@ -207,9 +207,37 @@ export function handleMeshJob(request: MeshJobRequest): MeshJobOutcome {
   }
 
   try {
+    // **Rezerva jedné buňky bydlí tady, ne u volajícího** — rozhodnuto
+    // 2. 9. 2026 v `T13-meshpadding`.
+    //
+    // `paddedBounds()` existovala od 29. 8. i s naměřenou tabulkou v hlavičce,
+    // a **nevolal ji ani jeden produkční volající**: `proxy.ts`, `/gallery`
+    // i `/dev/mesh-budget` posílaly `program.targetBounds` syrově.
+    //
+    // **Zavírá se tím vlásečnicový přesah, ne přesný sed** — naměřeno při psaní
+    // testu 2. 9. 2026, protože zadání úlohy tvrdilo obojí. Vzorek na hranici
+    // má vzdálenost přesně 0 a znaménko se soudí `value < 0`, takže nula je
+    // „venku" a přesně sedící kvádr `2³` se vymeshuje i bez rezervy (6 348
+    // trojúhelníků v mřížce 24 tak jako tak). Zmizí až tvar, který svůj kvádr
+    // přeteče o 1e-6: pak je i krajní vzorek uvnitř, žádná buňka nemění
+    // znaménko a meshovač poctivě vrátí prázdno. Neprojeví se to jako pád —
+    // objekt spadne na hlínu s hláškou `empty mesh`, tedy jako by ho napsal
+    // špatně model.
+    //
+    // Ve workeru to platí pro každého volajícího naráz a hlavně **měřidla
+    // měří tu cestu, kterou produkt doopravdy jde**. Kdyby rezerva byla
+    // v objednávce, `/dev/mesh-budget` by kalibroval rozpočty na kódu, kterým
+    // nikdo neprochází.
+    //
+    // **Cena, naměřená nad dvanácti tvary galerie 2. 9. 2026:** 164 668 →
+    // 150 468 trojúhelníků, tedy **−8,6 %** celkem, po tvarech od −19,6 %
+    // (`net`) po **+8,1 % (`column`)** — rezerva mřížku posune, nezmenší ji
+    // monotónně, takže „ubere zhruba 12 %" je nepravda a nepiš ji. Nejbližší
+    // dvojice galerie se vzdálila (`cloud`/`fruit` 0,1663 → 0,1707, práh
+    // 0,15), takže brána K1 zůstala zelená.
     const meshRequest: MeshRequest = {
       resolution: request.resolution,
-      bounds: request.bounds,
+      bounds: paddedBounds(request.bounds, request.resolution),
     };
     const mesh: ShapeMesh = meshShapeProgram(request.program, request.sessionSeed, meshRequest);
 

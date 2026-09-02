@@ -103,6 +103,13 @@ describe('evals/shape — dvanáct tvarů je dvanáct různých tvarů', () => {
   it('žádný tvar se nevymeshuje naprázdno', () => {
     // Prázdný mesh je tichá vada — viz hlavička. Měří se přímo, ne přes profil,
     // protože profil prázdného meshe vypadá jako platný profil samých nul.
+    //
+    // **Syrový kvádr je tady schválně, i když produkt od `T13-meshpadding`
+    // (2. 9. 2026) mele s rezervou jedné buňky.** Tenhle řádek nesoudí
+    // meshovač, soudí `gallery.ts`: ta si předepisuje „kvádr se rezervou,
+    // nikdy těsný", a rezerva ve workeru by tu kázeň schovala. Test je proto
+    // vědomě přísnější než produkce — tvar, který se vejde jen díky workeru,
+    // má tady spadnout.
     const empty = GALLERY.filter(
       (item) =>
         meshShapeProgram(item.program, GALLERY_SEED, {

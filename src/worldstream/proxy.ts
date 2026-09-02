@@ -314,6 +314,12 @@ export async function buildProxyWorld(
           program,
           sessionSeed: blueprint.sessionSeed,
           resolution: ROUGH_RESOLUTION,
+          // **Syrový `targetBounds` je tu správně a rezervu sem nepřidávej.**
+          // Od `T13-meshpadding` (2. 9. 2026) mele `handleMeshJob()`
+          // v `paddedBounds(bounds, resolution)`; objednávka říká, kam tvar
+          // patří, worker si k tomu přidá jednu buňku, aby tvar napsaný na
+          // svůj vlastní obal nezmizel. Rezerva na obou místech by kvádr
+          // nafoukla dvakrát a zbytečně zhrubla síť.
           bounds: program.targetBounds,
         }),
       );

@@ -29,7 +29,7 @@
 import { useEffect, useState } from 'react';
 
 import { createMeshClient } from '@/shape/mesh-client';
-import { meshShapeProgram } from '@/shape/surface-nets';
+import { meshShapeProgram, paddedBounds } from '@/shape/surface-nets';
 import { GALLERY, GALLERY_SEED } from '../../../../evals/shape/gallery';
 import {
   REFERENCE_BOUNDS,
@@ -113,9 +113,19 @@ export default function MeshBudgetPage(): React.JSX.Element {
 
     window.__meshBudget = {
       nodeCount: () => program.nodes.length,
+      // **Rezervu si přímá volání musí přidat sama, a je to podmínka
+      // srovnatelnosti, ne kosmetika.** Od `T13-meshpadding` (2. 9. 2026) mele
+      // `handleMeshJob()` v `paddedBounds(bounds, resolution)`, tedy o jednu
+      // buňku šíř. Kdyby tady zůstal syrový kvádr, sloupec „na hlavním vlákně"
+      // a sloupec „ve workeru" by počítaly jinak velké buňky a report by tiše
+      // srovnával dvě různá měření — přesně ta vada, před kterou varuje
+      // `unbudgeted` o kus výš.
       measureOnMainThread: (resolution) => {
         const startedAt = performance.now();
-        meshShapeProgram(program, REFERENCE_SEED, { resolution, bounds: REFERENCE_BOUNDS });
+        meshShapeProgram(program, REFERENCE_SEED, {
+          resolution,
+          bounds: paddedBounds(REFERENCE_BOUNDS, resolution),
+        });
         return performance.now() - startedAt;
       },
       measureGallery: (resolution) =>
@@ -123,7 +133,10 @@ export default function MeshBudgetPage(): React.JSX.Element {
           const startedAt = performance.now();
           const mesh = meshShapeProgram(item.program, GALLERY_SEED, {
             resolution,
-            bounds: item.program.targetBounds,
+            // Táž rezerva jako o kus výš: `/gallery` si tvary objednává přes
+            // workera, takže cena bez rezervy by byla cenou obrazu, který
+            // porotce nikdy neuvidí.
+            bounds: paddedBounds(item.program.targetBounds, resolution),
           });
           return {
             id: item.id,

@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-08-31",
+  "measuredAt": "2026-09-02",
   "task": "P13 vlna 1 T7",
   "resolution": 48,
   "silhouetteCells": 24,
@@ -12,630 +12,630 @@
   "shapes": [
     {
       "id": "bone",
-      "geometryHash": "0ca46c95",
-      "vertices": 1934,
-      "triangles": 3872,
+      "geometryHash": "fdb80383",
+      "vertices": 1700,
+      "triangles": 3396,
       "topology": [
-        0.5014,
-        0.908,
+        0.4957,
+        0.9077,
         1,
-        0.1273,
-        0.2497
+        0.1238,
+        0.2503
       ]
     },
     {
       "id": "root",
-      "geometryHash": "17d4dda8",
-      "vertices": 4578,
-      "triangles": 9104,
+      "geometryHash": "d5aca764",
+      "vertices": 4245,
+      "triangles": 8472,
       "topology": [
-        0.6963,
+        0.6701,
         1,
-        0.7013,
-        0.1354,
-        0.2514
+        0.6766,
+        0.1262,
+        0.2505
       ]
     },
     {
       "id": "vault",
-      "geometryHash": "23b26fad",
-      "vertices": 11076,
-      "triangles": 22160,
+      "geometryHash": "9e058f3e",
+      "vertices": 10172,
+      "triangles": 20352,
       "topology": [
         1,
-        0.8164,
-        0.8667,
-        0.3339,
+        0.8173,
+        0.8669,
+        0.3333,
         0.2499
       ]
     },
     {
       "id": "shell",
-      "geometryHash": "9bb21b9a",
-      "vertices": 4483,
-      "triangles": 9008,
+      "geometryHash": "1900b1cc",
+      "vertices": 4125,
+      "triangles": 8304,
       "topology": [
-        0.961,
+        0.9665,
         1,
-        0.4087,
-        0.1794,
-        0.2488
+        0.4131,
+        0.1829,
+        0.2484
       ]
     },
     {
       "id": "machine",
-      "geometryHash": "9c027458",
-      "vertices": 8618,
-      "triangles": 17236,
+      "geometryHash": "e957808a",
+      "vertices": 7810,
+      "triangles": 15640,
       "topology": [
         1,
         0.9938,
-        0.7294,
-        0.316,
-        0.25
+        0.7308,
+        0.3171,
+        0.2497
       ]
     },
     {
       "id": "column",
-      "geometryHash": "6165c36d",
-      "vertices": 5992,
-      "triangles": 11980,
+      "geometryHash": "2f1f856d",
+      "vertices": 6480,
+      "triangles": 12956,
       "topology": [
-        0.3281,
+        0.3331,
         1,
-        0.3281,
+        0.3331,
         0.088,
         0.2501
       ]
     },
     {
       "id": "cloud",
-      "geometryHash": "2864424b",
-      "vertices": 6432,
-      "triangles": 12860,
+      "geometryHash": "22b312d3",
+      "vertices": 5928,
+      "triangles": 11852,
       "topology": [
         1,
-        0.6956,
-        0.6796,
-        0.2153,
+        0.6957,
+        0.6795,
+        0.217,
         0.2501
       ]
     },
     {
       "id": "staircase",
-      "geometryHash": "afa5d19a",
-      "vertices": 6828,
-      "triangles": 13680,
+      "geometryHash": "6b5999d0",
+      "vertices": 6318,
+      "triangles": 12660,
       "topology": [
-        0.4339,
-        0.7578,
+        0.4296,
+        0.7467,
         1,
-        0.1262,
-        0.2496
+        0.1227,
+        0.2495
       ]
     },
     {
       "id": "cauldron",
-      "geometryHash": "dcef8117",
-      "vertices": 10900,
-      "triangles": 21796,
+      "geometryHash": "6ef70b50",
+      "vertices": 9836,
+      "triangles": 19672,
       "topology": [
         1,
-        0.7795,
+        0.7804,
         1,
-        0.3715,
+        0.3611,
         0.25
       ]
     },
     {
       "id": "fruit",
-      "geometryHash": "ba1d2d35",
-      "vertices": 5976,
-      "triangles": 11948,
+      "geometryHash": "0f48445e",
+      "vertices": 5510,
+      "triangles": 11020,
       "topology": [
-        0.7377,
+        0.7373,
         1,
-        0.7145,
-        0.2188,
-        0.2501
+        0.7154,
+        0.2303,
+        0.25
       ]
     },
     {
       "id": "wave",
-      "geometryHash": "4bab087e",
-      "vertices": 7068,
-      "triangles": 14260,
+      "geometryHash": "a728c683",
+      "vertices": 6281,
+      "triangles": 12660,
       "topology": [
         1,
-        0.4294,
-        0.6365,
-        0.1591,
-        0.2478
+        0.4223,
+        0.6289,
+        0.1522,
+        0.2481
       ]
     },
     {
       "id": "net",
-      "geometryHash": "a959df45",
-      "vertices": 8256,
-      "triangles": 16764,
+      "geometryHash": "55378b41",
+      "vertices": 6576,
+      "triangles": 13484,
       "topology": [
         1,
-        0.0588,
+        0.0599,
         1,
         0.162,
-        0.2462
+        0.2438
       ]
     }
   ],
   "closestPair": {
     "a": "cloud",
     "b": "fruit",
-    "distance": 0.1663,
-    "silhouette": 0.1858,
-    "topology": 0.121
+    "distance": 0.1707,
+    "silhouette": 0.191,
+    "topology": 0.1233
   },
   "pairs": [
     {
       "a": "cloud",
       "b": "fruit",
-      "distance": 0.1663,
-      "silhouette": 0.1858,
-      "topology": 0.121
+      "distance": 0.1707,
+      "silhouette": 0.191,
+      "topology": 0.1233
     },
     {
       "a": "root",
       "b": "fruit",
-      "distance": 0.1761,
-      "silhouette": 0.2396,
-      "topology": 0.0279
-    },
-    {
-      "a": "machine",
-      "b": "fruit",
-      "distance": 0.1912,
-      "silhouette": 0.2405,
-      "topology": 0.0761
+      "distance": 0.1822,
+      "silhouette": 0.2422,
+      "topology": 0.0421
     },
     {
       "a": "wave",
       "b": "net",
-      "distance": 0.1962,
-      "silhouette": 0.217,
-      "topology": 0.1477
+      "distance": 0.1919,
+      "silhouette": 0.2101,
+      "topology": 0.1495
+    },
+    {
+      "a": "machine",
+      "b": "fruit",
+      "distance": 0.1936,
+      "silhouette": 0.2448,
+      "topology": 0.0743
     },
     {
       "a": "shell",
       "b": "column",
-      "distance": 0.2094,
-      "silhouette": 0.23,
-      "topology": 0.1612
-    },
-    {
-      "a": "cloud",
-      "b": "wave",
-      "distance": 0.2153,
-      "silhouette": 0.276,
-      "topology": 0.0735
+      "distance": 0.2114,
+      "silhouette": 0.2326,
+      "topology": 0.162
     },
     {
       "a": "cloud",
       "b": "cauldron",
-      "distance": 0.2208,
-      "silhouette": 0.2674,
-      "topology": 0.1121
+      "distance": 0.2189,
+      "silhouette": 0.2656,
+      "topology": 0.1099
+    },
+    {
+      "a": "root",
+      "b": "column",
+      "distance": 0.22,
+      "silhouette": 0.2526,
+      "topology": 0.1438
+    },
+    {
+      "a": "cloud",
+      "b": "wave",
+      "distance": 0.2215,
+      "silhouette": 0.283,
+      "topology": 0.0782
     },
     {
       "a": "root",
       "b": "shell",
-      "distance": 0.2264,
+      "distance": 0.2273,
       "silhouette": 0.2717,
-      "topology": 0.1208
-    },
-    {
-      "a": "shell",
-      "b": "fruit",
-      "distance": 0.2341,
-      "silhouette": 0.2856,
-      "topology": 0.114
-    },
-    {
-      "a": "root",
-      "b": "column",
-      "distance": 0.2346,
-      "silhouette": 0.2674,
-      "topology": 0.158
+      "topology": 0.1238
     },
     {
       "a": "bone",
       "b": "staircase",
-      "distance": 0.2392,
+      "distance": 0.2398,
       "silhouette": 0.3229,
-      "topology": 0.0438
+      "topology": 0.0458
     },
     {
-      "a": "root",
-      "b": "machine",
-      "distance": 0.2396,
-      "silhouette": 0.2977,
-      "topology": 0.104
+      "a": "shell",
+      "b": "fruit",
+      "distance": 0.2402,
+      "silhouette": 0.2934,
+      "topology": 0.1161
     },
     {
       "a": "shell",
       "b": "cloud",
-      "distance": 0.2499,
-      "silhouette": 0.3012,
-      "topology": 0.1303
+      "distance": 0.2426,
+      "silhouette": 0.2917,
+      "topology": 0.128
+    },
+    {
+      "a": "root",
+      "b": "machine",
+      "distance": 0.2519,
+      "silhouette": 0.3099,
+      "topology": 0.1164
     },
     {
       "a": "machine",
       "b": "cloud",
-      "distance": 0.2584,
-      "silhouette": 0.3307,
-      "topology": 0.0897
+      "distance": 0.2615,
+      "silhouette": 0.3351,
+      "topology": 0.09
     },
     {
       "a": "column",
       "b": "fruit",
-      "distance": 0.2598,
-      "silhouette": 0.2917,
-      "topology": 0.1854
-    },
-    {
-      "a": "shell",
-      "b": "machine",
-      "distance": 0.2672,
-      "silhouette": 0.3385,
-      "topology": 0.1007
+      "distance": 0.2623,
+      "silhouette": 0.2951,
+      "topology": 0.1858
     },
     {
       "a": "bone",
       "b": "column",
-      "distance": 0.2731,
-      "silhouette": 0.3064,
-      "topology": 0.1954
+      "distance": 0.2726,
+      "silhouette": 0.3073,
+      "topology": 0.1916
+    },
+    {
+      "a": "shell",
+      "b": "machine",
+      "distance": 0.2726,
+      "silhouette": 0.3472,
+      "topology": 0.0986
     },
     {
       "a": "root",
       "b": "staircase",
-      "distance": 0.2767,
-      "silhouette": 0.3255,
-      "topology": 0.1629
+      "distance": 0.2735,
+      "silhouette": 0.3203,
+      "topology": 0.1643
     },
     {
       "a": "root",
       "b": "cloud",
-      "distance": 0.2784,
-      "silhouette": 0.3368,
-      "topology": 0.1422
-    },
-    {
-      "a": "cauldron",
-      "b": "fruit",
-      "distance": 0.2789,
-      "silhouette": 0.3194,
-      "topology": 0.1842
-    },
-    {
-      "a": "column",
-      "b": "staircase",
-      "distance": 0.2865,
-      "silhouette": 0.3186,
-      "topology": 0.2117
+      "distance": 0.2801,
+      "silhouette": 0.3377,
+      "topology": 0.1457
     },
     {
       "a": "staircase",
       "b": "net",
-      "distance": 0.2952,
-      "silhouette": 0.3099,
-      "topology": 0.2609
+      "distance": 0.2835,
+      "silhouette": 0.2934,
+      "topology": 0.2604
+    },
+    {
+      "a": "cauldron",
+      "b": "fruit",
+      "distance": 0.2835,
+      "silhouette": 0.3281,
+      "topology": 0.1795
+    },
+    {
+      "a": "column",
+      "b": "staircase",
+      "distance": 0.2843,
+      "silhouette": 0.316,
+      "topology": 0.2104
     },
     {
       "a": "staircase",
       "b": "wave",
-      "distance": 0.2981,
-      "silhouette": 0.3151,
-      "topology": 0.2585
+      "distance": 0.2868,
+      "silhouette": 0.2986,
+      "topology": 0.2594
     },
     {
       "a": "cloud",
       "b": "staircase",
-      "distance": 0.2999,
-      "silhouette": 0.3394,
-      "topology": 0.2077
+      "distance": 0.2882,
+      "silhouette": 0.3229,
+      "topology": 0.2074
     },
     {
       "a": "staircase",
       "b": "fruit",
-      "distance": 0.3076,
-      "silhouette": 0.3602,
-      "topology": 0.1849
+      "distance": 0.3112,
+      "silhouette": 0.3628,
+      "topology": 0.1907
     },
     {
-      "a": "bone",
-      "b": "fruit",
-      "distance": 0.3079,
-      "silhouette": 0.3793,
-      "topology": 0.1411
-    },
-    {
-      "a": "fruit",
+      "a": "shell",
       "b": "wave",
-      "distance": 0.3197,
-      "silhouette": 0.3733,
-      "topology": 0.1946
-    },
-    {
-      "a": "machine",
-      "b": "cauldron",
-      "distance": 0.3198,
-      "silhouette": 0.4106,
-      "topology": 0.1081
+      "distance": 0.3164,
+      "silhouette": 0.3785,
+      "topology": 0.1716
     },
     {
       "a": "bone",
       "b": "root",
-      "distance": 0.3207,
-      "silhouette": 0.4071,
-      "topology": 0.1191
+      "distance": 0.3169,
+      "silhouette": 0.4019,
+      "topology": 0.1185
+    },
+    {
+      "a": "bone",
+      "b": "fruit",
+      "distance": 0.3182,
+      "silhouette": 0.3924,
+      "topology": 0.1451
+    },
+    {
+      "a": "fruit",
+      "b": "wave",
+      "distance": 0.3193,
+      "silhouette": 0.3698,
+      "topology": 0.2014
+    },
+    {
+      "a": "machine",
+      "b": "cauldron",
+      "distance": 0.3233,
+      "silhouette": 0.4167,
+      "topology": 0.1054
     },
     {
       "a": "vault",
       "b": "cauldron",
-      "distance": 0.3209,
-      "silhouette": 0.4405,
-      "topology": 0.0416
-    },
-    {
-      "a": "shell",
-      "b": "wave",
-      "distance": 0.328,
-      "silhouette": 0.395,
-      "topology": 0.1717
-    },
-    {
-      "a": "column",
-      "b": "cloud",
-      "distance": 0.3389,
-      "silhouette": 0.3594,
-      "topology": 0.291
+      "distance": 0.326,
+      "silhouette": 0.4488,
+      "topology": 0.0396
     },
     {
       "a": "shell",
       "b": "staircase",
-      "distance": 0.3425,
-      "silhouette": 0.3681,
-      "topology": 0.2829
-    },
-    {
-      "a": "bone",
-      "b": "net",
-      "distance": 0.3451,
-      "silhouette": 0.3741,
-      "topology": 0.2772
+      "distance": 0.3318,
+      "silhouette": 0.3507,
+      "topology": 0.2877
     },
     {
       "a": "root",
       "b": "wave",
-      "distance": 0.346,
-      "silhouette": 0.4115,
-      "topology": 0.1933
+      "distance": 0.3367,
+      "silhouette": 0.3967,
+      "topology": 0.1968
+    },
+    {
+      "a": "column",
+      "b": "cloud",
+      "distance": 0.3384,
+      "silhouette": 0.3594,
+      "topology": 0.2893
+    },
+    {
+      "a": "bone",
+      "b": "net",
+      "distance": 0.339,
+      "silhouette": 0.3646,
+      "topology": 0.2793
     },
     {
       "a": "shell",
       "b": "cauldron",
-      "distance": 0.3476,
-      "silhouette": 0.4071,
-      "topology": 0.2088
+      "distance": 0.3456,
+      "silhouette": 0.4063,
+      "topology": 0.204
+    },
+    {
+      "a": "machine",
+      "b": "column",
+      "distance": 0.3515,
+      "silhouette": 0.3906,
+      "topology": 0.2601
+    },
+    {
+      "a": "vault",
+      "b": "wave",
+      "distance": 0.3522,
+      "silhouette": 0.4332,
+      "topology": 0.1632
+    },
+    {
+      "a": "column",
+      "b": "wave",
+      "distance": 0.3601,
+      "silhouette": 0.3767,
+      "topology": 0.3213
+    },
+    {
+      "a": "cauldron",
+      "b": "wave",
+      "distance": 0.3602,
+      "silhouette": 0.434,
+      "topology": 0.188
+    },
+    {
+      "a": "vault",
+      "b": "cloud",
+      "distance": 0.3603,
+      "silhouette": 0.4783,
+      "topology": 0.0851
     },
     {
       "a": "staircase",
       "b": "cauldron",
-      "distance": 0.3496,
-      "silhouette": 0.428,
-      "topology": 0.1667
-    },
-    {
-      "a": "machine",
-      "b": "column",
-      "distance": 0.3513,
-      "silhouette": 0.3898,
-      "topology": 0.2615
-    },
-    {
-      "a": "vault",
-      "b": "wave",
-      "distance": 0.353,
-      "silhouette": 0.4362,
-      "topology": 0.1588
-    },
-    {
-      "a": "cauldron",
-      "b": "wave",
-      "distance": 0.3559,
-      "silhouette": 0.4288,
-      "topology": 0.1856
+      "distance": 0.3605,
+      "silhouette": 0.4427,
+      "topology": 0.1686
     },
     {
       "a": "bone",
       "b": "vault",
-      "distance": 0.3563,
-      "silhouette": 0.4293,
-      "topology": 0.1861
-    },
-    {
-      "a": "vault",
-      "b": "machine",
-      "distance": 0.3593,
-      "silhouette": 0.4848,
-      "topology": 0.0665
-    },
-    {
-      "a": "vault",
-      "b": "cloud",
-      "distance": 0.3625,
-      "silhouette": 0.4813,
-      "topology": 0.0853
-    },
-    {
-      "a": "column",
-      "b": "wave",
-      "distance": 0.3672,
-      "silhouette": 0.3854,
-      "topology": 0.3249
+      "distance": 0.3668,
+      "silhouette": 0.4436,
+      "topology": 0.1875
     },
     {
       "a": "vault",
       "b": "net",
-      "distance": 0.3693,
-      "silhouette": 0.4362,
-      "topology": 0.2133
+      "distance": 0.3685,
+      "silhouette": 0.4349,
+      "topology": 0.2136
     },
     {
       "a": "cloud",
       "b": "net",
-      "distance": 0.372,
-      "silhouette": 0.4444,
-      "topology": 0.2029
+      "distance": 0.3709,
+      "silhouette": 0.4427,
+      "topology": 0.2035
+    },
+    {
+      "a": "vault",
+      "b": "machine",
+      "distance": 0.3752,
+      "silhouette": 0.5078,
+      "topology": 0.0658
     },
     {
       "a": "root",
       "b": "cauldron",
-      "distance": 0.3747,
-      "silhouette": 0.4444,
-      "topology": 0.2121
-    },
-    {
-      "a": "bone",
-      "b": "shell",
-      "distance": 0.3792,
-      "silhouette": 0.4392,
-      "topology": 0.2392
+      "distance": 0.3819,
+      "silhouette": 0.4505,
+      "topology": 0.2217
     },
     {
       "a": "bone",
       "b": "cloud",
-      "distance": 0.3813,
-      "silhouette": 0.4488,
-      "topology": 0.2239
+      "distance": 0.3826,
+      "silhouette": 0.4497,
+      "topology": 0.226
+    },
+    {
+      "a": "bone",
+      "b": "shell",
+      "distance": 0.385,
+      "silhouette": 0.4462,
+      "topology": 0.2422
     },
     {
       "a": "vault",
       "b": "fruit",
-      "distance": 0.3858,
-      "silhouette": 0.49,
-      "topology": 0.1427
+      "distance": 0.389,
+      "silhouette": 0.4957,
+      "topology": 0.14
     },
     {
       "a": "column",
       "b": "net",
-      "distance": 0.3945,
+      "distance": 0.394,
       "silhouette": 0.3611,
-      "topology": 0.4726
-    },
-    {
-      "a": "root",
-      "b": "vault",
-      "distance": 0.3978,
-      "silhouette": 0.4952,
-      "topology": 0.1705
-    },
-    {
-      "a": "bone",
-      "b": "machine",
-      "distance": 0.4005,
-      "silhouette": 0.4826,
-      "topology": 0.2088
-    },
-    {
-      "a": "bone",
-      "b": "cauldron",
-      "distance": 0.4017,
-      "silhouette": 0.4991,
-      "topology": 0.1743
-    },
-    {
-      "a": "vault",
-      "b": "staircase",
-      "distance": 0.4034,
-      "silhouette": 0.4935,
-      "topology": 0.1932
+      "topology": 0.4708
     },
     {
       "a": "shell",
       "b": "net",
-      "distance": 0.4036,
-      "silhouette": 0.4401,
-      "topology": 0.3183
+      "distance": 0.3953,
+      "silhouette": 0.4288,
+      "topology": 0.3172
     },
     {
       "a": "bone",
       "b": "wave",
-      "distance": 0.4051,
-      "silhouette": 0.4609,
-      "topology": 0.2749
+      "distance": 0.4007,
+      "silhouette": 0.4531,
+      "topology": 0.2783
     },
     {
       "a": "root",
       "b": "net",
-      "distance": 0.4105,
-      "silhouette": 0.4514,
-      "topology": 0.3151
+      "distance": 0.4014,
+      "silhouette": 0.4332,
+      "topology": 0.3272
+    },
+    {
+      "a": "root",
+      "b": "vault",
+      "distance": 0.4022,
+      "silhouette": 0.4965,
+      "topology": 0.1822
+    },
+    {
+      "a": "bone",
+      "b": "cauldron",
+      "distance": 0.4034,
+      "silhouette": 0.5017,
+      "topology": 0.1738
+    },
+    {
+      "a": "bone",
+      "b": "machine",
+      "distance": 0.4096,
+      "silhouette": 0.4948,
+      "topology": 0.2107
+    },
+    {
+      "a": "vault",
+      "b": "staircase",
+      "distance": 0.4097,
+      "silhouette": 0.5009,
+      "topology": 0.197
     },
     {
       "a": "machine",
       "b": "staircase",
-      "distance": 0.4197,
-      "silhouette": 0.4913,
-      "topology": 0.2526
+      "distance": 0.4293,
+      "silhouette": 0.5035,
+      "topology": 0.2562
     },
     {
       "a": "machine",
       "b": "wave",
-      "distance": 0.4263,
-      "silhouette": 0.5391,
-      "topology": 0.1632
+      "distance": 0.432,
+      "silhouette": 0.5451,
+      "topology": 0.168
     },
     {
       "a": "vault",
       "b": "shell",
-      "distance": 0.4418,
-      "silhouette": 0.5595,
-      "topology": 0.1672
+      "distance": 0.4352,
+      "silhouette": 0.5512,
+      "topology": 0.1644
     },
     {
       "a": "fruit",
       "b": "net",
-      "distance": 0.4478,
-      "silhouette": 0.5069,
-      "topology": 0.3099
+      "distance": 0.4461,
+      "silhouette": 0.5035,
+      "topology": 0.3124
     },
     {
       "a": "vault",
       "b": "column",
-      "distance": 0.4487,
-      "silhouette": 0.5004,
-      "topology": 0.328
+      "distance": 0.4471,
+      "silhouette": 0.4991,
+      "topology": 0.3258
     },
     {
       "a": "column",
       "b": "cauldron",
-      "distance": 0.4597,
-      "silhouette": 0.4983,
-      "topology": 0.3696
+      "distance": 0.462,
+      "silhouette": 0.5035,
+      "topology": 0.3653
     },
     {
       "a": "cauldron",
       "b": "net",
-      "distance": 0.4753,
-      "silhouette": 0.599,
-      "topology": 0.1868
+      "distance": 0.476,
+      "silhouette": 0.6007,
+      "topology": 0.1851
     },
     {
       "a": "machine",
       "b": "net",
-      "distance": 0.5114,
-      "silhouette": 0.6137,
-      "topology": 0.2726
+      "distance": 0.512,
+      "silhouette": 0.6146,
+      "topology": 0.2728
     }
   ],
   "duplicateHashes": []

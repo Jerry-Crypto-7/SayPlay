@@ -517,6 +517,116 @@ describe('prázdná práce se vrací jako selhání', () => {
 });
 
 /* ------------------------------------------------------------------ *
+ * 4c-bis. Rezervu jedné buňky přidává worker, ne volající.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Vlastnost: **objednávka meshe prochází rezervou, takže tvar napsaný na svůj
+ * vlastní obal nezmizí.**
+ *
+ * `paddedBounds()` existovala od 29. 8. 2026 i s naměřenou tabulkou v hlavičce
+ * a do 2. 9. 2026 ji **nevolal ani jeden produkční volající** — `proxy.ts`,
+ * `/gallery` i `/dev/mesh-budget` posílaly `targetBounds` syrově. Od
+ * `T13-meshpadding` ji přidává `handleMeshJob()` každé objednávce.
+ *
+ * ## Co se při psaní testu naměřilo a co to opravuje v zadání úlohy
+ *
+ * Zadání říkalo „tvar, jehož `targetBounds` sedí **přesně** na jeho obalu,
+ * vrátí neprázdný mesh". Naměřeno 2. 9. 2026: **přesný sed je v pořádku i bez
+ * rezervy** — vzorek na hranici má vzdálenost přesně 0, a znaménko se soudí
+ * `value < 0`, takže nula je „venku" a hranice se pořád mění. Kvádr `2³`
+ * v mřížce 24 nad ⟨−1, 1⟩ dá s rezervou i bez ní 6 348 trojúhelníků.
+ *
+ * Mizí až **vlásečnicový přesah**: kvádr `2,000002³` má i krajní vzorek uvnitř,
+ * žádná buňka nemění znaménko a meshovač poctivě vrátí prázdno. To je ta
+ * třída, kterou rezerva zavírá, a je to táž třída, kterou popisuje tabulka
+ * u `paddedBounds`.
+ *
+ * ## Proč je ten kvádr schovaný za `rotate`
+ *
+ * Bez obalu ho `T12-boundsratio` odmítne dřív, než se k meshingu vůbec dojde
+ * (`shape overflows its own targetBounds`), a test by měřil bránu programu
+ * místo rezervy. `rotate` je **dokumentovaný** důvod, proč je obal nejistý
+ * (`certainHulls` v `types.ts`): ze samotného kvádru potomka skutečný obal
+ * otočeného tvaru spočítat nejde. Deformace, pole, `intersect` a `subtract`
+ * jsou na tom stejně — tudy chodí model, jehož `targetBounds` je odhad.
+ */
+describe('rezervu přidává worker, ne volající', () => {
+  const TIGHT: Bounds3 = { min: [-1, -1, -1], max: [1, 1, 1] };
+  const RESOLUTION = 24;
+
+  /** Kvádr přetékající svůj obal o 1e-6, schovaný před bránou za `rotate`. */
+  const HAIRLINE: readonly ShapeNode[] = [
+    { kind: 'box', size: [2.000002, 2.000002, 2.000002] },
+    { kind: 'rotate', child: 0, yaw: 0, pitch: 0, roll: 0 },
+  ];
+
+  function job(nodes: readonly ShapeNode[]): MeshJobRequest {
+    return {
+      jobId: 'padding',
+      sessionSeed: SEED,
+      resolution: RESOLUTION,
+      bounds: TIGHT,
+      program: programOf(nodes, TIGHT),
+    };
+  }
+
+  function trianglesVia(nodes: readonly ShapeNode[]): number {
+    const { response } = handleMeshJob(job(nodes));
+    expect(response.ok, response.ok ? '' : response.error).toBe(true);
+    if (!response.ok) throw new Error(response.error);
+    return response.triangleCount;
+  }
+
+  it('vlásečnicový přesah bez rezervy zmizí celý — to je ta vada', () => {
+    // Přímé volání meshovače je tady schválně: je to ta cesta, kterou produkt
+    // šel do 2. 9. 2026, a bez ní by test netvrdil nic o tom, co se opravilo.
+    const bare = meshShapeProgram(programOf(HAIRLINE, TIGHT), SEED, {
+      resolution: RESOLUTION,
+      bounds: TIGHT,
+    });
+    expect(bare.triangleCount).toBe(0);
+  });
+
+  it('objednávka přes worker ho vrátí neprázdný', () => {
+    expect(trianglesVia(HAIRLINE)).toBe(6348);
+  });
+
+  it('rezerva je přesně `paddedBounds`, ne libovolné nafouknutí', () => {
+    // Koule přesně na svém obalu ta dvě čísla rozejde: 5 244 bez rezervy proti
+    // 4 620 s ní. Rovnost na obě strany zabije jak „worker nepadduje", tak
+    // „padduje jinak než volající".
+    //
+    // Kvádr z testů výš by tady neposloužil — ten dá s rezervou i bez ní
+    // 6 348, a rovnost by prošla i mutantovi, který nepadduje vůbec.
+    const sphere = programOf(SPHERE, TIGHT);
+    const bare = meshShapeProgram(sphere, SEED, { resolution: RESOLUTION, bounds: TIGHT });
+    const padded = meshShapeProgram(sphere, SEED, {
+      resolution: RESOLUTION,
+      bounds: paddedBounds(TIGHT, RESOLUTION),
+    });
+
+    expect(bare.triangleCount).toBe(5244);
+    expect(padded.triangleCount).toBe(4620);
+    expect(trianglesVia(SPHERE)).toBe(padded.triangleCount);
+  });
+
+  it('rezerva se počítá z rozlišení objednávky, ne z konstanty', () => {
+    // Buňka je `span / resolution`, takže jemnější mřížka má menší rezervu.
+    // Bez tohohle by prošla i rezerva napevno o velikosti buňky mřížky 24.
+    const fine = 40;
+    const { response } = handleMeshJob({ ...job(SPHERE), resolution: fine });
+    expect(response.ok).toBe(true);
+    if (!response.ok) return;
+    const expected = meshShapeProgram(programOf(SPHERE, TIGHT), SEED, {
+      resolution: fine,
+      bounds: paddedBounds(TIGHT, fine),
+    });
+    expect(response.triangleCount).toBe(expected.triangleCount);
+  });
+});
+
+/* ------------------------------------------------------------------ *
  * 4d. Měřit se dá i bez rozsudku — a nic jiného se tím nevypne.
  * ------------------------------------------------------------------ */
 

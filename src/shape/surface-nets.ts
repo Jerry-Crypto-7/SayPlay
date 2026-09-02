@@ -59,7 +59,14 @@ const EDGE_CORNERS: readonly (readonly [number, number])[] = [
 export interface MeshRequest {
   /** Kolik buněk na osu. Mřížka vzorků je o jednu větší. */
   readonly resolution: number;
-  /** Kvádr, ve kterém se hledá povrch. Obvykle `program.targetBounds` s rezervou. */
+  /**
+   * Kvádr, ve kterém se hledá povrch — **už včetně rezervy**.
+   *
+   * `meshShapeProgram()` bere tenhle kvádr doslova a rezervu si nepřidává;
+   * kdo mele přes `handleMeshJob()`, dostane ji od workeru (viz `paddedBounds`).
+   * Kdo volá meshovač přímo — testy a referenční sada — si o ni musí říct sám,
+   * jinak měří tvar, který svůj kvádr vyplnil, jako prázdno.
+   */
   readonly bounds: Bounds3;
 }
 
@@ -326,6 +333,14 @@ export function meshShapeProgram(
  *
  * Rezerva naopak **neuzavře** tvar, který přetéká výrazně — ten je useknutý
  * v každém kvádru a řeší se přepočítáním rozměrů, ne rezervou.
+ *
+ * ## Kdo ji volá
+ *
+ * Produkčně **jen `handleMeshJob()`** v `mesh-worker.ts`, a to na každou
+ * objednávku. Do 2. 9. 2026 ji nevolal nikdo — tahle hlavička tu stála i s tou
+ * tabulkou, zatímco `proxy.ts`, `/gallery` i `/dev/mesh-budget` posílaly
+ * `targetBounds` syrově. Mimo worker si o ni říkají testy a referenční sada,
+ * které meshovač volají přímo.
  */
 export function paddedBounds(bounds: Bounds3, resolution: number): Bounds3 {
   const padX = (bounds.max[0] - bounds.min[0]) / resolution;
