@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+import { deployedTarget } from './e2e/smoke-target';
+
 /**
  * Testuje se PRODUKČNÍ build, ne `next dev`. AC úlohy T4 mluví o `npm run build`
  * a o živém WebGL2 kontextu; dev server má jiný modulový graf a jiné chování
@@ -18,7 +20,9 @@ import { defineConfig, devices } from '@playwright/test';
  * případech by `webServer` níž postavil a spustil něco jiného, tedy přesně toho
  * druhého artefakta, o kterém se nemá nic tvrdit.
  */
-const target = process.env.FALLBACK_SMOKE_URL;
+// Prázdná proměnná znamená **nenastaveno** — rozhoduje o tom `deployedTarget()`,
+// aby se config a spec, který se podle téhož zařizuje, nemohly rozejít.
+const target = deployedTarget();
 
 /**
  * Port, na kterém běží testovaný artefakt. **Naměřeno 21. 8. 2026:** 3100 na

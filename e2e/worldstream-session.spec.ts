@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 import { SseDecoder } from '../src/components/viewer/sse';
 import type { SessionEvent } from '../src/worldstream/events';
+import { deployedTarget } from './smoke-target';
 
 /**
  * **Tři route relace přes skutečný `next start`** (P13 T16, §20 a §21).
@@ -126,7 +127,7 @@ async function open(page: Page, prompt: string): Promise<Opened> {
  * Nález nezávislé revize 2. 9. 2026.
  */
 test.skip(
-  process.env.FALLBACK_SMOKE_URL !== undefined,
+  deployedTarget() !== undefined,
   'zakládá skutečné relace, takže proti nasazené adrese by utrácel',
 );
 
