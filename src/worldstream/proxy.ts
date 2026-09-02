@@ -42,6 +42,7 @@
 import { Box3, Matrix4, Vector3 } from 'three';
 
 import { bakePlacements, compilePlacements, type GeomPlacement } from '@/geom/placements';
+import { childIndicesOf, placedFrom, separableFrom, type GeomNode } from '@/geom/program';
 import { blueprintRejectionSentence, type BlueprintOutcome } from '@/model/worldstream-repair';
 import type { MeshOrder, MeshResult } from '@/shape/mesh-client';
 import { MESH_DETAIL, type Bounds3, type ShapeProgram, type Vec3 } from '@/shape/types';
@@ -100,8 +101,18 @@ export type ProxyForm =
    * Hlína. Podoba je kvádr slotu — nic se nepřikládá, protože `localBounds`
    * ho už nese. `reason` je věta pro porotce, ne kód: říká, proč tenhle objekt
    * zatím vypadá jako bedna.
+   *
+   * `drawn` říká, jestli se ta bedna má **vykreslit**. Rozhoduje o tom
+   * `clayCause()` níž: tři z cest na hlínu vedou k objektu, jehož geometrie
+   * v obraze doopravdy stojí, jen ji nemůže dostat do vlastních rukou. Tam by
+   * bedna prorostla skutečným tvarem.
    */
-  | { readonly rung: 'semantic-clay'; readonly kind: 'clay'; readonly reason: string };
+  | {
+      readonly rung: 'semantic-clay';
+      readonly kind: 'clay';
+      readonly reason: string;
+      readonly drawn: boolean;
+    };
 
 export interface ProxySlot {
   readonly slot: SemanticSlot;
@@ -291,6 +302,135 @@ function meshingOrder(shapes: readonly ShapeProgram[]): readonly ShapeProgram[] 
   return [...shapes].sort((left, right) => right.priority - left.priority);
 }
 
+/* ------------------------------------------------------------------ *
+ * Proč tenhle objekt nedostal svůj řádek — a jestli se ta bedna kreslí.
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Rozhodnutí (2. 9. 2026, `T13-claydouble`): u tří ze čtyř příčin se hlína
+ * nekreslí. Slot zůstane, bedna zmizí.**
+ *
+ * Tři z těch čtyř důvodů vedly dosud k jedné a téže větě, a to je špatně
+ * dvakrát: hláška mířila na špatnou příčinu a bedna se stavěla i tam, kde už
+ * geometrie stojí. Liší se přitom v jediné věci — **je ta geometrie v obraze?**
+ *
+ * - `taken` — týž řádek si vzal jiný objekt. Kusy jsou vidět, jen patří jemu.
+ * - `nested` — kusy si vzal řádek **pod** tímhle. Razítko se dává zdola nahoru
+ *   a `stamped()` už orazítkovaný kus přepsat nesmí, takže vlastníkovi vyššího
+ *   řádku nezbude nic. Jeho geometrie je přesto celá v obraze, jen pod cizím
+ *   jménem.
+ * - `carved` — řez nad řádkem slepil podstrom do jedné sítě, ta jde do kulisy.
+ *   Trojúhelníky toho řádku v ní **jsou**; nedají se z ní vybrat.
+ * - `anchor-only` — `anchorTo` si z cíle vzalo kvádr a kusy zahodilo. Tenhle
+ *   řádek v obraze **není nikde**.
+ *
+ * U prvních tří by bedna na `targetBounds` prorostla skutečným tvarem —
+ * porotce uvidí dvojobraz a ten čte jako vada renderu, ne jako poctivé
+ * přiznání, že model napsal nárok, na který nedosáhl. Přiznání zůstává tam,
+ * kam patří: ve větě `reason`, kterou nese inspektor.
+ *
+ * **Druhá nabízená cesta — odečíst tu geometrii z kulisy a dát ji objektu —
+ * se zavrhla měřením, ne vkusem.** U `taken` i `nested` by odebrala kusy
+ * soupeři, který je vlastní právem prvního razítka. U `carved` je jednotkou
+ * řezu **celý podstrom**, takže by objekt dostal i sourozence toho řádku, a
+ * jeho `worldBounds` by tím lhaly — a `worldBounds` slotu jsou podle design
+ * booku §13.2 přesně to, co se při hot-swapu hnout nesmí. Ani jednou to tedy
+ * není volba mezi dvěma dobrými konci.
+ *
+ * **Do opravného kola se z těch čtyř posílají dva.** `taken` a `anchor-only`
+ * hlásí `findBlueprintReferenceIssues()` (`references.ts`), protože obojí se
+ * pozná ze zápisu a model to umí přepsat. `nested` a `carved` ne: nárok na
+ * řádek i na jeho potomka je vada teprve tehdy, když tomu vyššímu nakonec nic
+ * nezbude, a to je vlastnost **výsledku**, ne zápisu — přesně ta hranice,
+ * kterou má `references.ts` napsanou v hlavičce.
+ *
+ * **Co se tím ztrácí, přiznaně:** řez, který svůj podstrom vymazal do
+ * posledního trojúhelníku a přitom nechal program naživu sourozenci, dá
+ * objektu `drawn: false` nad prázdnem — tělo nebude mít žádné. Rozeznat ten
+ * případ od řezu, který tvar nechal stát, by chtělo původ trojúhelníku, a ten
+ * `carve` nepřenáší: slepí podstrom do jedné sítě a razítko v ní zaniká.
+ * Slot, kvádr, kotvy i věta ale zůstávají, takže objekt je pořád k nalezení
+ * a pořád vyměnitelný za vlastní `ShapeProgram` — a to je invariant, který
+ * tenhle soubor doopravdy hájí („Prázdný slot neexistuje" nahoře).
+ */
+function clayCause(
+  node: number,
+  rival: string | undefined,
+  nodes: readonly GeomNode[],
+  placed: ReadonlySet<number>,
+  separable: ReadonlySet<number>,
+  owned: ReadonlyMap<number, readonly GeomPlacement[]>,
+): { readonly reason: string; readonly drawn: boolean } {
+  if (rival !== undefined)
+    return {
+      reason: `composition row ${node} already belongs to ${rival}, so its pieces are drawn there and not a second time here`,
+      drawn: false,
+    };
+
+  // Nedosažitelný řádek se sem nedostane: `structuralIssues` takový program
+  // odmítne už v `parseGeomProgram()` a `splitComposition()` z toho udělá
+  // `compositionFailure`. Co projde a přesto není položené, je tedy vždycky
+  // cíl `anchorTo` — proto ta věta smí mluvit o kotvě jistotou, ne odhadem.
+  if (!placed.has(node))
+    return {
+      reason: `composition row ${node} is never placed in the world: the composition reaches it only as an anchorTo target, which reads its bounds and drops its pieces`,
+      drawn: true,
+    };
+
+  if (!separable.has(node))
+    return {
+      reason: `composition row ${node} was fused into one mesh by a carve above it, so the scenery draws its triangles and no object can be handed them`,
+      drawn: false,
+    };
+
+  const below = claimedBelow(node, nodes, owned);
+  if (below !== undefined)
+    return {
+      reason: `composition row ${node} was handed out as row ${below} below it, so its pieces are drawn there and not a second time here`,
+      drawn: false,
+    };
+
+  // Poslední větev je záměrně bez příčiny: čtyři, které jméno mají, jsou
+  // vyčerpané výš. Kdyby sem něco došlo, je to nová cesta na hlínu a bedna
+  // se má nakreslit — objekt bez těla je horší než objekt s bednou.
+  return {
+    reason: `composition row ${node} produced no piece of its own, so there is nothing to hand this object`,
+    drawn: true,
+  };
+}
+
+/**
+ * Řádek pod `node`, který si kusy vzal dřív. Vrací ten nejbližší.
+ *
+ * Sestup po `childIndicesOf` odshora dolů, stejně jako `placedFrom` —
+ * potomek má vždy nižší index, takže stačí jeden průchod. Hledá se v `owned`,
+ * ne v pořadí zpracování objektů: razítka rozdal kompilátor dávno předtím,
+ * než se sloty začaly plnit, takže odpověď nesmí záviset na tom, který objekt
+ * je v blueprintu první.
+ *
+ * Sem se dojde jedině tehdy, když vyššímu řádku nezbylo **nic** — kdyby mu
+ * zbyl jediný kus, dostal by `g2-rich` a na hlínu by nespadl. Nalezený potomek
+ * je tedy doopravdy ten, kdo je má všechny.
+ */
+function claimedBelow(
+  node: number,
+  nodes: readonly GeomNode[],
+  owned: ReadonlyMap<number, readonly GeomPlacement[]>,
+): number | undefined {
+  const below = new Set<number>([node]);
+  for (let index = node; index >= 0; index -= 1) {
+    if (!below.has(index)) continue;
+    for (const child of childIndicesOf(nodes[index])) below.add(child);
+  }
+  below.delete(node);
+
+  let nearest: number | undefined;
+  for (const index of below) {
+    if (owned.has(index) && (nearest === undefined || index > nearest)) nearest = index;
+  }
+  return nearest;
+}
+
 export async function buildProxyWorld(
   outcome: BlueprintOutcome,
   deps: ProxyDeps,
@@ -331,21 +471,32 @@ export async function buildProxyWorld(
   const shapesById = new Map(blueprint.shapes.map((program) => [program.shapeId, program]));
 
   /**
-   * Řádky, které si už někdo vzal. **Nároky jsou nepřenosné.**
+   * Řádky, které si už někdo vzal, a kdo. **Nároky jsou nepřenosné.**
    *
-   * `findBlueprintReferenceIssues()` hlídá druhý nárok na týž **tvar**
-   * (`references.ts`), na řádek kompozice ale ne — tam se soudí jen
-   * dosažitelnost. Dva objekty tedy smějí napsat `source: { node: 2 }` oba
-   * a projít vším. Bez tohohle záznamu by pak oba dostaly **tentýž objekt
-   * pole**: zeď by se vykreslila dvakrát a hot-swap jednoho slotu by odpojil
-   * kusy, které pořád vlastní ten druhý.
+   * Od 2. 9. 2026 hlásí druhý nárok na řádek i `findBlueprintReferenceIssues()`
+   * (`references.ts`), takže se model dá o opravu ještě požádat. Tenhle záznam
+   * tím ale nezaniká: opravné kolo smí skončit i tak, že vada zůstane, a bez
+   * něj by pak oba objekty dostaly **tentýž objekt pole** — zeď dvakrát
+   * v obraze a hot-swap jednoho slotu odpojující kusy, které pořád vlastní ten
+   * druhý. Jméno soupeře se drží kvůli větě, kterou čte porotce.
    */
-  const taken = new Set<number>();
+  const takenBy = new Map<number, string>();
+
+  /**
+   * Kam z programu dojdou trojúhelníky, a odkud se dají ještě vybrat jako
+   * vlastní kusy. Rozdíl těch dvou množin je přesně `carve`.
+   *
+   * Program se sem čte znovu, ne z `compilePlacements()`: ten vrací hotový
+   * plán, ve kterém už není poznat, který řádek ho vyrobil. A jsou to dva
+   * sestupy polem indexů, ne stavba — vedle mešování je to nula.
+   */
+  const placed = placedFrom(blueprint.geometry.nodes, blueprint.geometry.root);
+  const separable = separableFrom(blueprint.geometry.nodes, blueprint.geometry.root);
 
   const slots: ProxySlot[] = blueprint.objects.map((object) => {
-    const clay = (reason: string): ProxySlot => ({
+    const clay = (reason: string, drawn = true): ProxySlot => ({
       slot: slotFromWorldForm(object, object.targetBounds),
-      form: { rung: 'semantic-clay', kind: 'clay', reason },
+      form: { rung: 'semantic-clay', kind: 'clay', reason, drawn },
     });
 
     if (object.source.kind === 'shape') {
@@ -367,14 +518,19 @@ export async function buildProxyWorld(
     }
 
     const node = object.source.node;
-    const placements = taken.has(node) ? undefined : owned.get(node);
+    const rival = takenBy.get(node);
+    const placements = rival === undefined ? owned.get(node) : undefined;
     if (placements === undefined || placements.length === 0) {
-      return clay(
-        compositionFailure ??
-          (taken.has(node)
-            ? `composition row ${node} already belongs to another object, so this one has no pieces of its own`
-            : `composition row ${node} produced no piece of its own, so there is nothing to hand this object`),
+      if (compositionFailure !== null) return clay(compositionFailure);
+      const cause = clayCause(
+        node,
+        rival,
+        blueprint.geometry.nodes,
+        placed,
+        separable,
+        owned,
       );
+      return clay(cause.reason, cause.drawn);
     }
 
     const bounds = measureBounds(placements);
@@ -391,7 +547,7 @@ export async function buildProxyWorld(
       return clay(`composition row ${node} occupies no space`);
     }
 
-    taken.add(node);
+    takenBy.set(node, object.stableId);
     return {
       slot: slotFromWorldForm(object, bounds, measurePieces(placements)),
       form: {

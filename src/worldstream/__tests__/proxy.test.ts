@@ -355,6 +355,10 @@ describe('a shape that never arrives still leaves an object behind', () => {
 
     expect(hive.form.rung).toBe('semantic-clay');
     expect(hive.form.kind === 'clay' && hive.form.reason).toContain('empty mesh');
+    // Hrdina, kterému se tvar nevymešoval, nikdy žádnou geometrii v obraze
+    // neměl. Bedna je celé jeho tělo a **musí** se nakreslit — potlačit ji
+    // tady je jediný způsob, jak objekt z obrazu úplně ztratit.
+    expect(hive.form.kind === 'clay' && hive.form.drawn).toBe(true);
     expect(hive.slot.worldBounds).toEqual({ min: [-0.9, 0.6, 1.1], max: [0.9, 2.4, 2.9] });
     expect(hive.slot.anchors.map((anchor) => anchor.name)).toEqual(['base', 'top']);
   });
@@ -371,7 +375,9 @@ describe('a shape that never arrives still leaves an object behind', () => {
 
   it('falls to clay when the blueprint declares no shape at all', async () => {
     const world = await build(compiled(blueprint({ shapes: [] })));
-    expect(slotOf(world, 'tallHive').form.rung).toBe('semantic-clay');
+    const hive = slotOf(world, 'tallHive');
+    expect(hive.form.rung).toBe('semantic-clay');
+    expect(hive.form.kind === 'clay' && hive.form.drawn).toBe(true);
     expect(built(world).slots).toHaveLength(4);
   });
 
@@ -454,8 +460,14 @@ describe('the composition splits into slots and the scenery around them', () => 
     );
     const world = await build(compiled(blueprint({ objects })));
 
+    const wall = slotOf(world, 'drystoneWall');
     expect(slotOf(world, 'smokerBox').form.rung).toBe('g2-rich');
-    expect(slotOf(world, 'drystoneWall').form.rung).toBe('semantic-clay');
+    expect(wall.form.rung).toBe('semantic-clay');
+    // Řádek 2 je `repeat` nad řádkem 1. Kusy odešly dolů a nahoře nezbylo nic
+    // — ale v obraze stojí všech šest, jen pod cizím jménem. Bedna přes ně by
+    // byla dvojobraz.
+    expect(wall.form.kind === 'clay' && wall.form.reason).toContain('handed out as row 1');
+    expect(wall.form.kind === 'clay' && wall.form.drawn).toBe(false);
     expect(built(world).slots).toHaveLength(4);
   });
 
@@ -531,7 +543,8 @@ describe('the composition splits into slots and the scenery around them', () => 
     const box = slotOf(world, 'smokerBox');
     expect(wall.form.rung).toBe('g2-rich');
     expect(box.form.rung).toBe('semantic-clay');
-    expect(box.form.kind === 'clay' && box.form.reason).toContain('already belongs');
+    expect(box.form.kind === 'clay' && box.form.reason).toContain('already belongs to drystoneWall');
+    expect(box.form.kind === 'clay' && box.form.drawn).toBe(false);
 
     const owned = world.slots.flatMap((entry) =>
       entry.form.kind === 'placements' ? [...entry.form.placements] : [],
@@ -566,6 +579,88 @@ describe('the composition splits into slots and the scenery around them', () => 
     expect(world.slots[0].form.kind === 'clay' && world.slots[0].form.reason).toContain(
       'occupies no space',
     );
+    // Řez vymazal všechno, co ten řádek měl — v obraze po něm nezbylo nic,
+    // takže bedna je jediné, co tam bude stát, a kreslí se.
+    expect(world.slots[0].form.kind === 'clay' && world.slots[0].form.drawn).toBe(true);
+    expect(world.slots[1].form.rung).toBe('g2-rich');
+  });
+
+  /**
+   * **Řez, který řádek přežil — a proto se přes něj bedna nekreslí.**
+   *
+   * Rozdíl proti testu nad ním je jediné číslo: řez míjí bednu, místo aby ji
+   * spolkl. Objekt na řádku 0 nedostane kusy tak jako tak (razítko zaniká
+   * v řezu), jenže jeho trojúhelníky **v obraze zůstaly** — kulisa je kreslí
+   * jako jednu slepenou síť. Hliněný kvádr na `targetBounds` by tedy prorostl
+   * skutečným tvarem, a to je dvojobraz, ne poctivé přiznání.
+   *
+   * Na jednom snímku se to nepozná od správného renderu, proto je to pin.
+   */
+  it('does not draw clay over a row a carve fused into the scenery', async () => {
+    const geometry = {
+      version: EXAMPLE_BLUEPRINT_ANSWER.geometry.version,
+      nodes: [
+        { kind: 'fixture', variant: 'crate', at: [0, 0.3, 0] },
+        // Řez o hraně 1 stojící 6 m stranou: bednu na řádku 0 mine celou.
+        { kind: 'carve', child: 0, at: [6, 0, 0], size: [1, 1, 1] },
+        { kind: 'fixture', variant: 'crate', at: [12, 0.3, 0] },
+        { kind: 'group', children: [1, 2] },
+      ],
+      root: 3,
+    };
+    const objects = blueprint().objects.slice(0, 2).map((object, index) => ({
+      ...object,
+      source: { kind: 'geom' as const, node: index === 0 ? 0 : 2 },
+    }));
+
+    const world = built(await build(compiled(blueprint({ geometry, objects, shapes: [] }))));
+    const swallowed = world.slots[0];
+
+    expect(swallowed.form.rung).toBe('semantic-clay');
+    expect(swallowed.form.kind === 'clay' && swallowed.form.reason).toContain('carve above it');
+    expect(swallowed.form.kind === 'clay' && swallowed.form.drawn).toBe(false);
+    expect(world.slots[1].form.rung).toBe('g2-rich');
+
+    // A ta geometrie tam doopravdy stojí — kdyby řez bednu smazal, věta výš
+    // by mluvila o obraze, ve kterém nic není.
+    const baked = bakePlacements(world.scenery);
+    expect(baked.getAttribute('position').count).toBeGreaterThan(0);
+    baked.dispose();
+  });
+
+  /**
+   * **Cíl kotvy je dosažitelný a přesto v obraze není — a tam se bedna kreslí.**
+   *
+   * `anchorTo` si z cíle přečte kvádr a kusy zahodí, takže objekt na řádku 0
+   * nedostane nic a ani nic nezůstane stát na jeho místě. To je opačné
+   * rozhodnutí než u řezu, a rozhoduje o něm jediná otázka: je tam něco vidět?
+   * Kdyby se i tady mlčelo, objekt zmizí úplně — a chybějící objekt se nedá
+   * ani najít, natož vyměnit.
+   *
+   * Věta navíc musí mířit na správnou příčinu: do 2. 9. 2026 dostal tenhle
+   * řádek tutéž hlášku jako řádek slepený řezem.
+   */
+  it('draws clay for a row that only an anchorTo target reaches, and says so', async () => {
+    const geometry = {
+      version: EXAMPLE_BLUEPRINT_ANSWER.geometry.version,
+      nodes: [
+        { kind: 'fixture', variant: 'crate', at: [0, 0.3, 0] },
+        { kind: 'fixture', variant: 'crate', at: [6, 0.3, 0] },
+        { kind: 'anchorTo', child: 1, target: 0, site: 'top' },
+      ],
+      root: 2,
+    };
+    const objects = blueprint().objects.slice(0, 2).map((object, index) => ({
+      ...object,
+      source: { kind: 'geom' as const, node: index === 0 ? 0 : 1 },
+    }));
+
+    const world = built(await build(compiled(blueprint({ geometry, objects, shapes: [] }))));
+    const target = world.slots[0];
+
+    expect(target.form.rung).toBe('semantic-clay');
+    expect(target.form.kind === 'clay' && target.form.reason).toContain('anchorTo target');
+    expect(target.form.kind === 'clay' && target.form.drawn).toBe(true);
     expect(world.slots[1].form.rung).toBe('g2-rich');
   });
 
@@ -589,6 +684,7 @@ describe('the composition splits into slots and the scenery around them', () => 
     for (const entry of world.slots) {
       expect(entry.form.rung).toBe('semantic-clay');
       expect(entry.form.kind === 'clay' && entry.form.reason).toContain('empty geometry');
+      expect(entry.form.kind === 'clay' && entry.form.drawn).toBe(true);
       expect(spanOf(entry.slot.worldBounds, 1)).toBeGreaterThan(0);
     }
   });

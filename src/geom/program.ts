@@ -498,6 +498,46 @@ export function reachableFrom(nodes: readonly GeomNode[], root: number): Readonl
 }
 
 /**
+ * Řádky, ze kterých se do obrazu doopravdy dostanou trojúhelníky.
+ *
+ * Užší než `reachableFrom` právě o cíle kotev: `anchorTo` si z cíle vezme
+ * kvádr a **kusy zahodí**, takže řádek, na který se z kořene dojde jedině jako
+ * na `target`, je dosažitelný a přesto v obraze nikde. Objekt, který si ho
+ * nárokuje, tedy nedostane ani jeden kus — a nedozví se to z ničeho, co soudí
+ * dosažitelnost.
+ */
+export function placedFrom(nodes: readonly GeomNode[], root: number): ReadonlySet<number> {
+  const placed = new Set<number>([root]);
+  for (let index = nodes.length - 1; index >= 0; index -= 1) {
+    if (!placed.has(index)) continue;
+    for (const child of childIndicesOf(nodes[index])) placed.add(child);
+  }
+  return placed;
+}
+
+/**
+ * Řádky, které se z obrazu dají ještě **vybrat jako vlastní kusy**.
+ *
+ * Užší než `placedFrom` o všechno pod `carve`: řez slepí celý podstrom do
+ * jedné sítě (`compilePlacements` v `./placements.ts`), takže po něm už ta
+ * část není složeninou kusů, kterou by šlo orazítkovat a předat jednomu
+ * objektu. Její trojúhelníky v obraze **jsou** — jen je nikdo nemůže dostat
+ * samostatně.
+ *
+ * Do potomka `carve` se proto nesestupuje. Řádek dosažitelný dvěma cestami,
+ * z nichž jedna řezem nevede, tu zůstává: razítko mu drží ta druhá.
+ */
+export function separableFrom(nodes: readonly GeomNode[], root: number): ReadonlySet<number> {
+  const separable = new Set<number>([root]);
+  for (let index = nodes.length - 1; index >= 0; index -= 1) {
+    if (!separable.has(index)) continue;
+    if (nodes[index].kind === 'carve') continue;
+    for (const child of childIndicesOf(nodes[index])) separable.add(child);
+  }
+  return separable;
+}
+
+/**
  * Kolik umístěných kusů vyleze z každého uzlu po rozvinutí operací.
  *
  * Průchod odspodu nahoru — potomek má vždy nižší index než rodič, což vynucuje

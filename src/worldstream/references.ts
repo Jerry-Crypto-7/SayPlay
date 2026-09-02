@@ -29,7 +29,7 @@
  * jen aby prošel.
  */
 
-import { reachableFrom } from '@/geom/program';
+import { placedFrom, reachableFrom } from '@/geom/program';
 
 import type { WorldstreamBlueprint } from './schema';
 
@@ -69,10 +69,29 @@ export function findBlueprintReferenceIssues(
   // Řádky, které se z kořene doopravdy staví. Objekt ukazující na nedosažitelný
   // řádek je objekt, který v obraze nikde není — a to je horší než chybějící
   // odkaz, protože se to nedá vidět.
+  //
+  // Soudí se `placedFrom`, ne `reachableFrom`, a je v tom celý rozdíl mezi
+  // „dojde se tam" a „něco z toho je vidět": cíl `anchorTo` je dosažitelný,
+  // ale kompilátor si z něj vezme kvádr a kusy zahodí. Objekt na takovém řádku
+  // projde dosažitelností a přesto nedostane ani jeden trojúhelník — a tady je
+  // jediné místo, kde se model dá ještě požádat, aby ukázal jinam.
+  const placed = placedFrom(blueprint.geometry.nodes, blueprint.geometry.root);
   const reached = reachableFrom(blueprint.geometry.nodes, blueprint.geometry.root);
 
   /** Který objekt si nárokuje který tvar. Druhý nárok na týž tvar je vada. */
   const claimedBy = new Map<string, number>();
+
+  /**
+   * Který objekt si nárokuje který **řádek kompozice**.
+   *
+   * Druhý nárok na týž řádek je vada ze stejného důvodu jako u tvaru, jen se
+   * projeví jinak: `buildProxyWorld()` dá kusy prvnímu a druhý skončí na hlíně
+   * natrvalo. Kdyby se to hlásilo až tam, model se o tom nikdy nedozví —
+   * potrubí je v tu chvíli za opravným kolem. Rozdělit jeden řádek mezi dva
+   * objekty nejde: `repeat` ani `mirror` nedávají kopiím vlastní identitu,
+   * takže „vem si druhou kopii" není co napsat.
+   */
+  const rowClaimedBy = new Map<number, number>();
 
   blueprint.objects.forEach((object, index) => {
     const where = `objects/${index}/source`;
@@ -83,12 +102,20 @@ export function findBlueprintReferenceIssues(
           where,
           `names geometry node ${node} outside the table of ${blueprint.geometry.nodes.length}`,
         );
-      } else if (!reached.has(node)) {
+        return;
+      }
+      if (!placed.has(node)) {
         fail(
           where,
-          `names geometry node ${node}, which cannot be reached from root ${blueprint.geometry.root} and is therefore never built`,
+          reached.has(node)
+            ? `names geometry node ${node}, which root ${blueprint.geometry.root} reaches only as an anchorTo target, so none of its pieces are ever placed`
+            : `names geometry node ${node}, which cannot be reached from root ${blueprint.geometry.root} and is therefore never built`,
         );
+        return;
       }
+      const rowRival = rowClaimedBy.get(node);
+      if (rowRival === undefined) rowClaimedBy.set(node, index);
+      else fail(where, `names geometry node ${node}, already taken by objects/${rowRival}`);
       return;
     }
 

@@ -580,9 +580,12 @@ describe('joining with the plan is what keeps identity', () => {
   });
 
   it('rejects a shape whose object sources from somewhere else', () => {
+    // Řádek 1, ne 3: řádek 3 už vlastní `smokerBox` a od 2. 9. 2026 je druhý
+    // nárok na týž řádek vlastní nález (`findBlueprintReferenceIssues`).
+    // Přebil by ten, na který se tu soudí, a test by procházel z jiného důvodu.
     const placements = OWN_PLACEMENTS.map((placement) =>
       placement.stableId === 'tallHive'
-        ? { ...placement, source: { kind: 'geom', node: 3 } }
+        ? { ...placement, source: { kind: 'geom', node: 1 } }
         : placement,
     );
     const result = compile(answerWith({ placements }));
@@ -673,9 +676,10 @@ describe('the answer shape', () => {
   });
 
   it('accepts an answer with no hero shape at all', () => {
+    // Viz výš: řádek 3 patří `smokerBox`, tak si tenhle objekt vezme řádek 1.
     const placements = OWN_PLACEMENTS.map((placement) =>
       placement.stableId === 'tallHive'
-        ? { ...placement, source: { kind: 'geom', node: 3 } }
+        ? { ...placement, source: { kind: 'geom', node: 1 } }
         : placement,
     );
     const compiled = expectOk(compile(answerWith({ shapes: [], placements })));

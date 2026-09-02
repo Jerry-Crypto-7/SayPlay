@@ -14,7 +14,9 @@ import {
   instanceCounts,
   parseGeomProgram,
   pieceIdOf,
+  placedFrom,
   profileArea,
+  separableFrom,
   validateGeomProgram,
   type GeomNode,
   type GeomProgram,
@@ -666,5 +668,58 @@ describe('rozšíření jazyka o křivku, kotvu a volné otáčení', () => {
     });
 
     expect(validateGeomProgram(fullTurn).ok).toBe(false);
+  });
+});
+
+/**
+ * **Tři různé otázky nad týmž grafem, a rozdíly mezi nimi jsou celý smysl.**
+ *
+ * `reachableFrom` odpovídá „dojde se tam", `placedFrom` „je z toho něco vidět"
+ * a `separableFrom` „dá se to ještě vybrat jako vlastní kusy". Splynutí
+ * kterýchkoli dvou vyrobí tichou vadu o dvě vlny dál: objekt buď dostane
+ * hliněnou bednu přes skutečný tvar, nebo zmizí z obrazu úplně
+ * (`src/worldstream/proxy.ts`, `clayCause`). Na jednom snímku se ani jedno
+ * nepozná.
+ */
+describe('dosažitelnost, položenost a vybratelnost jsou tři různé množiny', () => {
+  const nodes = [
+    { kind: 'fixture', variant: 'crate', at: [0, 0.3, 0] }, // 0 — jen cíl kotvy
+    { kind: 'fixture', variant: 'crate', at: [6, 0.3, 0] }, // 1 — pod řezem
+    { kind: 'carve', child: 1, at: [6, 0, 0], size: [1, 1, 1] }, // 2
+    { kind: 'anchorTo', child: 2, target: 0, site: 'top' }, // 3
+    { kind: 'fixture', variant: 'crate', at: [12, 0.3, 0] }, // 4 — čistá cesta
+    { kind: 'group', children: [3, 4] }, // 5 = kořen
+  ] as unknown as GeomNode[];
+
+  it('nechává cíl kotvy dosažitelný, ale nepoloží ho', () => {
+    expect(placedFrom(nodes, 5).has(0)).toBe(false);
+    expect(separableFrom(nodes, 5).has(0)).toBe(false);
+  });
+
+  it('položí to, co je pod řezem, ale vybrat to už nedovolí', () => {
+    expect(placedFrom(nodes, 5).has(1)).toBe(true);
+    expect(separableFrom(nodes, 5).has(1)).toBe(false);
+    // Řez sám vybratelný zůstává: razítko dostane síť, kterou vyrobil.
+    expect(separableFrom(nodes, 5).has(2)).toBe(true);
+  });
+
+  it('nechává řádek na cestě bez řezu vybratelný', () => {
+    expect(separableFrom(nodes, 5).has(4)).toBe(true);
+  });
+
+  /**
+   * Dvě cesty k témuž řádku, z nichž jedna řezem nevede. Razítko mu drží ta
+   * druhá, takže vybratelný je — kdyby se `separableFrom` ptalo „stojí nad
+   * ním někde řez?", odpověděla by tady nepravdu.
+   */
+  it('nechává vybratelný řádek, ke kterému vede i cesta mimo řez', () => {
+    const shared = [
+      { kind: 'fixture', variant: 'crate', at: [0, 0.3, 0] }, // 0
+      { kind: 'carve', child: 0, at: [0, 0, 0], size: [1, 1, 1] }, // 1
+      { kind: 'group', children: [1, 0] }, // 2 = kořen
+    ] as unknown as GeomNode[];
+
+    expect(placedFrom(shared, 2).has(0)).toBe(true);
+    expect(separableFrom(shared, 2).has(0)).toBe(true);
   });
 });

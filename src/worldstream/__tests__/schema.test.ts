@@ -333,6 +333,51 @@ describe('cross references', () => {
     expect(found.map((issue) => issue.detail).join(' ')).toContain('already taken');
   });
 
+  /**
+   * **Druhý nárok na řádek kompozice, hlášený tam, kde ho model ještě opraví.**
+   *
+   * Do 2. 9. 2026 to chytal až `buildProxyWorld()` — jenže ten běží za opravným
+   * kolem, takže se model o sporu nikdy nedozvěděl a druhý objekt zůstal na
+   * hlíně natrvalo. Rozdělit řádek mezi dva objekty přitom nejde: `repeat` ani
+   * `mirror` nedávají kopiím vlastní identitu.
+   */
+  it('catches two objects claiming one composition row', () => {
+    const objects = (validBlueprint().objects as Record<string, unknown>[]).map((object) =>
+      object.stableId === 'tallHive' ? { ...object, source: { kind: 'geom', node: 2 } } : object,
+    );
+    const found = findBlueprintReferenceIssues(parse({ objects }));
+    expect(found.map((issue) => issue.detail).join(' ')).toContain(
+      'names geometry node 2, already taken by objects/0',
+    );
+  });
+
+  /**
+   * **Cíl kotvy je dosažitelný a přesto se z něj nikdy nic nepostaví.**
+   *
+   * `anchorTo` si z cíle přečte kvádr a kusy zahodí. Dosažitelnost přes
+   * `reachableFrom` ho tedy pustí — a musí, jinak by `structuralIssues`
+   * prohlásilo každý cíl kotvy za sirotka. Objekt, který si takový řádek
+   * nárokuje, ale nedostane ani jeden trojúhelník, a hláška o něm musí mířit
+   * na kotvu, ne na obecnou nedosažitelnost.
+   */
+  it('catches an object sourcing from a row only an anchorTo target reaches', () => {
+    const nodes = [
+      ...EXAMPLE_BLUEPRINT_ANSWER.geometry.nodes,
+      { kind: 'fixture', variant: 'crate', at: [0, 0.3, 0] },
+      { kind: 'fixture', variant: 'crate', at: [6, 0.3, 0] },
+      { kind: 'anchorTo', child: 10, target: 9, site: 'top' },
+    ];
+    const root = nodes.length - 1;
+    const geometry = { ...EXAMPLE_BLUEPRINT_ANSWER.geometry, nodes, root };
+    const objects = (validBlueprint().objects as Record<string, unknown>[]).map((object) =>
+      object.stableId === 'drystoneWall' ? { ...object, source: { kind: 'geom', node: 9 } } : object,
+    );
+    const found = findBlueprintReferenceIssues(parse({ geometry, objects }));
+    const detail = found.map((issue) => issue.detail).join(' ');
+    expect(detail).toContain('only as an anchorTo target');
+    expect(detail).not.toContain('cannot be reached');
+  });
+
   it('catches two objects sharing one stableId', () => {
     const [hero, wall] = validBlueprint().objects as Record<string, unknown>[];
     const found = findBlueprintReferenceIssues(
