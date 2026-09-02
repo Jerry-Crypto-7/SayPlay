@@ -473,6 +473,19 @@ describe('proud relace', () => {
     expect(frames.map((frame) => frame.sequence)).toEqual([4, 5]);
   });
 
+  it('opakovaný `?since=` navazuje na první použitelný kurzor, ne na nulu', async () => {
+    // Nález nezávislé revize 2. 9. 2026. `searchParams.get()` vrací **první**
+    // výskyt, takže `?since=&since=3` spadlo na prázdný řetězec, a s ním na
+    // `after: 0` — klient se obnovoval a dostal celou relaci znovu. Adresu
+    // staví klient z toho, co mu vydal server, takže to zvenčí vnutit nejde;
+    // drží to vlastnost, ne díru.
+    const stored = await generated();
+    stored.session.fail('done for the test');
+    const frames = await readFrames(await events(stored.session.sessionId, '?since=&since=3'));
+
+    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5]);
+  });
+
   it('prázdný dotaz i prázdná hlavička znamenají první připojení, ne chybu', async () => {
     // Druhá polovina téhož: klient bez kurzoru relaci od začátku dostat MÁ.
     const stored = await generated();

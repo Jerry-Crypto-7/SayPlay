@@ -103,15 +103,19 @@ type ResumePoint =
  * myslel.
  */
 export function readResumePoint(request: Request): ResumePoint {
-  const query = new URL(request.url).searchParams.get('since');
-  const header = request.headers.get('last-event-id');
   // **`?since=` bez hodnoty není odpověď, je to prázdné pole.** `??` by ho
   // propustilo jako přítomné (`''` není `null`), a tím by udělalo obojí naráz:
   // umlčelo `Last-Event-ID`, který klient poslal, a spadlo na `after: 0` —
   // tedy přehrálo celou relaci od začátku právě tomu, kdo se obnovoval.
   // Naměřeno nezávislou revizí 2. 9. 2026 nad `?since=` + `last-event-id: 3`:
   // proud vydal 1–5 místo 4–5.
-  const raw = query !== null && query !== '' ? query : header;
+  //
+  // A hledá se **napříč všemi výskyty**, ne v prvním. `get()` vrací ten
+  // první, takže `?since=&since=3` na tomtéž prázdném řetězci uvízlo znovu —
+  // stejná ztráta kurzoru, jen jinými dveřmi. Doměřeno toutéž revizí.
+  const query = new URL(request.url).searchParams.getAll('since').find((value) => value !== '');
+  const header = request.headers.get('last-event-id');
+  const raw = query ?? header;
   if (raw === null || raw === '') return { ok: true, after: 0 };
 
   if (!/^\d+$/.test(raw))
