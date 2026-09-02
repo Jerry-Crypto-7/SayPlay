@@ -66,6 +66,15 @@ export interface MeshJobRequest {
   readonly program: ShapeProgram;
   readonly sessionSeed: number;
   readonly resolution: number;
+  /**
+   * Kvádr zadání **syrový, bez rezervy**.
+   *
+   * Rezervu jedné buňky přidává `handleMeshJob()` sám (viz `paddedBounds`),
+   * takže volající, který si ji přidá taky, nafoukne kvádr dvakrát a měří
+   * mřížku, kterou produkt nikdy nemele. Naměřeno nezávislou revizí
+   * 2. 9. 2026: sedm fixtur v `__tests__/mesh.test.ts` to dělalo — brána
+   * rozpočtu se pinovala na 193 702 trojúhelnících proti produkčním 190 486.
+   */
   readonly bounds: Bounds3;
   /**
    * Změřit, ale nesoudit. **Jediné dveře ven z rozpočtu, a jsou pojmenované.**

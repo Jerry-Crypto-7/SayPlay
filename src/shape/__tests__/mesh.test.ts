@@ -248,7 +248,7 @@ describe('worker vrací mesh a předává vlastnictví paměti', () => {
     program: programOf(SPHERE),
     sessionSeed: SEED,
     resolution: 20,
-    bounds: paddedBounds(UNIT_BOUNDS, 20),
+    bounds: UNIT_BOUNDS,
   };
 
   it('odpověď nese tři buffery, a jsou to právě ty tři z meshe', () => {
@@ -310,7 +310,7 @@ describe('worker vrací mesh a předává vlastnictví paměti', () => {
       program,
       sessionSeed: SEED,
       resolution: MESH_DETAIL.high.resolution,
-      bounds: paddedBounds(bounds, MESH_DETAIL.high.resolution),
+      bounds,
     });
 
     expect(response.ok).toBe(false);
@@ -324,10 +324,20 @@ describe('worker vrací mesh a předává vlastnictví paměti', () => {
   });
 
   it('mesh pod stropem projde, takže strop neodmítá to, co produkt staví', () => {
-    // Failure path té samé brány. Naměřeno 29. 8. 2026 (`evals/shape/
-    // mesh-budget.json`): nejtěžší z dvanácti ručních tvarů dá v mřížce 48
-    // 26 992 trojúhelníků proti stropu 32 000. Kdyby se strop utáhl pod
-    // naměřené, produkt by přestal stavět a tenhle test to řekne.
+    // Failure path té samé brány: kdyby se strop utáhl pod to, co produkt
+    // doopravdy staví, přestal by stavět a tohle to řekne.
+    //
+    // **Komentář tu do 2. 9. 2026 tvrdil tři nepravdy naráz** a nálezla je
+    // nezávislá revize: „nejtěžší z dvanácti ručních tvarů dá v mřížce 48
+    // 26 992 trojúhelníků" — 26 992 nebyl tvar galerie, byl to **referenční
+    // program**; s rezervou z `T13-meshpadding` je z něj **24 616**; a
+    // nejtěžší tvar galerie v mřížce 48 je `vault` s **20 352**
+    // (`evals/shape/gallery-cost.json`, 2. 9. 2026). Proti stropu 32 000 má
+    // tedy produkt rezervu 36 %, ne 16 %.
+    //
+    // Aserce níž měří **kouli v mřížce 20**, ne nejtěžší tvar galerie, takže
+    // sama o sobě strop nehlídá. Drží ji spolu s testem o kus výš, který
+    // dokazuje druhou půlku — že přeplněný tvar strop **odmítne**.
     const { response } = handleMeshJob(request);
     expect(response.ok).toBe(true);
     if (!response.ok) return;
@@ -355,7 +365,7 @@ describe('brána workeru odmítne neplatný program s důvodem', () => {
     jobId: 'gated',
     sessionSeed: SEED,
     resolution: 12,
-    bounds: paddedBounds(UNIT_BOUNDS, 12),
+    bounds: UNIT_BOUNDS,
   };
 
   function refuse(program: ShapeProgram): string {
@@ -438,7 +448,7 @@ describe('prázdná práce se vrací jako selhání', () => {
     jobId: 'empty',
     sessionSeed: SEED,
     resolution: 12,
-    bounds: paddedBounds(UNIT_BOUNDS, 12),
+    bounds: UNIT_BOUNDS,
     program: programOf(SPHERE),
   };
 
@@ -658,7 +668,7 @@ describe('nesouzená práce se změří, ale zbylé brány platí dál', () => {
     program: { ...programOf(CRINKLED), targetBounds: FAT_BOUNDS },
     sessionSeed: SEED,
     resolution: MESH_DETAIL.high.resolution,
-    bounds: paddedBounds(FAT_BOUNDS, MESH_DETAIL.high.resolution),
+    bounds: FAT_BOUNDS,
   };
 
   it('týž mesh se souzený odmítne a nesouzený vrátí', () => {
@@ -727,7 +737,7 @@ describe('nesouzená práce se změří, ale zbylé brány platí dál', () => {
         min: [-50, -50, -50],
         max: [50, 50, 50],
       }),
-      bounds: paddedBounds(UNIT_BOUNDS, 12),
+      bounds: UNIT_BOUNDS,
       resolution: 12,
     }).response;
     expect(empty.ok).toBe(false);
@@ -765,7 +775,7 @@ describe('klient meshovacího workeru', () => {
     program: { ...programOf(SPHERE), shapeId: 'hero' },
     sessionSeed: SEED,
     resolution: 16,
-    bounds: paddedBounds(UNIT_BOUNDS, 16),
+    bounds: UNIT_BOUNDS,
   };
 
   it('pošle práci workeru a vrátí hotový mesh', async () => {

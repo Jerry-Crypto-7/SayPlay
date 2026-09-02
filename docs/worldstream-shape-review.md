@@ -79,6 +79,15 @@ Na `/gallery` čte `vault` od té chvíle jako tři valené oblouky na desce.
 Tabulka výš popisuje stav **před** tou opravou, protože to je stav, nad kterým
 se brána soudila.
 
+**Dovětek 2. 9. 2026 — čísla výš jsou pravdivá k 31. 8. a `diversity.json` už
+nesou jiná.** `T13-meshpadding` přesunula rezervu jedné buňky do meshovacího
+workeru, takže se všech dvanáct tvarů vzorkuje v o buňku širším kvádru:
+`vault` je **22 160 → 20 352** trojúhelníků a nejbližší dvojice galerie
+**`cloud`/`fruit` 0,1663 → 0,1707**, tedy dál od sebe, ne blíž. Závěry téhle
+sekce se tím nemění — `vault` je pořád hluboko pod stropem 32 000 a rezerva
+nad prahem 0,15 se zvětšila. Čísla se **nepřepisují**, protože brána K1 se
+soudila nad těmi z 31. 8.
+
 ### Užitečné, ale ne blokující
 
 - **`shell` / `hollow`** — dutá stěna dané tloušťky. Dnes se dutina dělá

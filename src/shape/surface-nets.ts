@@ -328,8 +328,27 @@ export function meshShapeProgram(
  *
  * Poslední řádek je ten důvod. Když těleso vyplní celou mřížku vzorků, žádná
  * buňka nemění znaménko a meshovač poctivě vrátí prázdno — objekt se nerozbije,
- * on **není**. Rezerva to stojí zhruba 12 % trojúhelníků, protože tytéž buňky
- * pokryjí větší objem; to je levné pojištění proti zmizelému hrdinovi.
+ * on **není**.
+ *
+ * ## Co to stojí — a proč to není jedno číslo
+ *
+ * Rezerva je `span / resolution` na stranu, tedy **relativně tím menší, čím
+ * jemnější je mřížka**. „Ubere zhruba 12 %" tady stálo do 2. 9. 2026 a je to
+ * nepravda; naměřeno nad referenčním programem (`NODE_BASELINE`):
+ *
+ * | Mřížka | Bez rezervy | S rezervou | Rozdíl |
+ * |---|---|---|---|
+ * | 32³ | 12 016 | 10 044 | **−16,4 %** |
+ * | 48³ | 26 992 | 24 616 | **−8,8 %** |
+ * | 64³ | 47 680 | 45 020 | **−5,6 %** |
+ * | 96³ | 106 696 | 103 128 | **−3,3 %** |
+ *
+ * A není to ani monotónní přes tvary: nad dvanácti tvary galerie v mřížce 48
+ * jde rozdíl od **−19,6 % (`net`)** po **+8,1 % (`column`)**, protože rezerva
+ * mřížku **posune**, nejen zhrubne. Kdo z toho odhaduje rozpočet, musí vzít
+ * řádek své mřížky, ne průměr.
+ *
+ * Tak jako tak je to levné pojištění proti zmizelému hrdinovi.
  *
  * Rezerva naopak **neuzavře** tvar, který přetéká výrazně — ten je useknutý
  * v každém kvádru a řeší se přepočítáním rozměrů, ne rezervou.

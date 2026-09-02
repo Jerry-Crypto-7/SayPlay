@@ -181,6 +181,25 @@ export const SHAPE_LIMITS = {
  *
  * ⚠ **96³ zůstává mimo žebřík**, jak §11.2 říkala — 3 593 až 4 033 ms a
  * 106 696 trojúhelníků je jen pro export, nikdy pro scénu.
+ *
+ * ## Čísla výš jsou z 29. 8. a měřila jinou mřížku — závěry drží, čísla ne
+ *
+ * `T13-meshpadding` (2. 9. 2026) přesunula rezervu jedné buňky do
+ * `handleMeshJob()`, takže se vzorkuje v `paddedBounds(bounds, resolution)`.
+ * Referenční program dnes dává **10 044** trojúhelníků v mřížce 32 (ne 12 016),
+ * **45 020** v 64 (ne 47 680) a **103 128** v 96 (ne 106 696); zdroj je
+ * `evals/shape/mesh-budget.json`. Přeměřený tvar stropů:
+ *
+ * - `rough.maxTriangles = 16 000` proti naměřeným **10 044** — rezerva 59 %,
+ *   ne 33 %. Strop se **nezvedá ani nesnižuje**: byl postavený na nejhorším
+ *   naměřeném běhu plus polovinu, a ten důvod se nezměnil.
+ * - tři objekty při 64³ dají **135 060** trojúhelníků, pořád nad stropem scény
+ *   120 000 — 64³ tedy vypadlo ze žebříku správně a i s rezervou by vypadlo.
+ * - `high.maxTriangles = 32 000` proti nejtěžšímu ručnímu tvaru `vault`
+ *   s **20 352** v mřížce 48 (`evals/shape/gallery-cost.json`).
+ *
+ * **Nepřepisuj čísla výš** — jsou to naměřené hodnoty, nad kterými se rozhodlo,
+ * a rozhodnutí se čte z nich. Tenhle odstavec je ten převod na dnešek.
  */
 export const MESH_DETAIL = {
   rough: { resolution: 32, maxMs: 350, maxTriangles: 16_000 },

@@ -32,6 +32,12 @@ export interface MeshOrder {
   readonly program: ShapeProgram;
   readonly sessionSeed: number;
   readonly resolution: number;
+  /**
+   * Kvádr zadání **syrový**. Objednávka říká, kam tvar patří; rezervu jedné
+   * buňky si k tomu přidá worker (`paddedBounds` v `handleMeshJob`), aby
+   * tvar napsaný přes svůj vlastní obal nezmizel. Přidat ji i tady znamená
+   * nafouknout kvádr dvakrát.
+   */
   readonly bounds: Bounds3;
 }
 

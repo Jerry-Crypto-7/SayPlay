@@ -25,6 +25,7 @@ import { EXAMPLE_PLAN } from '@/model/worldstream-examples';
 import { EXAMPLE_BLUEPRINT_ANSWER } from '@/model/worldstream-prompt';
 import type { BlueprintOutcome, CompiledBlueprint } from '@/model/worldstream-repair';
 import type { MeshOrder, MeshResult } from '@/shape/mesh-client';
+import { paddedBounds } from '@/shape/surface-nets';
 import type { Bounds3 } from '@/shape/types';
 
 import {
@@ -224,6 +225,28 @@ describe('the hero object is meshed from its own shape program', () => {
     expect(mesher.orders[0].sessionSeed).toBe(4021);
     expect(world.resolution).toBe(32);
     expect(slotOf(world, 'tallHive').form.rung).toBe('g3-reduced');
+  });
+
+  /**
+   * Vlastnost: **objednávka nese kvádr syrový a rezervu přidá jenom worker.**
+   *
+   * Od `T13-meshpadding` (2. 9. 2026) mele `handleMeshJob()`
+   * v `paddedBounds(bounds, resolution)`. Do téhle aserce to držel jen
+   * komentář v `proxy.ts` — nezávislá revize změřila, že kdo objednávku
+   * „opraví" přidáním rezervy i tady, nechá celou sadu zelenou a každý hrdina
+   * se pak vymeshuje v kvádru o dvě buňky širším, tedy hrubší, než jaký
+   * rozpočet povolil. `recordingMesher()` už objednávku zachytává; chyběl
+   * jediný řádek, který se podívá na `bounds`.
+   */
+  it('orders the raw target box, leaving the one-cell reserve to the worker', async () => {
+    const mesher = recordingMesher();
+    await buildProxyWorld(compiled(blueprint()), { mesh: mesher.mesh });
+
+    const program = mesher.orders[0].program;
+    expect(mesher.orders[0].bounds).toEqual(program.targetBounds);
+    // A ne jen „rovná se něčemu" — kvádr s rezervou je jiný objekt a tohle
+    // říká, o kolik: jedna buňka na stranu, tedy `span / resolution`.
+    expect(mesher.orders[0].bounds).not.toEqual(paddedBounds(program.targetBounds, 32));
   });
 
   /**
