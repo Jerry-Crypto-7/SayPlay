@@ -178,26 +178,42 @@ const BASE_PREFIX = 'worldsmith:spend';
  * produkce a v logu to vypadá jako jedno velmi činorodé nasazení.
  *
  * **Produkce si nechává holý základ**, aby se kniha nepřejmenovala pod běžícím
- * nasazením; odděluje se všechno ostatní. `VERCEL_ENV` chybí i mimo Vercel —
- * tam vyjde tentýž holý základ, což je správně pro jediné nasazení a **málo pro
- * dvě**: kdo si na vlastním železe pustí dvě prostředí nad jedním úložištěm,
- * musí `WORLDSMITH_SPEND_STORE_PREFIX` vyplnit. Proto výslovná hodnota vyhrává
- * nad odvozenou — odvození je záchranná síť, ne pravidlo.
+ * nasazením; odděluje se všechno ostatní.
  *
- * Jméno větve se **čistí a zkracuje**: klíč má strukturu oddělenou dvojtečkou
- * (`…:usd`, `…:calls`), takže ref jménem `feat:usd` by ji jinak rozmazal, a ref
- * je jediná část, kterou píše člověk.
+ * ⚠ **Odděluje se PROSTŘEDÍ, ne větev, a to je oprava blokujícího nálezu
+ * revize.** První podoba lepila do klíče i `VERCEL_GIT_COMMIT_REF`, takže každá
+ * nová větev dostala **vlastní čerstvý rozpočet** proti témuž klíči
+ * u poskytovatele — strop tím přestal omezovat peníze a začal omezovat peníze
+ * na větev, přičemž počet větví neomezuje nic. Kdo umí pushnout, koupí si další
+ * rozpočet přejmenováním větve. Klíče jsou proto nejvýš **dva** a součet přes
+ * nasazení je nejvýš dvojnásobek stropu. Kdyby někdy měla mít preview vlastní
+ * rozpočet na větev, potřebuje **menší vlastní `WORLDSMITH_SPEND_CAP_USD`**,
+ * ne jemnější klíč.
+ *
+ * ⚠ **Chybějící `VERCEL_ENV` na Vercelu není produkce, je to neznámo.** Systémové
+ * proměnné se dají v projektu vypnout přepínačem, který nebydlí v žádném
+ * souboru tohohle repa — a mlčky spadnout na produkční klíč je přesně ta vada,
+ * kterou tahle funkce zavírá. Takové nasazení dostane `unknown-env`: vlastní
+ * klíč, tedy zavřené selhání směrem k odděleným penězům. Mimo Vercel
+ * (`VERCEL` nenastavené) zůstává holý základ — tam je jediné nasazení norma
+ * a kdo jich má víc, vyplní `WORLDSMITH_SPEND_STORE_PREFIX` sám.
+ *
+ * Výslovná hodnota vyhrává nad odvozenou — odvození je záchranná síť, ne
+ * pravidlo. **Na Vercelu to má háček zapsaný v `.env.example`:** proměnná
+ * nastavená pro všechna prostředí odvození vypne a kolize se vrátí.
+ *
+ * Jméno prostředí se **čistí a zkracuje**: klíč má strukturu oddělenou
+ * dvojtečkou (`…:usd`, `…:calls`), takže hodnota s dvojtečkou by ji rozmazala.
  */
 export function storePrefix(env: Record<string, string | undefined>): string {
   const explicit = env.WORLDSMITH_SPEND_STORE_PREFIX?.trim() ?? '';
   if (explicit !== '') return explicit;
 
   const scope = env.VERCEL_ENV?.trim() ?? '';
-  if (scope === '' || scope === 'production') return BASE_PREFIX;
+  if (scope === 'production') return BASE_PREFIX;
+  if (scope === '') return isServerless(env) ? `${BASE_PREFIX}:unknown-env` : BASE_PREFIX;
 
-  const ref = safeSegment(env.VERCEL_GIT_COMMIT_REF ?? '');
-  const scoped = `${BASE_PREFIX}:${safeSegment(scope)}`;
-  return ref === '' ? scoped : `${scoped}:${ref}`;
+  return `${BASE_PREFIX}:${safeSegment(scope)}`;
 }
 
 /** Jeden článek klíče: bez dvojtečky, bez mezer, ohraničené délky. */

@@ -228,15 +228,26 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
     });
 
     expect(production).toBe('worldsmith:spend');
-    expect(preview).not.toBe(production);
-    // Ne jen „jiný": musí jít poznat, čí to je, jinak se nedá uklidit.
-    expect(preview).toContain('preview');
-    expect(preview).toContain('p11-prekladac-svetu');
+    expect(preview).toBe('worldsmith:spend:preview');
 
-    // Dvě různé větve jsou taky dvě různé knihy.
+    // **Odděluje se prostředí, NE větev — a to je tvrzení, ne detail.**
+    // Nález revize: klíč na větev znamená čerstvý rozpočet na větev, a počet
+    // větví neomezuje nic, takže kdo umí pushnout, koupí si další rozpočet
+    // přejmenováním. Klíče proto musí být nejvýš dva.
     expect(
       storePrefix({ VERCEL_ENV: 'preview', VERCEL_GIT_COMMIT_REF: 'jina-vetev' }),
-    ).not.toBe(preview);
+      'větev si vyrobila vlastní rozpočet',
+    ).toBe(preview);
+  });
+
+  it('chybějící VERCEL_ENV na serverless není produkce, ale neznámo', () => {
+    // Systémové proměnné se dají v projektu vypnout přepínačem, který v tomhle
+    // repu nebydlí. Spadnout mlčky na produkční klíč je přesně ta vada, kterou
+    // úloha zavírá — takové nasazení proto dostane vlastní knihu.
+    expect(storePrefix({ VERCEL: '1' })).toBe('worldsmith:spend:unknown-env');
+    expect(storePrefix({ VERCEL: '1', VERCEL_ENV: '  ' })).toBe('worldsmith:spend:unknown-env');
+    // Mimo Vercel je jediné nasazení norma, tam holý základ platí dál.
+    expect(storePrefix({})).toBe('worldsmith:spend');
   });
 
   it('výslovná předpona vyhrává nad odvozenou, a produkce si nechá holý základ', () => {
@@ -253,17 +264,14 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
     );
   });
 
-  it('jméno větve se vyčistí, aby nerozmazalo strukturu klíče', () => {
-    // Klíč je oddělený dvojtečkou (`…:usd`, `…:calls`) a ref je jediná jeho
-    // část, kterou píše člověk. Ref jménem `feat:usd` by ji jinak rozmazal.
-    const prefix = storePrefix({ VERCEL_ENV: 'preview', VERCEL_GIT_COMMIT_REF: 'feat:usd nasty/#' });
-    expect(prefix.split(':')).toHaveLength(4);
-    expect(prefix.endsWith(':feat-usd-nasty--')).toBe(true);
-
-    // Ohraničená délka: klíč nesmí růst s tím, jak dlouhé jméno větve někdo dá.
-    expect(
-      storePrefix({ VERCEL_ENV: 'preview', VERCEL_GIT_COMMIT_REF: 'a'.repeat(500) }).length,
-    ).toBeLessThan(120);
+  it('jméno prostředí se vyčistí, aby nerozmazalo strukturu klíče', () => {
+    // Klíč je oddělený dvojtečkou (`…:usd`, `…:calls`), takže hodnota
+    // s dvojtečkou by ji rozmazala a mohla by mířit na cizí knihu.
+    expect(storePrefix({ VERCEL_ENV: 'staging:usd nasty/#' })).toBe(
+      'worldsmith:spend:staging-usd-nasty--',
+    );
+    // Ohraničená délka: klíč nesmí růst s tím, co kdo do proměnné napíše.
+    expect(storePrefix({ VERCEL_ENV: 'a'.repeat(500) }).length).toBeLessThan(120);
   });
 
   it('odvozená předpona doopravdy dojde do klíčů, ne jen do návratové hodnoty', async () => {
@@ -276,8 +284,8 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
     )?.add(1, 1);
 
     const sent = JSON.parse(String(fetchImpl.mock.calls[0][1]?.body)) as string[][];
-    expect(sent[0][1]).toBe('worldsmith:spend:preview:vetev:usd');
-    expect(sent[1][1]).toBe('worldsmith:spend:preview:vetev:calls');
+    expect(sent[0][1]).toBe('worldsmith:spend:preview:usd');
+    expect(sent[1][1]).toBe('worldsmith:spend:preview:calls');
   });
 
   it('časový limit je pod rozpočtem hrubého světa, ne nad ním', () => {
