@@ -43,6 +43,11 @@ export async function GET(
       representations: snapshot.representations,
       blueprint: stored.blueprint,
       fault: stored.fault,
+      // Adresa hotového světa, nebo `null`. Je to jediné místo, kde se adresa
+      // dozví prohlížeč té relace — a tím i jediný člověk, který ji smí předat
+      // dál. Bez toho by sdílené světy měly adresu, kterou nikdo nezná.
+      sharedWorld:
+        stored.sharedWorld === null ? null : `/api/worldstream/snapshots/${stored.sharedWorld}`,
     },
     { headers: { 'cache-control': 'no-store' } },
   );

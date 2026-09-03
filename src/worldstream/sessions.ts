@@ -32,6 +32,7 @@ import { MAX_PENDING_CHANGES, type PendingChange } from '@/model/worldstream-ref
 import { compileWithRepair, type BlueprintEmitter } from '@/model/worldstream-repair';
 import type { WorldstreamBlueprint } from './schema';
 import { createSession, type GenerationSession } from './session';
+import { shareWorld } from './snapshot-store';
 
 /**
  * Kolik relací registr drží. Jedna relace je desítky rámců a jeden blueprint,
@@ -46,6 +47,12 @@ export interface StoredSession {
   blueprint: WorldstreamBlueprint | null;
   /** Proč to skončilo, **veřejnou** větou. `null`, dokud to neskončilo. */
   fault: string | null;
+  /**
+   * Adresa hotového světa ve sdíleném registru (`snapshot-store.ts`), nebo
+   * `null`, dokud svět nevznikl. Snapshot relace ji vydává ven, aby ji měl kdo
+   * předat dál — sdílení je lidský akt a bez adresy ho nikdo neudělá.
+   */
+  sharedWorld: string | null;
   /**
    * Previewy druhé věty čekající na commit (T22, §21).
    *
@@ -236,6 +243,15 @@ export async function runGeneration(
   // je autoritativní snapshot, ne rámec, a proto se blueprint neposílá dvakrát.
   session.advance('blueprint', { blueprint, rounds: outcome.rounds.length });
   session.register(blueprint.objects.map((object) => object.stableId));
+  // **Hotový svět dostane adresu, která přežije relaci** (T30, §22.4). Relace
+  // je živá věc — vypadne z registru, skončí s procesem, stojí slot. Sdílený
+  // svět je záznam, který se dá číst i ve chvíli, kdy je model vypnutý.
+  //
+  // Adresu spočítá server z obsahu, takže ji jako první zná jedině prohlížeč
+  // téhle relace; §24 („běžná relace se automaticky nestává galerií") je tím
+  // splněné rozdílem mezi *adresovatelný* a *vypsaný* — výpis neexistuje.
+  stored.sharedWorld = shareWorld(blueprint, Date.now());
+
   session.advance('world', {
     title: blueprint.title,
     objects: blueprint.objects.length,
@@ -260,6 +276,7 @@ export function openSession(sessionId: string, sessionSeed: number): StoredSessi
     session: createSession({ sessionId, sessionSeed }),
     blueprint: null,
     fault: null,
+    sharedWorld: null,
     changes: new Map(),
   };
   putSession(stored);
