@@ -28,6 +28,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { visitedZones } from '@/sim/agents';
+import { createBranchStore, type BranchStore, type BranchView } from '@/sim/branches';
 import { hashHex } from '@/sim/hash';
 import { createRuntime, step, type Runtime, type WorldDocRuntime } from '@/sim/interpreter';
 import { rebranchAt, type RebranchReason } from '@/sim/rebranch';
@@ -61,6 +62,22 @@ declare global {
       /** `ruleId` vypnutého pravidla, nebo `null`, dokud se neodbočilo. */
       branchedRule: () => string | null;
       /**
+       * Všechny větve, které kdy vznikly — **veřejné dveře úlohy T38**. Do ní
+       * osa každé odbočení předchozí větev přepsala, takže „dvě budoucnosti
+       * vedle sebe" neexistovaly ani jako data.
+       */
+      branches: () => readonly BranchView[];
+      /** Postaví se na jinou větev. `false` znamená neznámé id. */
+      switchTo: (id: string) => boolean;
+      /**
+       * Dokument, podle kterého aktivní větev jede.
+       *
+       * Je to jediná cesta, jak může e2e **přehrát tentýž svět v Node** — bez
+       * něj by se referenční hash počítal nad světem, o kterém se jen doufá, že
+       * je týž, jaký si postavil prohlížeč.
+       */
+      document: () => WorldDocRuntime;
+      /**
        * Zóny, kterými entita prošla za prvních `ticks` tiků běhu, seřazené.
        *
        * Horizont je **argument**, ne pozice posuvníku: odpověď se tím nedá
@@ -83,15 +100,14 @@ function without(doc: WorldDocRuntime, ruleId: string): WorldDocRuntime {
 }
 
 interface Controller {
-  runtime: Runtime;
-  axis: Axis;
-  /** Dokument, podle kterého běh právě jede. Po odbočení je to ten bez pravidla. */
-  doc: WorldDocRuntime;
+  /**
+   * Všechny budoucnosti, ne jedna. Do T38 tu stály `runtime`, `axis` a `doc`
+   * jako tři pole, která odbočení **přepsalo** — a předchozí větev tím zmizela.
+   */
+  store: BranchStore;
   /** Dokument, se kterým svět přišel. `fresh()` se vrací k němu, ne k větvi. */
   readonly origin: WorldDocRuntime;
   branchedRule: string | null;
-  /** `ruleId` spuštěné v každém tiku původního běhu, indexováno tikem. */
-  readonly firedAt: readonly (readonly string[])[];
   /** Hash zabaleného stavu na horizontu původního běhu. */
   readonly originalHash: string;
 }
@@ -139,12 +155,9 @@ function build(doc: WorldDocRuntime): Controller {
   const surveyed = survey(doc);
   const runtime = createRuntime(doc);
   return {
-    runtime,
-    axis: createTimeline(runtime, CAPACITY),
-    doc,
+    store: createBranchStore({ doc, runtime, timeline: createTimeline(runtime, CAPACITY) }),
     origin: doc,
     branchedRule: null,
-    firedAt: surveyed.firedAt,
     originalHash: surveyed.hash,
   };
 }
@@ -156,6 +169,8 @@ export default function Timeline({ world }: { readonly world: WorldDocRuntime | 
   const [tick, setTick] = useState(0);
   const [hash, setHash] = useState('');
   const [outcome, setOutcome] = useState<BranchOutcome | null>(null);
+  const [branches, setBranches] = useState<readonly BranchView[]>([]);
+  const [active, setActive] = useState('origin');
   /** Hash na horizontu po odbočení. `null`, dokud se neodbočilo. */
   const [branchHash, setBranchHash] = useState<string | null>(null);
 
@@ -163,36 +178,56 @@ export default function Timeline({ world }: { readonly world: WorldDocRuntime | 
     if (controller === null) return null;
 
     const publish = () => {
-      setTick(controller.runtime.tick);
-      setHash(hashHex(controller.runtime.state));
-      return controller.runtime.tick;
+      const live = controller.store.active();
+      setTick(live.runtime.tick);
+      setHash(hashHex(live.runtime.state));
+      setBranches(controller.store.list());
+      setActive(live.id);
+      return live.runtime.tick;
     };
 
+    /**
+     * Doběhne a **zapečetí**. Pečeť je hluboká kopie, takže zůstane platná i
+     * potom, co z téhle větve někdo odbočí dál a přetočí její runtime do
+     * minulosti — právě o to celé úložiště je.
+     */
     const runTo = (target: number) => {
-      while (controller.runtime.tick < target && controller.runtime.runState === 'running') {
-        advance(controller.axis, controller.runtime, inputsAt(controller.doc, controller.runtime.tick));
+      const live = controller.store.active();
+      while (live.runtime.tick < target && live.runtime.runState === 'running') {
+        advance(live.timeline, live.runtime, inputsAt(live.doc, live.runtime.tick));
       }
+      controller.store.seal();
       return publish();
     };
 
     const branch = (at: number): BranchOutcome => {
-      const busiest = busiestFrom(controller.firedAt, at);
+      const live = controller.store.active();
+      // Profil se počítá nad **aktivním** dokumentem, ne nad původním: druhá
+      // odbočka z už odbočené větve musí vybírat z pravidel, která v ní ještě
+      // jsou. Je to volba, ne tvrzení o historii — běh od nuly nad dokumentem
+      // větve není tatáž trajektorie, jakou si větev odžila.
+      const busiest = busiestFrom(survey(live.doc).firedAt, at);
       if (busiest === null) {
         const nothing = { verdict: 'NOTHING_FIRES' } as const;
         setOutcome(nothing);
         return nothing;
       }
-      const next = without(controller.doc, busiest.id);
-      const result = rebranchAt(controller.axis, controller.runtime, at, next);
+      const next = without(live.doc, busiest.id);
+      const result = rebranchAt(live.timeline, live.runtime, at, next);
       if (result.verdict === 'REJECTED') {
         const rejected = { verdict: 'REJECTED', reason: result.reason, detail: result.detail } as const;
         setOutcome(rejected);
         publish();
         return rejected;
       }
-      controller.runtime = result.runtime;
-      controller.axis = result.timeline;
-      controller.doc = next;
+      controller.store.open({
+        parentId: live.id,
+        atTick: at,
+        ruleId: busiest.id,
+        doc: next,
+        runtime: result.runtime,
+        timeline: result.timeline,
+      });
       controller.branchedRule = busiest.id;
       const branched = { verdict: 'BRANCHED', ruleId: busiest.id, firings: busiest.firings } as const;
       setOutcome(branched);
@@ -203,10 +238,7 @@ export default function Timeline({ world }: { readonly world: WorldDocRuntime | 
     return {
       horizon: HORIZON,
       fresh: () => {
-        const rebuilt = build(controller.origin);
-        controller.runtime = rebuilt.runtime;
-        controller.axis = rebuilt.axis;
-        controller.doc = controller.origin;
+        controller.store = build(controller.origin).store;
         controller.branchedRule = null;
         setOutcome(null);
         setBranchHash(null);
@@ -214,14 +246,22 @@ export default function Timeline({ world }: { readonly world: WorldDocRuntime | 
       },
       runTo,
       seek: (target: number) => {
-        seekTo(controller.axis, controller.runtime, target);
+        const live = controller.store.active();
+        seekTo(live.timeline, live.runtime, target);
         return publish();
       },
       branch,
-      tick: () => controller.runtime.tick,
-      hash: () => hashHex(controller.runtime.state),
+      tick: () => controller.store.active().runtime.tick,
+      hash: () => hashHex(controller.store.active().runtime.state),
       branchedRule: () => controller.branchedRule,
-      visited: (entity: string, ticks: number) => visitedZones(controller.doc, entity, ticks),
+      branches: () => controller.store.list(),
+      switchTo: (id: string) => {
+        if (!controller.store.switchTo(id)) return false;
+        publish();
+        return true;
+      },
+      document: () => controller.store.active().doc,
+      visited: (entity: string, ticks: number) => visitedZones(controller.store.active().doc, entity, ticks),
     };
   }, [controller]);
 
@@ -272,11 +312,34 @@ export default function Timeline({ world }: { readonly world: WorldDocRuntime | 
         )}
       </p>
 
+      {/* Strom větví. Porotce má dvě budoucnosti **vidět vedle sebe**, ne o nich
+          číst ve stavové větě — jediný uzel je legitimní stav, ne prázdno. */}
+      <div data-testid="branch-tree" style={TREE}>
+        {branches.map((entry) => (
+          <button
+            key={entry.id}
+            type="button"
+            data-testid="branch-node"
+            data-branch-id={entry.id}
+            data-parent-id={entry.parentId ?? ''}
+            data-at-tick={String(entry.atTick)}
+            data-rule={entry.ruleId ?? ''}
+            data-hash={entry.hash}
+            aria-pressed={entry.id === active}
+            onClick={() => api.switchTo(entry.id)}
+            style={{ ...NODE, ...(entry.id === active ? NODE_ON : null) }}
+          >
+            {entry.ruleId === null ? 'as written' : `without ${entry.ruleId}`}
+            {entry.hash === '' ? '' : ` · ${entry.hash}`}
+          </button>
+        ))}
+      </div>
+
       <button
         type="button"
         data-testid="timeline-branch"
         onClick={() => {
-          const result = api.branch(controller.runtime.tick);
+          const result = api.branch(api.tick());
           api.runTo(HORIZON);
           setBranchHash(result.verdict === 'BRANCHED' ? api.hash() : null);
         }}
@@ -338,6 +401,29 @@ const ROW: React.CSSProperties = {
 const CODE: React.CSSProperties = {
   color: '#dceaec',
   fontVariantNumeric: 'tabular-nums',
+};
+
+const TREE: React.CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '0.3rem',
+  marginTop: '0.35rem',
+};
+
+const NODE: React.CSSProperties = {
+  padding: '0.15rem 0.4rem',
+  borderRadius: '0.3rem',
+  border: '1px solid #24383d',
+  background: 'transparent',
+  color: '#9fc0c2',
+  font: 'inherit',
+  fontSize: '0.72rem',
+  cursor: 'pointer',
+};
+
+const NODE_ON: React.CSSProperties = {
+  borderColor: '#2f9e8f',
+  color: '#dceaec',
 };
 
 const ACTION: React.CSSProperties = {
