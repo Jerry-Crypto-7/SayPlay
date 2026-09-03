@@ -480,12 +480,6 @@ export async function POST(request: Request): Promise<Response> {
       return error(requestId, 400, 'MALFORMED_BODY', 'request body is not JSON');
     }
 
-    const grammar = frozenGrammar();
-    if (!grammar.ok) {
-      logStickyFault(requestId, grammar.reason, grammar.detail);
-      return error(requestId, 503, grammar.reason, PUBLIC_CORPUS_FAULT[grammar.reason]);
-    }
-
     /**
      * **Strop na placená volání v letu, sdílený se worldstreamovými dveřmi**
      * (P15 T28).
@@ -504,9 +498,18 @@ export async function POST(request: Request): Promise<Response> {
      * k témuž modelu a k témuž účtu, takže tři oddělené stropy po čtyřech by
      * nebyly strop čtyř, jen návod, jak se střídat.
      *
-     * Slot se bere **až tady**, ne u brány protokolu: drží se přesně po dobu
-     * volání modelu. Synchronní čtení zmrazeného protokolu je jiná cena a má
-     * vlastní opravu (routovaný nález `T28-grammarcache`).
+     * **Slot se bere PŘED čtením protokolu, protože odmítnutí musí být levné.**
+     * Druhé kolo revize 3. 9. 2026 našlo obrácené pořadí: `frozenGrammar()`
+     * není memoizované a každé volání blokuje smyčku dvěma `readFileSync`,
+     * sha256 a `JSON.parse`, takže požadavek odsouzený k `503` platil ~2 ms
+     * úplně zablokovaného Node — tisíc odmítnutí 2,2 s, po které stojí i SSE
+     * proudy, snapshoty a zdravotní sonda na téže instanci. Sesterské dveře
+     * (`worldstream/sessions/route.ts:241`) mají to pořadí naměřené od rána;
+     * tohle je jenom jejich přenos.
+     *
+     * Jediný odchod mezi vzetím slotu a `finally` níž je nečitelný protokol —
+     * a ten slot vrací sám, o dva řádky níž. **Přibude-li sem další `return`,
+     * musí vrátit taky.**
      */
     if (!acquireSlot())
       return error(
@@ -515,6 +518,13 @@ export async function POST(request: Request): Promise<Response> {
         'TOO_MANY_GENERATIONS',
         'too many worlds are being built right now',
       );
+
+    const grammar = frozenGrammar();
+    if (!grammar.ok) {
+      releaseSlot();
+      logStickyFault(requestId, grammar.reason, grammar.detail);
+      return error(requestId, 503, grammar.reason, PUBLIC_CORPUS_FAULT[grammar.reason]);
+    }
 
     let result;
     try {

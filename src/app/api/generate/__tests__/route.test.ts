@@ -1324,4 +1324,65 @@ describe('POST /api/generate pod náporem', () => {
       expect(status).toBe(200);
     }
   });
+
+  it('brána souběhu stojí ve zdroji PŘED čtením zmrazeného protokolu', () => {
+    // Nález druhého kola revize 3. 9. 2026: slot se bral **za**
+    // `frozenGrammar()`, tedy obráceně než u sesterských dveří, které to mají
+    // naměřené. `readFrozen` není memoizované — dva `readFileSync`, sha256
+    // a `JSON.parse` na smyčce událostí za každé volání — takže požadavek
+    // odsouzený k 503 platil ~2 ms úplně zablokovaného Node. Tisíc odmítnutí
+    // = 2,2 s, po které stojí i SSE proudy, snapshoty a zdravotní sonda.
+    //
+    // Soudí se **pořadí ve zdroji**, protože zevnitř jednoho procesu to jinak
+    // změřit nejde: čtení protokolu nemá pozorovatelný následek, na kterém by
+    // se odmítnutá cesta dala chytit, a časové měření by soudilo stroj. Je to
+    // táž brána, jakou má `worldstream/sessions/route.ts`.
+    //
+    // **Komentáře se odstřihnou** — zakomentovaný `acquireSlot()` výš by
+    // jinak bránu prošel, aniž by se cokoli vykonalo.
+    const source = readFileSync('src/app/api/generate/route.ts', 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    const gate = source.indexOf('if (!acquireSlot())');
+    const grammarRead = source.indexOf('const grammar = frozenGrammar();');
+
+    expect(gate, 'brána souběhu ve zdroji chybí').toBeGreaterThan(-1);
+    expect(grammarRead, 'čtení protokolu ve zdroji chybí').toBeGreaterThan(-1);
+    expect(gate, 'brána souběhu je až za čtením protokolu').toBeLessThan(grammarRead);
+  });
+
+  it('nečitelný protokol vrátí slot, a vrátí ho právě jednou', async () => {
+    // Druhá polovina té výměny: slot vzatý před čtením se musí vrátit, když
+    // protokol přečíst nejde. Bez toho by nečitelný korpus slot spolkl a po
+    // čtyřech požadavcích by neprošel nikdo — dveře zavřené natrvalo vadou,
+    // která se sama nespraví.
+    //
+    // Soudí se **chování**, ne zdroj: lexikální brána nad `releaseSlot();`
+    // pustí i vrácení přesunuté před podmínku, po kterém by každý úspěšný
+    // požadavek vracel dvakrát a čítač šel do záporu. Počet volných slotů po
+    // odmítnutí obojí odliší.
+    const dir = mkdtempSync(join(tmpdir(), 'worldsmith-slotrelease-'));
+    temporary.push(dir);
+    vi.spyOn(process, 'cwd').mockReturnValue(dir);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.resetModules();
+
+    const { POST } = await import('../route');
+    const { MAX_CONCURRENT_GENERATIONS, acquireSlot } = await import(
+      '../../worldstream/sessions/route'
+    );
+
+    const response = await POST(
+      new Request('http://127.0.0.1/api/generate', {
+        method: 'POST',
+        body: JSON.stringify({ prompt: CROWD_PROMPT }),
+      }),
+    );
+    expect(response.status).toBe(503);
+    expect(((await response.json()) as ResponseBody).error?.code).toBe('CORPUS_UNREADABLE');
+
+    for (let taken = 0; taken < MAX_CONCURRENT_GENERATIONS; taken += 1)
+      expect(acquireSlot(), `slot ${taken} měl být volný — odmítnutí ho nevrátilo`).toBe(true);
+    expect(acquireSlot(), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(false);
+  });
 });
