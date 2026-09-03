@@ -86,6 +86,7 @@ async function stageState(page: Page) {
       memory: stage.memory(),
       frames: stage.frames(),
       builds: stage.builds(),
+      camera: stage.camera(),
       slots: stage.slots().map((slot) => ({ id: slot.stableId, hash: slot.contentHash, triangles: slot.triangles })),
     };
   });
@@ -149,6 +150,11 @@ test('tažení po ose přetočí simulaci a reprezentací se nedotkne', async ({
   expect(after.builds).toBe(before.builds);
   expect(after.memory).toEqual(before.memory);
   expect(after.slots).toEqual(before.slots);
+  // Kamera je druhá věc, která do hashovaného stavu nepatří — přetočení jí
+  // nesmí hnout, jinak porotce po skoku nepozná, kam se dívá. Je to **dopředná
+  // zeď**: dnes na `/dev/time` kamerou nehýbe nic, takže by aserce prošla i bez
+  // osy. Třídu „přetočení sáhlo na scénu" pinuje `builds`, ne tohle.
+  expect(after.camera).toEqual(before.camera);
 });
 
 test('změna zákona v přetočeném stavu založí druhou budoucnost, nepřepíše první', async ({ page }) => {
