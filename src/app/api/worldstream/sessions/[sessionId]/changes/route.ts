@@ -42,7 +42,7 @@ import { moderatePrompt } from '@/server/moderation';
 import { logRateLimited } from '@/server/public-faults';
 import { getSession, putChange } from '@/worldstream/sessions';
 
-import { acquireSlot, cloudEmitter, releaseSlot } from '../../route';
+import { acquireSlot, cloudEmitter, MAX_CONCURRENT_GENERATIONS, releaseSlot } from '../../route';
 
 export const runtime = 'nodejs';
 
@@ -208,13 +208,23 @@ export async function createChange(
     // placené volání modelu a je levnější na vyvolání než celý svět — relaci si
     // založí kdokoli. Kdyby měly tyhle dveře strop vlastní, útočník by je
     // střídal a v letu by běželo osm volání místo čtyř.
-    if (!acquireSlot())
+    if (!acquireSlot()) {
+      // **Odmítnutí musí být vidět v operátorském logu**, stejně jako
+      // u zakládání relace: bez řádku se „strop nás ochránil" nedá odlišit od
+      // „nikdo nepřišel". Konstantní text, objem nese `(occurrence N)`.
+      logRateLimited(
+        'worldstream/changes',
+        requestId,
+        'TOO_MANY_CHANGES',
+        `all ${MAX_CONCURRENT_GENERATIONS} paid slots are in flight`,
+      );
       return fail(
         requestId,
         503,
         'TOO_MANY_CHANGES',
         'too many changes are being planned right now',
       );
+    }
 
     let outcome: ChangeOutcome;
     try {

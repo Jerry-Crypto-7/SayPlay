@@ -1303,6 +1303,15 @@ describe('POST /api/generate pod náporem', () => {
 
   it('požadavek nad strop souběžných generací dostane 503, ne volání modelu', async () => {
     const { MAX_CONCURRENT_GENERATIONS, acquireSlot, releaseSlot, send } = await loadOnce();
+    // **Odmítnutí musí být vidět v operátorském logu.** Bez řádku neodliší
+    // nikdo „strop nás ochránil" od „nikdo nepřišel", a orákulum téhle brány
+    // je na nasazené adrese nepozorovatelné — 503 vidí jen ten, kdo ho dostal.
+    // `loadOnce()` shodil registr modulů, takže počítadlo `logRateLimited`
+    // začíná na nule a tenhle výskyt je první, tedy milník.
+    const log: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+      log.push(String(line));
+    });
     for (let taken = 0; taken < MAX_CONCURRENT_GENERATIONS; taken += 1)
       expect(acquireSlot()).toBe(true);
 
@@ -1313,6 +1322,11 @@ describe('POST /api/generate pod náporem', () => {
     } finally {
       for (let taken = 0; taken < MAX_CONCURRENT_GENERATIONS; taken += 1) releaseSlot();
     }
+
+    const refusals = log.filter((line) => line.includes('TOO_MANY_GENERATIONS'));
+    expect(refusals, 'odmítnutí náporem neodešlo operátorovi').toHaveLength(1);
+    expect(refusals[0]).toContain('[generate]');
+    expect(refusals[0]).toContain(`all ${MAX_CONCURRENT_GENERATIONS} paid slots are in flight`);
   });
 
   it('slot se po odbavení vrátí, takže dveře nezůstanou zavřené', async () => {

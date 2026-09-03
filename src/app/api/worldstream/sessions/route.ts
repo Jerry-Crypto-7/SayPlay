@@ -238,8 +238,19 @@ export async function POST(request: Request): Promise<Response> {
     // takže jsou atomické na smyčce událostí. Jediný odchod z route mezi
     // vzetím slotu a `work.finally` níž je nečitelný protokol — a ten slot
     // vrací sám, řádek níž. **Přibude-li sem další `return`, musí vrátit taky.**
-    if (!acquireSlot())
+    if (!acquireSlot()) {
+      // **Odmítnutí musí být vidět v operátorském logu**, jinak se „strop nás
+      // ochránil" nedá odlišit od „nikdo nepřišel". Text je konstantní
+      // schválně: `logRateLimited` klíčuje `(dveře, kód)` a objem nese
+      // `(occurrence N)`, takže z náporu nevyroste víc než logaritmus řádků.
+      logRateLimited(
+        'worldstream/sessions',
+        requestId,
+        'TOO_MANY_SESSIONS',
+        `all ${MAX_CONCURRENT_GENERATIONS} paid slots are in flight`,
+      );
       return fail(requestId, 503, 'TOO_MANY_SESSIONS', 'too many worlds are being built right now');
+    }
 
     const grammar = serverGrammar();
     if (typeof grammar === 'string') {

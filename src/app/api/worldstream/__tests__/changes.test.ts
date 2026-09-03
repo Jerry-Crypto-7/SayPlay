@@ -28,7 +28,7 @@
  * zastaralosti by ze sady udělalo měřidlo poskytovatele.
  */
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { UpstreamRequest } from '@/model/prompt';
 import type { PendingChange, RefinePlan } from '@/model/worldstream-refine';
@@ -126,6 +126,9 @@ function worldOf(stored: StoredSession) {
 afterEach(() => {
   clearSessions();
   resetConcurrency();
+  // Špionáž na `console.error` (odmítnutí náporem) nesmí přežít do dalšího
+  // testu — tichý log by z něj udělal zelenou z jiného důvodu.
+  vi.restoreAllMocks();
 });
 
 /* ------------------------------------------------------------------ *
@@ -473,6 +476,15 @@ describe('strop souběžných placených volání', () => {
     const stored = await generated();
     const model = countingEmit();
 
+    // **Obojí odmítnutí musí být vidět v operátorském logu**, jinak je strop
+    // na nasazené adrese nepozorovatelný: 503 vidí jen ten, kdo ho dostal.
+    // Tenhle test je jediný producent obou klíčů v souboru, takže oba výskyty
+    // jsou první a `logRateLimited` je vydá i s promlčením.
+    const log: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+      log.push(String(line));
+    });
+
     // Sloty drží zakládací cesta: `acquireSlot()` je přesně to, co dělá
     // `POST /sessions` před generací.
     for (let i = 0; i < MAX_CONCURRENT_GENERATIONS; i += 1) expect(acquireSlot()).toBe(true);
@@ -499,6 +511,13 @@ describe('strop souběžných placených volání', () => {
 
     // Odmítnutí je **před** modelem. Za preview, které se nekonalo, se neplatí.
     expect(model.calls()).toBe(0);
+
+    const refusedSessions = log.filter((line) => line.includes('TOO_MANY_SESSIONS'));
+    const refusedChanges = log.filter((line) => line.includes('TOO_MANY_CHANGES'));
+    expect(refusedSessions, 'odmítnutá relace neodešla operátorovi').toHaveLength(1);
+    expect(refusedSessions[0]).toContain('[worldstream/sessions]');
+    expect(refusedChanges, 'odmítnuté preview neodešlo operátorovi').toHaveLength(1);
+    expect(refusedChanges[0]).toContain('[worldstream/changes]');
 
     // A jakmile se jeden slot uvolní, tytéž dveře pustí.
     releaseSlot();

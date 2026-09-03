@@ -60,7 +60,7 @@ import {
 } from '../../../server/public-faults';
 import { DEFAULT_CAP_USD, processSpendCap, type RefusalReason } from '../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../server/upstream';
-import { acquireSlot, releaseSlot } from '../worldstream/sessions/route';
+import { acquireSlot, MAX_CONCURRENT_GENERATIONS, releaseSlot } from '../worldstream/sessions/route';
 
 /** Strop je stav procesu, ne požadavku — jedna instance na celý běh serveru. */
 const CAP = processSpendCap();
@@ -511,13 +511,25 @@ export async function POST(request: Request): Promise<Response> {
      * a ten slot vrací sám, o dva řádky níž. **Přibude-li sem další `return`,
      * musí vrátit taky.**
      */
-    if (!acquireSlot())
+    if (!acquireSlot()) {
+      // **Odmítnutí musí být vidět v operátorském logu.** Bez toho řádku
+      // neodliší nikdo „strop nás ochránil" od „nikdo nepřišel" — a orákulum
+      // téhle brány je na nasazené adrese nepozorovatelné. `logRateLimited`
+      // klíčuje `(dveře, kód)` a text je schválně konstantní, takže z něj
+      // nápor nevyrobí víc než logaritmus řádků; objem nese `(occurrence N)`.
+      logRateLimited(
+        'generate',
+        requestId,
+        'TOO_MANY_GENERATIONS',
+        `all ${MAX_CONCURRENT_GENERATIONS} paid slots are in flight`,
+      );
       return error(
         requestId,
         503,
         'TOO_MANY_GENERATIONS',
         'too many worlds are being built right now',
       );
+    }
 
     const grammar = frozenGrammar();
     if (!grammar.ok) {

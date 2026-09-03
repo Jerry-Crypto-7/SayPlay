@@ -135,6 +135,9 @@ async function readRaw(response: Response, chunks = 1): Promise<string> {
 afterEach(() => {
   clearSessions();
   resetConcurrency();
+  // Špionáž na `console.error` (odmítnutí náporem) nesmí přežít do dalšího
+  // testu — tichý log by z něj udělal zelenou z jiného důvodu.
+  vi.restoreAllMocks();
 });
 
 /* ------------------------------------------------------------------ *
@@ -207,6 +210,15 @@ describe('založení relace', () => {
     // čítač se tak nikdy nenasytil a obě povolené odpovědi byly pravda.
     // Nález nezávislé revize. Slot se proto bere **ručně**, což je jediný
     // způsob, jak strop v jednom procesu doopravdy nasytit.
+    // **Odmítnutí musí být vidět v operátorském logu**, jinak je brána na
+    // nasazené adrese nepozorovatelná: 503 vidí jen ten, kdo ho dostal, a
+    // „strop nás ochránil" se nedá odlišit od „nikdo nepřišel". Je to jediný
+    // producent tohohle klíče v celém souboru, takže výskyt je první a
+    // `logRateLimited` ho vydá i s promlčením.
+    const log: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+      log.push(String(line));
+    });
     for (let i = 0; i < MAX_CONCURRENT_GENERATIONS; i += 1)
       expect(acquireSlot(), `slot ${i} měl být volný`).toBe(true);
 
@@ -216,6 +228,10 @@ describe('založení relace', () => {
     expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
       'TOO_MANY_SESSIONS',
     );
+
+    const refusals = log.filter((line) => line.includes('TOO_MANY_SESSIONS'));
+    expect(refusals, 'odmítnutí náporem neodešlo operátorovi').toHaveLength(1);
+    expect(refusals[0]).toContain('[worldstream/sessions]');
   });
 
   it('odmítnutí nad stropem nesáhne na disk — brána je před čtením protokolu', () => {
