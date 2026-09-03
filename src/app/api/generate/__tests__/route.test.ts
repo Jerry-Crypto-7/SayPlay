@@ -1258,3 +1258,66 @@ describe('POST /api/generate', () => {
     });
   });
 });
+
+
+/* ------------------------------------------------------------------ *
+ * Nápor: brána, která stojí před drahou prací (P15 T28).
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Tyhle dveře do 3. 9. 2026 neomezovalo nic** a bylo to naměřené, ne tušené:
+ * dokud počítadlo volání započítávalo i větev zdarma, byl to náhodou jediný
+ * strop neověřeného provozu, a `e8783d4` ten náhodný strop odstranil.
+ *
+ * Obě zkoušky běží nad **prázdným** `cwd`, takže zmrazený protokol se přečíst
+ * nedá. To je schválně: rozliší se tím, **kde brána stojí**. Požadavek, který
+ * se odmítne na rozpočtu, dostane `DEADLINE_EXCEEDED`; kdyby brána stála až
+ * za `frozenGrammar()`, přišlo by `CORPUS_UNREADABLE` — tedy práce, která se
+ * pod náporem udělá a zahodí.
+ *
+ * Druhá zkouška je ta, na které padá brána, co odmítá všechny: čerstvý
+ * požadavek musí projít dál a narazit až na rozbitý protokol.
+ */
+describe('POST /api/generate pod náporem', () => {
+  async function overBrokenGrammar(waitedMs: number) {
+    const dir = mkdtempSync(join(tmpdir(), 'worldsmith-admission-'));
+    temporary.push(dir);
+    vi.spyOn(process, 'cwd').mockReturnValue(dir);
+    vi.resetModules();
+    const { POST } = await import('../route');
+
+    // Hodiny se podvrhují **až po načtení modulu**: první volání je okamžik
+    // přijetí požadavku, každé další už je o `waitedMs` později. Tím se vyrobí
+    // fronta, aniž by se na cokoli muselo čekat doopravdy.
+    let first = true;
+    vi.spyOn(Date, 'now').mockImplementation(() => {
+      if (!first) return waitedMs;
+      first = false;
+      return 0;
+    });
+
+    const response = await POST(
+      new Request('http://127.0.0.1/api/generate', {
+        method: 'POST',
+        body: JSON.stringify({ prompt: 'a room that waited too long' }),
+      }),
+    );
+    return { status: response.status, json: (await response.json()) as ResponseBody };
+  }
+
+  it('požadavek, který prostál celý rozpočet, se odmítne dřív, než sáhne na disk', async () => {
+    const { status, json } = await overBrokenGrammar(20_000);
+
+    expect(status).toBe(503);
+    expect(json.error?.code).toBe('DEADLINE_EXCEEDED');
+  });
+
+  it('čerstvý požadavek brána pustí dál', async () => {
+    // Bez tohohle by prošla i brána, která odmítá všechny — a ta by demo
+    // neudržela naživu, ta by ho vypnula.
+    const { status, json } = await overBrokenGrammar(5);
+
+    expect(status).toBe(503);
+    expect(json.error?.code).toBe('CORPUS_UNREADABLE');
+  });
+});

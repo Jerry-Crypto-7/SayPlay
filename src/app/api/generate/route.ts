@@ -45,6 +45,7 @@ import { randomUUID } from 'node:crypto';
 import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
 import { frozenGrammar } from '../../../model/client';
 import { withRequest } from '../../../obs/trace';
+import { admit, type AdmissionPolicy } from '../../../server/admission';
 import { mockBranch } from '../../../server/mock';
 import { MAX_PROMPT_CHARS, type ModerationCategory } from '../../../server/moderation';
 import {
@@ -63,6 +64,28 @@ import { upstreamBranch, upstreamConfigFromEnv } from '../../../server/upstream'
 
 /** Strop je stav procesu, ne požadavku — jedna instance na celý běh serveru. */
 const CAP = processSpendCap();
+
+/**
+ * Rozpočet jednoho požadavku od chvíle, kdy dorazil (P15 T28).
+ *
+ * **Tyhle dveře do 3. 9. 2026 neomezovalo nic.** Dokud počítadlo volání
+ * započítávalo i větev zdarma, byl to náhodou jediný strop neověřeného
+ * provozu; `e8783d4` tu vadu opravil a tím ten náhodný strop zmizel.
+ * Přitom každý požadavek dělá tři až čtyři synchronní `readFileSync` plus
+ * sha256 a `JSON.parse` (`frozenGrammar()`) **na smyčce Node**, tedy práci,
+ * která blokuje i požadavky, co s ní nemají nic společného.
+ *
+ * Čísla jsou schválně tatáž jako u `SESSION_POLICY` worldstreamových dveří: je
+ * to týž druh rozhodnutí nad týmž strojem a dvě různá by znamenala, že se
+ * jedny dveře poddají dřív než druhé, aniž by to někdo chtěl. `maxQueued: 0`
+ * proto, že fronta je pro tuhle cestu k ničemu — kdo čeká, čeká na model, ne
+ * na slot.
+ */
+const GENERATE_POLICY: AdmissionPolicy = {
+  budgetMs: 15_000,
+  minServiceMs: 3_000,
+  maxQueued: 0,
+};
 
 export const runtime = 'nodejs';
 
@@ -441,6 +464,13 @@ function logForOperator(requestId: string, code: string, detail: string): void {
 
 export async function POST(request: Request): Promise<Response> {
   const requestId = randomUUID();
+  /**
+   * **Čas přijetí, ne čas rozhodnutí.** Admission se ptá, jak dlouho požadavek
+   * čekal, než se k němu server dostal — a to je jediné číslo, které pod
+   * náporem roste. Kdyby se bralo až u samotné kontroly, vyšla by čekací doba
+   * vždycky nulová a brána by nepustila nikdy nikoho domů.
+   */
+  const receivedAtMs = Date.now();
 
   return withRequest(requestId, async () => {
     /**
@@ -477,6 +507,27 @@ export async function POST(request: Request): Promise<Response> {
       body = JSON.parse(raw.text);
     } catch {
       return error(requestId, 400, 'MALFORMED_BODY', 'request body is not JSON');
+    }
+
+    /**
+     * **Brána stojí tady, ne níž**, protože hned za ní začíná ta drahá práce:
+     * `frozenGrammar()` čte soubory, hashuje a parsuje synchronně. Odmítnout
+     * až za ní by znamenalo tu práci pod náporem udělat a zahodit.
+     */
+    const admission = admit(requestId, receivedAtMs, Date.now(), GENERATE_POLICY);
+    if (!admission.admitted) {
+      logRateLimited(
+        'generate',
+        requestId,
+        admission.reason,
+        `waited ${String(admission.waitedMs)} ms`,
+      );
+      return error(
+        requestId,
+        503,
+        admission.reason,
+        'the request ran out of its time budget before any work began',
+      );
     }
 
     const grammar = frozenGrammar();
