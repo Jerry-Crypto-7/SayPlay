@@ -131,12 +131,41 @@ type Read<T, R extends ClientReason = ClientReason> =
   | ClientFailure<R>;
 
 /**
+ * Ověřené soubory, které už se v tomhle procesu jednou přečetly.
+ *
+ * **Cache smí existovat jen proto, že ten korpus je zmrazený.** Obsah je
+ * zamčený hashem v `MANIFEST.lock`, takže „přečti znovu" nemůže dát jinou
+ * odpověď — na rozdíl od ovládacího souboru stropu, který se schválně čte při
+ * každém volání, aby operátor mohl za incidentu sáhnout na páku bez restartu.
+ *
+ * **Ukládá se jen úspěch.** Nečitelný korpus je vada stroje nebo nasazení a ta
+ * se dá spravit; zapamatovaný neúspěch by z jednoho výpadku disku udělal stav,
+ * ze kterého se instance nedostane jinak než restartem. Neúspěšná cesta navíc
+ * spadne na prvním `readFileSync` a hash nepočítá, takže je levná i bez cache.
+ *
+ * **Žije a umírá s modulem**, ne s procesem — a to je nosné pro sadu: klient si
+ * `FROZEN_DIR` počítá z `process.cwd()` při importu, takže test, který podvrhne
+ * pracovní adresář a načte modul znovu (`clientAt()` v `client.test.ts`),
+ * dostane prázdnou cache. Kdyby cache modul přežila, druhý kořen by četl
+ * z prvního a zelená by znamenala jen „poprvé se to přečetlo správně".
+ */
+const frozenFiles = new Map<string, string>();
+
+/**
  * Přečte zmrazený soubor a **ověří jeho hash proti `MANIFEST.lock`**.
  *
  * `MANIFEST.lock` normalizuje CRLF na LF **před** hashováním. Bez toho by hash
  * téhož souboru závisel na stroji, na kterém se repo checkoutovalo.
+ *
+ * Čte **nejvýš jednou na cestu a proces** — viz `frozenFiles`. Bez toho stály
+ * čtyři dveře, které `frozenGrammar()` volají, dva `readFileSync` a sha256 nad
+ * 26 kB na **každém** požadavku, synchronně na smyčce událostí, a platilo se to
+ * i na neplacené větvi a před stropem souběhu.
  */
 function readFrozen(relativePath: string): Read<string, CorpusReason> {
+  const cached = frozenFiles.get(relativePath);
+  if (cached !== undefined) return { ok: true, value: cached };
+
   let manifest: { files?: Record<string, string> };
   let text: string;
   try {
@@ -161,6 +190,7 @@ function readFrozen(relativePath: string): Read<string, CorpusReason> {
       detail: `${relativePath} hashes to ${actual}, MANIFEST.lock says ${String(expected)}`,
     };
 
+  frozenFiles.set(relativePath, text);
   return { ok: true, value: text };
 }
 
@@ -181,8 +211,17 @@ function readJsonl(relativePath: string): Read<Record<string, unknown>[], Corpus
   }
 }
 
+/**
+ * Hotový slovník. Druhá polovina téže cache: `frozenFiles` ušetří obě čtení
+ * a hash, tohle navíc `JSON.parse` nad 26 kB, který se jinak platí znovu na
+ * každém požadavku všech čtyř dveří.
+ */
+let frozenGrammarValue: Grammar | null = null;
+
 /** Slovník ze zmrazeného protokolu — prompt si ho nesmí opsat. */
 export function frozenGrammar(): Read<Grammar> {
+  if (frozenGrammarValue !== null) return { ok: true, value: frozenGrammarValue };
+
   const file = readFrozen('protocol.v1.json');
   if (!file.ok) return file;
   let protocol: {
@@ -194,16 +233,14 @@ export function frozenGrammar(): Read<Grammar> {
   } catch (thrown) {
     return { ok: false, reason: 'CORPUS_UNREADABLE', detail: `protocol.v1.json: ${(thrown as Error).message}` };
   }
-  return {
-    ok: true,
-    value: {
-      surfaceEvents: protocol.grammar.surfaceEvents,
-      conditions: protocol.grammar.conditions,
-      actions: protocol.grammar.actions,
-      simFields: protocol.worldDoc.sim.fields,
-      lookFields: protocol.worldDoc.look.fields,
-    },
+  frozenGrammarValue = {
+    surfaceEvents: protocol.grammar.surfaceEvents,
+    conditions: protocol.grammar.conditions,
+    actions: protocol.grammar.actions,
+    simFields: protocol.worldDoc.sim.fields,
+    lookFields: protocol.worldDoc.look.fields,
   };
+  return { ok: true, value: frozenGrammarValue };
 }
 
 export interface FrozenPrompt {

@@ -18,6 +18,29 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+/**
+ * Počítadlo skutečných čtení z disku.
+ *
+ * Musí to být obal nad `node:fs`, ne `vi.spyOn`: klient si `readFileSync`
+ * importuje jmenovitě a vestavěné moduly jsou externalizované, takže špionáž
+ * nad jmenným prostorem by se do něj nepromítla a test by byl zelený nad
+ * čímkoli. Obal deleguje na skutečnou implementaci, takže zbytek souboru —
+ * který `node:fs` používá taky — se chová beze změny.
+ */
+const disk = vi.hoisted(() => ({ reads: [] as string[] }));
+
+vi.mock('node:fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:fs')>();
+  return {
+    ...actual,
+    default: actual,
+    readFileSync: (...args: Parameters<typeof actual.readFileSync>) => {
+      disk.reads.push(String(args[0]));
+      return actual.readFileSync(...args);
+    },
+  };
+});
+
 const REQUEST = { model: 'test', system: 'system', user: 'user' };
 
 const roots: string[] = [];
@@ -176,6 +199,39 @@ describe('zmrazený korpus na produkční cestě', () => {
     // naopak, protože jedno je vada stroje a druhé útok na zmrazení.
     for (const result of [prompt, grammar, emission])
       expect(!result.ok && result.reason).toBe('CORPUS_UNREADABLE');
+  });
+
+  it('zmrazený protokol se čte jednou za proces, ne na každém požadavku', async () => {
+    // **Hezký výsledek vypadá stejně s cachí i bez ní** — slovník je pokaždé
+    // tentýž, ať se přečetl jednou nebo stokrát. Pozná to jedině počítadlo
+    // čtení, a stojí to za měření: `frozenGrammar()` volají čtvery dveře, cena
+    // je dva `readFileSync` plus sha256 nad 26 kB synchronně na smyčce
+    // událostí, a platí se **před** stropem souběhu i na neplacené větvi.
+    const root = corpusRoot();
+    const client = await clientAt(root);
+    const underRoot = (): string[] => disk.reads.filter((path) => path.startsWith(root));
+
+    disk.reads.length = 0;
+    expect(client.frozenGrammar().ok).toBe(true);
+    expect(underRoot().length, 'první volání korpus vůbec nepřečetlo').toBeGreaterThan(0);
+
+    disk.reads.length = 0;
+    expect(client.frozenGrammar().ok).toBe(true);
+    expect(underRoot(), 'druhé volání sáhlo znovu na disk').toEqual([]);
+
+    // **Druhá půlka tvrzení, a bez ní by zelená znamenala jen „poprvé se to
+    // přečetlo".** Cache musí umřít s modulem: klient si `FROZEN_DIR` počítá
+    // z `process.cwd()` při importu, takže cache, která reload přežije, by
+    // druhému kořeni vydala obsah prvního — a všechny podvrhové testy v tomhle
+    // souboru by tím tiše přestaly měřit vlastní korpus.
+    const other = corpusRoot();
+    const reloaded = await clientAt(other);
+    disk.reads.length = 0;
+    expect(reloaded.frozenGrammar().ok).toBe(true);
+    expect(
+      disk.reads.filter((path) => path.startsWith(other)).length,
+      'cache přežila reload modulu — druhý kořen četl z prvního',
+    ).toBeGreaterThan(0);
   });
 
   it('neznámé id je prázdný výsledek, ne selhání korpusu', async () => {
