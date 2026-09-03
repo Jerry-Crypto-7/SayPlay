@@ -267,7 +267,13 @@ export async function probeWorldstream(options) {
     // Operátorovi stačí, **že** generace proběhla a jak dopadla; pod kterou
     // relací, se z logu dohledávat nemá.
     checks.generation = { objects: generation.objects, elapsedMs: generation.elapsedMs };
-    address = generation.sharedWorld;
+    // **Přes tutéž normalizaci jako parametr, ne kolem ní** — nález nezávislé
+    // revize 3. 9. 2026. Docstring `sharedWorldAddress()` sice tvrdí, že
+    // hodnota z generace už cestou je, jenže to je tvrzení o cizí odpovědi:
+    // cíl, který vrátí relativní hodnotu, složí `${target}${address}` na
+    // **jiný host** (`https://demo.example` + `.attacker.com/x`). Vynucovat je
+    // levnější než tvrdit.
+    address = sharedWorldAddress(generation.sharedWorld);
   }
 
   if (address !== null) {
@@ -322,13 +328,26 @@ async function main() {
   //
   // Kontroluje se **před** `record()` níž, aby špatný parametr skončil
   // kódem 2 a nesáhl ani na log, ani na síť. `Number('')` je nula, takže
-  // prázdná hodnota musí padnout taky; kladné nenulové číslo je jediný tvar,
-  // ve kterém obojí dává smysl.
-  const durations = { 'deadline-ms': DEFAULT_WORLD_DEADLINE_MS, 'poll-ms': DEFAULT_POLL_MS };
-  for (const [name, fallback] of Object.entries(durations)) {
+  // prázdná hodnota musí padnout taky.
+  //
+  // ⚠ **„Kladné a konečné" je málo, a je to změřené** — druhá nezávislá revize
+  // 3. 9. 2026, CONFIRMED spuštěním: první podoba téhle kontroly pustila
+  // `--deadline-ms 999999999999` (≈ 31 let) a `--poll-ms 0.0001`, což je
+  // **tatáž záplava**, kterou zavírala — naměřeno 314 GETů za 4 s, a hlídač
+  // pořád nic nenahlásil. Nestačí tedy tvar čísla, musí to být **rozsah**:
+  // horní mez je to, co dělá ze smyčky konečnou, dolní to, co jí brání
+  // vytáčet se na minimu operačního systému.
+  const durations = {
+    'deadline-ms': { fallback: DEFAULT_WORLD_DEADLINE_MS, min: 1, max: 3_600_000 },
+    'poll-ms': { fallback: DEFAULT_POLL_MS, min: 1, max: 300_000 },
+  };
+  for (const [name, { fallback, min, max }] of Object.entries(durations)) {
     const raw = argument(name, String(fallback));
-    if (!(Number(raw) > 0) || !Number.isFinite(Number(raw))) {
-      process.stderr.write(`worldstream-watchdog: --${name} musí být kladné číslo, ne ${JSON.stringify(raw)}\n`);
+    const value = Number(raw);
+    if (!(value >= min) || !(value <= max)) {
+      process.stderr.write(
+        `worldstream-watchdog: --${name} musí být číslo mezi ${min} a ${max}, ne ${JSON.stringify(raw)}\n`,
+      );
       process.exit(2);
     }
   }

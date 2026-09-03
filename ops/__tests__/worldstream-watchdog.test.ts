@@ -168,6 +168,35 @@ describe('HTTP 200 není oracle živosti', () => {
     expect(verdict.reason).toBe('WORLD_EMPTY');
   });
 
+  it('relativní adresa z cíle se nesmí složit na jiný host', async () => {
+    // **Nález nezávislé revize 3. 9. 2026.** Adresa z generace se do
+    // `${target}${address}` skládala **bez** normalizace, na kterou se posílá
+    // parametr `--shared`, a docstring to jen tvrdil. Cíl, který vrátí
+    // relativní hodnotu, tím posílá hlídače jinam: `https://demo.example`
+    // + `.attacker.com/x` je host `demo.example.attacker.com`.
+    const { run, seen } = probe(
+      healthyTarget({
+        'GET /api/worldstream/sessions/probe-1': {
+          status: 200,
+          body: {
+            phase: 'world',
+            blueprint: { objects: [{ stableId: 'door' }] },
+            sharedWorld: '.attacker.test/x',
+          },
+        },
+      }),
+    );
+    await run();
+
+    // **Nosné je vedoucí lomítko, ne to, že se řetězec nikde neobjeví.**
+    // Normalizace z něj udělá cestu **na cíli** — `.attacker.test/x` se tedy
+    // vyskytnout smí a musí, jen jako segment cesty za prefixem, ne jako
+    // pokračování hostitele. Kdyby chyběl prefix, `${target}${address}` složí
+    // `http://target.test.attacker.test/x`.
+    for (const call of seen) expect(call.path.startsWith('/')).toBe(true);
+    expect(seen.at(-1)?.path).toBe('/api/worldstream/snapshots/.attacker.test/x');
+  });
+
   it('svět, který nemá adresu, není načtený svět', async () => {
     const { run } = probe(
       healthyTarget({
@@ -394,6 +423,14 @@ describe('hlídač jako program', () => {
       ['--poll-ms', ''],
       ['--deadline-ms', '0'],
       ['--deadline-ms', '-5'],
+      // ⚠ **Rozsah, ne jen tvar čísla** — druhá nezávislá revize 3. 9. 2026
+      // spustila `--deadline-ms 999999999999` (≈ 31 let) a naměřila 314 GETů
+      // za 4 s, tedy tutéž záplavu, kterou první podoba kontroly zavírala.
+      // `--poll-ms 0.0001` se vytáčelo na minimu operačního systému.
+      ['--deadline-ms', '9e12'],
+      ['--deadline-ms', '999999999999'],
+      ['--poll-ms', '0.0001'],
+      ['--poll-ms', '999999'],
     ]) {
       const { code, stderr } = await runCli(['--target', target, '--log', log, ...bad]);
       expect(code).toBe(2);
