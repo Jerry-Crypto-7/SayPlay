@@ -371,7 +371,16 @@ export function processSpendCap(): SpendCap {
   return processCap;
 }
 
-/** Jen pro testy: zahodí singleton, aby si další test mohl nastavit vlastní prostředí. */
+/**
+ * Jen pro testy: zahodí singleton, aby si další test mohl nastavit vlastní prostředí.
+ *
+ * ⚠ **Platí jen v procesu, kde ještě žádná route nenačetla svůj modul.** Obě
+ * placené routy si instanci berou při importu do modulové konstanty, takže po
+ * resetu by `processSpendCap()` vydával druhý živý strop, zatímco routy dál
+ * rezervují proti prvnímu — a „jeden strop procesu" by přestal platit. Vitest
+ * izoluje soubory, takže se to v testech nepotká; z produkčního kódu se sem
+ * nesmí sáhnout vůbec (hlídá to lexikální brána v `spend-cap.test.ts`).
+ */
 export function resetProcessSpendCap(): void {
   processCap = null;
 }

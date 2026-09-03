@@ -31,8 +31,22 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { SseDecoder } from '../../../../components/viewer/sse';
 import type { SessionEvent, SessionEventLog } from '../../../../worldstream/events';
-import { clearSessions, openSession, runGeneration } from '../../../../worldstream/sessions';
+import {
+  clearSessions,
+  openSession,
+  runGeneration,
+  serverGrammar,
+} from '../../../../worldstream/sessions';
 import { ANSWER, PLAN, generated, grammar, scripted } from './world-fixture';
+
+// `serverGrammar` se obaluje, ne nahrazuje: propouští skutečné čtení protokolu
+// a jediný test níž ho na jedno volání přepne na nečitelný, aby se dala
+// změřit odmítnutá cesta, která jinak zevnitř procesu žádný pozorovatelný
+// následek nemá.
+vi.mock('../../../../worldstream/sessions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../worldstream/sessions')>();
+  return { ...actual, serverGrammar: vi.fn(actual.serverGrammar) };
+});
 import { DEFAULT_CAP_USD } from '../../../../server/spend-cap';
 import {
   acquireSlot,
@@ -228,13 +242,46 @@ describe('založení relace', () => {
     expect(grammarRead, 'čtení protokolu ve zdroji chybí').toBeGreaterThan(-1);
     expect(gate, 'brána souběhu je až za čtením protokolu').toBeLessThan(grammarRead);
 
+  });
+
+  it('nečitelný protokol vrátí slot, a vrátí ho právě jednou', async () => {
     // Druhá polovina té výměny: slot vzatý před čtením se musí vrátit, když
     // protokol přečíst nejde. Bez toho by nečitelný protokol slot spolkl a po
     // čtyřech požadavcích by neprošel nikdo.
-    const unreadable = source.indexOf("logRateLimited('worldstream/sessions', requestId, 'GRAMMAR_UNREADABLE'");
-    const release = source.indexOf('releaseSlot();', grammarRead);
-    expect(release, 'nečitelný protokol slot nevrací').toBeGreaterThan(-1);
-    expect(release, 'slot se vrací až za odchodem z route').toBeLessThan(unreadable);
+    //
+    // Soudí se **chování**, ne zdroj. Lexikální brána nad `releaseSlot();`
+    // pustila 3. 9. 2026 dva mutanty: vrácení smazané a nahrazené koncovým
+    // komentářem, a vrácení přesunuté před podmínku, které by každý úspěšný
+    // požadavek vracelo dvakrát a čítač zahnalo do záporu — po čemž by strop
+    // souběhu už nikdy neodmítl. Počet volných slotů po odmítnutí obojí odliší.
+    vi.mocked(serverGrammar).mockReturnValueOnce('protocol unreadable for this test');
+
+    const response = await createSession(createRequest({ prompt: 'a salt flat' }));
+    expect(response.status).toBe(503);
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
+      'GRAMMAR_UNREADABLE',
+    );
+
+    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS; i += 1)
+      expect(acquireSlot(), `slot ${i} měl být volný — odmítnutí ho nevrátilo`).toBe(true);
+    expect(acquireSlot(), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(false);
+  });
+
+  it('přijatý požadavek vrátí slot právě jednou, a to až ve `finally`', async () => {
+    // Druhý mutant z revize 3. 9. 2026: `releaseSlot()` přesunuté před
+    // podmínku nečitelného protokolu. Odmítnutá cesta vypadá správně, ale
+    // každý **přijatý** požadavek pak vrací dvakrát — jednou hned, jednou ve
+    // `finally` — a čítač jde do záporu, po čemž strop souběhu už neodmítne.
+    const response = await createSession(createRequest({ prompt: 'a salt flat' }));
+    expect(response.status).toBe(202);
+
+    // Bez `.env` generace selže čistě v mikrotascích; jedna makrotasková
+    // hranice ji nechá doběhnout i s `finally`, aniž se měří čas.
+    await new Promise<void>((resolve) => setImmediate(resolve));
+
+    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS; i += 1)
+      expect(acquireSlot(), `slot ${i} měl být volný — finally ho nevrátilo`).toBe(true);
+    expect(acquireSlot(), 'čítač je v záporu — slot se vrátil dvakrát').toBe(false);
   });
 });
 

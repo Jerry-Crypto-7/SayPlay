@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { mockBranch } from '../mock';
 import type { GenerationCall } from '../pipeline';
 
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 
 import {
   costUsd,
@@ -382,21 +382,36 @@ describe('jediný strop procesu', () => {
     // změřit: Next dává každé route vlastní bundle a test běží v jednom.
     // Kdyby si route zavolala `spendCapFromEnv()` sama, dostane vlastní
     // čítač a strop procesu přestane být strop.
-    const routes = [
-      'src/app/api/generate/route.ts',
-      'src/app/api/worldstream/sessions/route.ts',
-    ];
+    //
+    // Prohledává se **celý produkční `src/`**, ne seznam dvou rout: revize
+    // 3. 9. 2026 ukázala, že seznam nevidí třetí placenou routu ani pomocný
+    // modul, který si strop postaví přes `new SpendCap(...)` místo přes
+    // `spendCapFromEnv()`. Jediné místo, kde smí strop vzniknout, je
+    // `spend-cap.ts` sám; testy se vynechávají, protože si stropy staví schválně.
+    const stripComments = (code: string) =>
+      code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    const production = (readdirSync('src', { recursive: true }) as string[])
+      .map((entry) => entry.replaceAll('\\', '/'))
+      .filter((entry) => /\.tsx?$/.test(entry) && !entry.includes('__tests__'))
+      .map((entry) => `src/${entry}`)
+      .filter((path) => path !== 'src/server/spend-cap.ts');
+    expect(production.length, 'sken produkčního src je prázdný').toBeGreaterThan(50);
 
-    for (const route of routes) {
+    for (const path of production) {
       // **Komentáře se odstřihnou.** Jméno `spendCapFromEnv` v docstringu je
       // poctivé — vysvětluje, proč se sem přes něj nechodí — a brána, kterou
       // shodí vlastní komentář, je falešný poplach, ne ochrana.
-      const code = readFileSync(route, 'utf8')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/^\s*\/\/.*$/gm, '');
-
-      expect(code, `${route} si vyrábí vlastní strop`).not.toContain('spendCapFromEnv');
-      expect(code, `${route} nechodí přes singleton`).toContain('processSpendCap()');
+      const code = stripComments(readFileSync(path, 'utf8'));
+      expect(code, `${path} si vyrábí vlastní strop přes spendCapFromEnv`).not.toContain('spendCapFromEnv(');
+      expect(code, `${path} si vyrábí vlastní strop přes new SpendCap`).not.toContain('new SpendCap(');
+      // Reset patří testům: po něm by routy držely starý strop a singleton vydával nový.
+      expect(code, `${path} resetuje strop procesu`).not.toContain('resetProcessSpendCap(');
     }
+
+    // A obě placené routy přes singleton chodí doopravdy, ne jen „nevyrábějí".
+    for (const route of ['src/app/api/generate/route.ts', 'src/app/api/worldstream/sessions/route.ts'])
+      expect(stripComments(readFileSync(route, 'utf8')), `${route} nechodí přes singleton`).toContain(
+        'processSpendCap()',
+      );
   });
 });
