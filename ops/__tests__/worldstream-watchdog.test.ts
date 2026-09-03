@@ -360,12 +360,26 @@ describe('hlídač jako program', () => {
     expect(raw).not.toContain('probe-1');
   });
 
-  it('dokumentovaná cesta logu je gitignorovaná, ne jen zamýšlená', async () => {
+  /**
+   * **Nejen dokumentovaná cesta, ale celá hloubka, kterou `--log` dovoluje.**
+   *
+   * Mutační kontrola 3. 9. 2026 nechala jednoho přeživšího: zúžení vzoru
+   * v `.gitignore` z `ops/**' + '/*.jsonl` na `ops/*.jsonl` nechalo sadu celou
+   * zelenou (19/19), protože jediné tvrzení se ptalo na jedinou cestu.
+   * `--log` přitom bere cestu libovolnou, takže `ops/logs/w.jsonl` by šel
+   * commitnout — a je to týž soubor s cílovou URL a názvy světů. Tvrzení bez
+   * hloubky bylo dekorativní, a proto se sem přidala druhá cesta, ne třetí
+   * vzor do `.gitignore`.
+   */
+  it.each([
+    ['dokumentovaná cesta', 'ops/worldstream-watchdog.jsonl'],
+    ['cesta o patro níž, kterou `--log` taky dovolí', 'ops/logs/w.jsonl'],
+  ])('%s je gitignorovaná, ne jen zamýšlená', async (_label, path) => {
     // **Rozhoduje návratový kód, ne vypsaný řádek** (`CLAUDE.md`, past u
     // `/*.md`). Repozitář jde podle `RULES.md` §2 ven a tenhle soubor nese
     // cílovou URL i názvy světů, takže „chtěli jsme ho ignorovat" nestačí.
     const ignored = await new Promise<number | null>((done) => {
-      const child = spawn('git', ['check-ignore', '-q', 'ops/worldstream-watchdog.jsonl'], {
+      const child = spawn('git', ['check-ignore', '-q', path], {
         cwd: join(dirname(fileURLToPath(import.meta.url)), '..', '..'),
         stdio: 'ignore',
       });
