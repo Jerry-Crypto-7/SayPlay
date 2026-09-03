@@ -56,6 +56,11 @@
  * node ops/watchdog/worldstream.mjs --target https://demo.example \
  *   --log ops/worldstream-watchdog.jsonl --shared 5f3a… [--allow-generation]
  * ```
+ *
+ * `--shared` bere **holý otisk i celou cestu** — `sharedWorldAddress()` doplní
+ * `/api/worldstream/snapshots/` tomu prvnímu. Do 3. 9. 2026 to uměl jen tvar
+ * s cestou a návod výš ukazoval ten druhý, takže dokumentované volání šlo na
+ * `https://demo.example5f3a…` a hlásilo poruchu zdravého cíle.
  */
 
 import { appendFileSync } from 'node:fs';
@@ -66,6 +71,24 @@ export const DEFAULT_WORLD_DEADLINE_MS = 20_000;
 
 /** Jak často se ptá snapshotu relace. */
 export const DEFAULT_POLL_MS = 250;
+
+/**
+ * Adresa sdíleného světa z toho, co operátor napsal na příkazovou řádku.
+ *
+ * `checkSharedWorld` skládá `${target}${address}`, takže **holý otisk se musí
+ * na cestu doplnit tady** — jinak `--shared 5f3a…` složí
+ * `https://demo.exampleN5f3a…` a skončí `SHARED_WORLD_UNREADABLE`, tedy
+ * poruchou cíle, který je ve skutečnosti zdravý. Návod v hlavičce tenhle tvar
+ * sám ukazuje a testy posílaly jen tvar s cestou, takže to nikdo nechytil;
+ * nález nezávislé revize 3. 9. 2026, CONFIRMED spuštěním.
+ *
+ * Hodnota z generace už cestou je, takže na ní je to no-op — a je to jediný
+ * důvod, proč se to smí dělat na jednom místě pro oba zdroje.
+ */
+export function sharedWorldAddress(value) {
+  if (value === null || value.startsWith('/')) return value;
+  return `/api/worldstream/snapshots/${value}`;
+}
 
 /** Věta, kterou prober zakládá relaci. Konstantní schválně — hlídač netvoří. */
 export const PROBE_PROMPT = 'a small stone room with a single door';
@@ -230,7 +253,7 @@ export async function probeWorldstream(options) {
   // parametru.** Read-only režim tak umí ověřit patro 3 nad světem, který
   // vznikl dřív — a je to zároveň jediná kontrola, která na produkci s klíčem
   // dává smysl pouštět po minutách.
-  let address = sharedWorld;
+  let address = sharedWorldAddress(sharedWorld);
 
   if (allowGeneration) {
     const generation = await checkGeneration(target, fetchImpl, { now, wait, deadlineMs, pollMs });
@@ -283,6 +306,27 @@ async function main() {
   if (target === undefined || logPath === undefined) {
     process.stderr.write('worldstream-watchdog: --target <url> a --log <cesta> jsou povinné\n');
     process.exit(2);
+  }
+
+  // **Nečíslo se musí zastavit TEĎ, ne až ve smyčce** — nález nezávislé revize
+  // 3. 9. 2026, CONFIRMED spuštěním: `--deadline-ms nečíslo` dá `NaN`,
+  // `now() - started >= NaN` není nikdy pravda, takže smyčka nemá jak skončit,
+  // a `wait(NaN)` degraduje na ~0 ms. Revize naměřila **5000 GETů bez
+  // zastavení**; mez dal až její vlastní stub. Operátorův překlep by tak z
+  // hlídače udělal tok požadavků na nasazení — a hlídače, který nikdy nic
+  // nenahlásí.
+  //
+  // Kontroluje se **před** `record()` níž, aby špatný parametr skončil
+  // kódem 2 a nesáhl ani na log, ani na síť. `Number('')` je nula, takže
+  // prázdná hodnota musí padnout taky; kladné nenulové číslo je jediný tvar,
+  // ve kterém obojí dává smysl.
+  const durations = { 'deadline-ms': DEFAULT_WORLD_DEADLINE_MS, 'poll-ms': DEFAULT_POLL_MS };
+  for (const [name, fallback] of Object.entries(durations)) {
+    const raw = argument(name, String(fallback));
+    if (!(Number(raw) > 0) || !Number.isFinite(Number(raw))) {
+      process.stderr.write(`worldstream-watchdog: --${name} musí být kladné číslo, ne ${JSON.stringify(raw)}\n`);
+      process.exit(2);
+    }
   }
 
   // Zapisovatelnost se ověří TEĎ, ne až u prvního nálezu. Chybný adresář by

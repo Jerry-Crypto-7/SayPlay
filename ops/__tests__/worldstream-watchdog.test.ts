@@ -349,4 +349,47 @@ describe('hlídač jako program', () => {
     const { code } = await runCli(['--target', 'http://127.0.0.1:1']);
     expect(code).toBe(2);
   });
+
+  it('nečíselná doba skončí kódem 2 a nepošle jediný požadavek', async () => {
+    // **Nález nezávislé revize 3. 9. 2026, CONFIRMED spuštěním.** `NaN` udělal
+    // z `now() - started >= deadlineMs` výraz, který není nikdy pravda, a
+    // z `wait(NaN)` skoro nulovou pauzu: revize naměřila 5000 GETů bez
+    // zastavení. Test proto **počítá požadavky** — kód 2 sám o sobě by
+    // nerozlišil zastavení od zastavení až po záplavě.
+    const target = await serve(healthyTarget());
+    const log = join(scratch, `nan-${Date.now()}.jsonl`);
+
+    for (const bad of [
+      ['--deadline-ms', 'brzy'],
+      ['--poll-ms', 'často'],
+      ['--poll-ms', ''],
+      ['--deadline-ms', '0'],
+      ['--deadline-ms', '-5'],
+    ]) {
+      const { code, stderr } = await runCli(['--target', target, '--log', log, ...bad]);
+      expect(code).toBe(2);
+      expect(stderr).toContain(bad[0]!);
+    }
+
+    // **Log zůstal nezaložený, a to je ten důkaz o požadavcích.** `record()`
+    // se volá dřív než kterékoli síťování, takže soubor, který po pěti
+    // pokusech neexistuje, znamená, že se běh zastavil před obojím. Přímo
+    // počítat GETy by tady bylo slabší tvrzení — záplava vzniká až ve smyčce
+    // za tímhle bodem.
+    expect(() => readFileSync(log, 'utf8')).toThrow();
+  });
+
+  it('holý otisk u --shared míří na tutéž adresu jako tvar s cestou', async () => {
+    // Druhá půlka téhož nálezu: návod v hlavičce souboru ukazoval holý otisk,
+    // ale `checkSharedWorld` skládá `${target}${address}`, takže dokumentované
+    // volání šlo na `https://demo.example5f3a…` a hlásilo poruchu zdravého
+    // cíle. Testy do té doby posílaly jen tvar s cestou.
+    const target = await serve(healthyTarget());
+    const runShared = (shared: string) =>
+      runCli(['--target', target, '--log', join(scratch, `sh-${Date.now()}-${shared.length}.jsonl`), '--shared', shared]);
+
+    // Stub obsluhuje jedinou adresu snapshotu, takže obojí musí skončit na ní.
+    expect((await runShared('/api/worldstream/snapshots/abc')).code).toBe(0);
+    expect((await runShared('abc')).code).toBe(0);
+  });
 });
