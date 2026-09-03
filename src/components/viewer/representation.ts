@@ -95,6 +95,13 @@ export interface SlotView {
   /** Obal s transformací a sockety. **Přežívá každou výměnu.** */
   readonly group: Group;
   readonly attached: Object3D | null;
+  /**
+   * Kandidát, který je připojený a **čeká na odhalení** (§13.3 bod 4).
+   *
+   * `null` je pravidlo, ne výjimka: slot má rozdělané odhalení jen po tu
+   * necelou vteřinu, než crossfade doběhne.
+   */
+  readonly staged: Object3D | null;
 }
 
 export type OfferOutcome =
@@ -105,6 +112,24 @@ export type OfferOutcome =
       readonly deferred: DisposalTally;
     };
 
+/**
+ * Proč se nedalo dokončit odhalení. Ke čtyřem důvodům `offer()` přibývá jeden.
+ *
+ * `NOTHING_STAGED` není totéž co `UNKNOWN_SLOT`: slot existuje, jen se na něm
+ * žádné odhalení neběží. Rozlišit to je podmínka toho, aby se dvojí `commit()`
+ * (dva snímky, ve kterých se odhalení uzavře) dal poznat od commitu na cizí
+ * slot — první je neškodné opakování, druhé je vada volajícího.
+ */
+export type CommitRefusal = RepresentationRefusal | 'NOTHING_STAGED';
+
+export type CommitOutcome =
+  | { readonly ok: true; readonly view: SlotView; readonly deferred: DisposalTally }
+  | {
+      readonly ok: false;
+      readonly refusal: CommitRefusal;
+      readonly deferred: DisposalTally;
+    };
+
 export interface RepresentationRegistry {
   readonly slots: readonly SlotView[];
   /** Založí slot: obal, transformace, sockety, a volitelně hrubou podobu. */
@@ -112,6 +137,22 @@ export interface RepresentationRegistry {
   view(stableId: string): SlotView | null;
   /** Jediné dveře, kterými se podoba dostane na scénu. */
   offer(candidate: RepresentationCandidate): OfferOutcome;
+  /**
+   * §13.3 body 1–4: kandidát projde **týmiž branami jako `offer()`** a připojí
+   * se **neviditelný** vedle hrubé podoby. Ta zůstane, dokud odhalení nedoběhne.
+   *
+   * Proč to není jen `offer()` s příznakem: `offer()` je atomická výměna a její
+   * kontrakt zní „stará podoba odešla právě jednou". Odhalení má naopak okno,
+   * ve kterém stojí na scéně obě — a to okno musí umět skončit **oběma** směry
+   * (`commit`, `abandon`), protože §13.3 bod 7 chce, aby vadné odhalení nechalo
+   * hrubou podobu naživu. Jedna funkce se dvěma konci by ten druhý konec
+   * neuměla vůbec.
+   */
+  stage(candidate: RepresentationCandidate): OfferOutcome;
+  /** §13.3 bod 6: kandidát se stane podobou, stará odejde právě jednou. */
+  commit(stableId: string): CommitOutcome;
+  /** §13.3 bod 7: odhalení selhalo — kandidát odejde, hrubá podoba zůstane. */
+  abandon(stableId: string): DisposalTally;
   /** Druhá věta: zvedne revizi, běžící práci tím zneplatní. */
   revise(stableId: string): number | null;
   /** Světová poloha socketu, čtená z **obalu**. `null`, když takový není. */
@@ -126,6 +167,10 @@ interface SlotEntry {
   revision: number;
   contentHash: string | null;
   attached: Object3D | null;
+  /** Kandidát v odhalení a revize, proti které vznikl. Obojí, nebo ani jedno. */
+  staged: Object3D | null;
+  stagedRevision: number;
+  stagedHash: string | null;
 }
 
 /** Jméno uzlu obalu. Raycast čte `stableId` odsud, ne ze jména meshe (`T23`). */
@@ -145,6 +190,7 @@ function viewOf(entry: SlotEntry): SlotView {
     contentHash: entry.contentHash,
     group: entry.group,
     attached: entry.attached,
+    staged: entry.staged,
   };
 }
 
@@ -201,6 +247,9 @@ export function createRepresentationRegistry(): RepresentationRegistry {
         revision: 0,
         contentHash: null,
         attached: null,
+        staged: null,
+        stagedRevision: 0,
+        stagedHash: null,
       };
       if (rough !== null) {
         group.add(rough);
@@ -238,6 +287,91 @@ export function createRepresentationRegistry(): RepresentationRegistry {
       entry.attached = candidate.object;
       entry.contentHash = candidate.contentHash;
 
+      // Rozdělané odhalení tahle výměna přebíjí: jeho kandidát je starší a už
+      // se nemá kam připojit. Odejde spolu se starou podobou, ne místo ní —
+      // proto se účty sčítají a nepřepisují.
+      const displaced = entry.staged;
+      if (displaced !== null) {
+        entry.group.remove(displaced);
+        entry.staged = null;
+        entry.stagedHash = null;
+      }
+
+      return {
+        ok: true,
+        view: viewOf(entry),
+        deferred: addTallies(
+          leaving === null ? EMPTY_TALLY : disposeSubtree(leaving),
+          displaced === null ? EMPTY_TALLY : disposeSubtree(displaced),
+        ),
+      };
+    },
+
+    stage(candidate) {
+      const entry = entries.get(candidate.stableId);
+      // Brány jsou tytéž a ve stejném pořadí jako v `offer()`, protože se ptají
+      // na totéž. Kdyby se lišily, mohl by tudy projít mesh, který by atomickou
+      // cestou neprošel — a odhalení by z brány udělalo obchvat.
+      if (entry === undefined)
+        return { ok: false, refusal: 'UNKNOWN_SLOT', deferred: disposeSubtree(candidate.object) };
+
+      if (candidate.revision !== entry.revision)
+        return { ok: false, refusal: 'STALE_REVISION', deferred: disposeSubtree(candidate.object) };
+
+      const misfit = fits(entry.slot.localBounds, candidate.bounds);
+      if (misfit !== null)
+        return { ok: false, refusal: misfit, deferred: disposeSubtree(candidate.object) };
+
+      // Druhý kandidát na týž slot vytlačí prvního. Je novější, takže vyhrává
+      // z téhož důvodu jako u `offer()` — a odložit se musí, protože i prohraný
+      // drží geometrii na GPU.
+      const displaced = entry.staged;
+      if (displaced !== null) entry.group.remove(displaced);
+
+      // **Neviditelný, ne průhledný** (§13.3 bod 4). Průhlednost je věc
+      // odhalení a to ještě nezačalo; jeden snímek s plně vykresleným
+      // kandidátem přes hrubou podobu je přesně ten pop-in, kterému se tahle
+      // úloha vyhýbá.
+      candidate.object.visible = false;
+      entry.group.add(candidate.object);
+      entry.staged = candidate.object;
+      entry.stagedRevision = candidate.revision;
+      entry.stagedHash = candidate.contentHash;
+
+      return {
+        ok: true,
+        view: viewOf(entry),
+        deferred: displaced === null ? EMPTY_TALLY : disposeSubtree(displaced),
+      };
+    },
+
+    commit(stableId) {
+      const entry = entries.get(stableId);
+      if (entry === undefined) return { ok: false, refusal: 'UNKNOWN_SLOT', deferred: EMPTY_TALLY };
+
+      const staged = entry.staged;
+      if (staged === null) return { ok: false, refusal: 'NOTHING_STAGED', deferred: EMPTY_TALLY };
+
+      const clear = (): void => {
+        entry.staged = null;
+        entry.stagedHash = null;
+      };
+
+      // Revize se zvedla, **zatímco odhalení běželo** — druhá věta ten objekt
+      // mezitím odvolala. Kandidát se proto nepřipojí a odejde; hrubá podoba
+      // zůstane, což je tentýž konec jako u selhaného odhalení.
+      if (entry.stagedRevision !== entry.revision) {
+        entry.group.remove(staged);
+        clear();
+        return { ok: false, refusal: 'STALE_REVISION', deferred: disposeSubtree(staged) };
+      }
+
+      const leaving = entry.attached;
+      staged.visible = true;
+      entry.attached = staged;
+      entry.contentHash = entry.stagedHash;
+      clear();
+
       return {
         ok: true,
         view: viewOf(entry),
@@ -245,10 +379,26 @@ export function createRepresentationRegistry(): RepresentationRegistry {
       };
     },
 
+    abandon(stableId) {
+      const entry = entries.get(stableId);
+      if (entry === undefined || entry.staged === null) return EMPTY_TALLY;
+
+      const staged = entry.staged;
+      entry.group.remove(staged);
+      entry.staged = null;
+      entry.stagedHash = null;
+      return disposeSubtree(staged);
+    },
+
     revise(stableId) {
       const entry = entries.get(stableId);
       if (entry === undefined) return null;
       entry.revision += 1;
+      // Rozdělaný kandidát se tu **neodkládá** a je to záměr: odhalení běží
+      // a jeho konec ho odloží sám — `commit()` ho odmítne jako zastaralou
+      // revizi a odloží, `abandon()` taky. Odložit ho už tady by znamenalo
+      // sáhnout na uzel, který právě kreslí `Materialize`, a účet za něj by
+      // se ztratil, protože `revise()` vrací číslo, ne `DisposalTally`.
       return entry.revision;
     },
 

@@ -33,19 +33,26 @@
  * cesta (`T21b`) — je jeho věc.
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
 import { BoxGeometry, BufferAttribute, BufferGeometry, Group, Mesh, type Object3D } from 'three';
 
 import { PALETTES, type Palette } from '@/kit';
 import type { MeshResult } from '@/shape/mesh-client';
 import type { AnchorSpec, Vec3 } from '@/shape/types';
+import { admitMesh, type DetailLevel } from '@/worldstream/mesh-gate';
 import type { ProxyRung, ProxySlot, ProxyWorld } from '@/worldstream/proxy';
 import { boundsExtent, type SlotTransform } from '@/worldstream/slots';
 
 import { clayMaterial } from './ClayMaterial';
+import Materialize, { createRevealPlan, type RevealPlan } from './Materialize';
 import { RepresentationSlots } from './RepresentationSlot';
-import { createRepresentationRegistry, slotGroupName, type SlotView } from './representation';
+import {
+  createRepresentationRegistry,
+  slotGroupName,
+  type RepresentationRegistry,
+  type SlotView,
+} from './representation';
 import { buildPlacementGroup } from './scenery';
 
 /** Jméno skupiny kulisy. Sonda i testy ji hledají podle něj, ne podle pořadí. */
@@ -54,6 +61,17 @@ export const SCENERY_NAME = 'worldstream:scenery';
 /** Jméno podoby uvnitř slotu. Předpona je společná, ať přišla z kterékoli příčky. */
 export function formName(stableId: string): string {
   return `form:${stableId}`;
+}
+
+/**
+ * Jméno kandidáta, který se právě odhaluje.
+ *
+ * **Jiné než `formName()` schválně.** Během odhalení stojí v jednom obalu obě
+ * podoby (§13.3) a otázka „je jich tam víc, než má být?" se dá položit jedině
+ * tehdy, když se ta dvojice dá od sebe rozeznat po jménu.
+ */
+export function detailName(stableId: string): string {
+  return `detail:${stableId}`;
 }
 
 /* ------------------------------------------------------------------ *
@@ -171,8 +189,27 @@ export interface StageSlotProbe {
    * snímku správně. Kdo obchází registry, se pozná právě tady.
    */
   readonly forms: { readonly total: number; readonly inGroup: number };
+  /**
+   * Totéž pro kandidáta vyššího detailu. **Během odhalení musí být `1` spolu
+   * s `forms`** — §13.3 chce, aby hrubá podoba pod kandidátem zůstala; po
+   * commitu je hrubá pryč a zbude sám.
+   */
+  readonly details: { readonly total: number; readonly inGroup: number };
   /** Má slot připojenou podobu? Nekreslená hlína ji nemá, a je to legitimní. */
   readonly attached: boolean;
+  /** Čeká na tomhle slotu kandidát na odhalení? */
+  readonly staged: boolean;
+  /** Hash připojené podoby. Po commitu je to hash kandidáta, ne hrubé podoby. */
+  readonly contentHash: string | null;
+  /**
+   * Proč se detail nepřipojil — kód brány nebo registry, nikdy volný text.
+   * `null` znamená „nic se nepokazilo", ne „nic se nezkoušelo".
+   */
+  readonly failure: string | null;
+  /**
+   * Kolik trojúhelníků obal doopravdy kreslí — **čteno ze scény**, ne z účtu
+   * pořízeného při stavbě. Během odhalení je to součet obou podob.
+   */
   readonly triangles: number;
   readonly transform: SlotTransform;
   readonly anchors: readonly AnchorSpec[];
@@ -200,11 +237,35 @@ export interface StageSceneryProbe {
   readonly slotNodes: number;
 }
 
+/** Co se právě odhaluje. `null` je stav, ve kterém scéna tráví většinu času. */
+export interface StageRevealProbe {
+  readonly stableId: string;
+  readonly reducedMotion: boolean;
+  readonly durationMs: number;
+}
+
 export interface StageProbe {
   /** Postavila se scéna z hrubého světa? Do té doby jsou ostatní odpovědi prázdné. */
   ready: () => boolean;
   slots: () => readonly StageSlotProbe[];
   scenery: () => StageSceneryProbe;
+  /** Běžící odhalení, nebo `null`. */
+  reveal: () => StageRevealProbe | null;
+  /**
+   * Rozvrh **posledního** odhalení, i když už doběhlo.
+   *
+   * Bez toho se tlumený pohyb nedá doložit: při `reduce` je odhalení hotové
+   * v prvním snímku, takže okno, ve kterém `reveal()` něco vrací, nemusí
+   * nastat vůbec — a ptát se na něj by byl závod, ne měření.
+   */
+  lastReveal: () => StageRevealProbe | null;
+  /**
+   * Kde stojí kamera. Materializace s ní nesmí hnout — detail se má objevit
+   * tam, kam se porotce zrovna dívá, ne po přeletu, který mu vezme orientaci.
+   */
+  camera: () => Vec3;
+  /** Kolik odhalení se uzavřelo commitem. Roste jen po úspěchu. */
+  commits: () => number;
   /** Kolik snímků plátno vykreslilo. Bez toho se nepozná, že scéna došla na GPU. */
   frames: () => number;
 }
@@ -220,6 +281,13 @@ declare global {
  * ------------------------------------------------------------------ */
 
 interface StageBuild {
+  /**
+   * Registry, ne jen jeho snímek. Sonda i odhalení se ptají **živě**: `SlotView`
+   * je hodnota pořízená v okamžiku stavby, takže po `stage()` a `commit()` už
+   * o připojené podobě lhala.
+   */
+  readonly registry: RepresentationRegistry;
+  /** Snímek pro vykreslení. Obaly se nemění, mění se jen jejich obsah. */
   readonly views: readonly SlotView[];
   readonly rungs: ReadonlyMap<string, ProxyRung>;
   readonly triangles: ReadonlyMap<string, number>;
@@ -231,19 +299,27 @@ interface StageBuild {
   readonly dispose: () => void;
 }
 
-const EMPTY_BUILD: StageBuild = {
-  views: [],
-  rungs: new Map(),
-  triangles: new Map(),
-  slots: [],
-  scenery: null,
-  sceneryCost: { present: false, triangles: 0, drawCalls: 0 },
-  socketWorld: () => null,
-  dispose: () => {},
-};
+/**
+ * Stavba odmítnutého světa (§27 příčka 6). **Funkce, ne sdílená konstanta:**
+ * nese registry, a jedno sdílené registry napříč připojeními komponenty by
+ * znamenalo, že dvě plátna píšou do jednoho vlastníka slotů.
+ */
+function emptyBuild(): StageBuild {
+  return {
+    registry: createRepresentationRegistry(),
+    views: [],
+    rungs: new Map(),
+    triangles: new Map(),
+    slots: [],
+    scenery: null,
+    sceneryCost: { present: false, triangles: 0, drawCalls: 0 },
+    socketWorld: () => null,
+    dispose: () => {},
+  };
+}
 
 function buildStage(world: ProxyWorld, palette: Palette): StageBuild {
-  if (world.kind !== 'built') return EMPTY_BUILD;
+  if (world.kind !== 'built') return emptyBuild();
 
   const registry = createRepresentationRegistry();
   const rungs = new Map<string, ProxyRung>();
@@ -275,6 +351,7 @@ function buildStage(world: ProxyWorld, palette: Palette): StageBuild {
   }
 
   return {
+    registry,
     views: registry.slots,
     rungs,
     triangles,
@@ -294,6 +371,28 @@ function buildStage(world: ProxyWorld, palette: Palette): StageBuild {
  * Komponenta.
  * ------------------------------------------------------------------ */
 
+/**
+ * Vyšší detail pro jeden slot, hotový mesh.
+ *
+ * Nese `contentHash` **od volajícího**, ne spočítaný tady: hash se skládá
+ * z programu a rozlišení (`shapeContentHash()`), a program má ten, kdo mesh
+ * objednal. Kdyby si ho stage počítala z výsledku, nebyl by to otisk zadání,
+ * ale otisk toho, co z něj vylezlo — a kontrolní přečtení §13.3 by pak
+ * porovnávalo mesh sám se sebou.
+ */
+export interface DetailUpgrade {
+  readonly stableId: string;
+  readonly contentHash: string;
+  readonly level: DetailLevel;
+  readonly mesh: MeshResult;
+}
+
+interface Reveal {
+  readonly stableId: string;
+  readonly object: Object3D;
+  readonly plan: RevealPlan;
+}
+
 export interface WorldstreamStageProps {
   readonly world: ProxyWorld;
   /**
@@ -305,21 +404,112 @@ export interface WorldstreamStageProps {
    * do materiálu, protože ji jde vyměnit na jednom místě.
    */
   readonly palette?: Palette;
+  /**
+   * Detail, který má nahradit hrubou podobu jednoho slotu.
+   *
+   * Je to **prop, ne callback**, aby zdroj detailu zůstal venku: dneska ho
+   * vyrábí dev harness ze svého meshovače, po `T21b` poteče ze SSE proudu
+   * relace. Stage se v obou případech chová stejně — projde branou, připojí
+   * neviditelně, odhalí, commitne.
+   */
+  readonly upgrade?: DetailUpgrade | null;
 }
 
 export default function WorldstreamStage({
   world,
   palette = PALETTES.harbor,
+  upgrade = null,
 }: WorldstreamStageProps): React.ReactElement {
   const build = useMemo(() => buildStage(world, palette), [world, palette]);
   const frames = useRef(0);
+  const commits = useRef(0);
+  const failures = useRef(new Map<string, string>());
+  /**
+   * Slot, jehož odhalení běží a ještě se neuzavřelo. Jedna hodnota, kterou vidí
+   * i `finishReveal` — bez ní by se commit dal spustit dvakrát, viz tam.
+   */
+  const pending = useRef<string | null>(null);
+  const lastReveal = useRef<StageRevealProbe | null>(null);
   const [root, setRoot] = useState<Object3D | null>(null);
+  const [reveal, setReveal] = useState<Reveal | null>(null);
+  const camera = useThree((state) => state.camera);
 
   useEffect(() => build.dispose, [build]);
 
   useFrame(() => {
     frames.current += 1;
   });
+
+  useEffect(() => {
+    if (upgrade === null) return;
+
+    const entry = build.slots.find((candidate) => candidate.slot.stableId === upgrade.stableId);
+    const view = build.registry.view(upgrade.stableId);
+    if (entry === undefined || view === null) {
+      failures.current.set(upgrade.stableId, 'UNKNOWN_SLOT');
+      return;
+    }
+
+    // **Brána první, uzel až potom.** Kdyby se mesh nejdřív zabalil do `Mesh`
+    // a teprve pak soudil, drží odmítnutý artefakt geometrii na GPU po celou
+    // dobu, než ho někdo odloží — a odmítnutých je na failure cestách většina.
+    const verdict = admitMesh(upgrade.mesh, {
+      bounds: entry.slot.localBounds,
+      level: upgrade.level,
+    });
+    if (!verdict.ok) {
+      failures.current.set(upgrade.stableId, verdict.rejection);
+      return;
+    }
+
+    const geometry = geometryFromMesh(upgrade.mesh);
+    const material = clayMaterial();
+    const detail = new Mesh(geometry, material);
+    detail.name = detailName(upgrade.stableId);
+    detail.castShadow = true;
+    detail.receiveShadow = true;
+
+    // Odmítnutého kandidáta odloží `stage()` sama, na každé ze svých cest.
+    const staged = build.registry.stage({
+      stableId: upgrade.stableId,
+      revision: view.revision,
+      contentHash: upgrade.contentHash,
+      bounds: verdict.bounds,
+      object: detail,
+    });
+    if (!staged.ok) {
+      failures.current.set(upgrade.stableId, staged.refusal);
+      return;
+    }
+
+    failures.current.delete(upgrade.stableId);
+    pending.current = upgrade.stableId;
+    const plan = createRevealPlan();
+    lastReveal.current = {
+      stableId: upgrade.stableId,
+      reducedMotion: plan.reducedMotion,
+      durationMs: plan.durationMs,
+    };
+    setReveal({ stableId: upgrade.stableId, object: detail, plan });
+  }, [upgrade, build]);
+
+  /**
+   * §13.3 bod 6. **Nezavírá se přes updater `setReveal`**, protože commit je
+   * vedlejší účinek a React updater může proběhnout dvakrát (StrictMode) —
+   * druhý commit by na tomtéž slotu nenašel kandidáta a zapsal by `failure`
+   * o vadě, která se nestala. Rozhoduje `pending`, tedy jedna hodnota, kterou
+   * vidí obě strany.
+   */
+  const finishReveal = useCallback(() => {
+    const stableId = pending.current;
+    if (stableId === null) return;
+    pending.current = null;
+
+    const outcome = build.registry.commit(stableId);
+    if (outcome.ok) commits.current += 1;
+    else failures.current.set(stableId, outcome.refusal);
+    setReveal(null);
+  }, [build]);
 
   useEffect(() => {
     /**
@@ -335,6 +525,31 @@ export default function WorldstreamStage({
         if (object.name === name) found += 1;
       });
       return found;
+    };
+
+    /**
+     * Kolik trojúhelníků ten podstrom doopravdy kreslí.
+     *
+     * **Čte se ze scény, ne z účtu pořízeného při stavbě** — a je to oprava
+     * naměřené vady: dokud se hlásilo číslo ze stavby, hlásil slot po výměně
+     * podoby pořád počet **hrubé** podoby, takže `e2e` na jemnější mřížku
+     * viděla stejné číslo a nemohla poznat, jestli se vyměnilo cokoli.
+     *
+     * Během odhalení je to součet obou podob a je to správně: v tu chvíli se
+     * obě opravdu kreslí.
+     */
+    const trianglesUnder = (under: Object3D | null): number => {
+      let total = 0;
+      under?.traverse((object) => {
+        const geometry = (object as { geometry?: BufferGeometry }).geometry;
+        if (geometry === undefined) return;
+        const count = geometry.index?.count ?? geometry.getAttribute('position')?.count ?? 0;
+        const instances = (object as { isInstancedMesh?: boolean; count?: number }).isInstancedMesh
+          ? ((object as { count?: number }).count ?? 1)
+          : 1;
+        total += (count / 3) * instances;
+      });
+      return total;
     };
 
     const groupNamed = (name: string): Object3D | null => {
@@ -364,21 +579,37 @@ export default function WorldstreamStage({
         });
         return { ...build.sceneryCost, groups: count(SCENERY_NAME, root), slotNodes };
       },
+      reveal: () =>
+        reveal === null
+          ? null
+          : {
+              stableId: reveal.stableId,
+              reducedMotion: reveal.plan.reducedMotion,
+              durationMs: reveal.plan.durationMs,
+            },
+      lastReveal: () => lastReveal.current,
+      commits: () => commits.current,
+      camera: () => [camera.position.x, camera.position.y, camera.position.z],
       slots: () =>
         build.slots.map((entry) => {
           const { stableId, transform, anchors } = entry.slot;
-          const view = build.views.find((candidate) => candidate.stableId === stableId);
+          // **Živě z registry, ne ze snímku `views`.** Ten se pořídil při
+          // stavbě a o `stage()` ani `commit()` nikdy neuslyší.
+          const view = build.registry.view(stableId);
           const form = formName(stableId);
+          const detail = detailName(stableId);
+          const group = groupNamed(slotGroupName(stableId));
           return {
             stableId,
             rung: build.rungs.get(stableId)!,
             groups: count(slotGroupName(stableId), root),
-            forms: {
-              total: count(form, root),
-              inGroup: count(form, groupNamed(slotGroupName(stableId))),
-            },
+            forms: { total: count(form, root), inGroup: count(form, group) },
+            details: { total: count(detail, root), inGroup: count(detail, group) },
+            staged: view?.staged != null,
+            contentHash: view?.contentHash ?? null,
+            failure: failures.current.get(stableId) ?? null,
             attached: view?.attached != null,
-            triangles: build.triangles.get(stableId) ?? 0,
+            triangles: trianglesUnder(group),
             transform,
             anchors,
             // Kotva slotu je socket obalu, takže `socketWorld` ho vždycky najde
@@ -393,12 +624,18 @@ export default function WorldstreamStage({
     return () => {
       delete window.__worldstreamStage;
     };
-  }, [build, root]);
+  }, [build, root, reveal, camera]);
 
   return (
     <group ref={setRoot} name="worldstream:stage">
       <RepresentationSlots views={build.views} />
       {build.scenery !== null && <primitive object={build.scenery} />}
+      {reveal !== null && (
+        // Odhalení je vždycky nejvýš jedno, takže `key` tu nic neřeší a není
+        // tu. Naběhlý čas nuluje `Materialize` sám, na změně `object` a `plan`
+        // — a ty jsou u druhého odhalení téhož slotu nové objekty.
+        <Materialize object={reveal.object} plan={reveal.plan} onDone={finishReveal} />
+      )}
     </group>
   );
 }

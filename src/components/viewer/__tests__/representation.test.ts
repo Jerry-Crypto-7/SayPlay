@@ -330,3 +330,159 @@ describe('jediné dveře', () => {
     expect(view.group).toBeInstanceOf(Object3D);
   });
 });
+
+/* ------------------------------------------------------------------ *
+ * Dvoufázové připojení — §13.3.
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Odhalení má okno, ve kterém stojí na scéně obě podoby.** To je jediné, čím
+ * se `stage()` liší od `offer()`, a taky jediný důvod, proč obě existují:
+ * atomická výměna nemá kam vložit crossfade, a crossfade nemá jak splnit
+ * „stará podoba odešla právě jednou", dokud běží.
+ *
+ * Sada proto soudí **konce**, ne průběh. Průběh (krytí v čase) je práce
+ * `Materialize` a ta se měří jinde.
+ */
+describe('stage / commit / abandon', () => {
+  it('kandidát se připojí neviditelný a hrubá podoba pod ním zůstane', () => {
+    const registry = createRepresentationRegistry();
+    const rough = shape('clay');
+    registry.open(slotOf(), rough);
+
+    const detail = shape('detail');
+    const outcome = registry.stage(candidate({ object: detail, contentHash: 'hash-b' }));
+
+    expect(outcome.ok).toBe(true);
+    expect(detail.visible).toBe(false);
+    expect(detail.parent).toBe(registry.view('hero')!.group);
+    // Připojená podoba je pořád ta hrubá — commit ještě nebyl.
+    expect(registry.view('hero')!.attached).toBe(rough);
+    expect(registry.view('hero')!.staged).toBe(detail);
+    expect(registry.view('hero')!.contentHash).toBeNull();
+  });
+
+  it('commit vymění podobu, zviditelní kandidáta a starou odloží právě jednou', () => {
+    const registry = createRepresentationRegistry();
+    const rough = shape('clay');
+    registry.open(slotOf(), rough);
+    const detail = shape('detail');
+    registry.stage(candidate({ object: detail, contentHash: 'hash-b' }));
+
+    const outcome = registry.commit('hero');
+
+    expect(outcome.ok).toBe(true);
+    expect(detail.visible).toBe(true);
+    expect(registry.view('hero')!.attached).toBe(detail);
+    expect(registry.view('hero')!.staged).toBeNull();
+    expect(registry.view('hero')!.contentHash).toBe('hash-b');
+    expect(outcome.ok && outcome.deferred).toEqual({ geometries: 1, materials: 1, textures: 0 });
+    expect(rough.parent).toBeNull();
+  });
+
+  it('abandon nechá hrubou podobu stát a odloží jen kandidáta (§13.3 bod 7)', () => {
+    const registry = createRepresentationRegistry();
+    const rough = shape('clay');
+    registry.open(slotOf(), rough);
+    const detail = shape('detail');
+    registry.stage(candidate({ object: detail }));
+
+    const tally = registry.abandon('hero');
+
+    expect(tally).toEqual({ geometries: 1, materials: 1, textures: 0 });
+    expect(registry.view('hero')!.attached).toBe(rough);
+    expect(registry.view('hero')!.staged).toBeNull();
+    expect(rough.parent).toBe(registry.view('hero')!.group);
+    expect(detail.parent).toBeNull();
+  });
+
+  it('abandon nad slotem bez rozdělaného odhalení neodloží nic', () => {
+    const registry = createRepresentationRegistry();
+    registry.open(slotOf(), shape('clay'));
+    expect(registry.abandon('hero')).toEqual({ geometries: 0, materials: 0, textures: 0 });
+    expect(registry.abandon('nobody')).toEqual({ geometries: 0, materials: 0, textures: 0 });
+  });
+
+  it('commit bez kandidáta se pozná od commitu na cizí slot', () => {
+    const registry = createRepresentationRegistry();
+    registry.open(slotOf(), shape('clay'));
+
+    const empty = registry.commit('hero');
+    const alien = registry.commit('nobody');
+
+    expect(empty.ok === false && empty.refusal).toBe('NOTHING_STAGED');
+    expect(alien.ok === false && alien.refusal).toBe('UNKNOWN_SLOT');
+  });
+
+  it('revize zvednutá během odhalení kandidáta nepřipojí, hlína zůstane', () => {
+    const registry = createRepresentationRegistry();
+    const rough = shape('clay');
+    registry.open(slotOf(), rough);
+    const detail = shape('detail');
+    registry.stage(candidate({ object: detail, contentHash: 'hash-b' }));
+
+    // Druhá věta ten objekt mezitím odvolala.
+    registry.revise('hero');
+    const outcome = registry.commit('hero');
+
+    expect(outcome.ok === false && outcome.refusal).toBe('STALE_REVISION');
+    expect(outcome.deferred).toEqual({ geometries: 1, materials: 1, textures: 0 });
+    expect(registry.view('hero')!.attached).toBe(rough);
+    expect(registry.view('hero')!.contentHash).toBeNull();
+    expect(detail.parent).toBeNull();
+  });
+
+  it('stage prochází týmiž branami jako offer — zastaralá revize i špatný kvádr', () => {
+    const registry = createRepresentationRegistry();
+    registry.open(slotOf(), shape('clay'));
+
+    const stale = registry.stage(candidate({ revision: 7 }));
+    expect(stale.ok === false && stale.refusal).toBe('STALE_REVISION');
+
+    const huge: Bounds3 = {
+      min: LOCAL.min,
+      max: [LOCAL.max[0] * SLOT_FIT_TOLERANCE * 4, LOCAL.max[1], LOCAL.max[2]],
+    };
+    const misfit = registry.stage(candidate({ bounds: huge }));
+    expect(misfit.ok === false && misfit.refusal).toBe('BOUNDS_MISMATCH');
+
+    const alien = registry.stage(candidate({ stableId: 'nobody' }));
+    expect(alien.ok === false && alien.refusal).toBe('UNKNOWN_SLOT');
+
+    // Ani jeden odmítnutý kandidát na scéně nezůstal a odhalení nezačalo.
+    expect(registry.view('hero')!.staged).toBeNull();
+    expect(registry.view('hero')!.group.children.filter((c) => c.name === 'candidate')).toHaveLength(0);
+  });
+
+  it('druhý kandidát vytlačí prvního a ten se odloží právě jednou', () => {
+    const registry = createRepresentationRegistry();
+    registry.open(slotOf(), shape('clay'));
+    const first = shape('detail-a');
+    const second = shape('detail-b');
+
+    registry.stage(candidate({ object: first }));
+    const outcome = registry.stage(candidate({ object: second }));
+
+    expect(outcome.ok && outcome.deferred).toEqual({ geometries: 1, materials: 1, textures: 0 });
+    expect(registry.view('hero')!.staged).toBe(second);
+    expect(first.parent).toBeNull();
+  });
+
+  it('atomická výměna rozdělané odhalení přebije a odloží obojí', () => {
+    const registry = createRepresentationRegistry();
+    const rough = shape('clay');
+    registry.open(slotOf(), rough);
+    const staged = shape('detail');
+    registry.stage(candidate({ object: staged }));
+
+    const outcome = registry.offer(candidate({ object: shape('winner'), contentHash: 'hash-c' }));
+
+    // Dva odložené uzly, každý s vlastní geometrií a materiálem — účty se
+    // sčítají, protože odešly oba.
+    expect(outcome.ok && outcome.deferred).toEqual({ geometries: 2, materials: 2, textures: 0 });
+    expect(registry.view('hero')!.staged).toBeNull();
+    expect(registry.view('hero')!.contentHash).toBe('hash-c');
+    expect(rough.parent).toBeNull();
+    expect(staged.parent).toBeNull();
+  });
+});
