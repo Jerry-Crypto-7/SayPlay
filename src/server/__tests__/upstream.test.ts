@@ -589,6 +589,52 @@ describe('3. neznámá cena se neúčtuje nulou', () => {
     // Výslovná nula je rozhodnutí operátora a respektuje se.
     expect(upstreamConfigFromEnv({ ...LIVE_ENV, WORLDSMITH_USD_PER_MTOK_IN: '0' })?.pricing.usdPerMTokIn).toBe(0);
   });
+
+  /**
+   * **Podtečení plovoucí čárkou — `> 0` na ceně samotné nestačí** (P15 T29).
+   *
+   * `5e-324` je konečné i kladné, takže starou podmínkou prošlo, jenže
+   * `(8000 × 5e-324) / 1e6` je **přesně nula**: nejhorší případ vyjde nula,
+   * `reserve(0)` projde i při stropu nula a volání se ani nezapočítá, protože
+   * počítadlo roste jen nad kladnou rezervací. Strop je pak dekorace úplně
+   * stejně jako při chybějící ceně — a to je nález, kvůli kterému ten řádek
+   * o pár set znaků výš vůbec vznikl.
+   */
+  it('cena tak malá, že nejhorší případ podteče na nulu, větev nepustí', () => {
+    const underflowing = { ...LIVE_ENV, WORLDSMITH_USD_PER_MTOK_OUT: '5e-324' };
+    // Nejdřív ať je vidět, že stará podmínka by ji propustila.
+    expect(Number.isFinite(5e-324) && 5e-324 > 0, 'fixtura přestala být podtékající').toBe(true);
+    expect((8000 * 5e-324) / 1_000_000, 'fixtura přestala podtékat na nulu').toBe(0);
+
+    expect(upstreamConfigFromEnv(underflowing)).toBeNull();
+  });
+
+  it('cena těsně nad podtečením projde — mez není na ceně, ale na součinu', () => {
+    // `1e-300` je pořád nesmyslně malé číslo, ale `(8000 × 1e-300) / 1e6`
+    // kladné vyjde, takže strop nad ním doopravdy drží a odmítat se nemá.
+    // Bez tohohle testu by šlo tu mez utáhnout na libovolnou hodnotu a nikdo
+    // by se nedozvěděl, že se vypnula i konfigurace, která funguje.
+    const tiny = upstreamConfigFromEnv({ ...LIVE_ENV, WORLDSMITH_USD_PER_MTOK_OUT: '1e-300' });
+    expect(tiny).not.toBeNull();
+    expect((tiny!.maxOutputTokens * tiny!.pricing.usdPerMTokOut) / 1_000_000).toBeGreaterThan(0);
+  });
+
+  it('podteče i tehdy, když ji na nulu srazí až malý strop výstupu', () => {
+    // Součin, ne cena: tatáž cena projde s výchozím stropem tokenů a neprojde
+    // s jedním tokenem. Kdyby se soudila jen cena, tenhle případ propadne.
+    const price = '1e-320';
+    expect(
+      upstreamConfigFromEnv({ ...LIVE_ENV, WORLDSMITH_USD_PER_MTOK_OUT: price }),
+      'fixtura neprochází ani s výchozím stropem tokenů',
+    ).not.toBeNull();
+    expect(
+      upstreamConfigFromEnv({
+        ...LIVE_ENV,
+        WORLDSMITH_USD_PER_MTOK_OUT: price,
+        WORLDSMITH_MAX_OUTPUT_TOKENS: '1',
+      }),
+    ).toBeNull();
+  });
 });
 
 describe('4. při vypnutém přepínači neodejde žádný požadavek', () => {

@@ -213,6 +213,20 @@ export function upstreamConfigFromEnv(env: Record<string, string | undefined>): 
   const usdPerMTokOut = Number(env.WORLDSMITH_USD_PER_MTOK_OUT);
   if (!Number.isFinite(usdPerMTokOut) || usdPerMTokOut <= 0) return null;
 
+  const maxOutputTokens = positiveNumber(env.WORLDSMITH_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS);
+  // **`> 0` na ceně samotné nestačí — podtečení plovoucí čárkou** (P15 T29).
+  // `5e-324` je konečné i kladné, takže podmínkou nad tímhle řádkem projde,
+  // ale `(8000 × 5e-324) / 1e6` je **přesně nula**. Nejhorší případ pak vyjde
+  // nula, `reserve(0)` projde i při stropu nula a volání se ani nezapočítá
+  // (počítá se jen `worstCaseUsd > 0`, viz `spend-cap.ts`) — strop je zpátky
+  // dekorace, přesně jako při chybějící ceně.
+  //
+  // Soudí se **součin**, ne cena: podtečení je vlastnost té dělenky, ne
+  // jednoho čísla, takže jakákoli mez na ceně samotné by byla hádání.
+  // A odmítá se tady, při stavbě větve, ne v `reserve()`: nekonfigurace má
+  // vypnout živou větev, ne vyrábět odmítnutí na každém požadavku.
+  if ((maxOutputTokens * usdPerMTokOut) / 1_000_000 <= 0) return null;
+
   return {
     endpoint,
     apiKey,
@@ -227,7 +241,7 @@ export function upstreamConfigFromEnv(env: Record<string, string | undefined>): 
       // Ověřená výš, tady se jen dosazuje — jiná cesta sem hodnotu nepustí.
       usdPerMTokOut,
     },
-    maxOutputTokens: positiveNumber(env.WORLDSMITH_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS),
+    maxOutputTokens,
     timeoutMs: positiveNumber(env.WORLDSMITH_UPSTREAM_TIMEOUT_MS, DEFAULT_TIMEOUT_MS),
   };
 }
