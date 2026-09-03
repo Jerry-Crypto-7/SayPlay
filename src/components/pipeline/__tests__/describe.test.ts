@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
+import type { EmissionSource } from '@/model/source';
+
 import { describeEmission, diffPrograms, type ProgramLine } from '../describe';
 
 /**
@@ -162,8 +164,32 @@ describe('describeEmission — věty, ne dokument', () => {
 
 describe('describeEmission — vstup zvenčí se nepředpokládá', () => {
   it('emise bez sim řekne, co se stalo, a nespadne', () => {
-    expect(text(describeEmission({ look: {} }))).toBe('The model wrote no world for this sentence.');
-    expect(text(describeEmission(null))).toBe('The model wrote no world for this sentence.');
+    // Bez známého původce se nejmenuje nikdo: „ještě žádná věta nepadla" není
+    // odmítnutí modelu.
+    expect(text(describeEmission({ look: {} }))).toBe('No world was written for this sentence.');
+    expect(text(describeEmission(null))).toBe('No world was written for this sentence.');
+  });
+
+  it('prázdnou emisi přizná původce, který ji doopravdy vyrobil', () => {
+    // **Vada, kterou tenhle test zavírá (P15 T36).** Panel tvrdil „The model
+    // wrote no world" všem čtyřem cestám, a u tří z nich žádný model neběžel:
+    // rozpoznávač je regulární výrazy, zmrazený korpus je soubor a zaručená
+    // místnost je konstanta. Nepravdivá věta se v Inspect zásuvce čte úplně
+    // stejně dobře jako pravdivá, takže tohle je jediná věc, která ji odhalí.
+    const written = (source: EmissionSource): string => text(describeEmission(null, source));
+
+    expect(written('model')).toBe('The browser model wrote no world for this sentence.');
+    expect(written('recognizer')).toBe('The recognizer wrote no world for this sentence.');
+    expect(written('frozen')).toBe('The frozen corpus wrote no world for this sentence.');
+    expect(written('substitute')).toBe('The substitute room wrote no world for this sentence.');
+
+    // Tvrzení o modelu smí ze zdroje panelu vyjít **jen** pro `source: 'model'`.
+    // Lexikálně, protože příští úprava textu tenhle slib nesmí obejít tím, že
+    // si napíše vlastní větu vedle.
+    const source = readFileSync('src/components/pipeline/describe.ts', 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    expect(source).not.toMatch(/The model wrote/);
   });
 
   it('rozbité typy nespadnou a chybějící kus se přizná', () => {
