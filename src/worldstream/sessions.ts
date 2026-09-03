@@ -67,24 +67,91 @@ export interface StoredSession {
 const live = new Map<string, StoredSession>();
 
 /**
- * Vyhodí nejstarší **dokončenou** relaci, dokud se registr nevejde do stropu.
+ * Jak dlouho smí relace stát bez jediného nového rámce, než ji registr pustí.
+ *
+ * **Bez téhle meze strop `MAX_LIVE_SESSIONS` nedrží nic** — nález nezávislé
+ * revize 2. 9. 2026. `evict()` uměl uvolnit jen fáze `complete` a `failed`,
+ * jenže úspěšná generace končí ve fázi `world` a `session.complete` dnes
+ * neemituje nikdo. Jediná relace, kterou registr uměl uvolnit, byla ta
+ * **neúspěšná**, takže na nasazení, kde relace začnou uspívat, roste mapa bez
+ * konce. V dnešní sadě to nevidět: bez `.env` skončí každá relace `failed`
+ * a uklidí se.
+ *
+ * ⚠ **Řešení je stárnutí, ne přejmenování fáze.** Relace ve `world` je právem
+ * otevřená: prohlížeč teprve mele tvary a hlásí je zpátky (T18), takže proud
+ * musí zůstat živý a `session.complete` patří až za poslední tvar.
+ *
+ * Hodina je řádově víc, než trvá nejpomalejší meshing, a řádově míň, než jak
+ * dlouho by kdokoli nechal otevřené okno, do kterého se dívá.
+ */
+export const IDLE_SESSION_MS = 60 * 60 * 1000;
+
+/**
+ * Kdy naposledy se relaci pohnul proud — **vlastní čtení registru**, ne značka
+ * v logu.
+ *
+ * Log rámce časem razítkuje (`at`), ale to razítko je podle `events.ts`
+ * výslovně observační a nesmí nic řídit. Registr si proto vede vlastní
+ * záznam: číslo posledního rámce a čas, kdy ho poprvé viděl stát. Pohnulo-li
+ * se číslo, relace žije; nepohnulo-li se hodinu, je to okno, které někdo
+ * zavřel, aniž by to kdo řekl.
+ */
+interface IdleWatch {
+  readonly sequence: number;
+  readonly since: number;
+}
+
+const watched = new Map<string, IdleWatch>();
+
+function release(sessionId: string): void {
+  live.delete(sessionId);
+  // Previewy druhé věty visí na `StoredSession`, takže odcházejí s ní
+  // (T22-previewleak). Zůstat tu smí jen to, co registr sám založil.
+  watched.delete(sessionId);
+}
+
+/** Stojí ta relace tak dlouho, že už se na ni nikdo nedívá? */
+function idleFor(sessionId: string, stored: StoredSession, now: number): boolean {
+  const { sequence } = stored.session.events;
+  const seen = watched.get(sessionId);
+  if (seen === undefined || seen.sequence !== sequence) {
+    watched.set(sessionId, { sequence, since: now });
+    return false;
+  }
+  return now - seen.since >= IDLE_SESSION_MS;
+}
+
+/**
+ * Uvolní, co registr držet nemá: nejdřív relace, které stojí, pak nejstarší
+ * **dokončené**, dokud se registr nevejde do stropu.
  *
  * Pořadí `Map` je pořadí vložení, takže nejstarší je první. Běžící relace se
  * nevyhazuje ani tehdy, když je nejstarší: vyhodit ji znamená utnout proud
  * někomu, kdo se právě dívá, a to je horší než o jednu relaci nad strop.
+ * **Stárnutí je proto na pohybu proudu, ne na fázi** — relace, které rámce
+ * pořád přibývají, se nedotkne bez ohledu na to, jak dlouho běží.
+ *
+ * Zametá se při zakládání nové relace, tedy tehdy, když registr roste. Když
+ * nikdo nezakládá, nic neroste a není co zametat.
  */
-function evict(): void {
+function evict(now: number): void {
+  for (const [id, stored] of live) if (idleFor(id, stored, now)) release(id);
+
   if (live.size <= MAX_LIVE_SESSIONS) return;
   for (const [id, stored] of live) {
     if (live.size <= MAX_LIVE_SESSIONS) return;
     const phase = stored.session.phase;
-    if (phase === 'complete' || phase === 'failed') live.delete(id);
+    if (phase === 'complete' || phase === 'failed') release(id);
   }
 }
 
-export function putSession(stored: StoredSession): void {
+/**
+ * `now` je vstřícnost k testům: hodinu nejde odčekat a `Date.now()` se posunout
+ * nedá. Provoz ho nepředává.
+ */
+export function putSession(stored: StoredSession, now: number = Date.now()): void {
   live.set(stored.session.sessionId, stored);
-  evict();
+  evict(now);
 }
 
 export function getSession(sessionId: string): StoredSession | null {
@@ -94,10 +161,23 @@ export function getSession(sessionId: string): StoredSession | null {
 /** Jen pro testy: registr je proces-globální a testy se jinak ovlivňují. */
 export function clearSessions(): void {
   live.clear();
+  watched.clear();
 }
 
 export function liveSessionCount(): number {
   return live.size;
+}
+
+/**
+ * Kolik relací registr **hlídá na stárnutí**. Jen pro testy.
+ *
+ * Existuje proto, že `watched` je druhá mapa vedle `live` a druhá mapa je druhé
+ * místo, kde může vzniknout přesně ten únik, který `T16-evictworld` zavírá —
+ * jen o patro níž a bez jediného viditelného následku. Mutační kontrola
+ * 3. 9. 2026 to potvrdila: vynechaný úklid `watched` nezabil ani jeden test.
+ */
+export function watchedSessionCount(): number {
+  return watched.size;
 }
 
 /**
@@ -271,7 +351,11 @@ export function newSessionSeed(random: () => number = Math.random): number {
   return Math.floor(random() * 2_147_483_647);
 }
 
-export function openSession(sessionId: string, sessionSeed: number): StoredSession {
+export function openSession(
+  sessionId: string,
+  sessionSeed: number,
+  now: number = Date.now(),
+): StoredSession {
   const stored: StoredSession = {
     session: createSession({ sessionId, sessionSeed }),
     blueprint: null,
@@ -279,6 +363,6 @@ export function openSession(sessionId: string, sessionSeed: number): StoredSessi
     sharedWorld: null,
     changes: new Map(),
   };
-  putSession(stored);
+  putSession(stored, now);
   return stored;
 }
