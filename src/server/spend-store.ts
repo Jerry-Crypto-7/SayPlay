@@ -165,6 +165,46 @@ export function httpLedger(config: HttpLedgerConfig, fetchImpl: typeof fetch = f
   };
 }
 
+/** Základ, pod kterým účtuje produkce. Preview si k němu přilepí svoje. */
+const BASE_PREFIX = 'worldsmith:spend';
+
+/**
+ * Předpona klíčů účetní knihy — **výslovná, jinak odvozená z prostředí**.
+ *
+ * ⚠ **Pevný řetězec tuhle práci nedělá.** Proměnné prostředí se na Vercelu mezi
+ * prostředími běžně sdílejí a `VERCEL` je nastavené i na preview, takže push
+ * feature branche vyrobí nasazení, které účtuje do **téhož klíče** jako
+ * produkční demo — a vyčerpá rozpočet, na kterém stojí odevzdání. Zaplatí to
+ * produkce a v logu to vypadá jako jedno velmi činorodé nasazení.
+ *
+ * **Produkce si nechává holý základ**, aby se kniha nepřejmenovala pod běžícím
+ * nasazením; odděluje se všechno ostatní. `VERCEL_ENV` chybí i mimo Vercel —
+ * tam vyjde tentýž holý základ, což je správně pro jediné nasazení a **málo pro
+ * dvě**: kdo si na vlastním železe pustí dvě prostředí nad jedním úložištěm,
+ * musí `WORLDSMITH_SPEND_STORE_PREFIX` vyplnit. Proto výslovná hodnota vyhrává
+ * nad odvozenou — odvození je záchranná síť, ne pravidlo.
+ *
+ * Jméno větve se **čistí a zkracuje**: klíč má strukturu oddělenou dvojtečkou
+ * (`…:usd`, `…:calls`), takže ref jménem `feat:usd` by ji jinak rozmazal, a ref
+ * je jediná část, kterou píše člověk.
+ */
+export function storePrefix(env: Record<string, string | undefined>): string {
+  const explicit = env.WORLDSMITH_SPEND_STORE_PREFIX?.trim() ?? '';
+  if (explicit !== '') return explicit;
+
+  const scope = env.VERCEL_ENV?.trim() ?? '';
+  if (scope === '' || scope === 'production') return BASE_PREFIX;
+
+  const ref = safeSegment(env.VERCEL_GIT_COMMIT_REF ?? '');
+  const scoped = `${BASE_PREFIX}:${safeSegment(scope)}`;
+  return ref === '' ? scoped : `${scoped}:${ref}`;
+}
+
+/** Jeden článek klíče: bez dvojtečky, bez mezer, ohraničené délky. */
+function safeSegment(raw: string): string {
+  return raw.trim().replace(/[^A-Za-z0-9._-]/g, '-').slice(0, 64);
+}
+
 /** Kde běžíme. `VERCEL` nastavuje platforma sama, na všech svých prostředích. */
 export function isServerless(env: Record<string, string | undefined>): boolean {
   return env.VERCEL !== undefined;
@@ -196,7 +236,7 @@ export function ledgerFromEnv(
       {
         url,
         token,
-        prefix: env.WORLDSMITH_SPEND_STORE_PREFIX?.trim() ?? 'worldsmith:spend',
+        prefix: storePrefix(env),
         timeoutMs: DEFAULT_LEDGER_TIMEOUT_MS,
       },
       fetchImpl,

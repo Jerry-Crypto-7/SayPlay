@@ -5,6 +5,7 @@ import {
   httpLedger,
   isServerless,
   ledgerFromEnv,
+  storePrefix,
   memoryLedger,
   processLedger,
   resetProcessLedger,
@@ -212,6 +213,71 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
     await ledgerFromEnv({ ...STORE_ENV, WORLDSMITH_SPEND_STORE_PREFIX: 'demo' }, fetchImpl)?.add(1, 1);
 
     expect(JSON.parse(String(fetchImpl.mock.calls[0][1]?.body))[0][1]).toBe('demo:usd');
+  });
+
+  it('preview a produkce dostanou dva různé klíče i bez výslovné předpony', () => {
+    // **Naměřená vada, ne teorie:** Vercel nastavuje `VERCEL` i na preview a
+    // proměnné prostředí se mezi prostředími běžně sdílejí, takže push feature
+    // branche účtoval do téhož klíče jako produkční demo — a rozpočet, na
+    // kterém stojí odevzdání, by vyčerpal někdo, kdo si zkoušel větev.
+    const production = storePrefix({ VERCEL: '1', VERCEL_ENV: 'production' });
+    const preview = storePrefix({
+      VERCEL: '1',
+      VERCEL_ENV: 'preview',
+      VERCEL_GIT_COMMIT_REF: 'features/p11-prekladac-svetu',
+    });
+
+    expect(production).toBe('worldsmith:spend');
+    expect(preview).not.toBe(production);
+    // Ne jen „jiný": musí jít poznat, čí to je, jinak se nedá uklidit.
+    expect(preview).toContain('preview');
+    expect(preview).toContain('p11-prekladac-svetu');
+
+    // Dvě různé větve jsou taky dvě různé knihy.
+    expect(
+      storePrefix({ VERCEL_ENV: 'preview', VERCEL_GIT_COMMIT_REF: 'jina-vetev' }),
+    ).not.toBe(preview);
+  });
+
+  it('výslovná předpona vyhrává nad odvozenou, a produkce si nechá holý základ', () => {
+    // Odvození je záchranná síť, ne pravidlo: kdo předponu nastaví, dostane ji.
+    expect(
+      storePrefix({ VERCEL_ENV: 'preview', VERCEL_GIT_COMMIT_REF: 'x', WORLDSMITH_SPEND_STORE_PREFIX: 'demo' }),
+    ).toBe('demo');
+    // Mimo Vercel žádné `VERCEL_ENV` není a kniha se nesmí přejmenovat pod
+    // běžícím nasazením — proto tentýž holý základ jako produkce.
+    expect(storePrefix({})).toBe('worldsmith:spend');
+    // Bílé znaky jsou „nenastaveno", stejně jako u adresy a tokenu výš.
+    expect(storePrefix({ VERCEL_ENV: 'preview', WORLDSMITH_SPEND_STORE_PREFIX: '  ' })).toBe(
+      'worldsmith:spend:preview',
+    );
+  });
+
+  it('jméno větve se vyčistí, aby nerozmazalo strukturu klíče', () => {
+    // Klíč je oddělený dvojtečkou (`…:usd`, `…:calls`) a ref je jediná jeho
+    // část, kterou píše člověk. Ref jménem `feat:usd` by ji jinak rozmazal.
+    const prefix = storePrefix({ VERCEL_ENV: 'preview', VERCEL_GIT_COMMIT_REF: 'feat:usd nasty/#' });
+    expect(prefix.split(':')).toHaveLength(4);
+    expect(prefix.endsWith(':feat-usd-nasty--')).toBe(true);
+
+    // Ohraničená délka: klíč nesmí růst s tím, jak dlouhé jméno větve někdo dá.
+    expect(
+      storePrefix({ VERCEL_ENV: 'preview', VERCEL_GIT_COMMIT_REF: 'a'.repeat(500) }).length,
+    ).toBeLessThan(120);
+  });
+
+  it('odvozená předpona doopravdy dojde do klíčů, ne jen do návratové hodnoty', async () => {
+    // Bez tohohle by `storePrefix` mohla být správná a `ledgerFromEnv` ji
+    // přesto nepoužít — což je přesně ta vada, kterou úloha zavírá.
+    const fetchImpl = vi.fn<typeof fetch>(async () => pipelineAnswer(0, 0));
+    await ledgerFromEnv(
+      { ...STORE_ENV, VERCEL: '1', VERCEL_ENV: 'preview', VERCEL_GIT_COMMIT_REF: 'vetev' },
+      fetchImpl,
+    )?.add(1, 1);
+
+    const sent = JSON.parse(String(fetchImpl.mock.calls[0][1]?.body)) as string[][];
+    expect(sent[0][1]).toBe('worldsmith:spend:preview:vetev:usd');
+    expect(sent[1][1]).toBe('worldsmith:spend:preview:vetev:calls');
   });
 
   it('časový limit je pod rozpočtem hrubého světa, ne nad ním', () => {
