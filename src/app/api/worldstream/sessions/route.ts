@@ -34,7 +34,7 @@ import type { UpstreamRequest } from '../../../../model/prompt';
 import { admit, type AdmissionPolicy } from '../../../../server/admission';
 import { moderatePrompt } from '../../../../server/moderation';
 import { logRateLimited } from '../../../../server/public-faults';
-import { costUsd, spendCapFromEnv } from '../../../../server/spend-cap';
+import { costUsd, processSpendCap } from '../../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../../server/upstream';
 import type { BlueprintEmitter } from '../../../../model/worldstream-repair';
 import {
@@ -99,8 +99,15 @@ export function resetConcurrency(): void {
 }
 
 /**
- * Strop utrácení je stav **procesu**, ne požadavku — jedna instance na celý běh
- * serveru, vzor `src/app/api/generate/route.ts`.
+ * Strop utrácení je stav **procesu**, ne požadavku — a je to **táž instance**,
+ * jakou drží `src/app/api/generate/route.ts`, ne jeho kopie.
+ *
+ * ⚠ **Do 3. 9. 2026 to byly dvě instance a nikdo si toho nevšiml.** Obě route
+ * si volaly `spendCapFromEnv(process.env)` samy, každá dostala vlastní
+ * `#spentUsd` a `#callsMade`, a proces tedy utratil až **dvojnásobek**
+ * nastaveného stropu — každá půlka přitom svůj strop poctivě dodržela.
+ * Naměřeno nezávislou revizí. Proto se sem chodí výhradně přes
+ * `processSpendCap()`.
  *
  * Postavit ho uvnitř `cloudEmitter()` znamenalo nový strop na každý požadavek:
  * `#spentUsd` i `#callsMade` se pokaždé vynulovaly, takže strop nikdy nic
@@ -109,7 +116,7 @@ export function resetConcurrency(): void {
  *
  * Napříč instancemi to pořád nedrží; to je `T29` a jiná vada.
  */
-export const WORLDSTREAM_SPEND_CAP = spendCapFromEnv(process.env);
+export const WORLDSTREAM_SPEND_CAP = processSpendCap();
 
 function fail(requestId: string, status: number, code: string, message: string): Response {
   return Response.json({ requestId, error: { code, message } }, { status });
@@ -219,20 +226,27 @@ export async function POST(request: Request): Promise<Response> {
     if (!admission.admitted)
       return fail(requestId, 503, admission.reason, 'the request ran out of its time budget before any work began');
 
+    // **Slot se bere PŘED čtením protokolu, protože odmítnutí musí být levné.**
+    // `serverGrammar()` není cachované: každé volání blokuje smyčku událostí
+    // dvěma `readFileSync`, sha256 a `JSON.parse` nad 26 kB. Naměřeno
+    // nezávislou revizí 3. 9. 2026 — s obráceným pořadím stál požadavek
+    // odsouzený k `503 TOO_MANY_SESSIONS` **2,223 ms**, takže tisíc odmítnutí
+    // = 2,2 s úplně zablokovaného Node, a s ním stojí i SSE proudy, snapshot
+    // i preview. V tomhle pořadí stojí odmítnutí ~0.
+    //
+    // Kontrola a zvýšení čítače jsou jeden synchronní krok (`acquireSlot`),
+    // takže jsou atomické na smyčce událostí. Jediný odchod z route mezi
+    // vzetím slotu a `work.finally` níž je nečitelný protokol — a ten slot
+    // vrací sám, řádek níž. **Přibude-li sem další `return`, musí vrátit taky.**
+    if (!acquireSlot())
+      return fail(requestId, 503, 'TOO_MANY_SESSIONS', 'too many worlds are being built right now');
+
     const grammar = serverGrammar();
     if (typeof grammar === 'string') {
+      releaseSlot();
       logRateLimited('worldstream/sessions', requestId, 'GRAMMAR_UNREADABLE', grammar);
       return fail(requestId, 503, 'GRAMMAR_UNREADABLE', 'the frozen protocol could not be read');
     }
-
-    // **Slot se bere až tady, a schválně za čtením protokolu.** Kontrola a
-    // zvýšení čítače jsou v jednom synchronním kroku (`acquireSlot`) a mezi
-    // vzetím slotu a `work.finally` níž už neleží žádný odchod z route — slot
-    // se tedy nedá ztratit. Ta obrácená pořadí by ho ztratit uměla: nečitelný
-    // protokol by odešel s obsazeným slotem a po čtyřech požadavcích by
-    // neprošel nikdo.
-    if (!acquireSlot())
-      return fail(requestId, 503, 'TOO_MANY_SESSIONS', 'too many worlds are being built right now');
 
     const sessionId = randomUUID();
     const stored = openSession(sessionId, newSessionSeed());

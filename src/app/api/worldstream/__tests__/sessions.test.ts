@@ -25,6 +25,8 @@
  * route netýkají.
  */
 
+import { readFileSync } from 'node:fs';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { SseDecoder } from '../../../../components/viewer/sse';
@@ -33,6 +35,7 @@ import { clearSessions, openSession, runGeneration } from '../../../../worldstre
 import { ANSWER, PLAN, generated, grammar, scripted } from './world-fixture';
 import { DEFAULT_CAP_USD } from '../../../../server/spend-cap';
 import {
+  acquireSlot,
   MAX_CONCURRENT_GENERATIONS,
   POST as createSession,
   WORLDSTREAM_SPEND_CAP,
@@ -184,16 +187,48 @@ describe('založení relace', () => {
   });
 
   it('nad stropem souběhu odmítne, místo aby platila za všechny naráz', async () => {
-    // Bez `.env` skončí generace hned, takže se čítač musí nasytit ručně —
-    // jinak by tenhle test měřil rychlost stroje, ne strop.
-    const responses: Response[] = [];
-    for (let i = 0; i <= MAX_CONCURRENT_GENERATIONS; i += 1)
-      responses.push(await createSession(createRequest({ prompt: `a salt flat number ${i}` })));
+    // ⚠ **Do 3. 9. 2026 tenhle test nemohl spadnout.** Posílal `MAX + 1`
+    // požadavků za sebou a soudil `202 || 503`, jenže bez `.env` generace
+    // doběhne hned a `work.finally` slot vrátí dřív, než se pošle další —
+    // čítač se tak nikdy nenasytil a obě povolené odpovědi byly pravda.
+    // Nález nezávislé revize. Slot se proto bere **ručně**, což je jediný
+    // způsob, jak strop v jednom procesu doopravdy nasytit.
+    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS; i += 1)
+      expect(acquireSlot(), `slot ${i} měl být volný`).toBe(true);
 
-    // `resetConcurrency` je jediné, co čítač snižuje mimo doběhnutou generaci;
-    // tady se jen ověří, že strop je proměnná, o kterou se route opírá.
-    expect(MAX_CONCURRENT_GENERATIONS).toBeGreaterThan(0);
-    expect(responses.every((response) => response.status === 202 || response.status === 503)).toBe(true);
+    const response = await createSession(createRequest({ prompt: 'a salt flat' }));
+
+    expect(response.status).toBe(503);
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
+      'TOO_MANY_SESSIONS',
+    );
+  });
+
+  it('odmítnutí nad stropem nesáhne na disk — brána je před čtením protokolu', () => {
+    // `serverGrammar()` není cachované: dva `readFileSync`, sha256 a
+    // `JSON.parse` nad 26 kB, všechno blokuje smyčku událostí. Naměřeno
+    // nezávislou revizí 3. 9. 2026: s bránou až za čtením stál požadavek
+    // odsouzený k `503` **2,223 ms**, tedy 2,2 s zablokovaného Node na tisíc
+    // odmítnutí — a s ním stály i SSE proudy a preview.
+    //
+    // Soudí se **pořadí ve zdroji**, protože zevnitř jednoho procesu to jinak
+    // změřit nejde: čtení protokolu nemá pozorovatelný následek, na kterém by
+    // se odmítnutá cesta dala chytit, a časové měření by soudilo stroj.
+    const source = readFileSync('src/app/api/worldstream/sessions/route.ts', 'utf8');
+    const gate = source.indexOf('if (!acquireSlot())');
+    const grammarRead = source.indexOf('const grammar = serverGrammar();');
+
+    expect(gate, 'brána souběhu ve zdroji chybí').toBeGreaterThan(-1);
+    expect(grammarRead, 'čtení protokolu ve zdroji chybí').toBeGreaterThan(-1);
+    expect(gate, 'brána souběhu je až za čtením protokolu').toBeLessThan(grammarRead);
+
+    // Druhá polovina té výměny: slot vzatý před čtením se musí vrátit, když
+    // protokol přečíst nejde. Bez toho by nečitelný protokol slot spolkl a po
+    // čtyřech požadavcích by neprošel nikdo.
+    const unreadable = source.indexOf("logRateLimited('worldstream/sessions', requestId, 'GRAMMAR_UNREADABLE'");
+    const release = source.indexOf('releaseSlot();', grammarRead);
+    expect(release, 'nečitelný protokol slot nevrací').toBeGreaterThan(-1);
+    expect(release, 'slot se vrací až za odchodem z route').toBeLessThan(unreadable);
   });
 });
 

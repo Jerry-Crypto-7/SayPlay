@@ -7,7 +7,17 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { mockBranch } from '../mock';
 import type { GenerationCall } from '../pipeline';
 
-import { costUsd, DEFAULT_CALL_CAP, DEFAULT_CAP_USD, SpendCap, spendCapFromEnv } from '../spend-cap';
+import { readFileSync } from 'node:fs';
+
+import {
+  costUsd,
+  DEFAULT_CALL_CAP,
+  DEFAULT_CAP_USD,
+  processSpendCap,
+  resetProcessSpendCap,
+  SpendCap,
+  spendCapFromEnv,
+} from '../spend-cap';
 
 const PRICING = { usdPerMTokIn: 3, usdPerMTokOut: 15 };
 
@@ -344,5 +354,49 @@ describe('druhé vyrovnání téže rezervace', () => {
     expect(reservation.settle(9)).toBe(0.25);
     expect(cap.snapshot().spentUsd).toBe(0.25);
     expect(cap.snapshot().reservedUsd).toBe(0);
+  });
+});
+
+describe('jediný strop procesu', () => {
+  afterEach(() => {
+    resetProcessSpendCap();
+  });
+
+  it('vrátí pořád tutéž instanci, ne novou při každém volání', () => {
+    // **Dvě instance nejsou strop.** Každá si vede vlastní `#spentUsd`, takže
+    // proces se dvěma z nich utratí dvojnásobek nastaveného stropu a obě
+    // půlky přitom hlásí, že strop dodržely. Naměřeno nezávislou revizí
+    // 3. 9. 2026 nad `/api/generate` a `/api/worldstream/sessions`.
+    // Soudí se **sdílený stav**, ne reference: kdyby singleton vracel kopii se
+    // stejnými čísly, test nad `toBe` by prošel a vada by zůstala.
+    const first = processSpendCap();
+    const reservation = first.reserve(1);
+    if (!reservation.ok) throw new Error('rezervace měla projít');
+    reservation.settle(1);
+
+    expect(processSpendCap().snapshot().spentUsd).toBe(1);
+  });
+
+  it('žádná route si strop nevyrábí sama — chodí se přes singleton', () => {
+    // Lexikální brána, protože tuhle vlastnost nejde zevnitř jednoho procesu
+    // změřit: Next dává každé route vlastní bundle a test běží v jednom.
+    // Kdyby si route zavolala `spendCapFromEnv()` sama, dostane vlastní
+    // čítač a strop procesu přestane být strop.
+    const routes = [
+      'src/app/api/generate/route.ts',
+      'src/app/api/worldstream/sessions/route.ts',
+    ];
+
+    for (const route of routes) {
+      // **Komentáře se odstřihnou.** Jméno `spendCapFromEnv` v docstringu je
+      // poctivé — vysvětluje, proč se sem přes něj nechodí — a brána, kterou
+      // shodí vlastní komentář, je falešný poplach, ne ochrana.
+      const code = readFileSync(route, 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/^\s*\/\/.*$/gm, '');
+
+      expect(code, `${route} si vyrábí vlastní strop`).not.toContain('spendCapFromEnv');
+      expect(code, `${route} nechodí přes singleton`).toContain('processSpendCap()');
+    }
   });
 });

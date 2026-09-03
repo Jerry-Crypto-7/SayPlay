@@ -58,11 +58,11 @@ import {
   logRateLimited,
   logStickyFault as logStickyForRoute,
 } from '../../../server/public-faults';
-import { DEFAULT_CAP_USD, spendCapFromEnv, type RefusalReason } from '../../../server/spend-cap';
+import { DEFAULT_CAP_USD, processSpendCap, type RefusalReason } from '../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../server/upstream';
 
 /** Strop je stav procesu, ne požadavku — jedna instance na celý běh serveru. */
-const CAP = spendCapFromEnv(process.env);
+const CAP = processSpendCap();
 
 export const runtime = 'nodejs';
 

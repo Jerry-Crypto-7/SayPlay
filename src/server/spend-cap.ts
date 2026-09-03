@@ -349,6 +349,33 @@ export const DEFAULT_CALL_CAP = 200;
  * Překlep v proměnné jinak tiše zvedne strop na výchozí hodnotu; nula zastaví
  * provoz a je hned vidět.
  */
+let processCap: SpendCap | null = null;
+
+/**
+ * Jediný strop procesu.
+ *
+ * **Dvě instance nejsou strop.** `spendCapFromEnv()` vyrábí pokaždé nový
+ * `SpendCap` s vlastním `#spentUsd` a `#callsMade`, takže dvě route, které
+ * si ho každá zavolají samy, utratí dohromady **dvojnásobek** nastaveného
+ * stropu — a nikdo si toho nevšimne, protože každá půlka svůj strop dodržela.
+ * Naměřeno nezávislou revizí 3. 9. 2026 nad `/api/generate` a
+ * `/api/worldstream/sessions`, které přesně tohle dělaly.
+ *
+ * Je to **líné**, ne `const` na úrovni modulu: `process.env` se tak nečte při
+ * importu, takže si testy nemusí sahat na proces jen proto, že tenhle soubor
+ * někdo naimportoval. Je to táž doktrína, jakou `spendCapFromEnv()` drží
+ * parametrem `env`.
+ */
+export function processSpendCap(): SpendCap {
+  processCap ??= spendCapFromEnv(process.env);
+  return processCap;
+}
+
+/** Jen pro testy: zahodí singleton, aby si další test mohl nastavit vlastní prostředí. */
+export function resetProcessSpendCap(): void {
+  processCap = null;
+}
+
 export function spendCapFromEnv(env: Record<string, string | undefined>): SpendCap {
   const raw = env.WORLDSMITH_SPEND_CAP_USD;
   const parsed = raw === undefined ? DEFAULT_CAP_USD : Number(raw);
