@@ -228,6 +228,21 @@ describe('strop z prostředí', () => {
     expect(cap.enabled).toBe(false);
   });
 
+  it('prázdné nové jméno staré nezastíní', () => {
+    // `.env.example` ships řádek `WORLDSMITH_CONTROL_FILE=` a vymazané políčko
+    // v dashboardu dá totéž. S `??` by prázdný řetězec platil za „nastaveno",
+    // ukázal na neexistující soubor a strop by se tiše vrátil na výchozích
+    // 5 USD — tedy přesně ta vada, kterou záchyt zavírá.
+    const legacy = controlFile(JSON.stringify({ enabled: false, capUsd: 0 }));
+    const cap = spendCapFromEnv({
+      WORLDSMITH_CONTROL_FILE: '',
+      WORLDSMITH_SPEND_CAP_FILE: legacy,
+    }).snapshot();
+
+    expect(cap.capUsd).toBe(0);
+    expect(cap.enabled).toBe(false);
+  });
+
   it('nové jméno má přednost, když jsou nastavená obě', () => {
     const current = controlFile(JSON.stringify({ enabled: true, capUsd: 42 }));
     const legacy = controlFile(JSON.stringify({ enabled: true, capUsd: 7 }));

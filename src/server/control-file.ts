@@ -94,5 +94,15 @@ export function readControlFile(path: string | null): ControlRead {
  * druhá cesta.
  */
 export function controlFilePath(env: Record<string, string | undefined>): string | null {
-  return env.WORLDSMITH_CONTROL_FILE ?? env.WORLDSMITH_SPEND_CAP_FILE ?? null;
+  // **Prázdná hodnota není „nastaveno".** `??` by na `WORLDSMITH_CONTROL_FILE=`
+  // (přesně ten řádek, který ship `.env.example`, a přesně to, co zbyde po
+  // vymazání políčka v dashboardu během přejmenování) odpověděl prázdným
+  // řetězcem, tím zastínil staré jméno a vyrobil zpátky tutéž tichou ztrátu
+  // stropu i vypínačů, kterou má záchyt zavírat. Nález druhé nezávislé revize
+  // 3. 9. 2026. Bere se proto první **neprázdné** jméno.
+  return (
+    [env.WORLDSMITH_CONTROL_FILE, env.WORLDSMITH_SPEND_CAP_FILE]
+      .map((value) => value?.trim())
+      .find((value) => value !== undefined && value !== '') ?? null
+  );
 }

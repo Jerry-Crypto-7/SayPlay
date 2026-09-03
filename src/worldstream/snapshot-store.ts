@@ -14,8 +14,12 @@
  *
  * - **sdílet dvakrát týž svět nevyrobí dvě kopie** — druhé sdílení dopadne na
  *   tutéž adresu;
- * - odpověď se smí cachovat **navždy**, protože obsah pod adresou se z definice
- *   nemůže změnit.
+ * - obsah pod adresou se z definice nemůže změnit, takže cachovat se smí — ale
+ *   ⚠ **ne navždy**. Do 3. 9. 2026 tady stálo „navždy" a bylo to špatně:
+ *   stažení světa z oběhu (vypínač `off: ["all"]` a `SHARED_WORLD_TTL_MS` níž)
+ *   sahá **jen na origin**, takže `immutable` by z obou udělalo nevymahatelné
+ *   přání. Hlavičku drží `SNAPSHOT_CACHE_CONTROL` v `snapshots/[hash]/route.ts`
+ *   a mez je desítky sekund, ne rok.
  *
  * **Není to `canonicalHash` z `src/ir/worlddoc.ts`, a je to vědomé.** Ten je
  * FNV-1a na 32 bitů, tedy osm hexadecimálních číslic — to je adresa, kterou lze
