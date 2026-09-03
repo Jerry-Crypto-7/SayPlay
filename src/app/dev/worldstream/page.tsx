@@ -46,6 +46,7 @@ import type { BlueprintOutcome, CompiledBlueprint } from '@/model/worldstream-re
 import { createMeshClient, type MeshClient } from '@/shape/mesh-client';
 import { MESH_DETAIL } from '@/shape/types';
 import { shapeContentHash } from '@/worldstream/cache';
+import type { DetailLevel } from '@/worldstream/mesh-gate';
 import { buildProxyWorld, type ProxyWorld } from '@/worldstream/proxy';
 import { blueprintSchema, type WorldstreamBlueprint } from '@/worldstream/schema';
 
@@ -135,6 +136,28 @@ const CAMERA = { position: [17, 12, 21] as const, fov: 42 };
  */
 const HERO = DEMO_BLUEPRINT.objects.find((object) => object.source.kind === 'shape')!;
 
+/** Program hrdiny. Ukázka ho má právě jeden, takže se hledá jednou a nahoře. */
+const HERO_PROGRAM = DEMO_BLUEPRINT.shapes.find(
+  (candidate) => HERO.source.kind === 'shape' && candidate.shapeId === HERO.source.shapeId,
+)!;
+
+/**
+ * Dva snímky.
+ *
+ * Používá to jediné tlačítko — závod dvou výsledků (`T21`). Kandidát musí
+ * stihnout obsadit slot dřív, než dorazí druhý, jinak by druhý nevytlačil nic
+ * a test by měřil pořadí `setState`, ne chování scény. Dva snímky jsou zhruba
+ * 32 ms proti 700 ms odhalení, takže okno je široké o řád.
+ *
+ * ⚠ `requestAnimationFrame` je tu legitimní: `CLAUDE.md` ho zakazuje **na
+ * replay cestě**, a tahle stránka žádnou simulaci neběží.
+ */
+function twoFrames(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
+}
+
 export default function WorldstreamDevPage() {
   const [world, setWorld] = useState<ProxyWorld | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -162,38 +185,91 @@ export default function WorldstreamDevPage() {
   }, []);
 
   /**
-   * Objedná hrdinu ve vyšším rozlišení a pošle ho na scénu.
+   * Objedná hrdinu na dané příčce. Nic neposílá na scénu — to dělá volající.
    *
    * **Spouští to tlačítko, ne časovač**, a je to vlastnost harnessu, ne
    * provizorium: přechod trvá necelou vteřinu a test i člověk potřebují vědět,
    * kdy začal. Automatické doběhnutí by se dalo pozorovat jedině závodem
    * s vlastním pollingem, a taková sada je nespolehlivá z principu.
    */
-  const materialize = useCallback(async () => {
+  const order = useCallback(async (level: DetailLevel): Promise<DetailUpgrade | null> => {
     const client = mesher.current;
-    const program = DEMO_BLUEPRINT.shapes.find(
-      (candidate) => HERO.source.kind === 'shape' && candidate.shapeId === HERO.source.shapeId,
-    );
-    if (client === null || program === undefined) return;
+    if (client === null) return null;
 
-    const resolution = MESH_DETAIL.high.resolution;
+    const resolution = MESH_DETAIL[level].resolution;
+    const mesh = await client.mesh({
+      program: HERO_PROGRAM,
+      sessionSeed: DEMO_BLUEPRINT.sessionSeed,
+      resolution,
+      bounds: HERO_PROGRAM.targetBounds,
+    });
+    return {
+      stableId: HERO.stableId,
+      contentHash: shapeContentHash(HERO_PROGRAM, resolution),
+      level,
+      mesh,
+    };
+  }, []);
+
+  const report = useCallback((error: unknown) => {
+    setFailure(error instanceof Error ? error.message : String(error));
+  }, []);
+
+  const materialize = useCallback(async () => {
     try {
-      const mesh = await client.mesh({
-        program,
-        sessionSeed: DEMO_BLUEPRINT.sessionSeed,
-        resolution,
-        bounds: program.targetBounds,
-      });
+      const next = await order('high');
+      if (next !== null) setUpgrade(next);
+    } catch (error: unknown) {
+      report(error);
+    }
+  }, [order, report]);
+
+  /**
+   * Tentýž mesh, který se hlásí kvádrem přes dva sloty (`T21`).
+   *
+   * Vrcholy zůstávají platné a normály sedí — mění se **jedno** číslo, které
+   * brána soudí. Bez toho by se testovala odolnost proti rozbitému poli, což
+   * je jiná vada s jinou opravou; tahle cesta je blob, který přetekl svůj slot,
+   * a to je nejčastější odmítnutí, jaké meshing vyrábí.
+   */
+  const overrun = useCallback(async () => {
+    try {
+      const next = await order('high');
+      if (next === null) return;
+      const { min, max } = next.mesh.bounds;
       setUpgrade({
-        stableId: HERO.stableId,
-        contentHash: shapeContentHash(program, resolution),
-        level: 'high',
-        mesh,
+        ...next,
+        mesh: {
+          ...next.mesh,
+          bounds: {
+            min: [min[0] * 2, min[1] * 2, min[2] * 2],
+            max: [max[0] * 2, max[1] * 2, max[2] * 2],
+          },
+        },
       });
     } catch (error: unknown) {
-      setFailure(error instanceof Error ? error.message : String(error));
+      report(error);
     }
-  }, []);
+  }, [order, report]);
+
+  /**
+   * Dva výsledky na tentýž slot, druhý doprostřed odhalení prvního (`T21`).
+   *
+   * Oba se objednají **předem**. Kdyby se druhý objednával až po tom, co se
+   * první začne odhalovat, závodil by meshing s délkou odhalení a sada by
+   * červenala podle rychlosti stroje.
+   */
+  const race = useCallback(async () => {
+    try {
+      const [loser, winner] = await Promise.all([order('rough'), order('high')]);
+      if (loser === null || winner === null) return;
+      setUpgrade(loser);
+      await twoFrames();
+      setUpgrade(winner);
+    } catch (error: unknown) {
+      report(error);
+    }
+  }, [order, report]);
 
   return (
     <main
@@ -214,26 +290,34 @@ export default function WorldstreamDevPage() {
         <WorldstreamLighting />
         {world !== null && <WorldstreamStage world={world} upgrade={upgrade} />}
       </Canvas>
-      <button
-        type="button"
-        data-testid="materialize"
-        onClick={() => void materialize()}
-        disabled={world === null}
-        style={{
-          position: 'absolute',
-          right: 12,
-          bottom: 10,
-          padding: '6px 12px',
-          background: UI_TOKENS.accent,
-          color: UI_TOKENS.background,
-          border: 'none',
-          borderRadius: 4,
-          font: 'inherit',
-          cursor: 'pointer',
-        }}
-      >
-        materialize the hero
-      </button>
+      <div style={{ position: 'absolute', right: 12, bottom: 10, display: 'flex', gap: 8 }}>
+        {(
+          [
+            ['materialize', 'materialize the hero', materialize],
+            ['materialize-overrun', 'send a mesh that overruns the slot', overrun],
+            ['materialize-race', 'race two results', race],
+          ] as const
+        ).map(([id, label, run]) => (
+          <button
+            key={id}
+            type="button"
+            data-testid={id}
+            onClick={() => void run()}
+            disabled={world === null}
+            style={{
+              padding: '6px 12px',
+              background: id === 'materialize' ? UI_TOKENS.accent : UI_TOKENS.background,
+              color: id === 'materialize' ? UI_TOKENS.background : UI_TOKENS.text,
+              border: `1px solid ${UI_TOKENS.accent}`,
+              borderRadius: 4,
+              font: 'inherit',
+              cursor: 'pointer',
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
       <p
         data-testid="stage-status"
         style={{ position: 'absolute', left: 12, bottom: 10, margin: 0, opacity: 0.75 }}

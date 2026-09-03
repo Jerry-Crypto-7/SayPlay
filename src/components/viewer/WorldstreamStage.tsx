@@ -268,6 +268,17 @@ export interface StageProbe {
   commits: () => number;
   /** Kolik snímků plátno vykreslilo. Bez toho se nepozná, že scéna došla na GPU. */
   frames: () => number;
+  /**
+   * Co renderer **doopravdy** drží — jediný oracle úklidu, jaký z prohlížeče
+   * existuje. `disposeSubtree()` umí vrátit poctivý účet a přitom nechat zdroj
+   * naživu, protože ho vedle registry drží ještě někdo jiný; tohle číslo čte
+   * druhou stranu, tedy GPU.
+   *
+   * `programs` je tu kvůli **materiálům odhalení**. Každá výměna podoby si
+   * vyrobí vlastní `clayMaterial()`, a zapomenutý materiál se v počtu geometrií
+   * ani textur neprojeví vůbec — projeví se právě jen tady.
+   */
+  memory: () => { readonly geometries: number; readonly textures: number; readonly programs: number };
 }
 
 declare global {
@@ -433,6 +444,7 @@ export default function WorldstreamStage({
   const [root, setRoot] = useState<Object3D | null>(null);
   const [reveal, setReveal] = useState<Reveal | null>(null);
   const camera = useThree((state) => state.camera);
+  const gl = useThree((state) => state.gl);
 
   useEffect(() => build.dispose, [build]);
 
@@ -563,6 +575,13 @@ export default function WorldstreamStage({
     window.__worldstreamStage = {
       ready: () => build.views.length > 0,
       frames: () => frames.current,
+      memory: () => ({
+        geometries: gl.info.memory.geometries,
+        textures: gl.info.memory.textures,
+        // `programs` je u `WebGLRenderer` volitelné pole; když si ho renderer
+        // nevede, je nula poctivější odpověď než výjimka uprostřed měření.
+        programs: gl.info.programs?.length ?? 0,
+      }),
       scenery: () => {
         // Jména se skládají ze **stejných funkcí** jako při stavbě, ne z předpony
         // opsané podruhé: kdyby se `slotGroupName()` někdy změnil, má tenhle
@@ -624,7 +643,7 @@ export default function WorldstreamStage({
     return () => {
       delete window.__worldstreamStage;
     };
-  }, [build, root, reveal, camera]);
+  }, [build, root, reveal, camera, gl]);
 
   return (
     <group ref={setRoot} name="worldstream:stage">
