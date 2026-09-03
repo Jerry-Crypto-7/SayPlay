@@ -82,7 +82,17 @@ export function readControlFile(path: string | null): ControlRead {
  * `WORLDSMITH_SPEND_CAP_FILE`, protože strop byl jediný, kdo ji četl; jméno se
  * přejmenovalo ve chvíli, kdy do souboru přibyly kill switche, aby soubor
  * neměl jméno po jedné ze svých dvou polovin.
+ *
+ * ⚠ **Staré jméno se proto čte dál, a není to pohodlí — je to peníze.**
+ * Nález nezávislé revize 3. 9. 2026, `VERDICT: blocking`: přejmenování bez
+ * záchytu znamená, že nasazení, které v proměnných pořád nese staré jméno,
+ * přestane ovládací soubor vidět **v okamžiku deploye**. `controlFilePath()`
+ * vrátí `null`, soubor je „nepřítomný", strop se tiše vrátí na výchozí hodnoty
+ * a všechny čtyři vypínače hlásí „nic není vypnuté" — tedy operátorovo
+ * `{"enabled":false}` i každý kill switch se stanou mrtvým dopisem, a nevznikne
+ * u toho jediný řádek. Nové jméno má přednost; staré je záchranná síť, ne
+ * druhá cesta.
  */
 export function controlFilePath(env: Record<string, string | undefined>): string | null {
-  return env.WORLDSMITH_CONTROL_FILE ?? null;
+  return env.WORLDSMITH_CONTROL_FILE ?? env.WORLDSMITH_SPEND_CAP_FILE ?? null;
 }

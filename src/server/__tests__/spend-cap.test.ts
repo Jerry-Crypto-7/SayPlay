@@ -212,6 +212,33 @@ describe('strop z prostředí', () => {
     const path = controlFile(JSON.stringify({ enabled: true, capUsd: 42 }));
     expect(spendCapFromEnv({ WORLDSMITH_CONTROL_FILE: path }).snapshot().capUsd).toBe(42);
   });
+
+  it('staré jméno proměnné pořád platí, protože ho nese nasazení z doby před přejmenováním', () => {
+    // **Nález nezávislé revize 3. 9. 2026, `VERDICT: blocking`.** Přejmenování
+    // `WORLDSMITH_SPEND_CAP_FILE` → `WORLDSMITH_CONTROL_FILE` bez záchytu
+    // znamená, že nasazení se starým jménem přestane soubor vidět v okamžiku
+    // deploye: strop se tiše vrátí na výchozích 5 USD a operátorovo „vypnuto"
+    // se stane mrtvým dopisem, aniž vznikne jediný řádek.
+    // Soudí se `snapshot()`, ne `reserve()`: rezervace zapisuje do sdílené
+    // knihy, takže by tenhle test utratil cent v každém testu za sebou.
+    const path = controlFile(JSON.stringify({ enabled: false, capUsd: 0 }));
+    const cap = spendCapFromEnv({ WORLDSMITH_SPEND_CAP_FILE: path }).snapshot();
+
+    expect(cap.capUsd).toBe(0);
+    expect(cap.enabled).toBe(false);
+  });
+
+  it('nové jméno má přednost, když jsou nastavená obě', () => {
+    const current = controlFile(JSON.stringify({ enabled: true, capUsd: 42 }));
+    const legacy = controlFile(JSON.stringify({ enabled: true, capUsd: 7 }));
+
+    expect(
+      spendCapFromEnv({
+        WORLDSMITH_CONTROL_FILE: current,
+        WORLDSMITH_SPEND_CAP_FILE: legacy,
+      }).snapshot().capUsd,
+    ).toBe(42);
+  });
 });
 
 describe('strop na počet volání drží i tehdy, když je ceník opsaný špatně', () => {
