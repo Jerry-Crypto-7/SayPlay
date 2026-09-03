@@ -102,6 +102,14 @@ export type RefusalReason =
    * ceníku, který operátor opisuje ručně, takže překlep o tři řády (`0.000015`
    * místo `15`) ho tiše roztáhne milionkrát a nic si toho nevšimne — cena se
    * nedá ověřit na správnost, jen na tvar. Počet volání se ověřit dá.
+   *
+   * ⚠ **Jednu díru to dnes nekryje, a hlásí se tu, protože tenhle odstavec
+   * tvrdil opak.** Strop na počet visí na tomtéž `enabled` jako dolarový strop
+   * (`reserve()` níž), takže `{"enabled":false}` v ovládacím souboru odstraní
+   * **obě** meze naráz — naměřeno nezávislou revizí 3. 9. 2026: 400 rezervací
+   * ze 400 povolených, `callsRemaining: -200`. Právě ve stavu „ceník je opsaný
+   * špatně" tedy nehlídá nic. Je to starší rozhodnutí s vlastním testem
+   * (`vypnutý vypínač počet volání neomezuje`) a rozplétá ho `T30-callcapoff`.
    */
   | 'CALL_CAP_EXHAUSTED'
   /** Ovládací soubor existuje a nedá se přečíst nebo mu nesedí tvar. */
@@ -208,12 +216,16 @@ function parseControl(parsed: Record<string, unknown>, defaults: CapControl): Ca
   )
     return null;
   // **Vypnout strop je jediný povel, který se musí napsat celý.** `enabled:false`
-  // je jediná hodnota v celém souboru, která peněžní mez odstraní úplně, takže
-  // `{"enabled":false}` samotné by z pravidla „chybějící klíč = výchozí hodnota"
-  // udělalo nejkratší cestu k neomezenému utrácení — před 3. 9. 2026 týž soubor
-  // odmítal všechno. Nález nezávislé revize, `VERDICT: blocking`: naměřeno 501
-  // rezervací a 511 000 USD držených. Kdo strop vypíná, napíše i jeho hodnotu
-  // pro chvíli, kdy ho zapne zpátky.
+  // odstraní peněžní mez úplně — a jak je psáno u `CALL_CAP_EXHAUSTED`, dnes
+  // s ní bere i mez na počet volání, takže je to nejsilnější hodnota v celém
+  // souboru. Samotné `{"enabled":false}` by z pravidla „chybějící klíč =
+  // výchozí hodnota" udělalo nejkratší cestu k neomezenému utrácení, a přitom
+  // před 3. 9. 2026 týž soubor odmítal všechno. Nález nezávislé revize,
+  // `VERDICT: blocking`: naměřeno 501 rezervací a 511 000 USD držených. Kdo
+  // strop vypíná, napíše i jeho hodnotu pro chvíli, kdy ho zapne zpátky.
+  //
+  // Opačný směr — soubor, který o stropu mluví a částku **nepojmenuje**, ji tím
+  // tiše zvedne na výchozí — tahle mez nekryje; je to `T30-capsilence`.
   if (enabled === false && capUsd === undefined) return null;
 
   const resolvedCalls = callCap ?? defaults.callCap;
