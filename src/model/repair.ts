@@ -186,6 +186,25 @@ function repairCondition(
   return { kind: 'flagIs', flag: target, value: node.value };
 }
 
+/**
+ * Pravidla po opravě — a **každé z nich se svým `id`**.
+ *
+ * ⚠ **To `id` je celá druhá věta nad zákonem** (`T22-ruleid`, naměřeno
+ * 3. 9. 2026). `introducedRuleKeyFault` (`src/ir/worlddoc.ts`) bere identitu
+ * vady jako dvojici `(pointer, kanonický zápis položky)`, a pravidlo bez
+ * řetězcového `id` je pro něj vada. Kanonický zápis nese **celé tělo**, takže
+ * jakákoli úprava uvnitř takového pravidla vyrobí jinou identitu — a `commitPart`
+ * ji přečte jako **nově zavlečenou** vadu a patch odmítne. Naměřeno třemi pokusy
+ * proti commit route: `replace /sim/rules/reach/priority` → `REJECTED`, kdežto
+ * `add /sim/rules/lightUp` s vlastním `id` i `add /sim/rules/reach/id` prošly.
+ * Přidat zákon tedy šlo, změnit stávající ne — a přesně to druhé slibuje
+ * design book §4 dějství III.
+ *
+ * `id` se dosazuje **z klíče a přebíjí i to, co napsal model**: klíč je pointer,
+ * kterým se na pravidlo míří (`/sim/rules/<klíč>`), takže rozejít je znamená
+ * pravidlo, které v dokumentu leží a žádný patch ho nenajde. `worlddoc` to tak
+ * i soudí — `id !== key` je pro něj vada stejně jako `id` chybějící.
+ */
 function repairRules(sim: Record<string, unknown>, declared: Declared, notes: RepairNote[]): unknown {
   const rules = asRecord(sim.rules);
   const repaired: Record<string, unknown> = {};
@@ -193,6 +212,8 @@ function repairRules(sim: Record<string, unknown>, declared: Declared, notes: Re
     const rule = asRecord(raw);
     repaired[ruleId] = {
       ...rule,
+      // Za spreadem schválně: model své `id` napsat smí, ale rozhoduje klíč.
+      id: ruleId,
       event: repairEvent(ruleId, asRecord(rule.event), declared, notes),
       condition: repairCondition(ruleId, rule.condition, declared, notes),
     };

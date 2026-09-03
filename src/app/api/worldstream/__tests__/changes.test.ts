@@ -118,6 +118,12 @@ function pending(stored: StoredSession, changed: RefinePlan, changeId = 'change-
   return change;
 }
 
+/** Jedno pravidlo světa. `sim` je v dokumentu `unknown`, tak se čte tudy. */
+function ruleOf(stored: StoredSession, ruleId: string): Record<string, unknown> {
+  const sim = worldOf(stored).sim as { readonly rules: Record<string, Record<string, unknown>> };
+  return sim.rules[ruleId];
+}
+
 function worldOf(stored: StoredSession) {
   const blueprint = stored.blueprint;
   if (blueprint === null) throw new Error('the fixture session has no world');
@@ -423,6 +429,31 @@ describe('commit druhé věty', () => {
     expect((await commit(stored.session.sessionId, change.changeId)).status).toBe(200);
     expect((await commit(stored.session.sessionId, change.changeId)).status).toBe(404);
     expect(worldOf(stored).lookRevision).toBe(1);
+  });
+
+  // ⚠ **Změnit STÁVAJÍCÍ zákon, ne jen přidat nový** (`T22-ruleid`). Do
+  // 4. 9. 2026 emitoval compiler pravidla bez `id`, a `introducedRuleKeyFault`
+  // bere identitu vady jako `(pointer, kanonický zápis položky)` — tedy včetně
+  // celého těla. Úprava uvnitř takového pravidla tím vyrobila jinou identitu,
+  // `commitPart` ji přečetl jako nově zavlečenou vadu a patch odmítl. Naměřeno:
+  // `replace /sim/rules/reach/priority` → `REJECTED`, zatímco `add` nového
+  // pravidla s vlastním `id` prošel. Půlka slibu „změň jeden zákon běžícího
+  // světa" tedy neprocházela, a vypadalo to jako vada patche od modelu.
+  it('úprava uvnitř zákona vygenerovaného světa projde certifikací', async () => {
+    const stored = await generated();
+    // Svět prošel skutečným compilerem, takže tohle pravidlo napsal `repairRules`.
+    expect(ruleOf(stored, 'reach'), 'pravidlo ztratilo `id`').toMatchObject({
+      id: 'reach',
+    });
+
+    const change = pending(
+      stored,
+      plan({ behavior: [{ op: 'replace', path: '/sim/rules/reach/priority', value: 3 }] }),
+    );
+
+    const read = await body(await commit(stored.session.sessionId, change.changeId));
+    expect(read.outcome, 'změna stávajícího zákona se odmítla').toBe('COMMITTED');
+    expect(ruleOf(stored, 'reach')).toMatchObject({ priority: 3 });
   });
 
   // ⚠ **Zamítnutý commit preview nespotřebuje** (`T22-takeearly`). Do 4. 9. 2026
