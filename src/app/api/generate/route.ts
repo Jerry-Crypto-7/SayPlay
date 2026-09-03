@@ -530,6 +530,12 @@ export async function POST(request: Request): Promise<Response> {
      * (`worldstream/sessions/route.ts:241`) mají to pořadí naměřené od rána;
      * tohle je jenom jejich přenos.
      *
+     * ⚠ **Od `f5b1b49` je `frozenGrammar()` memoizované, takže to číslo platí
+     * jen pro PRVNÍ požadavek na instanci** — dál je čtení ~0 ms. Pořadí se
+     * přesto nemění a nesmí: cenu prvního požadavku platí každá nová instance
+     * a na Vercelu jich naskakuje tolik, kolik jich zrovna běží. Kdo tohle
+     * půjde přeměřit, naměří nulu a bude v pokušení bránu vrátit za čtení.
+     *
      * Jediný odchod mezi vzetím slotu a `finally` níž je nečitelný protokol —
      * a ten slot vrací sám, o dva řádky níž. **Přibude-li sem další `return`,
      * musí vrátit taky.**

@@ -1374,10 +1374,14 @@ describe('POST /api/generate pod náporem', () => {
   it('brána souběhu stojí ve zdroji PŘED čtením zmrazeného protokolu', () => {
     // Nález druhého kola revize 3. 9. 2026: slot se bral **za**
     // `frozenGrammar()`, tedy obráceně než u sesterských dveří, které to mají
-    // naměřené. `readFrozen` není memoizované — dva `readFileSync`, sha256
+    // naměřené. tehdy `readFrozen` memoizované nebylo — dva `readFileSync`, sha256
     // a `JSON.parse` na smyčce událostí za každé volání — takže požadavek
     // odsouzený k 503 platil ~2 ms úplně zablokovaného Node. Tisíc odmítnutí
     // = 2,2 s, po které stojí i SSE proudy, snapshoty a zdravotní sonda.
+    //
+    // ⚠ **Od `f5b1b49` memoizované je**, takže tuhle cenu platí jen první
+    // požadavek na instanci. Brána zůstává před čtením ze stejného důvodu:
+    // každá nová instance ji platí znovu.
     //
     // Soudí se **pořadí ve zdroji**, protože zevnitř jednoho procesu to jinak
     // změřit nejde: čtení protokolu nemá pozorovatelný následek, na kterém by

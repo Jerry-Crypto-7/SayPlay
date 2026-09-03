@@ -243,11 +243,13 @@ describe('založení relace', () => {
   });
 
   it('odmítnutí nad stropem nesáhne na disk — brána je před čtením protokolu', () => {
-    // `serverGrammar()` není cachované: dva `readFileSync`, sha256 a
+    // Tehdy `serverGrammar()` cachované nebylo: dva `readFileSync`, sha256 a
     // `JSON.parse` nad 26 kB, všechno blokuje smyčku událostí. Naměřeno
     // nezávislou revizí 3. 9. 2026: s bránou až za čtením stál požadavek
     // odsouzený k `503` **2,223 ms**, tedy 2,2 s zablokovaného Node na tisíc
-    // odmítnutí — a s ním stály i SSE proudy a preview.
+    // odmítnutí — a s ním stály i SSE proudy a preview. **Od `f5b1b49`
+    // cachované je**, takže tu cenu platí jen první požadavek na instanci —
+    // což je pořád důvod, proč brána zůstává před čtením.
     //
     // Soudí se **pořadí ve zdroji**, protože zevnitř jednoho procesu to jinak
     // změřit nejde: čtení protokolu nemá pozorovatelný následek, na kterém by

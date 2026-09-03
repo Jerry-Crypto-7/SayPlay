@@ -138,6 +138,15 @@ type Read<T, R extends ClientReason = ClientReason> =
  * odpověď — na rozdíl od ovládacího souboru stropu, který se schválně čte při
  * každém volání, aby operátor mohl za incidentu sáhnout na páku bez restartu.
  *
+ * ⚠ **Ověření hashem se tím posouvá z „při každém volání" na „jednou za
+ * instanci modulu", a to je vědomá výměna.** Proces, který soubor přečetl a
+ * kterému se `evals/frozen/` **pod rukama** změní, bude dál vydávat staré
+ * bajty a `MANIFEST_MISMATCH` už nezvedne. Do repa nikdo do toho adresáře
+ * nezapisuje a nasazený souborový systém je jen pro čtení, takže jediný živý
+ * tvar je `next dev` nad pracovním stromem, který někdo edituje — tam si
+ * změny korpusu vyžádají restart. Zmrazení jako takové to neoslabuje:
+ * `evals/__tests__/frozen.test.ts` hashuje z disku, ne přes tenhle klient.
+ *
  * **Ukládá se jen úspěch.** Nečitelný korpus je vada stroje nebo nasazení a ta
  * se dá spravit; zapamatovaný neúspěch by z jednoho výpadku disku udělal stav,
  * ze kterého se instance nedostane jinak než restartem. Neúspěšná cesta navíc

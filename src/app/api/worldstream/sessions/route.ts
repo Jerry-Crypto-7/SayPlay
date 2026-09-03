@@ -301,6 +301,11 @@ export async function POST(request: Request): Promise<Response> {
     // = 2,2 s úplně zablokovaného Node, a s ním stojí i SSE proudy, snapshot
     // i preview. V tomhle pořadí stojí odmítnutí ~0.
     //
+    // ⚠ **Od `f5b1b49` je `serverGrammar()` memoizované, takže těch 2,223 ms
+    // platí jen pro PRVNÍ požadavek na instanci.** Pořadí se přesto nemění:
+    // tu cenu platí každá nová instance znovu, a na Vercelu jich naskakuje
+    // tolik, kolik jich zrovna běží. Kdo to půjde přeměřit, naměří nulu.
+    //
     // Kontrola a zvýšení čítače jsou jeden synchronní krok (`acquireSlot`),
     // takže jsou atomické na smyčce událostí. Jediný odchod z route mezi
     // vzetím slotu a `work.finally` níž je nečitelný protokol — a ten slot
