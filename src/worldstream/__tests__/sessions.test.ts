@@ -159,7 +159,14 @@ describe('strop registru drží i tehdy, když nikdo nedokončí', () => {
       }
     });
 
-    for (let i = 0; i < MAX_LIVE_SESSIONS + 2; i += 1) worldSession(`tlačí-${i}`, T0 + 1 + i);
+    // ⚠ **Tlačící relace mají diváka taky, a je to nutné.** Od 4. 9. 2026 je
+    // otevřený proud známkou života, takže první kolo sledovanou relaci
+    // přeskočí a v pořadí třetího kola ji posune dozadu. Kdyby diváka měla
+    // jediná, byla by to poslední oběť a test by měřil ticho. Takhle je
+    // `since` u všech stejné, pořadí rozhodne vznik — a sledovaná je nejstarší.
+    for (let i = 0; i < MAX_LIVE_SESSIONS + 2; i += 1) {
+      worldSession(`tlačí-${i}`, T0 + 1 + i).session.events.subscribe(() => {});
+    }
 
     expect(getSession('sledovaná'), 'relace se vůbec neuvolnila').toBeNull();
     expect(viděno, 'proud nedostal koncový rámec, takže se nikdy neuklidí').toContain(
@@ -184,5 +191,61 @@ describe('strop registru drží i tehdy, když nikdo nedokončí', () => {
     }
 
     expect(liveSessionCount()).toBeLessThanOrEqual(MAX_LIVE_SESSIONS);
+  });
+});
+
+/**
+ * **Otevřený proud je první signál života, `sequence` až druhý** — nález
+ * nezávislé revize 4. 9. 2026, `VERDICT: blocking`.
+ *
+ * Stárnutí se do téhle revize soudilo výhradně podle `sequence`, jenže tím
+ * v provozu po `world.ready` nehne nic: meshuje prohlížeč, žádná route mu
+ * rámec nevrací a tep SSE se píše rovnou do proudu, ne do logu. Číslo tedy
+ * zamrzne pár vteřin po založení **každé** relaci a hodina se počítá odtamtud.
+ * Sada to neviděla, protože všechny tři testy nahoře hýbou proudem přes
+ * `session.queue()`, což je API, na které se žádnými dveřmi nedá dosáhnout.
+ * Tenhle blok proto `queue()` **nevolá vůbec** a měří jen odběr logu — přesně
+ * to, co drží `sessions/[sessionId]/events/route.ts`, dokud klient neodejde.
+ */
+describe('relace, na kterou se někdo dívá, nezestárne', () => {
+  it('otevřený proud drží relaci naživu i tři hodiny bez jediného rámce', () => {
+    const stored = worldSession('sledovaná', T0);
+    // Přesně to, co dělá route: odběr logu, který žije, dokud žije spojení.
+    stored.session.events.subscribe(() => {});
+
+    openSession('budička-1', 1, T0 + 1);
+    openSession('budička-2', 1, T0 + IDLE_SESSION_MS + 1);
+    openSession('budička-3', 1, T0 + 3 * IDLE_SESSION_MS);
+
+    expect(getSession('sledovaná'), 'relaci s otevřeným proudem utnulo stárnutí').not.toBeNull();
+    expect(stored.fault, 'divákovi se relace zavřela pod rukama').toBeNull();
+  });
+
+  it('jakmile divák odejde, hodina začne běžet a relace se uvolní', () => {
+    const stored = worldSession('opuštěná', T0);
+    const unsubscribe = stored.session.events.subscribe(() => {});
+
+    openSession('budička-1', 1, T0 + 1);
+    // Klient zavřel kartu: route se uklidila a odběr pustila.
+    unsubscribe();
+
+    openSession('budička-2', 1, T0 + 2);
+    expect(getSession('opuštěná'), 'relace odešla dřív, než uplynula hodina').not.toBeNull();
+
+    openSession('budička-3', 1, T0 + 2 + IDLE_SESSION_MS);
+    expect(getSession('opuštěná'), 'relace bez diváka nezestárla vůbec').toBeNull();
+  });
+
+  it('sledováním se strop obejít nedá — třetí kolo pustí i relace s divákem', () => {
+    for (let i = 0; i < 200; i += 1) {
+      const stored = worldSession(`sledovaná-${i}`, T0 + i);
+      stored.session.events.subscribe(() => {});
+    }
+
+    // Kdyby divák relaci vyjímal ze všech tří kol, byl by to nový, pohodlnější
+    // způsob, jak registr přeplnit: `/events` nemá admission ani strop
+    // (`T16-streamadmit`), takže proudů může viset libovolně mnoho.
+    expect(liveSessionCount()).toBeLessThanOrEqual(MAX_LIVE_SESSIONS);
+    expect(watchedSessionCount()).toBe(liveSessionCount());
   });
 });

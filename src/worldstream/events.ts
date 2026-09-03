@@ -93,6 +93,15 @@ export interface SessionEventLog {
   readonly sequence: number;
   readonly length: number;
   /**
+   * Kolik odběratelů proud právě drží.
+   *
+   * Registr to čte jako **známku života relace** (`idleFor` v `sessions.ts`).
+   * Otevřený SSE proud je jediné, co o přítomnosti diváka vypovídá i tehdy,
+   * když `sequence` stojí — a po `world.ready` stojí skoro pořád, protože
+   * meshuje prohlížeč a serveru se do logu nic nehlásí.
+   */
+  readonly watchers: number;
+  /**
    * Zapíše rámec a přidělí mu číslo — nebo sloučí s koncem logu, když to
    * `COALESCABLE_EVENT_TYPES` dovolí. Vrací rámec, který v logu skutečně stojí.
    */
@@ -163,6 +172,10 @@ export function createEventLog(sessionId: string, options: EventLogOptions = {})
 
     get length() {
       return entries.length;
+    },
+
+    get watchers() {
+      return listeners.size;
     },
 
     append(type, payload, subject = '') {

@@ -138,11 +138,34 @@ function release(sessionId: string): void {
   watched.delete(sessionId);
 }
 
-/** Stojí ta relace tak dlouho, že už se na ni nikdo nedívá? */
+/**
+ * Stojí ta relace tak dlouho, že už se na ni nikdo nedívá?
+ *
+ * **Dva signály života, otevřený proud je ten první.** ⚠ Nález nezávislé
+ * revize 4. 9. 2026, `VERDICT: blocking`: samotné `sequence` tuhle otázku
+ * zodpovědět neumí. Po `world.ready` ho v provozu **nehne nic** — meshování
+ * běží v prohlížeči a žádná route mu rámec nevrací (`session.queue()` nemá
+ * mimo testy volajícího), tep SSE se píše rovnou do proudu a do logu nejde.
+ * Číslo tedy zamrzne pár vteřin po založení úplně každé relaci a hodina se
+ * počítá od té chvíle. Jeden porotce, jedna věta, hodinu otevřená karta —
+ * a další POST kohokoli jiného mu tu relaci uklidí pod rukama, i když
+ * registr nikde netlačí na strop.
+ *
+ * Otevřený odběr logu je proti tomu přímý důkaz, že na druhé straně někdo
+ * je: `sessions/[sessionId]/events/route.ts` ho drží přesně tak dlouho, jak
+ * dlouho drží spojení, a pouští ho, jakmile klient odejde. Relace s divákem
+ * proto stárnout nezačne; `sequence` zůstává jako druhý signál pro relace,
+ * které nikdo nesleduje a přesto se v nich něco děje.
+ *
+ * ⚠ **Strop tím obejít nejde.** Tohle je jen první kolo `evict()`. Když se
+ * registr přeplní samými sledovanými relacemi, třetí kolo je pustí stejně —
+ * proto se `watched` obnovuje i tady, aby se v tom pořadí sledovaná relace
+ * řadila za tu, kterou nikdo nedrží, místo před ni.
+ */
 function idleFor(sessionId: string, stored: StoredSession, now: number): boolean {
-  const { sequence } = stored.session.events;
+  const { sequence, watchers } = stored.session.events;
   const seen = watched.get(sessionId);
-  if (seen === undefined || seen.sequence !== sequence) {
+  if (seen === undefined || seen.sequence !== sequence || watchers > 0) {
     watched.set(sessionId, { sequence, since: now });
     return false;
   }
@@ -152,9 +175,10 @@ function idleFor(sessionId: string, stored: StoredSession, now: number): boolean
 /**
  * Uvolní, co registr držet nemá — **ve třech kolech, od nejlevnější ztráty**.
  *
- * 1. Relace, kterým proud hodinu stojí. Ty nikdo nesleduje, ať jsou v jakékoli
- *    fázi. **Stárnutí je na pohybu proudu, ne na fázi** — relace, které rámce
- *    pořád přibývají, se tohle kolo nedotkne, i kdyby běžela den.
+ * 1. Relace, které nikdo nesleduje a hodinu se v nich nic nestalo, ať jsou
+ *    v jakékoli fázi. **Stárnutí je na divákovi a na pohybu proudu, ne na
+ *    fázi** — relace s otevřeným proudem nebo s přibývajícími rámci se tohle
+ *    kolo nedotkne, i kdyby běžela den (`idleFor` níž).
  * 2. Nad stropem: nejstarší **dokončené**, tedy `complete` a `failed`.
  * 3. Pořád nad stropem: ty, které **stojí nejdéle**, bez ohledu na fázi.
  *
