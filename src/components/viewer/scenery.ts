@@ -129,7 +129,25 @@ export function buildProgramGroup(
   material: Material,
   options: ProgramBuildOptions = {},
 ): ProgramBuild {
-  const placements = compilePlacements(program);
+  return buildPlacementGroup(compilePlacements(program), palette, material, options);
+}
+
+/**
+ * Hotové kusy → skupina k zavěšení do scény.
+ *
+ * Vydělené z `buildProgramGroup` 3. 9. 2026 kvůli `WorldstreamStage`. Hrubý
+ * svět (`buildProxyWorld`) si kusy zkompiluje sám, protože je musí **rozdělit**
+ * mezi sloty a kulisu, takže mu z programu nezbude nic k překompilování — a
+ * druhá cesta, jak se kusy dostanou na scénu, je přesně to, co se tady nesmí
+ * stát. Kdyby stage instancovala po svém, měl by jeden a týž kus jiný počet
+ * kreslicích volání podle toho, kdo ho kreslí.
+ */
+export function buildPlacementGroup(
+  placements: readonly GeomPlacement[],
+  palette: Palette,
+  material: Material,
+  options: ProgramBuildOptions = {},
+): ProgramBuild {
   const { instanced, baked } = split(placements);
   const shadows = options.shadows ?? false;
   const name = options.name ?? 'program';
