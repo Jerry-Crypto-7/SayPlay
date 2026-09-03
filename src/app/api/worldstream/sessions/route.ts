@@ -145,7 +145,7 @@ export function cloudEmitter(): BlueprintEmitter | null {
 
   return async (request: UpstreamRequest): Promise<unknown> => {
     const call = { prompt: request.user, request };
-    const reservation = cap.reserve(branch.worstCaseUsd(call));
+    const reservation = await cap.reserve(branch.worstCaseUsd(call));
     if (!reservation.ok) throw new Error(`${reservation.reason}: ${reservation.detail}`);
 
     let outcome;
@@ -154,11 +154,11 @@ export function cloudEmitter(): BlueprintEmitter | null {
     } catch (thrown) {
       // Rezervaci vyrovnat **před** rethrow, jinak visí do restartu procesu a
       // strop se sám utáhne — táž oprava jako v `runPipeline`.
-      reservation.settle('unknown');
+      await reservation.settle('unknown');
       throw thrown;
     }
 
-    reservation.settle(outcome.usage === null ? 'unknown' : costUsd(outcome.usage, branch.pricing));
+    await reservation.settle(outcome.usage === null ? 'unknown' : costUsd(outcome.usage, branch.pricing));
     if (!outcome.ok) throw new Error(`${outcome.reason}: ${outcome.detail}`);
     return outcome.body;
   };

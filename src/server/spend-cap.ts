@@ -50,6 +50,8 @@
 
 import { readFileSync } from 'node:fs';
 
+import { ledgerFromEnv, memoryLedger, resetProcessLedger, type SpendLedger } from './spend-store';
+
 /** Spotřeba tokenů tak, jak ji hlásí poskytovatel. */
 export interface Usage {
   readonly inputTokens: number;
@@ -110,7 +112,23 @@ export type RefusalReason =
    * Není to obrana proti nemožnému: `NaN` v porovnání vždycky vyjde `false`,
    * takže by tiše prošlo **každé** volání a strop by se choval jako vypnutý.
    */
-  | 'INVALID_ESTIMATE';
+  | 'INVALID_ESTIMATE'
+  /**
+   * Účetní kniha neodpověděla, nebo odpověděla nesmyslem.
+   *
+   * Zavřené selhání, ze stejného důvodu jako rozbitý ovládací soubor: neznámý
+   * zůstatek je přesně ten stav, ve kterém se placené volání dělat nemá. Průchod
+   * by z výpadku úložiště udělal způsob, jak strop vypnout.
+   */
+  | 'LEDGER_UNAVAILABLE'
+  /**
+   * Běžíme na serverless a **žádné sdílené úložiště není nastavené**.
+   *
+   * Kniha v paměti procesu tam totiž neznamená nic: každá studená instance
+   * začíná s plným zůstatkem, takže strop 5 USD je ve skutečnosti 5 USD × počet
+   * instancí. Do 3. 9. 2026 tomu bránil jen komentář v `.env.example`.
+   */
+  | 'STORE_UNCONFIGURED';
 
 export interface Reserved {
   readonly ok: true;
@@ -135,8 +153,17 @@ export interface Reserved {
    * že účtenka `{input_tokens: -1e9}` strhla správně 0,2195 USD a operátorovi
    * ohlásila `costUsd=-5000`. Opakované vyrovnání vrátí totéž číslo jako to
    * první, protože strop se podruhé nehnul.
+   *
+   * **Od P15 T29 je to `Promise`**, protože kniha, do které se zapisuje, může
+   * být na jiném stroji. Volající ho musí `await`nout ještě před odpovědí:
+   * nedokončený zápis se na serverless nedokončí nikdy — instance po odeslání
+   * odpovědi zamrzne a rezervace by zůstala držená až do vypršení klíče.
+   *
+   * **Selhání zápisu se nepřepočítává na nulu.** Když kniha neodpoví, zůstane
+   * držená celá rezervace: to je horní odhad, který strop spíš přestřelí, než
+   * aby ho pustil.
    */
-  settle(actualUsd: number | 'unknown'): number;
+  settle(actualUsd: number | 'unknown'): Promise<number>;
 }
 
 export interface Refused {
@@ -167,37 +194,52 @@ function parseControl(raw: string): CapControl | null {
 }
 
 export class SpendCap {
-  #spentUsd = 0;
-  #reservedUsd = 0;
   /**
-   * Povolená **placená** volání. Roste při **rezervaci**, ne při vyrovnání, a zpátky se
-   * nevrací: volání, které se smělo uskutečnit, se uskutečnilo. Kdyby se
-   * počítalo až po úspěchu, byl by padající poskytovatel cesta, jak strop
-   * obejít — týž důvod, proč se neznámá cena účtuje nejhorším případem.
+   * **Poslední součty, které kniha vrátila** — ne vlastní účetnictví.
    *
-   * **Rezervace za nula dolarů se nepočítá, a je to oprava naměřené vady**
-   * (nezávislá revize 31. 8. 2026). Obě větve zdarma — offline `mock`
-   * (`src/server/mock/index.ts`) i nenakonfigurovaný upstream — hlásí
-   * `worstCaseUsd: () => 0`, a offline větev je **výchozí**. Dokud se počítaly,
-   * dvousetkrát napsaná věta do nasazeného dema vyčerpala strop, který na
-   * nulových voláních nemohl nic uspořit: od 201. požadavku dostal každý
-   * návštěvník 429 `CALL_CAP_EXHAUSTED` při útratě 0 USD a nula volání
-   * k poskytovateli. U živé větve bez klíče je to ještě horší — poctivá 503
-   * `BRANCH_UNCONFIGURED` se po dvou stech pokusech změní na zavádějící 429.
+   * Do P15 T29 tady bydlel stav (`#spentUsd`, `#reservedUsd`, `#callsMade`) a
+   * strop platil přesně tak daleko, jak sahá jeden proces. Autoritou je od té
+   * doby `SpendLedger` (`./spend-store.ts`); tyhle dvě čísla jsou jen to, co
+   * z ní naposledy přišlo, a slouží `snapshot()`, tedy diagnostice.
    *
-   * **Placené volání takhle proklouznout nemůže.** Nejhorší případ živé větve
-   * je vždy kladný: `upstreamConfigFromEnv` bez kladné ceny výstupu vrací
-   * `null` a `maxOutputTokens` prochází `positiveNumber`. Nula tedy znamená
-   * „tahle větev nestojí nic", nikdy „ceník je opsaný špatně" — a přesně na ten
-   * druhý případ tenhle strop je.
+   * `snapshot()` proto **neptá se** — nesmí, je synchronní a čtení knihy je
+   * síťový let. Kdo chce čerstvá čísla, vezme si je z odmítnutí, které je nese.
    */
-  #callsMade = 0;
+  #seenUsd = 0;
+  #seenCalls = 0;
+  /**
+   * Dolary, které **tahle instance** zarezervovala a ještě nevyrovnala.
+   *
+   * Je to jediné číslo tady, které kniha neurčuje, a schválně: měří se jím
+   * vlastnost volajícího, ne zůstatek — „každá cesta ven svou rezervaci
+   * vyrovnala". Nevyrovnaná rezervace drží peníze až do konce procesu a strop
+   * se sám utáhne; naměřeno v `runPipeline` 1. 9. 2026 a hlídá to jedenáct
+   * asercí `reservedUsd === 0` napříč `src/server/__tests__`.
+   *
+   * Napříč instancemi neznamená nic a znamenat nemá — od toho je kniha.
+   */
+  #heldUsd = 0;
   readonly #defaults: CapControl;
   readonly #controlPath: string | null;
+  /**
+   * Kniha, ve které to počítadlo doopravdy bydlí. `null` znamená **odmítat
+   * všechno**: běžíme na serverless a sdílené úložiště nikdo nenastavil, takže
+   * strop by byl dekorace (`STORE_UNCONFIGURED`).
+   *
+   * Výchozí hodnota je **vlastní kniha v paměti**, ne procesová. Strop postavený
+   * ručně (typicky v testu) tak nikdy nepřebírá cizí zůstatek; jediné místo,
+   * kde se sdílí, je `processSpendCap()` níž, a to je schválně jedno místo.
+   */
+  readonly #ledger: SpendLedger | null;
 
-  constructor(defaults: CapControl, controlPath: string | null = null) {
+  constructor(
+    defaults: CapControl,
+    controlPath: string | null = null,
+    ledger: SpendLedger | null = memoryLedger(),
+  ) {
     this.#defaults = defaults;
     this.#controlPath = controlPath;
+    this.#ledger = ledger;
   }
 
   /**
@@ -221,11 +263,17 @@ export class SpendCap {
     return {
       ...control,
       callCap,
-      spentUsd: this.#spentUsd,
-      reservedUsd: this.#reservedUsd,
-      remainingUsd: control.capUsd - this.#spentUsd - this.#reservedUsd,
-      callsMade: this.#callsMade,
-      callsRemaining: callCap - this.#callsMade,
+      // **`spentUsd` nese držené i utracené dohromady.** Kniha je jeden součet,
+      // ne dva: mezi rezervací a jejím vyrovnáním se z téhož čísla stane útrata
+      // a rozdělit to zpátky by u sdíleného úložiště šlo jen odhadem.
+      //
+      // `reservedUsd` je proti tomu **jen to, co drží tahle instance** — viz
+      // `#heldUsd`. Není to podíl na knize a nesmí se tak číst.
+      spentUsd: this.#seenUsd,
+      reservedUsd: this.#heldUsd,
+      remainingUsd: control.capUsd - this.#seenUsd,
+      callsMade: this.#seenCalls,
+      callsRemaining: callCap - this.#seenCalls,
     };
   }
 
@@ -235,8 +283,18 @@ export class SpendCap {
    * Vypnutý strop rezervaci **pořád vede** a útratu počítá dál. Bez toho by se
    * po zapnutí vracel k číslu, které mezitím přestalo platit, a strop by kryl
    * jen tu část provozu, kterou zrovna viděl.
+   *
+   * ## Přičti, podívej se, případně vrať
+   *
+   * Rezervace je **jeden atomický zápis** do knihy (`add(+worst, +1)`) a teprve
+   * pak se soudí součet, který z ní přišel. Přeteče-li, tentýž zápis se odečte
+   * zpátky. Pořadí „přečti, rozmysli, zapiš" by se sem nedalo napsat bezpečně:
+   * mezi čtení a zápis se souběžný požadavek vejde a poslední kredit by koupili
+   * oba. Tohle pořadí naopak umí strop krátkodobě **přestřelit** — dva souběžní
+   * uvidí přeteklý součet a vrátí se oba, takže se odmítnou i tehdy, když by se
+   * jeden vešel. U peněz je to ta správná strana omylu.
    */
-  reserve(worstCaseUsd: number): Reservation {
+  async reserve(worstCaseUsd: number): Promise<Reservation> {
     const control = this.#control();
     if (control === null)
       return {
@@ -254,10 +312,84 @@ export class SpendCap {
         snapshot: this.snapshot(),
       };
 
+    if (this.#ledger === null)
+      return {
+        ok: false,
+        reason: 'STORE_UNCONFIGURED',
+        detail:
+          'this deployment runs serverless and has no shared spend store, ' +
+          'so a per-process cap would hold nothing; no call was made',
+        snapshot: this.snapshot(),
+      };
+
+    /**
+     * Kdy se volání **započítá** do stropu na počet, a proč zrovna takhle.
+     *
+     * Počítadlo roste při **rezervaci**, ne při vyrovnání, a zpátky se
+     * nevrací: volání, které se smělo uskutečnit, se uskutečnilo. Kdyby se
+     * počítalo až po úspěchu, byl by padající poskytovatel cesta, jak strop
+     * obejít — týž důvod, proč se neznámá cena účtuje nejhorším případem.
+     *
+     * **Rezervace za nula dolarů se nepočítá, a je to oprava naměřené vady**
+     * (nezávislá revize 31. 8. 2026). Obě větve zdarma — offline `mock`
+     * (`src/server/mock/index.ts`) i nenakonfigurovaný upstream — hlásí
+     * `worstCaseUsd: () => 0`, a offline větev je **výchozí**. Dokud se počítaly,
+     * dvousetkrát napsaná věta do nasazeného dema vyčerpala strop, který na
+     * nulových voláních nemohl nic uspořit: od 201. požadavku dostal každý
+     * návštěvník 429 `CALL_CAP_EXHAUSTED` při útratě 0 USD a nula volání
+     * k poskytovateli. U živé větve bez klíče je to ještě horší — poctivá 503
+     * `BRANCH_UNCONFIGURED` se po dvou stech pokusech změní na zavádějící 429.
+     *
+     * **Placené volání takhle proklouznout nemůže.** Nejhorší případ živé větve
+     * je vždy kladný: `upstreamConfigFromEnv` bez kladné ceny výstupu vrací
+     * `null` a `maxOutputTokens` prochází `positiveNumber`. Nula tedy znamená
+     * „tahle větev nestojí nic", nikdy „ceník je opsaný špatně" — a přesně na ten
+     * druhý případ tenhle strop je.
+     */
+    const countedCall = worstCaseUsd > 0 ? 1 : 0;
+    let totals;
+    try {
+      totals = await this.#ledger.add(worstCaseUsd, countedCall);
+    } catch (thrown) {
+      return {
+        ok: false,
+        reason: 'LEDGER_UNAVAILABLE',
+        detail: `the ${this.#ledger.id} spend ledger did not answer: ${(thrown as Error).message}`,
+        snapshot: this.snapshot(),
+      };
+    }
+    this.#seenUsd = totals.usd;
+    this.#seenCalls = totals.calls;
+
+    /**
+     * Vrátit, co si tahle rezervace vzala. Použije se na obou odmítnutích níž.
+     *
+     * Selhání se **polkne schválně**: zápis, který nejde vrátit, drží peníze
+     * navíc, tedy zavírá, ne otevírá. Vyhodit ho ven by z odmítnutí udělalo
+     * `LEDGER_UNAVAILABLE` a zamlčelo skutečnou příčinu, kterou už známe.
+     */
+    const giveBack = async (): Promise<void> => {
+      try {
+        const returned = await this.#ledger?.add(-worstCaseUsd, -countedCall);
+        // **Vrácená čísla se musí zapsat i sem.** `snapshot()` je jediná
+        // diagnostika, kterou strop vydává, a odmítnutí ji nese s sebou; bez
+        // tohohle řádku by ukazovala nafouklý součet, který na knize existoval
+        // jen ty dvě operace mezi přičtením a vrácením. Odmítnuté volání by
+        // pak v odpovědi vypadalo jako započítané.
+        if (returned !== undefined) {
+          this.#seenUsd = returned.usd;
+          this.#seenCalls = returned.calls;
+        }
+      } catch {
+        /* účet zůstane vyšší, než by musel — u stropu ta správná strana */
+      }
+    };
+
     // Před dolarovým stropem schválně: tenhle drží i tehdy, když je ceník
     // opsaný špatně, a právě proto tu je.
     const callCap = control.callCap ?? DEFAULT_CALL_CAP;
-    if (control.enabled && this.#callsMade >= callCap)
+    if (control.enabled && totals.calls > callCap) {
+      await giveBack();
       return {
         ok: false,
         reason: 'CALL_CAP_EXHAUSTED',
@@ -265,28 +397,36 @@ export class SpendCap {
         // diagnostika, kterou má (logovací kanál pod tímhle není). Ořez pro
         // veřejnost dělá `PUBLIC_REFUSAL` v `src/app/api/generate/route.ts` —
         // dělí se to tam, aby žádná příčina neodešla ven omylem.
-        detail: `the call cap of ${callCap} calls is used up (made ${this.#callsMade}); this call was not made`,
+        //
+        // **Utracené dolary jsou v té větě schválně.** Počítadlo roste
+        // i tehdy, když poskytovatel všechno odmítne (propadlý klíč), a bez
+        // toho čísla vypadá takové vyčerpání stejně jako vyčerpaný rozpočet.
+        // „200 volání, 0.000000 USD" je naopak čitelná diagnóza: nezaplatilo se
+        // za nic, takže to nebyl rozpočet, kdo došel.
+        detail:
+          `the call cap of ${callCap} calls is used up (made ${totals.calls - countedCall}, ` +
+          `spent ${(totals.usd - worstCaseUsd).toFixed(6)} USD); this call was not made`,
         snapshot: this.snapshot(),
       };
+    }
 
-    const wouldHold = this.#spentUsd + this.#reservedUsd + worstCaseUsd;
-    if (control.enabled && wouldHold > control.capUsd)
+    if (control.enabled && totals.usd > control.capUsd) {
+      await giveBack();
       return {
         ok: false,
         reason: 'CAP_EXHAUSTED',
         detail:
-          `this call would hold ${wouldHold.toFixed(6)} USD against a cap of ` +
+          `this call would hold ${totals.usd.toFixed(6)} USD against a cap of ` +
           `${control.capUsd.toFixed(6)} USD; it was not made`,
         snapshot: this.snapshot(),
       };
+    }
 
-    this.#reservedUsd += worstCaseUsd;
-    // Jen placená volání, viz `#callsMade`. Větev zdarma nemá co ušetřit.
-    if (worstCaseUsd > 0) this.#callsMade += 1;
+    this.#heldUsd += worstCaseUsd;
+
     let settledUsd: number | null = null;
-    const release = (actualUsd: number | 'unknown'): number => {
+    const release = async (actualUsd: number | 'unknown'): Promise<number> => {
       if (settledUsd !== null) return settledUsd;
-      this.#reservedUsd -= worstCaseUsd;
       // Číslu od poskytovatele se tady NEVĚŘÍ, a je to naměřené: `Math.max(0, NaN)`
       // je zase `NaN`, takže jediná vadná účtenka otráví součet a od té chvíle je
       // `wouldHold > capUsd` napořád nepravda — strop je do konce běhu procesu
@@ -313,7 +453,32 @@ export class SpendCap {
       // téhož dne rezervuje jeden token na znak. Kdyby se tam mez vrátila
       // k průměru, začne tenhle řádek podúčtovat každé poctivé volání.
       settledUsd = usable ? Math.min(actualUsd, worstCaseUsd) : worstCaseUsd;
-      this.#spentUsd += settledUsd;
+      // Vyrovnáno, takže tahle rezervace už nic nedrží. Odečítá se **jednou**:
+      // druhé vyrovnání se vrátilo o pár řádků výš.
+      this.#heldUsd -= worstCaseUsd;
+
+      // Rezervace se mění na útratu **rozdílem**, ne novým zápisem: v knize je
+      // to jedno číslo a `add()` je jediná operace, která ho umí posunout
+      // atomicky. Nula znamená „účtenka sedí na rezervaci", a pak se nezapisuje
+      // vůbec — jeden síťový let míň za každé volání, které nic nepřeplatilo.
+      //
+      // **Počítadlo volání se nevrací nikdy**, ani když se strhne nula. Volání,
+      // které se smělo uskutečnit, se uskutečnilo; opačné pravidlo by
+      // z padajícího poskytovatele udělalo neomezené volno. Rozhodnuto P15 T29
+      // proti druhé možnosti („vrať počet, když `billed === 0`") — diagnostiku
+      // propadlého klíče nese místo toho text odmítnutí u `CALL_CAP_EXHAUSTED`.
+      const delta = settledUsd - worstCaseUsd;
+      if (delta !== 0) {
+        try {
+          const totals = await this.#ledger?.add(delta, 0);
+          if (totals !== undefined) {
+            this.#seenUsd = totals.usd;
+            this.#seenCalls = totals.calls;
+          }
+        } catch {
+          /* nepovedlo se snížit: drží se dál celá rezervace, tedy horní odhad */
+        }
+      }
       return settledUsd;
     };
 
@@ -349,7 +514,6 @@ export const DEFAULT_CALL_CAP = 200;
  * Překlep v proměnné jinak tiše zvedne strop na výchozí hodnotu; nula zastaví
  * provoz a je hned vidět.
  */
-let processCap: SpendCap | null = null;
 
 /**
  * Jediný strop procesu.
@@ -367,9 +531,16 @@ let processCap: SpendCap | null = null;
  * parametrem `env`.
  */
 export function processSpendCap(): SpendCap {
-  processCap ??= spendCapFromEnv(process.env);
-  return processCap;
+  const holder = globalThis as Record<string, unknown>;
+  // **Na `globalThis`, ne v modulové proměnné** — táž oprava jako u účetní
+  // knihy. Modulová proměnná je jedna na graf modulů, a Next jich staví víc
+  // (server components, HMR ve vývoji); dva grafy = dva stropy = dvojnásobek.
+  // Napříč instancemi to nespojí ani tohle, na to je kniha.
+  holder[PROCESS_CAP_KEY] ??= spendCapFromEnv(process.env);
+  return holder[PROCESS_CAP_KEY] as SpendCap;
 }
+
+const PROCESS_CAP_KEY = '__worldsmithSpendCap';
 
 /**
  * Jen pro testy: zahodí singleton, aby si další test mohl nastavit vlastní prostředí.
@@ -382,7 +553,8 @@ export function processSpendCap(): SpendCap {
  * nesmí sáhnout vůbec (hlídá to lexikální brána v `spend-cap.test.ts`).
  */
 export function resetProcessSpendCap(): void {
-  processCap = null;
+  delete (globalThis as Record<string, unknown>)[PROCESS_CAP_KEY];
+  resetProcessLedger();
 }
 
 export function spendCapFromEnv(env: Record<string, string | undefined>): SpendCap {
@@ -394,5 +566,12 @@ export function spendCapFromEnv(env: Record<string, string | undefined>): SpendC
   const rawCalls = env.WORLDSMITH_CALL_CAP;
   const parsedCalls = rawCalls === undefined ? DEFAULT_CALL_CAP : Number(rawCalls);
   const callCap = Number.isInteger(parsedCalls) && parsedCalls >= 0 ? parsedCalls : 0;
-  return new SpendCap({ enabled: true, capUsd, callCap }, env.WORLDSMITH_SPEND_CAP_FILE ?? null);
+  // **Kniha z prostředí, a `null` z ní znamená odmítat** — serverless bez
+  // sdíleného úložiště, viz `ledgerFromEnv()`. Strop, který se resetuje
+  // s chladným startem, je horší než žádný: tváří se, že platí.
+  return new SpendCap(
+    { enabled: true, capUsd, callCap },
+    env.WORLDSMITH_SPEND_CAP_FILE ?? null,
+    ledgerFromEnv(env),
+  );
 }

@@ -688,7 +688,7 @@ describe('strop utrácení placené větve', () => {
     // sám, začal by na nule, tuhle rezervaci by nikdy neviděl a volání pustil —
     // a přesně tak se to chovalo do 3. 9. 2026: sdílený strop odmítl na volání
     // #38, strop na požadavek neodmítl ani po šedesáti.
-    const held = WORLDSTREAM_SPEND_CAP.reserve(DEFAULT_CAP_USD);
+    const held = await WORLDSTREAM_SPEND_CAP.reserve(DEFAULT_CAP_USD);
     expect(held.ok).toBe(true);
 
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
@@ -704,7 +704,7 @@ describe('strop utrácení placené větve', () => {
       expect(fetchSpy).not.toHaveBeenCalled();
     } finally {
       fetchSpy.mockRestore();
-      if (held.ok) held.settle(0);
+      if (held.ok) await held.settle(0);
       vi.unstubAllEnvs();
     }
   });

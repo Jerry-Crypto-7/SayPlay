@@ -100,10 +100,15 @@ function branchFor(env: NodeJS.ProcessEnv): GenerationBranch {
  * detail by tiše odešel ven i s čísly.
  */
 const PUBLIC_REFUSAL: Record<RefusalReason, string> = {
-  CAP_EXHAUSTED: 'the spend cap for this process is used up; no further calls will be made',
-  CALL_CAP_EXHAUSTED: 'the call cap for this process is used up; no further calls will be made',
+  CAP_EXHAUSTED: 'the spend cap is used up; no further calls will be made',
+  CALL_CAP_EXHAUSTED: 'the call cap is used up; no further calls will be made',
   CONTROL_UNREADABLE: 'the spend cap is misconfigured; no calls will be made until it is fixed',
   INVALID_ESTIMATE: 'the spend cap could not price this call; it was not made',
+  // Dvě příčiny knihy (P15 T29) — obě jsou o **účetním úložišti**, ne o
+  // zůstatku, a ven o něm nesmí odejít nic bližšího: existence sdíleného
+  // úložiště je informace o infrastruktuře, ne o téhle žádosti.
+  LEDGER_UNAVAILABLE: 'the spend cap could not be checked right now; this call was not made',
+  STORE_UNCONFIGURED: 'the spend cap is misconfigured; no calls will be made until it is fixed',
 };
 
 /**

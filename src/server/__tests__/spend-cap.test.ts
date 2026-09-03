@@ -18,6 +18,7 @@ import {
   SpendCap,
   spendCapFromEnv,
 } from '../spend-cap';
+import { memoryLedger, type SpendLedger } from '../spend-store';
 
 const PRICING = { usdPerMTokIn: 3, usdPerMTokOut: 15 };
 
@@ -48,9 +49,9 @@ describe('cena se počítá z ohlášené spotřeby', () => {
 });
 
 describe('strop rezervuje dopředu, nezaznamenává zpětně', () => {
-  it('odmítne volání, které by rozpočet přeteklo', () => {
+  it('odmítne volání, které by rozpočet přeteklo', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: 1 });
-    const refused = cap.reserve(1.5);
+    const refused = await cap.reserve(1.5);
     expect(refused.ok).toBe(false);
     if (refused.ok) throw new Error('unreachable');
     expect(refused.reason).toBe('CAP_EXHAUSTED');
@@ -58,56 +59,56 @@ describe('strop rezervuje dopředu, nezaznamenává zpětně', () => {
     expect(cap.snapshot().reservedUsd).toBe(0);
   });
 
-  it('volání přesně na strop projde — strop je mez, ne zákaz posledního dolaru', () => {
+  it('volání přesně na strop projde — strop je mez, ne zákaz posledního dolaru', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: 1 });
-    expect(cap.reserve(1).ok).toBe(true);
+    expect((await cap.reserve(1)).ok).toBe(true);
   });
 
-  it('rozpracované volání drží svůj nejhorší případ ostatním', () => {
+  it('rozpracované volání drží svůj nejhorší případ ostatním', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: 1 });
-    const first = cap.reserve(0.6);
+    const first = await cap.reserve(0.6);
     expect(first.ok).toBe(true);
     // Kdyby se počítala jen utracená částka, obě volání by prošla — v okamžiku
     // rozhodnutí totiž ani jedno ještě nic neutratilo.
-    expect(cap.reserve(0.6).ok).toBe(false);
+    expect((await cap.reserve(0.6)).ok).toBe(false);
   });
 
-  it('vyrovnání skutečnou cenou uvolní rozdíl proti odhadu', () => {
+  it('vyrovnání skutečnou cenou uvolní rozdíl proti odhadu', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: 1 });
-    const reservation = cap.reserve(0.6);
+    const reservation = await cap.reserve(0.6);
     if (!reservation.ok) throw new Error('unreachable');
-    reservation.settle(0.1);
+    await reservation.settle(0.1);
     expect(cap.snapshot().spentUsd).toBeCloseTo(0.1, 10);
     expect(cap.snapshot().reservedUsd).toBe(0);
-    expect(cap.reserve(0.6).ok).toBe(true);
+    expect((await cap.reserve(0.6)).ok).toBe(true);
   });
 
-  it('neznámá cena se účtuje celým odhadem', () => {
+  it('neznámá cena se účtuje celým odhadem', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: 1 });
-    const reservation = cap.reserve(0.6);
+    const reservation = await cap.reserve(0.6);
     if (!reservation.ok) throw new Error('unreachable');
-    reservation.settle('unknown');
+    await reservation.settle('unknown');
     expect(cap.snapshot().spentUsd).toBeCloseTo(0.6, 10);
     // Padající poskytovatel tím pádem není cesta, jak strop obejít.
-    expect(cap.reserve(0.6).ok).toBe(false);
+    expect((await cap.reserve(0.6)).ok).toBe(false);
   });
 
-  it('druhé vyrovnání téže rezervace nedělá nic', () => {
+  it('druhé vyrovnání téže rezervace nedělá nic', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: 10 });
-    const reservation = cap.reserve(1);
+    const reservation = await cap.reserve(1);
     if (!reservation.ok) throw new Error('unreachable');
-    reservation.settle(0.5);
-    reservation.settle(0.5);
-    reservation.settle('unknown');
+    await reservation.settle(0.5);
+    await reservation.settle(0.5);
+    await reservation.settle('unknown');
     expect(cap.snapshot().spentUsd).toBeCloseTo(0.5, 10);
     expect(cap.snapshot().reservedUsd).toBe(0);
   });
 
-  it('záporná ohlášená cena účtuje rezervaci, ne nulu', () => {
+  it('záporná ohlášená cena účtuje rezervaci, ne nulu', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: 1 });
-    const reservation = cap.reserve(0.5);
+    const reservation = await cap.reserve(0.5);
     if (!reservation.ok) throw new Error('unreachable');
-    reservation.settle(-5);
+    await reservation.settle(-5);
     // Dřív se tady účtovala nula a test to tvrdil jako vlastnost. Nula ale
     // znamená, že poskytovatel, který ohlásí nesmysl, volá **zadarmo** — táž
     // díra jako u NaN, jen mírnější. Nesmyslná účtenka proto účtuje celou
@@ -116,29 +117,29 @@ describe('strop rezervuje dopředu, nezaznamenává zpětně', () => {
     expect(cap.snapshot().spentUsd).toBeGreaterThanOrEqual(0);
   });
 
-  it('NaN ani Infinity v účtence strop nevypnou', () => {
+  it('NaN ani Infinity v účtence strop nevypnou', async () => {
     // Naměřeno revizí 21. 8. 2026: `Math.max(0, NaN)` je `NaN`, takže jediná
     // vadná účtenka otrávila součet a od té chvíle byla podmínka
     // `wouldHold > capUsd` napořád nepravda — strop byl do konce běhu procesu
     // vypnutý. Poskytovatel to spustí jediným `1e400` v `usage`.
     for (const poison of [Number.NaN, Number.POSITIVE_INFINITY]) {
       const cap = new SpendCap({ enabled: true, capUsd: 1 });
-      const first = cap.reserve(0.5);
+      const first = await cap.reserve(0.5);
       if (!first.ok) throw new Error('unreachable');
-      first.settle(poison);
+      await first.settle(poison);
 
       expect(Number.isFinite(cap.snapshot().spentUsd), `${String(poison)} otrávil součet`).toBe(true);
-      const second = cap.reserve(0.9);
+      const second = await cap.reserve(0.9);
       expect(second.ok, `po účtence ${String(poison)} strop pustil další volání`).toBe(false);
     }
   });
 
-  it('odhad, který není konečné nezáporné číslo, volání odmítne', () => {
+  it('odhad, který není konečné nezáporné číslo, volání odmítne', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: 1 });
     // `NaN > cap` je `false`, takže bez téhle kontroly by prošlo cokoli a strop
     // by se choval jako vypnutý.
     for (const estimate of [Number.NaN, Number.POSITIVE_INFINITY, -1]) {
-      const refused = cap.reserve(estimate);
+      const refused = await cap.reserve(estimate);
       expect(refused.ok).toBe(false);
       if (refused.ok) throw new Error('unreachable');
       expect(refused.reason).toBe('INVALID_ESTIMATE');
@@ -147,44 +148,44 @@ describe('strop rezervuje dopředu, nezaznamenává zpětně', () => {
 });
 
 describe('vypínač mění chování za běhu, bez nové instance', () => {
-  it('vypnutý strop pustí volání přes rozpočet a útratu pořád počítá', () => {
+  it('vypnutý strop pustí volání přes rozpočet a útratu pořád počítá', async () => {
     const path = controlFile(JSON.stringify({ enabled: false, capUsd: 1 }));
     const cap = new SpendCap({ enabled: true, capUsd: 1 }, path);
-    const reservation = cap.reserve(100);
+    const reservation = await cap.reserve(100);
     expect(reservation.ok).toBe(true);
     if (!reservation.ok) throw new Error('unreachable');
-    reservation.settle(100);
+    await reservation.settle(100);
     expect(cap.snapshot().spentUsd).toBe(100);
   });
 
-  it('zapnutí za běhu platí od dalšího rozhodnutí', () => {
+  it('zapnutí za běhu platí od dalšího rozhodnutí', async () => {
     const path = controlFile(JSON.stringify({ enabled: false, capUsd: 1 }));
     const cap = new SpendCap({ enabled: true, capUsd: 1 }, path);
-    expect(cap.reserve(100).ok).toBe(true);
+    expect((await cap.reserve(100)).ok).toBe(true);
 
     writeFileSync(path, JSON.stringify({ enabled: true, capUsd: 1 }), 'utf8');
-    expect(cap.reserve(100).ok).toBe(false);
+    expect((await cap.reserve(100)).ok).toBe(false);
   });
 
-  it('zvednutí stropu za běhu pustí volání, které předtím neprošlo', () => {
+  it('zvednutí stropu za běhu pustí volání, které předtím neprošlo', async () => {
     const path = controlFile(JSON.stringify({ enabled: true, capUsd: 1 }));
     const cap = new SpendCap({ enabled: true, capUsd: 1 }, path);
-    expect(cap.reserve(50).ok).toBe(false);
+    expect((await cap.reserve(50)).ok).toBe(false);
 
     writeFileSync(path, JSON.stringify({ enabled: true, capUsd: 100 }), 'utf8');
-    expect(cap.reserve(50).ok).toBe(true);
+    expect((await cap.reserve(50)).ok).toBe(true);
   });
 
-  it('chybějící ovládací soubor znamená výchozí hodnoty, ne odmítnutí', () => {
+  it('chybějící ovládací soubor znamená výchozí hodnoty, ne odmítnutí', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: 1 }, controlFile(null));
-    expect(cap.reserve(0.5).ok).toBe(true);
+    expect((await cap.reserve(0.5)).ok).toBe(true);
     expect(cap.snapshot().capUsd).toBe(1);
   });
 
-  it('vadný ovládací soubor odmítá, nepokračuje bez stropu', () => {
+  it('vadný ovládací soubor odmítá, nepokračuje bez stropu', async () => {
     for (const broken of ['{ not json', '{}', '{"enabled":"ano","capUsd":1}', '{"enabled":true,"capUsd":-1}']) {
       const cap = new SpendCap({ enabled: true, capUsd: 100 }, controlFile(broken));
-      const refused = cap.reserve(0.01);
+      const refused = await cap.reserve(0.01);
       expect(refused.ok).toBe(false);
       if (refused.ok) throw new Error('unreachable');
       expect(refused.reason).toBe('CONTROL_UNREADABLE');
@@ -220,11 +221,11 @@ describe('strop na počet volání drží i tehdy, když je ceník opsaný špat
    * roztáhne dolarový strop milionkrát, aniž by si toho kdokoli všiml. Cena se
    * nedá ověřit na správnost, jen na tvar. Počet volání ano.
    */
-  it('odmítne po vyčerpání počtu, i když dolary ještě zbývají', () => {
+  it('odmítne po vyčerpání počtu, i když dolary ještě zbývají', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: 1000, callCap: 3 });
-    for (let i = 0; i < 3; i++) expect(cap.reserve(0.000_001).ok, `volání ${i + 1}`).toBe(true);
+    for (let i = 0; i < 3; i++) expect((await cap.reserve(0.000_001)).ok, `volání ${i + 1}`).toBe(true);
 
-    const refused = cap.reserve(0.000_001);
+    const refused = await cap.reserve(0.000_001);
     expect(refused.ok).toBe(false);
     if (refused.ok) throw new Error('unreachable');
     expect(refused.reason).toBe('CALL_CAP_EXHAUSTED');
@@ -232,54 +233,54 @@ describe('strop na počet volání drží i tehdy, když je ceník opsaný špat
     expect(refused.snapshot.remainingUsd).toBeGreaterThan(999);
   });
 
-  it('odmítnuté volání počet nespotřebuje', () => {
+  it('odmítnuté volání počet nespotřebuje', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: 0.01, callCap: 2 });
-    expect(cap.reserve(1).ok, 'rezervace nad dolarový strop měla být odmítnuta').toBe(false);
+    expect((await cap.reserve(1)).ok, 'rezervace nad dolarový strop měla být odmítnuta').toBe(false);
     expect(cap.snapshot().callsMade, 'odmítnuté volání se započítalo').toBe(0);
-    expect(cap.reserve(0.001).ok).toBe(true);
+    expect((await cap.reserve(0.001)).ok).toBe(true);
     expect(cap.snapshot().callsMade).toBe(1);
   });
 
-  it('detail pro operátora čísla nese — ořez pro veřejnost dělá routa', () => {
+  it('detail pro operátora čísla nese — ořez pro veřejnost dělá routa', async () => {
     // Vlastnost „ven nejdou čísla" se testuje na routě, ne tady: tenhle text je
     // jediná diagnostika, kterou operátor má, a kdyby si ho ořezával strop sám,
     // nepřišel by o ni jen útočník. Viz `PUBLIC_REFUSAL` v route.ts.
     const cap = new SpendCap({ enabled: true, capUsd: 10, callCap: 1 });
-    cap.reserve(0.001);
-    const refused = cap.reserve(0.001);
+    await cap.reserve(0.001);
+    const refused = await cap.reserve(0.001);
     if (refused.ok) throw new Error('unreachable');
     expect(refused.detail).toMatch(/\d/);
   });
 
-  it('vypnutý vypínač počet volání neomezuje, ale pořád ho počítá', () => {
+  it('vypnutý vypínač počet volání neomezuje, ale pořád ho počítá', async () => {
     const cap = new SpendCap({ enabled: false, capUsd: 0, callCap: 1 });
-    expect(cap.reserve(5).ok).toBe(true);
-    expect(cap.reserve(5).ok, 'vypnutý strop odmítl volání').toBe(true);
+    expect((await cap.reserve(5)).ok).toBe(true);
+    expect((await cap.reserve(5)).ok, 'vypnutý strop odmítl volání').toBe(true);
     expect(cap.snapshot().callsMade).toBe(2);
   });
 
-  it('chybějící hodnota v prostředí je výchozí strop, vadná je NULA', () => {
+  it('chybějící hodnota v prostředí je výchozí strop, vadná je NULA', async () => {
     expect(spendCapFromEnv({}).snapshot().callCap).toBe(DEFAULT_CALL_CAP);
     for (const broken of ['', 'hodně', '3.5', '-1']) {
       const cap = spendCapFromEnv({ WORLDSMITH_CALL_CAP: broken });
       expect(cap.snapshot().callCap, `${JSON.stringify(broken)} neskončilo nulou`).toBe(0);
       // Nula znamená zastavený provoz, ne „bez stropu".
-      expect(cap.reserve(0.001).ok, `${JSON.stringify(broken)} pustilo volání`).toBe(false);
+      expect((await cap.reserve(0.001)).ok, `${JSON.stringify(broken)} pustilo volání`).toBe(false);
     }
   });
 
-  it('vadný počet v ovládacím souboru je rozbitý vypínač, ne bez stropu', () => {
+  it('vadný počet v ovládacím souboru je rozbitý vypínač, ne bez stropu', async () => {
     const path = controlFile(JSON.stringify({ enabled: true, capUsd: 1, callCap: -4 }));
-    const refused = new SpendCap({ enabled: true, capUsd: 1 }, path).reserve(0.001);
+    const refused = await new SpendCap({ enabled: true, capUsd: 1 }, path).reserve(0.001);
     expect(refused.ok).toBe(false);
     if (refused.ok) throw new Error('unreachable');
     expect(refused.reason).toBe('CONTROL_UNREADABLE');
   });
 
-  it('ovládací soubor bez počtu dál platí — starší soubory se nesmí rozbít', () => {
+  it('ovládací soubor bez počtu dál platí — starší soubory se nesmí rozbít', async () => {
     const path = controlFile(JSON.stringify({ enabled: true, capUsd: 1 }));
     const cap = new SpendCap({ enabled: true, capUsd: 1 }, path);
-    expect(cap.reserve(0.001).ok).toBe(true);
+    expect((await cap.reserve(0.001)).ok).toBe(true);
     expect(cap.snapshot().callCap).toBe(DEFAULT_CALL_CAP);
   });
 });
@@ -308,32 +309,32 @@ describe('strop na počet volání počítá jen placená volání', () => {
     expect(freeWorstCase).toBe(0);
   });
 
-  it('dvě stě vět do offline dema strop nevyčerpá', () => {
+  it('dvě stě vět do offline dema strop nevyčerpá', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: DEFAULT_CAP_USD, callCap: DEFAULT_CALL_CAP });
     for (let i = 0; i <= DEFAULT_CALL_CAP; i++)
-      expect(cap.reserve(freeWorstCase).ok, `věta ${i + 1} dostala 429`).toBe(true);
+      expect((await cap.reserve(freeWorstCase)).ok, `věta ${i + 1} dostala 429`).toBe(true);
 
     expect(cap.snapshot().callsMade, 'volání zdarma se započítala').toBe(0);
     expect(cap.snapshot().callsRemaining).toBe(DEFAULT_CALL_CAP);
   });
 
-  it('placené volání se počítá dál a strop pořád drží', () => {
+  it('placené volání se počítá dál a strop pořád drží', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: 1000, callCap: 3 });
-    for (let i = 0; i < 3; i++) expect(cap.reserve(0.000_001).ok, `volání ${i + 1}`).toBe(true);
+    for (let i = 0; i < 3; i++) expect((await cap.reserve(0.000_001)).ok, `volání ${i + 1}`).toBe(true);
 
-    const refused = cap.reserve(0.000_001);
+    const refused = await cap.reserve(0.000_001);
     expect(refused.ok).toBe(false);
     if (refused.ok) throw new Error('unreachable');
     expect(refused.reason).toBe('CALL_CAP_EXHAUSTED');
   });
 
-  it('volání zdarma nezkrátí rozpočet těm placeným', () => {
+  it('volání zdarma nezkrátí rozpočet těm placeným', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: 1000, callCap: 2 });
-    for (let i = 0; i < 50; i++) cap.reserve(freeWorstCase);
+    for (let i = 0; i < 50; i++) await cap.reserve(freeWorstCase);
 
-    expect(cap.reserve(0.001).ok, 'první placené').toBe(true);
-    expect(cap.reserve(0.001).ok, 'druhé placené').toBe(true);
-    const refused = cap.reserve(0.001);
+    expect((await cap.reserve(0.001)).ok, 'první placené').toBe(true);
+    expect((await cap.reserve(0.001)).ok, 'druhé placené').toBe(true);
+    const refused = await cap.reserve(0.001);
     expect(refused.ok, 'třetí placené mělo být odmítnuto').toBe(false);
     if (refused.ok) throw new Error('unreachable');
     expect(refused.reason).toBe('CALL_CAP_EXHAUSTED');
@@ -342,16 +343,16 @@ describe('strop na počet volání počítá jen placená volání', () => {
 });
 
 describe('druhé vyrovnání téže rezervace', () => {
-  it('vrátí totéž číslo jako to první a stropem nehne', () => {
+  it('vrátí totéž číslo jako to první a stropem nehne', async () => {
     // Kontrakt, který od 1. 9. 2026 stojí v docstringu `settle()`. Bez tohohle
     // testu ho nedrželo nic: mutace na `return 0` nechala celou sadu zelenou.
     const cap = new SpendCap({ enabled: true, capUsd: 10 });
-    const reservation = cap.reserve(1);
+    const reservation = await cap.reserve(1);
     if (!reservation.ok) throw new Error('rezervace měla projít');
 
-    expect(reservation.settle(0.25)).toBe(0.25);
+    expect(await reservation.settle(0.25)).toBe(0.25);
     // Druhé vyrovnání s úplně jiným číslem nesmí přepsat ani odpověď, ani strop.
-    expect(reservation.settle(9)).toBe(0.25);
+    expect(await reservation.settle(9)).toBe(0.25);
     expect(cap.snapshot().spentUsd).toBe(0.25);
     expect(cap.snapshot().reservedUsd).toBe(0);
   });
@@ -362,7 +363,7 @@ describe('jediný strop procesu', () => {
     resetProcessSpendCap();
   });
 
-  it('vrátí pořád tutéž instanci, ne novou při každém volání', () => {
+  it('vrátí pořád tutéž instanci, ne novou při každém volání', async () => {
     // **Dvě instance nejsou strop.** Každá si vede vlastní `#spentUsd`, takže
     // proces se dvěma z nich utratí dvojnásobek nastaveného stropu a obě
     // půlky přitom hlásí, že strop dodržely. Naměřeno nezávislou revizí
@@ -370,9 +371,9 @@ describe('jediný strop procesu', () => {
     // Soudí se **sdílený stav**, ne reference: kdyby singleton vracel kopii se
     // stejnými čísly, test nad `toBe` by prošel a vada by zůstala.
     const first = processSpendCap();
-    const reservation = first.reserve(1);
+    const reservation = await first.reserve(1);
     if (!reservation.ok) throw new Error('rezervace měla projít');
-    reservation.settle(1);
+    await reservation.settle(1);
 
     expect(processSpendCap().snapshot().spentUsd).toBe(1);
   });
@@ -413,5 +414,149 @@ describe('jediný strop procesu', () => {
       expect(stripComments(readFileSync(route, 'utf8')), `${route} nechodí přes singleton`).toContain(
         'processSpendCap()',
       );
+  });
+});
+
+/**
+ * **Strop nad SDÍLENOU knihou — to, kvůli čemu P15 T29 vznikla.**
+ *
+ * Do 3. 9. 2026 si `SpendCap` vedl součty v poli instance, takže platil přesně
+ * tak daleko, jak sahá jeden proces. `vercel.json` nasazuje serverless: každá
+ * studená instance je nový proces s plným zůstatkem, tedy dvacet lambd znamená
+ * až dvacetinásobek nastaveného stropu. Naměřila to nezávislá revize
+ * 31. 8. 2026 a je to jediný důvod, proč `./spend-store.ts` existuje.
+ *
+ * Autoritou je od té doby kniha. Testy níž proto **staví dva stropy nad jednou
+ * knihou** — to je věrná náhrada za dvě instance nad jedním úložištěm a jediná,
+ * kterou lze uvnitř jednoho procesu postavit.
+ */
+describe('strop drží i za hranicí jedné instance', () => {
+  it('druhá instance vidí, co utratila první — restart procesu strop neresetuje', async () => {
+    const ledger = memoryLedger();
+    const first = new SpendCap({ enabled: true, capUsd: 1 }, null, ledger);
+    const reservation = await first.reserve(0.9);
+    if (!reservation.ok) throw new Error('rezervace měla projít');
+    await reservation.settle(0.9);
+
+    // Studený start: nová instance, tatáž kniha. Kdyby si stav vedla sama,
+    // začne na nule a pustí další celý rozpočet.
+    const second = new SpendCap({ enabled: true, capUsd: 1 }, null, ledger);
+    expect((await second.reserve(0.9)).ok, 'studený start koupil rozpočet znovu').toBe(false);
+  });
+
+  it('počet volání přežije studený start stejně jako dolary', async () => {
+    const ledger = memoryLedger();
+    const control = { enabled: true, capUsd: 1000, callCap: 2 };
+    await new SpendCap(control, null, ledger).reserve(0.001);
+    await new SpendCap(control, null, ledger).reserve(0.001);
+
+    const refused = await new SpendCap(control, null, ledger).reserve(0.001);
+    expect(refused.ok).toBe(false);
+    if (refused.ok) throw new Error('unreachable');
+    expect(refused.reason).toBe('CALL_CAP_EXHAUSTED');
+  });
+
+  /**
+   * **Break-it-on-purpose z plánu:** dva paralelní požadavky na poslední kredit,
+   * právě jeden smí projít.
+   *
+   * Pořadí uvnitř `reserve()` je „přičti, podívej se, případně vrať". Kdyby to
+   * bylo „přečti, rozmysli, zapiš", oba požadavky přečtou týž zůstatek, oba se
+   * pod strop vejdou a poslední kredit se prodá dvakrát.
+   */
+  it('dva souběžné požadavky na poslední kredit: projde právě jeden', async () => {
+    const ledger = memoryLedger();
+    const control = { enabled: true, capUsd: 1 };
+    const [first, second] = await Promise.all([
+      new SpendCap(control, null, ledger).reserve(1),
+      new SpendCap(control, null, ledger).reserve(1),
+    ]);
+
+    expect([first.ok, second.ok].filter(Boolean).length, 'poslední kredit se prodal dvakrát').toBe(1);
+  });
+
+  it('odmítnutá rezervace se knize vrátí, jinak by strop po odmítnutí tekl', async () => {
+    const ledger = memoryLedger();
+    const cap = new SpendCap({ enabled: true, capUsd: 1 }, null, ledger);
+    expect((await cap.reserve(5)).ok).toBe(false);
+
+    // Kniha musí být zpátky na nule — jak v dolarech, tak v počtu volání.
+    expect(await ledger.add(0, 0)).toEqual({ usd: 0, calls: 0 });
+    // A snapshot to musí říkat taky: je to jediná diagnostika, kterou strop
+    // vydává, a odmítnutí ji nese s sebou.
+    expect(cap.snapshot().spentUsd).toBe(0);
+    expect(cap.snapshot().callsMade).toBe(0);
+  });
+
+  /**
+   * **Výpadek knihy je odmítnutí, ne průchod.**
+   *
+   * Neznámý zůstatek je přesně ten stav, ve kterém se placené volání dělat nemá.
+   * Opačná volba by z výpadku úložiště udělala způsob, jak strop vypnout.
+   */
+  it('kniha, která neodpoví, volání odmítne', async () => {
+    const broken: SpendLedger = {
+      id: 'broken',
+      add: () => Promise.reject(new Error('store is down')),
+    };
+    const refused = await new SpendCap({ enabled: true, capUsd: 100 }, null, broken).reserve(0.01);
+
+    expect(refused.ok).toBe(false);
+    if (refused.ok) throw new Error('unreachable');
+    expect(refused.reason).toBe('LEDGER_UNAVAILABLE');
+    // Jméno knihy patří operátorovi; ven ho ořezává `PUBLIC_REFUSAL` v routě.
+    expect(refused.detail).toContain('broken');
+  });
+
+  it('serverless bez sdíleného úložiště neudělá placené volání vůbec', async () => {
+    const refused = await spendCapFromEnv({ VERCEL: '1' }).reserve(0.01);
+
+    expect(refused.ok).toBe(false);
+    if (refused.ok) throw new Error('unreachable');
+    expect(refused.reason).toBe('STORE_UNCONFIGURED');
+  });
+
+  it('serverless SE sdíleným úložištěm placené volání pustí', async () => {
+    const cap = spendCapFromEnv({
+      VERCEL: '1',
+      WORLDSMITH_SPEND_STORE_URL: 'https://ledger.example.com',
+      WORLDSMITH_SPEND_STORE_TOKEN: 'token',
+      WORLDSMITH_SPEND_CAP_USD: '5',
+    });
+    // Kniha přes REST by tady letěla ven; test soudí jen to, že se strop
+    // nezastaví na `STORE_UNCONFIGURED`. Samotnou rouru měří `spend-store.test.ts`.
+    const attempt = await cap.reserve(0.01);
+    if (attempt.ok) return;
+    expect(attempt.reason).not.toBe('STORE_UNCONFIGURED');
+  });
+});
+
+describe('rezervace, která se nevyrovná, drží peníze — a snapshot to musí ukázat', () => {
+  /**
+   * `reservedUsd` je jediné číslo ve `snapshot()`, které neurčuje kniha: měří
+   * vlastnost volajícího („každá cesta ven svou rezervaci vyrovnala"), ne
+   * zůstatek. Nevyrovnaná rezervace drží peníze až do konce procesu a strop se
+   * sám utáhne — naměřeno v `runPipeline` 1. 9. 2026.
+   */
+  it('drží, dokud se nevyrovná, a pak je nula', async () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 10 });
+    const reservation = await cap.reserve(2);
+    if (!reservation.ok) throw new Error('rezervace měla projít');
+
+    expect(cap.snapshot().reservedUsd, 'rozpracovaná rezervace nedrží nic').toBe(2);
+    await reservation.settle(0.5);
+    expect(cap.snapshot().reservedUsd, 'vyrovnaná rezervace pořád drží').toBe(0);
+  });
+
+  it('odečítá se jednou, ne při každém dalším vyrovnání', async () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 10 });
+    const reservation = await cap.reserve(2);
+    if (!reservation.ok) throw new Error('rezervace měla projít');
+
+    await reservation.settle(0.5);
+    await reservation.settle(0.5);
+    // Kdyby se odečítalo pokaždé, spadne to do záporu a aserce
+    // `reservedUsd === 0` napříč `src/server/__tests__` přestanou něco měřit.
+    expect(cap.snapshot().reservedUsd).toBe(0);
   });
 });

@@ -15,6 +15,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { withoutCredentials } from '../../../../server/public-faults';
+import { resetProcessSpendCap } from '../../../../server/spend-cap';
 
 import { frozenPrompts } from '../../../../model/client';
 
@@ -32,6 +33,11 @@ afterEach(() => {
   // toho by špionáž na `cwd` přežila do dalších testů a ty by běžely nad
   // dočasným adresářem místo nad repozitářem — zelené z úplně jiného důvodu.
   vi.restoreAllMocks();
+  // **Strop procesu taky, a od P15 T29 nutně.** Bydlí na `globalThis`, takže
+  // `resetModules()` ho nezahodí a další test by začínal s cizím zůstatkem.
+  // Statický import stačí i po resetu modulů: maže se klíč na `globalThis`,
+  // který je pro všechny instance toho modulu jeden.
+  resetProcessSpendCap();
   vi.resetModules();
   for (const dir of temporary.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
@@ -66,12 +72,20 @@ function keysDeep(value: unknown, into: string[] = []): string[] {
  * prostředí — a **jedno načtení je jedna instance stropu**. Test, který chce
  * ověřit hromadění útraty přes víc požadavků, proto volá `POST` z jednoho
  * načtení opakovaně, ne `post()` dvakrát.
+ *
+ * ⚠ **Od P15 T29 to `vi.resetModules()` samo nezařídí.** Strop bydlí na
+ * `globalThis`, ne v modulové proměnné, právě proto, aby přežil druhý graf
+ * modulů — a přežije tím pádem i reset v testu. Bez `resetProcessSpendCap()`
+ * by si druhé načtení v témže souboru odneslo zůstatek prvního a testy by
+ * padaly v pořadí, ve kterém běží. Tuhle vlastnost (jeden strop napříč
+ * načteními) měří schválně vlastní test níž, ne tenhle pomocník.
  */
 async function loadRoute(env: Record<string, string> = {}) {
   // Každé načtení začíná od čistého prostředí, jinak by druhé v jednom testu
   // zdědilo nastavení prvního a tvrdilo něco jiného, než co se měří.
   vi.unstubAllEnvs();
   for (const [key, value] of Object.entries(env)) vi.stubEnv(key, value);
+  resetProcessSpendCap();
   vi.resetModules();
   const { POST } = await import('../route');
   return async (body: string) => {

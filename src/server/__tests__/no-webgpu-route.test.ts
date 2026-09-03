@@ -249,7 +249,7 @@ describe('s klíčem jde emise přes server a strop ji vidí', () => {
 
     expect(result.outcome).toBe('GENERATED');
     expect(cap.snapshot().spentUsd, 'nečitelná účtenka se zaúčtovala nulou').toBeGreaterThan(0);
-    expect(cap.reserve(0.05).ok, 'po nečitelné účtence strop pustil další volání').toBe(false);
+    expect((await cap.reserve(0.05)).ok, 'po nečitelné účtence strop pustil další volání').toBe(false);
   });
 
   it('Infinity v účtence strop nevypne', async () => {
@@ -276,7 +276,7 @@ describe('s klíčem jde emise přes server a strop ji vidí', () => {
 
     const spent = cap.snapshot().spentUsd;
     expect(Number.isFinite(spent), `útrata je ${String(spent)} — součet je otrávený`).toBe(true);
-    expect(cap.reserve(0.05).ok, 'po otrávené účtence strop pustil další volání').toBe(false);
+    expect((await cap.reserve(0.05)).ok, 'po otrávené účtence strop pustil další volání').toBe(false);
   });
 
   it('klíč se nedostane do výsledku, který jde volajícímu', async () => {

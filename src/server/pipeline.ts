@@ -185,7 +185,7 @@ export async function runPipeline(prompt: unknown, deps: PipelineDeps): Promise<
     request: buildEmissionRequest(verdict.prompt, deps.grammar),
   };
 
-  const reservation = deps.cap.reserve(deps.branch.worstCaseUsd(call));
+  const reservation = await deps.cap.reserve(deps.branch.worstCaseUsd(call));
   if (!reservation.ok)
     return {
       outcome: 'REFUSED',
@@ -206,7 +206,7 @@ export async function runPipeline(prompt: unknown, deps: PipelineDeps): Promise<
     // vůbec — TypeError by vylétl dřív a rezervace by visela až do konce
     // procesu. Nasazení by pak odmítalo 429 na stropu, který nic neutratil.
     // Naměřeno nezávislou revizí 1. 9. 2026 nad `10e8b8b`.
-    const settledUsd = reservation.settle('unknown');
+    const settledUsd = await reservation.settle('unknown');
     return {
       outcome: 'FAILED',
       stage: 'generation',
@@ -233,7 +233,7 @@ export async function runPipeline(prompt: unknown, deps: PipelineDeps): Promise<
       // `-5000`, `{input_tokens: 1e999}` vrátilo `Infinity`. Je to jediný
       // účetní údaj, který produkt vydává, takže operátor hledající, kam se
       // rozpočet poděl, dostal součet, který se stropem nesedí.
-      costUsd: reservation.settle(spent ?? 'unknown'),
+      costUsd: await reservation.settle(spent ?? 'unknown'),
       provenance: generated.provenance,
     };
   }
@@ -251,6 +251,6 @@ export async function runPipeline(prompt: unknown, deps: PipelineDeps): Promise<
     reason: generated.reason,
     detail: generated.detail,
     // Táž věc jako u úspěchu: `billed` je návrh, `settle()` je rozhodnutí.
-    costUsd: reservation.settle(billed),
+    costUsd: await reservation.settle(billed),
   };
 }

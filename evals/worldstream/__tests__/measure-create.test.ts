@@ -29,7 +29,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { GEOM_VERSION } from '@/geom/program';
 import type { Grammar, UpstreamRequest } from '@/model/prompt';
@@ -58,6 +58,21 @@ import {
   type WorldProfile,
 } from '../measure-create';
 import { readCorpus, verifyAgainstManifest, type CreateCase } from '../lock.mjs';
+import { resetProcessLedger } from '@/server/spend-store';
+
+/**
+ * **Účetní kniha se mezi testy vynuluje — od P15 T29 nutně.**
+ *
+ * `liveEmitter()` si staví strop přes `spendCapFromEnv()` a ten mimo serverless
+ * bere **knihu procesu**, ne vlastní součet. Je to schválně: dva stropy v jednom
+ * procesu jsou dohromady dvojnásobek nastaveného stropu, což byla naměřená vada.
+ * Měřicí běh je jeden proces, takže se to tam potká právě jednou; v testech je
+ * ale emitorů tolik, kolik je testů, a bez tohohle by druhý začínal se zůstatkem
+ * prvního.
+ */
+afterEach(() => {
+  resetProcessLedger();
+});
 
 /* ================================================================== *
  * Fixtura: plán, odpověď a atrapa modelu.

@@ -708,7 +708,7 @@ export function liveEmitter(
     },
     async emit(request: UpstreamRequest): Promise<unknown> {
       const call: GenerationCall = { prompt: request.user, request };
-      const reservation = cap.reserve(branch.worstCaseUsd(call));
+      const reservation = await cap.reserve(branch.worstCaseUsd(call));
       // Odmítnutý strop znamená, že se nikam nevolalo. Věta o tom doputuje do
       // reportu jako `unavailable`, ne jako vada modelu.
       if (!reservation.ok) throw new Error(`${reservation.reason}: ${reservation.detail}`);
@@ -718,13 +718,13 @@ export function liveEmitter(
       try {
         outcome = await branch.generate(call);
       } catch (thrown) {
-        reservation.settle('unknown');
+        await reservation.settle('unknown');
         throw thrown;
       }
 
       // Neznámá spotřeba se účtuje rezervací, ne nulou — táž doktrína jako
       // v `runPipeline`. Nula by znamenala volání zdarma.
-      reservation.settle(
+      await reservation.settle(
         outcome.usage === null ? 'unknown' : costUsd(outcome.usage, branch.pricing),
       );
 

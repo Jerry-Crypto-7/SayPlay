@@ -508,7 +508,14 @@ describe('hlášená cena se rovná té, kterou strop doopravdy strhl', () => {
     const result = await runPipeline('bludiště s klíčem', { branch, cap, grammar: GRAMMAR });
 
     if (result.outcome !== 'GENERATED') throw new Error('expected a generated world');
-    expect(result.costUsd).toBe(cap.snapshot().spentUsd);
+    // **Ne `toBe`, a od P15 T29 nesmí být.** Účtenka je pod rezervací, takže se
+    // kniha posouvá dvěma přičteními (rezervace, pak rozdíl) a její součet je od
+    // ohlášené ceny vzdálený o zbytek plovoucí čárky: naměřeno
+    // `0.0032999999999999974` proti `0.0033`. Tři sesterské aserce výš `toBe`
+    // mít smějí, protože tam se účtenka rovná rezervaci a druhé přičtení se
+    // vůbec nezapisuje. Vlastnost, o kterou tu jde — hlásí se stržené, ne
+    // rezervace — drží dál a pinuje ji řádek pod tímhle na dvanáct míst.
+    expect(result.costUsd).toBeCloseTo(cap.snapshot().spentUsd, 12);
     expect(result.costUsd).toBeCloseTo((100 * 3 + 200 * 15) / 1_000_000, 12);
     expect(result.costUsd).toBeLessThan(worstCase);
   });
@@ -599,7 +606,7 @@ describe('jedna účtenka nestrhne víc, než se na ni drželo', () => {
     // A hlavně: strop tím nesmí být vyčerpaný. Tohle je ten skutečný následek —
     // bez ořezu odpoví nasazení 429 každému dalšímu porotci až do restartu.
     expect(cap.snapshot().spentUsd).toBeLessThan(1);
-    expect(cap.reserve(reservationUsd()).ok).toBe(true);
+    expect((await cap.reserve(reservationUsd())).ok).toBe(true);
     // Ať je vidět, o kolik šlo, a ať to číslo nikdo nemusí dopočítávat.
     expect(unclampedUsd).toBeGreaterThan(cap.snapshot().spentUsd * 1_000_000);
   });
