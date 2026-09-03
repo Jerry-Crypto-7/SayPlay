@@ -214,7 +214,13 @@ describe('založení relace', () => {
     // Soudí se **pořadí ve zdroji**, protože zevnitř jednoho procesu to jinak
     // změřit nejde: čtení protokolu nemá pozorovatelný následek, na kterém by
     // se odmítnutá cesta dala chytit, a časové měření by soudilo stroj.
-    const source = readFileSync('src/app/api/worldstream/sessions/route.ts', 'utf8');
+    //
+    // **Komentáře se odstřihnou.** Zakomentovaný `releaseSlot();` by jinak
+    // bránu prošel – přesně tenhle mutant přežil 3. 9. 2026, dokud se soudil
+    // surový zdroj. Totéž dělá lexikální brána v `spend-cap.test.ts`.
+    const source = readFileSync('src/app/api/worldstream/sessions/route.ts', 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
     const gate = source.indexOf('if (!acquireSlot())');
     const grammarRead = source.indexOf('const grammar = serverGrammar();');
 
