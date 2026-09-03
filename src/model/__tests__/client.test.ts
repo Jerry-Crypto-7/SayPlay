@@ -219,6 +219,16 @@ describe('zmrazený korpus na produkční cestě', () => {
     expect(client.frozenGrammar().ok).toBe(true);
     expect(underRoot(), 'druhé volání sáhlo znovu na disk').toEqual([]);
 
+    // Cache sedí na `readFrozen`, tedy pod slovníkem — takže i druhá čtecí
+    // cesta korpusu z ní žije. Bez téhle aserce je ta polovina opravy
+    // nepokrytá: memo nad slovníkem by ji samo o sobě nechalo zelenou.
+    disk.reads.length = 0;
+    expect(client.frozenPrompt('C01').ok).toBe(true);
+    expect(underRoot().length, 'první čtení promptů korpus vůbec nepřečetlo').toBeGreaterThan(0);
+    disk.reads.length = 0;
+    expect(client.frozenPrompt('C02').ok).toBe(true);
+    expect(underRoot(), 'druhé čtení promptů sáhlo znovu na disk').toEqual([]);
+
     // **Druhá půlka tvrzení, a bez ní by zelená znamenala jen „poprvé se to
     // přečetlo".** Cache musí umřít s modulem: klient si `FROZEN_DIR` počítá
     // z `process.cwd()` při importu, takže cache, která reload přežije, by
