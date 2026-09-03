@@ -44,7 +44,7 @@ import {
 } from '../sessions/route';
 import { POST as commitChange } from '../sessions/[sessionId]/changes/[changeId]/commit/route';
 import { POST as previewChange, createChange } from '../sessions/[sessionId]/changes/route';
-import { generated } from './world-fixture';
+import { ANSWER, generated } from './world-fixture';
 
 /* ------------------------------------------------------------------ *
  * Volání route.
@@ -440,8 +440,18 @@ describe('commit druhé věty', () => {
   // pravidla s vlastním `id` prošel. Půlka slibu „změň jeden zákon běžícího
   // světa" tedy neprocházela, a vypadalo to jako vada patche od modelu.
   it('úprava uvnitř zákona vygenerovaného světa projde certifikací', async () => {
+    // ⚠ **Nejdřív se ověří, že to `id` nedodala fixtura.** Nález nezávislé
+    // revize 4. 9. 2026: ta odpověď je sdílená s dalšími ~15 případy, a kdyby
+    // do ní někdo `id` dopsal, prošel by tenhle test i nad vrácenou opravou —
+    // tedy by přestal měřit cokoli. Tahle aserce ten posun ohlásí nahlas.
+    const emitted = (ANSWER.world as { readonly sim: { readonly rules: Record<string, object> } })
+      .sim.rules.reach;
+    expect(emitted, 'fixtura už `id` nese, takže test níž nic nedokazuje').not.toHaveProperty(
+      'id',
+    );
+
     const stored = await generated();
-    // Svět prošel skutečným compilerem, takže tohle pravidlo napsal `repairRules`.
+    // Svět prošel skutečným compilerem, takže tohle `id` napsal `repairRules`.
     expect(ruleOf(stored, 'reach'), 'pravidlo ztratilo `id`').toMatchObject({
       id: 'reach',
     });
