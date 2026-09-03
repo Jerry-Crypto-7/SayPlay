@@ -34,6 +34,7 @@ import { useEffect } from 'react';
 import { ACESFilmicToneMapping, Fog, VSMShadowMap } from 'three';
 
 import { UI_TOKENS, VIEWER_BUDGETS } from '@/kit';
+import { budgetFor, type QualityTier } from '@/worldstream/quality';
 
 /**
  * Parametry kontextu a rendereru.
@@ -87,8 +88,36 @@ export const WORLDSTREAM_KEY_LIGHT = {
 /** Polovina hrany stínového ortho-boxu. Pokryje celou kompozici cílového snímku. */
 const SHADOW_EXTENT = 40;
 
-export default function WorldstreamLighting() {
+/**
+ * **Stínová mapa je to jediné, co texturový rozpočet §23 doopravdy omezuje**
+ * (P15 T26).
+ *
+ * Hledalo se, co v téhle scéně vlastně je textura — a odpověď je nečekaná:
+ * materiály žádnou obrázkovou texturu nenesou (barva je ve vrcholech), ale
+ * renderer jich drží čtyři, a ta velká mezi nimi je stínová mapa. Je **2048 na
+ * osu**, tedy přesně strop nejvyšší úrovně. Texturový stupínek žebříku tak není
+ * dekorace: `balanced` ji srazí na 1024 a `safe` na 512, což je přesně to, co
+ * §23 popisuje slovy „omezené stíny" a „jednoduché osvětlení".
+ *
+ * Světla samotná se nevypínají ani na `safe`. Rig je čtyři světla a tři z nich
+ * stín nevrhají — vypnout je by ubralo obraz, ne cenu.
+ */
+function shadowMapSize(quality: QualityTier): number {
+  return Math.min(VIEWER_BUDGETS.shadowMapSize, budgetFor(quality).textureAxis);
+}
+
+export default function WorldstreamLighting({
+  quality = 'full',
+}: {
+  /**
+   * Úroveň kvality. Výchozí `full`, tedy rig, jaký scéna měla do `T26` —
+   * volající, který kvalitu neřeší, nesmí dostat tišší stín, než na jaký byl
+   * zvyklý.
+   */
+  readonly quality?: QualityTier;
+} = {}) {
   const scene = useThree((state) => state.scene);
+  const shadowSize = shadowMapSize(quality);
 
   useEffect(() => {
     scene.fog = new Fog(WORLDSTREAM_FOG.color, WORLDSTREAM_FOG.near, WORLDSTREAM_FOG.far);
@@ -108,7 +137,7 @@ export default function WorldstreamLighting() {
         position={[...WORLDSTREAM_KEY_LIGHT.position]}
         intensity={WORLDSTREAM_KEY_LIGHT.intensity}
         color={WORLDSTREAM_KEY_LIGHT.color}
-        shadow-mapSize={[VIEWER_BUDGETS.shadowMapSize, VIEWER_BUDGETS.shadowMapSize]}
+        shadow-mapSize={[shadowSize, shadowSize]}
         shadow-camera-left={-SHADOW_EXTENT}
         shadow-camera-right={SHADOW_EXTENT}
         shadow-camera-top={SHADOW_EXTENT}

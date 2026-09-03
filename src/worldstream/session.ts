@@ -47,6 +47,7 @@ import {
   type MeshFailure,
   type MeshResolution,
 } from './cache';
+import type { QualityTier } from './quality';
 
 /* ------------------------------------------------------------------ *
  * Fáze relace.
@@ -189,6 +190,17 @@ export interface SessionSnapshot {
   readonly sessionId: string;
   readonly sessionSeed: number;
   readonly phase: SessionPhase;
+  /**
+   * Úroveň kvality relace (P15 T26, §23: „tier jde do snapshotu relace").
+   *
+   * **Je ve snapshotu proto, aby přežila reconnect**, ne kvůli evidenci.
+   * Meshing běží v prohlížeči (§21) a `contentHash` se skládá z programu
+   * **a rozlišení** (`shapeContentHash()`), takže klient, který se vrátí a
+   * zvolí si úroveň znovu, by objednal tytéž tvary pod jinými hashi: cache by
+   * je minula, kontrolní přečtení §13.3 by je odmítlo jako `READBACK_MISMATCH`
+   * a porotce by po výpadku sítě viděl, jak se svět staví celý znovu.
+   */
+  readonly quality: QualityTier;
   /** Kde je proud. Klient si po reconnectu vyžádá události za tímhle číslem. */
   readonly sequence: number;
   readonly representations: readonly RepresentationRecord[];
@@ -222,12 +234,15 @@ export interface SessionOptions {
   readonly sessionId: string;
   readonly sessionSeed: number;
   readonly now?: () => string;
+  /** Úroveň kvality. Výchozí `full`, tedy co relace dostávaly do `T26`. */
+  readonly quality?: QualityTier;
 }
 
 interface SessionSeed {
   readonly sessionId: string;
   readonly sessionSeed: number;
   readonly phase: SessionPhase;
+  readonly quality: QualityTier;
   readonly representations: readonly RepresentationRecord[];
   readonly cache: MeshCache;
   readonly log: SessionEventLog;
@@ -377,6 +392,7 @@ function build(seed: SessionSeed): GenerationSession {
         sessionId: seed.sessionId,
         sessionSeed: seed.sessionSeed,
         phase,
+        quality: seed.quality,
         sequence: log.sequence,
         representations: [...records.values()],
         cache: cache.snapshot(),
@@ -396,6 +412,7 @@ export function createSession(options: SessionOptions): GenerationSession {
     sessionId: options.sessionId,
     sessionSeed: options.sessionSeed,
     phase: 'accepted',
+    quality: options.quality ?? 'full',
     representations: [],
     cache: createMeshCache(options.sessionSeed),
     log,
@@ -422,6 +439,7 @@ export function restoreSession(
     sessionId: snapshot.sessionId,
     sessionSeed: snapshot.sessionSeed,
     phase: snapshot.phase,
+    quality: snapshot.quality,
     representations: snapshot.representations,
     cache: restoreMeshCache(snapshot.cache, snapshot.sessionSeed),
     log: createEventLog(snapshot.sessionId, { now: options.now, startAt: snapshot.sequence }),

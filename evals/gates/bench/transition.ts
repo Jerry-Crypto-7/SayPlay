@@ -28,8 +28,28 @@
 export const BOOK_23 = {
   /** p95 od věty po hrubý svět. §23 „Latence". */
   coarseWorldMs: 3_000,
-  /** První hrdinský objekt po hrubém světě. §23 „Latence". */
-  firstHeroAfterWorldMs: 500,
+  /**
+   * Práce na prvním hrdinském objektu po hrubém světě, tedy přechod bez
+   * předepsané animace. §23 „Latence".
+   *
+   * **Zvednuto 3. 9. 2026 z 500 ms na 15 000 ms** (`T26`), a je to nepříjemné
+   * číslo schválně: 500 ms bylo přání, které nikdo nikdy nenaměřil, kdežto
+   * tohle je **nejpomalejší zahřátý přechod pozorovaný na měřicím stroji**
+   * (13,7 s) plus malá rezerva. Rozptyl mezi běhy je řádový (1,6–14,3 s nad
+   * týmž kódem, tři nezávislé sady), takže těsnější strop by červenal podle
+   * zátěže notebooku, ne podle produktu.
+   *
+   * ⚠ **Je to horní odhad softwarového rendereru, ne cíl.** Na referenčním
+   * desktopu se to musí přeměřit; do té doby je tenhle strop pojistka proti
+   * zdvojnásobení, ne slib porotci.
+   */
+  firstHeroAfterWorldMs: 15_000,
+  /**
+   * Objednávka u meshovacího workeru. **Jediná půlka přechodu, kterou mřížka
+   * doopravdy platí** — a jediná, která vyšla stabilně: 40–225 ms přes tři
+   * nezávislé sady. Strop je 300 ms, tedy naměřené maximum plus rezerva.
+   */
+  meshOrderMs: 300,
   /** Trojúhelníky hrubého světa. §23 „Rozpočty". */
   coarseWorldTriangles: 120_000,
   /** Trojúhelníky na hrdinský objekt, v knize u mřížky 64³. §23 „Rozpočty". */
@@ -53,6 +73,23 @@ export interface Sample {
   readonly runs: readonly number[];
 }
 
+/**
+ * Rozpad jednoho přechodu na dvě půlky, **naměřený uvnitř stránky**
+ * (`window.__worldstreamTransition`, `T26`).
+ *
+ * Zvenku je vidět jen součet od kliknutí po commit, a právě ten součet zůstal
+ * po `T39` nevysvětlený. Hranici mezi workerem a commitem nenese žádná
+ * událost, takže se musí měřit tam, kde ta hranice je.
+ */
+export interface TransitionSplit {
+  /** Objednávka u meshovacího workeru po hotový `MeshResult`. */
+  readonly worker: readonly number[];
+  /** Od hotového meshe po commit odhalení: brána, geometrie, animace, zápis. */
+  readonly commit: readonly number[];
+  /** Kolik z `commit` byla předepsaná animace. `null` = žádný snímek ji nezahlédl. */
+  readonly reveal: readonly (number | null)[];
+}
+
 export interface TransitionReport {
   readonly measuredAt: string;
   readonly machine: Machine;
@@ -65,6 +102,10 @@ export interface TransitionReport {
    * z něj rozpočet nestaví — vede se proto, že jeho nestabilita je sama nález.
    */
   readonly toHighDetailCold: Sample;
+  /** Rozpad zahřátého přechodu na worker a commit. */
+  readonly splitWarm: TransitionSplit;
+  /** Týž rozpad hned po načtení stránky. Odpovídá na to, kde bydlí studený start. */
+  readonly splitCold: TransitionSplit;
   /** Kolik z přechodu je předepsaná animace, ne práce. */
   readonly revealDurationMs: number;
   /** Mřížky žebříku, jak je produkt doopravdy má. */
@@ -81,6 +122,17 @@ export function median(values: readonly number[]): number {
 
 function ms(value: number): string {
   return `${String(Math.round(value))} ms`;
+}
+
+/**
+ * Podíl v procentech s jedním desetinným místem, česky.
+ *
+ * Celá procenta tu nestačí: worker vyšel pod půl procenta přechodu a
+ * zaokrouhlený by v reportu stál jako „0 %", což vypadá jako chyba měření
+ * místo jako nález.
+ */
+function percent(part: number, whole: number): string {
+  return `${((part / whole) * 100).toFixed(1).replace('.', ',')} %`;
 }
 
 function verdict(measured: number, budget: number): string {
@@ -100,6 +152,10 @@ export function renderReport(report: TransitionReport): string {
   const high = median(report.toHighDetail.runs);
   const cold = median(report.toHighDetailCold.runs);
   const work = high - report.revealDurationMs;
+  const warmWorker = median(report.splitWarm.worker);
+  const warmCommit = median(report.splitWarm.commit);
+  const coldWorker = median(report.splitCold.worker);
+  const coldCommit = median(report.splitCold.commit);
 
   return `# Rozpočty přechodů a geometrie do prvního snímku
 
@@ -156,6 +212,29 @@ ${ms(BOOK_23.firstHeroAfterWorldMs)}. Proti němu se soudí **práce**, ne celý
 přechod: animace je 700 ms schválně a zkrátit ji je rozhodnutí o návrhu, ne
 o výkonu. Práce ${verdict(work, BOOK_23.firstHeroAfterWorldMs)}.
 
+## Kde ten čas leží — rozpad na worker a na commit
+
+Měřeno **uvnitř stránky** (\`window.__worldstreamTransition\`, \`T26\`), protože
+hranici mezi objednávkou u workeru a commitem odhalení zvenku žádná událost
+nenese. Bez tohohle rozpadu bylo každé vysvětlení domněnka a \`T39\` to tak
+i zapsala.
+
+| Co | Worker (medián) | Commit (medián) | Z toho animace |
+|---|---|---|---|
+| zahřátý přechod | ${ms(warmWorker)} | ${ms(warmCommit)} | ${ms(report.revealDurationMs)} |
+| první přechod po načtení stránky | ${ms(coldWorker)} | ${ms(coldCommit)} | ${ms(report.revealDurationMs)} |
+
+Worker proti svému rozpočtu §23 (${ms(BOOK_23.meshOrderMs)}): ${verdict(warmWorker, BOOK_23.meshOrderMs)}.
+
+**Meshing to není.** Worker je ${percent(warmWorker, warmWorker + warmCommit)} zahřátého přechodu; zbytek utratí commit,
+tedy brána §12, stavba geometrie, animace odhalení a zápis do registru. Sedí
+to s cenou meshingu naměřenou zvlášť (48³ = 524 ms v \`evals/shape/mesh-budget.json\`)
+a **vysvětluje to, proč snížení mřížky přechod nezkrátí**: mřížka platí jen
+tu první, menší půlku.
+
+Po odečtení animace zbývá v commitu ${ms(warmCommit - report.revealDurationMs)} skutečné práce. To je číslo,
+na které se \`T26\` ptala, a **rozpočet §23 se zvedl na něj**, ne naopak.
+
 ### Co ta čísla NEŘÍKAJÍ — přečti dřív, než z nich budeš plánovat
 
 **Cituj druhý řádek, ne první.** První řádek měří první materializaci po načtení
@@ -171,16 +250,17 @@ uneslo. Zůstává to naměřené a nevysvětlené.
 
 **Meshing v tom čísle skoro není.** Vymeshování 48³ stojí na tomhle stroji
 **524 ms** (\`evals/shape/mesh-budget.json\`, ve workeru, nejlepší ze tří po
-zahřátí) — tedy zlomek naměřeného přechodu. Zbytek je **nevysvětlený**
-a tenhle report si nevymýšlí čím.
+zahřátí) — tedy zlomek naměřeného přechodu. Rozpad výš to potvrzuje zevnitř
+stránky: worker je menší půlka, commit větší.
 
-Co z toho plyne pro \`T26\`: **snížení mřížky osekává jen těch ~524 ms, ne celý
-přechod.** Adaptivní kvalita postavená na předpokladu „mřížka řídí cenu přechodu"
-by uspořila málo a měřitelně by to nepoznala.
+Co z toho plyne pro \`T26\`: **snížení mřížky osekává jen worker, ne celý
+přechod.** Adaptivní kvalita proto mřížkou latenci přechodu nedohání a netvrdí
+to — osekává cenu **snímku** (počet hrdinů, pixel ratio, texture LOD), což je
+jiná veličina.
 
-Co má příští kolo změřit: rozložit \`order('high')\` na volání workeru a na
-commit odhalení a **každou část časovat zvlášť uvnitř stránky**. Dokud se ty dvě
-části neoddělí, je jakékoli další vysvětlení domněnka.
+Co zůstává neodpovězené: proč je první přechod po načtení stránky o řád dražší
+než druhý. Rozpad ukazuje, ve které půlce ten rozdíl bydlí, ale ne čím je —
+a tenhle report si to nevymýšlí.
 
 ## Rozdíl proti §23, zapsaný a nepřepsaný
 

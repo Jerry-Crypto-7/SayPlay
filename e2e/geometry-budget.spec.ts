@@ -2,8 +2,14 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
+import type { TransitionTiming } from '../src/app/dev/worldstream/page';
 import { MESH_DETAIL } from '../src/shape/types';
-import { median, renderReport, type Machine } from '../evals/gates/bench/transition';
+import {
+  median,
+  renderReport,
+  type Machine,
+  type TransitionSplit,
+} from '../evals/gates/bench/transition';
 
 /**
  * Živé měření rozpočtů (P15 T39).
@@ -30,6 +36,13 @@ import { median, renderReport, type Machine } from '../evals/gates/bench/transit
  * zátěže notebooku. Soudí se proto **to, co je na tom čísle rozbitelné tiše**:
  * že se opravdu měřil nakreslený snímek, a že report nese stroj i renderer.
  * Rozpočet se v reportu porovnává a rozdíl se zapisuje.
+ *
+ * ## Rozpad přechodu, od `T26`
+ *
+ * Součet od kliknutí po commit zůstal po `T39` nevysvětlený, takže stránka si
+ * ho od `T26` měří sama a vydává přes `window.__worldstreamTransition`. Sada
+ * ho jen sbírá — hranici mezi workerem a commitem zvenku vidět není a hodiny
+ * v Playwrightu by ji vyrobit nedokázaly.
  *
  * `@measure` drží spec mimo `npm run test:e2e` — přepisuje commitnutý artefakt
  * a spouští se jmenovitě.
@@ -86,6 +99,12 @@ async function measureToCoarseWorld(page: Page): Promise<number> {
   return Date.now() - started;
 }
 
+/** Jeden přechod: celkový čas zvenku a rozpad naměřený uvnitř stránky. */
+interface TransitionRun {
+  readonly totalMs: number;
+  readonly split: TransitionTiming;
+}
+
 /**
  * Od povelu k materializaci po commit odhalení.
  *
@@ -96,7 +115,7 @@ async function measureToCoarseWorld(page: Page): Promise<number> {
  * Zůstává tu proto, že ta vyvrácená hypotéza je sama o sobě výsledek; kdyby se
  * měření zahodilo, příští kolo by ji zkusilo znovu.
  */
-async function measureToHighDetail(page: Page, warm: boolean): Promise<number> {
+async function measureToHighDetail(page: Page, warm: boolean): Promise<TransitionRun> {
   await page.goto('/dev/worldstream');
   await expect(page.getByTestId('stage-status')).toContainText('slots at', { timeout: 60_000 });
   await page.waitForFunction(() => (window.__worldstreamStage?.frames() ?? 0) > 3);
@@ -115,7 +134,22 @@ async function measureToHighDetail(page: Page, warm: boolean): Promise<number> {
   await page.waitForFunction(() => window.__worldstreamStage!.commits() > 0, undefined, {
     timeout: 60_000,
   });
-  return Date.now() - started;
+  const totalMs = Date.now() - started;
+
+  // Rozpad se čte **po** commitu: stránka ho zapisuje až v okamžiku, kdy má obě
+  // půlky, takže dřív by tu byl buď `null`, nebo číslo z minulého běhu.
+  const split = await page.evaluate(() => window.__worldstreamTransition!());
+  if (split === null) throw new Error('přechod doběhl, ale stránka rozpad nenaměřila');
+  return { totalMs, split };
+}
+
+/** Tři běhy jedné sady na tvar, ve kterém je report umí vytisknout. */
+function splitOf(runs: readonly TransitionRun[]): TransitionSplit {
+  return {
+    worker: runs.map((run) => run.split.workerMs),
+    commit: runs.map((run) => run.split.commitMs),
+    reveal: runs.map((run) => run.split.revealMs),
+  };
 }
 
 test('@measure naměří cestu k hrubému světu i cenu přechodu na vysoký detail', async ({ page }) => {
@@ -126,11 +160,13 @@ test('@measure naměří cestu k hrubému světu i cenu přechodu na vysoký det
   const toCoarseWorld: number[] = [];
   for (let run = 0; run < RUNS; run += 1) toCoarseWorld.push(await measureToCoarseWorld(page));
 
-  const toHighDetailCold: number[] = [];
-  for (let run = 0; run < RUNS; run += 1) toHighDetailCold.push(await measureToHighDetail(page, false));
+  const coldRuns: TransitionRun[] = [];
+  for (let run = 0; run < RUNS; run += 1) coldRuns.push(await measureToHighDetail(page, false));
+  const toHighDetailCold = coldRuns.map((run) => run.totalMs);
 
-  const toHighDetail: number[] = [];
-  for (let run = 0; run < RUNS; run += 1) toHighDetail.push(await measureToHighDetail(page, true));
+  const warmRuns: TransitionRun[] = [];
+  for (let run = 0; run < RUNS; run += 1) warmRuns.push(await measureToHighDetail(page, true));
+  const toHighDetail = warmRuns.map((run) => run.totalMs);
 
   const report = {
     measuredAt: new Date().toISOString().slice(0, 10),
@@ -138,6 +174,8 @@ test('@measure naměří cestu k hrubému světu i cenu přechodu na vysoký det
     toCoarseWorld: { label: 'věta → první snímek hrubého světa (`/`, renderer `WorldScene`)', runs: toCoarseWorld },
     toHighDetail: { label: 'materializace po odmítnutém pokusu (worker už běžel)', runs: toHighDetail },
     toHighDetailCold: { label: 'první materializace po načtení stránky', runs: toHighDetailCold },
+    splitWarm: splitOf(warmRuns),
+    splitCold: splitOf(coldRuns),
     revealDurationMs: REVEAL_MS,
     ladder: { rough: MESH_DETAIL.rough.resolution, high: MESH_DETAIL.high.resolution },
     ladderTriangles: { rough: MESH_DETAIL.rough.maxTriangles, high: MESH_DETAIL.high.maxTriangles },
@@ -156,6 +194,18 @@ test('@measure naměří cestu k hrubému světu i cenu přechodu na vysoký det
   // Přechod nemůže být kratší než animace, kterou obsahuje. Kdyby byl, měřil by
   // se jiný okamžik než commit — a celý řádek „z toho práce" by byl smyšlený.
   expect(median(toHighDetail)).toBeGreaterThanOrEqual(REVEAL_MS);
+
+  // **Pin `T26`:** rozpad musí sedět na součet, který se měřil zvenku. Obě
+  // půlky kladné a dohromady uvnitř celku — kdyby jedna z nich byla nula nebo
+  // kdyby se součet rozešel s naměřeným přechodem, měřila by se jiná hranice
+  // než ta mezi workerem a commitem, a report by o ní tvrdil nepravdu.
+  for (const run of [...warmRuns, ...coldRuns]) {
+    expect(run.split.workerMs).toBeGreaterThan(0);
+    expect(run.split.commitMs).toBeGreaterThan(0);
+    expect(run.split.workerMs + run.split.commitMs).toBeLessThanOrEqual(run.totalMs);
+  }
+  // Commit v sobě nese předepsanou animaci, takže kratší než ona být nemůže.
+  expect(median(splitOf(warmRuns).commit)).toBeGreaterThanOrEqual(REVEAL_MS);
 
   // **Pin úlohy:** rozpočet bez jmenovaného stroje vypadá na papíře přesně jako
   // ten správný. Report proto musí nést stroj i renderer, ne jen čísla.

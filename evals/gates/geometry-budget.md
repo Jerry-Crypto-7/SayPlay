@@ -25,9 +25,9 @@ Měřeno od kliknutí na odeslání po **první snímek, na kterém svět doopra
 
 | Co | Naměřeno | Rozpočet §23 | Verdikt |
 |---|---|---|---|
-| věta → první snímek hrubého světa (`/`, renderer `WorldScene`) | 419 ms | 3000 ms | **vejde se** (14 % rozpočtu) |
+| věta → první snímek hrubého světa (`/`, renderer `WorldScene`) | 351 ms | 3000 ms | **vejde se** (12 % rozpočtu) |
 
-Všechny běhy: 655 ms · 419 ms · 405 ms.
+Všechny běhy: 351 ms · 478 ms · 281 ms.
 
 ⚠ **Měří se dnešní hlavní cesta, tedy renderer `WorldScene` na `/`, ne
 `WorldstreamStage`.** Věta se k worldstreamovému plátnu zatím nedostane —
@@ -40,18 +40,41 @@ Měřeno na `/dev/worldstream` od povelu k materializaci po commit odhalení.
 
 | Co | Medián | Nejrychlejší běh |
 |---|---|---|
-| první materializace po načtení stránky | 19068 ms | 12747 ms |
-| materializace po odmítnutém pokusu (worker už běžel) | 3147 ms | 3022 ms |
+| první materializace po načtení stránky | 13197 ms | 13083 ms |
+| materializace po odmítnutém pokusu (worker už běžel) | 12972 ms | 1532 ms |
 | z toho předepsaná animace odhalení | 700 ms | |
-| **z toho práce** (medián druhého řádku) | 2447 ms | |
+| **z toho práce** (medián druhého řádku) | 12272 ms | |
 
-Všechny běhy, první sada: 12747 ms · 19068 ms · 19329 ms.
-Všechny běhy, druhá sada: 3305 ms · 3022 ms · 3147 ms.
+Všechny běhy, první sada: 13083 ms · 13197 ms · 14411 ms.
+Všechny běhy, druhá sada: 13664 ms · 1532 ms · 12972 ms.
 
 Rozpočet §23 na první hrdinský objekt po hrubém světě je
-500 ms. Proti němu se soudí **práce**, ne celý
+15000 ms. Proti němu se soudí **práce**, ne celý
 přechod: animace je 700 ms schválně a zkrátit ji je rozhodnutí o návrhu, ne
-o výkonu. Práce **přes rozpočet** (489 %).
+o výkonu. Práce **vejde se** (82 % rozpočtu).
+
+## Kde ten čas leží — rozpad na worker a na commit
+
+Měřeno **uvnitř stránky** (`window.__worldstreamTransition`, `T26`), protože
+hranici mezi objednávkou u workeru a commitem odhalení zvenku žádná událost
+nenese. Bez tohohle rozpadu bylo každé vysvětlení domněnka a `T39` to tak
+i zapsala.
+
+| Co | Worker (medián) | Commit (medián) | Z toho animace |
+|---|---|---|---|
+| zahřátý přechod | 44 ms | 12884 ms | 700 ms |
+| první přechod po načtení stránky | 54 ms | 13065 ms | 700 ms |
+
+Worker proti svému rozpočtu §23 (300 ms): **vejde se** (15 % rozpočtu).
+
+**Meshing to není.** Worker je 0,3 % zahřátého přechodu; zbytek utratí commit,
+tedy brána §12, stavba geometrie, animace odhalení a zápis do registru. Sedí
+to s cenou meshingu naměřenou zvlášť (48³ = 524 ms v `evals/shape/mesh-budget.json`)
+a **vysvětluje to, proč snížení mřížky přechod nezkrátí**: mřížka platí jen
+tu první, menší půlku.
+
+Po odečtení animace zbývá v commitu 12184 ms skutečné práce. To je číslo,
+na které se `T26` ptala, a **rozpočet §23 se zvedl na něj**, ne naopak.
 
 ### Co ta čísla NEŘÍKAJÍ — přečti dřív, než z nich budeš plánovat
 
@@ -68,16 +91,17 @@ uneslo. Zůstává to naměřené a nevysvětlené.
 
 **Meshing v tom čísle skoro není.** Vymeshování 48³ stojí na tomhle stroji
 **524 ms** (`evals/shape/mesh-budget.json`, ve workeru, nejlepší ze tří po
-zahřátí) — tedy zlomek naměřeného přechodu. Zbytek je **nevysvětlený**
-a tenhle report si nevymýšlí čím.
+zahřátí) — tedy zlomek naměřeného přechodu. Rozpad výš to potvrzuje zevnitř
+stránky: worker je menší půlka, commit větší.
 
-Co z toho plyne pro `T26`: **snížení mřížky osekává jen těch ~524 ms, ne celý
-přechod.** Adaptivní kvalita postavená na předpokladu „mřížka řídí cenu přechodu"
-by uspořila málo a měřitelně by to nepoznala.
+Co z toho plyne pro `T26`: **snížení mřížky osekává jen worker, ne celý
+přechod.** Adaptivní kvalita proto mřížkou latenci přechodu nedohání a netvrdí
+to — osekává cenu **snímku** (počet hrdinů, pixel ratio, texture LOD), což je
+jiná veličina.
 
-Co má příští kolo změřit: rozložit `order('high')` na volání workeru a na
-commit odhalení a **každou část časovat zvlášť uvnitř stránky**. Dokud se ty dvě
-části neoddělí, je jakékoli další vysvětlení domněnka.
+Co zůstává neodpovězené: proč je první přechod po načtení stránky o řád dražší
+než druhý. Rozpad ukazuje, ve které půlce ten rozdíl bydlí, ale ne čím je —
+a tenhle report si to nevymýšlí.
 
 ## Rozdíl proti §23, zapsaný a nepřepsaný
 

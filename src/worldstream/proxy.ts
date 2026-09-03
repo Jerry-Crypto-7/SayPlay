@@ -47,6 +47,7 @@ import { blueprintRejectionSentence, type BlueprintOutcome } from '@/model/world
 import type { MeshOrder, MeshResult } from '@/shape/mesh-client';
 import { MESH_DETAIL, type Bounds3, type ShapeProgram, type Vec3 } from '@/shape/types';
 
+import { budgetFor, type QualityTier } from './quality';
 import type { WorldstreamBlueprint } from './schema';
 import { boundsCenter, slotFromForm, slotFromWorldForm, type SemanticSlot } from './slots';
 
@@ -83,8 +84,27 @@ export const ROUGH_RUNGS = ['g3-reduced', 'g2-rich', 'semantic-clay'] as const;
 
 export type RoughRung = (typeof ROUGH_RUNGS)[number];
 
-/** Mřížka hrubého světa. Jediné číslo, na kterém tahle úloha stojí. */
+/**
+ * Mřížka hrubého světa **výchozí úrovně**.
+ *
+ * Od `T26` ji volí `QualityBudget.roughResolution`, ne tahle konstanta —
+ * zůstává proto, že je to pořád táž hodnota u všech tří úrovní (pod 32³ žádná
+ * příčka neexistuje) a je na ni navázaný test, který si toho má všimnout, až
+ * nějaká vznikne.
+ */
 export const ROUGH_RESOLUTION = MESH_DETAIL.rough.resolution;
+
+/**
+ * Věta pro objekt, na kterého nezbyl hrdinský rozpočet.
+ *
+ * **Vlastní důvod, ne `the shape is missing`.** Tvar nechybí a model ho napsal
+ * správně — jen se na tuhle úroveň kvality nevešel, a to je informace pro toho,
+ * kdo se ptá, proč objekt vypadá jako bedna. Splynutí s chybějícím tvarem je
+ * přesně ta záměna, kterou `T14` musela opravovat u rozpadu příčin.
+ */
+export function overBudgetReason(heroes: number): string {
+  return `this quality tier renders ${heroes} authored ${heroes === 1 ? 'shape' : 'shapes'}`;
+}
 
 /* ------------------------------------------------------------------ *
  * Výsledek.
@@ -125,6 +145,12 @@ export type ProxyWorld =
       readonly title: string;
       readonly sessionSeed: number;
       readonly resolution: number;
+      /**
+       * Úroveň kvality, se kterou se svět postavil (`T26`). Nese ji svět, ne
+       * volající: kdo ho dostane, musí umět odpovědět „proti jakému rozpočtu
+       * se tohle má soudit?" bez toho, aby se ptal někoho třetího.
+       */
+      readonly quality: QualityTier;
       /** Jeden na každý `SemanticObject`, v pořadí blueprintu. */
       readonly slots: readonly ProxySlot[];
       /** Kompozice bez toho, co si nárokoval některý slot. */
@@ -139,6 +165,12 @@ export interface ProxyDeps {
    * v produktu je to `createMeshClient().mesh`, v testu atrapa.
    */
   readonly mesh: (order: MeshOrder) => Promise<MeshResult>;
+  /**
+   * Úroveň kvality. **Čte se jednou, na začátku stavby** (`T26`, §23) — od té
+   * chvíle je to konstanta a fan-out ji už nemůže změnit. Výchozí `full`, aby
+   * volající, kterého kvalita nezajímá, dostal to, co dostával dosud.
+   */
+  readonly quality?: QualityTier;
 }
 
 /* ------------------------------------------------------------------ *
@@ -438,6 +470,14 @@ export async function buildProxyWorld(
   if (outcome.kind !== 'compiled') return declined(outcomeReason(outcome));
 
   const blueprint = outcome.result.value;
+
+  // **Úroveň se čte tady a nikde jinde** (§23): jedno přečtení před fan-outem,
+  // pak už jen `budget`. Kdyby se `deps.quality` četlo uvnitř smyčky, mohla by
+  // se úroveň mezi dvěma tvary změnit — a `contentHash` nese rozlišení, takže
+  // by z jedné relace vylezly dva různé světy se stejnými jmény slotů.
+  const quality: QualityTier = deps.quality ?? 'full';
+  const budget = budgetFor(quality);
+
   const composition = splitComposition(blueprint);
   const compositionFailure = typeof composition === 'string' ? composition : null;
   const owned = typeof composition === 'string' ? new Map<number, readonly GeomPlacement[]>() : composition.owned;
@@ -446,14 +486,18 @@ export async function buildProxyWorld(
   // Tvary jdou napřed a po jednom: dokud neskončí, není co do slotů dát.
   // Selhání jednoho tvaru je věta pro ten jeden objekt, ne konec světa.
   const meshes = new Map<string, MeshResult | string>();
-  for (const program of meshingOrder(blueprint.shapes)) {
+  // Hrdinský rozpočet se utrácí **odshora podle priority**, protože
+  // `meshingOrder()` řadí sestupně: když se na úroveň vejde jeden tvar, dostane
+  // ho ten, který model označil za nejdůležitější. Zbytek se ani neobjedná —
+  // §23 chce, aby degradace nespustila práci, jejíž výsledek se nepoužije.
+  for (const program of meshingOrder(blueprint.shapes).slice(0, budget.heroes)) {
     try {
       meshes.set(
         program.shapeId,
         await deps.mesh({
           program,
           sessionSeed: blueprint.sessionSeed,
-          resolution: ROUGH_RESOLUTION,
+          resolution: budget.roughResolution,
           // **Syrový `targetBounds` je tu správně a rezervu sem nepřidávej.**
           // Od `T13-meshpadding` (2. 9. 2026) mele `handleMeshJob()`
           // v `paddedBounds(bounds, resolution)`; objednávka říká, kam tvar
@@ -506,7 +550,11 @@ export async function buildProxyWorld(
       // dokumentu ale tuhle větev pouští — proto se `undefined` čte, ne tvrdí.
       const result = program === undefined ? undefined : meshes.get(program.shapeId);
       if (program === undefined || typeof result === 'string' || result === undefined) {
-        return clay(typeof result === 'string' ? result : 'the shape is missing');
+        if (typeof result === 'string') return clay(result);
+        // Tvar, který se **neobjednal**, není tvar, který chybí. Rozlišuje se
+        // to podle toho, jestli o něm blueprint ví: zná-li ho `shapesById`,
+        // vypadl na hrdinském rozpočtu úrovně, ne na vadě modelu.
+        return clay(program === undefined ? 'the shape is missing' : overBudgetReason(budget.heroes));
       }
       return {
         slot: slotFromForm(object, {
@@ -562,7 +610,8 @@ export async function buildProxyWorld(
     kind: 'built',
     title: blueprint.title,
     sessionSeed: blueprint.sessionSeed,
-    resolution: ROUGH_RESOLUTION,
+    resolution: budget.roughResolution,
+    quality,
     slots,
     scenery,
   };

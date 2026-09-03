@@ -50,6 +50,7 @@ import type { MeshResult } from '@/shape/mesh-client';
 import type { AnchorSpec, Vec3 } from '@/shape/types';
 import { admitMesh, type DetailLevel } from '@/worldstream/mesh-gate';
 import type { ProxyRung, ProxySlot, ProxyWorld } from '@/worldstream/proxy';
+import { budgetFor, type QualityBudget, type QualityTier } from '@/worldstream/quality';
 import { boundsExtent, type SlotTransform } from '@/worldstream/slots';
 
 import { clayMaterial } from './ClayMaterial';
@@ -246,6 +247,58 @@ export interface StageSceneryProbe {
   readonly slotNodes: number;
 }
 
+/**
+ * Úroveň kvality a co proti jejímu rozpočtu **doopravdy stálo** (`T26`).
+ *
+ * Rozpočet i naměřené jde ven **v jedné odpovědi schválně.** Kdyby si sada
+ * rozpočet importovala z `quality.ts` a naměřené brala odsud, porovnávala by
+ * dvě čísla, mezi kterými nikdo neručí za to, že popisují touž scénu — stačilo
+ * by, aby se svět postavil na jiné úrovni, než si test myslel, a zelená by
+ * neznamenala nic.
+ *
+ * `drawCalls` a `triangles` jsou z `gl.info.render`, tedy **za poslední
+ * nakreslený snímek** (`autoReset` je zapnutý). `textures` je z
+ * `gl.info.memory`, což je stav, ne snímek.
+ */
+export interface StageQualityProbe {
+  readonly tier: QualityTier;
+  readonly budget: QualityBudget;
+  readonly drawCalls: number;
+  readonly triangles: number;
+  readonly textures: number;
+  /**
+   * **Největší textura scény, měřeno na osu** — jediné číslo, proti kterému se
+   * dá strop „2K na osu" z §23 vůbec soudit.
+   *
+   * `gl.info.memory.textures` je počet, ne velikost, takže rozpočet na osu by
+   * se z něj přečíst nedal. Naměřeno 3. 9. 2026: worldstreamová scéna nese
+   * čtyři textury, materiály z nich žádnou obrázkovou — velká je **stínová
+   * mapa**, a ta je proto to jediné, co texturový stupínek žebříku doopravdy
+   * utrácí.
+   */
+  readonly textureAxis: number;
+  /** Kolik slotů doopravdy dostalo vymeshovaný tvar. Proti `budget.heroes`. */
+  readonly heroes: number;
+  /**
+   * Pixel ratio, se kterým renderer doopravdy kreslí — **první stupínek
+   * žebříku §23** (`quality.ts`, `DEGRADE_LADDER`).
+   *
+   * Čte se z rendereru, ne z rozpočtu: rozpočet je horní mez a stroj
+   * s `devicePixelRatio` 1 zůstane na 1 i na nejvyšší úrovni. Rozdíl mezi
+   * „strop je 2" a „kreslí se na 2" je přesně to, co by se dalo prohlásit
+   * omylem.
+   */
+  readonly pixelRatio: number;
+  /**
+   * Kolik fragmentů má snímek, tedy plocha kreslicího bufferu v pixelech.
+   *
+   * **Tohle je ta veličina, kterou pixel ratio doopravdy platí**, a jediná
+   * z celé té škály, která nezávisí na ovladači — proto se dá měřit
+   * i na softwarovém rendereru, kde je snímková frekvence bezcenná.
+   */
+  readonly drawingBufferPixels: number;
+}
+
 /** Co se právě odhaluje. `null` je stav, ve kterém scéna tráví většinu času. */
 export interface StageRevealProbe {
   readonly stableId: string;
@@ -304,12 +357,41 @@ export interface StageProbe {
    * bod za kamerou.
    */
   screen: (stableId: string) => { readonly x: number; readonly y: number } | null;
+  /**
+   * Úroveň kvality a účet za ni (`T26`). `null` u odmítnutého světa — tam se
+   * nekreslí nic a rozpočet, proti kterému by se to soudilo, by byl výmysl.
+   */
+  quality: () => StageQualityProbe | null;
 }
 
 declare global {
   interface Window {
     __worldstreamStage?: StageProbe;
   }
+}
+
+/**
+ * Největší textura ve scéně, na osu.
+ *
+ * Prochází **celou scénu, ne jen sloty**: stínová mapa visí na světle, tedy
+ * mimo `worldstream:stage`, a je to zrovna ta největší. Kdo by se ptal jen
+ * uvnitř vlastního podstromu, dostal by nulu a rozpočet by se tvářil, že drží.
+ */
+function largestTextureAxis(root: Object3D): number {
+  let largest = 0;
+  root.traverse((node) => {
+    const shadow = (node as { shadow?: { mapSize?: { x: number; y: number } } }).shadow;
+    if (shadow?.mapSize != null && (node as { castShadow?: boolean }).castShadow === true)
+      largest = Math.max(largest, shadow.mapSize.x, shadow.mapSize.y);
+
+    const material = (node as { material?: unknown }).material;
+    for (const slot of Array.isArray(material) ? material : [material]) {
+      const map = (slot as { map?: { image?: { width?: number; height?: number } } } | undefined)
+        ?.map;
+      if (map?.image != null) largest = Math.max(largest, map.image.width ?? 0, map.image.height ?? 0);
+    }
+  });
+  return largest;
 }
 
 /* ------------------------------------------------------------------ *
@@ -503,6 +585,7 @@ export default function WorldstreamStage({
   const [root, setRoot] = useState<Object3D | null>(null);
   const [reveal, setReveal] = useState<Reveal | null>(null);
   const camera = useThree((state) => state.camera);
+  const scene = useThree((state) => state.scene);
   const gl = useThree((state) => state.gl);
   const size = useThree((state) => state.size);
   /** Škrábací vektor projekce. `project()` mutuje, takže se nealokuje po snímcích. */
@@ -722,6 +805,23 @@ export default function WorldstreamStage({
       ready: () => build.views.length > 0,
       frames: () => frames.current,
       builds: () => stageBuilds,
+      quality: () => {
+        if (world.kind !== 'built') return null;
+        return {
+          tier: world.quality,
+          budget: budgetFor(world.quality),
+          // `gl.info.render` nuluje renderer sám na začátku každého snímku,
+          // takže je to účet za ten poslední — přesně to, co rozpočet §23
+          // omezuje. Součet přes celou relaci by tu byl bezcenný.
+          drawCalls: gl.info.render.calls,
+          triangles: gl.info.render.triangles,
+          textures: gl.info.memory.textures,
+          textureAxis: largestTextureAxis(scene),
+          heroes: build.slots.filter((entry) => entry.form.kind === 'mesh').length,
+          pixelRatio: gl.getPixelRatio(),
+          drawingBufferPixels: gl.domElement.width * gl.domElement.height,
+        };
+      },
       memory: () => ({
         geometries: gl.info.memory.geometries,
         textures: gl.info.memory.textures,
@@ -791,7 +891,7 @@ export default function WorldstreamStage({
     return () => {
       delete window.__worldstreamStage;
     };
-  }, [build, root, reveal, camera, gl, toScreen]);
+  }, [build, root, reveal, camera, gl, scene, toScreen, world]);
 
   return (
     <group ref={setRoot} name="worldstream:stage" onClick={pick} onPointerMissed={miss}>

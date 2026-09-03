@@ -43,6 +43,13 @@ import { MESH_DETAIL } from '@/shape/types';
 import { shapeContentHash } from '@/worldstream/cache';
 import type { DetailLevel } from '@/worldstream/mesh-gate';
 import { buildProxyWorld, type ProxyWorld } from '@/worldstream/proxy';
+import {
+  budgetFor,
+  chooseQualityTier,
+  detailLevelFor,
+  isQualityTier,
+  type QualityTier,
+} from '@/worldstream/quality';
 
 import WorldstreamLighting, {
   WORLDSTREAM_GL,
@@ -71,9 +78,95 @@ import {
  * ⚠ `requestAnimationFrame` je tu legitimní: `CLAUDE.md` ho zakazuje **na
  * replay cestě**, a tahle stránka žádnou simulaci neběží.
  */
+/**
+ * Rozpad přechodu z hrubé podoby na vysokou, **časovaný uvnitř stránky**
+ * (P15 T26; `T39` skončila tím, že bez tohohle rozpadu je každé další
+ * vysvětlení domněnka).
+ *
+ * Dvě půlky, protože každá stojí na něčem jiném a jenom jedna z nich má co
+ * dělat s mřížkou: worker tvar spočítá, stránka ho pak protáhne bránou,
+ * odhalením a commitem. Rozpočet §23 na „první hrdinský objekt" mířil na
+ * součet a nikdo ho nikdy nerozdělil.
+ */
+export interface TransitionTiming {
+  /** Objednávka u meshovacího workeru: od odeslání po hotový `MeshResult`. */
+  readonly workerMs: number;
+  /**
+   * Od hotového meshe po commit odhalení: brána §12, stavba geometrie,
+   * animace odhalení a zápis do registru.
+   */
+  readonly commitMs: number;
+  /**
+   * Kolik z `commitMs` je předepsaná animace odhalení, **pozorovaná na
+   * scéně** — ne konstanta, protože `prefers-reduced-motion` ji zkracuje.
+   * `null`, když odhalení proběhlo tak rychle, že ho ani jeden snímek
+   * nezahlédl.
+   */
+  readonly revealMs: number | null;
+}
+
+declare global {
+  interface Window {
+    /** Poslední naměřený rozpad přechodu. `null`, dokud se nematerializovalo. */
+    __worldstreamTransition?: () => TransitionTiming | null;
+  }
+}
+
+/**
+ * Počká na commit odhalení a cestou si všimne, jak dlouhé to odhalení bylo.
+ *
+ * Ptá se **sondy scény**, ne vlastního stavu: commit uzavírá `WorldstreamStage`
+ * uvnitř svého `onDone`, takže stránka se o něm jinak nedozví. Čte se po
+ * snímcích, protože o snímky přesně jde.
+ */
+function waitForCommit(from: number): Promise<number | null> {
+  return new Promise((resolve) => {
+    let reveal: number | null = null;
+    const tick = (): void => {
+      const stage = window.__worldstreamStage;
+      reveal = stage?.reveal()?.durationMs ?? reveal;
+      if ((stage?.commits() ?? 0) > from) resolve(reveal);
+      else requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+}
+
 function twoFrames(): Promise<void> {
   return new Promise((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
+}
+
+/**
+ * Úroveň kvality **před** stavbou světa (`T26`, §23).
+ *
+ * `?tier=safe` přebíjí volbu podle stroje, a není to jen testovací zadní
+ * vrátka: úrovně se jinak na jednom stroji vyzkoušet nedají, takže bez toho by
+ * se dvě ze tří větví adaptivní kvality nikdy nikdo nepodíval. Neznámá hodnota
+ * se **ignoruje**, ne odmítá — je to vývojová adresa a překlep nemá shodit
+ * stránku, na které se zkouší něco jiného.
+ *
+ * Renderer se čte přes `WEBGL_debug_renderer_info`. Ta přípona bývá zakázaná;
+ * když chybí, zůstane prázdný řetězec a `chooseQualityTier()` rozhodne podle
+ * paměti a jader. Neznalost úroveň nesnižuje.
+ */
+function pickTier(search: string): QualityTier {
+  const forced = new URLSearchParams(search).get('tier');
+  if (isQualityTier(forced)) return forced;
+
+  let renderer = '';
+  const probe = document.createElement('canvas').getContext('webgl2');
+  if (probe !== null) {
+    const info = probe.getExtension('WEBGL_debug_renderer_info');
+    if (info !== null) renderer = String(probe.getParameter(info.UNMASKED_RENDERER_WEBGL) ?? '');
+    probe.getExtension('WEBGL_lose_context')?.loseContext();
+  }
+
+  return chooseQualityTier({
+    deviceMemoryGb: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
+    cores: navigator.hardwareConcurrency,
+    renderer,
   });
 }
 
@@ -82,13 +175,33 @@ export default function WorldstreamDevPage() {
   const [failure, setFailure] = useState<string | null>(null);
   const [upgrade, setUpgrade] = useState<DetailUpgrade | null>(null);
   const mesher = useRef<MeshClient | null>(null);
+  /** Poslední rozpad přechodu. Čte ho `window.__worldstreamTransition`. */
+  const transition = useRef<TransitionTiming | null>(null);
+  /**
+   * Úroveň se volí **jednou, v efektu, těsně před stavbou** — ne při renderu.
+   *
+   * Dvakrát ze stejného důvodu: `pickTier()` sahá na `window` a na `<canvas>`,
+   * které při prerenderu na serveru neexistují; a `buildProxyWorld()` úroveň
+   * čte před fan-outem, přičemž rozlišení jde do `contentHash`, takže úroveň
+   * měnící se mezi rendery by vyrobila dva světy se stejnými jmény slotů
+   * (`quality.ts`, hlavička).
+   */
+  const tier = useRef<QualityTier>('full');
+
+  useEffect(() => {
+    window.__worldstreamTransition = () => transition.current;
+    return () => {
+      delete window.__worldstreamTransition;
+    };
+  }, []);
 
   useEffect(() => {
     const client = createMeshClient();
     mesher.current = client;
     let live = true;
+    tier.current = pickTier(window.location.search);
 
-    buildProxyWorld(DEMO_OUTCOME, { mesh: (order) => client.mesh(order) })
+    buildProxyWorld(DEMO_OUTCOME, { mesh: (order) => client.mesh(order), quality: tier.current })
       .then((built) => {
         if (live) setWorld(built);
       })
@@ -115,6 +228,10 @@ export default function WorldstreamDevPage() {
     const client = mesher.current;
     if (client === null) return null;
 
+    // Rozlišení z `MESH_DETAIL` té příčky, ne z rozpočtu úrovně: příčku vybral
+    // volající přes `detailLevelFor()`, a brána meshe soudí trojúhelníky podle
+    // `MESH_DETAIL[level]`. Objednat jinou mřížku, než jakou soudí brána, je
+    // přesně ta neshoda, kterou `detailLevelFor()` odstraňuje.
     const resolution = MESH_DETAIL[level].resolution;
     const mesh = await client.mesh({
       program: DEMO_HERO_PROGRAM,
@@ -134,10 +251,29 @@ export default function WorldstreamDevPage() {
     setFailure(error instanceof Error ? error.message : String(error));
   }, []);
 
+  /**
+   * Materializace, a **současně jediné místo, kde se přechod měří** (`T26`).
+   *
+   * Hodiny jsou tady, ne v testu, schválně: zvenku je vidět jen součet od
+   * kliknutí po commit, a právě ten součet `T39` naměřila jako 2,5–5,3 s bez
+   * vysvětlení. Rozdělit ho z Playwrightu nejde — hranici mezi workerem
+   * a commitem uvnitř stránky žádná událost nenese.
+   */
   const materialize = useCallback(async () => {
     try {
-      const next = await order('high');
-      if (next !== null) setUpgrade(next);
+      const started = performance.now();
+      const next = await order(detailLevelFor(tier.current));
+      const meshed = performance.now();
+      if (next === null) return;
+
+      const before = window.__worldstreamStage?.commits() ?? 0;
+      setUpgrade(next);
+      const revealMs = await waitForCommit(before);
+      transition.current = {
+        workerMs: meshed - started,
+        commitMs: performance.now() - meshed,
+        revealMs,
+      };
     } catch (error: unknown) {
       report(error);
     }
@@ -153,7 +289,7 @@ export default function WorldstreamDevPage() {
    */
   const overrun = useCallback(async () => {
     try {
-      const next = await order('high');
+      const next = await order(detailLevelFor(tier.current));
       if (next === null) return;
       const { min, max } = next.mesh.bounds;
       setUpgrade({
@@ -180,7 +316,7 @@ export default function WorldstreamDevPage() {
    */
   const race = useCallback(async () => {
     try {
-      const [loser, winner] = await Promise.all([order('rough'), order('high')]);
+      const [loser, winner] = await Promise.all([order('rough'), order(detailLevelFor(tier.current))]);
       if (loser === null || winner === null) return;
       setUpgrade(loser);
       await twoFrames();
@@ -189,6 +325,16 @@ export default function WorldstreamDevPage() {
       report(error);
     }
   }, [order, report]);
+
+  /**
+   * Úroveň, kterou scéna zrovna kreslí.
+   *
+   * Bere se **ze světa, ne z `tier`**: dokud se svět staví, ref už úroveň zná,
+   * ale nic z ní ještě nevzniklo, a plátno, které by mezitím přeskočilo na jiné
+   * ratio, by si vyžádalo resize navíc. Odmítnutý svět nekreslí nic, takže na
+   * něm nezáleží.
+   */
+  const shownQuality: QualityTier = world?.kind === 'built' ? world.quality : 'full';
 
   return (
     <main
@@ -204,9 +350,13 @@ export default function WorldstreamDevPage() {
         gl={{ ...WORLDSTREAM_GL }}
         shadows={WORLDSTREAM_SHADOWS}
         camera={{ position: [...DEMO_CAMERA.position], fov: DEMO_CAMERA.fov }}
+        // **Rozsah, ne jedno číslo.** Rozpočet úrovně je horní mez: stroj,
+        // který hlásí ratio 1, kreslí na 1 i na `full`, a teprve displej
+        // s vyšší hustotou o ten stupínek doopravdy přijde.
+        dpr={[1, budgetFor(shownQuality).pixelRatio]}
         data-testid="worldstream-stage-canvas"
       >
-        <WorldstreamLighting />
+        <WorldstreamLighting quality={shownQuality} />
         {world !== null && <WorldstreamStage world={world} upgrade={upgrade} />}
       </Canvas>
       <div style={{ position: 'absolute', right: 12, bottom: 10, display: 'flex', gap: 8 }}>
@@ -239,14 +389,25 @@ export default function WorldstreamDevPage() {
       </div>
       <p
         data-testid="stage-status"
-        style={{ position: 'absolute', left: 12, bottom: 10, margin: 0, opacity: 0.75 }}
+        // `pointerEvents: 'none'` je oprava, ne kosmetika: hláška roste s tím,
+        // co o světě řekne, a jakmile přerostla polovinu šířky, přikryla
+        // tlačítka harnessu a Playwright na ně přestal doklikat. Popisek nemá
+        // co chytat myš.
+        style={{
+          position: 'absolute',
+          left: 12,
+          bottom: 10,
+          margin: 0,
+          opacity: 0.75,
+          pointerEvents: 'none',
+        }}
       >
         {failure !== null
           ? `rough world failed: ${failure}`
           : world === null
             ? 'building the rough world…'
             : world.kind === 'built'
-              ? `${world.title} — ${world.slots.length} slots at ${world.resolution}³`
+              ? `${world.title} — ${world.slots.length} slots at ${world.resolution}³, ${world.quality} quality, up to ${budgetFor(world.quality).heroes} authored ${budgetFor(world.quality).heroes === 1 ? 'shape' : 'shapes'}`
               : `declined: ${world.reason}`}
       </p>
     </main>
