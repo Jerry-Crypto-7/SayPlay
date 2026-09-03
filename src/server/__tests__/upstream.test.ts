@@ -299,23 +299,38 @@ describe('3. neznámá cena se neúčtuje nulou', () => {
     // „otrávit účtenku se nesmí vyplatit" má platit vždycky.
     const spend = async (usage?: { input_tokens: number; output_tokens: number }) => {
       const cap = openCap();
-      const result = await runPipeline(PROMPT, {
-        branch: upstreamBranch(liveConfig(), recordingFetch(cap, () => contentlessResponse(usage)).fetchImpl),
-        cap,
-        grammar: GRAMMAR,
-      });
+      const { calls, fetchImpl } = recordingFetch(cap, () => contentlessResponse(usage));
+      const result = await runPipeline(PROMPT, { branch: upstreamBranch(liveConfig(), fetchImpl), cap, grammar: GRAMMAR });
       expect(result.outcome).toBe('FAILED');
       expect(result.outcome === 'FAILED' && result.reason).toBe('MALFORMED_RESPONSE');
-      return cap.snapshot().spentUsd;
+      return { spentUsd: cap.snapshot().spentUsd, reservedUsd: calls[0]!.reservedAtCallUsd };
     };
 
-    const poisoned = await spend({ input_tokens: 0, output_tokens: 0 });
+    // **Kotva je rezervace držená při tom volání, ne připíchnutý dolar.**
+    // Bez ní by tvrzení „všechny stojí totéž" prošlo i pro samé nuly, tedy
+    // přesně pro vadu, kterou zavírá; a dolar z ceníku by se hnul při každé
+    // změně konfigurace. Třetí nález nezávislé revize 3. 9. 2026.
     const silent = await spend();
+    expect(silent.spentUsd).toBeCloseTo(silent.reservedUsd, 10);
+    expect(silent.spentUsd).toBeGreaterThan(0);
 
-    // Nejdřív že se vůbec něco strhlo — bez tohohle řádku projde tvrzení níž
-    // i pro dvě nuly, tedy přesně pro tu vadu, kterou zavírá.
-    expect(silent).toBeGreaterThan(0);
-    expect(poisoned).toBe(silent);
+    // ⚠ **Sousedi dvojité nuly patří do téhož tvrzení, ne do vlastního testu** —
+    // druhý nález téže revize. Rovnost na (0,0) je bod a podhlásit o jediný
+    // token ho obcházelo: `{0,1}` stálo 0,000025 USD a `{1,0}` 0,000005 USD
+    // proti rezervaci 0,2585 USD. Test, který by zkoušel jen (0,0), by tu vadu
+    // certifikoval jako zavřenou. **Záporná složka je v seznamu ze stejného
+    // důvodu** — dřív ji na tomhle návratu hlídal vlastní test, ale od chvíle,
+    // kdy se tu účtenka zahazuje celá, by ten test procházel triviálně.
+    for (const usage of [
+      { input_tokens: 0, output_tokens: 0 },
+      { input_tokens: 0, output_tokens: 1 },
+      { input_tokens: 1, output_tokens: 0 },
+      { input_tokens: 1, output_tokens: 1 },
+      { input_tokens: -1249, output_tokens: FLOOR_TOKENS },
+    ]) {
+      const poisoned = await spend(usage);
+      expect(poisoned.spentUsd).toBeCloseTo(poisoned.reservedUsd, 10);
+    }
   });
 
   it('vadný JSON v textovém bloku je pořád odpověď, která text nesla', async () => {
@@ -530,26 +545,13 @@ describe('3. neznámá cena se neúčtuje nulou', () => {
     }
   });
 
-  it('účtenka se zápornou složkou padne i tam, kde odpověď žádný text nenese', async () => {
-    // **Třetí návrat `generate()`.** První znění téhle opravy sedělo
-    // v `readableUsage()`, kterou volají jen dva návraty nesoucí text; návrat
-    // „odpověď nenese textový blok" předával účtenku syrovou. Otrávená dvojice
-    // tak byla přes `MALFORMED_RESPONSE` **levnější než neposlat nic**: 0,000005
-    // USD proti rezervaci, kterou `BILLED_ON_FAILURE` na téhle příčině účtuje.
-    // Naměřeno nezávislou revizí nad `df4a6b5`.
-    const cap = openCap();
-    const { calls, fetchImpl } = recordingFetch(cap, () =>
-      contentlessResponse({ input_tokens: -1249, output_tokens: FLOOR_TOKENS }),
-    );
-    const result = await runPipeline(PROMPT, {
-      branch: upstreamBranch(liveConfig(), fetchImpl),
-      cap,
-      grammar: GRAMMAR,
-    });
-
-    expect(result.outcome).toBe('FAILED');
-    expect(cap.snapshot().spentUsd).toBeCloseTo(calls[0]!.reservedAtCallUsd, 10);
-  });
+  // **Test „účtenka se zápornou složkou padne i tam, kde odpověď žádný text
+  // nenese" tady stál do 3. 9. 2026 a je schválně smazaný, ne přehlédnutý.**
+  // Od chvíle, kdy návrat bez textového bloku zahazuje účtenku celou, nemůže
+  // selhat z důvodu, kvůli kterému vznikl: prošel by i pro pravidlo, které se
+  // na zápornou složku vůbec nepodívá. Jeho případ se přestěhoval do seznamu
+  // v testu „otrávená účtenka bez textového bloku…" výš, kde je jedním z pěti
+  // a soudí se proti držené rezervaci.
 
   it('hranice platí i na vadném JSON, ne jen na úspěchu', async () => {
     const cap = openCap();

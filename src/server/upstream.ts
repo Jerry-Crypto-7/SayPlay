@@ -377,11 +377,21 @@ function usageOf(payload: unknown): Usage | null {
  * strop se nehne a nikdo se nic nedozví. Vyčerpání stropu ji má, je zapsaná
  * a je to počítadlo volání (`T9-capcoldstart`). Levnější cesta k témuž
  * vyčerpání navíc zůstává otevřená, takže se tímhle pravidlem nic nového
- * neotevírá — jen se zavírá jediná odpověď, která je dnes levnější než mlčet.
+ * neotevírá.
  *
  * **Námitka první revize tím nepadá a nesmí se zamlčet:** nepoctivý
  * poskytovatel dolarový strop opravdu vyčerpá a demo pak odmítá. Odpověď na to
  * je počítadlo volání, ne sleva za nečitelnou účtenku.
+ *
+ * ⚠ **Samo o sobě to ale nestačilo, a je to změřené** — nález nezávislé revize
+ * 3. 9. 2026, `VERDICT: routed`. Rovnost je pořád jen **bod**, a soused ho
+ * obejde: na návratu bez textového bloku se `{0, 1}` účtovalo 0,000025 USD
+ * a `{1, 0}` 0,000005 USD, tedy asi 10 000× a 50 000× levněji než mlčet. Ten
+ * návrat proto od téhož dne zahazuje účtenku **celou** (`usage: null`, viz
+ * `generate()` níž), protože bez textu se ověřit nedá žádná. Tohle pravidlo
+ * tím rozhoduje už jen o dvou návratech s textem, kde na ně navazuje hranice
+ * zdola — **zůstává ale tady, a ne u nich**, protože dvojitá nula je vlastnost
+ * účtenky, ne toho návratu, který ji zrovna použije.
  *
  * **Hranice zdola se nepřesouvá a nemá kam:** odvozuje se z délky textu
  * (`FLOOR_CHARS_PER_TOKEN`), a na návratu bez textového bloku žádný text není.
@@ -537,7 +547,23 @@ async function generate(
       ok: false,
       reason: 'MALFORMED_RESPONSE',
       detail: 'the upstream answer carries no text block',
-      usage,
+      // **Na tomhle návratu se účtenka zahazuje celá, ne jen dvojitá nula** —
+      // nález nezávislé revize 3. 9. 2026, `VERDICT: routed`, změřeno.
+      //
+      // Rovnost na (0,0) v `usageOf()` zavřela **bod**, a soused ho obejde:
+      // `{0, 1}` se tady účtovalo 0,000025 USD a `{1, 0}` 0,000005 USD proti
+      // rezervaci 0,2585 USD, tedy asi 10 000× a 50 000× levněji než neposlat
+      // účtenku vůbec. Je to týž „bod, ne mez", kvůli kterému má textová cesta
+      // hranici zdola — jenže hranice se odvozuje z délky textu a **tady žádný
+      // text není**, takže se tu žádná účtenka ověřit nedá.
+      //
+      // Zahodit ji nic nestojí: `runPipeline()` ji z neúspěšného výsledku
+      // **ven nevydává** (`./pipeline.ts:247–255` nemá pole `usage`), takže
+      // slouží výhradně k výpočtu účtu. Neověřitelná účtenka, která jen
+      // zlevňuje, je přesně to, na co `BILLED_ON_FAILURE` je. Ostatní návraty
+      // bez ověřitelného textu (`UPSTREAM_REJECTED`, `UPSTREAM_UNAVAILABLE`,
+      // „není JSON") posílají `null` odjakživa; tenhle byl jediná výjimka.
+      usage: null,
     };
 
   let body: unknown;
@@ -549,9 +575,9 @@ async function generate(
       reason: 'MALFORMED_RESPONSE',
       detail: `the upstream text block is not JSON: ${(thrown as Error).message}`,
       // **Rozhoduje text, ne úspěch.** Sem se dojde jen s textovým blokem
-      // v ruce, takže nula spálených výstupních tokenů je i tady nečitelná
-      // účtenka. Návrat výš (`carries no text block`) tuhle podmínku nesplňuje
-      // a účtenku si nechává, jak dorazila.
+      // v ruce, takže hranice zdola se z čeho odvodit má — a odvozuje se,
+      // i když je odpověď vadná. Návrat výš text nemá, takže tam se účtenka
+      // neověřuje vůbec a zahazuje se celá.
       usage: readableUsage(usage, text, config.maxOutputTokens),
     };
   }
@@ -560,8 +586,8 @@ async function generate(
     ok: true,
     body,
     // NEsrážet na `{0, 0}`: `null` znamená „účtenku neumíme přečíst" a strop na
-    // to musí účtovat rezervaci. Nula znamenala volání zdarma — a vynulovaná
-    // účtenka pod textovým blokem je totéž, viz `readableUsage()`.
+    // to musí účtovat rezervaci; nula by znamenala volání zdarma. Dvojitou nulu
+    // na `null` sráží `usageOf()` výš, hranici zdola dodá `readableUsage()`.
     usage: readableUsage(usage, text, config.maxOutputTokens),
     provenance: {
       branch: UPSTREAM_BRANCH_ID,
