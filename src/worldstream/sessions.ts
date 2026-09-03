@@ -28,6 +28,7 @@
 import { frozenGrammar } from '@/model/client';
 import type { Grammar } from '@/model/prompt';
 import { buildIntentRequest, readPlannerEmission } from '@/model/worldstream-intent';
+import { MAX_PENDING_CHANGES, type PendingChange } from '@/model/worldstream-refine';
 import { compileWithRepair, type BlueprintEmitter } from '@/model/worldstream-repair';
 import type { WorldstreamBlueprint } from './schema';
 import { createSession, type GenerationSession } from './session';
@@ -45,6 +46,15 @@ export interface StoredSession {
   blueprint: WorldstreamBlueprint | null;
   /** Proč to skončilo, **veřejnou** větou. `null`, dokud to neskončilo. */
   fault: string | null;
+  /**
+   * Previewy druhé věty čekající na commit (T22, §21).
+   *
+   * Bydlí tady ze stejného důvodu jako celý tenhle modul: preview zakládá jedna
+   * route a commituje ho druhá, takže si ho ani jedna z nich nesmí držet sama.
+   * Životnost je životnost relace — vypadne-li relace z registru, vypadnou
+   * s ní i její previewy a nezůstane po nich mapa, kterou nikdo neuklidí.
+   */
+  readonly changes: Map<string, PendingChange>;
 }
 
 const live = new Map<string, StoredSession>();
@@ -81,6 +91,37 @@ export function clearSessions(): void {
 
 export function liveSessionCount(): number {
   return live.size;
+}
+
+/**
+ * Uloží preview a udrží jich nejvýš `MAX_PENDING_CHANGES`.
+ *
+ * Strop je na tom, co se **drží**, ne na tom, kolik se jich smí založit — táž
+ * úvaha jako u `evict()` o pár řádků výš. Odmítat nový preview kvůli počtu by
+ * z hlídání paměti udělalo odmítnutí služby, a to zrovna u dveří, kterými
+ * porotce mění svět.
+ */
+export function putChange(stored: StoredSession, change: PendingChange): void {
+  stored.changes.set(change.changeId, change);
+  // Pořadí `Map` je pořadí vložení, takže první je nejstarší.
+  for (const oldest of stored.changes.keys()) {
+    if (stored.changes.size <= MAX_PENDING_CHANGES) break;
+    stored.changes.delete(oldest);
+  }
+}
+
+/**
+ * Vyzvedne preview **a zároveň ho spotřebuje**.
+ *
+ * Jedno preview je jeden commit: kdyby šlo commitnout dvakrát, druhý pokus by
+ * proběhl proti revizi, kterou zvedl ten první — tedy přesně ten zastaralý
+ * commit, který §9.8 zakazuje. Bránu na revize to nenahrazuje, jen jí ubírá
+ * jediný případ, u kterého by musela hádat, co se stalo dřív.
+ */
+export function takeChange(stored: StoredSession, changeId: string): PendingChange | null {
+  const change = stored.changes.get(changeId) ?? null;
+  if (change !== null) stored.changes.delete(changeId);
+  return change;
 }
 
 /* ------------------------------------------------------------------ *
@@ -219,6 +260,7 @@ export function openSession(sessionId: string, sessionSeed: number): StoredSessi
     session: createSession({ sessionId, sessionSeed }),
     blueprint: null,
     fault: null,
+    changes: new Map(),
   };
   putSession(stored);
   return stored;

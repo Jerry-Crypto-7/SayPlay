@@ -1,0 +1,273 @@
+/**
+ * `POST /api/worldstream/sessions/:id/changes` — **preview druhé věty** (P15 T22, §21).
+ *
+ * Design book §4 dějství III: *„Systém ukáže rozsah dřív, než cokoli změní."*
+ * Tyhle dveře tedy nic nemění. Vyrobí plán, uloží ho k relaci a vrátí, co by se
+ * stalo — commit je druhá route a druhé rozhodnutí člověka.
+ *
+ * ## Čtyři brány, a jedna z nich je zadarmo
+ *
+ * 1. **Tvar těla.** Přijímá se `prompt` a nepovinné `stableId` (cíl vybraný
+ *    klikem v T23). Klíč navíc je 400 — ze stejného důvodu jako u zakládání
+ *    relace: kdyby se ignoroval, `shape` nebo `behavior` od klienta by vypadaly
+ *    jako přijaté a produkt by tvrdil, že geometrii píše model, zatímco by ji
+ *    směl podstrčit kdokoli.
+ * 2. **Moderace**, táž jako u zakládání relace.
+ * 3. **Admission** na promlčeném rozpočtu.
+ * 4. **Grounding** — a ten je **před** modelem, tedy zadarmo. Nejasná věta se
+ *    vrátí jako nabídka kandidátů a nestojí ani jedno placené volání. Je to
+ *    zároveň jediný způsob, jak se druhá věta smí splést: nabídkou, ne odhadem.
+ *
+ * ## Meshing tady nezačne, a nezačne ani o kus dál
+ *
+ * Preview **nevolá `session.queue()` ani `session.revise()`**. Kdyby volalo,
+ * porotce by za preview zaplatil výměnou podoby, kterou ještě neodsouhlasil —
+ * a zrušené preview by po sobě nechalo objekt v `planned`, tedy prázdné místo
+ * na scéně. Revize se zvedá až v commitu, jednomu jedinému objektu.
+ */
+
+import { randomUUID } from 'node:crypto';
+
+import { readBody } from '@/http/body';
+import { groundTarget, planChange, type PendingChange } from '@/model/worldstream-refine';
+import type { BlueprintEmitter } from '@/model/worldstream-repair';
+import { withRequest } from '@/obs/trace';
+import { admit, type AdmissionPolicy } from '@/server/admission';
+import { moderatePrompt } from '@/server/moderation';
+import { logRateLimited } from '@/server/public-faults';
+import { getSession, putChange } from '@/worldstream/sessions';
+
+import { cloudEmitter } from '../../route';
+
+export const runtime = 'nodejs';
+
+/**
+ * Rozpočet jednoho preview. Kratší než u zakládání relace, protože se generuje
+ * jedna změna, ne celý svět: jedno volání modelu proti dvěma až čtyřem.
+ * `minServiceMs` drží tentýž smysl — požadavek, kterému zbývá míň, se nemá
+ * čeho chytit a je poctivější odmítnout ho hned než zaplatit za pozdní odpověď.
+ */
+export const CHANGE_POLICY: AdmissionPolicy = {
+  budgetMs: 10_000,
+  minServiceMs: 2_000,
+  maxQueued: 0,
+};
+
+function fail(requestId: string, status: number, code: string, message: string): Response {
+  return Response.json({ requestId, error: { code, message } }, { status });
+}
+
+interface ChangeRequest {
+  readonly prompt: unknown;
+  readonly stableId?: string;
+}
+
+type BodyRead = { ok: true; value: ChangeRequest } | { ok: false; code: string; message: string };
+
+/** Tělo je `{ prompt }` a nepovinné `{ stableId }`. Klíč navíc je vada, ne přebytek. */
+function readChangeBody(text: string): BodyRead {
+  let body: unknown;
+  try {
+    body = JSON.parse(text === '' ? 'null' : text);
+  } catch {
+    return { ok: false, code: 'BODY_NOT_JSON', message: 'the request body is not JSON' };
+  }
+  if (body === null || typeof body !== 'object' || Array.isArray(body))
+    return { ok: false, code: 'BODY_NOT_AN_OBJECT', message: 'the request body is not a JSON object' };
+
+  const extra = Object.keys(body).filter((key) => key !== 'prompt' && key !== 'stableId');
+  if (extra.length > 0)
+    return {
+      ok: false,
+      code: 'UNEXPECTED_FIELDS',
+      message: `this endpoint takes a prompt and an optional stableId; it will not accept ${extra.join(', ')}`,
+    };
+
+  const { prompt, stableId } = body as { prompt?: unknown; stableId?: unknown };
+  if (stableId !== undefined && typeof stableId !== 'string')
+    return { ok: false, code: 'INVALID_STABLE_ID', message: 'stableId must be a string' };
+
+  return { ok: true, value: { prompt, ...(stableId === undefined ? {} : { stableId }) } };
+}
+
+export async function POST(
+  request: Request,
+  context: { params: Promise<{ sessionId: string }> },
+): Promise<Response> {
+  const { sessionId } = await context.params;
+  return createChange(request, sessionId, cloudEmitter());
+}
+
+/**
+ * Celá route bez dvou řádků, které se v testu nedají mít: rozbalení `params`
+ * a **placeného** emitoru.
+ *
+ * Bez toho by šťastná cesta těchhle dveří neměla oracle vůbec — `cloudEmitter()`
+ * bez `.env` vrací `null`, takže by sada uměla otestovat jen odmítnutí. Vzor je
+ * `runGeneration` v `src/worldstream/sessions.ts`, který je oddělený od
+ * zakládací route ze stejného důvodu.
+ */
+export async function createChange(
+  request: Request,
+  sessionId: string,
+  emit: BlueprintEmitter | null,
+): Promise<Response> {
+  const requestId = randomUUID();
+  const receivedAtMs = Date.now();
+
+  return withRequest(requestId, async () => {
+    let raw;
+    try {
+      raw = await readBody(request);
+    } catch (thrown) {
+      logRateLimited(
+        'worldstream/changes',
+        requestId,
+        'BODY_UNREADABLE',
+        thrown instanceof Error ? thrown.message : String(thrown),
+      );
+      return fail(requestId, 400, 'BODY_UNREADABLE', 'the request body could not be read');
+    }
+    if (!raw.ok)
+      return fail(
+        requestId,
+        raw.reason === 'TOO_LARGE' ? 413 : 408,
+        raw.reason,
+        raw.reason === 'TOO_LARGE'
+          ? 'the request body is too large'
+          : 'the request body arrived too slowly',
+      );
+
+    const read = readChangeBody(raw.text);
+    if (!read.ok) return fail(requestId, 400, read.code, read.message);
+
+    const stored = getSession(sessionId);
+    if (stored === null)
+      return fail(
+        requestId,
+        404,
+        'UNKNOWN_SESSION',
+        'no session with that id is being served by this process',
+      );
+
+    // **Změnit se dá jen svět, který stojí.** Relace před `world.ready` blueprint
+    // nemá, takže by nebylo co groundovat ani proti čemu psát operace — a 409 to
+    // říká líp než 404, protože ta adresa za chvíli platit bude.
+    const blueprint = stored.blueprint;
+    if (blueprint === null)
+      return fail(
+        requestId,
+        409,
+        'WORLD_NOT_READY',
+        'this session has no world yet, so there is nothing to change',
+      );
+
+    // Uzavřená relace preview přijmout smí, ale nikdy by ho nešlo commitnout —
+    // a nechat porotce zaplatit modelem za změnu, kterou dveře o kus dál
+    // odmítnou, je horší než říct to hned.
+    const phase = stored.session.phase;
+    if (phase === 'complete' || phase === 'failed')
+      return fail(requestId, 409, 'SESSION_CLOSED', 'this session is closed and no longer takes changes');
+
+    const verdict = moderatePrompt(read.value.prompt);
+    if (!verdict.ok) return fail(requestId, 400, verdict.category, verdict.detail);
+
+    const admission = admit(requestId, receivedAtMs, Date.now(), CHANGE_POLICY);
+    if (!admission.admitted)
+      return fail(
+        requestId,
+        503,
+        admission.reason,
+        'the request ran out of its time budget before any work began',
+      );
+
+    // **Grounding je před modelem, a proto je zadarmo.** Nejasná věta se vrátí
+    // jako nabídka i na nasazení bez klíče: je to odpověď o světě, ne o modelu,
+    // a platit za otázku, na kterou se ještě nikdo nezeptal, je čistá ztráta.
+    const grounding = groundTarget(verdict.prompt, blueprint.objects, read.value.stableId);
+    if (!grounding.ok)
+      return Response.json({
+        requestId,
+        outcome: 'AMBIGUOUS',
+        reason: grounding.reason,
+        candidates: grounding.candidates,
+      });
+
+    // `null` znamená „cloudová větev není nakonfigurovaná". Na rozdíl od
+    // zakládání relace se tu neshazuje celá relace — svět běží dál a porotce ho
+    // pořád vidí; nepovedla se jen tahle jedna změna.
+    if (emit === null)
+      return fail(requestId, 503, 'MODEL_UNAVAILABLE', 'the model could not be reached');
+
+    const outcome = await planChange({
+      prompt: verdict.prompt,
+      blueprint,
+      target: grounding.target,
+      emit,
+    });
+
+    if (outcome.kind === 'unavailable') {
+      // Detail poskytovatele ven nejde nikdy — `fetch` píše do svých hlášek celou
+      // adresu koncového bodu a ta umí nést pověření. Ven kód a věta, do logu
+      // operátora všechno ostatní.
+      logRateLimited('worldstream/changes', requestId, 'MODEL_UNAVAILABLE', outcome.detail);
+      return fail(requestId, 503, 'MODEL_UNAVAILABLE', 'the model could not be reached');
+    }
+
+    if (outcome.kind === 'rejected') {
+      stored.session.events.append('patch.rejected', {
+        reason: outcome.reason,
+        detail: outcome.detail,
+      });
+      return Response.json({
+        requestId,
+        outcome: 'REJECTED',
+        reason: outcome.reason,
+        detail: outcome.detail,
+      });
+    }
+
+    const { plan } = outcome;
+    const target = grounding.target;
+    const change: PendingChange = {
+      changeId: randomUUID(),
+      plan,
+      basedOn: {
+        // Objekt je v registru od `session.register()`, takže `null` sem nedojde;
+        // 0 je poctivá odpověď i tak — objekt bez podoby je na revizi 0.
+        representation: stored.session.revisionOf(plan.stableId) ?? 0,
+        sim: blueprint.world.simRevision,
+        look: blueprint.world.lookRevision,
+      },
+    };
+    putChange(stored, change);
+
+    const scope = {
+      shape: plan.shape !== null,
+      behavior: plan.behavior.length,
+      appearance: plan.appearance.length,
+    };
+
+    stored.session.events.append(
+      'patch.preview',
+      { changeId: change.changeId, stableId: plan.stableId, summary: plan.summary, scope },
+      plan.stableId,
+    );
+
+    return Response.json({
+      requestId,
+      changeId: change.changeId,
+      outcome: 'PREVIEW',
+      summary: plan.summary,
+      target: { stableId: target.stableId, label: target.label },
+      scope,
+      // §4 ukazuje porotci vedle rozsahu i to, co změna **nechá být**. Je to
+      // polovina slibu „bez resetu" a bez ní se ta věta nedá ověřit očima.
+      preserved: blueprint.objects
+        .filter((object) => object.stableId !== plan.stableId)
+        .map((object) => object.label),
+      basedOn: change.basedOn,
+      commit: `/api/worldstream/sessions/${sessionId}/changes/${change.changeId}/commit`,
+    });
+  });
+}

@@ -1,0 +1,440 @@
+/**
+ * **Dvoje dveře druhé věty: preview a commit** (P15 T22, §21).
+ *
+ * Svět, nad kterým se to soudí, projde **skutečným** compilerem a jeho
+ * certifikací (`world-fixture.ts`), takže patch řetěz tady pracuje s vyřešeným
+ * svědkem a zapečetěným `simHash` — ne s ručně napsaným dokumentem, u kterého
+ * by „certifikováno" nic neznamenalo.
+ *
+ * ## Čtyři vlastnosti, které oko nepokryje
+ *
+ * 1. **Vzhledová změna nezmění runtime hash.** Vypadá to na obrazovce úplně
+ *    stejně, ať se `simHash` pohnul nebo ne — a když se pohnul, hráč přijde
+ *    o rozehraný stav a nikdo nepozná proč.
+ * 2. **Revizi podoby dostane jeden objekt.** Zvednout ji všem vypadá správně
+ *    (svět se přemeshuje a je hezký), a přitom je to reset, který produkt
+ *    slibuje neudělat.
+ * 3. **Zastaralé preview se nesmí commitnout.** Rozdíl mezi „změnilo se to, co
+ *    jsem viděl" a „změnilo se něco jiného" není z výsledku poznat.
+ * 4. **Smíšená změna je celá, nebo žádná.** Půlka změny je svět, o který nikdo
+ *    nežádal — a ta druhá půlka chybí tiše.
+ *
+ * ## Preview se zakládá dvěma cestami a obě jsou tu schválně
+ *
+ * Šťastná cesta jde přes `createChange()` se **scriptovaným** emitorem, protože
+ * `cloudEmitter()` bez `.env` vrací `null` a jinak by se otestovala jen
+ * odmítnutí. Commitové sady si preview vkládají rovnou `putChange()` — to je
+ * přesně to, co route dělá, a nechat je platit modelem za každý případ
+ * zastaralosti by ze sady udělalo měřidlo poskytovatele.
+ */
+
+import { afterEach, describe, expect, it } from 'vitest';
+
+import type { UpstreamRequest } from '@/model/prompt';
+import type { PendingChange, RefinePlan } from '@/model/worldstream-refine';
+import { clearSessions, openSession, putChange, type StoredSession } from '@/worldstream/sessions';
+
+import { POST as commitChange } from '../sessions/[sessionId]/changes/[changeId]/commit/route';
+import { POST as previewChange, createChange } from '../sessions/[sessionId]/changes/route';
+import { generated } from './world-fixture';
+
+/* ------------------------------------------------------------------ *
+ * Volání route.
+ * ------------------------------------------------------------------ */
+
+function previewRequest(sessionId: string, body: unknown): Request {
+  return new Request(`http://127.0.0.1/api/worldstream/sessions/${sessionId}/changes`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: typeof body === 'string' ? body : JSON.stringify(body),
+  });
+}
+
+function preview(sessionId: string, body: unknown, emit: ((request: UpstreamRequest) => Promise<unknown>) | null = null) {
+  return createChange(previewRequest(sessionId, body), sessionId, emit);
+}
+
+function commit(sessionId: string, changeId: string): Promise<Response> {
+  return commitChange(new Request(`http://127.0.0.1/commit`, { method: 'POST' }), {
+    params: Promise.resolve({ sessionId, changeId }),
+  });
+}
+
+async function body(response: Response): Promise<Record<string, unknown>> {
+  return (await response.json()) as Record<string, unknown>;
+}
+
+/* ------------------------------------------------------------------ *
+ * Fasety změn, které se nad tou fixturou dají provést.
+ * ------------------------------------------------------------------ */
+
+/** Nová podoba stožáru. Týž `shapeId` i `stableId` — jinak nemá kam přistát. */
+const WOVEN_MAST = {
+  shapeId: 'mastPost',
+  stableId: 'ironMast',
+  nodes: [
+    { kind: 'prism', sides: 6, radius: 0.4, height: 4.1 },
+    { kind: 'twist', child: 0, axis: 'y', radiansPerUnit: 0.75 },
+  ],
+  root: 1,
+  targetBounds: { min: [-0.5, -2.1, -0.5], max: [0.5, 2.1, 0.5] },
+  anchors: [{ name: 'tip', at: [0, 2, 0], normal: [0, 1, 0] }],
+  materialIntent: 'metal',
+  priority: 9,
+} as unknown as RefinePlan['shape'];
+
+function plan(overrides: Partial<RefinePlan> = {}): RefinePlan {
+  return {
+    stableId: 'ironMast',
+    summary: 'the mast is rewoven and the salt goes warm',
+    shape: null,
+    behavior: [],
+    appearance: [],
+    ...overrides,
+  };
+}
+
+/** Preview vložené přesně tak, jak ho vkládá route. */
+function pending(stored: StoredSession, changed: RefinePlan, changeId = 'change-1'): PendingChange {
+  const world = worldOf(stored);
+  const change: PendingChange = {
+    changeId,
+    plan: changed,
+    basedOn: {
+      representation: stored.session.revisionOf(changed.stableId) ?? 0,
+      sim: world.simRevision,
+      look: world.lookRevision,
+    },
+  };
+  putChange(stored, change);
+  return change;
+}
+
+function worldOf(stored: StoredSession) {
+  const blueprint = stored.blueprint;
+  if (blueprint === null) throw new Error('the fixture session has no world');
+  return blueprint.world;
+}
+
+afterEach(() => {
+  clearSessions();
+});
+
+/* ------------------------------------------------------------------ *
+ * POST /changes — preview
+ * ------------------------------------------------------------------ */
+
+describe('preview druhé věty', () => {
+  it('neznámá relace je 404, ne prázdné preview', async () => {
+    const response = await preview('nobody', { prompt: 'make the mast taller' });
+    expect(response.status).toBe(404);
+    expect((await body(response)).error).toMatchObject({ code: 'UNKNOWN_SESSION' });
+  });
+
+  it('relace bez světa je 409 — ta adresa za chvíli platit bude', async () => {
+    const stored = openSession('empty-session', 7);
+    const response = await preview(stored.session.sessionId, { prompt: 'make the mast taller' });
+    expect(response.status).toBe(409);
+    expect((await body(response)).error).toMatchObject({ code: 'WORLD_NOT_READY' });
+  });
+
+  it('klíč navíc je 400, ne tiše zahozené pole', async () => {
+    const stored = await generated();
+    const response = await preview(stored.session.sessionId, {
+      prompt: 'make the mast taller',
+      shape: { shapeId: 'smuggled' },
+    });
+    expect(response.status).toBe(400);
+    expect((await body(response)).error).toMatchObject({ code: 'UNEXPECTED_FIELDS' });
+  });
+
+  it('prázdná věta neprojde moderací', async () => {
+    const stored = await generated();
+    const response = await preview(stored.session.sessionId, { prompt: '   ' });
+    expect(response.status).toBe(400);
+  });
+
+  it('nejasná věta vrátí kandidáty, a to i bez klíče k modelu', async () => {
+    // Grounding je před modelem. Kdyby byl za ním, tahle odpověď by na nasazení
+    // bez `.env` neexistovala a porotce by místo nabídky dostal 503.
+    const stored = await generated();
+    const response = await preview(stored.session.sessionId, { prompt: 'make it nicer' }, null);
+    expect(response.status).toBe(200);
+    const read = await body(response);
+    expect(read.outcome).toBe('AMBIGUOUS');
+    expect(read.reason).toBe('NO_MATCH');
+    expect(read.candidates).toHaveLength(2);
+  });
+
+  it('jasná věta bez nakonfigurovaného modelu je 503, relace zůstane živá', async () => {
+    const stored = await generated();
+    const response = await preview(stored.session.sessionId, { prompt: 'make the mast taller' }, null);
+    expect(response.status).toBe(503);
+    expect((await body(response)).error).toMatchObject({ code: 'MODEL_UNAVAILABLE' });
+    expect(stored.session.phase).toBe('world');
+  });
+
+  it('preview vrátí rozsah, co zůstane, a NEZAČNE meshovat', async () => {
+    const stored = await generated();
+    const before = stored.session.events.sequence;
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'turn the mast into woven metal' },
+      async () => ({
+        summary: 'the mast is rewoven',
+        shape: WOVEN_MAST,
+        behavior: [],
+        appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    const read = await body(response);
+    expect(read.outcome).toBe('PREVIEW');
+    expect(read.target).toMatchObject({ stableId: 'ironMast' });
+    expect(read.scope).toEqual({ shape: true, behavior: 0, appearance: 1 });
+    expect(read.preserved).toEqual(['the salt flat']);
+
+    // **Žádný meshing před commitem.** Podoba stojí tam, kde stála, revize se
+    // nepohnula a do proudu odešel jediný rámec — preview, ne fronta tvarů.
+    expect(stored.session.revisionOf('ironMast')).toBe(0);
+    expect(stored.session.stateOf('ironMast')).toEqual({ kind: 'planned' });
+    const frames = stored.session.events.since(before);
+    expect(frames.map((frame) => frame.type)).toEqual(['patch.preview']);
+
+    // A svět je pořád ten původní — preview nic nezapsalo.
+    expect(worldOf(stored).look.palette).toBe('moss');
+    expect(stored.changes.size).toBe(1);
+  });
+
+  it('cíl vybraný klikem přebije text věty', async () => {
+    const stored = await generated();
+    let seen = '';
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'make the salt flat brighter', stableId: 'ironMast' },
+      async (request: UpstreamRequest) => {
+        seen = request.user;
+        return { summary: 'the mast is rewoven', shape: WOVEN_MAST };
+      },
+    );
+    expect(response.status).toBe(200);
+    expect((await body(response)).target).toMatchObject({ stableId: 'ironMast' });
+    expect(seen).toContain('ironMast');
+  });
+
+  it('vadná odpověď modelu je 200 REJECTED a rámec, ne 500', async () => {
+    const stored = await generated();
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'make the mast taller' },
+      async () => ({ summary: 'nothing happens', behavior: [], appearance: [] }),
+    );
+    expect(response.status).toBe(200);
+    expect((await body(response)).outcome).toBe('REJECTED');
+    expect(stored.session.events.all().at(-1)?.type).toBe('patch.rejected');
+    expect(stored.changes.size).toBe(0);
+  });
+
+  it('produkční POST bez .env dojde na tutéž 503', async () => {
+    const stored = await generated();
+    const response = await previewChange(
+      previewRequest(stored.session.sessionId, { prompt: 'make the mast taller' }),
+      { params: Promise.resolve({ sessionId: stored.session.sessionId }) },
+    );
+    expect(response.status).toBe(503);
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * POST /changes/:id/commit
+ * ------------------------------------------------------------------ */
+
+describe('commit druhé věty', () => {
+  it('neznámé preview je 404', async () => {
+    const stored = await generated();
+    const response = await commit(stored.session.sessionId, 'never-existed');
+    expect(response.status).toBe(404);
+    expect((await body(response)).error).toMatchObject({ code: 'UNKNOWN_CHANGE' });
+  });
+
+  it('změna jen vzhledu NEZMĚNÍ runtime hash ani podobu objektu', async () => {
+    const stored = await generated();
+    const hashBefore = worldOf(stored).simHash;
+    const change = pending(
+      stored,
+      plan({ appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }] }),
+    );
+
+    const response = await commit(stored.session.sessionId, change.changeId);
+    expect(response.status).toBe(200);
+    const read = await body(response);
+    expect(read.outcome).toBe('COMMITTED');
+    expect(read.applied).toEqual(['look']);
+    // `representation: null` je celé to tvrzení: mesh na scéně zůstává.
+    expect(read.representation).toBeNull();
+
+    const after = worldOf(stored);
+    expect(after.look.palette).toBe('sand');
+    expect(after.lookRevision).toBe(1);
+    expect(after.simRevision).toBe(0);
+    expect(after.simHash).toBe(hashBefore);
+    expect(stored.session.revisionOf('ironMast')).toBe(0);
+  });
+
+  it('geometrická změna zvedne revizi JEN dotčeného objektu', async () => {
+    const stored = await generated();
+    const change = pending(stored, plan({ shape: WOVEN_MAST }));
+
+    const response = await commit(stored.session.sessionId, change.changeId);
+    const read = await body(response);
+    expect(read.outcome).toBe('COMMITTED');
+    expect(read.representation).toBe(1);
+
+    expect(stored.session.revisionOf('ironMast')).toBe(1);
+    expect(stored.session.revisionOf('saltFlat')).toBe(0);
+    // Nová podoba doopravdy nahradila starou, a dokument se přitom nehnul.
+    expect(stored.blueprint?.shapes[0].nodes[0]).toMatchObject({ sides: 6 });
+    expect(worldOf(stored).simRevision).toBe(0);
+    expect(worldOf(stored).lookRevision).toBe(0);
+  });
+
+  it('nové pravidlo projde certifikací, zvedne simRevision a přepočítá hash', async () => {
+    const stored = await generated();
+    const hashBefore = worldOf(stored).simHash;
+    const change = pending(
+      stored,
+      plan({
+        behavior: [
+          {
+            op: 'add',
+            path: '/sim/rules/lightUp',
+            value: {
+              id: 'lightUp',
+              phase: 0,
+              priority: 1,
+              event: { kind: 'onEnterZone', entity: 'surveyor', zone: 'mastPad' },
+              condition: null,
+              actions: [{ kind: 'win' }],
+            },
+          },
+        ],
+      }),
+    );
+
+    const read = await body(await commit(stored.session.sessionId, change.changeId));
+    expect(read.outcome).toBe('COMMITTED');
+    expect(read.applied).toEqual(['sim']);
+    // Svědek se ověřuje **znovu** nad commitnutou `sim`, ne přebírá.
+    expect(read.certificate).toMatchObject({ verdict: 'CERTIFIED' });
+    expect(worldOf(stored).simRevision).toBe(1);
+    expect(worldOf(stored).simHash).not.toBe(hashBefore);
+    // Pravidlo se změnilo, podoba ne — mesh na scéně zůstává.
+    expect(stored.session.revisionOf('ironMast')).toBe(0);
+  });
+
+  it('preview proti revizi N se po commitu na N+1 už nesmí commitnout', async () => {
+    // Break-it-on-purpose z AC: dvě preview nad týmž objektem, obě proti revizi
+    // 0. První projde a revizi zvedne, druhé je zastaralé — a nesmí to být
+    // best-effort změna, protože porotce ji viděl nad světem, který zmizel.
+    const stored = await generated();
+    const first = pending(stored, plan({ shape: WOVEN_MAST }), 'change-a');
+    const second = pending(stored, plan({ shape: WOVEN_MAST }), 'change-b');
+
+    expect((await commit(stored.session.sessionId, first.changeId)).status).toBe(200);
+
+    const response = await commit(stored.session.sessionId, second.changeId);
+    expect(response.status).toBe(409);
+    expect((await body(response)).error).toMatchObject({
+      code: 'STALE_REVISION',
+      field: 'basedOn/representation',
+    });
+  });
+
+  it('preview proti staré revizi dokumentu je taky 409', async () => {
+    const stored = await generated();
+    const stale = pending(
+      stored,
+      plan({ appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }] }),
+      'change-stale',
+    );
+    const winner = pending(
+      stored,
+      plan({ appearance: [{ op: 'replace', path: '/look/atmosphere', value: 'haze' }] }),
+      'change-winner',
+    );
+
+    expect((await commit(stored.session.sessionId, winner.changeId)).status).toBe(200);
+
+    const response = await commit(stored.session.sessionId, stale.changeId);
+    expect(response.status).toBe(409);
+    expect((await body(response)).error).toMatchObject({ field: 'basedOn/look' });
+  });
+
+  it('smíšená změna je celá, nebo žádná', async () => {
+    // Vzhled je legální a `sim` shodí svědka. `/api/edit` by si vzhled nechal
+    // (§13.4); tady je půlka změny horší výsledek než žádná.
+    const stored = await generated();
+    const change = pending(
+      stored,
+      plan({
+        behavior: [{ op: 'remove', path: '/sim/rules/reach' }],
+        appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }],
+      }),
+    );
+
+    const response = await commit(stored.session.sessionId, change.changeId);
+    expect(response.status).toBe(200);
+    const read = await body(response);
+    expect(read.outcome).toBe('REJECTED');
+
+    const after = worldOf(stored);
+    expect(after.look.palette).toBe('moss');
+    expect(after.lookRevision).toBe(0);
+    expect(after.simRevision).toBe(0);
+    expect(stored.session.revisionOf('ironMast')).toBe(0);
+    expect(stored.session.events.all().at(-1)?.type).toBe('patch.rejected');
+  });
+
+  it('jedno preview je jeden commit', async () => {
+    const stored = await generated();
+    const change = pending(
+      stored,
+      plan({ appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }] }),
+    );
+
+    expect((await commit(stored.session.sessionId, change.changeId)).status).toBe(200);
+    expect((await commit(stored.session.sessionId, change.changeId)).status).toBe(404);
+    expect(worldOf(stored).lookRevision).toBe(1);
+  });
+
+  it('tvar, který ve světě není, se tiše nepodstrčí', async () => {
+    const stored = await generated();
+    const change = pending(
+      stored,
+      plan({
+        shape: { ...(WOVEN_MAST as Record<string, unknown>), shapeId: 'ghostSpan' } as RefinePlan['shape'],
+      }),
+    );
+
+    const read = await body(await commit(stored.session.sessionId, change.changeId));
+    expect(read.outcome).toBe('REJECTED');
+    // Revize se nezvedla, takže prohlížeč nepřemeshuje starou podobu jako novou.
+    expect(stored.session.revisionOf('ironMast')).toBe(0);
+  });
+
+  it('operace mimo obě části dokumentu neprojde routerem', async () => {
+    const stored = await generated();
+    const change = pending(
+      stored,
+      // Faseta by tohle nepustila, ale preview může přijít i z jiného kola;
+      // rozhoduje router nad cestami, ne štítek.
+      plan({ behavior: [{ op: 'replace', path: '/simRevision', value: 9 }] }),
+    );
+
+    const read = await body(await commit(stored.session.sessionId, change.changeId));
+    expect(read.outcome).toBe('REJECTED');
+    expect(worldOf(stored).simRevision).toBe(0);
+  });
+});
