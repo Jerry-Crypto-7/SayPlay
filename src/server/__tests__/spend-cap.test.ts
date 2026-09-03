@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { mockBranch } from '../mock';
 import type { GenerationCall } from '../pipeline';
@@ -558,5 +558,97 @@ describe('rezervace, která se nevyrovná, drží peníze — a snapshot to mus�
     // Kdyby se odečítalo pokaždé, spadne to do záporu a aserce
     // `reservedUsd === 0` napříč `src/server/__tests__` přestanou něco měřit.
     expect(cap.snapshot().reservedUsd).toBe(0);
+  });
+});
+
+/**
+ * **Chladný start si rozpočet nekoupí znovu** (P15 `T9-capcoldstart`).
+ *
+ * Vada, kterou to zavírá: `spend-cap.ts` držel součty v poli instance, takže
+ * každý nový proces startoval s plnými 5 USD a 200 voláními. Na Vercelu je
+ * chladný start běžná událost, ne výjimka — a ceník je z veřejného repa
+ * dopočitatelný, takže „počkej si na novou instanci" byla dostupná cesta, jak
+ * strop obejít.
+ *
+ * Jede se přes **`httpLedger`**, ne přes knihu v paměti: paměťová varianta by
+ * dokazovala jen to, že dva stropy sdílejí jeden objekt, kdežto tohle prochází
+ * skutečným kódem adaptéru — serializací příkazů, rourou i čtením odpovědi.
+ * Sdílené úložiště nahrazuje počítadlo v uzávěru, protože Redis samotný tu
+ * netestujeme; testuje se, že strop **nemá vlastní paměť**.
+ *
+ * ⚠ **Co tenhle test NEpokrývá:** že si routa vytáhne prostředí až při načtení.
+ * To drží lexikální brána „žádná route si strop nevyrábí sama" o kus výš.
+ */
+describe('chladný start rozpočet neresetuje', () => {
+  /** Úložiště jako uzávěr: dva klíče, dvě operace, tentýž protokol jako roura. */
+  function fakeStore() {
+    const keys = new Map<string, number>();
+    const fetchImpl = (async (_url: unknown, init?: RequestInit) => {
+      const commands = JSON.parse(String(init?.body)) as [string, string, string][];
+      const answers = commands.map(([, key, delta]) => {
+        const next = (keys.get(key) ?? 0) + Number(delta);
+        keys.set(key, next);
+        return { result: String(next) };
+      });
+      return new Response(JSON.stringify(answers), {
+        headers: { 'content-type': 'application/json' },
+      });
+    }) as unknown as typeof fetch;
+    return { keys, fetchImpl };
+  }
+
+  const SERVERLESS_ENV = {
+    VERCEL: '1',
+    WORLDSMITH_SPEND_STORE_URL: 'https://ledger.example.com',
+    WORLDSMITH_SPEND_STORE_TOKEN: 'token',
+    WORLDSMITH_SPEND_CAP_USD: '1',
+  };
+
+  it('druhý start nad týmž úložištěm dostane odmítnutí, ne čerstvý rozpočet', async () => {
+    const store = fakeStore();
+    vi.stubGlobal('fetch', store.fetchImpl);
+    try {
+      // První instance spotřebuje rozpočet.
+      const first = spendCapFromEnv(SERVERLESS_ENV);
+      const held = await first.reserve(0.9);
+      if (!held.ok) throw new Error('první rezervace měla projít');
+      await held.settle(0.9);
+
+      // Chladný start: nová instance, tytéž proměnné, tytéž klíče v úložišti.
+      const second = await spendCapFromEnv(SERVERLESS_ENV).reserve(0.9);
+      expect(second.ok, 'chladný start koupil rozpočet znovu').toBe(false);
+      if (second.ok) throw new Error('unreachable');
+      expect(second.reason).toBe('CAP_EXHAUSTED');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('počet placených volání přežije chladný start stejně jako dolary', async () => {
+    const store = fakeStore();
+    vi.stubGlobal('fetch', store.fetchImpl);
+    try {
+      const env = { ...SERVERLESS_ENV, WORLDSMITH_SPEND_CAP_USD: '1000', WORLDSMITH_CALL_CAP: '2' };
+      await spendCapFromEnv(env).reserve(0.001);
+      await spendCapFromEnv(env).reserve(0.001);
+
+      const third = await spendCapFromEnv(env).reserve(0.001);
+      expect(third.ok).toBe(false);
+      if (third.ok) throw new Error('unreachable');
+      expect(third.reason).toBe('CALL_CAP_EXHAUSTED');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('a bez úložiště se ten rozpočet koupit nedá vůbec, protože se nevolá', async () => {
+    // Druhá strana téhož: kdyby sdílené úložiště chybělo, nesmí strop spadnout
+    // zpátky na paměť procesu — tam by chladný start fungoval dál.
+    const { WORLDSMITH_SPEND_STORE_URL: _u, WORLDSMITH_SPEND_STORE_TOKEN: _t, ...withoutStore } =
+      SERVERLESS_ENV;
+    const refused = await spendCapFromEnv(withoutStore).reserve(0.001);
+    expect(refused.ok).toBe(false);
+    if (refused.ok) throw new Error('unreachable');
+    expect(refused.reason).toBe('STORE_UNCONFIGURED');
   });
 });
