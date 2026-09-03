@@ -19,17 +19,34 @@
  * Neznámá adresa a vypršená adresa dostanou **tutéž** odpověď. Rozlišit je
  * znamená potvrdit, že takový svět kdysi existoval.
  *
- * ## Cachovat se smí navždy, a to není optimalizace
+ * ## Cachovat se smí, ale ne navždy — a ten rozdíl je celý o stažení z oběhu
  *
- * Obsah pod adresou se nemůže změnit, protože adresa je z něj spočítaná. Proto
- * `immutable` — a proto tyhle dveře unesou nápor, který by relace neunesla: po
- * prvním průchodu je odbaví CDN a server se jich už ani nedotkne.
+ * Obsah pod adresou se nemůže změnit, protože adresa je z něj spočítaná, takže
+ * `immutable` na rok vypadalo jako správná odpověď. **Není**, a nález nezávislé
+ * revize 3. 9. 2026 (`VERDICT: blocking`) říká proč: tenhle soubor zavádí dvě
+ * cesty, jak svět z oběhu stáhnout — vypínač `off: ["all"]` a `SHARED_WORLD_TTL_MS`
+ * (24 h, „výslovné vypršení" z §22.4) — a **obě sahají jen na origin**. Rok
+ * v `immutable` znamená, že jednou stažený otisk servíruje CDN dál i s vypnutým
+ * demem; u obsahu, který má jít pryč (uklouzlá moderace, něčí osobní věc), je
+ * to rok bez páky.
+ *
+ * Kompromis je `s-maxage` v řádu desítek sekund: nápor prvního průchodu odbaví
+ * pořád CDN, ale stažení z oběhu se propíše nejpozději za minutu. `max-age=0`
+ * navrch říká prohlížeči, ať se ptá vždycky — jeho vlastní záložka je jediné
+ * místo, kde stará kopie nikomu nevadí.
  */
 
 import { killState } from '@/server/kill-switch';
 import { readSharedWorld } from '@/worldstream/snapshot-store';
 
 export const runtime = 'nodejs';
+
+/**
+ * Jak dlouho smí sdílená cache držet svět, o kterém se origin už nemusí
+ * dozvědět. Nejvýš minuta — to je horní mez toho, jak dlouho po stažení
+ * z oběhu ještě někdo uvidí starý obsah.
+ */
+export const SNAPSHOT_CACHE_CONTROL = 'public, max-age=0, s-maxage=60, must-revalidate';
 
 export async function GET(
   _request: Request,
@@ -59,6 +76,6 @@ export async function GET(
       sessionSeed: world.sessionSeed,
       blueprint: world.blueprint,
     },
-    { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+    { headers: { 'cache-control': SNAPSHOT_CACHE_CONTROL } },
   );
 }

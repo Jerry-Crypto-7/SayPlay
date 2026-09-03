@@ -144,12 +144,24 @@ describe('retence je explicitní, ne „navždy"', () => {
  * ------------------------------------------------------------------ */
 
 describe('dveře sdíleného světa', () => {
-  it('vydají svět a dovolí ho cachovat navždy', async () => {
+  it('vydají svět a nechají ho cachovat, ale ne přes stažení z oběhu', async () => {
     const hash = shareWorld(await world('a cathedral of salt'), Date.now());
     const response = await get(hash);
 
     expect(response.status).toBe(200);
-    expect(response.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
+    // **Nález nezávislé revize 3. 9. 2026, `VERDICT: blocking`.** Vypínač
+    // `off: ["all"]` i `SHARED_WORLD_TTL_MS` sahají jen na origin, takže
+    // `immutable` na rok by z obou udělalo nevymahatelné přání: jednou stažený
+    // otisk by CDN servírovala dál i s vypnutým demem.
+    const cacheControl = response.headers.get('cache-control') ?? '';
+    expect(cacheControl).not.toContain('immutable');
+
+    const sharedSeconds = Number(/s-maxage=(\d+)/.exec(cacheControl)?.[1] ?? Number.NaN);
+    expect(sharedSeconds).toBeGreaterThan(0);
+    // Horní mez je to jediné, co tady něco tvrdí: jak dlouho po stažení z oběhu
+    // ještě někdo uvidí starý obsah. Minuta, ne rok — a hluboko pod TTL.
+    expect(sharedSeconds).toBeLessThanOrEqual(60);
+    expect(sharedSeconds * 1000).toBeLessThan(SHARED_WORLD_TTL_MS);
     const body = (await response.json()) as Record<string, unknown>;
     // Uzavřený seznam polí: nová položka v odpovědi je vědomé rozhodnutí, ne
     // něco, co se do veřejných dveří přilepí cestou.
