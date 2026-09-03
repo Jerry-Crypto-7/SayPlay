@@ -85,6 +85,7 @@ async function stageState(page: Page) {
     return {
       memory: stage.memory(),
       frames: stage.frames(),
+      builds: stage.builds(),
       slots: stage.slots().map((slot) => ({ id: slot.stableId, hash: slot.contentHash, triangles: slot.triangles })),
     };
   });
@@ -133,12 +134,19 @@ test('tažení po ose přetočí simulaci a reprezentací se nedotkne', async ({
   expect(rewound).toBe(expected.atBranch);
   expect(rewound).not.toBe(atHorizon);
 
+  // Tohle je ta aserce, na které to celé stojí, a proto stojí první: `memory`
+  // ani `slots` po přestavbě scény nic nenamítnou — stará se odloží, nová
+  // vznikne a čísla vyjdou stejně. Naměřeno mutací 3. 9. 2026.
+  const rebuilt = await stageState(page);
+  expect(rebuilt.builds).toBe(before.builds);
+
   // Plátno mezitím kreslilo dál — jinak by „nic se nezměnilo" platilo triviálně.
   await expect
     .poll(async () => (await stageState(page)).frames, { timeout: 15_000 })
     .toBeGreaterThan(before.frames);
 
   const after = await stageState(page);
+  expect(after.builds).toBe(before.builds);
   expect(after.memory).toEqual(before.memory);
   expect(after.slots).toEqual(before.slots);
 });

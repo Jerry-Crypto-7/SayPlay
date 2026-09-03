@@ -289,6 +289,12 @@ export interface StageProbe {
    */
   memory: () => { readonly geometries: number; readonly textures: number; readonly programs: number };
   /**
+   * Kolikrát se scéna postavila. **Jediné číslo, které přežije remount**, a
+   * proto jediné, kterým jde doložit, že přetočení času reprezentace
+   * nepřepočítalo: `memory()` ani `slots()` po přestavbě nic nenamítnou.
+   */
+  builds: () => number;
+  /**
    * Kam se má kliknout, aby paprsek trefil ten objekt — **střed kvádru
    * v pixelech plátna** (`T23`).
    *
@@ -348,7 +354,20 @@ function emptyBuild(): StageBuild {
   };
 }
 
+/**
+ * Kolikrát se scéna postavila od načtení stránky — **modulová proměnná
+ * schválně** (P15 T24).
+ *
+ * Ref uvnitř komponenty by se s ní odmountoval, a přesně to je případ, který má
+ * tohle číslo chytit: přestavba scény vrátí tytéž počty geometrií i tytéž hashe
+ * podob, protože stará se odloží a nová vznikne. Počty tedy „nic se nezměnilo"
+ * potvrdí i po úplném přepočtu — naměřeno mutací 3. 9. 2026, která scénu při
+ * každém přetočení času remountovala a sadu nechala zelenou.
+ */
+let stageBuilds = 0;
+
 function buildStage(world: ProxyWorld, palette: Palette): StageBuild {
+  stageBuilds += 1;
   if (world.kind !== 'built') return emptyBuild();
 
   const registry = createRepresentationRegistry();
@@ -702,6 +721,7 @@ export default function WorldstreamStage({
     window.__worldstreamStage = {
       ready: () => build.views.length > 0,
       frames: () => frames.current,
+      builds: () => stageBuilds,
       memory: () => ({
         geometries: gl.info.memory.geometries,
         textures: gl.info.memory.textures,
