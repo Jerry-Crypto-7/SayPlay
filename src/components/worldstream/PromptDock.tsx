@@ -27,10 +27,16 @@ import type { ReactNode } from 'react';
 
 export default function PromptDock({
   status,
+  change = null,
   children,
 }: {
   /** Stavová věta. Vykreslí se nad polem, ale v DOM stojí za ním. */
   readonly status: ReactNode;
+  /**
+   * Rozsah druhé věty (`T23`). Poslední v DOM, tedy **nejvýš** na obrazovce:
+   * `column-reverse` obrací pořadí a rozhodnutí patří nad sdělení.
+   */
+  readonly change?: ReactNode;
   /** Vstup pro větu. */
   readonly children: ReactNode;
 }) {
@@ -38,6 +44,7 @@ export default function PromptDock({
     <div className="ws-dock" data-testid="prompt-dock">
       {children}
       {status}
+      {change}
     </div>
   );
 }

@@ -27,6 +27,7 @@ import {
   SLOT_FIT_TOLERANCE,
   socketName,
   slotGroupName,
+  slotIdOfNode,
   type RepresentationCandidate,
 } from '../representation';
 
@@ -484,5 +485,84 @@ describe('stage / commit / abandon', () => {
     expect(registry.view('hero')!.contentHash).toBe('hash-c');
     expect(rough.parent).toBeNull();
     expect(staged.parent).toBeNull();
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Raycast: který slot ten uzel patří.
+ * ------------------------------------------------------------------ */
+
+describe('slotIdOfNode', () => {
+  /** Obal se dvěma vnořenými uzly, jaké vyrábí odhalení: podoba a kandidát. */
+  function scene(stableId: string): {
+    readonly group: Group;
+    readonly form: Mesh;
+    readonly deep: Mesh;
+  } {
+    const group = new Group();
+    group.name = slotGroupName(stableId);
+    const form = new Mesh(new BoxGeometry(1, 1, 1), new MeshBasicMaterial());
+    form.name = `form:${stableId}`;
+    const deep = new Mesh(new BoxGeometry(1, 1, 1), new MeshBasicMaterial());
+    deep.name = 'lid';
+    form.add(deep);
+    group.add(form);
+    return { group, form, deep };
+  }
+
+  it('vrátí stableId z obalu, i když paprsek trefil podobu', () => {
+    const { form } = scene('tallHive');
+    expect(slotIdOfNode(form)).toBe('tallHive');
+  });
+
+  /**
+   * **Tohle je celé pravidlo T23.** Jméno meshe je jméno *podoby*, ne objektu:
+   * po výměně se změní, zatímco slot je právě to, co výměnu přežívá. Kdyby se
+   * `stableId` četlo odtamtud, vrátil by výběr `form:tallHive`.
+   */
+  it('nikdy nevrátí jméno meshe', () => {
+    const { form } = scene('tallHive');
+    expect(slotIdOfNode(form)).not.toContain('form:');
+  });
+
+  it('doleze k obalu i z uzlu zanořeného hlouběji', () => {
+    const { deep } = scene('tallHive');
+    expect(slotIdOfNode(deep)).toBe('tallHive');
+  });
+
+  it('vrátí sám obal, když paprsek trefí přímo jeho', () => {
+    const { group } = scene('tallHive');
+    expect(slotIdOfNode(group)).toBe('tallHive');
+  });
+
+  /** Kulisa žádný obal nad sebou nemá. `null` je odpověď „porotce klikl vedle". */
+  it('vrátí null pro uzel mimo jakýkoli slot', () => {
+    const loose = new Mesh(new BoxGeometry(1, 1, 1), new MeshBasicMaterial());
+    loose.name = 'worldstream:scenery';
+    expect(slotIdOfNode(loose)).toBeNull();
+  });
+
+  it('vrátí null pro prázdný vstup', () => {
+    expect(slotIdOfNode(null)).toBeNull();
+    expect(slotIdOfNode(undefined)).toBeNull();
+  });
+
+  /**
+   * Uzel pojmenovaný přesně prefixem je vada, ne slot s prázdným jménem —
+   * bez téhle podmínky by výběr vrátil prázdný řetězec, který se pak tváří
+   * jako platné id a hledá se ve světě marně.
+   */
+  it('nepovažuje holý prefix za slot', () => {
+    const bare = new Object3D();
+    bare.name = slotGroupName('');
+    expect(slotIdOfNode(bare)).toBeNull();
+  });
+
+  /** Vnořené sloty nevznikají, ale kdyby vznikly, rozhoduje ten nejbližší. */
+  it('u vnořených obalů vyhraje ten nejbližší', () => {
+    const outer = scene('outerSlot');
+    const inner = scene('innerSlot');
+    outer.group.add(inner.group);
+    expect(slotIdOfNode(inner.form)).toBe('innerSlot');
   });
 });

@@ -301,3 +301,96 @@ body {
 .ws-inspect-toggle[aria-expanded='true'] {
   border-color: var(--ws-verdigris);
 }
+
+/* --- Druhá věta (T23) -----------------------------------------------------
+
+   Dvě věci nad plátnem: kotvený popisek vybraného objektu a panel s rozsahem
+   změny.
+
+   **Popisek je jediný prvek skořápky mimo mřížku, a je to výjimka s důvodem.**
+   Buňka mřížky drží roh; popisek drží *objekt*, takže se jeho poloha počítá
+   z kamery a stage mu ji každý snímek přepisuje. Kotvit ho do buňky by ho
+   naopak přišpendlilo na místo, ze kterého by na objekt neukazoval. Kliknutí
+   nebere — je to sdělení, ne ovladač, a nad plátnem by kradl výběr. */
+
+.ws-object-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  /* `translate(-50%, -100%)` posadí popisek nad kotvu a vycentruje ho; zbytek
+     transformace píše stage. */
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--ws-verdigris);
+  border-radius: 0.25rem;
+  background: rgba(7, 20, 31, 0.82);
+  color: var(--ws-nacre);
+  text-shadow: var(--ws-text-shadow);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Panel rozsahu. Bydlí v doku jako třetí dítě, takže ho `column-reverse`
+   posadí nad stavovou větu i nad pole. */
+
+.ws-change {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--ws-verdigris);
+  border-radius: 0.35rem;
+  background: rgba(7, 20, 31, 0.88);
+  color: var(--ws-nacre);
+  font-size: 0.9rem;
+}
+
+.ws-change-lead,
+.ws-change-scope,
+.ws-change-preserved {
+  margin: 0;
+}
+
+.ws-change-scope {
+  color: var(--ws-amber);
+}
+
+.ws-change-preserved {
+  color: var(--ws-muted);
+  font-size: 0.82rem;
+}
+
+.ws-change-candidates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ws-change-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ws-change button {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--ws-verdigris);
+  border-radius: 0.25rem;
+  background: rgba(22, 38, 47, 0.72);
+  color: var(--ws-nacre);
+  font: inherit;
+  cursor: pointer;
+}
+
+.ws-change button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.ws-change .ws-change-primary {
+  background: var(--ws-verdigris);
+  color: var(--ws-pelagic);
+}

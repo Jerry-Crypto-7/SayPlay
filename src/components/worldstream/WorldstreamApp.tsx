@@ -51,6 +51,8 @@ export default function WorldstreamApp({
   stage,
   prompt,
   status,
+  change = null,
+  label = null,
   empty = null,
   controls = null,
   inspect,
@@ -64,6 +66,20 @@ export default function WorldstreamApp({
   readonly prompt: ReactNode;
   /** Jedna stavová věta nad vstupem. */
   readonly status: ReactNode;
+  /**
+   * Rozsah druhé věty (`T23`). Stojí v doku **za** stavovou větou, takže ho
+   * `column-reverse` posadí nad ni — nejvýš na obrazovce je to, o čem se
+   * zrovna rozhoduje.
+   */
+  readonly change?: ReactNode;
+  /**
+   * Kotvený popisek vybraného objektu (`T23`).
+   *
+   * **Jediný prvek mimo mřížku**, a `ObjectLabel` říká proč: jeho polohu
+   * počítá kamera, ne rozvržení. Stojí mimo `.ws-shell`, aby ho nezarovnala
+   * žádná buňka, a nad plátnem, protože ukazuje do scény.
+   */
+  readonly label?: ReactNode;
   /** Prázdný stav uprostřed plátna, dokud nepadla první věta. */
   readonly empty?: ReactNode;
   /** Herní ovládání vlevo dole. Stojí tam jen tehdy, když je co hrát. */
@@ -80,12 +96,15 @@ export default function WorldstreamApp({
   return (
     <main data-testid="worldstream" style={SHELL}>
       <div className="ws-shell" data-inspecting={inspecting}>
-        <PromptDock status={status}>{prompt}</PromptDock>
+        <PromptDock status={status} change={change}>
+          {prompt}
+        </PromptDock>
         {controls === null ? null : <div className="ws-controls">{controls}</div>}
         <InspectDrawer open={inspecting} onToggle={onInspect} background={inspectBackground}>
           {inspect}
         </InspectDrawer>
       </div>
+      {label}
       {empty}
       {stage}
     </main>

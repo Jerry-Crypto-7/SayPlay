@@ -183,6 +183,31 @@ export function socketName(name: string): string {
   return `socket:${name}`;
 }
 
+/**
+ * Který slot ten uzel patří — **inverze `slotGroupName()`, a proto stojí vedle ní**.
+ *
+ * Tohle je celé pravidlo raycastu (`T23`). Paprsek trefí `Mesh`, a jméno toho
+ * meshe je `form:<id>` nebo `detail:<id>`, tedy jméno **podoby**, ne objektu.
+ * Číst `stableId` odtamtud znamená mít druhou pravdu o identitě: podoba se
+ * vymění a jméno se s ní změní, zatímco slot je právě ta věc, která výměnu
+ * přežívá (§13.2). Proto se leze **nahoru** k obalu a odpověď dává jedině on.
+ *
+ * Trefa mimo jakýkoli slot — kulisa, podlaha, prázdno — vrací `null`. Je to
+ * legitimní odpověď a znamená „porotce klikl vedle", ne chybu.
+ *
+ * Prefix se ani tady neopisuje: kdyby se `slotGroupName()` změnil, přestane
+ * tahle funkce hledat spolu s ním, místo aby tiše spadla na nulu shod.
+ */
+export function slotIdOfNode(object: Object3D | null | undefined): string | null {
+  for (let node = object ?? null; node !== null; node = node.parent) {
+    // `slotGroupName('')` dá samotný prefix, takže se nikde neopisuje `'slot:'`.
+    const prefix = slotGroupName('');
+    if (node.name.startsWith(prefix) && node.name.length > prefix.length)
+      return node.name.slice(prefix.length);
+  }
+  return null;
+}
+
 function viewOf(entry: SlotEntry): SlotView {
   return {
     stableId: entry.slot.stableId,

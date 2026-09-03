@@ -37,18 +37,12 @@
 import { Canvas } from '@react-three/fiber';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { sealSimHash } from '@/ir/worlddoc';
 import { UI_TOKENS } from '@/kit';
-import { repairEmission } from '@/model/repair';
-import { EXAMPLE_PLAN } from '@/model/worldstream-examples';
-import { EXAMPLE_BLUEPRINT_ANSWER } from '@/model/worldstream-prompt';
-import type { BlueprintOutcome, CompiledBlueprint } from '@/model/worldstream-repair';
 import { createMeshClient, type MeshClient } from '@/shape/mesh-client';
 import { MESH_DETAIL } from '@/shape/types';
 import { shapeContentHash } from '@/worldstream/cache';
 import type { DetailLevel } from '@/worldstream/mesh-gate';
 import { buildProxyWorld, type ProxyWorld } from '@/worldstream/proxy';
-import { blueprintSchema, type WorldstreamBlueprint } from '@/worldstream/schema';
 
 import WorldstreamLighting, {
   WORLDSTREAM_GL,
@@ -58,88 +52,13 @@ import WorldstreamStage, {
   type DetailUpgrade,
 } from '../../../components/viewer/WorldstreamStage';
 
-/** Ruční blueprint. Čtyři objekty, tři cesty ke hmotě, jeden hrdinský tvar. */
-const DEMO_BLUEPRINT: WorldstreamBlueprint = blueprintSchema.parse({
-  version: 'worldstream-v1',
-  sessionSeed: 4021,
-  title: 'a hillside terrace of beehives behind a low drystone wall',
-  intent: EXAMPLE_PLAN.intent,
-  world: sealSimHash(repairEmission(EXAMPLE_BLUEPRINT_ANSWER.world).document as { sim: unknown }),
-  geometry: EXAMPLE_BLUEPRINT_ANSWER.geometry,
-  objects: [
-    {
-      stableId: 'hillsideTerrace',
-      label: 'the hillside terrace',
-      synonyms: ['the terrace', 'the slope'],
-      role: 'terrain',
-      source: { kind: 'geom', node: 0 },
-      targetBounds: { min: [-13, -1, -9], max: [13, 1, 9] },
-      importance: 2,
-    },
-    {
-      stableId: 'drystoneWall',
-      label: 'the drystone wall',
-      synonyms: ['the wall'],
-      role: 'architecture',
-      source: { kind: 'geom', node: 2 },
-      targetBounds: { min: [-10.5, 0, -5.6], max: [9.5, 1.4, -4.4] },
-      importance: 2,
-    },
-    {
-      stableId: 'tallHive',
-      label: 'the tallest hive',
-      synonyms: ['the hive'],
-      role: 'hero',
-      source: { kind: 'shape', shapeId: 'tallHiveShape' },
-      targetBounds: { min: [-0.9, 0.6, 1.1], max: [0.9, 2.4, 2.9] },
-      importance: 3,
-    },
-    {
-      stableId: 'smokerBox',
-      label: "the smoker's box",
-      synonyms: ['the box'],
-      role: 'prop',
-      source: { kind: 'geom', node: 5 },
-      targetBounds: { min: [4.1, 0, 5.1], max: [4.9, 0.7, 5.9] },
-      importance: 1,
-    },
-  ],
-  shapes: EXAMPLE_BLUEPRINT_ANSWER.shapes,
-});
-
-/**
- * Obálka kola kolem hotového blueprintu.
- *
- * `verdict`, `adjustments` a `repairs` jsou přetypované prázdno — jsou to stopy
- * o tom, jak blueprint vznikl, a `buildProxyWorld()` je nečte. `value` naopak
- * prošlo schématem, protože to je dokument, ze kterého se svět staví.
- */
-const DEMO_OUTCOME: BlueprintOutcome = {
-  kind: 'compiled',
-  rounds: [{ attempt: 1, fault: null, ms: 0 }],
-  result: {
-    ok: true,
-    stage: 'worldstream-blueprint',
-    value: DEMO_BLUEPRINT,
-    verdict: undefined,
-    adjustments: [],
-    repairs: [],
-  } as unknown as CompiledBlueprint,
-};
-
-/** Kam se kamera dívá. Kompozice je 26 polí široká a nízká, takže shora zboku. */
-const CAMERA = { position: [17, 12, 21] as const, fov: 42 };
-
-/**
- * Hrdinský tvar, který se dá materializovat. Ukázka má právě jeden a je to
- * záměr: `T20` soudí **přechod**, ne frontu.
- */
-const HERO = DEMO_BLUEPRINT.objects.find((object) => object.source.kind === 'shape')!;
-
-/** Program hrdiny. Ukázka ho má právě jeden, takže se hledá jednou a nahoře. */
-const HERO_PROGRAM = DEMO_BLUEPRINT.shapes.find(
-  (candidate) => HERO.source.kind === 'shape' && candidate.shapeId === HERO.source.shapeId,
-)!;
+import {
+  DEMO_BLUEPRINT,
+  DEMO_CAMERA,
+  DEMO_HERO,
+  DEMO_HERO_PROGRAM,
+  DEMO_OUTCOME,
+} from '../demo-world';
 
 /**
  * Dva snímky.
@@ -198,14 +117,14 @@ export default function WorldstreamDevPage() {
 
     const resolution = MESH_DETAIL[level].resolution;
     const mesh = await client.mesh({
-      program: HERO_PROGRAM,
+      program: DEMO_HERO_PROGRAM,
       sessionSeed: DEMO_BLUEPRINT.sessionSeed,
       resolution,
-      bounds: HERO_PROGRAM.targetBounds,
+      bounds: DEMO_HERO_PROGRAM.targetBounds,
     });
     return {
-      stableId: HERO.stableId,
-      contentHash: shapeContentHash(HERO_PROGRAM, resolution),
+      stableId: DEMO_HERO.stableId,
+      contentHash: shapeContentHash(DEMO_HERO_PROGRAM, resolution),
       level,
       mesh,
     };
@@ -284,7 +203,7 @@ export default function WorldstreamDevPage() {
       <Canvas
         gl={{ ...WORLDSTREAM_GL }}
         shadows={WORLDSTREAM_SHADOWS}
-        camera={{ position: [...CAMERA.position], fov: CAMERA.fov }}
+        camera={{ position: [...DEMO_CAMERA.position], fov: DEMO_CAMERA.fov }}
         data-testid="worldstream-stage-canvas"
       >
         <WorldstreamLighting />

@@ -33,9 +33,17 @@
  * cesta (`T21b`) — je jeho věc.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
-import { BoxGeometry, BufferAttribute, BufferGeometry, Group, Mesh, type Object3D } from 'three';
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
+import {
+  BoxGeometry,
+  BufferAttribute,
+  BufferGeometry,
+  Group,
+  Mesh,
+  Vector3,
+  type Object3D,
+} from 'three';
 
 import { PALETTES, type Palette } from '@/kit';
 import type { MeshResult } from '@/shape/mesh-client';
@@ -50,6 +58,7 @@ import { RepresentationSlots } from './RepresentationSlot';
 import {
   createRepresentationRegistry,
   slotGroupName,
+  slotIdOfNode,
   type RepresentationRegistry,
   type SlotView,
 } from './representation';
@@ -279,6 +288,16 @@ export interface StageProbe {
    * ani textur neprojeví vůbec — projeví se právě jen tady.
    */
   memory: () => { readonly geometries: number; readonly textures: number; readonly programs: number };
+  /**
+   * Kam se má kliknout, aby paprsek trefil ten objekt — **střed kvádru
+   * v pixelech plátna** (`T23`).
+   *
+   * Bez tohohle by sada musela souřadnice dopočítávat sama z kamery a
+   * `worldBounds`, tedy podruhé opsat projekci, kterou stage už umí — a
+   * porovnávala by pak výpočet sám se sebou. `null` znamená neznámý slot nebo
+   * bod za kamerou.
+   */
+  screen: (stableId: string) => { readonly x: number; readonly y: number } | null;
 }
 
 declare global {
@@ -424,12 +443,33 @@ export interface WorldstreamStageProps {
    * neviditelně, odhalí, commitne.
    */
   readonly upgrade?: DetailUpgrade | null;
+  /**
+   * Vybraný objekt (`T23`). Stav drží volající, protože na něm visí i druhá
+   * věta — stage jen kreslí a hlásí trefu.
+   */
+  readonly selected?: string | null;
+  /**
+   * Porotce klikl do světa. `null` znamená „vedle", tedy do kulisy nebo do
+   * prázdna, a je to platná odpověď: výběr se tím ruší.
+   */
+  readonly onSelect?: (stableId: string | null) => void;
+  /**
+   * Uzel popisku, kterému stage každý snímek přepisuje polohu.
+   *
+   * Ref, ne prop se souřadnicí: souřadnice se mění každý snímek a `setState`
+   * by překreslil celou skořápku šedesátkrát za vteřinu. Proč to nekreslí
+   * `<Html>` z drei ani sprite ve scéně, je v `ObjectLabel.tsx`.
+   */
+  readonly labelAnchor?: RefObject<HTMLDivElement | null>;
 }
 
 export default function WorldstreamStage({
   world,
   palette = PALETTES.harbor,
   upgrade = null,
+  selected = null,
+  onSelect,
+  labelAnchor,
 }: WorldstreamStageProps): React.ReactElement {
   const build = useMemo(() => buildStage(world, palette), [world, palette]);
   const frames = useRef(0);
@@ -445,12 +485,99 @@ export default function WorldstreamStage({
   const [reveal, setReveal] = useState<Reveal | null>(null);
   const camera = useThree((state) => state.camera);
   const gl = useThree((state) => state.gl);
+  const size = useThree((state) => state.size);
+  /** Škrábací vektor projekce. `project()` mutuje, takže se nealokuje po snímcích. */
+  const projected = useMemo(() => new Vector3(), []);
 
   useEffect(() => build.dispose, [build]);
 
+  /**
+   * Kde objekt leží na obrazovce, v CSS pixelech plátna.
+   *
+   * `height` volí výšku uvnitř kvádru: **popisek chce vrch** (`1`), protože
+   * počátek slotu leží u většiny objektů na podlaze a popisek by visel uvnitř
+   * hmoty; **paprsek chce střed** (`0.5`), protože vrch kvádru je bod nad
+   * povrchem a kliknutí do něj by objekt minulo. Jeden výpočet pro obojí, aby
+   * se popisek a trefa nemohly rozejít.
+   *
+   * `null` znamená „neznámý slot, nebo bod za kamerou". Po `project()` je bod
+   * za kamerou `z > 1` a bez té podmínky by se zrcadlil na druhou stranu
+   * obrazovky a ukazoval na nic.
+   */
+  const toScreen = useCallback(
+    (stableId: string, height: number): { readonly x: number; readonly y: number } | null => {
+      const entry = build.slots.find((candidate) => candidate.slot.stableId === stableId);
+      if (entry === undefined) return null;
+
+      const { min, max } = entry.slot.worldBounds;
+      projected.set(
+        (min[0] + max[0]) / 2,
+        min[1] + (max[1] - min[1]) * height,
+        (min[2] + max[2]) / 2,
+      );
+      projected.project(camera);
+      if (projected.z > 1) return null;
+
+      return {
+        x: (projected.x * 0.5 + 0.5) * size.width,
+        y: (-projected.y * 0.5 + 0.5) * size.height,
+      };
+    },
+    [build, projected, camera, size],
+  );
+
   useFrame(() => {
     frames.current += 1;
+
+    const node = labelAnchor?.current ?? null;
+    if (node === null) return;
+
+    const at = selected === null ? null : toScreen(selected, 1);
+    if (at === null) {
+      node.style.visibility = 'hidden';
+      return;
+    }
+
+    node.style.transform = `translate(${at.x}px, ${at.y}px) translate(-50%, -100%)`;
+    node.style.visibility = 'visible';
   });
+
+  /**
+   * Trefa paprsku → `stableId`.
+   *
+   * `slotIdOfNode()` leze od trefeného meshe **nahoru k obalu**, takže jméno
+   * podoby (`form:` / `detail:`) se do výběru nedostane ani omylem — a to je
+   * celý smysl: podoba se vymění, slot zůstane. Kulisa žádný obal nad sebou
+   * nemá, takže vrátí `null` a výběr se zruší, což je správná odpověď na
+   * kliknutí do pozadí.
+   */
+  const pick = useCallback(
+    (event: ThreeEvent<MouseEvent>) => {
+      // Bez toho by jedno kliknutí ohlásilo tolik treb, kolik jich paprsek
+      // protne, a poslední (nejvzdálenější) by přepsala tu, na kterou porotce
+      // ukázal.
+      event.stopPropagation();
+      onSelect?.(slotIdOfNode(event.object));
+    },
+    [onSelect],
+  );
+
+  /**
+   * Kliknutí, které netrefilo scénu vůbec. Ruší výběr stejně jako kulisa.
+   *
+   * ⚠ **Nefiltruje se, odkud ten klik přišel, a je to naměřené rozhodnutí.**
+   * Napsala se sem nejdřív podmínka „jen když je cíl `<canvas>`", protože se
+   * čekalo, že tlačítka skořápky (`Apply`, `Change it`) budou hlášená jako
+   * netrefa a zrušila by výběr, kvůli kterému ten panel vůbec stojí. Mutace
+   * 3. 9. 2026 tu podmínku vyhodila a **celá sada `worldstream-refine` zůstala
+   * zelená**: R3F posílá `onPointerMissed` jen za kliky na samotné plátno, ne
+   * za kliky do DOM nad ním. Podmínka tedy nechránila před ničím, a nechat ji
+   * tu by znamenalo řádek, který nejde otestovat, protože nejde spustit.
+   * Že výběr přežije `Apply`, drží připíchnuté ta sada.
+   */
+  const miss = useCallback(() => {
+    onSelect?.(null);
+  }, [onSelect]);
 
   useEffect(() => {
     if (upgrade === null) return;
@@ -609,6 +736,7 @@ export default function WorldstreamStage({
       lastReveal: () => lastReveal.current,
       commits: () => commits.current,
       camera: () => [camera.position.x, camera.position.y, camera.position.z],
+      screen: (stableId: string) => toScreen(stableId, 0.5),
       slots: () =>
         build.slots.map((entry) => {
           const { stableId, transform, anchors } = entry.slot;
@@ -643,10 +771,10 @@ export default function WorldstreamStage({
     return () => {
       delete window.__worldstreamStage;
     };
-  }, [build, root, reveal, camera, gl]);
+  }, [build, root, reveal, camera, gl, toScreen]);
 
   return (
-    <group ref={setRoot} name="worldstream:stage">
+    <group ref={setRoot} name="worldstream:stage" onClick={pick} onPointerMissed={miss}>
       <RepresentationSlots views={build.views} />
       {build.scenery !== null && <primitive object={build.scenery} />}
       {reveal !== null && (
