@@ -695,6 +695,25 @@ describe('4. při vypnutém přepínači neodejde žádný požadavek', () => {
   });
 });
 
+/**
+ * Jména ze sekce `[host]` souboru `ops/build-env.allow`.
+ *
+ * Sekce se hledá **řádkem, který je přesně `[host]`**, ne prvním výskytem toho
+ * řetězce v souboru: hlavička `build-env.allow` obě jména sekcí vysvětluje
+ * v komentáři, takže `indexOf` trefí komentář a vykrojí prázdno. Aserce nad
+ * prázdným seznamem je zelená vždycky — přesně to se tady dělo do 3. 9. 2026.
+ */
+function hostAllowlist(): string[] {
+  const lines = readFileSync(`${repoRoot}ops/build-env.allow`, 'utf8')
+    .split(/\r?\n/)
+    .map((line) => line.trim());
+  const from = lines.indexOf('[host]');
+  const to = lines.indexOf('[platform]');
+  if (from === -1 || to === -1 || to < from)
+    throw new Error('build-env.allow has no [host] and [platform] section lines');
+  return lines.slice(from + 1, to).filter((line) => line.length > 0 && !line.startsWith('#'));
+}
+
 describe('5. secret se nedostane do klientského bundlu', () => {
   it('každé jméno s předponou NEXT_PUBLIC_ je na uzavřeném seznamu povolených', () => {
     // **Seznam povolených, ne zakázaných slov — a to je celý ten nález.**
@@ -748,16 +767,33 @@ describe('5. secret se nedostane do klientského bundlu', () => {
   });
 
   it('hermetický build klíč vůbec nevidí — není na allowlistu', () => {
-    const allow = readFileSync(`${repoRoot}ops/build-env.allow`, 'utf8');
-    const host = allow.slice(allow.indexOf('[host]'), allow.indexOf('[platform]'));
-    const names = host
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0 && !line.startsWith('#') && !line.startsWith('['));
+    const names = hostAllowlist();
+
+    // **Nejdřív že se vůbec něco změřilo.** Do 3. 9. 2026 se sekce hledala
+    // `indexOf('[host]')`, jenže první výskyt toho řetězce je v hlavičkovém
+    // komentáři souboru — stejně jako první `[platform]` o dva odstavce níž.
+    // Vykrojený úsek tedy nebyl seznam, ale 152 znaků komentáře, po odfiltrování
+    // `#` prázdné pole. Obě aserce pod tím byly zelené nad nulou položek: klíč
+    // dopsaný na seznam by neshodil nic. Naměřeno při P15 T30.
+    expect(names.length).toBeGreaterThan(10);
 
     expect(names).not.toContain('WORLDSMITH_MODEL_KEY');
     // Ani nic jiného, co nese tajemství. Seznam roste, tahle aserce ne.
     for (const name of names) expect(/KEY|SECRET|TOKEN|PASSWORD/.test(name), name).toBe(false);
+  });
+
+  it('a nevidí ani nic dalšího, co se čte za běhu', () => {
+    // **Aserce o tvaru jména sama nestačí — tohle je ta druhá půlka** (P15 T30).
+    // `WORLDSMITH_MODEL_ENDPOINT` ani `WORLDSMITH_CONTROL_FILE` nenesou ve jméně
+    // `KEY`, `SECRET` ani `TOKEN`, takže by na seznam prošly — a adresa
+    // poskytovatele v klientském bundlu je návod, kam posílat cizí požadavky,
+    // zatímco cesta k ovládacímu souboru je rozvržení disku serveru.
+    //
+    // Seznam je proto uzavřený: build potřebuje **dvě** vlastní proměnné a nová
+    // se sem dostane jedině tím, že ji někdo dopíše i sem.
+    const ours = hostAllowlist().filter((name) => name.startsWith('WORLDSMITH_'));
+
+    expect(ours.sort()).toEqual(['WORLDSMITH_BUILD_TREE', 'WORLDSMITH_ENV_REPORT']);
   });
 });
 
