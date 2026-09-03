@@ -1,7 +1,7 @@
 'use client';
 
-import { Canvas } from '@react-three/fiber';
-import { useRef, useState } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useRef, useState, type RefObject } from 'react';
 
 import FollowCamera, { type CameraMode } from '@/components/viewer/FollowCamera';
 import Lighting, { VIEWER_GL, VIEWER_SHADOWS } from '@/components/viewer/Lighting';
@@ -31,6 +31,17 @@ declare global {
       /** Kolik tiků svět odkrokoval. */
       tick: () => number;
       /**
+       * Kolik snímků plátno nakreslilo **se světem na scéně** (P15 T39).
+       *
+       * `entities().length > 0` říká, že svět vznikl v paměti — ne že došel na
+       * GPU. Rozpočet „od věty po první snímek" se o ten rozdíl opírá celý,
+       * takže se nesmí měřit proti přítomnosti dat.
+       *
+       * **Počítá se od nuly jen pro první svět stránky.** Druhý prompt čítač
+       * nenuluje: měřit se má studený start, a ten nastane jednou za načtení.
+       */
+      worldFrames: () => number;
+      /**
        * Kde stojí kamera ve světových souřadnicích.
        *
        * Embed má totéž pod `window.__viewer`, úvodní stránka do T5 neměla nic —
@@ -59,6 +70,21 @@ declare global {
  * (`viewer/Lighting.tsx`). Úvodní stránka a embed musí vypadat stejně — dokud
  * měla každá vlastní dvojici světel, lišily se a nikdo to nehlídal.
  */
+
+/**
+ * Počítadlo snímků **uvnitř světa**. Mountuje se jen s ním, takže první
+ * započtený snímek je doopravdy první snímek, na kterém svět byl.
+ *
+ * Kdyby stálo vedle světa, počítalo by i prázdnou mřížku úvodní obrazovky
+ * a rozpočet „od věty po první snímek" by vyšel na nulu.
+ */
+function DrawnFrames({ counter }: { readonly counter: RefObject<number> }) {
+  useFrame(() => {
+    counter.current += 1;
+  });
+  return null;
+}
+
 export default function Stage({
   world = null,
   look = null,
@@ -89,6 +115,7 @@ export default function Stage({
   const [, setReady] = useState(false);
   const own = useRef<RunnerRef['current']>(null);
   const runnerRef = shared ?? own;
+  const worldFrames = useRef(0);
 
   return (
     <Canvas
@@ -109,6 +136,7 @@ export default function Stage({
           // tedy dlouho po vytvoření plátna.
           entities: () => runnerRef.current?.entities() ?? [],
           tick: () => runnerRef.current?.tick() ?? 0,
+          worldFrames: () => worldFrames.current,
           camera: () => ({ x: camera.position.x, y: camera.position.y, z: camera.position.z }),
         };
         setReady(true);
@@ -119,6 +147,7 @@ export default function Stage({
         <gridHelper args={[12, 12, '#1d2b2f', '#162023']} position={[0, -1.2, 0]} />
       ) : (
         <>
+          <DrawnFrames counter={worldFrames} />
           <WorldScene world={world} look={look} runnerRef={runnerRef} inputs={inputs} />
           <FollowCamera runnerRef={runnerRef} mode={cameraMode} />
         </>
