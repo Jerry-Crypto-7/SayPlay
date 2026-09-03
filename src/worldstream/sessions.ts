@@ -122,14 +122,27 @@ function idleFor(sessionId: string, stored: StoredSession, now: number): boolean
 }
 
 /**
- * Uvolní, co registr držet nemá: nejdřív relace, které stojí, pak nejstarší
- * **dokončené**, dokud se registr nevejde do stropu.
+ * Uvolní, co registr držet nemá — **ve třech kolech, od nejlevnější ztráty**.
  *
- * Pořadí `Map` je pořadí vložení, takže nejstarší je první. Běžící relace se
- * nevyhazuje ani tehdy, když je nejstarší: vyhodit ji znamená utnout proud
- * někomu, kdo se právě dívá, a to je horší než o jednu relaci nad strop.
- * **Stárnutí je proto na pohybu proudu, ne na fázi** — relace, které rámce
- * pořád přibývají, se nedotkne bez ohledu na to, jak dlouho běží.
+ * 1. Relace, kterým proud hodinu stojí. Ty nikdo nesleduje, ať jsou v jakékoli
+ *    fázi. **Stárnutí je na pohybu proudu, ne na fázi** — relace, které rámce
+ *    pořád přibývají, se tohle kolo nedotkne, i kdyby běžela den.
+ * 2. Nad stropem: nejstarší **dokončené**, tedy `complete` a `failed`.
+ * 3. Pořád nad stropem: ty, které **stojí nejdéle**, bez ohledu na fázi.
+ *
+ * ⚠ **Třetí kolo je změna doktríny a je vynucená měřením.** Do 3. 9. 2026 tu
+ * stálo, že běžící relace se nevyhodí ani jako nejstarší, protože „utnout proud
+ * někomu, kdo se dívá, je horší než o jednu relaci nad strop". Nezávislá revize
+ * ukázala, že „o jednu" byla nepravda: se stárnutím na hodinu a bez třetího
+ * kola zní mez **„příchody za hodinu"**, ne `MAX_LIVE_SESSIONS`. Dvě stě
+ * požadavků v jedné hodině — tedy den, na který se tenhle produkt chystá —
+ * drží dvě stě relací a strop 64 nedělá nic. Neomezená mapa dosažitelná zvenčí
+ * je přesně to, proti čemu strop je.
+ *
+ * Obětuje se proto ta, která stojí nejdéle: `watched.since` je čas, kdy registr
+ * naposledy viděl proud té relace **hnout se**, takže relace, do které se
+ * právě píše, je v tom pořadí poslední. První kolo `watched` přepíše pro
+ * všechny, takže se řadí nad čerstvými čísly, ne nad zbytky.
  *
  * Zametá se při zakládání nové relace, tedy tehdy, když registr roste. Když
  * nikdo nezakládá, nic neroste a není co zametat.
@@ -142,6 +155,15 @@ function evict(now: number): void {
     if (live.size <= MAX_LIVE_SESSIONS) return;
     const phase = stored.session.phase;
     if (phase === 'complete' || phase === 'failed') release(id);
+  }
+
+  if (live.size <= MAX_LIVE_SESSIONS) return;
+  const podleStání = [...live.keys()].sort(
+    (a, b) => (watched.get(a)?.since ?? 0) - (watched.get(b)?.since ?? 0),
+  );
+  for (const id of podleStání) {
+    if (live.size <= MAX_LIVE_SESSIONS) return;
+    release(id);
   }
 }
 

@@ -109,12 +109,31 @@ describe('relace, které se hodinu nepohnul proud, registr pustí', () => {
 });
 
 describe('strop registru drží i tehdy, když nikdo nedokončí', () => {
-  it('mapa nepřeroste stropem o víc než o běžící relace', () => {
-    // Bez stárnutí tenhle cyklus skončí na 200 relacích v mapě: každá je ve
-    // fázi `world` a `evict()` na ni do 3. 9. 2026 nesáhl.
-    for (let i = 0; i < 200; i += 1) worldSession(`relace-${i}`, T0 + i * IDLE_SESSION_MS);
+  // ⚠ **Milisekundy, ne hodiny, a je to celý smysl tohohle testu.** Nález
+  // nezávislé revize 3. 9. 2026: první verze rozestoupila relace po hodině,
+  // takže je uvolnilo stárnutí a strop se nikdy nezkoušel. Dvě stě požadavků
+  // v jedné hodině je přitom přesně to, co vyrobí den, na který se produkt
+  // chystá — a nad nimi držela mapa dvě stě relací proti stropu 64.
+  it('dvě stě relací v jedné hodině se do stropu vejde', () => {
+    for (let i = 0; i < 200; i += 1) worldSession(`relace-${i}`, T0 + i);
 
-    expect(liveSessionCount()).toBeLessThanOrEqual(MAX_LIVE_SESSIONS + 1);
+    expect(liveSessionCount()).toBeLessThanOrEqual(MAX_LIVE_SESSIONS);
+  });
+
+  it('obětuje se ta, která stojí nejdéle, ne ta, do které se právě píše', () => {
+    for (let i = 0; i < MAX_LIVE_SESSIONS; i += 1) worldSession(`stará-${i}`, T0 + i);
+    const čerstvá = worldSession('čerstvá', T0 + MAX_LIVE_SESSIONS);
+
+    // Do téhle jediné pořád tečou rámce, tak ji strop přeskočí a sáhne po
+    // nejstarší stojící.
+    for (let i = 1; i <= 20; i += 1) {
+      expect(čerstvá.session.queue(`tvar-${i}`, 32), 'rámec nevznikl').toBe(true);
+      worldSession(`nová-${i}`, T0 + MAX_LIVE_SESSIONS + i);
+    }
+
+    expect(getSession('čerstvá'), 'strop utnul relaci, do které se právě psalo').not.toBeNull();
+    expect(getSession('stará-0'), 'nejstarší stojící relace přežila').toBeNull();
+    expect(liveSessionCount()).toBeLessThanOrEqual(MAX_LIVE_SESSIONS);
   });
 
   it('mapa, kterou si registr vede na stárnutí, neroste vedle té hlavní', () => {
