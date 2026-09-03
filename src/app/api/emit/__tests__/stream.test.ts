@@ -283,21 +283,20 @@ async function leaveMidStream(post: Route, promptId: string): Promise<void> {
  *
  * Čeká se přes časovač, protože `start()` mezi rámci parkuje na `flush()`,
  * a to je taky časovač.
- */
-async function neverRead(post: Route, promptId: string, signal: AbortSignal): Promise<void> {
-  await post(request({ promptId }, signal));
-  await new Promise((resolve) => setTimeout(resolve, 40));
-}
-
-/**
- * Totéž, ale spojení vydrží přes hlavičky a **první** rámec a zmizí až potom.
  *
  * ⚠ **Zrušit se musí až po `await post(...)`, a je to nosné, ne kosmetické.**
  * První podoba téhle fixtury rušila signál souběžně s během routy, takže
- * `start()` viděl zrušení ještě před rámcem `requested` — a všechny tři testy
- * pak měřily jedno a totéž okno. Po `await` je `start()` deterministicky
- * zaparkovaný na prvním `flush()`, tedy na časovači, protože mikroúlohy se
- * vyprázdní dřív než kterýkoli časovač.
+ * `start()` viděl zrušení ještě před rámcem `requested`. Po `await` je
+ * `start()` deterministicky zaparkovaný na prvním `flush()`, tedy na časovači,
+ * protože mikroúlohy se vyprázdní dřív než kterýkoli časovač.
+ *
+ * ⚠ **Signál, který je zrušený už při stavbě požadavku, se sem nehodí, a je to
+ * naměřené.** Nález nezávislé revize 3. 9. 2026, `VERDICT: routed`: takovému
+ * požadavku Next zahodí tělo (`...signal.aborted ? {} : { body }`,
+ * `node_modules/next/dist/server/web/spec-extension/adapters/next-request.js:114`),
+ * takže `readPromptId()` odpoví 400 a `start()` se nepostaví. Test nad takovou
+ * fixturou by certifikoval řádek, který v provozu nikdy nevznikne — a byl tu,
+ * dokud ho ta revize nezměřila.
  */
 async function goneMidStream(post: Route, promptId: string, gone: AbortController): Promise<void> {
   await post(request({ promptId }, gone.signal));
@@ -310,18 +309,6 @@ describe('proud, který nikdo nezačne číst', () => {
     vi.doUnmock('../chain');
     vi.restoreAllMocks();
     vi.resetModules();
-  });
-
-  it('spojení pryč ještě před prvním rámcem nechá operátorovi řádek', async () => {
-    // `signalFromNodeResponse()` vrací **rovnou zrušený** signál, když je
-    // odpověď `errored || destroyed` už v okamžiku, kdy požadavek dorazí do
-    // routy. Zvenčí je to 200 s hlavičkami proudu a naprosté ticho za nimi.
-    const { post, log } = await loadStream();
-    await neverRead(post, 'C01', AbortSignal.abort());
-
-    expect(log).toHaveLength(1);
-    expect(log[0]).toContain('STREAM_CANCELLED');
-    expect(log[0]).not.toContain('STREAM_FAILED');
   });
 
   it('spojení pryč uprostřed emise nechá řádek i tehdy, když enqueue nikdy neselže', async () => {

@@ -116,10 +116,22 @@
  * 2. **V těch devíti bězích se ale nic neztratilo**: `pipeTo` stihlo začít,
  *    `enqueue` vyhodilo a sentinel zabral. Nové kontrole tam nezbylo co
  *    opravovat — nezměnila ani jednu nálepku.
- * 3. **Tiché okno se reprodukuje jednotkově, a je úplně tiché:** požadavek se
- *    zrušeným signálem, jehož tělo nikdo nečte, dnes vrátí 200, zařadí všech
- *    osm rámců do fronty, kterou nikdo nevybírá, a nechá **nula řádků**. To je
- *    stav, kvůli kterému tenhle soubor existuje, jen o jedno okno dál.
+ * 3. **Tiché okno se reprodukuje jednotkově, a je úplně tiché:** požadavek,
+ *    jehož spojení zmizí po vstupu do routy a jehož tělo nikdo nečte, dnes
+ *    vrátí 200, zařadí všech osm rámců do fronty, kterou nikdo nevybírá,
+ *    a nechá **nula řádků**. To je stav, kvůli kterému tenhle soubor existuje,
+ *    jen o jedno okno dál.
+ *
+ * ⚠ **„Spojení mrtvé už při vstupu" se sem ale nepočítá, a je to naměřené.**
+ * Nález nezávislé revize 3. 9. 2026, `VERDICT: routed`, CONFIRMED spuštěním.
+ * Když `signalFromNodeResponse()` vrátí rovnou zrušený signál, Next tomu
+ * požadavku **zahodí tělo** — `...signal.aborted ? {} : { body }`
+ * (`node_modules/next/dist/server/web/spec-extension/adapters/next-request.js:114`).
+ * `readPromptId()` proto dostane prázdné tělo, odpoví **400** a `start()` se
+ * nepostaví vůbec. Je to jiné ticho než tohle a **tahle kontrola ho nezavírá**:
+ * 400 je korelovaná odpověď na nevalidní tělo, ne porucha, takže řádek
+ * nedluží. Zavřít se dá jedině okno, do kterého se emise skutečně dostane —
+ * tedy odchod **po** vstupu do routy.
  *
  * Cena opravy je proto **jedno čtení booleanu na rámec** a jde přes jediný
  * trychtýř: `write()` je pět zápisů rámců v `start()` v jednom místě. Za to se
@@ -130,10 +142,22 @@
  * proč kontrola sedí ve `write()` a ne v `catch`.** Signál není stav proudu,
  * je to stav **spojení**, a ptá se ho **předpoklad zápisu**, ne klasifikátor
  * poruchy: `catch` pořád soudí výhradně podle toho, jestli přiletěl sentinel.
- * Řetěz, který spadne po odchodu klienta, vyhodí ze `steps.next()`, tedy mimo
- * `write()` — a zůstává `STREAM_FAILED`. Přesně to pinuje test „pád řetězu PO
- * zrušení je pád, ne zrušení", nově i nad požadavkem, který signál doopravdy
- * nese.
+ * Řetěz, který spadne **na první operaci za odchodem klienta**, vyhodí ze
+ * `steps.next()`, tedy mimo `write()` — a zůstává `STREAM_FAILED`. Přesně to
+ * pinuje test „pád řetězu po zrušeném spojení je pořád pád, ne zrušení", nově
+ * i nad požadavkem, který signál doopravdy nese.
+ *
+ * ⚠ **Dál než na tu první operaci to tvrzení nesahá, a nemá.** Nález nezávislé
+ * revize 3. 9. 2026, `VERDICT: routed`, CONFIRMED spuštěním: když řetěz po
+ * odchodu klienta ještě stihne vydat další fázi, potká zrušení nejdřív
+ * `write()` toho `progress` a nálepka je `STREAM_CANCELLED` — pád, který by
+ * přišel o kolo později, se už neohlásí. **Odchod klienta tedy předběhne
+ * jakýkoli pozdější pád řetězu, a je to vědomé:** v okně, kde `pipeTo` už
+ * běželo, to tak fungovalo i před touhle opravou, protože `enqueue` na
+ * errorovaném proudu vyhodí dřív, než se řetěz dostane k pádu. Kontrola
+ * signálu tím nevyrábí nové chování, jen ho rozšiřuje na okno, kde se
+ * `enqueue` nikdy nezeptá. Rozhodující je pořád **co vyhodilo**; mění se jen
+ * to, kdy se ten sentinel vyrobí.
  *
  * **Za posledním zápisem se signál nekontroluje a nemá to díru:** mezi
  * `write('result', …)` a `controller.close()` není `await`, takže se do toho
