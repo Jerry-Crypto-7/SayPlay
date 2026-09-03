@@ -74,10 +74,42 @@ export const SESSION_POLICY: AdmissionPolicy = {
 
 let running = 0;
 
+/**
+ * Vzít slot pro jedno placené volání v letu. Vrací `false`, když je plno.
+ *
+ * **Jeden čítač na oboje dveře** — zakládání relace i preview druhé věty.
+ * Dva oddělené stropy po čtyřech nejsou strop čtyř: kdo chce platit za osm
+ * volání naráz, střídá obě adresy. Kontrola a zvýšení jsou v jednom
+ * synchronním kroku, takže mezi ně nemá co vklouznout.
+ */
+export function acquireSlot(): boolean {
+  if (running >= MAX_CONCURRENT_GENERATIONS) return false;
+  running += 1;
+  return true;
+}
+
+/** Slot vrátit. Musí proběhnout na **každé** cestě ven, i na chybové. */
+export function releaseSlot(): void {
+  running -= 1;
+}
+
 /** Jen pro testy: čítač je proces-globální jako registr relací. */
 export function resetConcurrency(): void {
   running = 0;
 }
+
+/**
+ * Strop utrácení je stav **procesu**, ne požadavku — jedna instance na celý běh
+ * serveru, vzor `src/app/api/generate/route.ts`.
+ *
+ * Postavit ho uvnitř `cloudEmitter()` znamenalo nový strop na každý požadavek:
+ * `#spentUsd` i `#callsMade` se pokaždé vynulovaly, takže strop nikdy nic
+ * neodmítl. Naměřeno revizí 3. 9. 2026 — sdílený strop odmítl na volání #38,
+ * strop na požadavek neodmítl ani po šedesáti.
+ *
+ * Napříč instancemi to pořád nedrží; to je `T29` a jiná vada.
+ */
+export const WORLDSTREAM_SPEND_CAP = spendCapFromEnv(process.env);
 
 function fail(requestId: string, status: number, code: string, message: string): Response {
   return Response.json({ requestId, error: { code, message } }, { status });
@@ -97,12 +129,12 @@ function fail(requestId: string, status: number, code: string, message: string):
  * kterém je ta příčina vidět, a `RULES.md` §3.3 mu dává právo zkoušet vlastní
  * věty i tehdy, když je nasazení bez klíče.
  */
-export function cloudEmitter(env: NodeJS.ProcessEnv = process.env): BlueprintEmitter | null {
-  const config = upstreamConfigFromEnv(env);
+export function cloudEmitter(): BlueprintEmitter | null {
+  const config = upstreamConfigFromEnv(process.env);
   if (config === null) return null;
 
   const branch = upstreamBranch(config);
-  const cap = spendCapFromEnv(env);
+  const cap = WORLDSTREAM_SPEND_CAP;
 
   return async (request: UpstreamRequest): Promise<unknown> => {
     const call = { prompt: request.user, request };
@@ -187,20 +219,25 @@ export async function POST(request: Request): Promise<Response> {
     if (!admission.admitted)
       return fail(requestId, 503, admission.reason, 'the request ran out of its time budget before any work began');
 
-    if (running >= MAX_CONCURRENT_GENERATIONS)
-      return fail(requestId, 503, 'TOO_MANY_SESSIONS', 'too many worlds are being built right now');
-
     const grammar = serverGrammar();
     if (typeof grammar === 'string') {
       logRateLimited('worldstream/sessions', requestId, 'GRAMMAR_UNREADABLE', grammar);
       return fail(requestId, 503, 'GRAMMAR_UNREADABLE', 'the frozen protocol could not be read');
     }
 
+    // **Slot se bere až tady, a schválně za čtením protokolu.** Kontrola a
+    // zvýšení čítače jsou v jednom synchronním kroku (`acquireSlot`) a mezi
+    // vzetím slotu a `work.finally` níž už neleží žádný odchod z route — slot
+    // se tedy nedá ztratit. Ta obrácená pořadí by ho ztratit uměla: nečitelný
+    // protokol by odešel s obsazeným slotem a po čtyřech požadavcích by
+    // neprošel nikdo.
+    if (!acquireSlot())
+      return fail(requestId, 503, 'TOO_MANY_SESSIONS', 'too many worlds are being built right now');
+
     const sessionId = randomUUID();
     const stored = openSession(sessionId, newSessionSeed());
 
     const emit = cloudEmitter();
-    running += 1;
     const work =
       emit === null
         ? Promise.resolve().then(() => {
@@ -218,7 +255,7 @@ export async function POST(request: Request): Promise<Response> {
     // generace doběhne — to je celý smysl téhle route. `finally` je jediné,
     // co drží čítač souběhu poctivý i na cestě, kterou nikdo nečeká.
     void work.finally(() => {
-      running -= 1;
+      releaseSlot();
     });
 
     return Response.json(

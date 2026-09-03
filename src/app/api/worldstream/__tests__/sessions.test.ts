@@ -25,13 +25,20 @@
  * route netýkají.
  */
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { SseDecoder } from '../../../../components/viewer/sse';
 import type { SessionEvent, SessionEventLog } from '../../../../worldstream/events';
 import { clearSessions, openSession, runGeneration } from '../../../../worldstream/sessions';
 import { ANSWER, PLAN, generated, grammar, scripted } from './world-fixture';
-import { MAX_CONCURRENT_GENERATIONS, POST as createSession, resetConcurrency } from '../sessions/route';
+import { DEFAULT_CAP_USD } from '../../../../server/spend-cap';
+import {
+  MAX_CONCURRENT_GENERATIONS,
+  POST as createSession,
+  WORLDSTREAM_SPEND_CAP,
+  cloudEmitter,
+  resetConcurrency,
+} from '../sessions/route';
 import { GET as readSnapshot } from '../sessions/[sessionId]/route';
 import { HEARTBEAT_FRAME, GET as readEvents } from '../sessions/[sessionId]/events/route';
 
@@ -555,5 +562,41 @@ describe('generace se scriptovaným emitorem', () => {
     // svět staví. Modul to umí a route to musí donést až k němu.
     const ladder = frames.map((frame) => frame.type).filter((type) => type !== 'session.failed');
     expect(ladder).toEqual(['session.accepted', 'intent.ready', 'blueprint.ready', 'world.ready']);
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Strop utrácení
+ * ------------------------------------------------------------------ */
+
+describe('strop utrácení placené větve', () => {
+  it('je jeden na modul, ne nový na každý požadavek', async () => {
+    vi.stubEnv('WORLDSMITH_MODEL_ENDPOINT', 'https://model.invalid/v1/messages');
+    vi.stubEnv('WORLDSMITH_MODEL_KEY', 'not-a-real-key');
+    vi.stubEnv('WORLDSMITH_USD_PER_MTOK_OUT', '15');
+
+    // Rozpočet spolkne rezervace **mimo** emitor. Kdyby si emitor stavěl strop
+    // sám, začal by na nule, tuhle rezervaci by nikdy neviděl a volání pustil —
+    // a přesně tak se to chovalo do 3. 9. 2026: sdílený strop odmítl na volání
+    // #38, strop na požadavek neodmítl ani po šedesáti.
+    const held = WORLDSTREAM_SPEND_CAP.reserve(DEFAULT_CAP_USD);
+    expect(held.ok).toBe(true);
+
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    try {
+      const emit = cloudEmitter();
+      expect(emit).not.toBeNull();
+      await expect(
+        emit!({ model: 'claude-opus-5', system: 'system', user: 'a salt flat with one iron mast' }),
+      ).rejects.toThrow(/CAP_EXHAUSTED/);
+
+      // Odmítnutí je **před** voláním, ne po něm. Strop, který se ptá až
+      // potom, není strop — je to účetnictví.
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+      if (held.ok) held.settle(0);
+      vi.unstubAllEnvs();
+    }
   });
 });

@@ -29,7 +29,12 @@
 import { randomUUID } from 'node:crypto';
 
 import { readBody } from '@/http/body';
-import { groundTarget, planChange, type PendingChange } from '@/model/worldstream-refine';
+import {
+  groundTarget,
+  planChange,
+  type ChangeOutcome,
+  type PendingChange,
+} from '@/model/worldstream-refine';
 import type { BlueprintEmitter } from '@/model/worldstream-repair';
 import { withRequest } from '@/obs/trace';
 import { admit, type AdmissionPolicy } from '@/server/admission';
@@ -37,7 +42,7 @@ import { moderatePrompt } from '@/server/moderation';
 import { logRateLimited } from '@/server/public-faults';
 import { getSession, putChange } from '@/worldstream/sessions';
 
-import { cloudEmitter } from '../../route';
+import { acquireSlot, cloudEmitter, releaseSlot } from '../../route';
 
 export const runtime = 'nodejs';
 
@@ -199,12 +204,31 @@ export async function createChange(
     if (emit === null)
       return fail(requestId, 503, 'MODEL_UNAVAILABLE', 'the model could not be reached');
 
-    const outcome = await planChange({
-      prompt: verdict.prompt,
-      blueprint,
-      target: grounding.target,
-      emit,
-    });
+    // **Týž čítač jako u zakládání relace**, ne druhý po čtyřech. Preview je
+    // placené volání modelu a je levnější na vyvolání než celý svět — relaci si
+    // založí kdokoli. Kdyby měly tyhle dveře strop vlastní, útočník by je
+    // střídal a v letu by běželo osm volání místo čtyř.
+    if (!acquireSlot())
+      return fail(
+        requestId,
+        503,
+        'TOO_MANY_CHANGES',
+        'too many changes are being planned right now',
+      );
+
+    let outcome: ChangeOutcome;
+    try {
+      outcome = await planChange({
+        prompt: verdict.prompt,
+        blueprint,
+        target: grounding.target,
+        emit,
+      });
+    } finally {
+      // `finally`, ne řádek za `await`: `planChange` smí házet a slot, který se
+      // nevrátí, strop utáhne natrvalo.
+      releaseSlot();
+    }
 
     if (outcome.kind === 'unavailable') {
       // Detail poskytovatele ven nejde nikdy — `fetch` píše do svých hlášek celou

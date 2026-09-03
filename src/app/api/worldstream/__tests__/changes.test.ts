@@ -34,6 +34,13 @@ import type { UpstreamRequest } from '@/model/prompt';
 import type { PendingChange, RefinePlan } from '@/model/worldstream-refine';
 import { clearSessions, openSession, putChange, type StoredSession } from '@/worldstream/sessions';
 
+import {
+  MAX_CONCURRENT_GENERATIONS,
+  POST as createSession,
+  acquireSlot,
+  releaseSlot,
+  resetConcurrency,
+} from '../sessions/route';
 import { POST as commitChange } from '../sessions/[sessionId]/changes/[changeId]/commit/route';
 import { POST as previewChange, createChange } from '../sessions/[sessionId]/changes/route';
 import { generated } from './world-fixture';
@@ -118,6 +125,7 @@ function worldOf(stored: StoredSession) {
 
 afterEach(() => {
   clearSessions();
+  resetConcurrency();
 });
 
 /* ------------------------------------------------------------------ *
@@ -436,5 +444,89 @@ describe('commit druhé věty', () => {
     const read = await body(await commit(stored.session.sessionId, change.changeId));
     expect(read.outcome).toBe('REJECTED');
     expect(worldOf(stored).simRevision).toBe(0);
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Strop souběhu — jeden čítač pro oboje placené dveře
+ * ------------------------------------------------------------------ */
+
+/** Emitor, který si počítá, kolikrát se za něj zaplatilo. */
+function countingEmit(): { emit: (request: UpstreamRequest) => Promise<unknown>; calls: () => number } {
+  let calls = 0;
+  return {
+    calls: () => calls,
+    emit: async () => {
+      calls += 1;
+      return {
+        summary: 'the mast turns sand',
+        shape: null,
+        behavior: [],
+        appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }],
+      };
+    },
+  };
+}
+
+describe('strop souběžných placených volání', () => {
+  it('preview se počítá do TÉHOŽ stropu jako zakládání relace', async () => {
+    const stored = await generated();
+    const model = countingEmit();
+
+    // Sloty drží zakládací cesta: `acquireSlot()` je přesně to, co dělá
+    // `POST /sessions` před generací.
+    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS; i += 1) expect(acquireSlot()).toBe(true);
+
+    // Dvoje dveře, jeden strop. Kdyby měly čítače vlastní, útočník by je
+    // střídal a v letu by běželo osm placených volání místo čtyř.
+    const refusedSession = await createSession(
+      new Request('http://127.0.0.1/api/worldstream/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ prompt: 'a salt flat with one iron mast' }),
+      }),
+    );
+    expect(refusedSession.status).toBe(503);
+    expect((await body(refusedSession)).error).toMatchObject({ code: 'TOO_MANY_SESSIONS' });
+
+    const refusedChange = await preview(
+      stored.session.sessionId,
+      { prompt: 'make the mast sand-coloured' },
+      model.emit,
+    );
+    expect(refusedChange.status).toBe(503);
+    expect((await body(refusedChange)).error).toMatchObject({ code: 'TOO_MANY_CHANGES' });
+
+    // Odmítnutí je **před** modelem. Za preview, které se nekonalo, se neplatí.
+    expect(model.calls()).toBe(0);
+
+    // A jakmile se jeden slot uvolní, tytéž dveře pustí.
+    releaseSlot();
+    const accepted = await preview(
+      stored.session.sessionId,
+      { prompt: 'make the mast sand-coloured' },
+      model.emit,
+    );
+    expect(accepted.status).toBe(200);
+    expect((await body(accepted)).outcome).toBe('PREVIEW');
+    expect(model.calls()).toBe(1);
+  });
+
+  it('preview slot vrátí, takže věty v řadě neucpou strop', async () => {
+    const stored = await generated();
+    const model = countingEmit();
+
+    // O jednu víc, než je strop. Kdyby si preview slot nechalo, poslední by
+    // narazila na 503 — a stačilo by na to pár vět od jednoho porotce.
+    for (let i = 0; i <= MAX_CONCURRENT_GENERATIONS; i += 1) {
+      const response = await preview(
+        stored.session.sessionId,
+        { prompt: 'make the mast sand-coloured' },
+        model.emit,
+      );
+      expect(response.status).toBe(200);
+    }
+    expect(model.calls()).toBe(MAX_CONCURRENT_GENERATIONS + 1);
+    expect(acquireSlot()).toBe(true);
   });
 });
