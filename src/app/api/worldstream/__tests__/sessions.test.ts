@@ -709,3 +709,41 @@ describe('strop utrácení placené větve', () => {
     }
   });
 });
+
+/**
+ * **Práce za odpovědí 202 se předává platformě, ne holému `void`.**
+ *
+ * Nález nezávislé revize 3. 9. 2026 nad `4ee2b3d`. `vercel.json` nasazuje
+ * serverless a instance se po odeslání odpovědi **zmrazí**, takže rezervace
+ * stropu se zapsala a vyrovnání už neproběhlo. Do P15 T29 to stálo jen paměť
+ * procesu a umřelo to s ním; od T29 je účetní kniha sdílená a trvalá, takže
+ * každá opuštěná rezervace strop **natrvalo utáhne** — dvacet po výchozím
+ * nejhorším případu 0,2585 USD vyčerpá strop 5 USD a další instance začne
+ * rovnou na `CAP_EXHAUSTED`.
+ *
+ * ⚠ **Soudí se zdroj, protože zevnitř jednoho procesu se to změřit nedá.**
+ * Zmrazení instance je vlastnost platformy; vitest volá `POST()` přímo, takže
+ * `after()` tam vyhodí „outside a request scope" a route spadne do stejné
+ * záložní větve, jakou má `next start`. Chování obou větví je tím pádem
+ * nerozlišitelné a jediné, co tuhle vlastnost drží, je tenhle test.
+ */
+describe('generace za odpovědí přežije zmrazení instance', () => {
+  it('předává rozdělanou práci `after()`, ne jen `void`', () => {
+    // Komentáře se odstřihnou — zakomentované `after(` by bránu jinak prošlo.
+    const source = readFileSync('src/app/api/worldstream/sessions/route.ts', 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+
+    expect(source, 'route neimportuje `after` z `next/server`').toContain(
+      "import { after } from 'next/server'",
+    );
+    // Ta práce, a ne nějaká jiná: je to tentýž `Promise`, na kterém visí
+    // `releaseSlot()`, takže se na platformu předává i vrácení slotu.
+    expect(source, 'rozdělaná generace se nepředává `after()`').toMatch(
+      /after\(settled\)/,
+    );
+    expect(source, 'na `settled` nevisí vrácení slotu').toMatch(
+      /const settled = work\.finally\(\(\) => \{\s*releaseSlot\(\);\s*\}\);/,
+    );
+  });
+});

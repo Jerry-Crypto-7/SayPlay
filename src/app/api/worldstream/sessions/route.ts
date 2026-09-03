@@ -28,6 +28,8 @@
 
 import { randomUUID } from 'node:crypto';
 
+import { after } from 'next/server';
+
 import { readBody } from '../../../../http/body';
 import { withRequest } from '../../../../obs/trace';
 import type { UpstreamRequest } from '../../../../model/prompt';
@@ -279,12 +281,37 @@ export async function POST(request: Request): Promise<Response> {
               logRateLimited('worldstream/sessions', requestId, fault, detail),
           });
 
-    // **`void` s `finally`, ne `await`.** Odpověď 202 musí odejít dřív, než
-    // generace doběhne — to je celý smysl téhle route. `finally` je jediné,
-    // co drží čítač souběhu poctivý i na cestě, kterou nikdo nečeká.
-    void work.finally(() => {
+    // **`after()`, ne holé `void`.** Odpověď 202 musí odejít dřív, než generace
+    // doběhne — to je celý smysl téhle route — ale práce za ní musí platformu
+    // přežít.
+    //
+    // Naměřeno nezávislou revizí 3. 9. 2026 nad `4ee2b3d`: `vercel.json`
+    // nasazuje serverless a instance se po odeslání odpovědi **zmrazí**, takže
+    // `void work` znamená „rezervace se zapsala, vyrovnání ne". Do P15 T29 to
+    // stálo jen paměť procesu a umřelo to s ním; od T29 je kniha sdílená
+    // a trvalá, takže každá taková rezervace strop **natrvalo utáhne** —
+    // dvacet opuštěných rezervací po 0,2585 USD vyčerpá strop 5 USD a další
+    // instance začne rovnou na `CAP_EXHAUSTED`. Zotavení pak není mazání klíče
+    // v úložišti, ale zvednutí `capUsd` v ovládacím souboru; je to rozhodnutí
+    // o penězích a patří člověku.
+    //
+    // `after()` doběhne i tehdy, když odpověď skončí chybou, a je omezené
+    // `maxDuration` routy, ne donekonečna.
+    const settled = work.finally(() => {
       releaseSlot();
     });
+    try {
+      after(settled);
+    } catch {
+      // **`after()` mimo request scope vyhodí**, a to je jediná větev, kterou
+      // tenhle `catch` chytá: test, který volá `POST()` přímo, a `next start`.
+      // Ani na jednom z těch dvou se instance po odpovědi nezmrazí, takže tam
+      // holé `void` platí dál — není to náhradní řešení, je to ta správná
+      // odpověď mimo serverless. Že se práce na serverless doopravdy předává
+      // platformě, pinuje lexikálně `sessions.test.ts`; uvnitř jednoho procesu
+      // se ta vlastnost změřit nedá.
+      void settled;
+    }
 
     return Response.json(
       {
