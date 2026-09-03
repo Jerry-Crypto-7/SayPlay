@@ -548,9 +548,10 @@ export async function POST(request: Request): Promise<Response> {
         'generate',
         requestId,
         'TOO_MANY_GENERATIONS',
-        // Číslo je **stropem těchhle dveří**, ne velikostí čítače: stavba světa
-        // se zastaví o slot dřív, aby nevyhladověla preview druhé věty.
-        `all ${MAX_WORLD_GENERATIONS} of ${MAX_CONCURRENT_GENERATIONS} paid slots open to new worlds are in flight on this instance`,
+        // **Věta neříká, že běží tři generace — čítač to neví.** Sloty může
+        // držet preview druhé věty; nález revize 4. 9. 2026, celé odůvodnění
+        // u sesterských dveří ve worldstream/sessions/route.ts.
+        `paid slots in flight reached the ${MAX_WORLD_GENERATIONS} of ${MAX_CONCURRENT_GENERATIONS} a new world may hold on this instance`,
       );
       return error(
         requestId,

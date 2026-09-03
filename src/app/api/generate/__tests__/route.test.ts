@@ -1348,8 +1348,14 @@ describe('POST /api/generate pod náporem', () => {
     // zelený — log by se pořád shodoval sám se sebou, jen o řád výš. Nález
     // nezávislé revize 3. 9. 2026. **„on this instance" je součást tvrzení:**
     // čítač je stav modulu, takže na Vercelu ho každá instance má vlastní.
+    // **Věta nesmí tvrdit, že tři generace běží.** Sloty může držet preview
+    // druhé věty, a hláška, která o nich mluví jako o světech, pošle operátora
+    // hledat generaci, která neexistuje. Nález revize 4. 9. 2026.
     expect(refusals[0]).toContain(
-      'all 3 of 4 paid slots open to new worlds are in flight on this instance',
+      'paid slots in flight reached the 3 of 4 a new world may hold on this instance',
+    );
+    expect(refusals[0], 'hláška tvrdí o slotech víc, než čítač ví').not.toContain(
+      'open to new worlds are in flight',
     );
     expect(MAX_WORLD_GENERATIONS, 'strop se pohnul — přepiš i větu v logu').toBe(3);
     expect(MAX_CONCURRENT_GENERATIONS, 'čítač se pohnul — přepiš i větu v logu').toBe(4);

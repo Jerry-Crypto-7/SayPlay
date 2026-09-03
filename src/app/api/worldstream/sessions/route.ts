@@ -78,9 +78,19 @@ export const MAX_CONCURRENT_GENERATIONS = 4;
  * zůstává jeden, mění se jen strop, proti kterému se drahé dveře porovnávají.
  * Kdo chce platit za osm volání naráz, střídáním adres si je pořád nekoupí.
  *
- * **Opačným směrem rezerva nejde a nemá jít.** Čtyři preview v letu odmítnou
- * zakládání relace, jenže preview slot drží jedno volání modelu a vrací ho
- * hned; hladovět tímhle směrem trvá vteřiny, ne minuty.
+ * ⚠ **Rezerva je dnes jednosměrná, a to není vlastnost, je to dluh.** První
+ * podoba tohohle komentáře tvrdila, že opačným směrem hladovět nejde, protože
+ * preview drží slot „vteřiny, ne minuty". **Revize to vyvrátila čtením zdroje:**
+ * preview jde týmž `cloudEmitter()` (níž v tomhle souboru) s touž konfigurací,
+ * takže jeho jediná mez je zase `DEFAULT_TIMEOUT_MS = 120 000`. Tři souběžná
+ * `POST …/changes` proti visícímu poskytovateli tedy zavřou **oboje** dveře na
+ * stavbu světa na celé dvě minuty, aniž se staví jediný svět — a stojí to o
+ * jeden požadavek míň než před touhle úlohou.
+ *
+ * Není to regrese v druhu, jen ve stupni: před rezervou to stálo čtyři
+ * požadavky, teď tři. Skutečná oprava je **počítat v letu po dveřích** (dva
+ * čítače a jeden společný součet), aby rezerva platila na obě strany; to je
+ * routovaná úloha `T22-doorcounters`, ne tenhle jeden řádek.
  */
 export const MAX_WORLD_GENERATIONS = 3;
 
@@ -307,10 +317,12 @@ export async function POST(request: Request): Promise<Response> {
         'worldstream/sessions',
         requestId,
         'TOO_MANY_SESSIONS',
-        // Číslo je **stropem těchhle dveří**, ne velikostí čítače: operátor,
-        // který v logu čte „all 4", by po čtvrtém odmítnutí hledal čtvrtou
-        // generaci, která neexistuje — třetí drží slot a čtvrtý je rezerva.
-        `all ${MAX_WORLD_GENERATIONS} of ${MAX_CONCURRENT_GENERATIONS} paid slots open to new worlds are in flight on this instance`,
+        // **Věta neříká, že běží tři světy — čítač to neví.** Sloty mohou
+        // držet preview druhé věty, a revize našla, že první podoba téhle
+        // hlášky („all 3 … open to new worlds are in flight") pak posílá
+        // operátora hledat generaci, která neexistuje. Pravda, kterou čítač
+        // unese, je jediná: v letu je tolik, kolik smí držet nový svět.
+        `paid slots in flight reached the ${MAX_WORLD_GENERATIONS} of ${MAX_CONCURRENT_GENERATIONS} a new world may hold on this instance`,
       );
       return fail(requestId, 503, 'TOO_MANY_SESSIONS', 'too many worlds are being built right now');
     }
