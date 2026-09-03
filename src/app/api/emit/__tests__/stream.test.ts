@@ -15,6 +15,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { POST as emit } from '../route';
 import { SseDecoder } from '../../../../components/viewer/sse';
+import type { EmissionOutcome, EmitPhase } from '../chain';
 import { POST as stream } from '../stream/route';
 
 type Route = (request: Request) => Promise<Response>;
@@ -148,23 +149,42 @@ describe('kanál s průběhem', () => {
 });
 
 /**
- * Podvrhne řetěz tak, že první krok emise vyhodí — tedy **za** odeslanými
- * hlavičkami a za prvním rámcem `progress`, což je přesně to okno, ve kterém
- * do 1. 9. 2026 nevznikla ani odpověď, ani řádek v logu.
+ * Načte routu s řetězem, který jde **za běhu rozbít** — a než se rozbije, je
+ * to ten skutečný řetěz.
+ *
+ * ⚠ **Ta přepínatelnost je celé jádro téhle sady, ne pohodlí.** Do 2. 9. 2026
+ * se zrušení proudu zkoušelo výhradně nad podvrženým pádem, takže výjimka,
+ * kterou `catch` v routě dostal, byla vždycky ten podvrh — **nikdy**
+ * `TypeError` z `enqueue`, který v provozu vyrobí odchod klienta. Sada tím
+ * certifikovala zařazení, které je špatně, a pět zabitých mutantů z pěti to
+ * nechytilo: mutační kontrola měří, jestli aserce nejsou ozdobné, ne jestli
+ * fixtura vyrábí ten svět, který vyrobí provoz. **Zrušení se proto od téhle
+ * revize zkouší nad zdravým řetězem** a `breakChain()` se volá jen tam, kde se
+ * soudí skutečný pád.
  *
  * Modul se načítá znovu, protože `logRateLimited` si počítadlo drží jako stav
  * modulu: bez `resetModules()` by druhý test v tomhle souboru byl už druhým
  * výskytem téhož klíče, mez by ho zahodila a test by měřil počítadlo místo
  * opravy.
  */
-async function loadBrokenStream(): Promise<{ readonly post: Route; readonly log: string[] }> {
+async function loadStream(): Promise<{
+  readonly post: Route;
+  readonly log: string[];
+  readonly breakChain: () => void;
+  readonly silenceChain: () => void;
+}> {
   vi.resetModules();
+  let mode: 'healthy' | 'broken' | 'silent' = 'healthy';
   vi.doMock('../chain', async (importOriginal) => {
     const actual = await importOriginal<typeof import('../chain')>();
     let calls = 0;
     return {
       ...actual,
-      emissionSteps: function* (): Generator<never, never, void> {
+      emissionSteps: function* (promptId: string): Generator<EmitPhase, EmissionOutcome, void> {
+        if (mode === 'healthy') return yield* actual.emissionSteps(promptId);
+        // Řetěz, který **nevydá jedinou fázi** a rovnou vrátí verdikt. Slouží
+        // jedinému účelu: posunout zrušení až na `enqueue` rámce `result`.
+        if (mode === 'silent') return { kind: 'unknown-prompt' };
         calls += 1;
         throw new Error(`the chain came apart (${calls})`);
       },
@@ -177,7 +197,27 @@ async function loadBrokenStream(): Promise<{ readonly post: Route; readonly log:
   });
 
   const { POST } = await import('../stream/route');
-  return { post: POST, log };
+  return {
+    post: POST,
+    log,
+    breakChain: () => {
+      mode = 'broken';
+    },
+    silenceChain: () => {
+      mode = 'silent';
+    },
+  };
+}
+
+/**
+ * Podvrhne řetěz tak, že první krok emise vyhodí — tedy **za** odeslanými
+ * hlavičkami a za prvním rámcem `progress`, což je přesně to okno, ve kterém
+ * do 1. 9. 2026 nevznikla ani odpověď, ani řádek v logu.
+ */
+async function loadBrokenStream(): Promise<{ readonly post: Route; readonly log: string[] }> {
+  const loaded = await loadStream();
+  loaded.breakChain();
+  return loaded;
 }
 
 /**
@@ -230,11 +270,59 @@ describe('pád uvnitř proudu', () => {
     // Tohle je ten případ, kvůli kterému je zápis **před** `enqueue`: na
     // zrušeném proudu `enqueue` vyhodí, takže řádek psaný za ním by nevznikl
     // právě u požadavku, o kterém se operátor potřebuje dozvědět.
-    const { post, log } = await loadBrokenStream();
+    //
+    // **Řetěz je tady zdravý, a to je nosné.** Jediná výjimka, která v tomhle
+    // testu může vzniknout, je `TypeError: Invalid state: Controller is already
+    // closed` ze samotného `enqueue` — tedy přesně ta hodnota, kterou vyrobí
+    // odchod klienta v provozu. Nad podvrženým pádem tenhle test měřil roky
+    // něco jiného, než si myslel.
+    const { post, log } = await loadStream();
     await leaveMidStream(post, 'C01');
 
     expect(log).toHaveLength(1);
     // A jmenuje to **zrušením**, ne pádem: odchod klienta není porucha.
+    expect(log[0]).toContain('STREAM_CANCELLED');
+    expect(log[0]).not.toContain('STREAM_FAILED');
+  });
+
+  it('pád řetězu PO zrušení je pád, ne zrušení', async () => {
+    // ⛔ **Druhý blokující nález revize z 1. 9. 2026, kolo 2.** Oprava kola 1
+    // soudila podle stavu proudu (`cancelled ? … : …`), a stav proudu říká,
+    // **co se stalo proudu** — ne **co vyhodilo**. V tomhle okně se ty dvě věci
+    // rozcházejí: klient odejde, a teprve pak spadne řetěz. Nálepka „zrušení"
+    // by ten pád schovala, a protože každé obyčejné proklikání týž klíč
+    // posouvá, po pár kliknutích by se zahodil úplně.
+    //
+    // Zrušení dorazí, dokud `start()` čeká na první `flush()`; řetěz vyhodí až
+    // na `steps.next()` hned za ním, tedy dřív, než se dojde k jakémukoli
+    // `enqueue`. Výjimka proto **není** `TypeError` z proudu a nálepka to musí
+    // poznat.
+    const { post, log, breakChain } = await loadStream();
+    breakChain();
+    await leaveMidStream(post, 'C01');
+
+    expect(log).toHaveLength(1);
+    expect(log[0]).toContain('STREAM_FAILED');
+    expect(log[0]).not.toContain('STREAM_CANCELLED');
+    expect(log[0]).toContain('the chain came apart (1)');
+  });
+
+  it('zrušení, které potká až rámec verdiktu, je pořád zrušení', async () => {
+    // **Tenhle test hlídá rozsah opravy, ne její princip.** Návrh revize zněl
+    // „sentinel ze `send()`", jenže zápisů rámců je v `start()` pět a `send()`
+    // je jeden z nich. Zrušení, které dorazí během **posledního** `flush()`,
+    // nepotká žádný `progress` — potká `enqueue` rámce `result`. S obalem jen
+    // kolem `send()` by z toho byl `STREAM_FAILED`, tedy týž falešný poplach
+    // o kus vedle.
+    //
+    // Řetěz proto nevydá jedinou fázi: `start()` pošle `requested`, zaparkuje
+    // na prvním `flush()` — a to je přesně okno, ve kterém zrušení dorazí.
+    // Další zápis v pořadí je už verdikt.
+    const { post, log, silenceChain } = await loadStream();
+    silenceChain();
+    await leaveMidStream(post, 'C01');
+
+    expect(log).toHaveLength(1);
     expect(log[0]).toContain('STREAM_CANCELLED');
     expect(log[0]).not.toContain('STREAM_FAILED');
   });
@@ -245,11 +333,13 @@ describe('pád uvnitř proudu', () => {
     // spotřeboval výskyt číslo jedna a pád hned po něm by byl druhý — tedy
     // žádný řádek. A odchod klienta je běžný provoz: `Viewer.tsx` volá `abort()`
     // při každé změně promptu i při odchodu ze stránky.
-    const { post, log } = await loadBrokenStream();
+    const { post, log, breakChain } = await loadStream();
 
-    // Nejdřív obyčejné proklikání: klient odejde uprostřed emise.
+    // Nejdřív obyčejné proklikání nad **zdravým** řetězem: klient odejde
+    // uprostřed emise a výjimku vyrobí `enqueue`, jako v provozu.
     await leaveMidStream(post, 'C01');
-    // A hned nato skutečný pád řetězu, který se ohlásit musí.
+    // A teprve pak skutečný pád řetězu, který se ohlásit musí.
+    breakChain();
     await collect({ promptId: 'C05' }, post);
 
     expect(log).toHaveLength(2);

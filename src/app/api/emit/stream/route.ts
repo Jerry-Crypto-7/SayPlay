@@ -44,6 +44,27 @@
  *    to ve vývoji zdvojí. Nález nezávislé revize 1. 9. 2026, `VERDICT: blocking`
  *    — bez rozdělení kódu tahle oprava tentýž stav, který zavírá, vyrábí zpátky
  *    obyčejným proklikáním.
+ *
+ *    ⚠ **Rozděluje je to, co vyhodilo — nikdy stav proudu.** První podoba téhle
+ *    opravy se ptala vlajky nastavené z `cancel()`, a to je špatná otázka: stav
+ *    proudu říká, *co se stalo proudu*, ne *co vyhodilo*, a v tomhle okně se ty
+ *    dvě věci rozcházejí. Klient odejde a hned nato spadne řetěz → vlajka řekne
+ *    „zrušení", pád dostane nálepku běžného provozu a protože každé proklikání
+ *    týž klíč posouvá, po pár kliknutích se zahodí úplně. Naměřeno druhou
+ *    nezávislou revizí 1. 9. 2026, `VERDICT: blocking`.
+ *
+ *    Odpověď je proto **sentinel**: jediné místo, které smí říct „zrušeno", je
+ *    `write()` níž, tedy obal kolem `enqueue`. Když `enqueue` vyhodí, proud
+ *    nikdo nedrží — to je definice zrušení a nedá se splést s ničím jiným.
+ *    Cokoli jiného je pád. Vlajka z `cancel()` tím **zanikla**: kdyby zůstala
+ *    jako křížová kontrola, byla by to druhá odpověď na tutéž otázku a příští
+ *    revize by řešila, která z nich platí.
+ *
+ *    **Obal musí být kolem každého `enqueue`, ne jen kolem `send()`.** Sondou
+ *    naměřeno 3. 9. 2026: zápisů rámců je v `start()` pět, a návrh „sentinel
+ *    ze `send()`" by pokryl jeden. Zrušení, které dorazí během posledního
+ *    `flush()`, potká až `enqueue` rámce `result` — tedy jednu ze tří větví
+ *    verdiktu — a to by byl týž falešný poplach o kus vedle.
  * 2. **Řádek operátorovi jde první, `enqueue` až po něm.** Na proudu, který
  *    protistrana zrušila, `enqueue` vyhodí — kdyby byl zápis až za ním, právě
  *    ten případ, o kterém se operátor potřebuje dozvědět, by řádek nevyrobil
@@ -109,6 +130,21 @@ const PUBLIC_STREAM_FAULT: Record<StreamFault, string> = {
   STREAM_FAILED: 'the stream failed before the verdict was ready',
 };
 
+/**
+ * „Rámec se nedal zařadit, protože proud už nikdo nedrží."
+ *
+ * Je to **jediný** zdroj nálepky `STREAM_CANCELLED` a vyhazuje ho výhradně
+ * `write()`. Symbol proto, aby se nedal splést s ničím, co přiletí z řetězu:
+ * na rozdíl od třídy chyby nebo textu hlášky ho nemá jak vyrobit nikdo jiný.
+ *
+ * Naměřeno v Node 3. 9. 2026: `enqueue` na zrušeném proudu vyhodí
+ * `TypeError: Invalid state: Controller is already closed`. Ta hláška se
+ * **nesniffuje** — je to text běhového prostředí, ne kontrakt. Sentinel se
+ * neptá čím `enqueue` selhal, jen že selhal, a to stačí: proud, do kterého
+ * nejde zapsat, nemá druhé vysvětlení.
+ */
+const STREAM_CLOSED = Symbol('the other end went away');
+
 function frame(event: string, payload: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`;
 }
@@ -128,28 +164,31 @@ export async function POST(request: Request): Promise<Response> {
     const promptId = parsed.promptId;
     const encoder = new TextEncoder();
 
-    /**
-     * Zrušil proud ten druhý konec?
-     *
-     * Ptát se na to jde jen takhle. `ReadableStreamDefaultController` stav
-     * nezveřejňuje a `desiredSize` vrací nulu i při obyčejném protitlaku, takže
-     * by se to nedalo odlišit; sniffovat text `TypeError`u by zase záviselo na
-     * hlášce běhového prostředí. `cancel()` na zdroji je jediný signál, který
-     * spec dává — a přijde **dřív** než výjimka z `enqueue`, protože zrušení
-     * proud nejdřív zavře a hned nato zavolá tuhle metodu.
-     */
-    let cancelled = false;
-
     const stream = new ReadableStream<Uint8Array>({
-      cancel() {
-        cancelled = true;
-      },
       async start(controller) {
+        /**
+         * Jediná cesta, kterou z `start()` odchází rámec — a tím i jediné
+         * místo, které umí říct „zrušeno".
+         *
+         * Bajty se skládají **před** `try`, aby se do sentinelu nedostalo
+         * selhání `JSON.stringify`. To je pád jako každý jiný a nálepku
+         * zrušení si nezaslouží.
+         */
+        const write = (event: string, payload: unknown): void => {
+          const bytes = encoder.encode(frame(event, payload));
+          try {
+            controller.enqueue(bytes);
+          }
+          catch {
+            throw STREAM_CLOSED;
+          }
+        };
+
         try {
           let step = 0;
           const send = (phase: EmitPhase | 'requested') => {
             step += 1;
-            controller.enqueue(encoder.encode(frame('progress', { phase, step })));
+            write('progress', { phase, step });
           };
 
           send('requested');
@@ -169,39 +208,35 @@ export async function POST(request: Request): Promise<Response> {
             // odpověď jako každá jiná — že jde po kouscích, na kořist nic nemění.
             // A **týž bound**: vada korpusu je jeden stav, tedy jeden řádek.
             logStickyFault('emit/stream', requestId, outcome.failure.reason, outcome.failure.detail);
-            controller.enqueue(
-              encoder.encode(
-                frame('result', {
-                  requestId,
-                  error: {
-                    code: outcome.failure.reason,
-                    message: PUBLIC_CORPUS_FAULT[outcome.failure.reason],
-                  },
-                }),
-              ),
-            );
+            write('result', {
+              requestId,
+              error: {
+                code: outcome.failure.reason,
+                message: PUBLIC_CORPUS_FAULT[outcome.failure.reason],
+              },
+            });
           }
           else if (outcome.kind === 'unknown-prompt')
-            controller.enqueue(
-              encoder.encode(
-                frame('result', {
-                  requestId,
-                  error: {
-                    code: 'UNKNOWN_PROMPT',
-                    message: `no frozen create prompt named ${promptId}`,
-                    field: 'promptId',
-                  },
-                }),
-              ),
-            );
-          else controller.enqueue(encoder.encode(frame('result', { requestId, ...outcome.body })));
+            write('result', {
+              requestId,
+              error: {
+                code: 'UNKNOWN_PROMPT',
+                message: `no frozen create prompt named ${promptId}`,
+                field: 'promptId',
+              },
+            });
+          else write('result', { requestId, ...outcome.body });
 
           controller.close();
         }
         catch (thrown) {
           // Odchod klienta a pád řetězu dostanou **každý svůj klíč**, jinak ten
-          // častý umlčí ten vzácný — pravidlo 1 v hlavičce.
-          const cause: StreamFault = cancelled ? 'STREAM_CANCELLED' : 'STREAM_FAILED';
+          // častý umlčí ten vzácný — pravidlo 1 v hlavičce. A rozhoduje o tom
+          // **co vyhodilo**: sentinel umí vyrobit jedině `write()`, tedy
+          // selhané `enqueue`. Všechno ostatní přiletělo z řetězu, i kdyby
+          // protistrana mezitím odešla.
+          const closed = thrown === STREAM_CLOSED;
+          const cause: StreamFault = closed ? 'STREAM_CANCELLED' : 'STREAM_FAILED';
           // **Pořadí je nosné, ne kosmetické** — pravidlo 2. Zápis musí
           // předcházet `enqueue`, protože na zrušeném proudu `enqueue` vyhodí
           // a řádek by nevznikl právě v tom případě, kvůli kterému tenhle blok
@@ -210,17 +245,15 @@ export async function POST(request: Request): Promise<Response> {
             'emit/stream',
             requestId,
             cause,
-            thrown instanceof Error ? thrown.message : String(thrown),
+            // Sentinel je symbol a `String()` by z něj udělal šum. Text zrušení
+            // je konstanta, protože zrušení žádnou diagnostiku nenese.
+            closed ? 'the other end went away' : thrown instanceof Error ? thrown.message : String(thrown),
           );
           try {
-            controller.enqueue(
-              encoder.encode(
-                frame('result', {
-                  requestId,
-                  error: { code: cause, message: PUBLIC_STREAM_FAULT[cause] },
-                }),
-              ),
-            );
+            write('result', {
+              requestId,
+              error: { code: cause, message: PUBLIC_STREAM_FAULT[cause] },
+            });
             controller.close();
           }
           catch {
