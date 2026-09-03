@@ -103,7 +103,35 @@ interface IdleWatch {
 
 const watched = new Map<string, IdleWatch>();
 
+/**
+ * Uvolní relaci **a řekne to jejímu proudu**.
+ *
+ * ⚠ **To druhé je celá pointa, a chybělo to.** Nález nezávislé revize
+ * 3. 9. 2026, `VERDICT: blocking`: smazat relaci ze dvou map paměť neuvolní.
+ * Otevřený SSE proud (`sessions/[sessionId]/events/route.ts`) si drží odběr
+ * logu a patnáctivteřinový časovač, a ten časovač je kořen, ze kterého vede
+ * řetěz na celý `StoredSession` — blueprint, mesh cache i previewy. Vlastní
+ * úklid route spouští jedině odchod klienta. **Naměřeno:** 65 POSTů s otevřeným
+ * `/events` u každého → registr hlásí 64, proces drží 65 relací a 65 běžících
+ * časovačů, a klient první relace dostává tep dál, zatímco všechny ostatní
+ * dveře na tutéž relaci odpovídají 404.
+ *
+ * Dokud uvolňovaly jen `complete` a `failed`, nebylo to vidět: takový proud se
+ * zavře sám, protože terminální rámec zavolá `finish()`. Třetí kolo stropu je
+ * první cesta, která pustí relaci, jež do koncové fáze **nikdy nedojde**.
+ *
+ * Řešení proto tou cestou jde: relace se **ukončí** dřív, než zmizí z mapy.
+ * `fail()` zapíše `session.failed`, odběratel ho dostane synchronně, uvidí
+ * koncovou fázi a zavolá `finish()` — tedy `clearInterval` i odhlášení. Klient
+ * se současně dozví **proč**, místo aby dostával tep do prázdna. Na relaci,
+ * která už koncová je, je `fail()` bez účinku, takže dvoje dveře nevadí.
+ */
 function release(sessionId: string): void {
+  const stored = live.get(sessionId);
+  if (stored !== undefined && stored.fault === null) {
+    stored.fault = SESSION_FAULTS.SESSION_RELEASED;
+    stored.session.fail(SESSION_FAULTS.SESSION_RELEASED);
+  }
   live.delete(sessionId);
   // Previewy druhé věty visí na `StoredSession`, takže odcházejí s ní
   // (T22-previewleak). Zůstat tu smí jen to, co registr sám založil.
@@ -251,6 +279,15 @@ export const SESSION_FAULTS = {
   BLUEPRINT_REJECTED: 'the model could not write a world that holds together',
   MODEL_UNAVAILABLE: 'the model could not be reached',
   BAD_REQUEST: 'the request was built wrong before the model saw it',
+  /**
+   * Registr relaci pustil, aby se vešly novější (`release()` výš).
+   *
+   * Není to selhání generace a věta to tak neříká: svět, který vznikl, je
+   * pořád ve sdíleném registru pod svou adresou. Skončila jen **relace**.
+   * Fáze je přesto `failed`, protože jiná koncová fáze s důvodem neexistuje —
+   * a koncová být musí, jinak se proud nedozví, že má skončit.
+   */
+  SESSION_RELEASED: 'the session was closed to make room for newer ones',
 } as const;
 
 export type SessionFault = keyof typeof SESSION_FAULTS;

@@ -23,6 +23,7 @@ import {
   MAX_LIVE_SESSIONS,
   openSession,
   putChange,
+  SESSION_FAULTS,
   watchedSessionCount,
 } from '../sessions';
 import type { PendingChange } from '@/model/worldstream-refine';
@@ -120,20 +121,52 @@ describe('strop registru drží i tehdy, když nikdo nedokončí', () => {
     expect(liveSessionCount()).toBeLessThanOrEqual(MAX_LIVE_SESSIONS);
   });
 
+  // ⚠ **Pohybuje se ta NEJSTARŠÍ, schválně.** Nález nezávislé revize
+  // 3. 9. 2026: první verze nechala téct rámce do nejnovější relace, takže
+  // aserce držela i nad mutantem, který `watched` ignoruje a maže prostě podle
+  // pořadí vzniku — jedna proměnná tam měnila dvě věci naráz a test prošel ze
+  // špatného důvodu. Pořadí vzniku je tady proto konstantní a liší se **jen**
+  // pohyb proudu, tedy přesně ta vlastnost, o které je řeč.
   it('obětuje se ta, která stojí nejdéle, ne ta, do které se právě píše', () => {
-    for (let i = 0; i < MAX_LIVE_SESSIONS; i += 1) worldSession(`stará-${i}`, T0 + i);
-    const čerstvá = worldSession('čerstvá', T0 + MAX_LIVE_SESSIONS);
+    const nejstarší = worldSession('stará-0', T0);
+    for (let i = 1; i < MAX_LIVE_SESSIONS; i += 1) worldSession(`stará-${i}`, T0 + i);
 
-    // Do téhle jediné pořád tečou rámce, tak ji strop přeskočí a sáhne po
-    // nejstarší stojící.
     for (let i = 1; i <= 20; i += 1) {
-      expect(čerstvá.session.queue(`tvar-${i}`, 32), 'rámec nevznikl').toBe(true);
+      expect(nejstarší.session.queue(`tvar-${i}`, 32), 'rámec nevznikl').toBe(true);
       worldSession(`nová-${i}`, T0 + MAX_LIVE_SESSIONS + i);
     }
 
-    expect(getSession('čerstvá'), 'strop utnul relaci, do které se právě psalo').not.toBeNull();
-    expect(getSession('stará-0'), 'nejstarší stojící relace přežila').toBeNull();
+    expect(getSession('stará-0'), 'strop utnul relaci, do které se právě psalo').not.toBeNull();
+    expect(getSession('stará-1'), 'nejdéle stojící relace přežila').toBeNull();
     expect(liveSessionCount()).toBeLessThanOrEqual(MAX_LIVE_SESSIONS);
+  });
+
+  // Nález nezávislé revize 3. 9. 2026, `VERDICT: blocking`: smazání ze dvou map
+  // paměť neuvolní, dokud si otevřený SSE proud drží odběr a časovač. Odběratel
+  // se o konci dozví jedině z koncového rámce, tak ho registr musí vydat.
+  it('uvolněná relace vydá koncový rámec, aby se její proud dozvěděl, že skončil', () => {
+    const stored = worldSession('sledovaná', T0);
+
+    const viděno: string[] = [];
+    let odhlášen = false;
+    const unsubscribe = stored.session.events.subscribe((event) => {
+      viděno.push(event.type);
+      // Tohle je přesně to, co dělá route: koncová fáze → `finish()`, tedy
+      // `clearInterval` a odhlášení.
+      if (stored.session.phase === 'failed' || stored.session.phase === 'complete') {
+        unsubscribe();
+        odhlášen = true;
+      }
+    });
+
+    for (let i = 0; i < MAX_LIVE_SESSIONS + 2; i += 1) worldSession(`tlačí-${i}`, T0 + 1 + i);
+
+    expect(getSession('sledovaná'), 'relace se vůbec neuvolnila').toBeNull();
+    expect(viděno, 'proud nedostal koncový rámec, takže se nikdy neuklidí').toContain(
+      'session.failed',
+    );
+    expect(odhlášen).toBe(true);
+    expect(stored.fault, 'klient se nedozví důvod').toBe(SESSION_FAULTS.SESSION_RELEASED);
   });
 
   it('mapa, kterou si registr vede na stárnutí, neroste vedle té hlavní', () => {
