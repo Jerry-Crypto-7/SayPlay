@@ -97,8 +97,36 @@ export async function healthReport(
   };
 }
 
+/**
+ * Jak dlouho platí jedna odpověď.
+ *
+ * **Bez tohohle je veřejná adresa zesilovač** — nález nezávislé revize
+ * 3. 9. 2026, potvrzený měřením: každé zavolání dělá `write` + `fsync` +
+ * `read` + `unlink` na tomtéž svazku, po kterém čte zmrazený protokol
+ * `/api/generate`. Kdokoli zvenku tedy uměl jedním `while true; do curl`
+ * zpomalit disk natolik, že sonda sama začne trvat dlouho — a instance se
+ * odhlásí z rotace kvůli požadavku, který ji měl jen zkontrolovat.
+ *
+ * Dvě vteřiny jsou pod periodou, kterou se vyvažovač ptá (jednotky vteřin),
+ * takže poctivá kontrola o nic nepřijde; nad ní se z tisíce dotazů stane
+ * jeden zápis. **Cachuje se i verdikt „nepřipraven"** — plný disk se za dvě
+ * vteřiny nespraví a odpověď, která by se místo toho ptala znovu, by dala
+ * útočníkovi zesilovač zpátky přesně ve chvíli, kdy je stroj nejslabší.
+ */
+const CACHE_MS = 2_000;
+
+let cached: { readonly at: number; readonly answer: Awaited<ReturnType<typeof healthReport>> } | null =
+  null;
+
+/** Hodiny sondy. Wall-clock je tu legální — není to replay cesta. */
+function freshEnough(at: number): boolean {
+  return Date.now() - at < CACHE_MS;
+}
+
 export async function GET(): Promise<Response> {
-  const { status, body } = await healthReport(tmpdir(), nodeReadinessDeps());
+  if (cached === null || !freshEnough(cached.at))
+    cached = { at: Date.now(), answer: await healthReport(tmpdir(), nodeReadinessDeps()) };
+  const { status, body } = cached.answer;
 
   // **`no-store` je součást odpovědi, ne ladění.** Zdravotní kontrola, kterou
   // někdo po cestě uloží do cache, odpovídá za instanci, která už neběží —

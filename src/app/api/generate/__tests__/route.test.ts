@@ -1261,7 +1261,7 @@ describe('POST /api/generate', () => {
 
 
 /* ------------------------------------------------------------------ *
- * Nápor: brána, která stojí před drahou prací (P15 T28).
+ * Nápor: strop na placená volání v letu (P15 T28).
  * ------------------------------------------------------------------ */
 
 /**
@@ -1269,55 +1269,59 @@ describe('POST /api/generate', () => {
  * dokud počítadlo volání započítávalo i větev zdarma, byl to náhodou jediný
  * strop neověřeného provozu, a `e8783d4` ten náhodný strop odstranil.
  *
- * Obě zkoušky běží nad **prázdným** `cwd`, takže zmrazený protokol se přečíst
- * nedá. To je schválně: rozliší se tím, **kde brána stojí**. Požadavek, který
- * se odmítne na rozpočtu, dostane `DEADLINE_EXCEEDED`; kdyby brána stála až
- * za `frozenGrammar()`, přišlo by `CORPUS_UNREADABLE` — tedy práce, která se
- * pod náporem udělá a zahodí.
+ * První pokus o opravu byla brána na promlčeném rozpočtu a **nezávislá revize
+ * ji vyvrátila měřením**: odmítá až po 12 s čekání, jenže čtení těla má vlastní
+ * strop 5 s, takže nemohla odmítnout nikdy nikoho. Drží to proto čítač
+ * souběžných generací, sdílený se worldstreamovými dveřmi — a soudí se tu obojí,
+ * co se na něm dá porušit tiše: **že kousne** a **že slot zase pustí**.
  *
- * Druhá zkouška je ta, na které padá brána, co odmítá všechny: čerstvý
- * požadavek musí projít dál a narazit až na rozbitý protokol.
+ * **Modul se načítá jednou pro celý test, ne přes `post()`.** Ten helper mezi
+ * požadavky shazuje registr modulů, takže čítač by se pokaždé narodil znovu na
+ * nule — obsazené sloty by zmizely a zelená by neznamenala nic.
  */
+/** Věta ze zmrazeného korpusu, zúžená na řetězec mimo uzávěr. */
+const CROWD_PROMPT: string = FROZEN_CREATE.prompt;
+
 describe('POST /api/generate pod náporem', () => {
-  async function overBrokenGrammar(waitedMs: number) {
-    const dir = mkdtempSync(join(tmpdir(), 'worldsmith-admission-'));
-    temporary.push(dir);
-    vi.spyOn(process, 'cwd').mockReturnValue(dir);
+  async function loadOnce() {
+    vi.unstubAllEnvs();
     vi.resetModules();
     const { POST } = await import('../route');
-
-    // Hodiny se podvrhují **až po načtení modulu**: první volání je okamžik
-    // přijetí požadavku, každé další už je o `waitedMs` později. Tím se vyrobí
-    // fronta, aniž by se na cokoli muselo čekat doopravdy.
-    let first = true;
-    vi.spyOn(Date, 'now').mockImplementation(() => {
-      if (!first) return waitedMs;
-      first = false;
-      return 0;
-    });
-
-    const response = await POST(
-      new Request('http://127.0.0.1/api/generate', {
-        method: 'POST',
-        body: JSON.stringify({ prompt: 'a room that waited too long' }),
-      }),
-    );
-    return { status: response.status, json: (await response.json()) as ResponseBody };
+    // **Až za routou**, aby to byla táž instance modulu, jakou si vzala ona.
+    const slots = await import('../../worldstream/sessions/route');
+    const send = async () => {
+      const response = await POST(
+        new Request('http://127.0.0.1/api/generate', {
+          method: 'POST',
+          body: JSON.stringify({ prompt: CROWD_PROMPT }),
+        }),
+      );
+      return { status: response.status, json: (await response.json()) as ResponseBody };
+    };
+    return { ...slots, send };
   }
 
-  it('požadavek, který prostál celý rozpočet, se odmítne dřív, než sáhne na disk', async () => {
-    const { status, json } = await overBrokenGrammar(20_000);
+  it('požadavek nad strop souběžných generací dostane 503, ne volání modelu', async () => {
+    const { MAX_CONCURRENT_GENERATIONS, acquireSlot, releaseSlot, send } = await loadOnce();
+    for (let taken = 0; taken < MAX_CONCURRENT_GENERATIONS; taken += 1)
+      expect(acquireSlot()).toBe(true);
 
-    expect(status).toBe(503);
-    expect(json.error?.code).toBe('DEADLINE_EXCEEDED');
+    try {
+      const { status, json } = await send();
+      expect(status).toBe(503);
+      expect(json.error?.code).toBe('TOO_MANY_GENERATIONS');
+    } finally {
+      for (let taken = 0; taken < MAX_CONCURRENT_GENERATIONS; taken += 1) releaseSlot();
+    }
   });
 
-  it('čerstvý požadavek brána pustí dál', async () => {
-    // Bez tohohle by prošla i brána, která odmítá všechny — a ta by demo
-    // neudržela naživu, ta by ho vypnula.
-    const { status, json } = await overBrokenGrammar(5);
-
-    expect(status).toBe(503);
-    expect(json.error?.code).toBe('CORPUS_UNREADABLE');
+  it('slot se po odbavení vrátí, takže dveře nezůstanou zavřené', async () => {
+    // Bez tohohle by prošel i strop, který se s každým požadavkem o jedna
+    // sníží — a po čtyřech větách by demo zavřelo samo sebe.
+    const { MAX_CONCURRENT_GENERATIONS, send } = await loadOnce();
+    for (let round = 0; round < MAX_CONCURRENT_GENERATIONS + 2; round += 1) {
+      const { status } = await send();
+      expect(status).toBe(200);
+    }
   });
 });
