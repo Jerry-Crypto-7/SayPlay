@@ -243,11 +243,14 @@ export async function POST(request: Request): Promise<Response> {
       // ochránil" nedá odlišit od „nikdo nepřišel". Text je konstantní
       // schválně: `logRateLimited` klíčuje `(dveře, kód)` a objem nese
       // `(occurrence N)`, takže z náporu nevyroste víc než logaritmus řádků.
+      // **„on this instance" je součást pravdy:** `running` je stav modulu, takže
+      // na Vercelu má vlastní čítač každá instance a globální číslo nedrží nikdo
+      // — to zavře až sdílené úložiště `T29`.
       logRateLimited(
         'worldstream/sessions',
         requestId,
         'TOO_MANY_SESSIONS',
-        `all ${MAX_CONCURRENT_GENERATIONS} paid slots are in flight`,
+        `all ${MAX_CONCURRENT_GENERATIONS} paid slots are in flight on this instance`,
       );
       return fail(requestId, 503, 'TOO_MANY_SESSIONS', 'too many worlds are being built right now');
     }

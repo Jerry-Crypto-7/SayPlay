@@ -1326,7 +1326,13 @@ describe('POST /api/generate pod náporem', () => {
     const refusals = log.filter((line) => line.includes('TOO_MANY_GENERATIONS'));
     expect(refusals, 'odmítnutí náporem neodešlo operátorovi').toHaveLength(1);
     expect(refusals[0]).toContain('[generate]');
-    expect(refusals[0]).toContain(`all ${MAX_CONCURRENT_GENERATIONS} paid slots are in flight`);
+    // **Číslo doslova, ne interpolované.** Se stejnou konstantou na obou
+    // stranách by se strop dal zvednout ze čtyř na čtyřicet a test by zůstal
+    // zelený — log by se pořád shodoval sám se sebou, jen o řád výš. Nález
+    // nezávislé revize 3. 9. 2026. **„on this instance" je součást tvrzení:**
+    // čítač je stav modulu, takže na Vercelu ho každá instance má vlastní.
+    expect(refusals[0]).toContain('all 4 paid slots are in flight on this instance');
+    expect(MAX_CONCURRENT_GENERATIONS, 'strop se pohnul — přepiš i větu v logu').toBe(4);
   });
 
   it('slot se po odbavení vrátí, takže dveře nezůstanou zavřené', async () => {

@@ -31,6 +31,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { UpstreamRequest } from '@/model/prompt';
+import { resetFaultLog } from '@/server/public-faults';
 import type { PendingChange, RefinePlan } from '@/model/worldstream-refine';
 import { clearSessions, openSession, putChange, type StoredSession } from '@/worldstream/sessions';
 
@@ -126,6 +127,10 @@ function worldOf(stored: StoredSession) {
 afterEach(() => {
   clearSessions();
   resetConcurrency();
+  // Počítadlo okna v `public-faults` je stav modulu: bez vynulování by druhý
+  // producent téže dvojice (dveře, kód) byl `occurrence 2`, tedy mimo milník,
+  // a tvrzení „řádek odešel" by mlčky zčervenalo v cizím testu.
+  resetFaultLog();
   // Špionáž na `console.error` (odmítnutí náporem) nesmí přežít do dalšího
   // testu — tichý log by z něj udělal zelenou z jiného důvodu.
   vi.restoreAllMocks();

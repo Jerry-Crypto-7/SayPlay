@@ -212,11 +212,13 @@ export async function createChange(
       // **Odmítnutí musí být vidět v operátorském logu**, stejně jako
       // u zakládání relace: bez řádku se „strop nás ochránil" nedá odlišit od
       // „nikdo nepřišel". Konstantní text, objem nese `(occurrence N)`.
+      // **„on this instance"** ze stejného důvodu jako u sesterských dveří: čítač
+      // je stav modulu, ne nasazení.
       logRateLimited(
         'worldstream/changes',
         requestId,
         'TOO_MANY_CHANGES',
-        `all ${MAX_CONCURRENT_GENERATIONS} paid slots are in flight`,
+        `all ${MAX_CONCURRENT_GENERATIONS} paid slots are in flight on this instance`,
       );
       return fail(
         requestId,

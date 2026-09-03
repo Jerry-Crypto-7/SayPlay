@@ -325,3 +325,16 @@ export function logRateLimited(
   if (!isMilestone(occurrence) && !newCause) return;
   logForOperator(route, requestId, code, `${detail} (occurrence ${occurrence})`);
 }
+
+/**
+ * Jen pro testy: počítadlo okna je stav modulu, tedy sdílené celým souborem.
+ *
+ * Bez tohohle stojí každá aserce „řádek odešel" na tom, že je ten test **první
+ * producent** své dvojice `(dveře, kód)` v souboru — druhý výskyt je až
+ * `occurrence 2`, tedy mimo milník, a `logRateLimited` mlčí. Test přidaný nad
+ * ten stávající by tak shodil test, který nikdo nesáhl. Nález nezávislé revize
+ * 3. 9. 2026; do té doby to držel jen komentář, a komentář není mechanismus.
+ */
+export function resetFaultLog(): void {
+  SEEN_PER_KEY.clear();
+}

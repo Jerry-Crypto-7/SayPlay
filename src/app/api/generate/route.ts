@@ -517,11 +517,15 @@ export async function POST(request: Request): Promise<Response> {
       // téhle brány je na nasazené adrese nepozorovatelné. `logRateLimited`
       // klíčuje `(dveře, kód)` a text je schválně konstantní, takže z něj
       // nápor nevyrobí víc než logaritmus řádků; objem nese `(occurrence N)`.
+      // **„on this instance" tam je schválně:** `running` je stav modulu, takže na
+      // Vercelu má každá instance vlastní čítač a nasazení jich má tolik, kolik
+      // jich zrovna běží. Věta bez té výhrady by operátorovi tvrdila globální
+      // číslo, které nikdo nedrží; sdílený stav je `T29`.
       logRateLimited(
         'generate',
         requestId,
         'TOO_MANY_GENERATIONS',
-        `all ${MAX_CONCURRENT_GENERATIONS} paid slots are in flight`,
+        `all ${MAX_CONCURRENT_GENERATIONS} paid slots are in flight on this instance`,
       );
       return error(
         requestId,

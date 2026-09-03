@@ -47,6 +47,7 @@ vi.mock('../../../../worldstream/sessions', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../worldstream/sessions')>();
   return { ...actual, serverGrammar: vi.fn(actual.serverGrammar) };
 });
+import { resetFaultLog } from '../../../../server/public-faults';
 import { DEFAULT_CAP_USD } from '../../../../server/spend-cap';
 import {
   acquireSlot,
@@ -135,6 +136,10 @@ async function readRaw(response: Response, chunks = 1): Promise<string> {
 afterEach(() => {
   clearSessions();
   resetConcurrency();
+  // Počítadlo okna v `public-faults` je stav modulu: bez vynulování by druhý
+  // producent téže dvojice (dveře, kód) byl `occurrence 2`, tedy mimo milník,
+  // a tvrzení „řádek odešel" by mlčky zčervenalo v cizím testu.
+  resetFaultLog();
   // Špionáž na `console.error` (odmítnutí náporem) nesmí přežít do dalšího
   // testu — tichý log by z něj udělal zelenou z jiného důvodu.
   vi.restoreAllMocks();
