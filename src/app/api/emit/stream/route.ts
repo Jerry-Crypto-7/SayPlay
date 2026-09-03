@@ -89,6 +89,56 @@
  * `requestId` se do rámců `progress` **nepřidává**, ačkoli si o to nález říkal.
  * S tímhle `try/catch` neexistuje stav, kdy klient dostane `progress` a nikdy
  * `result`, takže by to byla změna kontraktu bez následku, který by zavírala.
+ *
+ * ## Proud, který nikdo nezačne číst
+ *
+ * Sentinel z `enqueue` výš zavírá jen ten případ, kdy proud **někdo číst
+ * začal** a pak odešel: `pipeTo` proud errorovalo a další `enqueue` vyhodí.
+ * Existuje ale druhé okno, ve kterém se `enqueue` nikdy nezeptá — a to je celé
+ * ticho, které tenhle odstavec zavírá.
+ *
+ * `pipeToNodeResponse` se vrátí **předčasně**, když je odpověď v okamžiku
+ * napojení už `errored || destroyed`
+ * (`node_modules/next/dist/server/pipe-readable.js:120–124`). `pipeTo` se pak
+ * nezavolá vůbec, proud se nezačne číst, a `enqueue` proto neselže: fronta
+ * jen roste, `close()` projde a `start()` doběhne **bez jediné výjimky**.
+ * Nikam nedorazí nic a nevznikne ani řádek.
+ *
+ * **Naměřeno 3. 9. 2026 nad `next build && next start`, Next 16.3.0**, a měření
+ * rozhodlo mezi „zúžit tvrzení hlavičky" a „zavřít cestu" ve prospěch toho
+ * druhého:
+ *
+ * 1. **`request.signal` v Node routě opravdu drží spojení.** Devět běhů se
+ *    syrovým socketem zničeným 0–30 ms po odeslání požadavku: pokaždé se uvnitř
+ *    `start()` přepnul na `aborted=true`. Vyrábí ho `signalFromNodeResponse()`
+ *    nad **týmž** `res`, který o kus dál kontroluje `pipeToNodeResponse` — takže
+ *    v tom okně, kde ta funkce mlčky odejde, je signál už zrušený.
+ * 2. **V těch devíti bězích se ale nic neztratilo**: `pipeTo` stihlo začít,
+ *    `enqueue` vyhodilo a sentinel zabral. Nové kontrole tam nezbylo co
+ *    opravovat — nezměnila ani jednu nálepku.
+ * 3. **Tiché okno se reprodukuje jednotkově, a je úplně tiché:** požadavek se
+ *    zrušeným signálem, jehož tělo nikdo nečte, dnes vrátí 200, zařadí všech
+ *    osm rámců do fronty, kterou nikdo nevybírá, a nechá **nula řádků**. To je
+ *    stav, kvůli kterému tenhle soubor existuje, jen o jedno okno dál.
+ *
+ * Cena opravy je proto **jedno čtení booleanu na rámec** a jde přes jediný
+ * trychtýř: `write()` je pět zápisů rámců v `start()` v jednom místě. Za to se
+ * ticho vymění za tutéž nálepku `STREAM_CANCELLED`, jakou dostane odchod
+ * klienta jinou cestou — je to táž událost, jen zjištěná dřív.
+ *
+ * ⚠ **Pravidlo „rozděluje je to, co vyhodilo" tím nepadá, a je to ten důvod,
+ * proč kontrola sedí ve `write()` a ne v `catch`.** Signál není stav proudu,
+ * je to stav **spojení**, a ptá se ho **předpoklad zápisu**, ne klasifikátor
+ * poruchy: `catch` pořád soudí výhradně podle toho, jestli přiletěl sentinel.
+ * Řetěz, který spadne po odchodu klienta, vyhodí ze `steps.next()`, tedy mimo
+ * `write()` — a zůstává `STREAM_FAILED`. Přesně to pinuje test „pád řetězu PO
+ * zrušení je pád, ne zrušení", nově i nad požadavkem, který signál doopravdy
+ * nese.
+ *
+ * **Za posledním zápisem se signál nekontroluje a nemá to díru:** mezi
+ * `write('result', …)` a `controller.close()` není `await`, takže se do toho
+ * okna žádné zrušení nemá jak vejít. Kontrola u `close()` by tedy nic
+ * nezavřela a jen by přidala druhé místo, které umí říct „zrušeno".
  */
 
 import { randomUUID } from 'node:crypto';
@@ -197,12 +247,22 @@ export async function POST(request: Request): Promise<Response> {
          * Jediná cesta, kterou z `start()` odchází rámec — a tím i jediné
          * místo, které umí říct „zrušeno".
          *
-         * Bajty se skládají **před** `try`, aby se do sentinelu nedostalo
-         * selhání `JSON.stringify`. To je pád jako každý jiný a nálepku
-         * zrušení si nezaslouží.
+         * Bajty se skládají **před** oběma kontrolami, aby se do sentinelu
+         * nedostalo selhání `JSON.stringify`. To je pád jako každý jiný
+         * a nálepku zrušení si nezaslouží.
+         *
+         * Zrušení se pozná ze **dvou** různých věcí, protože provoz vyrábí dva
+         * různé stavy — viz „Proud, který nikdo nezačne číst" v hlavičce:
+         *
+         * - `request.signal` je zrušený → spojení je pryč a rámec nemá kam jít,
+         *   i kdyby se zařadil. Tohle je jediná cesta, jak se dá poznat proud,
+         *   který se **vůbec nezačal číst**.
+         * - `enqueue` vyhodí → proud je errorovaný, tedy `pipeTo` běželo
+         *   a skončilo.
          */
         const write = (event: string, payload: unknown): void => {
           const bytes = encoder.encode(frame(event, payload));
+          if (request.signal.aborted) throw STREAM_CLOSED;
           try {
             controller.enqueue(bytes);
           }

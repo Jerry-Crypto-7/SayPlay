@@ -27,11 +27,12 @@ interface Collected {
   readonly result: Record<string, unknown> | null;
 }
 
-function request(body: unknown): Request {
+function request(body: unknown, signal?: AbortSignal): Request {
   return new Request('http://127.0.0.1/api/emit/stream', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
+    ...signal ? { signal } : {},
   });
 }
 
@@ -268,6 +269,89 @@ async function leaveMidStream(post: Route, promptId: string): Promise<void> {
   // A pak nechat `start()` doběhnout až do výjimky.
   await new Promise((resolve) => setTimeout(resolve, 20));
 }
+
+/**
+ * Požadavek, jehož tělo **nikdo nezačne číst** — tedy to okno, ve kterém
+ * `pipeToNodeResponse` mlčky odejde, protože odpověď je už zničená
+ * (`node_modules/next/dist/server/pipe-readable.js:120–124`).
+ *
+ * **Nečíst tělo je celá fixtura, ne úspora řádku.** Kdyby ho test četl,
+ * zrušení by proud errorovalo a vyhodilo by `enqueue` — tedy ten *druhý*
+ * sentinel, který je zavřený od 1. 9. 2026. Tenhle test měří přesně ten stav,
+ * ve kterém `enqueue` nikdy neselže, a bez kontroly signálu proto neexistuje
+ * ani rámec, ani řádek.
+ *
+ * Čeká se přes časovač, protože `start()` mezi rámci parkuje na `flush()`,
+ * a to je taky časovač.
+ */
+async function neverRead(post: Route, promptId: string, signal: AbortSignal): Promise<void> {
+  await post(request({ promptId }, signal));
+  await new Promise((resolve) => setTimeout(resolve, 40));
+}
+
+/**
+ * Totéž, ale spojení vydrží přes hlavičky a **první** rámec a zmizí až potom.
+ *
+ * ⚠ **Zrušit se musí až po `await post(...)`, a je to nosné, ne kosmetické.**
+ * První podoba téhle fixtury rušila signál souběžně s během routy, takže
+ * `start()` viděl zrušení ještě před rámcem `requested` — a všechny tři testy
+ * pak měřily jedno a totéž okno. Po `await` je `start()` deterministicky
+ * zaparkovaný na prvním `flush()`, tedy na časovači, protože mikroúlohy se
+ * vyprázdní dřív než kterýkoli časovač.
+ */
+async function goneMidStream(post: Route, promptId: string, gone: AbortController): Promise<void> {
+  await post(request({ promptId }, gone.signal));
+  gone.abort();
+  await new Promise((resolve) => setTimeout(resolve, 40));
+}
+
+describe('proud, který nikdo nezačne číst', () => {
+  afterEach(() => {
+    vi.doUnmock('../chain');
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it('spojení pryč ještě před prvním rámcem nechá operátorovi řádek', async () => {
+    // `signalFromNodeResponse()` vrací **rovnou zrušený** signál, když je
+    // odpověď `errored || destroyed` už v okamžiku, kdy požadavek dorazí do
+    // routy. Zvenčí je to 200 s hlavičkami proudu a naprosté ticho za nimi.
+    const { post, log } = await loadStream();
+    await neverRead(post, 'C01', AbortSignal.abort());
+
+    expect(log).toHaveLength(1);
+    expect(log[0]).toContain('STREAM_CANCELLED');
+    expect(log[0]).not.toContain('STREAM_FAILED');
+  });
+
+  it('spojení pryč uprostřed emise nechá řádek i tehdy, když enqueue nikdy neselže', async () => {
+    // Druhá půlka téhož okna, a **jediná, kde je zápis rámce už za sebou**:
+    // spojení vydrží přes hlavičky i přes `requested` a zmizí, dokud `start()`
+    // čeká na první `flush()`. Proud se pořád nezačal číst, takže `enqueue`
+    // projde a starý sentinel se nemá čeho chytit.
+    const { post, log } = await loadStream();
+    await goneMidStream(post, 'C01', new AbortController());
+
+    expect(log).toHaveLength(1);
+    expect(log[0]).toContain('STREAM_CANCELLED');
+  });
+
+  it('pád řetězu po zrušeném spojení je pořád pád, ne zrušení', async () => {
+    // **Tohle je ta regrese, kterou nová kontrola mohla vyrobit**, a proto má
+    // vlastní test nad požadavkem, který signál doopravdy nese: `catch` musí
+    // dál soudit podle toho, **co vyhodilo**, ne podle toho, v jakém stavu je
+    // spojení. Řetěz vyhodí ze `steps.next()`, tedy mimo `write()` — nálepka
+    // proto zůstává `STREAM_FAILED`, i když je signál v tu chvíli zrušený.
+    const { post, log, breakChain } = await loadStream();
+    breakChain();
+    await goneMidStream(post, 'C01', new AbortController());
+
+    expect(log).toHaveLength(1);
+    expect(log[0]).toContain('STREAM_FAILED');
+    expect(log[0]).not.toContain('STREAM_CANCELLED');
+    expect(log[0]).toContain('the chain came apart (1)');
+  });
+});
 
 describe('pád uvnitř proudu', () => {
   afterEach(() => {
