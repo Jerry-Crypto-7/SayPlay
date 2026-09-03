@@ -24,7 +24,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { killState, killStateFrom, KILL_SWITCHES } from '../kill-switch';
 import { readControlFile } from '../control-file';
-import { resetProcessSpendCap, spendCapFromEnv } from '../spend-cap';
+import { DEFAULT_CAP_USD, resetProcessSpendCap, spendCapFromEnv } from '../spend-cap';
 
 const temporary: string[] = [];
 
@@ -194,6 +194,20 @@ describe('ovládací soubor je jeden, ne dva', () => {
     // o souboru, který v tomhle testu neexistuje.
     expect(spendCapFromEnv(variables).snapshot().capUsd).toBe(42);
     expect(killState(variables).refine).toBe(true);
+  });
+
+  // P15 T30-offonlyfile. Hlavička nahoře operátorovi slibuje, že do souboru
+  // napíše, co má stát. Do 3. 9. 2026 mu tenhle soubor zastavil i všechno
+  // ostatní, protože strop v něm neviděl svoje klíče a odmítal.
+  it('soubor s pouhým `off` vypne jednu vrstvu a strop nechá na výchozích hodnotách', async () => {
+    const variables = { WORLDSMITH_CONTROL_FILE: controlFile(JSON.stringify({ off: ['refine'] })) };
+
+    expect(killState(variables).refine).toBe(true);
+    expect(killState(variables).sessions, 'vypnul se i vypínač, o kterém soubor mlčí').toBe(false);
+
+    const cap = spendCapFromEnv(variables);
+    expect(cap.snapshot().capUsd).toBe(DEFAULT_CAP_USD);
+    expect((await cap.reserve(0.01)).ok, 'vypnutí refine zastavilo zakládání světů').toBe(true);
   });
 
   it('klíče se navzájem nepletou: strop ignoruje `off`, vypínače ignorují `capUsd`', () => {

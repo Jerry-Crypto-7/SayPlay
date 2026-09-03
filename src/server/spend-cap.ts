@@ -175,15 +175,42 @@ export interface Refused {
 
 export type Reservation = Reserved | Refused;
 
-function parseControl(parsed: Record<string, unknown>): CapControl | null {
-  const { enabled, capUsd } = parsed as { enabled?: unknown; capUsd?: unknown };
-  if (typeof enabled !== 'boolean') return null;
-  if (typeof capUsd !== 'number' || !Number.isFinite(capUsd) || capUsd < 0) return null;
-  const { callCap } = parsed as { callCap?: unknown };
-  if (callCap === undefined) return { enabled, capUsd };
+/**
+ * Přečte strop z **validního** ovládacího souboru. `null` je rozbitý vypínač.
+ *
+ * **Chybějící klíč rozbitý vypínač není** — a do 3. 9. 2026 byl. Soubor má od
+ * P15 T30 dvě půlky: strop (`enabled`, `capUsd`, `callCap`) a kill switche
+ * (`off`). Operátor, který za incidentu napíše `{"off":["refine"]}`, o stropu
+ * neříká nic, jenže tahle funkce v takovém souboru neviděla `enabled` ani
+ * `capUsd` a vracela `null`. Naměřeno: `refine` se sice vyplo, ale současně
+ * `reserve()` začalo vracet `CONTROL_UNREADABLE`, takže vypnutí **druhé věty**
+ * zastavilo i zakládání každého nového světa. Přesný opak povelu, a hlavička
+ * `kill-switch.ts` k tomu operátora sama naváděla.
+ *
+ * Chybějící klíč proto znamená „platí výchozí hodnota volajícího" — tedy to,
+ * co by platilo bez souboru. **Vyplněný nesmysl znamená dál zavřené selhání:**
+ * `{"capUsd":"pět"}` je pokus stropem hnout a ten se nepovedl, a to je jiný
+ * stav než mlčení.
+ */
+function parseControl(parsed: Record<string, unknown>, defaults: CapControl): CapControl | null {
+  const { enabled, capUsd, callCap } = parsed as {
+    enabled?: unknown;
+    capUsd?: unknown;
+    callCap?: unknown;
+  };
+  if (enabled !== undefined && typeof enabled !== 'boolean') return null;
+  if (capUsd !== undefined && (typeof capUsd !== 'number' || !Number.isFinite(capUsd) || capUsd < 0))
+    return null;
   // Vyplněný, ale nesmyslný strop je rozbitý vypínač, ne „bez stropu".
-  if (typeof callCap !== 'number' || !Number.isInteger(callCap) || callCap < 0) return null;
-  return { enabled, capUsd, callCap };
+  if (
+    callCap !== undefined &&
+    (typeof callCap !== 'number' || !Number.isInteger(callCap) || callCap < 0)
+  )
+    return null;
+
+  const resolvedCalls = callCap ?? defaults.callCap;
+  const resolved = { enabled: enabled ?? defaults.enabled, capUsd: capUsd ?? defaults.capUsd };
+  return resolvedCalls === undefined ? resolved : { ...resolved, callCap: resolvedCalls };
 }
 
 export class SpendCap {
@@ -243,7 +270,7 @@ export class SpendCap {
     const read = readControlFile(this.#controlPath);
     if (read.kind === 'absent') return this.#defaults;
     if (read.kind === 'broken') return null;
-    return parseControl(read.value);
+    return parseControl(read.value, this.#defaults);
   }
 
   snapshot(): CapSnapshot {

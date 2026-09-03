@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { killState } from '../kill-switch';
 import { mockBranch } from '../mock';
 import type { GenerationCall } from '../pipeline';
 
@@ -183,13 +184,59 @@ describe('vypínač mění chování za běhu, bez nové instance', () => {
   });
 
   it('vadný ovládací soubor odmítá, nepokračuje bez stropu', async () => {
-    for (const broken of ['{ not json', '{}', '{"enabled":"ano","capUsd":1}', '{"enabled":true,"capUsd":-1}']) {
+    for (const broken of [
+      '{ not json',
+      '{"enabled":"ano","capUsd":1}',
+      '{"enabled":true,"capUsd":-1}',
+      // Vyplněný nesmysl je pokus stropem hnout, který se nepovedl — na rozdíl
+      // od mlčení níž. Obojí je „validní JSON objekt", a právě proto je to tady.
+      '{"capUsd":"pět"}',
+      '{"enabled":1,"off":["refine"]}',
+    ]) {
       const cap = new SpendCap({ enabled: true, capUsd: 100 }, controlFile(broken));
       const refused = await cap.reserve(0.01);
-      expect(refused.ok).toBe(false);
+      expect(refused.ok, `${broken} prošlo`).toBe(false);
       if (refused.ok) throw new Error('unreachable');
       expect(refused.reason).toBe('CONTROL_UNREADABLE');
     }
+  });
+
+  // P15 T30-offonlyfile. Soubor, kterým se vypíná jedna vrstva, o stropu mlčí —
+  // a do 3. 9. 2026 tím zastavil celý provoz.
+  describe('soubor, který o stropu mlčí, platí výchozí hodnoty', () => {
+    it('`{"off":["refine"]}` nechá zakládání světů běžet na výchozím stropu', async () => {
+      const path = controlFile(JSON.stringify({ off: ['refine'] }));
+      const cap = new SpendCap({ enabled: true, capUsd: 7, callCap: 5 }, path);
+
+      const reservation = await cap.reserve(0.01);
+      expect(reservation.ok, 'vypnutí refine zastavilo i strop').toBe(true);
+      expect(cap.snapshot().capUsd).toBe(7);
+      expect(cap.snapshot().callCap).toBe(5);
+      // A vypínač, kvůli kterému ten soubor vznikl, pořád platí.
+      expect(killState({ WORLDSMITH_CONTROL_FILE: path }).refine).toBe(true);
+    });
+
+    it('prázdný objekt je mlčení, ne rozbitý vypínač', async () => {
+      const cap = new SpendCap({ enabled: true, capUsd: 3 }, controlFile('{}'));
+      expect((await cap.reserve(0.01)).ok).toBe(true);
+      expect(cap.snapshot().capUsd).toBe(3);
+    });
+
+    it('chybí jen jedna půlka: `capUsd` platí ze souboru, `enabled` z výchozích', async () => {
+      const path = controlFile(JSON.stringify({ capUsd: 0.005, off: ['refine'] }));
+      const cap = new SpendCap({ enabled: true, capUsd: 100 }, path);
+
+      const refused = await cap.reserve(0.01);
+      expect(refused.ok, 'strop ze souboru se neuplatnil').toBe(false);
+      if (refused.ok) throw new Error('unreachable');
+      expect(refused.reason).toBe('CAP_EXHAUSTED');
+    });
+
+    it('vypnutý výchozí strop se souborem o `off` nezapne', async () => {
+      const path = controlFile(JSON.stringify({ off: ['upstream'] }));
+      const cap = new SpendCap({ enabled: false, capUsd: 0 }, path);
+      expect((await cap.reserve(100)).ok, 'mlčení souboru zapnulo vypnutý strop').toBe(true);
+    });
   });
 });
 
@@ -324,6 +371,21 @@ describe('strop na počet volání drží i tehdy, když je ceník opsaný špat
     const cap = new SpendCap({ enabled: true, capUsd: 1 }, path);
     expect((await cap.reserve(0.001)).ok).toBe(true);
     expect(cap.snapshot().callCap).toBe(DEFAULT_CALL_CAP);
+  });
+
+  // Druhá strana téhož: soubor, který počet **vyplní**, přebíjí výchozí hodnotu.
+  // Bez téhle aserce projde i verze, která soubor přečte a pak ho zahodí —
+  // naměřeno mutací 3. 9. 2026, přežila pátý mutant `T30-offonlyfile`.
+  it('počet ze souboru přebíjí výchozí hodnotu, a platí hned', async () => {
+    const path = controlFile(JSON.stringify({ enabled: true, capUsd: 1000, callCap: 1 }));
+    const cap = new SpendCap({ enabled: true, capUsd: 1000, callCap: 9 }, path);
+
+    expect(cap.snapshot().callCap).toBe(1);
+    expect((await cap.reserve(0.001)).ok).toBe(true);
+    const refused = await cap.reserve(0.001);
+    expect(refused.ok, 'počet ze souboru se neuplatnil').toBe(false);
+    if (refused.ok) throw new Error('unreachable');
+    expect(refused.reason).toBe('CALL_CAP_EXHAUSTED');
   });
 });
 
