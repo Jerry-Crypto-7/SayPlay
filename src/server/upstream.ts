@@ -341,33 +341,61 @@ function usageOf(payload: unknown): Usage | null {
   // přes `costUsd()` → `release()`, takže by změna nekoupila nic a jen by
   // zahodila jediné číslo, které o té odpovědi ven jde.
   if (!(usage.input_tokens >= 0) || !(usage.output_tokens >= 0)) return null;
+  // **Dvojitá nula je nečitelná účtenka, ne volání zdarma — a platí to na
+  // všechny tři návraty `generate()`, ne jen na ty dva s textem.** Rozhodnuto
+  // 3. 9. 2026, rozpad hned pod touhle funkcí v „Rovnost na (0,0)".
+  if (usage.input_tokens === 0 && usage.output_tokens === 0) return null;
 
   return { inputTokens: usage.input_tokens, outputTokens: usage.output_tokens };
 }
 
 /**
- * Účtenka **úspěšné** odpovědi. Dvojitá nula je na ní nečitelná účtenka, ne
- * volání zadarmo.
+ * ## Rovnost na (0, 0) bydlí v `usageOf()`, ne u textových návratů
  *
- * `null`, `NaN` i záporná čísla už rezervaci účtují; nula je oproti nim
- * *známá* hodnota, projde každou kontrolou a `costUsd()` z ní vyjde přesně 0.
- * `settle(0)` pak dolarovým stropem nehne vůbec a placené volání je zadarmo —
- * zbývá jen počítadlo volání, které se na serverless resetuje s chladným startem.
+ * ⚠ **Tohle je rozhodnutý spor, ne aktuální stav — dvě nezávislé revize
+ * 1. 9. 2026 si přímo protiřečily a obě měly pravdu o svém směru.** Zapsané je
+ * to proto, aby se pravidlo nestěhovalo potřetí.
  *
- * Odpověď, na kterou se tohle použije, **nese text**: nula spálených výstupních
- * tokenů k němu neexistuje.
+ * **Proti přesunu** (revize nad `4a8952d`): dokud rovnost bydlela nahoře,
+ * odpověď 200 s prázdným `content` a vynulovanou spotřebou zaplatila **celou
+ * rezervaci** (0,2195 USD proti 0,00003 USD u téže vady s účtenkou `{1,1}`),
+ * takže bránou, kterou nikdo nehlídá, jde strop 5 USD vyčerpat asi
+ * **23 odpověďmi** bez jediného dolaru skutečné spotřeby — a nasazené demo pak
+ * každému dalšímu porotci odpoví 429.
  *
- * ⚠ **A právě proto to nesmí platit na celou funkci** — nález nezávislé revize
- * 1. 9. 2026, který opravuje tentýž den starou vadu. `usageOf()` se čte
- * **před** kontrolou textového bloku, takže dokud tohle pravidlo bydlelo uvnitř
- * ní, chytalo i `MALFORMED_RESPONSE`. Naměřeno: odpověď 200 s prázdným
- * `content` a vynulovanou spotřebou účtovala **celou rezervaci** (0,2195 USD
- * proti 0,00003 USD u téže vady s účtenkou `{1,1}`), takže bránou, kterou
- * nikdo nehlídá, se dá strop 5 USD vyčerpat asi 23 odpověďmi bez jediného
- * dolaru skutečné spotřeby — a nasazené demo pak každému dalšímu porotci
- * odpoví 429. Odmítnutá odpověď se proto účtuje dál podle `BILLED_ON_FAILURE`.
+ * **Pro přesun** (kontrolní revize téhož dne): ten argument **nerozlišuje ty
+ * dvě podoby**, protože tutéž rezervaci účtuje odpověď bez pole `usage`
+ * **už dnes** — `BILLED_ON_FAILURE.MALFORMED_RESPONSE` je `'estimate'`
+ * (`./pipeline.ts:119–127`, strháváno na `./pipeline.ts:244–246`). Vyčerpat
+ * strop tou branou tedy jde tak jako tak, a **levněji**: stačí `usage`
+ * vynechat. Co zůstává, je jediná věc — **sleva za otrávené číslo**: `{0,0}`
+ * na návratu „odpověď nenese textový blok" se účtovalo 0,00000000 USD proti
+ * rezervaci 0,2585 USD, tedy asi **8600× levněji než neposlat účtenku vůbec**.
  *
- * ## Rovnost na (0, 0) byla bod, ne mez — proto ta druhá půlka
+ * **Vybraná strana je ta přísná, a rozhodl o tom rozdíl v pojistkách.**
+ * Podúčtování nemá druhou obranu: `settle()` dostane poctivě vypadající nulu,
+ * strop se nehne a nikdo se nic nedozví. Vyčerpání stropu ji má, je zapsaná
+ * a je to počítadlo volání (`T9-capcoldstart`). Levnější cesta k témuž
+ * vyčerpání navíc zůstává otevřená, takže se tímhle pravidlem nic nového
+ * neotevírá — jen se zavírá jediná odpověď, která je dnes levnější než mlčet.
+ *
+ * **Námitka první revize tím nepadá a nesmí se zamlčet:** nepoctivý
+ * poskytovatel dolarový strop opravdu vyčerpá a demo pak odmítá. Odpověď na to
+ * je počítadlo volání, ne sleva za nečitelnou účtenku.
+ *
+ * **Hranice zdola se nepřesouvá a nemá kam:** odvozuje se z délky textu
+ * (`FLOOR_CHARS_PER_TOKEN`), a na návratu bez textového bloku žádný text není.
+ * Zůstává proto v `readableUsage()` níž.
+ */
+
+/**
+ * **Hranice zdola** pro odpověď, která nese text.
+ *
+ * Dvojitá nula sem už nepatří — od 3. 9. 2026 bydlí o patro výš, v `usageOf()`,
+ * a proč, je v bloku nad touhle funkcí. Zbývá to, co se z textu odvodit dá
+ * a bez textu nedává smysl.
+ *
+ * ## Hranice byla druhá půlka téhož, protože rovnost byla bod, ne mez
  *
  * Dvojitá nula sama je jen jediný zakázaný bod v celém prostoru účtenek a
  * **poskytovatel nebo brána, která podhlásí o jeden token, ji obejde celou**:
@@ -428,9 +456,10 @@ function usageOf(payload: unknown): Usage | null {
  */
 function readableUsage(usage: Usage | null, text: string, maxOutputTokens: number): Usage | null {
   if (usage === null) return null;
-  // Pořadí je podstatné: dvojitá nula je nečitelná účtenka a musí spadnout na
-  // rezervaci, ne na hranici, která je o dva řády levnější.
-  if (usage.inputTokens === 0 && usage.outputTokens === 0) return null;
+  // Dvojitá nula sem už nedojde — od 3. 9. 2026 ji na `null` sráží `usageOf()`,
+  // aby to platilo i na návratu bez textového bloku. Zdejší podmínka by od té
+  // chvíle byla nedosažitelná, takže tu není; pořadí proti hranici níž drží
+  // to, že `usageOf()` běží dřív.
   // Delší text, než na kolik se rezervovalo, znamená poskytovatele, který
   // ignoroval `max_tokens`. Hranice z něj nesmí vyrůst nad výstupní půlku
   // rezervace — jinak se strhne víc, než se na to volání drželo.

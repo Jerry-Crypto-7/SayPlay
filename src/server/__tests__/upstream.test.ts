@@ -79,9 +79,15 @@ function textBlockResponse(text: string, usage: { input_tokens: number; output_t
   });
 }
 
-/** Odpověď 200, která projde jako JSON, ale nenese žádný textový blok. */
-function contentlessResponse(usage: { input_tokens: number; output_tokens: number }) {
-  return new Response(JSON.stringify({ content: [], usage }), {
+/**
+ * Odpověď 200, která projde jako JSON, ale nenese žádný textový blok.
+ *
+ * `usage` je volitelná schválně: jediné, co u tohohle návratu jde poměřit, je
+ * **otrávená účtenka proti žádné účtence**, a bez druhé půlky to srovnání nemá
+ * s čím.
+ */
+function contentlessResponse(usage?: { input_tokens: number; output_tokens: number }) {
+  return new Response(JSON.stringify({ content: [], ...usage ? { usage } : {} }), {
     status: 200,
     headers: { 'content-type': 'application/json' },
   });
@@ -280,26 +286,36 @@ describe('3. neznámá cena se neúčtuje nulou', () => {
     if (result.outcome === 'GENERATED') expect(result.usage).toEqual({ inputTokens: 0, outputTokens: 0 });
   });
 
-  it('odmítnutá odpověď se neúčtuje rezervací jen proto, že nese nuly', async () => {
-    const config = liveConfig();
-    const cap = openCap();
+  it('otrávená účtenka bez textového bloku nesmí být levnější než žádná účtenka', async () => {
+    // **Rozhodnutý spor, ne aktuální stav** — rozpad je v docstringu nad
+    // `readableUsage()` v `../upstream.ts`. Do 3. 9. 2026 tenhle test tvrdil
+    // opak: že dvojitá nula na návratu bez textu strop nechá stát. Naměřeno,
+    // že to je asi **8600× levnější než neposlat účtenku vůbec** — a levnější
+    // cesta k témuž vyčerpání stropu (prostě `usage` vynechat) zůstává
+    // otevřená tak jako tak, takže ta sleva nekupovala nic.
+    //
+    // Soudí se to **srovnáním obou odpovědí v jednom testu**, ne připíchnutým
+    // dolarem: absolutní číslo se hne s každou změnou ceníku, kdežto tvrzení
+    // „otrávit účtenku se nesmí vyplatit" má platit vždycky.
+    const spend = async (usage?: { input_tokens: number; output_tokens: number }) => {
+      const cap = openCap();
+      const result = await runPipeline(PROMPT, {
+        branch: upstreamBranch(liveConfig(), recordingFetch(cap, () => contentlessResponse(usage)).fetchImpl),
+        cap,
+        grammar: GRAMMAR,
+      });
+      expect(result.outcome).toBe('FAILED');
+      expect(result.outcome === 'FAILED' && result.reason).toBe('MALFORMED_RESPONSE');
+      return cap.snapshot().spentUsd;
+    };
 
-    // Pravidlo dvojité nuly platí jen pro **úspěšnou** odpověď. Kdyby platilo
-    // i tady, dala by se rezervace vyčerpat odpověďmi, které nic nestály:
-    // naměřeno 0,2195 USD na jednu, tedy strop 5 USD asi za 23 odpovědí.
-    const result = await runPipeline(PROMPT, {
-      branch: upstreamBranch(
-        config,
-        recordingFetch(cap, () => contentlessResponse({ input_tokens: 0, output_tokens: 0 })).fetchImpl,
-      ),
-      cap,
-      grammar: GRAMMAR,
-    });
+    const poisoned = await spend({ input_tokens: 0, output_tokens: 0 });
+    const silent = await spend();
 
-    expect(result.outcome).toBe('FAILED');
-    expect(result.outcome === 'FAILED' && result.reason).toBe('MALFORMED_RESPONSE');
-    expect(cap.snapshot().spentUsd).toBe(0);
-    expect(cap.snapshot().reservedUsd).toBe(0);
+    // Nejdřív že se vůbec něco strhlo — bez tohohle řádku projde tvrzení níž
+    // i pro dvě nuly, tedy přesně pro tu vadu, kterou zavírá.
+    expect(silent).toBeGreaterThan(0);
+    expect(poisoned).toBe(silent);
   });
 
   it('vadný JSON v textovém bloku je pořád odpověď, která text nesla', async () => {
