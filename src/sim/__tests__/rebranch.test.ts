@@ -1,3 +1,6 @@
+import { readFileSync, readdirSync } from 'node:fs';
+import { basename, resolve } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { createRuntime, run, step, type Runtime, type WorldDocRuntime } from '../interpreter';
@@ -382,5 +385,76 @@ describe('co se z prostředka větvit nedá', () => {
     if (result.verdict !== 'REJECTED') return;
     expect(result.reason).toBe('SHAPE_CHANGED');
     expect(result.detail).toContain('slot count');
+  });
+
+  /**
+   * **Zamítnutá větev nesmí hnout světem** (P15 T24).
+   *
+   * Od chvíle, kdy osu drží produkt a ne technický panel, je zamítnutí běžný
+   * výsledek porotcovy druhé věty. Do T24 se runtime přetáčel **první** a
+   * kontrola tvaru běžela až po něm, takže odmítnutá změna nechala svět stát
+   * o sto šedesát tiků v minulosti — pohyb, o který nikdo nepožádal a který
+   * žádné hlášení nedoprovodilo.
+   *
+   * Měří se tik **i** hash: samotný tik by prošel i tehdy, kdyby se stav cestou
+   * přepsal a jen číslo tiku se vrátilo.
+   */
+  it('nechá svět tam, kde stál, když změnu odmítne', () => {
+    const base = oscillator();
+    const far = runOnTimeline(base, HORIZON);
+    const before = { tick: far.runtime.tick, hash: hashHex(far.runtime.state) };
+
+    const moved = structuredClone(oscillator()) as {
+      ir: { slots: { initial: number }[] };
+    } & WorldDocRuntime;
+    moved.ir.slots[0].initial = 5;
+
+    expect(rebranchAt(far.timeline, far.runtime, BRANCH, moved).verdict).toBe('REJECTED');
+    expect(far.runtime.tick).toBe(before.tick);
+    expect(hashHex(far.runtime.state)).toBe(before.hash);
+
+    // Protipól: legální změna se přetočit **musí**, jinak by tenhle test šel
+    // splnit tím, že rebranch přestane přetáčet úplně.
+    const accepted = rebranchAt(far.timeline, far.runtime, BRANCH, withoutFirstRule(base));
+    expect(accepted.verdict).toBe('REBRANCHED');
+    expect(far.runtime.tick).toBe(BRANCH);
+  });
+});
+
+/**
+ * **Nástěnný čas na replay cestě** (`CLAUDE.md`, Determinismus).
+ *
+ * `Date.now()`, `performance.now()` a skutečný `requestAnimationFrame` dělají
+ * z běhu něco, co se podruhé odehraje jinak — a vada se neprojeví výjimkou,
+ * projeví se tím, že se hash v prohlížeči rozejde s hashem v Node. Tohle je
+ * proto lexikální zeď, ne behaviorální test: chytá **zápis**, ne jeho následek,
+ * protože následek je vidět až na stroji s jinou rychlostí.
+ *
+ * Rozsah je celý `src/sim` plus osa, která ho ovládá. Panel v Inspectu
+ * (`src/components/pipeline/Timeline.tsx`) sem schválně nepatří — `T38` ho
+ * teprve přestavuje a přibrat ho by znamenalo zeď, která zčervená kvůli cizí
+ * úloze.
+ */
+describe('replay cesta nesmí sáhnout na nástěnný čas', () => {
+  const GUARDED = [
+    ...readdirSync(resolve(import.meta.dirname, '..'))
+      .filter((name) => name.endsWith('.ts'))
+      .map((name) => resolve(import.meta.dirname, '..', name)),
+    resolve(import.meta.dirname, '../../components/worldstream/TimeAxis.tsx'),
+  ];
+
+  /** Zdroj bez komentářů — jinak by zeď spadla na větě, která ji vysvětluje. */
+  function code(path: string): string {
+    return readFileSync(path, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/.*$/gm, '');
+  }
+
+  it('nemá kde vzít wall-clock', () => {
+    expect(GUARDED.length).toBeGreaterThan(8);
+    const guilty = GUARDED.filter((path) =>
+      /\bDate\.now\b|\bperformance\.now\b|\brequestAnimationFrame\b/.test(code(path)),
+    ).map((path) => basename(path));
+    expect(guilty).toEqual([]);
   });
 });

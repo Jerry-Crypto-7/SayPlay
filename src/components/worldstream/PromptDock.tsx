@@ -26,10 +26,17 @@
 import type { ReactNode } from 'react';
 
 export default function PromptDock({
+  axis = null,
   status,
   change = null,
   children,
 }: {
+  /**
+   * Osa materializace a času (`T24`). V DOM hned za polem, tedy opticky **těsně
+   * nad ním** — design book §15.3 ji kreslí mezi stavovou větu a vstup, protože
+   * je to ovladač, a ovladače patří k ruce, ne k sdělení.
+   */
+  readonly axis?: ReactNode;
   /** Stavová věta. Vykreslí se nad polem, ale v DOM stojí za ním. */
   readonly status: ReactNode;
   /**
@@ -43,6 +50,7 @@ export default function PromptDock({
   return (
     <div className="ws-dock" data-testid="prompt-dock">
       {children}
+      {axis}
       {status}
       {change}
     </div>

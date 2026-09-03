@@ -51,6 +51,7 @@ export default function WorldstreamApp({
   stage,
   prompt,
   status,
+  axis = null,
   change = null,
   label = null,
   empty = null,
@@ -66,6 +67,12 @@ export default function WorldstreamApp({
   readonly prompt: ReactNode;
   /** Jedna stavová věta nad vstupem. */
   readonly status: ReactNode;
+  /**
+   * Osa materializace a času (`T24`). Bydlí v doku, ne ve vlastní buňce: design
+   * book §15.3 ji kreslí jako jednu stopu mezi větou a vstupem, a je to
+   * **jeden prvek se dvěma funkcemi**, ne dva ovladače nad sebou.
+   */
+  readonly axis?: ReactNode;
   /**
    * Rozsah druhé věty (`T23`). Stojí v doku **za** stavovou větou, takže ho
    * `column-reverse` posadí nad ni — nejvýš na obrazovce je to, o čem se
@@ -96,7 +103,7 @@ export default function WorldstreamApp({
   return (
     <main data-testid="worldstream" style={SHELL}>
       <div className="ws-shell" data-inspecting={inspecting}>
-        <PromptDock status={status} change={change}>
+        <PromptDock axis={axis} status={status} change={change}>
           {prompt}
         </PromptDock>
         {controls === null ? null : <div className="ws-controls">{controls}</div>}
