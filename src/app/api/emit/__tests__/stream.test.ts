@@ -82,6 +82,11 @@ describe('kanál s průběhem', () => {
     const response = await stream(request({ promptId: 'C01' }));
     const raw = await new Response(response.body).text();
     const steps = [...raw.matchAll(/"step":(\d+)/g)].map((match) => Number(match[1]));
+    // **Nejdřív že vůbec nějaké jsou.** Bez tohohle řádku obě strany aserce níž
+    // vycházejí z `steps`, takže proud, který nepošle jediný `progress`, dá
+    // `[] === []` a test zůstane zelený — přesně u regrese, která ze smyčky
+    // vyhodí `send()`. Nález nezávislé revize 3. 9. 2026.
+    expect(steps.length).toBeGreaterThan(3);
     expect(steps).toEqual(steps.map((_, index) => index + 1));
   });
 
@@ -172,9 +177,10 @@ async function loadStream(): Promise<{
   readonly log: string[];
   readonly breakChain: () => void;
   readonly silenceChain: () => void;
+  readonly poisonChain: () => void;
 }> {
   vi.resetModules();
-  let mode: 'healthy' | 'broken' | 'silent' = 'healthy';
+  let mode: 'healthy' | 'broken' | 'silent' | 'poisoned' = 'healthy';
   vi.doMock('../chain', async (importOriginal) => {
     const actual = await importOriginal<typeof import('../chain')>();
     let calls = 0;
@@ -185,6 +191,10 @@ async function loadStream(): Promise<{
         // Řetěz, který **nevydá jedinou fázi** a rovnou vrátí verdikt. Slouží
         // jedinému účelu: posunout zrušení až na `enqueue` rámce `result`.
         if (mode === 'silent') return { kind: 'unknown-prompt' };
+        // Verdikt, který se nedá serializovat: `BigInt` položí `JSON.stringify`.
+        // Slouží k rozlišení „rámec se nedal zapsat" od „rámec se nedal složit".
+        // Prochází poslední větví, tedy `write('result', { …outcome.body })`.
+        if (mode === 'poisoned') return { body: { poison: 1n } } as unknown as EmissionOutcome;
         calls += 1;
         throw new Error(`the chain came apart (${calls})`);
       },
@@ -205,6 +215,9 @@ async function loadStream(): Promise<{
     },
     silenceChain: () => {
       mode = 'silent';
+    },
+    poisonChain: () => {
+      mode = 'poisoned';
     },
   };
 }
@@ -325,6 +338,22 @@ describe('pád uvnitř proudu', () => {
     expect(log).toHaveLength(1);
     expect(log[0]).toContain('STREAM_CANCELLED');
     expect(log[0]).not.toContain('STREAM_FAILED');
+  });
+
+  it('rámec, který se nedá složit, je pád — ne zrušení', async () => {
+    // **Nález nezávislé revize 3. 9. 2026.** Sentinel má znamenat „proud už
+    // nikdo nedrží", a to je jediná věc, kterou umí vyrobit `enqueue`. Kdyby
+    // se bajty skládaly **uvnitř** téhož `try`, spadlo by do sentinelu
+    // i selhání `JSON.stringify` — a operátor by na skutečnou vadu
+    // serializace dostal řádek „klient odešel". Ta hranice byla do teď jen
+    // v komentáři.
+    const { post, log, poisonChain } = await loadStream();
+    poisonChain();
+    await collect({ promptId: 'C01' }, post);
+
+    expect(log).toHaveLength(1);
+    expect(log[0]).toContain('STREAM_FAILED');
+    expect(log[0]).not.toContain('STREAM_CANCELLED');
   });
 
   it('odchod klienta nespotřebuje výskyt, na kterém by se ohlásil skutečný pád', async () => {
