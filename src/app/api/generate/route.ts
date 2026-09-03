@@ -61,7 +61,12 @@ import {
 import { killState } from '../../../server/kill-switch';
 import { DEFAULT_CAP_USD, processSpendCap, type RefusalReason } from '../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../server/upstream';
-import { acquireSlot, MAX_CONCURRENT_GENERATIONS, releaseSlot } from '../worldstream/sessions/route';
+import {
+  acquireSlot,
+  MAX_CONCURRENT_GENERATIONS,
+  MAX_WORLD_GENERATIONS,
+  releaseSlot,
+} from '../worldstream/sessions/route';
 
 /** Strop je stav procesu, ne požadavku — jedna instance na celý běh serveru. */
 const CAP = processSpendCap();
@@ -510,6 +515,12 @@ export async function POST(request: Request): Promise<Response> {
      * k témuž modelu a k témuž účtu, takže tři oddělené stropy po čtyřech by
      * nebyly strop čtyř, jen návod, jak se střídat.
      *
+     * **Tyhle dveře jsou `'world'`, ne `'refine'`.** Drží slot po celý
+     * `runPipeline`, tedy dvě až čtyři volání modelu uvnitř jednoho požadavku —
+     * táž doba držení jako u zakládání relace. Zastaví se proto o slot dřív
+     * (`MAX_WORLD_GENERATIONS`), aby preview druhé věty nezůstalo bez místa;
+     * naměřené odůvodnění je u té konstanty.
+     *
      * **Slot se bere PŘED čtením protokolu, protože odmítnutí musí být levné.**
      * Druhé kolo revize 3. 9. 2026 našlo obrácené pořadí: `frozenGrammar()`
      * není memoizované a každé volání blokuje smyčku dvěma `readFileSync`,
@@ -523,7 +534,7 @@ export async function POST(request: Request): Promise<Response> {
      * a ten slot vrací sám, o dva řádky níž. **Přibude-li sem další `return`,
      * musí vrátit taky.**
      */
-    if (!acquireSlot()) {
+    if (!acquireSlot('world')) {
       // **Odmítnutí musí být vidět v operátorském logu.** Bez toho řádku
       // neodliší nikdo „strop nás ochránil" od „nikdo nepřišel" — a orákulum
       // téhle brány je na nasazené adrese nepozorovatelné. `logRateLimited`
@@ -537,7 +548,9 @@ export async function POST(request: Request): Promise<Response> {
         'generate',
         requestId,
         'TOO_MANY_GENERATIONS',
-        `all ${MAX_CONCURRENT_GENERATIONS} paid slots are in flight on this instance`,
+        // Číslo je **stropem těchhle dveří**, ne velikostí čítače: stavba světa
+        // se zastaví o slot dřív, aby nevyhladověla preview druhé věty.
+        `all ${MAX_WORLD_GENERATIONS} of ${MAX_CONCURRENT_GENERATIONS} paid slots open to new worlds are in flight on this instance`,
       );
       return error(
         requestId,

@@ -216,7 +216,11 @@ export async function createChange(
     // placené volání modelu a je levnější na vyvolání než celý svět — relaci si
     // založí kdokoli. Kdyby měly tyhle dveře strop vlastní, útočník by je
     // střídal a v letu by běželo osm volání místo čtyř.
-    if (!acquireSlot()) {
+    //
+    // `'refine'` znamená „smí až na dno čítače". Stavba světa se zastaví
+    // o slot dřív (`MAX_WORLD_GENERATIONS`), aby čtyři pomalé generace
+    // nevypnuly druhou větu na celé minuty — celé odůvodnění je u té konstanty.
+    if (!acquireSlot('refine')) {
       // **Odmítnutí musí být vidět v operátorském logu**, stejně jako
       // u zakládání relace: bez řádku se „strop nás ochránil" nedá odlišit od
       // „nikdo nepřišel". Konstantní text, objem nese `(occurrence N)`.

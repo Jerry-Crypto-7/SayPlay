@@ -62,6 +62,42 @@ export const runtime = 'nodejs';
 export const MAX_CONCURRENT_GENERATIONS = 4;
 
 /**
+ * Kolik z těch čtyř smí naráz držet **zakládání relace**.
+ *
+ * Jeden čítač obsluhuje dvoje dveře, jejichž doba držení se liší o dva řády.
+ * Zakládání drží slot po **celou** generaci na pozadí — volání na záměr plus až
+ * `MAX_BLUEPRINT_ROUNDS` kol kompilace a oprav, každé `fetch` omezené jen
+ * `DEFAULT_TIMEOUT_MS = 120 000` v `src/server/upstream.ts`. Preview druhé věty
+ * drží slot na jedno `planChange`. Naměřený následek sdíleného stropu bez
+ * rezervy: **čtyři anonymní `POST /sessions`** proti pomalému poskytovateli
+ * obsadí všechny čtyři sloty na minuty a každé `POST …/changes` po tu dobu
+ * vrátí `503 TOO_MANY_CHANGES`. Cena útoku jsou čtyři požadavky, a vypne to
+ * druhou větu — tedy hlavní věc, kterou má porotce vidět.
+ *
+ * Tři ze čtyř je proto **rezerva pro levné dveře**, ne druhý strop: čítač
+ * zůstává jeden, mění se jen strop, proti kterému se drahé dveře porovnávají.
+ * Kdo chce platit za osm volání naráz, střídáním adres si je pořád nekoupí.
+ *
+ * **Opačným směrem rezerva nejde a nemá jít.** Čtyři preview v letu odmítnou
+ * zakládání relace, jenže preview slot drží jedno volání modelu a vrací ho
+ * hned; hladovět tímhle směrem trvá vteřiny, ne minuty.
+ */
+export const MAX_WORLD_GENERATIONS = 3;
+
+/**
+ * Dveře, které si o placený slot říkají. Ne řetězec: strop se vybírá podle
+ * něj, a překlep by ho tiše nastavil na `undefined`, po čemž `running >=
+ * undefined` je nepravda a strop by nedržel vůbec.
+ */
+export type PaidDoor = 'world' | 'refine';
+
+/** Strop na dveře. Jedno místo, kde ta dvě čísla stojí vedle sebe. */
+const DOOR_CEILING: Readonly<Record<PaidDoor, number>> = {
+  world: MAX_WORLD_GENERATIONS,
+  refine: MAX_CONCURRENT_GENERATIONS,
+};
+
+/**
  * Rozpočet jednoho požadavku od chvíle, kdy dorazil.
  *
  * `minServiceMs` je 3 000 schválně: cíl §22.1 je p95 do hrubého světa pod 3 s,
@@ -84,9 +120,13 @@ let running = 0;
  * Dva oddělené stropy po čtyřech nejsou strop čtyř: kdo chce platit za osm
  * volání naráz, střídá obě adresy. Kontrola a zvýšení jsou v jednom
  * synchronním kroku, takže mezi ně nemá co vklouznout.
+ *
+ * **`door` říká, proti kterému stropu se ten jeden čítač porovnává** —
+ * `MAX_WORLD_GENERATIONS` u drahých dveří, `MAX_CONCURRENT_GENERATIONS`
+ * u levných. Viz `MAX_WORLD_GENERATIONS` pro naměřený důvod.
  */
-export function acquireSlot(): boolean {
-  if (running >= MAX_CONCURRENT_GENERATIONS) return false;
+export function acquireSlot(door: PaidDoor): boolean {
+  if (running >= DOOR_CEILING[door]) return false;
   running += 1;
   return true;
 }
@@ -255,7 +295,7 @@ export async function POST(request: Request): Promise<Response> {
     // takže jsou atomické na smyčce událostí. Jediný odchod z route mezi
     // vzetím slotu a `work.finally` níž je nečitelný protokol — a ten slot
     // vrací sám, řádek níž. **Přibude-li sem další `return`, musí vrátit taky.**
-    if (!acquireSlot()) {
+    if (!acquireSlot('world')) {
       // **Odmítnutí musí být vidět v operátorském logu**, jinak se „strop nás
       // ochránil" nedá odlišit od „nikdo nepřišel". Text je konstantní
       // schválně: `logRateLimited` klíčuje `(dveře, kód)` a objem nese
@@ -267,7 +307,10 @@ export async function POST(request: Request): Promise<Response> {
         'worldstream/sessions',
         requestId,
         'TOO_MANY_SESSIONS',
-        `all ${MAX_CONCURRENT_GENERATIONS} paid slots are in flight on this instance`,
+        // Číslo je **stropem těchhle dveří**, ne velikostí čítače: operátor,
+        // který v logu čte „all 4", by po čtvrtém odmítnutí hledal čtvrtou
+        // generaci, která neexistuje — třetí drží slot a čtvrtý je rezerva.
+        `all ${MAX_WORLD_GENERATIONS} of ${MAX_CONCURRENT_GENERATIONS} paid slots open to new worlds are in flight on this instance`,
       );
       return fail(requestId, 503, 'TOO_MANY_SESSIONS', 'too many worlds are being built right now');
     }

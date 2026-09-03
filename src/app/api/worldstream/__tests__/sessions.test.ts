@@ -52,6 +52,7 @@ import { DEFAULT_CAP_USD } from '../../../../server/spend-cap';
 import {
   acquireSlot,
   MAX_CONCURRENT_GENERATIONS,
+  MAX_WORLD_GENERATIONS,
   POST as createSession,
   WORLDSTREAM_SPEND_CAP,
   cloudEmitter,
@@ -224,8 +225,10 @@ describe('založení relace', () => {
     vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
       log.push(String(line));
     });
-    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS; i += 1)
-      expect(acquireSlot(), `slot ${i} měl být volný`).toBe(true);
+    // Nasytí se **strop těchhle dveří**, ne celý čítač: zakládání se zastaví
+    // o slot dřív, aby čtyři pomalé generace nevypnuly druhou větu.
+    for (let i = 0; i < MAX_WORLD_GENERATIONS; i += 1)
+      expect(acquireSlot('world'), `slot ${i} měl být volný`).toBe(true);
 
     const response = await createSession(createRequest({ prompt: 'a salt flat' }));
 
@@ -256,7 +259,7 @@ describe('založení relace', () => {
     const source = readFileSync('src/app/api/worldstream/sessions/route.ts', 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/^\s*\/\/.*$/gm, '');
-    const gate = source.indexOf('if (!acquireSlot())');
+    const gate = source.indexOf("if (!acquireSlot('world'))");
     const grammarRead = source.indexOf('const grammar = serverGrammar();');
 
     expect(gate, 'brána souběhu ve zdroji chybí').toBeGreaterThan(-1);
@@ -284,8 +287,10 @@ describe('založení relace', () => {
     );
 
     for (let i = 0; i < MAX_CONCURRENT_GENERATIONS; i += 1)
-      expect(acquireSlot(), `slot ${i} měl být volný — odmítnutí ho nevrátilo`).toBe(true);
-    expect(acquireSlot(), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(false);
+      expect(acquireSlot('refine'), `slot ${i} měl být volný — odmítnutí ho nevrátilo`).toBe(true);
+    expect(acquireSlot('refine'), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(
+      false,
+    );
   });
 
   it('přijatý požadavek vrátí slot právě jednou, a to až ve `finally`', async () => {
@@ -301,8 +306,8 @@ describe('založení relace', () => {
     await new Promise<void>((resolve) => setImmediate(resolve));
 
     for (let i = 0; i < MAX_CONCURRENT_GENERATIONS; i += 1)
-      expect(acquireSlot(), `slot ${i} měl být volný — finally ho nevrátilo`).toBe(true);
-    expect(acquireSlot(), 'čítač je v záporu — slot se vrátil dvakrát').toBe(false);
+      expect(acquireSlot('refine'), `slot ${i} měl být volný — finally ho nevrátilo`).toBe(true);
+    expect(acquireSlot('refine'), 'čítač je v záporu — slot se vrátil dvakrát').toBe(false);
   });
 });
 

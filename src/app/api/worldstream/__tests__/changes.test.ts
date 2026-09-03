@@ -37,6 +37,7 @@ import { clearSessions, openSession, putChange, type StoredSession } from '@/wor
 
 import {
   MAX_CONCURRENT_GENERATIONS,
+  MAX_WORLD_GENERATIONS,
   POST as createSession,
   acquireSlot,
   releaseSlot,
@@ -571,9 +572,11 @@ describe('strop souběžných placených volání', () => {
       log.push(String(line));
     });
 
-    // Sloty drží zakládací cesta: `acquireSlot()` je přesně to, co dělá
-    // `POST /sessions` před generací.
-    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS; i += 1) expect(acquireSlot()).toBe(true);
+    // Čítač se sytí **levnými dveřmi**, protože jen ony smí až na dno: drahé
+    // se zastaví o slot dřív a preview by pořád prošlo. Tenhle test soudí
+    // sdílenost čítače, ne rezervu — tu soudí test hned pod ním.
+    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS; i += 1)
+      expect(acquireSlot('refine')).toBe(true);
 
     // Dvoje dveře, jeden strop. Kdyby měly čítače vlastní, útočník by je
     // střídal a v letu by běželo osm placených volání místo čtyř.
@@ -632,6 +635,40 @@ describe('strop souběžných placených volání', () => {
       expect(response.status).toBe(200);
     }
     expect(model.calls()).toBe(MAX_CONCURRENT_GENERATIONS + 1);
-    expect(acquireSlot()).toBe(true);
+    expect(acquireSlot('refine')).toBe(true);
+  });
+
+  it('zakládání relace nevyhladoví druhou větu — jeden slot je rezerva', async () => {
+    // **Vlastnost, kterou oko nepokryje.** Vyhladovění vypadá zvenčí jako
+    // „model je dneska pomalý", ne jako strop: porotce dostane 503, svede to
+    // na poskytovatele a druhá věta — hlavní věc, kterou má vidět — přestane
+    // fungovat po čtyřech anonymních požadavcích.
+    //
+    // Drahé dveře drží slot po celou generaci na pozadí (až
+    // `MAX_BLUEPRINT_ROUNDS` kol, každé `fetch` omezené jen 120 s), levné jen
+    // na jedno `planChange`. Rezerva je proto asymetrická schválně.
+    const stored = await generated();
+    const model = countingEmit();
+
+    // Drahé dveře se nasytí o slot dřív, než je čítač plný.
+    for (let i = 0; i < MAX_WORLD_GENERATIONS; i += 1)
+      expect(acquireSlot('world'), `slot ${i} měl být volný`).toBe(true);
+    expect(acquireSlot('world'), 'zakládání relace dosáhlo až na dno čítače').toBe(false);
+
+    // A to je celý smysl: rezervovaný slot pustí preview dovnitř.
+    const accepted = await preview(
+      stored.session.sessionId,
+      { prompt: 'make the mast sand-coloured' },
+      model.emit,
+    );
+    expect(accepted.status, 'druhá věta narazila na strop, který ji měl nechat projít').toBe(200);
+    expect((await body(accepted)).outcome).toBe('PREVIEW');
+    expect(model.calls()).toBe(1);
+
+    // Rezerva je jeden slot, ne druhá fronta: preview svůj slot vrátilo, takže
+    // levné dveře dojdou na dno čítače a pátý pokus už neprojde.
+    for (let i = MAX_WORLD_GENERATIONS; i < MAX_CONCURRENT_GENERATIONS; i += 1)
+      expect(acquireSlot('refine'), `rezervovaný slot ${i} měl být volný`).toBe(true);
+    expect(acquireSlot('refine'), 'čítač pustil víc než MAX_CONCURRENT_GENERATIONS').toBe(false);
   });
 });

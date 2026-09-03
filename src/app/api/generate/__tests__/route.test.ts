@@ -1316,7 +1316,8 @@ describe('POST /api/generate pod náporem', () => {
   }
 
   it('požadavek nad strop souběžných generací dostane 503, ne volání modelu', async () => {
-    const { MAX_CONCURRENT_GENERATIONS, acquireSlot, releaseSlot, send } = await loadOnce();
+    const { MAX_CONCURRENT_GENERATIONS, MAX_WORLD_GENERATIONS, acquireSlot, releaseSlot, send } =
+      await loadOnce();
     // **Odmítnutí musí být vidět v operátorském logu.** Bez řádku neodliší
     // nikdo „strop nás ochránil" od „nikdo nepřišel", a orákulum téhle brány
     // je na nasazené adrese nepozorovatelné — 503 vidí jen ten, kdo ho dostal.
@@ -1326,15 +1327,17 @@ describe('POST /api/generate pod náporem', () => {
     vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
       log.push(String(line));
     });
-    for (let taken = 0; taken < MAX_CONCURRENT_GENERATIONS; taken += 1)
-      expect(acquireSlot()).toBe(true);
+    // Nasytí se **strop těchhle dveří**, ne celý čítač: stavba světa se
+    // zastaví o slot dřív, aby nevyhladověla preview druhé věty.
+    for (let taken = 0; taken < MAX_WORLD_GENERATIONS; taken += 1)
+      expect(acquireSlot('world')).toBe(true);
 
     try {
       const { status, json } = await send();
       expect(status).toBe(503);
       expect(json.error?.code).toBe('TOO_MANY_GENERATIONS');
     } finally {
-      for (let taken = 0; taken < MAX_CONCURRENT_GENERATIONS; taken += 1) releaseSlot();
+      for (let taken = 0; taken < MAX_WORLD_GENERATIONS; taken += 1) releaseSlot();
     }
 
     const refusals = log.filter((line) => line.includes('TOO_MANY_GENERATIONS'));
@@ -1345,8 +1348,11 @@ describe('POST /api/generate pod náporem', () => {
     // zelený — log by se pořád shodoval sám se sebou, jen o řád výš. Nález
     // nezávislé revize 3. 9. 2026. **„on this instance" je součást tvrzení:**
     // čítač je stav modulu, takže na Vercelu ho každá instance má vlastní.
-    expect(refusals[0]).toContain('all 4 paid slots are in flight on this instance');
-    expect(MAX_CONCURRENT_GENERATIONS, 'strop se pohnul — přepiš i větu v logu').toBe(4);
+    expect(refusals[0]).toContain(
+      'all 3 of 4 paid slots open to new worlds are in flight on this instance',
+    );
+    expect(MAX_WORLD_GENERATIONS, 'strop se pohnul — přepiš i větu v logu').toBe(3);
+    expect(MAX_CONCURRENT_GENERATIONS, 'čítač se pohnul — přepiš i větu v logu').toBe(4);
   });
 
   it('slot se po odbavení vrátí, takže dveře nezůstanou zavřené', async () => {
@@ -1377,7 +1383,7 @@ describe('POST /api/generate pod náporem', () => {
     const source = readFileSync('src/app/api/generate/route.ts', 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/^\s*\/\/.*$/gm, '');
-    const gate = source.indexOf('if (!acquireSlot())');
+    const gate = source.indexOf("if (!acquireSlot('world'))");
     const grammarRead = source.indexOf('const grammar = frozenGrammar();');
 
     expect(gate, 'brána souběhu ve zdroji chybí').toBeGreaterThan(-1);
@@ -1416,7 +1422,11 @@ describe('POST /api/generate pod náporem', () => {
     expect(((await response.json()) as ResponseBody).error?.code).toBe('CORPUS_UNREADABLE');
 
     for (let taken = 0; taken < MAX_CONCURRENT_GENERATIONS; taken += 1)
-      expect(acquireSlot(), `slot ${taken} měl být volný — odmítnutí ho nevrátilo`).toBe(true);
-    expect(acquireSlot(), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(false);
+      expect(acquireSlot('refine'), `slot ${taken} měl být volný — odmítnutí ho nevrátilo`).toBe(
+        true,
+      );
+    expect(acquireSlot('refine'), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(
+      false,
+    );
   });
 });
