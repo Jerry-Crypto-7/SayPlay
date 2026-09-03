@@ -210,7 +210,7 @@ describe('strop z prostředí', () => {
 
   it('cesta k vypínači se bere z prostředí', () => {
     const path = controlFile(JSON.stringify({ enabled: true, capUsd: 42 }));
-    expect(spendCapFromEnv({ WORLDSMITH_SPEND_CAP_FILE: path }).snapshot().capUsd).toBe(42);
+    expect(spendCapFromEnv({ WORLDSMITH_CONTROL_FILE: path }).snapshot().capUsd).toBe(42);
   });
 });
 

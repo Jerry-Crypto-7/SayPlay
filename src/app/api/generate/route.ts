@@ -58,6 +58,7 @@ import {
   logRateLimited,
   logStickyFault as logStickyForRoute,
 } from '../../../server/public-faults';
+import { killState } from '../../../server/kill-switch';
 import { DEFAULT_CAP_USD, processSpendCap, type RefusalReason } from '../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../server/upstream';
 import { acquireSlot, MAX_CONCURRENT_GENERATIONS, releaseSlot } from '../worldstream/sessions/route';
@@ -79,7 +80,13 @@ export const runtime = 'nodejs';
  * (`src/server/spend-cap.ts`) — vadné nastavení nikdy neznamená tichý průchod.
  */
 function branchFor(env: NodeJS.ProcessEnv): GenerationBranch {
-  return env.WORLDSMITH_BRANCH === 'live' ? upstreamBranch(upstreamConfigFromEnv(env)) : mockBranch();
+  if (env.WORLDSMITH_BRANCH !== 'live') return mockBranch();
+  // **Vypnutý upstream se chová jako živá větev bez klíče**, tedy 503, ne tichý
+  // sjezd na mock. Doktrína o řádek výš platí i pro vypínač: kdyby se vypnutý
+  // model nahradil mockem, vydával by tenhle server mock za model a operátor,
+  // který sáhl na vypínač kvůli účtu, by se to nedozvěděl.
+  if (killState(env).upstream) return upstreamBranch(null);
+  return upstreamBranch(upstreamConfigFromEnv(env));
 }
 
 /**

@@ -41,6 +41,7 @@
 import { commitRoutedParts, staleRevision, type CommitOutcome } from '@/app/api/edit/commit';
 import type { PartPatch } from '@/ir/revision';
 import { routePatch, type RoutedPatch } from '@/patch/router';
+import { killState } from '@/server/kill-switch';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 import { getSession, takeChange } from '@/worldstream/sessions';
 
@@ -55,6 +56,14 @@ export async function POST(
   context: { params: Promise<{ sessionId: string; changeId: string }> },
 ): Promise<Response> {
   const { sessionId, changeId } = await context.params;
+
+  // **Commit patří pod týž vypínač jako preview.** „Public refine" z §22.4 je
+  // celá druhá věta, ne jen její první polovina: vypnout preview a nechat
+  // commitovat by znamenalo, že se svět dál mění — jen z previewů, které stihly
+  // vzniknout dřív. Vypínač se čte tady, protože tahle route je druhé rozhodnutí
+  // člověka a mezi ním a preview může uběhnout libovolně dlouhá doba.
+  if (killState(process.env).refine)
+    return fail(503, 'REFINE_DISABLED', 'changing worlds is switched off right now');
 
   const stored = getSession(sessionId);
   if (stored === null)

@@ -34,6 +34,7 @@ import { readBody } from '../../../../http/body';
 import { withRequest } from '../../../../obs/trace';
 import type { UpstreamRequest } from '../../../../model/prompt';
 import { admit, type AdmissionPolicy } from '../../../../server/admission';
+import { killState } from '../../../../server/kill-switch';
 import { moderatePrompt } from '../../../../server/moderation';
 import { logRateLimited } from '../../../../server/public-faults';
 import { costUsd, processSpendCap } from '../../../../server/spend-cap';
@@ -139,6 +140,12 @@ function fail(requestId: string, status: number, code: string, message: string):
  * věty i tehdy, když je nasazení bez klíče.
  */
 export function cloudEmitter(): BlueprintEmitter | null {
+  // **Kill switch `upstream` vypadá odsud stejně jako chybějící klíč**, a je to
+  // schválně: obě cesty končí `session.failed` s veřejnou větou „the model could
+  // not be reached", takže porotci zůstane proud, ve kterém je ta příčina vidět.
+  // Vypnutý model není 503 — 503 by mu vzalo i to.
+  if (killState(process.env).upstream) return null;
+
   const config = upstreamConfigFromEnv(process.env);
   if (config === null) return null;
 
@@ -198,6 +205,14 @@ export async function POST(request: Request): Promise<Response> {
   const receivedAtMs = Date.now();
 
   return withRequest(requestId, async () => {
+    // **Vypínač je první brána, před čtením těla.** Vypnuté dveře nesmí stát
+    // víc než jeden `readFileSync` nad souborem o pár řádcích — tělo požadavku
+    // je proti tomu až 64 kB, které někdo pošle a my je nepotřebujeme.
+    if (killState(process.env).sessions) {
+      logRateLimited('worldstream/sessions', requestId, 'SESSIONS_DISABLED', 'kill switch: sessions');
+      return fail(requestId, 503, 'SESSIONS_DISABLED', 'new worlds are switched off right now');
+    }
+
     let raw;
     try {
       raw = await readBody(request);

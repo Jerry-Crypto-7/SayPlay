@@ -272,7 +272,7 @@ describe('POST /api/generate', () => {
         WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
         WORLDSMITH_MODEL_KEY: 'test-key',
         WORLDSMITH_USD_PER_MTOK_OUT: '15',
-        WORLDSMITH_SPEND_CAP_FILE: path,
+        WORLDSMITH_CONTROL_FILE: path,
       });
 
       expect(status).toBe(503);
@@ -344,7 +344,7 @@ describe('POST /api/generate', () => {
 
   it('rozbitý vypínač je 503, ne tichý průchod bez stropu', async () => {
     const { status, json } = await post(JSON.stringify({ prompt: FROZEN_CREATE.prompt }), {
-      WORLDSMITH_SPEND_CAP_FILE: controlFile('{ rozbito'),
+      WORLDSMITH_CONTROL_FILE: controlFile('{ rozbito'),
     });
     expect(status).toBe(503);
     expect(json.error?.code).toBe('CONTROL_UNREADABLE');
@@ -540,7 +540,7 @@ describe('POST /api/generate', () => {
       writeFileSync(path, 'tohle není JSON', 'utf8');
 
       const { status, json } = await post(JSON.stringify({ prompt: FROZEN_CREATE.prompt }), {
-        WORLDSMITH_SPEND_CAP_FILE: path,
+        WORLDSMITH_CONTROL_FILE: path,
       });
 
       expect(status).toBe(503);
@@ -699,7 +699,7 @@ describe('POST /api/generate', () => {
 
       // Jedno načtení = jeden proces. Strop i záznam o zapsaných příčinách jsou
       // stav procesu, takže se `call()` volá opakovaně, ne `post()` dvacetkrát.
-      const call = await loadRoute({ WORLDSMITH_SPEND_CAP_FILE: path });
+      const call = await loadRoute({ WORLDSMITH_CONTROL_FILE: path });
       for (let attempt = 0; attempt < 25; attempt += 1)
         expect((await call(JSON.stringify({ prompt: FROZEN_CREATE.prompt }))).status).toBe(503);
 

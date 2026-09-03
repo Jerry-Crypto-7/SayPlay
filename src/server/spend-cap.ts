@@ -20,13 +20,14 @@
  * AC úlohy žádá, aby se strop dal změnit **za běhu bez redeploye**, a zároveň
  * zakazuje přihlašování. Administrátorská routa bez přihlášení je horší než
  * žádný strop: kdokoli ho vypne dřív, než pošle tisíc promptů. Ovládá se proto
- * souborem, který si čte tenhle modul při **každém** rozhodnutí — změna platí od
- * dalšího požadavku, přístup k souboru má jen kdo má přístup ke stroji, a
- * HTTP povrch nevzniká žádný.
+ * souborem (`WORLDSMITH_CONTROL_FILE`), který si čte tenhle modul při **každém**
+ * rozhodnutí — změna platí od dalšího požadavku, přístup k souboru má jen kdo
+ * má přístup ke stroji, a HTTP povrch nevzniká žádný.
  *
- * Čte se pokaždé znovu schválně. Cache by potřebovala invalidaci a smysl celé
- * věci je, že změna platí hned; jeden `readFileSync` nad souborem o dvou
- * klíčích je proti volání modelu neměřitelný.
+ * **Od P15 T30 je ten soubor sdílený s kill switchi** a jeho čtení bydlí
+ * v `control-file.ts`; tenhle modul z něj bere klíče `enabled`, `capUsd`
+ * a `callCap` a o zbytek se nestará. Do té doby se proměnná jmenovala
+ * `WORLDSMITH_SPEND_CAP_FILE` a četl ji jenom strop.
  *
  * ## Kdy se selhává zavřeně
  *
@@ -48,8 +49,7 @@
  * `src/server/__tests__/pipeline.test.ts`.
  */
 
-import { readFileSync } from 'node:fs';
-
+import { controlFilePath, readControlFile } from './control-file';
 import { ledgerFromEnv, memoryLedger, resetProcessLedger, type SpendLedger } from './spend-store';
 
 /** Spotřeba tokenů tak, jak ji hlásí poskytovatel. */
@@ -175,14 +175,7 @@ export interface Refused {
 
 export type Reservation = Reserved | Refused;
 
-function parseControl(raw: string): CapControl | null {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    return null;
-  }
-  if (typeof parsed !== 'object' || parsed === null) return null;
+function parseControl(parsed: Record<string, unknown>): CapControl | null {
   const { enabled, capUsd } = parsed as { enabled?: unknown; capUsd?: unknown };
   if (typeof enabled !== 'boolean') return null;
   if (typeof capUsd !== 'number' || !Number.isFinite(capUsd) || capUsd < 0) return null;
@@ -247,14 +240,10 @@ export class SpendCap {
    * chybějící soubor je oproti tomu normální stav a vrací výchozí hodnoty.
    */
   #control(): CapControl | null {
-    if (this.#controlPath === null) return this.#defaults;
-    let raw: string;
-    try {
-      raw = readFileSync(this.#controlPath, 'utf8');
-    } catch (thrown) {
-      return (thrown as NodeJS.ErrnoException).code === 'ENOENT' ? this.#defaults : null;
-    }
-    return parseControl(raw);
+    const read = readControlFile(this.#controlPath);
+    if (read.kind === 'absent') return this.#defaults;
+    if (read.kind === 'broken') return null;
+    return parseControl(read.value);
   }
 
   snapshot(): CapSnapshot {
@@ -571,7 +560,7 @@ export function spendCapFromEnv(env: Record<string, string | undefined>): SpendC
   // s chladným startem, je horší než žádný: tváří se, že platí.
   return new SpendCap(
     { enabled: true, capUsd, callCap },
-    env.WORLDSMITH_SPEND_CAP_FILE ?? null,
+    controlFilePath(env),
     ledgerFromEnv(env),
   );
 }

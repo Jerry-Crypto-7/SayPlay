@@ -38,6 +38,7 @@ import {
 import type { BlueprintEmitter } from '@/model/worldstream-repair';
 import { withRequest } from '@/obs/trace';
 import { admit, type AdmissionPolicy } from '@/server/admission';
+import { killState } from '@/server/kill-switch';
 import { moderatePrompt } from '@/server/moderation';
 import { logRateLimited } from '@/server/public-faults';
 import { getSession, putChange } from '@/worldstream/sessions';
@@ -121,6 +122,13 @@ export async function createChange(
   const receivedAtMs = Date.now();
 
   return withRequest(requestId, async () => {
+    // Vypínač `refine` je první brána, před čtením těla — táž úvaha jako
+    // u zakládání relace: vypnuté dveře nesmí stát víc než přečtení souboru.
+    if (killState(process.env).refine) {
+      logRateLimited('worldstream/changes', requestId, 'REFINE_DISABLED', 'kill switch: refine');
+      return fail(requestId, 503, 'REFINE_DISABLED', 'changing worlds is switched off right now');
+    }
+
     let raw;
     try {
       raw = await readBody(request);
