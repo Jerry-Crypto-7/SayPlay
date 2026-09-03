@@ -145,6 +145,33 @@ const PUBLIC_STREAM_FAULT: Record<StreamFault, string> = {
  */
 const STREAM_CLOSED = Symbol('the other end went away');
 
+/**
+ * **Čím se rozbité potrubí pozná od změřeného světa** — strojově, ne tím, že
+ * v rámci „nějak chybí `doc`".
+ *
+ * `POST /api/emit` tuhle informaci nese **stavovým kódem**: 503 „o takovém
+ * běhu se nesmí nic skórovat", 404 neznámý prompt, 200 verdikt. Proud ji tak
+ * nést nemůže — v okamžiku, kdy se kterákoli z těch věcí pozná, jsou hlavičky
+ * i stav **200** dávno u klienta a zpátky se vzít nedají. Ty dveře by tím
+ * jinak o téže situaci říkaly opak než dveře vedle.
+ *
+ * Jede proto v těle rámce a je to **uzavřený seznam**, který na ty stavové
+ * kódy jedna ku jedné mapuje:
+ *
+ * | `resultKind` | `/api/emit` | Smí se z toho skórovat? |
+ * |---|---|---|
+ * | `verdict` | 200 | **ano**, je to změřený svět |
+ * | `unknown-prompt` | 404 | ne, nikdo takový prompt nezná |
+ * | `unavailable` | 503 | ne, rozbité prostředí |
+ * | `stream-fault` | *nemá obdobu* | ne, rozbité potrubí |
+ *
+ * Poslední řádek je ten, kvůli kterému to vzniklo: pád nebo zrušení proudu je
+ * porucha **kanálu**, ne výsledek světa. Bez tohohle pole vypadá v číslech
+ * jako svět, který se prostě nepovedl — a to je přesně ten rozdíl, kvůli
+ * kterému `EmissionOutcome` odlišuje `unavailable` od verdiktu.
+ */
+type ResultKind = 'verdict' | 'unknown-prompt' | 'unavailable' | 'stream-fault';
+
 function frame(event: string, payload: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`;
 }
@@ -210,6 +237,7 @@ export async function POST(request: Request): Promise<Response> {
             logStickyFault('emit/stream', requestId, outcome.failure.reason, outcome.failure.detail);
             write('result', {
               requestId,
+              resultKind: 'unavailable' satisfies ResultKind,
               error: {
                 code: outcome.failure.reason,
                 message: PUBLIC_CORPUS_FAULT[outcome.failure.reason],
@@ -219,13 +247,17 @@ export async function POST(request: Request): Promise<Response> {
           else if (outcome.kind === 'unknown-prompt')
             write('result', {
               requestId,
+              resultKind: 'unknown-prompt' satisfies ResultKind,
               error: {
                 code: 'UNKNOWN_PROMPT',
                 message: `no frozen create prompt named ${promptId}`,
                 field: 'promptId',
               },
             });
-          else write('result', { requestId, ...outcome.body });
+          // Diskriminátor jde **za** rozbalením těla, aby ho verdikt nemohl
+          // přepsat: o tom, jestli je tohle změřený svět, rozhoduje tahle routa,
+          // ne obsah, který jí přišel z řetězu.
+          else write('result', { requestId, ...outcome.body, resultKind: 'verdict' satisfies ResultKind });
 
           controller.close();
         }
@@ -252,6 +284,7 @@ export async function POST(request: Request): Promise<Response> {
           try {
             write('result', {
               requestId,
+              resultKind: 'stream-fault' satisfies ResultKind,
               error: { code: cause, message: PUBLIC_STREAM_FAULT[cause] },
             });
             controller.close();

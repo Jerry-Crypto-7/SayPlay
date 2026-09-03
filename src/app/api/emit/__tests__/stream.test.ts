@@ -58,9 +58,19 @@ async function collect(body: unknown, post: Route = stream): Promise<Collected> 
   return { status: response.status, contentType, phases, result };
 }
 
-/** Bez `requestId`, který je z definice pokaždé jiný. */
+/**
+ * Bez obálky kanálu — tedy bez `requestId`, který je z definice pokaždé jiný,
+ * a bez `resultKind`.
+ *
+ * **`resultKind` se odečítá ze stejného důvodu, z jakého se neporovnává stavový
+ * kód:** je to obálka, ne verdikt. `/api/emit` tutéž informaci nese jako 200 /
+ * 404 / 503 a do těla ji nepíše; proud ji do těla psát musí, protože v okamžiku,
+ * kdy se to pozná, jsou hlavičky pryč. Kdyby se počítala do porovnání, tenhle
+ * test by hlásil rozdíl tam, kde žádný není — obě cesty říkají totéž, jen jinou
+ * částí odpovědi. **Verdikt sám se pořád porovnává celý.**
+ */
 function comparable(body: Record<string, unknown>): Record<string, unknown> {
-  const { requestId: _ignored, ...rest } = body;
+  const { requestId: _ignored, resultKind: _envelope, ...rest } = body;
   return rest;
 }
 
@@ -144,6 +154,17 @@ describe('kanál s průběhem', () => {
   it('neznámý prompt jde jako verdikt, ne jako pád', async () => {
     const collected = await collect({ promptId: 'takovy-neni' });
     expect((collected.result as { error: { code: string } }).error.code).toBe('UNKNOWN_PROMPT');
+  });
+
+  it('verdikt se hlásí jako verdikt, neznámý prompt jako neznámý prompt', async () => {
+    // `/api/emit` tenhle rozdíl nese **stavovým kódem** (200 / 404 / 503).
+    // Proud ho tak nést nemůže, protože hlavičky odešly dřív, než se to dá
+    // poznat — jede proto v těle jako `resultKind`.
+    const good = await collect({ promptId: 'C01' });
+    expect(good.result?.resultKind).toBe('verdict');
+
+    const unknown = await collect({ promptId: 'NOPE' });
+    expect(unknown.result?.resultKind).toBe('unknown-prompt');
   });
 
   it('nevalidní tělo odpoví 400 a vůbec nestreamuje', async () => {
@@ -338,6 +359,22 @@ describe('pád uvnitř proudu', () => {
     expect(log).toHaveLength(1);
     expect(log[0]).toContain('STREAM_CANCELLED');
     expect(log[0]).not.toContain('STREAM_FAILED');
+  });
+
+  it('spadlé potrubí se ve skórování nesmí potkat s odmítnutým světem', async () => {
+    // **To je celý smysl `resultKind`.** Rozbité potrubí i neznámý prompt dnes
+    // odejdou jako 200 s polem `error`, takže bez diskriminátoru je od sebe
+    // odliší jedině to, že v jednom „nějak chybí `doc`". Pád kanálu není
+    // výsledek světa a nesmí se dostat do čísel jako svět, který se nepovedl.
+    const { post } = await loadBrokenStream();
+    const broken = await collect({ promptId: 'C01' }, post);
+    const rejected = await collect({ promptId: 'NOPE' });
+
+    expect(broken.result?.resultKind).toBe('stream-fault');
+    expect(rejected.result?.resultKind).toBe('unknown-prompt');
+    expect(broken.result?.resultKind).not.toBe(rejected.result?.resultKind);
+    // A ani jedno není verdikt — skórovat se smí jedině ten.
+    expect(broken.result?.resultKind).not.toBe('verdict');
   });
 
   it('rámec, který se nedá složit, je pád — ne zrušení', async () => {
