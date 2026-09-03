@@ -425,6 +425,46 @@ describe('commit druhé věty', () => {
     expect(worldOf(stored).lookRevision).toBe(1);
   });
 
+  // ⚠ **Zamítnutý commit preview nespotřebuje** (`T22-takeearly`). Do 4. 9. 2026
+  // route vyzvedla preview hned na začátku, tedy dřív, než cokoli ověřila —
+  // takže každé odmítnutí ho spálilo a druhý pokus dostal 404 „takové preview
+  // tu není". Porotce tím přišel o placené volání modelu za větu, po které se
+  // ve světě nezměnil ani bajt. „Jedno preview je jeden commit" platí pro
+  // commit, který **prošel**; test o řádek výš to hlídá z druhé strany.
+  it('preview zamítnuté bránou revizí přežije a podruhé řekne totéž', async () => {
+    const stored = await generated();
+    const first = pending(stored, plan({ shape: WOVEN_MAST }), 'change-a');
+    const stale = pending(stored, plan({ shape: WOVEN_MAST }), 'change-b');
+
+    expect((await commit(stored.session.sessionId, first.changeId)).status).toBe(200);
+
+    const prvni = await commit(stored.session.sessionId, stale.changeId);
+    const druhy = await commit(stored.session.sessionId, stale.changeId);
+
+    expect(prvni.status, 'zastaralé preview mělo dostat 409').toBe(409);
+    expect(druhy.status, 'druhý pokus dostal 404, takže se preview spálilo').toBe(409);
+    expect((await body(druhy)).error).toMatchObject({ field: 'basedOn/representation' });
+  });
+
+  it('preview zamítnuté routerem přežije a podruhé řekne totéž', async () => {
+    const stored = await generated();
+    const change = pending(
+      stored,
+      plan({ shape: { ...(WOVEN_MAST as Record<string, unknown>), shapeId: 'ghostSpan' } as RefinePlan['shape'] }),
+    );
+
+    expect((await body(await commit(stored.session.sessionId, change.changeId))).outcome).toBe(
+      'REJECTED',
+    );
+
+    // Týž verdikt, ne 404 — a pořád beze změny ve světě.
+    const druhy = await body(await commit(stored.session.sessionId, change.changeId));
+    expect(druhy.outcome, 'druhý pokus dostal jiný verdikt, takže se preview spálilo').toBe(
+      'REJECTED',
+    );
+    expect(stored.session.revisionOf('ironMast')).toBe(0);
+  });
+
   it('tvar, který ve světě není, se tiše nepodstrčí', async () => {
     const stored = await generated();
     const change = pending(

@@ -272,12 +272,29 @@ export function putChange(stored: StoredSession, change: PendingChange): void {
 }
 
 /**
+ * Podívá se na preview, **aniž ho spotřebuje**.
+ *
+ * Je to první půlka commitu: route potřebuje plán, aby ho měla proti čemu
+ * ověřit, ale spotřebovat ho smí teprve tehdy, když se svět opravdu změní
+ * (`takeChange` níž). Do 4. 9. 2026 tenhle rozdíl neexistoval a stálo to
+ * jedno placené volání modelu za každé odmítnutí — viz `T22-takeearly`.
+ */
+export function peekChange(stored: StoredSession, changeId: string): PendingChange | null {
+  return stored.changes.get(changeId) ?? null;
+}
+
+/**
  * Vyzvedne preview **a zároveň ho spotřebuje**.
  *
  * Jedno preview je jeden commit: kdyby šlo commitnout dvakrát, druhý pokus by
  * proběhl proti revizi, kterou zvedl ten první — tedy přesně ten zastaralý
  * commit, který §9.8 zakazuje. Bránu na revize to nenahrazuje, jen jí ubírá
  * jediný případ, u kterého by musela hádat, co se stalo dřív.
+ *
+ * ⚠ **Volá se až na certifikované cestě, ne při vyzvednutí plánu.** Ta úvaha
+ * výš platí jen pro commit, který **prošel**: odmítnutý commit revizi nezvedl
+ * a do světa nezapsal ani bajt, takže spotřebovat mu preview znamená jen to,
+ * že porotce zaplatí druhé volání modelu za tutéž větu (`T22-takeearly`).
  */
 export function takeChange(stored: StoredSession, changeId: string): PendingChange | null {
   const change = stored.changes.get(changeId) ?? null;

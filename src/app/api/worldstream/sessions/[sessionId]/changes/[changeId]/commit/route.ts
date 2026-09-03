@@ -43,7 +43,7 @@ import type { PartPatch } from '@/ir/revision';
 import { routePatch, type RoutedPatch } from '@/patch/router';
 import { killState } from '@/server/kill-switch';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
-import { getSession, takeChange } from '@/worldstream/sessions';
+import { getSession, peekChange, takeChange } from '@/worldstream/sessions';
 
 export const runtime = 'nodejs';
 
@@ -80,10 +80,13 @@ export async function POST(
   if (phase === 'complete' || phase === 'failed')
     return fail(409, 'SESSION_CLOSED', 'this session is closed and no longer takes changes');
 
-  // Vyzvednutím se preview spotřebuje. Jedno preview je jeden pokus: druhý by
-  // běžel proti revizi, kterou zvedl ten první, tedy proti světu, který porotce
-  // v preview neviděl.
-  const change = takeChange(stored, changeId);
+  // **Jen se na preview podíváme.** Spotřebuje se až tam, kde se svět opravdu
+  // mění (`takeChange` níž) — „jedno preview je jeden pokus" platí pro commit,
+  // který prošel, ne pro ten, který zamítla brána. Odmítnutý commit revizi
+  // nezvedl a do světa nezapsal ani bajt, takže druhý pokus proti zastaralému
+  // světu neběží; spálit mu preview by porotce jen donutilo zaplatit druhé
+  // volání modelu za tutéž větu (`T22-takeearly`).
+  const change = peekChange(stored, changeId);
   if (change === null)
     return fail(404, 'UNKNOWN_CHANGE', 'no preview with that id is waiting on this session');
 
@@ -161,6 +164,11 @@ export async function POST(
       { stage: 'apply', reason: 'BLUEPRINT_INVALID', pointer: '/shapes', detail: next },
     ]);
 
+  // **Odtud dolů se svět mění, takže teď a jen teď se preview spotřebuje.**
+  // Od `peekChange` výš sem nevede jediný `await`, takže mezi kontrolou a
+  // vyzvednutím se nemá kdy vklínit druhý požadavek — dvojí commit téhož
+  // preview pořád není možný.
+  takeChange(stored, changeId);
   stored.blueprint = next;
   const revision = plan.shape === null ? null : stored.session.revise(plan.stableId);
 
