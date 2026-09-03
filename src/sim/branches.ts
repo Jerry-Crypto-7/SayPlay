@@ -9,15 +9,21 @@
  *
  * ## Proč se pečetí, a proč hlubokou kopií
  *
- * Živý runtime větve je pořád živý: dá se jím krokovat, přetáčet, a `rebranchAt`
- * ho při zakládání další větve **posune do minulosti**. Kdyby si větev svůj
- * výsledek držela odkazem na `runtime.state`, přepsalo by ji každé takové
- * sáhnutí — a hash, kterým se dvě budoucnosti porovnávají, by po chvíli
- * popisoval úplně jiný tik, než o kterém tvrdí.
+ * Živý runtime větve je pořád živý: `step` píše do `runtime.state` **na místě**
+ * (`writeSlot` v interpretu), takže větev, která si svůj výsledek drží odkazem,
+ * o něm přestane mluvit pravdu, jakmile se z ní krokuje dál — hash pak popisuje
+ * tik, na kterém běh právě stojí, ne ten, na kterém větev dopadla.
  *
- * Pečeť je proto `runtime.state.slice()`, tedy vlastní pole. Je to jediný řádek
- * v tomhle souboru, na kterém záleží, a `branches.test.ts` i
- * `e2e/branch-replay.spec.ts` ho hlídají z obou stran.
+ * Pečeť je proto `runtime.state.slice()`, tedy vlastní pole.
+ *
+ * **Naměřeno 3. 9. 2026, ať to nikdo nemusí zkoušet podruhé:** nahradit ten
+ * `slice()` odkazem shodí **jenom** jednotkový test „krokování runtimu po
+ * zapečetění hashem větve nehne". Přetáčení tu vadu neodhalí a `branch-replay`
+ * nad ní zůstane zelený, protože `restore` v `timeline.ts:82` dělá
+ * `runtime.state = snapshot.state.slice()`, tedy pole **vymění**; zapečetěné
+ * pole tím osiří a náhodou zůstane platné. Je to shoda okolností, ne záruka —
+ * jakmile někdo `restore` zlevní na `runtime.state.set(...)`, spadnou hashe
+ * všech větví naráz a jediné, co to chytí, je ten jednotkový test.
  *
  * ## Co tady schválně není
  *
