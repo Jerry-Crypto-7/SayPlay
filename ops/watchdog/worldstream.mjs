@@ -258,11 +258,15 @@ export async function probeWorldstream(options) {
   if (allowGeneration) {
     const generation = await checkGeneration(target, fetchImpl, { now, wait, deadlineMs, pollMs });
     if (!generation.ok) return { ok: false, reason: generation.reason, detail: generation.detail, checks };
-    checks.generation = {
-      objects: generation.objects,
-      elapsedMs: generation.elapsedMs,
-      sessionId: generation.sessionId,
-    };
+    // **`sessionId` se do `checks` nepíše, a je to bezpečnostní rozhodnutí, ne
+    // úspora místa.** Nález nezávislé revize 3. 9. 2026: `checks` jde celý do
+    // logu, log je dokumentovaný jako `ops/worldstream-watchdog.jsonl`, a
+    // repozitář jde podle `RULES.md` §2 ven. Živé `sessionId` přitom není
+    // identifikátor, ale **schopnost** — kdo ho drží, může POSTovat do
+    // `/changes` té relace a působit placená volání modelu, dokud proces žije.
+    // Operátorovi stačí, **že** generace proběhla a jak dopadla; pod kterou
+    // relací, se z logu dohledávat nemá.
+    checks.generation = { objects: generation.objects, elapsedMs: generation.elapsedMs };
     address = generation.sharedWorld;
   }
 

@@ -108,7 +108,12 @@ describe('zdravý cíl projde všemi třemi patry', () => {
     const verdict = await run();
 
     expect(verdict.ok).toBe(true);
-    expect(verdict.checks.generation).toMatchObject({ objects: 2, sessionId: 'probe-1' });
+    expect(verdict.checks.generation).toMatchObject({ objects: 2 });
+    // **`sessionId` tady být nesmí** — do 3. 9. 2026 se tenhle řádek na jeho
+    // přítomnost naopak ptal. `checks` jde celý do logu a živé `sessionId` je
+    // schopnost: kdo ho drží, může do té relace POSTovat placená volání.
+    // `toMatchObject` výš by ho propustilo, proto vlastní aserce.
+    expect(verdict.checks.generation).not.toHaveProperty('sessionId');
     expect(verdict.checks.sharedWorld).toMatchObject({ address: '/api/worldstream/snapshots/abc', objects: 2 });
 
     // Pořadí je součást tvrzení: nezdravý cíl se nemá zatěžovat generací.
@@ -312,9 +317,33 @@ describe('hlídač jako program', () => {
     const { code } = await runCli(['--target', target, '--log', log, '--allow-generation', '--poll-ms', '10']);
     expect(code).toBe(0);
 
-    const lines = readFileSync(log, 'utf8').trim().split('\n').map((line) => JSON.parse(line));
+    const raw = readFileSync(log, 'utf8');
+    const lines = raw.trim().split('\n').map((line) => JSON.parse(line));
     expect(lines.map((line) => line.event)).toEqual(['watchdog.started', 'watchdog.ok']);
     expect(lines[1].checks.generation.objects).toBe(2);
+
+    // **Nad syrovým textem, ne nad rozparsovaným objektem.** Tvrzení je „do
+    // souboru se to nezapsalo", takže se soudí to, co v souboru doopravdy
+    // stojí — jinak by nový průchod, který `sessionId` zapíše o patro jinam,
+    // prošel. Stub zakládá `probe-1`, což je v celém řádku jediná hodnota,
+    // která by z relace unikla.
+    expect(raw).not.toContain('sessionId');
+    expect(raw).not.toContain('probe-1');
+  });
+
+  it('dokumentovaná cesta logu je gitignorovaná, ne jen zamýšlená', async () => {
+    // **Rozhoduje návratový kód, ne vypsaný řádek** (`CLAUDE.md`, past u
+    // `/*.md`). Repozitář jde podle `RULES.md` §2 ven a tenhle soubor nese
+    // cílovou URL i názvy světů, takže „chtěli jsme ho ignorovat" nestačí.
+    const ignored = await new Promise<number | null>((done) => {
+      const child = spawn('git', ['check-ignore', '-q', 'ops/worldstream-watchdog.jsonl'], {
+        cwd: join(dirname(fileURLToPath(import.meta.url)), '..', '..'),
+        stdio: 'ignore',
+      });
+      child.on('exit', done);
+    });
+
+    expect(ignored).toBe(0);
   });
 
   it('cíl, který světy nevyrábí: kód 5 a příčina zapsaná jménem', async () => {
