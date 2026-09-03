@@ -42,6 +42,28 @@
 
 import { readFileSync } from 'node:fs';
 
+/**
+ * Jediné klíče, které ovládací soubor smí nést — obě jeho půlky dohromady.
+ *
+ * **Neznámý klíč je rozbitý soubor, ne cizí klíč k přehlédnutí.** Nález
+ * nezávislé revize 3. 9. 2026, `VERDICT: blocking`: od chvíle, kdy chybějící
+ * klíč stropu znamená „platí výchozí hodnota", je **překlep k nerozeznání od
+ * mlčení**. `{"enabled":true,"capusd":0.01}` — operátor, který za incidentu
+ * sráží strop a splete jedno písmeno — tedy neskončí odmítnutím, ale výchozím
+ * stropem 5 USD, což je 500násobek toho, co napsal. Táž doktrína jako u
+ * neznámého jména v `off` (`kill-switch.ts`), jen o patro výš: **překlep vznikl
+ * při pokusu něco utáhnout, takže se nesmí přeložit na povolení.**
+ *
+ * Je to seznam za celý soubor, ne za jednu půlku, protože soubor je jeden.
+ * Kdyby si každá půlka soudila svoje klíče sama, musela by tolerovat klíče té
+ * druhé — a `{"offf":["all"]}` by prošlo jako „nic není vypnuté" přesně tak,
+ * jak to revize naměřila.
+ *
+ * Naměřeno tímtéž během: **26 ovládacích souborů napsaných v repu, 0 z nich
+ * nese jiný klíč**, takže tenhle seznam nezakazuje nic, co existuje.
+ */
+export const CONTROL_KEYS = ['enabled', 'capUsd', 'callCap', 'off'] as const;
+
 export type ControlRead =
   /** Nikdo vypínačem nehnul. Platí výchozí hodnoty volajícího. */
   | { readonly kind: 'absent' }
@@ -71,6 +93,14 @@ export function readControlFile(path: string | null): ControlRead {
   // Pole je taky `object` a `null` taky. Ani jedno není ovládací soubor.
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed))
     return { kind: 'broken', detail: 'control file is not a JSON object' };
+
+  const known = new Set<string>(CONTROL_KEYS);
+  const unknown = Object.keys(parsed).filter((key) => !known.has(key));
+  if (unknown.length > 0)
+    return {
+      kind: 'broken',
+      detail: `control file has unknown keys: ${unknown.join(', ')} (allowed: ${CONTROL_KEYS.join(', ')})`,
+    };
 
   return { kind: 'read', value: parsed as Record<string, unknown> };
 }

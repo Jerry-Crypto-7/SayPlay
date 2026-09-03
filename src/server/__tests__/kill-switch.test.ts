@@ -164,6 +164,15 @@ describe('rozbitý vypínač zastaví placené dveře a čtení nechá běžet',
     expectPaidOff(killStateFrom({ off: ['upstream', 'sessons'] }));
   });
 
+  // Nález nezávislé revize 3. 9. 2026: překlep v **hodnotě** selhával zavřeně,
+  // překlep v **klíči** otevřeně. `{"offf":["all"]}` je „zastav všechno" a
+  // vracelo „nic není vypnuté", bez jediného řádku v logu.
+  it('překlep v klíči, ne v hodnotě — `offf` místo `off`', () => {
+    expectPaidOff(killState(env(JSON.stringify({ offf: ['all'] }))));
+    expectPaidOff(killState(env(JSON.stringify({ OFF: ['all'] }))));
+    expectPaidOff(killState(env(JSON.stringify({ off: ['all'], disable: 'all' }))));
+  });
+
   it('nečitelný soubor — cesta míří na adresář', () => {
     const dir = mkdtempSync(join(tmpdir(), 'worldsmith-kill-dir-'));
     temporary.push(dir);

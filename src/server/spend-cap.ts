@@ -207,6 +207,14 @@ function parseControl(parsed: Record<string, unknown>, defaults: CapControl): Ca
     (typeof callCap !== 'number' || !Number.isInteger(callCap) || callCap < 0)
   )
     return null;
+  // **Vypnout strop je jediný povel, který se musí napsat celý.** `enabled:false`
+  // je jediná hodnota v celém souboru, která peněžní mez odstraní úplně, takže
+  // `{"enabled":false}` samotné by z pravidla „chybějící klíč = výchozí hodnota"
+  // udělalo nejkratší cestu k neomezenému utrácení — před 3. 9. 2026 týž soubor
+  // odmítal všechno. Nález nezávislé revize, `VERDICT: blocking`: naměřeno 501
+  // rezervací a 511 000 USD držených. Kdo strop vypíná, napíše i jeho hodnotu
+  // pro chvíli, kdy ho zapne zpátky.
+  if (enabled === false && capUsd === undefined) return null;
 
   const resolvedCalls = callCap ?? defaults.callCap;
   const resolved = { enabled: enabled ?? defaults.enabled, capUsd: capUsd ?? defaults.capUsd };

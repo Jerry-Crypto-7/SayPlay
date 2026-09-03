@@ -192,6 +192,16 @@ describe('vypínač mění chování za běhu, bez nové instance', () => {
       // od mlčení níž. Obojí je „validní JSON objekt", a právě proto je to tady.
       '{"capUsd":"pět"}',
       '{"enabled":1,"off":["refine"]}',
+      // Nález revize 3. 9. 2026: překlep v klíči je pokus utáhnout strop, ne
+      // mlčení o něm. `capusd` malým „u" by jinak dalo výchozích 5 USD, tedy
+      // 500násobek napsaného.
+      '{"enabled":true,"capusd":0.01}',
+      '{"enabled":true,"capUSD":0.01}',
+      '{"callcap":1}',
+      // Vypnutí stropu se musí napsat celé, jinak je to nejkratší cesta
+      // k neomezenému utrácení.
+      '{"enabled":false}',
+      '{"enabled":false,"off":["refine"]}',
     ]) {
       const cap = new SpendCap({ enabled: true, capUsd: 100 }, controlFile(broken));
       const refused = await cap.reserve(0.01);
@@ -213,6 +223,18 @@ describe('vypínač mění chování za běhu, bez nové instance', () => {
       expect(cap.snapshot().capUsd).toBe(7);
       expect(cap.snapshot().callCap).toBe(5);
       // A vypínač, kvůli kterému ten soubor vznikl, pořád platí.
+      expect(killState({ WORLDSMITH_CONTROL_FILE: path }).refine).toBe(true);
+    });
+
+    // Mez „vypnout se musí napsat celé" platí jen na vypnutí. Bez téhle aserce
+    // projde i verze, která `capUsd` vyžaduje pokaždé, když padne slovo
+    // `enabled` — naměřeno mutací 3. 9. 2026, přežil desátý mutant.
+    it('`{"enabled":true, off}` je platný soubor: strop běží na výchozí částce', async () => {
+      const path = controlFile(JSON.stringify({ enabled: true, off: ['refine'] }));
+      const cap = new SpendCap({ enabled: true, capUsd: 7 }, path);
+
+      expect((await cap.reserve(0.01)).ok, 'potvrzení, že strop běží, ho zastavilo').toBe(true);
+      expect(cap.snapshot().capUsd).toBe(7);
       expect(killState({ WORLDSMITH_CONTROL_FILE: path }).refine).toBe(true);
     });
 
