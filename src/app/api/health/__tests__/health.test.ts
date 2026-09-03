@@ -15,7 +15,7 @@
  */
 
 import { tmpdir } from 'node:os';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { GET, healthReport, type HealthBody } from '../route';
 import type { ReadinessDeps, ReadinessFs, WriteOutcome } from '../../../../server/readiness';
@@ -114,5 +114,138 @@ describe('GET /api/health', () => {
     expect(response.headers.get('cache-control')).toBe('no-store');
     expect(((await response.json()) as HealthBody).ready).toBe(true);
     expect(tmpdir().length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * **Cache sondy — dvě vteřiny, které do 3. 9. 2026 neplatily** (P15 T28).
+ *
+ * Druhé kolo nezávislé revize našlo, že tahle logika neměla **žádný** test:
+ * jediný test, který sahal na `GET()`, ho volal jednou a soudil hlavičku
+ * `no-store`, což je vlastnost klientské cache — tedy pravý opak té serverové.
+ * Mutant, který obě řádky cache smazal, nechal sadu zelenou.
+ *
+ * Soudí se proto to, co cache slibuje, a obojí se dá porušit tiše:
+ *
+ * 1. **souběžné dotazy sdílejí jednu sondu** — bez toho je veřejná adresa
+ *    zesilovač přesně pod náporem, na který byla cache postavená;
+ * 2. **razítko vzniká na konci sondy, ne na začátku** — jinak sonda delší než
+ *    okno vyrobí záznam, který je prošlý ve chvíli, kdy vznikne, a cache na
+ *    pomalém svazku mlčky přestane existovat.
+ *
+ * Sonda se předává parametrem, takže se počítá, kolikrát se doopravdy pustila.
+ * Čítač je jediný pozorovatelný následek, který sonda má.
+ */
+describe('cache zdravotní sondy', () => {
+  /** Čerstvý modul, tedy prázdná cache. Stav je modulový, ne parametr. */
+  async function freshCache(): Promise<(probe: () => Promise<Answer>) => Promise<Answer>> {
+    vi.resetModules();
+    return (await import('../route')).cachedReport;
+  }
+
+  type Answer = Awaited<ReturnType<typeof healthReport>>;
+
+  it('dvě stě souběžných dotazů spustí jednu sondu', async () => {
+    // Revizí naměřený případ: 200 paralelních `GET /api/health` = 200 sond,
+    // protože se `cached` přiřazovalo až po `await` a všechny dotazy, které
+    // mezitím dorazily, viděly prázdno.
+    const ready = await healthReport(DIRECTORY, deps(fakeFs('none')));
+    const cachedReport = await freshCache();
+
+    let probes = 0;
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const probe = async (): Promise<Answer> => {
+      probes += 1;
+      await gate;
+      return ready;
+    };
+
+    const all = Promise.all(Array.from({ length: 200 }, () => cachedReport(probe)));
+    release();
+    const answers = await all;
+
+    expect(probes, 'každý dotaz si spustil vlastní sondu').toBe(1);
+    expect(
+      answers.every((one) => one === ready),
+      'někdo dostal jinou odpověď než tu jedinou naměřenou',
+    ).toBe(true);
+  });
+
+  it('sonda pomalejší než okno se přesto uloží', async () => {
+    // Druhá půlka nálezu. Pět dotazů za sebou nad sondou 2 100 ms dalo pět
+    // sond: razítko se bralo, než sonda začala, takže záznam byl po jejím
+    // doběhnutí starý 2 100 ms — tedy prošlý dřív, než ho někdo přečetl.
+    const ready = await healthReport(DIRECTORY, deps(fakeFs('none')));
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(0);
+      const cachedReport = await freshCache();
+
+      let probes = 0;
+      const slow = async (): Promise<Answer> => {
+        probes += 1;
+        vi.setSystemTime(Date.now() + 2_100);
+        return ready;
+      };
+
+      await cachedReport(slow);
+      await cachedReport(slow);
+
+      expect(probes, 'razítko vzniklo před sondou, takže záznam byl prošlý hned').toBe(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('po dvou vteřinách se sonda pustí znovu', async () => {
+    // Opačný mutant: cache, která nikdy nevyprší, hlásí zdraví instance,
+    // která se mezitím rozbila — a to je horší než žádná kontrola.
+    const ready = await healthReport(DIRECTORY, deps(fakeFs('none')));
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(0);
+      const cachedReport = await freshCache();
+
+      let probes = 0;
+      const probe = async (): Promise<Answer> => {
+        probes += 1;
+        return ready;
+      };
+
+      await cachedReport(probe);
+      vi.setSystemTime(1_999);
+      await cachedReport(probe);
+      expect(probes, 'cache vypršela dřív než po dvou vteřinách').toBe(1);
+
+      vi.setSystemTime(2_000);
+      await cachedReport(probe);
+      expect(probes, 'cache nevypršela nikdy').toBe(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('cachuje se i verdikt „nepřipraven"', async () => {
+    // Komentář u `CACHE_MS` to slibuje výslovně: plný disk se za dvě vteřiny
+    // nespraví a odpověď, která by se ptala znovu, vrátí útočníkovi zesilovač
+    // přesně ve chvíli, kdy je stroj nejslabší.
+    const broken = await healthReport(DIRECTORY, deps(fakeFs('write')));
+    const cachedReport = await freshCache();
+
+    let probes = 0;
+    const probe = async (): Promise<Answer> => {
+      probes += 1;
+      return broken;
+    };
+
+    const first = await cachedReport(probe);
+    const second = await cachedReport(probe);
+
+    expect(first.status).toBe(503);
+    expect(second, 'nepřipravený verdikt se nezacachoval').toBe(first);
+    expect(probes, 'nepřipravená instance se sondovala znovu').toBe(1);
   });
 });

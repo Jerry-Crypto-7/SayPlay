@@ -115,18 +115,54 @@ export async function healthReport(
  */
 const CACHE_MS = 2_000;
 
-let cached: { readonly at: number; readonly answer: Awaited<ReturnType<typeof healthReport>> } | null =
-  null;
+type Answer = Awaited<ReturnType<typeof healthReport>>;
+
+let cached: { readonly at: number; readonly answer: Answer } | null = null;
+
+/**
+ * Sonda, která právě běží. **Bez tohohle cache neslučuje souběh** — nález
+ * nezávislé revize 3. 9. 2026, potvrzený měřením nad věrnou replikou:
+ * **200 souběžných dotazů = 200 sond**, protože `cached` se přiřazovalo až
+ * po doběhnutí `await` a každý dotaz, který mezitím přišel, viděl prázdno.
+ * Zesilovač, který měla cache zavřít, tak zůstal otevřený přesně pod náporem,
+ * na který byl určený.
+ */
+let inFlight: Promise<Answer> | null = null;
 
 /** Hodiny sondy. Wall-clock je tu legální — není to replay cesta. */
 function freshEnough(at: number): boolean {
   return Date.now() - at < CACHE_MS;
 }
 
+/**
+ * Jedna sonda na okno, ať se ptá kdokoli.
+ *
+ * **Razítko `at` vzniká, až když sonda doběhne, ne než začne.** Druhá půlka
+ * téhož nálezu: se starým pořadím byl záznam po pomalé sondě prošlý ve chvíli,
+ * kdy vznikl (sonda přes 2 s → cache platná 0 ms), takže na pomalém svazku
+ * cache mlčky přestala existovat. Měřeno: pět dotazů za sebou nad sondou
+ * 2 100 ms dalo pět sond.
+ *
+ * Sonda se předává parametrem, protože jinak tuhle logiku nejde testovat —
+ * a revize našla, že netestovaná byla celá. `GET` je její jediný volající.
+ */
+export function cachedReport(probe: () => Promise<Answer>): Promise<Answer> {
+  if (cached !== null && freshEnough(cached.at)) return Promise.resolve(cached.answer);
+  if (inFlight !== null) return inFlight;
+
+  inFlight = probe()
+    .then((answer) => {
+      cached = { at: Date.now(), answer };
+      return answer;
+    })
+    .finally(() => {
+      inFlight = null;
+    });
+  return inFlight;
+}
+
 export async function GET(): Promise<Response> {
-  if (cached === null || !freshEnough(cached.at))
-    cached = { at: Date.now(), answer: await healthReport(tmpdir(), nodeReadinessDeps()) };
-  const { status, body } = cached.answer;
+  const { status, body } = await cachedReport(() => healthReport(tmpdir(), nodeReadinessDeps()));
 
   // **`no-store` je součást odpovědi, ne ladění.** Zdravotní kontrola, kterou
   // někdo po cestě uloží do cache, odpovídá za instanci, která už neběží —
