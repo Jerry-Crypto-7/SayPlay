@@ -661,6 +661,41 @@ describe('commit druhé věty', () => {
     ).toEqual([duvod]);
   });
 
+  // `T22-rejectreplay`, **druhé kolo** nezávislé revize 4. 9. 2026, `blocking`.
+  // Čítače jsou tři, ne dva: commit preview, které mění **jen tvar**, nenese
+  // jedinou operaci, takže `sim` i `look` stojí a hne se jen revize podoby.
+  // Dokud ji brána nečetla, propadl takový retry o pár řádků níž na
+  // `STALE_REVISION`, které `rejections` nenese — a revize podoby je
+  // monotónní, takže se ten důvod už neměl jak vrátit.
+  it('zamítnuté preview se po pohybu SAMOTNÉ revize podoby už commitnout nedá', async () => {
+    const stored = await generated();
+    // Vada tvaru patche: verdikt na světě nezávisí, takže se opakováním
+    // nemůže vrátit sám.
+    const loser = pending(
+      stored,
+      plan({ behavior: [{ op: 'replace', path: '/meta/title', value: 'nowhere' }] }),
+      'change-malformed',
+    );
+    const prvni = await body(await commit(stored.session.sessionId, loser.changeId));
+    expect(prvni.outcome).toBe('REJECTED');
+    const duvod = (prvni.rejections as readonly Record<string, unknown>[])[0];
+
+    // Cizí věta mění jen podobu **téhož** objektu: žádná operace, tedy ani
+    // `sim`, ani `look`.
+    const other = pending(stored, plan({ shape: WOVEN_MAST }), 'change-shape');
+    expect((await commit(stored.session.sessionId, other.changeId)).status).toBe(200);
+    expect(stored.session.revisionOf('ironMast')).toBe(1);
+    expect(worldOf(stored).simRevision).toBe(0);
+    expect(worldOf(stored).lookRevision).toBe(0);
+
+    const znovu = await commit(stored.session.sessionId, loser.changeId);
+    expect(znovu.status).toBe(409);
+    expect(
+      (await body(znovu)).error,
+      'retry propadl na STALE_REVISION, které důvod nenese',
+    ).toMatchObject({ code: 'PREVIEW_REJECTED', field: 'changeId', rejections: [duvod] });
+  });
+
   it('tvar, který ve světě není, se tiše nepodstrčí', async () => {
     const stored = await generated();
     const change = pending(

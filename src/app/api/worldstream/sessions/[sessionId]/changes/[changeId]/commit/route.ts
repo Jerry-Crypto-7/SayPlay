@@ -148,17 +148,25 @@ export async function POST(
    * proč jeho věta neprošla. U vady, která na světě nezávisí (vada tvaru
    * patche), se ta věta navíc nemá jak vrátit: verdikt se nemůže změnit, takže
    * po prvním cizím commitu by byl důvod nečitelný napořád.
+   *
+   * ⚠ **Čítače jsou tři, ne dva** — druhé kolo téže revize. Commit preview,
+   * které mění jen tvar, nenese jedinou operaci, takže `sim` i `look` stojí
+   * a hne se jen revize podoby; dokud ji tahle brána nečetla, takový retry
+   * propadl o pár řádků níž na `STALE_REVISION`, které verdikt nenese.
    */
+  const representation = stored.session.revisionOf(plan.stableId);
   const rejectedAt = change.rejectedAt;
   if (
     rejectedAt !== undefined &&
-    (rejectedAt.sim !== doc.simRevision || rejectedAt.look !== doc.lookRevision)
+    (rejectedAt.sim !== doc.simRevision ||
+      rejectedAt.look !== doc.lookRevision ||
+      rejectedAt.representation !== (representation ?? 0))
   )
     return Response.json(
       {
         error: {
           code: 'PREVIEW_REJECTED',
-          message: `this preview was already rejected when the world was at sim ${String(rejectedAt.sim)} / look ${String(rejectedAt.look)}, and the world has since moved to sim ${String(doc.simRevision)} / look ${String(doc.lookRevision)} — ask for a new preview`,
+          message: `this preview was already rejected when the world was at sim ${String(rejectedAt.sim)} / look ${String(rejectedAt.look)} / representation ${String(rejectedAt.representation)}, and the world has since moved to sim ${String(doc.simRevision)} / look ${String(doc.lookRevision)} / representation ${String(representation ?? 0)} — ask for a new preview`,
           field: 'changeId',
           rejections: rejectedAt.rejections,
         },
@@ -166,7 +174,6 @@ export async function POST(
       { status: 409 },
     );
 
-  const representation = stored.session.revisionOf(plan.stableId);
   if (representation !== basedOn.representation)
     return Response.json(
       {
@@ -294,7 +301,12 @@ function rejected(
   doc: WorldstreamBlueprint['world'],
   rejections: readonly RejectionNote[],
 ): Response {
-  markRejected(stored, changeId, { sim: doc.simRevision, look: doc.lookRevision, rejections });
+  markRejected(stored, changeId, {
+    sim: doc.simRevision,
+    look: doc.lookRevision,
+    representation: stored.session.revisionOf(stableId) ?? 0,
+    rejections,
+  });
   stored.session.events.append('patch.rejected', { stableId, rejections }, stableId);
   return Response.json({ outcome: 'REJECTED', stableId, rejections });
 }

@@ -533,9 +533,16 @@ export interface RejectionNote {
  * Odmítnuté preview v mapě zůstává schválně (`T22-takeearly`), aby porotce
  * neplatil druhé volání modelu za tutéž větu. Tím ale smí být jen **opakování
  * téhož verdiktu nad týmž světem**: jakmile se svět mezitím pohnul, je druhý
- * pokus rozhodnutí o jiném světě, než jaký člověk viděl. Obě revize dohromady,
- * protože `staleRevision` soudí každou část zvlášť a záměrně — tady jde právě
+ * pokus rozhodnutí o jiném světě, než jaký člověk viděl. **Všechny tři** čítače dohromady,
+ * protože `staleRevision` soudí každý zvlášť a záměrně — tady jde právě
  * o pohyb v části, které se preview netýká.
+ *
+ * ⚠ **`representation` v razítku je třetí čítač, ne ozdoba** — nález druhého
+ * kola nezávislé revize 4. 9. 2026, ověřený spuštěním route. Commit preview,
+ * které mění **jen tvar**, nenese jedinou operaci, takže `sim` ani `look` se
+ * nehnou a zvedne se právě a jen revize podoby. Bez téhle položky takový retry
+ * propadl pod bránu na starší `STALE_REVISION`, které `rejections` nenese —
+ * a protože revize podoby je monotónní, důvod byl nečitelný napořád.
  *
  * ⚠ **Verdikt se veze s razítkem, a je to celý nález nezávislé revize
  * 4. 9. 2026.** Bez něj by 409 nad pohnutým světem spolklo jedinou větu, která
@@ -546,5 +553,7 @@ export interface RejectionNote {
 export interface RejectedAt {
   readonly sim: number;
   readonly look: number;
+  /** Revize podoby **toho objektu**, kterého se preview týká. */
+  readonly representation: number;
   readonly rejections: readonly RejectionNote[];
 }
