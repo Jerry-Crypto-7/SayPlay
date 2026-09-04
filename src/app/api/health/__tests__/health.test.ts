@@ -48,9 +48,9 @@ function fakeFs(
   };
 }
 
-function deps(fs: ReadinessFs): ReadinessDeps {
+function deps(fs: ReadinessFs, capMisconfigured: () => boolean = () => false): ReadinessDeps {
   let clock = 0;
-  return { fs, now: () => (clock += 3), nonce: () => 'test-probe' };
+  return { fs, now: () => (clock += 3), nonce: () => 'test-probe', capMisconfigured };
 }
 
 /** Co všechno by z odpovědi šlo vyčíst o instanci, kdyby se to tam dostalo. */
