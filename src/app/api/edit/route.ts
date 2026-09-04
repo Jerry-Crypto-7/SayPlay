@@ -33,7 +33,9 @@
  * Tatáž hranice jako u `/api/emit`, protože ji konzumuje týž scorer: **400**
  * nevalidní požadavek, **404** neznámý editační prompt nebo dvojice (svět,
  * prompt), kterou zmrazení nekryje, **408** tělo bez deadlinu, **413** tělo přes
- * strop, **409** zastaralá revize, **503** dvojí — nečitelný nebo podvržený
+ * strop, **409** zastaralá revize, **429** dvojí — překročená frekvence nebo
+ * plná fronta čtení těl, obojí s hlavičkou `retry-after` (`T28-editrate`),
+ * **503** dvojí — nečitelný nebo podvržený
  * korpus, a od `f81d019` taky `REPLAY_DISABLED`, tedy vypnutý provoz
  * (`off: ["all"]`, brána hned na začátku handleru).
  * Všechno ostatní je **200 s verdiktem** — patch, který se nedá směrovat,
@@ -76,13 +78,15 @@
  *    ne na počet. Patří to do `T28-editrate` spolu s omezením frekvence,
  *    protože je to táž mez a stavět ji dvakrát nemá smysl.
  *
- * **Co naměřené ZŮSTÁVÁ jako otevřený problém:** jeden požadavek stojí
+ * **Co s tím naměřeným tedy JE, od `T28-editrate`:** jeden požadavek stojí
  * **medián 15,3 ms, p95 27,7 ms a max 38,6 ms** synchronního CPU na smyčce
- * (60 měření nad tělem o 1 784 B, po zahřátí cache korpusu). To je anonymní
- * veřejná adresa bez jakéhokoli omezení, takže ~66 požadavků za sekundu
- * zastaví celou instanci — a s ní SSE proudy, preview i snapshot. Lék na to
- * není čítač v letu, ale omezení **frekvence** nebo přesun té práce ze smyčky;
- * je to úloha `T28-editrate`, ne tahle.
+ * (60 měření nad tělem o 1 784 B, po zahřátí cache korpusu), takže ~66
+ * požadavků za sekundu zastaví celou instanci — a s ní SSE proudy, preview
+ * i snapshot. Zavírají to **dvě meze, ne čítač v letu**: strop na frekvenci
+ * (`src/server/rate-limit.ts`, 50 požadavků za 10 s na dveře, odvozené z toho
+ * p95) a strop na počet souběžných čtení těla (`MAX_CONCURRENT_BODY_READS`).
+ * ⚠ Obě jsou meze **na instanci**, ne na nasazení; co to znamená a proč to tak
+ * je, stojí v hlavičce `rate-limit.ts`.
  *
  * ## Endpoint NEČTE `allowedPaths`
  *
@@ -98,11 +102,12 @@ import { randomUUID } from 'node:crypto';
 
 import type { Operation } from 'rfc6902';
 
-import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
+import { bodyRefusalResponse, readBody } from '../../../http/body';
 import type { PartPatch } from '../../../ir/revision';
 import { migrateWorldDoc, type WorldDoc } from '../../../ir/worlddoc';
 import { emitPatch, frozenGrammar, frozenPrompt, type ClientFailure } from '../../../model/client';
 import { killState } from '../../../server/kill-switch';
+import { rateLimitedResponse, takeRateSlot } from '../../../server/rate-limit';
 import { buildEditRequest } from '../../../model/edit-prompt';
 import { withRequest } from '../../../obs/trace';
 import {
@@ -236,6 +241,20 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     /**
+     * **Strop na frekvenci je druhá brána, pořád před čtením těla.** Je to ta
+     * mez, kterou naměřená vada téhle route doopravdy potřebuje: 15,3 ms CPU
+     * na požadavek znamená, že ~66 požadavků za sekundu zastaví instanci, a
+     * fronta čtení těla na to nesáhne — kdo posílá celá těla, ji nikdy
+     * nenaplní. Odůvodnění čísel i toho, proč je mez na proces, je
+     * v `src/server/rate-limit.ts`.
+     */
+    const slot = takeRateSlot('edit');
+    if (!slot.allowed) {
+      logRateLimited('edit', requestId, 'TOO_MANY_REQUESTS', `${String(slot.count)} in window`);
+      return rateLimitedResponse(requestId, slot);
+    }
+
+    /**
      * **Čtení těla je uvnitř `try`, a je to jediný důvod, proč tenhle handler
      * odpoví vždycky.** `readBody()` vrací svoje meze jako hodnotu, ale samo
      * `reader.read()` se odmítnout může — přerušené spojení, vadná komprese —
@@ -255,22 +274,10 @@ export async function POST(request: Request): Promise<Response> {
       );
       return badRequest(requestId, 'BODY_UNREADABLE', 'the request body could not be read');
     }
-    if (!raw.ok)
-      return raw.reason === 'TOO_LARGE'
-        ? Response.json(
-            {
-              requestId,
-              error: { code: 'PAYLOAD_TOO_LARGE', message: `request body exceeds ${MAX_BODY_BYTES} bytes` },
-            },
-            { status: 413 },
-          )
-        : Response.json(
-            {
-              requestId,
-              error: { code: 'BODY_TIMEOUT', message: `request body did not arrive within ${BODY_DEADLINE_MS} ms` },
-            },
-            { status: 408 },
-          );
+    // Kódy i hlášky jsou beze změny; přibyl třetí důvod (`BUSY`, tedy plná
+    // fronta čtení) a překlad se přestěhoval k mezi do `src/http/body.ts`,
+    // aby ho čtvery dveře nedržely čtyřikrát.
+    if (!raw.ok) return bodyRefusalResponse(requestId, raw.reason);
 
     let body: unknown;
     try {

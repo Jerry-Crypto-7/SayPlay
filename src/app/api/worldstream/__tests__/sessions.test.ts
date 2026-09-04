@@ -49,6 +49,7 @@ vi.mock('../../../../worldstream/sessions', async (importOriginal) => {
   return { ...actual, serverGrammar: vi.fn(actual.serverGrammar) };
 });
 import { resetFaultLog } from '../../../../server/public-faults';
+import { MAX_REQUESTS_PER_WINDOW, resetRateWindows, takeRateSlot } from '../../../../server/rate-limit';
 import { DEFAULT_CAP_USD } from '../../../../server/spend-cap';
 import {
   acquireSlot,
@@ -951,5 +952,29 @@ describe('proud relace má strop na počet posluchačů', () => {
     // Mapa se maže na nule; kdyby držela klíče na nule, je to táž netěsnost
     // o patro níž.
     expect(streamedSessionCount(), 'po odchodu všech diváků zůstal klíč v mapě').toBe(0);
+  });
+});
+
+describe('strop na frekvenci dorazí až k zakládání relace', () => {
+  it('padesátý první požadavek v okně je 429, a čítač souběhu tím nezůstane rozbitý', async () => {
+    // Okno se plní přímo čítačem — měří se zapojení meze do těchhle dveří,
+    // ne mez sama (`src/server/__tests__/rate-limit.test.ts`).
+    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) takeRateSlot('sessions');
+    try {
+      const response = await createSession(createRequest({ prompt: 'a salt flat with one iron mast' }));
+      expect(response.status).toBe(429);
+      expect(Number(response.headers.get('retry-after'))).toBeGreaterThanOrEqual(1);
+      expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
+        'TOO_MANY_REQUESTS',
+      );
+    } finally {
+      resetRateWindows();
+    }
+
+    // **Odmítnutí musí být PŘED slotem placeného souběhu.** Kdyby se bralo
+    // dřív, každý odmítnutý požadavek by ukousl jeden ze tří slotů a nevrátil
+    // ho — a padesát jedna požadavků by zavřelo stavbu světů natrvalo.
+    const after = await createSession(createRequest({ prompt: 'a salt flat with one iron mast' }));
+    expect(after.status, 'čítač souběhu zůstal po odmítnutí obsazený').toBe(202);
   });
 });

@@ -20,12 +20,14 @@ import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, posix, relative, resolve, sep } from 'node:path';
 import { applyPatch, type Operation } from 'rfc6902';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type PartPatch } from '../../../../ir/revision';
 import { peelEnvelope, sealSimHash, type WorldDoc } from '../../../../ir/worlddoc';
 import { routePatch } from '../../../../patch/router';
 import { commitRoutedParts, staleRevision } from '../commit';
+import { MAX_CONCURRENT_BODY_READS, openBodyReads, readBody } from '../../../../http/body';
+import { MAX_REQUESTS_PER_WINDOW, resetRateWindows, takeRateSlot } from '../../../../server/rate-limit';
 import { POST } from '../route';
 
 // ---------------------------------------------------------------------------
@@ -281,6 +283,19 @@ async function edit(promptId: string, doc?: WorldDoc, revision?: { sim: number; 
 }
 
 // ---------------------------------------------------------------------------
+
+
+/**
+ * **Strop na frekvenci se před každým případem nuluje, a není to obcházení
+ * meze.** Okna `takeRateSlot()` jsou proces-globální (`src/server/rate-limit.ts`)
+ * a tahle sada vystřelí na jedny dveře víc než `MAX_REQUESTS_PER_WINDOW`
+ * požadavků za desetisekundové okno — což žádný člověk neudělá, ale sada ano.
+ * Bez tohohle řádku začne od padesátého prvního požadavku odpovídat 429 a
+ * červená se objeví na náhodném případu podle pořadí, ne na tom vadném.
+ */
+beforeEach(() => {
+  resetRateWindows();
+});
 
 describe('celá zmrazená editační sada projde endpointem', () => {
   it('má právě 25 editačních promptů a žádný z nich nekončí 5xx', async () => {
@@ -1203,6 +1218,79 @@ describe('strop souběhu sem nepatří, a je to změřené', () => {
       expect((await post(payload)).status).toBe(200);
     } finally {
       vi.unstubAllEnvs();
+    }
+  });
+});
+
+describe('plná fronta čtení těla dorazí až ke dveřím', () => {
+  /** Klient, který pošle hlavičky a pak mlčí — drží slot až do deadlinu. */
+  function stalled(): { readonly request: Request; readonly finish: () => void } {
+    let close = (): void => undefined;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        close = () => {
+          controller.close();
+        };
+      },
+    });
+    const request = new Request('http://127.0.0.1/api/edit', {
+      method: 'POST',
+      body,
+      duplex: 'half',
+    } as RequestInit & { duplex: 'half' });
+    return { request, finish: () => { close(); } };
+  }
+
+  it('vrací 429 s retry-after, ne 408 a ne 200', async () => {
+    // **Jednotkový test nad `readBody` tohle neuhlídá.** Mez může být správná
+    // a dveře ji přesto nemusí přeložit — do 4. 9. 2026 tu stálo
+    // `reason === 'TOO_LARGE' ? 413 : 408`, takže nápor by odsud odešel jako
+    // „tvoje tělo dorazilo pomalu".
+    const held = Array.from({ length: MAX_CONCURRENT_BODY_READS }, stalled);
+    const pending = held.map((h) => readBody(h.request, 60_000));
+    try {
+      expect(openBodyReads()).toBe(MAX_CONCURRENT_BODY_READS);
+      const response = await POST(
+        new Request('http://127.0.0.1/api/edit', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ promptId: 'E01' }),
+        }),
+      );
+      expect(response.status).toBe(429);
+      expect(response.headers.get('retry-after')).toBe('5');
+      expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
+        'TOO_MANY_BODY_READS',
+      );
+    } finally {
+      for (const h of held) h.finish();
+      await Promise.all(pending);
+    }
+    expect(openBodyReads()).toBe(0);
+  });
+});
+
+describe('strop na frekvenci dorazí až ke dveřím', () => {
+  it('padesátý první požadavek v okně je 429 s retry-after, ne 200', async () => {
+    // Okno se plní přímo čítačem, ne padesáti HTTP požadavky: měří se tady
+    // **zapojení** meze do těchhle dveří, ne mez sama (ta má vlastní sadu
+    // v `src/server/__tests__/rate-limit.test.ts`).
+    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) takeRateSlot('edit');
+    try {
+      const response = await POST(
+        new Request('http://127.0.0.1/api/edit', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ promptId: 'E01' }),
+        }),
+      );
+      expect(response.status).toBe(429);
+      expect(Number(response.headers.get('retry-after'))).toBeGreaterThanOrEqual(1);
+      expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
+        'TOO_MANY_REQUESTS',
+      );
+    } finally {
+      resetRateWindows();
     }
   });
 });

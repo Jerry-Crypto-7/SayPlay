@@ -42,11 +42,137 @@ export const MAX_BODY_BYTES = 64 * 1024;
 /** Strop **času** na přečtení celého těla, ne jen jeho přebytku. */
 export const BODY_DEADLINE_MS = 5_000;
 
-export type BodyRead = { ok: true; text: string } | { ok: false; reason: 'TOO_LARGE' | 'TIMEOUT' };
+/**
+ * Kolik čtení těla smí běžet **naráz** — třetí mez, a bez ní ty dvě nad ní
+ * neomezují nic dohromady.
+ *
+ * `MAX_BODY_BYTES` říká, kolik drží **jedno** čtení, a `BODY_DEADLINE_MS`, jak
+ * dlouho. Ani jedno neříká, kolik jich smí být: N klientů, kteří pošlou
+ * hlavičky a pak mlčí, sedí uvnitř `POST` současně, každý s vlastním readerem,
+ * spojením a až 64 kB, a odejdou nejdřív za pět sekund. Naměřeno nezávislou
+ * revizí 4. 9. 2026 (P15 `T28-editrate`) nad `/api/edit`; týká se to stejně
+ * `/api/emit` i worldstreamových relací, protože všechny čtou tímhle jedním
+ * kusem kódu.
+ *
+ * **32 je součin, ne vkus:** 32 × `MAX_BODY_BYTES` = 2 MB je strop paměti, kterou
+ * čtená těla smí naráz držet, a `BODY_DEADLINE_MS` říká, že se slot uvolní
+ * nejpozději za pět sekund i tehdy, když druhá strana mlčí. Kdo tohle číslo
+ * zvedá, zvedá tím obojí.
+ *
+ * ⚠ **Je to mez na PROCES, a to je tady správně, ne kompromis.** Chrání paměť
+ * a smyčku téhle instance — sdílený obchod by o její zátěži nevěděl nic a řešil
+ * by jiný problém (frekvenci, `src/server/rate-limit.ts`).
+ */
+export const MAX_CONCURRENT_BODY_READS = 32;
+
+/**
+ * Kolik čtení právě běží. Visí to na `globalThis`, ne na modulu, z téhož
+ * naměřeného důvodu jako procesová účetní kniha v `src/server/spend-store.ts`:
+ * Next umí postavit víc grafů modulů a modulová proměnná by pak počítala jen
+ * uvnitř jednoho z nich, tedy pod mez, která má chránit celý proces.
+ */
+const OPEN_READS_KEY = '__worldsmithOpenBodyReads';
+
+function openReads(): { count: number } {
+  const holder = globalThis as Record<string, unknown>;
+  holder[OPEN_READS_KEY] ??= { count: 0 };
+  return holder[OPEN_READS_KEY] as { count: number };
+}
+
+/** Kolik čtení těla právě běží. Pro diagnostiku a pro testy. */
+export function openBodyReads(): number {
+  return openReads().count;
+}
+
+export type BodyRead =
+  | { ok: true; text: string }
+  | { ok: false; reason: 'TOO_LARGE' | 'TIMEOUT' | 'BUSY' };
+
+export interface BodyRefusal {
+  readonly status: 413 | 408 | 429;
+  readonly code: 'PAYLOAD_TOO_LARGE' | 'BODY_TIMEOUT' | 'TOO_MANY_BODY_READS';
+  readonly message: string;
+  /** Kolik sekund má smysl počkat. `undefined` tam, kde opakování nepomůže. */
+  readonly retryAfterSeconds?: number;
+}
+
+/**
+ * Překlad odmítnutého čtení na stav a kód — **jednou pro všechny dveře**.
+ *
+ * Čtou tímhle kusem kódu čtvery (`edit`, `emit`, `generate`, worldstreamové
+ * relace) a do 4. 9. 2026 si každé psalo vlastní ternární výraz nad `reason`.
+ * Přibytí třetího důvodu tuhle vadu ukázalo naráz na všech čtyřech místech:
+ * `reason === 'TOO_LARGE' ? 413 : 408` vydá na nápor **408 „tělo dorazilo
+ * pomalu"**, což je tvrzení o volajícím, a ten přitom neudělal nic. Proto
+ * překlad bydlí tady, u meze, a ne u dveří.
+ */
+export function bodyRefusal(reason: 'TOO_LARGE' | 'TIMEOUT' | 'BUSY'): BodyRefusal {
+  if (reason === 'TOO_LARGE')
+    return {
+      status: 413,
+      code: 'PAYLOAD_TOO_LARGE',
+      message: `request body exceeds ${String(MAX_BODY_BYTES)} bytes`,
+    };
+  if (reason === 'TIMEOUT')
+    return {
+      status: 408,
+      code: 'BODY_TIMEOUT',
+      message: `request body did not arrive within ${String(BODY_DEADLINE_MS)} ms`,
+    };
+  return {
+    status: 429,
+    code: 'TOO_MANY_BODY_READS',
+    message: 'too many request bodies are being read right now',
+    // **Pět sekund je odvozených, ne vybraných:** `BODY_DEADLINE_MS` ručí za to,
+    // že se každý obsazený slot do té doby uvolní, i kdyby druhá strana mlčela.
+    retryAfterSeconds: Math.ceil(BODY_DEADLINE_MS / 1000),
+  };
+}
+
+/**
+ * Hotová odpověď na odmítnuté čtení.
+ *
+ * Tvar `{ requestId, error: { code, message } }` mají všechny čtvery dveře
+ * shodný — je to týž kontrakt, jen se do 4. 9. 2026 skládal na čtyřech místech.
+ * `retry-after` se posílá jen u toho důvodu, u kterého opakování pomůže.
+ */
+export function bodyRefusalResponse(
+  requestId: string,
+  reason: 'TOO_LARGE' | 'TIMEOUT' | 'BUSY',
+): Response {
+  const refusal = bodyRefusal(reason);
+  return Response.json(
+    { requestId, error: { code: refusal.code, message: refusal.message } },
+    {
+      status: refusal.status,
+      ...(refusal.retryAfterSeconds === undefined
+        ? {}
+        : { headers: { 'retry-after': String(refusal.retryAfterSeconds) } }),
+    },
+  );
+}
 
 export async function readBody(request: Request, deadlineMs = BODY_DEADLINE_MS): Promise<BodyRead> {
+  // **Tělo, které není, slot nebere.** Držet by nemělo co a odmítnout požadavek
+  // bez těla kvůli plné čtecí frontě by byla mez na něčem, co ji nezatěžuje.
   if (request.body === null) return { ok: true, text: '' };
-  const reader = request.body.getReader();
+
+  const open = openReads();
+  if (open.count >= MAX_CONCURRENT_BODY_READS) return { ok: false, reason: 'BUSY' };
+  open.count += 1;
+  try {
+    return await readBodyInner(request, deadlineMs);
+  } finally {
+    // **`finally`, ne konec šťastné cesty.** `reader.read()` se odmítnout může
+    // (přerušené spojení, vadná komprese) a slot, který by se tím ztratil, se
+    // už nikdy nevrátí — mez by se po pár takových požadavcích utáhla na nulu
+    // a vypadala by jako nápor.
+    open.count -= 1;
+  }
+}
+
+async function readBodyInner(request: Request, deadlineMs: number): Promise<BodyRead> {
+  const reader = (request.body as ReadableStream<Uint8Array>).getReader();
   // **Jedny hodiny na celé čtení**, naarmované hned. Ne až při přetečení: pod
   // stropem se nepřeteče nikdy, takže podmíněný deadline neplatí zrovna tam,
   // kde je nejlevnější ho obejít.

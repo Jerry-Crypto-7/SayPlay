@@ -43,11 +43,12 @@ import { randomUUID } from 'node:crypto';
 
 import { after } from 'next/server';
 
-import { readBody } from '../../../../http/body';
+import { bodyRefusalResponse, readBody } from '../../../../http/body';
 import { withRequest } from '../../../../obs/trace';
 import type { UpstreamRequest } from '../../../../model/prompt';
 import { killState } from '../../../../server/kill-switch';
 import { moderatePrompt } from '../../../../server/moderation';
+import { rateLimitedResponse, takeRateSlot } from '../../../../server/rate-limit';
 import { logRateLimited } from '../../../../server/public-faults';
 import { costUsd, processSpendCap } from '../../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../../server/upstream';
@@ -260,6 +261,20 @@ export async function POST(request: Request): Promise<Response> {
       return fail(requestId, 503, 'SESSIONS_DISABLED', 'new worlds are switched off right now');
     }
 
+    // Strop na frekvenci, hned za vypínačem a před čtením těla. Tyhle dveře
+    // stojí navíc placená volání, takže čítač souběhu níž zůstává — frekvence
+    // a souběh měří dvě různé věci a jedna druhou nenahradí.
+    const slot = takeRateSlot('sessions');
+    if (!slot.allowed) {
+      logRateLimited(
+        'worldstream/sessions',
+        requestId,
+        'TOO_MANY_REQUESTS',
+        `${String(slot.count)} in window`,
+      );
+      return rateLimitedResponse(requestId, slot);
+    }
+
     let raw;
     try {
       raw = await readBody(request);
@@ -272,13 +287,22 @@ export async function POST(request: Request): Promise<Response> {
       );
       return fail(requestId, 400, 'BODY_UNREADABLE', 'the request body could not be read');
     }
+    // **Dva starší důvody si nechávají svůj pravopis.** Tyhle dveře vydávají
+    // `TOO_LARGE`/`TIMEOUT` tam, kde ostatní vydávají `PAYLOAD_TOO_LARGE`
+    // a `BODY_TIMEOUT`; sjednotit to je změna kontraktu, kterou tahle úloha
+    // neobjednala. Nový důvod (plná fronta čtení) sdílí kód se všemi dveřmi,
+    // aby nevznikl pátý pravopis.
     if (!raw.ok)
-      return fail(
-        requestId,
-        raw.reason === 'TOO_LARGE' ? 413 : 408,
-        raw.reason,
-        raw.reason === 'TOO_LARGE' ? 'the request body is too large' : 'the request body arrived too slowly',
-      );
+      return raw.reason === 'BUSY'
+        ? bodyRefusalResponse(requestId, raw.reason)
+        : fail(
+            requestId,
+            raw.reason === 'TOO_LARGE' ? 413 : 408,
+            raw.reason,
+            raw.reason === 'TOO_LARGE'
+              ? 'the request body is too large'
+              : 'the request body arrived too slowly',
+          );
 
     const read = readPrompt(raw.text);
     if (!read.ok) return fail(requestId, 400, read.code, read.message);

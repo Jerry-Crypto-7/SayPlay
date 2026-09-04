@@ -42,7 +42,7 @@
 
 import { randomUUID } from 'node:crypto';
 
-import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
+import { bodyRefusalResponse, readBody } from '../../../http/body';
 import { frozenGrammar } from '../../../model/client';
 import { withRequest } from '../../../obs/trace';
 import { mockBranch } from '../../../server/mock';
@@ -485,10 +485,9 @@ export async function POST(request: Request): Promise<Response> {
       );
       return error(requestId, 400, 'BODY_UNREADABLE', 'the request body could not be read');
     }
-    if (!raw.ok)
-      return raw.reason === 'TOO_LARGE'
-        ? error(requestId, 413, 'PAYLOAD_TOO_LARGE', `request body exceeds ${MAX_BODY_BYTES} bytes`)
-        : error(requestId, 408, 'BODY_TIMEOUT', `request body did not arrive within ${BODY_DEADLINE_MS} ms`);
+    // Třetí důvod (`BUSY`) a jeden překlad pro všechny dveře — viz
+    // `bodyRefusalResponse()` v `src/http/body.ts`. Kódy i hlášky beze změny.
+    if (!raw.ok) return bodyRefusalResponse(requestId, raw.reason);
 
     let body: unknown;
     try {

@@ -55,9 +55,10 @@
 
 import { randomUUID } from 'node:crypto';
 
-import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
+import { BODY_DEADLINE_MS, MAX_BODY_BYTES, bodyRefusalResponse, readBody } from '../../../http/body';
 import { withRequest } from '../../../obs/trace';
 import { killState } from '../../../server/kill-switch';
+import { rateLimitedResponse, takeRateSlot } from '../../../server/rate-limit';
 import {
   PUBLIC_CORPUS_FAULT,
   logRateLimited,
@@ -147,26 +148,9 @@ export async function readPromptId(
       ),
     };
   }
-  if (!raw.ok)
-    return {
-      ok: false,
-      response:
-        raw.reason === 'TOO_LARGE'
-          ? Response.json(
-              {
-                requestId,
-                error: { code: 'PAYLOAD_TOO_LARGE', message: `request body exceeds ${MAX_BODY_BYTES} bytes` },
-              },
-              { status: 413 },
-            )
-          : Response.json(
-              {
-                requestId,
-                error: { code: 'BODY_TIMEOUT', message: `request body did not arrive within ${BODY_DEADLINE_MS} ms` },
-              },
-              { status: 408 },
-            ),
-    };
+  // Třetí důvod (`BUSY`) a jeden překlad pro všechny dveře — viz
+  // `bodyRefusalResponse()` v `src/http/body.ts`.
+  if (!raw.ok) return { ok: false, response: bodyRefusalResponse(requestId, raw.reason) };
 
   let body: unknown;
   try {
@@ -207,6 +191,14 @@ export async function POST(request: Request): Promise<Response> {
   return withRequest(requestId, async () => {
     const disabled = replayDisabled(requestId, 'emit');
     if (disabled !== null) return disabled;
+
+    // Strop na frekvenci, pořád před čtením těla — táž mez a totéž odůvodnění
+    // jako u `/api/edit`, viz `src/server/rate-limit.ts`.
+    const slot = takeRateSlot('emit');
+    if (!slot.allowed) {
+      logRateLimited('emit', requestId, 'TOO_MANY_REQUESTS', `${String(slot.count)} in window`);
+      return rateLimitedResponse(requestId, slot);
+    }
 
     const parsed = await readPromptId(request, requestId, 'emit');
     if (!parsed.ok) return parsed.response;

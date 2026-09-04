@@ -35,7 +35,9 @@ import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { resetRateWindows } from '../rate-limit';
 
 import { peelEnvelope, sealSimHash, type WorldDoc } from '../../ir/worlddoc';
 import {
@@ -144,6 +146,19 @@ function judge(door: string, sent: string, doors: Doors, requestId: string): voi
 /* ------------------------------------------------------------------ *
  * Čtvery dveře.
  * ------------------------------------------------------------------ */
+
+
+/**
+ * **Strop na frekvenci se před každým případem nuluje, a není to obcházení
+ * meze.** Okna `takeRateSlot()` jsou proces-globální (`src/server/rate-limit.ts`)
+ * a tahle sada vystřelí na jedny dveře víc než `MAX_REQUESTS_PER_WINDOW`
+ * požadavků za desetisekundové okno — což žádný člověk neudělá, ale sada ano.
+ * Bez tohohle řádku začne od padesátého prvního požadavku odpovídat 429 a
+ * červená se objeví na náhodném případu podle pořadí, ne na tom vadném.
+ */
+beforeEach(() => {
+  resetRateWindows();
+});
 
 describe('a corpus fault says the same public sentence at every door', () => {
   it('/api/generate', async () => {
@@ -447,6 +462,13 @@ describe('a hole in the corpus is told apart from a caller mistake at the edit d
       holes.filter((line) => line.includes('E02')),
       'lepivá mez neplatí — padesát požadavků na jednu díru napsalo víc řádků',
     ).toHaveLength(1);
+
+    // **Padesát dvě požadavků na jedny dveře je přesně to, co od `T28-editrate`
+    // kousne.** Tenhle případ měří lepivost LOGU, ne strop frekvence, a ten
+    // strop mu právě spotřeboval celé okno (`MAX_REQUESTS_PER_WINDOW = 50`),
+    // takže omyl volajícího níž by odešel jako 429 a soudil by se špatný kód.
+    // Nuluje se proto **uprostřed případu**, ne jen před ním.
+    resetRateWindows();
 
     // A vedle toho omyl volajícího na **zdravém** záznamu. Kdyby oba důvody
     // sdílely jedno počítadlo, byl by tenhle až druhý výskyt, tedy žádný řádek.
