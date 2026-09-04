@@ -173,7 +173,7 @@ import {
   logRateLimited,
   logStickyFault,
 } from '../../../../server/public-faults';
-import { callerKey, rateLimitedResponse, takeRateSlot } from '../../../../server/rate-limit';
+import { callerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '../../../../server/rate-limit';
 import { emissionSteps, type EmitPhase } from '../chain';
 import { readPromptId, replayDisabled } from '../route';
 
@@ -278,7 +278,7 @@ export async function POST(request: Request): Promise<Response> {
       logRateLimited(
         'emit/stream',
         requestId,
-        'TOO_MANY_REQUESTS',
+        rateLimitCode(slot),
         `${String(slot.count)} in window`,
       );
       return rateLimitedResponse(requestId, slot);

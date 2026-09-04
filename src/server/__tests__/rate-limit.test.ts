@@ -5,6 +5,7 @@ import {
   MAX_REQUESTS_PER_WINDOW_PER_INSTANCE,
   RATE_WINDOW_MS,
   callerKey,
+  rateLimitCode,
   rateLimitedResponse,
   resetRateWindows,
   takeRateSlot,
@@ -153,5 +154,27 @@ describe('strop na frekvenci veřejných dveří', () => {
     const capacity = rateLimitedResponse('req-10', { ...verdict, scope: 'instance' });
     const capacityBody = (await capacity.json()) as { error: { code: string } };
     expect(capacityBody.error.code).toBe('SERVER_AT_CAPACITY');
+  });
+});
+
+describe('kód odmítnutí je jeden pro odpověď i pro log', () => {
+  it('operátor se o plné instanci nedozví, že za to může volající', async () => {
+    // **Nález nezávislé revize 4. 9. 2026.** Do té doby psalo všech šest dveří
+    // do `logRateLimited` napevno `TOO_MANY_REQUESTS`, takže naplněný strop
+    // instance dal operátorovi tvrzení o volajícím, které odpověď o řádek níž
+    // zrovna opravila — a `logRateLimited` klíčuje `(dveře, kód)`, takže se
+    // navíc oba případy slily do jednoho promlčovacího okna.
+    const caller = takeRateSlot('edit', ME, T0);
+    expect(rateLimitCode(caller)).toBe('TOO_MANY_REQUESTS');
+    expect(rateLimitCode({ ...caller, scope: 'instance' })).toBe('SERVER_AT_CAPACITY');
+
+    // A je to **týž** kód, jaký odejde ven — jedno rozhodnutí, dvě hlášení.
+    for (const scope of ['caller', 'instance'] as const) {
+      const verdict = { ...caller, scope };
+      const sent = (await rateLimitedResponse('req-11', verdict).json()) as {
+        error: { code: string };
+      };
+      expect(sent.error.code, `${scope}: log a odpověď se rozešly`).toBe(rateLimitCode(verdict));
+    }
   });
 });

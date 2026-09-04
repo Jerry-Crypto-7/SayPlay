@@ -26,7 +26,7 @@ import { type PartPatch } from '../../../../ir/revision';
 import { peelEnvelope, sealSimHash, type WorldDoc } from '../../../../ir/worlddoc';
 import { routePatch } from '../../../../patch/router';
 import { commitRoutedParts, staleRevision } from '../commit';
-import { MAX_CONCURRENT_BODY_READS_PER_CALLER, openBodyReads, readBody } from '../../../../http/body';
+import { MAX_CONCURRENT_BODY_READS_UNIDENTIFIED, openBodyReads, readBody } from '../../../../http/body';
 import { MAX_REQUESTS_PER_WINDOW, resetRateWindows, takeRateSlot } from '../../../../server/rate-limit';
 import { POST } from '../route';
 
@@ -1246,10 +1246,14 @@ describe('plná fronta čtení těla dorazí až ke dveřím', () => {
     // a dveře ji přesto nemusí přeložit — do 4. 9. 2026 tu stálo
     // `reason === 'TOO_LARGE' ? 413 : 408`, takže nápor by odsud odešel jako
     // „tvoje tělo dorazilo pomalu".
-    const held = Array.from({ length: MAX_CONCURRENT_BODY_READS_PER_CALLER }, stalled);
+    //
+    // Požadavky testu nenesou hlavičku proxy, takže spadají do kbelíku
+    // nerozeznaných — plní se proto jeho strop a odmítnutí je `instance`,
+    // ne obvinění volajícího (`src/http/body.ts`).
+    const held = Array.from({ length: MAX_CONCURRENT_BODY_READS_UNIDENTIFIED }, stalled);
     const pending = held.map((h) => readBody(h.request, 60_000));
     try {
-      expect(openBodyReads()).toBe(MAX_CONCURRENT_BODY_READS_PER_CALLER);
+      expect(openBodyReads()).toBe(MAX_CONCURRENT_BODY_READS_UNIDENTIFIED);
       const response = await POST(
         new Request('http://127.0.0.1/api/edit', {
           method: 'POST',
@@ -1260,7 +1264,7 @@ describe('plná fronta čtení těla dorazí až ke dveřím', () => {
       expect(response.status).toBe(429);
       expect(response.headers.get('retry-after')).toBe('5');
       expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
-        'TOO_MANY_BODY_READS',
+        'SERVER_AT_CAPACITY',
       );
     } finally {
       for (const h of held) h.finish();

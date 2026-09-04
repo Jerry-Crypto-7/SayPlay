@@ -53,7 +53,7 @@ import { withRequest } from '@/obs/trace';
 import { killState } from '@/server/kill-switch';
 import { moderatePrompt } from '@/server/moderation';
 import { logRateLimited } from '@/server/public-faults';
-import { callerKey, rateLimitedResponse, takeRateSlot } from '@/server/rate-limit';
+import { callerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '@/server/rate-limit';
 import { getSession, putChange } from '@/worldstream/sessions';
 
 import { acquireSlot, cloudEmitter, MAX_CONCURRENT_GENERATIONS, releaseSlot } from '../../route';
@@ -137,7 +137,7 @@ export async function createChange(
       logRateLimited(
         'worldstream/changes',
         requestId,
-        'TOO_MANY_REQUESTS',
+        rateLimitCode(slot),
         `${String(slot.count)} in window`,
       );
       return rateLimitedResponse(requestId, slot);

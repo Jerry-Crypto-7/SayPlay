@@ -48,7 +48,7 @@ import { withRequest } from '../../../../obs/trace';
 import type { UpstreamRequest } from '../../../../model/prompt';
 import { killState } from '../../../../server/kill-switch';
 import { moderatePrompt } from '../../../../server/moderation';
-import { callerKey, rateLimitedResponse, takeRateSlot } from '../../../../server/rate-limit';
+import { callerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '../../../../server/rate-limit';
 import { logRateLimited } from '../../../../server/public-faults';
 import { costUsd, processSpendCap } from '../../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../../server/upstream';
@@ -269,7 +269,7 @@ export async function POST(request: Request): Promise<Response> {
       logRateLimited(
         'worldstream/sessions',
         requestId,
-        'TOO_MANY_REQUESTS',
+        rateLimitCode(slot),
         `${String(slot.count)} in window`,
       );
       return rateLimitedResponse(requestId, slot);

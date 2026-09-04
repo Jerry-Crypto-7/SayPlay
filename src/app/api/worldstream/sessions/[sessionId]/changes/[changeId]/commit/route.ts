@@ -38,10 +38,19 @@
  * a hráč si nechá stav i rozehranou podobu.
  */
 
+import { randomUUID } from 'node:crypto';
+
 import { commitRoutedParts, staleRevision, type CommitOutcome } from '@/app/api/edit/commit';
 import type { PartPatch } from '@/ir/revision';
 import { routePatch, type RoutedPatch } from '@/patch/router';
 import { killState } from '@/server/kill-switch';
+import { logRateLimited } from '@/server/public-faults';
+import {
+  callerKey,
+  rateLimitCode,
+  rateLimitedResponse,
+  takeRateSlot,
+} from '@/server/rate-limit';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 import { getSession, peekChange, takeChange } from '@/worldstream/sessions';
 
@@ -52,7 +61,7 @@ function fail(status: number, code: string, message: string): Response {
 }
 
 export async function POST(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ sessionId: string; changeId: string }> },
 ): Promise<Response> {
   const { sessionId, changeId } = await context.params;
@@ -64,6 +73,30 @@ export async function POST(
   // člověka a mezi ním a preview může uběhnout libovolně dlouhá doba.
   if (killState(process.env).refine)
     return fail(503, 'REFINE_DISABLED', 'changing worlds is switched off right now');
+
+  /**
+   * **Strop na frekvenci, hned za vypínačem** — nález nezávislé revize
+   * 4. 9. 2026 (`T28-editrate`, 2. kolo). Tyhle dveře byly jediné veřejné
+   * `POST`, které v `RateLimitedDoor` nebyly, a přitom vedou na `routePatch`
+   * a `commitRoutedParts`, tedy na tutéž synchronní práci, kterou `/api/edit`
+   * naměřilo na medián 15,3 ms.
+   *
+   * ⚠ **Nestačí, že preview stojí placené volání.** Zamítnutý commit preview
+   * **nespotřebuje** — `takeChange` je až za všemi branami, schválně
+   * (`T22-takeearly`) — takže jedno zaplacené preview koupí neomezené
+   * opakování téhle práce. Brána je proto tady, ne u placení.
+   */
+  const requestId = randomUUID();
+  const slot = takeRateSlot('commit', callerKey(request));
+  if (!slot.allowed) {
+    logRateLimited(
+      'worldstream/commit',
+      requestId,
+      rateLimitCode(slot),
+      `${String(slot.count)} in window`,
+    );
+    return rateLimitedResponse(requestId, slot);
+  }
 
   const stored = getSession(sessionId);
   if (stored === null)

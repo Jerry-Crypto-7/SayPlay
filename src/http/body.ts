@@ -30,7 +30,7 @@
  * hashovaného stavu z něj nevstupuje nic.
  */
 
-import { callerKey } from '../server/rate-limit';
+import { UNIDENTIFIED_CALLER, callerKey } from '../server/rate-limit';
 
 /**
  * Strop těla požadavku.
@@ -87,8 +87,40 @@ export const MAX_CONCURRENT_BODY_READS_PER_CALLER = 4;
  * ⚠ **Je to mez na PROCES, a to je tady správně, ne kompromis.** Chrání paměť
  * a smyčku téhle instance — sdílený obchod by o její zátěži nevěděl nic a řešil
  * by jiný problém (frekvenci, `src/server/rate-limit.ts`).
+ *
+ * **Plný rozpočet odmítne i toho, kdo nedrží ani bajt — a vstupní kontrola se
+ * proto nezrušila.** Nezávislá revize 4. 9. 2026 navrhla vpouštět vždycky
+ * a nechat rozhodnout kontrolu uprostřed čtení. **Vyvráceno rozborem kódu:
+ * odmítne to tytéž volající, jen o kus později** — nad plným rozpočtem selže
+ * `takeBytes()` na prvním kuse každého nového čtení, takže se nic nevpustí a
+ * navíc se za každé odmítnutí zaplatí sáhnutím na proud. Rozpočet držený na
+ * maximu stojí útočníka **2 MB každých pět sekund, tedy ~400 kB/s** trvale
+ * (`BODY_DEADLINE_MS` uvolní i mlčící čtení), a odpověď na to je poctivá:
+ * `SERVER_AT_CAPACITY` s `retry-after`. Co by pomohlo, je **rezervovaný díl
+ * rozpočtu pro malá těla** — to je ale nová dvoustupňová mez, ne oprava, a
+ * patří k rozhodnutí o velikosti rozpočtu (`T28-fleetrate`).
  */
 export const MAX_BUFFERED_BODY_BYTES = 2 * 1024 * 1024;
+
+/**
+ * Kolik čtení smí naráz běžet **kbelíku nerozeznaných volajících**.
+ *
+ * ⚠ **Nález nezávislé revize 4. 9. 2026, a je to regrese, ne doladění.** Klíč
+ * je hlavička od proxy; bez proxy — `next start`, běh bez `x-forwarded-for` —
+ * spadnou do klíče `UNIDENTIFIED_CALLER` **všichni**, a strop čtyři je pak
+ * mez na celý proces, tedy **osmkrát přísnější** než těch 32, které nahradil:
+ * čtyři mlčící spojení by zavřela dveře komukoli.
+ *
+ * **V jednom kbelíku není koho od koho izolovat**, takže tam per-caller mez
+ * nekupuje nic a zbývá jediná mez, která tam něco znamená — rozpočet paměti.
+ * Číslo je proto odvozené: přesně tolik plných těl, kolik ten rozpočet unese,
+ * tedy chování **před** rozdělením meze. Nové volné číslo to není.
+ *
+ * ⛔ **Globální strop na počet se tím zpátky nezavádí a druhé kolo to nesmí
+ * zkusit** — rozeznaní volající do tohohle kbelíku nespadají, takže jeden klíč
+ * nemá jak zavřít dveře ostatním. Přesně to byla vada `cdde072`.
+ */
+export const MAX_CONCURRENT_BODY_READS_UNIDENTIFIED = MAX_BUFFERED_BODY_BYTES / MAX_BODY_BYTES;
 
 /**
  * Kolik čtení běží komu a kolik bajtů drží. Visí to na `globalThis`, ne na
@@ -245,9 +277,16 @@ export async function readBody(request: Request, deadlineMs = BODY_DEADLINE_MS):
     return { ok: false, reason: 'BUSY', scope: 'instance' };
 
   const caller = callerKey(request);
+  // **Nerozeznaný volající má vlastní strop a vlastní sdělení.** V jednom
+  // kbelíku se nedá říct „posíláš jich moc ty" — je to tvrzení o volajícím,
+  // který za naplněný kbelík nemusí moci — takže odmítnutí je `instance`.
+  const unidentified = caller === UNIDENTIFIED_CALLER;
+  const limit = unidentified
+    ? MAX_CONCURRENT_BODY_READS_UNIDENTIFIED
+    : MAX_CONCURRENT_BODY_READS_PER_CALLER;
   const open = reads.perCaller.get(caller) ?? 0;
-  if (open >= MAX_CONCURRENT_BODY_READS_PER_CALLER)
-    return { ok: false, reason: 'BUSY', scope: 'caller' };
+  if (open >= limit)
+    return { ok: false, reason: 'BUSY', scope: unidentified ? 'instance' : 'caller' };
   reads.perCaller.set(caller, open + 1);
 
   const held = { bytes: 0 };

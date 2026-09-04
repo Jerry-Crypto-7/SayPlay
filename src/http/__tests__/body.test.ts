@@ -5,6 +5,7 @@ import {
   MAX_BODY_BYTES,
   MAX_BUFFERED_BODY_BYTES,
   MAX_CONCURRENT_BODY_READS_PER_CALLER,
+  MAX_CONCURRENT_BODY_READS_UNIDENTIFIED,
   bodyRefusal,
   bodyRefusalResponse,
   bufferedBodyBytes,
@@ -156,6 +157,41 @@ describe('strop na počet souběžných čtení jednoho volajícího', () => {
     await Promise.all(pending);
   });
 
+  it('doběhlé čtení vrátí JEDEN slot, ne celý záznam volajícího', async () => {
+    // **Mutant, který přežil první kolo** (nezávislá revize 4. 9. 2026):
+    // nahradit celý dekrement za `perCaller.delete(caller)` prošlo všemi
+    // testy, protože každý z nich svá souběžná čtení zavíral naráz. Takový
+    // kód strop ruší úplně — komu doběhne jedno ze čtyř, smí otevřít další
+    // čtyři. Tenhle případ proto **jedno** zavře a tři nechá viset.
+    const held = Array.from({ length: MAX_CONCURRENT_BODY_READS_PER_CALLER }, () =>
+      pushableRequest('203.0.113.31'),
+    );
+    const pending = held.map((h) => readBody(h.request, 60_000));
+    try {
+      const [first, ...rest] = held;
+      first.finish();
+      expect(await pending[0]).toEqual({ ok: true, text: '' });
+      expect(openBodyReads(), 'zavřelo se jedno čtení, ne všechna').toBe(rest.length);
+
+      // Uvolnil se právě jeden slot, takže právě jedno nové čtení projde…
+      const admitted = pushableRequest('203.0.113.31');
+      const admittedRead = readBody(admitted.request, 60_000);
+      // …a hned to další už ne. Kdyby se mazal celý záznam, prošla by obě.
+      const refused = pushableRequest('203.0.113.31');
+      expect(await readBody(refused.request)).toEqual({
+        ok: false,
+        reason: 'BUSY',
+        scope: 'caller',
+      });
+
+      admitted.finish();
+      await admittedRead;
+    } finally {
+      for (const h of held.slice(1)) h.finish();
+      await Promise.all(pending);
+    }
+  });
+
   it('slot se vrátí i tehdy, když čtení VYHODÍ, ne jen když doběhne', async () => {
     // **Failure path, a je to ta drahá půlka.** Kdyby se čítač snižoval až na
     // šťastné cestě, každé přerušené spojení nebo vadná komprese by mez utáhly
@@ -183,6 +219,59 @@ describe('strop na počet souběžných čtení jednoho volajícího', () => {
     const request = new Request('http://worldsmith.test/api/edit', { method: 'POST' });
     expect(await readBody(request)).toEqual({ ok: true, text: '' });
     expect(openBodyReads()).toBe(0);
+  });
+
+  it('běh bez proxy nezavře dveře čtyřmi mlčícími spojeními', async () => {
+    // **Regrese naměřená nezávislou revizí 4. 9. 2026.** Bez hlaviček proxy
+    // spadnou všichni do jednoho klíče, takže strop 4 by byl mez na celý
+    // proces — osmkrát přísnější než 32, které nahradil, a čtyři mlčící
+    // spojení by zavřela dveře komukoli. Žádná hlavička = žádná izolace,
+    // takže tam per-caller mez neplatí.
+    const held = Array.from({ length: MAX_CONCURRENT_BODY_READS_PER_CALLER + 1 }, () =>
+      pushableRequest(),
+    );
+    const pending = held.map((h) => readBody(h.request, 60_000));
+    try {
+      expect(openBodyReads(), 'pátý nerozeznaný požadavek se odmítl').toBe(held.length);
+
+      const guest = pushableRequest();
+      const guestRead = readBody(guest.request, 60_000);
+      guest.push(16);
+      guest.finish();
+      expect((await guestRead).ok).toBe(true);
+    } finally {
+      for (const h of held) h.finish();
+      await Promise.all(pending);
+    }
+  });
+
+  it('plný kbelík nerozeznaných je odmítnutí instance, ne obvinění volajícího', async () => {
+    // V jednom kbelíku není koho od koho izolovat, takže „posíláš jich moc ty"
+    // by bylo tvrzení o volajícím, který za jeho naplnění nemusí moci.
+    const held = Array.from({ length: MAX_CONCURRENT_BODY_READS_UNIDENTIFIED }, () =>
+      pushableRequest(),
+    );
+    const pending = held.map((h) => readBody(h.request, 60_000));
+    try {
+      expect(await readBody(pushableRequest().request)).toEqual({
+        ok: false,
+        reason: 'BUSY',
+        scope: 'instance',
+      });
+    } finally {
+      for (const h of held) h.finish();
+      await Promise.all(pending);
+    }
+  });
+
+  it('strop nerozeznaných je to, co unese paměť — ne nové volné číslo', () => {
+    // Odvozený, ne vybraný: přesně tolik plných těl, kolik drží rozpočet, tedy
+    // chování před rozdělením meze.
+    expect(MAX_CONCURRENT_BODY_READS_UNIDENTIFIED * MAX_BODY_BYTES).toBe(MAX_BUFFERED_BODY_BYTES);
+    expect(
+      MAX_CONCURRENT_BODY_READS_UNIDENTIFIED,
+      'kbelík bez izolace nesmí být přísnější než rozeznaný volající',
+    ).toBeGreaterThan(MAX_CONCURRENT_BODY_READS_PER_CALLER);
   });
 
   it('jeden volající sám rozpočet instance nezaplní', () => {

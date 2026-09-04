@@ -59,7 +59,7 @@ import {
   logStickyFault as logStickyForRoute,
 } from '../../../server/public-faults';
 import { killState } from '../../../server/kill-switch';
-import { callerKey, rateLimitedResponse, takeRateSlot } from '../../../server/rate-limit';
+import { callerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '../../../server/rate-limit';
 import { DEFAULT_CAP_USD, processSpendCap, type RefusalReason } from '../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../server/upstream';
 import {
@@ -471,7 +471,7 @@ export async function POST(request: Request): Promise<Response> {
      */
     const slot = takeRateSlot('generate', callerKey(request));
     if (!slot.allowed) {
-      logRateLimited('generate', requestId, 'TOO_MANY_REQUESTS', `${String(slot.count)} in window`);
+      logRateLimited('generate', requestId, rateLimitCode(slot), `${String(slot.count)} in window`);
       return rateLimitedResponse(requestId, slot);
     }
 

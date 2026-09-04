@@ -32,7 +32,7 @@ import { readFileSync } from 'node:fs';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { BODY_DEADLINE_MS, MAX_CONCURRENT_BODY_READS_PER_CALLER, readBody } from '@/http/body';
+import { BODY_DEADLINE_MS, MAX_CONCURRENT_BODY_READS_UNIDENTIFIED, readBody } from '@/http/body';
 import type { UpstreamRequest } from '@/model/prompt';
 import { resetFaultLog } from '@/server/public-faults';
 import {
@@ -885,18 +885,40 @@ describe('strop na frekvenci dorazí až ke dveřím', () => {
     };
   }
 
+  it('commit je taky za stropem, ne jen preview', async () => {
+    // **Nález nezávislé revize 4. 9. 2026, 2. kolo.** Commit byly jediné
+    // veřejné `POST` dveře mimo `RateLimitedDoor`, a přitom vedou na
+    // `routePatch` i `commitRoutedParts`. Zamítnutý commit navíc preview
+    // **nespotřebuje** (`peekChange`, ne `takeChange`), takže jedno zaplacené
+    // preview kupovalo neomezené opakování téhle práce.
+    const stored = await generated();
+    const change = pending(stored, plan({ shape: WOVEN_MAST }));
+    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1)
+      takeRateSlot('commit', 'unknown');
+
+    const response = await commit(stored.session.sessionId, change.changeId);
+    expect(response.status).toBe(429);
+    expect(Number(response.headers.get('retry-after'))).toBeGreaterThanOrEqual(1);
+    expect((await body(response)).error).toMatchObject({ code: 'TOO_MANY_REQUESTS' });
+
+    // A brána je **před** prací: preview pořád čeká, svět se nezměnil.
+    expect(stored.session.revisionOf('ironMast')).toBe(change.basedOn.representation);
+  });
+
   it('plná fronta čtení těl NENÍ pomalé tělo — 429, ne 408', async () => {
     // **Tyhle dveře jako jediné překládaly `raw.reason` samy** a do 4. 9. 2026
     // vydávaly `? 413 : 408`, takže nápor odsud odešel jako 408 „tělo dorazilo
-    // pomalu" — tvrzení o volajícím, který neudělal nic.
+    // pomalu" — tvrzení o volajícím, který neudělal nic. Požadavky nenesou
+    // hlavičku proxy, takže plní kbelík nerozeznaných a odmítnutí je
+    // `instance` (`src/http/body.ts`).
     const stored = await generated();
-    const held = Array.from({ length: MAX_CONCURRENT_BODY_READS_PER_CALLER }, silentBody);
+    const held = Array.from({ length: MAX_CONCURRENT_BODY_READS_UNIDENTIFIED }, silentBody);
     const pending = held.map((h) => readBody(h.request, 60_000));
     try {
       const response = await preview(stored.session.sessionId, { prompt: 'lower the mast' });
       expect(response.status).toBe(429);
       expect(response.headers.get('retry-after')).toBe('5');
-      expect((await body(response)).error).toMatchObject({ code: 'TOO_MANY_BODY_READS' });
+      expect((await body(response)).error).toMatchObject({ code: 'SERVER_AT_CAPACITY' });
     } finally {
       for (const h of held) h.finish();
       await Promise.all(pending);
