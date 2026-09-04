@@ -1354,7 +1354,7 @@ describe('POST /api/generate pod náporem', () => {
       expect(status).toBe(503);
       expect(json.error?.code).toBe('TOO_MANY_GENERATIONS');
     } finally {
-      for (let taken = 0; taken < MAX_WORLD_GENERATIONS; taken += 1) releaseSlot();
+      for (let taken = 0; taken < MAX_WORLD_GENERATIONS; taken += 1) releaseSlot('world');
     }
 
     const refusals = log.filter((line) => line.includes('TOO_MANY_GENERATIONS'));
@@ -1368,8 +1368,12 @@ describe('POST /api/generate pod náporem', () => {
     // **Věta nesmí tvrdit, že tři generace běží.** Sloty může držet preview
     // druhé věty, a hláška, která o nich mluví jako o světech, pošle operátora
     // hledat generaci, která neexistuje. Nález revize 4. 9. 2026.
+    //
+    // **Od `T22-doorcounters` řádek rovnou jmenuje, které dveře ty sloty
+    // drží** — tady jsou to tři světy a žádné preview, takže operátor ví, kam
+    // se dívat, aniž by hádal.
     expect(refusals[0]).toContain(
-      'paid slots in flight reached the 3 of 4 a new world may hold on this instance',
+      'paid slots in flight: 3 world + 0 refine of 4 on this instance; the world door may hold 3',
     );
     expect(refusals[0], 'hláška tvrdí o slotech víc, než čítač ví').not.toContain(
       'open to new worlds are in flight',

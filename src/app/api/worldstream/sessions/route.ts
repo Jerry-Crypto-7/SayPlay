@@ -12,10 +12,10 @@
  *    by vypadaly jako přijaté a produkt by tvrdil, že geometrii píše model,
  *    zatímco by ji směl podstrčit kdokoli.
  * 2. **Moderace** (`src/server/moderation.ts`), tedy táž brána jako `/api/emit`.
- * 3. **Strop souběhu**: je to **týž čítač** jako u preview druhé věty, jen
- *    tyhle dveře se zastaví o slot dřív — porovnávají se proti
- *    `MAX_WORLD_GENERATIONS`, ne proti dnu `MAX_CONCURRENT_GENERATIONS`.
- *    Celé odůvodnění té asymetrie je u `DOOR_CEILING` níž.
+ * 3. **Strop souběhu**: je to **týž strop** jako u preview druhé věty, jen
+ *    tyhle dveře se zastaví o slot dřív — mají vlastní `MAX_WORLD_GENERATIONS`
+ *    nad společným dnem `MAX_CONCURRENT_GENERATIONS`. V letu se počítá po
+ *    dveřích, takže rezerva platí obojím směrem; odůvodnění je u `DOOR_CEILING`.
  * 4. **Strop utrácení** — uvnitř emitoru, u každého placeného volání zvlášť.
  *
  * ## Proč tu není `AdmissionQueue`, ačkoli je napsaná
@@ -101,9 +101,15 @@ export const MAX_CONCURRENT_GENERATIONS = 4;
  * jeden požadavek míň než před touhle úlohou.
  *
  * Není to regrese v druhu, jen ve stupni: před rezervou to stálo čtyři
- * požadavky, teď tři. Skutečná oprava je **počítat v letu po dveřích** (dva
- * čítače a jeden společný součet), aby rezerva platila na obě strany; to je
- * routovaná úloha `T22-doorcounters`, ne tenhle jeden řádek.
+ * požadavky, teď tři.
+ *
+ * ✅ **Opraveno 4. 9. 2026 (`T22-doorcounters`): v letu se počítá PO DVEŘÍCH.**
+ * `running` není jedno nerozlišené číslo, ale dvě, a dveře projdou, jen když
+ * jsou pod **svým** stropem **a** součet je pod `MAX_CONCURRENT_GENERATIONS`.
+ * Rezerva tím platí na obě strany: tři visící preview obsadí tři sloty ze
+ * čtyř, ale stavbu světa nezavřou — ta má vlastní strop tři a součet ještě
+ * jedno místo má. Celkový strop zůstal **jediný a rozhoduje pořád on**; tohle
+ * je jen jeho rozpad podle dveří, ne druhý strop na téže úrovni.
  */
 export const MAX_WORLD_GENERATIONS = 3;
 
@@ -120,34 +126,69 @@ const DOOR_CEILING: Readonly<Record<PaidDoor, number>> = {
   refine: MAX_CONCURRENT_GENERATIONS,
 };
 
-let running = 0;
+/**
+ * Kolik placených volání drží která dveře. **Dva čítače, jeden strop.**
+ *
+ * `refine` má v `DOOR_CEILING` rovnou `MAX_CONCURRENT_GENERATIONS`, tedy
+ * vlastní strop žádný — smí až na dno, a zastaví ho jedině součet. To je celá
+ * asymetrie rezervy zapsaná v datech: strop pod dnem má jen jedny dveře.
+ */
+const running: Record<PaidDoor, number> = { world: 0, refine: 0 };
+
+/**
+ * Věta pro operátorský log u odmítnutí: **kdo ty sloty drží a kolik jich smí
+ * držet tyhle dveře.** Jedno místo pro všechny troje dveře, protože jinak by
+ * se odpověď na „koho mám hledat" psala třikrát a rozešla se.
+ *
+ * **„on this instance" je součást pravdy:** čítač je stav modulu, takže na
+ * Vercelu má vlastní každá instance a globální číslo nedrží nikdo — to zavře
+ * až sdílené úložiště (`T29`, měření `T22-slotperroute`).
+ */
+export function slotsDetail(door: PaidDoor): string {
+  return (
+    `paid slots in flight: ${running.world} world + ${running.refine} refine ` +
+    `of ${MAX_CONCURRENT_GENERATIONS} on this instance; ` +
+    `the ${door} door may hold ${DOOR_CEILING[door]}`
+  );
+}
 
 /**
  * Vzít slot pro jedno placené volání v letu. Vrací `false`, když je plno.
  *
- * **Jeden čítač na oboje dveře** — zakládání relace i preview druhé věty.
+ * **Jeden strop na oboje dveře** — zakládání relace i preview druhé věty.
  * Dva oddělené stropy po čtyřech nejsou strop čtyř: kdo chce platit za osm
- * volání naráz, střídá obě adresy. Kontrola a zvýšení jsou v jednom
- * synchronním kroku, takže mezi ně nemá co vklouznout.
+ * volání naráz, střídá obě adresy. Proto se `running.world + running.refine`
+ * porovnává proti `MAX_CONCURRENT_GENERATIONS` **vždycky**, ať přijdou které
+ * dveře chtějí. Kontrola a zvýšení jsou v jednom synchronním kroku, takže mezi
+ * ně nemá co vklouznout.
  *
- * **`door` říká, proti kterému stropu se ten jeden čítač porovnává** —
- * `MAX_WORLD_GENERATIONS` u drahých dveří, `MAX_CONCURRENT_GENERATIONS`
- * u levných. Viz `MAX_WORLD_GENERATIONS` pro naměřený důvod.
+ * **Vlastní strop dveří je nad tím**, ne místo toho: `MAX_WORLD_GENERATIONS`
+ * u drahých, dno čítače u levných. Ten drží rezervu — obojím směrem, protože
+ * sytit ho umí jen ty dveře, kterých se týká. Viz `MAX_WORLD_GENERATIONS`.
  */
 export function acquireSlot(door: PaidDoor): boolean {
-  if (running >= DOOR_CEILING[door]) return false;
-  running += 1;
+  if (running.world + running.refine >= MAX_CONCURRENT_GENERATIONS) return false;
+  if (running[door] >= DOOR_CEILING[door]) return false;
+  running[door] += 1;
   return true;
 }
 
-/** Slot vrátit. Musí proběhnout na **každé** cestě ven, i na chybové. */
-export function releaseSlot(): void {
-  running -= 1;
+/**
+ * Slot vrátit. Musí proběhnout na **každé** cestě ven, i na chybové.
+ *
+ * `door` je povinné a musí sedět s tím, čím se slot bral: vrácení pod cizími
+ * dveřmi by jeden čítač poslalo do záporu a druhý natrvalo utáhlo. Typ to
+ * hlídá jen zpola (obojí je `PaidDoor`), zbytek je na tom, že vzetí i vrácení
+ * stojí v témž bloku.
+ */
+export function releaseSlot(door: PaidDoor): void {
+  running[door] -= 1;
 }
 
 /** Jen pro testy: čítač je proces-globální jako registr relací. */
 export function resetConcurrency(): void {
-  running = 0;
+  running.world = 0;
+  running.refine = 0;
 }
 
 /**
@@ -339,19 +380,22 @@ export async function POST(request: Request): Promise<Response> {
         'worldstream/sessions',
         requestId,
         'TOO_MANY_SESSIONS',
-        // **Věta neříká, že běží tři světy — čítač to neví.** Sloty mohou
-        // držet preview druhé věty, a revize našla, že první podoba téhle
-        // hlášky („all 3 … open to new worlds are in flight") pak posílá
-        // operátora hledat generaci, která neexistuje. Pravda, kterou čítač
-        // unese, je jediná: v letu je tolik, kolik smí držet nový svět.
-        `paid slots in flight reached the ${MAX_WORLD_GENERATIONS} of ${MAX_CONCURRENT_GENERATIONS} a new world may hold on this instance`,
+        // **Řádek jmenuje dveře, které sloty drží.** Do `T22-doorcounters` to
+        // čítač nevěděl, takže uměl říct jen „v letu je tolik, kolik smí držet
+        // nový svět" — a operátor z toho nepoznal, jestli ho zavřely světy,
+        // nebo preview druhé věty. Rozpad po dveřích tu odpověď nese.
+        //
+        // **Proměnlivý text nevyrobí povodeň.** `logRateLimited` vydá nanejvýš
+        // `MAX_DETAILS_PER_WINDOW = 8` různých příčin za okno, a různých
+        // podob je tu stejně nejvýš pět: `world` se přes svůj strop nedostane.
+        slotsDetail('world'),
       );
       return fail(requestId, 503, 'TOO_MANY_SESSIONS', 'too many worlds are being built right now');
     }
 
     const grammar = serverGrammar();
     if (typeof grammar === 'string') {
-      releaseSlot();
+      releaseSlot('world');
       logRateLimited('worldstream/sessions', requestId, 'GRAMMAR_UNREADABLE', grammar);
       return fail(requestId, 503, 'GRAMMAR_UNREADABLE', 'the frozen protocol could not be read');
     }
@@ -390,7 +434,7 @@ export async function POST(request: Request): Promise<Response> {
     // `after()` doběhne i tehdy, když odpověď skončí chybou, a je omezené
     // `maxDuration` routy, ne donekonečna.
     const settled = work.finally(() => {
-      releaseSlot();
+      releaseSlot('world');
     });
     try {
       after(settled);

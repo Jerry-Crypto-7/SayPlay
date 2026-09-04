@@ -62,12 +62,7 @@ import { killState } from '../../../server/kill-switch';
 import { callerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '../../../server/rate-limit';
 import { DEFAULT_CAP_USD, processSpendCap, type RefusalReason } from '../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../server/upstream';
-import {
-  acquireSlot,
-  MAX_CONCURRENT_GENERATIONS,
-  MAX_WORLD_GENERATIONS,
-  releaseSlot,
-} from '../worldstream/sessions/route';
+import { acquireSlot, releaseSlot, slotsDetail } from '../worldstream/sessions/route';
 
 /** Strop je stav procesu, ne požadavku — jedna instance na celý běh serveru. */
 const CAP = processSpendCap();
@@ -567,10 +562,11 @@ export async function POST(request: Request): Promise<Response> {
         'generate',
         requestId,
         'TOO_MANY_GENERATIONS',
-        // **Věta neříká, že běží tři generace — čítač to neví.** Sloty může
-        // držet preview druhé věty; nález revize 4. 9. 2026, celé odůvodnění
-        // u sesterských dveří ve worldstream/sessions/route.ts.
-        `paid slots in flight reached the ${MAX_WORLD_GENERATIONS} of ${MAX_CONCURRENT_GENERATIONS} a new world may hold on this instance`,
+        // **Řádek jmenuje dveře, které sloty drží.** Do `T22-doorcounters`
+        // uměl čítač říct jen souhrn, takže operátor nepoznal, jestli tyhle
+        // dveře zavřely světy, nebo preview druhé věty. Celé odůvodnění je
+        // u `slotsDetail` ve worldstream/sessions/route.ts.
+        slotsDetail('world'),
       );
       return error(
         requestId,
@@ -582,7 +578,7 @@ export async function POST(request: Request): Promise<Response> {
 
     const grammar = frozenGrammar();
     if (!grammar.ok) {
-      releaseSlot();
+      releaseSlot('world');
       logStickyFault(requestId, grammar.reason, grammar.detail);
       return error(requestId, 503, grammar.reason, PUBLIC_CORPUS_FAULT[grammar.reason]);
     }
@@ -598,7 +594,7 @@ export async function POST(request: Request): Promise<Response> {
       // **Uvolnit se musí i po výjimce.** Slot, který zůstane zabraný po pádu,
       // je strop, který se s každou chybou o jedna sníží — a po čtyřech
       // pádech dveře zavře natrvalo.
-      releaseSlot();
+      releaseSlot('world');
     }
 
     /**

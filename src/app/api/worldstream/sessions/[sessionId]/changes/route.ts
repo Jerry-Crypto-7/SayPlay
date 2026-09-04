@@ -56,7 +56,7 @@ import { logRateLimited } from '@/server/public-faults';
 import { callerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '@/server/rate-limit';
 import { getSession, putChange } from '@/worldstream/sessions';
 
-import { acquireSlot, cloudEmitter, MAX_CONCURRENT_GENERATIONS, releaseSlot } from '../../route';
+import { acquireSlot, cloudEmitter, releaseSlot, slotsDetail } from '../../route';
 
 export const runtime = 'nodejs';
 
@@ -243,7 +243,10 @@ export async function createChange(
         'worldstream/changes',
         requestId,
         'TOO_MANY_CHANGES',
-        `all ${MAX_CONCURRENT_GENERATIONS} paid slots are in flight on this instance`,
+        // **Řádek jmenuje dveře, které sloty drží** (`T22-doorcounters`):
+        // preview se odmítne jedině tehdy, když je plný společný součet, a
+        // operátor z rozpadu pozná, jestli ho vyčerpaly světy, nebo preview.
+        slotsDetail('refine'),
       );
       return fail(
         requestId,
@@ -264,7 +267,7 @@ export async function createChange(
     } finally {
       // `finally`, ne řádek za `await`: `planChange` smí házet a slot, který se
       // nevrátí, strop utáhne natrvalo.
-      releaseSlot();
+      releaseSlot('refine');
     }
 
     if (outcome.kind === 'unavailable') {

@@ -761,7 +761,7 @@ describe('generace za odpovědí přežije zmrazení instance', () => {
       /after\(settled\)/,
     );
     expect(source, 'na `settled` nevisí vrácení slotu').toMatch(
-      /const settled = work\.finally\(\(\) => \{\s*releaseSlot\(\);\s*\}\);/,
+      /const settled = work\.finally\(\(\) => \{\s*releaseSlot\('world'\);\s*\}\);/,
     );
   });
 });

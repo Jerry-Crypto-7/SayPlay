@@ -844,8 +844,21 @@ describe('strop souběžných placených volání', () => {
     expect(refusedChanges, 'odmítnuté preview neodešlo operátorovi').toHaveLength(1);
     expect(refusedChanges[0]).toContain('[worldstream/changes]');
 
+    // **Oba řádky jmenují, které dveře ty sloty drží** (`T22-doorcounters`).
+    // Do té doby uměl čítač říct jen souhrn, takže operátor u zavřených dveří
+    // na stavbu světa nepoznal, jestli je zavřely světy, nebo preview — a
+    // tenhle případ je přesně ten druhý. Čísla doslova, ne interpolovaná: se
+    // stejnou konstantou na obou stranách by se strop dal zvednout ze čtyř na
+    // čtyřicet a řádek by se pořád shodoval sám se sebou.
+    expect(refusedSessions[0]).toContain(
+      'paid slots in flight: 0 world + 4 refine of 4 on this instance; the world door may hold 3',
+    );
+    expect(refusedChanges[0]).toContain(
+      'paid slots in flight: 0 world + 4 refine of 4 on this instance; the refine door may hold 4',
+    );
+
     // A jakmile se jeden slot uvolní, tytéž dveře pustí.
-    releaseSlot();
+    releaseSlot('refine');
     const accepted = await preview(
       stored.session.sessionId,
       { prompt: 'make the mast sand-coloured' },
@@ -906,6 +919,43 @@ describe('strop souběžných placených volání', () => {
     for (let i = MAX_WORLD_GENERATIONS; i < MAX_CONCURRENT_GENERATIONS; i += 1)
       expect(acquireSlot('refine'), `rezervovaný slot ${i} měl být volný`).toBe(true);
     expect(acquireSlot('refine'), 'čítač pustil víc než MAX_CONCURRENT_GENERATIONS').toBe(false);
+  });
+
+  it('druhá věta nevyhladoví stavbu světa — rezerva platí obojím směrem', async () => {
+    // **Zrcadlo testu nad tímhle, a do `T22-doorcounters` bylo červené.** Než
+    // se v letu začalo počítat po dveřích, byl `running` jedno nerozlišené
+    // číslo, takže tři visící preview zavřela **oboje** dveře na stavbu světa
+    // na celé dvě minuty (`DEFAULT_TIMEOUT_MS`), aniž se stavěl jediný svět.
+    // Cena toho útoku byla tři anonymní požadavky.
+    //
+    // Vypadá to zvenčí jako „model je dneska pomalý", ne jako strop — proto to
+    // pokrývá test, ne oko.
+    for (let i = 0; i < MAX_WORLD_GENERATIONS; i += 1)
+      expect(acquireSlot('refine'), `preview ${i} nemělo na co narazit`).toBe(true);
+
+    const accepted = await createSession(
+      new Request('http://127.0.0.1/api/worldstream/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ prompt: 'a salt flat with one iron mast' }),
+      }),
+    );
+    expect(accepted.status, 'tři visící preview zavřela stavbu světa').toBe(202);
+  });
+
+  it('součet přes oboje dveře nepřeroste strop, ať přijdou v jakémkoli pořadí', async () => {
+    // **Rozpad po dveřích je rozpad, ne druhý strop.** Kdyby si každé dveře
+    // hlídaly jen svoje číslo, běželo by v letu až sedm placených volání
+    // (tři světy plus čtyři preview) a strop čtyř by byl jen návod, jak se
+    // střídat. Součet proto rozhoduje pořád, ať se dveře prokládají jakkoli.
+    expect(acquireSlot('refine')).toBe(true);
+    expect(acquireSlot('world')).toBe(true);
+    expect(acquireSlot('refine')).toBe(true);
+    expect(acquireSlot('world')).toBe(true);
+
+    expect(acquireSlot('refine'), 'součet přerostl MAX_CONCURRENT_GENERATIONS').toBe(false);
+    expect(acquireSlot('world'), 'součet přerostl MAX_CONCURRENT_GENERATIONS').toBe(false);
+    expect(MAX_CONCURRENT_GENERATIONS, 'strop se pohnul — přepiš i tenhle test').toBe(4);
   });
 });
 
