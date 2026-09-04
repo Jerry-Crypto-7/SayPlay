@@ -16,9 +16,11 @@
  * zvlášť, což je křížová kontrola, ne zdroj pravdy.
  */
 
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { applyPatch, type Operation } from 'rfc6902';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { type PartPatch } from '../../../../ir/revision';
 import { peelEnvelope, sealSimHash, type WorldDoc } from '../../../../ir/worlddoc';
@@ -981,6 +983,10 @@ describe('hranice požadavku', () => {
 });
 
 describe('strop souběhu sem nepatří, a je to změřené', () => {
+  /** Komentáře pryč: hlavička route o tom měření mluví a nesmí si bránu prošlapat. */
+  const stripComments = (source: string): string =>
+    source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+
   /**
    * **Nedosažitelná brána vypadá jako brána.** `T28-editungated` chtěla tyhle
    * dveře pověsit na čítač placených volání v letu. Měření to zamítlo dvakrát:
@@ -998,13 +1004,24 @@ describe('strop souběhu sem nepatří, a je to změřené', () => {
    * bránu prošlapat sama.
    */
   it('mezi čtením těla a odpovědí není jediný await', () => {
-    const code = readFileSync('src/app/api/edit/route.ts', 'utf8')
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/^\s*\/\/.*$/gm, '');
+    // **Sousední soubory se soudí taky, a je to oprava routovaného nálezu
+    // ze 4. 9. 2026.** Počítat `await` v jednom souboru pinovalo pravopis, ne
+    // vlastnost: `return commitRoutedParts(...).then(...)` s asynchronním
+    // `commit.ts` přidá do route **nula** tokenů `await` a úsek se přitom stane
+    // přerušitelným. Drahá část leží ve třech souborech, takže se soudí tři.
+    const routeCode = stripComments(readFileSync('src/app/api/edit/route.ts', 'utf8'));
 
-    const awaits = code.match(/\bawait\b/g) ?? [];
+    const awaits = routeCode.match(/\bawait\b/g) ?? [];
     expect(awaits, 'v handleru přibyl await — viz hlavička route').toHaveLength(1);
-    expect(code, 'jediný await už není čtení těla').toContain('raw = await readBody(request);');
+    expect(routeCode, 'jediný await už není čtení těla').toContain('raw = await readBody(request);');
+
+    // A ani jeden z volaných nesmí uhnout do mikrotasku.
+    for (const callee of ['src/app/api/edit/commit.ts', 'src/patch/router.ts']) {
+      const code = stripComments(readFileSync(callee, 'utf8'));
+      expect(code.match(/\bawait\b/g) ?? [], `${callee}: přibyl await`).toHaveLength(0);
+      expect(code.match(/\basync\b/g) ?? [], `${callee}: přibyl async`).toHaveLength(0);
+      expect(code, `${callee}: přibyl .then(`).not.toContain('.then(');
+    }
   });
 
   /**
@@ -1012,12 +1029,57 @@ describe('strop souběhu sem nepatří, a je to změřené', () => {
    * Neplacené dveře na něm obsadí sloty, ze kterých se platí za svět a za
    * druhou větu — vyhladovění, které `dc58740` odstranil.
    */
-  it('neplacené dveře nesahají na čítač placených volání', () => {
-    const code = readFileSync('src/app/api/edit/route.ts', 'utf8')
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/^\s*\/\/.*$/gm, '');
+  it('neplacené dveře neimportují ani čítač, ani strop utrácení', () => {
+    // **Soudí se import, ne jméno.** Předchozí podoba byla seznam dvou řetězců
+    // (`acquireSlot`, `SpendCap`) a revize 4. 9. 2026 ji obešla dvakrát: cizí
+    // jméno pro tutéž funkci prošlo, a `spendCapFromEnv` neobsahuje ani
+    // `SpendCap` s velkým S. Modul, ze kterého to jde vzít, jsou dva — a ty
+    // přejmenovat nejde, aniž se přejmenuje soubor.
+    const code = readFileSync('src/app/api/edit/route.ts', 'utf8');
 
-    expect(code, 'edit route si bere slot z čítače placených volání').not.toContain('acquireSlot');
-    expect(code, 'edit route sahá na strop utrácení, ačkoli nic neplatí').not.toContain('SpendCap');
+    expect(code, 'edit route sáhla na modul s čítačem placených volání').not.toContain(
+      'worldstream/sessions/route',
+    );
+    expect(code, 'edit route sáhla na strop utrácení, ačkoli nic neplatí').not.toContain(
+      'server/spend-cap',
+    );
+  });
+
+  /**
+   * **Vypínač musí dosáhnout i sem.** Revize 4. 9. 2026 naměřila, že
+   * `off: ["all"]` zastavil relace, refine, upstream i snapshoty, a `/api/edit`
+   * bralo anonymní požadavky dál — jediné zastavení byl redeploy. Jsou to
+   * neplacené dveře, takže rozbitý ovládací soubor je nechává běžet; vypne je
+   * jedině výslovné „vypni provoz".
+   */
+  it('off: all zavře i tyhle dveře, a rozbitý soubor ne', async () => {
+    const world = baseDoc(contractOf(ids[0]).baseWorld as string);
+    const payload = {
+      worldDoc: world,
+      baseRevision: { sim: world.simRevision, look: world.lookRevision },
+      promptId: ids[0],
+    };
+
+    const control = join(mkdtempSync(join(tmpdir(), 'edit-kill-')), 'control.json');
+    try {
+      writeFileSync(control, JSON.stringify({ off: ['all'] }), 'utf8');
+      vi.stubEnv('WORLDSMITH_CONTROL_FILE', control);
+      const off = await post(payload);
+      expect(off.status, 'vypnutý provoz tyhle dveře nezavřel').toBe(503);
+      expect(off.body.error).toMatchObject({ code: 'REPLAY_DISABLED' });
+
+      // Rozbitý soubor je překlep operátora a nesmí položit i to, co nic nestojí.
+      writeFileSync(control, '{ rozbito', 'utf8');
+      expect(
+        (await post(payload)).status,
+        'překlep v ovládacím souboru zavřel neplacené dveře',
+      ).toBe(200);
+
+      // A vypnout tři placené vrstvy se těchhle dveří taky netýká.
+      writeFileSync(control, JSON.stringify({ off: ['sessions', 'refine'] }), 'utf8');
+      expect((await post(payload)).status).toBe(200);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

@@ -54,7 +54,13 @@ afterEach(() => {
 
 describe('bez povelu běží všechno', () => {
   it('nenastavená cesta nevypne nic', () => {
-    expect(killState({})).toEqual({ upstream: false, sessions: false, refine: false, snapshots: false });
+    expect(killState({})).toEqual({
+      upstream: false,
+      sessions: false,
+      refine: false,
+      snapshots: false,
+      replay: false,
+    });
   });
 
   it('chybějící soubor nevypne nic — to je normální stav čisté instalace', () => {
@@ -67,6 +73,7 @@ describe('bez povelu běží všechno', () => {
       sessions: false,
       refine: false,
       snapshots: false,
+      replay: false,
     });
   });
 
@@ -82,6 +89,7 @@ describe('každá vrstva se vypíná zvlášť', () => {
       sessions: false,
       refine: false,
       snapshots: false,
+      replay: false,
     });
   });
 
@@ -91,6 +99,7 @@ describe('každá vrstva se vypíná zvlášť', () => {
       sessions: true,
       refine: false,
       snapshots: false,
+      replay: false,
     });
   });
 
@@ -100,6 +109,7 @@ describe('každá vrstva se vypíná zvlášť', () => {
       sessions: false,
       refine: true,
       snapshots: false,
+      replay: false,
     });
   });
 
@@ -109,6 +119,7 @@ describe('každá vrstva se vypíná zvlášť', () => {
       sessions: false,
       refine: true,
       snapshots: false,
+      replay: false,
     });
   });
 
@@ -118,6 +129,7 @@ describe('každá vrstva se vypíná zvlášť', () => {
       sessions: true,
       refine: true,
       snapshots: true,
+      replay: true,
     });
   });
 
@@ -137,6 +149,7 @@ describe('rozbitý vypínač zastaví placené dveře a čtení nechá běžet',
     expect(state.sessions).toBe(true);
     expect(state.refine).toBe(true);
     expect(state.snapshots).toBe(false);
+    expect(state.replay, "rozbitý soubor zavřel i neplacené přehrávací dveře").toBe(false);
   }
 
   it('vadný JSON', () => {
@@ -227,6 +240,7 @@ describe('ovládací soubor je jeden, ne dva', () => {
       sessions: false,
       refine: false,
       snapshots: false,
+      replay: false,
     });
   });
 });

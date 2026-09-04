@@ -59,13 +59,20 @@
  *    slot pro druhou větu (`dc58740`). Pustit na něj **neplacené** dveře
  *    znamená, že anonymní provoz sem obsadí všechny čtyři sloty a **odmítne
  *    ty placené** — tedy přesně to vyhladovění, které `dc58740` odstranil.
- * 2. **Čítač v letu by tu stejně nikdy nesepnul.** Mezi `await readBody` a
- *    odpovědí **není jediný `await`** — `migrateWorldDoc`, `frozenPrompt`,
- *    `frozenGrammar`, `emitPatch`, `routePatch` i `commitRoutedParts` doběhnou
- *    synchronně v jednom taktu smyčky. Druhý požadavek se tedy do toho úseku
- *    nemá jak dostat a strop ≥ 2 je nedosažitelný **konstrukcí**. Byla by to
- *    druhá `T22-admissiondead` v témže běhu. Hlídá to test
- *    „mezi čtením těla a odpovědí není jediný await".
+ * 2. **Čítač by ohradil špatný úsek.** Mezi `await readBody` a odpovědí **není
+ *    jediný `await`** — `migrateWorldDoc`, `frozenPrompt`, `frozenGrammar`,
+ *    `emitPatch`, `routePatch` i `commitRoutedParts` doběhnou synchronně
+ *    v jednom taktu smyčky, takže se do drahé části nemá jak dostat druhý
+ *    požadavek a čítač kolem ní by ukazoval nejvýš jedna.
+ *
+ *    ⚠ **Neznamená to, že „čítač tady nemůže nikdy sepnout" — revize 4. 9. 2026
+ *    tu formulaci vyvrátila a je opravená.** Čítač vzatý na *vstupu* handleru
+ *    sepne dobře: `readBody` čeká až `BODY_DEADLINE_MS = 5 000`
+ *    (`src/http/body.ts`), takže N klientů, kteří pošlou hlavičky a pak mlčí,
+ *    sedí uvnitř `POST` současně. Ohradil by ale **okno čtení těla**, ne těch
+ *    15 ms CPU — a to okno má dnes strop jen na velikost (`MAX_BODY_BYTES`),
+ *    ne na počet. Patří to do `T28-editrate` spolu s omezením frekvence,
+ *    protože je to táž mez a stavět ji dvakrát nemá smysl.
  *
  * **Co naměřené ZŮSTÁVÁ jako otevřený problém:** jeden požadavek stojí
  * **medián 15,3 ms, p95 27,7 ms a max 38,6 ms** synchronního CPU na smyčce
@@ -93,6 +100,7 @@ import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
 import type { PartPatch } from '../../../ir/revision';
 import { migrateWorldDoc, type WorldDoc } from '../../../ir/worlddoc';
 import { emitPatch, frozenGrammar, frozenPrompt, type ClientFailure } from '../../../model/client';
+import { killState } from '../../../server/kill-switch';
 import { buildEditRequest } from '../../../model/edit-prompt';
 import { withRequest } from '../../../obs/trace';
 import {
@@ -202,6 +210,29 @@ export async function POST(request: Request): Promise<Response> {
   const requestId = randomUUID();
 
   return withRequest(requestId, async () => {
+    /**
+     * **Vypínač je první brána, před čtením těla** — týž vzor jako
+     * u worldstreamových dveří. Vypnuté dveře nesmí stát víc než jeden
+     * `readFileSync` nad souborem o pár řádcích.
+     *
+     * Čte se `replay`, ne `sessions`: tyhle dveře nic neplatí (přehrávají
+     * zmrazený korpus), takže je **rozbitý** ovládací soubor nechává běžet
+     * ze stejného důvodu jako snapshoty. Vypne je jedině výslovné
+     * `off: ["all"]`, tedy „vypni provoz" — a to na ně dosáhnout musí, protože
+     * jeden požadavek stojí medián 15,3 ms synchronního CPU na smyčce a bez
+     * tohohle řádku byl jediným zastavením redeploy.
+     */
+    if (killState(process.env).replay) {
+      logRateLimited('edit', requestId, 'REPLAY_DISABLED', 'kill switch: all');
+      return Response.json(
+        {
+          requestId,
+          error: { code: 'REPLAY_DISABLED', message: 'editing worlds is switched off right now' },
+        },
+        { status: 503 },
+      );
+    }
+
     /**
      * **Čtení těla je uvnitř `try`, a je to jediný důvod, proč tenhle handler
      * odpoví vždycky.** `readBody()` vrací svoje meze jako hodnotu, ale samo

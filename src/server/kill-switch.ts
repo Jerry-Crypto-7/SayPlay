@@ -38,7 +38,7 @@
  * |---|---|
  * | není | nic |
  * | rozbitý, nebo `off` obsahuje neznámé jméno | **upstream, relace a refine** — snapshoty čtou dál |
- * | `off: ["all"]` | úplně všechno, i snapshoty |
+ * | `off: ["all"]` | úplně všechno, i snapshoty a přehrávací dveře |
  *
  * Prostřední řádek je jediné netriviální rozhodnutí tady a má dvě půlky.
  *
@@ -74,6 +74,20 @@ export interface KillState {
   readonly refine: boolean;
   /** Čtení hotových sdílených světů. Vypne to jedině `all`. */
   readonly snapshots: boolean;
+  /**
+   * Dveře, které jen **přehrávají zmrazený korpus** — `/api/edit`. Neplatí se
+   * na nich nic, takže je rozbitý vypínač nechává běžet ze stejného důvodu jako
+   * snapshoty; vypne je jedině `all`.
+   *
+   * **Existuje proto, že „vypni provoz" musí dosáhnout na každé dveře.** Nezávislá
+   * revize 4. 9. 2026 naměřila, že `off: ["all"]` zastavil relace, refine, upstream
+   * i snapshoty, zatímco `/api/edit` bralo anonymní požadavky dál — a jeden stojí
+   * medián 15,3 ms synchronního CPU na smyčce. Jediné zastavení byl redeploy.
+   *
+   * Vlastní pole, ne `snapshots`: to je dokumentované jako čtení hotových světů
+   * a kdo by mu příště měnil pravidlo, změnil by mlčky i tyhle dveře.
+   */
+  readonly replay: boolean;
 }
 
 const NOTHING_OFF: KillState = {
@@ -81,6 +95,7 @@ const NOTHING_OFF: KillState = {
   sessions: false,
   refine: false,
   snapshots: false,
+  replay: false,
 };
 
 /** Rozbitý vypínač: placené dveře stojí, čtení běží. Viz hlavička. */
@@ -89,6 +104,7 @@ const PAID_OFF: KillState = {
   sessions: true,
   refine: true,
   snapshots: false,
+  replay: false,
 };
 
 const EVERYTHING_OFF: KillState = {
@@ -96,6 +112,7 @@ const EVERYTHING_OFF: KillState = {
   sessions: true,
   refine: true,
   snapshots: true,
+  replay: true,
 };
 
 function isSwitch(name: unknown): name is KillSwitch {
@@ -119,6 +136,7 @@ export function killStateFrom(value: Record<string, unknown>): KillState {
     sessions: named.has('sessions'),
     refine: named.has('refine'),
     snapshots: false,
+    replay: false,
   };
 }
 
