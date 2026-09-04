@@ -38,6 +38,32 @@
  * doby se nikde nesmí tvrdit, že persistence je ověřená. Ověřený je **port**,
  * a to deterministickým adaptérem v paměti, který sdílí týž kontrakt a týž
  * test.
+ *
+ * ## Opuštěná rezervace a postup zotavení (P15 T29-abandoned)
+ *
+ * Rezervace `add(+worst, +1)` se vyrovnává až po volání. Odpoví-li úložiště
+ * po časovém limitu (`DEFAULT_LEDGER_TIMEOUT_MS`), server **neví**, jestli
+ * `INCRBYFLOAT` dorazil, a odmítne (`LEDGER_UNAVAILABLE`). Dorazil-li,
+ * rezervace v knize zůstane natrvalo: kniha nemá TTL a repo nemá příkaz, který
+ * by klíč vynuloval. Obojí je vědomá volba, ne opomenutí:
+ *
+ * - **`EXPIRE` na klíčích knihy** by s rezervací nechal vypršet celý součet
+ *   útraty, takže by se strop dal koupit znovu počkáním — přesně vada, kterou
+ *   `T9-capcoldstart` zavírá. TTL na běžícím počítadle není úklid, je to reset.
+ * - **Slepá kompenzace `add(-worst, -1)` v `catch`** by mohla vrátit peníze,
+ *   které se nikdy nestrhly, a strop tím otevřít. Doktrína celého souboru je
+ *   opačná: chyba směrem k odmítnutí je u peněz ta správná.
+ *
+ * Obojí vyvrátila nezávislá revize 3. 9. 2026 měřením; příští kolo to nemá
+ * zkoušet znovu.
+ *
+ * **Zotavení je ruční a je to rozhodnutí o penězích:** porovnat součet knihy
+ * s účtem poskytovatele a o rozdíl zvednout `capUsd` v ovládacím souboru
+ * (`WORLDSMITH_CONTROL_FILE`, platí od dalšího požadavku bez redeploye); na
+ * Vercelu, kde disk není, přes `WORLDSMITH_SPEND_CAP_USD` a redeploy. Postup
+ * pro operátora je v `.env.example` u `WORLDSMITH_SPEND_STORE_PREFIX`. Hlídač,
+ * který by opuštěné rezervace měřil, dnes neexistuje; kdyby vznikl, nesmí umět
+ * součet knihy snížit sám od sebe.
  */
 
 /** Součty účetní knihy. Dolary jsou rezervované i utracené dohromady. */
