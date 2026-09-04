@@ -740,6 +740,68 @@ describe('commit druhé věty', () => {
     ).toMatchObject({ code: 'PREVIEW_REJECTED', field: 'changeId', rejections: [duvod] });
   });
 
+  // `T22-gateorder`, nález nezávislé revize 4. 9. 2026. Razítková brána sedí
+  // **nad** oběma návraty `STALE_REVISION`, takže u preview, které už jednou
+  // prohrálo, přebije ten specifičtější kód. Naměřeno na téže trojici
+  // požadavků: před bránou `409 {code:'STALE_REVISION', field:'basedOn/sim'}`,
+  // po ní `409 {code:'PREVIEW_REJECTED', field:'changeId'}`.
+  //
+  // **Pořadí zůstává rozhodnutím** — „prohrálo jsi a svět se pohnul, vyžádej si
+  // nové" je akceschopná věta a jako jediná veze původní verdikt s sebou. Test
+  // proto pinuje, kudy ta hranice vede: **překryv patří razítku**, a preview,
+  // které nikdy neprohrálo, dostane pořád `basedOn/sim`. Obě půlky jsou tu
+  // nutné — bez té druhé smí stín růst dál a nikdo to nepozná, protože dvě 409
+  // nad týmž stavem a s jiným kódem vypadají v zelené sadě stejně.
+  it('překryv obou bran soudí razítko, a jen ten překryv', async () => {
+    const stored = await generated();
+    // Míří do `sim` a shodí svědka: 200 REJECTED, ve světě ani bajt, razítko na
+    // preview. Operace v patchi je tu schválně — bez ní se `staleRevision`
+    // vůbec nedosáhne a žádný překryv by nevznikl.
+    const loser = pending(
+      stored,
+      plan({ behavior: [{ op: 'remove', path: '/sim/rules/reach' }] }),
+      'change-loser',
+    );
+    // Postavené nad `sim` 0 už teď, aby mělo tutéž zastaralou bázi jako `loser`
+    // — jen bez prohry. Commituje se až úplně dole.
+    const cerstve = pending(
+      stored,
+      plan({ behavior: [{ op: 'replace', path: '/sim/rules/reach/priority', value: 5 }] }),
+      'change-fresh',
+    );
+
+    const prvni = await body(await commit(stored.session.sessionId, loser.changeId));
+    expect(prvni.outcome).toBe('REJECTED');
+    const duvod = (prvni.rejections as readonly Record<string, unknown>[])[0];
+
+    // Cizí věta pohne `sim` na 1. Od téhle chvíle platí na `loser` obě brány
+    // naráz: razítko (svět se od prohry pohnul) i `staleRevision` (patch míří
+    // do `sim`, který je proti `basedOn` napřed).
+    const other = pending(
+      stored,
+      plan({ behavior: [{ op: 'replace', path: '/sim/rules/reach/priority', value: 3 }] }),
+      'change-other',
+    );
+    expect((await commit(stored.session.sessionId, other.changeId)).status).toBe(200);
+    expect(worldOf(stored).simRevision).toBe(1);
+
+    const znovu = await commit(stored.session.sessionId, loser.changeId);
+    expect(znovu.status).toBe(409);
+    expect(
+      (await body(znovu)).error,
+      'překryv spadl na STALE_REVISION, takže se původní verdikt ztratil',
+    ).toMatchObject({ code: 'PREVIEW_REJECTED', field: 'changeId', rejections: [duvod] });
+
+    // Druhá půlka hranice: `cerstve` má tutéž zastaralou bázi, ale razítko ne,
+    // takže na něj ta brána nesmí dosáhnout a specifičtější kód vyhraje.
+    const nikdy = await commit(stored.session.sessionId, cerstve.changeId);
+    expect(nikdy.status).toBe(409);
+    expect(
+      (await body(nikdy)).error,
+      'stín razítka se rozšířil i na preview, které nikdy neprohrálo',
+    ).toMatchObject({ code: 'STALE_REVISION', field: 'basedOn/sim' });
+  });
+
   it('tvar, který ve světě není, se tiše nepodstrčí', async () => {
     const stored = await generated();
     const change = pending(
