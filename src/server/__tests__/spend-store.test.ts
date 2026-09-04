@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   __resetControlWindows,
   CONTROL_CACHE_TTL_MS,
+  DEFAULT_CONTROL_TIMEOUT_MS,
   CONTROL_KEY_SUFFIX,
   type ControlStore,
   controlStoreFromEnv,
@@ -839,5 +840,64 @@ describe('čtení vypínače je ohraničené oknem, ne počtem požadavků', () 
       fetchImpl.mock.calls.length,
       'okno je vázané na objekt obchodu, ne na instanci — strop neplatí',
     ).toBe(1);
+  });
+});
+
+
+/**
+ * Limit letu na ovládací klíč (`T30-controltimeout`).
+ *
+ * ⚠ **Do 4. 9. 2026 to netvrdil nikdo** — nález nezávislé revize commitu
+ * `316a4f1`: `DEFAULT_CONTROL_TIMEOUT_MS` se nevyskytoval v jediném testovém
+ * souboru a jediná aserce na limit zněla `signal instanceof AbortSignal`, což
+ * je pravda pro jakoukoli hodnotu. Kdo by `controlStoreFromEnv()` přepsal na
+ * `DEFAULT_LEDGER_TIMEOUT_MS` (2 s), nechal by sadu zelenou a přidal dvě
+ * sekundy na každé z desatera dveří, než se vůbec začne pracovat.
+ */
+describe('let na ovládací klíč má svůj vlastní, kratší limit', () => {
+  afterEach(() => {
+    __resetControlWindows();
+  });
+
+  /**
+   * ⚠ **Reálný čas, ne `vi.useFakeTimers()`** — naměřeno 4. 9. 2026:
+   * `AbortSignal.timeout()` visí na časovači, který sinonovy falešné hodiny
+   * nezachytávají, takže test nad nimi hlásil `aborted === false` navždy.
+   * Test proto stojí ~300 ms skutečného času a soudí pásmo: po 150 ms let
+   * ještě běží, po 300 ms už ne. To pásmo vylučuje jak nulu, tak limit knihy
+   * (2 s), což je přesně ta záměna, kterou nález popsal.
+   */
+  it('limit je ten ovládací, ne ten od knihy — soudí se čas, ne typ objektu', async () => {
+    let signal: AbortSignal | undefined;
+    const fetchImpl = vi.fn(async (_url: string, init?: RequestInit) => {
+      signal = init?.signal ?? undefined;
+      // Let, který se nikdy nedokončí: rozhodne o něm výhradně jeho limit.
+      return new Promise<Response>(() => undefined);
+    });
+
+    const store = controlStoreFromEnv(
+      {
+        WORLDSMITH_SPEND_STORE_URL: 'https://s.example.com',
+        WORLDSMITH_SPEND_STORE_TOKEN: 't',
+        VERCEL_ENV: 'production',
+      },
+      fetchImpl as unknown as typeof fetch,
+    );
+    if (store === null) throw new Error('obchod měl vzniknout');
+
+    void store.read().catch(() => undefined);
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(signal, 'fetch nedostal signál, takže limit nedrží nic').toBeDefined();
+    expect(signal?.aborted, 'let se utnul dřív, než měl').toBe(false);
+
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    expect(
+      signal?.aborted,
+      'let běžel dál za 350 ms — limit je ten od knihy (2 s), nebo žádný',
+    ).toBe(true);
+  });
+
+  it('ovládací limit je kratší než ten od knihy, ne tentýž', () => {
+    expect(DEFAULT_CONTROL_TIMEOUT_MS).toBeLessThan(DEFAULT_LEDGER_TIMEOUT_MS);
   });
 });
