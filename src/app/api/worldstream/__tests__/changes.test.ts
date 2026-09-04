@@ -451,6 +451,14 @@ describe('commit druhé věty', () => {
     expect(after.simRevision).toBe(0);
     expect(stored.session.revisionOf('ironMast')).toBe(0);
     expect(stored.session.events.all().at(-1)?.type).toBe('patch.rejected');
+
+    // `T22-rejectreplay`: razítko nese revize UPRAVENÉHO světa, ne dokumentu,
+    // který `commitRoutedParts` vrátil s commitnutou půlkou vzhledu a který se
+    // zahodil. Kdyby neslo ten druhý, byl by druhý pokus 409 nad světem, který
+    // se ve skutečnosti nepohnul.
+    const znovu = await commit(stored.session.sessionId, change.changeId);
+    expect(znovu.status, 'razítko četlo zahozenou půlku patche').toBe(200);
+    expect((await body(znovu)).outcome).toBe('REJECTED');
   });
 
   it('jedno preview je jeden commit', async () => {
@@ -538,6 +546,45 @@ describe('commit druhé věty', () => {
       'REJECTED',
     );
     expect(stored.session.revisionOf('ironMast')).toBe(0);
+  });
+
+  // `T22-rejectreplay`. Druhá strana téhož rozhodnutí: preview, které
+  // odmítnutí přežilo, smí opakovat **týž verdikt nad týmž světem** — ne si
+  // vzít okno, které mu mezitím otevřel někdo jiný. `staleRevision` na to
+  // nedosáhne schválně: soudí jen části v patchi, a nezávislost částí je záměr.
+  // Tenhle případ je právě ten, který záměr nepokrývá — pohnula se část, které
+  // se preview netýká.
+  it('zamítnuté preview se po pohybu JINÉ části světa už commitnout nedá', async () => {
+    const stored = await generated();
+    // Míří jen do `sim` a shodí svědka, takže dostane 200 REJECTED a ve světě
+    // nezmění ani bajt.
+    const loser = pending(
+      stored,
+      plan({ behavior: [{ op: 'remove', path: '/sim/rules/reach' }] }),
+      'change-loser',
+    );
+    expect((await body(await commit(stored.session.sessionId, loser.changeId))).outcome).toBe(
+      'REJECTED',
+    );
+
+    // Cizí věta pohne `look`. `sim` ani revize podoby se nehnuly, takže obě
+    // dosavadní brány to preview pustí dál.
+    const other = pending(
+      stored,
+      plan({ appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }] }),
+      'change-other',
+    );
+    expect((await commit(stored.session.sessionId, other.changeId)).status).toBe(200);
+    expect(worldOf(stored).lookRevision).toBe(1);
+    expect(worldOf(stored).simRevision).toBe(0);
+    expect(stored.session.revisionOf('ironMast')).toBe(0);
+
+    const znovu = await commit(stored.session.sessionId, loser.changeId);
+    expect(znovu.status, 'druhý pokus se soudil nad světem, který porotce neviděl').toBe(409);
+    expect((await body(znovu)).error).toMatchObject({
+      code: 'PREVIEW_REJECTED',
+      field: 'changeId',
+    });
   });
 
   it('tvar, který ve světě není, se tiše nepodstrčí', async () => {

@@ -512,4 +512,16 @@ export interface PendingChange {
   readonly changeId: string;
   readonly plan: RefinePlan;
   readonly basedOn: ChangeBase;
+  /**
+   * Revize dokumentu ve chvíli, kdy tohle preview commit **prohrálo** — nebo
+   * `undefined`, dokud o nic nepřišlo (`T22-rejectreplay`).
+   *
+   * Odmítnuté preview v mapě zůstává schválně (`T22-takeearly`), aby porotce
+   * neplatil druhé volání modelu za tutéž větu. Tím ale smí být jen **opakování
+   * téhož verdiktu nad týmž světem**: jakmile se svět mezitím pohnul, je druhý
+   * pokus rozhodnutí o jiném světě, než jaký člověk viděl. Obě revize
+   * dohromady, protože `staleRevision` soudí každou část zvlášť a záměrně —
+   * tady jde právě o pohyb v části, které se preview netýká.
+   */
+  readonly rejectedAt?: { readonly sim: number; readonly look: number };
 }

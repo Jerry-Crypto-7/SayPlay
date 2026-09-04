@@ -284,6 +284,28 @@ export function peekChange(stored: StoredSession, changeId: string): PendingChan
 }
 
 /**
+ * Orazítkuje preview prohraným commitem (`T22-rejectreplay`).
+ *
+ * Preview se odmítnutím **nespotřebuje** (`takeChange` níž), takže v mapě leží
+ * dál a dá se poslat znovu. Razítko je jediné, co o něm pak ještě není známo:
+ * nad kterým světem prohrálo. Commit route z něj pozná, jestli je druhý pokus
+ * pořád tentýž případ, nebo už rozhodnutí o jiném světě.
+ *
+ * `Map.set` na existující klíč **nemění pořadí vložení**, takže razítko
+ * neposune preview na konec fronty a strop `MAX_PENDING_CHANGES` dál vyhazuje
+ * doopravdy nejstarší.
+ */
+export function markRejected(
+  stored: StoredSession,
+  changeId: string,
+  at: { readonly sim: number; readonly look: number },
+): void {
+  const change = stored.changes.get(changeId);
+  if (change === undefined) return;
+  stored.changes.set(changeId, { ...change, rejectedAt: at });
+}
+
+/**
  * Vyzvedne preview **a zároveň ho spotřebuje**.
  *
  * Jedno preview je jeden commit: kdyby šlo commitnout dvakrát, druhý pokus by

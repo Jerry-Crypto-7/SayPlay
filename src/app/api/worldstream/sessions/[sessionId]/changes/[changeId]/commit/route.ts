@@ -52,7 +52,7 @@ import {
   takeRateSlot,
 } from '@/server/rate-limit';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
-import { getSession, peekChange, takeChange } from '@/worldstream/sessions';
+import { getSession, markRejected, peekChange, takeChange } from '@/worldstream/sessions';
 
 export const runtime = 'nodejs';
 
@@ -126,6 +126,38 @@ export async function POST(
   const { plan, basedOn } = change;
   const doc = blueprint.world;
 
+  /**
+   * **Preview, které už jednou prohrálo, si nesmí vzít okno, které mu otevřel
+   * někdo jiný** (`T22-rejectreplay`).
+   *
+   * Odmítnutí preview nespálí (`T22-takeearly`), takže tentýž `changeId` jde
+   * poslat znovu — a to je správně, dokud je svět tam, kde byl: opakuje se týž
+   * verdikt nad týmž světem. Jakmile se svět mezitím pohnul, je druhý pokus
+   * rozhodnutí o jiném světě, než jaký člověk viděl, a člověk k němu souhlas
+   * nedal.
+   *
+   * **Nedělá to `staleRevision` a nemá.** Ta se ptá každé části zvlášť a jen na
+   * ty v `routing.patches` — nezávislost částí je záměr (§13.1.1) a přebíjí
+   * tuhle opravu. Zbývalo právě to, co záměr nepokrývá: preview jen nad `sim`
+   * postavené nad `look` revizí 3 projde i po `look` 5. Razítko proto soudí
+   * **dvojici jako celek**, a jen u preview, které už souhlas jednou vyčerpalo.
+   */
+  const rejectedAt = change.rejectedAt;
+  if (
+    rejectedAt !== undefined &&
+    (rejectedAt.sim !== doc.simRevision || rejectedAt.look !== doc.lookRevision)
+  )
+    return Response.json(
+      {
+        error: {
+          code: 'PREVIEW_REJECTED',
+          message: `this preview was already rejected when the world was at sim ${String(rejectedAt.sim)} / look ${String(rejectedAt.look)}, and the world has since moved to sim ${String(doc.simRevision)} / look ${String(doc.lookRevision)} — ask for a new preview`,
+          field: 'changeId',
+        },
+      },
+      { status: 409 },
+    );
+
   const representation = stored.session.revisionOf(plan.stableId);
   if (representation !== basedOn.representation)
     return Response.json(
@@ -158,7 +190,7 @@ export async function POST(
 
   if (operations.length > 0) {
     const routing = routePatch({ operations }, doc);
-    if (routing.verdict === 'REJECTED') return rejected(stored, plan.stableId, [
+    if (routing.verdict === 'REJECTED') return rejected(stored, changeId, plan.stableId, doc, [
       { stage: 'routing', reason: routing.reason, pointer: routing.pointer, detail: `${routing.detail} (expected ${routing.expected})` },
     ]);
 
@@ -188,12 +220,13 @@ export async function POST(
 
     // Jediné místo, kde se rozhoduje o atomičnosti: dokud tohle neprojde, do
     // `stored` se nezapsalo nic a zapsat se nemá.
-    if (committed.outcome !== 'CERTIFIED') return rejected(stored, plan.stableId, committed.rejections);
+    if (committed.outcome !== 'CERTIFIED')
+      return rejected(stored, changeId, plan.stableId, doc, committed.rejections);
   }
 
   const next = nextBlueprint(blueprint, committed.after, plan.shape);
   if (typeof next === 'string')
-    return rejected(stored, plan.stableId, [
+    return rejected(stored, changeId, plan.stableId, doc, [
       { stage: 'apply', reason: 'BLUEPRINT_INVALID', pointer: '/shapes', detail: next },
     ]);
 
@@ -239,12 +272,24 @@ interface Rejection {
   readonly detail: string;
 }
 
-/** Odmítnutá změna: rámec do proudu, 200 s verdiktem, ve světě ani bajt. */
+/**
+ * Odmítnutá změna: razítko na preview, rámec do proudu, 200 s verdiktem, ve
+ * světě ani bajt.
+ *
+ * Razítko nese revize světa, nad kterým se prohrálo — `doc`, ne
+ * `committed.after`. U smíšeného patche vrací `commitRoutedParts` dokument
+ * s commitnutou půlkou vzhledu, jenže ten se při odmítnutí nikam neuloží, takže
+ * uložený svět zůstal na `doc`. Orazítkovat preview výsledkem, který se zahodil,
+ * by z příštího pokusu udělalo 409 nad světem, který se ve skutečnosti nehnul.
+ */
 function rejected(
   stored: NonNullable<ReturnType<typeof getSession>>,
+  changeId: string,
   stableId: string,
+  doc: WorldstreamBlueprint['world'],
   rejections: readonly Rejection[],
 ): Response {
+  markRejected(stored, changeId, { sim: doc.simRevision, look: doc.lookRevision });
   stored.session.events.append('patch.rejected', { stableId, rejections }, stableId);
   return Response.json({ outcome: 'REJECTED', stableId, rejections });
 }
