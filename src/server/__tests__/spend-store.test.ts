@@ -307,11 +307,21 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
       { WORLDSMITH_SPEND_STORE_URL: 'https://ledger.example.com/' },
       { WORLDSMITH_SPEND_STORE_TOKEN: 'token' },
       { WORLDSMITH_SPEND_STORE_URL: '  ', WORLDSMITH_SPEND_STORE_TOKEN: '  ' },
+      // **Výslovný základ patří do matice, ne jen pod ni** — nález nezávislé
+      // revize 4. 9. 2026. Dokud se porovnávalo proti napsanému
+      // `'worldsmith:spend:unknown-env'`, nešel sem přidat jediný řádek
+      // s předponou, aniž by matice zčervenala bez vady; celá výslovná větev
+      // proto stála na dvou ručních asercích dole.
+      { ...STORE_ENV, WORLDSMITH_SPEND_STORE_PREFIX: 'demo' },
+      // A základ, který segment už nese — přesně tvar, ke kterému operátora
+      // svádí migrační odstavec v `.env.example`. Segment se připojí i k němu.
+      { ...STORE_ENV, WORLDSMITH_SPEND_STORE_PREFIX: 'demo:preview' },
     ];
 
     for (const env of envs) {
       const shares = ledgerFromEnv(env)?.id === 'http';
-      const unknown = storePrefix(env) === 'worldsmith:spend:unknown-env';
+      const base = env.WORLDSMITH_SPEND_STORE_PREFIX?.trim() || 'worldsmith:spend';
+      const unknown = storePrefix(env) === `${base}:unknown-env`;
       expect(unknown, `klíč a úložiště se rozešly pro ${JSON.stringify(env)}`).toBe(shares);
     }
 
@@ -336,6 +346,36 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
     // nemá s čím.
     expect(storePrefix({ VERCEL: '1' })).toBe('worldsmith:spend:unknown-env');
     expect(ledgerFromEnv({ VERCEL: '1' })).toBeNull();
+  });
+
+  /**
+   * **Doktrína zotavení, kterou `.env.example` tvrdí a oko ji neuvidí.**
+   *
+   * Nález nezávislé revize 4. 9. 2026: migrační odstavec radil dopsat segment
+   * rovnou do hodnoty proměnné, což starý klíč nevrátí — vyrobí TŘETÍ, na
+   * kterém nikdo nic neutratil, a operátor k uvízlé útratě dostane celý strop
+   * navrch. Text se opravil; tenhle test hlídá, že se opravil na pravdu.
+   */
+  it('mimo produkci nevrátí starý klíč žádná hodnota té proměnné', () => {
+    const mimoVercel = { ...STORE_ENV };
+    const starý = storePrefix(mimoVercel);
+    expect(starý).toBe('worldsmith:spend:unknown-env');
+
+    // Připnutí staré hodnoty: tichý no-op, klíč se nehne.
+    expect(storePrefix({ ...mimoVercel, WORLDSMITH_SPEND_STORE_PREFIX: 'worldsmith:spend' })).toBe(starý);
+    // Dopsání segmentu: třetí klíč, ne ten původní.
+    expect(storePrefix({ ...mimoVercel, WORLDSMITH_SPEND_STORE_PREFIX: starý })).toBe(
+      'worldsmith:spend:unknown-env:unknown-env',
+    );
+    // Táž past na preview.
+    const preview = { ...STORE_ENV, VERCEL: '1', VERCEL_ENV: 'preview' };
+    expect(storePrefix({ ...preview, WORLDSMITH_SPEND_STORE_PREFIX: 'demo:preview' })).toBe(
+      'demo:preview:preview',
+    );
+    // Jediné prostředí, kde výslovná hodnota klíč doopravdy určí.
+    expect(
+      storePrefix({ ...STORE_ENV, VERCEL_ENV: 'production', WORLDSMITH_SPEND_STORE_PREFIX: 'worldsmith:spend' }),
+    ).toBe('worldsmith:spend');
   });
 
   it('výslovná předpona mění základ jména, ne pravidla pod ním', () => {

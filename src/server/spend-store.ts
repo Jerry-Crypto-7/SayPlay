@@ -294,7 +294,14 @@ function sharedStoreFromEnv(
  * ⚠ **Kdo výslovnou předponu má a sdílenou knihu taky, tomu se klíč
  * jednorázově přejmenoval** — `demo` → `demo:unknown-env` mimo Vercel,
  * `demo` → `demo:preview` na preview. Dosud naúčtovaná útrata zůstane na
- * starém klíči a strop začne od nuly; migrační postup je v `.env.example`.
+ * starém klíči a strop začne od nuly.
+ *
+ * **Zpátky se tou proměnnou dostat nedá a nikde se to nemá radit** — mimo
+ * `production` ne. Segment se připojuje k čemukoli, takže `demo:unknown-env`
+ * dá `demo:unknown-env:unknown-env`, tedy třetí klíč s prázdnou útratou a
+ * celým stropem navrch. Zotavení je na straně úložiště: přejmenovat starý klíč,
+ * nebo ho vyprázdnit a snížit `WORLDSMITH_SPEND_CAP_USD` o uvízlou částku.
+ * Celý postup je v `.env.example`.
  */
 export function storePrefix(env: Record<string, string | undefined>): string {
   // **Výslovná předpona mění ZÁKLAD, ne pravidla pod ním** — každá větev níž
