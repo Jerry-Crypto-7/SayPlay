@@ -194,12 +194,13 @@ describe('strop na frekvenci veřejných dveří', () => {
   it('nepoužitelná hlavička dá kbelík bez adresy, do kterého se dá jen vstoupit schválně', () => {
     const BEZ_ADRESY = 'ip:';
 
-    for (const headers of [
+    const nepoužitelné: Record<string, string>[] = [
       { 'x-forwarded-for': '' },
       { 'x-forwarded-for': '   ' },
       { 'x-forwarded-for': ' , ' },
       { 'x-real-ip': '' },
-    ]) {
+    ];
+    for (const headers of nepoužitelné) {
       expect(
         callerKey(new Request('http://x/', { headers })),
         `${JSON.stringify(headers)} už nespadá do sdíleného kbelíku — přepiš doktrínu u callerKey()`,
