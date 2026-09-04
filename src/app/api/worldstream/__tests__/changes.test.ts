@@ -36,7 +36,9 @@ import { BODY_DEADLINE_MS, MAX_CONCURRENT_BODY_READS_UNIDENTIFIED, readBody } fr
 import type { UpstreamRequest } from '@/model/prompt';
 import { resetFaultLog } from '@/server/public-faults';
 import {
+  callerKey,
   MAX_REQUESTS_PER_WINDOW,
+  MAX_REQUESTS_PER_WINDOW_PER_INSTANCE,
   resetRateWindows,
   takeRateSlot,
 } from '@/server/rate-limit';
@@ -71,8 +73,24 @@ function preview(sessionId: string, body: unknown, emit: ((request: UpstreamRequ
   return createChange(previewRequest(sessionId, body), sessionId, emit);
 }
 
-function commit(sessionId: string, changeId: string): Promise<Response> {
-  return commitChange(new Request(`http://127.0.0.1/commit`, { method: 'POST' }), {
+/**
+ * Požadavek na commit. `from` je adresa v `x-forwarded-for`, tedy přesně to, z
+ * čeho `callerKey()` skládá klíč stropu frekvence; bez ní spadne volající do
+ * kbelíku nerozeznaných a **dva různí lidé jsou pro strop jeden**.
+ */
+function commitRequest(from: string | null = null): Request {
+  return new Request(`http://127.0.0.1/commit`, {
+    method: 'POST',
+    headers: from === null ? undefined : { 'x-forwarded-for': from },
+  });
+}
+
+function commit(
+  sessionId: string,
+  changeId: string,
+  from: string | null = null,
+): Promise<Response> {
+  return commitChange(commitRequest(from), {
     params: Promise.resolve({ sessionId, changeId }),
   });
 }
@@ -903,6 +921,96 @@ describe('strop na frekvenci dorazí až ke dveřím', () => {
 
     // A brána je **před** prací: preview pořád čeká, svět se nezměnil.
     expect(stored.session.revisionOf('ironMast')).toBe(change.basedOn.representation);
+  });
+
+  it('okno commitu patří JEDNOMU volajícímu, ne dveřím', async () => {
+    // **Test-gap ze 3. kola nezávislé revize 4. 9. 2026, ověřený mutací.** Test
+    // nad ním plní okno klíčem `'unknown'` a požadavek posílá bez hlaviček
+    // proxy, takže obojí spadne do téhož kbelíku: vyměnit v route
+    // `callerKey(request)` za konstantu by zůstalo zelené. A přitom je to
+    // přesně ta vada, kterou 1. kolo revize opravovalo u ostatních šesti dveří
+    // — jeden flooder zavře commit **všem**, a to už za 5,1 požadavku za
+    // sekundu místo naměřených ~66.
+    const stored = await generated();
+    const theirs = pending(
+      stored,
+      plan({ appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }] }),
+      'change-theirs',
+    );
+    const mine = pending(stored, plan({ shape: WOVEN_MAST }), 'change-mine');
+
+    const FLOODER = '203.0.113.7';
+    const BYSTANDER = '198.51.100.4';
+    // Klíč skládá `callerKey()`, ne ruka: předpona `ip:` je součást obrany
+    // proti složení sentinelu z hlavičky, a opsat ji sem podruhé znamená
+    // pinovat překlep místo chování.
+    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1)
+      takeRateSlot('commit', callerKey(commitRequest(FLOODER)));
+
+    // Kdo nestřílel, projde celou cestou až ke commitnutému světu.
+    expect((await commit(stored.session.sessionId, theirs.changeId, BYSTANDER)).status).toBe(200);
+
+    // Kdo okno naplnil, dostane 429 — a jeho preview je přitom v pořádku.
+    const refused = await commit(stored.session.sessionId, mine.changeId, FLOODER);
+    expect(refused.status).toBe(429);
+    expect((await body(refused)).error).toMatchObject({ code: 'TOO_MANY_REQUESTS' });
+  });
+
+  it('při plném okně je neznámá relace 429, ne 404', async () => {
+    // **Test-gap ze 3. kola revize:** pořadí brány vůči `getSession`
+    // a `peekChange` drží jedině komentář ve zdroji. Posunout ji pod ně vypadá
+    // neškodně a znamená, že nápor na neexistující relace zaplatí `getSession`
+    // i `peekChange` za každý požadavek — tedy tu práci, kterou má brána
+    // ušetřit.
+    const FLOODER = '203.0.113.7';
+
+    // Kontrola proti falešnému poplachu, a je tu první schválně: s prázdným
+    // oknem tytéž dveře a tentýž požadavek 404 dají.
+    const missing = await commit('no-such-session', 'no-such-change', FLOODER);
+    expect(missing.status).toBe(404);
+    expect((await body(missing)).error).toMatchObject({ code: 'UNKNOWN_SESSION' });
+
+    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1)
+      takeRateSlot('commit', callerKey(commitRequest(FLOODER)));
+
+    const refused = await commit('no-such-session', 'no-such-change', FLOODER);
+    expect(refused.status).toBe(429);
+    expect((await body(refused)).error).toMatchObject({ code: 'TOO_MANY_REQUESTS' });
+  });
+
+  it('plná instance jde do operátorského logu jako kapacita, ne jako moc požadavků', async () => {
+    // **Test-gap ze 3. kola revize:** `rateLimitCode(slot)` stojí na sedmi
+    // místech a **žádné** z nich nepinuje test — vrátit tam napevno psané
+    // `'TOO_MANY_REQUESTS'`, jak to všech sedmero dveří dělalo do 4. 9. 2026,
+    // přežije celou sadu. Operátor by pak nad naplněnou instancí četl tvrzení
+    // o volajícím, které odpověď o řádek níž zrovna opravila; `logRateLimited`
+    // navíc klíčuje `(dveře, kód)`, takže by se oba případy slily do jednoho
+    // promlčovacího okna a ten vzácnější by z něj nevylezl nikdy.
+    //
+    // ⚠ **Pinuje to JEDNY dveře ze sedmi.** Každé další bydlí v jiné sadě
+    // s vlastní fixturou a je to týž trojřádek opsaný vedle; `rateLimitCode()`
+    // samo soudí `src/server/__tests__/rate-limit.test.ts`.
+    const stored = await generated();
+    const change = pending(stored, plan({ shape: WOVEN_MAST }));
+
+    const log: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+      log.push(String(line));
+    });
+
+    // Strop instance se soudí PRVNÍ, takže ho nasytí kdokoli. Klíče jsou různé
+    // proto, aby se pod ním neschoval strop na volajícího a neodmítal místo něj.
+    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW_PER_INSTANCE; taken += 1)
+      takeRateSlot('commit', `ip:198.51.100.${String(taken)}`);
+
+    const refused = await commit(stored.session.sessionId, change.changeId, '203.0.113.7');
+    expect(refused.status).toBe(429);
+    expect((await body(refused)).error).toMatchObject({ code: 'SERVER_AT_CAPACITY' });
+
+    const lines = log.filter((line) => line.includes('worldstream/commit'));
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('SERVER_AT_CAPACITY');
+    expect(lines[0]).not.toContain('TOO_MANY_REQUESTS');
   });
 
   it('plná fronta čtení těl NENÍ pomalé tělo — 429, ne 408', async () => {
