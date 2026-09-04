@@ -587,6 +587,37 @@ describe('commit druhé věty', () => {
     });
   });
 
+  // `T22-rejectreplay`, nález nezávislé revize. Brána nad pohnutým světem
+  // nesmí spolknout důvod: u vady tvaru patche verdikt na světě nezávisí,
+  // takže když ho odpověď zamlčí, člověk se ho po prvním cizím commitu
+  // nedozví už nikdy.
+  it('brána nad pohnutým světem pořád řekne, PROČ ta věta neprošla', async () => {
+    const stored = await generated();
+    // Cesta nemíří ani do `/sim`, ani do `/look`, takže ji router odmítne —
+    // a odmítne ji stejně nad každým světem.
+    const loser = pending(
+      stored,
+      plan({ behavior: [{ op: 'replace', path: '/meta/title', value: 'nowhere' }] }),
+      'change-malformed',
+    );
+    const prvni = await body(await commit(stored.session.sessionId, loser.changeId));
+    expect(prvni.outcome).toBe('REJECTED');
+    const duvod = (prvni.rejections as readonly Record<string, unknown>[])[0];
+
+    const other = pending(
+      stored,
+      plan({ appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }] }),
+      'change-other',
+    );
+    expect((await commit(stored.session.sessionId, other.changeId)).status).toBe(200);
+
+    const znovu = await body(await commit(stored.session.sessionId, loser.changeId));
+    expect(
+      (znovu.error as Record<string, unknown>).rejections,
+      'důvod odmítnutí se ztratil, a u téhle vady se nemá jak vrátit',
+    ).toEqual([duvod]);
+  });
+
   it('tvar, který ve světě není, se tiše nepodstrčí', async () => {
     const stored = await generated();
     const change = pending(

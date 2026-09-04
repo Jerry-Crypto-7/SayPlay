@@ -28,7 +28,7 @@
 import { frozenGrammar } from '@/model/client';
 import type { Grammar } from '@/model/prompt';
 import { buildIntentRequest, readPlannerEmission } from '@/model/worldstream-intent';
-import { MAX_PENDING_CHANGES, type PendingChange } from '@/model/worldstream-refine';
+import { MAX_PENDING_CHANGES, type PendingChange, type RejectedAt } from '@/model/worldstream-refine';
 import { compileWithRepair, type BlueprintEmitter } from '@/model/worldstream-repair';
 import type { WorldstreamBlueprint } from './schema';
 import { createSession, type GenerationSession } from './session';
@@ -295,11 +295,7 @@ export function peekChange(stored: StoredSession, changeId: string): PendingChan
  * neposune preview na konec fronty a strop `MAX_PENDING_CHANGES` dál vyhazuje
  * doopravdy nejstarší.
  */
-export function markRejected(
-  stored: StoredSession,
-  changeId: string,
-  at: { readonly sim: number; readonly look: number },
-): void {
+export function markRejected(stored: StoredSession, changeId: string, at: RejectedAt): void {
   const change = stored.changes.get(changeId);
   if (change === undefined) return;
   stored.changes.set(changeId, { ...change, rejectedAt: at });

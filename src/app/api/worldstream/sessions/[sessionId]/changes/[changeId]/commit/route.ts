@@ -42,6 +42,7 @@ import { randomUUID } from 'node:crypto';
 
 import { commitRoutedParts, staleRevision, type CommitOutcome } from '@/app/api/edit/commit';
 import type { PartPatch } from '@/ir/revision';
+import type { RejectionNote } from '@/model/worldstream-refine';
 import { routePatch, type RoutedPatch } from '@/patch/router';
 import { killState } from '@/server/kill-switch';
 import { logRateLimited } from '@/server/public-faults';
@@ -141,6 +142,12 @@ export async function POST(
    * tuhle opravu. Zbývalo právě to, co záměr nepokrývá: preview jen nad `sim`
    * postavené nad `look` revizí 3 projde i po `look` 5. Razítko proto soudí
    * **dvojici jako celek**, a jen u preview, které už souhlas jednou vyčerpalo.
+   *
+   * ⚠ **Odpověď veze původní verdikt s sebou** — nález nezávislé revize
+   * 4. 9. 2026. Bez něj tahle brána spolkne jedinou větu, která člověku říká,
+   * proč jeho věta neprošla. U vady, která na světě nezávisí (vada tvaru
+   * patche), se ta věta navíc nemá jak vrátit: verdikt se nemůže změnit, takže
+   * po prvním cizím commitu by byl důvod nečitelný napořád.
    */
   const rejectedAt = change.rejectedAt;
   if (
@@ -153,6 +160,7 @@ export async function POST(
           code: 'PREVIEW_REJECTED',
           message: `this preview was already rejected when the world was at sim ${String(rejectedAt.sim)} / look ${String(rejectedAt.look)}, and the world has since moved to sim ${String(doc.simRevision)} / look ${String(doc.lookRevision)} — ask for a new preview`,
           field: 'changeId',
+          rejections: rejectedAt.rejections,
         },
       },
       { status: 409 },
@@ -265,16 +273,13 @@ export async function POST(
   });
 }
 
-interface Rejection {
-  readonly stage: string;
-  readonly reason: string;
-  readonly pointer: string;
-  readonly detail: string;
-}
-
 /**
  * Odmítnutá změna: razítko na preview, rámec do proudu, 200 s verdiktem, ve
  * světě ani bajt.
+ *
+ * **Razítko nese i ten verdikt**, ne jen revize. Preview se odmítnutím
+ * nespotřebuje, takže se na tenhle text ještě někdo zeptá — a brána nad
+ * pohnutým světem ho pak umí zopakovat místo toho, aby ho spolkla.
  *
  * Razítko nese revize světa, nad kterým se prohrálo — `doc`, ne
  * `committed.after`. U smíšeného patche vrací `commitRoutedParts` dokument
@@ -287,9 +292,9 @@ function rejected(
   changeId: string,
   stableId: string,
   doc: WorldstreamBlueprint['world'],
-  rejections: readonly Rejection[],
+  rejections: readonly RejectionNote[],
 ): Response {
-  markRejected(stored, changeId, { sim: doc.simRevision, look: doc.lookRevision });
+  markRejected(stored, changeId, { sim: doc.simRevision, look: doc.lookRevision, rejections });
   stored.session.events.append('patch.rejected', { stableId, rejections }, stableId);
   return Response.json({ outcome: 'REJECTED', stableId, rejections });
 }

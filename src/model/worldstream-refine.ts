@@ -513,15 +513,38 @@ export interface PendingChange {
   readonly plan: RefinePlan;
   readonly basedOn: ChangeBase;
   /**
-   * Revize dokumentu ve chvíli, kdy tohle preview commit **prohrálo** — nebo
-   * `undefined`, dokud o nic nepřišlo (`T22-rejectreplay`).
-   *
-   * Odmítnuté preview v mapě zůstává schválně (`T22-takeearly`), aby porotce
-   * neplatil druhé volání modelu za tutéž větu. Tím ale smí být jen **opakování
-   * téhož verdiktu nad týmž světem**: jakmile se svět mezitím pohnul, je druhý
-   * pokus rozhodnutí o jiném světě, než jaký člověk viděl. Obě revize
-   * dohromady, protože `staleRevision` soudí každou část zvlášť a záměrně —
-   * tady jde právě o pohyb v části, které se preview netýká.
+   * Co se stalo, když tohle preview commit **prohrálo** — nebo `undefined`,
+   * dokud o nic nepřišlo (`T22-rejectreplay`).
    */
-  readonly rejectedAt?: { readonly sim: number; readonly look: number };
+  readonly rejectedAt?: RejectedAt;
+}
+
+/** Jedna vytknutá vada, tak jak ji commit route vrací volajícímu. */
+export interface RejectionNote {
+  readonly stage: string;
+  readonly reason: string;
+  readonly pointer: string;
+  readonly detail: string;
+}
+
+/**
+ * Razítko prohraného commitu.
+ *
+ * Odmítnuté preview v mapě zůstává schválně (`T22-takeearly`), aby porotce
+ * neplatil druhé volání modelu za tutéž větu. Tím ale smí být jen **opakování
+ * téhož verdiktu nad týmž světem**: jakmile se svět mezitím pohnul, je druhý
+ * pokus rozhodnutí o jiném světě, než jaký člověk viděl. Obě revize dohromady,
+ * protože `staleRevision` soudí každou část zvlášť a záměrně — tady jde právě
+ * o pohyb v části, které se preview netýká.
+ *
+ * ⚠ **Verdikt se veze s razítkem, a je to celý nález nezávislé revize
+ * 4. 9. 2026.** Bez něj by 409 nad pohnutým světem spolklo jedinou větu, která
+ * člověku říká, proč jeho věta neprošla — a u vad, které na světě nezávisí
+ * (vada tvaru patche), se ta věta už nemá jak vrátit, protože verdikt se
+ * nemůže změnit.
+ */
+export interface RejectedAt {
+  readonly sim: number;
+  readonly look: number;
+  readonly rejections: readonly RejectionNote[];
 }
