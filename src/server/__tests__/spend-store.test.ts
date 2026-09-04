@@ -209,10 +209,16 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
   });
 
   it('výchozí předponu jde přepsat, aby si dvě nasazení nesečetla rozpočty', async () => {
+    // ⚠ **Očekávaný klíč se od `T29-explicitscope` změnil a byl přepsán, ne
+    // smazán.** Výslovná předpona je nově ZÁKLAD jména, ne celé jméno, takže
+    // se k ní segment prostředí připojí stejně jako k odvozené — tady
+    // `unknown-env`, protože `STORE_ENV` sdílenou knihu má a `VERCEL_ENV`
+    // nenese. Vlastnost, kterou test pinuje (předpona se propíše až do klíče,
+    // kam se doopravdy zapisuje), platí dál.
     const fetchImpl = vi.fn<typeof fetch>(async () => pipelineAnswer(0, 0));
     await ledgerFromEnv({ ...STORE_ENV, WORLDSMITH_SPEND_STORE_PREFIX: 'demo' }, fetchImpl)?.add(1, 1);
 
-    expect(JSON.parse(String(fetchImpl.mock.calls[0][1]?.body))[0][1]).toBe('demo:usd');
+    expect(JSON.parse(String(fetchImpl.mock.calls[0][1]?.body))[0][1]).toBe('demo:unknown-env:usd');
   });
 
   it('preview a produkce dostanou dva různé klíče i bez výslovné předpony', () => {
@@ -309,10 +315,13 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
       expect(unknown, `klíč a úložiště se rozešly pro ${JSON.stringify(env)}`).toBe(shares);
     }
 
-    // **Výjimka 1 — výslovná předpona vyhrává nad odvozením.** Kniha se sdílí,
-    // klíč přesto není `unknown-env`, protože ho určil operátor.
+    // ⚠ **Tohle byla do 4. 9. 2026 „Výjimka 1" a přestala jí být**
+    // (`T29-explicitscope`). Výslovná předpona odvození nevypíná, jen mu mění
+    // základ, takže rovnost „neznámý klíč ⇔ sdílená kniha" platí i pro ni —
+    // jen se soudí proti `demo:unknown-env` místo proti výchozímu základu.
+    // Zůstává tu proto, že to je ten případ, kde se rovnost dřív lámala.
     const explicit = { ...STORE_ENV, WORLDSMITH_SPEND_STORE_PREFIX: 'demo' };
-    expect(storePrefix(explicit)).toBe('demo');
+    expect(storePrefix(explicit)).toBe('demo:unknown-env');
     expect(ledgerFromEnv(explicit)?.id).toBe('http');
 
     // **Výjimka 2 — známé prostředí rozhoduje samo.** Sdílená kniha ho
@@ -329,11 +338,23 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
     expect(ledgerFromEnv({ VERCEL: '1' })).toBeNull();
   });
 
-  it('výslovná předpona vyhrává nad odvozenou, a produkce si nechá holý základ', () => {
-    // Odvození je záchranná síť, ne pravidlo: kdo předponu nastaví, dostane ji.
+  it('výslovná předpona mění základ jména, ne pravidla pod ním', () => {
+    // ⚠ **Tenhle případ tvrdil do 4. 9. 2026 „výslovná vyhrává nad odvozením"
+    // a byl přepsán, ne smazán** (`T29-explicitscope`; mění to napsané AC
+    // `T29-storeprefix`). Důvod je naměřený: vercelské UI při zakládání
+    // proměnné předškrtává všechna tři prostředí, takže operátor, který se
+    // řídil starou radou, tím odvození vypnul a preview začalo účtovat do
+    // produkční knihy. „Výslovná vyhrává" je proto pravidlo o tom, KTERÝ
+    // základ, ne o tom, jestli se prostředí připojí.
     expect(
       storePrefix({ VERCEL_ENV: 'preview', VERCEL_GIT_COMMIT_REF: 'x', WORLDSMITH_SPEND_STORE_PREFIX: 'demo' }),
-    ).toBe('demo');
+    ).toBe('demo:preview');
+    // Produkce si holý základ nechá — i ten výslovný.
+    expect(storePrefix({ VERCEL: '1', VERCEL_ENV: 'production', WORLDSMITH_SPEND_STORE_PREFIX: 'demo' })).toBe(
+      'demo',
+    );
+    // A lokální běh bez sdílené knihy taky: není s čím kolidovat.
+    expect(storePrefix({ WORLDSMITH_SPEND_STORE_PREFIX: 'demo' })).toBe('demo');
     // Mimo Vercel žádné `VERCEL_ENV` není a kniha se nesmí přejmenovat pod
     // běžícím nasazením — proto tentýž holý základ jako produkce.
     expect(storePrefix({})).toBe('worldsmith:spend');

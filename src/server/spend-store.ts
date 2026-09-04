@@ -276,22 +276,42 @@ function sharedStoreFromEnv(
  * vyplněné `WORLDSMITH_SPEND_STORE_*`, což je stejně jediná podoba, ve které
  * strop na serverless platí (`ledgerFromEnv()` níž).
  *
- * Výslovná hodnota vyhrává nad odvozenou — odvození je záchranná síť, ne
- * pravidlo. **Na Vercelu to má háček zapsaný v `.env.example`:** proměnná
- * nastavená pro všechna prostředí odvození vypne a kolize se vrátí.
+ * ⚠ **Výslovná předpona je ZÁKLAD jména, ne celé jméno — a je to obrácení
+ * dřívějšího AC `T29-storeprefix`.** Do 4. 9. 2026 `WORLDSMITH_SPEND_STORE_PREFIX`
+ * odvození vypnula úplně, na tom stál zelený test a bylo to napsané jako
+ * pravidlo. Jenže vercelské UI při zakládání proměnné **předškrtává všechna tři
+ * prostředí**, takže operátor, který se řídil starou radou z `.env.example`
+ * („vyplň ji a nasazení se oddělí"), tím odvození vypnul a vrátil přesně tu
+ * kolizi, kterou úloha zavírala. Naměřeno revizí: `{VERCEL:1,
+ * VERCEL_ENV:preview, WORLDSMITH_SPEND_STORE_PREFIX:worldsmith:spend}` →
+ * `worldsmith:spend`, tedy **preview účtuje do produkční knihy**.
+ *
+ * „Výslovná vyhrává" proto od `T29-explicitscope` znamená **který základ**, ne
+ * jestli smí preview psát do produkční knihy. Segment prostředí se připojuje
+ * i k výslovné předponě; jediné, co si nechá holý základ, je `production` —
+ * a lokální běh bez sdílené knihy, kde není s čím kolidovat (o řádek níž).
+ *
+ * ⚠ **Kdo výslovnou předponu má a sdílenou knihu taky, tomu se klíč
+ * jednorázově přejmenoval** — `demo` → `demo:unknown-env` mimo Vercel,
+ * `demo` → `demo:preview` na preview. Dosud naúčtovaná útrata zůstane na
+ * starém klíči a strop začne od nuly; migrační postup je v `.env.example`.
  */
 export function storePrefix(env: Record<string, string | undefined>): string {
+  // **Výslovná předpona mění ZÁKLAD, ne pravidla pod ním** — každá větev níž
+  // zůstala, jen se přestala vázat na konstantu. Kdyby tady byl dřívější
+  // `return explicit`, vercelské předškrtnutí všech tří prostředí by odvození
+  // vyplo a preview by účtovalo do produkční knihy.
   const explicit = env.WORLDSMITH_SPEND_STORE_PREFIX?.trim() ?? '';
-  if (explicit !== '') return explicit;
+  const base = explicit !== '' ? explicit : BASE_PREFIX;
 
   const scope = env.VERCEL_ENV?.trim().toLowerCase() ?? '';
-  if (scope === 'production') return BASE_PREFIX;
-  if (scope === 'preview') return `${BASE_PREFIX}:preview`;
+  if (scope === 'production') return base;
+  if (scope === 'preview') return `${base}:preview`;
   // Prostředí není známé. Holý základ tu smí vyjít jedině tam, kde není s čím
   // kolidovat: nikdo další do té knihy nepíše a nic neříká, že jsme nasazení.
-  if (scope === '' && sharedStoreFromEnv(env) === null && !isServerless(env)) return BASE_PREFIX;
+  if (scope === '' && sharedStoreFromEnv(env) === null && !isServerless(env)) return base;
 
-  return `${BASE_PREFIX}:unknown-env`;
+  return `${base}:unknown-env`;
 }
 
 /** Kde běžíme. `VERCEL` nastavuje platforma sama, na všech svých prostředích. */
