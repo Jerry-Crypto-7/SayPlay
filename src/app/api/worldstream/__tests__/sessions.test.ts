@@ -846,6 +846,55 @@ describe('proud relace má strop na počet posluchačů', () => {
     for (const stream of open) await stream.close();
   });
 
+  it('slot se vrací právě jednou, i když proud odejde dvěma cestami naráz', async () => {
+    // ⚠ **Tenhle případ dopsala nezávislá revize, protože její mutant PŘEŽIL.**
+    // Závora `holdsSlot` v `release()` je nosná půlka tvrzení „slot se vrací
+    // právě jednou", a do 4. 9. 2026 ji nepinovalo nic: revize ji nahradila
+    // holým `releaseStream(sessionId)` a **všech 41 testů zůstalo zelených**,
+    // přičemž strop čtyř pak pustil pátý proud. Komentář to tvrdil, test ne.
+    //
+    // Dvě cesty úklidu naráz jsou přesně to, co se v provozu děje běžně:
+    // prohlížeč zavře kartu (`abort`) a čtečka nad ní ještě zruší reader
+    // (`cancel`). Kdyby každá vrátila slot zvlášť, počítadlo by šlo pod nulu
+    // a strop by přestal držet po prvním obyčejném odchodu diváka.
+    openSession('double-exit', 15);
+    // **Vedle musí stát druhý proud, jinak se ta závora neprojeví.**
+    // `releaseStream()` se sama brání jen tehdy, když klíč po prvním snížení
+    // z mapy zmizí — tedy když šel počet na nulu. Se dvěma proudy jde první
+    // snížení na 1, klíč zůstane, a druhé projde. Naměřeno: bez souseda mutant
+    // bez závory tenhle případ **přežil**.
+    const neighbour = await listen('double-exit');
+    expect(neighbour.response.status).toBe(200);
+
+    const controller = new AbortController();
+    const doubled = await readEvents(
+      new Request('http://127.0.0.1/api/worldstream/sessions/double-exit/events', {
+        signal: controller.signal,
+      }),
+      params('double-exit'),
+    );
+    expect(doubled.status).toBe(200);
+
+    controller.abort();
+    await doubled.body?.cancel();
+
+    // Odešel JEDEN divák ze dvou, takže se smí vrátit JEDEN slot: k sousedovi
+    // se vejdou přesně `MAX_STREAM_SUBSCRIBERS - 1` další, ne o jednoho víc.
+    const open = [];
+    for (let i = 0; i < MAX_STREAM_SUBSCRIBERS - 1; i += 1) {
+      const stream = await listen('double-exit');
+      expect(stream.response.status, `slot #${i + 1} chyběl`).toBe(200);
+      open.push(stream);
+    }
+    expect(
+      (await events('double-exit')).status,
+      'slot se vrátil dvakrát, takže strop pustil o jednoho víc',
+    ).toBe(503);
+
+    await neighbour.close();
+    for (const stream of open) await stream.close();
+  });
+
   it('odmítnutý požadavek slot nezabere — 404 ani 400 nesmí ubrat místo', async () => {
     openSession('unspent', 14);
 
