@@ -1374,14 +1374,14 @@ describe('POST /api/generate pod náporem', () => {
     // drží** — tady jsou to démové dveře a nic jiného, takže operátor ví, kam
     // se dívat, aniž by hádal.
     expect(refusals[0]).toContain(
-      'paid slots in flight: 0 world + 1 generate + 0 refine of 4 on this instance; ' +
-        'the generate door may hold 1',
+      'paid slots in flight: 0 world + 2 generate + 0 refine of 6 on this instance; ' +
+        'the generate door may hold 2',
     );
     expect(refusals[0], 'hláška tvrdí o slotech víc, než čítač ví').not.toContain(
       'open to new worlds are in flight',
     );
-    expect(DOOR_CEILING.generate, 'strop se pohnul — přepiš i větu v logu').toBe(1);
-    expect(MAX_CONCURRENT_GENERATIONS, 'čítač se pohnul — přepiš i větu v logu').toBe(4);
+    expect(DOOR_CEILING.generate, 'strop se pohnul — přepiš i větu v logu').toBe(2);
+    expect(MAX_CONCURRENT_GENERATIONS, 'čítač se pohnul — přepiš i větu v logu').toBe(6);
   });
 
   it('nasycené zakládání relace tyhle dveře nezavře — každé mají vlastní čítač', async () => {

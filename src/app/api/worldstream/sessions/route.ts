@@ -70,10 +70,21 @@ export const runtime = 'nodejs';
  *
  * Není to výkonnostní ladění, je to strop na **placená volání v letu**: každá
  * generace stojí dvě až čtyři volání modelu a strop utrácení je kontrola po
- * volání, ne před náporem. Čtyři je nad tím, co porotce vyrobí sám, a pod tím,
+ * volání, ne před náporem. Je to nad tím, co porotce vyrobí sám, a pod tím,
  * co by z jednoho návštěvníka udělalo účet za den.
+ *
+ * ✅ **Ze čtyř na šest 4. 9. 2026, a je to rozhodnutí o penězích.** Čtyři sloty
+ * na troje dveře vycházely 2 + 1 + 1, tedy **jedno** souběžné preview druhé věty
+ * na celou instanci — a druhá věta je hlavní věc, kterou má porotce vidět. Šest
+ * dovolí 3 + 2 + 2. Peníze to neuvolňuje: horní mez útraty drží
+ * `src/server/spend-cap.ts`, tenhle strop je jen mez souběhu.
+ *
+ * ⚠ **Vedlejší následek, který stojí za to znát:** při 2 + 1 + 1 byl součet
+ * stropů roven dnu, takže brána na součet nikdy nekousla první a nešla změřit
+ * (mutant, který ji vypustil, přežil). Při 3 + 2 + 2 je součet 7 proti dnu 6,
+ * takže rozhoduje a má vlastní test.
  */
-export const MAX_CONCURRENT_GENERATIONS = 4;
+export const MAX_CONCURRENT_GENERATIONS = 6;
 
 /**
  * Kolik z těch čtyř smí naráz držet **zakládání relace**.
@@ -97,12 +108,12 @@ export const MAX_CONCURRENT_GENERATIONS = 4;
  * relace po tu dobu dostalo `503`. Rezerva na dveře platí jen tehdy, když má
  * vlastní čítač **každé** veřejné dveře.
  *
- * ⚠ **Cena té opravy je vidět a je vědomá:** čtyři sloty se dělí na tři dveře,
- * takže `refine` spadlo ze tří na jeden a `world` ze tří na dva. Zvednout
- * `MAX_CONCURRENT_GENERATIONS` je jediná páka, jak to vrátit — a to je
- * rozhodnutí o penězích (souběžná placená volání), ne o kódu.
+ * ✅ **Kapacita se 4. 9. 2026 vrátila zvednutím dna, ne zrušením rezervy.**
+ * První podoba téhle opravy dělila čtyři sloty na troje dveře (2 + 1 + 1),
+ * takže druhá věta směla běžet jednou naráz. Dno je od téhož dne šest a dělí se
+ * 3 + 2 + 2, tedy `world` má zpátky své tři.
  */
-export const MAX_WORLD_GENERATIONS = 2;
+export const MAX_WORLD_GENERATIONS = 3;
 
 /**
  * Dveře, které si o placený slot říkají. Ne řetězec: strop se vybírá podle
@@ -127,23 +138,24 @@ export type PaidDoor = 'world' | 'generate' | 'refine';
  * `MAX_CONCURRENT_GENERATIONS`.** Teprve pak platí, že dveře, které nedrží
  * nic, se dovnitř dostanou vždycky: odmítnout je umí jen jejich vlastní strop
  * (tedy jejich vlastní provoz), nebo součet — a na součet ostatní samy
- * nedosáhnou. Dnes: `world` 2 + `generate` 1 + `refine` 1 = 4, takže pro
- * každé dveře je součet těch zbylých nejvýš 3 proti dnu 4.
+ * nedosáhnou. Dnes: `world` 3 + `generate` 2 + `refine` 2 = 7 proti dnu 6,
+ * takže pro každé dveře je součet těch zbylých nejvýš 5 — pod dnem.
  *
  * ⚠ **Ten invariant se poruší tiše.** Zvednout kterýkoli strop o jedna
  * vypadá jako uvolnění, a přitom to jiným dveřím sebere rezervu, o kterou tu
  * celou dobu jde. Pinuje ho vlastnostní test nad těmihle konstantami
  * (`changes.test.ts`, „invariant rezervy"), ne komentář.
  *
- * ⚠ **Se třemi dveřmi a dnem čtyř brána na součet nikdy nekousne první** —
- * součet stropů je roven dnu, takže rozhodnou stropy dveří. Zbývá tam schválně:
- * je to jediné, co udrží celkový počet placených volání, kdyby někdo strop
- * některých dveří zvedl. Rovnost hlídá týž test.
+ * ⚠ **Součet stropů je NAD dnem (7 proti 6), takže brána na součet doopravdy
+ * rozhoduje** — a je to tak správně: je to jediné, co drží celkový počet
+ * placených volání bez ohledu na to, kolik dveří přibude. Do 4. 9. 2026 byl
+ * součet roven dnu, brána nikdy nekousla první a mutant, který ji vypustil,
+ * proto přežil. Hlídá to týž test.
  */
 export const DOOR_CEILING: Readonly<Record<PaidDoor, number>> = {
   world: MAX_WORLD_GENERATIONS,
-  generate: 1,
-  refine: 1,
+  generate: 2,
+  refine: 2,
 };
 
 /** Kolik placených volání drží která dveře. **Tři čítače, jeden strop.** */
