@@ -907,6 +907,30 @@ describe('strop drží i za hranicí jedné instance', () => {
     expect(refused.ok).toBe(false);
     expect(cap.snapshot().capUsd).toBe(0.25);
   });
+
+  /**
+   * **Rozbitý povel se pamatuje taky — a je to ta zajímavější půlka.**
+   *
+   * Napsané schválně po přeživším mutantovi: `if (outcome.kind === 'ok')` kolem
+   * zápisu prošlo oběma testy výš, protože v obou byl povel čitelný. Rozbitý
+   * ovládací klíč přitom rezervaci **odmítne**, takže je to rozhodnutí jako
+   * každé jiné — a `snapshot()` po něm nesmí ukazovat strop ze zálohy, jako by
+   * pořád platil. `capUsd: 0` je tu správná odpověď: neplatí žádný.
+   */
+  it('rozbitý povel `snapshot()` nepřebije zálohou ze souboru', async () => {
+    const store: ControlStore = {
+      id: 'test',
+      key: 'worldsmith:spend:control',
+      read: () => Promise.reject(new Error('the store is down')),
+    };
+    const cap = new SpendCap({ enabled: true, capUsd: 5 }, null, memoryLedger(), store);
+
+    const refused = await cap.reserve(0.01);
+    expect(refused.ok).toBe(false);
+    if (refused.ok) throw new Error('unreachable');
+    expect(refused.reason).toBe('CONTROL_UNREADABLE');
+    expect(cap.snapshot().capUsd).toBe(0);
+  });
 });
 
 describe('rezervace, která se nevyrovná, drží peníze — a snapshot to musí ukázat', () => {
