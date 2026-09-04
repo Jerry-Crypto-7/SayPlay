@@ -140,11 +140,23 @@ export type RefusalReason =
    */
   | 'LEDGER_UNAVAILABLE'
   /**
-   * Běžíme na serverless a **žádné sdílené úložiště není nastavené**.
+   * **Žádné sdílené úložiště, a tenhle proces neumí doložit, že je sám.**
    *
-   * Kniha v paměti procesu tam totiž neznamená nic: každá studená instance
-   * začíná s plným zůstatkem, takže strop 5 USD je ve skutečnosti 5 USD × počet
+   * Kniha v paměti procesu jinde neznamená nic: každá studená instance začíná
+   * s plným zůstatkem, takže strop 5 USD je ve skutečnosti 5 USD × počet
    * instancí. Do 3. 9. 2026 tomu bránil jen komentář v `.env.example`.
+   *
+   * ⚠ **Od `T29-lambdadetect` to není jen o serverless a ta věta se nesmí
+   * vrátit.** Nasazení s vypnutým přepínačem systémových proměnných o sobě
+   * neřekne `VERCEL` ani `VERCEL_ENV`, takže „poznáme serverless" ho minulo
+   * přesně tam, kde na tom záleželo. Podmínkou je proto známé prostředí, ne
+   * nepřítomnost platformy — rozhoduje `ledgerFromEnv()`.
+   *
+   * ⚠ **Operátorovi se to na cestě relace ukáže pod cizím jménem** — nález
+   * nezávislé revize 4. 9. 2026. `runGeneration` chytá výjimku emitoru jako
+   * `MODEL_UNAVAILABLE`, takže porotce čte „the model could not be reached",
+   * zatímco příčina je nedokonfigurovaný strop. Detail se do operátorského logu
+   * dostane, ale předem to nikdo neohlásí; zavírá to `T29-readinessledger`.
    */
   | 'STORE_UNCONFIGURED';
 

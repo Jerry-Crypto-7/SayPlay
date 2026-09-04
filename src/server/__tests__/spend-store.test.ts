@@ -10,6 +10,7 @@ import {
   processLedger,
   resetProcessLedger,
 } from '../spend-store';
+import { processSpendCap, resetProcessSpendCap } from '../spend-cap';
 
 /**
  * Odpověď roury úložiště. Tvar je `[{result}, {result}]` v pořadí příkazů,
@@ -156,6 +157,10 @@ describe('kniha přes REST', () => {
 describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
   afterEach(() => {
     resetProcessLedger();
+    // Strop procesu si knihu drží taky, a `vi.stubEnv` bez úklidu by ji
+    // podstrčil dalšímu testu i s cizím prostředím.
+    resetProcessSpendCap();
+    vi.unstubAllEnvs();
   });
 
   it('vyplněná adresa a token dají knihu přes REST', () => {
@@ -215,6 +220,46 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
 
   it('velikost písmen ani mezery kolem známého prostředí nerozhodují', () => {
     expect(ledgerFromEnv({ VERCEL_ENV: ' Production ' })?.id).toBe('process-memory');
+  });
+
+  /**
+   * **Tatáž brána, ale tvarem, kterým ji volá produkce** — nález nezávislé
+   * revize 4. 9. 2026 (LOW) k `T29-lambdadetect`.
+   *
+   * Všechny aserce výš předávají `ledgerFromEnv()` vlastní objekt prostředí,
+   * takže se `process.env` cesty nedotknou. Jenže právě tu bere
+   * `processSpendCap()` (`spend-cap.ts`), a to je jediný strop, kterým placené
+   * routy doopravdy chodí. Regrese v tom napojení — kdyby `spendCapFromEnv()`
+   * přestala knihu z prostředí brát, nebo kdyby `null` přestalo znamenat
+   * odmítnutí — by celou sadu nechala zelenou.
+   *
+   * ⚠ **Proto se tady `VERCEL_ENV` odstraňuje ručně:** `vitest.config.mts` ho
+   * pro celý běh nastavuje na `production`, což je nutné, aby ostatní testy
+   * měřily svůj předmět. Tenhle jediný ho musí zase sundat, jinak by měřil
+   * konfiguraci sady, ne bránu.
+   */
+  it('strop procesu odmítne rezervaci, když prostředí v `process.env` chybí', async () => {
+    resetProcessSpendCap();
+    vi.stubEnv('VERCEL_ENV', '');
+
+    const refused = await processSpendCap().reserve(0.01);
+    expect(refused.ok, 'strop pustil placené volání bez knihy, která by ho udržela').toBe(false);
+    if (refused.ok) throw new Error('unreachable');
+    expect(refused.reason).toBe('STORE_UNCONFIGURED');
+
+    // Překlep operátora je „neznámo", ne produkce — `prod` na uzavřeném seznamu
+    // není a nesmí se na něj dostat žádnou tolerancí.
+    resetProcessSpendCap();
+    vi.stubEnv('VERCEL_ENV', 'prod');
+    expect((await processSpendCap().reserve(0.01)).ok, '`prod` prošlo jako známé prostředí').toBe(
+      false,
+    );
+
+    // A z druhé strany: se známým prostředím tatáž rezervace projde, takže se
+    // netvrdí jen „něco odmítá".
+    resetProcessSpendCap();
+    vi.stubEnv('VERCEL_ENV', 'production');
+    expect((await processSpendCap().reserve(0.01)).ok).toBe(true);
   });
 
   /**
