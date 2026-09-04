@@ -983,27 +983,81 @@ describe('hranice požadavku', () => {
 });
 
 describe('strop souběhu sem nepatří, a je to změřené', () => {
-  /** Komentáře pryč: hlavička route o tom měření mluví a nesmí si bránu prošlapat. */
+  const Q_SINGLE = String.fromCharCode(39);
+  const Q_DOUBLE = String.fromCharCode(34);
+  const Q_BACKTICK = String.fromCharCode(96);
+  const BACKSLASH = String.fromCharCode(92);
+
+  /**
+   * Zdroj bez komentářů — blokové celé, řádkové **kdekoli na řádku**.
+   *
+   * ⚠ **Ukotvit řádkový komentář na začátek řádku nestačí, a je to naměřený
+   * nález nezávislé revize 4. 9. 2026** (`VERDICT: blocking`, CONFIRMED
+   * spuštěním). Nad kotvou na začátek řádku stačilo dopsat na konec řádku kódu
+   * komentář, který zmiňuje cestu k stropu utrácení, a obě brány níž zčervenaly,
+   * aniž se cokoli změnilo na chování. Zrovna tenhle soubor o těch cestách
+   * v komentářích mluví hodně, takže je to falešný poplach na pravděpodobném
+   * místě.
+   *
+   * Hlídá se přitom uvozovka: dvě lomítka uvnitř řetězce (typicky v URL) nejsou
+   * komentář a zbytek řádku se za nimi zahodit nesmí.
+   */
   const stripComments = (source: string): string =>
-    source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
+    source
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split(/\r?\n/)
+      .map((line) => {
+        let quote: string | null = null;
+        for (let i = 0; i < line.length; i += 1) {
+          const char = line[i];
+          if (char === BACKSLASH) {
+            i += 1;
+            continue;
+          }
+          if (quote !== null) {
+            if (char === quote) quote = null;
+            continue;
+          }
+          if (char === Q_SINGLE || char === Q_DOUBLE || char === Q_BACKTICK) {
+            quote = char;
+            continue;
+          }
+          if (char === '/' && line[i + 1] === '/') return line.slice(0, i);
+        }
+        return line;
+      })
+      .join('\n');
 
   const ROUTE = 'src/app/api/edit/route.ts';
 
   /**
+   * Každý tvar, kterým jde v tomhle repu přitáhnout modul.
+   *
+   * ⚠ **Uvozovka rozhodovala o platnosti celé brány, a je to naměřený nález
+   * nezávislé revize 4. 9. 2026** (`VERDICT: blocking`, CONFIRMED spuštěním).
+   * Předchozí podoba četla jen `from` s apostrofy, takže tentýž import zapsaný
+   * uvozovkami — jediný jiný znak — vzal neplaceným dveřím slot z čítače
+   * placených volání a sada zůstala **zelená, 35/35**. Toutéž dírou prošel
+   * `export … from`, `import` kvůli vedlejšímu účinku, dynamický `import()`
+   * i `require()`.
+   */
+  const IMPORT_SPECIFIER = /(?:\bfrom\b|\bimport\b|\brequire\b)\s*\(?\s*['"]([^'"]+)['"]/g;
+
+  /**
    * **Kam ten soubor sahá — rozřešeně, ne jako text.**
    *
-   * Vrací cesty modulů, které `file` importuje relativně nebo přes `@/`.
-   * Balíčky se zahazují: ty do repa nepatří a jejich obsah tenhle test nehlídá.
+   * Vrací cesty modulů, které `file` přitáhne relativně nebo přes `@/`. Balíčky
+   * se zahazují: ty do repa nepatří a jejich obsah tenhle test nehlídá.
    *
-   * Existuje proto, že obě brány níž byly do 4. 9. 2026 seznamy řetězců, a
-   * nezávislá revize obě obešla beze změny chování — jednu novým souborem,
-   * který v seznamu nebyl, druhou zápisem `from '../../route'`, který ani jeden
+   * Existuje proto, že obě brány níž byly do 4. 9. 2026 seznamy řetězců, a dvě
+   * nezávislé revize je obešly beze změny chování — jednu novým souborem, který
+   * v seznamu nebyl, druhou zápisem `from '../../route'`, který ani jeden
    * z hlídaných řetězců nenese.
    */
   function resolvedImports(file: string): string[] {
     const source = stripComments(readFileSync(file, 'utf8'));
     const found: string[] = [];
-    for (const match of source.matchAll(/from '([^']+)'/g)) {
+    for (const match of source.matchAll(IMPORT_SPECIFIER)) {
       const specifier = match[1];
       const base = specifier.startsWith('.')
         ? resolve(dirname(file), specifier)
@@ -1019,13 +1073,16 @@ describe('strop souběhu sem nepatří, a je to změřené', () => {
     return found;
   }
 
-  /** Všechno, kam se z `entry` dá dojít po týchž hranách. */
-  function importClosure(entry: string): Set<string> {
+  /**
+   * Všechno, kam se z `entry` dá dojít po týchž hranách. `stopAt` se do uzávěru
+   * nedostane a nechodí se ani skrz něj.
+   */
+  function importClosure(entry: string, stopAt: string | null = null): Set<string> {
     const seen = new Set<string>();
     const stack = [entry];
     while (stack.length > 0) {
       const next = stack.pop() as string;
-      if (seen.has(next)) continue;
+      if (seen.has(next) || next === stopAt) continue;
       seen.add(next);
       stack.push(...resolvedImports(next));
     }
@@ -1033,14 +1090,14 @@ describe('strop souběhu sem nepatří, a je to změřené', () => {
   }
 
   /**
-   * Modul toho **jediného** povoleného `await` — tedy čtení těla, které celý
-   * úsek začíná. Je z hlídání vyňatý jmenovitě, protože být asynchronní je celý
-   * jeho účel.
+   * Modul toho **jediného** povoleného `await` — čtení těla, které celý úsek
+   * začíná. Je vyňatý jmenovitě, protože být asynchronní je celý jeho účel,
+   * a nechodí se ani skrz něj: co dělá, děje se uvnitř toho jednoho `await`.
    *
-   * **Naměřeno 4. 9. 2026, ne odhadnuto:** rozřešených importů `route.ts` je
-   * deset a `await`/`async`/`.then(` nese z nich **jediný**, právě tenhle.
-   * Návrh revize „seznam volaných odvodit z importů" by tedy bez téhle výjimky
-   * svítil červeně nad kódem, který je v pořádku.
+   * **Naměřeno 4. 9. 2026, ne odhadnuto:** uzávěr `route.ts` bez tohohle modulu
+   * má **29 souborů a `await`/`async`/`.then(` nenese ani jeden**. Návrh revize
+   * „seznam volaných odvodit z importů" by tedy bez téhle jediné výjimky svítil
+   * červeně nad kódem, který je v pořádku.
    */
   const BODY_MODULE = 'src/http/body.ts';
 
@@ -1056,9 +1113,6 @@ describe('strop souběhu sem nepatří, a je to změřené', () => {
    * se stal přerušitelným, dva požadavky by se v něm potkaly a **rozhodnutí
    * „čítač sem nepatří" by přestalo platit** — což je přesně ta chvíle, kdy se
    * má někdo podívat znovu, a ne se to dozvědět z nasazení.
-   *
-   * Komentáře se odstřihnou; hlavička route o tom měření mluví a nesmí si
-   * bránu prošlapat sama.
    */
   it('mezi čtením těla a odpovědí není jediný await', () => {
     const routeCode = stripComments(readFileSync(ROUTE, 'utf8'));
@@ -1067,22 +1121,21 @@ describe('strop souběhu sem nepatří, a je to změřené', () => {
     expect(awaits, 'v handleru přibyl await — viz hlavička route').toHaveLength(1);
     expect(routeCode, 'jediný await už není čtení těla').toContain('raw = await readBody(request);');
     // **`.then(` se soudí i tady, ne jen u volaných** — routovaný nález
-    // 4. 9. 2026: `return Promise.resolve(commitRoutedParts(...)).then(...)`
-    // přidá do route nula tokenů `await` a úsek přesto přeruší.
+    // 4. 9. 2026: vrátit z route promise s připojeným `.then(` přidá nula
+    // tokenů `await` a úsek přesto přeruší.
     expect(routeCode, 'route sama uhnula do mikrotasku').not.toContain('.then(');
 
-    // **Seznam volaných je odvozený, ne napsaný.** Předchozí podoba jmenovala
-    // dva soubory, takže drahou práci stačilo vytáhnout do třetího (revize
-    // navrhla `src/app/api/edit/pipeline.ts` jako `export async function`)
-    // a brána zůstala zelená. Odvozený seznam takový soubor uvidí v tu chvíli,
-    // kdy ho route začne importovat.
-    const callees = resolvedImports(ROUTE).filter((file) => file !== BODY_MODULE);
-    expect(callees, 'rozřešení importů nic nenašlo — brána by soudila prázdno').not.toEqual([]);
-    expect(callees, 'modul s commitem se z route přestal importovat').toContain(
+    // **Celý dosažitelný uzávěr, ne přímí sousedé.** Ruční seznam dvou souborů
+    // obešla revize novým modulem; seznam odvozený jen z přímých importů by
+    // obešla **hloubkou** — asynchronní práce o jeden skok za `commit.ts` je
+    // z route neviditelná úplně stejně.
+    const span = [...importClosure(ROUTE, BODY_MODULE)].filter((file) => file !== ROUTE);
+    expect(span, 'rozřešení importů nic nenašlo — brána by soudila prázdno').not.toEqual([]);
+    expect(span, 'modul s commitem se z route přestal importovat').toContain(
       'src/app/api/edit/commit.ts',
     );
 
-    for (const callee of callees) {
+    for (const callee of span) {
       const code = stripComments(readFileSync(callee, 'utf8'));
       expect(code.match(/\bawait\b/g) ?? [], `${callee}: přibyl await`).toHaveLength(0);
       expect(code.match(/\basync\b/g) ?? [], `${callee}: přibyl async`).toHaveLength(0);
@@ -1097,15 +1150,14 @@ describe('strop souběhu sem nepatří, a je to změřené', () => {
    */
   it('neplacené dveře neimportují ani čítač, ani strop utrácení', () => {
     // **Soudí se rozřešený graf, ne text souboru.** Seznam řetězců revize
-    // 4. 9. 2026 obešla: `changes/route.ts` už dnes týž čítač importuje zápisem
+    // obešla: `changes/route.ts` už dnes týž čítač importuje zápisem
     // `from '../../route'`, který ani jeden z hlídaných řetězců nenese, takže
     // jednořádkový re-export kdekoli po cestě bránu obejde. A druhým směrem
-    // svítil falešně: zmínit `src/server/spend-cap.ts` v prozaické hlavičce
-    // route ho rozsvítilo červeně, zrovna v souboru, kde se ta cesta nejspíš
-    // píše. Graf umí obojí naráz.
+    // svítil falešně: zmínit cestu ke stropu utrácení v hlavičce route ji
+    // rozsvítilo červeně, zrovna v souboru, kde se ta cesta nejspíš píše.
     const reachable = importClosure(ROUTE);
 
-    expect(reachable.size, 'graf se nerozvinul — brána by soudila prázdno').toBeGreaterThan(1);
+    expect(reachable.size, 'graf se nerozvinul — brána by soudila prázdno').toBeGreaterThan(5);
     expect(
       [...reachable].filter((file) => file === 'src/server/spend-cap.ts'),
       'edit route dosáhne na strop utrácení, ačkoli nic neplatí',
