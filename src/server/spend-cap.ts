@@ -331,8 +331,9 @@ export class SpendCap {
   readonly #controlPath: string | null;
   /**
    * Kniha, ve které to počítadlo doopravdy bydlí. `null` znamená **odmítat
-   * všechno**: běžíme na serverless a sdílené úložiště nikdo nenastavil, takže
-   * strop by byl dekorace (`STORE_UNCONFIGURED`).
+   * všechno**: sdílené úložiště nikdo nenastavil a tenhle proces neumí doložit,
+   * že je sám, takže strop by byl dekorace (`STORE_UNCONFIGURED`). Rozhoduje
+   * o tom `ledgerFromEnv()`, ne tenhle soubor.
    *
    * Výchozí hodnota je **vlastní kniha v paměti**, ne procesová. Strop postavený
    * ručně (typicky v testu) tak nikdy nepřebírá cizí zůstatek; jediné místo,
@@ -421,8 +422,8 @@ export class SpendCap {
         ok: false,
         reason: 'STORE_UNCONFIGURED',
         detail:
-          'this deployment runs serverless and has no shared spend store, ' +
-          'so a per-process cap would hold nothing; no call was made',
+          'no shared spend store is configured and this process cannot show it is ' +
+          'the only one, so a per-process cap would hold nothing; no call was made',
         snapshot: this.snapshot(),
       };
 

@@ -238,7 +238,15 @@ describe('ovládací soubor je jeden, ne dva', () => {
   // napíše, co má stát. Do 3. 9. 2026 mu tenhle soubor zastavil i všechno
   // ostatní, protože strop v něm neviděl svoje klíče a odmítal.
   it('soubor s pouhým `off` vypne jednu vrstvu a strop nechá na výchozích hodnotách', async () => {
-    const variables = { WORLDSMITH_CONTROL_FILE: controlFile(JSON.stringify({ off: ['refine'] })) };
+    // ⚠ **`VERCEL_ENV` tu neměří tenhle test, ale P15 `T29-lambdadetect`.**
+    // Strop dostane knihu jedině při známém prostředí; tenhle případ si prostředí
+    // skládá vlastním objektem, takže na něj `env` z `vitest.config.mts`
+    // nedosáhne. Bez toho by rezervaci odmítla kniha (`STORE_UNCONFIGURED`) a
+    // tvrzení o vypínači by prošlo z docela jiného důvodu.
+    const variables = {
+      WORLDSMITH_CONTROL_FILE: controlFile(JSON.stringify({ off: ['refine'] })),
+      VERCEL_ENV: 'production',
+    };
 
     expect(killState(variables).refine).toBe(true);
     expect(killState(variables).sessions, 'vypnul se i vypínač, o kterém soubor mlčí').toBe(false);
@@ -269,6 +277,9 @@ describe('ovládací soubor je jeden, ne dva', () => {
       WORLDSMITH_CONTROL_FILE: controlFile(
         JSON.stringify({ off: ['upstream'], note: 'účet utíká, vypínám model, volej Tomáše' }),
       ),
+      // Viz test o `off` výš: bez známého prostředí by rezervaci odmítla kniha,
+      // ne poznámka, a aserce by měřila něco jiného (P15 `T29-lambdadetect`).
+      VERCEL_ENV: 'production',
     };
     expect(killState(variables)).toEqual({
       upstream: true,

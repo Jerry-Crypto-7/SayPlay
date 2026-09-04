@@ -311,14 +311,38 @@ export function storePrefix(env: Record<string, string | undefined>): string {
   const explicit = env.WORLDSMITH_SPEND_STORE_PREFIX?.trim() ?? '';
   const base = explicit !== '' ? explicit : BASE_PREFIX;
 
-  const scope = env.VERCEL_ENV?.trim().toLowerCase() ?? '';
+  const scope = environmentScope(env);
   if (scope === 'production') return base;
   if (scope === 'preview') return `${base}:preview`;
   // Prostředí není známé. Holý základ tu smí vyjít jedině tam, kde není s čím
   // kolidovat: nikdo další do té knihy nepíše a nic neříká, že jsme nasazení.
-  if (scope === '' && sharedStoreFromEnv(env) === null && !isServerless(env)) return base;
+  if (scope === 'unset' && sharedStoreFromEnv(env) === null && !isServerless(env)) return base;
 
   return `${base}:unknown-env`;
+}
+
+/**
+ * Prostředí, ve kterém tenhle proces běží — **jediná definice, uzavřený
+ * seznam** (P15 `T29-lambdadetect`).
+ *
+ * Čte ji `storePrefix()` (do kterého klíče se účtuje) i `ledgerFromEnv()`
+ * (jestli se vůbec smí platit). Dvě definice by se rozešly a server by účtoval
+ * do knihy, o které si druhá půlka kódu myslí něco jiného — u peněz je to ten
+ * druh rozporu, který se pozná až na faktuře.
+ *
+ * **`unset` a `unrecognized` se rozlišují schválně**, i když obojí je
+ * „neznámo". Chybějící proměnná je normální stav lokálního běhu, kdežto vlastní
+ * vercelské prostředí (`staging`, `qa` — Vercel je dovoluje zakládat) je
+ * nasazení, které se jen jmenuje jinak. `storePrefix()` na tom rozdílu stojí:
+ * jen `unset` smí dostat holý základ.
+ */
+type EnvironmentScope = 'production' | 'preview' | 'unset' | 'unrecognized';
+
+function environmentScope(env: Record<string, string | undefined>): EnvironmentScope {
+  const raw = env.VERCEL_ENV?.trim().toLowerCase() ?? '';
+  if (raw === 'production') return 'production';
+  if (raw === 'preview') return 'preview';
+  return raw === '' ? 'unset' : 'unrecognized';
 }
 
 /** Kde běžíme. `VERCEL` nastavuje platforma sama, na všech svých prostředích. */
@@ -333,13 +357,40 @@ export function isServerless(env: Record<string, string | undefined>): boolean {
  * | Prostředí | Co vyjde |
  * |---|---|
  * | `WORLDSMITH_SPEND_STORE_URL` + token | sdílená kniha přes REST |
- * | bez nich, mimo serverless | kniha v paměti procesu, poctivě označená |
- * | bez nich, **na serverless** | `null`, tedy zavřené selhání |
+ * | bez nich, `VERCEL` nastavené | `null`, tedy zavřené selhání |
+ * | bez nich, `VERCEL_ENV` neznámé | `null`, tedy zavřené selhání |
+ * | bez nich, známé prostředí mimo Vercel | kniha v paměti procesu, poctivě označená |
  *
- * Poslední řádek je celý smysl téhle funkce. Do 3. 9. 2026 bránil nasazení
+ * Zavřené selhání je celý smysl téhle funkce. Do 3. 9. 2026 bránil nasazení
  * s klíčem a bez sdíleného stavu **jen český komentář v `.env.example`**, a
  * komentář není mechanismus: kdo klíč vyplní, dostane strop, který se resetuje
  * s každým chladným startem, a nedozví se o tom.
+ *
+ * ## Proč nestačí `isServerless()` samotné (P15 `T29-lambdadetect`)
+ *
+ * `T29-unknownenv` zavřela **klíč**, ne **volbu knihy**: `storePrefix()`
+ * přestala věřit `VERCEL`, kdežto tahle funkce podle něj rozhodovala dál.
+ * Přepínač *Automatically expose System Environment Variables* přitom zhasíná
+ * `VERCEL` i `VERCEL_ENV` naráz, takže nasazení s vypnutým přepínačem a bez
+ * sdílené knihy vypadalo z prostředí jako lokální běh — dostalo knihu v paměti
+ * procesu a s ní N-násobek stropu, přesně tu vadu, kvůli které tenhle soubor
+ * vznikl. Naměřila to nezávislá revize 4. 9. 2026.
+ *
+ * **Kniha v paměti procesu proto platí jen tam, kde je jeden proces, a to musí
+ * být řečeno — ne odhadnuto z ticha.** Řekne to `VERCEL_ENV` s uzavřeného
+ * seznamu při zhasnutém `VERCEL`.
+ *
+ * ⚠ **Cena je, že lokální `next start` bez `VERCEL_ENV` placená volání
+ * odmítne** (`STORE_UNCONFIGURED`). Je to vědomé: na peněžní cestě se selhává
+ * zavřeně a mlčení není důkaz, že jsme sami. Vývojář si dopíše `VERCEL_ENV`,
+ * nebo sdílenou knihu; obojí je v `.env.example`. **Neplacené cesty to
+ * nezastaví** — offline větev, korpus ani meshing přes strop nechodí.
+ *
+ * ⚠ **`AWS_LAMBDA_FUNCTION_NAME` ani `NEXT_RUNTIME` se sem zavádět NEMÁ a
+ * příští kolo to nemá zkoušet.** `NEXT_RUNTIME` přiřazuje `next` sám, tedy
+ * i lokálnímu `next start` a `next dev`; `AWS_LAMBDA*` je neověřené chování
+ * cizí platformy na peněžní cestě a v repu se nevyskytuje ani jednou. Zavřené
+ * selhání nový platformní signál nepotřebuje.
  */
 export function ledgerFromEnv(
   env: Record<string, string | undefined>,
@@ -357,7 +408,9 @@ export function ledgerFromEnv(
       fetchImpl,
     );
 
-  return isServerless(env) ? null : processLedger();
+  if (isServerless(env)) return null;
+  const scope = environmentScope(env);
+  return scope === 'production' || scope === 'preview' ? processLedger() : null;
 }
 
 /**

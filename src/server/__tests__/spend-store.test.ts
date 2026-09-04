@@ -172,8 +172,49 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
     expect(fetchImpl.mock.calls[0][0]).toBe('https://ledger.example.com/pipeline');
   });
 
-  it('mimo serverless a bez úložiště je to kniha procesu, poctivě označená', () => {
-    expect(ledgerFromEnv({})?.id).toBe('process-memory');
+  // ⚠ **Tahle aserce se 4. 9. 2026 OBRÁTILA a byla přepsána, ne smazána**
+  // (P15 `T29-lambdadetect`). Do té chvíle stačilo, že `VERCEL` nesvítí — a to
+  // je přesně signál, který vercelský přepínač *Automatically expose System
+  // Environment Variables* zhasíná spolu s `VERCEL_ENV`. Nasazení s vypnutým
+  // přepínačem tak bylo od lokálního běhu nerozeznatelné a dostávalo knihu
+  // v paměti, tedy strop krát počet instancí.
+  it('známé prostředí mimo serverless dá knihu procesu, poctivě označenou', () => {
+    expect(ledgerFromEnv({ VERCEL_ENV: 'production' })?.id).toBe('process-memory');
+    expect(ledgerFromEnv({ VERCEL_ENV: 'preview' })?.id).toBe('process-memory');
+  });
+
+  /**
+   * **Neznámé prostředí je taky zavřené selhání** (P15 `T29-lambdadetect`).
+   *
+   * „Jeden proces" se musí doložit, ne mlčet: mlčení je stav, ve kterém vypadá
+   * nasazení s vypnutým přepínačem stejně jako `next start` na notebooku.
+   * Cena je zapsaná v `.env.example` i v hlavičce `ledgerFromEnv()` — lokální
+   * běh bez `VERCEL_ENV` placená volání odmítne.
+   */
+  it('bez známého prostředí a bez úložiště nevydá žádnou knihu', () => {
+    expect(ledgerFromEnv({}), 'prázdné prostředí prošlo jako lokální běh').toBeNull();
+    // Vlastní vercelské prostředí je nasazení, které se jen jmenuje jinak —
+    // a `VERCEL` u něj svítit nemusí, protože ho zhasíná týž přepínač.
+    expect(ledgerFromEnv({ VERCEL_ENV: 'staging' })).toBeNull();
+    expect(ledgerFromEnv({ VERCEL_ENV: 'qa' })).toBeNull();
+    // Prázdná a bílá hodnota je „nenastaveno", ne známé prostředí.
+    expect(ledgerFromEnv({ VERCEL_ENV: '  ' })).toBeNull();
+  });
+
+  /**
+   * Ta přesná dvojice, kterou naměřila revize: přepínač systémových proměnných
+   * vypnutý (tedy `VERCEL` i `VERCEL_ENV` zhasnuté) a sdílená kniha nevyplněná.
+   * Do 4. 9. 2026 z toho vyšla kniha v paměti procesu.
+   */
+  it('vypnutý přepínač systémových proměnných nedostane knihu v paměti', () => {
+    expect(
+      ledgerFromEnv({ WORLDSMITH_SPEND_CAP_USD: '5', WORLDSMITH_BRANCH: 'live' }),
+      'nasazení bez systémových proměnných dostalo strop, který se resetuje se studeným startem',
+    ).toBeNull();
+  });
+
+  it('velikost písmen ani mezery kolem známého prostředí nerozhodují', () => {
+    expect(ledgerFromEnv({ VERCEL_ENV: ' Production ' })?.id).toBe('process-memory');
   });
 
   /**
@@ -185,6 +226,10 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
    */
   it('na serverless bez úložiště nevydá žádnou knihu', () => {
     expect(ledgerFromEnv({ VERCEL: '1' })).toBeNull();
+    // Známé prostředí `VERCEL` nepřebíjí — na Vercelu je produkce pořád N
+    // procesů, takže kniha v paměti by tam držela přesně nic.
+    expect(ledgerFromEnv({ VERCEL: '1', VERCEL_ENV: 'production' })).toBeNull();
+    expect(ledgerFromEnv({ VERCEL: '', VERCEL_ENV: 'preview' })).toBeNull();
     // I prázdné a bílé hodnoty jsou „nenastaveno" — jinak by `URL= ` v panelu
     // hostingu vypadalo jako nakonfigurované úložiště.
     expect(
@@ -277,6 +322,29 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
     // by se produkční kniha přejmenovala pod běžícím nasazením.
     expect(storePrefix({ ...STORE_ENV, VERCEL_ENV: 'production' })).toBe('worldsmith:spend');
     expect(storePrefix({ ...STORE_ENV, VERCEL_ENV: 'preview' })).toBe('worldsmith:spend:preview');
+  });
+
+  /**
+   * **Vlastní prostředí je nasazení, i když o sobě nic jiného neřekne** — a je
+   * to jediné místo, kde se „`VERCEL_ENV` chybí" a „`VERCEL_ENV` je cizí slovo"
+   * chovají různě.
+   *
+   * Holý základ smí dostat jen ticho: běh, o kterém nic netvrdí, že je
+   * nasazení, a do jehož knihy nikdo další nepíše. `staging` je proti tomu
+   * povel — někdo to prostředí založil, a Vercel to dovoluje. Přiřknout mu
+   * produkční klíč znamená dát mu produkční rozpočet, což je táž vada jako
+   * dřívější rozpočet na větev.
+   *
+   * ⚠ **Přeživší mutant P15 `T29-lambdadetect`.** Do téhle aserce ten rozdíl
+   * nehlídalo nic: sloučení obou případů do jednoho nechalo sadu (4068) zelenou.
+   */
+  it('vlastní prostředí bez sdílené knihy taky nedostane holý základ', () => {
+    expect(storePrefix({ VERCEL_ENV: 'staging' })).toBe('worldsmith:spend:unknown-env');
+    expect(storePrefix({ VERCEL_ENV: 'qa' })).toBe('worldsmith:spend:unknown-env');
+    // A naopak: ticho holý základ dostane dál, jinak by se lokálnímu běhu
+    // přejmenovala kniha bez důvodu.
+    expect(storePrefix({})).toBe('worldsmith:spend');
+    expect(storePrefix({ VERCEL_ENV: '  ' })).toBe('worldsmith:spend');
 
     // **Půlka konfigurace není konfigurace.** Adresa bez tokenu knihu nesdílí
     // (`ledgerFromEnv` z ní také žádnou neudělá), takže přejmenovat lokální

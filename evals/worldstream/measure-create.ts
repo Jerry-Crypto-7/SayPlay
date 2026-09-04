@@ -685,6 +685,12 @@ export function liveEmitter(
     );
 
   const branch = fetchImpl === undefined ? upstreamBranch(config) : upstreamBranch(config, fetchImpl);
+  // ⚠ **Strop tu od P15 `T29-lambdadetect` potřebuje víc než klíč a ceník.**
+  // Knihu v paměti procesu vydá `ledgerFromEnv()` jen tam, kde je „jeden proces"
+  // doložené známým `VERCEL_ENV` při zhasnutém `VERCEL`; jinak je **každá**
+  // rezervace `STORE_UNCONFIGURED` a měřicí běh se zastaví na prvním volání,
+  // aniž by cokoli zaplatil. Do `.env` k měření tedy patří `VERCEL_ENV`, nebo
+  // vyplněné `WORLDSMITH_SPEND_STORE_*`.
   const cap = spendCapFromEnv(env);
   const archive: ArchiveEntry[] = [];
   // Klíč se maže i doslova, ne jen podle vzoru: poskytovatel, který ho vrátí

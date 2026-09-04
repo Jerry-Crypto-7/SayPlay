@@ -819,6 +819,14 @@ describe('the call that costs money', () => {
     WORLDSMITH_MODEL_KEY: KEY,
     WORLDSMITH_USD_PER_MTOK_OUT: '15',
     WORLDSMITH_USD_PER_MTOK_IN: '3',
+    // ⚠ **Od P15 `T29-lambdadetect` je to podmínka placeného volání, ne kulisa.**
+    // `spendCapFromEnv()` dostane knihu jedině tam, kde je „jeden proces"
+    // doložené známým prostředím; jinak je každá rezervace `STORE_UNCONFIGURED`.
+    // Fixtura si prostředí skládá vlastním objektem, takže `env`
+    // z `vitest.config.mts` na ni nedosáhne. **Platí to i pro skutečný měřicí
+    // běh** (`npm run measure:worldstream-create`) — ten čte `process.env`,
+    // takže bez `VERCEL_ENV` nebo sdílené knihy nezaplatí ani první volání.
+    VERCEL_ENV: 'production',
     ...patch,
   });
 
@@ -968,6 +976,10 @@ describe('nothing reaches the disk with a credential still in it', () => {
       WORLDSMITH_MODEL_ENDPOINT: ENDPOINT_SECRET,
       WORLDSMITH_MODEL_KEY: `sk-ant-${KEY_TAIL}`,
       WORLDSMITH_USD_PER_MTOK_OUT: '15',
+      // Bez známého prostředí by strop odmítl dřív, než se vůbec zavolá ven —
+      // a test o vyčištěné adrese by měřil `STORE_UNCONFIGURED`, ve kterém
+      // žádná adresa není (P15 `T29-lambdadetect`).
+      VERCEL_ENV: 'production',
     },
     unreachable(),
   );

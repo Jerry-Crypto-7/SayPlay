@@ -22,5 +22,19 @@ export default defineConfig({
     // vada sady, ne regrese. Nejpomalejší soubor jede ~30 s, takže 30 s na test
     // je strop s rezervou; skutečné zaseknutí pořád spadne.
     testTimeout: 30_000,
+    /**
+     * **Sada běží v jednom procesu a od P15 `T29-lambdadetect` to musí říct.**
+     *
+     * `ledgerFromEnv()` vydá knihu stropu v paměti jedině tam, kde je „jeden
+     * proces" doložené známým `VERCEL_ENV`; jinak odmítá (`STORE_UNCONFIGURED`),
+     * protože mlčící prostředí je přesně to, jak vypadá nasazení s vypnutým
+     * přepínačem systémových proměnných. Bez tohohle řádku by každý test, který
+     * projde placenou cestou, měřil zavřené selhání místo svého předmětu.
+     *
+     * ⚠ **Samotnou tu bránu tohle neoslepuje** — `spend-store.test.ts` volá
+     * `ledgerFromEnv()` s vlastními objekty prostředí, takže na tuhle hodnotu
+     * nesahá a odmítání měří dál.
+     */
+    env: { VERCEL_ENV: 'production' },
   },
 });
