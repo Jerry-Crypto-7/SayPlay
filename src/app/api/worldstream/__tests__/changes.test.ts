@@ -713,6 +713,32 @@ describe('pomalý požadavek končí na stropu těla, ne na rozpočtu', () => {
     } as RequestInit & { duplex: 'half' });
   }
 
+  /** Tělo, které dorazí celé, jen pozdě. `delayMs` je pod stropem těla. */
+  function slowRequest(url: string, payload: unknown, delayMs: number): Request {
+    let sent = false;
+    const late = new ReadableStream({
+      pull(controller) {
+        if (sent) {
+          controller.close();
+          return undefined;
+        }
+        sent = true;
+        return new Promise<void>((resolve) => {
+          setTimeout(() => {
+            controller.enqueue(new TextEncoder().encode(JSON.stringify(payload)));
+            resolve();
+          }, delayMs);
+        });
+      },
+    });
+    return new Request(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: late,
+      duplex: 'half',
+    } as RequestInit & { duplex: 'half' });
+  }
+
   async function answerAfterDeadline(pending: Promise<Response>): Promise<Response> {
     await vi.advanceTimersByTimeAsync(BODY_DEADLINE_MS + 1);
     return pending;
@@ -737,10 +763,40 @@ describe('pomalý požadavek končí na stropu těla, ne na rozpočtu', () => {
   });
 
   /**
+   * **Vlastnost, ne pravopis** — a je to oprava routovaného nálezu revize
+   * ze 4. 9. 2026. Lexikální brána o kus níž pozná jen `admit(` a slovo
+   * `receivedAtMs`; `import { admit as gate }` nebo přejmenovaný čítač by jí
+   * prošly a nedosažitelná 503 by se vrátila nad zelenou sadou. Tenhle test
+   * proti tomu drží **chování**: tělo, které dorazí těsně pod `BODY_DEADLINE_MS`,
+   * musí být obsloužené. Jakýkoli budoucí rozpočet měřený od vstupu handleru
+   * a kratší než strop těla ho položí, ať se jmenuje jak chce.
+   */
+  it('tělo těsně pod stropem projde až k modelu, ne k odmítnutí', async () => {
+    vi.useFakeTimers();
+    const stored = await generated();
+    const model = countingEmit();
+    const url = `http://127.0.0.1/api/worldstream/sessions/${stored.session.sessionId}/changes`;
+    const request = slowRequest(url, { prompt: 'make the mast sand-coloured' }, BODY_DEADLINE_MS - 1);
+
+    const pending = createChange(request, stored.session.sessionId, model.emit);
+    await vi.advanceTimersByTimeAsync(BODY_DEADLINE_MS - 1);
+    const response = await pending;
+
+    expect(response.status, 'tělo pod stropem těla přesto neprošlo').toBe(200);
+    expect((await body(response)).outcome).toBe('PREVIEW');
+    expect(model.calls(), 'k modelu se to nedostalo').toBe(1);
+  });
+
+  /**
    * Druhá polovina téhož tvrzení, a soudí se **zdroj**, protože chybějící brána
    * nemá pozorovatelný následek: cesta bez ní vypadá zvenčí přesně jako cesta
    * s branou, která nikdy nesepne. To je celý důvod, proč ten nález našla až
    * revize s měřítkem v ruce, a ne sada.
+   *
+   * Soudí se **dvě věci**: že tam není `admit(`, a — obecněji, tedy i na
+   * přejmenovanou podobu — že si ani jedny dveře neberou hodiny **před** čtením
+   * těla. Rozpočet naarmovaný dřív než `readBody` je přesně ten tvar, který
+   * strop těla postaví mimo dosah.
    *
    * **Komentáře se odstřihnou** — jinak by bránu prošly zrovna ty odstavce
    * v hlavičkách obou rout, které tuhle historii popisují. Týž postup jako
@@ -761,6 +817,16 @@ describe('pomalý požadavek končí na stropu těla, ne na rozpočtu', () => {
         /\badmit\s*\(/,
       );
       expect(code, `${route} si zase bere čas na vstupu handleru`).not.toContain('receivedAtMs');
+
+      // A totéž o patro obecněji, protože jméno se dá změnit: nad voláním
+      // `readBody(request)` nesmí stát žádné čtení hodin. Rozpočet naarmovaný
+      // dřív měří interval, který strop těla sám omezuje na pět vteřin.
+      const bodyRead = code.indexOf('await readBody(request)');
+      expect(bodyRead, `${route}: čtení těla ve zdroji chybí`).toBeGreaterThan(-1);
+      expect(
+        code.slice(0, bodyRead).indexOf('Date.now()'),
+        `${route} armuje hodiny ještě před čtením těla`,
+      ).toBe(-1);
     }
   });
 });

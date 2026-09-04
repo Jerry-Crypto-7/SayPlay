@@ -12,8 +12,10 @@
  *    by vypadaly jako přijaté a produkt by tvrdil, že geometrii píše model,
  *    zatímco by ji směl podstrčit kdokoli.
  * 2. **Moderace** (`src/server/moderation.ts`), tedy táž brána jako `/api/emit`.
- * 3. **Strop souběhu**: placených volání v letu běží nejvýš
- *    `MAX_CONCURRENT_GENERATIONS`, a je to týž čítač jako u sesterských dveří.
+ * 3. **Strop souběhu**: je to **týž čítač** jako u preview druhé věty, jen
+ *    tyhle dveře se zastaví o slot dřív — porovnávají se proti
+ *    `MAX_WORLD_GENERATIONS`, ne proti dnu `MAX_CONCURRENT_GENERATIONS`.
+ *    Celé odůvodnění té asymetrie je u `DOOR_CEILING` níž.
  * 4. **Strop utrácení** — uvnitř emitoru, u každého placeného volání zvlášť.
  *
  * ## Proč tu není `AdmissionQueue`, ačkoli je napsaná
