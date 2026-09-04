@@ -219,12 +219,36 @@ export type Reservation = Reserved | Refused;
  * switche se z něj čtou dál, protože `killState()` čte soubor sám a tudy
  * nechodí.
  *
- * ⚠ **Tahle mez třídu NEZAVÍRÁ, jen její polovinu** — nález revize, měřeno:
- * z `{"capUsd":0.5}` na `{"off":["refine"]}` (nebo `{}`, nebo smazání souboru)
- * pořád zvedne strop zpátky na výchozích 5 USD, protože mlčení o celé peněžní
- * půlce platit musí, jinak by zaniklo `T30-offonlyfile`. Zbytek třídy je
- * `T30-capfloor` a **jediná dnešní obrana je držet utaženou částku i ve
- * `WORLDSMITH_SPEND_CAP_USD`**, ne jen v souboru.
+ * ## Soubor umí jen utahovat — podlaha z prostředí (P15 `T30-capfloor`)
+ *
+ * Mlčení o celé peněžní půlce platit **musí** (jinak by zaniklo
+ * `T30-offonlyfile`), takže přepsat `{"capUsd":0.5}` na `{"off":["refine"]}`,
+ * na `{}` nebo soubor smazat dodnes vrátí výchozí částku. Uvnitř téhle funkce
+ * se to zavřít nedá a příští kolo to nemá zkoušet — ta dvě pravidla si
+ * odporují a mlčení musí vyhrát.
+ *
+ * Zavírá se to o patro výš: **účinná částka je `min(soubor, výchozí)`**, a
+ * totéž pro `callCap` (kde výchozí hodnota vyplněná není, je podlahou
+ * `DEFAULT_CALL_CAP`). Soubor tím umí strop **jen přitahovat**; částka nad
+ * výchozí hodnotou se uřízne. Ztráta souboru pak nemůže vydat víc, než co
+ * povoluje `WORLDSMITH_SPEND_CAP_USD` — tedy rozpočet, který někdo napsal
+ * vědomě a mění se jen redeployem. Mlčení tím přestalo být cestou, jak dostat
+ * strop **nad** nastavený rozpočet; nález nezávislé revize 4. 9. 2026,
+ * CONFIRMED spuštěním (`reserve(2)` skočilo z `CAP_EXHAUSTED` na `ok`, bez
+ * řádku v logu).
+ *
+ * **Cena je zapsaná, ne přehlédnutá:** soubor už není páka, kterou se za
+ * incidentu strop ZVEDNE. Kdo potřebuje víc — třeba o velikost opuštěných
+ * rezervací — sáhne na `WORLDSMITH_SPEND_CAP_USD` a redeploy; postup je
+ * v `.env.example`. Ta výměna je záměr: rychlá páka bez redeploye má právo
+ * přitahovat, uvolňovat ne.
+ *
+ * ⚠ **`enabled:false` podlaha NEDRŽÍ a je to rozhodnutí, ne díra.** Vypnutí
+ * stropu je nejsilnější povel v souboru a mlčením nikdy nevznikne — mez výš
+ * z něj dělá zmínku o stropu, takže `{"enabled":false}` bez `capUsd` je
+ * rozbitý soubor. Podlaha zavírá tiché uvolnění číslem; napsané „utrácej bez
+ * meze" zůstává vědomým povelem operátora (`T30-callcapoff`, pinuje
+ * `upstream.test.ts`).
  */
 function parseControl(parsed: Record<string, unknown>, defaults: CapControl): CapControl | null {
   const { enabled, capUsd, callCap } = parsed as {
@@ -263,8 +287,17 @@ function parseControl(parsed: Record<string, unknown>, defaults: CapControl): Ca
   // o stropu se musí napsat celá"**. Rozbitý soubor odmítá; mlčení dál platí.
   if (capUsd === undefined && (enabled !== undefined || callCap !== undefined)) return null;
 
-  const resolvedCalls = callCap ?? defaults.callCap;
-  const resolved = { enabled: enabled ?? defaults.enabled, capUsd: capUsd ?? defaults.capUsd };
+  // **Podlaha z prostředí** (`T30-capfloor`): soubor smí částku jen snížit.
+  // `Math.min` s výchozí hodnotou místo přebíjení — proč, je v hlavičce.
+  const resolvedUsd = capUsd === undefined ? defaults.capUsd : Math.min(capUsd, defaults.capUsd);
+  // U počtu volání je podlahou `DEFAULT_CALL_CAP` tehdy, když výchozí hodnota
+  // vyplněná není — to je totiž číslo, které v takovém případě doopravdy platí
+  // (`snapshot()` i `reserve()` si ho dosadí samy). Bez té dosazené podlahy by
+  // `{"callCap":1000}` nad konstruktorem, který počet neřešil, zvedlo účinný
+  // strop z 200 na 1000; táž třída, jen v druhém čísle.
+  const floorCalls = defaults.callCap ?? DEFAULT_CALL_CAP;
+  const resolvedCalls = callCap === undefined ? defaults.callCap : Math.min(callCap, floorCalls);
+  const resolved = { enabled: enabled ?? defaults.enabled, capUsd: resolvedUsd };
   return resolvedCalls === undefined ? resolved : { ...resolved, callCap: resolvedCalls };
 }
 

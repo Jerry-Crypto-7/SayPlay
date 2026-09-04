@@ -168,13 +168,27 @@ describe('vypínač mění chování za běhu, bez nové instance', () => {
     expect((await cap.reserve(100)).ok).toBe(false);
   });
 
-  it('zvednutí stropu za běhu pustí volání, které předtím neprošlo', async () => {
-    const path = controlFile(JSON.stringify({ enabled: true, capUsd: 1 }));
-    const cap = new SpendCap({ enabled: true, capUsd: 1 }, path);
-    expect((await cap.reserve(50)).ok).toBe(false);
+  // ⚠ **Tenhle případ tvrdil do 4. 9. 2026 přesný OPAK a byl přepsán, ne
+  // smazán** (P15 `T30-capfloor`). Původně sliboval, že zvednutí částky
+  // v souboru za běhu pustí volání, které předtím neprošlo — jenže přesně tím
+  // byl soubor pákou, kterou jde strop tiše UVOLNIT. Od podlahy z prostředí
+  // umí soubor jen přitahovat, takže se aserce obrátila: platí, co je nižší.
+  // Vlastnost, kvůli které test vznikl — změna platí od dalšího rozhodnutí,
+  // bez nové instance — se pinuje dál, jen v tom směru, který soubor smí.
+  it('změna za běhu platí hned, ale nad podlahu z prostředí strop nezvedne', async () => {
+    const path = controlFile(JSON.stringify({ enabled: true, capUsd: 100 }));
+    const cap = new SpendCap({ enabled: true, capUsd: 100 }, path);
+    expect((await cap.reserve(50)).ok, 'výchozí strop neplatil').toBe(true);
 
-    writeFileSync(path, JSON.stringify({ enabled: true, capUsd: 100 }), 'utf8');
-    expect((await cap.reserve(50)).ok).toBe(true);
+    writeFileSync(path, JSON.stringify({ enabled: true, capUsd: 1 }), 'utf8');
+    expect((await cap.reserve(50)).ok, 'utažení za běhu se neprojevilo').toBe(false);
+
+    writeFileSync(path, JSON.stringify({ enabled: true, capUsd: 1000 }), 'utf8');
+    expect(
+      (await cap.reserve(500)).ok,
+      'soubor zvedl strop nad podlahu z prostředí — to je celá vada T30-capfloor',
+    ).toBe(false);
+    expect(cap.snapshot().capUsd, 'účinná částka není min(soubor, výchozí)').toBe(100);
   });
 
   it('chybějící ovládací soubor znamená výchozí hodnoty, ne odmítnutí', async () => {
@@ -281,24 +295,31 @@ describe('vypínač mění chování za běhu, bez nové instance', () => {
       expect(cap.snapshot().capUsd).toBe(3);
     });
 
-    // ⚠ **Tenhle případ pinuje ZBYTEK třídy, který `T30-capsilence` nezavřela** —
-    // nález nezávislé revize 4. 9. 2026. Je tady proto, aby se hlavička
-    // `parseControl()` nedala číst jako „utažený strop už nikdo tiše nezvedne".
-    // Utažený soubor BEZ `enabled` a BEZ `callCap` se pořád dá zrušit mlčením,
-    // a zavřít to uvnitř `parseControl()` nejde: znamenalo by to odmítat
-    // `{"off":[…]}` a `{}`, tedy zrušit `T30-offonlyfile`. Kdyby tenhle test
-    // někdy zčervenal, třída se zavřela a hlavička se má přepsat, ne test.
-    it('utažený strop bez `enabled` se mlčením pořád vrátí na výchozí — zbytek třídy', async () => {
+    // ⚠ **Tenhle případ tvrdil do 4. 9. 2026 „zbytek třídy je otevřený" a byl
+    // přepsán, ne smazán** (P15 `T30-capfloor`). Mlčení pořád vrací výchozí
+    // částku — to platit MUSÍ, jinak by zaniklo `T30-offonlyfile` — jenže
+    // podlaha z prostředí mezitím udělala z výchozí částky **strop všeho, co
+    // soubor kdy smí povolit**. Návrat k ní tedy už není zvednutí nad
+    // nastavený rozpočet, a tím se ta třída zavřela o patro výš, ne uvnitř
+    // `parseControl()`. Aserce proto pinuje obě půlky naráz: mlčení vrací
+    // výchozí hodnotu, a víc než výchozí hodnotu soubor nedostane ani když si
+    // o to výslovně řekne.
+    it('mlčení vrátí výchozí částku, a ta je zároveň strop toho, co soubor smí', async () => {
       const path = controlFile(JSON.stringify({ capUsd: 0.5 }));
       const cap = new SpendCap({ enabled: true, capUsd: 5 }, path);
       expect((await cap.reserve(2)).ok, 'utažená částka neplatila').toBe(false);
 
       writeFileSync(path, JSON.stringify({ off: ['refine'] }), 'utf8');
-      expect(
-        (await cap.reserve(2)).ok,
-        'zbytek třídy se zavřel — přepiš hlavičku parseControl(), ne tenhle test',
-      ).toBe(true);
+      expect((await cap.reserve(2)).ok, 'mlčení nevrátilo výchozí částku').toBe(true);
       expect(cap.snapshot().capUsd).toBe(5);
+
+      // A druhá půlka: výslovné zvednutí na tomtéž souboru nedostane víc.
+      writeFileSync(path, JSON.stringify({ capUsd: 1000 }), 'utf8');
+      expect(cap.snapshot().capUsd, 'soubor přebil podlahu z prostředí').toBe(5);
+      const refused = await cap.reserve(100);
+      expect(refused.ok, 'soubor si vyprosil 1000 USD nad rozpočtem 5 USD').toBe(false);
+      if (refused.ok) throw new Error('unreachable');
+      expect(refused.reason).toBe('CAP_EXHAUSTED');
     });
 
     it('chybí jen jedna půlka: `capUsd` platí ze souboru, `enabled` z výchozích', async () => {
@@ -315,6 +336,66 @@ describe('vypínač mění chování za běhu, bez nové instance', () => {
       const path = controlFile(JSON.stringify({ off: ['upstream'] }));
       const cap = new SpendCap({ enabled: false, capUsd: 0 }, path);
       expect((await cap.reserve(100)).ok, 'mlčení souboru zapnulo vypnutý strop').toBe(true);
+    });
+  });
+
+  // P15 `T30-capfloor`. Účinný strop je `min(soubor, výchozí)` — soubor umí
+  // strop jen přitahovat, nikdy uvolňovat. Podlaha je jediná obrana proti
+  // tomu, aby se ztrátou nebo přepsáním souboru dal strop dostat NAD rozpočet,
+  // který někdo napsal vědomě do prostředí a mění se jen redeployem.
+  describe('soubor umí strop jen přitáhnout, ne uvolnit', () => {
+    it('utažená částka ze souboru platí — podlaha nebrání směru dolů', async () => {
+      const path = controlFile(JSON.stringify({ capUsd: 0.5 }));
+      const cap = new SpendCap({ enabled: true, capUsd: 5 }, path);
+
+      expect(cap.snapshot().capUsd).toBe(0.5);
+      const refused = await cap.reserve(2);
+      expect(refused.ok, 'utažení souborem se neprojevilo').toBe(false);
+      if (refused.ok) throw new Error('unreachable');
+      expect(refused.reason).toBe('CAP_EXHAUSTED');
+    });
+
+    it('`callCap` ze souboru se uřízne na výchozí hodnotu konstruktoru', async () => {
+      const path = controlFile(JSON.stringify({ capUsd: 5, callCap: 1000 }));
+      const cap = new SpendCap({ enabled: true, capUsd: 5, callCap: 2 }, path);
+
+      expect(cap.snapshot().callCap, 'soubor zvedl počet volání nad výchozí').toBe(2);
+      expect((await cap.reserve(0.001)).ok).toBe(true);
+      expect((await cap.reserve(0.001)).ok).toBe(true);
+      const refused = await cap.reserve(0.001);
+      expect(refused.ok, 'třetí volání prošlo přes strop dvou').toBe(false);
+      if (refused.ok) throw new Error('unreachable');
+      expect(refused.reason).toBe('CALL_CAP_EXHAUSTED');
+    });
+
+    // Když výchozí `callCap` vyplněný není, doopravdy platí `DEFAULT_CALL_CAP`
+    // (dosazuje ho `snapshot()` i `reserve()`), takže podlahou musí být ono —
+    // jinak by `{"callCap":1000}` zvedlo účinný strop z 200 na 1000 nad každým
+    // konstruktorem, který počet volání neřešil. To je většina z nich.
+    it('bez výchozího `callCap` je podlahou DEFAULT_CALL_CAP, ne částka ze souboru', () => {
+      const path = controlFile(JSON.stringify({ capUsd: 5, callCap: DEFAULT_CALL_CAP + 800 }));
+      const cap = new SpendCap({ enabled: true, capUsd: 5 }, path);
+
+      expect(cap.snapshot().callCap, 'soubor přebil DEFAULT_CALL_CAP').toBe(DEFAULT_CALL_CAP);
+    });
+
+    it('nižší `callCap` ze souboru platí i bez výchozí hodnoty', () => {
+      const path = controlFile(JSON.stringify({ capUsd: 5, callCap: 3 }));
+      const cap = new SpendCap({ enabled: true, capUsd: 5 }, path);
+
+      expect(cap.snapshot().callCap).toBe(3);
+    });
+
+    // ⚠ **Vědomá výjimka, ne díra** (`T30-callcapoff`). Podlaha zavírá tiché
+    // uvolnění ČÍSLEM; `enabled:false` je napsaný povel „utrácej bez meze"
+    // a mlčením nikdy nevznikne — bez `capUsd` je to rozbitý soubor. Kdyby
+    // podlaha zavřela i tohle, spadl by pinovaný test v `upstream.test.ts`
+    // („`enabled: false` provoz nezastaví, jen přestane odmítat").
+    it('`enabled:false` v souboru strop pořád vypne, podlaha na něj neplatí', async () => {
+      const path = controlFile(JSON.stringify({ enabled: false, capUsd: 0 }));
+      const cap = new SpendCap({ enabled: true, capUsd: 5 }, path);
+
+      expect((await cap.reserve(100)).ok, 'vypnutí souborem přestalo platit').toBe(true);
     });
   });
 });
@@ -335,8 +416,11 @@ describe('strop z prostředí', () => {
   });
 
   it('cesta k vypínači se bere z prostředí', () => {
-    const path = controlFile(JSON.stringify({ enabled: true, capUsd: 42 }));
-    expect(spendCapFromEnv({ WORLDSMITH_CONTROL_FILE: path }).snapshot().capUsd).toBe(42);
+    // Částka je schválně POD výchozími 5 USD: od podlahy z prostředí
+    // (`T30-capfloor`) by se 42 uřízlo na 5 a test by tvrdil, že soubor nikdo
+    // nečetl. Tohle je test o cestě, ne o číslu.
+    const path = controlFile(JSON.stringify({ enabled: true, capUsd: 0.42 }));
+    expect(spendCapFromEnv({ WORLDSMITH_CONTROL_FILE: path }).snapshot().capUsd).toBe(0.42);
   });
 
   it('staré jméno proměnné pořád platí, protože ho nese nasazení z doby před přejmenováním', () => {
@@ -370,15 +454,18 @@ describe('strop z prostředí', () => {
   });
 
   it('nové jméno má přednost, když jsou nastavená obě', () => {
-    const current = controlFile(JSON.stringify({ enabled: true, capUsd: 42 }));
-    const legacy = controlFile(JSON.stringify({ enabled: true, capUsd: 7 }));
+    // Obě částky jsou pod výchozími 5 USD — s podlahou z prostředí
+    // (`T30-capfloor`) by se 42 i 7 uřízly na tutéž pětku a test by přestal
+    // rozlišovat, které jméno vyhrálo.
+    const current = controlFile(JSON.stringify({ enabled: true, capUsd: 0.42 }));
+    const legacy = controlFile(JSON.stringify({ enabled: true, capUsd: 0.07 }));
 
     expect(
       spendCapFromEnv({
         WORLDSMITH_CONTROL_FILE: current,
         WORLDSMITH_SPEND_CAP_FILE: legacy,
       }).snapshot().capUsd,
-    ).toBe(42);
+    ).toBe(0.42);
   });
 });
 

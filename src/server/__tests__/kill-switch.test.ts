@@ -219,11 +219,18 @@ describe('vypínač se čte při každém rozhodnutí, ne jednou na startu', () 
 describe('ovládací soubor je jeden, ne dva', () => {
   it('strop i vypínače čtou tutéž cestu', () => {
     const variables = {
-      WORLDSMITH_CONTROL_FILE: controlFile(JSON.stringify({ enabled: true, capUsd: 42, off: ['refine'] })),
+      WORLDSMITH_CONTROL_FILE: controlFile(
+        JSON.stringify({ enabled: true, capUsd: 0.42, off: ['refine'] }),
+      ),
     };
     // Kdyby si každý četl vlastní proměnnou, jedno z těch dvou tvrzení by bylo
     // o souboru, který v tomhle testu neexistuje.
-    expect(spendCapFromEnv(variables).snapshot().capUsd).toBe(42);
+    //
+    // Částka je schválně POD výchozími 5 USD: od podlahy z prostředí
+    // (P15 `T30-capfloor`) je účinný strop `min(soubor, výchozí)`, takže
+    // původních 42 by se uřízlo na 5 — tedy na hodnotu k nerozeznání od
+    // „soubor se vůbec nepřečetl", což je přesně to, co má tenhle test vyloučit.
+    expect(spendCapFromEnv(variables).snapshot().capUsd).toBe(0.42);
     expect(killState(variables).refine).toBe(true);
   });
 
