@@ -111,8 +111,9 @@ export function logForOperator(
  * `windowStart` a nejvýš `MAX_DETAILS_PER_WINDOW` řetězců.
  *
  * ⚠ **Kolik těch dvojic je, tady schválně nestojí.** Do 4. 9. 2026 tu bylo
- * „dvanáct" a `T28` přidal `REPLAY_DISABLED` na troje dveře, tedy hned čtyři
- * další; každá nová brána to číslo posune a **nic ho nehlídá**. Nosné je, že ta
+ * „dvanáct", pak přibyl `REPLAY_DISABLED` na `/api/edit` a hned nato tytéž
+ * dveře i na `/api/emit` a `/api/emit/stream`; každá nová brána to číslo posune
+ * a **nic ho nehlídá**. Nosné je, že ta
  * množina neroste s provozem, ne jak je velká: klíč vzniká jedině tím, že ho
  * někdo napíše do zdroje.
  */

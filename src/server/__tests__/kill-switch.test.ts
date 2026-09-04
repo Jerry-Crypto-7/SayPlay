@@ -341,14 +341,19 @@ describe('vypínač je zapojený do dveří, ne jen napsaný', () => {
  * vzniknou příště: nová `route.ts` bez brány shodí tenhle test hned, jak se
  * založí.
  *
- * Soudí se **volání `killState(`**, ne řádek s importem, a hledá se i v modulech,
- * které si route pod `src/app/api` přitáhne relativní cestou. Obojí je vědomé:
+ * Soudí se **volání `killState(` v kódu** — komentáře se předtím odstřihnou — ne
+ * řádek s importem, a hledá se i v modulech, které si route pod `src/app/api`
+ * přitáhne relativní cestou. Všechno tři je vědomé:
  *
  * - `/api/emit/stream` vlastní bránu nemá — volá sdílenou `replayDisabled()`
  *   ze sousední `../route.ts`, aby se ty dvě emitovací cesty nemohly rozejít.
  *   Test, který by četl jen text jednoho souboru, by tu sdílenou bránu neviděl.
  * - Naopak přítomnost importu nic nedokazuje: nepoužitý import projde přes lint
  *   i `tsc` jako mrtvý kód, kdežto `killState(` je volání.
+ * - A komentář taky nic nedokazuje. Nezávislá revize 4. 9. 2026 to naměřila:
+ *   dveře, jejichž jediná zmínka o vypínači byla věta v hlavičce, prošly zeleně
+ *   — a hlavičky v tomhle repu `killState(` jmenují běžně. Odstřihnout se proto
+ *   musí dřív, než se hledá.
  */
 const API_ROOT = resolve(fileURLToPath(new URL('../../app/api', import.meta.url)));
 
@@ -363,15 +368,33 @@ const API_ROOT = resolve(fileURLToPath(new URL('../../app/api', import.meta.url)
  */
 const KILL_SWITCH_EXEMPT = ['build-id/route.ts', 'health/route.ts', 'og/route.ts'] as const;
 
-/** Každá `route.ts` pod `src/app/api`, jako cesta s `/` od kořene těch dveří. */
+/**
+ * Jak se jmenuje soubor, který App Router bere jako dveře.
+ *
+ * **Všechny přípony, ne jen `.ts`** — nález nezávislé revize 4. 9. 2026:
+ * `route.js` i `route.tsx` bez brány prošly zeleně, protože se hledalo jméno
+ * `route.ts` doslova. Next je obsluhuje stejně, tak je stejně musí vidět i tenhle
+ * test.
+ */
+const ROUTE_FILE = /^route\.(ts|tsx|js|jsx|mjs)$/;
+
+/** Každé dveře pod `src/app/api`, jako cesta s `/` od kořene těch dveří. */
 function apiRoutes(directory: string = API_ROOT): string[] {
   const found: string[] = [];
   for (const entry of readdirSync(directory)) {
     const full = join(directory, entry);
     if (statSync(full).isDirectory()) found.push(...apiRoutes(full));
-    else if (entry === 'route.ts') found.push(relative(API_ROOT, full).split(sep).join(posix.sep));
+    else if (ROUTE_FILE.test(entry)) found.push(relative(API_ROOT, full).split(sep).join(posix.sep));
   }
   return found.sort();
+}
+
+/**
+ * Zdroj bez komentářů. Blokové celé, řádkové jen tam, kde `//` začíná řádek —
+ * `https://` uvnitř řetězce tak zůstane a nesebere s sebou kód za sebou.
+ */
+function code(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
 }
 
 /**
@@ -389,7 +412,7 @@ function readsKillSwitch(file: string, seen = new Set<string>()): boolean {
   seen.add(full);
   if (!existsSync(full)) return false;
 
-  const source = readFileSync(full, 'utf8');
+  const source = code(readFileSync(full, 'utf8'));
   if (source.includes('killState(')) return true;
 
   for (const match of source.matchAll(/from '(\.[^']*)'/g)) {

@@ -41,9 +41,12 @@
  * | `off: ["all"]` | úplně všechno, i snapshoty a přehrávací dveře |
  *
  * ⚠ **„Úplně všechno" je tvrzení o dveřích, ne o téhle funkci, takže ho hlídá
- * test, ne tenhle odstavec.** `kill-switch.test.ts` vyjmenuje **každou**
- * `route.ts` pod `src/app/api` ze stromu a žádá, aby buď tenhle modul
- * importovala, nebo stála na jmenovaném seznamu výjimek. Ruční seznam dveří je
+ * test, ne tenhle odstavec.** `kill-switch.test.ts` vyjmenuje ze stromu **každé**
+ * dveře pod `src/app/api` a žádá, aby v jejich kódu — nebo v modulu, který si
+ * pod těmi dveřmi přitáhnou relativní cestou — stálo volání `killState(`, nebo
+ * aby stály na jmenovaném seznamu výjimek. Sdílená brána se tak počítá:
+ * `/api/emit/stream` tenhle modul neimportuje vůbec a chodí přes
+ * `replayDisabled()` v sousední `../route.ts`. Ruční seznam dveří je
  * přesně to, co 4. 9. 2026 nechalo `off: ["all"]` zastavit **šest dveří
  * z deseti**, které něco obsluhují: remediace zavřela `/api/edit`, kdežto obě
  * emitovací cesty i obojí čtecí dveře relace braly požadavky dál — zatímco
