@@ -50,9 +50,11 @@ import {
   MAX_CONCURRENT_GENERATIONS,
   MAX_WORLD_GENERATIONS,
   POST as createSession,
+  type PaidDoor,
   acquireSlot,
   releaseSlot,
   resetConcurrency,
+  slotsDetail,
 } from '../sessions/route';
 import { POST as commitChange } from '../sessions/[sessionId]/changes/[changeId]/commit/route';
 import { POST as previewChange, createChange } from '../sessions/[sessionId]/changes/route';
@@ -1027,6 +1029,28 @@ describe('strop souběžných placených volání', () => {
     for (const door of ['world', 'generate', 'refine'] as const)
       expect(acquireSlot(door), `${door}: součet přerostl MAX_CONCURRENT_GENERATIONS`).toBe(false);
     expect(MAX_CONCURRENT_GENERATIONS, 'strop se pohnul — přepiš i tenhle test').toBe(4);
+  });
+
+  it('neznámé dveře slot nedostanou a čítač neotráví (P15 T22-doorkeyguard)', () => {
+    // Typ `PaidDoor` je dnes jediná zábrana. Kdyby ji někdo obešel, `running[door]`
+    // je `undefined`, obě porovnání `>=` jsou nepravda a `+= 1` zapíše `NaN` —
+    // od té chvíle je `NaN >= MAX_CONCURRENT_GENERATIONS` nepravda navždy a
+    // strop na součet neodmítne nikoho do konce života procesu. V zelené sadě
+    // vypadá `NaN` přesně jako nula, proto se ten stav vyrábí přetypováním.
+    const stranger = 'admin' as PaidDoor;
+    // Vrácení jde první schválně: bez zábrany by `-= 1` na `undefined` klíč
+    // založilo (`NaN`), a vzetí by ho pak už za cizí nepoznalo.
+    releaseSlot(stranger);
+    expect(acquireSlot(stranger), 'cizí dveře slot dostaly').toBe(false);
+
+    // Čítač zůstal beze změny: všechna troje dveře dojdou přesně na svůj strop
+    // a součet pak odmítne — kdyby byl `NaN`, prošlo by cokoli.
+    for (const door of ['world', 'generate', 'refine'] as const)
+      for (let i = 0; i < DOOR_CEILING[door]; i += 1)
+        expect(acquireSlot(door), `slot ${i} dveří ${door} měl být volný`).toBe(true);
+    for (const door of ['world', 'generate', 'refine'] as const)
+      expect(acquireSlot(door), `${door}: čítač je otrávený, součet nekousl`).toBe(false);
+    expect(slotsDetail('world')).not.toContain('NaN');
   });
 });
 

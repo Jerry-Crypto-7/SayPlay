@@ -181,6 +181,12 @@ export function slotsDetail(door: PaidDoor): string {
  * sytit ho umí jen ty dveře, kterých se týká. Viz `MAX_WORLD_GENERATIONS`.
  */
 export function acquireSlot(door: PaidDoor): boolean {
+  // Díra pod tou, kterou hlídá typ (P15 T22-doorkeyguard): pro klíč mimo
+  // `PaidDoor` je `running[door]` `undefined`, obě porovnání níž jsou nepravda
+  // a `+= 1` zapíše `NaN` — od té chvíle je součet `NaN` a strop neodmítne
+  // nikoho do konce života procesu. Dnes sem cizí klíč nedosáhne (všichni tři
+  // volající předávají literál); tohle jen zavírá cestu, kdyby typ někdo obešel.
+  if (!Object.hasOwn(running, door)) return false;
   if (running.world + running.generate + running.refine >= MAX_CONCURRENT_GENERATIONS)
     return false;
   if (running[door] >= DOOR_CEILING[door]) return false;
@@ -197,6 +203,7 @@ export function acquireSlot(door: PaidDoor): boolean {
  * stojí v témž bloku.
  */
 export function releaseSlot(door: PaidDoor): void {
+  if (!Object.hasOwn(running, door)) return;
   running[door] -= 1;
 }
 
