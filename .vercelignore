@@ -1,0 +1,37 @@
+# Vercel nahrává pracovní strom, ne jen to, co je v gitu. Tenhle soubor je proto
+# DRUHÁ závora vedle .gitignore na materiál, který se nesmí dostat ven – bez něj
+# by se spoléhalo na to, že CLI .gitignore respektuje. Důvody u jednotlivých
+# vzorů jsou v .gitignore; tady je jen zrcadlo té části, kde je cena chyby vysoká.
+SECURITY-FINDINGS.md
+blind-check.config.json
+scripts/cleanroom-forbidden.txt
+
+# Interní strategie a pracovní logy.
+/*.md
+!README.md
+!DISCLOSURE.md
+plans/
+.claude/
+ops/**/*.jsonl
+
+# Syrové odpovědi poskytovatele – plné znění promptů i odpovědí.
+evals/live/*
+!evals/live/.gitkeep
+evals/worldstream/create-raw.json
+
+# Tajemství.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.json
+
+# Build si Vercel dělá sám; tohle by jen zdržovalo nahrávání.
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+.playwright-mcp/
