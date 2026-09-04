@@ -77,9 +77,14 @@ export interface CapControl {
   /**
    * Strop na počet volání. Nevyplněný znamená `DEFAULT_CALL_CAP`.
    *
-   * Je **volitelný schválně**: ovládací soubory a volání konstruktoru, které
-   * vznikly dřív, musí dál platit. Vyplněný ale musí být celé kladné číslo —
-   * nesmysl se odmítne stejně jako u zbytku souboru, tedy zavřeně.
+   * Je **volitelný schválně**: volání konstruktoru, která vznikla dřív, musí
+   * dál platit. Vyplněný musí být celé kladné číslo — nesmysl se odmítne stejně
+   * jako u zbytku souboru, tedy zavřeně.
+   *
+   * ⚠ **V ovládacím SOUBORU volitelný není**, i když tady ano. Od
+   * `T30-capsilence` táhne `capUsd` s sebou: `{"callCap":10}` je rozbitý soubor,
+   * protože kdo píše mez na počet volání, mluví o stropu — a zmínka o stropu se
+   * musí napsat celá. Viz `parseControl()`.
    */
   readonly callCap?: number;
 }
@@ -199,6 +204,22 @@ export type Reservation = Reserved | Refused;
  * co by platilo bez souboru. **Vyplněný nesmysl znamená dál zavřené selhání:**
  * `{"capUsd":"pět"}` je pokus stropem hnout a ten se nepovedl, a to je jiný
  * stav než mlčení.
+ *
+ * ⚠ **To pravidlo má od `T30-capsilence` jednu výjimku a ta se týká peněz:**
+ * mlčet se smí o **celé** peněžní půlce, ne o jejím kusu. Soubor, který nese
+ * `enabled` nebo `callCap` a `capUsd` ne, je proto rozbitý. Tím se přestěhovaly
+ * dva tvary, které do 4. 9. 2026 byly platné — `{"enabled":true}`
+ * a `{"callCap":10}` — mezi odmítané. **Nasazený soubor bez `capUsd` tedy začne
+ * odmítat placenou práci hned po deployi, aniž na něj kdokoli sáhne**; kill
+ * switche se z něj čtou dál, protože `killState()` čte soubor sám a tudy
+ * nechodí.
+ *
+ * ⚠ **Tahle mez třídu NEZAVÍRÁ, jen její polovinu** — nález revize, měřeno:
+ * z `{"capUsd":0.5}` na `{"off":["refine"]}` (nebo `{}`, nebo smazání souboru)
+ * pořád zvedne strop zpátky na výchozích 5 USD, protože mlčení o celé peněžní
+ * půlce platit musí, jinak by zaniklo `T30-offonlyfile`. Zbytek třídy je
+ * `T30-capfloor` a **jediná dnešní obrana je držet utaženou částku i ve
+ * `WORLDSMITH_SPEND_CAP_USD`**, ne jen v souboru.
  */
 function parseControl(parsed: Record<string, unknown>, defaults: CapControl): CapControl | null {
   const { enabled, capUsd, callCap } = parsed as {

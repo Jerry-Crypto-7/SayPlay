@@ -22,8 +22,15 @@
  * ```
  *
  * Seznam proto, že operátor za incidentu píše, co má stát — ne co má běžet.
- * Chybějící klíč `off` i prázdný seznam znamenají „běží všechno", takže dnešní
- * ovládací soubory stropu platí beze změny.
+ * Chybějící klíč `off` i prázdný seznam znamenají „běží všechno".
+ *
+ * ⚠ **Přidat `off` do existujícího souboru není vždy no-op — od
+ * `T30-capsilence`.** Soubor, který nese `enabled` nebo `callCap` a `capUsd` ne,
+ * je pro strop rozbitý, takže `{"enabled":true}` + přidané `off` skončí
+ * odmítáním placené práce, ne dokumentovaným nic-se-neděje. Vypínače samotné
+ * z takového souboru **platí dál** (tahle funkce `parseControl()` nevolá), ale
+ * kdo za incidentu píše `off` do souboru, který o stropu mluví, musí v něm mít
+ * i `capUsd`. Nejjistější je psát celý tvar z příkladu výš.
  *
  * ## Kam se selhává
  *

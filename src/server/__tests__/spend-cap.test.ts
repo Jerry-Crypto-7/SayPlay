@@ -259,9 +259,12 @@ describe('vypínač mění chování za běhu, bez nové instance', () => {
       expect(killState({ WORLDSMITH_CONTROL_FILE: path }).refine).toBe(true);
     });
 
-    // **Ta mez je na částku, ne na slovo `enabled`.** Bez tohohle případu projde
-    // i verze, která odmítá každý soubor bez `capUsd` — a tím by zrušila celé
-    // `T30-offonlyfile`, tedy důvod, proč tenhle describe blok existuje.
+    // **Napsaná nula je rozhodnutí, ne mlčení.** Zabíjí verzi, která by mez psala
+    // přes pravdivostní hodnotu (`!capUsd`) místo `=== undefined` — nad ní by
+    // `{"enabled":true,"capUsd":0}` spadlo do „soubor o stropu mlčí" a strop by
+    // vyskočil na výchozích 5 USD právě ve chvíli, kdy ho někdo utáhl na nulu.
+    // (Verzi „odmítej každý soubor bez `capUsd`" zabíjejí případy `{}`
+    // a `{"off":[…]}` výš, ne tenhle — naměřeno mutací 4. 9. 2026.)
     it('napsaná nula je pojmenovaná částka, ne mlčení', async () => {
       const path = controlFile(JSON.stringify({ enabled: true, capUsd: 0 }));
       const cap = new SpendCap({ enabled: true, capUsd: 7 }, path);
@@ -276,6 +279,26 @@ describe('vypínač mění chování za běhu, bez nové instance', () => {
       const cap = new SpendCap({ enabled: true, capUsd: 3 }, controlFile('{}'));
       expect((await cap.reserve(0.01)).ok).toBe(true);
       expect(cap.snapshot().capUsd).toBe(3);
+    });
+
+    // ⚠ **Tenhle případ pinuje ZBYTEK třídy, který `T30-capsilence` nezavřela** —
+    // nález nezávislé revize 4. 9. 2026. Je tady proto, aby se hlavička
+    // `parseControl()` nedala číst jako „utažený strop už nikdo tiše nezvedne".
+    // Utažený soubor BEZ `enabled` a BEZ `callCap` se pořád dá zrušit mlčením,
+    // a zavřít to uvnitř `parseControl()` nejde: znamenalo by to odmítat
+    // `{"off":[…]}` a `{}`, tedy zrušit `T30-offonlyfile`. Kdyby tenhle test
+    // někdy zčervenal, třída se zavřela a hlavička se má přepsat, ne test.
+    it('utažený strop bez `enabled` se mlčením pořád vrátí na výchozí — zbytek třídy', async () => {
+      const path = controlFile(JSON.stringify({ capUsd: 0.5 }));
+      const cap = new SpendCap({ enabled: true, capUsd: 5 }, path);
+      expect((await cap.reserve(2)).ok, 'utažená částka neplatila').toBe(false);
+
+      writeFileSync(path, JSON.stringify({ off: ['refine'] }), 'utf8');
+      expect(
+        (await cap.reserve(2)).ok,
+        'zbytek třídy se zavřel — přepiš hlavičku parseControl(), ne tenhle test',
+      ).toBe(true);
+      expect(cap.snapshot().capUsd).toBe(5);
     });
 
     it('chybí jen jedna půlka: `capUsd` platí ze souboru, `enabled` z výchozích', async () => {
