@@ -40,6 +40,35 @@
  * `intent.ready` je celé volání modelu: proud, který mlčí deset vteřin, zavře
  * kdejaká obrácená proxy a porotce uvidí přerušené demo bez jediné chyby.
  *
+ * ## Kolik posluchačů smí jedna relace mít
+ *
+ * Do 4. 9. 2026 nekonečně, a to byly jediné dveře worldstreamu bez jakéhokoli
+ * stropu (`T16-streamadmit`). `MAX_CONCURRENT_GENERATIONS` z create route sem
+ * nesahá — ten počítá placená volání v letu, kdežto tohle spojení žádné
+ * nedělá. Jenže **každé** spojení si založí vlastní patnáctivteřinový časovač
+ * a vlastní odběr logu, takže se na každý rámec relace zapisuje N-krát;
+ * `POST` je neanonymní jen v tom smyslu, že nechce přihlášení, takže jedno
+ * platné `sessionId` stačí komukoli k tomu, aby si těch N vyrobil.
+ *
+ * Strop je proto jeden a je to konstanta v tomhle souboru:
+ * `MAX_STREAM_SUBSCRIBERS` na jednu relaci. Přeplněno je **503**, ne fronta —
+ * čekající SSE spojení je další časovač navíc, tedy přesně to, čemu se strop
+ * vyhýbá.
+ *
+ * ⚠ **Druhý strop, na celý proces, se sem NEPÍŠE a je to změřené rozhodnutí.**
+ * První podoba téhle úlohy ho měla (`MAX_STREAM_TOTAL = 64`) v domnění, že
+ * strop na relaci součet nedrží. **Drží, přes registr:** `putSession()` volá
+ * `evict()`, ten uvolní relaci přes `release()`, a `release()` na ní zavolá
+ * `session.fail(SESSION_RELEASED)` (`src/worldstream/sessions.ts:129–139`) —
+ * tedy koncový rámec, na kterém se tenhle proud sám zavře a slot vrátí.
+ * Naměřeno sondou: 67 relací po jednom proudu drželo **64 slotů, ne 67**,
+ * a 65. relace uvolnila proud té první. Součet je tedy shora omezený
+ * `MAX_LIVE_SESSIONS` × `MAX_STREAM_SUBSCRIBERS` = 256 časovačů.
+ *
+ * Strop na proces by navrch **odmítal poctivý provoz**: při 64 živých relacích
+ * po jednom divákovi by 64 slotů bylo vyčerpaných a druhá karta kterékoli
+ * relace by dostala 503, přestože její vlastní strop je ze čtyř na jedné.
+ *
  * ## Proud se zavírá sám, na koncové fázi
  *
  * `session.complete` a `session.failed` jsou poslední rámce relace, takže za
@@ -73,6 +102,50 @@ export const HEARTBEAT_MS = 15_000;
  * `sequence` a proud by přestal být posloupností, o které §20 mluví.
  */
 export const HEARTBEAT_FRAME = ': heartbeat\n\n';
+
+/**
+ * Kolik proudů smí naráz viset na JEDNÉ relaci.
+ *
+ * Čtyři, protože tolik jich uživatel vyrobí sám bez zlého úmyslu: karta,
+ * duplikát karty, obnovení stránky, které starý proud ještě neuklidilo, a
+ * rezerva. Pátý je už vzorec, ne provoz.
+ */
+export const MAX_STREAM_SUBSCRIBERS = 4;
+
+/**
+ * Kolik proudů drží která relace. Klíč se **maže na nule**, jinak by tahle
+ * mapa byla táž netěsnost, kterou strop zavírá — jen o patro níž.
+ */
+const subscribers = new Map<string, number>();
+
+/**
+ * Vzít slot pro jeden proud. `false` = plno; kontrola i zvýšení jsou jeden
+ * synchronní krok, takže mezi ně nemá co vklouznout.
+ */
+function acquireStream(sessionId: string): boolean {
+  const held = subscribers.get(sessionId) ?? 0;
+  if (held >= MAX_STREAM_SUBSCRIBERS) return false;
+  subscribers.set(sessionId, held + 1);
+  return true;
+}
+
+/** Slot vrátit. Musí proběhnout na **každé** cestě ven, i na chybové. */
+function releaseStream(sessionId: string): void {
+  const held = subscribers.get(sessionId);
+  if (held === undefined) return;
+  if (held <= 1) subscribers.delete(sessionId);
+  else subscribers.set(sessionId, held - 1);
+}
+
+/** Jen pro testy: počty jsou proces-globální jako registr relací. */
+export function resetStreamSubscribers(): void {
+  subscribers.clear();
+}
+
+/** Jen pro testy: kolik relací drží aspoň jeden proud. Pinuje mazání na nule. */
+export function streamedSessionCount(): number {
+  return subscribers.size;
+}
 
 /** Fáze, za kterými už žádný rámec nepřijde. */
 function terminal(phase: string): boolean {
@@ -157,16 +230,39 @@ export async function GET(
       { status: 404, headers: { 'cache-control': 'no-store' } },
     );
 
+  // **Slot až tady, za 400 i za 404.** Odmítnutý požadavek nesmí obsadit
+  // místo, které pak nikdo nevrátí — a obě větve nad tímhle řádkem se vracejí
+  // dřív, než by měly co uklízet.
+  if (!acquireStream(sessionId))
+    return Response.json(
+      {
+        error: {
+          code: 'TOO_MANY_STREAMS',
+          message: `this session already has the ${MAX_STREAM_SUBSCRIBERS} listeners it may have on this instance`,
+        },
+      },
+      { status: 503, headers: { 'cache-control': 'no-store' } },
+    );
+
   const log = stored.session.events;
   const encoder = new TextEncoder();
   let unsubscribe: (() => void) | null = null;
   let beat: ReturnType<typeof setInterval> | null = null;
+  let holdsSlot = true;
 
   function release(): void {
     unsubscribe?.();
     unsubscribe = null;
     if (beat !== null) clearInterval(beat);
     beat = null;
+    // **Slot se vrací právě jednou.** `release()` chodí ze čtyř míst (cancel,
+    // abort, koncová fáze, selhaný zápis) a je schválně idempotentní; bez téhle
+    // závory by dvě z nich stroj počítadla poslaly pod nulu a strop by přestal
+    // držet po prvním obyčejném odchodu diváka.
+    if (holdsSlot) {
+      holdsSlot = false;
+      releaseStream(sessionId);
+    }
   }
 
   const stream = new ReadableStream<Uint8Array>({

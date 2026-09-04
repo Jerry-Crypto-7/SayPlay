@@ -33,6 +33,7 @@ import { SseDecoder } from '../../../../components/viewer/sse';
 import type { SessionEvent, SessionEventLog } from '../../../../worldstream/events';
 import {
   clearSessions,
+  MAX_LIVE_SESSIONS,
   openSession,
   runGeneration,
   serverGrammar,
@@ -59,7 +60,13 @@ import {
   resetConcurrency,
 } from '../sessions/route';
 import { GET as readSnapshot } from '../sessions/[sessionId]/route';
-import { HEARTBEAT_FRAME, GET as readEvents } from '../sessions/[sessionId]/events/route';
+import {
+  HEARTBEAT_FRAME,
+  MAX_STREAM_SUBSCRIBERS,
+  GET as readEvents,
+  resetStreamSubscribers,
+  streamedSessionCount,
+} from '../sessions/[sessionId]/events/route';
 
 /* ------------------------------------------------------------------ *
  * Volání route.
@@ -137,6 +144,9 @@ async function readRaw(response: Response, chunks = 1): Promise<string> {
 afterEach(() => {
   clearSessions();
   resetConcurrency();
+  // Počty odběratelů proudu jsou stav modulu stejně jako čítač souběhu: proud,
+  // který si test nechal otevřený, by jinak ubral slot každému dalšímu testu.
+  resetStreamSubscribers();
   // Počítadlo okna v `public-faults` je stav modulu: bez vynulování by druhý
   // producent téže dvojice (dveře, kód) byl `occurrence 2`, tedy mimo milník,
   // a tvrzení „řádek odešel" by mlčky zčervenalo v cizím testu.
@@ -752,5 +762,145 @@ describe('generace za odpovědí přežije zmrazení instance', () => {
     expect(source, 'na `settled` nevisí vrácení slotu').toMatch(
       /const settled = work\.finally\(\(\) => \{\s*releaseSlot\(\);\s*\}\);/,
     );
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Strop na počet posluchačů proudu (P15 T16-streamadmit).
+ * ------------------------------------------------------------------ */
+
+describe('proud relace má strop na počet posluchačů', () => {
+  /**
+   * Otevře proud a vrátí odpověď i způsob, jak ho zavřít.
+   *
+   * Zavírá se `body.cancel()`, protože to je jediné, co v testu spustí větev
+   * `cancel()` na proudu — tedy tutéž cestu úklidu, kterou v provozu spustí
+   * odchod diváka.
+   */
+  async function listen(sessionId: string): Promise<{ response: Response; close: () => Promise<void> }> {
+    const response = await events(sessionId);
+    return {
+      response,
+      close: async () => {
+        await response.body?.cancel();
+      },
+    };
+  }
+
+  it(`${MAX_STREAM_SUBSCRIBERS + 1}. proud téže relace dostane 503 a stabilní kód`, async () => {
+    openSession('crowded', 11);
+    const open = [];
+    for (let i = 0; i < MAX_STREAM_SUBSCRIBERS; i += 1) {
+      const stream = await listen('crowded');
+      expect(stream.response.status, `proud #${i + 1} neprošel`).toBe(200);
+      open.push(stream);
+    }
+
+    const refused = await events('crowded');
+    expect(refused.status).toBe(503);
+    // Kód se čte strojově (klient podle něj rozhodne, jestli zkusit znovu),
+    // takže se pinuje on, ne věta vedle něj.
+    expect(((await refused.json()) as { error: { code: string } }).error.code).toBe(
+      'TOO_MANY_STREAMS',
+    );
+
+    for (const stream of open) await stream.close();
+  });
+
+  it('odpojení uvolní slot, takže další divák projde', async () => {
+    openSession('revolving', 12);
+    const open = [];
+    for (let i = 0; i < MAX_STREAM_SUBSCRIBERS; i += 1) open.push(await listen('revolving'));
+
+    expect((await events('revolving')).status, 'plno se nepoznalo').toBe(503);
+    await open[0].close();
+
+    const after = await events('revolving');
+    expect(after.status, 'odchod diváka slot nevrátil').toBe(200);
+
+    await after.body?.cancel();
+    for (const stream of open.slice(1)) await stream.close();
+  });
+
+  it('přerušený požadavek uvolní slot stejně jako odchod diváka', async () => {
+    openSession('aborted', 13);
+    const controller = new AbortController();
+    const response = await readEvents(
+      new Request('http://127.0.0.1/api/worldstream/sessions/aborted/events', {
+        signal: controller.signal,
+      }),
+      params('aborted'),
+    );
+    expect(response.status).toBe(200);
+
+    controller.abort();
+    // Slot se vrátil, takže se dá naplnit celý strop znovu a teprve pak je plno.
+    const open = [];
+    for (let i = 0; i < MAX_STREAM_SUBSCRIBERS; i += 1) {
+      const stream = await listen('aborted');
+      expect(stream.response.status, `po přerušení nezbyl slot #${i + 1}`).toBe(200);
+      open.push(stream);
+    }
+    expect((await events('aborted')).status).toBe(503);
+
+    for (const stream of open) await stream.close();
+  });
+
+  it('odmítnutý požadavek slot nezabere — 404 ani 400 nesmí ubrat místo', async () => {
+    openSession('unspent', 14);
+
+    // Neznámá relace (404) a nesmyslný bod obnovení (400) se vracejí dřív, než
+    // by měly co uklízet. Kdyby si přesto braly slot, nikdo by ho nevrátil a
+    // strop by šlo vyčerpat požadavky, které proud vůbec neotevřou.
+    for (let i = 0; i < 20; i += 1) {
+      expect((await events('nikdy-nebyla')).status).toBe(404);
+      expect((await events('unspent', '?since=abc')).status).toBe(400);
+    }
+
+    const open = [];
+    for (let i = 0; i < MAX_STREAM_SUBSCRIBERS; i += 1) {
+      const stream = await listen('unspent');
+      expect(stream.response.status, `odmítnutí ukradlo slot #${i + 1}`).toBe(200);
+      open.push(stream);
+    }
+
+    for (const stream of open) await stream.close();
+  });
+
+  it('součet přes celý proces drží registr, ne druhý strop', async () => {
+    // ⚠ **Tenhle případ pinuje, PROČ tu druhý strop (na celý proces) není.**
+    // První podoba úlohy ho měla, protože se předpokládalo, že strop na relaci
+    // součet nedrží. Sonda ukázala opak: registr uvolní nejdéle stojící relaci
+    // (`evict()` → `release()` → `session.fail(SESSION_RELEASED)`), a na tom
+    // koncovém rámci se proud té relace **sám zavře a slot vrátí**. Součet je
+    // proto shora omezený `MAX_LIVE_SESSIONS` × `MAX_STREAM_SUBSCRIBERS`.
+    //
+    // Kdyby tenhle test zčervenal, přestal platit důvod, proč se druhý strop
+    // nestaví — pak se má přidat on, ne přepsat tenhle test.
+    const open = [];
+    for (let i = 0; i < MAX_LIVE_SESSIONS; i += 1) {
+      openSession(`crowd-${i}`, 100 + i);
+      const stream = await listen(`crowd-${i}`);
+      expect(stream.response.status, `proud #${i + 1} neprošel`).toBe(200);
+      open.push(stream);
+    }
+    expect(streamedSessionCount(), 'registr pustil víc relací, než deklaruje').toBe(
+      MAX_LIVE_SESSIONS,
+    );
+
+    // 65. relace vytlačí tu nejdéle stojící — a s ní její proud i jeho slot.
+    openSession('one-too-many', 999);
+    const stream = await listen('one-too-many');
+    expect(stream.response.status).toBe(200);
+    expect(
+      streamedSessionCount(),
+      'vytlačená relace si nechala proud, takže počet časovačů roste bez konce',
+    ).toBe(MAX_LIVE_SESSIONS);
+
+    await stream.close();
+    for (const held of open) await held.close();
+    // Mapa se maže na nule; kdyby držela klíče na nule, je to táž netěsnost
+    // o patro níž.
+    expect(streamedSessionCount(), 'po odchodu všech diváků zůstal klíč v mapě').toBe(0);
   });
 });
