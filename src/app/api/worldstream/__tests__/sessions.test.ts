@@ -38,6 +38,7 @@ import {
   MAX_LIVE_SESSIONS,
   MAX_SESSIONS_PER_CALLER,
   openSession,
+  QUOTA_ENGAGES_AT,
   runGeneration,
   serverGrammar,
 } from '../../../../worldstream/sessions';
@@ -1003,8 +1004,44 @@ describe('strop na frekvenci dorazí až k zakládání relace', () => {
  * soubor je jediné místo, kde se dá pinovat, že provoz posílá skutečný klíč.
  */
 describe('relaci zakládá klíč volajícího, ne anonym', () => {
-  it('devátá relace z jedné hlavičky dostane 429 a osm předchozích zůstane', async () => {
+  /**
+   * Zaplní registr na práh, od kterého kvóta vůbec odmítá
+   * (`QUOTA_ENGAGES_AT`). Zakládá se přímo v registru, ne přes route: tyhle
+   * relace nejsou to, co se měří, a 32 průchodů celým handlerem by jen stálo
+   * čas a čtyřicet řádků okna stropu frekvence.
+   *
+   * **Sledované schválně** — nesledované by zametení uvolnilo a obsazenost by
+   * spadla pod práh uprostřed testu.
+   */
+  function naPráh(): void {
+    for (let i = 0; i < QUOTA_ENGAGES_AT; i += 1) {
+      const stored = openSession(`dav-${String(i)}`, 100 + i, Date.now(), `dav-klíč-${String(i)}`);
+      expect(stored, 'dav se do registru nevešel').not.toBeNull();
+      stored!.session.events.subscribe(() => {});
+    }
+  }
+
+  /**
+   * ⚠ **Nález sedmé nezávislé revize, `VERDICT: blocking`.** Klíč volajícího je
+   * odchozí adresa, takže devět porotců za jednou firemní NATkou má **jeden**
+   * klíč. Dokud kvóta odmítala i na prázdné instanci, devátý dostal 429 ve
+   * chvíli, kdy bylo volných 55 slotů z 64 — a vyčistit si to neuměl.
+   */
+  it('devět porotců za jednou NATkou dostane na klidné instanci devět světů', async () => {
     resetRateWindows();
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER + 1; i += 1) {
+      const odpověď = await createSession(
+        createRequest({ prompt: `porotce ${String(i)}` }, '198.51.100.77'),
+      );
+      expect(odpověď.status, `porotce ${String(i)} dostal odmítnutí na prázdné instanci`).toBe(202);
+    }
+
+    expect(liveSessionCount()).toBe(MAX_SESSIONS_PER_CALLER + 1);
+  });
+
+  it('devátá relace z jedné hlavičky dostane nad prahem 429 a osm předchozích zůstane', async () => {
+    resetRateWindows();
+    naPráh();
     const první = await createSession(createRequest({ prompt: 'svět 0' }, '203.0.113.7'));
     const { sessionId } = (await první.json()) as { sessionId: string };
     for (let i = 1; i < MAX_SESSIONS_PER_CALLER; i += 1) {
@@ -1020,7 +1057,7 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
     expect(
       liveSessionCount(),
       'route klíč nepředala — kvóta je dekorace a strop 64 jde naplnit z jedné smyčky',
-    ).toBe(MAX_SESSIONS_PER_CALLER);
+    ).toBe(QUOTA_ENGAGES_AT + MAX_SESSIONS_PER_CALLER);
     expect(getSession(sessionId), 'kvóta zaplatila vlastní relací místo odmítnutím').not.toBeNull();
   });
 
@@ -1030,6 +1067,7 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
   // volající, protože ten původní je nad kvótou pořád.
   it('odmítnutí nad kvótou nezabere slot, který má chránit', async () => {
     resetRateWindows();
+    naPráh();
     for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
       await createSession(createRequest({ prompt: `svět ${String(i)}` }, '203.0.113.9'));
     }
@@ -1044,6 +1082,7 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
 
   it('dvě různé hlavičky jsou dva kbelíky, takže si relace nezavřou navzájem', async () => {
     resetRateWindows();
+    naPráh();
     const první = await createSession(createRequest({ prompt: 'porotce' }, '198.51.100.4'));
     const { sessionId } = (await první.json()) as { sessionId: string };
 
@@ -1061,6 +1100,7 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
    */
   it('útočník s hlavičkou oběti její běžící svět nezavře', async () => {
     resetRateWindows();
+    naPráh();
     const oběť = await createSession(createRequest({ prompt: 'porotce' }, '198.51.100.4'));
     const { sessionId } = (await oběť.json()) as { sessionId: string };
 
@@ -1071,7 +1111,7 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
     }
 
     expect(getSession(sessionId), 'osm podvržených POSTů zavřelo oběti svět').not.toBeNull();
-    expect(liveSessionCount()).toBe(MAX_SESSIONS_PER_CALLER);
+    expect(liveSessionCount()).toBe(QUOTA_ENGAGES_AT + MAX_SESSIONS_PER_CALLER);
   });
 
   /**
@@ -1082,13 +1122,16 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
    */
   it('dvanáct návštěvníků bez proxy hlaviček si světy nezavře navzájem', async () => {
     resetRateWindows();
+    naPráh();
     const první = await createSession(createRequest({ prompt: 'návštěvník 0' }));
     const { sessionId } = (await první.json()) as { sessionId: string };
     for (let i = 1; i < 12; i += 1) {
       await createSession(createRequest({ prompt: `návštěvník ${String(i)}` }));
     }
 
-    expect(liveSessionCount(), 'strop instance klesl ze 64 na kvótu jednoho kbelíku').toBe(12);
+    expect(liveSessionCount(), 'strop instance klesl ze 64 na kvótu jednoho kbelíku').toBe(
+      QUOTA_ENGAGES_AT + 12,
+    );
     expect(getSession(sessionId), 'svět prvního návštěvníka se zavřel pod ním').not.toBeNull();
   });
 });

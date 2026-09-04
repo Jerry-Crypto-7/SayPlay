@@ -27,11 +27,16 @@
  * ## Jediná výjimka: vlastní kvóta volajícího
  *
  * „Nová relace vždycky projde" platí proti stropu registru, ne proti kvótě
- * klíče. Nad `MAX_SESSIONS_PER_CALLER` se **odmítne nováček** (`putSession`
- * vrátí `false`, route z toho udělá 429) — a je to jediné místo v modulu, kde
- * někdo nedostane relaci kvůli počtu. Důvod je změřený a je u té konstanty:
- * uklidit místo toho cizí relaci znamená dát volajícímu páku na cizí svět,
- * kdežto odmítnutí ho stojí jeho vlastní požadavek.
+ * klíče. Na **obsazeném** registru (`QUOTA_ENGAGES_AT` a výš) se nad
+ * `MAX_SESSIONS_PER_CALLER` **odmítne nováček** (`putSession` vrátí `false`,
+ * route z toho udělá 429) — a je to jediné místo v modulu, kde někdo nedostane
+ * relaci kvůli počtu. Důvod je změřený a je u té konstanty: uklidit místo toho
+ * cizí relaci znamená dát volajícímu páku na cizí svět, kdežto odmítnutí ho
+ * stojí jeho vlastní požadavek.
+ *
+ * Ta podmínka „na obsazeném registru" je taky změřená, ne opatrnost: klíč je
+ * odchozí adresa, takže ho sdílí celá kancelář, a odmítat devátého člověka
+ * ve chvíli, kdy je volných 55 slotů z 64, je daň za NATku, ne ochrana slotu.
  */
 
 import { frozenGrammar } from '@/model/client';
@@ -100,6 +105,19 @@ export const MAX_LIVE_SESSIONS = 64;
  * zametá stárnutí dřív, než kbelík spočítá. Bez toho pořadí by osm relací,
  * které tentýž průchod zrovna pouští, vracelo 429 na devátou.
  *
+ * ⚠ **Kvóta se zapíná až od `QUOTA_ENGAGES_AT`, a je to oprava, ne úleva.**
+ * Sedmá nezávislá revize naměřila, že odmítání na prázdné instanci dopadá na
+ * sdílené odchozí adresy — devět porotců za jednou NATkou je jeden klíč.
+ * Odůvodnění je celé u té konstanty.
+ *
+ * ⚠ **Odmítnutí se nedá zrušit zavřením okna a hláška to nesmí slibovat.**
+ * `release()` je dosažitelné jedině ze zametení a z přetečení registru;
+ * koncový bod „zavři mi relaci" neexistuje. Naměřeno sedmou revizí: volající
+ * na kvótě, který zavře všechny karty, je zpátky v poli až po **dvou** hodinách
+ * a třech požadavcích, protože jedno zametení se spotřebuje na překlopení
+ * `watched` a hodina se rozeběhne až tím druhým. Dokud takový koncový bod
+ * nevznikne, smí 429 říct jen to, **co platí** — ne radu, která neplatí.
+ *
  * ⚠ **Co to NEZAVÍRÁ, a je to vědomé.** Klíč jde pořád podvrhnout, takže
  * útočník umí oběti **zablokovat zakládání** nových světů (osm požadavků
  * s její IP naplní její kbelík), a kdo si vymyslí 64 hlaviček po jedné relaci,
@@ -117,6 +135,35 @@ export const MAX_LIVE_SESSIONS = 64;
  * který se dá postavit; proto kvóta, ne jiné pořadí.
  */
 export const MAX_SESSIONS_PER_CALLER = 8;
+
+/**
+ * Od jaké obsazenosti registru kvóta vůbec **začne odmítat**.
+ *
+ * ⚠ **Nález sedmé nezávislé revize 4. 9. 2026, `VERDICT: blocking`, změřený.**
+ * Kvóta bez tohohle prahu odmítala i tam, kde o žádný slot nikdo nesoupeřil,
+ * a dopadalo to na populaci, kterou si tenhle soubor jmenuje sám: **devět
+ * porotců za jednou firemní NATkou** má jeden `callerKey`, takže devátý dostal
+ * 429 na instanci, kde bylo volných 55 slotů z 64. Věta „odmítnutí stojí
+ * volajícího jeho vlastní požadavek" je pravdivá jedině tehdy, když je klíč
+ * jeho — u sdílené odchozí adresy stojí devátého člověka celý svět.
+ *
+ * **Kvóta je mez na soupeření o slot, ne daň za sdílenou adresu.** Dokud je
+ * registr z poloviny prázdný, nikdo se o nic nepere a odmítat není proč.
+ * Nad prahem už ano, a tam platí `MAX_SESSIONS_PER_CALLER` beze změny.
+ *
+ * ⚠ **Co to volnější pravidlo NEROZBÍJÍ, a je to spočítané, ne odhadnuté.**
+ * Jeden klíč se pod prahem dostane nejvýš na `QUOTA_ENGAGES_AT` relací, tedy
+ * na polovinu registru — víc mu strop kvóty nedovolí, protože ta se od prahu
+ * zapne. Registr proto **jedním klíčem naplnit nejde** a to je jediná
+ * vlastnost, na které stojí ochrana proti páce: třetí kolo `evictOverCap()`
+ * bere oběť z **největšího** kbelíku, a kbelík o 32 relacích je vždycky větší
+ * než porotcův o jedné. Naměřeno v `sessions.test.ts`: 1 sledovaná oběť +
+ * útočník na jednom klíči → registr přeteče a padá útočník, ne oběť.
+ *
+ * Půlka, ne jiné číslo: pod ní je volných slotů víc než kolik jich kterýkoli
+ * klíč smí držet, takže se nedá vyrobit situace „odmítnut, a přitom volno".
+ */
+export const QUOTA_ENGAGES_AT = MAX_LIVE_SESSIONS / 2;
 
 export interface StoredSession {
   readonly session: GenerationSession;
@@ -429,7 +476,8 @@ function callerHolds(owner: string): number {
  */
 export function putSession(stored: StoredSession, now: number = Date.now()): boolean {
   sweepIdle(now);
-  if (callerHolds(stored.owner) >= MAX_SESSIONS_PER_CALLER) return false;
+  if (live.size >= QUOTA_ENGAGES_AT && callerHolds(stored.owner) >= MAX_SESSIONS_PER_CALLER)
+    return false;
 
   const sessionId = stored.session.sessionId;
   live.set(sessionId, stored);
@@ -722,6 +770,17 @@ export function openSession(
     // nekupuje nic a zbývá jediná mez, která tam něco znamená — strop registru.
     // Je to táž úvaha a týž sentinel jako u stropu souběžných čtení těla
     // v `src/http/body.ts`, jen tam vede na vlastní číslo a tady na „bez kvóty".
+    //
+    // ⚠ **Řekni to nahlas, protože to zní jinak, než to je** — nález sedmé
+    // nezávislé revize, `VERDICT: blocking`. Kbelík na `sessionId` znamená
+    // jeden kbelík na **relaci**, ne na volajícího, takže na nasazení bez
+    // proxy hlaviček je `MAX_SESSIONS_PER_CALLER` **vypnutá úplně** a jeden
+    // volající tam smí držet všech 64 slotů. Sonda revize to naměřila přesně
+    // tak. Nikde — v commitu, v reportu ani v přihlášce — se proto nesmí psát,
+    // že „nerozeznaný volající dostane svůj kbelík" ve smyslu meze; dostane
+    // ho ve smyslu **izolace**, a mez tam nedrží žádná kromě stropu registru.
+    // Vercel obě hlavičky posílá, takže na nasazené cestě kvóta platí; týká se
+    // to `next start`, dema z notebooku a prosté reverse proxy.
     owner: owner === UNIDENTIFIED_CALLER ? sessionId : owner,
     blueprint: null,
     fault: null,

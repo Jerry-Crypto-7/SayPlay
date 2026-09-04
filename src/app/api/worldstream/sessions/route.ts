@@ -465,10 +465,17 @@ export async function POST(request: Request): Promise<Response> {
     // jeden ze tří slotů dveří `world`, tedy z toho, co má chránit.
     //
     // ⚠ **429, ne 503.** 503 by řeklo „instance je plná", což je nepravda:
-    // registr může být poloprázdný a odmítnutí se týká **jen tohohle klíče**.
-    // `Retry-After` se schválně neposílá — relace se uvolní, až volající zavře
-    // některé své okno nebo až jedné z nich doběhne hodina; číslo, které by tu
-    // stálo, by bylo vymyšlené.
+    // odmítnutí se týká **jen tohohle klíče**, a od `QUOTA_ENGAGES_AT` je
+    // registr navíc zaručeně aspoň z poloviny obsazený.
+    //
+    // ⚠ **Věta nesmí radit „zavři jedno okno", protože to nefunguje** — nález
+    // sedmé nezávislé revize, `VERDICT: blocking`, změřený. Koncový bod na
+    // zavření relace neexistuje; `release()` je dosažitelné jedině ze zametení
+    // stárnutí a z přetečení registru, takže volající, který zavře všechny
+    // karty, je zpátky v poli až po **dvou hodinách a třech požadavcích**.
+    // `Retry-After` se z téhož důvodu neposílá: jediné poctivé číslo by bylo
+    // „nevím", a u relace s drženým proudem je to dokonce „nikdy"
+    // (`T16-idleforever`). Hláška proto říká jen stav, ne radu.
     if (stored === null) {
       releaseSlot('world');
       logRateLimited(
@@ -481,7 +488,7 @@ export async function POST(request: Request): Promise<Response> {
         requestId,
         429,
         'TOO_MANY_SESSIONS_PER_CALLER',
-        'you already have as many worlds open as one client may hold — close one and try again',
+        'this client already holds as many live worlds as one client may hold on a busy instance',
       );
     }
 

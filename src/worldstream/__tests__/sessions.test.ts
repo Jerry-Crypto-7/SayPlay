@@ -23,6 +23,7 @@ import {
   MAX_LIVE_SESSIONS,
   MAX_SESSIONS_PER_CALLER,
   openSession,
+  QUOTA_ENGAGES_AT,
   putChange,
   SESSION_FAULTS,
   watchedSessionCount,
@@ -373,18 +374,53 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
     return stored!;
   }
 
-  it('devátá relace jednoho klíče se odmítne a osm předchozích zůstane', () => {
+  /**
+   * Zaplní registr na práh, od kterého kvóta vůbec odmítá.
+   *
+   * Klíče jsou cizí a po jedné relaci, takže do žádného zkoušeného kbelíku
+   * nemluví. **Sledované schválně:** nesledované by zametení uvolnilo a
+   * obsazenost by spadla pod práh uprostřed testu, takže by pak zelená
+   * neznamenala nic.
+   */
+  function naPráh(): void {
+    for (let i = 0; i < QUOTA_ENGAGES_AT; i += 1) {
+      const stored = admitted(`dav-${i}`, T0 - QUOTA_ENGAGES_AT + i, `dav-klíč-${i}`);
+      stored.session.events.subscribe(() => {});
+    }
+    expect(liveSessionCount()).toBe(QUOTA_ENGAGES_AT);
+  }
+
+  /**
+   * ⚠ **Nález sedmé nezávislé revize, `VERDICT: blocking`, změřený.** Kvóta
+   * bez prahu odmítala i na prázdné instanci, a klíč je odchozí adresa — devět
+   * porotců za jednou firemní NATkou je **jeden** klíč. Devátý dostával 429 ve
+   * chvíli, kdy bylo volných 55 slotů z 64, a vyčistit si to neuměl (koncový
+   * bod „zavři mi relaci" neexistuje).
+   */
+  it('na klidné instanci drží jeden sdílený klíč víc, než je kvóta', () => {
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER + 4; i += 1) {
+      admitted(`porotce-${i}`, T0 + i, 'ip:sdílená-natka');
+    }
+
+    expect(
+      liveSessionCount(),
+      'kvóta odmítla na instanci, kde o slot nikdo nesoupeřil',
+    ).toBe(MAX_SESSIONS_PER_CALLER + 4);
+  });
+
+  it('devátá relace jednoho klíče se nad prahem odmítne a osm předchozích zůstane', () => {
+    naPráh();
     for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
       admitted(`moje-${i}`, T0 + i, 'volající-A');
     }
-    expect(liveSessionCount()).toBe(MAX_SESSIONS_PER_CALLER);
+    expect(liveSessionCount()).toBe(QUOTA_ENGAGES_AT + MAX_SESSIONS_PER_CALLER);
 
     const devátá = ownedWorld('devátá', T0 + MAX_SESSIONS_PER_CALLER, 'volající-A');
 
     expect(devátá, 'kvóta nedrží — devátá relace prošla').toBeNull();
     expect(getSession('devátá'), 'odmítnutá relace zůstala v registru').toBeNull();
     expect(getSession('moje-0'), 'kvóta zaplatila relací místo odmítnutím').not.toBeNull();
-    expect(liveSessionCount()).toBe(MAX_SESSIONS_PER_CALLER);
+    expect(liveSessionCount()).toBe(QUOTA_ENGAGES_AT + MAX_SESSIONS_PER_CALLER);
   });
 
   /**
@@ -394,6 +430,10 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
    * dostala 429, přestože po ní v registru nezůstane nic.
    */
   it('vlastní hodinu stojící relace volajícího na devátou nezamknou', () => {
+    // Práh drží sledovaný dav, takže kvóta zůstane zapnutá i po zametení —
+    // jinak by devátá prošla proto, že obsazenost spadla, ne proto, že se
+    // kbelík uvolnil, a test by měřil něco jiného, než tvrdí.
+    naPráh();
     for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
       admitted(`moje-${i}`, T0 + i, 'volající-A');
     }
@@ -408,10 +448,13 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
 
     expect(devátá, 'kvóta se počítala nad relacemi, které zametení zrovna pouští').not.toBeNull();
     expect(getSession('moje-0'), 'hodinu stojící relace se neuvolnila').toBeNull();
-    expect(liveSessionCount(), 'v registru zůstalo víc než budička a devátá').toBe(2);
+    expect(liveSessionCount(), 'kvóta se zapnula, ale osm vlastních se neuvolnilo').toBe(
+      QUOTA_ENGAGES_AT + 2,
+    );
   });
 
   it('devátá relace jednoho klíče nesáhne na relaci cizího klíče', () => {
+    naPráh();
     const cizí = admitted('cizí', T0, 'volající-B');
     cizí.session.events.subscribe(() => {});
 
@@ -434,6 +477,7 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
    * zaměřovač, ne ochrana.
    */
   it('podvržená hlavička s klíčem oběti její běžící svět nezavře', () => {
+    naPráh();
     const oběť = admitted('porotce', T0, 'ip:203.0.113.7');
     oběť.session.events.subscribe(() => {});
 
@@ -444,7 +488,7 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
 
     expect(getSession('porotce'), 'osm podvržených POSTů zavřelo oběti svět').not.toBeNull();
     expect(oběť.fault, 'oběti se svět zavřel pod rukama').toBeNull();
-    expect(liveSessionCount()).toBe(MAX_SESSIONS_PER_CALLER);
+    expect(liveSessionCount()).toBe(QUOTA_ENGAGES_AT + MAX_SESSIONS_PER_CALLER);
 
     // ⚠ **A tohle je zbytek, který ta oprava NEZAVÍRÁ, tak ať je změřený.**
     // Útočník oběti pořád umí zaplnit kbelík, takže si nezaloží **nový** svět.
@@ -469,12 +513,35 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
    * devíti porotců za jednou firemní NATkou.
    */
   it('nerozeznaný volající dostane vlastní kbelík, ne společný strop 8', () => {
+    naPráh();
     for (let i = 0; i < 12; i += 1) {
       admitted(`návštěvník-${i}`, T0 + i, UNIDENTIFIED_CALLER);
     }
 
-    expect(liveSessionCount(), 'strop instance klesl ze 64 na kvótu jednoho kbelíku').toBe(12);
+    expect(liveSessionCount(), 'strop instance klesl ze 64 na kvótu jednoho kbelíku').toBe(
+      QUOTA_ENGAGES_AT + 12,
+    );
     expect(getSession('návštěvník-0'), 'svět prvního návštěvníka se zavřel pod ním').not.toBeNull();
+  });
+
+  /**
+   * ⚠ **Tenhle test pinuje, co kvóta u nerozeznaného volajícího NEDĚLÁ** —
+   * nález sedmé nezávislé revize, `VERDICT: blocking`. Kbelík na `sessionId`
+   * je jeden kbelík na **relaci**, takže na nasazení bez proxy hlaviček
+   * (`next start`, demo z notebooku) je `MAX_SESSIONS_PER_CALLER` vypnutá
+   * a jediná mez je strop registru. Kdyby tenhle test jednou zčervenal proto,
+   * že se čísla srovnala na kvótu, ochrana se zesílila — pak se přepíše
+   * doktrína u `openSession()`, ne tenhle řádek.
+   */
+  it('bez proxy hlaviček kvóta neomezuje nic — mez dává jedině strop registru', () => {
+    for (let i = 0; i < MAX_LIVE_SESSIONS + 4; i += 1) {
+      ownedWorld(`anonym-${i}`, T0 + i, UNIDENTIFIED_CALLER);
+    }
+
+    expect(
+      liveSessionCount(),
+      'kvóta u nerozeznaného volajícího najednou drží — přepiš doktrínu u openSession()',
+    ).toBe(MAX_LIVE_SESSIONS);
   });
 });
 
