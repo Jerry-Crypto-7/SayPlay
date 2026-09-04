@@ -959,7 +959,7 @@ describe('strop na frekvenci dorazí až k zakládání relace', () => {
   it('padesátý první požadavek v okně je 429, a čítač souběhu tím nezůstane rozbitý', async () => {
     // Okno se plní přímo čítačem — měří se zapojení meze do těchhle dveří,
     // ne mez sama (`src/server/__tests__/rate-limit.test.ts`).
-    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) takeRateSlot('sessions');
+    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) takeRateSlot('sessions', 'unknown');
     try {
       const response = await createSession(createRequest({ prompt: 'a salt flat with one iron mast' }));
       expect(response.status).toBe(429);

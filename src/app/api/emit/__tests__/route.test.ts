@@ -293,7 +293,7 @@ describe('strop na frekvenci dorazí až ke dveřím', () => {
   it('padesátý první požadavek v okně je 429 s retry-after, ne 200', async () => {
     // Okno se plní přímo čítačem — měří se zapojení meze do těchhle dveří,
     // ne mez sama (`src/server/__tests__/rate-limit.test.ts`).
-    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) takeRateSlot('emit');
+    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) takeRateSlot('emit', 'unknown');
     try {
       const response = await POST(
         new Request('http://127.0.0.1/api/emit', {

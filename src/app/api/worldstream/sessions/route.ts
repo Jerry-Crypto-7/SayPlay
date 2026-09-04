@@ -48,7 +48,7 @@ import { withRequest } from '../../../../obs/trace';
 import type { UpstreamRequest } from '../../../../model/prompt';
 import { killState } from '../../../../server/kill-switch';
 import { moderatePrompt } from '../../../../server/moderation';
-import { rateLimitedResponse, takeRateSlot } from '../../../../server/rate-limit';
+import { callerKey, rateLimitedResponse, takeRateSlot } from '../../../../server/rate-limit';
 import { logRateLimited } from '../../../../server/public-faults';
 import { costUsd, processSpendCap } from '../../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../../server/upstream';
@@ -264,7 +264,7 @@ export async function POST(request: Request): Promise<Response> {
     // Strop na frekvenci, hned za vypínačem a před čtením těla. Tyhle dveře
     // stojí navíc placená volání, takže čítač souběhu níž zůstává — frekvence
     // a souběh měří dvě různé věci a jedna druhou nenahradí.
-    const slot = takeRateSlot('sessions');
+    const slot = takeRateSlot('sessions', callerKey(request));
     if (!slot.allowed) {
       logRateLimited(
         'worldstream/sessions',

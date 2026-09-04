@@ -58,7 +58,7 @@ import { randomUUID } from 'node:crypto';
 import { BODY_DEADLINE_MS, MAX_BODY_BYTES, bodyRefusalResponse, readBody } from '../../../http/body';
 import { withRequest } from '../../../obs/trace';
 import { killState } from '../../../server/kill-switch';
-import { rateLimitedResponse, takeRateSlot } from '../../../server/rate-limit';
+import { callerKey, rateLimitedResponse, takeRateSlot } from '../../../server/rate-limit';
 import {
   PUBLIC_CORPUS_FAULT,
   logRateLimited,
@@ -194,7 +194,7 @@ export async function POST(request: Request): Promise<Response> {
 
     // Strop na frekvenci, pořád před čtením těla — táž mez a totéž odůvodnění
     // jako u `/api/edit`, viz `src/server/rate-limit.ts`.
-    const slot = takeRateSlot('emit');
+    const slot = takeRateSlot('emit', callerKey(request));
     if (!slot.allowed) {
       logRateLimited('emit', requestId, 'TOO_MANY_REQUESTS', `${String(slot.count)} in window`);
       return rateLimitedResponse(requestId, slot);

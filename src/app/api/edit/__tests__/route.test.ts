@@ -1275,7 +1275,7 @@ describe('strop na frekvenci dorazí až ke dveřím', () => {
     // Okno se plní přímo čítačem, ne padesáti HTTP požadavky: měří se tady
     // **zapojení** meze do těchhle dveří, ne mez sama (ta má vlastní sadu
     // v `src/server/__tests__/rate-limit.test.ts`).
-    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) takeRateSlot('edit');
+    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) takeRateSlot('edit', 'unknown');
     try {
       const response = await POST(
         new Request('http://127.0.0.1/api/edit', {
