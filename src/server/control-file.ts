@@ -232,15 +232,24 @@ export function controlFilePath(env: Record<string, string | undefined>): string
  * má, čte soubor; kdo sdílený obchod nemá, druhý zdroj vůbec nevznikne a
  * neproběhne jediný síťový let.
  *
- * ## Cena je jeden síťový let na požadavek, a je zaplacená vědomě
+ * ## Cena je nejvýš jeden síťový let za sekundu, ne jeden na požadavek
  *
- * Vypínač se čte **při každém rozhodnutí**, takže na nasazení se sdíleným
- * obchodem stojí každá brána jeden `GET` (limit `DEFAULT_CONTROL_TIMEOUT_MS`,
- * 200 ms). Doktrína „vypnuté dveře nesmí stát víc než `readFileSync`" tím
- * zdražila. Alternativa byla synchronně čtená cache obnovovaná jinde — ta by
- * síťový let ušetřila a zavedla **zastaralost do páky, kterou se sahá za
- * incidentu**. Rozhodnuto 4. 9. 2026 pro čerstvost: je to jediná páka, kterou
- * se zastavuje utrácení a veřejné vydávání dat.
+ * Vypínač se čte **při každém rozhodnutí**, ale na sdílený obchod se přitom
+ * nesahá pokaždé: `controlStoreFromEnv()` obaluje čtení oknem
+ * `CONTROL_CACHE_TTL_MS` (1 s, `spend-store.ts`), takže instance vydá nejvýš
+ * jeden `GET` za sekundu (limit letu `DEFAULT_CONTROL_TIMEOUT_MS`, 200 ms)
+ * a souběžní čtenáři sdílejí jeden let.
+ *
+ * ⚠ **To okno je oprava blokujícího nálezu, ne úspora.** Bez něj byl každý
+ * anonymní požadavek jeden příkaz do obchodu a tři čtecí dveře nemají strop
+ * frekvence vůbec — smyčka přes `GET /api/worldstream/snapshots/<náhodný hash>`
+ * tedy uměla vypálit kvótu obchodu, tedy **tu jedinou páku, kterou se za
+ * incidentu vypíná utrácení**. Celý rozpad je u `CONTROL_CACHE_TTL_MS`.
+ *
+ * Rozhodnutí ze 4. 9. 2026 znělo „čerstvost, ne cache" a tohle je jeho
+ * ohraničená podoba: zamítnutá varianta byla cache **obnovovaná jinde**,
+ * s neomezeným stářím. Tady je stáří shora sekunda a soubor na disku se
+ * necachuje vůbec, takže lokální provoz a `next start` jsou plně čerstvé.
  *
  * **Výpadek obchodu se čte jako rozbitý povel**, ne jako mlčení. Placené dveře
  * tím stojí (kniha by je o operaci později odmítla stejně, `LEDGER_UNAVAILABLE`)

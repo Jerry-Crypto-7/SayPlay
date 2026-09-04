@@ -530,12 +530,95 @@ export function httpControlStore(
 }
 
 /**
+ * Jak dlouho smí jeden přečtený povel platit pro další čtenáře **téže
+ * instance**.
+ *
+ * ⚠ **Bez téhle meze je čtení vypínače zesilovač, který platí operátor** —
+ * nález nezávislé revize commitu `316a4f1`, `VERDICT: blocking`. `killState()`
+ * se od `T30-controllever` čte přes síť a sedí jako **první** příkaz na každých
+ * dveřích. Tři čtecí dveře přitom strop frekvence nemají vůbec
+ * (`snapshots/[hash]`, `sessions/[sessionId]`, `.../events`), takže jeden
+ * anonymní požadavek = jeden příkaz do sdíleného obchodu, bez horní meze. Kdo
+ * ve smyčce žádá `GET /api/worldstream/snapshots/<náhodný hash>`, projde i
+ * kolem CDN (`s-maxage` na nové adrese nikdy netrefí) a vypálí kvótu obchodu
+ * rychlostí požadavků. Až kvóta dojde, `read()` vyhazuje → `PAID_OFF`, kniha
+ * hlásí `LEDGER_UNAVAILABLE` — a jediná páka, kterou to má operátor zastavit,
+ * je právě ten obchod.
+ *
+ * **Omezuje se to, co brána VYPRODUKUJE, ne kdo na ni smí sáhnout.** Přeřazení
+ * `killState()` za strop frekvence samo nestačí a je to spočítané, ne
+ * odhadnuté: strop instance pouští 400 požadavků za 10 s, tedy pořád 40
+ * příkazů za sekundu, což je 3,4 milionu za den. S tímhle oknem vydá instance
+ * **nejvýš jeden příkaz za sekundu** bez ohledu na to, kolik jich přijde.
+ *
+ * ⚠ **Je to odchylka od rozhodnutí ze 4. 9. 2026 („čerstvost, ne cache") a
+ * takhle je zaplacená:** zamítnutá varianta byla cache **obnovovaná jinde**,
+ * tedy s neomezeným stářím. Tady je stáří ohraničené na jednu sekundu a nikdo
+ * ji neobnovuje — vypínač zabere do sekundy od chvíle, kdy ho operátor napíše.
+ * Soubor na disku se necachuje vůbec, takže lokální provoz a `next start` jsou
+ * pořád plně čerstvé.
+ */
+export const CONTROL_CACHE_TTL_MS = 1000;
+
+/**
+ * Sdílené okno na instanci. Klíčem je adresa **a** ovládací klíč, aby si dvě
+ * prostředí (a dva testy) nesáhly do téhož záznamu.
+ */
+const controlWindows = new Map<string, { readonly at: number; readonly read: Promise<string | null> }>();
+
+/** Zahodí okna. Jen pro testy — provoz je nemá proč zahazovat. */
+export function __resetControlWindows(): void {
+  controlWindows.clear();
+}
+
+/**
+ * Obalí obchod oknem: souběžní čtenáři sdílejí **jeden** let a další sekundu
+ * ho sdílejí i ti, co přijdou po nich.
+ *
+ * Ukládá se `Promise`, ne hodnota, a to je celá pointa: souběh 400 požadavků
+ * v jednom tiku by nad hotovou hodnotou pořád vypálil 400 letů, protože by
+ * všechny našly okno prázdné. Takhle najdou rozdělaný let a přidají se k němu.
+ *
+ * **Neúspěch se cachuje taky, schválně.** Výpadek obchodu je přesně ta chvíle,
+ * kdy se nesmí každý požadavek pokoušet znovu: 200 ms na požadavek by udělalo
+ * z výpadku frontu a z kvóty popel. Zavřené selhání drží sekundu a pak se
+ * zkusí znovu.
+ */
+export function windowedControlStore(
+  inner: ControlStore,
+  cacheKey: string,
+  ttlMs: number = CONTROL_CACHE_TTL_MS,
+  now: () => number = Date.now,
+): ControlStore {
+  return {
+    id: inner.id,
+    key: inner.key,
+    read() {
+      const at = now();
+      const open = controlWindows.get(cacheKey);
+      if (open !== undefined && at - open.at < ttlMs) return open.read;
+
+      const read = inner.read();
+      controlWindows.set(cacheKey, { at, read });
+      // Bez tohohle by odmítnutý let, ke kterému se do vypršení okna nikdo
+      // nepřidá, spadl do Node jako neošetřené odmítnutí a shodil proces.
+      read.catch(() => undefined);
+      return read;
+    },
+  };
+}
+
+/**
  * Ovládací klíč podle prostředí, nebo `null`, když se s nikým nesdílí.
  *
  * `null` tady znamená **„není druhý zdroj"**, ne „odmítat" — na rozdíl od
  * `ledgerFromEnv()`. Je to schválně: bez sdíleného obchodu platí soubor a to
  * je celý lokální provoz. Zavřené selhání bez sdíleného stavu už drží kniha,
  * a dvě místa, která ho drží, by znamenala dvě pravidla.
+ *
+ * **Okno se nasazuje tady, ne v `httpControlStore()`.** Kdo si obchod skládá
+ * sám — testy a budoucí volající — dostane holé čtení bez sdíleného stavu;
+ * okno má jedině ta cesta, kterou chodí běžící server.
  */
 export function controlStoreFromEnv(
   env: Record<string, string | undefined>,
@@ -543,7 +626,7 @@ export function controlStoreFromEnv(
 ): ControlStore | null {
   const shared = sharedStoreFromEnv(env);
   if (shared === null) return null;
-  return httpControlStore(
+  const store = httpControlStore(
     {
       url: shared.url,
       token: shared.token,
@@ -552,4 +635,5 @@ export function controlStoreFromEnv(
     },
     fetchImpl,
   );
+  return windowedControlStore(store, `${shared.url} ${store.key}`);
 }

@@ -19,7 +19,9 @@ import {
   SpendCap,
   spendCapFromEnv,
 } from '../spend-cap';
-import { memoryLedger, type SpendLedger } from '../spend-store';
+// Okno ovládacího klíče je stav modulu (`CONTROL_CACHE_TTL_MS`); bez resetu
+// by si dva testy sáhly do téhož letu a druhý by četl odpověď prvního.
+import { __resetControlWindows, memoryLedger, type SpendLedger } from '../spend-store';
 
 const PRICING = { usdPerMTokIn: 3, usdPerMTokOut: 15 };
 
@@ -35,6 +37,7 @@ function controlFile(contents: string | null): string {
 
 afterEach(() => {
   for (const dir of temporary.splice(0)) rmSync(dir, { recursive: true, force: true });
+  __resetControlWindows();
 });
 
 describe('cena se počítá z ohlášené spotřeby', () => {

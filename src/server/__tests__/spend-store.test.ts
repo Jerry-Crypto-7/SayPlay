@@ -1,8 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  __resetControlWindows,
+  CONTROL_CACHE_TTL_MS,
   CONTROL_KEY_SUFFIX,
+  type ControlStore,
   controlStoreFromEnv,
+  windowedControlStore,
   DEFAULT_LEDGER_TIMEOUT_MS,
   httpControlStore,
   httpLedger,
@@ -666,5 +670,136 @@ describe('ovládací klíč ve sdíleném obchodě', () => {
     expect(controlStoreFromEnv({ ...shared, VERCEL_ENV: 'staging' })?.key).toBe(
       `worldsmith:spend:unknown-env${CONTROL_KEY_SUFFIX}`,
     );
+  });
+});
+
+/**
+ * Okno na čtení ovládacího klíče (`T30-controllever`, remediace blokujícího
+ * nálezu revize commitu `316a4f1`).
+ *
+ * Tvrzení, která se tu pinují, jsou tři a každé má vlastní mutanta:
+ * instance vydá **nejvýš jeden** let za okno, souběžní čtenáři se přidají
+ * k rozdělanému letu místo vlastního, a **neúspěch se drží taky** — jinak by
+ * výpadek obchodu vyrobil frontu 200ms letů, tedy přesně ten zesilovač, který
+ * okno zavírá.
+ */
+describe('čtení vypínače je ohraničené oknem, ne počtem požadavků', () => {
+  afterEach(() => {
+    __resetControlWindows();
+  });
+
+  /** Obchod, který si počítá lety a odpovídá, co mu řekneš. */
+  function countingStore(answer: () => Promise<string | null>, key = 'worldsmith:spend:control') {
+    const calls = { count: 0 };
+    const store: ControlStore = {
+      id: 'counting',
+      key,
+      read() {
+        calls.count += 1;
+        return answer();
+      },
+    };
+    return { store, calls };
+  }
+
+  it('druhé čtení v témže okně nevydá druhý let', async () => {
+    const { store, calls } = countingStore(() => Promise.resolve('{"off":["all"]}'));
+    let clock = 1000;
+    const windowed = windowedControlStore(store, 'k', CONTROL_CACHE_TTL_MS, () => clock);
+
+    expect(await windowed.read()).toBe('{"off":["all"]}');
+    clock += CONTROL_CACHE_TTL_MS - 1;
+    expect(await windowed.read()).toBe('{"off":["all"]}');
+
+    expect(calls.count, 'dvě čtení uvnitř okna je jeden let').toBe(1);
+  });
+
+  it('za koncem okna se čte znovu, takže vypínač zabere do sekundy', async () => {
+    let answer = 'first';
+    const { store, calls } = countingStore(() => Promise.resolve(answer));
+    let clock = 1000;
+    const windowed = windowedControlStore(store, 'k', CONTROL_CACHE_TTL_MS, () => clock);
+
+    expect(await windowed.read()).toBe('first');
+    answer = 'second';
+    clock += CONTROL_CACHE_TTL_MS;
+
+    expect(await windowed.read(), 'okno vypršelo, platí nový povel').toBe('second');
+    expect(calls.count).toBe(2);
+  });
+
+  it('souběh se přidá k rozdělanému letu, ne že si každý pošle vlastní', async () => {
+    let release: (value: string | null) => void = () => undefined;
+    const pending = new Promise<string | null>((resolve) => {
+      release = resolve;
+    });
+    const { store, calls } = countingStore(() => pending);
+    const windowed = windowedControlStore(store, 'k', CONTROL_CACHE_TTL_MS, () => 1000);
+
+    // Čtyři sta čtenářů v jednom tiku je ta situace, kterou strop instance
+    // pouští (400 za 10 s). Nad hotovou hodnotou by našli okno prázdné a
+    // vypálili 400 letů; proto se ukládá `Promise`, ne hodnota.
+    const readers = Array.from({ length: 400 }, () => windowed.read());
+    release('{"off":[]}');
+
+    expect(await Promise.all(readers)).toEqual(Array.from({ length: 400 }, () => '{"off":[]}'));
+    expect(calls.count, '400 souběžných čtenářů je jeden let').toBe(1);
+  });
+
+  it('výpadek obchodu se drží celé okno, jinak z něj je fronta letů', async () => {
+    const { store, calls } = countingStore(() => Promise.reject(new Error('store is down')));
+    let clock = 1000;
+    const windowed = windowedControlStore(store, 'k', CONTROL_CACHE_TTL_MS, () => clock);
+
+    await expect(windowed.read()).rejects.toThrow('store is down');
+    await expect(windowed.read(), 'druhý čtenář dostane totéž odmítnutí').rejects.toThrow(
+      'store is down',
+    );
+    expect(calls.count, 'výpadek je jeden pokus za okno, ne pokus na požadavek').toBe(1);
+
+    clock += CONTROL_CACHE_TTL_MS;
+    await expect(windowed.read()).rejects.toThrow('store is down');
+    expect(calls.count, 'za koncem okna se zkusí znovu — výpadek není trvalý').toBe(2);
+  });
+
+  it('dvě prostředí mají dvě okna, takže si povelem nesáhnou na sebe', async () => {
+    const first = countingStore(() => Promise.resolve('a'));
+    const second = countingStore(() => Promise.resolve('b'));
+    const now = () => 1000;
+
+    const production = windowedControlStore(first.store, 'prod', CONTROL_CACHE_TTL_MS, now);
+    const preview = windowedControlStore(second.store, 'preview', CONTROL_CACHE_TTL_MS, now);
+
+    expect(await production.read()).toBe('a');
+    expect(await preview.read(), 'cizí okno není moje okno').toBe('b');
+    expect(first.calls.count).toBe(1);
+    expect(second.calls.count).toBe(1);
+  });
+
+  it('okno má i ta cesta, kterou chodí server — ne jen ta, kterou volá test', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ result: '{"off":["all"]}' }), {
+          headers: { 'content-type': 'application/json' },
+        }),
+    );
+    const store = controlStoreFromEnv(
+      {
+        WORLDSMITH_SPEND_STORE_URL: 'https://s.example.com',
+        WORLDSMITH_SPEND_STORE_TOKEN: 't',
+        VERCEL_ENV: 'production',
+      },
+      fetchImpl as unknown as typeof fetch,
+    );
+    if (store === null) throw new Error('obchod měl vzniknout');
+
+    await store.read();
+    await store.read();
+    await store.read();
+
+    expect(
+      fetchImpl.mock.calls.length,
+      'tři rozhodnutí v témže okně je jeden GET do obchodu',
+    ).toBe(1);
   });
 });

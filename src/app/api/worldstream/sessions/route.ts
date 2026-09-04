@@ -332,6 +332,17 @@ export async function POST(request: Request): Promise<Response> {
     // **Vypínač je první brána, před čtením těla.** Vypnuté dveře nesmí stát
     // víc než jeden `readFileSync` nad souborem o pár řádcích — tělo požadavku
     // je proti tomu až 64 kB, které někdo pošle a my je nepotřebujeme.
+    //
+    // ⚠ **Ta věta byla od `T30-controllever` chvíli nepravdivá a je znovu
+    // pravdivá.** Druhým zdrojem povelu je sdílený obchod, takže čtení umí být
+    // síťový let — a jako první příkaz na neomezených dveřích to byl
+    // zesilovač, kterým šlo vypálit kvótu obchodu (nález nezávislé revize
+    // commitu `316a4f1`, `VERDICT: blocking`). Zavírá to okno
+    // `CONTROL_CACHE_TTL_MS` v `spend-store.ts`: instance vydá nejvýš jeden
+    // `GET` za sekundu, všechno ostatní je pohled do mapy. Pořadí bran proto
+    // zůstává — přeřadit vypínač za strop frekvence by odchozí lety
+    // neohraničilo (strop instance pouští 400 za 10 s, tedy 40 příkazů za
+    // sekundu) a jen by vypnutým dveřím vzalo přednost.
     if ((await killState(process.env)).sessions) {
       logRateLimited('worldstream/sessions', requestId, 'SESSIONS_DISABLED', 'kill switch: sessions');
       return fail(requestId, 503, 'SESSIONS_DISABLED', 'new worlds are switched off right now');

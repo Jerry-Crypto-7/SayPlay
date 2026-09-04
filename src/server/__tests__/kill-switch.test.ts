@@ -34,6 +34,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { killState, killStateFrom, KILL_SWITCHES, type KillState } from '../kill-switch';
 import { readControlFile } from '../control-file';
 import { DEFAULT_CAP_USD, resetProcessSpendCap, spendCapFromEnv } from '../spend-cap';
+// Okno ovládacího klíče je stav modulu: bez tohohle by si dva testy sáhly do
+// téhož letu a druhý by četl odpověď prvního (CONTROL_CACHE_TTL_MS).
+import { __resetControlWindows } from '../spend-store';
 
 const temporary: string[] = [];
 
@@ -55,6 +58,7 @@ afterEach(() => {
   vi.unstubAllEnvs();
   vi.restoreAllMocks();
   resetProcessSpendCap();
+  __resetControlWindows();
 });
 
 /**
