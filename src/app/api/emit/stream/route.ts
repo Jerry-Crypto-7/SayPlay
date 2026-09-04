@@ -266,7 +266,7 @@ export async function POST(request: Request): Promise<Response> {
     // `text/event-stream` je stav 200 dávno u klienta a 503 se už poslat nedá,
     // takže brána o kus níž by uměla leda rámec `stream-fault` — tedy vypnutí
     // vydávané za poruchu potrubí.
-    const disabled = replayDisabled(requestId, 'emit/stream');
+    const disabled = await replayDisabled(requestId, 'emit/stream');
     if (disabled !== null) return disabled;
 
     // **Strop na frekvenci hned za vypínačem a pořád před proudem** — z téhož

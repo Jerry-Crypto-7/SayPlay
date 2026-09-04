@@ -27,7 +27,7 @@ export async function GET(
   // běžet schválně, protože §22.4 chce, aby existující světy zůstaly čitelné.
   // Do `T28-killemit` je nečetl žádný, takže „vypni provoz" zastavil zakládání
   // i sesterský snapshot a autoritativní stav relace vydával dál.
-  if (killState(process.env).snapshots)
+  if ((await killState(process.env)).snapshots)
     return Response.json(
       { error: { code: 'SERVICE_DISABLED', message: 'this deployment is switched off right now' } },
       { status: 503, headers: { 'cache-control': 'no-store' } },

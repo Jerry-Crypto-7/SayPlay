@@ -49,8 +49,21 @@
  * `src/server/__tests__/pipeline.test.ts`.
  */
 
-import { controlFilePath, readControlFile } from './control-file';
-import { ledgerFromEnv, memoryLedger, resetProcessLedger, type SpendLedger } from './spend-store';
+import {
+  type ControlRead,
+  type ControlSource,
+  controlFilePath,
+  readControlFile,
+  readControlFrom,
+} from './control-file';
+import {
+  type ControlStore,
+  controlStoreFromEnv,
+  ledgerFromEnv,
+  memoryLedger,
+  resetProcessLedger,
+  type SpendLedger,
+} from './spend-store';
 
 /** Spotřeba tokenů tak, jak ji hlásí poskytovatel. */
 export interface Usage {
@@ -313,6 +326,14 @@ function parseControl(parsed: Record<string, unknown>, defaults: CapControl): Ca
   return resolvedCalls === undefined ? resolved : { ...resolved, callCap: resolvedCalls };
 }
 
+/**
+ * Co ze čtení povelu vyšlo. `broken` nese větu pro operátora, protože zdroje
+ * jsou od `T30-controllever` dva a odmítnutí musí říct, který z nich to byl.
+ */
+type ControlOutcome =
+  | { readonly kind: 'ok'; readonly control: CapControl }
+  | { readonly kind: 'broken'; readonly detail: string };
+
 export class SpendCap {
   /**
    * **Poslední součty, které kniha vrátila** — ne vlastní účetnictví.
@@ -352,30 +373,87 @@ export class SpendCap {
    * kde se sdílí, je `processSpendCap()` níž, a to je schválně jedno místo.
    */
   readonly #ledger: SpendLedger | null;
+  /**
+   * Druhý zdroj povelu — sdílený klíč v tomtéž obchodě, který drží knihu.
+   *
+   * `null` znamená „není", ne „odmítat": bez sdíleného obchodu platí soubor
+   * a to je celý lokální provoz. Soubor má přednost vždycky
+   * (`readControlFrom()`), takže tenhle zdroj nemůže přebít nic, co je na disku.
+   */
+  readonly #controlStore: ControlStore | null;
 
   constructor(
     defaults: CapControl,
     controlPath: string | null = null,
     ledger: SpendLedger | null = memoryLedger(),
+    controlStore: ControlStore | null = null,
   ) {
     this.#defaults = defaults;
     this.#controlPath = controlPath;
     this.#ledger = ledger;
+    this.#controlStore = controlStore;
   }
 
   /**
-   * Přečte vypínač. `null` znamená rozbitý ovládací soubor, tedy odmítnutí —
-   * chybějící soubor je oproti tomu normální stav a vrací výchozí hodnoty.
+   * Přečte vypínač z **obou zdrojů** — souboru i sdíleného klíče
+   * (`readControlFrom()` říká, který vyhrává a proč).
+   *
+   * `broken` znamená odmítnutí a nese s sebou větu pro operátora, ve které je
+   * poznat, **který ze zdrojů** je rozbitý; chybějící povel je oproti tomu
+   * normální stav a vrací výchozí hodnoty.
    */
-  #control(): CapControl | null {
-    const read = readControlFile(this.#controlPath);
-    if (read.kind === 'absent') return this.#defaults;
-    if (read.kind === 'broken') return null;
-    return parseControl(read.value, this.#defaults);
+  async #control(): Promise<ControlOutcome> {
+    return this.#outcome(await readControlFrom(this.#controlPath, this.#controlStore));
+  }
+
+  /**
+   * Totéž jen ze souboru, synchronně — **jediné, co smí `snapshot()`**.
+   *
+   * `snapshot()` je diagnostika a je synchronní, takže se sdíleného klíče
+   * zeptat nemůže; je to táž hranice, kvůli které se neptá ani účetní knihy
+   * (viz `#seenUsd`). Rozhodnutí o penězích na téhle cestě nestojí žádné —
+   * `reserve()` si čte povel sama a odmítnutí nese `snapshot` složený
+   * z toho, co doopravdy rozhodlo.
+   */
+  #controlFromFile(): ControlOutcome {
+    return this.#outcome(readControlFile(this.#controlPath));
+  }
+
+  #outcome(read: ControlRead): ControlOutcome {
+    if (read.kind === 'absent') return { kind: 'ok', control: this.#defaults };
+    if (read.kind === 'broken') return this.#broken(read.source, read.detail);
+    const parsed = parseControl(read.value, this.#defaults);
+    return parsed === null
+      ? this.#broken(read.source, 'it does not describe a spend cap this server can read')
+      : { kind: 'ok', control: parsed };
+  }
+
+  /**
+   * Věta pro operátora — a ta **musí jmenovat místo, které má opravit**.
+   *
+   * U souboru je tím místem cesta na disku a je v ní schválně: bez ní se
+   * operátor dozví jen to, že je něco rozbité. (Ven ji nepouští
+   * `PUBLIC_REFUSAL` v `/api/generate`, který text zahazuje celý — rozvržení
+   * souborů serveru je věc operátora, ne internetu.) U sdíleného klíče jméno
+   * klíče nese už `readControlFrom()`, protože cesta k němu je adresa obchodu
+   * a ta se do logu neopisuje.
+   */
+  #broken(source: ControlSource, detail: string): ControlOutcome {
+    return {
+      kind: 'broken',
+      detail:
+        source === 'file'
+          ? `spend cap control file ${String(this.#controlPath)} is unreadable or malformed: ${detail}`
+          : detail,
+    };
   }
 
   snapshot(): CapSnapshot {
-    const control = this.#control() ?? { enabled: true, capUsd: 0, callCap: 0 };
+    return this.#snapshotOf(this.#controlFromFile());
+  }
+
+  #snapshotOf(outcome: ControlOutcome): CapSnapshot {
+    const control = outcome.kind === 'ok' ? outcome.control : { enabled: true, capUsd: 0, callCap: 0 };
     const callCap = control.callCap ?? DEFAULT_CALL_CAP;
     return {
       ...control,
@@ -412,21 +490,26 @@ export class SpendCap {
    * jeden vešel. U peněz je to ta správná strana omylu.
    */
   async reserve(worstCaseUsd: number): Promise<Reservation> {
-    const control = this.#control();
-    if (control === null)
+    // **Jedno čtení na celou rezervaci, ne jedno na každou odpověď.** Od
+    // `T30-controllever` je to i síťový let do sdíleného obchodu; číst ho pod
+    // každým `return` znovu by znamenalo tři lety na jedno odmítnutí a povel,
+    // který se během jedné rezervace může změnit.
+    const outcome = await this.#control();
+    if (outcome.kind === 'broken')
       return {
         ok: false,
         reason: 'CONTROL_UNREADABLE',
-        detail: `spend cap control file ${String(this.#controlPath)} is unreadable or malformed`,
-        snapshot: this.snapshot(),
+        detail: outcome.detail,
+        snapshot: this.#snapshotOf(outcome),
       };
+    const { control } = outcome;
 
     if (!Number.isFinite(worstCaseUsd) || worstCaseUsd < 0)
       return {
         ok: false,
         reason: 'INVALID_ESTIMATE',
         detail: `worst case estimate ${String(worstCaseUsd)} is not a finite non-negative number of dollars`,
-        snapshot: this.snapshot(),
+        snapshot: this.#snapshotOf(outcome),
       };
 
     if (this.#ledger === null)
@@ -436,7 +519,7 @@ export class SpendCap {
         detail:
           'no shared spend store is configured and this process cannot show it is ' +
           'the only one, so a per-process cap would hold nothing; no call was made',
-        snapshot: this.snapshot(),
+        snapshot: this.#snapshotOf(outcome),
       };
 
     /**
@@ -472,7 +555,7 @@ export class SpendCap {
         ok: false,
         reason: 'LEDGER_UNAVAILABLE',
         detail: `the ${this.#ledger.id} spend ledger did not answer: ${(thrown as Error).message}`,
-        snapshot: this.snapshot(),
+        snapshot: this.#snapshotOf(outcome),
       };
     }
     this.#seenUsd = totals.usd;
@@ -523,7 +606,7 @@ export class SpendCap {
         detail:
           `the call cap of ${callCap} calls is used up (made ${totals.calls - countedCall}, ` +
           `spent ${(totals.usd - worstCaseUsd).toFixed(6)} USD); this call was not made`,
-        snapshot: this.snapshot(),
+        snapshot: this.#snapshotOf(outcome),
       };
     }
 
@@ -535,7 +618,7 @@ export class SpendCap {
         detail:
           `this call would hold ${totals.usd.toFixed(6)} USD against a cap of ` +
           `${control.capUsd.toFixed(6)} USD; it was not made`,
-        snapshot: this.snapshot(),
+        snapshot: this.#snapshotOf(outcome),
       };
     }
 
@@ -690,5 +773,9 @@ export function spendCapFromEnv(env: Record<string, string | undefined>): SpendC
     { enabled: true, capUsd, callCap },
     controlFilePath(env),
     ledgerFromEnv(env),
+    // **Druhý zdroj ovládacího povelu** (`T30-controllever`): tentýž sdílený
+    // obchod, tatáž předpona. Bez vyplněných `WORLDSMITH_SPEND_STORE_*` je to
+    // `null` a platí jen soubor, přesně jako dřív.
+    controlStoreFromEnv(env),
   );
 }

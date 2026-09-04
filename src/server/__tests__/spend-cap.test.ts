@@ -247,7 +247,7 @@ describe('vypínač mění chování za běhu, bez nové instance', () => {
       expect(cap.snapshot().capUsd).toBe(7);
       expect(cap.snapshot().callCap).toBe(5);
       // A vypínač, kvůli kterému ten soubor vznikl, pořád platí.
-      expect(killState({ WORLDSMITH_CONTROL_FILE: path }).refine).toBe(true);
+      expect((await killState({ WORLDSMITH_CONTROL_FILE: path })).refine).toBe(true);
     });
 
     // ⚠ **Tenhle případ tvrdil do 4. 9. 2026 přesný OPAK a byl přepsán, ne
@@ -270,7 +270,7 @@ describe('vypínač mění chování za běhu, bez nové instance', () => {
       expect(refused.reason).toBe('CONTROL_UNREADABLE');
       // Rozbitý soubor pořád zastavuje placené dveře a nechává běžet čtení —
       // vypínač z něj se tedy čte dál, stejně jako u každého jiného rozbití.
-      expect(killState({ WORLDSMITH_CONTROL_FILE: path }).refine).toBe(true);
+      expect((await killState({ WORLDSMITH_CONTROL_FILE: path })).refine).toBe(true);
     });
 
     // **Napsaná nula je rozhodnutí, ne mlčení.** Zabíjí verzi, která by mez psala
@@ -904,10 +904,25 @@ describe('rezervace, která se nevyrovná, drží peníze — a snapshot to mus�
  * To drží lexikální brána „žádná route si strop nevyrábí sama" o kus výš.
  */
 describe('chladný start rozpočet neresetuje', () => {
-  /** Úložiště jako uzávěr: dva klíče, dvě operace, tentýž protokol jako roura. */
-  function fakeStore() {
+  /**
+   * Úložiště jako uzávěr: dva klíče, dvě operace, tentýž protokol jako roura.
+   *
+   * ⚠ **Od `T30-controllever` umí i ovládací klíč**, protože do téhož obchodu
+   * chodí i čtení vypínačů a stropu (`GET /get/…:control`). Dvojník, který
+   * odpoví jen na rouru, by na tom čtení hodil pipeline-tvar, strop by ho
+   * přečetl jako rozbitý povel a každá rezervace by skončila
+   * `CONTROL_UNREADABLE` — tedy z docela jiného důvodu, než ten test měří.
+   */
+  function fakeStore(control: string | null = null) {
     const keys = new Map<string, number>();
     const fetchImpl = (async (_url: unknown, init?: RequestInit) => {
+      // Ovládací klíč se čte `GET`em, tedy bez těla. `null` je „nikdo
+      // vypínačem nehnul", což je výchozí stav všech případů níž.
+      if (init?.body === undefined)
+        return new Response(JSON.stringify({ result: control }), {
+          headers: { 'content-type': 'application/json' },
+        });
+
       const commands = JSON.parse(String(init?.body)) as [string, string, string][];
       const answers = commands.map(([, key, delta]) => {
         const next = (keys.get(key) ?? 0) + Number(delta);

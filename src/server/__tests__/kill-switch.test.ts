@@ -31,7 +31,7 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { killState, killStateFrom, KILL_SWITCHES } from '../kill-switch';
+import { killState, killStateFrom, KILL_SWITCHES, type KillState } from '../kill-switch';
 import { readControlFile } from '../control-file';
 import { DEFAULT_CAP_USD, resetProcessSpendCap, spendCapFromEnv } from '../spend-cap';
 
@@ -57,13 +57,31 @@ afterEach(() => {
   resetProcessSpendCap();
 });
 
+/**
+ * Tohle je celý smysl toho, že `PAID_OFF` není `EVERYTHING_OFF`. Kdyby rozbitý
+ * povel vypnul i snapshoty, byl by překlep v JSONu úplný výpadek dema — tedy
+ * horší následek než ta vada, kvůli které na vypínač někdo sahal.
+ *
+ * V modulovém rozsahu proto, že od `T30-controllever` se totéž tvrdí o dvou
+ * zdrojích: o rozbitém souboru a o rozbitém sdíleném klíči. Kdyby si každý
+ * z nich měl vlastní kopii, mohly by se rozejít — a přesně to je rozdíl, který
+ * se tady soudit nesmí.
+ */
+function expectPaidOff(state: KillState): void {
+  expect(state.upstream).toBe(true);
+  expect(state.sessions).toBe(true);
+  expect(state.refine).toBe(true);
+  expect(state.snapshots).toBe(false);
+  expect(state.replay, 'rozbitý povel zavřel i neplacené přehrávací dveře').toBe(false);
+}
+
 /* ------------------------------------------------------------------ *
  * Pravidla.
  * ------------------------------------------------------------------ */
 
 describe('bez povelu běží všechno', () => {
-  it('nenastavená cesta nevypne nic', () => {
-    expect(killState({})).toEqual({
+  it('nenastavená cesta nevypne nic', async () => {
+    expect(await killState({})).toEqual({
       upstream: false,
       sessions: false,
       refine: false,
@@ -72,12 +90,12 @@ describe('bez povelu běží všechno', () => {
     });
   });
 
-  it('chybějící soubor nevypne nic — to je normální stav čisté instalace', () => {
-    expect(killState(env(null)).sessions).toBe(false);
+  it('chybějící soubor nevypne nic — to je normální stav čisté instalace', async () => {
+    expect((await killState(env(null))).sessions).toBe(false);
   });
 
-  it('soubor bez klíče `off` nevypne nic, takže dnešní ovládací soubory stropu platí dál', () => {
-    expect(killState(env(JSON.stringify({ enabled: true, capUsd: 5 })))).toEqual({
+  it('soubor bez klíče `off` nevypne nic, takže dnešní ovládací soubory stropu platí dál', async () => {
+    expect(await killState(env(JSON.stringify({ enabled: true, capUsd: 5 })))).toEqual({
       upstream: false,
       sessions: false,
       refine: false,
@@ -148,26 +166,13 @@ describe('každá vrstva se vypíná zvlášť', () => {
 });
 
 describe('rozbitý vypínač zastaví placené dveře a čtení nechá běžet', () => {
-  /**
-   * Tohle je celý smysl toho, že `PAID_OFF` není `EVERYTHING_OFF`. Kdyby
-   * rozbitý soubor vypnul i snapshoty, byl by překlep v JSONu úplný výpadek
-   * dema — tedy horší následek než ta vada, kvůli které na vypínač někdo sahal.
-   */
-  function expectPaidOff(state: ReturnType<typeof killState>): void {
-    expect(state.upstream).toBe(true);
-    expect(state.sessions).toBe(true);
-    expect(state.refine).toBe(true);
-    expect(state.snapshots).toBe(false);
-    expect(state.replay, "rozbitý soubor zavřel i neplacené přehrávací dveře").toBe(false);
-  }
-
-  it('vadný JSON', () => {
-    expectPaidOff(killState(env('{ rozbito')));
+  it('vadný JSON', async () => {
+    expectPaidOff(await killState(env('{ rozbito')));
   });
 
-  it('JSON, který není objekt', () => {
-    expectPaidOff(killState(env('[1, 2, 3]')));
-    expectPaidOff(killState(env('"vypnout"')));
+  it('JSON, který není objekt', async () => {
+    expectPaidOff(await killState(env('[1, 2, 3]')));
+    expectPaidOff(await killState(env('"vypnout"')));
   });
 
   it('`off`, které není seznam', () => {
@@ -189,35 +194,35 @@ describe('rozbitý vypínač zastaví placené dveře a čtení nechá běžet',
   // Nález nezávislé revize 3. 9. 2026: překlep v **hodnotě** selhával zavřeně,
   // překlep v **klíči** otevřeně. `{"offf":["all"]}` je „zastav všechno" a
   // vracelo „nic není vypnuté", bez jediného řádku v logu.
-  it('překlep v klíči, ne v hodnotě — `offf` místo `off`', () => {
-    expectPaidOff(killState(env(JSON.stringify({ offf: ['all'] }))));
-    expectPaidOff(killState(env(JSON.stringify({ OFF: ['all'] }))));
-    expectPaidOff(killState(env(JSON.stringify({ off: ['all'], disable: 'all' }))));
+  it('překlep v klíči, ne v hodnotě — `offf` místo `off`', async () => {
+    expectPaidOff(await killState(env(JSON.stringify({ offf: ['all'] }))));
+    expectPaidOff(await killState(env(JSON.stringify({ OFF: ['all'] }))));
+    expectPaidOff(await killState(env(JSON.stringify({ off: ['all'], disable: 'all' }))));
   });
 
-  it('nečitelný soubor — cesta míří na adresář', () => {
+  it('nečitelný soubor — cesta míří na adresář', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'worldsmith-kill-dir-'));
     temporary.push(dir);
-    expectPaidOff(killState({ WORLDSMITH_CONTROL_FILE: dir }));
+    expectPaidOff(await killState({ WORLDSMITH_CONTROL_FILE: dir }));
   });
 });
 
 describe('vypínač se čte při každém rozhodnutí, ne jednou na startu', () => {
-  it('přepnutí souboru platí od dalšího dotazu', () => {
+  it('přepnutí souboru platí od dalšího dotazu', async () => {
     const path = controlFile(JSON.stringify({ off: [] }));
     const variables = { WORLDSMITH_CONTROL_FILE: path };
-    expect(killState(variables).sessions).toBe(false);
+    expect((await killState(variables)).sessions).toBe(false);
 
     writeFileSync(path, JSON.stringify({ off: ['sessions'] }), 'utf8');
-    expect(killState(variables).sessions).toBe(true);
+    expect((await killState(variables)).sessions).toBe(true);
 
     writeFileSync(path, JSON.stringify({ off: [] }), 'utf8');
-    expect(killState(variables).sessions).toBe(false);
+    expect((await killState(variables)).sessions).toBe(false);
   });
 });
 
 describe('ovládací soubor je jeden, ne dva', () => {
-  it('strop i vypínače čtou tutéž cestu', () => {
+  it('strop i vypínače čtou tutéž cestu', async () => {
     const variables = {
       WORLDSMITH_CONTROL_FILE: controlFile(
         JSON.stringify({ enabled: true, capUsd: 0.42, off: ['refine'] }),
@@ -231,7 +236,7 @@ describe('ovládací soubor je jeden, ne dva', () => {
     // původních 42 by se uřízlo na 5 — tedy na hodnotu k nerozeznání od
     // „soubor se vůbec nepřečetl", což je přesně to, co má tenhle test vyloučit.
     expect(spendCapFromEnv(variables).snapshot().capUsd).toBe(0.42);
-    expect(killState(variables).refine).toBe(true);
+    expect((await killState(variables)).refine).toBe(true);
   });
 
   // P15 T30-offonlyfile. Hlavička nahoře operátorovi slibuje, že do souboru
@@ -248,8 +253,10 @@ describe('ovládací soubor je jeden, ne dva', () => {
       VERCEL_ENV: 'production',
     };
 
-    expect(killState(variables).refine).toBe(true);
-    expect(killState(variables).sessions, 'vypnul se i vypínač, o kterém soubor mlčí').toBe(false);
+    expect((await killState(variables)).refine).toBe(true);
+    expect((await killState(variables)).sessions, 'vypnul se i vypínač, o kterém soubor mlčí').toBe(
+      false,
+    );
 
     const cap = spendCapFromEnv(variables);
     expect(cap.snapshot().capUsd).toBe(DEFAULT_CAP_USD);
@@ -281,7 +288,7 @@ describe('ovládací soubor je jeden, ne dva', () => {
       // ne poznámka, a aserce by měřila něco jiného (P15 `T29-lambdadetect`).
       VERCEL_ENV: 'production',
     };
-    expect(killState(variables)).toEqual({
+    expect(await killState(variables)).toEqual({
       upstream: true,
       sessions: false,
       refine: false,
@@ -294,13 +301,213 @@ describe('ovládací soubor je jeden, ne dva', () => {
 
     // Hodnota `note` je volná: objekt soubor nerozbije. Přes soubor, ne přes
     // `killStateFrom` — seznam klíčů soudí `readControlFile`, a ta by se obešla.
-    const objectNote = killState(env(JSON.stringify({ off: ['upstream'], note: { ticket: 42 } })));
+    const objectNote = await killState(
+      env(JSON.stringify({ off: ['upstream'], note: { ticket: 42 } })),
+    );
     expect(objectNote.upstream).toBe(true);
     expect(objectNote.sessions, 'objekt v `note` rozbil soubor').toBe(false);
 
     // Ale překlep v tom klíči je pořád překlep v klíči: seznam zůstává uzavřený.
-    expect(killState(env(JSON.stringify({ off: ['upstream'], notes: 'x' }))).sessions, '`notes` prošlo').toBe(true);
-    expect(killState(env(JSON.stringify({ off: ['upstream'], Note: 'x' }))).sessions, '`Note` prošlo').toBe(true);
+    expect(
+      (await killState(env(JSON.stringify({ off: ['upstream'], notes: 'x' })))).sessions,
+      '`notes` prošlo',
+    ).toBe(true);
+    expect(
+      (await killState(env(JSON.stringify({ off: ['upstream'], Note: 'x' })))).sessions,
+      '`Note` prošlo',
+    ).toBe(true);
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Druhý zdroj povelu — sdílený klíč (P15 T30-controllever).
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Vypínač bez páky není vypínač.** Do `T30-controllever` se celý ovládací
+ * mechanismus ovládal souborem na disku — jenže na Vercelu je souborový systém
+ * kromě `/tmp` jen pro čtení a `/tmp` je per-instance, takže operátor za
+ * incidentu neměl kam napsat `{"off":["all"]}` tak, aby to viděla celá flotila.
+ * Jediné zastavení byl redeploy, což je při utíkajícím účtu ta nejpomalejší
+ * cesta, jaká existuje.
+ *
+ * Soudí se čtyři věci a jsou to čtyři různá tvrzení:
+ *
+ * 1. povel ze sdíleného klíče **platí** — a to i `off: ["all"]`, bez zápisu na disk;
+ * 2. **soubor má přednost**, takže lokální provoz se nezměnil;
+ * 3. rozbitá hodnota v klíči selhává **zavřeně**, přesně jako rozbitý soubor;
+ * 4. bez sdíleného obchodu **neproběhne jediný síťový let**.
+ */
+describe('povel jde napsat i tam, kde není disk', () => {
+  /** Obchod jako uzávěr: `GET` na ovládací klíč, nic víc tudy nechodí. */
+  function storeFetch(answer: () => Response): { fetchImpl: typeof fetch; calls: string[] } {
+    const calls: string[] = [];
+    const fetchImpl = (async (url: unknown) => {
+      calls.push(String(url));
+      return answer();
+    }) as unknown as typeof fetch;
+    return { fetchImpl, calls };
+  }
+
+  /**
+   * Obchod, který umí obojí: ovládací klíč (`GET`, bez těla) i knihu
+   * (`POST /pipeline`). Do jednoho obchodu jdou od `T30-controllever` obě
+   * čtení, takže dvojník, který zná jen jedno z nich, měří něco jiného, než
+   * si test myslí.
+   */
+  function storeWithControl(control: string | null): typeof fetch {
+    const keys = new Map<string, number>();
+    return (async (_url: unknown, init?: RequestInit) => {
+      if (init?.body === undefined) return json({ result: control });
+      const commands = JSON.parse(String(init.body)) as [string, string, string][];
+      return json(
+        commands.map(([, key, delta]) => {
+          const next = (keys.get(key) ?? 0) + Number(delta);
+          keys.set(key, next);
+          return { result: String(next) };
+        }),
+      );
+    }) as unknown as typeof fetch;
+  }
+
+  function json(body: unknown, status = 200): Response {
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
+
+  /** Prostředí se sdíleným obchodem a bez ovládacího souboru. */
+  const SHARED = {
+    WORLDSMITH_SPEND_STORE_URL: 'https://store.example.com',
+    WORLDSMITH_SPEND_STORE_TOKEN: 'token',
+    VERCEL: '1',
+    VERCEL_ENV: 'production',
+  };
+
+  it('`off: ["all"]` ze sdíleného klíče vypne provoz, aniž se sáhne na disk', async () => {
+    const { fetchImpl, calls } = storeFetch(() =>
+      json({ result: JSON.stringify({ off: ['all'] }) }),
+    );
+
+    expect(await killState(SHARED, fetchImpl)).toEqual({
+      upstream: true,
+      sessions: true,
+      refine: true,
+      snapshots: true,
+      replay: true,
+    });
+    // Klíč leží vedle knihy, pod toutéž předponou — operátor vidí rozpočet
+    // i vypínače na jednom místě.
+    expect(calls).toEqual(['https://store.example.com/get/worldsmith%3Aspend%3Acontrol']);
+  });
+
+  it('preview vypíná preview: klíč nese segment prostředí stejně jako kniha', async () => {
+    const { fetchImpl, calls } = storeFetch(() => json({ result: null }));
+    await killState({ ...SHARED, VERCEL_ENV: 'preview' }, fetchImpl);
+    expect(calls[0]).toContain('worldsmith%3Aspend%3Apreview%3Acontrol');
+  });
+
+  it('nezaložený klíč nevypne nic — normální stav nasazení, na které nikdo nesáhl', async () => {
+    const { fetchImpl } = storeFetch(() => json({ result: null }));
+    expect((await killState(SHARED, fetchImpl)).sessions).toBe(false);
+  });
+
+  it('soubor má přednost, takže lokální provoz zůstal, jak byl', async () => {
+    const { fetchImpl, calls } = storeFetch(() =>
+      json({ result: JSON.stringify({ off: ['all'] }) }),
+    );
+    const withFile = {
+      ...SHARED,
+      WORLDSMITH_CONTROL_FILE: controlFile(JSON.stringify({ off: ['refine'] })),
+    };
+
+    const state = await killState(withFile, fetchImpl);
+    expect(state.refine, 'soubor neplatil').toBe(true);
+    expect(state.snapshots, 'klíč přebil soubor a vypnul i čtení světů').toBe(false);
+    expect(calls, 'na obchod se sáhlo, ačkoli rozhodl soubor').toEqual([]);
+  });
+
+  it('rozbitý SOUBOR se nepřebíjí klíčem — povel, který se nepovedl, je pořád povel', async () => {
+    const { fetchImpl, calls } = storeFetch(() => json({ result: JSON.stringify({ off: [] }) }));
+    const withFile = { ...SHARED, WORLDSMITH_CONTROL_FILE: controlFile('{ rozbito') };
+
+    // Kdyby se na rozbitém souboru padalo dál na klíč, byl by překlep v souboru
+    // cestou, jak se dostat k jinému povelu, než operátor napsal.
+    expectPaidOff(await killState(withFile, fetchImpl));
+    expect(calls).toEqual([]);
+  });
+
+  it('rozbitá hodnota v klíči selhává zavřeně stejně jako rozbitý soubor', async () => {
+    for (const body of ['{ rozbito', '[1, 2, 3]', JSON.stringify({ offf: ['all'] })]) {
+      const { fetchImpl } = storeFetch(() => json({ result: body }));
+      expectPaidOff(await killState(SHARED, fetchImpl));
+    }
+  });
+
+  it('obchod, který neodpoví, je rozbitý povel — ne mlčení', async () => {
+    // Placené dveře stojí (kniha by je o operaci později odmítla stejně),
+    // čtení hotových světů běží dál. To je celý rozdíl mezi PAID_OFF
+    // a EVERYTHING_OFF a tady se platí za to, že ho někdo napsal.
+    expectPaidOff(await killState(SHARED, storeFetch(() => json({ e: 1 }, 500)).fetchImpl));
+    // Odpověď správného tvaru, ale hodnota není řetězec: taky nevíme, co platí.
+    expectPaidOff(
+      await killState(SHARED, storeFetch(() => json({ result: { off: [] } })).fetchImpl),
+    );
+
+    const dead = (() => {
+      throw new Error('connection reset');
+    }) as unknown as typeof fetch;
+    expectPaidOff(await killState(SHARED, dead));
+  });
+
+  it('bez sdíleného obchodu neproběhne jediný síťový let', async () => {
+    const { fetchImpl, calls } = storeFetch(() =>
+      json({ result: JSON.stringify({ off: ['all'] }) }),
+    );
+    // Ani s ovládacím souborem, ani bez něj: druhý zdroj vůbec nevznikne.
+    expect((await killState({}, fetchImpl)).sessions).toBe(false);
+    expect((await killState(env(JSON.stringify({ off: ['sessions'] })), fetchImpl)).sessions).toBe(
+      true,
+    );
+    expect(calls).toEqual([]);
+
+    // A půlka konfigurace není konfigurace — adresa bez tokenu obchod nedělá.
+    await killState({ WORLDSMITH_SPEND_STORE_URL: 'https://store.example.com' }, fetchImpl);
+    expect(calls).toEqual([]);
+  });
+
+  it('strop se ze sdíleného klíče čte taky, a podlaha z prostředí nad ním platí dál', async () => {
+    vi.stubGlobal('fetch', storeWithControl(JSON.stringify({ enabled: true, capUsd: 1000 })));
+    try {
+      // Klíč napsal 1000, prostředí 0,5. Povel strop nezvedá ani ze souboru,
+      // ani z klíče — účinná částka je min(povel, proměnná), viz T30-capfloor.
+      const refused = await spendCapFromEnv({
+        ...SHARED,
+        WORLDSMITH_SPEND_CAP_USD: '0.5',
+      }).reserve(0.9);
+      expect(refused.ok, 'sdílený klíč zvedl strop nad rozpočet z prostředí').toBe(false);
+      if (refused.ok) throw new Error('unreachable');
+      expect(refused.reason).toBe('CAP_EXHAUSTED');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('rozbitý klíč odmítne placené volání a řekne operátorovi, který zdroj to byl', async () => {
+    vi.stubGlobal('fetch', storeWithControl('{ rozbito'));
+    try {
+      const refused = await spendCapFromEnv(SHARED).reserve(0.01);
+      expect(refused.ok).toBe(false);
+      if (refused.ok) throw new Error('unreachable');
+      expect(refused.reason).toBe('CONTROL_UNREADABLE');
+      // Věta pro operátora ho musí poslat na místo, které má opravit. Cesta
+      // k souboru by ho poslala na disk, na kterém žádný soubor není.
+      expect(refused.detail).toContain('shared control key');
+      expect(refused.detail, 'odmítnutí posílá operátora na disk').not.toContain('control file');
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 
@@ -330,10 +537,10 @@ describe('vypínač je zapojený do dveří, ne jen napsaný', () => {
     const { cloudEmitter } = await import('../../app/api/worldstream/sessions/route');
     // Kontrola proti opačnému směru: bez vypínače je tahle konfigurace platná
     // a emitor vzniká. Bez ní by test procházel i na nefunkční konfiguraci.
-    expect(cloudEmitter()).not.toBeNull();
+    expect(await cloudEmitter()).not.toBeNull();
 
     vi.stubEnv('WORLDSMITH_CONTROL_FILE', controlFile(JSON.stringify({ off: ['upstream'] })));
-    expect(cloudEmitter()).toBeNull();
+    expect(await cloudEmitter()).toBeNull();
   });
 
   it('vypnutý refine odmítne preview 503', async () => {

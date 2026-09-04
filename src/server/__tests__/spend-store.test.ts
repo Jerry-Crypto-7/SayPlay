@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  CONTROL_KEY_SUFFIX,
+  controlStoreFromEnv,
   DEFAULT_LEDGER_TIMEOUT_MS,
+  httpControlStore,
   httpLedger,
   isServerless,
   ledgerFromEnv,
@@ -562,5 +565,106 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
     // §22.1 dává na hrubý svět 3 s. Kdyby si čekání na knihu vzalo víc,
     // byl by strop sám tím, co rozpočet přetáhne.
     expect(DEFAULT_LEDGER_TIMEOUT_MS).toBeLessThan(3_000);
+  });
+});
+
+/**
+ * **Ovládací klíč — druhé čtení do téhož obchodu** (P15 T30-controllever).
+ *
+ * Kniha se zapisuje, klíč se čte, a chodí to jednou adresou a jedním tokenem.
+ * Soudí se tvar toho čtení: kam jde, co s sebou nese a co udělá, když obchod
+ * odpoví nesmysl. Co ta odpověď ZNAMENÁ, soudí `kill-switch.test.ts` — tady
+ * jde jen o protokol.
+ */
+describe('ovládací klíč ve sdíleném obchodě', () => {
+  function answer(body: unknown, status = 200): Response {
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
+
+  it('jde `GET`em na klíč vedle knihy a token nese v hlavičce, ne v adrese', async () => {
+    const fetchImpl = vi.fn<typeof fetch>(async () => answer({ result: '{}' }));
+    const store = httpControlStore(
+      { url: 'https://store.example.com', token: 'secret', prefix: 'demo', timeoutMs: 200 },
+      fetchImpl,
+    );
+
+    expect(store.key).toBe(`demo${CONTROL_KEY_SUFFIX}`);
+    expect(await store.read()).toBe('{}');
+
+    const [url, init] = fetchImpl.mock.calls[0];
+    expect(url).toBe('https://store.example.com/get/demo%3Acontrol');
+    expect(String(url), 'token skončil v adrese, tedy i v logu proxy').not.toContain('secret');
+    expect((init?.headers as Record<string, string>).authorization).toBe('Bearer secret');
+  });
+
+  it('má časový limit a nebere odpověď z cache — jinak platí vypínač se zpožděním', async () => {
+    const fetchImpl = vi.fn<typeof fetch>(async () => answer({ result: null }));
+    await httpControlStore(
+      { url: 'https://store.example.com', token: 'secret', prefix: 'demo', timeoutMs: 200 },
+      fetchImpl,
+    ).read();
+
+    // Bez limitu by výpadek obchodu zavěsil KAŽDÉ dveře na dobu, kterou určuje
+    // někdo jiný; cache by z vypínače udělala povel platný od cizího vypršení.
+    expect(fetchImpl.mock.calls[0][1]?.signal).toBeInstanceOf(AbortSignal);
+    expect(fetchImpl.mock.calls[0][1]?.cache).toBe('no-store');
+  });
+
+  it('nezaložený klíč je `null`, ne výjimka — nikdo vypínačem nehnul', async () => {
+    for (const body of [{ result: null }, {}]) {
+      const fetchImpl = vi.fn<typeof fetch>(async () => answer(body));
+      expect(
+        await httpControlStore(
+          { url: 'https://s.example.com', token: 't', prefix: 'demo', timeoutMs: 200 },
+          fetchImpl,
+        ).read(),
+      ).toBeNull();
+    }
+  });
+
+  it('nepovedená odpověď i cizí tvar vyhodí, a bez těla odpovědi', async () => {
+    const failures: [string, () => Response][] = [
+      ['stav 500', () => answer({ detail: 'https://store.example.com/get/demo?token=secret' }, 500)],
+      ['hodnota není řetězec', () => answer({ result: { off: ['all'] } })],
+      ['hodnota je číslo', () => answer({ result: 7 })],
+    ];
+    for (const [why, make] of failures) {
+      const store = httpControlStore(
+        { url: 'https://store.example.com', token: 'secret', prefix: 'demo', timeoutMs: 200 },
+        (async () => make()) as unknown as typeof fetch,
+      );
+      await expect(store.read(), why).rejects.toThrow();
+      // Chybová stránka obchodu nese adresu i token a tenhle text jde do logu.
+      await store.read().catch((thrown: Error) => {
+        expect(thrown.message, why).not.toContain('secret');
+      });
+    }
+  });
+
+  it('bez sdíleného obchodu žádný klíč nevznikne, a půlka konfigurace není konfigurace', () => {
+    expect(controlStoreFromEnv({})).toBeNull();
+    expect(controlStoreFromEnv({ WORLDSMITH_SPEND_STORE_URL: 'https://s.example.com' })).toBeNull();
+    expect(controlStoreFromEnv({ WORLDSMITH_SPEND_STORE_TOKEN: 't' })).toBeNull();
+  });
+
+  it('klíč se dělí podle prostředí přesně jako kniha — jedna hranice, ne dvě', () => {
+    const shared = {
+      WORLDSMITH_SPEND_STORE_URL: 'https://s.example.com',
+      WORLDSMITH_SPEND_STORE_TOKEN: 't',
+    };
+    expect(controlStoreFromEnv({ ...shared, VERCEL_ENV: 'production' })?.key).toBe(
+      `worldsmith:spend${CONTROL_KEY_SUFFIX}`,
+    );
+    expect(controlStoreFromEnv({ ...shared, VERCEL_ENV: 'preview' })?.key).toBe(
+      `worldsmith:spend:preview${CONTROL_KEY_SUFFIX}`,
+    );
+    // Neznámé prostředí dostane vlastní klíč, takže se vypínačem nedá sáhnout
+    // na cizí nasazení jen proto, že se jmenuje jinak.
+    expect(controlStoreFromEnv({ ...shared, VERCEL_ENV: 'staging' })?.key).toBe(
+      `worldsmith:spend:unknown-env${CONTROL_KEY_SUFFIX}`,
+    );
   });
 });

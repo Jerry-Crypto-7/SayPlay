@@ -1092,12 +1092,12 @@ describe('strop souběhu sem nepatří, a je to změřené', () => {
    * Všechno, kam se z `entry` dá dojít po týchž hranách. `stopAt` se do uzávěru
    * nedostane a nechodí se ani skrz něj.
    */
-  function importClosure(entry: string, stopAt: string | null = null): Set<string> {
+  function importClosure(entry: string, stopAt: readonly string[] = []): Set<string> {
     const seen = new Set<string>();
     const stack = [entry];
     while (stack.length > 0) {
       const next = stack.pop() as string;
-      if (seen.has(next) || next === stopAt) continue;
+      if (seen.has(next) || stopAt.includes(next)) continue;
       seen.add(next);
       stack.push(...resolvedImports(next));
     }
@@ -1117,6 +1117,22 @@ describe('strop souběhu sem nepatří, a je to změřené', () => {
   const BODY_MODULE = 'src/http/body.ts';
 
   /**
+   * Druhá výjimka, a je z téhož důvodu (P15 `T30-controllever`).
+   *
+   * Vypínač je od té úlohy `async`: ovládací povel má na nasazení druhý zdroj
+   * — sdílený klíč v obchodě, protože zapisovatelný disk pro celou flotilu na
+   * Vercelu není. Tahle route ho čte `awaitem` **úplně první, před čtením
+   * těla**, takže do drahého úseku nesahá; brána o kus níž to tvrdí zvlášť
+   * a tvrdí to nad textem route, ne nad tímhle seznamem.
+   *
+   * ⚠ **Vyjmout modul znamená vyjmout i to, co si přitáhne** (`control-file`
+   * a `spend-store`) — a je to schválně: uzávěr se dělí podle toho, jestli je
+   * kód v drahém úseku, ne podle toho, jak se jmenuje. Kdyby vypínač někdy
+   * přestal být první branou, ozve se aserce nad textem route, ne tenhle řádek.
+   */
+  const KILL_MODULE = 'src/server/kill-switch.ts';
+
+  /**
    * **Nedosažitelná brána vypadá jako brána.** `T28-editungated` chtěla tyhle
    * dveře pověsit na čítač placených volání v letu. Měření to zamítlo dvakrát:
    * placených volání odsud vede nula (`emitPatch` přehrává zmrazený korpus),
@@ -1132,9 +1148,27 @@ describe('strop souběhu sem nepatří, a je to změřené', () => {
   it('mezi čtením těla a odpovědí není jediný await', () => {
     const routeCode = stripComments(readFileSync(ROUTE, 'utf8'));
 
-    const awaits = routeCode.match(/\bawait\b/g) ?? [];
-    expect(awaits, 'v handleru přibyl await — viz hlavička route').toHaveLength(1);
-    expect(routeCode, 'jediný await už není čtení těla').toContain('raw = await readBody(request);');
+    // **Dělí se to čtením těla, ne počtem tokenů na celý soubor.** Do
+    // `T30-controllever` stačilo počítat `await` v celé route, protože byl
+    // jediný. Od té chvíle je vypínač `async` — ovládací povel má na nasazení
+    // druhý zdroj (sdílený klíč, protože zapisovatelný disk tam není) — takže
+    // by pouhý počet svítil červeně nad awaitem, který stojí **před** drahým
+    // úsekem a nic v něm nepřerušuje. Soudí se proto rovnou to, co hlavička
+    // tvrdí: za čtením těla není ani jeden.
+    const BODY_READ = 'raw = await readBody(request);';
+    expect(routeCode, 'jediný await už není čtení těla').toContain(BODY_READ);
+    const cut = routeCode.indexOf(BODY_READ) + BODY_READ.length;
+
+    const inSpan = routeCode.slice(cut).match(/\bawait\b/g) ?? [];
+    expect(inSpan, 'v drahém úseku za čtením těla přibyl await').toHaveLength(0);
+
+    // A před tělem taky ne víc než ten jeden vypínač: nový `await` kdekoli
+    // v handleru se má ozvat, jen se u něj má dát rozhodnout, kam padl.
+    const beforeBody = routeCode.slice(0, routeCode.indexOf(BODY_READ));
+    expect(beforeBody.match(/\bawait\b/g) ?? [], 'před čtením těla přibyl await').toHaveLength(1);
+    expect(beforeBody, 'ten await před tělem už není vypínač').toContain(
+      'await killState(process.env)',
+    );
     // **`.then(` se soudí i tady, ne jen u volaných** — routovaný nález
     // 4. 9. 2026: vrátit z route promise s připojeným `.then(` přidá nula
     // tokenů `await` a úsek přesto přeruší.
@@ -1144,7 +1178,9 @@ describe('strop souběhu sem nepatří, a je to změřené', () => {
     // obešla revize novým modulem; seznam odvozený jen z přímých importů by
     // obešla **hloubkou** — asynchronní práce o jeden skok za `commit.ts` je
     // z route neviditelná úplně stejně.
-    const span = [...importClosure(ROUTE, BODY_MODULE)].filter((file) => file !== ROUTE);
+    const span = [...importClosure(ROUTE, [BODY_MODULE, KILL_MODULE])].filter(
+      (file) => file !== ROUTE,
+    );
     expect(span, 'rozřešení importů nic nenašlo — brána by soudila prázdno').not.toEqual([]);
     expect(span, 'modul s commitem se z route přestal importovat').toContain(
       'src/app/api/edit/commit.ts',

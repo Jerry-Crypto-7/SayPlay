@@ -97,8 +97,8 @@ export { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody };
  * `route` jde jen do logu, aby se v něm poznalo, které z těch dvou cest se to
  * týká.
  */
-export function replayDisabled(requestId: string, route: string): Response | null {
-  if (!killState(process.env).replay) return null;
+export async function replayDisabled(requestId: string, route: string): Promise<Response | null> {
+  if (!(await killState(process.env)).replay) return null;
   logRateLimited(route, requestId, 'REPLAY_DISABLED', 'kill switch: all');
   return Response.json(
     {
@@ -189,7 +189,7 @@ export async function POST(request: Request): Promise<Response> {
   const requestId = randomUUID();
 
   return withRequest(requestId, async () => {
-    const disabled = replayDisabled(requestId, 'emit');
+    const disabled = await replayDisabled(requestId, 'emit');
     if (disabled !== null) return disabled;
 
     // Strop na frekvenci, pořád před čtením těla — táž mez a totéž odůvodnění

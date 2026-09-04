@@ -423,3 +423,133 @@ export function ledgerFromEnv(
  * a odmítnutí je u peněz levnější než volání naslepo.
  */
 export const DEFAULT_LEDGER_TIMEOUT_MS = 2_000;
+
+/**
+ * **Druhé místo, odkud se čte ovládací soubor** (P15 `T30-controllever`).
+ *
+ * Vypínače i strop se do `T30-controllever` ovládaly výhradně souborem na
+ * disku (`control-file.ts` říká, proč souborem a ne routou). Na Vercelu je ale
+ * souborový systém **jen pro čtení** kromě `/tmp`, a `/tmp` je per-instance:
+ * operátor tedy za incidentu neměl kam napsat `{"off":["all"]}` tak, aby to
+ * viděla celá flotila. Vypínač existoval v kódu a chyběla mu páka.
+ *
+ * Klíč je proto **druhý zdroj čtení, ne třetí ovládací povrch**. Je to tentýž
+ * obchod, který od `T29` drží účetní knihu, tatáž předpona (`storePrefix()`),
+ * tentýž token — a hlavně **týž obsah**: do klíče se píše přesně ten JSON,
+ * který by jinak ležel v souboru, takže pravidla o uzavřeném seznamu klíčů,
+ * o rozbitém souboru i o podlaze stropu platí beze změny. Soubor si drží
+ * přednost, aby lokální provoz a `next start` zůstaly, jak byly.
+ *
+ * **Předpona je táž jako u knihy schválně.** Preview tím vypíná preview
+ * a produkce produkci; jedna kniha na prostředí a jeden vypínač na prostředí
+ * je jedna hranice, ne dvě, které se můžou rozejít.
+ */
+export interface ControlStore {
+  /** Jméno do diagnostiky. Ven nikdy nejde. */
+  readonly id: string;
+  /** Klíč, ze kterého se čte. Do diagnostiky a do testů, ven nejde. */
+  readonly key: string;
+  /**
+   * Text uloženého ovládacího klíče, nebo `null`, když klíč neexistuje.
+   *
+   * `null` je „nikdo vypínačem nehnul", tedy totéž co chybějící soubor.
+   * Vyhozená výjimka znamená „nevím, co je vypnuté", a volající ji překládá na
+   * **rozbitý ovládací soubor** — tedy placené dveře stojí a čtení běží dál.
+   */
+  read(): Promise<string | null>;
+}
+
+/**
+ * Přípona klíče, pod kterým ovládací JSON v obchodě bydlí.
+ *
+ * Vedle `…:usd` a `…:calls`, které drží knihu. Tři klíče na jednu předponu,
+ * takže operátor, který se dívá do konzole úložiště, vidí rozpočet i vypínače
+ * pohromadě.
+ */
+export const CONTROL_KEY_SUFFIX = ':control';
+
+/**
+ * Kolik se čeká na ovládací klíč — **desetina toho, co na knihu**.
+ *
+ * Kniha je ta operace, kvůli které se platí (`DEFAULT_LEDGER_TIMEOUT_MS`, 2 s);
+ * ovládací klíč je proti tomu **brána před prací**, a to na každých veřejných
+ * dveřích včetně čtecích. Dvě sekundy by na nich znamenaly, že výpadek
+ * úložiště přidá dvě sekundy ke každému požadavku, který se pak stejně
+ * odmítne — z rozpočtu §22.1 na hrubý svět (3 s) by nezbylo nic.
+ *
+ * 200 ms je nad síťovým letem do téhož regionu (`vercel.json` pinuje `fra1`)
+ * o řád a pod tím, co porotce postřehne. Vyprší-li, čte se to jako rozbitý
+ * ovládací soubor: placené dveře stojí (kniha by je stejně odmítla o operaci
+ * později), čtení hotových světů běží dál.
+ */
+export const DEFAULT_CONTROL_TIMEOUT_MS = 200;
+
+export interface HttpControlStoreConfig {
+  /** Základ REST adresy úložiště. Bez koncového lomítka. */
+  readonly url: string;
+  readonly token: string;
+  /** Táž předpona jako u knihy. Klíč je `${prefix}${CONTROL_KEY_SUFFIX}`. */
+  readonly prefix: string;
+  readonly timeoutMs: number;
+}
+
+/** Ovládací klíč ve sdíleném úložišti přes REST. */
+export function httpControlStore(
+  config: HttpControlStoreConfig,
+  fetchImpl: typeof fetch = fetch,
+): ControlStore {
+  const key = `${config.prefix}${CONTROL_KEY_SUFFIX}`;
+
+  return {
+    id: 'http',
+    key,
+    async read() {
+      const response = await fetchImpl(`${config.url}/get/${encodeURIComponent(key)}`, {
+        headers: { authorization: `Bearer ${config.token}` },
+        // **Bez cache.** Vypínač, který platí až od vypršení cizí cache, není
+        // vypínač — týž důvod, proč se soubor čte při každém rozhodnutí znovu.
+        cache: 'no-store',
+        signal: AbortSignal.timeout(config.timeoutMs),
+      });
+
+      if (!response.ok)
+        // Bez těla odpovědi, ze stejného důvodu jako u knihy: chybová stránka
+        // úložiště nese adresu i klíč požadavku a tenhle text jde do logu.
+        throw new Error(`control store answered ${String(response.status)}`);
+
+      const parsed: unknown = await response.json();
+      const result = (parsed as { result?: unknown }).result;
+      // `null` i chybějící pole znamenají „klíč není", tedy normální stav
+      // nasazení, na které nikdo nesáhl.
+      if (result === null || result === undefined) return null;
+      if (typeof result !== 'string')
+        throw new Error('control store answered a shape this server cannot read');
+      return result;
+    },
+  };
+}
+
+/**
+ * Ovládací klíč podle prostředí, nebo `null`, když se s nikým nesdílí.
+ *
+ * `null` tady znamená **„není druhý zdroj"**, ne „odmítat" — na rozdíl od
+ * `ledgerFromEnv()`. Je to schválně: bez sdíleného obchodu platí soubor a to
+ * je celý lokální provoz. Zavřené selhání bez sdíleného stavu už drží kniha,
+ * a dvě místa, která ho drží, by znamenala dvě pravidla.
+ */
+export function controlStoreFromEnv(
+  env: Record<string, string | undefined>,
+  fetchImpl: typeof fetch = fetch,
+): ControlStore | null {
+  const shared = sharedStoreFromEnv(env);
+  if (shared === null) return null;
+  return httpControlStore(
+    {
+      url: shared.url,
+      token: shared.token,
+      prefix: storePrefix(env),
+      timeoutMs: DEFAULT_CONTROL_TIMEOUT_MS,
+    },
+    fetchImpl,
+  );
+}

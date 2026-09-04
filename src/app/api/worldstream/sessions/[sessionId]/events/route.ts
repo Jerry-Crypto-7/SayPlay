@@ -219,7 +219,7 @@ export async function GET(
   // zastaví zdroj rámců (relace, refine i upstream stojí) a proudy dojedou na
   // koncové fázi nebo na odchodu klienta. Tvrdit víc by znamenalo slíbit
   // vypnutí, které se nekoná.
-  if (killState(process.env).snapshots)
+  if ((await killState(process.env)).snapshots)
     return Response.json(
       { error: { code: 'SERVICE_DISABLED', message: 'this deployment is switched off right now' } },
       { status: 503, headers: { 'cache-control': 'no-store' } },

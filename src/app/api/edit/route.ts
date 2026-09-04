@@ -233,7 +233,7 @@ export async function POST(request: Request): Promise<Response> {
      * jeden požadavek stojí medián 15,3 ms synchronního CPU na smyčce a bez
      * tohohle řádku byl jediným zastavením redeploy.
      */
-    if (killState(process.env).replay) {
+    if ((await killState(process.env)).replay) {
       logRateLimited('edit', requestId, 'REPLAY_DISABLED', 'kill switch: all');
       return Response.json(
         {

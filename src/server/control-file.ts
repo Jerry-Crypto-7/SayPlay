@@ -20,6 +20,13 @@
  * o tom, co znamená rozbitý soubor. Proto je čtení tady a soubor je jeden:
  * `WORLDSMITH_CONTROL_FILE`.
  *
+ * ⚠ **Od P15 `T30-controllever` jsou ZDROJE dva, povel je pořád jeden.** Na
+ * Vercelu je disk kromě `/tmp` jen pro čtení a `/tmp` je per-instance, takže
+ * tam soubor napsat nejde a vypínač zůstával bez páky. Druhým zdrojem je klíč
+ * ve sdíleném obchodě, který drží účetní knihu; nese přesně týž JSON a soubor
+ * má před ním přednost. Celé pravidlo i jeho cena jsou u `readControlFrom()`
+ * dole — všechno v tomhle odstavci a v tabulce níž platí pro obojí.
+ *
  * ## Tři odpovědi, ne dvě
  *
  * | Stav souboru | Odpověď | Co si s tím počne volající |
@@ -41,6 +48,8 @@
  */
 
 import { readFileSync } from 'node:fs';
+
+import { type ControlStore, controlStoreFromEnv } from './spend-store';
 
 /**
  * Jediné klíče, které ovládací soubor smí nést — obě jeho půlky dohromady.
@@ -90,12 +99,58 @@ import { readFileSync } from 'node:fs';
  */
 export const CONTROL_KEYS = ['enabled', 'capUsd', 'callCap', 'off', 'note'] as const;
 
+/**
+ * Odkud ten obsah přišel. Jde to jen do diagnostiky operátora — ven nikdy.
+ *
+ * Rozlišuje se proto, že od `T30-controllever` jsou zdroje dva a **odmítnutí
+ * musí říct, který z nich je rozbitý**. Věta „ovládací soubor je nečitelný"
+ * posílala operátora na disk, na kterém na Vercelu žádný soubor není, zatímco
+ * povel doopravdy leží ve sdíleném klíči.
+ */
+export type ControlSource = 'file' | 'store';
+
 export type ControlRead =
   /** Nikdo vypínačem nehnul. Platí výchozí hodnoty volajícího. */
   | { readonly kind: 'absent' }
   /** Někdo vypínačem hnul a rozbil ho. Volající selhává zavřeně. */
-  | { readonly kind: 'broken'; readonly detail: string }
-  | { readonly kind: 'read'; readonly value: Record<string, unknown> };
+  | { readonly kind: 'broken'; readonly source: ControlSource; readonly detail: string }
+  | {
+      readonly kind: 'read';
+      readonly source: ControlSource;
+      readonly value: Record<string, unknown>;
+    };
+
+/**
+ * Obsah ovládacího povelu, ať přišel odkudkoli.
+ *
+ * **Jedno místo, kde se soudí tvar** — soubor i sdílený klíč nesou přesně týž
+ * JSON a musí z nich plynout přesně totéž. Dvě kopie téhle validace by se
+ * rozešly a operátor by dostal jiný verdikt podle toho, kam povel napsal.
+ */
+function parseControlBody(raw: string, source: ControlSource): ControlRead {
+  const where = source === 'file' ? 'control file' : 'shared control key';
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return { kind: 'broken', source, detail: `${where} is not JSON` };
+  }
+  // Pole je taky `object` a `null` taky. Ani jedno není ovládací soubor.
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed))
+    return { kind: 'broken', source, detail: `${where} is not a JSON object` };
+
+  const known = new Set<string>(CONTROL_KEYS);
+  const unknown = Object.keys(parsed).filter((key) => !known.has(key));
+  if (unknown.length > 0)
+    return {
+      kind: 'broken',
+      source,
+      detail: `${where} has unknown keys: ${unknown.join(', ')} (allowed: ${CONTROL_KEYS.join(', ')})`,
+    };
+
+  return { kind: 'read', source, value: parsed as Record<string, unknown> };
+}
 
 export function readControlFile(path: string | null): ControlRead {
   if (path === null) return { kind: 'absent' };
@@ -107,28 +162,14 @@ export function readControlFile(path: string | null): ControlRead {
     const error = thrown as NodeJS.ErrnoException;
     return error.code === 'ENOENT'
       ? { kind: 'absent' }
-      : { kind: 'broken', detail: `control file could not be read: ${error.code ?? 'unknown error'}` };
+      : {
+          kind: 'broken',
+          source: 'file',
+          detail: `control file could not be read: ${error.code ?? 'unknown error'}`,
+        };
   }
 
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    return { kind: 'broken', detail: 'control file is not JSON' };
-  }
-  // Pole je taky `object` a `null` taky. Ani jedno není ovládací soubor.
-  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed))
-    return { kind: 'broken', detail: 'control file is not a JSON object' };
-
-  const known = new Set<string>(CONTROL_KEYS);
-  const unknown = Object.keys(parsed).filter((key) => !known.has(key));
-  if (unknown.length > 0)
-    return {
-      kind: 'broken',
-      detail: `control file has unknown keys: ${unknown.join(', ')} (allowed: ${CONTROL_KEYS.join(', ')})`,
-    };
-
-  return { kind: 'read', value: parsed as Record<string, unknown> };
+  return parseControlBody(raw, 'file');
 }
 
 /**
@@ -161,4 +202,86 @@ export function controlFilePath(env: Record<string, string | undefined>): string
       .map((value) => value?.trim())
       .find((value) => value !== undefined && value !== '') ?? null
   );
+}
+
+/**
+ * **Povel odkudkoli: nejdřív soubor, pak sdílený klíč** (P15 `T30-controllever`).
+ *
+ * Do `T30-controllever` byl zdroj jeden a byl to soubor na disku. Na Vercelu je
+ * ale souborový systém **jen pro čtení** kromě `/tmp`, a `/tmp` je per-instance,
+ * takže operátor za incidentu neměl kam napsat `{"off":["all"]}` tak, aby to
+ * viděla celá flotila: vypínač existoval v kódu a chyběla mu páka. Druhým
+ * zdrojem je proto tentýž sdílený obchod, který od `T29` drží účetní knihu
+ * (`spend-store.ts` → `controlStoreFromEnv()`).
+ *
+ * ## Soubor má přednost, a je to pravidlo o jednom směru
+ *
+ * | Soubor | Sdílený klíč | Platí |
+ * |---|---|---|
+ * | je | cokoli | **soubor** |
+ * | rozbitý | cokoli | **soubor**, tedy zavřené selhání |
+ * | není | je | klíč |
+ * | není | není, nebo se nesdílí | nikdo vypínačem nehnul |
+ *
+ * **Soubor vyhrává i když je rozbitý**, schválně: kdyby se na rozbitém souboru
+ * padalo dál na klíč, byl by překlep v souboru cestou, jak se dostat k jinému
+ * povelu, než operátor napsal. Rozbitý povel je povel, který se nepovedl, a ten
+ * se nepřebíjí druhým zdrojem.
+ *
+ * Lokální provoz a `next start` proto zůstávají přesně, jak byly: kdo soubor
+ * má, čte soubor; kdo sdílený obchod nemá, druhý zdroj vůbec nevznikne a
+ * neproběhne jediný síťový let.
+ *
+ * ## Cena je jeden síťový let na požadavek, a je zaplacená vědomě
+ *
+ * Vypínač se čte **při každém rozhodnutí**, takže na nasazení se sdíleným
+ * obchodem stojí každá brána jeden `GET` (limit `DEFAULT_CONTROL_TIMEOUT_MS`,
+ * 200 ms). Doktrína „vypnuté dveře nesmí stát víc než `readFileSync`" tím
+ * zdražila. Alternativa byla synchronně čtená cache obnovovaná jinde — ta by
+ * síťový let ušetřila a zavedla **zastaralost do páky, kterou se sahá za
+ * incidentu**. Rozhodnuto 4. 9. 2026 pro čerstvost: je to jediná páka, kterou
+ * se zastavuje utrácení a veřejné vydávání dat.
+ *
+ * **Výpadek obchodu se čte jako rozbitý povel**, ne jako mlčení. Placené dveře
+ * tím stojí (kniha by je o operaci později odmítla stejně, `LEDGER_UNAVAILABLE`)
+ * a čtení hotových světů běží dál — přesně to, co §22.4 chrání jmenovitě.
+ */
+export async function readControlFrom(
+  path: string | null,
+  store: ControlStore | null,
+): Promise<ControlRead> {
+  const fromFile = readControlFile(path);
+  if (fromFile.kind !== 'absent') return fromFile;
+  if (store === null) return { kind: 'absent' };
+
+  let raw: string | null;
+  try {
+    raw = await store.read();
+  } catch (thrown) {
+    return {
+      kind: 'broken',
+      source: 'store',
+      // Jméno klíče ano, adresa a token ne: tenhle text čte operátor v logu a
+      // potřebuje vědět, do kterého klíče se dívat. Ven ho pouští jedině
+      // `PUBLIC_REFUSAL` v `/api/generate`, který ho zahazuje celý.
+      detail: `shared control key ${store.key} could not be read: ${(thrown as Error).message}`,
+    };
+  }
+
+  // Klíč, který nikdo nezaložil, je normální stav nasazení, na které se
+  // nesáhlo — totéž co chybějící soubor.
+  return raw === null ? { kind: 'absent' } : parseControlBody(raw, 'store');
+}
+
+/**
+ * Oba zdroje poskládané z prostředí. Jediné, co volá běžící server.
+ *
+ * `fetchImpl` je parametr ze stejného důvodu jako `env`: bez něj by se čtení
+ * sdíleného klíče nedalo otestovat, aniž by si test sahal na síť.
+ */
+export function readControl(
+  env: Record<string, string | undefined>,
+  fetchImpl: typeof fetch = fetch,
+): Promise<ControlRead> {
+  return readControlFrom(controlFilePath(env), controlStoreFromEnv(env, fetchImpl));
 }

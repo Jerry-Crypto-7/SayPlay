@@ -718,7 +718,7 @@ describe('strop utrácení placené větve', () => {
 
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
     try {
-      const emit = cloudEmitter();
+      const emit = await cloudEmitter();
       expect(emit).not.toBeNull();
       await expect(
         emit!({ model: 'claude-opus-5', system: 'system', user: 'a salt flat with one iron mast' }),

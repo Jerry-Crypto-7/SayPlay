@@ -13,9 +13,14 @@
  *
  * ## Jak se to ovládá
  *
- * Jedním souborem, tím samým, kterým se ovládá strop utrácení
- * (`control-file.ts` říká proč souborem a ne routou). Klíč je `off` a je to
- * **seznam jmen**, ne čtyři booleany:
+ * Jedním povelem, tím samým, kterým se ovládá strop utrácení
+ * (`control-file.ts` říká proč souborem a ne routou). Napsat ho jde na dvě
+ * místa a nese přesně týž JSON: **soubor na disku** (lokální provoz,
+ * `next start`) a **sdílený klíč** v tomtéž obchodě, který drží účetní knihu —
+ * ten je jediná páka, která na Vercelu za incidentu funguje, protože tam žádný
+ * zapisovatelný disk pro celou flotilu není. Soubor má přednost; celé pravidlo
+ * je u `readControlFrom()`. Klíč je `off` a je to **seznam jmen**, ne čtyři
+ * booleany:
  *
  * ```json
  * { "enabled": true, "capUsd": 5, "off": ["upstream", "refine"] }
@@ -34,10 +39,10 @@
  *
  * ## Kam se selhává
  *
- * | Stav souboru | Co se vypne |
+ * | Stav povelu | Co se vypne |
  * |---|---|
- * | není | nic |
- * | rozbitý, nebo `off` obsahuje neznámé jméno | **upstream, relace a refine** — snapshoty čtou dál |
+ * | není ani soubor, ani klíč | nic |
+ * | rozbitý, `off` obsahuje neznámé jméno, nebo obchod neodpověděl | **upstream, relace a refine** — snapshoty čtou dál |
  * | `off: ["all"]` | úplně všechno, i snapshoty a přehrávací dveře |
  *
  * ⚠ **„Úplně všechno" je tvrzení o dveřích, ne o téhle funkci, takže ho hlídá
@@ -66,7 +71,7 @@
  * (což je ta nevratná škoda) a nechají čitelné to, co už je zaplacené.
  */
 
-import { controlFilePath, readControlFile } from './control-file';
+import { readControl } from './control-file';
 
 /**
  * Jména, která smí stát v `off`. `all` je zkratka za všechna ostatní **plus
@@ -174,10 +179,23 @@ export function killStateFrom(value: Record<string, unknown>): KillState {
 /**
  * Co je vypnuté **právě teď**. Čte se při každém rozhodnutí, ne jednou na
  * startu — vypínač, který platí až od restartu, není vypínač.
+ *
+ * ⚠ **Od `T30-controllever` je to `async`, a je to cena za páku na nasazení.**
+ * Zdroje jsou dva — soubor na disku a sdílený klíč (`readControl()` říká, který
+ * vyhrává a proč) — a ten druhý je síťový let, protože na Vercelu žádný
+ * zapisovatelný disk pro celou flotilu není. Volajícím to nepřidalo nic než
+ * `await`: všech deset dveří, které vypínač čtou, už v `async` funkcích bylo.
+ *
+ * **Bez sdíleného obchodu se nic nezmění a žádný let neproběhne** — lokální
+ * provoz i `next start` čtou dál jen soubor.
  */
-export function killState(env: Record<string, string | undefined>): KillState {
-  const read = readControlFile(controlFilePath(env));
-  if (read.kind === 'absent') return NOTHING_OFF;
-  if (read.kind === 'broken') return PAID_OFF;
-  return killStateFrom(read.value);
+export function killState(
+  env: Record<string, string | undefined>,
+  fetchImpl: typeof fetch = fetch,
+): Promise<KillState> {
+  return readControl(env, fetchImpl).then((read) => {
+    if (read.kind === 'absent') return NOTHING_OFF;
+    if (read.kind === 'broken') return PAID_OFF;
+    return killStateFrom(read.value);
+  });
 }

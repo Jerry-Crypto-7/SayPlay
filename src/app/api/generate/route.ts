@@ -80,13 +80,13 @@ export const runtime = 'nodejs';
  * 503 `BRANCH_UNCONFIGURED`. Táž doktrína jako u rozbitého vypínače stropu
  * (`src/server/spend-cap.ts`) — vadné nastavení nikdy neznamená tichý průchod.
  */
-function branchFor(env: NodeJS.ProcessEnv): GenerationBranch {
+async function branchFor(env: NodeJS.ProcessEnv): Promise<GenerationBranch> {
   if (env.WORLDSMITH_BRANCH !== 'live') return mockBranch();
   // **Vypnutý upstream se chová jako živá větev bez klíče**, tedy 503, ne tichý
   // sjezd na mock. Doktrína o řádek výš platí i pro vypínač: kdyby se vypnutý
   // model nahradil mockem, vydával by tenhle server mock za model a operátor,
   // který sáhl na vypínač kvůli účtu, by se to nedozvěděl.
-  if (killState(env).upstream) return upstreamBranch(null);
+  if ((await killState(env)).upstream) return upstreamBranch(null);
   return upstreamBranch(upstreamConfigFromEnv(env));
 }
 
@@ -588,7 +588,7 @@ export async function POST(request: Request): Promise<Response> {
     let result;
     try {
       result = await runPipeline((body as { prompt?: unknown } | null)?.prompt, {
-        branch: branchFor(process.env),
+        branch: await branchFor(process.env),
         cap: CAP,
         grammar: grammar.value,
       });

@@ -72,7 +72,7 @@ export async function POST(
   // commitovat by znamenalo, že se svět dál mění — jen z previewů, které stihly
   // vzniknout dřív. Vypínač se čte tady, protože tahle route je druhé rozhodnutí
   // člověka a mezi ním a preview může uběhnout libovolně dlouhá doba.
-  if (killState(process.env).refine)
+  if ((await killState(process.env)).refine)
     return fail(503, 'REFINE_DISABLED', 'changing worlds is switched off right now');
 
   /**

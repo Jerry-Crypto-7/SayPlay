@@ -102,7 +102,7 @@ export async function POST(
   context: { params: Promise<{ sessionId: string }> },
 ): Promise<Response> {
   const { sessionId } = await context.params;
-  return createChange(request, sessionId, cloudEmitter());
+  return createChange(request, sessionId, await cloudEmitter());
 }
 
 /**
@@ -124,7 +124,7 @@ export async function createChange(
   return withRequest(requestId, async () => {
     // Vypínač `refine` je první brána, před čtením těla — táž úvaha jako
     // u zakládání relace: vypnuté dveře nesmí stát víc než přečtení souboru.
-    if (killState(process.env).refine) {
+    if ((await killState(process.env)).refine) {
       logRateLimited('worldstream/changes', requestId, 'REFINE_DISABLED', 'kill switch: refine');
       return fail(requestId, 503, 'REFINE_DISABLED', 'changing worlds is switched off right now');
     }

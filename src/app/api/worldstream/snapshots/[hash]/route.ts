@@ -54,7 +54,7 @@ export async function GET(
 ): Promise<Response> {
   // **Jediný vypínač, který na tyhle dveře sahá, je `all`.** Rozbitý ovládací
   // soubor je nechá běžet schválně; viz `kill-switch.ts`.
-  if (killState(process.env).snapshots)
+  if ((await killState(process.env)).snapshots)
     return Response.json(
       { error: { code: 'SERVICE_DISABLED', message: 'this deployment is switched off right now' } },
       { status: 503 },
