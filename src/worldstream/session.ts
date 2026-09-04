@@ -402,9 +402,16 @@ function build(seed: SessionSeed): GenerationSession {
 }
 
 /**
- * Nová relace. Vzniká **až po moderaci a admission** (T16), takže první, co
- * udělá, je rámec `session.accepted` — relace bez něj by v proudu začínala
- * uprostřed.
+ * Nová relace. Vzniká **až po moderaci a po čítači souběžných placených
+ * volání**, takže první, co udělá, je rámec `session.accepted` — relace bez
+ * něj by v proudu začínala uprostřed.
+ *
+ * ⚠ **Fronta `src/server/admission.ts` v tom NENÍ**, ačkoli tu do 4. 9. 2026
+ * stálo, že ano. `3235f5b` (`T22-admissiondead`) obě volání `admit()`
+ * odstranil, protože ta brána nemohla odmítnout nikdy nikoho: rozhodovala po
+ * 12 s čekání, kdežto čtení těla má vlastní strop `BODY_DEADLINE_MS = 5 000`.
+ * Modul zůstal v repu jako napsaná, **nezapojená** práce — jestli se zapojí
+ * s deadlinem předaným až k poskytovateli, rozhoduje `T28`.
  */
 export function createSession(options: SessionOptions): GenerationSession {
   const log = createEventLog(options.sessionId, { now: options.now });

@@ -121,9 +121,14 @@ export interface ClientOptions {
  * Věta → relace. Vrací adresy, ne stav: generace teprve začala a všechno, co
  * se o ní dá vědět, teče proudem.
  *
- * Odmítnutí (moderace, admission, souběh) se sem vrací jako výjimka s kódem
- * serveru, protože 4xx a 5xx tady **nejsou** proud rámců a tichý `null` by
- * z odmítnuté věty udělal větu, která se nikdy nenačetla.
+ * Odmítnutí (moderace, souběh placených volání, strop frekvence, vypínač) se
+ * sem vrací jako výjimka s kódem serveru, protože 4xx a 5xx tady **nejsou**
+ * proud rámců a tichý `null` by z odmítnuté věty udělal větu, která se nikdy
+ * nenačetla.
+ *
+ * ⚠ **Fronta `admission.ts` mezi nimi není** — do 4. 9. 2026 se tu jmenovala.
+ * `3235f5b` ji z obojích dveří odstranil jako nedosažitelnou; je to napsaná,
+ * nezapojená práce.
  */
 export async function openWorldstreamSession(
   prompt: string,
