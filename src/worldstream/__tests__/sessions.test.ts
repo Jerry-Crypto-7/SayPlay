@@ -496,6 +496,9 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
    */
   it('osm podvržených relací s drženým proudem drží oběti kbelík plný i po třiceti dnech', () => {
     const TŘICET_DNÍ = 30 * 24 * 60 * 60 * 1000;
+    // **Práh je část útoku, ne kulisa** — nezávislá revize 4. 9. 2026. Pod
+    // `QUOTA_ENGAGES_AT` kvóta neodmítá vůbec, takže osm podvržených POSTů
+    // samo o sobě neblokuje nikoho; útočník musí registr na prahu i držet.
     naPráh();
     for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
       // Útočník píše IP oběti a na každou svou relaci otevře proud — dveře

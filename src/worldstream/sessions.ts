@@ -143,16 +143,23 @@ export const MAX_LIVE_SESSIONS = 64;
  * s její IP naplní její kbelík), a kdo si vymyslí 64 hlaviček po jedné relaci,
  * srovná kbelíky na jedničku a strop registru vybírá zase starým pořadím.
  *
- * ⚠ **A jak dlouho ten blok trvá: dokud běží proces, ne hodinu**
- * (`T16-idleforever`, změřeno 4. 9. 2026 sondou v +1 h, +24 h i +30 dní).
- * `idleFor()` obnovuje `since` při každém zametení, dokud `watchers > 0`,
- * a `GET /events` žádné ověření nemá — osm podvržených POSTů plus osm
- * držených proudů tedy oběti kbelík nikdy neuvolní. Drží to na fázi
- * `world`: proud nad `failed` si `events/route.ts` zavře sám na koncovém
- * rámci, kdežto `advance('complete')` nemá v provozu volajícího, takže
- * **úspěšná generace končí ve `world` a její proud zůstává otevřený.**
+ * ⚠ **A jak dlouho ten blok trvá: dokud běží proces, ne hodinu — ale jen nad
+ * prahem** (`T16-idleforever`, změřeno 4. 9. 2026 v +1 h, +24 h i +30 dní,
+ * meze doměřila nezávislá revize téhož dne). `idleFor()` obnovuje `since` při
+ * každém zametení, dokud `watchers > 0`, a `GET /events` žádné ověření nemá,
+ * takže oběti kbelík nezestárne. **Osm podvržených POSTů samo o sobě ale
+ * neblokuje nikoho** — pod `QUOTA_ENGAGES_AT` kvóta vůbec neodmítá. Skutečná
+ * cena útoku je **držet registr na prahu**, tedy dalších ~32 živých relací
+ * se sledovaným proudem; až nad ním těch osm něco zavře. **Shora to má mez
+ * taky:** nad 64 relacemi je kbelík oběti ten **největší**, takže
+ * `nejdražšíKbelík()` sáhne po podvržené relaci a kbelík se každým přetečením
+ * o jednu ztenčí. Blok tedy platí v pásmu **32–64** obsazených slotů, ne všude.
+ * Drží to na fázi `world`: proud nad `failed` si `events/route.ts` zavře sám
+ * na koncovém rámci, kdežto `advance('complete')` nemá v provozu volajícího,
+ * takže **úspěšná generace končí ve `world` a její proud zůstává otevřený.**
  * Zbytek tvrdí kladně test `osm podvržených relací s drženým proudem drží
- * oběti kbelík plný i po třiceti dnech`.
+ * oběti kbelík plný i po třiceti dnech` — práh si podkládá `naPráh()`, a je to
+ * část útoku, ne kulisa testu.
  *
  * ⚠ **Stárnutím se to nespravuje a příští kolo to nemá zkoušet — změřeno.**
  * (a) Vyjmout `complete`/`failed` z `callerHolds()` **vypne kvótu úplně tam,
