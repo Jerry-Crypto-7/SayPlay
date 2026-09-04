@@ -587,6 +587,49 @@ describe('commit druhé věty', () => {
     });
   });
 
+  // `T22-rejectreplay`, nález nezávislé revize 4. 9. 2026 — **přeživší mutant**.
+  // Brána se hlásí k tomu, že soudí dvojici `sim`+`look` **jako celek**, jenže
+  // měřila ji jediná věta, a ta hýbala `look`em. Vypustit z podmínky půlku
+  // `sim` proto nechalo celou sadu (722) zelenou. Tohle je zrcadlový případ.
+  //
+  // Poražené preview míří **jen na podobu**, tedy do žádné části dokumentu:
+  // nenese jedinou operaci, takže `staleRevision` nemá co soudit, a revize
+  // podoby se cizím commitem nehnula. Mezi ním a rozhodnutím nad světem, který
+  // člověk neviděl, tak stojí právě a jen půlka `sim` téhle brány.
+  it('zamítnuté preview se po pohybu SAMOTNÉHO `sim` už commitnout nedá', async () => {
+    const stored = await generated();
+    // Tvar, který ve světě není: odmítne ho `nextBlueprint`, ne router, takže
+    // preview projde celou cestou dolů bez jediné operace v patchi.
+    const loser = pending(
+      stored,
+      plan({
+        shape: { ...(WOVEN_MAST as Record<string, unknown>), shapeId: 'ghostSpan' } as RefinePlan['shape'],
+      }),
+      'change-loser',
+    );
+    expect((await body(await commit(stored.session.sessionId, loser.changeId))).outcome).toBe(
+      'REJECTED',
+    );
+
+    // Cizí věta pohne **jen** `sim`. `look` i revize podoby zůstávají, kde byly.
+    const other = pending(
+      stored,
+      plan({ behavior: [{ op: 'replace', path: '/sim/rules/reach/priority', value: 3 }] }),
+      'change-other',
+    );
+    expect((await commit(stored.session.sessionId, other.changeId)).status).toBe(200);
+    expect(worldOf(stored).simRevision).toBe(1);
+    expect(worldOf(stored).lookRevision).toBe(0);
+    expect(stored.session.revisionOf('ironMast')).toBe(0);
+
+    const znovu = await commit(stored.session.sessionId, loser.changeId);
+    expect(znovu.status, 'pohyb samotného `sim` tu bránu nezvedl').toBe(409);
+    expect(
+      (await body(znovu)).error,
+      'brána mlčela a preview se soudilo znovu, jen nad jiným světem',
+    ).toMatchObject({ code: 'PREVIEW_REJECTED', field: 'changeId' });
+  });
+
   // `T22-rejectreplay`, nález nezávislé revize. Brána nad pohnutým světem
   // nesmí spolknout důvod: u vady tvaru patche verdikt na světě nezávisí,
   // takže když ho odpověď zamlčí, člověk se ho po prvním cizím commitu
