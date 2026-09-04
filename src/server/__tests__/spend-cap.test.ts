@@ -21,7 +21,12 @@ import {
 } from '../spend-cap';
 // Okno ovládacího klíče je stav modulu (`CONTROL_CACHE_TTL_MS`); bez resetu
 // by si dva testy sáhly do téhož letu a druhý by četl odpověď prvního.
-import { __resetControlWindows, memoryLedger, type SpendLedger } from '../spend-store';
+import {
+  __resetControlWindows,
+  type ControlStore,
+  memoryLedger,
+  type SpendLedger,
+} from '../spend-store';
 
 const PRICING = { usdPerMTokIn: 3, usdPerMTokOut: 15 };
 
@@ -855,6 +860,52 @@ describe('strop drží i za hranicí jedné instance', () => {
     const attempt = await cap.reserve(0.01);
     if (attempt.ok) return;
     expect(attempt.reason).not.toBe('STORE_UNCONFIGURED');
+  });
+
+  /**
+   * **`snapshot()` musí vydat strop, který doopravdy platí** (P15
+   * `T30-snapshotstale`).
+   *
+   * Na serverless žádný ovládací soubor není, takže dokud `snapshot()` četl
+   * výhradně disk, vracel pokaždé výchozí hodnoty — a jediný provozní
+   * konzument (`accountingStepUsd()` v `/api/generate`) podle nich odvozuje
+   * zrnitost účetního logu. Operátor přetáhl strop sdíleným klíčem a číslo
+   * v logu ho dál sledovat přestalo, aniž o tom cokoli řeklo.
+   *
+   * Soudí se to **nad obchodem bez souboru**, tedy přesně v prostředí, kde ta
+   * vada byla; s cestou k souboru by test prošel i před opravou.
+   */
+  it('strop ze sdíleného klíče se v `snapshot()` objeví po rezervaci', async () => {
+    const store: ControlStore = {
+      id: 'test',
+      key: 'worldsmith:spend:control',
+      read: () => Promise.resolve('{"enabled":true,"capUsd":0.5}'),
+    };
+    const cap = new SpendCap({ enabled: true, capUsd: 5 }, null, memoryLedger(), store);
+
+    // Před první rezervací platí záloha: soubor neexistuje, takže výchozí strop.
+    expect(cap.snapshot().capUsd).toBe(5);
+
+    const reserved = await cap.reserve(0.01);
+    expect(reserved.ok).toBe(true);
+
+    // A teď to, o co jde: rozhodovalo se stropem 0,5 USD a `snapshot()` to říká.
+    expect(cap.snapshot().capUsd).toBe(0.5);
+    // Zbytek se počítá z platného stropu, ne z výchozího.
+    expect(cap.snapshot().remainingUsd).toBeCloseTo(0.49, 10);
+  });
+
+  it('odmítnutá rezervace je taky rozhodnutí a `snapshot()` ho vydá', async () => {
+    const store: ControlStore = {
+      id: 'test',
+      key: 'worldsmith:spend:control',
+      read: () => Promise.resolve('{"enabled":true,"capUsd":0.25}'),
+    };
+    const cap = new SpendCap({ enabled: true, capUsd: 5 }, null, memoryLedger(), store);
+
+    const refused = await cap.reserve(9);
+    expect(refused.ok).toBe(false);
+    expect(cap.snapshot().capUsd).toBe(0.25);
   });
 });
 

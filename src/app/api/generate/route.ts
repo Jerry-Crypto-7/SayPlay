@@ -371,6 +371,13 @@ const REFUSALS_LOGGED = new Set<RefusalReason>();
  * `logRateLimited()` (`src/server/public-faults.ts`). Chladný start obojí
  * vynuluje, takže skutečná mez je `instance × 100` řádků. Zavře to teprve
  * sdílený stav z vlny 7 (T29), tentýž, který potřebuje i strop utrácení.
+ *
+ * ⚠ **A do `T30-snapshotstale` to na serverless neplatilo ani po opravě
+ * z 1. září.** `snapshot()` četl výhradně ovládací soubor a ten na Vercelu
+ * neexistuje, takže „procento skutečného stropu" byla zase setina výchozího —
+ * strop přetažený sdíleným klíčem se sem nedostal. `snapshot()` proto od té
+ * úlohy vydává povel, kterým rozhodovala poslední rezervace; první placené
+ * volání jednu vždycky udělá, takže tenhle konzument čte platné číslo.
  */
 function accountingStepUsd(): number {
   const { capUsd } = CAP.snapshot();

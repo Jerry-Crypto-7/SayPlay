@@ -431,17 +431,37 @@ export class SpendCap {
    * normální stav a vrací výchozí hodnoty.
    */
   async #control(): Promise<ControlOutcome> {
-    return this.#outcome(await readControlFrom(this.#controlPath, this.#controlStore));
+    const outcome = this.#outcome(await readControlFrom(this.#controlPath, this.#controlStore));
+    // **Zapamatovat si povel, který doopravdy rozhodl** (P15 `T30-snapshotstale`).
+    // `snapshot()` je synchronní a sdíleného klíče se zeptat nemůže, takže bez
+    // téhle stopy hlásí na serverless vždycky výchozí hodnoty — tedy strop,
+    // který operátor před chvílí přetáhl a který už neplatí.
+    this.#decidedWith = outcome;
+    return outcome;
   }
 
   /**
-   * Totéž jen ze souboru, synchronně — **jediné, co smí `snapshot()`**.
+   * Povel, kterým se rozhodovala **poslední rezervace**. `null` = žádná nebyla.
+   *
+   * Není to cache a nikdo se podle toho nerozhoduje: rozhoduje se výhradně
+   * `reserve()` nad čerstvým čtením. Tohle je stopa pro diagnostiku, aby
+   * `snapshot()` uměl vydat číslo, které se doopravdy použilo.
+   */
+  #decidedWith: ControlOutcome | null = null;
+
+  /**
+   * Totéž jen ze souboru, synchronně — **záloha `snapshot()` pro první volání**.
    *
    * `snapshot()` je diagnostika a je synchronní, takže se sdíleného klíče
    * zeptat nemůže; je to táž hranice, kvůli které se neptá ani účetní knihy
    * (viz `#seenUsd`). Rozhodnutí o penězích na téhle cestě nestojí žádné —
    * `reserve()` si čte povel sama a odmítnutí nese `snapshot` složený
    * z toho, co doopravdy rozhodlo.
+   *
+   * ⚠ **Od `T30-snapshotstale` to není jediný zdroj `snapshot()`.** Byl, a na
+   * serverless kvůli tomu hlásil pokaždé výchozí hodnoty — tam žádný soubor
+   * není. Jakmile jednou proběhne rezervace, platí `#decidedWith`; sem se sáhne
+   * jen předtím.
    */
   #controlFromFile(): ControlOutcome {
     return this.#outcome(readControlFile(this.#controlPath));
@@ -476,8 +496,24 @@ export class SpendCap {
     };
   }
 
+  /**
+   * Diagnostika: čísla knihy a strop, **který naposledy rozhodl**.
+   *
+   * ⚠ **Dokud se to četlo výhradně ze souboru, umělo to lhát** — nález
+   * nezávislé revize 4. 9. 2026 (P15 `T30-snapshotstale`). Na serverless žádný
+   * ovládací soubor není, takže `#controlFromFile()` vrací pokaždé výchozí
+   * hodnoty; operátor, který strop přetáhl sdíleným klíčem na 0,5 USD, četl
+   * v jediném provozním konzumentovi (`accountingStepUsd()` v `/api/generate`)
+   * dál původních 5 USD, a zrnitost účetního logu tak tiše sledovala strop,
+   * který přestal platit. Na penězích to neviselo — `reserve()` rozhoduje nad
+   * vlastním čerstvým čtením — ale na tom jediném čísle, které o stropu
+   * operátor v logu vidí, ano.
+   *
+   * Soubor proto zůstává **jen jako záloha pro první volání**, než jakákoli
+   * rezervace proběhne. Pak platí povel, kterým se rozhodovalo.
+   */
   snapshot(): CapSnapshot {
-    return this.#snapshotOf(this.#controlFromFile());
+    return this.#snapshotOf(this.#decidedWith ?? this.#controlFromFile());
   }
 
   #snapshotOf(outcome: ControlOutcome): CapSnapshot {
