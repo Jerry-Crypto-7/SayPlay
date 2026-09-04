@@ -108,13 +108,18 @@ export type RefusalReason =
    * místo `15`) ho tiše roztáhne milionkrát a nic si toho nevšimne — cena se
    * nedá ověřit na správnost, jen na tvar. Počet volání se ověřit dá.
    *
-   * ⚠ **Jednu díru to dnes nekryje, a hlásí se tu, protože tenhle odstavec
-   * tvrdil opak.** Strop na počet visí na tomtéž `enabled` jako dolarový strop
-   * (`reserve()` níž), takže `{"enabled":false}` v ovládacím souboru odstraní
-   * **obě** meze naráz — naměřeno nezávislou revizí 3. 9. 2026: 400 rezervací
-   * ze 400 povolených, `callsRemaining: -200`. Právě ve stavu „ceník je opsaný
-   * špatně" tedy nehlídá nic. Je to starší rozhodnutí s vlastním testem
-   * (`vypnutý vypínač počet volání neomezuje`) a rozplétá ho `T30-callcapoff`.
+   * **Nezávislý na ceníku, ne na vypínači.** `enabled:false` v ovládacím
+   * souboru vypíná **obě** meze naráz, dolarovou i počet — naměřeno nezávislou
+   * revizí 3. 9. 2026: nad `{"enabled":false,"capUsd":0}` 400 rezervací ze 400,
+   * `callsRemaining: -200`. Je to rozhodnutí, ne díra (P15 `T30-callcapoff`):
+   * `enabled:false` je vědomý povel operátora „utrácej bez meze", ne nouzová
+   * brzda — tou jsou kill switche (`off`). Kdyby počet držel i při vypnutém
+   * stropu, byl by `{"enabled":false}` s `callCap:0` úplná zastávka provozu,
+   * a přesně to pinuje jako NEžádoucí `upstream.test.ts` („`enabled: false`
+   * provoz nezastaví, jen přestane odmítat"). Druhá větev — počet drží vždy —
+   * se tím vyvrátila měřením: shodila by jeden pinovaný test a dvě zapsaná
+   * tvrzení v `src/app/api/generate`. Ochrana proti špatně opsanému ceníku
+   * tedy platí, dokud je strop zapnutý; kdo ho vypne, vypne i ji.
    */
   | 'CALL_CAP_EXHAUSTED'
   /** Ovládací soubor existuje a nedá se přečíst nebo mu nesedí tvar. */

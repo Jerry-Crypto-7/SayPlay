@@ -420,7 +420,15 @@ describe('strop na počet volání drží i tehdy, když je ceník opsaný špat
     expect(refused.detail).toMatch(/\d/);
   });
 
-  it('vypnutý vypínač počet volání neomezuje, ale pořád ho počítá', async () => {
+  it('`enabled:false` vypíná obě meze: počet volání neomezuje, ale pořád ho počítá', async () => {
+    // Rozhodnutí P15 `T30-callcapoff`, ne opomenutí: strop na počet je
+    // nezávislý na CENÍKU, ne na vypínači. `enabled:false` je vědomý povel
+    // „utrácej bez meze"; nouzová brzda jsou kill switche (`off`). Kdyby počet
+    // držel i při vypnutém stropu, `callCap:0` by z `enabled:false` udělalo
+    // úplnou zastávku provozu — a to pinuje jako nežádoucí `upstream.test.ts`
+    // („`enabled: false` provoz nezastaví, jen přestane odmítat"). Hlavička
+    // `CALL_CAP_EXHAUSTED` v `spend-cap.ts` říká totéž; tenhle test hlídá,
+    // že se od ní chování neodchýlí.
     const cap = new SpendCap({ enabled: false, capUsd: 0, callCap: 1 });
     expect((await cap.reserve(5)).ok).toBe(true);
     expect((await cap.reserve(5)).ok, 'vypnutý strop odmítl volání').toBe(true);
