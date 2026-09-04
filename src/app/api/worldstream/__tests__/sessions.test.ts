@@ -251,9 +251,15 @@ describe('založení relace', () => {
     const response = await createSession(createRequest({ prompt: 'a salt flat' }));
 
     expect(response.status).toBe(503);
-    expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
-      'TOO_MANY_SESSIONS',
-    );
+    const { error } = (await response.json()) as { error: { code: string; message: string } };
+    expect(error.code).toBe('TOO_MANY_SESSIONS');
+    // **Tatáž rovnost, jakou nad sebou má věta 429** (`T30-503sentence`).
+    // Do 4. 9. 2026 hlídal přesné znění jen soused, takže do téhle věty
+    // šlo dopsat radu i slib o čase a sada zůstala zelená. Route
+    // žádný `Retry-After` nevydává — `fail()` skládá jen tělo — a to je
+    // druhá půlka slibu: číslo, které by nikdo nedržel, tu nesmí vzniknout.
+    expect(error.message).toBe('too many worlds are being built right now');
+    expect(response.headers.get('retry-after'), 'slíbený čas, který nikdo nedrží').toBeNull();
 
     const refusals = log.filter((line) => line.includes('TOO_MANY_SESSIONS'));
     expect(refusals, 'odmítnutí náporem neodešlo operátorovi').toHaveLength(1);
