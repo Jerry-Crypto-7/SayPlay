@@ -172,6 +172,55 @@ describe('strop na frekvenci veřejných dveří', () => {
     expect(callerKey(new Request('http://x/'))).toBe(UNIDENTIFIED_CALLER);
   });
 
+  /**
+   * **Kam ty nepoužitelné hlavičky spadnou, když ne na sentinel**
+   * (`T28-emptyxff`, nezávislá revize 4. 9. 2026). Test výš tvrdí jen to,
+   * čím **nejsou**. Skončí všechny v jediném kbelíku `ip:`, tedy bez adresy —
+   * a od `2fad718` je to kbelík **odmítající**, takže osm požadavků ho zamčne
+   * komukoli dalšímu, kdo do něj spadne.
+   *
+   * ⚠ **Změřeno, že tam ale nespadne nikdo počestný, a proto se to neopravuje.**
+   * Na Vercelu je `x-forwarded-for` vždycky vyplněné; bez proxy (`next start`,
+   * demo z notebooku) nepřijde ani jedna hlavička a klíč je sentinel. Do `ip:`
+   * se tedy dá dostat **jedině hlavičkou, kterou nikdo neposílá omylem** —
+   * obsazují ho jen ti, kdo si ho vybrali. Zamčnout ho znamená zamčnout sebe.
+   *
+   * **Obě alternativy jsou měřitelně horší.** Pustit takový požadavek na
+   * sentinel je přesně to obejití, které zavírá test o řádek výš (osmkrát
+   * vyšší strop souběžných čtení). Dát každému takovému požadavku vlastní
+   * klíč je mez zrušit. Skutečný zavírač je klíč z důvěryhodného konce
+   * řetězu (`T16-trustedkey`); tenhle test řekne, co do té doby platí.
+   */
+  it('nepoužitelná hlavička dá kbelík bez adresy, do kterého se dá jen vstoupit schválně', () => {
+    const BEZ_ADRESY = 'ip:';
+
+    for (const headers of [
+      { 'x-forwarded-for': '' },
+      { 'x-forwarded-for': '   ' },
+      { 'x-forwarded-for': ' , ' },
+      { 'x-real-ip': '' },
+    ]) {
+      expect(
+        callerKey(new Request('http://x/', { headers })),
+        `${JSON.stringify(headers)} už nespadá do sdíleného kbelíku — přepiš doktrínu u callerKey()`,
+      ).toBe(BEZ_ADRESY);
+    }
+
+    // **Polarita, a je to celá obhajoba té zelené výš.** Ani jeden tvar, který
+    // používá poctivý provoz, do toho kbelíku nevede: s proxy přijde adresa,
+    // bez proxy nepřijde hlavička žádná.
+    expect(callerKey(new Request('http://x/', { headers: { 'x-forwarded-for': ME } }))).not.toBe(
+      BEZ_ADRESY,
+    );
+    expect(
+      callerKey(new Request('http://x/', { headers: { 'x-forwarded-for': ` , ${ME}` } })),
+      'první prázdná položka zahodila i použitelnou adresu za ní',
+    ).not.toBe(BEZ_ADRESY);
+    expect(callerKey(new Request('http://x/')), 'běh bez proxy skončil v kbelíku bez adresy').toBe(
+      UNIDENTIFIED_CALLER,
+    );
+  });
+
   it('odpověď nese 429, retry-after a NEPROZRADÍ, kde ten strop je', async () => {
     // Číslo stropu je přesně ten údaj, ze kterého se počítá nejlevnější způsob,
     // jak dveře držet zavřené.
