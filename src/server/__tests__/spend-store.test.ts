@@ -246,8 +246,62 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
     // úloha zavírá — takové nasazení proto dostane vlastní knihu.
     expect(storePrefix({ VERCEL: '1' })).toBe('worldsmith:spend:unknown-env');
     expect(storePrefix({ VERCEL: '1', VERCEL_ENV: '  ' })).toBe('worldsmith:spend:unknown-env');
-    // Mimo Vercel je jediné nasazení norma, tam holý základ platí dál.
+    // Mimo Vercel a BEZ sdílené knihy je jediný proces norma, tam holý základ
+    // platí dál. Tohle tvrzení `T29-unknownenv` **nepřevrátila** — jen ho
+    // zúžila o sdílenou knihu, viz případ níž.
     expect(storePrefix({})).toBe('worldsmith:spend');
+  });
+
+  it('sdílená kniha bez známého prostředí nedostane produkční klíč, ani když VERCEL zhasne', () => {
+    // **Naměřená vada druhé nezávislé revize (4. 9. 2026):** záchranná síť na
+    // chybějící `VERCEL_ENV` visela na `VERCEL`, jenže vercelský přepínač
+    // *Automatically expose System Environment Variables* zhasíná obě proměnné
+    // naráz. V tom jediném případě, kvůli kterému síť existuje, tedy nebyla —
+    // a nasazení dostalo `worldsmith:spend`, tedy produkční rozpočet.
+    //
+    // Rozhoduje proto sdílená kniha, ne platforma: adresa a token jsou
+    // uživatelské proměnné a ten přepínač je nevypíná.
+    expect(storePrefix({ ...STORE_ENV })).toBe('worldsmith:spend:unknown-env');
+    expect(storePrefix({ ...STORE_ENV, VERCEL_ENV: '  ' })).toBe('worldsmith:spend:unknown-env');
+    expect(storePrefix({ ...STORE_ENV, VERCEL_ENV: 'staging' })).toBe(
+      'worldsmith:spend:unknown-env',
+    );
+
+    // Známé prostředí rozhoduje pořád samo — sdílená kniha ho nepřebíjí, jinak
+    // by se produkční kniha přejmenovala pod běžícím nasazením.
+    expect(storePrefix({ ...STORE_ENV, VERCEL_ENV: 'production' })).toBe('worldsmith:spend');
+    expect(storePrefix({ ...STORE_ENV, VERCEL_ENV: 'preview' })).toBe('worldsmith:spend:preview');
+
+    // **Půlka konfigurace není konfigurace.** Adresa bez tokenu knihu nesdílí
+    // (`ledgerFromEnv` z ní také žádnou neudělá), takže přejmenovat lokální
+    // knihu by tu znamenalo zahodit dosud naúčtovanou útratu za nic.
+    expect(storePrefix({ WORLDSMITH_SPEND_STORE_URL: STORE_ENV.WORLDSMITH_SPEND_STORE_URL })).toBe(
+      'worldsmith:spend',
+    );
+    expect(
+      storePrefix({ WORLDSMITH_SPEND_STORE_TOKEN: 'token', WORLDSMITH_SPEND_STORE_URL: '   ' }),
+    ).toBe('worldsmith:spend');
+  });
+
+  it('klíč a úložiště se nesmí rozejít: co je sdílená kniha pro předponu, je jí i pro zápis', () => {
+    // Dvě definice „sdílené knihy" by znamenaly klíč, který mluví o jiném
+    // uložišti, než kam zápis míří. Projde se proto celá matice a porovná se
+    // odpověď obou funkcí, ne jejich vnitřek. **Žádný záznam nemá známé
+    // `VERCEL_ENV`** — se známým prostředím rozhoduje ono a rovnost neplatí.
+    const envs: Record<string, string | undefined>[] = [
+      {},
+      { ...STORE_ENV },
+      { ...STORE_ENV, VERCEL: '1' },
+      { WORLDSMITH_SPEND_STORE_URL: 'https://ledger.example.com/' },
+      { WORLDSMITH_SPEND_STORE_TOKEN: 'token' },
+      { WORLDSMITH_SPEND_STORE_URL: '  ', WORLDSMITH_SPEND_STORE_TOKEN: '  ' },
+    ];
+
+    for (const env of envs) {
+      const shares = ledgerFromEnv(env)?.id === 'http';
+      const unknown = storePrefix(env) === 'worldsmith:spend:unknown-env';
+      expect(unknown, `klíč a úložiště se rozešly pro ${JSON.stringify(env)}`).toBe(shares);
+    }
   });
 
   it('výslovná předpona vyhrává nad odvozenou, a produkce si nechá holý základ', () => {

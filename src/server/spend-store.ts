@@ -169,6 +169,24 @@ export function httpLedger(config: HttpLedgerConfig, fetchImpl: typeof fetch = f
 const BASE_PREFIX = 'worldsmith:spend';
 
 /**
+ * Adresa a token sdílené knihy, nebo `null`, když se kniha s nikým nesdílí.
+ *
+ * **Jediná definice toho, co znamená „sdílená kniha"** — čte ji `storePrefix()`
+ * i `ledgerFromEnv()`. Dvě definice by se rozešly a klíč by pak mluvil o jiném
+ * uložišti, než do kterého zápis doopravdy míří; u peněz je to ten druh
+ * rozporu, který se pozná až na faktuře.
+ */
+function sharedStoreFromEnv(
+  env: Record<string, string | undefined>,
+): { readonly url: string; readonly token: string } | null {
+  const url = env.WORLDSMITH_SPEND_STORE_URL?.trim().replace(/\/+$/, '') ?? '';
+  const token = env.WORLDSMITH_SPEND_STORE_TOKEN?.trim() ?? '';
+  // **Půlka konfigurace není konfigurace.** Adresa bez tokenu by dala klíč
+  // „sdílíme", ale zápis by neměl kam jít — proto obojí, nebo nic.
+  return url !== '' && token !== '' ? { url, token } : null;
+}
+
+/**
  * Předpona klíčů účetní knihy — **výslovná, jinak odvozená z prostředí**.
  *
  * ⚠ **Pevný řetězec tuhle práci nedělá.** Proměnné prostředí se na Vercelu mezi
@@ -198,13 +216,26 @@ const BASE_PREFIX = 'worldsmith:spend';
  * a `…:unknown-env` — a součet přes nasazení je nejvýš trojnásobek stropu.
  * Cokoliv mimo `production` a `preview` je neznámo, ne vlastní prostředí.
  *
- * ⚠ **Chybějící `VERCEL_ENV` na Vercelu není produkce, je to neznámo.** Systémové
- * proměnné se dají v projektu vypnout přepínačem, který nebydlí v žádném
- * souboru tohohle repa — a mlčky spadnout na produkční klíč je přesně ta vada,
- * kterou tahle funkce zavírá. Takové nasazení dostane `unknown-env`: vlastní
- * klíč, tedy zavřené selhání směrem k odděleným penězům. Mimo Vercel
- * (`VERCEL` nenastavené) zůstává holý základ — tam je jediné nasazení norma
- * a kdo jich má víc, vyplní `WORLDSMITH_SPEND_STORE_PREFIX` sám.
+ * ⚠ **Chybějící `VERCEL_ENV` není produkce, je to neznámo — a nesmí se to poznat
+ * podle `VERCEL`.** Systémové proměnné vypíná v projektu jeden přepínač
+ * (*Automatically expose System Environment Variables*), a ten řídí `VERCEL`
+ * i `VERCEL_ENV` **dohromady**. Záchranná síť pověšená na `VERCEL` tedy mizí
+ * přesně v tom případě, kvůli kterému existuje: zhasnou obě proměnné, `scope`
+ * je prázdný, `isServerless()` řekne „ne" a nasazení dostane produkční klíč.
+ * Naměřeno druhou nezávislou revizí 4. 9. 2026 (P15 `T29-unknownenv`).
+ *
+ * **Rozhoduje proto sdílená kniha, ne platforma.** Adresa a token jsou
+ * uživatelské proměnné, které ten přepínač nevypíná: kdo sdílí knihu a nemá
+ * známé prostředí, dostane `unknown-env`. Bez sdílené knihy není s čím
+ * kolidovat — jediný proces si vede vlastní součet a holý základ platí dál,
+ * takže se lokálnímu ani `next start` provozu kniha nepřejmenovala. `VERCEL`
+ * zůstává jako druhý, slabší signál: když svítí, je to nasazení tak jako tak.
+ *
+ * ⚠ **Jedna díra tím zavřená NENÍ a nemá se předstírat, že je:** nasazení
+ * s vypnutým přepínačem **a bez sdílené knihy** je z prostředí nerozeznatelné
+ * od lokálního běhu, takže dostane knihu v paměti procesu. Zavírá to až
+ * vyplněné `WORLDSMITH_SPEND_STORE_*`, což je stejně jediná podoba, ve které
+ * strop na serverless platí (`ledgerFromEnv()` níž).
  *
  * Výslovná hodnota vyhrává nad odvozenou — odvození je záchranná síť, ne
  * pravidlo. **Na Vercelu to má háček zapsaný v `.env.example`:** proměnná
@@ -217,9 +248,9 @@ export function storePrefix(env: Record<string, string | undefined>): string {
   const scope = env.VERCEL_ENV?.trim().toLowerCase() ?? '';
   if (scope === 'production') return BASE_PREFIX;
   if (scope === 'preview') return `${BASE_PREFIX}:preview`;
-  // Mimo Vercel je jediné nasazení norma, tam holý základ platí dál; kdo jich
-  // má víc, vyplní `WORLDSMITH_SPEND_STORE_PREFIX` sám.
-  if (scope === '' && !isServerless(env)) return BASE_PREFIX;
+  // Prostředí není známé. Holý základ tu smí vyjít jedině tam, kde není s čím
+  // kolidovat: nikdo další do té knihy nepíše a nic neříká, že jsme nasazení.
+  if (scope === '' && sharedStoreFromEnv(env) === null && !isServerless(env)) return BASE_PREFIX;
 
   return `${BASE_PREFIX}:unknown-env`;
 }
@@ -248,13 +279,12 @@ export function ledgerFromEnv(
   env: Record<string, string | undefined>,
   fetchImpl: typeof fetch = fetch,
 ): SpendLedger | null {
-  const url = env.WORLDSMITH_SPEND_STORE_URL?.trim().replace(/\/+$/, '') ?? '';
-  const token = env.WORLDSMITH_SPEND_STORE_TOKEN?.trim() ?? '';
-  if (url !== '' && token !== '')
+  const shared = sharedStoreFromEnv(env);
+  if (shared !== null)
     return httpLedger(
       {
-        url,
-        token,
+        url: shared.url,
+        token: shared.token,
         prefix: storePrefix(env),
         timeoutMs: DEFAULT_LEDGER_TIMEOUT_MS,
       },
