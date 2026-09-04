@@ -58,12 +58,19 @@
  * zkoušet znovu.
  *
  * **Zotavení je ruční a je to rozhodnutí o penězích:** porovnat součet knihy
- * s účtem poskytovatele a o rozdíl zvednout `capUsd` v ovládacím souboru
- * (`WORLDSMITH_CONTROL_FILE`, platí od dalšího požadavku bez redeploye); na
- * Vercelu, kde disk není, přes `WORLDSMITH_SPEND_CAP_USD` a redeploy. Postup
- * pro operátora je v `.env.example` u `WORLDSMITH_SPEND_STORE_PREFIX`. Hlídač,
- * který by opuštěné rezervace měřil, dnes neexistuje; kdyby vznikl, nesmí umět
- * součet knihy snížit sám od sebe.
+ * s účtem poskytovatele a o rozdíl zvednout `WORLDSMITH_SPEND_CAP_USD`, pak
+ * redeploy.
+ *
+ * ⚠ **Ovládacím souborem to NEJDE a do 4. 9. 2026 tady stálo, že jde.** Od
+ * `T30-capfloor` je účinná částka `min(soubor, WORLDSMITH_SPEND_CAP_USD)`,
+ * takže soubor umí strop jen přitáhnout. Vyšší `capUsd` zapsané do souboru je
+ * tichý no-op: nic se nezmění a nevznikne u toho řádek, takže operátor uvidí
+ * jen to, že `CAP_EXHAUSTED` trvá dál. Proměnná a redeploy jsou jediná páka
+ * směrem nahoru.
+ *
+ * Postup pro operátora je v `.env.example` u `WORLDSMITH_SPEND_STORE_PREFIX`.
+ * Hlídač, který by opuštěné rezervace měřil, dnes neexistuje; kdyby vznikl,
+ * nesmí umět součet knihy snížit sám od sebe.
  */
 
 /** Součty účetní knihy. Dolary jsou rezervované i utracené dohromady. */

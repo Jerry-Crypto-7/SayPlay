@@ -693,6 +693,42 @@ describe('jediný strop procesu', () => {
         'processSpendCap()',
       );
   });
+
+  // P15 `T30-capfloor`, remediace nezávislé revize 4. 9. 2026 (`VERDICT:
+  // blocking`). Podlaha z prostředí udělala z „zvedni `capUsd` v ovládacím
+  // souboru" **tichý no-op** — nic se nezmění a nevznikne u toho řádek —
+  // a operátorský postup zotavení stál v repu ve **třech** kopiích. Commit
+  // s podlahou přepsal jednu (`.env.example`) a dvě nechal být, takže si
+  // dokumentace odporovala nad penězi. Brána je lexikální schválně: je to
+  // tvrzení o textu pro člověka, a to žádný běhový test nezkontroluje.
+  it('nikde se operátorovi neradí zvednout strop ovládacím souborem', () => {
+    // Zvedací sloveso a `capUsd` **jako jeho předmět** — okno je 40 znaků, tedy
+    // zhruba „zvednout capUsd" i přes zalomení řádku. Širší okno se zkusilo
+    // (200 znaků) a je nepoužitelné: chytlo správnou větu, která nejdřív radí
+    // zvednout WORLDSMITH_SPEND_CAP_USD a o dva řádky níž vysvětluje, proč
+    // capUsd v souboru nestačí. Text, který obojí správně vysvětluje, musí
+    // projít — jinak brána trestá přesně tu opravu, kvůli které vznikla.
+    //
+    // `povolit` a `uvolnit` na seznamu sloves schválně NEJSOU: v tomhle repu se
+    // objevují jen v záporu („umí jen přitáhnout, nikdy uvolnit"), takže by
+    // vyráběly falešný poplach na správně napsané doktríně. Táž past jako
+    // u popisků počítadel v `CLAUDE.md`.
+    const rada = /(zvednou?t|zvednutí|zvýšit|zvýšení|raise)[\s\S]{0,40}?capUsd/i;
+    const texty = (readdirSync('src', { recursive: true }) as string[])
+      // Zpětná lomítka z Windows tu vadit nemohou: `includes` i `readFileSync`
+      // si s nimi poradí a cesta se nikde neporovnává na rovnost.
+      .map((entry) => `src/${entry}`)
+      .filter((path) => /\.tsx?$/.test(path) && !path.includes('__tests__'))
+      .concat('.env.example');
+    expect(texty.length, 'sken je prázdný').toBeGreaterThan(50);
+
+    for (const path of texty)
+      expect(
+        readFileSync(path, 'utf8'),
+        `${path} radí zvednout capUsd — od T30-capfloor to nefunguje, ` +
+          'pákou nahoru je WORLDSMITH_SPEND_CAP_USD a redeploy',
+      ).not.toMatch(rada);
+  });
 });
 
 /**

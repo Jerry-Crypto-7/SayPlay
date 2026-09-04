@@ -463,8 +463,10 @@ export async function POST(request: Request): Promise<Response> {
     // a trvalá, takže každá taková rezervace strop **natrvalo utáhne** —
     // dvacet opuštěných rezervací po 0,2585 USD vyčerpá strop 5 USD a další
     // instance začne rovnou na `CAP_EXHAUSTED`. Zotavení pak není mazání klíče
-    // v úložišti, ale zvednutí `capUsd` v ovládacím souboru; je to rozhodnutí
-    // o penězích a patří člověku.
+    // v úložišti, ale zvednutí `WORLDSMITH_SPEND_CAP_USD` a redeploy; je to
+    // rozhodnutí o penězích a patří člověku. **Ovládacím souborem to od
+    // `T30-capfloor` nejde** — ten umí strop jen přitáhnout, takže vyšší
+    // `capUsd` v něm je tichý no-op.
     //
     // `after()` doběhne i tehdy, když odpověď skončí chybou, a je omezené
     // `maxDuration` routy, ne donekonečna.
