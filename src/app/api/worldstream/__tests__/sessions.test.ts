@@ -299,11 +299,14 @@ describe('založení relace', () => {
       'GRAMMAR_UNREADABLE',
     );
 
-    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS - 1; i += 1)
-      expect(acquireSlot('refine'), `slot ${i} měl být volný — odmítnutí ho nevrátilo`).toBe(true);
-    // Poslední slot je rezerva pro drahé dveře, tak se bere jimi.
-    expect(acquireSlot('world'), `poslední slot měl být volný — odmítnutí ho nevrátilo`).toBe(true);
-    expect(acquireSlot('refine'), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(
+    // **Ptá se to čítače, který mohl uplavat — tedy `world`.** Do 4. 9. 2026
+    // se sonda ptala levných dveří, a nezávislá revize ji spustila jako
+    // dekorativní: jakmile dostalo `refine` vlastní strop pod dnem, odmítalo
+    // poslední pokus **vlastním** stropem, ať byl `running.world` nula, nebo
+    // mínus tři. Oba mutanty, které ten komentář jmenuje, tím přežily.
+    for (let i = 0; i < MAX_WORLD_GENERATIONS; i += 1)
+      expect(acquireSlot('world'), `slot ${i} měl být volný — odmítnutí ho nevrátilo`).toBe(true);
+    expect(acquireSlot('world'), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(
       false,
     );
   });
@@ -320,11 +323,11 @@ describe('založení relace', () => {
     // hranice ji nechá doběhnout i s `finally`, aniž se měří čas.
     await new Promise<void>((resolve) => setImmediate(resolve));
 
-    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS - 1; i += 1)
-      expect(acquireSlot('refine'), `slot ${i} měl být volný — finally ho nevrátilo`).toBe(true);
-    // Poslední slot je rezerva pro drahé dveře, tak se bere jimi.
-    expect(acquireSlot('world'), `poslední slot měl být volný — finally ho nevrátilo`).toBe(true);
-    expect(acquireSlot('refine'), 'čítač je v záporu — slot se vrátil dvakrát').toBe(false);
+    // Sonda se ptá **týchž dveří, kterými slot odešel** — jinak ji odmítne
+    // vlastní strop těch druhých a nezměří nic. Viz test nad tímhle.
+    for (let i = 0; i < MAX_WORLD_GENERATIONS; i += 1)
+      expect(acquireSlot('world'), `slot ${i} měl být volný — finally ho nevrátilo`).toBe(true);
+    expect(acquireSlot('world'), 'čítač je v záporu — slot se vrátil dvakrát').toBe(false);
   });
 });
 
