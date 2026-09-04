@@ -150,7 +150,7 @@ export async function readPromptId(
   }
   // Třetí důvod (`BUSY`) a jeden překlad pro všechny dveře — viz
   // `bodyRefusalResponse()` v `src/http/body.ts`.
-  if (!raw.ok) return { ok: false, response: bodyRefusalResponse(requestId, raw.reason) };
+  if (!raw.ok) return { ok: false, response: bodyRefusalResponse(requestId, raw) };
 
   let body: unknown;
   try {

@@ -15,6 +15,11 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { withoutCredentials } from '../../../../server/public-faults';
+import {
+  MAX_REQUESTS_PER_WINDOW,
+  resetRateWindows,
+  takeRateSlot,
+} from '../../../../server/rate-limit';
 import { resetProcessSpendCap } from '../../../../server/spend-cap';
 
 import { frozenPrompts } from '../../../../model/client';
@@ -38,6 +43,11 @@ afterEach(() => {
   // Statický import stačí i po resetu modulů: maže se klíč na `globalThis`,
   // který je pro všechny instance toho modulu jeden.
   resetProcessSpendCap();
+  // **Okna stropu frekvence taky, a ze stejného důvodu.** Bydlí na
+  // `globalThis` a plní je i odmítnuté požadavky, takže bez tohohle by sada
+  // přes padesát případů mez naplnila sama a červená by vyskočila na náhodném
+  // případu, který s frekvencí nemá nic společného.
+  resetRateWindows();
   vi.resetModules();
   for (const dir of temporary.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
@@ -852,6 +862,11 @@ describe('POST /api/generate', () => {
       const CALLS = 150;
       const PER_CALL = 0.0033;
       for (let attempt = 0; attempt < CALLS; attempt += 1) {
+        // **Okno frekvence se posouvá, protože se tu měří účetní kniha.**
+        // 150 volání z jedné adresy je nad `MAX_REQUESTS_PER_WINDOW`, ale to
+        // jsou jiné dveře — nechat je sepnout tady by test měřil je a mlčel
+        // o tom, co má hlídat. Mez sama má vlastní sadu.
+        resetRateWindows();
         const { status } = await ask(JSON.stringify({ prompt: 'bludiště s klíčem' }));
         expect(status).toBe(200);
       }
@@ -919,6 +934,8 @@ describe('POST /api/generate', () => {
       });
 
       for (let attempt = 0; attempt < 150; attempt += 1) {
+        // Viz test nad tímhle: měří se účetní kniha, ne strop frekvence.
+        resetRateWindows();
         const { status } = await ask(JSON.stringify({ prompt: 'bludiště s klíčem' }));
         expect(status).toBe(200);
       }
@@ -1438,5 +1455,25 @@ describe('POST /api/generate pod náporem', () => {
     expect(acquireSlot('refine'), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(
       false,
     );
+  });
+});
+
+describe('strop na frekvenci dorazí až ke dveřím', () => {
+  it('padesátý první požadavek v okně je 429 s retry-after, ne 200', async () => {
+    // Okno se plní přímo čítačem, ne padesáti HTTP požadavky: měří se tady
+    // **zapojení** meze do těchhle dveří, ne mez sama (ta má vlastní sadu
+    // v `src/server/__tests__/rate-limit.test.ts`).
+    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1)
+      takeRateSlot('generate', 'unknown');
+    const { POST } = await import('../route');
+    const response = await POST(
+      new Request('http://127.0.0.1/api/generate', {
+        method: 'POST',
+        body: JSON.stringify({ prompt: CROWD_PROMPT }),
+      }),
+    );
+    expect(response.status).toBe(429);
+    expect(Number(response.headers.get('retry-after'))).toBeGreaterThanOrEqual(1);
+    expect(((await response.json()) as ResponseBody).error?.code).toBe('TOO_MANY_REQUESTS');
   });
 });

@@ -41,7 +41,7 @@
 
 import { randomUUID } from 'node:crypto';
 
-import { readBody } from '@/http/body';
+import { bodyRefusalResponse, readBody } from '@/http/body';
 import {
   groundTarget,
   planChange,
@@ -53,6 +53,7 @@ import { withRequest } from '@/obs/trace';
 import { killState } from '@/server/kill-switch';
 import { moderatePrompt } from '@/server/moderation';
 import { logRateLimited } from '@/server/public-faults';
+import { callerKey, rateLimitedResponse, takeRateSlot } from '@/server/rate-limit';
 import { getSession, putChange } from '@/worldstream/sessions';
 
 import { acquireSlot, cloudEmitter, MAX_CONCURRENT_GENERATIONS, releaseSlot } from '../../route';
@@ -128,6 +129,20 @@ export async function createChange(
       return fail(requestId, 503, 'REFINE_DISABLED', 'changing worlds is switched off right now');
     }
 
+    // Strop na frekvenci, hned za vypínačem a před čtením těla. Tyhle dveře
+    // stojí navíc placené volání, takže čítač souběhu níž zůstává — frekvence
+    // a souběh měří dvě různé věci a jedna druhou nenahradí.
+    const slot = takeRateSlot('changes', callerKey(request));
+    if (!slot.allowed) {
+      logRateLimited(
+        'worldstream/changes',
+        requestId,
+        'TOO_MANY_REQUESTS',
+        `${String(slot.count)} in window`,
+      );
+      return rateLimitedResponse(requestId, slot);
+    }
+
     let raw;
     try {
       raw = await readBody(request);
@@ -140,15 +155,23 @@ export async function createChange(
       );
       return fail(requestId, 400, 'BODY_UNREADABLE', 'the request body could not be read');
     }
+    // **Dva starší důvody si nechávají svůj pravopis.** Tyhle dveře vydávají
+    // `TOO_LARGE`/`TIMEOUT` tam, kde ostatní vydávají `PAYLOAD_TOO_LARGE`
+    // a `BODY_TIMEOUT`; sjednotit to je změna kontraktu, kterou tahle úloha
+    // neobjednala. Nový důvod (plná fronta čtení) sdílí kód se všemi dveřmi,
+    // a hlavně: `? 413 : 408` na něj vydávalo **408 „tělo dorazilo pomalu"**,
+    // tedy tvrzení o volajícím, který neudělal nic.
     if (!raw.ok)
-      return fail(
-        requestId,
-        raw.reason === 'TOO_LARGE' ? 413 : 408,
-        raw.reason,
-        raw.reason === 'TOO_LARGE'
-          ? 'the request body is too large'
-          : 'the request body arrived too slowly',
-      );
+      return raw.reason === 'BUSY'
+        ? bodyRefusalResponse(requestId, raw)
+        : fail(
+            requestId,
+            raw.reason === 'TOO_LARGE' ? 413 : 408,
+            raw.reason,
+            raw.reason === 'TOO_LARGE'
+              ? 'the request body is too large'
+              : 'the request body arrived too slowly',
+          );
 
     const read = readChangeBody(raw.text);
     if (!read.ok) return fail(requestId, 400, read.code, read.message);

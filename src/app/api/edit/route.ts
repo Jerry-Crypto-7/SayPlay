@@ -74,17 +74,20 @@
  *    sepne dobře: `readBody` čeká až `BODY_DEADLINE_MS = 5 000`
  *    (`src/http/body.ts`), takže N klientů, kteří pošlou hlavičky a pak mlčí,
  *    sedí uvnitř `POST` současně. Ohradil by ale **okno čtení těla**, ne těch
- *    15 ms CPU — a to okno má dnes strop jen na velikost (`MAX_BODY_BYTES`),
- *    ne na počet. Patří to do `T28-editrate` spolu s omezením frekvence,
- *    protože je to táž mez a stavět ji dvakrát nemá smysl.
+ *    15 ms CPU — a to okno mělo do 4. 9. 2026 strop jen na velikost
+ *    (`MAX_BODY_BYTES`), ne na počet. Zavřela to `T28-editrate` spolu
+ *    s omezením frekvence, protože je to táž mez a stavět ji dvakrát nemá
+ *    smysl.
  *
  * **Co s tím naměřeným tedy JE, od `T28-editrate`:** jeden požadavek stojí
  * **medián 15,3 ms, p95 27,7 ms a max 38,6 ms** synchronního CPU na smyčce
  * (60 měření nad tělem o 1 784 B, po zahřátí cache korpusu), takže ~66
  * požadavků za sekundu zastaví celou instanci — a s ní SSE proudy, preview
  * i snapshot. Zavírají to **dvě meze, ne čítač v letu**: strop na frekvenci
- * (`src/server/rate-limit.ts`, 50 požadavků za 10 s na dveře, odvozené z toho
- * p95) a strop na počet souběžných čtení těla (`MAX_CONCURRENT_BODY_READS`).
+ * (`src/server/rate-limit.ts`, 50 požadavků za 10 s na dvojici dveře–volající,
+ * odvozené z toho p95) a strop na okno čtení těla, který je sám dvojí —
+ * `MAX_CONCURRENT_BODY_READS_PER_CALLER` na počet a `MAX_BUFFERED_BODY_BYTES`
+ * na paměť, kterou rozečtená těla drží (`src/http/body.ts`).
  * ⚠ Obě jsou meze **na instanci**, ne na nasazení; co to znamená a proč to tak
  * je, stojí v hlavičce `rate-limit.ts`.
  *
@@ -277,7 +280,7 @@ export async function POST(request: Request): Promise<Response> {
     // Kódy i hlášky jsou beze změny; přibyl třetí důvod (`BUSY`, tedy plná
     // fronta čtení) a překlad se přestěhoval k mezi do `src/http/body.ts`,
     // aby ho čtvery dveře nedržely čtyřikrát.
-    if (!raw.ok) return bodyRefusalResponse(requestId, raw.reason);
+    if (!raw.ok) return bodyRefusalResponse(requestId, raw);
 
     let body: unknown;
     try {

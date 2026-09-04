@@ -32,9 +32,14 @@ import { readFileSync } from 'node:fs';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { BODY_DEADLINE_MS } from '@/http/body';
+import { BODY_DEADLINE_MS, MAX_CONCURRENT_BODY_READS_PER_CALLER, readBody } from '@/http/body';
 import type { UpstreamRequest } from '@/model/prompt';
 import { resetFaultLog } from '@/server/public-faults';
+import {
+  MAX_REQUESTS_PER_WINDOW,
+  resetRateWindows,
+  takeRateSlot,
+} from '@/server/rate-limit';
 import type { PendingChange, RefinePlan } from '@/model/worldstream-refine';
 import { clearSessions, openSession, putChange, type StoredSession } from '@/worldstream/sessions';
 
@@ -141,6 +146,10 @@ afterEach(() => {
   // producent téže dvojice (dveře, kód) byl `occurrence 2`, tedy mimo milník,
   // a tvrzení „řádek odešel" by mlčky zčervenalo v cizím testu.
   resetFaultLog();
+  // Okna stropu frekvence bydlí na `globalThis` a plní je i odmítnuté
+  // požadavky, takže bez vynulování by je sada naplnila sama a červená by
+  // vyskočila na náhodném případu, který s frekvencí nemá nic společného.
+  resetRateWindows();
   // Špionáž na `console.error` (odmítnutí náporem) nesmí přežít do dalšího
   // testu — tichý log by z něj udělal zelenou z jiného důvodu.
   vi.restoreAllMocks();
@@ -827,6 +836,70 @@ describe('pomalý požadavek končí na stropu těla, ne na rozpočtu', () => {
         code.slice(0, bodyRead).indexOf('Date.now()'),
         `${route} armuje hodiny ještě před čtením těla`,
       ).toBe(-1);
+    }
+  });
+});
+
+describe('strop na frekvenci dorazí až ke dveřím', () => {
+  it('padesátý první požadavek v okně je 429 s retry-after, ne 200', async () => {
+    // Okno se plní přímo čítačem, ne padesáti HTTP požadavky: měří se tady
+    // **zapojení** meze do těchhle dveří, ne mez sama (ta má vlastní sadu
+    // v `src/server/__tests__/rate-limit.test.ts`).
+    const stored = await generated();
+    const model = countingEmit();
+    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1)
+      takeRateSlot('changes', 'unknown');
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'make the mast sand-coloured' },
+      model.emit,
+    );
+    expect(response.status).toBe(429);
+    expect(Number(response.headers.get('retry-after'))).toBeGreaterThanOrEqual(1);
+    expect((await body(response)).error).toMatchObject({ code: 'TOO_MANY_REQUESTS' });
+    // Odmítnutí je **před** modelem. Za preview, které se nekonalo, se neplatí.
+    expect(model.calls()).toBe(0);
+  });
+
+  /** Tělo, které mlčí, dokud mu to někdo nedovolí — obsazuje slot čtení. */
+  function silentBody(): { readonly request: Request; readonly finish: () => void } {
+    let close = (): void => undefined;
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        close = () => {
+          controller.close();
+        };
+      },
+    });
+    const request = new Request('http://127.0.0.1/api/worldstream/sessions/s-1/changes', {
+      method: 'POST',
+      body: stream,
+      duplex: 'half',
+    } as RequestInit & { duplex: 'half' });
+    return {
+      request,
+      finish: () => {
+        close();
+      },
+    };
+  }
+
+  it('plná fronta čtení těl NENÍ pomalé tělo — 429, ne 408', async () => {
+    // **Tyhle dveře jako jediné překládaly `raw.reason` samy** a do 4. 9. 2026
+    // vydávaly `? 413 : 408`, takže nápor odsud odešel jako 408 „tělo dorazilo
+    // pomalu" — tvrzení o volajícím, který neudělal nic.
+    const stored = await generated();
+    const held = Array.from({ length: MAX_CONCURRENT_BODY_READS_PER_CALLER }, silentBody);
+    const pending = held.map((h) => readBody(h.request, 60_000));
+    try {
+      const response = await preview(stored.session.sessionId, { prompt: 'lower the mast' });
+      expect(response.status).toBe(429);
+      expect(response.headers.get('retry-after')).toBe('5');
+      expect((await body(response)).error).toMatchObject({ code: 'TOO_MANY_BODY_READS' });
+    } finally {
+      for (const h of held) h.finish();
+      await Promise.all(pending);
     }
   });
 });

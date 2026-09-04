@@ -294,7 +294,7 @@ export async function POST(request: Request): Promise<Response> {
     // aby nevznikl pátý pravopis.
     if (!raw.ok)
       return raw.reason === 'BUSY'
-        ? bodyRefusalResponse(requestId, raw.reason)
+        ? bodyRefusalResponse(requestId, raw)
         : fail(
             requestId,
             raw.reason === 'TOO_LARGE' ? 413 : 408,

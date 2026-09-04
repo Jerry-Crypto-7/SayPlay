@@ -26,7 +26,7 @@ import { type PartPatch } from '../../../../ir/revision';
 import { peelEnvelope, sealSimHash, type WorldDoc } from '../../../../ir/worlddoc';
 import { routePatch } from '../../../../patch/router';
 import { commitRoutedParts, staleRevision } from '../commit';
-import { MAX_CONCURRENT_BODY_READS, openBodyReads, readBody } from '../../../../http/body';
+import { MAX_CONCURRENT_BODY_READS_PER_CALLER, openBodyReads, readBody } from '../../../../http/body';
 import { MAX_REQUESTS_PER_WINDOW, resetRateWindows, takeRateSlot } from '../../../../server/rate-limit';
 import { POST } from '../route';
 
@@ -1246,10 +1246,10 @@ describe('plná fronta čtení těla dorazí až ke dveřím', () => {
     // a dveře ji přesto nemusí přeložit — do 4. 9. 2026 tu stálo
     // `reason === 'TOO_LARGE' ? 413 : 408`, takže nápor by odsud odešel jako
     // „tvoje tělo dorazilo pomalu".
-    const held = Array.from({ length: MAX_CONCURRENT_BODY_READS }, stalled);
+    const held = Array.from({ length: MAX_CONCURRENT_BODY_READS_PER_CALLER }, stalled);
     const pending = held.map((h) => readBody(h.request, 60_000));
     try {
-      expect(openBodyReads()).toBe(MAX_CONCURRENT_BODY_READS);
+      expect(openBodyReads()).toBe(MAX_CONCURRENT_BODY_READS_PER_CALLER);
       const response = await POST(
         new Request('http://127.0.0.1/api/edit', {
           method: 'POST',

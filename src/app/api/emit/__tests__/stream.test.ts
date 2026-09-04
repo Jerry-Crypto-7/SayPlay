@@ -17,6 +17,11 @@ import { POST as emit } from '../route';
 import { SseDecoder } from '../../../../components/viewer/sse';
 import type { EmissionOutcome, EmitPhase } from '../chain';
 import { POST as stream } from '../stream/route';
+import {
+  MAX_REQUESTS_PER_WINDOW,
+  resetRateWindows,
+  takeRateSlot,
+} from '../../../../server/rate-limit';
 
 type Route = (request: Request) => Promise<Response>;
 
@@ -509,5 +514,27 @@ describe('pád uvnitř proudu', () => {
     expect(log[0]).toContain('occurrence 1');
     expect(log[0]).toContain('the chain came apart (1)');
     expect(log[1]).toContain('the chain came apart (2)');
+  });
+});
+
+describe('strop na frekvenci dorazí až ke dveřím', () => {
+  afterEach(() => {
+    resetRateWindows();
+  });
+
+  it('padesátý první požadavek v okně je 429 s retry-after, ne proud', async () => {
+    // **Musí to být obyčejná odpověď, ne rámec.** Za hlavičkami
+    // `text/event-stream` je stav 200 dávno u klienta, takže brána o kus níž
+    // by uměla leda `stream-fault` — tedy nápor vydávaný za poruchu potrubí.
+    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1)
+      takeRateSlot('emit/stream', 'unknown');
+
+    const response = await stream(request({ promptId: 'C01' }));
+    expect(response.status).toBe(429);
+    expect(response.headers.get('content-type')).not.toContain('text/event-stream');
+    expect(Number(response.headers.get('retry-after'))).toBeGreaterThanOrEqual(1);
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
+      'TOO_MANY_REQUESTS',
+    );
   });
 });

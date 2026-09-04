@@ -59,6 +59,7 @@ import {
   logStickyFault as logStickyForRoute,
 } from '../../../server/public-faults';
 import { killState } from '../../../server/kill-switch';
+import { callerKey, rateLimitedResponse, takeRateSlot } from '../../../server/rate-limit';
 import { DEFAULT_CAP_USD, processSpendCap, type RefusalReason } from '../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../server/upstream';
 import {
@@ -462,6 +463,19 @@ export async function POST(request: Request): Promise<Response> {
 
   return withRequest(requestId, async () => {
     /**
+     * **Strop na frekvenci je první brána, ještě před čtením těla.** Jsou to
+     * **placené** dveře, takže čítač volání v letu níž zůstává — ten hlídá
+     * peníze a souběh, tenhle hlídá smyčku instance a jsou to dvě různé věci.
+     * Odůvodnění čísel i toho, proč je mez na proces, je
+     * v `src/server/rate-limit.ts`.
+     */
+    const slot = takeRateSlot('generate', callerKey(request));
+    if (!slot.allowed) {
+      logRateLimited('generate', requestId, 'TOO_MANY_REQUESTS', `${String(slot.count)} in window`);
+      return rateLimitedResponse(requestId, slot);
+    }
+
+    /**
      * **Čtení těla je uvnitř `try`, a je to jediný důvod, proč tenhle handler
      * odpoví vždycky.** `readBody()` vrací meze jako hodnotu, ale samo
      * `reader.read()` se **odmítnout** může — přerušené spojení, vadná
@@ -487,7 +501,7 @@ export async function POST(request: Request): Promise<Response> {
     }
     // Třetí důvod (`BUSY`) a jeden překlad pro všechny dveře — viz
     // `bodyRefusalResponse()` v `src/http/body.ts`. Kódy i hlášky beze změny.
-    if (!raw.ok) return bodyRefusalResponse(requestId, raw.reason);
+    if (!raw.ok) return bodyRefusalResponse(requestId, raw);
 
     let body: unknown;
     try {
