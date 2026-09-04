@@ -470,6 +470,50 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
     expect(getSession('podvrh'), 'padla útočníkova relace, ne oběť').not.toBeNull();
   });
 
+  /**
+   * ⚠ **Druhý test, který tvrdí ZBYTEK kladně** (`T16-idleforever`, sedmá
+   * nezávislá revize 4. 9. 2026). Doktrína u `MAX_SESSIONS_PER_CALLER` říká,
+   * že podvržený klíč umí oběti zablokovat zakládání světů. Není tam, jak
+   * dlouho — a odpověď je **po celou životnost procesu**, ne hodinu:
+   * `idleFor()` obnovuje `since` při každém zametení, dokud `watchers > 0`,
+   * a dveře `GET /events` žádné ověření nemají.
+   *
+   * **Úspěšná relace je tu schválně, a je to opravený tvar útoku.** První
+   * verze tohohle testu držela proud nad relací `failed`, což provozem
+   * neprošlo: `events/route.ts` zavírá proud sám na koncovém rámci
+   * (`session.failed`), takže `watchers` spadne na nulu a relace zestárne
+   * normálně. Nezavře se naopak relace ve fázi `world`: `advance('complete')`
+   * nemá v provozu jediného volajícího (ověřeno greppem 4. 9. 2026), takže
+   * **úspěšná generace končí ve `world` a její proud zůstává otevřený.**
+   * Tam útok drží.
+   *
+   * **Zelená tady znamená „páka je pořád otevřená“.** Zavře ji klíč
+   * z důvěryhodného konce řetězu (`T16-trustedkey`), ne stárnutí — stárnout
+   * podle fáze sem nemá kdo dopsat, protože fáze, na které to drží, je
+   * `world`, a tu chrání vlastní pinnutá vlastnost („otevřený proud drží
+   * relaci naživu i tři hodiny"). Až se páka zavře, tenhle test zčervená
+   * a doktrínu je pak nutné přepsat vědomě.
+   */
+  it('osm podvržených relací s drženým proudem drží oběti kbelík plný i po třiceti dnech', () => {
+    const TŘICET_DNÍ = 30 * 24 * 60 * 60 * 1000;
+    naPráh();
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
+      // Útočník píše IP oběti a na každou svou relaci otevře proud — dveře
+      // `GET /events` žádné ověření nemají a `sessionId` mu přišlo v 202.
+      admitted(`podvrh-${String(i)}`, T0 + i, 'ip:oběť').session.events.subscribe(() => {});
+    }
+
+    // Oběť se po třiceti dnech pokusí založit svůj první svět. `putSession()`
+    // předtím zamete stárnutí, takže tohle je zároveň to zametení.
+    const nový = ownedWorld('oběť-nový', T0 + TŘICET_DNÍ, 'ip:oběť');
+
+    expect(
+      nový,
+      'páka je zavřená — přepiš doktrínu u MAX_SESSIONS_PER_CALLER, tenhle zbytek už neplatí',
+    ).toBeNull();
+    expect(getSession('podvrh-0'), 'sledovaná relace přece zestárla').not.toBeNull();
+  });
+
   it('devátá relace jednoho klíče se nad prahem odmítne a osm předchozích zůstane', () => {
     naPráh();
     for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {

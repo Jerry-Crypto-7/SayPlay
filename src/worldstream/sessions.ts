@@ -142,6 +142,28 @@ export const MAX_LIVE_SESSIONS = 64;
  * útočník umí oběti **zablokovat zakládání** nových světů (osm požadavků
  * s její IP naplní její kbelík), a kdo si vymyslí 64 hlaviček po jedné relaci,
  * srovná kbelíky na jedničku a strop registru vybírá zase starým pořadím.
+ *
+ * ⚠ **A jak dlouho ten blok trvá: dokud běží proces, ne hodinu**
+ * (`T16-idleforever`, změřeno 4. 9. 2026 sondou v +1 h, +24 h i +30 dní).
+ * `idleFor()` obnovuje `since` při každém zametení, dokud `watchers > 0`,
+ * a `GET /events` žádné ověření nemá — osm podvržených POSTů plus osm
+ * držených proudů tedy oběti kbelík nikdy neuvolní. Drží to na fázi
+ * `world`: proud nad `failed` si `events/route.ts` zavře sám na koncovém
+ * rámci, kdežto `advance('complete')` nemá v provozu volajícího, takže
+ * **úspěšná generace končí ve `world` a její proud zůstává otevřený.**
+ * Zbytek tvrdí kladně test `osm podvržených relací s drženým proudem drží
+ * oběti kbelík plný i po třiceti dnech`.
+ *
+ * ⚠ **Stárnutím se to nespravuje a příští kolo to nemá zkoušet — změřeno.**
+ * (a) Vyjmout `complete`/`failed` z `callerHolds()` **vypne kvótu úplně tam,
+ * kde dnes běží demo**: bez `.env` skončí každá relace `failed` ještě před
+ * dalším POSTem (sonda přes route, 4. 9. 2026), takže `callerHolds()` vrací
+ * nulu a čtyři route testy kvóty zbarví červeně. Navíc by to tuhle páku
+ * netrefilo — drží na `world`, ne na doběhlé fázi. (b) Nechat stárnout
+ * i sledované relace položí pinnutou vlastnost „otevřený proud drží relaci
+ * naživu i tři hodiny" — tedy přesně toho porotce, kvůli kterému ta
+ * vlastnost vznikla. Zavírá to klíč z důvěryhodného konce řetězu
+ * (`T16-trustedkey`), ne čtvrté kolo stárnutí.
  * Zavřít obojí umí jedině klíč z **důvěryhodného** konce řetězu
  * (`x-vercel-forwarded-for`, nebo poslední položka XFF při pevné hloubce
  * proxy). To je změna `callerKey()`, na které stojí i strop frekvence sedmerých
