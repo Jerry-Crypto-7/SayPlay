@@ -387,6 +387,30 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
     expect(liveSessionCount()).toBe(MAX_SESSIONS_PER_CALLER);
   });
 
+  /**
+   * ⚠ **Stárnutí se zametá dřív, než se kbelík spočítá.** Bez toho pořadí by
+   * volajícího zamklo osm jeho **vlastních** hodinu stojících relací: kbelík by
+   * se počítal nad relacemi, které tentýž průchod zrovna pouští, a devátá by
+   * dostala 429, přestože po ní v registru nezůstane nic.
+   */
+  it('vlastní hodinu stojící relace volajícího na devátou nezamknou', () => {
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
+      admitted(`moje-${i}`, T0 + i, 'volající-A');
+    }
+    // Jedno cizí zametení, aby registr uviděl všech osm proudů **stát**.
+    admitted('budička', T0 + MAX_SESSIONS_PER_CALLER, 'jiný-klíč');
+
+    const devátá = ownedWorld(
+      'devátá',
+      T0 + MAX_SESSIONS_PER_CALLER + IDLE_SESSION_MS + 1,
+      'volající-A',
+    );
+
+    expect(devátá, 'kvóta se počítala nad relacemi, které zametení zrovna pouští').not.toBeNull();
+    expect(getSession('moje-0'), 'hodinu stojící relace se neuvolnila').toBeNull();
+    expect(liveSessionCount(), 'v registru zůstalo víc než budička a devátá').toBe(2);
+  });
+
   it('devátá relace jednoho klíče nesáhne na relaci cizího klíče', () => {
     const cizí = admitted('cizí', T0, 'volající-B');
     cizí.session.events.subscribe(() => {});
