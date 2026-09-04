@@ -1333,7 +1333,7 @@ describe('POST /api/generate pod náporem', () => {
   }
 
   it('požadavek nad strop souběžných generací dostane 503, ne volání modelu', async () => {
-    const { MAX_CONCURRENT_GENERATIONS, MAX_WORLD_GENERATIONS, acquireSlot, releaseSlot, send } =
+    const { DOOR_CEILING, MAX_CONCURRENT_GENERATIONS, acquireSlot, releaseSlot, send } =
       await loadOnce();
     // **Odmítnutí musí být vidět v operátorském logu.** Bez řádku neodliší
     // nikdo „strop nás ochránil" od „nikdo nepřišel", a orákulum téhle brány
@@ -1344,17 +1344,18 @@ describe('POST /api/generate pod náporem', () => {
     vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
       log.push(String(line));
     });
-    // Nasytí se **strop těchhle dveří**, ne celý čítač: stavba světa se
-    // zastaví o slot dřív, aby nevyhladověla preview druhé věty.
-    for (let taken = 0; taken < MAX_WORLD_GENERATIONS; taken += 1)
-      expect(acquireSlot('world')).toBe(true);
+    // Nasytí se **strop těchhle dveří**, ne celý čítač: `/api/generate` má od
+    // druhého kola revize `T22-doorcounters` vlastní čítač, aby nevyhladovělo
+    // zakládání relace ani preview druhé věty.
+    for (let taken = 0; taken < DOOR_CEILING.generate; taken += 1)
+      expect(acquireSlot('generate')).toBe(true);
 
     try {
       const { status, json } = await send();
       expect(status).toBe(503);
       expect(json.error?.code).toBe('TOO_MANY_GENERATIONS');
     } finally {
-      for (let taken = 0; taken < MAX_WORLD_GENERATIONS; taken += 1) releaseSlot('world');
+      for (let taken = 0; taken < DOOR_CEILING.generate; taken += 1) releaseSlot('generate');
     }
 
     const refusals = log.filter((line) => line.includes('TOO_MANY_GENERATIONS'));
@@ -1370,16 +1371,35 @@ describe('POST /api/generate pod náporem', () => {
     // hledat generaci, která neexistuje. Nález revize 4. 9. 2026.
     //
     // **Od `T22-doorcounters` řádek rovnou jmenuje, které dveře ty sloty
-    // drží** — tady jsou to tři světy a žádné preview, takže operátor ví, kam
+    // drží** — tady jsou to démové dveře a nic jiného, takže operátor ví, kam
     // se dívat, aniž by hádal.
     expect(refusals[0]).toContain(
-      'paid slots in flight: 3 world + 0 refine of 4 on this instance; the world door may hold 3',
+      'paid slots in flight: 0 world + 1 generate + 0 refine of 4 on this instance; ' +
+        'the generate door may hold 1',
     );
     expect(refusals[0], 'hláška tvrdí o slotech víc, než čítač ví').not.toContain(
       'open to new worlds are in flight',
     );
-    expect(MAX_WORLD_GENERATIONS, 'strop se pohnul — přepiš i větu v logu').toBe(3);
+    expect(DOOR_CEILING.generate, 'strop se pohnul — přepiš i větu v logu').toBe(1);
     expect(MAX_CONCURRENT_GENERATIONS, 'čítač se pohnul — přepiš i větu v logu').toBe(4);
+  });
+
+  it('nasycené zakládání relace tyhle dveře nezavře — každé mají vlastní čítač', async () => {
+    // **Zrcadlo nálezu druhého kola nezávislé revize 4. 9. 2026.** Do té doby
+    // si `/api/generate` bralo slot pod jménem `world`, tedy z týchž slotů jako
+    // `POST /api/worldstream/sessions`. Vyhladovění šlo oběma směry a tenhle
+    // test měří ten, který jde přes **skutečnou routu**: nasytit dveře `world`
+    // a poslat větu sem. Se sdíleným čítačem je odpověď 503.
+    const { DOOR_CEILING, acquireSlot, releaseSlot, send } = await loadOnce();
+    for (let taken = 0; taken < DOOR_CEILING.world; taken += 1)
+      expect(acquireSlot('world'), `slot ${taken} zakládání relace měl být volný`).toBe(true);
+
+    try {
+      const { status } = await send();
+      expect(status, 'zakládání relace zavřelo demo dveře — sdílený čítač je zpátky').toBe(200);
+    } finally {
+      for (let taken = 0; taken < DOOR_CEILING.world; taken += 1) releaseSlot('world');
+    }
   });
 
   it('slot se po odbavení vrátí, takže dveře nezůstanou zavřené', async () => {
@@ -1414,7 +1434,7 @@ describe('POST /api/generate pod náporem', () => {
     const source = readFileSync('src/app/api/generate/route.ts', 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/^\s*\/\/.*$/gm, '');
-    const gate = source.indexOf("if (!acquireSlot('world'))");
+    const gate = source.indexOf("if (!acquireSlot('generate'))");
     const grammarRead = source.indexOf('const grammar = frozenGrammar();');
 
     expect(gate, 'brána souběhu ve zdroji chybí').toBeGreaterThan(-1);
@@ -1439,9 +1459,7 @@ describe('POST /api/generate pod náporem', () => {
     vi.resetModules();
 
     const { POST } = await import('../route');
-    const { MAX_WORLD_GENERATIONS, acquireSlot } = await import(
-      '../../worldstream/sessions/route'
-    );
+    const { DOOR_CEILING, acquireSlot } = await import('../../worldstream/sessions/route');
 
     const response = await POST(
       new Request('http://127.0.0.1/api/generate', {
@@ -1452,15 +1470,15 @@ describe('POST /api/generate pod náporem', () => {
     expect(response.status).toBe(503);
     expect(((await response.json()) as ResponseBody).error?.code).toBe('CORPUS_UNREADABLE');
 
-    // **Sonda se ptá `world`, tedy dveří, kterými ten slot odešel.** Levné
-    // dveře mají od `T22-doorcounters` vlastní strop pod dnem čítače, takže
-    // by poslední pokus odmítly samy a o `running.world` by neřekly nic —
-    // přesně tak byla tahle sonda dekorativní, než to našla revize.
-    for (let taken = 0; taken < MAX_WORLD_GENERATIONS; taken += 1)
-      expect(acquireSlot('world'), `slot ${taken} měl být volný — odmítnutí ho nevrátilo`).toBe(
+    // **Sonda se ptá `generate`, tedy dveří, kterými ten slot odešel.** Cizí
+    // dveře mají vlastní strop, takže by poslední pokus odmítly samy a o
+    // `running.generate` by neřekly nic — přesně tak byla tahle sonda
+    // dekorativní, než to našla revize.
+    for (let taken = 0; taken < DOOR_CEILING.generate; taken += 1)
+      expect(acquireSlot('generate'), `slot ${taken} měl být volný — odmítnutí ho nevrátilo`).toBe(
         true,
       );
-    expect(acquireSlot('world'), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(
+    expect(acquireSlot('generate'), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(
       false,
     );
   });

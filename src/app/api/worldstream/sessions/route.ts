@@ -12,11 +12,11 @@
  *    by vypadaly jako přijaté a produkt by tvrdil, že geometrii píše model,
  *    zatímco by ji směl podstrčit kdokoli.
  * 2. **Moderace** (`src/server/moderation.ts`), tedy táž brána jako `/api/emit`.
- * 3. **Strop souběhu**: je to **týž strop** jako u preview druhé věty, jen se
- *    tyhle dveře zastaví o slot dřív — `MAX_WORLD_GENERATIONS` nad společným
- *    dnem `MAX_CONCURRENT_GENERATIONS`. Preview má vlastní mez o slot níž ze
- *    stejného důvodu; v letu se počítá po dveřích, takže rezerva platí obojím
- *    směrem. Odůvodnění je u `DOOR_CEILING`.
+ * 3. **Strop souběhu**: je to **týž strop** jako u preview druhé věty a jako
+ *    u `/api/generate`, jen se každé ty dveře zastaví o kus dřív — vlastní
+ *    strop nad společným dnem `MAX_CONCURRENT_GENERATIONS`. V letu se počítá
+ *    po dveřích, takže rezerva platí na všechny strany. Odůvodnění a invariant,
+ *    na kterém to stojí, jsou u `DOOR_CEILING`.
  * 4. **Strop utrácení** — uvnitř emitoru, u každého placeného volání zvlášť.
  *
  * ## Proč tu není `AdmissionQueue`, ačkoli je napsaná
@@ -78,7 +78,7 @@ export const MAX_CONCURRENT_GENERATIONS = 4;
 /**
  * Kolik z těch čtyř smí naráz držet **zakládání relace**.
  *
- * Jeden čítač obsluhuje dvoje dveře, jejichž doba držení se liší o dva řády.
+ * Jeden čítač obsluhoval dvoje dveře, jejichž doba držení se liší o dva řády.
  * Zakládání drží slot po **celou** generaci na pozadí — volání na záměr plus až
  * `MAX_BLUEPRINT_ROUNDS` kol kompilace a oprav, každé `fetch` omezené jen
  * `DEFAULT_TIMEOUT_MS = 120 000` v `src/server/upstream.ts`. Preview druhé věty
@@ -88,57 +88,66 @@ export const MAX_CONCURRENT_GENERATIONS = 4;
  * vrátí `503 TOO_MANY_CHANGES`. Cena útoku jsou čtyři požadavky, a vypne to
  * druhou větu — tedy hlavní věc, kterou má porotce vidět.
  *
- * Tři ze čtyř je proto **rezerva pro ty druhé dveře**, ne druhý strop: strop
- * zůstává jeden a rozhoduje součet, mění se jen mez, o kterou se každé dveře
- * zastaví dřív. Kdo chce platit za osm volání naráz, střídáním adres si je
- * pořád nekoupí.
+ * ✅ **Od 4. 9. 2026 jsou dveře troje, ne dvoje** (`T22-doorcounters`, druhé
+ * kolo nezávislé revize). `POST /api/generate` je **třetí veřejné dveře na
+ * placené volání** a do té doby si bral slot pod jménem `world`, tedy z týchž
+ * dvou slotů jako zakládání relace: tři souběžná `POST /api/generate` (strop
+ * frekvence pustí padesát za deset sekund, takže tři jsou zadarmo) obsadila
+ * celý strop dveří `world` na celou dobu poskytovatele a **každé** zakládání
+ * relace po tu dobu dostalo `503`. Rezerva na dveře platí jen tehdy, když má
+ * vlastní čítač **každé** veřejné dveře.
  *
- * ⚠ **Rezerva byla do 4. 9. 2026 jednosměrná, a nebyla to vlastnost.** První
- * podoba tohohle komentáře tvrdila, že opačným směrem hladovět nejde, protože
- * preview drží slot „vteřiny, ne minuty". **Revize to vyvrátila čtením zdroje:**
- * preview jde týmž `cloudEmitter()` (níž v tomhle souboru) s touž konfigurací,
- * takže jeho jediná mez je zase `DEFAULT_TIMEOUT_MS = 120 000`. Tři souběžná
- * `POST …/changes` proti visícímu poskytovateli tedy zavřou **oboje** dveře na
- * stavbu světa na celé dvě minuty, aniž se staví jediný svět — a stojí to o
- * jeden požadavek míň než před touhle úlohou.
- *
- * Není to regrese v druhu, jen ve stupni: před rezervou to stálo čtyři
- * požadavky, teď tři.
- *
- * ✅ **Opraveno 4. 9. 2026 (`T22-doorcounters`): v letu se počítá PO DVEŘÍCH.**
- * `running` není jedno nerozlišené číslo, ale dvě, a dveře projdou, jen když
- * jsou pod **svým** stropem **a** součet je pod `MAX_CONCURRENT_GENERATIONS`.
- * Rezerva tím platí na obě strany: víc než tři sloty nedostanou ani jedny
- * dveře, takže čtvrtý zůstává těm druhým, ať přijde nápor odkudkoli. Celkový
- * strop zůstal **jediný a rozhoduje pořád on**; tohle je jen jeho rozpad podle
- * dveří, ne druhý strop na téže úrovni.
+ * ⚠ **Cena té opravy je vidět a je vědomá:** čtyři sloty se dělí na tři dveře,
+ * takže `refine` spadlo ze tří na jeden a `world` ze tří na dva. Zvednout
+ * `MAX_CONCURRENT_GENERATIONS` je jediná páka, jak to vrátit — a to je
+ * rozhodnutí o penězích (souběžná placená volání), ne o kódu.
  */
-export const MAX_WORLD_GENERATIONS = 3;
+export const MAX_WORLD_GENERATIONS = 2;
 
 /**
  * Dveře, které si o placený slot říkají. Ne řetězec: strop se vybírá podle
  * něj, a překlep by ho tiše nastavil na `undefined`, po čemž `running >=
  * undefined` je nepravda a strop by nedržel vůbec.
  */
-export type PaidDoor = 'world' | 'refine';
+export type PaidDoor = 'world' | 'generate' | 'refine';
 
 /**
- * Strop na dveře. Jedno místo, kde ta dvě čísla stojí vedle sebe.
+ * Strop na dveře. Jedno místo, kde ta tři čísla stojí vedle sebe.
  *
- * **Obojí dveře se zastaví o slot dřív, každé kvůli těm druhým.** První podoba
+ * **Každé dveře se zastaví o slot dřív, kvůli těm ostatním.** První podoba
  * `T22-doorcounters` nechávala `refine` až na dno čítače, a nezávislá revize to
  * spustila: čtyři souběžná `POST …/changes` proti visícímu poskytovateli pak
  * zavřela **oboje** dveře na stavbu světa na celé dvě minuty, tedy přesně ten
- * útok, který ta úloha zavírala — jen za čtyři požadavky místo tří. Rezerva
- * platí obojím směrem, teprve když má rezervovaný slot každá strana.
+ * útok, který ta úloha zavírala — jen za čtyři požadavky místo tří. Druhé kolo
+ * revize našlo totéž potřetí: `/api/generate` sdílelo čítač s `world`.
+ *
+ * ## Invariant, na kterém rezerva stojí
+ *
+ * **Součet stropů VŠECH OSTATNÍCH dveří musí být menší než
+ * `MAX_CONCURRENT_GENERATIONS`.** Teprve pak platí, že dveře, které nedrží
+ * nic, se dovnitř dostanou vždycky: odmítnout je umí jen jejich vlastní strop
+ * (tedy jejich vlastní provoz), nebo součet — a na součet ostatní samy
+ * nedosáhnou. Dnes: `world` 2 + `generate` 1 + `refine` 1 = 4, takže pro
+ * každé dveře je součet těch zbylých nejvýš 3 proti dnu 4.
+ *
+ * ⚠ **Ten invariant se poruší tiše.** Zvednout kterýkoli strop o jedna
+ * vypadá jako uvolnění, a přitom to jiným dveřím sebere rezervu, o kterou tu
+ * celou dobu jde. Pinuje ho vlastnostní test nad těmihle konstantami
+ * (`changes.test.ts`, „invariant rezervy"), ne komentář.
+ *
+ * ⚠ **Se třemi dveřmi a dnem čtyř brána na součet nikdy nekousne první** —
+ * součet stropů je roven dnu, takže rozhodnou stropy dveří. Zbývá tam schválně:
+ * je to jediné, co udrží celkový počet placených volání, kdyby někdo strop
+ * některých dveří zvedl. Rovnost hlídá týž test.
  */
-const DOOR_CEILING: Readonly<Record<PaidDoor, number>> = {
+export const DOOR_CEILING: Readonly<Record<PaidDoor, number>> = {
   world: MAX_WORLD_GENERATIONS,
-  refine: MAX_CONCURRENT_GENERATIONS - 1,
+  generate: 1,
+  refine: 1,
 };
 
-/** Kolik placených volání drží která dveře. **Dva čítače, jeden strop.** */
-const running: Record<PaidDoor, number> = { world: 0, refine: 0 };
+/** Kolik placených volání drží která dveře. **Tři čítače, jeden strop.** */
+const running: Record<PaidDoor, number> = { world: 0, generate: 0, refine: 0 };
 
 /**
  * Věta pro operátorský log u odmítnutí: **kdo ty sloty drží a kolik jich smí
@@ -151,8 +160,8 @@ const running: Record<PaidDoor, number> = { world: 0, refine: 0 };
  */
 export function slotsDetail(door: PaidDoor): string {
   return (
-    `paid slots in flight: ${running.world} world + ${running.refine} refine ` +
-    `of ${MAX_CONCURRENT_GENERATIONS} on this instance; ` +
+    `paid slots in flight: ${running.world} world + ${running.generate} generate + ` +
+    `${running.refine} refine of ${MAX_CONCURRENT_GENERATIONS} on this instance; ` +
     `the ${door} door may hold ${DOOR_CEILING[door]}`
   );
 }
@@ -172,7 +181,8 @@ export function slotsDetail(door: PaidDoor): string {
  * sytit ho umí jen ty dveře, kterých se týká. Viz `MAX_WORLD_GENERATIONS`.
  */
 export function acquireSlot(door: PaidDoor): boolean {
-  if (running.world + running.refine >= MAX_CONCURRENT_GENERATIONS) return false;
+  if (running.world + running.generate + running.refine >= MAX_CONCURRENT_GENERATIONS)
+    return false;
   if (running[door] >= DOOR_CEILING[door]) return false;
   running[door] += 1;
   return true;
@@ -193,6 +203,7 @@ export function releaseSlot(door: PaidDoor): void {
 /** Jen pro testy: čítač je proces-globální jako registr relací. */
 export function resetConcurrency(): void {
   running.world = 0;
+  running.generate = 0;
   running.refine = 0;
 }
 

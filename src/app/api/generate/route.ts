@@ -548,7 +548,7 @@ export async function POST(request: Request): Promise<Response> {
      * a ten slot vrací sám, o dva řádky níž. **Přibude-li sem další `return`,
      * musí vrátit taky.**
      */
-    if (!acquireSlot('world')) {
+    if (!acquireSlot('generate')) {
       // **Odmítnutí musí být vidět v operátorském logu.** Bez toho řádku
       // neodliší nikdo „strop nás ochránil" od „nikdo nepřišel" — a orákulum
       // téhle brány je na nasazené adrese nepozorovatelné. `logRateLimited`
@@ -566,7 +566,7 @@ export async function POST(request: Request): Promise<Response> {
         // uměl čítač říct jen souhrn, takže operátor nepoznal, jestli tyhle
         // dveře zavřely světy, nebo preview druhé věty. Celé odůvodnění je
         // u `slotsDetail` ve worldstream/sessions/route.ts.
-        slotsDetail('world'),
+        slotsDetail('generate'),
       );
       return error(
         requestId,
@@ -578,7 +578,7 @@ export async function POST(request: Request): Promise<Response> {
 
     const grammar = frozenGrammar();
     if (!grammar.ok) {
-      releaseSlot('world');
+      releaseSlot('generate');
       logStickyFault(requestId, grammar.reason, grammar.detail);
       return error(requestId, 503, grammar.reason, PUBLIC_CORPUS_FAULT[grammar.reason]);
     }
@@ -594,7 +594,7 @@ export async function POST(request: Request): Promise<Response> {
       // **Uvolnit se musí i po výjimce.** Slot, který zůstane zabraný po pádu,
       // je strop, který se s každou chybou o jedna sníží — a po čtyřech
       // pádech dveře zavře natrvalo.
-      releaseSlot('world');
+      releaseSlot('generate');
     }
 
     /**
