@@ -33,7 +33,9 @@
  * Tatáž hranice jako u `/api/emit`, protože ji konzumuje týž scorer: **400**
  * nevalidní požadavek, **404** neznámý editační prompt nebo dvojice (svět,
  * prompt), kterou zmrazení nekryje, **408** tělo bez deadlinu, **413** tělo přes
- * strop, **409** zastaralá revize, **503** nečitelný nebo podvržený korpus.
+ * strop, **409** zastaralá revize, **503** dvojí — nečitelný nebo podvržený
+ * korpus, a od `f81d019` taky `REPLAY_DISABLED`, tedy vypnutý provoz
+ * (`off: ["all"]`, brána hned na začátku handleru).
  * Všechno ostatní je **200 s verdiktem** — patch, který se nedá směrovat,
  * aplikovat, snížit nebo jehož svědek po editaci nedojde do výhry, je *naměřený
  * výsledek*, ne chyba serveru.

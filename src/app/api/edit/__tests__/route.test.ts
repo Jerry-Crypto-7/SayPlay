@@ -16,9 +16,9 @@
  * zvlášť, což je křížová kontrola, ne zdroj pravdy.
  */
 
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, posix, relative, resolve, sep } from 'node:path';
 import { applyPatch, type Operation } from 'rfc6902';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -985,7 +985,64 @@ describe('hranice požadavku', () => {
 describe('strop souběhu sem nepatří, a je to změřené', () => {
   /** Komentáře pryč: hlavička route o tom měření mluví a nesmí si bránu prošlapat. */
   const stripComments = (source: string): string =>
-    source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
+
+  const ROUTE = 'src/app/api/edit/route.ts';
+
+  /**
+   * **Kam ten soubor sahá — rozřešeně, ne jako text.**
+   *
+   * Vrací cesty modulů, které `file` importuje relativně nebo přes `@/`.
+   * Balíčky se zahazují: ty do repa nepatří a jejich obsah tenhle test nehlídá.
+   *
+   * Existuje proto, že obě brány níž byly do 4. 9. 2026 seznamy řetězců, a
+   * nezávislá revize obě obešla beze změny chování — jednu novým souborem,
+   * který v seznamu nebyl, druhou zápisem `from '../../route'`, který ani jeden
+   * z hlídaných řetězců nenese.
+   */
+  function resolvedImports(file: string): string[] {
+    const source = stripComments(readFileSync(file, 'utf8'));
+    const found: string[] = [];
+    for (const match of source.matchAll(/from '([^']+)'/g)) {
+      const specifier = match[1];
+      const base = specifier.startsWith('.')
+        ? resolve(dirname(file), specifier)
+        : specifier.startsWith('@/')
+          ? resolve('src', specifier.slice(2))
+          : null;
+      if (base === null) continue;
+      const hit = [`${base}.ts`, `${base}.tsx`, join(base, 'index.ts')].find((candidate) =>
+        existsSync(candidate),
+      );
+      if (hit !== undefined) found.push(relative(process.cwd(), hit).split(sep).join(posix.sep));
+    }
+    return found;
+  }
+
+  /** Všechno, kam se z `entry` dá dojít po týchž hranách. */
+  function importClosure(entry: string): Set<string> {
+    const seen = new Set<string>();
+    const stack = [entry];
+    while (stack.length > 0) {
+      const next = stack.pop() as string;
+      if (seen.has(next)) continue;
+      seen.add(next);
+      stack.push(...resolvedImports(next));
+    }
+    return seen;
+  }
+
+  /**
+   * Modul toho **jediného** povoleného `await` — tedy čtení těla, které celý
+   * úsek začíná. Je z hlídání vyňatý jmenovitě, protože být asynchronní je celý
+   * jeho účel.
+   *
+   * **Naměřeno 4. 9. 2026, ne odhadnuto:** rozřešených importů `route.ts` je
+   * deset a `await`/`async`/`.then(` nese z nich **jediný**, právě tenhle.
+   * Návrh revize „seznam volaných odvodit z importů" by tedy bez téhle výjimky
+   * svítil červeně nad kódem, který je v pořádku.
+   */
+  const BODY_MODULE = 'src/http/body.ts';
 
   /**
    * **Nedosažitelná brána vypadá jako brána.** `T28-editungated` chtěla tyhle
@@ -1004,19 +1061,28 @@ describe('strop souběhu sem nepatří, a je to změřené', () => {
    * bránu prošlapat sama.
    */
   it('mezi čtením těla a odpovědí není jediný await', () => {
-    // **Sousední soubory se soudí taky, a je to oprava routovaného nálezu
-    // ze 4. 9. 2026.** Počítat `await` v jednom souboru pinovalo pravopis, ne
-    // vlastnost: `return commitRoutedParts(...).then(...)` s asynchronním
-    // `commit.ts` přidá do route **nula** tokenů `await` a úsek se přitom stane
-    // přerušitelným. Drahá část leží ve třech souborech, takže se soudí tři.
-    const routeCode = stripComments(readFileSync('src/app/api/edit/route.ts', 'utf8'));
+    const routeCode = stripComments(readFileSync(ROUTE, 'utf8'));
 
     const awaits = routeCode.match(/\bawait\b/g) ?? [];
     expect(awaits, 'v handleru přibyl await — viz hlavička route').toHaveLength(1);
     expect(routeCode, 'jediný await už není čtení těla').toContain('raw = await readBody(request);');
+    // **`.then(` se soudí i tady, ne jen u volaných** — routovaný nález
+    // 4. 9. 2026: `return Promise.resolve(commitRoutedParts(...)).then(...)`
+    // přidá do route nula tokenů `await` a úsek přesto přeruší.
+    expect(routeCode, 'route sama uhnula do mikrotasku').not.toContain('.then(');
 
-    // A ani jeden z volaných nesmí uhnout do mikrotasku.
-    for (const callee of ['src/app/api/edit/commit.ts', 'src/patch/router.ts']) {
+    // **Seznam volaných je odvozený, ne napsaný.** Předchozí podoba jmenovala
+    // dva soubory, takže drahou práci stačilo vytáhnout do třetího (revize
+    // navrhla `src/app/api/edit/pipeline.ts` jako `export async function`)
+    // a brána zůstala zelená. Odvozený seznam takový soubor uvidí v tu chvíli,
+    // kdy ho route začne importovat.
+    const callees = resolvedImports(ROUTE).filter((file) => file !== BODY_MODULE);
+    expect(callees, 'rozřešení importů nic nenašlo — brána by soudila prázdno').not.toEqual([]);
+    expect(callees, 'modul s commitem se z route přestal importovat').toContain(
+      'src/app/api/edit/commit.ts',
+    );
+
+    for (const callee of callees) {
       const code = stripComments(readFileSync(callee, 'utf8'));
       expect(code.match(/\bawait\b/g) ?? [], `${callee}: přibyl await`).toHaveLength(0);
       expect(code.match(/\basync\b/g) ?? [], `${callee}: přibyl async`).toHaveLength(0);
@@ -1030,19 +1096,24 @@ describe('strop souběhu sem nepatří, a je to změřené', () => {
    * druhou větu — vyhladovění, které `dc58740` odstranil.
    */
   it('neplacené dveře neimportují ani čítač, ani strop utrácení', () => {
-    // **Soudí se import, ne jméno.** Předchozí podoba byla seznam dvou řetězců
-    // (`acquireSlot`, `SpendCap`) a revize 4. 9. 2026 ji obešla dvakrát: cizí
-    // jméno pro tutéž funkci prošlo, a `spendCapFromEnv` neobsahuje ani
-    // `SpendCap` s velkým S. Modul, ze kterého to jde vzít, jsou dva — a ty
-    // přejmenovat nejde, aniž se přejmenuje soubor.
-    const code = readFileSync('src/app/api/edit/route.ts', 'utf8');
+    // **Soudí se rozřešený graf, ne text souboru.** Seznam řetězců revize
+    // 4. 9. 2026 obešla: `changes/route.ts` už dnes týž čítač importuje zápisem
+    // `from '../../route'`, který ani jeden z hlídaných řetězců nenese, takže
+    // jednořádkový re-export kdekoli po cestě bránu obejde. A druhým směrem
+    // svítil falešně: zmínit `src/server/spend-cap.ts` v prozaické hlavičce
+    // route ho rozsvítilo červeně, zrovna v souboru, kde se ta cesta nejspíš
+    // píše. Graf umí obojí naráz.
+    const reachable = importClosure(ROUTE);
 
-    expect(code, 'edit route sáhla na modul s čítačem placených volání').not.toContain(
-      'worldstream/sessions/route',
-    );
-    expect(code, 'edit route sáhla na strop utrácení, ačkoli nic neplatí').not.toContain(
-      'server/spend-cap',
-    );
+    expect(reachable.size, 'graf se nerozvinul — brána by soudila prázdno').toBeGreaterThan(1);
+    expect(
+      [...reachable].filter((file) => file === 'src/server/spend-cap.ts'),
+      'edit route dosáhne na strop utrácení, ačkoli nic neplatí',
+    ).toEqual([]);
+    expect(
+      [...reachable].filter((file) => file === 'src/app/api/worldstream/sessions/route.ts'),
+      'edit route dosáhne na modul s čítačem placených volání',
+    ).toEqual([]);
   });
 
   /**
