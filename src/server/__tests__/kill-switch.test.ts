@@ -252,6 +252,38 @@ describe('ovládací soubor je jeden, ne dva', () => {
       replay: false,
     });
   });
+
+  // P15 T30-whitelistedge. JSON komentáře nemá, takže poznámka pro kolegu je
+  // to první, co operátor za incidentu do souboru napíše — a uzavřený seznam
+  // ji do 4. 9. 2026 četl jako rozbitý soubor: troje placené dveře dolů kvůli
+  // větě, kterou nikdo nečte. `note` je jediný volný klíč a nikdo ho nečte.
+  it('`note` vedle povelu nic nerozbije — vypne jen to, co povel jmenuje', async () => {
+    const variables = {
+      WORLDSMITH_CONTROL_FILE: controlFile(
+        JSON.stringify({ off: ['upstream'], note: 'účet utíká, vypínám model, volej Tomáše' }),
+      ),
+    };
+    expect(killState(variables)).toEqual({
+      upstream: true,
+      sessions: false,
+      refine: false,
+      snapshots: false,
+      replay: false,
+    });
+    const cap = spendCapFromEnv(variables);
+    expect(cap.snapshot().capUsd, 'poznámka pohnula stropem').toBe(DEFAULT_CAP_USD);
+    expect((await cap.reserve(0.01)).ok, 'poznámka odmítla rezervaci').toBe(true);
+
+    // Hodnota `note` je volná: objekt soubor nerozbije. Přes soubor, ne přes
+    // `killStateFrom` — seznam klíčů soudí `readControlFile`, a ta by se obešla.
+    const objectNote = killState(env(JSON.stringify({ off: ['upstream'], note: { ticket: 42 } })));
+    expect(objectNote.upstream).toBe(true);
+    expect(objectNote.sessions, 'objekt v `note` rozbil soubor').toBe(false);
+
+    // Ale překlep v tom klíči je pořád překlep v klíči: seznam zůstává uzavřený.
+    expect(killState(env(JSON.stringify({ off: ['upstream'], notes: 'x' }))).sessions, '`notes` prošlo').toBe(true);
+    expect(killState(env(JSON.stringify({ off: ['upstream'], Note: 'x' }))).sessions, '`Note` prošlo').toBe(true);
+  });
 });
 
 /* ------------------------------------------------------------------ *

@@ -61,8 +61,34 @@ import { readFileSync } from 'node:fs';
  *
  * Naměřeno tímtéž během: **26 ovládacích souborů napsaných v repu, 0 z nich
  * nese jiný klíč**, takže tenhle seznam nezakazuje nic, co existuje.
+ *
+ * ## `note` — jediný volný klíč, a nikdo ho nečte (P15 T30-whitelistedge)
+ *
+ * JSON komentáře nemá, takže `{"off":["upstream"],"note":"účet utíká"}` je to
+ * nejpřirozenější, co operátor za incidentu napíše — a uzavřený seznam na to
+ * odpovídal `broken`, tedy troje placené dveře dolů a každé `reserve()`
+ * odmítnuté. Selhává to zavřeně, takže peníze neutečou; padá dostupnost
+ * přesně ve chvíli, kdy na ní záleží (naměřeno nezávislou revizí 3. 9. 2026,
+ * CONFIRMED spuštěním). `note` proto na seznamu je, **smí nést cokoli a žádný
+ * čtenář ho neinterpretuje** — strop bere `enabled`/`capUsd`/`callCap`,
+ * vypínače `off`, a `note` nevidí ani jeden. Překlep v `note` je pořád překlep
+ * v klíči (`notes`, `Note`) a soubor rozbije; to je cena za to, že seznam
+ * zůstává uzavřený.
+ *
+ * ## Opakovaný klíč se neřeší — zapsané rozhodnutí, ne přehlédnutí
+ *
+ * `{"capUsd":0.01,"capUsd":1000}` projde `JSON.parse` jako `{capUsd:1000}`;
+ * `Object.keys` vidí až výsledek, takže poslední výskyt vyhraje a seznam to
+ * nepozná. Je to jediná podoba překlepu, kterou schová sám formát. Zavřít by
+ * to šlo počítáním klíčů nad syrovým textem nebo `reviver`em, který redefinici
+ * odmítne — obojí je vlastní parser JSONu kvůli souboru o pěti klíčích.
+ * Naměřeno 4. 9. 2026: **žádný ovládací soubor v repu ani na nasazení
+ * neexistuje** (na Vercelu ani disk, `T30-controllever`), takže by ten parser
+ * dnes hlídal nulu souborů. Rozhodnutí: **mimo rozsah, poslední klíč vyhrává**;
+ * kdo soubor píše, píše každý klíč jednou. Otevře se to znovu, až bude soubor
+ * na nasazení existovat a ukáže se, že se do něj dopisuje pod starší řádky.
  */
-export const CONTROL_KEYS = ['enabled', 'capUsd', 'callCap', 'off'] as const;
+export const CONTROL_KEYS = ['enabled', 'capUsd', 'callCap', 'off', 'note'] as const;
 
 export type ControlRead =
   /** Nikdo vypínačem nehnul. Platí výchozí hodnoty volajícího. */
