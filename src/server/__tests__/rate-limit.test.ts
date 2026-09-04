@@ -9,6 +9,7 @@ import {
   rateLimitedResponse,
   resetRateWindows,
   takeRateSlot,
+  UNIDENTIFIED_CALLER,
 } from '../rate-limit';
 
 /** Začátek okna, aby se v případech počítalo od kulatého čísla. */
@@ -122,19 +123,51 @@ describe('strop na frekvenci veřejných dveří', () => {
     const forwarded = new Request('http://x/', {
       headers: { 'x-forwarded-for': `${ME}, 70.41.3.18, 150.172.238.178` },
     });
-    expect(callerKey(forwarded), 'první položka je klient, zbytek jsou proxy').toBe(ME);
+    expect(callerKey(forwarded), 'první položka je klient, zbytek jsou proxy').toContain(ME);
 
     const real = new Request('http://x/', { headers: { 'x-real-ip': SOMEONE_ELSE } });
-    expect(callerKey(real)).toBe(SOMEONE_ELSE);
+    expect(callerKey(real)).toContain(SOMEONE_ELSE);
 
     // Bez hlaviček spadnou všichni do jednoho jména — lokální běh je jeden
     // stroj a jeden návštěvník.
-    expect(callerKey(new Request('http://x/'))).toBe('unknown');
+    expect(callerKey(new Request('http://x/'))).toBe(UNIDENTIFIED_CALLER);
 
     // **Klíč je vstup od volajícího, takže se ořezává.** Bez toho by stačilo
     // posílat kilobajtové hlavičky a mapa oken by byla úložiště zdarma.
     const huge = new Request('http://x/', { headers: { 'x-forwarded-for': 'a'.repeat(5_000) } });
-    expect(callerKey(huge).length).toBe(45);
+    expect(huge.headers.get('x-forwarded-for')?.length).toBe(5_000);
+    expect(callerKey(huge).length).toBeLessThan(60);
+  });
+
+  it('sentinel nerozeznaných se z hlavičky NEDÁ složit', () => {
+    // **Obejití naměřené nezávislou revizí 4. 9. 2026, ověřené spuštěním.**
+    // Klíč se skládal z hodnoty, kterou píše volající, takže se dalo
+    // dobrovolně vstoupit do kbelíku nerozeznaných — a ten má v `body.ts`
+    // osmkrát vyšší strop souběžných čtení, tedy celý rozpočet paměti
+    // instance pro jednoho klienta.
+    const spoofed: Record<string, string>[] = [
+      { 'x-forwarded-for': UNIDENTIFIED_CALLER },
+      { 'x-forwarded-for': `${UNIDENTIFIED_CALLER}, 203.0.113.7` },
+      // Prázdná první položka: `split(',')[0].trim()` z ní udělá `''`, což
+      // dřív spadlo rovnou na sentinel.
+      { 'x-forwarded-for': ' , 203.0.113.7' },
+      // A hlavička prázdná úplně — pořád je to vstup od volajícího.
+      { 'x-forwarded-for': '' },
+      { 'x-forwarded-for': '   ' },
+      { 'x-real-ip': UNIDENTIFIED_CALLER },
+      { 'x-real-ip': '' },
+    ];
+    for (const headers of spoofed) {
+      const key = callerKey(new Request('http://x/', { headers }));
+      expect(key, `${JSON.stringify(headers)} se vydal za nerozeznaného`).not.toBe(
+        UNIDENTIFIED_CALLER,
+      );
+    }
+
+    // Polarita: chybějící hlavička sentinel pořád dát MUSÍ, jinak by se
+    // kbelík nerozeznaných nedal naplnit vůbec a test výš by byl zelený
+    // nad `callerKey`, který vrací pokaždé něco jiného.
+    expect(callerKey(new Request('http://x/'))).toBe(UNIDENTIFIED_CALLER);
   });
 
   it('odpověď nese 429, retry-after a NEPROZRADÍ, kde ten strop je', async () => {
