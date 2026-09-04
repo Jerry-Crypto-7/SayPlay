@@ -33,7 +33,10 @@ import { SseDecoder } from '../../../../components/viewer/sse';
 import type { SessionEvent, SessionEventLog } from '../../../../worldstream/events';
 import {
   clearSessions,
+  getSession,
+  liveSessionCount,
   MAX_LIVE_SESSIONS,
+  MAX_SESSIONS_PER_CALLER,
   openSession,
   runGeneration,
   serverGrammar,
@@ -73,10 +76,13 @@ import {
  * Volání route.
  * ------------------------------------------------------------------ */
 
-function createRequest(body: unknown): Request {
+function createRequest(body: unknown, caller?: string): Request {
   return new Request('http://127.0.0.1/api/worldstream/sessions', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers:
+      caller === undefined
+        ? { 'content-type': 'application/json' }
+        : { 'content-type': 'application/json', 'x-forwarded-for': caller },
     body: typeof body === 'string' ? body : JSON.stringify(body),
   });
 }
@@ -983,5 +989,39 @@ describe('strop na frekvenci dorazí až k zakládání relace', () => {
     // ho — a padesát jedna požadavků by zavřelo stavbu světů natrvalo.
     const after = await createSession(createRequest({ prompt: 'a salt flat with one iron mast' }));
     expect(after.status, 'čítač souběhu zůstal po odmítnutí obsazený').toBe(202);
+  });
+});
+
+
+/**
+ * **Kvóta na klíč volajícího dojde až sem, nebo nedojde nikam** — pátá
+ * nezávislá revize `T16-evictworld`, `VERDICT: blocking`.
+ *
+ * Registr má výchozí hodnotu vlastníka `sessionId`, tedy vlastní kbelík. Ta
+ * je konzervativní schválně, ale znamená, že kdyby route klíč nepředala,
+ * **kvóta by mlčky nedělala nic** a celá ochrana by byla dekorace. Tenhle
+ * soubor je jediné místo, kde se dá pinovat, že provoz posílá skutečný klíč.
+ */
+describe('relaci zakládá klíč volajícího, ne anonym', () => {
+  it('devět relací z jedné hlavičky nechá naživu osm, a jsou to vlastní ztráty', async () => {
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER + 1; i += 1) {
+      await createSession(createRequest({ prompt: `svět ${String(i)}` }, '203.0.113.7'));
+    }
+
+    expect(
+      liveSessionCount(),
+      'route klíč nepředala — kvóta je dekorace a strop 64 jde naplnit z jedné smyčky',
+    ).toBe(MAX_SESSIONS_PER_CALLER);
+  });
+
+  it('dvě různé hlavičky jsou dva kbelíky, takže si relace nezavřou navzájem', async () => {
+    const první = await createSession(createRequest({ prompt: 'porotce' }, '198.51.100.4'));
+    const { sessionId } = (await první.json()) as { sessionId: string };
+
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER + 1; i += 1) {
+      await createSession(createRequest({ prompt: `útok ${String(i)}` }, '203.0.113.7'));
+    }
+
+    expect(getSession(sessionId), 'cizí kvóta zaplatila relací porotce').not.toBeNull();
   });
 });

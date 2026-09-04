@@ -447,7 +447,13 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     const sessionId = randomUUID();
-    const stored = openSession(sessionId, newSessionSeed());
+    // **Vlastník relace je klíč volajícího, a je to mez, ne diagnostika**
+    // (`MAX_SESSIONS_PER_CALLER`). Bez něj by registr seskupil všechny relace
+    // do jednoho kbelíku a strop 64 by šel naplnit z jedné smyčky — tedy páka,
+    // kterou se zvenčí zavírají cizí relace. Je to týž klíč, jaký soudí strop
+    // frekvence pár řádků výš, schválně: dvě různá jména volajícího by byla
+    // dvě pravidla o tomtéž.
+    const stored = openSession(sessionId, newSessionSeed(), Date.now(), callerKey(request));
 
     const emit = await cloudEmitter();
     const work =

@@ -21,6 +21,7 @@ import {
   IDLE_SESSION_MS,
   liveSessionCount,
   MAX_LIVE_SESSIONS,
+  MAX_SESSIONS_PER_CALLER,
   openSession,
   putChange,
   SESSION_FAULTS,
@@ -328,5 +329,133 @@ describe('relace, na kterou se někdo dívá, nezestárne', () => {
     // (`T16-streamadmit`), takže proudů může viset libovolně mnoho.
     expect(liveSessionCount()).toBeLessThanOrEqual(MAX_LIVE_SESSIONS);
     expect(watchedSessionCount()).toBe(liveSessionCount());
+  });
+});
+
+/**
+ * Kvóta na klíč volajícího (`T16-evictworld`, pátá nezávislá revize
+ * 4. 9. 2026, `VERDICT: blocking`).
+ *
+ * Nález: rozdělení „nejdřív nesledované" se obejde tím, že si útočník své
+ * relace **sám sleduje**. Pak nezbude nic nesledovaného, řadí se podle
+ * `moved` a nejstarší `moved` má právě relace porotce. Naměřeno sondou:
+ * 1 sledovaná oběť + 64 sledovaných útočníkových → padla **jen** ta oběť.
+ */
+describe('strop registru není páka na cizí relace', () => {
+  /** Relace ve fázi `world` s určeným vlastníkem. */
+  function ownedWorld(id: string, at: number, owner: string) {
+    const stored = openSession(id, 1234, at, owner);
+    stored.session.advance('intent', {});
+    stored.session.advance('blueprint', {});
+    stored.session.advance('world', {});
+    stored.session.register(TVARY);
+    return stored;
+  }
+
+  it('jeden klíč neudrží víc než svou kvótu, a platí vlastní relací', () => {
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
+      ownedWorld(`moje-${i}`, T0 + i, 'volající-A');
+    }
+    expect(liveSessionCount()).toBe(MAX_SESSIONS_PER_CALLER);
+
+    ownedWorld('devátá', T0 + MAX_SESSIONS_PER_CALLER, 'volající-A');
+
+    expect(liveSessionCount(), 'kvóta nedrží — jeden klíč přeplnil registr').toBe(
+      MAX_SESSIONS_PER_CALLER,
+    );
+    expect(getSession('devátá'), 'nová relace padla za oběť vlastnímu zametení').not.toBeNull();
+    expect(getSession('moje-0'), 'obětí nebyla vlastní nejstarší relace').toBeNull();
+  });
+
+  it('devátá relace jednoho klíče nesáhne na relaci cizího klíče', () => {
+    const cizí = ownedWorld('cizí', T0, 'volající-B');
+    cizí.session.events.subscribe(() => {});
+
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER + 1; i += 1) {
+      ownedWorld(`moje-${i}`, T0 + 1 + i, 'volající-A');
+    }
+
+    expect(getSession('cizí'), 'kvóta cizího klíče zaplatila cizí relací').not.toBeNull();
+    expect(cizí.fault, 'divákovi se relace zavřela pod rukama').toBeNull();
+  });
+
+  /**
+   * **Tohle je ta naměřená sonda.** Útočník si každou svou relaci sám sleduje,
+   * takže kolo „nejdřív nesledované" nemá co najít; oběť porotce má nejstarší
+   * `moved`, protože po `world.ready` jí proud nikdo nehne.
+   */
+  it('útočník, který si své relace sám sleduje, cizí relaci nezavře', () => {
+    const oběť = ownedWorld('porotce', T0, 'volající-porotce');
+    oběť.session.events.subscribe(() => {});
+
+    for (let i = 0; i < MAX_LIVE_SESSIONS; i += 1) {
+      const stored = ownedWorld(`útok-${i}`, T0 + 1 + i, 'volající-útočník');
+      stored.session.events.subscribe(() => {});
+    }
+
+    expect(getSession('porotce'), 'strop zavřel relaci, na kterou se někdo díval').not.toBeNull();
+    expect(oběť.fault, 'porotci se svět zavřel pod rukama').toBeNull();
+    expect(liveSessionCount()).toBeLessThanOrEqual(MAX_LIVE_SESSIONS);
+  });
+
+  it('uvnitř kbelíku padne nejdřív ta, na kterou se nikdo nedívá', () => {
+    // **Osm, ne 64.** Jeden klíč se přes svou kvótu nedostane, takže „největší
+    // kbelík" je u jednoho volajícího přesně jeho kvóta — a přetečení řeší
+    // `enforceQuota()`, ne třetí kolo stropu.
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
+      const stored = ownedWorld(`moje-${i}`, T0 + i, 'volající-A');
+      // Všechny sledované až na jednu — ta má být obětí, protože je levnější.
+      if (i !== 3) stored.session.events.subscribe(() => {});
+    }
+    ownedWorld('přetečení', T0 + MAX_SESSIONS_PER_CALLER, 'volající-A');
+
+    expect(getSession('moje-3'), 'padla sledovaná dřív než nesledovaná').toBeNull();
+    expect(getSession('moje-0'), 'obětí byla sledovaná relace').not.toBeNull();
+    expect(liveSessionCount()).toBe(MAX_SESSIONS_PER_CALLER);
+  });
+
+  /**
+   * **Kbelíky nestejné velikosti: platí ten větší.** Tohle je jediná cesta,
+   * kterou třetí kolo `evict()` vůbec rozhoduje — jeden klíč se přes kvótu
+   * nedostane, takže registr přeplní teprve několik klíčů dohromady.
+   */
+  it('nad stropem registru platí klíč, který drží nejvíc relací', () => {
+    const oběť = ownedWorld('porotce', T0, 'volající-porotce');
+    oběť.session.events.subscribe(() => {});
+
+    // Osm klíčů po osmi relacích = 64, tedy plný registr; porotce drží jednu.
+    for (let klíč = 0; klíč < MAX_LIVE_SESSIONS / MAX_SESSIONS_PER_CALLER; klíč += 1) {
+      for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
+        const stored = ownedWorld(`útok-${klíč}-${i}`, T0 + 1 + klíč * 10 + i, `útočník-${klíč}`);
+        stored.session.events.subscribe(() => {});
+      }
+    }
+
+    expect(getSession('porotce'), 'platil kbelík o jedné relaci místo toho o osmi').not.toBeNull();
+    expect(oběť.fault).toBeNull();
+    expect(liveSessionCount()).toBeLessThanOrEqual(MAX_LIVE_SESSIONS);
+  });
+
+  /**
+   * ⚠ **Tenhle test pinuje mez té ochrany, ne její sílu — a je to schválně.**
+   * Klíč volajícího se bere z `x-forwarded-for` a jde podvrhnout. Kdo si
+   * vymyslí hlavičku na každou relaci, srovná kbelíky na jedničku a vybírá se
+   * zase přes celý registr. Kdyby se tenhle test jednou rozsvítil zeleně
+   * z opačného důvodu, znamená to, že se ochrana zesílila — pak se přepíše
+   * i doktrína u `MAX_SESSIONS_PER_CALLER`, ne jen tohle číslo.
+   */
+  it('podvržená hlavička na každou relaci kvótu obejde — mez je změřená, ne tvrzená', () => {
+    const oběť = ownedWorld('porotce', T0, 'volající-porotce');
+    oběť.session.events.subscribe(() => {});
+
+    for (let i = 0; i < MAX_LIVE_SESSIONS; i += 1) {
+      const stored = ownedWorld(`podvrh-${i}`, T0 + 1 + i, `vymyšlený-klíč-${i}`);
+      stored.session.events.subscribe(() => {});
+    }
+
+    expect(
+      getSession('porotce'),
+      'ochrana zesílila nad to, co je o ní napsané — přepiš doktrínu u MAX_SESSIONS_PER_CALLER',
+    ).toBeNull();
   });
 });
