@@ -27,6 +27,11 @@ evals/worldstream/create-raw.json
 *.key
 secrets.json
 
+# Profil prohlížeče z měření lokálního modelu — ~2,3 GB vah Qwen3 v cache
+# service workeru, jednotlivé soubory přes 100 MB. Git ho ignoruje, Vercel ne,
+# a právě on shodil nasazení 5. 9. 2026 (`File size limit exceeded (100 MB)`).
+tmp-webllm-profile/
+
 # Build si Vercel dělá sám; tohle by jen zdržovalo nahrávání.
 node_modules/
 .next/
