@@ -802,4 +802,42 @@ describe('čtení vypínače je ohraničené oknem, ne počtem požadavků', () 
       'tři rozhodnutí v témže okně je jeden GET do obchodu',
     ).toBe(1);
   });
+
+  /**
+   * ⚠ **Tohle je ta aserce, která nález doopravdy zavírá** — nález nezávislé
+   * revize commitu `1dfc7ec`. Test nad **jedním** obchodem pinuje jen to, že si
+   * objekt pamatuje vlastní odpověď; jenže běžící server si staví **nový**
+   * obchod na každý požadavek (`control-file.ts` volá `controlStoreFromEnv()`
+   * uvnitř `readControl()`). Vlastnost, na které stojí strop „jeden let za
+   * sekundu", je proto ta, že okno **přežije stavbu obchodu**.
+   *
+   * Revize to změřila mutantem: přesunout okno z globální mapy do uzávěru
+   * `windowedControlStore()` nechalo 154 testů zelených a 50 požadavků vyrobilo
+   * 50 GETů místo jednoho.
+   */
+  it('okno přežije stavbu obchodu, protože server si ho staví na každý požadavek', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ result: '{"off":["all"]}' }), {
+          headers: { 'content-type': 'application/json' },
+        }),
+    );
+    const env = {
+      WORLDSMITH_SPEND_STORE_URL: 'https://s.example.com',
+      WORLDSMITH_SPEND_STORE_TOKEN: 't',
+      VERCEL_ENV: 'production',
+    };
+
+    // Přesně tvar provozu: padesát požadavků, každý s vlastním obchodem.
+    for (let i = 0; i < 50; i += 1) {
+      const store = controlStoreFromEnv(env, fetchImpl as unknown as typeof fetch);
+      if (store === null) throw new Error('obchod měl vzniknout');
+      await store.read();
+    }
+
+    expect(
+      fetchImpl.mock.calls.length,
+      'okno je vázané na objekt obchodu, ne na instanci — strop neplatí',
+    ).toBe(1);
+  });
 });

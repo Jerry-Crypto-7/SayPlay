@@ -560,15 +560,33 @@ export function httpControlStore(
  */
 export const CONTROL_CACHE_TTL_MS = 1000;
 
+interface ControlWindow {
+  readonly at: number;
+  readonly read: Promise<string | null>;
+}
+
 /**
- * Sdílené okno na instanci. Klíčem je adresa **a** ovládací klíč, aby si dvě
- * prostředí (a dva testy) nesáhly do téhož záznamu.
+ * Sdílená okna na instanci. Klíčem záznamu je adresa **a** ovládací klíč, aby
+ * si dvě prostředí (a dva testy) nesáhly do téhož letu.
+ *
+ * ⚠ **Visí to na `globalThis` ze stejného naměřeného důvodu jako
+ * `PROCESS_LEDGER_KEY` výš**, a je to nález nezávislé revize commitu `1dfc7ec`:
+ * Next umí postavit víc grafů modulů, takže modulová proměnná by byla sdílená
+ * jen uvnitř jednoho z nich — a slíbený strop „jeden let za sekundu na
+ * instanci" by tiše platil **na graf**, ne na instanci. Ze stejného důvodu by
+ * `__resetControlWindows()` uklidil jen graf volajícího.
  */
-const controlWindows = new Map<string, { readonly at: number; readonly read: Promise<string | null> }>();
+const CONTROL_WINDOWS_KEY = '__worldsmithControlWindows';
+
+function controlWindows(): Map<string, ControlWindow> {
+  const holder = globalThis as Record<string, unknown>;
+  holder[CONTROL_WINDOWS_KEY] ??= new Map<string, ControlWindow>();
+  return holder[CONTROL_WINDOWS_KEY] as Map<string, ControlWindow>;
+}
 
 /** Zahodí okna. Jen pro testy — provoz je nemá proč zahazovat. */
 export function __resetControlWindows(): void {
-  controlWindows.clear();
+  delete (globalThis as Record<string, unknown>)[CONTROL_WINDOWS_KEY];
 }
 
 /**
@@ -595,11 +613,12 @@ export function windowedControlStore(
     key: inner.key,
     read() {
       const at = now();
-      const open = controlWindows.get(cacheKey);
+      const windows = controlWindows();
+      const open = windows.get(cacheKey);
       if (open !== undefined && at - open.at < ttlMs) return open.read;
 
       const read = inner.read();
-      controlWindows.set(cacheKey, { at, read });
+      windows.set(cacheKey, { at, read });
       // Bez tohohle by odmítnutý let, ke kterému se do vypršení okna nikdo
       // nepřidá, spadl do Node jako neošetřené odmítnutí a shodil proces.
       read.catch(() => undefined);
