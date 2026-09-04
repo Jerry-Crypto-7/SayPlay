@@ -97,8 +97,35 @@ export const IDLE_SESSION_MS = 60 * 60 * 1000;
  * zavřel, aniž by to kdo řekl.
  */
 interface IdleWatch {
+  /** Číslo posledního rámce, které registr u téhle relace viděl. */
   readonly sequence: number;
+  /**
+   * Kdy registr naposledy viděl to číslo **se hnout** — řadicí klíč třetího
+   * kola, oddělený od hodiny stárnutí (`T16-agesignal`).
+   *
+   * Do 4. 9. 2026 řadilo třetí kolo podle `since`, jenže to se sledované
+   * relaci obnovuje při každém zametení. V registru samých sledovaných relací
+   * proto byly všechny klíče stejné, stabilní řazení spadlo na pořadí vzniku
+   * a obětí byla relace #0 — vybraná proto, že vznikla první, ne proto, že
+   * stojí nejdéle. Doktrína u `evict()` přitom tvrdila to druhé.
+   */
+  readonly moved: number;
+  /** Odkdy relaci běží hodina stárnutí. */
   readonly since: number;
+  /**
+   * Měla ta relace při **minulém** pohledu diváka?
+   *
+   * ⚠ Bez téhle jediné vlajky se hodina nepočítá od odchodu diváka, ale od
+   * posledního cizího POSTu — nález nezávislé revize 4. 9. 2026,
+   * `VERDICT: blocking`. Sledované relaci se `since` obnovuje při každém
+   * zametení, takže když divák odejde, `else` větev porovnává proti razítku,
+   * které postavil někdo úplně jiný. Naměřeno: relace založená v T0, jediný
+   * POST v T0+1 ms, divák drží proud 61 minut a spojení mu spadne (proxy,
+   * uspaný notebook, reload — SSE padá běžně, proto existuje tep); první cizí
+   * POST o vteřinu později ji uvolní, ačkoli registr nikde netlačí na strop.
+   * Hodina proto začíná běžet na přechodu 1 → 0, ne dřív.
+   */
+  readonly watched: boolean;
 }
 
 const watched = new Map<string, IdleWatch>();
@@ -133,8 +160,11 @@ function release(sessionId: string): void {
     stored.session.fail(SESSION_FAULTS.SESSION_RELEASED);
   }
   live.delete(sessionId);
-  // Previewy druhé věty visí na `StoredSession`, takže odcházejí s ní
-  // (T22-previewleak). Zůstat tu smí jen to, co registr sám založil.
+  // **Previewy se pouštějí, ne jen odkazují** (`T22-previewleak`). Že visí na
+  // `StoredSession`, stačí jen tehdy, když ten objekt nikdo jiný nedrží — a
+  // route druhé věty ho drží přes celé volání modelu (`T16-changeafterrelease`).
+  // Osm plánů včetně `ShapeProgram` je pak řetěz, který přežije uvolnění.
+  if (stored !== undefined) stored.changes.clear();
   watched.delete(sessionId);
 }
 
@@ -165,8 +195,11 @@ function release(sessionId: string): void {
 function idleFor(sessionId: string, stored: StoredSession, now: number): boolean {
   const { sequence, watchers } = stored.session.events;
   const seen = watched.get(sessionId);
-  if (seen === undefined || seen.sequence !== sequence || watchers > 0) {
-    watched.set(sessionId, { sequence, since: now });
+  // `seen.watched` je čtvrtý důvod k obnovení: relace, kterou minule ještě
+  // někdo držel, teprve teď osiřela a hodina jí začíná **tady**.
+  if (seen === undefined || seen.sequence !== sequence || watchers > 0 || seen.watched) {
+    const moved = seen === undefined || seen.sequence !== sequence ? now : seen.moved;
+    watched.set(sessionId, { sequence, moved, since: now, watched: watchers > 0 });
     return false;
   }
   return now - seen.since >= IDLE_SESSION_MS;
@@ -198,21 +231,41 @@ function idleFor(sessionId: string, stored: StoredSession, now: number): boolean
  *
  * Zametá se při zakládání nové relace, tedy tehdy, když registr roste. Když
  * nikdo nezakládá, nic neroste a není co zametat.
+ *
+ * ⚠ **`keep` je ta právě založená relace a nesmí padnout za oběť vlastnímu
+ * zametení.** Bez téhle výjimky se druhé a třetí kolo obrátí proti ní: divák si
+ * proud otevírá až **po** odpovědi na POST, takže v okamžiku zametení je nová
+ * relace jediná nesledovaná v registru — a v registru samých sledovaných relací
+ * by tedy byla vždycky jedinou obětí. Nikdo by pak nezaložil svět, dokud by se
+ * 64 lidí dívalo. „Nová relace vždycky projde" je doktrína registru z hlavičky
+ * souboru; tohle je jediné místo, kde se dá porušit.
  */
-function evict(now: number): void {
+function evict(now: number, keep: string): void {
   for (const [id, stored] of live) if (idleFor(id, stored, now)) release(id);
 
   if (live.size <= MAX_LIVE_SESSIONS) return;
   for (const [id, stored] of live) {
     if (live.size <= MAX_LIVE_SESSIONS) return;
     const phase = stored.session.phase;
-    if (phase === 'complete' || phase === 'failed') release(id);
+    if (id !== keep && (phase === 'complete' || phase === 'failed')) release(id);
   }
 
   if (live.size <= MAX_LIVE_SESSIONS) return;
-  const podleStání = [...live.keys()].sort(
-    (a, b) => (watched.get(a)?.since ?? 0) - (watched.get(b)?.since ?? 0),
-  );
+  const podleStání = [...live.keys()]
+    .filter((id) => id !== keep)
+    .sort((a, b) => (watched.get(a)?.moved ?? 0) - (watched.get(b)?.moved ?? 0));
+  // **Nejdřív ty, na které se nikdo nedívá.** Bez tohohle rozdělení je strop
+  // páka, kterou zvenčí zavřeš cizí relaci: `POST /api/worldstream/sessions`
+  // nemá účet a `acquireSlot()` omezuje jen souběžné generace, takže ~65
+  // sekvenčních požadavků kohokoli utne porotci svět, na který se dívá.
+  for (const id of podleStání) {
+    if (live.size <= MAX_LIVE_SESSIONS) return;
+    if (live.get(id)?.session.events.watchers === 0) release(id);
+  }
+  // **Sledovaná relace je poslední oběť, ne nedotknutelná.** Kdyby ji divák
+  // vyjímal ze všech tří kol, byl by to pohodlnější způsob, jak registr
+  // přeplnit — stačilo by u každé relace držet jeden proud. Strop tedy platí
+  // absolutně; mění se jen pořadí, ve kterém se platí.
   for (const id of podleStání) {
     if (live.size <= MAX_LIVE_SESSIONS) return;
     release(id);
@@ -225,7 +278,7 @@ function evict(now: number): void {
  */
 export function putSession(stored: StoredSession, now: number = Date.now()): void {
   live.set(stored.session.sessionId, stored);
-  evict(now);
+  evict(now, stored.session.sessionId);
 }
 
 export function getSession(sessionId: string): StoredSession | null {

@@ -103,9 +103,11 @@ describe('relace, které se hodinu nepohnul proud, registr pustí', () => {
     openSession('budička-1', 1, T0 + 1);
     openSession('budička-2', 1, T0 + 1 + IDLE_SESSION_MS);
 
-    // Preview visí na `StoredSession`, takže ho registr nemá kde nechat ležet:
-    // jediná mapa, která na něj ukazuje, odešla s relací.
     expect(getSession('s-previewy')).toBeNull();
+    // ⚠ **„Visí na `StoredSession`" nestačí** (`T22-previewleak`). Route druhé
+    // věty si ten objekt drží přes celé volání modelu, takže dokud se mapa
+    // nevyprázdní doopravdy, osm plánů včetně `ShapeProgram` uvolnění přežije.
+    expect(stored.changes.size, 'previewy zůstaly viset na objektu, který drží route').toBe(0);
   });
 });
 
@@ -221,19 +223,98 @@ describe('relace, na kterou se někdo dívá, nezestárne', () => {
     expect(stored.fault, 'divákovi se relace zavřela pod rukama').toBeNull();
   });
 
-  it('jakmile divák odejde, hodina začne běžet a relace se uvolní', () => {
+  /**
+   * ⚠ **Předchozí verze tohohle testu procházela z jiného důvodu, než tvrdil
+   * její titulek** — nález nezávislé revize 4. 9. 2026, `VERDICT: blocking`.
+   * Zametení s divákem a `unsubscribe()` v ní ležely na téže milisekundě,
+   * takže „hodina od odchodu" a „hodina od posledního cizího POSTu" nešly
+   * rozlišit. Odchod je proto od zametení **hodinu daleko**: jedině tak se
+   * pozná, od čeho se ta hodina počítá.
+   */
+  it('hodina běží od odchodu diváka, ne od posledního cizího POSTu', () => {
     const stored = worldSession('opuštěná', T0);
     const unsubscribe = stored.session.events.subscribe(() => {});
 
+    // Jediné zametení, které tuhle relaci vidí s divákem. Pak se hodinu neděje
+    // nic — přesně jako když jeden porotce drží jednu kartu.
     openSession('budička-1', 1, T0 + 1);
-    // Klient zavřel kartu: route se uklidila a odběr pustila.
+
+    // Spojení spadlo o hodinu později: proxy, uspaný notebook, reload. SSE padá
+    // běžně, proto existuje tep.
     unsubscribe();
 
-    openSession('budička-2', 1, T0 + 2);
-    expect(getSession('opuštěná'), 'relace odešla dřív, než uplynula hodina').not.toBeNull();
+    openSession('budička-2', 1, T0 + IDLE_SESSION_MS + 1000);
+    expect(
+      getSession('opuštěná'),
+      'relace odešla vteřinu po odchodu diváka, protože hodina běžela od cizího POSTu',
+    ).not.toBeNull();
 
-    openSession('budička-3', 1, T0 + 2 + IDLE_SESSION_MS);
+    openSession('budička-3', 1, T0 + 2 * IDLE_SESSION_MS + 2000);
     expect(getSession('opuštěná'), 'relace bez diváka nezestárla vůbec').toBeNull();
+  });
+
+  /**
+   * **Strop je zvenčí ovladatelná páka** (`T16-evictkill`). `POST` na založení
+   * relace nemá účet a `acquireSlot()` omezuje jen **souběžné** generace, takže
+   * sekvenční požadavky zakládají relace bez omezení. Do 4. 9. 2026 tím šlo
+   * porotci zavřít svět, na který se právě dívá.
+   */
+  it('nápor nesledovaných požadavků nezavře cizí relaci s divákem', () => {
+    const oběť = worldSession('sledovaná', T0);
+    oběť.session.events.subscribe(() => {});
+
+    for (let i = 0; i < MAX_LIVE_SESSIONS + 5; i += 1) openSession(`útok-${i}`, 1, T0 + 1 + i);
+
+    expect(getSession('sledovaná'), 'strop zavřel relaci, na kterou se někdo díval').not.toBeNull();
+    expect(oběť.fault, 'divákovi se relace zavřela pod rukama').toBeNull();
+    expect(liveSessionCount()).toBeLessThanOrEqual(MAX_LIVE_SESSIONS);
+  });
+
+  /**
+   * **Nová relace vždycky projde** — doktrína registru, a od 4. 9. 2026 je to
+   * jediné místo, kde se dá porušit. Divák si proud otevírá až po odpovědi na
+   * POST, takže v okamžiku vlastního zametení je nová relace jediná
+   * nesledovaná v registru; kolo, které obětuje nesledované, by ji tedy
+   * v registru samých sledovaných relací vybralo pokaždé.
+   */
+  it('v registru samých sledovaných relací projde nová relace, ne naopak', () => {
+    for (let i = 0; i < MAX_LIVE_SESSIONS; i += 1) {
+      const stored = worldSession(`sledovaná-${i}`, T0 + i);
+      stored.session.events.subscribe(() => {});
+    }
+
+    // Přesně to, co dělá route: relace vznikne a proud se k ní připojí až potom.
+    const nová = openSession('nová', 1, T0 + MAX_LIVE_SESSIONS);
+
+    expect(getSession('nová'), 'nová relace padla za oběť vlastnímu zametení').not.toBeNull();
+    expect(nová.fault, 'volající dostal 202 na relaci, která už neexistuje').toBeNull();
+    expect(liveSessionCount()).toBeLessThanOrEqual(MAX_LIVE_SESSIONS);
+  });
+
+  /**
+   * **Mezi samými sledovanými relacemi rozhoduje pohyb proudu, ne pořadí
+   * vzniku** (`T16-agesignal`). Řadicí klíč třetího kola byl do 4. 9. 2026
+   * `since`, jenže ten se sledované relaci obnovuje při každém zametení —
+   * všechny klíče proto byly stejné, stabilní řazení spadlo na pořadí vložení
+   * a obětí byla vždycky relace #0.
+   */
+  it('mezi sledovanými padne ta, jejíž proud stojí nejdéle, ne ta nejstarší', () => {
+    for (let i = 0; i < MAX_LIVE_SESSIONS; i += 1) {
+      const stored = worldSession(`sledovaná-${i}`, T0 + i);
+      stored.session.events.subscribe(() => {});
+    }
+
+    // Nejstarší relaci se hnul proud: prohlížeč ohlásil hotový tvar (T18).
+    const nejstarší = getSession('sledovaná-0');
+    expect(nejstarší?.session.queue('tvar-1', 32), 'rámec nevznikl').toBe(true);
+
+    openSession('přetečení', 1, T0 + MAX_LIVE_SESSIONS + 100);
+
+    expect(
+      getSession('sledovaná-0'),
+      'obětí byla relace #0, vybraná podle vzniku místo podle pohybu proudu',
+    ).not.toBeNull();
+    expect(getSession('sledovaná-1'), 'padla jiná než ta, jejíž proud stojí nejdéle').toBeNull();
   });
 
   it('sledováním se strop obejít nedá — třetí kolo pustí i relace s divákem', () => {

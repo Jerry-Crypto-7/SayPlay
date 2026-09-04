@@ -9,7 +9,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { COALESCABLE_EVENT_TYPES, createEventLog } from '../events';
+import { COALESCABLE_EVENT_TYPES, createEventLog, MAX_LOG_EVENTS } from '../events';
 
 const SESSION_ID = 'session-events';
 
@@ -96,5 +96,43 @@ describe('slučování s koncem logu', () => {
 
     expect(events.since(1).map((event) => event.sequence)).toEqual([2]);
     expect(events.since(2)).toEqual([]);
+  });
+});
+
+/**
+ * **Strop na délku logu** (`T22-previewleak`).
+ *
+ * Do 4. 9. 2026 strop nebyl a odůvodňovalo ho „desítky rámců, ne
+ * desetitisíce". Naměřeno: každé přijaté preview druhé věty je jeden
+ * nesloučitelný rámec `patch.preview` a dveře `changes` pouštějí 50 požadavků
+ * za 10 vteřin, takže hodina, kterou relaci dává registr, se vejde do řádově
+ * 18 000 rámců — krát 64 relací je to únik paměti dosažitelný zvenčí bez účtu.
+ */
+describe('log má strop a ztráta není tichá', () => {
+  it('přes strop se zahazuje od začátku, takže čísla zbylých rámců jsou souvislá', () => {
+    const events = log();
+    for (let i = 0; i < MAX_LOG_EVENTS + 10; i += 1) events.append('shape.queued', { i }, `tvar-${i}`);
+
+    expect(events.length, 'log roste dál a strop nedělá nic').toBe(MAX_LOG_EVENTS);
+    // Čísla musí zůstat souvislá: `reducer.ts` mezeru uprostřed proudu zabíjí,
+    // takže zahazovat z prostředka by rozbilo i klienta, který nic nezmeškal.
+    const čísla = events.all().map((event) => event.sequence);
+    expect(čísla[0]).toBe(11);
+    expect(čísla[čísla.length - 1]).toBe(MAX_LOG_EVENTS + 10);
+  });
+
+  it('zahozený rámec je v `floor` zapsaný, ne jen chybějící', () => {
+    const events = log();
+    expect(events.floor, 'prázdný log už něco zahodil').toBe(0);
+
+    for (let i = 0; i < MAX_LOG_EVENTS; i += 1) events.append('shape.queued', { i }, `tvar-${i}`);
+    expect(events.floor, 'strop kousl dřív, než měl').toBe(0);
+
+    events.append('shape.queued', { i: 'navíc' }, 'tvar-navíc');
+    // Klient s `after < floor` má v proudu díru. Sám ji pozná — `reducer.ts`
+    // chybějící číslo hlásí jako vadu a sáhne si pro snapshot — ale modul o ní
+    // musí vědět taky, jinak je „zahodilo se" jen dovozené z délky pole.
+    expect(events.floor).toBe(1);
+    expect(events.since(0)[0].sequence, 'první rámec po zahození je jiný než floor+1').toBe(2);
   });
 });

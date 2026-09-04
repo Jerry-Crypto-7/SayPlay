@@ -43,7 +43,14 @@ import {
   takeRateSlot,
 } from '@/server/rate-limit';
 import type { PendingChange, RefinePlan } from '@/model/worldstream-refine';
-import { clearSessions, openSession, putChange, type StoredSession } from '@/worldstream/sessions';
+import {
+  clearSessions,
+  getSession,
+  MAX_LIVE_SESSIONS,
+  openSession,
+  putChange,
+  type StoredSession,
+} from '@/worldstream/sessions';
 
 import {
   DOOR_CEILING,
@@ -265,6 +272,40 @@ describe('preview druhé věty', () => {
     // A svět je pořád ten původní — preview nic nezapsalo.
     expect(worldOf(stored).look.palette).toBe('moss');
     expect(stored.changes.size).toBe(1);
+  });
+
+  /**
+   * **Uvolněná relace nesmí dostat 200 na preview, které nikdo nedokáže
+   * commitnout** (`T16-changeafterrelease`).
+   *
+   * Volání modelu trvá vteřiny a registr je mezitím živá věc: nápor přes
+   * `MAX_LIVE_SESSIONS` relaci uvolní i uprostřed rozdělané práce. Do
+   * 4. 9. 2026 route zkontrolovala fázi **před** modelem a po jeho návratu už
+   * ne, takže `putChange` zapsal preview do objektu, který v registru nebyl —
+   * volající zaplatil, dostal `changeId` a jeho commit vracel navždy 404.
+   */
+  it('relace uvolněná během volání modelu vrátí 409, ne changeId do prázdna', async () => {
+    const stored = await generated();
+    const sessionId = stored.session.sessionId;
+
+    const response = await preview(sessionId, { prompt: 'turn the mast into woven metal' }, async () => {
+      // Nápor, který doběhne, zatímco tenhle požadavek čeká na model. Sekvenční
+      // POSTy nemá co brzdit: `acquireSlot()` omezuje jen souběžné generace.
+      for (let i = 0; i < MAX_LIVE_SESSIONS + 2; i += 1) openSession(`nápor-${i}`, 1);
+      expect(getSession(sessionId), 'nápor relaci neuvolnil, test měří něco jiného').toBeNull();
+      return {
+        summary: 'the mast is rewoven',
+        shape: WOVEN_MAST,
+        behavior: [],
+        appearance: [],
+      };
+    });
+
+    expect(response.status).toBe(409);
+    expect((await body(response)).error).toMatchObject({ code: 'SESSION_CLOSED' });
+    // Preview se nesmí zapsat ani na tu odpojenou relaci: route si `stored`
+    // drží dál, takže by to byl přesně ten řetěz, který uvolnění přežije.
+    expect(stored.changes.size, 'preview se zapsalo do relace, která už není v registru').toBe(0);
   });
 
   it('cíl vybraný klikem přebije text věty', async () => {

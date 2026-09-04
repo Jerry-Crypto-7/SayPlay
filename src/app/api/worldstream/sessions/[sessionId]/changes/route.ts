@@ -271,6 +271,20 @@ export async function createChange(
       releaseSlot('refine');
     }
 
+    // **Ta relace tu ještě je?** Volání modelu trvá vteřiny a registr je mezitím
+    // živá věc: nápor přes `MAX_LIVE_SESSIONS` ji uvolní i uprostřed rozdělané
+    // práce (`T16-changeafterrelease`). Bez téhle jediné otázky by `putChange`
+    // zapsal preview do objektu, který v registru už není — volající by dostal
+    // 200 a `changeId`, jehož commit může navždy vrátit jen 404. Zaplaceno je
+    // tak jako tak; jediné, co se dá zachránit, je pravdivá odpověď.
+    if (getSession(sessionId) !== stored)
+      return fail(
+        requestId,
+        409,
+        'SESSION_CLOSED',
+        'this session is closed and no longer takes changes',
+      );
+
     if (outcome.kind === 'unavailable') {
       // Detail poskytovatele ven nejde nikdy — `fetch` píše do svých hlášek celou
       // adresu koncového bodu a ta umí nést pověření. Ven kód a věta, do logu

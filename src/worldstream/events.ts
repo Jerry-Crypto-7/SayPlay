@@ -115,10 +115,40 @@ export interface SessionEvent<T = unknown> {
   readonly payload: T;
 }
 
+/**
+ * Kolik rámců si log nechá.
+ *
+ * ⚠ **Do 4. 9. 2026 tu strop nebyl a odůvodňovalo ho „desítky rámců, ne
+ * desetitisíce". To číslo je měřitelně vedle** (`T22-previewleak`): každé
+ * přijaté preview druhé věty zapíše jeden rámec `patch.preview` a dveře
+ * `changes` pouští podle `src/server/rate-limit.ts` **50 požadavků za 10 s**
+ * na volajícího. Jedna relace tedy stihne za hodinu, kterou jí registr dává
+ * (`IDLE_SESSION_MS`), řádově **18 000** rámců — přesně ty desetitisíce.
+ * Krát strop `MAX_LIVE_SESSIONS` je to únik paměti dosažitelný zvenčí bez účtu.
+ *
+ * **A ztráta není tichá, na rozdíl od toho, co tu stálo dřív.** Klient mezeru
+ * v číslech pozná sám: `reducer.ts` proud při chybějícím čísle **zabíjí,
+ * nezalepuje** — vrátivší se klient dostane vadu a sáhne si pro snapshot, který
+ * je podle §21 autoritativní. Zahodit nejstarší rámce tedy znamená vzít
+ * notifikaci, ne stav.
+ *
+ * 512 je řádově víc, než kolik jich vyrobí poctivá relace (desítky), a řádově
+ * míň než ta osmnáctitisícová horní mez.
+ */
+export const MAX_LOG_EVENTS = 512;
+
 export interface SessionEventLog {
   /** Poslední přidělené číslo. Prázdný log má 0. */
   readonly sequence: number;
   readonly length: number;
+  /**
+   * Nejvyšší číslo, které log **zahodil**. `0`, dokud nezahodil nic.
+   *
+   * Klient s `after < floor` má v proudu díru; `reducer.ts` mu ji ohlásí jako
+   * vadu, protože chybějící číslo proud zabíjí. Pole existuje proto, aby ta
+   * ztráta byla v modulu **zapsaná**, ne jen dovozená z délky pole.
+   */
+  readonly floor: number;
   /**
    * Kolik odběratelů proud právě drží.
    *
@@ -171,23 +201,25 @@ export interface EventLogOptions {
 }
 
 /**
- * Log jedné relace. Nemá strop a je to vědomé: jedna věta vyrobí desítky
- * rámců, ne desetitisíce, a to, co ten počet nafukuje — průběh tvaru
- * a opakované odmítnutí — slučování shora omezuje.
+ * Log jedné relace, **se stropem `MAX_LOG_EVENTS`**.
  *
- * ⚠ **„Desítky, ne desetitisíce" je předpoklad, ne mechanismus**, a od
- * `T22-takeearly` ho drží až brány o patro výš: strop frekvence na veřejných
- * dveřích (`src/server/rate-limit.ts`) a uvolňování relací z registru
- * (`T16-evictworld`, dnes rozbité). Strop na délku logu tady schválně není —
- * `since(after)` je jediná cesta, kudy se vrátivší se klient dozví, co
- * zmeškal, a zahodit staré rámce znamená ztratit je **tiše**, bez toho, že by
- * se o mezeře dozvěděl.
+ * Poctivá relace vyrobí desítky rámců a slučování (`COALESCABLE_EVENT_TYPES`)
+ * drží průběh tvaru i opakované odmítnutí na uzdě. Strop je proti tomu, co
+ * poctivé není: každé preview druhé věty je jeden nesloučitelný rámec a dveře
+ * `changes` jich pustí 50 za 10 vteřin — odůvodnění i naměřená čísla jsou
+ * u konstanty výš.
+ *
+ * ⚠ **Zahazuje se od začátku, nikdy z prostředka**, aby čísla zbylých rámců
+ * zůstala souvislá. Klient, který se vrátí až za tou hranicí, dostane od
+ * `reducer.ts` vadu a sáhne si pro snapshot; klient, který ji nepřekročil,
+ * nepozná rozdíl.
  */
 export function createEventLog(sessionId: string, options: EventLogOptions = {}): SessionEventLog {
   const now = options.now ?? (() => new Date().toISOString());
   const entries: LoggedEvent[] = [];
   const listeners = new Set<(event: SessionEvent) => void>();
   let sequence = options.startAt ?? 0;
+  let floor = 0;
 
   function publish(event: SessionEvent): SessionEvent {
     for (const listener of [...listeners]) {
@@ -207,6 +239,10 @@ export function createEventLog(sessionId: string, options: EventLogOptions = {})
 
     get length() {
       return entries.length;
+    },
+
+    get floor() {
+      return floor;
     },
 
     get watchers() {
@@ -234,6 +270,12 @@ export function createEventLog(sessionId: string, options: EventLogOptions = {})
       sequence += 1;
       const event: SessionEvent = { sessionId, sequence, type, at: now(), payload };
       entries.push({ event, subject });
+      // `shift()` po jednom, ne `splice` na konci: přidává se vždycky jeden
+      // rámec, takže se nikdy nezahazuje víc než jeden a `floor` roste o krok.
+      while (entries.length > MAX_LOG_EVENTS) {
+        const dropped = entries.shift();
+        if (dropped !== undefined) floor = dropped.event.sequence;
+      }
       return publish(event);
     },
 
