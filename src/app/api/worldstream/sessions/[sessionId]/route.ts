@@ -11,6 +11,8 @@
  * `runGeneration` ho odkládá do logu operátora a sem posílá `SESSION_FAULTS`.
  */
 
+import { killState } from '@/server/kill-switch';
+
 import { getSession } from '../../../../../worldstream/sessions';
 
 export const runtime = 'nodejs';
@@ -19,6 +21,18 @@ export async function GET(
   _request: Request,
   context: { params: Promise<{ sessionId: string }> },
 ): Promise<Response> {
+  // **Čtení existujícího světa, tedy `snapshots` — táž třída jako
+  // `/api/worldstream/snapshots/:hash` a stejná odpověď.** Jediný vypínač,
+  // který na tyhle dveře sahá, je `all`: rozbitý ovládací soubor je nechává
+  // běžet schválně, protože §22.4 chce, aby existující světy zůstaly čitelné.
+  // Do `T28-killemit` je nečetl žádný, takže „vypni provoz" zastavil zakládání
+  // i sesterský snapshot a autoritativní stav relace vydával dál.
+  if (killState(process.env).snapshots)
+    return Response.json(
+      { error: { code: 'SERVICE_DISABLED', message: 'this deployment is switched off right now' } },
+      { status: 503, headers: { 'cache-control': 'no-store' } },
+    );
+
   const { sessionId } = await context.params;
   const stored = getSession(sessionId);
 

@@ -12,7 +12,8 @@
  * **404** neznámý zmrazený prompt. **408** tělo, které nedorazilo do
  * `BODY_DEADLINE_MS`. **413** tělo přes strop. **503** nečitelný
  * nebo podvržený zmrazený korpus — rozbité prostředí, o kterém se nesmí nic
- * skórovat. Všechno ostatní je **200 s verdiktem**: emise, která neprošla
+ * skórovat — a od `T28-killemit` taky **vypnutý provoz** (`REPLAY_DISABLED`,
+ * jedině na `off: ["all"]`). Všechno ostatní je **200 s verdiktem**: emise, která neprošla
  * schématem, nese osiřelý odkaz, nejde snížit nebo její svědek nedojde do výhry,
  * je *naměřený výsledek*, ne chyba serveru. Kdyby se z toho dělalo 5xx, měřicí
  * běh v T17 by nerozeznal vadný svět od spadlého potrubí — a přesně to je
@@ -56,6 +57,7 @@ import { randomUUID } from 'node:crypto';
 
 import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
 import { withRequest } from '../../../obs/trace';
+import { killState } from '../../../server/kill-switch';
 import {
   PUBLIC_CORPUS_FAULT,
   logRateLimited,
@@ -72,6 +74,39 @@ export const runtime = 'nodejs';
  * první konzument a jeho testy je jmenují na téhle cestě.
  */
 export { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody };
+
+/**
+ * **Vypínač je první brána, před čtením těla** — týž vzor jako v `/api/edit`
+ * a u worldstreamových dveří. Vypnuté dveře nesmí stát víc než jeden
+ * `readFileSync` nad souborem o pár řádcích, kdežto `readPromptId()` níž čeká
+ * na tělo až `BODY_DEADLINE_MS`.
+ *
+ * Čte se `replay`, ne `sessions` ani `upstream`: obě emitovací cesty přehrávají
+ * **zmrazený korpus** a neplatí se na nich nic, takže je **rozbitý** ovládací
+ * soubor nechává běžet ze stejného důvodu jako snapshoty. Vypne je jedině
+ * výslovné `off: ["all"]`, tedy „vypni provoz".
+ *
+ * **Sdílené, protože ty dveře jsou dvoje a mez na nich musí být táž** — přesně
+ * z toho důvodu, proč je sdílený i `readPromptId()` pod tímhle. Kdyby si každá
+ * cesta nesla vlastní kopii, dala by se jedna použít k obejití druhé. To se
+ * 4. 9. 2026 stalo doopravdy: remediace zavřela `/api/edit` a tyhle dvoje dveře
+ * téže třídy braly anonymní požadavky dál, přičemž `/api/emit/stream` navrch
+ * otevíral nová SSE spojení a držel je.
+ *
+ * `route` jde jen do logu, aby se v něm poznalo, které z těch dvou cest se to
+ * týká.
+ */
+export function replayDisabled(requestId: string, route: string): Response | null {
+  if (!killState(process.env).replay) return null;
+  logRateLimited(route, requestId, 'REPLAY_DISABLED', 'kill switch: all');
+  return Response.json(
+    {
+      requestId,
+      error: { code: 'REPLAY_DISABLED', message: 'replaying worlds is switched off right now' },
+    },
+    { status: 503 },
+  );
+}
 
 /**
  * Přečte tělo a vytáhne z něj `promptId`, nebo rovnou vrátí chybovou odpověď.
@@ -170,6 +205,9 @@ export async function POST(request: Request): Promise<Response> {
   const requestId = randomUUID();
 
   return withRequest(requestId, async () => {
+    const disabled = replayDisabled(requestId, 'emit');
+    if (disabled !== null) return disabled;
+
     const parsed = await readPromptId(request, requestId, 'emit');
     if (!parsed.ok) return parsed.response;
 

@@ -106,9 +106,15 @@ export function logForOperator(
  * Kratší okno není bezpečnější, jen upovídanější — `W` = 120 s dá 30 řádků za
  * hodinu a klíč, což pořád není záplava. Rozpětí je široké a tohle je bod v něm.
  *
- * Paměť to nezvětšuje o řád: klíč je dvojice (dveře, kód), tedy uzavřená
- * množina dvanácti hodnot, a k počítadlu přibylo `windowStart` a nejvýš
- * `MAX_DETAILS_PER_WINDOW` řetězců.
+ * Paměť to nezvětšuje o řád: klíč je dvojice (dveře, kód), tedy **uzavřená
+ * množina** — jmen dveří je sedm a kódů na každých hrst — a k počítadlu přibylo
+ * `windowStart` a nejvýš `MAX_DETAILS_PER_WINDOW` řetězců.
+ *
+ * ⚠ **Kolik těch dvojic je, tady schválně nestojí.** Do 4. 9. 2026 tu bylo
+ * „dvanáct" a `T28` přidal `REPLAY_DISABLED` na troje dveře, tedy hned čtyři
+ * další; každá nová brána to číslo posune a **nic ho nehlídá**. Nosné je, že ta
+ * množina neroste s provozem, ne jak je velká: klíč vzniká jedině tím, že ho
+ * někdo napíše do zdroje.
  */
 export const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 
@@ -126,9 +132,11 @@ export const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
  * 1. **návrat téže vady zůstane nepovšimnutý nejvýš hodinu**;
  * 2. **trvale rozbité dveře napíšou 24 řádků za den místo jednoho** — do
  *    1. 9. 2026 to byl jeden řádek za proces. Nasazení bez `evals/frozen/**`
- *    má dvanáct dosažitelných klíčů, tedy 288 řádků za den proti dvanácti.
- *    Je to zanedbatelné množstvím a **není to zanedbatelné jako tvrzení**,
- *    protože tenhle soubor má za sebou čtyři kola komentářů, které přežily kód.
+ *    má takových klíčů **řádově desítky**, tedy stovky řádků za den místo
+ *    desítek. Je to zanedbatelné množstvím a **není to zanedbatelné jako
+ *    tvrzení**, protože tenhle soubor má za sebou čtyři kola komentářů, které
+ *    přežily kód — a to „dvanáct", které tady stálo do 4. 9. 2026, je toho
+ *    přesně příklad.
  */
 export const STICKY_WINDOW_MS = 4 * RATE_LIMIT_WINDOW_MS;
 

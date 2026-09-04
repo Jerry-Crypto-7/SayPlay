@@ -40,6 +40,15 @@
  * | rozbitý, nebo `off` obsahuje neznámé jméno | **upstream, relace a refine** — snapshoty čtou dál |
  * | `off: ["all"]` | úplně všechno, i snapshoty a přehrávací dveře |
  *
+ * ⚠ **„Úplně všechno" je tvrzení o dveřích, ne o téhle funkci, takže ho hlídá
+ * test, ne tenhle odstavec.** `kill-switch.test.ts` vyjmenuje **každou**
+ * `route.ts` pod `src/app/api` ze stromu a žádá, aby buď tenhle modul
+ * importovala, nebo stála na jmenovaném seznamu výjimek. Ruční seznam dveří je
+ * přesně to, co 4. 9. 2026 nechalo `off: ["all"]` zastavit **šest dveří
+ * z deseti**, které něco obsluhují: remediace zavřela `/api/edit`, kdežto obě
+ * emitovací cesty i obojí čtecí dveře relace braly požadavky dál — zatímco
+ * tahle tabulka už tvrdila opak.
+ *
  * Prostřední řádek je jediné netriviální rozhodnutí tady a má dvě půlky.
  *
  * **Proč se vůbec něco vypne:** neznámé jméno je skoro vždycky překlep
@@ -72,17 +81,36 @@ export interface KillState {
   readonly sessions: boolean;
   /** Druhá věta, tedy preview i commit změny. */
   readonly refine: boolean;
-  /** Čtení hotových sdílených světů. Vypne to jedině `all`. */
+  /**
+   * Čtení světa, který už existuje — sdílený snapshot
+   * (`/api/worldstream/snapshots/:hash`) i autoritativní stav a proud běžící
+   * relace (`…/sessions/:id` a `…/sessions/:id/events`). Vypne to jedině `all`.
+   *
+   * Ty troje dveře jsou jedna třída: nic neplatí, nic nezakládají a jen vydávají
+   * to, co už vzniklo. `sessions` na ně proto **nesahá** — ten vypíná zakládání
+   * nových relací a světy, které běží, mají zůstat čitelné (§22.4).
+   *
+   * ⚠ **U proudu to zavírá nová spojení, ne ta, která už visí.** Rámce jim
+   * přestane vyrábět zbytek vypnutého provozu; existující odběr tenhle příznak
+   * neruší.
+   */
   readonly snapshots: boolean;
   /**
-   * Dveře, které jen **přehrávají zmrazený korpus** — `/api/edit`. Neplatí se
-   * na nich nic, takže je rozbitý vypínač nechává běžet ze stejného důvodu jako
-   * snapshoty; vypne je jedině `all`.
+   * Dveře, které jen **přehrávají zmrazený korpus** — `/api/edit`,
+   * `/api/emit` a `/api/emit/stream`. Neplatí se na nich nic, takže je rozbitý
+   * vypínač nechává běžet ze stejného důvodu jako snapshoty; vypne je jedině
+   * `all`.
    *
    * **Existuje proto, že „vypni provoz" musí dosáhnout na každé dveře.** Nezávislá
    * revize 4. 9. 2026 naměřila, že `off: ["all"]` zastavil relace, refine, upstream
    * i snapshoty, zatímco `/api/edit` bralo anonymní požadavky dál — a jeden stojí
    * medián 15,3 ms synchronního CPU na smyčce. Jediné zastavení byl redeploy.
+   *
+   * ⚠ **Ten nález jmenoval troje dveře a první remediace zavřela jedny.** Druhé
+   * kolo revize 4. 9. 2026 to vrátilo jako `blocking`: `/api/emit` dál anonymně
+   * přehrával korpus a `/api/emit/stream` k tomu otevíral nová SSE spojení
+   * a držel je. Obě čtou tenhle příznak od `T28-killemit`, obě přes sdílenou
+   * `replayDisabled()` v `src/app/api/emit/route.ts`.
    *
    * Vlastní pole, ne `snapshots`: to je dokumentované jako čtení hotových světů
    * a kdo by mu příště měnil pravidlo, změnil by mlčky i tyhle dveře.

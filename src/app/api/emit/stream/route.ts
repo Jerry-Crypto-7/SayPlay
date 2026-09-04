@@ -174,7 +174,7 @@ import {
   logStickyFault,
 } from '../../../../server/public-faults';
 import { emissionSteps, type EmitPhase } from '../chain';
-import { readPromptId } from '../route';
+import { readPromptId, replayDisabled } from '../route';
 
 export const runtime = 'nodejs';
 
@@ -259,6 +259,15 @@ export async function POST(request: Request): Promise<Response> {
   const requestId = randomUUID();
 
   return withRequest(requestId, async () => {
+    // **Vypínač úplně první, ještě před tělem — a hlavně před proudem.**
+    // Odůvodnění je u `replayDisabled()` v `../route.ts`; tady navíc platí,
+    // že vypnuté dveře musí odmítnout **obyčejnou odpovědí**. Za hlavičkami
+    // `text/event-stream` je stav 200 dávno u klienta a 503 se už poslat nedá,
+    // takže brána o kus níž by uměla leda rámec `stream-fault` — tedy vypnutí
+    // vydávané za poruchu potrubí.
+    const disabled = replayDisabled(requestId, 'emit/stream');
+    if (disabled !== null) return disabled;
+
     const parsed = await readPromptId(request, requestId, 'emit/stream');
     if (!parsed.ok) return parsed.response;
 

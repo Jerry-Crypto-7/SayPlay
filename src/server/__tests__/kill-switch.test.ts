@@ -16,9 +16,18 @@
  * je už zaplacené, je výpadek přesně toho, co §22.4 chrání jmenovitě.
  */
 
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, posix, relative, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -316,5 +325,207 @@ describe('vypínač je zapojený do dveří, ne jen napsaný', () => {
     );
     // 404, ne 503: dveře refine běží dál a odmítly to až na neznámé relaci.
     expect(response.status).not.toBe(503);
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Dveře podruhé — vyjmenované ze stromu, ne z hlavy.
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Tenhle blok existuje proto, že ruční seznam dveří tuhle vadu vyrobil.**
+ *
+ * Nález `T28` jmenoval troje dveře bez vypínače, remediace zavřela jedny
+ * a druhé kolo nezávislé revize 4. 9. 2026 to vrátilo jako `blocking`.
+ * Enumerace ze stromu je jediná forma, která **nemůže** zapomenout dveře, které
+ * vzniknou příště: nová `route.ts` bez brány shodí tenhle test hned, jak se
+ * založí.
+ *
+ * Soudí se **volání `killState(`**, ne řádek s importem, a hledá se i v modulech,
+ * které si route pod `src/app/api` přitáhne relativní cestou. Obojí je vědomé:
+ *
+ * - `/api/emit/stream` vlastní bránu nemá — volá sdílenou `replayDisabled()`
+ *   ze sousední `../route.ts`, aby se ty dvě emitovací cesty nemohly rozejít.
+ *   Test, který by četl jen text jednoho souboru, by tu sdílenou bránu neviděl.
+ * - Naopak přítomnost importu nic nedokazuje: nepoužitý import projde přes lint
+ *   i `tsc` jako mrtvý kód, kdežto `killState(` je volání.
+ */
+const API_ROOT = resolve(fileURLToPath(new URL('../../app/api', import.meta.url)));
+
+/**
+ * Dveře, které vypínač číst **nemají**. Není to seznam k doplnění po každém
+ * nálezu — je to tvrzení, které se musí obhájit:
+ *
+ * - `build-id` a `health` jsou diagnostika. Vypnout je znamená oslepit
+ *   monitoring přesně ve chvíli, kdy operátor vypínač zapnul.
+ * - `og` skládá statický obrázek pro náhled odkazu. Nečte relaci, nevolá model
+ *   a nesahá na nic, co by šlo vypnout.
+ */
+const KILL_SWITCH_EXEMPT = ['build-id/route.ts', 'health/route.ts', 'og/route.ts'] as const;
+
+/** Každá `route.ts` pod `src/app/api`, jako cesta s `/` od kořene těch dveří. */
+function apiRoutes(directory: string = API_ROOT): string[] {
+  const found: string[] = [];
+  for (const entry of readdirSync(directory)) {
+    const full = join(directory, entry);
+    if (statSync(full).isDirectory()) found.push(...apiRoutes(full));
+    else if (entry === 'route.ts') found.push(relative(API_ROOT, full).split(sep).join(posix.sep));
+  }
+  return found.sort();
+}
+
+/**
+ * Volá tenhle soubor `killState(` — sám, nebo přes modul, který si pod
+ * `src/app/api` přitáhl relativní cestou?
+ *
+ * Chodí se **jen po relativních importech uvnitř těch dveří**. Balíčky ani `@/`
+ * se nesledují schválně: kdyby ano, stačilo by importovat cokoli, co kdesi
+ * hluboko vypínač čte, a brána by se rozsvítila zeleně i nad dveřmi, které se
+ * nikoho neptají.
+ */
+function readsKillSwitch(file: string, seen = new Set<string>()): boolean {
+  const full = resolve(API_ROOT, file);
+  if (seen.has(full)) return false;
+  seen.add(full);
+  if (!existsSync(full)) return false;
+
+  const source = readFileSync(full, 'utf8');
+  if (source.includes('killState(')) return true;
+
+  for (const match of source.matchAll(/from '(\.[^']*)'/g)) {
+    const target = `${resolve(dirname(full), match[1])}.ts`;
+    if (!target.startsWith(API_ROOT)) continue;
+    if (readsKillSwitch(relative(API_ROOT, target), seen)) return true;
+  }
+  return false;
+}
+
+describe('vypínač dosáhne na každé dveře, ne na ty, na které si někdo vzpomněl', () => {
+  it('strom dveří se doopravdy prochází', () => {
+    const routes = apiRoutes();
+    // Kdyby se cesta rozešla se skutečností, prošlo by všechno níž nad prázdnou
+    // množinou — tedy zelený test bez jediného tvrzení.
+    expect(routes).toContain('emit/route.ts');
+    expect(routes).toContain('worldstream/sessions/[sessionId]/events/route.ts');
+    expect(routes.length).toBeGreaterThan(KILL_SWITCH_EXEMPT.length);
+  });
+
+  it('každá route.ts vypínač čte, nebo stojí na jmenovaném seznamu výjimek', () => {
+    const ungated = apiRoutes().filter(
+      (route) =>
+        !readsKillSwitch(route) && !(KILL_SWITCH_EXEMPT as readonly string[]).includes(route),
+    );
+    expect(
+      ungated,
+      'tyhle dveře vypni-provoz neuvidí — buď do nich bránu dopiš, nebo k výjimce napiš důvod',
+    ).toEqual([]);
+  });
+
+  it('seznam výjimek nesmí zetlít: každá jmenovaná route existuje', () => {
+    const routes = apiRoutes();
+    for (const exempt of KILL_SWITCH_EXEMPT) expect(routes).toContain(exempt);
+  });
+});
+
+describe('vypni-provoz dosáhne na obě emitovací cesty', () => {
+  it('vypnutý provoz odmítne /api/emit 503, a nepřečte ani tělo', async () => {
+    vi.stubEnv('WORLDSMITH_CONTROL_FILE', controlFile(JSON.stringify({ off: ['all'] })));
+    const { POST } = await import('../../app/api/emit/route');
+
+    // Tělo je nečitelné schválně: kdyby ho route četla dřív než vypínač,
+    // odpověděla by 400 a vypnuté dveře by stály celý `readBody`.
+    const response = await POST(
+      new Request('http://127.0.0.1/api/emit', { method: 'POST', body: '{ rozbito' }),
+    );
+    expect(response.status).toBe(503);
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe('REPLAY_DISABLED');
+  });
+
+  it('vypnutý provoz odmítne /api/emit/stream obyčejnou odpovědí, ne proudem', async () => {
+    vi.stubEnv('WORLDSMITH_CONTROL_FILE', controlFile(JSON.stringify({ off: ['all'] })));
+    const { POST } = await import('../../app/api/emit/stream/route');
+
+    const response = await POST(
+      new Request('http://127.0.0.1/api/emit/stream', {
+        method: 'POST',
+        body: JSON.stringify({ promptId: 'whatever' }),
+      }),
+    );
+    expect(response.status).toBe(503);
+    // Za hlavičkami `text/event-stream` je stav 200 už u klienta a 503 se poslat
+    // nedá — vypnutí by pak odešlo jako rámec `stream-fault`, tedy jako porucha
+    // potrubí. Brána proto musí být před proudem, ne v něm.
+    expect(response.headers.get('content-type')).not.toContain('text/event-stream');
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe('REPLAY_DISABLED');
+  });
+
+  it('vypnutí tří vrstev emitovací dveře nechá běžet — jsou neplacené', async () => {
+    vi.stubEnv(
+      'WORLDSMITH_CONTROL_FILE',
+      controlFile(JSON.stringify({ off: ['upstream', 'sessions', 'refine'] })),
+    );
+    const { POST } = await import('../../app/api/emit/route');
+
+    const response = await POST(
+      new Request('http://127.0.0.1/api/emit', { method: 'POST', body: '{ rozbito' }),
+    );
+    // 400 za nečitelné tělo: brána se zeptala a pustila dál.
+    expect(response.status).not.toBe(503);
+  });
+
+  it('rozbitý ovládací soubor emitovací dveře nepoloží', async () => {
+    vi.stubEnv('WORLDSMITH_CONTROL_FILE', controlFile('{ tohle není JSON'));
+    const { POST } = await import('../../app/api/emit/route');
+
+    const response = await POST(
+      new Request('http://127.0.0.1/api/emit', { method: 'POST', body: '{ rozbito' }),
+    );
+    // Táž doktrína jako u snapshotů: překlep v JSONu nesmí položit to, co se
+    // neplatí. Vypne to jedině výslovné `all`.
+    expect(response.status).not.toBe(503);
+  });
+});
+
+describe('vypni-provoz dosáhne i na čtení běžící relace', () => {
+  const unknown = { params: Promise.resolve({ sessionId: 'no-such-session' }) };
+
+  it('vypnutý provoz odmítne snapshot relace 503, dřív než sáhne do registru', async () => {
+    vi.stubEnv('WORLDSMITH_CONTROL_FILE', controlFile(JSON.stringify({ off: ['all'] })));
+    const { GET } = await import('../../app/api/worldstream/sessions/[sessionId]/route');
+
+    // Neznámá relace: bez vypínače je odpověď 404, takže 503 znamená, že se
+    // brána ptala první.
+    const response = await GET(new Request('http://127.0.0.1/x'), unknown);
+    expect(response.status).toBe(503);
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe('SERVICE_DISABLED');
+  });
+
+  it('vypnutý provoz odmítne i proud relace, a to před slotem', async () => {
+    vi.stubEnv('WORLDSMITH_CONTROL_FILE', controlFile(JSON.stringify({ off: ['all'] })));
+    const events = await import('../../app/api/worldstream/sessions/[sessionId]/events/route');
+    events.resetStreamSubscribers();
+
+    const response = await events.GET(new Request('http://127.0.0.1/x'), unknown);
+    expect(response.status).toBe(503);
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe('SERVICE_DISABLED');
+    // Odmítnutý požadavek nesmí obsadit místo, které pak nikdo nevrátí.
+    expect(events.streamedSessionCount()).toBe(0);
+  });
+
+  it('vypnuté relace čtení běžící relace nezastaví — vrstvy zůstávají oddělené', async () => {
+    vi.stubEnv('WORLDSMITH_CONTROL_FILE', controlFile(JSON.stringify({ off: ['sessions'] })));
+    const { GET } = await import('../../app/api/worldstream/sessions/[sessionId]/route');
+
+    const response = await GET(new Request('http://127.0.0.1/x'), unknown);
+    // 404, ne 503: zakládání stojí, ale co běží, zůstává čitelné (§22.4).
+    expect(response.status).toBe(404);
+  });
+
+  it('rozbitý ovládací soubor čtení běžící relace nepoloží', async () => {
+    vi.stubEnv('WORLDSMITH_CONTROL_FILE', controlFile('{ tohle není JSON'));
+    const { GET } = await import('../../app/api/worldstream/sessions/[sessionId]/route');
+
+    const response = await GET(new Request('http://127.0.0.1/x'), unknown);
+    expect(response.status).toBe(404);
   });
 });
