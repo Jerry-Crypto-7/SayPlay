@@ -55,6 +55,7 @@ import { costUsd, processSpendCap } from '../../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../../server/upstream';
 import type { BlueprintEmitter } from '../../../../model/worldstream-repair';
 import {
+  MAX_SESSIONS_PER_CALLER,
   newSessionSeed,
   openSession,
   runGeneration,
@@ -449,11 +450,40 @@ export async function POST(request: Request): Promise<Response> {
     const sessionId = randomUUID();
     // **Vlastník relace je klíč volajícího, a je to mez, ne diagnostika**
     // (`MAX_SESSIONS_PER_CALLER`). Bez něj by registr seskupil všechny relace
-    // do jednoho kbelíku a strop 64 by šel naplnit z jedné smyčky — tedy páka,
-    // kterou se zvenčí zavírají cizí relace. Je to týž klíč, jaký soudí strop
-    // frekvence pár řádků výš, schválně: dvě různá jména volajícího by byla
-    // dvě pravidla o tomtéž.
+    // do jednoho kbelíku a strop 64 by šel naplnit z jedné smyčky. Je to týž
+    // klíč, jaký soudí strop frekvence pár řádků výš, schválně: dvě různá
+    // jména volajícího by byla dvě pravidla o tomtéž.
+    //
+    // ⚠ **Klíč je podvrhnutelný a mez se tomu přizpůsobuje, ne naopak.** Právě
+    // proto kvóta **odmítá** místo aby uklízela: kdyby uklízela, byla by
+    // podvržená hlavička zaměřovač na cizí relaci (naměřeno 4. 9. 2026, osm
+    // POSTů zavřelo oběti svět). Celý rozklad je u té konstanty.
     const stored = openSession(sessionId, newSessionSeed(), Date.now(), callerKey(request));
+    // **Nad vlastní kvótou se odmítá nováček, a slot se vrací.** Je to ten
+    // další `return` mezi `acquireSlot('world')` a `work.finally`, o kterém
+    // mluví komentář výš: bez `releaseSlot` by každé odmítnutí natrvalo ubralo
+    // jeden ze tří slotů dveří `world`, tedy z toho, co má chránit.
+    //
+    // ⚠ **429, ne 503.** 503 by řeklo „instance je plná", což je nepravda:
+    // registr může být poloprázdný a odmítnutí se týká **jen tohohle klíče**.
+    // `Retry-After` se schválně neposílá — relace se uvolní, až volající zavře
+    // některé své okno nebo až jedné z nich doběhne hodina; číslo, které by tu
+    // stálo, by bylo vymyšlené.
+    if (stored === null) {
+      releaseSlot('world');
+      logRateLimited(
+        'worldstream/sessions',
+        requestId,
+        'TOO_MANY_SESSIONS_PER_CALLER',
+        `caller already holds ${String(MAX_SESSIONS_PER_CALLER)} live sessions on this instance`,
+      );
+      return fail(
+        requestId,
+        429,
+        'TOO_MANY_SESSIONS_PER_CALLER',
+        'you already have as many worlds open as one client may hold — close one and try again',
+      );
+    }
 
     const emit = await cloudEmitter();
     const work =

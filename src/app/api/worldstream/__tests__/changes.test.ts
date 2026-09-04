@@ -198,7 +198,7 @@ describe('preview druhé věty', () => {
   });
 
   it('relace bez světa je 409 — ta adresa za chvíli platit bude', async () => {
-    const stored = openSession('empty-session', 7);
+    const stored = openSession('empty-session', 7)!;
     const response = await preview(stored.session.sessionId, { prompt: 'make the mast taller' });
     expect(response.status).toBe(409);
     expect((await body(response)).error).toMatchObject({ code: 'WORLD_NOT_READY' });

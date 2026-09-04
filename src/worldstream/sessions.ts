@@ -23,6 +23,15 @@
  * kolik jich smí vzniknout: nová relace vždycky projde a nejstarší dokončená
  * vypadne. Odmítat nové relace kvůli počtu by z hlídání paměti udělalo
  * odmítnutí služby.
+ *
+ * ## Jediná výjimka: vlastní kvóta volajícího
+ *
+ * „Nová relace vždycky projde" platí proti stropu registru, ne proti kvótě
+ * klíče. Nad `MAX_SESSIONS_PER_CALLER` se **odmítne nováček** (`putSession`
+ * vrátí `false`, route z toho udělá 429) — a je to jediné místo v modulu, kde
+ * někdo nedostane relaci kvůli počtu. Důvod je změřený a je u té konstanty:
+ * uklidit místo toho cizí relaci znamená dát volajícímu páku na cizí svět,
+ * kdežto odmítnutí ho stojí jeho vlastní požadavek.
  */
 
 import { frozenGrammar } from '@/model/client';
@@ -30,6 +39,7 @@ import type { Grammar } from '@/model/prompt';
 import { buildIntentRequest, readPlannerEmission } from '@/model/worldstream-intent';
 import { MAX_PENDING_CHANGES, type PendingChange, type RejectedAt } from '@/model/worldstream-refine';
 import { compileWithRepair, type BlueprintEmitter } from '@/model/worldstream-repair';
+import { UNIDENTIFIED_CALLER } from '@/server/rate-limit';
 import type { WorldstreamBlueprint } from './schema';
 import { createSession, type GenerationSession } from './session';
 import { shareWorld } from './snapshot-store';
@@ -42,7 +52,8 @@ import { shareWorld } from './snapshot-store';
 export const MAX_LIVE_SESSIONS = 64;
 
 /**
- * Kolik z těch 64 slotů smí držet **jeden klíč volajícího**.
+ * Kolik z těch 64 slotů smí držet **jeden klíč volajícího** — a nad tou mezí
+ * padá **nováček**, nikdy cizí relace.
  *
  * ⚠ **Bez téhle meze je strop registru páka, kterou se zvenčí zavírají cizí
  * relace** — nález páté nezávislé revize 4. 9. 2026, `VERDICT: blocking`,
@@ -54,18 +65,49 @@ export const MAX_LIVE_SESSIONS = 64;
  *
  * Osm z 64 znamená, že plný registr potřebuje nejmíň osm různých klíčů, a že
  * jeden klíč nikdy nedrží víc než osminu. Osm současně otevřených světů
- * z jednoho prohlížeče je řádově víc, než kdo otevře; devátý uvolní **vlastní**
- * nejstarší relaci, nikdy cizí.
+ * z jednoho prohlížeče je řádově víc, než kdo otevře.
  *
- * ⚠ **Co to NEZAVÍRÁ, a je to vědomé.** Klíč se bere z `x-forwarded-for`
- * a podvrhnout ho jde — stojí to v hlavičce `src/server/rate-limit.ts`.
- * Útočník s jednou hlavičkou na cizí relaci nesáhne vůbec (jeho kbelík je
- * vždycky největší, takže platí sám). Útočník, který si vymyslí 64 hlaviček po
- * jedné relaci, srovná kbelíky na velikost 1 a oběť se zase vybírá starým
- * pořadím. Cena útoku tím stoupla ze „smyčky" na „smyčku s měnící se
- * hlavičkou", ne o řád. Zavřít to úplně uměl jedině opačný obchod —
- * plný registr odmítá nové relace (503) — a ten byl 4. 9. 2026 zamítnut
- * vědomě: útočník by pak držel 64 proudů a hodinu by nikdo nezaložil svět.
+ * ## ⚠ Devátá relace se ODMÍTNE. Do 4. 9. 2026 uklízela, a to byla horší vada
+ *
+ * První podoba kvóty uvolnila nad kvótou **nejstarší relaci toho kbelíku**.
+ * Šestá nezávislá revize (`VERDICT: blocking`, obojí naměřeno přes skutečný
+ * route handler) ukázala, že tím vznikl **levnější útok, než jaký kvóta
+ * zavírala**:
+ *
+ * 1. **Kbelík si vybírá volající, takže to byl zaměřovač, ne ochrana.**
+ *    `callerKey()` čte `x-forwarded-for`, tedy hodnotu, kterou píše volající.
+ *    Útočník napsal na svých osm POSTů `x-forwarded-for: <IP oběti>`, tím své
+ *    relace vložil do kbelíku oběti, a devátý požadavek uvolnil nejstaršího
+ *    člena toho kbelíku — oběť. **Naměřeno: 8 POSTů → oběť `RELEASED`,
+ *    `live = 8`.** Osm požadavků místo 65 požadavků a 65 proudů, a registr
+ *    nemusel být ani zdaleka plný.
+ * 2. **Sdílený kbelík byl nová plocha na odepření služby počestným.** Bez
+ *    proxy hlaviček vrací `callerKey()` sentinel, takže do jednoho kbelíku
+ *    spadli všichni a strop registru klesl ze 64 na 8 pro celou instanci.
+ *    Naměřeno: 12 návštěvníků → `live = 8`. Zavírá to `openSession()` níž.
+ *
+ * **Odmítnutí ten obchod obrací:** stojí volajícího jeho vlastní požadavek,
+ * kdežto uklizení stálo cizího člověka jeho živý svět. Podvržená hlavička pak
+ * útočníkovi nekupuje víc než „oběť si hodinu nezaloží nový svět" — její
+ * **běžící** svět se nezavře.
+ *
+ * ⚠ **Není to zamítnutá alternativa „plný registr odmítá nové relace".** Ta
+ * byla zamítnuta vědomě (útočník by držel 64 proudů a hodinu by nezaložil svět
+ * nikdo) a platí dál: strop **registru** pořád uklízí, ne odmítá. Odmítá se
+ * jedině volající nad **vlastní** kvótou.
+ *
+ * ⚠ **Vlastní hodinu staré relace volajícího nezamknou** — `putSession()`
+ * zametá stárnutí dřív, než kbelík spočítá. Bez toho pořadí by osm relací,
+ * které tentýž průchod zrovna pouští, vracelo 429 na devátou.
+ *
+ * ⚠ **Co to NEZAVÍRÁ, a je to vědomé.** Klíč jde pořád podvrhnout, takže
+ * útočník umí oběti **zablokovat zakládání** nových světů (osm požadavků
+ * s její IP naplní její kbelík), a kdo si vymyslí 64 hlaviček po jedné relaci,
+ * srovná kbelíky na jedničku a strop registru vybírá zase starým pořadím.
+ * Zavřít obojí umí jedině klíč z **důvěryhodného** konce řetězu
+ * (`x-vercel-forwarded-for`, nebo poslední položka XFF při pevné hloubce
+ * proxy). To je změna `callerKey()`, na které stojí i strop frekvence sedmerých
+ * dveří, tedy **samostatná úloha** — ne přílepek k téhle.
  *
  * ⚠ **Přeřazení tuhle třídu nezavře a příští kolo to nemá zkoušet.** Obrátit
  * třetí kolo na LIFO (nejnovější sledovaná padá první) vypadá jako oprava —
@@ -85,6 +127,10 @@ export interface StoredSession {
    * mapy a druhá už jednou stála za nálezem o neuklizeném stavu; třetí by
    * potřebovala vlastní úklidovou cestu. Takhle vlastnictví umírá s relací
    * v `live.delete()` a není co zapomenout.
+   *
+   * ⚠ **Sentinel `UNIDENTIFIED_CALLER` se sem nikdy nedostane** —
+   * `openSession()` ho překládá na `sessionId`, tedy na vlastní kbelík.
+   * Kdyby se sem dostal, byl by z kvóty strop 8 na celý proces.
    */
   readonly owner: string;
   /** Autoritativní blueprint pro reconnect (§21). `null`, dokud nevznikl. */
@@ -250,14 +296,31 @@ function idleFor(sessionId: string, stored: StoredSession, now: number): boolean
 }
 
 /**
- * Uvolní, co registr držet nemá — **ve třech kolech, od nejlevnější ztráty**.
+ * **První kolo úklidu:** relace, které nikdo nesleduje a hodinu se v nich nic
+ * nestalo, ať jsou v jakékoli fázi. **Stárnutí je na divákovi a na pohybu
+ * proudu, ne na fázi** — relace s otevřeným proudem nebo s přibývajícími rámci
+ * se tohle kolo nedotkne, i kdyby běžela den (`idleFor` výš).
  *
- * 1. Relace, které nikdo nesleduje a hodinu se v nich nic nestalo, ať jsou
- *    v jakékoli fázi. **Stárnutí je na divákovi a na pohybu proudu, ne na
- *    fázi** — relace s otevřeným proudem nebo s přibývajícími rámci se tohle
- *    kolo nedotkne, i kdyby běžela den (`idleFor` níž).
+ * Kola jsou tři a jdou od nejlevnější ztráty. Druhé a třetí jsou
+ * v `evictOverCap()` níž, protože se spouštějí až nad plným registrem:
+ *
  * 2. Nad stropem: nejstarší **dokončené**, tedy `complete` a `failed`.
  * 3. Pořád nad stropem: ty, které **stojí nejdéle**, bez ohledu na fázi.
+ *
+ * Zametá se při zakládání nové relace, tedy tehdy, když registr roste. Když
+ * nikdo nezakládá, nic neroste a není co zametat.
+ */
+function sweepIdle(now: number): void {
+  for (const [id, stored] of live) if (idleFor(id, stored, now)) release(id);
+}
+
+/**
+ * Kola 2 a 3: co uvolnit, když registr **přeteče** svůj strop.
+ *
+ * Oddělené od prvního kola, protože se spouštějí v jinou chvíli. Stárnutí musí
+ * proběhnout **před** kvótou volajícího (jinak by osm jeho vlastních hodinu
+ * stojících relací vracelo 429 na devátou), kdežto strop registru rozhoduje až
+ * nad relací, která už v mapě je.
  *
  * ⚠ **Třetí kolo je změna doktríny a je vynucená měřením.** Do 3. 9. 2026 tu
  * stálo, že běžící relace se nevyhodí ani jako nejstarší, protože „utnout proud
@@ -268,25 +331,21 @@ function idleFor(sessionId: string, stored: StoredSession, now: number): boolean
  * drží dvě stě relací a strop 64 nedělá nic. Neomezená mapa dosažitelná zvenčí
  * je přesně to, proti čemu strop je.
  *
- * Obětuje se proto ta, která stojí nejdéle: `watched.since` je čas, kdy registr
+ * Obětuje se proto ta, která stojí nejdéle: `watched.moved` je čas, kdy registr
  * naposledy viděl proud té relace **hnout se**, takže relace, do které se
  * právě píše, je v tom pořadí poslední. První kolo `watched` přepíše pro
  * všechny, takže se řadí nad čerstvými čísly, ne nad zbytky.
  *
- * Zametá se při zakládání nové relace, tedy tehdy, když registr roste. Když
- * nikdo nezakládá, nic neroste a není co zametat.
- *
  * ⚠ **`keep` je ta právě založená relace a nesmí padnout za oběť vlastnímu
- * zametení.** Bez téhle výjimky se druhé a třetí kolo obrátí proti ní: divák si
- * proud otevírá až **po** odpovědi na POST, takže v okamžiku zametení je nová
+ * zametení.** Bez téhle výjimky se obě kola obrátí proti ní: divák si proud
+ * otevírá až **po** odpovědi na POST, takže v okamžiku zametení je nová
  * relace jediná nesledovaná v registru — a v registru samých sledovaných relací
  * by tedy byla vždycky jedinou obětí. Nikdo by pak nezaložil svět, dokud by se
  * 64 lidí dívalo. „Nová relace vždycky projde" je doktrína registru z hlavičky
- * souboru; tohle je jediné místo, kde se dá porušit.
+ * souboru a proti stropu registru platí bez výjimky; jediné, co nováčka odmítá,
+ * je jeho **vlastní** kvóta o kus níž.
  */
-function evict(now: number, keep: string): void {
-  for (const [id, stored] of live) if (idleFor(id, stored, now)) release(id);
-
+function evictOverCap(keep: string): void {
   if (live.size <= MAX_LIVE_SESSIONS) return;
   for (const [id, stored] of live) {
     if (live.size <= MAX_LIVE_SESSIONS) return;
@@ -343,42 +402,44 @@ function nejdražšíKbelík(keep: string): string | undefined {
   return podleStání.find((id) => live.get(id)?.session.events.watchers === 0) ?? podleStání[0];
 }
 
-/**
- * Uvolní, co jeden klíč drží nad svou kvótou — **vlastní relace, nikdy cizí**.
- *
- * Běží před stropem registru a jen nad tím klíčem, který právě založil relaci:
- * roste-li registr, roste právě jeho kbelík. Devátá relace téhož volajícího
- * proto uvolní jeho **vlastní** nejstarší, ne cizí, a to i ve chvíli, kdy je
- * registr jinak poloprázdný. To je celá pointa kvóty: strop 64 se nedá naplnit
- * jedním klíčem, takže se nedá použít jako páka.
- */
-function enforceQuota(keep: string): void {
-  const owner = live.get(keep)?.owner;
-  if (owner === undefined) return;
-
-  for (;;) {
-    const mé = [...live.keys()].filter((id) => id !== keep && live.get(id)?.owner === owner);
-    if (mé.length + 1 <= MAX_SESSIONS_PER_CALLER) return;
-    const podleStání = mé.sort(
-      (a, b) => (watched.get(a)?.moved ?? 0) - (watched.get(b)?.moved ?? 0),
-    );
-    const oběť =
-      podleStání.find((id) => live.get(id)?.session.events.watchers === 0) ?? podleStání[0];
-    if (oběť === undefined) return;
-    release(oběť);
-  }
+/** Kolik relací ten klíč právě drží. */
+function callerHolds(owner: string): number {
+  let held = 0;
+  for (const stored of live.values()) if (stored.owner === owner) held += 1;
+  return held;
 }
 
 /**
+ * Zapíše relaci do registru, nebo řekne `false`, že se **nevejde do kvóty**
+ * svého volajícího.
+ *
+ * `false` je jediná odpověď „ne" celého modulu a je to odmítnutí **nováčka**,
+ * ne úklid cizí relace; proč zrovna takhle, stojí u `MAX_SESSIONS_PER_CALLER`.
+ * Volající to musí přečíst — relace, na kterou vrátí `false`, v registru není
+ * a ostatní dveře na ni odpoví 404.
+ *
+ * Pořadí uvnitř je celé odůvodněné a nedá se prohodit:
+ * 1. **Stárnutí**, ještě před kvótou — jinak by volajícího zamklo osm jeho
+ *    vlastních relací, které tenhle průchod zrovna pouští.
+ * 2. **Kvóta klíče**, před zápisem — odmítá se, takže se nemá co zapisovat.
+ * 3. **Strop registru**, až nad zapsanou relací a s ní jako `keep`.
+ *
  * `now` je vstřícnost k testům: hodinu nejde odčekat a `Date.now()` se posunout
  * nedá. Provoz ho nepředává.
  */
-export function putSession(stored: StoredSession, now: number = Date.now()): void {
-  live.set(stored.session.sessionId, stored);
-  // Kvóta klíče běží **před** stropem registru: jinak by se z jednoho klíče
-  // dal registr naplnit a strop by pak vybíral oběť z plné místnosti.
-  enforceQuota(stored.session.sessionId);
-  evict(now, stored.session.sessionId);
+export function putSession(stored: StoredSession, now: number = Date.now()): boolean {
+  sweepIdle(now);
+  if (callerHolds(stored.owner) >= MAX_SESSIONS_PER_CALLER) return false;
+
+  const sessionId = stored.session.sessionId;
+  live.set(sessionId, stored);
+  // **Hodina stárnutí začíná nováčkovi běžet tady, ne až při příštím zametení.**
+  // `idleFor` na neznámé relaci jen založí záznam a vrátí `false`; kdyby se
+  // nezaložil, zůstala by relace mimo `watched` až do dalšího POSTu a
+  // `watchedSessionCount()` by nesouhlasil s `live`.
+  idleFor(sessionId, stored, now);
+  evictOverCap(sessionId);
+  return true;
 }
 
 export function getSession(sessionId: string): StoredSession | null {
@@ -622,6 +683,14 @@ export function newSessionSeed(random: () => number = Math.random): number {
   return Math.floor(random() * 2_147_483_647);
 }
 
+/**
+ * Založí relaci a zapíše ji do registru — nebo vrátí `null`, když je volající
+ * nad svou kvótou (`MAX_SESSIONS_PER_CALLER`).
+ *
+ * `null` je jediná cesta, kterou tenhle modul někoho odmítne, a route z něj
+ * dělá 429. Relace v tom případě **nevznikne**: nic se nezapsalo, nikomu
+ * cizímu se nic nezavřelo.
+ */
 export function openSession(
   sessionId: string,
   sessionSeed: number,
@@ -631,22 +700,33 @@ export function openSession(
    *
    * Nepřipsat vlastníka znamená „tuhle relaci neumím nikomu přiřadit", a
    * seskupit neurčené relace do jednoho kbelíku by z toho kbelíku udělalo
-   * největší — jeden neurčený volající by pak vyhazoval druhého. Vlastní
-   * kbelík je proto konzervativní čtení, ne vypnutá kvóta.
+   * jedinou kvótu pro všechny. Vlastní kbelík je proto konzervativní čtení,
+   * ne vypnutá kvóta.
    *
    * Provoz sem posílá `callerKey(request)` a pinuje to route test; výchozí
    * hodnotu má jedině sada, která relaci zakládá přímo.
    */
   owner: string = sessionId,
-): StoredSession {
+): StoredSession | null {
   const stored: StoredSession = {
     session: createSession({ sessionId, sessionSeed }),
-    owner,
+    // ⚠ **Nerozeznaný volající dostane vlastní kbelík, ne společný** — druhý
+    // blokující nález šesté nezávislé revize 4. 9. 2026. Bez proxy hlaviček
+    // (`next start`, demo z notebooku, prostý reverse proxy) vrací `callerKey()`
+    // sentinel **všem**, takže jeden kbelík byl celá instance a strop registru
+    // klesl ze 64 na 8. Naměřeno přes skutečnou route: 12 návštěvníků →
+    // `live = 8`. Na Vercelu totéž na sdílené odchozí IP: devět porotců za
+    // jednou firemní NATkou.
+    //
+    // **V jednom kbelíku není koho od koho izolovat**, takže tam kvóta
+    // nekupuje nic a zbývá jediná mez, která tam něco znamená — strop registru.
+    // Je to táž úvaha a týž sentinel jako u stropu souběžných čtení těla
+    // v `src/http/body.ts`, jen tam vede na vlastní číslo a tady na „bez kvóty".
+    owner: owner === UNIDENTIFIED_CALLER ? sessionId : owner,
     blueprint: null,
     fault: null,
     sharedWorld: null,
     changes: new Map(),
   };
-  putSession(stored, now);
-  return stored;
+  return putSession(stored, now) ? stored : null;
 }

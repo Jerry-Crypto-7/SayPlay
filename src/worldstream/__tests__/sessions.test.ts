@@ -28,6 +28,7 @@ import {
   watchedSessionCount,
 } from '../sessions';
 import type { PendingChange } from '@/model/worldstream-refine';
+import { UNIDENTIFIED_CALLER } from '@/server/rate-limit';
 
 /** Půlnoc, ať se v aserci pozná hodina od milisekundy. */
 const T0 = 1_760_000_000_000;
@@ -36,9 +37,16 @@ beforeEach(() => {
   clearSessions();
 });
 
-/** Relace dovedená do fáze `world` — tedy tam, kde končí úspěšná generace. */
+/**
+ * Relace dovedená do fáze `world` — tedy tam, kde končí úspěšná generace.
+ *
+ * `!` je tu bezpečné a je to tvrzení, ne pohodlí: bez čtvrtého argumentu je
+ * vlastníkem `sessionId`, takže každá tahle relace stojí ve vlastním kbelíku
+ * a kvóta volajícího na ni nemá jak dosáhnout. Kvótu zkouší až vlastní
+ * `describe` dole, a ten má vlastní helper.
+ */
 function worldSession(id: string, at: number) {
-  const stored = openSession(id, 1234, at);
+  const stored = openSession(id, 1234, at)!;
   stored.session.advance('intent', {});
   stored.session.advance('blueprint', {});
   stored.session.advance('world', {});
@@ -189,7 +197,7 @@ describe('strop registru drží i tehdy, když nikdo nedokončí', () => {
 
   it('neúspěšná relace se pořád uvolňuje stropem, ne až časem', () => {
     for (let i = 0; i < MAX_LIVE_SESSIONS + 5; i += 1) {
-      const stored = openSession(`padlá-${i}`, 1, T0);
+      const stored = openSession(`padlá-${i}`, 1, T0)!;
       stored.session.fail('the model could not be reached');
     }
 
@@ -285,7 +293,7 @@ describe('relace, na kterou se někdo dívá, nezestárne', () => {
     }
 
     // Přesně to, co dělá route: relace vznikne a proud se k ní připojí až potom.
-    const nová = openSession('nová', 1, T0 + MAX_LIVE_SESSIONS);
+    const nová = openSession('nová', 1, T0 + MAX_LIVE_SESSIONS)!;
 
     expect(getSession('nová'), 'nová relace padla za oběť vlastnímu zametení').not.toBeNull();
     expect(nová.fault, 'volající dostal 202 na relaci, která už neexistuje').toBeNull();
@@ -333,18 +341,24 @@ describe('relace, na kterou se někdo dívá, nezestárne', () => {
 });
 
 /**
- * Kvóta na klíč volajícího (`T16-evictworld`, pátá nezávislá revize
- * 4. 9. 2026, `VERDICT: blocking`).
+ * Kvóta na klíč volajícího (`T16-evictworld`, pátá a šestá nezávislá revize
+ * 4. 9. 2026, obě `VERDICT: blocking`).
  *
- * Nález: rozdělení „nejdřív nesledované" se obejde tím, že si útočník své
- * relace **sám sleduje**. Pak nezbude nic nesledovaného, řadí se podle
- * `moved` a nejstarší `moved` má právě relace porotce. Naměřeno sondou:
- * 1 sledovaná oběť + 64 sledovaných útočníkových → padla **jen** ta oběť.
+ * **Pátá** našla, proč kvóta musí existovat: rozdělení „nejdřív nesledované"
+ * se obejde tím, že si útočník své relace sám sleduje, a pak se řadí podle
+ * `moved`, kde nejstarší je relace porotce (1 sledovaná oběť + 64 útočníkových
+ * → padla **jen** ta oběť).
+ *
+ * **Šestá** našla, proč kvóta musí odmítat místo uklízet: kbelík si vybírá
+ * volající. S úklidem stačilo napsat `x-forwarded-for: <IP oběti>` na osm
+ * vlastních POSTů a devátý zavřel svět oběti — osm požadavků místo 65
+ * požadavků a 65 proudů. Obě sondy téhle revize jsou dole jako testy.
  */
-describe('strop registru není páka na cizí relace', () => {
-  /** Relace ve fázi `world` s určeným vlastníkem. */
+describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
+  /** Relace ve fázi `world` s určeným vlastníkem, nebo `null`, když ji kvóta odmítla. */
   function ownedWorld(id: string, at: number, owner: string) {
     const stored = openSession(id, 1234, at, owner);
+    if (stored === null) return null;
     stored.session.advance('intent', {});
     stored.session.advance('blueprint', {});
     stored.session.advance('world', {});
@@ -352,23 +366,29 @@ describe('strop registru není páka na cizí relace', () => {
     return stored;
   }
 
-  it('jeden klíč neudrží víc než svou kvótu, a platí vlastní relací', () => {
+  /** Totéž, ale test tvrdí, že projít **musí** — a řekne to, když neprojde. */
+  function admitted(id: string, at: number, owner: string) {
+    const stored = ownedWorld(id, at, owner);
+    expect(stored, `relaci ${id} odmítla kvóta, ačkoli se vejít měla`).not.toBeNull();
+    return stored!;
+  }
+
+  it('devátá relace jednoho klíče se odmítne a osm předchozích zůstane', () => {
     for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
-      ownedWorld(`moje-${i}`, T0 + i, 'volající-A');
+      admitted(`moje-${i}`, T0 + i, 'volající-A');
     }
     expect(liveSessionCount()).toBe(MAX_SESSIONS_PER_CALLER);
 
-    ownedWorld('devátá', T0 + MAX_SESSIONS_PER_CALLER, 'volající-A');
+    const devátá = ownedWorld('devátá', T0 + MAX_SESSIONS_PER_CALLER, 'volající-A');
 
-    expect(liveSessionCount(), 'kvóta nedrží — jeden klíč přeplnil registr').toBe(
-      MAX_SESSIONS_PER_CALLER,
-    );
-    expect(getSession('devátá'), 'nová relace padla za oběť vlastnímu zametení').not.toBeNull();
-    expect(getSession('moje-0'), 'obětí nebyla vlastní nejstarší relace').toBeNull();
+    expect(devátá, 'kvóta nedrží — devátá relace prošla').toBeNull();
+    expect(getSession('devátá'), 'odmítnutá relace zůstala v registru').toBeNull();
+    expect(getSession('moje-0'), 'kvóta zaplatila relací místo odmítnutím').not.toBeNull();
+    expect(liveSessionCount()).toBe(MAX_SESSIONS_PER_CALLER);
   });
 
   it('devátá relace jednoho klíče nesáhne na relaci cizího klíče', () => {
-    const cizí = ownedWorld('cizí', T0, 'volající-B');
+    const cizí = admitted('cizí', T0, 'volající-B');
     cizí.session.events.subscribe(() => {});
 
     for (let i = 0; i < MAX_SESSIONS_PER_CALLER + 1; i += 1) {
@@ -380,38 +400,106 @@ describe('strop registru není páka na cizí relace', () => {
   });
 
   /**
-   * **Tohle je ta naměřená sonda.** Útočník si každou svou relaci sám sleduje,
-   * takže kolo „nejdřív nesledované" nemá co najít; oběť porotce má nejstarší
-   * `moved`, protože po `world.ready` jí proud nikdo nehne.
+   * ⚠ **Tohle je první sonda šesté nezávislé revize a je to důvod, proč kvóta
+   * odmítá místo aby uklízela** (`VERDICT: blocking`, naměřeno přes skutečnou
+   * route: 8 POSTů → oběť `RELEASED`, `live = 8`).
+   *
+   * Klíč se bere z `x-forwarded-for`, tedy z hodnoty, kterou píše volající.
+   * Útočník proto napsal IP oběti, tím své relace vložil do **jejího** kbelíku,
+   * a devátá uvolnila nejstaršího člena toho kbelíku — oběť. Kbelík byl
+   * zaměřovač, ne ochrana.
    */
-  it('útočník, který si své relace sám sleduje, cizí relaci nezavře', () => {
-    const oběť = ownedWorld('porotce', T0, 'volající-porotce');
+  it('podvržená hlavička s klíčem oběti její běžící svět nezavře', () => {
+    const oběť = admitted('porotce', T0, 'ip:203.0.113.7');
     oběť.session.events.subscribe(() => {});
 
-    for (let i = 0; i < MAX_LIVE_SESSIONS; i += 1) {
-      const stored = ownedWorld(`útok-${i}`, T0 + 1 + i, 'volající-útočník');
-      stored.session.events.subscribe(() => {});
+    // Útočník píše týž klíč na svých osm POSTů. Žádný proud není potřeba.
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
+      ownedWorld(`podvrh-${i}`, T0 + 1 + i, 'ip:203.0.113.7');
     }
 
-    expect(getSession('porotce'), 'strop zavřel relaci, na kterou se někdo díval').not.toBeNull();
-    expect(oběť.fault, 'porotci se svět zavřel pod rukama').toBeNull();
-    expect(liveSessionCount()).toBeLessThanOrEqual(MAX_LIVE_SESSIONS);
+    expect(getSession('porotce'), 'osm podvržených POSTů zavřelo oběti svět').not.toBeNull();
+    expect(oběť.fault, 'oběti se svět zavřel pod rukama').toBeNull();
+    expect(liveSessionCount()).toBe(MAX_SESSIONS_PER_CALLER);
+
+    // ⚠ **A tohle je zbytek, který ta oprava NEZAVÍRÁ, tak ať je změřený.**
+    // Útočník oběti pořád umí zaplnit kbelík, takže si nezaloží **nový** svět.
+    // Zavře to až klíč z důvěryhodného konce řetězu — samostatná úloha nad
+    // `callerKey()`. Kdyby se tahle aserce jednou rozsvítila zeleně z opačného
+    // důvodu, znamená to, že se ochrana zesílila: pak se přepíše doktrína
+    // u `MAX_SESSIONS_PER_CALLER`, ne tenhle řádek.
+    expect(
+      ownedWorld('nový-svět-oběti', T0 + 100, 'ip:203.0.113.7'),
+      'ochrana zesílila nad to, co je o ní napsané — přepiš doktrínu u MAX_SESSIONS_PER_CALLER',
+    ).toBeNull();
   });
 
-  it('uvnitř kbelíku padne nejdřív ta, na kterou se nikdo nedívá', () => {
-    // **Osm, ne 64.** Jeden klíč se přes svou kvótu nedostane, takže „největší
-    // kbelík" je u jednoho volajícího přesně jeho kvóta — a přetečení řeší
-    // `enforceQuota()`, ne třetí kolo stropu.
-    for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
-      const stored = ownedWorld(`moje-${i}`, T0 + i, 'volající-A');
-      // Všechny sledované až na jednu — ta má být obětí, protože je levnější.
-      if (i !== 3) stored.session.events.subscribe(() => {});
+  /**
+   * ⚠ **Druhá sonda šesté revize** (`VERDICT: blocking`, naměřeno: 12
+   * návštěvníků přes skutečnou route → `live = 8` a svět prvního se uvolnil).
+   *
+   * Bez proxy hlaviček vrací `callerKey()` sentinel **všem**, takže sdílený
+   * kbelík by z kvóty udělal strop 8 na celou instanci — osmkrát přísnější než
+   * strop registru, který má chránit. Týká se to každého běhu bez proxy
+   * (`next start`, demo z notebooku) i sdílené odchozí IP na Vercelu, tedy
+   * devíti porotců za jednou firemní NATkou.
+   */
+  it('nerozeznaný volající dostane vlastní kbelík, ne společný strop 8', () => {
+    for (let i = 0; i < 12; i += 1) {
+      admitted(`návštěvník-${i}`, T0 + i, UNIDENTIFIED_CALLER);
     }
-    ownedWorld('přetečení', T0 + MAX_SESSIONS_PER_CALLER, 'volající-A');
 
-    expect(getSession('moje-3'), 'padla sledovaná dřív než nesledovaná').toBeNull();
-    expect(getSession('moje-0'), 'obětí byla sledovaná relace').not.toBeNull();
-    expect(liveSessionCount()).toBe(MAX_SESSIONS_PER_CALLER);
+    expect(liveSessionCount(), 'strop instance klesl ze 64 na kvótu jednoho kbelíku').toBe(12);
+    expect(getSession('návštěvník-0'), 'svět prvního návštěvníka se zavřel pod ním').not.toBeNull();
+  });
+});
+
+/**
+ * Strop **registru** pořád uklízí, ne odmítá — a s kvótou ho přeplní teprve
+ * několik klíčů dohromady (`T16-evictworld`, páté a šesté kolo revize).
+ */
+describe('strop registru není páka na cizí relace', () => {
+  function ownedWorld(id: string, at: number, owner: string) {
+    const stored = openSession(id, 1234, at, owner);
+    if (stored === null) return null;
+    stored.session.advance('intent', {});
+    stored.session.advance('blueprint', {});
+    stored.session.advance('world', {});
+    stored.session.register(TVARY);
+    return stored;
+  }
+
+  /** Osm klíčů po osmi relacích = plný registr. Vrací id, které zbylo nesledované. */
+  function plnýRegistr(nesledovaná: number): void {
+    let pořadí = 0;
+    for (let klíč = 0; klíč < MAX_LIVE_SESSIONS / MAX_SESSIONS_PER_CALLER; klíč += 1) {
+      for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
+        const stored = ownedWorld(`plný-${klíč}-${i}`, T0 + 1 + pořadí, `klíč-${klíč}`);
+        expect(stored, `relace plný-${klíč}-${i} se do registru nevešla`).not.toBeNull();
+        if (pořadí !== nesledovaná) stored!.session.events.subscribe(() => {});
+        pořadí += 1;
+      }
+    }
+  }
+
+  /**
+   * **Uvnitř kbelíku je nesledovaná relace levnější ztráta**, i když stojí
+   * kratší dobu než sledované. Bez kvóty šlo tohle kolo obejít tím, že si
+   * útočník své relace sám sleduje (pátá revize); dnes ho přes kbelík pustí
+   * teprve několik klíčů, ale pořadí uvnitř zůstává stejné.
+   */
+  it('uvnitř největšího kbelíku padne nejdřív ta, na kterou se nikdo nedívá', () => {
+    // Nesledovaná je až padesátá, tedy zdaleka ne nejdéle stojící.
+    plnýRegistr(50);
+    expect(liveSessionCount()).toBe(MAX_LIVE_SESSIONS);
+
+    // Devátý klíč přetečení způsobí, ale sám platit nemá — je to `keep`.
+    ownedWorld('přetečení', T0 + 1000, 'klíč-nový');
+
+    expect(getSession('plný-6-2'), 'obětí nebyla nesledovaná relace').toBeNull();
+    expect(getSession('plný-0-0'), 'padla sledovaná dřív než nesledovaná').not.toBeNull();
+    expect(getSession('přetečení'), 'nová relace padla za oběť vlastnímu zametení').not.toBeNull();
+    expect(liveSessionCount()).toBe(MAX_LIVE_SESSIONS);
   });
 
   /**
@@ -421,18 +509,13 @@ describe('strop registru není páka na cizí relace', () => {
    */
   it('nad stropem registru platí klíč, který drží nejvíc relací', () => {
     const oběť = ownedWorld('porotce', T0, 'volající-porotce');
-    oběť.session.events.subscribe(() => {});
+    expect(oběť).not.toBeNull();
+    oběť!.session.events.subscribe(() => {});
 
-    // Osm klíčů po osmi relacích = 64, tedy plný registr; porotce drží jednu.
-    for (let klíč = 0; klíč < MAX_LIVE_SESSIONS / MAX_SESSIONS_PER_CALLER; klíč += 1) {
-      for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
-        const stored = ownedWorld(`útok-${klíč}-${i}`, T0 + 1 + klíč * 10 + i, `útočník-${klíč}`);
-        stored.session.events.subscribe(() => {});
-      }
-    }
+    plnýRegistr(-1);
 
     expect(getSession('porotce'), 'platil kbelík o jedné relaci místo toho o osmi').not.toBeNull();
-    expect(oběť.fault).toBeNull();
+    expect(oběť!.fault).toBeNull();
     expect(liveSessionCount()).toBeLessThanOrEqual(MAX_LIVE_SESSIONS);
   });
 
@@ -446,11 +529,12 @@ describe('strop registru není páka na cizí relace', () => {
    */
   it('podvržená hlavička na každou relaci kvótu obejde — mez je změřená, ne tvrzená', () => {
     const oběť = ownedWorld('porotce', T0, 'volající-porotce');
-    oběť.session.events.subscribe(() => {});
+    expect(oběť).not.toBeNull();
+    oběť!.session.events.subscribe(() => {});
 
     for (let i = 0; i < MAX_LIVE_SESSIONS; i += 1) {
       const stored = ownedWorld(`podvrh-${i}`, T0 + 1 + i, `vymyšlený-klíč-${i}`);
-      stored.session.events.subscribe(() => {});
+      stored?.session.events.subscribe(() => {});
     }
 
     expect(

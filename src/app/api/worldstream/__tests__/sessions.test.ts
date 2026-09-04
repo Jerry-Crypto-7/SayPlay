@@ -637,7 +637,7 @@ describe('proud relace', () => {
 describe('generace se scriptovaným emitorem', () => {
   it('projde tři fáze v pořadí a dvěma voláními modelu', async () => {
     const emitter = scripted();
-    const stored = openSession('scripted-happy', 4021);
+    const stored = openSession('scripted-happy', 4021)!;
     await runGeneration(stored, PLAN.intent.setting, { emit: emitter.emit, grammar: grammar() });
 
     expect(stored.session.phase).toBe('world');
@@ -666,7 +666,7 @@ describe('generace se scriptovaným emitorem', () => {
   });
 
   it('model, který nedodá záměr, skončí relaci veřejnou větou', async () => {
-    const stored = openSession('scripted-rejected', 4021);
+    const stored = openSession('scripted-rejected', 4021)!;
     await runGeneration(stored, PLAN.intent.setting, {
       emit: async () => ({ intent: 'a salt flat' }),
       grammar: grammar(),
@@ -678,7 +678,7 @@ describe('generace se scriptovaným emitorem', () => {
   });
 
   it('nedostupný model skončí relaci, ne nezachyceným slibem', async () => {
-    const stored = openSession('scripted-unavailable', 4021);
+    const stored = openSession('scripted-unavailable', 4021)!;
     await runGeneration(stored, PLAN.intent.setting, {
       emit: async () => {
         throw new Error('connect ECONNREFUSED https://provider.example/v1?key=sk-secret');
@@ -1003,18 +1003,47 @@ describe('strop na frekvenci dorazí až k zakládání relace', () => {
  * soubor je jediné místo, kde se dá pinovat, že provoz posílá skutečný klíč.
  */
 describe('relaci zakládá klíč volajícího, ne anonym', () => {
-  it('devět relací z jedné hlavičky nechá naživu osm, a jsou to vlastní ztráty', async () => {
-    for (let i = 0; i < MAX_SESSIONS_PER_CALLER + 1; i += 1) {
+  it('devátá relace z jedné hlavičky dostane 429 a osm předchozích zůstane', async () => {
+    resetRateWindows();
+    const první = await createSession(createRequest({ prompt: 'svět 0' }, '203.0.113.7'));
+    const { sessionId } = (await první.json()) as { sessionId: string };
+    for (let i = 1; i < MAX_SESSIONS_PER_CALLER; i += 1) {
       await createSession(createRequest({ prompt: `svět ${String(i)}` }, '203.0.113.7'));
     }
 
+    const devátá = await createSession(createRequest({ prompt: 'devátý' }, '203.0.113.7'));
+
+    expect(devátá.status, 'kvóta nedrží — devátá relace prošla').toBe(429);
+    expect(((await devátá.json()) as { error: { code: string } }).error.code).toBe(
+      'TOO_MANY_SESSIONS_PER_CALLER',
+    );
     expect(
       liveSessionCount(),
       'route klíč nepředala — kvóta je dekorace a strop 64 jde naplnit z jedné smyčky',
     ).toBe(MAX_SESSIONS_PER_CALLER);
+    expect(getSession(sessionId), 'kvóta zaplatila vlastní relací místo odmítnutím').not.toBeNull();
+  });
+
+  // **Odmítnutí vrací slot placeného souběhu.** Ten `return` přibyl mezi
+  // `acquireSlot('world')` a `work.finally`, takže bez `releaseSlot` by tři
+  // odmítnutí natrvalo zavřela stavbu světů komukoli. Naměří to jedině jiný
+  // volající, protože ten původní je nad kvótou pořád.
+  it('odmítnutí nad kvótou nezabere slot, který má chránit', async () => {
+    resetRateWindows();
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
+      await createSession(createRequest({ prompt: `svět ${String(i)}` }, '203.0.113.9'));
+    }
+    for (let i = 0; i < MAX_WORLD_GENERATIONS + 1; i += 1) {
+      const odmítnutá = await createSession(createRequest({ prompt: 'navíc' }, '203.0.113.9'));
+      expect(odmítnutá.status).toBe(429);
+    }
+
+    const jiný = await createSession(createRequest({ prompt: 'jiný člověk' }, '198.51.100.9'));
+    expect(jiný.status, 'odmítnutí ukousla sloty dveří world a nevrátila je').toBe(202);
   });
 
   it('dvě různé hlavičky jsou dva kbelíky, takže si relace nezavřou navzájem', async () => {
+    resetRateWindows();
     const první = await createSession(createRequest({ prompt: 'porotce' }, '198.51.100.4'));
     const { sessionId } = (await první.json()) as { sessionId: string };
 
@@ -1023,5 +1052,43 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
     }
 
     expect(getSession(sessionId), 'cizí kvóta zaplatila relací porotce').not.toBeNull();
+  });
+
+  /**
+   * ⚠ **Sonda šesté nezávislé revize, doslova.** Naměřeno tehdy přes tuhle
+   * route: 8 POSTů s hlavičkou oběti → oběť `RELEASED`, `live = 8`. Kbelík si
+   * vybírá volající, takže dokud kvóta uklízela, byla zaměřovač.
+   */
+  it('útočník s hlavičkou oběti její běžící svět nezavře', async () => {
+    resetRateWindows();
+    const oběť = await createSession(createRequest({ prompt: 'porotce' }, '198.51.100.4'));
+    const { sessionId } = (await oběť.json()) as { sessionId: string };
+
+    // Útočník píše IP oběti na svých osm POSTů, aby své relace dostal do
+    // jejího kbelíku. Žádný proud k tomu není potřeba.
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
+      await createSession(createRequest({ prompt: `podvrh ${String(i)}` }, '198.51.100.4'));
+    }
+
+    expect(getSession(sessionId), 'osm podvržených POSTů zavřelo oběti svět').not.toBeNull();
+    expect(liveSessionCount()).toBe(MAX_SESSIONS_PER_CALLER);
+  });
+
+  /**
+   * ⚠ **Druhá sonda šesté revize.** Naměřeno tehdy: 12 návštěvníků bez proxy
+   * hlaviček → `live = 8` a svět prvního se uvolnil pod ním, protože sentinel
+   * `UNIDENTIFIED_CALLER` byl jeden sdílený kbelík pro celou instanci. Týká se
+   * to každého běhu bez proxy i devíti porotců za jednou firemní NATkou.
+   */
+  it('dvanáct návštěvníků bez proxy hlaviček si světy nezavře navzájem', async () => {
+    resetRateWindows();
+    const první = await createSession(createRequest({ prompt: 'návštěvník 0' }));
+    const { sessionId } = (await první.json()) as { sessionId: string };
+    for (let i = 1; i < 12; i += 1) {
+      await createSession(createRequest({ prompt: `návštěvník ${String(i)}` }));
+    }
+
+    expect(liveSessionCount(), 'strop instance klesl ze 64 na kvótu jednoho kbelíku').toBe(12);
+    expect(getSession(sessionId), 'svět prvního návštěvníka se zavřel pod ním').not.toBeNull();
   });
 });
