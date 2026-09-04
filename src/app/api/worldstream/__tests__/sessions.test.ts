@@ -1025,7 +1025,7 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
    * ⚠ **Nález sedmé nezávislé revize, `VERDICT: blocking`.** Klíč volajícího je
    * odchozí adresa, takže devět porotců za jednou firemní NATkou má **jeden**
    * klíč. Dokud kvóta odmítala i na prázdné instanci, devátý dostal 429 ve
-   * chvíli, kdy bylo volných 55 slotů z 64 — a vyčistit si to neuměl.
+   * chvíli, kdy bylo volných 56 slotů z 64 — a vyčistit si to neuměl.
    */
   it('devět porotců za jednou NATkou dostane na klidné instanci devět světů', async () => {
     resetRateWindows();
@@ -1156,6 +1156,14 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
 
     expect(getSession(sessionId), 'osm podvržených POSTů zavřelo oběti svět').not.toBeNull();
     expect(liveSessionCount()).toBe(QUOTA_ENGAGES_AT + MAX_SESSIONS_PER_CALLER);
+
+    // ⚠ **Druhá půlka názvu („jen jí zaplní kbelík") se tady netvrdí a je to
+    // vědomé.** Desátá revize navrhla dopsat devátý POST s IP oběti proti
+    // 429. **Změřeno, že by to byla dekorace:** ta aserce zůstane zelená i
+    // s rozbitou kvótou (`callerHolds` vrací 0) a zůstane zelená, i když ji
+    // dám v testu první, takže nezachytí nic. Kbelík plní počty odvozené
+    // z `MAX_SESSIONS_PER_CALLER`, takže se s mutací té konstanty posunou
+    // spolu s ní. Drží to modulové dvojče; zbytek je `T16-bucketatroute`.
   });
 
   /**

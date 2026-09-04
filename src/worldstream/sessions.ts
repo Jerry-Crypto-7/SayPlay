@@ -36,7 +36,7 @@
  *
  * Ta podmínka „na obsazeném registru" je taky změřená, ne opatrnost: klíč je
  * odchozí adresa, takže ho sdílí celá kancelář, a odmítat devátého člověka
- * ve chvíli, kdy je volných 55 slotů z 64, je daň za NATku, ne ochrana slotu.
+ * ve chvíli, kdy je volných 56 slotů z 64, je daň za NATku, ne ochrana slotu.
  */
 
 import { frozenGrammar } from '@/model/client';
@@ -163,7 +163,7 @@ export const MAX_SESSIONS_PER_CALLER = 8;
  * Kvóta bez tohohle prahu odmítala i tam, kde o žádný slot nikdo nesoupeřil,
  * a dopadalo to na populaci, kterou si tenhle soubor jmenuje sám: **devět
  * porotců za jednou firemní NATkou** má jeden `callerKey`, takže devátý dostal
- * 429 na instanci, kde bylo volných 55 slotů z 64. Věta „odmítnutí stojí
+ * 429 na instanci, kde bylo volných 56 slotů z 64. Věta „odmítnutí stojí
  * volajícího jeho vlastní požadavek" je pravdivá jedině tehdy, když je klíč
  * jeho — u sdílené odchozí adresy stojí devátého člověka celý svět.
  *

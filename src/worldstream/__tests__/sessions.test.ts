@@ -394,7 +394,7 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
    * ⚠ **Nález sedmé nezávislé revize, `VERDICT: blocking`, změřený.** Kvóta
    * bez prahu odmítala i na prázdné instanci, a klíč je odchozí adresa — devět
    * porotců za jednou firemní NATkou je **jeden** klíč. Devátý dostával 429 ve
-   * chvíli, kdy bylo volných 55 slotů z 64, a vyčistit si to neuměl (koncový
+   * chvíli, kdy bylo volných 56 slotů z 64, a vyčistit si to neuměl (koncový
    * bod „zavři mi relaci" neexistuje).
    */
   it('na klidné instanci drží jeden sdílený klíč víc, než je kvóta', () => {
@@ -544,7 +544,7 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
    * vyvrací ho test `nad plným registrem jedna podvržená relace zavře oběti
    * svět` o pár desítek řádků výš. Zavřený je jen tenhle levný případ.
    */
-  it('osm podvrhů do kbelíku oběti jí zaplní kvótu, svět nezavře', () => {
+  it('osm POSTů do kbelíku oběti jí zaplní kvótu, svět nezavře', () => {
     naPráh();
     const oběť = admitted('porotce', T0, 'ip:203.0.113.7');
     oběť.session.events.subscribe(() => {});
