@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
@@ -208,6 +210,49 @@ describe('kód odmítnutí je jeden pro odpověď i pro log', () => {
         error: { code: string };
       };
       expect(sent.error.code, `${scope}: log a odpověď se rozešly`).toBe(rateLimitCode(verdict));
+    }
+  });
+});
+
+/**
+ * **Dosah obou mezí je tvrzení pro člověka, a rozešlo se už jednou**
+ * (`T28-fleetrate`, rozhodnuto 4. 9. 2026: sdílený čítač se nestaví).
+ *
+ * Strop platí na instanci, ne na nasazení, a flotila o N instancích propustí
+ * N násobek. To se nedá zkontrolovat běhovým testem — je to věta v hlavičce,
+ * a věta se dá při příští úpravě tiše ztratit nebo obrátit. Popis téhle
+ * hranice přitom žije ve **třech** souborech naráz.
+ *
+ * ⚠ **Pinuje se přítomnost správné odpovědi, ne nepřítomnost špatné.**
+ * Blocklist slov se v tomhle repu už jednou vyzkoušel u stropu utrácení
+ * (`T30-capfloor`) a zahodil se: dal se obejít pořadím slov i cizím jazykem
+ * a naopak červenal na správně napsaném záporu. Značka `T28-fleetrate`
+ * v žádném z těch bloků být nemohla, dokud ji tam někdo nenapsal vědomě.
+ */
+describe('všechny tři popisy dosahu vědí, že mez platí na instanci', () => {
+  const bloky = [
+    ['src/server/rate-limit.ts', 'Co tenhle soubor tedy NEDĚLÁ'],
+    // ⚠ Kotva nesmí obsahovat samotné tvrzení, jinak si aserce na „na instanci"
+    // měří vlastní kotvu a mutace se zabije dvakrát na témže místě. `retry-after`
+    // je odpověď toho mechanismu, ne věta o něm.
+    ['src/http/body.ts', '`retry-after`'],
+    ['src/app/api/edit/route.ts', 'Obě jsou meze'],
+  ] as const;
+
+  it('každý blok nese značku úlohy i samotné omezení na instanci', () => {
+    for (const [path, kotva] of bloky) {
+      const text = readFileSync(path, 'utf8');
+      const start = text.indexOf(kotva);
+      expect(start, `${path}: kotva „${kotva}" zmizela — oprav kotvu, ne test`).toBeGreaterThan(-1);
+      // Okno je 900 znaků, tedy celý odstavec i s odůvodněním.
+      const blok = text.slice(start, start + 900);
+      expect(blok, `${path}: popis dosahu neříká, že mez platí na instanci`).toContain(
+        'na instanci',
+      );
+      expect(
+        blok,
+        `${path}: popis dosahu nenese značku — dopiš, že sdílený čítač se vědomě nestaví`,
+      ).toContain('T28-fleetrate');
     }
   });
 });

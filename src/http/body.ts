@@ -97,8 +97,12 @@ export const MAX_CONCURRENT_BODY_READS_PER_CALLER = 4;
  * maximu stojí útočníka **2 MB každých pět sekund, tedy ~400 kB/s** trvale
  * (`BODY_DEADLINE_MS` uvolní i mlčící čtení), a odpověď na to je poctivá:
  * `SERVER_AT_CAPACITY` s `retry-after`. Co by pomohlo, je **rezervovaný díl
- * rozpočtu pro malá těla** — to je ale nová dvoustupňová mez, ne oprava, a
- * patří k rozhodnutí o velikosti rozpočtu (`T28-fleetrate`).
+ * rozpočtu pro malá těla** — to je ale nová dvoustupňová mez, ne oprava.
+ *
+ * ⚠ **Tenhle rozpočet je taky na instanci, ne na nasazení, a zůstane tak**
+ * (`T28-fleetrate`, rozhodnuto 4. 9. 2026): sdílený čítač se nestaví, protože by
+ * stál síťový let před každým požadavkem. Odůvodnění je v hlavičce
+ * `src/server/rate-limit.ts` a platí pro obě meze stejně.
  */
 export const MAX_BUFFERED_BODY_BYTES = 2 * 1024 * 1024;
 

@@ -88,8 +88,9 @@
  * odvozené z toho p95) a strop na okno čtení těla, který je sám dvojí —
  * `MAX_CONCURRENT_BODY_READS_PER_CALLER` na počet a `MAX_BUFFERED_BODY_BYTES`
  * na paměť, kterou rozečtená těla drží (`src/http/body.ts`).
- * ⚠ Obě jsou meze **na instanci**, ne na nasazení; co to znamená a proč to tak
- * je, stojí v hlavičce `rate-limit.ts`.
+ * ⚠ Obě jsou meze **na instanci**, ne na nasazení (`T28-fleetrate`); co to
+ * znamená, proč to tak zůstává a co se tím vzdává, stojí v hlavičce
+ * `rate-limit.ts`.
  *
  * ## Endpoint NEČTE `allowedPaths`
  *
