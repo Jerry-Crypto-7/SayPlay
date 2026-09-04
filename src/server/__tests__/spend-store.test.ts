@@ -285,13 +285,19 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
 
   it('klíč a úložiště se nesmí rozejít: co je sdílená kniha pro předponu, je jí i pro zápis', () => {
     // Dvě definice „sdílené knihy" by znamenaly klíč, který mluví o jiném
-    // uložišti, než kam zápis míří. Projde se proto celá matice a porovná se
-    // odpověď obou funkcí, ne jejich vnitřek. **Žádný záznam nemá známé
-    // `VERCEL_ENV`** — se známým prostředím rozhoduje ono a rovnost neplatí.
+    // uložišti, než kam zápis míří. Porovnává se proto odpověď obou funkcí, ne
+    // jejich vnitřek.
+    //
+    // ⚠ **Rovnost „neznámý klíč ⇔ sdílená kniha" má TŘI výjimky a ty se
+    // vyjmenovávají, ne vynechávají z matice** — nález nezávislé revize
+    // 4. 9. 2026. Zelená, které se dosáhne kurátorováním seznamu vstupů, tvrdí
+    // pravidlo, jaké kód nemá: dopsání `{VERCEL:'1'}` by ji rozsvítilo červeně
+    // bez jediné vady. Každá výjimka má tedy vlastní aserci dole.
     const envs: Record<string, string | undefined>[] = [
       {},
       { ...STORE_ENV },
       { ...STORE_ENV, VERCEL: '1' },
+      { ...STORE_ENV, VERCEL_ENV: 'staging' },
       { WORLDSMITH_SPEND_STORE_URL: 'https://ledger.example.com/' },
       { WORLDSMITH_SPEND_STORE_TOKEN: 'token' },
       { WORLDSMITH_SPEND_STORE_URL: '  ', WORLDSMITH_SPEND_STORE_TOKEN: '  ' },
@@ -302,6 +308,25 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
       const unknown = storePrefix(env) === 'worldsmith:spend:unknown-env';
       expect(unknown, `klíč a úložiště se rozešly pro ${JSON.stringify(env)}`).toBe(shares);
     }
+
+    // **Výjimka 1 — výslovná předpona vyhrává nad odvozením.** Kniha se sdílí,
+    // klíč přesto není `unknown-env`, protože ho určil operátor.
+    const explicit = { ...STORE_ENV, WORLDSMITH_SPEND_STORE_PREFIX: 'demo' };
+    expect(storePrefix(explicit)).toBe('demo');
+    expect(ledgerFromEnv(explicit)?.id).toBe('http');
+
+    // **Výjimka 2 — známé prostředí rozhoduje samo.** Sdílená kniha ho
+    // nepřebíjí, jinak by produkce účtovala pod neznámem.
+    const production = { ...STORE_ENV, VERCEL_ENV: 'production' };
+    expect(storePrefix(production)).toBe('worldsmith:spend');
+    expect(ledgerFromEnv(production)?.id).toBe('http');
+
+    // **Výjimka 3 — `VERCEL` bez sdílené knihy.** Prostředí je neznámé
+    // nasazení, takže klíč je `unknown-env`, ale zapisovat není kam: kniha je
+    // `null`, tedy zavřené selhání. Klíč tu tedy nikam nevede a rozejít se
+    // nemá s čím.
+    expect(storePrefix({ VERCEL: '1' })).toBe('worldsmith:spend:unknown-env');
+    expect(ledgerFromEnv({ VERCEL: '1' })).toBeNull();
   });
 
   it('výslovná předpona vyhrává nad odvozenou, a produkce si nechá holý základ', () => {

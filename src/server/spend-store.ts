@@ -228,8 +228,14 @@ function sharedStoreFromEnv(
  * uživatelské proměnné, které ten přepínač nevypíná: kdo sdílí knihu a nemá
  * známé prostředí, dostane `unknown-env`. Bez sdílené knihy není s čím
  * kolidovat — jediný proces si vede vlastní součet a holý základ platí dál,
- * takže se lokálnímu ani `next start` provozu kniha nepřejmenovala. `VERCEL`
- * zůstává jako druhý, slabší signál: když svítí, je to nasazení tak jako tak.
+ * takže lokálnímu provozu **bez vyplněných `WORLDSMITH_SPEND_STORE_*`** se
+ * kniha nepřejmenovala. `VERCEL` zůstává jako druhý, slabší signál: když
+ * svítí, je to nasazení tak jako tak.
+ *
+ * ⚠ **Kdo sdílenou knihu vyplněnou má a známé prostředí nemá, tomu se klíč
+ * přejmenoval** — `worldsmith:spend` → `…:unknown-env`, tedy `next start` nebo
+ * Docker nad Upstashem taky. Dosud naúčtovaná útrata zůstane na starém klíči
+ * a strop začne od nuly; migrační postup je v `.env.example`.
  *
  * ⚠ **Jedna díra tím zavřená NENÍ a nemá se předstírat, že je:** nasazení
  * s vypnutým přepínačem **a bez sdílené knihy** je z prostředí nerozeznatelné
