@@ -231,6 +231,130 @@ function emission(overrides: Record<string, unknown> = {}): Record<string, unkno
   };
 }
 
+const LANTERN_RULE = {
+  phase: 0,
+  priority: 1,
+  event: { kind: 'onEnterZone', entity: 'walker', zone: 'deck' },
+  condition: null,
+  actions: [{ kind: 'win' }],
+};
+
+/** Tělo pravidla z operace fasety chování, ať se nemusí odklikávat typy. */
+function ruleValue(read: ReturnType<typeof readRefineEmission>, index = 0): Record<string, unknown> {
+  if (!read.ok) throw new Error('plán se nepřečetl');
+  return (read.value.behavior[index] as { value: Record<string, unknown> }).value;
+}
+
+describe('pravidlo dostane `id` z klíče cesty', () => {
+  // **Nález nezávislé revize 4. 9. 2026.** Create cestu opravil `949e38f`,
+  // editační cesta `id` nedopisovala vůbec — a `add /sim/rules/<klíč>` s tělem
+  // bez `id` je pro `introducedRuleKeyFault` **nově zavlečená vada**, takže
+  // commit odpoví `REJECTED` a žádné opravné kolo za ním není. Druhá věta tím
+  // nemohla založit zákon a porotce zaplatil volání modelu za nic.
+  it('add bez `id` ho dostane z posledního tokenu cesty', () => {
+    const read = readRefineEmission(
+      emission({ behavior: [{ op: 'add', path: '/sim/rules/lightUp', value: LANTERN_RULE }] }),
+      BRIDGE,
+    );
+    expect(read.ok).toBe(true);
+    expect(ruleValue(read).id).toBe('lightUp');
+  });
+
+  it('replace celého těla je táž vada pod jiným jménem operace', () => {
+    const read = readRefineEmission(
+      emission({ behavior: [{ op: 'replace', path: '/sim/rules/lightUp', value: LANTERN_RULE }] }),
+      BRIDGE,
+    );
+    expect(read.ok).toBe(true);
+    expect(ruleValue(read).id).toBe('lightUp');
+  });
+
+  it('`id`, které se rozešlo s klíčem, se přebíjí — stejně jako na create cestě', () => {
+    // Klíč JE pointer, kterým se na pravidlo míří, takže pravidlo s cizím `id`
+    // leží v dokumentu a žádný patch ho nenajde. `worlddoc` to soudí jako vadu
+    // stejně jako `id` chybějící, takže nechat ho být znamená terminální
+    // odmítnutí místo funkční změny.
+    const read = readRefineEmission(
+      emission({
+        behavior: [{ op: 'add', path: '/sim/rules/lightUp', value: { ...LANTERN_RULE, id: 'somethingElse' } }],
+      }),
+      BRIDGE,
+    );
+    expect(read.ok).toBe(true);
+    expect(ruleValue(read).id).toBe('lightUp');
+  });
+
+  it('escapovaný token se odescapuje, protože klíč v dokumentu je ten holý', () => {
+    const read = readRefineEmission(
+      emission({ behavior: [{ op: 'add', path: '/sim/rules/light~1up', value: LANTERN_RULE }] }),
+      BRIDGE,
+    );
+    expect(read.ok).toBe(true);
+    expect(ruleValue(read).id).toBe('light/up');
+  });
+
+  it('cesta DOVNITŘ pravidla se nechává být — ta na `id` nesahá', () => {
+    // ⚠ **Hodnota tu musí být OBJEKT, a je to naměřené mutací.** První podoba
+    // tohohle testu psala `…/priority` s hodnotou `3`, a mutant, který mez
+    // délky cesty rozvolní z `!== 3` na `< 3`, ji **přežil**: číslo se zastaví
+    // až o dvě podmínky dál na kontrole tvaru, takže aserce neměřila mez, kvůli
+    // které tam je. Nad objektem mutant dopíše `id: 'lightUp'` dovnitř
+    // **události**, tedy do těla, které model napsal celé sám.
+    const event = { kind: 'onEnterZone', entity: 'walker', zone: 'deck' };
+    const read = readRefineEmission(
+      emission({ behavior: [{ op: 'replace', path: '/sim/rules/lightUp/event', value: event }] }),
+      BRIDGE,
+    );
+    expect(read.ok).toBe(true);
+    if (read.ok)
+      expect(read.value.behavior[0]).toEqual({
+        op: 'replace',
+        path: '/sim/rules/lightUp/event',
+        value: event,
+      });
+
+    // A mělká cesta nad tabulkou jako celkem taky ne: `/sim/rules` je dvojice
+    // tokenů, takže žádný klíč pravidla nenese.
+    const whole = readRefineEmission(
+      emission({ behavior: [{ op: 'replace', path: '/sim/rules', value: {} }] }),
+      BRIDGE,
+    );
+    expect(whole.ok).toBe(true);
+    if (whole.ok) expect(whole.value.behavior[0]).toEqual({ op: 'replace', path: '/sim/rules', value: {} });
+  });
+
+  it('operace mimo tabulku pravidel se nemění', () => {
+    const read = readRefineEmission(emission(), BRIDGE);
+    expect(read.ok).toBe(true);
+    if (read.ok) {
+      expect(read.value.behavior[0]).toEqual({ op: 'add', path: '/sim/state/flags/lit', value: true });
+      expect(read.value.appearance[0]).toEqual({ op: 'replace', path: '/look/palette', value: 'sand' });
+    }
+  });
+
+  it('`remove` a hodnota, která pravidlo není, se nechávají být', () => {
+    // `remove` žádné `value` nenese a pole ani `null` pravidlo není — dopsat
+    // jim `id` znamená vyrobit operaci, kterou model nenapsal.
+    const read = readRefineEmission(
+      emission({
+        behavior: [
+          { op: 'remove', path: '/sim/rules/lightUp' },
+          { op: 'add', path: '/sim/rules/broken', value: null },
+          { op: 'add', path: '/sim/rules/alsoBroken', value: [1, 2] },
+        ],
+      }),
+      BRIDGE,
+    );
+    expect(read.ok).toBe(true);
+    if (read.ok)
+      expect(read.value.behavior).toEqual([
+        { op: 'remove', path: '/sim/rules/lightUp' },
+        { op: 'add', path: '/sim/rules/broken', value: null },
+        { op: 'add', path: '/sim/rules/alsoBroken', value: [1, 2] },
+      ]);
+  });
+});
+
 describe('čtení plánu změny', () => {
   it('rozdělí odpověď na tvar, chování a vzhled', () => {
     const read = readRefineEmission(emission({ shape: BRIDGE_SPAN }), BRIDGE);

@@ -9,6 +9,7 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { ruleKeyFault } from '../../ir/worlddoc';
 import { EXAMPLE_MARKER, buildEmissionRequest, type Grammar } from '../prompt';
 import { repairEmission } from '../repair';
 
@@ -29,6 +30,40 @@ function example(): Doc {
 }
 
 const kinds = (result: ReturnType<typeof repairEmission>) => result.notes.map((note) => note.kind);
+
+describe('co oprava nesmí ztratit', () => {
+  it('pravidlo pod klíčem __proto__ nezmizí — pojmenuje se jako vada', () => {
+    // **Nález nezávislé revize 4. 9. 2026, ověřený spuštěním v node.** Tabulka
+    // pravidel se skládala přiřazením do `{}`, a `repaired['__proto__'] = {…}`
+    // vlastní klíč nezaloží: zavolá setter prototypu. Pravidlo tedy z tabulky
+    // **zmizelo** a hotové tabulce se navíc vyměnil prototyp — svět se pak
+    // certifikuje o jeden zákon chudší, aniž kdokoli řekne proč.
+    //
+    // Vstup se skládá `Object.fromEntries`, protože ta zakládá vlastnosti
+    // definicí, ne přiřazením — přesně jako `JSON.parse`, kterým odpověď modelu
+    // doopravdy přichází. Napsat `{ __proto__: … }` v literálu by vyrobilo něco
+    // jiného: prototyp, ne klíč.
+    const doc = example();
+    const rules = doc.sim.rules as Record<string, unknown>;
+    const [firstKey] = Object.keys(rules);
+    const poisoned = Object.fromEntries([...Object.entries(rules), ['__proto__', rules[firstKey]]]);
+    expect(Object.keys(poisoned), 'fixtura ten klíč ztratila už na vstupu').toContain('__proto__');
+
+    const repaired = (
+      repairEmission({ ...doc, sim: { ...doc.sim, rules: poisoned } }).document as Doc
+    ).sim;
+    const table = repaired.rules as Record<string, unknown>;
+
+    expect(Object.keys(table), 'zákon zmizel z tabulky').toContain('__proto__');
+    expect(Object.keys(table)).toHaveLength(Object.keys(poisoned).length);
+    expect(Object.getPrototypeOf(table), 'tabulce se vyměnil prototyp').toBe(Object.prototype);
+
+    // A druhá polovina toho slibu: **nezakládá se nový invariant**. Klíč, na
+    // který se rozbor cesty nedostane, pojmenuje ta větev, která na to už je —
+    // stejně jako `constructor` a `prototype`, které tudy chodí správně dnes.
+    expect(ruleKeyFault(repaired)?.detail).toContain('__proto__');
+  });
+});
 
 describe('co oprava dělá', () => {
   it('dohledá svědka, kterého model nenapsal', () => {

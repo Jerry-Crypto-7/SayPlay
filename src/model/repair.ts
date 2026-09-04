@@ -204,21 +204,40 @@ function repairCondition(
  * kterým se na pravidlo míří (`/sim/rules/<klíč>`), takže rozejít je znamená
  * pravidlo, které v dokumentu leží a žádný patch ho nenajde. `worlddoc` to tak
  * i soudí — `id !== key` je pro něj vada stejně jako `id` chybějící.
+ *
+ * ## Tabulka se skládá `Object.fromEntries`, ne přiřazením do `{}`
+ *
+ * ⚠ **Klíč `__proto__` pravidlo TIŠE SMAZAL a je to naměřené, ne teoretické**
+ * (nález nezávislé revize 4. 9. 2026, ověřený spuštěním v node). `repaired[key] =
+ * {…}` pod tím klíčem nezaloží vlastní vlastnost — zavolá setter prototypu:
+ * `Object.keys` pravidlo ztratí a hotové tabulce se vymění prototyp. Svět se pak
+ * certifikuje **o jeden zákon chudší**, a větev, která takový klíč umí pojmenovat
+ * (`ruleKeyFaults` v `src/ir/worlddoc.ts`, přes `isUnaddressableToken`), se na něj
+ * nedostane, protože už tam není co soudit.
+ *
+ * `Object.fromEntries` zakládá vlastnosti definicí, ne přiřazením, takže žádný
+ * setter nevolá: klíč zůstane vlastní a prototyp netknutý. **Nový invariant to
+ * nezakládá** — je to díra pod tou existující větví, ne druhá brána vedle ní;
+ * pravidlo pod neadresovatelným klíčem odmítne `worlddoc` úplně stejně jako
+ * `constructor` a `prototype`, které tudy procházejí správně už dnes.
  */
 function repairRules(sim: Record<string, unknown>, declared: Declared, notes: RepairNote[]): unknown {
   const rules = asRecord(sim.rules);
-  const repaired: Record<string, unknown> = {};
-  for (const [ruleId, raw] of Object.entries(rules)) {
-    const rule = asRecord(raw);
-    repaired[ruleId] = {
-      ...rule,
-      // Za spreadem schválně: model své `id` napsat smí, ale rozhoduje klíč.
-      id: ruleId,
-      event: repairEvent(ruleId, asRecord(rule.event), declared, notes),
-      condition: repairCondition(ruleId, rule.condition, declared, notes),
-    };
-  }
-  return repaired;
+  return Object.fromEntries(
+    Object.entries(rules).map(([ruleId, raw]) => {
+      const rule = asRecord(raw);
+      return [
+        ruleId,
+        {
+          ...rule,
+          // Za spreadem schválně: model své `id` napsat smí, ale rozhoduje klíč.
+          id: ruleId,
+          event: repairEvent(ruleId, asRecord(rule.event), declared, notes),
+          condition: repairCondition(ruleId, rule.condition, declared, notes),
+        },
+      ];
+    }),
+  );
 }
 
 // ---------------------------------------------------------------------------

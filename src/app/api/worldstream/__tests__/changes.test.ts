@@ -591,6 +591,53 @@ function countingEmit(): { emit: (request: UpstreamRequest) => Promise<unknown>;
   };
 }
 
+describe('druhá věta umí založit zákon', () => {
+  it('pravidlo bez `id` projde celou cestou od věty ke commitu', async () => {
+    // **Jediný test, který tuhle cestu měří celou** — a proto je tady, ne
+    // u `readRefineEmission`. Nález nezávislé revize 4. 9. 2026: model, který
+    // napíše `add /sim/rules/<klíč>` s tělem bez `id`, dostal
+    // `introducedRuleKeyFault` → `REJECTED`, a **za commitem žádné opravné kolo
+    // není**, takže to byl konec. Zákon se přidat nedal, přestože přesně to
+    // slibuje design book §4 dějství III.
+    //
+    // Preview se proto zakládá **scriptovaným emitorem přes `createChange()`**,
+    // ne `putChange()`: dosazení `id` bydlí v `readRefineEmission`, tedy na
+    // cestě, kterou ruční vložení preview obchází.
+    const stored = await generated();
+    const created = await preview(
+      stored.session.sessionId,
+      { prompt: 'the bridge lights up when the surveyor reaches the mast' },
+      async () => ({
+        summary: 'reaching the mast now wins',
+        shape: null,
+        appearance: [],
+        behavior: [
+          {
+            op: 'add',
+            path: '/sim/rules/lightUp',
+            value: {
+              phase: 0,
+              priority: 1,
+              event: { kind: 'onEnterZone', entity: 'surveyor', zone: 'mastPad' },
+              condition: null,
+              actions: [{ kind: 'win' }],
+            },
+          },
+        ],
+      }),
+    );
+    expect(created.status).toBe(200);
+    const changeId = (await body(created)).changeId as string;
+
+    const read = await body(await commit(stored.session.sessionId, changeId));
+    expect(read.outcome, 'zákon se nedal přidat').toBe('COMMITTED');
+    expect(read.applied).toEqual(['sim']);
+    // A pravidlo v dokumentu je adresovatelné: `id` se rovná klíči, jinak by ho
+    // příští věta nenašla.
+    expect(ruleOf(stored, 'lightUp')).toMatchObject({ id: 'lightUp' });
+  });
+});
+
 describe('strop souběžných placených volání', () => {
   it('preview se počítá do TÉHOŽ stropu jako zakládání relace', async () => {
     const stored = await generated();

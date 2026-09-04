@@ -210,6 +210,45 @@ const FACET_PART = { behavior: 'sim', appearance: 'look' } as const;
 
 type Facet = keyof typeof FACET_PART;
 
+/**
+ * **Pravidlo, které druhá věta zakládá nebo přepisuje, dostane `id` z klíče cesty.**
+ *
+ * Create cesta to dělá od `949e38f` (`repairRules` v `src/model/repair.ts`) a
+ * editační cesta to nedělala vůbec, takže `add /sim/rules/lightUp` s tělem bez
+ * `id` skončilo terminálně: `introducedRuleKeyFault` (`src/ir/worlddoc.ts`) to
+ * přečte jako **nově zavlečenou** vadu, commit route odpoví `REJECTED` — a za
+ * commitem žádné opravné kolo není. Porotce tím přišel o zaplacené volání
+ * modelu a o možnost změnit zákon, což slibuje design book §4 dějství III.
+ *
+ * ⚠ **Nález mířil na `src/patch/repair.ts` a tam se to postavit NEMÁ** — změřeno
+ * 4. 9. 2026, ne odhadnuto: ten modul má **nula** produkčních importérů (jediní
+ * dva jsou `evals/harness/chain.ts` a `evals/harness/live.ts`), takže je to
+ * opravář zmrazeného korpusu, ne refine cesty. Oprava tam by na produktu
+ * nezměnila nic.
+ *
+ * **`id` přebíjí i to, co napsal model**, přesně jako na create cestě a ze
+ * stejného důvodu: klíč JE pointer, kterým se na pravidlo míří, takže pravidlo
+ * s jiným `id` leží v dokumentu a žádný patch ho nenajde. Dvě různá pravidla
+ * pro jedno pole by se navíc časem rozešla.
+ *
+ * **`replace` je tu vedle `add` schválně** — přepsat celé tělo pravidla bez
+ * `id` je táž vada pod jiným jménem operace a odmítla by se toutéž větví.
+ * Cesty hlouběji (`…/priority`) sem nepatří: ty `id` nesahají.
+ */
+function withRuleId(operation: Operation): Operation {
+  if (operation.op !== 'add' && operation.op !== 'replace') return operation;
+
+  const tokens = pointerTokens(operation.path);
+  if (tokens.length !== 3 || tokens[0] !== 'sim' || tokens[1] !== 'rules') return operation;
+
+  const body = (operation as { readonly value?: unknown }).value;
+  if (body === null || typeof body !== 'object' || Array.isArray(body)) return operation;
+
+  const key = tokens[2];
+  if ((body as { readonly id?: unknown }).id === key) return operation;
+  return { ...operation, value: { ...body, id: key } } as Operation;
+}
+
 /** Operace fasety, nebo věta o tom, čím se od nich liší. */
 function readOperations(value: unknown, facet: Facet): readonly Operation[] | string {
   if (!Array.isArray(value)) return `${facet} is not an array of operations`;
@@ -231,7 +270,10 @@ function readOperations(value: unknown, facet: Facet): readonly Operation[] | st
   // Tvar operace samotné (`op`, `value`, `from`) soudí router a `applyWorldPatch`
   // nad skutečným dokumentem. Duplikovat to sem znamená dvě brány, které se
   // časem rozejdou — táž úvaha, proč `session.apply()` neopisuje bránu meshe.
-  return value as readonly Operation[];
+  //
+  // `withRuleId` **není brána, je to dosazení** — nic neodmítá a nic nesoudí,
+  // jen dopisuje pole, jehož jediná možná hodnota stojí v cestě té operace.
+  return (value as readonly Operation[]).map(withRuleId);
 }
 
 /**
