@@ -80,13 +80,24 @@ export const MAX_LIVE_SESSIONS = 64;
  * route handler) ukázala, že tím vznikl **levnější útok, než jaký kvóta
  * zavírala**:
  *
- * 1. **Kbelík si vybírá volající, takže to byl zaměřovač, ne ochrana.**
+ * 1. **Kbelík si vybíral volající, takže to byl zaměřovač, ne ochrana.**
  *    `callerKey()` čte `x-forwarded-for`, tedy hodnotu, kterou píše volající.
  *    Útočník napsal na svých osm POSTů `x-forwarded-for: <IP oběti>`, tím své
  *    relace vložil do kbelíku oběti, a devátý požadavek uvolnil nejstaršího
  *    člena toho kbelíku — oběť. **Naměřeno: 8 POSTů → oběť `RELEASED`,
  *    `live = 8`.** Osm požadavků místo 65 požadavků a 65 proudů, a registr
  *    nemusel být ani zdaleka plný.
+ *
+ *    ✅ **Od `T16-trustedkey` se kvóta klíčuje jinou funkcí a tenhle bod je
+ *    minulý čas — tam, kde důvěryhodný konec řetězu existuje.** Route posílá
+ *    `trustedCallerKey(request)`, tedy `x-vercel-forwarded-for` nebo XFF
+ *    v pevné hloubce proxy; do cizího kbelíku se hlavičkou nedostane nic.
+ *    Tvrdí to kladně route test `podvržená hlavička se do kbelíku oběti vůbec
+ *    nedostane`. ⚠ **Bez důvěryhodného zdroje** (`next start`, demo
+ *    z notebooku, prostá reverse proxy bez `WORLDSMITH_TRUSTED_PROXY_HOPS`)
+ *    je klíč `null` → sentinel → kbelík na relaci, tedy **kvóta vypnutá**;
+ *    stará páka se tam vrací v plné síle. Demo proto pouštět jedině za proxy,
+ *    která hlavičku píše.
  * 2. **Sdílený kbelík byl nová plocha na odepření služby počestným.** Bez
  *    proxy hlaviček vrací `callerKey()` sentinel, takže do jednoho kbelíku
  *    spadli všichni a strop registru klesl ze 64 na 8 pro celou instanci.
@@ -113,9 +124,15 @@ export const MAX_LIVE_SESSIONS = 64;
  * porotci sami a útok pak stojí ty dva požadavky. Když si ho útočník plní
  * sám, fillery **nepotřebují proud** – stačí 63 holých POSTů. Jediná část
  * ceny, která drží: fillery musí doopravdy uspět, protože relaci ve fázi
- * `failed` sebere druhé kolo `evict()` dřív než oběť. Zavírá to teprve klíč
- * z **důvěryhodného** konce řetězu (`T16-trustedkey`); dokud ten není, je
- * strop registru pořád páka na cizí relaci (`T16-evictkill`).
+ * `failed` sebere druhé kolo `evict()` dřív než oběť.
+ *
+ * ✅ **Od `T16-trustedkey` (4. 9. 2026) je vložení relace do cizího kbelíku
+ * na route úrovni nedosažitelné, protože kvótu klíčuje `trustedCallerKey()`.**
+ * Modulový test výš pinuje dál **tvar** útoku a je zelený dál — jde přes
+ * `openSession()` s vlastníkem předaným rovnou, tedy obchází hlavičky.
+ * ⚠ **Zavřené to je jen tam, kde důvěryhodný konec řetězu existuje**
+ * (Vercel, nebo proxy s vyplněným `WORLDSMITH_TRUSTED_PROXY_HOPS`). Bez něj
+ * je kvóta vypnutá a `T16-evictkill` platí v plné síle.
  *
  * ⚠ **Není to zamítnutá alternativa „plný registr odmítá nové relace".** Ta
  * byla zamítnuta vědomě (útočník by držel 64 proudů a hodinu by nezaložil svět
@@ -172,10 +189,15 @@ export const MAX_LIVE_SESSIONS = 64;
  * naživu i tři hodiny" — tedy přesně toho porotce, kvůli kterému ta
  * vlastnost vznikla. Zavírá to klíč z důvěryhodného konce řetězu
  * (`T16-trustedkey`), ne čtvrté kolo stárnutí.
- * Zavřít obojí umí jedině klíč z **důvěryhodného** konce řetězu
- * (`x-vercel-forwarded-for`, nebo poslední položka XFF při pevné hloubce
- * proxy). To je změna `callerKey()`, na které stojí i strop frekvence sedmerých
- * dveří, tedy **samostatná úloha** — ne přílepek k téhle.
+ *
+ * ✅ **Ten klíč přistál 4. 9. 2026 a je to `trustedCallerKey()`, ne opravený
+ * `callerKey()`.** Plán předepisoval opravit tu původní funkci; **změřeno
+ * předem, že to položí 8 testů, a čtyři z nich pinují opravu dřívějšího
+ * blokujícího nálezu** — strop frekvence by bez rozeznatelného klíče spadl
+ * zpátky na „strop na dveře", tedy 5,1 req/s zavře dveře všem. Rozdělily se
+ * proto podle toho, co podvržený klíč způsobí: u frekvence nic (vrací
+ * útočníka tam, kde by byl bez meze), u kvóty všechno. Celá tabulka je
+ * v hlavičce `trustedCallerKey()` v `src/server/rate-limit.ts`.
  *
  * ⚠ **Přeřazení tuhle třídu nezavře a příští kolo to nemá zkoušet.** Obrátit
  * třetí kolo na LIFO (nejnovější sledovaná padá první) vypadá jako oprava —
@@ -227,7 +249,11 @@ export const QUOTA_ENGAGES_AT = MAX_LIVE_SESSIONS / 2;
 export interface StoredSession {
   readonly session: GenerationSession;
   /**
-   * Klíč volajícího, který relaci založil (`callerKey()` z `rate-limit.ts`).
+   * Klíč volajícího, který relaci založil.
+   *
+   * ⚠ **Od `T16-trustedkey` je to `trustedCallerKey()`, ne `callerKey()`** —
+   * konec řetězu, do kterého volající nemluví. Ty dvě funkce se schválně
+   * liší; proč, stojí u té druhé v `src/server/rate-limit.ts`.
    *
    * **Vlastnictví bydlí tady, ne ve třetí mapě.** `live` a `watched` jsou dvě
    * mapy a druhá už jednou stála za nálezem o neuklizeném stavu; třetí by

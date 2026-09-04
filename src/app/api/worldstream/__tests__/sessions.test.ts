@@ -77,13 +77,27 @@ import {
  * Volání route.
  * ------------------------------------------------------------------ */
 
-function createRequest(body: unknown, caller?: string): Request {
+/**
+ * Požadavek na založení relace.
+ *
+ * `caller` je **poctivý provoz za platformou**, takže píše obě hlavičky —
+ * `x-forwarded-for` pro strop frekvence a `x-vercel-forwarded-for` pro kvótu.
+ * Od `T16-trustedkey` jsou to dva různé klíče a Vercel posílá obojí.
+ *
+ * `spoofed` přepíše **jen** `x-forwarded-for`, tedy přesně to, co si smí napsat
+ * volající sám. Tím se dá útok napsat jako útok: útočník mluví pod svou
+ * skutečnou adresou a lže o cizí.
+ */
+function createRequest(body: unknown, caller?: string, spoofed?: string): Request {
+  const headers: Record<string, string> = { 'content-type': 'application/json' };
+  if (caller !== undefined) {
+    headers['x-forwarded-for'] = caller;
+    headers['x-vercel-forwarded-for'] = caller;
+  }
+  if (spoofed !== undefined) headers['x-forwarded-for'] = spoofed;
   return new Request('http://127.0.0.1/api/worldstream/sessions', {
     method: 'POST',
-    headers:
-      caller === undefined
-        ? { 'content-type': 'application/json' }
-        : { 'content-type': 'application/json', 'x-forwarded-for': caller },
+    headers,
     body: typeof body === 'string' ? body : JSON.stringify(body),
   });
 }
@@ -1219,19 +1233,21 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
   });
 
   /**
-   * ⚠ **Sonda šesté nezávislé revize, doslova.** Naměřeno tehdy přes tuhle
-   * route: 8 POSTů s hlavičkou oběti → oběť `RELEASED`, `live = 8`. Kbelík si
-   * vybírá volající, takže dokud kvóta uklízela, byla zaměřovač.
+   * ⚠ **Přepsáno 4. 9. 2026 (`T16-trustedkey`), a jméno se změnilo s chováním.**
    *
-   * ⚠ **Název je schválně užší, než by se chtělo psát.** Osmá revize
-   * naměřila, že obecné „útočník s hlavičkou oběti její svět nezavře"
-   * **neplatí**: nad naplněným registrem stačí jediná podvržená relace
-   * navíc, tím je kbelík oběti největší a přetečení sáhne po ní. Zavřený je
-   * jen tenhle levný případ – přeplnit kbelík. Zbytek tvrdí kladně test
-   * „nad plným registrem jedna podvržená relace zavře oběti svět" v modulové
-   * sadě a je to `T16-evictkill`.
+   * Předchozí podoba se jmenovala „osm podvržených POSTů oběti svět nezavře,
+   * **jen jí zaplní kbelík**" — a ta druhá půlka byla naměřená pravda: kbelík
+   * si vybíral volající hlavičkou `x-forwarded-for`, takže cizí člověk uměl
+   * oběti kbelík zaplnit a nad naplněným registrem z něj udělat největší,
+   * po kterém přetečení sáhne. Od `trustedCallerKey()` se kvóta klíčuje
+   * koncem řetězu, který píše platforma, takže **se do cizího kbelíku
+   * nedostane vůbec nic**. Test proto tvrdí víc, ne míň.
+   *
+   * Podstatné je, že to tvrdí **kladně**: nestačí ukázat, že oběť žije —
+   * to platilo i předtím. Ukazuje se, že oběti zůstala **celá kvóta**, tedy
+   * že do jejího kbelíku nespadla ani jedna z útočníkových relací.
    */
-  it('osm podvržených POSTů oběti svět nezavře, jen jí zaplní kbelík', async () => {
+  it('podvržená hlavička se do kbelíku oběti vůbec nedostane', async () => {
     resetRateWindows();
     naPráh();
     const oběť = await createSession(createRequest({ prompt: 'porotce' }, '198.51.100.4'));
@@ -1247,24 +1263,29 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
       'kvóta se pohnula; zapiš proč se pohnula, nepřepisuj to číslo',
     ).toBe(PODVRŽENÝCH_POSTŮ);
 
-    // Útočník píše IP oběti na svých osm POSTů, aby své relace dostal do
-    // jejího kbelíku. Žádný proud k tomu není potřeba.
+    // Útočník mluví pod **svou** adresou a lže o cizí: `x-forwarded-for` nese
+    // IP oběti, důvěryhodný konec řetězu jeho vlastní. Přesně tohle si volající
+    // smí napsat sám.
     for (let i = 0; i < PODVRŽENÝCH_POSTŮ; i += 1) {
-      await createSession(createRequest({ prompt: `podvrh ${String(i)}` }, '198.51.100.4'));
+      await createSession(
+        createRequest({ prompt: `podvrh ${String(i)}` }, '203.0.113.99', '198.51.100.4'),
+      );
     }
 
-    expect(getSession(sessionId), 'osm podvržených POSTů zavřelo oběti svět').not.toBeNull();
-    // Oběť drží jednu relaci, útočník poslal osm do téhož kbelíku — devátá
-    // se odrazila o kvótu, takže přibylo přesně osm světů. **Tohle je ta
-    // druhá půlka názvu:** kbelík se zaplnil a dál nepustil.
-    expect(liveSessionCount(), 'kbelík nedrží — prošlo víc než osm').toBe(
-      QUOTA_ENGAGES_AT + PODVRŽENÝCH_POSTŮ,
+    expect(getSession(sessionId), 'podvržené POSTy zavřely oběti svět').not.toBeNull();
+    expect(liveSessionCount(), 'útočníkovi neprošlo osm vlastních relací').toBe(
+      QUOTA_ENGAGES_AT + 1 + PODVRŽENÝCH_POSTŮ,
     );
 
-    // ⚠ **Devátý POST proti 429 se sem dopisovat nemá — změřeno jako
-    // dekorace.** Desátá revize to navrhla; aserce zůstává zelená i
-    // s rozbitou kvótou (`callerHolds` vrací 0), a zůstane zelená, i když se
-    // dá v testu první. Nese to počet světů výš, ne další odpověď.
+    // **Tohle je ta kladná půlka.** Oběť drží jedinou relaci, takže jí zbývá
+    // sedm z osmi — a všech sedm musí projít. Kdyby se do jejího kbelíku
+    // dostala byť jediná útočníkova relace, sedmý POST se odrazí o kvótu.
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER - 1; i += 1) {
+      const další = await createSession(
+        createRequest({ prompt: `porotce znovu ${String(i)}` }, '198.51.100.4'),
+      );
+      expect(další.status, `oběti ubyla kvóta na ${String(i + 2)}. světě`).toBe(202);
+    }
   });
 
   /**

@@ -49,7 +49,14 @@ import { withRequest } from '../../../../obs/trace';
 import type { UpstreamRequest } from '../../../../model/prompt';
 import { killState } from '../../../../server/kill-switch';
 import { moderatePrompt } from '../../../../server/moderation';
-import { callerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '../../../../server/rate-limit';
+import {
+  callerKey,
+  rateLimitCode,
+  rateLimitedResponse,
+  takeRateSlot,
+  trustedCallerKey,
+  UNIDENTIFIED_CALLER,
+} from '../../../../server/rate-limit';
 import { logRateLimited } from '../../../../server/public-faults';
 import { costUsd, processSpendCap, SpendRefusalError } from '../../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../../server/upstream';
@@ -454,20 +461,22 @@ export async function POST(request: Request): Promise<Response> {
     const sessionId = randomUUID();
     // **Vlastník relace je klíč volajícího, a je to mez, ne diagnostika**
     // (`MAX_SESSIONS_PER_CALLER`). Bez něj by registr seskupil všechny relace
-    // do jednoho kbelíku a strop 64 by šel naplnit z jedné smyčky. Je to týž
-    // klíč, jaký soudí strop frekvence pár řádků výš, schválně: dvě různá
-    // jména volajícího by byla dvě pravidla o tomtéž.
+    // do jednoho kbelíku a strop 64 by šel naplnit z jedné smyčky.
     //
-    // ⚠ **Klíč je podvrhnutelný a mez se tomu přizpůsobuje, ne naopak.** Právě
-    // proto kvóta **odmítá** místo aby uklízela: kdyby uklízela, stačilo by
-    // osm POSTů s cizí IP na zavření cizího světa (naměřeno 4. 9. 2026).
+    // ⚠ **Je to JINÝ klíč než ten pár řádků výš, a od `T16-trustedkey` to tak
+    // má být.** Strop frekvence bere `callerKey()`, tedy vstup volajícího;
+    // podvrhnout ho tam nic nezískává (tabulka v hlavičce `rate-limit.ts`).
+    // Kvóta bere `trustedCallerKey()`, protože tady je cizí klíč **zbraň**:
+    // jedna relace vložená do kbelíku oběti z něj udělá největší kbelík
+    // a přetečení pak sáhne po oběti (naměřeno 5 z 5, `T16-evictkill`).
     //
-    // ⚠ **Míření tím ale zavřené NENÍ, jen zdražené na naplnění registru** –
-    // osmá nezávislá revize naměřila, že jedna relace vložená do kbelíku
-    // oběti z něj udělá největší kbelík a přetečení pak sáhne po oběti.
-    // Celý rozklad i cena jsou u `QUOTA_ENGAGES_AT`; zavírá to až klíč
-    // z důvěryhodného konce řetězu (`T16-trustedkey`).
-    const stored = openSession(sessionId, newSessionSeed(), Date.now(), callerKey(request));
+    // ⚠ **Bez důvěryhodného konce řetězu je kvóta VYPNUTÁ, ne přísnější.**
+    // `null` → sentinel → `openSession()` dá relaci vlastní kbelík, což je
+    // izolace, ne mez; celé odůvodnění je tam. Týká se to `next start`, dema
+    // z notebooku a prosté reverse proxy bez vyplněného
+    // `WORLDSMITH_TRUSTED_PROXY_HOPS`. Na Vercelu klíč je.
+    const owner = trustedCallerKey(request) ?? UNIDENTIFIED_CALLER;
+    const stored = openSession(sessionId, newSessionSeed(), Date.now(), owner);
     // **Nad vlastní kvótou se odmítá nováček, a slot se vrací.** Je to ten
     // další `return` mezi `acquireSlot('world')` a `work.finally`, o kterém
     // mluví komentář výš: bez `releaseSlot` by každé odmítnutí natrvalo ubralo

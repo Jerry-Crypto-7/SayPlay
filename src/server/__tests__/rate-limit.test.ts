@@ -11,6 +11,8 @@ import {
   rateLimitedResponse,
   resetRateWindows,
   takeRateSlot,
+  TRUSTED_PROXY_HOPS,
+  trustedCallerKey,
   UNIDENTIFIED_CALLER,
 } from '../rate-limit';
 
@@ -304,5 +306,117 @@ describe('všechny tři popisy dosahu vědí, že mez platí na instanci', () =>
         `${path}: popis dosahu nenese značku — dopiš, že sdílený čítač se vědomě nestaví`,
       ).toContain('T28-fleetrate');
     }
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Klíč z důvěryhodného konce řetězu (P15 `T16-trustedkey`).
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Tenhle klíč nesmí jít vnutit zvenčí — na tom stojí kvóta relací.**
+ *
+ * `callerKey()` výš podvrhnout jde a je to vědomé: u frekvence vrací
+ * podvržený klíč útočníka nanejvýš tam, kde by byl bez meze. U kvóty je to
+ * zbraň — cizí klíč míří na cizí relace a zavře porotci svět (naměřeno
+ * 5 z 5, `T16-evictkill`). Proto druhá funkce a proto se tady soudí
+ * **nedosažitelnost**, ne tvar.
+ */
+describe('klíč z důvěryhodného konce řetězu', () => {
+  function požadavek(headers: Record<string, string>): Request {
+    return new Request('http://x/', { headers });
+  }
+
+  it('hlavička platformy rozhoduje a volající do ní nemluví', () => {
+    const key = trustedCallerKey(
+      požadavek({
+        'x-vercel-forwarded-for': '198.51.100.4',
+        // Celá lež volajícího. Na výsledek nesmí mít vliv žádný.
+        'x-forwarded-for': '203.0.113.99, 10.0.0.1',
+        'x-real-ip': '203.0.113.99',
+      }),
+      {},
+    );
+
+    expect(key).toContain('198.51.100.4');
+    expect(key, 'do klíče se dostala hodnota od volajícího').not.toContain('203.0.113.99');
+  });
+
+  it('bez důvěryhodného zdroje je to `null`, ne odhad z hlavičky volajícího', () => {
+    // **Fail-closed, a je to celý smysl.** Vrátit sem první položku XFF
+    // znamená vrátit vadu, kterou tahle funkce zavírá; `null` říká „neumím
+    // rozeznat" a volající si z toho musí udělat konzervativní závěr.
+    expect(trustedCallerKey(požadavek({ 'x-forwarded-for': '203.0.113.99' }), {})).toBeNull();
+    expect(trustedCallerKey(požadavek({ 'x-real-ip': '203.0.113.99' }), {})).toBeNull();
+    expect(trustedCallerKey(požadavek({}), {})).toBeNull();
+  });
+
+  it('při vyplněné hloubce rozhoduje položka, kterou připsala proxy', () => {
+    // Jedna proxy: cokoli si napsal volající zůstane vlevo od toho, co
+    // připsala ona, takže poslední položka je skutečná adresa.
+    const jedna = trustedCallerKey(
+      požadavek({ 'x-forwarded-for': '198.51.100.4, 203.0.113.99' }),
+      { [TRUSTED_PROXY_HOPS]: '1' },
+    );
+    expect(jedna).toContain('203.0.113.99');
+    expect(jedna, 'vzala se první položka, tedy lež volajícího').not.toContain('198.51.100.4');
+
+    // Dvě proxy: skutečná adresa je předposlední.
+    const dvě = trustedCallerKey(
+      požadavek({ 'x-forwarded-for': 'client-written, 203.0.113.99, 10.0.0.1' }),
+      { [TRUSTED_PROXY_HOPS]: '2' },
+    );
+    expect(dvě).toContain('203.0.113.99');
+  });
+
+  it('volající neposune počítání od konce vlastními položkami', () => {
+    // **Tohle je ta vlastnost, kvůli které se počítá od konce a ne od
+    // začátku.** Útočník si do hlavičky napíše, co chce — prázdné položky,
+    // čárky navíc, cizí adresy. Všechno to skončí vlevo od toho, co připsala
+    // proxy, takže klíč se nehne.
+    for (const lie of ['', ' ', ' , , ', 'unknown', '198.51.100.4, , 1.2.3.4']) {
+      const key = trustedCallerKey(
+        požadavek({ 'x-forwarded-for': `${lie}, 203.0.113.99` }),
+        { [TRUSTED_PROXY_HOPS]: '1' },
+      );
+      expect(key, `lež "${lie}" pohnula klíčem`).toContain('203.0.113.99');
+    }
+  });
+
+  it('nesmyslná nebo přestřelená hloubka dá `null`, ne vedlejší položku', () => {
+    // Vyplněný nesmysl je pokus hloubku nastavit, a ten se nepovedl — to je
+    // jiný stav než nevyplněno a odpověď je stejná: nevíme.
+    for (const hloubka of ['0', '-1', '1.5', 'abc', '', ' ']) {
+      expect(
+        trustedCallerKey(požadavek({ 'x-forwarded-for': 'a, b' }), { [TRUSTED_PROXY_HOPS]: hloubka }),
+        `hloubka "${hloubka}" prošla`,
+      ).toBeNull();
+    }
+
+    // Hloubka větší než řetěz: proxy tolik položek nepřipsala, takže se
+    // nesmí sáhnout po té, kterou napsal volající.
+    expect(
+      trustedCallerKey(požadavek({ 'x-forwarded-for': '203.0.113.99' }), {
+        [TRUSTED_PROXY_HOPS]: '3',
+      }),
+    ).toBeNull();
+
+    // Prázdná položka na spočítaném místě: „nevíme", ne „vezmi vedlejší".
+    expect(
+      trustedCallerKey(požadavek({ 'x-forwarded-for': '203.0.113.99, ' }), {
+        [TRUSTED_PROXY_HOPS]: '1',
+      }),
+    ).toBeNull();
+  });
+
+  it('sentinel z důvěryhodné hlavičky složit nejde a klíč se ořezává', () => {
+    // Táž vlastnost a týž důvod jako u `callerKey()`: kdo se dostane do
+    // kbelíku nerozeznaných, dostane se k volnějším mezím.
+    expect(
+      trustedCallerKey(požadavek({ 'x-vercel-forwarded-for': UNIDENTIFIED_CALLER }), {}),
+    ).not.toBe(UNIDENTIFIED_CALLER);
+
+    const huge = požadavek({ 'x-vercel-forwarded-for': 'a'.repeat(5_000) });
+    expect(trustedCallerKey(huge, {})!.length).toBeLessThan(60);
   });
 });
