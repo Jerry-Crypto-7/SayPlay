@@ -432,7 +432,7 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
 
     expect(
       přijato,
-      'jeden klíč naplnil registr — páka na cizí relaci je zpátky',
+      'jeden klíč naplnil registr — může ho použít jako páku i bez podvrhu',
     ).toBeLessThan(MAX_LIVE_SESSIONS);
     expect(přijato, 'práh se pohnul; zapiš proč se pohnul, nepřepisuj to číslo').toBe(32);
   });
@@ -538,7 +538,13 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
    * a devátá uvolnila nejstaršího člena toho kbelíku — oběť. Kbelík byl
    * zaměřovač, ne ochrana.
    */
-  it('podvržená hlavička s klíčem oběti její běžící svět nezavře', () => {
+  /**
+   * ⚠ **Název je schválně užší, než by se chtělo psát** – stejně jako u
+   * route dvojčete. Obecné „podvržená hlavička cizí svět nezavře" **neplatí**;
+   * vyvrací ho test `nad plným registrem jedna podvržená relace zavře oběti
+   * svět` o pár desítek řádků výš. Zavřený je jen tenhle levný případ.
+   */
+  it('osm podvrhů do kbelíku oběti jí zaplní kvótu, svět nezavře', () => {
     naPráh();
     const oběť = admitted('porotce', T0, 'ip:203.0.113.7');
     oběť.session.events.subscribe(() => {});

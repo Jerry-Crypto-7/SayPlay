@@ -101,13 +101,20 @@ export const MAX_LIVE_SESSIONS = 64;
  * oběti **jednu** relaci s její IP a sám si ji sleduje. Kbelík oběti má tím
  * dva členy proti jednomu u ostatních, je největší, a protože jsou obě jeho
  * relace sledované, vybere se z něj `podleStání[0]` – nejstarší `moved`,
- * tedy relace oběti. **Naměřeno: nad jednorázově naplněným registrem padne
- * cílený porotce za 2 POSTy a 1 proud, 5 z 5.**
+ * tedy relace oběti. **Naměřila to osmá nezávislá revize sondou přes route:
+ * nad jednorázově naplněným registrem padl cílený porotce za 2 POSTy
+ * a 1 proud, 5 z 5.** V repu drží mechanismus modulový test `nad plným
+ * registrem jedna podvržená relace zavře oběti svět` – ten jde přes
+ * `openSession()`, ne přes POSTy, takže pinuje **tvar útoku, ne ta čísla**.
  *
- * Cena útoku je tedy to naplnění registru (~64 zaplacených světů), ne ta
- * dvojice požadavků – a kvóta ji proti stavu před sebou nesnížila. Zavírá to
- * teprve klíč z **důvěryhodného** konce řetězu (`T16-trustedkey`); dokud ten
- * není, je strop registru pořád páka na cizí relaci (`T16-evictkill`).
+ * ⚠ **Plný registr je předpoklad, ne cena, kterou platí útočník.** Registr
+ * drží hodinu provozu, ne souběžné uživatele, takže na demo dni ho naplní
+ * porotci sami a útok pak stojí ty dva požadavky. Když si ho útočník plní
+ * sám, fillery **nepotřebují proud** – stačí 63 holých POSTů. Jediná část
+ * ceny, která drží: fillery musí doopravdy uspět, protože relaci ve fázi
+ * `failed` sebere druhé kolo `evict()` dřív než oběť. Zavírá to teprve klíč
+ * z **důvěryhodného** konce řetězu (`T16-trustedkey`); dokud ten není, je
+ * strop registru pořád páka na cizí relaci (`T16-evictkill`).
  *
  * ⚠ **Není to zamítnutá alternativa „plný registr odmítá nové relace".** Ta
  * byla zamítnuta vědomě (útočník by držel 64 proudů a hodinu by nezaložil svět
@@ -446,8 +453,15 @@ function evictOverCap(keep: string): void {
  * schválně.** Útočník, který si vymyslí 64 hlaviček po jedné relaci, srovná
  * kbelíky na jedničku a vybírá se zase přes celý registr. Cena útoku tím
  * stoupla o „měň hlavičku", ne o řád — celý rozpad i zamítnutá alternativa
- * jsou u `MAX_SESSIONS_PER_CALLER`. Tvrdit se tu smí jedině tolik, kolik to
- * doopravdy dělá: **jeden klíč cizí relaci nezavře nikdy.**
+ * jsou u `MAX_SESSIONS_PER_CALLER`.
+ *
+ * ⚠ **Klíč není člověk, a dvě kola revize tu tuhle záměnu našla dvakrát.**
+ * Dřív tady stálo „jeden klíč cizí relaci nezavře nikdy"; to je pravda
+ * jedině při čtení „cizí = jiný klíč". Cizímu **člověku** svět zavřít jde:
+ * stačí mu do kbelíku podvrhnout jednu relaci s jeho IP a nad plným
+ * registrem sáhne tahle funkce po něm (`T16-evictkill`; pinuje to test
+ * `nad plným registrem jedna podvržená relace zavře oběti svět`). Drží jen
+ * tolik: kbelík, který si útočník nepodvrhne, zůstane vůči němu nedotčený.
  */
 function nejdražšíKbelík(keep: string): string | undefined {
   const kandidáti = [...live.keys()].filter((id) => id !== keep);

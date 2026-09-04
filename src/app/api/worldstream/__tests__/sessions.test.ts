@@ -1081,6 +1081,14 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
 
     expect(odmítnutá.status).toBe(429);
     expect(odmítnutá.headers.get('retry-after'), 'slíbený čas, který nikdo nedrží').toBeNull();
+    // ⚠ **Přesné znění, ne jen seznam zakázaných slov.** Devátá revize
+    // změřila, že samotný blocklist propustí `…; free a slot and come back
+    // in an hour, or open fewer worlds` – tři nesplnitelné rady a slib
+    // o čase, 50 z 50 zelených. Blocklist proto zůstává jako doplněk, ale
+    // váhu nese tahle rovnost: každá změna té věty se sem musí zapsat.
+    expect(error.message).toBe(
+      'this address already holds as many live worlds as one address may hold on a busy instance',
+    );
     for (const rada of [/close/i, /try again/i, /retry/i, /wait/i]) {
       expect(
         error.message,
