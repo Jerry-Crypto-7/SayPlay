@@ -28,8 +28,11 @@
  * zastaralosti by ze sady udělalo měřidlo poskytovatele.
  */
 
+import { readFileSync } from 'node:fs';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { BODY_DEADLINE_MS } from '@/http/body';
 import type { UpstreamRequest } from '@/model/prompt';
 import { resetFaultLog } from '@/server/public-faults';
 import type { PendingChange, RefinePlan } from '@/model/worldstream-refine';
@@ -141,6 +144,9 @@ afterEach(() => {
   // Špionáž na `console.error` (odmítnutí náporem) nesmí přežít do dalšího
   // testu — tichý log by z něj udělal zelenou z jiného důvodu.
   vi.restoreAllMocks();
+  // Sada o pomalém těle si bere falešné hodiny; nechat je zapnuté by zastavilo
+  // čas každému testu za ní.
+  vi.useRealTimers();
 });
 
 /* ------------------------------------------------------------------ *
@@ -670,5 +676,91 @@ describe('strop souběžných placených volání', () => {
     for (let i = MAX_WORLD_GENERATIONS; i < MAX_CONCURRENT_GENERATIONS; i += 1)
       expect(acquireSlot('refine'), `rezervovaný slot ${i} měl být volný`).toBe(true);
     expect(acquireSlot('refine'), 'čítač pustil víc než MAX_CONCURRENT_GENERATIONS').toBe(false);
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Rozpočet požadavku: brána, která nikdy nesepnula (P15 T22-admissiondead).
+ * ------------------------------------------------------------------ */
+
+describe('pomalý požadavek končí na stropu těla, ne na rozpočtu', () => {
+  /**
+   * **Brána, která nesepne, vypadá v kódu i v testu úplně stejně jako brána,
+   * která sepne.** Obojí dveře držely `admit()` na promlčeném rozpočtu:
+   * preview odmítalo nad 8 s čekání, zakládání relace nad 12 s. Jenže
+   * `receivedAtMs` se bralo až uvnitř handleru, takže jediný interval, který se
+   * odsud dá změřit, je čtení těla — a to má vlastní strop
+   * `BODY_DEADLINE_MS = 5 000`. Naměřeno nezávislou revizí 3. 9. 2026:
+   * 0 / 1 000 / 4 999 / 5 000 / 7 999 ms všechno `ADMITTED`.
+   *
+   * Tenhle test pojmenovává **větev, která zbyla**: nejpomalejší, co požadavek
+   * dokáže, je vyčerpat strop těla, a odpověď na to je 408, ne odmítnutí
+   * rozpočtem. Kdo sem příště bude psát časovou bránu, musí ji vejít pod
+   * `BODY_DEADLINE_MS`, jinak vyrobí totéž znovu.
+   *
+   * Hodiny jsou falešné schválně — pravdivý běh by stál pět vteřin za test.
+   */
+  function stalledRequest(url: string): Request {
+    // Proud, který nikdy nic nepošle a nikdy se nezavře: přesně to, co brána
+    // na čas má chytit.
+    const stalled = new ReadableStream({ pull() { return new Promise<void>(() => undefined); } });
+    return new Request(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: stalled,
+      // Node vyžaduje u proudového těla; `Request` ho bez toho odmítne složit.
+      duplex: 'half',
+    } as RequestInit & { duplex: 'half' });
+  }
+
+  async function answerAfterDeadline(pending: Promise<Response>): Promise<Response> {
+    await vi.advanceTimersByTimeAsync(BODY_DEADLINE_MS + 1);
+    return pending;
+  }
+
+  it('preview druhé věty: 408 TIMEOUT, žádné odmítnutí rozpočtem', async () => {
+    vi.useFakeTimers();
+    const url = 'http://127.0.0.1/api/worldstream/sessions/s-1/changes';
+    const response = await answerAfterDeadline(createChange(stalledRequest(url), 's-1', null));
+
+    expect(response.status, 'pomalé tělo neskončilo na svém vlastním stropu').toBe(408);
+    expect((await body(response)).error).toMatchObject({ code: 'TIMEOUT' });
+  });
+
+  it('zakládání relace: 408 TIMEOUT, žádné odmítnutí rozpočtem', async () => {
+    vi.useFakeTimers();
+    const url = 'http://127.0.0.1/api/worldstream/sessions';
+    const response = await answerAfterDeadline(createSession(stalledRequest(url)));
+
+    expect(response.status, 'pomalé tělo neskončilo na svém vlastním stropu').toBe(408);
+    expect((await body(response)).error).toMatchObject({ code: 'TIMEOUT' });
+  });
+
+  /**
+   * Druhá polovina téhož tvrzení, a soudí se **zdroj**, protože chybějící brána
+   * nemá pozorovatelný následek: cesta bez ní vypadá zvenčí přesně jako cesta
+   * s branou, která nikdy nesepne. To je celý důvod, proč ten nález našla až
+   * revize s měřítkem v ruce, a ne sada.
+   *
+   * **Komentáře se odstřihnou** — jinak by bránu prošly zrovna ty odstavce
+   * v hlavičkách obou rout, které tuhle historii popisují. Týž postup jako
+   * u lexikální brány v `sessions.test.ts`.
+   */
+  it('ani jedny dveře nedrží hodiny naarmované na vstupu handleru', () => {
+    const routes = [
+      'src/app/api/worldstream/sessions/route.ts',
+      'src/app/api/worldstream/sessions/[sessionId]/changes/route.ts',
+    ];
+
+    for (const route of routes) {
+      const code = readFileSync(route, 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/^\s*\/\/.*$/gm, '');
+
+      expect(code, `${route} volá admit() na rozpočtu, který čtení těla nikdy nepřečerpá`).not.toMatch(
+        /\badmit\s*\(/,
+      );
+      expect(code, `${route} si zase bere čas na vstupu handleru`).not.toContain('receivedAtMs');
+    }
   });
 });

@@ -5,7 +5,7 @@
  * Tyhle dveře tedy nic nemění. Vyrobí plán, uloží ho k relaci a vrátí, co by se
  * stalo — commit je druhá route a druhé rozhodnutí člověka.
  *
- * ## Čtyři brány, a jedna z nich je zadarmo
+ * ## Tři brány, a jedna z nich je zadarmo
  *
  * 1. **Tvar těla.** Přijímá se `prompt` a nepovinné `stableId` (cíl vybraný
  *    klikem v T23). Klíč navíc je 400 — ze stejného důvodu jako u zakládání
@@ -13,10 +13,23 @@
  *    jako přijaté a produkt by tvrdil, že geometrii píše model, zatímco by ji
  *    směl podstrčit kdokoli.
  * 2. **Moderace**, táž jako u zakládání relace.
- * 3. **Admission** na promlčeném rozpočtu.
- * 4. **Grounding** — a ten je **před** modelem, tedy zadarmo. Nejasná věta se
+ * 3. **Grounding** — a ten je **před** modelem, tedy zadarmo. Nejasná věta se
  *    vrátí jako nabídka kandidátů a nestojí ani jedno placené volání. Je to
  *    zároveň jediný způsob, jak se druhá věta smí splést: nabídkou, ne odhadem.
+ *
+ * Za nimi stojí ještě **strop souběhu** — týž čítač jako u zakládání relace.
+ * Není to brána vstupu, protože se bere až těsně před placeným voláním.
+ *
+ * ## Rozpočet požadavku tu stál a nikdy nesepnul
+ *
+ * Do 4. 9. 2026 tu byla čtvrtá brána: `admit()` na promlčeném rozpočtu
+ * (`CHANGE_POLICY`: 10 s rozpočtu, 2 s minimální obsluhy). **Nezávislá revize
+ * ji vyvrátila měřením** — odmítala až nad 8 s čekání, jenže `receivedAtMs` se
+ * bralo až uvnitř handleru, takže jediný interval, který se odsud dal změřit,
+ * bylo čtení těla, a to má vlastní strop `BODY_DEADLINE_MS = 5 000`
+ * (`src/http/body.ts`). Naměřeno revizí: 0 / 1 000 / 4 999 / 5 000 / 7 999 ms
+ * všechno `ADMITTED`. Táž vada a totéž odstranění jako v `/api/generate`
+ * (`7c1e12f`) a v zakládací routě.
  *
  * ## Meshing tady nezačne, a nezačne ani o kus dál
  *
@@ -37,7 +50,6 @@ import {
 } from '@/model/worldstream-refine';
 import type { BlueprintEmitter } from '@/model/worldstream-repair';
 import { withRequest } from '@/obs/trace';
-import { admit, type AdmissionPolicy } from '@/server/admission';
 import { killState } from '@/server/kill-switch';
 import { moderatePrompt } from '@/server/moderation';
 import { logRateLimited } from '@/server/public-faults';
@@ -46,18 +58,6 @@ import { getSession, putChange } from '@/worldstream/sessions';
 import { acquireSlot, cloudEmitter, MAX_CONCURRENT_GENERATIONS, releaseSlot } from '../../route';
 
 export const runtime = 'nodejs';
-
-/**
- * Rozpočet jednoho preview. Kratší než u zakládání relace, protože se generuje
- * jedna změna, ne celý svět: jedno volání modelu proti dvěma až čtyřem.
- * `minServiceMs` drží tentýž smysl — požadavek, kterému zbývá míň, se nemá
- * čeho chytit a je poctivější odmítnout ho hned než zaplatit za pozdní odpověď.
- */
-export const CHANGE_POLICY: AdmissionPolicy = {
-  budgetMs: 10_000,
-  minServiceMs: 2_000,
-  maxQueued: 0,
-};
 
 function fail(requestId: string, status: number, code: string, message: string): Response {
   return Response.json({ requestId, error: { code, message } }, { status });
@@ -119,7 +119,6 @@ export async function createChange(
   emit: BlueprintEmitter | null,
 ): Promise<Response> {
   const requestId = randomUUID();
-  const receivedAtMs = Date.now();
 
   return withRequest(requestId, async () => {
     // Vypínač `refine` je první brána, před čtením těla — táž úvaha jako
@@ -184,15 +183,6 @@ export async function createChange(
 
     const verdict = moderatePrompt(read.value.prompt);
     if (!verdict.ok) return fail(requestId, 400, verdict.category, verdict.detail);
-
-    const admission = admit(requestId, receivedAtMs, Date.now(), CHANGE_POLICY);
-    if (!admission.admitted)
-      return fail(
-        requestId,
-        503,
-        admission.reason,
-        'the request ran out of its time budget before any work began',
-      );
 
     // **Grounding je před modelem, a proto je zadarmo.** Nejasná věta se vrátí
     // jako nabídka i na nasazení bez klíče: je to odpověď o světě, ne o modelu,

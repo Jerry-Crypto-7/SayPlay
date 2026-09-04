@@ -12,8 +12,8 @@
  *    by vypadaly jako přijaté a produkt by tvrdil, že geometrii píše model,
  *    zatímco by ji směl podstrčit kdokoli.
  * 2. **Moderace** (`src/server/moderation.ts`), tedy táž brána jako `/api/emit`.
- * 3. **Admission**: požadavek, kterému už vypršel rozpočet, se nepouští
- *    k modelu, a souběžných generací běží nejvýš `MAX_CONCURRENT_GENERATIONS`.
+ * 3. **Strop souběhu**: placených volání v letu běží nejvýš
+ *    `MAX_CONCURRENT_GENERATIONS`, a je to týž čítač jako u sesterských dveří.
  * 4. **Strop utrácení** — uvnitř emitoru, u každého placeného volání zvlášť.
  *
  * ## Proč tu není `AdmissionQueue`, ačkoli je napsaná
@@ -22,8 +22,19 @@
  * dřív, než práce doběhne — jinak se 202 změní v „počkej si třicet vteřin".
  * Fronta se sem tedy nedá zapojit tak, jak je: zapojení celé ochrany proti
  * náporu je vlna 7 (T28) a bude potřebovat slot držený **napříč** požadavkem
- * a generací. Do té doby drží nápor dvě věci, které tuhle vlastnost nemají:
- * `admit()` na promlčeném rozpočtu a čítač souběžných generací níž.
+ * a generací. Do té doby drží nápor jediná věc, která tuhle vlastnost nemá:
+ * čítač souběžných generací níž.
+ *
+ * ## Rozpočet požadavku tu stál a nikdy nesepnul
+ *
+ * Do 4. 9. 2026 tu byla ještě brána `admit()` na promlčeném rozpočtu
+ * (`SESSION_POLICY`: 15 s rozpočtu, 3 s minimální obsluhy). **Nezávislá revize
+ * ji vyvrátila měřením:** odmítala až požadavek, který čekal přes 12 s, jenže
+ * `receivedAtMs` se bralo až uvnitř handleru, takže jediný interval, který se
+ * odsud dal změřit, bylo čtení těla — a to má vlastní strop
+ * `BODY_DEADLINE_MS = 5 000` (`src/http/body.ts`). Brána byla o sedm vteřin
+ * mimo dosah a nemohla odmítnout nikdy nikoho. Táž vada a totéž odstranění jako
+ * v `/api/generate` (`7c1e12f`); zůstává čítač, který doopravdy kousne.
  */
 
 import { randomUUID } from 'node:crypto';
@@ -33,7 +44,6 @@ import { after } from 'next/server';
 import { readBody } from '../../../../http/body';
 import { withRequest } from '../../../../obs/trace';
 import type { UpstreamRequest } from '../../../../model/prompt';
-import { admit, type AdmissionPolicy } from '../../../../server/admission';
 import { killState } from '../../../../server/kill-switch';
 import { moderatePrompt } from '../../../../server/moderation';
 import { logRateLimited } from '../../../../server/public-faults';
@@ -105,20 +115,6 @@ export type PaidDoor = 'world' | 'refine';
 const DOOR_CEILING: Readonly<Record<PaidDoor, number>> = {
   world: MAX_WORLD_GENERATIONS,
   refine: MAX_CONCURRENT_GENERATIONS,
-};
-
-/**
- * Rozpočet jednoho požadavku od chvíle, kdy dorazil.
- *
- * `minServiceMs` je 3 000 schválně: cíl §22.1 je p95 do hrubého světa pod 3 s,
- * takže požadavek, kterému zbývá míň, se nemá čeho chytit a je poctivější ho
- * odmítnout hned než ho pustit k modelu a zaplatit za odpověď, která přijde
- * pozdě.
- */
-export const SESSION_POLICY: AdmissionPolicy = {
-  budgetMs: 15_000,
-  minServiceMs: 3_000,
-  maxQueued: 0,
 };
 
 let running = 0;
@@ -252,7 +248,6 @@ function readPrompt(text: string): PromptRead | { readonly ok: false; readonly c
 
 export async function POST(request: Request): Promise<Response> {
   const requestId = randomUUID();
-  const receivedAtMs = Date.now();
 
   return withRequest(requestId, async () => {
     // **Vypínač je první brána, před čtením těla.** Vypnuté dveře nesmí stát
@@ -288,10 +283,6 @@ export async function POST(request: Request): Promise<Response> {
 
     const verdict = moderatePrompt(read.prompt);
     if (!verdict.ok) return fail(requestId, 400, verdict.category, verdict.detail);
-
-    const admission = admit(requestId, receivedAtMs, Date.now(), SESSION_POLICY);
-    if (!admission.admitted)
-      return fail(requestId, 503, admission.reason, 'the request ran out of its time budget before any work began');
 
     // **Slot se bere PŘED čtením protokolu, protože odmítnutí musí být levné.**
     // `serverGrammar()` není cachované: každé volání blokuje smyčku událostí
