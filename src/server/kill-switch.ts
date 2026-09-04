@@ -29,6 +29,15 @@
  * Seznam proto, že operátor za incidentu píše, co má stát — ne co má běžet.
  * Chybějící klíč `off` i prázdný seznam znamenají „běží všechno".
  *
+ * ⚠ **Páka váže jen instance na tomhle buildu a novějším** (`T30-oldbuildlever`).
+ * Starší build čte vypínače výhradně ze souboru a o sdílený klíč
+ * `<předpona>:control` vůbec nezavadí, takže povel k němu **nedojde**. Týká se to
+ * dvou situací, které za incidentu nastanou samy: překryvu při rolloveru, a
+ * staršího preview nasazení, které zůstává dosažitelné na vlastní adrese.
+ * **Peníze to nepustí** — účetní kniha je sdílená pod touž předponou, takže
+ * strop platí i tam; nedojde tam **povel stop**. Kdo za incidentu vypíná, musí
+ * proto stará nasazení zrušit, ne se spolehnout na to, že je povel umlčí.
+ *
  * ⚠ **Přidat `off` do existujícího souboru není vždy no-op — od
  * `T30-capsilence`.** Soubor, který nese `enabled` nebo `callCap` a `capUsd` ne,
  * je pro strop rozbitý, takže `{"enabled":true}` + přidané `off` skončí
