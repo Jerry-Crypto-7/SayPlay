@@ -1154,22 +1154,34 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
     const oběť = await createSession(createRequest({ prompt: 'porotce' }, '198.51.100.4'));
     const { sessionId } = (await oběť.json()) as { sessionId: string };
 
+    // **Osm je tu napsáno ručně, ne odvozeno** (`T16-bucketatroute`). Dokud
+    // se smyčka i očekávaný počet braly z `MAX_SESSIONS_PER_CALLER`, posunuly
+    // se s mutací té konstanty spolu — s kvótou čtyři prošly čtyři relace
+    // a test zůstal zelený. S pevnou osmičkou ta mutace zhasíná právě tady.
+    const PODVRŽENÝCH_POSTŮ = 8;
+    expect(
+      MAX_SESSIONS_PER_CALLER,
+      'kvóta se pohnula; zapiš proč se pohnula, nepřepisuj to číslo',
+    ).toBe(PODVRŽENÝCH_POSTŮ);
+
     // Útočník píše IP oběti na svých osm POSTů, aby své relace dostal do
     // jejího kbelíku. Žádný proud k tomu není potřeba.
-    for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
+    for (let i = 0; i < PODVRŽENÝCH_POSTŮ; i += 1) {
       await createSession(createRequest({ prompt: `podvrh ${String(i)}` }, '198.51.100.4'));
     }
 
     expect(getSession(sessionId), 'osm podvržených POSTů zavřelo oběti svět').not.toBeNull();
-    expect(liveSessionCount()).toBe(QUOTA_ENGAGES_AT + MAX_SESSIONS_PER_CALLER);
+    // Oběť drží jednu relaci, útočník poslal osm do téhož kbelíku — devátá
+    // se odrazila o kvótu, takže přibylo přesně osm světů. **Tohle je ta
+    // druhá půlka názvu:** kbelík se zaplnil a dál nepustil.
+    expect(liveSessionCount(), 'kbelík nedrží — prošlo víc než osm').toBe(
+      QUOTA_ENGAGES_AT + PODVRŽENÝCH_POSTŮ,
+    );
 
-    // ⚠ **Druhá půlka názvu („jen jí zaplní kbelík") se tady netvrdí a je to
-    // vědomé.** Desátá revize navrhla dopsat devátý POST s IP oběti proti
-    // 429. **Změřeno, že by to byla dekorace:** ta aserce zůstane zelená i
-    // s rozbitou kvótou (`callerHolds` vrací 0) a zůstane zelená, i když ji
-    // dám v testu první, takže nezachytí nic. Kbelík plní počty odvozené
-    // z `MAX_SESSIONS_PER_CALLER`, takže se s mutací té konstanty posunou
-    // spolu s ní. Drží to modulové dvojče; zbytek je `T16-bucketatroute`.
+    // ⚠ **Devátý POST proti 429 se sem dopisovat nemá — změřeno jako
+    // dekorace.** Desátá revize to navrhla; aserce zůstává zelená i
+    // s rozbitou kvótou (`callerHolds` vrací 0), a zůstane zelená, i když se
+    // dá v testu první. Nese to počet světů výš, ne další odpověď.
   });
 
   /**
