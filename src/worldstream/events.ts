@@ -56,13 +56,40 @@ export type SessionEventType = (typeof SESSION_EVENT_TYPES)[number];
  * Které typy se smějí sloučit s bezprostředně předchozím rámcem téhož
  * `subject`.
  *
- * **Jediný `shape.refining`**, protože jediný z patnácti je průběh: říká, že
- * se na tvaru pracuje, a novější zpráva starší nahrazuje beze ztráty. Všechno
- * ostatní je stavový přechod a §20 tři z nich (`ready`, `failed`, `committed`)
- * jmenuje výslovně. Rozšiřovat tenhle seznam „pro jistotu" znamená mazat
- * přechody, které klientský reducer potřebuje vidět.
+ * **Slučuje se to, co NENÍ stavový přechod**, a jsou to dvě věci z patnácti.
+ * Rozšiřovat tenhle seznam „pro jistotu" znamená mazat přechody, které
+ * klientský reducer potřebuje vidět; §20 tři z nich (`ready`, `failed`,
+ * `committed`) jmenuje výslovně a ty se sem nesmějí dostat nikdy.
+ *
+ * `shape.refining` je **průběh**: říká, že se na tvaru pracuje, a novější
+ * zpráva starší nahrazuje beze ztráty.
+ *
+ * `patch.rejected` je **oznámení o nepřechodu** (P15 `T22-rejectflood`).
+ * Odmítnutý patch z definice nechal svět tam, kde byl — do dokumentu nešel ani
+ * bajt — takže rámec nenese přechod, který by šlo sloučením ztratit. Přibyl
+ * sem proto, že `b398521` (`T22-takeearly`) nechal odmítnuté preview **ležet
+ * dál**, a tím se rozvázala mez „jeden rámec na jedno zaplacené volání
+ * modelu": N opakovaných POSTů na tentýž `changeId` vyrobilo N rámců, přestože
+ * se zaplatilo jednou.
+ *
+ * ⚠ **Na automat relace to nemá vliv a je to změřené, ne odhadnuté.**
+ * `isCoalescable` čte kromě logu jen `session.ts`, a tam výhradně přes
+ * `RUNG_EVENT[next.kind]`, jehož obor hodnot jsou **čtyři** příčky žebříku
+ * (`shape.coarse`, `shape.refining`, `shape.ready`, `shape.failed`).
+ * `patch.rejected` mezi ně nepatří, takže se otázka „smí se ta příčka
+ * zopakovat" na něj nikdy nezeptá: **nula dotčených příček.**
+ *
+ * ⚠ **Co to NEOHRANIČUJE, a nesmí se tvrdit opak.** Slučuje se jedině s
+ * **koncem** logu, takže kdo drží dvě preview nad dvěma různými objekty a
+ * odmítnutí střídá, dostane rámce dva a dva a neslije se nic. Tvrdou mez tady
+ * dnes dává strop frekvence na dveřích `commit` (`T28-editrate`) a měla by ji
+ * dávat i eviction relace, která je ale rozbitá (`T16-evictworld`). Tohle
+ * zavírá levný případ — opakování téhož odmítnutí zadarmo — ne všechny.
  */
-export const COALESCABLE_EVENT_TYPES: readonly SessionEventType[] = ['shape.refining'];
+export const COALESCABLE_EVENT_TYPES: readonly SessionEventType[] = [
+  'shape.refining',
+  'patch.rejected',
+];
 
 /**
  * Smí se rámec toho typu sloučit s předchozím?
@@ -145,8 +172,16 @@ export interface EventLogOptions {
 
 /**
  * Log jedné relace. Nemá strop a je to vědomé: jedna věta vyrobí desítky
- * rámců, ne desetitisíce, a jediné, co ten počet nafukuje, je průběh —
- * tedy právě to, co slučování shora omezuje.
+ * rámců, ne desetitisíce, a to, co ten počet nafukuje — průběh tvaru
+ * a opakované odmítnutí — slučování shora omezuje.
+ *
+ * ⚠ **„Desítky, ne desetitisíce" je předpoklad, ne mechanismus**, a od
+ * `T22-takeearly` ho drží až brány o patro výš: strop frekvence na veřejných
+ * dveřích (`src/server/rate-limit.ts`) a uvolňování relací z registru
+ * (`T16-evictworld`, dnes rozbité). Strop na délku logu tady schválně není —
+ * `since(after)` je jediná cesta, kudy se vrátivší se klient dozví, co
+ * zmeškal, a zahodit staré rámce znamená ztratit je **tiše**, bez toho, že by
+ * se o mezeře dozvěděl.
  */
 export function createEventLog(sessionId: string, options: EventLogOptions = {}): SessionEventLog {
   const now = options.now ?? (() => new Date().toISOString());

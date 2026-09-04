@@ -255,7 +255,18 @@ describe('backpressure', () => {
 
     const coarseFrames = run.events.all().filter((event) => event.type === 'shape.coarse');
     expect(coarseFrames).toHaveLength(2);
-    expect(COALESCABLE_EVENT_TYPES).toEqual(['shape.refining']);
+
+    // **Soudí se vlastnost, ne opsaný seznam — přepsáno 4. 9. 2026.** Do
+    // `COALESCABLE_EVENT_TYPES` přibyl `patch.rejected` (`T22-rejectflood`),
+    // což je typ mimo žebřík příček, takže se automatu relace nedotýká vůbec.
+    // Rovnost na jediné jméno by ale tenhle test položila — a tvrdila by tím
+    // o příčkách něco, co se nezměnilo. Měří se tedy to, co název slibuje:
+    // z příček se smí slučovat jedině průběh.
+    for (const rung of ['shape.coarse', 'shape.ready', 'shape.failed'] as const)
+      expect(COALESCABLE_EVENT_TYPES, `${rung} se slučuje, takže příčka umí zmizet`).not.toContain(
+        rung,
+      );
+    expect(COALESCABLE_EVENT_TYPES).toContain('shape.refining');
   });
 });
 
