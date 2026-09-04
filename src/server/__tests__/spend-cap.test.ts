@@ -694,40 +694,50 @@ describe('jediný strop procesu', () => {
       );
   });
 
-  // P15 `T30-capfloor`, remediace nezávislé revize 4. 9. 2026 (`VERDICT:
-  // blocking`). Podlaha z prostředí udělala z „zvedni `capUsd` v ovládacím
-  // souboru" **tichý no-op** — nic se nezmění a nevznikne u toho řádek —
-  // a operátorský postup zotavení stál v repu ve **třech** kopiích. Commit
-  // s podlahou přepsal jednu (`.env.example`) a dvě nechal být, takže si
-  // dokumentace odporovala nad penězi. Brána je lexikální schválně: je to
-  // tvrzení o textu pro člověka, a to žádný běhový test nezkontroluje.
-  it('nikde se operátorovi neradí zvednout strop ovládacím souborem', () => {
-    // Zvedací sloveso a `capUsd` **jako jeho předmět** — okno je 40 znaků, tedy
-    // zhruba „zvednout capUsd" i přes zalomení řádku. Širší okno se zkusilo
-    // (200 znaků) a je nepoužitelné: chytlo správnou větu, která nejdřív radí
-    // zvednout WORLDSMITH_SPEND_CAP_USD a o dva řádky níž vysvětluje, proč
-    // capUsd v souboru nestačí. Text, který obojí správně vysvětluje, musí
-    // projít — jinak brána trestá přesně tu opravu, kvůli které vznikla.
-    //
-    // `povolit` a `uvolnit` na seznamu sloves schválně NEJSOU: v tomhle repu se
-    // objevují jen v záporu („umí jen přitáhnout, nikdy uvolnit"), takže by
-    // vyráběly falešný poplach na správně napsané doktríně. Táž past jako
-    // u popisků počítadel v `CLAUDE.md`.
-    const rada = /(zvednou?t|zvednutí|zvýšit|zvýšení|raise)[\s\S]{0,40}?capUsd/i;
-    const texty = (readdirSync('src', { recursive: true }) as string[])
-      // Zpětná lomítka z Windows tu vadit nemohou: `includes` i `readFileSync`
-      // si s nimi poradí a cesta se nikde neporovnává na rovnost.
-      .map((entry) => `src/${entry}`)
-      .filter((path) => /\.tsx?$/.test(path) && !path.includes('__tests__'))
-      .concat('.env.example');
-    expect(texty.length, 'sken je prázdný').toBeGreaterThan(50);
+  // P15 `T30-capfloor`, druhé kolo nezávislé revize 4. 9. 2026. Postup zotavení
+  // z opuštěné rezervace stojí v repu ve **třech** kopiích a rozešel se už
+  // dvakrát: podlaha z prostředí z rady „zvedni `capUsd` v ovládacím souboru"
+  // udělala tichý no-op a první oprava přepsala jen jednu z těch tří. Je to
+  // tvrzení o textu pro člověka, takže ho žádný běhový test nezkontroluje.
+  //
+  // **Předchozí podoba téhle brány byla blocklist zvedacích sloves a byla
+  // nahrazena, ne rozšířena.** Měla dvě potvrzené vady: obejít se dala pořadím
+  // slov, vsuvkou přes okno nebo anglickým „increase", a naopak **červenala na
+  // správně napsaném záporu** („nejde zvednout `capUsd` v souboru"), tedy přesně
+  // na té větě, kterou má oprava obsahovat.
+  //
+  // ⚠ **Návrh revize — „pinuj kladné tvrzení: blok musí nést
+  // WORLDSMITH_SPEND_CAP_USD" — se změřil a NEPOSTAVIL.** Nad skutečným
+  // historickým textem chytí **1 ze 3** vadných bloků: `spend-store.ts`
+  // i `.env.example` proměnnou už tehdy jmenovaly, jen jako vercelskou
+  // záložní cestu pod radou o souboru. Značka `T30-capfloor` chytí **3 ze 3**,
+  // protože ta v žádném z nich být nemohla — vznikla až s podlahou.
+  //
+  // Co se tím vzdává, napsané nahlas: nová **čtvrtá** kopie v souboru, který
+  // tady není vyjmenovaný, projde. Revize prošla všechny git-tracked soubory
+  // a čtvrtou kopii nenašla, a nová by přišla s vlastní revizí.
+  it('všechny tři popisy zotavení vědí, že soubor strop nezvedne', () => {
+    const bloky = [
+      ['src/server/spend-store.ts', 'Zotavení je ruční'],
+      ['src/app/api/worldstream/sessions/route.ts', 'Zotavení pak není mazání klíče'],
+      ['.env.example', 'POSTUP PŘI INCIDENTU'],
+    ] as const;
 
-    for (const path of texty)
+    for (const [path, kotva] of bloky) {
+      const text = readFileSync(path, 'utf8');
+      const start = text.indexOf(kotva);
+      expect(start, `${path}: kotva „${kotva}" zmizela — oprav kotvu, ne test`).toBeGreaterThan(-1);
+      // Okno je 900 znaků, tedy celý odstavec postupu i s odůvodněním.
+      const blok = text.slice(start, start + 900);
+      expect(blok, `${path}: postup zotavení nejmenuje jedinou páku nahoru`).toContain(
+        'WORLDSMITH_SPEND_CAP_USD',
+      );
       expect(
-        readFileSync(path, 'utf8'),
-        `${path} radí zvednout capUsd — od T30-capfloor to nefunguje, ` +
-          'pákou nahoru je WORLDSMITH_SPEND_CAP_USD a redeploy',
-      ).not.toMatch(rada);
+        blok,
+        `${path}: postup zotavení neví o podlaze — dopiš, že ovládacím souborem ` +
+          'to od T30-capfloor nejde',
+      ).toContain('T30-capfloor');
+    }
   });
 });
 

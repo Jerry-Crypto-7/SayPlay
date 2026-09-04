@@ -353,8 +353,10 @@ const REFUSALS_LOGGED = new Set<RefusalReason>();
  * Krok je **procento skutečného stropu**, ne setina toho výchozího — oprava
  * podle kontrolní revize 1. 9. 2026, která tu naměřila 200násobek. Do té chvíle
  * tu stálo `DEFAULT_CAP_USD / 100`, tedy pevných 5 centů odvozených z literálu
- * v `spend-cap.ts`, zatímco skutečný strop nese `WORLDSMITH_SPEND_CAP_USD` nebo
- * `capUsd` z řídicího souboru. Nad `WORLDSMITH_SPEND_CAP_USD=1000` — což je
+ * v `spend-cap.ts`, zatímco skutečný strop nese `WORLDSMITH_SPEND_CAP_USD`,
+ * případně utažený řídicím souborem — od `T30-capfloor` je to
+ * `min(soubor, proměnná)`, ne „jedno nebo druhé": soubor umí částku jen
+ * snížit a nad proměnnou nevydá nikdy. Nad `WORLDSMITH_SPEND_CAP_USD=1000` — což je
  * prostředí, ve kterém tohle testujeme — to dávalo `1000 / 0,05` = **20 000
  * řádků za proces** proti slíbené stovce, a komentář u toho tvrdil „když se
  * strop zvedne, zvedne se s ním". Teď se zvedne doopravdy.
