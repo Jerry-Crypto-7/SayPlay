@@ -455,9 +455,14 @@ export async function POST(request: Request): Promise<Response> {
     // jména volajícího by byla dvě pravidla o tomtéž.
     //
     // ⚠ **Klíč je podvrhnutelný a mez se tomu přizpůsobuje, ne naopak.** Právě
-    // proto kvóta **odmítá** místo aby uklízela: kdyby uklízela, byla by
-    // podvržená hlavička zaměřovač na cizí relaci (naměřeno 4. 9. 2026, osm
-    // POSTů zavřelo oběti svět). Celý rozklad je u té konstanty.
+    // proto kvóta **odmítá** místo aby uklízela: kdyby uklízela, stačilo by
+    // osm POSTů s cizí IP na zavření cizího světa (naměřeno 4. 9. 2026).
+    //
+    // ⚠ **Míření tím ale zavřené NENÍ, jen zdražené na naplnění registru** –
+    // osmá nezávislá revize naměřila, že jedna relace vložená do kbelíku
+    // oběti z něj udělá největší kbelík a přetečení pak sáhne po oběti.
+    // Celý rozklad i cena jsou u `QUOTA_ENGAGES_AT`; zavírá to až klíč
+    // z důvěryhodného konce řetězu (`T16-trustedkey`).
     const stored = openSession(sessionId, newSessionSeed(), Date.now(), callerKey(request));
     // **Nad vlastní kvótou se odmítá nováček, a slot se vrací.** Je to ten
     // další `return` mezi `acquireSlot('world')` a `work.finally`, o kterém
@@ -488,7 +493,7 @@ export async function POST(request: Request): Promise<Response> {
         requestId,
         429,
         'TOO_MANY_SESSIONS_PER_CALLER',
-        'this client already holds as many live worlds as one client may hold on a busy instance',
+        'this address already holds as many live worlds as one address may hold on a busy instance',
       );
     }
 

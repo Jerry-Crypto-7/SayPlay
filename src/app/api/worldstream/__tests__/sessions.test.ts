@@ -1061,6 +1061,34 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
     expect(getSession(sessionId), 'kvóta zaplatila vlastní relací místo odmítnutím').not.toBeNull();
   });
 
+  /**
+   * ⚠ **Sedmá nezávislá revize naměřila, že hláška radí něco, co tahle route
+   * neumí splnit** („close one and try again", ačkoli koncový bod na zavření
+   * relace neexistuje a volající je zpátky v poli až po dvou hodinách).
+   * Osmá revize ověřila, že rada je pryč – ale **nedržel ji žádný test**,
+   * takže se dala tiše vrátit. Tohle je ta závora: hláška smí říct **stav**,
+   * ne radu a ne slib o čase.
+   */
+  it('odmítnutí nad kvótou neradí nic, co by systém neuměl splnit', async () => {
+    resetRateWindows();
+    naPráh();
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
+      await createSession(createRequest({ prompt: `svět ${String(i)}` }, `203.0.113.11`));
+    }
+
+    const odmítnutá = await createSession(createRequest({ prompt: 'navíc' }, '203.0.113.11'));
+    const { error } = (await odmítnutá.json()) as { error: { message: string } };
+
+    expect(odmítnutá.status).toBe(429);
+    expect(odmítnutá.headers.get('retry-after'), 'slíbený čas, který nikdo nedrží').toBeNull();
+    for (const rada of [/close/i, /try again/i, /retry/i, /wait/i]) {
+      expect(
+        error.message,
+        `hláška radí ${rada.source}, což tahle route splnit neumí`,
+      ).not.toMatch(rada);
+    }
+  });
+
   // **Odmítnutí vrací slot placeného souběhu.** Ten `return` přibyl mezi
   // `acquireSlot('world')` a `work.finally`, takže bez `releaseSlot` by tři
   // odmítnutí natrvalo zavřela stavbu světů komukoli. Naměří to jedině jiný
@@ -1097,8 +1125,16 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
    * ⚠ **Sonda šesté nezávislé revize, doslova.** Naměřeno tehdy přes tuhle
    * route: 8 POSTů s hlavičkou oběti → oběť `RELEASED`, `live = 8`. Kbelík si
    * vybírá volající, takže dokud kvóta uklízela, byla zaměřovač.
+   *
+   * ⚠ **Název je schválně užší, než by se chtělo psát.** Osmá revize
+   * naměřila, že obecné „útočník s hlavičkou oběti její svět nezavře"
+   * **neplatí**: nad naplněným registrem stačí jediná podvržená relace
+   * navíc, tím je kbelík oběti největší a přetečení sáhne po ní. Zavřený je
+   * jen tenhle levný případ – přeplnit kbelík. Zbytek tvrdí kladně test
+   * „nad plným registrem jedna podvržená relace zavře oběti svět" v modulové
+   * sadě a je to `T16-evictkill`.
    */
-  it('útočník s hlavičkou oběti její běžící svět nezavře', async () => {
+  it('osm podvržených POSTů oběti svět nezavře, jen jí zaplní kbelík', async () => {
     resetRateWindows();
     naPráh();
     const oběť = await createSession(createRequest({ prompt: 'porotce' }, '198.51.100.4'));

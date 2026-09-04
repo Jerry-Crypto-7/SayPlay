@@ -92,9 +92,22 @@ export const MAX_LIVE_SESSIONS = 64;
  *    Naměřeno: 12 návštěvníků → `live = 8`. Zavírá to `openSession()` níž.
  *
  * **Odmítnutí ten obchod obrací:** stojí volajícího jeho vlastní požadavek,
- * kdežto uklizení stálo cizího člověka jeho živý svět. Podvržená hlavička pak
- * útočníkovi nekupuje víc než „oběť si hodinu nezaloží nový svět" — její
- * **běžící** svět se nezavře.
+ * kdežto uklizení stálo cizího člověka jeho živý svět. Osm POSTů s cizí IP
+ * proto dnes zavře akorát zakládání nových světů té IP.
+ *
+ * ⚠ **Neplatí ale, že cizí běžící svět je tím v bezpečí – tady předchozí
+ * znění lhalo a osmá nezávislá revize to naměřila.** Pravidlo „největší
+ * kbelík" zůstává zaměřovač, jen se míří jinak: útočník vloží do kbelíku
+ * oběti **jednu** relaci s její IP a sám si ji sleduje. Kbelík oběti má tím
+ * dva členy proti jednomu u ostatních, je největší, a protože jsou obě jeho
+ * relace sledované, vybere se z něj `podleStání[0]` – nejstarší `moved`,
+ * tedy relace oběti. **Naměřeno: nad jednorázově naplněným registrem padne
+ * cílený porotce za 2 POSTy a 1 proud, 5 z 5.**
+ *
+ * Cena útoku je tedy to naplnění registru (~64 zaplacených světů), ne ta
+ * dvojice požadavků – a kvóta ji proti stavu před sebou nesnížila. Zavírá to
+ * teprve klíč z **důvěryhodného** konce řetězu (`T16-trustedkey`); dokud ten
+ * není, je strop registru pořád páka na cizí relaci (`T16-evictkill`).
  *
  * ⚠ **Není to zamítnutá alternativa „plný registr odmítá nové relace".** Ta
  * byla zamítnuta vědomě (útočník by držel 64 proudů a hodinu by nezaložil svět
@@ -157,11 +170,20 @@ export const MAX_SESSIONS_PER_CALLER = 8;
  * zapne. Registr proto **jedním klíčem naplnit nejde** a to je jediná
  * vlastnost, na které stojí ochrana proti páce: třetí kolo `evictOverCap()`
  * bere oběť z **největšího** kbelíku, a kbelík o 32 relacích je vždycky větší
- * než porotcův o jedné. Naměřeno v `sessions.test.ts`: 1 sledovaná oběť +
- * útočník na jednom klíči → registr přeteče a padá útočník, ne oběť.
+ * než porotcův o jedné. **Pinuje to `sessions.test.ts` na skutečném čísle:
+ * jeden klíč se na jinak prázdném registru dostane nejvýš na 32 relací.**
+ * (Dřív tu stálo „1 sledovaná oběť + útočník na jednom klíči → registr
+ * přeteče"; takový scénář je s prahem **nemožný** a ten test nikdy
+ * neexistoval. Osmá nezávislá revize, `VERDICT: blocking`.)
  *
- * Půlka, ne jiné číslo: pod ní je volných slotů víc než kolik jich kterýkoli
- * klíč smí držet, takže se nedá vyrobit situace „odmítnut, a přitom volno".
+ * ⚠ **Půlka problém sdílené adresy zmenšuje, neodstraňuje ho – změřeno,
+ * a předchozí znění tvrdilo opak.** Na prázdném registru projde devět
+ * porotců za jednou NATkou všech devět. Na registru přesně na prahu projde
+ * **8 z 9** a devátý dostane 429 ve chvíli, kdy je **24 slotů volných**:
+ * kvóta se soudí podle obsazenosti, ne podle toho, kolik zbývá. Situace
+ * „odmítnut, a přitom volno" tedy vyrobit jde a na obsazeném registru
+ * NATka o slot platí. Je to vědomá cena za to, že jeden klíč nesmí registr
+ * naplnit; vázat práh na volné sloty by tu daň posunulo, ne zrušilo.
  */
 export const QUOTA_ENGAGES_AT = MAX_LIVE_SESSIONS / 2;
 

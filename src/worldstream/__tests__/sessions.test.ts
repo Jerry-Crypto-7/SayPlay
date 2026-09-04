@@ -408,6 +408,68 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
     ).toBe(MAX_SESSIONS_PER_CALLER + 4);
   });
 
+  /**
+   * ⚠ **Nález osmé nezávislé revize, `VERDICT: blocking`.** Hodnotu prahu
+   * nedržel žádný test: mutace `QUOTA_ENGAGES_AT = MAX_LIVE_SESSIONS` nechala
+   * **74 ze 74 zelených**, protože všechny ostatní testy plní registr „na
+   * práh" symbolicky – přes tu konstantu – a změnu jejího čísla proto
+   * uvidět nemůžou. S tím mutantem přitom jeden klíč drží všech 64 slotů,
+   * tedy přesně to, o čem `sessions.ts` píše „to je jediná vlastnost, na
+   * které stojí ochrana proti páce".
+   *
+   * Tvrzení jsou proto **dvě a schválně obě**. Mez se **nesmí** odvozovat
+   * z `QUOTA_ENGAGES_AT` – s mutantem by se posunula spolu s ním a test by
+   * zase neměřil nic.
+   */
+  it('jeden klíč se ani na prázdném registru nedostane přes polovinu', () => {
+    let přijato = 0;
+    for (let i = 0; i < MAX_LIVE_SESSIONS + MAX_SESSIONS_PER_CALLER; i += 1) {
+      const stored = ownedWorld(`sám-${i}`, T0 + i, `ip:jediný-klíč`);
+      if (stored === null) break;
+      stored.session.events.subscribe(() => {});
+      přijato += 1;
+    }
+
+    expect(
+      přijato,
+      'jeden klíč naplnil registr — páka na cizí relaci je zpátky',
+    ).toBeLessThan(MAX_LIVE_SESSIONS);
+    expect(přijato, 'práh se pohnul; zapiš proč se pohnul, nepřepisuj to číslo').toBe(32);
+  });
+
+  /**
+   * ⚠ **Tenhle test tvrdí ZBYTEK kladně, ne ochranu.** Osmá nezávislá revize
+   * naměřila, že pravidlo „největší kbelík" zůstalo zaměřovač: útočník vloží
+   * do kbelíku oběti **jednu** relaci s její IP, tím je ten kbelík největší,
+   * a protože jsou obě jeho relace sledované, přetečení sáhne po nejstarší –
+   * po oběti. Cena je naplnění registru, ne ta jedna relace.
+   *
+   * **Zelená tady znamená „páka je pořád otevřená" (`T16-evictkill`).** Až ji
+   * zavře klíč z důvěryhodného konce řetězu (`T16-trustedkey`), tenhle test
+   * zčervená – a to je jeho účel: doktrína u `QUOTA_ENGAGES_AT` se pak musí
+   * přepsat vědomě, ne se tiše rozejít s kódem.
+   */
+  it('nad plným registrem jedna podvržená relace zavře oběti svět', () => {
+    for (let i = 0; i < MAX_LIVE_SESSIONS - 2; i += 1) {
+      admitted(`dav-${i}`, T0 + i, `ip:dav-${i}`).session.events.subscribe(() => {});
+    }
+
+    const oběť = admitted('oběť', T0 + MAX_LIVE_SESSIONS, 'ip:oběť');
+    oběť.session.events.subscribe(() => {});
+    // Jediná podvržená relace navíc: kbelík oběti má dva členy proti jednomu
+    // u všech ostatních, takže je největší.
+    admitted('podvrh', T0 + MAX_LIVE_SESSIONS + 1, 'ip:oběť').session.events.subscribe(() => {});
+    expect(liveSessionCount()).toBe(MAX_LIVE_SESSIONS);
+
+    admitted('spouštěč', T0 + MAX_LIVE_SESSIONS + 2, 'ip:kdokoli');
+
+    expect(
+      getSession('oběť'),
+      'páka je zavřená — přepiš doktrínu u QUOTA_ENGAGES_AT, tenhle zbytek už neplatí',
+    ).toBeNull();
+    expect(getSession('podvrh'), 'padla útočníkova relace, ne oběť').not.toBeNull();
+  });
+
   it('devátá relace jednoho klíče se nad prahem odmítne a osm předchozích zůstane', () => {
     naPráh();
     for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
