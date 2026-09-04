@@ -808,11 +808,12 @@ describe('strop souběžných placených volání', () => {
       log.push(String(line));
     });
 
-    // Čítač se sytí **levnými dveřmi**, protože jen ony smí až na dno: drahé
-    // se zastaví o slot dřív a preview by pořád prošlo. Tenhle test soudí
-    // sdílenost čítače, ne rezervu — tu soudí test hned pod ním.
-    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS; i += 1)
+    // Čítač se sytí **oběma dveřmi**, protože ani jedny na dno samy nesmí:
+    // každé se zastaví o slot dřív a ten poslední drží ty druhé. Tenhle test
+    // soudí sdílenost stropu, ne rezervu — tu soudí dva testy pod ním.
+    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS - 1; i += 1)
       expect(acquireSlot('refine')).toBe(true);
+    expect(acquireSlot('world'), 'poslední slot měl být volný').toBe(true);
 
     // Dvoje dveře, jeden strop. Kdyby měly čítače vlastní, útočník by je
     // střídal a v letu by běželo osm placených volání místo čtyř.
@@ -851,10 +852,10 @@ describe('strop souběžných placených volání', () => {
     // stejnou konstantou na obou stranách by se strop dal zvednout ze čtyř na
     // čtyřicet a řádek by se pořád shodoval sám se sebou.
     expect(refusedSessions[0]).toContain(
-      'paid slots in flight: 0 world + 4 refine of 4 on this instance; the world door may hold 3',
+      'paid slots in flight: 1 world + 3 refine of 4 on this instance; the world door may hold 3',
     );
     expect(refusedChanges[0]).toContain(
-      'paid slots in flight: 0 world + 4 refine of 4 on this instance; the refine door may hold 4',
+      'paid slots in flight: 1 world + 3 refine of 4 on this instance; the refine door may hold 3',
     );
 
     // A jakmile se jeden slot uvolní, tytéž dveře pustí.
@@ -930,8 +931,13 @@ describe('strop souběžných placených volání', () => {
     //
     // Vypadá to zvenčí jako „model je dneska pomalý", ne jako strop — proto to
     // pokrývá test, ne oko.
-    for (let i = 0; i < MAX_WORLD_GENERATIONS; i += 1)
+    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS - 1; i += 1)
       expect(acquireSlot('refine'), `preview ${i} nemělo na co narazit`).toBe(true);
+    // **Až na dno nesmí ani preview.** Nezávislá revize 4. 9. 2026 spustila
+    // první podobu téhle úlohy, kde `refine` dno dosáhlo: čtyři souběžná
+    // preview pak zavřela oboje dveře na stavbu světa a útok jen podražil ze
+    // tří požadavků na čtyři.
+    expect(acquireSlot('refine'), 'preview dosáhlo až na dno čítače').toBe(false);
 
     const accepted = await createSession(
       new Request('http://127.0.0.1/api/worldstream/sessions', {

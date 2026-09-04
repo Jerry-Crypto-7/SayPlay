@@ -1452,10 +1452,12 @@ describe('POST /api/generate pod náporem', () => {
     expect(response.status).toBe(503);
     expect(((await response.json()) as ResponseBody).error?.code).toBe('CORPUS_UNREADABLE');
 
-    for (let taken = 0; taken < MAX_CONCURRENT_GENERATIONS; taken += 1)
+    for (let taken = 0; taken < MAX_CONCURRENT_GENERATIONS - 1; taken += 1)
       expect(acquireSlot('refine'), `slot ${taken} měl být volný — odmítnutí ho nevrátilo`).toBe(
         true,
       );
+    // Poslední slot drží rezerva pro drahé dveře, tak se bere jimi.
+    expect(acquireSlot('world'), 'poslední slot měl být volný — odmítnutí ho nevrátilo').toBe(true);
     expect(acquireSlot('refine'), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(
       false,
     );

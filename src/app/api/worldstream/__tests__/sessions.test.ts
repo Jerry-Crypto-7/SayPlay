@@ -299,8 +299,10 @@ describe('založení relace', () => {
       'GRAMMAR_UNREADABLE',
     );
 
-    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS; i += 1)
+    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS - 1; i += 1)
       expect(acquireSlot('refine'), `slot ${i} měl být volný — odmítnutí ho nevrátilo`).toBe(true);
+    // Poslední slot je rezerva pro drahé dveře, tak se bere jimi.
+    expect(acquireSlot('world'), `poslední slot měl být volný — odmítnutí ho nevrátilo`).toBe(true);
     expect(acquireSlot('refine'), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(
       false,
     );
@@ -318,8 +320,10 @@ describe('založení relace', () => {
     // hranice ji nechá doběhnout i s `finally`, aniž se měří čas.
     await new Promise<void>((resolve) => setImmediate(resolve));
 
-    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS; i += 1)
+    for (let i = 0; i < MAX_CONCURRENT_GENERATIONS - 1; i += 1)
       expect(acquireSlot('refine'), `slot ${i} měl být volný — finally ho nevrátilo`).toBe(true);
+    // Poslední slot je rezerva pro drahé dveře, tak se bere jimi.
+    expect(acquireSlot('world'), `poslední slot měl být volný — finally ho nevrátilo`).toBe(true);
     expect(acquireSlot('refine'), 'čítač je v záporu — slot se vrátil dvakrát').toBe(false);
   });
 });

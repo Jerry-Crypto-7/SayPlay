@@ -12,10 +12,11 @@
  *    by vypadaly jako přijaté a produkt by tvrdil, že geometrii píše model,
  *    zatímco by ji směl podstrčit kdokoli.
  * 2. **Moderace** (`src/server/moderation.ts`), tedy táž brána jako `/api/emit`.
- * 3. **Strop souběhu**: je to **týž strop** jako u preview druhé věty, jen
- *    tyhle dveře se zastaví o slot dřív — mají vlastní `MAX_WORLD_GENERATIONS`
- *    nad společným dnem `MAX_CONCURRENT_GENERATIONS`. V letu se počítá po
- *    dveřích, takže rezerva platí obojím směrem; odůvodnění je u `DOOR_CEILING`.
+ * 3. **Strop souběhu**: je to **týž strop** jako u preview druhé věty, jen se
+ *    tyhle dveře zastaví o slot dřív — `MAX_WORLD_GENERATIONS` nad společným
+ *    dnem `MAX_CONCURRENT_GENERATIONS`. Preview má vlastní mez o slot níž ze
+ *    stejného důvodu; v letu se počítá po dveřích, takže rezerva platí obojím
+ *    směrem. Odůvodnění je u `DOOR_CEILING`.
  * 4. **Strop utrácení** — uvnitř emitoru, u každého placeného volání zvlášť.
  *
  * ## Proč tu není `AdmissionQueue`, ačkoli je napsaná
@@ -87,11 +88,12 @@ export const MAX_CONCURRENT_GENERATIONS = 4;
  * vrátí `503 TOO_MANY_CHANGES`. Cena útoku jsou čtyři požadavky, a vypne to
  * druhou větu — tedy hlavní věc, kterou má porotce vidět.
  *
- * Tři ze čtyř je proto **rezerva pro levné dveře**, ne druhý strop: čítač
- * zůstává jeden, mění se jen strop, proti kterému se drahé dveře porovnávají.
- * Kdo chce platit za osm volání naráz, střídáním adres si je pořád nekoupí.
+ * Tři ze čtyř je proto **rezerva pro ty druhé dveře**, ne druhý strop: strop
+ * zůstává jeden a rozhoduje součet, mění se jen mez, o kterou se každé dveře
+ * zastaví dřív. Kdo chce platit za osm volání naráz, střídáním adres si je
+ * pořád nekoupí.
  *
- * ⚠ **Rezerva je dnes jednosměrná, a to není vlastnost, je to dluh.** První
+ * ⚠ **Rezerva byla do 4. 9. 2026 jednosměrná, a nebyla to vlastnost.** První
  * podoba tohohle komentáře tvrdila, že opačným směrem hladovět nejde, protože
  * preview drží slot „vteřiny, ne minuty". **Revize to vyvrátila čtením zdroje:**
  * preview jde týmž `cloudEmitter()` (níž v tomhle souboru) s touž konfigurací,
@@ -106,10 +108,10 @@ export const MAX_CONCURRENT_GENERATIONS = 4;
  * ✅ **Opraveno 4. 9. 2026 (`T22-doorcounters`): v letu se počítá PO DVEŘÍCH.**
  * `running` není jedno nerozlišené číslo, ale dvě, a dveře projdou, jen když
  * jsou pod **svým** stropem **a** součet je pod `MAX_CONCURRENT_GENERATIONS`.
- * Rezerva tím platí na obě strany: tři visící preview obsadí tři sloty ze
- * čtyř, ale stavbu světa nezavřou — ta má vlastní strop tři a součet ještě
- * jedno místo má. Celkový strop zůstal **jediný a rozhoduje pořád on**; tohle
- * je jen jeho rozpad podle dveří, ne druhý strop na téže úrovni.
+ * Rezerva tím platí na obě strany: víc než tři sloty nedostanou ani jedny
+ * dveře, takže čtvrtý zůstává těm druhým, ať přijde nápor odkudkoli. Celkový
+ * strop zůstal **jediný a rozhoduje pořád on**; tohle je jen jeho rozpad podle
+ * dveří, ne druhý strop na téže úrovni.
  */
 export const MAX_WORLD_GENERATIONS = 3;
 
@@ -120,19 +122,22 @@ export const MAX_WORLD_GENERATIONS = 3;
  */
 export type PaidDoor = 'world' | 'refine';
 
-/** Strop na dveře. Jedno místo, kde ta dvě čísla stojí vedle sebe. */
+/**
+ * Strop na dveře. Jedno místo, kde ta dvě čísla stojí vedle sebe.
+ *
+ * **Obojí dveře se zastaví o slot dřív, každé kvůli těm druhým.** První podoba
+ * `T22-doorcounters` nechávala `refine` až na dno čítače, a nezávislá revize to
+ * spustila: čtyři souběžná `POST …/changes` proti visícímu poskytovateli pak
+ * zavřela **oboje** dveře na stavbu světa na celé dvě minuty, tedy přesně ten
+ * útok, který ta úloha zavírala — jen za čtyři požadavky místo tří. Rezerva
+ * platí obojím směrem, teprve když má rezervovaný slot každá strana.
+ */
 const DOOR_CEILING: Readonly<Record<PaidDoor, number>> = {
   world: MAX_WORLD_GENERATIONS,
-  refine: MAX_CONCURRENT_GENERATIONS,
+  refine: MAX_CONCURRENT_GENERATIONS - 1,
 };
 
-/**
- * Kolik placených volání drží která dveře. **Dva čítače, jeden strop.**
- *
- * `refine` má v `DOOR_CEILING` rovnou `MAX_CONCURRENT_GENERATIONS`, tedy
- * vlastní strop žádný — smí až na dno, a zastaví ho jedině součet. To je celá
- * asymetrie rezervy zapsaná v datech: strop pod dnem má jen jedny dveře.
- */
+/** Kolik placených volání drží která dveře. **Dva čítače, jeden strop.** */
 const running: Record<PaidDoor, number> = { world: 0, refine: 0 };
 
 /**

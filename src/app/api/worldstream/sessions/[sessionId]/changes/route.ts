@@ -230,9 +230,10 @@ export async function createChange(
     // založí kdokoli. Kdyby měly tyhle dveře strop vlastní, útočník by je
     // střídal a v letu by běželo osm volání místo čtyř.
     //
-    // `'refine'` znamená „smí až na dno čítače". Stavba světa se zastaví
-    // o slot dřív (`MAX_WORLD_GENERATIONS`), aby čtyři pomalé generace
-    // nevypnuly druhou větu na celé minuty — celé odůvodnění je u té konstanty.
+    // `'refine'` má **vlastní strop pod dnem čítače**, stejně jako stavba
+    // světa: každé dveře se zastaví o slot dřív, aby ty druhé nevyhladověly.
+    // Nápor sem tedy nevypne druhou větu ani stavbu světa — celé odůvodnění
+    // je u `DOOR_CEILING` v create route.
     if (!acquireSlot('refine')) {
       // **Odmítnutí musí být vidět v operátorském logu**, stejně jako
       // u zakládání relace: bez řádku se „strop nás ochránil" nedá odlišit od
