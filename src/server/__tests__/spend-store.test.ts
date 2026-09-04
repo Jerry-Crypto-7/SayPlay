@@ -264,14 +264,31 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
     );
   });
 
-  it('jméno prostředí se vyčistí, aby nerozmazalo strukturu klíče', () => {
-    // Klíč je oddělený dvojtečkou (`…:usd`, `…:calls`), takže hodnota
-    // s dvojtečkou by ji rozmazala a mohla by mířit na cizí knihu.
-    expect(storePrefix({ VERCEL_ENV: 'staging:usd nasty/#' })).toBe(
-      'worldsmith:spend:staging-usd-nasty--',
+  it('odvozené klíče jsou právě tři, ať do VERCEL_ENV napíše kdo chce co chce', () => {
+    // **Tenhle případ nahradil starší „jméno prostředí se vyčistí".** Ten
+    // tvrdil, že `VERCEL_ENV: 'staging:usd nasty/#'` má dát vlastní vyčištěný
+    // klíč `worldsmith:spend:staging-usd-nasty--` — čistil tedy tvar hodnoty
+    // a mlčel o tom, kolik různých knih ta hodnota umí založit. Druhá nezávislá
+    // revize to spustila: `staging`, `qa` a `development` daly tři různé
+    // rozpočty, a Vercel dovoluje zakládat vlastní prostředí, takže počet
+    // hodnot neomezuje nic — táž vada, jakou u větví zavřel commit e1b2595.
+    // Pinuje se proto POČET klíčů, ne jejich pravopis.
+    const scopes = ['production', 'preview', 'staging', 'qa', 'development', 'PREVIEW', '  ', ''];
+    const keys = new Set(scopes.map((VERCEL_ENV) => storePrefix({ VERCEL: '1', VERCEL_ENV })));
+
+    expect(keys, 'prostředí si vyrobilo vlastní rozpočet').toEqual(
+      new Set(['worldsmith:spend', 'worldsmith:spend:preview', 'worldsmith:spend:unknown-env']),
     );
-    // Ohraničená délka: klíč nesmí růst s tím, co kdo do proměnné napíše.
-    expect(storePrefix({ VERCEL_ENV: 'a'.repeat(500) }).length).toBeLessThan(120);
+    // Neznámé prostředí je neznámo, ne vlastní kniha — a ne produkce.
+    expect(storePrefix({ VERCEL: '1', VERCEL_ENV: 'staging' })).toBe(
+      'worldsmith:spend:unknown-env',
+    );
+    // Velikost písmen knihu nerozdvojuje.
+    expect(storePrefix({ VERCEL: '1', VERCEL_ENV: 'Production' })).toBe('worldsmith:spend');
+    // Klíč nemůže růst s tím, co kdo do proměnné napíše — délka je daná mapou.
+    expect(storePrefix({ VERCEL: '1', VERCEL_ENV: 'a'.repeat(500) })).toBe(
+      'worldsmith:spend:unknown-env',
+    );
   });
 
   it('odvozená předpona doopravdy dojde do klíčů, ne jen do návratové hodnoty', async () => {

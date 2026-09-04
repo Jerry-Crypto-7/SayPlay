@@ -185,10 +185,18 @@ const BASE_PREFIX = 'worldsmith:spend';
  * nová větev dostala **vlastní čerstvý rozpočet** proti témuž klíči
  * u poskytovatele — strop tím přestal omezovat peníze a začal omezovat peníze
  * na větev, přičemž počet větví neomezuje nic. Kdo umí pushnout, koupí si další
- * rozpočet přejmenováním větve. Klíče jsou proto nejvýš **dva** a součet přes
- * nasazení je nejvýš dvojnásobek stropu. Kdyby někdy měla mít preview vlastní
- * rozpočet na větev, potřebuje **menší vlastní `WORLDSMITH_SPEND_CAP_USD`**,
- * ne jemnější klíč.
+ * rozpočet přejmenováním větve. Kdyby někdy měla mít preview vlastní rozpočet
+ * na větev, potřebuje **menší vlastní `WORLDSMITH_SPEND_CAP_USD`**, ne jemnější
+ * klíč.
+ *
+ * ⚠ **Jméno prostředí je UZAVŘENÝ seznam, ne volný text — nález druhé revize.**
+ * Dokud se `VERCEL_ENV` jen čistilo a lepilo do klíče, mintovala si vlastní
+ * čerstvý rozpočet každá jeho hodnota, a **Vercel dovoluje zakládat vlastní
+ * prostředí**, jejichž slug do té proměnné padne. Naměřeno revizí: `staging`,
+ * `qa` i `development` daly tři různé knihy — táž vada jako u větví, jen
+ * o patro výš. Odvozené klíče jsou proto **právě tři** — `…`, `…:preview`
+ * a `…:unknown-env` — a součet přes nasazení je nejvýš trojnásobek stropu.
+ * Cokoliv mimo `production` a `preview` je neznámo, ne vlastní prostředí.
  *
  * ⚠ **Chybějící `VERCEL_ENV` na Vercelu není produkce, je to neznámo.** Systémové
  * proměnné se dají v projektu vypnout přepínačem, který nebydlí v žádném
@@ -201,24 +209,19 @@ const BASE_PREFIX = 'worldsmith:spend';
  * Výslovná hodnota vyhrává nad odvozenou — odvození je záchranná síť, ne
  * pravidlo. **Na Vercelu to má háček zapsaný v `.env.example`:** proměnná
  * nastavená pro všechna prostředí odvození vypne a kolize se vrátí.
- *
- * Jméno prostředí se **čistí a zkracuje**: klíč má strukturu oddělenou
- * dvojtečkou (`…:usd`, `…:calls`), takže hodnota s dvojtečkou by ji rozmazala.
  */
 export function storePrefix(env: Record<string, string | undefined>): string {
   const explicit = env.WORLDSMITH_SPEND_STORE_PREFIX?.trim() ?? '';
   if (explicit !== '') return explicit;
 
-  const scope = env.VERCEL_ENV?.trim() ?? '';
+  const scope = env.VERCEL_ENV?.trim().toLowerCase() ?? '';
   if (scope === 'production') return BASE_PREFIX;
-  if (scope === '') return isServerless(env) ? `${BASE_PREFIX}:unknown-env` : BASE_PREFIX;
+  if (scope === 'preview') return `${BASE_PREFIX}:preview`;
+  // Mimo Vercel je jediné nasazení norma, tam holý základ platí dál; kdo jich
+  // má víc, vyplní `WORLDSMITH_SPEND_STORE_PREFIX` sám.
+  if (scope === '' && !isServerless(env)) return BASE_PREFIX;
 
-  return `${BASE_PREFIX}:${safeSegment(scope)}`;
-}
-
-/** Jeden článek klíče: bez dvojtečky, bez mezer, ohraničené délky. */
-function safeSegment(raw: string): string {
-  return raw.trim().replace(/[^A-Za-z0-9._-]/g, '-').slice(0, 64);
+  return `${BASE_PREFIX}:unknown-env`;
 }
 
 /** Kde běžíme. `VERCEL` nastavuje platforma sama, na všech svých prostředích. */
