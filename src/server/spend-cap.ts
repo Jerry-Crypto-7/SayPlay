@@ -215,18 +215,27 @@ function parseControl(parsed: Record<string, unknown>, defaults: CapControl): Ca
     (typeof callCap !== 'number' || !Number.isInteger(callCap) || callCap < 0)
   )
     return null;
-  // **Vypnout strop je jediný povel, který se musí napsat celý.** `enabled:false`
-  // odstraní peněžní mez úplně — a jak je psáno u `CALL_CAP_EXHAUSTED`, dnes
-  // s ní bere i mez na počet volání, takže je to nejsilnější hodnota v celém
-  // souboru. Samotné `{"enabled":false}` by z pravidla „chybějící klíč =
-  // výchozí hodnota" udělalo nejkratší cestu k neomezenému utrácení, a přitom
-  // před 3. 9. 2026 týž soubor odmítal všechno. Nález nezávislé revize,
-  // `VERDICT: blocking`: naměřeno 501 rezervací a 511 000 USD držených. Kdo
-  // strop vypíná, napíše i jeho hodnotu pro chvíli, kdy ho zapne zpátky.
+  // **Kdo o stropu mluví, pojmenuje částku.** Mlčet o celé peněžní půlce se smí
+  // (`{"off":["refine"]}` i `{}` dál platí výchozí hodnoty — to je celý smysl
+  // `T30-offonlyfile`); mluvit o ní napůl se nesmí.
   //
-  // Opačný směr — soubor, který o stropu mluví a částku **nepojmenuje**, ji tím
-  // tiše zvedne na výchozí — tahle mez nekryje; je to `T30-capsilence`.
-  if (enabled === false && capUsd === undefined) return null;
+  // Původní podoba téhle meze hlídala jen jeden směr, `enabled:false` bez
+  // `capUsd`, protože vypnutí je nejsilnější povel v souboru: samotné
+  // `{"enabled":false}` by bylo nejkratší cestou k neomezenému utrácení
+  // (nález nezávislé revize, `VERDICT: blocking`, naměřeno 501 rezervací
+  // a 511 000 USD držených).
+  //
+  // Druhý směr ale mez neměl a je stejně tichý — nález druhé revize
+  // (`T30-capsilence`), naměřeno: nad `{"enabled":true,"capUsd":0.5}` stačí
+  // soubor přepsat na `{"enabled":true,"off":["refine"]}`, tedy **přidat
+  // vypínač a zapomenout přepsat částku**, a `capUsd` skočí z 0,5 zpátky na
+  // výchozích 5 USD. `reserve(2)` projde tam, kde před chvílí neprošlo, a v logu
+  // to nezanechá řádku. Totéž platí pro `callCap` — kdo píše mez na počet
+  // volání, píše zjevně o stropu.
+  //
+  // Přísnější mez proto nezní „vypnutí se musí napsat celé", ale **„zmínka
+  // o stropu se musí napsat celá"**. Rozbitý soubor odmítá; mlčení dál platí.
+  if (capUsd === undefined && (enabled !== undefined || callCap !== undefined)) return null;
 
   const resolvedCalls = callCap ?? defaults.callCap;
   const resolved = { enabled: enabled ?? defaults.enabled, capUsd: capUsd ?? defaults.capUsd };

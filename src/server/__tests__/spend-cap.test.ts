@@ -202,6 +202,16 @@ describe('vypínač mění chování za běhu, bez nové instance', () => {
       // k neomezenému utrácení.
       '{"enabled":false}',
       '{"enabled":false,"off":["refine"]}',
+      // P15 T30-capsilence, nález druhé revize 3. 9. 2026: opačný směr je
+      // stejně tichý. Nad `{"enabled":true,"capUsd":0.5}` stačí přidat vypínač
+      // a zapomenout přepsat částku — `capUsd` skočí zpátky na výchozích 5 USD
+      // a `reserve(2)` projde tam, kde před chvílí neprošlo. Zmínka o stropu se
+      // proto musí napsat celá, ne jen jeho vypnutí. Platí i pro `callCap`:
+      // kdo píše mez na počet volání, píše zjevně o stropu.
+      '{"enabled":true,"off":["refine"]}',
+      '{"enabled":true}',
+      '{"callCap":10}',
+      '{"callCap":10,"off":["refine"]}',
     ]) {
       const cap = new SpendCap({ enabled: true, capUsd: 100 }, controlFile(broken));
       const refused = await cap.reserve(0.01);
@@ -226,16 +236,40 @@ describe('vypínač mění chování za běhu, bez nové instance', () => {
       expect(killState({ WORLDSMITH_CONTROL_FILE: path }).refine).toBe(true);
     });
 
-    // Mez „vypnout se musí napsat celé" platí jen na vypnutí. Bez téhle aserce
-    // projde i verze, která `capUsd` vyžaduje pokaždé, když padne slovo
-    // `enabled` — naměřeno mutací 3. 9. 2026, přežil desátý mutant.
-    it('`{"enabled":true, off}` je platný soubor: strop běží na výchozí částce', async () => {
+    // ⚠ **Tenhle případ tvrdil do 4. 9. 2026 přesný OPAK a byl přepsán, ne
+    // smazán.** Vznikl proto, aby zabil mutanta, který mez „vypnutí se musí
+    // napsat celé" rozšířil na každou zmínku o `enabled` — tehdy to bylo
+    // správně, protože mez měla krýt jen vypnutí. Druhá nezávislá revize
+    // (P15 `T30-capsilence`) pak naměřila, že opačný směr je stejně tichý:
+    // nad `{"enabled":true,"capUsd":0.5}` stačí soubor přepsat na
+    // `{"enabled":true,"off":["refine"]}` a strop se sám zvedne na výchozích
+    // 5 USD, bez jediného řádku v logu. **Ten mutant se tím stal kódem,
+    // a aserce proto musí říkat opak.** Mlčení o celé peněžní půlce
+    // (`{"off":[…]}`, `{}`) platí dál — to hlídají případy nad a pod tímhle.
+    it('`{"enabled":true, off}` je rozbitý soubor: půlka zmínky o stropu nestačí', async () => {
       const path = controlFile(JSON.stringify({ enabled: true, off: ['refine'] }));
       const cap = new SpendCap({ enabled: true, capUsd: 7 }, path);
 
-      expect((await cap.reserve(0.01)).ok, 'potvrzení, že strop běží, ho zastavilo').toBe(true);
-      expect(cap.snapshot().capUsd).toBe(7);
+      const refused = await cap.reserve(0.01);
+      expect(refused.ok, 'zmínka o stropu bez částky prošla').toBe(false);
+      if (refused.ok) throw new Error('unreachable');
+      expect(refused.reason).toBe('CONTROL_UNREADABLE');
+      // Rozbitý soubor pořád zastavuje placené dveře a nechává běžet čtení —
+      // vypínač z něj se tedy čte dál, stejně jako u každého jiného rozbití.
       expect(killState({ WORLDSMITH_CONTROL_FILE: path }).refine).toBe(true);
+    });
+
+    // **Ta mez je na částku, ne na slovo `enabled`.** Bez tohohle případu projde
+    // i verze, která odmítá každý soubor bez `capUsd` — a tím by zrušila celé
+    // `T30-offonlyfile`, tedy důvod, proč tenhle describe blok existuje.
+    it('napsaná nula je pojmenovaná částka, ne mlčení', async () => {
+      const path = controlFile(JSON.stringify({ enabled: true, capUsd: 0 }));
+      const cap = new SpendCap({ enabled: true, capUsd: 7 }, path);
+
+      const refused = await cap.reserve(0.01);
+      expect(refused.ok, 'napsaná nula se nepočítala jako částka').toBe(false);
+      if (refused.ok) throw new Error('unreachable');
+      expect(refused.reason).toBe('CAP_EXHAUSTED');
     });
 
     it('prázdný objekt je mlčení, ne rozbitý vypínač', async () => {
