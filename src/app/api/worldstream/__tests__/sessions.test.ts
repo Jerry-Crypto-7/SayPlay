@@ -54,7 +54,7 @@ vi.mock('../../../../worldstream/sessions', async (importOriginal) => {
 });
 import { resetFaultLog } from '../../../../server/public-faults';
 import { MAX_REQUESTS_PER_WINDOW, resetRateWindows, takeRateSlot } from '../../../../server/rate-limit';
-import { DEFAULT_CAP_USD } from '../../../../server/spend-cap';
+import { DEFAULT_CAP_USD, SpendRefusalError, type Refused } from '../../../../server/spend-cap';
 import {
   acquireSlot,
   MAX_CONCURRENT_GENERATIONS,
@@ -698,6 +698,89 @@ describe('generace se scriptovaným emitorem', () => {
     // operátora, ne do relace, kterou čte kdokoli s odkazem.
     expect(stored.fault).toBe('the model could not be reached');
     expect(JSON.stringify(stored.session.events.all())).not.toContain('sk-secret');
+  });
+
+  /**
+   * **Odmítnutý strop nesmí mluvit o poskytovateli** (P15 `T29-readinessledger`).
+   *
+   * Rozdíl není kosmetický: nasazení bez sdílené knihy odmítne **každé** placené
+   * volání, a dokud se to hlásilo jako „the model could not be reached", vinu
+   * nesla cizí strana a operátor neměl jak poznat, že příčina je u něj.
+   *
+   * Soudí se **obě volání modelu**, ne jen první: plánovač má vlastní `catch`,
+   * kompilátor prochází přes `compileWithRepair`, a právě tam se výjimka do
+   * `T29` zplošťovala na text a typ se ztrácel.
+   */
+  describe('odmítnutí stropu na cestě relace', () => {
+    function refusal(reason: Refused['reason']): SpendRefusalError {
+      return new SpendRefusalError({
+        ok: false,
+        reason,
+        detail: 'no shared ledger is configured for this deployment',
+        snapshot: {
+          enabled: true,
+          capUsd: DEFAULT_CAP_USD,
+          spentUsd: 0,
+          reservedUsd: 0,
+          remainingUsd: DEFAULT_CAP_USD,
+          callsMade: 0,
+          callsRemaining: 200,
+        },
+      });
+    }
+
+    it('odmítnutí u plánovače dá vlastní větu, ne poruchu modelu', async () => {
+      const stored = openSession('scripted-cap-planner', 4021)!;
+      const logged: string[] = [];
+      await runGeneration(stored, PLAN.intent.setting, {
+        emit: async () => {
+          throw refusal('STORE_UNCONFIGURED');
+        },
+        grammar: grammar(),
+        log: (fault, detail) => logged.push(`${fault}|${detail}`),
+      });
+
+      expect(stored.session.phase).toBe('failed');
+      expect(stored.fault).toBe('this deployment is not making model calls right now; nothing was sent');
+      expect(stored.fault).not.toContain('model could not be reached');
+      // Rozpad dostane operátor, ne porotce.
+      expect(logged).toEqual([
+        'SPEND_CAP_BLOCKED|STORE_UNCONFIGURED: no shared ledger is configured for this deployment',
+      ]);
+      expect(JSON.stringify(stored.session.events.all())).not.toContain('STORE_UNCONFIGURED');
+    });
+
+    it('odmítnutí u kompilátoru projde přes opravnou smyčku se stejným verdiktem', async () => {
+      const stored = openSession('scripted-cap-compiler', 4021)!;
+      let calls = 0;
+      await runGeneration(stored, PLAN.intent.setting, {
+        emit: async () => {
+          calls += 1;
+          if (calls === 1) return { intent: PLAN.intent, objects: PLAN.objects };
+          throw refusal('CAP_EXHAUSTED');
+        },
+        grammar: grammar(),
+      });
+
+      // Záměr prošel, takže relace došla dál než v testu výš — a přesto se
+      // o poskytovateli nesmí tvrdit nic.
+      expect(stored.session.events.all().map((event) => event.type)).toContain('intent.ready');
+      expect(stored.fault).toBe('this deployment is not making model calls right now; nothing was sent');
+    });
+
+    it('mlčící poskytovatel zůstává poruchou modelu', async () => {
+      const stored = openSession('scripted-cap-control', 4021)!;
+      await runGeneration(stored, PLAN.intent.setting, {
+        emit: async () => {
+          // Táž zpráva, jinak vyhozená. Kdyby se rozhodovalo podle textu,
+          // tenhle test by spadl spolu s tím výš.
+          throw new Error('STORE_UNCONFIGURED: no shared ledger is configured for this deployment');
+        },
+        grammar: grammar(),
+      });
+
+      expect(stored.fault).toBe('the model could not be reached');
+    });
   });
 
   it('proud spojený s doběhlou relací ukáže celou cestu v pořadí', async () => {

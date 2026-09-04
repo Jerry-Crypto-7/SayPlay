@@ -45,6 +45,7 @@ import { buildIntentRequest, readPlannerEmission } from '@/model/worldstream-int
 import { MAX_PENDING_CHANGES, type PendingChange, type RejectedAt } from '@/model/worldstream-refine';
 import { compileWithRepair, type BlueprintEmitter } from '@/model/worldstream-repair';
 import { UNIDENTIFIED_CALLER } from '@/server/rate-limit';
+import { SpendRefusalError } from '@/server/spend-cap';
 import type { WorldstreamBlueprint } from './schema';
 import { createSession, type GenerationSession } from './session';
 import { shareWorld } from './snapshot-store';
@@ -664,6 +665,21 @@ export const SESSION_FAULTS = {
   PLANNER_REJECTED: 'the sentence could not be turned into a plan',
   BLUEPRINT_REJECTED: 'the model could not write a world that holds together',
   MODEL_UNAVAILABLE: 'the model could not be reached',
+  /**
+   * **Strop odmítl a k poskytovateli se nikdo nepřipojoval** (P15 `T29`).
+   *
+   * Vlastní věta, ne `MODEL_UNAVAILABLE`, a je to celý smysl toho rozdělení:
+   * nedokonfigurovaná kniha stropu (`STORE_UNCONFIGURED`), vyčerpaný rozpočet
+   * i rozbitý ovládací soubor končí odmítnutím **před** voláním, takže
+   * „the model could not be reached" o nich tvrdí nepravdu a vinu posílá
+   * k poskytovateli, který o žádosti neví.
+   *
+   * **Jedna věta pro všechny příčiny odmítnutí, ne věta na příčinu.** Kolik
+   * rozpočtu zbývá a jestli tohle nasazení má sdílené úložiště, jsou stavy
+   * serveru; ven jde jen to, že se nevolalo. Rozpad dostane operátor logem
+   * (`SpendRefusalError.message` nese `<reason>: <detail>`).
+   */
+  SPEND_CAP_BLOCKED: 'this deployment is not making model calls right now; nothing was sent',
   BAD_REQUEST: 'the request was built wrong before the model saw it',
   /**
    * Registr relaci pustil, aby se vešly novější (`release()` výš).
@@ -704,6 +720,17 @@ export function serverGrammar(): Grammar | string {
  * by skončil jako `unhandledRejection` a relace by zůstala navždy v `accepted`.
  * Každá cesta ven proto končí buď `world.ready`, nebo `session.failed`.
  */
+/**
+ * Vyhozená hodnota → která z obou vět o nedostupnosti platí.
+ *
+ * Ptá se `instanceof`, ne na text: `message` odmítnutí je pro operátora a je
+ * v něm detail, který se mění. Kontrakt nad řetězcem by se rozpadl beze slova
+ * a `tsc` by o tom nevěděl.
+ */
+function unreachableFault(thrown: unknown): 'SPEND_CAP_BLOCKED' | 'MODEL_UNAVAILABLE' {
+  return thrown instanceof SpendRefusalError ? 'SPEND_CAP_BLOCKED' : 'MODEL_UNAVAILABLE';
+}
+
 export async function runGeneration(
   stored: StoredSession,
   prompt: string,
@@ -722,7 +749,7 @@ export async function runGeneration(
   try {
     plan = readPlannerEmission(await deps.emit(buildIntentRequest(prompt)));
   } catch (thrown) {
-    stop('MODEL_UNAVAILABLE', thrown instanceof Error ? thrown.message : String(thrown));
+    stop(unreachableFault(thrown), thrown instanceof Error ? thrown.message : String(thrown));
     return;
   }
   if (!plan.ok) {
@@ -751,7 +778,7 @@ export async function runGeneration(
         : `${outcome.fault.reason}: ${outcome.fault.detail}`;
     stop(
       outcome.kind === 'unavailable'
-        ? 'MODEL_UNAVAILABLE'
+        ? unreachableFault(outcome.cause)
         : outcome.kind === 'invalidInput'
           ? 'BAD_REQUEST'
           : 'BLUEPRINT_REJECTED',

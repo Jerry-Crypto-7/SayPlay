@@ -54,7 +54,8 @@ import { killState } from '@/server/kill-switch';
 import { moderatePrompt } from '@/server/moderation';
 import { logRateLimited } from '@/server/public-faults';
 import { callerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '@/server/rate-limit';
-import { getSession, putChange } from '@/worldstream/sessions';
+import { SpendRefusalError } from '@/server/spend-cap';
+import { getSession, putChange, SESSION_FAULTS } from '@/worldstream/sessions';
 
 import { acquireSlot, cloudEmitter, releaseSlot, slotsDetail } from '../../route';
 
@@ -286,11 +287,17 @@ export async function createChange(
       );
 
     if (outcome.kind === 'unavailable') {
+      // **Odmítnutý strop není mlčící poskytovatel** (P15 `T29-readinessledger`).
+      // Druhá věta má tutéž vadu jako stavba světa: dokud se obojí hlásilo jako
+      // `MODEL_UNAVAILABLE`, četl porotce „the model could not be reached" i
+      // o žádosti, která se nikam neodeslala. Rozhoduje typ výjimky, ne text.
+      const code =
+        outcome.cause instanceof SpendRefusalError ? 'SPEND_CAP_BLOCKED' : 'MODEL_UNAVAILABLE';
       // Detail poskytovatele ven nejde nikdy — `fetch` píše do svých hlášek celou
       // adresu koncového bodu a ta umí nést pověření. Ven kód a věta, do logu
       // operátora všechno ostatní.
-      logRateLimited('worldstream/changes', requestId, 'MODEL_UNAVAILABLE', outcome.detail);
-      return fail(requestId, 503, 'MODEL_UNAVAILABLE', 'the model could not be reached');
+      logRateLimited('worldstream/changes', requestId, code, outcome.detail);
+      return fail(requestId, 503, code, SESSION_FAULTS[code]);
     }
 
     if (outcome.kind === 'rejected') {

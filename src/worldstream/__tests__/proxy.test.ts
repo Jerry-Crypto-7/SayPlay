@@ -809,6 +809,7 @@ describe('the fallback ladder is a closed list, not a guess', () => {
     const unavailable = await build({
       kind: 'unavailable',
       detail: 'upstream timed out',
+      cause: new Error('upstream timed out'),
       rounds: [],
     });
     expect(unavailable.kind).toBe('declined');

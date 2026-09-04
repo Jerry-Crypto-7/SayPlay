@@ -457,7 +457,7 @@ export interface ChangeInput {
 export type ChangeOutcome =
   | { readonly kind: 'planned'; readonly plan: RefinePlan }
   | { readonly kind: 'rejected'; readonly reason: RefineRejection; readonly detail: string }
-  | { readonly kind: 'unavailable'; readonly detail: string };
+  | { readonly kind: 'unavailable'; readonly detail: string; readonly cause: unknown };
 
 /**
  * Jedno kolo modelu nad **už rozhodnutým** cílem.
@@ -481,7 +481,14 @@ export async function planChange(input: ChangeInput): Promise<ChangeOutcome> {
   try {
     answer = await input.emit(buildRefineRequest(input.prompt, input.blueprint, input.target));
   } catch (thrown) {
-    return { kind: 'unavailable', detail: thrown instanceof Error ? thrown.message : String(thrown) };
+    // `cause` vedle `detail` ze stejného důvodu jako v `worldstream-repair.ts`:
+    // odmítnutý strop a mlčící poskytovatel jsou dvě různé věty pro porotce
+    // a rozeznat se musí typem, ne textem.
+    return {
+      kind: 'unavailable',
+      detail: thrown instanceof Error ? thrown.message : String(thrown),
+      cause: thrown,
+    };
   }
 
   const read = readRefineEmission(answer, input.target);

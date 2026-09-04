@@ -89,6 +89,15 @@ export type BlueprintOutcome =
   | {
       readonly kind: 'unavailable';
       readonly detail: string;
+      /**
+       * Co se doopravdy vyhodilo — **nezploštěné na text**.
+       *
+       * `detail` je věta pro operátora a rozhodovat se podle ní znamená mít
+       * kontrakt nad řetězcem. Volající, který potřebuje rozlišit „poskytovatel
+       * neodpověděl" od „strop odmítl a nikam se nevolalo", se ptá `instanceof`
+       * (P15 `T29-readinessledger`); ostatní si dál berou `detail`.
+       */
+      readonly cause: unknown;
       readonly rounds: readonly BlueprintRound[];
     }
   /**
@@ -343,7 +352,7 @@ export async function compileWithRepair(input: RepairInput): Promise<BlueprintOu
       // Rozbité prostředí není verdikt o blueprintu. Kola, která už proběhla,
       // se ale nezahazují — je z nich vidět, kam se to dostalo.
       const message = thrown instanceof Error ? `${thrown.name}: ${thrown.message}` : String(thrown);
-      return { kind: 'unavailable', detail: message, rounds };
+      return { kind: 'unavailable', detail: message, cause: thrown, rounds };
     }
 
     // Brána dostane požadavek **toho kola**, ne prvního: verdikt nesmí tvrdit

@@ -35,6 +35,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { BODY_DEADLINE_MS, MAX_CONCURRENT_BODY_READS_UNIDENTIFIED, readBody } from '@/http/body';
 import type { UpstreamRequest } from '@/model/prompt';
 import { resetFaultLog } from '@/server/public-faults';
+import { DEFAULT_CAP_USD, SpendRefusalError } from '@/server/spend-cap';
 import {
   callerKey,
   MAX_REQUESTS_PER_WINDOW,
@@ -238,6 +239,49 @@ describe('preview druhé věty', () => {
     expect(response.status).toBe(503);
     expect((await body(response)).error).toMatchObject({ code: 'MODEL_UNAVAILABLE' });
     expect(stored.session.phase).toBe('world');
+  });
+
+  /**
+   * **Odmítnutý strop není mlčící poskytovatel** — tytéž dveře, táž vada jako
+   * u stavby světa (P15 `T29-readinessledger`). Rozeznává se typ výjimky, ne
+   * text: druhý případ níž hází doslova tutéž zprávu jako holý `Error`.
+   */
+  it('odmítnutý strop dá vlastní kód a větu, ne poruchu modelu', async () => {
+    const stored = await generated();
+    const response = await preview(stored.session.sessionId, { prompt: 'make the mast taller' }, async () => {
+      throw new SpendRefusalError({
+        ok: false,
+        reason: 'STORE_UNCONFIGURED',
+        detail: 'no shared ledger is configured for this deployment',
+        snapshot: {
+          enabled: true,
+          capUsd: DEFAULT_CAP_USD,
+          spentUsd: 0,
+          reservedUsd: 0,
+          remainingUsd: DEFAULT_CAP_USD,
+          callsMade: 0,
+          callsRemaining: 200,
+        },
+      });
+    });
+
+    expect(response.status).toBe(503);
+    const error = (await body(response)).error as { code: string; message: string };
+    expect(error.code).toBe('SPEND_CAP_BLOCKED');
+    expect(error.message).toBe('this deployment is not making model calls right now; nothing was sent');
+    // Rozpad příčiny je operátorský, ven nejde.
+    expect(error.message).not.toContain('STORE_UNCONFIGURED');
+    expect(stored.session.phase).toBe('world');
+  });
+
+  it('výjimka poskytovatele se stejným textem zůstává poruchou modelu', async () => {
+    const stored = await generated();
+    const response = await preview(stored.session.sessionId, { prompt: 'make the mast taller' }, async () => {
+      throw new Error('STORE_UNCONFIGURED: no shared ledger is configured for this deployment');
+    });
+
+    expect(response.status).toBe(503);
+    expect((await body(response)).error).toMatchObject({ code: 'MODEL_UNAVAILABLE' });
   });
 
   it('preview vrátí rozsah, co zůstane, a NEZAČNE meshovat', async () => {

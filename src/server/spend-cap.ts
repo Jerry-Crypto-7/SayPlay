@@ -219,6 +219,34 @@ export interface Refused {
 export type Reservation = Reserved | Refused;
 
 /**
+ * Odmítnutí stropu **jako typ**, ne jako text zprávy.
+ *
+ * Emitor, který platí (`cloudEmitter()`), musí umět selhat — jeho volající
+ * `runGeneration()` chytá jedinou výjimku a do P15 `T29-readinessledger` z ní
+ * dělal `MODEL_UNAVAILABLE`. Porotce tak nad nedokonfigurovaným stropem četl
+ * „the model could not be reached", přestože se k poskytovateli nikdo
+ * nepřipojoval; vina padla na cizí stranu a předem to nikdo neohlásil.
+ *
+ * **Rozhoduje `instanceof`, ne shoda nad `message`.** Text zprávy je pro
+ * operátora a mění se s detailem, takže rozhodovat podle něj znamená mít
+ * kontrakt, který nikdo nevidí a `tsc` nehlídá. `reason` zůstává strojově
+ * čitelné pro toho, kdo chce rozlišit i jednotlivé příčiny.
+ *
+ * `message` je schválně **týž řetězec**, jaký se házel předtím
+ * (`<reason>: <detail>`), protože končí v operátorském logu a měnit ho by
+ * znamenalo měnit záznam, ve kterém se incident dohledává.
+ */
+export class SpendRefusalError extends Error {
+  readonly reason: RefusalReason;
+
+  constructor(refused: Refused) {
+    super(`${refused.reason}: ${refused.detail}`);
+    this.name = 'SpendRefusalError';
+    this.reason = refused.reason;
+  }
+}
+
+/**
  * Přečte strop z **validního** ovládacího souboru. `null` je rozbitý vypínač.
  *
  * **Chybějící klíč rozbitý vypínač není** — a do 3. 9. 2026 byl. Soubor má od

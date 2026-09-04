@@ -51,7 +51,7 @@ import { killState } from '../../../../server/kill-switch';
 import { moderatePrompt } from '../../../../server/moderation';
 import { callerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '../../../../server/rate-limit';
 import { logRateLimited } from '../../../../server/public-faults';
-import { costUsd, processSpendCap } from '../../../../server/spend-cap';
+import { costUsd, processSpendCap, SpendRefusalError } from '../../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../../server/upstream';
 import type { BlueprintEmitter } from '../../../../model/worldstream-repair';
 import {
@@ -281,7 +281,11 @@ export async function cloudEmitter(): Promise<BlueprintEmitter | null> {
   return async (request: UpstreamRequest): Promise<unknown> => {
     const call = { prompt: request.user, request };
     const reservation = await cap.reserve(branch.worstCaseUsd(call));
-    if (!reservation.ok) throw new Error(`${reservation.reason}: ${reservation.detail}`);
+    // **Vlastní třída, ne holý `Error`** (P15 `T29-readinessledger`). Volající
+    // chytá jedinou výjimku a musí z ní poznat, jestli se k poskytovateli
+    // vůbec někdo připojoval — odmítnutý strop se do té chvíle hlásil jako
+    // „the model could not be reached". Text zprávy zůstává, mění se typ.
+    if (!reservation.ok) throw new SpendRefusalError(reservation);
 
     let outcome;
     try {
