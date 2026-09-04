@@ -979,3 +979,45 @@ describe('hranice požadavku', () => {
     }
   });
 });
+
+describe('strop souběhu sem nepatří, a je to změřené', () => {
+  /**
+   * **Nedosažitelná brána vypadá jako brána.** `T28-editungated` chtěla tyhle
+   * dveře pověsit na čítač placených volání v letu. Měření to zamítlo dvakrát:
+   * placených volání odsud vede nula (`emitPatch` přehrává zmrazený korpus),
+   * a čítač v letu by tu **nikdy nesepnul** — mezi `await readBody` a odpovědí
+   * není jediný `await`, takže celý drahý úsek doběhne v jednom taktu smyčky
+   * a druhý požadavek se do něj nemá jak dostat.
+   *
+   * Tenhle test tu druhou půlku drží. Kdyby do handleru přibyl `await`, úsek by
+   * se stal přerušitelným, dva požadavky by se v něm potkaly a **rozhodnutí
+   * „čítač sem nepatří" by přestalo platit** — což je přesně ta chvíle, kdy se
+   * má někdo podívat znovu, a ne se to dozvědět z nasazení.
+   *
+   * Komentáře se odstřihnou; hlavička route o tom měření mluví a nesmí si
+   * bránu prošlapat sama.
+   */
+  it('mezi čtením těla a odpovědí není jediný await', () => {
+    const code = readFileSync('src/app/api/edit/route.ts', 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+
+    const awaits = code.match(/\bawait\b/g) ?? [];
+    expect(awaits, 'v handleru přibyl await — viz hlavička route').toHaveLength(1);
+    expect(code, 'jediný await už není čtení těla').toContain('raw = await readBody(request);');
+  });
+
+  /**
+   * A první půlka: tenhle soubor **nesmí** sáhnout na čítač placených volání.
+   * Neplacené dveře na něm obsadí sloty, ze kterých se platí za svět a za
+   * druhou větu — vyhladovění, které `dc58740` odstranil.
+   */
+  it('neplacené dveře nesahají na čítač placených volání', () => {
+    const code = readFileSync('src/app/api/edit/route.ts', 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+
+    expect(code, 'edit route si bere slot z čítače placených volání').not.toContain('acquireSlot');
+    expect(code, 'edit route sahá na strop utrácení, ačkoli nic neplatí').not.toContain('SpendCap');
+  });
+});

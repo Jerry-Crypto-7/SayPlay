@@ -46,6 +46,35 @@
  * `applied` říká, které půlky si volající smí nechat — a `sim` mezi nimi je jen
  * tehdy, když jeho svědek po editaci znovu došel do výhry.
  *
+ * ## Proč tyhle dveře NEJSOU za čítačem placených volání
+ *
+ * `T28-editungated` chtěla, aby si `/api/edit` bralo slot z téhož čítače jako
+ * `/api/generate` a worldstreamové dveře. **Změřeno 4. 9. 2026 a zamítnuto,
+ * dvakrát nezávisle:**
+ *
+ * 1. **Nejsou to placené dveře.** `emitPatch()` přehrává zmrazený korpus
+ *    (`src/model/client.ts`) — tenhle soubor neimportuje ani upstream klienta,
+ *    ani `fetch`, ani strop utrácení. Placených volání odsud vede **nula**.
+ *    Sdílený čítač má strop 4 a `MAX_WORLD_GENERATIONS = 3` v něm drží čtvrtý
+ *    slot pro druhou větu (`dc58740`). Pustit na něj **neplacené** dveře
+ *    znamená, že anonymní provoz sem obsadí všechny čtyři sloty a **odmítne
+ *    ty placené** — tedy přesně to vyhladovění, které `dc58740` odstranil.
+ * 2. **Čítač v letu by tu stejně nikdy nesepnul.** Mezi `await readBody` a
+ *    odpovědí **není jediný `await`** — `migrateWorldDoc`, `frozenPrompt`,
+ *    `frozenGrammar`, `emitPatch`, `routePatch` i `commitRoutedParts` doběhnou
+ *    synchronně v jednom taktu smyčky. Druhý požadavek se tedy do toho úseku
+ *    nemá jak dostat a strop ≥ 2 je nedosažitelný **konstrukcí**. Byla by to
+ *    druhá `T22-admissiondead` v témže běhu. Hlídá to test
+ *    „mezi čtením těla a odpovědí není jediný await".
+ *
+ * **Co naměřené ZŮSTÁVÁ jako otevřený problém:** jeden požadavek stojí
+ * **medián 15,3 ms, p95 27,7 ms a max 38,6 ms** synchronního CPU na smyčce
+ * (60 měření nad tělem o 1 784 B, po zahřátí cache korpusu). To je anonymní
+ * veřejná adresa bez jakéhokoli omezení, takže ~66 požadavků za sekundu
+ * zastaví celou instanci — a s ní SSE proudy, preview i snapshot. Lék na to
+ * není čítač v letu, ale omezení **frekvence** nebo přesun té práce ze smyčky;
+ * je to úloha `T28-editrate`, ne tahle.
+ *
  * ## Endpoint NEČTE `allowedPaths`
  *
  * `allowedPaths` je pole **kontraktu z eval sady** (`contracts.v1.jsonl`),
