@@ -125,7 +125,7 @@ export type BlueprintOutcome =
     };
 
 /**
- * Strop kol. **Tři, a je to jiné odůvodnění než u lokální smyčky.**
+ * Výchozí strop kol. **Tři, a je to jiné odůvodnění než u lokální smyčky.**
  *
  * `MAX_ROUNDS` v `local/emit.ts` drží tři kvůli času: jedna emise na GPU má
  * medián 33,7 s, takže čtvrté kolo by porotce nevydržel. Tady je vazba na
@@ -133,6 +133,16 @@ export type BlueprintOutcome =
  * kolo zdraží nejhorší případ o třetinu za čím dál menší šanci. Model, který
  * vadu neopravil dvakrát, ji obvykle neopraví ani potřetí; od toho je
  * zastavení na nepohnutém odmítnutí níž, které utne dřív než tenhle strop.
+ *
+ * ⚠ **Je to výchozí hodnota, ne zákon — obojí odůvodnění mluví o placené živé
+ * cestě a autorský běh není ani jedno.** Naměřeno 5. 9. 2026 nad prvními
+ * sedmnácti větami: **sedm z jedenácti neúspěchů skončilo přesně na stropu**
+ * (čtyři volání, tedy planner a všechna tři kola) a **ani jeden z nich se
+ * nezastavil na nepohnutém odmítnutí** — model tedy pořád opravoval, jen mu
+ * došla kola. Že se ta poslední kola vyplácejí, je vidět na druhé straně:
+ * **dva z šesti uložených světů (`c03`, `c15`) potřebovaly celý strop.**
+ * Autorský běh je nehlídaný a bez klíče (`G2`), takže tam kolo nestojí nic
+ * a strop jen zahazuje rozdělanou práci — proto si ho volající volí sám.
  */
 export const MAX_BLUEPRINT_ROUNDS = 3;
 
@@ -304,13 +314,13 @@ export function buildRepairRequest(
  * „neumístil jsi kopuli") vypadaly jako nepohnuté a smyčka by se zastavila
  * uprostřed pokroku.
  *
- * **Porovnává se jen předchozí kolo, ne všechna, a při stropu tři to nic
- * nestojí — spočítáno 31. 8. 2026.** Kmit A→B→A projde: po kole 2 se B liší od
- * A, takže kolo 3 běží a skončí na téže vadě jako kolo 1. Historie vad by to
- * poznala, jenže až **po** třetím volání, které se stejně muselo udělat —
- * úspora je nula. Cenu to začne mít teprve tehdy, když se
- * `MAX_BLUEPRINT_ROUNDS` zvedne; do té doby je to kód navíc bez účinku.
- * Zapsáno jako `T12-oscillation`.
+ * **Porovnává se proti všem odehraným kolům, ne jen proti minulému — od
+ * 5. 9. 2026.** Kmit A→B→A jinak projde celý: po kole 2 se B liší od A, takže
+ * kolo 3 běží a skončí na téže vadě jako kolo 1. Do 5. 9. to nestálo nic
+ * (spočítáno 31. 8.: při stropu tři se to pozná až po třetím volání, které se
+ * stejně muselo udělat), a proto se to nedělalo. Podmínka z té úvahy je dnes
+ * splněná: `maxRounds` si volí volající a autorský běh jde nad tři, takže kolo
+ * čtvrté a další se opravdu dá prokmitat. Zapsáno jako `T12-oscillation`.
  */
 function sameFault(before: BlueprintFault, after: BlueprintFault): boolean {
   return (
@@ -335,10 +345,20 @@ export interface RepairInput {
    * v kole je zpráva pro člověka, ne vstup do hashe.
    */
   readonly now?: () => number;
+  /**
+   * Kolik kol si tahle cesta smí dovolit. Výchozí `MAX_BLUEPRINT_ROUNDS`.
+   *
+   * **Je to volba volajícího, protože strop platí peníze, a ne každá cesta je
+   * platí stejně.** Živá relace u porotce má za každé kolo placené volání
+   * a čeká u toho člověk — tam zůstávají tři. Autorský běh (`G2` z 5. 9. 2026:
+   * žádný klíč, Codex na předplatném) je nehlídaný a zdarma, takže tam strop
+   * nekupuje nic a jen zahazuje rozdělanou práci.
+   */
+  readonly maxRounds?: number;
 }
 
 /**
- * Protočí emisi blueprintu, dokud jedna neprojde branou, nejvýš třikrát.
+ * Protočí emisi blueprintu, dokud jedna neprojde branou, nejvýš `maxRounds`krát.
  *
  * **Časový rozpočet tu schválně není.** Lokální smyčka ho má, protože měří
  * vlastní GPU a ta se umí zaseknout; tady drží čas timeout klienta
@@ -358,10 +378,13 @@ export async function compileWithRepair(input: RepairInput): Promise<BlueprintOu
   const clock = input.now ?? Date.now;
 
   const rounds: BlueprintRound[] = [];
+  const seen: BlueprintFault[] = [];
   let previous: unknown = null;
   let last: BlueprintFault | null = null;
 
-  for (let attempt = 1; attempt <= MAX_BLUEPRINT_ROUNDS; attempt += 1) {
+  const maxRounds = input.maxRounds ?? MAX_BLUEPRINT_ROUNDS;
+
+  for (let attempt = 1; attempt <= maxRounds; attempt += 1) {
     const request = last === null ? first : buildRepairRequest(first, previous, last);
     const startedAt = clock();
 
@@ -397,9 +420,12 @@ export async function compileWithRepair(input: RepairInput): Promise<BlueprintOu
     rounds.push({ attempt, fault, ms });
 
     // Nepohnuté odmítnutí: tutéž vadu model opravit neumí a další placené
-    // volání by za ni nic nekoupilo.
-    if (last !== null && sameFault(last, fault)) return { kind: 'rejected', fault, rounds };
+    // volání by za ni nic nekoupilo. **Porovnává se proti všem kolům, ne jen
+    // proti minulému** — kmit A→B→A jinak projde celý (`T12-oscillation`).
+    if (seen.some((earlier) => sameFault(earlier, fault)))
+      return { kind: 'rejected', fault, rounds };
 
+    seen.push(fault);
     previous = answer;
     last = fault;
   }

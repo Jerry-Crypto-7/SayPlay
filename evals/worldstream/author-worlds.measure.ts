@@ -78,6 +78,25 @@ function readRejects(): readonly AuthoringReject[] {
 /** Semínko relace píše měřidlo, ne model. Táž hodnota jako ve spiku. */
 const SESSION_SEED = 4021;
 
+/**
+ * Kolik oprav dostane věta tady. **Šest, proti třem na živé cestě.**
+ *
+ * ⚠ **Naměřeno 5. 9. 2026 na prvních sedmnácti větách, ne odhadnuto.** Sedm
+ * z jedenácti neúspěchů skončilo na čtyřech voláních, tedy na plánu a všech
+ * třech kolech, a **ani jeden z nich se nezastavil na nepohnutém odmítnutí** —
+ * kdyby se zastavil, volání by byla tři. Model tedy pořád opravoval a jen mu
+ * došla kola. Že se poslední kolo vyplácí, ukazuje druhá strana téhož čísla:
+ * **`c03` a `c15` se uložily až na čtvrté volání**, tedy dva z šesti světů,
+ * které sklad má.
+ *
+ * Strop na živé cestě zůstává tři a nesahá se na něj: tam čeká porotce a každé
+ * kolo je placené volání. Tady neplatí ani jedno — běh je nehlídaný a Codex
+ * jede na předplatném (`G2`), takže kolo navíc stojí jen čas, kterého je dost.
+ * Šest, ne „bez stropu": smyčka se musí umět vzdát, a zastavení na odmítnutí,
+ * které už jednou padlo, je od `T12-oscillation` skutečná mez, ne dekorace.
+ */
+const AUTHOR_MAX_ROUNDS = 6;
+
 function readStore(): AuthoredStore {
   try {
     return JSON.parse(readFileSync(STORE_FILE, 'utf8')) as AuthoredStore;
@@ -147,6 +166,7 @@ describe('Codex uvaří světy dopředu', () => {
               mesh: mesh.mesh,
               grammar: grammar.value,
               sessionSeed: SESSION_SEED,
+              maxRounds: AUTHOR_MAX_ROUNDS,
             });
           } catch (thrown) {
             unavailable = thrown instanceof Error ? thrown.message.slice(0, 120) : String(thrown);

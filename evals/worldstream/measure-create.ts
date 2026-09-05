@@ -331,6 +331,13 @@ export interface CaseDeps {
   readonly grammar: Grammar;
   readonly sessionSeed: number;
   readonly now?: () => number;
+  /**
+   * Strop opravných kol. Výchozí je ten z `worldstream-repair`, tedy tři.
+   *
+   * Zvedá ho **jen autorský běh**, a to z naměřeného důvodu: strop je odůvodněný
+   * cenou placeného volání, kterou nehlídaný běh na předplatném neplatí.
+   */
+  readonly maxRounds?: number;
 }
 
 /**
@@ -455,6 +462,7 @@ export async function driveCreateCase(entry: CreateCase, deps: CaseDeps): Promis
     sessionSeed: deps.sessionSeed,
     emit: deps.emit,
     ...(deps.now === undefined ? {} : { now: deps.now }),
+    ...(deps.maxRounds === undefined ? {} : { maxRounds: deps.maxRounds }),
   });
 
   if (outcome.kind !== 'compiled') {

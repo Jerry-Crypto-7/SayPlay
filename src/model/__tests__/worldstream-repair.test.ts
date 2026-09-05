@@ -637,11 +637,17 @@ function scripted(answers: readonly unknown[]): {
   };
 }
 
-const run = (answers: readonly unknown[]) => {
+const run = (answers: readonly unknown[], maxRounds?: number) => {
   const script = scripted(answers);
   return {
     script,
-    outcome: compileWithRepair({ plan: PLAN, grammar, sessionSeed: SEED, emit: script.emit }),
+    outcome: compileWithRepair({
+      plan: PLAN,
+      grammar,
+      sessionSeed: SEED,
+      emit: script.emit,
+      ...(maxRounds === undefined ? {} : { maxRounds }),
+    }),
   };
 };
 
@@ -704,6 +710,64 @@ describe('the loop is bounded', () => {
     expect(done.kind).toBe('rejected');
     expect(done.rounds).toHaveLength(2);
     expect(script.seen).toHaveLength(2);
+  });
+
+  it('turns as many times as the caller allows, because a round is not always paid', async () => {
+    // Naměřeno 5. 9. 2026: sedm z jedenácti neúspěchů autorského běhu skončilo
+    // přesně na stropu a ani jeden na nepohnutém odmítnutí — model opravoval
+    // dál a jen mu došla kola. Strop je odůvodněný cenou placeného volání,
+    // a tu nehlídaný běh na předplatném neplatí.
+    const { script, outcome } = run(
+      [
+        answerWith({ geometry: 'cathedral' }),
+        answerWith({ shapes: [SWARM_SHAPE] }),
+        answerWith({ shapes: [STOLEN_SHAPE] }),
+        OWN_ANSWER,
+      ],
+      6,
+    );
+    const done = await outcome;
+
+    // Čtvrté kolo je to, které by se při stropu tři nikdy neodehrálo.
+    expect(done.kind).toBe('compiled');
+    expect(script.seen).toHaveLength(4);
+  });
+
+  it('still stops at three when nobody asks for more, so the paid path is unchanged', async () => {
+    const { script, outcome } = run([
+      answerWith({ geometry: 'cathedral' }),
+      answerWith({ shapes: [SWARM_SHAPE] }),
+      answerWith({ shapes: [STOLEN_SHAPE] }),
+      OWN_ANSWER,
+    ]);
+    const done = await outcome;
+
+    expect(done.kind).toBe('rejected');
+    expect(script.seen).toHaveLength(MAX_BLUEPRINT_ROUNDS);
+  });
+
+  it('gives up on a fault that already happened, not only on the one just before', async () => {
+    // Kmit A→B→A. Do 5. 9. 2026 se porovnávalo jen minulé kolo, takže tohle
+    // prošlo celé — a při vyšším stropu by se protáčelo dokola. Zastavit se má
+    // na kole 3, kde se `GEOMETRY_NOT_AUTHORED` vrací podruhé.
+    const { script, outcome } = run(
+      [
+        answerWith({ geometry: 'cathedral' }),
+        answerWith({ shapes: [SWARM_SHAPE] }),
+        answerWith({ geometry: 'cathedral' }),
+        OWN_ANSWER,
+      ],
+      6,
+    );
+    const done = await outcome;
+
+    expect(done.kind).toBe('rejected');
+    expect(script.seen).toHaveLength(3);
+    expect(done.rounds.map((round) => round.fault?.reason)).toEqual([
+      'GEOMETRY_NOT_AUTHORED',
+      'SHAPE_INVALID',
+      'GEOMETRY_NOT_AUTHORED',
+    ]);
   });
 
   it('keeps turning while the same reason names a different object', async () => {
