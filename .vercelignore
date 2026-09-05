@@ -33,8 +33,10 @@ secrets.json
 # (`File size limit exceeded (100 MB)`). ⚠ Dřívější odhad „~2,3 GB" byl o 1,6 GB
 # nízko a svedl rozbor k součtu tří adresářů; tenhle adresář je celé to číslo.
 #
-# S tímhle souborem má nahrávka **9,85 MB v 650 souborech a největší z nich má
-# 0,55 MB** (`docs/contact-sheet.png`) — naměřeno 5. 9. 2026 průchodem stromu
+# S tímhle souborem má nahrávka **necelých 10 MiB v ~650 souborech a největší
+# z nich má 0,55 MiB** (`docs/contact-sheet.png`) — počet souborů kolísá
+# s rozpracovaným stromem, mez 100 MB drží o dva řády
+# — naměřeno 5. 9. 2026 průchodem stromu
 # přes `ignore@5`, tedy týž matcher, jaký CLI na tenhle soubor pouští, a
 # doloženo **bez nasazení**. `.git` je do toho nepočítaný: Vercel ho ignoruje
 # sám a `.git/` se sem schválně NEDOPISUJE, protože z něj CLI čte `VERCEL_GIT_*`.

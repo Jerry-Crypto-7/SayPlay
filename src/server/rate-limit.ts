@@ -118,9 +118,21 @@ export const MAX_REQUESTS_PER_WINDOW_PER_INSTANCE = 400;
  *
  * **Proč ne u těch dvou čtecích.** Vydávají hotový stav z paměti, nesahají
  * na poskytovatele a neutrácejí. Jediné, co se přes ně dalo zesílit, byla
- * odchozí frekvence čtení ovládacího klíče, a **to už je zavřené jinde**:
- * `CONTROL_CACHE_TTL_MS` (`1dfc7ec`) drží nanejvýš jeden let za sekundu na
- * instanci, ať se ptá kdokoli jak často chce.
+ * odchozí frekvence čtení ovládacího klíče, a **na Vercelu je to zavřené
+ * jinde**: `CONTROL_CACHE_TTL_MS` (`1dfc7ec`) drží nanejvýš jeden let za
+ * sekundu na instanci, ať se ptá kdokoli jak často chce.
+ *
+ * ⚠ **S ovládacím SOUBOREM to ale neplatí a naměřila to nezávislá revize.**
+ * Všechny troje ty dveře volají `killState()`, a když je vyplněné
+ * `WORLDSMITH_CONTROL_FILE` (typicky `next start` a demo z notebooku),
+ * jde to na **nekešovaný synchronní `readFileSync`** — kešování tam odmítá
+ * `control-file.ts` schválně, aby povel zabral hned. Naměřeno: 25 volání
+ * `killState()` = **25 čtení souboru**. Smyčka na `snapshots/[hash]` je tam
+ * tedy jedno blokující čtení disku na požadavek, na smyčce událostí a bez
+ * jakékoli meze. **Na dnešním nasazení ta větev neběží** (Vercel žádný soubor
+ * nemá a rozhoduje sdílená kniha), takže je to zapsaná cena režimu se
+ * souborem, ne otevřená vada dema — ale kdo ten režim pustí veřejně, musí
+ * buď dát dveřím slot, nebo čtení souboru pověsit do téhož okna.
  *
  * ⚠ **Zbytek po té opravě je flotilové číslo, a je změřený, ne odhadnutý.**
  * Okno je **na instanci**, kdežto kvóta obchodu je **na flotilu**: N souběžných
@@ -131,7 +143,8 @@ export const MAX_REQUESTS_PER_WINDOW_PER_INSTANCE = 400;
  * číslo z principu nezmenší.
  *
  * ⛔ **Co by to rozhodnutí otočilo:** kdyby některé z těch tří dveří začaly
- * utrácet, sahat na disk nebo na poskytovatele. Do té doby se sem
+ * utrácet nebo sahat na poskytovatele — a u režimu s ovládacím souborem
+ * (odstavec výš) je to otočené už dnes. Do té doby se sem
  * **nedopisují** — a kdo je dopíše, musí současně ukázat e2e, že se reconnect
  * SSE o ten slot nezasekne. Pinuje to test `troje čtecí dveře nemají slot,
  * a je to rozhodnutí` v `rate-limit.test.ts`.

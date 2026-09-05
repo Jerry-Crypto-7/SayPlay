@@ -472,3 +472,51 @@ describe('troje čtecí dveře nemají slot, a je to rozhodnutí', () => {
     expect(blok, 'odůvodnění neveze flotilové číslo').toContain('flotilové');
   });
 });
+
+/**
+ * **Připíchnutá CENA rozdělení klíčů — `T16-keydoctrine`, kolo revize 5. 9. 2026.**
+ *
+ * `callerKey()` bere **první** položku `x-forwarded-for`, tedy hodnotu, kterou
+ * píše volající, a route si slot frekvence bere **dřív** než kvótu. Cizí
+ * člověk tak umí držet kbelík frekvence oběti a odrážet její požadavky na 429.
+ * Je to **vědomá cena**: podvrh u frekvence vrací útočníka nanejvýš tam, kde
+ * by byl bez meze, a rozeznatelnější klíč mimo Vercel neexistuje. Cizí relaci
+ * to nezavře — jen odmítne novou.
+ *
+ * ⚠ **Píše se to sem proto, že to doktrína u kvóty jednou zamlčela.** První
+ * podoba přepsané doktríny tvrdila, že „zablokovat oběti zakládání" je po
+ * `trustedCallerKey()` minulý čas; nezávislá revize to spuštěním vyvrátila.
+ * **Zelená tady znamená „ta cena se pořád platí".** Až ji někdo zavře, tenhle
+ * test zčervená — a doktrína v `sessions.ts` i tabulka v hlavičce
+ * `rate-limit.ts` se pak přepíšou vědomě, ne mlčky.
+ */
+describe('podvržený klíč frekvence je vědomá cena, ne uzavřená díra', () => {
+  afterEach(() => {
+    resetRateWindows();
+  });
+
+  it('útočník s hlavičkou oběti jí odrazí vlastní požadavek na 429', () => {
+    const OBĚŤ = '198.51.100.4';
+    const požadavekS = (xff: string): Request =>
+      new Request('http://127.0.0.1/api/worldstream/sessions', {
+        method: 'POST',
+        headers: { 'x-forwarded-for': xff },
+      });
+
+    // Útočník mluví pod svou adresou, ale píše adresu oběti. `callerKey()`
+    // bere první položku, takže oba skončí v témž kbelíku.
+    const útok = požadavekS(`${OBĚŤ}, 203.0.113.99`);
+    expect(callerKey(útok), 'podvrh se do klíče frekvence nedostal').toContain(OBĚŤ);
+
+    for (let i = 0; i < MAX_REQUESTS_PER_WINDOW; i += 1) {
+      takeRateSlot('sessions', callerKey(útok), T0);
+    }
+
+    // Oběť posílá svůj úplně první požadavek.
+    const verdikt = takeRateSlot('sessions', callerKey(požadavekS(OBĚŤ)), T0);
+    expect(verdikt.allowed, 'cena je zavřená — přepiš doktrínu v sessions.ts, nemaž tenhle test').toBe(
+      false,
+    );
+    expect(verdikt.scope, 'oběť odmítla kapacita instance, ne cizí kbelík').toBe('caller');
+  });
+});

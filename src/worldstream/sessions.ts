@@ -100,6 +100,13 @@ export const MAX_LIVE_SESSIONS = 64;
  *    (`WORLDSMITH_TRUSTED_PROXY_HOPS`) od `e72f9b3` **neexistuje**, protože
  *    počítání pozice v hlavičce nedokáže odlišit, co připsala proxy, od toho,
  *    co si napsal volající. Demo proto pouštět jedině na Vercelu.
+ *
+ *    ⛔ **A `VERCEL=1` si mimo Vercel nedopisuj** — je to přesně ta ruka,
+ *    kterou by člověk kvótu „zapnul" za vlastní nginx, a je to **horší než
+ *    vypnutá kvóta**: `x-vercel-forwarded-for` tam nikdo nepřepisuje, takže
+ *    se z ní stane hlavička od volajícího a vrátí se celá páka z doby před
+ *    `f493ce5` (napiš adresu oběti, naplň jí kbelík, staň se tím největším,
+ *    po kterém přetečení sáhne). Zapsané je to i v `.env.example`.
  * 2. **Sdílený kbelík byl nová plocha na odepření služby počestným.** Bez
  *    proxy hlaviček vrací `callerKey()` sentinel, takže do jednoho kbelíku
  *    spadli všichni a strop registru klesl ze 64 na 8 pro celou instanci.
@@ -162,9 +169,23 @@ export const MAX_LIVE_SESSIONS = 64;
  *
  * ⚠ **Co to NEZAVÍRÁ, a je to vědomé — přepsáno 5. 9. 2026, `T16-keydoctrine`.**
  * Věta „klíč jde pořád podvrhnout, osm požadavků s IP oběti naplní její
- * kbelík" **na důvěryhodné cestě už neplatí** a nesmí se nikam opisovat:
- * od `f493ce5` klíčuje kvótu `trustedCallerKey()` a do cizího kbelíku se
- * hlavičkou nedostane nic. Zbývají dvě jiné cesty, obě s vlastní úlohou:
+ * kbelík" **platí dál, jen ne o kvótě** — a rozdíl je podstatný, protože
+ * první podoba téhle věty ho zamlčela a nezávislá revize to naměřila.
+ * O **kvótu** volající přišel: od `f493ce5` ji klíčuje `trustedCallerKey()`
+ * a do cizího kbelíku se hlavičkou nedostane nic.
+ *
+ * ⛔ **Zablokovat oběti zakládání světů ale jde dál, jinou mezí.** Strop
+ * frekvence klíčuje `callerKey()`, tedy **první** položku `x-forwarded-for`,
+ * kterou píše volající — a route si slot bere **dřív** než kvótu. Útočník,
+ * který drží 5 požadavků za sekundu s hlavičkou `x-forwarded-for: <IP oběti>`,
+ * odrazí obětin vlastní požadavek na **429**, a to na všech sedmerých dveřích.
+ * **Naměřeno nezávislou revizí spuštěním.** Je to vědomá cena: klíč stropu
+ * frekvence se podvrhnout **smí**, protože podvrh tam vrací útočníka nanejvýš
+ * tam, kde by byl bez meze, a rozeznatelnější klíč mimo Vercel neexistuje.
+ * Cizí **relaci to nezavře** — jen odmítne novou; celý rozdíl je v tabulce
+ * v hlavičce `rate-limit.ts`.
+ *
+ * Nad kvótou zbývají dvě cesty, obě s vlastní úlohou:
  * **mimo Vercel** je klíč `null` a kvóta vypnutá (`T16-cookieowner`), a
  * **jediná IPv6 /64** dá jednomu volajícímu 64 různých klíčů, čímž srovná
  * kbelíky na jedničku a strop registru vybírá zase starým pořadím

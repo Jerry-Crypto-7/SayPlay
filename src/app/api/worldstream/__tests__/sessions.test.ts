@@ -1315,9 +1315,14 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
    * útočníkova relace je sledovaná stejně jako obětina. **Tenhle test proto
    * neměří uvolňování; měří, že se k němu nedá dojít.**
    *
-   * **Strop frekvence se schválně nuluje uvnitř smyčky.** Útočník si okno
-   * prostě počká, takže test, který by ho nechal běžet, by měřil okno a ne
-   * kvótu — a zezelenal by i tehdy, kdyby kvóta neexistovala.
+   * **Strop frekvence se uvnitř smyčky nuluje, a ta věta o něm byla dvakrát
+   * moc silná — opraveno po nezávislé revizi 5. 9. 2026.** Při `NÁPOR = 40`
+   * je to **no-op**: 40 útočníkových požadavků plus obětin jeden je 41, tedy
+   * pod `MAX_REQUESTS_PER_WINDOW = 50`, a okno se nezapne tak jako tak
+   * (naměřeno: bez toho řádku je test zelený stejně). Stojí tam proto, aby
+   * šlo nápor zvednout **nad padesát**, aniž se začne měřit okno místo kvóty
+   * — útočník si ho stejně počká. **Nekopírovat to do jiného burst testu
+   * jako povolení:** tam, kde okno kousne, by ten řádek skryl skutečnou mez.
    */
   it('nápor z jedné adresy registr vůbec nepřeteče, takže není čím cizí svět zavřít', async () => {
     resetRateWindows();
