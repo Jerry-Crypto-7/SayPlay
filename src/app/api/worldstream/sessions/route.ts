@@ -61,6 +61,7 @@ import { logRateLimited } from '../../../../server/public-faults';
 import { costUsd, processSpendCap, SpendRefusalError } from '../../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../../server/upstream';
 import type { BlueprintEmitter } from '../../../../model/worldstream-repair';
+import { authoredEmitter } from '../../../../worldstream/authored';
 import {
   MAX_SESSIONS_PER_CALLER,
   newSessionSeed,
@@ -515,7 +516,14 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    const emit = await cloudEmitter();
+    // ⚠ **Pořadí je součást kontraktu, ne detail zápisu.** Živá cesta má
+    // přednost vždycky; sklad uvařených světů je až za ní. Kdyby předbíhal,
+    // zaplacený klíč by přestal být vidět a `T14` by místo modelu měřila cache.
+    //
+    // Vypnutý model i chybějící klíč vypadají odsud stejně (`cloudEmitter()`
+    // vrátí `null`) a to je správně: kill switch `upstream` vypíná **živou**
+    // větev, ne sklad. Porotci má vypnutý model nechat svět, ne prázdno.
+    const emit = (await cloudEmitter()) ?? authoredEmitter(verdict.prompt);
     const work =
       emit === null
         ? Promise.resolve().then(() => {

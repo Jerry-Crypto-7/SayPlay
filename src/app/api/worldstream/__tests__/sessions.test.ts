@@ -70,6 +70,7 @@ import {
   resetConcurrency,
 } from '../sessions/route';
 import { GET as readSnapshot } from '../sessions/[sessionId]/route';
+import { AUTHORED_STORE } from '@/worldstream/authored';
 import {
   HEARTBEAT_FRAME,
   MAX_STREAM_SUBSCRIBERS,
@@ -1473,5 +1474,67 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
       QUOTA_ENGAGES_AT + 12,
     );
     expect(getSession(sessionId), 'svět prvního návštěvníka se zavřel pod ním').not.toBeNull();
+  });
+});
+
+/**
+ * **Bez klíče relace nekončí prázdnem, ale nejbližším uvařeným světem.**
+ *
+ * Pořadí zdrojů je součást kontraktu, ne detail zápisu: živá cesta má přednost
+ * vždycky. Kdyby ji sklad předbíhal, zaplacený klíč by přestal být vidět
+ * a měření `T14` by místo modelu měřilo cache — a nikdo by si toho nevšiml,
+ * protože obě cesty vypadají zvenčí stejně.
+ */
+describe('zdroj emise: živá cesta, a teprve za ní sklad', () => {
+  const AUTHORED = AUTHORED_STORE.worlds[0]!;
+
+  /** Relace založená přes route a dovedená do konce, ať dopadne jakkoli. */
+  async function generate(prompt: string) {
+    const response = await createSession(createRequest({ prompt }));
+    const body = (await response.json()) as { sessionId: string };
+    // Práce běží za odpovědí; bez tohohle by se soudil stav před generací.
+    await vi.waitFor(() => {
+      const stored = getSession(body.sessionId);
+      if (stored === null) throw new Error('relace zmizela');
+      if (stored.session.phase !== 'world' && stored.session.phase !== 'failed')
+        throw new Error(`ještě běží: ${stored.session.phase}`);
+    }, { timeout: 20_000, interval: 25 });
+    return getSession(body.sessionId)!;
+  }
+
+  it('bez klíče postaví svět ze skladu, místo aby skončila session.failed', async () => {
+    // Do `T46` tahle relace vždycky skončila `the model could not be reached`.
+    const stored = await generate(AUTHORED.prompt);
+
+    expect(stored.session.phase).toBe('world');
+    expect(stored.fault).toBeNull();
+  });
+
+  it('bez klíče dostane i cizí věta svět, protože prázdná obrazovka není odpověď', async () => {
+    const stored = await generate('A lighthouse on a cliff above a storm-lit harbour');
+
+    expect(stored.session.phase).toBe('world');
+  });
+
+  it('s klíčem jde relace k modelu, i když sklad tu větu má', async () => {
+    // ⚠ **Tohle je celá brána na pořadí.** Endpoint míří do neexistujícího
+    // hostitele, takže živá cesta selže — a právě to je důkaz, že se šlo tudy.
+    // Kdyby sklad předbíhal, relace by skončila ve fázi `world` a test by
+    // prošel ze špatného důvodu.
+    vi.stubEnv('WORLDSMITH_MODEL_ENDPOINT', 'https://model.invalid/v1/messages');
+    vi.stubEnv('WORLDSMITH_MODEL_KEY', 'not-a-real-key');
+    // ⚠ **Bez ceny je konfigurace neúplná a `cloudEmitter()` vrátí `null`** —
+    // `upstreamConfigFromEnv()` na ni sahá, protože nulová cena vypíná strop.
+    // Naměřeno: bez tohohle řádku spadla relace do skladu a test prošel obráceně,
+    // tedy dokazoval opak toho, co tvrdí.
+    vi.stubEnv('WORLDSMITH_USD_PER_MTOK_OUT', '15');
+    try {
+      const stored = await generate(AUTHORED.prompt);
+
+      expect(stored.session.phase).toBe('failed');
+      expect(stored.fault).not.toBeNull();
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });
