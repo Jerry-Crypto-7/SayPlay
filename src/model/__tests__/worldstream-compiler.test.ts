@@ -705,6 +705,18 @@ describe('the compiler request', () => {
     expect(request.system).toContain('sim.witness  omitted — the system writes it');
   });
 
+  it('closes the NO_FIT door the embedded contract opens, and closes it after it', () => {
+    // ⚠ **Pořadí je celé tvrzení, ne detail zápisu.** Vložený světový kontrakt
+    // `NO_FIT` nabízí právem — sdílí ho cesta, kde za větou nemusí nic stát.
+    // Tady za ní stojí hotové místo, takže se nabídka ruší, a zrušení, které by
+    // stálo nad ní, by si model přečetl jako přebité tím, co je pod ním.
+    const offer = request.system.indexOf('simOutcome: "NO_FIT"');
+    const close = request.system.indexOf('On this path you do not have it');
+
+    expect(offer).toBeGreaterThan(-1);
+    expect(close).toBeGreaterThan(offer);
+  });
+
   it('names every node of both languages in the manifest', () => {
     const manifest = capabilityManifest();
     for (const kind of SCHEMA_NODE_KINDS) expect(manifest).toContain(`    ${kind} —`);

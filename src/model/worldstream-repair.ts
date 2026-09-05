@@ -223,8 +223,28 @@ function extraIssues(fault: BlueprintFault): readonly string[] {
  * přesně ta vada, kvůli které níž existuje `squash()`.
  */
 export function blueprintRejectionSentence(fault: BlueprintFault): string {
-  if (fault.world !== undefined)
+  if (fault.world !== undefined) {
+    // ⚠ **Odmítnutý sim je jediná fáze, kde se sdílená věta nepřebírá — naměřeno
+    // 5. 9. 2026.** `rejectionSentence()` u ní končí slovy „or keep declining only
+    // if the request truly cannot be built", a to je na téhle cestě slepá ulička:
+    // Codex tu nabídku přijal třikrát po sobě a smyčka dojela do stropu kol, aniž
+    // se odpověď hnula. Lokální větev tu nabídku má právem — `NO_FIT` je tam
+    // poctivá obrazovka — proto se mění tady a `local/rejection-prompt.ts` zůstává.
+    //
+    // Věta drží dvě věci naráz: co napsat místo odmítnutí, a **že zbytek emise
+    // byl v pořádku**. Bez druhé půlky by model přepsal i geometrii, kterou
+    // compiler přijal, a další kolo by opravovalo jinou vadu než tuhle.
+    if (fault.world.rejection.stage === 'declined')
+      return [
+        `${fault.reason} · You declined to write the sim part, and this stage has no NO_FIT.`,
+        'The place already stands, so write the smallest sim that fits it: whoever walks in, one',
+        'socket the place already contains, and a win rule that says what reaching it means.',
+        'Send back the geometry, the shapes and the placements exactly as you wrote them — they',
+        'were accepted, and rewriting them costs you the only part that was already right.',
+      ].join(' ');
+
     return `${fault.reason} · ${rejectionSentence(fault.world.rejection, fault.world.context)}`;
+  }
 
   const extra = extraIssues(fault);
   const listed = extra.slice(0, MAX_ISSUES_IN_SENTENCE);

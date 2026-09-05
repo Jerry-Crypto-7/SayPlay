@@ -390,6 +390,21 @@ export function buildCompilerRequest(plan: PlannerEmission, grammar: Grammar): U
     buildEmissionRequest('', grammar).system,
     WORLD_CONTRACT_END,
     '',
+    // ⚠ **Zavření `NO_FIT` je oprava naměřeného zaseknutí, ne opatrnost.**
+    // Spike z 5. 9. 2026 (`d749ce7`, věta `c01`): Codex napsal geometrii, tvary
+    // i placementy tak, že je compiler přijal, a odmítl **jen** sim —
+    // `sim: null`, `simOutcome: "NO_FIT"`. Tři opravná kola ho z toho
+    // nedostala, protože věta o odmítnutí sama nabízela „keep declining".
+    // Kontrakt nad tímhle blokem tu nabídku dělá právem: sdílí se s cestou,
+    // kde model dostane holou větu a nemusí za ní nic stát. Sem se ale vkládá
+    // doslova, takže se ta nabídka musí zavřít tady, ne v něm.
+    'THE CONTRACT ABOVE OFFERS YOU NO_FIT. On this path you do not have it.',
+    'It is written for a stage that may be handed a sentence with nothing behind it. You are handed',
+    'a place that already stands, so there is always a sim to write: whoever walks in, one socket the',
+    'place already contains, and a win rule that says what reaching it means. That is the whole',
+    'minimum, and it is never unreachable. Answering with sim: null here is not honesty — it is a',
+    'place nobody can enter, and it is rejected exactly like a broken one.',
+    '',
     BLUEPRINT_EXAMPLE_MARKER,
     // **Odsazení tu musí zůstat**, ze stejného naměřeného důvodu jako
     // u ukázky v `./prompt.ts`: kompaktní ukázka zkrátila odpovědi a zaplatila

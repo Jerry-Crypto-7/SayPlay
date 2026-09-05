@@ -289,6 +289,21 @@ const UNREACHABLE_STEP_WORLD = (): Record<string, unknown> => {
   return world as unknown as Record<string, unknown>;
 };
 
+/**
+ * Svět, který sim nenapsal a řekl to nahlas — `sim: null`, `simOutcome: "NO_FIT"`.
+ *
+ * Není to vymyšlený tvar: přesně tohle vrátil Codex ve spiku z 5. 9. 2026 na
+ * větu `c01`, a to třikrát po sobě, protože ho z toho opravné kolo nedostalo.
+ * Vede přes `certifySteps()` na `stage: 'declined'`, tedy jedinou fázi, kde si
+ * `blueprintRejectionSentence()` píše větu sama místo aby ji převzala.
+ */
+const DECLINED_WORLD = (): Record<string, unknown> => {
+  const world = structuredClone(OWN_WORLD) as Record<string, unknown>;
+  world.sim = null;
+  world.simOutcome = 'NO_FIT';
+  return world;
+};
+
 const FAULTS = {
   schema: () => faultFrom(answerWith({ title: 'a hillside terrace' })),
   geometry: () => faultFrom(answerWith({ geometry: 'cathedral' })),
@@ -309,6 +324,7 @@ const WORLD_FAULTS = {
   dangling: () => faultFrom(answerWith({ world: DANGLING_WORLD() })),
   malformed: () => faultFrom(answerWith({ world: MALFORMED_WORLD() })),
   unreachableStep: () => faultFrom(answerWith({ world: UNREACHABLE_STEP_WORLD() })),
+  declined: () => faultFrom(answerWith({ world: DECLINED_WORLD() })),
 } as const;
 
 /* ================================================================== *
@@ -492,6 +508,32 @@ describe('a rejected world gets the advice of its own stage', () => {
     });
 
     expect(sentence).toContain(GENERIC);
+  });
+
+  it('stops offering the model that it may keep declining, because it took that offer', () => {
+    // ⚠ **Naměřeno 5. 9. 2026, spike `d749ce7`.** Sdílená věta z
+    // `local/rejection-prompt.ts` končí slovy „or keep declining only if the
+    // request truly cannot be built" a Codex ji přijal ve všech třech kolech:
+    // odpověď se mezi koly nehnula a smyčka dojela do stropu. Tenhle test tedy
+    // pinuje **nepřítomnost nabídky**, ne přítomnost formulace — kdyby se sem
+    // ta věta vrátila jinými slovy, měřidlo by ji muselo chytit taky.
+    const fault = WORLD_FAULTS.declined();
+    expect(fault.world?.rejection.stage).toBe('declined');
+
+    const sentence = blueprintRejectionSentence(fault);
+
+    expect(sentence).not.toContain('keep declining');
+    expect(sentence).not.toContain('truly cannot be built');
+  });
+
+  it('tells the model to keep the half the compiler already accepted', () => {
+    // Geometrie, tvary a placementy prošly — bránu minul jen svět. Kdyby to
+    // věta neřekla, model by v dalším kole přepsal i to, co bylo v pořádku,
+    // a smyčka by opravovala jinou vadu, než na které se zastavila.
+    const sentence = blueprintRejectionSentence(WORLD_FAULTS.declined());
+
+    expect(sentence.startsWith('WORLD_REJECTED · ')).toBe(true);
+    for (const kept of ['geometry', 'shapes', 'placements']) expect(sentence).toContain(kept);
   });
 
   it('recommends the tier that would fit instead of a general instruction', () => {
