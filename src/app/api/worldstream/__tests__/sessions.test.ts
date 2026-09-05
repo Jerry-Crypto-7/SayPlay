@@ -1094,6 +1094,81 @@ describe('strop na frekvenci dorazí až k zakládání relace', () => {
     const after = await createSession(createRequest({ prompt: 'a salt flat with one iron mast' }));
     expect(after.status, 'čítač souběhu zůstal po odmítnutí obsazený').toBe(202);
   });
+
+  it('útočník s hlavičkou oběti jí přes tyhle dveře odrazí požadavek na 429', async () => {
+    /**
+     * **Pin doktríny „podvržený klíč frekvence je vědomá cena"**
+     * (`src/worldstream/sessions.ts`, tabulka v hlavičce `rate-limit.ts`).
+     *
+     * ⚠ **Předchozí podoba tohohle pinu byla měřeně dekorativní a stála
+     * v `rate-limit.test.ts`.** Volala `callerKey()` a `takeRateSlot()`
+     * napřímo, takže se route vůbec nedotkla: mutace `sessions/route.ts` na
+     * `takeRateSlot('sessions', trustedCallerKey(request) ?? callerKey(request))`
+     * — tedy ta cena zavřená na nasazené cestě — nechala celou sadu zelenou
+     * (naměřeno 5. 9. 2026, 828/828 včetně toho pinu). Věta „až ji někdo
+     * zavře, tenhle test zčervená" byla proto nepravdivá.
+     *
+     * **Proto se okno plní PŘES route, ne čítačem.** Klíč si musí odvodit
+     * route sama; jakmile ho odvodí z něčeho, do čeho volající nemluví,
+     * útočníkových padesát požadavků skončí v jeho vlastním kbelíku a oběť
+     * projde — tedy červená.
+     *
+     * **A proto `VERCEL=1`.** Bez něj vrací `trustedCallerKey()` `null`
+     * i po opravě a spadne se zpátky na `callerKey()`, takže by rozdíl nebyl
+     * vidět. Tady se soudí nasazená cesta, ne notebook.
+     *
+     * Plní se **nečitelným tělem**: slot frekvence se bere před čtením těla
+     * a **počítá se i odmítnutý požadavek**, takže padesát 400 naplní okno
+     * a nezaloží ani jednu relaci.
+     */
+    const OBĚŤ = '198.51.100.4';
+    const ÚTOČNÍK = '203.0.113.99';
+
+    vi.stubEnv('VERCEL', '1');
+    resetRateWindows();
+    try {
+      // Útočník mluví pod svou adresou, ale do `x-forwarded-for` píše první
+      // položkou adresu oběti.
+      for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) {
+        const plnící = new Request('http://127.0.0.1/api/worldstream/sessions', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-forwarded-for': `${OBĚŤ}, ${ÚTOČNÍK}`,
+            'x-vercel-forwarded-for': ÚTOČNÍK,
+          },
+          body: '{ not json',
+        });
+        const odpověď = await createSession(plnící);
+        expect(odpověď.status, `plnící požadavek ${taken} nedošel ke slotu`).toBe(400);
+      }
+
+      // Oběť posílá svůj úplně první požadavek — a taky s nečitelným tělem,
+      // aby ani červená větev nezaložila relaci. Strop frekvence se soudí
+      // dřív než tělo, takže 429 přebíjí 400.
+      const oběti = new Request('http://127.0.0.1/api/worldstream/sessions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-forwarded-for': OBĚŤ,
+          'x-vercel-forwarded-for': OBĚŤ,
+        },
+        body: '{ not json',
+      });
+      const verdikt = await createSession(oběti);
+
+      expect(
+        verdikt.status,
+        'cena je zavřená — přepiš doktrínu v sessions.ts a v hlavičce rate-limit.ts, nemaž tenhle test',
+      ).toBe(429);
+      expect(((await verdikt.json()) as { error: { code: string } }).error.code).toBe(
+        'TOO_MANY_REQUESTS',
+      );
+    } finally {
+      resetRateWindows();
+      vi.unstubAllEnvs();
+    }
+  });
 });
 
 

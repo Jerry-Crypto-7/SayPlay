@@ -185,6 +185,13 @@ export const MAX_LIVE_SESSIONS = 64;
  * Cizí **relaci to nezavře** — jen odmítne novou; celý rozdíl je v tabulce
  * v hlavičce `rate-limit.ts`.
  *
+ * **Pin té ceny je route test** „útočník s hlavičkou oběti jí přes tyhle dveře
+ * odrazí požadavek na 429" (`src/app/api/worldstream/__tests__/sessions.test.ts`).
+ * Plní okno přes skutečný handler s `VERCEL=1`, takže zčervená, jakmile si
+ * route odvodí klíč frekvence z něčeho, do čeho volající nemluví. ⚠ Modulový
+ * test v `rate-limit.test.ts` tuhle práci **nedělá** — volá `callerKey()`
+ * napřímo a mutaci route přežije; naměřeno 5. 9. 2026.
+ *
  * Nad kvótou zbývají dvě cesty, obě s vlastní úlohou:
  * **mimo Vercel** je klíč `null` a kvóta vypnutá (`T16-cookieowner`), a
  * **jediná IPv6 /64** dá jednomu volajícímu 64 různých klíčů, čímž srovná

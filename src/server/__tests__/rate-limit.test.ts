@@ -486,9 +486,19 @@ describe('troje čtecí dveře nemají slot, a je to rozhodnutí', () => {
  * ⚠ **Píše se to sem proto, že to doktrína u kvóty jednou zamlčela.** První
  * podoba přepsané doktríny tvrdila, že „zablokovat oběti zakládání" je po
  * `trustedCallerKey()` minulý čas; nezávislá revize to spuštěním vyvrátila.
- * **Zelená tady znamená „ta cena se pořád platí".** Až ji někdo zavře, tenhle
- * test zčervená — a doktrína v `sessions.ts` i tabulka v hlavičce
- * `rate-limit.ts` se pak přepíšou vědomě, ne mlčky.
+ *
+ * ⛔ **Tenhle test tu cenu NEHLÍDÁ — je to doplněk, ne pin, a druhá podoba
+ * téhle věty to tvrdila obráceně.** Volá `callerKey()` a `takeRateSlot()`
+ * napřímo, takže se route nedotkne: mutace `sessions/route.ts` na
+ * `takeRateSlot('sessions', trustedCallerKey(request) ?? callerKey(request))`
+ * ho nechá zelený (naměřeno 5. 9. 2026, 828/828). Soudí se tady jen to, že
+ * `callerKey()` bere první položku a že společný kbelík odmítá.
+ *
+ * **Pin, který doopravdy zčervená, jde přes route** a bydlí v
+ * `src/app/api/worldstream/__tests__/sessions.test.ts`, test „útočník
+ * s hlavičkou oběti jí přes tyhle dveře odrazí požadavek na 429". Až tam
+ * zčervená, přepíše se doktrína v `sessions.ts` i tabulka v hlavičce
+ * `rate-limit.ts` — vědomě, ne mlčky.
  */
 describe('podvržený klíč frekvence je vědomá cena, ne uzavřená díra', () => {
   afterEach(() => {
