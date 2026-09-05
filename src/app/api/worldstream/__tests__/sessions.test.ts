@@ -1304,6 +1304,59 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
   });
 
   /**
+   * ⚠ **Tohle je `T16-evictkill` a tvrdí se tu ta úloha celá, kladně.** Strop
+   * registru byl zvenčí ovladatelná páka: `evict()` uvolní kteroukoli relaci,
+   * jakmile `live` přeteče `MAX_LIVE_SESSIONS`, a `acquireSlot()` omezuje jen
+   * souběh, takže **sekvenční** POSTy zakládaly relace bez omezení. Naměřený
+   * scénář zněl „kdokoli pošle ~65 POSTů a porotcův svět se zavře".
+   *
+   * Zavřel to klíč, který si volající nevybere (`T16-trustedkey`), ne
+   * uvolňování podle diváka — to je u té úlohy naměřeně vyvrácené, protože
+   * útočníkova relace je sledovaná stejně jako obětina. **Tenhle test proto
+   * neměří uvolňování; měří, že se k němu nedá dojít.**
+   *
+   * **Strop frekvence se schválně nuluje uvnitř smyčky.** Útočník si okno
+   * prostě počká, takže test, který by ho nechal běžet, by měřil okno a ne
+   * kvótu — a zezelenal by i tehdy, kdyby kvóta neexistovala.
+   */
+  it('nápor z jedné adresy registr vůbec nepřeteče, takže není čím cizí svět zavřít', async () => {
+    resetRateWindows();
+    naPráh();
+    const oběť = await createSession(createRequest({ prompt: 'porotce' }, '198.51.100.4'));
+    const { sessionId } = (await oběť.json()) as { sessionId: string };
+
+    // **Osmička je napsaná ručně, ne odvozená** (`T16-bucketatroute`): odvozená
+    // by se posunula spolu s mutací konstanty a test by mutaci přežil.
+    const KVÓTA = 8;
+    expect(
+      MAX_SESSIONS_PER_CALLER,
+      'kvóta se pohnula; zapiš proč se pohnula, nepřepisuj to číslo',
+    ).toBe(KVÓTA);
+
+    // Čtyřicet je víc než 64 − 33 = 31, tedy víc, než by na přetečení registru
+    // stačilo, kdyby jedna adresa směla zakládat donekonečna.
+    const NÁPOR = 40;
+    let přijato = 0;
+    for (let i = 0; i < NÁPOR; i += 1) {
+      resetRateWindows();
+      const odpověď = await createSession(
+        createRequest({ prompt: `nápor ${String(i)}` }, '203.0.113.99'),
+      );
+      if (odpověď.status === 202) přijato += 1;
+    }
+
+    expect(přijato, 'jedna adresa dostala víc než svou kvótu').toBe(KVÓTA);
+    expect(liveSessionCount(), 'registr se hnul jinam, než o kolik smí jedna adresa').toBe(
+      QUOTA_ENGAGES_AT + 1 + KVÓTA,
+    );
+    expect(
+      liveSessionCount(),
+      'nápor dotlačil registr na strop, tedy páka je zpátky otevřená',
+    ).toBeLessThan(MAX_LIVE_SESSIONS);
+    expect(getSession(sessionId), 'nápor z jedné adresy zavřel oběti svět').not.toBeNull();
+  });
+
+  /**
    * ⚠ **Druhá sonda šesté revize.** Naměřeno tehdy: 12 návštěvníků bez proxy
    * hlaviček → `live = 8` a svět prvního se uvolnil pod ním, protože sentinel
    * `UNIDENTIFIED_CALLER` byl jeden sdílený kbelík pro celou instanci. Týká se
