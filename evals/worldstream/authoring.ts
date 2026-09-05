@@ -177,6 +177,30 @@ export function withWorld(store: AuthoredStore, world: AuthoredWorld): AuthoredS
   };
 }
 
+/** Emise, kterou brána odmítla. Materiál na diagnózu, nikdy ne zdroj světa. */
+export interface AuthoringReject {
+  readonly id: string;
+  readonly prompt: string;
+  readonly cause: string | null;
+  readonly detail: string | null;
+  readonly planner: unknown;
+  readonly compiler: unknown;
+}
+
+/**
+ * Odmítnutá emise doplněná mezi ostatní. **Nikdy nemutuje tu, kterou dostal.**
+ *
+ * Táž doktrína jako u `withWorld`: druhý pokus o tutéž větu je oprava, ne
+ * duplikát. Dva záznamy o `c02` by při čtení rozpadu vypadaly jako dvě různá
+ * odmítnutí a odvedly by opravu k neexistujícímu vzoru.
+ */
+export function withReject(
+  rejects: readonly AuthoringReject[],
+  reject: AuthoringReject,
+): readonly AuthoringReject[] {
+  return [...rejects.filter((entry) => entry.id !== reject.id), reject];
+}
+
 /**
  * Věty, které běh ještě má uvařit.
  *

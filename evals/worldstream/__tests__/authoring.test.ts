@@ -18,9 +18,11 @@ import {
   reportFrom,
   stillToAuthor,
   STORE_VERSION,
+  withReject,
   withWorld,
   type AuthoredStore,
   type AuthoredWorld,
+  type AuthoringReject,
   type AuthoringResult,
 } from '../authoring';
 
@@ -168,7 +170,40 @@ describe('the report says why the rest did not make it', () => {
 });
 
 /* ================================================================== *
- * 4b. Report přes dávky — běh je přerušitelný, měření musí být taky.
+ * 4b. Odmítnutá emise se schovává, protože stála volání Codexu.
+ * ================================================================== */
+
+describe('a rejected emission is kept for diagnosis, not thrown away', () => {
+  const reject = (id: string, cause: string): AuthoringReject => ({
+    id,
+    prompt: `sentence ${id}`,
+    cause,
+    detail: 'horizon 600 exhausted in state running',
+    planner: { objects: [] },
+    compiler: { world: {} },
+  });
+
+  it('adds a rejection without touching the ones already there', () => {
+    // Bez tohohle stojí každá diagnóza dalších 200 s — zahozená emise je
+    // nejdražší artefakt téhle fáze a jediný materiál na offline zkoumání.
+    const kept = withReject([reject('c02', 'witness')], reject('c05', 'clay'));
+
+    expect(kept.map((entry) => entry.id)).toEqual(['c02', 'c05']);
+    expect(kept[0].cause).toBe('witness');
+  });
+
+  it('replaces the older verdict of the same sentence instead of doubling it', () => {
+    // Druhý pokus o tutéž větu je oprava, ne duplikát. Dva záznamy o `c02` by
+    // při čtení vypadaly jako dvě různá odmítnutí a odvedly opravu jinam.
+    const twice = withReject([reject('c02', 'witness')], reject('c02', 'clay'));
+
+    expect(twice).toHaveLength(1);
+    expect(twice[0].cause).toBe('clay');
+  });
+});
+
+/* ================================================================== *
+ * 4c. Report přes dávky — běh je přerušitelný, měření musí být taky.
  * ================================================================== */
 
 describe('a resumed batch continues the report instead of replacing it', () => {

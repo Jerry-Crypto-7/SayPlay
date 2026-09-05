@@ -38,8 +38,10 @@ import {
   reportFrom,
   stillToAuthor,
   STORE_VERSION,
+  withReject,
   withWorld,
   type AuthoredStore,
+  type AuthoringReject,
   type AuthoringReport,
   type AuthoringResult,
 } from './authoring';
@@ -48,6 +50,30 @@ import { driveCreateCase } from './measure-create';
 
 const STORE_FILE = 'src/worldstream/authored-worlds.json';
 const REPORT_FILE = 'evals/worldstream/authoring-report.json';
+
+/**
+ * Emise, které branou neprošly. **Není to sklad a do bundlu nejde.**
+ *
+ * ⚠ **Bez tohohle stojí každá diagnóza dalších 200 s.** Zahozená emise je
+ * nejdražší artefakt téhle fáze — stojí jedno volání Codexu — a do 5. 9. 2026
+ * se rovnou zahazovala. Otázku „proč `witness` odmítl pět vět" tak nešlo
+ * zodpovědět jinak než uvařit je znovu a dívat se u toho. Uložená emise se
+ * dá prohnat hledačem i verifikátorem **offline, zadarmo a kolikrát je
+ * potřeba** — a to je jediný způsob, jak se dá kontrakt opravovat měřením
+ * místo hádáním.
+ *
+ * Odsud se **nikdy nečte do produktu**: svět, který brána odmítla, je přesně
+ * ten, co porotce vidět nesmí.
+ */
+const REJECTS_FILE = 'evals/worldstream/authoring-rejects.json';
+
+function readRejects(): readonly AuthoringReject[] {
+  try {
+    return JSON.parse(readFileSync(REJECTS_FILE, 'utf8')) as AuthoringReject[];
+  } catch {
+    return [];
+  }
+}
 
 /** Semínko relace píše měřidlo, ne model. Táž hodnota jako ve spiku. */
 const SESSION_SEED = 4021;
@@ -89,6 +115,7 @@ describe('Codex uvaří světy dopředu', () => {
       // Dávka pokračuje v reportu, nezakládá nový. Bez tohohle popisuje
       // poslední dávku a tváří se, že popisuje celou zmrazenou sadu.
       const results: AuthoringResult[] = [...carryOver(readPreviousResults(), todo)];
+      let rejects: readonly AuthoringReject[] = readRejects();
       const mesh = createMeshClient({ allowMainThread: true });
 
       try {
@@ -153,6 +180,19 @@ describe('Codex uvaří světy dopředu', () => {
             // **Zápis po každé větě, ne na konci.** Nehlídaný běh se přeruší
             // výpadkem, restartem i Ctrl-C, a hodina práce se ztratit nesmí.
             writeFileSync(STORE_FILE, `${JSON.stringify(store, null, 2)}\n`, 'utf8');
+          } else {
+            // Zahozená emise se **schová**, ne smaže. Stála jedno volání Codexu
+            // a je to jediný materiál, nad kterým jde příčinu odmítnutí zkoumat
+            // offline; bez ní se táž otázka platí znovu, celých 200 s.
+            rejects = withReject(rejects, {
+              id: entry.id,
+              prompt: entry.prompt,
+              cause,
+              detail,
+              planner: answers.planner,
+              compiler: answers.compiler,
+            });
+            writeFileSync(REJECTS_FILE, `${JSON.stringify(rejects, null, 2)}\n`, 'utf8');
           }
 
           results.push({ id: entry.id, kept, cause, detail, seconds, calls });
