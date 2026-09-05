@@ -481,6 +481,18 @@ describe('klíč z důvěryhodného konce řetězu', () => {
     expect(klíč('::ffff:cb00:7109')).not.toBe(klíč('::ffff:cb00:710a'));
     expect(klíč('::ffff:cb00:7109')).not.toBe(klíč('::1'));
 
+    // ⚠ **Šířka té stráže, tedy PĚT nulových skupin, ne čtyři —
+    // `T16-mappedwidth`, přeživší mutant naměřený nezávislou revizí.**
+    // `::ffff:0:0/96` znamená pět nulových skupin a pak `ffff`. Dokud se
+    // měřilo jen `groups[5] === 0xffff`, nechala mutace `slice(0, 5)` →
+    // `slice(0, 4)` celou sadu zelenou, ačkoli pod ní tahle adresa přeskočí
+    // ze seskupeného klíče na doslovný. Adresa má pátou skupinu nenulovou,
+    // takže do `::ffff:0:0/96` **nepatří** a seskupit se má.
+    expect(
+      klíč('0:0:0:0:1:ffff:cb00:7109'),
+      'stráž na ::ffff:0:0/96 je o skupinu širší, než má být',
+    ).toBe('net:0:0:0:0::/64');
+
     // Rozbitý zápis (dvakrát `::`) není adresa, takže se neseskupuje.
     expect(klíč('2001:db8::1::2')).not.toBe('net:2001:db8:0:0::/64');
 
