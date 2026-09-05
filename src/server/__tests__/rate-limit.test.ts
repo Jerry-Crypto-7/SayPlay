@@ -429,3 +429,46 @@ describe('klíč z důvěryhodného konce řetězu', () => {
     }
   });
 });
+
+/**
+ * **`T30-readdoorrate`, 5. 9. 2026.** Troje čtecí dveře nemají strop frekvence
+ * vůbec, a AC té úlohy nabízela dvě cesty: buď jim slot dát a e2e ukázat, že
+ * se reconnect SSE o něj nezasekne, nebo napsat, **proč** ho nemají. Vybrala
+ * se druhá — u `/events` je totiž naměřené, že proti páce, kvůli které by ten
+ * strop někdo chtěl, nezavře nic (útok drží otevřené proudy, ne frekvenci).
+ *
+ * ⚠ **Rozhodnutí bez pinu je jen komentář.** Tenhle test drží obojí: že ty
+ * troje dveře slot doopravdy nemají, a že u seznamu dveří stojí odůvodnění.
+ * Kdo některým z nich slot dá, položí to tady — a to je celý účel: doktrína
+ * se pak přepíše vědomě, místo aby zůstala tiše nepravdivá.
+ */
+describe('troje čtecí dveře nemají slot, a je to rozhodnutí', () => {
+  const ČTECÍ_DVEŘE = [
+    'src/app/api/worldstream/snapshots/[hash]/route.ts',
+    'src/app/api/worldstream/sessions/[sessionId]/route.ts',
+    'src/app/api/worldstream/sessions/[sessionId]/events/route.ts',
+  ] as const;
+
+  it('ani jedny z nich nesahají po slotu', () => {
+    for (const path of ČTECÍ_DVEŘE) {
+      expect(
+        readFileSync(path, 'utf8'),
+        `${path}: přibyl strop frekvence — přepiš doktrínu u RateLimitedDoor a dolož e2e na reconnect SSE`,
+      ).not.toContain('takeRateSlot');
+    }
+  });
+
+  it('u seznamu dveří stojí, proč tam ty troje nejsou', () => {
+    const text = readFileSync('src/server/rate-limit.ts', 'utf8');
+    const start = text.indexOf('T30-readdoorrate');
+    expect(start, 'odůvodnění u RateLimitedDoor zmizelo').toBeGreaterThan(-1);
+    const blok = text.slice(start, start + 2200);
+    // Tři jména dveří, aby se nedalo odůvodnit jen jedny a na dvoje zapomenout.
+    for (const jméno of ['snapshots/[hash]', 'sessions/[sessionId]', 'events']) {
+      expect(blok, `odůvodnění nejmenuje ${jméno}`).toContain(jméno);
+    }
+    // A samotný důvod, ne jen jejich výčet.
+    expect(blok, 'odůvodnění neříká, že SSE se reconnectuje samo').toContain('reconnect');
+    expect(blok, 'odůvodnění neveze flotilové číslo').toContain('flotilové');
+  });
+});
