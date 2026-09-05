@@ -518,38 +518,16 @@ function ipv6Prefix(value: string): string | null {
 }
 
 /**
- * **Jediná** položka řetězu, ořezaná. `null`, když jich je jiný počet než jedna
- * (P15 `T16-singleentry`).
+ * Poslední položka řetězu, ořezaná. `null`, když tam žádná není.
  *
- * ## Proč ne „poslední", když to tak stálo do 5. 9. 2026
- *
- * Vercelský edge píše `x-vercel-forwarded-for` **s jednou položkou**. Funkce
- * ale brala konec řetězu, ať měl položek pět nebo jednu — a tím stála na tom,
- * co edge udělá s hlavičkou, kterou pošle volající sám. **Naměřeno:**
- * `1.1.1.1, 2.2.2.2` vydalo `ip:2.2.2.2`, tedy položku, kterou tam mohl
- * napsat volající. Když ji edge přepíše, je to neškodné; když ji nechá
- * a spojení dvou hlavičkových řádků skončí v pořadí příjmu, je klíč zase
- * volajícího — a klíč kvóty je zbraň (`T16-evictkill`).
- *
- * **Repo samo píše, že jednopoložkovost je dokumentované chování platformy,
- * ne naše měření**, a ověří ho teprve `G1`. Do té doby na něm kód stát nemá.
- *
- * ⛔ **„Víc než jedna položka je odmítnutí" zavírá celou tu třídu bez ohledu
- * na to, který konec edge píše.** Poctivý jednohodnotový případ nechává být
- * a **není to ani jedna ze dvou cest vyvrácených u `T16-trustedkey`**:
- * nepočítá pozici v hlavičce ani nezkoumá peera, jenom odmítá tvar, který
- * platforma nikdy nenapíše.
- *
- * Prázdná položka je `null` ze stejného důvodu — nevíme, ne „vezmi vedlejší".
+ * Nezahazují se prázdné položky, a je to podstatné: zahodit je znamená
+ * přečíslovat seznam podle toho, co do něj napsal volající. Prázdná položka
+ * na konci je proto `null` — nevíme, ne „vezmi vedlejší".
  */
 function lastEntry(header: string | null): string | null {
   if (header === null) return null;
   const entries = header.split(',');
-  // ⚠ Odmítnutí je `null`, tedy **vypnutá kvóta**, ne přísnější mez. Je to
-  // ta správná strana: horší mez míří na nikoho, kdežto klíč vybraný
-  // volajícím míří na oběť.
-  if (entries.length !== 1) return null;
-  const value = entries[0]!.trim();
+  const value = entries[entries.length - 1]?.trim() ?? '';
   return value === '' ? null : value.slice(0, MAX_CALLER_KEY_LENGTH);
 }
 
