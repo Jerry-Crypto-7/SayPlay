@@ -757,8 +757,9 @@ describe('strop registru není páka na cizí relace', () => {
  * protiřečila: u `StoredSession.owner` stálo „provoz sem posílá
  * `callerKey(request)`", zatímco route posílá `trustedCallerKey()`. Kdo by
  * opravoval podle té věty, vrátil by `callerKey()` a s ním celý
- * `T16-evictkill`. Další dvě věty pořád nabízely režim s hloubkou proxy,
- * který `e72f9b3` zrušil.
+ * `T16-evictkill`. Další **tři** věty pořád nabízely režim s hloubkou proxy,
+ * který `e72f9b3` zrušil — třetí z nich našlo až třetí kolo revize 5. 9. 2026
+ * a seděla osm řádků nad větou, která ten režim popírá.
  *
  * ⚠ **Nepravdivá doktrína u meze vypadá v zelené sadě přesně jako pravdivá**,
  * takže se pinuje lexikálně. Pinuje se **přítomnost správné odpovědi**, ne
@@ -796,8 +797,39 @@ describe('doktrína u kvóty říká, čím se kvóta doopravdy klíčuje', () =
     );
   });
 
+  /**
+   * ⚠ **Okno kolem kotvy, ne celý soubor — nález třetího kola revize.**
+   * Předchozí podoba hledala `VERCEL=1` kdekoli v pěti stech řádcích route,
+   * takže by zůstala zelená i po smazání té podmínky, jakmile by se to slovo
+   * objevilo kdekoli jinde. Kotva míří přesně na tu větu, která bez podmínky
+   * lže.
+   */
   it('route i doktrína vědí, že mimo Vercel je kvóta vypnutá', () => {
-    const routa = readFileSync('src/app/api/worldstream/sessions/route.ts', 'utf8');
-    expect(routa, 'route tvrdí „na Vercelu klíč je" bez podmínky VERCEL=1').toContain('VERCEL=1');
+    const ROUTA = 'src/app/api/worldstream/sessions/route.ts';
+    const routa = readFileSync(ROUTA, 'utf8');
+    const start = routa.indexOf('Na Vercelu klíč je');
+    expect(start, `${ROUTA}: kotva „Na Vercelu klíč je" zmizela — oprav kotvu, ne test`).toBeGreaterThan(-1);
+    const blok = routa.slice(start, start + 300);
+    expect(blok, 'route tvrdí „na Vercelu klíč je" bez podmínky VERCEL=1').toContain('VERCEL=1');
+  });
+
+  /**
+   * ⚠ **Třetí zapomenutá věta, a ani jedna z obou kotev výš na ni nedosáhla.**
+   * U bodu o kvótě stálo, že klíč jde z `x-vercel-forwarded-for` „nebo XFF
+   * v pevné hloubce proxy" — osm řádků nad větou, která ten režim popírá.
+   * Kdo by opravoval podle ní, vrátí `WORLDSMITH_TRUSTED_PROXY_HOPS` a s ním
+   * `T16-evictkill`. Pinuje se **kladné tvrzení o jedinosti zdroje**, ne zákaz
+   * slova — důvod je u prvního testu téhle sady.
+   */
+  it('u bodu o kvótě stojí, že důvěryhodný zdroj je jenom jeden', () => {
+    const text = readFileSync(ZDROJ, 'utf8');
+    const start = text.indexOf('se kvóta klíčuje jinou funkcí');
+    expect(start, `${ZDROJ}: kotva „se kvóta klíčuje jinou funkcí" zmizela — oprav kotvu, ne test`).toBeGreaterThan(-1);
+    const blok = text.slice(start, start + 500);
+    expect(blok, 'doktrína u kvóty netvrdí, že zdroj je jediný').toContain('jediný zdroj');
+    expect(blok, 'doktrína u kvóty nejmenuje hlavičku platformy').toContain(
+      'x-vercel-forwarded-for',
+    );
+    expect(blok, 'doktrína u kvóty nepodmiňuje zdroj hodnotou VERCEL=1').toContain('VERCEL=1');
   });
 });

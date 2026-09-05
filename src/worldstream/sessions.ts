@@ -90,8 +90,10 @@ export const MAX_LIVE_SESSIONS = 64;
  *
  *    ✅ **Od `T16-trustedkey` se kvóta klíčuje jinou funkcí a tenhle bod je
  *    minulý čas — tam, kde důvěryhodný konec řetězu existuje.** Route posílá
- *    `trustedCallerKey(request)`, tedy `x-vercel-forwarded-for` nebo XFF
- *    v pevné hloubce proxy; do cizího kbelíku se hlavičkou nedostane nic.
+ *    `trustedCallerKey(request)`, a ta má **jediný zdroj: hlavičku
+ *    `x-vercel-forwarded-for` při `VERCEL=1`**. Žádný druhý tu není a XFF
+ *    mezi ně nepatří ani v pevné hloubce proxy — do cizího kbelíku se tedy
+ *    hlavičkou nedostane nic.
  *    Tvrdí to kladně route test `podvržená hlavička se do kbelíku oběti vůbec
  *    nedostane`. ⚠ **Mimo Vercel je klíč VŽDYCKY `null`** → sentinel →
  *    kbelík na relaci, tedy **kvóta vypnutá**; stará páka se tam vrací v plné
@@ -182,8 +184,18 @@ export const MAX_LIVE_SESSIONS = 64;
  * **Naměřeno nezávislou revizí spuštěním.** Je to vědomá cena: klíč stropu
  * frekvence se podvrhnout **smí**, protože podvrh tam vrací útočníka nanejvýš
  * tam, kde by byl bez meze, a rozeznatelnější klíč mimo Vercel neexistuje.
- * Cizí **relaci to nezavře** — jen odmítne novou; celý rozdíl je v tabulce
- * v hlavičce `rate-limit.ts`.
+ * ⛔ **Neplatí ale, že „cizí relaci to nezavře, jen odmítne novou" — tak to
+ * tu stálo do 5. 9. 2026 a třetí nezávislá revize to naměřila jinak.** Týchž
+ * 5 požadavků za sekundu s hlavičkou oběti kousne i `POST …/<relace>/changes`
+ * a `…/commit`, protože `changes/route.ts` si slot bere **před** dohledáním
+ * relace: útočník tedy nepotřebuje ani platné `sessionId`, ani tělo, ani
+ * vlastní relaci. Obětin **běžící** svět tím sice nezmizí, ale po dobu okna
+ * jí neprojde druhá věta ani commit, tedy hlavní funkce produktu.
+ * **Naměřeno přes skutečný handler `createChange()`: 50 podvržených
+ * požadavků → oběť 429.** Držet to stojí ~20 req/s na čtvery dveře dohromady,
+ * což je pořád pod stropem instance (40 req/s), takže se to samo nezastaví.
+ * Celý rozdíl mezi touhle cenou a klíčem kvóty je v tabulce v hlavičce
+ * `rate-limit.ts`.
  *
  * **Pin té ceny je route test** „útočník s hlavičkou oběti jí přes tyhle dveře
  * odrazí požadavek na 429" (`src/app/api/worldstream/__tests__/sessions.test.ts`).

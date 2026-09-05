@@ -53,7 +53,12 @@ vi.mock('../../../../worldstream/sessions', async (importOriginal) => {
   return { ...actual, serverGrammar: vi.fn(actual.serverGrammar) };
 });
 import { resetFaultLog } from '../../../../server/public-faults';
-import { MAX_REQUESTS_PER_WINDOW, resetRateWindows, takeRateSlot } from '../../../../server/rate-limit';
+import {
+  MAX_REQUESTS_PER_WINDOW,
+  RATE_WINDOW_MS,
+  resetRateWindows,
+  takeRateSlot,
+} from '../../../../server/rate-limit';
 import { DEFAULT_CAP_USD, SpendRefusalError, type Refused } from '../../../../server/spend-cap';
 import {
   acquireSlot,
@@ -1126,6 +1131,18 @@ describe('strop na frekvenci dorazí až k zakládání relace', () => {
 
     vi.stubEnv('VERCEL', '1');
     resetRateWindows();
+
+    // ⚠ **Hodiny se zamrazí, a je to oprava naměřené vratkosti, ne ozdoba.**
+    // Okno je pevný desetivteřinový kbelík ukotvený na absolutním čase. Když
+    // těch padesát jedna volání (~18 ms) protne hranici kbelíku, čítač se
+    // uprostřed smyčky vynuluje a oběť dostane 400 místo 429 — nezávislá
+    // revize to 5. 9. 2026 spočítala na ~1 běh z 550. Náhodná červená na
+    // bezpečnostním pinu, jehož vlastní hláška říká „nemaž tenhle test", je
+    // přesně to, po čem se takový test smaže. Zmrazený čas leží uprostřed
+    // kbelíku, takže se hranice neprotne ani jednou.
+    const uprostředKbelíku = 1_770_000_000_000 + RATE_WINDOW_MS / 2;
+    const hodiny = vi.spyOn(Date, 'now').mockReturnValue(uprostředKbelíku);
+
     try {
       // Útočník mluví pod svou adresou, ale do `x-forwarded-for` píše první
       // položkou adresu oběti.
@@ -1165,6 +1182,7 @@ describe('strop na frekvenci dorazí až k zakládání relace', () => {
         'TOO_MANY_REQUESTS',
       );
     } finally {
+      hodiny.mockRestore();
       resetRateWindows();
       vi.unstubAllEnvs();
     }
