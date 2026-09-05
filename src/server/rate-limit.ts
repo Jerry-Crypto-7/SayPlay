@@ -232,6 +232,26 @@ export const UNIDENTIFIED_CALLER = 'unknown';
 const HEADER_CALLER_PREFIX = 'ip:';
 
 /**
+ * Předpona klíče, který vznikl **seskupením** na IPv6 `/64`.
+ *
+ * ⚠ **Vlastní předpona, ne kosmetika — nález nezávislé revize 5. 9. 2026.**
+ * Seskupený klíč je čitelný řetězec (`2001:db8:0:0::/64`) a nerozpoznaná
+ * hodnota se do klíče propisuje, jak přišla. Se společnou předponou by tedy
+ * stačilo poslat ten řetězec **doslova** a volající by se trefil do kbelíku
+ * celého cizího přidělení, aniž zná jedinou adresu z něj. S vlastní předponou
+ * to nejde: doslovný řetězec je nerozpoznaná hodnota, takže skončí pod
+ * `ip:`, kdežto seskupení pod `net:`.
+ *
+ * ⚠ **Co tím zavřené NENÍ, napsané nahlas:** kdo umí do hlavičky platformy
+ * psát, potřebuje po tomhle commitu znát jen `/64` oběti místo její přesné
+ * adresy, a prefixy jsou veřejná směrovací informace. Je to **vědomá cena
+ * seskupování** a bez ní by neexistoval jeho užitek. Že do té hlavičky psát
+ * nejde, je zatím dokumentované chování platformy, ne naše měření — ověří ho
+ * `G1`.
+ */
+const GROUPED_CALLER_PREFIX = 'net:';
+
+/**
  * Kdo požadavek poslal, podle hlaviček proxy.
  *
  * `x-forwarded-for` je **seznam** a první položka je klient; Vercel ji plní sám.
@@ -372,7 +392,7 @@ export function trustedCallerKey(
   if (env.VERCEL !== '1') return null;
 
   const platform = lastEntry(request.headers.get('x-vercel-forwarded-for'));
-  return platform === null ? null : `${HEADER_CALLER_PREFIX}${normalizeAddress(platform)}`;
+  return platform === null ? null : trustedKeyFor(platform);
 }
 
 /**
@@ -391,20 +411,23 @@ export function trustedCallerKey(
  * z jediné IPv6 `/64`:** 64 adres nestojí nic, protože jedno přidělení `/64`
  * jich dává 2^64.
  *
- * Sráží se proto tři věci, každá jinou třídu:
+ * Sráží se proto čtyři věci, každá jinou třídu:
  *
  * | Vstup | Klíč | Co to zavírá |
  * |---|---|---|
- * | `198.51.100.4:51234` | `198.51.100.4` | port jako zdroj entropie |
- * | `[2001:db8::1]:51234` | `2001:db8:0:0::/64` | port i hostitel uvnitř přidělení |
- * | `2001:DB8::1` | `2001:db8:0:0::/64` | velikost písmen |
+ * | `198.51.100.4:51234` | `ip:198.51.100.4` | port jako zdroj entropie |
+ * | `[2001:db8::1]:51234` | `net:2001:db8:0:0::/64` | port i hostitel uvnitř přidělení |
+ * | `2001:DB8::1` | `net:2001:db8:0:0::/64` | velikost písmen |
+ * | `2001:db8::1%eth0` | `net:2001:db8:0:0::/64` | zone id, tedy jméno rozhraní u odesílatele |
  *
- * ⚠ **Co se ZÁMĚRNĚ neseskupuje: IPv4.** Sráží se jen IPv6 prefix, protože
- * jedno IPv6 přidělení je jeden odběratel, kdežto sousední IPv4 adresy jsou
- * cizí lidé. Ze stejného důvodu propadá `::ffff:203.0.113.9` (IPv4 zapsaná
- * jako IPv6) beze změny: seskupit ji na `/64` by slilo **všechny** IPv4
- * volající do jednoho kbelíku, tedy vyrobilo tu odepření služby, kterou má
- * kvóta zavírat.
+ * ⚠ **Co se ZÁMĚRNĚ neseskupuje: IPv4, a to v obou zápisech.** Sráží se jen
+ * IPv6 prefix, protože jedno IPv6 přidělení je jeden odběratel, kdežto
+ * sousední IPv4 adresy jsou cizí lidé. Propadá proto beze změny jak
+ * `::ffff:203.0.113.9`, tak **totéž zapsané šestnáctkově**
+ * (`::ffff:cb00:7109`) — druhý zápis sem doplnil nález nezávislé revize
+ * 5. 9. 2026, protože přes soud na hexadecimální skupinu prošel a seskupoval
+ * se do `0:0:0:0::/64` společně s `::1` a `::`. Slít všechny IPv4 volající do
+ * jednoho kbelíku znamená vyrobit tu odepření služby, kterou má kvóta zavírat.
  *
  * ⚠ **Co se sem nesmí přidat: soud „tohle není adresa, tak ji zahoď".**
  * Nerozpoznaná hodnota se ořezává jako dřív a klíč z ní vznikne. Vrátit
@@ -415,6 +438,14 @@ export function trustedCallerKey(
  * podvrhnutelný (tabulka v hlavičce souboru); srážet tam tvar adresy nic
  * nezavírá, protože útočník tam stejně píše, co chce.
  */
+function trustedKeyFor(platform: string): string {
+  const address = normalizeAddress(platform);
+  const grouped = ipv6Prefix(address);
+  return grouped === null
+    ? `${HEADER_CALLER_PREFIX}${address}`
+    : `${GROUPED_CALLER_PREFIX}${grouped}`;
+}
+
 function normalizeAddress(value: string): string {
   // `[v6]:port` i holé `[v6]` — hranaté závorky píše každá proxy, která port
   // připisuje, protože jinak by dvojtečka portu splynula s adresou.
@@ -427,13 +458,29 @@ function normalizeAddress(value: string): string {
     address = address.slice(0, address.lastIndexOf(':'));
   }
 
-  return (ipv6Prefix(address.toLowerCase()) ?? address).slice(0, MAX_CALLER_KEY_LENGTH);
+  // **Zone id (`%eth0`, `%12`) pryč, a je to zavření celé třídy, ne detail.**
+  // Je to jméno rozhraní u ODESÍLATELE, takže o tom, kdo volá, neříká nic —
+  // ale seskupení maří úplně. Naměřeno nezávislou revizí: tisíc požadavků
+  // jako `2001:db8::1%<n>` dalo **tisíc klíčů**, tedy přesně tu neomezenou
+  // zásobu klíčů, kterou tahle funkce zavírá.
+  //
+  // ⚠ **Malá písmena se dělají na VŠECH cestách, ne jen na té rozpoznané.**
+  // Dokud se sráželo jen uvnitř `ipv6Prefix()`, dávalo `HOST:80` a `host:80`
+  // dva klíče. Velikost písmen v adrese nenese identitu na žádné cestě.
+  //
+  // ⚠ **Ořez na délku tady NENÍ, a je to změřené, ne opomenuté.** `lastEntry()`
+  // useká hodnotu na `MAX_CALLER_KEY_LENGTH` dřív, než se sem dostane,
+  // a seskupení řetězec jedině zkracuje (nejdelší výstup má 24 znaků).
+  // Druhý ořez tu byl mrtvý kód: revize ho smazala a sada zůstala celá zelená.
+  return address.split('%')[0]!.toLowerCase();
 }
 
 /**
  * Prvních 64 bitů IPv6 adresy jako klíč. `null`, když to IPv6 adresa není —
  * a to je většina vstupů, protože sem chodí i IPv4 a i vyložený nesmysl.
  */
+const HEX_GROUP = /^[0-9a-f]{1,4}$/;
+
 function ipv6Prefix(value: string): string | null {
   if (!value.includes(':')) return null;
 
@@ -450,9 +497,21 @@ function ipv6Prefix(value: string): string | null {
       ? [...head, ...(new Array(8 - head.length - tail.length).fill('0') as string[]), ...tail]
       : head;
   if (groups.length !== 8) return null;
-  // Skupina, která není čtyřmi hexadecimálními číslicemi, znamená „tohle
-  // není IPv6" — sem spadá i IPv4 zapsaná jako `::ffff:1.2.3.4`.
-  if (!groups.every((group) => /^[0-9a-f]{1,4}$/.test(group))) return null;
+  // Skupina, která není hexadecimální, znamená „tohle není IPv6" — sem spadá
+  // IPv4 zapsaná tečkami jako `::ffff:203.0.113.9`.
+  if (!groups.every((group) => HEX_GROUP.test(group))) return null;
+
+  // **A sem ta táž adresa zapsaná šestnáctkově, `::ffff:cb00:7109`** — nález
+  // nezávislé revize 5. 9. 2026, potvrzený spuštěním. Přes tečkovaný zápis
+  // neprojde, ale hexadecimální je platná skupina, takže se seskupoval
+  // a padal do `0:0:0:0::/64` **společně s `::1`, `::` a každou další nízkou
+  // adresou** — tedy přesně to slití všech IPv4 volajících do jednoho kbelíku,
+  // o kterém doktrína výš tvrdí, že nenastane. Obě podoby `::ffff:0:0/96`
+  // proto propadají na doslovnou hodnotu.
+  const mappedV4 =
+    groups.slice(0, 5).every((group) => Number.parseInt(group, 16) === 0) &&
+    Number.parseInt(groups[5]!, 16) === 0xffff;
+  if (mappedV4) return null;
 
   const prefix = groups.slice(0, 4).map((group) => group.replace(/^0+(?=.)/, '')).join(':');
   return `${prefix}::/64`;
