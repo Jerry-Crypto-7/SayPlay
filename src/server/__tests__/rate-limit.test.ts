@@ -396,16 +396,24 @@ describe('klíč z důvěryhodného konce řetězu', () => {
     // Zbylo tedy jediné poctivé chování: **mimo Vercel žádný důvěryhodný
     // konec řetězu není**, takže `null` a kvóta vypnutá. Je to horší mez,
     // ale míří na nikoho — a to je ta správná strana.
-    // ⚠ **`VERCEL: ''` tady schválně NENÍ.** Prázdná hodnota je fail-open
-    // (`env.VERCEL !== undefined` je pravda) a je to skutečná vada, ale patří
-    // úloze `T16-vercelblank`: týž výraz drží i `isServerless()` ve
-    // `spend-store.ts`, kde je naopak fail-CLOSED, a přepsat ho na pravdivost
-    // by uvolnilo peněžní cestu. Jedna změna, dvě opačné strany bezpečí —
-    // proto vlastní úloha a vlastní měření, ne přílepek sem.
+    // ⚠ **Nestačí `VERCEL` nedefinované — třetí kolo revize (5. 9. 2026)
+    // naměřilo, že fail-open je KAŽDÁ jiná hodnota, ne jen prázdná.**
+    // `{VERCEL:'0'}` + `x-vercel-forwarded-for: 203.0.113.9` vracelo
+    // `ip:203.0.113.9`, takže operátor, který si mimo Vercel napíše
+    // `VERCEL=0` ve smyslu „tady Vercel není", tuhle větev naopak ZAPNE.
+    // Proto se tady tvrdí celá trojice `''`, `'0'`, `'false'` a strážce je
+    // rovnost na `'1'`, tedy na hodnotu, kterou tam píše platforma.
+    // ⚠ **`isServerless()` ve `spend-store.ts` zůstává na `!== undefined`
+    // schválně** — tam je týž výraz fail-**CLOSED** (zavírá peněžní cestu),
+    // takže zúžit ho na rovnost by placené volání naopak pustilo.
     for (const env of [
       {},
+      { VERCEL: '' },
+      { VERCEL: '0' },
+      { VERCEL: 'false' },
       { WORLDSMITH_TRUSTED_PROXY_HOPS: '1' },
       { WORLDSMITH_TRUSTED_PROXY_HOPS: '2' },
+      { VERCEL: '0', WORLDSMITH_TRUSTED_PROXY_HOPS: '1' },
     ]) {
       expect(
         trustedCallerKey(
