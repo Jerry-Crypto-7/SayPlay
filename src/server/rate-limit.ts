@@ -372,7 +372,90 @@ export function trustedCallerKey(
   if (env.VERCEL !== '1') return null;
 
   const platform = lastEntry(request.headers.get('x-vercel-forwarded-for'));
-  return platform === null ? null : `${HEADER_CALLER_PREFIX}${platform}`;
+  return platform === null ? null : `${HEADER_CALLER_PREFIX}${normalizeAddress(platform)}`;
+}
+
+/**
+ * Adresa svedená na tvar, pod kterým je **jeden volající jeden klíč**
+ * (P15 `T16-addrshape`).
+ *
+ * ## Proč to nestačí jen ořezat na délku
+ *
+ * Do 5. 9. 2026 se hodnota z důvěryhodného konce jen usekla na
+ * `MAX_CALLER_KEY_LENGTH`. **Naměřeno nezávislou revizí:** `[2001:db8::1]:51234`
+ * prošlo celé, tedy i s portem. Za proxy, která do řetězu píše `ip:port`
+ * (Azure App Service, Front Door), má pak **každý požadavek jiný klíč**, takže
+ * `MAX_SESSIONS_PER_CALLER` nezakousne nikdy a všechny kbelíky zůstanou po
+ * jednom. Přetečení registru pak nerozhoduje podle kbelíků, ale podle stání —
+ * a nejdéle stojící sledovaná relace je porotcova. **Týž efekt na Vercelu
+ * z jediné IPv6 `/64`:** 64 adres nestojí nic, protože jedno přidělení `/64`
+ * jich dává 2^64.
+ *
+ * Sráží se proto tři věci, každá jinou třídu:
+ *
+ * | Vstup | Klíč | Co to zavírá |
+ * |---|---|---|
+ * | `198.51.100.4:51234` | `198.51.100.4` | port jako zdroj entropie |
+ * | `[2001:db8::1]:51234` | `2001:db8:0:0::/64` | port i hostitel uvnitř přidělení |
+ * | `2001:DB8::1` | `2001:db8:0:0::/64` | velikost písmen |
+ *
+ * ⚠ **Co se ZÁMĚRNĚ neseskupuje: IPv4.** Sráží se jen IPv6 prefix, protože
+ * jedno IPv6 přidělení je jeden odběratel, kdežto sousední IPv4 adresy jsou
+ * cizí lidé. Ze stejného důvodu propadá `::ffff:203.0.113.9` (IPv4 zapsaná
+ * jako IPv6) beze změny: seskupit ji na `/64` by slilo **všechny** IPv4
+ * volající do jednoho kbelíku, tedy vyrobilo tu odepření služby, kterou má
+ * kvóta zavírat.
+ *
+ * ⚠ **Co se sem nesmí přidat: soud „tohle není adresa, tak ji zahoď".**
+ * Nerozpoznaná hodnota se ořezává jako dřív a klíč z ní vznikne. Vrátit
+ * `null` znamená kvótu vypnout, a to je přesně ta strana, na kterou volající
+ * chce hodnotu dotlačit. Drží to test `nerozpoznaná hodnota klíč nezruší`.
+ *
+ * ⚠ **Netýká se `callerKey()`.** Ten klíčuje strop frekvence a je vědomě
+ * podvrhnutelný (tabulka v hlavičce souboru); srážet tam tvar adresy nic
+ * nezavírá, protože útočník tam stejně píše, co chce.
+ */
+function normalizeAddress(value: string): string {
+  // `[v6]:port` i holé `[v6]` — hranaté závorky píše každá proxy, která port
+  // připisuje, protože jinak by dvojtečka portu splynula s adresou.
+  const bracketed = /^\[([^\]]+)\](?::\d+)?$/.exec(value);
+  let address = bracketed?.[1] ?? value;
+
+  // `v4:port`. Podmínka „přesně jedna dvojtečka" je nosná: IPv6 jich má
+  // vždycky víc, takže se tímhle nedá uříznout skupina adresy.
+  if (bracketed === null && /^[^:]+:\d+$/.test(address)) {
+    address = address.slice(0, address.lastIndexOf(':'));
+  }
+
+  return (ipv6Prefix(address.toLowerCase()) ?? address).slice(0, MAX_CALLER_KEY_LENGTH);
+}
+
+/**
+ * Prvních 64 bitů IPv6 adresy jako klíč. `null`, když to IPv6 adresa není —
+ * a to je většina vstupů, protože sem chodí i IPv4 a i vyložený nesmysl.
+ */
+function ipv6Prefix(value: string): string | null {
+  if (!value.includes(':')) return null;
+
+  const halves = value.split('::');
+  if (halves.length > 2) return null;
+
+  const head = halves[0] === '' ? [] : halves[0].split(':');
+  const tail = halves.length === 2 && halves[1] !== '' ? halves[1].split(':') : [];
+  // `::` musí zastupovat aspoň jednu nulovou skupinu, jinak je to jiný zápis.
+  if (halves.length === 2 && head.length + tail.length > 7) return null;
+
+  const groups =
+    halves.length === 2
+      ? [...head, ...(new Array(8 - head.length - tail.length).fill('0') as string[]), ...tail]
+      : head;
+  if (groups.length !== 8) return null;
+  // Skupina, která není čtyřmi hexadecimálními číslicemi, znamená „tohle
+  // není IPv6" — sem spadá i IPv4 zapsaná jako `::ffff:1.2.3.4`.
+  if (!groups.every((group) => /^[0-9a-f]{1,4}$/.test(group))) return null;
+
+  const prefix = groups.slice(0, 4).map((group) => group.replace(/^0+(?=.)/, '')).join(':');
+  return `${prefix}::/64`;
 }
 
 /**

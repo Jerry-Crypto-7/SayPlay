@@ -377,6 +377,75 @@ describe('klíč z důvěryhodného konce řetězu', () => {
     expect(trustedCallerKey(huge, { VERCEL: '1' })!.length).toBeLessThan(60);
   });
 
+  /**
+   * **`T16-addrshape`, 5. 9. 2026.** Hodnota z důvěryhodného konce se do té
+   * doby jen usekla na délku, takže `[2001:db8::1]:51234` prošlo i s portem.
+   * Za proxy, která do řetězu píše `ip:port`, měl pak **každý požadavek jiný
+   * klíč** — kvóta relací nezakousla nikdy a přetečení registru sáhlo po
+   * nejdéle stojící sledované relaci, tedy po porotci. Týž efekt na Vercelu
+   * z jediné IPv6 `/64`, kde 64 adres nestojí nic.
+   */
+  it('port, velikost písmen ani hostitel uvnitř /64 nerozdělí jeden volající na tisíc', () => {
+    const klíč = (adresa: string) =>
+      trustedCallerKey(požadavek({ 'x-vercel-forwarded-for': adresa }), { VERCEL: '1' });
+
+    // Tři zápisy téhož odběratele. Musí to být jeden klíč, ne tři.
+    const seskupené = new Set([
+      klíč('[2001:db8::1]:51234'),
+      klíč('2001:db8::1'),
+      klíč('2001:DB8:0:0:aaaa:bbbb:cccc:dddd'),
+    ]);
+    expect(seskupené, `tři zápisy jednoho /64 daly ${String(seskupené.size)} klíčů`).toHaveLength(
+      1,
+    );
+    expect([...seskupené][0]).toBe('ip:2001:db8:0:0::/64');
+
+    // IPv4 s portem. Port je u téhle proxy zdroj entropie, ne identita.
+    expect(klíč('198.51.100.4:51234')).toBe(klíč('198.51.100.4'));
+    expect(klíč('198.51.100.4')).toBe('ip:198.51.100.4');
+  });
+
+  /**
+   * ⚠ **Selhávající cesty, a každá z nich je vlastní vada, kdyby se sráželo
+   * víc, než se má.** Seskupení, které sežere i to, co adresa není, vyrobí
+   * z kvóty odepření služby počestným — tedy přesně to, co má zavírat.
+   */
+  it('sráží se jenom to, co je doopravdy jedno přidělení', () => {
+    const klíč = (adresa: string) =>
+      trustedCallerKey(požadavek({ 'x-vercel-forwarded-for': adresa }), { VERCEL: '1' });
+
+    // **IPv4 se NESESKUPUJE.** Sousední IPv4 adresy jsou cizí lidé, kdežto
+    // sousední adresy v jednom IPv6 `/64` jsou jeden odběratel.
+    expect(klíč('198.51.100.4')).not.toBe(klíč('198.51.100.5'));
+
+    // **Ani IPv4 zapsaná jako IPv6.** Seskupit `::ffff:…` na `/64` by slilo
+    // všechny IPv4 volající do jednoho kbelíku.
+    expect(klíč('::ffff:203.0.113.9')).not.toBe(klíč('::ffff:203.0.113.10'));
+
+    // Rozbitý zápis (dvakrát `::`) není adresa, takže se neseskupuje.
+    expect(klíč('2001:db8::1::2')).not.toBe('ip:2001:db8:0:0::/64');
+  });
+
+  /**
+   * ⚠ **Nerozpoznaná hodnota klíč NEZRUŠÍ, a je to ta bezpečná strana.**
+   * `null` znamená vypnutou kvótu, tedy přesně tam, kam chce volající hodnotu
+   * dotlačit. Ořez na délku zůstává jediná obrana proti kilobajtové hlavičce.
+   */
+  it('nerozpoznaná hodnota klíč nezruší, jen se ořízne', () => {
+    const nesmysl = trustedCallerKey(
+      požadavek({ 'x-vercel-forwarded-for': 'tohle není adresa' }),
+      { VERCEL: '1' },
+    );
+    expect(nesmysl, 'nerozpoznaná hodnota vypnula kvótu').not.toBeNull();
+    expect(nesmysl).toBe('ip:tohle není adresa');
+
+    const dlouhá = trustedCallerKey(
+      požadavek({ 'x-vercel-forwarded-for': `2001:db8::${'f'.repeat(5_000)}` }),
+      { VERCEL: '1' },
+    );
+    expect(dlouhá!.length, 'ořez na délku se seskupováním ztratil').toBeLessThan(60);
+  });
+
   it('mimo Vercel je klíč vždycky `null`, ať si volající napíše cokoli', () => {
     // **Druhý blokující nález nezávislé revize 5. 9. 2026 — a tenhle se
     // nezáplatoval, zrušil se celý režim.** `WORLDSMITH_TRUSTED_PROXY_HOPS`
