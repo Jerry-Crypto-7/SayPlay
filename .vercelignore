@@ -27,9 +27,18 @@ evals/worldstream/create-raw.json
 *.key
 secrets.json
 
-# Profil prohlížeče z měření lokálního modelu — ~2,3 GB vah Qwen3 v cache
-# service workeru, jednotlivé soubory přes 100 MB. Git ho ignoruje, Vercel ne,
-# a právě on shodil nasazení 5. 9. 2026 (`File size limit exceeded (100 MB)`).
+# Profil prohlížeče z měření lokálního modelu — naměřeno 5. 9. 2026 **3 936 MB**
+# vah Qwen3 v cache service workeru, jednotlivé soubory přes 100 MB. Git ho
+# ignoruje, Vercel ne, a sám o sobě shodil nasazení 5. 9. 2026
+# (`File size limit exceeded (100 MB)`). ⚠ Dřívější odhad „~2,3 GB" byl o 1,6 GB
+# nízko a svedl rozbor k součtu tří adresářů; tenhle adresář je celé to číslo.
+#
+# S tímhle souborem má nahrávka **9,85 MB v 650 souborech a největší z nich má
+# 0,55 MB** (`docs/contact-sheet.png`) — naměřeno 5. 9. 2026 průchodem stromu
+# přes `ignore@5`, tedy týž matcher, jaký CLI na tenhle soubor pouští, a
+# doloženo **bez nasazení**. `.git` je do toho nepočítaný: Vercel ho ignoruje
+# sám a `.git/` se sem schválně NEDOPISUJE, protože z něj CLI čte `VERCEL_GIT_*`.
+# I s ním je nahrávka 29,8 MB, takže mez 100 MB drží tak jako tak.
 tmp-webllm-profile/
 
 # Build si Vercel dělá sám; tohle by jen zdržovalo nahrávání.
