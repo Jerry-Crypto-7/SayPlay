@@ -11,7 +11,6 @@ import {
   rateLimitedResponse,
   resetRateWindows,
   takeRateSlot,
-  TRUSTED_PROXY_HOPS,
   trustedCallerKey,
   UNIDENTIFIED_CALLER,
 } from '../rate-limit';
@@ -340,6 +339,20 @@ describe('klíč z důvěryhodného konce řetězu', () => {
 
     expect(key).toContain('198.51.100.4');
     expect(key, 'do klíče se dostala hodnota od volajícího').not.toContain('203.0.113.99');
+
+    // **Bere se KONEC řetězu, ne začátek — a bez tohohle je to tvrzení
+    // dekorativní.** Naměřeno 5. 9. 2026: mutace „vezmi první položku"
+    // přežila celou sadu, protože každý dosavadní případ posílal
+    // `x-vercel-forwarded-for` s jedinou položkou, kde se první a poslední
+    // neliší. Kdyby edge připisoval místo přepisoval, byla by první položka
+    // zase volba volajícího — tedy přesně ta vada, kterou funkce zavírá.
+    const řetěz = trustedCallerKey(
+      požadavek({ 'x-vercel-forwarded-for': '203.0.113.99, 198.51.100.4' }),
+      { VERCEL: '1' },
+    );
+    expect(řetěz, 'vzala se první položka, tedy to, co mohl napsat volající').toBe(
+      'ip:198.51.100.4',
+    );
   });
 
   it('bez důvěryhodného zdroje je to `null`, ne odhad z hlavičky volajícího', () => {
@@ -349,87 +362,6 @@ describe('klíč z důvěryhodného konce řetězu', () => {
     expect(trustedCallerKey(požadavek({ 'x-forwarded-for': '203.0.113.99' }), {})).toBeNull();
     expect(trustedCallerKey(požadavek({ 'x-real-ip': '203.0.113.99' }), {})).toBeNull();
     expect(trustedCallerKey(požadavek({}), {})).toBeNull();
-  });
-
-  it('při vyplněné hloubce rozhoduje položka, kterou připsala proxy', () => {
-    // Jedna proxy: cokoli si napsal volající zůstane vlevo od toho, co
-    // připsala ona, takže poslední položka je skutečná adresa.
-    const jedna = trustedCallerKey(
-      požadavek({ 'x-forwarded-for': '198.51.100.4, 203.0.113.99' }),
-      { [TRUSTED_PROXY_HOPS]: '1' },
-    );
-    expect(jedna).toContain('203.0.113.99');
-    expect(jedna, 'vzala se první položka, tedy lež volajícího').not.toContain('198.51.100.4');
-
-    // Dvě proxy: skutečná adresa je předposlední.
-    const dvě = trustedCallerKey(
-      požadavek({ 'x-forwarded-for': 'client-written, 203.0.113.99, 10.0.0.1' }),
-      { [TRUSTED_PROXY_HOPS]: '2' },
-    );
-    expect(dvě).toContain('203.0.113.99');
-  });
-
-  it('volající neposune počítání od konce vlastními položkami', () => {
-    // **Tohle je ta vlastnost, kvůli které se počítá od konce a ne od
-    // začátku.** Útočník si do hlavičky napíše, co chce — prázdné položky,
-    // čárky navíc, cizí adresy. Všechno to skončí vlevo od toho, co připsala
-    // proxy, takže klíč se nehne.
-    for (const lie of ['', ' ', ' , , ', 'unknown', '198.51.100.4, , 1.2.3.4']) {
-      const key = trustedCallerKey(
-        požadavek({ 'x-forwarded-for': `${lie}, 203.0.113.99` }),
-        { [TRUSTED_PROXY_HOPS]: '1' },
-      );
-      expect(key, `lež "${lie}" pohnula klíčem`).toContain('203.0.113.99');
-    }
-  });
-
-  it('nesmyslná nebo přestřelená hloubka dá `null`, ne vedlejší položku', () => {
-    // Vyplněný nesmysl je pokus hloubku nastavit, a ten se nepovedl — to je
-    // jiný stav než nevyplněno a odpověď je stejná: nevíme.
-    for (const hloubka of ['0', '-1', '1.5', 'abc', '', ' ']) {
-      expect(
-        trustedCallerKey(požadavek({ 'x-forwarded-for': 'a, b' }), { [TRUSTED_PROXY_HOPS]: hloubka }),
-        `hloubka "${hloubka}" prošla`,
-      ).toBeNull();
-    }
-
-    // Hloubka větší než řetěz: proxy tolik položek nepřipsala, takže se
-    // nesmí sáhnout po té, kterou napsal volající.
-    expect(
-      trustedCallerKey(požadavek({ 'x-forwarded-for': '203.0.113.99' }), {
-        [TRUSTED_PROXY_HOPS]: '3',
-      }),
-    ).toBeNull();
-
-    // Prázdná položka na spočítaném místě: „nevíme", ne „vezmi vedlejší".
-    expect(
-      trustedCallerKey(požadavek({ 'x-forwarded-for': '203.0.113.99, ' }), {
-        [TRUSTED_PROXY_HOPS]: '1',
-      }),
-    ).toBeNull();
-  });
-
-  it('mimo Vercel je hlavička platformy obyčejná lež a hloubku nepřebije', () => {
-    // **Blokující nález nezávislé revize 5. 9. 2026.** `x-vercel-forwarded-for`
-    // přepisuje jedině vercelský edge. Kdekoli jinde si ji volající napíše sám,
-    // a protože měla přednost před vyplněnou hloubkou, obcházela i správně
-    // nastavenou nginx — tedy přesně ten režim, který `.env.example` prodává
-    // jako chráněný.
-    const zaNginx = trustedCallerKey(
-      požadavek({
-        'x-vercel-forwarded-for': '198.51.100.4',
-        'x-forwarded-for': 'lie, 203.0.113.99',
-      }),
-      { [TRUSTED_PROXY_HOPS]: '1' },
-    );
-    expect(zaNginx, 'podvržená hlavička platformy přebila hloubku proxy').not.toContain(
-      '198.51.100.4',
-    );
-    expect(zaNginx).toContain('203.0.113.99');
-
-    // Bez proxy a mimo Vercel nezbývá důvěryhodný konec vůbec — `null`,
-    // tedy kvóta vypnutá, ne klíč vybraný volajícím.
-    expect(trustedCallerKey(požadavek({ 'x-vercel-forwarded-for': '198.51.100.4' }), {})).toBeNull();
   });
 
   it('sentinel z důvěryhodné hlavičky složit nejde a klíč se ořezává', () => {
@@ -443,5 +375,49 @@ describe('klíč z důvěryhodného konce řetězu', () => {
 
     const huge = požadavek({ 'x-vercel-forwarded-for': 'a'.repeat(5_000) });
     expect(trustedCallerKey(huge, { VERCEL: '1' })!.length).toBeLessThan(60);
+  });
+
+  it('mimo Vercel je klíč vždycky `null`, ať si volající napíše cokoli', () => {
+    // **Druhý blokující nález nezávislé revize 5. 9. 2026 — a tenhle se
+    // nezáplatoval, zrušil se celý režim.** `WORLDSMITH_TRUSTED_PROXY_HOPS`
+    // uměl jen počítat pozici v `x-forwarded-for`. Nedokázal ověřit, že tolik
+    // položek doopravdy PŘIPSALA proxy, a adresu protistrany z `Request`
+    // v Next App Routeru přečíst nejde. Za nginx, která píše `X-Real-IP`
+    // a XFF propouští, si tedy klíč vybral volající — a ten klíč je zbraň
+    // (`T16-evictkill`: cizí relace, zavřený porotcův svět, 5 z 5).
+    //
+    // **Obě silnější opravy jsou měřením vyvrácené, proto ta škrtací.**
+    // (a) „řetěz musí mít víc položek než hloubka" položí PRÁVĚ ten poctivý
+    // případ: poctivý volající XFF neposílá vůbec, nginx připíše jedinou
+    // položku, řetěz má délku 1 — a při `HOPS=1` by vyšel `null`, tedy kvóta
+    // vypnutá všem. (b) „ověř, že peer socketu je nakonfigurovaná proxy"
+    // nejde postavit: `Request` adresu protistrany nenese.
+    //
+    // Zbylo tedy jediné poctivé chování: **mimo Vercel žádný důvěryhodný
+    // konec řetězu není**, takže `null` a kvóta vypnutá. Je to horší mez,
+    // ale míří na nikoho — a to je ta správná strana.
+    // ⚠ **`VERCEL: ''` tady schválně NENÍ.** Prázdná hodnota je fail-open
+    // (`env.VERCEL !== undefined` je pravda) a je to skutečná vada, ale patří
+    // úloze `T16-vercelblank`: týž výraz drží i `isServerless()` ve
+    // `spend-store.ts`, kde je naopak fail-CLOSED, a přepsat ho na pravdivost
+    // by uvolnilo peněžní cestu. Jedna změna, dvě opačné strany bezpečí —
+    // proto vlastní úloha a vlastní měření, ne přílepek sem.
+    for (const env of [
+      {},
+      { WORLDSMITH_TRUSTED_PROXY_HOPS: '1' },
+      { WORLDSMITH_TRUSTED_PROXY_HOPS: '2' },
+    ]) {
+      expect(
+        trustedCallerKey(
+          požadavek({
+            'x-forwarded-for': '198.51.100.4',
+            'x-real-ip': '198.51.100.4',
+            'x-vercel-forwarded-for': '198.51.100.4',
+          }),
+          env,
+        ),
+        `prostředí ${JSON.stringify(env)} pustilo klíč vybraný volajícím`,
+      ).toBeNull();
+    }
   });
 });

@@ -472,9 +472,11 @@ export async function POST(request: Request): Promise<Response> {
     //
     // ⚠ **Bez důvěryhodného konce řetězu je kvóta VYPNUTÁ, ne přísnější.**
     // `null` → sentinel → `openSession()` dá relaci vlastní kbelík, což je
-    // izolace, ne mez; celé odůvodnění je tam. Týká se to `next start`, dema
-    // z notebooku a prosté reverse proxy bez vyplněného
-    // `WORLDSMITH_TRUSTED_PROXY_HOPS`. Na Vercelu klíč je.
+    // izolace, ne mez; celé odůvodnění je tam. **Mimo Vercel to platí vždycky**
+    // — `next start`, demo z notebooku i vlastní reverse proxy. Režim „za
+    // vlastní nginx" tu do 5. 9. 2026 byl a zrušil ho měřením potvrzený nález
+    // (doktrína u `trustedCallerKey()`); zpátky smí jedině se zdrojem, který
+    // volající nepíše. Na Vercelu klíč je.
     const owner = trustedCallerKey(request) ?? UNIDENTIFIED_CALLER;
     const stored = openSession(sessionId, newSessionSeed(), Date.now(), owner);
     // **Nad vlastní kvótou se odmítá nováček, a slot se vrací.** Je to ten
