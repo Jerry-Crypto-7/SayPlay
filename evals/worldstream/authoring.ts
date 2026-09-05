@@ -47,6 +47,16 @@ export interface AuthoringResult {
   readonly kept: boolean;
   /** Proč se nezachovala — fáze z brány, nebo `unavailable`, když Codex selhal. */
   readonly cause: string | null;
+  /**
+   * Co u té fáze stálo — věta od brány, která odmítla.
+   *
+   * **Bez ní se rozpad příčin dá jen přečíst, ne opravit.** Běh z 5. 9. 2026
+   * nahlásil `witness: 4` a nic dalšího; „svět nebyl dohratelný" ale neříká,
+   * jestli hledač cestu nenašel, našel ji nad stropem, nebo runtime spadl —
+   * a každá z těch tří se opravuje jinde. Jedna věta stojí ~200 s, takže
+   * neuložený důvod znamená ten čas zaplatit znovu.
+   */
+  readonly detail: string | null;
   readonly seconds: number;
   readonly calls: number;
 }
@@ -196,6 +206,25 @@ export interface AuthoringReport {
   readonly results: readonly AuthoringResult[];
 }
 
+/**
+ * Výsledky předchozích dávek, o kterých tahle dávka nic nezmění.
+ *
+ * **Běh je přerušitelný, takže report musí být taky** — jinak popisuje poslední
+ * dávku a tváří se, že popisuje třicet vět. Naměřeno 5. 9. 2026: první dávka
+ * uvařila 11 vět (4 uložené, `witness` 4×), druhá by ten rozpad přepsala svým
+ * a zbylo by číslo, které nikdo nedokáže sečíst zpátky.
+ *
+ * Věta, na kterou se sahá znovu, se **zahazuje** — její starý verdikt už
+ * neplatí a dva záznamy o téže větě by se v rozpadu počítaly dvakrát.
+ */
+export function carryOver(
+  previous: readonly AuthoringResult[],
+  reattempting: readonly { readonly id: string }[],
+): readonly AuthoringResult[] {
+  const again = new Set(reattempting.map((entry) => entry.id));
+  return previous.filter((result) => !again.has(result.id));
+}
+
 export function reportFrom(
   results: readonly AuthoringResult[],
   measuredAt: string,
@@ -234,15 +263,24 @@ export function outcomeOf(input: {
   readonly blueprintValid: boolean;
   readonly geometryAuthored: boolean;
   readonly failureStage: string | null;
+  readonly failureDetail?: string | null;
   readonly planner: unknown;
   readonly compiler: unknown;
-}): { readonly kept: boolean; readonly cause: string | null } {
-  if (input.thrown !== null) return { kept: false, cause: `unavailable: ${input.thrown}` };
+}): { readonly kept: boolean; readonly cause: string | null; readonly detail: string | null } {
+  // **`cause` je krátký klíč, `detail` je věta.** Do 5. 9. 2026 se do `cause`
+  // lepila i zpráva výjimky, takže každé jiné znění vyrobilo v rozpadu příčin
+  // vlastní příčku — rozpad se tím rozpadl na samé jedničky a přestal ukazovat,
+  // co se opakuje. Klíčů je proto uzavřená hrst a text jde vedle.
+  if (input.thrown !== null) return { kept: false, cause: 'unavailable', detail: input.thrown };
   if (!input.blueprintValid || !input.geometryAuthored)
-    return { kept: false, cause: input.failureStage ?? 'lost' };
+    return {
+      kept: false,
+      cause: input.failureStage ?? 'lost',
+      detail: input.failureDetail ?? null,
+    };
   // Obě emise, ne jedna. Sklad, kterému chybí plán, vydá na planner požadavek
   // `null` a relace skončí odmítnutím, jehož příčina není nikde vidět.
   if (input.planner === null || input.compiler === null)
-    return { kept: false, cause: 'incomplete: one of the two emissions was never seen' };
-  return { kept: true, cause: null };
+    return { kept: false, cause: 'incomplete', detail: 'one of the two emissions was never seen' };
+  return { kept: true, cause: null, detail: null };
 }

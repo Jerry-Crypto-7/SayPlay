@@ -33,12 +33,14 @@ import { createMeshClient } from '@/shape/mesh-client';
 
 import {
   askCodex,
+  carryOver,
   outcomeOf,
   reportFrom,
   stillToAuthor,
   STORE_VERSION,
   withWorld,
   type AuthoredStore,
+  type AuthoringReport,
   type AuthoringResult,
 } from './authoring';
 import { readCorpus, type CreateCase } from './lock.mjs';
@@ -58,6 +60,16 @@ function readStore(): AuthoredStore {
   }
 }
 
+/** Co naměřily předchozí dávky. Chybějící report není chyba — první dávka žádný nemá. */
+function readPreviousResults(): readonly AuthoringResult[] {
+  try {
+    const report = JSON.parse(readFileSync(REPORT_FILE, 'utf8')) as AuthoringReport;
+    return report.results;
+  } catch {
+    return [];
+  }
+}
+
 describe('Codex uvaří světy dopředu', () => {
   it(
     'projde zmrazenou sadu a uloží jen to, co prošlo branami',
@@ -74,7 +86,9 @@ describe('Codex uvaří světy dopředu', () => {
         `\nsklad drží ${String(store.worlds.length)}, k uvaření ${String(todo.length)} z ${String(corpus.create.length)}\n\n`,
       );
 
-      const results: AuthoringResult[] = [];
+      // Dávka pokračuje v reportu, nezakládá nový. Bez tohohle popisuje
+      // poslední dávku a tváří se, že popisuje celou zmrazenou sadu.
+      const results: AuthoringResult[] = [...carryOver(readPreviousResults(), todo)];
       const mesh = createMeshClient({ allowMainThread: true });
 
       try {
@@ -112,11 +126,12 @@ describe('Codex uvaří světy dopředu', () => {
           }
 
           const seconds = (Date.now() - started) / 1000;
-          const { kept, cause } = outcomeOf({
+          const { kept, cause, detail } = outcomeOf({
             thrown: unavailable,
             blueprintValid: done?.blueprintValid ?? false,
             geometryAuthored: done?.geometryAuthored ?? false,
             failureStage: done?.failure?.stage ?? null,
+            failureDetail: done?.failure?.detail ?? null,
             planner: answers.planner,
             compiler: answers.compiler,
           });
@@ -140,7 +155,7 @@ describe('Codex uvaří světy dopředu', () => {
             writeFileSync(STORE_FILE, `${JSON.stringify(store, null, 2)}\n`, 'utf8');
           }
 
-          results.push({ id: entry.id, kept, cause, seconds, calls });
+          results.push({ id: entry.id, kept, cause, detail, seconds, calls });
           writeFileSync(
             REPORT_FILE,
             `${JSON.stringify(reportFrom(results, new Date().toISOString()), null, 2)}\n`,
@@ -148,7 +163,8 @@ describe('Codex uvaří světy dopředu', () => {
           );
 
           process.stdout.write(
-            `${entry.id} ${kept ? 'uloženo' : `zahozeno (${cause ?? '—'})`} · ${String(Math.round(seconds))} s · ${String(calls)} volání\n`,
+            `${entry.id} ${kept ? 'uloženo' : `zahozeno (${cause ?? '—'})`} · ${String(Math.round(seconds))} s · ${String(calls)} volání` +
+              `${detail === null ? '' : `\n   ${detail.slice(0, 160)}`}\n`,
           );
         }
       } finally {

@@ -13,6 +13,7 @@ import { describe, expect, it } from 'vitest';
 import {
   answerFrom,
   askCodex,
+  carryOver,
   outcomeOf,
   reportFrom,
   stillToAuthor,
@@ -20,6 +21,7 @@ import {
   withWorld,
   type AuthoredStore,
   type AuthoredWorld,
+  type AuthoringResult,
 } from '../authoring';
 
 const EMPTY: AuthoredStore = { version: STORE_VERSION, worlds: [] };
@@ -141,10 +143,10 @@ describe('the report says why the rest did not make it', () => {
     // vada kontraktu, tři různé fáze je vada v každé zvlášť.
     const report = reportFrom(
       [
-        { id: 'c01', kept: true, cause: null, seconds: 150, calls: 3 },
-        { id: 'c02', kept: false, cause: 'schema', seconds: 190, calls: 4 },
-        { id: 'c03', kept: false, cause: 'schema', seconds: 200, calls: 4 },
-        { id: 'c04', kept: false, cause: 'shape', seconds: 60, calls: 2 },
+        { id: 'c01', kept: true, cause: null, detail: null, seconds: 150, calls: 3 },
+        { id: 'c02', kept: false, cause: 'schema', detail: 'no layout', seconds: 190, calls: 4 },
+        { id: 'c03', kept: false, cause: 'schema', detail: 'no win rule', seconds: 200, calls: 4 },
+        { id: 'c04', kept: false, cause: 'shape', detail: null, seconds: 60, calls: 2 },
       ],
       '2026-09-05T20:00:00.000Z',
     );
@@ -156,9 +158,41 @@ describe('the report says why the rest did not make it', () => {
   });
 
   it('counts no cause for a world that was kept, so the breakdown stays readable', () => {
-    const report = reportFrom([{ id: 'c01', kept: true, cause: null, seconds: 1, calls: 1 }], 'now');
+    const report = reportFrom(
+      [{ id: 'c01', kept: true, cause: null, detail: null, seconds: 1, calls: 1 }],
+      'now',
+    );
 
     expect(report.causes).toEqual({});
+  });
+});
+
+/* ================================================================== *
+ * 4b. Report přes dávky — běh je přerušitelný, měření musí být taky.
+ * ================================================================== */
+
+describe('a resumed batch continues the report instead of replacing it', () => {
+  const EARLIER: readonly AuthoringResult[] = [
+    { id: 'c01', kept: true, cause: null, detail: null, seconds: 150, calls: 3 },
+    { id: 'c02', kept: false, cause: 'witness', detail: 'NO_WIN', seconds: 210, calls: 4 },
+  ];
+
+  it('keeps what earlier batches measured, so the report describes all 30', () => {
+    // Bez tohohle popisuje report poslední dávku a tváří se, že popisuje
+    // zmrazenou sadu. Naměřeno 5. 9. 2026: první dávka uvařila 11 vět.
+    const report = reportFrom([...carryOver(EARLIER, [{ id: 'c03' }]), ...[
+      { id: 'c03', kept: true, cause: null, detail: null, seconds: 160, calls: 3 },
+    ]], 'now');
+
+    expect(report.results.map((result) => result.id)).toEqual(['c01', 'c02', 'c03']);
+    expect(report.attempted).toBe(3);
+    expect(report.causes).toEqual({ witness: 1 });
+  });
+
+  it('drops the old verdict of a sentence it is about to try again', () => {
+    // Dva záznamy o téže větě by se v rozpadu počítaly dvakrát a starý verdikt
+    // už stejně neplatí — tuhle větu právě přepisuje nový běh.
+    expect(carryOver(EARLIER, [{ id: 'c02' }]).map((result) => result.id)).toEqual(['c01']);
   });
 });
 
@@ -177,7 +211,7 @@ describe('only a world that came through the gates is kept', () => {
   };
 
   it('keeps a case that passed both gates', () => {
-    expect(outcomeOf(GOOD)).toEqual({ kept: true, cause: null });
+    expect(outcomeOf(GOOD)).toEqual({ kept: true, cause: null, detail: null });
   });
 
   it('throws away a broken answer and names the stage it died on', () => {
@@ -185,11 +219,43 @@ describe('only a world that came through the gates is kept', () => {
     // z parseru. Uložit se nesmí a v reportu musí být poznat proč.
     expect(outcomeOf({ ...GOOD, thrown: 'Codex nevratil JSON' })).toEqual({
       kept: false,
-      cause: 'unavailable: Codex nevratil JSON',
+      cause: 'unavailable',
+      detail: 'Codex nevratil JSON',
     });
     expect(outcomeOf({ ...GOOD, blueprintValid: false, failureStage: 'schema' })).toEqual({
       kept: false,
       cause: 'schema',
+      detail: null,
+    });
+  });
+
+  it('keeps the cause short and puts the sentence beside it', () => {
+    // **Tohle je ta vada, kvůli které se to měnilo.** Zpráva slepená do
+    // `cause` vyrobí v rozpadu příčin vlastní příčku pro každé znění, takže
+    // deset odmítnutí téže třídy se přečte jako deset různých vad. Klíč je
+    // proto uzavřený a text jde vedle něj.
+    const first = outcomeOf({ ...GOOD, thrown: 'exit 1: socket hang up' });
+    const second = outcomeOf({ ...GOOD, thrown: 'exit 1: read ECONNRESET' });
+
+    expect(first.cause).toBe(second.cause);
+    expect(first.detail).not.toBe(second.detail);
+  });
+
+  it('carries the reason the gate gave, not just the stage it stood at', () => {
+    // „witness" sám neřekne, co opravit: hledač cestu nenašel, našel ji nad
+    // stropem, nebo runtime spadl — tři vady, tři různá místa opravy. Jedna
+    // věta stojí ~200 s, takže zahozený důvod se platí znovu.
+    expect(
+      outcomeOf({
+        ...GOOD,
+        blueprintValid: false,
+        failureStage: 'witness',
+        failureDetail: 'NO_WIN: horizon exhausted without a win',
+      }),
+    ).toEqual({
+      kept: false,
+      cause: 'witness',
+      detail: 'NO_WIN: horizon exhausted without a win',
     });
   });
 
@@ -199,6 +265,7 @@ describe('only a world that came through the gates is kept', () => {
     expect(outcomeOf({ ...GOOD, geometryAuthored: false, failureStage: 'shape' })).toEqual({
       kept: false,
       cause: 'shape',
+      detail: null,
     });
   });
 
