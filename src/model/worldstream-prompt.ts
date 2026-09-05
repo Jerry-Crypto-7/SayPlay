@@ -58,7 +58,7 @@ import { SHAPE_NODE_GROUPS } from '../shape/schema';
 import { SHAPE_LIMITS, type ShapeNodeKind } from '../shape/types';
 
 import { EMISSION_MODEL, buildEmissionRequest, type Grammar, type UpstreamRequest } from './prompt';
-import type { PlannerEmission } from './worldstream-intent';
+import { PLANNER_ANSWER_FIELDS, type PlannerEmission } from './worldstream-intent';
 
 /** Značka fáze. Odlišuje blueprint od plánu i od staré emise v logu i v provenance. */
 export const COMPILER_STAGE = 'worldstream-blueprint';
@@ -348,6 +348,27 @@ export function capabilityManifest(): string {
  * Požadavek.
  * ------------------------------------------------------------------ */
 
+/** Pole, která tahle fáze v odpovědi žádá. Důvod je u `PLANNER_ANSWER_FIELDS`. */
+export const COMPILER_ANSWER_FIELDS = ['geometry', 'shapes', 'placements', 'world'] as const;
+
+/**
+ * Která ze dvou fází si o tenhle požadavek řekla.
+ *
+ * ⚠ **Rozhoduje seznam žádaných polí, NIKDY pořadí volání — naměřeno
+ * 5. 9. 2026.** Jedna věta znamená dvě volání modelu, ale opravné kolo posílá
+ * compiler požadavek znovu, takže „první je planner" je pravidlo, které se
+ * rozbije při prvním odmítnutí. Spike `d749ce7` poslal na jednu větu čtyři
+ * požadavky v pořadí planner, compiler, compiler, compiler.
+ *
+ * Funkce bydlí tady, protože odsud jsou vidět oba builderové a oba seznamy.
+ * V úložišti uvařených světů by existovala podruhé.
+ */
+export function requestStage(request: UpstreamRequest): 'planner' | 'compiler' | null {
+  if (request.system.includes(`${COMPILER_ANSWER_FIELDS.join(', ')}.`)) return 'compiler';
+  if (request.system.includes(`${PLANNER_ANSWER_FIELDS.join(', ')}.`)) return 'planner';
+  return null;
+}
+
 export function buildCompilerRequest(plan: PlannerEmission, grammar: Grammar): UpstreamRequest {
   const heroIds = plan.objects
     .filter((object) => object.role === 'hero')
@@ -361,7 +382,7 @@ export function buildCompilerRequest(plan: PlannerEmission, grammar: Grammar): U
     'Somebody else already decided WHAT the place is. You decide how it stands up.',
     '',
     'Answer with a single JSON object and nothing else. Its top-level fields are exactly:',
-    'geometry, shapes, placements, world. Anything else is rejected, including a title —',
+    `${COMPILER_ANSWER_FIELDS.join(', ')}. Anything else is rejected, including a title —`,
     'the system writes that from the intent you were given.',
     '',
     capabilityManifest(),

@@ -1,0 +1,567 @@
+{
+  "version": "authored-v1",
+  "worlds": [
+    {
+      "id": "c01",
+      "prompt": "A cathedral of stacked shipping containers around a light well.",
+      "heroObjects": [
+        "centralLightWell"
+      ],
+      "synonyms": [
+        "the containers",
+        "the shipping containers",
+        "the container stacks",
+        "the stacked containers",
+        "the container walls",
+        "the cathedral",
+        "the well",
+        "the lightwell",
+        "the central opening",
+        "the opening to the sky",
+        "the floor",
+        "the ground",
+        "the central floor",
+        "the light",
+        "the natural light",
+        "the skylight"
+      ],
+      "planner": {
+        "intent": {
+          "setting": "a cathedral formed from stacked shipping containers around a light well",
+          "mood": "monumental, industrial, contemplative",
+          "spatialThesis": "Stacked container walls enclose a central light well, making the surrounding architecture feel oriented toward a shared opening to the sky.",
+          "actors": [],
+          "heroObjects": [
+            "the stacked shipping containers",
+            "the light well"
+          ],
+          "interactions": [
+            "daylight enters through the light well and reaches the enclosed cathedral"
+          ],
+          "unsupported": [
+            "the shipping containers are fixed architectural units, not movable or openable cargo containers",
+            "the light well is an open architectural void with daylight, not a simulated moving sun"
+          ]
+        },
+        "objects": [
+          {
+            "stableId": "containerCathedral",
+            "label": "the stacked shipping containers",
+            "synonyms": [
+              "the containers",
+              "the shipping containers",
+              "the container stacks",
+              "the stacked containers",
+              "the container walls",
+              "the cathedral"
+            ],
+            "role": "architecture",
+            "importance": 3
+          },
+          {
+            "stableId": "centralLightWell",
+            "label": "the light well",
+            "synonyms": [
+              "the well",
+              "the lightwell",
+              "the central opening",
+              "the opening to the sky"
+            ],
+            "role": "hero",
+            "importance": 3
+          },
+          {
+            "stableId": "cathedralFloor",
+            "label": "the cathedral floor",
+            "synonyms": [
+              "the floor",
+              "the ground",
+              "the central floor"
+            ],
+            "role": "terrain",
+            "importance": 1
+          },
+          {
+            "stableId": "wellDaylight",
+            "label": "the daylight",
+            "synonyms": [
+              "the light",
+              "the natural light",
+              "the skylight"
+            ],
+            "role": "effect",
+            "importance": 2
+          }
+        ]
+      },
+      "compiler": {
+        "geometry": {
+          "version": "geom-program-v1",
+          "nodes": [
+            {
+              "kind": "mass",
+              "variant": "block",
+              "at": [
+                -7.7,
+                1,
+                -6
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                2,
+                1,
+                1
+              ]
+            },
+            {
+              "kind": "repeat",
+              "child": 0,
+              "count": 8,
+              "step": [
+                2.2,
+                0,
+                0
+              ]
+            },
+            {
+              "kind": "repeat",
+              "child": 1,
+              "count": 3,
+              "step": [
+                0,
+                2.05,
+                0
+              ]
+            },
+            {
+              "kind": "mirror",
+              "child": 2,
+              "axis": "z",
+              "about": 0
+            },
+            {
+              "kind": "mass",
+              "variant": "block",
+              "at": [
+                -8.8,
+                1,
+                -3.75
+              ],
+              "yaw": 1,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                2,
+                1,
+                1
+              ]
+            },
+            {
+              "kind": "repeat",
+              "child": 4,
+              "count": 4,
+              "step": [
+                0,
+                0,
+                2.5
+              ]
+            },
+            {
+              "kind": "repeat",
+              "child": 5,
+              "count": 3,
+              "step": [
+                0,
+                2.05,
+                0
+              ]
+            },
+            {
+              "kind": "mirror",
+              "child": 6,
+              "axis": "x",
+              "about": 0
+            },
+            {
+              "kind": "arch",
+              "variant": "portal",
+              "at": [
+                0,
+                1.8,
+                -6
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1.8,
+                2.2,
+                1.2
+              ]
+            },
+            {
+              "kind": "group",
+              "children": [
+                2,
+                3,
+                6,
+                7,
+                8
+              ]
+            },
+            {
+              "kind": "terrain",
+              "variant": "flat",
+              "extent": [
+                22,
+                18
+              ],
+              "amplitude": 0.08,
+              "seed": 271,
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0
+            },
+            {
+              "kind": "group",
+              "children": [
+                9,
+                10
+              ]
+            }
+          ],
+          "root": 11
+        },
+        "shapes": [
+          {
+            "shapeId": "centralLightWellShape",
+            "stableId": "centralLightWell",
+            "nodes": [
+              {
+                "kind": "roundBox",
+                "size": [
+                  5.2,
+                  8,
+                  5.2
+                ],
+                "radius": 0.18
+              },
+              {
+                "kind": "translate",
+                "child": 0,
+                "offset": [
+                  0,
+                  4,
+                  0
+                ]
+              },
+              {
+                "kind": "box",
+                "size": [
+                  4.1,
+                  9,
+                  4.1
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 2,
+                "offset": [
+                  0,
+                  4.25,
+                  0
+                ]
+              },
+              {
+                "kind": "subtract",
+                "children": [
+                  1,
+                  3
+                ],
+                "k": 0.08
+              }
+            ],
+            "root": 4,
+            "targetBounds": {
+              "min": [
+                -2.6,
+                0,
+                -2.6
+              ],
+              "max": [
+                2.6,
+                8,
+                2.6
+              ]
+            },
+            "anchors": [
+              {
+                "name": "skyOpening",
+                "at": [
+                  0,
+                  8,
+                  0
+                ],
+                "normal": [
+                  0,
+                  1,
+                  0
+                ]
+              },
+              {
+                "name": "floorCenter",
+                "at": [
+                  0,
+                  0,
+                  0
+                ],
+                "normal": [
+                  0,
+                  1,
+                  0
+                ]
+              }
+            ],
+            "materialIntent": "lightWellLining",
+            "priority": 12
+          }
+        ],
+        "placements": [
+          {
+            "stableId": "containerCathedral",
+            "source": {
+              "kind": "geom",
+              "node": 9
+            },
+            "targetBounds": {
+              "min": [
+                -10,
+                0,
+                -7
+              ],
+              "max": [
+                10,
+                6.2,
+                7
+              ]
+            }
+          },
+          {
+            "stableId": "centralLightWell",
+            "source": {
+              "kind": "shape",
+              "shapeId": "centralLightWellShape"
+            },
+            "targetBounds": {
+              "min": [
+                -2.6,
+                0,
+                -2.6
+              ],
+              "max": [
+                2.6,
+                8,
+                2.6
+              ]
+            }
+          },
+          {
+            "stableId": "cathedralFloor",
+            "source": {
+              "kind": "geom",
+              "node": 10
+            },
+            "targetBounds": {
+              "min": [
+                -11,
+                -0.1,
+                -9
+              ],
+              "max": [
+                11,
+                0.1,
+                9
+              ]
+            }
+          }
+        ],
+        "world": {
+          "irVersion": "v1",
+          "simRevision": 0,
+          "lookRevision": 0,
+          "sim": {
+            "layout": {
+              "width": 18,
+              "height": 14
+            },
+            "grid": {
+              "cell": 1
+            },
+            "sockets": {
+              "visitorStart": [
+                2,
+                7
+              ],
+              "cathedralPad": [
+                9,
+                2
+              ],
+              "lightWellPad": [
+                9,
+                7
+              ],
+              "floorPad": [
+                8,
+                7
+              ]
+            },
+            "collisionAabb": {
+              "visitor": [
+                2,
+                7,
+                1,
+                1
+              ],
+              "containerCathedral": [
+                1,
+                1,
+                16,
+                12
+              ],
+              "centralLightWell": [
+                7,
+                5,
+                5,
+                5
+              ],
+              "cathedralFloor": [
+                1,
+                1,
+                16,
+                12
+              ]
+            },
+            "entities": {
+              "visitor": {
+                "role": "actor",
+                "socket": "visitorStart",
+                "state": "contemplating"
+              },
+              "containerCathedral": {
+                "role": "architecture",
+                "socket": "cathedralPad",
+                "state": "fixed",
+                "locked": true
+              },
+              "centralLightWell": {
+                "role": "hero",
+                "socket": "lightWellPad",
+                "state": "open",
+                "locked": true
+              },
+              "cathedralFloor": {
+                "role": "terrain",
+                "socket": "floorPad",
+                "state": "fixed",
+                "locked": true
+              }
+            },
+            "rules": {
+              "win": {
+                "phase": 0,
+                "priority": 0,
+                "event": {
+                  "kind": "onEnterZone",
+                  "entity": "visitor",
+                  "zone": "lightWellPad"
+                },
+                "condition": null,
+                "actions": [
+                  {
+                    "kind": "win"
+                  }
+                ]
+              }
+            },
+            "state": {
+              "counters": {},
+              "flags": {},
+              "timers": {},
+              "zones": {},
+              "slots": 0,
+              "pool": {}
+            }
+          },
+          "look": {
+            "modules": {
+              "containerCathedral": {
+                "family": "stacked industrial architecture",
+                "params": {
+                  "weathering": 0.62,
+                  "repetition": 0.9,
+                  "verticalEmphasis": 0.82
+                }
+              },
+              "centralLightWell": {
+                "family": "open architectural void",
+                "params": {
+                  "skyExposure": 1,
+                  "interiorReflectance": 0.72
+                }
+              },
+              "cathedralFloor": {
+                "family": "monolithic floor",
+                "params": {
+                  "roughness": 0.76
+                }
+              }
+            },
+            "palette": {
+              "containerSteel": "oxidized muted steel",
+              "floor": "cool charcoal concrete",
+              "wellLining": "pale weathered metal",
+              "accent": "warm daylight"
+            },
+            "lightRig": {
+              "kind": "open-sky light well",
+              "source": "wellDaylight",
+              "direction": [
+                0,
+                -1,
+                0
+              ],
+              "focusEntity": "centralLightWell",
+              "intensity": 1.4,
+              "bounce": 0.65
+            },
+            "atmosphere": {
+              "kind": "still interior air",
+              "haze": 0.12,
+              "mood": "monumental industrial contemplative"
+            },
+            "materialRoles": {
+              "containerCathedral": "weathered corrugated steel",
+              "centralLightWell": "light-catching pale metal",
+              "cathedralFloor": "sealed dark concrete"
+            },
+            "camera": {
+              "kind": "orbit",
+              "target": "centralLightWell",
+              "elevation": 0.32,
+              "distance": 24
+            },
+            "audio": {
+              "ambience": "quiet resonant industrial enclosure",
+              "reverb": 0.78
+            }
+          }
+        }
+      }
+    }
+  ]
+}

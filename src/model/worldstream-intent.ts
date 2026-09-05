@@ -125,13 +125,24 @@ export function containsGeometryVocabulary(text: string): string[] {
 /** Pole staré emise. Jejich přítomnost znamená, že model odpověděl špatnou fází. */
 const WORLD_DOC_FIELDS = ['irVersion', 'simRevision', 'lookRevision', 'sim', 'look'];
 
+/**
+ * Pole, která tahle fáze v odpovědi žádá.
+ *
+ * Je to konstanta, a ne text v promptu, protože podle **týchž** polí se
+ * o kus dál pozná, který ze dvou požadavků právě přišel
+ * (`requestStage()` ve `worldstream-prompt.ts`). Kdyby se seznam psal na
+ * dvou místech, rozešel by se a rozlišovač by tiše přestal rozlišovat —
+ * sklad uvařených světů by pak na compiler požadavek vydal plán.
+ */
+export const PLANNER_ANSWER_FIELDS = ['intent', 'objects'] as const;
+
 export function buildIntentRequest(prompt: string): UpstreamRequest {
   const system = [
     'You read one sentence describing a place and answer with what that place IS.',
     'You never describe how to draw it. Another stage does that, and it is given your answer, not the sentence.',
     '',
     'Answer with a single JSON object and nothing else. Its top-level fields are exactly:',
-    'intent, objects.',
+    `${PLANNER_ANSWER_FIELDS.join(', ')}.`,
     '',
     'intent carries: setting, mood, spatialThesis, actors, heroObjects, interactions, unsupported.',
     'spatialThesis is ONE sentence about how the space is arranged — what is where, and what that',
