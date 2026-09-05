@@ -13,6 +13,8 @@
  * by tvrdil jen to, že relace za jednu milisekundu nezestárla.
  */
 
+import { readFileSync } from 'node:fs';
+
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
@@ -747,5 +749,55 @@ describe('strop registru není páka na cizí relace', () => {
       getSession('porotce'),
       'ochrana zesílila nad to, co je o ní napsané — přepiš doktrínu u MAX_SESSIONS_PER_CALLER',
     ).toBeNull();
+  });
+});
+
+/**
+ * **`T16-keydoctrine`, 5. 9. 2026.** Doktrína u kvóty si v jednom souboru
+ * protiřečila: u `StoredSession.owner` stálo „provoz sem posílá
+ * `callerKey(request)`", zatímco route posílá `trustedCallerKey()`. Kdo by
+ * opravoval podle té věty, vrátil by `callerKey()` a s ním celý
+ * `T16-evictkill`. Další dvě věty pořád nabízely režim s hloubkou proxy,
+ * který `e72f9b3` zrušil.
+ *
+ * ⚠ **Nepravdivá doktrína u meze vypadá v zelené sadě přesně jako pravdivá**,
+ * takže se pinuje lexikálně. Pinuje se **přítomnost správné odpovědi**, ne
+ * nepřítomnost špatné — s jedinou výjimkou, a tou je jméno zrušené proměnné:
+ * to je jednoznačný důkaz, že text mluví o režimu, který neexistuje.
+ */
+describe('doktrína u kvóty říká, čím se kvóta doopravdy klíčuje', () => {
+  const ZDROJ = 'src/worldstream/sessions.ts';
+
+  /**
+   * ⚠ **Blocklist na jméno zrušené proměnné se sem NEPÍŠE, a je to poučení
+   * z `T30-capfloor`.** Doktrína ji jmenovat MUSÍ — právě proto, aby řekla,
+   * že ten režim zrušil `e72f9b3` a proč. Zákaz slova by položil pravdivý
+   * text a pustil ten, kde chybí. Pinuje se proto ta věta, ne to slovo.
+   */
+  it('doktrína říká, že jediný důvěryhodný zdroj je Vercel při VERCEL=1', () => {
+    const text = readFileSync(ZDROJ, 'utf8');
+    const start = text.indexOf('Zavřené to je');
+    expect(start, `${ZDROJ}: kotva „Zavřené to je" zmizela — oprav kotvu, ne test`).toBeGreaterThan(-1);
+    const blok = text.slice(start, start + 900);
+    expect(blok, 'doktrína nepodmiňuje uzavřenost hodnotou VERCEL=1').toContain('VERCEL=1');
+    expect(blok, 'doktrína neříká, který commit režim s hloubkou proxy zrušil').toContain('e72f9b3');
+  });
+
+  it('u vlastníka relace stojí ta funkce, kterou route opravdu volá', () => {
+    const text = readFileSync(ZDROJ, 'utf8');
+    const start = text.indexOf('Provoz sem posílá');
+    expect(start, `${ZDROJ}: kotva „Provoz sem posílá" zmizela — oprav kotvu, ne test`).toBeGreaterThan(-1);
+    const blok = text.slice(start, start + 600);
+    expect(blok, 'doktrína u owner neříká, že provoz posílá trustedCallerKey').toContain(
+      'trustedCallerKey(request) ?? UNIDENTIFIED_CALLER',
+    );
+    expect(blok, 'doktrína neodliší klíč kvóty od klíče stropu frekvence').toContain(
+      'ne `callerKey(request)`',
+    );
+  });
+
+  it('route i doktrína vědí, že mimo Vercel je kvóta vypnutá', () => {
+    const routa = readFileSync('src/app/api/worldstream/sessions/route.ts', 'utf8');
+    expect(routa, 'route tvrdí „na Vercelu klíč je" bez podmínky VERCEL=1').toContain('VERCEL=1');
   });
 });

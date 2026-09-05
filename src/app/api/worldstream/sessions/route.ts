@@ -476,7 +476,10 @@ export async function POST(request: Request): Promise<Response> {
     // — `next start`, demo z notebooku i vlastní reverse proxy. Režim „za
     // vlastní nginx" tu do 5. 9. 2026 byl a zrušil ho měřením potvrzený nález
     // (doktrína u `trustedCallerKey()`); zpátky smí jedině se zdrojem, který
-    // volající nepíše. Na Vercelu klíč je.
+    // volající nepíše. **Na Vercelu klíč je — ale jedině při `VERCEL=1`:**
+    // přepínač *Automatically expose System Environment Variables* zháší
+    // `VERCEL` i `VERCEL_ENV` naráz, a s vypnutým přepínačem je kvóta i tam
+    // vypnutá. Tvrdit „na Vercelu klíč je" bez té podmínky je nepravda.
     const owner = trustedCallerKey(request) ?? UNIDENTIFIED_CALLER;
     const stored = openSession(sessionId, newSessionSeed(), Date.now(), owner);
     // **Nad vlastní kvótou se odmítá nováček, a slot se vrací.** Je to ten

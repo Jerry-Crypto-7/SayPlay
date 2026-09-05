@@ -93,11 +93,13 @@ export const MAX_LIVE_SESSIONS = 64;
  *    `trustedCallerKey(request)`, tedy `x-vercel-forwarded-for` nebo XFF
  *    v pevné hloubce proxy; do cizího kbelíku se hlavičkou nedostane nic.
  *    Tvrdí to kladně route test `podvržená hlavička se do kbelíku oběti vůbec
- *    nedostane`. ⚠ **Bez důvěryhodného zdroje** (`next start`, demo
- *    z notebooku, prostá reverse proxy bez `WORLDSMITH_TRUSTED_PROXY_HOPS`)
- *    je klíč `null` → sentinel → kbelík na relaci, tedy **kvóta vypnutá**;
- *    stará páka se tam vrací v plné síle. Demo proto pouštět jedině za proxy,
- *    která hlavičku píše.
+ *    nedostane`. ⚠ **Mimo Vercel je klíč VŽDYCKY `null`** → sentinel →
+ *    kbelík na relaci, tedy **kvóta vypnutá**; stará páka se tam vrací v plné
+ *    síle (`T16-cookieowner`). Netýká se to jen `next start` a dema
+ *    z notebooku, ale i vlastní reverse proxy: režim s hloubkou řetězu
+ *    (`WORLDSMITH_TRUSTED_PROXY_HOPS`) od `e72f9b3` **neexistuje**, protože
+ *    počítání pozice v hlavičce nedokáže odlišit, co připsala proxy, od toho,
+ *    co si napsal volající. Demo proto pouštět jedině na Vercelu.
  * 2. **Sdílený kbelík byl nová plocha na odepření služby počestným.** Bez
  *    proxy hlaviček vrací `callerKey()` sentinel, takže do jednoho kbelíku
  *    spadli všichni a strop registru klesl ze 64 na 8 pro celou instanci.
@@ -130,9 +132,11 @@ export const MAX_LIVE_SESSIONS = 64;
  * na route úrovni nedosažitelné, protože kvótu klíčuje `trustedCallerKey()`.**
  * Modulový test výš pinuje dál **tvar** útoku a je zelený dál — jde přes
  * `openSession()` s vlastníkem předaným rovnou, tedy obchází hlavičky.
- * ⚠ **Zavřené to je jen tam, kde důvěryhodný konec řetězu existuje**
- * (Vercel, nebo proxy s vyplněným `WORLDSMITH_TRUSTED_PROXY_HOPS`). Bez něj
- * je kvóta vypnutá a `T16-evictkill` platí v plné síle.
+ * ⚠ **Zavřené to je jedině na Vercelu, a jedině při `VERCEL=1`.** Jiný
+ * důvěryhodný konec řetězu dnes neexistuje — režim s hloubkou proxy zrušil
+ * `e72f9b3`, a `4041c57` zúžil strážce z „`VERCEL` je definované" na rovnost,
+ * protože `VERCEL=0` tu větev zapínalo místo aby ji vypnulo. Kde klíč není,
+ * je kvóta vypnutá a tvar útoku platí v plné síle (`T16-cookieowner`).
  *
  * ⚠ **Není to zamítnutá alternativa „plný registr odmítá nové relace".** Ta
  * byla zamítnuta vědomě (útočník by držel 64 proudů a hodinu by nezaložil svět
@@ -156,10 +160,15 @@ export const MAX_LIVE_SESSIONS = 64;
  * `watched` a hodina se rozeběhne až tím druhým. Dokud takový koncový bod
  * nevznikne, smí 429 říct jen to, **co platí** — ne radu, která neplatí.
  *
- * ⚠ **Co to NEZAVÍRÁ, a je to vědomé.** Klíč jde pořád podvrhnout, takže
- * útočník umí oběti **zablokovat zakládání** nových světů (osm požadavků
- * s její IP naplní její kbelík), a kdo si vymyslí 64 hlaviček po jedné relaci,
- * srovná kbelíky na jedničku a strop registru vybírá zase starým pořadím.
+ * ⚠ **Co to NEZAVÍRÁ, a je to vědomé — přepsáno 5. 9. 2026, `T16-keydoctrine`.**
+ * Věta „klíč jde pořád podvrhnout, osm požadavků s IP oběti naplní její
+ * kbelík" **na důvěryhodné cestě už neplatí** a nesmí se nikam opisovat:
+ * od `f493ce5` klíčuje kvótu `trustedCallerKey()` a do cizího kbelíku se
+ * hlavičkou nedostane nic. Zbývají dvě jiné cesty, obě s vlastní úlohou:
+ * **mimo Vercel** je klíč `null` a kvóta vypnutá (`T16-cookieowner`), a
+ * **jediná IPv6 /64** dá jednomu volajícímu 64 různých klíčů, čímž srovná
+ * kbelíky na jedničku a strop registru vybírá zase starým pořadím
+ * (`T16-addrshape`). Až obě zavřou, přepíše se tenhle odstavec znovu.
  *
  * ⚠ **A jak dlouho ten blok trvá: dokud běží proces, ne hodinu — ale jen nad
  * prahem** (`T16-idleforever`, změřeno 4. 9. 2026 v +1 h, +24 h i +30 dní,
@@ -869,8 +878,11 @@ export function openSession(
    * jedinou kvótu pro všechny. Vlastní kbelík je proto konzervativní čtení,
    * ne vypnutá kvóta.
    *
-   * Provoz sem posílá `callerKey(request)` a pinuje to route test; výchozí
-   * hodnotu má jedině sada, která relaci zakládá přímo.
+   * Provoz sem posílá `trustedCallerKey(request) ?? UNIDENTIFIED_CALLER`
+   * (`sessions/route.ts`), **ne `callerKey(request)`** — to je klíč stropu
+   * frekvence a do kvóty nepatří; proč se ty dvě funkce liší, stojí u nich
+   * v `src/server/rate-limit.ts`. Pinuje to route test; výchozí hodnotu má
+   * jedině sada, která relaci zakládá přímo.
    */
   owner: string = sessionId,
 ): StoredSession | null {
