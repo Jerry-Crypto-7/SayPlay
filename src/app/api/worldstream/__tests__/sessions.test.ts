@@ -27,7 +27,7 @@
 
 import { readFileSync } from 'node:fs';
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SseDecoder } from '../../../../components/viewer/sse';
 import type { SessionEvent, SessionEventLog } from '../../../../worldstream/events';
@@ -1107,6 +1107,21 @@ describe('strop na frekvenci dorazí až k zakládání relace', () => {
  * soubor je jediné místo, kde se dá pinovat, že provoz posílá skutečný klíč.
  */
 describe('relaci zakládá klíč volajícího, ne anonym', () => {
+  /**
+   * **Tenhle blok popisuje nasazení na Vercelu, a od 5. 9. 2026 to musí říct
+   * nahlas.** `trustedCallerKey()` čte `x-vercel-forwarded-for` jen tam, kde
+   * je `VERCEL` nastavené — mimo platformu je to obyčejná hlavička od
+   * volajícího (blokující nález nezávislé revize). Bez téhle deklarace by
+   * `createRequest(..., caller)` psal hlavičku, které nikdo nevěří, kvóta by
+   * spadla na `UNIDENTIFIED_CALLER` a čtyři testy níž by měřily prázdno.
+   */
+  beforeEach(() => {
+    vi.stubEnv('VERCEL', '1');
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   /**
    * Zaplní registr na práh, od kterého kvóta vůbec odmítá
    * (`QUOTA_ENGAGES_AT`). Zakládá se přímo v registru, ne přes route: tyhle

@@ -335,7 +335,7 @@ describe('klíč z důvěryhodného konce řetězu', () => {
         'x-forwarded-for': '203.0.113.99, 10.0.0.1',
         'x-real-ip': '203.0.113.99',
       }),
-      {},
+      { VERCEL: '1' },
     );
 
     expect(key).toContain('198.51.100.4');
@@ -409,14 +409,39 @@ describe('klíč z důvěryhodného konce řetězu', () => {
     ).toBeNull();
   });
 
+  it('mimo Vercel je hlavička platformy obyčejná lež a hloubku nepřebije', () => {
+    // **Blokující nález nezávislé revize 5. 9. 2026.** `x-vercel-forwarded-for`
+    // přepisuje jedině vercelský edge. Kdekoli jinde si ji volající napíše sám,
+    // a protože měla přednost před vyplněnou hloubkou, obcházela i správně
+    // nastavenou nginx — tedy přesně ten režim, který `.env.example` prodává
+    // jako chráněný.
+    const zaNginx = trustedCallerKey(
+      požadavek({
+        'x-vercel-forwarded-for': '198.51.100.4',
+        'x-forwarded-for': 'lie, 203.0.113.99',
+      }),
+      { [TRUSTED_PROXY_HOPS]: '1' },
+    );
+    expect(zaNginx, 'podvržená hlavička platformy přebila hloubku proxy').not.toContain(
+      '198.51.100.4',
+    );
+    expect(zaNginx).toContain('203.0.113.99');
+
+    // Bez proxy a mimo Vercel nezbývá důvěryhodný konec vůbec — `null`,
+    // tedy kvóta vypnutá, ne klíč vybraný volajícím.
+    expect(trustedCallerKey(požadavek({ 'x-vercel-forwarded-for': '198.51.100.4' }), {})).toBeNull();
+  });
+
   it('sentinel z důvěryhodné hlavičky složit nejde a klíč se ořezává', () => {
     // Táž vlastnost a týž důvod jako u `callerKey()`: kdo se dostane do
     // kbelíku nerozeznaných, dostane se k volnějším mezím.
     expect(
-      trustedCallerKey(požadavek({ 'x-vercel-forwarded-for': UNIDENTIFIED_CALLER }), {}),
+      trustedCallerKey(požadavek({ 'x-vercel-forwarded-for': UNIDENTIFIED_CALLER }), {
+        VERCEL: '1',
+      }),
     ).not.toBe(UNIDENTIFIED_CALLER);
 
     const huge = požadavek({ 'x-vercel-forwarded-for': 'a'.repeat(5_000) });
-    expect(trustedCallerKey(huge, {})!.length).toBeLessThan(60);
+    expect(trustedCallerKey(huge, { VERCEL: '1' })!.length).toBeLessThan(60);
   });
 });
