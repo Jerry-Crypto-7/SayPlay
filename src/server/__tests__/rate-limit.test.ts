@@ -382,6 +382,17 @@ describe('klíč z důvěryhodného konce řetězu', () => {
     // toho, co do něj napsal volající, je právě ta vada.
     expect(klíč('198.51.100.4,')).toBeNull();
     expect(klíč(', 198.51.100.4')).toBeNull();
+
+    // ⚠ **Jediná prázdná položka je taky `null`, a tohle je díra, kterou
+    // nedržel nikdo — naměřeno mutací 5. 9. 2026.** Bez téhle aserce nechala
+    // mutace „prázdnou položku pusť" celou sadu zelenou, ačkoli pod ní
+    // prázdná hlavička spadne do sdíleného kbelíku `ip:` místo do `null`.
+    // Rozdíl je celý v tom, kdo tam s ní je: `null` dá relaci vlastní kbelík,
+    // kdežto `ip:` je jeden kbelík pro každého, kdo si prázdnou hlavičku
+    // napíše. Vlastnost je starší než `T16-singleentry`; jenom ji do té doby
+    // nikdo nepinoval.
+    expect(klíč(''), 'prázdná hlavička dala kbelík místo neznáma').toBeNull();
+    expect(klíč('   '), 'hlavička ze samých mezer dala kbelík místo neznáma').toBeNull();
   });
 
   it('bez důvěryhodného zdroje je to `null`, ne odhad z hlavičky volajícího', () => {
