@@ -47,7 +47,7 @@
  * se má odmítnout, je to jediná práce, kterou ten požadavek způsobí.
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 
 import { type ControlStore, controlStoreFromEnv } from './spend-store';
 
@@ -118,6 +118,16 @@ export type ControlRead =
       readonly kind: 'read';
       readonly source: ControlSource;
       readonly value: Record<string, unknown>;
+      /**
+       * Kdy povel vznikl, v milisekundách epochy. `null` = zdroj to říct neumí.
+       *
+       * Čte to jediný konzument — mez na stáří vypnutého stropu
+       * (`CAP_OFF_MAX_AGE_MS` v `spend-cap.ts`, P15 `T30-capoffbound`). Soubor
+       * na disku má `mtime`; sdílený klíč žádnou obdobu nemá, a proto odsud
+       * chodí `null`. Kdo z toho čte, musí `null` číst jako **„neumím doložit
+       * stáří"**, tedy zavřeně, ne jako „je čerstvý".
+       */
+      readonly writtenAtMs: number | null;
     };
 
 /**
@@ -127,7 +137,11 @@ export type ControlRead =
  * JSON a musí z nich plynout přesně totéž. Dvě kopie téhle validace by se
  * rozešly a operátor by dostal jiný verdikt podle toho, kam povel napsal.
  */
-function parseControlBody(raw: string, source: ControlSource): ControlRead {
+function parseControlBody(
+  raw: string,
+  source: ControlSource,
+  writtenAtMs: number | null,
+): ControlRead {
   const where = source === 'file' ? 'control file' : 'shared control key';
 
   let parsed: unknown;
@@ -149,7 +163,28 @@ function parseControlBody(raw: string, source: ControlSource): ControlRead {
       detail: `${where} has unknown keys: ${unknown.join(', ')} (allowed: ${CONTROL_KEYS.join(', ')})`,
     };
 
-  return { kind: 'read', source, value: parsed as Record<string, unknown> };
+  return { kind: 'read', source, writtenAtMs, value: parsed as Record<string, unknown> };
+}
+
+/**
+ * Kdy byl soubor naposledy zapsaný. `null` = nedá se zjistit.
+ *
+ * Je to `mtime`, tedy čas, který operátor **vyrobí tím, že soubor napíše** —
+ * a to je celý důvod, proč se tady sahá na disk podruhé. `T30-capoffbound`
+ * potřebuje vypnutý strop ohraničit stářím a jediné pole, které o stáří povelu
+ * něco ví, je razítko souboru.
+ *
+ * **Selhání `stat` je `null`, ne výjimka.** Soubor se právě přečetl, takže sem
+ * se dojde jen když mezitím zmizel nebo se rozbila práva; z toho neplyne
+ * „povel je rozbitý" (obsah je v ruce a je v pořádku), plyne z toho „nevím, jak
+ * je starý". Ten rozdíl řeší konzument a řeší ho zavřeně.
+ */
+function fileWrittenAt(path: string): number | null {
+  try {
+    return statSync(path).mtimeMs;
+  } catch {
+    return null;
+  }
 }
 
 export function readControlFile(path: string | null): ControlRead {
@@ -169,7 +204,7 @@ export function readControlFile(path: string | null): ControlRead {
         };
   }
 
-  return parseControlBody(raw, 'file');
+  return parseControlBody(raw, 'file', fileWrittenAt(path));
 }
 
 /**
@@ -279,7 +314,7 @@ export async function readControlFrom(
 
   // Klíč, který nikdo nezaložil, je normální stav nasazení, na které se
   // nesáhlo — totéž co chybějící soubor.
-  return raw === null ? { kind: 'absent' } : parseControlBody(raw, 'store');
+  return raw === null ? { kind: 'absent' } : parseControlBody(raw, 'store', null);
 }
 
 /**

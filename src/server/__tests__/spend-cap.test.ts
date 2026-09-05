@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -11,6 +11,7 @@ import type { GenerationCall } from '../pipeline';
 import { readdirSync, readFileSync } from 'node:fs';
 
 import {
+  CAP_OFF_MAX_AGE_MS,
   costUsd,
   DEFAULT_CALL_CAP,
   DEFAULT_CAP_USD,
@@ -747,6 +748,24 @@ describe('jediný strop procesu', () => {
       ).toContain('T30-capfloor');
     }
   });
+
+  // P15 `T30-capoffbound`. Vypnutí stropu je jediný povel, který peněženku
+  // otevírá, a `.env.example` je jediné místo, kde se operátor za incidentu
+  // dočte, jak dlouho to vypnutí vydrží. Do 5. 9. 2026 tam stálo „Nic to samo
+  // neukončí." a byla to pravda; od meze na stáří je to lež, která stojí
+  // peníze. Kotva je nadpis, který je tam OD DŘÍV — tvrzení se tím pinuje,
+  // ne opakuje.
+  it('rada o vypnutí stropu ví, že vypnutí vyprší', () => {
+    const text = readFileSync('.env.example', 'utf8');
+    const kotva = 'VYPNUTÍ JE VÝJIMKA';
+    const start = text.indexOf(kotva);
+    expect(start, `kotva „${kotva}" zmizela — oprav kotvu, ne test`).toBeGreaterThan(-1);
+
+    // Okno je celá sekce o vypnutí i s odůvodněním, ne jen odstavec.
+    const blok = text.slice(start, start + 1600);
+    expect(blok, 'rada o vypnutí neříká, že okno má konec').toContain('T30-capoffbound');
+    expect(blok, 'rada o vypnutí nepojmenovává délku okna').toMatch(/30 minut/);
+  });
 });
 
 /**
@@ -1067,5 +1086,122 @@ describe('chladný start rozpočet neresetuje', () => {
     expect(refused.ok).toBe(false);
     if (refused.ok) throw new Error('unreachable');
     expect(refused.reason).toBe('STORE_UNCONFIGURED');
+  });
+});
+
+// **Vypnutý strop je jediná páka, která uvolňuje — a jediná, kterou nic
+// nekončilo** (P15 `T30-capoffbound`, routováno z revize `T30-capfloor`).
+// Mez je stáří povelu, ne jeho obsah: `mtime` souboru plus třicet minut.
+describe('vypnutý strop sám vyprší', () => {
+  function agedControlFile(contents: string, ageMs: number): string {
+    const path = controlFile(contents);
+    // `utimesSync` bere sekundy. Razítko se posouvá do minulosti, protože
+    // čekat třicet minut v testu není měření, ale zdržení.
+    const when = (Date.now() - ageMs) / 1000;
+    utimesSync(path, when, when);
+    return path;
+  }
+
+  const CAP_OFF = JSON.stringify({ enabled: false, capUsd: 0 });
+
+  it('čerstvé vypnutí platí dál', async () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 5 }, agedControlFile(CAP_OFF, 0));
+
+    expect((await cap.reserve(100)).ok, 'vypnutí přestalo platit hned po zápisu').toBe(true);
+  });
+
+  it('těsně pod mezí pořád platí', async () => {
+    const path = agedControlFile(CAP_OFF, CAP_OFF_MAX_AGE_MS - 60_000);
+    const cap = new SpendCap({ enabled: true, capUsd: 5 }, path);
+
+    expect((await cap.reserve(100)).ok).toBe(true);
+  });
+
+  it('po vypršení se strop vrátí a rezervace nad ním se odmítne', async () => {
+    const path = agedControlFile(CAP_OFF, CAP_OFF_MAX_AGE_MS + 60_000);
+    const cap = new SpendCap({ enabled: true, capUsd: 5 }, path);
+
+    const refused = await cap.reserve(100);
+    expect(refused.ok, 'zapomenutý soubor drží peněženku otevřenou dál').toBe(false);
+    if (refused.ok) throw new Error('unreachable');
+    expect(refused.reason).toBe('CAP_EXHAUSTED');
+    // A říká to i diagnostika, ne jen odmítnutí — operátor se dívá sem.
+    expect(refused.snapshot.enabled).toBe(true);
+  });
+
+  it('sdílený klíč vypnutí neprosadí vůbec, protože neumí říct, kdy vznikl', async () => {
+    // Tohle je ta polovina, na které záleží: na Vercelu žádný soubor není,
+    // takže kdyby `null` znamenalo „čerstvý", platila by mez lokálně a na
+    // nasazení, kde jsou peníze doopravdy, ne.
+    const store: ControlStore = {
+      id: 'test',
+      key: 'worldsmith:spend:control',
+      read: () => Promise.resolve(CAP_OFF),
+    };
+    const cap = new SpendCap({ enabled: true, capUsd: 5 }, null, memoryLedger(), store);
+
+    const refused = await cap.reserve(100);
+    expect(refused.ok, 'nedatovaný povel vypnul strop').toBe(false);
+    if (refused.ok) throw new Error('unreachable');
+    expect(refused.reason).toBe('CAP_EXHAUSTED');
+  });
+
+  it('vypnutý rozpočet mez nezapíná zpátky', async () => {
+    // `enabled:false` ve VÝCHOZÍCH hodnotách je rozhodnutí z prostředí, tedy
+    // z redeploye. Mez hlídá páku bez redeploye a do rozpočtu jí nic není.
+    const path = agedControlFile(CAP_OFF, CAP_OFF_MAX_AGE_MS + 60_000);
+    const cap = new SpendCap({ enabled: false, capUsd: 5 }, path);
+
+    expect((await cap.reserve(100)).ok).toBe(true);
+  });
+
+
+  // ⚠ **Tyhle dva testy měří stáří v minutách, ne v násobcích konstanty** —
+  // a je to oprava přeživšího mutanta, ne opakování. Zbytek téhle sady počítá
+  // stáří jako `CAP_OFF_MAX_AGE_MS ± minuta`, takže se pohne spolu s ní:
+  // naměřeno 5. 9. 2026, záměna třiceti minut za třicet HODIN nechala všech
+  // 73 asercí zelených. Okno je slib operátorovi a musí ho pinovat číslo.
+  it('čtvrt hodiny staré vypnutí ještě platí', async () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 5 }, agedControlFile(CAP_OFF, 15 * 60_000));
+
+    expect((await cap.reserve(100)).ok, 'okno se zkrátilo pod čtvrt hodiny').toBe(true);
+  });
+
+  it('tříčtvrtěhodinové vypnutí už neplatí', async () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 5 }, agedControlFile(CAP_OFF, 45 * 60_000));
+
+    expect((await cap.reserve(100)).ok, 'okno se protáhlo nad tři čtvrtě hodiny').toBe(false);
+  });
+  it('řádek do logu je jeden na proces, ne jeden na požadavek', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const path = agedControlFile(CAP_OFF, CAP_OFF_MAX_AGE_MS + 60_000);
+    const cap = new SpendCap({ enabled: true, capUsd: 5 }, path);
+
+    await cap.reserve(100);
+    await cap.reserve(100);
+    await cap.reserve(100);
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0]?.[0])).toContain('spend cap');
+    warn.mockRestore();
+  });
+
+  it('přepsaný soubor vypnutí obnoví, a ozve se to znovu', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const path = agedControlFile(CAP_OFF, CAP_OFF_MAX_AGE_MS + 60_000);
+    const cap = new SpendCap({ enabled: true, capUsd: 5 }, path);
+
+    expect((await cap.reserve(100)).ok).toBe(false);
+
+    // Operátor si všiml a soubor přepsal — nové razítko, nové okno.
+    writeFileSync(path, CAP_OFF, 'utf8');
+    expect((await cap.reserve(100)).ok, 'přepsání souboru okno neobnovilo').toBe(true);
+
+    // A druhý zásah téhož procesu se musí ozvat znovu, ne mlčet.
+    const when = (Date.now() - (CAP_OFF_MAX_AGE_MS + 60_000)) / 1000;
+    utimesSync(path, when, when);
+    expect((await cap.reserve(100)).ok).toBe(false);
+    expect(warn).toHaveBeenCalledTimes(2);
+    warn.mockRestore();
   });
 });

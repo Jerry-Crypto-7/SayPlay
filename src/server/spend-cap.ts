@@ -355,6 +355,41 @@ function parseControl(parsed: Record<string, unknown>, defaults: CapControl): Ca
 }
 
 /**
+ * **Jak dlouho platí vypnutý strop, než sám vyprší** (P15 `T30-capoffbound`).
+ *
+ * `{"enabled":false,"capUsd":…}` znamená „utrácej bez meze" a po
+ * `T30-capfloor` je to **jediná páka v ovládacím souboru, která strop
+ * uvolňuje** — všechno ostatní umí soubor už jen přitahovat (`min(soubor,
+ * výchozí)`). Zůstávala u ní jedna vlastnost, kterou nemá žádná jiná páka
+ * v tomhle modulu: **nic ji nekončí.** Operátor, který za incidentem v noci
+ * strop vypne, aby něco doměřil, a pak zavře notebook, nechá veřejné demo
+ * s otevřenou peněženkou tak dlouho, dokud si na ten soubor někdo nevzpomene.
+ * Nález nezávislé revize 4. 9. 2026 u `T30-capfloor`, routovaný sem.
+ *
+ * Mez je proto **stáří povelu, ne jeho obsah**: vypnutí platí třicet minut od
+ * chvíle, kdy soubor vznikl (`mtime`), a pak se strop sám vrátí na výchozí
+ * hodnotu. Kdo potřebuje víc času, soubor přepíše — a tím vyrobí nové razítko.
+ * Je to vědomá výměna: rychlá páka bez redeploye má právo uvolnit strop
+ * **na dobu jednoho zásahu**, ne natrvalo.
+ *
+ * ## Třicet minut, a proč zrovna tolik
+ *
+ * Delší než nejdelší zásah, který má tenhle produkt (měření nad zmrazenou
+ * sadou 30 vět, `T14`, běží v jednotkách minut), a kratší než doba, za kterou
+ * operátor stihne odejít od počítače a zapomenout. Není to bezpečnostní
+ * konstanta a nemá se o ni opírat nic dalšího.
+ *
+ * ⚠ **Zdroj, který razítko nemá, vypnutí neprosadí vůbec.** Sdílený klíč
+ * (`spend-store.ts`) žádnou obdobu `mtime` nenese, takže odsud chodí
+ * `writtenAtMs: null` — a `null` se čte jako „neumím doložit stáří", tedy
+ * zavřeně. Na Vercelu se tím strop souborem ani klíčem vypnout nedá; cesta
+ * k neomezenému utrácení tam vede přes `WORLDSMITH_SPEND_CAP_USD` a redeploy,
+ * přesně jako u podlahy v `T30-capfloor`. Uvolnění stropu si žádá krok, který
+ * je vidět v historii nasazení.
+ */
+export const CAP_OFF_MAX_AGE_MS = 30 * 60 * 1000;
+
+/**
  * Co ze čtení povelu vyšlo. `broken` nese větu pro operátora, protože zdroje
  * jsou od `T30-controllever` dva a odmítnutí musí říct, který z nich to byl.
  */
@@ -473,7 +508,52 @@ export class SpendCap {
     const parsed = parseControl(read.value, this.#defaults);
     return parsed === null
       ? this.#broken(read.source, 'it does not describe a spend cap this server can read')
-      : { kind: 'ok', control: parsed };
+      : { kind: 'ok', control: this.#bounded(parsed, read.writtenAtMs) };
+  }
+
+  /**
+   * Jestli operátor už dostal řádek o vypršelém vypnutí. Jen proti zaplavení.
+   *
+   * Vypnutý strop se čte **při každém rozhodnutí**, takže bez téhle značky by
+   * jedna věta do logu byla jedna věta na požadavek. Vrací se na `false`, jakmile
+   * nějaké vypnutí zase platí, aby se druhý zásah téhož procesu zase ozval.
+   */
+  #warnedCapOffExpired = false;
+
+  /**
+   * **Vypnutý strop ohraničený stářím povelu** (P15 `T30-capoffbound`).
+   *
+   * Proč vůbec a proč třicet minut, je u `CAP_OFF_MAX_AGE_MS`. Tady je jen ten
+   * jeden rozdíl, na kterém záleží: **`null` není „čerstvý"**. Zdroj, který
+   * razítko neumí (sdílený klíč), vypnutí neprosadí — jinak by mez platila
+   * lokálně a na nasazení, kde jsou peníze doopravdy, ne.
+   *
+   * Zpátky se padá na `this.#defaults.enabled`, tedy na to, co platí bez
+   * souboru. Když je i výchozí hodnota `false`, vypnutí nic nemění a nehlásí
+   * se nic — strop je vypnutý rozpočtem, ne pákou, a rozpočet se mění
+   * redeployem.
+   */
+  #bounded(control: CapControl, writtenAtMs: number | null): CapControl {
+    if (control.enabled) return control;
+
+    const ageMs = writtenAtMs === null ? null : Date.now() - writtenAtMs;
+    if (ageMs !== null && ageMs <= CAP_OFF_MAX_AGE_MS) {
+      this.#warnedCapOffExpired = false;
+      return control;
+    }
+    if (!this.#defaults.enabled) return control;
+
+    if (!this.#warnedCapOffExpired) {
+      this.#warnedCapOffExpired = true;
+      const why =
+        ageMs === null
+          ? 'the control source cannot say when the command was written'
+          : `it was written ${Math.round(ageMs / 60_000)} min ago, past the ${CAP_OFF_MAX_AGE_MS / 60_000} min limit`;
+      console.warn(
+        `[spend-cap] the disabled spend cap expired: ${why}. The cap is back on. Rewrite the control file to disable it for another window, or raise WORLDSMITH_SPEND_CAP_USD and redeploy.`,
+      );
+    }
+    return { ...control, enabled: true };
   }
 
   /**
