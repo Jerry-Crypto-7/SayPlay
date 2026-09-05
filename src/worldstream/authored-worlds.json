@@ -562,6 +562,6278 @@
           }
         }
       }
+    },
+    {
+      "id": "c03",
+      "prompt": "A bridge town: houses hanging under a single span over a dry canyon.",
+      "heroObjects": [
+        "hangingHouses"
+      ],
+      "synonyms": [
+        "the bridge",
+        "the span",
+        "the single span",
+        "the crossing",
+        "the houses",
+        "the suspended houses",
+        "the homes",
+        "the town",
+        "the bridge town",
+        "the settlement",
+        "the canyon",
+        "the gorge",
+        "the ravine",
+        "the canyon floor"
+      ],
+      "planner": {
+        "intent": {
+          "setting": "a town suspended beneath a bridge spanning a dry canyon",
+          "mood": "precarious, sheltered, cohesive",
+          "spatialThesis": "The town occupies the underside of one continuous bridge span, making the crossing overhead and the settlement above the canyon the same structure.",
+          "actors": [],
+          "heroObjects": [
+            "the bridge span",
+            "the hanging houses"
+          ],
+          "interactions": [
+            "the houses hang beneath the bridge span over the dry canyon"
+          ],
+          "unsupported": [
+            "the houses remain fixed beneath the bridge; structural loads, movement, and sway are not represented",
+            "the canyon is permanently dry, with no flowing or accumulating water"
+          ]
+        },
+        "objects": [
+          {
+            "stableId": "bridgeSpan",
+            "label": "the bridge span",
+            "synonyms": [
+              "the bridge",
+              "the span",
+              "the single span",
+              "the crossing"
+            ],
+            "role": "architecture",
+            "importance": 3
+          },
+          {
+            "stableId": "hangingHouses",
+            "label": "the hanging houses",
+            "synonyms": [
+              "the houses",
+              "the suspended houses",
+              "the homes",
+              "the town",
+              "the bridge town",
+              "the settlement"
+            ],
+            "role": "hero",
+            "importance": 3
+          },
+          {
+            "stableId": "dryCanyon",
+            "label": "the dry canyon",
+            "synonyms": [
+              "the canyon",
+              "the gorge",
+              "the ravine",
+              "the canyon floor"
+            ],
+            "role": "terrain",
+            "importance": 3
+          }
+        ]
+      },
+      "compiler": {
+        "geometry": {
+          "version": "geom-program-v1",
+          "nodes": [
+            {
+              "kind": "terrain",
+              "variant": "basin",
+              "extent": [
+                30,
+                22
+              ],
+              "amplitude": 6,
+              "seed": 731,
+              "at": [
+                0,
+                -3,
+                0
+              ],
+              "yaw": 0
+            },
+            {
+              "kind": "panel",
+              "variant": "floor",
+              "at": [
+                0,
+                3.2,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                8,
+                0.3,
+                2
+              ]
+            },
+            {
+              "kind": "panel",
+              "variant": "railing",
+              "at": [
+                0,
+                4,
+                -2
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                8,
+                1,
+                1
+              ]
+            },
+            {
+              "kind": "mirror",
+              "child": 2,
+              "axis": "z",
+              "about": 0
+            },
+            {
+              "kind": "arch",
+              "variant": "buttress",
+              "at": [
+                -9,
+                0,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                2,
+                4,
+                3
+              ]
+            },
+            {
+              "kind": "mirror",
+              "child": 4,
+              "axis": "x",
+              "about": 0
+            },
+            {
+              "kind": "group",
+              "children": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ]
+            },
+            {
+              "kind": "group",
+              "children": [
+                0,
+                6
+              ]
+            }
+          ],
+          "root": 7
+        },
+        "shapes": [
+          {
+            "shapeId": "suspendedTownShape",
+            "stableId": "hangingHouses",
+            "nodes": [
+              {
+                "kind": "roundBox",
+                "size": [
+                  2.1,
+                  1.7,
+                  1.8
+                ],
+                "radius": 0.12
+              },
+              {
+                "kind": "translate",
+                "child": 0,
+                "offset": [
+                  0,
+                  -1.2,
+                  0
+                ]
+              },
+              {
+                "kind": "prism",
+                "sides": 3,
+                "radius": 1.4,
+                "height": 1.8
+              },
+              {
+                "kind": "rotate",
+                "child": 2,
+                "yaw": 0,
+                "pitch": 1.5708,
+                "roll": 0
+              },
+              {
+                "kind": "translate",
+                "child": 3,
+                "offset": [
+                  0,
+                  -0.15,
+                  0
+                ]
+              },
+              {
+                "kind": "cylinder",
+                "height": 3,
+                "radius": 0.1
+              },
+              {
+                "kind": "translate",
+                "child": 5,
+                "offset": [
+                  -0.7,
+                  1.55,
+                  -0.6
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 5,
+                "offset": [
+                  0.7,
+                  1.55,
+                  -0.6
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 5,
+                "offset": [
+                  -0.7,
+                  1.55,
+                  0.6
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 5,
+                "offset": [
+                  0.7,
+                  1.55,
+                  0.6
+                ]
+              },
+              {
+                "kind": "union",
+                "children": [
+                  1,
+                  4,
+                  6,
+                  7,
+                  8,
+                  9
+                ],
+                "k": 0.06
+              },
+              {
+                "kind": "repeat",
+                "child": 10,
+                "count": 5,
+                "step": [
+                  3,
+                  0,
+                  0
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 11,
+                "offset": [
+                  -6,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "root": 12,
+            "targetBounds": {
+              "min": [
+                -7.5,
+                -2.2,
+                -1.5
+              ],
+              "max": [
+                7.5,
+                3.1,
+                1.5
+              ]
+            },
+            "anchors": [
+              {
+                "name": "bridgeAttachment",
+                "at": [
+                  0,
+                  3.05,
+                  0
+                ],
+                "normal": [
+                  0,
+                  1,
+                  0
+                ]
+              }
+            ],
+            "materialIntent": "weatheredTimberAndIron",
+            "priority": 12
+          }
+        ],
+        "placements": [
+          {
+            "stableId": "bridgeSpan",
+            "source": {
+              "kind": "geom",
+              "node": 6
+            },
+            "targetBounds": {
+              "min": [
+                -11,
+                -1,
+                -3
+              ],
+              "max": [
+                11,
+                5,
+                3
+              ]
+            }
+          },
+          {
+            "stableId": "hangingHouses",
+            "source": {
+              "kind": "shape",
+              "shapeId": "suspendedTownShape"
+            },
+            "targetBounds": {
+              "min": [
+                -7.5,
+                -0.5,
+                -1.5
+              ],
+              "max": [
+                7.5,
+                3.1,
+                1.5
+              ]
+            }
+          },
+          {
+            "stableId": "dryCanyon",
+            "source": {
+              "kind": "geom",
+              "node": 0
+            },
+            "targetBounds": {
+              "min": [
+                -15,
+                -9,
+                -11
+              ],
+              "max": [
+                15,
+                0,
+                11
+              ]
+            }
+          }
+        ],
+        "world": {
+          "irVersion": "v1",
+          "simRevision": 0,
+          "lookRevision": 0,
+          "sim": {
+            "layout": {
+              "width": 16,
+              "height": 10
+            },
+            "grid": {
+              "cell": 1
+            },
+            "sockets": {
+              "nearEnd": [
+                1,
+                5
+              ],
+              "bridgeCenter": [
+                8,
+                5
+              ],
+              "townBelow": [
+                8,
+                7
+              ],
+              "canyonFloor": [
+                8,
+                2
+              ],
+              "farEnd": [
+                14,
+                5
+              ]
+            },
+            "collisionAabb": {
+              "traveler": [
+                1,
+                5,
+                1,
+                1
+              ],
+              "bridgeSpan": [
+                2,
+                4,
+                13,
+                3
+              ],
+              "hangingHouses": [
+                4,
+                6,
+                9,
+                3
+              ],
+              "dryCanyon": [
+                2,
+                1,
+                13,
+                8
+              ]
+            },
+            "entities": {
+              "traveler": {
+                "role": "actor",
+                "socket": "nearEnd",
+                "state": "ready",
+                "locked": false
+              },
+              "bridgeSpan": {
+                "role": "crossing",
+                "socket": "bridgeCenter",
+                "state": "standing",
+                "locked": false
+              },
+              "hangingHouses": {
+                "role": "settlement",
+                "socket": "townBelow",
+                "state": "suspended",
+                "locked": false
+              },
+              "dryCanyon": {
+                "role": "terrain",
+                "socket": "canyonFloor",
+                "state": "dry",
+                "locked": false
+              }
+            },
+            "rules": {
+              "win": {
+                "phase": 0,
+                "priority": 0,
+                "event": {
+                  "kind": "onStart"
+                },
+                "condition": null,
+                "actions": [
+                  {
+                    "kind": "win"
+                  }
+                ]
+              }
+            },
+            "state": {
+              "counters": {},
+              "flags": {},
+              "timers": {},
+              "zones": {},
+              "slots": 0,
+              "pool": {}
+            }
+          },
+          "look": {
+            "modules": {
+              "bridgeSpan": {
+                "family": "continuous masonry crossing",
+                "params": {
+                  "deckThickness": 0.6,
+                  "parapetHeight": 1
+                }
+              },
+              "hangingHouses": {
+                "family": "suspended timber dwellings",
+                "params": {
+                  "houseCount": 5,
+                  "attachmentDensity": 4
+                }
+              },
+              "dryCanyon": {
+                "family": "eroded canyon",
+                "params": {
+                  "depth": 8,
+                  "waterLevel": 0
+                }
+              }
+            },
+            "palette": {
+              "stone": "pale dust",
+              "timber": "smoked brown",
+              "metal": "dark iron",
+              "accent": "muted ochre"
+            },
+            "lightRig": {
+              "kind": "high raking sun",
+              "intensity": 1.1,
+              "shadowSoftness": 0.25
+            },
+            "atmosphere": {
+              "kind": "dry suspended dust",
+              "density": 0.08
+            },
+            "materialRoles": {
+              "bridge": "weathered load-bearing stone",
+              "houses": "aged timber with iron hangers",
+              "canyon": "stratified dry rock"
+            },
+            "camera": {
+              "kind": "orbit",
+              "target": [
+                0,
+                1,
+                0
+              ],
+              "distance": 25,
+              "elevation": 0.3
+            },
+            "audio": {
+              "ambience": "canyon wind and distant timber creaks"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c04",
+      "prompt": "A brutalist observatory, one dome on three splayed legs, on a windswept plateau.",
+      "heroObjects": [],
+      "synonyms": [
+        "the dome",
+        "the observatory",
+        "the brutalist observatory",
+        "the observatory shell",
+        "the legs",
+        "the supports",
+        "the support legs",
+        "the three supports",
+        "the splayed supports",
+        "the plateau",
+        "the high ground",
+        "the exposed ground",
+        "the wind",
+        "the windswept air",
+        "the gusts"
+      ],
+      "planner": {
+        "intent": {
+          "setting": "a brutalist observatory on a windswept plateau",
+          "mood": "stark, exposed, monumental",
+          "spatialThesis": "A single observatory dome is borne by three splayed supports above the plateau, making the structure feel both elevated and firmly braced against the wind.",
+          "actors": [],
+          "heroObjects": [
+            "the observatory dome",
+            "the three splayed legs"
+          ],
+          "interactions": [
+            "the wind sweeps across the plateau around the observatory"
+          ],
+          "unsupported": [
+            "the wind is an atmospheric effect, not a force that physically moves or strains the observatory",
+            "the observatory is identified by its exterior form; no interior rooms or instruments are specified"
+          ]
+        },
+        "objects": [
+          {
+            "stableId": "observatoryDome",
+            "label": "the observatory dome",
+            "synonyms": [
+              "the dome",
+              "the observatory",
+              "the brutalist observatory",
+              "the observatory shell"
+            ],
+            "role": "architecture",
+            "importance": 3
+          },
+          {
+            "stableId": "splayedSupportLegs",
+            "label": "the three splayed legs",
+            "synonyms": [
+              "the legs",
+              "the supports",
+              "the support legs",
+              "the three supports",
+              "the splayed supports"
+            ],
+            "role": "architecture",
+            "importance": 3
+          },
+          {
+            "stableId": "windsweptPlateau",
+            "label": "the windswept plateau",
+            "synonyms": [
+              "the plateau",
+              "the high ground",
+              "the exposed ground"
+            ],
+            "role": "terrain",
+            "importance": 2
+          },
+          {
+            "stableId": "plateauWind",
+            "label": "the plateau wind",
+            "synonyms": [
+              "the wind",
+              "the windswept air",
+              "the gusts"
+            ],
+            "role": "effect",
+            "importance": 1
+          }
+        ]
+      },
+      "compiler": {
+        "geometry": {
+          "version": "geom-program-v1",
+          "nodes": [
+            {
+              "kind": "terrain",
+              "variant": "plateau",
+              "extent": [
+                28,
+                22
+              ],
+              "amplitude": 0.8,
+              "seed": 731,
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0
+            },
+            {
+              "kind": "sweep",
+              "profile": [
+                [
+                  -0.48,
+                  -0.48
+                ],
+                [
+                  0.48,
+                  -0.48
+                ],
+                [
+                  0.48,
+                  0.48
+                ],
+                [
+                  -0.48,
+                  0.48
+                ]
+              ],
+              "path": [
+                [
+                  -5,
+                  0,
+                  0
+                ],
+                [
+                  -1.7,
+                  4.8,
+                  0
+                ]
+              ],
+              "segments": 8,
+              "swatch": "shell",
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            {
+              "kind": "sweep",
+              "profile": [
+                [
+                  -0.48,
+                  -0.48
+                ],
+                [
+                  0.48,
+                  -0.48
+                ],
+                [
+                  0.48,
+                  0.48
+                ],
+                [
+                  -0.48,
+                  0.48
+                ]
+              ],
+              "path": [
+                [
+                  2.5,
+                  0,
+                  4.35
+                ],
+                [
+                  0.85,
+                  4.8,
+                  1.47
+                ]
+              ],
+              "segments": 8,
+              "swatch": "shell",
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            {
+              "kind": "sweep",
+              "profile": [
+                [
+                  -0.48,
+                  -0.48
+                ],
+                [
+                  0.48,
+                  -0.48
+                ],
+                [
+                  0.48,
+                  0.48
+                ],
+                [
+                  -0.48,
+                  0.48
+                ]
+              ],
+              "path": [
+                [
+                  2.5,
+                  0,
+                  -4.35
+                ],
+                [
+                  0.85,
+                  4.8,
+                  -1.47
+                ]
+              ],
+              "segments": 8,
+              "swatch": "shell",
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            {
+              "kind": "group",
+              "children": [
+                1,
+                2,
+                3
+              ]
+            },
+            {
+              "kind": "group",
+              "children": [
+                0,
+                4
+              ]
+            }
+          ],
+          "root": 5
+        },
+        "shapes": [
+          {
+            "shapeId": "observatoryDomeShape",
+            "stableId": "observatoryDome",
+            "nodes": [
+              {
+                "kind": "ellipsoid",
+                "radii": [
+                  4.8,
+                  2.7,
+                  4.8
+                ]
+              },
+              {
+                "kind": "ellipsoid",
+                "radii": [
+                  4.3,
+                  2.3,
+                  4.3
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 1,
+                "offset": [
+                  0,
+                  -0.16,
+                  0
+                ]
+              },
+              {
+                "kind": "subtract",
+                "children": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "kind": "box",
+                "size": [
+                  10,
+                  3.2,
+                  10
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 4,
+                "offset": [
+                  0,
+                  1.6,
+                  0
+                ]
+              },
+              {
+                "kind": "intersect",
+                "children": [
+                  3,
+                  5
+                ]
+              },
+              {
+                "kind": "torus",
+                "majorRadius": 4.55,
+                "minorRadius": 0.28
+              },
+              {
+                "kind": "union",
+                "children": [
+                  6,
+                  7
+                ],
+                "k": 0.08
+              }
+            ],
+            "root": 8,
+            "targetBounds": {
+              "min": [
+                -5,
+                -0.35,
+                -5
+              ],
+              "max": [
+                5,
+                3,
+                5
+              ]
+            },
+            "anchors": [
+              {
+                "name": "supportHub",
+                "at": [
+                  0,
+                  0,
+                  0
+                ],
+                "normal": [
+                  0,
+                  -1,
+                  0
+                ]
+              },
+              {
+                "name": "zenith",
+                "at": [
+                  0,
+                  2.7,
+                  0
+                ],
+                "normal": [
+                  0,
+                  1,
+                  0
+                ]
+              }
+            ],
+            "materialIntent": "rawConcreteShell",
+            "priority": 10
+          }
+        ],
+        "placements": [
+          {
+            "stableId": "observatoryDome",
+            "source": {
+              "kind": "shape",
+              "shapeId": "observatoryDomeShape"
+            },
+            "targetBounds": {
+              "min": [
+                -5,
+                4.7,
+                -5
+              ],
+              "max": [
+                5,
+                7.7,
+                5
+              ]
+            }
+          },
+          {
+            "stableId": "splayedSupportLegs",
+            "source": {
+              "kind": "geom",
+              "node": 4
+            },
+            "targetBounds": {
+              "min": [
+                -5.6,
+                0,
+                -4.95
+              ],
+              "max": [
+                3.1,
+                5.1,
+                4.95
+              ]
+            }
+          },
+          {
+            "stableId": "windsweptPlateau",
+            "source": {
+              "kind": "geom",
+              "node": 0
+            },
+            "targetBounds": {
+              "min": [
+                -14,
+                -0.8,
+                -11
+              ],
+              "max": [
+                14,
+                0.8,
+                11
+              ]
+            }
+          }
+        ],
+        "world": {
+          "irVersion": "v1",
+          "simRevision": 0,
+          "lookRevision": 0,
+          "sim": {
+            "layout": {
+              "width": 28,
+              "height": 22
+            },
+            "grid": {
+              "cell": 1
+            },
+            "sockets": {
+              "arrivalPad": [
+                3,
+                11
+              ],
+              "observatoryPad": [
+                14,
+                11
+              ],
+              "northLegPad": [
+                9,
+                11
+              ],
+              "southeastLegPad": [
+                17,
+                15
+              ],
+              "southwestLegPad": [
+                17,
+                7
+              ],
+              "plateauPad": [
+                14,
+                10
+              ]
+            },
+            "collisionAabb": {
+              "visitor": [
+                3,
+                11,
+                1,
+                1
+              ],
+              "observatoryDome": [
+                9,
+                6,
+                10,
+                10
+              ],
+              "splayedSupportLegs": [
+                8,
+                6,
+                11,
+                10
+              ],
+              "windsweptPlateau": [
+                0,
+                0,
+                28,
+                22
+              ]
+            },
+            "entities": {
+              "visitor": {
+                "role": "actor",
+                "socket": "arrivalPad",
+                "state": "approaching",
+                "locked": false
+              },
+              "observatoryDome": {
+                "role": "observatory",
+                "socket": "observatoryPad",
+                "state": "exposed",
+                "locked": false
+              },
+              "splayedSupportLegs": {
+                "role": "supports",
+                "socket": "northLegPad",
+                "state": "braced",
+                "locked": false
+              },
+              "windsweptPlateau": {
+                "role": "terrain",
+                "socket": "plateauPad",
+                "state": "windswept",
+                "locked": false
+              }
+            },
+            "rules": {
+              "win": {
+                "phase": 0,
+                "priority": 0,
+                "event": {
+                  "kind": "onEnterZone",
+                  "entity": "visitor",
+                  "zone": "observatoryPad"
+                },
+                "condition": null,
+                "actions": [
+                  {
+                    "kind": "win"
+                  }
+                ]
+              }
+            },
+            "state": {
+              "counters": {},
+              "flags": {},
+              "timers": {},
+              "zones": {},
+              "slots": 0
+            }
+          },
+          "look": {
+            "modules": {
+              "observatoryDome": {
+                "family": "monolithic dome",
+                "params": {
+                  "surfaceRoughness": 0.88,
+                  "seamWeight": 0.35
+                }
+              },
+              "splayedSupportLegs": {
+                "family": "splayed concrete supports",
+                "params": {
+                  "massiveness": 0.9
+                }
+              },
+              "windsweptPlateau": {
+                "family": "exposed high ground",
+                "params": {
+                  "erosion": 0.7
+                }
+              }
+            },
+            "palette": {
+              "concrete": "cold gray",
+              "ground": "charcoal stone",
+              "accent": "weathered steel"
+            },
+            "lightRig": {
+              "kind": "overcast directional",
+              "intensity": 0.78,
+              "azimuth": -0.7,
+              "elevation": 0.42
+            },
+            "atmosphere": {
+              "kind": "plateau wind",
+              "haze": 0.16,
+              "gustDirection": [
+                1,
+                0,
+                -0.25
+              ],
+              "gustStrength": 0.82,
+              "cloudCover": 0.76
+            },
+            "materialRoles": {
+              "shell": "board-marked concrete",
+              "supports": "rough structural concrete",
+              "terrain": "wind-scoured rock"
+            },
+            "camera": {
+              "kind": "orbit",
+              "target": [
+                0,
+                3.2,
+                0
+              ],
+              "distance": 24,
+              "elevation": 0.28
+            },
+            "audio": {
+              "wind": {
+                "kind": "broad exposed gusts",
+                "gain": 0.72
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c09",
+      "prompt": "A giant fallen tree hollowed into a village.",
+      "heroObjects": [
+        "treeVillage"
+      ],
+      "synonyms": [
+        "the tree",
+        "the fallen tree",
+        "the hollow tree",
+        "the trunk",
+        "the hollow trunk",
+        "the tree shell",
+        "the tree village",
+        "the settlement",
+        "the community",
+        "the dwellings",
+        "the homes",
+        "the houses",
+        "the living spaces",
+        "the passage",
+        "the thoroughfare",
+        "the village path",
+        "the main passage",
+        "the commons",
+        "the gathering place",
+        "the shared space"
+      ],
+      "planner": {
+        "intent": {
+          "setting": "a village built within the hollow of a fallen tree",
+          "mood": "sheltered, communal, quietly wondrous",
+          "spatialThesis": "The village extends through the tree's continuous hollow, so the trunk serves as both its enclosing shelter and its shared main thoroughfare.",
+          "actors": [
+            "the villagers"
+          ],
+          "heroObjects": [
+            "the hollow fallen tree",
+            "the village"
+          ],
+          "interactions": [
+            "the villagers travel through the shared passage and enter dwellings connected to it"
+          ],
+          "unsupported": [
+            "the tree is a stable inhabitable shell, not a decaying trunk whose structure changes over time",
+            "the village is represented by a coherent group of dwellings and shared spaces rather than every facility a functioning settlement would require"
+          ]
+        },
+        "objects": [
+          {
+            "stableId": "hollowFallenTree",
+            "label": "the hollow fallen tree",
+            "synonyms": [
+              "the tree",
+              "the fallen tree",
+              "the hollow tree",
+              "the trunk",
+              "the hollow trunk",
+              "the tree shell"
+            ],
+            "role": "architecture",
+            "importance": 3
+          },
+          {
+            "stableId": "treeVillage",
+            "label": "the village",
+            "synonyms": [
+              "the tree village",
+              "the settlement",
+              "the community"
+            ],
+            "role": "hero",
+            "importance": 3
+          },
+          {
+            "stableId": "villageDwellings",
+            "label": "the village dwellings",
+            "synonyms": [
+              "the dwellings",
+              "the homes",
+              "the houses",
+              "the living spaces"
+            ],
+            "role": "prop",
+            "importance": 2
+          },
+          {
+            "stableId": "sharedPassage",
+            "label": "the shared passage",
+            "synonyms": [
+              "the passage",
+              "the thoroughfare",
+              "the village path",
+              "the main passage"
+            ],
+            "role": "architecture",
+            "importance": 2
+          },
+          {
+            "stableId": "villageCommons",
+            "label": "the village commons",
+            "synonyms": [
+              "the commons",
+              "the gathering place",
+              "the shared space"
+            ],
+            "role": "prop",
+            "importance": 1
+          }
+        ]
+      },
+      "compiler": {
+        "geometry": {
+          "version": "geom-program-v1",
+          "nodes": [
+            {
+              "kind": "sweep",
+              "profile": [
+                [
+                  -2.8,
+                  -1.9
+                ],
+                [
+                  -1.8,
+                  -2.7
+                ],
+                [
+                  1.8,
+                  -2.7
+                ],
+                [
+                  2.8,
+                  -1.9
+                ],
+                [
+                  2.8,
+                  1.9
+                ],
+                [
+                  1.8,
+                  2.7
+                ],
+                [
+                  -1.8,
+                  2.7
+                ],
+                [
+                  -2.8,
+                  1.9
+                ]
+              ],
+              "path": [
+                [
+                  -9,
+                  2.7,
+                  0
+                ],
+                [
+                  -3,
+                  2.75,
+                  0.15
+                ],
+                [
+                  3,
+                  2.65,
+                  -0.1
+                ],
+                [
+                  9,
+                  2.7,
+                  0
+                ]
+              ],
+              "segments": 28,
+              "swatch": "warm",
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            {
+              "kind": "carve",
+              "child": 0,
+              "at": [
+                0,
+                2.65,
+                0
+              ],
+              "size": [
+                16.5,
+                3.8,
+                3.8
+              ]
+            },
+            {
+              "kind": "mass",
+              "variant": "bevel",
+              "at": [
+                -5.1,
+                0.85,
+                -1.65
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1.2,
+                1.4,
+                0.9
+              ]
+            },
+            {
+              "kind": "repeat",
+              "child": 2,
+              "count": 4,
+              "step": [
+                3.4,
+                0,
+                0
+              ]
+            },
+            {
+              "kind": "mirror",
+              "child": 3,
+              "axis": "z",
+              "about": 0
+            },
+            {
+              "kind": "group",
+              "children": [
+                3,
+                4
+              ]
+            },
+            {
+              "kind": "panel",
+              "variant": "floor",
+              "at": [
+                0,
+                0.25,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                7.5,
+                0.25,
+                0.8
+              ]
+            },
+            {
+              "kind": "mass",
+              "variant": "plinth",
+              "at": [
+                0,
+                0.4,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1.8,
+                0.35,
+                1.8
+              ]
+            },
+            {
+              "kind": "fixture",
+              "variant": "bench",
+              "at": [
+                -1.6,
+                0.55,
+                -1.25
+              ],
+              "yaw": 1,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1.1,
+                0.7,
+                0.7
+              ]
+            },
+            {
+              "kind": "repeat",
+              "child": 8,
+              "count": 4,
+              "step": [
+                1.05,
+                0,
+                0.85
+              ]
+            },
+            {
+              "kind": "group",
+              "children": [
+                7,
+                9
+              ]
+            },
+            {
+              "kind": "group",
+              "children": [
+                1,
+                5,
+                6,
+                10
+              ]
+            }
+          ],
+          "root": 11
+        },
+        "shapes": [
+          {
+            "shapeId": "treeVillageShape",
+            "stableId": "treeVillage",
+            "nodes": [
+              {
+                "kind": "roundBox",
+                "size": [
+                  1.4,
+                  1.2,
+                  1.1
+                ],
+                "radius": 0.18
+              },
+              {
+                "kind": "cone",
+                "height": 0.8,
+                "radius": 0.9
+              },
+              {
+                "kind": "translate",
+                "child": 1,
+                "offset": [
+                  0,
+                  0.95,
+                  0
+                ]
+              },
+              {
+                "kind": "union",
+                "children": [
+                  0,
+                  2
+                ],
+                "k": 0.08
+              },
+              {
+                "kind": "translate",
+                "child": 3,
+                "offset": [
+                  -5.1,
+                  0.75,
+                  -1.65
+                ]
+              },
+              {
+                "kind": "repeat",
+                "child": 4,
+                "count": 4,
+                "step": [
+                  3.4,
+                  0,
+                  0
+                ]
+              },
+              {
+                "kind": "mirror",
+                "child": 5,
+                "axis": "z",
+                "about": 0
+              },
+              {
+                "kind": "roundBox",
+                "size": [
+                  14.5,
+                  0.25,
+                  1.3
+                ],
+                "radius": 0.1
+              },
+              {
+                "kind": "translate",
+                "child": 7,
+                "offset": [
+                  0,
+                  0.25,
+                  0
+                ]
+              },
+              {
+                "kind": "cylinder",
+                "height": 0.35,
+                "radius": 1.8
+              },
+              {
+                "kind": "translate",
+                "child": 9,
+                "offset": [
+                  0,
+                  0.35,
+                  0
+                ]
+              },
+              {
+                "kind": "union",
+                "children": [
+                  5,
+                  6,
+                  8,
+                  10
+                ],
+                "k": 0.08
+              }
+            ],
+            "root": 11,
+            "targetBounds": {
+              "min": [
+                -7.4,
+                0,
+                -2.55
+              ],
+              "max": [
+                7.4,
+                2.2,
+                2.55
+              ]
+            },
+            "anchors": [
+              {
+                "name": "westEntrance",
+                "at": [
+                  -7.25,
+                  0.4,
+                  0
+                ],
+                "normal": [
+                  -1,
+                  0,
+                  0
+                ]
+              },
+              {
+                "name": "commonsCenter",
+                "at": [
+                  0,
+                  0.55,
+                  0
+                ],
+                "normal": [
+                  0,
+                  1,
+                  0
+                ]
+              },
+              {
+                "name": "eastEntrance",
+                "at": [
+                  7.25,
+                  0.4,
+                  0
+                ],
+                "normal": [
+                  1,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "materialIntent": "carvedTimberVillage",
+            "priority": 12
+          }
+        ],
+        "placements": [
+          {
+            "stableId": "hollowFallenTree",
+            "source": {
+              "kind": "geom",
+              "node": 1
+            },
+            "targetBounds": {
+              "min": [
+                -9.5,
+                0,
+                -3
+              ],
+              "max": [
+                9.5,
+                5.5,
+                3
+              ]
+            }
+          },
+          {
+            "stableId": "treeVillage",
+            "source": {
+              "kind": "shape",
+              "shapeId": "treeVillageShape"
+            },
+            "targetBounds": {
+              "min": [
+                -7.4,
+                0,
+                -2.55
+              ],
+              "max": [
+                7.4,
+                2.2,
+                2.55
+              ]
+            }
+          },
+          {
+            "stableId": "villageDwellings",
+            "source": {
+              "kind": "geom",
+              "node": 5
+            },
+            "targetBounds": {
+              "min": [
+                -6.4,
+                0,
+                -2.6
+              ],
+              "max": [
+                6.4,
+                2.4,
+                2.6
+              ]
+            }
+          },
+          {
+            "stableId": "sharedPassage",
+            "source": {
+              "kind": "geom",
+              "node": 6
+            },
+            "targetBounds": {
+              "min": [
+                -7.5,
+                0,
+                -0.8
+              ],
+              "max": [
+                7.5,
+                0.5,
+                0.8
+              ]
+            }
+          },
+          {
+            "stableId": "villageCommons",
+            "source": {
+              "kind": "geom",
+              "node": 10
+            },
+            "targetBounds": {
+              "min": [
+                -2.1,
+                0,
+                -2
+              ],
+              "max": [
+                2.1,
+                1.2,
+                2
+              ]
+            }
+          }
+        ],
+        "world": {
+          "irVersion": "v1",
+          "simRevision": 0,
+          "lookRevision": 0,
+          "sim": {
+            "layout": {
+              "width": 19,
+              "height": 7
+            },
+            "grid": {
+              "cell": 1
+            },
+            "sockets": {
+              "westEntrance": [
+                1,
+                3
+              ],
+              "passageMid": [
+                7,
+                3
+              ],
+              "commonsPad": [
+                10,
+                3
+              ],
+              "dwellingPad": [
+                15,
+                2
+              ],
+              "treeCore": [
+                10,
+                5
+              ],
+              "villageCore": [
+                10,
+                4
+              ]
+            },
+            "collisionAabb": {
+              "villagers": [
+                1,
+                3,
+                1,
+                1
+              ],
+              "hollowFallenTree": [
+                0,
+                0,
+                19,
+                7
+              ],
+              "treeVillage": [
+                2,
+                1,
+                15,
+                5
+              ],
+              "villageDwellings": [
+                3,
+                1,
+                13,
+                5
+              ],
+              "sharedPassage": [
+                1,
+                3,
+                17,
+                1
+              ],
+              "villageCommons": [
+                8,
+                2,
+                4,
+                3
+              ]
+            },
+            "entities": {
+              "villagers": {
+                "role": "actor",
+                "socket": "westEntrance",
+                "state": "arriving",
+                "locked": false
+              },
+              "hollowFallenTree": {
+                "role": "shelter",
+                "socket": "treeCore",
+                "state": "stable",
+                "locked": false
+              },
+              "treeVillage": {
+                "role": "village",
+                "socket": "villageCore",
+                "state": "inhabited",
+                "locked": false
+              },
+              "villageDwellings": {
+                "role": "dwellings",
+                "socket": "dwellingPad",
+                "state": "welcoming",
+                "locked": false
+              },
+              "sharedPassage": {
+                "role": "thoroughfare",
+                "socket": "passageMid",
+                "state": "open",
+                "locked": false
+              },
+              "villageCommons": {
+                "role": "commons",
+                "socket": "commonsPad",
+                "state": "quiet",
+                "locked": false
+              }
+            },
+            "state": {
+              "counters": {},
+              "flags": {
+                "passageTraversed": {
+                  "init": false
+                }
+              },
+              "timers": {},
+              "zones": {
+                "centralPassage": [
+                  [
+                    5,
+                    3,
+                    6,
+                    1
+                  ]
+                ]
+              },
+              "slots": 0,
+              "pool": {}
+            },
+            "rules": {
+              "traverseSharedPassage": {
+                "phase": 0,
+                "priority": 0,
+                "event": {
+                  "kind": "onEnterZone",
+                  "entity": "villagers",
+                  "zone": "centralPassage"
+                },
+                "condition": null,
+                "actions": [
+                  {
+                    "kind": "setFlag",
+                    "flag": "passageTraversed",
+                    "value": true
+                  },
+                  {
+                    "kind": "setState",
+                    "target": "villagers",
+                    "value": "travelingTogether"
+                  }
+                ]
+              },
+              "enterDwelling": {
+                "phase": 0,
+                "priority": 1,
+                "event": {
+                  "kind": "onEnterZone",
+                  "entity": "villagers",
+                  "zone": "dwellingPad"
+                },
+                "condition": {
+                  "kind": "flagIs",
+                  "flag": "passageTraversed",
+                  "value": true
+                },
+                "actions": [
+                  {
+                    "kind": "setState",
+                    "target": "villagers",
+                    "value": "atHome"
+                  },
+                  {
+                    "kind": "setState",
+                    "target": "villageDwellings",
+                    "value": "occupied"
+                  }
+                ]
+              },
+              "win": {
+                "phase": 1,
+                "priority": 0,
+                "event": {
+                  "kind": "onStateEnter",
+                  "entity": "villagers",
+                  "state": "atHome"
+                },
+                "condition": {
+                  "kind": "flagIs",
+                  "flag": "passageTraversed",
+                  "value": true
+                },
+                "actions": [
+                  {
+                    "kind": "win"
+                  }
+                ]
+              }
+            }
+          },
+          "look": {
+            "modules": {
+              "villagers": {
+                "family": "small communal figures",
+                "params": {
+                  "count": 5,
+                  "scale": 0.55
+                }
+              },
+              "hollowFallenTree": {
+                "family": "enclosing timber shell",
+                "params": {
+                  "barkDepth": 0.24,
+                  "hollowGlow": 0.3
+                }
+              },
+              "treeVillage": {
+                "family": "interconnected interior settlement",
+                "params": {
+                  "density": 0.7,
+                  "handBuilt": 1
+                }
+              },
+              "villageDwellings": {
+                "family": "carved timber homes",
+                "params": {
+                  "windowGlow": 0.65
+                }
+              },
+              "sharedPassage": {
+                "family": "continuous wooden thoroughfare",
+                "params": {
+                  "wear": 0.35
+                }
+              },
+              "villageCommons": {
+                "family": "circular gathering space",
+                "params": {
+                  "warmth": 0.8
+                }
+              }
+            },
+            "palette": {
+              "bark": "deep umber",
+              "interiorWood": "honeyed brown",
+              "moss": "muted green",
+              "windows": "soft amber"
+            },
+            "lightRig": {
+              "kind": "sheltered lantern pools",
+              "keyIntensity": 0.55,
+              "ambientIntensity": 0.22
+            },
+            "atmosphere": {
+              "kind": "still interior air",
+              "dustMotes": 0.3,
+              "mist": 0.04
+            },
+            "materialRoles": {
+              "shell": "weathered bark",
+              "homes": "smoothed heartwood",
+              "passage": "worn timber",
+              "accents": "moss and warm glass"
+            },
+            "camera": {
+              "kind": "interior tracking",
+              "position": [
+                -8,
+                2.4,
+                4.8
+              ],
+              "target": [
+                0,
+                1.3,
+                0
+              ],
+              "fieldOfView": 58
+            },
+            "audio": {
+              "bed": "quiet timber creaks and distant communal murmurs",
+              "intensity": 0.3
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c10",
+      "prompt": "A coral reef growing over a sunken radio tower.",
+      "heroObjects": [
+        "coralReef",
+        "sunkenRadioTower"
+      ],
+      "synonyms": [
+        "the reef",
+        "the coral",
+        "the coral growth",
+        "the radio tower",
+        "the tower",
+        "the sunken tower",
+        "the antenna tower"
+      ],
+      "planner": {
+        "intent": {
+          "setting": "an underwater coral reef overtaking a sunken radio tower",
+          "mood": "submerged, reclaimed, quietly alive",
+          "spatialThesis": "The reef spreads across the radio tower, making the lost structure and the living habitat one continuous place.",
+          "actors": [],
+          "heroObjects": [
+            "the coral reef",
+            "the sunken radio tower"
+          ],
+          "interactions": [
+            "the coral reef grows over and overtakes the radio tower"
+          ],
+          "unsupported": [
+            "the reef's growth is represented as a fixed state, not a biological process unfolding over time",
+            "the radio tower is an inert ruin, not functioning communications equipment"
+          ]
+        },
+        "objects": [
+          {
+            "stableId": "coralReef",
+            "label": "the coral reef",
+            "synonyms": [
+              "the reef",
+              "the coral",
+              "the coral growth"
+            ],
+            "role": "hero",
+            "importance": 3
+          },
+          {
+            "stableId": "sunkenRadioTower",
+            "label": "the sunken radio tower",
+            "synonyms": [
+              "the radio tower",
+              "the tower",
+              "the sunken tower",
+              "the antenna tower"
+            ],
+            "role": "hero",
+            "importance": 3
+          }
+        ]
+      },
+      "compiler": {
+        "geometry": {
+          "version": "geom-program-v1",
+          "nodes": [
+            {
+              "kind": "terrain",
+              "variant": "basin",
+              "extent": [
+                24,
+                20
+              ],
+              "amplitude": 1.2,
+              "seed": 731,
+              "at": [
+                0,
+                -1,
+                0
+              ],
+              "yaw": 0
+            },
+            {
+              "kind": "organic",
+              "variant": "pebble",
+              "at": [
+                -7,
+                -0.5,
+                -5
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                0.8,
+                0.4,
+                1.1
+              ]
+            },
+            {
+              "kind": "scatter",
+              "child": 1,
+              "count": 12,
+              "radius": 9,
+              "seed": 1842
+            },
+            {
+              "kind": "group",
+              "children": [
+                0,
+                2
+              ]
+            }
+          ],
+          "root": 3
+        },
+        "shapes": [
+          {
+            "shapeId": "coralReefShape",
+            "stableId": "coralReef",
+            "nodes": [
+              {
+                "kind": "ellipsoid",
+                "radii": [
+                  5.8,
+                  0.9,
+                  4.2
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 0,
+                "offset": [
+                  0,
+                  0.2,
+                  0
+                ]
+              },
+              {
+                "kind": "sphere",
+                "radius": 0.9
+              },
+              {
+                "kind": "scale",
+                "child": 2,
+                "factor": [
+                  1.3,
+                  0.8,
+                  1
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 3,
+                "offset": [
+                  -3.2,
+                  1,
+                  -1.8
+                ]
+              },
+              {
+                "kind": "repeat",
+                "child": 4,
+                "count": 4,
+                "step": [
+                  1.9,
+                  0.25,
+                  1
+                ]
+              },
+              {
+                "kind": "capsule",
+                "height": 3,
+                "radius": 0.3
+              },
+              {
+                "kind": "taper",
+                "child": 6,
+                "axis": "y",
+                "amount": -0.18
+              },
+              {
+                "kind": "radialArray",
+                "child": 7,
+                "count": 7,
+                "axis": "y",
+                "radius": 2.3
+              },
+              {
+                "kind": "translate",
+                "child": 8,
+                "offset": [
+                  0,
+                  1.6,
+                  0
+                ]
+              },
+              {
+                "kind": "torus",
+                "majorRadius": 1.7,
+                "minorRadius": 0.3
+              },
+              {
+                "kind": "translate",
+                "child": 10,
+                "offset": [
+                  1.1,
+                  3,
+                  0.7
+                ]
+              },
+              {
+                "kind": "cone",
+                "height": 2.6,
+                "radius": 0.75
+              },
+              {
+                "kind": "translate",
+                "child": 12,
+                "offset": [
+                  -1.5,
+                  2.1,
+                  -0.9
+                ]
+              },
+              {
+                "kind": "capsule",
+                "height": 2.2,
+                "radius": 0.22
+              },
+              {
+                "kind": "bend",
+                "child": 14,
+                "axis": "z",
+                "curvature": 0.22
+              },
+              {
+                "kind": "radialArray",
+                "child": 15,
+                "count": 5,
+                "axis": "y",
+                "radius": 1.2
+              },
+              {
+                "kind": "translate",
+                "child": 16,
+                "offset": [
+                  2.4,
+                  2.2,
+                  -1.5
+                ]
+              },
+              {
+                "kind": "union",
+                "children": [
+                  1,
+                  5,
+                  9,
+                  11,
+                  13,
+                  17
+                ],
+                "k": 0.28
+              },
+              {
+                "kind": "displace",
+                "child": 18,
+                "amplitude": 0.16,
+                "frequency": 2.4,
+                "seed": 908
+              }
+            ],
+            "root": 19,
+            "targetBounds": {
+              "min": [
+                -6.2,
+                -0.8,
+                -4.8
+              ],
+              "max": [
+                6.2,
+                5.2,
+                4.8
+              ]
+            },
+            "anchors": [
+              {
+                "name": "reefCrown",
+                "at": [
+                  0,
+                  4.8,
+                  0
+                ],
+                "normal": [
+                  0,
+                  1,
+                  0
+                ]
+              },
+              {
+                "name": "towerGrowth",
+                "at": [
+                  1.2,
+                  3,
+                  0.7
+                ],
+                "normal": [
+                  1,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "materialIntent": "living_coral_and_encrusted_stone",
+            "priority": 12
+          },
+          {
+            "shapeId": "sunkenRadioTowerShape",
+            "stableId": "sunkenRadioTower",
+            "nodes": [
+              {
+                "kind": "box",
+                "size": [
+                  0.18,
+                  9,
+                  0.18
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 0,
+                "offset": [
+                  -1.4,
+                  4.5,
+                  -1.4
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 0,
+                "offset": [
+                  1.4,
+                  4.5,
+                  -1.4
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 0,
+                "offset": [
+                  -1.4,
+                  4.5,
+                  1.4
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 0,
+                "offset": [
+                  1.4,
+                  4.5,
+                  1.4
+                ]
+              },
+              {
+                "kind": "union",
+                "children": [
+                  1,
+                  2,
+                  3,
+                  4
+                ]
+              },
+              {
+                "kind": "box",
+                "size": [
+                  3.2,
+                  0.16,
+                  0.18
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 6,
+                "offset": [
+                  0,
+                  1,
+                  -1.4
+                ]
+              },
+              {
+                "kind": "repeat",
+                "child": 7,
+                "count": 5,
+                "step": [
+                  0,
+                  1.8,
+                  0
+                ]
+              },
+              {
+                "kind": "box",
+                "size": [
+                  0.18,
+                  0.16,
+                  3.2
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 9,
+                "offset": [
+                  -1.4,
+                  1,
+                  0
+                ]
+              },
+              {
+                "kind": "repeat",
+                "child": 10,
+                "count": 5,
+                "step": [
+                  0,
+                  1.8,
+                  0
+                ]
+              },
+              {
+                "kind": "box",
+                "size": [
+                  0.14,
+                  2.1,
+                  0.14
+                ]
+              },
+              {
+                "kind": "rotate",
+                "child": 12,
+                "yaw": 0,
+                "pitch": 0,
+                "roll": 0.78
+              },
+              {
+                "kind": "translate",
+                "child": 13,
+                "offset": [
+                  0,
+                  1.8,
+                  -1.4
+                ]
+              },
+              {
+                "kind": "repeat",
+                "child": 14,
+                "count": 4,
+                "step": [
+                  0,
+                  1.8,
+                  0
+                ]
+              },
+              {
+                "kind": "mirror",
+                "child": 15,
+                "axis": "x",
+                "about": 0
+              },
+              {
+                "kind": "cylinder",
+                "height": 3,
+                "radius": 0.15
+              },
+              {
+                "kind": "translate",
+                "child": 17,
+                "offset": [
+                  0,
+                  10.4,
+                  0
+                ]
+              },
+              {
+                "kind": "sphere",
+                "radius": 0.58
+              },
+              {
+                "kind": "translate",
+                "child": 19,
+                "offset": [
+                  0,
+                  12.1,
+                  0
+                ]
+              },
+              {
+                "kind": "torus",
+                "majorRadius": 1.8,
+                "minorRadius": 0.12
+              },
+              {
+                "kind": "translate",
+                "child": 21,
+                "offset": [
+                  0,
+                  8.5,
+                  0
+                ]
+              },
+              {
+                "kind": "union",
+                "children": [
+                  5,
+                  8,
+                  11,
+                  15,
+                  16,
+                  18,
+                  20,
+                  22
+                ]
+              },
+              {
+                "kind": "rotate",
+                "child": 23,
+                "yaw": 0.08,
+                "pitch": 0,
+                "roll": 0.12
+              }
+            ],
+            "root": 24,
+            "targetBounds": {
+              "min": [
+                -2.5,
+                -0.5,
+                -2.5
+              ],
+              "max": [
+                2.5,
+                13.5,
+                2.5
+              ]
+            },
+            "anchors": [
+              {
+                "name": "towerBase",
+                "at": [
+                  0,
+                  0,
+                  0
+                ],
+                "normal": [
+                  0,
+                  1,
+                  0
+                ]
+              },
+              {
+                "name": "reefOverlap",
+                "at": [
+                  1.4,
+                  3,
+                  1.4
+                ],
+                "normal": [
+                  1,
+                  0,
+                  1
+                ]
+              },
+              {
+                "name": "antennaTip",
+                "at": [
+                  0,
+                  12.8,
+                  0
+                ],
+                "normal": [
+                  0,
+                  1,
+                  0
+                ]
+              }
+            ],
+            "materialIntent": "corroded_encrusted_steel",
+            "priority": 11
+          }
+        ],
+        "placements": [
+          {
+            "stableId": "coralReef",
+            "source": {
+              "kind": "shape",
+              "shapeId": "coralReefShape"
+            },
+            "targetBounds": {
+              "min": [
+                -6.2,
+                -0.8,
+                -4.8
+              ],
+              "max": [
+                6.2,
+                5.2,
+                4.8
+              ]
+            }
+          },
+          {
+            "stableId": "sunkenRadioTower",
+            "source": {
+              "kind": "shape",
+              "shapeId": "sunkenRadioTowerShape"
+            },
+            "targetBounds": {
+              "min": [
+                -2.5,
+                -0.5,
+                -2.5
+              ],
+              "max": [
+                2.5,
+                13.5,
+                2.5
+              ]
+            }
+          }
+        ],
+        "world": {
+          "irVersion": "v1",
+          "simRevision": 0,
+          "lookRevision": 0,
+          "sim": {
+            "layout": {
+              "width": 16,
+              "height": 14
+            },
+            "grid": {
+              "cell": 1
+            },
+            "sockets": {
+              "diveEntry": [
+                2,
+                7
+              ],
+              "reefCenter": [
+                9,
+                7
+              ],
+              "towerBase": [
+                9,
+                7
+              ],
+              "reefTowerJunction": [
+                10,
+                7
+              ]
+            },
+            "collisionAabb": {
+              "diver": [
+                2,
+                7,
+                1,
+                1
+              ],
+              "coralReef": [
+                5,
+                4,
+                8,
+                7
+              ],
+              "sunkenRadioTower": [
+                8,
+                6,
+                3,
+                3
+              ]
+            },
+            "entities": {
+              "diver": {
+                "role": "actor",
+                "socket": "diveEntry",
+                "state": "swimming",
+                "locked": false
+              },
+              "coralReef": {
+                "role": "living_habitat",
+                "socket": "reefCenter",
+                "state": "overtaking_tower",
+                "locked": true
+              },
+              "sunkenRadioTower": {
+                "role": "inert_ruin",
+                "socket": "towerBase",
+                "state": "submerged_and_overgrown",
+                "locked": true
+              }
+            },
+            "rules": {
+              "win": {
+                "phase": 0,
+                "priority": 0,
+                "event": {
+                  "kind": "onStart"
+                },
+                "condition": null,
+                "actions": [
+                  {
+                    "kind": "win"
+                  }
+                ]
+              }
+            },
+            "state": {
+              "counters": {},
+              "flags": {},
+              "timers": {},
+              "zones": {},
+              "slots": 0,
+              "pool": {}
+            }
+          },
+          "look": {
+            "modules": {
+              "coralReef": {
+                "family": "branching_reef",
+                "params": {
+                  "coverage": 0.82,
+                  "towerIntegration": 0.76
+                }
+              },
+              "sunkenRadioTower": {
+                "family": "collapsed_lattice",
+                "params": {
+                  "corrosion": 0.9,
+                  "marineGrowth": 0.78,
+                  "functioning": 0
+                }
+              }
+            },
+            "palette": "deep_water_coral",
+            "lightRig": "filtered_surface_shafts",
+            "atmosphere": "submerged_particulate_haze",
+            "materialRoles": {
+              "reef": "living_mineral_growth",
+              "tower": "corroded_marine_encrusted_metal",
+              "seabed": "soft_sediment"
+            },
+            "camera": {
+              "kind": "orbit",
+              "target": [
+                0,
+                4.5,
+                0
+              ],
+              "distance": 18,
+              "elevation": 0.3
+            },
+            "audio": {
+              "bed": "quiet_underwater_current",
+              "details": [
+                "distant_hull_creak",
+                "soft_bubble_drift"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c15",
+      "prompt": "An orrery the size of a room, planets on brass arms.",
+      "heroObjects": [
+        "orreryMechanism",
+        "planetModels"
+      ],
+      "synonyms": [
+        "the orrery",
+        "the planetary model",
+        "the mechanism",
+        "the mechanical model",
+        "the planets",
+        "the planetary bodies",
+        "the spheres",
+        "the worlds",
+        "the arms",
+        "the planet arms",
+        "the supporting arms",
+        "the orbital arms"
+      ],
+      "planner": {
+        "intent": {
+          "setting": "an inhabitable mechanical model of a planetary system",
+          "mood": "cosmic, intricate, contemplative",
+          "spatialThesis": "The planetary bodies and their supporting arms form one surrounding mechanism, so the model itself becomes the place.",
+          "actors": [],
+          "heroObjects": [
+            "the orrery",
+            "the planets"
+          ],
+          "interactions": [],
+          "unsupported": [
+            "the planets are representations, not full celestial bodies",
+            "orbital movement is implied by the orrery, but no drive mechanism or controls are specified"
+          ]
+        },
+        "objects": [
+          {
+            "stableId": "orreryMechanism",
+            "label": "the orrery",
+            "synonyms": [
+              "the orrery",
+              "the planetary model",
+              "the mechanism",
+              "the mechanical model"
+            ],
+            "role": "hero",
+            "importance": 3
+          },
+          {
+            "stableId": "planetModels",
+            "label": "the planets",
+            "synonyms": [
+              "the planets",
+              "the planetary bodies",
+              "the spheres",
+              "the worlds"
+            ],
+            "role": "hero",
+            "importance": 3
+          },
+          {
+            "stableId": "planetArms",
+            "label": "the planetary arms",
+            "synonyms": [
+              "the arms",
+              "the planet arms",
+              "the supporting arms",
+              "the orbital arms"
+            ],
+            "role": "prop",
+            "importance": 3
+          }
+        ]
+      },
+      "compiler": {
+        "geometry": {
+          "version": "geom-program-v1",
+          "nodes": [
+            {
+              "kind": "sweep",
+              "profile": [
+                [
+                  -0.14,
+                  -0.14
+                ],
+                [
+                  0.14,
+                  -0.14
+                ],
+                [
+                  0.14,
+                  0.14
+                ],
+                [
+                  -0.14,
+                  0.14
+                ]
+              ],
+              "path": [
+                [
+                  0,
+                  2.2,
+                  0
+                ],
+                [
+                  1.8,
+                  2.2,
+                  0
+                ],
+                [
+                  3.8,
+                  2.8,
+                  0
+                ],
+                [
+                  6.8,
+                  2.8,
+                  0
+                ]
+              ],
+              "segments": 18,
+              "swatch": "warm",
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            {
+              "kind": "sweep",
+              "profile": [
+                [
+                  -0.13,
+                  -0.13
+                ],
+                [
+                  0.13,
+                  -0.13
+                ],
+                [
+                  0.13,
+                  0.13
+                ],
+                [
+                  -0.13,
+                  0.13
+                ]
+              ],
+              "path": [
+                [
+                  0,
+                  2.35,
+                  0
+                ],
+                [
+                  1.5,
+                  2.35,
+                  1.5
+                ],
+                [
+                  3.3,
+                  3.15,
+                  3.3
+                ],
+                [
+                  5.3,
+                  3.15,
+                  5.3
+                ]
+              ],
+              "segments": 18,
+              "swatch": "warm",
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            {
+              "kind": "sweep",
+              "profile": [
+                [
+                  -0.12,
+                  -0.12
+                ],
+                [
+                  0.12,
+                  -0.12
+                ],
+                [
+                  0.12,
+                  0.12
+                ],
+                [
+                  -0.12,
+                  0.12
+                ]
+              ],
+              "path": [
+                [
+                  0,
+                  2.5,
+                  0
+                ],
+                [
+                  0,
+                  2.5,
+                  2.1
+                ],
+                [
+                  0,
+                  3.5,
+                  4.4
+                ],
+                [
+                  0,
+                  3.5,
+                  7.8
+                ]
+              ],
+              "segments": 18,
+              "swatch": "accent",
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            {
+              "kind": "sweep",
+              "profile": [
+                [
+                  -0.13,
+                  -0.13
+                ],
+                [
+                  0.13,
+                  -0.13
+                ],
+                [
+                  0.13,
+                  0.13
+                ],
+                [
+                  -0.13,
+                  0.13
+                ]
+              ],
+              "path": [
+                [
+                  0,
+                  2.65,
+                  0
+                ],
+                [
+                  -1.5,
+                  2.65,
+                  1.5
+                ],
+                [
+                  -3.3,
+                  3.9,
+                  3.3
+                ],
+                [
+                  -5.8,
+                  3.9,
+                  5.8
+                ]
+              ],
+              "segments": 18,
+              "swatch": "warm",
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            {
+              "kind": "sweep",
+              "profile": [
+                [
+                  -0.15,
+                  -0.15
+                ],
+                [
+                  0.15,
+                  -0.15
+                ],
+                [
+                  0.15,
+                  0.15
+                ],
+                [
+                  -0.15,
+                  0.15
+                ]
+              ],
+              "path": [
+                [
+                  0,
+                  2.8,
+                  0
+                ],
+                [
+                  -2,
+                  2.8,
+                  0
+                ],
+                [
+                  -4.6,
+                  4.3,
+                  0
+                ],
+                [
+                  -8.7,
+                  4.3,
+                  0
+                ]
+              ],
+              "segments": 20,
+              "swatch": "accent",
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            {
+              "kind": "sweep",
+              "profile": [
+                [
+                  -0.14,
+                  -0.14
+                ],
+                [
+                  0.14,
+                  -0.14
+                ],
+                [
+                  0.14,
+                  0.14
+                ],
+                [
+                  -0.14,
+                  0.14
+                ]
+              ],
+              "path": [
+                [
+                  0,
+                  2.95,
+                  0
+                ],
+                [
+                  -1.5,
+                  2.95,
+                  -1.5
+                ],
+                [
+                  -3.7,
+                  4.8,
+                  -3.7
+                ],
+                [
+                  -6.7,
+                  4.8,
+                  -6.7
+                ]
+              ],
+              "segments": 20,
+              "swatch": "warm",
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            {
+              "kind": "sweep",
+              "profile": [
+                [
+                  -0.12,
+                  -0.12
+                ],
+                [
+                  0.12,
+                  -0.12
+                ],
+                [
+                  0.12,
+                  0.12
+                ],
+                [
+                  -0.12,
+                  0.12
+                ]
+              ],
+              "path": [
+                [
+                  0,
+                  3.1,
+                  0
+                ],
+                [
+                  0,
+                  3.1,
+                  -2.1
+                ],
+                [
+                  0,
+                  5.35,
+                  -4.8
+                ],
+                [
+                  0,
+                  5.35,
+                  -10.2
+                ]
+              ],
+              "segments": 22,
+              "swatch": "accent",
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            {
+              "kind": "sweep",
+              "profile": [
+                [
+                  -0.13,
+                  -0.13
+                ],
+                [
+                  0.13,
+                  -0.13
+                ],
+                [
+                  0.13,
+                  0.13
+                ],
+                [
+                  -0.13,
+                  0.13
+                ]
+              ],
+              "path": [
+                [
+                  0,
+                  3.25,
+                  0
+                ],
+                [
+                  1.5,
+                  3.25,
+                  -1.5
+                ],
+                [
+                  3.7,
+                  5.9,
+                  -3.7
+                ],
+                [
+                  7.5,
+                  5.9,
+                  -7.5
+                ]
+              ],
+              "segments": 22,
+              "swatch": "warm",
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            {
+              "kind": "group",
+              "children": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+              ]
+            }
+          ],
+          "root": 8
+        },
+        "shapes": [
+          {
+            "shapeId": "orreryMechanismShape",
+            "stableId": "orreryMechanism",
+            "nodes": [
+              {
+                "kind": "torus",
+                "majorRadius": 3.2,
+                "minorRadius": 0.13
+              },
+              {
+                "kind": "torus",
+                "majorRadius": 2.55,
+                "minorRadius": 0.1
+              },
+              {
+                "kind": "rotate",
+                "child": 1,
+                "yaw": 0,
+                "pitch": 0.58,
+                "roll": 0.22
+              },
+              {
+                "kind": "torus",
+                "majorRadius": 1.85,
+                "minorRadius": 0.09
+              },
+              {
+                "kind": "rotate",
+                "child": 3,
+                "yaw": 0.35,
+                "pitch": -0.72,
+                "roll": 0
+              },
+              {
+                "kind": "cylinder",
+                "height": 4.4,
+                "radius": 0.34
+              },
+              {
+                "kind": "translate",
+                "child": 5,
+                "offset": [
+                  0,
+                  0.2,
+                  0
+                ]
+              },
+              {
+                "kind": "sphere",
+                "radius": 0.78
+              },
+              {
+                "kind": "translate",
+                "child": 7,
+                "offset": [
+                  0,
+                  2.2,
+                  0
+                ]
+              },
+              {
+                "kind": "cylinder",
+                "height": 0.45,
+                "radius": 1.35
+              },
+              {
+                "kind": "translate",
+                "child": 9,
+                "offset": [
+                  0,
+                  -2,
+                  0
+                ]
+              },
+              {
+                "kind": "union",
+                "children": [
+                  0,
+                  2,
+                  4,
+                  6,
+                  8,
+                  10
+                ],
+                "k": 0.04
+              }
+            ],
+            "root": 11,
+            "targetBounds": {
+              "min": [
+                -3.5,
+                -2.3,
+                -3.5
+              ],
+              "max": [
+                3.5,
+                3.35,
+                3.5
+              ]
+            },
+            "anchors": [
+              {
+                "name": "axisTop",
+                "at": [
+                  0,
+                  3.25,
+                  0
+                ],
+                "normal": [
+                  0,
+                  1,
+                  0
+                ]
+              },
+              {
+                "name": "mechanismCenter",
+                "at": [
+                  0,
+                  1.8,
+                  0
+                ],
+                "normal": [
+                  0,
+                  1,
+                  0
+                ]
+              }
+            ],
+            "materialIntent": "engravedAstronomicalBrass",
+            "priority": 12
+          },
+          {
+            "shapeId": "planetModelsShape",
+            "stableId": "planetModels",
+            "nodes": [
+              {
+                "kind": "sphere",
+                "radius": 0.42
+              },
+              {
+                "kind": "translate",
+                "child": 0,
+                "offset": [
+                  2.8,
+                  0,
+                  0
+                ]
+              },
+              {
+                "kind": "sphere",
+                "radius": 0.55
+              },
+              {
+                "kind": "translate",
+                "child": 2,
+                "offset": [
+                  4.7,
+                  0.4,
+                  0
+                ]
+              },
+              {
+                "kind": "sphere",
+                "radius": 0.6
+              },
+              {
+                "kind": "translate",
+                "child": 4,
+                "offset": [
+                  0,
+                  0.7,
+                  6
+                ]
+              },
+              {
+                "kind": "sphere",
+                "radius": 0.5
+              },
+              {
+                "kind": "translate",
+                "child": 6,
+                "offset": [
+                  -4.6,
+                  1.1,
+                  4.6
+                ]
+              },
+              {
+                "kind": "sphere",
+                "radius": 1.05
+              },
+              {
+                "kind": "translate",
+                "child": 8,
+                "offset": [
+                  -7.2,
+                  1.5,
+                  0
+                ]
+              },
+              {
+                "kind": "sphere",
+                "radius": 0.88
+              },
+              {
+                "kind": "translate",
+                "child": 10,
+                "offset": [
+                  -5.6,
+                  2,
+                  -5.6
+                ]
+              },
+              {
+                "kind": "sphere",
+                "radius": 0.72
+              },
+              {
+                "kind": "translate",
+                "child": 12,
+                "offset": [
+                  0,
+                  2.55,
+                  -8.4
+                ]
+              },
+              {
+                "kind": "sphere",
+                "radius": 0.7
+              },
+              {
+                "kind": "translate",
+                "child": 14,
+                "offset": [
+                  6.2,
+                  3.1,
+                  -6.2
+                ]
+              },
+              {
+                "kind": "torus",
+                "majorRadius": 1.35,
+                "minorRadius": 0.09
+              },
+              {
+                "kind": "translate",
+                "child": 16,
+                "offset": [
+                  -5.6,
+                  2,
+                  -5.6
+                ]
+              },
+              {
+                "kind": "union",
+                "children": [
+                  1,
+                  3,
+                  5,
+                  7,
+                  9,
+                  11,
+                  13,
+                  15
+                ]
+              },
+              {
+                "kind": "union",
+                "children": [
+                  17,
+                  18
+                ]
+              }
+            ],
+            "root": 19,
+            "targetBounds": {
+              "min": [
+                -8.3,
+                -1.1,
+                -9.2
+              ],
+              "max": [
+                7.2,
+                3.9,
+                6.8
+              ]
+            },
+            "anchors": [
+              {
+                "name": "innerPlanet",
+                "at": [
+                  2.8,
+                  0,
+                  0
+                ],
+                "normal": [
+                  0,
+                  -1,
+                  0
+                ]
+              },
+              {
+                "name": "outerPlanet",
+                "at": [
+                  6.2,
+                  3.8,
+                  -6.2
+                ],
+                "normal": [
+                  0,
+                  -1,
+                  0
+                ]
+              }
+            ],
+            "materialIntent": "handPaintedPlanetaryEnamel",
+            "priority": 14
+          }
+        ],
+        "placements": [
+          {
+            "stableId": "orreryMechanism",
+            "source": {
+              "kind": "shape",
+              "shapeId": "orreryMechanismShape"
+            },
+            "targetBounds": {
+              "min": [
+                -3.5,
+                0,
+                -3.5
+              ],
+              "max": [
+                3.5,
+                5.65,
+                3.5
+              ]
+            }
+          },
+          {
+            "stableId": "planetModels",
+            "source": {
+              "kind": "shape",
+              "shapeId": "planetModelsShape"
+            },
+            "targetBounds": {
+              "min": [
+                -8.3,
+                2.8,
+                -9.2
+              ],
+              "max": [
+                7.2,
+                7.8,
+                6.8
+              ]
+            }
+          },
+          {
+            "stableId": "planetArms",
+            "source": {
+              "kind": "geom",
+              "node": 8
+            },
+            "targetBounds": {
+              "min": [
+                -8.9,
+                2,
+                -10.4
+              ],
+              "max": [
+                7.8,
+                6.2,
+                8
+              ]
+            }
+          }
+        ],
+        "world": {
+          "irVersion": "v1",
+          "simRevision": 0,
+          "lookRevision": 0,
+          "sim": {
+            "layout": {
+              "width": 21,
+              "height": 21
+            },
+            "grid": {
+              "cell": 1
+            },
+            "sockets": {
+              "entryPad": [
+                10,
+                19
+              ],
+              "observationPad": [
+                10,
+                11
+              ],
+              "mechanismSocket": [
+                10,
+                10
+              ],
+              "planetsSocket": [
+                10,
+                9
+              ],
+              "armsSocket": [
+                10,
+                10
+              ]
+            },
+            "collisionAabb": {
+              "visitor": [
+                10,
+                19,
+                1,
+                1
+              ],
+              "orreryMechanism": [
+                7,
+                7,
+                7,
+                7
+              ],
+              "planetModels": [
+                1,
+                1,
+                19,
+                18
+              ],
+              "planetArms": [
+                1,
+                1,
+                19,
+                18
+              ]
+            },
+            "entities": {
+              "visitor": {
+                "role": "actor",
+                "socket": "entryPad",
+                "state": "wandering",
+                "locked": false
+              },
+              "orreryMechanism": {
+                "role": "hero",
+                "socket": "mechanismSocket",
+                "state": "poised",
+                "locked": false
+              },
+              "planetModels": {
+                "role": "hero",
+                "socket": "planetsSocket",
+                "state": "suspended",
+                "locked": false
+              },
+              "planetArms": {
+                "role": "support",
+                "socket": "armsSocket",
+                "state": "still",
+                "locked": false
+              }
+            },
+            "state": {
+              "counters": {},
+              "flags": {},
+              "timers": {},
+              "zones": {},
+              "slots": 0,
+              "pool": {}
+            },
+            "rules": {
+              "win": {
+                "phase": 0,
+                "priority": 0,
+                "event": {
+                  "kind": "onEnterZone",
+                  "entity": "visitor",
+                  "zone": "observationPad"
+                },
+                "condition": null,
+                "actions": [
+                  {
+                    "kind": "win"
+                  }
+                ]
+              }
+            }
+          },
+          "look": {
+            "modules": {
+              "orreryMechanism": {
+                "family": "astronomical mechanism",
+                "params": {
+                  "engravingDensity": 0.85,
+                  "patina": 0.32
+                }
+              },
+              "planetModels": {
+                "family": "planetary miniatures",
+                "params": {
+                  "surfaceVariation": 0.74,
+                  "gloss": 0.28
+                }
+              },
+              "planetArms": {
+                "family": "orbital supports",
+                "params": {
+                  "slenderness": 0.88
+                }
+              }
+            },
+            "palette": {
+              "metal": "aged brass",
+              "structure": "blue-black iron",
+              "planets": "muted mineral pigments",
+              "floor": "dark celestial stone"
+            },
+            "lightRig": {
+              "kind": "concentric pendant glow",
+              "keyIntensity": 0.72,
+              "rimIntensity": 0.48,
+              "planetAccents": 0.36
+            },
+            "atmosphere": {
+              "clarity": 0.82,
+              "dust": 0.12,
+              "mood": "cosmic, intricate, contemplative"
+            },
+            "materialRoles": {
+              "mechanism": "engraved brass",
+              "supports": "dark iron",
+              "worlds": "painted enamel"
+            },
+            "camera": {
+              "kind": "orbit",
+              "focus": [
+                0,
+                3.2,
+                0
+              ],
+              "distance": 18,
+              "elevation": 0.32
+            },
+            "audio": {
+              "ambience": "quiet resonant chamber",
+              "mechanicalBed": "faint metallic ticking"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c17",
+      "prompt": "A lighthouse in fog so thick the beam is the only straight line.",
+      "heroObjects": [],
+      "synonyms": [
+        "the lighthouse",
+        "the tower",
+        "the lighthouse tower",
+        "the beam",
+        "the light",
+        "the beacon",
+        "the beacon beam",
+        "the fog",
+        "the mist",
+        "the haze"
+      ],
+      "planner": {
+        "intent": {
+          "setting": "a lighthouse engulfed by dense fog",
+          "mood": "isolated, disorienting, vigilant",
+          "spatialThesis": "The lighthouse is swallowed by fog while its beam cuts outward as the only clear axis through the obscured surroundings.",
+          "actors": [],
+          "heroObjects": [
+            "the lighthouse",
+            "the lighthouse beam"
+          ],
+          "interactions": [
+            "the lighthouse beam cuts through the fog while everything beyond it remains obscured"
+          ],
+          "unsupported": [
+            "the fog is an obscuring atmospheric effect, not a fluid that can be displaced",
+            "the beam is a visible light effect, not a solid path"
+          ]
+        },
+        "objects": [
+          {
+            "stableId": "lighthouseTower",
+            "label": "the lighthouse",
+            "synonyms": [
+              "the lighthouse",
+              "the tower",
+              "the lighthouse tower"
+            ],
+            "role": "architecture",
+            "importance": 3
+          },
+          {
+            "stableId": "lighthouseBeam",
+            "label": "the lighthouse beam",
+            "synonyms": [
+              "the beam",
+              "the light",
+              "the beacon",
+              "the beacon beam"
+            ],
+            "role": "effect",
+            "importance": 3
+          },
+          {
+            "stableId": "denseFog",
+            "label": "the dense fog",
+            "synonyms": [
+              "the fog",
+              "the mist",
+              "the haze"
+            ],
+            "role": "effect",
+            "importance": 3
+          }
+        ]
+      },
+      "compiler": {
+        "geometry": {
+          "version": "geom-program-v1",
+          "nodes": [
+            {
+              "kind": "terrain",
+              "variant": "flat",
+              "extent": [
+                18,
+                18
+              ],
+              "amplitude": 0.25,
+              "seed": 731,
+              "at": [
+                0,
+                -0.2,
+                0
+              ],
+              "yaw": 0
+            },
+            {
+              "kind": "group",
+              "children": [
+                0
+              ]
+            }
+          ],
+          "root": 1
+        },
+        "shapes": [
+          {
+            "shapeId": "lighthouseTowerShape",
+            "stableId": "lighthouseTower",
+            "nodes": [
+              {
+                "kind": "cylinder",
+                "height": 10,
+                "radius": 2
+              },
+              {
+                "kind": "taper",
+                "child": 0,
+                "axis": "y",
+                "amount": -0.12
+              },
+              {
+                "kind": "translate",
+                "child": 1,
+                "offset": [
+                  0,
+                  5,
+                  0
+                ]
+              },
+              {
+                "kind": "roundBox",
+                "size": [
+                  0.75,
+                  1.35,
+                  0.7
+                ],
+                "radius": 0.12
+              },
+              {
+                "kind": "translate",
+                "child": 3,
+                "offset": [
+                  0,
+                  7.4,
+                  1.75
+                ]
+              },
+              {
+                "kind": "translate",
+                "child": 3,
+                "offset": [
+                  0,
+                  4.4,
+                  1.9
+                ]
+              },
+              {
+                "kind": "subtract",
+                "children": [
+                  2,
+                  4,
+                  5
+                ],
+                "k": 0.06
+              },
+              {
+                "kind": "cylinder",
+                "height": 0.4,
+                "radius": 2.5
+              },
+              {
+                "kind": "translate",
+                "child": 7,
+                "offset": [
+                  0,
+                  10.05,
+                  0
+                ]
+              },
+              {
+                "kind": "cylinder",
+                "height": 2,
+                "radius": 1.55
+              },
+              {
+                "kind": "translate",
+                "child": 9,
+                "offset": [
+                  0,
+                  11.15,
+                  0
+                ]
+              },
+              {
+                "kind": "torus",
+                "majorRadius": 1.95,
+                "minorRadius": 0.12
+              },
+              {
+                "kind": "translate",
+                "child": 11,
+                "offset": [
+                  0,
+                  10.65,
+                  0
+                ]
+              },
+              {
+                "kind": "cone",
+                "height": 1.8,
+                "radius": 2
+              },
+              {
+                "kind": "translate",
+                "child": 13,
+                "offset": [
+                  0,
+                  12.85,
+                  0
+                ]
+              },
+              {
+                "kind": "union",
+                "children": [
+                  6,
+                  8,
+                  10,
+                  12,
+                  14
+                ],
+                "k": 0.1
+              }
+            ],
+            "root": 15,
+            "targetBounds": {
+              "min": [
+                -2.6,
+                0,
+                -2.6
+              ],
+              "max": [
+                2.6,
+                13.8,
+                2.6
+              ]
+            },
+            "anchors": [
+              {
+                "name": "beacon",
+                "at": [
+                  0,
+                  11.4,
+                  0
+                ],
+                "normal": [
+                  1,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "materialIntent": "weatheredMasonryAndBeaconGlass",
+            "priority": 10
+          }
+        ],
+        "placements": [
+          {
+            "stableId": "lighthouseTower",
+            "source": {
+              "kind": "shape",
+              "shapeId": "lighthouseTowerShape"
+            },
+            "targetBounds": {
+              "min": [
+                -2.6,
+                0,
+                -2.6
+              ],
+              "max": [
+                2.6,
+                13.8,
+                2.6
+              ]
+            }
+          }
+        ],
+        "world": {
+          "irVersion": "v1",
+          "simRevision": 0,
+          "lookRevision": 0,
+          "sim": {
+            "layout": {
+              "width": 15,
+              "height": 15
+            },
+            "grid": {
+              "cell": 1
+            },
+            "sockets": {
+              "fogboundStart": [
+                2,
+                7
+              ],
+              "lighthouseBase": [
+                11,
+                7
+              ]
+            },
+            "collisionAabb": {
+              "visitor": [
+                2,
+                7,
+                1,
+                1
+              ],
+              "lighthouseTower": [
+                10,
+                6,
+                3,
+                3
+              ]
+            },
+            "entities": {
+              "visitor": {
+                "role": "actor",
+                "socket": "fogboundStart",
+                "state": "searching",
+                "locked": false
+              },
+              "lighthouseTower": {
+                "role": "landmark",
+                "socket": "lighthouseBase",
+                "state": "vigilant",
+                "locked": true
+              }
+            },
+            "rules": {
+              "win": {
+                "phase": 0,
+                "priority": 0,
+                "event": {
+                  "kind": "onEnterZone",
+                  "entity": "visitor",
+                  "zone": "lighthouseBase"
+                },
+                "condition": null,
+                "actions": [
+                  {
+                    "kind": "win"
+                  }
+                ]
+              }
+            },
+            "state": {
+              "counters": {},
+              "flags": {},
+              "timers": {},
+              "zones": {},
+              "slots": 0,
+              "pool": {}
+            }
+          },
+          "look": {
+            "modules": {
+              "lighthouseTower": {
+                "family": "monolithic beacon tower",
+                "params": {
+                  "masonryWeathering": 0.82,
+                  "glassGlow": 1,
+                  "gallerySilhouette": 0.9
+                }
+              }
+            },
+            "palette": {
+              "masonry": "cold chalk white",
+              "trim": "oxidized dark metal",
+              "ground": "wet charcoal stone",
+              "beam": "pale warm ivory",
+              "fog": "blue-grey"
+            },
+            "lightRig": {
+              "kind": "rotating beacon",
+              "sourceEntity": "lighthouseTower",
+              "height": 11.4,
+              "direction": [
+                1,
+                -0.04,
+                0.18
+              ],
+              "coneAngle": 0.13,
+              "range": 34,
+              "intensity": 9,
+              "volumetricScattering": 1,
+              "ambientIntensity": 0.08
+            },
+            "atmosphere": {
+              "kind": "dense maritime fog",
+              "density": 0.94,
+              "visibility": 4.5,
+              "beamVisibility": 1,
+              "backgroundOcclusion": 0.98,
+              "drift": [
+                0.03,
+                0,
+                -0.02
+              ]
+            },
+            "materialRoles": {
+              "towerShell": "salt-streaked masonry",
+              "lanternRoom": "fogged beacon glass",
+              "gallery": "corroded iron",
+              "terrain": "rain-darkened rock"
+            },
+            "camera": {
+              "kind": "ground orbit",
+              "distance": 19,
+              "height": 4.2,
+              "target": [
+                0,
+                6.2,
+                0
+              ]
+            },
+            "audio": {
+              "bed": "low wind and distant surf",
+              "accent": "slow beacon machinery",
+              "reverb": 0.72
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c20",
+      "prompt": "A tunnel lit only by the train that is about to arrive.",
+      "heroObjects": [
+        "arrivingTrain"
+      ],
+      "synonyms": [
+        "tunnel",
+        "the railway tunnel",
+        "railway tunnel",
+        "the train tunnel",
+        "train tunnel",
+        "train",
+        "the train",
+        "the approaching train",
+        "approaching train",
+        "light",
+        "the light",
+        "the train light",
+        "train light",
+        "the approaching light",
+        "approaching light",
+        "the illumination",
+        "illumination"
+      ],
+      "planner": {
+        "intent": {
+          "setting": "a railway tunnel awaiting an approaching train",
+          "mood": "dark, tense, expectant",
+          "spatialThesis": "The arriving train faces into the tunnel, so its advancing light is the only thing that reveals the enclosed route ahead.",
+          "actors": [
+            "the arriving train"
+          ],
+          "heroObjects": [
+            "the tunnel",
+            "the arriving train"
+          ],
+          "interactions": [
+            "the approaching train casts the tunnel's only light"
+          ],
+          "unsupported": [
+            "the train remains on the verge of arrival rather than completing its passage",
+            "the train's illumination is treated as a single advancing light effect"
+          ]
+        },
+        "objects": [
+          {
+            "stableId": "railwayTunnel",
+            "label": "the tunnel",
+            "synonyms": [
+              "tunnel",
+              "the railway tunnel",
+              "railway tunnel",
+              "the train tunnel",
+              "train tunnel"
+            ],
+            "role": "architecture",
+            "importance": 3
+          },
+          {
+            "stableId": "arrivingTrain",
+            "label": "the arriving train",
+            "synonyms": [
+              "train",
+              "the train",
+              "the approaching train",
+              "approaching train"
+            ],
+            "role": "hero",
+            "importance": 3
+          },
+          {
+            "stableId": "trainLight",
+            "label": "the train's light",
+            "synonyms": [
+              "light",
+              "the light",
+              "the train light",
+              "train light",
+              "the approaching light",
+              "approaching light",
+              "the illumination",
+              "illumination"
+            ],
+            "role": "effect",
+            "importance": 3
+          }
+        ]
+      },
+      "compiler": {
+        "geometry": {
+          "version": "geom-program-v1",
+          "nodes": [
+            {
+              "kind": "arch",
+              "variant": "portal",
+              "at": [
+                0,
+                2.6,
+                -7
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                3.5,
+                3.2,
+                0.4
+              ]
+            },
+            {
+              "kind": "repeat",
+              "child": 0,
+              "count": 8,
+              "step": [
+                0,
+                0,
+                2
+              ]
+            },
+            {
+              "kind": "panel",
+              "variant": "wall",
+              "at": [
+                -3.2,
+                1.7,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                0.3,
+                2.6,
+                8
+              ]
+            },
+            {
+              "kind": "mirror",
+              "child": 2,
+              "axis": "x",
+              "about": 0
+            },
+            {
+              "kind": "panel",
+              "variant": "floor",
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                3.4,
+                0.15,
+                8
+              ]
+            },
+            {
+              "kind": "fixture",
+              "variant": "pipe",
+              "at": [
+                -0.85,
+                0.28,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 1,
+              "roll": 0,
+              "scale": [
+                0.12,
+                8,
+                0.12
+              ]
+            },
+            {
+              "kind": "mirror",
+              "child": 5,
+              "axis": "x",
+              "about": 0
+            },
+            {
+              "kind": "panel",
+              "variant": "floor",
+              "at": [
+                0,
+                0.18,
+                -7
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                2.2,
+                0.12,
+                0.22
+              ]
+            },
+            {
+              "kind": "repeat",
+              "child": 7,
+              "count": 12,
+              "step": [
+                0,
+                0,
+                1.25
+              ]
+            },
+            {
+              "kind": "group",
+              "children": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                8
+              ]
+            }
+          ],
+          "root": 9
+        },
+        "shapes": [
+          {
+            "shapeId": "arrivingTrainShape",
+            "stableId": "arrivingTrain",
+            "nodes": [
+              {
+                "kind": "roundBox",
+                "size": [
+                  2.7,
+                  2.2,
+                  6.4
+                ],
+                "radius": 0.35
+              },
+              {
+                "kind": "translate",
+                "child": 0,
+                "offset": [
+                  0,
+                  1.45,
+                  0
+                ]
+              },
+              {
+                "kind": "roundBox",
+                "size": [
+                  2.45,
+                  1.9,
+                  2.5
+                ],
+                "radius": 0.2
+              },
+              {
+                "kind": "translate",
+                "child": 2,
+                "offset": [
+                  0,
+                  3.25,
+                  1.35
+                ]
+              },
+              {
+                "kind": "cylinder",
+                "height": 0.8,
+                "radius": 0.36
+              },
+              {
+                "kind": "translate",
+                "child": 4,
+                "offset": [
+                  0,
+                  3.15,
+                  -1.35
+                ]
+              },
+              {
+                "kind": "cone",
+                "height": 0.55,
+                "radius": 0.48
+              },
+              {
+                "kind": "translate",
+                "child": 6,
+                "offset": [
+                  0,
+                  3.78,
+                  -1.35
+                ]
+              },
+              {
+                "kind": "sphere",
+                "radius": 0.32
+              },
+              {
+                "kind": "translate",
+                "child": 8,
+                "offset": [
+                  0,
+                  2.05,
+                  3.3
+                ]
+              },
+              {
+                "kind": "cylinder",
+                "height": 3,
+                "radius": 0.48
+              },
+              {
+                "kind": "rotate",
+                "child": 10,
+                "yaw": 0,
+                "pitch": 0,
+                "roll": 1.5707963267948966
+              },
+              {
+                "kind": "translate",
+                "child": 11,
+                "offset": [
+                  0,
+                  0.45,
+                  -2.1
+                ]
+              },
+              {
+                "kind": "repeat",
+                "child": 12,
+                "count": 3,
+                "step": [
+                  0,
+                  0,
+                  2.1
+                ]
+              },
+              {
+                "kind": "roundBox",
+                "size": [
+                  2.65,
+                  0.25,
+                  2.8
+                ],
+                "radius": 0.12
+              },
+              {
+                "kind": "translate",
+                "child": 14,
+                "offset": [
+                  0,
+                  4.25,
+                  1.35
+                ]
+              },
+              {
+                "kind": "union",
+                "children": [
+                  1,
+                  3,
+                  5,
+                  7,
+                  9,
+                  13,
+                  15
+                ],
+                "k": 0.08
+              },
+              {
+                "kind": "scale",
+                "child": 16,
+                "factor": [
+                  0.94,
+                  1,
+                  0.94
+                ]
+              }
+            ],
+            "root": 17,
+            "targetBounds": {
+              "min": [
+                -1.6,
+                -0.1,
+                -3.5
+              ],
+              "max": [
+                1.6,
+                4.5,
+                3.7
+              ]
+            },
+            "anchors": [
+              {
+                "name": "headlight",
+                "at": [
+                  0,
+                  2.05,
+                  3.6
+                ],
+                "normal": [
+                  0,
+                  0,
+                  1
+                ]
+              },
+              {
+                "name": "coupler",
+                "at": [
+                  0,
+                  0.85,
+                  3.65
+                ],
+                "normal": [
+                  0,
+                  0,
+                  1
+                ]
+              }
+            ],
+            "materialIntent": "weatheredLocomotiveSteel",
+            "priority": 20
+          }
+        ],
+        "placements": [
+          {
+            "stableId": "railwayTunnel",
+            "source": {
+              "kind": "geom",
+              "node": 9
+            },
+            "targetBounds": {
+              "min": [
+                -3.6,
+                -0.2,
+                -7.5
+              ],
+              "max": [
+                3.6,
+                6,
+                7.5
+              ]
+            }
+          },
+          {
+            "stableId": "arrivingTrain",
+            "source": {
+              "kind": "shape",
+              "shapeId": "arrivingTrainShape"
+            },
+            "targetBounds": {
+              "min": [
+                -1.6,
+                0,
+                -13.5
+              ],
+              "max": [
+                1.6,
+                4.6,
+                -6.3
+              ]
+            }
+          }
+        ],
+        "world": {
+          "irVersion": "v1",
+          "simRevision": 0,
+          "lookRevision": 0,
+          "sim": {
+            "layout": {
+              "width": 9,
+              "height": 18
+            },
+            "grid": {
+              "cell": 1
+            },
+            "sockets": {
+              "approachPad": [
+                4,
+                15
+              ],
+              "tunnelMouth": [
+                4,
+                12
+              ]
+            },
+            "collisionAabb": {
+              "arrivingTrain": [
+                3,
+                14,
+                3,
+                4
+              ],
+              "railwayTunnel": [
+                1,
+                3,
+                7,
+                10
+              ]
+            },
+            "entities": {
+              "arrivingTrain": {
+                "role": "actor",
+                "socket": "approachPad",
+                "state": "approaching",
+                "locked": false
+              },
+              "railwayTunnel": {
+                "role": "destination",
+                "socket": "tunnelMouth",
+                "state": "dark",
+                "locked": false
+              }
+            },
+            "state": {
+              "counters": {},
+              "flags": {},
+              "timers": {},
+              "zones": {},
+              "slots": 0,
+              "pool": {}
+            },
+            "rules": {
+              "win": {
+                "phase": 0,
+                "priority": 0,
+                "event": {
+                  "kind": "onEnterZone",
+                  "entity": "arrivingTrain",
+                  "zone": "tunnelMouth"
+                },
+                "condition": null,
+                "actions": [
+                  {
+                    "kind": "win"
+                  }
+                ]
+              }
+            }
+          },
+          "look": {
+            "modules": {
+              "railwayTunnel": {
+                "family": "enclosed masonry tunnel",
+                "params": {
+                  "depth": 15,
+                  "ribSpacing": 2,
+                  "surfaceRoughness": 0.92
+                }
+              },
+              "arrivingTrain": {
+                "family": "approaching locomotive",
+                "params": {
+                  "headlightAnchor": "headlight",
+                  "forwardAxis": [
+                    0,
+                    0,
+                    1
+                  ]
+                }
+              }
+            },
+            "palette": {
+              "stone": "soot-blackened",
+              "rails": "cold steel",
+              "train": "near-black iron",
+              "visibility": "headlight-revealed only"
+            },
+            "lightRig": {
+              "ambientIntensity": 0,
+              "lights": [
+                {
+                  "kind": "advancing headlight",
+                  "entity": "arrivingTrain",
+                  "anchor": "headlight",
+                  "intensity": 18,
+                  "range": 24,
+                  "coneAngle": 0.42,
+                  "colorTemperature": 3200
+                }
+              ]
+            },
+            "atmosphere": {
+              "kind": "dense tunnel haze",
+              "density": 0.18,
+              "mood": "dark, tense, expectant"
+            },
+            "materialRoles": {
+              "tunnelShell": "damp soot-dark masonry",
+              "track": "oily steel",
+              "trainBody": "weathered locomotive steel",
+              "headlightLens": "hot glass"
+            },
+            "camera": {
+              "kind": "low trackside",
+              "target": "arrivingTrain",
+              "position": [
+                2.7,
+                1.1,
+                4.5
+              ],
+              "lookAt": [
+                0,
+                1.8,
+                -8
+              ]
+            },
+            "audio": {
+              "bed": "subterranean rail resonance",
+              "source": "arrivingTrain",
+              "intensity": 0.8
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c24",
+      "prompt": "A place built out of the negative space of a staircase.",
+      "heroObjects": [
+        "staircaseVoid"
+      ],
+      "synonyms": [
+        "the void",
+        "the negative space",
+        "the stair void",
+        "the staircase space",
+        "the place",
+        "the staircase",
+        "the stairs",
+        "the stair",
+        "the steps",
+        "the interior",
+        "the rooms",
+        "the passages",
+        "the inhabitable space"
+      ],
+      "planner": {
+        "intent": {
+          "setting": "an inhabitable interior formed from the void around and beneath a staircase",
+          "mood": "paradoxical, enclosed, exploratory",
+          "spatialThesis": "Connected rooms occupy the gaps defined by the staircase, so the space normally left empty becomes the place itself.",
+          "actors": [],
+          "heroObjects": [
+            "the staircase void"
+          ],
+          "interactions": [
+            "occupants move through the connected spaces formed by the staircase gaps"
+          ],
+          "unsupported": [
+            "negative space is treated as inhabitable architecture rather than literal absence",
+            "the staircase is a defining boundary rather than a usable stair"
+          ]
+        },
+        "objects": [
+          {
+            "stableId": "staircaseVoid",
+            "label": "the staircase void",
+            "synonyms": [
+              "the void",
+              "the negative space",
+              "the stair void",
+              "the staircase space",
+              "the place"
+            ],
+            "role": "hero",
+            "importance": 3
+          },
+          {
+            "stableId": "staircaseBoundary",
+            "label": "the staircase boundary",
+            "synonyms": [
+              "the staircase",
+              "the stairs",
+              "the stair",
+              "the steps"
+            ],
+            "role": "architecture",
+            "importance": 3
+          },
+          {
+            "stableId": "connectedInterior",
+            "label": "the connected interior",
+            "synonyms": [
+              "the interior",
+              "the rooms",
+              "the passages",
+              "the inhabitable space"
+            ],
+            "role": "architecture",
+            "importance": 2
+          }
+        ]
+      },
+      "compiler": {
+        "geometry": {
+          "version": "geom-program-v1",
+          "nodes": [
+            {
+              "kind": "mass",
+              "variant": "step",
+              "at": [
+                -4.5,
+                1.1,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1.5,
+                0.7,
+                5.4
+              ]
+            },
+            {
+              "kind": "repeat",
+              "child": 0,
+              "count": 6,
+              "step": [
+                1.5,
+                0.7,
+                0
+              ]
+            },
+            {
+              "kind": "panel",
+              "variant": "floor",
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                5.8,
+                0.2,
+                3.4
+              ]
+            },
+            {
+              "kind": "panel",
+              "variant": "wall",
+              "at": [
+                0,
+                2.4,
+                3
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                5.8,
+                2.4,
+                0.2
+              ]
+            },
+            {
+              "kind": "panel",
+              "variant": "half",
+              "at": [
+                -5.4,
+                1.4,
+                0
+              ],
+              "yaw": 1,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                3.2,
+                1.4,
+                0.2
+              ]
+            },
+            {
+              "kind": "mirror",
+              "child": 4,
+              "axis": "x",
+              "about": 0
+            },
+            {
+              "kind": "arch",
+              "variant": "doorway",
+              "at": [
+                -1.5,
+                1.6,
+                0
+              ],
+              "yaw": 0,
+              "pitch": 0,
+              "roll": 0,
+              "scale": [
+                1.2,
+                1.6,
+                0.35
+              ]
+            },
+            {
+              "kind": "mirror",
+              "child": 6,
+              "axis": "x",
+              "about": 0
+            },
+            {
+              "kind": "group",
+              "children": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+              ]
+            },
+            {
+              "kind": "group",
+              "children": [
+                1,
+                8
+              ]
+            }
+          ],
+          "root": 9
+        },
+        "shapes": [
+          {
+            "shapeId": "staircaseVoidShape",
+            "stableId": "staircaseVoid",
+            "nodes": [
+              {
+                "kind": "roundBox",
+                "size": [
+                  2.5,
+                  1.3,
+                  4.4
+                ],
+                "radius": 0.18
+              },
+              {
+                "kind": "translate",
+                "child": 0,
+                "offset": [
+                  -3.45,
+                  0.85,
+                  0
+                ]
+              },
+              {
+                "kind": "roundBox",
+                "size": [
+                  2.5,
+                  2,
+                  4.4
+                ],
+                "radius": 0.18
+              },
+              {
+                "kind": "translate",
+                "child": 2,
+                "offset": [
+                  -1.15,
+                  1.2,
+                  0
+                ]
+              },
+              {
+                "kind": "roundBox",
+                "size": [
+                  2.5,
+                  2.7,
+                  4.4
+                ],
+                "radius": 0.18
+              },
+              {
+                "kind": "translate",
+                "child": 4,
+                "offset": [
+                  1.15,
+                  1.55,
+                  0
+                ]
+              },
+              {
+                "kind": "roundBox",
+                "size": [
+                  2.5,
+                  3.3,
+                  4.4
+                ],
+                "radius": 0.18
+              },
+              {
+                "kind": "translate",
+                "child": 6,
+                "offset": [
+                  3.45,
+                  1.9,
+                  0
+                ]
+              },
+              {
+                "kind": "union",
+                "children": [
+                  1,
+                  3,
+                  5,
+                  7
+                ]
+              }
+            ],
+            "root": 8,
+            "targetBounds": {
+              "min": [
+                -5.1,
+                0,
+                -2.4
+              ],
+              "max": [
+                5.1,
+                3.9,
+                2.4
+              ]
+            },
+            "anchors": [
+              {
+                "name": "entry",
+                "at": [
+                  -5,
+                  0.8,
+                  0
+                ],
+                "normal": [
+                  -1,
+                  0,
+                  0
+                ]
+              },
+              {
+                "name": "deepRoom",
+                "at": [
+                  3.75,
+                  1,
+                  0
+                ],
+                "normal": [
+                  0,
+                  1,
+                  0
+                ]
+              }
+            ],
+            "materialIntent": "inhabitable_negative_space",
+            "priority": 20
+          }
+        ],
+        "placements": [
+          {
+            "stableId": "staircaseVoid",
+            "source": {
+              "kind": "shape",
+              "shapeId": "staircaseVoidShape"
+            },
+            "targetBounds": {
+              "min": [
+                -5.1,
+                0,
+                -2.4
+              ],
+              "max": [
+                5.1,
+                3.9,
+                2.4
+              ]
+            }
+          },
+          {
+            "stableId": "staircaseBoundary",
+            "source": {
+              "kind": "geom",
+              "node": 1
+            },
+            "targetBounds": {
+              "min": [
+                -5.25,
+                0.75,
+                -2.7
+              ],
+              "max": [
+                4.5,
+                5.3,
+                2.7
+              ]
+            }
+          },
+          {
+            "stableId": "connectedInterior",
+            "source": {
+              "kind": "geom",
+              "node": 8
+            },
+            "targetBounds": {
+              "min": [
+                -5.8,
+                0,
+                -3.2
+              ],
+              "max": [
+                5.8,
+                4.8,
+                3.2
+              ]
+            }
+          }
+        ],
+        "world": {
+          "irVersion": "v1",
+          "simRevision": 0,
+          "lookRevision": 0,
+          "sim": {
+            "layout": {
+              "width": 14,
+              "height": 10
+            },
+            "grid": {
+              "cell": 1
+            },
+            "sockets": {
+              "entryGap": [
+                1,
+                5
+              ],
+              "lowRoom": [
+                4,
+                5
+              ],
+              "middleGap": [
+                8,
+                5
+              ],
+              "deepRoom": [
+                12,
+                5
+              ]
+            },
+            "collisionAabb": {
+              "occupant": [
+                1,
+                5,
+                1,
+                1
+              ],
+              "staircaseVoid": [
+                3,
+                3,
+                7,
+                5
+              ],
+              "staircaseBoundary": [
+                4,
+                2,
+                6,
+                6
+              ],
+              "connectedInterior": [
+                1,
+                2,
+                12,
+                6
+              ]
+            },
+            "entities": {
+              "occupant": {
+                "role": "actor",
+                "socket": "entryGap",
+                "state": "exploring",
+                "locked": false
+              },
+              "staircaseVoid": {
+                "role": "hero",
+                "socket": "lowRoom",
+                "state": "inhabitable",
+                "locked": false
+              },
+              "staircaseBoundary": {
+                "role": "architecture",
+                "socket": "middleGap",
+                "state": "defining",
+                "locked": true
+              },
+              "connectedInterior": {
+                "role": "architecture",
+                "socket": "deepRoom",
+                "state": "open",
+                "locked": false
+              }
+            },
+            "state": {
+              "counters": {},
+              "flags": {},
+              "timers": {},
+              "zones": {},
+              "slots": 0,
+              "pool": {}
+            },
+            "rules": {
+              "win": {
+                "phase": 0,
+                "priority": 0,
+                "event": {
+                  "kind": "onEnterZone",
+                  "entity": "occupant",
+                  "zone": "deepRoom"
+                },
+                "condition": null,
+                "actions": [
+                  {
+                    "kind": "win"
+                  }
+                ]
+              }
+            }
+          },
+          "look": {
+            "modules": {
+              "staircaseVoid": {
+                "family": "continuous_room_volume",
+                "params": {
+                  "thresholdEmphasis": 0.8,
+                  "interconnection": 1
+                }
+              },
+              "staircaseBoundary": {
+                "family": "overhead_step_boundary",
+                "params": {
+                  "visualWeight": 0.9,
+                  "usable": false
+                }
+              },
+              "connectedInterior": {
+                "family": "linked_chambers",
+                "params": {
+                  "enclosure": 0.95,
+                  "passageRhythm": 0.7
+                }
+              }
+            },
+            "palette": {
+              "shell": "chalky enclosure",
+              "deep": "charcoal recess",
+              "accent": "muted mineral blue",
+              "warm": "worn amber thresholds"
+            },
+            "lightRig": {
+              "kind": "indirect_slot_light",
+              "intensity": 0.65,
+              "contrast": 0.82
+            },
+            "atmosphere": {
+              "kind": "enclosed_dust",
+              "density": 0.08
+            },
+            "materialRoles": {
+              "voidSurface": "soft mineral plaster",
+              "boundary": "dense cast concrete",
+              "floor": "worn matte stone"
+            },
+            "camera": {
+              "kind": "walkthrough",
+              "height": 1.6,
+              "fieldOfView": 72
+            },
+            "audio": {
+              "kind": "interior_resonance",
+              "decay": 1.8,
+              "occlusion": 0.7
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c25",
+      "prompt": "A landscape where distance is measured in silence.",
+      "heroObjects": [
+        "isolatedLandmarks"
+      ],
+      "synonyms": [
+        "the plain",
+        "the landscape",
+        "the open ground",
+        "the expanse",
+        "the landmarks",
+        "the markers",
+        "the distant markers",
+        "silence",
+        "the quiet",
+        "the stillness",
+        "the hush"
+      ],
+      "planner": {
+        "intent": {
+          "setting": "an uninhabited plain defined by open ground, isolated landmarks, and pervasive silence",
+          "mood": "hushed, contemplative, boundless",
+          "spatialThesis": "Isolated landmarks interrupt an otherwise continuous plain, so the silence encountered between them becomes the perceived measure of distance.",
+          "actors": [],
+          "heroObjects": [
+            "the silence",
+            "the isolated landmarks"
+          ],
+          "interactions": [
+            "silence persists between landmarks, making each crossing feel like an interval of quiet"
+          ],
+          "unsupported": [
+            "silence is treated as a perceptible environmental interval, not a literal unit of measurement",
+            "isolated landmarks are introduced to make the relationship between distance and silence spatially legible"
+          ]
+        },
+        "objects": [
+          {
+            "stableId": "openPlain",
+            "label": "the open plain",
+            "synonyms": [
+              "the plain",
+              "the landscape",
+              "the open ground",
+              "the expanse"
+            ],
+            "role": "terrain",
+            "importance": 3
+          },
+          {
+            "stableId": "isolatedLandmarks",
+            "label": "the isolated landmarks",
+            "synonyms": [
+              "the landmarks",
+              "the markers",
+              "the distant markers"
+            ],
+            "role": "hero",
+            "importance": 3
+          },
+          {
+            "stableId": "pervasiveSilence",
+            "label": "the silence",
+            "synonyms": [
+              "silence",
+              "the quiet",
+              "the stillness",
+              "the hush"
+            ],
+            "role": "effect",
+            "importance": 3
+          }
+        ]
+      },
+      "compiler": {
+        "geometry": {
+          "version": "geom-program-v1",
+          "nodes": [
+            {
+              "kind": "terrain",
+              "variant": "flat",
+              "extent": [
+                32,
+                22
+              ],
+              "amplitude": 0.18,
+              "seed": 1703,
+              "at": [
+                0,
+                0,
+                0
+              ],
+              "yaw": 0
+            },
+            {
+              "kind": "group",
+              "children": [
+                0
+              ]
+            }
+          ],
+          "root": 1
+        },
+        "shapes": [
+          {
+            "shapeId": "isolatedLandmarksShape",
+            "stableId": "isolatedLandmarks",
+            "nodes": [
+              {
+                "kind": "roundBox",
+                "size": [
+                  0.85,
+                  3.8,
+                  0.85
+                ],
+                "radius": 0.16
+              },
+              {
+                "kind": "taper",
+                "child": 0,
+                "axis": "y",
+                "amount": -0.12
+              },
+              {
+                "kind": "translate",
+                "child": 1,
+                "offset": [
+                  0,
+                  1.9,
+                  0
+                ]
+              },
+              {
+                "kind": "arrayAlongCurve",
+                "child": 2,
+                "count": 5,
+                "points": [
+                  [
+                    -9,
+                    0,
+                    -3
+                  ],
+                  [
+                    -5,
+                    0,
+                    2.5
+                  ],
+                  [
+                    0,
+                    0,
+                    -1.5
+                  ],
+                  [
+                    5.5,
+                    0,
+                    3
+                  ],
+                  [
+                    10,
+                    0,
+                    -2.5
+                  ]
+                ]
+              }
+            ],
+            "root": 3,
+            "targetBounds": {
+              "min": [
+                -9.6,
+                0,
+                -3.6
+              ],
+              "max": [
+                10.6,
+                4,
+                3.6
+              ]
+            },
+            "anchors": [
+              {
+                "name": "firstMarker",
+                "at": [
+                  -9,
+                  0,
+                  -3
+                ],
+                "normal": [
+                  0,
+                  1,
+                  0
+                ]
+              },
+              {
+                "name": "lastMarker",
+                "at": [
+                  10,
+                  0,
+                  -2.5
+                ],
+                "normal": [
+                  0,
+                  1,
+                  0
+                ]
+              }
+            ],
+            "materialIntent": "weatheredStone",
+            "priority": 10
+          }
+        ],
+        "placements": [
+          {
+            "stableId": "openPlain",
+            "source": {
+              "kind": "geom",
+              "node": 0
+            },
+            "targetBounds": {
+              "min": [
+                -16,
+                -0.2,
+                -11
+              ],
+              "max": [
+                16,
+                0.2,
+                11
+              ]
+            }
+          },
+          {
+            "stableId": "isolatedLandmarks",
+            "source": {
+              "kind": "shape",
+              "shapeId": "isolatedLandmarksShape"
+            },
+            "targetBounds": {
+              "min": [
+                -9.6,
+                0,
+                -3.6
+              ],
+              "max": [
+                10.6,
+                4,
+                3.6
+              ]
+            }
+          }
+        ],
+        "world": {
+          "irVersion": "v1",
+          "simRevision": 0,
+          "lookRevision": 0,
+          "sim": {
+            "layout": {
+              "width": 24,
+              "height": 16
+            },
+            "grid": {
+              "cell": 1
+            },
+            "sockets": {
+              "entryPad": [
+                2,
+                8
+              ],
+              "plainCenter": [
+                12,
+                8
+              ],
+              "landmarkField": [
+                18,
+                8
+              ],
+              "farMarker": [
+                22,
+                8
+              ]
+            },
+            "collisionAabb": {
+              "traveler": [
+                2,
+                8,
+                1,
+                1
+              ],
+              "openPlain": [
+                0,
+                0,
+                24,
+                16
+              ],
+              "isolatedLandmarks": [
+                3,
+                4,
+                20,
+                8
+              ]
+            },
+            "entities": {
+              "traveler": {
+                "role": "actor",
+                "socket": "entryPad",
+                "state": "still",
+                "locked": false
+              },
+              "openPlain": {
+                "role": "terrain",
+                "socket": "plainCenter",
+                "state": "open",
+                "locked": false
+              },
+              "isolatedLandmarks": {
+                "role": "goal",
+                "socket": "landmarkField",
+                "state": "distant",
+                "locked": false
+              }
+            },
+            "rules": {
+              "crossQuietInterval": {
+                "phase": 0,
+                "priority": 0,
+                "event": {
+                  "kind": "onEnterZone",
+                  "entity": "traveler",
+                  "zone": "plainCenter"
+                },
+                "condition": null,
+                "actions": [
+                  {
+                    "kind": "setFlag",
+                    "flag": "silenceCrossed",
+                    "value": true
+                  },
+                  {
+                    "kind": "setState",
+                    "target": "traveler",
+                    "value": "crossing"
+                  }
+                ]
+              },
+              "win": {
+                "phase": 1,
+                "priority": 0,
+                "event": {
+                  "kind": "onEnterZone",
+                  "entity": "traveler",
+                  "zone": "plainCenter"
+                },
+                "condition": null,
+                "actions": [
+                  {
+                    "kind": "win"
+                  }
+                ]
+              }
+            },
+            "state": {
+              "counters": {},
+              "flags": {
+                "silenceCrossed": {
+                  "init": false
+                }
+              },
+              "timers": {},
+              "zones": {
+                "quietInterval": [
+                  [
+                    6,
+                    2,
+                    13,
+                    12
+                  ]
+                ]
+              },
+              "slots": 0,
+              "pool": {}
+            }
+          },
+          "look": {
+            "modules": {
+              "openPlain": {
+                "family": "terrain",
+                "params": {
+                  "surfaceVariation": 0.08,
+                  "detailScale": 0.35
+                }
+              },
+              "isolatedLandmarks": {
+                "family": "monolith",
+                "params": {
+                  "edgeSoftness": 0.16,
+                  "weathering": 0.42
+                }
+              }
+            },
+            "palette": {
+              "ground": "pale mineral earth",
+              "landmarks": "cool weathered stone",
+              "distance": "desaturated blue-grey"
+            },
+            "lightRig": {
+              "kind": "broad overcast",
+              "intensity": 0.62,
+              "shadowSoftness": 0.9
+            },
+            "atmosphere": {
+              "kind": "still haze",
+              "density": 0.12,
+              "wind": 0
+            },
+            "materialRoles": {
+              "terrain": "matte fine-grained ground",
+              "hero": "weathered low-reflectance stone"
+            },
+            "camera": {
+              "kind": "orbit",
+              "distance": 28,
+              "height": 7,
+              "fov": 38
+            },
+            "audio": {
+              "bed": "near-silence",
+              "windLevel": 0,
+              "wildlifeLevel": 0,
+              "footstepDecay": 0.92
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c27",
+      "prompt": "Write a haiku about the sea.",
+      "heroObjects": [
+        "sea"
+      ],
+      "synonyms": [
+        "sea",
+        "the ocean",
+        "ocean",
+        "the water",
+        "water"
+      ],
+      "planner": {
+        "intent": {
+          "setting": "the sea",
+          "mood": "poetic, contemplative",
+          "spatialThesis": "The sea is the entire place, so no distinct shore, vessel, or landmark organizes the space.",
+          "actors": [],
+          "heroObjects": [
+            "the sea"
+          ],
+          "interactions": [],
+          "unsupported": [
+            "the request asks for a poem rather than describing a place, so the sea is treated as the place itself",
+            "no specific shore, weather, time, inhabitants, or objects are provided"
+          ]
+        },
+        "objects": [
+          {
+            "stableId": "sea",
+            "label": "the sea",
+            "synonyms": [
+              "sea",
+              "the ocean",
+              "ocean",
+              "the water",
+              "water"
+            ],
+            "role": "hero",
+            "importance": 3
+          }
+        ]
+      },
+      "compiler": {
+        "geometry": {
+          "version": "geom-program-v1",
+          "nodes": [
+            {
+              "kind": "terrain",
+              "variant": "flat",
+              "extent": [
+                24,
+                24
+              ],
+              "amplitude": 0,
+              "seed": 731,
+              "at": [
+                0,
+                -0.65,
+                0
+              ],
+              "yaw": 0
+            },
+            {
+              "kind": "group",
+              "children": [
+                0
+              ]
+            }
+          ],
+          "root": 1
+        },
+        "shapes": [
+          {
+            "shapeId": "seaShape",
+            "stableId": "sea",
+            "nodes": [
+              {
+                "kind": "roundBox",
+                "size": [
+                  24,
+                  0.5,
+                  24
+                ],
+                "radius": 0.2
+              },
+              {
+                "kind": "translate",
+                "child": 0,
+                "offset": [
+                  0,
+                  -0.3,
+                  0
+                ]
+              },
+              {
+                "kind": "displace",
+                "child": 1,
+                "amplitude": 0.14,
+                "frequency": 0.55,
+                "seed": 731
+              }
+            ],
+            "root": 2,
+            "targetBounds": {
+              "min": [
+                -12.2,
+                -0.7,
+                -12.2
+              ],
+              "max": [
+                12.2,
+                0.2,
+                12.2
+              ]
+            },
+            "anchors": [
+              {
+                "name": "surface",
+                "at": [
+                  0,
+                  0,
+                  0
+                ],
+                "normal": [
+                  0,
+                  1,
+                  0
+                ]
+              }
+            ],
+            "materialIntent": "deepWater",
+            "priority": 10
+          }
+        ],
+        "placements": [
+          {
+            "stableId": "sea",
+            "source": {
+              "kind": "shape",
+              "shapeId": "seaShape"
+            },
+            "targetBounds": {
+              "min": [
+                -12.2,
+                -0.7,
+                -12.2
+              ],
+              "max": [
+                12.2,
+                0.2,
+                12.2
+              ]
+            }
+          }
+        ],
+        "world": {
+          "irVersion": "v1",
+          "simRevision": 0,
+          "lookRevision": 0,
+          "sim": {
+            "layout": {
+              "width": 12,
+              "height": 12
+            },
+            "grid": {
+              "cell": 1
+            },
+            "sockets": {
+              "driftStart": [
+                2,
+                6
+              ],
+              "openSea": [
+                9,
+                6
+              ]
+            },
+            "collisionAabb": {
+              "wanderer": [
+                2,
+                6,
+                1,
+                1
+              ],
+              "sea": [
+                0,
+                0,
+                12,
+                12
+              ]
+            },
+            "entities": {
+              "wanderer": {
+                "role": "actor",
+                "socket": "driftStart",
+                "state": "contemplating",
+                "locked": false
+              },
+              "sea": {
+                "role": "goal",
+                "socket": "openSea",
+                "state": "endless",
+                "locked": false
+              }
+            },
+            "rules": {
+              "win": {
+                "phase": 0,
+                "priority": 0,
+                "event": {
+                  "kind": "onEnterZone",
+                  "entity": "wanderer",
+                  "zone": "openSea"
+                },
+                "condition": null,
+                "actions": [
+                  {
+                    "kind": "win"
+                  }
+                ]
+              }
+            },
+            "state": {
+              "counters": {},
+              "flags": {},
+              "timers": {},
+              "zones": {},
+              "slots": 0,
+              "pool": {}
+            }
+          },
+          "look": {
+            "modules": {
+              "sea": {
+                "family": "distanceField",
+                "params": {
+                  "surfaceMotion": 0.18,
+                  "reflectionSoftness": 0.72
+                }
+              }
+            },
+            "palette": {
+              "surface": "muted blue-grey",
+              "depth": "near-black blue",
+              "glimmer": "soft silver"
+            },
+            "lightRig": {
+              "kind": "diffuse horizon",
+              "intensity": 0.65
+            },
+            "atmosphere": {
+              "kind": "marine haze",
+              "density": 0.22,
+              "mood": "poetic, contemplative"
+            },
+            "materialRoles": {
+              "deep water": {
+                "roughness": 0.18,
+                "reflectivity": 0.74
+              }
+            },
+            "camera": {
+              "kind": "low orbit",
+              "height": 1.4,
+              "distance": 9
+            },
+            "audio": {
+              "kind": "continuous distant water",
+              "volume": 0.32
+            }
+          }
+        }
+      }
     }
   ]
 }
