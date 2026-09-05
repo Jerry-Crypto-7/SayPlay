@@ -340,19 +340,48 @@ describe('klíč z důvěryhodného konce řetězu', () => {
     expect(key).toContain('198.51.100.4');
     expect(key, 'do klíče se dostala hodnota od volajícího').not.toContain('203.0.113.99');
 
-    // **Bere se KONEC řetězu, ne začátek — a bez tohohle je to tvrzení
-    // dekorativní.** Naměřeno 5. 9. 2026: mutace „vezmi první položku"
-    // přežila celou sadu, protože každý dosavadní případ posílal
-    // `x-vercel-forwarded-for` s jedinou položkou, kde se první a poslední
-    // neliší. Kdyby edge připisoval místo přepisoval, byla by první položka
-    // zase volba volajícího — tedy přesně ta vada, kterou funkce zavírá.
+    // **Víceprvkový řetěz je odmítnutí, ne výběr položky — `T16-singleentry`,
+    // 5. 9. 2026.** Do té doby se bral konec řetězu, ať měl položek pět nebo
+    // jednu, a tím tenhle kód stál na tom, co edge udělá s hlavičkou, kterou
+    // pošle volající sám. Naměřeno: `1.1.1.1, 2.2.2.2` vydalo `ip:2.2.2.2`,
+    // tedy položku, kterou tam mohl napsat volající.
+    //
+    // ⚠ **Tenhle případ se PŘEPSAL, nesmazal, a tady je proč.** Dřív tvrdil
+    // „vezmi poslední" a vznikl proto, že bez něj přežil mutant „vezmi
+    // první". Nad novou vlastností ten mutant rozlišitelný není — obě podoby
+    // vrátí `null` — takže ho **nahrazuje mutant „pusť víceprvkový řetěz"**,
+    // který tahle aserce zabíjí.
     const řetěz = trustedCallerKey(
       požadavek({ 'x-vercel-forwarded-for': '203.0.113.99, 198.51.100.4' }),
       { VERCEL: '1' },
     );
-    expect(řetěz, 'vzala se první položka, tedy to, co mohl napsat volající').toBe(
-      'ip:198.51.100.4',
-    );
+    expect(řetěz, 'víceprvkový řetěz vydal klíč, ačkoli ho platforma nikdy nenapíše').toBeNull();
+  });
+
+  /**
+   * ⚠ **Odmítnutí je `null`, tedy vypnutá kvóta — ne přísnější mez.** Je to
+   * ta správná strana: horší mez míří na nikoho, kdežto klíč vybraný
+   * volajícím míří na oběť. Platí to i pro tvar, který sem pošle útočník
+   * schválně, aby si kvótu vypnul: nic tím nezíská, protože bez klíče dostane
+   * vlastní kbelík na relaci, ne cizí.
+   */
+  it('platforma píše jednu položku, takže jiný počet je odmítnutí', () => {
+    const klíč = (hlavička: string) =>
+      trustedCallerKey(požadavek({ 'x-vercel-forwarded-for': hlavička }), { VERCEL: '1' });
+
+    // Jedna položka je jediný tvar, který vercelský edge píše — a jediný,
+    // který projde.
+    expect(klíč('198.51.100.4')).toBe('ip:198.51.100.4');
+
+    // Dvě i pět. Ani jeden z těch konců není důvěryhodný, protože o tom, kde
+    // řetěz začíná, rozhoduje volající.
+    expect(klíč('1.1.1.1, 2.2.2.2')).toBeNull();
+    expect(klíč('1.1.1.1, 2.2.2.2, 3.3.3.3, 4.4.4.4, 5.5.5.5')).toBeNull();
+
+    // Prázdná položka navíc je pořád položka navíc — přečíslovat seznam podle
+    // toho, co do něj napsal volající, je právě ta vada.
+    expect(klíč('198.51.100.4,')).toBeNull();
+    expect(klíč(', 198.51.100.4')).toBeNull();
   });
 
   it('bez důvěryhodného zdroje je to `null`, ne odhad z hlavičky volajícího', () => {
