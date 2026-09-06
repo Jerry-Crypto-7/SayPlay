@@ -259,7 +259,7 @@ test('porotce projde celou cestu, jak ji dostane na odevzdání', async ({ page 
   // zůstane plošina, které se `r02` nedotkne. Je to jediná aserce téhle sady,
   // která vidí i změnu objektu kresleného kompozicí.
   const preserved = page.getByTestId('change-preserved');
-  await expect(preserved).toHaveText('Untouched: the windswept plateau');
+  await expect(preserved).toHaveText('Not named by this change: the windswept plateau');
 
   // ── Takt V: potvrzení přestaví svět a identita to přežije ────────────────
   const applied = Date.now();

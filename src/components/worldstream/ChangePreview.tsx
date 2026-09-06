@@ -165,7 +165,7 @@ export default function ChangePreview({
           porotce má poznat svůj svět, ne přečíst číslo. */}
       {state.preserved.length > 0 && (
         <p className="ws-change-preserved" data-testid="change-preserved">
-          Untouched: {state.preserved.join(', ')}
+          Not named by this change: {state.preserved.join(', ')}
         </p>
       )}
       <div className="ws-change-actions">

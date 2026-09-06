@@ -138,20 +138,56 @@ export async function POST(
  * listy. Produkt si odporoval uvnitř jednoho průchodu, před porotcem.
  *
  * Objekt se počítá za dotčený, když se jeho `stableId` objeví jako **celý
- * segment** kterékoli cesty. Segment, ne podřetězec: jméno socketu
- * (`leftLegPad`) není jméno objektu a slučovat je by seznam vyprázdnilo.
- * Omyl je tím zatlačený na bezpečnou stranu — nejistý objekt ze seznamu
- * vypadne, takže se slibuje míň, ne víc.
+ * segment** kterékoli cesty, jako segment `from` u `move`/`copy`, nebo
+ * kdekoli uvnitř zapisované hodnoty — pravidlo se dá do světa přidat celé
+ * a cizí objekt v něm jmenovat, aniž se objeví v cestě. Segment, ne
+ * podřetězec: jméno socketu (`leftLegPad`) není jméno objektu.
+ *
+ * **Zápis nad celým poddokumentem seznam vyprázdní** (`replace /sim/entities`).
+ * Cesta o dvou segmentech nejmenuje objekt, ale přepisuje je všechny, takže
+ * jediná pravdivá odpověď je „neslibuju nic".
+ *
+ * ⚠ **Jedna třída zůstává otevřená a je pojmenovaná v plánu, ne zamlčená:**
+ * sdílený poddokument umí objekt řídit, aniž ho jmenuje
+ * (`/look/palette/containerSteel`, `/sim/sockets/southwestLegPad`). Proto se
+ * ta věta v panelu jmenuje **„Not named by this change"**, ne „Untouched" —
+ * tvrdí se přesně to, co se počítá. Úplné přiřazení chce mapu poddokument →
+ * objekt a ta v dokumentu není: naměřeno 6. 9. 2026, dva ze šesti socketů
+ * `c04` si nenárokuje žádná entita, takže by ji nešlo dopočítat ani ze
+ * `sim.entities`.
  */
 function preservedBy(
   objects: readonly { readonly stableId: string; readonly label: string }[],
   plan: RefinePlan,
 ): readonly string[] {
   const touched = new Set<string>([plan.stableId]);
-  for (const operation of [...plan.behavior, ...plan.appearance])
-    for (const segment of operation.path.split('/')) touched.add(segment);
+
+  for (const operation of [...plan.behavior, ...plan.appearance]) {
+    const path = operation.path.split('/').filter((segment) => segment !== '');
+    // `/sim/entities` přepíše všechny entity naráz; `/sim/entities/x/state` ne.
+    if (path.length < 3) return [];
+
+    for (const segment of path) touched.add(segment);
+    // `from` má jen `move`/`copy`, `value` jen zápisové operace — typ je
+    // rozlišuje, ale ptát se na obojí je levnější než dvě větve podle `op`.
+    const wide = operation as { readonly from?: string; readonly value?: unknown };
+    for (const segment of (wide.from ?? '').split('/')) touched.add(segment);
+    for (const name of namesWithin(wide.value)) touched.add(name);
+  }
 
   return objects.filter((object) => !touched.has(object.stableId)).map((object) => object.label);
+}
+
+/** Každý řetězec a každý klíč uvnitř zapisované hodnoty. Jména objektů jsou obojí. */
+function namesWithin(value: unknown, found: string[] = []): readonly string[] {
+  if (typeof value === 'string') found.push(value);
+  else if (Array.isArray(value)) for (const item of value) namesWithin(item, found);
+  else if (value !== null && typeof value === 'object')
+    for (const [key, item] of Object.entries(value)) {
+      found.push(key);
+      namesWithin(item, found);
+    }
+  return found;
 }
 
 function authoredChangeFor(

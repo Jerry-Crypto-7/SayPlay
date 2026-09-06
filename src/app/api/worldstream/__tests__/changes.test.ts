@@ -310,7 +310,11 @@ describe('preview druhé věty', () => {
     expect(read.outcome).toBe('PREVIEW');
     expect(read.target).toMatchObject({ stableId: 'ironMast' });
     expect(read.scope).toEqual({ shape: true, behavior: 0, appearance: 1 });
-    expect(read.preserved).toEqual(['the salt flat']);
+    // ⚠ **Prázdný seznam, a je to oprava, ne regrese.** `replace /look/palette`
+    // vyměňuje celou paletu, tedy i barvu solné pláně; slib „the salt flat
+    // zůstane" byl tichá nepravda, kterou tenhle test do 6. 9. 2026 pinoval.
+    // Cesta o dvou segmentech nejmenuje objekt a přepisuje je všechny.
+    expect(read.preserved).toEqual([]);
 
     // **Žádný meshing před commitem.** Podoba stojí tam, kde stála, revize se
     // nepohnula a do proudu odešel jediný rámec — preview, ne fronta tvarů.
@@ -355,6 +359,50 @@ describe('preview druhé věty', () => {
     const read = await body(response);
     expect(read.target).toMatchObject({ stableId: 'ironMast' });
     expect(read.preserved).toEqual([]);
+  });
+
+  /**
+   * **Tři cesty, jak objekt změnit, aniž ho cesta jmenuje** — druhé kolo
+   * nezávislé revize 6. 9. 2026. Cesta sama je jen třetina patchového
+   * slovníku, takže se seznam dal obejít vším ostatním: `move` bere objekt
+   * ze zdroje, který stojí jen ve `from`; pravidlo se dá přidat celé a cizí
+   * objekt jmenovat uvnitř hodnoty; a `replace /sim/entities` přepíše všechny
+   * naráz, aniž jmenuje jediného.
+   */
+  it.each([
+    [
+      'move bere objekt ze zdroje, který stojí jen ve `from`',
+      {
+        behavior: [
+          { op: 'move', from: '/sim/entities/saltFlat/state', path: '/sim/entities/ironMast/state' },
+        ],
+        appearance: [],
+      },
+    ],
+    [
+      'pravidlo jmenuje cizí objekt uvnitř hodnoty, ne v cestě',
+      {
+        behavior: [
+          { op: 'add', path: '/sim/rules/tiltFlat', value: { when: 'tick', then: ['saltFlat'] } },
+        ],
+        appearance: [],
+      },
+    ],
+    [
+      'zápis nad celým poddokumentem přepíše všechny objekty naráz',
+      { behavior: [{ op: 'replace', path: '/sim/entities', value: {} }], appearance: [] },
+    ],
+  ])('%s', async (_name, parts) => {
+    const stored = await generated();
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'turn the mast into woven metal' },
+      async () => ({ summary: 'the mast is rewoven', shape: WOVEN_MAST, ...parts }),
+    );
+
+    expect(response.status).toBe(200);
+    expect((await body(response)).preserved).toEqual([]);
   });
 
   /**

@@ -473,7 +473,13 @@ export async function commitChange(
 
   if (!response.ok) {
     const error = body?.error as { code?: string; message?: string } | undefined;
-    throw new Error(`the change was not applied: ${error?.code ?? `HTTP_${response.status}`}`);
+    // Táž úvaha jako u `requestChange()` o kus výš: kód je pro stroj, věta pro
+    // člověka. Neúspěšné *Apply* je navíc to horší ze dvou míst, kde se tohle
+    // porotci ukáže — v tu chvíli už jednou rozhodl.
+    const code = error?.code ?? `HTTP_${response.status}`;
+    throw new Error(
+      `the change was not applied: ${error?.message ?? code}${error?.message === undefined ? '' : ` (${code})`}`,
+    );
   }
 
   if (body?.outcome !== 'COMMITTED')

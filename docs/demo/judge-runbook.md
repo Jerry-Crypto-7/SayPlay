@@ -98,13 +98,22 @@ Po *Apply* se svět přestaví a panel plánu zmizí. **Žádný objekt nepřibu
 nezmizí** a svět se nezakládá znovu – porotce má po změně tentýž svět, ne nový.
 To je celý rozdíl mezi „chirurgickou změnou" a „novým světem".
 
-⚠ **„Jeden objekt" ale znamená jeden CÍL, ne jednu dotčenou věc, a je poctivé
-to říct nahlas.** Vlajková věta jmenuje nohy i kupoli, takže uvařená změna
-posune kupoli a zároveň přepíše parametr rozkročení nohou. Cíl je jeden –
-kupole – a panel proto v řádku *Untouched* jmenuje jenom to, čeho se změna
-doopravdy nedotkne (u téhle věty plošinu, nikoli nohy). **Ten seznam se počítá
-z operací té změny**, ne z toho, koho věta jmenovala jako cíl; do 6. 9. 2026 se
-počítal opačně a produkt si tím uvnitř jednoho průchodu odporoval.
+⚠ **„Jeden objekt" znamená jeden CÍL, ne jednu dotčenou věc, a je poctivé to
+říct nahlas.** Vlajková věta jmenuje nohy i kupoli, takže uvařená změna posune
+kupoli a zároveň přepíše parametr rozkročení nohou. Cíl je jeden – kupole –
+a panel proto pod plánem jmenuje jenom to, čeho se změna doopravdy nedotýká
+(u téhle věty plošinu, nikoli nohy). **Ten seznam se počítá z operací té
+změny**, ne z toho, koho věta jmenovala jako cíl; do 6. 9. 2026 se počítal
+opačně a produkt si tím uvnitř jednoho průchodu odporoval.
+
+⚠ **Ten řádek se od 6. 9. 2026 jmenuje „Not named by this change", ne
+„Untouched", a ten rozdíl není kosmetický.** Sdílený poddokument – paleta,
+světelný rig, mřížka socketů – umí objekt řídit, aniž ho jmenuje, a úplné
+přiřazení „která cesta patří kterému objektu" v dokumentu prostě není
+(naměřeno: dva ze šesti socketů observatoře si nenárokuje žádná entita).
+Produkt proto tvrdí **přesně to, co umí spočítat**: že žádná operace té změny
+tyhle objekty nejmenuje. Slibovat „nedotčeno" by bylo o slovo víc, než se dá
+doložit.
 
 ⚠ **Změna nemusí být nápadná a je to vlastnost, ne vada.** Kupole se posune;
 počet trojúhelníků se tím nehne vůbec, hne se umístění. Kdo hledá „vidím
@@ -147,9 +156,9 @@ produkt u přesně známé věty o původu mlčí. Trvá tolik, co jedno přečt
 
 ⚠ **Takty I a VI nejsou totéž číslo a nemají být.** Přesně známá věta jde ze
 skladu rovnou, neznámá se musí nejdřív porovnat se všemi uvařenými světy –
-proto je takt VI trojnásobek taktu I. Obojí je pod pěti sekundami.
+proto je takt VI zhruba dvojnásobek taktu I. Obojí je pod pěti sekundami.
 
-Součet taktů 0, I a II je **zhruba 3,4 s od načtení stránky k hotové hmotě**.
+Součet taktů 0, I a II je **zhruba 3,6 s od načtení stránky k hotové hmotě**.
 
 ## ⚠ Co porotce na téhle cestě NEDOSTANE
 
