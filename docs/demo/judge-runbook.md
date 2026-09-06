@@ -101,20 +101,19 @@ To je celý rozdíl mezi „chirurgickou změnou" a „novým světem".
 ⚠ **„Jeden objekt" znamená jeden CÍL, ne jednu dotčenou věc, a je poctivé to
 říct nahlas.** Vlajková věta jmenuje nohy i kupoli, takže uvařená změna posune
 kupoli a zároveň přepíše parametr rozkročení nohou. Cíl je jeden – kupole –
-a panel proto pod plánem vypíše objekty, které **žádná operace té změny
-nejmenuje** (u téhle věty plošinu; nohy v seznamu nejsou, protože je operace
-jmenují). **Ten seznam se počítá z operací**, ne z toho, koho věta jmenovala
-jako cíl; do 6. 9. 2026 se počítal opačně a produkt si tím uvnitř jednoho
-průchodu odporoval.
+a panel proto pod plánem vypíše objekty, které **ta změna nikde nejmenuje** –
+ani v operaci, ani uvnitř nového tvaru (u téhle věty plošinu; nohy v seznamu
+nejsou, protože je operace jmenují). **Ten seznam se počítá z toho, co změna
+doopravdy obsahuje**, ne z toho, koho věta jmenovala jako cíl; do 6. 9. 2026
+se počítal opačně a produkt si tím uvnitř jednoho průchodu odporoval.
 
 ⚠ **Ten řádek se od 6. 9. 2026 jmenuje „Not named by this change", ne
 „Untouched", a ten rozdíl není kosmetický.** Sdílený poddokument – paleta,
 světelný rig, mřížka socketů – umí objekt řídit, aniž ho jmenuje, a úplné
 přiřazení „která cesta patří kterému objektu" v dokumentu prostě není
 (naměřeno: dva ze šesti socketů observatoře si nenárokuje žádná entita).
-Produkt proto tvrdí **přesně to, co umí spočítat**: že žádná operace té změny
-tyhle objekty nejmenuje. Slibovat „nedotčeno" by bylo o slovo víc, než se dá
-doložit.
+Produkt proto tvrdí **přesně to, co umí spočítat**: že tyhle objekty ta změna
+nikde nejmenuje. Slibovat „nedotčeno" by bylo o slovo víc, než se dá doložit.
 
 ⚠ **Změna nemusí být nápadná a je to vlastnost, ne vada.** Kupole se posune;
 počet trojúhelníků se tím nehne vůbec, hne se umístění. Kdo hledá „vidím

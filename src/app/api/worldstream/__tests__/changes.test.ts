@@ -453,6 +453,56 @@ describe('preview druhé věty', () => {
   });
 
   /**
+   * **Hluboko zanořená hodnota nesmí vyčerpat zásobník** — čtvrté kolo
+   * nezávislé revize 6. 9. 2026, a je to táž třída jako `from: 7` o kus výš.
+   * `JSON.parse` je iterativní a takovou hodnotu rozparsuje; rekurzivní
+   * procházka nad ní spadne kolem pěti tisíc pater, a `RangeError` uvnitř
+   * `withRequest` nevrátí odpověď vůbec.
+   *
+   * Dvacet tisíc pater je s rezervou nad tou mezí a pořád se vejde do stropu
+   * výstupu modelu. Jméno na dně se **musí najít** — jinak by test procházel
+   * i nad procházkou, která se zastaví o patro dřív, než je potřeba.
+   */
+  it('hodnota zanořená dvacet tisíc pater neshodí dveře a jméno na dně se najde', async () => {
+    const stored = await generated();
+
+    let deep: unknown = 'saltFlat';
+    for (let level = 0; level < 20_000; level += 1) deep = [deep];
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'turn the mast into woven metal' },
+      async () => ({
+        summary: 'the mast is rewoven',
+        shape: WOVEN_MAST,
+        behavior: [{ op: 'add', path: '/sim/entities/ironMast/state/queue', value: deep }],
+        appearance: [],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect((await body(response)).preserved).toEqual([]);
+  });
+
+  /**
+   * **Kontrola k testu o tvaru: tvar, který nikoho nejmenuje, seznam nekrátí.**
+   * Bez ní projde i procházka, která po každém tvaru označí za dotčené všechno
+   * — naměřeno čtvrtým kolem revize jako přeživší mutant.
+   */
+  it('tvar, který cizí objekt nejmenuje, nechá seznam být', async () => {
+    const stored = await generated();
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'turn the mast into woven metal' },
+      async () => ({ summary: 'the mast is rewoven', shape: WOVEN_MAST, behavior: [], appearance: [] }),
+    );
+
+    expect(response.status).toBe(200);
+    expect((await body(response)).preserved).toEqual(['the salt flat']);
+  });
+
+  /**
    * **Uvolněná relace nesmí dostat 200 na preview, které nikdo nedokáže
    * commitnout** (`T16-changeafterrelease`).
    *

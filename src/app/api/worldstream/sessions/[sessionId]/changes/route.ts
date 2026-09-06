@@ -193,15 +193,39 @@ function preservedBy(
   return objects.filter((object) => !touched.has(object.stableId)).map((object) => object.label);
 }
 
-/** Každý řetězec a každý klíč uvnitř zapisované hodnoty. Jména objektů jsou obojí. */
-function namesWithin(value: unknown, found: string[] = []): readonly string[] {
-  if (typeof value === 'string') found.push(value);
-  else if (Array.isArray(value)) for (const item of value) namesWithin(item, found);
-  else if (value !== null && typeof value === 'object')
-    for (const [key, item] of Object.entries(value)) {
-      found.push(key);
-      namesWithin(item, found);
-    }
+/**
+ * Každý řetězec a každý klíč uvnitř zapisované hodnoty. Jména objektů jsou obojí.
+ *
+ * ⚠ **Průchod je smyčkou, ne rekurzí, a je to oprava pádu — čtvrté kolo
+ * nezávislé revize 6. 9. 2026.** `JSON.parse` je ve V8 iterativní a hodnotu
+ * zanořenou stotisíckrát rozparsuje bez mrknutí; rekurzivní procházka nad ní
+ * vyčerpá zásobník kolem pěti tisíc. `readOperations` soudí jen `path`, takže
+ * `{ op: 'add', path: '/sim/entities/x/state/q', value: [[[…]]] }` sem dojde
+ * celé — a pět tisíc závorek se vejde do osmitisícového stropu emise.
+ * `RangeError` uvnitř `withRequest` nevrátí `Response` vůbec, takže by porotce
+ * dostal holou pětistovku bez `requestId`, a to až po zaplaceném volání.
+ *
+ * Vlastní zásobník žádnou hloubkovou mez nepotřebuje: velikost emise shora
+ * omezuje strop výstupu modelu, takže se sem nedostane hodnota, kterou by
+ * nešlo projít.
+ */
+function namesWithin(value: unknown): readonly string[] {
+  const found: string[] = [];
+  const pending: unknown[] = [value];
+
+  while (pending.length > 0) {
+    const item = pending.pop();
+    if (typeof item === 'string') found.push(item);
+    // `push(...item)` by u dlouhého pole přeteklo seznamem argumentů, tedy táž
+    // třída pádu o patro níž. Prvek po prvku.
+    else if (Array.isArray(item)) for (const nested of item) pending.push(nested);
+    else if (item !== null && typeof item === 'object')
+      for (const [key, nested] of Object.entries(item)) {
+        found.push(key);
+        pending.push(nested);
+      }
+  }
+
   return found;
 }
 
