@@ -68,7 +68,7 @@ test('produkt je ovladatelný do tří sekund a stroj bez WebGPU nestáhne váhy
   });
 
   const started = Date.now();
-  await page.goto('/', { waitUntil: 'commit' });
+  await page.goto('/classic', { waitUntil: 'commit' });
 
   const input = page.getByTestId('prompt-input');
   await input.fill(SENTENCE);

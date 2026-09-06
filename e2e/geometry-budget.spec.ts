@@ -87,7 +87,7 @@ async function readMachine(page: Page): Promise<Machine> {
  * se schválně nenuluje mezi světy.
  */
 async function measureToCoarseWorld(page: Page): Promise<number> {
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
   await page.getByTestId('prompt-input').fill(FROZEN_PROMPT);
 

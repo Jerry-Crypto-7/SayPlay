@@ -43,7 +43,7 @@ async function submit(page: Page, text: string): Promise<void> {
 }
 
 test('bez opravy panel nestojí a roh nezabírá', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/classic');
   await openInspect(page);
   await expect(page.getByTestId('repair-rounds')).toHaveCount(0);
 
@@ -63,7 +63,7 @@ test('bez opravy panel nestojí a roh nezabírá', async ({ page }) => {
  * někoho jiného, takže tlačítko nejde kliknout. Okem se to nepozná.
  */
 test('ovládání v pravém dolním rohu zůstane zásahové i s novým panelem', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/classic');
   await submit(page, PROMPT);
   await openInspect(page);
 

@@ -77,7 +77,7 @@ test('nadiktovaná věta se přidá do pole a formulář se tím neodešle', asy
     if (request.url().includes('/api/generate')) generateCalls.push(request.url());
   });
 
-  await page.goto('/');
+  await page.goto('/classic');
 
   const input = page.getByTestId('prompt-input');
   await input.fill(TYPED);
@@ -111,7 +111,7 @@ test('bez rozhraní prohlížeče se tlačítko vůbec nevykreslí', async ({ pa
   const serverHtml = await (await page.request.get('/')).text();
   expect(serverHtml, 'tlačítko na diktování přišlo už ze serveru').not.toContain('prompt-dictate');
 
-  await page.goto('/');
+  await page.goto('/classic');
 
   // Nepřítomnost tlačítka je pravdivá i na mrtvém HTML ze serveru. Tvrzení má
   // cenu až nad připojeným Reactem, a ten dokazuje globál stránky.

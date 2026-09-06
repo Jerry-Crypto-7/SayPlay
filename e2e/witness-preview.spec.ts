@@ -26,7 +26,7 @@ const SHORTER_TRACE_PROMPT = 'an escape room in a submarine that floods slowly, 
 test('náhled přehraje vítěznou cestu a nese TÝŽ hash jako certifikát', async ({ page }) => {
   test.setTimeout(180_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
   // Od P13 vlny 0 T1 pruh nestojí na výchozí obrazovce — otevírá se z Inspectu.
@@ -84,7 +84,7 @@ test('dokončený náhled přežije nahrazení světem s kratší stopou', async
   const pageErrors: string[] = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
   await openInspect(page);
 

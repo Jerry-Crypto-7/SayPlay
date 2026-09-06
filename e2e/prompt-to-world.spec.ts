@@ -53,7 +53,7 @@ test('napsaná věta vyrobí scénu, a jde přes /api/generate', async ({ page }
     await route.continue();
   });
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
   // Úvodní obrazovka nic nepředstírá: dokud nepřišel prompt, žádné entity.
@@ -115,7 +115,7 @@ test('napsaná věta vyrobí scénu, a jde přes /api/generate', async ({ page }
 test('věta mimo korpus dostane náhradní místnost i nabídku záložní větve', async ({ page }) => {
   test.setTimeout(120_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
   await page.getByTestId('prompt-input').fill(UNKNOWN_PROMPT);
@@ -145,7 +145,7 @@ test('věta mimo korpus dostane náhradní místnost i nabídku záložní větv
 test('nabídnutá záložní větev tu samou větu opravdu odehraje', async ({ page }) => {
   test.setTimeout(180_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
   await page.getByTestId('prompt-input').fill(REPORTED_PROMPT);
@@ -182,7 +182,7 @@ test('prázdný vstup neodešle nic', async ({ page }) => {
 
   const requests = recordRequests(page);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
   await page.getByTestId('prompt-input').fill('   ');
@@ -212,7 +212,7 @@ test('prázdný vstup neodešle nic', async ({ page }) => {
 test('odpojená síť svět přesto postaví', async ({ page }) => {
   test.setTimeout(120_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
   // Až teď — stránka se musí nejdřív načíst, teprve pak se „vytáhne kabel".

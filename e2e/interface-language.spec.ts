@@ -107,7 +107,7 @@ async function expectEnglishCounters(hud: Locator, what: string): Promise<void> 
 test('žádný panel na demo cestě nemluví česky', async ({ page }) => {
   test.setTimeout(180_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
   // 1. `lang` odpovídá skutečnosti. Do 24. 8. 2026 tvrdil `en` nad českým UI.
@@ -157,7 +157,7 @@ test('žádný panel na demo cestě nemluví česky', async ({ page }) => {
 test('náhradní místnost i nabídka záložní větve mluví anglicky', async ({ page }) => {
   test.setTimeout(120_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
   await page.getByTestId('prompt-input').fill('a world that the frozen corpus has never heard of');

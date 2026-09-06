@@ -297,3 +297,40 @@ export function chooseQualityTier(signals: QualitySignals): QualityTier {
   if ((memory !== undefined && memory < 8) || (cores !== undefined && cores < 8)) return 'balanced';
   return 'full';
 }
+
+/**
+ * Úroveň, na které tenhle prohlížeč doopravdy poběží.
+ *
+ * `chooseQualityTier()` výš je čistá funkce nad signály; tohle je jejich
+ * **čtení ze stroje** a bydlí to tady, protože obojí je jedno rozhodnutí. Do
+ * 6. 9. 2026 to byla soukromá funkce `/dev/worldstream`; hlavní cesta ji
+ * potřebuje taky (`T47-t21bunblock`) a druhá kopie by se s tou první časem
+ * rozešla o jeden signál, aniž by o tom kdokoli věděl.
+ *
+ * `?tier=safe` přebíjí volbu podle stroje, a nejsou to jen testovací zadní
+ * vrátka: úrovně se jinak na jednom stroji vyzkoušet nedají, takže bez toho by
+ * se dvě ze tří větví adaptivní kvality nikdy nikdo nepodíval. Neznámá hodnota
+ * se **ignoruje**, ne odmítá — překlep v adrese nemá shodit svět.
+ *
+ * Renderer se čte přes `WEBGL_debug_renderer_info`. Ta přípona bývá zakázaná;
+ * když chybí, zůstane prázdný řetězec a rozhodne paměť a jádra. **Neznalost
+ * úroveň nesnižuje.**
+ */
+export function pickQualityTier(search: string): QualityTier {
+  const forced = new URLSearchParams(search).get('tier');
+  if (isQualityTier(forced)) return forced;
+
+  let renderer = '';
+  const probe = document.createElement('canvas').getContext('webgl2');
+  if (probe !== null) {
+    const info = probe.getExtension('WEBGL_debug_renderer_info');
+    if (info !== null) renderer = String(probe.getParameter(info.UNMASKED_RENDERER_WEBGL) ?? '');
+    probe.getExtension('WEBGL_lose_context')?.loseContext();
+  }
+
+  return chooseQualityTier({
+    deviceMemoryGb: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
+    cores: navigator.hardwareConcurrency,
+    renderer,
+  });
+}

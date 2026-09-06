@@ -60,7 +60,7 @@ function isPurple(r: number, g: number, b: number, minSaturation: number): boole
 const FROZEN_PROMPT = 'a puzzle room where I have to find three keys to open the exit door';
 
 async function buildWorld(page: Page): Promise<void> {
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
   await openInspect(page);
   await page.getByTestId('prompt-input').fill(FROZEN_PROMPT);

@@ -39,7 +39,7 @@ const MOVED_PANELS = [
 test('výchozí obrazovka je svět, prompt a jedna věta — nic víc', async ({ page }) => {
   test.setTimeout(120_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
   // Plátno drží celý viewport, ne obdélník mezi panely.
@@ -78,7 +78,7 @@ test('výchozí obrazovka je svět, prompt a jedna věta — nic víc', async ({
 test('Inspect se otevře a zavřít znamená odpojit, ne skrýt', async ({ page }) => {
   test.setTimeout(120_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
   await page.getByTestId('inspect-toggle').click();
@@ -119,7 +119,7 @@ test('Inspect se otevře a zavřít znamená odpojit, ne skrýt', async ({ page 
 test('otevřená zásuvka nesahá na dok ani na herní ovládání', async ({ page }) => {
   test.setTimeout(180_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
   await page.getByTestId('inspect-toggle').click();
   await expect(page.getByTestId('inspect')).toHaveAttribute('data-open', 'true');

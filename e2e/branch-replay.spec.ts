@@ -85,7 +85,7 @@ function replay(
 test('tři sourozenecké větve nesou tři různé hashe a každý sedí na replay v Node', async ({ page }) => {
   test.setTimeout(240_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
   await openInspect(page);
   await page.getByTestId('prompt-input').fill(FROZEN_PROMPT);

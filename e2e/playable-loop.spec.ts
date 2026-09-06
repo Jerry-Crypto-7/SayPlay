@@ -24,7 +24,7 @@ const SENTENCE = 'a quiet cellar with three keys and a locked exit door';
 const CHECKPOINT = 40;
 
 async function build(page: Page): Promise<void> {
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__game !== undefined, undefined, { timeout: 60_000 });
 
   await page.getByTestId('prompt-input').fill(SENTENCE);

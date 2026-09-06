@@ -22,7 +22,7 @@ const BRANCH_TICK = 40;
 const HORIZON = 200;
 
 async function buildWorld(page: import('@playwright/test').Page): Promise<void> {
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
   // Od P13 vlny 0 T1 osa nestojí na výchozí obrazovce — otevírá se z Inspectu.
   await openInspect(page);

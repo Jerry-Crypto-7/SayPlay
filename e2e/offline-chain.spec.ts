@@ -87,7 +87,7 @@ let pageReplays = -1;
 async function chain(page: Page, request: APIRequestContext): Promise<ChainReport> {
   if (cached !== null) return cached;
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith?.verify !== undefined, undefined, { timeout: 60_000 });
 
   cached = await runOfflineChain({

@@ -42,7 +42,7 @@ const BOLD = 'a bold guard who patrols the whole corridor without stopping';
 const WARY = 'a wary guard who never strays far from his post';
 
 async function routeOf(page: Page, sentence: string): Promise<readonly string[]> {
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
   // **Bez tohohle je `window.__timeline` navždy `undefined`.** Publikuje ho

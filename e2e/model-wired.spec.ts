@@ -56,7 +56,7 @@ test('bez akcelerace zůstane okamžitá náhradní místnost a neodejde jediný
   test.setTimeout(120_000);
   const seen = observe(page);
 
-  await page.goto('/');
+  await page.goto('/classic');
   // Panel bydlí od P13 vlny 0 T1 v Inspect zásuvce. Motor modelu tím odpojený
   // není — probe běží od načtení stránky, `visible` řídí jenom vykreslení.
   await openInspect(page);
@@ -149,7 +149,7 @@ test('skutečný prohlížečový model nahradí okamžitý svět certifikovanou
     console.log(`[model-wired] adapter ${adapter}`);
 
     const seen = observe(page);
-    await page.goto(baseUrl as string);
+    await page.goto(new URL('/classic', baseUrl as string).toString());
     await openInspect(page);
     await expect
       .poll(() => page.getByTestId('model-progress').getAttribute('data-phase'), {

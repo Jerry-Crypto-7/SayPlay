@@ -36,7 +36,7 @@ const HORIZON = 200;
 test('přetočení na tik 40 a změna pravidla přepočítá tutéž budoucnost jako změna bez přetáčení', async ({ page }) => {
   test.setTimeout(180_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
   // Od P13 vlny 0 T1 osa nestojí na výchozí obrazovce — otevírá se z Inspectu.
@@ -119,7 +119,7 @@ test('přetočení na tik 40 a změna pravidla přepočítá tutéž budoucnost 
 test('posuvník i tlačítko panelu hýbou týmž během, který měří hash', async ({ page }) => {
   test.setTimeout(180_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
   await openInspect(page);
   await page.getByTestId('prompt-input').fill(FROZEN_PROMPT);

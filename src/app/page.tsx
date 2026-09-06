@@ -1,436 +1,310 @@
 'use client';
 
 /**
- * Úvodní stránka — věta dovnitř, svět ven, a od T19 se ten svět dá hrát.
+ * **Hlavní cesta produktu: věta → relace → svět na plátně** (P15 `T21b`,
+ * odblokováno `T47-t21bunblock`).
  *
- * Prompt a plátno drží jedna komponenta, protože mezi nimi teče přesně jedna
- * hodnota: emise. `PromptBar` ji vybere z korpusu, rozpoznávače nebo lokálního
- * modelu, tady se z ní postaví běh a `Stage` ho hraje.
+ * Do 6. 9. 2026 tady stála stará herní scéna: `PromptBar` vybral emisi
+ * z korpusu, rozpoznávače nebo lokálního modelu a `Stage` z ní hrál
+ * `WorldDocRuntime`. Ta stránka se nemaže, přestěhovala se na `/classic`
+ * i s celou svojí sadou testů.
  *
- * Svět se staví `buildRuntimeWorld`, tedy **tímtéž vstupním bodem**, jakým prošel
- * certifikát na serveru. Kdyby si stránka stavěla svět po svém, hrála by něco
- * jiného, než co verifikátor prohlásil za platné.
+ * Tohle je jiný systém a je to ten, o kterém je celý design book:
  *
- * ## Proč ovládání bydlí tady, a ne v plátně
+ *   věta → `POST /api/worldstream/sessions` → proud rámců (§20) → blueprint →
+ *   `buildProxyWorldFrom()` v prohlížeči → `WorldstreamStage`.
  *
- * Stisk klávesy musí skončit ve **stopě téhož běhu**, který je vidět — jinak by
- * se hrálo jedno a měřilo druhé. Stránka proto drží frontu stisků
- * (`src/game/flow.ts`) a plátno si od ní bere vstupy tik po tiku; běh zůstává
- * funkcí `(dokument, stopa)` a restart se dá přehrát na tentýž hash.
+ * ## Co stránka drží a co schválně nedrží
  *
- * ## Model je třetí cesta, ne vstupní závora (P12 V1 T9)
+ * Drží **stav jedné relace**: fázi, svět, poruchu. Nedrží nic o meshingu ani
+ * o výměně podoby — hot-swap má vlastní harness na `/dev/worldstream` a
+ * tlačítka toho harnessu na produkční stránku nepatří (rozhodnutí `T21b`
+ * ze 6. 9. 2026). Až poteče detail proudem relace, přijde sem jako `upgrade`
+ * pro `WorldstreamStage`; dokud neteče, stránka o něm mlčí.
  *
- * Po zmrazeném korpusu a deterministickém rozpoznávači dostane neznámou větu
- * model v prohlížeči. Jeho naměřený medián je 33,9 s, takže se na něj nesmí
- * čekat s prvním světem: nejdřív stojí hratelná a pravdivě označená náhradní
- * místnost, kterou certifikovaná modelová emise později transakčně nahradí.
+ * ## Server je jediný autor světa
  *
- * `ModelProgress` nejdřív zdarma ověří WebGPU. Teprve kladný probe smí načíst
- * WebLLM a váhy; na stroji bez akcelerace neodejde jediný jejich bajt. Hotový
- * engine vede přes `PromptBar` do produkčního `emitLocally()`, takže panel už
- * neplatí cenu bez volajícího. Měří to `e2e/model-wired.spec.ts`.
+ * Blueprint se **nedopočítává** z ničeho, co by si stránka domyslela: přijde
+ * rámcem `blueprint.ready` a projde `blueprintSchema` znovu, tady. Server ho
+ * validoval taky, a to je schválně dvakrát — mezi nimi je síť a `unknown`,
+ * takže bez druhého čtení by se do `buildProxyWorldFrom()` dostal objekt,
+ * o kterém překladač jen věří, že má správný tvar.
  *
- * ## Rozvržení odešlo do skořápky (P13 vlna 0 T1)
+ * ## Odchod čtenáře neruší relaci
  *
- * Do 27. 8. 2026 tahle stránka rozvržení i držela: dva sloupce v rozích, pole na
- * větu v horním pruhu a pět průsvitných karet s vnitřnostmi potrubí, které
- * viděl každý, kdo přišel napsat větu. Design book §15.3 to obrací — plátno má
- * celý viewport a rozhraní jsou tři věci u spodní hrany. Rozvržení teď dělá
- * `WorldstreamApp`, tady zůstal **stav**: svět, emise, fáze hry, `window.__game`.
- *
- * Pět panelů se **nemaže**, stěhuje se do Inspect zásuvky. Jediná výjimka je
- * `ModelProgress`, který je současně panel i motor stahování modelu; drží ho
- * proto `inspectBackground` připojený pořád a vykreslí se až po otevření.
+ * `AbortController` zavře **čtení**, ne generaci: relace na serveru běží dál
+ * (`client.ts`). Druhá věta tedy nezahazuje zaplacenou práci té první, jen
+ * na ni přestane čekat.
  */
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 
-import FirstRun from '@/components/hud/FirstRun';
-import ModelProgress, { type ModelPhase, type ModelState } from '@/components/hud/ModelProgress';
-import RepairRounds from '@/components/hud/RepairRounds';
-import Program from '@/components/pipeline/Program';
-import Timeline from '@/components/pipeline/Timeline';
-import WitnessPreview from '@/components/pipeline/WitnessPreview';
-import PromptBar from '@/components/PromptBar';
 import WorldStatus, { type WorldStatusState } from '@/components/worldstream/WorldStatus';
 import WorldstreamApp from '@/components/worldstream/WorldstreamApp';
-import type { CameraMode } from '@/components/viewer/FollowCamera';
-import type { RunnerRef } from '@/components/viewer/WorldScene';
+import { createMeshClient, type MeshClient } from '@/shape/mesh-client';
 import {
-  actorOf,
-  arrivedAt,
-  createControls,
-  phaseOf,
-  playableTargets,
-  type GamePhase,
-} from '@/game/flow';
-import { buildRuntimeWorld } from '@/ir/build';
-import type { ChatEngine } from '@/model/local/engine';
-import type { EmissionSource } from '@/model/source';
-import type { Round } from '@/model/local/emit';
-import type { TraceInput, WorldDocRuntime } from '@/sim/interpreter';
+  followSession,
+  openWorldstreamSession,
+  type SessionHandle,
+} from '@/worldstream/client';
+import {
+  buildProxyWorldFrom,
+  PROXY_RUNG_LABELS,
+  type ProxyWorld,
+} from '@/worldstream/proxy';
+import { pickQualityTier, type QualityTier } from '@/worldstream/quality';
+import { blueprintSchema } from '@/worldstream/schema';
 
-declare global {
-  interface Window {
-    /**
-     * Hra, jak ji vidí zvenčí. Každá odpověď se počítá z hraného běhu na plátně,
-     * ne z druhého runtimu vedle — jinak by odpovídala o jiné hře, než jakou má
-     * divák před sebou.
-     */
-    __game?: {
-      /** Fáze teď. */
-      state: () => GamePhase;
-      /** Fáze v pořadí, ve kterém nastaly. Vzorkuje se každý snímek. */
-      seen: () => readonly GamePhase[];
-      /** Cíle v pořadí kláves 1 až 9. */
-      targets: () => readonly string[];
-      /** Naposledy vybraný cíl. */
-      selected: () => string | null;
-      /** Stojí hráč na vybraném cíli? */
-      arrived: () => boolean;
-      /** Hash stavu hraného běhu. */
-      hash: () => string;
-      /** Co hráč zahrál, s tiky. Přehráním vznikne týž běh. */
-      inputs: () => readonly TraceInput[];
-      /** Znovu od začátku, týž dokument. */
-      restart: () => void;
-    };
-  }
-}
-
-// ssr: false je povinné, ne kosmetické — WebGL kontext na serveru neexistuje
-// a `<Canvas>` by při SSR spadl na `document`.
-const Stage = dynamic(() => import('@/components/Stage'), { ssr: false });
+// `ssr: false` je povinné, ne kosmetické — WebGL2 kontext na serveru
+// neexistuje a `<Canvas>` by při prerenderu spadl na `document`.
+const WorldstreamCanvas = dynamic(() => import('@/components/worldstream/WorldstreamCanvas'), {
+  ssr: false,
+});
 
 /**
- * Emise → běh, nebo `null`.
+ * Věta, kterou porotce uvidí, když relace skončí bez světa a bez důvodu.
  *
- * Emise, ze které se svět postavit nedá, je normální odpověď některé vstupní
- * cesty, ne výjimka: dokument se validuje až tady. Plátno pak zůstane prázdné
- * a uživatel dostane hlášku místo pádu.
+ * Text poruchy ze serveru je **veřejná věta** (`SESSION_FAULTS`), ne výjimka
+ * poskytovatele — do proudu se nic jiného nedostane. Když ani ta nedorazí,
+ * zbude tahle: relace skončila a svět nevznikl, což je celá pravda, kterou
+ * v tu chvíli známe.
  */
-function worldFrom(emission: unknown): WorldDocRuntime | null {
-  const sim = (emission as { sim?: unknown } | null)?.sim;
-  if (sim === undefined || sim === null) return null;
+const UNKNOWN_FAULT = 'the session ended without a world';
 
-  const built = buildRuntimeWorld(sim);
-  return built.ok ? built.world : null;
-}
+/** Co z relace vyleze: buď blueprint, nebo věta, proč žádný nebude. */
+type Arrival = { readonly blueprint: unknown } | { readonly fault: string };
 
 /**
- * Výtvarná část emise. Vybírá rodinu kulisy (`chooseFamily`) a je to **odkaz do
- * uloženého objektu**, ne nová hodnota — kdyby vznikala při každém renderu,
- * `WorldScene` by přestavovala scénu pořád dokola.
+ * První blueprint z relace — **ne její konec**.
+ *
+ * `followSession()` se vrátí až na koncové fázi, jenže `advance('complete')`
+ * nemá v provozu volajícího (`sessions.ts`): relace zůstává po `world.ready`
+ * otevřená, aby do ní mohla přijít druhá věta a hlášení o mešovaných tvarech
+ * (§21). Čekat na její konec by tedy znamenalo čekat navždy — naměřeno
+ * 6. 9. 2026, stavová věta stála na `building` devadesát vteřin.
+ *
+ * Čte se proto `onState`: jakmile proud donese blueprint, je co stavět.
+ * Proud se přitom **nezavírá** — běží dál pod rukou, protože další rámce téže
+ * relace patří téhle stránce. Zavře ho až druhá věta nebo odchod.
+ *
+ * Slib se plní **právě jednou**; `then` níž je proto druhá větev, ne návazný
+ * krok: relace, která skončila bez blueprintu, musí umět vydat svoji větu.
  */
-function lookOf(emission: unknown): unknown {
-  return (emission as { look?: unknown } | null)?.look ?? null;
+function firstBlueprint(
+  handle: SessionHandle,
+  signal: AbortSignal,
+): Promise<Arrival> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = (arrival: Arrival): void => {
+      if (settled) return;
+      settled = true;
+      resolve(arrival);
+    };
+
+    void followSession(handle, {
+      signal,
+      onState: (state) => {
+        if (state.blueprint !== null) done({ blueprint: state.blueprint });
+      },
+    })
+      .then((final) => done({ fault: final.fault ?? UNKNOWN_FAULT }))
+      .catch((error: unknown) =>
+        done({ fault: error instanceof Error ? error.message : String(error) }),
+      );
+  });
 }
 
 export default function Page() {
-  const [world, setWorld] = useState<WorldDocRuntime | null>(null);
-  const [broken, setBroken] = useState(false);
-  // Výchozí stav je sledovací a je to rozhodnutí, ne shoda okolností: divák,
-  // který o přepínači neví, musí vidět hru, ne prázdno vedle ní.
-  const [cameraMode, setCameraMode] = useState<CameraMode>('follow');
-  const [engine, setEngine] = useState<ChatEngine | null>(null);
-  const [modelPhase, setModelPhase] = useState<ModelPhase>('probing');
-  /**
-   * Kola opravné smyčky poslední věty. Prázdné, dokud model neběžel.
-   *
-   * Bydlí tady, ne v `PromptBar`, protože panel patří do Inspect zásuvky —
-   * kotvit se sám mu `.ws-inspect-panels` zakazuje a dvakrát to už stálo několik
-   * dní červené e2e sady.
-   */
-  const [rounds, setRounds] = useState<readonly Round[]>([]);
-  // Dvě emise v JEDNOM stavu, ne dva stavy vedle sebe: panel překladu ukazuje
-  // ROZDÍL proti minulé větě, a posun "současná se stane minulou" musí být jeden
-  // atomický krok. Dvě `useState` by ho složily ze dvou zápisů čtoucích zachycenou
-  // hodnotu z minulého renderu — tedy z místa, kde se dá minout právě ta emise,
-  // proti které se má porovnávat.
-  const [programs, setPrograms] = useState<{
-    readonly current: unknown;
-    readonly previous: unknown;
-    readonly source: EmissionSource | null;
-  }>({
-    current: null,
-    previous: null,
-    source: null,
-  });
-
-  /**
-   * Je Inspect otevřený?
-   *
-   * Bydlí to tady, ne v `WorldstreamApp`, kvůli `ModelProgress`: ten je současně
-   * panel i motor stahování modelu, takže se nesmí odpojit se zavřenou zásuvkou.
-   * Stránka mu proto podává `visible` a on zůstává připojený pořád.
-   */
+  const [world, setWorld] = useState<ProxyWorld | null>(null);
+  /** Běží relace? Rozhoduje o stavové větě i o zamčeném tlačítku. */
+  const [streaming, setStreaming] = useState(false);
+  const [fault, setFault] = useState<string | null>(null);
+  const [sentence, setSentence] = useState('');
   const [inspecting, setInspecting] = useState(false);
   const toggleInspect = useCallback(() => setInspecting((was) => !was), []);
 
-  const runnerRef = useRef<RunnerRef['current']>(null);
-  const controls = useMemo(createControls, []);
-  const seen = useRef<GamePhase[]>([]);
-
-  const acceptWorld = useCallback(
-    (next: unknown, nextSource: EmissionSource): void => {
-      const built = worldFrom(next);
-      controls.reset();
-      setBroken(built === null);
-      setWorld(built);
-      setPrograms((was) => ({ current: next, previous: was.current, source: nextSource }));
-    },
-    [controls],
-  );
-
-  // Stabilní identity jsou součást správnosti: `ModelProgress` má callbacky v
-  // závislostech efektu. Inline funkce by při každém renderu zrušila právě
-  // běžící probe nebo download a začala znovu.
-  const acceptEngine = useCallback((next: ChatEngine): void => setEngine(next), []);
-  const acceptModelState = useCallback((next: ModelState): void => setModelPhase(next.phase), []);
-
-  const actor = world === null ? null : actorOf(world);
-  const targets = useMemo(() => (world === null ? [] : playableTargets(world)), [world]);
-
-  // Jedna věta o stavu světa, ne panel logů (design book §15.3). Rozbitý svět má
-  // přednost před živým: kdyby se poslední věta nedala postavit, je to to jediné,
-  // co uživatel v tu chvíli potřebuje vědět.
-  const statusState: WorldStatusState = broken ? 'broken' : world === null ? 'empty' : 'live';
-
-  const inputs = useCallback(
-    (tick: number) => (actor === null ? [] : controls.take(tick, actor)),
-    [actor, controls],
-  );
-
-  const phase = useCallback((): GamePhase => {
-    const runner = runnerRef.current;
-    const assembly = runner?.assembly();
-    return phaseOf({
-      hasWorld: world !== null && runner !== null,
-      revealed: assembly?.revealed ?? 0,
-      total: assembly?.total ?? 1,
-      runState: runner?.runState() ?? 'running',
-    });
-  }, [world]);
-
   /**
-   * Zapíše fázi do záznamu, když je jiná než naposledy. Volá se ze DVOU míst a obě
-   * jsou potřeba: z vlastního vzorkování po snímcích, a z každého dotazu zvenčí.
-   *
-   * **Vzorkování po snímcích samo nestačí, a je to naměřené.** Při softwarovém
-   * vykreslování (SwiftShader v e2e) trvá snímek stovky milisekund, a hodiny
-   * simulace v jednom snímku doženou celou dávku zameškaných tiků. Fáze, která
-   * začne a skončí uvnitř jedné takové dávky, mezi dvěma snímky prostě není —
-   * záznam pak přeskočí `playing` nebo `won`. Dotaz na `state()` proto zapisuje taky:
-   * kdo se ptá, ten fázi viděl, a záznam říká právě tohle — kudy hra prokazatelně
-   * prošla, ne kudy se dá tušit, že asi šla.
+   * Meshovací klient. **Jeden na celou stránku**, ne jeden na relaci: worker
+   * stojí start a druhá věta by ho zaplatila znovu. Zavírá se s odchodem
+   * ze stránky.
    */
-  const record = useCallback((): GamePhase => {
-    const now = phase();
-    if (seen.current[seen.current.length - 1] !== now) seen.current.push(now);
-    return now;
-  }, [phase]);
-
-  // Vzorkování je MIMO hashovaný stav, ve stejné kategorii jako kamera nebo
-  // částice: nic z toho nevstupuje do tiku, takže tu smí běžet skutečný
-  // `requestAnimationFrame`.
-  useEffect(() => {
-    let frame = requestAnimationFrame(function sample() {
-      record();
-      frame = requestAnimationFrame(sample);
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [record]);
+  const mesher = useRef<MeshClient | null>(null);
+  /** Čtení právě běžící relace. Nová věta to předchozí zruší. */
+  const reading = useRef<AbortController | null>(null);
+  /** Úroveň kvality. Čte se jednou, po připojení — sahá na `document`. */
+  const tier = useRef<QualityTier>('full');
 
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      // Psaní věty není hraní. Bez téhle podmínky by číslice napsaná do promptu
-      // poslala postavu pryč a mezerník mezi slovy by zvedal předměty.
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
-      if (controls.press(event.key, targets) !== null) event.preventDefault();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [controls, targets]);
+    const client = createMeshClient();
+    mesher.current = client;
+    tier.current = pickQualityTier(window.location.search);
 
-  const restart = useCallback(() => {
-    controls.reset();
-    // **Uvolnit starý běh dřív, než se vymění svět.** `phaseOf()` odpovídá `won`
-    // dřív, než se vůbec podívá na rozvrh stavby (a je to tak schválně, drží to
-    // zelený test v `src/game/__tests__/flow.test.ts`). Restart se ale dělá po
-    // dohrané partii, takže dokud tady visí vyhraný běh, čte se fáze z něj:
-    // záznam zůstane stát na `won`, druhé `building` se nikdy nezapíše a
-    // `e2e/playable-loop.spec.ts` na něj čeká marně. Bez běhu vyjde `building`,
-    // protože `hasWorld` je nepravda a stav se čte jako `running`.
-    runnerRef.current = null;
-    // Zapsat hned, ne až po snímcích. Rozvrh stavby může doběhnout uvnitř jedné
-    // dávky tiků a fáze, která začne a skončí mezi dvěma snímky, v záznamu není —
-    // týž důvod, proč `record()` zapisuje i při dotazu zvenčí.
-    record();
-    // Nový OBJEKT téhož dokumentu. `WorldScene` si běh, scénu i rozvrh stavby drží
-    // podle identity `world`, takže restart bez nové identity by jen vysypal frontu
-    // a nechal rozehraný svět běžet dál.
-    setWorld((was) => (was === null ? null : { ...was }));
-  }, [controls, record]);
-
-  useEffect(() => {
-    window.__game = {
-      state: record,
-      seen: () => [...seen.current],
-      targets: () => targets,
-      selected: controls.selected,
-      arrived: () => {
-        const selected = controls.selected();
-        const runner = runnerRef.current;
-        if (selected === null || runner === null || actor === null) return false;
-        return arrivedAt(runner.entities(), actor, selected);
-      },
-      hash: () => runnerRef.current?.hash() ?? '',
-      inputs: () => controls.log(),
-      restart,
-    };
     return () => {
-      delete window.__game;
+      reading.current?.abort();
+      mesher.current = null;
+      client.dispose();
     };
-  }, [actor, controls, record, restart, targets]);
+  }, []);
+
+  const submit = useCallback(
+    async (event: FormEvent): Promise<void> => {
+      event.preventDefault();
+      const prompt = sentence.trim();
+      if (prompt === '' || streaming) return;
+
+      // Předchozí čtení se ruší **před** otevřením nové relace, aby dva proudy
+      // nepsaly do jednoho stavu. Relaci to na serveru neruší, jen ji přestaneme
+      // poslouchat.
+      reading.current?.abort();
+      const control = new AbortController();
+      reading.current = control;
+
+      setStreaming(true);
+      setFault(null);
+      setWorld(null);
+
+      try {
+        const handle = await openWorldstreamSession(prompt, { signal: control.signal });
+        const arrival = await firstBlueprint(handle, control.signal);
+        if (control.signal.aborted) return;
+
+        if (!('blueprint' in arrival)) {
+          setFault(arrival.fault);
+          return;
+        }
+
+        // Server blueprint validoval taky. Čte se podruhé, protože mezi tím je
+        // síť a `unknown` — bez toho by se dovnitř dostal objekt, o kterém
+        // překladač jen věří, že má správný tvar.
+        const parsed = blueprintSchema.safeParse(arrival.blueprint);
+        if (!parsed.success) {
+          setFault(`the world that arrived does not parse: ${parsed.error.issues[0]?.message ?? '?'}`);
+          return;
+        }
+
+        const client = mesher.current;
+        if (client === null) return;
+        const built = await buildProxyWorldFrom(parsed.data, {
+          mesh: (order) => client.mesh(order),
+          quality: tier.current,
+        });
+        if (control.signal.aborted) return;
+
+        // Odmítnutý svět není svět. Věta o něm je ta, kterou napsal
+        // `buildProxyWorldFrom()` — ta ví, na čem stavba ztroskotala.
+        if (built.kind === 'built') setWorld(built);
+        else setFault(built.reason);
+      } catch (error: unknown) {
+        if (control.signal.aborted) return;
+        setFault(error instanceof Error ? error.message : String(error));
+      } finally {
+        if (!control.signal.aborted) setStreaming(false);
+      }
+    },
+    [sentence, streaming],
+  );
+
+  // Pořadí je pořadí pravdy: porucha přebíjí běžící relaci, protože relace
+  // skončila; běžící relace přebíjí prázdno, protože se něco děje.
+  const status: WorldStatusState =
+    fault !== null ? 'broken' : streaming ? 'building' : world === null ? 'empty' : 'live';
 
   return (
     <WorldstreamApp
       inspecting={inspecting}
       onInspect={toggleInspect}
       prompt={
-        <PromptBar
-          onWorld={acceptWorld}
-          onRounds={setRounds}
-          engine={engine}
-          modelPhase={modelPhase}
-        />
-      }
-      status={<WorldStatus state={statusState} />}
-      /* Prázdný stav plátna. Mizí, jakmile návštěvník poprvé odešle větu — i
-         když se z ní svět postavit nepodařilo, protože pak mluví stavová věta o
-         chybě a dvě sdělení přes sebe by si braly pozornost. */
-      empty={world === null && programs.current === null ? <FirstRun /> : null}
-      controls={
-        world === null ? null : (
-          <GameControls
-            targets={targets}
-            onRestart={restart}
-            cameraMode={cameraMode}
-            onCameraMode={() => setCameraMode((now) => (now === 'follow' ? 'free' : 'follow'))}
+        <form onSubmit={(event) => void submit(event)} data-testid="prompt-form" style={FORM}>
+          <input
+            data-testid="prompt-input"
+            aria-label="Describe a place"
+            placeholder="a drowned cathedral lit from below"
+            value={sentence}
+            onChange={(event) => setSentence(event.target.value)}
+            style={INPUT}
           />
-        )
+          <button type="submit" data-testid="prompt-submit" disabled={streaming} style={BUTTON}>
+            {streaming ? 'Building…' : 'Build the world'}
+          </button>
+        </form>
       }
-      /* Pět panelů, které do vlny 0 stály v rozích a vidělo je i to, kdo přišel
-         jenom napsat větu. Nemažou se — jsou to důkazy, na kterých produkt stojí
-         (design book §15.5). Do stromu se dostanou teprve po otevření zásuvky. */
-      inspect={
-        <>
-          <Program
-            emission={programs.current}
-            previous={programs.previous}
-            source={programs.source}
-          />
-          <Timeline world={world} />
-          <WitnessPreview world={world} />
-          <RepairRounds rounds={rounds} />
-        </>
-      }
-      inspectBackground={
-        <ModelProgress onReady={acceptEngine} onState={acceptModelState} visible={inspecting} />
-      }
-      /* `look` jde z TÉŽE emise jako svět, ne z vedlejšího stavu: obojí zapisuje
-         `acceptWorld` jedním krokem, takže si kulisa a hra nemůžou patřit dvěma
-         různým větám. Vybírá výtvarnou rodinu kulisy (`chooseFamily`). */
-      stage={
-        <Stage
-          world={world}
-          look={lookOf(programs.current)}
-          inputs={inputs}
-          runnerRef={runnerRef}
-          cameraMode={cameraMode}
-        />
-      }
+      status={<WorldStatus state={status} detail={fault} />}
+      inspect={<WorldFacts world={world} />}
+      stage={<WorldstreamCanvas world={world} />}
     />
   );
 }
 
 /**
- * Nápověda ovládání.
+ * Co v tom světě doopravdy stojí — **jediný panel Inspectu na hlavní cestě**.
  *
- * Bez ní je místnost hratelná jen pro toho, kdo četl zdroják: cíle pojmenoval svět,
- * takže je divák nemá odkud znát. Vypisuje se proto to, co svět doopravdy nabízí,
- * ne pevný seznam kláves.
+ * Není to log a není to ozdoba: hrubý svět dává každému objektu příčku žebříku
+ * (§27) a právě ta odpovídá na otázku „proč tenhle kus vypadá jako bedna?".
+ * Bez ní je hlína němá a porotce ji čte jako vadu vykreslování.
+ *
+ * Pět panelů staré stránky (`Program`, `Timeline`, `WitnessPreview`,
+ * `RepairRounds`, `ModelProgress`) sem **nejde**: stojí nad lokální emisí a
+ * `WorldDocRuntime`, tedy nad systémem, který na `/classic` zůstal celý.
  */
-function GameControls({
-  targets,
-  onRestart,
-  cameraMode,
-  onCameraMode,
-}: {
-  readonly targets: readonly string[];
-  readonly onRestart: () => void;
-  readonly cameraMode: CameraMode;
-  readonly onCameraMode: () => void;
-}) {
+function WorldFacts({ world }: { readonly world: ProxyWorld | null }) {
+  if (world === null || world.kind !== 'built') return null;
+
   return (
-    <div data-testid="game-controls" style={PANEL}>
+    <section data-testid="world-facts" style={FACTS}>
+      <h2 style={FACTS_TITLE}>{world.title}</h2>
       <ol style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-        {targets.map((target, at) => (
-          <li key={target} data-testid="game-target">
-            <kbd style={KEY}>{at + 1}</kbd> walk to <strong>{target}</strong>
+        {world.slots.map(({ slot, form }) => (
+          <li key={slot.stableId} data-testid="world-facts-slot" data-rung={form.rung}>
+            <strong>{slot.label}</strong> — {PROXY_RUNG_LABELS[form.rung]}
+            {form.kind === 'clay' ? `: ${form.reason}` : ''}
           </li>
         ))}
       </ol>
-      <p style={{ margin: '0.4rem 0 0' }}>
-        <kbd style={KEY}>space</kbd> pick up &middot; <kbd style={KEY}>E</kbd> use
-      </p>
-      <button type="button" data-testid="game-restart" onClick={onRestart} style={BUTTON}>
-        Restart
-      </button>
-      {/* Přepínač stojí vedle restartu, ne ve vlastní komponentě: ovládání hry
-          žije tady a druhý panel v témž rohu je ta vada, kvůli které sloupce
-          vznikly. `aria-pressed` nese stav i pro toho, kdo popisek neuvidí. */}
-      <button
-        type="button"
-        data-testid="camera-mode"
-        aria-pressed={cameraMode === 'free'}
-        onClick={onCameraMode}
-        style={{ ...BUTTON, marginLeft: '0.4rem' }}
-      >
-        {cameraMode === 'free' ? 'Follow the hero' : 'Turn the world'}
-      </button>
-    </div>
+    </section>
   );
 }
 
-const PANEL: React.CSSProperties = {
-  // Žádné vlastní ukotvení do rohu — panel je členem `.ws-controls` a roh drží
-  // ten sloupec. Dokud se kotvil sám (`bottom`/`left: 1rem`, `zIndex: 2`), lehl
-  // si přesně pod časovou osu a `game-restart` nešlo kliknout:
-  // `elementFromPoint` ve středu tlačítka vracel `timeline-outcome`.
+const FACTS: React.CSSProperties = {
   pointerEvents: 'auto',
+  maxWidth: '26rem',
   padding: '0.6rem 0.75rem',
   borderRadius: 6,
   background: 'rgba(11, 18, 20, 0.82)',
   color: '#cfe3e6',
-  font: '13px/1.5 ui-monospace, monospace',
+  font: '12px/1.5 ui-monospace, monospace',
 };
 
-const KEY: React.CSSProperties = {
-  padding: '0 0.3rem',
-  borderRadius: 3,
-  background: '#1d2b2f',
+const FACTS_TITLE: React.CSSProperties = {
+  margin: '0 0 0.4rem',
+  font: 'inherit',
   color: '#7fd4c1',
 };
 
+const FORM: React.CSSProperties = {
+  display: 'flex',
+  gap: '0.5rem',
+  pointerEvents: 'auto',
+};
+
+const INPUT: React.CSSProperties = {
+  flex: 1,
+  minWidth: 0,
+  padding: '0.55rem 0.75rem',
+  border: '1px solid #2c4147',
+  borderRadius: 4,
+  background: 'rgba(11, 18, 20, 0.86)',
+  color: '#cfe3e6',
+  font: '14px/1.4 ui-monospace, monospace',
+};
+
 const BUTTON: React.CSSProperties = {
-  marginTop: '0.5rem',
-  padding: '0.25rem 0.6rem',
+  padding: '0.55rem 1rem',
   border: '1px solid #2c4147',
   borderRadius: 4,
   background: '#132022',
   color: '#cfe3e6',
   cursor: 'pointer',
-  font: 'inherit',
+  font: '14px/1.4 ui-monospace, monospace',
 };

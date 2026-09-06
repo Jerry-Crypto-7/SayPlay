@@ -468,9 +468,25 @@ export async function buildProxyWorld(
   deps: ProxyDeps,
 ): Promise<ProxyWorld> {
   if (outcome.kind !== 'compiled') return declined(outcomeReason(outcome));
+  return buildProxyWorldFrom(outcome.result.value, deps);
+}
 
-  const blueprint = outcome.result.value;
-
+/**
+ * Totéž z **holého blueprintu**, pro volajícího, který výsledek compileru nemá.
+ *
+ * Prohlížeč ho nemá a mít nemůže: proudem relace přiletí `blueprint.ready`
+ * s blueprintem, a `verdict`, `adjustments` ani `repairs` po drátě nejdou
+ * (§20). Kdyby si hlavní stránka `CompiledBlueprint` skládala přetypováním,
+ * tvrdila by o certifikátu něco, co nikdy neviděla — a `tsc` by ji nechal.
+ *
+ * Staví se **z blueprintu a z ničeho jiného**, takže obě cesty dají doslova
+ * týž svět; `buildProxyWorld()` výš je tenhle vstup plus rozbalení obálky
+ * compileru.
+ */
+export async function buildProxyWorldFrom(
+  blueprint: WorldstreamBlueprint,
+  deps: ProxyDeps,
+): Promise<ProxyWorld> {
   // **Úroveň se čte tady a nikde jinde** (§23): jedno přečtení před fan-outem,
   // pak už jen `budget`. Kdyby se `deps.quality` četlo uvnitř smyčky, mohla by
   // se úroveň mezi dvěma tvary změnit — a `contentHash` nese rozlišení, takže

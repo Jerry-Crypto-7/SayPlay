@@ -526,7 +526,7 @@ test('čtyři rodiny se vejdou do rozpočtu a na snímku se čtou jako svět', a
 test('první interaktivní prvek nese instrukci a je vidět bez rolování', async ({ page }) => {
   test.setTimeout(120_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await expect(page.getByTestId('first-run')).toBeVisible();
 
   const first = await page.evaluate(() => {

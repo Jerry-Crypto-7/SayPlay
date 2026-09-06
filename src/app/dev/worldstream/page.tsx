@@ -45,9 +45,8 @@ import type { DetailLevel } from '@/worldstream/mesh-gate';
 import { buildProxyWorld, type ProxyWorld } from '@/worldstream/proxy';
 import {
   budgetFor,
-  chooseQualityTier,
   detailLevelFor,
-  isQualityTier,
+  pickQualityTier,
   type QualityTier,
 } from '@/worldstream/quality';
 
@@ -138,38 +137,6 @@ function twoFrames(): Promise<void> {
   });
 }
 
-/**
- * Úroveň kvality **před** stavbou světa (`T26`, §23).
- *
- * `?tier=safe` přebíjí volbu podle stroje, a není to jen testovací zadní
- * vrátka: úrovně se jinak na jednom stroji vyzkoušet nedají, takže bez toho by
- * se dvě ze tří větví adaptivní kvality nikdy nikdo nepodíval. Neznámá hodnota
- * se **ignoruje**, ne odmítá — je to vývojová adresa a překlep nemá shodit
- * stránku, na které se zkouší něco jiného.
- *
- * Renderer se čte přes `WEBGL_debug_renderer_info`. Ta přípona bývá zakázaná;
- * když chybí, zůstane prázdný řetězec a `chooseQualityTier()` rozhodne podle
- * paměti a jader. Neznalost úroveň nesnižuje.
- */
-function pickTier(search: string): QualityTier {
-  const forced = new URLSearchParams(search).get('tier');
-  if (isQualityTier(forced)) return forced;
-
-  let renderer = '';
-  const probe = document.createElement('canvas').getContext('webgl2');
-  if (probe !== null) {
-    const info = probe.getExtension('WEBGL_debug_renderer_info');
-    if (info !== null) renderer = String(probe.getParameter(info.UNMASKED_RENDERER_WEBGL) ?? '');
-    probe.getExtension('WEBGL_lose_context')?.loseContext();
-  }
-
-  return chooseQualityTier({
-    deviceMemoryGb: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
-    cores: navigator.hardwareConcurrency,
-    renderer,
-  });
-}
-
 export default function WorldstreamDevPage() {
   const [world, setWorld] = useState<ProxyWorld | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -199,7 +166,7 @@ export default function WorldstreamDevPage() {
     const client = createMeshClient();
     mesher.current = client;
     let live = true;
-    tier.current = pickTier(window.location.search);
+    tier.current = pickQualityTier(window.location.search);
 
     buildProxyWorld(DEMO_OUTCOME, { mesh: (order) => client.mesh(order), quality: tier.current })
       .then((built) => {

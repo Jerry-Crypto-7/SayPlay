@@ -73,7 +73,7 @@ let pageReplays = -1;
 async function live(page: Page): Promise<LiveReport> {
   if (cached !== null) return cached;
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith?.verify !== undefined, undefined, { timeout: 60_000 });
 
   try {

@@ -68,7 +68,7 @@ async function lines(page: Page): Promise<string[]> {
 test('panel ukáže program, po druhé větě rozdíl, a jde sbalit', async ({ page }) => {
   test.setTimeout(180_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
   // Od P13 vlny 0 T1 panel nestojí na výchozí obrazovce — plátno má celý
@@ -151,7 +151,7 @@ const CORNER_CONTROLS = ['pipeline-toggle', 'timeline-branch', 'game-restart'] a
 test('ovládání v levém dolním rohu si nebere kliknutí navzájem', async ({ page }) => {
   test.setTimeout(180_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
   // Zásuvka se otevírá PŘED větou, ne po ní: `sentence()` čeká na
