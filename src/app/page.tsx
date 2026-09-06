@@ -46,6 +46,7 @@ import { createMeshClient, type MeshClient } from '@/shape/mesh-client';
 import {
   followSession,
   openWorldstreamSession,
+  type AuthoredProvenance,
   type SessionHandle,
 } from '@/worldstream/client';
 import {
@@ -121,6 +122,14 @@ export default function Page() {
   /** Běží relace? Rozhoduje o stavové větě i o zamčeném tlačítku. */
   const [streaming, setStreaming] = useState(false);
   const [fault, setFault] = useState<string | null>(null);
+  /**
+   * Odkud je svět na plátně. `null` znamená „napsal ho model teď".
+   *
+   * Přepisuje se **až se světem**, ne při odeslání věty: dokud stará scéna
+   * stojí, platí o ní starý popisek. Kdyby se nuloval dřív, produkt by během
+   * generace jednu vteřinu tvrdil, že přehrávaný svět je čerstvý.
+   */
+  const [provenance, setProvenance] = useState<AuthoredProvenance | null>(null);
   const [sentence, setSentence] = useState('');
   const [inspecting, setInspecting] = useState(false);
   const toggleInspect = useCallback(() => setInspecting((was) => !was), []);
@@ -194,8 +203,10 @@ export default function Page() {
 
         // Odmítnutý svět není svět. Věta o něm je ta, kterou napsal
         // `buildProxyWorldFrom()` — ta ví, na čem stavba ztroskotala.
-        if (built.kind === 'built') setWorld(built);
-        else setFault(built.reason);
+        if (built.kind === 'built') {
+          setWorld(built);
+          setProvenance(handle.authored);
+        } else setFault(built.reason);
       } catch (error: unknown) {
         if (control.signal.aborted) return;
         setFault(error instanceof Error ? error.message : String(error));
@@ -231,9 +242,41 @@ export default function Page() {
         </form>
       }
       status={<WorldStatus state={status} detail={fault} />}
+      provenance={<AuthoredNotice provenance={world === null ? null : provenance} />}
       inspect={<WorldFacts world={world} />}
       stage={<WorldstreamCanvas world={world} />}
     />
+  );
+}
+
+/**
+ * „Tenhle svět jsem uměl dopředu" — **nahlas, anglicky, na obrazovce**
+ * (`T45-honestlabel`).
+ *
+ * Model se pro tohle demo nekupuje (`G2`, 5. 9. 2026), takže neznámou větu
+ * obslouží nejbližší svět ze skladu uvařeného dopředu. Bez téhle věty by
+ * produkt tvrdil, že tuhle větu napsal model teď — a je to nepravda, kterou
+ * porotce odhalí druhou větou, protože dvě různé věty dostanou tentýž svět.
+ * **Poctivost je tady levnější než iluze.**
+ *
+ * Mlčí se ve dvou případech a oba jsou správně: svět píše model (`provenance`
+ * je `null`), nebo věta trefila uvařený svět **přesně** — tam se nic
+ * nenahrazovalo, takže není co přiznávat.
+ *
+ * Text jmenuje, co se stalo, a neomlouvá se. Omluva by z poctivosti udělala
+ * vadu; tohle je vlastnost.
+ */
+function AuthoredNotice({
+  provenance,
+}: {
+  readonly provenance: AuthoredProvenance | null;
+}) {
+  if (provenance === null || provenance.match !== 'nearest') return null;
+
+  return (
+    <p className="ws-provenance" data-testid="world-authored">
+      This is the closest world authored ahead of time.
+    </p>
   );
 }
 

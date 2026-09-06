@@ -61,7 +61,7 @@ import { logRateLimited } from '../../../../server/public-faults';
 import { costUsd, processSpendCap, SpendRefusalError } from '../../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../../server/upstream';
 import type { BlueprintEmitter } from '../../../../model/worldstream-repair';
-import { authoredEmitter } from '../../../../worldstream/authored';
+import { chooseAuthored, emitterFor } from '../../../../worldstream/authored';
 import {
   MAX_SESSIONS_PER_CALLER,
   newSessionSeed,
@@ -523,7 +523,13 @@ export async function POST(request: Request): Promise<Response> {
     // Vypnutý model i chybějící klíč vypadají odsud stejně (`cloudEmitter()`
     // vrátí `null`) a to je správně: kill switch `upstream` vypíná **živou**
     // větev, ne sklad. Porotci má vypnutý model nechat svět, ne prázdno.
-    const emit = (await cloudEmitter()) ?? authoredEmitter(verdict.prompt);
+    const cloud = await cloudEmitter();
+    // Sklad se hledá **tady**, ne uvnitř emitoru: odpověď musí říct, jestli
+    // věta trefila uvařený svět přesně, nebo dostala ten nejbližší. Bez toho
+    // by produkt tvrdil, že tenhle svět napsal model teď — a to je nepravda,
+    // kterou porotce odhalí druhou větou (`T45-honestlabel`).
+    const authored = cloud === null ? chooseAuthored(verdict.prompt) : null;
+    const emit = cloud ?? (authored === null ? null : emitterFor(authored.world));
     const work =
       emit === null
         ? Promise.resolve().then(() => {
@@ -577,6 +583,10 @@ export async function POST(request: Request): Promise<Response> {
         sessionId,
         events: `/api/worldstream/sessions/${sessionId}/events`,
         snapshot: `/api/worldstream/sessions/${sessionId}`,
+        // **Chybí, když svět píše model**, a to je celý rozdíl, který má
+        // porotce vidět. Klíč se posílá jen tehdy, když odpovídá sklad; co
+        // s tím rozhraní udělá, patří jemu, ne téhle route.
+        ...(authored === null ? {} : { authored: { match: authored.match } }),
       },
       { status: 202 },
     );

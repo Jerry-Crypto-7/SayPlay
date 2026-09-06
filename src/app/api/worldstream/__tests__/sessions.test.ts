@@ -202,6 +202,22 @@ describe('založení relace', () => {
     expect(body).not.toHaveProperty('blueprint');
   });
 
+  it('odpověď přizná, že svět jde ze skladu, a jak přesně věta trefila', async () => {
+    // Bez tohohle klíče nemá popisek `T45-honestlabel` odkud vzniknout:
+    // `chooseAuthored()` běží na serveru a klient sklad nevidí. Sada běží bez
+    // `.env`, takže `cloudEmitter()` vrátí `null` a odpovídá sklad — přesně
+    // konfigurace nasazeného dema (rozhodnutí `G2` z 5. 9. 2026).
+    const exact = await createSession(
+      createRequest({ prompt: 'A cathedral of stacked shipping containers around a light well.' }),
+    );
+    expect(((await exact.json()) as { authored?: unknown }).authored).toEqual({ match: 'exact' });
+
+    const nearest = await createSession(
+      createRequest({ prompt: 'A greenhouse swallowed by a glacier, its panes still warm.' }),
+    );
+    expect(((await nearest.json()) as { authored?: unknown }).authored).toEqual({ match: 'nearest' });
+  });
+
   it('geometrii od klienta odmítne, místo aby ji tiše zahodila', async () => {
     // Nosné tvrzení celého endpointu: kdyby se klíč navíc ignoroval, dal by se
     // `ShapeProgram` podstrčit zvenčí a produkt by pořád tvrdil, že geometrii

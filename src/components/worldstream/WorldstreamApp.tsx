@@ -51,6 +51,7 @@ export default function WorldstreamApp({
   stage,
   prompt,
   status,
+  provenance = null,
   axis = null,
   change = null,
   label = null,
@@ -67,6 +68,13 @@ export default function WorldstreamApp({
   readonly prompt: ReactNode;
   /** Jedna stavová věta nad vstupem. */
   readonly status: ReactNode;
+  /**
+   * Věta o původu světa (`T45-honestlabel`) — „tenhle svět vznikl dopředu".
+   *
+   * Jde do doku, ne nad plátno: je to **sdělení o tom, co se právě stalo**,
+   * takže patří k stavové větě, a ne k objektu ve scéně jako `label`.
+   */
+  readonly provenance?: ReactNode;
   /**
    * Osa materializace a času (`T24`). Bydlí v doku, ne ve vlastní buňce: design
    * book §15.3 ji kreslí jako jednu stopu mezi větou a vstupem, a je to
@@ -103,7 +111,7 @@ export default function WorldstreamApp({
   return (
     <main data-testid="worldstream" style={SHELL}>
       <div className="ws-shell" data-inspecting={inspecting}>
-        <PromptDock axis={axis} status={status} change={change}>
+        <PromptDock axis={axis} status={status} provenance={provenance} change={change}>
           {prompt}
         </PromptDock>
         {controls === null ? null : <div className="ws-controls">{controls}</div>}

@@ -104,11 +104,23 @@ function decodeBlock(block: string): SseFrame | null {
  * Otevření relace.
  * ------------------------------------------------------------------ */
 
+/** Odkud se ten svět vzal, když ho nepsal model. */
+export interface AuthoredProvenance {
+  /** `nearest` znamená „tuhle větu jsem neuměl a dal ti nejbližší, co mám". */
+  readonly match: 'exact' | 'nearest';
+}
+
 /** Adresy, které vrátí `POST /api/worldstream/sessions` (202). */
 export interface SessionHandle {
   readonly sessionId: string;
   readonly events: string;
   readonly snapshot: string;
+  /**
+   * `null`, když svět píše model. Route ten klíč posílá **jen tehdy**, když
+   * odpovídá sklad uvařených světů — porotce má právo vědět, že tenhle svět
+   * vznikl dopředu a jeho věta ho jen našla (`T45-honestlabel`).
+   */
+  readonly authored: AuthoredProvenance | null;
 }
 
 export interface ClientOptions {
@@ -153,10 +165,15 @@ export async function openWorldstreamSession(
   if (typeof body?.sessionId !== 'string' || typeof body.events !== 'string')
     throw new Error('the world was not opened: the answer named no session');
 
+  // Neznámá hodnota se čte jako „původ neznáme", ne jako `nearest`: popisek
+  // o přehrávaném světě je tvrzení a tvrdit se smí jen to, co server řekl.
+  const match = body.authored?.match;
+
   return {
     sessionId: body.sessionId,
     events: body.events,
     snapshot: body.snapshot ?? `/api/worldstream/sessions/${body.sessionId}`,
+    authored: match === 'exact' || match === 'nearest' ? { match } : null,
   };
 }
 

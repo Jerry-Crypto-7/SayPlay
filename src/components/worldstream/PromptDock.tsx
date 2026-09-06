@@ -28,6 +28,7 @@ import type { ReactNode } from 'react';
 export default function PromptDock({
   axis = null,
   status,
+  provenance = null,
   change = null,
   children,
 }: {
@@ -39,6 +40,15 @@ export default function PromptDock({
   readonly axis?: ReactNode;
   /** Stavová věta. Vykreslí se nad polem, ale v DOM stojí za ním. */
   readonly status: ReactNode;
+  /**
+   * Odkud se ten svět vzal (`T45-honestlabel`). V DOM za stavovou větou, tedy
+   * opticky **nad ní**: nejdřív se čte, co se stalo, a teprve pak, čí to je
+   * práce.
+   *
+   * Bydlí v doku, ne ve vlastním rohu — konvence rohů v `CLAUDE.md`. Šestý
+   * absolutně kotvený box je přesně ta vada, kvůli které `.ws-shell` vznikla.
+   */
+  readonly provenance?: ReactNode;
   /**
    * Rozsah druhé věty (`T23`). Poslední v DOM, tedy **nejvýš** na obrazovce:
    * `column-reverse` obrací pořadí a rozhodnutí patří nad sdělení.
@@ -52,6 +62,7 @@ export default function PromptDock({
       {children}
       {axis}
       {status}
+      {provenance}
       {change}
     </div>
   );

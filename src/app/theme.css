@@ -394,3 +394,21 @@ body {
   background: var(--ws-verdigris);
   color: var(--ws-pelagic);
 }
+
+/* Popisek původu světa (`T45-honestlabel`).
+
+   Bydlí v doku, ne ve vlastním rohu — konvence rohů v `CLAUDE.md`. Je tišší
+   než stavová věta schválně: říká, čí je to práce, ne co se právě stalo, a
+   dvě stejně hlasitá sdělení nad sebou si berou pozornost navzájem. Tišší ale
+   neznamená schovaný: kontrast drží perleť, ne šedá na tmavé. */
+
+.ws-provenance {
+  margin: 0;
+  padding: 0 0.2rem;
+  color: var(--ws-nacre);
+  opacity: 0.78;
+  text-shadow: var(--ws-text-shadow);
+  font-size: 0.8rem;
+  /* Věta je sdělení, ne ovladač — stejně jako `.ws-status`. */
+  pointer-events: none;
+}

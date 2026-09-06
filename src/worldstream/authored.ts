@@ -171,9 +171,18 @@ export function authoredEmitter(
   worlds: readonly AuthoredWorld[] = AUTHORED_STORE.worlds,
 ): BlueprintEmitter | null {
   const found = chooseAuthored(prompt, worlds);
-  if (found === null) return null;
-  const world = found.world;
+  return found === null ? null : emitterFor(found.world);
+}
 
+/**
+ * Emitor nad **jedním** uvařeným světem, který si volající už vybral.
+ *
+ * Existuje kvůli popisku (`T45-honestlabel`): route potřebuje vědět, jestli
+ * je shoda `exact`, nebo `nearest`, takže si `chooseAuthored()` volá sama.
+ * Bez tohohle vstupu by musela hledat dvakrát — jednou pro odpověď a podruhé
+ * uvnitř `authoredEmitter()` — a dva hledače nad tímtéž se dají rozejít.
+ */
+export function emitterFor(world: AuthoredWorld): BlueprintEmitter {
   return (request: UpstreamRequest): Promise<unknown> => {
     const stage = requestStage(request);
     if (stage === null)

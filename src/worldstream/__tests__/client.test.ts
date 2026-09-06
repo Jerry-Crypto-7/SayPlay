@@ -272,6 +272,8 @@ const HANDLE: SessionHandle = {
   sessionId: SESSION_ID,
   events: `/api/worldstream/sessions/${SESSION_ID}/events`,
   snapshot: `/api/worldstream/sessions/${SESSION_ID}`,
+  // Odpověď bez klíče `authored` znamená „svět píše model", ne „nevíme".
+  authored: null,
 };
 
 interface Call {
@@ -496,6 +498,42 @@ describe('openWorldstreamSession', () => {
 
     expect(sent).toEqual({ prompt: 'a drowned cathedral' });
     expect(handle).toEqual(HANDLE);
+  });
+
+  it('původ ze skladu se veze s adresami, ne zvlášť', async () => {
+    const handle = await openWorldstreamSession('a place nobody wrote', {
+      fetch: async () =>
+        Response.json(
+          {
+            requestId: 'req-2',
+            sessionId: SESSION_ID,
+            events: HANDLE.events,
+            snapshot: HANDLE.snapshot,
+            authored: { match: 'nearest' },
+          },
+          { status: 202 },
+        ),
+    });
+
+    expect(handle.authored).toEqual({ match: 'nearest' });
+  });
+
+  it('neznámý původ se čte jako žádný — popisek je tvrzení, ne dohad', async () => {
+    const handle = await openWorldstreamSession('a place nobody wrote', {
+      fetch: async () =>
+        Response.json(
+          {
+            requestId: 'req-3',
+            sessionId: SESSION_ID,
+            events: HANDLE.events,
+            snapshot: HANDLE.snapshot,
+            authored: { match: 'somewhere-in-between' },
+          },
+          { status: 202 },
+        ),
+    });
+
+    expect(handle.authored).toBeNull();
   });
 
   it('odmítnutí je výjimka s kódem serveru, ne tichý prázdný svět', async () => {
