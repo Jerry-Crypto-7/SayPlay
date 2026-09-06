@@ -11,6 +11,7 @@
  */
 
 import type { WorldDoc } from '@/ir/worlddoc';
+import { pointerTokens } from '@/patch/reject';
 
 /** Tolik z operace, kolik tenhle výpočet čte. Zbytek emise je mu jedno. */
 export interface PreservedOperation {
@@ -61,15 +62,21 @@ export interface PreservedChange {
  * `authored-worlds.json`, ne odhadnuto.
  *
  * ⚠ **Zbytek třídy je otevřený a `T35-preservedattr` ho zavřít nemohl, protože
- * ho měření vyvrátilo.** Plán předepisoval mapu i pro paletu (přes
- * `look.materialRoles`) a světla (přes `lights[*].entity`), a doplnění
- * chybějících vazeb při kompilaci. Nad skutečnými jedenácti světy neplatí ani
- * jedno: **30 ze 33** klíčů `materialRoles` neodpovídá roli žádné entity
- * (`c27` má klíč `deep water`, tedy větu, ne jméno), `look.lightRig` je plochý
- * objekt **bez pole `lights`** ve všech jedenácti, a vynucení nárokovaného
- * socketu při kompilaci by odmítlo **5 z 11** uložených světů — z toho `c15`
- * má nenárokovaný socket `observationPad` použitý v `/sim/rules/win/event/zone`,
- * takže ho nejde ani zahodit.
+ * ho měření vyvrátilo — ale jedna třetina té refutace byla sama špatně.** Plán
+ * předepisoval mapu i pro paletu (přes `look.materialRoles`) a světla (přes
+ * `lights[*].entity`), a doplnění chybějících vazeb při kompilaci. Nad
+ * skutečnými jedenácti světy platí z toho **světla, a jen ta**:
+ *
+ * - **Paleta ne.** **30 ze 33** klíčů `materialRoles` neodpovídá roli žádné
+ *   entity; `c27` má klíč `deep water`, tedy větu, ne jméno.
+ * - **Světla ano, a tvrzení „bez pole `lights` ve všech jedenácti" bylo
+ *   nepravdivé** — routovaný nález druhého kola nezávislé revize, přeměřený
+ *   6. 9. 2026: pole má **jeden** z jedenácti (`c20`,
+ *   `lights[0].entity === 'arrivingTrain'`). Ta vazba se od té chvíle čte.
+ * - **Doplnění vazeb při kompilaci ne.** Vynucení nárokovaného socketu by
+ *   odmítlo **5 z 11** uložených světů — z toho `c15` má nenárokovaný socket
+ *   `observationPad` použitý v `/sim/rules/win/event/zone`, takže ho nejde ani
+ *   zahodit.
  *
  * Proto se ta věta v panelu jmenuje **„Not named by this change"**, ne
  * „Untouched", a **smí se přejmenovat teprve tehdy, až bude přiřazení úplné.**
@@ -94,7 +101,15 @@ export function preservedBy(
    * ani jedno. `move` mažící `from` tedy jméno majitele socketu neviděl.
    */
   const readAddress = (pointer: string): boolean => {
-    const path = pointer.split('/').filter((segment) => segment !== '');
+    // ⚠ **Sdílený dekodér, ne druhý `split('/')` — routovaný nález druhého kola
+    // nezávislé revize (6. 9. 2026).** `~1` je v RFC 6901 lomítko a `~0` vlnovka;
+    // syrové dělení je nechá stát, takže socket doslova pojmenovaný
+    // `north/south pad` se hledal pod jménem `north~1south pad` a jeho majitel
+    // se nenašel. Klíče dokumentu píše model volně (`c27` má v `materialRoles`
+    // klíč `deep water`, tedy i s mezerou), a patch při commitu aplikuje
+    // `rfc6902`, který escape rozebírá správně — dvě čtení téže cesty jsou přesně
+    // ta třída vady, kvůli které je `pointerTokens` v repu jediné.
+    const path = pointerTokens(pointer);
     // `/sim/entities` přepíše všechny entity naráz; `/sim/entities/x/state` ne.
     if (path.length < 3) return false;
 
@@ -106,6 +121,15 @@ export function preservedBy(
     // vyhrává" by druhého z nich vypsalo jako nedotčeného, zatímco se posouvá.
     if (path[0] === 'sim' && path[1] === 'sockets')
       for (const owner of ownerOfSocket.get(path[2]) ?? []) touched.add(owner);
+    // **Světlo jmenuje objekt, který osvětluje** — druhý routovaný nález téhož
+    // kola, a s ním se opravuje číslo, které tenhle soubor tvrdil špatně:
+    // `look.lightRig.lights` má **1 z 11** světů (`c20`, `entity:
+    // "arrivingTrain"`), ne nula. Adresa `/look/lightRig/lights/0` to jméno
+    // nese sama, protože `valueAt` vrátí celý záznam světla; hlubší
+    // `/look/lightRig/lights/0/intensity` vrátí číslo — a přesně tuhle adresu
+    // emituje uvařená změna `c20`/`r17`. Čte se proto záznam, ne list.
+    if (path[0] === 'look' && path[1] === 'lightRig' && path[2] === 'lights' && path.length > 4)
+      for (const name of namesWithin(valueAt(doc, path.slice(0, 4)))) touched.add(name);
     // **Uložená hodnota se čte u KAŽDÉ operace, ne jen u `remove`** — první
     // blokující nález nezávislé revize (6. 9. 2026). Smazané pravidlo jmenuje
     // cizí objekt ve svém těle, ale `replace` nad tímtéž klíčem to tělo zničí

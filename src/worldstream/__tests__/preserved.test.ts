@@ -119,4 +119,104 @@ describe('preservedBy nad socketem, který si nárokuje víc objektů', () => {
 
     expect(preserved).toEqual(['the iron mast', 'the wind off the salt']);
   });
+
+  /**
+   * ⚠ **`~1` je lomítko, ne dva znaky** (RFC 6901) — routovaný nález druhého
+   * kola nezávislé revize. Klíče dokumentu píše model volně a `rfc6902`, který
+   * patch při commitu doopravdy aplikuje, escape rozebírá; syrové `split('/')`
+   * ne. Socket doslova pojmenovaný `north/south pad` se pak hledal pod jménem
+   * `north~1south pad`, majitel se nenašel a panel by kupoli slíbil, že ji
+   * změna nechá být, zatímco jí commit odstěhuje footing.
+   */
+  it('rozebírá `~1` v cestě jako lomítko, ne jako dva znaky', () => {
+    const preserved = preservedBy(
+      OBJECTS,
+      {
+        stableId: 'someoneElse',
+        behavior: [{ op: 'move', path: '/sim/sockets/relocated/0' }],
+        appearance: [],
+        shape: null,
+      },
+      {
+        sim: { sockets: { 'north/south pad': [4, 2] }, entities: { ironMast: { socket: 'north/south pad' } } },
+      } as unknown as WorldDoc,
+    );
+
+    // Kontrola, že cesta sama nic nezkrátila: bez `from` je stěžeň netknutý.
+    expect(preserved).toEqual(['the salt flat', 'the iron mast', 'the wind off the salt']);
+
+    const moved = preservedBy(
+      OBJECTS,
+      {
+        stableId: 'someoneElse',
+        behavior: [{ op: 'move', from: '/sim/sockets/north~1south pad', path: '/sim/sockets/relocated' }] as never,
+        appearance: [],
+        shape: null,
+      },
+      {
+        sim: { sockets: { 'north/south pad': [4, 2] }, entities: { ironMast: { socket: 'north/south pad' } } },
+      } as unknown as WorldDoc,
+    );
+
+    expect(moved).toEqual(['the salt flat', 'the wind off the salt']);
+  });
+});
+
+/**
+ * **Světlo jmenuje objekt, který osvětluje** — routovaný nález druhého kola
+ * nezávislé revize (6. 9. 2026).
+ *
+ * Vazba `lights[*].entity` se zavírala jako vyvrácená („pole `lights` nemá ani
+ * jeden z jedenácti světů"), jenže to tvrzení bylo nepravdivé: `c20` ho má.
+ * Adresu o jeden segment kratší nese `valueAt` sama; teprve `…/0/intensity`,
+ * kterou uvařená změna `c20`/`r17` doopravdy emituje, vrací číslo bez jména.
+ */
+describe('preservedBy nad světlem, které patří objektu', () => {
+  const OBJECTS = [
+    { stableId: 'arrivingTrain', label: 'the arriving train' },
+    { stableId: 'railwayTunnel', label: 'the railway tunnel' },
+  ];
+
+  const lit = {
+    sim: { sockets: {}, entities: {} },
+    look: {
+      lightRig: {
+        ambientIntensity: 0,
+        lights: [{ kind: 'advancing headlight', entity: 'arrivingTrain', intensity: 18 }],
+      },
+    },
+  } as unknown as WorldDoc;
+
+  const dim = (path: string) =>
+    preservedBy(OBJECTS, { stableId: 'someoneElse', behavior: [], appearance: [{ op: 'replace', path }], shape: null }, lit);
+
+  it('hlubší adresa uvnitř světla jmenuje osvětlený objekt', () => {
+    expect(dim('/look/lightRig/lights/0/intensity')).toEqual(['the railway tunnel']);
+  });
+
+  /**
+   * Kontrola k předchozímu: čte se **záznam toho světla**, ne celý rig. Druhé
+   * světlo patřící někomu jinému nesmí z prvního udělat dotčený objekt.
+   */
+  it('cizí světlo cizí objekt nedotýká', () => {
+    const twoLights = {
+      sim: { sockets: {}, entities: {} },
+      look: {
+        lightRig: {
+          lights: [
+            { kind: 'fill', entity: 'railwayTunnel', intensity: 2 },
+            { kind: 'advancing headlight', entity: 'arrivingTrain', intensity: 18 },
+          ],
+        },
+      },
+    } as unknown as WorldDoc;
+
+    const preserved = preservedBy(
+      OBJECTS,
+      { stableId: 'someoneElse', behavior: [], appearance: [{ op: 'replace', path: '/look/lightRig/lights/1/intensity' }], shape: null },
+      twoLights,
+    );
+
+    expect(preserved).toEqual(['the railway tunnel']);
+  });
 });
