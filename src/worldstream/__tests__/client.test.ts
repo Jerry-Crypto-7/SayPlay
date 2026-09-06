@@ -23,7 +23,14 @@ import { sessionFrame } from '../../app/api/worldstream/sessions/[sessionId]/eve
 import { createSession, type GenerationSession } from '../session';
 import type { MeshArtifact } from '../cache';
 import type { SessionEvent } from '../events';
-import { followSession, openWorldstreamSession, SseDecoder, type SessionHandle } from '../client';
+import {
+  commitChange,
+  followSession,
+  openWorldstreamSession,
+  requestChange,
+  SseDecoder,
+  type SessionHandle,
+} from '../client';
 import {
   applySnapshot,
   initialClientState,
@@ -543,6 +550,66 @@ describe('openWorldstreamSession', () => {
           Response.json({ error: { code: 'PROMPT_REFUSED', message: 'no' } }, { status: 400 }),
       }),
     ).rejects.toThrow('PROMPT_REFUSED');
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Druhá věta: co se porotci ukáže, když dveře odmítnou.
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Věta serveru jde ven celá, kód se veze za ní** — nález nezávislé revize
+ * 6. 9. 2026, který si opravu vysloužil, ale ne aserci. Pátým kolem (6. 9.)
+ * přežil mutant, který obě větve vrátil k holému kódu: unit sada zůstala celá
+ * zelená a e2e šťastnou cestou tudy neprojde, takže to nechytil nikdo.
+ *
+ * Chytat je koho: `NO_AUTHORED_CHANGE` je věta pro stroj a porotce ji čte
+ * v panelu změny na obrazovce.
+ */
+describe('requestChange a commitChange – co se ukáže při odmítnutí', () => {
+  it('ven jde věta serveru a kód se veze za ní, ne místo ní', async () => {
+    await expect(
+      requestChange(SESSION_ID, 'make the mast taller', {
+        fetch: async () =>
+          Response.json(
+            {
+              error: {
+                code: 'NO_AUTHORED_CHANGE',
+                message: 'nobody wrote a change for the iron mast',
+              },
+            },
+            { status: 503 },
+          ),
+      }),
+    ).rejects.toThrow(
+      'the change was not planned: nobody wrote a change for the iron mast (NO_AUTHORED_CHANGE)',
+    );
+  });
+
+  /**
+   * Kontrola k předchozímu: bez věty serveru zůstane **holý kód**, ne kód
+   * dvakrát. Bez `$` by test prošel i nad `CODE (CODE)`, což je přesně to,
+   * co ta podmínka v klientu vyrábí, když se zruší.
+   */
+  it('bez věty serveru zůstane holý kód, ne kód dvakrát', async () => {
+    await expect(
+      requestChange(SESSION_ID, 'make the mast taller', {
+        fetch: async () => Response.json({ error: { code: 'NO_AUTHORED_CHANGE' } }, { status: 503 }),
+      }),
+    ).rejects.toThrow(/the change was not planned: NO_AUTHORED_CHANGE$/);
+  });
+
+  /** Neúspěšné *Apply* je to horší ze dvou míst — porotce už jednou rozhodl. */
+  it('neúspěšné Apply řekne větu serveru stejně jako preview', async () => {
+    await expect(
+      commitChange(SESSION_ID, 'change-1', {
+        fetch: async () =>
+          Response.json(
+            { error: { code: 'CHANGE_EXPIRED', message: 'the plan is no longer live' } },
+            { status: 409 },
+          ),
+      }),
+    ).rejects.toThrow('the change was not applied: the plan is no longer live (CHANGE_EXPIRED)');
   });
 });
 

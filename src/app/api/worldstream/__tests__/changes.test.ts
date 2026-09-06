@@ -503,6 +503,39 @@ describe('preview druhé věty', () => {
   });
 
   /**
+   * **Segment, ne podřetězec — pátým kolem revize (6. 9. 2026) přeživší
+   * mutant.** `preservedBy` sype do `touched` celé segmenty cesty a ptá se na
+   * ně `Set.has`, což je shoda na celém jménu; docstring to tvrdí výslovně
+   * („jméno socketu `leftLegPad` není jméno objektu"). Záměna té shody za
+   * `includes` ale nechala celou sadu zelenou, protože fixtura má jen
+   * `saltFlat` a `ironMast` a žádná cesta v ostatních testech jméno objektu
+   * jako podřetězec nenese — všechny se ptaly na prázdný seznam, který
+   * plošné označení vyrobí taky.
+   *
+   * Směr té chyby je konzervativní (objekt navíc vypadne z „nedotčených",
+   * panel tedy netvrdí víc, než umí), takže porotci nelže. Ale nevynucené
+   * pravidlo je dekorativní: `saltFlatEdge` je socket pojmenovaný po terénu
+   * a terén přežít musí.
+   */
+  it('socket pojmenovaný po objektu ten objekt nedotýká', async () => {
+    const stored = await generated();
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'raise the mast on its footing' },
+      async () => ({
+        summary: 'the mast rides higher',
+        shape: null,
+        behavior: [{ op: 'replace', path: '/sim/sockets/saltFlatEdge/height', value: 0.4 }],
+        appearance: [],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect((await body(response)).preserved).toEqual(['the salt flat']);
+  });
+
+  /**
    * **Uvolněná relace nesmí dostat 200 na preview, které nikdo nedokáže
    * commitnout** (`T16-changeafterrelease`).
    *
