@@ -566,6 +566,127 @@ describe('preview druhé věty', () => {
     expect((await body(response)).preserved).toEqual(['the salt flat']);
   });
 
+  /* ---------------------------------------------------------------- *
+   * T35-preservedattr: poddokument, který objekt řídí, aniž ho jmenuje.
+   * ---------------------------------------------------------------- */
+
+  /**
+   * **Socket jmenuje objekt, který na něm stojí** — `sim.entities[*].socket`
+   * je jediná vazba téhle třídy, kterou dokument doopravdy nese.
+   *
+   * Cesta `/sim/sockets/saltPad/0` neobsahuje `saltFlat` v žádném segmentu, ale
+   * pláň na tom socketu stojí, takže ji ta změna posouvá. Slibovat porotci, že
+   * ji nechá být, je nepravda.
+   */
+  it('zápis na socket jmenuje objekt, který si ten socket nárokuje', async () => {
+    const stored = await generated();
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'raise the mast on its footing' },
+      async () => ({
+        summary: 'the mast rides higher and the flat shifts under it',
+        shape: null,
+        behavior: [{ op: 'replace', path: '/sim/sockets/saltPad/0', value: 5 }],
+        appearance: [],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect((await body(response)).preserved).toEqual([]);
+  });
+
+  /**
+   * **Nenárokovaný socket seznam schválně NEvyprazdňuje** — a je to rozhodnutí
+   * změřené, ne opomenuté (`T35-preservedattr`).
+   *
+   * Přísné pravidlo „nepřiřaditelná operace ⇒ neslibuj nic" vyprázdní **2 z 5**
+   * uvařených seznamů v `authored-worlds.json`, mezi nimi vlajkový `c04`/`r02`,
+   * který posouvá `southeastLegPad` a `southwestLegPad` — dva sockety, které si
+   * v `c04` nenárokuje žádná entita. Půlka dějství III na porotcově cestě by
+   * tím zmizela. Cena za to je pojmenovaná v panelu: věta zní **„Not named by
+   * this change"**, ne „Untouched".
+   */
+  it('zápis na socket, který si nikdo nenárokuje, nikoho neodebere', async () => {
+    const stored = await generated();
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'raise the mast on its footing' },
+      async () => ({
+        summary: 'the mast rides higher',
+        shape: null,
+        behavior: [{ op: 'replace', path: '/sim/sockets/sparePad/0', value: 5 }],
+        appearance: [],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect((await body(response)).preserved).toEqual(['the salt flat']);
+  });
+
+  /**
+   * **`remove` nenese `value`, a přesto umí jmenovat cizí objekt** — jméno
+   * stojí v **uloženém** těle mazaného pravidla, ne v patchi.
+   *
+   * Fixturové pravidlo `guard` má akci `setState target: saltFlat`. Smazat ho
+   * znamená, že pláň přestane reagovat na příchod měřiče; slib „pláně se to
+   * netýká" je proto nepravdivý. Patch to neví — dokument ano.
+   */
+  it('remove čte uložené tělo, takže smazané pravidlo jmenuje, koho jmenovalo', async () => {
+    const stored = await generated();
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'raise the mast on its footing' },
+      async () => ({
+        summary: 'the mast rides higher and the flat stops reacting',
+        shape: null,
+        behavior: [{ op: 'remove', path: '/sim/rules/guard' }],
+        appearance: [],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect((await body(response)).preserved).toEqual([]);
+  });
+
+  /**
+   * **Cesta, která v dokumentu nikam nevede, nesmí spadnout** — poučení ze
+   * čtvrtého a pátého kola revize, kde dvě remediace po sobě přinesly
+   * `TypeError` uvnitř `withRequest`, tedy **holou pětistovku bez `requestId`
+   * po zaplaceném volání**. Čtení uloženého těla je třetí místo téže třídy.
+   *
+   * `readOperations` schválně soudí jen tvar cesty, takže sem `remove` nad
+   * neexistujícím pravidlem doopravdy dojde.
+   */
+  it('remove nad cestou, která nikam nevede, vrátí plán, ne pětistovku', async () => {
+    const stored = await generated();
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'raise the mast on its footing' },
+      async () => ({
+        summary: 'the mast rides higher',
+        shape: null,
+        behavior: [
+          { op: 'remove', path: '/sim/rules/neverWritten' },
+          { op: 'remove', path: '/sim/rules/guard/actions/notAnIndex' },
+          { op: 'remove', path: '/sim/rules/reach/phase/deeper/still' },
+          // ⚠ **Tenhle je ten, který doopravdy padá.** `condition` je `null`
+          // a `Object.hasOwn(null, 'kind')` vyhodí `TypeError`; číslo ani
+          // řetězec se jen tiše minou. Bez `current === null` v `valueAt()`
+          // tady průchod skončí pětistovkou.
+          { op: 'remove', path: '/sim/rules/reach/condition/kind' },
+        ],
+        appearance: [],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect((await body(response)).preserved).toEqual(['the salt flat']);
+  });
+
   /**
    * **Uvolněná relace nesmí dostat 200 na preview, které nikdo nedokáže
    * commitnout** (`T16-changeafterrelease`).

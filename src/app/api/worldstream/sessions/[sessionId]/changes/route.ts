@@ -61,6 +61,7 @@ import {
   changeEmitterFor,
   chooseAuthoredChange,
 } from '@/worldstream/authored';
+import { preservedBy } from '@/worldstream/preserved';
 import { getSession, putChange, SESSION_FAULTS } from '@/worldstream/sessions';
 
 import { acquireSlot, cloudEmitter, releaseSlot, slotsDetail } from '../../route';
@@ -125,110 +126,6 @@ export async function POST(
  * přes všechno" by porotci místo změny spolehlivě vrátilo odmítnutí. Objekt,
  * ke kterému se změna neuvařila, tedy druhou větu nemá a route to řekne rovnou.
  */
-/**
- * Co změna **nechá být** — spočítané z jejích operací, ne z toho, koho věta
- * jmenovala jako cíl.
- *
- * ⚠ **Rozdíl je naměřený a byl to blokující nález nezávislé revize
- * 6. 9. 2026.** „Všechno kromě cíle" je nepravda vždycky, když emise sáhne
- * i vedle: vlajková změna dema (`c04`/`r02`) míří na kupoli, ale zapisuje
- * `/look/modules/splayedSupportLegs/params/splay` a čtyři `/sim/collisionAabb/
- * splayedSupportLegs/*`. Panel tedy porotci tvrdil „Untouched: the three
- * splayed legs" a odpověď commitu hned nato vypsala tytéž nohy mezi změněnými
- * listy. Produkt si odporoval uvnitř jednoho průchodu, před porotcem.
- *
- * Objekt se počítá za dotčený, když se jeho `stableId` objeví jako **celý
- * segment** kterékoli cesty, jako segment `from` u `move`/`copy`, nebo
- * kdekoli uvnitř zapisované hodnoty — pravidlo se dá do světa přidat celé
- * a cizí objekt v něm jmenovat, aniž se objeví v cestě. Segment, ne
- * podřetězec: jméno socketu (`leftLegPad`) není jméno objektu.
- *
- * **Zápis nad celým poddokumentem seznam vyprázdní** (`replace /sim/entities`).
- * Cesta o dvou segmentech nejmenuje objekt, ale přepisuje je všechny, takže
- * jediná pravdivá odpověď je „neslibuju nic".
- *
- * ⚠ **Jedna třída zůstává otevřená a je pojmenovaná v plánu, ne zamlčená:**
- * sdílený poddokument umí objekt řídit, aniž ho jmenuje
- * (`/look/palette/containerSteel`, `/sim/sockets/southwestLegPad`). Proto se
- * ta věta v panelu jmenuje **„Not named by this change"**, ne „Untouched" —
- * tvrdí se přesně to, co se počítá. Úplné přiřazení chce mapu poddokument →
- * objekt a ta v dokumentu není: naměřeno 6. 9. 2026, dva ze šesti socketů
- * `c04` si nenárokuje žádná entita, takže by ji nešlo dopočítat ani ze
- * `sim.entities`.
- */
-function preservedBy(
-  objects: readonly { readonly stableId: string; readonly label: string }[],
-  plan: RefinePlan,
-): readonly string[] {
-  const touched = new Set<string>([plan.stableId]);
-
-  for (const operation of [...plan.behavior, ...plan.appearance]) {
-    const path = operation.path.split('/').filter((segment) => segment !== '');
-    // `/sim/entities` přepíše všechny entity naráz; `/sim/entities/x/state` ne.
-    if (path.length < 3) return [];
-
-    for (const segment of path) touched.add(segment);
-    // `from` má jen `move`/`copy`, `value` jen zápisové operace — typ je
-    // rozlišuje, ale ptát se na obojí je levnější než dvě větve podle `op`.
-    //
-    // ⚠ **`typeof`, ne `?? ''` — nález třetího kola nezávislé revize
-    // 6. 9. 2026, a byl to pád, který jsem sem přinesl sám.** `readOperations`
-    // schválně soudí jen `path` a tvar operace nechává routeru, takže sem
-    // `{ op: 'move', from: 7 }` doopravdy dojde; `7 ?? ''` je `7` a `.split`
-    // spadne. Nad `withRequest` není žádný `catch`, takže by porotce místo
-    // odmítnutí dostal holou pětistovku bez `requestId` — a to až **po**
-    // zaplaceném volání modelu.
-    const wide = operation as { readonly from?: unknown; readonly value?: unknown };
-    if (typeof wide.from === 'string')
-      for (const segment of wide.from.split('/')) touched.add(segment);
-    for (const name of namesWithin(wide.value)) touched.add(name);
-  }
-
-  // **Nový tvar je taky část změny.** Jméno materiálu nebo kotvy se smí rovnat
-  // `stableId` jiného objektu, a pak ho změna jmenuje, aniž se objeví
-  // v jediné operaci (třetí kolo nezávislé revize). Nad dnešním skladem to
-  // neubere ani jeden objekt z pěti seznamů — měřeno, ne odhadnuto.
-  for (const name of namesWithin(plan.shape)) touched.add(name);
-
-  return objects.filter((object) => !touched.has(object.stableId)).map((object) => object.label);
-}
-
-/**
- * Každý řetězec a každý klíč uvnitř zapisované hodnoty. Jména objektů jsou obojí.
- *
- * ⚠ **Průchod je smyčkou, ne rekurzí, a je to oprava pádu — čtvrté kolo
- * nezávislé revize 6. 9. 2026.** `JSON.parse` je ve V8 iterativní a hodnotu
- * zanořenou stotisíckrát rozparsuje bez mrknutí; rekurzivní procházka nad ní
- * vyčerpá zásobník kolem pěti tisíc. `readOperations` soudí jen `path`, takže
- * `{ op: 'add', path: '/sim/entities/x/state/q', value: [[[…]]] }` sem dojde
- * celé — a pět tisíc závorek se vejde do osmitisícového stropu emise.
- * `RangeError` uvnitř `withRequest` nevrátí `Response` vůbec, takže by porotce
- * dostal holou pětistovku bez `requestId`, a to až po zaplaceném volání.
- *
- * Vlastní zásobník žádnou hloubkovou mez nepotřebuje: velikost emise shora
- * omezuje strop výstupu modelu, takže se sem nedostane hodnota, kterou by
- * nešlo projít.
- */
-function namesWithin(value: unknown): readonly string[] {
-  const found: string[] = [];
-  const pending: unknown[] = [value];
-
-  while (pending.length > 0) {
-    const item = pending.pop();
-    if (typeof item === 'string') found.push(item);
-    // `push(...item)` by u dlouhého pole přeteklo seznamem argumentů, tedy táž
-    // třída pádu o patro níž. Prvek po prvku.
-    else if (Array.isArray(item)) for (const nested of item) pending.push(nested);
-    else if (item !== null && typeof item === 'object')
-      for (const [key, nested] of Object.entries(item)) {
-        found.push(key);
-        pending.push(nested);
-      }
-  }
-
-  return found;
-}
-
 function authoredChangeFor(
   stored: NonNullable<ReturnType<typeof getSession>>,
   prompt: string,
@@ -505,7 +402,7 @@ export async function createChange(
       scope,
       // §4 ukazuje porotci vedle rozsahu i to, co změna **nechá být**. Je to
       // polovina slibu „bez resetu" a bez ní se ta věta nedá ověřit očima.
-      preserved: preservedBy(blueprint.objects, plan),
+      preserved: preservedBy(blueprint.objects, plan, blueprint.world),
       // **Chybí, když změnu píše model** — týž kontrakt a týž důvod jako
       // u zakládání relace (`T45-honestlabel`). Poctivost platí i pro druhou
       // větu: přehrávanou změnu porotce odhalí tím, že dvě různé věty udělají

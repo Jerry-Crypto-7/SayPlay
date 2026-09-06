@@ -107,11 +107,18 @@ export const ANSWER: Record<string, unknown> = {
     sim: {
       layout: { width: 12, height: 8 },
       grid: { cell: 1 },
-      sockets: { startPad: [1, 4], mastPad: [10, 4] },
+      // ⚠ **`saltPad` a `sparePad` jsou tu kvůli `T35-preservedattr` a jsou to
+      // dva různé případy, ne jeden.** `saltPad` si **nárokuje** entita
+      // `saltFlat`, tedy objekt, takže zápis na ten socket ten objekt jmenuje,
+      // aniž ho cesta obsahuje. `sparePad` si nenárokuje **nikdo** — a to je
+      // ve skutečném skladu častější, než by se čekalo: `c04` má takové dva
+      // ze šesti. Nepřiřaditelný zápis seznam schválně nevyprazdňuje.
+      sockets: { startPad: [1, 4], mastPad: [10, 4], saltPad: [4, 2], sparePad: [6, 6] },
       collisionAabb: { surveyor: [1, 4, 1, 1], mastBase: [10, 4, 1, 1] },
       entities: {
         surveyor: { role: 'actor', socket: 'startPad', state: 'idle' },
         mastBase: { role: 'goal', socket: 'mastPad', state: 'shut' },
+        saltFlat: { role: 'terrain', socket: 'saltPad', state: 'dry' },
       },
       state: { counters: {}, flags: {}, timers: {}, zones: {}, slots: 0 },
       rules: {
@@ -121,6 +128,15 @@ export const ANSWER: Record<string, unknown> = {
           event: { kind: 'onEnterZone', entity: 'surveyor', zone: 'mastPad' },
           condition: null,
           actions: [{ kind: 'win' }],
+        },
+        // Pravidlo, jehož **uložené tělo** jmenuje objekt, kterého se cesta
+        // `remove /sim/rules/guard` nedotkne ani slovem (`T35-preservedattr`).
+        guard: {
+          phase: 0,
+          priority: 1,
+          event: { kind: 'onEnterZone', entity: 'surveyor', zone: 'saltPad' },
+          condition: null,
+          actions: [{ kind: 'setState', target: 'saltFlat', state: 'disturbed' }],
         },
       },
     },

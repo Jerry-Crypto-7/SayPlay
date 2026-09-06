@@ -44,6 +44,7 @@ import { createMeshClient, type MeshClient } from '@/shape/mesh-client';
 import { shapeProgramSchema, validateShapeProgram } from '@/shape/schema';
 import { MESH_DETAIL } from '@/shape/types';
 import { shapeContentHash } from '@/worldstream/cache';
+import { preservedBy } from '@/worldstream/preserved';
 import { buildProxyWorld, type ProxyWorld } from '@/worldstream/proxy';
 
 import WorldstreamLighting, {
@@ -194,9 +195,21 @@ export default function RefineDevPage() {
         summary: SCRIPTED_SUMMARY,
         target: { stableId: grounding.target.stableId, label: grounding.target.label },
         scope: { shape: true, behavior: 0, appearance: 0 },
-        preserved: DEMO_BLUEPRINT.objects
-          .filter((object) => object.stableId !== grounding.target.stableId)
-          .map((object) => object.label),
+        // **Týž výpočet jako v routě, ne druhý odhad** (`T35-preservedattr`).
+        // Do 6. 9. 2026 tu stálo „všechno kromě cíle", tedy přesně ta věta,
+        // kterou blokující nález nezávislé revize v routě zavřel: scénář
+        // nepíše žádnou operaci, ale **píše nový tvar**, a jméno uvnitř tvaru
+        // se smí rovnat `stableId` jiného objektu.
+        preserved: preservedBy(
+          DEMO_BLUEPRINT.objects,
+          {
+            stableId: grounding.target.stableId,
+            behavior: [],
+            appearance: [],
+            shape: SHARPENED_HERO,
+          },
+          DEMO_BLUEPRINT.world,
+        ),
       });
     },
     [selected, sentence],
