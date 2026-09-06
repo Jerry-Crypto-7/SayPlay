@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -899,5 +901,48 @@ describe('let na ovládací klíč má svůj vlastní, kratší limit', () => {
 
   it('ovládací limit je kratší než ten od knihy, ne tentýž', () => {
     expect(DEFAULT_CONTROL_TIMEOUT_MS).toBeLessThan(DEFAULT_LEDGER_TIMEOUT_MS);
+  });
+});
+
+/**
+ * **Co „kniha v paměti" doopravdy dokazuje — a operátorský kontrakt k tomu.**
+ *
+ * P15 `T29-singleprocess`. Dvojice `{VERCEL zhasnuté} × {VERCEL_ENV z uzavřeného
+ * seznamu}` dokazuje „nejsme na Vercelu", ne „jsme jeden proces". `.env.example`
+ * přitom operátorovi pro lokální placení výslovně **radí** si `VERCEL_ENV`
+ * dopsat, a mlčelo o tom, že táž rada na hostiteli se čtyřmi replikami dá
+ * čtyřnásobek stropu. **Kód se vědomě nemění** (rozhodnutí uživatele 6. 9. 2026:
+ * nová proměnná mění rozhodnutí ze 4. 9., a sdílená kniha všude zastaví měřicí
+ * běh `T14` povinný pro `G2`), takže jediné, co tu vadu drží, je zapsaná věta —
+ * a nezapsaná věta je věta, kterou příští úklid smaže.
+ *
+ * ⚠ **Obě kopie, ne jedna.** Rada je v `.env.example`, mez je v docblocku
+ * `ledgerFromEnv()`. Kdyby se pinovala jen jedna, druhá se od ní rozejde přesně
+ * tak, jak se rozešly dva výpočty „co změna nechá být" — táž třída vady, jen
+ * o soubor vedle.
+ */
+describe('mez „nejsme Vercel ≠ jsme jeden proces" je zapsaná na obou místech', () => {
+  const MISTA = [
+    ['.env.example', 'Kdo chce lokálně platit'],
+    ['src/server/spend-store.ts', 'Kniha v paměti procesu proto platí jen tam'],
+  ] as const;
+
+  it.each(MISTA)('%s ví, že repliky bez sdílené knihy strop násobí', (path, kotva) => {
+    const text = readFileSync(path, 'utf8');
+    const start = text.indexOf(kotva);
+    expect(start, `${path}: kotva „${kotva}" zmizela — oprav kotvu, ne test`).toBeGreaterThan(-1);
+
+    // Okno je celý odstavec i s odůvodněním, ne jen věta.
+    const blok = text.slice(start, start + 1600);
+    expect(blok, `${path}: mez nenese značku, takže ji úklid nerozezná`).toContain(
+      'T29-singleprocess',
+    );
+    expect(blok, `${path}: nikde nestojí, že repliky bez sdílené knihy strop násobí`).toMatch(
+      /replik/,
+    );
+    expect(
+      blok,
+      `${path}: chybí to podstatné — že VERCEL_ENV dokazuje „nejsme Vercel", ne „jsme jeden proces"`,
+    ).toMatch(/jeden proces/);
   });
 });

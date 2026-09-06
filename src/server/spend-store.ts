@@ -380,6 +380,21 @@ export function isServerless(env: Record<string, string | undefined>): boolean {
  * být řečeno — ne odhadnuto z ticha.** Řekne to `VERCEL_ENV` s uzavřeného
  * seznamu při zhasnutém `VERCEL`.
  *
+ * ⚠ **Co ta dvojice dokazuje doopravdy, a co ne** (`T29-singleprocess`,
+ * 6. 9. 2026). Dokazuje „**nejsme na Vercelu**", ne „**jsme jeden proces**" —
+ * a to je slabší tvrzení, než na kterém strop stojí. Operátor na cizím
+ * hostiteli si `VERCEL_ENV=production` nastaví sám (`.env.example` mu to pro
+ * lokální placení výslovně radí) a se čtyřmi replikami bez sdílené knihy má
+ * čtyřnásobek stropu. **Kód se kvůli tomu vědomě NEMĚNÍ** — rozhodnutí
+ * uživatele 6. 9. 2026: `WORLDSMITH_SINGLE_PROCESS` by měnila rozhodnutí ze
+ * 4. 9. („žádný nový platformní signál"), a vyžadovat sdílenou knihu všude
+ * zastaví i měřicí běh `T14`, který je povinný pro bránu `G2`. Ta vada navíc
+ * míří na tvar nasazení, který v repu není: žádný `Dockerfile`, žádné
+ * `docker-compose`, cíl je Vercel. **Podmínka znovuotevření je proto věcná,
+ * ne časová:** jakmile v repu přibude `Dockerfile`, `docker-compose*` nebo
+ * jakékoli nasazení s víc než jednou instancí bez sdílené knihy, tahle mez se
+ * musí dodělat DŘÍV než to nasazení.
+ *
  * ⚠ **Cena je, že lokální `next start` bez `VERCEL_ENV` placená volání
  * odmítne** (`STORE_UNCONFIGURED`). Je to vědomé: na peněžní cestě se selhává
  * zavřeně a mlčení není důkaz, že jsme sami. Vývojář si dopíše `VERCEL_ENV`,
