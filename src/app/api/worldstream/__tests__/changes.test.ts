@@ -28,7 +28,8 @@
  * zastaralosti by ze sady udělalo měřidlo poskytovatele.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { dirname, join, posix, relative, resolve, sep } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -873,6 +874,120 @@ describe('commit druhé věty', () => {
     const read = await body(await commit(stored.session.sessionId, change.changeId));
     expect(read.outcome).toBe('REJECTED');
     expect(worldOf(stored).simRevision).toBe(0);
+  });
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Předpoklad razítkové brány: na serveru revize jenom rostou
+ * ------------------------------------------------------------------ */
+
+/**
+ * **`T22-rewindrevision`.** Razítko z `T22-rejectreplay` porovnává revize přes
+ * `!==`, takže opakovaný commit prohraného preview odmítne právě tehdy, když se
+ * svět od prohry pohnul. Ta brána mlčky stojí na tom, že revize **rostou**:
+ * jakmile se svět umí vrátit na dřívější číslo, dorovná se razítko zpátky a
+ * brána se otevře znovu — nad jiným světem, který má náhodou totéž číslo.
+ *
+ * **Naměřeno 6. 9. 2026, ne odhadnuto.** Přetáčení času (`src/sim/rebranch.ts`,
+ * `T24`) je celé v prohlížeči: volají ho `Timeline.tsx` a `TimeAxis.tsx`, ani
+ * jeden nesahá na síť, a žádná route pod `src/app/api/` na `rebranchAt`
+ * nedosáhne. Do `stored.blueprint` píšou dvě místa a obě jen dopředu — revizi
+ * zvedá výhradně inkrement v `src/ir/revision.ts`.
+ *
+ * ⚠ **Návrh úlohy „porovnávat `<` místo `!==`" tohle měření vyvrací.**
+ * Přetočení vrátí čítač na hodnotu, kterou razítko nese, takže po návratu ze
+ * `sim` 5 na `sim` 3 je `rejectedAt.sim < doc.simRevision` nepravdivé úplně
+ * stejně jako `!==` — obojí bránu otevře. Použitelná zůstává jen druhá cesta:
+ * **při přetočení zahodit razítka celá**, protože po něm rovnost čísel přestává
+ * znamenat shodu světů.
+ *
+ * Test proto nepinuje chování brány; dokud čas nejde zpátky, vypadají obě
+ * varianty v zelené sadě stejně. Pinuje **ten předpoklad**: den, kdy přetáčení
+ * dostane serverové dveře, tohle zčervená a ukáže na tuhle úlohu.
+ *
+ * Uzávěr se počítá z rozřešených importů, ne greppem přes seznam jmen. Seznam
+ * řetězců obešly u `T28-editpins` dvě nezávislé revize beze změny chování,
+ * a tranzitivní cesta (route → helper → `rebranch`) by mu unikla celá.
+ */
+describe('razítková brána stojí na tom, že se čas na server nedostal', () => {
+  const REBRANCH = 'src/sim/rebranch.ts';
+  const IMPORT_SPECIFIER = /(?:\bfrom\b|\bimport\b|\brequire\b)\s*\(?\s*['"]([^'"]+)['"]/g;
+
+  /** Komentář, který cestu jen zmiňuje, není import — a zrovna tenhle soubor jich má hodně. */
+  const stripComments = (source: string): string =>
+    source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+
+  const posixPath = (file: string): string =>
+    relative(process.cwd(), file).split(sep).join(posix.sep);
+
+  function routeFiles(dir: string): string[] {
+    return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) return routeFiles(full);
+      return entry.name === 'route.ts' ? [posixPath(full)] : [];
+    });
+  }
+
+  function resolvedImports(file: string): string[] {
+    const found: string[] = [];
+    for (const match of stripComments(readFileSync(file, 'utf8')).matchAll(IMPORT_SPECIFIER)) {
+      const specifier = match[1];
+      const base = specifier.startsWith('.')
+        ? resolve(dirname(file), specifier)
+        : specifier.startsWith('@/')
+          ? resolve('src', specifier.slice(2))
+          : null;
+      if (base === null) continue;
+      const hit = [`${base}.ts`, `${base}.tsx`, join(base, 'index.ts')].find((candidate) =>
+        existsSync(candidate),
+      );
+      if (hit !== undefined) found.push(posixPath(hit));
+    }
+    return found;
+  }
+
+  function importClosure(entry: string): Set<string> {
+    const seen = new Set<string>();
+    const stack = [entry];
+    while (stack.length > 0) {
+      const next = stack.pop() as string;
+      if (seen.has(next)) continue;
+      seen.add(next);
+      stack.push(...resolvedImports(next));
+    }
+    return seen;
+  }
+
+  const routes = routeFiles('src/app/api');
+  const serverClosure = new Set(routes.flatMap((route) => [...importClosure(route)]));
+
+  it('sběr dveří vůbec něco najde', () => {
+    // Prázdný seznam by obě brány níž nechal zeleně projít a nehlídaly by nic.
+    expect(routes.length).toBeGreaterThan(10);
+    expect(routes).toContain(
+      'src/app/api/worldstream/sessions/[sessionId]/changes/[changeId]/commit/route.ts',
+    );
+  });
+
+  it('žádné veřejné dveře nedosáhnou na přetáčení času', () => {
+    expect(
+      routes.filter((route) => importClosure(route).has(REBRANCH)),
+      'přetáčení času dostalo serverové dveře, takže svět umí jít na dřívější revizi a razítková brána se nad ním znovu otevře — otevři T22-rewindrevision',
+    ).toEqual([]);
+  });
+
+  it('do blueprintu relace píšou dvě místa a obě jen dopředu', () => {
+    const writers = [...serverClosure]
+      .filter((file) => /\.blueprint\s*=[^=]/.test(stripComments(readFileSync(file, 'utf8'))))
+      .sort();
+    expect(
+      writers,
+      'blueprint relace přepisuje nový zapisovatel — ověř, že nesnižuje revizi (T22-rewindrevision)',
+    ).toEqual([
+      'src/app/api/worldstream/sessions/[sessionId]/changes/[changeId]/commit/route.ts',
+      'src/worldstream/sessions.ts',
+    ]);
   });
 });
 

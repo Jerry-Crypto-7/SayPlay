@@ -154,6 +154,15 @@ export async function POST(
    * které mění jen tvar, nenese jedinou operaci, takže `sim` i `look` stojí
    * a hne se jen revize podoby; dokud ji tahle brána nečetla, takový retry
    * propadl o pár řádků níž na `STALE_REVISION`, které verdikt nenese.
+   *
+   * ⚠ **Rovnost revizí znamená „týž svět" jen dokud revize rostou**
+   * (`T22-rewindrevision`). Porovnání přes `!==` je správně proto, že do
+   * `stored.blueprint` píšou dvě místa a obě jen dopředu; přetáčení času
+   * (`T24`) je celé v prohlížeči a serverové dveře nedostalo. Ten předpoklad
+   * hlídá `changes.test.ts` nad grafem importů, ne tenhle odstavec. **Až
+   * přetočení dveře dostane, nestačí vyměnit `!==` za `<`** — návrat ze `sim` 5
+   * na `sim` 3 dorovná razítko a obě podoby brány otevře stejně. Zbývá pak
+   * jediná cesta: zahodit razítka při přetočení celá.
    */
   const representation = stored.session.revisionOf(plan.stableId);
   const rejectedAt = change.rejectedAt;
