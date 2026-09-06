@@ -17,6 +17,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { withoutCredentials } from '../../../../server/public-faults';
 import {
   MAX_REQUESTS_PER_WINDOW,
+  RATE_WINDOW_MS,
   resetRateWindows,
   takeRateSlot,
 } from '../../../../server/rate-limit';
@@ -1501,5 +1502,67 @@ describe('strop na frekvenci dorazí až ke dveřím', () => {
     expect(response.status).toBe(429);
     expect(Number(response.headers.get('retry-after'))).toBeGreaterThanOrEqual(1);
     expect(((await response.json()) as ResponseBody).error?.code).toBe('TOO_MANY_REQUESTS');
+  });
+
+  /**
+   * **Dvě různé hodnoty `x-forwarded-for` od jednoho volajícího dostanou dvě
+   * přihrádky** — pin doktríny, ne poplach (`T29-freeunbounded`).
+   *
+   * Klíč stropu frekvence skládá `callerKey()`, tedy **vstup volajícího**, a je
+   * to vědomá volba měřená 4. 9. 2026 (tabulka v hlavičce `rate-limit.ts`).
+   * Kdo hlavičku rotuje, dostane novou přihrádku a s ní dalších 50 požadavků
+   * za okno. Tenhle test to **potvrzuje**, aby se ta cena nedala zavřít mlčky
+   * ani mlčky rozšířit: až ji někdo bude chtít zavřít, musí přepsat doktrínu
+   * na obou místech a teprve pak tenhle test, ne obráceně.
+   *
+   * ⚠ **Okno se plní PŘES route, ne čítačem.** Sousední test výš volá
+   * `takeRateSlot()` napřímo, což měří zapojení meze, ale **klíč nezkouší
+   * vůbec** — mutace `callerKey(request)` na konstantu by ho nechala zeleného
+   * (přesně ta vada se naměřila 5. 9. 2026 na sesterském pinu v
+   * `sessions.test.ts`). Klíč si tady musí odvodit route sama.
+   *
+   * Plní se **nečitelným tělem**: slot frekvence se bere před čtením těla a
+   * počítá se i odmítnutý požadavek, takže padesát 400 naplní okno a nespustí
+   * ani jednu emisi.
+   */
+  it('jinou hlavičkou dostane týž volající druhou přihrádku, a je to vědomá cena', async () => {
+    const PRVNÍ = '198.51.100.7';
+    const DRUHÁ = '203.0.113.7';
+
+    // ⚠ **Hodiny se zamrazí ze stejného důvodu jako u sesterského pinu.** Okno
+    // je pevný desetivteřinový kbelík ukotvený na absolutním čase; když těch
+    // padesát dva volání protne jeho hranici, čítač se uprostřed smyčky
+    // vynuluje a vyjde 400 místo 429. Zmrazený čas leží uprostřed kbelíku.
+    const uprostředKbelíku = 1_770_000_000_000 + RATE_WINDOW_MS / 2;
+    const hodiny = vi.spyOn(Date, 'now').mockReturnValue(uprostředKbelíku);
+    const { POST } = await import('../route');
+    const nečitelný = (forwarded: string): Request =>
+      new Request('http://127.0.0.1/api/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-forwarded-for': forwarded },
+        body: '{ not json',
+      });
+
+    try {
+      for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) {
+        const plnící = await POST(nečitelný(PRVNÍ));
+        expect(plnící.status, `plnící požadavek ${String(taken)} nedošel ke slotu`).toBe(400);
+      }
+
+      const zavřená = await POST(nečitelný(PRVNÍ));
+      expect(zavřená.status, 'okno se přes route nenaplnilo — pin by dál neměřil nic').toBe(429);
+
+      // Táž ruka, jiná hlavička. Kdyby route klíčovala z něčeho, do čeho
+      // volající nemluví, skončil by tenhle požadavek v téže přihrádce a
+      // vyšlo by 429.
+      const druhá = await POST(nečitelný(DRUHÁ));
+      expect(
+        druhá.status,
+        'klíč frekvence se přestal brát z hlavičky — přepiš doktrínu v rate-limit.ts a v generate/route.ts, nemaž tenhle test',
+      ).toBe(400);
+    } finally {
+      hodiny.mockRestore();
+      resetRateWindows();
+    }
   });
 });

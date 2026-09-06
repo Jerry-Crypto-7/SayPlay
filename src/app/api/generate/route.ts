@@ -472,6 +472,37 @@ export async function POST(request: Request): Promise<Response> {
      * peníze a souběh, tenhle hlídá smyčku instance a jsou to dvě různé věci.
      * Odůvodnění čísel i toho, proč je mez na proces, je
      * v `src/server/rate-limit.ts`.
+     *
+     * ## Proč `callerKey()` a ne `trustedCallerKey()` — změřeno 6. 9. 2026
+     *
+     * ⚠ **Tohle je dnes jediná mez téhle cesty, a přesto se klíč NEPŘEPÍNÁ.**
+     * Od `T29-e2egeneratedead` propouští strop utrácení rezervaci za nula
+     * dolarů vždycky (naměřeno 1000 z 1000 proti `capUsd: 0`), což je záměr:
+     * volání zdarma nemá co utratit. Následek ale je, že větev bez klíče
+     * výrobce nedrží žádná peněžní mez a zbývá jen tenhle strop — a ten se
+     * klíčuje z `x-forwarded-for`, tedy ze vstupu volajícího.
+     *
+     * **Doktrína `sessions/route.ts` se sem přenesla a NEPLATÍ pro přepnutí,
+     * ze dvou měřených důvodů:**
+     *
+     * 1. Cizí klíč je zbraň jen tam, kde míří na **cizí stav**. U kvóty relací
+     *    míří (`T16-evictkill`, 5 z 5). Tady ne: obě věci klíčované volajícím
+     *    — okno frekvence a čítač rozečtených těl (`src/http/body.ts`) — jsou
+     *    přihrádky bez cizího obsahu, takže podvržený klíč vrací útočníka
+     *    nanejvýš tam, kde by byl **bez** téhle meze.
+     * 2. `trustedCallerKey()` vrací mimo Vercel vždycky `null` a s vypnutým
+     *    přepínačem systémových proměnných i na něm. Náhrada by tedy svedla
+     *    všechny volající do **jedné** přihrádky, tedy zpátky na strop na
+     *    dveře — a ten je měřeně horší než žádný: 5,1 req/s zavře dveře všem
+     *    místo naměřených ~66 req/s jednomu (blokující nález 4. 9. 2026).
+     *
+     * **Zbývá tedy, co tahle mez nedrží, a musí se to číst jako napsané:**
+     * rotace hlavičky dá útočníkovi novou přihrádku a s ní 40 req/s na
+     * instanci. Cena je **CPU téhle instance**, ne peníze ani data — korpus je
+     * memoizovaný a placená větev má nad sebou vlastní strop. Pin je
+     * v `route.test.ts`, test `jinou hlavičkou dostane týž volající druhou
+     * přihrádku`; kdo tu cenu chce zavřít, musí přinést zdroj, který volající
+     * nepíše, a přepsat doktrínu na obou místech dřív než ten test.
      */
     const slot = takeRateSlot('generate', callerKey(request));
     if (!slot.allowed) {
