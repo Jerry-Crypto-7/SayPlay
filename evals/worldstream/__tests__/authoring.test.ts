@@ -14,12 +14,16 @@ import {
   answerFrom,
   askCodex,
   carryOver,
+  changeOutcomeOf,
   outcomeOf,
   reportFrom,
   stillToAuthor,
+  stillToChange,
   STORE_VERSION,
+  withChange,
   withReject,
   withWorld,
+  type AuthoredChange,
   type AuthoredStore,
   type AuthoredWorld,
   type AuthoringReject,
@@ -29,7 +33,7 @@ import {
 const EMPTY: AuthoredStore = { version: STORE_VERSION, worlds: [] };
 
 function world(id: string): AuthoredWorld {
-  return { id, prompt: `${id} prompt`, heroObjects: [], synonyms: [], planner: {}, compiler: {} };
+  return { id, prompt: `${id} prompt`, heroObjects: [], synonyms: [], planner: {}, compiler: {}, changes: [] };
 }
 
 /* ================================================================== *
@@ -309,5 +313,99 @@ describe('only a world that came through the gates is kept', () => {
     // odmítnutím, jehož příčina není nikde vidět.
     expect(outcomeOf({ ...GOOD, planner: null }).kept).toBe(false);
     expect(outcomeOf({ ...GOOD, compiler: null }).cause).toMatch(/incomplete/);
+  });
+});
+
+/* ================================================================== *
+ * 5. Druhá věta: co se ukládá ke kterému světu (`T35-actsthree4`).
+ * ================================================================== */
+
+function change(id: string, stableId = 'ironMast'): AuthoredChange {
+  return { id, prompt: `${id} prompt`, stableId, synonyms: [], refine: { summary: id } };
+}
+
+describe('uvařené změny patří ke svému světu', () => {
+  const shelf: AuthoredStore = { version: STORE_VERSION, worlds: [world('c01'), world('c02')] };
+
+  it('doplní změnu jen tomu světu, který se jmenoval', () => {
+    const next = withChange(shelf, 'c01', change('r01'));
+
+    expect(next.worlds.find((entry) => entry.id === 'c01')?.changes.map((c) => c.id)).toEqual(['r01']);
+    expect(next.worlds.find((entry) => entry.id === 'c02')?.changes).toEqual([]);
+  });
+
+  it('nezakládá svět, který sklad nedrží', () => {
+    // Změna bez svého světa nemá proti čemu platit: nese `stableId`
+    // z blueprintu, který by neexistoval.
+    expect(withChange(shelf, 'c99', change('r01')).worlds.map((entry) => entry.id)).toEqual([
+      'c01',
+      'c02',
+    ]);
+  });
+
+  it('druhý pokus o touž změnu je oprava, ne duplikát', () => {
+    const once = withChange(shelf, 'c01', change('r01'));
+    const twice = withChange(once, 'c01', { ...change('r01'), prompt: 'opraveno' });
+    const kept = twice.worlds.find((entry) => entry.id === 'c01')?.changes ?? [];
+
+    expect(kept).toHaveLength(1);
+    expect(kept[0]?.prompt).toBe('opraveno');
+  });
+
+  it('nemutuje sklad, který dostal', () => {
+    withChange(shelf, 'c01', change('r01'));
+    expect(shelf.worlds[0]?.changes).toEqual([]);
+  });
+});
+
+describe('fronta druhých vět má dvojí filtr', () => {
+  const cases = [
+    { id: 'r01', createId: 'c01' },
+    { id: 'r02', createId: 'c02' },
+    { id: 'r03', createId: 'c99' },
+  ];
+
+  it('přeskočí případ, jehož svět sklad nedrží', () => {
+    // Bez blueprintu není proti čemu psát operace, takže volání Codexu by
+    // zaplatilo za změnu, která nemá kam přistát.
+    const store: AuthoredStore = { version: STORE_VERSION, worlds: [world('c01'), world('c02')] };
+    expect(stillToChange(cases, store).map((entry) => entry.id)).toEqual(['r01', 'r02']);
+  });
+
+  it('přeskočí případ, který je ve skladu hotový', () => {
+    const store = withChange(
+      { version: STORE_VERSION, worlds: [world('c01'), world('c02')] },
+      'c01',
+      change('r01'),
+    );
+    expect(stillToChange(cases, store).map((entry) => entry.id)).toEqual(['r02']);
+  });
+});
+
+describe('co se z uvařené změny uloží', () => {
+  const GOOD = { thrown: null, grounded: true, accepted: true, rejection: null };
+
+  it('uloží změnu, kterou přijala táž brána jako v route', () => {
+    expect(changeOutcomeOf(GOOD)).toEqual({ kept: true, cause: null, detail: null });
+  });
+
+  it('nerozřešený cíl je vlastní příčina, ne odmítnutá emise', () => {
+    // Věta, kterou grounding nerozřešil, se modelu nikdy neposlala. Sloučit ji
+    // s odmítnutím by v rozpadu tvrdilo, že model odpověděl špatně — a opravovalo
+    // by se to v kontraktu místo ve větě.
+    expect(changeOutcomeOf({ ...GOOD, grounded: false, accepted: false, rejection: 'AMBIGUOUS' })).toEqual(
+      { kept: false, cause: 'grounding', detail: 'AMBIGUOUS' },
+    );
+  });
+
+  it('zahodí emisi, kterou by route odmítla', () => {
+    expect(changeOutcomeOf({ ...GOOD, accepted: false, rejection: 'WRONG_TARGET: …' })).toMatchObject({
+      kept: false,
+      cause: 'refine',
+    });
+  });
+
+  it('selhání Codexu je `unavailable`, ne odmítnutá změna', () => {
+    expect(changeOutcomeOf({ ...GOOD, thrown: 'ENOENT' }).cause).toBe('unavailable');
   });
 });

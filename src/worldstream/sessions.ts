@@ -338,6 +338,22 @@ export interface StoredSession {
   readonly owner: string;
   /** Autoritativní blueprint pro reconnect (§21). `null`, dokud nevznikl. */
   blueprint: WorldstreamBlueprint | null;
+  /**
+   * Id uvařeného světa, ze kterého tahle relace vznikla, nebo `null`, když ji
+   * napsal model (`T35-actsthree4`).
+   *
+   * **Bez tohohle řádku nemá druhá věta ze skladu co vydat.** Uvařená změna
+   * nese `stableId` z jednoho konkrétního blueprintu, takže se dá nabídnout
+   * jedině tomu světu, nad kterým ji model napsal; hledat ji přes celý sklad
+   * znamená vydat cizí `stableId` a nechat `readRefineEmission()` odpověď
+   * odmítnout. Vlastnictví bydlí tady ze stejného důvodu jako `owner` — umře
+   * s relací a není co uklízet.
+   *
+   * Ven **nejde**: snapshot relace vydává původ jako `exact`/`nearest`
+   * (`T45-honestlabel`), ne jako klíč do skladu. Id uvařeného světa je vnitřní
+   * jméno a porotce z něj nemá co rozhodnout.
+   */
+  authoredWorldId: string | null;
   /** Proč to skončilo, **veřejnou** větou. `null`, dokud to neskončilo. */
   fault: string | null;
   /**
@@ -1010,6 +1026,7 @@ export function openSession(
     // to `next start`, dema z notebooku a prosté reverse proxy.
     owner: owner === UNIDENTIFIED_CALLER ? sessionId : owner,
     blueprint: null,
+    authoredWorldId: null,
     fault: null,
     sharedWorld: null,
     changes: new Map(),

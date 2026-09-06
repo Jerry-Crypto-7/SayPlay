@@ -394,6 +394,15 @@ function worldBrief(blueprint: WorldstreamBlueprint, target: SemanticObject): st
   );
 }
 
+/**
+ * Pole, která tahle fáze v odpovědi žádá. Důvod je u `PLANNER_ANSWER_FIELDS`.
+ *
+ * **Čte to i `requestStage()`**, takže se seznam nesmí opsat do systémové věty
+ * ručně: sklad uvařených změn (`T35-actsthree4`) pozná refine požadavek jedině
+ * podle něj, a dvě kopie téhož seznamu se rozejdou při prvním doplnění fasety.
+ */
+export const REFINE_ANSWER_FIELDS = ['summary', 'shape', 'behavior', 'appearance'] as const;
+
 export function buildRefineRequest(
   sentence: string,
   blueprint: WorldstreamBlueprint,
@@ -404,7 +413,7 @@ export function buildRefineRequest(
     'You answer with that change and nothing else. You never rewrite the world.',
     '',
     'Answer with a single JSON object whose top-level fields are exactly:',
-    'summary, shape, behavior, appearance.',
+    `${REFINE_ANSWER_FIELDS.join(', ')}.`,
     '',
     'summary is ONE sentence, written for the person who asked, saying what will change.',
     'They read it before anything happens and decide whether to go ahead, so write what they will',

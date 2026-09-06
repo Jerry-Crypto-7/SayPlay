@@ -540,6 +540,11 @@ export async function POST(request: Request): Promise<Response> {
     // kterou porotce odhalí druhou větou (`T45-honestlabel`).
     const authored = cloud === null ? chooseAuthored(verdict.prompt) : null;
     const emit = cloud ?? (authored === null ? null : emitterFor(authored.world));
+    // **Relace si pamatuje, ze kterého uvařeného světa vznikla** — jinak nemá
+    // druhá věta ze skladu co vydat (`T35-actsthree4`). Uvařená změna nese
+    // `stableId` z jednoho blueprintu, takže patří k jednomu světu a hledat ji
+    // přes celý sklad znamená vydat cizí cíl.
+    stored.authoredWorldId = authored?.world.id ?? null;
     const work =
       emit === null
         ? Promise.resolve().then(() => {

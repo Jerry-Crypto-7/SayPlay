@@ -22,22 +22,23 @@ import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import type { UpstreamRequest } from '@/model/prompt';
+import type { Grammar, UpstreamRequest } from '@/model/prompt';
+import { buildIntentRequest, readPlannerEmission } from '@/model/worldstream-intent';
+import { compileWithRepair } from '@/model/worldstream-repair';
+import { emitterFor } from '@/worldstream/authored';
+import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
-/** Jeden uvařený svět tak, jak ho drží `src/worldstream/authored-worlds.json`. */
-export interface AuthoredWorld {
-  readonly id: string;
-  readonly prompt: string;
-  readonly heroObjects: readonly string[];
-  readonly synonyms: readonly string[];
-  readonly planner: unknown;
-  readonly compiler: unknown;
-}
+/**
+ * Tvar skladu se **půjčuje z produktu**, neopisuje.
+ *
+ * Do `T35-actsthree4` tu stála vlastní kopie těch dvou rozhraní. Byla to druhá
+ * pravda o témž souboru: pole přidané v produktu se sem nedostalo, takže se
+ * autorský běh o něm nedozvěděl a `tsc` mlčel. Sklad má jedno místo, kde se
+ * jeho tvar definuje, a je to `src/worldstream/authored.ts`.
+ */
+export type { AuthoredChange, AuthoredStore, AuthoredWorld } from '@/worldstream/authored';
 
-export interface AuthoredStore {
-  readonly version: string;
-  readonly worlds: readonly AuthoredWorld[];
-}
+import type { AuthoredChange, AuthoredStore, AuthoredWorld } from '@/worldstream/authored';
 
 export const STORE_VERSION = 'authored-v1';
 
@@ -307,4 +308,113 @@ export function outcomeOf(input: {
   if (input.planner === null || input.compiler === null)
     return { kept: false, cause: 'incomplete', detail: 'one of the two emissions was never seen' };
   return { kept: true, cause: null, detail: null };
+}
+
+/* ------------------------------------------------------------------ *
+ * Druhá věta: uvařené změny (`T35-actsthree4`).
+ * ------------------------------------------------------------------ */
+
+/**
+ * Sklad s doplněnou změnou u jednoho světa. **Nikdy nemutuje ten, který dostal.**
+ *
+ * Táž doktrína jako u `withWorld()`: záznam téhož `id` se přepíše, ne přidá
+ * podruhé — druhý běh nad toutéž větou je oprava, a dvě změny s týmž `id` by
+ * o tom, kterou route vydá, rozhodovaly pořadím v souboru.
+ *
+ * Svět, který sklad nedrží, se **nezakládá**. Změna bez svého světa nemá proti
+ * čemu platit: nese `stableId` z blueprintu, který by neexistoval.
+ */
+export function withChange(
+  store: AuthoredStore,
+  worldId: string,
+  change: AuthoredChange,
+): AuthoredStore {
+  return {
+    version: STORE_VERSION,
+    worlds: store.worlds.map((world) =>
+      world.id !== worldId
+        ? world
+        : {
+            ...world,
+            changes: [...world.changes.filter((entry) => entry.id !== change.id), change].sort(
+              (a, b) => a.id.localeCompare(b.id),
+            ),
+          },
+    ),
+  };
+}
+
+/**
+ * Druhé věty, které běh ještě má uvařit.
+ *
+ * Dvojí filtr, ne jeden: případ patří do fronty jedině tehdy, když sklad **má**
+ * jeho svět (bez blueprintu není proti čemu psát operace) a **nemá** jeho
+ * změnu. Přerušitelnost stojí na téže druhé půlce jako u světů.
+ */
+export function stillToChange<T extends { readonly id: string; readonly createId: string }>(
+  cases: readonly T[],
+  store: AuthoredStore,
+): readonly T[] {
+  const worlds = new Map(store.worlds.map((world) => [world.id, world]));
+  return cases.filter((entry) => {
+    const world = worlds.get(entry.createId);
+    return world !== undefined && !world.changes.some((change) => change.id === entry.id);
+  });
+}
+
+/**
+ * Uloží se tahle změna, nebo se zahodí a proč.
+ *
+ * **Rozhodnutí bydlí tady, ne v běhu**, ze stejného důvodu jako `outcomeOf()`:
+ * v měřicím souboru by se dalo změřit jedině tak, že se zaplatí volání Codexu.
+ *
+ * Uloží se jen změna, kterou přijal `readRefineEmission()` — tedy táž brána,
+ * kterou projde živá emise v route. Změna, která branou neprošla, by v provozu
+ * skončila odmítnutím, takže uložit ji znamená nabídnout porotci zaručenou
+ * chybu místo dějství III.
+ */
+export function changeOutcomeOf(input: {
+  readonly thrown: string | null;
+  readonly grounded: boolean;
+  readonly accepted: boolean;
+  readonly rejection: string | null;
+}): { readonly kept: boolean; readonly cause: string | null; readonly detail: string | null } {
+  if (input.thrown !== null) return { kept: false, cause: 'unavailable', detail: input.thrown };
+  // **Nedostupný cíl je vlastní příčina, ne odmítnutá emise.** Věta, kterou
+  // grounding nerozřešil, se modelu nikdy neposlala — sloučit ji s odmítnutím
+  // by v rozpadu tvrdilo, že model odpověděl špatně, a opravovalo by se to
+  // v kontraktu místo ve větě.
+  if (!input.grounded)
+    return { kept: false, cause: 'grounding', detail: input.rejection };
+  if (!input.accepted) return { kept: false, cause: 'refine', detail: input.rejection };
+  return { kept: true, cause: null, detail: null };
+}
+
+/**
+ * Blueprint uvařeného světa, **beze všech volání modelu**.
+ *
+ * Druhá věta se nedá napsat naslepo: `buildRefineRequest()` chce objekty, jejich
+ * dnešní tvar a obě fasety dokumentu, tedy hotový blueprint. Ten se ale nemusí
+ * kupovat znovu — sklad drží obě emise, takže se týž řetěz (`planner` →
+ * `compileWithRepair`) přehraje nad `emitterFor()` a stojí to nula volání.
+ *
+ * Je to i jediná poctivá cesta: kdyby se blueprint složil zkratkou kolem
+ * kompilátoru, psala by se změna proti světu, který porotci nikdo neukáže.
+ */
+export async function replayBlueprint(
+  world: AuthoredWorld,
+  deps: { readonly grammar: Grammar; readonly sessionSeed: number },
+): Promise<WorldstreamBlueprint | string> {
+  const emit = emitterFor(world);
+
+  const plan = readPlannerEmission(await emit(buildIntentRequest(world.prompt)));
+  if (!plan.ok) return `${plan.reason}: ${plan.detail}`;
+
+  const outcome = await compileWithRepair({
+    plan: plan.value,
+    grammar: deps.grammar,
+    sessionSeed: deps.sessionSeed,
+    emit,
+  });
+  return outcome.kind === 'compiled' ? outcome.result.value : `the stored world no longer compiles: ${outcome.kind}`;
 }

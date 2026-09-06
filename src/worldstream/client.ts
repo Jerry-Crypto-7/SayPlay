@@ -329,3 +329,178 @@ async function readSnapshot(
   if (!response.ok) throw new Error(`the world snapshot is gone: HTTP ${response.status}`);
   return (await response.json()) as ClientSnapshot;
 }
+
+/* ------------------------------------------------------------------ *
+ * Druhá věta: preview a commit (`T22`, zapojeno `T35-actsthree4`).
+ * ------------------------------------------------------------------ */
+
+/** Co druhá věta udělá, dřív než se cokoli změní. */
+export interface ChangePreviewed {
+  readonly kind: 'preview';
+  readonly changeId: string;
+  readonly summary: string;
+  readonly target: { readonly stableId: string; readonly label: string };
+  readonly scope: {
+    readonly shape: boolean;
+    readonly behavior: number;
+    readonly appearance: number;
+  };
+  readonly preserved: readonly string[];
+  /** `null`, když změnu psal model. Jinak odkud se vzala (`T45-honestlabel`). */
+  readonly authored: AuthoredProvenance | null;
+}
+
+/** Věta byla nejasná — server nabízí objekty, mezi kterými se má vybrat. */
+export interface ChangeAmbiguous {
+  readonly kind: 'ambiguous';
+  readonly reason: 'NO_MATCH' | 'AMBIGUOUS' | 'UNKNOWN_ID';
+  readonly candidates: readonly {
+    readonly stableId: string;
+    readonly label: string;
+    /** Jméno, kterým se objekt do věty trefil. `null`, když se netrefil vůbec. */
+    readonly matched: string | null;
+  }[];
+}
+
+/** Model odpověděl, ale odpověď branou neprošla. Svět se nehnul. */
+export interface ChangeRefused {
+  readonly kind: 'refused';
+  readonly reason: string;
+  readonly detail: string;
+}
+
+export type ChangeOutcomeRead = ChangePreviewed | ChangeAmbiguous | ChangeRefused;
+
+/**
+ * Věta → **plán změny, ne změna**. Design book §4 dějství III: rozsah se ukáže
+ * dřív, než se cokoli změní, a commit je druhé rozhodnutí člověka.
+ *
+ * `stableId` má přednost před textem — když člověk na objekt ukázal, o cíli
+ * rozhodl on, ne rozpoznávač.
+ *
+ * Odmítnutí serveru (vypínač, strop, zavřená relace, chybějící výrobce) se sem
+ * vrací jako výjimka s kódem, ze stejného důvodu jako u zakládání relace: 4xx
+ * a 5xx nejsou plán a tichý `null` by z odmítnuté věty udělal větu, která se
+ * nikdy neodeslala.
+ */
+export async function requestChange(
+  sessionId: string,
+  prompt: string,
+  options: ClientOptions & { readonly stableId?: string } = {},
+): Promise<ChangeOutcomeRead> {
+  const call = options.fetch ?? fetch;
+  const response = await call(`/api/worldstream/sessions/${sessionId}/changes`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      prompt,
+      ...(options.stableId === undefined ? {} : { stableId: options.stableId }),
+    }),
+    signal: options.signal,
+  });
+
+  const body = (await response.json().catch(() => null)) as Record<string, unknown> | null;
+
+  if (!response.ok) {
+    const error = body?.error as { code?: string } | undefined;
+    throw new Error(`the change was not planned: ${error?.code ?? `HTTP_${response.status}`}`);
+  }
+
+  if (body?.outcome === 'AMBIGUOUS')
+    return {
+      kind: 'ambiguous',
+      reason: (body.reason ?? 'NO_MATCH') as ChangeAmbiguous['reason'],
+      candidates: (body.candidates ?? []) as ChangeAmbiguous['candidates'],
+    };
+
+  if (body?.outcome === 'REJECTED')
+    return {
+      kind: 'refused',
+      reason: String(body.reason ?? 'REJECTED'),
+      detail: String(body.detail ?? ''),
+    };
+
+  if (typeof body?.changeId !== 'string')
+    throw new Error('the change was not planned: the answer named no change');
+
+  // Neznámá hodnota se čte jako „původ neznáme", ne jako `nearest` — táž
+  // úvaha jako u `openWorldstreamSession()`: popisek je tvrzení a tvrdit se
+  // smí jen to, co server řekl.
+  const match = (body.authored as { match?: unknown } | undefined)?.match;
+
+  return {
+    kind: 'preview',
+    changeId: body.changeId,
+    summary: String(body.summary ?? ''),
+    target: body.target as ChangePreviewed['target'],
+    scope: body.scope as ChangePreviewed['scope'],
+    preserved: (body.preserved ?? []) as readonly string[],
+    authored: match === 'exact' || match === 'nearest' ? { match } : null,
+  };
+}
+
+/** Jak dopadl commit. Odmítnutí je 200 s verdiktem, ne výjimka. */
+export type ChangeCommitted =
+  | { readonly kind: 'committed'; readonly stableId: string; readonly summary: string }
+  | { readonly kind: 'refused'; readonly detail: string };
+
+/**
+ * Potvrzení plánu — **jediné místo, kde se svět mění**.
+ *
+ * Nevrací nový blueprint schválně: autoritativní stav je snapshot relace
+ * (§21), takže volající si o svět řekne toutéž cestou, kterou by ho dostal po
+ * reconnectu. Druhá kopie světa v odpovědi commitu by byla druhá pravda.
+ */
+export async function commitChange(
+  sessionId: string,
+  changeId: string,
+  options: ClientOptions = {},
+): Promise<ChangeCommitted> {
+  const call = options.fetch ?? fetch;
+  const response = await call(
+    `/api/worldstream/sessions/${sessionId}/changes/${changeId}/commit`,
+    { method: 'POST', signal: options.signal },
+  );
+
+  const body = (await response.json().catch(() => null)) as Record<string, unknown> | null;
+
+  if (!response.ok) {
+    const error = body?.error as { code?: string; message?: string } | undefined;
+    throw new Error(`the change was not applied: ${error?.code ?? `HTTP_${response.status}`}`);
+  }
+
+  if (body?.outcome !== 'COMMITTED')
+    return {
+      kind: 'refused',
+      detail: String(
+        (body?.rejections as readonly { detail?: string }[] | undefined)?.[0]?.detail ??
+          'the change did not pass the gates',
+      ),
+    };
+
+  return {
+    kind: 'committed',
+    stableId: String(body.stableId ?? ''),
+    summary: String(body.summary ?? ''),
+  };
+}
+
+/**
+ * Blueprint, jak ho drží server **teď**.
+ *
+ * Commit ho do proudu neposílá — rámec `patch.committed` nese jen to, co se
+ * změnilo — takže po commitu si o něj klient řekne sám. Je to táž cesta,
+ * kterou se svět obnovuje po mezeře v proudu, jen vyvolaná jiným důvodem.
+ */
+export async function readBlueprint(
+  sessionId: string,
+  options: ClientOptions = {},
+): Promise<unknown> {
+  const call = options.fetch ?? fetch;
+  const response = await call(`/api/worldstream/sessions/${sessionId}`, {
+    headers: { accept: 'application/json' },
+    signal: options.signal,
+  });
+  if (!response.ok) throw new Error(`the world snapshot is gone: HTTP ${response.status}`);
+  return ((await response.json()) as ClientSnapshot).blueprint ?? null;
+}

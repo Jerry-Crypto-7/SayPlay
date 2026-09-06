@@ -29,6 +29,24 @@ import type { BlueprintEmitter } from '@/model/worldstream-repair';
 
 import store from './authored-worlds.json';
 
+/**
+ * Jedna **druhá** věta a emise, kterou na ni model napsal (`T35-actsthree4`).
+ *
+ * Změna patří k jednomu světu a k jednomu jeho objektu, protože přesně tak ji
+ * model napsal: `stableId` v emisi je id z toho blueprintu a `readRefineEmission()`
+ * odmítne odpověď, která jmenuje jiný cíl. Vydat změnu autorovanou nad `c04`
+ * do světa `c01` tedy není „nejbližší odpověď", je to zaručené odmítnutí.
+ */
+export interface AuthoredChange {
+  readonly id: string;
+  readonly prompt: string;
+  /** Objekt, na který ta změna míří — `stableId` z blueprintu toho světa. */
+  readonly stableId: string;
+  /** Slova, kterými se ten objekt dá pojmenovat. Váží stejně jako u světa. */
+  readonly synonyms: readonly string[];
+  readonly refine: unknown;
+}
+
 /** Jedna věta a obě emise, které na ni model napsal. */
 export interface AuthoredWorld {
   readonly id: string;
@@ -37,6 +55,12 @@ export interface AuthoredWorld {
   readonly synonyms: readonly string[];
   readonly planner: unknown;
   readonly compiler: unknown;
+  /**
+   * Druhé věty uvařené k tomuhle světu. **Prázdné pole je poctivý stav**, ne
+   * chybějící data: svět, ke kterému se změna neuvařila, druhou větu nabídnout
+   * nemůže a route to řekne rovnou místo aby vydala odpověď jiného světa.
+   */
+  readonly changes: readonly AuthoredChange[];
 }
 
 export interface AuthoredStore {
@@ -109,10 +133,23 @@ export const EXACT_MAX_DISTANCE = 0.1;
  * Vlastní věta záznamu dává přesně 0, protože nad ní jsou obě strany totéž.
  */
 export function distanceTo(prompt: string, world: AuthoredWorld): number {
-  const base = new Set(significantWords(world.prompt));
-  const heroic = new Set(
-    [...world.heroObjects, ...world.synonyms].flatMap((source) => significantWords(source)),
-  );
+  return distanceBetween(prompt, world.prompt, [...world.heroObjects, ...world.synonyms]);
+}
+
+/**
+ * Táž vzdálenost nad libovolnou dvojicí věta ↔ záznam.
+ *
+ * Existuje proto, že sklad drží **dva** druhy záznamů (svět a druhá věta) a
+ * obojí se hledá týmž měřítkem. Dvě kopie téhle aritmetiky by se rozešly při
+ * první úpravě vah a `exact` by pak u každého druhu znamenal něco jiného.
+ */
+function distanceBetween(
+  prompt: string,
+  sentence: string,
+  heroicSources: readonly string[],
+): number {
+  const base = new Set(significantWords(sentence));
+  const heroic = new Set(heroicSources.flatMap((source) => significantWords(source)));
   const asked = new Set(significantWords(prompt));
   const weigh = (word: string): number => (heroic.has(word) ? HERO_WEIGHT : 1);
 
@@ -191,4 +228,69 @@ export function emitterFor(world: AuthoredWorld): BlueprintEmitter {
       );
     return Promise.resolve(stage === 'planner' ? world.planner : world.compiler);
   };
+}
+
+/* ------------------------------------------------------------------ *
+ * Druhá věta ze skladu (`T35-actsthree4`).
+ * ------------------------------------------------------------------ */
+
+/** Svět, ze kterého relace vznikla, nebo `null`, když ho sklad nedrží. */
+export function authoredWorldById(
+  id: string,
+  worlds: readonly AuthoredWorld[] = AUTHORED_STORE.worlds,
+): AuthoredWorld | null {
+  return worlds.find((world) => world.id === id) ?? null;
+}
+
+/** Co sklad na tuhle druhou větu našel. */
+export interface AuthoredChangeMatch {
+  readonly change: AuthoredChange;
+  /** `exact` znamená „tuhle změnu jsem uměl". Cokoli jiného se musí přiznat. */
+  readonly match: 'exact' | 'nearest';
+  readonly distance: number;
+}
+
+/**
+ * Kterou uvařenou změnu tahle věta dostane — **jen v mezích jednoho cíle**.
+ *
+ * Filtr na `stableId` není optimalizace, je to podmínka správnosti. Emise
+ * uvařená nad jiným objektem nese cizí `stableId` a `readRefineEmission()` ji
+ * odmítne jako `WRONG_TARGET`, takže „nejbližší přes celý svět" by porotci
+ * místo změny spolehlivě vrátilo odmítnutí. Objekt, ke kterému se změna
+ * neuvařila, tedy druhou větu nemá a route to řekne rovnou.
+ *
+ * Deterministické, bez PRNG a bez modelu; při shodě vzdáleností rozhoduje `id`,
+ * ne pořadí v souboru — táž úvaha jako u `chooseAuthored()`.
+ */
+export function chooseAuthoredChange(
+  prompt: string,
+  stableId: string,
+  world: AuthoredWorld,
+): AuthoredChangeMatch | null {
+  let best: AuthoredChangeMatch | null = null;
+  for (const change of world.changes) {
+    if (change.stableId !== stableId) continue;
+    const distance = distanceBetween(prompt, change.prompt, change.synonyms);
+    if (best !== null && (distance > best.distance || (distance === best.distance && change.id >= best.change.id)))
+      continue;
+    best = { change, distance, match: distance <= EXACT_MAX_DISTANCE ? 'exact' : 'nearest' };
+  }
+  return best;
+}
+
+/**
+ * Emitor nad **jednou** uvařenou změnou.
+ *
+ * Odpovídá jedině na požadavek fáze `refine`. Vydat uvařenou změnu na planner
+ * nebo compiler požadavek by znamenalo přehrát druhou větu tam, kde se staví
+ * svět — a `readBlueprintEmission()` by dostal odpověď, která o geometrii
+ * nemluví vůbec.
+ */
+export function changeEmitterFor(change: AuthoredChange): BlueprintEmitter {
+  return (request: UpstreamRequest): Promise<unknown> =>
+    requestStage(request) === 'refine'
+      ? Promise.resolve(change.refine)
+      : Promise.reject(
+          new Error('the authored store was asked for a stage it does not recognise'),
+        );
 }

@@ -14,10 +14,15 @@ import { buildIntentRequest } from '@/model/worldstream-intent';
 import { buildCompilerRequest } from '@/model/worldstream-prompt';
 import { frozenGrammar } from '@/model/client';
 
+import { buildRefineRequest } from '@/model/worldstream-refine';
+
 import {
   AUTHORED_STORE,
   authoredEmitter,
+  authoredWorldById,
+  changeEmitterFor,
   chooseAuthored,
+  chooseAuthoredChange,
   distanceTo,
   EXACT_MAX_DISTANCE,
   HERO_WEIGHT,
@@ -221,8 +226,8 @@ describe('the match is measured, not guessed', () => {
     // se váha srazí na 1: trefené slovo se počítá tak jako tak. Mutant
     // `HERO_WEIGHT = 1` proto přežil. Pinuje se tedy hodnota, kterou váha
     // vyrábí: shoda 7 z 10 s trojkou proti 1 z 6 bez ní.
-    const hero = { id: 'x', prompt: 'a wide hall of pale brick', heroObjects: ['stoneWhale'], synonyms: [], planner: {}, compiler: {} };
-    const plain = { id: 'y', prompt: 'a wide hall of pale brick', heroObjects: [], synonyms: [], planner: {}, compiler: {} };
+    const hero = { id: 'x', prompt: 'a wide hall of pale brick', heroObjects: ['stoneWhale'], synonyms: [], planner: {}, compiler: {}, changes: [] };
+    const plain = { id: 'y', prompt: 'a wide hall of pale brick', heroObjects: [], synonyms: [], planner: {}, compiler: {}, changes: [] };
 
     expect(distanceTo('a hall with a stone whale', hero)).toBeCloseTo(0.3, 10);
     expect(distanceTo('a hall with a stone whale', plain)).toBeCloseTo(5 / 6, 10);
@@ -234,7 +239,7 @@ describe('the match is measured, not guessed', () => {
     // mohla jmenovatel přerůst; výsledek se řezal u nuly a cizí věta, která
     // trefila dvě jména, dostala `exact`. Řez už ve vzorci není a nesmí být
     // potřeba.
-    const world = { id: 'x', prompt: 'a hall', heroObjects: ['stoneWhale'], synonyms: ['whale'], planner: {}, compiler: {} };
+    const world = { id: 'x', prompt: 'a hall', heroObjects: ['stoneWhale'], synonyms: ['whale'], planner: {}, compiler: {}, changes: [] };
     const found = chooseAuthored('a hall stone whale', [world]);
 
     expect(distanceTo('a hall stone whale', world)).toBe(0);
@@ -246,8 +251,8 @@ describe('the match is measured, not guessed', () => {
     // Pořadí v souboru se mění při každém doplnění skladu. Rozhodovat podle něj
     // znamená, že táž věta dostane po `T44` jiný svět než dneska.
     const twins = [
-      { id: 'zz', prompt: 'a hall', heroObjects: [], synonyms: [], planner: {}, compiler: {} },
-      { id: 'aa', prompt: 'a hall', heroObjects: [], synonyms: [], planner: {}, compiler: {} },
+      { id: 'zz', prompt: 'a hall', heroObjects: [], synonyms: [], planner: {}, compiler: {}, changes: [] },
+      { id: 'aa', prompt: 'a hall', heroObjects: [], synonyms: [], planner: {}, compiler: {}, changes: [] },
     ];
 
     expect(chooseAuthored('a hall', twins)?.world.id).toBe('aa');
@@ -257,9 +262,9 @@ describe('the match is measured, not guessed', () => {
 
 describe('the nearest world is the nearest one, not the first one', () => {
   const shelf = [
-    { id: 'a1', prompt: 'A lighthouse on a cliff above a storm-lit harbour', heroObjects: ['lighthouseTower'], synonyms: ['lighthouse'], planner: {}, compiler: {} },
-    { id: 'a2', prompt: 'A sunken ballroom lit by drifting jellyfish', heroObjects: ['ballroomFloor'], synonyms: ['ballroom'], planner: {}, compiler: {} },
-    { id: 'a3', prompt: 'A desert observatory built from salvaged radio dishes', heroObjects: ['radioDish'], synonyms: ['dish'], planner: {}, compiler: {} },
+    { id: 'a1', prompt: 'A lighthouse on a cliff above a storm-lit harbour', heroObjects: ['lighthouseTower'], synonyms: ['lighthouse'], planner: {}, compiler: {}, changes: [] },
+    { id: 'a2', prompt: 'A sunken ballroom lit by drifting jellyfish', heroObjects: ['ballroomFloor'], synonyms: ['ballroom'], planner: {}, compiler: {}, changes: [] },
+    { id: 'a3', prompt: 'A desert observatory built from salvaged radio dishes', heroObjects: ['radioDish'], synonyms: ['dish'], planner: {}, compiler: {}, changes: [] },
   ];
 
   it('picks the world the sentence is actually about', () => {
@@ -277,5 +282,111 @@ describe('the nearest world is the nearest one, not the first one', () => {
     const distances = shelf.map((world) => distanceTo('a ballroom', world));
 
     expect(Math.min(...distances)).toBeGreaterThan(EXACT_MAX_DISTANCE);
+  });
+});
+
+/* ================================================================== *
+ * Druhá věta ze skladu (`T35-actsthree4`).
+ * ================================================================== */
+
+/**
+ * Změny nad jedním smyšleným světem.
+ *
+ * Sklad na disku jich dnes drží kolik uvařil autorský běh, takže sada, která by
+ * se ptala jeho, by měřila stav souboru místo rozhodování. Police je proto
+ * vlastní a rozhoduje se nad ní všechno, co rozhoduje route.
+ */
+const SHELF: AuthoredWorld = {
+  id: 'w1',
+  prompt: 'A hall of stacked containers around a light well',
+  heroObjects: ['centralLightWell'],
+  synonyms: ['the containers'],
+  planner: {},
+  compiler: {},
+  changes: [
+    {
+      id: 'ch-paint',
+      prompt: 'Paint the containers rust red.',
+      stableId: 'containerWall',
+      synonyms: ['the containers', 'the container wall'],
+      refine: { summary: 'the containers go rust red', shape: null, behavior: [], appearance: [] },
+    },
+    {
+      id: 'ch-widen',
+      prompt: 'Widen the light well so more sky comes in.',
+      stableId: 'centralLightWell',
+      synonyms: ['the light well', 'the well'],
+      refine: { summary: 'the well opens wider', shape: null, behavior: [], appearance: [] },
+    },
+    {
+      id: 'ch-deepen',
+      prompt: 'Cut the light well deeper into the floor.',
+      stableId: 'centralLightWell',
+      synonyms: ['the light well', 'the well'],
+      refine: { summary: 'the well cuts deeper', shape: null, behavior: [], appearance: [] },
+    },
+  ],
+};
+
+describe('uvařená druhá věta se hledá v mezích jednoho cíle', () => {
+  it('objekt bez uvařené změny žádnou nedostane, ani tu nejbližší', () => {
+    // ⚠ **Tohle je celý důvod, proč se nefiltruje až po výběru.** Emise uvařená
+    // nad `centralLightWell` nese ten `stableId` v odpovědi, takže by ji
+    // `readRefineEmission()` nad cílem `saltFlat` odmítla jako `WRONG_TARGET` —
+    // „nejbližší přes celý svět" by porotci místo změny vrátilo zaručenou chybu.
+    expect(chooseAuthoredChange('paint it red', 'saltFlat', SHELF)).toBeNull();
+  });
+
+  it('mezi změnami téhož cíle vybere tu, o které ta věta doopravdy je', () => {
+    expect(chooseAuthoredChange('let more sky come in', 'centralLightWell', SHELF)?.change.id).toBe(
+      'ch-widen',
+    );
+    expect(chooseAuthoredChange('cut it into the floor', 'centralLightWell', SHELF)?.change.id).toBe(
+      'ch-deepen',
+    );
+  });
+
+  it('vlastní věta záznamu je `exact`, cizí věta se musí přiznat', () => {
+    const own = chooseAuthoredChange('Paint the containers rust red.', 'containerWall', SHELF);
+    expect(own).toMatchObject({ match: 'exact', distance: 0 });
+
+    const foreign = chooseAuthoredChange('make them green', 'containerWall', SHELF);
+    expect(foreign?.match).toBe('nearest');
+    expect(foreign?.distance).toBeGreaterThan(EXACT_MAX_DISTANCE);
+  });
+
+  it('svět, který sklad nedrží, je `null`, ne výjimka', () => {
+    expect(authoredWorldById('nothing-like-this', [SHELF])).toBeNull();
+    expect(authoredWorldById('w1', [SHELF])?.id).toBe('w1');
+  });
+});
+
+describe('emitor uvařené změny odpovídá jen na svoji fázi', () => {
+  const change = SHELF.changes[1]!;
+
+  it('na refine požadavek vydá uvařenou změnu', async () => {
+    // Požadavek se **staví skutečným builderem nad skutečným světem**, ne
+    // opsaným řetězcem: kdyby se seznam žádaných polí v systémové větě pohnul,
+    // sada s opsaným požadavkem by zůstala zelená a sklad by v provozu mlčel.
+    const stored = openSession('authored-refine', 4021)!;
+    await runGeneration(stored, KNOWN.prompt, {
+      emit: authoredEmitter(KNOWN.prompt)!,
+      grammar: serverGrammar() as ReturnType<typeof grammar>,
+    });
+    const blueprint = stored.blueprint!;
+    const target = blueprint.objects[0]!;
+
+    const request = buildRefineRequest('open it wider', blueprint, target);
+
+    await expect(changeEmitterFor(change)(request)).resolves.toBe(change.refine);
+  });
+
+  it('na požadavek o stavbu světa odmítne, místo aby vydala změnu', async () => {
+    // Kdyby vydala, dostal by `readBlueprintEmission()` odpověď, která
+    // o geometrii nemluví vůbec — a relace by skončila odmítnutím, jehož
+    // příčina není nikde vidět.
+    await expect(
+      changeEmitterFor(change)(buildIntentRequest('a hall of containers')),
+    ).rejects.toThrow(/stage it does not recognise/);
   });
 });

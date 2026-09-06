@@ -55,6 +55,11 @@ import { moderatePrompt } from '@/server/moderation';
 import { logRateLimited } from '@/server/public-faults';
 import { callerKey, trustedCallerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '@/server/rate-limit';
 import { SpendRefusalError } from '@/server/spend-cap';
+import {
+  authoredWorldById,
+  changeEmitterFor,
+  chooseAuthoredChange,
+} from '@/worldstream/authored';
 import { getSession, putChange, SESSION_FAULTS } from '@/worldstream/sessions';
 
 import { acquireSlot, cloudEmitter, releaseSlot, slotsDetail } from '../../route';
@@ -107,6 +112,29 @@ export async function POST(
 }
 
 /**
+ * Kdo tuhle druhou větu obslouží, když živá větev není nakonfigurovaná.
+ *
+ * ⚠ **Pořadí je součást kontraktu, stejně jako u zakládání relace.** Živý model
+ * má přednost vždycky a sklad je až za ním; kdyby předbíhal, zaplacený klíč by
+ * přestal být vidět a `T40` by místo modelu měřila cache.
+ *
+ * Hledá se **v mezích jednoho světa a jednoho cíle**, ne přes celý sklad.
+ * Uvařená změna nese `stableId` z blueprintu, nad kterým ji model psal, takže
+ * cizí by ji `readRefineEmission()` odmítl jako `WRONG_TARGET` — „nejbližší
+ * přes všechno" by porotci místo změny spolehlivě vrátilo odmítnutí. Objekt,
+ * ke kterému se změna neuvařila, tedy druhou větu nemá a route to řekne rovnou.
+ */
+function authoredChangeFor(
+  stored: NonNullable<ReturnType<typeof getSession>>,
+  prompt: string,
+  stableId: string,
+): ReturnType<typeof chooseAuthoredChange> {
+  if (stored.authoredWorldId === null) return null;
+  const world = authoredWorldById(stored.authoredWorldId);
+  return world === null ? null : chooseAuthoredChange(prompt, stableId, world);
+}
+
+/**
  * Celá route bez dvou řádků, které se v testu nedají mít: rozbalení `params`
  * a **placeného** emitoru.
  *
@@ -114,11 +142,16 @@ export async function POST(
  * bez `.env` vrací `null`, takže by sada uměla otestovat jen odmítnutí. Vzor je
  * `runGeneration` v `src/worldstream/sessions.ts`, který je oddělený od
  * zakládací route ze stejného důvodu.
+ *
+ * ⚠ **Parametr je `cloud`, ne „emitor".** Sklad uvařených změn se dosazuje až
+ * uvnitř, protože se hledá podle **groundnutého cíle** — a ten je známý až za
+ * moderací a groundingem. Kdo sem pošle `null`, dostane tedy pořád tu větev,
+ * kterou má nasazení bez klíče.
  */
 export async function createChange(
   request: Request,
   sessionId: string,
-  emit: BlueprintEmitter | null,
+  cloud: BlueprintEmitter | null,
 ): Promise<Response> {
   const requestId = randomUUID();
 
@@ -220,9 +253,15 @@ export async function createChange(
         candidates: grounding.candidates,
       });
 
-    // `null` znamená „cloudová větev není nakonfigurovaná". Na rozdíl od
-    // zakládání relace se tu neshazuje celá relace — svět běží dál a porotce ho
-    // pořád vidí; nepovedla se jen tahle jedna změna.
+    // **Živý model má přednost, sklad je za ním** (`T35-actsthree4`) — táž
+    // záložní větev a totéž pořadí jako u zakládání relace.
+    const authored = cloud === null ? authoredChangeFor(stored, verdict.prompt, grounding.target.stableId) : null;
+    const emit = cloud ?? (authored === null ? null : changeEmitterFor(authored.change));
+
+    // `null` znamená „cloudová větev není nakonfigurovaná a sklad na tenhle
+    // objekt změnu nemá". Na rozdíl od zakládání relace se tu neshazuje celá
+    // relace — svět běží dál a porotce ho pořád vidí; nepovedla se jen tahle
+    // jedna změna.
     if (emit === null)
       return fail(requestId, 503, 'MODEL_UNAVAILABLE', 'the model could not be reached');
 
@@ -352,6 +391,11 @@ export async function createChange(
       preserved: blueprint.objects
         .filter((object) => object.stableId !== plan.stableId)
         .map((object) => object.label),
+      // **Chybí, když změnu píše model** — týž kontrakt a týž důvod jako
+      // u zakládání relace (`T45-honestlabel`). Poctivost platí i pro druhou
+      // větu: přehrávanou změnu porotce odhalí tím, že dvě různé věty udělají
+      // totéž, a produkt to má říct dřív než on.
+      ...(authored === null ? {} : { authored: { match: authored.match } }),
       basedOn: change.basedOn,
       commit: `/api/worldstream/sessions/${sessionId}/changes/${change.changeId}/commit`,
     });

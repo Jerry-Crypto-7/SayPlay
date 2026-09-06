@@ -59,6 +59,7 @@ import { SHAPE_LIMITS, type ShapeNodeKind } from '../shape/types';
 
 import { EMISSION_MODEL, buildEmissionRequest, type Grammar, type UpstreamRequest } from './prompt';
 import { PLANNER_ANSWER_FIELDS, type PlannerEmission } from './worldstream-intent';
+import { REFINE_ANSWER_FIELDS } from './worldstream-refine';
 
 /** Značka fáze. Odlišuje blueprint od plánu i od staré emise v logu i v provenance. */
 export const COMPILER_STAGE = 'worldstream-blueprint';
@@ -352,7 +353,7 @@ export function capabilityManifest(): string {
 export const COMPILER_ANSWER_FIELDS = ['geometry', 'shapes', 'placements', 'world'] as const;
 
 /**
- * Která ze dvou fází si o tenhle požadavek řekla.
+ * Která ze tří fází si o tenhle požadavek řekla.
  *
  * ⚠ **Rozhoduje seznam žádaných polí, NIKDY pořadí volání — naměřeno
  * 5. 9. 2026.** Jedna věta znamená dvě volání modelu, ale opravné kolo posílá
@@ -360,12 +361,18 @@ export const COMPILER_ANSWER_FIELDS = ['geometry', 'shapes', 'placements', 'worl
  * rozbije při prvním odmítnutí. Spike `d749ce7` poslal na jednu větu čtyři
  * požadavky v pořadí planner, compiler, compiler, compiler.
  *
- * Funkce bydlí tady, protože odsud jsou vidět oba builderové a oba seznamy.
+ * **Třetí fáze `refine` přibyla s `T35-actsthree4`**, kdy druhá věta dostala
+ * tutéž záložní větev jako první: sklad musí poznat, jestli se ho ptá stavba
+ * světa, nebo změna běžícího. Bez toho by vydal na požadavek o změnu plán
+ * světa a `readRefineEmission()` by ho odmítl jako odpověď špatné fáze.
+ *
+ * Funkce bydlí tady, protože odsud jsou vidět všechny tři seznamy.
  * V úložišti uvařených světů by existovala podruhé.
  */
-export function requestStage(request: UpstreamRequest): 'planner' | 'compiler' | null {
+export function requestStage(request: UpstreamRequest): 'planner' | 'compiler' | 'refine' | null {
   if (request.system.includes(`${COMPILER_ANSWER_FIELDS.join(', ')}.`)) return 'compiler';
   if (request.system.includes(`${PLANNER_ANSWER_FIELDS.join(', ')}.`)) return 'planner';
+  if (request.system.includes(`${REFINE_ANSWER_FIELDS.join(', ')}.`)) return 'refine';
   return null;
 }
 

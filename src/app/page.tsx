@@ -40,12 +40,16 @@
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 
+import ChangePreview, { type ChangeState } from '@/components/worldstream/ChangePreview';
 import WorldStatus, { type WorldStatusState } from '@/components/worldstream/WorldStatus';
 import WorldstreamApp from '@/components/worldstream/WorldstreamApp';
 import { createMeshClient, type MeshClient } from '@/shape/mesh-client';
 import {
+  commitChange,
   followSession,
   openWorldstreamSession,
+  readBlueprint,
+  requestChange,
   type AuthoredProvenance,
   type SessionHandle,
 } from '@/worldstream/client';
@@ -134,6 +138,24 @@ export default function Page() {
   const [inspecting, setInspecting] = useState(false);
   const toggleInspect = useCallback(() => setInspecting((was) => !was), []);
 
+  /* ---------------------------------------------------------------- *
+   * Dějství III: druhá věta (`T35-actsthree4`).
+   * ---------------------------------------------------------------- */
+
+  /**
+   * Relace, do které se druhá věta posílá. `null` znamená „zatím není co měnit".
+   *
+   * Drží se **relace, ne svět**: preview i commit jsou dvoje dveře jedné relace
+   * a obojí potřebuje její id. Svět na plátně je až její výsledek.
+   */
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [second, setSecond] = useState('');
+  const [change, setChange] = useState<ChangeState | null>(null);
+  /** Odkud je plán změny. `null` znamená „napsal ho model teď". */
+  const [changeFrom, setChangeFrom] = useState<AuthoredProvenance | null>(null);
+  /** Běží preview nebo commit? Dvojklik by jinak poslal dvě žádosti. */
+  const [changing, setChanging] = useState(false);
+
   /**
    * Meshovací klient. **Jeden na celou stránku**, ne jeden na relaci: worker
    * stojí start a druhá věta by ho zaplatila znovu. Zavírá se s odchodem
@@ -173,6 +195,12 @@ export default function Page() {
       setStreaming(true);
       setFault(null);
       setWorld(null);
+      // Nová věta zakládá **novou** relaci, takže po té staré nesmí zůstat ani
+      // rozdělaný plán změny, ani její adresa: commit do zavřené relace by
+      // skončil 404 a panel by mezitím tvrdil, že se pořád o něčem rozhoduje.
+      setSessionId(null);
+      setChange(null);
+      setChangeFrom(null);
 
       try {
         const handle = await openWorldstreamSession(prompt, { signal: control.signal });
@@ -206,6 +234,7 @@ export default function Page() {
         if (built.kind === 'built') {
           setWorld(built);
           setProvenance(handle.authored);
+          setSessionId(handle.sessionId);
         } else setFault(built.reason);
       } catch (error: unknown) {
         if (control.signal.aborted) return;
@@ -216,6 +245,119 @@ export default function Page() {
     },
     [sentence, streaming],
   );
+
+  /**
+   * Druhá věta → **plán, ne změna**. Design book §4 dějství III: rozsah se
+   * ukáže dřív, než se cokoli změní.
+   *
+   * `stableId` má přednost před textem, a je to celý smysl nabídky kandidátů:
+   * když porotce na objekt ukázal, o cíli rozhodl on, ne rozpoznávač. Grounding
+   * je přitom na serveru **před** modelem, takže nejasná věta nestojí nic.
+   */
+  const plan = useCallback(
+    async (stableId?: string): Promise<void> => {
+      const prompt = second.trim();
+      if (sessionId === null || prompt === '' || changing) return;
+      const signal = reading.current?.signal;
+
+      setChanging(true);
+      try {
+        const outcome = await requestChange(sessionId, prompt, {
+          ...(signal === undefined ? {} : { signal }),
+          ...(stableId === undefined ? {} : { stableId }),
+        });
+
+        if (outcome.kind === 'ambiguous') {
+          setChange({
+            kind: 'candidates',
+            reason: outcome.reason,
+            candidates: outcome.candidates,
+          });
+          setChangeFrom(null);
+          return;
+        }
+        if (outcome.kind === 'refused') {
+          setChange({ kind: 'refused', message: outcome.detail });
+          setChangeFrom(null);
+          return;
+        }
+
+        setChange({
+          kind: 'preview',
+          changeId: outcome.changeId,
+          summary: outcome.summary,
+          target: outcome.target,
+          scope: outcome.scope,
+          preserved: outcome.preserved,
+        });
+        setChangeFrom(outcome.authored);
+      } catch (error: unknown) {
+        setChange({ kind: 'refused', message: error instanceof Error ? error.message : String(error) });
+        setChangeFrom(null);
+      } finally {
+        setChanging(false);
+      }
+    },
+    [second, sessionId, changing],
+  );
+
+  /**
+   * Potvrzení plánu — **jediné místo, kde se svět mění**.
+   *
+   * Nový svět se čte ze snapshotu relace, ne z odpovědi commitu: autoritativní
+   * stav je snapshot (§21), takže druhá kopie světa v odpovědi by byla druhá
+   * pravda. Stavba pak jde toutéž cestou jako po první větě — `blueprintSchema`
+   * podruhé, `buildProxyWorldFrom()`, plátno.
+   */
+  const apply = useCallback(async (): Promise<void> => {
+    if (sessionId === null || change === null || change.kind !== 'preview' || changing) return;
+    const client = mesher.current;
+    if (client === null) return;
+    const signal = reading.current?.signal;
+
+    setChanging(true);
+    try {
+      const done = await commitChange(sessionId, change.changeId, {
+        ...(signal === undefined ? {} : { signal }),
+      });
+      if (done.kind === 'refused') {
+        setChange({ kind: 'refused', message: done.detail });
+        return;
+      }
+
+      const parsed = blueprintSchema.safeParse(
+        await readBlueprint(sessionId, { ...(signal === undefined ? {} : { signal }) }),
+      );
+      if (!parsed.success) {
+        setChange({ kind: 'refused', message: 'the changed world does not parse' });
+        return;
+      }
+
+      const built = await buildProxyWorldFrom(parsed.data, {
+        mesh: (order) => client.mesh(order),
+        quality: tier.current,
+      });
+      if (built.kind !== 'built') {
+        setChange({ kind: 'refused', message: built.reason });
+        return;
+      }
+
+      setWorld(built);
+      setChange(null);
+      setChangeFrom(null);
+      setSecond('');
+    } catch (error: unknown) {
+      setChange({ kind: 'refused', message: error instanceof Error ? error.message : String(error) });
+    } finally {
+      setChanging(false);
+    }
+  }, [change, changing, sessionId]);
+
+  /** Zahození plánu. Sahá **jen** na panel — svět ani revize se nehnou. */
+  const discard = useCallback(() => {
+    setChange(null);
+    setChangeFrom(null);
+  }, []);
 
   // Pořadí je pořadí pravdy: porucha přebíjí běžící relaci, protože relace
   // skončila; běžící relace přebíjí prázdno, protože se něco děje.
@@ -243,6 +385,42 @@ export default function Page() {
       }
       status={<WorldStatus state={status} detail={fault} />}
       provenance={<AuthoredNotice provenance={world === null ? null : provenance} />}
+      change={
+        sessionId === null || world === null ? null : (
+          <>
+            {change === null ? null : (
+              <ChangePreview
+                state={change}
+                onChoose={(stableId) => void plan(stableId)}
+                onApply={() => void apply()}
+                onDiscard={discard}
+                busy={changing}
+              />
+            )}
+            <AuthoredChangeNotice provenance={change === null ? null : changeFrom} />
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                void plan();
+              }}
+              data-testid="refine-form"
+              style={FORM}
+            >
+              <input
+                data-testid="refine-input"
+                aria-label="Change one thing in this world"
+                placeholder="paint the containers rust red"
+                value={second}
+                onChange={(event) => setSecond(event.target.value)}
+                style={INPUT}
+              />
+              <button type="submit" data-testid="refine-submit" disabled={changing} style={BUTTON}>
+                {changing ? 'Working…' : 'Change it'}
+              </button>
+            </form>
+          </>
+        )
+      }
       inspect={<WorldFacts world={world} />}
       stage={<WorldstreamCanvas world={world} />}
     />
@@ -276,6 +454,30 @@ function AuthoredNotice({
   return (
     <p className="ws-provenance" data-testid="world-authored">
       This is the closest world authored ahead of time.
+    </p>
+  );
+}
+
+/**
+ * Totéž o **druhé** větě (`T35-actsthree4`).
+ *
+ * Je to samostatná komponenta, ne parametr té nad ní, protože říká jinou věc:
+ * tam se přiznává původ **světa**, tady původ **plánu změny**. Jeden text pro
+ * obojí by porotci nad změněným světem tvrdil, že je přehrávaný celý svět.
+ *
+ * Mlčí ze stejných dvou důvodů: změnu píše model (`null`), nebo věta trefila
+ * uvařenou změnu **přesně** — tam se nic nenahrazovalo.
+ */
+function AuthoredChangeNotice({
+  provenance,
+}: {
+  readonly provenance: AuthoredProvenance | null;
+}) {
+  if (provenance === null || provenance.match !== 'nearest') return null;
+
+  return (
+    <p className="ws-provenance" data-testid="change-authored">
+      This is the closest change authored ahead of time.
     </p>
   );
 }

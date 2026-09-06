@@ -31,13 +31,19 @@ import { requestStage } from '@/model/worldstream-prompt';
 import type { UpstreamRequest } from '@/model/prompt';
 import { createMeshClient } from '@/shape/mesh-client';
 
+import { groundTarget, buildRefineRequest, readRefineEmission } from '@/model/worldstream-refine';
+
 import {
   askCodex,
   carryOver,
+  changeOutcomeOf,
   outcomeOf,
+  replayBlueprint,
   reportFrom,
   stillToAuthor,
+  stillToChange,
   STORE_VERSION,
+  withChange,
   withReject,
   withWorld,
   type AuthoredStore,
@@ -45,7 +51,7 @@ import {
   type AuthoringReport,
   type AuthoringResult,
 } from './authoring';
-import { readCorpus, type CreateCase } from './lock.mjs';
+import { readCorpus, type CreateCase, type RefineCase } from './lock.mjs';
 import { driveCreateCase } from './measure-create';
 
 const STORE_FILE = 'src/worldstream/authored-worlds.json';
@@ -196,6 +202,11 @@ describe('Codex uvaří světy dopředu', () => {
               synonyms: plan.objects.flatMap((object) => object.synonyms ?? []),
               planner: answers.planner,
               compiler: answers.compiler,
+              // Druhé věty vaří **druhá fáze** téhož běhu, až nad hotovým
+              // světem: bez blueprintu není proti čemu psát operace, a ten
+              // vznikne teprve tady. Nový svět tedy vstupuje bez změn a druhá
+              // fáze si ho v téže dávce vyzvedne.
+              changes: [],
             });
             // **Zápis po každé větě, ne na konci.** Nehlídaný běh se přeruší
             // výpadkem, restartem i Ctrl-C, a hodina práce se ztratit nesmí.
@@ -225,6 +236,103 @@ describe('Codex uvaří světy dopředu', () => {
           process.stdout.write(
             `${entry.id} ${kept ? 'uloženo' : `zahozeno (${cause ?? '—'})`} · ${String(Math.round(seconds))} s · ${String(calls)} volání` +
               `${detail === null ? '' : `\n   ${detail.slice(0, 160)}`}\n`,
+          );
+        }
+
+        /* ---------------------------------------------------------- *
+         * Druhá fáze: ke každému hotovému světu aspoň jedna změna.
+         * ---------------------------------------------------------- */
+
+        // **Až tady, ne v téže smyčce** (`T35-actsthree4`). Druhá věta se píše
+        // proti hotovému blueprintu, takže svět uvařený o pár řádků výš je
+        // teprve teď použitelný — a druhá fáze si ho v téže dávce vyzvedne.
+        // Blueprint se přehraje ze skladu, takže **nestojí ani jedno volání**;
+        // platí se jedině za samotnou změnu.
+        const changesTodo = stillToChange(corpus.refine as RefineCase[], store).slice(0, limit);
+        // Věta, na kterou se sahá znovu, zahazuje svůj starý verdikt — táž
+        // úvaha jako u `carryOver()` výš. Bez toho by se `r12` v rozpadu
+        // příčin počítala dvakrát, jednou zahozená a jednou uložená.
+        const carried = carryOver(results, changesTodo);
+        results.length = 0;
+        results.push(...carried);
+
+        process.stdout.write(`\nk uvaření ${String(changesTodo.length)} druhých vět\n\n`);
+
+        for (const entry of changesTodo) {
+          const started = Date.now();
+          const world = store.worlds.find((candidate) => candidate.id === entry.createId)!;
+
+          let thrown: string | null = null;
+          let grounded = false;
+          let accepted = false;
+          let rejection: string | null = null;
+          let answer: unknown = null;
+          let stableId = '';
+          let synonyms: readonly string[] = [];
+          let calls = 0;
+
+          try {
+            const blueprint = await replayBlueprint(world, {
+              grammar: grammar.value,
+              sessionSeed: SESSION_SEED,
+            });
+            if (typeof blueprint === 'string') throw new Error(blueprint);
+
+            // **Grounding je tentýž, který běží v route** — čistá funkce, žádné
+            // volání. Věta, kterou nerozřeší, se modelu neposílá vůbec: v provozu
+            // by skončila nabídkou kandidátů, ne změnou, takže by uvařená emise
+            // neměla kde vzniknout ani k čemu být.
+            const target = groundTarget(entry.prompt, blueprint.objects);
+            if (!target.ok) {
+              rejection = target.reason;
+            } else {
+              grounded = true;
+              stableId = target.target.stableId;
+              synonyms = [target.target.label, ...target.target.synonyms];
+
+              calls += 1;
+              answer = askCodex(buildRefineRequest(entry.prompt, blueprint, target.target));
+              // Táž brána, kterou emise projde v route. Uložit něco, co jí
+              // neprojde, znamená nabídnout porotci zaručenou chybu.
+              const read = readRefineEmission(answer, target.target);
+              accepted = read.ok;
+              if (!read.ok) rejection = `${read.reason}: ${read.detail}`;
+            }
+          } catch (error) {
+            thrown = error instanceof Error ? error.message.slice(0, 160) : String(error);
+          }
+
+          const seconds = (Date.now() - started) / 1000;
+          const outcome = changeOutcomeOf({ thrown, grounded, accepted, rejection });
+
+          if (outcome.kept) {
+            store = withChange(store, world.id, {
+              id: entry.id,
+              prompt: entry.prompt,
+              stableId,
+              synonyms,
+              refine: answer,
+            });
+            writeFileSync(STORE_FILE, `${JSON.stringify(store, null, 2)}\n`, 'utf8');
+          }
+
+          results.push({
+            id: entry.id,
+            kept: outcome.kept,
+            cause: outcome.cause,
+            detail: outcome.detail,
+            seconds,
+            calls,
+          });
+          writeFileSync(
+            REPORT_FILE,
+            `${JSON.stringify(reportFrom(results, new Date().toISOString()), null, 2)}\n`,
+            'utf8',
+          );
+
+          process.stdout.write(
+            `${entry.id} → ${world.id} ${outcome.kept ? 'uloženo' : `zahozeno (${outcome.cause ?? '—'})`} · ${String(Math.round(seconds))} s · ${String(calls)} volání` +
+              `${outcome.detail === null ? '' : `\n   ${outcome.detail.slice(0, 160)}`}\n`,
           );
         }
       } finally {
