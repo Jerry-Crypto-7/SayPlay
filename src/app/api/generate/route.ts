@@ -59,7 +59,7 @@ import {
   logStickyFault as logStickyForRoute,
 } from '../../../server/public-faults';
 import { killState } from '../../../server/kill-switch';
-import { callerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '../../../server/rate-limit';
+import { callerKey, trustedCallerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '../../../server/rate-limit';
 import { DEFAULT_CAP_USD, processSpendCap, type RefusalReason } from '../../../server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '../../../server/upstream';
 import { acquireSlot, releaseSlot, slotsDetail } from '../worldstream/sessions/route';
@@ -473,38 +473,39 @@ export async function POST(request: Request): Promise<Response> {
      * Odůvodnění čísel i toho, proč je mez na proces, je
      * v `src/server/rate-limit.ts`.
      *
-     * ## Proč `callerKey()` a ne `trustedCallerKey()` — změřeno 6. 9. 2026
+     * ## Proč `trustedCallerKey() ?? callerKey()` — změřeno 6. 9. 2026
      *
-     * ⚠ **Tohle je dnes jediná mez téhle cesty, a přesto se klíč NEPŘEPÍNÁ.**
-     * Od `T29-e2egeneratedead` propouští strop utrácení rezervaci za nula
-     * dolarů vždycky (naměřeno 1000 z 1000 proti `capUsd: 0`), což je záměr:
-     * volání zdarma nemá co utratit. Následek ale je, že větev bez klíče
-     * výrobce nedrží žádná peněžní mez a zbývá jen tenhle strop — a ten se
-     * klíčuje z `x-forwarded-for`, tedy ze vstupu volajícího.
+     * ⚠ **Na téhle cestě je frekvence dnes prakticky jediná mez, takže na jejím
+     * klíči záleží víc než jinde.** Od `T29-e2egeneratedead` propouští strop
+     * utrácení rezervaci za nula dolarů bez knihy a bez dolarového soudu, což
+     * je záměr: volání zdarma nemá co utratit. Nad ní zůstává už jen strop
+     * souběhu (`acquireSlot('generate')`, dvě volání v letu) a — jen dokud
+     * `#seenCalls` z placených volání nepřeteče `callCap` — počet volání.
      *
-     * **Doktrína `sessions/route.ts` se sem přenesla a NEPLATÍ pro přepnutí,
-     * ze dvou měřených důvodů:**
+     * **Klíč je proto důvěryhodný konec řetězu, a `callerKey()` je jen pád**
+     * (`T29-freeunbounded`). Předchozí podoba tohohle bloku tvrdila, že
+     * spoofovatelný klíč je vědomá cena, protože „vrací útočníka nanejvýš tam,
+     * kde by byl bez meze". **Blokující nález nezávislé revize to vyvrátil
+     * spuštěním:** platí to o útočníkovi, ne o oběti — první položka
+     * `x-forwarded-for` je vstup volajícího, takže padesát požadavků
+     * s `x-forwarded-for: <oběť>, <útočník>` (nečitelné tělo, žádná emise)
+     * umlčí porotce na deset sekund za cenu 5 req/s. Naměřená cena opravy:
+     * **0 obrácených asercí ze 686**.
      *
-     * 1. Cizí klíč je zbraň jen tam, kde míří na **cizí stav**. U kvóty relací
-     *    míří (`T16-evictkill`, 5 z 5). Tady ne: obě věci klíčované volajícím
-     *    — okno frekvence a čítač rozečtených těl (`src/http/body.ts`) — jsou
-     *    přihrádky bez cizího obsahu, takže podvržený klíč vrací útočníka
-     *    nanejvýš tam, kde by byl **bez** téhle meze.
-     * 2. `trustedCallerKey()` vrací mimo Vercel vždycky `null` a s vypnutým
-     *    přepínačem systémových proměnných i na něm. Náhrada by tedy svedla
-     *    všechny volající do **jedné** přihrádky, tedy zpátky na strop na
-     *    dveře — a ten je měřeně horší než žádný: 5,1 req/s zavře dveře všem
-     *    místo naměřených ~66 req/s jednomu (blokující nález 4. 9. 2026).
+     * **Pád na `callerKey()` je nutný, ne opomenutí:** `trustedCallerKey()`
+     * vrací mimo Vercel vždycky `null`, a bez pádu by se všichni volající
+     * svedli do jedné přihrádky, tedy zpátky na strop na dveře — měřeně horší
+     * než žádný (5,1 req/s zavře dveře všem místo ~66 req/s jednomu).
      *
-     * **Zbývá tedy, co tahle mez nedrží, a musí se to číst jako napsané:**
-     * rotace hlavičky dá útočníkovi novou přihrádku a s ní 40 req/s na
-     * instanci. Cena je **CPU téhle instance**, ne peníze ani data — korpus je
-     * memoizovaný a placená větev má nad sebou vlastní strop. Pin je
-     * v `route.test.ts`, test `jinou hlavičkou dostane týž volající druhou
-     * přihrádku`; kdo tu cenu chce zavřít, musí přinést zdroj, který volající
-     * nepíše, a přepsat doktrínu na obou místech dřív než ten test.
+     * **Co tahle mez ani po opravě nedrží, a musí se to číst jako napsané:**
+     * mimo platformu (a na ní s vypnutým přepínačem systémových proměnných)
+     * je klíč dál vstup volajícího — rotace hlavičky tam dá nové přihrádky a
+     * dovede jednoho útočníka až na strop instance, tedy k 429 pro všechny.
+     * Cena je **CPU téhle instance**, ne peníze ani data: korpus je
+     * memoizovaný, offline větev nikam nezapisuje a placená větev má nad sebou
+     * vlastní stropy. Piny jsou v `route.test.ts`, testy o přihrádkách.
      */
-    const slot = takeRateSlot('generate', callerKey(request));
+    const slot = takeRateSlot('generate', trustedCallerKey(request) ?? callerKey(request));
     if (!slot.allowed) {
       logRateLimited('generate', requestId, rateLimitCode(slot), `${String(slot.count)} in window`);
       return rateLimitedResponse(requestId, slot);

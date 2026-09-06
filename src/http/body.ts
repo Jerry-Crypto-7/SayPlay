@@ -30,7 +30,7 @@
  * hashovaného stavu z něj nevstupuje nic.
  */
 
-import { UNIDENTIFIED_CALLER, callerKey } from '../server/rate-limit';
+import { UNIDENTIFIED_CALLER, callerKey, trustedCallerKey } from '../server/rate-limit';
 
 /**
  * Strop těla požadavku.
@@ -280,7 +280,18 @@ export async function readBody(request: Request, deadlineMs = BODY_DEADLINE_MS):
   if (reads.bufferedBytes >= MAX_BUFFERED_BODY_BYTES)
     return { ok: false, reason: 'BUSY', scope: 'instance' };
 
-  const caller = callerKey(request);
+  // **Klíč je důvěryhodný konec řetězu, `callerKey()` je jen pád** — blokující
+  // nález nezávislé revize 6. 9. 2026 (`T29-freeunbounded`). Tenhle čítač nemá
+  // v klíči jméno dveří, takže je to nejlevnější páka v celém provozu: čtyři
+  // pomalá těla poslaná pod adresou oběti jí zavřou `generate`, `edit`, `emit`
+  // i `sessions` naráz, a to na celý `BODY_DEADLINE_MS`, za necelý požadavek
+  // za sekundu. Dokud se klíčovalo `callerKey()`, byla ta adresa vstup
+  // volajícího (první položka `x-forwarded-for`), tedy volba oběti.
+  //
+  // Mimo platformu vrací `trustedCallerKey()` `null` a pádem se vrací staré
+  // chování; bez toho pádu by všichni volající spadli do jedné přihrádky, což
+  // je měřeně horší než žádná mez (hlavička `rate-limit.ts`).
+  const caller = trustedCallerKey(request) ?? callerKey(request);
   // **Nerozeznaný volající má vlastní strop a vlastní sdělení.** V jednom
   // kbelíku se nedá říct „posíláš jich moc ty" — je to tvrzení o volajícím,
   // který za naplněný kbelík nemusí moci — takže odmítnutí je `instance`.

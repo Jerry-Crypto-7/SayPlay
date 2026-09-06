@@ -111,7 +111,7 @@ import type { PartPatch } from '../../../ir/revision';
 import { migrateWorldDoc, type WorldDoc } from '../../../ir/worlddoc';
 import { emitPatch, frozenGrammar, frozenPrompt, type ClientFailure } from '../../../model/client';
 import { killState } from '../../../server/kill-switch';
-import { callerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '../../../server/rate-limit';
+import { callerKey, trustedCallerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '../../../server/rate-limit';
 import { buildEditRequest } from '../../../model/edit-prompt';
 import { withRequest } from '../../../obs/trace';
 import {
@@ -252,7 +252,7 @@ export async function POST(request: Request): Promise<Response> {
      * nenaplní. Odůvodnění čísel i toho, proč je mez na proces, je
      * v `src/server/rate-limit.ts`.
      */
-    const slot = takeRateSlot('edit', callerKey(request));
+    const slot = takeRateSlot('edit', trustedCallerKey(request) ?? callerKey(request));
     if (!slot.allowed) {
       logRateLimited('edit', requestId, rateLimitCode(slot), `${String(slot.count)} in window`);
       return rateLimitedResponse(requestId, slot);

@@ -48,6 +48,7 @@ import { killState } from '@/server/kill-switch';
 import { logRateLimited } from '@/server/public-faults';
 import {
   callerKey,
+  trustedCallerKey,
   rateLimitCode,
   rateLimitedResponse,
   takeRateSlot,
@@ -88,7 +89,7 @@ export async function POST(
    * opakování téhle práce. Brána je proto tady, ne u placení.
    */
   const requestId = randomUUID();
-  const slot = takeRateSlot('commit', callerKey(request));
+  const slot = takeRateSlot('commit', trustedCallerKey(request) ?? callerKey(request));
   if (!slot.allowed) {
     logRateLimited(
       'worldstream/commit',

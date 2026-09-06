@@ -53,7 +53,7 @@ import { withRequest } from '@/obs/trace';
 import { killState } from '@/server/kill-switch';
 import { moderatePrompt } from '@/server/moderation';
 import { logRateLimited } from '@/server/public-faults';
-import { callerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '@/server/rate-limit';
+import { callerKey, trustedCallerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '@/server/rate-limit';
 import { SpendRefusalError } from '@/server/spend-cap';
 import { getSession, putChange, SESSION_FAULTS } from '@/worldstream/sessions';
 
@@ -133,7 +133,7 @@ export async function createChange(
     // Strop na frekvenci, hned za vypínačem a před čtením těla. Tyhle dveře
     // stojí navíc placené volání, takže čítač souběhu níž zůstává — frekvence
     // a souběh měří dvě různé věci a jedna druhou nenahradí.
-    const slot = takeRateSlot('changes', callerKey(request));
+    const slot = takeRateSlot('changes', trustedCallerKey(request) ?? callerKey(request));
     if (!slot.allowed) {
       logRateLimited(
         'worldstream/changes',

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   BODY_DEADLINE_MS,
@@ -19,7 +19,10 @@ import {
  * klient, kvůli kterému obě meze na souběh vznikly: hlavičky odešly, tělo
  * chodí po kusech nebo vůbec, a slot je obsazený až do deadlinu.
  */
-function pushableRequest(caller?: string): {
+function pushableRequest(
+  caller?: string,
+  platform?: string,
+): {
   readonly request: Request;
   readonly push: (bytes: number) => void;
   readonly finish: () => void;
@@ -39,7 +42,18 @@ function pushableRequest(caller?: string): {
   const request = new Request('http://worldsmith.test/api/edit', {
     method: 'POST',
     body,
-    ...(caller === undefined ? {} : { headers: { 'x-forwarded-for': caller } }),
+    ...(caller === undefined
+      ? {}
+      : {
+          headers: {
+            'x-forwarded-for': caller,
+            // **Platformní hlavička se posílá vždycky, a je to bezpečné.**
+            // `trustedCallerKey()` ji čte jedině při `VERCEL=1`; bez toho
+            // je to obyčejná hlavička, které nikdo nevěří, takže všechny
+            // ostatní případy měří dál pád na `callerKey()`.
+            'x-vercel-forwarded-for': platform ?? caller,
+          },
+        }),
     // Node vyžaduje u proudového těla `duplex`; v typech `RequestInit` není.
     duplex: 'half',
   } as RequestInit & { duplex: 'half' });
@@ -117,6 +131,63 @@ describe('strop na počet souběžných čtení jednoho volajícího', () => {
     expect(openBodyReads()).toBe(0);
   });
 
+
+  /**
+   * **Na platformě nevyčerpá útočník čtecí sloty oběti** — blokující nález
+   * nezávislé revize 6. 9. 2026, `T29-freeunbounded`.
+   *
+   * Tenhle čítač je klíčovaný **bez jména dveří**, takže je levnější než strop
+   * frekvence a míří přes všechny dveře naráz: čtyři pomalá těla poslaná pod
+   * adresou oběti jí do 6. 9. 2026 zavřela `generate`, `edit`, `emit`
+   * i `sessions` současně, a to na celý `BODY_DEADLINE_MS`. Cena útoku byla
+   * necelý požadavek za sekundu.
+   *
+   * Klíč proto bere `trustedCallerKey(request) ?? callerKey(request)`, tedy
+   * totéž co sedmero stropů frekvence. Mimo platformu se pádem vrací staré
+   * chování — jinou mez tam postavit nejde a měří ji zbytek téhle sady.
+   */
+  it('na platformě sežere útočník s hlavičkou oběti svoje vlastní sloty', async () => {
+    const OBĚŤ = '198.51.100.4';
+    const ÚTOČNÍK = '203.0.113.99';
+    vi.stubEnv('VERCEL', '1');
+
+    // **Úklid patří do `finally`, ne na konec těla.** Kdyby zčervenala
+    // kterákoli aserce níž, zůstalo by `VERCEL=1` nastavené a položilo by to
+    // další případy v tomhle souboru — naměřeno 6. 9. 2026 při mutaci klíče:
+    // jeden mutant obrátil PĚT testů místo jednoho a čtyři z nich se sem
+    // rozlily odsud.
+    const held = Array.from({ length: MAX_CONCURRENT_BODY_READS_PER_CALLER }, () =>
+      pushableRequest(`${OBĚŤ}, ${ÚTOČNÍK}`, ÚTOČNÍK),
+    );
+    const pending = held.map((h) => readBody(h.request, 60_000));
+    try {
+      expect(openBodyReads()).toBe(MAX_CONCURRENT_BODY_READS_PER_CALLER);
+
+      // Pátý útočníkův požadavek se odmítne — sloty došly JEMU.
+      const další = pushableRequest(`${OBĚŤ}, ${ÚTOČNÍK}`, ÚTOČNÍK);
+      expect(await readBody(další.request)).toEqual({ ok: false, reason: 'BUSY', scope: 'caller' });
+
+      // A oběť projde, protože do jejího kbelíku útočník nedosáhl.
+      const oběti = pushableRequest(OBĚŤ, OBĚŤ);
+      const čtení = readBody(oběti.request, 60_000);
+      expect(
+        openBodyReads(),
+        'oběti se slot nedal — klíč se přestal brát z důvěryhodného konce řetězu',
+      ).toBe(MAX_CONCURRENT_BODY_READS_PER_CALLER + 1);
+
+      oběti.finish();
+      await čtení;
+    } finally {
+      // **I držená čtení se zavírají tady.** Kdyby zůstala otevřená, visí na
+      // `globalThis` a položí každý další případ v souboru hláškou „čtení
+      // zůstalo otevřené" — naměřeno 6. 9. 2026: mutant klíče obrátil ŠEST
+      // testů místo jednoho a pět z nich se rozlilo odsud.
+      for (const h of held) h.finish();
+      await Promise.all(pending);
+      vi.unstubAllEnvs();
+    }
+    expect(openBodyReads()).toBe(0);
+  });
   it('plný volající NEZAVŘE dveře nikomu jinému', async () => {
     // **Tohle je celý důvod, proč je klíč volající.** Do 4. 9. 2026 tu byl
     // jeden čítač na proces: čtyři mlčící spojení by tehdy vzala slot i tomu,

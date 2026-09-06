@@ -364,7 +364,7 @@ export async function POST(request: Request): Promise<Response> {
     // Strop na frekvenci, hned za vypínačem a před čtením těla. Tyhle dveře
     // stojí navíc placená volání, takže čítač souběhu níž zůstává — frekvence
     // a souběh měří dvě různé věci a jedna druhou nenahradí.
-    const slot = takeRateSlot('sessions', callerKey(request));
+    const slot = takeRateSlot('sessions', trustedCallerKey(request) ?? callerKey(request));
     if (!slot.allowed) {
       logRateLimited(
         'worldstream/sessions',
@@ -465,11 +465,21 @@ export async function POST(request: Request): Promise<Response> {
     // do jednoho kbelíku a strop 64 by šel naplnit z jedné smyčky.
     //
     // ⚠ **Je to JINÝ klíč než ten pár řádků výš, a od `T16-trustedkey` to tak
-    // má být.** Strop frekvence bere `callerKey()`, tedy vstup volajícího;
-    // podvrhnout ho tam nic nezískává (tabulka v hlavičce `rate-limit.ts`).
-    // Kvóta bere `trustedCallerKey()`, protože tady je cizí klíč **zbraň**:
-    // jedna relace vložená do kbelíku oběti z něj udělá největší kbelík
-    // a přetečení pak sáhne po oběti (naměřeno 5 z 5, `T16-evictkill`).
+    // má být.** Kvóta bere `trustedCallerKey()` **holý**, protože tady je cizí
+    // klíč zbraň: jedna relace vložená do kbelíku oběti z něj udělá největší
+    // kbelík a přetečení pak sáhne po oběti (naměřeno 5 z 5, `T16-evictkill`).
+    // Strop frekvence bere od `T29-freeunbounded` (6. 9. 2026) **týž klíč
+    // s pádem** — `trustedCallerKey(request) ?? callerKey(request)` — takže se
+    // liší jen v tom, co dělají, když důvěryhodný konec řetězu není: kvóta se
+    // vypne, frekvence spadne na vstup volajícího a platí dál.
+    //
+    // ⚠ **Do 6. 9. 2026 tu stálo „strop frekvence bere `callerKey()`,
+    // podvrhnout ho tam nic nezískává" a byl to blokující nález nezávislé
+    // revize.** Podvrhnout ho získává **cizí kbelík**: první položka
+    // `x-forwarded-for` je vstup volajícího, takže padesát požadavků
+    // s hlavičkou oběti umlčí porotce na deset sekund. Celý rozpad je
+    // v hlavičce `rate-limit.ts`; pin je `útočník s hlavičkou oběti jí na
+    // nasazení požadavek NEODRAZÍ`.
     //
     // ⚠ **Bez důvěryhodného konce řetězu je kvóta VYPNUTÁ, ne přísnější.**
     // `null` → sentinel → `openSession()` dá relaci vlastní kbelík, což je

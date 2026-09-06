@@ -1505,15 +1505,17 @@ describe('strop na frekvenci dorazí až ke dveřím', () => {
   });
 
   /**
-   * **Dvě různé hodnoty `x-forwarded-for` od jednoho volajícího dostanou dvě
-   * přihrádky** — pin doktríny, ne poplach (`T29-freeunbounded`).
+   * **Mimo platformu dostanou dvě různé hodnoty `x-forwarded-for` od jednoho
+   * volajícího dvě přihrádky** — pin **záchranné cesty**, ne doktríny
+   * (`T29-freeunbounded`).
    *
-   * Klíč stropu frekvence skládá `callerKey()`, tedy **vstup volajícího**, a je
-   * to vědomá volba měřená 4. 9. 2026 (tabulka v hlavičce `rate-limit.ts`).
-   * Kdo hlavičku rotuje, dostane novou přihrádku a s ní dalších 50 požadavků
-   * za okno. Tenhle test to **potvrzuje**, aby se ta cena nedala zavřít mlčky
-   * ani mlčky rozšířit: až ji někdo bude chtít zavřít, musí přepsat doktrínu
-   * na obou místech a teprve pak tenhle test, ne obráceně.
+   * Klíč skládá `trustedCallerKey(request) ?? callerKey(request)`. Bez
+   * `VERCEL=1` je levá strana `null`, takže se klíčuje ze vstupu volajícího a
+   * rotace hlavičky dá nové přihrádky. **Ten pád je nutný, ne opomenutí:** bez
+   * něj by mimo platformu spadli všichni volající do jedné přihrádky, což je
+   * měřeně horší než žádná mez (hlavička `rate-limit.ts`). Test proto pinuje
+   * pád samotný — kdyby zmizel, tenhle případ zčervená dřív, než se to pozná
+   * na nasazení. Uzavřenou stranu měří test hned za ním.
    *
    * ⚠ **Okno se plní PŘES route, ne čítačem.** Sousední test výš volá
    * `takeRateSlot()` napřímo, což měří zapojení meze, ale **klíč nezkouší
@@ -1563,6 +1565,59 @@ describe('strop na frekvenci dorazí až ke dveřím', () => {
     } finally {
       hodiny.mockRestore();
       resetRateWindows();
+    }
+  });
+
+  /**
+   * **Na platformě si útočník cizí přihrádku nevybere** — druhá strana téhož
+   * klíče a uzavření blokujícího nálezu nezávislé revize z 6. 9. 2026.
+   *
+   * S `VERCEL=1` čte `trustedCallerKey()` `x-vercel-forwarded-for`, tedy
+   * hlavičku, kterou píše edge platformy a volající do ní nemluví. Útočník
+   * proto naplní **svou** přihrádku, i když do `x-forwarded-for` napíše první
+   * položkou adresu oběti — a oběť projde.
+   *
+   * ⚠ **Bez tohohle testu je oprava neměřená v tom jediném prostředí, kde na
+   * ní záleží.** Demo běží na platformě; sada běží bez ní, takže všech 46
+   * ostatních případů měří **záchrannou cestu**.
+   */
+  it('na platformě naplní útočník s hlavičkou oběti svou vlastní přihrádku', async () => {
+    const OBĚŤ = '198.51.100.4';
+    const ÚTOČNÍK = '203.0.113.99';
+
+    vi.stubEnv('VERCEL', '1');
+    const uprostředKbelíku = 1_770_000_000_000 + RATE_WINDOW_MS / 2;
+    const hodiny = vi.spyOn(Date, 'now').mockReturnValue(uprostředKbelíku);
+    const { POST } = await import('../route');
+    const nečitelný = (forwarded: string, platforma: string): Request =>
+      new Request('http://127.0.0.1/api/generate', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-forwarded-for': forwarded,
+          'x-vercel-forwarded-for': platforma,
+        },
+        body: '{ not json',
+      });
+
+    try {
+      for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) {
+        const plnící = await POST(nečitelný(`${OBĚŤ}, ${ÚTOČNÍK}`, ÚTOČNÍK));
+        expect(plnící.status, `plnící požadavek ${String(taken)} nedošel ke slotu`).toBe(400);
+      }
+
+      const útočníkovi = await POST(nečitelný(`${OBĚŤ}, ${ÚTOČNÍK}`, ÚTOČNÍK));
+      expect(útočníkovi.status, 'útočníkovi se okno nenaplnilo — pin neměří nic').toBe(429);
+
+      const obětí = await POST(nečitelný(OBĚŤ, OBĚŤ));
+      expect(
+        obětí.status,
+        'útok míří zpátky na oběť — klíč se přestal brát z důvěryhodného konce řetězu',
+      ).toBe(400);
+    } finally {
+      hodiny.mockRestore();
+      resetRateWindows();
+      vi.unstubAllEnvs();
     }
   });
 });

@@ -27,8 +27,29 @@
  * | koho to odmítne | nikoho | **všechny** | toho, kdo střílí |
  *
  * Podvržený klíč tedy útočníka vrací nanejvýš tam, kde byl **bez** téhle meze,
- * kdežto sdílený čítač ho posouval o řád dopředu. Klíč na volajícího proto
- * nemusí být důvěryhodný, aby byl lepší; musí být jen levný.
+ * kdežto sdílený čítač ho posouval o řád dopředu.
+ *
+ * ⚠ **Věta „klíč nemusí být důvěryhodný, aby byl lepší" tady stála do
+ * 6. 9. 2026 a byla to lež o polovině účastníků** — blokující nález nezávislé
+ * revize, potvrzený spuštěním. Platí **o útočníkovi** a neplatí **o oběti**:
+ * `callerKey()` čte první položku `x-forwarded-for`, což je hodnota, kterou
+ * píše volající, takže si útočník nevybírá svůj kbelík — vybírá **cizí**.
+ * Padesát požadavků s `x-forwarded-for: <oběť>, <útočník>` za deset sekund
+ * (nečitelné tělo, žádná emise) umlčí porotce na dalších deset, bez
+ * přihlášení a bez peněz.
+ *
+ * **Proto všech sedmero veřejných dveří klíčuje `trustedCallerKey(request) ??
+ * callerKey(request)`** (`T29-freeunbounded`). Na platformě si klíč vybrat
+ * nejde; mimo ni je to **beze změny** — `null` padá zpátky na starý klíč,
+ * takže se nikde nezhroutí všichni volající do jednoho kbelíku, což je ta
+ * horší polovina staré doktríny a **platí dál** (sloupec „Strop na dveře").
+ * Naměřená cena přepnutí: **0 obrácených asercí ze 686**; jediný pin, který
+ * zčervenal, tvrdil právě tu zavřenou cenu (`sessions.test.ts`).
+ *
+ * ⚠ **Co zbývá mimo platformu, a musí se to číst jako napsané:** tam je klíč
+ * dál vstup volajícího, útok na cizí kbelík dál vyjde a rotace hlavičky dál
+ * dává nové kbelíky. Uzavřít to nejde bez zdroje, do kterého volající nemluví
+ * (doktrína u `trustedCallerKey()`), a nasazení dema na platformě běží.
  *
  * ## Proč je stav v PROCESU, ačkoli plán psal sdílený obchod
  *
@@ -309,14 +330,16 @@ export function callerKey(request: Request): string {
  * | | `callerKey()` | `trustedCallerKey()` |
  * |---|---|---|
  * | čte | první položku XFF, tedy vstup volajícího | konec řetězu, který píše proxy |
- * | co s ním jde udělat | vrátit se tam, kde bych byl bez meze | **nic** |
- * | co chrání | frekvenci dveří | kvótu relací a volbu oběti |
- * | mimo Vercel | sdílený kbelík, mez platí dál | `null`, tedy kvóta vypnutá |
+ * | co s ním jde udělat | **vybrat si cizí kbelík** a odmítnout z něj oběť | nic |
+ * | kde se dnes používá | **jen jako pád**, když důvěryhodný konec neexistuje | kvóta relací, volba oběti a klíč všech sedmi stropů frekvence |
+ * | mimo Vercel | sdílený kbelík, mez platí dál | `null`, tedy pád na levý sloupec |
  *
- * U frekvence je podvržený klíč **levný a neškodný**: vrací útočníka nanejvýš
- * tam, kde by byl bez meze. U kvóty je zbraň — cizí klíč tam míří na cizí
- * relace a zavře porotci svět (`T16-evictkill`, naměřeno 5 z 5). Proto je
- * důvěryhodnost potřeba přesně na jedné z těch dvou cest.
+ * ⚠ **Levý sloupec býval do 6. 9. 2026 klíčem stropu frekvence a byla to
+ * měřená vada, ne volba** (`T29-freeunbounded`, blokující nález nezávislé
+ * revize). „Podvržený klíč je levný a neškodný" platí o útočníkovi a neplatí
+ * o oběti: první položka XFF je vstup volajícího, takže se jím míří na cizí
+ * kbelík. Dnes je proto `callerKey()` **záchranná cesta**, ne volba —
+ * a rozdíl mezi sloupci je pořád ten samý, jen se levý používá jinde.
  *
  *
  * ## Jediný zdroj: hlavička, kterou píše platforma

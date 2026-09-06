@@ -1117,70 +1117,58 @@ describe('strop na frekvenci dorazí až k zakládání relace', () => {
     expect(after.status, 'čítač souběhu zůstal po odmítnutí obsazený').toBe(202);
   });
 
-  it('útočník s hlavičkou oběti jí přes tyhle dveře odrazí požadavek na 429', async () => {
+  it('útočník s hlavičkou oběti jí na nasazení požadavek NEODRAZÍ', async () => {
     /**
-     * **Pin doktríny „podvržený klíč frekvence je vědomá cena"**
-     * (`src/worldstream/sessions.ts`, tabulka v hlavičce `rate-limit.ts`).
+     * **Pin doktríny „klíč frekvence bere důvěryhodný konec řetězu, když
+     * existuje"** (hlavička `rate-limit.ts`, `T29-freeunbounded`, 6. 9. 2026).
      *
-     * ⚠ **Předchozí podoba tohohle pinu byla měřeně dekorativní a stála
-     * v `rate-limit.test.ts`.** Volala `callerKey()` a `takeRateSlot()`
-     * napřímo, takže se route vůbec nedotkla: mutace `sessions/route.ts` na
-     * `takeRateSlot('sessions', trustedCallerKey(request) ?? callerKey(request))`
-     * — tedy ta cena zavřená na nasazené cestě — nechala celou sadu zelenou
-     * (naměřeno 5. 9. 2026, 828/828 včetně toho pinu). Věta „až ji někdo
-     * zavře, tenhle test zčervená" byla proto nepravdivá.
+     * ⚠ **Tenhle test tvrdil do 6. 9. 2026 PŘESNÝ OPAK a jeho vlastní hláška
+     * říkala „přepiš doktrínu, nemaž tenhle test". Tak se to stalo.** Doktrína
+     * zněla „podvržený klíč vrací útočníka nanejvýš tam, kde by byl bez meze",
+     * což je pravda **o útočníkovi** a lež o oběti: `callerKey()` čte první
+     * položku `x-forwarded-for`, tedy hodnotu, kterou píše volající, takže
+     * útočník si nevybírá jen svůj kbelík — vybírá **cizí**. Padesát požadavků
+     * za deset sekund tím umlčelo porotce, bez přihlášení a bez peněz
+     * (naměřila nezávislá revize 6. 9. 2026, `VERDICT: blocking`).
      *
-     * **Proto se okno plní PŘES route, ne čítačem.** Klíč si musí odvodit
-     * route sama; jakmile ho odvodí z něčeho, do čeho volající nemluví,
-     * útočníkových padesát požadavků skončí v jeho vlastním kbelíku a oběť
-     * projde — tedy červená.
+     * **Oprava je `trustedCallerKey(request) ?? callerKey(request)` na všech
+     * sedmerých veřejných dveřích.** Mimo Vercel je to beze změny (`null`
+     * → dřívější chování), takže se strop frekvence nikde nezhroutí do
+     * jediného kbelíku — to byla druhá půlka staré doktríny a ta platí dál.
+     * Naměřená cena přepnutí: **0 obrácených asercí ze 686**, jen tenhle pin,
+     * který tvrdil zavřenou cenu.
      *
-     * **A proto `VERCEL=1`.** Bez něj vrací `trustedCallerKey()` `null`
-     * i po opravě a spadne se zpátky na `callerKey()`, takže by rozdíl nebyl
-     * vidět. Tady se soudí nasazená cesta, ne notebook.
-     *
-     * Plní se **nečitelným tělem**: slot frekvence se bere před čtením těla
-     * a **počítá se i odmítnutý požadavek**, takže padesát 400 naplní okno
-     * a nezaloží ani jednu relaci.
+     * Test proto jede **oběma směry**: s `VERCEL=1` míří útok na útočníka,
+     * bez něj zůstává stará cena, protože důvěryhodný konec řetězu neexistuje.
      */
     const OBĚŤ = '198.51.100.4';
     const ÚTOČNÍK = '203.0.113.99';
 
-    vi.stubEnv('VERCEL', '1');
-    resetRateWindows();
-
     // ⚠ **Hodiny se zamrazí, a je to oprava naměřené vratkosti, ne ozdoba.**
     // Okno je pevný desetivteřinový kbelík ukotvený na absolutním čase. Když
     // těch padesát jedna volání (~18 ms) protne hranici kbelíku, čítač se
-    // uprostřed smyčky vynuluje a oběť dostane 400 místo 429 — nezávislá
-    // revize to 5. 9. 2026 spočítala na ~1 běh z 550. Náhodná červená na
-    // bezpečnostním pinu, jehož vlastní hláška říká „nemaž tenhle test", je
-    // přesně to, po čem se takový test smaže. Zmrazený čas leží uprostřed
-    // kbelíku, takže se hranice neprotne ani jednou.
+    // uprostřed smyčky vynuluje a oběť dostane 400 z jiného důvodu, než se
+    // tady soudí — nezávislá revize to 5. 9. 2026 spočítala na ~1 běh z 550.
+    // Zmrazený čas leží uprostřed kbelíku, takže se hranice neprotne ani jednou.
     const uprostředKbelíku = 1_770_000_000_000 + RATE_WINDOW_MS / 2;
     const hodiny = vi.spyOn(Date, 'now').mockReturnValue(uprostředKbelíku);
 
-    try {
-      // Útočník mluví pod svou adresou, ale do `x-forwarded-for` píše první
-      // položkou adresu oběti.
-      for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) {
-        const plnící = new Request('http://127.0.0.1/api/worldstream/sessions', {
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json',
-            'x-forwarded-for': `${OBĚŤ}, ${ÚTOČNÍK}`,
-            'x-vercel-forwarded-for': ÚTOČNÍK,
-          },
-          body: '{ not json',
-        });
-        const odpověď = await createSession(plnící);
-        expect(odpověď.status, `plnící požadavek ${taken} nedošel ke slotu`).toBe(400);
-      }
-
-      // Oběť posílá svůj úplně první požadavek — a taky s nečitelným tělem,
-      // aby ani červená větev nezaložila relaci. Strop frekvence se soudí
-      // dřív než tělo, takže 429 přebíjí 400.
-      const oběti = new Request('http://127.0.0.1/api/worldstream/sessions', {
+    // Útočník mluví pod svou adresou, ale do `x-forwarded-for` píše první
+    // položkou adresu oběti. Plní se **nečitelným tělem**: slot frekvence se
+    // bere před čtením těla a počítá se i odmítnutý požadavek, takže padesát
+    // 400 naplní okno a nezaloží ani jednu relaci.
+    const útok = (): Request =>
+      new Request('http://127.0.0.1/api/worldstream/sessions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-forwarded-for': `${OBĚŤ}, ${ÚTOČNÍK}`,
+          'x-vercel-forwarded-for': ÚTOČNÍK,
+        },
+        body: '{ not json',
+      });
+    const oběti = (): Request =>
+      new Request('http://127.0.0.1/api/worldstream/sessions', {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
@@ -1189,13 +1177,38 @@ describe('strop na frekvenci dorazí až k zakládání relace', () => {
         },
         body: '{ not json',
       });
-      const verdikt = await createSession(oběti);
 
+    try {
+      vi.stubEnv('VERCEL', '1');
+      resetRateWindows();
+      for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) {
+        const odpověď = await createSession(útok());
+        expect(odpověď.status, `plnící požadavek ${String(taken)} nedošel ke slotu`).toBe(400);
+      }
+      const naVercelu = await createSession(oběti());
       expect(
-        verdikt.status,
-        'cena je zavřená — přepiš doktrínu v sessions.ts a v hlavičce rate-limit.ts, nemaž tenhle test',
+        naVercelu.status,
+        'útok míří zpátky na oběť — klíč frekvence se přestal brát z důvěryhodného konce řetězu',
+      ).toBe(400);
+
+      // **Druhý směr: bez platformy zůstává stará cena, a musí být vidět.**
+      // `trustedCallerKey()` vrací mimo Vercel `null`, takže se padá zpátky na
+      // `callerKey()` a útočník si kbelík zase vybírá. Je to horší strana, ale
+      // je to jediná, kterou lze mít bez zdroje, do kterého volající nemluví;
+      // kdyby ten pád zmizel, spadli by všichni volající do JEDNOHO kbelíku,
+      // což je měřeně horší než žádná mez (tabulka v hlavičce `rate-limit.ts`).
+      vi.unstubAllEnvs();
+      resetRateWindows();
+      for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) {
+        const odpověď = await createSession(útok());
+        expect(odpověď.status, `plnící požadavek ${String(taken)} nedošel ke slotu`).toBe(400);
+      }
+      const mimoVercel = await createSession(oběti());
+      expect(
+        mimoVercel.status,
+        'mimo Vercel se cena zavřela sama — buď přibyl důvěryhodný zdroj (napiš ho do doktríny), nebo se pád na callerKey() rozbil',
       ).toBe(429);
-      expect(((await verdikt.json()) as { error: { code: string } }).error.code).toBe(
+      expect(((await mimoVercel.json()) as { error: { code: string } }).error.code).toBe(
         'TOO_MANY_REQUESTS',
       );
     } finally {

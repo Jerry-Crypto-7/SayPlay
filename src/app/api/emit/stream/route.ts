@@ -173,7 +173,7 @@ import {
   logRateLimited,
   logStickyFault,
 } from '../../../../server/public-faults';
-import { callerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '../../../../server/rate-limit';
+import { callerKey, trustedCallerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '../../../../server/rate-limit';
 import { emissionSteps, type EmitPhase } from '../chain';
 import { readPromptId, replayDisabled } from '../route';
 
@@ -273,7 +273,7 @@ export async function POST(request: Request): Promise<Response> {
     // důvodu, kvůli kterému je před ním vypínač: za hlavičkami
     // `text/event-stream` je stav 200 u klienta a 429 se poslat nedá. Tyhle
     // dveře stojí navíc celý replay svědka, tedy nejdražší krok emise.
-    const slot = takeRateSlot('emit/stream', callerKey(request));
+    const slot = takeRateSlot('emit/stream', trustedCallerKey(request) ?? callerKey(request));
     if (!slot.allowed) {
       logRateLimited(
         'emit/stream',
