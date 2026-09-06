@@ -407,7 +407,28 @@ describe('klíč z důvěryhodného konce řetězu', () => {
       trustedCallerKey(požadavek({ 'x-vercel-forwarded-for': hlavička }), { VERCEL: '1' });
 
     expect(klíč(''), 'prázdná hlavička dala kbelík místo neznáma').toBeNull();
-    expect(klíč('   '), 'hlavička ze samých mezer dala kbelík místo neznáma').toBeNull();
+
+    // ⚠ **Případ `klíč('   ')` tu stál do 6. 9. 2026 a byl to TÝŽ případ**
+    // (`T16-trimdecor`, nález nezávislé revize). `Headers` normalizuje HTTP
+    // mezery, takže se hodnota ze samých mezer dostane do funkce jako prázdný
+    // řetězec — naměřeno: `'   '` → `''`, `'  1.2.3.4  '` → `'1.2.3.4'`.
+    // Aserce tedy pinovala normalizaci v Node, ne stráž v našem kódu, a číst
+    // se dala jako dvě vlastnosti místo jedné.
+    //
+    // **Nahrazuje ji vstup, který normalizací PROJDE a `.trim()` doopravdy
+    // zaměstná:** vnitřní mezeru za čárkou `Headers` nechává být (`'1.1.1.1,
+    // 2.2.2.2'` dorazí beze změny), takže poslední položka je ` 2.2.2.2`.
+    // Bez `.trim()` by z ní vznikl klíč s mezerou uvnitř, tedy jiný kbelík než
+    // pro tutéž adresu poslanou samotnou.
+    expect(klíč('1.1.1.1, 2.2.2.2'), 'mezera za čárkou zůstala v klíči').toBe('ip:2.2.2.2');
+    expect(klíč('1.1.1.1,	2.2.2.2'), 'tabulátor za čárkou zůstal v klíči').toBe('ip:2.2.2.2');
+    expect(klíč('1.1.1.1, 2.2.2.2'), 'týž volající skončil ve dvou kbelících').toBe(klíč('2.2.2.2'));
+
+    // ⚠ **Stráž `value === ''` se přes `Request` dá vyvolat JEDINĚ prázdnou
+    // hlavičkou, ne mezerami.** Poslední položka ze samých mezer neexistuje:
+    // koncové mezery celé hodnoty normalizace ustřihne (`'1.1.1.1,   '` → 
+    // `'1.1.1.1,'`). Kdo sem přidá další případ „samé mezery", ať to změří
+    // dřív, než napíše hlášku.
   });
 
   it('bez důvěryhodného zdroje je to `null`, ne odhad z hlavičky volajícího', () => {
