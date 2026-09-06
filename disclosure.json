@@ -2336,7 +2336,7 @@
         "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
       ],
       "attribution": "Anthropic, https://www.anthropic.com/legal/commercial-terms",
-      "reviewNote": "Model emisní cesty (src/model/prompt.ts, EMISSION_MODEL). Produkční endpoint je v režimu záznamu a živé volání neprovádí."
+      "reviewNote": "Od 6. 9. 2026 se NEVOLÁ a produktu se neúčastní. Do té chvíle stál v src/model/prompt.ts jako EMISSION_MODEL a proxy vracela pod tím jménem odpovědi gpt-5.6-sol; emisní cesta proto jmenuje ten model přímo. Položka zůstává, protože identifikátor je pořád v kódu — v testech a fixturách (evals/harness/**, evals/worldstream/__tests__/**, scripts/__tests__/**)."
     },
     {
       "name": "gemini-9-pro",
@@ -2378,7 +2378,7 @@
         "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
       ],
       "attribution": "OpenAI, https://openai.com/policies/business-terms",
-      "reviewNote": "Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je."
+      "reviewNote": "Model emisní cesty produktu (src/model/prompt.ts, EMISSION_MODEL). Hradí se předplatným Codexu, ne měřeným API klíčem: požadavek jde přes lokální claude-code-proxy, která mluví formátem Anthropic Messages, a po tokenech se neúčtuje nic. Jmenuje ho i měřicí harness (evals/harness/preflight.ts)."
     },
     {
       "name": "gpt-5.6-terra",

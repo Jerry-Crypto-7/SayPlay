@@ -94,14 +94,30 @@ export interface UpstreamRequest {
 }
 
 /**
- * Model, proti kterému P1 měří.
+ * **Model, který ty světy doopravdy píše, jménem, jakým se o něj žádá.**
  *
- * V Phase 3 se **nevolá** — `./client` běží v režimu záznamu proti
- * `evals/frozen/responses/`. Jméno je tu proto, že se zaznamenává do
- * požadavku, a záznam bez jména modelu by po HALT bráně nešlo srovnat s živým
- * během (T18).
+ * Je to `gpt-5.6-sol` od OpenAI, placený **předplatným Codexu** přes lokální
+ * `claude-code-proxy`, která mluví formátem Anthropic Messages. Žádný měřený
+ * klíč se nekupuje a po tokenech se neúčtuje nic — jediná mez, která kousne,
+ * je `WORLDSMITH_CALL_CAP`, tedy počet volání.
+ *
+ * ⛔ **Do 6. 9. 2026 tady stálo `claude-opus-5` a byla to nepravda, kterou
+ * měřidlo zapisovalo na disk.** Naměřeno z logu proxy: **53 z 53 volání**
+ * požádalo o `claude-opus-5`, proxy je poslala na `provider: codex`,
+ * `model: gpt-5.6-sol` — a odpověď vrátila **označenou jako `claude-opus-5`**.
+ * Archiv i `create-report.json` tedy zapisovaly jméno modelu, který se
+ * produktu neúčastní, a `RULES.md` §2 chce u každého modelu a API pravdivý
+ * zdroj, poskytovatele a licenci. Anthropic mezi backendy proxy není a Max
+ * plán není HTTP endpoint; serverová cesta produktu se na něj napojit neumí.
+ *
+ * **Alias se sem nesmí vrátit.** Hlídá to `__tests__/prompt.test.ts`, který
+ * odmítne jakékoli jméno tvaru `claude-*`, dokud platí rozhodnutí `G2` (a).
+ *
+ * Zmrazený korpus tím dotčený **není**: `evals/frozen/responses/` jsou
+ * syntetické odpovědi klíčované podle promptu, ne podle jména modelu, takže
+ * `./client` v režimu záznamu čte totéž co dřív.
  */
-export const EMISSION_MODEL = 'claude-opus-5';
+export const EMISSION_MODEL = 'gpt-5.6-sol';
 
 /**
  * Řádek, za kterým ve zprávě stojí příklad a nic jiného.

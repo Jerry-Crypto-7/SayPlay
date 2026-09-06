@@ -335,10 +335,10 @@ _Žádná položka._
 
 ### Modely — licence posouzené jednotlivě
 
-- **claude-opus-5** (komerční podmínky služby (Anthropic Commercial Terms)): Model emisní cesty (src/model/prompt.ts, EMISSION_MODEL). Produkční endpoint je v režimu záznamu a živé volání neprovádí.
+- **claude-opus-5** (komerční podmínky služby (Anthropic Commercial Terms)): Od 6. 9. 2026 se NEVOLÁ a produktu se neúčastní. Do té chvíle stál v src/model/prompt.ts jako EMISSION_MODEL a proxy vracela pod tím jménem odpovědi gpt-5.6-sol; emisní cesta proto jmenuje ten model přímo. Položka zůstává, protože identifikátor je pořád v kódu — v testech a fixturách (evals/harness/**, evals/worldstream/__tests__/**, scripts/__tests__/**).
 - **gpt-5.6** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
 - **gpt-5.6-mini** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
-- **gpt-5.6-sol** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
+- **gpt-5.6-sol** (komerční podmínky služby (OpenAI Business Terms)): Model emisní cesty produktu (src/model/prompt.ts, EMISSION_MODEL). Hradí se předplatným Codexu, ne měřeným API klíčem: požadavek jde přes lokální claude-code-proxy, která mluví formátem Anthropic Messages, a po tokenech se neúčtuje nic. Jmenuje ho i měřicí harness (evals/harness/preflight.ts).
 - **gpt-5.6-terra** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
 - **Qwen3-1.7B-q4f16_1-MLC** (Apache-2.0): Váhy modelu emisní cesty, které si prohlížeč stáhne za běhu (src/model/local/**, WebLLM). Nejsou v repozitáři ani v bundlu, proto to není položka kind: asset. Kvantizace q4f16_1, 979 MB. Sync je nechává být — z package-lock.json se váhy odvodit nedají.
 
