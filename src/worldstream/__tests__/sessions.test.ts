@@ -28,6 +28,7 @@ import {
   QUOTA_ENGAGES_AT,
   putChange,
   SESSION_FAULTS,
+  TERMINAL_SESSION_MS,
   watchedSessionCount,
 } from '../sessions';
 import type { PendingChange } from '@/model/worldstream-refine';
@@ -520,41 +521,79 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
   });
 
   /**
-   * **Relace, která už nikam nejde, nesmí držet kvótu svého volajícího**
-   * (P15 `T16-quotaselfengage` a `T16-idleforever`, přeměřeno 6. 9. 2026).
+   * **Doběhlá relace kvótu drží dál — jen minutu, ne hodinu** (P15
+   * `T16-idleforever` a `T16-quotaselfengage`, přepsáno 6. 9. 2026 po
+   * nezávislé revizi).
    *
-   * Doběhlé relace uklízí až `evictOverCap()`, a ta se rozjede teprve nad
-   * `MAX_LIVE_SESSIONS`. Pod tím stropem zůstávaly `failed` relace v registru
-   * a `callerHolds()` je počítal, takže osm padlých generací zamklo volajícímu
-   * vlastní kbelík — bez jediné relace, která by komukoli něco dodávala.
+   * ⚠ **Předchozí podoba téhle vlastnosti byla díra a je to naměřené.**
+   * Do `34e66df` se doběhlé relace z `callerHolds()` vyjímaly. Stálo to na
+   * předpokladu „relace dojede do fáze `world`, padlá je výjimka", jenže
+   * uvařený sklad se konzultuje **jedině bez klíče**
+   * (`sessions/route.ts`: `cloud === null ? chooseAuthored(…) : null`).
+   * S klíčem stačí vyčerpat strop utrácení nebo počkat na výpadek
+   * poskytovatele a padlá je zase každá relace: revize naměřila **500 z 500
+   * přijatých a všech 64 slotů v jedněch rukou**. Kvóta se tím nedala jen
+   * obejít, dala se **vypnout**.
    *
-   * ⚠ **Proč to jde měřit teprve teď.** Do `T46-routewire` (5. 9. 2026)
-   * skončila bez `.env` každá relace `failed`, takže tahle oprava kvótu
-   * vypínala úplně a čtyři route testy červenaly. Dnes se sáhne po uvařeném
-   * světě (naměřeno 6. 9. 2026: **11 světů ve skladu, každá věta dostane
-   * `nearest`, nikdy `null`**), relace dojede do fáze `world` a padlá je zase
-   * výjimka — takže vyjmout ji smí. Přeměřeno: **466/466 zelených.**
-   *
-   * Fáze `world` se tím **nedotýká schválně**: na ní drží páka z testu výš
-   * a zavírá ji klíč z důvěryhodného konce řetězu, ne stárnutí.
+   * Nová vlastnost tedy tvrdí obojí naráz a ani jedna půlka nesmí zmizet:
+   * osm padlých relací zamkne devátou (jinak jde kvóta vypnout), a po
+   * `TERMINAL_SESSION_MS` se zametou samy (jinak je odmítnutí trvalé, což
+   * byl celý `T16-idleforever`).
    */
-  it('doběhlé relace jednoho klíče nedrží jeho kvótu', () => {
+  it('osm doběhlých relací drží kvótu, dokud nezestárnou', () => {
     naPráh();
     for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
       admitted(`padlá-${i}`, T0 + i, 'ip:volající').session.fail('the model could not be reached');
     }
 
-    const další = ownedWorld('devátá', T0 + MAX_SESSIONS_PER_CALLER, 'ip:volající');
-    expect(další, 'osm doběhlých relací drží volajícímu vlastní kbelík').not.toBeNull();
+    expect(
+      ownedWorld('devátá', T0 + MAX_SESSIONS_PER_CALLER, 'ip:volající'),
+      'osm padlých relací kvótu nedrží — pak ji vyčerpaný strop utrácení vypne úplně',
+    ).toBeNull();
+  });
 
-    // A z druhé strany, aby to neznamenalo jen „kvóta nic nedělá": tytéž
-    // relace ve fázi `world` kbelík držet MUSÍ, jinak je kvóta vypnutá.
+  /**
+   * Druhá půlka téže vlastnosti: **to zamčení je dočasné**, jinak by stačilo
+   * osmkrát selhat a volající je odstavený na hodinu.
+   *
+   * ⚠ **Dvě zametení, ne jedno, a je to vlastnost `idleFor()`, ne kulisa.**
+   * `fail()` posune `sequence`, takže první zametení po pádu ještě jen
+   * překlopí razítko a vrátí `false`; minuta začíná běžet teprve od něj.
+   */
+  it('doběhlá relace kvótu pustí za minutu, ne za hodinu', () => {
+    naPráh();
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
+      admitted(`padlá-${i}`, T0 + i, 'ip:volající').session.fail('the model could not be reached');
+    }
+
+    // Zametení, které jen překlopí razítko na nové `sequence`.
+    expect(ownedWorld('překlopení', T0 + MAX_SESSIONS_PER_CALLER, 'ip:volající')).toBeNull();
+
+    const po = T0 + MAX_SESSIONS_PER_CALLER + TERMINAL_SESSION_MS + 1;
+    expect(
+      ownedWorld('po minutě', po, 'ip:volající'),
+      'padlé relace drží kbelík i po minutě — odmítnutí kvótou je zase trvalé',
+    ).not.toBeNull();
+  });
+
+  /**
+   * A protikus, aby se minuta nedala vydávat za obecné zkrácení stárnutí:
+   * **relace ve fázi `world` po minutě stojí dál.** Ta hodina patří porotci,
+   * který se do světa dívá; kdyby ji tahle oprava zkrátila, zavře mu svět pod
+   * rukama a zelená sada by to nepoznala.
+   */
+  it('živá relace minutou nezestárne, ta patří jen doběhlé', () => {
+    naPráh();
     for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
       admitted(`běžící-${i}`, T0 + i, 'ip:druhý');
     }
+
+    expect(ownedWorld('překlopení', T0 + MAX_SESSIONS_PER_CALLER, 'ip:druhý')).toBeNull();
+
+    const po = T0 + MAX_SESSIONS_PER_CALLER + TERMINAL_SESSION_MS + 1;
     expect(
-      ownedWorld('devátá-běžící', T0 + MAX_SESSIONS_PER_CALLER, 'ip:druhý'),
-      'kvóta nedrží ani nad běžícími relacemi — je vypnutá, ne opravená',
+      ownedWorld('po minutě', po, 'ip:druhý'),
+      'relace ve fázi world zestárla za minutu — porotci to zavře svět pod rukama',
     ).toBeNull();
   });
 

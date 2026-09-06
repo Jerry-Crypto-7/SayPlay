@@ -228,28 +228,38 @@ export const MAX_LIVE_SESSIONS = 64;
  * oběti kbelík plný i po třiceti dnech` — práh si podkládá `naPráh()`, a je to
  * část útoku, ne kulisa testu.
  *
- * ⚠ **Stárnutím se tahle páka nespravuje — a jedno ze dvou starých zamítnutí
- * padlo, tak ať se neopisuje dál.**
+ * ⚠ **Tuhle páku stárnutím nespravíš — ale kvótu samu drží od 6. 9. 2026
+ * právě stárnutí, a tenhle odstavec se dvakrát přepsal, tak ať se ta cesta
+ * neopisuje potřetí.**
  *
- * (a) Vyjmout `complete`/`failed` z `callerHolds()` **se 6. 9. 2026 udělalo**
- * (`T16-quotaselfengage`, `T16-idleforever`). Do té doby to kvótu vypínalo
- * úplně tam, kde běží demo: bez `.env` skončila každá relace `failed` ještě
- * před dalším POSTem, `callerHolds()` vracel nulu a čtyři route testy
- * červenaly (sonda přes route, 4. 9. 2026). **Ten předpoklad zrušila
- * `T46-routewire`** — emitor je dnes `(await cloudEmitter()) ?? uvařený svět`,
- * a sklad má 11 světů, z nichž každá věta dostane aspoň ten nejbližší (nikdy
- * `null`, změřeno 6. 9. 2026). Relace tedy dojede do fáze `world` a padlá je
- * zase výjimka; přeměřeno **466/466 zelených**. Doběhlé relace proto kvótu
- * svého volajícího už nedrží — držely ji až do `evictOverCap()`, tedy teprve
- * nad `MAX_LIVE_SESSIONS`.
+ * (a) **Vyjmout `complete`/`failed` z `callerHolds()` je ZAMÍTNUTÉ, a je to
+ * druhé zamítnutí téže cesty — nezkoušet ji znovu.** Poprvé (4. 9. 2026)
+ * padla na tom, že bez `.env` skončila každá relace `failed` ještě před
+ * dalším POSTem: `callerHolds()` vracel nulu a čtyři route testy červenaly.
+ * Předpoklad zrušila `T46-routewire` (sklad uvařených světů, každá věta
+ * dostane aspoň nejbližší), tak se to 6. 9. udělalo — a **nezávislá revize
+ * téhož dne to vrátila, protože ten sklad se konzultuje jedině bez klíče**
+ * (`sessions/route.ts`: `cloud === null ? chooseAuthored(…) : null`).
+ * S klíčem stačí vyčerpat strop utrácení nebo počkat na výpadek
+ * poskytovatele a relace je zase `failed` do milisekund. **Naměřeno: jeden
+ * klíč otevřel 500 z 500 relací a zabral všech 64 slotů.** Fázový přeskok
+ * tedy kvótu nevypnul jen na dnešní sadě — vypnul ji na nasazení.
  *
- * ⚠ **Tuhle páku to ale pořád netrefuje, a to se nezměnilo:** drží na fázi
- * `world`, ne na doběhlé. Zavírá ji klíč z důvěryhodného konce řetězu
- * (`T16-trustedkey`), ne čtvrté kolo stárnutí.
+ * ✅ **Co to nahradilo: doběhlá relace se počítá dál, jen stárne minutou**
+ * (`TERMINAL_SESSION_MS`) místo hodiny. Odmítnutí kvótou tím přestává být
+ * trvalé, což byl celý `T16-idleforever`, a vypnout kvótu to nedovolí,
+ * protože osm padlých relací se pořád počítá jako osm. Naměřená cena
+ * přepnutí: **jediný test**, ten z `34e66df`, a přepsal se s odůvodněním.
  *
- * (b) Nechat stárnout i sledované relace položí pinnutou vlastnost „otevřený
- * proud drží relaci naživu i tři hodiny" — tedy přesně toho porotce, kvůli
- * kterému ta vlastnost vznikla. **Zamítnuté to zůstává.**
+ * ⚠ **Tuhle páku (podvržený klíč nad prahem) to pořád netrefuje, a to se
+ * nezměnilo:** drží na fázi `world`, ne na doběhlé. Zavírá ji klíč
+ * z důvěryhodného konce řetězu (`T16-trustedkey`), ne čtvrté kolo stárnutí.
+ *
+ * (b) Nechat stárnout i **sledované** relace položí pinnutou vlastnost
+ * „otevřený proud drží relaci naživu i tři hodiny" — tedy přesně toho
+ * porotce, kvůli kterému ta vlastnost vznikla. **Zamítnuté to zůstává, a je
+ * to jiná věc než minuta na doběhlou relaci:** ta doběhlou nikdo nesleduje,
+ * proud si `events/route.ts` zavře sám na koncovém rámci.
  *
  * ✅ **Ten klíč přistál 4. 9. 2026 a je to `trustedCallerKey()`, ne opravený
  * `callerKey()`.** Plán předepisoval opravit tu původní funkci; **změřeno
@@ -370,6 +380,36 @@ const live = new Map<string, StoredSession>();
 export const IDLE_SESSION_MS = 60 * 60 * 1000;
 
 /**
+ * Jak dlouho smí v registru stát relace, která **už nikam nejde** — tedy
+ * `complete` nebo `failed`.
+ *
+ * **Bez téhle kratší meze je kvóta volajícího vypnutelná zvenčí** — nález
+ * nezávislé revize 6. 9. 2026, CONFIRMED spuštěním. Do té chvíle se doběhlé
+ * relace z `callerHolds()` prostě vyjímaly, což stálo na předpokladu, že
+ * relace dojde do fáze `world`. **Ten předpoklad platí jen bez klíče.**
+ * Uvařený sklad se konzultuje jedině tehdy, když model nakonfigurovaný není
+ * (`sessions/route.ts`: `cloud === null ? chooseAuthored(…) : null`), takže
+ * na nasazení **s klíčem** stačí vyčerpat strop utrácení nebo počkat na
+ * výpadek poskytovatele: `reserve()` odmítne ještě před sítí, relace je
+ * `failed` do milisekund, `callerHolds()` vrací nulu a
+ * `MAX_SESSIONS_PER_CALLER` neodmítne nikoho. **Naměřeno revizí: jeden klíč
+ * otevřel 500 z 500 relací a zabral všech 64 slotů**; nad prahem měl dostat
+ * osm. Spustit to jde bez účtu — strop je sdílený a trvalý, takže ho vyčerpá
+ * řádově deset POSTů.
+ *
+ * ⚠ **Fáze se proto počítají zase všechny a kvótu uvolňuje ČAS, ne fáze.**
+ * Minuta je řádově míň než hodina, po kterou smí stát relace živá, a řádově
+ * víc, než co porotce potřebuje na přečtení chybové hlášky — snímek relace
+ * mizí až za ní. Odmítnutí kvótou tím přestává být trvalé
+ * (`T16-idleforever`), aniž by šla kvóta vypnout (`T16-quotaselfengage`).
+ *
+ * ⚠ **Nesahat na to zkrácením `IDLE_SESSION_MS`.** Ta hodina drží relaci ve
+ * fázi `world`, tedy tu, do které se porotce dívá; zkrátit ji znamená zavřít
+ * mu svět pod rukama.
+ */
+export const TERMINAL_SESSION_MS = 60 * 1000;
+
+/**
  * Kdy naposledy se relaci pohnul proud — **vlastní čtení registru**, ne značka
  * v logu.
  *
@@ -485,7 +525,12 @@ function idleFor(sessionId: string, stored: StoredSession, now: number): boolean
     watched.set(sessionId, { sequence, moved, since: now, watched: watchers > 0 });
     return false;
   }
-  return now - seen.since >= IDLE_SESSION_MS;
+  // **Doběhlá relace stárne minutou, ne hodinou** (`TERMINAL_SESSION_MS`).
+  // Hodina patří relaci, do které se někdo dívá; relace, která už nikam
+  // nejde, drží jen slot a kbelík svého volajícího.
+  const phase = stored.session.phase;
+  const mez = phase === 'complete' || phase === 'failed' ? TERMINAL_SESSION_MS : IDLE_SESSION_MS;
+  return now - seen.since >= mez;
 }
 
 /**
@@ -605,11 +650,7 @@ function nejdražšíKbelík(keep: string): string | undefined {
 /** Kolik relací ten klíč právě drží. */
 function callerHolds(owner: string): number {
   let held = 0;
-  for (const stored of live.values()) {
-    const phase = stored.session.phase;
-    if (phase === 'complete' || phase === 'failed') continue;
-    if (stored.owner === owner) held += 1;
-  }
+  for (const stored of live.values()) if (stored.owner === owner) held += 1;
   return held;
 }
 
