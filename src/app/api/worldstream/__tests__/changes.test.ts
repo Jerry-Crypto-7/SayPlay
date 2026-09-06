@@ -238,7 +238,12 @@ describe('preview druhé věty', () => {
     const stored = await generated();
     const response = await preview(stored.session.sessionId, { prompt: 'make the mast taller' }, null);
     expect(response.status).toBe(503);
-    expect((await body(response)).error).toMatchObject({ code: 'MODEL_UNAVAILABLE' });
+    // **Ne `MODEL_UNAVAILABLE`** (nález nezávislé revize 6. 9. 2026): žádný
+    // model se nevolal, protože žádný nakonfigurovaný není. Hláška o výpadku
+    // by porotci popsala poruchu, která se nestala.
+    const error = (await body(response)).error as { code: string; message: string };
+    expect(error.code).toBe('NO_AUTHORED_CHANGE');
+    expect(error.message).not.toContain('could not be reached');
     expect(stored.session.phase).toBe('world');
   });
 
@@ -317,6 +322,39 @@ describe('preview druhé věty', () => {
     // A svět je pořád ten původní — preview nic nezapsalo.
     expect(worldOf(stored).look.palette).toBe('moss');
     expect(stored.changes.size).toBe(1);
+  });
+
+  /**
+   * **„Co zůstane" se počítá z operací, ne z cíle věty** — blokující nález
+   * nezávislé revize 6. 9. 2026.
+   *
+   * Do té doby se do `preserved` dostal každý objekt kromě cíle, takže emise,
+   * která sáhla i vedle, nechala produkt tvrdit dvě protichůdné věci uvnitř
+   * jednoho průchodu: panel sliboval „Untouched: X" a odpověď commitu vypsala
+   * X mezi změněnými listy. Naměřeno na vlajkové změně dema (`c04`/`r02`),
+   * takže to porotce viděl na první pokus, ne v okrajovém případě.
+   *
+   * Emise níž je ta samá třída: cíl je stěžeň, ale vzhledová operace jmenuje
+   * solnou pláň. Poctivá odpověď je proto **prázdný** seznam.
+   */
+  it('objekt, kterého se operace dotkne, nesmí být mezi nedotčenými', async () => {
+    const stored = await generated();
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'turn the mast into woven metal' },
+      async () => ({
+        summary: 'the mast is rewoven and the flat takes its colour',
+        shape: WOVEN_MAST,
+        behavior: [],
+        appearance: [{ op: 'replace', path: '/look/modules/saltFlat/params/tint', value: 'rust' }],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    const read = await body(response);
+    expect(read.target).toMatchObject({ stableId: 'ironMast' });
+    expect(read.preserved).toEqual([]);
   });
 
   /**

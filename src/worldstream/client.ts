@@ -402,8 +402,15 @@ export async function requestChange(
   const body = (await response.json().catch(() => null)) as Record<string, unknown> | null;
 
   if (!response.ok) {
-    const error = body?.error as { code?: string } | undefined;
-    throw new Error(`the change was not planned: ${error?.code ?? `HTTP_${response.status}`}`);
+    // **Ven jde věta serveru, ne jen jeho kód** — nález nezávislé revize
+    // 6. 9. 2026. Kód je pro stroj; porotce čte tuhle výjimku na obrazovce
+    // v panelu změny, a `NO_AUTHORED_CHANGE` mu neřekne nic. Kód zůstává za
+    // větou, aby se dal nahlásit, když se někdo ptá.
+    const error = body?.error as { code?: string; message?: string } | undefined;
+    const code = error?.code ?? `HTTP_${response.status}`;
+    throw new Error(
+      `the change was not planned: ${error?.message ?? code}${error?.message === undefined ? '' : ` (${code})`}`,
+    );
   }
 
   if (body?.outcome === 'AMBIGUOUS')

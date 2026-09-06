@@ -41,23 +41,25 @@ import { openInspect } from './inspect';
  * Věta, kterou sklad autorovaných světů zná přesně.
  *
  * ⚠ **Vybral ji sklad, ne vkus — a od `T35-actsthree4` (6. 9. 2026) je to
- * `c03`, ne katedrála z kontejnerů.** Průchod má nově dějství III a to se nedá
- * doložit nad libovolným světem: uvařená změna musí mířit na **hrdinský**
- * objekt a nést nový tvar, jinak se přepis tvaru odmítne („drawn by the
- * composition, not by a hero shape") nebo se nemá kde projevit. Naměřeno ve
- * skladu 6. 9. 2026: katedrála má jedinou uvařenou změnu `r12` a ta je jen
+ * `c04`, observatoř, ne katedrála z kontejnerů.** Průchod má nově dějství III
+ * a to se nedá doložit nad libovolným světem: uvařená změna musí mířit na
+ * objekt kreslený **hrdinským tvarem**, jinak se přepis tvaru odmítne („drawn
+ * by the composition, not by a hero shape") nebo se nemá kde projevit.
+ * Naměřeno ve skladu: katedrála má jedinou uvařenou změnu `r12` a ta je jen
  * o vzhledu — svět by se přestavěl, ale `contentHash` ani `triangles` by se
  * nehnuly, takže by aserce o změněném světě byla zelená i nad `apply()`, které
- * nedělá nic. Most z `c03` má změnu `r15` na hrdinovi `hangingHouses`
- * a s ní nový tvar.
+ * nedělá nic. Observatoř má změnu `r02` na `observatoryDome` a s ní nový tvar.
+ * Uvařenou změnu má pět světů z jedenácti, takže výběr je mezi pěti, ne mezi
+ * všemi.
  */
 const FLAGSHIP = 'A brutalist observatory, one dome on three splayed legs, on a windswept plateau.';
 
 /**
  * Druhá věta — **záměrně ne doslova ta uvařená**.
  *
- * Sklad zná `r15` jako „Make the hanging houses bigger and let them sway.";
- * tahle říká totéž jinými slovy, protože porotce píše vlastní větu, ne opsanou
+ * Sklad zná `r02` jako „Splay the observatory legs further out so the dome
+ * sits lower."; tahle říká totéž jinými slovy, protože porotce píše vlastní
+ * větu, ne opsanou
  * (`RULES.md` §3.3). Měří se tím současně poctivý popisek (`T45-honestlabel`):
  * doslovná věta by dala `exact`, popisek by mlčel, a takt by prošel i tehdy,
  * kdyby žádný popisek neexistoval.
@@ -121,6 +123,14 @@ async function sentenceToCanvas(page: Page, sentence: string): Promise<number> {
  * uvnitř jejího SDF, což počet trojúhelníků nechává na 11 340 před i po. Svět
  * se přitom prokazatelně změnil — `transform.translation` kupole se hnul
  * z 5,013 na 5,506. Otisk proto bere celý slot.
+ *
+ * ⚠ **A pořád nevidí všechno — druhý nález téže revize.** Změna, která sáhne
+ * na `/look` parametry nebo `/sim` kolize objektu kresleného kompozicí, se do
+ * téhle projekce nepromítne vůbec: sloty nesou tvar a umístění, ne parametry
+ * modulů. Vlajková změna `r02` přesně to dělá se `splayedSupportLegs`. Otisk
+ * proto dokládá **jediný pohnutý vykreslený slot**, ne „právě jeden změněný
+ * objekt světa" — druhou půlku toho tvrzení pinuje aserce o `Untouched` níž
+ * a jednotkový test nad `preserved` v `changes.test.ts`.
  */
 async function stageShape(page: Page): Promise<{
   readonly builds: number;
@@ -241,6 +251,16 @@ test('porotce projde celou cestu, jak ji dostane na odevzdání', async ({ page 
   // ne původ světa, který v tuhle chvíli sedí na přesné shodě a mlčí.
   await expect(page.getByTestId('change-authored')).toHaveCount(1);
 
+  // **A co změna nechá být, to musí být pravda** (blokující nález nezávislé
+  // revize 6. 9. 2026). Do té doby se do seznamu psal každý objekt kromě cíle
+  // věty, takže panel porotci sliboval nedotčené nohy observatoře — a tatáž
+  // změna jim vzápětí přepsala `/look` parametr i kolizní kvádry. Seznam se
+  // proto počítá z operací a nad vlajkovou změnou z něj **nohy vypadnou**;
+  // zůstane plošina, které se `r02` nedotkne. Je to jediná aserce téhle sady,
+  // která vidí i změnu objektu kresleného kompozicí.
+  const preserved = page.getByTestId('change-preserved');
+  await expect(preserved).toHaveText('Untouched: the windswept plateau');
+
   // ── Takt V: potvrzení přestaví svět a identita to přežije ────────────────
   const applied = Date.now();
   await page.getByTestId('change-apply').click();
@@ -254,7 +274,11 @@ test('porotce projde celou cestu, jak ji dostane na odevzdání', async ({ page 
   act('takt V – potvrzení → změněný svět', Date.now() - applied);
 
   const afterChange = await stageShape(page);
-  await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live');
+  // `world-status` se tu **neptáme schválně**: od taktu I je `live` a `apply()`
+  // na něj nesahá ani při selhání, takže by ta aserce byla zelená vždycky
+  // (nález nezávislé revize 6. 9. 2026). Neúspěšné potvrzení chytá panel výš —
+  // odmítnutí ho nechá stát s `data-kind="refused"`, takže `toHaveCount(0)` je
+  // ta pravá brána.
   await expect(page.getByTestId('world-broken')).toHaveCount(0);
 
   // **Identita změnu přežije** — to je celý slib dějství III. Mění se jeden
@@ -272,7 +296,7 @@ test('porotce projde celou cestu, jak ji dostane na odevzdání', async ({ page 
   );
   expect(
     moved.length,
-    `druhá věta měla změnit právě jeden objekt (${beforeChange.signatures.join(' | ')} → ${afterChange.signatures.join(' | ')})`,
+    `druhá věta měla pohnout právě jedním vykresleným slotem (${beforeChange.signatures.join(' | ')} → ${afterChange.signatures.join(' | ')})`,
   ).toBe(1);
 
   // ── Takt VI: porotce zkusí vlastní větu ──────────────────────────────────
@@ -309,8 +333,17 @@ test('tahle sada si nikde nepodstrkuje síť', () => {
   // opřít špatně: přejmenování souboru ani jiný pracovní adresář ho neminou.
   const source = readFileSync(test.info().file, 'utf8');
 
-  // Vlastní jméno v řetězcích níž by test shodilo o sebe sama, proto se skládá.
-  const forbidden = ['route.' + 'fulfill', 'route.' + 'abort'];
+  // ⚠ **Dřív se hlídalo jméno proměnné, ne to volání** — nález nezávislé
+  // revize 6. 9. 2026. Zakázané řetězce zněly `route` + tečka + jméno metody,
+  // jenže odchyt se dá napsat s callbackem pojmenovaným jakkoli, a přejmenovat
+  // ho umí i dobrá víra. Hlídá se proto **tečka a jméno metody**, ať ji vlastní
+  // kdokoli.
+  //
+  // ⚠ **Tenhle test se umí shodit sám o sebe, a už se to stalo.** Zakázaný
+  // řetězec napsaný v komentáři je pořád zakázaný řetězec ve zdroji, takže se
+  // v celém tomhle souboru nesmí objevit doslova — proto se skládají níž a
+  // proto o nich komentáře mluví opisem.
+  const forbidden = ['.ful' + 'fill(', '.ab' + 'ort('];
   for (const call of forbidden) {
     expect(source.split(call).length - 1, `${call} v sadě, která ho má zakázaný`).toBe(0);
   }

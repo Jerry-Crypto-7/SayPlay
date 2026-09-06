@@ -47,6 +47,7 @@ import {
   planChange,
   type ChangeOutcome,
   type PendingChange,
+  type RefinePlan,
 } from '@/model/worldstream-refine';
 import type { BlueprintEmitter } from '@/model/worldstream-repair';
 import { withRequest } from '@/obs/trace';
@@ -124,6 +125,35 @@ export async function POST(
  * přes všechno" by porotci místo změny spolehlivě vrátilo odmítnutí. Objekt,
  * ke kterému se změna neuvařila, tedy druhou větu nemá a route to řekne rovnou.
  */
+/**
+ * Co změna **nechá být** — spočítané z jejích operací, ne z toho, koho věta
+ * jmenovala jako cíl.
+ *
+ * ⚠ **Rozdíl je naměřený a byl to blokující nález nezávislé revize
+ * 6. 9. 2026.** „Všechno kromě cíle" je nepravda vždycky, když emise sáhne
+ * i vedle: vlajková změna dema (`c04`/`r02`) míří na kupoli, ale zapisuje
+ * `/look/modules/splayedSupportLegs/params/splay` a čtyři `/sim/collisionAabb/
+ * splayedSupportLegs/*`. Panel tedy porotci tvrdil „Untouched: the three
+ * splayed legs" a odpověď commitu hned nato vypsala tytéž nohy mezi změněnými
+ * listy. Produkt si odporoval uvnitř jednoho průchodu, před porotcem.
+ *
+ * Objekt se počítá za dotčený, když se jeho `stableId` objeví jako **celý
+ * segment** kterékoli cesty. Segment, ne podřetězec: jméno socketu
+ * (`leftLegPad`) není jméno objektu a slučovat je by seznam vyprázdnilo.
+ * Omyl je tím zatlačený na bezpečnou stranu — nejistý objekt ze seznamu
+ * vypadne, takže se slibuje míň, ne víc.
+ */
+function preservedBy(
+  objects: readonly { readonly stableId: string; readonly label: string }[],
+  plan: RefinePlan,
+): readonly string[] {
+  const touched = new Set<string>([plan.stableId]);
+  for (const operation of [...plan.behavior, ...plan.appearance])
+    for (const segment of operation.path.split('/')) touched.add(segment);
+
+  return objects.filter((object) => !touched.has(object.stableId)).map((object) => object.label);
+}
+
 function authoredChangeFor(
   stored: NonNullable<ReturnType<typeof getSession>>,
   prompt: string,
@@ -262,8 +292,20 @@ export async function createChange(
     // objekt změnu nemá". Na rozdíl od zakládání relace se tu neshazuje celá
     // relace — svět běží dál a porotce ho pořád vidí; nepovedla se jen tahle
     // jedna změna.
+    // ⚠ **Není to porucha modelu a nesmí se tak jmenovat** — nález nezávislé
+    // revize 6. 9. 2026. `MODEL_UNAVAILABLE` znamená „model se nepodařilo
+    // dovolat"; tady se žádný model nevolal, protože žádný nakonfigurovaný
+    // není a sklad na tenhle objekt změnu nemá. Rozdíl není akademický:
+    // uvařenou změnu má dnes pět světů z jedenácti, takže tohle je **výchozí**
+    // odpověď pro porotce, který změní jiný svět — a ten má číst pravdu, ne
+    // hlášku o výpadku, který se nestal.
     if (emit === null)
-      return fail(requestId, 503, 'MODEL_UNAVAILABLE', 'the model could not be reached');
+      return fail(
+        requestId,
+        503,
+        'NO_AUTHORED_CHANGE',
+        'no change for that object was authored ahead of time, and no model is configured to write one now',
+      );
 
     // **Týž čítač jako u zakládání relace**, ne druhý po čtyřech. Preview je
     // placené volání modelu a je levnější na vyvolání než celý svět — relaci si
@@ -388,9 +430,7 @@ export async function createChange(
       scope,
       // §4 ukazuje porotci vedle rozsahu i to, co změna **nechá být**. Je to
       // polovina slibu „bez resetu" a bez ní se ta věta nedá ověřit očima.
-      preserved: blueprint.objects
-        .filter((object) => object.stableId !== plan.stableId)
-        .map((object) => object.label),
+      preserved: preservedBy(blueprint.objects, plan),
       // **Chybí, když změnu píše model** — týž kontrakt a týž důvod jako
       // u zakládání relace (`T45-honestlabel`). Poctivost platí i pro druhou
       // větu: přehrávanou změnu porotce odhalí tím, že dvě různé věty udělají

@@ -94,15 +94,21 @@ napsal dopředu sklad, ne model teď.
 
 ### Takt V – potvrzení a svět se změní pod rukama
 
-Po *Apply* se svět přestaví a panel plánu zmizí. **Změní se právě jeden
-objekt** – ten, který plán jmenoval; ostatní zůstanou bajt po bajtu tam, kde
-byly, a žádný objekt nepřibude ani nezmizí. To je celý rozdíl mezi „chirurgickou
-změnou" a „novým světem" a sada ho měří přesně takhle: jeden změněný otisk, ne
-nula a ne dva.
+Po *Apply* se svět přestaví a panel plánu zmizí. **Žádný objekt nepřibude ani
+nezmizí** a svět se nezakládá znovu – porotce má po změně tentýž svět, ne nový.
+To je celý rozdíl mezi „chirurgickou změnou" a „novým světem".
 
-⚠ **Změna nemusí být nápadná a je to vlastnost, ne vada.** Uvařená změna
-posouvá kupoli dolů; počet trojúhelníků se tím nehne vůbec, hne se umístění.
-Kdo hledá „vidím rozdíl", ať se dívá na kupoli, ne na siluetu.
+⚠ **„Jeden objekt" ale znamená jeden CÍL, ne jednu dotčenou věc, a je poctivé
+to říct nahlas.** Vlajková věta jmenuje nohy i kupoli, takže uvařená změna
+posune kupoli a zároveň přepíše parametr rozkročení nohou. Cíl je jeden –
+kupole – a panel proto v řádku *Untouched* jmenuje jenom to, čeho se změna
+doopravdy nedotkne (u téhle věty plošinu, nikoli nohy). **Ten seznam se počítá
+z operací té změny**, ne z toho, koho věta jmenovala jako cíl; do 6. 9. 2026 se
+počítal opačně a produkt si tím uvnitř jednoho průchodu odporoval.
+
+⚠ **Změna nemusí být nápadná a je to vlastnost, ne vada.** Kupole se posune;
+počet trojúhelníků se tím nehne vůbec, hne se umístění. Kdo hledá „vidím
+rozdíl", ať se dívá na kupoli, ne na siluetu.
 
 ### Takt VI – porotce zkusí vlastní větu
 
@@ -119,17 +125,17 @@ i podle toho, co o sobě produkt tvrdí.
 ## Naměřené doby taktů
 
 Běh 6. 9. 2026, `npx playwright test e2e/judge-flow.spec.ts --project=chromium`,
-celá sada **55 s**. Druhý sloupec je předchozí běh téhož dne – je tam schválně,
+celá sada **78 s**. Druhý sloupec je předchozí běh téhož dne – je tam schválně,
 aby bylo vidět, **jak moc se ta čísla hýbou sama od sebe**.
 
 | Takt | Co porotce dělá | Naměřeno | Předchozí běh |
 |---|---|---|---|
-| 0 | stránka se načte a čeká na větu | **572 ms** | 611 ms |
-| I | věta → svět na plátně (první vykreslený snímek) | **1 272 ms** | 1 300 ms |
-| II | hmota ztvrdne a je vidět v Inspect | **646 ms** | 739 ms |
-| IV | druhá věta → plán změny | **737 ms** | 821 ms |
-| V | potvrzení → změněný svět | **1 357 ms** | 1 079 ms |
-| VI | vlastní věta porotce → svět | **3 615 ms** | 2 998 ms |
+| 0 | stránka se načte a čeká na větu | **516 ms** | 572 ms |
+| I | věta → svět na plátně (první vykreslený snímek) | **1 878 ms** | 1 272 ms |
+| II | hmota ztvrdne a je vidět v Inspect | **1 165 ms** | 646 ms |
+| IV | druhá věta → plán změny | **965 ms** | 737 ms |
+| V | potvrzení → změněný svět | **887 ms** | 1 357 ms |
+| VI | vlastní věta porotce → svět | **4 043 ms** | 3 615 ms |
 
 **Rozptyl mezi dvěma běhy je skoro dvojnásobek**, takže se z těch čísel dá číst
 řád, ne přesná hodnota. Řád je to podstatné: porotce čeká na první svět
@@ -162,10 +168,19 @@ navíc, ne nová sada.
 přetáčení času sám.** Ukázat se dá na vývojářské adrese; tvrdit se o něm smí
 jen to, co platí.
 
-⚠ **Druhá věta má dnes výrobce jen pro světy, které sklad zná.** Uvařená změna
-existuje k pěti světům z jedenácti (`c01`, `c03`, `c04`, `c09`, `c20`).
-Porotce, který změní svět mimo tuhle pětku, dostane poctivé odmítnutí, ne
-změnu – a vlajková věta je proto vybraná z ní.
+⚠ **Druhá věta má dnes výrobce jen pro pět světů z jedenácti** (`c01`, `c03`,
+`c04`, `c09`, `c20`), a i tam vždycky jen pro jeden objekt. Porotce, který
+zkusí změnit cokoli jiného, dostane odmítnutí – a to odmítnutí musí říkat
+pravdu. **Říká ji od 6. 9. 2026:** do té doby vracelo `MODEL_UNAVAILABLE`
+a větu „the model could not be reached", což je popis výpadku, který se nestal
+(žádný model se nevolá, klíč se podle `G2` nekupuje). Dnes vrací
+`NO_AUTHORED_CHANGE` a větu *„no change for that object was authored ahead of
+time, and no model is configured to write one now."*
+
+Vlajková věta je proto vybraná z té pětky. **Takt VI je opačný případ a je to
+tak schválně:** vlastní věta porotce dostane nejbližší uvařený svět, ale druhá
+věta nad ním už uvařenou změnu mít nemusí – tam porotce uvidí právě to
+odmítnutí.
 
 ## Čím se ta sada dá zfalšovat, a co se stane
 

@@ -145,7 +145,7 @@ describe('druhá věta bez klíče jde ze skladu', () => {
     );
 
     expect(response.status).toBe(503);
-    expect((await body(response)).error).toMatchObject({ code: 'MODEL_UNAVAILABLE' });
+    expect((await body(response)).error).toMatchObject({ code: 'NO_AUTHORED_CHANGE' });
   });
 
   it('objekt bez uvařené změny je 503, ne změna cizího objektu', async () => {
@@ -160,7 +160,14 @@ describe('druhá věta bez klíče jde ze skladu', () => {
     );
 
     expect(response.status).toBe(503);
-    expect((await body(response)).error).toMatchObject({ code: 'MODEL_UNAVAILABLE' });
+    // Porotce se tenhle text dočte v panelu změny, takže se pinuje i on:
+    // pět světů z jedenácti uvařenou změnu má, takže tohle je pro zbytek
+    // **výchozí** odpověď, ne okrajová porucha.
+    const error = (await body(response)).error as { code: string; message: string };
+    expect(error.code).toBe('NO_AUTHORED_CHANGE');
+    expect(error.message).toBe(
+      'no change for that object was authored ahead of time, and no model is configured to write one now',
+    );
   });
 
   it('živý model má přednost před skladem, i když sklad odpověď má', async () => {
