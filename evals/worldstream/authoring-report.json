@@ -1,7 +1,7 @@
 {
-  "measuredAt": "2026-09-05T20:20:54.499Z",
-  "attempted": 29,
-  "kept": 10,
+  "measuredAt": "2026-09-06T13:17:56.193Z",
+  "attempted": 37,
+  "kept": 15,
   "causes": {
     "witness": 5,
     "clay": 5,
@@ -9,9 +9,11 @@
     "shape": 3,
     "planner": 1,
     "lowering": 1,
-    "geom": 1
+    "geom": 1,
+    "grounding": 2,
+    "refine": 1
   },
-  "secondsTotal": 6356,
+  "secondsTotal": 6649,
   "results": [
     {
       "id": "c02",
@@ -215,6 +217,70 @@
       "cause": "clay",
       "seconds": 248.792,
       "calls": 4
+    },
+    {
+      "id": "r02",
+      "kept": true,
+      "cause": null,
+      "detail": null,
+      "seconds": 58.751,
+      "calls": 1
+    },
+    {
+      "id": "r05",
+      "kept": true,
+      "cause": null,
+      "detail": null,
+      "seconds": 92.061,
+      "calls": 1
+    },
+    {
+      "id": "r10",
+      "kept": false,
+      "cause": "grounding",
+      "detail": "NO_MATCH",
+      "seconds": 0.016,
+      "calls": 0
+    },
+    {
+      "id": "r12",
+      "kept": true,
+      "cause": null,
+      "detail": null,
+      "seconds": 21.682,
+      "calls": 1
+    },
+    {
+      "id": "r14",
+      "kept": false,
+      "cause": "refine",
+      "detail": "SHAPE_INVALID: node 11 references node 14 at or above itself",
+      "seconds": 49.512,
+      "calls": 1
+    },
+    {
+      "id": "r15",
+      "kept": true,
+      "cause": null,
+      "detail": null,
+      "seconds": 43.768,
+      "calls": 1
+    },
+    {
+      "id": "r17",
+      "kept": true,
+      "cause": null,
+      "detail": null,
+      "seconds": 26.742,
+      "calls": 1
+    },
+    {
+      "id": "r20",
+      "kept": false,
+      "cause": "grounding",
+      "detail": "NO_MATCH",
+      "seconds": 0.008,
+      "calls": 0
     }
   ]
 }

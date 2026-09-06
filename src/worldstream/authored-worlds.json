@@ -562,7 +562,34 @@
           }
         }
       },
-      "changes": []
+      "changes": [
+        {
+          "id": "r12",
+          "prompt": "Paint the containers rust red.",
+          "stableId": "containerCathedral",
+          "synonyms": [
+            "the stacked shipping containers",
+            "the containers",
+            "the shipping containers",
+            "the container stacks",
+            "the stacked containers",
+            "the container walls",
+            "the cathedral"
+          ],
+          "refine": {
+            "summary": "The stacked shipping containers become rust red.",
+            "shape": null,
+            "behavior": [],
+            "appearance": [
+              {
+                "op": "replace",
+                "path": "/look/palette/containerSteel",
+                "value": "rust red"
+              }
+            ]
+          }
+        }
+      ]
     },
     {
       "id": "c03",
@@ -1127,7 +1154,190 @@
           }
         }
       },
-      "changes": []
+      "changes": [
+        {
+          "id": "r15",
+          "prompt": "Make the hanging houses bigger and let them sway.",
+          "stableId": "hangingHouses",
+          "synonyms": [
+            "the hanging houses",
+            "the houses",
+            "the suspended houses",
+            "the homes",
+            "the town",
+            "the bridge town",
+            "the settlement"
+          ],
+          "refine": {
+            "summary": "The hanging houses become larger and gently sway beneath the bridge.",
+            "shape": {
+              "shapeId": "suspendedTownShape",
+              "stableId": "hangingHouses",
+              "nodes": [
+                {
+                  "kind": "roundBox",
+                  "size": [
+                    2.6,
+                    2.1,
+                    2.2
+                  ],
+                  "radius": 0.12
+                },
+                {
+                  "kind": "translate",
+                  "child": 0,
+                  "offset": [
+                    0,
+                    -1.2,
+                    0
+                  ]
+                },
+                {
+                  "kind": "prism",
+                  "sides": 3,
+                  "radius": 1.75,
+                  "height": 2.2
+                },
+                {
+                  "kind": "rotate",
+                  "child": 2,
+                  "yaw": 0,
+                  "pitch": 1.5708,
+                  "roll": 0
+                },
+                {
+                  "kind": "translate",
+                  "child": 3,
+                  "offset": [
+                    0,
+                    -0.15,
+                    0
+                  ]
+                },
+                {
+                  "kind": "cylinder",
+                  "height": 3,
+                  "radius": 0.1
+                },
+                {
+                  "kind": "translate",
+                  "child": 5,
+                  "offset": [
+                    -0.7,
+                    1.55,
+                    -0.6
+                  ]
+                },
+                {
+                  "kind": "translate",
+                  "child": 5,
+                  "offset": [
+                    0.7,
+                    1.55,
+                    -0.6
+                  ]
+                },
+                {
+                  "kind": "translate",
+                  "child": 5,
+                  "offset": [
+                    -0.7,
+                    1.55,
+                    0.6
+                  ]
+                },
+                {
+                  "kind": "translate",
+                  "child": 5,
+                  "offset": [
+                    0.7,
+                    1.55,
+                    0.6
+                  ]
+                },
+                {
+                  "kind": "union",
+                  "children": [
+                    1,
+                    4,
+                    6,
+                    7,
+                    8,
+                    9
+                  ],
+                  "k": 0.06
+                },
+                {
+                  "kind": "repeat",
+                  "child": 10,
+                  "count": 5,
+                  "step": [
+                    3,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "kind": "translate",
+                  "child": 11,
+                  "offset": [
+                    -6,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "root": 12,
+              "targetBounds": {
+                "min": [
+                  -7.8,
+                  -2.3,
+                  -1.8
+                ],
+                "max": [
+                  7.8,
+                  3.1,
+                  1.8
+                ]
+              },
+              "anchors": [
+                {
+                  "name": "bridgeAttachment",
+                  "at": [
+                    0,
+                    3.05,
+                    0
+                  ],
+                  "normal": [
+                    0,
+                    1,
+                    0
+                  ]
+                }
+              ],
+              "materialIntent": "weatheredTimberAndIron",
+              "priority": 12
+            },
+            "behavior": [
+              {
+                "op": "add",
+                "path": "/sim/entities/hangingHouses/motion",
+                "value": {
+                  "kind": "sway",
+                  "axis": [
+                    0,
+                    0,
+                    1
+                  ],
+                  "amplitude": 0.12,
+                  "period": 4
+                }
+              }
+            ],
+            "appearance": []
+          }
+        }
+      ]
     },
     {
       "id": "c04",
@@ -1762,7 +1972,193 @@
           }
         }
       },
-      "changes": []
+      "changes": [
+        {
+          "id": "r02",
+          "prompt": "Splay the observatory legs further out so the dome sits lower.",
+          "stableId": "observatoryDome",
+          "synonyms": [
+            "the observatory dome",
+            "the dome",
+            "the observatory",
+            "the brutalist observatory",
+            "the observatory shell"
+          ],
+          "refine": {
+            "summary": "The observatory’s three legs splay farther outward and the dome sits lower above them.",
+            "shape": {
+              "shapeId": "observatoryDomeShape",
+              "stableId": "observatoryDome",
+              "nodes": [
+                {
+                  "kind": "ellipsoid",
+                  "radii": [
+                    4.8,
+                    2.7,
+                    4.8
+                  ]
+                },
+                {
+                  "kind": "ellipsoid",
+                  "radii": [
+                    4.3,
+                    2.3,
+                    4.3
+                  ]
+                },
+                {
+                  "kind": "translate",
+                  "child": 1,
+                  "offset": [
+                    0,
+                    -0.16,
+                    0
+                  ]
+                },
+                {
+                  "kind": "subtract",
+                  "children": [
+                    0,
+                    2
+                  ]
+                },
+                {
+                  "kind": "box",
+                  "size": [
+                    10,
+                    3.2,
+                    10
+                  ]
+                },
+                {
+                  "kind": "translate",
+                  "child": 4,
+                  "offset": [
+                    0,
+                    1.6,
+                    0
+                  ]
+                },
+                {
+                  "kind": "intersect",
+                  "children": [
+                    3,
+                    5
+                  ]
+                },
+                {
+                  "kind": "torus",
+                  "majorRadius": 4.55,
+                  "minorRadius": 0.28
+                },
+                {
+                  "kind": "union",
+                  "children": [
+                    6,
+                    7
+                  ],
+                  "k": 0.08
+                },
+                {
+                  "kind": "translate",
+                  "child": 8,
+                  "offset": [
+                    0,
+                    -0.55,
+                    0
+                  ]
+                }
+              ],
+              "root": 9,
+              "targetBounds": {
+                "min": [
+                  -5,
+                  -0.9,
+                  -5
+                ],
+                "max": [
+                  5,
+                  2.45,
+                  5
+                ]
+              },
+              "anchors": [
+                {
+                  "name": "supportHub",
+                  "at": [
+                    0,
+                    -0.55,
+                    0
+                  ],
+                  "normal": [
+                    0,
+                    -1,
+                    0
+                  ]
+                },
+                {
+                  "name": "zenith",
+                  "at": [
+                    0,
+                    2.15,
+                    0
+                  ],
+                  "normal": [
+                    0,
+                    1,
+                    0
+                  ]
+                }
+              ],
+              "materialIntent": "rawConcreteShell",
+              "priority": 10
+            },
+            "behavior": [
+              {
+                "op": "replace",
+                "path": "/sim/sockets/northLegPad",
+                "value": [
+                  7,
+                  11
+                ]
+              },
+              {
+                "op": "replace",
+                "path": "/sim/sockets/southeastLegPad",
+                "value": [
+                  18,
+                  16
+                ]
+              },
+              {
+                "op": "replace",
+                "path": "/sim/sockets/southwestLegPad",
+                "value": [
+                  18,
+                  6
+                ]
+              },
+              {
+                "op": "replace",
+                "path": "/sim/collisionAabb/splayedSupportLegs",
+                "value": [
+                  7,
+                  5,
+                  12,
+                  12
+                ]
+              }
+            ],
+            "appearance": [
+              {
+                "op": "add",
+                "path": "/look/modules/splayedSupportLegs/params/splay",
+                "value": 1.25
+              }
+            ]
+          }
+        }
+      ]
     },
     {
       "id": "c09",
@@ -2636,7 +3032,34 @@
           }
         }
       },
-      "changes": []
+      "changes": [
+        {
+          "id": "r05",
+          "prompt": "Hollow the trunk deeper so the rooms fit further inside.",
+          "stableId": "hollowFallenTree",
+          "synonyms": [
+            "the hollow fallen tree",
+            "the tree",
+            "the fallen tree",
+            "the hollow tree",
+            "the trunk",
+            "the hollow trunk",
+            "the tree shell"
+          ],
+          "refine": {
+            "summary": "The hollow fallen tree gains a deeper interior, so the rooms appear to sit farther inside the trunk.",
+            "shape": null,
+            "behavior": [],
+            "appearance": [
+              {
+                "op": "add",
+                "path": "/look/modules/hollowFallenTree/params/interiorDepth",
+                "value": 0.85
+              }
+            ]
+          }
+        }
+      ]
     },
     {
       "id": "c10",
@@ -5564,7 +5987,56 @@
           }
         }
       },
-      "changes": []
+      "changes": [
+        {
+          "id": "r17",
+          "prompt": "Make the headlight brighter and wider, and have the train stop at the platform.",
+          "stableId": "arrivingTrain",
+          "synonyms": [
+            "the arriving train",
+            "train",
+            "the train",
+            "the approaching train",
+            "approaching train"
+          ],
+          "refine": {
+            "summary": "The train’s headlight becomes brighter and wider, and the train stops at the platform.",
+            "shape": null,
+            "behavior": [
+              {
+                "op": "add",
+                "path": "/sim/sockets/platform",
+                "value": [
+                  4,
+                  15
+                ]
+              },
+              {
+                "op": "replace",
+                "path": "/sim/entities/arrivingTrain/socket",
+                "value": "platform"
+              },
+              {
+                "op": "replace",
+                "path": "/sim/entities/arrivingTrain/state",
+                "value": "stopped"
+              }
+            ],
+            "appearance": [
+              {
+                "op": "replace",
+                "path": "/look/lightRig/lights/0/intensity",
+                "value": 28
+              },
+              {
+                "op": "replace",
+                "path": "/look/lightRig/lights/0/coneAngle",
+                "value": 0.65
+              }
+            ]
+          }
+        }
+      ]
     },
     {
       "id": "c24",

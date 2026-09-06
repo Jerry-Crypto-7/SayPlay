@@ -23,25 +23,46 @@ import { openInspect } from './inspect';
  * ## ⚠ Co tahle sada NEMĚŘÍ, a proč to není opomenutí
  *
  * Design book §4 popisuje **čtyři dějství**. Porotcova cesta na kořeni má dnes
- * první dvě. Naměřeno 6. 9. 2026 ve zdroji, ne odhadnuto:
+ * **první tři** — dějství III se na ni dostalo `T35-actsthree4` (6. 9. 2026)
+ * a měří ho takty IV a V níž, protože plánovač změny má od téže úlohy tutéž
+ * záložní cestu přes sklad autorovaných světů, jakou má první věta od
+ * `T46-routewire`. Bez klíče (`G2`) tedy druhá věta výrobce má.
  *
- * - **Dějství III (druhá věta mění svět)** na kořeni není. `WorldstreamApp`
- *   bere panel změny propem `change`, a `src/app/page.tsx` ho nepředává; panel
- *   žije na `/dev/refine`. Navíc `changes/route.ts:106` staví plánovač výhradně
- *   z `cloudEmitter()` — bez `.env` tedy nemá výrobce vůbec, kdežto první věta
- *   ho od `T46-routewire` má ve skladu autorovaných světů. Bez klíče (`G2`,
- *   rozhodnuto 5. 9. 2026) je druhá věta na poctivé cestě nedosažitelná
- *   a zezelenat by šla jedině odchycením sítě, které tahle sada zakazuje.
- * - **Dějství IV (přetáčení času)** na kořeni taky není: `WorldstreamApp` bere
- *   osu propem `axis` a kořen ho nepředává. Osa žije na `/dev/time`.
+ * Nemá ho **dějství IV (přetáčení času)**, a to na kořeni pořád není. Naměřeno
+ * 6. 9. 2026 ve zdroji, ne odhadnuto: `WorldstreamApp` bere osu propem `axis`
+ * a `src/app/page.tsx` ho nepředává, takže osa žije jen na `/dev/time`.
  *
- * Runbook to říká nahlas a stejnými slovy. **Až se obě dějství na kořen
- * dostanou, patří sem dva takty navíc, ne nová sada** — jinak se „celý průchod"
- * zase rozpadne na kusy, které nikdo nezkouší najednou.
+ * Runbook to říká nahlas a stejnými slovy. **Až se dějství IV na kořen dostane,
+ * patří sem takt navíc, ne nová sada** — jinak se „celý průchod" zase rozpadne
+ * na kusy, které nikdo nezkouší najednou.
  */
 
-/** Věta, kterou sklad autorovaných světů zná přesně. */
-const FLAGSHIP = 'A cathedral of stacked shipping containers around a light well.';
+/**
+ * Věta, kterou sklad autorovaných světů zná přesně.
+ *
+ * ⚠ **Vybral ji sklad, ne vkus — a od `T35-actsthree4` (6. 9. 2026) je to
+ * `c03`, ne katedrála z kontejnerů.** Průchod má nově dějství III a to se nedá
+ * doložit nad libovolným světem: uvařená změna musí mířit na **hrdinský**
+ * objekt a nést nový tvar, jinak se přepis tvaru odmítne („drawn by the
+ * composition, not by a hero shape") nebo se nemá kde projevit. Naměřeno ve
+ * skladu 6. 9. 2026: katedrála má jedinou uvařenou změnu `r12` a ta je jen
+ * o vzhledu — svět by se přestavěl, ale `contentHash` ani `triangles` by se
+ * nehnuly, takže by aserce o změněném světě byla zelená i nad `apply()`, které
+ * nedělá nic. Most z `c03` má změnu `r15` na hrdinovi `hangingHouses`
+ * a s ní nový tvar.
+ */
+const FLAGSHIP = 'A brutalist observatory, one dome on three splayed legs, on a windswept plateau.';
+
+/**
+ * Druhá věta — **záměrně ne doslova ta uvařená**.
+ *
+ * Sklad zná `r15` jako „Make the hanging houses bigger and let them sway.";
+ * tahle říká totéž jinými slovy, protože porotce píše vlastní větu, ne opsanou
+ * (`RULES.md` §3.3). Měří se tím současně poctivý popisek (`T45-honestlabel`):
+ * doslovná věta by dala `exact`, popisek by mlčel, a takt by prošel i tehdy,
+ * kdyby žádný popisek neexistoval.
+ */
+const SECOND = 'Splay the observatory legs wider so the dome drops lower.';
 
 /**
  * Věta, kterou nezná nikdo — porotce má právo zkoušet vlastní (`RULES.md` §3.3).
@@ -53,6 +74,9 @@ const UNSEEN = 'A lighthouse built from stacked fishing boats, still dripping.';
 
 /** Relace, meshování a první snímek na SwiftShaderu. Ne rozpočet produktu. */
 const WORLD_BUDGET_MS = 90_000;
+
+/** Plán změny a přestavba světa po ní. Táž třída rozpočtu, ne produktová mez. */
+const CHANGE_BUDGET_MS = 90_000;
 
 /**
  * Doby taktů se **tisknou**, nezapisují do commitnutého souboru.
@@ -81,6 +105,45 @@ async function sentenceToCanvas(page: Page, sentence: string): Promise<number> {
     timeout: WORLD_BUDGET_MS,
   });
   return Date.now() - started;
+}
+
+/**
+ * Otisk scény: co v ní stojí a jak to vypadá. Před druhou větou a po ní.
+ *
+ * `builds()` je jediné číslo, které přežije přestavbu, a hlavní stránka svět po
+ * potvrzení **staví znovu** — nevyměňuje slot za běhu jako `/dev/refine`, takže
+ * `commits()` tady zůstane na nule a čekat na něj by sadu zavěsilo.
+ *
+ * ⚠ **Otisk musí nést i umístění, ne jen tvar — naměřeno 6. 9. 2026.** První
+ * podoba se ptala na `contentHash` a počet trojúhelníků a **byla slepá**: na
+ * hlavní cestě je `contentHash` u všech slotů `null` (registr podob plní až
+ * hot-swap na `/dev/refine`) a uvařená změna `r02` posouvá kupoli translací
+ * uvnitř jejího SDF, což počet trojúhelníků nechává na 11 340 před i po. Svět
+ * se přitom prokazatelně změnil — `transform.translation` kupole se hnul
+ * z 5,013 na 5,506. Otisk proto bere celý slot.
+ */
+async function stageShape(page: Page): Promise<{
+  readonly builds: number;
+  readonly ids: readonly string[];
+  readonly signatures: readonly string[];
+}> {
+  return page.evaluate(() => {
+    const stage = window.__worldstreamStage!;
+    const slots = stage.slots();
+    return {
+      builds: stage.builds(),
+      ids: slots.map((slot) => slot.stableId),
+      signatures: slots.map((slot) =>
+        JSON.stringify({
+          rung: slot.rung,
+          triangles: slot.triangles,
+          contentHash: slot.contentHash,
+          transform: slot.transform,
+          sockets: slot.sockets,
+        }),
+      ),
+    };
+  });
 }
 
 test('porotce projde celou cestu, jak ji dostane na odevzdání', async ({ page }) => {
@@ -150,13 +213,75 @@ test('porotce projde celou cestu, jak ji dostane na odevzdání', async ({ page 
   await expect(page.getByTestId('world-authored')).toHaveCount(0);
   await expect(page.getByTestId('world-broken')).toHaveCount(0);
 
-  // ── Takt IV: porotce zkusí vlastní větu ──────────────────────────────────
+  // ── Takt IV: druhá věta chirurgicky změní jeden objekt ───────────────────
+  //
+  // Dějství III design booku §4. Do `T35-actsthree4` (6. 9. 2026) na porotcově
+  // cestě nebylo vůbec — panel změny žil na `/dev/refine` a plánovač se stavěl
+  // výhradně z cloudového modelu. Bez zaplaceného klíče (`G2`) ho dnes obslouží
+  // sklad uvařených změn, toutéž záložní cestou jako první větu.
+  const beforeChange = await stageShape(page);
+  const planned = Date.now();
+  await page.getByTestId('refine-input').fill(SECOND);
+  await page.getByTestId('refine-submit').click();
+
+  const panel = page.getByTestId('change-preview');
+  // `data-kind` rozhoduje: `candidates` i `refused` jsou taky panel, jen to
+  // nejsou plány. Bez atributu by `toBeVisible()` prošlo i nad odmítnutím.
+  await expect(panel).toHaveAttribute('data-kind', 'preview', { timeout: CHANGE_BUDGET_MS });
+  act('takt IV – druhá věta → plán změny', Date.now() - planned);
+
+  // Plán míří na **jeden** objekt a řekne na který. Prázdný popisek by prošel
+  // pouhým `toBeVisible()`, takže se sada ptá na text.
+  await expect(page.getByTestId('change-target')).not.toBeEmpty();
+  await expect(page.getByTestId('change-summary')).not.toBeEmpty();
+
+  // **A tady se produkt zase ozve** (`T45-honestlabel`). Plán té změny nenapsal
+  // model teď, je to nejbližší uvařená změna, a porotce to má vědět. Je to jiná
+  // věta než ta o původu světa a jiná komponenta: přiznává se původ **plánu**,
+  // ne původ světa, který v tuhle chvíli sedí na přesné shodě a mlčí.
+  await expect(page.getByTestId('change-authored')).toHaveCount(1);
+
+  // ── Takt V: potvrzení přestaví svět a identita to přežije ────────────────
+  const applied = Date.now();
+  await page.getByTestId('change-apply').click();
+  // Panel po potvrzení zmizí: rozhodnuto je, není o čem rozhodovat.
+  await expect(panel).toHaveCount(0, { timeout: CHANGE_BUDGET_MS });
+  await page.waitForFunction(
+    (was) => (window.__worldstreamStage?.builds() ?? 0) > was,
+    beforeChange.builds,
+    { timeout: CHANGE_BUDGET_MS },
+  );
+  act('takt V – potvrzení → změněný svět', Date.now() - applied);
+
+  const afterChange = await stageShape(page);
+  await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live');
+  await expect(page.getByTestId('world-broken')).toHaveCount(0);
+
+  // **Identita změnu přežije** — to je celý slib dějství III. Mění se jeden
+  // objekt, ne svět: žádný `stableId` nesmí přibýt ani zmizet, jinak porotce
+  // dostal nový svět a tvrzení o chirurgické změně je nepravda.
+  expect(afterChange.ids, 'druhá věta vyměnila svět, ne objekt').toEqual(beforeChange.ids);
+
+  // **A právě jeden objekt musí vypadat jinak.** To je celý rozdíl mezi
+  // „chirurgickou změnou" a „novým světem", a drží obě strany naráz: nula
+  // znamená, že `apply()` svět jen přestavělo z týchž dat (`builds()` by
+  // vyrostlo i tak), víc než jedna znamená, že se porotci pod rukama změnilo
+  // i to, o co nežádal. Naměřeno: hne se jedině kupole, cíl věty.
+  const moved = afterChange.signatures.filter(
+    (signature, index) => signature !== beforeChange.signatures[index],
+  );
+  expect(
+    moved.length,
+    `druhá věta měla změnit právě jeden objekt (${beforeChange.signatures.join(' | ')} → ${afterChange.signatures.join(' | ')})`,
+  ).toBe(1);
+
+  // ── Takt VI: porotce zkusí vlastní větu ──────────────────────────────────
   //
   // `RULES.md` §3.3 mu na to dává právo, takže tohle je ta věta, o kterou se
   // demo doopravdy rozbije. Nesmí skončit prázdnem ani chybou — nejbližší
   // autorovaný svět je odpověď, ne výmluva.
   const ownSentence = await sentenceToCanvas(page, UNSEEN);
-  act('takt IV – vlastní věta porotce → svět', ownSentence);
+  act('takt VI – vlastní věta porotce → svět', ownSentence);
 
   expect(
     await page.evaluate(() => window.__worldstreamStage!.slots().length),

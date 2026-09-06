@@ -130,8 +130,16 @@ describe('Codex uvaří světy dopředu', () => {
       if (!grammar.ok) throw new Error(`${grammar.reason}: ${grammar.detail}`);
 
       const limit = Number(process.env.AUTHOR_LIMIT ?? '30');
+      // **`AUTHOR_SKIP_CREATE=1` pustí jen druhou fázi.** `AUTHOR_LIMIT` na to
+      // nestačí, protože krátí obě naráz: nula první fáze je i nula druhé.
+      // Naměřeno 6. 9. 2026 — devatenáct nezaložených světů je devatenáct už
+      // jednou zahozených vět (`authoring-report.json`), takže jejich opakování
+      // stojí ~70 minut a druhou fázi jen odloží.
+      const skipCreate = process.env.AUTHOR_SKIP_CREATE === '1';
       let store = readStore();
-      const todo = stillToAuthor(corpus.create as CreateCase[], store).slice(0, limit);
+      const todo = skipCreate
+        ? []
+        : stillToAuthor(corpus.create as CreateCase[], store).slice(0, limit);
 
       process.stdout.write(
         `\nsklad drží ${String(store.worlds.length)}, k uvaření ${String(todo.length)} z ${String(corpus.create.length)}\n\n`,

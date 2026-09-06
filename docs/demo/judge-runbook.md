@@ -45,7 +45,13 @@ dorazí detail**, takže scéna je vidět, i když se hmota ještě dopočítáv
 
 Vlajková věta, kterou sklad zná přesně:
 
-> A cathedral of stacked shipping containers around a light well.
+> A brutalist observatory, one dome on three splayed legs, on a windswept plateau.
+
+**Tuhle větu vybral sklad, ne vkus.** Průchod má od 6. 9. 2026 i dějství III
+(takty IV a V), a to se nedá předvést nad libovolným světem: uvařená druhá věta
+musí mířit na objekt kreslený **hrdinským tvarem**, jinak se přepis tvaru
+odmítne. Katedrála z kontejnerů, která tu stála dřív, má jedinou uvařenou změnu
+a ta je pouze o barvě.
 
 ### Takt II – hmota ztvrdne a dá se do ní kouknout
 
@@ -58,13 +64,47 @@ zatím na hlínu.
 něco se postaví, ale nic neztvrdne. Sada to soudí příčkami, ne počtem objektů,
 právě proto.
 
-### Takt III – produkt řekne, odkud ten svět je
+### Takt III – produkt u známé věty mlčí
 
-Vedle stavové věty stojí poznámka, že svět **nenapsal model, ale sklad dopředu
-autorovaných světů**. Není to omluva ani drobné písmo: porotce má právo vědět,
-co zrovna vidí, a přihláška se soudí i podle toho, co o sobě tvrdí.
+Nad vlajkovou větou **žádná poznámka o původu nestojí, a to je správně**. Věta
+trefila uvařený svět přesně, takže se nic nenahrazovalo a není co přiznávat.
+Poznámka patří k **náhradě** – porotce ji uvidí u taktů IV a VI. Kdyby stála
+u každého světa, byla by z poctivosti omluva na pozadí, kterou přestane číst.
 
-### Takt IV – porotce zkusí vlastní větu
+Že se produkt ozve tam, kde má, a mlčí tam, kde nemá, měří sada v jednom
+průchodu obojí – „někdy mlčí, někdy mluví" je tvrzení, které se jinak splnit
+nedá.
+
+### Takt IV – druhá věta chirurgicky změní jeden objekt
+
+Pod plátnem je druhé pole, **Change one thing in this world**. Porotce do něj
+napíše, co má být jinak, a produkt mu nejdřív ukáže **plán, ne hotovou změnu**:
+který objekt se změní, jednou větou co se s ním stane, čeho se změna týká
+(tvar / chování / vzhled) a jmenovitě **co zůstane**. Nic se nestane, dokud
+porotce nezmáčkne *Apply*.
+
+Sada na to používá:
+
+> Splay the observatory legs wider so the dome drops lower.
+
+Je to schválně **jinými slovy**, než jak tu větu zná sklad („Splay the
+observatory legs further out so the dome sits lower."), protože porotce píše
+vlastní větu, ne opsanou. Produkt proto vedle plánu řekne nahlas, že ten plán
+napsal dopředu sklad, ne model teď.
+
+### Takt V – potvrzení a svět se změní pod rukama
+
+Po *Apply* se svět přestaví a panel plánu zmizí. **Změní se právě jeden
+objekt** – ten, který plán jmenoval; ostatní zůstanou bajt po bajtu tam, kde
+byly, a žádný objekt nepřibude ani nezmizí. To je celý rozdíl mezi „chirurgickou
+změnou" a „novým světem" a sada ho měří přesně takhle: jeden změněný otisk, ne
+nula a ne dva.
+
+⚠ **Změna nemusí být nápadná a je to vlastnost, ne vada.** Uvařená změna
+posouvá kupoli dolů; počet trojúhelníků se tím nehne vůbec, hne se umístění.
+Kdo hledá „vidím rozdíl", ať se dívá na kupoli, ne na siluetu.
+
+### Takt VI – porotce zkusí vlastní větu
 
 `RULES.md` §3.3 mu na to dává právo, takže je to ten takt, o který se demo
 doopravdy rozbije. Věta, kterou nikdo nepředvídal, **nesmí skončit prázdnem ani
@@ -72,18 +112,24 @@ chybou** – odpoví jí nejbližší autorovaný svět. Sada na to používá:
 
 > A lighthouse built from stacked fishing boats, still dripping.
 
+A **teď** se produkt ozve: tenhle svět nenapsal model ani nikdo nepsal na tuhle
+větu, je to nejbližší uvařený. Porotce má právo to vědět a přihláška se soudí
+i podle toho, co o sobě produkt tvrdí.
+
 ## Naměřené doby taktů
 
 Běh 6. 9. 2026, `npx playwright test e2e/judge-flow.spec.ts --project=chromium`,
-celá sada **50 s**. Druhý sloupec je předchozí běh téhož dne – je tam schválně,
+celá sada **55 s**. Druhý sloupec je předchozí běh téhož dne – je tam schválně,
 aby bylo vidět, **jak moc se ta čísla hýbou sama od sebe**.
 
 | Takt | Co porotce dělá | Naměřeno | Předchozí běh |
 |---|---|---|---|
-| 0 | stránka se načte a čeká na větu | **406 ms** | 389 ms |
-| I | věta → svět na plátně (první vykreslený snímek) | **1 854 ms** | 1 006 ms |
-| II | hmota ztvrdne a je vidět v Inspect | **1 170 ms** | 691 ms |
-| IV | vlastní věta porotce → svět | **2 998 ms** | – |
+| 0 | stránka se načte a čeká na větu | **572 ms** | 611 ms |
+| I | věta → svět na plátně (první vykreslený snímek) | **1 272 ms** | 1 300 ms |
+| II | hmota ztvrdne a je vidět v Inspect | **646 ms** | 739 ms |
+| IV | druhá věta → plán změny | **737 ms** | 821 ms |
+| V | potvrzení → změněný svět | **1 357 ms** | 1 079 ms |
+| VI | vlastní věta porotce → svět | **3 615 ms** | 2 998 ms |
 
 **Rozptyl mezi dvěma běhy je skoro dvojnásobek**, takže se z těch čísel dá číst
 řád, ne přesná hodnota. Řád je to podstatné: porotce čeká na první svět
@@ -93,31 +139,33 @@ medián 35–39 s na větu, a to je ten rozdíl, kvůli kterému se od něj upus
 **Takt III v tabulce není schválně** – neměří se v něm čekání, ale to, že
 produkt u přesně známé věty o původu mlčí. Trvá tolik, co jedno přečtení DOM.
 
+⚠ **Takty I a VI nejsou totéž číslo a nemají být.** Přesně známá věta jde ze
+skladu rovnou, neznámá se musí nejdřív porovnat se všemi uvařenými světy –
+proto je takt VI trojnásobek taktu I. Obojí je pod pěti sekundami.
+
 Součet taktů 0, I a II je **zhruba 3,4 s od načtení stránky k hotové hmotě**.
 
 ## ⚠ Co porotce na téhle cestě NEDOSTANE
 
-Design book §4 slibuje **čtyři dějství**. Cesta na hlavní stránce má dnes
-první dvě. Ověřeno 6. 9. 2026 ve zdroji, ne odhadnuto:
+Design book §4 slibuje **čtyři dějství**. Cesta na hlavní stránce má od
+6. 9. 2026 **první tři**; dějství III se na ni dostalo tím, že plánovač změny
+dostal tutéž záložní cestu přes sklad autorovaných světů, jakou měla první
+věta. Ověřeno ve zdroji a naměřeno sadou, ne odhadnuto.
 
-- **Druhá věta, která chirurgicky změní jeden objekt** (dějství III), na hlavní
-  stránce není. Panel změny se do skořápky předává propem `change` a hlavní
-  stránka ho nepředává; žije na `/dev/refine`. Navíc plánovač změny se staví
-  výhradně z cloudového modelu a **nemá záložní cestu přes sklad autorovaných
-  světů**, kterou první věta od `T46-routewire` má. Bez zaplaceného klíče
-  (`G2`, rozhodnuto 5. 9. 2026) tedy druhá věta nemá výrobce vůbec.
-- **Přetáčení času a větvení budoucnosti** (dějství IV) na hlavní stránce taky
-  není – osa se předává propem `axis` a hlavní stránka ho nepředává. Žije na
-  `/dev/time`.
+Chybí **přetáčení času a větvení budoucnosti** (dějství IV). Osa se do skořápky
+předává propem `axis` a hlavní stránka ho nepředává, takže žije jen na
+vývojářské adrese `/dev/time`. Postavené a otestované to je – jen ne na
+porotcově cestě. Až se na ni dostane, patří do `e2e/judge-flow.spec.ts` takt
+navíc, ne nová sada.
 
-Obojí je **postavené a otestované**, jen na vývojářských adresách, které nejsou
-součástí porotcovy cesty. Až se na hlavní stránku dostanou, patří do
-`e2e/judge-flow.spec.ts` dva takty navíc – ne nová sada, jinak se „celý
-průchod" zase rozpadne na kusy, které nikdo nezkouší najednou.
+**Do té doby se ani v přihlášce, ani ve videu nesmí tvrdit, že porotce projde
+přetáčení času sám.** Ukázat se dá na vývojářské adrese; tvrdit se o něm smí
+jen to, co platí.
 
-**Do té doby se ani v přihlášce, ani ve videu nesmí tvrdit, že porotce ta dvě
-dějství projde sám.** Ukázat se dají na vývojářských adresách; tvrdit se o nich
-smí jen to, co platí.
+⚠ **Druhá věta má dnes výrobce jen pro světy, které sklad zná.** Uvařená změna
+existuje k pěti světům z jedenácti (`c01`, `c03`, `c04`, `c09`, `c20`).
+Porotce, který změní svět mimo tuhle pětku, dostane poctivé odmítnutí, ne
+změnu – a vlajková věta je proto vybraná z ní.
 
 ## Čím se ta sada dá zfalšovat, a co se stane
 
