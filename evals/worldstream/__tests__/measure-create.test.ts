@@ -47,6 +47,7 @@ import {
   driveCreateCase,
   liveEmitter,
   percentile95,
+  runBudget,
   rungsAreAuthored,
   scrubDeep,
   scrubHeaders,
@@ -1042,5 +1043,148 @@ describe('the raw archive never reaches the public repo', () => {
     );
     expect(rules).toContain('evals/worldstream/create-raw.json');
     expect(rules).not.toContain('evals/worldstream/create-report.json');
+  });
+});
+
+/* ================================================================== *
+ * 11. Vypršený čas nesmí sebrat, co už se změřilo.
+ * ================================================================== */
+
+describe('a run that runs out of time keeps what it measured', () => {
+  /** Atrapa hodin. Čas se posouvá ručně, takže se test nedívá na skutečný. */
+  const clockAt = (marks: number[]) => {
+    let at = 0;
+    return () => marks[Math.min(at++, marks.length - 1)];
+  };
+
+  it('always lets the first sentence through, even past an exhausted budget', () => {
+    // Bez jediného pozorování se doba té další věty nedá odhadnout a běh,
+    // který nezměřil nic, je horší než běh useknutý po jedné. Hodiny se tu
+    // schválně posunou **za** rozpočet: zámek se ptá na počet pozorování, ne
+    // na zbývající čas, jinak by nulový rozpočet nezměřil vůbec nic.
+    const budget = runBudget({ totalMs: 0, now: clockAt([0, 5]) });
+    expect(budget.roomForAnother()).toBeNull();
+  });
+
+  it('stops before a sentence that would not fit in what is left', () => {
+    // Rozpočet 150, první věta trvala 100 → na druhou zbývá 50 a to je míň,
+    // než ta nejpomalejší dosud.
+    const budget = runBudget({ totalMs: 150, now: clockAt([0, 100]) });
+    budget.recordCase(100);
+
+    const stop = budget.roomForAnother();
+    expect(stop).not.toBeNull();
+    expect(stop).toContain('after 1 sentences');
+    expect(stop).toContain('50 ms left of 150 ms');
+    expect(stop).toContain('slowest sentence so far took 100 ms');
+  });
+
+  it('keeps going while another sentence still fits', () => {
+    const budget = runBudget({ totalMs: 1_000, now: clockAt([0, 100, 200]) });
+    budget.recordCase(100);
+    expect(budget.roomForAnother()).toBeNull();
+    budget.recordCase(100);
+    expect(budget.roomForAnother()).toBeNull();
+  });
+
+  it('estimates the next sentence from the slowest one, not the last one', () => {
+    // Kdyby se odhadovalo z poslední (10 ms), pustil by rozpočet další větu,
+    // ta by trvala jako ta nejpomalejší (300 ms) a doběhla by až za limitem
+    // vitestu — tedy přesně do vady, kvůli které rozpočet vzniká.
+    const budget = runBudget({ totalMs: 500, now: clockAt([0, 310]) });
+    budget.recordCase(300);
+    budget.recordCase(10);
+    expect(budget.roomForAnother()).toContain('slowest sentence so far took 300 ms');
+  });
+
+  it('accepts a sentence that fits exactly and refuses one millisecond past it', () => {
+    const fits = runBudget({ totalMs: 200, now: clockAt([0, 100]) });
+    fits.recordCase(100);
+    expect(fits.roomForAnother()).toBeNull();
+
+    const past = runBudget({ totalMs: 200, now: clockAt([0, 101]) });
+    past.recordCase(100);
+    expect(past.roomForAnother()).not.toBeNull();
+  });
+});
+
+describe('a half-measured run must not read as a verdict on the model', () => {
+  it('says how far it got, before it says anything about geometry', () => {
+    // Osmnáct vět z třiceti, všechny poctivé. Bez první věty by brána K2
+    // rozhodovala o modelu podle běhu, který se ke dvanácti větám nedostala.
+    const short = buildCreateReport(spread(18), {
+      sessionSeed: SEED,
+      measuredAt: '2026-09-06T00:00:00.000Z',
+      planned: 30,
+      stopReason: 'the run budget stopped the measurement after 18 sentences',
+    });
+
+    expect(short.planned).toBe(30);
+    expect(short.totals.attempted).toBe(18);
+    expect(short.gateFailures[0]).toContain('18 of 30 sentences');
+    expect(short.gateFailures[0]).toContain('the run budget stopped');
+    expect(short.gateFailures[0]).toContain('an interrupted run, not the model');
+  });
+
+  it('files the same line when the loop broke without saying why', () => {
+    const short = buildCreateReport(spread(2), {
+      sessionSeed: SEED,
+      measuredAt: '2026-09-06T00:00:00.000Z',
+      planned: 30,
+    });
+    expect(short.stopReason).toBeNull();
+    expect(short.gateFailures[0]).toContain('2 of 30 sentences');
+  });
+
+  it('stays quiet about it when every planned sentence got measured', () => {
+    const whole = buildCreateReport(spread(30), {
+      sessionSeed: SEED,
+      measuredAt: '2026-09-06T00:00:00.000Z',
+      planned: 30,
+    });
+    expect(whole.stopReason).toBeNull();
+    expect(whole.gateFailures).toEqual([]);
+  });
+
+  it('assumes the run was whole when nobody said how many were planned', () => {
+    // Zpětná slučitelnost: starší volání beze `planned` nesmí vyrobit falešný
+    // poplach o useknutém běhu.
+    const legacy = report(spread(30));
+    expect(legacy.planned).toBe(30);
+    expect(legacy.gateFailures).toEqual([]);
+  });
+});
+
+describe('the runner asks the budget before it spends, and tells it after', () => {
+  const live = readFileSync(
+    fileURLToPath(new URL('../live-create.measure.ts', import.meta.url)),
+    'utf8',
+  );
+
+  it('consults the budget before the sentence and records it afterwards', () => {
+    // Pořadí je celá vlastnost: ptát se až po větě znamená rozpočet, který
+    // nikdy nikoho nezastavil.
+    const asks = live.indexOf('roomForAnother()');
+    const spends = live.indexOf('driveCreateCase(');
+    const records = live.indexOf('recordCase(');
+
+    expect(asks).toBeGreaterThan(-1);
+    expect(asks).toBeLessThan(spends);
+    expect(records).toBeGreaterThan(spends);
+  });
+
+  it('leaves vitest a bigger limit than the budget it enforces itself', () => {
+    // Kdyby byl limit vitestu menší nebo roven rozpočtu, o konci by zase
+    // rozhodl vitest — a report by se nezapsal, protože opuštěný `await`
+    // `finally` nespustí.
+    expect(live).toContain('budgetMs + TIMEOUT_MARGIN_MS');
+    expect(/const TIMEOUT_MARGIN_MS = [1-9]/.test(live)).toBe(true);
+  });
+
+  it('tells the report how many sentences were planned', () => {
+    // Bez toho by report o useknutém běhu tvrdil, že `attempted` je všechno,
+    // co kdy mělo přijít.
+    expect(live).toContain('planned: corpus.create.length');
+    expect(live).toContain('stopReason,');
   });
 });

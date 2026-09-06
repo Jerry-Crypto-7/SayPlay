@@ -26,6 +26,7 @@
  */
 
 import { writeFileSync } from 'node:fs';
+import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
@@ -38,11 +39,37 @@ import {
   buildCreateReport,
   driveCreateCase,
   liveEmitter,
+  runBudget,
   type CaseOutcome,
 } from './measure-create';
 
 /** Semínko běhu. Pevné, aby dva běhy nad týmž modelem šly porovnat. */
 const SESSION_SEED = 4021;
+
+/**
+ * **Rozpočet měření — a limit vitestu až NAD ním.**
+ *
+ * O konci běhu musí rozhodnout rozpočet ve smyčce, ne vitest. Vitest čekající
+ * operaci **opustí**, takže cokoli, co mělo přijít po ní — zápis reportu,
+ * zápis archivu — se nespustí; naměřeno 6. 9. 2026, kdy 45 minut měření
+ * skončilo nulou souborů.
+ *
+ * Čísla vycházejí z prvního pokusu: medián ~142 s na větu, 30 vět ≈ 71 minut.
+ * Sto minut dává rezervu na pomalejší věty, deset minut navíc pak dovolí
+ * doběhnout té větě, která zrovna běží, když rozpočet dojde.
+ */
+const DEFAULT_BUDGET_MS = 100 * 60_000;
+const TIMEOUT_MARGIN_MS = 10 * 60_000;
+
+/**
+ * Zkrácení rozpočtu pro zkušební běh. Nastavené na míň, než trvá jedna věta,
+ * doběhne měření po první z nich a **na disku zůstane report** — což je jediný
+ * způsob, jak si tuhle ochranu ověřit nad skutečným poskytovatelem, aniž by se
+ * čekala hodina a půl.
+ */
+const budgetMs = ((raw) => (Number.isFinite(raw) && raw > 0 ? raw : DEFAULT_BUDGET_MS))(
+  Number(process.env.WORLDSMITH_MEASURE_BUDGET_MS ?? ''),
+);
 
 const REPORT_FILE = fileURLToPath(new URL('./create-report.json', import.meta.url));
 const ARCHIVE_FILE = fileURLToPath(new URL('./create-raw.json', import.meta.url));
@@ -68,9 +95,21 @@ describe('the live create path over the frozen set', () => {
       const mesh = createMeshClient({ allowMainThread: true });
 
       const cases: CaseOutcome[] = [];
+      const budget = runBudget({ totalMs: budgetMs, now: () => performance.now() });
+      let stopReason: string | null = null;
       let report: ReturnType<typeof buildCreateReport> | null = null;
       try {
         for (const entry of corpus.create as CreateCase[]) {
+          // **Ptát se PŘED větou, ne po ní.** Rozpočet neumí větu přerušit
+          // uprostřed — umí jenom nezačít další. Proto je limit vitestu o kus
+          // vyšší: musí se do něj vejít i ta věta, která začala na poslední
+          // chvíli.
+          stopReason = budget.roomForAnother();
+          if (stopReason !== null) {
+            process.stdout.write(`\n${stopReason}\n`);
+            break;
+          }
+
           upstream.caseId = entry.id;
           const done = await driveCreateCase(entry, {
             emit: (request) => upstream.emit(request),
@@ -79,6 +118,7 @@ describe('the live create path over the frozen set', () => {
             sessionSeed: SESSION_SEED,
           });
           cases.push(done);
+          budget.recordCase(done.latencyMs);
           process.stdout.write(
             `${entry.id} ${done.geometryAuthored ? 'authored' : (done.failure?.stage ?? 'lost')} ${String(Math.round(done.latencyMs))} ms\n`,
           );
@@ -88,10 +128,17 @@ describe('the live create path over the frozen set', () => {
         report = buildCreateReport(cases, {
           sessionSeed: SESSION_SEED,
           measuredAt: new Date().toISOString(),
+          planned: corpus.create.length,
+          stopReason,
         });
-        // **Obojí se zapíše i po pádu uprostřed.** Meshing ani profil nejsou
+        // **Obojí se zapíše i po VYHOZENÉ výjimce.** Meshing ani profil nejsou
         // v `driveCreateCase` chráněné, takže výjimka u dvacáté deváté věty by
         // jinak znamenala 29 zaplacených vět a žádný report.
+        //
+        // ⚠ **Na vypršený čas tenhle `finally` nestačí a nikdy nestačil.**
+        // Vitest čekající `await` na `testTimeout` opustí, takže se tenhle blok
+        // vůbec nespustí — naměřeno 6. 9. 2026: 19 vět z 30, 45 minut, nula
+        // souborů. Proti času chrání `runBudget()` ve smyčce výš, ne tohle.
         //
         // **A obojí projde scrubbingem emitoru**, ne jen archiv: hlášky `fetch`e
         // nesou celou adresu koncového bodu a doputují až do `failure.detail`.
@@ -111,7 +158,9 @@ describe('the live create path over the frozen set', () => {
       expect(report.totals.attempted).toBe(corpus.create.length);
       expect(report.gateFailures).toEqual([]);
     },
-    // Třicet vět krát až tři kola sebeopravy, každé kolo řádově desítky sekund.
-    45 * 60_000,
+    // **Vitest je až druhá mez, ne první.** O konci rozhoduje rozpočet uvnitř
+    // smyčky; tenhle limit jen musí být tak vysoký, aby doběhla i věta, která
+    // začala těsně před vyčerpáním rozpočtu.
+    budgetMs + TIMEOUT_MARGIN_MS,
   );
 });

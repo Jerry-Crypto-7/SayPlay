@@ -302,6 +302,68 @@ export function worldDistance(first: WorldProfile, second: WorldProfile): number
 }
 
 /* ------------------------------------------------------------------ *
+ * Rozpočet běhu.
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Vejde se do zbývajícího času ještě jedna věta?**
+ *
+ * Do 6. 9. 2026 měl spouštěč `finally`, jehož komentář sliboval report „i po
+ * pádu uprostřed". Chránil ale jen proti **vyhozené výjimce**. Když test
+ * vyprší na `testTimeout`, vitest čekající `await` opustí, `finally` se
+ * nespustí a na disku nezůstane nic. Naměřeno na vlastní kůži: **19 vět z 30
+ * změřeno, 45 minut, nula souborů.** Ochrana byla napsaná na to selhání,
+ * které nepřišlo.
+ *
+ * Oprava proto **není** vyšší `testTimeout` — ten jen posune hranici, za
+ * kterou se zase ztratí všechno. Je to rozpočet **uvnitř smyčky**, kratší než
+ * limit vitestu: než se sáhne na další větu, zeptá se, jestli na ni zbývá
+ * čas; když ne, smyčka skončí, report se zapíše s tím, co se změřilo, a brána
+ * spadne poctivě na `attempted < planned`.
+ *
+ * Rozhodování bydlí tady, ne ve spouštěči, ze stejného důvodu jako placené
+ * volání: proti atrapě hodin se dá projet testem, který nic nestojí.
+ */
+export interface RunBudget {
+  /** Věta, proč další případ nezačínat — nebo `null`, když je čas. */
+  roomForAnother(): string | null;
+  /** Ohlásí doměřený případ. Nejpomalejší z nich odhaduje ten příští. */
+  recordCase(elapsedMs: number): void;
+}
+
+/**
+ * Odhad příští věty je **ta nejpomalejší dosud**, ne průměr ani ta poslední.
+ *
+ * Průměr by rozpočet vyčerpal těsně a poslední věta by doběhla až za limitem
+ * vitestu — tedy přesně do vady, kvůli které rozpočet vzniká. Konzervativní
+ * odhad stojí pár nezměřených vět, optimistický stojí celý běh.
+ *
+ * **První věta jde vždycky.** Bez jediného pozorování se doba té další nedá
+ * odhadnout a běh, který nezměřil nic, je horší než běh useknutý po jedné.
+ */
+export function runBudget(options: {
+  readonly totalMs: number;
+  readonly now: () => number;
+}): RunBudget {
+  const started = options.now();
+  let slowestMs = 0;
+  let measured = 0;
+
+  return {
+    roomForAnother(): string | null {
+      if (measured === 0) return null;
+      const remainingMs = options.totalMs - (options.now() - started);
+      if (remainingMs >= slowestMs) return null;
+      return `the run budget stopped the measurement after ${String(measured)} sentences: ${String(Math.round(remainingMs))} ms left of ${String(Math.round(options.totalMs))} ms and the slowest sentence so far took ${String(Math.round(slowestMs))} ms`;
+    },
+    recordCase(elapsedMs: number): void {
+      measured += 1;
+      if (elapsedMs > slowestMs) slowestMs = elapsedMs;
+    },
+  };
+}
+
+/* ------------------------------------------------------------------ *
  * Jeden případ.
  * ------------------------------------------------------------------ */
 
@@ -530,6 +592,14 @@ export interface WorldPair {
 export interface CreateReport {
   readonly measuredAt: string;
   readonly sessionSeed: number;
+  /**
+   * Kolik vět měl běh změřit. Menší `totals.attempted` znamená useknutý běh —
+   * a report to musí říct sám, protože soubor na disku přežije i běh, který
+   * doběhl jen do půlky.
+   */
+  readonly planned: number;
+  /** Věta, kterou běh skončil dřív, než mu došly věty. `null` = doběhl. */
+  readonly stopReason: string | null;
   readonly cases: readonly CaseOutcome[];
   readonly totals: {
     readonly attempted: number;
@@ -558,8 +628,17 @@ export function percentile95(values: readonly number[]): number {
 
 export function buildCreateReport(
   cases: readonly CaseOutcome[],
-  meta: { readonly sessionSeed: number; readonly measuredAt: string },
+  meta: {
+    readonly sessionSeed: number;
+    readonly measuredAt: string;
+    /** Kolik vět mělo dojít na řadu. Bez hodnoty se soudí jen to, co doběhlo. */
+    readonly planned?: number;
+    /** Věta z `RunBudget.roomForAnother()`, když smyčka skončila dřív. */
+    readonly stopReason?: string | null;
+  },
 ): CreateReport {
+  const planned = meta.planned ?? cases.length;
+  const stopReason = meta.stopReason ?? null;
   const totals = {
     attempted: cases.length,
     intentValid: cases.filter((entry) => entry.intentValid).length,
@@ -595,6 +674,17 @@ export function buildCreateReport(
 
   const gateFailures: string[] = [];
 
+  // **Useknutý běh se hlásí dřív než model — ze stejného důvodu jako strop.**
+  // Nezměřené věty se do součtů nedostanou vůbec, takže `geometryAuthored`
+  // spočítané z osmnácti vět vypadá jako plnohodnotné číslo. Bez téhle věty by
+  // brána K2 rozhodovala o modelu podle běhu, který se k dvanácti větám vůbec
+  // nedostal.
+  if (totals.attempted < planned) {
+    gateFailures.push(
+      `the run measured ${String(totals.attempted)} of ${String(planned)} sentences${stopReason === null ? '' : ` (${stopReason})`}: the numbers below measure an interrupted run, not the model`,
+    );
+  }
+
   // **Strop, který během běhu spadl, se hlásí jako první a vlastní větou.**
   // Bez toho se běh useknutý účetnictvím čte jako vada modelu: nedoběhlé věty
   // skončí jako `unavailable`, `geometryAuthored` spadne pod práh a brána K2 by
@@ -626,6 +716,8 @@ export function buildCreateReport(
   return {
     measuredAt: meta.measuredAt,
     sessionSeed: meta.sessionSeed,
+    planned,
+    stopReason,
     cases,
     totals,
     geometryAuthoredRate,
