@@ -519,6 +519,45 @@ describe('kvóta volajícího odmítá nováčka, ne cizí relaci', () => {
     expect(getSession('podvrh-0'), 'sledovaná relace přece zestárla').not.toBeNull();
   });
 
+  /**
+   * **Relace, která už nikam nejde, nesmí držet kvótu svého volajícího**
+   * (P15 `T16-quotaselfengage` a `T16-idleforever`, přeměřeno 6. 9. 2026).
+   *
+   * Doběhlé relace uklízí až `evictOverCap()`, a ta se rozjede teprve nad
+   * `MAX_LIVE_SESSIONS`. Pod tím stropem zůstávaly `failed` relace v registru
+   * a `callerHolds()` je počítal, takže osm padlých generací zamklo volajícímu
+   * vlastní kbelík — bez jediné relace, která by komukoli něco dodávala.
+   *
+   * ⚠ **Proč to jde měřit teprve teď.** Do `T46-routewire` (5. 9. 2026)
+   * skončila bez `.env` každá relace `failed`, takže tahle oprava kvótu
+   * vypínala úplně a čtyři route testy červenaly. Dnes se sáhne po uvařeném
+   * světě (naměřeno 6. 9. 2026: **11 světů ve skladu, každá věta dostane
+   * `nearest`, nikdy `null`**), relace dojede do fáze `world` a padlá je zase
+   * výjimka — takže vyjmout ji smí. Přeměřeno: **466/466 zelených.**
+   *
+   * Fáze `world` se tím **nedotýká schválně**: na ní drží páka z testu výš
+   * a zavírá ji klíč z důvěryhodného konce řetězu, ne stárnutí.
+   */
+  it('doběhlé relace jednoho klíče nedrží jeho kvótu', () => {
+    naPráh();
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
+      admitted(`padlá-${i}`, T0 + i, 'ip:volající').session.fail('the model could not be reached');
+    }
+
+    const další = ownedWorld('devátá', T0 + MAX_SESSIONS_PER_CALLER, 'ip:volající');
+    expect(další, 'osm doběhlých relací drží volajícímu vlastní kbelík').not.toBeNull();
+
+    // A z druhé strany, aby to neznamenalo jen „kvóta nic nedělá": tytéž
+    // relace ve fázi `world` kbelík držet MUSÍ, jinak je kvóta vypnutá.
+    for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
+      admitted(`běžící-${i}`, T0 + i, 'ip:druhý');
+    }
+    expect(
+      ownedWorld('devátá-běžící', T0 + MAX_SESSIONS_PER_CALLER, 'ip:druhý'),
+      'kvóta nedrží ani nad běžícími relacemi — je vypnutá, ne opravená',
+    ).toBeNull();
+  });
+
   it('devátá relace jednoho klíče se nad prahem odmítne a osm předchozích zůstane', () => {
     naPráh();
     for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {

@@ -228,16 +228,28 @@ export const MAX_LIVE_SESSIONS = 64;
  * oběti kbelík plný i po třiceti dnech` — práh si podkládá `naPráh()`, a je to
  * část útoku, ne kulisa testu.
  *
- * ⚠ **Stárnutím se to nespravuje a příští kolo to nemá zkoušet — změřeno.**
- * (a) Vyjmout `complete`/`failed` z `callerHolds()` **vypne kvótu úplně tam,
- * kde dnes běží demo**: bez `.env` skončí každá relace `failed` ještě před
- * dalším POSTem (sonda přes route, 4. 9. 2026), takže `callerHolds()` vrací
- * nulu a čtyři route testy kvóty zbarví červeně. Navíc by to tuhle páku
- * netrefilo — drží na `world`, ne na doběhlé fázi. (b) Nechat stárnout
- * i sledované relace položí pinnutou vlastnost „otevřený proud drží relaci
- * naživu i tři hodiny" — tedy přesně toho porotce, kvůli kterému ta
- * vlastnost vznikla. Zavírá to klíč z důvěryhodného konce řetězu
+ * ⚠ **Stárnutím se tahle páka nespravuje — a jedno ze dvou starých zamítnutí
+ * padlo, tak ať se neopisuje dál.**
+ *
+ * (a) Vyjmout `complete`/`failed` z `callerHolds()` **se 6. 9. 2026 udělalo**
+ * (`T16-quotaselfengage`, `T16-idleforever`). Do té doby to kvótu vypínalo
+ * úplně tam, kde běží demo: bez `.env` skončila každá relace `failed` ještě
+ * před dalším POSTem, `callerHolds()` vracel nulu a čtyři route testy
+ * červenaly (sonda přes route, 4. 9. 2026). **Ten předpoklad zrušila
+ * `T46-routewire`** — emitor je dnes `(await cloudEmitter()) ?? uvařený svět`,
+ * a sklad má 11 světů, z nichž každá věta dostane aspoň ten nejbližší (nikdy
+ * `null`, změřeno 6. 9. 2026). Relace tedy dojede do fáze `world` a padlá je
+ * zase výjimka; přeměřeno **466/466 zelených**. Doběhlé relace proto kvótu
+ * svého volajícího už nedrží — držely ji až do `evictOverCap()`, tedy teprve
+ * nad `MAX_LIVE_SESSIONS`.
+ *
+ * ⚠ **Tuhle páku to ale pořád netrefuje, a to se nezměnilo:** drží na fázi
+ * `world`, ne na doběhlé. Zavírá ji klíč z důvěryhodného konce řetězu
  * (`T16-trustedkey`), ne čtvrté kolo stárnutí.
+ *
+ * (b) Nechat stárnout i sledované relace položí pinnutou vlastnost „otevřený
+ * proud drží relaci naživu i tři hodiny" — tedy přesně toho porotce, kvůli
+ * kterému ta vlastnost vznikla. **Zamítnuté to zůstává.**
  *
  * ✅ **Ten klíč přistál 4. 9. 2026 a je to `trustedCallerKey()`, ne opravený
  * `callerKey()`.** Plán předepisoval opravit tu původní funkci; **změřeno
@@ -593,7 +605,11 @@ function nejdražšíKbelík(keep: string): string | undefined {
 /** Kolik relací ten klíč právě drží. */
 function callerHolds(owner: string): number {
   let held = 0;
-  for (const stored of live.values()) if (stored.owner === owner) held += 1;
+  for (const stored of live.values()) {
+    const phase = stored.session.phase;
+    if (phase === 'complete' || phase === 'failed') continue;
+    if (stored.owner === owner) held += 1;
+  }
   return held;
 }
 
