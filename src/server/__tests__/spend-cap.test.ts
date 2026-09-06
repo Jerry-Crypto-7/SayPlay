@@ -889,11 +889,22 @@ describe('strop drží i za hranicí jedné instance', () => {
    * peníze na model — přičemž to, co zrovna kouká, žádné nepotřebuje.
    */
   it('vyčerpaný rozpočet nezastaví volání zdarma', async () => {
-    const cap = new SpendCap({ enabled: true, capUsd: 0.005 }, null, memoryLedger());
-    const first = await cap.reserve(0.01);
-    expect(first.ok, 'předpoklad testu: kladná rezervace měla strop přetéct').toBe(false);
+    // **Kniha se musí přeplnit ZVENČÍ, ne odmítnutou rezervací.** Odmítnutá
+    // rezervace si svoje dolary bere zpátky (`giveBack()`), takže by kniha
+    // skončila zase na nule a test by byl zelený i nad opačným chováním —
+    // naměřeno mutací 6. 9. 2026, kdy tuhle aserci přeživší mutant neshodil.
+    const ledger = memoryLedger();
+    await ledger.add(10, 1);
 
+    const cap = new SpendCap({ enabled: true, capUsd: 5 }, null, ledger);
     expect((await cap.reserve(0)).ok, 'vyčerpaný rozpočet položil volání zdarma').toBe(true);
+
+    // A z druhé strany, aby se netvrdilo jen „něco pouští": táž kniha, táž
+    // instance, kladná částka — a ta narazit musí.
+    const paid = await cap.reserve(0.01);
+    expect(paid.ok).toBe(false);
+    if (paid.ok) throw new Error('unreachable');
+    expect(paid.reason).toBe('CAP_EXHAUSTED');
   });
 
   /**
