@@ -130,6 +130,26 @@ export interface ClientOptions {
 }
 
 /**
+ * **Věta pro člověka, kód pro stroj — a věta i tam, kde server žádnou neposlal.**
+ * Nález šestého kola nezávislé revize (6. 9. 2026), třikrát opsaný: tělo, které
+ * nejde přečíst jako JSON, nechá `error` nedefinované, a do panelu na obrazovce
+ * pak šel holý `HTTP_504`. Takové tělo produkt sám nevyrábí — route odpovídá
+ * výhradně přes `fail()` — vyrábí ho hosting, když funkci dojde čas, a porotce
+ * ten řetězec čte stejně. `openWorldstreamSession()` navíc větu serveru
+ * neukazovala **nikdy**, ani když ji server poslal.
+ *
+ * Kód zůstává v závorce za větou, aby se dal nahlásit, když se někdo ptá.
+ */
+function refusal(
+  prefix: string,
+  error: { readonly code?: string; readonly message?: string } | undefined,
+  status: number,
+): string {
+  const code = error?.code ?? `HTTP_${status}`;
+  return `${prefix}: ${error?.message ?? 'the server did not say why'} (${code})`;
+}
+
+/**
  * Věta → relace. Vrací adresy, ne stav: generace teprve začala a všechno, co
  * se o ní dá vědět, teče proudem.
  *
@@ -158,10 +178,7 @@ export async function openWorldstreamSession(
     | (Partial<SessionHandle> & { error?: { code?: string; message?: string } })
     | null;
 
-  if (!response.ok) {
-    const code = body?.error?.code ?? `HTTP_${response.status}`;
-    throw new Error(`the world was not opened: ${code}`);
-  }
+  if (!response.ok) throw new Error(refusal('the world was not opened', body?.error, response.status));
   if (typeof body?.sessionId !== 'string' || typeof body.events !== 'string')
     throw new Error('the world was not opened: the answer named no session');
 
@@ -404,12 +421,13 @@ export async function requestChange(
   if (!response.ok) {
     // **Ven jde věta serveru, ne jen jeho kód** — nález nezávislé revize
     // 6. 9. 2026. Kód je pro stroj; porotce čte tuhle výjimku na obrazovce
-    // v panelu změny, a `NO_AUTHORED_CHANGE` mu neřekne nic. Kód zůstává za
-    // větou, aby se dal nahlásit, když se někdo ptá.
-    const error = body?.error as { code?: string; message?: string } | undefined;
-    const code = error?.code ?? `HTTP_${response.status}`;
+    // v panelu změny, a `NO_AUTHORED_CHANGE` mu neřekne nic.
     throw new Error(
-      `the change was not planned: ${error?.message ?? code}${error?.message === undefined ? '' : ` (${code})`}`,
+      refusal(
+        'the change was not planned',
+        body?.error as { code?: string; message?: string } | undefined,
+        response.status,
+      ),
     );
   }
 
@@ -472,13 +490,15 @@ export async function commitChange(
   const body = (await response.json().catch(() => null)) as Record<string, unknown> | null;
 
   if (!response.ok) {
-    const error = body?.error as { code?: string; message?: string } | undefined;
     // Táž úvaha jako u `requestChange()` o kus výš: kód je pro stroj, věta pro
     // člověka. Neúspěšné *Apply* je navíc to horší ze dvou míst, kde se tohle
     // porotci ukáže — v tu chvíli už jednou rozhodl.
-    const code = error?.code ?? `HTTP_${response.status}`;
     throw new Error(
-      `the change was not applied: ${error?.message ?? code}${error?.message === undefined ? '' : ` (${code})`}`,
+      refusal(
+        'the change was not applied',
+        body?.error as { code?: string; message?: string } | undefined,
+        response.status,
+      ),
     );
   }
 

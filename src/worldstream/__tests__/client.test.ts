@@ -587,16 +587,60 @@ describe('requestChange a commitChange – co se ukáže při odmítnutí', () =
   });
 
   /**
-   * Kontrola k předchozímu: bez věty serveru zůstane **holý kód**, ne kód
-   * dvakrát. Bez `$` by test prošel i nad `CODE (CODE)`, což je přesně to,
-   * co ta podmínka v klientu vyrábí, když se zruší.
+   * **Bez věty serveru se věta nahradí, ne vynechá** — a kód se neopíše
+   * dvakrát. Do 6. 9. 2026 sem klient posílal holý `NO_AUTHORED_CHANGE`; šesté
+   * kolo nezávislé revize ukázalo, že „porotce čte větu" tím platí jen pro
+   * odpovědi, které větu nesou.
+   *
+   * Aserce jsou dvě schválně: `toThrow` je shoda na podřetězec, takže samotná
+   * první projde i nad `CODE (CODE)`. Druhá to zavírá tím, že kód smí být
+   * v celém řetězci jednou.
    */
-  it('bez věty serveru zůstane holý kód, ne kód dvakrát', async () => {
+  it('bez věty serveru se ukáže náhradní věta a kód právě jednou', async () => {
+    const rejected = requestChange(SESSION_ID, 'make the mast taller', {
+      fetch: async () => Response.json({ error: { code: 'NO_AUTHORED_CHANGE' } }, { status: 503 }),
+    });
+
+    await expect(rejected).rejects.toThrow(
+      'the change was not planned: the server did not say why (NO_AUTHORED_CHANGE)',
+    );
+    await expect(rejected).rejects.toThrow(/^[^(]*\(NO_AUTHORED_CHANGE\)$/);
+  });
+
+  /**
+   * **Tělo, které nejde přečíst jako JSON, je ta cesta, kterou nasazení
+   * doopravdy vyrobí** — nález šestého kola nezávislé revize (6. 9. 2026).
+   * Route odpovídá výhradně přes `fail()`, takže tuhle odpověď nevyrábí
+   * produkt, ale hosting, když funkci dojde čas: HTML pětsetčtyřka. Do panelu
+   * změny pak šel řetězec `the change was not planned: HTTP_504` — samý stroj,
+   * ani slovo pro člověka.
+   */
+  it('nečitelné tělo dá větu i tak, ne holé HTTP_504', async () => {
     await expect(
       requestChange(SESSION_ID, 'make the mast taller', {
-        fetch: async () => Response.json({ error: { code: 'NO_AUTHORED_CHANGE' } }, { status: 503 }),
+        fetch: async () =>
+          new Response('<html>An error occurred with your deployment</html>', {
+            status: 504,
+            headers: { 'content-type': 'text/html' },
+          }),
       }),
-    ).rejects.toThrow(/the change was not planned: NO_AUTHORED_CHANGE$/);
+    ).rejects.toThrow('the change was not planned: the server did not say why (HTTP_504)');
+  });
+
+  /**
+   * Táž třída na **první** větě, a tam byla horší: `openWorldstreamSession()`
+   * větu serveru neukazovala nikdy, ani když ji server poslal.
+   */
+  it('zakládání relace ukáže větu serveru, ne jen jeho kód', async () => {
+    await expect(
+      openWorldstreamSession('a salt flat under an iron mast', {
+        fetch: async () =>
+          Response.json(
+            { error: { code: 'CAP_EXHAUSTED', message: 'the budget for today is spent' } },
+            { status: 429 },
+          ),
+      }),
+    ).rejects.toThrow('the world was not opened: the budget for today is spent (CAP_EXHAUSTED)');
   });
 
   /** Neúspěšné *Apply* je to horší ze dvou míst — porotce už jednou rozhodl. */

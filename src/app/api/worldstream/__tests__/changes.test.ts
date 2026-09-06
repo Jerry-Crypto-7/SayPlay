@@ -536,6 +536,37 @@ describe('preview druhé věty', () => {
   });
 
   /**
+   * **Druhý směr téže shody, a v tomhle je ta drahá polovina** — nález šestého
+   * kola nezávislé revize (6. 9. 2026). Test nad ním pinuje jen relaxaci
+   * `segment.includes(stableId)`; obrácená, `stableId.includes(segment)`, mu
+   * projde, protože `touched` vždycky nese obecné segmenty (`sim`, `sockets`,
+   * `look`, `entities`) a ani `saltFlat`, ani `ironMast` žádný z nich neobsahuje.
+   *
+   * Přitom je to ta horší mutace: pod ní by z „Not named by this change"
+   * vypadl každý objekt, jehož jméno nese obecný segment jako podřetězec —
+   * `lookoutTower`, `simRig`. Tady to obstará `salt` jako jméno entity, kterou
+   * cesta jmenuje: `saltFlat` ho obsahuje, ale rovná se mu ne, takže pláň
+   * přežít musí.
+   */
+  it('segment, který je jen podřetězcem jména, ten objekt nedotýká', async () => {
+    const stored = await generated();
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'raise the mast on its footing' },
+      async () => ({
+        summary: 'the mast rides higher',
+        shape: null,
+        behavior: [{ op: 'replace', path: '/sim/entities/salt/state/lit', value: true }],
+        appearance: [],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect((await body(response)).preserved).toEqual(['the salt flat']);
+  });
+
+  /**
    * **Uvolněná relace nesmí dostat 200 na preview, které nikdo nedokáže
    * commitnout** (`T16-changeafterrelease`).
    *
