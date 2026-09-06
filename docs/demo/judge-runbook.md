@@ -80,8 +80,8 @@ nedá.
 Pod plátnem je druhé pole, **Change one thing in this world**. Porotce do něj
 napíše, co má být jinak, a produkt mu nejdřív ukáže **plán, ne hotovou změnu**:
 který objekt se změní, jednou větou co se s ním stane, čeho se změna týká
-(tvar / chování / vzhled) a jmenovitě **co zůstane**. Nic se nestane, dokud
-porotce nezmáčkne *Apply*.
+(tvar / chování / vzhled) a jmenovitě **které objekty ta změna vůbec
+nejmenuje**. Nic se nestane, dokud porotce nezmáčkne *Apply*.
 
 Sada na to používá:
 
@@ -101,10 +101,11 @@ To je celý rozdíl mezi „chirurgickou změnou" a „novým světem".
 ⚠ **„Jeden objekt" znamená jeden CÍL, ne jednu dotčenou věc, a je poctivé to
 říct nahlas.** Vlajková věta jmenuje nohy i kupoli, takže uvařená změna posune
 kupoli a zároveň přepíše parametr rozkročení nohou. Cíl je jeden – kupole –
-a panel proto pod plánem jmenuje jenom to, čeho se změna doopravdy nedotýká
-(u téhle věty plošinu, nikoli nohy). **Ten seznam se počítá z operací té
-změny**, ne z toho, koho věta jmenovala jako cíl; do 6. 9. 2026 se počítal
-opačně a produkt si tím uvnitř jednoho průchodu odporoval.
+a panel proto pod plánem vypíše objekty, které **žádná operace té změny
+nejmenuje** (u téhle věty plošinu; nohy v seznamu nejsou, protože je operace
+jmenují). **Ten seznam se počítá z operací**, ne z toho, koho věta jmenovala
+jako cíl; do 6. 9. 2026 se počítal opačně a produkt si tím uvnitř jednoho
+průchodu odporoval.
 
 ⚠ **Ten řádek se od 6. 9. 2026 jmenuje „Not named by this change", ne
 „Untouched", a ten rozdíl není kosmetický.** Sdílený poddokument – paleta,

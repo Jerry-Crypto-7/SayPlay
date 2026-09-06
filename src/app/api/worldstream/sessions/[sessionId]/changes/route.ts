@@ -170,10 +170,25 @@ function preservedBy(
     for (const segment of path) touched.add(segment);
     // `from` má jen `move`/`copy`, `value` jen zápisové operace — typ je
     // rozlišuje, ale ptát se na obojí je levnější než dvě větve podle `op`.
-    const wide = operation as { readonly from?: string; readonly value?: unknown };
-    for (const segment of (wide.from ?? '').split('/')) touched.add(segment);
+    //
+    // ⚠ **`typeof`, ne `?? ''` — nález třetího kola nezávislé revize
+    // 6. 9. 2026, a byl to pád, který jsem sem přinesl sám.** `readOperations`
+    // schválně soudí jen `path` a tvar operace nechává routeru, takže sem
+    // `{ op: 'move', from: 7 }` doopravdy dojde; `7 ?? ''` je `7` a `.split`
+    // spadne. Nad `withRequest` není žádný `catch`, takže by porotce místo
+    // odmítnutí dostal holou pětistovku bez `requestId` — a to až **po**
+    // zaplaceném volání modelu.
+    const wide = operation as { readonly from?: unknown; readonly value?: unknown };
+    if (typeof wide.from === 'string')
+      for (const segment of wide.from.split('/')) touched.add(segment);
     for (const name of namesWithin(wide.value)) touched.add(name);
   }
+
+  // **Nový tvar je taky část změny.** Jméno materiálu nebo kotvy se smí rovnat
+  // `stableId` jiného objektu, a pak ho změna jmenuje, aniž se objeví
+  // v jediné operaci (třetí kolo nezávislé revize). Nad dnešním skladem to
+  // neubere ani jeden objekt z pěti seznamů — měřeno, ne odhadnuto.
+  for (const name of namesWithin(plan.shape)) touched.add(name);
 
   return objects.filter((object) => !touched.has(object.stableId)).map((object) => object.label);
 }

@@ -406,6 +406,53 @@ describe('preview druhé věty', () => {
   });
 
   /**
+   * **Vadný tvar operace nesmí být pád** — třetí kolo nezávislé revize
+   * 6. 9. 2026. `readOperations` schválně soudí jen `path` a zbytek nechává
+   * routeru a `applyWorldPatch`, takže se sem `from` dostane i jako číslo.
+   * Odpovědí je odmítnutí nebo poctivé preview, nikdy holá pětistovka bez
+   * `requestId` — a už vůbec ne po zaplaceném volání modelu.
+   */
+  it('operace s nesmyslným `from` neshodí dveře', async () => {
+    const stored = await generated();
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'turn the mast into woven metal' },
+      async () => ({
+        summary: 'the mast is rewoven',
+        shape: WOVEN_MAST,
+        behavior: [{ op: 'move', from: 7, path: '/sim/entities/ironMast/state' }],
+        appearance: [],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect((await body(response)).outcome).toBe('PREVIEW');
+  });
+
+  /**
+   * **Tvar je taky část změny.** Jméno materiálu se smí rovnat `stableId`
+   * jiného objektu; pak ho změna jmenuje, aniž ji vidí jediná operace.
+   */
+  it('objekt jmenovaný uvnitř nového tvaru není nedotčený', async () => {
+    const stored = await generated();
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'turn the mast into woven metal' },
+      async () => ({
+        summary: 'the mast is rewoven',
+        shape: { ...WOVEN_MAST, materialIntent: 'saltFlat' },
+        behavior: [],
+        appearance: [],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect((await body(response)).preserved).toEqual([]);
+  });
+
+  /**
    * **Uvolněná relace nesmí dostat 200 na preview, které nikdo nedokáže
    * commitnout** (`T16-changeafterrelease`).
    *
