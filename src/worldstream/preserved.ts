@@ -99,10 +99,13 @@ export function preservedBy(
     if (path.length < 3) return false;
 
     for (const segment of path) touched.add(segment);
-    if (path[0] === 'sim' && path[1] === 'sockets') {
-      const owner = ownerOfSocket.get(path[2]);
-      if (owner !== undefined) touched.add(owner);
-    }
+    // **Nárokovat jeden socket smí víc objektů a pak se počítají všichni** —
+    // routovaný nález prvního kola nezávislé revize (6. 9. 2026). `sim.entities`
+    // je ve schématu `unknown` a `src/ir/build.ts` jednoznačnost nároku nehlídá,
+    // takže živě vygenerovaný svět dva nároky na týž socket unese; „první nárok
+    // vyhrává" by druhého z nich vypsalo jako nedotčeného, zatímco se posouvá.
+    if (path[0] === 'sim' && path[1] === 'sockets')
+      for (const owner of ownerOfSocket.get(path[2]) ?? []) touched.add(owner);
     // **Uložená hodnota se čte u KAŽDÉ operace, ne jen u `remove`** — první
     // blokující nález nezávislé revize (6. 9. 2026). Smazané pravidlo jmenuje
     // cizí objekt ve svém těle, ale `replace` nad tímtéž klíčem to tělo zničí
@@ -145,25 +148,36 @@ export function preservedBy(
 }
 
 /**
- * Socket → objekt, který na něm stojí. Jediná vazba téhle třídy, kterou
- * dokument doopravdy nese.
+ * Socket → **všechny** objekty, které na něm stojí. Jediná vazba téhle třídy,
+ * kterou dokument doopravdy nese.
  *
  * ⚠ **`sim.entities` je ve schématu `present`, tedy `unknown`** — projde tudy
  * i `{"visitor": 7}` nebo `{"visitor": {"socket": []}}`. Čte se proto po
  * jednom typu; cizí tvar se přeskočí a socket zůstane nepřiřazený, což je
  * konzervativní směr: objekt navíc vypadne z „nedotčených", nikdy naopak.
+ *
+ * ⚠ **Seznam, ne jediný majitel, a je to oprava routovaného nálezu prvního
+ * kola nezávislé revize (6. 9. 2026).** Jednoznačnost nároku nehlídá nic:
+ * `sim.entities` je `unknown` (`src/ir/worlddoc.ts`) a `src/ir/build.ts` čte
+ * `decl.socket` po entitách bez kontroly, takže dva objekty na jednom socketu
+ * projdou. Nad `authored-worlds.json` dnes takový svět není — všech jedenáct má
+ * nároky jednoznačné — takže to je pojistka na živou emisi, ne oprava dnešní
+ * nepravdy. „Vada světa, ať si ji svět vyřeší" nestačí: cena za ni se platí
+ * v panelu porotce, ne v dokumentu.
  */
-function socketOwners(doc: WorldDoc): ReadonlyMap<string, string> {
-  const owners = new Map<string, string>();
+function socketOwners(doc: WorldDoc): ReadonlyMap<string, readonly string[]> {
+  const owners = new Map<string, string[]>();
   const entities = doc.sim.entities;
   if (entities === null || typeof entities !== 'object' || Array.isArray(entities)) return owners;
 
   for (const [stableId, entity] of Object.entries(entities)) {
     if (entity === null || typeof entity !== 'object') continue;
     const socket = (entity as { readonly socket?: unknown }).socket;
-    // První nárok vyhrává. Dva objekty na jednom socketu je vada světa, ne
-    // tohohle výpočtu, a hádat mezi nimi by znamenalo tvrdit víc, než se ví.
-    if (typeof socket === 'string' && !owners.has(socket)) owners.set(socket, stableId);
+    if (typeof socket !== 'string') continue;
+
+    const claimants = owners.get(socket);
+    if (claimants === undefined) owners.set(socket, [stableId]);
+    else claimants.push(stableId);
   }
 
   return owners;
