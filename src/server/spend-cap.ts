@@ -656,7 +656,31 @@ export class SpendCap {
         snapshot: this.#snapshotOf(outcome),
       };
 
-    if (this.#ledger === null)
+    /**
+     * **Kniha je potřeba jen tam, kde se do ní něco přičítá** (P15
+     * `T29-e2egeneratedead`).
+     *
+     * Rezervace za nula dolarů nepřičte ani dolary, ani volání (`countedCall`
+     * níž je nula), takže by do knihy zapsala `add(0, 0)` — tedy nic. Odmítat
+     * ji kvůli chybějící knize znamená zavřít **větev zdarma** kvůli mezi,
+     * kterou ta větev překročit nemůže.
+     *
+     * ⚠ **Naměřeno 6. 9. 2026, a nebyla to teorie:** týž build, táž adresa,
+     * jediný rozdíl `VERCEL_ENV`. Bez něj vrátilo `POST /api/generate` **503
+     * `STORE_UNCONFIGURED`**, s ním **200 s hotovým světem z větve `mock`**,
+     * jejíž `worstCaseUsd()` je nula. Odmítalo se tedy volání, které nemohlo
+     * utratit nic — a padalo s ním celé offline demo i sedmadvacet e2e sad.
+     * Docstring `ledgerFromEnv()` přitom sliboval opak („neplacené cesty to
+     * nezastaví"), a tenhle řádek ten slib teprve plní.
+     *
+     * **Placené volání tudy neproklouzne.** Nejhorší případ živé větve je vždy
+     * kladný: `upstreamConfigFromEnv` bez kladné ceny výstupu vrací `null`
+     * a `maxOutputTokens` prochází `positiveNumber`. Nula proto znamená „tahle
+     * větev nestojí nic", nikdy „ceník je opsaný špatně" — týž důvod, proč se
+     * nulová rezervace nezapočítává do stropu na počet volání.
+     */
+    const ledger = this.#ledger;
+    if (ledger === null && worstCaseUsd > 0)
       return {
         ok: false,
         reason: 'STORE_UNCONFIGURED',
@@ -691,16 +715,23 @@ export class SpendCap {
      * druhý případ tenhle strop je.
      */
     const countedCall = worstCaseUsd > 0 ? 1 : 0;
-    let totals;
-    try {
-      totals = await this.#ledger.add(worstCaseUsd, countedCall);
-    } catch (thrown) {
-      return {
-        ok: false,
-        reason: 'LEDGER_UNAVAILABLE',
-        detail: `the ${this.#ledger.id} spend ledger did not answer: ${(thrown as Error).message}`,
-        snapshot: this.#snapshotOf(outcome),
-      };
+    let totals: { usd: number; calls: number };
+    if (ledger === null) {
+      // Sem se dostane **výhradně nulová rezervace** — kladná se odmítla výš.
+      // Přičíst není co a přičíst není kam, takže součty zůstávají tam, kde
+      // byly; bez knihy jsou to nuly a mají jimi zůstat.
+      totals = { usd: this.#seenUsd, calls: this.#seenCalls };
+    } else {
+      try {
+        totals = await ledger.add(worstCaseUsd, countedCall);
+      } catch (thrown) {
+        return {
+          ok: false,
+          reason: 'LEDGER_UNAVAILABLE',
+          detail: `the ${ledger.id} spend ledger did not answer: ${(thrown as Error).message}`,
+          snapshot: this.#snapshotOf(outcome),
+        };
+      }
     }
     this.#seenUsd = totals.usd;
     this.#seenCalls = totals.calls;

@@ -383,8 +383,15 @@ export function isServerless(env: Record<string, string | undefined>): boolean {
  * ⚠ **Cena je, že lokální `next start` bez `VERCEL_ENV` placená volání
  * odmítne** (`STORE_UNCONFIGURED`). Je to vědomé: na peněžní cestě se selhává
  * zavřeně a mlčení není důkaz, že jsme sami. Vývojář si dopíše `VERCEL_ENV`,
- * nebo sdílenou knihu; obojí je v `.env.example`. **Neplacené cesty to
- * nezastaví** — offline větev, korpus ani meshing přes strop nechodí.
+ * nebo sdílenou knihu; obojí je v `.env.example`.
+ *
+ * ⚠ **„Neplacené cesty to nezastaví" tady stálo od 3. 9. 2026 a bylo to
+ * nepravdivé** (P15 `T29-e2egeneratedead`). Offline větev `mock` přes strop
+ * **chodí** — `src/server/pipeline.ts` rezervuje před každým voláním, tedy
+ * i za nula dolarů — takže `null` odsud kladlo i ji. Naměřeno 6. 9. 2026: týž
+ * build a táž adresa, jediný rozdíl `VERCEL_ENV`, 503 proti 200 se světem.
+ * Slib teď plní `SpendCap.reserve()`, která knihu žádá jen pro rezervaci
+ * s kladnou částkou; tenhle soubor rozhoduje beze změny.
  *
  * ⚠ **`AWS_LAMBDA_FUNCTION_NAME` ani `NEXT_RUNTIME` se sem zavádět NEMÁ a
  * příští kolo to nemá zkoušet.** `NEXT_RUNTIME` přiřazuje `next` sám, tedy

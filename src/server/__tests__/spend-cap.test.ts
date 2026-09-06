@@ -859,6 +859,44 @@ describe('strop drží i za hranicí jedné instance', () => {
     expect(refused.detail).toContain('broken');
   });
 
+  /**
+   * **Bez knihy padala i větev, která nestojí nic** (P15 `T29-e2egeneratedead`).
+   *
+   * Nulová rezervace do knihy nepřičte ani dolary, ani volání, takže ji
+   * chybějící kniha omezit nemůže — a přesto ji `STORE_UNCONFIGURED` odmítalo.
+   * Naměřeno nad `next start`: týž build, táž adresa, jediný rozdíl
+   * `VERCEL_ENV`, 503 proti 200 se světem z větve `mock`. Oko to nepokryje:
+   * 503 vypadá jako správně zavřená peněžní brána, dokud někdo neuvidí, že za
+   * tím voláním žádné peníze nejsou.
+   *
+   * Obě strany v jednom testu schválně: „něco odmítá" i „něco pouští" musí
+   * platit **zároveň**, jinak se to dá splnit vypnutím brány.
+   */
+  it('bez knihy projde volání zdarma, placené pořád ne', async () => {
+    const free = await spendCapFromEnv({ VERCEL: '1' }).reserve(0);
+    expect(free.ok, 'strop odmítl volání, které nemůže utratit nic').toBe(true);
+
+    const paid = await spendCapFromEnv({ VERCEL: '1' }).reserve(0.01);
+    expect(paid.ok).toBe(false);
+    if (paid.ok) throw new Error('unreachable');
+    expect(paid.reason).toBe('STORE_UNCONFIGURED');
+  });
+
+  /**
+   * A volání zdarma nesmí **nic** zapsat: bez knihy není kam, a i kdyby byla,
+   * nulová rezervace se do stropu na počet nepočítá. Bez téhle aserce by ta
+   * cesta směla tiše mincovat vlastní účetnictví v paměti procesu.
+   */
+  it('volání zdarma bez knihy nezvedne žádné počítadlo', async () => {
+    const cap = spendCapFromEnv({ VERCEL: '1' });
+    for (let i = 0; i < 5; i += 1) await cap.reserve(0);
+
+    const seen = cap.snapshot();
+    expect(seen.spentUsd).toBe(0);
+    expect(seen.callsMade).toBe(0);
+    expect(seen.reservedUsd).toBe(0);
+  });
+
   it('serverless bez sdíleného úložiště neudělá placené volání vůbec', async () => {
     const refused = await spendCapFromEnv({ VERCEL: '1' }).reserve(0.01);
 
