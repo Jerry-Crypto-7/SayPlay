@@ -652,6 +652,97 @@ describe('preview druhé věty', () => {
   });
 
   /**
+   * **`replace` ničí uložené tělo stejně jako `remove`** — první blokující
+   * nález nezávislé revize nad `T35-preservedattr` (6. 9. 2026).
+   *
+   * Původní oprava se ptala na `op === 'remove'`, tedy zavírala nepravdu
+   * o jedno klíčové slovo a vedle ní nechávala tutéž. `withRuleId()` ve
+   * `worldstream-refine.ts` existuje právě proto, že model `add`/`replace` nad
+   * klíči pravidel doopravdy píše, takže je to tvar z provozu, ne z hlavy.
+   *
+   * Nové tělo `guard` pláň nejmenuje, staré ano — přepis ji tedy přestane
+   * řídit a slib „pláně se to netýká" je nepravdivý.
+   */
+  it('replace nad pravidlem čte i tělo, které přepisuje', async () => {
+    const stored = await generated();
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'raise the mast on its footing' },
+      async () => ({
+        summary: 'the mast rides higher and the guard rule changes hands',
+        shape: null,
+        behavior: [
+          {
+            op: 'replace',
+            path: '/sim/rules/guard',
+            value: {
+              phase: 0,
+              priority: 1,
+              event: { kind: 'onEnterZone', entity: 'surveyor', zone: 'mastPad' },
+              condition: null,
+              actions: [{ kind: 'win' }],
+            },
+          },
+        ],
+        appearance: [],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect((await body(response)).preserved).toEqual([]);
+  });
+
+  /**
+   * **`move` ničí adresu `from`, takže se soudí stejně přísně jako cíl** —
+   * druhý blokující nález téže revize.
+   *
+   * Socketové pravidlo se do 6. 9. 2026 ptalo jen na `path`. Přesun `saltPad`
+   * jinam přitom bere pláni footing, na kterém stojí, a `from` je jediné
+   * místo, kde se to jméno objeví.
+   */
+  it('move čte majitele socketu i na adrese from, ne jen na cíli', async () => {
+    const stored = await generated();
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'raise the mast on its footing' },
+      async () => ({
+        summary: 'the footing moves out from under the flat',
+        shape: null,
+        behavior: [{ op: 'move', from: '/sim/sockets/saltPad', path: '/sim/sockets/relocatedPad' }],
+        appearance: [],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect((await body(response)).preserved).toEqual([]);
+  });
+
+  /**
+   * **`from` nad celým poddokumentem vyprázdní seznam stejně jako `path`.**
+   * `move from: /sim/entities` odstěhuje všechny entity naráz; slíbit v tu
+   * chvíli cokoli je nepravda bez ohledu na to, kam to míří.
+   */
+  it('move z celého poddokumentu neslibuje nic', async () => {
+    const stored = await generated();
+
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'raise the mast on its footing' },
+      async () => ({
+        summary: 'everything moves at once',
+        shape: null,
+        behavior: [{ op: 'move', from: '/sim/sockets', path: '/sim/relocated/sockets' }],
+        appearance: [],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect((await body(response)).preserved).toEqual([]);
+  });
+
+  /**
    * **Cesta, která v dokumentu nikam nevede, nesmí spadnout** — poučení ze
    * čtvrtého a pátého kola revize, kde dvě remediace po sobě přinesly
    * `TypeError` uvnitř `withRequest`, tedy **holou pětistovku bez `requestId`

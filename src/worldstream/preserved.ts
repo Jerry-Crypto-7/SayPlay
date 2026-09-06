@@ -83,24 +83,45 @@ export function preservedBy(
   const touched = new Set<string>([change.stableId]);
   const ownerOfSocket = socketOwners(doc);
 
-  for (const operation of [...change.behavior, ...change.appearance]) {
-    const path = operation.path.split('/').filter((segment) => segment !== '');
+  /**
+   * Jedna adresa uvnitř dokumentu se vším, co z ní plyne — segmenty, majitel
+   * socketu a **uložená hodnota, která na ní dnes stojí**. Vrací `false`, když
+   * ta adresa míří na celý poddokument, tedy když se neslibuje nic.
+   *
+   * ⚠ **Je to jedna funkce, protože dvě kopie se hned rozešly.** První kolo
+   * nezávislé revize nad `T35-preservedattr` vrátilo dva blokující nálezy
+   * a oba byly totéž: obě nová pravidla se uplatnila na `path` a na `from`
+   * ani jedno. `move` mažící `from` tedy jméno majitele socketu neviděl.
+   */
+  const readAddress = (pointer: string): boolean => {
+    const path = pointer.split('/').filter((segment) => segment !== '');
     // `/sim/entities` přepíše všechny entity naráz; `/sim/entities/x/state` ne.
-    if (path.length < 3) return [];
+    if (path.length < 3) return false;
 
     for (const segment of path) touched.add(segment);
     if (path[0] === 'sim' && path[1] === 'sockets') {
       const owner = ownerOfSocket.get(path[2]);
       if (owner !== undefined) touched.add(owner);
     }
-    // **`remove` nemá `value`, a přesto umí jmenovat cizí objekt** — smazané
-    // pravidlo ho jmenuje ve svém **uloženém** těle. Patch to nenese, dokument
-    // ano, tak se to přečte odtamtud. (Žádná z pěti uvařených změn `remove`
-    // nepoužívá; je to díra, kterou otevře první živá emise.)
-    if (operation.op === 'remove')
-      for (const name of namesWithin(valueAt(doc, path))) touched.add(name);
-    // `from` má jen `move`/`copy`, `value` jen zápisové operace — typ je
-    // rozlišuje, ale ptát se na obojí je levnější než dvě větve podle `op`.
+    // **Uložená hodnota se čte u KAŽDÉ operace, ne jen u `remove`** — první
+    // blokující nález nezávislé revize (6. 9. 2026). Smazané pravidlo jmenuje
+    // cizí objekt ve svém těle, ale `replace` nad tímtéž klíčem to tělo zničí
+    // úplně stejně — a `withRuleId()` ve `worldstream-refine.ts` existuje
+    // právě proto, že model `add`/`replace` nad klíči pravidel doopravdy píše.
+    // Úzká větev na `op` byla tedy táž nepravda o jedno klíčové slovo vedle.
+    //
+    // `add` nad novým klíčem tím nic nestojí: `valueAt` vrátí `undefined`
+    // a `namesWithin` z něj nevydá ani jedno jméno.
+    for (const name of namesWithin(valueAt(doc, path))) touched.add(name);
+    return true;
+  };
+
+  for (const operation of [...change.behavior, ...change.appearance]) {
+    if (!readAddress(operation.path)) return [];
+
+    // `from` má jen `move`/`copy`. U `move` je to **druhá zničená adresa**,
+    // ne přívažek: hodnota z `from` zmizí, takže se soudí stejně přísně jako
+    // cíl — to je druhý blokující nález téže revize.
     //
     // ⚠ **`typeof`, ne `?? ''` — nález třetího kola nezávislé revize
     // 6. 9. 2026, a byl to pád, který jsem sem přinesl sám.** `readOperations`
@@ -110,8 +131,7 @@ export function preservedBy(
     // odmítnutí dostal holou pětistovku bez `requestId` — a to až **po**
     // zaplaceném volání modelu.
     const wide = operation as { readonly from?: unknown; readonly value?: unknown };
-    if (typeof wide.from === 'string')
-      for (const segment of wide.from.split('/')) touched.add(segment);
+    if (typeof wide.from === 'string' && !readAddress(wide.from)) return [];
     for (const name of namesWithin(wide.value)) touched.add(name);
   }
 
