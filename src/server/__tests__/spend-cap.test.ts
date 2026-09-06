@@ -908,6 +908,50 @@ describe('strop drží i za hranicí jedné instance', () => {
   });
 
   /**
+   * **A ta vlastnost musí přežít placený provoz, ne jen čerstvou instanci**
+   * (P15 `T29-freecallcap`, nález nezávislé revize 6. 9. 2026).
+   *
+   * Test o řádek výš dělá volání zdarma **jako první**, takže se rozhoduje nad
+   * nulovými součty, které kniha nikdy nenaplnila. Skutečné nasazení má pořadí
+   * obrácené: nejdřív běží placený provoz, ten součty do instance zapíše, a až
+   * pak přijde návštěvník na větvi zdarma.
+   *
+   * Nulová rezervace knihu schválně přeskakuje, takže si nese **poslední
+   * viděná** čísla (`#seenUsd`, `#seenCalls`). Když je placený provoz nechal nad
+   * mezí, soudila se podle nich i větev, která nemůže utratit nic — 429 při
+   * útratě 0 USD, tedy táž třída vady jako `T29-e2egeneratedead`, jen zapnutá
+   * později.
+   */
+  it('placený provoz nad mezí nezastaví volání zdarma, které přijde po něm', async () => {
+    // Obě meze zvlášť, protože každou drží vlastní podmínka a mutace na jedné
+    // z nich by na sdíleném testu nebyla vidět.
+    const byUsd = memoryLedger();
+    // Zvenčí, ne odmítnutou rezervací: ta si svoje dolary bere zpátky.
+    await byUsd.add(10, 0);
+    const usdCap = new SpendCap({ enabled: true, capUsd: 5 }, null, byUsd);
+    const paidUsd = await usdCap.reserve(0.01);
+    expect(paidUsd.ok, 'přeplněná kniha pustila placené volání').toBe(false);
+    if (paidUsd.ok) throw new Error('unreachable');
+    expect(paidUsd.reason).toBe('CAP_EXHAUSTED');
+    expect(
+      (await usdCap.reserve(0)).ok,
+      'vyčerpané dolary z placeného provozu položily volání zdarma',
+    ).toBe(true);
+
+    const byCalls = memoryLedger();
+    await byCalls.add(0, 5);
+    const callCap = new SpendCap({ enabled: true, capUsd: 5, callCap: 3 }, null, byCalls);
+    const paidCalls = await callCap.reserve(0.01);
+    expect(paidCalls.ok, 'vyčerpaný počet pustil placené volání').toBe(false);
+    if (paidCalls.ok) throw new Error('unreachable');
+    expect(paidCalls.reason).toBe('CALL_CAP_EXHAUSTED');
+    expect(
+      (await callCap.reserve(0)).ok,
+      'vyčerpaný počet volání z placeného provozu položil volání zdarma',
+    ).toBe(true);
+  });
+
+  /**
    * **Bez knihy padala i větev, která nestojí nic** (P15 `T29-e2egeneratedead`).
    *
    * Nulová rezervace do knihy nepřičte ani dolary, ani volání, takže ji

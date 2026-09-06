@@ -714,7 +714,14 @@ export class SpendCap {
      * „tahle větev nestojí nic", nikdy „ceník je opsaný špatně" — a přesně na ten
      * druhý případ tenhle strop je.
      */
-    const countedCall = worstCaseUsd > 0 ? 1 : 0;
+    /**
+     * **Jediné místo, kde se rozhoduje „stojí tohle volání něco".** Tři věci
+     * pod tím visí — jestli se volání započítá, jestli se sahá do knihy,
+     * a jestli se na něj vůbec vztahují peněžní meze. Dokud to byly tři
+     * opsané výrazy, mohly se rozejít, a taky se rozešly (`T29-freecallcap`).
+     */
+    const costsMoney = worstCaseUsd > 0;
+    const countedCall = costsMoney ? 1 : 0;
     let totals: { usd: number; calls: number };
     /**
      * **Nulová rezervace knihu nepotřebuje ani tehdy, když kniha je** — nález
@@ -736,7 +743,7 @@ export class SpendCap {
      * rozpočet na model. Placenou rezervaci to nemine: ta má `worstCaseUsd > 0`
      * a jde dolů do knihy jako dřív.
      */
-    if (ledger === null || worstCaseUsd === 0) {
+    if (ledger === null || !costsMoney) {
       // Přičíst není co, takže součty zůstávají tam, kde je nechalo poslední
       // čtení knihy; bez knihy jsou to nuly a mají jimi zůstat.
       totals = { usd: this.#seenUsd, calls: this.#seenCalls };
@@ -782,7 +789,7 @@ export class SpendCap {
     // Před dolarovým stropem schválně: tenhle drží i tehdy, když je ceník
     // opsaný špatně, a právě proto tu je.
     const callCap = control.callCap ?? DEFAULT_CALL_CAP;
-    if (control.enabled && totals.calls > callCap) {
+    if (costsMoney && control.enabled && totals.calls > callCap) {
       await giveBack();
       return {
         ok: false,
@@ -804,7 +811,7 @@ export class SpendCap {
       };
     }
 
-    if (control.enabled && totals.usd > control.capUsd) {
+    if (costsMoney && control.enabled && totals.usd > control.capUsd) {
       await giveBack();
       return {
         ok: false,
