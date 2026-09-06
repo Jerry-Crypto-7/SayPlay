@@ -1211,6 +1211,24 @@ describe('strop na frekvenci dorazí až k zakládání relace', () => {
       expect(((await mimoVercel.json()) as { error: { code: string } }).error.code).toBe(
         'TOO_MANY_REQUESTS',
       );
+
+      // ⚠ **A třetí, nezúčastněný volající musí projít** — bez téhle aserce je
+      // celá tahle půlka dekorativní, což naměřilo druhé kolo nezávislé revize
+      // 6. 9. 2026: mutace `trustedCallerKey(request) ?? UNIDENTIFIED_CALLER`,
+      // tedy přesně ta regrese „všichni spadnou do jednoho kbelíku", proti níž
+      // je tenhle test napsaný, nechala soubor 59/59 zelený. Oběť dostane 429
+      // v obou světech; rozdíl je vidět jedině na někom, kdo v útoku nefiguruje.
+      const nezúčastněný = await createSession(
+        new Request('http://127.0.0.1/api/worldstream/sessions', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-forwarded-for': '192.0.2.77' },
+          body: '{ not json',
+        }),
+      );
+      expect(
+        nezúčastněný.status,
+        'kolemjdoucí dostal 429 — pád na callerKey() zmizel a všichni sdílejí jeden kbelík',
+      ).toBe(400);
     } finally {
       hodiny.mockRestore();
       resetRateWindows();

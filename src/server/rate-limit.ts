@@ -273,15 +273,41 @@ const HEADER_CALLER_PREFIX = 'ip:';
 const GROUPED_CALLER_PREFIX = 'net:';
 
 /**
+ * Předpona klíče, který složil **nedůvěryhodný** `callerKey()`.
+ *
+ * ⚠ **Vlastní předpona, a je to nález druhého kola nezávislé revize
+ * 6. 9. 2026** (`T29-freeunbounded`, `VERDICT: routed`, kolize CONFIRMED
+ * spuštěním). Od téhož dne klíčuje sedmero dveří i čítač rozečtených těl
+ * `trustedCallerKey(request) ?? callerKey(request)`, takže **oba klíče žijí
+ * v jedné mapě**. Se společnou předponou `ip:` by stačilo poslat požadavek
+ * **bez** platformní hlavičky (nebo s prázdnou, kterou `lastEntry()` mění na
+ * `null`) a s `x-forwarded-for: <oběť>, <útočník>`: pád složí `ip:<oběť>`,
+ * tedy **přesně ten klíč**, pod kterým počestná oběť sedí — a útok, který ten
+ * commit zavíral, se vrátí zadními dveřmi.
+ *
+ * Je to táž třída, kterou u seskupených klíčů zavřel `net:` (doktrína
+ * o řádek výš), jen o patro níž. Dvě různá pravidla klíčování **nesmějí umět
+ * složit tentýž řetězec**, jinak si volající vybírá, které z nich se na něj
+ * použije.
+ */
+const UNTRUSTED_CALLER_PREFIX = 'xff:';
+
+/**
  * Kdo požadavek poslal, podle hlaviček proxy.
  *
  * `x-forwarded-for` je **seznam** a první položka je klient; Vercel ji plní sám.
  * Bez obou hlaviček — lokální běh, `next start` bez proxy — spadnou všichni do
  * jednoho jména, což je tam správně: je to jeden stroj a jeden návštěvník.
  *
- * ⚠ **Podvrhnout to jde a je to spočítané, ne přehlédnuté** — viz tabulka
- * v hlavičce souboru: podvržený klíč vrací útočníka nanejvýš tam, kde by byl
- * bez téhle meze, kdežto sdílený čítač ho posouval o řád dopředu.
+ * ⚠ **Podvrhnout to jde, a od 6. 9. 2026 je to důvod, proč je tahle funkce
+ * jen PÁD.** Věta „podvržený klíč vrací útočníka nanejvýš tam, kde by byl bez
+ * téhle meze" tu stála jako odůvodnění a je to lež o oběti: první položka
+ * `x-forwarded-for` je vstup volajícího, takže se jím míří na **cizí** kbelík
+ * (blokující nález nezávislé revize, naměřený). Volají to proto všechny dveře
+ * jako `trustedCallerKey(request) ?? callerKey(request)` a tahle funkce se
+ * použije jedině tam, kde důvěryhodný konec řetězu neexistuje — což je pořád
+ * lepší než jediný sdílený čítač, a to je celý zbytek toho odůvodnění.
+ * Rozpad je v tabulce v hlavičce souboru.
  */
 export function callerKey(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for');
@@ -307,7 +333,7 @@ export function callerKey(request: Request): string {
   // právě tou cestou se dal strop obejít.
   const client = forwarded?.split(',').find((item) => item.trim() !== '')?.trim() ?? '';
   const value = client === '' ? (real?.trim() ?? '') : client;
-  return `${HEADER_CALLER_PREFIX}${value.slice(0, MAX_CALLER_KEY_LENGTH)}`;
+  return `${UNTRUSTED_CALLER_PREFIX}${value.slice(0, MAX_CALLER_KEY_LENGTH)}`;
 }
 
 /**
@@ -457,9 +483,24 @@ export function trustedCallerKey(
  * `null` znamená kvótu vypnout, a to je přesně ta strana, na kterou volající
  * chce hodnotu dotlačit. Drží to test `nerozpoznaná hodnota klíč nezruší`.
  *
- * ⚠ **Netýká se `callerKey()`.** Ten klíčuje strop frekvence a je vědomě
- * podvrhnutelný (tabulka v hlavičce souboru); srážet tam tvar adresy nic
- * nezavírá, protože útočník tam stejně píše, co chce.
+ * ⚠ **Netýká se `callerKey()`, a to je pořád pravda — ale ta věta znamená od
+ * 6. 9. 2026 něco jiného.** `callerKey()` je dnes už jen **pád**, když
+ * důvěryhodný konec řetězu neexistuje; srážet tam tvar adresy nic nezavírá,
+ * protože útočník tam stejně píše, co chce.
+ *
+ * ⚠ **Co se tím dnem naopak ZMĚNILO, a je to naměřená vedlejší škoda**
+ * (`T29-freeunbounded`, druhé kolo nezávislé revize): tohle seskupení řídí
+ * nově i **strop frekvence sedmera dveří** a **čítač rozečtených těl**
+ * (`src/http/body.ts`), ne jen kvótu relací. Na platformě má proto celá
+ * `/64` — tedy typicky celá kancelář, sál nebo VPN, protože SLAAC dává jedné
+ * síti jednu `/64` — dohromady 50 požadavků za 10 s přes všechny dveře a
+ * **čtyři** souběžně čtená těla. Do 6. 9. měl na Vercelu každý porotce vlastní
+ * kbelík.
+ *
+ * **Vědomá cena, ne přehlédnutí:** bez seskupení stačí u IPv6 vyměnit spodních
+ * 64 bitů a mez neplatí vůbec. Sál plný porotců je ale reálný scénář téhle
+ * soutěže, takže **jestli se to na `G1` projeví, zvedá se mez pro klíče `net:`**
+ * (dnes tam žádné zvláštní číslo není), ne že se seskupení zruší.
  */
 function trustedKeyFor(platform: string): string {
   const address = normalizeAddress(platform);

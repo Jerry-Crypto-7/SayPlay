@@ -140,7 +140,10 @@ export const MAX_CONCURRENT_BODY_READS_UNIDENTIFIED = MAX_BUFFERED_BODY_BYTES / 
 const OPEN_READS_KEY = '__worldsmithOpenBodyReads';
 
 interface BodyReads {
-  /** Klíč je `callerKey()`. Hodnota je počet právě běžících čtení. */
+  /**
+   * Klíč je `trustedCallerKey() ?? callerKey()` (doktrína u `readBody()`).
+   * Hodnota je počet právě běžících čtení.
+   */
   perCaller: Map<string, number>;
   /** Kolik bajtů drží rozečtená těla dohromady. */
   bufferedBytes: number;

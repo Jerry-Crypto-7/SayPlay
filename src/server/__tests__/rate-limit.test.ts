@@ -173,16 +173,51 @@ describe('strop na frekvenci veřejných dveří', () => {
     expect(callerKey(new Request('http://x/'))).toBe(UNIDENTIFIED_CALLER);
   });
 
+
+  /**
+   * **Pád a důvěryhodná cesta nesmějí umět složit tentýž klíč** — nález
+   * druhého kola nezávislé revize 6. 9. 2026 (`T29-freeunbounded`), CONFIRMED
+   * spuštěním nad `891e9c1`.
+   *
+   * Od té chvíle klíčuje sedmero dveří i čítač rozečtených těl
+   * `trustedCallerKey(request) ?? callerKey(request)`, takže oba klíče leží
+   * v jedné mapě. Dokud obě cesty psaly `ip:`, stačilo poslat požadavek **bez**
+   * platformní hlavičky a s `x-forwarded-for: <oběť>, <útočník>` — pád složil
+   * `ip:<oběť>`, tedy kbelík počestné oběti. Útok, který se tím commitem
+   * zavíral, tudy chodil dál.
+   */
+  it('nedůvěryhodný klíč se do důvěryhodného kbelíku netrefí ani doslovným opisem', () => {
+    const OBĚŤ = '198.51.100.4';
+    // Vlastní stavitel: pomocník `požadavek()` bydlí až v sousedním bloku.
+    const s = (headers: Record<string, string>): Request =>
+      new Request('http://worldsmith.test/api/edit', { method: 'POST', headers });
+
+    const důvěryhodný = trustedCallerKey(s({ 'x-vercel-forwarded-for': OBĚŤ }), { VERCEL: '1' });
+    expect(důvěryhodný).toBe(`ip:${OBĚŤ}`);
+
+    // Útočník, který platformní hlavičku vynechá, spadne na `callerKey()`.
+    const pádem = callerKey(s({ 'x-forwarded-for': `${OBĚŤ}, 203.0.113.99` }));
+    expect(pádem, 'pád složil klíč z důvěryhodné cesty — kolize je zpátky').not.toBe(důvěryhodný);
+
+    // A ani doslovný opis celého klíče se do něj netrefí, protože předpona
+    // je součást klíče, ne popisek.
+    expect(callerKey(s({ 'x-forwarded-for': důvěryhodný! }))).not.toBe(důvěryhodný);
+    expect(
+      callerKey(s({ 'x-forwarded-for': 'net:2001:db8:0:0::/64' })),
+      'doslovný opis seskupeného klíče se trefil do seskupeného kbelíku',
+    ).not.toBe('net:2001:db8:0:0::/64');
+  });
+
   /**
    * **Kam ty nepoužitelné hlavičky spadnou, když ne na sentinel**
    * (`T28-emptyxff`, nezávislá revize 4. 9. 2026). Test výš tvrdí jen to,
-   * čím **nejsou**. Skončí všechny v jediném kbelíku `ip:`, tedy bez adresy —
+   * čím **nejsou**. Skončí všechny v jediném kbelíku `xff:`, tedy bez adresy —
    * a od `2fad718` je to kbelík **odmítající**, takže osm požadavků ho zamčne
    * komukoli dalšímu, kdo do něj spadne.
    *
    * ⚠ **Změřeno, že tam ale nespadne nikdo počestný, a proto se to neopravuje.**
    * Na Vercelu je `x-forwarded-for` vždycky vyplněné; bez proxy (`next start`,
-   * demo z notebooku) nepřijde ani jedna hlavička a klíč je sentinel. Do `ip:`
+   * demo z notebooku) nepřijde ani jedna hlavička a klíč je sentinel. Do `xff:`
    * se tedy dá dostat **jedině hlavičkou, kterou nikdo neposílá omylem** —
    * obsazují ho jen ti, kdo si ho vybrali. Zamčnout ho znamená zamčnout sebe.
    *
@@ -193,7 +228,11 @@ describe('strop na frekvenci veřejných dveří', () => {
    * řetězu (`T16-trustedkey`); tenhle test řekne, co do té doby platí.
    */
   it('nepoužitelná hlavička dá kbelík bez adresy, do kterého se dá jen vstoupit schválně', () => {
-    const BEZ_ADRESY = 'ip:';
+    // ⚠ **`xff:`, ne `ip:` — od 6. 9. 2026 a je to bezpečnostní rozdíl,
+    // ne přejmenování** (`T29-freeunbounded`). `ip:` skládá důvěryhodná
+    // cesta a obě cesty dnes žijí v jedné mapě; sdílená předpona by dala
+    // volajícímu vybrat si, které pravidlo klíčování se na něj použije.
+    const BEZ_ADRESY = 'xff:';
 
     const nepoužitelné: Record<string, string>[] = [
       { 'x-forwarded-for': '' },

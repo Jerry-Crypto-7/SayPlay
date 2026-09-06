@@ -1490,18 +1490,32 @@ describe('strop na frekvenci dorazí až ke dveřím', () => {
     // Okno se plní přímo čítačem, ne padesáti HTTP požadavky: měří se tady
     // **zapojení** meze do těchhle dveří, ne mez sama (ta má vlastní sadu
     // v `src/server/__tests__/rate-limit.test.ts`).
-    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1)
-      takeRateSlot('generate', 'unknown');
-    const { POST } = await import('../route');
-    const response = await POST(
-      new Request('http://127.0.0.1/api/generate', {
-        method: 'POST',
-        body: JSON.stringify({ prompt: CROWD_PROMPT }),
-      }),
-    );
-    expect(response.status).toBe(429);
-    expect(Number(response.headers.get('retry-after'))).toBeGreaterThanOrEqual(1);
-    expect(((await response.json()) as ResponseBody).error?.code).toBe('TOO_MANY_REQUESTS');
+    //
+    // ⚠ **Hodiny se mrazí, a viděla to spadnout revize, ne teorie.** Okno je
+    // pevný desetivteřinový kbelík na absolutním čase a mezi naplněním
+    // a asercí sedí `await import('../route')`, tedy načtení celého modulu.
+    // Když ten import protne hranici kbelíku, čítač se vynuluje a vyjde 200
+    // (naměřeno 6. 9. 2026 ve vícesouborovém běhu; při opakování zelená).
+    // Oba sousední případy níž mrazily čas od začátku, tenhle zůstal pozadu.
+    const uprostředKbelíku = 1_770_000_000_000 + RATE_WINDOW_MS / 2;
+    const hodiny = vi.spyOn(Date, 'now').mockReturnValue(uprostředKbelíku);
+    try {
+      for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1)
+        takeRateSlot('generate', 'unknown');
+      const { POST } = await import('../route');
+      const response = await POST(
+        new Request('http://127.0.0.1/api/generate', {
+          method: 'POST',
+          body: JSON.stringify({ prompt: CROWD_PROMPT }),
+        }),
+      );
+      expect(response.status).toBe(429);
+      expect(Number(response.headers.get('retry-after'))).toBeGreaterThanOrEqual(1);
+      expect(((await response.json()) as ResponseBody).error?.code).toBe('TOO_MANY_REQUESTS');
+    } finally {
+      hodiny.mockRestore();
+      resetRateWindows();
+    }
   });
 
   /**
