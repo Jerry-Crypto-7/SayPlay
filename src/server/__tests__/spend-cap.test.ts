@@ -860,6 +860,43 @@ describe('strop drží i za hranicí jedné instance', () => {
   });
 
   /**
+   * **Ani NAKONFIGUROVANÁ kniha nesmí položit volání zdarma** — nález nezávislé
+   * revize 6. 9. 2026, `VERDICT: routed` (CONFIRMED).
+   *
+   * Zápis `add(0, 0)` nic nemění, ale u sdíleného obchodu je to síťový let,
+   * a ten selhat umí. Bez téhle aserce vrátilo nasazení s vyplněnou adresou
+   * obchodu 503 na větvi, která nestojí nic — tedy táž vada jako lokálně, jen
+   * o konfiguraci vedle. Oko ji nepokryje: projeví se až při výpadku obchodu.
+   */
+  it('rozbitá kniha nezastaví volání zdarma, placené zastaví', async () => {
+    const broken: SpendLedger = {
+      id: 'broken',
+      add: () => Promise.reject(new Error('store is down')),
+    };
+
+    const free = await new SpendCap({ enabled: true, capUsd: 5 }, null, broken).reserve(0);
+    expect(free.ok, 'výpadek knihy položil volání, které nemůže utratit nic').toBe(true);
+
+    const paid = await new SpendCap({ enabled: true, capUsd: 5 }, null, broken).reserve(0.01);
+    expect(paid.ok).toBe(false);
+    if (paid.ok) throw new Error('unreachable');
+    expect(paid.reason).toBe('LEDGER_UNAVAILABLE');
+  });
+
+  /**
+   * A vyčerpaný rozpočet je vlastnost **placené** větve. Odmítat kvůli němu
+   * větev zdarma znamená nechat porotci zhasnout demo v okamžiku, kdy dojdou
+   * peníze na model — přičemž to, co zrovna kouká, žádné nepotřebuje.
+   */
+  it('vyčerpaný rozpočet nezastaví volání zdarma', async () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 0.005 }, null, memoryLedger());
+    const first = await cap.reserve(0.01);
+    expect(first.ok, 'předpoklad testu: kladná rezervace měla strop přetéct').toBe(false);
+
+    expect((await cap.reserve(0)).ok, 'vyčerpaný rozpočet položil volání zdarma').toBe(true);
+  });
+
+  /**
    * **Bez knihy padala i větev, která nestojí nic** (P15 `T29-e2egeneratedead`).
    *
    * Nulová rezervace do knihy nepřičte ani dolary, ani volání, takže ji

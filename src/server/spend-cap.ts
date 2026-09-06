@@ -716,10 +716,29 @@ export class SpendCap {
      */
     const countedCall = worstCaseUsd > 0 ? 1 : 0;
     let totals: { usd: number; calls: number };
-    if (ledger === null) {
-      // Sem se dostane **výhradně nulová rezervace** — kladná se odmítla výš.
-      // Přičíst není co a přičíst není kam, takže součty zůstávají tam, kde
-      // byly; bez knihy jsou to nuly a mají jimi zůstat.
+    /**
+     * **Nulová rezervace knihu nepotřebuje ani tehdy, když kniha je** — nález
+     * nezávislé revize 6. 9. 2026 nad `81ed617`, `VERDICT: routed` (CONFIRMED).
+     *
+     * `add(0, 0)` je zápis, který nemá co změnit, ale u sdíleného obchodu je to
+     * **síťový let** — a ten umí selhat. Nasazení s vyplněným
+     * `WORLDSMITH_SPEND_STORE_URL` na větvi zdarma pak vrátilo 503
+     * `LEDGER_UNAVAILABLE` při výpadku obchodu, tedy **tutéž vadu, kterou tenhle
+     * blok opravoval**, jen v produkční konfiguraci místo lokální.
+     *
+     * Odpadá tím i **jedno kolo sítě na každé volání zdarma**, což je celé
+     * offline demo.
+     *
+     * ⚠ **Vedlejší důsledek je zamýšlený, ne přehlédnutý:** volání zdarma se
+     * tím přestane soudit podle vyčerpaného rozpočtu. Je to správně — utracené
+     * dolary jsou vlastnost placené větve a odmítat kvůli nim větev, která
+     * nestojí nic, znamená nechat porotci zhasnout demo v okamžiku, kdy dojde
+     * rozpočet na model. Placenou rezervaci to nemine: ta má `worstCaseUsd > 0`
+     * a jde dolů do knihy jako dřív.
+     */
+    if (ledger === null || worstCaseUsd === 0) {
+      // Přičíst není co, takže součty zůstávají tam, kde je nechalo poslední
+      // čtení knihy; bez knihy jsou to nuly a mají jimi zůstat.
       totals = { usd: this.#seenUsd, calls: this.#seenCalls };
     } else {
       try {
