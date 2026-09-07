@@ -748,3 +748,56 @@ describe('the compiler request', () => {
     expect(request.system).not.toContain(EXAMPLE_PLAN.objects[0].stableId);
   });
 });
+
+/* ================================================================== *
+ * 10. materialIntent napsaný jako popis.
+ * ================================================================== */
+
+/**
+ * Naměřeno nad archivem běhu `T14` (6. 9. 2026): **60 ze 112** hodnot
+ * `materialIntent` je fráze, a protože smyčka nad tvary odmítá na prvním vadném,
+ * opravil model jedno pole na kolo — `✗2 → ✗1 → ✓` je dvě placená volání za
+ * pravopis. Řetězce níž jsou z toho archivu, ne vymyšlené.
+ */
+describe('a material written as a description is read, not refused', () => {
+  const shapeWith = (intent: unknown): unknown[] => [{ ...OWN_SHAPE, materialIntent: intent }];
+
+  it('reads a phrase as a material name and says so', () => {
+    const compiled = expectOk(
+      compile(answerWith({ shapes: shapeWith('weathered corrugated steel') })),
+    );
+    const note = compiled.adjustments.find((entry) => entry.path === 'shapes/0/materialIntent');
+
+    expect(note?.reason).toContain('weathered corrugated steel');
+    expect(note?.reason).toContain('weatheredCorrugatedSteel');
+    expect(compiled.value.shapes[0].materialIntent).toBe('weatheredCorrugatedSteel');
+  });
+
+  it('leaves a name the protocol already takes exactly as written', () => {
+    // `weathered_stone` je naměřená platná hodnota. Rozpad na slova by z ní
+    // udělal `weatheredStone`, tedy jiný materiál, a nikdo by se to nedozvěděl.
+    const compiled = expectOk(compile(answerWith({ shapes: shapeWith('weathered_stone') })));
+
+    expect(compiled.value.shapes[0].materialIntent).toBe('weathered_stone');
+    expect(compiled.adjustments.map((entry) => entry.path)).not.toContain('shapes/0/materialIntent');
+  });
+
+  it('still refuses a material no identifier can be read out of', () => {
+    // Selhání je půlka kontraktu: dopsat sem předponu by byl vymyšlený materiál
+    // ve světě, o kterém by panel tvrdil, že ho napsal model.
+    const result = compile(answerWith({ shapes: shapeWith('· — ·') }));
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toBe('SHAPE_INVALID');
+      expect(result.detail).toContain('materialIntent');
+    }
+  });
+
+  it('refuses a material that is not a string at all', () => {
+    const result = compile(answerWith({ shapes: shapeWith(42) }));
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toBe('SHAPE_INVALID');
+  });
+});

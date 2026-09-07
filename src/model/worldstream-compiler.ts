@@ -53,7 +53,7 @@
 
 import { parseGeomProgram, validateGeomProgram } from '../geom/program';
 import { canonical } from '../ir/worlddoc';
-import { validateShapeProgram } from '../shape/schema';
+import { SHAPE_IDENTIFIER_PATTERN, validateShapeProgram } from '../shape/schema';
 import type { ShapeProgram } from '../shape/types';
 import {
   MIN_TARGET_EXTENT,
@@ -68,7 +68,7 @@ import { findBlueprintReferenceIssues } from '../worldstream/references';
 
 import { certifySteps, type Rejection, type Verdict } from './certify';
 import { contextFromEmission, type RejectionContext } from './local/rejection-prompt';
-import { repairEmission, type RepairNote } from './repair';
+import { repairEmission, toIdentifier, type RepairNote } from './repair';
 import { buildCompilerRequest, COMPILER_STAGE, EXAMPLE_BLUEPRINT_ANSWER } from './worldstream-prompt';
 import { isExampleEmission, type Grammar, type UpstreamRequest } from './prompt';
 import type { PlannedObject, PlannerEmission } from './worldstream-intent';
@@ -356,6 +356,46 @@ function clampBounds(
 }
 
 /* ------------------------------------------------------------------ *
+ * Tvary.
+ * ------------------------------------------------------------------ */
+
+/**
+ * `materialIntent` napsaný jako popis přečti jako jméno materiálu.
+ *
+ * **Nejdražší jediná příčina celého běhu `T14`, a je měřená:** 60 ze 112
+ * hodnot v archivu je fráze (`"weathered corrugated steel"`), 25 z 28 prvních
+ * odpovědí aspoň jednu takovou nese. A protože loop níž **odmítá na prvním
+ * vadném tvaru**, opraví model jedno pole na kolo — naměřená posloupnost je
+ * `✗2 → ✗1 → ✓`, tedy dvě placená volání za dva řetězce. Šest vět na kola
+ * nedosáhlo a skončilo na krabici kvůli štítku, který dneska nikdo nečte.
+ *
+ * Přepis je pravopisný a jde vidět (`adjustments` → panel). Sáhne se **jen** na
+ * `materialIntent`: `shapeId` a `stableId` jsou oboustranné odkazy na
+ * placement a na registr slotů, takže narovnat je znamená rozpojit je — a
+ * naměřeno je u obou **0 vad ze 739**, takže by to bylo narovnávání ničeho.
+ */
+function straightenMaterialIntent(
+  raw: unknown,
+  index: number,
+  adjustments: BlueprintAdjustment[],
+): unknown {
+  if (!isRecord(raw)) return raw;
+  const intent = raw.materialIntent;
+
+  // Jediná podmínka, ne dvě: `toIdentifier` vrací platnou hodnotu nezměněnou,
+  // takže „netřeba sahat" a „nešlo narovnat" se poznají tady, a vzor zůstává
+  // jediný. Druhá kopie té otázky by se dala rozejít s tou první.
+  const straight = toIdentifier(intent, SHAPE_IDENTIFIER_PATTERN);
+  if (straight === null || straight === intent) return raw;
+
+  adjustments.push({
+    path: `shapes/${index}/materialIntent`,
+    reason: `"${intent}" is a phrase where the protocol takes a material name, so the system read it as ${straight}`,
+  });
+  return { ...raw, materialIntent: straight };
+}
+
+/* ------------------------------------------------------------------ *
  * Placements.
  * ------------------------------------------------------------------ */
 
@@ -436,6 +476,7 @@ export function compileBlueprint(
   if (!Array.isArray(answer.shapes))
     return reject('WRONG_SHAPE', 'shapes is not an array; write an empty one if there are none');
 
+  const adjustments: BlueprintAdjustment[] = [];
   const shapes: ShapeProgram[] = [];
   for (const [index, raw] of answer.shapes.entries()) {
     if (EXAMPLE_SHAPE_TABLES.has(tableOf(raw)))
@@ -444,14 +485,20 @@ export function compileBlueprint(
         `shapes[${index}] is the example shape table, node for node`,
       );
 
-    const validation = validateShapeProgram(raw);
+    // Před bránou, ne po ní: sáhnout na to až v opravném kole znamená placené
+    // volání za pravopis. Na pořadí proti kontrole opsané ukázky nad tím
+    // **nezáleží** a je to ověřené, ne odhadnuté — `tableOf()` kanonizuje jen
+    // `{ nodes, root }`, takže `materialIntent` do toho verdiktu nevstupuje.
+    const shape = straightenMaterialIntent(raw, index, adjustments);
+
+    const validation = validateShapeProgram(shape);
     if (!validation.ok)
       return reject(
         'SHAPE_INVALID',
         `shapes[${index}]: ${validation.issues[0]}`,
         validation.issues.map((issue) => `shapes/${index}: ${issue}`),
       );
-    shapes.push(raw as ShapeProgram);
+    shapes.push(shape as ShapeProgram);
   }
 
   // --- placements --------------------------------------------------------
@@ -459,7 +506,6 @@ export function compileBlueprint(
   if (!Array.isArray(answer.placements))
     return reject('WRONG_SHAPE', 'placements is not an array');
 
-  const adjustments: BlueprintAdjustment[] = [];
   const planned = new Map<string, PlannedObject>(
     plan.objects.map((object) => [object.stableId, object]),
   );

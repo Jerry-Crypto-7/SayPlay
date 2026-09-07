@@ -96,11 +96,13 @@ const axis = z.enum(['x', 'y', 'z']);
  * i v registru reprezentací a `stableId` se objevuje ve vyrenderovaném HTML.
  * Model, který sem napíše celou větu, se to má dozvědět tady, ne až v DOM.
  */
+export const SHAPE_IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$/;
+
 const identifier = z
   .string()
   .min(1)
   .max(64)
-  .regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]*$/, 'identifier must start alphanumerically');
+  .regex(SHAPE_IDENTIFIER_PATTERN, 'identifier must start alphanumerically');
 
 /* ------------------------------------------------------------------ *
  * Primitiva.

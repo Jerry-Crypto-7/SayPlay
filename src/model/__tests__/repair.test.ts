@@ -9,9 +9,12 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { buildRuntimeWorld } from '../../ir/build';
+import { ID_PATTERN } from '../../ir/types';
 import { ruleKeyFault } from '../../ir/worlddoc';
+import { SHAPE_IDENTIFIER_PATTERN } from '../../shape/schema';
 import { EXAMPLE_MARKER, buildEmissionRequest, type Grammar } from '../prompt';
-import { repairEmission } from '../repair';
+import { repairEmission, toIdentifier } from '../repair';
 
 const grammar = (): Grammar => ({
   surfaceEvents: ['onStart', 'onEnterZone', 'onCollide', 'onAction', 'onPickup'],
@@ -417,5 +420,117 @@ describe('kde přesně je hranice zásahu', () => {
     expect(kinds(result)).toContain('witnessSolved');
     expect(witness.H_cert, 'přání modelu zůstalo horizontem hledání').toBe(600);
     expect(witness.ops.length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * **Každý řetězec níž je naměřený, ne vymyšlený.** Pochází z archivu běhu `T14`
+ * (`evals/worldstream/create-raw.json`, 104 odpovědí, 6. 9. 2026), který je
+ * gitignorovaný — proto jsou hodnoty opsané sem. Poměry z toho archivu, které
+ * tenhle blok hlídá: `materialIntent` 60 vadných ze 112, `role` 3 ze 479,
+ * a **528 platných hodnot, na které se nesmí sáhnout**.
+ */
+describe('narovnání identifikátoru', () => {
+  const MEASURED_PHRASES: readonly (readonly [string, string])[] = [
+    ['weathered corrugated steel', 'weatheredCorrugatedSteel'],
+    ['wet projecting eaves', 'wetProjectingEaves'],
+    ['stagnant floodwater', 'stagnantFloodwater'],
+    ['rain-darkened courtyard curb', 'rainDarkenedCourtyardCurb'],
+    ['patched timber homes with iron hangers', 'patchedTimberHomesWithIronHangers'],
+  ];
+
+  /** Naměřené hodnoty, které prošly. Byte za byte je vrátí obě vrstvy. */
+  const MEASURED_VALID: readonly string[] = [
+    'weathered_stone',
+    'living_bark_and_hewn_timber',
+    'agedClockworkMetal',
+    'actor',
+    'traversableMachinery',
+  ];
+
+  it('přečte frázi jako identifikátor platný na obou vrstvách naráz', () => {
+    for (const [wrote, read] of MEASURED_PHRASES) {
+      expect(toIdentifier(wrote, SHAPE_IDENTIFIER_PATTERN), wrote).toBe(read);
+      expect(toIdentifier(wrote, ID_PATTERN), wrote).toBe(read);
+      // Celý smysl jednoho pravidla místo dvou: co vyleze, projde oběma vzory.
+      expect(SHAPE_IDENTIFIER_PATTERN.test(read), read).toBe(true);
+      expect(ID_PATTERN.test(read), read).toBe(true);
+    }
+  });
+
+  it('nesáhne na hodnotu, která už platná je', () => {
+    // Bez téhle aserce projde narovnání, které rozpadá na slova vždycky — a
+    // `weathered_stone` by z něj vylezlo jako `weatheredStone`, tedy jiný
+    // materiál než ten, který model napsal.
+    for (const value of MEASURED_VALID) {
+      const pattern = SHAPE_IDENTIFIER_PATTERN.test(value) ? SHAPE_IDENTIFIER_PATTERN : ID_PATTERN;
+      expect(toIdentifier(value, pattern), value).toBe(value);
+    }
+  });
+
+  it('nechá být hodnotu, kterou přijímá vrstva, na které stojí', () => {
+    // ⚠ **`outdoor-space` je naměřený případ obojího naráz.** Je to jediná
+    // vadná `role` celého běhu (3 výskyty ze 479), takže IR ji odmítne a
+    // narovná se — jenže tvarová vrstva pomlčku bere. Kdyby se obě vrstvy
+    // narovnávaly přísnějším vzorem, přepsala by se hodnota, kterou nikdo
+    // neodmítl. Vzor rozhoduje o obojím: co je vada i co z ní vznikne.
+    expect(toIdentifier('outdoor-space', ID_PATTERN)).toBe('outdoorSpace');
+    expect(toIdentifier('outdoor-space', SHAPE_IDENTIFIER_PATTERN)).toBe('outdoor-space');
+
+    expect(toIdentifier('9lives', SHAPE_IDENTIFIER_PATTERN)).toBe('9lives');
+    expect(toIdentifier('geom:panel.floor', SHAPE_IDENTIFIER_PATTERN)).toBe('geom:panel.floor');
+  });
+
+  it('nevymýšlí identifikátor tam, kde žádný nevznikne', () => {
+    // Selhání jsou stejně důležitá jako úspěchy: dopsat předponu k `3rd floor`
+    // nebo useknout konec dlouhého řetězce je hádání, ne oprava.
+    expect(toIdentifier('', ID_PATTERN), 'prázdný řetězec').toBeNull();
+    expect(toIdentifier('   ', ID_PATTERN), 'samé mezery').toBeNull();
+    expect(toIdentifier('— · —', ID_PATTERN), 'samá interpunkce').toBeNull();
+    expect(toIdentifier(42, ID_PATTERN), 'nebyl to řetězec').toBeNull();
+    expect(toIdentifier(null, ID_PATTERN), 'nebyl to řetězec').toBeNull();
+    expect(toIdentifier('3rd floor', ID_PATTERN), 'IR chce první písmeno').toBeNull();
+    expect(toIdentifier('weathered '.repeat(9), ID_PATTERN), 'delší než 64 znaků').toBeNull();
+  });
+
+  it('narovná roli u entity i v pravidle, které se jí drží', () => {
+    // ⚠ **Tohle je celý důvod, proč je narovnání dokumentové, ne polní.**
+    // `onPickup` se smí klíčovat rolí a `entitiesWithRole()` porovnává řetězce
+    // na rovnost, takže přepis jen u entity vyrobí pravidlo, které nikoho
+    // nenajde — a lowering spadne na `no entity matches role`.
+    const doc = example();
+    const entities = doc.sim.entities as Record<string, Record<string, unknown>>;
+    const rules = doc.sim.rules as Record<string, Record<string, unknown>>;
+    const [ruleId, byRole] =
+      Object.entries(rules).find(
+        ([, rule]) => (rule.event as Record<string, unknown>).kind === 'onPickup',
+      ) ?? [];
+    expect(byRole, 'fixtura ztratila pravidlo klíčované rolí').toBeDefined();
+
+    const sim = {
+      ...doc.sim,
+      entities: { ...entities, card: { ...entities.card, role: 'loose pickup' } },
+      rules: {
+        ...rules,
+        [ruleId as string]: { ...byRole, event: { kind: 'onPickup', role: 'loose pickup' } },
+      },
+    };
+
+    const result = repairEmission({ ...doc, sim });
+    const repaired = (result.document as Doc).sim;
+    const repairedEntities = repaired.entities as Record<string, Record<string, unknown>>;
+    const repairedRules = repaired.rules as Record<string, Record<string, unknown>>;
+
+    expect(kinds(result).filter((kind) => kind === 'roleStraightened'), 'nota má být jedna na roli').toHaveLength(1);
+    expect(repairedEntities.card.role).toBe('loosePickup');
+    expect((repairedRules[ruleId as string].event as Record<string, unknown>).role).toBe('loosePickup');
+
+    const built = buildRuntimeWorld(repaired);
+    expect(built.ok ? [] : built.issues, 'svět se po narovnání nepostavil').toEqual([]);
+  });
+
+  it('nechá roli být, když identifikátor už je', () => {
+    const result = repairEmission(example());
+    expect(kinds(result)).not.toContain('roleStraightened');
   });
 });
