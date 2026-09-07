@@ -43,7 +43,9 @@ import {
   REDACTED,
   ROUGH_WORLD_P95_MS,
   WORLD_DISTANCE_FLOOR,
+  archiveEmitter,
   buildCreateReport,
+  clayDetail,
   driveCreateCase,
   liveEmitter,
   percentile95,
@@ -54,6 +56,7 @@ import {
   scrubText,
   worldDistance,
   worldProfile,
+  type ArchiveEntry,
   type CaseOutcome,
   type FailureStage,
   type WorldProfile,
@@ -1186,5 +1189,91 @@ describe('the runner asks the budget before it spends, and tells it after', () =
     // co kdy mělo přijít.
     expect(live).toContain('planned: corpus.create.length');
     expect(live).toContain('stopReason,');
+  });
+});
+
+/* ================================================================== *
+ * 12. Proč slot spadl na hlínu, a přehrání archivu zadarmo.
+ * ================================================================== */
+
+describe('a clay slot says which object it was and why', () => {
+  const built = (slots: { id: string; rung: string; reason?: string }[]) =>
+    ({
+      kind: 'built' as const,
+      title: 't',
+      sessionSeed: SEED,
+      resolution: 32,
+      quality: 'balanced',
+      scenery: [],
+      slots: slots.map((entry) => ({
+        slot: { stableId: entry.id, role: 'hero', source: { kind: 'shape', shapeId: 's' } },
+        form:
+          entry.rung === 'semantic-clay'
+            ? { rung: 'semantic-clay', kind: 'clay', reason: entry.reason, drawn: true }
+            : { rung: entry.rung, kind: 'placements', placements: [] },
+      })),
+    }) as never;
+
+  it('names the object, its role and the reason the code recorded', () => {
+    // Do 7. 9. 2026 tady stálo jen `1 of 3 objects fell back to clay` a osm vět
+    // z běhu T14 se pod tou větou tvářilo jako tři různé vady. Nebyly to tři.
+    const detail = clayDetail(
+      built([
+        { id: 'wall', rung: 'g2-rich' },
+        { id: 'tallHive', rung: 'semantic-clay', reason: 'mesh is 17200 triangles, above maxTriangles 16000' },
+        { id: 'floor', rung: 'g2-rich' },
+      ]),
+    );
+
+    expect(detail).toContain('1 of 3 objects fell back to clay');
+    expect(detail).toContain('tallHive');
+    expect(detail).toContain('source shape');
+    expect(detail).toContain('above maxTriangles 16000');
+  });
+
+  it('names every clay object, not just the first one', () => {
+    const detail = clayDetail(
+      built([
+        { id: 'a', rung: 'semantic-clay', reason: 'first reason' },
+        { id: 'b', rung: 'semantic-clay', reason: 'second reason' },
+      ]),
+    );
+    expect(detail).toContain('2 of 2');
+    expect(detail).toContain('first reason');
+    expect(detail).toContain('second reason');
+  });
+});
+
+describe('the archive replays instead of the provider', () => {
+  const entry = (caseId: string, call: number, answer: unknown): ArchiveEntry => ({
+    caseId,
+    call,
+    request: {},
+    answer,
+  });
+
+  const request: UpstreamRequest = { model: 'm', system: 's', user: 'u' };
+
+  it('hands back that case answers in the order they were paid for', async () => {
+    const emit = archiveEmitter(
+      [entry('c01', 1, { a: 1 }), entry('c02', 2, { wrong: true }), entry('c01', 3, { a: 2 })],
+      'c01',
+    );
+    expect(await emit(request)).toEqual({ a: 1 });
+    expect(await emit(request)).toEqual({ a: 2 });
+  });
+
+  it('behaves like a dead provider when the archive runs out', async () => {
+    // Naostro to tak dopadlo: `c14` i `c28` mají v archivu míň odpovědí než
+    // kol, protože poslední volání neodpovědělo. Přehrání to musí zopakovat,
+    // ne vyrobit úspěch, který se nikdy nestal.
+    const emit = archiveEmitter([entry('c01', 1, { a: 1 })], 'c01');
+    await emit(request);
+    await expect(emit(request)).rejects.toThrow('UPSTREAM_UNAVAILABLE');
+  });
+
+  it('never answers for a case the archive does not hold', async () => {
+    const emit = archiveEmitter([entry('c01', 1, { a: 1 })], 'c99');
+    await expect(emit(request)).rejects.toThrow('holds 0 answers');
   });
 });

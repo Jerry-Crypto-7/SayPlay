@@ -450,6 +450,26 @@ export function stageOfOutcome(outcome: BlueprintOutcome): FailureStage {
   }
 }
 
+/**
+ * **Který objekt spadl na hlínu a proč — jmenovitě.**
+ *
+ * Do 7. 9. 2026 tady stálo jen `1 of 3 objects fell back to clay`. Naměřeno
+ * na běhu z 6. 9.: osm vět z třiceti skončilo přesně takhle, vždycky s jedním
+ * jediným objektem na hlíně — a z reportu nešlo poznat, jestli model ten
+ * objekt vůbec nenapsal, jestli mu ho někdo vyfoukl, nebo jestli vypadl na
+ * rozpočtu hrdinů. Tři různé opravy pod jednou větou.
+ *
+ * `proxy.ts` ten důvod zná a nese ho v `form.reason`; ztrácel se až tady.
+ */
+export function clayDetail(world: ProxyWorld & { kind: 'built' }): string {
+  const clay = world.slots.filter((entry) => entry.form.rung === 'semantic-clay');
+  const named = clay.map(
+    (entry) =>
+      `${entry.slot.stableId} (${entry.slot.role}, source ${entry.slot.source.kind}): ${entry.form.kind === 'clay' ? entry.form.reason : 'no reason recorded'}`,
+  );
+  return `${String(clay.length)} of ${String(world.slots.length)} objects fell back to clay — ${named.join('; ')}`;
+}
+
 /** Autorská geometrie znamená, že žádný slot nespadl na hlínu. */
 export function rungsAreAuthored(world: ProxyWorld): boolean {
   if (world.kind !== 'built') return false;
@@ -569,10 +589,7 @@ export async function driveCreateCase(entry: CreateCase, deps: CaseDeps): Promis
           // selhání než odmítnutí a nesmí se s ním sloučit: pod `shape` by
           // splynulo s tvarem, který neprošel bránou, a to se opravuje jinde.
           stage: 'clay',
-          detail:
-            world.kind === 'built'
-              ? `${world.slots.filter((entry_) => entry_.form.rung === 'semantic-clay').length} of ${world.slots.length} objects fell back to clay`
-              : world.reason,
+          detail: world.kind === 'built' ? clayDetail(world) : world.reason,
         },
     rungs: world.kind === 'built' ? world.slots.map((entry_) => entry_.form.rung) : [],
     profile: worldProfile(blueprint),
@@ -850,5 +867,46 @@ export function liveEmitter(
       if (!outcome.ok) throw new Error(`${outcome.reason}: ${outcome.detail}`);
       return outcome.body;
     },
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * Přehrání archivu — tytéž odpovědi, žádné placené volání.
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Emitor, který místo poskytovatele čte `create-raw.json`.**
+ *
+ * Existuje kvůli jedné otázce, která se jinak dá zodpovědět jen dalším
+ * sedmdesátiminutovým během za 104 volání: *„srovnala by tahle oprava ty
+ * věty, které minule spadly?"* Odpovědi z běhu 6. 9. 2026 jsou na disku, běh
+ * je deterministický (pevné `SESSION_SEED`) a compiler je ručně psaný, takže
+ * přehrání dá **tytéž** blueprinty a rozdíl pak nese výhradně ta oprava.
+ *
+ * ⚠ **Neměří model, měří kód pod ním.** Přehraný běh nesmí nikde vystupovat
+ * jako výsledek brány `K2` — model v něm nedostane ani jednu novou šanci,
+ * takže věta, kterou minule napsal špatně, bude špatně i teď. Čísla odsud
+ * patří k opravám (`T14r-*`), ne do reportu o schopnostech modelu.
+ *
+ * Archiv nese jen volání, která **doopravdy odpověděla**: když jich pro
+ * případ dojde, chová se to jako výpadek poskytovatele — tedy stejně, jako
+ * to dopadlo naostro.
+ */
+export function archiveEmitter(
+  archive: readonly ArchiveEntry[],
+  caseId: string,
+): (request: UpstreamRequest) => Promise<unknown> {
+  const answers = archive.filter((entry) => entry.caseId === caseId).map((entry) => entry.answer);
+  let at = 0;
+  return (_request: UpstreamRequest): Promise<unknown> => {
+    if (at >= answers.length)
+      return Promise.reject(
+        new Error(
+          `UPSTREAM_UNAVAILABLE: the archive holds ${String(answers.length)} answers for ${caseId} and the replay asked for one more`,
+        ),
+      );
+    const answer = answers[at];
+    at += 1;
+    return Promise.resolve(answer);
   };
 }
