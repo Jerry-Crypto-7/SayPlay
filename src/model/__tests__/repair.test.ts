@@ -534,3 +534,61 @@ describe('narovnání identifikátoru', () => {
     expect(kinds(result)).not.toContain('roleStraightened');
   });
 });
+
+/**
+ * **Nález nezávislé revize 7. 9. 2026, ověřený spuštěním.** Pravopisný přepis
+ * přestává být pravopisem ve chvíli, kdy vyrobí jméno, které v dokumentu už
+ * někdo nese. Tři scénáře níž jsou ty, které revize doopravdy spustila.
+ */
+describe('narovnání role se odmítne tam, kde by slilo dvě role v jednu', () => {
+  const withRoles = (extra: Record<string, unknown>) => {
+    const doc = example();
+    const entities = doc.sim.entities as Record<string, Record<string, unknown>>;
+    return { ...doc, sim: { ...doc.sim, entities: { ...entities, ...extra } } };
+  };
+
+  it('nechá roli být, když by narovnaná patřila jiné entitě', () => {
+    // `card` nese `pickup`. `decoy` s `"pickup "` by se narovnal na tutéž roli,
+    // a od té chvíle by `onPickup{role:"pickup"}` střílel na obě entity —
+    // a `countInZone{tag:"pickup"}` počítal dvě tam, kde model napsal jednu.
+    const result = repairEmission(
+      withRoles({ decoy: { role: 'pickup ', socket: 'leverPad', state: 'loose' } }),
+    );
+    const entities = (result.document as Doc).sim.entities as Record<string, Record<string, unknown>>;
+
+    expect(kinds(result)).not.toContain('roleStraightened');
+    expect(entities.decoy.role, 'role se slila s cizí').toBe('pickup ');
+  });
+
+  it('nevyrobí dvě stejné role ze dvou různých frází', () => {
+    const result = repairEmission(
+      withRoles({
+        alpha: { role: 'loose pickup', socket: 'leverPad', state: 'loose' },
+        beta: { role: 'loose-pickup', socket: 'cardPad', state: 'loose' },
+      }),
+    );
+    const entities = (result.document as Doc).sim.entities as Record<string, Record<string, unknown>>;
+    const roles = [entities.alpha.role, entities.beta.role];
+
+    expect(new Set(roles).size, 'dvě různé role modelu splynuly v jednu').toBe(2);
+  });
+
+  it('nevyrobí `actor` ani `agent`, protože to není pravopis, ale volba hrdiny', () => {
+    // ⚠ Nejhorší instance nálezu: `build.ts` i `solve.ts` berou **první**
+    // entitu s rolí `actor`, takže narovnaný `decoy` před `player` by přebral
+    // avatara i vítěznou cestu. Odmítá se, i kdyby bylo jméno volné.
+    const result = repairEmission(
+      withRoles({ decoy: { role: 'actor!', socket: 'leverPad', state: 'idle' } }),
+    );
+    const entities = (result.document as Doc).sim.entities as Record<string, Record<string, unknown>>;
+
+    expect(kinds(result)).not.toContain('roleStraightened');
+    expect(entities.decoy.role).toBe('actor!');
+
+    const built = buildRuntimeWorld((result.document as Doc).sim);
+    const actors = built.ok
+      ? built.world.ir.entities.filter((entity) => entity.role === 'actor')
+      : [];
+    expect(actors.length, 'narovnání vyrobilo druhého avatara').toBeLessThan(2);
+  });
+});

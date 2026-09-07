@@ -192,14 +192,44 @@ function dropOrphanLookModules(
  * a `entitiesWithRole()` porovnává řetězce na rovnost — narovnat jedno místo
  * a druhé ne znamená pravidlo, které nikoho nenajde a shodí lowering na
  * `no entity matches role`. Nota je jedna na roli, ne na výskyt.
+ *
+ * ## Slití dvou rolí do jedné je změna významu, a proto se odmítá
+ *
+ * ⚠ **Nález nezávislé revize 7. 9. 2026, ověřený spuštěním.** Pravopisný přepis
+ * je bezpečný jen dokud vyrobí jméno, které v dokumentu ještě nikdo nemá.
+ * Jakmile `"pickup "` vyleze jako `pickup`, který už nese jiná entita, přestane
+ * to být pravopis: `entitiesWithRole()` porovnává na rovnost, takže pravidlo
+ * `onPickup{role:"pickup"}` začne střílet i na tu druhou entitu, a `buildTags()`
+ * (`src/ir/build.ts:97`) z role dělá **tag**, takže `countInZone{tag:"pickup"}`
+ * napočítá dvě tam, kde model napsal jednu — a to je práh ve výherní podmínce.
+ *
+ * **`actor` a `agent` se nevyrábějí nikdy**, ani když je volné. Jsou to jediné
+ * dvě role, které systém čte jménem (`build.ts:184,285`), `actor` rozhoduje,
+ * kdo je avatar a pro koho se hledá vítězná cesta, a obě je berou **první
+ * shodou v pořadí klíčů**. Udělat z `"actor!"` avatara není oprava pravopisu,
+ * je to volba hlavní postavy — přesně to hádání, které tenhle modul zakazuje.
+ *
+ * V obou případech se role nechá být a odmítne ji lowering nahlas, jako dřív.
  */
+const RESERVED_ROLES = new Set(['actor', 'agent']);
+
 function roleRewrites(sim: Record<string, unknown>, notes: RepairNote[]): ReadonlyMap<string, string> {
+  const written = Object.values(asRecord(sim.entities))
+    .map((raw) => asString(asRecord(raw).role))
+    .filter((role): role is string => role !== null);
+
+  // Co už je v dokumentu obsazené. Přepis smí vyrobit jen jméno mimo tuhle
+  // množinu, a co vyrobí, do ní hned patří — jinak by dvě různé role modelu
+  // splynuly do jedné přes dvě nezávislá narovnání.
+  const taken = new Set(written);
   const rewrites = new Map<string, string>();
-  for (const raw of Object.values(asRecord(sim.entities))) {
-    const role = asString(asRecord(raw).role);
-    if (role === null || ID_PATTERN.test(role) || rewrites.has(role)) continue;
+
+  for (const role of written) {
+    if (ID_PATTERN.test(role) || rewrites.has(role)) continue;
     const straight = toIdentifier(role, ID_PATTERN);
-    if (straight === null) continue;
+    if (straight === null || RESERVED_ROLES.has(straight) || taken.has(straight)) continue;
+
+    taken.add(straight);
     rewrites.set(role, straight);
     notes.push({
       kind: 'roleStraightened',
