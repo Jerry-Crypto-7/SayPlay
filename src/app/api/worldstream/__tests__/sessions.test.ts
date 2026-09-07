@@ -117,6 +117,40 @@ function createRequest(body: unknown, caller?: string, spoofed?: string): Reques
   });
 }
 
+/**
+ * Zapnutý poskytovatel na neexistujícím hostiteli.
+ *
+ * **Od `T14r-acttwo` je to jediný způsob, jak se v testu vůbec vezme placený
+ * slot.** První větu obsluhuje sklad a slot si nebere; slot bere jedině
+ * dějství II, tedy tělo s `live: true` nad nakonfigurovaným modelem. Bez ceny
+ * je konfigurace neúplná a `cloudEmitter()` vrátí `null`.
+ */
+function stubCloud(): void {
+  vi.stubEnv('WORLDSMITH_MODEL_ENDPOINT', 'https://model.invalid/v1/messages');
+  vi.stubEnv('WORLDSMITH_MODEL_KEY', 'not-a-real-key');
+  // **Cena je malá schválně, a nenulová schválně.** Nulová vypíná strop
+  // utrácení a s ním i `cloudEmitter()`; patnáct dolarů za megatoken naopak
+  // rezervuje na každé volání nejhorší případ kolem čtvrt dolaru, takže by
+  // živé generace tohohle souboru vyčerpaly procesní strop `DEFAULT_CAP_USD`
+  // a test o sdíleném stropu níž by neuměl rezervovat nic. Naměřeno 7. 9. 2026.
+  vi.stubEnv('WORLDSMITH_USD_PER_MTOK_OUT', '0.01');
+}
+
+/** Počká, až generace za odpovědí doběhne — ať dopadne jakkoli. */
+async function settled(sessionId: string): Promise<void> {
+  await vi.waitFor(
+    () => {
+      const stored = getSession(sessionId);
+      if (stored === null) throw new Error('relace zmizela');
+      if (stored.session.phase !== 'world' && stored.session.phase !== 'failed')
+        throw new Error('ještě běží: ' + stored.session.phase);
+    },
+    { timeout: 20_000, interval: 25 },
+  );
+  // `work.finally` visí za `runGeneration`; jedna makrotasková hranice ho pustí.
+  await new Promise<void>((resolve) => setImmediate(resolve));
+}
+
 function params(sessionId: string): { params: Promise<{ sessionId: string }> } {
   return { params: Promise.resolve({ sessionId }) };
 }
@@ -179,6 +213,10 @@ async function readRaw(response: Response, chunks = 1): Promise<string> {
 
 
 afterEach(() => {
+  // **Proměnné prostředí patří k úklidu stejně jako čítače.** Od
+  // `T14r-acttwo` je `stubCloud()` v tomhle souboru na pěti místech a
+  // zapomenuté `unstubAllEnvs` by zaplo placenou větev cizímu testu.
+  vi.unstubAllEnvs();
   clearSessions();
   resetConcurrency();
   // Počty odběratelů proudu jsou stav modulu stejně jako čítač souběhu: proud,
@@ -431,9 +469,17 @@ describe('založení relace', () => {
     // komentářem, a vrácení přesunuté před podmínku, které by každý úspěšný
     // požadavek vracelo dvakrát a čítač zahnalo do záporu — po čemž by strop
     // souběhu už nikdy neodmítl. Počet volných slotů po odmítnutí obojí odliší.
+    //
+    // ⚠ **Od `T14r-acttwo` musí ten požadavek být dějství II, a bez toho tenhle
+    // test neměřil nic** — nález nezávislé revize commitu `b0b95da`, ověřený
+    // spuštěním mutanta. První větu obsluhuje sklad a placený slot si nebere
+    // vůbec, takže nad `{ prompt }` se sonda ptala čítače, kterého se ten
+    // požadavek ani nedotkl: revize smazala `releaseSlot` z `work.finally` a
+    // celý soubor zůstal zelený.
+    stubCloud();
     vi.mocked(serverGrammar).mockReturnValueOnce('protocol unreadable for this test');
 
-    const response = await createSession(createRequest({ prompt: 'a salt flat' }));
+    const response = await createSession(createRequest({ prompt: 'a salt flat', live: true }));
     expect(response.status).toBe(503);
     expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
       'GRAMMAR_UNREADABLE',
@@ -449,25 +495,6 @@ describe('založení relace', () => {
     expect(acquireSlot('world'), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(
       false,
     );
-  });
-
-  it('přijatý požadavek vrátí slot právě jednou, a to až ve `finally`', async () => {
-    // Druhý mutant z revize 3. 9. 2026: `releaseSlot()` přesunuté před
-    // podmínku nečitelného protokolu. Odmítnutá cesta vypadá správně, ale
-    // každý **přijatý** požadavek pak vrací dvakrát — jednou hned, jednou ve
-    // `finally` — a čítač jde do záporu, po čemž strop souběhu už neodmítne.
-    const response = await createSession(createRequest({ prompt: 'a salt flat' }));
-    expect(response.status).toBe(202);
-
-    // Bez `.env` generace selže čistě v mikrotascích; jedna makrotasková
-    // hranice ji nechá doběhnout i s `finally`, aniž se měří čas.
-    await new Promise<void>((resolve) => setImmediate(resolve));
-
-    // Sonda se ptá **týchž dveří, kterými slot odešel** — jinak ji odmítne
-    // vlastní strop těch druhých a nezměří nic. Viz test nad tímhle.
-    for (let i = 0; i < MAX_WORLD_GENERATIONS; i += 1)
-      expect(acquireSlot('world'), `slot ${i} měl být volný — finally ho nevrátilo`).toBe(true);
-    expect(acquireSlot('world'), 'čítač je v záporu — slot se vrátil dvakrát').toBe(false);
   });
 });
 
@@ -1456,18 +1483,29 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
   // odmítnutí natrvalo zavřela stavbu světů komukoli. Naměří to jedině jiný
   // volající, protože ten původní je nad kvótou pořád.
   it('odmítnutí nad kvótou nezabere slot, který má chránit', async () => {
+    // ⚠ **Odmítané požadavky musí být dějství II, jinak žádný slot nedrží** —
+    // nález nezávislé revize commitu `b0b95da`. Kvótu naplní věty dějství I
+    // (ty slot neberou a jsou zadarmo), a teprve pokusy navíc si o slot řeknou.
+    stubCloud();
     resetRateWindows();
     naPráh();
     for (let i = 0; i < MAX_SESSIONS_PER_CALLER; i += 1) {
       await createSession(createRequest({ prompt: `svět ${String(i)}` }, '203.0.113.9'));
     }
     for (let i = 0; i < MAX_WORLD_GENERATIONS + 1; i += 1) {
-      const odmítnutá = await createSession(createRequest({ prompt: 'navíc' }, '203.0.113.9'));
+      const odmítnutá = await createSession(
+        createRequest({ prompt: 'navíc', live: true }, '203.0.113.9'),
+      );
+      // **429, a to samo je půlka tvrzení.** Bez vráceného slotu narazí čtvrtý
+      // pokus na prázdný strop dveří dřív než na kvótu a vydá 503.
       expect(odmítnutá.status).toBe(429);
     }
 
-    const jiný = await createSession(createRequest({ prompt: 'jiný člověk' }, '198.51.100.9'));
+    const jiný = await createSession(
+      createRequest({ prompt: 'jiný člověk', live: true }, '198.51.100.9'),
+    );
     expect(jiný.status, 'odmítnutí ukousla sloty dveří world a nevrátila je').toBe(202);
+    await settled(((await jiný.json()) as { sessionId: string }).sessionId);
   });
 
   it('dvě různé hlavičky jsou dva kbelíky, takže si relace nezavřou navzájem', async () => {
@@ -1638,15 +1676,6 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
 describe('zdroj emise: dějství I ze skladu, dějství II od modelu', () => {
   const AUTHORED = AUTHORED_STORE.worlds[0]!;
 
-  /** Zapnutý poskytovatel na neexistujícím hostiteli — živá cesta selže hlasitě. */
-  function stubCloud(): void {
-    vi.stubEnv('WORLDSMITH_MODEL_ENDPOINT', 'https://model.invalid/v1/messages');
-    vi.stubEnv('WORLDSMITH_MODEL_KEY', 'not-a-real-key');
-    // ⚠ **Bez ceny je konfigurace neúplná a `cloudEmitter()` vrátí `null`** —
-    // `upstreamConfigFromEnv()` na ni sahá, protože nulová cena vypíná strop.
-    vi.stubEnv('WORLDSMITH_USD_PER_MTOK_OUT', '15');
-  }
-
   /** Relace založená přes route a dovedená do konce, ať dopadne jakkoli. */
   async function generate(prompt: string, live = false) {
     const response = await createSession(createRequest(live ? { prompt, live } : { prompt }));
@@ -1751,5 +1780,43 @@ describe('zdroj emise: dějství I ze skladu, dějství II od modelu', () => {
     } finally {
       vi.unstubAllEnvs();
     }
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Slot dveří `world` po doběhlé generaci
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Tenhle blok stojí na konci souboru schválně, a je to jediné místo, kde
+ * stát může.**
+ *
+ * Pouští skutečnou živou generaci, tedy jedinou cestu, na které se placený
+ * slot vůbec vezme — od `T14r-acttwo` obsluhuje první větu sklad a slot si
+ * nebere. Živá generace si ale rezervuje na procesním stropu, a test „strop
+ * utrácení je jeden na modul" výš si rezervuje `DEFAULT_CAP_USD`, tedy
+ * **celý** rozpočet. Jakákoli útrata před ním ho shodí, ať je sebemenší;
+ * refundace neexistuje. Naměřeno 7. 9. 2026 při opravě nálezu nezávislé
+ * revize commitu `b0b95da`.
+ */
+describe('slot se vrací i po generaci, která doběhla', () => {
+  it('přijatý požadavek vrátí slot právě jednou, a to až ve `finally`', async () => {
+    // Druhý mutant z revize 3. 9. 2026: `releaseSlot()` přesunuté před
+    // podmínku nečitelného protokolu. Odmítnutá cesta vypadá správně, ale
+    // každý **přijatý** požadavek pak vrací dvakrát — jednou hned, jednou ve
+    // `finally` — a čítač jde do záporu, po čemž strop souběhu už neodmítne.
+    //
+    // ⚠ **Dějství II ze stejného důvodu jako u testu nad tímhle** — první věta
+    // slot nebere, takže by se tady měřil netknutý čítač.
+    stubCloud();
+    const response = await createSession(createRequest({ prompt: 'a salt flat', live: true }));
+    expect(response.status).toBe(202);
+    await settled(((await response.json()) as { sessionId: string }).sessionId);
+
+    // Sonda se ptá **týchž dveří, kterými slot odešel** — jinak ji odmítne
+    // vlastní strop těch druhých a nezměří nic. Viz test nad tímhle.
+    for (let i = 0; i < MAX_WORLD_GENERATIONS; i += 1)
+      expect(acquireSlot('world'), `slot ${i} měl být volný — finally ho nevrátilo`).toBe(true);
+    expect(acquireSlot('world'), 'čítač je v záporu — slot se vrátil dvakrát').toBe(false);
   });
 });

@@ -39,6 +39,10 @@ const WORLD_BUDGET_MS = 90_000;
 interface Acts {
   /** Pustí proud dějství II. Do zavolání model „pořád píše". */
   readonly release: () => void;
+  /** Pustí potvrzení změny. Do zavolání commit visí na drátě. */
+  readonly releaseCommit: () => void;
+  /** Od téhle chvíle commit visí, dokud ho `releaseCommit` nepustí. */
+  readonly hold: () => void;
   /** Adresy, na které stránka poslala požadavek. */
   readonly urls: readonly string[];
 }
@@ -51,6 +55,19 @@ async function scriptSecondAct(page: Page): Promise<Acts> {
   });
   const urls: string[] = [];
   page.on('request', (request) => urls.push(request.url()));
+
+  // **Potvrzení změny se dá zdržet, a to je celé měřidlo závodu.** Commit trvá
+  // v provozu vteřiny a dějství II se do toho okna vejde; bez brány by se ten
+  // okamžik trefoval náhodou.
+  let releaseCommit = (): void => {};
+  const commitGate = new Promise<void>((resolve) => {
+    releaseCommit = resolve;
+  });
+  let holdCommit = false;
+  await page.route('**/changes/*/commit', async (route) => {
+    if (holdCommit) await commitGate;
+    return route.fallback();
+  });
 
   // Dějství I projde na skutečný server; zapamatuje se jen adresa jeho relace.
   await page.route('**/api/worldstream/sessions', async (route) => {
@@ -88,7 +105,17 @@ async function scriptSecondAct(page: Page): Promise<Acts> {
     });
   });
 
-  return { release, urls };
+  return {
+    release,
+    releaseCommit: () => {
+      holdCommit = false;
+      releaseCommit();
+    },
+    hold: () => {
+      holdCommit = true;
+    },
+    urls,
+  };
 }
 
 async function buildWorld(page: Page, sentence: string): Promise<void> {
@@ -161,4 +188,41 @@ test('když porotce změnu commitnul, dějství II se jen nabídne', async ({ pa
   await page.getByTestId('second-act-show').click();
   await expect(page.getByTestId('world-authored')).toHaveCount(0);
   await expect(page.getByTestId('second-act-offer')).toHaveCount(0);
+});
+
+test('dějství II, které dorazí uprostřed potvrzování změny, svět nepřepíše', async ({ page }) => {
+  test.setTimeout(180_000);
+  const acts = await scriptSecondAct(page);
+
+  await page.goto('/');
+  await buildWorld(page, AUTHORED);
+  await expect(page.getByTestId('second-act-writing')).toBeVisible();
+
+  await page.getByTestId('refine-input').fill(REFINE);
+  await page.getByTestId('refine-submit').click();
+  await expect(page.getByTestId('change-preview')).toHaveAttribute('data-kind', 'preview', {
+    timeout: WORLD_BUDGET_MS,
+  });
+
+  // **Tohle je ten závod, a byl to blokující nález nezávislé revize commitu
+  // `b0b95da`.** Porotce klikne na potvrzení, commit odejde na server — a
+  // dějství II dorazí dřív, než se vrátí. Dokud se vlajka „porotce zasáhl"
+  // zvedala až za odpovědí, dějství II tady četlo `false`, svět vyměnilo pod
+  // rozdělaným commitem a na plátně skončil svět jedné relace, v poli druhé
+  // věty adresa druhé a popisek původu třetí pravda.
+  acts.hold();
+  await page.getByTestId('change-apply').click();
+  await expect
+    .poll(() => acts.urls.some((url) => url.includes('/commit')), { timeout: 30_000 })
+    .toBe(true);
+  acts.release();
+
+  // Nabídka, ne výměna — přestože v tuhle chvíli ještě žádný commit nedoběhl.
+  await expect(page.getByTestId('second-act-offer')).toBeVisible({ timeout: WORLD_BUDGET_MS });
+
+  acts.releaseCommit();
+
+  // A commit doběhne do svého vlastního světa, ne do toho od modelu.
+  await expect(page.getByTestId('change-preview')).toHaveCount(0, { timeout: WORLD_BUDGET_MS });
+  await expect(page.getByTestId('world-authored'), 'svět se vyměnil pod rukama').toBeVisible();
 });

@@ -198,6 +198,21 @@ export default function Page() {
   const committed = useRef(false);
   /** Čtení relace dějství II. Nová věta ho ruší stejně jako to první. */
   const secondReading = useRef<AbortController | null>(null);
+  /**
+   * **Které dějství platí.** Zvyšuje se při nové větě a při každé výměně světa.
+   *
+   * ⚠ **Bez tohohle čísla se dá vyrobit rozpor, který vypadá správně** — nález
+   * nezávislé revize commitu `b0b95da`, ověřený čtením. `plan()` i `apply()`
+   * si při vzniku zapamatují `sessionId` z toho vykreslení a čekají vteřiny na
+   * model. Dějství II se do toho okna vejde: vymění svět i adresu relace, a
+   * doběhlá půlka staré operace pak zapíše svůj výsledek přes něj. Na plátně
+   * zůstane svět jedné relace, v poli druhé věty adresa druhé a popisek původu
+   * třetí pravda.
+   *
+   * Ref, ne stav: čte se to až za `await`em, tedy o vteřiny později, než se
+   * uzávěra vyrobila.
+   */
+  const generation = useRef(0);
 
   /**
    * Meshovací klient. **Jeden na celou stránku**, ne jeden na relaci: worker
@@ -236,6 +251,9 @@ export default function Page() {
    * model teď", což je poprvé v celém produktu pravda.
    */
   const adopt = useCallback((next: SecondAct): void => {
+    // **První řádek, ne poslední.** Od téhle chvíle je všechno rozdělané z té
+    // předchozí relace neplatné, a poznají to podle tohohle čísla.
+    generation.current += 1;
     setWorld(next.world);
     setSessionId(next.sessionId);
     setProvenance(null);
@@ -246,6 +264,9 @@ export default function Page() {
     setSecond('');
     setOffer(null);
     setWriting(false);
+    // Rozdělaná operace staré relace svůj `finally` zahodí, takže odemknout
+    // panel musí výměna sama — jinak by tlačítka zůstala zamčená navždy.
+    setChanging(false);
     committed.current = false;
   }, []);
 
@@ -328,6 +349,7 @@ export default function Page() {
       setChangeFrom(null);
       setOffer(null);
       setWriting(false);
+      generation.current += 1;
       committed.current = false;
 
       try {
@@ -391,6 +413,9 @@ export default function Page() {
       const prompt = second.trim();
       if (sessionId === null || prompt === '' || changing) return;
       const signal = reading.current?.signal;
+      // Známka relace, do které se tenhle plán posílá. Za `await`em už nemusí
+      // platit — viz `generation`.
+      const era = generation.current;
 
       setChanging(true);
       try {
@@ -398,6 +423,10 @@ export default function Page() {
           ...(signal === undefined ? {} : { signal }),
           ...(stableId === undefined ? {} : { stableId }),
         });
+        // **Plán patří relaci, která už není na plátně.** `changeId` z ní se do
+        // té nové poslat nedá, takže ukázat ho znamená nabídnout tlačítko,
+        // které skončí 404 nad světem, o kterém porotce nic neví.
+        if (era !== generation.current) return;
 
         if (outcome.kind === 'ambiguous') {
           setChange({
@@ -424,10 +453,11 @@ export default function Page() {
         });
         setChangeFrom(outcome.authored);
       } catch (error: unknown) {
+        if (era !== generation.current) return;
         setChange({ kind: 'refused', message: error instanceof Error ? error.message : String(error) });
         setChangeFrom(null);
       } finally {
-        setChanging(false);
+        if (era === generation.current) setChanging(false);
       }
     },
     [second, sessionId, changing],
@@ -446,12 +476,26 @@ export default function Page() {
     const client = mesher.current;
     if (client === null) return;
     const signal = reading.current?.signal;
+    const era = generation.current;
 
     setChanging(true);
+    // **Před voláním, ne po něm** — nález nezávislé revize commitu `b0b95da`.
+    // Commit trvá vteřiny a dějství II se do toho okna vejde; kdyby se tahle
+    // vlajka zvedala až za ním, hotový svět by porotci právě rozdělanou změnu
+    // přepsal — tedy přesně v tom jediném případě, kvůli kterému existuje.
+    //
+    // **Odmítnutý commit ji nesnižuje**, a je to rozhodnutí, ne opomenutí:
+    // porotce do tohohle světa sáhl, ať mu server odpověděl jakkoli, takže
+    // hotové dějství II se odsud dál jen nabízí. Jeden klik ho pořád vydá.
+    committed.current = true;
     try {
       const done = await commitChange(sessionId, change.changeId, {
         ...(signal === undefined ? {} : { signal }),
       });
+      // Svět se pod tímhle commitem mohl vyměnit. Zapsat jeho výsledek by
+      // znamenalo postavit na plátno svět jedné relace a do pole druhé věty
+      // adresu druhé.
+      if (era !== generation.current) return;
       if (done.kind === 'refused') {
         setChange({ kind: 'refused', message: done.detail });
         return;
@@ -460,6 +504,7 @@ export default function Page() {
       const parsed = blueprintSchema.safeParse(
         await readBlueprint(sessionId, { ...(signal === undefined ? {} : { signal }) }),
       );
+      if (era !== generation.current) return;
       if (!parsed.success) {
         setChange({ kind: 'refused', message: 'the changed world does not parse' });
         return;
@@ -469,6 +514,7 @@ export default function Page() {
         mesh: (order) => client.mesh(order),
         quality: tier.current,
       });
+      if (era !== generation.current) return;
       if (built.kind !== 'built') {
         setChange({ kind: 'refused', message: built.reason });
         return;
@@ -478,13 +524,11 @@ export default function Page() {
       setChange(null);
       setChangeFrom(null);
       setSecond('');
-      // **Od téhle chvíle se svět sám nevymění.** Porotce do něj zasáhl, takže
-      // hotové dějství II se odsud dál jen nabízí.
-      committed.current = true;
     } catch (error: unknown) {
+      if (era !== generation.current) return;
       setChange({ kind: 'refused', message: error instanceof Error ? error.message : String(error) });
     } finally {
-      setChanging(false);
+      if (era === generation.current) setChanging(false);
     }
   }, [change, changing, sessionId]);
 
