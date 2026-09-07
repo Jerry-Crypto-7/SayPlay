@@ -33,6 +33,7 @@ import {
   COMBINATION_KINDS,
   DEFORMATION_KINDS,
   MASK_KINDS,
+  MAX_BOUNDS_VOLUME_RATIO,
   PRIMITIVE_KINDS,
   SHAPE_LIMITS,
   TRANSFORM_KINDS,
@@ -350,22 +351,36 @@ function isTooShort(vector: readonly number[]): boolean {
 /**
  * **Program smí přetéct kvádr, který si sám deklaruje — a tohle to změří.**
  *
- * Bez toho se to pozná až v meshovači, a to špatně: `paddedBounds` naměřilo, že
- * tvar přetékající svůj kvádr o 1e-6 **bez rezervy zmizí úplně** (0 trojúhelníků).
- * Model se tak dozví „nic nevzniklo" místo „přestřelil jsi o tolik", a to až po
- * zaplaceném volání.
- *
  * Počítá se **uvnitř souřadnic tvaru**. `targetBounds` a kvádr placementu jsou
  * dvě různé věci — první je v souřadnicích tvaru, druhý ve světových a potrubí
  * mezi nimi normalizuje — takže srovnávat je proti sobě by byla vada, ne kontrola.
  *
  * `null` znamená **nic netvrdím**: obal se nedal spočítat (viz `certainHulls`),
- * nebo se tvar vejde. Odmítá se jen to, co je jisté.
+ * nebo je přesah pod prahem. Odmítá se jen to, co je jisté.
  *
- * Poměr objemů je v hlášce proto, aby z ní šla napsat opravná věta — „přetéká"
- * bez čísla nedává model, o kolik má ubrat. Kritérium je ale **přesah po osách**,
- * ne ten poměr: tvar posunutý ven může mít objem menší než kvádr a přesto z něj
- * čouhat, takže hláška nese obojí.
+ * ## Práh je objem, ne přesah po ose — přeměřeno 7. 9. 2026 (`T14r-shapebounds`)
+ *
+ * Do té úlohy stačil přesah po **kterékoli ose** a brána odmítla celý blueprint.
+ * Naměřeno nad prvním živým během (deset tvarů, které padly výhradně na tomhle):
+ * **devět z deseti se vymeshuje a padne do své krabice** — naměřené rozpětí je
+ * v rozmezí jednotek procent kolem zadaného, největší přesah 4,7 %. Brána tedy
+ * odmítala podle **konzervativního statického obalu**, ne podle toho, co
+ * doopravdy vyleze, a stála šest vět z třiceti.
+ *
+ * Desátý (`chessBoardShape`) vrátí **prázdný mesh** — a přesně proti tomu tahle
+ * kontrola vznikla. Jenže na to má meshovač vlastní detektor **na výsledku**,
+ * který vrátí pojmenovaný důvod; tenhle byl jeho odhadem předem. Je to táž
+ * doktrína, kterou si `mesh-worker.ts` i `mesh-gate.ts` píšou samy: chraň
+ * **výstup**, ne odhad vstupu.
+ *
+ * Zůstává proto jediné, co se z obalu tvrdit dá jistě: program, který si
+ * krabice **nevšímá vůbec**. Práh je `MAX_BOUNDS_VOLUME_RATIO`, tedy tentýž,
+ * kterým měří naměřený mesh `mesh-gate.ts`. Naměřená desítka leží mezi 0,026×
+ * a 1,9×, tedy celá pod ním; koule o poloměru 5 v krabici ±0,7 je 364×.
+ *
+ * Hláška nese poměr **i osy**: poměr proto, aby z ní šla napsat opravná věta
+ * („přetéká" bez čísla nedává model, o kolik má ubrat), osy proto, že tvar
+ * posunutý ven může mít objem menší než krabice a přesto z ní čouhat.
  */
 function boundsIssue(
   nodes: readonly ShapeNode[],
@@ -384,14 +399,15 @@ function boundsIssue(
   const volume = (min: readonly number[], max: readonly number[]) =>
     (max[0] - min[0]) * (max[1] - min[1]) * (max[2] - min[2]);
   const ratio = volume(hull.min, hull.max) / volume(target.min, target.max);
-  // Pod jedničkou se zaokrouhluje na platné číslice, ne na desetinu: tvar
-  // odsunutý ven má poměr klidně 0,023 a `toFixed(1)` by z něj udělalo „0.0×",
-  // tedy větu „tvar je nulový" o tvaru, který jen leží jinde.
-  const shown = ratio >= 1 ? ratio.toFixed(1) : ratio.toPrecision(2);
+  // **Jediná brána téhle funkce.** Nad prahem je poměr vždycky větší než jedna,
+  // takže se smí zaokrouhlit na desetinu; do `T14r-shapebounds` sem doléhaly
+  // i poměry pod jedničkou a `toFixed(1)` z nich dělalo „0.0×", tedy větu
+  // „tvar je nulový" o tvaru, který jen ležel jinde.
+  if (ratio <= MAX_BOUNDS_VOLUME_RATIO) return null;
 
   return (
     `shape overflows its own targetBounds on ${over.join(', ')}: ` +
-    `generated bounds were ${shown}× the requested volume`
+    `generated bounds were ${ratio.toFixed(1)}× the requested volume`
   );
 }
 

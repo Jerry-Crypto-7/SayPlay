@@ -8,6 +8,7 @@ import {
   validateShapeProgram,
 } from '../schema';
 import {
+  MAX_BOUNDS_VOLUME_RATIO,
   SHAPE_LIMITS,
   SHAPE_NODE_KINDS,
   childIndicesOf,
@@ -557,9 +558,20 @@ describe('přesah vlastního kvádru', () => {
     expect(result).toEqual({ ok: true, issues: [] });
   });
 
-  it('kritérium je přesah po osách, ne poměr objemů', () => {
-    // Malá koule odsunutá ven: objem je **menší** než kvádr, a přesto z něj
-    // čouhá. Kdyby se soudil poměr, tenhle případ projde.
+  /**
+   * ⚠ **Tenhle test tvrdil do 7. 9. 2026 pravý opak a je to vědomá změna,
+   * ne regrese.** Jmenoval se „kritérium je přesah po osách, ne poměr objemů"
+   * a žádal odmítnutí. `T14r-shapebounds` přeměřila, co ta brána doopravdy
+   * dělá: nad prvním živým během padlo výhradně na ní **deset tvarů, a devět
+   * z nich se vymeshuje a padne do své krabice** (největší přesah naměřeného
+   * rozpětí 4,7 %). Odmítala tedy podle konzervativního statického obalu, ne
+   * podle toho, co vyleze, a stála šest vět z třiceti.
+   *
+   * Desátý vrátí prázdný mesh — přesně to, proti čemu brána vznikla. Jenže na
+   * prázdno má meshovač **vlastní detektor na výsledku**, který vrátí
+   * pojmenovaný důvod; tenhle byl jeho odhadem předem.
+   */
+  it('malý tvar, který z krabice čouhá, se pustí — na prázdno je detektor níž', () => {
     const result = validateShapeProgram(
       programWith(
         [
@@ -570,9 +582,24 @@ describe('přesah vlastního kvádru', () => {
       ),
     );
 
-    expect(result.ok).toBe(false);
-    expect(result.issues[0]).toContain('targetBounds on x');
-    expect(result.issues[0], 'poměr se počítá z objemu tvaru, ne z přesahu').toContain('0.023×');
+    expect(result).toEqual({ ok: true, issues: [] });
+  });
+
+  it('práh je tentýž, kterým měří naměřený mesh druhá brána', () => {
+    // Dvě čísla pro tutéž otázku se rozejdou při prvním ladění. Statický obal
+    // je konzervativní, tedy vždycky ≥ naměřenému, takže tahle strana je tím
+    // prahem přísnější — a je to tak správně.
+    expect(MAX_BOUNDS_VOLUME_RATIO).toBe(2);
+
+    // Failure path prahu: těsně nad ním se odmítá, těsně pod ním ne. Kdyby
+    // brána zmizela úplně, prošel by i program, který si krabice nevšímá.
+    const edge = (over: number) =>
+      validateShapeProgram(
+        programWith([{ kind: 'sphere', radius: 0.7 * Math.cbrt(over) }], SMALL_BOX),
+      );
+
+    expect(edge(MAX_BOUNDS_VOLUME_RATIO * 1.2).ok).toBe(false);
+    expect(edge(MAX_BOUNDS_VOLUME_RATIO * 0.9)).toEqual({ ok: true, issues: [] });
   });
 
   it('co se spočítat nedá, se neodmítá — otočený tvar projde', () => {

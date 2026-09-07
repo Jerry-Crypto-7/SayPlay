@@ -206,6 +206,26 @@ export const MESH_DETAIL = {
   high: { resolution: 48, maxMs: 2_600, maxTriangles: 32_000 },
 } as const;
 
+/**
+ * O kolik smí kvádr tvaru přerůst ten objednaný, měřeno **objemem**.
+ *
+ * Dvojnásobek: tvar se smí své krabice dotknout a marching cubes klade vrcholy
+ * na hrany buněk, takže z ní o kus buňky vyleze. Osmnáctinásobek je naopak
+ * program, který si krabici nevšímá.
+ *
+ * **Stojí to tady, a ne u jedné ze dvou bran, schválně** — soudí se tím dvakrát
+ * a ta dvě čísla se nesmějí rozejít: `mesh-gate.ts` jím váží kvádr **naměřený
+ * na hotovém meshi**, `schema.ts` kvádr **staticky odhadnutý z programu**
+ * (`certainHulls`). Odhad je konzervativní, tedy vždycky větší nebo rovný
+ * naměřenému, takže na téhle straně je to práh přísnější — a je to tak
+ * správně: schéma smí odmítnout jen program, který si krabice nevšímá vůbec.
+ *
+ * Souvisí s ním ještě třetí číslo, které tu není: `RepresentationRegistry` se
+ * ptá **po osách** a povoluje čtvrtinu. 1,25³ = 1,95, tedy skoro přesně 2 —
+ * jedno tvrzení viděné ze dvou stran. Kdo hne jedním, má hnout druhým.
+ */
+export const MAX_BOUNDS_VOLUME_RATIO = 2;
+
 /* ------------------------------------------------------------------ *
  * Uzly.
  * ------------------------------------------------------------------ */

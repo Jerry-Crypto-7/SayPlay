@@ -49,7 +49,7 @@
  * model — tedy po `T14`, ne dřív.
  */
 
-import { MESH_DETAIL, type Bounds3, type Vec3 } from '@/shape/types';
+import { MAX_BOUNDS_VOLUME_RATIO, MESH_DETAIL, type Bounds3, type Vec3 } from '@/shape/types';
 import type { MeshResult } from '@/shape/mesh-client';
 
 import type { MeshFailure } from './cache';
@@ -117,11 +117,13 @@ function refuse(rejection: MeshRejection): MeshVerdict {
 /**
  * O kolik smí naměřený kvádr přerůst objednaný, měřeno **objemem**.
  *
- * Dvojnásobek: tvar se smí své krabice dotknout a marching cubes klade vrcholy
- * na hrany buněk, takže z ní o kus buňky vyleze. Osmnáctinásobek je naopak
- * program, který si krabici nevšímá — a ten se má zastavit tady, ne na scéně.
+ * **Číslo bydlí v `src/shape/types.ts`, protože se jím soudí dvakrát** — tady
+ * nad kvádrem naměřeným na hotovém meshi, a v `schema.ts` nad kvádrem
+ * staticky odhadnutým z programu. Dvě kopie téhož prahu by se rozešly při
+ * prvním ladění; odůvodnění je u konstanty. Re-export zůstává, protože pod
+ * tímhle jménem ho čte tahle brána i její sada.
  */
-export const MAX_BOUNDS_VOLUME_RATIO = 2;
+export { MAX_BOUNDS_VOLUME_RATIO };
 
 /**
  * Kolik různých materiálů smí jedna podoba nést.
