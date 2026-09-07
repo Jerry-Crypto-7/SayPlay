@@ -41,6 +41,24 @@ export interface MeshOrder {
   readonly bounds: Bounds3;
 }
 
+/**
+ * Odmítnutí na **rozpočtu příčky** (`MeshJobFailure.overBudget`), tedy na
+ * trojúhelnících nebo na čase.
+ *
+ * Je to vlastní třída, a ne jen jiná věta, protože se na ni reaguje: proxy
+ * tvar přemeshuje na hrubší mřížce (`COARSER_GRIDS`), místo aby objekt spadl
+ * na krabici. Odlišit ji podle textu hlášky by znamenalo, že přepsaná hláška
+ * tu reakci tiše vypne — a hláška je psaná pro porotce, takže se přepisovat
+ * bude. Ostatní odmítnutí (prázdný mesh, vadné zadání, brána programu)
+ * zůstávají obyčejný `Error`: opakovat je nemá co změnit.
+ */
+export class MeshBudgetError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'MeshBudgetError';
+  }
+}
+
 export interface MeshResult {
   readonly shapeId: string;
   readonly positions: Float32Array;
@@ -159,7 +177,9 @@ export function createMeshClient(options: MeshClientOptions = {}): MeshClient {
         elapsedMs: response.elapsedMs,
       });
     } else {
-      entry.reject(new Error(response.error));
+      entry.reject(
+        response.overBudget === true ? new MeshBudgetError(response.error) : new Error(response.error),
+      );
     }
     pump();
   }

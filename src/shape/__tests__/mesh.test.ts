@@ -16,7 +16,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { createMeshClient, type MeshWorkerLike } from '../mesh-client';
+import { MeshBudgetError, createMeshClient, type MeshWorkerLike } from '../mesh-client';
 import { validateShapeProgram } from '../schema';
 import { handleMeshJob, type MeshJobRequest, type MeshJobResponse } from '../mesh-worker';
 import { meshShapeProgram, paddedBounds, type ShapeMesh } from '../surface-nets';
@@ -320,6 +320,10 @@ describe('worker vrací mesh a předává vlastnictví paměti', () => {
       new RegExp(`above maxTriangles ${MESH_DETAIL.high.maxTriangles}`),
     );
     expect(response.error).toMatch(/^mesh is \d+ triangles/);
+    // **Příznak, ne věta.** Proxy na přetečený rozpočet odpovídá hrubší
+    // mřížkou (`COARSER_GRIDS`); kdyby to poznávala podle textu hlášky,
+    // vypnula by tu reakci první přeformulovaná věta pro porotce.
+    expect(response.overBudget).toBe(true);
     expect(transfer).toHaveLength(0);
   });
 
@@ -515,6 +519,32 @@ describe('prázdná práce se vrací jako selhání', () => {
       }),
     });
     expect(reason).toContain('empty mesh');
+  });
+
+  it('odmítnutí mimo rozpočet příznak `overBudget` nenese', () => {
+    // Failure path příznaku, ne jeho happy path. Kdyby ho nesla každá
+    // odmítnutá práce, proxy by na prázdný mesh i na vadné zadání spálila
+    // celý žebřík mřížek a porotci pak napsala „went over budget on every
+    // rung" o tvaru, který se rozpočtu ani nedotkl.
+    const outside = handleMeshJob({
+      ...base,
+      program: programOf(
+        [
+          { kind: 'sphere', radius: 0.5 },
+          { kind: 'translate', child: 0, offset: [40, 0, 0] },
+        ],
+        { min: [39, -1, -1], max: [41, 1, 1] },
+      ),
+    }).response;
+    expect(outside.ok).toBe(false);
+    if (outside.ok) return;
+    expect(outside.error).toContain('empty mesh');
+    expect(outside.overBudget).toBeUndefined();
+
+    const flat = handleMeshJob({ ...base, bounds: { min: [-2, 2, -2], max: [2, 2, 2] } }).response;
+    expect(flat.ok).toBe(false);
+    if (flat.ok) return;
+    expect(flat.overBudget).toBeUndefined();
   });
 
   it('poctivá práce zůstane úspěchem', () => {
@@ -825,6 +855,28 @@ describe('klient meshovacího workeru', () => {
     worker.onmessage?.({ data: failure });
 
     await expect(promise).rejects.toThrow('shape program is broken');
+    await expect(promise).rejects.not.toBeInstanceOf(MeshBudgetError);
+  });
+
+  it('odmítnutí na rozpočtu překlopí na vlastní třídu, ostatní ne', async () => {
+    // Tohle je jediné místo, kde se příznak workeru mění na něco, na co umí
+    // volající reagovat. Kdyby se ztratil tady, proxy by hrubší mřížku
+    // nikdy neobjednala a osm světů by se vrátilo na krabici — beze slova.
+    const worker = fakeWorker();
+    const client = createMeshClient({ createWorker: () => worker });
+    const promise = client.mesh(order);
+
+    const failure: MeshJobResponse = {
+      jobId: worker.queue[0].jobId,
+      ok: false,
+      error: 'mesh is 17200 triangles, above maxTriangles 16000 for resolution 32',
+      overBudget: true,
+    };
+    worker.queue.shift();
+    worker.onmessage?.({ data: failure });
+
+    await expect(promise).rejects.toBeInstanceOf(MeshBudgetError);
+    await expect(promise).rejects.toThrow('above maxTriangles 16000');
   });
 
   it('bez workeru selže, místo aby tiše počítal na volajícím vlákně', async () => {

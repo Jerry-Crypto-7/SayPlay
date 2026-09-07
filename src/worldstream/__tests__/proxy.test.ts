@@ -24,11 +24,12 @@ import { sealSimHash } from '@/ir/worlddoc';
 import { EXAMPLE_PLAN } from '@/model/worldstream-examples';
 import { EXAMPLE_BLUEPRINT_ANSWER } from '@/model/worldstream-prompt';
 import type { BlueprintOutcome, CompiledBlueprint } from '@/model/worldstream-repair';
-import type { MeshOrder, MeshResult } from '@/shape/mesh-client';
+import { MeshBudgetError, type MeshOrder, type MeshResult } from '@/shape/mesh-client';
 import { paddedBounds } from '@/shape/surface-nets';
 import type { Bounds3 } from '@/shape/types';
 
 import {
+  COARSER_GRIDS,
   PROXY_RUNGS,
   ROUGH_RESOLUTION,
   ROUGH_RUNGS,
@@ -224,7 +225,10 @@ describe('the hero object is meshed from its own shape program', () => {
     expect(mesher.orders[0].program.shapeId).toBe('tallHiveShape');
     expect(mesher.orders[0].sessionSeed).toBe(4021);
     expect(world.resolution).toBe(32);
-    expect(slotOf(world, 'tallHive').form.rung).toBe('g3-reduced');
+    const hive = slotOf(world, 'tallHive').form;
+    expect(hive.rung).toBe('g3-reduced');
+    // Mřížka, ve které mesh doopravdy vznikl. Bez sestupu je to ta hrubá.
+    expect(hive.kind === 'mesh' && hive.resolution).toBe(32);
   });
 
   /**
@@ -339,6 +343,116 @@ describe('the hero object is meshed from its own shape program', () => {
     expect(lid[1]).toBeCloseTo(2.31, 10);
     expect(lid[2]).toBeCloseTo(2, 10);
     expect(lid[1]).toBeLessThan(rough.worldBounds.max[1]);
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * 2b. Žebřík hrubších mřížek (`T14r-meshbudget`).
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Vlastnost: tvar přes rozpočet spadne o příčku níž, ne rovnou na krabici.**
+ *
+ * Naměřeno 7. 9. 2026 přehráním prvního živého běhu: osm z třiceti vět
+ * skončilo hlínou, a ani jednou proto, že by model tvar nenapsal — pokaždé ho
+ * zahodil rozpočet hrubé příčky. Sedm z těch osmi se hrubší mřížkou vrátilo
+ * na `g3-reduced`, `clay` klesl z **8 na 1**.
+ *
+ * Sada proto soudí **žebřík**, ne jednu objednávku: kolikrát se objednalo,
+ * v jakých mřížkách, a co z toho slot dostal.
+ */
+describe('a shape over the budget drops a rung of the grid, not to a box', () => {
+  /** Meshovač, který odmítá na rozpočtu, dokud mřížka neklesne pod `passAt`. */
+  function budgetMesher(passAt: number) {
+    const orders: MeshOrder[] = [];
+    return {
+      orders,
+      mesh: async (order: MeshOrder): Promise<MeshResult> => {
+        orders.push(order);
+        if (order.resolution > passAt) {
+          throw new MeshBudgetError(
+            `mesh is 17200 triangles, above maxTriangles 16000 for resolution ${String(order.resolution)}`,
+          );
+        }
+        return fakeMesh(order);
+      },
+    };
+  }
+
+  it('names two rungs below the rough grid, in the order they are tried', () => {
+    expect([...COARSER_GRIDS]).toEqual([24, 16]);
+    for (const grid of COARSER_GRIDS) expect(grid).toBeLessThan(ROUGH_RESOLUTION);
+  });
+
+  it('remeshes on the next grid down and keeps the authored rung', async () => {
+    const mesher = budgetMesher(24);
+    const world = built(await buildProxyWorld(compiled(blueprint()), { mesh: mesher.mesh }));
+
+    expect(mesher.orders.map((order) => order.resolution)).toEqual([32, 24]);
+    const hive = slotOf(world, 'tallHive').form;
+    // Autorský tvar, ne fallback — celý smysl žebříku.
+    expect(hive.rung).toBe('g3-reduced');
+    // A svět neříká 32 o meshi, který se mlel ve 24. Bez tohohle pole by se
+    // ta dvě čísla tiše rozešla.
+    expect(hive.kind === 'mesh' && hive.resolution).toBe(24);
+    expect(world.resolution).toBe(32);
+  });
+
+  it('goes all the way down to the last rung before it gives up', async () => {
+    const mesher = budgetMesher(16);
+    const world = built(await buildProxyWorld(compiled(blueprint()), { mesh: mesher.mesh }));
+
+    expect(mesher.orders.map((order) => order.resolution)).toEqual([32, 24, 16]);
+    const hive = slotOf(world, 'tallHive').form;
+    expect(hive.kind === 'mesh' && hive.resolution).toBe(16);
+  });
+
+  it('orders the raw target box on every rung, not only on the first', async () => {
+    // Failure path rezervy: kdyby se na hrubší příčce začal posílat kvádr
+    // s rezervou, mlel by se tvar v boxu o dvě buňky širším — a `resolution`
+    // v reportu by o té změně mlčelo.
+    const mesher = budgetMesher(16);
+    await buildProxyWorld(compiled(blueprint()), { mesh: mesher.mesh });
+
+    for (const order of mesher.orders) {
+      expect(order.bounds).toEqual(order.program.targetBounds);
+      expect(order.bounds).not.toEqual(paddedBounds(order.program.targetBounds, order.resolution));
+    }
+  });
+
+  it('falls to clay when every rung is over budget, and says the ladder was tried', async () => {
+    const mesher = budgetMesher(0);
+    const world = await buildProxyWorld(compiled(blueprint()), { mesh: mesher.mesh });
+
+    expect(mesher.orders.map((order) => order.resolution)).toEqual([32, 24, 16]);
+    const hive = slotOf(world, 'tallHive').form;
+    expect(hive.rung).toBe('semantic-clay');
+    if (hive.kind !== 'clay') throw new Error(hive.kind);
+    // Věta pro porotce jmenuje poslední mřížku, takže musí říct i to, že jich
+    // bylo víc — jinak mluví o mřížce 16, o které svět nikde jinde nemluví.
+    expect(hive.reason).toContain('32 → 24 → 16');
+    expect(hive.reason).toContain('for resolution 16');
+    expect(hive.drawn).toBe(true);
+  });
+
+  it('does not walk the ladder for a refusal the coarser grid cannot fix', async () => {
+    // Prázdný mesh, vadné zadání a brána programu jsou deterministické: tentýž
+    // program dá podruhé totéž, jen levněji. Sestup by spálil dvě objednávky
+    // navíc a porotci pak napsal o rozpočtu, kterého se tvar nedotkl.
+    const orders: MeshOrder[] = [];
+    const world = await buildProxyWorld(compiled(blueprint()), {
+      mesh: async (order) => {
+        orders.push(order);
+        throw new Error('empty mesh: no surface inside the requested box');
+      },
+    });
+
+    expect(orders).toHaveLength(1);
+    const hive = slotOf(world, 'tallHive').form;
+    expect(hive.rung).toBe('semantic-clay');
+    expect(hive.kind === 'clay' && hive.reason).toBe(
+      'empty mesh: no surface inside the requested box',
+    );
   });
 });
 

@@ -44,7 +44,7 @@ import { Box3, Matrix4, Vector3 } from 'three';
 import { bakePlacements, compilePlacements, type GeomPlacement } from '@/geom/placements';
 import { childIndicesOf, placedFrom, separableFrom, type GeomNode } from '@/geom/program';
 import { blueprintRejectionSentence, type BlueprintOutcome } from '@/model/worldstream-repair';
-import type { MeshOrder, MeshResult } from '@/shape/mesh-client';
+import { MeshBudgetError, type MeshOrder, type MeshResult } from '@/shape/mesh-client';
 import { MESH_DETAIL, type Bounds3, type ShapeProgram, type Vec3 } from '@/shape/types';
 
 import { budgetFor, type QualityTier } from './quality';
@@ -95,6 +95,60 @@ export type RoughRung = (typeof ROUGH_RUNGS)[number];
 export const ROUGH_RESOLUTION = MESH_DETAIL.rough.resolution;
 
 /**
+ * Mřížky **pod** hrubou příčkou, na které se tvar přemeshuje, když se do
+ * rozpočtu `MESH_DETAIL.rough` nevešel. V pořadí, ve kterém se zkoušejí.
+ *
+ * ## Proč tenhle žebřík vůbec je (naměřeno 7. 9. 2026, `T14r-meshbudget`)
+ *
+ * Ze třiceti vět prvního živého běhu spadlo **osm** hrdinů na krabici, a ani
+ * jednou proto, že by model nic nenapsal — tvar napsal pokaždé a pokaždé ho
+ * zahodil rozpočet hrubé příčky. Čtyřikrát na trojúhelnících (16 160 až
+ * 20 280 proti stropu 16 000, jeden o pouhé 1 %) a čtyřikrát na čase (521 až
+ * 2 453 ms proti 350 ms).
+ *
+ * `MESH_DETAIL` má přitom jen `rough` 32³ a `high` 48³, tedy jedinou příčku
+ * **nad** tou, na které se hrubý svět staví. Tvar, který přeteče o procento,
+ * proto nespadl o příčku níž — spadl rovnou na `semantic-clay`, což je bedna.
+ * Celá teze produktu zní „hrubá hlína, která ztvrdne do detailu **bez ztráty
+ * identity**", a příčka se jmenuje `g3-reduced`, tedy „authored shape, rough
+ * grid". Hrubší mřížka je tedy ta chybějící příčka, ne výjimka z pravidla.
+ *
+ * ## Co se schválně **nezvedlo**
+ *
+ * `maxTriangles` ani `maxMs`. Ta čísla jsou naměřená a `src/shape/types.ts`
+ * u nich výslovně píše „nepřepisuj čísla výš"; zvednutí stropu by mělo
+ * následek na každém světě, ne jen na těch osmi. Tenhle žebřík naopak stropy
+ * **dodržuje** — jen dá tvaru druhou a třetí šanci se do nich vejít.
+ *
+ * ## Proč zrovna 24 a 16
+ *
+ * Buněk ubývá s třetí mocninou, takže 24³ je 0,42× a 16³ 0,125× práce 32³.
+ * Naměřeno nad těmi osmi: **pět** se srovnalo hned na 24³, **dva** až na 16³,
+ * jeden nevyhověl ani tam. `clay` klesl **z 8 na 1**.
+ *
+ * ⚠ **Ten jeden zbylý (`glowingAnemoneColony`) míjí strop o 4 % na 16³** —
+ * 363 až 421 ms proti 350, měřeno dvakrát a pokaždé jinak. Je to wall-clock
+ * číslo, tedy měření stroje a zátěže kolem, ne programu (`MESH_DETAIL` to
+ * o `maxMs` říká samo). Třetí příčka by se tedy vybírala podle jediného
+ * vzorku, který se sám hýbe — a ten správný nástroj je soudit cenu v počtu
+ * vyhodnocení, ne přidávat mřížku. Žebřík proto zůstává dvoustupňový a tvar,
+ * který nevyhoví ani na 16³, spadne na hlínu s větou, která jmenuje, že se to
+ * zkusilo.
+ *
+ * ⚠ **Co se hrubší mřížkou doopravdy ztrácí, ať to nikdo nemusí hádat.** Sedm
+ * zachráněných tvarů drží kvádr zadání do pár procent; výjimka je
+ * `ribcageForest` na 16³, kde ze **684** trojúhelníků zbude hloubka 9,4 m
+ * proti zadaným 13 m, tedy 72 %. Pořád je to napsaný tvar, ne bedna — ale je
+ * to ta nejhorší naměřená ztráta detailu a nová příčka pod 16³ by ji jenom
+ * prohloubila.
+ *
+ * **Nejsou to `MeshResolution`.** Ten typ vyjmenovává mřížky, které umí
+ * *žebřík podob* a měřicí stránka; tohle jsou mřížky poslední záchrany, které
+ * se do žádného artefaktu ani cache klíče nedostávají.
+ */
+export const COARSER_GRIDS = [24, 16] as const;
+
+/**
  * Věta pro objekt, na kterého nezbyl hrdinský rozpočet.
  *
  * **Vlastní důvod, ne `the shape is missing`.** Tvar nechybí a model ho napsal
@@ -111,7 +165,21 @@ export function overBudgetReason(heroes: number): string {
  * ------------------------------------------------------------------ */
 
 export type ProxyForm =
-  | { readonly rung: 'g3-reduced'; readonly kind: 'mesh'; readonly mesh: MeshResult }
+  | {
+      readonly rung: 'g3-reduced';
+      readonly kind: 'mesh';
+      readonly mesh: MeshResult;
+      /**
+       * Mřížka, ve které tenhle mesh doopravdy vznikl.
+       *
+       * Obvykle je to `ProxyWorld.resolution`, ale nemusí: tvar, který se do
+       * rozpočtu hrubé příčky nevešel, se přemeshoval o příčku níž
+       * (`COARSER_GRIDS`). Bez tohohle pole by svět deklaroval jednu mřížku a
+       * některé jeho tvary mlely jinou — přesně ta třída tichého rozporu,
+       * kterou plán honí od `T29-lambdadetect`.
+       */
+      readonly resolution: number;
+    }
   | {
       readonly rung: 'g2-rich';
       readonly kind: 'placements';
@@ -334,6 +402,59 @@ function meshingOrder(shapes: readonly ShapeProgram[]): readonly ShapeProgram[] 
   return [...shapes].sort((left, right) => right.priority - left.priority);
 }
 
+/** Hotový mesh plus mřížka, ve které vznikl. */
+interface MeshedShape {
+  readonly mesh: MeshResult;
+  readonly resolution: number;
+}
+
+/**
+ * Objednat tvar a při přetečení rozpočtu ho zkusit na hrubší mřížce.
+ *
+ * **Sestupuje se jen po odmítnutí na rozpočtu** (`MeshBudgetError`, tedy
+ * trojúhelníky nebo čas). Prázdný mesh, vadné zadání i brána programu končí
+ * hned: meshovač je deterministický a hrubší mřížka na nich nemá co změnit —
+ * leda že by prázdný tvar zůstal prázdný o něco levněji.
+ *
+ * Vrací hotový mesh, nebo větu, proč žádný není. Ta věta jde rovnou porotci,
+ * takže když se sestupovalo, **řekne to** — jinak by hláška jmenovala mřížku
+ * 16, o které svět nikde jinde nemluví.
+ */
+async function meshDownTheLadder(
+  program: ShapeProgram,
+  sessionSeed: number,
+  roughResolution: number,
+  mesh: (order: MeshOrder) => Promise<MeshResult>,
+): Promise<MeshedShape | string> {
+  const ladder = [roughResolution, ...COARSER_GRIDS];
+  let refusal = '';
+
+  for (const resolution of ladder) {
+    try {
+      return {
+        mesh: await mesh({
+          program,
+          sessionSeed,
+          resolution,
+          // **Syrový `targetBounds` je tu správně a rezervu sem nepřidávej.**
+          // Od `T13-meshpadding` (2. 9. 2026) mele `handleMeshJob()`
+          // v `paddedBounds(bounds, resolution)`; objednávka říká, kam tvar
+          // patří, worker si k tomu přidá jednu buňku, aby tvar napsaný na
+          // svůj vlastní obal nezmizel. Rezerva na obou místech by kvádr
+          // nafoukla dvakrát a zbytečně zhrubla síť.
+          bounds: program.targetBounds,
+        }),
+        resolution,
+      };
+    } catch (error) {
+      refusal = error instanceof Error ? error.message : String(error);
+      if (!(error instanceof MeshBudgetError)) return refusal;
+    }
+  }
+
+  return `${refusal} — the shape was remeshed down the grid ladder ${ladder.join(' → ')} and went over budget on every rung`;
+}
+
 /* ------------------------------------------------------------------ *
  * Proč tenhle objekt nedostal svůj řádek — a jestli se ta bedna kreslí.
  * ------------------------------------------------------------------ */
@@ -501,31 +622,16 @@ export async function buildProxyWorldFrom(
 
   // Tvary jdou napřed a po jednom: dokud neskončí, není co do slotů dát.
   // Selhání jednoho tvaru je věta pro ten jeden objekt, ne konec světa.
-  const meshes = new Map<string, MeshResult | string>();
+  const meshes = new Map<string, MeshedShape | string>();
   // Hrdinský rozpočet se utrácí **odshora podle priority**, protože
   // `meshingOrder()` řadí sestupně: když se na úroveň vejde jeden tvar, dostane
   // ho ten, který model označil za nejdůležitější. Zbytek se ani neobjedná —
   // §23 chce, aby degradace nespustila práci, jejíž výsledek se nepoužije.
   for (const program of meshingOrder(blueprint.shapes).slice(0, budget.heroes)) {
-    try {
-      meshes.set(
-        program.shapeId,
-        await deps.mesh({
-          program,
-          sessionSeed: blueprint.sessionSeed,
-          resolution: budget.roughResolution,
-          // **Syrový `targetBounds` je tu správně a rezervu sem nepřidávej.**
-          // Od `T13-meshpadding` (2. 9. 2026) mele `handleMeshJob()`
-          // v `paddedBounds(bounds, resolution)`; objednávka říká, kam tvar
-          // patří, worker si k tomu přidá jednu buňku, aby tvar napsaný na
-          // svůj vlastní obal nezmizel. Rezerva na obou místech by kvádr
-          // nafoukla dvakrát a zbytečně zhrubla síť.
-          bounds: program.targetBounds,
-        }),
-      );
-    } catch (error) {
-      meshes.set(program.shapeId, error instanceof Error ? error.message : String(error));
-    }
+    meshes.set(
+      program.shapeId,
+      await meshDownTheLadder(program, blueprint.sessionSeed, budget.roughResolution, deps.mesh),
+    );
   }
 
   const shapesById = new Map(blueprint.shapes.map((program) => [program.shapeId, program]));
@@ -577,7 +683,12 @@ export async function buildProxyWorldFrom(
           localBounds: program.targetBounds,
           anchors: program.anchors,
         }),
-        form: { rung: 'g3-reduced', kind: 'mesh', mesh: result },
+        form: {
+          rung: 'g3-reduced',
+          kind: 'mesh',
+          mesh: result.mesh,
+          resolution: result.resolution,
+        },
       };
     }
 

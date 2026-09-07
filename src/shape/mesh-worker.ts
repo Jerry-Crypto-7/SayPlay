@@ -126,6 +126,18 @@ export interface MeshJobFailure {
   readonly jobId: string;
   readonly ok: false;
   readonly error: string;
+  /**
+   * Odmítnutí padlo na **rozpočtu příčky** — trojúhelníky nebo čas — a na
+   * ničem jiném. Prázdný mesh, vadné zadání ani brána programu tenhle příznak
+   * nenesou.
+   *
+   * Je to příznak, ne věta, schválně. Volající, který na přetečený rozpočet
+   * odpovídá hrubší mřížkou (`src/worldstream/proxy.ts`), by jinak musel číst
+   * prózu psanou pro porotce — a ta se smí kdykoli přepsat. `T14r-meshbudget`
+   * je přesně ta třída vady, kdy se osm světů tiše vrátí na krabici, protože
+   * se pohnulo slovo v hlášce.
+   */
+  readonly overBudget?: true;
 }
 
 export type MeshJobResponse = MeshJobSuccess | MeshJobFailure;
@@ -295,6 +307,7 @@ export function handleMeshJob(request: MeshJobRequest): MeshJobOutcome {
             jobId: request.jobId,
             ok: false,
             error: `mesh is ${mesh.triangleCount} triangles, above maxTriangles ${budget.maxTriangles} for resolution ${request.resolution}`,
+            overBudget: true,
           },
           transfer: [],
         };
@@ -306,6 +319,7 @@ export function handleMeshJob(request: MeshJobRequest): MeshJobOutcome {
             jobId: request.jobId,
             ok: false,
             error: `mesh took ${elapsedMs} ms, above maxMs ${budget.maxMs} for resolution ${request.resolution}`,
+            overBudget: true,
           },
           transfer: [],
         };
