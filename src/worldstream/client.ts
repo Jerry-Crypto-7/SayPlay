@@ -130,6 +130,23 @@ export interface ClientOptions {
 }
 
 /**
+ * Co navíc smí říct **otevření** relace, a nic z toho neplatí pro čtení proudu
+ * (proto vlastní typ, ne další klíč v `ClientOptions`).
+ */
+export interface OpenOptions extends ClientOptions {
+  /**
+   * **Dějství II: tenhle svět má napsat model** (P15 `T14r-acttwo`).
+   *
+   * Výchozí `false` je dějství I, kde odpovídá sklad uvařených světů, kdykoli
+   * pro tu větu něco má. Dějství II běží ve **vlastní** relaci s vlastním
+   * placeným slotem, takže relace dějství I, její blueprint ani změna, kterou
+   * do ní porotce commitnul, se ho netýkají — a to je celý důvod, proč to jsou
+   * dvě relace a ne jedna se dvěma generacemi.
+   */
+  readonly live?: boolean;
+}
+
+/**
  * **Věta pro člověka, kód pro stroj — a věta i tam, kde server žádnou neposlal.**
  * Nález šestého kola nezávislé revize (6. 9. 2026), třikrát opsaný: tělo, které
  * nejde přečíst jako JSON, nechá `error` nedefinované, a do panelu na obrazovce
@@ -164,13 +181,16 @@ function refusal(
  */
 export async function openWorldstreamSession(
   prompt: string,
-  options: ClientOptions = {},
+  options: OpenOptions = {},
 ): Promise<SessionHandle> {
   const call = options.fetch ?? fetch;
   const response = await call('/api/worldstream/sessions', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ prompt }),
+    // **Klíč se posílá jen tehdy, když něco znamená.** Dveře přijímají prompt
+    // a `live` a nic jiného, takže `live: false` by byl klíč navíc, který nic
+    // nemění — a tělo dějství I má zůstat tím, čím bylo.
+    body: JSON.stringify(options.live === true ? { prompt, live: true } : { prompt }),
     signal: options.signal,
   });
 

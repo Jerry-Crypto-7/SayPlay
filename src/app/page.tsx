@@ -81,6 +81,18 @@ const UNKNOWN_FAULT = 'the session ended without a world';
 type Arrival = { readonly blueprint: unknown } | { readonly fault: string };
 
 /**
+ * Hotové dějství II — **svět a adresa jeho relace, nerozdělitelně**.
+ *
+ * Ta dvojice je celý důvod, proč to je typ a ne dvě proměnné: svět bez své
+ * relace by druhé větě ukazoval na relaci dějství I, tedy na jiný svět, než
+ * jaký je na plátně.
+ */
+interface SecondAct {
+  readonly world: ProxyWorld;
+  readonly sessionId: string;
+}
+
+/**
  * První blueprint z relace — **ne její konec**.
  *
  * `followSession()` se vrátí až na koncové fázi, jenže `advance('complete')`
@@ -156,6 +168,37 @@ export default function Page() {
   /** Běží preview nebo commit? Dvojklik by jinak poslal dvě žádosti. */
   const [changing, setChanging] = useState(false);
 
+  /* ---------------------------------------------------------------- *
+   * Dějství II: model píše svou verzi (`T14r-acttwo`).
+   * ---------------------------------------------------------------- */
+
+  /**
+   * Hotový svět dějství II, který **čeká na svolení**. `null` znamená „není co
+   * nabízet" — buď dějství II neběželo, nebo se svět vyměnil sám.
+   */
+  const [offer, setOffer] = useState<SecondAct | null>(null);
+  /**
+   * Píše model svou verzi právě teď?
+   *
+   * Zapíná se **až když relace dějství II doopravdy vznikla**, ne při odeslání
+   * věty. Na nasazení bez modelu ty dveře odmítnou (`LIVE_UNAVAILABLE`) a věta
+   * o píšícím modelu se tam tím pádem neobjeví ani na okamžik — je to jediný
+   * způsob, jak ten popisek nemůže lhát.
+   */
+  const [writing, setWriting] = useState(false);
+  /**
+   * Sáhl porotce do světa, který má na plátně?
+   *
+   * **Ref, ne `useState`, a je to celý důvod, proč to funguje:** čte se to až ve
+   * chvíli, kdy dějství II dorazí, tedy o minuty později než se ta uzávěra
+   * vyrobila. Hodnota ze `useState` by v ní byla ta, která platila při odeslání
+   * věty — tedy vždycky `false` — a hotový svět by porotci přepsal jeho změnu
+   * přesně v tom případě, kvůli kterému tahle větev existuje.
+   */
+  const committed = useRef(false);
+  /** Čtení relace dějství II. Nová věta ho ruší stejně jako to první. */
+  const secondReading = useRef<AbortController | null>(null);
+
   /**
    * Meshovací klient. **Jeden na celou stránku**, ne jeden na relaci: worker
    * stojí start a druhá věta by ho zaplatila znovu. Zavírá se s odchodem
@@ -174,10 +217,90 @@ export default function Page() {
 
     return () => {
       reading.current?.abort();
+      secondReading.current?.abort();
       mesher.current = null;
       client.dispose();
     };
   }, []);
+
+  /**
+   * **Přepnutí na svět dějství II — naráz, nebo vůbec.**
+   *
+   * Svět, adresa relace a popisek původu jsou jedno tvrzení ve třech
+   * proměnných. Kdyby se přepnul jen svět, ukazovalo by pole druhé věty pořád
+   * na relaci dějství I (commit by skončil na cizím světě) a popisek by o světě
+   * od modelu tvrdil, že je ze skladu. React ty zápisy z jedné funkce dávkuje,
+   * takže je vidí jedno vykreslení.
+   *
+   * `setProvenance(null)` je tady to podstatné slovo: `null` znamená „napsal ho
+   * model teď", což je poprvé v celém produktu pravda.
+   */
+  const adopt = useCallback((next: SecondAct): void => {
+    setWorld(next.world);
+    setSessionId(next.sessionId);
+    setProvenance(null);
+    // Plán změny patřil relaci dějství I. Ta zůstala stát na serveru, ale
+    // `changeId` z ní se do nové relace poslat nedá — commit by byl 404.
+    setChange(null);
+    setChangeFrom(null);
+    setSecond('');
+    setOffer(null);
+    setWriting(false);
+    committed.current = false;
+  }, []);
+
+  /**
+   * **Dějství II: druhá relace, vlastní placený slot, nabídnutý výsledek.**
+   *
+   * Běží jedině nad uvařeným světem — když první větu psal model, není co
+   * dohánět. Odsud dál se nesahá na nic z dějství I: jiná relace znamená, že
+   * blueprint ani commit porotce nemá tahle větev jak přepsat, a to je
+   * konstrukce, ne hlídání (debata Opus ↔ Codex 7. 9. 2026, nález F2).
+   *
+   * **Spadlé dějství II nemění na plátně nic** — žádná porucha, žádné prázdno.
+   * Porotce má na plátně svět z dějství I a ten platí dál.
+   */
+  const runSecondAct = useCallback(
+    async (prompt: string): Promise<void> => {
+      const control = new AbortController();
+      secondReading.current = control;
+
+      try {
+        const handle = await openWorldstreamSession(prompt, {
+          signal: control.signal,
+          live: true,
+        });
+        if (control.signal.aborted) return;
+        setWriting(true);
+
+        const arrival = await firstBlueprint(handle, control.signal);
+        if (control.signal.aborted || !('blueprint' in arrival)) return;
+
+        const parsed = blueprintSchema.safeParse(arrival.blueprint);
+        if (!parsed.success) return;
+
+        const client = mesher.current;
+        if (client === null) return;
+        const built = await buildProxyWorldFrom(parsed.data, {
+          mesh: (order) => client.mesh(order),
+          quality: tier.current,
+        });
+        if (control.signal.aborted || built.kind !== 'built') return;
+
+        // **Tady se rozhoduje, jestli je to výměna, nebo nabídka.** Automaticky
+        // přepsat svět, do kterého porotce zasáhl, nemá žádné produktové
+        // odůvodnění; dokud nezasáhl, je výměna to, co chtěl.
+        const next: SecondAct = { world: built, sessionId: handle.sessionId };
+        if (committed.current) setOffer(next);
+        else adopt(next);
+      } catch {
+        // Odmítnuté dveře i spadlá relace končí stejně: mlčením.
+      } finally {
+        if (!control.signal.aborted) setWriting(false);
+      }
+    },
+    [adopt],
+  );
 
   const submit = useCallback(
     async (event: FormEvent): Promise<void> => {
@@ -189,6 +312,8 @@ export default function Page() {
       // nepsaly do jednoho stavu. Relaci to na serveru neruší, jen ji přestaneme
       // poslouchat.
       reading.current?.abort();
+      // Dějství II staré věty by doneslo svět k větě, která už na plátně není.
+      secondReading.current?.abort();
       const control = new AbortController();
       reading.current = control;
 
@@ -201,6 +326,9 @@ export default function Page() {
       setSessionId(null);
       setChange(null);
       setChangeFrom(null);
+      setOffer(null);
+      setWriting(false);
+      committed.current = false;
 
       try {
         const handle = await openWorldstreamSession(prompt, { signal: control.signal });
@@ -235,6 +363,10 @@ export default function Page() {
           setWorld(built);
           setProvenance(handle.authored);
           setSessionId(handle.sessionId);
+          // **Dějství II začíná jedině nad uvařeným světem.** `authored === null`
+          // znamená, že tenhle svět napsal model — druhá relace by pak psala
+          // podruhé totéž a platilo by se to dvakrát.
+          if (handle.authored !== null) void runSecondAct(prompt);
         } else setFault(built.reason);
       } catch (error: unknown) {
         if (control.signal.aborted) return;
@@ -243,7 +375,7 @@ export default function Page() {
         if (!control.signal.aborted) setStreaming(false);
       }
     },
-    [sentence, streaming],
+    [runSecondAct, sentence, streaming],
   );
 
   /**
@@ -346,6 +478,9 @@ export default function Page() {
       setChange(null);
       setChangeFrom(null);
       setSecond('');
+      // **Od téhle chvíle se svět sám nevymění.** Porotce do něj zasáhl, takže
+      // hotové dějství II se odsud dál jen nabízí.
+      committed.current = true;
     } catch (error: unknown) {
       setChange({ kind: 'refused', message: error instanceof Error ? error.message : String(error) });
     } finally {
@@ -384,7 +519,19 @@ export default function Page() {
         </form>
       }
       status={<WorldStatus state={status} detail={fault} />}
-      provenance={<AuthoredNotice provenance={world === null ? null : provenance} />}
+      provenance={
+        <>
+          <AuthoredNotice provenance={world === null ? null : provenance} />
+          {writing ? (
+            <p className="ws-provenance" data-testid="second-act-writing">
+              The model is writing its own version of this world.
+            </p>
+          ) : null}
+          {offer === null ? null : (
+            <SecondActOffer onShow={() => adopt(offer)} onKeep={() => setOffer(null)} />
+          )}
+        </>
+      }
       change={
         sessionId === null || world === null ? null : (
           <>
@@ -470,6 +617,41 @@ function AuthoredNotice({
 }
 
 /**
+ * **Hotové dějství II se nabízí, když porotce do světa zasáhl** (`T14r-acttwo`).
+ *
+ * Dokud necommitnul žádnou změnu, se svět vymění sám a tahle komponenta se
+ * nevykreslí vůbec. Jakmile commitnul, je na plátně něco, co udělal on — a
+ * přepsat to bez zeptání nemá žádné produktové odůvodnění (odpověď na
+ * Codexovu otázku č. 1, debata 7. 9. 2026).
+ *
+ * ⚠ **Nesmí nést `.ws-provenance`, i když sedí na témž místě v doku.** Ta třída
+ * má `pointer-events: none`, protože je to sdělení; tohle jsou dvě tlačítka a
+ * pod tou třídou by se nedala zmáčknout.
+ *
+ * Věta říká, co se stane, protože obojí je nevratné: „Show it" zahodí změnu,
+ * kterou porotce udělal, „Keep this one" zahodí svět, za který se zaplatilo.
+ */
+function SecondActOffer({
+  onShow,
+  onKeep,
+}: {
+  readonly onShow: () => void;
+  readonly onKeep: () => void;
+}) {
+  return (
+    <div data-testid="second-act-offer" style={OFFER}>
+      <span>The model wrote its own version. Showing it drops your change.</span>
+      <button type="button" data-testid="second-act-show" onClick={onShow} style={BUTTON}>
+        Show it
+      </button>
+      <button type="button" data-testid="second-act-keep" onClick={onKeep} style={BUTTON}>
+        Keep this one
+      </button>
+    </div>
+  );
+}
+
+/**
  * Totéž o **druhé** větě (`T35-actsthree4`).
  *
  * Je to samostatná komponenta, ne parametr té nad ní, protože říká jinou věc:
@@ -536,6 +718,19 @@ const FACTS_TITLE: React.CSSProperties = {
   margin: '0 0 0.4rem',
   font: 'inherit',
   color: '#7fd4c1',
+};
+
+const OFFER: React.CSSProperties = {
+  display: 'flex',
+  gap: '0.5rem',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  // **Sdělení mlčí, nabídka se maká.** Sousední `.ws-provenance` má
+  // `pointer-events: none`; tady by to tlačítka umrtvilo.
+  pointerEvents: 'auto',
+  padding: '0.4rem 0.2rem',
+  color: '#cfe3e6',
+  font: '12px/1.5 ui-monospace, monospace',
 };
 
 const FORM: React.CSSProperties = {

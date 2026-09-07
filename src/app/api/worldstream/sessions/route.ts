@@ -314,9 +314,20 @@ export async function cloudEmitter(): Promise<BlueprintEmitter | null> {
 interface PromptRead {
   readonly ok: true;
   readonly prompt: unknown;
+  /**
+   * Dějství II: **svět má napsat model, sklad se ho netýká** (P15 `T14r-acttwo`).
+   *
+   * Je to jediný klíč navíc, který tyhle dveře přijímají, a nese **rozhodnutí,
+   * ne obsah**. Klient jím říká, které dějství otevírá; co v tom světě bude,
+   * píše pořád jenom model.
+   */
+  readonly live: boolean;
 }
 
-/** Tělo je `{ prompt }` a nic víc. Klíč navíc je vada, ne přebytek. */
+/**
+ * Tělo je `{ prompt }`, volitelně `{ prompt, live }`. Klíč navíc je vada, ne
+ * přebytek — kdyby se ignoroval, dal by se `ShapeProgram` podstrčit zvenčí.
+ */
 function readPrompt(text: string): PromptRead | { readonly ok: false; readonly code: string; readonly message: string } {
   let body: unknown;
   try {
@@ -327,7 +338,7 @@ function readPrompt(text: string): PromptRead | { readonly ok: false; readonly c
   if (body === null || typeof body !== 'object' || Array.isArray(body))
     return { ok: false, code: 'BODY_NOT_AN_OBJECT', message: 'the request body is not a JSON object' };
 
-  const extra = Object.keys(body).filter((key) => key !== 'prompt');
+  const extra = Object.keys(body).filter((key) => key !== 'prompt' && key !== 'live');
   if (extra.length > 0)
     return {
       ok: false,
@@ -335,7 +346,18 @@ function readPrompt(text: string): PromptRead | { readonly ok: false; readonly c
       message: `this endpoint takes a prompt and nothing else; it will not accept ${extra.join(', ')}`,
     };
 
-  return { ok: true, prompt: (body as { prompt?: unknown }).prompt };
+  // **Cokoli jiného než boolean je 400, ne tiché `false`.** Ticho by z překlepu
+  // (`live: 'true'`) udělalo dějství I, tedy uvařený svět v odpovědi, kterou si
+  // klient přečte jako svět napsaný modelem — a popisek by o tom mlčel.
+  const live = (body as { live?: unknown }).live;
+  if (live !== undefined && typeof live !== 'boolean')
+    return {
+      ok: false,
+      code: 'LIVE_NOT_A_BOOLEAN',
+      message: 'live is true, false, or absent; it is not text',
+    };
+
+  return { ok: true, prompt: (body as { prompt?: unknown }).prompt, live: live === true };
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -425,9 +447,38 @@ export async function POST(request: Request): Promise<Response> {
     // `cloudEmitter()` je levné — `killState` má vteřinové okno a
     // `upstreamConfigFromEnv` čte proměnné prostředí; k poskytovateli se
     // odsud nikdo nepřipojuje.
+    //
+    // **Dějství I je sklad, dějství II je model** (P15 `T14r-acttwo`). Uvařený
+    // svět odpoví hned a nestojí nic, takže první větu obslouží on, kdykoli ho
+    // sklad má; placený slot si bere jedině věta, kterou sklad neumí. Dějství II
+    // je opak: sklad se ho netýká, protože jeho celý smysl je ukázat, co napsal
+    // model. Ta dvě dějství jsou proto po celý zbytek téhle route **vzájemně
+    // vylučující** — `live` a `authored` nebudou nikdy pravdivé obě.
     const cloud = await cloudEmitter();
-    const authored = chooseAuthored(verdict.prompt);
-    const live = cloud !== null && acquireSlot('world');
+    const authored = read.live ? null : chooseAuthored(verdict.prompt);
+    const live = authored === null && cloud !== null && acquireSlot('world');
+
+    // **Dějství II relaci, na kterou nemá, vůbec neotevře.** Relace, která hned
+    // spadne, ubere volajícímu jedno místo z `MAX_SESSIONS_PER_CALLER` a porotci
+    // nedá nic — dějství I mu přitom pořád stojí na plátně, takže je co ztratit
+    // a není co získat. Obě příčiny jsou 503, protože obě znamenají „teď ne":
+    // vypnutý nebo nenakonfigurovaný model a plný strop souběhu.
+    if (read.live && !live) {
+      logRateLimited(
+        'worldstream/sessions',
+        requestId,
+        'LIVE_UNAVAILABLE',
+        cloud === null ? 'no live branch is configured' : slotsDetail('world'),
+      );
+      return fail(
+        requestId,
+        503,
+        'LIVE_UNAVAILABLE',
+        cloud === null
+          ? 'the model is not writing worlds on this instance'
+          : 'too many worlds are being built right now',
+      );
+    }
 
     // **Plný stroj bez skladu je pořád 503**, protože není co vydat. S plným
     // strojem A uvařeným světem se 503 nevydá: níž se emituje sklad.
@@ -551,7 +602,9 @@ export async function POST(request: Request): Promise<Response> {
     // věta trefila uvařený svět přesně, nebo dostala ten nejbližší. Bez toho
     // by produkt tvrdil, že tenhle svět napsal model teď — a to je nepravda,
     // kterou porotce odhalí druhou větou (`T45-honestlabel`).
-    const served = live ? null : authored;
+    // `live` a `authored` se vylučují už od výběru zdroje výš, takže tady se
+    // nic nerozhoduje podruhé: co vybral sklad, to se vydá.
+    const served = authored;
     const emit = live ? cloud : served === null ? null : emitterFor(served.world);
     // **Relace si pamatuje, ze kterého uvařeného světa vznikla** — jinak nemá
     // druhá věta ze skladu co vydat (`T35-actsthree4`). Uvařená změna nese

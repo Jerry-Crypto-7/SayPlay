@@ -543,6 +543,32 @@ describe('openWorldstreamSession', () => {
     expect(handle.authored).toBeNull();
   });
 
+  it('dějství II se ohlásí klíčem `live`, dějství I posílá tělo beze změny', async () => {
+    // **Dvě relace, dvě různá těla** (`T14r-acttwo`). Klíč se posílá jen tehdy,
+    // když něco znamená: dveře přijímají prompt a `live` a nic jiného, takže
+    // `live: false` by byl klíč navíc, který nic nemění — a tělo první věty má
+    // zůstat tím, čím bylo. Test nad tímhle pinuje, že dějství I je pořád
+    // `{ prompt }`; tady se soudí obojí naráz.
+    const bodies: unknown[] = [];
+    const record: typeof fetch = async (_input, init) => {
+      bodies.push(JSON.parse(String(init?.body)));
+      return Response.json(
+        { requestId: 'req-4', sessionId: SESSION_ID, events: HANDLE.events, snapshot: HANDLE.snapshot },
+        { status: 202 },
+      );
+    };
+
+    await openWorldstreamSession('a salt flat', { fetch: record, live: true });
+    await openWorldstreamSession('a salt flat', { fetch: record, live: false });
+    await openWorldstreamSession('a salt flat', { fetch: record });
+
+    expect(bodies).toEqual([
+      { prompt: 'a salt flat', live: true },
+      { prompt: 'a salt flat' },
+      { prompt: 'a salt flat' },
+    ]);
+  });
+
   it('odmítnutí je výjimka s kódem serveru, ne tichý prázdný svět', async () => {
     await expect(
       openWorldstreamSession('something the moderator refuses', {

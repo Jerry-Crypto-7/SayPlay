@@ -243,6 +243,22 @@ describe('založení relace', () => {
     }
   });
 
+  it('klíč `live` je jediný přípustný navíc, a musí to být boolean', async () => {
+    // **Dějství II se ohlašuje jedním klíčem** (`T14r-acttwo`), takže tyhle
+    // dveře od té chvíle přijímají dva. Text místo booleanu je 400, ne tiché
+    // `false`: `live: 'true'` by se jinak přečetl jako dějství I, tedy jako
+    // uvařený svět v odpovědi, kterou si klient přebere jako práci modelu.
+    const typed = await createSession(createRequest({ prompt: 'a salt flat', live: 'true' }));
+    expect(typed.status).toBe(400);
+    expect(((await typed.json()) as { error: { code: string } }).error.code).toBe(
+      'LIVE_NOT_A_BOOLEAN',
+    );
+
+    // `false` je platné a znamená totéž co nic — dějství I.
+    const first = await createSession(createRequest({ prompt: 'a salt flat', live: false }));
+    expect(first.status).toBe(202);
+  });
+
   it('odmítne tělo, které není JSON objekt', async () => {
     for (const [body, code] of [
       ['{ not json', 'BODY_NOT_JSON'],
@@ -272,7 +288,7 @@ describe('založení relace', () => {
     expect(snapshot.status).toBe(404);
   });
 
-  it('nad stropem souběhu vydá uvařený svět a placenou větev nepustí', async () => {
+  it('plná instance vydá první větě uvařený svět a k poskytovateli nesáhne', async () => {
     // **Tohle je od `T14r-actone` to, co strop souběhu doopravdy dělá.** Do
     // 7. 9. 2026 se sloty braly dřív, než se vybíral zdroj světa, takže se za
     // stropem schoval i uvařený svět — soubor v paměti, který nestojí volání
@@ -281,6 +297,12 @@ describe('založení relace', () => {
     //
     // Strop tím **neoslabuje**: chrání pořád přesně to, kvůli čemu vznikl —
     // placená volání. Jen místo odmítnutí vydá to, co je zadarmo.
+    //
+    // ⚠ **Od `T14r-acttwo` už tuhle vlastnost nedrží strop souběhu, a název
+    // testu se proto změnil.** První větu obsluhuje sklad **vždycky**, plný
+    // nebo prázdný čítač; nasycené sloty tady zůstávají jako nejtvrdší
+    // podmínka, za které to musí platit taky. Že sklad předbíhá i s volnými
+    // sloty, soudí blok „zdroj emise" na konci souboru.
     vi.stubEnv('WORLDSMITH_MODEL_ENDPOINT', 'https://model.invalid/v1/messages');
     vi.stubEnv('WORLDSMITH_MODEL_KEY', 'not-a-real-key');
     vi.stubEnv('WORLDSMITH_USD_PER_MTOK_OUT', '15');
@@ -1598,19 +1620,36 @@ describe('relaci zakládá klíč volajícího, ne anonym', () => {
 });
 
 /**
- * **Bez klíče relace nekončí prázdnem, ale nejbližším uvařeným světem.**
+ * **Pořadí zdrojů: dějství I je sklad, dějství II je model** (`T14r-acttwo`).
  *
- * Pořadí zdrojů je součást kontraktu, ne detail zápisu: živá cesta má přednost
- * vždycky. Kdyby ji sklad předbíhal, zaplacený klíč by přestal být vidět
- * a měření `T14` by místo modelu měřilo cache — a nikdo by si toho nevšiml,
- * protože obě cesty vypadají zvenčí stejně.
+ * ⚠ **Do 7. 9. 2026 tenhle blok tvrdil pravý opak** („živá cesta má přednost
+ * vždycky") a odůvodňoval ho tím, že jinak by měření `T14` místo modelu měřilo
+ * cache. **To odůvodnění bylo měřením vyvráceno:**
+ * `evals/worldstream/measure-create.ts` tuhle route nevolá vůbec, mluví
+ * s poskytovatelem přímo — `grep -rn "api/worldstream/sessions" evals/` nevrací
+ * nic. Pořadí zdrojů tedy žádné měřidlo nevidí.
+ *
+ * Rozhodla debata Opus ↔ Codex 7. 9. 2026
+ * (`.claude/debate/worldstream-twoacts-decision.md`): uvařený svět stojí nula
+ * a stojí na plátně za tři vteřiny, kdežto živá cesta má medián 146 s. První
+ * větu proto obsluhuje sklad a model píše **druhé dějství ve vlastní relaci**,
+ * které se nabídne, až bude hotové.
  */
-describe('zdroj emise: živá cesta, a teprve za ní sklad', () => {
+describe('zdroj emise: dějství I ze skladu, dějství II od modelu', () => {
   const AUTHORED = AUTHORED_STORE.worlds[0]!;
 
+  /** Zapnutý poskytovatel na neexistujícím hostiteli — živá cesta selže hlasitě. */
+  function stubCloud(): void {
+    vi.stubEnv('WORLDSMITH_MODEL_ENDPOINT', 'https://model.invalid/v1/messages');
+    vi.stubEnv('WORLDSMITH_MODEL_KEY', 'not-a-real-key');
+    // ⚠ **Bez ceny je konfigurace neúplná a `cloudEmitter()` vrátí `null`** —
+    // `upstreamConfigFromEnv()` na ni sahá, protože nulová cena vypíná strop.
+    vi.stubEnv('WORLDSMITH_USD_PER_MTOK_OUT', '15');
+  }
+
   /** Relace založená přes route a dovedená do konce, ať dopadne jakkoli. */
-  async function generate(prompt: string) {
-    const response = await createSession(createRequest({ prompt }));
+  async function generate(prompt: string, live = false) {
+    const response = await createSession(createRequest(live ? { prompt, live } : { prompt }));
     const body = (await response.json()) as { sessionId: string };
     // Práce běží za odpovědí; bez tohohle by se soudil stav před generací.
     await vi.waitFor(() => {
@@ -1636,23 +1675,79 @@ describe('zdroj emise: živá cesta, a teprve za ní sklad', () => {
     expect(stored.session.phase).toBe('world');
   });
 
-  it('s klíčem jde relace k modelu, i když sklad tu větu má', async () => {
-    // ⚠ **Tohle je celá brána na pořadí.** Endpoint míří do neexistujícího
-    // hostitele, takže živá cesta selže — a právě to je důkaz, že se šlo tudy.
-    // Kdyby sklad předbíhal, relace by skončila ve fázi `world` a test by
-    // prošel ze špatného důvodu.
-    vi.stubEnv('WORLDSMITH_MODEL_ENDPOINT', 'https://model.invalid/v1/messages');
-    vi.stubEnv('WORLDSMITH_MODEL_KEY', 'not-a-real-key');
-    // ⚠ **Bez ceny je konfigurace neúplná a `cloudEmitter()` vrátí `null`** —
-    // `upstreamConfigFromEnv()` na ni sahá, protože nulová cena vypíná strop.
-    // Naměřeno: bez tohohle řádku spadla relace do skladu a test prošel obráceně,
-    // tedy dokazoval opak toho, co tvrdí.
-    vi.stubEnv('WORLDSMITH_USD_PER_MTOK_OUT', '15');
+  it('i se zaplaceným klíčem obslouží první větu sklad, ne poskytovatel', async () => {
+    // ⚠ **Tenhle test do 7. 9. 2026 tvrdil pravý opak** a jmenoval se
+    // „s klíčem jde relace k modelu, i když sklad tu větu má". Endpoint míří do
+    // neexistujícího hostitele, takže dřív relace **spadla** a ten pád byl
+    // důkazem, že se šlo živou cestou.
+    //
+    // **Od `T14r-acttwo` je důkazem pravý opak: relace dojde na svět a
+    // k poskytovateli se nikdo neozve.** Sonda na `fetch` je proto nosná
+    // půlka tvrzení — bez ní by test prošel i nad odpovědí od modelu, kdyby
+    // ten hostitel náhodou existoval.
+    stubCloud();
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
     try {
       const stored = await generate(AUTHORED.prompt);
 
+      expect(stored.session.phase).toBe('world');
+      expect(stored.fault).toBeNull();
+      expect(fetchSpy, 'první věta se šla ptát modelu').not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('dějství II jde k modelu i nad větou, kterou sklad zná přesně', async () => {
+    // **Druhá půlka téhož pořadí.** `live: true` říká „tenhle svět má napsat
+    // model", a sklad se ho netýká ani tehdy, když tu větu umí nazpaměť.
+    // Poskytovatel neexistuje, takže pád relace je důkaz, že se šlo k němu;
+    // kdyby dějství II tiše spadlo do skladu, skončilo by ve fázi `world`.
+    stubCloud();
+    try {
+      const stored = await generate(AUTHORED.prompt, true);
+
       expect(stored.session.phase).toBe('failed');
       expect(stored.fault).not.toBeNull();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('dějství II bez modelu relaci vůbec neotevře', async () => {
+    // **Relace, která hned spadne, není zadarmo:** ubere volajícímu jedno místo
+    // z `MAX_SESSIONS_PER_CALLER` a porotci nedá nic — dějství I mu přitom
+    // pořád stojí na plátně. Odmítnutí proto stojí **před** `openSession()`,
+    // a čítač relací je jediný způsob, jak se to odsud dá změřit.
+    const before = liveSessionCount();
+
+    const response = await createSession(createRequest({ prompt: AUTHORED.prompt, live: true }));
+
+    expect(response.status).toBe(503);
+    const { error } = (await response.json()) as { error: { code: string; message: string } };
+    expect(error.code).toBe('LIVE_UNAVAILABLE');
+    expect(error.message).toBe('the model is not writing worlds on this instance');
+    expect(liveSessionCount(), 'odmítnuté dějství II po sobě nechalo relaci').toBe(before);
+  });
+
+  it('dějství II nad plným stropem souběhu taky neotevře relaci — a do skladu nesáhne', async () => {
+    // Druhá příčina téhož odmítnutí. **Sklad se tu nesmí připlést:** kdyby
+    // dějství II nad plným stropem vydalo uvařený svět, porotce by dostal
+    // podruhé přesně to, co už má, a produkt by to vydával za práci modelu.
+    stubCloud();
+    const before = liveSessionCount();
+    for (let i = 0; i < MAX_WORLD_GENERATIONS; i += 1)
+      expect(acquireSlot('world'), `slot ${i} měl být volný`).toBe(true);
+
+    try {
+      const response = await createSession(createRequest({ prompt: AUTHORED.prompt, live: true }));
+
+      expect(response.status).toBe(503);
+      const { error } = (await response.json()) as { error: { code: string; message: string } };
+      expect(error.code).toBe('LIVE_UNAVAILABLE');
+      expect(error.message).toBe('too many worlds are being built right now');
+      expect(liveSessionCount(), 'odmítnuté dějství II po sobě nechalo relaci').toBe(before);
     } finally {
       vi.unstubAllEnvs();
     }
