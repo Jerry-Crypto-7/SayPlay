@@ -1544,15 +1544,33 @@ describe('strop souběžných placených volání', () => {
 
     // Troje dveře, jeden strop. Kdyby měly čítače vlastní, útočník by je
     // střídal a v letu by běželo dvanáct placených volání místo čtyř.
-    const refusedSession = await createSession(
+    //
+    // ⚠ **Dveře na zakládání relace to od `T14r-actone` dokazují jinak.**
+    // Sdílený strop chrání **placená volání**, ne odpovědi: nad plným čítačem
+    // se k poskytovateli nesmí ozvat nikdo, a to platí dál. Odpověď ale už
+    // není 503 — uvařený svět nic nestojí, tak se vydá. Aby se ta ochrana dala
+    // pozorovat, musí být model nakonfigurovaný; bez klíče by se o slot
+    // neucházel nikdo a test by neměřil sdílenost, ale její nepřítomnost.
+    vi.stubEnv('WORLDSMITH_MODEL_ENDPOINT', 'https://model.invalid/v1/messages');
+    vi.stubEnv('WORLDSMITH_MODEL_KEY', 'not-a-real-key');
+    vi.stubEnv('WORLDSMITH_USD_PER_MTOK_OUT', '15');
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+    const cookedSession = await createSession(
       new Request('http://127.0.0.1/api/worldstream/sessions', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ prompt: 'a salt flat with one iron mast' }),
       }),
     );
-    expect(refusedSession.status).toBe(503);
-    expect((await body(refusedSession)).error).toMatchObject({ code: 'TOO_MANY_SESSIONS' });
+    expect(cookedSession.status).toBe(202);
+    // Popisek je důkaz, že svět vydal sklad, ne poskytovatel.
+    expect((await body(cookedSession)).authored, 'uvařený svět se nepřiznal').toBeDefined();
+    // **A tohle je ta chráněná věc.** Sdílený čítač je nasycený, takže placená
+    // větev těchhle dveří nesměla běžet.
+    expect(fetchSpy, 'nad sdíleným stropem se šlo k poskytovateli').not.toHaveBeenCalled();
+    fetchSpy.mockRestore();
+    vi.unstubAllEnvs();
 
     const refusedChange = await preview(
       stored.session.sessionId,
@@ -1567,8 +1585,10 @@ describe('strop souběžných placených volání', () => {
 
     const refusedSessions = log.filter((line) => line.includes('TOO_MANY_SESSIONS'));
     const refusedChanges = log.filter((line) => line.includes('TOO_MANY_CHANGES'));
-    expect(refusedSessions, 'odmítnutá relace neodešla operátorovi').toHaveLength(1);
-    expect(refusedSessions[0]).toContain('[worldstream/sessions]');
+    // **Relace se neodmítla, takže se ani nemá co logovat.** Operátorský řádek
+    // popisuje odmítnutí; nad vydaným světem by tvrdil, že někdo odešel s
+    // prázdnou, což se nestalo.
+    expect(refusedSessions, 'vydaný uvařený svět se hlásí jako odmítnutí').toHaveLength(0);
     expect(refusedChanges, 'odmítnuté preview neodešlo operátorovi').toHaveLength(1);
     expect(refusedChanges[0]).toContain('[worldstream/changes]');
 
@@ -1578,10 +1598,10 @@ describe('strop souběžných placených volání', () => {
     // tenhle případ je přesně ten druhý. Čísla doslova, ne interpolovaná: se
     // stejnou konstantou na obou stranách by se strop dal zvednout ze čtyř na
     // čtyřicet a řádek by se pořád shodoval sám se sebou.
-    expect(refusedSessions[0]).toContain(
-      'paid slots in flight: 2 world + 2 generate + 2 refine of 6 on this instance; ' +
-        'the world door may hold 3',
-    );
+    // ⚠ **Varianta pro dveře `world` se sem od `T14r-actone` nevejde**, protože
+    // ty dveře nad plným čítačem neodmítají — vydají uvařený svět. Tentýž
+    // řádek nad nimi pinuje `sessions.test.ts` na jediné cestě, kde odmítnutí
+    // zbylo: plný stroj a prázdný sklad.
     expect(refusedChanges[0]).toContain(
       'paid slots in flight: 2 world + 2 generate + 2 refine of 6 on this instance; ' +
         'the refine door may hold 2',

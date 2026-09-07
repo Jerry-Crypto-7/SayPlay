@@ -52,6 +52,15 @@ vi.mock('../../../../worldstream/sessions', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../worldstream/sessions')>();
   return { ...actual, serverGrammar: vi.fn(actual.serverGrammar) };
 });
+
+// Týž obal a týž důvod jako u `serverGrammar` výš: sklad se propouští
+// skutečný, a jediný test níž ho na jedno volání vyprázdní. Prázdný sklad je
+// od `T14r-actone` jediná cesta, jak se ještě dá dostat na `503`, a v repu
+// nemá dosažitelný vstup — `authored-worlds.json` je commitnutý a neprázdný.
+vi.mock('@/worldstream/authored', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/worldstream/authored')>();
+  return { ...actual, chooseAuthored: vi.fn(actual.chooseAuthored) };
+});
 import { resetFaultLog } from '../../../../server/public-faults';
 import {
   MAX_REQUESTS_PER_WINDOW,
@@ -70,7 +79,7 @@ import {
   resetConcurrency,
 } from '../sessions/route';
 import { GET as readSnapshot } from '../sessions/[sessionId]/route';
-import { AUTHORED_STORE } from '@/worldstream/authored';
+import { AUTHORED_STORE, chooseAuthored } from '@/worldstream/authored';
 import {
   HEARTBEAT_FRAME,
   MAX_STREAM_SUBSCRIBERS,
@@ -263,7 +272,42 @@ describe('založení relace', () => {
     expect(snapshot.status).toBe(404);
   });
 
-  it('nad stropem souběhu odmítne, místo aby platila za všechny naráz', async () => {
+  it('nad stropem souběhu vydá uvařený svět a placenou větev nepustí', async () => {
+    // **Tohle je od `T14r-actone` to, co strop souběhu doopravdy dělá.** Do
+    // 7. 9. 2026 se sloty braly dřív, než se vybíral zdroj světa, takže se za
+    // stropem schoval i uvařený svět — soubor v paměti, který nestojí volání
+    // ani vteřinu — a čtvrtý porotce dostal `503` místo světa, který tam celou
+    // dobu ležel. Je to táž třída jako `T29-freecallcap`.
+    //
+    // Strop tím **neoslabuje**: chrání pořád přesně to, kvůli čemu vznikl —
+    // placená volání. Jen místo odmítnutí vydá to, co je zadarmo.
+    vi.stubEnv('WORLDSMITH_MODEL_ENDPOINT', 'https://model.invalid/v1/messages');
+    vi.stubEnv('WORLDSMITH_MODEL_KEY', 'not-a-real-key');
+    vi.stubEnv('WORLDSMITH_USD_PER_MTOK_OUT', '15');
+
+    for (let i = 0; i < MAX_WORLD_GENERATIONS; i += 1)
+      expect(acquireSlot('world'), `slot ${i} měl být volný`).toBe(true);
+
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    try {
+      const response = await createSession(createRequest({ prompt: 'a salt flat' }));
+
+      expect(response.status).toBe(202);
+      const body = (await response.json()) as { authored?: { match: string } };
+      // **Popisek je důkaz, že svět vydal sklad**, ne model. Bez něj by tenhle
+      // test prošel i nad odpovědí, kterou napsal poskytovatel.
+      expect(body.authored, 'uvařený svět se nepřiznal').toBeDefined();
+
+      // **A tohle je ta chráněná věc.** Nad stropem se k poskytovateli
+      // nesmí ozvat nikdo; kdyby ano, strop by nebyl strop.
+      expect(fetchSpy, 'nad stropem se šlo k poskytovateli').not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('nad stropem souběhu odmítne, když sklad nemá co vydat', async () => {
     // ⚠ **Do 3. 9. 2026 tenhle test nemohl spadnout.** Posílal `MAX + 1`
     // požadavků za sebou a soudil `202 || 503`, jenže bez `.env` generace
     // doběhne hned a `work.finally` slot vrátí dřív, než se pošle další —
@@ -279,6 +323,16 @@ describe('založení relace', () => {
     vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
       log.push(String(line));
     });
+    // ⚠ **Od `T14r-actone` je 503 dosažitelné jedině bez skladu.** S uvařeným
+    // světem po ruce vydá plný stroj svět, ne odmítnutí — to soudí test nad
+    // tímhle. Zbývá tahle jediná cesta a v repu **nemá dosažitelný vstup**:
+    // `authored-worlds.json` je commitnutý a neprázdný, takže se prázdný sklad
+    // musí předstírat. Větev přesto existuje a bez ní by plný stroj s prázdným
+    // skladem odpověděl 202 nad relací, která nikdy nedostane svět.
+    vi.stubEnv('WORLDSMITH_MODEL_ENDPOINT', 'https://model.invalid/v1/messages');
+    vi.stubEnv('WORLDSMITH_MODEL_KEY', 'not-a-real-key');
+    vi.stubEnv('WORLDSMITH_USD_PER_MTOK_OUT', '15');
+    vi.mocked(chooseAuthored).mockReturnValueOnce(null);
     // Nasytí se **strop těchhle dveří**, ne celý čítač: zakládání se zastaví
     // o slot dřív, aby čtyři pomalé generace nevypnuly druhou větu.
     for (let i = 0; i < MAX_WORLD_GENERATIONS; i += 1)
@@ -300,6 +354,17 @@ describe('založení relace', () => {
     const refusals = log.filter((line) => line.includes('TOO_MANY_SESSIONS'));
     expect(refusals, 'odmítnutí náporem neodešlo operátorovi').toHaveLength(1);
     expect(refusals[0]).toContain('[worldstream/sessions]');
+    // **Řádek jmenuje, které dveře ty sloty drží** (`T22-doorcounters`), a od
+    // `T14r-actone` je tohle jeho **jediný** producent: `changes.test.ts` tuhle
+    // variantu pinovat přestal, protože ty dveře nad plným čítačem už
+    // neodmítají. Čísla doslova, ne interpolovaná — se stejnou konstantou na
+    // obou stranách by se strop dal zvednout ze tří na třicet a řádek by se
+    // pořád shodoval sám se sebou.
+    expect(refusals[0]).toContain(
+      'paid slots in flight: 3 world + 0 generate + 0 refine of 6 on this instance; ' +
+        'the world door may hold 3',
+    );
+    vi.unstubAllEnvs();
   });
 
   it('odmítnutí nad stropem nesáhne na disk — brána je před čtením protokolu', () => {
@@ -321,13 +386,17 @@ describe('založení relace', () => {
     const source = readFileSync('src/app/api/worldstream/sessions/route.ts', 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/^\s*\/\/.*$/gm, '');
-    const gate = source.indexOf("if (!acquireSlot('world'))");
+    // ⚠ **Od `T14r-actone` se slot bere podmíněně**, takže se kotví na výraz,
+    // který ho bere, ne na `if (!acquireSlot(...))`, který už neexistuje.
+    // Vybrání zdroje před ním (`cloudEmitter`, `chooseAuthored`) na disk
+    // nesahá — `killState` má vteřinové okno a sklad je v paměti modulu —
+    // takže vlastnost „odsouzený požadavek nečte 26 kB protokolu" platí dál.
+    const gate = source.indexOf("acquireSlot('world')");
     const grammarRead = source.indexOf('const grammar = serverGrammar();');
 
     expect(gate, 'brána souběhu ve zdroji chybí').toBeGreaterThan(-1);
     expect(grammarRead, 'čtení protokolu ve zdroji chybí').toBeGreaterThan(-1);
     expect(gate, 'brána souběhu je až za čtením protokolu').toBeLessThan(grammarRead);
-
   });
 
   it('nečitelný protokol vrátí slot, a vrátí ho právě jednou', async () => {
@@ -899,8 +968,12 @@ describe('generace za odpovědí přežije zmrazení instance', () => {
     expect(source, 'rozdělaná generace se nepředává `after()`').toMatch(
       /after\(settled\)/,
     );
-    expect(source, 'na `settled` nevisí vrácení slotu').toMatch(
-      /const settled = work\.finally\(\(\) => \{\s*releaseSlot\('world'\);\s*\}\);/,
+    // ⚠ **Od `T14r-actone` je vrácení podmíněné a musí být.** Uvařená cesta
+    // si o slot neřekne, takže bezpodmínečné `releaseSlot()` by odečetlo
+    // z čítače, který nikdo nezvýšil — po třech uvařených světech by dveře
+    // `world` měly volných slotů víc, než kolik jich vůbec mají.
+    expect(source, 'na `settled` nevisí podmíněné vrácení slotu').toMatch(
+      /const settled = work\.finally\(\(\) => \{\s*if \(live\) releaseSlot\('world'\);\s*\}\);/,
     );
   });
 });

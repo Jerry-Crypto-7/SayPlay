@@ -437,9 +437,18 @@ export default function Page() {
  * porotce odhalí druhou větou, protože dvě různé věty dostanou tentýž svět.
  * **Poctivost je tady levnější než iluze.**
  *
- * Mlčí se ve dvou případech a oba jsou správně: svět píše model (`provenance`
- * je `null`), nebo věta trefila uvařený svět **přesně** — tam se nic
- * nenahrazovalo, takže není co přiznávat.
+ * Mlčí se **jedině tehdy, když svět napsal model** (`provenance` je `null`).
+ *
+ * ⚠ **Do 7. 9. 2026 se mlčelo i u přesné shody a od `T14r-actone` je to
+ * nepravda.** Tehdy platilo „nic se nenahrazovalo, není co přiznávat": sklad
+ * uměl právě tuhle větu, takže odpověď byla její. Od `T14r-actone` ale uvařený
+ * svět vydávají i dveře, na které nevyšel placený slot, takže přesná shoda
+ * přestala znamenat „sklad tuhle větu uměl" a začala znamenat „tenhle svět je
+ * uložený". Uložený svět bez popisku je tvrzení, že ho model napsal teď.
+ * **Rozhodla debata Opus ↔ Codex 7. 9. 2026**, `.claude/debate/worldstream-twoacts-decision.md`.
+ *
+ * Dvě věty, protože „nejbližší" a „přesně tenhle" jsou dvě různé pravdy a
+ * jedna společná by musela lhát u jedné z nich.
  *
  * Text jmenuje, co se stalo, a neomlouvá se. Omluva by z poctivosti udělala
  * vadu; tohle je vlastnost.
@@ -449,11 +458,13 @@ function AuthoredNotice({
 }: {
   readonly provenance: AuthoredProvenance | null;
 }) {
-  if (provenance === null || provenance.match !== 'nearest') return null;
+  if (provenance === null) return null;
 
   return (
     <p className="ws-provenance" data-testid="world-authored">
-      This is the closest world authored ahead of time.
+      {provenance.match === 'exact'
+        ? 'This world was authored ahead of time.'
+        : 'This is the closest world authored ahead of time.'}
     </p>
   );
 }

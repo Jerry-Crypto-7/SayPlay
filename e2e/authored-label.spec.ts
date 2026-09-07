@@ -69,16 +69,29 @@ test('věta mimo sklad dostane svět a produkt to řekne nahlas', async ({ page 
   expect(box.x, 'popisek stojí za pravou hranou okna').toBeLessThan(view.width);
 });
 
-test('věta, kterou sklad zná přesně, se neomlouvá za nic', async ({ page }) => {
+test('i věta, kterou sklad zná přesně, se přizná k uloženému světu', async ({ page }) => {
   test.setTimeout(180_000);
 
   await page.goto('/');
   await buildWorld(page, AUTHORED);
 
-  // Nic se nenahrazovalo, takže není co přiznávat. Popisek nad každým světem
-  // by byl šum a porotce by ho po druhé větě přestal číst — včetně chvíle,
-  // kdy něco doopravdy znamená.
-  await expect(page.getByTestId('world-authored')).toHaveCount(0);
+  // ⚠ **Tenhle test do 7. 9. 2026 tvrdil pravý opak** (`toHaveCount(0)`)
+  // s odůvodněním „nic se nenahrazovalo, není co přiznávat". Za tehdejšího
+  // pořadí to byla pravda: sklad se hledal jedině bez klíče, takže přesná
+  // shoda znamenala „sklad uměl právě tuhle větu".
+  //
+  // **Od `T14r-actone` to pravda není.** Uvařený svět vydávají i dveře, na
+  // které nevyšel placený slot, takže přesná shoda znamená jen „tenhle svět je
+  // uložený" — a uložený svět bez popisku je tvrzení, že ho model napsal teď.
+  // Rozhodla debata Opus ↔ Codex 7. 9. 2026,
+  // `.claude/debate/worldstream-twoacts-decision.md`, nález o popisku.
+  const notice = page.getByTestId('world-authored');
+  await expect(notice).toBeVisible();
+
+  // **Jiná věta než u nejbližší shody, a to je celý smysl.** Kdyby přesná
+  // shoda hlásila „closest", produkt by se omlouval za náhradu, ke které
+  // nedošlo — a porotce, který tu větu uvidí u obou, ji přestane číst.
+  await expect(notice).toHaveText('This world was authored ahead of time.');
 });
 
 test('prázdné plátno o původu mlčí', async ({ page }) => {

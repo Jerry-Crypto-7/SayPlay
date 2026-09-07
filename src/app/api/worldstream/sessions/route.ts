@@ -410,24 +410,28 @@ export async function POST(request: Request): Promise<Response> {
     const verdict = moderatePrompt(read.prompt);
     if (!verdict.ok) return fail(requestId, 400, verdict.category, verdict.detail);
 
-    // **Slot se bere PŘED čtením protokolu, protože odmítnutí musí být levné.**
-    // `serverGrammar()` není cachované: každé volání blokuje smyčku událostí
-    // dvěma `readFileSync`, sha256 a `JSON.parse` nad 26 kB. Naměřeno
-    // nezávislou revizí 3. 9. 2026 — s obráceným pořadím stál požadavek
-    // odsouzený k `503 TOO_MANY_SESSIONS` **2,223 ms**, takže tisíc odmítnutí
-    // = 2,2 s úplně zablokovaného Node, a s ním stojí i SSE proudy, snapshot
-    // i preview. V tomhle pořadí stojí odmítnutí ~0.
+    // **Zdroj světa se vybírá PŘED placenou vstupenkou** (P15 `T14r-actone`).
     //
-    // ⚠ **Od `f5b1b49` je `serverGrammar()` memoizované, takže těch 2,223 ms
-    // platí jen pro PRVNÍ požadavek na instanci.** Pořadí se přesto nemění:
-    // tu cenu platí každá nová instance znovu, a na Vercelu jich naskakuje
-    // tolik, kolik jich zrovna běží. Kdo to půjde přeměřit, naměří nulu.
+    // ⚠ **Do 7. 9. 2026 se sloty braly první a byla to naměřená vada.** Uvařený
+    // svět nestojí ani volání, ani vteřinu — je to soubor v paměti procesu —
+    // a přesto se za `acquireSlot('world')` schovával spolu s živou větví.
+    // Při třech běžících generacích (`MAX_WORLD_GENERATIONS`) tak čtvrtý
+    // porotce dostal **503 místo okamžitého světa**, který tu celou dobu ležel.
+    // Je to táž třída jako `T29-freecallcap` („volání zdarma se nesmí odmítnout
+    // kvůli placenému provozu"), jen o jedny dveře vedle.
     //
-    // Kontrola a zvýšení čítače jsou jeden synchronní krok (`acquireSlot`),
-    // takže jsou atomické na smyčce událostí. Jediný odchod z route mezi
-    // vzetím slotu a `work.finally` níž je nečitelný protokol — a ten slot
-    // vrací sám, řádek níž. **Přibude-li sem další `return`, musí vrátit taky.**
-    if (!acquireSlot('world')) {
+    // **Slot se proto bere jedině tehdy, když poběží živá větev**, a `&&`
+    // zkratuje: bez nakonfigurovaného modelu se o slot nikdo neuchází.
+    // `cloudEmitter()` je levné — `killState` má vteřinové okno a
+    // `upstreamConfigFromEnv` čte proměnné prostředí; k poskytovateli se
+    // odsud nikdo nepřipojuje.
+    const cloud = await cloudEmitter();
+    const authored = chooseAuthored(verdict.prompt);
+    const live = cloud !== null && acquireSlot('world');
+
+    // **Plný stroj bez skladu je pořád 503**, protože není co vydat. S plným
+    // strojem A uvařeným světem se 503 nevydá: níž se emituje sklad.
+    if (!live && cloud !== null && authored === null) {
       // **Odmítnutí musí být vidět v operátorském logu**, jinak se „strop nás
       // ochránil" nedá odlišit od „nikdo nepřišel". Text je konstantní
       // schválně: `logRateLimited` klíčuje `(dveře, kód)` a objem nese
@@ -452,9 +456,13 @@ export async function POST(request: Request): Promise<Response> {
       return fail(requestId, 503, 'TOO_MANY_SESSIONS', 'too many worlds are being built right now');
     }
 
+    // ⚠ **Každý `return` odsud dolů musí slot vrátit, a jedině když ho drží.**
+    // Do `T14r-actone` ho držela každá cesta, takže stačilo `releaseSlot`
+    // bezpodmínečně; dnes ho uvařená cesta nedrží a vrátit cizí slot by
+    // odečetlo z čítače, který nikdo nezvýšil.
     const grammar = serverGrammar();
     if (typeof grammar === 'string') {
-      releaseSlot('world');
+      if (live) releaseSlot('world');
       logRateLimited('worldstream/sessions', requestId, 'GRAMMAR_UNREADABLE', grammar);
       return fail(requestId, 503, 'GRAMMAR_UNREADABLE', 'the frozen protocol could not be read');
     }
@@ -511,7 +519,7 @@ export async function POST(request: Request): Promise<Response> {
     // „nevím", a u relace s drženým proudem je to dokonce „nikdy"
     // (`T16-idleforever`). Hláška proto říká jen stav, ne radu.
     if (stored === null) {
-      releaseSlot('world');
+      if (live) releaseSlot('world');
       logRateLimited(
         'worldstream/sessions',
         requestId,
@@ -526,25 +534,30 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    // ⚠ **Pořadí je součást kontraktu, ne detail zápisu.** Živá cesta má
-    // přednost vždycky; sklad uvařených světů je až za ní. Kdyby předbíhal,
-    // zaplacený klíč by přestal být vidět a `T14` by místo modelu měřila cache.
+    // **Živá větev jede, jen když na ni vyšel slot; jinak vydá svět sklad.**
+    //
+    // ⚠ **Odůvodnění, které tu stálo do 7. 9. 2026, bylo zastaralé.** Znělo
+    // „živá cesta má přednost vždycky, jinak by `T14` místo modelu měřila
+    // cache" — jenže `evals/worldstream/measure-create.ts` tuhle route
+    // **nevolá**: mluví s poskytovatelem přímo přes `compileWithRepair`
+    // a `upstreamBranch`. `grep -rn "api/worldstream/sessions" evals/` nevrací
+    // nic. Měřidlo tedy pořadí zdrojů nevidí a žádný vypínač nepotřebuje.
     //
     // Vypnutý model i chybějící klíč vypadají odsud stejně (`cloudEmitter()`
     // vrátí `null`) a to je správně: kill switch `upstream` vypíná **živou**
     // větev, ne sklad. Porotci má vypnutý model nechat svět, ne prázdno.
-    const cloud = await cloudEmitter();
-    // Sklad se hledá **tady**, ne uvnitř emitoru: odpověď musí říct, jestli
+    //
+    // Sklad se hledá **v route**, ne uvnitř emitoru: odpověď musí říct, jestli
     // věta trefila uvařený svět přesně, nebo dostala ten nejbližší. Bez toho
     // by produkt tvrdil, že tenhle svět napsal model teď — a to je nepravda,
     // kterou porotce odhalí druhou větou (`T45-honestlabel`).
-    const authored = cloud === null ? chooseAuthored(verdict.prompt) : null;
-    const emit = cloud ?? (authored === null ? null : emitterFor(authored.world));
+    const served = live ? null : authored;
+    const emit = live ? cloud : served === null ? null : emitterFor(served.world);
     // **Relace si pamatuje, ze kterého uvařeného světa vznikla** — jinak nemá
     // druhá věta ze skladu co vydat (`T35-actsthree4`). Uvařená změna nese
     // `stableId` z jednoho blueprintu, takže patří k jednomu světu a hledat ji
     // přes celý sklad znamená vydat cizí cíl.
-    stored.authoredWorldId = authored?.world.id ?? null;
+    stored.authoredWorldId = served?.world.id ?? null;
     const work =
       emit === null
         ? Promise.resolve().then(() => {
@@ -577,7 +590,11 @@ export async function POST(request: Request): Promise<Response> {
     // `after()` doběhne i tehdy, když odpověď skončí chybou, a je omezené
     // `maxDuration` routy, ne donekonečna.
     const settled = work.finally(() => {
-      releaseSlot('world');
+      // **Vrací se jen držený slot.** Uvařená cesta si o žádný neřekla
+      // (`T14r-actone`), takže bezpodmínečné vrácení by ubralo z čítače, který
+      // nikdo nezvýšil — a po třech uvařených světech by `world` měl volných
+      // slotů víc, než kolik jich vůbec má.
+      if (live) releaseSlot('world');
     });
     try {
       after(settled);
@@ -601,7 +618,7 @@ export async function POST(request: Request): Promise<Response> {
         // **Chybí, když svět píše model**, a to je celý rozdíl, který má
         // porotce vidět. Klíč se posílá jen tehdy, když odpovídá sklad; co
         // s tím rozhraní udělá, patří jemu, ne téhle route.
-        ...(authored === null ? {} : { authored: { match: authored.match } }),
+        ...(served === null ? {} : { authored: { match: served.match } }),
       },
       { status: 202 },
     );
