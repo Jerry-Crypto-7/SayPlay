@@ -1,21 +1,32 @@
 {
-  "$comment": "Vstup pro `node scripts/submission-check.mjs`. Hodnoty s prefixem TODO: brána odmítá — nevyplněné pole musí kontrolu shodit, ne projít jako pravdivá hodnota.",
+  "$comment": "Aktuální předání: lokální Reality Compiler demo přes vlastní předplatné. TODO: MISSING zachovává fail-closed konvenci existující submission brány. Nejde o dokončené veřejné odevzdání.",
   "repositoryUrl": "https://github.com/Jerry-Crypto-7/Hackathon",
-  "demoUrl": "TODO: hostovaný browser demo link (P2 T205b)",
-  "backendUrl": "TODO: adresa, na které backend odpovídá (P2 T205b)",
-  "videoPath": "video/final.mp4",
+  "demoUrl": "TODO: MISSING — veřejná URL aktuálního pilotu",
+  "backendUrl": "TODO: MISSING — veřejný backend; lokální demo používá řízený browser a oficiální CLI",
+  "videoPath": "TODO: MISSING — video/final.mp4",
   "descriptionPath": "docs/submission/description.md",
-  "modelTablePaths": ["src/model/prompt.ts", "evals/harness/preflight.ts"],
+  "modelTablePaths": [
+    "src/model/prompt.ts",
+    "evals/harness/preflight.ts"
+  ],
   "monitoringPath": "ops/monitoring/uptime.json",
-  "dataDirs": ["evals/frozen", "evals/contracts/gold"],
+  "dataDirs": [
+    "evals/frozen",
+    "evals/contracts/gold",
+    "evals/reality-compiler/holdout-v1"
+  ],
   "measurementReports": [
-    "evals/gates/kill-gate-2026-09-15.md",
-    "evals/hostile-report.json",
-    "evals/geom-budgets.json",
-    "evals/family-divergence.json",
-    "evals/local-model/grammar-report.json",
-    "evals/local-model/decision.md",
-    "evals/reject-causes.json",
-    "evals/fallback-efficacy.json"
-  ]
+    "evals/reality-compiler/subscription-report.md",
+    "evals/reality-compiler/subscription-demo.md",
+    "evals/reality-compiler/decision.md",
+    "evals/reality-compiler/user-study-results.json"
+  ],
+  "localDemo": {
+    "command": "npm run demo:subscription",
+    "scope": "own local source demo",
+    "billing": "subscription",
+    "apiFallback": false,
+    "walkthrough": "docs/submission/demo-walkthrough.md",
+    "readiness": "evals/reality-compiler/submission-readiness.md"
+  }
 }

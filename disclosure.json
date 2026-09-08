@@ -2373,12 +2373,12 @@
       "kind": "model",
       "source": "https://platform.openai.com/docs/models",
       "authorOrProvider": "OpenAI",
-      "license": "komerční podmínky služby (OpenAI Business Terms)",
+      "license": "Podmínky příslušné služby OpenAI; tento lokální běh používá uživatelské předplatné ChatGPT/Codex. Ověření podmínek pro veřejné soutěžní nasazení: MISSING.",
       "requiredNotices": [
         "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
       ],
       "attribution": "OpenAI, https://openai.com/policies/business-terms",
-      "reviewNote": "Model emisní cesty produktu (src/model/prompt.ts, EMISSION_MODEL). Hradí se předplatným Codexu, ne měřeným API klíčem: požadavek jde přes lokální claude-code-proxy, která mluví formátem Anthropic Messages, a po tokenech se neúčtuje nic. Jmenuje ho i měřicí harness (evals/harness/preflight.ts)."
+      "reviewNote": "Reality Compiler lokální demo a benchmark 8. 9. 2026 volají oficiální Codex CLI 0.145.0 ve validovaném WSL2, s ChatGPT přihlášením, gpt-5.6-sol a low effort. Žádný API fallback ani čtení credential souborů. Spotřeba předplatného je evidována; jednotková USD cena není doložena. Historická proxy/API cesta zůstává v repozitáři, ale tento launcher ji nepoužívá. Schválení veřejného hostování prostřednictvím osobního předplatného: MISSING; není součástí předání."
     },
     {
       "name": "gpt-5.6-terra",
@@ -2494,6 +2494,71 @@
       ],
       "attribution": "OpenAI, https://openai.com/policies/business-terms",
       "reviewNote": "Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá."
+    },
+    {
+      "name": "Reality Compiler pilot sources",
+      "kind": "dataset",
+      "firstParty": true,
+      "reason": "Vlastní fiktivní vývojové a holdout podklady vytvořené v tomto repozitáři. Nejde o skutečné bezpečnostní postupy ani externí dokumenty. Výstupy modelu a citace mají samostatný stav review.",
+      "paths": [
+        "evals/reality-compiler/museum-source.txt",
+        "evals/reality-compiler/subscription-demo-source.txt",
+        "evals/reality-compiler/museum.sim.json",
+        "evals/reality-compiler/holdout-v1"
+      ]
+    },
+    {
+      "name": "Repository implementation fixtures — T13 inventory",
+      "kind": "dataset",
+      "firstParty": true,
+      "reason": "Vlastní testovací scénáře, implementační konstanty a prompty tohoto projektu; inventura T13 8. 9. 2026 ověřila hlavičky a vazbu na projektové moduly. Registrace kvůli prahu literálů ve stávající submission bráně, nikoli externí dataset.",
+      "paths": [
+        "evals/gates/bench/transition.ts",
+        "evals/worldstream/__tests__/measure-create.test.ts",
+        "src/app/api/generate/__tests__/route.test.ts",
+        "src/app/api/worldstream/__tests__/changes.test.ts",
+        "src/app/api/worldstream/__tests__/sessions.test.ts",
+        "src/geom/__tests__/compile.test.ts",
+        "src/geom/__tests__/program.test.ts",
+        "src/model/__tests__/repair.test.ts",
+        "src/model/__tests__/worldstream-compiler.test.ts",
+        "src/model/__tests__/worldstream-refine.test.ts",
+        "src/model/__tests__/worldstream-repair.test.ts",
+        "src/model/worldstream-prompt.ts",
+        "src/server/__tests__/kill-switch.test.ts",
+        "src/server/__tests__/pipeline.test.ts",
+        "src/server/__tests__/public-faults.test.ts",
+        "src/server/__tests__/rate-limit.test.ts",
+        "src/server/__tests__/spend-cap.test.ts",
+        "src/server/__tests__/spend-store.test.ts",
+        "src/shape/__tests__/field.test.ts",
+        "src/shape/__tests__/mesh.test.ts",
+        "src/shape/__tests__/schema.test.ts",
+        "src/worldstream/__tests__/authored.test.ts",
+        "src/worldstream/__tests__/look-repair.test.ts",
+        "src/worldstream/__tests__/proxy.test.ts",
+        "src/worldstream/__tests__/sessions.test.ts"
+      ]
+    },
+    {
+      "name": "claude-sonnet-5",
+      "kind": "model",
+      "firstParty": true,
+      "reason": "Doslovný identifikátor v src/server/__tests__/upstream.test.ts: test předává změněné model ID mock transportu a ověřuje request body. Tato položka neprohlašuje volání modelu Anthropic v lokálním subscription demu ani existenci modelu tohoto jména."
+    },
+    {
+      "name": "OpenAI Codex CLI@0.145.0",
+      "kind": "library",
+      "manual": true,
+      "scope": "dev",
+      "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.145.0/LICENSE",
+      "authorOrProvider": "OpenAI",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "při redistribuci přiložit licenci, zachovat relevantní notices a označit změny"
+      ],
+      "attribution": "Copyright 2025 OpenAI",
+      "reviewNote": "Externí lokální nástroj instalovaný uživatelem ve WSL2; není zkopírován do repozitáře ani distribuován s tímto handoffem. Verze ověřena oficiálním CLI, licence proti upstream tagu rust-v0.145.0 dne 8. 9. 2026. Licence kódu CLI není oprávnění k modelové službě ani ke sdílení osobního účtu."
     }
   ]
 }
