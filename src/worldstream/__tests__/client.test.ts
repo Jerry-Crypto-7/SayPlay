@@ -21,6 +21,7 @@ import { describe, expect, it } from 'vitest';
 
 import { sessionFrame } from '../../app/api/worldstream/sessions/[sessionId]/events/route';
 import { createSession, type GenerationSession } from '../session';
+import { meshResolution } from '../cache';
 import type { MeshArtifact } from '../cache';
 import type { SessionEvent } from '../events';
 import {
@@ -222,6 +223,88 @@ function snapshotOf(session: GenerationSession, overrides: Partial<ClientSnapsho
     ...overrides,
   };
 }
+
+/* ------------------------------------------------------------------ *
+ * Mřížka z drátu (`T14r-ladderhash`).
+ * ------------------------------------------------------------------ */
+
+/**
+ * `COARSER_GRIDS = [24, 16]` v `proxy.ts` jsou **záchranné příčky pod** hrubou
+ * hmotou, ne úrovně podoby, takže v `MESH_RESOLUTIONS` nestojí. Do téhle úlohy
+ * je obě vstupní místa reduceru braly přetypováním `as MeshResolution`, což
+ * o hodnotě neověří nic — `resolution: 24` prošlo tiše až do `ShapeView`,
+ * odkud by `shapeContentHash(program, 24)` vyrobil klíč cache mimo žebřík.
+ *
+ * **Obě cesty se soudí zvlášť.** Událost a snapshot po reconnectu jsou dva
+ * nezávislé vstupy z drátu, ne dva pohledy na tentýž; jedna brána by druhou
+ * díru nechala otevřenou.
+ */
+describe('mřížka, kterou žebřík nejmenuje', () => {
+  /**
+   * Rámec vzniká **skutečnou relací**, ne ručním zápisem — doktrína tohohle
+   * souboru výš. `24` se sem dostane jediným přetypováním na `MeshArtifact`,
+   * a to je přesně to, co `T21b` udělá: hrubý mesh z prohlížeče ohlásí
+   * artefakt z mřížky, kterou `MESH_RESOLUTIONS` nejmenuje.
+   */
+  function rescued(resolution: number): { events: readonly SessionEvent[] } {
+    const { session } = generation();
+    const applied = session.apply({
+      sessionId: SESSION_ID,
+      stableId: 'pillar',
+      representationRevision: 0,
+      next: {
+        kind: 'coarse',
+        artifact: { ...artifact('hash-rescued', 1_200), resolution } as MeshArtifact,
+      },
+    });
+    expect(applied.ok, 'relace ten rámec nevydala').toBe(true);
+    return { events: session.events.all() };
+  }
+
+  it('nepřijme 24³ z události a nechá pole prázdné', () => {
+    const state = feed(rescued(24).events);
+
+    expect(shape(state, 'pillar').rung).toBe('coarse');
+    expect(shape(state, 'pillar').contentHash).toBe('hash-rescued');
+    // Příčka i hash projdou; nepravdivé je jen číslo mřížky.
+    expect(shape(state, 'pillar').resolution).toBeNull();
+  });
+
+  it('nepřijme 24³ ani ze snapshotu po reconnectu', () => {
+    const { session } = generation();
+    session.apply({
+      sessionId: SESSION_ID,
+      stableId: 'pillar',
+      representationRevision: 0,
+      next: {
+        kind: 'coarse',
+        artifact: { ...artifact('hash-rescued', 1_200), resolution: 24 } as unknown as MeshArtifact,
+      },
+    });
+
+    const restored = applySnapshot(initialClientState(), snapshotOf(session));
+    expect(shape(restored, 'pillar').resolution).toBeNull();
+  });
+
+  it('jmenovanou mřížku pustí dál, jinak by brána zavírala všechno', () => {
+    // Selhací cesta obráceným směrem: „odmítej neznámé" se dá napsat tak, že
+    // neprojde ani 48³, a stav by pak držel mřížku, která už neplatí.
+    const state = feed(rescued(48).events);
+
+    expect(shape(state, 'pillar').resolution).toBe(48);
+  });
+
+  it('zachází s neznámou mřížkou jako s chybějící, ne jako s nulou', () => {
+    // `0` i `null` by se v `??` chovaly jinak než chybějící hodnota a do
+    // klíče cache by pustily číslo, které žádný mesh nepopisuje.
+    expect(meshResolution(0)).toBeNull();
+    expect(meshResolution(24)).toBeNull();
+    expect(meshResolution(16)).toBeNull();
+    expect(meshResolution('32')).toBeNull();
+    expect(meshResolution(undefined)).toBeNull();
+    expect(meshResolution(32)).toBe(32);
+  });
+});
 
 describe('applySnapshot', () => {
   it('obnoví stav po reconnectu z autoritativního snapshotu', () => {

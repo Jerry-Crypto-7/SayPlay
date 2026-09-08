@@ -48,6 +48,7 @@
  * druhá věta vyrobila mezeru z pravidla 2.
  */
 
+import { meshResolution } from './cache';
 import type { MeshFailure, MeshResolution } from './cache';
 import type { SessionEvent, SessionEventType } from './events';
 import type { RepresentationRung, SessionPhase } from './session';
@@ -188,14 +189,18 @@ function shapeAfter(previous: ShapeView, type: SessionEventType, payload: unknow
 
   const fields = record(payload);
   const hash = text(fields.contentHash);
-  const resolution = count(fields.resolution);
+  // **Ptá se seznamu, netvrdí** — `T14r-ladderhash`. Mřížka mimo
+  // `MESH_RESOLUTIONS` je záchranná příčka `COARSER_GRIDS`, ne úroveň podoby,
+  // a v klíči cache nemá co dělat. Chová se jako chybějící hodnota: drží se
+  // předchozí, protože pro tuhle příčku prostě žádná jmenovaná mřížka není.
+  const resolution = meshResolution(fields.resolution);
   const triangles = count(fields.triangles);
 
   return {
     ...previous,
     rung,
     contentHash: hash ?? (rung === 'failed' ? null : previous.contentHash),
-    resolution: (resolution as MeshResolution | null) ?? previous.resolution,
+    resolution: resolution ?? previous.resolution,
     triangles: triangles ?? previous.triangles,
     failure: rung === 'failed' ? ((text(fields.reason) as MeshFailure | null) ?? null) : null,
     retryable: rung === 'failed' ? fields.retryable === true : false,
@@ -300,7 +305,9 @@ function viewOfRecord(
     revision: Math.max(base.revision, entry.revision),
     rung: entry.state.kind as RepresentationRung | 'failed',
     contentHash: hash ?? (entry.state.kind === 'failed' ? null : base.contentHash),
-    resolution: (count(artifact.resolution) as MeshResolution | null) ?? base.resolution,
+    // Táž brána jako u události výš, a je tu druhá schválně: snapshot po
+    // reconnectu je nezávislý vstup z drátu, ne jiný pohled na tentýž.
+    resolution: meshResolution(artifact.resolution) ?? base.resolution,
     triangles: count(artifact.triangles) ?? base.triangles,
     failure: entry.state.kind === 'failed' ? ((text(entry.state.reason) as MeshFailure | null) ?? null) : null,
     retryable: entry.state.kind === 'failed' ? entry.state.retryable === true : false,

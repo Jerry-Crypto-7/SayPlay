@@ -41,6 +41,30 @@ export const MESH_RESOLUTIONS = [32, 48, 64, 96] as const;
 
 export type MeshResolution = (typeof MESH_RESOLUTIONS)[number];
 
+/**
+ * Číslo z drátu jako `MeshResolution`, nebo `null`. **Ptá se seznamu, netvrdí.**
+ *
+ * ⚠ **Existuje kvůli `T14r-ladderhash` a je to jedna ze dvou nabídnutých cest —
+ * vzala se ta druhá.** `COARSER_GRIDS = [24, 16]` (`proxy.ts`) je záchranná
+ * příčka **pod** hrubou hmotou; nejsou to plnohodnotné úrovně podoby a do
+ * `MESH_RESOLUTIONS` proto nepatří. Alternativa byla ty mřížky do seznamu
+ * přijmout, což by znamenalo přeučit `everyTierIsPlayable()`, co je úroveň.
+ * Zvolila se užší cesta: seznam zůstává čtyřmi pojmenovanými mřížkami a
+ * **odmítá se na hranici**, kudy neověřené číslo vstupuje.
+ *
+ * Ta hranice je dnes jediná: dvě místa v `reducer.ts`, kde se `resolution`
+ * čte z události nebo ze snapshotu. Do `T14r-ladderhash` tam stálo
+ * `as MeshResolution` — přetypování, které o hodnotě nic neověří — takže
+ * `resolution: 24` prošlo tiše a `shapeContentHash(program, 24)` by vyrobil
+ * klíč cache mimo jmenovaný žebřík. Dvě různé podoby téhož tvaru pak můžou
+ * sdílet klíč, nebo naopak minout cache. Dnes to nikdo nepošle (žádné
+ * produkční místo `MeshArtifact` z hrubší mřížky nestaví); probudí to `T21b`,
+ * až hrubý mesh z prohlížeče začne hlásit artefakt.
+ */
+export function meshResolution(value: unknown): MeshResolution | null {
+  return MESH_RESOLUTIONS.includes(value as MeshResolution) ? (value as MeshResolution) : null;
+}
+
 /** Hotová, změřená geometrie jednoho tvaru. Design book §9.6. */
 export interface MeshArtifact {
   readonly shapeId: string;
