@@ -7,6 +7,9 @@ import { GEOM_VERSION, type GeomProgram } from '../src/geom/program';
 import { KIT_BUDGETS, VIEWER_BUDGETS, trianglesOf } from '../src/kit/budgets';
 import { MIN_FIGURE_GROUND_SEPARATION, PALETTES, repaint } from '../src/kit/palettes';
 import { FOG, KEY_LIGHT, SHADOW_MAP_TYPE, TOON_LEVELS } from '../src/components/viewer/Lighting';
+import { layoutById } from '../src/kit';
+import { deriveLook } from '../src/worldstream/look';
+import { repairLook } from '../src/worldstream/look-repair';
 
 /**
  * Oracle úlohy T6 — **rig je opravdu zapnutý a snímek se vejde do rozpočtu**.
@@ -62,7 +65,31 @@ test('plátno má zapnutý rig a vejde se do rozpočtu snímku', async ({ page }
   );
   expect(stats.antialias, 'kontext musí mít vyhlazování hran').toBe(true);
   expect(stats.fog, 'mlha musí existovat, jinak nemá scéna hloubku').not.toBeNull();
-  expect(stats.fog!.color, 'mlha má barvu stránky, jinak vzdálený kus zbělá').toBe(FOG.color);
+  // **Do P14 T3 tady stála barva stránky (`FOG.color`).** Plátno bylo
+  // průhledné a vzdálený kus mizel do stránky. Od T3 je za scénou obloha, takže
+  // mlha musí končit v obzoru — a bere si proto barvu z popisu vzhledu, stejně
+  // jako obzor samotný. Dvě různé barvy by na obzoru udělaly viditelnou hranu.
+  //
+  // Pin je odvozená barva, ne konstanta: kdyby se prohlížeč vrátil k pevné
+  // hodnotě nebo popis vzhledu obešel, tahle aserce zčervená. Barva mlhy závisí
+  // jen na paletě, ne na semínku, takže se smí odvodit s libovolným.
+  //
+  // **Od P14 T11 se odvozený vzhled porovnává až po podlaze** (`repairLook`).
+  // Scéna kreslí opravený popis, takže porovnání se syrovým `deriveLook` by
+  // tvrdilo vadu tam, kde je oprava — naměřeno 29. 8. 2026: mlha `#504a39`
+  // proti odvozené `#394a50`. Řetěz zůstává celý: pin pořád drží, že barva
+  // mlhy vzniká z popisu vzhledu, jen se ptá té jeho podoby, která jde na plátno.
+  const derived = repairLook(
+    deriveLook({
+      palette: layoutById('harbor-pier')!.palette,
+      terrain: 'flat',
+      seed: 1,
+    }),
+  ).look;
+  expect(stats.fog!.color, 'mlha má barvu obzoru z popisu vzhledu, ne barvu stránky').toBe(
+    derived.fog.color,
+  );
+  expect(stats.fog!.color, 'barva stránky je přesně to, co T3 opustila').not.toBe(FOG.color);
   expect(stats.fog!.near, 'pásmo mlhy musí být pásmo, ne bod').toBeLessThan(stats.fog!.far);
   expect(
     stats.lights,
@@ -499,7 +526,7 @@ test('čtyři rodiny se vejdou do rozpočtu a na snímku se čtou jako svět', a
 test('první interaktivní prvek nese instrukci a je vidět bez rolování', async ({ page }) => {
   test.setTimeout(120_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await expect(page.getByTestId('first-run')).toBeVisible();
 
   const first = await page.evaluate(() => {

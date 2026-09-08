@@ -229,9 +229,14 @@ describe('s klíčem jde emise přes server a strop ji vidí', () => {
       JSON.stringify({ content: [{ type: 'text', text: '{"entities":[]}' }], usage: { input_tokens: null } }),
       { headers: { 'content-type': 'application/json' } },
     );
-    // Nad jedním nejhorším případem: 1000 výstupních × 15 + ~3000 vstupních × 3
-    // za Mtok je ~0,024 USD, jinak by se rezervace odmítla a nikam by se nešlo.
-    const cap = new SpendCap({ enabled: true, capUsd: 0.05 });
+    // Strop musí být nad **jedním** nejhorším případem a pod dvěma, jinak
+    // buď rezervace neprojde a nikam se nejde, nebo poslední aserce neměří nic.
+    // Rezervace téhle fixtury je 1000 výstupních × 15 + ~11 700 vstupních × 3
+    // za Mtok, tedy ~0,050 USD. Do 1. 9. 2026 tu stálo 0,05 a ~0,024 USD:
+    // vstup se tehdy odhadoval po třech znacích na token, dnes se rezervuje
+    // po jednom (`worstCaseUsd()` v `../upstream.ts`), protože ořez
+    // v `SpendCap.release()` se o rezervaci opírá jako o strop.
+    const cap = new SpendCap({ enabled: true, capUsd: 0.08 });
 
     const result = await runPipeline(PROMPT, {
       branch: upstreamBranch(
@@ -244,7 +249,7 @@ describe('s klíčem jde emise přes server a strop ji vidí', () => {
 
     expect(result.outcome).toBe('GENERATED');
     expect(cap.snapshot().spentUsd, 'nečitelná účtenka se zaúčtovala nulou').toBeGreaterThan(0);
-    expect(cap.reserve(0.05).ok, 'po nečitelné účtence strop pustil další volání').toBe(false);
+    expect((await cap.reserve(0.05)).ok, 'po nečitelné účtence strop pustil další volání').toBe(false);
   });
 
   it('Infinity v účtence strop nevypne', async () => {
@@ -257,7 +262,8 @@ describe('s klíčem jde emise přes server a strop ji vidí', () => {
       '{"content":[{"type":"text","text":"{\\"entities\\":[]}"}],"usage":{"input_tokens":1e400,"output_tokens":1e400}}',
       { headers: { 'content-type': 'application/json' } },
     );
-    const cap = new SpendCap({ enabled: true, capUsd: 0.05 });
+    // Táž aritmetika jako o test výš: nad jednou rezervací (~0,050 USD), pod dvěma.
+    const cap = new SpendCap({ enabled: true, capUsd: 0.08 });
 
     await runPipeline(PROMPT, {
       branch: upstreamBranch(
@@ -270,7 +276,7 @@ describe('s klíčem jde emise přes server a strop ji vidí', () => {
 
     const spent = cap.snapshot().spentUsd;
     expect(Number.isFinite(spent), `útrata je ${String(spent)} — součet je otrávený`).toBe(true);
-    expect(cap.reserve(0.05).ok, 'po otrávené účtence strop pustil další volání').toBe(false);
+    expect((await cap.reserve(0.05)).ok, 'po otrávené účtence strop pustil další volání').toBe(false);
   });
 
   it('klíč se nedostane do výsledku, který jde volajícímu', async () => {

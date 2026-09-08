@@ -59,7 +59,7 @@ const replayIn = (page: Page) => async (world: unknown, witness: unknown) =>
 async function measure(page: Page, request: APIRequestContext): Promise<KillGateReport> {
   if (cached !== null) return cached;
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith?.verify !== undefined, undefined, { timeout: 60_000 });
 
   const replay = replayIn(page);

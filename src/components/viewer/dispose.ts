@@ -31,6 +31,32 @@ export interface DisposalTally {
   readonly textures: number;
 }
 
+/**
+ * Nula odložených zdrojů.
+ *
+ * Existuje proto, aby volající, který **nic neodkládal**, vracel součet místo
+ * `null`. `RepresentationRegistry` (T18) odkládá po každé výměně podoby a
+ * občas nemá co — a `null` v tom součtu by znamenalo dvě různá „nic":
+ * „neodložilo se" a „ta cesta se nespustila".
+ */
+export const EMPTY_TALLY: DisposalTally = { geometries: 0, materials: 0, textures: 0 };
+
+/**
+ * Součet dvou účtů. Slot po slotu, ne po celé scéně naráz.
+ *
+ * ⚠ **Sčítá se, nesjednocuje.** Dva `disposeSubtree()` nad týmž objektem by
+ * dohromady daly dvojnásobek, protože deduplikace platí uvnitř jednoho volání.
+ * Je to schválně: „odloženo právě jednou" se má hlídat tam, kde se rozhoduje,
+ * co odejde, a součet je to jediné, co takovou chybu ukáže.
+ */
+export function addTallies(left: DisposalTally, right: DisposalTally): DisposalTally {
+  return {
+    geometries: left.geometries + right.geometries,
+    materials: left.materials + right.materials,
+    textures: left.textures + right.textures,
+  };
+}
+
 /** Jen to z `Object3D`, na co úklid sahá. Mesh, Line, Points i Sprite to splňují. */
 interface Renderable extends Object3D {
   geometry?: BufferGeometry;

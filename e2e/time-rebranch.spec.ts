@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { openInspect } from './inspect';
+
 /**
  * Oracle úlohy T17 — **přetočení času nic neztratí, změna pravidla se propíše**.
  *
@@ -34,10 +36,13 @@ const HORIZON = 200;
 test('přetočení na tik 40 a změna pravidla přepočítá tutéž budoucnost jako změna bez přetáčení', async ({ page }) => {
   test.setTimeout(180_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
-  // Bez světa se žádná časová osa nepředstírá.
+  // Od P13 vlny 0 T1 osa nestojí na výchozí obrazovce — otevírá se z Inspectu.
+  await openInspect(page);
+
+  // Bez světa se žádná časová osa nepředstírá ani otevřená.
   await expect(page.getByTestId('timeline')).toHaveCount(0);
 
   await page.getByTestId('prompt-input').fill(FROZEN_PROMPT);
@@ -114,8 +119,9 @@ test('přetočení na tik 40 a změna pravidla přepočítá tutéž budoucnost 
 test('posuvník i tlačítko panelu hýbou týmž během, který měří hash', async ({ page }) => {
   test.setTimeout(180_000);
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
+  await openInspect(page);
   await page.getByTestId('prompt-input').fill(FROZEN_PROMPT);
   await page.getByTestId('prompt-submit').click();
   await page.waitForFunction(() => window.__worldsmith!.entities().length > 0, undefined, { timeout: 60_000 });

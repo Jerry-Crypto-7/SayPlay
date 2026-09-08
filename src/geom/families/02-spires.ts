@@ -13,7 +13,7 @@ export const spires: Family = {
   title: 'Věže',
   palette: 'frost',
   silhouette: 'sloupy na sobě, svislé pásy, brána vysoko nad zemí',
-  proportions: { footprint: 16, height: 29, pieces: 32 },
+  proportions: { footprint: 16, height: 29, pieces: 89 },
 
   compose(seed: number): GeomProgram {
     const stream = familyStream(seed);
@@ -22,9 +22,9 @@ export const spires: Family = {
     // se rozešla víc než dvě rodiny — naměřeno 24. 8. 2026 profilem 0,066 proti
     // stropu 0,012. Semínku zůstává terén a rozmístění sloupů kolem, tedy
     // rozmístění kusů; silueta rodiny je pevná.
-    const floors = 5;
-    const towers = 5;
-    const outliers = nextInt(stream, 8, 10);
+    const floors = 6;
+    const towers = 6;
+    const outliers = nextInt(stream, 15, 16);
 
     return {
       version: GEOM_VERSION,
@@ -49,9 +49,16 @@ export const spires: Family = {
           radius: 7.2,
           seed: nextInt(stream, 0, 100_000),
         },
-        { kind: 'group', children: [0, 4, 5, 7] },
+        // Postava stojí u paty věže, ve výšce, kde věž začíná — bez ní se
+        // nedá poznat, jestli je sloup vysoký šest jednotek nebo šedesát.
+        // **Vysoká postava do Věží patří i tvarem:** rodina je svislá, a svislá
+        // silueta u paty svislé stavby profil nerozmělní.
+        { kind: 'actor', variant: 'tall', at: [-7.7, 3.4, 2], scale: [2, 2, 2] },
+        { kind: 'fixture', variant: 'lamp', at: [-11.4, 4, 1], scale: [2.2, 2.2, 2.2] },
+        { kind: 'fixture', variant: 'sign', at: [-5.9, 3.6, 4.2], scale: [2, 2, 2] },
+        { kind: 'group', children: [0, 4, 5, 7, 8, 9, 10] },
       ],
-      root: 8,
+      root: 11,
     };
   },
 };

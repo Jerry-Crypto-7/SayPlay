@@ -153,6 +153,71 @@ const PROGRAMS: ReadonlyArray<readonly [string, GeomProgram]> = [
       3,
     ),
   ],
+  [
+    'kusy-podel-krivky',
+    program(
+      [
+        { kind: 'column', variant: 'post', scale: [1, 1.5, 1] },
+        {
+          kind: 'arrayAlongCurve',
+          child: 0,
+          count: 7,
+          points: [
+            [-8, 0, -4],
+            [0, 2, 4],
+            [8, 0, -4],
+          ],
+        },
+      ],
+      1,
+    ),
+  ],
+  [
+    'kotva-na-plosinu',
+    program(
+      [
+        { kind: 'mass', variant: 'plinth', at: [2, 0, -1], scale: [4, 1.2, 4] },
+        { kind: 'organic', variant: 'tree', scale: [1.2, 1.8, 1.2] },
+        { kind: 'anchorTo', child: 1, target: 0, site: 'top' },
+        { kind: 'group', children: [0, 2] },
+      ],
+      3,
+    ),
+  ],
+  [
+    'volne-otoceny-kus',
+    program(
+      [
+        {
+          kind: 'arch',
+          variant: 'buttress',
+          at: [1, 0.5, -2],
+          yaw: 0.37,
+          pitch: -0.42,
+          roll: 1.13,
+          scale: [1.4, 1.4, 1.4],
+        },
+      ],
+      0,
+    ),
+  ],
+  [
+    // Tenhle program je oráklum jednoho konkrétního rozhodnutí: kotva bere
+    // kvádr z **upečeného** cíle, ne z obalových kvádrů jednotlivých kusů.
+    // Obalový kvádr volně otočeného kusu je menší než otočený obalový kvádr,
+    // takže levnější varianta by tady posadila hlavici jinam než slučující
+    // cesta a tenhle test by to ukázal jako posunutou kulisu.
+    'kotva-pod-volnym-otocenim',
+    program(
+      [
+        { kind: 'mass', variant: 'wedge', scale: [3, 2, 3], yaw: 0.33, pitch: 0.21 },
+        { kind: 'column', variant: 'capital' },
+        { kind: 'anchorTo', child: 1, target: 0, site: 'top' },
+        { kind: 'group', children: [0, 2] },
+      ],
+      3,
+    ),
+  ],
   ...(['flat', 'ridge', 'basin', 'plateau'] as const).map(
     (variant) =>
       [

@@ -6,7 +6,7 @@
  * Projekt stojí na jediné dokázané vlastnosti: nic vadného neprojde přijetím.
  * Oprava, která by hádala, co model myslel, by ji shodila — a přesně proto se
  * 21. 8. 2026 zamítlo dohledávání „podobných" jmen (`CLAUDE.md`, rozpor 10).
- * Tenhle modul tu hranici drží tak, že smí **výhradně** tyhle čtyři věci, každou
+ * Tenhle modul tu hranici drží tak, že smí **výhradně** tyhle pět věcí, každou
  * s podmínkou, za které je zásah přesný, ne pravděpodobný:
  *
  * 1. **Zahodit osiřelý vzhledový modul.** `look` je mimo stavový hash a klíč,
@@ -21,7 +21,13 @@
  * 3. **`stateIs` nad jménem vlajky přepsat na `flagIs`.** Když `target`
  *    nejmenuje žádnou entitu, ale jmenuje deklarovanou vlajku, a hodnota je
  *    boolean, je to záměna kategorie s jediným kanonickým zápisem.
- * 4. **Dohledat svědka.** Vítězná cesta je důkaz, ne obsah — viz
+ * 4. **Roli napsanou jako fráze přečíst jako identifikátor.** `outdoor-space`
+ *    není jiná role než `outdoorSpace`, je to táž role zapsaná abecedou, kterou
+ *    protokol nezná. Přepis je čistě pravopisný (`toIdentifier()` níž) a jde
+ *    **celým dokumentem naráz**: role je zároveň klíč, na který se smí věšet
+ *    `onPickup`, takže přepsat ji u entity a nechat ji v pravidle by pravidlo
+ *    tiše odpojilo. Podmínka: z řetězce identifikátor vznikne; jinak se nesahá.
+ * 5. **Dohledat svědka.** Vítězná cesta je důkaz, ne obsah — viz
  *    `src/verify/solve.ts`. Model si ji nechává, pokud jeho vlastní projde
  *    ověřením; jinak ji najde systém a ověří **týmž** verifikátorem.
  *
@@ -37,13 +43,20 @@
  */
 
 import { buildRuntimeWorld } from '../ir/build';
+import { ID_PATTERN } from '../ir/types';
 import { TIER_POLICY, isTier } from '../verify/tiers';
 import { solveWitness } from '../verify/solve';
 import { verifyWitness } from '../verify/witness';
 
 /** Jeden zásah, tak jak ho uvidí porotce. Anglicky — je to viditelná měď produktu. */
 export interface RepairNote {
-  readonly kind: 'lookModuleDropped' | 'collideToZone' | 'stateToFlag' | 'witnessSolved' | 'witnessKept';
+  readonly kind:
+    | 'lookModuleDropped'
+    | 'collideToZone'
+    | 'stateToFlag'
+    | 'roleStraightened'
+    | 'witnessSolved'
+    | 'witnessKept';
   readonly detail: string;
 }
 
@@ -69,6 +82,48 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 function asString(value: unknown): string | null {
   return typeof value === 'string' ? value : null;
+}
+
+/**
+ * **Lidská fráze → identifikátor. Jedno narovnání pro obě vrstvy.**
+ *
+ * Model píše na dvě místa popis tam, kde protokol chce jméno: `materialIntent`
+ * u tvaru (`src/shape/schema.ts`) a `role` u entity (`ID_PATTERN`). Naměřeno
+ * nad archivem běhu `T14` (104 odpovědí, 6. 9. 2026) a je to vada **popisu, ne
+ * modelu**: každé pole, u kterého prompt tvar jmenuje, přišlo bez jediné vady —
+ * `stableId` 0 z 515, `shapeId` 0 z 224, `anchors[].name` 0 z 211. Obě pole,
+ * u kterých prompt tvar mlčí, vadu mají — `materialIntent` **60 ze 112**
+ * a `role` 3 ze 479.
+ *
+ * Proto se to narovnává tady a ne v promptu: narovnání drží nezávisle na tom,
+ * který model a jaký poskytovatel odpovídá, a dá se změřit bez placeného
+ * volání. Prompt zůstává druhá půlka téhož a je routovaná zvlášť.
+ *
+ * ## Dvě vlastnosti, na kterých to celé stojí
+ *
+ * 1. **Co už je platné, se nesmí dotknout.** `weathered_stone` i
+ *    `living_bark_and_hewn_timber` jsou naměřené platné hodnoty a rozpad na
+ *    slova by z nich udělal něco jiného. Proto se `accepted` ptá **první**.
+ * 2. **Co vyleze, je platné na obou vrstvách naráz.** Spoje jsou čistě
+ *    alfanumerické, takže výsledek projde `ID_PATTERN` (přísnější: musí začít
+ *    písmenem, bez `:` a `-`) i tvarovým vzorem. Jedno pravidlo, ne dvě.
+ *
+ * Co se **nedopisuje**: nic. Řetězec, ze kterého identifikátor nevznikne —
+ * prázdný, samá interpunkce, začínající číslicí tam, kde `ID_PATTERN` chce
+ * písmeno, delší než 64 znaků — vrací `null` a odmítne ho brána přesně jako
+ * dnes. Domyslet předponu nebo useknout konec je hádání, ne oprava.
+ */
+export function toIdentifier(value: unknown, accepted: RegExp): string | null {
+  if (typeof value !== 'string') return null;
+  if (accepted.test(value)) return value;
+
+  const words = value.split(/[^A-Za-z0-9]+/).filter((word) => word.length > 0);
+  if (words.length === 0) return null;
+
+  const joined = words
+    .map((word, index) => (index === 0 ? word : `${word[0].toUpperCase()}${word.slice(1)}`))
+    .join('');
+  return ID_PATTERN.test(joined) ? joined : null;
 }
 
 /** Kopie záznamu bez jednoho klíče. Nesahá na originál — verdikt nese i syrovou emisi. */
@@ -126,15 +181,92 @@ function dropOrphanLookModules(
 }
 
 // ---------------------------------------------------------------------------
+// 4. Role jako fráze
+// ---------------------------------------------------------------------------
+
+/**
+ * Tabulka „co model napsal" → „jak to systém přečetl", jedna položka na roli.
+ *
+ * Sbírá se **před** jakýmkoli přepisem, protože týž přepis musí potkat roli
+ * u entity i u pravidla. `onPickup` se smí klíčovat rolí (`src/ir/surface.ts`),
+ * a `entitiesWithRole()` porovnává řetězce na rovnost — narovnat jedno místo
+ * a druhé ne znamená pravidlo, které nikoho nenajde a shodí lowering na
+ * `no entity matches role`. Nota je jedna na roli, ne na výskyt.
+ *
+ * ## Slití dvou rolí do jedné je změna významu, a proto se odmítá
+ *
+ * ⚠ **Nález nezávislé revize 7. 9. 2026, ověřený spuštěním.** Pravopisný přepis
+ * je bezpečný jen dokud vyrobí jméno, které v dokumentu ještě nikdo nemá.
+ * Jakmile `"pickup "` vyleze jako `pickup`, který už nese jiná entita, přestane
+ * to být pravopis: `entitiesWithRole()` porovnává na rovnost, takže pravidlo
+ * `onPickup{role:"pickup"}` začne střílet i na tu druhou entitu, a `buildTags()`
+ * (`src/ir/build.ts:97`) z role dělá **tag**, takže `countInZone{tag:"pickup"}`
+ * napočítá dvě tam, kde model napsal jednu — a to je práh ve výherní podmínce.
+ *
+ * **`actor` a `agent` se nevyrábějí nikdy**, ani když je volné. Jsou to jediné
+ * dvě role, které systém čte jménem (`build.ts:184,285`), `actor` rozhoduje,
+ * kdo je avatar a pro koho se hledá vítězná cesta, a obě je berou **první
+ * shodou v pořadí klíčů**. Udělat z `"actor!"` avatara není oprava pravopisu,
+ * je to volba hlavní postavy — přesně to hádání, které tenhle modul zakazuje.
+ *
+ * V obou případech se role nechá být a odmítne ji lowering nahlas, jako dřív.
+ */
+const RESERVED_ROLES = new Set(['actor', 'agent']);
+
+function roleRewrites(sim: Record<string, unknown>, notes: RepairNote[]): ReadonlyMap<string, string> {
+  const written = Object.values(asRecord(sim.entities))
+    .map((raw) => asString(asRecord(raw).role))
+    .filter((role): role is string => role !== null);
+
+  // Co už je v dokumentu obsazené. Přepis smí vyrobit jen jméno mimo tuhle
+  // množinu, a co vyrobí, do ní hned patří — jinak by dvě různé role modelu
+  // splynuly do jedné přes dvě nezávislá narovnání.
+  const taken = new Set(written);
+  const rewrites = new Map<string, string>();
+
+  for (const role of written) {
+    if (ID_PATTERN.test(role) || rewrites.has(role)) continue;
+    const straight = toIdentifier(role, ID_PATTERN);
+    if (straight === null || RESERVED_ROLES.has(straight) || taken.has(straight)) continue;
+
+    taken.add(straight);
+    rewrites.set(role, straight);
+    notes.push({
+      kind: 'roleStraightened',
+      detail: `role "${role}" is a phrase where the protocol takes a name, so the system read it as ${straight}`,
+    });
+  }
+  return rewrites;
+}
+
+/** Role narovnaná všude, kde ji entita nese. Tabulka se skládá `fromEntries` — viz `repairRules`. */
+function repairEntities(sim: Record<string, unknown>, rewrites: ReadonlyMap<string, string>): unknown {
+  if (rewrites.size === 0) return sim.entities;
+  return Object.fromEntries(
+    Object.entries(asRecord(sim.entities)).map(([stableId, raw]) => {
+      const entity = asRecord(raw);
+      const straight = rewrites.get(asString(entity.role) ?? '');
+      return [stableId, straight === undefined ? raw : { ...entity, role: straight }];
+    }),
+  );
+}
+
+// ---------------------------------------------------------------------------
 // 2. a 3. Přepisy uvnitř jednoho pravidla
 // ---------------------------------------------------------------------------
 
 function repairEvent(
   ruleId: string,
-  event: Record<string, unknown>,
+  raw: Record<string, unknown>,
   declared: Declared,
+  rewrites: ReadonlyMap<string, string>,
   notes: RepairNote[],
 ): Record<string, unknown> {
+  // Druhá půlka narovnané role. Bez noty — tu vydal `roleRewrites()` jednou za
+  // roli a řádek na každý výskyt by ji v panelu utopil.
+  const straightRole = rewrites.get(asString(raw.role) ?? '');
+  const event = straightRole === undefined ? raw : { ...raw, role: straightRole };
+
   if (asString(event.kind) !== 'onCollide') return event;
   const a = asString(event.a);
   const b = asString(event.b);
@@ -186,18 +318,63 @@ function repairCondition(
   return { kind: 'flagIs', flag: target, value: node.value };
 }
 
-function repairRules(sim: Record<string, unknown>, declared: Declared, notes: RepairNote[]): unknown {
+/**
+ * Pravidla po opravě — a **každé z nich se svým `id`**.
+ *
+ * ⚠ **To `id` je celá druhá věta nad zákonem** (`T22-ruleid`, naměřeno
+ * 3. 9. 2026). `introducedRuleKeyFault` (`src/ir/worlddoc.ts`) bere identitu
+ * vady jako dvojici `(pointer, kanonický zápis položky)`, a pravidlo bez
+ * řetězcového `id` je pro něj vada. Kanonický zápis nese **celé tělo**, takže
+ * jakákoli úprava uvnitř takového pravidla vyrobí jinou identitu — a `commitPart`
+ * ji přečte jako **nově zavlečenou** vadu a patch odmítne. Naměřeno třemi pokusy
+ * proti commit route: `replace /sim/rules/reach/priority` → `REJECTED`, kdežto
+ * `add /sim/rules/lightUp` s vlastním `id` i `add /sim/rules/reach/id` prošly.
+ * Přidat zákon tedy šlo, změnit stávající ne — a přesně to druhé slibuje
+ * design book §4 dějství III.
+ *
+ * `id` se dosazuje **z klíče a přebíjí i to, co napsal model**: klíč je pointer,
+ * kterým se na pravidlo míří (`/sim/rules/<klíč>`), takže rozejít je znamená
+ * pravidlo, které v dokumentu leží a žádný patch ho nenajde. `worlddoc` to tak
+ * i soudí — `id !== key` je pro něj vada stejně jako `id` chybějící.
+ *
+ * ## Tabulka se skládá `Object.fromEntries`, ne přiřazením do `{}`
+ *
+ * ⚠ **Klíč `__proto__` pravidlo TIŠE SMAZAL a je to naměřené, ne teoretické**
+ * (nález nezávislé revize 4. 9. 2026, ověřený spuštěním v node). `repaired[key] =
+ * {…}` pod tím klíčem nezaloží vlastní vlastnost — zavolá setter prototypu:
+ * `Object.keys` pravidlo ztratí a hotové tabulce se vymění prototyp. Svět se pak
+ * certifikuje **o jeden zákon chudší**, a větev, která takový klíč umí pojmenovat
+ * (`ruleKeyFaults` v `src/ir/worlddoc.ts`, přes `isUnaddressableToken`), se na něj
+ * nedostane, protože už tam není co soudit.
+ *
+ * `Object.fromEntries` zakládá vlastnosti definicí, ne přiřazením, takže žádný
+ * setter nevolá: klíč zůstane vlastní a prototyp netknutý. **Nový invariant to
+ * nezakládá** — je to díra pod tou existující větví, ne druhá brána vedle ní;
+ * pravidlo pod neadresovatelným klíčem odmítne `worlddoc` úplně stejně jako
+ * `constructor` a `prototype`, které tudy procházejí správně už dnes.
+ */
+function repairRules(
+  sim: Record<string, unknown>,
+  declared: Declared,
+  rewrites: ReadonlyMap<string, string>,
+  notes: RepairNote[],
+): unknown {
   const rules = asRecord(sim.rules);
-  const repaired: Record<string, unknown> = {};
-  for (const [ruleId, raw] of Object.entries(rules)) {
-    const rule = asRecord(raw);
-    repaired[ruleId] = {
-      ...rule,
-      event: repairEvent(ruleId, asRecord(rule.event), declared, notes),
-      condition: repairCondition(ruleId, rule.condition, declared, notes),
-    };
-  }
-  return repaired;
+  return Object.fromEntries(
+    Object.entries(rules).map(([ruleId, raw]) => {
+      const rule = asRecord(raw);
+      return [
+        ruleId,
+        {
+          ...rule,
+          // Za spreadem schválně: model své `id` napsat smí, ale rozhoduje klíč.
+          id: ruleId,
+          event: repairEvent(ruleId, asRecord(rule.event), declared, rewrites, notes),
+          condition: repairCondition(ruleId, rule.condition, declared, notes),
+        },
+      ];
+    }),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -280,7 +457,15 @@ export function repairEmission(body: unknown): RepairResult {
   const declared = declaredNames(sim);
   const notes: RepairNote[] = [];
 
-  const withRules = { ...sim, rules: repairRules(sim, declared, notes), witness: witnessEnvelope(sim) };
+  // Tabulka rolí vzniká první: `repairEntities` i `repairRules` z ní čtou tentýž
+  // přepis, a to je jediné, co drží roli na entitě a v pravidle na téže hodnotě.
+  const rewrites = roleRewrites(sim, notes);
+  const withRules = {
+    ...sim,
+    entities: repairEntities(sim, rewrites),
+    rules: repairRules(sim, declared, rewrites, notes),
+    witness: witnessEnvelope(sim),
+  };
   const withWitness = solveFor(withRules, notes);
   const look = dropOrphanLookModules(asRecord(document.look), declared, notes);
 

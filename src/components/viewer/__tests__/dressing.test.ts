@@ -18,13 +18,19 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { KIT } from '@/kit';
+import { KIT, KIT_BUDGETS, pieceById, trianglesOf } from '@/kit';
 import type { EntityDecl, IrDoc, IrLimits } from '@/ir/types';
 import type { WorldDocRuntime } from '@/sim/interpreter';
 
 import { FAMILIES } from '@/geom/families';
 
-import { dressingSeed, familyForSeed, planDressing, type DressingPlacement } from '../dressing';
+import {
+  dressingSeed,
+  familyForSeed,
+  planDressing,
+  FILL_RINGS,
+  type DressingPlacement,
+} from '../dressing';
 
 function limits(width: number, height: number): IrLimits {
   return {
@@ -308,5 +314,100 @@ describe('planDressing – co kde stojí', () => {
     const worn = Object.values(planDressing(crowded).props);
     expect(worn.length).toBe(12);
     expect(new Set(worn).size).toBeGreaterThan(1);
+  });
+});
+
+/**
+ * Výplň za hranou mřížky — úloha T6 vlny 3.
+ *
+ * **Proč se to měří a nekouká.** Prázdná scéna je vidět na první pohled, ale
+ * scéna těsně pod stropem rozpočtu vypadá stejně dobře jako scéna v půlce
+ * rozpočtu; rozdíl se projeví až propadem snímků na slabším stroji. Podlaha
+ * hustoty i strop rozpočtu jsou tedy přesně ta třída, kterou oko nepokryje.
+ *
+ * Naměřeno 27. 8. 2026 nad `world()` (mřížka 7×5): statická výzdoba stoupla
+ * **1 172 → 7 724 trojúhelníků** a počet dávek **10 → 19**. Vygenerovaný svět
+ * v prohlížeči šel z 8 724 na 30 090 trojúhelníků za snímek (`C02`).
+ */
+describe('planDressing – výplň za hranou mřížky', () => {
+  const fillOf = (source: WorldDocRuntime) =>
+    planDressing(source).statics.filter((placement) => placement.kind === 'fill');
+
+  it('pokryje každou buňku prstenců kolem mřížky právě jednou', () => {
+    const plan = fillOf(world());
+    const expected: string[] = [];
+    for (let ring = 1; ring <= FILL_RINGS; ring += 1) {
+      const last = { x: 7 + ring - 1, y: 5 + ring - 1 };
+      for (let y = -ring; y <= last.y; y += 1) {
+        for (let x = -ring; x <= last.x; x += 1) {
+          if (x === -ring || y === -ring || x === last.x || y === last.y) expected.push(`${x},${y}`);
+        }
+      }
+    }
+
+    const placed = plan.map((placement) => `${placement.cell[0]},${placement.cell[1]}`);
+    expect(new Set(placed).size, 'jedna buňka výplně dostala dva kusy').toBe(placed.length);
+    expect(placed.sort()).toEqual(expected.sort());
+  });
+
+  it('nestojí ani jedním kusem uvnitř hrací plochy', () => {
+    // Tohle je ta vlastnost, kvůli které je výplň prstenec a ne obdélník:
+    // kus uvnitř mřížky by vypadal jako překážka, kterou simulace nezná.
+    for (const placement of fillOf(world())) {
+      const [x, y] = placement.cell;
+      expect(
+        x >= 0 && x < 7 && y >= 0 && y < 5,
+        `výplň ${placement.piece} stojí na hrací buňce ${x},${y}`,
+      ).toBe(false);
+    }
+  });
+
+  it('nejbližší prstenec nese jen přízemní kusy, aby hru nezakryl', () => {
+    // Follow kamera sedí šest polí nad postavou a dívá se přes hranu mřížky.
+    // Kus vyšší než pole hned za ní by hrací plochu zakryl, a ve volném režimu
+    // (T5) se na to dá otočit z libovolného úhlu.
+    // Prstenec 1 je obvod mřížky zvětšené o jedno pole. Nestačí `x === -1`:
+    // tím sloupcem prochází i vzdálenější prstenec, který vysoký být smí.
+    const nearest = fillOf(world()).filter((placement) => {
+      const [x, y] = placement.cell;
+      const inside = x >= -1 && x <= 7 && y >= -1 && y <= 5;
+      return inside && (x === -1 || x === 7 || y === -1 || y === 5);
+    });
+    expect(nearest.length, 'první prstenec je prázdný').toBeGreaterThan(0);
+
+    for (const id of new Set(nearest.map((placement) => placement.piece))) {
+      const geometry = pieceById(id)!.build();
+      geometry.computeBoundingBox();
+      const height = geometry.boundingBox!.max.y - geometry.boundingBox!.min.y;
+      geometry.dispose();
+      expect(height, `${id} je v prvním prstenci a je ${height.toFixed(2)} pole vysoký`).toBeLessThan(1);
+    }
+  });
+
+  it('statická výzdoba unese hustotu a pořád se vejde do rozpočtu světa', () => {
+    const plan = planDressing(world());
+    const perPiece = new Map<string, number>();
+    for (const id of plan.pieces) {
+      const geometry = pieceById(id)!.build();
+      perPiece.set(id, trianglesOf(geometry));
+      geometry.dispose();
+    }
+
+    const trianglesOfKind = (kind: string) =>
+      plan.statics
+        .filter((placement) => placement.kind === kind)
+        .reduce((sum, placement) => sum + perPiece.get(placement.piece)!, 0);
+
+    const total = plan.statics.reduce((sum, placement) => sum + perPiece.get(placement.piece)!, 0);
+
+    // Podlaha: naměřeno 7 724 nad tímhle světem, tedy 6 000 nechává rezervu na
+    // to, že se pooly výplně ještě přeskládají. Pod ní je scéna zase prázdná.
+    expect(total, `statika má jen ${total} trojúhelníků`).toBeGreaterThanOrEqual(6_000);
+    expect(total).toBeLessThanOrEqual(KIT_BUDGETS.maxTrianglesPerWorld);
+    expect(plan.pieces.length).toBeLessThanOrEqual(KIT_BUDGETS.maxDrawCallsPerWorld);
+
+    // A hustotu nese výplň, ne dlaždice. Bez tohohle by podlahu výš splnila
+    // i mřížka o dvojnásobné hraně, tedy větší prázdno.
+    expect(trianglesOfKind('fill')).toBeGreaterThan(trianglesOfKind('floor'));
   });
 });

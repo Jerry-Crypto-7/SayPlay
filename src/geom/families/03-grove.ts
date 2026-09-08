@@ -22,7 +22,7 @@ export const grove: Family = {
   title: 'Háj',
   palette: 'thicket',
   silhouette: 'porost ve shlucích, žádná rovná hrana, žádná stavba',
-  proportions: { footprint: 12, height: 13, pieces: 66 },
+  proportions: { footprint: 12, height: 13, pieces: 104 },
 
   compose(seed: number): GeomProgram {
     const stream = familyStream(seed);
@@ -30,10 +30,19 @@ export const grove: Family = {
     // podstatně větší, takže čtyři kusy sem nebo tam hýbou siluetou rodiny, ne
     // jen rozmístěním — a to je přesně to, co strop na dvojice uvnitř rodiny
     // zakazuje.
-    const trees = nextInt(stream, 20, 22);
-    const shrubs = nextInt(stream, 22, 24);
-    const boulders = nextInt(stream, 8, 9);
-    const reeds = nextInt(stream, 16, 18);
+    // **Počty porostu jsou pevné, losuje se jen počet balvanů.** Naměřeno
+    // 27. 8. 2026 v `e2e/divergence.spec.ts`: s pěti kolísajícími počty vyšel
+    // profil dvou semínek Háje na **0,0129 proti stropu 0,012**, tedy dvě
+    // semínka téže rodiny se rozešla v siluetě víc, než rodina snese. Každý
+    // kolísající počet posune sloupcové pokrytí celého snímku; balvan je z pěti
+    // vrstev jediný nízký a široký, takže siluetu hne nejmíň — a nechat jednu
+    // vrstvu kolísat je nutné, jinak dvě semínka vydají bajt po bajtu tutéž
+    // kulisu.
+    const trees = 24;
+    const shrubs = 24;
+    const boulders = nextInt(stream, 11, 13);
+    const reeds = 24;
+    const clusters = 20;
 
     return {
       version: GEOM_VERSION,
@@ -53,9 +62,27 @@ export const grove: Family = {
         { kind: 'scatter', child: 5, count: boulders, radius: 7.1, seed: nextInt(stream, 0, 100_000) },
         { kind: 'organic', variant: 'reed', scale: [2.7, 5.4, 2.7] },
         { kind: 'scatter', child: 7, count: reeds, radius: 10.2, seed: nextInt(stream, 0, 100_000) },
-        { kind: 'group', children: [0, 2, 4, 6, 8] },
+        // Podrost mezi kmeny. Shluk je nízký a široký, takže siluetu Háje
+        // zahustí u země — tam, kde byla mezi stromy vidět holá zem.
+        { kind: 'organic', variant: 'cluster', scale: [3.4, 2.6, 3.4] },
+        {
+          kind: 'scatter',
+          child: 9,
+          count: clusters,
+          radius: 9.2,
+          seed: nextInt(stream, 0, 100_000),
+        },
+        // Háj nemá stavbu, takže postava stojí u balvanů a lavičky — jediného
+        // místa v rodině, které čte jako „sem někdo chodí". **Čtyřnožec, ne
+        // člověk:** do porostu patří zvíře, a hlavně je to jiný druh postavy
+        // než ve zbylých třech rodinách. Stejná postava všude by rodiny
+        // sblížila, a průměr odlišnosti má nad prahem rezervu jen 0,14.
+        { kind: 'actor', variant: 'quadruped', at: [2.4, 1.6, 4], scale: [2.2, 2.2, 2.2] },
+        { kind: 'fixture', variant: 'bench', at: [-2.6, 1.5, 5.4], scale: [2, 2, 2] },
+        { kind: 'fixture', variant: 'lamp', at: [-1, 2.2, 3.2], scale: [2.4, 2.4, 2.4] },
+        { kind: 'group', children: [0, 2, 4, 6, 8, 10, 11, 12, 13] },
       ],
-      root: 9,
+      root: 14,
     };
   },
 };

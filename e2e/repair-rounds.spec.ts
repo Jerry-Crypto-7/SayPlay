@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { openInspect } from './inspect';
+
 /**
  * Oracle úlohy P12 V2 T5 — **panel s koly opravy vstoupil do pravého sloupce**.
  *
@@ -25,6 +27,10 @@ import { expect, test, type Page } from '@playwright/test';
  * roh a lehl si na cizí. Levý dolní roh od té doby hlídá
  * `e2e/pipeline-panel.spec.ts`; **pravý roh takovou zkoušku neměl** a nový
  * panel jde právě do něj.
+ *
+ * **Od P13 vlny 0 T1 je ten pravý sloupec uvnitř Inspect zásuvky**
+ * (`.ws-inspect-panels` v `src/app/theme.css`). Zavřená zásuvka panely
+ * doopravdy odpojí, takže se musí nejdřív otevřít — a otázka zůstává tatáž.
  */
 
 /** Věta mimo zmrazený korpus. Vede na náhradní místnost, tedy bez opravy modelem. */
@@ -37,7 +43,8 @@ async function submit(page: Page, text: string): Promise<void> {
 }
 
 test('bez opravy panel nestojí a roh nezabírá', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/classic');
+  await openInspect(page);
   await expect(page.getByTestId('repair-rounds')).toHaveCount(0);
 
   await submit(page, PROMPT);
@@ -56,8 +63,9 @@ test('bez opravy panel nestojí a roh nezabírá', async ({ page }) => {
  * někoho jiného, takže tlačítko nejde kliknout. Okem se to nepozná.
  */
 test('ovládání v pravém dolním rohu zůstane zásahové i s novým panelem', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/classic');
   await submit(page, PROMPT);
+  await openInspect(page);
 
   const replay = page.getByTestId('witness-replay');
   if ((await replay.count()) > 0) {

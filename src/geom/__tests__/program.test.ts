@@ -1,16 +1,22 @@
 import { describe, expect, it } from 'vitest';
 
-import { KIT, KIT_BUDGETS } from '@/kit';
+import { KIT, KIT_BUDGETS, SWATCHES } from '@/kit';
 import {
   GEOM_LIMITS,
   GEOM_VERSION,
+  MAX_CURVE_POINTS,
+  MAX_SWEEP_SEGMENTS,
   OPERATION_KINDS,
   PIECE_VARIANTS,
   SHAPE_KINDS,
+  SWATCH_NAMES,
   childIndicesOf,
   instanceCounts,
   parseGeomProgram,
   pieceIdOf,
+  placedFrom,
+  profileArea,
+  separableFrom,
   validateGeomProgram,
   type GeomNode,
   type GeomProgram,
@@ -37,8 +43,44 @@ function coveringProgram(): GeomProgram {
       { kind: 'arch', variant: 'doorway', at: [0, 0, -4] },
       { kind: 'organic', variant: 'tree', at: [6, 0, 6] },
       { kind: 'group', children: [0, 3, 5, 7, 8, 9] },
+
+      // P13 vlna 1 T6. Připsané **za** dosavadní skupinu, ne doprostřed:
+      // zamítavé testy níž si na uzly sahají indexem, a posunutá tabulka by
+      // z nich udělala testy něčeho jiného, aniž by zčervenaly.
+      { kind: 'arrayAlongCurve', child: 8, count: 5, points: [[0, 0, 0], [4, 0, 3], [8, 0, 0]] },
+      { kind: 'anchorTo', child: 9, target: 1, site: 'top' },
+      { kind: 'group', children: [10, 11, 12] },
+
+      // P14 T4. Zase **za** dosavadní tabulku, ze stejného důvodu jako výš:
+      // zamítavé testy sahají na uzly indexem. Délku tabulky proto žádný test
+      // neopisuje číslem — čte ji z tohohle programu.
+      { kind: 'fixture', variant: 'crate', at: [3, 0, 3] },
+      { kind: 'actor', variant: 'tall', at: [2, 0, 2] },
+      { kind: 'group', children: [13, 14, 15] },
+
+      // P14 T10. Zase **za** dosavadní tabulku, ze stejného důvodu jako výš.
+      // Kořen se tím posouvá z 16 na 18 — žádný test ho neopisuje číslem,
+      // čtou ho z tohohle programu.
+      {
+        kind: 'sweep',
+        profile: [
+          [-0.4, -0.4],
+          [0.4, -0.4],
+          [0.4, 0.4],
+          [-0.4, 0.4],
+        ],
+        path: [
+          [0, 0, 0],
+          [0, 3, 2],
+          [0, 0, 4],
+        ],
+        segments: 12,
+        swatch: 'shell',
+        at: [-6, 0, 0],
+      },
+      { kind: 'group', children: [16, 17] },
     ],
-    root: 10,
+    root: 18,
   };
 }
 
@@ -69,19 +111,170 @@ describe('slovník programu je slovník kitu', () => {
     }
   });
 
-  it('kit nemá kategorii, o které by program nevěděl — kromě fixture a actor', () => {
-    // `fixture` a `actor` vkládá simulace, ne výtvarný program. Nová kategorie
-    // v kitu se tímhle testem ohlásí místo aby tiše zmizela z emise.
-    const known = new Set<string>([...Object.keys(PIECE_VARIANTS), 'fixture', 'actor']);
+  it('kit nemá kategorii, o které by program nevěděl', () => {
+    // Do P14 T4 tu stála výjimka pro `fixture` a `actor`. Padla s nimi:
+    // program teď umí každou kategorii, kterou kit vydává, a nová kategorie
+    // se tímhle testem ohlásí místo aby tiše zmizela z emise.
+    const known = new Set<string>(Object.keys(PIECE_VARIANTS));
     const categories = [...new Set(KIT.map((piece) => piece.category))];
 
     expect(categories.filter((category) => !known.has(category))).toEqual([]);
   });
 
-  it('terrain je jediný tvar bez kusu v kitu', () => {
+  it('každý kus kitu je z programu dosažitelný', () => {
+    // **Tohle je ta vada, kterou oko nechytí.** Dvanáct kusů (osm `fixture`,
+    // čtyři `actor`) leželo v kitu celé týdny a žádný program je neuměl
+    // postavit — testy výš se ptaly jen na to, jestli sedí varianty kategorií,
+    // které program **zná**, takže o chybějící kategorii mlčely.
+    //
+    // Aserce jde přes celý `KIT`, ne přes `PIECE_VARIANTS`: kdyby se ptala
+    // z mapy, měřila by mapu proti sobě samé.
+    const reachable = new Set<string>(
+      (Object.keys(PIECE_VARIANTS) as PieceKind[]).flatMap((kind) =>
+        PIECE_VARIANTS[kind].map((variant) => pieceIdOf(kind, variant)),
+      ),
+    );
+
+    expect(KIT.filter((piece) => !reachable.has(piece.id)).map((piece) => piece.id)).toEqual([]);
+    expect(reachable.size, 'kit má 42 kusů a všechny musí být dosažitelné').toBe(KIT.length);
+  });
+
+  it('generované tvary bez kusu v kitu jsou právě terrain a sweep', () => {
+    // Do P14 T10 tu stál jen `terrain`. `sweep` přibyl a je to druhý tvar
+    // téhož druhu: kus kitu se dá otočit a zvětšit, ale ne ohnout, takže
+    // klenba se z něj složit nedá a musí se spočítat. **Seznam je uzavřený
+    // schválně** — třetí generovaný tvar znamená třetí generátor sítí a ten
+    // má někdo obhájit, ne ho přidat mimochodem.
     const withoutPiece = SHAPE_KINDS.filter((kind) => !(kind in PIECE_VARIANTS));
 
-    expect(withoutPiece).toEqual(['terrain']);
+    expect(withoutPiece).toEqual(['terrain', 'sweep']);
+  });
+});
+
+
+describe('profil tažený po křivce má meze, které nejsou nové', () => {
+  const sweepNode = (patch: Record<string, unknown> = {}): GeomNode =>
+    ({
+      kind: 'sweep',
+      profile: [
+        [-0.5, -0.5],
+        [0.5, -0.5],
+        [0.5, 0.5],
+        [-0.5, 0.5],
+      ],
+      path: [
+        [0, 0, 0],
+        [0, 2, 2],
+        [0, 0, 4],
+      ],
+      segments: 8,
+      swatch: 'deep',
+      ...patch,
+    }) as GeomNode;
+
+  const sweepProgram = (patch: Record<string, unknown> = {}): unknown => ({
+    version: GEOM_VERSION,
+    nodes: [sweepNode(patch)],
+    root: 0,
+  });
+
+  it('odstíny sweepu jsou přesně odstíny kitu', () => {
+    // Opsaný seznam v `program.ts` proti skutečnému kitu. Kdyby se rozešly,
+    // model by mohl emitovat odstín, na kterém `repaint()` vyhodí — nebo by
+    // mu naopak zmizel odstín, který kit vydává.
+    expect([...SWATCH_NAMES]).toEqual(Object.keys(SWATCHES));
+  });
+
+  it('dráha sdílí strop bodů s arrayAlongCurve, nemá vlastní', () => {
+    const points = (count: number) =>
+      Array.from({ length: count }, (_unused, index) => [index, 0, index] as const);
+
+    // Obojí na tomtéž čísle: jeden uzel jazyka ve dvou větvích nesmí mít dvě
+    // meze, protože pak platí ta menší a druhá je dekorace.
+    expect(validateGeomProgram(sweepProgram({ path: points(MAX_CURVE_POINTS) })).ok).toBe(true);
+    expect(validateGeomProgram(sweepProgram({ path: points(MAX_CURVE_POINTS + 1) })).ok).toBe(false);
+
+    const alongCurve = (count: number) => ({
+      version: GEOM_VERSION,
+      nodes: [
+        { kind: 'mass', variant: 'block' },
+        { kind: 'arrayAlongCurve', child: 0, count: 3, points: points(count) },
+      ],
+      root: 1,
+    });
+
+    expect(validateGeomProgram(alongCurve(MAX_CURVE_POINTS)).ok).toBe(true);
+    expect(validateGeomProgram(alongCurve(MAX_CURVE_POINTS + 1)).ok).toBe(false);
+  });
+
+  it('nejdražší povolený sweep se vejde do rozpočtu jednoho kusu', () => {
+    // Plášť je `dílky × body profilu × 2` trojúhelníků, obě víka
+    // `2 × (body − 2)`. Součin tří stropů se počítá tady, aby zvednutí
+    // kteréhokoli z nich spadlo dřív, než se objeví v rozpočtu světa.
+    const shell = MAX_SWEEP_SEGMENTS * MAX_CURVE_POINTS * 2;
+    const caps = 2 * (MAX_CURVE_POINTS - 2);
+
+    expect(shell + caps).toBeLessThanOrEqual(KIT_BUDGETS.maxTrianglesPerPiece);
+  });
+
+  it('plocha profilu má znaménko podle pořadí bodů', () => {
+    const square = [
+      [-1, -1],
+      [1, -1],
+      [1, 1],
+      [-1, 1],
+    ] as const;
+
+    expect(profileArea(square)).toBeCloseTo(4, 12);
+    expect(profileArea([...square].reverse())).toBeCloseTo(-4, 12);
+  });
+
+  it.each([
+    ['profil o dvou bodech', { profile: [[0, 0], [1, 1]] }],
+    ['profil nad stropem', { profile: Array.from({ length: MAX_CURVE_POINTS + 1 }, (_u, i) => [i, i]) }],
+    ['dráha o jediném bodu', { path: [[0, 0, 0]] }],
+    ['jediný dílek', { segments: 1 }],
+    ['dílky nad stropem', { segments: MAX_SWEEP_SEGMENTS + 1 }],
+    ['zlomkový počet dílků', { segments: 8.5 }],
+    ['odstín mimo kit', { swatch: 'lilac' }],
+    ['pole navíc', { thickness: 0.2 }],
+    ['NaN v profilu', { profile: [[0, 0], [1, Number.NaN], [1, 1]] }],
+    ['souřadnice dráhy mimo rozsah', { path: [[0, 0, 0], [900, 0, 0]] }],
+  ])('%s se odmítne', (_name, patch) => {
+    expect(validateGeomProgram(sweepProgram(patch)).ok).toBe(false);
+  });
+
+  it('profil s nulovou plochou se odmítne, protože by nebyl tenký, ale neviditelný', () => {
+    // Tři body na přímce projdou schématem — je to platné pole platných čísel.
+    // Vadu vidí až pohled na celé pole, takže patří do strukturální kontroly.
+    const collinear = validateGeomProgram(
+      sweepProgram({ profile: [[0, 0], [1, 1], [2, 2]] }),
+    );
+
+    expect(collinear.ok).toBe(false);
+    expect(collinear.issues.join(' ')).toContain('no area');
+  });
+
+  it('dráha ze samých stejných bodů se odmítne, protože to není dráha', () => {
+    const still = validateGeomProgram(
+      sweepProgram({ path: [[2, 1, 3], [2, 1, 3], [2, 1, 3]] }),
+    );
+
+    expect(still.ok).toBe(false);
+    expect(still.issues.join(' ')).toContain('identical points');
+  });
+
+  it('dráha, kde se shoduje jen část bodů, projde', () => {
+    // Zdvojený bod je legitimní způsob, jak křivku u konce přibrzdit. Odmítnutí
+    // by tady zakázalo tvar, na kterém není nic špatného.
+    expect(validateGeomProgram(sweepProgram({ path: [[0, 0, 0], [0, 0, 0], [0, 2, 3]] })).ok).toBe(
+      true,
+    );
+  });
+
+  it('sweep je tvar, ne operace — do rozpočtu instancí se počítá jako jeden kus', () => {
+    expect(instanceCounts([sweepNode()])).toEqual([1]);
+    expect(childIndicesOf(sweepNode())).toEqual([]);
   });
 });
 
@@ -236,6 +429,24 @@ describe('vadný program se odmítne a řekne proč', () => {
     );
   });
 
+  it('potomek mimo tabulku jmenuje tabulku, a jenom to', () => {
+    // Nález `T7-gate-deadcheck`: hlášky se vydávaly za sebou, takže ta
+    // o tabulce se u potomka nikdy neozvala sama — potomek mimo tabulku je
+    // vždycky i nad vlastním řádkem. Délka se čte z programu, neopisuje se.
+    const size = coveringProgram().nodes.length;
+    const result = validateGeomProgram(
+      broken((program) => {
+        (program.nodes[3] as { child: number }).child = size + 6;
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.issues.join(' | ')).toContain(
+      `node 3 references node ${String(size + 6)} outside the table of ${String(size)}`,
+    );
+    expect(result.issues.join(' | ')).not.toContain('at or above itself');
+  });
+
   it('potomek pod kořenem, ale nad rodičem', () => {
     rejects(
       broken((program) => {
@@ -259,7 +470,14 @@ describe('vadný program se odmítne a řekne proč', () => {
       broken((program) => {
         (program as { root: number }).root = 40;
       }),
-      /root references node 40 outside the table of 11/,
+      // Číslo se pohnulo z 11 na 14 v P13 vlně 1 T6 a je to zapsané, ne
+      // přepsané: pokrývající program musí obsahovat každý druh uzlu, a přibyly
+      // `arrayAlongCurve`, `anchorTo` a skupina, která je drží. Kdyby se
+      // pohnulo bez toho, aby tabulka vyrostla, znamená to, že se z fixture
+      // něco ztratilo.
+      // Délka se čte z programu, ne opisuje: pin je na hlášku s důvodem, ne na
+      // to, kolik uzlů zrovna má pokrývající program.
+      new RegExp(`root references node 40 outside the table of ${String(coveringProgram().nodes.length)}`),
     );
   });
 
@@ -276,6 +494,48 @@ describe('vadný program se odmítne a řekne proč', () => {
     };
 
     rejects(explosive, /expands to 384 placed pieces, above maxInstances 120/);
+  });
+
+  it('řádek mimo strom se odmítne, protože rozpočet ho nevidí a kompilátor ho staví', () => {
+    // Nález nezávislého review: rozpočet se čte z `[root]`, ale
+    // `compileGeomProgram` i `compilePlacements` staví **každý** řádek
+    // tabulky. Řetěz nedosažitelných `repeat` řádků tak ohlásil jeden kus
+    // proti stropu 120 a postavil jich 65 536.
+    const smuggled = {
+      version: GEOM_VERSION,
+      nodes: [
+        { kind: 'mass', variant: 'block' },
+        { kind: 'repeat', child: 0, count: 16, step: [1, 0, 0] },
+        { kind: 'repeat', child: 1, count: 16, step: [0, 1, 0] },
+        { kind: 'repeat', child: 2, count: 16, step: [0, 0, 1] },
+        { kind: 'repeat', child: 3, count: 16, step: [1, 1, 0] },
+      ],
+      root: 0,
+    };
+
+    // Co brána viděla, než tahle kontrola přibyla: rozpočet z `[root]` je 1.
+    expect(instanceCounts(smuggled.nodes as readonly GeomNode[])[0]).toBe(1);
+    // A co by kompilátor postavil: čtvrtý řádek už je 65 536 kusů.
+    expect(instanceCounts(smuggled.nodes as readonly GeomNode[])[4]).toBe(65_536);
+
+    rejects(smuggled, /nodes 1, 2, 3, 4 cannot be reached from root 0/);
+  });
+
+  it('cíl `anchorTo` je dosažitelný, i když se do výsledku nevkládá', () => {
+    // Failure path té samé kontroly: kdyby se dosažitelnost počítala po
+    // `childIndicesOf` místo `referencedIndicesOf`, stal by se z každého cíle
+    // kotvy sirotek a brána by odmítla 161 programů, které repo dneska staví.
+    const anchored = {
+      version: GEOM_VERSION,
+      nodes: [
+        { kind: 'mass', variant: 'block', at: [0, 0, 0] },
+        { kind: 'column', variant: 'pillar', scale: [1, 1.6, 1] },
+        { kind: 'anchorTo', child: 1, target: 0, site: 'top' },
+      ],
+      root: 2,
+    };
+
+    expect(validateGeomProgram(anchored).ok).toBe(true);
   });
 
   it('program přesně na stropu kusů projde', () => {
@@ -311,5 +571,155 @@ describe('vadný program se odmítne a řekne proč', () => {
         }),
       ),
     ).toThrow(/invalid geom program: root references node 40/);
+  });
+});
+
+/**
+ * P13 vlna 1 T6 — co jazyk umí navíc a co u toho nesmí povolit.
+ *
+ * Tři vlastnosti, na kterých ta úloha stojí: kotva je odkaz a musí mířit dolů,
+ * křivkové pole platí do rozpočtu jako každé jiné, a volné otáčení je
+ * **nadmnožina** kvadrantů, ne jejich náhrada.
+ */
+describe('rozšíření jazyka o křivku, kotvu a volné otáčení', () => {
+  it('strop uzlů je 96 a devadesát sedm se odmítne', () => {
+    expect(GEOM_LIMITS.maxNodes).toBe(96);
+
+    const nodes: GeomNode[] = Array.from({ length: 97 }, () => ({
+      kind: 'mass',
+      variant: 'block',
+    }));
+
+    expect(validateGeomProgram({ version: GEOM_VERSION, nodes, root: 0 }).ok).toBe(false);
+  });
+
+  it('kotva na uzel nad sebou nebo na sebe se odmítne', () => {
+    for (const target of [12, 13]) {
+      const result = validateGeomProgram(
+        broken((program) => {
+          (program.nodes[12] as { target: number }).target = target;
+        }),
+      );
+
+      expect(result.ok, `target ${target} prošel`).toBe(false);
+      expect(result.issues.join(' | ')).toMatch(
+        new RegExp(`node 12 references node ${target} at or above itself`),
+      );
+    }
+  });
+
+  it('kotva se počítá jako posun, ne jako druhý kus', () => {
+    const counts = instanceCounts(parseGeomProgram(coveringProgram()).nodes);
+
+    // Uzel 12 kotví jediný strom (uzel 9) na plošinu (uzel 1). Cíl se do
+    // výsledku nedostane, takže z kotvy vyleze právě jeden kus.
+    expect(counts[12]).toBe(1);
+  });
+
+  it('křivkové pole započítává rozvinuté kopie do stropu kusů', () => {
+    const explosive = {
+      version: GEOM_VERSION,
+      nodes: [
+        { kind: 'mass', variant: 'block' },
+        { kind: 'repeat', child: 0, count: 6, step: [1, 0, 0] },
+        {
+          kind: 'arrayAlongCurve',
+          child: 1,
+          count: 24,
+          points: [
+            [0, 0, 0],
+            [10, 4, 0],
+            [20, 0, 0],
+          ],
+        },
+      ],
+      root: 2,
+    };
+
+    const result = validateGeomProgram(explosive);
+    expect(result.ok).toBe(false);
+    expect(result.issues.join(' | ')).toMatch(
+      /expands to 144 placed pieces, above maxInstances 120/,
+    );
+  });
+
+  it('křivka nesmí mít víc kontrolních bodů, než jazyk dovolí', () => {
+    const result = validateGeomProgram(
+      broken((program) => {
+        (program.nodes[11] as { points: number[][] }).points = Array.from(
+          { length: MAX_CURVE_POINTS + 1 },
+          (_unused, index) => [index, 0, 0],
+        );
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+  });
+
+  it('volné otáčení je nadmnožina kvadrantů: yak 0,37 projde, celá otáčka ne', () => {
+    const fractional = broken((program) => {
+      program.nodes[1] = { kind: 'mass', variant: 'block', yaw: 0.37, pitch: -1.2, roll: 2.9 };
+    });
+
+    expect(validateGeomProgram(fractional).ok).toBe(true);
+
+    const fullTurn = broken((program) => {
+      program.nodes[1] = { kind: 'mass', variant: 'block', yaw: 4 };
+    });
+
+    expect(validateGeomProgram(fullTurn).ok).toBe(false);
+  });
+});
+
+/**
+ * **Tři různé otázky nad týmž grafem, a rozdíly mezi nimi jsou celý smysl.**
+ *
+ * `reachableFrom` odpovídá „dojde se tam", `placedFrom` „je z toho něco vidět"
+ * a `separableFrom` „dá se to ještě vybrat jako vlastní kusy". Splynutí
+ * kterýchkoli dvou vyrobí tichou vadu o dvě vlny dál: objekt buď dostane
+ * hliněnou bednu přes skutečný tvar, nebo zmizí z obrazu úplně
+ * (`src/worldstream/proxy.ts`, `clayCause`). Na jednom snímku se ani jedno
+ * nepozná.
+ */
+describe('dosažitelnost, položenost a vybratelnost jsou tři různé množiny', () => {
+  const nodes = [
+    { kind: 'fixture', variant: 'crate', at: [0, 0.3, 0] }, // 0 — jen cíl kotvy
+    { kind: 'fixture', variant: 'crate', at: [6, 0.3, 0] }, // 1 — pod řezem
+    { kind: 'carve', child: 1, at: [6, 0, 0], size: [1, 1, 1] }, // 2
+    { kind: 'anchorTo', child: 2, target: 0, site: 'top' }, // 3
+    { kind: 'fixture', variant: 'crate', at: [12, 0.3, 0] }, // 4 — čistá cesta
+    { kind: 'group', children: [3, 4] }, // 5 = kořen
+  ] as unknown as GeomNode[];
+
+  it('nechává cíl kotvy dosažitelný, ale nepoloží ho', () => {
+    expect(placedFrom(nodes, 5).has(0)).toBe(false);
+    expect(separableFrom(nodes, 5).has(0)).toBe(false);
+  });
+
+  it('položí to, co je pod řezem, ale vybrat to už nedovolí', () => {
+    expect(placedFrom(nodes, 5).has(1)).toBe(true);
+    expect(separableFrom(nodes, 5).has(1)).toBe(false);
+    // Řez sám vybratelný zůstává: razítko dostane síť, kterou vyrobil.
+    expect(separableFrom(nodes, 5).has(2)).toBe(true);
+  });
+
+  it('nechává řádek na cestě bez řezu vybratelný', () => {
+    expect(separableFrom(nodes, 5).has(4)).toBe(true);
+  });
+
+  /**
+   * Dvě cesty k témuž řádku, z nichž jedna řezem nevede. Razítko mu drží ta
+   * druhá, takže vybratelný je — kdyby se `separableFrom` ptalo „stojí nad
+   * ním někde řez?", odpověděla by tady nepravdu.
+   */
+  it('nechává vybratelný řádek, ke kterému vede i cesta mimo řez', () => {
+    const shared = [
+      { kind: 'fixture', variant: 'crate', at: [0, 0.3, 0] }, // 0
+      { kind: 'carve', child: 0, at: [0, 0, 0], size: [1, 1, 1] }, // 1
+      { kind: 'group', children: [1, 0] }, // 2 = kořen
+    ] as unknown as GeomNode[];
+
+    expect(placedFrom(shared, 2).has(0)).toBe(true);
+    expect(separableFrom(shared, 2).has(0)).toBe(true);
   });
 });

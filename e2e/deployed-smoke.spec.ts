@@ -68,7 +68,7 @@ test('nasazený artefakt hlásí strom, ze kterého vznikl', async ({ request })
 
 test('první věta postaví svět', async ({ page }) => {
   const errors = collectPageErrors(page);
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
 
   // Úvodní obrazovka nic nepředstírá: dokud nepřišla věta, žádné entity.

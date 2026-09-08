@@ -1,0 +1,13 @@
+Fiktivní muzejní procedura pro demonstrační simulaci.
+Nejde o popis skutečného zabezpečení.
+
+Místnost obsahuje vstupní senzor A, vzdálený senzor B u vitríny a vitrínu.
+Návštěvník začíná u vstupu. K senzoru musí dojít; aktivovat jej lze pouze z přilehlého dosažitelného místa.
+Na začátku jsou oba senzory neaktivní, vitrína zamčená a alarm vypnutý.
+První aktivace A spustí odpočet 20 sekund. Další aktivace A jej nerestartuje.
+Aktivace B před aktivací A nemá účinek a neukládá se pro pozdější použití.
+Pokud návštěvník aktivuje B přísně před vypršením odpočtu spuštěného A, vitrína se odemkne a odpočet se zruší.
+Pokud odpočet vyprší dříve, než dojde k platné aktivaci B, spustí se alarm a vitrína zůstane zamčená.
+Při aktivaci B přesně v okamžiku expirace má přednost expirace.
+Po spuštění alarmu nelze vitrínu v daném běhu odemknout. Po odemčení už opakované aktivace nic nemění.
+Cílem je odemknout vitrínu bez spuštění alarmu.

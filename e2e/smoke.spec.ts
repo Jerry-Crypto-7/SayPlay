@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test('plátno dostane ŽIVÝ WebGL2 kontext, ne jen element canvas', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/classic');
 
   const canvas = page.locator('canvas');
   await expect(canvas).toBeVisible();
@@ -26,7 +26,7 @@ test('plátno dostane ŽIVÝ WebGL2 kontext, ne jen element canvas', async ({ pa
 });
 
 test('plátno má nenulové rozměry', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 30_000 });
 
   const box = await page.locator('canvas').boundingBox();

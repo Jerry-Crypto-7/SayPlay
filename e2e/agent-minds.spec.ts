@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { openInspect } from './inspect';
+
 /**
  * Oracle úlohy T18 — **model napíše postavě povahu, interpret ji odchodí**.
  *
@@ -40,8 +42,18 @@ const BOLD = 'a bold guard who patrols the whole corridor without stopping';
 const WARY = 'a wary guard who never strays far from his post';
 
 async function routeOf(page: Page, sentence: string): Promise<readonly string[]> {
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith !== undefined, undefined, { timeout: 60_000 });
+
+  // **Bez tohohle je `window.__timeline` navždy `undefined`.** Publikuje ho
+  // panel `Timeline`, a ten od P13 vlny 0 T1 ve výchozím DOM nestojí — zavřená
+  // zásuvka ho doopravdy odpojí. Sada tím ležela červená a nikdo si toho
+  // nevšiml, protože T1 se ověřovala jinými soubory; je to podruhé, co přestavba
+  // rozvržení potichu shodila sadu, která na panel sahá.
+  //
+  // Otevírá se **před** napsáním věty, ne po ní: `e2e/inspect.ts` to u
+  // `window.__pipeline` vysvětluje týmž důvodem a pro `__timeline` platí totéž.
+  await openInspect(page);
 
   await page.getByTestId('prompt-input').fill(sentence);
   await page.getByTestId('prompt-submit').click();
@@ -79,15 +91,65 @@ test('dvě věty o téže hlídce dají dvě různé trasy', async ({ page }) =>
 test('mysl neběží na dynamicky vyhodnoceném kódu — svět se postaví z deklarace', async ({ page }) => {
   test.setTimeout(120_000);
 
-  // Stránka běží pod produkčním CSP bez `unsafe-eval`; kdyby snížení mysli
-  // potřebovalo dynamické vyhodnocení, spadlo by to sem jako chyba konzole a
-  // svět by nevznikl. Je to druhá polovina třetí AC — grep nad `src/sim/`
-  // hlídá zdroj, tohle hlídá běh.
+  // **CSP si nasazuje tenhle test, produkce žádné nemá** — naměřeno 30. 8. 2026
+  // jako nález `T1-cspclaim`: `next.config.mjs` nemá `headers()`, `middleware.ts`
+  // v repu není a `vercel.json` nese jen framework a region. Do té doby tady
+  // stála věta „stránka běží pod produkčním CSP bez `unsafe-eval`", což pravda
+  // nebyla — takže druhá polovina té věty („spadlo by to sem") nehlídala nic:
+  // `pageerror` chytá pády, ale `eval` nikdo nezakazoval.
+  //
+  // Hlavička se proto vkládá do odpovědi na dokument. Tvrzení tím není
+  // „produkce běží pod CSP" (neběží), ale to slabší a pravdivé: **mysl by pod
+  // CSP bez `unsafe-eval` fungovala dál**. Rozhodnutí, jestli se CSP nasadí, je
+  // součást deploye a patří uživateli; až padne, tenhle blok se smaže a bude
+  // platit ta silnější věta.
+  //
+  // `unsafe-inline` zůstává povolený schválně: Next posílá hydratační data
+  // inline skriptem, takže bez něj by stránka nevznikla vůbec a test by padal
+  // na Nextu, ne na mysli. Zakázané je právě a jenom dynamické vyhodnocení.
+  //
+  // **Zachytává se jen dokument.** `route.fallback()` pustí zbytek beze změny;
+  // původní verze protahovala přes `route.fetch()` každý požadavek a padala na
+  // `Fetch response has been disposed`, jakmile něco dojelo po konci testu.
+  await page.route('**/*', async (route, request) => {
+    if (request.resourceType() !== 'document') return route.fallback();
+    const response = await route.fetch();
+    return route.fulfill({
+      response,
+      headers: {
+        ...response.headers(),
+        'content-security-policy': "script-src 'self' 'unsafe-inline'; worker-src 'self' blob:",
+      },
+    });
+  });
+
   const failures: string[] = [];
   page.on('pageerror', (error) => failures.push(String(error)));
 
+  // Druhá síť: porušení CSP se neohlásí jako `pageerror`, ale jako zpráva
+  // konzole. **Zabíjí ale ta první** — naměřeno mutací níž.
+  const violations: string[] = [];
+  page.on('console', (message) => {
+    const text = message.text();
+    if (text.includes('Content Security Policy')) violations.push(text);
+  });
+
+  // ## Jak se ověřilo, že tahle brána doopravdy kouše (30. 8. 2026)
+  //
+  // **`new Function('return 1')` vložené do `expandAgentMinds`** — tedy do
+  // cesty, kterou tenhle test jede — sadu **zčervenalo**: svět se nepostavil
+  // a čekání na entity vypršelo. **Kontrola k tomu:** týž mutant pod testem
+  // „dvě věty o téže hlídce", který CSP nevkládá, **prošel**. Rozdíl mezi
+  // těmi dvěma běhy je jen ta hlavička, takže zabíjí ona, ne mutant sám.
+  //
+  // **Co naopak nezkoušet, protože je to změřené a nefunguje to:** `eval`
+  // vložený přes `page.addInitScript` nebo `page.evaluate`. Naměřeno — vrátí
+  // `2` a CSP se neozve, protože kód vstříknutý Playwrightem přes CDP
+  // politice stránky nepodléhá. Tuhle bránu umí zkoušet jen kód aplikace.
+
   const route = await routeOf(page, BOLD);
 
+  expect(violations).toEqual([]);
   expect(failures).toEqual([]);
   expect(route.length).toBeGreaterThan(1);
 });

@@ -63,10 +63,13 @@ export default function Program({
 
   const lines: readonly DiffLine[] = useMemo(() => {
     if (emission === null || emission === undefined) return [];
+    // `source` jde do obou volání: věta o prázdné emisi jmenuje původce a ten
+    // se musí shodovat s odznakem vedle titulku, jinak by panel o téže emisi
+    // tvrdil dvě různé věci.
     const before: readonly ProgramLine[] | null =
-      previous === null || previous === undefined ? null : describeEmission(previous);
-    return diffPrograms(before, describeEmission(emission));
-  }, [emission, previous]);
+      previous === null || previous === undefined ? null : describeEmission(previous, source);
+    return diffPrograms(before, describeEmission(emission, source));
+  }, [emission, previous, source]);
 
   if (lines.length === 0) return null;
 

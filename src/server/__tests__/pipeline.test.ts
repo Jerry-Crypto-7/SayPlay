@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { frozenGrammar, frozenPrompts } from '../../model/client';
-import type { Grammar } from '../../model/prompt';
+import { buildEmissionRequest, type Grammar } from '../../model/prompt';
 import { moderatePrompt, type DeniedTopic } from '../moderation';
 import { mockBranch } from '../mock';
 import { runPipeline, type GenerationBranch, type GenerationFailureReason } from '../pipeline';
@@ -114,6 +114,7 @@ const LIVE_CONFIG: UpstreamConfig = {
   endpoint: 'https://upstream.invalid/v1/messages',
   apiKey: 'test-key',
   model: 'test-model',
+  effort: 'low',
   pricing: { usdPerMTokIn: 3, usdPerMTokOut: 15 },
   maxOutputTokens: 1000,
   timeoutMs: 1000,
@@ -379,6 +380,147 @@ describe('co se účtuje, když se volání nepovede', () => {
 // Hranice proti měřicí vrstvě
 // ---------------------------------------------------------------------------
 
+/**
+ * **Hlášená cena se musí rovnat té stržené.** Je to jediný účetní údaj, který
+ * produkt vydává — `/api/generate` z něj píše `ACCOUNTING costUsd=…` — takže
+ * operátor, který hledá, kam se rozpočet poděl, nemá jak si ho ověřit jinde.
+ *
+ * Do 1. 9. 2026 to neplatilo a vada byla starší než pravidlo dvojité nuly:
+ * `settle()` účtenku, která nedává smysl, zahodí a strhne celou rezervaci, ale
+ * nikomu to neřekl — `runPipeline` vracel dál to číslo, které poslal. Naměřeno:
+ * `{input_tokens: -1e9}` strhlo 0,2195 USD a ohlásilo `-5000`; `1e999` ohlásilo
+ * `Infinity`, a to nekonečno pak rušilo mez operátorského logu úplně.
+ */
+describe('hlášená cena se rovná té, kterou strop doopravdy strhl', () => {
+  /** Kolik strop na tenhle prompt drží. Jediné číslo, které se dá znát nezávisle. */
+  function reservationFor(prompt: string): number {
+    return upstreamBranch(LIVE_CONFIG, (() => {
+      throw new Error('worstCaseUsd nikam nevolá');
+    }) as unknown as typeof fetch).worstCaseUsd({
+      prompt,
+      request: buildEmissionRequest(prompt, GRAMMAR),
+    });
+  }
+
+  /** Účtenka, kterou `release()` odmítne, ať je nesmysl v kterékoli složce. */
+  function poisonedFetch(rawUsage: string): typeof fetch {
+    // Tělo jde jako text, ne přes `Response.json`: to by `Infinity` uložilo
+    // jako `null`. `JSON.parse('1e999')` dá `Infinity` typu number.
+    return (() =>
+      Promise.resolve(
+        new Response(`{"content":[{"type":"text","text":${JSON.stringify(JSON.stringify(LIVE_WORLD))}}],"usage":${rawUsage}}`, {
+          headers: { 'content-type': 'application/json' },
+        }),
+      )) as unknown as typeof fetch;
+  }
+
+  it('záporná účtenka se ohlásí rezervací, ne záporným číslem', async () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 100 });
+    const result = await runPipeline('bludiště s klíčem', {
+      branch: upstreamBranch(LIVE_CONFIG, poisonedFetch('{"input_tokens":-1e9,"output_tokens":1}')),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    if (result.outcome !== 'GENERATED') throw new Error('expected a generated world');
+    expect(result.costUsd).toBe(cap.snapshot().spentUsd);
+    // **Proti rezervaci, ne proti nule.** `toBeGreaterThan(0)` tady stálo do
+    // 1. 9. 2026 a nedokázalo nic: prošlo by i účtence za 0,000005 USD, tedy
+    // přesně tomu podhlášení, kvůli kterému tenhle blok vznikl. A `costUsd`
+    // JE návratová hodnota `settle()`, takže rovnost o řádek výš je taky jen
+    // pojmenování téhož čísla dvakrát. Jediné nezávisle známé číslo je
+    // rezervace. Nález nezávislé revize 1. 9. 2026 nad `df4a6b5`.
+    expect(result.costUsd).toBeCloseTo(reservationFor('bludiště s klíčem'), 10);
+    // **Hlášená spotřeba je od 1. 9. 2026 nečitelná, ne záporná.** Dřív tady
+    // stálo, že se ven vrací to, co poskytovatel řekl; pak se ukázalo, že
+    // záporná složka umí zaplatit kladnou a součet projde `release()` jako
+    // drobné (`readableUsage()` v `../upstream.ts`). Účtenka se zápornou
+    // složkou se proto zahazuje celá a ven jde totéž `{0, 0}` jako u každé
+    // jiné nečitelné. Jediné číslo, které tu něco tvrdí, je `costUsd` výš.
+    //
+    // ⚠ Nekonečná účtenka o dva testy níž se ven pořád vrací tak, jak přišla —
+    // je „čitelná, ale nesmyslná". Ten rozpor patří `T9-usagereport`, ne sem.
+    expect(result.usage).toEqual({ inputTokens: 0, outputTokens: 0 });
+  });
+
+  it('nekonečná účtenka se ohlásí konečným číslem', async () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 100 });
+    const result = await runPipeline('bludiště s klíčem', {
+      branch: upstreamBranch(LIVE_CONFIG, poisonedFetch('{"input_tokens":1e999,"output_tokens":1}')),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    if (result.outcome !== 'GENERATED') throw new Error('expected a generated world');
+    expect(Number.isFinite(result.costUsd), String(result.costUsd)).toBe(true);
+    expect(result.costUsd).toBe(cap.snapshot().spentUsd);
+  });
+
+  it('platí to i na cestě selhání, ne jen na úspěchu', async () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 100 });
+    // Textový blok, který není JSON, plus otrávená účtenka: `BILLED_ON_FAILURE`
+    // dá přednost účtence před odhadem, takže sem teče totéž otrávené číslo.
+    const fetchImpl = (() =>
+      Promise.resolve(
+        new Response('{"content":[{"type":"text","text":"tohle není JSON"}],"usage":{"input_tokens":-1e9,"output_tokens":1}}', {
+          headers: { 'content-type': 'application/json' },
+        }),
+      )) as unknown as typeof fetch;
+
+    const result = await runPipeline('bludiště s klíčem', {
+      branch: upstreamBranch(LIVE_CONFIG, fetchImpl),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    if (result.outcome !== 'FAILED') throw new Error('expected a failure');
+    expect(result.costUsd).toBe(cap.snapshot().spentUsd);
+    expect(result.costUsd).toBeGreaterThan(0);
+  });
+
+  it('výjimka, ze které nejde přečíst zpráva, nenechá rezervaci viset', async () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 100 });
+    // `Promise.reject(null)` je jediný tvar, u kterého sestavení odpovědi spadne
+    // dřív, než se stihne vyrovnat — `(null as Error).message` je TypeError.
+    // Rezervace se přesto musí uvolnit: visící rezervace strop trvale zmenší,
+    // takže nasazení začne odmítat 429 na rozpočtu, který nic neutratil.
+    const branch: GenerationBranch = {
+      id: 'live',
+      pricing: { usdPerMTokIn: 3, usdPerMTokOut: 15 },
+      worstCaseUsd: () => 0.02,
+      generate: () => Promise.reject(null),
+    };
+
+    await expect(runPipeline('bludiště s klíčem', { branch, cap, grammar: GRAMMAR })).rejects.toThrow();
+    expect(cap.snapshot().reservedUsd).toBe(0);
+    expect(cap.snapshot().spentUsd).toBeCloseTo(0.02, 12);
+  });
+
+  it('poctivá účtenka se ohlásí sama sebou, ne rezervací', async () => {
+    // Druhý směr téhož tvrzení: rovnost se nesmí zařídit tím, že se vždycky
+    // hlásí rezervace. To by strop nafouklo u každého levného volání.
+    const cap = new SpendCap({ enabled: true, capUsd: 100 });
+    const branch = upstreamBranch(LIVE_CONFIG, stubFetch());
+    const worstCase = branch.worstCaseUsd({
+      prompt: 'bludiště',
+      request: { model: 'test-model', system: '', user: 'bludiště' },
+    });
+    const result = await runPipeline('bludiště s klíčem', { branch, cap, grammar: GRAMMAR });
+
+    if (result.outcome !== 'GENERATED') throw new Error('expected a generated world');
+    // **Ne `toBe`, a od P15 T29 nesmí být.** Účtenka je pod rezervací, takže se
+    // kniha posouvá dvěma přičteními (rezervace, pak rozdíl) a její součet je od
+    // ohlášené ceny vzdálený o zbytek plovoucí čárky: naměřeno
+    // `0.0032999999999999974` proti `0.0033`. Tři sesterské aserce výš `toBe`
+    // mít smějí, protože tam se účtenka rovná rezervaci a druhé přičtení se
+    // vůbec nezapisuje. Vlastnost, o kterou tu jde — hlásí se stržené, ne
+    // rezervace — drží dál a pinuje ji řádek pod tímhle na dvanáct míst.
+    expect(result.costUsd).toBeCloseTo(cap.snapshot().spentUsd, 12);
+    expect(result.costUsd).toBeCloseTo((100 * 3 + 200 * 15) / 1_000_000, 12);
+    expect(result.costUsd).toBeLessThan(worstCase);
+  });
+});
+
 describe('strop endpointu a strop měřicích běhů o sobě nesmějí vědět', () => {
   // Skenují se jen produkční soubory. Tenhle test sám prefix proměnných jmenuje,
   // takže kdyby se skenoval i on, shodil by sám sebe — táž past jako zástupné
@@ -400,5 +542,100 @@ describe('strop endpointu a strop měřicích běhů o sobě nesmějí vědět',
   it('žádný produkční soubor neimportuje z evals/', () => {
     const offenders = production.filter((path) => /from\s+'[^']*evals\//.test(readFileSync(path, 'utf8')));
     expect(offenders).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Strop na jednu účtenku
+// ---------------------------------------------------------------------------
+
+/**
+ * **Jedna účtenka nesmí strhnout částku, kterou strop nikdy nedržel.**
+ *
+ * `reserve()` hlídá to, co se rezervuje; čísla, která pošle poskytovatel,
+ * nehlídalo do 1. 9. 2026 nic. `release()` odmítá záporná a nekonečná, ale
+ * `1e12` je konečné kladné číslo a prošlo: naměřeno nezávislou revizí celou
+ * cestou přes `runPipeline`, že `{1e12, 0}` strhlo **5 000 000 USD** proti
+ * rezervaci 0,2195 USD a stropu 5 USD (`{0, 1e12}` pak 25 000 000 USD), takže
+ * každý další požadavek dostal do konce života procesu 429 `CAP_EXHAUSTED`.
+ *
+ * **Ořez je tvrdý a smí být, protože rezervace je od téhož dne strop, ne odhad.**
+ * Zřejmá oprava `Math.min(spent, reservedUsd)` sama o sobě podúčtovala poctivé
+ * volání: při odhadu vstupu po třech znacích na token stála účtenka
+ * `{8000, 8000}` 0,240000 USD proti rezervaci 0,219505 USD, tedy legitimně
+ * o 9,3 % víc. Proto se vstup rezervuje po **jednom** tokenu na znak; druhý
+ * test to drží, a bez něj by se dala mez v `worstCaseUsd()` vrátit k průměru,
+ * aniž by se cokoli ozvalo.
+ */
+describe('jedna účtenka nestrhne víc, než se na ni drželo', () => {
+  const PROMPT = 'bludiště s klíčem';
+
+  /** Kolik strop na tenhle prompt drží. Počítá se, neopisuje. */
+  function reservationUsd(): number {
+    return upstreamBranch(LIVE_CONFIG, (() => {
+      throw new Error('worstCaseUsd nikam nevolá');
+    }) as unknown as typeof fetch).worstCaseUsd({
+      prompt: PROMPT,
+      request: buildEmissionRequest(PROMPT, GRAMMAR),
+    });
+  }
+
+  function answering(usage: string): typeof fetch {
+    const world = JSON.stringify({ irVersion: 'v1', simRevision: 0, lookRevision: 0, sim: null, look: {} });
+    return (() =>
+      Promise.resolve(
+        new Response(`{"content":[{"type":"text","text":${JSON.stringify(world)}}],"usage":${usage}}`, {
+          headers: { 'content-type': 'application/json' },
+        }),
+      )) as unknown as typeof fetch;
+  }
+
+  it.each([
+    ['{"input_tokens":1e12,"output_tokens":0}', 5_000_000],
+    ['{"input_tokens":0,"output_tokens":1e12}', 25_000_000],
+  ])('řádový nesmysl %s se ořízne na rezervaci', async (usage, unclampedUsd) => {
+    const cap = new SpendCap({ enabled: true, capUsd: 5 });
+    const result = await runPipeline(PROMPT, {
+      branch: upstreamBranch(LIVE_CONFIG, answering(usage)),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    if (result.outcome !== 'GENERATED') throw new Error('expected a generated world');
+    expect(result.costUsd).toBeCloseTo(reservationUsd(), 10);
+    // A hlavně: strop tím nesmí být vyčerpaný. Tohle je ten skutečný následek —
+    // bez ořezu odpoví nasazení 429 každému dalšímu porotci až do restartu.
+    expect(cap.snapshot().spentUsd).toBeLessThan(1);
+    expect((await cap.reserve(reservationUsd())).ok).toBe(true);
+    // Ať je vidět, o kolik šlo, a ať to číslo nikdo nemusí dopočítávat.
+    expect(unclampedUsd).toBeGreaterThan(cap.snapshot().spentUsd * 1_000_000);
+  });
+
+  it('poctivá účtenka až po strop rezervace se zaúčtuje celá', async () => {
+    // Jeden token na znak vstupu a celý povolený výstup: přesně to, co
+    // `worstCaseUsd()` drží. Kdyby se mez vrátila k ~3 znakům na token,
+    // rezervace spadne pod cenu téhle účtenky, ořez ji utne a tenhle test
+    // zčervená — což je přesně ta vada, kterou plán označil za vyvrácenou
+    // zřejmou opravu.
+    const request = buildEmissionRequest(PROMPT, GRAMMAR);
+    const inputTokens = request.system.length + request.user.length;
+    const honestUsd =
+      (inputTokens * LIVE_CONFIG.pricing.usdPerMTokIn +
+        LIVE_CONFIG.maxOutputTokens * LIVE_CONFIG.pricing.usdPerMTokOut) /
+      1_000_000;
+
+    const cap = new SpendCap({ enabled: true, capUsd: 5 });
+    const result = await runPipeline(PROMPT, {
+      branch: upstreamBranch(
+        LIVE_CONFIG,
+        answering(`{"input_tokens":${inputTokens},"output_tokens":${LIVE_CONFIG.maxOutputTokens}}`),
+      ),
+      cap,
+      grammar: GRAMMAR,
+    });
+
+    if (result.outcome !== 'GENERATED') throw new Error('expected a generated world');
+    expect(result.costUsd).toBeCloseTo(honestUsd, 10);
+    expect(honestUsd).toBeCloseTo(reservationUsd(), 10);
   });
 });

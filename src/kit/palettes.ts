@@ -65,6 +65,32 @@ export const PALETTES = {
     sand: '#efe2c2',
     moss: '#8f9a5e',
   },
+  /**
+   * Paleta cílového snímku — **sedm tokenů WORLDSTREAM přeložených na šest
+   * slotů kitu**, ne sedmá vymyšlená sada barev.
+   *
+   * Design book §15.1 říká, na čem scéna stojí; kit ale barví po swatchích,
+   * takže tohle je ta mapa mezi nimi:
+   * - `shell` = **clay**, hrubá hmota: zdi, skála, útes,
+   * - `deep` = **basalt**, stíny a spodní desky,
+   * - `accent` = **amber**, jediné svítící sklo v obraze — okna a lampa majáku.
+   *   Studený `verdigris` sem nepatří: rozsvícené okno má být pozvání dovnitř,
+   *   ne signální světlo,
+   * - `warm` = **verdigris**, měděné střechy. Patina mědi je doslova to, co ten
+   *   token pojmenovává, takže střechy dostaly barvu, kterou v reálu mají,
+   * - `sand` = **nacre**, mostovka a podlahy,
+   * - `moss` — jediný slot, který token nemá. Bere se odstín z palety `harbor`
+   *   místo vymyšleného hexu, protože zeleň porostu žádný token WORLDSTREAM
+   *   nepokrývá a sedmý hex navíc by byl přesně to, co §15.1 zakazuje.
+   */
+  worldstream: {
+    shell: '#c8a987',
+    deep: '#16262f',
+    accent: '#f1b24a',
+    warm: '#2e8f86',
+    sand: '#d8e7e2',
+    moss: '#5f8a6b',
+  },
   frost: {
     shell: '#c3d2da',
     deep: '#3d525e',
@@ -184,6 +210,31 @@ export const UI_TOKENS = {
   /** Prohra a chyby. */
   negative: '#e2622c',
   accent: '#2f9e8f',
+
+  // --- Paleta WORLDSTREAM (design book §15.1) -----------------------------
+  // Sedm tokenů jedné výtvarné teze: „živá kartografie hmoty". Tokeny nad nimi
+  // zůstávají, protože je nese HUD záložní větve i stávající scéna; tyhle nese
+  // skořápka produktu a všechno, co po ní přijde.
+  //
+  // **Fialová tu není a nebude.** Revize 1 návrhu měla `#7857A8` jako akcent;
+  // fialová je výchozí barva AI-generovaného designu, tedy přesně ten dojem,
+  // kterému se vyhýbáme. Nahrazuje ji **verdigris**, patina mědi. Hlídá to
+  // `src/app/__tests__/theme.test.ts` pásmem odstínu 250–320°.
+
+  /** Prostor, mlha, hluboké pozadí. */
+  pelagic: '#07141f',
+  /** Plochy, panely, stíny. */
+  basalt: '#16262f',
+  /** Hrubá hmota a nehotové objekty. Ne šedý placeholder — první fáze světa. */
+  clay: '#c8a987',
+  /** Text a jemné prostorové linky. */
+  nacre: '#d8e7e2',
+  /** Aktivní generativní vazby a výběr. */
+  verdigris: '#2e8f86',
+  /** Hotová kotva, potvrzená interakce. */
+  amber: '#f1b24a',
+  /** Lokální selhání bez alarmistické červené plochy. */
+  coral: '#df6b62',
 } as const;
 
 export type UiToken = keyof typeof UI_TOKENS;

@@ -1,0 +1,169 @@
+{
+  "config": {
+    "runId": "81e26e34-9084-4da2-b26e-3b8895f3b439",
+    "commit": "b036efa5fc91fe50e932ce0c75a6ea34dfec6b74",
+    "dirty": true,
+    "model": "none",
+    "modelConfig": {
+      "fixture": "museum",
+      "runtime": "node",
+      "browserFrameMeasured": false
+    },
+    "origin": "offline",
+    "suiteSha256": "94eddd33fe280868eaa3270fe1063331b17e929a681d8f729130e804c3e57a45",
+    "authorized": false,
+    "spendLimitUsd": null,
+    "maxCalls": 1,
+    "maxWallMs": 60000
+  },
+  "protocolSha256": "7bfd14f1abb64b1f6e9ae04984c1588ff69ae63873b1706d7b34f983bfb87baf",
+  "suiteStatus": "development",
+  "startedAt": "2026-09-08T10:00:42.382Z",
+  "pairs": [
+    {
+      "index": 0,
+      "caseId": "museum-development",
+      "repeat": 0,
+      "input": {
+        "id": "museum-development",
+        "kind": "complete",
+        "source": "Fiktivní muzejní procedura pro demonstrační simulaci.\nNejde o popis skutečného zabezpečení.\n\nMístnost obsahuje vstupní senzor A, vzdálený senzor B u vitríny a vitrínu.\nNávštěvník začíná u vstupu. K senzoru musí dojít; aktivovat jej lze pouze z přilehlého dosažitelného místa.\nNa začátku jsou oba senzory neaktivní, vitrína zamčená a alarm vypnutý.\nPrvní aktivace A spustí odpočet 20 sekund. Další aktivace A jej nerestartuje.\nAktivace B před aktivací A nemá účinek a neukládá se pro pozdější použití.\nPokud návštěvník aktivuje B přísně před vypršením odpočtu spuštěného A, vitrína se odemkne a odpočet se zruší.\nPokud odpočet vyprší dříve, než dojde k platné aktivaci B, spustí se alarm a vitrína zůstane zamčená.\nPři aktivaci B přesně v okamžiku expirace má přednost expirace.\nPo spuštění alarmu nelze vitrínu v daném běhu odemknout. Po odemčení už opakované aktivace nic nemění.\nCílem je odemknout vitrínu bez spuštění alarmu.\n",
+        "intervention": "Change the countdown from 20 to 10 seconds.",
+        "clarification": null
+      },
+      "phases": {
+        "create": {
+          "status": "success",
+          "error": null,
+          "wallMs": 813.6126999999999,
+          "machineMs": 813.6126999999999,
+          "stages": {
+            "validation": [
+              695.7416000000001
+            ]
+          }
+        },
+        "edit": {
+          "status": "success",
+          "error": null,
+          "wallMs": 53.20820000000003,
+          "machineMs": 53.20820000000003,
+          "stages": {
+            "validation": [
+              45.16960000000017
+            ]
+          }
+        }
+      },
+      "calls": [],
+      "checks": {
+        "invariants": null,
+        "criticalSupported": null,
+        "criticalCitations": null,
+        "otherCitations": null,
+        "rejectedUnchanged": null,
+        "problematicBlocked": null,
+        "rules": null,
+        "branchDelta": true,
+        "visualUsable": null
+      }
+    },
+    {
+      "index": 1,
+      "caseId": "museum-development",
+      "repeat": 1,
+      "input": {
+        "id": "museum-development",
+        "kind": "complete",
+        "source": "Fiktivní muzejní procedura pro demonstrační simulaci.\nNejde o popis skutečného zabezpečení.\n\nMístnost obsahuje vstupní senzor A, vzdálený senzor B u vitríny a vitrínu.\nNávštěvník začíná u vstupu. K senzoru musí dojít; aktivovat jej lze pouze z přilehlého dosažitelného místa.\nNa začátku jsou oba senzory neaktivní, vitrína zamčená a alarm vypnutý.\nPrvní aktivace A spustí odpočet 20 sekund. Další aktivace A jej nerestartuje.\nAktivace B před aktivací A nemá účinek a neukládá se pro pozdější použití.\nPokud návštěvník aktivuje B přísně před vypršením odpočtu spuštěného A, vitrína se odemkne a odpočet se zruší.\nPokud odpočet vyprší dříve, než dojde k platné aktivaci B, spustí se alarm a vitrína zůstane zamčená.\nPři aktivaci B přesně v okamžiku expirace má přednost expirace.\nPo spuštění alarmu nelze vitrínu v daném běhu odemknout. Po odemčení už opakované aktivace nic nemění.\nCílem je odemknout vitrínu bez spuštění alarmu.\n",
+        "intervention": "Change the countdown from 20 to 10 seconds.",
+        "clarification": null
+      },
+      "phases": {
+        "create": {
+          "status": "success",
+          "error": null,
+          "wallMs": 627.4597999999996,
+          "machineMs": 627.4597999999996,
+          "stages": {
+            "validation": [
+              619.1129999999998
+            ]
+          }
+        },
+        "edit": {
+          "status": "success",
+          "error": null,
+          "wallMs": 46.722999999999956,
+          "machineMs": 46.722999999999956,
+          "stages": {
+            "validation": [
+              39.11550000000034
+            ]
+          }
+        }
+      },
+      "calls": [],
+      "checks": {
+        "invariants": null,
+        "criticalSupported": null,
+        "criticalCitations": null,
+        "otherCitations": null,
+        "rejectedUnchanged": null,
+        "problematicBlocked": null,
+        "rules": null,
+        "branchDelta": true,
+        "visualUsable": null
+      }
+    },
+    {
+      "index": 2,
+      "caseId": "museum-development",
+      "repeat": 2,
+      "input": {
+        "id": "museum-development",
+        "kind": "complete",
+        "source": "Fiktivní muzejní procedura pro demonstrační simulaci.\nNejde o popis skutečného zabezpečení.\n\nMístnost obsahuje vstupní senzor A, vzdálený senzor B u vitríny a vitrínu.\nNávštěvník začíná u vstupu. K senzoru musí dojít; aktivovat jej lze pouze z přilehlého dosažitelného místa.\nNa začátku jsou oba senzory neaktivní, vitrína zamčená a alarm vypnutý.\nPrvní aktivace A spustí odpočet 20 sekund. Další aktivace A jej nerestartuje.\nAktivace B před aktivací A nemá účinek a neukládá se pro pozdější použití.\nPokud návštěvník aktivuje B přísně před vypršením odpočtu spuštěného A, vitrína se odemkne a odpočet se zruší.\nPokud odpočet vyprší dříve, než dojde k platné aktivaci B, spustí se alarm a vitrína zůstane zamčená.\nPři aktivaci B přesně v okamžiku expirace má přednost expirace.\nPo spuštění alarmu nelze vitrínu v daném běhu odemknout. Po odemčení už opakované aktivace nic nemění.\nCílem je odemknout vitrínu bez spuštění alarmu.\n",
+        "intervention": "Change the countdown from 20 to 10 seconds.",
+        "clarification": null
+      },
+      "phases": {
+        "create": {
+          "status": "success",
+          "error": null,
+          "wallMs": 566.2958999999996,
+          "machineMs": 566.2958999999996,
+          "stages": {
+            "validation": [
+              538.9351000000001
+            ]
+          }
+        },
+        "edit": {
+          "status": "success",
+          "error": null,
+          "wallMs": 44.564400000000205,
+          "machineMs": 44.564400000000205,
+          "stages": {
+            "validation": [
+              37.07520000000022
+            ]
+          }
+        }
+      },
+      "calls": [],
+      "checks": {
+        "invariants": null,
+        "criticalSupported": null,
+        "criticalCitations": null,
+        "otherCitations": null,
+        "rejectedUnchanged": null,
+        "problematicBlocked": null,
+        "rules": null,
+        "branchDelta": true,
+        "visualUsable": null
+      }
+    }
+  ],
+  "stopReason": null
+}

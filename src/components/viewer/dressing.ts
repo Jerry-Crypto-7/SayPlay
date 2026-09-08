@@ -29,7 +29,7 @@
  * jádro je. Kit musí jít postavit ve stromu, kde `src/sim/` není.
  */
 
-import { FAMILIES } from '@/geom/families';
+import { familyForSeed as familyFromSeed } from '@/geom/family-choice';
 import type { WorldDocRuntime } from '@/sim/interpreter';
 import { hashWords } from '@/sim/hash';
 import { createStreams, nextInt } from '@/sim/rng';
@@ -37,7 +37,7 @@ import { createStreams, nextInt } from '@/sim/rng';
 import { visualRoleOf } from './projection';
 
 /** Čím kus ve scéně je. Rozhoduje o tom, jak vysoko sedí a jestli se hýbe. */
-export type DressingKind = 'floor' | 'wall' | 'zone' | 'scatter';
+export type DressingKind = 'floor' | 'wall' | 'zone' | 'scatter' | 'fill';
 
 export interface DressingPlacement {
   readonly kind: DressingKind;
@@ -92,17 +92,48 @@ const SCATTER_PIECES = ['organic.pebble', 'organic.reed', 'organic.shrub'] as co
 const SCATTER_ODDS = 9;
 
 /**
- * Výtvarná rodina kulisy.
+ * Výplň — pás kusů **za** hranou mřížky, jeden pool na prstenec.
+ *
+ * Do 27. 8. 2026 končil svět hranou hrací plochy a za ní byla prázdnota:
+ * vygenerovaný svět kreslil 8 700 až 11 400 trojúhelníků ze stropu 120 000,
+ * tedy pod desetinu rozpočtu, a valnou většinu z toho nesly dlaždice podlahy.
+ * Tohle je ta hustota, kterou hrací plocha dodat nemůže — kusů uvnitř mřížky je
+ * pevný počet a mají svoji roli.
+ *
+ * **Pořadí polí je pořadí prstenců od mřížky ven a je to jediné, co určuje
+ * výšku.** Nejbližší prstenec nese jen přízemní kusy (nic přes 0,95 pole), aby
+ * hrací plochu nezakryl, a teprve venku se staví vysoké. `FILL_RINGS` se z pole
+ * odvozuje, ne píše zvlášť — dvě čísla by se rozešla a poslední prstenec by
+ * zůstal bez kusů, nebo by pool přebyl.
+ */
+const FILL_PIECES = [
+  ['organic.pebble', 'organic.boulder', 'organic.shrub', 'fixture.crate'],
+  ['organic.cluster', 'mass.stack', 'fixture.barrel', 'fixture.hatch'],
+  ['organic.tree', 'column.broken', 'column.fluted', 'arch.round'],
+] as const;
+
+/**
+ * Kolik prstenců buněk kolem mřížky výplň zabírá.
+ *
+ * Čte to i kulisa (`scenery.ts`), aby začínala až za posledním prstencem —
+ * jinak by krajina ležela na výplni. Proto je to export, ne lokální konstanta.
+ */
+export const FILL_RINGS = FILL_PIECES.length;
+
+/**
+ * Výtvarná rodina kulisy **pro svět bez věty**.
  *
  * Počítá se ze **semínka**, ne ze streamu. Odběr navíc by posunul všechny
  * následující losy, takže by tatáž věta dala jinou výzdobu než včera — a pořadí
  * odběrů je podle `planDressing` součást kontraktu, ne detail.
  *
- * Vlna 3 T3 tenhle výběr nahradí volbou podle **věty**; do té doby je rodina
- * vlastnost světa, ne vlastnost objednávky, a plán to říká nahlas.
+ * Od vlny 3 T3 je to **záloha, ne hlavní cesta**: rodinu vybírá `look` emise
+ * (`chooseFamily` v `@/geom/family-choice`) a na semínko se padá teprve tehdy,
+ * když v něm není jediné známé slovo. Tělo je proto přeposlání — druhá definice
+ * téhož výpočtu by se rozešla přesně tam, kam se nikdo nedívá.
  */
 export function familyForSeed(seed: number): string {
-  return FAMILIES[seed % FAMILIES.length].id;
+  return familyFromSeed(seed);
 }
 
 function pick<T>(pool: readonly T[], stream: Parameters<typeof nextInt>[0]): T {
@@ -111,6 +142,26 @@ function pick<T>(pool: readonly T[], stream: Parameters<typeof nextInt>[0]): T {
 
 function cellKey(cell: readonly [number, number]): string {
   return `${cell[0]},${cell[1]}`;
+}
+
+/**
+ * Buňky `ring`-tého prstence kolem mřížky, po řádcích.
+ *
+ * Prstenec 1 přiléhá k mřížce, takže žádná vrácená buňka do mřížky nespadá a
+ * dva prstence se nepřekrývají — je to obvod obdélníku zvětšeného o `ring`.
+ * Pořadí je pevné (řádky, v nich sloupce), aby se výplň dvou běhů nerozešla.
+ */
+function ringCells(width: number, height: number, ring: number): (readonly [number, number])[] {
+  const cells: (readonly [number, number])[] = [];
+  const last = { x: width + ring - 1, y: height + ring - 1 };
+
+  for (let y = -ring; y <= last.y; y += 1) {
+    for (let x = -ring; x <= last.x; x += 1) {
+      if (x === -ring || y === -ring || x === last.x || y === last.y) cells.push([x, y]);
+    }
+  }
+
+  return cells;
 }
 
 /**
@@ -215,6 +266,15 @@ export function planDressing(world: WorldDocRuntime): DressingPlan {
       });
     }
   }
+
+  // Výplň je až za dlaždicemi schválně. Pořadí odběrů ze streamu je součást
+  // kontraktu, takže nový blok patří na konec — jinak by se posunula výzdoba
+  // hrací plochy, kterou tahle úloha měnit nemá.
+  FILL_PIECES.forEach((pool, index) => {
+    for (const cell of ringCells(width, height, index + 1)) {
+      statics.push({ kind: 'fill', piece: pick(pool, stream), cell, yaw: nextInt(stream, 0, 3) });
+    }
+  });
 
   const used = new Set(statics.map((placement) => placement.piece));
   for (const piece of Object.values(props)) used.add(piece);

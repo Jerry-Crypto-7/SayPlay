@@ -110,6 +110,22 @@ function makeRepo(fixture: Fixture = {}): string {
   return dir;
 }
 
+/**
+ * Další commit s vlastní dvojicí autor/committer. Oddělené od `makeRepo`,
+ * protože kontrola 1 čte celou historii, ne jen HEAD.
+ */
+function addCommit(dir: string, who: { author: string; committer?: string }): void {
+  const [, name = '', email = ''] = who.author.match(/^(.*?)\s*<(.*)>$/) ?? [];
+  const [, cName = '', cEmail = ''] = who.committer ? (who.committer.match(/^(.*?)\s*<(.*)>$/) ?? []) : [];
+  writeFileSync(join(dir, 'NOTE.md'), 'Druhý commit.\n', 'utf8');
+  run(dir, ['add', '-A']);
+  run(
+    dir,
+    ['-c', `user.name=${name}`, '-c', `user.email=${email}`, 'commit', '-m', 'chore: second'],
+    who.committer ? { GIT_COMMITTER_NAME: cName, GIT_COMMITTER_EMAIL: cEmail } : {},
+  );
+}
+
 function blindCheck(
   cwd: string,
   env: Record<string, string> = {},
@@ -199,6 +215,38 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
     expect(failedChecks(result.out)).toEqual([1]);
     expect(result.out).toContain('committer obsahuje zakázaný token');
     expect(result.out).not.toContain('author obsahuje zakázaný token');
+  });
+
+  /**
+   * Merge přes web GitHubu je jediná identita navíc, kterou si repozitář
+   * vyrobí sám: autorem je anonymní účet, committerem `GitHub`. Dokud brána
+   * počítala identity, padala na tom napořád a nešlo pushnout vůbec nic.
+   * Obojí patří k tomu účtu, takže se z počítání vyjímá — hledání zakázaných
+   * tokenů jím ale prochází dál, což pojistí případ pod tímhle.
+   */
+  it('[1] merge přes web GitHubu neprozrazuje autora', () => {
+    const dir = makeRepo();
+    addCommit(dir, {
+      author: `${ACCOUNT} <${ACCOUNT}@users.noreply.github.com>`,
+      committer: 'GitHub <noreply@github.com>',
+    });
+    const result = blindCheck(dir);
+    expect(result.code).toBe(0);
+    expect(failedChecks(result.out)).toEqual([]);
+  });
+
+  /**
+   * Druhá polovina té výjimky. Kdyby se počítání identit vypnulo místo zúžení,
+   * tenhle případ by prošel — a přesně jím se autor prozradí: cizí jméno bez
+   * jediného zakázaného tokenu, které do historie nepatří.
+   */
+  it('[1] cizí identita bez zakázaného tokenu pořád zastaví push', () => {
+    const dir = makeRepo();
+    addCommit(dir, { author: 'stranger <stranger@example.com>' });
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([1]);
+    expect(result.out).toContain('různých identit');
   });
 
   it('[2] chybějící lokální identita v repu', () => {

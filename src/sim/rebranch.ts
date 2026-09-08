@@ -146,6 +146,13 @@ function shapeMismatch(was: Runtime, now: Runtime): string | null {
  * schovávat ji za kopii by znamenalo mít dvě různá „teď". Volající, který chce
  * obě větve vedle sebe, si postaví druhý runtime; k tomu je `createRuntime`.
  *
+ * **Zamítnutí ale runtimem nehne** (P15 T24). Kontrola tvaru běží *před*
+ * přetočením, protože od chvíle, kdy osu drží produkt, je zamítnutá větev běžný
+ * výsledek porotcovy druhé věty, ne chyba testu — a svět mu nesmí odskočit do
+ * minulosti kvůli změně, která se nakonec neprovedla. Prohodit to jde bezpečně:
+ * `seekTo` sahá jen na `state`, `runState`, `fault`, `tick`, `drainQueue`
+ * a `previous`, tedy na nic z toho, co `shapeMismatch` čte.
+ *
  * Budoucnost se tu **nepočítá**. Větev stojí na tiku větvení a dopočítá si ji
  * volající — `seekTo` nad vrácenou osou, nebo `run`. Rozdíl mezi „odbočilo se"
  * a „doběhlo se do horizontu" je rozdíl, který má vidět ten, kdo o něj požádal.
@@ -156,15 +163,15 @@ export function rebranchAt(
   tick: number,
   nextDoc: WorldDocRuntime,
 ): RebranchResult {
-  const reached = seekTo(timeline, runtime, tick);
-  if (reached !== tick) {
-    return rejected('TICK_UNREACHABLE', `asked for tick ${String(tick)}, the timeline reaches ${String(reached)}`);
-  }
-
   const next = createRuntime(nextDoc);
   const mismatch = shapeMismatch(runtime, next);
   if (mismatch !== null) {
     return rejected('SHAPE_CHANGED', `${mismatch} — a branch from the middle can only change the rules`);
+  }
+
+  const reached = seekTo(timeline, runtime, tick);
+  if (reached !== tick) {
+    return rejected('TICK_UNREACHABLE', `asked for tick ${String(tick)}, the timeline reaches ${String(reached)}`);
   }
 
   next.state.set(runtime.state);

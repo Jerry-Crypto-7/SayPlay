@@ -1,0 +1,4267 @@
+{
+  "runId": "f768e40f-1424-45c0-a68f-0ddd003ecd8d",
+  "suiteSha256": "f00a6e627ea3ac6a21463d0d35a31b11c245766eeff5e552eb44c9e8a072b2c3",
+  "oracleSha256": "0cccfc73b2f690e38e0b232054d7977ed5136714283c09dc12641ee9055d1f19",
+  "rows": [
+    {
+      "index": 0,
+      "caseId": "H01",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H01.room",
+          "met": null
+        },
+        {
+          "id": "H01.actor-position",
+          "met": null
+        },
+        {
+          "id": "H01.start-position",
+          "met": null
+        },
+        {
+          "id": "H01.finish-position",
+          "met": null
+        },
+        {
+          "id": "H01.approach",
+          "met": null
+        },
+        {
+          "id": "H01.goal-position",
+          "met": null
+        },
+        {
+          "id": "H01.adjacent",
+          "met": null
+        },
+        {
+          "id": "H01.remote",
+          "met": null
+        },
+        {
+          "id": "H01.walk",
+          "met": null
+        },
+        {
+          "id": "H01.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H01.initial-started",
+          "met": null
+        },
+        {
+          "id": "H01.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H01.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H01.capacity",
+          "met": null
+        },
+        {
+          "id": "H01.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H01.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H01.start-locked",
+          "met": null
+        },
+        {
+          "id": "H01.start-effect",
+          "met": null
+        },
+        {
+          "id": "H01.finish-started",
+          "met": null
+        },
+        {
+          "id": "H01.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H01.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H01.finish-running",
+          "met": null
+        },
+        {
+          "id": "H01.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H01.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H01.expire",
+          "met": null
+        },
+        {
+          "id": "H01.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H01.finish-first",
+          "met": null
+        },
+        {
+          "id": "H01.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H01.latch",
+          "met": null
+        },
+        {
+          "id": "H01.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H01.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H01.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 1,
+      "caseId": "H02",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H02.room",
+          "met": null
+        },
+        {
+          "id": "H02.actor-position",
+          "met": null
+        },
+        {
+          "id": "H02.start-position",
+          "met": null
+        },
+        {
+          "id": "H02.finish-position",
+          "met": null
+        },
+        {
+          "id": "H02.approach",
+          "met": null
+        },
+        {
+          "id": "H02.goal-position",
+          "met": null
+        },
+        {
+          "id": "H02.adjacent",
+          "met": null
+        },
+        {
+          "id": "H02.remote",
+          "met": null
+        },
+        {
+          "id": "H02.walk",
+          "met": null
+        },
+        {
+          "id": "H02.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H02.initial-started",
+          "met": null
+        },
+        {
+          "id": "H02.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H02.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H02.capacity",
+          "met": null
+        },
+        {
+          "id": "H02.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H02.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H02.start-locked",
+          "met": null
+        },
+        {
+          "id": "H02.start-effect",
+          "met": null
+        },
+        {
+          "id": "H02.finish-started",
+          "met": null
+        },
+        {
+          "id": "H02.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H02.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H02.finish-running",
+          "met": null
+        },
+        {
+          "id": "H02.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H02.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H02.expire",
+          "met": null
+        },
+        {
+          "id": "H02.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H02.finish-first",
+          "met": null
+        },
+        {
+          "id": "H02.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H02.latch",
+          "met": null
+        },
+        {
+          "id": "H02.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H02.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H02.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 2,
+      "caseId": "H03",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H03.room",
+          "met": null
+        },
+        {
+          "id": "H03.actor-position",
+          "met": null
+        },
+        {
+          "id": "H03.start-position",
+          "met": null
+        },
+        {
+          "id": "H03.finish-position",
+          "met": null
+        },
+        {
+          "id": "H03.approach",
+          "met": null
+        },
+        {
+          "id": "H03.goal-position",
+          "met": null
+        },
+        {
+          "id": "H03.adjacent",
+          "met": null
+        },
+        {
+          "id": "H03.remote",
+          "met": null
+        },
+        {
+          "id": "H03.walk",
+          "met": null
+        },
+        {
+          "id": "H03.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H03.initial-started",
+          "met": null
+        },
+        {
+          "id": "H03.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H03.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H03.capacity",
+          "met": null
+        },
+        {
+          "id": "H03.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H03.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H03.start-locked",
+          "met": null
+        },
+        {
+          "id": "H03.start-effect",
+          "met": null
+        },
+        {
+          "id": "H03.finish-started",
+          "met": null
+        },
+        {
+          "id": "H03.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H03.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H03.finish-running",
+          "met": null
+        },
+        {
+          "id": "H03.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H03.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H03.expire",
+          "met": null
+        },
+        {
+          "id": "H03.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H03.finish-first",
+          "met": null
+        },
+        {
+          "id": "H03.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H03.latch",
+          "met": null
+        },
+        {
+          "id": "H03.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H03.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H03.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 3,
+      "caseId": "H04",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H04.room",
+          "met": null
+        },
+        {
+          "id": "H04.actor-position",
+          "met": null
+        },
+        {
+          "id": "H04.start-position",
+          "met": null
+        },
+        {
+          "id": "H04.finish-position",
+          "met": null
+        },
+        {
+          "id": "H04.approach",
+          "met": null
+        },
+        {
+          "id": "H04.goal-position",
+          "met": null
+        },
+        {
+          "id": "H04.adjacent",
+          "met": null
+        },
+        {
+          "id": "H04.remote",
+          "met": null
+        },
+        {
+          "id": "H04.walk",
+          "met": null
+        },
+        {
+          "id": "H04.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H04.initial-started",
+          "met": null
+        },
+        {
+          "id": "H04.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H04.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H04.capacity",
+          "met": null
+        },
+        {
+          "id": "H04.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H04.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H04.start-locked",
+          "met": null
+        },
+        {
+          "id": "H04.start-effect",
+          "met": null
+        },
+        {
+          "id": "H04.finish-started",
+          "met": null
+        },
+        {
+          "id": "H04.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H04.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H04.finish-running",
+          "met": null
+        },
+        {
+          "id": "H04.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H04.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H04.expire",
+          "met": null
+        },
+        {
+          "id": "H04.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H04.finish-first",
+          "met": null
+        },
+        {
+          "id": "H04.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H04.latch",
+          "met": null
+        },
+        {
+          "id": "H04.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H04.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H04.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 4,
+      "caseId": "H05",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H05.room",
+          "met": null
+        },
+        {
+          "id": "H05.actor-position",
+          "met": null
+        },
+        {
+          "id": "H05.start-position",
+          "met": null
+        },
+        {
+          "id": "H05.finish-position",
+          "met": null
+        },
+        {
+          "id": "H05.approach",
+          "met": null
+        },
+        {
+          "id": "H05.goal-position",
+          "met": null
+        },
+        {
+          "id": "H05.adjacent",
+          "met": null
+        },
+        {
+          "id": "H05.remote",
+          "met": null
+        },
+        {
+          "id": "H05.walk",
+          "met": null
+        },
+        {
+          "id": "H05.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H05.initial-started",
+          "met": null
+        },
+        {
+          "id": "H05.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H05.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H05.capacity",
+          "met": null
+        },
+        {
+          "id": "H05.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H05.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H05.start-locked",
+          "met": null
+        },
+        {
+          "id": "H05.start-effect",
+          "met": null
+        },
+        {
+          "id": "H05.finish-started",
+          "met": null
+        },
+        {
+          "id": "H05.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H05.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H05.finish-running",
+          "met": null
+        },
+        {
+          "id": "H05.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H05.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H05.expire",
+          "met": null
+        },
+        {
+          "id": "H05.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H05.finish-first",
+          "met": null
+        },
+        {
+          "id": "H05.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H05.latch",
+          "met": null
+        },
+        {
+          "id": "H05.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H05.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H05.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 5,
+      "caseId": "H06",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H06.room",
+          "met": null
+        },
+        {
+          "id": "H06.actor-position",
+          "met": null
+        },
+        {
+          "id": "H06.start-position",
+          "met": null
+        },
+        {
+          "id": "H06.finish-position",
+          "met": null
+        },
+        {
+          "id": "H06.approach",
+          "met": null
+        },
+        {
+          "id": "H06.goal-position",
+          "met": null
+        },
+        {
+          "id": "H06.adjacent",
+          "met": null
+        },
+        {
+          "id": "H06.remote",
+          "met": null
+        },
+        {
+          "id": "H06.walk",
+          "met": null
+        },
+        {
+          "id": "H06.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H06.initial-started",
+          "met": null
+        },
+        {
+          "id": "H06.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H06.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H06.capacity",
+          "met": null
+        },
+        {
+          "id": "H06.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H06.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H06.start-locked",
+          "met": null
+        },
+        {
+          "id": "H06.start-effect",
+          "met": null
+        },
+        {
+          "id": "H06.finish-started",
+          "met": null
+        },
+        {
+          "id": "H06.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H06.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H06.finish-running",
+          "met": null
+        },
+        {
+          "id": "H06.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H06.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H06.expire",
+          "met": null
+        },
+        {
+          "id": "H06.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H06.finish-first",
+          "met": null
+        },
+        {
+          "id": "H06.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H06.latch",
+          "met": null
+        },
+        {
+          "id": "H06.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H06.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H06.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 6,
+      "caseId": "H07",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H07.room",
+          "met": null
+        },
+        {
+          "id": "H07.actor-position",
+          "met": null
+        },
+        {
+          "id": "H07.start-position",
+          "met": null
+        },
+        {
+          "id": "H07.finish-position",
+          "met": null
+        },
+        {
+          "id": "H07.approach",
+          "met": null
+        },
+        {
+          "id": "H07.goal-position",
+          "met": null
+        },
+        {
+          "id": "H07.adjacent",
+          "met": null
+        },
+        {
+          "id": "H07.remote",
+          "met": null
+        },
+        {
+          "id": "H07.walk",
+          "met": null
+        },
+        {
+          "id": "H07.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H07.initial-started",
+          "met": null
+        },
+        {
+          "id": "H07.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H07.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H07.capacity",
+          "met": null
+        },
+        {
+          "id": "H07.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H07.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H07.start-locked",
+          "met": null
+        },
+        {
+          "id": "H07.start-effect",
+          "met": null
+        },
+        {
+          "id": "H07.finish-started",
+          "met": null
+        },
+        {
+          "id": "H07.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H07.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H07.finish-running",
+          "met": null
+        },
+        {
+          "id": "H07.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H07.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H07.expire",
+          "met": null
+        },
+        {
+          "id": "H07.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H07.finish-first",
+          "met": null
+        },
+        {
+          "id": "H07.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H07.latch",
+          "met": null
+        },
+        {
+          "id": "H07.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H07.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H07.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 7,
+      "caseId": "H08",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H08.room",
+          "met": null
+        },
+        {
+          "id": "H08.actor-position",
+          "met": null
+        },
+        {
+          "id": "H08.start-position",
+          "met": null
+        },
+        {
+          "id": "H08.finish-position",
+          "met": null
+        },
+        {
+          "id": "H08.approach",
+          "met": null
+        },
+        {
+          "id": "H08.goal-position",
+          "met": null
+        },
+        {
+          "id": "H08.adjacent",
+          "met": null
+        },
+        {
+          "id": "H08.remote",
+          "met": null
+        },
+        {
+          "id": "H08.walk",
+          "met": null
+        },
+        {
+          "id": "H08.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H08.initial-started",
+          "met": null
+        },
+        {
+          "id": "H08.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H08.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H08.capacity",
+          "met": null
+        },
+        {
+          "id": "H08.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H08.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H08.start-locked",
+          "met": null
+        },
+        {
+          "id": "H08.start-effect",
+          "met": null
+        },
+        {
+          "id": "H08.finish-started",
+          "met": null
+        },
+        {
+          "id": "H08.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H08.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H08.finish-running",
+          "met": null
+        },
+        {
+          "id": "H08.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H08.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H08.expire",
+          "met": null
+        },
+        {
+          "id": "H08.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H08.finish-first",
+          "met": null
+        },
+        {
+          "id": "H08.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H08.latch",
+          "met": null
+        },
+        {
+          "id": "H08.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H08.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H08.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 8,
+      "caseId": "H09",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H09.room",
+          "met": null
+        },
+        {
+          "id": "H09.actor-position",
+          "met": null
+        },
+        {
+          "id": "H09.start-position",
+          "met": null
+        },
+        {
+          "id": "H09.finish-position",
+          "met": null
+        },
+        {
+          "id": "H09.approach",
+          "met": null
+        },
+        {
+          "id": "H09.goal-position",
+          "met": null
+        },
+        {
+          "id": "H09.adjacent",
+          "met": null
+        },
+        {
+          "id": "H09.remote",
+          "met": null
+        },
+        {
+          "id": "H09.walk",
+          "met": null
+        },
+        {
+          "id": "H09.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H09.initial-started",
+          "met": null
+        },
+        {
+          "id": "H09.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H09.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H09.capacity",
+          "met": null
+        },
+        {
+          "id": "H09.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H09.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H09.start-locked",
+          "met": null
+        },
+        {
+          "id": "H09.start-effect",
+          "met": null
+        },
+        {
+          "id": "H09.finish-started",
+          "met": null
+        },
+        {
+          "id": "H09.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H09.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H09.finish-running",
+          "met": null
+        },
+        {
+          "id": "H09.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H09.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H09.expire",
+          "met": null
+        },
+        {
+          "id": "H09.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H09.finish-first",
+          "met": null
+        },
+        {
+          "id": "H09.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H09.latch",
+          "met": null
+        },
+        {
+          "id": "H09.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H09.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H09.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 9,
+      "caseId": "H10",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H10.room",
+          "met": null
+        },
+        {
+          "id": "H10.actor-position",
+          "met": null
+        },
+        {
+          "id": "H10.start-position",
+          "met": null
+        },
+        {
+          "id": "H10.finish-position",
+          "met": null
+        },
+        {
+          "id": "H10.approach",
+          "met": null
+        },
+        {
+          "id": "H10.goal-position",
+          "met": null
+        },
+        {
+          "id": "H10.adjacent",
+          "met": null
+        },
+        {
+          "id": "H10.remote",
+          "met": null
+        },
+        {
+          "id": "H10.walk",
+          "met": null
+        },
+        {
+          "id": "H10.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H10.initial-started",
+          "met": null
+        },
+        {
+          "id": "H10.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H10.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H10.capacity",
+          "met": null
+        },
+        {
+          "id": "H10.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H10.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H10.start-locked",
+          "met": null
+        },
+        {
+          "id": "H10.start-effect",
+          "met": null
+        },
+        {
+          "id": "H10.finish-started",
+          "met": null
+        },
+        {
+          "id": "H10.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H10.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H10.finish-running",
+          "met": null
+        },
+        {
+          "id": "H10.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H10.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H10.expire",
+          "met": null
+        },
+        {
+          "id": "H10.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H10.finish-first",
+          "met": null
+        },
+        {
+          "id": "H10.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H10.latch",
+          "met": null
+        },
+        {
+          "id": "H10.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H10.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H10.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 10,
+      "caseId": "H01",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H01.room",
+          "met": null
+        },
+        {
+          "id": "H01.actor-position",
+          "met": null
+        },
+        {
+          "id": "H01.start-position",
+          "met": null
+        },
+        {
+          "id": "H01.finish-position",
+          "met": null
+        },
+        {
+          "id": "H01.approach",
+          "met": null
+        },
+        {
+          "id": "H01.goal-position",
+          "met": null
+        },
+        {
+          "id": "H01.adjacent",
+          "met": null
+        },
+        {
+          "id": "H01.remote",
+          "met": null
+        },
+        {
+          "id": "H01.walk",
+          "met": null
+        },
+        {
+          "id": "H01.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H01.initial-started",
+          "met": null
+        },
+        {
+          "id": "H01.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H01.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H01.capacity",
+          "met": null
+        },
+        {
+          "id": "H01.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H01.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H01.start-locked",
+          "met": null
+        },
+        {
+          "id": "H01.start-effect",
+          "met": null
+        },
+        {
+          "id": "H01.finish-started",
+          "met": null
+        },
+        {
+          "id": "H01.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H01.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H01.finish-running",
+          "met": null
+        },
+        {
+          "id": "H01.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H01.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H01.expire",
+          "met": null
+        },
+        {
+          "id": "H01.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H01.finish-first",
+          "met": null
+        },
+        {
+          "id": "H01.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H01.latch",
+          "met": null
+        },
+        {
+          "id": "H01.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H01.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H01.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 11,
+      "caseId": "H02",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H02.room",
+          "met": null
+        },
+        {
+          "id": "H02.actor-position",
+          "met": null
+        },
+        {
+          "id": "H02.start-position",
+          "met": null
+        },
+        {
+          "id": "H02.finish-position",
+          "met": null
+        },
+        {
+          "id": "H02.approach",
+          "met": null
+        },
+        {
+          "id": "H02.goal-position",
+          "met": null
+        },
+        {
+          "id": "H02.adjacent",
+          "met": null
+        },
+        {
+          "id": "H02.remote",
+          "met": null
+        },
+        {
+          "id": "H02.walk",
+          "met": null
+        },
+        {
+          "id": "H02.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H02.initial-started",
+          "met": null
+        },
+        {
+          "id": "H02.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H02.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H02.capacity",
+          "met": null
+        },
+        {
+          "id": "H02.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H02.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H02.start-locked",
+          "met": null
+        },
+        {
+          "id": "H02.start-effect",
+          "met": null
+        },
+        {
+          "id": "H02.finish-started",
+          "met": null
+        },
+        {
+          "id": "H02.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H02.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H02.finish-running",
+          "met": null
+        },
+        {
+          "id": "H02.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H02.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H02.expire",
+          "met": null
+        },
+        {
+          "id": "H02.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H02.finish-first",
+          "met": null
+        },
+        {
+          "id": "H02.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H02.latch",
+          "met": null
+        },
+        {
+          "id": "H02.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H02.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H02.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 12,
+      "caseId": "H03",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H03.room",
+          "met": null
+        },
+        {
+          "id": "H03.actor-position",
+          "met": null
+        },
+        {
+          "id": "H03.start-position",
+          "met": null
+        },
+        {
+          "id": "H03.finish-position",
+          "met": null
+        },
+        {
+          "id": "H03.approach",
+          "met": null
+        },
+        {
+          "id": "H03.goal-position",
+          "met": null
+        },
+        {
+          "id": "H03.adjacent",
+          "met": null
+        },
+        {
+          "id": "H03.remote",
+          "met": null
+        },
+        {
+          "id": "H03.walk",
+          "met": null
+        },
+        {
+          "id": "H03.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H03.initial-started",
+          "met": null
+        },
+        {
+          "id": "H03.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H03.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H03.capacity",
+          "met": null
+        },
+        {
+          "id": "H03.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H03.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H03.start-locked",
+          "met": null
+        },
+        {
+          "id": "H03.start-effect",
+          "met": null
+        },
+        {
+          "id": "H03.finish-started",
+          "met": null
+        },
+        {
+          "id": "H03.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H03.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H03.finish-running",
+          "met": null
+        },
+        {
+          "id": "H03.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H03.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H03.expire",
+          "met": null
+        },
+        {
+          "id": "H03.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H03.finish-first",
+          "met": null
+        },
+        {
+          "id": "H03.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H03.latch",
+          "met": null
+        },
+        {
+          "id": "H03.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H03.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H03.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 13,
+      "caseId": "H04",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H04.room",
+          "met": null
+        },
+        {
+          "id": "H04.actor-position",
+          "met": null
+        },
+        {
+          "id": "H04.start-position",
+          "met": null
+        },
+        {
+          "id": "H04.finish-position",
+          "met": null
+        },
+        {
+          "id": "H04.approach",
+          "met": null
+        },
+        {
+          "id": "H04.goal-position",
+          "met": null
+        },
+        {
+          "id": "H04.adjacent",
+          "met": null
+        },
+        {
+          "id": "H04.remote",
+          "met": null
+        },
+        {
+          "id": "H04.walk",
+          "met": null
+        },
+        {
+          "id": "H04.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H04.initial-started",
+          "met": null
+        },
+        {
+          "id": "H04.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H04.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H04.capacity",
+          "met": null
+        },
+        {
+          "id": "H04.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H04.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H04.start-locked",
+          "met": null
+        },
+        {
+          "id": "H04.start-effect",
+          "met": null
+        },
+        {
+          "id": "H04.finish-started",
+          "met": null
+        },
+        {
+          "id": "H04.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H04.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H04.finish-running",
+          "met": null
+        },
+        {
+          "id": "H04.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H04.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H04.expire",
+          "met": null
+        },
+        {
+          "id": "H04.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H04.finish-first",
+          "met": null
+        },
+        {
+          "id": "H04.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H04.latch",
+          "met": null
+        },
+        {
+          "id": "H04.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H04.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H04.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 14,
+      "caseId": "H05",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H05.room",
+          "met": null
+        },
+        {
+          "id": "H05.actor-position",
+          "met": null
+        },
+        {
+          "id": "H05.start-position",
+          "met": null
+        },
+        {
+          "id": "H05.finish-position",
+          "met": null
+        },
+        {
+          "id": "H05.approach",
+          "met": null
+        },
+        {
+          "id": "H05.goal-position",
+          "met": null
+        },
+        {
+          "id": "H05.adjacent",
+          "met": null
+        },
+        {
+          "id": "H05.remote",
+          "met": null
+        },
+        {
+          "id": "H05.walk",
+          "met": null
+        },
+        {
+          "id": "H05.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H05.initial-started",
+          "met": null
+        },
+        {
+          "id": "H05.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H05.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H05.capacity",
+          "met": null
+        },
+        {
+          "id": "H05.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H05.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H05.start-locked",
+          "met": null
+        },
+        {
+          "id": "H05.start-effect",
+          "met": null
+        },
+        {
+          "id": "H05.finish-started",
+          "met": null
+        },
+        {
+          "id": "H05.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H05.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H05.finish-running",
+          "met": null
+        },
+        {
+          "id": "H05.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H05.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H05.expire",
+          "met": null
+        },
+        {
+          "id": "H05.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H05.finish-first",
+          "met": null
+        },
+        {
+          "id": "H05.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H05.latch",
+          "met": null
+        },
+        {
+          "id": "H05.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H05.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H05.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 15,
+      "caseId": "H06",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H06.room",
+          "met": null
+        },
+        {
+          "id": "H06.actor-position",
+          "met": null
+        },
+        {
+          "id": "H06.start-position",
+          "met": null
+        },
+        {
+          "id": "H06.finish-position",
+          "met": null
+        },
+        {
+          "id": "H06.approach",
+          "met": null
+        },
+        {
+          "id": "H06.goal-position",
+          "met": null
+        },
+        {
+          "id": "H06.adjacent",
+          "met": null
+        },
+        {
+          "id": "H06.remote",
+          "met": null
+        },
+        {
+          "id": "H06.walk",
+          "met": null
+        },
+        {
+          "id": "H06.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H06.initial-started",
+          "met": null
+        },
+        {
+          "id": "H06.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H06.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H06.capacity",
+          "met": null
+        },
+        {
+          "id": "H06.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H06.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H06.start-locked",
+          "met": null
+        },
+        {
+          "id": "H06.start-effect",
+          "met": null
+        },
+        {
+          "id": "H06.finish-started",
+          "met": null
+        },
+        {
+          "id": "H06.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H06.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H06.finish-running",
+          "met": null
+        },
+        {
+          "id": "H06.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H06.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H06.expire",
+          "met": null
+        },
+        {
+          "id": "H06.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H06.finish-first",
+          "met": null
+        },
+        {
+          "id": "H06.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H06.latch",
+          "met": null
+        },
+        {
+          "id": "H06.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H06.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H06.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 16,
+      "caseId": "H07",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H07.room",
+          "met": null
+        },
+        {
+          "id": "H07.actor-position",
+          "met": null
+        },
+        {
+          "id": "H07.start-position",
+          "met": null
+        },
+        {
+          "id": "H07.finish-position",
+          "met": null
+        },
+        {
+          "id": "H07.approach",
+          "met": null
+        },
+        {
+          "id": "H07.goal-position",
+          "met": null
+        },
+        {
+          "id": "H07.adjacent",
+          "met": null
+        },
+        {
+          "id": "H07.remote",
+          "met": null
+        },
+        {
+          "id": "H07.walk",
+          "met": null
+        },
+        {
+          "id": "H07.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H07.initial-started",
+          "met": null
+        },
+        {
+          "id": "H07.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H07.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H07.capacity",
+          "met": null
+        },
+        {
+          "id": "H07.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H07.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H07.start-locked",
+          "met": null
+        },
+        {
+          "id": "H07.start-effect",
+          "met": null
+        },
+        {
+          "id": "H07.finish-started",
+          "met": null
+        },
+        {
+          "id": "H07.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H07.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H07.finish-running",
+          "met": null
+        },
+        {
+          "id": "H07.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H07.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H07.expire",
+          "met": null
+        },
+        {
+          "id": "H07.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H07.finish-first",
+          "met": null
+        },
+        {
+          "id": "H07.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H07.latch",
+          "met": null
+        },
+        {
+          "id": "H07.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H07.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H07.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 17,
+      "caseId": "H08",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H08.room",
+          "met": null
+        },
+        {
+          "id": "H08.actor-position",
+          "met": null
+        },
+        {
+          "id": "H08.start-position",
+          "met": null
+        },
+        {
+          "id": "H08.finish-position",
+          "met": null
+        },
+        {
+          "id": "H08.approach",
+          "met": null
+        },
+        {
+          "id": "H08.goal-position",
+          "met": null
+        },
+        {
+          "id": "H08.adjacent",
+          "met": null
+        },
+        {
+          "id": "H08.remote",
+          "met": null
+        },
+        {
+          "id": "H08.walk",
+          "met": null
+        },
+        {
+          "id": "H08.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H08.initial-started",
+          "met": null
+        },
+        {
+          "id": "H08.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H08.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H08.capacity",
+          "met": null
+        },
+        {
+          "id": "H08.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H08.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H08.start-locked",
+          "met": null
+        },
+        {
+          "id": "H08.start-effect",
+          "met": null
+        },
+        {
+          "id": "H08.finish-started",
+          "met": null
+        },
+        {
+          "id": "H08.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H08.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H08.finish-running",
+          "met": null
+        },
+        {
+          "id": "H08.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H08.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H08.expire",
+          "met": null
+        },
+        {
+          "id": "H08.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H08.finish-first",
+          "met": null
+        },
+        {
+          "id": "H08.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H08.latch",
+          "met": null
+        },
+        {
+          "id": "H08.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H08.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H08.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 18,
+      "caseId": "H09",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H09.room",
+          "met": null
+        },
+        {
+          "id": "H09.actor-position",
+          "met": null
+        },
+        {
+          "id": "H09.start-position",
+          "met": null
+        },
+        {
+          "id": "H09.finish-position",
+          "met": null
+        },
+        {
+          "id": "H09.approach",
+          "met": null
+        },
+        {
+          "id": "H09.goal-position",
+          "met": null
+        },
+        {
+          "id": "H09.adjacent",
+          "met": null
+        },
+        {
+          "id": "H09.remote",
+          "met": null
+        },
+        {
+          "id": "H09.walk",
+          "met": null
+        },
+        {
+          "id": "H09.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H09.initial-started",
+          "met": null
+        },
+        {
+          "id": "H09.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H09.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H09.capacity",
+          "met": null
+        },
+        {
+          "id": "H09.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H09.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H09.start-locked",
+          "met": null
+        },
+        {
+          "id": "H09.start-effect",
+          "met": null
+        },
+        {
+          "id": "H09.finish-started",
+          "met": null
+        },
+        {
+          "id": "H09.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H09.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H09.finish-running",
+          "met": null
+        },
+        {
+          "id": "H09.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H09.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H09.expire",
+          "met": null
+        },
+        {
+          "id": "H09.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H09.finish-first",
+          "met": null
+        },
+        {
+          "id": "H09.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H09.latch",
+          "met": null
+        },
+        {
+          "id": "H09.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H09.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H09.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 19,
+      "caseId": "H10",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H10.room",
+          "met": null
+        },
+        {
+          "id": "H10.actor-position",
+          "met": null
+        },
+        {
+          "id": "H10.start-position",
+          "met": null
+        },
+        {
+          "id": "H10.finish-position",
+          "met": null
+        },
+        {
+          "id": "H10.approach",
+          "met": null
+        },
+        {
+          "id": "H10.goal-position",
+          "met": null
+        },
+        {
+          "id": "H10.adjacent",
+          "met": null
+        },
+        {
+          "id": "H10.remote",
+          "met": null
+        },
+        {
+          "id": "H10.walk",
+          "met": null
+        },
+        {
+          "id": "H10.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H10.initial-started",
+          "met": null
+        },
+        {
+          "id": "H10.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H10.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H10.capacity",
+          "met": null
+        },
+        {
+          "id": "H10.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H10.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H10.start-locked",
+          "met": null
+        },
+        {
+          "id": "H10.start-effect",
+          "met": null
+        },
+        {
+          "id": "H10.finish-started",
+          "met": null
+        },
+        {
+          "id": "H10.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H10.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H10.finish-running",
+          "met": null
+        },
+        {
+          "id": "H10.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H10.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H10.expire",
+          "met": null
+        },
+        {
+          "id": "H10.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H10.finish-first",
+          "met": null
+        },
+        {
+          "id": "H10.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H10.latch",
+          "met": null
+        },
+        {
+          "id": "H10.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H10.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H10.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 20,
+      "caseId": "H01",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H01.room",
+          "met": null
+        },
+        {
+          "id": "H01.actor-position",
+          "met": null
+        },
+        {
+          "id": "H01.start-position",
+          "met": null
+        },
+        {
+          "id": "H01.finish-position",
+          "met": null
+        },
+        {
+          "id": "H01.approach",
+          "met": null
+        },
+        {
+          "id": "H01.goal-position",
+          "met": null
+        },
+        {
+          "id": "H01.adjacent",
+          "met": null
+        },
+        {
+          "id": "H01.remote",
+          "met": null
+        },
+        {
+          "id": "H01.walk",
+          "met": null
+        },
+        {
+          "id": "H01.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H01.initial-started",
+          "met": null
+        },
+        {
+          "id": "H01.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H01.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H01.capacity",
+          "met": null
+        },
+        {
+          "id": "H01.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H01.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H01.start-locked",
+          "met": null
+        },
+        {
+          "id": "H01.start-effect",
+          "met": null
+        },
+        {
+          "id": "H01.finish-started",
+          "met": null
+        },
+        {
+          "id": "H01.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H01.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H01.finish-running",
+          "met": null
+        },
+        {
+          "id": "H01.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H01.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H01.expire",
+          "met": null
+        },
+        {
+          "id": "H01.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H01.finish-first",
+          "met": null
+        },
+        {
+          "id": "H01.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H01.latch",
+          "met": null
+        },
+        {
+          "id": "H01.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H01.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H01.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 21,
+      "caseId": "H02",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H02.room",
+          "met": null
+        },
+        {
+          "id": "H02.actor-position",
+          "met": null
+        },
+        {
+          "id": "H02.start-position",
+          "met": null
+        },
+        {
+          "id": "H02.finish-position",
+          "met": null
+        },
+        {
+          "id": "H02.approach",
+          "met": null
+        },
+        {
+          "id": "H02.goal-position",
+          "met": null
+        },
+        {
+          "id": "H02.adjacent",
+          "met": null
+        },
+        {
+          "id": "H02.remote",
+          "met": null
+        },
+        {
+          "id": "H02.walk",
+          "met": null
+        },
+        {
+          "id": "H02.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H02.initial-started",
+          "met": null
+        },
+        {
+          "id": "H02.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H02.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H02.capacity",
+          "met": null
+        },
+        {
+          "id": "H02.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H02.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H02.start-locked",
+          "met": null
+        },
+        {
+          "id": "H02.start-effect",
+          "met": null
+        },
+        {
+          "id": "H02.finish-started",
+          "met": null
+        },
+        {
+          "id": "H02.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H02.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H02.finish-running",
+          "met": null
+        },
+        {
+          "id": "H02.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H02.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H02.expire",
+          "met": null
+        },
+        {
+          "id": "H02.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H02.finish-first",
+          "met": null
+        },
+        {
+          "id": "H02.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H02.latch",
+          "met": null
+        },
+        {
+          "id": "H02.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H02.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H02.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 22,
+      "caseId": "H03",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H03.room",
+          "met": null
+        },
+        {
+          "id": "H03.actor-position",
+          "met": null
+        },
+        {
+          "id": "H03.start-position",
+          "met": null
+        },
+        {
+          "id": "H03.finish-position",
+          "met": null
+        },
+        {
+          "id": "H03.approach",
+          "met": null
+        },
+        {
+          "id": "H03.goal-position",
+          "met": null
+        },
+        {
+          "id": "H03.adjacent",
+          "met": null
+        },
+        {
+          "id": "H03.remote",
+          "met": null
+        },
+        {
+          "id": "H03.walk",
+          "met": null
+        },
+        {
+          "id": "H03.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H03.initial-started",
+          "met": null
+        },
+        {
+          "id": "H03.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H03.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H03.capacity",
+          "met": null
+        },
+        {
+          "id": "H03.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H03.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H03.start-locked",
+          "met": null
+        },
+        {
+          "id": "H03.start-effect",
+          "met": null
+        },
+        {
+          "id": "H03.finish-started",
+          "met": null
+        },
+        {
+          "id": "H03.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H03.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H03.finish-running",
+          "met": null
+        },
+        {
+          "id": "H03.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H03.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H03.expire",
+          "met": null
+        },
+        {
+          "id": "H03.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H03.finish-first",
+          "met": null
+        },
+        {
+          "id": "H03.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H03.latch",
+          "met": null
+        },
+        {
+          "id": "H03.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H03.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H03.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 23,
+      "caseId": "H04",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H04.room",
+          "met": null
+        },
+        {
+          "id": "H04.actor-position",
+          "met": null
+        },
+        {
+          "id": "H04.start-position",
+          "met": null
+        },
+        {
+          "id": "H04.finish-position",
+          "met": null
+        },
+        {
+          "id": "H04.approach",
+          "met": null
+        },
+        {
+          "id": "H04.goal-position",
+          "met": null
+        },
+        {
+          "id": "H04.adjacent",
+          "met": null
+        },
+        {
+          "id": "H04.remote",
+          "met": null
+        },
+        {
+          "id": "H04.walk",
+          "met": null
+        },
+        {
+          "id": "H04.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H04.initial-started",
+          "met": null
+        },
+        {
+          "id": "H04.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H04.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H04.capacity",
+          "met": null
+        },
+        {
+          "id": "H04.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H04.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H04.start-locked",
+          "met": null
+        },
+        {
+          "id": "H04.start-effect",
+          "met": null
+        },
+        {
+          "id": "H04.finish-started",
+          "met": null
+        },
+        {
+          "id": "H04.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H04.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H04.finish-running",
+          "met": null
+        },
+        {
+          "id": "H04.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H04.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H04.expire",
+          "met": null
+        },
+        {
+          "id": "H04.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H04.finish-first",
+          "met": null
+        },
+        {
+          "id": "H04.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H04.latch",
+          "met": null
+        },
+        {
+          "id": "H04.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H04.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H04.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 24,
+      "caseId": "H05",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H05.room",
+          "met": null
+        },
+        {
+          "id": "H05.actor-position",
+          "met": null
+        },
+        {
+          "id": "H05.start-position",
+          "met": null
+        },
+        {
+          "id": "H05.finish-position",
+          "met": null
+        },
+        {
+          "id": "H05.approach",
+          "met": null
+        },
+        {
+          "id": "H05.goal-position",
+          "met": null
+        },
+        {
+          "id": "H05.adjacent",
+          "met": null
+        },
+        {
+          "id": "H05.remote",
+          "met": null
+        },
+        {
+          "id": "H05.walk",
+          "met": null
+        },
+        {
+          "id": "H05.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H05.initial-started",
+          "met": null
+        },
+        {
+          "id": "H05.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H05.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H05.capacity",
+          "met": null
+        },
+        {
+          "id": "H05.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H05.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H05.start-locked",
+          "met": null
+        },
+        {
+          "id": "H05.start-effect",
+          "met": null
+        },
+        {
+          "id": "H05.finish-started",
+          "met": null
+        },
+        {
+          "id": "H05.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H05.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H05.finish-running",
+          "met": null
+        },
+        {
+          "id": "H05.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H05.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H05.expire",
+          "met": null
+        },
+        {
+          "id": "H05.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H05.finish-first",
+          "met": null
+        },
+        {
+          "id": "H05.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H05.latch",
+          "met": null
+        },
+        {
+          "id": "H05.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H05.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H05.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 25,
+      "caseId": "H06",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H06.room",
+          "met": null
+        },
+        {
+          "id": "H06.actor-position",
+          "met": null
+        },
+        {
+          "id": "H06.start-position",
+          "met": null
+        },
+        {
+          "id": "H06.finish-position",
+          "met": null
+        },
+        {
+          "id": "H06.approach",
+          "met": null
+        },
+        {
+          "id": "H06.goal-position",
+          "met": null
+        },
+        {
+          "id": "H06.adjacent",
+          "met": null
+        },
+        {
+          "id": "H06.remote",
+          "met": null
+        },
+        {
+          "id": "H06.walk",
+          "met": null
+        },
+        {
+          "id": "H06.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H06.initial-started",
+          "met": null
+        },
+        {
+          "id": "H06.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H06.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H06.capacity",
+          "met": null
+        },
+        {
+          "id": "H06.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H06.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H06.start-locked",
+          "met": null
+        },
+        {
+          "id": "H06.start-effect",
+          "met": null
+        },
+        {
+          "id": "H06.finish-started",
+          "met": null
+        },
+        {
+          "id": "H06.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H06.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H06.finish-running",
+          "met": null
+        },
+        {
+          "id": "H06.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H06.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H06.expire",
+          "met": null
+        },
+        {
+          "id": "H06.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H06.finish-first",
+          "met": null
+        },
+        {
+          "id": "H06.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H06.latch",
+          "met": null
+        },
+        {
+          "id": "H06.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H06.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H06.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 26,
+      "caseId": "H07",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H07.room",
+          "met": null
+        },
+        {
+          "id": "H07.actor-position",
+          "met": null
+        },
+        {
+          "id": "H07.start-position",
+          "met": null
+        },
+        {
+          "id": "H07.finish-position",
+          "met": null
+        },
+        {
+          "id": "H07.approach",
+          "met": null
+        },
+        {
+          "id": "H07.goal-position",
+          "met": null
+        },
+        {
+          "id": "H07.adjacent",
+          "met": null
+        },
+        {
+          "id": "H07.remote",
+          "met": null
+        },
+        {
+          "id": "H07.walk",
+          "met": null
+        },
+        {
+          "id": "H07.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H07.initial-started",
+          "met": null
+        },
+        {
+          "id": "H07.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H07.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H07.capacity",
+          "met": null
+        },
+        {
+          "id": "H07.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H07.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H07.start-locked",
+          "met": null
+        },
+        {
+          "id": "H07.start-effect",
+          "met": null
+        },
+        {
+          "id": "H07.finish-started",
+          "met": null
+        },
+        {
+          "id": "H07.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H07.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H07.finish-running",
+          "met": null
+        },
+        {
+          "id": "H07.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H07.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H07.expire",
+          "met": null
+        },
+        {
+          "id": "H07.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H07.finish-first",
+          "met": null
+        },
+        {
+          "id": "H07.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H07.latch",
+          "met": null
+        },
+        {
+          "id": "H07.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H07.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H07.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 27,
+      "caseId": "H08",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H08.room",
+          "met": null
+        },
+        {
+          "id": "H08.actor-position",
+          "met": null
+        },
+        {
+          "id": "H08.start-position",
+          "met": null
+        },
+        {
+          "id": "H08.finish-position",
+          "met": null
+        },
+        {
+          "id": "H08.approach",
+          "met": null
+        },
+        {
+          "id": "H08.goal-position",
+          "met": null
+        },
+        {
+          "id": "H08.adjacent",
+          "met": null
+        },
+        {
+          "id": "H08.remote",
+          "met": null
+        },
+        {
+          "id": "H08.walk",
+          "met": null
+        },
+        {
+          "id": "H08.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H08.initial-started",
+          "met": null
+        },
+        {
+          "id": "H08.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H08.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H08.capacity",
+          "met": null
+        },
+        {
+          "id": "H08.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H08.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H08.start-locked",
+          "met": null
+        },
+        {
+          "id": "H08.start-effect",
+          "met": null
+        },
+        {
+          "id": "H08.finish-started",
+          "met": null
+        },
+        {
+          "id": "H08.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H08.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H08.finish-running",
+          "met": null
+        },
+        {
+          "id": "H08.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H08.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H08.expire",
+          "met": null
+        },
+        {
+          "id": "H08.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H08.finish-first",
+          "met": null
+        },
+        {
+          "id": "H08.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H08.latch",
+          "met": null
+        },
+        {
+          "id": "H08.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H08.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H08.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 28,
+      "caseId": "H09",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H09.room",
+          "met": null
+        },
+        {
+          "id": "H09.actor-position",
+          "met": null
+        },
+        {
+          "id": "H09.start-position",
+          "met": null
+        },
+        {
+          "id": "H09.finish-position",
+          "met": null
+        },
+        {
+          "id": "H09.approach",
+          "met": null
+        },
+        {
+          "id": "H09.goal-position",
+          "met": null
+        },
+        {
+          "id": "H09.adjacent",
+          "met": null
+        },
+        {
+          "id": "H09.remote",
+          "met": null
+        },
+        {
+          "id": "H09.walk",
+          "met": null
+        },
+        {
+          "id": "H09.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H09.initial-started",
+          "met": null
+        },
+        {
+          "id": "H09.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H09.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H09.capacity",
+          "met": null
+        },
+        {
+          "id": "H09.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H09.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H09.start-locked",
+          "met": null
+        },
+        {
+          "id": "H09.start-effect",
+          "met": null
+        },
+        {
+          "id": "H09.finish-started",
+          "met": null
+        },
+        {
+          "id": "H09.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H09.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H09.finish-running",
+          "met": null
+        },
+        {
+          "id": "H09.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H09.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H09.expire",
+          "met": null
+        },
+        {
+          "id": "H09.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H09.finish-first",
+          "met": null
+        },
+        {
+          "id": "H09.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H09.latch",
+          "met": null
+        },
+        {
+          "id": "H09.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H09.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H09.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    },
+    {
+      "index": 29,
+      "caseId": "H10",
+      "reviewer": null,
+      "reviewedAt": null,
+      "criticalSupported": null,
+      "criticalCitations": null,
+      "clarificationCorrect": null,
+      "visualUsable": null,
+      "atoms": [
+        {
+          "id": "H10.room",
+          "met": null
+        },
+        {
+          "id": "H10.actor-position",
+          "met": null
+        },
+        {
+          "id": "H10.start-position",
+          "met": null
+        },
+        {
+          "id": "H10.finish-position",
+          "met": null
+        },
+        {
+          "id": "H10.approach",
+          "met": null
+        },
+        {
+          "id": "H10.goal-position",
+          "met": null
+        },
+        {
+          "id": "H10.adjacent",
+          "met": null
+        },
+        {
+          "id": "H10.remote",
+          "met": null
+        },
+        {
+          "id": "H10.walk",
+          "met": null
+        },
+        {
+          "id": "H10.initial-lock",
+          "met": null
+        },
+        {
+          "id": "H10.initial-started",
+          "met": null
+        },
+        {
+          "id": "H10.initial-failed",
+          "met": null
+        },
+        {
+          "id": "H10.initial-timer",
+          "met": null
+        },
+        {
+          "id": "H10.capacity",
+          "met": null
+        },
+        {
+          "id": "H10.start-not-started",
+          "met": null
+        },
+        {
+          "id": "H10.start-not-failed",
+          "met": null
+        },
+        {
+          "id": "H10.start-locked",
+          "met": null
+        },
+        {
+          "id": "H10.start-effect",
+          "met": null
+        },
+        {
+          "id": "H10.finish-started",
+          "met": null
+        },
+        {
+          "id": "H10.finish-not-failed",
+          "met": null
+        },
+        {
+          "id": "H10.finish-locked",
+          "met": null
+        },
+        {
+          "id": "H10.finish-running",
+          "met": null
+        },
+        {
+          "id": "H10.finish-unlock",
+          "met": null
+        },
+        {
+          "id": "H10.finish-stop",
+          "met": null
+        },
+        {
+          "id": "H10.expire",
+          "met": null
+        },
+        {
+          "id": "H10.deadline-priority",
+          "met": null
+        },
+        {
+          "id": "H10.finish-first",
+          "met": null
+        },
+        {
+          "id": "H10.repeat-start",
+          "met": null
+        },
+        {
+          "id": "H10.latch",
+          "met": null
+        },
+        {
+          "id": "H10.no-terminal",
+          "met": null
+        },
+        {
+          "id": "H10.tick-rate",
+          "met": null
+        },
+        {
+          "id": "H10.duration",
+          "met": null
+        }
+      ],
+      "unsupportedAtomicCount": null,
+      "notes": ""
+    }
+  ]
+}

@@ -18,7 +18,7 @@ import { describe, expect, it } from 'vitest';
 import { buildRuntimeWorld } from '../../ir/build';
 import { peelEnvelope, validateLook, worldEmissionSchema } from '../../ir/worlddoc';
 import { verifyWitness } from '../../verify/witness';
-import { EXAMPLE_MARKER, buildEmissionRequest, type Grammar } from '../prompt';
+import { EMISSION_MODEL, EXAMPLE_MARKER, buildEmissionRequest, type Grammar } from '../prompt';
 import { repairEmission } from '../repair';
 
 /**
@@ -240,5 +240,52 @@ describe('zpráva nese slovník i tvar', () => {
     const system = buildEmissionRequest('anything', grammar()).system;
     const tail = system.slice(system.indexOf(EXAMPLE_MARKER) + EXAMPLE_MARKER.length).trim();
     expect(tail, 'příklad se zkompaktnil — emise pak vynechávají pole a nejdou opravit').toContain('\n');
+  });
+});
+
+/**
+ * **Jméno modelu je tvrzení, které jde do přihlášky — a nikdo si ho nepřečte
+ * jako chybu.**
+ *
+ * Rozhodnutí `G2` (a) ze 6. 9. 2026: světy píše `gpt-5.6-sol` placený
+ * předplatným Codexu. Do té chvíle tu stálo `claude-opus-5` a proxy vracela
+ * odpovědi označené tím aliasem, takže archiv i `create-report.json`
+ * zapisovaly jméno modelu, který se produktu neúčastní. `RULES.md` §2 chce
+ * u každého modelu pravdivý zdroj a poskytovatele, takže by to byla nepravda
+ * odeslaná v odevzdávaném dokumentu.
+ *
+ * Brána proto soudí **tvar jména**, ne jednu konkrétní hodnotu: kdyby soudila
+ * rovnost s `gpt-5.6-sol`, projde jí každý budoucí alias jiného poskytovatele
+ * stejně tiše jako tenhle.
+ */
+describe('the emission path names the model that actually answers', () => {
+  it('refuses any claude-* alias while the model is bought as a subscription', () => {
+    expect(EMISSION_MODEL.toLowerCase().startsWith('claude-')).toBe(false);
+    expect(EMISSION_MODEL).toBe('gpt-5.6-sol');
+  });
+
+  it('sends that same name upstream instead of one written elsewhere', () => {
+    // Konstanta, o kterou se nikdo nežádá, je jen komentář. Tohle pinuje, že
+    // jméno doopravdy odjede v požadavku.
+    const request = buildEmissionRequest('a salt flat with one iron mast', grammar());
+    expect(request.model).toBe(EMISSION_MODEL);
+  });
+
+  it('says in the disclosure who provides it and how it is paid for', () => {
+    // `docs/submission/submission.json` deklaruje tenhle soubor jako tabulku
+    // modelů, takže poskytovatel a forma úhrady musí být čitelné odsud, ne jen
+    // z plánu, který do veřejného repa nejde.
+    const source = readFileSync(new URL('../prompt.ts', import.meta.url), 'utf8');
+    expect(source).toContain('OpenAI');
+    expect(source).toContain('předplatným Codexu');
+
+    const registry = JSON.parse(
+      readFileSync(new URL('../../../disclosure.json', import.meta.url), 'utf8'),
+    ) as { entries: { name: string; kind: string; authorOrProvider?: string; reviewNote?: string }[] };
+    const entry = registry.entries.find(
+      (item) => item.kind === 'model' && item.name === EMISSION_MODEL,
+    );
+    expect(entry?.authorOrProvider).toBe('OpenAI');
+    expect(entry?.reviewNote).toContain('předplatn');
   });
 });

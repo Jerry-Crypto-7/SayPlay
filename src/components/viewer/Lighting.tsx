@@ -25,6 +25,7 @@ import { useEffect } from 'react';
 import { ACESFilmicToneMapping, DataTexture, Fog, LinearFilter, RedFormat, VSMShadowMap } from 'three';
 
 import { VIEWER_BUDGETS } from '@/kit';
+import type { LookDescriptor } from '@/worldstream/look';
 
 /**
  * Parametry kontextu a rendereru pro obě plátna.
@@ -48,13 +49,34 @@ export const VIEWER_GL = {
 /**
  * Mlha.
  *
- * Barva je **schválně** barva stránky (`src/app/layout.tsx`), ne šedá: plátno
- * je průhledné a kreslí se na ni, takže vzdálený kus zmizí do pozadí místo aby
- * do něj byl zapatlaný světlejším oparem. Pásmo je psané na aréna-velikost
- * světů ze zmrazeného korpusu — blíž než 14 jednotek se nemlží nic, za 38
- * jednotkami už je jen pozadí.
+ * Barva byla do P14 T3 **schválně** barva stránky (`src/app/layout.tsx`):
+ * plátno bylo průhledné a kreslilo se na ni, takže vzdálený kus zmizel do
+ * pozadí místo aby do něj byl zapatlaný světlejším oparem. Od T3 je za scénou
+ * obloha, takže mlha musí končit **v obzoru, ne ve stránce** — a barvu si proto
+ * bere z popisu vzhledu (`look.fog.color`), stejně jako obzor samotný. Dvě
+ * různé barvy by na obzoru udělaly viditelnou hranu.
+ *
+ * Tohle zůstává jako **záloha pro plátno bez popisu vzhledu** a jako původ
+ * pásma: blíž než 14 jednotek se nemlží nic, za 38 jednotkami už je jen pozadí.
+ * Pásmo je psané na aréna-velikost světů ze zmrazeného korpusu.
  */
 export const FOG = { color: '#0b1114', near: 14, far: 38 } as const;
+
+/**
+ * Pásmo mlhy pro danou hustotu.
+ *
+ * Hustota není fyzikální veličina, je to jedno číslo 0–1 z popisu vzhledu, tak
+ * z něj musí vzniknout dvě vzdálenosti. Řídký vzduch odsune konec pásma dál
+ * (`far` až 2,4× základ), hustý ho přitáhne skoro na scénu — a začátek se
+ * s hustotou přisunuje ke kameře, jinak by hustá mlha začínala stejně daleko
+ * jako čirý vzduch a lišila by se jen strmostí.
+ */
+export function fogBand(density: number): { readonly near: number; readonly far: number } {
+  return {
+    near: FOG.near * (1 - 0.35 * density),
+    far: FOG.far * (2.4 - 1.6 * density),
+  };
+}
 
 /**
  * Druh stínové mapy pro obě plátna.
@@ -138,15 +160,16 @@ export function toonRamp(): DataTexture {
  * - **Polokulové ambientní** místo rovnoměrného: obloha nad, země pod, takže i
  *   neosvětlená plocha nese informaci o tom, kudy je nahoru.
  */
-export default function Lighting() {
+export default function Lighting({ look = null }: { readonly look?: LookDescriptor | null } = {}) {
   const scene = useThree((state) => state.scene);
+  const fog = look === null ? { ...FOG } : { color: look.fog.color, ...fogBand(look.fog.density) };
 
   useEffect(() => {
-    scene.fog = new Fog(FOG.color, FOG.near, FOG.far);
+    scene.fog = new Fog(fog.color, fog.near, fog.far);
     return () => {
       scene.fog = null;
     };
-  }, [scene]);
+  }, [scene, fog.color, fog.near, fog.far]);
 
   return (
     <>
@@ -176,7 +199,14 @@ export default function Lighting() {
         shadow-normalBias={0.03}
       />
       <directionalLight position={[-8, 5, -3]} intensity={0.45} color="#84b4c4" />
-      <directionalLight position={[0, 4, -10]} intensity={0.7} color="#cdece4" />
+      {/* Obrysové. Síla jde z popisu vzhledu, protože „jak ostře se silueta
+          odlepí od pozadí" je vlastnost počasí, ne rigu: v mlze je obrys měkký,
+          v mrazu tvrdý. Bez popisu zůstává původní 0,7. */}
+      <directionalLight
+        position={[0, 4, -10]}
+        intensity={look === null ? 0.7 : 0.4 + look.rim * 0.8}
+        color="#cdece4"
+      />
     </>
   );
 }
