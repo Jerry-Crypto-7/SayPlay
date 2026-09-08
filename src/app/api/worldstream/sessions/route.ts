@@ -5,19 +5,38 @@
  * doslova: „validní odpověď neznamená hotový svět". Generace běží dál za
  * odpovědí a hlásí se rámci do relace (`src/worldstream/sessions.ts`).
  *
+ * ## Kdo svět píše: sklad, nebo model
+ *
+ * **Od `T14r-acttwo` rozhoduje tělo požadavku, ne dostupnost modelu.**
+ * `{ prompt }` je dějství I a obslouží ho **vždycky sklad**; `{ prompt, live:
+ * true }` je dějství II a to je **jediná** cesta k modelu.
+ *
+ * Že sklad obslouží dějství I *vždycky*, není podmínka, ale dnešní fakt:
+ * `chooseAuthored()` vrací `null` jedině nad **prázdným** skladem (vybírá
+ * nejbližší svět, ne jen přesnou shodu — `src/worldstream/authored.ts`), a
+ * `authored-worlds.json` drží **11 světů**. Dějství I tedy k modelu nedojde
+ * nikdy, nebere placený slot a nic nestojí. Větev `TOO_MANY_SESSIONS` níž je
+ * proto dnes **mrtvý kód** — ožila by jedině nad prázdným skladem.
+ *
+ * ⚠ **Pro konzumenta mimo prohlížeč je to tichá změna kontraktu.** `{ prompt }`
+ * dřív znamenalo „nech to napsat model, když můžeš"; dnes vrátí uvařený svět
+ * a popisek, jestli je shoda přesná, nebo nejbližší (`T45-honestlabel`).
+ *
  * ## Čtyři brány, v tomhle pořadí
  *
- * 1. **Tvar těla.** Přijímá se **prompt a nic jiného**. Klíč navíc je 400, ne
- *    tiše ignorovaný — kdyby se ignoroval, `shapes` nebo `geometry` od klienta
- *    by vypadaly jako přijaté a produkt by tvrdil, že geometrii píše model,
- *    zatímco by ji směl podstrčit kdokoli.
+ * 1. **Tvar těla.** Přijímá se **`prompt`, volitelně `live`, a nic jiného**.
+ *    Klíč navíc je 400, ne tiše ignorovaný — kdyby se ignoroval, `shapes` nebo
+ *    `geometry` od klienta by vypadaly jako přijaté a produkt by tvrdil, že
+ *    geometrii píše model, zatímco by ji směl podstrčit kdokoli.
  * 2. **Moderace** (`src/server/moderation.ts`), tedy táž brána jako `/api/emit`.
- * 3. **Strop souběhu**: je to **týž strop** jako u preview druhé věty a jako
+ * 3. **Strop souběhu** — **jen pro dějství II**, protože slot si bere jedině
+ *    živá větev. Je to **týž strop** jako u preview druhé věty a jako
  *    u `/api/generate`, jen se každé ty dveře zastaví o kus dřív — vlastní
  *    strop nad společným dnem `MAX_CONCURRENT_GENERATIONS`. V letu se počítá
  *    po dveřích, takže rezerva platí na všechny strany. Odůvodnění a invariant,
  *    na kterém to stojí, jsou u `DOOR_CEILING`.
- * 4. **Strop utrácení** — uvnitř emitoru, u každého placeného volání zvlášť.
+ * 4. **Strop utrácení** — také jen pro dějství II, uvnitř emitoru, u každého
+ *    placeného volání zvlášť. Dějství I neutratí nic, takže se ho netýká.
  *
  * ## Proč tu není `AdmissionQueue`, ačkoli je napsaná
  *
@@ -26,7 +45,9 @@
  * Fronta se sem tedy nedá zapojit tak, jak je: zapojení celé ochrany proti
  * náporu je vlna 7 (T28) a bude potřebovat slot držený **napříč** požadavkem
  * a generací. Do té doby drží nápor jediná věc, která tuhle vlastnost nemá:
- * čítač souběžných generací níž.
+ * čítač souběžných generací níž — a ten od `T14r-acttwo` počítá **jen dějství
+ * II**. Nápor na dějství I dnes nezastavuje tenhle čítač, ale strop frekvence
+ * a počtu rozečtených těl (`src/server/rate-limit.ts`).
  *
  * ## Rozpočet požadavku tu stál a nikdy nesepnul
  *
@@ -427,6 +448,13 @@ export async function POST(request: Request): Promise<Response> {
 
     // **Plný stroj bez skladu je pořád 503**, protože není co vydat. S plným
     // strojem A uvařeným světem se 503 nevydá: níž se emituje sklad.
+    //
+    // ⚠ **Dnes je tahle větev mrtvý kód a je to v pořádku.** Dostat se sem
+    // znamená `authored === null`, a `chooseAuthored()` vrátí `null` jedině nad
+    // **prázdným** skladem; `authored-worlds.json` drží 11 světů. Ožije tedy
+    // přesně za jedné podmínky — sklad bez jediného světa (smazaný soubor,
+    // neproběhlý `npm run author:worlds`). Nechává se stát proto, že tehdy je
+    // 503 jediná pravdivá odpověď: model je plný a vydat není co.
     if (!live && cloud !== null && authored === null) {
       // **Odmítnutí musí být vidět v operátorském logu**, jinak se „strop nás
       // ochránil" nedá odlišit od „nikdo nepřišel". Text je konstantní
