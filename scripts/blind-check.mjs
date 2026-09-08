@@ -257,18 +257,31 @@ check(1, 'commit identity carries no author trace', (config) => {
       .filter(Boolean),
   );
   if (pairs.size === 0) return 'repozitář nemá žádný commit, není co ověřit';
-  if (pairs.size > 1) {
-    return `historie nese ${pairs.size} různých identit, čekala se právě jedna: ${[...pairs].join(' / ')}`;
+
+  // Merge přes web GitHubu podepíše commit anonymním účtem a jako committera
+  // dosadí `GitHub <noreply@github.com>`. Obojí patří k tomu účtu, takže by
+  // počítání identit padalo napořád na každém repu, kde se kdy sloučilo PR
+  // v prohlížeči. Takový pár se proto z počítání vyjme — ne z hledání tokenů
+  // níž, tam projde stejně jako každý jiný.
+  const account = (config.account ?? '').toLowerCase();
+  const ownsIdentity = (value) => {
+    const lower = value.toLowerCase();
+    return (account !== '' && lower.includes(account)) || lower.includes('<noreply@github.com>');
+  };
+  const foreign = [...pairs].filter((pair) => !pair.split('|').every(ownsIdentity));
+  if (foreign.length > 1) {
+    return `historie nese ${foreign.length} různých identit, čekala se právě jedna: ${foreign.join(' / ')}`;
   }
 
   // Autor i committer zvlášť: `--amend` cizím strojem přepíše jen committera.
-  const [pair] = pairs;
-  const [author, committer] = pair.split('|');
   const tokens = [...config.publicTokens, ...config.identityTokens].filter(Boolean);
   const hits = [];
-  for (const [role, value] of [['author', author], ['committer', committer]]) {
-    for (const token of tokens) {
-      if (value.toLowerCase().includes(token.toLowerCase())) hits.push(`${role} obsahuje zakázaný token`);
+  for (const pair of pairs) {
+    const [author, committer] = pair.split('|');
+    for (const [role, value] of [['author', author], ['committer', committer]]) {
+      for (const token of tokens) {
+        if (value.toLowerCase().includes(token.toLowerCase())) hits.push(`${role} obsahuje zakázaný token`);
+      }
     }
   }
   return hits.length ? [...new Set(hits)].join('; ') : null;
