@@ -493,6 +493,58 @@ describe('zadání pro model', () => {
     expect(request.system).toContain('/look');
     expect(request.system).toContain('rejected');
   });
+
+  /**
+   * `T14r-refineintent`. Druhá věta jde touž branou identifikátoru jako první,
+   * ale nemá čím narovnání přiznat — `RefinePlan` nenese `adjustments`. Zvolená
+   * cesta je proto „chová se jako dnes a **řekne se to nahlas**": příčina se
+   * zavírá v promptu, ne tichým přepisem v preview.
+   *
+   * Aserce je na **okno kolem toho pole**, ne na celou zprávu. Bez okna zůstane
+   * zelená i po smazání obou vět, protože „camelCase" se ve zprávě objeví
+   * kdekoli jinde — táž dekorativní past jako u první věty.
+   */
+  const windowAround = (text: string, needle: string): string => {
+    const lines = text.split('\n');
+    const at = lines.findIndex((line) => line.includes(needle));
+    expect(at).toBeGreaterThan(-1);
+    return lines.slice(at, at + 2).join('\n');
+  };
+
+  it('říká, jak se píše materialIntent, a že to tady nikdo nepřepíše', () => {
+    const near = windowAround(request.system, 'materialIntent');
+
+    expect(near).toContain('camelCase');
+    expect(near).toContain('no spaces');
+    expect(request.system).toContain('Nothing here rewrites it for you');
+  });
+
+  it('říká totéž o roli, kterou druhá věta zapisuje do /sim', () => {
+    const near = windowAround(request.system, 'role you write there');
+
+    expect(near).toContain('camelCase');
+    expect(near).toContain('no spaces');
+  });
+});
+
+describe('narovnání identifikátoru na editační cestě', () => {
+  /**
+   * ⚠ **Tenhle test pinuje CHYBĚJÍCÍ narovnání, ne opomenutí.** Kdyby ho někdo
+   * doplnil, `RefinePlan` musí zároveň dostat kanál na přiznané zásahy a
+   * preview ho musí ukázat — jinak se změna do světa dostane potichu.
+   */
+  it('odmítne frázi v materialIntent místo aby ji potichu přepsala', () => {
+    const read = readRefineEmission(
+      emission({ shape: { ...BRIDGE_SPAN, materialIntent: 'woven roots' } }),
+      BRIDGE,
+    );
+
+    expect(read.ok).toBe(false);
+    if (!read.ok) {
+      expect(read.reason).toBe('SHAPE_INVALID');
+      expect(read.detail).toContain('materialIntent');
+    }
+  });
 });
 
 /* ------------------------------------------------------------------ *

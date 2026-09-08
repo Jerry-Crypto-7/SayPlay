@@ -333,6 +333,20 @@ export function readRefineEmission(value: unknown, target: SemanticObject): Refi
         detail: `${target.stableId} is drawn by the composition, not by a hero shape, so its shape cannot be rewritten`,
       };
 
+    // ⚠ **Druhá věta na `materialIntent` NENARROVNÁVÁ, a je to rozhodnutí —
+    // `T14r-refineintent`, 8. 9. 2026.** První věta má `straightenMaterialIntent()`
+    // (`worldstream-compiler.ts`) a přiznává ho v `adjustments`; tady takový kanál
+    // není: `RefinePlan` nenese `adjustments` ani `repairs`, takže by přepis
+    // proběhl **potichu** — a tichý přepis v preview je přesně ta vada, kterou
+    // vlna 0 u produktu zavřela. Preview je jediná věc, podle které se člověk
+    // rozhoduje, jestli změnu pustit dál.
+    //
+    // **Místo narovnání se zavřela příčina**, stejně jako u první věty
+    // (`T14r-promptalphabet`): systémová zpráva výš teď u `materialIntent`
+    // i u role jmenuje abecedu a říká rovnou, že to tady nikdo nepřepíše.
+    // Cena, která zůstává: fráze v `materialIntent` stojí druhou větu jedno
+    // opravné kolo. `repairEmission()` na téhle cestě neběží vůbec, takže totéž
+    // platí o roli psané do `behavior`.
     const validation = validateShapeProgram(body.shape);
     if (!validation.ok) return { ok: false, reason: 'SHAPE_INVALID', detail: validation.issues[0] };
 
@@ -421,9 +435,12 @@ export function buildRefineRequest(
     '',
     'shape is a ShapeProgram replacing how the target object is drawn, or null when the change does',
     'not touch its form. Its stableId and shapeId must be exactly the ones given in the request.',
+    'Its materialIntent is camelCase with no spaces — a name, never a colour and never a phrase:',
+    'brushedSteel, not "brushed steel". Nothing here rewrites it for you.',
     '',
     'behavior is a list of RFC 6902 operations, every path rooted at /sim. That is where rules,',
-    'entities, sockets and state live.',
+    'entities, sockets and state live. An entity role you write there is a LABEL under the same rule:',
+    'camelCase, no spaces (loosePickup, not "loose pickup").',
     'appearance is a list of RFC 6902 operations, every path rooted at /look. That is where palette,',
     'materials, lighting and atmosphere live.',
     '',
