@@ -159,6 +159,21 @@ test('dokud porotce nic nezměnil, dějství II svět vymění samo — i s adre
     .toBe(true);
 });
 
+test('visitor input protects the running world from a late second act', async ({ page }) => {
+  test.setTimeout(180_000);
+  const acts = await scriptSecondAct(page);
+  await page.goto('/');
+  await buildWorld(page, AUTHORED);
+  await expect(page.getByTestId('second-act-writing')).toBeVisible();
+  await expect(page.getByTestId('runtime-act')).toBeEnabled();
+  await page.getByTestId('runtime-act').click();
+  await expect(page.getByTestId('runtime-input-result')).toContainText('Input at tick');
+  acts.release();
+  await expect(page.getByTestId('second-act-offer')).toBeVisible({ timeout: WORLD_BUDGET_MS });
+  await expect(page.getByTestId('world-authored')).toBeVisible();
+  await expect(page.getByTestId('runtime-input-result')).toContainText('Input at tick');
+});
+
 test('když porotce změnu commitnul, dějství II se jen nabídne', async ({ page }) => {
   test.setTimeout(180_000);
   const acts = await scriptSecondAct(page);
@@ -225,4 +240,35 @@ test('dějství II, které dorazí uprostřed potvrzování změny, svět nepře
   // A commit doběhne do svého vlastního světa, ne do toho od modelu.
   await expect(page.getByTestId('change-preview')).toHaveCount(0, { timeout: WORLD_BUDGET_MS });
   await expect(page.getByTestId('world-authored'), 'svět se vyměnil pod rukama').toBeVisible();
+});
+
+test('nová věta během potvrzování změny odemkne úpravy nového světa', async ({ page }) => {
+  test.setTimeout(180_000);
+  const acts = await scriptSecondAct(page);
+
+  await page.goto('/');
+  await buildWorld(page, AUTHORED);
+  await page.getByTestId('refine-input').fill(REFINE);
+  await page.getByTestId('refine-submit').click();
+  await expect(page.getByTestId('change-preview')).toHaveAttribute('data-kind', 'preview', {
+    timeout: WORLD_BUDGET_MS,
+  });
+
+  acts.hold();
+  await page.getByTestId('change-apply').click();
+  await expect.poll(() => acts.urls.some((url) => url.includes('/commit'))).toBe(true);
+
+  // Nová relace invaliduje starý commit. Jeho finally už nesmí zapisovat do UI,
+  // takže odemknutí musí patřit začátku nové relace, ne staré odpovědi.
+  await buildWorld(page, AUTHORED);
+  await expect(page.getByTestId('refine-submit')).toBeEnabled();
+  acts.releaseCommit();
+
+  // Ověříme i skutečnou další operaci; samotný vzhled tlačítka není důkaz,
+  // že requestChange používá nový svět a že jej stará odpověď nepřepsala.
+  await page.getByTestId('refine-input').fill(REFINE);
+  await page.getByTestId('refine-submit').click();
+  await expect(page.getByTestId('change-preview')).toHaveAttribute('data-kind', 'preview', {
+    timeout: WORLD_BUDGET_MS,
+  });
 });

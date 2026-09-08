@@ -1,0 +1,10 @@
+Fictional museum demo, not a real security system.
+Corridor grid: width 10, height 3, cell size 1, x=0..9, y=0..2. No internal walls or obstacles. All cells are walkable and all entities non-solid.
+Actor visitor starts at (1,1); sensorA at (2,1), sensorB at (8,1), display case at (9,1). Walkable markers approachA at (1,1), approachB at (7,1).
+Sensor activation requires visitor in an orthogonally adjacent cell, never remote or on the sensor cell. Zones: nearA={(1,1),(3,1),(2,0),(2,2)}, nearB={(7,1),(9,1),(8,0),(8,2)}.
+Use built-in moveTo for walking to markers: one initial settling tick, then one grid cell per tick toward the destination. A new move replaces the destination. Activation while moving is allowed only if the current position meets the zone condition. Movement itself is not activation.
+Initially case is locked, flags started=false and alarm=false. Timer countdown has capacity 400 ticks and initial remaining time 0. Runtime is 20 ticks per second. The sensor input is action activate targeting sensorA or sensorB.
+The first valid sensorA activation while started=false, alarm=false and case locked sets started=true and starts countdown for 400 ticks (20 seconds). Later sensorA activations do not restart it.
+sensorB activation before sensorA has no effect and is not remembered. A valid sensorB activation while started=true, alarm=false, case locked and countdown running unlocks case and stops countdown.
+Countdown expiry while case is locked sets alarm=true and leaves case locked. Expiry wins over sensorB activation on the same tick. After alarm, case cannot unlock. After unlocking, further activations have no effect.
+Goal: case unlocked and alarm=false. No other mechanisms or reset actions. Appearance is schematic.
