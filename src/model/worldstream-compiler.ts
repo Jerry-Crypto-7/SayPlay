@@ -478,6 +478,22 @@ export function compileBlueprint(
 
   const adjustments: BlueprintAdjustment[] = [];
   const shapes: ShapeProgram[] = [];
+
+  // ⚠ **Vadné tvary se sbírají všechny, ne jen první — `T14r-shapefirstfault`.**
+  // Naměřeno nad archivem `T14`: `return` uvnitř smyčky dal modelu jeden tvar
+  // na kolo, takže posloupnost vypadala `✗2 → ✗1 → ✓` a věty se třemi vadnými
+  // tvary na tři povolená kola vůbec nedosáhly. Placené kolo na tvar je cena,
+  // kterou nic nevynucuje: `findBlueprintReferenceIssues()` vrací všechny
+  // nálezy schválně a `worldstream-repair.ts` je umí vypsat („Also wrong, and
+  // each one on its own"). Smyčka nad tvary tu kázeň jako jediná nedržela.
+  //
+  // **`EXAMPLE_COPIED` se dál odmítá hned a je to schválně.** Není to vada
+  // jednoho tvaru, kterou by šlo opravit vedle jiné — je to verdikt o celé
+  // odpovědi a `reject()` nese **jeden** důvod. Sesypat ho do jednoho seznamu
+  // s `SHAPE_INVALID` znamená vydat jeden z těch dvou důvodů nepravdivě.
+  const shapeIssues: string[] = [];
+  let firstFaulty: { readonly index: number; readonly issue: string } | null = null;
+
   for (const [index, raw] of answer.shapes.entries()) {
     if (EXAMPLE_SHAPE_TABLES.has(tableOf(raw)))
       return reject(
@@ -492,14 +508,24 @@ export function compileBlueprint(
     const shape = straightenMaterialIntent(raw, index, adjustments);
 
     const validation = validateShapeProgram(shape);
-    if (!validation.ok)
-      return reject(
-        'SHAPE_INVALID',
-        `shapes[${index}]: ${validation.issues[0]}`,
-        validation.issues.map((issue) => `shapes/${index}: ${issue}`),
-      );
+    if (!validation.ok) {
+      firstFaulty ??= { index, issue: validation.issues[0] };
+      shapeIssues.push(...validation.issues.map((issue) => `shapes/${index}: ${issue}`));
+      continue;
+    }
     shapes.push(shape as ShapeProgram);
   }
+
+  // **Věta pro model jmenuje první vadný tvar, seznam nese všechny.** Tohle
+  // dělení není volba tohohle místa: `blueprintRejectionSentence()` skládá
+  // `detail` a `issues` do jedné věty a `extraIssues()` z ní první nález
+  // odečítá, aby se neopsal dvakrát.
+  if (firstFaulty !== null)
+    return reject(
+      'SHAPE_INVALID',
+      `shapes[${firstFaulty.index}]: ${firstFaulty.issue}`,
+      shapeIssues,
+    );
 
   // --- placements --------------------------------------------------------
 

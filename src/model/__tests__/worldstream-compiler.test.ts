@@ -54,6 +54,7 @@ import {
 } from '../worldstream-prompt';
 import { repairEmission } from '../repair';
 import { compileBlueprint, type CompilerResult } from '../worldstream-compiler';
+import { blueprintRejectionSentence } from '../worldstream-repair';
 import { EXAMPLE_PLAN } from '../worldstream-examples';
 import type { PlannerEmission } from '../worldstream-intent';
 
@@ -804,7 +805,81 @@ describe('a material written as a description is read, not refused', () => {
 });
 
 /* ================================================================== *
- * 11. Abeceda u polí, která ji potřebují (`T14r-promptalphabet`).
+ * 11. Vadné tvary se sbírají všechny (`T14r-shapefirstfault`).
+ * ================================================================== */
+
+/**
+ * Naměřeno nad archivem `T14`: `return` uvnitř smyčky nad tvary dal modelu
+ * jeden tvar na kolo, takže posloupnost byla `✗2 → ✗1 → ✓` a věty se třemi
+ * vadnými tvary (`c30`, a dál `c03`, `c05`, `c13`, `c21`, `c26`) na tři
+ * povolená kola nedosáhly. Tady se pinuje, že jedno kolo unese všechny.
+ *
+ * **Soudí se celý řetěz až po větu pro model**, ne jen pole `issues`.
+ * Compiler může nálezy posbírat bezvadně a `blueprintRejectionSentence()` je
+ * přesto zahodit — pak by úloha byla zelená a model by dál platil za kolo na
+ * tvar.
+ */
+describe('an answer with several faulty shapes', () => {
+  // Dvě **různé** vady, schválně: stejná vada dvakrát projde i kódem, který umí
+  // jen zopakovat první nález.
+  const overflowing = { ...OWN_SHAPE, nodes: [{ kind: 'sphere', radius: 5 }], root: 0, anchors: [] };
+  const unnamed = { ...OWN_SHAPE, shapeId: 'hiveCap', materialIntent: 42 };
+
+  const rejection = () => {
+    const result = compile(answerWith({ shapes: [overflowing, unnamed] }));
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('the answer compiled');
+    return result;
+  };
+
+  it('reports every faulty shape in one round, not just the first', () => {
+    const result = rejection();
+
+    expect(result.reason).toBe('SHAPE_INVALID');
+    expect(result.issues.some((issue) => issue.startsWith('shapes/0: '))).toBe(true);
+    expect(result.issues.some((issue) => issue.startsWith('shapes/1: '))).toBe(true);
+  });
+
+  it('names the first faulty shape in the sentence a person reads', () => {
+    // `detail` je věta pro člověka v Inspect zásuvce a `extraIssues()` ji
+    // z výpisu odečítá, aby první nález nezazněl dvakrát. Ta dělba je proto
+    // součást tvrzení, ne jen zápisu.
+    expect(rejection().detail).toContain('shapes[0]');
+  });
+
+  it('carries both faults into the sentence the model gets back', () => {
+    const sentence = blueprintRejectionSentence(rejection());
+
+    expect(sentence).toContain('shapes[0]');
+    expect(sentence).toContain('shapes/1');
+    expect(sentence).toContain('materialIntent');
+  });
+
+  it('keeps a sound shape out of the findings even when a neighbour is faulty', () => {
+    // Selhací cesta, kterou by sbírání nálezů mohlo rozbít: „posbírej všechno"
+    // se dá napsat tak, že do seznamu spadne i tvar, na kterém nic není.
+    const result = compile(answerWith({ shapes: [overflowing, OWN_SHAPE] }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.issues.every((issue) => issue.startsWith('shapes/0: '))).toBe(true);
+  });
+
+  it('still calls a copied example table copied, whatever stands after it', () => {
+    // Konzervativní čtení úlohy: `EXAMPLE_COPIED` je verdikt o celé odpovědi,
+    // ne vada jednoho tvaru, a `reject()` nese jediný důvod. Sesypat ho do
+    // seznamu se `SHAPE_INVALID` znamená jeden z těch dvou důvodů vydat
+    // nepravdivě, takže se odmítá dál hned.
+    const copied = EXAMPLE_BLUEPRINT_ANSWER.shapes[0];
+    const result = compile(answerWith({ shapes: [copied, unnamed] }));
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toBe('EXAMPLE_COPIED');
+  });
+});
+
+/* ================================================================== *
+ * 12. Abeceda u polí, která ji potřebují (`T14r-promptalphabet`).
  * ================================================================== */
 
 /**
