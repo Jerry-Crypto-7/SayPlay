@@ -22,9 +22,16 @@
  * o to někdo řekne", a to je přesně ono.
  *
  *     npm run measure:worldstream-replay
+ *
+ * ## Co po sobě nechá
+ *
+ * `create-replay.json`, a ten se **commituje**. Je to jediná cesta, jak se
+ * tvrzení o pohybu vět dá ověřit v repu, kde archiv chybí — bez něj zůstane
+ * jen v commit zprávě. `create-report.json` se přitom nepřepisuje: měří model,
+ * ne kód pod ním.
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
@@ -37,6 +44,7 @@ import {
   FAILURE_STAGES,
   archiveEmitter,
   buildCreateReport,
+  compareReplay,
   driveCreateCase,
   type ArchiveEntry,
   type CaseOutcome,
@@ -49,6 +57,12 @@ const SESSION_SEED = 4021;
 
 const ARCHIVE_FILE = fileURLToPath(new URL('./create-raw.json', import.meta.url));
 const REPORT_FILE = fileURLToPath(new URL('./create-report.json', import.meta.url));
+
+/**
+ * **Vlastní soubor, a proto se commituje.** `create-report.json` měří model
+ * a přehrání ho přepsat nesmí; tenhle měří kód pod ním.
+ */
+const REPLAY_FILE = fileURLToPath(new URL('./create-replay.json', import.meta.url));
 
 describe('the archived run, replayed against the current code', () => {
   it(
@@ -91,33 +105,28 @@ describe('the archived run, replayed against the current code', () => {
         planned: corpus.create.length,
       });
 
-      // **Řádek dostane jen ta věta, která se pohnula.** Třicet nezměněných
-      // řádků je šum, ve kterém se ten jeden pohyb ztratí.
-      const was = new Map(before.cases.map((entry) => [entry.id, entry]));
-      const moved: string[] = [];
-      for (const now of after.cases) {
-        const then = was.get(now.id);
-        if (then === undefined) continue;
-        const from = then.geometryAuthored ? 'authored' : (then.failure?.stage ?? 'lost');
-        const to = now.geometryAuthored ? 'authored' : (now.failure?.stage ?? 'lost');
-        if (from === to) continue;
-        moved.push(`${now.id}: ${from} -> ${to}${now.failure === null ? '' : ` (${now.failure.detail.slice(0, 120)})`}`);
-      }
+      const comparison = compareReplay(before, after, new Date().toISOString());
+      writeFileSync(REPLAY_FILE, `${JSON.stringify(comparison, null, 2)}\n`, 'utf8');
 
-      const tally = (report: CreateReport): string =>
-        FAILURE_STAGES.filter((stage) => report.failuresByStage[stage] > 0)
-          .map((stage: FailureStage) => `${stage} ${String(report.failuresByStage[stage])}`)
+      const tally = (stages: Readonly<Record<FailureStage, number>>): string =>
+        FAILURE_STAGES.filter((stage) => stages[stage] > 0)
+          .map((stage: FailureStage) => `${stage} ${String(stages[stage])}`)
           .join(', ');
 
       process.stdout.write(
         [
           '',
-          `authored  before ${String(before.totals.geometryAuthored)}/${String(before.totals.attempted)}  ->  replay ${String(after.totals.geometryAuthored)}/${String(after.totals.attempted)}`,
-          `stages    before ${tally(before)}`,
-          `          replay ${tally(after)}`,
-          moved.length === 0
+          `authored  before ${String(comparison.before.geometryAuthored)}/${String(comparison.before.attempted)}  ->  replay ${String(comparison.after.geometryAuthored)}/${String(comparison.after.attempted)}`,
+          `stages    before ${tally(comparison.before.failuresByStage)}`,
+          `          replay ${tally(comparison.after.failuresByStage)}`,
+          comparison.moved.length === 0
             ? 'no sentence changed verdict — the replay reproduces the archived run exactly'
-            : `${String(moved.length)} sentences moved:\n  ${moved.join('\n  ')}`,
+            : `${String(comparison.moved.length)} sentences moved:\n  ${comparison.moved
+                .map(
+                  (move) =>
+                    `${move.id}: ${move.from} -> ${move.to}${move.detail === null ? '' : ` (${move.detail.slice(0, 120)})`}`,
+                )
+                .join('\n  ')}`,
           '',
           // **Co dneska padá a proč, jmenovitě.** Je to celý smysl nástroje:
           // opravovat se má podle věty, kterou kód napsal, ne podle fáze.
@@ -125,6 +134,8 @@ describe('the archived run, replayed against the current code', () => {
           ...after.cases
             .filter((entry) => entry.failure !== null)
             .map((entry) => `  ${entry.id} ${entry.failure!.stage}: ${entry.failure!.detail}`),
+          '',
+          `written to ${REPLAY_FILE}`,
           '',
         ].join('\n'),
       );

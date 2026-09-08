@@ -46,6 +46,7 @@ import {
   archiveEmitter,
   buildCreateReport,
   clayDetail,
+  compareReplay,
   driveCreateCase,
   liveEmitter,
   percentile95,
@@ -58,6 +59,7 @@ import {
   worldProfile,
   type ArchiveEntry,
   type CaseOutcome,
+  type CreateReport,
   type FailureStage,
   type WorldProfile,
 } from '../measure-create';
@@ -1275,5 +1277,88 @@ describe('the archive replays instead of the provider', () => {
   it('never answers for a case the archive does not hold', async () => {
     const emit = archiveEmitter([entry('c01', 1, { a: 1 })], 'c99');
     await expect(emit(request)).rejects.toThrow('holds 0 answers');
+  });
+});
+
+/**
+ * **Doklad, ne commit zpráva.** Přehrání archivu ukazuje, co by opravený kód
+ * postavil nad odpověďmi, které už jsou zaplacené — jenže archiv je
+ * gitignorovaný, takže v čistém klonu ten běh nikdo nezopakuje. Jediné, co
+ * z těch čísel v repu zůstane, je `create-replay.json`, a ten proto musí sedět
+ * s reportem, ke kterému se hlásí.
+ */
+describe('the replay leaves a number the repo can check', () => {
+  it('names the sentences that moved and stays quiet about the rest', () => {
+    const before = report([
+      outcome({ id: 'c01', geometryAuthored: false, failure: { stage: 'clay', detail: 'one of three' } }),
+      outcome({ id: 'c02' }),
+      outcome({ id: 'c03', geometryAuthored: false, failure: { stage: 'shape', detail: 'bounds' } }),
+    ]);
+    const after = report([
+      outcome({ id: 'c01', rungs: ['g3-reduced', 'g2-rich'] }),
+      outcome({ id: 'c02' }),
+      outcome({ id: 'c03', geometryAuthored: false, failure: { stage: 'witness', detail: 'horizon 600' } }),
+    ]);
+
+    const diff = compareReplay(before, after, '2026-09-08T00:00:00.000Z');
+
+    expect(diff.moved).toEqual([
+      { id: 'c01', from: 'clay', to: 'authored', detail: null, rungs: ['g3-reduced', 'g2-rich'] },
+      { id: 'c03', from: 'shape', to: 'witness', detail: 'horizon 600', rungs: ['g3-reduced'] },
+    ]);
+    expect(diff.before.geometryAuthored).toBe(1);
+    expect(diff.after.geometryAuthored).toBe(2);
+    expect(diff.archivedRun.measuredAt).toBe(before.measuredAt);
+  });
+
+  it('carries the wall-clock caveat into the file itself', () => {
+    // Bez téhle věty je artefakt čtený za rok nepravdivý: příčka, na které tvar
+    // skončí, se rozhoduje mimo jiné časem, takže pomalejší stroj dá jiné číslo.
+    const empty = report([]);
+    const diff = compareReplay(empty, empty, '2026-09-08T00:00:00.000Z');
+    expect(diff.wallClock.join(' ')).toMatch(/wall clock/i);
+    expect(diff.wallClock.join(' ')).toMatch(/maxMs/);
+  });
+
+  it('refuses to be read as a measurement of the model', () => {
+    // Autorská čísla z přehrání se citovat nesmějí jako výsledek modelu —
+    // model v něm nedostane ani jednu novou šanci. Bez téhle věty v souboru
+    // to ví jen ten, kdo má po ruce plán.
+    const empty = report([]);
+    const diff = compareReplay(empty, empty, '2026-09-08T00:00:00.000Z');
+    expect(diff.measures.join(' ')).toMatch(/never the model/i);
+    expect(diff.measures.join(' ')).toMatch(/K2/);
+  });
+});
+
+describe('the committed replay artifact holds up on its own', () => {
+  const read = <T,>(name: string): T =>
+    JSON.parse(readFileSync(new URL(`../${name}`, import.meta.url), 'utf8')) as T;
+
+  const artifact = read<ReturnType<typeof compareReplay>>('create-replay.json');
+  const measured = read<CreateReport>('create-report.json');
+
+  it('replays the run the committed report measured, not some other one', () => {
+    // Kdyby se rozešly, mluvila by ta dvě čísla o dvou různých bězích a věta
+    // „clay 8 -> 0" by neměla k čemu být rozdílem.
+    expect(artifact.archivedRun.measuredAt).toBe(measured.measuredAt);
+    expect(artifact.archivedRun.sessionSeed).toBe(measured.sessionSeed);
+    expect(artifact.before.geometryAuthored).toBe(measured.totals.geometryAuthored);
+    expect(artifact.before.failuresByStage).toEqual(measured.failuresByStage);
+  });
+
+  it('has as many moved sentences as the two tallies differ by', () => {
+    const moves = new Set(artifact.moved.map((move) => move.id));
+    expect(moves.size).toBe(artifact.moved.length);
+    const gained = artifact.after.geometryAuthored - artifact.before.geometryAuthored;
+    const toAuthored = artifact.moved.filter((move) => move.to === 'authored').length;
+    const fromAuthored = artifact.moved.filter((move) => move.from === 'authored').length;
+    expect(toAuthored - fromAuthored).toBe(gained);
+  });
+
+  it('says out loud which of its numbers a slower machine would move', () => {
+    expect(artifact.wallClock.length).toBeGreaterThan(0);
+    expect(artifact.wallClock.join(' ')).toMatch(/wall clock/i);
+    expect(artifact.measures.join(' ')).toMatch(/never the model/i);
   });
 });

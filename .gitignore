@@ -36,7 +36,9 @@ evals/live/*
 # Totéž o vlnu později a pod jiným jménem: archiv živého create běhu (P13 T14).
 # Nese plné znění promptů i odpovědí, tedy tutéž třídu dat jako evals/live.
 # `create-report.json` vedle něj se commituje schválně – je to naměřené číslo,
-# na kterém stojí brána K2, a scrubuje ho `LiveEmitter.scrub()`.
+# na kterém stojí brána K2, a scrubuje ho `LiveEmitter.scrub()`. Totéž platí
+# o `create-replay.json`: protože tenhle archiv v klonu chybí, je ten soubor
+# jediný doklad, co by dnešní kód nad zaplacenými odpověďmi postavil (T14r-replayreport).
 evals/worldstream/create-raw.json
 
 # Report z vývojového profilu (předplatné). Leží ve stejném adresáři jako

@@ -1,0 +1,235 @@
+{
+  "replayedAt": "2026-09-08T19:03:47.214Z",
+  "archivedRun": {
+    "measuredAt": "2026-09-06T21:40:13.751Z",
+    "sessionSeed": 4021
+  },
+  "before": {
+    "attempted": 30,
+    "geometryAuthored": 9,
+    "failuresByStage": {
+      "planner": 1,
+      "schema": 0,
+      "copied": 0,
+      "reference": 0,
+      "geom": 0,
+      "shape": 8,
+      "lowering": 1,
+      "witness": 1,
+      "clay": 8,
+      "unavailable": 2
+    }
+  },
+  "after": {
+    "attempted": 30,
+    "geometryAuthored": 21,
+    "failuresByStage": {
+      "planner": 1,
+      "schema": 0,
+      "copied": 0,
+      "reference": 0,
+      "geom": 0,
+      "shape": 0,
+      "lowering": 0,
+      "witness": 6,
+      "clay": 0,
+      "unavailable": 2
+    }
+  },
+  "moved": [
+    {
+      "id": "c01",
+      "from": "clay",
+      "to": "authored",
+      "detail": null,
+      "rungs": [
+        "g2-rich",
+        "g3-reduced",
+        "g3-reduced"
+      ]
+    },
+    {
+      "id": "c03",
+      "from": "shape",
+      "to": "authored",
+      "detail": null,
+      "rungs": [
+        "g3-reduced",
+        "g3-reduced",
+        "g2-rich"
+      ]
+    },
+    {
+      "id": "c05",
+      "from": "shape",
+      "to": "authored",
+      "detail": null,
+      "rungs": [
+        "g2-rich",
+        "g3-reduced",
+        "g3-reduced",
+        "g2-rich"
+      ]
+    },
+    {
+      "id": "c07",
+      "from": "clay",
+      "to": "authored",
+      "detail": null,
+      "rungs": [
+        "g3-reduced",
+        "g2-rich"
+      ]
+    },
+    {
+      "id": "c08",
+      "from": "clay",
+      "to": "authored",
+      "detail": null,
+      "rungs": [
+        "g2-rich",
+        "g3-reduced",
+        "g2-rich"
+      ]
+    },
+    {
+      "id": "c09",
+      "from": "clay",
+      "to": "authored",
+      "detail": null,
+      "rungs": [
+        "g2-rich",
+        "g3-reduced",
+        "g2-rich",
+        "g2-rich",
+        "g2-rich"
+      ]
+    },
+    {
+      "id": "c11",
+      "from": "clay",
+      "to": "witness",
+      "detail": "witness: horizon 600 exhausted in state running",
+      "rungs": []
+    },
+    {
+      "id": "c12",
+      "from": "clay",
+      "to": "authored",
+      "detail": null,
+      "rungs": [
+        "g2-rich",
+        "g3-reduced",
+        "g2-rich",
+        "g2-rich"
+      ]
+    },
+    {
+      "id": "c13",
+      "from": "shape",
+      "to": "witness",
+      "detail": "witness: horizon 600 exhausted in state running",
+      "rungs": []
+    },
+    {
+      "id": "c20",
+      "from": "shape",
+      "to": "authored",
+      "detail": null,
+      "rungs": [
+        "g2-rich",
+        "g3-reduced",
+        "g2-rich"
+      ]
+    },
+    {
+      "id": "c21",
+      "from": "shape",
+      "to": "authored",
+      "detail": null,
+      "rungs": [
+        "g3-reduced",
+        "g2-rich",
+        "g3-reduced",
+        "g2-rich"
+      ]
+    },
+    {
+      "id": "c22",
+      "from": "clay",
+      "to": "authored",
+      "detail": null,
+      "rungs": [
+        "g3-reduced"
+      ]
+    },
+    {
+      "id": "c23",
+      "from": "shape",
+      "to": "authored",
+      "detail": null,
+      "rungs": [
+        "g2-rich",
+        "g3-reduced",
+        "g3-reduced",
+        "g2-rich",
+        "g2-rich"
+      ]
+    },
+    {
+      "id": "c24",
+      "from": "clay",
+      "to": "witness",
+      "detail": "witness: horizon 600 exhausted in state running",
+      "rungs": []
+    },
+    {
+      "id": "c26",
+      "from": "shape",
+      "to": "witness",
+      "detail": "witness: horizon 600 exhausted in state running",
+      "rungs": []
+    },
+    {
+      "id": "c27",
+      "from": "authored",
+      "to": "witness",
+      "detail": "witness: horizon 600 exhausted in state running",
+      "rungs": []
+    },
+    {
+      "id": "c29",
+      "from": "lowering",
+      "to": "authored",
+      "detail": null,
+      "rungs": [
+        "g2-rich",
+        "g2-rich",
+        "g3-reduced"
+      ]
+    },
+    {
+      "id": "c30",
+      "from": "shape",
+      "to": "authored",
+      "detail": null,
+      "rungs": [
+        "g3-reduced",
+        "g3-reduced",
+        "g3-reduced",
+        "g2-rich",
+        "g2-rich"
+      ]
+    }
+  ],
+  "measures": [
+    "This measures the code under the model, never the model. Every answer here was already paid for on the archived run, so a sentence the model wrote badly is still written badly: the authored count belongs to the fixes, and gate K2 is closed by a live run alone.",
+    "A fix that saves a repair round changes which archived answer gets spent, so the world downstream is a different world. Counts that move for that reason say nothing about meaning."
+  ],
+  "wallClock": [
+    "The rung a shape lands on is decided partly by wall clock: MESH_DETAIL budgets cap maxMs alongside maxTriangles, so a slower machine can push a shape one rung further down than this file records.",
+    "Measured on the archived run: four of the eight shapes rescued by COARSER_GRIDS had missed the rough budget on time, not on triangles, and glowingAnemoneColony alone gave 363 and 421 ms in two runs of the same archive.",
+    "Everything else here is deterministic: the answers come from the archive, the compiler and the mesher are hand written, and the session seed is fixed, so the same machine replaying the same archive gives the same verdicts.",
+    "Latency is deliberately absent. It measured the paid provider, and a replay that spends nothing cannot honestly report it."
+  ]
+}

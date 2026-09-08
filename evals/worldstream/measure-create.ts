@@ -910,3 +910,114 @@ export function archiveEmitter(
     return Promise.resolve(answer);
   };
 }
+
+/* ------------------------------------------------------------------ *
+ * Přehrání proti commitnutému reportu.
+ * ------------------------------------------------------------------ */
+
+/** Jedna věta, která po opravě skončila jinde, než jak ji zapsal běh. */
+export interface ReplayMove {
+  readonly id: string;
+  /** `authored`, název fáze, ve které to spadlo, nebo `lost`. */
+  readonly from: string;
+  readonly to: string;
+  /** Hláška toho selhání, když věta pořád padá. `null` = staví se. */
+  readonly detail: string | null;
+  /** Příčky, na kterých sloty skončily po přehrání. */
+  readonly rungs: readonly ProxyRung[];
+}
+
+/**
+ * **Co ten soubor měří a co ne.** Stojí v něm, protože artefakt cestuje sám —
+ * bez plánu, bez commit zprávy a bez docblocku spouštěče.
+ */
+export const REPLAY_MEASURES: readonly string[] = [
+  'This measures the code under the model, never the model. Every answer here was already paid for on the archived run, so a sentence the model wrote badly is still written badly: the authored count belongs to the fixes, and gate K2 is closed by a live run alone.',
+  'A fix that saves a repair round changes which archived answer gets spent, so the world downstream is a different world. Counts that move for that reason say nothing about meaning.',
+];
+
+/**
+ * **Která z těch čísel se na jiném stroji hnou.** Patří do souboru, ne do
+ * commit zprávy: kdo tenhle artefakt čte, čte ho bez ní.
+ */
+export const REPLAY_WALL_CLOCK_CAVEAT: readonly string[] = [
+  'The rung a shape lands on is decided partly by wall clock: MESH_DETAIL budgets cap maxMs alongside maxTriangles, so a slower machine can push a shape one rung further down than this file records.',
+  'Measured on the archived run: four of the eight shapes rescued by COARSER_GRIDS had missed the rough budget on time, not on triangles, and glowingAnemoneColony alone gave 363 and 421 ms in two runs of the same archive.',
+  'Everything else here is deterministic: the answers come from the archive, the compiler and the mesher are hand written, and the session seed is fixed, so the same machine replaying the same archive gives the same verdicts.',
+  'Latency is deliberately absent. It measured the paid provider, and a replay that spends nothing cannot honestly report it.',
+];
+
+/**
+ * Rozdíl mezi commitnutým reportem a přehráním, jako datová struktura.
+ *
+ * **Existuje proto, že běh, který ta čísla vyrobil, se z repa spustit nedá:**
+ * `create-raw.json` je gitignorovaný (3,8 MB scrubnutých odpovědí), takže
+ * v čistém klonu není co přehrát. Tvrzení „clay 8 → 1" tím do 7. 9. 2026
+ * žilo jen v commit zprávě a v plánu. Tenhle soubor je jeho jediný
+ * ověřitelný doklad — a proto se **commituje**, na rozdíl od archivu.
+ *
+ * Přepsat `create-report.json` by bylo lákavější a je to zakázané: ten report
+ * měří **model**, přehrání měří **kód pod ním**, a slít to do jednoho souboru
+ * znamená vyrobit číslo o schopnostech modelu, které si nikdo nezměřil.
+ */
+export interface ReplayComparison {
+  readonly replayedAt: string;
+  /** Běh, který se přehrával. Sedí s `create-report.json`. */
+  readonly archivedRun: { readonly measuredAt: string; readonly sessionSeed: number };
+  readonly before: {
+    readonly attempted: number;
+    readonly geometryAuthored: number;
+    readonly failuresByStage: Readonly<Record<FailureStage, number>>;
+  };
+  readonly after: {
+    readonly attempted: number;
+    readonly geometryAuthored: number;
+    readonly failuresByStage: Readonly<Record<FailureStage, number>>;
+  };
+  readonly moved: readonly ReplayMove[];
+  readonly measures: readonly string[];
+  readonly wallClock: readonly string[];
+}
+
+/** Kde ta věta skončila — jedním slovem, ve stejné abecedě před i po. */
+function landing(entry: CaseOutcome): string {
+  if (entry.geometryAuthored) return 'authored';
+  return entry.failure?.stage ?? 'lost';
+}
+
+export function compareReplay(
+  before: CreateReport,
+  after: CreateReport,
+  replayedAt: string,
+): ReplayComparison {
+  const was = new Map(before.cases.map((entry) => [entry.id, entry]));
+  // **Řádek dostane jen ta věta, která se pohnula.** Třicet nezměněných
+  // řádků je šum, ve kterém se ten jeden pohyb ztratí.
+  const moved: ReplayMove[] = [];
+  for (const now of after.cases) {
+    const then = was.get(now.id);
+    if (then === undefined) continue;
+    const from = landing(then);
+    const to = landing(now);
+    if (from === to) continue;
+    moved.push({ id: now.id, from, to, detail: now.failure?.detail ?? null, rungs: now.rungs });
+  }
+
+  return {
+    replayedAt,
+    archivedRun: { measuredAt: before.measuredAt, sessionSeed: before.sessionSeed },
+    before: {
+      attempted: before.totals.attempted,
+      geometryAuthored: before.totals.geometryAuthored,
+      failuresByStage: before.failuresByStage,
+    },
+    after: {
+      attempted: after.totals.attempted,
+      geometryAuthored: after.totals.geometryAuthored,
+      failuresByStage: after.failuresByStage,
+    },
+    moved,
+    measures: REPLAY_MEASURES,
+    wallClock: REPLAY_WALL_CLOCK_CAVEAT,
+  };
+}
