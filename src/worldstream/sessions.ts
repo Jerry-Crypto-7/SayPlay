@@ -49,6 +49,46 @@ import { SpendRefusalError } from '@/server/spend-cap';
 import type { WorldstreamBlueprint } from './schema';
 import { createSession, type GenerationSession } from './session';
 import { shareWorld } from './snapshot-store';
+import { proposeSourceScenario, type SourceScenarioResult } from '../model/source-scenario';
+import { cloudEmitter } from '../server/worldstream-emitter';
+import { createEvidenceProject } from './evidence-commit';
+
+// Source projects have a single authoritative snapshot, separate from the
+// legacy blueprint workflow. T9 reads this complete world/evidence pair.
+const evidenceProjects = new WeakMap<StoredSession, ReturnType<typeof createEvidenceProject>>();
+function evidenceProject(stored: StoredSession) {
+  let project = evidenceProjects.get(stored);
+  if (!project) { project = createEvidenceProject(); evidenceProjects.set(stored, project); }
+  return project;
+}
+export function getSessionProject(stored: StoredSession) {
+  return evidenceProjects.get(stored)?.getSnapshot() ?? null;
+}
+export function commitSessionProject(stored: StoredSession, input: unknown) {
+  return evidenceProject(stored).commitInitial(input);
+}
+export function commitSessionIntervention(stored: StoredSession, input: unknown,
+  runtime: Parameters<ReturnType<typeof createEvidenceProject>['commitIntervention']>[1]) {
+  return evidenceProject(stored).commitIntervention(input, runtime);
+}
+
+/** T7: pouze návrh. Přijetí světa a evidence do relace je transakce T8. */
+export async function runSourceProposal(
+  source: unknown,
+  worldRevision: string,
+  deps?: Pick<GenerationDeps, 'emit' | 'grammar'>,
+): Promise<SourceScenarioResult> {
+  const grammar = deps?.grammar ?? serverGrammar();
+  if (typeof grammar === 'string') return { kind: 'rejected', code: 'BAD_REQUEST' };
+  return proposeSourceScenario({ source, worldRevision, grammar,
+    emit: deps?.emit ?? (async (request) => {
+      // Provider configuration and reservation happen only after input validation.
+      const emit = await cloudEmitter();
+      if (!emit) throw new Error('MODEL_UNAVAILABLE');
+      return emit(request);
+    }),
+  });
+}
 
 /**
  * Kolik relací registr drží. Jedna relace je desítky rámců a jeden blueprint,

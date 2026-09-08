@@ -1406,13 +1406,14 @@ describe('razítková brána stojí na tom, že se čas na server nedostal', () 
     return found;
   }
 
-  function importClosure(entry: string): Set<string> {
+  function importClosure(entry: string, boundary?: string): Set<string> {
     const seen = new Set<string>();
     const stack = [entry];
     while (stack.length > 0) {
       const next = stack.pop() as string;
       if (seen.has(next)) continue;
       seen.add(next);
+      if (next === boundary) continue;
       stack.push(...resolvedImports(next));
     }
     return seen;
@@ -1429,11 +1430,21 @@ describe('razítková brána stojí na tom, že se čas na server nedostal', () 
     );
   });
 
-  it('žádné veřejné dveře nedosáhnou na přetáčení času', () => {
+  it('legacy dveře nedosáhnou na přetáčení času mimo oddělenou project transakci', () => {
+    // T8 privately replays a source project, never rolling back the legacy
+    // blueprint or its rejectedAt stamps. Keep checking the FULL closure for
+    // blueprint writers below; do not exempt project code from that invariant.
     expect(
-      routes.filter((route) => importClosure(route).has(REBRANCH)),
+      routes.filter((route) => importClosure(route, 'src/worldstream/evidence-commit.ts').has(REBRANCH)),
       'přetáčení času dostalo serverové dveře, takže svět umí jít na dřívější revizi a razítková brána se nad ním znovu otevře — otevři T22-rewindrevision',
     ).toEqual([]);
+  });
+
+  it('project transakce nemá přístup k mutable legacy relaci ani registru blueprintů', () => {
+    const project = importClosure('src/worldstream/evidence-commit.ts');
+    expect(project.has('src/worldstream/sessions.ts')).toBe(false);
+    expect(project.has('src/worldstream/session.ts')).toBe(false);
+    expect(project.has('src/worldstream/snapshot-store.ts')).toBe(false);
   });
 
   it('do blueprintu relace píšou dvě místa a obě jen dopředu', () => {

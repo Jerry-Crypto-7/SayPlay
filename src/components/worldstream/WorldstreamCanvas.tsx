@@ -25,7 +25,7 @@
  */
 
 import { Canvas, useThree } from '@react-three/fiber';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useSyncExternalStore } from 'react';
 
 import WorldstreamLighting, {
   WORLDSTREAM_GL,
@@ -33,6 +33,8 @@ import WorldstreamLighting, {
 } from '@/components/viewer/WorldstreamLighting';
 import WorldstreamStage from '@/components/viewer/WorldstreamStage';
 import { FRAMING_FOV, frameScene, type Bounds } from '@/worldstream/framing';
+import type { RuntimeController, RuntimeSnapshot } from '@/worldstream/runtime-controller';
+import { CELL_SIZE } from '@/components/viewer/projection';
 import type { ProxyWorld } from '@/worldstream/proxy';
 import { budgetFor, type QualityTier } from '@/worldstream/quality';
 
@@ -43,15 +45,17 @@ import { budgetFor, type QualityTier } from '@/worldstream/quality';
  * doopravdy padne. `localBounds` je kvádr, ve kterém je podoba napsaná, a
  * u posunutého objektu ukazuje jinam, než kde ten objekt stojí.
  */
-function worldExtent(world: ProxyWorld): Bounds | null {
+function worldExtent(world: ProxyWorld, state: RuntimeSnapshot | null): Bounds | null {
   if (world.kind !== 'built' || world.slots.length === 0) return null;
 
   const min = [Infinity, Infinity, Infinity];
   const max = [-Infinity, -Infinity, -Infinity];
   for (const { slot } of world.slots) {
+    const entity = state?.entities.find(entry => entry.stableId === slot.stableId);
+    const offset = entity ? [entity.dx * CELL_SIZE, 0, entity.dy * CELL_SIZE] : [0, 0, 0];
     for (let axis = 0; axis < 3; axis += 1) {
-      min[axis] = Math.min(min[axis], slot.worldBounds.min[axis]);
-      max[axis] = Math.max(max[axis], slot.worldBounds.max[axis]);
+      min[axis] = Math.min(min[axis], slot.worldBounds.min[axis], slot.worldBounds.min[axis] + offset[axis]);
+      max[axis] = Math.max(max[axis], slot.worldBounds.max[axis], slot.worldBounds.max[axis] + offset[axis]);
     }
   }
   return { min: { x: min[0], y: min[1], z: min[2] }, max: { x: max[0], y: max[1], z: max[2] } };
@@ -76,10 +80,12 @@ function heroCenter(world: ProxyWorld): { x: number; y: number; z: number } | nu
  * změně světa**, takže druhá věta dostane svoje rámování a nezůstane po té
  * první.
  */
-function FrameCamera({ world }: { readonly world: ProxyWorld | null }) {
+function FrameCamera({ world, controller }: { readonly world: ProxyWorld | null; readonly controller: RuntimeController | null }) {
+  const state = useSyncExternalStore(controller?.subscribe ?? subscribeEmpty,
+    controller?.getSnapshot ?? emptySnapshot, emptySnapshot);
   const camera = useThree((state) => state.camera);
   const size = useThree((state) => state.size);
-  const bounds = useMemo(() => (world === null ? null : worldExtent(world)), [world]);
+  const bounds = useMemo(() => (world === null ? null : worldExtent(world, state)), [world, state]);
   const hero = useMemo(() => (world === null ? null : heroCenter(world)), [world]);
 
   useEffect(() => {
@@ -99,7 +105,10 @@ function FrameCamera({ world }: { readonly world: ProxyWorld | null }) {
   return null;
 }
 
-export default function WorldstreamCanvas({ world }: { readonly world: ProxyWorld | null }) {
+export default function WorldstreamCanvas({ world, controller = null }: {
+  readonly world: ProxyWorld | null;
+  readonly controller?: RuntimeController | null;
+}) {
   // Úroveň se čte ze **světa**, ne z volajícího: kdo svět dostane, ví, proti
   // jakému rozpočtu se má soudit (`proxy.ts`). Prázdné plátno kreslí `full`,
   // protože nekreslí nic.
@@ -116,8 +125,17 @@ export default function WorldstreamCanvas({ world }: { readonly world: ProxyWorl
       dpr={[1, budgetFor(quality).pixelRatio]}
     >
       <WorldstreamLighting quality={quality} />
-      <FrameCamera world={world} />
-      {world !== null && world.kind === 'built' && <WorldstreamStage world={world} />}
+      <FrameCamera world={world} controller={controller} />
+      {world !== null && world.kind === 'built' && <RuntimeStage world={world} controller={controller} />}
     </Canvas>
   );
+}
+
+const subscribeEmpty = () => () => {};
+const emptySnapshot = () => null;
+
+function RuntimeStage({ world, controller }: { readonly world: ProxyWorld; readonly controller: RuntimeController | null }) {
+  const state = useSyncExternalStore(controller?.subscribe ?? subscribeEmpty,
+    controller?.getSnapshot ?? emptySnapshot, emptySnapshot);
+  return <WorldstreamStage world={world} runtimeState={state} />;
 }

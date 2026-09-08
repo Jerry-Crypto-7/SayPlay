@@ -697,10 +697,14 @@ describe('jediný strop procesu', () => {
     }
 
     // A obě placené routy přes singleton chodí doopravdy, ne jen „nevyrábějí".
-    for (const route of ['src/app/api/generate/route.ts', 'src/app/api/worldstream/sessions/route.ts'])
+    for (const route of ['src/app/api/generate/route.ts', 'src/server/worldstream-emitter.ts'])
       expect(stripComments(readFileSync(route, 'utf8')), `${route} nechodí přes singleton`).toContain(
         'processSpendCap()',
       );
+    expect(stripComments(readFileSync('src/app/api/worldstream/sessions/route.ts', 'utf8')))
+      .toContain("import { cloudEmitter } from '../../../../server/worldstream-emitter'");
+    expect(stripComments(readFileSync('src/worldstream/sessions.ts', 'utf8')))
+      .toContain("import { cloudEmitter } from '../server/worldstream-emitter'");
   });
 
   // P15 `T30-capfloor`, druhé kolo nezávislé revize 4. 9. 2026. Postup zotavení

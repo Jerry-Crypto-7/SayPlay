@@ -187,6 +187,22 @@ body {
   pointer-events: auto;
 }
 
+.ws-source input, .ws-source textarea, .ws-source select, .ws-source button {
+  color: #cfe3e6;
+  background: #132022;
+  border: 1px solid #426068;
+  border-radius: 4px;
+  padding: 0.4rem 0.5rem;
+  font: inherit;
+  max-width: 100%;
+}
+.ws-source button, .ws-source summary { cursor: pointer; }
+.ws-source :focus-visible { outline: 2px solid #7fd4c1; outline-offset: 2px; }
+.ws-source :disabled { opacity: 0.6; cursor: default; }
+.ws-source dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.2rem 0.75rem; }
+.ws-source dd { margin: 0; }
+.ws-source blockquote { margin: 0.5rem 0; padding-left: 0.75rem; border-left: 2px solid #7fd4c1; }
+
 .ws-status {
   margin: 0;
   padding: 0 0.2rem;

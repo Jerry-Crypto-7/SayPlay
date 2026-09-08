@@ -33,7 +33,7 @@
  * cesta (`T21b`) — je jeho věc.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import {
   BoxGeometry,
@@ -45,6 +45,7 @@ import {
   type Object3D,
 } from 'three';
 
+import type { RuntimeSnapshot } from '@/worldstream/runtime-controller';
 import { PALETTES, type Palette } from '@/kit';
 import type { MeshResult } from '@/shape/mesh-client';
 import type { AnchorSpec, Vec3 } from '@/shape/types';
@@ -54,6 +55,7 @@ import { budgetFor, type QualityBudget, type QualityTier } from '@/worldstream/q
 import { boundsExtent, type SlotTransform } from '@/worldstream/slots';
 
 import { clayMaterial } from './ClayMaterial';
+import { CELL_SIZE } from './projection';
 import Materialize, { createRevealPlan, type RevealPlan } from './Materialize';
 import { RepresentationSlots } from './RepresentationSlot';
 import {
@@ -525,6 +527,7 @@ interface Reveal {
 }
 
 export interface WorldstreamStageProps {
+  readonly runtimeState?: RuntimeSnapshot | null;
   readonly world: ProxyWorld;
   /**
    * Paleta kusů kompozice.
@@ -566,6 +569,7 @@ export interface WorldstreamStageProps {
 
 export default function WorldstreamStage({
   world,
+  runtimeState = null,
   palette = PALETTES.harbor,
   upgrade = null,
   selected = null,
@@ -573,6 +577,19 @@ export default function WorldstreamStage({
   labelAnchor,
 }: WorldstreamStageProps): React.ReactElement {
   const build = useMemo(() => buildStage(world, palette), [world, palette]);
+  // Transform je absolutní od autorské kotvy; opakovaný render nesčítá posun.
+  useLayoutEffect(() => {
+    if (runtimeState === null) return;
+    for (const entity of runtimeState.entities) {
+      const view = build.views.find((candidate) => candidate.stableId === entity.stableId);
+      const slot = build.slots.find((candidate) => candidate.slot.stableId === entity.stableId)?.slot;
+      if (!view || !slot) continue;
+      const origin = slot.transform.translation;
+      view.group.position.set(origin[0] + entity.dx * CELL_SIZE, origin[1], origin[2] + entity.dy * CELL_SIZE);
+      view.group.visible = entity.active;
+      view.group.userData.runtime = entity;
+    }
+  }, [build, runtimeState]);
   const frames = useRef(0);
   const commits = useRef(0);
   const failures = useRef(new Map<string, string>());
@@ -611,11 +628,16 @@ export default function WorldstreamStage({
       const entry = build.slots.find((candidate) => candidate.slot.stableId === stableId);
       if (entry === undefined) return null;
 
+      const group = build.registry.view(stableId)?.group;
+      if (group?.visible === false) return null;
+      const origin = entry.slot.transform.translation;
+      const dx = (group?.position.x ?? origin[0]) - origin[0];
+      const dz = (group?.position.z ?? origin[2]) - origin[2];
       const { min, max } = entry.slot.worldBounds;
       projected.set(
-        (min[0] + max[0]) / 2,
+        (min[0] + max[0]) / 2 + dx,
         min[1] + (max[1] - min[1]) * height,
-        (min[2] + max[2]) / 2,
+        (min[2] + max[2]) / 2 + dz,
       );
       projected.project(camera);
       if (projected.z > 1) return null;
@@ -877,7 +899,10 @@ export default function WorldstreamStage({
             failure: failures.current.get(stableId) ?? null,
             attached: view?.attached != null,
             triangles: trianglesUnder(group),
-            transform,
+            transform: group === null ? transform : {
+              scale: [group.scale.x, group.scale.y, group.scale.z],
+              translation: [group.position.x, group.position.y, group.position.z],
+            },
             anchors,
             // Kotva slotu je socket obalu, takže `socketWorld` ho vždycky najde
             // — obojí zakládá `open()` z téhož pole `anchors`.
