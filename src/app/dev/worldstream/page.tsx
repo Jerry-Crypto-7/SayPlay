@@ -42,7 +42,7 @@ import { createMeshClient, type MeshClient } from '@/shape/mesh-client';
 import { MESH_DETAIL } from '@/shape/types';
 import { shapeContentHash } from '@/worldstream/cache';
 import type { DetailLevel } from '@/worldstream/mesh-gate';
-import { buildProxyWorld, type ProxyWorld } from '@/worldstream/proxy';
+import { buildProxyWorld, slotResolutions, type ProxyWorld } from '@/worldstream/proxy';
 import {
   budgetFor,
   detailLevelFor,
@@ -374,7 +374,11 @@ export default function WorldstreamDevPage() {
           : world === null
             ? 'building the rough world…'
             : world.kind === 'built'
-              ? `${world.title} — ${world.slots.length} slots at ${world.resolution}³, ${world.quality} quality, up to ${budgetFor(world.quality).heroes} authored ${budgetFor(world.quality).heroes === 1 ? 'shape' : 'shapes'}`
+              ? // **Mřížky z příček slotů, ne jedno číslo světa** (`T14r-worldgrid`).
+                // `world.resolution` je objednávka; tvar, který se do rozpočtu
+                // hrubé příčky nevešel, se přemeshoval o příčku níž, a věta,
+                // která to zamlčí, se čte správně a je špatně.
+                `${world.title} — ${world.slots.length} slots at ${slotResolutions(world).map((grid) => `${grid}³`).join(' / ') || 'no mesh'}, ${world.quality} quality, up to ${budgetFor(world.quality).heroes} authored ${budgetFor(world.quality).heroes === 1 ? 'shape' : 'shapes'}`
               : `declined: ${world.reason}`}
       </p>
     </main>

@@ -34,6 +34,7 @@ import {
   ROUGH_RESOLUTION,
   ROUGH_RUNGS,
   buildProxyWorld,
+  slotResolutions,
   type ProxySlot,
   type ProxyWorld,
 } from '../proxy';
@@ -396,6 +397,45 @@ describe('a shape over the budget drops a rung of the grid, not to a box', () =>
     // ta dvě čísla tiše rozešla.
     expect(hive.kind === 'mesh' && hive.resolution).toBe(24);
     expect(world.resolution).toBe(32);
+  });
+
+  /**
+   * `T14r-worldgrid`. Jedno číslo na světě je od téhle úlohy naměřeně nepravda
+   * o sestoupeném tvaru a jeden konzument ho už tiskne
+   * (`src/app/dev/worldstream/page.tsx`, věta „N slots at 32³"). Oko ji přečte
+   * správně a ona je špatně, takže se pinuje.
+   */
+  it('reports the grids the slots actually meshed at, not the one it ordered', async () => {
+    const mesher = budgetMesher(24);
+    const world = built(await buildProxyWorld(compiled(blueprint()), { mesh: mesher.mesh }));
+
+    // Objednávka zůstává jedním číslem a je to schválně.
+    expect(world.resolution).toBe(32);
+    // Jediný meshovaný slot téhle fixtury je hrdina a ten sestoupil, takže
+    // věta „N slots at 32³" mluví o mřížce, ve které nevznikl **žádný** tvar.
+    expect(slotResolutions(world)).toEqual([24]);
+  });
+
+  /**
+   * ⚠ **Tenhle svět je složený ručně a je to nutné, ne pohodlné.** Fixtura
+   * `blueprint()` má **jediný** hrdinský tvar, takže přes ni se sesypání ani
+   * pořadí změřit nedá: mutant, který `new Set` i `sort` vypustí, nad ní
+   * přežije. Naměřeno při psaní téhle úlohy.
+   */
+  it('counts a grid once and puts the coarsest last', async () => {
+    const one = built(await buildProxyWorld(compiled(blueprint()), { mesh: recordingMesher().mesh }));
+    const meshed = one.slots.find((entry) => entry.form.rung === 'g3-reduced');
+    expect(meshed, 'fixtura nemá jediný meshovaný slot').toBeDefined();
+
+    const at = (resolution: number): ProxySlot => ({
+      ...meshed!,
+      form: { ...meshed!.form, resolution } as ProxySlot['form'],
+    });
+    const many: ProxyWorld = { ...one, slots: [at(24), at(32), at(24), at(16)] };
+
+    // Sestupně a bez duplicit — jinak z jednoho sestoupeného tvaru mezi deseti
+    // vyroste věta „32³ / 32³ / 32³ / 24³", kterou nikdo nepřečte.
+    expect(slotResolutions(many)).toEqual([32, 24, 16]);
   });
 
   it('goes all the way down to the last rung before it gives up', async () => {

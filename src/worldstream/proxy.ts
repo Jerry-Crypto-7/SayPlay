@@ -212,6 +212,16 @@ export type ProxyWorld =
       readonly kind: 'built';
       readonly title: string;
       readonly sessionSeed: number;
+      /**
+       * Mřížka, na kterou byl svět **objednán** — `budget.roughResolution`.
+       *
+       * ⚠ **Není to tvrzení o tom, v čem každý slot doopravdy vznikl —
+       * `T14r-worldgrid`.** Od `T14r-meshbudget` smí tvar, který se do rozpočtu
+       * hrubé příčky nevešel, sestoupit o příčku níž (`COARSER_GRIDS`), a
+       * v čem vznikl doopravdy, říká `ProxyForm.resolution` u toho slotu. Kdo
+       * chce vypsat, na čem svět stojí, bere `slotResolutions()` níž; tohle
+       * číslo je objednávka, ne výsledek.
+       */
       readonly resolution: number;
       /**
        * Úroveň kvality, se kterou se svět postavil (`T26`). Nese ji svět, ne
@@ -226,6 +236,28 @@ export type ProxyWorld =
     }
   /** Ani hlína nešla vyrobit, protože žádný blueprint není (§27, příčka 6). */
   | { readonly kind: 'declined'; readonly rung: 'declined'; readonly reason: string };
+
+/**
+ * Mřížky, ve kterých hotové tvary toho světa doopravdy vznikly. Sestupně,
+ * bez duplicit; prázdné pole, když svět žádný mesh nemá.
+ *
+ * ⚠ **Existuje proto, že jedno číslo na světě je od `T14r-meshbudget` nepravda
+ * o sestoupeném tvaru — `T14r-worldgrid`.** Ze dvou nabídnutých cest se vzala
+ * ta, kde se **věta počítá z příček slotů**; `ProxyWorld.resolution` zůstává
+ * jedním číslem a je to objednávka, ne výsledek. Druhá cesta — rozbít to pole
+ * — by sahala na typ, který čte víc míst, a to je proti rozsahu úlohy:
+ * jediný dnešní konzument je vývojářská adresa mimo porotcovu cestu.
+ *
+ * Sloty bez meshe (`g2-rich`, hlína) se nepočítají. Nemají mřížku, a doplnit
+ * jim tu světovou by vyrobilo přesně to číslo, které tahle funkce odstraňuje.
+ */
+export function slotResolutions(world: ProxyWorld): readonly number[] {
+  if (world.kind !== 'built') return [];
+  const grids = world.slots
+    .map((entry) => (entry.form.rung === 'g3-reduced' ? entry.form.resolution : null))
+    .filter((value): value is number => value !== null);
+  return [...new Set(grids)].sort((a, b) => b - a);
+}
 
 export interface ProxyDeps {
   /**
