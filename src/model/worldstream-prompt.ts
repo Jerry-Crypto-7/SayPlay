@@ -340,7 +340,8 @@ export function capabilityManifest(): string {
     '',
     'A shape carries: shapeId, stableId (the object it belongs to), nodes, root, targetBounds',
     '{ min, max } in SHAPE space, anchors [{ name, at, normal }] where sockets sit, materialIntent',
-    '(a name, never a colour), priority (higher is meshed first).',
+    '(camelCase, no spaces — a name, never a colour and never a phrase: brushedSteel, not "brushed steel"),',
+    'priority (higher is meshed first).',
     'You do NOT write grid resolution, quality, cost or meshing order. Those are pipeline decisions.',
   ].join('\n');
 }

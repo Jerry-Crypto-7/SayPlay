@@ -37,8 +37,9 @@ import { describe, expect, it } from 'vitest';
 
 import { GEOM_VERSION, validateGeomProgram } from '../../geom/program';
 import { buildRuntimeWorld } from '../../ir/build';
+import { ID_PATTERN } from '../../ir/types';
 import { canonical } from '../../ir/worlddoc';
-import { SCHEMA_NODE_KINDS, validateShapeProgram } from '../../shape/schema';
+import { SCHEMA_NODE_KINDS, SHAPE_IDENTIFIER_PATTERN, validateShapeProgram } from '../../shape/schema';
 import { solveWitness } from '../../verify/solve';
 import { verifyWitness } from '../../verify/witness';
 import { blueprintSchema } from '../../worldstream/schema';
@@ -799,5 +800,56 @@ describe('a material written as a description is read, not refused', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toBe('SHAPE_INVALID');
+  });
+});
+
+/* ================================================================== *
+ * 11. Abeceda u polí, která ji potřebují (`T14r-promptalphabet`).
+ * ================================================================== */
+
+/**
+ * Naměřený přirozený experiment uvnitř jednoho běhu `T14`: každé pole, u
+ * kterého prompt tvar jmenuje, přišlo bez vady (`stableId` 0 z 515, `shapeId`
+ * 0 z 224, `anchors[].name` 0 z 211); obě pole, u kterých mlčel, vadu měla
+ * (`materialIntent` 60 ze 112, `role` 3 ze 479). Rozdíl byl jedna závorka.
+ *
+ * **Aserce je proto na okno kolem toho pole, ne na celou zprávu.** `stableId`
+ * říká „camelCase, unique, no spaces" odjakživa, takže `toContain('camelCase')`
+ * nad celým textem zůstane zelené i po smazání obou dopsaných vět — to je
+ * dekorativní test, ne pin. Okno je řádek s tím polem plus jeden následující,
+ * protože oba popisy se přes zalomení řádku přelévají.
+ */
+const windowAround = (text: string, needle: string): string => {
+  const lines = text.split('\n');
+  const at = lines.findIndex((line) => line.includes(needle));
+  expect(at).toBeGreaterThan(-1);
+  return lines.slice(at, at + 2).join('\n');
+};
+
+describe('the two fields the prompt used to leave without an alphabet', () => {
+  const system = buildCompilerRequest(PLAN, grammar()).system;
+
+  it('says how materialIntent is spelled, right where it introduces it', () => {
+    const near = windowAround(system, 'materialIntent');
+
+    expect(near).toContain('camelCase');
+    expect(near).toContain('no spaces');
+  });
+
+  it('says how an entity role is spelled, right where it calls it a free label', () => {
+    const near = windowAround(system, 'role is a FREE label');
+
+    expect(near).toContain('camelCase');
+    expect(near).toContain('no spaces');
+  });
+
+  it('demands exactly what the two validators demand, so the words are not a third rule', () => {
+    // Kdyby se schéma uvolnilo, prompt by žádal víc než kód a model by platil
+    // za pravopis, který nikdo nevyžaduje. Mezera je to jediné, co obě pole
+    // spojuje, a je to to jediné, co model naměřeně psal.
+    expect(SHAPE_IDENTIFIER_PATTERN.test('brushed steel')).toBe(false);
+    expect(SHAPE_IDENTIFIER_PATTERN.test('brushedSteel')).toBe(true);
+    expect(ID_PATTERN.test('loose pickup')).toBe(false);
+    expect(ID_PATTERN.test('loosePickup')).toBe(true);
   });
 });
