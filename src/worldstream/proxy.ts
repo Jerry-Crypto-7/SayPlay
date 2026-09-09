@@ -480,7 +480,15 @@ async function meshDownTheLadder(
       };
     } catch (error) {
       refusal = error instanceof Error ? error.message : String(error);
-      if (!(error instanceof MeshBudgetError)) return refusal;
+      // **Sestup se přiznává i u ne-rozpočtového odmítnutí** — nález nezávislé
+      // revize 9. 9. 2026. Prázdný mesh na hrubší příčce se vracel holou větou
+      // té příčky, tedy o mřížce, o které svět nikde nemluví („empty mesh …
+      // inside the requested box" o 24³, zatímco objednávka zněla 32³), a
+      // příčina „byl moc detailní" z ní zmizela úplně.
+      if (!(error instanceof MeshBudgetError))
+        return resolution === ladder[0]
+          ? refusal
+          : `${refusal} — on grid ${String(resolution)}, stepped down from ${String(ladder[0])} because the shape went over budget there`;
     }
   }
 

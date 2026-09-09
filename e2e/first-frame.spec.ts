@@ -40,20 +40,35 @@ const NEAREST = 'A greenhouse swallowed by a glacier, its panes still warm.';
 /**
  * Regresní strop, ne slib.
  *
- * **Naměřeno 7. 9. 2026** na tomhle stroji, systémové Chrome, uvařená cesta
- * bez nakonfigurovaného modelu: **přesná shoda 3 468 ms, nejbližší 16 444 ms**
- * (`evals/worldstream/first-frame.json`).
+ * ⚠ **Do 9. 9. 2026 tu stála čísla, která commitnutý artefakt vyvrací** —
+ * nález nezávislé revize. Docblock tvrdil „přesná shoda 3 468 ms, nejbližší
+ * 16 444 ms" a stavěl na tom příběh o tom, že těžší svět stojí násobně víc;
+ * `evals/worldstream/first-frame.json` přitom drží **2 545 ms** a **1 608 ms**,
+ * tedy nejbližší svět **rychlejší** než přesná shoda. Odsud se citují čísla
+ * z toho souboru, protože ten je výstupem tohohle testu.
  *
- * **Ten rozdíl není náhoda a není v síti** — obě věty čte sklad z paměti.
- * Je to meshing hrdinů v prohlížeči: `buildProxyWorldFrom()` je mele sériově,
- * takže těžší svět stojí násobně víc (`T14r-meshbudget`). Kdo bude zkracovat
- * cestu k prvnímu snímku, zkracuje **tohle**, ne odpověď serveru.
+ * **Co z těch dvou čísel plyne a co ne.** Jsou to dva uložené běhy na jednom
+ * stroji, ne p95 — a rozdíl mezi nimi je menší než rozptyl, takže se z nich
+ * o ceně meshingu nesmí odvozovat nic. Že meshing na téhle cestě dominuje,
+ * je měřené jinde (`T14r-meshbudget`), ne tady.
  *
- * Strop je nad naměřeným maximem s rezervou ~50 % na rozptyl stroje; kdo ho
- * posune, **napíše k tomu proč a nové číslo**, přesně jako u připíchnutých
- * čísel v `offline-chain` (`CLAUDE.md`, Konvence).
+ * **Strop je trojnásobek naměřeného maxima**, tedy mez, která pozná
+ * pětinásobné zhoršení. Předtím tu bylo 25 000 ms odvozených od těch
+ * fantomových 16 444 — desetinásobek skutečnosti, tedy strop, který
+ * nepropustil jedině úplné zaseknutí. Kdo ho posune, **napíše k tomu proč
+ * a nové číslo**, přesně jako u připíchnutých čísel v `offline-chain`
+ * (`CLAUDE.md`, Konvence).
  */
-const FIRST_FRAME_CEILING_MS = 25_000;
+const FIRST_FRAME_CEILING_MS = 8_000;
+
+/**
+ * Kolik se na svět **čeká**, než se vzdá.
+ *
+ * Schválně řádově víc než strop: čekat jen do stropu znamená, že pomalý stroj
+ * spadne na timeoutu locatoru a číslo se nedozvíme. Takhle test doměří i běh,
+ * který strop překročí, a spadne až na aserci — s naměřenou hodnotou v hlášce.
+ */
+const FIRST_FRAME_WAIT_MS = 60_000;
 
 const REPORT = 'evals/worldstream/first-frame.json';
 
@@ -65,7 +80,7 @@ async function measure(page: import('@playwright/test').Page, sentence: string):
   const started = Date.now();
   await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live', {
-    timeout: FIRST_FRAME_CEILING_MS,
+    timeout: FIRST_FRAME_WAIT_MS,
   });
   return Date.now() - started;
 }
@@ -75,6 +90,19 @@ test('uvařený svět dojde na plátno a měří se, jak dlouho to trvalo', asyn
 
   const exactMs = await measure(page, EXACT);
   const nearestMs = await measure(page, NEAREST);
+
+  // **Soudí se DŘÍV, než se píše** — nález nezávislé revize 9. 9. 2026.
+  // Opačné pořadí znamenalo, že běh, který strop prorazí, nejdřív přepíše
+  // commitnutou baseline svými špatnými čísly a teprve pak spadne; příště se
+  // pak regrese poměřuje proti sobě samé. Čísla nese hláška, takže se běh,
+  // který spadl, nemusí číst z artefaktu.
+  expect(exactMs, `přesná shoda přestala docházet na plátno: ${String(exactMs)} ms`).toBeLessThan(
+    FIRST_FRAME_CEILING_MS,
+  );
+  expect(
+    nearestMs,
+    `nejbližší shoda přestala docházet na plátno: ${String(nearestMs)} ms`,
+  ).toBeLessThan(FIRST_FRAME_CEILING_MS);
 
   mkdirSync(dirname(REPORT), { recursive: true });
   writeFileSync(
@@ -93,10 +121,4 @@ test('uvařený svět dojde na plátno a měří se, jak dlouho to trvalo', asyn
     'utf8',
   );
 
-  // **Jediné, co se soudí, je regrese.** Čísla samotná jsou vstup do rozhodnutí
-  // o headline, ne jeho výsledek.
-  expect(exactMs, 'přesná shoda přestala docházet na plátno').toBeLessThan(FIRST_FRAME_CEILING_MS);
-  expect(nearestMs, 'nejbližší shoda přestala docházet na plátno').toBeLessThan(
-    FIRST_FRAME_CEILING_MS,
-  );
 });

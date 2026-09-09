@@ -494,6 +494,30 @@ describe('a shape over the budget drops a rung of the grid, not to a box', () =>
       'empty mesh: no surface inside the requested box',
     );
   });
+
+  it('says which rung refused when the refusal came after a step down', async () => {
+    // **Nález nezávislé revize 9. 9. 2026.** Hrubší mřížka mine tenké detaily,
+    // takže tvar přes rozpočet na 32³ umí na 24³ vrátit prázdný mesh — a věta
+    // pro porotce pak mluvila o mřížce 24, o které svět nikde jinde nemluví,
+    // zatímco příčina „byl moc detailní" z ní zmizela.
+    const orders: MeshOrder[] = [];
+    const world = await buildProxyWorld(compiled(blueprint()), {
+      mesh: async (order) => {
+        orders.push(order);
+        if (order.resolution === ROUGH_RESOLUTION)
+          throw new MeshBudgetError('mesh is 17200 triangles, above maxTriangles 16000');
+        throw new Error('empty mesh: no surface inside the requested box');
+      },
+    });
+
+    // Druhá příčka se zkusila, třetí ne — prázdný mesh hrubší mřížka neopraví.
+    expect(orders.map((order) => order.resolution)).toEqual([32, 24]);
+    const hive = slotOf(world, 'tallHive').form;
+    if (hive.kind !== 'clay') throw new Error(hive.kind);
+    expect(hive.reason).toContain('empty mesh');
+    expect(hive.reason).toContain('on grid 24');
+    expect(hive.reason).toContain('stepped down from 32');
+  });
 });
 
 /* ------------------------------------------------------------------ *
