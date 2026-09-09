@@ -92,6 +92,22 @@ const EFFORT_LEVELS = ['low', 'medium', 'high', 'xhigh', 'max'] as const;
 
 export type Effort = (typeof EFFORT_LEVELS)[number];
 
+/**
+ * Čím se ten běh platí.
+ *
+ * **`api`** je metrovaná cesta: dolary doopravdy tečou a strop v dolarech je
+ * ta mez, která kousne. **`subscription`** je cesta přes předplatné (dnes
+ * `gpt-5.6-sol` přes `claude-code-proxy`, rozhodnutí `G2` (a) ze 6. 9. 2026):
+ * po tokenech se neúčtuje nic, takže každá dolarová částka kolem takového běhu
+ * je **přepočet z ceníku**, ne stržený obnos, a `WORLDSMITH_SPEND_CAP_USD`
+ * vypadá jako strop, aniž by držel peníze.
+ *
+ * **Tenhle pojem vede `evals/harness/preflight.ts` od P11 a produkt ho neměl.**
+ * Opisuje se jen ten rozdíl, ne kód: `src/server/**` a `evals/harness/**` jsou
+ * oddělené vrstvy a jejich stropy o sobě vědět nesmějí.
+ */
+export type UpstreamProfile = 'api' | 'subscription';
+
 export interface UpstreamConfig {
   readonly endpoint: string;
   readonly apiKey: string;
@@ -100,6 +116,14 @@ export interface UpstreamConfig {
   readonly pricing: Pricing;
   readonly maxOutputTokens: number;
   readonly timeoutMs: number;
+  /** Metrovaná cesta, nebo předplatné. Viz `UpstreamProfile`. */
+  readonly profile: UpstreamProfile;
+  /**
+   * Strop na počet volání, a u `subscription` **jediná mez, která doopravdy
+   * kousne**. U `api` je `null` — tam meze drží dolary a počet je jen druhá
+   * pojistka proti špatně opsanému ceníku (`src/server/spend-cap.ts`).
+   */
+  readonly callCap: number | null;
 }
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 8000;
@@ -155,6 +179,27 @@ function effortLevel(raw: string | undefined): Effort {
   return (EFFORT_LEVELS as readonly string[]).includes(value) ? (value as Effort) : DEFAULT_EFFORT;
 }
 
+/**
+ * Profil z prostředí. Neznámá hodnota je `null`, tedy **odmítnutá konfigurace**.
+ *
+ * Tichá náhrada by tady byla drahá oběma směry: překlep spadlý na `api` by
+ * u předplatného vyžadoval cenu, která neexistuje, a překlep spadlý na
+ * `subscription` by u placeného klíče **odpojil dolarový strop**. Nenastavená
+ * proměnná je `api` — to je ta přísnější z těch dvou a je to dnešní chování.
+ */
+function profileFrom(raw: string | undefined): UpstreamProfile | null {
+  const value = (raw ?? '').trim().toLowerCase();
+  if (value === '') return 'api';
+  return value === 'api' || value === 'subscription' ? value : null;
+}
+
+/** Celé kladné číslo, nebo `null`. Prázdná i vadná hodnota je `null`. */
+function wholePositive(raw: string | undefined): number | null {
+  const parsed = Number((raw ?? '').trim());
+  if ((raw ?? '').trim() === '') return null;
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
 function inputPrice(raw: string | undefined, usdPerMTokOut: number): number {
   if (raw === undefined || raw.trim() === '') return usdPerMTokOut;
   const parsed = Number(raw);
@@ -208,6 +253,22 @@ export function upstreamConfigFromEnv(env: Record<string, string | undefined>): 
   if (endpoint === undefined || endpoint.length === 0) return null;
   if (apiKey === undefined || apiKey.length === 0) return null;
 
+  const profile = profileFrom(env.WORLDSMITH_MODEL_PROFILE);
+  if (profile === null) return null;
+
+  // **U předplatného je povinný strop na POČET volání, ne cena.** Je to táž
+  // doktrína jako u chybějící ceny o kus níž — mez, kterou nikdo nenastavil,
+  // je nekonfigurace, ne nula — jen posunutá tam, kde ta mez doopravdy je.
+  // `preflight.ts` to u profilu `subscription` dělá od P11 (`NO_CALL_CAP`);
+  // produkt to do 9. 9. 2026 neuměl a `WORLDSMITH_SPEND_CAP_USD` tam vypadal
+  // jako strop, který nedrží nic.
+  //
+  // U `api` se tady nevyžaduje: tam meze drží dolary a `spend-cap.ts` má
+  // vlastní `DEFAULT_CALL_CAP` jako druhou pojistku proti špatně opsanému
+  // ceníku.
+  const callCap = profile === 'subscription' ? wholePositive(env.WORLDSMITH_CALL_CAP) : null;
+  if (profile === 'subscription' && callCap === null) return null;
+
   // `positiveNumber` by tu nestačila: ta vadnou hodnotu tiše nahradí náhradou,
   // a náhrada za cenu je právě ta nula, která strop vypíná.
   const usdPerMTokOut = Number(env.WORLDSMITH_USD_PER_MTOK_OUT);
@@ -243,6 +304,8 @@ export function upstreamConfigFromEnv(env: Record<string, string | undefined>): 
     },
     maxOutputTokens,
     timeoutMs: positiveNumber(env.WORLDSMITH_UPSTREAM_TIMEOUT_MS, DEFAULT_TIMEOUT_MS),
+    profile,
+    callCap,
   };
 }
 

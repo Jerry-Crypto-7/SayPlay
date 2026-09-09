@@ -118,6 +118,8 @@ const LIVE_CONFIG: UpstreamConfig = {
   pricing: { usdPerMTokIn: 3, usdPerMTokOut: 15 },
   maxOutputTokens: 1000,
   timeoutMs: 1000,
+  profile: 'api',
+  callCap: null,
 };
 
 const LIVE_WORLD = { irVersion: 'v1', simRevision: 0, lookRevision: 0, sim: null, look: {} };

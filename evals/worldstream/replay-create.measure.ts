@@ -107,6 +107,7 @@ describe('the archived run, replayed against the current code', () => {
         // z archivu, takže neutratí ani jedno volání — a právě proto se
         // jeho čísla nesmějí citovat jako výkon modelu.
         paidCalls: 0,
+        pricing: 'none',
       });
 
       const comparison = compareReplay(before, after, new Date().toISOString());

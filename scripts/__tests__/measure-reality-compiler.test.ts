@@ -271,7 +271,7 @@ describe('T10 benchmark accounting and denominators (synthetic transport only)',
     const s = setup();
     const value: upstream.UpstreamConfig = { endpoint: 'https://private.invalid/model', apiKey: 'fake-test-key',
       model: 'test', effort: 'low', maxOutputTokens: 100, timeoutMs: 1000,
-      pricing: { usdPerMTokIn: 1, usdPerMTokOut: 2 } };
+      pricing: { usdPerMTokIn: 1, usdPerMTokOut: 2 }, profile: 'api', callCap: null };
     vi.spyOn(upstream, 'upstreamConfigFromEnv').mockReturnValue(value);
     expect(() => configuredTransport(s.config)).toThrow('MODEL_CONFIG_MISMATCH');
     s.config.modelConfig = { effort: 'low', maxOutputTokens: 100, timeoutMs: 1000, usdPerMTokIn: 1, usdPerMTokOut: 2 };

@@ -472,7 +472,7 @@ describe('every kind of failure lands in its own bucket', () => {
   });
 
   it('has a bucket for every stage the report can print', () => {
-    const report = buildCreateReport([], { sessionSeed: SEED, measuredAt: 'now', paidCalls: 0 });
+    const report = buildCreateReport([], { sessionSeed: SEED, measuredAt: 'now', paidCalls: 0, pricing: 'charged' });
     expect(Object.keys(report.failuresByStage).sort()).toEqual([...FAILURE_STAGES].sort());
   });
 });
@@ -589,6 +589,7 @@ const report = (cases: readonly CaseOutcome[]) =>
     sessionSeed: SEED,
     measuredAt: '2026-08-31T00:00:00.000Z',
     paidCalls: 0,
+    pricing: 'charged',
   });
 
 describe('the report rules on the run instead of describing it', () => {
@@ -870,6 +871,17 @@ describe('the call that costs money', () => {
     );
   });
 
+  it('says the subscription pays in calls, so its dollars are a conversion', () => {
+    // **Bez tohohle slova čte report dolary jako stržený obnos.** Běh
+    // z 6. 9. 2026 jel na ceníku `1/1` za milion tokenů dosazeném jen proto,
+    // aby konfigurace prošla — částka z něj se nesmí citovat jako cena.
+    expect(liveEmitter(env()).pricing).toBe('charged');
+    const subscription = liveEmitter(
+      env({ WORLDSMITH_MODEL_PROFILE: 'subscription', WORLDSMITH_CALL_CAP: '200' }),
+    );
+    expect(subscription.pricing).toBe('derived');
+  });
+
   it('returns the parsed answer and files it under the case being measured', async () => {
     const provider = answers({ hello: 'world' });
     const upstream = liveEmitter(env(), provider.fetchImpl);
@@ -1127,6 +1139,7 @@ describe('a half-measured run must not read as a verdict on the model', () => {
       planned: 30,
       stopReason: 'the run budget stopped the measurement after 18 sentences',
       paidCalls: 0,
+      pricing: 'charged',
     });
 
     expect(short.planned).toBe(30);
@@ -1142,6 +1155,7 @@ describe('a half-measured run must not read as a verdict on the model', () => {
       measuredAt: '2026-09-06T00:00:00.000Z',
       planned: 30,
       paidCalls: 0,
+      pricing: 'charged',
     });
     expect(short.stopReason).toBeNull();
     expect(short.gateFailures[0]).toContain('2 of 30 sentences');
@@ -1153,6 +1167,7 @@ describe('a half-measured run must not read as a verdict on the model', () => {
       measuredAt: '2026-09-06T00:00:00.000Z',
       planned: 30,
       paidCalls: 0,
+      pricing: 'charged',
     });
     expect(whole.stopReason).toBeNull();
     expect(whole.gateFailures).toEqual([]);
@@ -1167,9 +1182,21 @@ describe('a half-measured run must not read as a verdict on the model', () => {
       measuredAt: '2026-09-06T00:00:00.000Z',
       planned: 3,
       paidCalls: 11,
+      pricing: 'charged',
     });
     expect(built.paidCalls).toBe(11);
     expect(built.totals.attempted).toBe(3);
+  });
+
+  it('carries the pricing word out of the run instead of assuming it was paid', () => {
+    const built = buildCreateReport(spread(2), {
+      sessionSeed: SEED,
+      measuredAt: '2026-09-06T00:00:00.000Z',
+      planned: 2,
+      paidCalls: 4,
+      pricing: 'derived',
+    });
+    expect(built.pricing).toBe('derived');
   });
 
   it('assumes the run was whole when nobody said how many were planned', () => {
@@ -1399,6 +1426,10 @@ describe('the committed replay artifact holds up on its own', () => {
     // Rozdíl jsou kola oprav, a právě ten by mlčky zmizel, kdyby se sem někdy
     // dosadilo `attempted`.
     expect(measured.paidCalls).toBeGreaterThanOrEqual(measured.totals.attempted);
+    // **A říká, čím se platilo.** Ten běh šel přes předplatné, takže ceník
+    // `1/1` za milion tokenů byl dosazený jen proto, aby konfigurace prošla;
+    // bez tohohle slova si čtenář jeho dolary přečte jako stržený obnos.
+    expect(measured.pricing).toBe('derived');
   });
 
   it('has as many moved sentences as the two tallies differ by', () => {

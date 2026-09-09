@@ -131,6 +131,7 @@ describe('the live create path over the frozen set', () => {
           planned: corpus.create.length,
           stopReason,
           paidCalls: upstream.paidCalls,
+          pricing: upstream.pricing,
         });
         // **Obojí se zapíše i po VYHOZENÉ výjimce.** Meshing ani profil nejsou
         // v `driveCreateCase` chráněné, takže výjimka u dvacáté deváté věty by

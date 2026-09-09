@@ -601,6 +601,100 @@ describe('3. neznámá cena se neúčtuje nulou', () => {
     expect(upstreamConfigFromEnv({ ...LIVE_ENV, WORLDSMITH_USD_PER_MTOK_OUT: '0,003' })).toBeNull();
   });
 
+/* ------------------------------------------------------------------ *
+ * Profil poskytovatele: metrovaná cesta proti předplatnému.
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Předplatné neúčtuje po tokenech, takže dolarový strop tam nedrží nic.**
+ *
+ * Produkt tenhle pojem do 9. 9. 2026 neměl: `upstreamConfigFromEnv()` žádala
+ * kladnou cenu výstupu vždycky, takže se přes předplatné cena **dosazovala jen
+ * proto, aby konfigurace prošla** — a `WORLDSMITH_SPEND_CAP_USD` pak vypadal
+ * jako mez, kterou nic nedrží. Naostro to tak proběhlo: běh z 6. 9. 2026 jel
+ * na ceníku `1/1` za milion tokenů.
+ *
+ * Mez, která u předplatného doopravdy kousne, je počet volání, takže se stává
+ * povinnou přesně tam. `evals/harness/preflight.ts` to u profilu
+ * `subscription` dělá od P11; opisuje se ten rozdíl, ne kód.
+ */
+describe('profil poskytovatele rozhoduje, která mez je povinná', () => {
+  const SUBSCRIPTION = { ...LIVE_ENV, WORLDSMITH_MODEL_PROFILE: 'subscription' };
+
+  it('nenastavený profil je `api` a nic dalšího nežádá', () => {
+    // Dnešní chování se nesmí pohnout: nasazení, které o profilu neví, jede dál.
+    const config = upstreamConfigFromEnv(LIVE_ENV);
+    expect(config?.profile).toBe('api');
+    expect(config?.callCap).toBeNull();
+    // Prázdná hodnota je totéž co chybějící — `.env.example` má proměnné prázdné.
+    expect(upstreamConfigFromEnv({ ...LIVE_ENV, WORLDSMITH_MODEL_PROFILE: '  ' })?.profile).toBe('api');
+  });
+
+  it('u předplatného je strop na počet volání povinný, stejně jako dnes cena', () => {
+    // Failure path, a je to celý smysl úlohy: bez tohohle je jediná skutečná
+    // mez předplatného nenastavená a nikdo se to nedozví.
+    expect(upstreamConfigFromEnv(SUBSCRIPTION)).toBeNull();
+    expect(upstreamConfigFromEnv({ ...SUBSCRIPTION, WORLDSMITH_CALL_CAP: '' })).toBeNull();
+    expect(upstreamConfigFromEnv({ ...SUBSCRIPTION, WORLDSMITH_CALL_CAP: '0' })).toBeNull();
+    expect(upstreamConfigFromEnv({ ...SUBSCRIPTION, WORLDSMITH_CALL_CAP: '-5' })).toBeNull();
+    // Půlka volání neexistuje; desetinná čárka je nečíslo, stejně jako u ceny.
+    expect(upstreamConfigFromEnv({ ...SUBSCRIPTION, WORLDSMITH_CALL_CAP: '2.5' })).toBeNull();
+    expect(upstreamConfigFromEnv({ ...SUBSCRIPTION, WORLDSMITH_CALL_CAP: '2,5' })).toBeNull();
+  });
+
+  it('s vyplněným stropem projde a nese obojí', () => {
+    const config = upstreamConfigFromEnv({ ...SUBSCRIPTION, WORLDSMITH_CALL_CAP: '200' });
+    expect(config?.profile).toBe('subscription');
+    expect(config?.callCap).toBe(200);
+  });
+
+  it('u `api` se strop na počet volání nevyžaduje', () => {
+    // Tam meze drží dolary a počet je druhá pojistka s vlastní výchozí hodnotou
+    // ve `spend-cap.ts`. Vyžadovat ho tady by odpojilo běžící nasazení.
+    const config = upstreamConfigFromEnv({ ...LIVE_ENV, WORLDSMITH_MODEL_PROFILE: 'api' });
+    expect(config).not.toBeNull();
+    expect(config?.callCap).toBeNull();
+  });
+
+  it('neznámý profil se odmítne, místo aby tiše spadl na jeden z těch dvou', () => {
+    // Obě tichá spadnutí jsou drahá a každé jinak: překlep spadlý na `api` by
+    // u předplatného vyžadoval cenu, která neexistuje, a překlep spadlý na
+    // `subscription` by u placeného klíče odpojil dolarový strop.
+    expect(upstreamConfigFromEnv({ ...LIVE_ENV, WORLDSMITH_MODEL_PROFILE: 'subscribtion' })).toBeNull();
+    expect(upstreamConfigFromEnv({ ...LIVE_ENV, WORLDSMITH_MODEL_PROFILE: 'free' })).toBeNull();
+  });
+
+  /**
+   * ⚠ **Cena zůstává povinná i u předplatného, a je to měřením vynucené —
+   * nestavěla se tedy druhá půlka toho, co úloha navrhovala.**
+   *
+   * Zadání žádalo, aby se u `subscription` „dolarová mez do rozhodování
+   * nezapočítala". Doslova provedené to znamená nulový nejhorší případ, a ten
+   * **vypne i strop na počet volání**: `spend-cap.ts` má jediné rozhodnutí
+   * `costsMoney = worstCaseUsd > 0`, na kterém visí započítání volání i obě
+   * odmítnutí (`CALL_CAP_EXHAUSTED` i `CAP_EXHAUSTED`). Pinuje to
+   * `spend-cap.test.ts` větou „volání zdarma se nezapočítala".
+   *
+   * Odstranit cenu by tedy odstranilo tu jedinou mez, kterou tahle úloha dělá
+   * povinnou. Cena se proto u předplatného pořád vyžaduje — je to nosič
+   * počítadla, ne účtenka — a report u ní od `T14-subprofile` říká `derived`,
+   * takže ji nikdo nepřečte jako stržené dolary.
+   */
+  it('cena je u předplatného pořád povinná, protože nese počítadlo volání', () => {
+    const { WORLDSMITH_USD_PER_MTOK_OUT: _omitted, ...priceless } = SUBSCRIPTION;
+    expect(upstreamConfigFromEnv({ ...priceless, WORLDSMITH_CALL_CAP: '200' })).toBeNull();
+
+    // A s cenou je nejhorší případ kladný, tedy volání se počítá.
+    const config = upstreamConfigFromEnv({ ...SUBSCRIPTION, WORLDSMITH_CALL_CAP: '200' });
+    expect(config).not.toBeNull();
+    const worstCase = upstreamBranch(config).worstCaseUsd({
+      prompt: PROMPT,
+      request: { model: 'test', system: 'system', user: PROMPT },
+    });
+    expect(worstCase).toBeGreaterThan(0);
+  });
+});
+
   it('nevyplněná cena vstupu se dopočítá z ceny výstupu, ne z nuly', () => {
     const { WORLDSMITH_USD_PER_MTOK_IN: _omitted, ...withoutInput } = LIVE_ENV;
     expect(upstreamConfigFromEnv(withoutInput)?.pricing.usdPerMTokIn).toBe(25);

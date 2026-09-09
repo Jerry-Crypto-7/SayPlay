@@ -606,6 +606,20 @@ export interface WorldPair {
   readonly distance: number;
 }
 
+/**
+ * Co znamenají dolary kolem tohohle běhu.
+ *
+ * - `charged` — metrovaná cesta (`api`): částky se doopravdy strhly.
+ * - `derived` — předplatné: po tokenech se neúčtuje nic, takže každá částka
+ *   je **přepočet z ceníku**. Odsud nesmí odejít jako cena běhu.
+ * - `none` — nevolalo se; přehrání odpovídá z archivu.
+ *
+ * **Stojí to v reportu, ne v commit zprávě**, protože ten soubor cestuje sám —
+ * a běh z 6. 9. 2026 měl ceník `1/1` za milion tokenů dosazený jen proto, aby
+ * konfigurace prošla. Bez tohohle pole si ho čtenář přečte jako dolary.
+ */
+export type ReportPricing = 'charged' | 'derived' | 'none';
+
 export interface CreateReport {
   readonly measuredAt: string;
   readonly sessionSeed: number;
@@ -648,6 +662,8 @@ export interface CreateReport {
    * zaplacený běh by o sobě mlčky tvrdil, že byl zadarmo.
    */
   readonly paidCalls: number;
+  /** Viz `ReportPricing`. */
+  readonly pricing: ReportPricing;
 }
 
 /** p95 tak, jak ho počítá zbytek repa: index `ceil(0,95 · n) − 1` na seřazeném. */
@@ -668,6 +684,8 @@ export function buildCreateReport(
     readonly stopReason?: string | null;
     /** Kolik placených volání běh stál. Povinné — viz `CreateReport`. */
     readonly paidCalls: number;
+    /** Čím se běh platil. Povinné — viz `ReportPricing`. */
+    readonly pricing: ReportPricing;
   },
 ): CreateReport {
   const planned = meta.planned ?? cases.length;
@@ -760,6 +778,7 @@ export function buildCreateReport(
     closestPair,
     gateFailures,
     paidCalls: meta.paidCalls,
+    pricing: meta.pricing,
   };
 }
 
@@ -783,6 +802,14 @@ export interface LiveEmitter {
   readonly archive: readonly ArchiveEntry[];
   /** Kolik volání strop propustil. Roste i u těch, která pak selhala. */
   readonly paidCalls: number;
+  /**
+   * Čím tenhle emitor platí, přeložené na to, co znamenají jeho dolary.
+   *
+   * Bydlí to tady, protože emitor je jediný, kdo drží `UpstreamConfig` —
+   * spouštěč by profil musel číst z prostředí podruhé a ta dvě čtení by se
+   * mohla rozejít.
+   */
+  readonly pricing: ReportPricing;
   /**
    * **Cokoli, co jde na disk, projde tudy.** Ne jen archiv.
    *
@@ -815,7 +842,9 @@ export function liveEmitter(
   const config = upstreamConfigFromEnv(env);
   if (config === null)
     throw new Error(
-      'no upstream is configured: set WORLDSMITH_MODEL_ENDPOINT, WORLDSMITH_MODEL_KEY and a positive WORLDSMITH_USD_PER_MTOK_OUT before spending money',
+      'no upstream is configured: set WORLDSMITH_MODEL_ENDPOINT, WORLDSMITH_MODEL_KEY and a positive ' +
+        'WORLDSMITH_USD_PER_MTOK_OUT before spending money; on WORLDSMITH_MODEL_PROFILE=subscription ' +
+        'WORLDSMITH_CALL_CAP is required too, because there it is the only limit that bites',
     );
 
   const branch = fetchImpl === undefined ? upstreamBranch(config) : upstreamBranch(config, fetchImpl);
@@ -843,6 +872,7 @@ export function liveEmitter(
     get paidCalls() {
       return paidCalls;
     },
+    pricing: config.profile === 'subscription' ? 'derived' : 'charged',
     scrub(value: unknown): unknown {
       return scrubDeep(value, secrets);
     },
