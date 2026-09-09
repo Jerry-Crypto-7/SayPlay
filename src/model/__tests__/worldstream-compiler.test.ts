@@ -931,13 +931,28 @@ describe('the two fields the prompt used to leave without an alphabet', () => {
     expect(near).toContain('no spaces');
   });
 
-  it('demands exactly what the two validators demand, so the words are not a third rule', () => {
-    // Kdyby se schéma uvolnilo, prompt by žádal víc než kód a model by platil
-    // za pravopis, který nikdo nevyžaduje. Mezera je to jediné, co obě pole
-    // spojuje, a je to to jediné, co model naměřeně psal.
+  it('asks for less than both validators allow, and the space is the whole overlap', () => {
+    // ⚠ **Titulek tohohle testu do 9. 9. 2026 zněl „demands exactly what the
+    // two validators demand" a byl to nález nezávislé revize** — tvrdil rovnost
+    // tam, kde je nerovnost, a dvě hodnoty, které zkoušel, ji nemohly odhalit.
+    //
+    // Prompt žádá **camelCase**, obě regulárky pouštějí víc, a **každá něco
+    // jiného**: `SHAPE_IDENTIFIER_PATTERN` bere pomlčku i podtržítko,
+    // `ID_PATTERN` podtržítko ano a pomlčku ne. Rovnost tedy neplatí ani mezi
+    // těmi dvěma navzájem.
+    expect(SHAPE_IDENTIFIER_PATTERN.test('brushed-steel')).toBe(true);
+    expect(SHAPE_IDENTIFIER_PATTERN.test('brushed_steel')).toBe(true);
+    expect(ID_PATTERN.test('loose_pickup')).toBe(true);
+    expect(ID_PATTERN.test('loose-pickup')).toBe(false);
+
+    // **Co platí a proč na tom stojí ta dvě dopsaná slova v promptu:** mezeru
+    // odmítnou obě, a mezera je to jediné, co model naměřeně psal
+    // (`materialIntent` 60 ze 112, `role` 3 ze 479). Přísnější prompt je tedy
+    // v pořádku — nedá modelu platit za pravopis, který kód odmítne, jen mu
+    // nechá užší cestu, než by musel.
     expect(SHAPE_IDENTIFIER_PATTERN.test('brushed steel')).toBe(false);
-    expect(SHAPE_IDENTIFIER_PATTERN.test('brushedSteel')).toBe(true);
     expect(ID_PATTERN.test('loose pickup')).toBe(false);
+    expect(SHAPE_IDENTIFIER_PATTERN.test('brushedSteel')).toBe(true);
     expect(ID_PATTERN.test('loosePickup')).toBe(true);
   });
 });

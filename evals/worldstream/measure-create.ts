@@ -920,6 +920,7 @@ export interface ReplayMove {
   readonly id: string;
   /** `authored`, název fáze, ve které to spadlo, nebo `lost`. */
   readonly from: string;
+  /** Totéž, plus `absent` pro větu, kterou přehrání už vůbec nezkusilo. */
   readonly to: string;
   /** Hláška toho selhání, když věta pořád padá. `null` = staví se. */
   readonly detail: string | null;
@@ -996,11 +997,29 @@ export function compareReplay(
   const moved: ReplayMove[] = [];
   for (const now of after.cases) {
     const then = was.get(now.id);
+    // Věta, kterou archivovaný běh neměl, není pohyb — není odkud.
     if (then === undefined) continue;
     const from = landing(then);
     const to = landing(now);
     if (from === to) continue;
     moved.push({ id: now.id, from, to, detail: now.failure?.detail ?? null, rungs: now.rungs });
+  }
+
+  // **Zmizelá věta je pohyb, a ten největší** — nález `T14r-promptclaims`.
+  // Smyčka výš chodí po `after.cases`, takže větu, kterou archivovaný běh
+  // měl a přehrání ne, nepotká vůbec; `then === undefined` řeší jen opačný
+  // směr. Doklad by pak mlčel přesně o té změně, kvůli které se čte:
+  // `attempted` by kleslo a `moved` by zůstalo prázdné, takže by to
+  // vypadalo, že se nehnulo nic.
+  //
+  // `absent` není `lost`. `lost` je věta, která doběhla a neskončila nikde;
+  // `absent` je věta, kterou přehrání ani nezkusilo — typicky proto, že jí
+  // v archivu chybí odpověď. Slévat je do jednoho slova by ten rozdíl
+  // zahodilo právě v souboru, který ho má nést.
+  const stillThere = new Set(after.cases.map((entry) => entry.id));
+  for (const then of before.cases) {
+    if (stillThere.has(then.id)) continue;
+    moved.push({ id: then.id, from: landing(then), to: 'absent', detail: null, rungs: [] });
   }
 
   return {

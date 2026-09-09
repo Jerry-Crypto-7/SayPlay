@@ -1311,6 +1311,26 @@ describe('the replay leaves a number the repo can check', () => {
     expect(diff.archivedRun.measuredAt).toBe(before.measuredAt);
   });
 
+  it('says so when a sentence the archived run had is gone from the replay', () => {
+    // **Nález `T14r-promptclaims`.** Smyčka chodila po `after.cases`, takže
+    // zmizelou větu nepotkala vůbec — `attempted` kleslo, `moved` zůstalo
+    // prázdné a doklad mlčel právě o té největší změně. Naostro to není
+    // hypotéza: `c14` i `c28` mají v archivu míň odpovědí než kol, takže
+    // přehrání, které je přeskočí, je ta cesta, ne výmysl.
+    const before = report([
+      outcome({ id: 'c01' }),
+      outcome({ id: 'c02', geometryAuthored: false, failure: { stage: 'clay', detail: 'one of three' } }),
+    ]);
+    const after = report([outcome({ id: 'c01' })]);
+
+    const diff = compareReplay(before, after, '2026-09-08T00:00:00.000Z');
+
+    // `absent`, ne `lost`: `lost` je věta, která doběhla a neskončila nikde.
+    expect(diff.moved).toEqual([
+      { id: 'c02', from: 'clay', to: 'absent', detail: null, rungs: [] },
+    ]);
+  });
+
   it('carries the wall-clock caveat into the file itself', () => {
     // Bez téhle věty je artefakt čtený za rok nepravdivý: příčka, na které tvar
     // skončí, se rozhoduje mimo jiné časem, takže pomalejší stroj dá jiné číslo.
