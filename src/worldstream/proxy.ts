@@ -157,6 +157,38 @@ export const ROUGH_RESOLUTION = MESH_DETAIL.rough.resolution;
  * trojúhelníků. Sestup po prázdném meshi je tedy druhá záchrana, ne opakování
  * téhož výpočtu.
  *
+ * ## Proč žebřík nemá celkový deadline — `T14r-ladderdeadline`, změřeno 9. 9. 2026
+ *
+ * Worker soudí čas **až po vymeshování**, takže přeteklá příčka se platí celá:
+ * nejdražší svět archivu (`c08`) zaplatil 2 595 ms na příčce s rozpočtem
+ * 350 ms, pak 1 060 ms, a uspěl až na 16³ za 348 ms. Celkem **4 003 ms**, z toho
+ * 1 408 ms jsou ty dvě příčky navíc. Přes sekundu meshování má **5 z 65** světů
+ * archivu.
+ *
+ * **Deadline se ale neposadí nikam, kde by neplatil hrdiny.** Ty tři světy, co
+ * stojí nejvíc, jsou přesně ty, kterým žebřík hrdinu **zachránil** — uspěly až
+ * na poslední příčce. Součet rozpočtů vlastních příček (3 × 350 = 1 050 ms) by
+ * jich obětoval **tři**, aby ušetřil 3,4 s; `c08` uspěje až po 3 655 ms, takže
+ * jakákoli mez, která na něm ušetří čas, ho zároveň pošle na hlínu. Je to
+ * vlastnost, ne otázka ladění, a je to opak toho, co `e614918` vyhrálo
+ * (`clay` 8 → 1).
+ *
+ * **A není to nekonečno, které by mez potřebovalo.** Práci jedné příčky shora
+ * omezují rozpočty programu: 33³ rohů × `maxEvaluations` 512 je nejdražší
+ * legální tvar, a naměřených 2 595 ms je přesně on. Nejhorší případ žebříku je
+ * tedy ohraničený už dnes, jen tou branou, ne stopkami.
+ *
+ * **Kde ta sekunda a půl doopravdy leží:** ne na cestě k prvnímu snímku. Sklad
+ * jedenácti světů (`authored-worlds.json`) protočí všech svých 13 tvarů za
+ * 2 393 ms dohromady, sestupuje u dvou a na 16³ nejde ani jeden — žebřík na
+ * první snímek přidá pár set milisekund. Ta čtyřsekundová cena je z dějství II,
+ * které samo trvá kolem dvou a půl minuty.
+ *
+ * Kdyby se k tomu někdo vracel: měřit se to **nemá stopkami**, protože `maxMs`
+ * je měření stroje. Jediná cesta, která nedělá kompromis mezi časem a hrdinou,
+ * je odhadnout cenu příčky **předem** z programu (buňky × vyhodnocení na buňku)
+ * a přeskočit tu, na kterou tvar nemá — to je ale nový nákladový model, ne mez.
+ *
  * **Nejsou to `MeshResolution`.** Ten typ vyjmenovává mřížky, které umí
  * *žebřík podob* a měřicí stránka; tohle jsou mřížky poslední záchrany, které
  * se do žádného artefaktu ani cache klíče nedostávají.
