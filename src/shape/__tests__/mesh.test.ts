@@ -352,6 +352,54 @@ describe('worker vrací mesh a předává vlastnictví paměti', () => {
     if (!response.ok) return;
     expect(response.triangleCount).toBeLessThanOrEqual(MESH_DETAIL.rough.maxTriangles);
   });
+
+  it('mřížka 32³ je poslední hrubá příčka, ne první jemná', () => {
+    // `budgetFor()` dělí příčky na `resolution <= 32`, a ta hranice se do
+    // 9. 9. 2026 netestovala vůbec: testy žebříku vstřikují falešný mesher,
+    // takže skutečný strop nikdy nikdo nepřekročil a mutace `<= 32` → `< 32`
+    // (tedy 32³ souzené rozpočtem `high`) nechala celou sadu zelenou.
+    //
+    // **Zabít ji jde jen na 32³, a jen tvarem v úzkém pásu.** Mřížka 16 ten
+    // rozdíl nevidí — 16 je pod 32 v obou zněních, takže obě vrátí `rough`;
+    // AC nálezu žádalo právě 16³ a splnit se nedalo. Tvar musí padnout mezi
+    // oba stropy: nad `rough` 16 000 a pod `high` 32 000, jinak ho odmítnou
+    // obě znění, nebo ani jedno.
+    //
+    // Naměřeno 9. 9. 2026: tenhle program dá na 32³ **20 850 trojúhelníků**
+    // za 34 ms. Trojúhelníky se soudí dřív než čas a 34 ms je i pod
+    // `rough.maxMs` 350, takže odmítnutí nemůže přijít z druhého důvodu.
+    const bounds: Bounds3 = { min: [-1.2, -1.2, -1.2], max: [1.2, 1.2, 1.2] };
+    const middling: readonly ShapeNode[] = [
+      { kind: 'sphere', radius: 0.75 },
+      { kind: 'displace', child: 0, amplitude: 0.2, frequency: 10, seed: 3 },
+      { kind: 'displace', child: 1, amplitude: 0.12, frequency: 7, seed: 5 },
+    ];
+    const program = { ...programOf(middling), targetBounds: bounds };
+    expect(validateShapeProgram(program).ok).toBe(true);
+
+    const job: MeshJobRequest = {
+      jobId: 'job-rung',
+      program,
+      sessionSeed: SEED,
+      resolution: MESH_DETAIL.rough.resolution,
+      bounds,
+    };
+
+    // Nesouzeně: číslo, na kterém stojí celý test. Kdyby tvar z pásu vypadl,
+    // obě aserce níž by platily z jiného důvodu, než tvrdí titulek.
+    const measured = handleMeshJob({ ...job, unbudgeted: true }).response;
+    expect(measured.ok).toBe(true);
+    if (!measured.ok) return;
+    expect(measured.triangleCount).toBeGreaterThan(MESH_DETAIL.rough.maxTriangles);
+    expect(measured.triangleCount).toBeLessThan(MESH_DETAIL.high.maxTriangles);
+
+    // A souzeně: 32³ se soudí hrubou příčkou, takže tenhle tvar neprojde.
+    const { response } = handleMeshJob(job);
+    expect(response.ok).toBe(false);
+    if (response.ok) return;
+    expect(response.overBudget).toBe(true);
+    expect(response.error).toContain(`above maxTriangles ${MESH_DETAIL.rough.maxTriangles}`);
+  });
 });
 
 /* ------------------------------------------------------------------ *
