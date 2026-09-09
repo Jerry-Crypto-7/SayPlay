@@ -523,8 +523,16 @@ async function meshDownTheLadder(
 ): Promise<MeshedShape | string> {
   const ladder = [roughResolution, ...COARSER_GRIDS];
   let refusal = '';
-  // Proč se sestoupilo na tuhle příčku. `null` na první, protože se nesestupovalo.
-  let steppedBecause: string | null = null;
+  // **Příčina se sbírá po příčkách, ne do jedné proměnné** — nález nezávislé
+  // revize 9. 9. 2026 na `G3`. Dokud tu stálo jedno `steppedBecause`, každá
+  // další příčka ho přepsala, takže věta pro porotce přiřkla **poslední**
+  // příčinu **prvnímu** sestupu: běh, který na 32³ přetekl rozpočet a na 24³
+  // vrátil prázdno, hlásil „stepped down from 32 because … reserve".
+  //
+  // Příčky a příčiny jsou proto zarovnané: `refusedRungs[i]` je důvod, proč
+  // odmítla `ladder[i]`. Fráze se přišívá k číslu mřížky („32 went over
+  // budget"), aby věta nemohla mluvit o mřížce bez toho, co se na ní stalo.
+  const refusedRungs: string[] = [];
 
   for (const resolution of ladder) {
     try {
@@ -551,9 +559,9 @@ async function meshDownTheLadder(
 
       const retryable =
         error instanceof MeshBudgetError
-          ? 'the shape went over budget there'
+          ? 'went over budget'
           : error instanceof MeshEmptyError
-            ? "the shape did not fit inside the reserve that grid's box carries"
+            ? 'did not fit inside the reserve its box carries'
             : null;
 
       // **Sestup se přiznává i u ne-sestupového odmítnutí** — nález nezávislé
@@ -562,15 +570,15 @@ async function meshDownTheLadder(
       // inside the requested box" o 24³, zatímco objednávka zněla 32³), a
       // příčina „byl moc detailní" z ní zmizela úplně.
       if (retryable === null)
-        return steppedBecause === null
+        return refusedRungs.length === 0
           ? refusal
-          : `${refusal} — on grid ${String(resolution)}, stepped down from ${String(ladder[0])} because ${steppedBecause}`;
+          : `${refusal} — on grid ${String(resolution)}, stepped down from ${String(ladder[0])}: ${refusedRungs.join(', ')}`;
 
-      steppedBecause = retryable;
+      refusedRungs.push(`${String(resolution)} ${retryable}`);
     }
   }
 
-  return `${refusal} — the shape was remeshed down the grid ladder ${ladder.join(' → ')} and ${steppedBecause ?? 'was refused'} on every rung`;
+  return `${refusal} — the shape was remeshed down the grid ladder ${ladder.join(' → ')} and was refused on every rung: ${refusedRungs.join(', ')}`;
 }
 
 /* ------------------------------------------------------------------ *

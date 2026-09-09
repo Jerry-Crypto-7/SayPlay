@@ -571,10 +571,13 @@ describe('a shape over the budget drops a rung of the grid, not to a box', () =>
     // o které svět nikde jinde nemluví („on grid 24", zatímco objednávka zněla
     // 32³), a příčina sestupu z ní zmizela.
     //
-    // ⚠ **Od `T14r-boundspad` jsou ty příčiny dvě a věta musí jmenovat tu
-    // poslední.** Tenhle běh sestupuje nejdřív kvůli rozpočtu a pak kvůli
-    // rezervě; kdyby se hlásil rozpočet, mluvila by o příčině, které se tvar
-    // na poslední příčce ani nedotkl.
+    // ⚠ **Od `T14r-boundspad` jsou ty příčiny dvě a věta musí jmenovat obě
+    // u jejich vlastní příčky** — opraveno na `G3` 9. 9. 2026. Tenhle test
+    // dřív žádal pravý opak (`not.toContain('over budget')`) a připínal tím
+    // vadu: běh sestupuje z 32³ kvůli **rozpočtu** a z 24³ kvůli **rezervě**,
+    // takže „stepped down from 32 because … reserve" tvrdilo o první příčce
+    // příčinu, které se na ní tvar ani nedotkl. Jedna příčina na tři příčky
+    // je nepravda vždycky, když se ty příčiny liší.
     const orders: MeshOrder[] = [];
     const world = await buildProxyWorld(compiled(blueprint()), {
       mesh: async (order) => {
@@ -593,8 +596,35 @@ describe('a shape over the budget drops a rung of the grid, not to a box', () =>
     expect(hive.reason).toContain('invalid shape program');
     expect(hive.reason).toContain('on grid 16');
     expect(hive.reason).toContain('stepped down from 32');
-    expect(hive.reason).toContain('did not fit inside the reserve');
-    expect(hive.reason).not.toContain('over budget');
+    // Obě příčiny, každá u své příčky — a v tomhle pořadí, protože žebřík
+    // sestupuje odshora.
+    expect(hive.reason).toContain('32 went over budget');
+    expect(hive.reason).toContain('24 did not fit inside the reserve');
+    // Příčka, která odmítla nesestupově, se mezi sestupy plést nesmí.
+    expect(hive.reason).not.toContain('16 went over budget');
+    expect(hive.reason).not.toContain('16 did not fit');
+  });
+
+  it('gives each rung its own cause when the ladder runs out on mixed causes', async () => {
+    // **Druhá půlka téhož nálezu.** Vyčerpaný žebřík hlásil jednu příčinu „on
+    // every rung"; když se příčiny liší, je ta věta nepravdivá pro dvě příčky
+    // ze tří. Odmítnutí jde rovnou porotci, takže nesmí jmenovat příčinu,
+    // které se tvar na dané mřížce nedotkl.
+    const world = await buildProxyWorld(compiled(blueprint()), {
+      mesh: async (order) => {
+        if (order.resolution === 16)
+          throw new MeshEmptyError('empty mesh: no surface inside the requested box');
+        throw new MeshBudgetError('mesh is 17200 triangles, above maxTriangles 16000');
+      },
+    });
+
+    const hive = slotOf(world, 'tallHive').form;
+    if (hive.kind !== 'clay') throw new Error(hive.kind);
+    expect(hive.reason).toContain('32 → 24 → 16');
+    expect(hive.reason).toContain('32 went over budget');
+    expect(hive.reason).toContain('24 went over budget');
+    expect(hive.reason).toContain('16 did not fit inside the reserve');
+    expect(hive.reason).not.toContain('16 went over budget');
   });
 });
 
