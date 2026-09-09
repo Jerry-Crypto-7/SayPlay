@@ -876,6 +876,19 @@ describe('an answer with several faulty shapes', () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toBe('EXAMPLE_COPIED');
   });
+
+  it('calls it copied even when the faulty shape comes FIRST', () => {
+    // **Nález nezávislé revize 9. 9. 2026.** Dokud se opsaná ukázka soudila
+    // uvnitř téže smyčky jako platnost tvarů, rozhodovalo o verdiktu pořadí:
+    // tenhle vstup vydal `SHAPE_INVALID` do `T14r-shapefirstfault` a
+    // `EXAMPLE_COPIED` po něm. Verdikt o celé odpovědi nesmí viset na tom,
+    // kolikátý tvar ji prozradí.
+    const copied = EXAMPLE_BLUEPRINT_ANSWER.shapes[0];
+    const result = compile(answerWith({ shapes: [unnamed, copied] }));
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toBe('EXAMPLE_COPIED');
+  });
 });
 
 /* ================================================================== *

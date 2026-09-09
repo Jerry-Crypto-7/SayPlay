@@ -175,8 +175,16 @@ const WHAT_TO_DO: Readonly<Record<CompilerRejection, string>> = {
     'Write the composition out as a node table. There is no library of finished places, so a name is never an answer.',
   GEOM_INVALID:
     'Fix that node and send the whole answer back. Every child index is lower than the row that names it, and every argument stays inside the range the capability manifest gives.',
+  /**
+   * ⚠ **„that one shape … leave the other shapes as they are" tu stálo do
+   * 9. 9. 2026 a rušilo to opravu o patro výš** (nález nezávislé revize).
+   * `T14r-shapefirstfault` nechal compiler odmítnout až za všemi vadnými tvary,
+   * takže věta jich dnes jmenuje víc — a hned za tím stál příkaz ostatní tvary
+   * nechat být. Model tedy opravil jeden na kolo dál, tedy přesně ta cena,
+   * kvůli které se sběr stavěl. Věta říká, co se jmenuje, ne kolik toho je.
+   */
   SHAPE_INVALID:
-    'Rewrite that one shape inside the budget the capability manifest names, and leave the other shapes as they are.',
+    'Rewrite every shape named here inside the budget the capability manifest names, and leave the shapes that were not named as they are.',
   PLACEMENT_MISMATCH:
     'Place every object you were given exactly once, and place no id the brief did not name.',
   REFERENCE_BROKEN:
@@ -211,6 +219,54 @@ function squash(text: string): string {
 function extraIssues(fault: BlueprintFault): readonly string[] {
   const detail = squash(fault.detail);
   return fault.issues.filter((issue) => !detail.includes(squash(issue)));
+}
+
+/**
+ * Adresa, ke které ten nález patří — `shapes/1`, `geometry/nodes/3`.
+ *
+ * Nálezy vznikají jako `<adresa>: <co je špatně>`. Nerozpoznaný tvar dostane
+ * vlastní přihrádku pod sebou samým, takže se nikdy neslije s cizí.
+ */
+function issueAddress(issue: string): string {
+  return issue.split(':')[0]?.trim() ?? issue;
+}
+
+/**
+ * Vybrat nálezy tak, aby **každá vadná adresa dostala hlas**.
+ *
+ * ⚠ **Nález nezávislé revize 9. 9. 2026, naměřený.** Do té chvíle se bralo
+ * prvních šest nálezů v pořadí, v jakém přišly, a ty jsou řazené po tvarech.
+ * Jeden špatně tvarovaný tvar přitom vyrobí **sedm** hlášek ze schématu, takže
+ * vyplnil celý rozpočet věty sám a druhý vadný tvar se do ní nedostal ani
+ * jménem — přesně to, co `T14r-shapefirstfault` zavíralo o patro výš, když
+ * compiler přestal odmítat na prvním vadném tvaru. Sběr všech nálezů je
+ * k ničemu, když je věta pro model zase neunese.
+ *
+ * Bere se proto **kolo po kole přes adresy**: první nález každé adresy, pak
+ * druhý každé adresy, dokud se rozpočet nevyčerpá. Pořadí uvnitř adresy
+ * i pořadí adres zůstává, jak přišlo.
+ */
+function fairShare(issues: readonly string[], budget: number): readonly string[] {
+  const byAddress = new Map<string, string[]>();
+  for (const issue of issues) {
+    const address = issueAddress(issue);
+    const bucket = byAddress.get(address);
+    if (bucket === undefined) byAddress.set(address, [issue]);
+    else bucket.push(issue);
+  }
+
+  const picked: string[] = [];
+  for (let round = 0; picked.length < budget; round += 1) {
+    const before = picked.length;
+    for (const bucket of byAddress.values()) {
+      if (picked.length >= budget) break;
+      const issue = bucket[round];
+      if (issue !== undefined) picked.push(issue);
+    }
+    // Žádná adresa už na tomhle kole nic nemá, takže další kolo taky nic nedá.
+    if (picked.length === before) break;
+  }
+  return picked;
 }
 
 /**
@@ -257,12 +313,15 @@ export function blueprintRejectionSentence(fault: BlueprintFault): string {
   }
 
   const extra = extraIssues(fault);
-  const listed = extra.slice(0, MAX_ISSUES_IN_SENTENCE);
+  const listed = fairShare(extra, MAX_ISSUES_IN_SENTENCE);
   const rest = extra.length - listed.length;
 
   const parts = [`${fault.reason} · ${fault.detail}.`];
   if (listed.length > 0) {
-    const more = rest > 0 ? `; and ${String(rest)} more of the same kind` : '';
+    // **„of the same kind" tady stálo do 9. 9. 2026 a byla to nepravda** —
+    // zbytek jsou nálezy jiných adres a jiných druhů, protože se vybírá kolo
+    // po kole. Věta říká jenom počet, který ověřit umí.
+    const more = rest > 0 ? `; and ${String(rest)} more` : '';
     parts.push(`Also wrong, and each one on its own: ${listed.join('; ')}${more}.`);
   }
   parts.push(WHAT_TO_DO[fault.reason]);

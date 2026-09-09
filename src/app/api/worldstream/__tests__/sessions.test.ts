@@ -448,9 +448,12 @@ describe('založení relace', () => {
       .replace(/^\s*\/\/.*$/gm, '');
     // ⚠ **Od `T14r-actone` se slot bere podmíněně**, takže se kotví na výraz,
     // který ho bere, ne na `if (!acquireSlot(...))`, který už neexistuje.
-    // Vybrání zdroje před ním (`cloudEmitter`, `chooseAuthored`) na disk
-    // nesahá — `killState` má vteřinové okno a sklad je v paměti modulu —
-    // takže vlastnost „odsouzený požadavek nečte 26 kB protokolu" platí dál.
+    // Vlastnost, kterou tenhle test měří, je jediná: **odsouzený požadavek
+    // nečte 26 kB protokolu.** Vybrání zdroje před bránou (`cloudEmitter`,
+    // `chooseAuthored`) na disk **sáhnout umí** — s nastaveným
+    // `WORLDSMITH_CONTROL_FILE` čte `readControlFile()` soubor při každém
+    // volání, což tady do 9. 9. 2026 stálo obráceně (nález nezávislé revize).
+    // Řádově je to jiná věc než protokol a na pořadí bran to nic nemění.
     const gate = source.indexOf("acquireSlot('world')");
     const grammarRead = source.indexOf('const grammar = serverGrammar();');
 
@@ -495,6 +498,26 @@ describe('založení relace', () => {
     expect(acquireSlot('world'), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(
       false,
     );
+  });
+
+  it('dějství I slot nevrací, protože si ho nevzalo', async () => {
+    // **Druhá polovina téhož `if (live)`, a do 9. 9. 2026 ji nepinovalo nic** —
+    // nález nezávislé revize, ověřený spuštěním mutanta: obě podmínky se daly
+    // smazat a celá sada `src/app/api/worldstream` zůstala zelená (164/164).
+    //
+    // Následek smazání je horší než zapomenuté vrácení: `releaseSlot()` nemá
+    // dno, takže odmítnuté dějství I odečte slot, který nikdo nevzal, čítač jde
+    // do záporu a strop dveří **i sdílený strop placených volání** se uvolní
+    // natrvalo. Dno se sem schválně nedoplňuje — zaclonilo by přesně tuhle
+    // sondu a mutant by přežil s ním.
+    vi.mocked(serverGrammar).mockReturnValueOnce('protocol unreadable for this test');
+
+    const response = await createSession(createRequest({ prompt: 'a salt flat' }));
+    expect(response.status).toBe(503);
+
+    for (let i = 0; i < MAX_WORLD_GENERATIONS; i += 1)
+      expect(acquireSlot('world'), `slot ${i} měl být volný`).toBe(true);
+    expect(acquireSlot('world'), 'čítač je v záporu — vrátil se slot, který se nebral').toBe(false);
   });
 });
 

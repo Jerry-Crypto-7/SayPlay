@@ -344,9 +344,12 @@ export function readRefineEmission(value: unknown, target: SemanticObject): Refi
     // **Místo narovnání se zavřela příčina**, stejně jako u první věty
     // (`T14r-promptalphabet`): systémová zpráva výš teď u `materialIntent`
     // i u role jmenuje abecedu a říká rovnou, že to tady nikdo nepřepíše.
-    // Cena, která zůstává: fráze v `materialIntent` stojí druhou větu jedno
-    // opravné kolo. `repairEmission()` na téhle cestě neběží vůbec, takže totéž
-    // platí o roli psané do `behavior`.
+    // Cena, která zůstává, a je vyšší, než tady stálo do 9. 9. 2026 (nález
+    // nezávislé revize): **fráze v `materialIntent` nestojí opravné kolo, ale
+    // celou druhou větu.** `planChange()` níž žádnou sebeopravu nemá — vlastní
+    // docblock to říká nahlas — takže se odmítnutí vrátí porotci a ten musí
+    // napsat větu znovu. `repairEmission()` na téhle cestě neběží vůbec, takže
+    // totéž platí o roli psané do `behavior`.
     const validation = validateShapeProgram(body.shape);
     if (!validation.ok) return { ok: false, reason: 'SHAPE_INVALID', detail: validation.issues[0] };
 

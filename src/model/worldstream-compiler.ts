@@ -494,13 +494,20 @@ export function compileBlueprint(
   const shapeIssues: string[] = [];
   let firstFaulty: { readonly index: number; readonly issue: string } | null = null;
 
-  for (const [index, raw] of answer.shapes.entries()) {
+  // **Opsaná ukázka se soudí ve VLASTNÍM kole, přes všechny tvary napřed** —
+  // nález nezávislé revize 9. 9. 2026. Dokud se soudila uvnitř téže smyčky,
+  // rozhodovalo o verdiktu **pořadí**: vadný tvar na indexu 0 a opsaná tabulka
+  // na 1 vydaly `SHAPE_INVALID` do `T14r-shapefirstfault` a `EXAMPLE_COPIED`
+  // po něm, protože sběr nálezů odsunul `return` až za smyčku. Verdikt o celé
+  // odpovědi nemá viset na tom, kolikátý tvar ji prozradí.
+  for (const [index, raw] of answer.shapes.entries())
     if (EXAMPLE_SHAPE_TABLES.has(tableOf(raw)))
       return reject(
         'EXAMPLE_COPIED',
         `shapes[${index}] is the example shape table, node for node`,
       );
 
+  for (const [index, raw] of answer.shapes.entries()) {
     // Před bránou, ne po ní: sáhnout na to až v opravném kole znamená placené
     // volání za pravopis. Na pořadí proti kontrole opsané ukázky nad tím
     // **nezáleží** a je to ověřené, ne odhadnuté — `tableOf()` kanonizuje jen

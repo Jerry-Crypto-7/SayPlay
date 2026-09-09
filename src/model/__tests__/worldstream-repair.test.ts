@@ -405,7 +405,34 @@ describe('every gate that rejects turns into a sentence', () => {
     };
 
     const sentence = blueprintRejectionSentence(fault);
-    expect(sentence).toContain('and 2 more of the same kind');
+    // **„of the same kind" tam nesmí být.** Věta vybírá nálezy kolo po kole
+    // přes adresy, takže o druhu zbytku netvrdí nic — nález nezávislé revize
+    // 9. 9. 2026.
+    expect(sentence).toContain('and 2 more');
+    expect(sentence).not.toContain('of the same kind');
+  });
+
+  it('gives every faulty address a voice, so one loud shape neither eats the sentence', () => {
+    // **Naměřený případ, ne vymyšlený:** jeden špatně tvarovaný tvar vyrobí ze
+    // schématu sedm hlášek. Dokud se bralo prvních šest v pořadí, vyplnil
+    // rozpočet věty sám a druhý vadný tvar se do ní nedostal ani jménem —
+    // tedy tatáž cena za kolo, kterou `T14r-shapefirstfault` zavíralo tím, že
+    // compiler přestal odmítat na prvním vadném tvaru.
+    const fault: BlueprintFault = {
+      reason: 'SHAPE_INVALID',
+      detail: 'shapes[0]: radius must be a number',
+      issues: [
+        ...Array.from({ length: 7 }, (_unused, at) => `shapes/0: field ${String(at)} is wrong`),
+        'shapes/1: depth must be at most 6',
+      ],
+    };
+
+    const sentence = blueprintRejectionSentence(fault);
+
+    expect(sentence).toContain('shapes/1: depth must be at most 6');
+    // A instrukce za tím seznamem nesmí říkat opak toho, co seznam jmenuje.
+    expect(sentence).toContain('Rewrite every shape named here');
+    expect(sentence).not.toContain('leave the other shapes as they are');
   });
 
   it('still names the code and the instruction when the gate gave no detail', () => {

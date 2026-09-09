@@ -47,7 +47,8 @@
  * a generací. Do té doby drží nápor jediná věc, která tuhle vlastnost nemá:
  * čítač souběžných generací níž — a ten od `T14r-acttwo` počítá **jen dějství
  * II**. Nápor na dějství I dnes nezastavuje tenhle čítač, ale strop frekvence
- * a počtu rozečtených těl (`src/server/rate-limit.ts`).
+ * (`src/server/rate-limit.ts`) a čítač rozečtených těl (`src/http/body.ts`) —
+ * jsou to dvě různá místa a do 9. 9. 2026 tu obě visela pod jedním souborem.
  *
  * ## Rozpočet požadavku tu stál a nikdy nesepnul
  *
@@ -309,7 +310,10 @@ function readPrompt(text: string): PromptRead | { readonly ok: false; readonly c
     return {
       ok: false,
       code: 'UNEXPECTED_FIELDS',
-      message: `this endpoint takes a prompt and nothing else; it will not accept ${extra.join(', ')}`,
+      // **Hláška jmenuje obě pole, ne jedno.** Do 9. 9. 2026 tvrdila „a prompt
+      // and nothing else" i po tom, co brána `live` přijímá — klient tak četl
+      // odmítnutí, které popírá pole, jež mu tytéž dveře povolují.
+      message: `this endpoint takes a prompt and an optional live flag, nothing else; it will not accept ${extra.join(', ')}`,
     };
 
   // **Cokoli jiného než boolean je 400, ne tiché `false`.** Ticho by z překlepu
@@ -410,9 +414,15 @@ export async function POST(request: Request): Promise<Response> {
     //
     // **Slot se proto bere jedině tehdy, když poběží živá větev**, a `&&`
     // zkratuje: bez nakonfigurovaného modelu se o slot nikdo neuchází.
-    // `cloudEmitter()` je levné — `killState` má vteřinové okno a
-    // `upstreamConfigFromEnv` čte proměnné prostředí; k poskytovateli se
-    // odsud nikdo nepřipojuje.
+    // `cloudEmitter()` je levné v tom smyslu, na kterém tady záleží:
+    // `upstreamConfigFromEnv` čte proměnné prostředí a **k poskytovateli se
+    // odsud nikdo nepřipojuje**.
+    //
+    // ⚠ **Zadarmo to ale není, a do 9. 9. 2026 tu stálo, že ano** (nález
+    // nezávislé revize). Vteřinové okno má jedině sdílený klíč
+    // (`spend-store.ts`); `readControlFile()` dělá `readFileSync` + `statSync`
+    // **při každém volání**, takže s nastaveným `WORLDSMITH_CONTROL_FILE` stojí
+    // i odmítnutý požadavek dvě synchronní čtení disku.
     //
     // **Dějství I je sklad, dějství II je model** (P15 `T14r-acttwo`). Uvařený
     // svět odpoví hned a nestojí nic, takže první větu obslouží on, kdykoli ho
