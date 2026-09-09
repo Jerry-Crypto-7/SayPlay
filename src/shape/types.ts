@@ -216,9 +216,24 @@ export const MESH_DETAIL = {
  * **Stojí to tady, a ne u jedné ze dvou bran, schválně** — soudí se tím dvakrát
  * a ta dvě čísla se nesmějí rozejít: `mesh-gate.ts` jím váží kvádr **naměřený
  * na hotovém meshi**, `schema.ts` kvádr **staticky odhadnutý z programu**
- * (`certainHulls`). Odhad je konzervativní, tedy vždycky větší nebo rovný
- * naměřenému, takže na téhle straně je to práh přísnější — a je to tak
- * správně: schéma smí odmítnout jen program, který si krabice nevšímá vůbec.
+ * (`certainHulls`).
+ *
+ * ⚠ **Ten odhad NENÍ horní mez, ať název `certainHulls` říká cokoliv — změřeno
+ * 9. 9. 2026 v `T14r-boundspad`.** `hullOf` umí třináct druhů uzlů a u všech
+ * ostatních vrací `null`; `union` ale neznámé potomky **zahodí** a sloučí jen
+ * ty známé. Obal takové unie je proto **dolní** mez skutečného rozsahu, ne
+ * horní. Naměřený případ: `observatoryDomeSdf` z případu c04 archivu
+ * `create-raw.json` má kořen `union`, jehož první potomek je `clip` (tedy
+ * neznámý), obal proto hlásí přesah 0 % na všech osách — a skutečný povrch
+ * vyleze pod dno krabice o **52 % její výšky**.
+ *
+ * Pro `boundsIssue` je to i tak správný nástroj, protože ta funkce dokazuje
+ * **přesah**, ne vejití se: k důkazu přesahu stačí jedna část venku, a známé
+ * potomky unie obsahuje. Nikdy z toho obalu ale nedokazuj opak — hlavně ne
+ * rezervu, kterou má worker vzorkovat.
+ *
+ * Práh je na téhle straně přísnější a je to tak správně: schéma smí odmítnout
+ * jen program, který si krabice nevšímá vůbec.
  *
  * Souvisí s ním ještě třetí číslo, které tu není: `RepresentationRegistry` se
  * ptá **po osách** a povoluje čtvrtinu. 1,25³ = 1,95, tedy skoro přesně 2 —
@@ -773,6 +788,13 @@ function hullOf(node: ShapeNode, hulls: readonly (Bounds3 | null)[]): Bounds3 | 
       return { min: [minX, -node.height / 2, minZ], max: [maxX, node.height / 2, maxZ] };
     }
 
+    /**
+     * ⚠ **Neznámý potomek se zahazuje, takže obal unie je DOLNÍ mez.**
+     * Vědomé, ne opomenutí: `boundsIssue` z něj dokazuje přesah, a k tomu stačí
+     * jedna část venku. Kdo by z něj chtěl dokazovat opak — třeba rezervu, na
+     * kterou se má vzorkovat — dostane číslo, které lže. Naměřený případ je
+     * u `MAX_BOUNDS_VOLUME_RATIO` výš.
+     */
     case 'union': {
       const known = node.children.map((child) => hulls[child]).filter((hull) => hull !== null);
       if (known.length === 0) return null;
