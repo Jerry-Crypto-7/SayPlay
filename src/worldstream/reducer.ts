@@ -140,6 +140,25 @@ function text(value: unknown): string | null {
   return typeof value === 'string' && value !== '' ? value : null;
 }
 
+/**
+ * Mřížka z rámce, pokud ji ten rámec **nese**. `undefined` znamená „rámec
+ * o mřížce nic neřekl", `null` znamená „řekl číslo, které žebřík nejmenuje".
+ *
+ * ⚠ **Ty dvě věci se nesmějí slít, a do `T14r-stalegrid` slévaly** —
+ * `meshResolution(…) ?? previous.resolution` nechalo obojí spadnout na starou
+ * hodnotu. U chybějícího pole je to správně (`shape.refining` mřížku nenese
+ * a scéna nemá zapomenout, co na ní stojí); u nejmenované mřížky je to lež:
+ * rámec zrovna řekl, že mesh vznikl jinde, a stav dál tvrdí 32³.
+ *
+ * Dnes tudy nikdo neprojde — žádné produkční místo `MeshArtifact` z hrubší
+ * mřížky nestaví (`cache.ts`, `meshResolution`). Probudí to `T21b`.
+ */
+function statedResolution(
+  fields: Record<string, unknown>,
+): MeshResolution | null | undefined {
+  return 'resolution' in fields ? meshResolution(fields.resolution) : undefined;
+}
+
 function count(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
@@ -191,16 +210,17 @@ function shapeAfter(previous: ShapeView, type: SessionEventType, payload: unknow
   const hash = text(fields.contentHash);
   // **Ptá se seznamu, netvrdí** — `T14r-ladderhash`. Mřížka mimo
   // `MESH_RESOLUTIONS` je záchranná příčka `COARSER_GRIDS`, ne úroveň podoby,
-  // a v klíči cache nemá co dělat. Chová se jako chybějící hodnota: drží se
-  // předchozí, protože pro tuhle příčku prostě žádná jmenovaná mřížka není.
-  const resolution = meshResolution(fields.resolution);
+  // a v klíči cache nemá co dělat. Od `T14r-stalegrid` se ale **nechová jako
+  // chybějící hodnota**: rámec, který mřížku nese, přebíjí i prázdnem, protože
+  // zrovna řekl, že mesh vznikl jinde než posledně.
+  const resolution = statedResolution(fields);
   const triangles = count(fields.triangles);
 
   return {
     ...previous,
     rung,
     contentHash: hash ?? (rung === 'failed' ? null : previous.contentHash),
-    resolution: resolution ?? previous.resolution,
+    resolution: resolution === undefined ? previous.resolution : resolution,
     triangles: triangles ?? previous.triangles,
     failure: rung === 'failed' ? ((text(fields.reason) as MeshFailure | null) ?? null) : null,
     retryable: rung === 'failed' ? fields.retryable === true : false,
@@ -297,6 +317,7 @@ function viewOfRecord(
   const base = previous ?? blank(entry.stableId);
   const artifact = record(entry.state.artifact);
   const hash = text(artifact.contentHash);
+  const resolution = statedResolution(artifact);
 
   return {
     ...base,
@@ -306,8 +327,9 @@ function viewOfRecord(
     rung: entry.state.kind as RepresentationRung | 'failed',
     contentHash: hash ?? (entry.state.kind === 'failed' ? null : base.contentHash),
     // Táž brána jako u události výš, a je tu druhá schválně: snapshot po
-    // reconnectu je nezávislý vstup z drátu, ne jiný pohled na tentýž.
-    resolution: meshResolution(artifact.resolution) ?? base.resolution,
+    // reconnectu je nezávislý vstup z drátu, ne jiný pohled na tentýž. Platí
+    // pro ni i totéž rozlišení nesené a nejmenované mřížky (`T14r-stalegrid`).
+    resolution: resolution === undefined ? base.resolution : resolution,
     triangles: count(artifact.triangles) ?? base.triangles,
     failure: entry.state.kind === 'failed' ? ((text(entry.state.reason) as MeshFailure | null) ?? null) : null,
     retryable: entry.state.kind === 'failed' ? entry.state.retryable === true : false,

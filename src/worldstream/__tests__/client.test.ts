@@ -294,15 +294,73 @@ describe('mřížka, kterou žebřík nejmenuje', () => {
     expect(shape(state, 'pillar').resolution).toBe(48);
   });
 
-  it('zachází s neznámou mřížkou jako s chybějící, ne jako s nulou', () => {
-    // `0` i `null` by se v `??` chovaly jinak než chybějící hodnota a do
-    // klíče cache by pustily číslo, které žádný mesh nepopisuje.
+  it('seznam mřížek odmítne všechno, co v něm nestojí', () => {
+    // Brána samotná, mimo reducer. `0` i `null` by do klíče cache pustily
+    // číslo, které žádný mesh nepopisuje.
     expect(meshResolution(0)).toBeNull();
     expect(meshResolution(24)).toBeNull();
     expect(meshResolution(16)).toBeNull();
     expect(meshResolution('32')).toBeNull();
     expect(meshResolution(undefined)).toBeNull();
     expect(meshResolution(32)).toBe(32);
+  });
+
+  /**
+   * Tvar, který **už drží jmenovanou mřížku**, dostane rámec ze záchranné
+   * příčky. `before` je stav těsně před tím rámcem, tedy s poctivými 64³.
+   */
+  function rescuedAfterNamedGrid(): { session: GenerationSession; before: ClientState } {
+    const { session } = generation();
+    session.apply({
+      sessionId: SESSION_ID,
+      stableId: 'pillar',
+      representationRevision: 0,
+      next: { kind: 'coarse', artifact: artifact('hash-named', 4_000) },
+    });
+    const before = feed(session.events.all());
+    expect(shape(before, 'pillar').resolution, 'předpoklad testu').toBe(64);
+
+    session.apply({
+      sessionId: SESSION_ID,
+      stableId: 'pillar',
+      representationRevision: 0,
+      next: {
+        kind: 'refined',
+        artifact: { ...artifact('hash-rescued', 1_200), resolution: 24 } as unknown as MeshArtifact,
+      },
+    });
+    return { session, before };
+  }
+
+  it('nesená mřížka přebije i tu, kterou stav už držel', () => {
+    // **Jádro `T14r-stalegrid`.** Testy nad `rescued()` výš začínají na
+    // prázdném poli, takže by prošly i s pravidlem „drž předchozí" — tady stav
+    // předtím drží **64³** z `hash-coarse`. Když rámec ohlásí 24³ a pole
+    // zůstane 64, klient tvrdí mřížku, o které mu ten samý rámec zrovna řekl,
+    // že už neplatí.
+    const { session } = rescuedAfterNamedGrid();
+
+    const state = feed(session.events.all());
+    expect(shape(state, 'pillar').contentHash).toBe('hash-rescued');
+    expect(shape(state, 'pillar').resolution).toBeNull();
+  });
+
+  it('nesená mřížka přebije drženou i ve snapshotu po reconnectu', () => {
+    // Druhý vstup z drátu se soudí zvlášť, stejně jako u `T14r-ladderhash`.
+    const { session, before } = rescuedAfterNamedGrid();
+
+    const restored = applySnapshot(before, snapshotOf(session));
+    expect(shape(restored, 'pillar').resolution).toBeNull();
+  });
+
+  it('rámec, který mřížku nenese, drženou hodnotu nesmaže', () => {
+    // Selhací cesta opačným směrem, a je to důvod, proč to pravidlo vzniklo:
+    // `shape.refining` nese `from`, ne artefakt. Kdyby i on pole vynuloval,
+    // scéna by po dobu refinování přestala vědět, v čem tvar stojí.
+    const state = feed(generation().events);
+
+    expect(shape(state, 'hero').rung).toBe('refining');
+    expect(shape(state, 'hero').resolution).toBe(64);
   });
 });
 
