@@ -1,13 +1,13 @@
 {
-  "measuredAt": "2026-09-07T10:30:43.303Z",
+  "measuredAt": "2026-09-09T04:53:54.364Z",
   "note": "submit -> world on canvas, cooked path, includes hero meshing in the browser",
-  "ceilingMs": 25000,
+  "ceilingMs": 8000,
   "exact": {
     "sentence": "A cathedral of stacked shipping containers around a light well.",
-    "ms": 2545
+    "ms": 1869
   },
   "nearest": {
     "sentence": "A greenhouse swallowed by a glacier, its panes still warm.",
-    "ms": 1608
+    "ms": 595
   }
 }
