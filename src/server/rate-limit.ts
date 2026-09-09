@@ -106,6 +106,41 @@ export const RATE_WINDOW_MS = 10_000;
 export const MAX_REQUESTS_PER_WINDOW = 50;
 
 /**
+ * Strop na klíč, který **není jeden člověk, ale celé IPv6 přidělení `/64`**
+ * (P15 `T29-netfloor`).
+ *
+ * `trustedKeyFor()` sráží IPv6 na `/64`, protože jinak stačí vyměnit spodních
+ * 64 bitů a mez neplatí vůbec. Seskupení je tím správně a nezrušíme ho —
+ * špatně bylo jen to, že takový kbelík dostal **týž strop jako jeden člověk**,
+ * takže sál, kancelář nebo VPN sdílely 50 požadavků za okno. Jedna síť se
+ * SLAAC je jedna `/64`, takže je to celá místnost.
+ *
+ * **Proč zrovna dvojnásobek, a co to NENÍ.** Porotce, který píše věty a kliká,
+ * nevyrobí ani jeden požadavek za sekundu (doktrína u `MAX_REQUESTS_PER_WINDOW`
+ * o řádek výš), takže 100 za 10 s pokryje **deset lidí naráz v jedné síti** —
+ * víc, než kolik jich na tuhle soutěž kdy sedne k jednomu stolu. Není to
+ * změřené číslo a nesmí se tak citovat; je to nejmenší mez, která pojme
+ * pojmenovaný scénář.
+ *
+ * ⚠ **Nejhorší případ instance se tím nehne, a to je celá bezpečnost téhle
+ * změny.** `MAX_REQUESTS_PER_WINDOW_PER_INSTANCE` zůstává 400 a soudí se
+ * první, takže žádná `/64` nedostane víc, než co instance unese. Zvedá se
+ * jenom podíl, který si z toho jeden kbelík může vzít: ze 14 % na 28 % práce
+ * jedné smyčky.
+ *
+ * ⚠ **Volající si tenhle kbelík vybrat neumí.** Předponu `net:` skládá jedině
+ * `trustedKeyFor()`, tedy cesta, která běží až za `VERCEL === '1'` a čte konec
+ * řetězu psaný platformou. Pád `callerKey()` píše `xff:` a doslovný řetězec
+ * z hlavičky skončí pod `ip:`, takže volnější strop není dosažitelný zvenčí.
+ *
+ * ⚠ **Číslo přepočítá `G1`, ne další úvaha.** Dokud demo neběží na veřejné
+ * adrese, není čím změřit, jestli porotci přijdou z jedné `/64` (sál) nebo ze
+ * sedmi (každý doma). Až ta data budou, mění se tahle konstanta — seskupení
+ * se neruší a `ip:` se nezvedá.
+ */
+export const MAX_REQUESTS_PER_WINDOW_PER_GROUP = 100;
+
+/**
  * Druhý strop: celá instance, všechny dveře dohromady.
  *
  * 400 za 10 s je **40 požadavků za sekundu**, tedy pod naměřenou hranicí ~66/s,
@@ -271,6 +306,18 @@ const HEADER_CALLER_PREFIX = 'ip:';
  * `G1`.
  */
 const GROUPED_CALLER_PREFIX = 'net:';
+
+/**
+ * Je ten klíč **skupina**, tedy celé přidělení `/64`, a ne jeden člověk?
+ *
+ * Ptá se na to strop frekvence tady i čítač rozečtených těl v `src/http/body.ts`
+ * (P15 `T29-netfloor`) — obojí klíčuje týmiž funkcemi, takže odpověď má být na
+ * jednom místě. Předpona je privátní schválně: kdo potřebuje vědět, jestli je
+ * klíč skupina, se ptá touhle funkcí a neskládá si řetězec sám.
+ */
+export function isGroupedCaller(caller: string): boolean {
+  return caller.startsWith(GROUPED_CALLER_PREFIX);
+}
 
 /**
  * Předpona klíče, který složil **nedůvěryhodný** `callerKey()`.
@@ -657,10 +704,17 @@ export function takeRateSlot(
   window.count += 1;
   open.perCaller.set(key, window);
 
+  // **Skupina má vlastní strop, protože to není jeden člověk** (`T29-netfloor`).
+  // Odůvodnění čísla i to, proč si tenhle kbelík volající nevybere, je
+  // u `MAX_REQUESTS_PER_WINDOW_PER_GROUP`.
+  const limit = isGroupedCaller(caller)
+    ? MAX_REQUESTS_PER_WINDOW_PER_GROUP
+    : MAX_REQUESTS_PER_WINDOW;
+
   return {
-    allowed: window.count <= MAX_REQUESTS_PER_WINDOW,
+    allowed: window.count <= limit,
     count: window.count,
-    limit: MAX_REQUESTS_PER_WINDOW,
+    limit,
     scope: 'caller',
     // Zbytek okna **nahoru** na celé sekundy. Nula z toho vyjít nemůže a
     // nehlídá se: `startedAtMs` je zaokrouhlené dolů, takže zbytek je vždycky

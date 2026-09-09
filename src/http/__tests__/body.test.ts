@@ -5,6 +5,7 @@ import {
   MAX_BODY_BYTES,
   MAX_BUFFERED_BODY_BYTES,
   MAX_CONCURRENT_BODY_READS_PER_CALLER,
+  MAX_CONCURRENT_BODY_READS_PER_GROUP,
   MAX_CONCURRENT_BODY_READS_UNIDENTIFIED,
   bodyRefusal,
   bodyRefusalResponse,
@@ -188,6 +189,58 @@ describe('strop na počet souběžných čtení jednoho volajícího', () => {
     }
     expect(openBodyReads()).toBe(0);
   });
+  /**
+   * **Celá `/64` není jeden člověk** — `T29-netfloor`, routovaný nález druhého
+   * kola nezávislé revize 6. 9. 2026.
+   *
+   * Sráží se schválně (bez toho stačí u IPv6 vyměnit spodních 64 bitů a mez
+   * neplatí vůbec), jenže do téhle úlohy dostal takový kbelík **týž strop jako
+   * jeden člověk**: čtyři pomalá spojení jednoho návštěvníka zavřela čtecí
+   * dveře celé jeho síti — sálu, kanceláři, VPN.
+   */
+  it('kbelík celé /64 unese víc rozečtených těl než jedna adresa', async () => {
+    vi.stubEnv('VERCEL', '1');
+    // Platformní hlavička se sráží na `net:2001:db8:0:0::/64`; IPv4 se
+    // neseskupuje, takže druhý volající je pin na rozdíl, ne na číslo.
+    const held = Array.from({ length: MAX_CONCURRENT_BODY_READS_PER_CALLER + 1 }, (_, i) =>
+      pushableRequest('198.51.100.4', `2001:db8::${String(i + 1)}`),
+    );
+    const pending = held.map((h) => readBody(h.request, 60_000));
+    try {
+      // Páté tělo z téže `/64` prošlo — jedné adrese by se odmítlo o případ
+      // výš (`pustí přesně tolik čtení, kolik říká mez`).
+      expect(openBodyReads()).toBe(MAX_CONCURRENT_BODY_READS_PER_CALLER + 1);
+
+      const zbytek = Array.from(
+        { length: MAX_CONCURRENT_BODY_READS_PER_GROUP - MAX_CONCURRENT_BODY_READS_PER_CALLER - 1 },
+        (_, i) => pushableRequest('198.51.100.4', `2001:db8::a${String(i + 1)}`),
+      );
+      const zbytekPending = zbytek.map((h) => readBody(h.request, 60_000));
+      held.push(...zbytek);
+      pending.push(...zbytekPending);
+      expect(openBodyReads()).toBe(MAX_CONCURRENT_BODY_READS_PER_GROUP);
+
+      // **A na svém stropu kousne i skupina.** Bez téhle aserce by test prošel
+      // i nad vypnutou mezí, což je přesně ta vada, kterou úloha nesmí vyrobit.
+      const přes = pushableRequest('198.51.100.4', '2001:db8::ff');
+      expect(await readBody(přes.request)).toEqual({ ok: false, reason: 'BUSY', scope: 'caller' });
+    } finally {
+      for (const h of held) h.finish();
+      await Promise.all(pending);
+      vi.unstubAllEnvs();
+    }
+    expect(openBodyReads()).toBe(0);
+  });
+
+  it('strop skupiny zůstává pod rozpočtem paměti instance', () => {
+    // Nejhorší případ instance se `T29-netfloor` nehnul: rozpočet se soudí
+    // první a jedna `/64` ho nevyčerpá ani plnými těly.
+    expect(MAX_CONCURRENT_BODY_READS_PER_GROUP).toBeGreaterThan(
+      MAX_CONCURRENT_BODY_READS_PER_CALLER,
+    );
+    expect(MAX_CONCURRENT_BODY_READS_PER_GROUP).toBeLessThan(READS_TO_FILL_BUDGET);
+  });
+
   it('plný volající NEZAVŘE dveře nikomu jinému', async () => {
     // **Tohle je celý důvod, proč je klíč volající.** Do 4. 9. 2026 tu byl
     // jeden čítač na proces: čtyři mlčící spojení by tehdy vzala slot i tomu,

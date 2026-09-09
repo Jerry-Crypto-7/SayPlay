@@ -4,9 +4,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   MAX_REQUESTS_PER_WINDOW,
+  MAX_REQUESTS_PER_WINDOW_PER_GROUP,
   MAX_REQUESTS_PER_WINDOW_PER_INSTANCE,
   RATE_WINDOW_MS,
   callerKey,
+  isGroupedCaller,
   rateLimitCode,
   rateLimitedResponse,
   resetRateWindows,
@@ -19,6 +21,8 @@ import {
 const T0 = 1_000 * RATE_WINDOW_MS;
 const ME = '203.0.113.7';
 const SOMEONE_ELSE = '198.51.100.4';
+/** Klíč, jaký složí `trustedKeyFor()` z IPv6: celé přidělení, ne jeden člověk. */
+const ROOM = 'net:2001:db8:0:0::/64';
 
 /** Vystřelí `count` požadavků do téhož okamžiku a vrátí poslední verdikt. */
 function burst(door: 'edit' | 'emit', caller: string, count: number, atMs: number) {
@@ -63,6 +67,51 @@ describe('strop na frekvenci veřejných dveří', () => {
     const over = takeRateSlot('emit', 'someone-brand-new', T0);
     expect(over).toMatchObject({ allowed: false, scope: 'instance' });
     expect(over.limit).toBe(MAX_REQUESTS_PER_WINDOW_PER_INSTANCE);
+  });
+
+  /**
+   * **Sál není jeden člověk** — `T29-netfloor`, routovaný nález druhého kola
+   * nezávislé revize 6. 9. 2026.
+   *
+   * `trustedKeyFor()` sráží IPv6 na `/64`, protože jinak se mez obejde výměnou
+   * spodních 64 bitů. Do téhle úlohy měl ale takový kbelík **týž strop jako
+   * jedna ruka na klávesnici**, takže celá kancelář nebo sál sdílely 50
+   * požadavků za okno.
+   */
+  it('kbelík celé /64 pustí víc než jedna adresa, a nekousne na jejím stropu', () => {
+    expect(burst('edit', ROOM, MAX_REQUESTS_PER_WINDOW + 1, T0).allowed).toBe(true);
+    expect(burst('edit', ME, MAX_REQUESTS_PER_WINDOW + 1, T0).allowed).toBe(false);
+  });
+
+  it('skupina má vlastní strop, ne vypnutou mez', () => {
+    expect(burst('edit', ROOM, MAX_REQUESTS_PER_WINDOW_PER_GROUP, T0).allowed).toBe(true);
+    expect(takeRateSlot('edit', ROOM, T0)).toMatchObject({
+      allowed: false,
+      count: MAX_REQUESTS_PER_WINDOW_PER_GROUP + 1,
+      limit: MAX_REQUESTS_PER_WINDOW_PER_GROUP,
+      scope: 'caller',
+    });
+  });
+
+  it('strop instance zůstává nad stropem skupiny, takže nejhorší případ smyčky se nehnul', () => {
+    expect(MAX_REQUESTS_PER_WINDOW_PER_INSTANCE).toBeGreaterThan(MAX_REQUESTS_PER_WINDOW_PER_GROUP);
+    expect(MAX_REQUESTS_PER_WINDOW_PER_GROUP).toBeGreaterThan(MAX_REQUESTS_PER_WINDOW);
+  });
+
+  it('volnější kbelík si volající vybrat neumí — z jeho hlavičky `net:` nevyjde', () => {
+    // Předponu skládá jedině důvěryhodná cesta. Doslovný opis skončí pod
+    // `xff:`, takže volnější strop není dosažitelný zvenčí; je to táž třída,
+    // kterou u kvóty relací zavřely oddělené předpony.
+    const opis = new Request('http://worldsmith.test/api/edit', {
+      headers: { 'x-forwarded-for': 'net:2001:db8:0:0::/64' },
+    });
+    expect(isGroupedCaller(callerKey(opis))).toBe(false);
+    expect(trustedCallerKey(opis, { VERCEL: '1' })).toBeNull();
+
+    const platforma = new Request('http://worldsmith.test/api/edit', {
+      headers: { 'x-vercel-forwarded-for': '2001:db8::1' },
+    });
+    expect(isGroupedCaller(trustedCallerKey(platforma, { VERCEL: '1' }) ?? '')).toBe(true);
   });
 
   it('strop instance je nad stropem volajícího, ne pod ním', () => {

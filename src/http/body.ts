@@ -30,7 +30,12 @@
  * hashovaného stavu z něj nevstupuje nic.
  */
 
-import { UNIDENTIFIED_CALLER, callerKey, trustedCallerKey } from '../server/rate-limit';
+import {
+  UNIDENTIFIED_CALLER,
+  callerKey,
+  isGroupedCaller,
+  trustedCallerKey,
+} from '../server/rate-limit';
 
 /**
  * Strop těla požadavku.
@@ -63,6 +68,24 @@ export const BODY_DEADLINE_MS = 5_000;
  * nezaplní, ani kdyby všechna čtyři těla poslal plná.
  */
 export const MAX_CONCURRENT_BODY_READS_PER_CALLER = 4;
+
+/**
+ * Kolik čtení smí naráz běžet klíči, který je **celé přidělení `/64`**, tedy
+ * sál, kancelář nebo VPN, ne jeden člověk (P15 `T29-netfloor`).
+ *
+ * Táž vada jako u stropu frekvence, jen o dům dál: od `T29-freeunbounded`
+ * klíčuje tenhle čítač totéž seskupení, takže celá místnost dostala **čtyři**
+ * souběžně čtená těla dohromady. Čtyři pomalá spojení jednoho člověka tím
+ * zavřou dveře všem ostatním v jeho síti.
+ *
+ * **Dvojnásobek, a shora to pořád drží paměť.** Osm plných těl je 512 kB, tedy
+ * čtvrtina rozpočtu instance (`MAX_BUFFERED_BODY_BYTES`), který se soudí první
+ * a nemění se — jedna `/64` proto instanci nezaplní ani teď. Odůvodnění čísla
+ * a to, proč si volající předponu `net:` vybrat neumí, je u
+ * `MAX_REQUESTS_PER_WINDOW_PER_GROUP` v `src/server/rate-limit.ts`; `G1`
+ * přepočítá obě čísla naráz.
+ */
+export const MAX_CONCURRENT_BODY_READS_PER_GROUP = 8;
 
 /**
  * Kolik bajtů smí **všechna rozečtená těla dohromady** naráz držet.
@@ -299,9 +322,13 @@ export async function readBody(request: Request, deadlineMs = BODY_DEADLINE_MS):
   // kbelíku se nedá říct „posíláš jich moc ty" — je to tvrzení o volajícím,
   // který za naplněný kbelík nemusí moci — takže odmítnutí je `instance`.
   const unidentified = caller === UNIDENTIFIED_CALLER;
+  // **Skupina leží mezi tím: víc než člověk, míň než celý rozpočet paměti**
+  // (`T29-netfloor`). `net:` je celé přidělení `/64`, tedy typicky celý sál.
   const limit = unidentified
     ? MAX_CONCURRENT_BODY_READS_UNIDENTIFIED
-    : MAX_CONCURRENT_BODY_READS_PER_CALLER;
+    : isGroupedCaller(caller)
+      ? MAX_CONCURRENT_BODY_READS_PER_GROUP
+      : MAX_CONCURRENT_BODY_READS_PER_CALLER;
   const open = reads.perCaller.get(caller) ?? 0;
   if (open >= limit)
     return { ok: false, reason: 'BUSY', scope: unidentified ? 'instance' : 'caller' };
