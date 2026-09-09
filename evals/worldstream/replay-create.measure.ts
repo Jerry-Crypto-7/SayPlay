@@ -103,6 +103,10 @@ describe('the archived run, replayed against the current code', () => {
         sessionSeed: SESSION_SEED,
         measuredAt: new Date().toISOString(),
         planned: corpus.create.length,
+        // **Nula je tu pravda, ne výchozí hodnota.** Přehrání odpovídá
+        // z archivu, takže neutratí ani jedno volání — a právě proto se
+        // jeho čísla nesmějí citovat jako výkon modelu.
+        paidCalls: 0,
       });
 
       const comparison = compareReplay(before, after, new Date().toISOString());

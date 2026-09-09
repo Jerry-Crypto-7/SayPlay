@@ -472,7 +472,7 @@ describe('every kind of failure lands in its own bucket', () => {
   });
 
   it('has a bucket for every stage the report can print', () => {
-    const report = buildCreateReport([], { sessionSeed: SEED, measuredAt: 'now' });
+    const report = buildCreateReport([], { sessionSeed: SEED, measuredAt: 'now', paidCalls: 0 });
     expect(Object.keys(report.failuresByStage).sort()).toEqual([...FAILURE_STAGES].sort());
   });
 });
@@ -585,7 +585,11 @@ const spread = (count: number, patch: (index: number) => Partial<CaseOutcome> = 
   );
 
 const report = (cases: readonly CaseOutcome[]) =>
-  buildCreateReport(cases, { sessionSeed: SEED, measuredAt: '2026-08-31T00:00:00.000Z' });
+  buildCreateReport(cases, {
+    sessionSeed: SEED,
+    measuredAt: '2026-08-31T00:00:00.000Z',
+    paidCalls: 0,
+  });
 
 describe('the report rules on the run instead of describing it', () => {
   it('takes p95 off the index the rest of the repo takes it off', () => {
@@ -1122,6 +1126,7 @@ describe('a half-measured run must not read as a verdict on the model', () => {
       measuredAt: '2026-09-06T00:00:00.000Z',
       planned: 30,
       stopReason: 'the run budget stopped the measurement after 18 sentences',
+      paidCalls: 0,
     });
 
     expect(short.planned).toBe(30);
@@ -1136,6 +1141,7 @@ describe('a half-measured run must not read as a verdict on the model', () => {
       sessionSeed: SEED,
       measuredAt: '2026-09-06T00:00:00.000Z',
       planned: 30,
+      paidCalls: 0,
     });
     expect(short.stopReason).toBeNull();
     expect(short.gateFailures[0]).toContain('2 of 30 sentences');
@@ -1146,9 +1152,24 @@ describe('a half-measured run must not read as a verdict on the model', () => {
       sessionSeed: SEED,
       measuredAt: '2026-09-06T00:00:00.000Z',
       planned: 30,
+      paidCalls: 0,
     });
     expect(whole.stopReason).toBeNull();
     expect(whole.gateFailures).toEqual([]);
+  });
+
+  it('carries the paid-call count out of the run, instead of counting cases', () => {
+    // **Není to `attempted`.** Jedna věta stojí tolik volání, kolik kol oprav
+    // si vyžádala; naostro 30 vět stálo 104 volání. Kdyby se číslo odvozovalo
+    // z počtu vět, report by o ceně mlčel přesně tam, kde je zajímavá.
+    const built = buildCreateReport(spread(3), {
+      sessionSeed: SEED,
+      measuredAt: '2026-09-06T00:00:00.000Z',
+      planned: 3,
+      paidCalls: 11,
+    });
+    expect(built.paidCalls).toBe(11);
+    expect(built.totals.attempted).toBe(3);
   });
 
   it('assumes the run was whole when nobody said how many were planned', () => {
@@ -1365,6 +1386,19 @@ describe('the committed replay artifact holds up on its own', () => {
     expect(artifact.archivedRun.sessionSeed).toBe(measured.sessionSeed);
     expect(artifact.before.geometryAuthored).toBe(measured.totals.geometryAuthored);
     expect(artifact.before.failuresByStage).toEqual(measured.failuresByStage);
+  });
+
+  it('says what the run cost, not just what it produced', () => {
+    // **Cena běhu se jinak zjistí jedině počítáním řádků archivu, a ten je
+    // gitignorovaný.** V čistém klonu tedy nebylo z čeho ji vyčíst.
+    //
+    // Číslo se do reportu z 6. 9. 2026 doplnilo z archivu (`create-raw.json`,
+    // 104 položek), ne odhadem — a plán i commit `8761627` nesou totéž.
+    expect(measured.paidCalls).toBe(104);
+    // **Volání je nejmíň tolik co vět**, protože každá věta stojí aspoň jedno.
+    // Rozdíl jsou kola oprav, a právě ten by mlčky zmizel, kdyby se sem někdy
+    // dosadilo `attempted`.
+    expect(measured.paidCalls).toBeGreaterThanOrEqual(measured.totals.attempted);
   });
 
   it('has as many moved sentences as the two tallies differ by', () => {

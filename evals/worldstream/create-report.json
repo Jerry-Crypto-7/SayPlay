@@ -1949,5 +1949,6 @@
   "gateFailures": [
     "geometryAuthored 0.300 is below the floor 0.9",
     "p95 to a finished rough world is 213934 ms, above 3000 ms"
-  ]
+  ],
+  "paidCalls": 104
 }

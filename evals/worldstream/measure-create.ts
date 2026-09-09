@@ -634,6 +634,20 @@ export interface CreateReport {
   readonly closestPair: WorldPair | null;
   /** Prázdné pole znamená, že běh prošel branami. */
   readonly gateFailures: readonly string[];
+  /**
+   * Kolik placených volání ten běh stál.
+   *
+   * **Cena běhu se jinak zjistí jedině počítáním řádků archivu, a ten je
+   * gitignorovaný** (3,8 MB scrubnutých odpovědí), takže v čistém klonu ji
+   * nezjistí nikdo. Číslo není totéž co `totals.attempted`: jedna věta stojí
+   * tolik volání, kolik kol oprav si vyžádala — běh z 6. 9. 2026 zaplatil
+   * 104 volání za 30 vět.
+   *
+   * **Nemá výchozí hodnotu, schválně.** Nula je platná odpověď jedině pro
+   * přehrání, které doopravdy nic neutratí; kdyby se dosazovala sama,
+   * zaplacený běh by o sobě mlčky tvrdil, že byl zadarmo.
+   */
+  readonly paidCalls: number;
 }
 
 /** p95 tak, jak ho počítá zbytek repa: index `ceil(0,95 · n) − 1` na seřazeném. */
@@ -652,6 +666,8 @@ export function buildCreateReport(
     readonly planned?: number;
     /** Věta z `RunBudget.roomForAnother()`, když smyčka skončila dřív. */
     readonly stopReason?: string | null;
+    /** Kolik placených volání běh stál. Povinné — viz `CreateReport`. */
+    readonly paidCalls: number;
   },
 ): CreateReport {
   const planned = meta.planned ?? cases.length;
@@ -743,6 +759,7 @@ export function buildCreateReport(
     pairs,
     closestPair,
     gateFailures,
+    paidCalls: meta.paidCalls,
   };
 }
 
