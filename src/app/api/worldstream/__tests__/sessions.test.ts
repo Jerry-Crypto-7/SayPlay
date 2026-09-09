@@ -1783,6 +1783,43 @@ describe('zdroj emise: dějství I ze skladu, dějství II od modelu', () => {
     expect(liveSessionCount(), 'odmítnuté dějství II po sobě nechalo relaci').toBe(before);
   });
 
+  it('prázdný sklad bez modelu je 503, ne relace hlásící výpadek modelu', async () => {
+    // **Nález `T14r-actonefault`.** Dostat se sem znamená `authored === null`
+    // a `cloud === null` naráz, a do 9. 9. 2026 to 503 minulo: podmínka větve
+    // zněla `!live && cloud !== null && authored === null`. Porotce dostal 202
+    // a pak relaci zabitou větou „the model could not be reached" — o modelu,
+    // kterého se nikdo nedovolával, protože dějství I model nevolá vůbec.
+    //
+    // Sklad je commitnutý a neprázdný, takže prázdno se musí předstírat; model
+    // je bez `stubCloud()` vypnutý sám od sebe, což je tady ta druhá půlka
+    // vstupu, ne opomenutí.
+    const log: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+      log.push(String(line));
+    });
+    vi.mocked(chooseAuthored).mockReturnValueOnce(null);
+    const before = liveSessionCount();
+
+    const response = await createSession(createRequest({ prompt: 'a salt flat' }));
+
+    expect(response.status).toBe(503);
+    const { error } = (await response.json()) as { error: { code: string; message: string } };
+    // **Vlastní kód, ne `TOO_MANY_SESSIONS`.** Ten druhý znamená „počkej, až
+    // se uvolní stroj"; tohle znamená „pusť `npm run author:worlds`, nebo
+    // nastav klíč". Jedna hláška pro obojí pošle operátora čekat nadarmo.
+    expect(error.code).toBe('NO_WORLD_AVAILABLE');
+    expect(error.message).toBe(
+      'this instance has no stored worlds and the model is not writing them',
+    );
+    // **Odmítnutí stojí před `openSession()`.** Relace, která hned spadne,
+    // ubere volajícímu jedno místo z `MAX_SESSIONS_PER_CALLER` a nedá nic.
+    expect(liveSessionCount(), 'odmítnutá věta po sobě nechala relaci').toBe(before);
+    // A operátor se to dozví. Do opravy nedostal ani řádek: cesta 503 minula.
+    const refusals = log.filter((line) => line.includes('NO_WORLD_AVAILABLE'));
+    expect(refusals, 'odmítnutí neodešlo operátorovi').toHaveLength(1);
+    expect(refusals[0]).toContain('no stored worlds and no live branch is configured');
+  });
+
   it('dějství II nad plným stropem souběhu taky neotevře relaci — a do skladu nesáhne', async () => {
     // Druhá příčina téhož odmítnutí. **Sklad se tu nesmí připlést:** kdyby
     // dějství II nad plným stropem vydalo uvařený svět, porotce by dostal

@@ -15,8 +15,11 @@
  * `chooseAuthored()` vrací `null` jedině nad **prázdným** skladem (vybírá
  * nejbližší svět, ne jen přesnou shodu — `src/worldstream/authored.ts`), a
  * `authored-worlds.json` drží **11 světů**. Dějství I tedy k modelu nedojde
- * nikdy, nebere placený slot a nic nestojí. Větev `TOO_MANY_SESSIONS` níž je
- * proto dnes **mrtvý kód** — ožila by jedině nad prázdným skladem.
+ * nikdy, nebere placený slot a nic nestojí. Obě 503 větve nad prázdným
+ * skladem — `TOO_MANY_SESSIONS` a `NO_WORLD_AVAILABLE` — jsou proto dnes
+ * **mrtvý kód**; ožily by jedině nad skladem bez jediného světa. Která
+ * z těch dvou promluví, rozhoduje model: nakonfigurovaný a plný dá
+ * `TOO_MANY_SESSIONS`, vypnutý nebo chybějící dá `NO_WORLD_AVAILABLE`.
  *
  * ⚠ **Pro konzumenta mimo prohlížeč je to tichá změna kontraktu.** `{ prompt }`
  * dřív znamenalo „nech to napsat model, když můžeš"; dnes vrátí uvařený svět
@@ -456,16 +459,30 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    // **Plný stroj bez skladu je pořád 503**, protože není co vydat. S plným
-    // strojem A uvařeným světem se 503 nevydá: níž se emituje sklad.
+    // **Prázdný sklad je 503, ať už je model plný, nebo vypnutý.** Není co
+    // vydat, a to je „teď ne" bez ohledu na příčinu. S uvařeným světem po ruce
+    // se sem nedojde: níž se emituje sklad.
     //
     // ⚠ **Dnes je tahle větev mrtvý kód a je to v pořádku.** Dostat se sem
     // znamená `authored === null`, a `chooseAuthored()` vrátí `null` jedině nad
     // **prázdným** skladem; `authored-worlds.json` drží 11 světů. Ožije tedy
     // přesně za jedné podmínky — sklad bez jediného světa (smazaný soubor,
-    // neproběhlý `npm run author:worlds`). Nechává se stát proto, že tehdy je
-    // 503 jediná pravdivá odpověď: model je plný a vydat není co.
-    if (!live && cloud !== null && authored === null) {
+    // neproběhlý `npm run author:worlds`).
+    //
+    // ⚠ **Podmínka `cloud !== null` tady stála do 9. 9. 2026 a byla to vada**
+    // (`T14r-actonefault`). Prázdný sklad **a k tomu** vypnutý nebo
+    // nenakonfigurovaný model 503 minul, vrátil 202 a relaci pak zabil větou
+    // „the model could not be reached" — o modelu, kterého se nikdo
+    // nedovolával. Porotce tak četl výpadek modelu tam, kde chybí uvařené
+    // světy, a operátor nedostal ani řádek do logu.
+    //
+    // **Kód rozděluje příčinu, protože každá se opravuje jinde.**
+    // `TOO_MANY_SESSIONS` znamená plný stroj, tedy počkej; `NO_WORLD_AVAILABLE`
+    // znamená nasazení bez skladu i bez modelu, tedy pusť `npm run
+    // author:worlds` nebo nastav klíč. Jedna hláška pro obojí by operátora
+    // poslala čekat na uvolnění, které nikdy nepřijde.
+    if (!live && authored === null) {
+      const noSource = cloud === null;
       // **Odmítnutí musí být vidět v operátorském logu**, jinak se „strop nás
       // ochránil" nedá odlišit od „nikdo nepřišel". Text je konstantní
       // schválně: `logRateLimited` klíčuje `(dveře, kód)` a objem nese
@@ -476,7 +493,7 @@ export async function POST(request: Request): Promise<Response> {
       logRateLimited(
         'worldstream/sessions',
         requestId,
-        'TOO_MANY_SESSIONS',
+        noSource ? 'NO_WORLD_AVAILABLE' : 'TOO_MANY_SESSIONS',
         // **Řádek jmenuje dveře, které sloty drží.** Do `T22-doorcounters` to
         // čítač nevěděl, takže uměl říct jen „v letu je tolik, kolik smí držet
         // nový svět" — a operátor z toho nepoznal, jestli ho zavřely světy,
@@ -485,9 +502,16 @@ export async function POST(request: Request): Promise<Response> {
         // **Proměnlivý text nevyrobí povodeň.** `logRateLimited` vydá nanejvýš
         // `MAX_DETAILS_PER_WINDOW = 8` různých příčin za okno, a různých
         // podob je tu stejně nejvýš pět: `world` se přes svůj strop nedostane.
-        slotsDetail('world'),
+        noSource ? 'no stored worlds and no live branch is configured' : slotsDetail('world'),
       );
-      return fail(requestId, 503, 'TOO_MANY_SESSIONS', 'too many worlds are being built right now');
+      return noSource
+        ? fail(
+            requestId,
+            503,
+            'NO_WORLD_AVAILABLE',
+            'this instance has no stored worlds and the model is not writing them',
+          )
+        : fail(requestId, 503, 'TOO_MANY_SESSIONS', 'too many worlds are being built right now');
     }
 
     // ⚠ **Každý `return` odsud dolů musí slot vrátit, a jedině když ho drží.**
