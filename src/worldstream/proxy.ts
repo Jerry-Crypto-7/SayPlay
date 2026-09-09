@@ -44,7 +44,12 @@ import { Box3, Matrix4, Vector3 } from 'three';
 import { bakePlacements, compilePlacements, type GeomPlacement } from '@/geom/placements';
 import { childIndicesOf, placedFrom, separableFrom, type GeomNode } from '@/geom/program';
 import { blueprintRejectionSentence, type BlueprintOutcome } from '@/model/worldstream-repair';
-import { MeshBudgetError, type MeshOrder, type MeshResult } from '@/shape/mesh-client';
+import {
+  MeshBudgetError,
+  MeshEmptyError,
+  type MeshOrder,
+  type MeshResult,
+} from '@/shape/mesh-client';
 import { MESH_DETAIL, type Bounds3, type ShapeProgram, type Vec3 } from '@/shape/types';
 
 import { budgetFor, type QualityTier } from './quality';
@@ -141,6 +146,16 @@ export const ROUGH_RESOLUTION = MESH_DETAIL.rough.resolution;
  * proti zadaným 13 m, tedy 72 %. Pořád je to napsaný tvar, ne bedna — ale je
  * to ta nejhorší naměřená ztráta detailu a nová příčka pod 16³ by ji jenom
  * prohloubila.
+ *
+ * ⚠ **Od `T14r-boundspad` sem vede druhá cesta, a ta s rozpočtem nesouvisí.**
+ * Rezervu si přidává worker jako **jednu buňku**, tedy `1/resolution` kvádru,
+ * takže hrubší příčka jí rezervuje víc: 24³ dá 4,17 % tam, kde 32³ dalo
+ * 3,13 %. Tvar, který svou krabici přeteče o kousek víc než jednu buňku,
+ * nemá na první příčce jediný vzorek venku a povrch nevznikne vůbec. Naměřeno
+ * nad archivem `create-raw.json`: ze 41 tvarů, které projdou bránou schématu,
+ * je takový jeden (`chessBoardShape`, c26) a na 24³ z něj vyleze 4 232
+ * trojúhelníků. Sestup po prázdném meshi je tedy druhá záchrana, ne opakování
+ * téhož výpočtu.
  *
  * **Nejsou to `MeshResolution`.** Ten typ vyjmenovává mřížky, které umí
  * *žebřík podob* a měřicí stránka; tohle jsou mřížky poslední záchrany, které
@@ -441,16 +456,32 @@ interface MeshedShape {
 }
 
 /**
- * Objednat tvar a při přetečení rozpočtu ho zkusit na hrubší mřížce.
+ * Objednat tvar a při odmítnutí, které hrubší mřížka umí změnit, ho zkusit níž.
  *
- * **Sestupuje se jen po odmítnutí na rozpočtu** (`MeshBudgetError`, tedy
- * trojúhelníky nebo čas). Prázdný mesh, vadné zadání i brána programu končí
- * hned: meshovač je deterministický a hrubší mřížka na nich nemá co změnit —
- * leda že by prázdný tvar zůstal prázdný o něco levněji.
+ * **Sestupuje se po dvou odmítnutích, a obě mají vlastní třídu chyby.**
+ *
+ * - `MeshBudgetError` — trojúhelníky nebo čas. Hrubší mřížka jich vyrobí míň.
+ * - `MeshEmptyError` — v kvádru nebyl žádný povrch. Vypadá to jako opakování
+ *   téhož výpočtu, ale není: rezervu si přidává worker sám jako **jednu buňku**
+ *   (`paddedBounds`), tedy `1/resolution` kvádru, takže 24³ rezervuje 4,17 %
+ *   tam, kde 32³ rezervovalo 3,13 %. Tvar, který svou krabici přeteče o kousek
+ *   víc než jednu buňku, je na hrubší příčce uvnitř a povrch se uzavře.
+ *
+ * ⚠ **Do `T14r-boundspad` se po prázdném meshi nesestupovalo** a stálo tu, že
+ * „meshovač je deterministický a hrubší mřížka na nich nemá co změnit".
+ * Deterministický je, ale objednávka na hrubší příčce **není tatáž** — liší se
+ * právě tou rezervou. Naměřeno 9. 9. 2026 nad archivem `create-raw.json`:
+ * ze 41 tvarů, které projdou bránou schématu, vrátí prázdno na první příčce
+ * jediný (`chessBoardShape`, c26), a na 24³ z něj vyleze **4 232
+ * trojúhelníků**. Byl to jediný hrdina celého archivu, který kvůli tomu padal
+ * na hlínu; po sestupu nepadá žádný.
+ *
+ * Vadné zadání a brána programu vlastní třídu nemají a končí hned — ty na
+ * mřížce nezávisejí.
  *
  * Vrací hotový mesh, nebo větu, proč žádný není. Ta věta jde rovnou porotci,
- * takže když se sestupovalo, **řekne to** — jinak by hláška jmenovala mřížku
- * 16, o které svět nikde jinde nemluví.
+ * takže když se sestupovalo, **řekne to i proč** — jinak by hláška jmenovala
+ * mřížku 16, o které svět nikde jinde nemluví.
  */
 async function meshDownTheLadder(
   program: ShapeProgram,
@@ -460,6 +491,8 @@ async function meshDownTheLadder(
 ): Promise<MeshedShape | string> {
   const ladder = [roughResolution, ...COARSER_GRIDS];
   let refusal = '';
+  // Proč se sestoupilo na tuhle příčku. `null` na první, protože se nesestupovalo.
+  let steppedBecause: string | null = null;
 
   for (const resolution of ladder) {
     try {
@@ -474,25 +507,38 @@ async function meshDownTheLadder(
           // patří, worker si k tomu přidá jednu buňku, aby tvar napsaný na
           // svůj vlastní obal nezmizel. Rezerva na obou místech by kvádr
           // nafoukla dvakrát a zbytečně zhrubla síť.
+          //
+          // Je to zároveň důvod, proč sestup po prázdném meshi něco změní:
+          // ta jedna buňka je na hrubší příčce větší.
           bounds: program.targetBounds,
         }),
         resolution,
       };
     } catch (error) {
       refusal = error instanceof Error ? error.message : String(error);
-      // **Sestup se přiznává i u ne-rozpočtového odmítnutí** — nález nezávislé
+
+      const retryable =
+        error instanceof MeshBudgetError
+          ? 'the shape went over budget there'
+          : error instanceof MeshEmptyError
+            ? "the shape did not fit inside the reserve that grid's box carries"
+            : null;
+
+      // **Sestup se přiznává i u ne-sestupového odmítnutí** — nález nezávislé
       // revize 9. 9. 2026. Prázdný mesh na hrubší příčce se vracel holou větou
       // té příčky, tedy o mřížce, o které svět nikde nemluví („empty mesh …
       // inside the requested box" o 24³, zatímco objednávka zněla 32³), a
       // příčina „byl moc detailní" z ní zmizela úplně.
-      if (!(error instanceof MeshBudgetError))
-        return resolution === ladder[0]
+      if (retryable === null)
+        return steppedBecause === null
           ? refusal
-          : `${refusal} — on grid ${String(resolution)}, stepped down from ${String(ladder[0])} because the shape went over budget there`;
+          : `${refusal} — on grid ${String(resolution)}, stepped down from ${String(ladder[0])} because ${steppedBecause}`;
+
+      steppedBecause = retryable;
     }
   }
 
-  return `${refusal} — the shape was remeshed down the grid ladder ${ladder.join(' → ')} and went over budget on every rung`;
+  return `${refusal} — the shape was remeshed down the grid ladder ${ladder.join(' → ')} and ${steppedBecause ?? 'was refused'} on every rung`;
 }
 
 /* ------------------------------------------------------------------ *

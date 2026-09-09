@@ -138,6 +138,22 @@ export interface MeshJobFailure {
    * se pohnulo slovo v hlášce.
    */
   readonly overBudget?: true;
+  /**
+   * Odmítnutí padlo na **prázdném meshi**, tedy na tom, že v objednaném kvádru
+   * i s rezervou workeru žádný povrch není.
+   *
+   * Je to vlastní příznak ze stejného důvodu jako `overBudget`: proxy na něj
+   * reaguje sestupem o příčku níž. Vypadá to jako opakování téhož výpočtu, ale
+   * není — rezerva je **jedna buňka**, tedy `1/resolution` kvádru, takže 24³
+   * rezervuje 4,17 % tam, kde 32³ rezervovalo 3,13 %. Tvar, který svou krabici
+   * přeteče o kousek víc než jednu buňku, je na hrubší příčce **uvnitř**.
+   *
+   * Naměřeno 9. 9. 2026 nad archivem `create-raw.json`: ze 41 tvarů, které
+   * projdou bránou, je `chessBoardShape` (c26) jediný, který na první příčce
+   * vrátí prázdno — a na 24³ z něj vyleze 4 232 trojúhelníků. Bez sestupu byl
+   * jediným hrdinou celého archivu, který spadl na hlínu.
+   */
+  readonly emptyMesh?: true;
 }
 
 export type MeshJobResponse = MeshJobSuccess | MeshJobFailure;
@@ -279,6 +295,7 @@ export function handleMeshJob(request: MeshJobRequest): MeshJobOutcome {
           ok: false,
           error:
             'empty mesh: no surface inside the requested box (the shape sits outside it, or the box lies entirely inside the shape)',
+          emptyMesh: true,
         },
         transfer: [],
       };

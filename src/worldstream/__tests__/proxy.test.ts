@@ -24,7 +24,12 @@ import { sealSimHash } from '@/ir/worlddoc';
 import { EXAMPLE_PLAN } from '@/model/worldstream-examples';
 import { EXAMPLE_BLUEPRINT_ANSWER } from '@/model/worldstream-prompt';
 import type { BlueprintOutcome, CompiledBlueprint } from '@/model/worldstream-repair';
-import { MeshBudgetError, type MeshOrder, type MeshResult } from '@/shape/mesh-client';
+import {
+  MeshBudgetError,
+  MeshEmptyError,
+  type MeshOrder,
+  type MeshResult,
+} from '@/shape/mesh-client';
 import { paddedBounds } from '@/shape/surface-nets';
 import type { Bounds3 } from '@/shape/types';
 
@@ -476,14 +481,15 @@ describe('a shape over the budget drops a rung of the grid, not to a box', () =>
   });
 
   it('does not walk the ladder for a refusal the coarser grid cannot fix', async () => {
-    // Prázdný mesh, vadné zadání a brána programu jsou deterministické: tentýž
-    // program dá podruhé totéž, jen levněji. Sestup by spálil dvě objednávky
-    // navíc a porotci pak napsal o rozpočtu, kterého se tvar nedotkl.
+    // ⚠ **Prázdný mesh sem do `T14r-boundspad` patřil a už nepatří.** Objednávka
+    // na hrubší příčce není tatáž: rezervu si přidává worker jako `1/resolution`
+    // kvádru, takže se s příčkou mění (test o kus níž). Deterministické a na
+    // mřížce nezávislé zůstává vadné zadání a brána programu — ta dvě sem.
     const orders: MeshOrder[] = [];
     const world = await buildProxyWorld(compiled(blueprint()), {
       mesh: async (order) => {
         orders.push(order);
-        throw new Error('empty mesh: no surface inside the requested box');
+        throw new Error('invalid shape program: node 3 references node 7 outside the table of 4');
       },
     });
 
@@ -491,32 +497,104 @@ describe('a shape over the budget drops a rung of the grid, not to a box', () =>
     const hive = slotOf(world, 'tallHive').form;
     expect(hive.rung).toBe('semantic-clay');
     expect(hive.kind === 'clay' && hive.reason).toBe(
-      'empty mesh: no surface inside the requested box',
+      'invalid shape program: node 3 references node 7 outside the table of 4',
     );
   });
 
-  it('says which rung refused when the refusal came after a step down', async () => {
-    // **Nález nezávislé revize 9. 9. 2026.** Hrubší mřížka mine tenké detaily,
-    // takže tvar přes rozpočet na 32³ umí na 24³ vrátit prázdný mesh — a věta
-    // pro porotce pak mluvila o mřížce 24, o které svět nikde jinde nemluví,
-    // zatímco příčina „byl moc detailní" z ní zmizela.
+  it('remeshes down a rung when the box clipped the shape away', async () => {
+    // **Jádro `T14r-boundspad`.** Rezerva workeru je jedna buňka, tedy
+    // `1/resolution` kvádru: 32³ rezervuje 3,13 %, 24³ 4,17 %. Tvar, který svou
+    // krabici přeteče o kousek víc než jednu buňku, nemá na první příčce jediný
+    // vzorek venku, takže povrch nevznikne — a na druhé už ano.
+    //
+    // Naměřeno nad archivem `create-raw.json`: ze 41 tvarů, které projdou
+    // bránou schématu, je takový jeden (`chessBoardShape`, c26), a byl to
+    // jediný hrdina celého archivu, který kvůli tomu padal na hlínu.
+    const orders: MeshOrder[] = [];
+    const world = await buildProxyWorld(compiled(blueprint()), {
+      mesh: async (order) => {
+        orders.push(order);
+        if (order.resolution === ROUGH_RESOLUTION)
+          throw new MeshEmptyError('empty mesh: no surface inside the requested box');
+        return fakeMesh(order);
+      },
+    });
+
+    expect(orders.map((order) => order.resolution)).toEqual([32, 24]);
+    const hive = slotOf(world, 'tallHive').form;
+    expect(hive.rung).toBe('g3-reduced');
+    expect(hive.kind === 'mesh' && hive.resolution).toBe(24);
+  });
+
+  it('says the reserve refused, not the budget, when the step down was for an empty mesh', async () => {
+    // Hláška jde rovnou porotci. Kdyby po sestupu kvůli rezervě tvrdila
+    // „because the shape went over budget there", jmenovala by příčinu, které
+    // se ten tvar ani nedotkl.
+    const world = await buildProxyWorld(compiled(blueprint()), {
+      mesh: async (order) => {
+        if (order.resolution === ROUGH_RESOLUTION)
+          throw new MeshEmptyError('empty mesh: no surface inside the requested box');
+        throw new Error('invalid mesh request: resolution 24 is not a whole number of at least 1');
+      },
+    });
+
+    const hive = slotOf(world, 'tallHive').form;
+    if (hive.kind !== 'clay') throw new Error(hive.kind);
+    expect(hive.reason).toContain('on grid 24');
+    expect(hive.reason).toContain('stepped down from 32');
+    expect(hive.reason).toContain('did not fit inside the reserve');
+    expect(hive.reason).not.toContain('over budget');
+  });
+
+  it('names the reserve when every rung came back empty', async () => {
+    // Failure path celého žebříku. Věta pro porotce musí říct, že se sestupovalo
+    // — jinak mluví o mřížce 16, o které svět nikde jinde nemluví — a musí
+    // jmenovat tu příčinu, která tvar doopravdy zastavila.
+    const orders: MeshOrder[] = [];
+    const world = await buildProxyWorld(compiled(blueprint()), {
+      mesh: async (order) => {
+        orders.push(order);
+        throw new MeshEmptyError('empty mesh: no surface inside the requested box');
+      },
+    });
+
+    expect(orders.map((order) => order.resolution)).toEqual([32, 24, 16]);
+    const hive = slotOf(world, 'tallHive').form;
+    if (hive.kind !== 'clay') throw new Error(hive.kind);
+    expect(hive.reason).toContain('32 → 24 → 16');
+    expect(hive.reason).toContain('did not fit inside the reserve');
+    expect(hive.drawn).toBe(true);
+  });
+
+  it('says which rung refused, and names the cause that took it there', async () => {
+    // **Nález nezávislé revize 9. 9. 2026.** Věta pro porotce mluvila o mřížce,
+    // o které svět nikde jinde nemluví („on grid 24", zatímco objednávka zněla
+    // 32³), a příčina sestupu z ní zmizela.
+    //
+    // ⚠ **Od `T14r-boundspad` jsou ty příčiny dvě a věta musí jmenovat tu
+    // poslední.** Tenhle běh sestupuje nejdřív kvůli rozpočtu a pak kvůli
+    // rezervě; kdyby se hlásil rozpočet, mluvila by o příčině, které se tvar
+    // na poslední příčce ani nedotkl.
     const orders: MeshOrder[] = [];
     const world = await buildProxyWorld(compiled(blueprint()), {
       mesh: async (order) => {
         orders.push(order);
         if (order.resolution === ROUGH_RESOLUTION)
           throw new MeshBudgetError('mesh is 17200 triangles, above maxTriangles 16000');
-        throw new Error('empty mesh: no surface inside the requested box');
+        if (order.resolution === 24)
+          throw new MeshEmptyError('empty mesh: no surface inside the requested box');
+        throw new Error('invalid shape program: node 3 references node 7 outside the table of 4');
       },
     });
 
-    // Druhá příčka se zkusila, třetí ne — prázdný mesh hrubší mřížka neopraví.
-    expect(orders.map((order) => order.resolution)).toEqual([32, 24]);
+    expect(orders.map((order) => order.resolution)).toEqual([32, 24, 16]);
     const hive = slotOf(world, 'tallHive').form;
     if (hive.kind !== 'clay') throw new Error(hive.kind);
-    expect(hive.reason).toContain('empty mesh');
-    expect(hive.reason).toContain('on grid 24');
+    expect(hive.reason).toContain('invalid shape program');
+    expect(hive.reason).toContain('on grid 16');
     expect(hive.reason).toContain('stepped down from 32');
+    expect(hive.reason).toContain('did not fit inside the reserve');
+    expect(hive.reason).not.toContain('over budget');
   });
 });
 

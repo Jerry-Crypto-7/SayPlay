@@ -49,13 +49,36 @@ export interface MeshOrder {
  * tvar přemeshuje na hrubší mřížce (`COARSER_GRIDS`), místo aby objekt spadl
  * na krabici. Odlišit ji podle textu hlášky by znamenalo, že přepsaná hláška
  * tu reakci tiše vypne — a hláška je psaná pro porotce, takže se přepisovat
- * bude. Ostatní odmítnutí (prázdný mesh, vadné zadání, brána programu)
- * zůstávají obyčejný `Error`: opakovat je nemá co změnit.
+ * bude. Prázdný mesh má vlastní třídu `MeshEmptyError` níž, protože se na něj
+ * od `T14r-boundspad` reaguje taky; vadné zadání a brána programu zůstávají
+ * obyčejný `Error`, protože ty na mřížce nezávisejí.
  */
 export class MeshBudgetError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'MeshBudgetError';
+  }
+}
+
+/**
+ * Odmítnutí na **prázdném meshi** (`MeshJobFailure.emptyMesh`), tedy na tom,
+ * že v objednaném kvádru i s rezervou workeru žádný povrch nebyl.
+ *
+ * Vlastní třída ze stejného důvodu jako `MeshBudgetError`: proxy na ni reaguje
+ * sestupem o příčku níž. **Není to opakování téhož výpočtu** — rezervu si
+ * přidává worker jako `1/resolution` kvádru, takže hrubší příčka rezervuje
+ * víc (24³ dá 4,17 % proti 3,13 % na 32³) a tvar, který svou krabici přeteče
+ * o kousek víc než jednu buňku, se do ní na hrubší příčce vejde.
+ *
+ * Odlišit ji podle textu hlášky by znamenalo, že přepsaná hláška tu reakci
+ * tiše vypne — hláška je psaná pro porotce, takže se přepisovat bude.
+ * Ostatní odmítnutí (vadné zadání, brána programu) zůstávají obyčejný
+ * `Error`: opakovat je nemá co změnit, protože na mřížce nezávisejí.
+ */
+export class MeshEmptyError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'MeshEmptyError';
   }
 }
 
@@ -178,7 +201,11 @@ export function createMeshClient(options: MeshClientOptions = {}): MeshClient {
       });
     } else {
       entry.reject(
-        response.overBudget === true ? new MeshBudgetError(response.error) : new Error(response.error),
+        response.overBudget === true
+          ? new MeshBudgetError(response.error)
+          : response.emptyMesh === true
+            ? new MeshEmptyError(response.error)
+            : new Error(response.error),
       );
     }
     pump();

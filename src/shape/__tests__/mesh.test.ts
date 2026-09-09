@@ -16,7 +16,12 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { MeshBudgetError, createMeshClient, type MeshWorkerLike } from '../mesh-client';
+import {
+  MeshBudgetError,
+  MeshEmptyError,
+  createMeshClient,
+  type MeshWorkerLike,
+} from '../mesh-client';
 import { validateShapeProgram } from '../schema';
 import { handleMeshJob, type MeshJobRequest, type MeshJobResponse } from '../mesh-worker';
 import { meshShapeProgram, paddedBounds, type ShapeMesh } from '../surface-nets';
@@ -547,6 +552,67 @@ describe('prázdná práce se vrací jako selhání', () => {
     expect(flat.overBudget).toBeUndefined();
   });
 
+  it('prázdný mesh nese příznak `emptyMesh`, vadné zadání ne', () => {
+    // Happy i failure path druhého příznaku — `T14r-boundspad`. Proxy podle něj
+    // sestoupí o příčku níž; kdyby ho nesla i vadná objednávka, spálil by se
+    // celý žebřík na tvaru, kterému hrubší mřížka nemá co pomoct.
+    const empty = handleMeshJob({
+      ...base,
+      program: programOf([{ kind: 'sphere', radius: 50 }], {
+        min: [-50, -50, -50],
+        max: [50, 50, 50],
+      }),
+    }).response;
+    expect(empty.ok).toBe(false);
+    if (empty.ok) return;
+    expect(empty.emptyMesh).toBe(true);
+
+    const flat = handleMeshJob({ ...base, bounds: { min: [-2, 2, -2], max: [2, 2, 2] } }).response;
+    expect(flat.ok).toBe(false);
+    if (flat.ok) return;
+    expect(flat.emptyMesh).toBeUndefined();
+  });
+
+  it('tvar, kterému rezerva jedné buňky nestačí, se vymešuje o příčku níž', () => {
+    // **Naměřený případ, ne vymyšlený.** `chessBoardShape` z případu c26
+    // archivu `evals/worldstream/create-raw.json` — jediný ze 41 tvarů, které
+    // projdou bránou schématu, který na první příčce vrátí prázdno.
+    //
+    // Proč: obruba je `roundBox` 3,5 × 0,24 × 3,5 s poloměrem 0,12, tedy sahá
+    // v `x` do 1,87, kdežto `targetBounds` končí na 1,75. Rezerva na 32³ je
+    // 3,5/32 = 0,109, takže kvádr se vzorkuje do 1,859 — pořád **uvnitř**
+    // tělesa. Žádný vzorek nezmění znaménko a povrch nevznikne. Na 24³ je
+    // rezerva 3,5/24 = 0,146, kvádr sahá do 1,896, roh je venku a tvar se
+    // uzavře.
+    //
+    // Brána objemu ho propustí právem: poměr kvádrů je asi 1,15×, hluboko pod
+    // prahem `MAX_BOUNDS_VOLUME_RATIO`. Přesah nad rezervu tedy **není** vada
+    // programu, kterou by šlo odmítnout u vstupu.
+    const chessBoard = programOf(
+      [
+        { kind: 'roundBox', size: [3.5, 0.24, 3.5], radius: 0.12 },
+        { kind: 'box', size: [3.05, 0.18, 3.05] },
+        { kind: 'translate', child: 1, offset: [0, 0.12, 0] },
+        { kind: 'subtract', children: [0, 2] },
+        { kind: 'roundBox', size: [3.02, 0.08, 3.02], radius: 0.04 },
+        { kind: 'translate', child: 4, offset: [0, 0.1, 0] },
+        { kind: 'union', children: [3, 5] },
+      ],
+      { min: [-1.75, -0.12, -1.75], max: [1.75, 0.16, 1.75] },
+    );
+    const order = { ...base, program: chessBoard, bounds: chessBoard.targetBounds };
+
+    const rough = handleMeshJob({ ...order, resolution: 32 }).response;
+    expect(rough.ok).toBe(false);
+    if (rough.ok) return;
+    expect(rough.emptyMesh).toBe(true);
+
+    const coarser = handleMeshJob({ ...order, resolution: 24 }).response;
+    expect(coarser.ok).toBe(true);
+    if (!coarser.ok) return;
+    expect(coarser.triangleCount).toBe(4232);
+  });
+
   it('poctivá práce zůstane úspěchem', () => {
     // Bez tohohle by celý blok prošel i s „odmítej všechno".
     const { response } = handleMeshJob(base);
@@ -877,6 +943,29 @@ describe('klient meshovacího workeru', () => {
 
     await expect(promise).rejects.toBeInstanceOf(MeshBudgetError);
     await expect(promise).rejects.toThrow('above maxTriangles 16000');
+  });
+
+  it('prázdný mesh překlopí na vlastní třídu, protože se na něj taky reaguje', async () => {
+    // Druhý příznak, na který proxy odpovídá sestupem — `T14r-boundspad`.
+    // Rezerva workeru je jedna buňka, tedy `1/resolution` kvádru, takže hrubší
+    // příčka jí rezervuje víc a tvar, který svou krabici přeteče o kousek víc
+    // než jednu buňku, se do ní na 24³ vejde. Kdyby se příznak ztratil tady,
+    // sestup by se nikdy neobjednal.
+    const worker = fakeWorker();
+    const client = createMeshClient({ createWorker: () => worker });
+    const promise = client.mesh(order);
+
+    const failure: MeshJobResponse = {
+      jobId: worker.queue[0].jobId,
+      ok: false,
+      error: 'empty mesh: no surface inside the requested box',
+      emptyMesh: true,
+    };
+    worker.queue.shift();
+    worker.onmessage?.({ data: failure });
+
+    await expect(promise).rejects.toBeInstanceOf(MeshEmptyError);
+    await expect(promise).rejects.not.toBeInstanceOf(MeshBudgetError);
   });
 
   it('bez workeru selže, místo aby tiše počítal na volajícím vlákně', async () => {
