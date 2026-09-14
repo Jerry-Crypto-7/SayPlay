@@ -343,6 +343,15 @@ export function capabilityManifest(): string {
     '(camelCase, no spaces — a name, never a colour and never a phrase: brushedSteel, not "brushed steel"),',
     'priority (higher is meshed first).',
     'You do NOT write grid resolution, quality, cost or meshing order. Those are pipeline decisions.',
+    // **Naměřeno 14. 9. 2026 na c07.** „Les, kde stromy jsou hrudní koše" přišel
+    // jako jeden tvar: strom o 5,3 m se žebry 15 cm, zopakovaný 3× a 2×, takže
+    // targetBounds byl 14,5 m a buňka mřížky 45 cm — žebra se rozpadla. Mřížka
+    // je pevná, takže opakování se platí rozlišením a platí se zbytečně. Brána
+    // `repeatedHeroIssue` to odmítá; tenhle odstavec je ta věta předem.
+    'ONE shape is ONE object. If a hero appears many times — a forest of the same tree, a row of',
+    'the same lamp — write it ONCE, with targetBounds around that single copy, and put the copies',
+    'in the composition. The mesh grid is fixed, so a targetBounds stretched around repeated copies',
+    'spends its resolution on the gaps between them and the detail inside each one is lost.',
   ].join('\n');
 }
 

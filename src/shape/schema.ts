@@ -34,6 +34,8 @@ import {
   DEFORMATION_KINDS,
   MASK_KINDS,
   MAX_BOUNDS_VOLUME_RATIO,
+  MAX_REPEATED_HERO_RATIO,
+  MESH_DETAIL,
   PRIMITIVE_KINDS,
   SHAPE_LIMITS,
   TRANSFORM_KINDS,
@@ -413,6 +415,82 @@ function boundsIssue(
   );
 }
 
+/**
+ * Kolikrát objednaná krabice přerůstá to, co se v ní opakuje.
+ *
+ * ## Co se tím chytá — naměřeno 14. 9. 2026 nad případem c07
+ *
+ * `gpt-6-astra` napsala „les, kde stromy jsou hrudní koše" jako **jeden**
+ * hrdinský tvar: uzly 0–17 jsou jeden strom o 5,3 m se žebry `torus`
+ * `minorRadius` **0,15 m**, a teprve uzly 19–20 ho zopakují 3× a 2×. Tím
+ * `targetBounds` naroste na **14,5 m**. Mřížka je ale pevná (`MESH_DETAIL`,
+ * hrubá 32³), takže buňka měří 14,5/32 = **45 cm** — třikrát víc než žebro.
+ * Šest stromů se rozpadne na drobky, zatímco týž strom sám v krabici 5,3 m má
+ * buňku 17 cm a vymeshuje se celý.
+ *
+ * **Opakování tedy platí rozlišením, a platí se za něj zbytečně** — kopie
+ * hrdiny patří do kompozice `GeomProgram`, kde je každá vlastním umístěním
+ * jediného meshe (a `createCachedMeshClient` je proto mešuje jen jednou).
+ *
+ * ## Proč práh 2,0 a proč to nic jiného nezasáhne
+ *
+ * Přeměřeno nad 62 tvary tří archivů (`create-raw.json`, `authored-worlds.json`
+ * a galerie kvality): **pole u kořene mají tři** a poměr krabice k jednotce
+ * vychází **2,90× (`hangingHouses`), 2,52× (`ribcageTrees`, tedy c07) a 1,01×
+ * (`sortingChutes`)**. Nad 3,0× není žádný. Mezi 1,01 a 2,52 je tedy prázdno
+ * a práh 2,0 leží v něm — není naladěný na jeden vzorek, jen ho nemá kam
+ * minout. Zbylých 59 tvarů pole u kořene nemá a tahle kontrola o nich mlčí.
+ *
+ * ⚠ **Nezaměňovat s `boundsIssue`.** Ta soudí tvar, který si krabice nevšímá;
+ * tahle soudí krabici, která je správně velká na to, co se do ní napsalo, jen
+ * se do ní napsalo něco, co tam nepatří. `hullOf` navíc `repeat` ani
+ * `radialArray` neumí, takže u těchhle tvarů vrací `certainHulls` u kořene
+ * `null` a `boundsIssue` na nich mlčí — tohle není druhá kontrola téhož.
+ *
+ * `null` znamená nic netvrdím: u kořene žádné pole není, nebo se obal jednotky
+ * nedal spočítat, nebo je poměr pod prahem.
+ */
+function repeatedHeroIssue(
+  nodes: readonly ShapeNode[],
+  root: number,
+  target: { min: readonly number[]; max: readonly number[] },
+): string | null {
+  // Sestup od kořene přes pole a přes uzly, které jen posunou celek. Zastav se
+  // na prvním uzlu, který doopravdy tvoří tvar.
+  let unit = root;
+  let copies = 1;
+  for (;;) {
+    const node = nodes[unit];
+    if (node === undefined) return null;
+    const arrayed = (ARRAY_KINDS as readonly string[]).includes(node.kind);
+    if (!arrayed && !(TRANSFORM_KINDS as readonly string[]).includes(node.kind)) break;
+    if (arrayed && 'count' in node) copies *= node.count;
+    unit = (node as { child: number }).child;
+  }
+  if (copies < 2) return null;
+
+  const hull = certainHulls(nodes)[unit];
+  if (hull === null) return null;
+
+  const longest = (min: readonly number[], max: readonly number[]) =>
+    Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]);
+  const unitSide = longest(hull.min, hull.max);
+  if (unitSide <= 0) return null;
+  const ratio = longest(target.min, target.max) / unitSide;
+  if (ratio < MAX_REPEATED_HERO_RATIO) return null;
+
+  // Hláška nese obě čísla i buňku, protože bez nich model neví, co zmenšit:
+  // „je to moc velké" se dá splnit i zmenšením žeber, což je přesně ta ztráta,
+  // které se vyhýbáme.
+  const cell = longest(target.min, target.max) / MESH_DETAIL.rough.resolution;
+  return (
+    `shape repeats one ${unitSide.toFixed(1)} m unit ${copies} times, so targetBounds is ` +
+    `${ratio.toFixed(1)}× that unit and the mesh grid gives it ${(cell * 100).toFixed(0)} cm cells. ` +
+    `Write the unit once, sized to its own targetBounds, and place the ${copies} copies in the ` +
+    `composition instead`
+  );
+}
+
 function structuralIssues(program: z.infer<typeof shapeProgramSchema>): string[] {
   const issues: string[] = [];
   const fail = (message: string) => issues.push(message);
@@ -516,6 +594,9 @@ function structuralIssues(program: z.infer<typeof shapeProgramSchema>): string[]
 
   const overflow = boundsIssue(nodes, program.root, program.targetBounds);
   if (overflow !== null) fail(overflow);
+
+  const repeated = repeatedHeroIssue(nodes, program.root, program.targetBounds);
+  if (repeated !== null) fail(repeated);
 
   return issues;
 }

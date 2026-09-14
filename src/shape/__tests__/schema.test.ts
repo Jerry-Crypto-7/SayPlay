@@ -235,11 +235,17 @@ describe('stropy jazyka', () => {
   });
 
   it('přijme rozvinutí přesně na stropu kopií a odmítne o jedno větší', () => {
-    expect(validateShapeProgram(arrayProgram(16, 16)).ok).toBe(true);
-
-    const result = validateShapeProgram(arrayProgram(17, 16));
-    expect(result.ok).toBe(false);
-    expect(result.issues).toContain('program expands to 272 copies, above maxInstances 256');
+    // Předmětem je strop kopií, ne krabice. `arrayProgram` je pole koulí o 0,3 m
+    // v obálce o několika metrech, takže od 14. 9. 2026 na něm mluví i
+    // `repeatedHeroIssue` — a mluví správně, je to přesně opakovaný hrdina.
+    // Proto se tu soudí ta jedna hláška, ne `ok`; jinak by ten test od té chvíle
+    // měřil dvě věci a padal na té druhé.
+    const copies = (program: unknown) =>
+      validateShapeProgram(program).issues.filter((issue) => issue.includes('above maxInstances'));
+    expect(copies(arrayProgram(16, 16))).toEqual([]);
+    expect(copies(arrayProgram(17, 16))).toEqual([
+      'program expands to 272 copies, above maxInstances 256',
+    ]);
   });
 
   it('počítá kopie po rozvinutí, ne řádky tabulky', () => {

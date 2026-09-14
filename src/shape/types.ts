@@ -241,6 +241,21 @@ export const MESH_DETAIL = {
  */
 export const MAX_BOUNDS_VOLUME_RATIO = 2;
 
+/**
+ * Kolikrát smí objednaná krabice přerůst to, co se v ní u kořene opakuje,
+ * měřeno **nejdelší hranou** — ne objemem jako `MAX_BOUNDS_VOLUME_RATIO`.
+ *
+ * Hranou proto, že tady je předmětem sporu velikost buňky, a ta je podíl hrany
+ * a `MESH_DETAIL.rough.resolution`; objem by tři kopie v řadě a kopie do tří
+ * směrů soudil stejně, ačkoliv rozlišení platí jenom ta první.
+ *
+ * **Práh je naměřený, ne odhadnutý — 14. 9. 2026, 62 tvarů tří archivů.** Pole
+ * u kořene mají tři a jejich poměry jsou 2,90×, 2,52× a 1,01×; nad 3,0× není
+ * žádný. Dvojka leží v prázdném pásmu mezi 1,01 a 2,52, takže ji nelze minout
+ * o vzorek. Důvod a naměřený případ jsou u `repeatedHeroIssue` ve `schema.ts`.
+ */
+export const MAX_REPEATED_HERO_RATIO = 2;
+
 /* ------------------------------------------------------------------ *
  * Uzly.
  * ------------------------------------------------------------------ */
