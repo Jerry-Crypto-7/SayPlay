@@ -72,6 +72,7 @@ import { repairEmission, toIdentifier, type RepairNote } from './repair';
 import { buildCompilerRequest, COMPILER_STAGE, EXAMPLE_BLUEPRINT_ANSWER } from './worldstream-prompt';
 import { isExampleEmission, type Grammar, type UpstreamRequest } from './prompt';
 import type { PlannedObject, PlannerEmission } from './worldstream-intent';
+import { straightenGeometry, straightenShape } from './worldstream-straighten';
 
 export { COMPILER_STAGE };
 
@@ -414,6 +415,17 @@ function readSource(value: unknown): SemanticSource | string {
   return `source.kind ${JSON.stringify(value.kind)} is neither "geom" nor "shape"`;
 }
 
+/** Řádky geometrie, ze kterých placements berou objekt — narovnání je nesmí vyhodit. */
+function placementRows(placements: unknown): ReadonlySet<number> {
+  const rows = new Set<number>();
+  if (!Array.isArray(placements)) return rows;
+  for (const raw of placements) {
+    const source = isRecord(raw) ? readSource(raw.source) : null;
+    if (source !== null && typeof source !== 'string' && source.kind === 'geom') rows.add(source.node);
+  }
+  return rows;
+}
+
 /* ------------------------------------------------------------------ *
  * Compiler.
  * ------------------------------------------------------------------ */
@@ -466,17 +478,24 @@ export function compileBlueprint(
       'the geometry table is the example one, node for node; renaming what sits around it does not make it an answer',
     );
 
-  const geomValidation = validateGeomProgram(answer.geometry);
+  // **Narovnání před bránou, ne po ní** — týž důvod jako u `materialIntent`
+  // níž: strukturální přešlap (širší `group`, delší křivka, měřítko nad
+  // stropem, rozpočet kusů, neznámá varianta, nedosažitelný řádek) stál
+  // 25–42 s placeného kola za něco, co jde narovnat deterministicky a ukázat
+  // v panelu. Co narovnat nejde, brána odmítne jako dřív.
+  const adjustments: BlueprintAdjustment[] = [];
+  const straightGeometry = straightenGeometry(answer.geometry, adjustments, placementRows(answer.placements));
+
+  const geomValidation = validateGeomProgram(straightGeometry.value);
   if (!geomValidation.ok)
     return reject('GEOM_INVALID', geomValidation.issues[0], geomValidation.issues);
-  const geometry = parseGeomProgram(answer.geometry);
+  const geometry = parseGeomProgram(straightGeometry.value);
 
   // --- tvary -------------------------------------------------------------
 
   if (!Array.isArray(answer.shapes))
     return reject('WRONG_SHAPE', 'shapes is not an array; write an empty one if there are none');
 
-  const adjustments: BlueprintAdjustment[] = [];
   const shapes: ShapeProgram[] = [];
 
   // ⚠ **Vadné tvary se sbírají všechny, ne jen první — `T14r-shapefirstfault`.**
@@ -512,7 +531,7 @@ export function compileBlueprint(
     // volání za pravopis. Na pořadí proti kontrole opsané ukázky nad tím
     // **nezáleží** a je to ověřené, ne odhadnuté — `tableOf()` kanonizuje jen
     // `{ nodes, root }`, takže `materialIntent` do toho verdiktu nevstupuje.
-    const shape = straightenMaterialIntent(raw, index, adjustments);
+    const shape = straightenShape(straightenMaterialIntent(raw, index, adjustments), index, adjustments);
 
     const validation = validateShapeProgram(shape);
     if (!validation.ok) {
@@ -561,8 +580,11 @@ export function compileBlueprint(
     if (placed.has(stableId))
       return reject('PLACEMENT_MISMATCH', `${where} places ${stableId} a second time`);
 
-    const source = readSource(raw.source);
-    if (typeof source === 'string') return reject('WRONG_SHAPE', `${where}.${source}`);
+    const written = readSource(raw.source);
+    if (typeof written === 'string') return reject('WRONG_SHAPE', `${where}.${written}`);
+    // Narovnání geometrie mohlo řádky posunout; placement ukazuje do téže tabulky.
+    const source: SemanticSource =
+      written.kind === 'geom' ? { kind: 'geom', node: straightGeometry.remap(written.node) } : written;
 
     const targetBounds = clampBounds(raw.targetBounds, `${where}/targetBounds`, adjustments);
     if (targetBounds === null)
