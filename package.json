@@ -8,7 +8,7 @@
   },
   "scripts": {
     "demo:subscription": "vitest run --config vitest.measure.mts evals/reality-compiler/subscription-demo.measure.ts",
-    "prepare": "git config core.hooksPath .githooks",
+    "prepare": "node scripts/install-git-hooks.mjs",
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
