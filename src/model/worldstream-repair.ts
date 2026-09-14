@@ -1,3 +1,4 @@
+import { observePhase, observePhaseAsync, type PhaseObserver } from './phase-observer';
 /**
  * **Sebeoprava blueprintu (P13 T12): odmítnutí compileru → další pokus.**
  *
@@ -394,6 +395,7 @@ function sameFault(before: BlueprintFault, after: BlueprintFault): boolean {
 export type BlueprintEmitter = (request: UpstreamRequest) => Promise<unknown>;
 
 export interface RepairInput {
+  readonly observePhase?: PhaseObserver;
   readonly plan: PlannerEmission;
   readonly grammar: Grammar;
   /** Semínko relace. Píše ho systém, ne model. */
@@ -449,7 +451,7 @@ export async function compileWithRepair(input: RepairInput): Promise<BlueprintOu
 
     let answer: unknown;
     try {
-      answer = await input.emit(request);
+      answer = await observePhaseAsync(input.observePhase, 'blueprint-emitter', () => input.emit(request));
     } catch (thrown) {
       // Rozbité prostředí není verdikt o blueprintu. Kola, která už proběhla,
       // se ale nezahazují — je z nich vidět, kam se to dostalo.
@@ -459,10 +461,10 @@ export async function compileWithRepair(input: RepairInput): Promise<BlueprintOu
 
     // Brána dostane požadavek **toho kola**, ne prvního: verdikt nesmí tvrdit
     // o modelu něco, co nedostal, a od opravného kola se obojí liší.
-    const result = compileBlueprint(answer, input.plan, {
+    const result = observePhase(input.observePhase, 'blueprint-validation-and-lowering', () => compileBlueprint(answer, input.plan, {
       sessionSeed: input.sessionSeed,
       upstream: request,
-    });
+    }));
     const ms = clock() - startedAt;
 
     if (result.ok) {

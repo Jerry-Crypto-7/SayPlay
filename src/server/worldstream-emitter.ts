@@ -1,3 +1,5 @@
+import { observePhaseAsync } from '../model/phase-observer';
+import { serverPhaseObserver } from './worldstream-metrics';
 /** Shared provider and spend reservation for world and source proposals. */
 import type { UpstreamRequest } from '../model/prompt';
 import type { BlueprintEmitter } from '../model/worldstream-repair';
@@ -36,7 +38,7 @@ export async function cloudEmitter(): Promise<BlueprintEmitter | null> {
 
   return async (request: UpstreamRequest): Promise<unknown> => {
     const call = { prompt: request.user, request };
-    const reservation = await cap.reserve(branch.worstCaseUsd(call));
+    const reservation = await observePhaseAsync(serverPhaseObserver, 'spend-reservation', () => cap.reserve(branch.worstCaseUsd(call)));
     // **Vlastní třída, ne holý `Error`** (P15 `T29-readinessledger`). Volající
     // chytá jedinou výjimku a musí z ní poznat, jestli se k poskytovateli
     // vůbec někdo připojoval — odmítnutý strop se do té chvíle hlásil jako
@@ -45,7 +47,7 @@ export async function cloudEmitter(): Promise<BlueprintEmitter | null> {
 
     let outcome;
     try {
-      outcome = await branch.generate(call);
+      outcome = await observePhaseAsync(serverPhaseObserver, 'provider-transport-and-response', () => branch.generate(call));
     } catch (thrown) {
       // Rezervaci vyrovnat **před** rethrow, jinak visí do restartu procesu a
       // strop se sám utáhne — táž oprava jako v `runPipeline`.
