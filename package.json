@@ -31,6 +31,7 @@
     "measure:worldstream-latency": "vitest run --config vitest.measure.mts evals/worldstream/live-latency.measure.ts",
     "measure:worldstream-create": "vitest run --config vitest.measure.mts evals/worldstream/live-create.measure.ts",
     "measure:worldstream-replay": "vitest run --config vitest.measure.mts evals/worldstream/replay-create.measure.ts",
+    "measure:effort": "playwright test -c playwright.effort.ts --grep @measure",
     "measure:reality-compiler": "vitest run --config vitest.measure.mts evals/reality-compiler/benchmark.measure.ts",
     "measure:reality-compiler-cold": "vitest run --config vitest.measure.mts evals/reality-compiler/cold-browser.measure.ts",
     "measure:reality-compiler-subscription": "vitest run --config vitest.measure.mts evals/reality-compiler/subscription-benchmark.measure.ts",
