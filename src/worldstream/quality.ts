@@ -334,3 +334,32 @@ export function pickQualityTier(search: string): QualityTier {
     renderer,
   });
 }
+
+/** Co `/dev/worldstream` smí stáhnout z `?blueprint=`: adresa, nebo důvod odmítnutí. */
+export type StoredBlueprint = { readonly url: string } | { readonly refused: string };
+
+/**
+ * Uložený svět z `?blueprint=`, **jen ze stejného originu** (P15
+ * `G1-blueprintorigin`, nezávislá revize 14. 9. 2026).
+ *
+ * Stránka je na nasazení veřejná (e2e na ni sahají), a do 14. 9. stáhla
+ * libovolnou adresu a nakreslila ji jako svět pod doménou dema: odkaz
+ * `…/dev/worldstream?blueprint=https://cizi.example/x.json` ukázal porotci cizí
+ * svět jako náš. Galerie kvality podává relativní `/__quality/…`, takže jí
+ * stejný origin nevadí. `//cizi.example`, `data:` i `javascript:` mají cizí
+ * (nebo `null`) origin a padají stejnou větví. Chybějící parametr je `null`,
+ * tedy ukázka, ne chyba.
+ */
+export function pickStoredBlueprint(search: string, here: string): StoredBlueprint | null {
+  const raw = new URLSearchParams(search).get('blueprint');
+  if (raw === null) return null;
+  const origin = new URL(here).origin;
+  let target: URL;
+  try {
+    target = new URL(raw, here);
+  } catch {
+    return { refused: 'blueprint address does not parse' };
+  }
+  if (target.origin !== origin) return { refused: `blueprint must come from ${origin}, not ${target.origin}` };
+  return { url: target.href };
+}

@@ -19,6 +19,7 @@ import type { MeshOrder, MeshResult } from '@/shape/mesh-client';
 
 import { buildProxyWorld, overBudgetReason } from '../proxy';
 import {
+  pickStoredBlueprint,
   DEGRADE_LADDER,
   QUALITY_BUDGETS,
   QUALITY_TIERS,
@@ -282,5 +283,37 @@ describe('úroveň ve snapshotu relace', () => {
 
   it('relace bez uvedené úrovně dostane plnou', () => {
     expect(createSession({ sessionId: 's2', sessionSeed: 4 }).snapshot().quality).toBe('full');
+  });
+});
+
+/**
+ * `?blueprint=` smí jen ze stejného originu (P15 `G1-blueprintorigin`).
+ * Odmítnutí cizí adresy vypadá na stránce stejně jako chybějící soubor —
+ * „stored world failed" — takže bez tohohle pinu by se hranice dala tiše
+ * vrátit a nikdo by si toho nevšiml.
+ */
+describe('pickStoredBlueprint pouští jen stejný origin', () => {
+  const here = 'https://worldstream-sigma.vercel.app/dev/worldstream?blueprint=x';
+
+  it('bez parametru je to ukázka, ne chyba', () => {
+    expect(pickStoredBlueprint('?tier=full', here)).toBeNull();
+  });
+
+  it('relativní adresa galerie kvality projde a rozřeší se proti stránce', () => {
+    expect(pickStoredBlueprint('?blueprint=%2F__quality%2Fa%2Fw1.json&tier=full', here)).toEqual({
+      url: 'https://worldstream-sigma.vercel.app/__quality/a/w1.json',
+    });
+  });
+
+  it.each([
+    ['cizí doména', 'https://cizi.example/x.json'],
+    ['protokolově relativní', '//cizi.example/x.json'],
+    ['http místo https', 'http://worldstream-sigma.vercel.app/x.json'],
+    ['data:', 'data:application/json,{}'],
+    ['javascript:', 'javascript:alert(1)'],
+  ])('%s se odmítne a nic se nestáhne', (_, raw) => {
+    const picked = pickStoredBlueprint(`?blueprint=${encodeURIComponent(raw)}`, here);
+    expect(picked).not.toBeNull();
+    expect(picked !== null && 'url' in picked, `${raw} prošel jako adresa ke stažení`).toBe(false);
   });
 });

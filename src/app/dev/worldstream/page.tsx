@@ -48,6 +48,8 @@ import {
   budgetFor,
   detailLevelFor,
   pickQualityTier,
+  pickStoredBlueprint,
+  type StoredBlueprint,
   type QualityTier,
 } from '@/worldstream/quality';
 
@@ -147,17 +149,23 @@ function twoFrames(): Promise<void> {
  * s automatickým zarámováním kamery), aby se dva modely daly porovnat na
  * pohled, ne jen podle toho, že prošly bránou. Svět se staví celý, s hrdiny
  * vymeshovanými na úroveň kvality — tak, jak ho vidí porotce po doběhnutí.
+ * Adresa smí být jen ze stejného originu (`pickStoredBlueprint`); cizí se
+ * nestáhne a ukáže se jako selhání.
  */
-function StoredWorldPage({ url }: { readonly url: string }) {
+function StoredWorldPage({ source }: { readonly source: StoredBlueprint }) {
   const [world, setWorld] = useState<ProxyWorld | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [presented, setPresented] = useState(false);
 
   useEffect(() => {
+    if ('refused' in source) {
+      setFailure(source.refused);
+      return;
+    }
     const client = createMeshClient();
     let live = true;
     const tier = pickQualityTier(window.location.search);
-    fetch(url)
+    fetch(source.url)
       .then((response) => response.json())
       .then((document) => {
         const parsed = blueprintSchema.safeParse((document as { blueprint?: unknown }).blueprint ?? document);
@@ -174,7 +182,7 @@ function StoredWorldPage({ url }: { readonly url: string }) {
       live = false;
       client.dispose();
     };
-  }, [url]);
+  }, [source]);
 
   return (
     <main style={{ position: 'fixed', inset: 0, background: UI_TOKENS.pelagic, color: UI_TOKENS.text, font: '13px/1.5 ui-monospace, monospace' }}>
@@ -193,11 +201,11 @@ function StoredWorldPage({ url }: { readonly url: string }) {
 }
 
 export default function WorldstreamDevPage() {
-  const [stored, setStored] = useState<string | null>(null);
+  const [stored, setStored] = useState<StoredBlueprint | null>(null);
   useEffect(() => {
-    setStored(new URLSearchParams(window.location.search).get('blueprint'));
+    setStored(pickStoredBlueprint(window.location.search, window.location.href));
   }, []);
-  if (stored !== null) return <StoredWorldPage url={stored} />;
+  if (stored !== null) return <StoredWorldPage source={stored} />;
   return <DemoWorldPage />;
 }
 
