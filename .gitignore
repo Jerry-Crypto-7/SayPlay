@@ -119,3 +119,8 @@ tmp-*
 # a nese cílovou URL i názvy světů; do 3. 9. 2026 nesla i živé `sessionId`, což
 # je schopnost, ne identifikátor. Repo jde podle RULES.md §2 ven.
 ops/**/*.jsonl
+
+# Python bytecode. A11 subscription sondy jsou v `scripts/*.py`; `__pycache__`
+# vzniká při každém pytest běhu a repo jde podle RULES.md §2 ven.
+__pycache__/
+*.pyc
