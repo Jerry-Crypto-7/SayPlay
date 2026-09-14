@@ -1,16 +1,16 @@
 import { defineConfig, devices } from '@playwright/test';
 
 import { deployedTarget } from './e2e/smoke-target';
+import { browserRenderer } from './scripts/browser-renderer';
 
 /**
  * Testuje se PRODUKČNÍ build, ne `next dev`. AC úlohy T4 mluví o `npm run build`
  * a o živém WebGL2 kontextu; dev server má jiný modulový graf a jiné chování
  * dynamic importů, takže by ověřoval něco jiného, než co se nasadí.
  *
- * SwiftShader je tu vědomý kompromis: headless Chromium nemá GPU, ale
- * `WebGL2RenderingContext` přes ANGLE/SwiftShader je pořád skutečný WebGL2
- * kontext. TOOLING.md §1 na to upozorňuje u screenshot diffů — proto se tady
- * NEporovnává obraz, jen se ptá runtimu, co doopravdy dostal.
+ * Lokální Windows běh používá skutečné GPU přes ANGLE/D3D11. CI a explicitní
+ * E2E_RENDERER=software zachovávají historický SwiftShader. Renderer se
+ * ověřuje samostatným testem; časy těchto prostředí se neslučují.
  */
 /**
  * Cíl smoke testu uzamčeného fallbacku (P2 T205a/T205b).
@@ -40,6 +40,10 @@ const PORT = process.env.E2E_PORT ?? '3100';
 
 const LOCAL_URL = `http://127.0.0.1:${PORT}`;
 
+// Local Windows graphics use the real GPU. CI retains its explicit software
+// renderer; E2E_RENDERER=software reproduces historical SwiftShader runs.
+const { args: renderArgs } = browserRenderer();
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -51,7 +55,7 @@ export default defineConfig({
     baseURL: target ?? LOCAL_URL,
     trace: 'off',
     launchOptions: {
-      args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+      args: renderArgs,
     },
   },
   projects: [
