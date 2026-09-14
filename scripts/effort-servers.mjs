@@ -141,6 +141,10 @@ async function start() {
       WORLDSMITH_USD_PER_MTOK_IN: '5',
       WORLDSMITH_USD_PER_MTOK_OUT: '25',
       WORLDSMITH_CALL_CAP: '60',
+      // Předplatné neplatí dolary, ale strop útraty běží dál s výchozími 5 USD
+      // z vymyšlené ceny: astra@xhigh ho 14. 9. 2026 vyčerpala na sedmé větě a
+      // osmá se nezavolala vůbec. Mez tady drží počet volání o řádek výš.
+      WORLDSMITH_SPEND_CAP_USD: '1000',
       WORLDSMITH_UPSTREAM_TIMEOUT_MS: '600000',
     };
     if (variant.effort !== undefined) env.WORLDSMITH_MODEL_EFFORT = variant.effort;
