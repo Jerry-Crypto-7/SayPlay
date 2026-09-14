@@ -1,3 +1,6 @@
+import { observePhase, observePhaseAsync } from '@/model/phase-observer';
+import { APPEARANCE_UNSUPPORTED, hasUnsupportedAppearance, hasUnsupportedMotion, MOTION_UNSUPPORTED } from '@/server/worldstream-capabilities';
+import { withServerMetrics, serverPhaseObserver } from '@/server/worldstream-metrics';
 /**
  * `POST /api/worldstream/sessions/:id/changes/:changeId/commit` — **commit druhé
  * věty** (P15 T22, §21).
@@ -67,13 +70,15 @@ export async function POST(
   context: { params: Promise<{ sessionId: string; changeId: string }> },
 ): Promise<Response> {
   const { sessionId, changeId } = await context.params;
+  const requestId = randomUUID();
+  return withServerMetrics(requestId, 'edit', async () => {
 
   // **Commit patří pod týž vypínač jako preview.** „Public refine" z §22.4 je
   // celá druhá věta, ne jen její první polovina: vypnout preview a nechat
   // commitovat by znamenalo, že se svět dál mění — jen z previewů, které stihly
   // vzniknout dřív. Vypínač se čte tady, protože tahle route je druhé rozhodnutí
   // člověka a mezi ním a preview může uběhnout libovolně dlouhá doba.
-  if ((await killState(process.env)).refine)
+  if ((await observePhaseAsync(serverPhaseObserver, 'request-kill-switch', () => killState(process.env))).refine)
     return fail(503, 'REFINE_DISABLED', 'changing worlds is switched off right now');
 
   /**
@@ -88,7 +93,6 @@ export async function POST(
    * (`T22-takeearly`) — takže jedno zaplacené preview koupí neomezené
    * opakování téhle práce. Brána je proto tady, ne u placení.
    */
-  const requestId = randomUUID();
   const slot = takeRateSlot('commit', trustedCallerKey(request) ?? callerKey(request));
   if (!slot.allowed) {
     logRateLimited(
@@ -126,6 +130,12 @@ export async function POST(
     return fail(404, 'UNKNOWN_CHANGE', 'no preview with that id is waiting on this session');
 
   const { plan, basedOn } = change;
+  // Stored/authored previews must pass the same capability gate as new ones.
+  // Reject the entire mixed change before routing, revision checks or writes.
+  if (hasUnsupportedAppearance(plan))
+    return fail(422, 'APPEARANCE_UNSUPPORTED', APPEARANCE_UNSUPPORTED);
+  if (hasUnsupportedMotion(plan, blueprint.world))
+    return fail(422, 'MOTION_UNSUPPORTED', MOTION_UNSUPPORTED);
   const doc = blueprint.world;
 
   /**
@@ -232,7 +242,7 @@ export async function POST(
         { status: 409 },
       );
 
-    committed = commitRoutedParts(
+    committed = observePhase(serverPhaseObserver, 'edit-commit-validation', () => commitRoutedParts(
       doc,
       routing.patches.map(
         (routed: RoutedPatch): PartPatch => ({
@@ -241,7 +251,7 @@ export async function POST(
           operations: routed.operations,
         }),
       ),
-    );
+    ));
 
     // Jediné místo, kde se rozhoduje o atomičnosti: dokud tohle neprojde, do
     // `stored` se nezapsalo nic a zapsat se nemá.
@@ -249,7 +259,7 @@ export async function POST(
       return rejected(stored, changeId, plan.stableId, doc, committed.rejections);
   }
 
-  const next = nextBlueprint(blueprint, committed.after, plan.shape);
+  const next = observePhase(serverPhaseObserver, 'edit-next-blueprint', () => nextBlueprint(blueprint, committed.after, plan.shape));
   if (typeof next === 'string')
     return rejected(stored, changeId, plan.stableId, doc, [
       { stage: 'apply', reason: 'BLUEPRINT_INVALID', pointer: '/shapes', detail: next },
@@ -287,6 +297,7 @@ export async function POST(
     /** Nová revize podoby, nebo `null`, když se tvar neměnil a mesh zůstává. */
     representation: revision,
     certificate: committed.certificate,
+  });
   });
 }
 

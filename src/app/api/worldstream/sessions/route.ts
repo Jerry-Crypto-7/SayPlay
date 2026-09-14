@@ -1,3 +1,5 @@
+import { observePhaseAsync } from '@/model/phase-observer';
+import { withServerMetrics, serverPhaseObserver, currentServerMetrics, reportServerMetrics } from '@/server/worldstream-metrics';
 /**
  * `POST /api/worldstream/sessions` — z věty vznikne relace (P13 T16, §21).
  *
@@ -336,7 +338,7 @@ function readPrompt(text: string): PromptRead | { readonly ok: false; readonly c
 export async function POST(request: Request): Promise<Response> {
   const requestId = randomUUID();
 
-  return withRequest(requestId, async () => {
+  return withRequest(requestId, () => withServerMetrics(requestId, 'prompt', async () => {
     // **Vypínač je první brána, před čtením těla.** Vypnuté dveře nesmí stát
     // víc než jeden `readFileSync` nad souborem o pár řádcích — tělo požadavku
     // je proti tomu až 64 kB, které někdo pošle a my je nepotřebujeme.
@@ -351,7 +353,7 @@ export async function POST(request: Request): Promise<Response> {
     // zůstává — přeřadit vypínač za strop frekvence by odchozí lety
     // neohraničilo (strop instance pouští 400 za 10 s, tedy 40 příkazů za
     // sekundu) a jen by vypnutým dveřím vzalo přednost.
-    if ((await killState(process.env)).sessions) {
+    if ((await observePhaseAsync(serverPhaseObserver, 'request-kill-switch', () => killState(process.env))).sessions) {
       logRateLimited('worldstream/sessions', requestId, 'SESSIONS_DISABLED', 'kill switch: sessions');
       return fail(requestId, 503, 'SESSIONS_DISABLED', 'new worlds are switched off right now');
     }
@@ -372,7 +374,7 @@ export async function POST(request: Request): Promise<Response> {
 
     let raw;
     try {
-      raw = await readBody(request);
+      raw = await observePhaseAsync(serverPhaseObserver, 'request-body-read', () => readBody(request));
     } catch (thrown) {
       logRateLimited(
         'worldstream/sessions',
@@ -618,7 +620,10 @@ export async function POST(request: Request): Promise<Response> {
     // `stableId` z jednoho blueprintu, takže patří k jednomu světu a hledat ji
     // přes celý sklad znamená vydat cizí cíl.
     stored.authoredWorldId = served?.world.id ?? null;
-    const work =
+    const metrics = currentServerMetrics();
+    metrics?.setProvenance(live ? 'live' : 'prepared');
+    const finishGeneration = metrics?.observe('background-generation');
+    const work = (
       emit === null
         ? Promise.resolve().then(() => {
             stored.fault = 'the model could not be reached';
@@ -629,7 +634,14 @@ export async function POST(request: Request): Promise<Response> {
             grammar,
             log: (fault: SessionFault, detail: string) =>
               logRateLimited('worldstream/sessions', requestId, fault, detail),
-          });
+          })
+    ).catch((thrown: unknown) => {
+      // An unexpected rejection can bypass runGeneration's stored.fault path.
+      // Preserve the original rejection while closing telemetry as failed;
+      // the idempotent finalizer below still releases the paid slot.
+      finishGeneration?.('failed');
+      throw thrown;
+    });
 
     // **`after()`, ne holé `void`.** Odpověď 202 musí odejít dřív, než generace
     // doběhne — to je celý smysl téhle route — ale práce za ní musí platformu
@@ -655,6 +667,8 @@ export async function POST(request: Request): Promise<Response> {
       // nikdo nezvýšil — a po třech uvařených světech by `world` měl volných
       // slotů víc, než kolik jich vůbec má.
       if (live) releaseSlot('world');
+      finishGeneration?.(stored.fault ? 'failed' : 'completed');
+      reportServerMetrics(metrics);
     });
     try {
       after(settled);
@@ -682,5 +696,5 @@ export async function POST(request: Request): Promise<Response> {
       },
       { status: 202 },
     );
-  });
+  }));
 }

@@ -4,8 +4,10 @@ import { z } from 'zod';
 import { ID_PATTERN } from '../ir/types';
 import { canonical } from '../ir/worlddoc';
 import { isUnaddressableToken } from '../patch/reject';
+import { ruleSupportParts } from './rule-support';
 
 export const EVIDENCE_VERSION = 'worldstream-evidence-v1';
+export const COMPONENT_EVIDENCE_VERSION = 'worldstream-evidence-v2';
 export const EVIDENCE_LIMITS = Object.freeze({
   sourceCodePoints: 4_000, sourceBytes: 16_000, sources: 4,
   claims: 64, bindings: 128, references: 16, spans: 8,
@@ -34,7 +36,7 @@ const sourceText = z.string().min(1).max(EVIDENCE_LIMITS.sourceCodePoints * 2)
 
 const sourceFields = {
   sourceId: id, text: sourceText, title: z.string().min(1).max(256),
-  mediaType: z.literal('text/plain'), origin: z.enum(['own', 'provided']),
+  mediaType: z.literal('text/plain'), origin: z.enum(['own', 'provided', 'user-supplement']),
   rights: z.enum(['owned', 'licensed', 'unreviewed']),
 };
 export const sourceSnapshotSchema = z.strictObject({ ...sourceFields, sha256: hash });
@@ -64,6 +66,13 @@ const claimSchema = z.discriminatedUnion('support', [
 ]);
 const bindingSchema = z.strictObject({
   bindingId: id, target: z.strictObject({ kind: z.enum(['rule', 'entity']), id }), claimIds: references,
+  part: z.string().regex(/^(event|condition(?:\.\d+)*|action\.\d+)$/).max(128).optional(),
+  declarationHash: z.string().min(1).max(128).optional(),
+});
+/** The application computes declarationHash; the model supplies selectors only. */
+export const componentProposalBindingSchema = bindingSchema.omit({ declarationHash: true, bindingId: true }).extend({
+  part: bindingSchema.shape.part.unwrap(),
+  target: z.strictObject({ kind: z.literal('rule'), id }),
 });
 const scalar = z.union([z.number().finite().refine((value) => !Object.is(value, -0)), z.boolean(), z.string().min(1).max(128)]);
 const interventionSchema = z.strictObject({
@@ -73,7 +82,7 @@ const interventionSchema = z.strictObject({
   reason: text,
 });
 const fields = {
-  schemaVersion: z.literal(EVIDENCE_VERSION), worldRevision: revision,
+  schemaVersion: z.enum([EVIDENCE_VERSION, COMPONENT_EVIDENCE_VERSION]), worldRevision: revision,
   parentEvidenceHash: hash.nullable(),
   sources: z.array(z.strictObject({ sourceId: id, sha256: hash })).max(EVIDENCE_LIMITS.sources),
   claims: z.array(claimSchema).min(1).max(EVIDENCE_LIMITS.claims),
@@ -93,6 +102,7 @@ export interface EvidenceContext {
   readonly ruleIds: ReadonlySet<string>;
   readonly entityIds: ReadonlySet<string>;
   readonly sources: ReadonlyMap<string, SourceSnapshot>;
+  readonly rules?: unknown;
   readonly parent: { readonly branchId: string; readonly evidenceHash: string; readonly worldRevision: string } | null;
   /** Exact reviewed revision digests from an authoritative review store. */
   readonly reviewedRevisionHashes?: ReadonlySet<string>;
@@ -200,7 +210,25 @@ export async function sealEvidenceDraft(input: unknown, context: EvidenceContext
   draft.claims.forEach((claim) => visit(claim.claimId));
 
   const boundRules = new Set<string>();
+  const componentVersion = draft.schemaVersion === COMPONENT_EVIDENCE_VERSION;
+  let components: ReturnType<typeof ruleSupportParts> = [];
+  if (componentVersion) {
+    try { components = ruleSupportParts(context.rules); }
+    catch { issues.push('RULE_SUPPORT_CONTEXT_INVALID'); }
+  }
+  const covered = new Set<string>();
   for (const binding of draft.bindings) {
+    if (!componentVersion && (binding.part !== undefined || binding.declarationHash !== undefined)) issues.push('RULE_SUPPORT_VERSION_MISMATCH');
+    if (componentVersion && binding.target.kind === 'rule') {
+      const part = components.find(part => part.ruleId === binding.target.id && part.part === binding.part);
+      if (!part) issues.push('RULE_SUPPORT_TARGET_INVALID');
+      else {
+        const key = `${part.ruleId}:${part.part}`;
+        if (covered.has(key)) issues.push('RULE_SUPPORT_DUPLICATE');
+        covered.add(key);
+        if (binding.declarationHash !== part.declarationHash) issues.push('RULE_SUPPORT_STALE');
+      }
+    } else if (binding.part !== undefined || binding.declarationHash !== undefined) issues.push('RULE_SUPPORT_TARGET_INVALID');
     const known = binding.target.kind === 'rule' ? context.ruleIds : context.entityIds;
     if (!known.has(binding.target.id)) issues.push('BINDING_TARGET_MISSING');
     if (binding.target.kind === 'rule') boundRules.add(binding.target.id);
@@ -211,10 +239,17 @@ export async function sealEvidenceDraft(input: unknown, context: EvidenceContext
       if (claim.interventionId !== null) {
         const intervention = interventions.get(claim.interventionId);
         if (binding.target.kind !== 'rule' || intervention?.ruleId !== binding.target.id) issues.push('INTERVENTION_BINDING_MISMATCH');
+        if (componentVersion) {
+          const part = components.find(part => part.ruleId === binding.target.id && part.part === binding.part);
+          const action = part?.declaration as { kind?: string; durationTicks?: number } | undefined;
+          if (!part?.part.startsWith('action.') || action?.kind !== 'startTimer' || action.durationTicks !== intervention?.after)
+            issues.push('INTERVENTION_BINDING_MISMATCH');
+        }
       }
     }
   }
   for (const ruleId of context.ruleIds) if (!boundRules.has(ruleId)) issues.push('RULE_EVIDENCE_MISSING');
+  if (componentVersion && components.some(part => !covered.has(`${part.ruleId}:${part.part}`))) issues.push('RULE_SUPPORT_MISSING');
   for (const entry of draft.interventions) {
     if (!draft.bindings.some((binding) => binding.target.kind === 'rule' && binding.target.id === entry.ruleId &&
       binding.claimIds.some((claimId) => claims.get(claimId)?.interventionId === entry.interventionId))) issues.push('INTERVENTION_BINDING_MISMATCH');

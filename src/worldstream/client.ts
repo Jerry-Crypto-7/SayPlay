@@ -486,7 +486,8 @@ export async function requestChange(
 
 /** Jak dopadl commit. Odmítnutí je 200 s verdiktem, ne výjimka. */
 export type ChangeCommitted =
-  | { readonly kind: 'committed'; readonly stableId: string; readonly summary: string }
+  | { readonly kind: 'committed'; readonly stableId: string; readonly summary: string;
+      readonly acceptedRevision?: { readonly sim: number; readonly look: number } }
   | { readonly kind: 'refused'; readonly detail: string };
 
 /**
@@ -531,10 +532,14 @@ export async function commitChange(
       ),
     };
 
+  const revisions = body.revisions as { sim?: { after?: unknown }; look?: { after?: unknown } } | undefined;
+  const sim = revisions?.sim?.after, look = revisions?.look?.after;
   return {
     kind: 'committed',
     stableId: String(body.stableId ?? ''),
     summary: String(body.summary ?? ''),
+    ...(typeof sim === 'number' && Number.isSafeInteger(sim) && sim >= 0 &&
+      typeof look === 'number' && Number.isSafeInteger(look) && look >= 0 ? { acceptedRevision: { sim, look } } : {}),
   };
 }
 
@@ -554,6 +559,7 @@ export async function readBlueprint(
     headers: { accept: 'application/json' },
     signal: options.signal,
   });
+  if (response.status === 404) throw new Error('The session is unavailable (HTTP 404). It may have expired or the server restarted. Start a new world.');
   if (!response.ok) throw new Error(`the world snapshot is gone: HTTP ${response.status}`);
   return ((await response.json()) as ClientSnapshot).blueprint ?? null;
 }

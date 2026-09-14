@@ -301,7 +301,7 @@ describe('preview druhé věty', () => {
         summary: 'the mast is rewoven',
         shape: WOVEN_MAST,
         behavior: [],
-        appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }],
+        appearance: [],
       }),
     );
 
@@ -309,12 +309,8 @@ describe('preview druhé věty', () => {
     const read = await body(response);
     expect(read.outcome).toBe('PREVIEW');
     expect(read.target).toMatchObject({ stableId: 'ironMast' });
-    expect(read.scope).toEqual({ shape: true, behavior: 0, appearance: 1 });
-    // ⚠ **Prázdný seznam, a je to oprava, ne regrese.** `replace /look/palette`
-    // vyměňuje celou paletu, tedy i barvu solné pláně; slib „the salt flat
-    // zůstane" byl tichá nepravda, kterou tenhle test do 6. 9. 2026 pinoval.
-    // Cesta o dvou segmentech nejmenuje objekt a přepisuje je všechny.
-    expect(read.preserved).toEqual([]);
+    expect(read.scope).toEqual({ shape: true, behavior: 0, appearance: 0 });
+    expect(read.preserved).toEqual(['the salt flat']);
 
     // **Žádný meshing před commitem.** Podoba stojí tam, kde stála, revize se
     // nepohnula a do proudu odešel jediný rámec — preview, ne fronta tvarů.
@@ -355,10 +351,10 @@ describe('preview druhé věty', () => {
       }),
     );
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(422);
     const read = await body(response);
-    expect(read.target).toMatchObject({ stableId: 'ironMast' });
-    expect(read.preserved).toEqual([]);
+    expect(read.error).toMatchObject({ code: 'APPEARANCE_UNSUPPORTED' });
+    expect(stored.changes.size).toBe(0);
   });
 
   /**
@@ -863,7 +859,7 @@ describe('commit druhé věty', () => {
     expect((await body(response)).error).toMatchObject({ code: 'UNKNOWN_CHANGE' });
   });
 
-  it('změna jen vzhledu NEZMĚNÍ runtime hash ani podobu objektu', async () => {
+  it('nepodporovaná změna vzhledu nezmění revizi, runtime hash ani podobu', async () => {
     const stored = await generated();
     const hashBefore = worldOf(stored).simHash;
     const change = pending(
@@ -872,16 +868,13 @@ describe('commit druhé věty', () => {
     );
 
     const response = await commit(stored.session.sessionId, change.changeId);
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(422);
     const read = await body(response);
-    expect(read.outcome).toBe('COMMITTED');
-    expect(read.applied).toEqual(['look']);
-    // `representation: null` je celé to tvrzení: mesh na scéně zůstává.
-    expect(read.representation).toBeNull();
+    expect(read.error).toMatchObject({ code: 'APPEARANCE_UNSUPPORTED' });
 
     const after = worldOf(stored);
-    expect(after.look.palette).toBe('sand');
-    expect(after.lookRevision).toBe(1);
+    expect(after.look.palette).toBe('moss');
+    expect(after.lookRevision).toBe(0);
     expect(after.simRevision).toBe(0);
     expect(after.simHash).toBe(hashBefore);
     expect(stored.session.revisionOf('ironMast')).toBe(0);
@@ -960,12 +953,12 @@ describe('commit druhé věty', () => {
     const stored = await generated();
     const stale = pending(
       stored,
-      plan({ appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }] }),
+      plan({ behavior: [{ op: 'replace', path: '/sim/rules/reach/priority', value: 2 }] }),
       'change-stale',
     );
     const winner = pending(
       stored,
-      plan({ appearance: [{ op: 'replace', path: '/look/atmosphere', value: 'haze' }] }),
+      plan({ behavior: [{ op: 'replace', path: '/sim/rules/reach/priority', value: 3 }] }),
       'change-winner',
     );
 
@@ -973,12 +966,11 @@ describe('commit druhé věty', () => {
 
     const response = await commit(stored.session.sessionId, stale.changeId);
     expect(response.status).toBe(409);
-    expect((await body(response)).error).toMatchObject({ field: 'basedOn/look' });
+    expect((await body(response)).error).toMatchObject({ field: 'basedOn/sim' });
   });
 
   it('smíšená změna je celá, nebo žádná', async () => {
-    // Vzhled je legální a `sim` shodí svědka. `/api/edit` by si vzhled nechal
-    // (§13.4); tady je půlka změny horší výsledek než žádná.
+    // Unsupported appearance rejects the whole mixed change before certification.
     const stored = await generated();
     const change = pending(
       stored,
@@ -989,36 +981,33 @@ describe('commit druhé věty', () => {
     );
 
     const response = await commit(stored.session.sessionId, change.changeId);
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(422);
     const read = await body(response);
-    expect(read.outcome).toBe('REJECTED');
+    expect(read.error).toMatchObject({ code: 'APPEARANCE_UNSUPPORTED' });
 
     const after = worldOf(stored);
     expect(after.look.palette).toBe('moss');
     expect(after.lookRevision).toBe(0);
     expect(after.simRevision).toBe(0);
     expect(stored.session.revisionOf('ironMast')).toBe(0);
-    expect(stored.session.events.all().at(-1)?.type).toBe('patch.rejected');
+    expect(stored.session.events.all().some(event => event.type === 'patch.committed')).toBe(false);
 
-    // `T22-rejectreplay`: razítko nese revize UPRAVENÉHO světa, ne dokumentu,
-    // který `commitRoutedParts` vrátil s commitnutou půlkou vzhledu a který se
-    // zahodil. Kdyby neslo ten druhý, byl by druhý pokus 409 nad světem, který
-    // se ve skutečnosti nepohnul.
+    // Retrying the same unsupported preview preserves the same refusal.
     const znovu = await commit(stored.session.sessionId, change.changeId);
-    expect(znovu.status, 'razítko četlo zahozenou půlku patche').toBe(200);
-    expect((await body(znovu)).outcome).toBe('REJECTED');
+    expect(znovu.status).toBe(422);
+    expect((await body(znovu)).error).toMatchObject({ code: 'APPEARANCE_UNSUPPORTED' });
   });
 
   it('jedno preview je jeden commit', async () => {
     const stored = await generated();
     const change = pending(
       stored,
-      plan({ appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }] }),
+      plan({ shape: WOVEN_MAST }),
     );
 
     expect((await commit(stored.session.sessionId, change.changeId)).status).toBe(200);
     expect((await commit(stored.session.sessionId, change.changeId)).status).toBe(404);
-    expect(worldOf(stored).lookRevision).toBe(1);
+    expect(stored.session.revisionOf('ironMast')).toBe(1);
   });
 
   // ⚠ **Změnit STÁVAJÍCÍ zákon, ne jen přidat nový** (`T22-ruleid`). Do
@@ -1117,12 +1106,9 @@ describe('commit druhé věty', () => {
 
     // Cizí věta pohne `look`. `sim` ani revize podoby se nehnuly, takže obě
     // dosavadní brány to preview pustí dál.
-    const other = pending(
-      stored,
-      plan({ appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }] }),
-      'change-other',
-    );
-    expect((await commit(stored.session.sessionId, other.changeId)).status).toBe(200);
+    // Emulate an archived/external look revision. Public appearance commits are now refused.
+    stored.blueprint = { ...stored.blueprint!, world: { ...worldOf(stored),
+      lookRevision: 1, look: { ...worldOf(stored).look, palette: 'sand' } } };
     expect(worldOf(stored).lookRevision).toBe(1);
     expect(worldOf(stored).simRevision).toBe(0);
     expect(stored.session.revisionOf('ironMast')).toBe(0);
@@ -1197,7 +1183,7 @@ describe('commit druhé věty', () => {
 
     const other = pending(
       stored,
-      plan({ appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }] }),
+      plan({ shape: WOVEN_MAST }),
       'change-other',
     );
     expect((await commit(stored.session.sessionId, other.changeId)).status).toBe(200);
@@ -1474,9 +1460,9 @@ function countingEmit(): { emit: (request: UpstreamRequest) => Promise<unknown>;
       calls += 1;
       return {
         summary: 'the mast turns sand',
-        shape: null,
+        shape: WOVEN_MAST,
         behavior: [],
-        appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }],
+        appearance: [],
       };
     },
   };
@@ -1956,7 +1942,7 @@ describe('pomalý požadavek končí na stropu těla, ne na rozpočtu', () => {
       // A totéž o patro obecněji, protože jméno se dá změnit: nad voláním
       // `readBody(request)` nesmí stát žádné čtení hodin. Rozpočet naarmovaný
       // dřív měří interval, který strop těla sám omezuje na pět vteřin.
-      const bodyRead = code.indexOf('await readBody(request)');
+      const bodyRead = code.indexOf('readBody(request)');
       expect(bodyRead, `${route}: čtení těla ve zdroji chybí`).toBeGreaterThan(-1);
       expect(
         code.slice(0, bodyRead).indexOf('Date.now()'),
@@ -2042,7 +2028,7 @@ describe('strop na frekvenci dorazí až ke dveřím', () => {
     const stored = await generated();
     const theirs = pending(
       stored,
-      plan({ appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }] }),
+      plan({ behavior: [{ op: 'replace', path: '/sim/rules/reach/priority', value: 2 }] }),
       'change-theirs',
     );
     const mine = pending(stored, plan({ shape: WOVEN_MAST }), 'change-mine');

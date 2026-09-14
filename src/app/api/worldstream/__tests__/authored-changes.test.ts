@@ -29,7 +29,7 @@ import { clearSessions } from '@/worldstream/sessions';
 
 import { resetConcurrency } from '../sessions/route';
 import { createChange } from '../sessions/[sessionId]/changes/route';
-import { generated } from './world-fixture';
+import { ANSWER, generated } from './world-fixture';
 
 /**
  * Uvařená změna nad hrdinou fixtury.
@@ -44,9 +44,9 @@ const MAST_CHANGE = {
   synonyms: ['the mast', 'the tower'],
   refine: {
     summary: 'the mast goes to rust',
-    shape: null,
+    shape: (ANSWER.shapes as unknown[])[0],
     behavior: [],
-    appearance: [{ op: 'replace', path: '/look/mood', value: 'rusted, wind-scoured' }],
+    appearance: [],
   },
 };
 
@@ -66,7 +66,7 @@ vi.mock('@/worldstream/authored', async (importOriginal) => {
     ...original,
     // **Jen tahle jedna funkce.** Výběr změny, emitor i práh `exact` zůstávají
     // skutečné, takže sada pořád soudí rozhodování a ne svoji vlastní fixturu.
-    authoredWorldById: (id: string) => (id === SHELF.id ? SHELF : null),
+    authoredWorldById: (id: string) => id === 'legacy-look' ? { ...SHELF, changes: [{ ...MAST_CHANGE, refine: { ...MAST_CHANGE.refine, appearance: [{ op: 'replace', path: '/look/palette', value: 'sand' }] } }] } : (id === SHELF.id ? SHELF : null),
   };
 });
 
@@ -88,6 +88,15 @@ afterEach(() => {
   resetFaultLog();
   resetRateWindows();
   vi.restoreAllMocks();
+});
+
+it('refuses an archived authored appearance change without updating the world', async () => {
+  const stored = await generated(); stored.authoredWorldId = 'legacy-look';
+  const before = stored.blueprint;
+  const response = await createChange(previewRequest(stored.session.sessionId, MAST_CHANGE.prompt), stored.session.sessionId, null);
+  expect(response.status).toBe(422);
+  expect((await body(response)).error).toMatchObject({ code: 'APPEARANCE_UNSUPPORTED' });
+  expect(stored.blueprint).toBe(before); expect(stored.changes.size).toBe(0);
 });
 
 describe('druhá věta bez klíče jde ze skladu', () => {
@@ -183,9 +192,9 @@ describe('druhá věta bez klíče jde ze skladu', () => {
       () =>
         Promise.resolve({
           summary: 'the model answered this one',
-          shape: null,
+          shape: (ANSWER.shapes as unknown[])[0],
           behavior: [],
-          appearance: [{ op: 'replace', path: '/look/mood', value: 'live' }],
+          appearance: [],
         }),
     );
 

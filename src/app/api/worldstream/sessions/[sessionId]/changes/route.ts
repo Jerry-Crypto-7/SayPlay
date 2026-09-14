@@ -1,3 +1,6 @@
+import { observePhase, observePhaseAsync } from '@/model/phase-observer';
+import { APPEARANCE_UNSUPPORTED, hasUnsupportedAppearance, hasUnsupportedMotion, MOTION_UNSUPPORTED, SHAPE_ONLY_MOTION_SUMMARY } from '@/server/worldstream-capabilities';
+import { withServerMetrics, serverPhaseObserver, currentServerMetrics } from '@/server/worldstream-metrics';
 /**
  * `POST /api/worldstream/sessions/:id/changes` — **preview druhé věty** (P15 T22, §21).
  *
@@ -157,10 +160,10 @@ export async function createChange(
 ): Promise<Response> {
   const requestId = randomUUID();
 
-  return withRequest(requestId, async () => {
+  return withRequest(requestId, () => withServerMetrics(requestId, 'edit', async () => {
     // Vypínač `refine` je první brána, před čtením těla — táž úvaha jako
     // u zakládání relace: vypnuté dveře nesmí stát víc než přečtení souboru.
-    if ((await killState(process.env)).refine) {
+    if ((await observePhaseAsync(serverPhaseObserver, 'request-kill-switch', () => killState(process.env))).refine) {
       logRateLimited('worldstream/changes', requestId, 'REFINE_DISABLED', 'kill switch: refine');
       return fail(requestId, 503, 'REFINE_DISABLED', 'changing worlds is switched off right now');
     }
@@ -181,7 +184,7 @@ export async function createChange(
 
     let raw;
     try {
-      raw = await readBody(request);
+      raw = await observePhaseAsync(serverPhaseObserver, 'request-body-read', () => readBody(request));
     } catch (thrown) {
       logRateLimited(
         'worldstream/changes',
@@ -209,7 +212,7 @@ export async function createChange(
               : 'the request body arrived too slowly',
           );
 
-    const read = readChangeBody(raw.text);
+    const read = observePhase(serverPhaseObserver, 'request-parse-and-validation', () => readChangeBody(raw.text));
     if (!read.ok) return fail(requestId, 400, read.code, read.message);
 
     const stored = getSession(sessionId);
@@ -311,9 +314,11 @@ export async function createChange(
       );
     }
 
+    currentServerMetrics()?.setProvenance(cloud === null ? 'prepared' : 'live');
     let outcome: ChangeOutcome;
     try {
       outcome = await planChange({
+        observePhase: serverPhaseObserver,
         prompt: verdict.prompt,
         blueprint,
         target: grounding.target,
@@ -366,7 +371,15 @@ export async function createChange(
       });
     }
 
-    const { plan } = outcome;
+    let { plan } = outcome;
+    if (hasUnsupportedAppearance(plan))
+      return fail(requestId, 422, 'APPEARANCE_UNSUPPORTED', APPEARANCE_UNSUPPORTED);
+    if (hasUnsupportedMotion(plan, blueprint.world)) {
+      if (plan.shape === null) return fail(requestId, 422, 'MOTION_UNSUPPORTED', MOTION_UNSUPPORTED);
+      // Offer a new, explicit shape-only scope for the user to review. Never
+      // reuse the old summary or silently narrow an already stored preview.
+      plan = { ...plan, behavior: [], summary: SHAPE_ONLY_MOTION_SUMMARY };
+    }
     const target = grounding.target;
     const change: PendingChange = {
       changeId: randomUUID(),
@@ -411,5 +424,5 @@ export async function createChange(
       basedOn: change.basedOn,
       commit: `/api/worldstream/sessions/${sessionId}/changes/${change.changeId}/commit`,
     });
-  });
+  }));
 }

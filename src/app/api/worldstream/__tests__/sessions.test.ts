@@ -1045,7 +1045,7 @@ describe('generace za odpovědí přežije zmrazení instance', () => {
     // z čítače, který nikdo nezvýšil — po třech uvařených světech by dveře
     // `world` měly volných slotů víc, než kolik jich vůbec mají.
     expect(source, 'na `settled` nevisí podmíněné vrácení slotu').toMatch(
-      /const settled = work\.finally\(\(\) => \{\s*if \(live\) releaseSlot\('world'\);\s*\}\);/,
+      /const settled = work\.finally\(\(\) => \{\s*if \(live\) releaseSlot\('world'\);/,
     );
   });
 });

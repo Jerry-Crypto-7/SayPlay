@@ -121,6 +121,23 @@ describe('reduceEvent', () => {
     expect(state.shapes.map((entry) => entry.stableId)).toEqual(['hero']);
   });
 
+  it('`intent.ready` vydá setting a tezi dřív než blueprint, a bez obou polí nic', () => {
+    const { events } = generation();
+    const intentFrame = events.find((event) => event.type === 'intent.ready')!;
+    // Fixtura relace posílá jen `theme`: to je rámec bez obou polí a stav o něm nic netvrdí.
+    expect(feed([events[0], intentFrame]).intent).toBeNull();
+
+    const told = { ...intentFrame, payload: { setting: 'a drowned cathedral', spatialThesis: 'One nave, flooded to the capitals.' } };
+    const state = feed([events[0], told]);
+    expect(state.phase).toBe('intent');
+    expect(state.blueprint).toBeNull();
+    expect(state.intent).toEqual({ setting: 'a drowned cathedral', spatialThesis: 'One nave, flooded to the capitals.' });
+
+    // Blueprint ho nepřepíše — věta o pochopení platí, dokud relace žije.
+    const rest = events.slice(events.indexOf(intentFrame) + 1);
+    expect(feed(rest, state).intent).toEqual(state.intent);
+  });
+
   it('je idempotentní: tentýž rámec podruhé stavem nehne', () => {
     const { events } = generation();
     const state = feed(events);

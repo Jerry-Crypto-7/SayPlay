@@ -6,6 +6,7 @@ import { canonical, sealSimHash } from '../../ir/worlddoc';
 import { createEvidenceProject, projectWorldRevision } from '../evidence-commit';
 import { createSourceSnapshot, evidenceDigest, sealEvidenceDraft, EVIDENCE_VERSION } from '../evidence';
 import { createRuntimeController } from '../runtime-controller';
+import { PARAMETER_KEYS, parameterProposalHash } from '../source-parameters';
 import { openSession, clearSessions, commitSessionProject, getSessionProject, commitSessionIntervention } from '../sessions';
 
 async function fixture() {
@@ -25,7 +26,9 @@ async function fixture() {
   }, { worldRevision: 't7-proposal', parent: null, sources: new Map([[source.sourceId, source]]),
     ruleIds: new Set(Object.keys(surface.rules)), entityIds: new Set(Object.keys(surface.entities)) });
   if (!evidence.ok) throw new Error(evidence.issues.join(','));
-  const input = structuredClone({ base: null, world, evidence: evidence.value, sources: [source] });
+  const input = structuredClone({ base: null, world, evidence: evidence.value, sources: [source],
+    parameterConfirmation: { version: 'source-parameters-v1', confirmed: [...PARAMETER_KEYS],
+      proposalHash: await parameterProposalHash(world.sim, [source], evidence.value) } });
   const built = buildRuntimeWorld(world.sim);
   if (!built.ok) throw new Error('world');
   const runtime = createRuntimeController({ ...built.world, trace: oracle.cases[0].inputs });
@@ -37,6 +40,23 @@ async function fixture() {
 }
 
 describe('atomic evidence project revision', () => {
+  it('cannot bypass parameter review through a direct commit', async () => {
+    const { input, store } = await fixture();
+    const { parameterConfirmation: _confirmation, ...unconfirmed } = input;
+    expect((await store.commitInitial(unconfirmed)).ok).toBe(false);
+    expect(store.getSnapshot()).toBeNull();
+    input.parameterConfirmation.confirmed.pop();
+    expect((await store.commitInitial(input)).ok).toBe(false);
+    expect(store.getSnapshot()).toBeNull();
+  });
+
+  it('rejects stale confirmation even when the changed world remains structurally valid', async () => {
+    const { input, store } = await fixture();
+    input.world.sim.rules.start_countdown.actions[1].durationTicks = 200;
+    input.world = sealSimHash(input.world);
+    expect(await store.commitInitial(input)).toEqual({ ok: false, issues: ['PARAMETERS_NOT_CONFIRMED'] });
+    expect(store.getSnapshot()).toBeNull();
+  });
   it('accepts a complete world and seals the T7 proposal to its actual revision', async () => {
     const { input, store } = await fixture();
     const result = await store.commitInitial(input);

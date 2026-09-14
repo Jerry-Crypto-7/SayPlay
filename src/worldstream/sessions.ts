@@ -1,3 +1,5 @@
+import { observePhase, observePhaseAsync } from '../model/phase-observer';
+import { serverPhaseObserver } from '../server/worldstream-metrics';
 /**
  * **Serverová polovina relace: kdo si ji pamatuje a kdo ji naplní** (P13 T16).
  *
@@ -77,10 +79,11 @@ export async function runSourceProposal(
   source: unknown,
   worldRevision: string,
   deps?: Pick<GenerationDeps, 'emit' | 'grammar'>,
+  supplement?: string,
 ): Promise<SourceScenarioResult> {
   const grammar = deps?.grammar ?? serverGrammar();
   if (typeof grammar === 'string') return { kind: 'rejected', code: 'BAD_REQUEST' };
-  return proposeSourceScenario({ source, worldRevision, grammar,
+  return proposeSourceScenario({ source, supplement, worldRevision, grammar, observePhase: serverPhaseObserver,
     emit: deps?.emit ?? (async (request) => {
       // Provider configuration and reservation happen only after input validation.
       const emit = await cloudEmitter();
@@ -935,7 +938,8 @@ export async function runGeneration(
 
   let plan;
   try {
-    plan = readPlannerEmission(await deps.emit(buildIntentRequest(prompt)));
+    const answer = await observePhaseAsync(serverPhaseObserver, 'intent-emitter', () => deps.emit(buildIntentRequest(prompt)));
+    plan = observePhase(serverPhaseObserver, 'intent-validation', () => readPlannerEmission(answer));
   } catch (thrown) {
     stop(unreachableFault(thrown), thrown instanceof Error ? thrown.message : String(thrown));
     return;
@@ -953,6 +957,7 @@ export async function runGeneration(
   });
 
   const outcome = await compileWithRepair({
+    observePhase: serverPhaseObserver,
     plan: plan.value,
     grammar: deps.grammar,
     sessionSeed: session.sessionSeed,
