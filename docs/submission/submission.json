@@ -1,8 +1,8 @@
 {
-  "$comment": "Aktuální předání: lokální Reality Compiler demo přes vlastní předplatné. TODO: MISSING zachovává fail-closed konvenci existující submission brány. Nejde o dokončené veřejné odevzdání.",
+  "$comment": "Veřejné demo běží na Vercelu (ověřeno 14. 9. 2026 kouřovým testem 3/3 proti demoUrl). Nasazení zatím nemá model: větu, kterou pokrývá sklad uvařených světů, obslouží hned, živá větev vrací 503, dokud se nenastaví proměnné modelu a sdílený obchod stropu. TODO: MISSING zachovává fail-closed konvenci submission brány. Nejde o dokončené veřejné odevzdání.",
   "repositoryUrl": "https://github.com/Jerry-Crypto-7/Hackathon",
-  "demoUrl": "TODO: MISSING — veřejná URL aktuálního pilotu",
-  "backendUrl": "TODO: MISSING — veřejný backend; lokální demo používá řízený browser a oficiální CLI",
+  "demoUrl": "https://worldstream-sigma.vercel.app",
+  "backendUrl": "https://worldstream-sigma.vercel.app/api/health",
   "videoPath": "TODO: MISSING — video/final.mp4",
   "descriptionPath": "docs/submission/description.md",
   "modelTablePaths": [
