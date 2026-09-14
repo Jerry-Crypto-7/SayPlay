@@ -200,8 +200,17 @@ const running: Record<PaidDoor, number> = { world: 0, generate: 0, refine: 0 };
  * se odpověď na „koho mám hledat" psala třikrát a rozešla se.
  *
  * **„on this instance" je součást pravdy:** čítač je stav modulu, takže na
- * Vercelu má vlastní každá instance a globální číslo nedrží nikdo — to zavře
- * až sdílené úložiště (`T29`, měření `T22-slotperroute`).
+ * Vercelu má vlastní každá instance a globální číslo nedrží nikdo — flotila
+ * o N instancích propustí N násobek, a to zavře až sdílené úložiště (`T29`).
+ *
+ * **Troje dveře ale jednu instanci sdílejí — naměřeno 14. 9. 2026
+ * (`T22-slotperroute`) na nasazení `dpl_CHKuAWi7exEcg1TdhJ3FdDeyKkzf`.** Výpis
+ * výstupu buildu (`vercel api /v6/deployments/<id>/files`) ukazuje
+ * `api/generate`, `api/worldstream/sessions`, `api/edit` i
+ * `api/worldstream/source` jako odkazy na **týž** funkční balík (jedno `uid`),
+ * takže v jedné instanci drží všechny troje dveře týž `running`. Platí to pro
+ * tohle nasazení, ne navždy: kdyby balík přerostl limit velikosti a Vercel ho
+ * rozdělil, měření se opakuje tímtéž příkazem.
  */
 export function slotsDetail(door: PaidDoor): string {
   return (

@@ -1880,3 +1880,27 @@ describe('slot se vrací i po generaci, která doběhla', () => {
     expect(acquireSlot('world'), 'čítač je v záporu — slot se vrátil dvakrát').toBe(false);
   });
 });
+
+/**
+ * **„Troje dveře sdílejí jeden čítač" je naměřené na nasazení, ne v testu**
+ * (`T22-slotperroute`, 14. 9. 2026). Běhový test to ověřit neumí — ve `vitest`u
+ * platí sdílení konstrukcí, jeden proces, jeden modul — takže se pinuje věta:
+ * měření s datem i výhrada, že mez platí na instanci, ne na nasazení.
+ * Kotva je začátek doc bloku, ne samotné tvrzení, aby si aserce neměřila kotvu.
+ */
+describe('popis čítače nese měření z nasazení i výhradu na instanci', () => {
+  it('blok nad slotsDetail jmenuje měření T22-slotperroute a nezamlčí flotilu', () => {
+    const text = readFileSync('src/app/api/worldstream/sessions/route.ts', 'utf8');
+    const kotva = 'Věta pro operátorský log u odmítnutí';
+    const start = text.indexOf(kotva);
+    expect(start, `kotva „${kotva}" zmizela — oprav kotvu, ne test`).toBeGreaterThan(-1);
+    const blok = text.slice(start, text.indexOf('export function slotsDetail', start));
+    expect(blok, 'měření sdílení čítače zmizelo nebo ztratilo značku úlohy').toContain(
+      'T22-slotperroute',
+    );
+    expect(blok, 'blok už neříká, že troje dveře sdílejí jednu instanci').toContain(
+      'jednu instanci sdílejí',
+    );
+    expect(blok, 'blok zamlčel, že globální číslo nedrží nikdo').toContain('nedrží nikdo');
+  });
+});
