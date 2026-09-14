@@ -1770,6 +1770,20 @@
       "scope": "dev"
     },
     {
+      "name": "OpenAI Codex CLI@0.145.0",
+      "kind": "library",
+      "manual": true,
+      "scope": "dev",
+      "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.145.0/LICENSE",
+      "authorOrProvider": "OpenAI",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "při redistribuci přiložit licenci, zachovat relevantní notices a označit změny"
+      ],
+      "attribution": "Copyright 2025 OpenAI",
+      "reviewNote": "Externí lokální nástroj instalovaný uživatelem ve WSL2; jeho binárka není zkopírována do repozitáře ani distribuována s tímto handoffem. Verze ověřena oficiálním CLI, licence proti upstream tagu rust-v0.145.0 dne 8. 9. 2026. Odvozený veřejný modelový katalog má vlastní položku níže. Licence kódu CLI není oprávnění k modelové službě ani ke sdílení osobního účtu."
+    },
+    {
       "name": "opener@1.5.2",
       "kind": "library",
       "source": "https://registry.npmjs.org/opener/-/opener-1.5.2.tgz",
@@ -2339,6 +2353,12 @@
       "reviewNote": "Od 6. 9. 2026 se NEVOLÁ a produktu se neúčastní. Do té chvíle stál v src/model/prompt.ts jako EMISSION_MODEL a proxy vracela pod tím jménem odpovědi gpt-5.6-sol; emisní cesta proto jmenuje ten model přímo. Položka zůstává, protože identifikátor je pořád v kódu — v testech a fixturách (evals/harness/**, evals/worldstream/__tests__/**, scripts/__tests__/**)."
     },
     {
+      "name": "claude-sonnet-5",
+      "kind": "model",
+      "firstParty": true,
+      "reason": "Doslovný identifikátor v src/server/__tests__/upstream.test.ts: test předává změněné model ID mock transportu a ověřuje request body. Tato položka neprohlašuje volání modelu Anthropic v lokálním subscription demu ani existenci modelu tohoto jména."
+    },
+    {
       "name": "gemini-9-pro",
       "kind": "model",
       "firstParty": true,
@@ -2355,6 +2375,18 @@
       ],
       "attribution": "OpenAI, https://openai.com/policies/business-terms",
       "reviewNote": "Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je."
+    },
+    {
+      "name": "gpt-5.6-luna",
+      "kind": "model",
+      "source": "https://platform.openai.com/docs/models",
+      "authorOrProvider": "OpenAI",
+      "license": "Podmínky příslušné služby OpenAI; tento lokální běh používá uživatelské předplatné ChatGPT/Codex. Ověření podmínek pro veřejné soutěžní nasazení: MISSING.",
+      "requiredNotices": [
+        "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
+      ],
+      "attribution": "OpenAI, https://openai.com/policies/business-terms",
+      "reviewNote": "13. 9. 2026 odpoledne EMISSION_MODEL (nad 30 větami medián 33 s proti 101 s gpt-5.6-sol; 5/5 za 36 s proti gpt-6-astra), týž večer nahrazen gpt-6-astra kvůli kvalitě 3D (galerie e2e/quality-gallery.spec.ts). Produkt ho od té chvíle NEVOLÁ; jmenuje ho měřidlo latence a komentář v src/model/prompt.ts. Volá se přes lokální claude-code-proxy placenou předplatným Codexu, low effort, žádný API fallback."
     },
     {
       "name": "gpt-5.6-mini",
@@ -2381,6 +2413,18 @@
       "reviewNote": "Reality Compiler lokální demo a benchmark 8. 9. 2026 volají oficiální Codex CLI 0.145.0 ve validovaném WSL2, s ChatGPT přihlášením, gpt-5.6-sol a low effort. Žádný API fallback ani čtení credential souborů. Spotřeba předplatného je evidována; jednotková USD cena není doložena. Historická proxy/API cesta zůstává v repozitáři, ale tento launcher ji nepoužívá. Schválení veřejného hostování prostřednictvím osobního předplatného: MISSING; není součástí předání."
     },
     {
+      "name": "gpt-5.6-sol-fast",
+      "kind": "model",
+      "source": "https://platform.openai.com/docs/models",
+      "authorOrProvider": "OpenAI",
+      "license": "Podmínky příslušné služby OpenAI; tento lokální běh používá uživatelské předplatné ChatGPT/Codex. Ověření podmínek pro veřejné soutěžní nasazení: MISSING.",
+      "requiredNotices": [
+        "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
+      ],
+      "attribution": "OpenAI, https://openai.com/policies/business-terms",
+      "reviewNote": "Produkt ho NEVOLÁ. Jmenuje ho jen měřidlo latence (evals/worldstream/live-latency.measure.ts) a allowlist evals/harness/preflight.ts; naměřeno 12. 9. 2026 (medián věty 98 s → 56 s), ale 13. 9. 2026 zamítnuto jako výchozí model, protože varianta -fast účtuje předplatnému přibližně 2,5× víc tokenů. Volá se přes lokální claude-code-proxy placenou předplatným Codexu, low effort, žádný API fallback."
+    },
+    {
       "name": "gpt-5.6-terra",
       "kind": "model",
       "source": "https://platform.openai.com/docs/models",
@@ -2391,6 +2435,18 @@
       ],
       "attribution": "OpenAI, https://openai.com/policies/business-terms",
       "reviewNote": "Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je."
+    },
+    {
+      "name": "gpt-6-astra",
+      "kind": "model",
+      "source": "https://platform.openai.com/docs/models",
+      "authorOrProvider": "OpenAI",
+      "license": "Podmínky příslušné služby OpenAI; měření běželo přes uživatelské předplatné ChatGPT/Codex (Codex CLI 0.154.0, codex exec). Ověření podmínek pro veřejné soutěžní nasazení: MISSING.",
+      "requiredNotices": [
+        "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
+      ],
+      "attribution": "OpenAI, https://openai.com/policies/business-terms",
+      "reviewNote": "Od 13. 9. 2026 večer EMISSION_MODEL v src/model/prompt.ts — model, který WORLDSTREAM světy doopravdy píše. Rozhodnutí uživatele po galerii kvality (e2e/quality-gallery.spec.ts): 2–5× bohatší kompozice než gpt-5.6-luna, za medián 143 s na větu proti 35 s. claude-code-proxy ho nezná, volá se proto spuštěním Codex CLI (codex exec --json, transport codex-cli v src/server/upstream.ts, WORLDSMITH_MODEL_ENDPOINT=codex-cli), s ChatGPT přihlášením, medium effort, sandbox read-only, nástroje vypnuté, žádný API fallback. Spotřeba předplatného je evidována; jednotková USD cena není doložena. Schválení veřejného hostování prostřednictvím osobního předplatného: MISSING."
     },
     {
       "name": "gpt-neexistuje",
@@ -2426,74 +2482,22 @@
       "reviewNote": "Váhy modelu emisní cesty, které si prohlížeč stáhne za běhu (src/model/local/**, WebLLM). Nejsou v repozitáři ani v bundlu, proto to není položka kind: asset. Kvantizace q4f16_1, 979 MB. Sync je nechává být — z package-lock.json se váhy odvodit nedají."
     },
     {
-      "name": "vlastní zdroje nad prahem literálů",
+      "name": "OpenAI Codex 0.145.0 — derived fixed text model catalog",
       "kind": "dataset",
-      "firstParty": true,
-      "reason": "Testy, fixtury a samotné skripty brány, které nesou víc než 4 096 B literálů. Napsané v tomhle repozitáři, nikdo třetí je nevlastní. V registru jsou proto, že `submission-check` kontrola 6 (d) žádá položku pro každý soubor nad prahem — váha literálů neumí odlišit první stranu od třetí, a to je vlastnost prahu, ne vada zápisu.",
-      "paths": [
-        "evals/contracts/__tests__/gold-frozen.test.ts",
-        "evals/gates/__tests__/divergence-lock.test.ts",
-        "evals/gates/run/kill-gate.ts",
-        "evals/harness/__tests__/live.test.ts",
-        "evals/scorer/__tests__/mutations.ts",
-        "evals/scorer/semantic.ts",
-        "scripts/__tests__/blind-check.test.ts",
-        "scripts/__tests__/license-gate.test.ts",
-        "scripts/__tests__/submission-check-gate.test.ts",
-        "scripts/license-gate.mjs",
-        "scripts/submission-check.mjs",
-        "src/app/api/edit/__tests__/route.test.ts",
-        "src/fallback/__tests__/isolation.test.ts",
-        "src/ir/__tests__/two-revisions.test.ts",
-        "src/model/prompt.ts",
-        "src/patch/__tests__/repair.test.ts",
-        "src/patch/__tests__/router.test.ts",
-        "src/patch/__tests__/transaction.test.ts",
-        "src/server/__tests__/admission.test.ts",
-        "src/sim/__tests__/totality.test.ts"
-      ]
-    },
-    {
-      "name": "zmrazený korpus promptů a kontraktů (evals/frozen, evals/gold.jsonl)",
-      "kind": "dataset",
-      "source": "vlastní tvorba v tomhle repozitáři, zmrazená tagem evals-frozen-v2",
-      "authorOrProvider": "worldsmith",
-      "license": "MIT",
-      "requiredNotices": [
-        "copyright notice",
-        "plné znění licence"
-      ],
-      "attribution": "worldsmith, tenhle repozitář",
-      "reviewNote": "Vlastní data, žádný externí zdroj. Uvedeno proto, že RULES.md §2 žádá disclosure datasetů bez ohledu na to, kdo je autor.",
-      "paths": [
-        "evals/frozen",
-        "evals/gold.jsonl",
-        "evals/contracts/gold"
-      ]
-    },
-    {
-      "name": "npm registry",
-      "kind": "api",
-      "source": "https://registry.npmjs.org",
-      "authorOrProvider": "npm, Inc. (GitHub)",
-      "license": "npm Open-Source Terms of Use",
-      "requiredNotices": [
-        "žádné pro konzumenta registru"
-      ],
-      "attribution": "npm, Inc., https://docs.npmjs.com/policies/terms",
-      "reviewNote": "Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá."
-    },
-    {
-      "name": "OpenAI Chat Completions API",
-      "kind": "api",
-      "source": "https://api.openai.com/v1/chat/completions",
+      "scope": "dev",
+      "source": "https://github.com/openai/codex/blob/25af12f7e61572b0bc18ddb1008be543b91519b0/codex-rs/models-manager/models.json",
       "authorOrProvider": "OpenAI",
-      "license": "komerční podmínky služby (OpenAI Business Terms)",
+      "license": "Apache-2.0",
       "requiredNotices": [
-        "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
+        "přiložené plné znění licence",
+        "zachovaný upstream NOTICE",
+        "označení dvou změněných policy hodnot"
       ],
-      "attribution": "OpenAI, https://openai.com/policies/business-terms",
-      "reviewNote": "Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá."
+      "attribution": "OpenAI Codex contributors; scripts/vendor/codex-model-catalog.LICENSE, scripts/vendor/codex-model-catalog.NOTICE a scripts/subscription-text-model-catalog.md",
+      "reviewNote": "Veřejná konfigurační metadata a instrukční texty jediného modelu gpt-5.6-sol. Pinned raw SHA-256 497d7653bb22358baa29ebd4a70be55ce990b73a64896848a59179485b37db9d; odvozený katalog 59d22b4ae6532d4f869d776e56faaf2ae169f36038375597f4f1e581459b8791. Zachovány všechny ostatní hodnoty, změněny pouze tool_mode=direct a multi_agent_version=disabled. Není to nový benchmark, nezávislý holdout ani modelový výstup. Samotný katalog neprokazuje autentizaci, inference nebo produkční připravenost.",
+      "paths": [
+        "scripts/subscription-text-model-catalog.json"
+      ]
     },
     {
       "name": "Reality Compiler pilot sources",
@@ -2541,24 +2545,84 @@
       ]
     },
     {
-      "name": "claude-sonnet-5",
-      "kind": "model",
+      "name": "vlastní zdroje nad prahem literálů",
+      "kind": "dataset",
       "firstParty": true,
-      "reason": "Doslovný identifikátor v src/server/__tests__/upstream.test.ts: test předává změněné model ID mock transportu a ověřuje request body. Tato položka neprohlašuje volání modelu Anthropic v lokálním subscription demu ani existenci modelu tohoto jména."
+      "reason": "Testy, fixtury a samotné skripty brány, které nesou víc než 4 096 B literálů. Napsané v tomhle repozitáři, nikdo třetí je nevlastní. V registru jsou proto, že `submission-check` kontrola 6 (d) žádá položku pro každý soubor nad prahem — váha literálů neumí odlišit první stranu od třetí, a to je vlastnost prahu, ne vada zápisu.",
+      "paths": [
+        "e2e/reality-compiler-branch.spec.ts",
+        "e2e/reality-compiler-evidence.spec.ts",
+        "evals/contracts/__tests__/gold-frozen.test.ts",
+        "evals/gates/__tests__/divergence-lock.test.ts",
+        "evals/gates/run/kill-gate.ts",
+        "evals/harness/__tests__/live.test.ts",
+        "evals/scorer/__tests__/mutations.ts",
+        "evals/scorer/semantic.ts",
+        "scripts/__tests__/blind-check.test.ts",
+        "scripts/__tests__/subscription-appserver-generation.test.ts",
+        "scripts/__tests__/subscription-appserver-fixture-transport.test.ts",
+        "scripts/__tests__/subscription-appserver-metadata-transport.test.ts",
+        "scripts/__tests__/subscription-cli-probe-transport.test.ts",
+        "scripts/__tests__/codex-subscription.test.ts",
+        "scripts/__tests__/license-gate.test.ts",
+        "scripts/__tests__/submission-check-gate.test.ts",
+        "scripts/license-gate.mjs",
+        "scripts/subscription-appserver-fixture-transport.ts",
+        "scripts/submission-check.mjs",
+        "src/app/api/edit/__tests__/route.test.ts",
+        "src/fallback/__tests__/isolation.test.ts",
+        "src/ir/__tests__/two-revisions.test.ts",
+        "src/model/prompt.ts",
+        "src/patch/__tests__/repair.test.ts",
+        "src/patch/__tests__/router.test.ts",
+        "src/patch/__tests__/transaction.test.ts",
+        "src/server/__tests__/admission.test.ts",
+        "src/server/__tests__/upstream.test.ts",
+        "src/sim/__tests__/totality.test.ts",
+        "src/worldstream/__tests__/client.test.ts"
+      ]
     },
     {
-      "name": "OpenAI Codex CLI@0.145.0",
-      "kind": "library",
-      "manual": true,
-      "scope": "dev",
-      "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.145.0/LICENSE",
-      "authorOrProvider": "OpenAI",
-      "license": "Apache-2.0",
+      "name": "zmrazený korpus promptů a kontraktů (evals/frozen, evals/gold.jsonl)",
+      "kind": "dataset",
+      "source": "vlastní tvorba v tomhle repozitáři, zmrazená tagem evals-frozen-v2",
+      "authorOrProvider": "worldsmith",
+      "license": "MIT",
       "requiredNotices": [
-        "při redistribuci přiložit licenci, zachovat relevantní notices a označit změny"
+        "copyright notice",
+        "plné znění licence"
       ],
-      "attribution": "Copyright 2025 OpenAI",
-      "reviewNote": "Externí lokální nástroj instalovaný uživatelem ve WSL2; není zkopírován do repozitáře ani distribuován s tímto handoffem. Verze ověřena oficiálním CLI, licence proti upstream tagu rust-v0.145.0 dne 8. 9. 2026. Licence kódu CLI není oprávnění k modelové službě ani ke sdílení osobního účtu."
+      "attribution": "worldsmith, tenhle repozitář",
+      "reviewNote": "Vlastní data, žádný externí zdroj. Uvedeno proto, že RULES.md §2 žádá disclosure datasetů bez ohledu na to, kdo je autor.",
+      "paths": [
+        "evals/frozen",
+        "evals/gold.jsonl",
+        "evals/contracts/gold"
+      ]
+    },
+    {
+      "name": "npm registry",
+      "kind": "api",
+      "source": "https://registry.npmjs.org",
+      "authorOrProvider": "npm, Inc. (GitHub)",
+      "license": "npm Open-Source Terms of Use",
+      "requiredNotices": [
+        "žádné pro konzumenta registru"
+      ],
+      "attribution": "npm, Inc., https://docs.npmjs.com/policies/terms",
+      "reviewNote": "Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá."
+    },
+    {
+      "name": "OpenAI Chat Completions API",
+      "kind": "api",
+      "source": "https://api.openai.com/v1/chat/completions",
+      "authorOrProvider": "OpenAI",
+      "license": "komerční podmínky služby (OpenAI Business Terms)",
+      "requiredNotices": [
+        "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
+      ],
+      "attribution": "OpenAI, https://openai.com/policies/business-terms",
+      "reviewNote": "Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá."
     }
   ]
 }
