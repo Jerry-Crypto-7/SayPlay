@@ -47,7 +47,7 @@ export const GEOM_VERSION = 'geom-program-v1';
  *   skládá z vazeb mezi uzly, ne z opsaných souřadnic, a na to je 64 řádků
  *   málo. Strop chrání pořád tentýž rozpočet, protože skutečnou cenu drží
  *   `maxInstances` — ten se nezvedl.
- * - `maxInstances` **120** — kolik umístěných kusů z programu **vyleze po
+ * - `maxInstances` **200** (do 13. 9. 2026 120) — kolik umístěných kusů z programu **vyleze po
  *   rozvinutí** operací. Není to nový rozpočet: je to `maxDrawCallsPerWorld`
  *   z `src/kit/budgets.ts`, kde jeden umístěný kus = jeden draw call. Test tu
  *   rovnost hlídá, aby se obě čísla nerozešla. `maxNodes` sám o sobě nic
@@ -55,7 +55,7 @@ export const GEOM_VERSION = 'geom-program-v1';
  */
 export const GEOM_LIMITS = {
   maxNodes: 96,
-  maxInstances: 120,
+  maxInstances: 200,
 } as const;
 
 /**

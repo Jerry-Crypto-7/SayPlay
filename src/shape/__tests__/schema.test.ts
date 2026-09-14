@@ -231,7 +231,7 @@ describe('stropy jazyka', () => {
 
     const result = validateShapeProgram(chainProgram(SHAPE_LIMITS.maxDepth + 1));
     expect(result.ok).toBe(false);
-    expect(result.issues).toContain('program is 9 nodes deep, above maxDepth 8');
+    expect(result.issues).toContain(`program is ${SHAPE_LIMITS.maxDepth + 1} nodes deep, above maxDepth ${SHAPE_LIMITS.maxDepth}`);
   });
 
   it('přijme rozvinutí přesně na stropu kopií a odmítne o jedno větší', () => {

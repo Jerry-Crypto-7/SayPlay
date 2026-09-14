@@ -125,7 +125,7 @@ export type ShapeNodeKind = (typeof SHAPE_NODE_KINDS)[number];
  */
 export const SHAPE_LIMITS = {
   maxNodes: 48,
-  maxDepth: 8,
+  maxDepth: 12,
   maxInstances: 256,
   maxCurvePoints: 8,
   maxEvaluations: 512,

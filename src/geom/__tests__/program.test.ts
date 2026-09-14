@@ -493,7 +493,7 @@ describe('vadný program se odmítne a řekne proč', () => {
       root: 2,
     };
 
-    rejects(explosive, /expands to 384 placed pieces, above maxInstances 120/);
+    rejects(explosive, /expands to 384 placed pieces, above maxInstances 200/);
   });
 
   it('řádek mimo strom se odmítne, protože rozpočet ho nevidí a kompilátor ho staví', () => {
@@ -543,8 +543,8 @@ describe('vadný program se odmítne a řekne proč', () => {
       version: GEOM_VERSION,
       nodes: [
         { kind: 'mass', variant: 'block' },
-        { kind: 'repeat', child: 0, count: 15, step: [1, 0, 0] },
-        { kind: 'scatter', child: 1, count: 8, radius: 20, seed: 1 },
+        { kind: 'repeat', child: 0, count: 10, step: [1, 0, 0] },
+        { kind: 'scatter', child: 1, count: 20, radius: 20, seed: 1 },
       ],
       root: 2,
     };
@@ -621,7 +621,7 @@ describe('rozšíření jazyka o křivku, kotvu a volné otáčení', () => {
       version: GEOM_VERSION,
       nodes: [
         { kind: 'mass', variant: 'block' },
-        { kind: 'repeat', child: 0, count: 6, step: [1, 0, 0] },
+        { kind: 'repeat', child: 0, count: 9, step: [1, 0, 0] },
         {
           kind: 'arrayAlongCurve',
           child: 1,
@@ -639,7 +639,7 @@ describe('rozšíření jazyka o křivku, kotvu a volné otáčení', () => {
     const result = validateGeomProgram(explosive);
     expect(result.ok).toBe(false);
     expect(result.issues.join(' | ')).toMatch(
-      /expands to 144 placed pieces, above maxInstances 120/,
+      /expands to 216 placed pieces, above maxInstances 200/,
     );
   });
 

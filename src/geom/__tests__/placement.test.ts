@@ -333,7 +333,7 @@ describe('compilePlacements', () => {
       const source = program(
         [
           { kind: 'organic', variant: 'pebble' },
-          { kind: 'scatter', child: 0, count: 11, radius: 6, seed: 1 },
+          { kind: 'scatter', child: 0, count: 17, radius: 6, seed: 1 },
           { kind: 'repeat', child: 1, count: 12, step: [1, 0, 0] },
         ],
         2,

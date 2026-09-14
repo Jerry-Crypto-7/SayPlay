@@ -7,9 +7,12 @@ import { Mesh, type BufferGeometry, type Object3D } from 'three';
  * svět a strop draw callů, ale žádnou hodnotu neuvádí — §18 #7 ji má jako
  * nenaměřenou položku pro P5. Do té doby je strop odvozený, ne opsaný:
  *
- * - `maxDrawCallsPerWorld` **120** — kit má jediný materiál a nic se
- *   neinstancuje, takže draw call = jeden umístěný kus. 120 kusů je hustota,
- *   při které ručně skládaný layout z T201 vypadá zaplněně.
+ * - `maxDrawCallsPerWorld` **200** — kit má jediný materiál a nic se
+ *   neinstancuje, takže draw call = jeden umístěný kus. Do 13. 9. 2026 to bylo
+ *   120 (hustota, při které ručně skládaný layout z T201 vypadá zaplněně);
+ *   zvednuto na 200, protože `gpt-6-astra` píše kompozice s 25 řádky a
+ *   150–200 kusy a brána je na 120 odmítala — svět o 200 draw callech je pro
+ *   WebGL2 pořád levný, strop trojúhelníků zůstává.
  * - `maxTrianglesPerWorld` **120 000** — strop pro WebGL2 na slabším notebooku
  *   s rezervou na 60 fps.
  * - `maxTrianglesPerPiece` **1 200** — 120 000 / 120 dá průměr 1 000 na kus;
@@ -26,7 +29,7 @@ import { Mesh, type BufferGeometry, type Object3D } from 'three';
 export const KIT_BUDGETS = {
   minPieces: 36,
   maxPieces: 44,
-  maxDrawCallsPerWorld: 120,
+  maxDrawCallsPerWorld: 200,
   maxTrianglesPerWorld: 120_000,
   maxTrianglesPerPiece: 1_200,
 } as const;
