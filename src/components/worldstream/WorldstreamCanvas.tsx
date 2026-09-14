@@ -25,7 +25,9 @@
  */
 
 import { Canvas, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { PerspectiveCamera } from 'three';
 
 import WorldstreamLighting, {
   WORLDSTREAM_GL,
@@ -33,6 +35,7 @@ import WorldstreamLighting, {
 } from '@/components/viewer/WorldstreamLighting';
 import WorldstreamStage from '@/components/viewer/WorldstreamStage';
 import { FRAMING_FOV, frameScene, type Bounds } from '@/worldstream/framing';
+import { applyDiagramProjection, frameDiagram } from '@/worldstream/diagram-framing';
 import type { RuntimeController, RuntimeSnapshot } from '@/worldstream/runtime-controller';
 import { CELL_SIZE } from '@/components/viewer/projection';
 import type { ProxyWorld } from '@/worldstream/proxy';
@@ -76,38 +79,64 @@ function heroCenter(world: ProxyWorld): { x: number; y: number; z: number } | nu
  * Posadí kameru tak, aby se svět vešel do snímku.
  *
  * Uvnitř plátna, ne v `<Canvas camera>`: prop `camera` platí jen při vzniku
- * plátna a svět přichází o vteřiny později. Kamera se přestaví **při každé
- * změně světa**, takže druhá věta dostane svoje rámování a nezůstane po té
- * první.
+ * plátna a svět přichází o vteřiny později. Automatické rámování proběhne
+ * pro novou session/source identitu a na výslovný reset. Editace, pohyb
+ * návštěvníka i doplnění detailu zachovají ruční pohled.
  */
-function FrameCamera({ world, controller }: { readonly world: ProxyWorld | null; readonly controller: RuntimeController | null }) {
-  const state = useSyncExternalStore(controller?.subscribe ?? subscribeEmpty,
-    controller?.getSnapshot ?? emptySnapshot, emptySnapshot);
+function FrameCamera({ world, controller, sceneId, reset, framing }: { readonly world: ProxyWorld | null;
+  readonly controller: RuntimeController | null; readonly sceneId: string | null; readonly reset: number;
+  readonly framing: 'scene' | 'diagram' }) {
   const camera = useThree((state) => state.camera);
+  const canvas = useThree((state) => state.gl.domElement);
   const size = useThree((state) => state.size);
-  const bounds = useMemo(() => (world === null ? null : worldExtent(world, state)), [world, state]);
-  const hero = useMemo(() => (world === null ? null : heroCenter(world)), [world]);
+  const controls = useMemo(() => new OrbitControls(camera), [camera]);
+  const framed = useRef<{ sceneId: string | null; reset: number; framing: 'scene' | 'diagram' } | null>(null);
 
   useEffect(() => {
-    if (bounds === null) return;
+    canvas.tabIndex = 0;
+    canvas.setAttribute('aria-label', 'Scene camera: drag to orbit, scroll to zoom, arrow keys to pan');
+    controls.connect(canvas);
+    controls.listenToKeyEvents(canvas);
+    controls.minDistance = 0.5;
+    controls.maxPolarAngle = Math.PI / 2 - 0.01;
+    const focus = () => canvas.focus({ preventScroll: true });
+    canvas.addEventListener('pointerdown', focus);
+    return () => { canvas.removeEventListener('pointerdown', focus); controls.dispose(); };
+  }, [canvas, controls]);
 
-    const framing = frameScene({
+  useEffect(() => {
+    if (camera instanceof PerspectiveCamera)
+      applyDiagramProjection(camera, size.width, size.height, framing === 'diagram');
+  }, [camera, framing, size.width, size.height]);
+
+  useEffect(() => {
+    if (world === null) { framed.current = null; return; }
+    if (framed.current?.sceneId === sceneId && framed.current.reset === reset && framed.current.framing === framing) return;
+    const bounds = worldExtent(world, controller?.getSnapshot() ?? null);
+    if (bounds === null) return;
+    const view = framing === 'diagram' ? frameDiagram(bounds, size.width / size.height) : frameScene({
       bounds,
-      hero,
+      hero: heroCenter(world),
       aspect: size.width / size.height,
       fov: FRAMING_FOV,
     });
-    camera.position.set(framing.eye.x, framing.eye.y, framing.eye.z);
-    camera.lookAt(framing.target.x, framing.target.y, framing.target.z);
+    camera.position.set(view.eye.x, view.eye.y, view.eye.z);
+    controls.target.set(view.target.x, view.target.y, view.target.z);
+    controls.update();
     camera.updateProjectionMatrix();
-  }, [bounds, camera, hero, size.height, size.width]);
+    framed.current = { sceneId, reset, framing };
+  }, [world, controller, sceneId, reset, framing, camera, controls, size.height, size.width]);
 
   return null;
 }
 
-export default function WorldstreamCanvas({ world, controller = null }: {
+export default function WorldstreamCanvas({ world, controller = null, sceneId = null, reset = 0, framing = 'scene', onPresented }: {
   readonly world: ProxyWorld | null;
   readonly controller?: RuntimeController | null;
+  readonly sceneId?: string | null;
+  readonly reset?: number;
+  readonly framing?: 'scene' | 'diagram';
+  readonly onPresented?: (world: ProxyWorld) => void;
 }) {
   // Úroveň se čte ze **světa**, ne z volajícího: kdo svět dostane, ví, proti
   // jakému rozpočtu se má soudit (`proxy.ts`). Prázdné plátno kreslí `full`,
@@ -125,8 +154,8 @@ export default function WorldstreamCanvas({ world, controller = null }: {
       dpr={[1, budgetFor(quality).pixelRatio]}
     >
       <WorldstreamLighting quality={quality} />
-      <FrameCamera world={world} controller={controller} />
-      {world !== null && world.kind === 'built' && <RuntimeStage world={world} controller={controller} />}
+      <FrameCamera world={world} controller={controller} sceneId={sceneId} reset={reset} framing={framing} />
+      {world !== null && world.kind === 'built' && <RuntimeStage key={sceneId} world={world} controller={controller} onPresented={onPresented} />}
     </Canvas>
   );
 }
@@ -134,8 +163,9 @@ export default function WorldstreamCanvas({ world, controller = null }: {
 const subscribeEmpty = () => () => {};
 const emptySnapshot = () => null;
 
-function RuntimeStage({ world, controller }: { readonly world: ProxyWorld; readonly controller: RuntimeController | null }) {
+function RuntimeStage({ world, controller, onPresented }: { readonly world: ProxyWorld; readonly controller: RuntimeController | null;
+  readonly onPresented?: (world: ProxyWorld) => void }) {
   const state = useSyncExternalStore(controller?.subscribe ?? subscribeEmpty,
     controller?.getSnapshot ?? emptySnapshot, emptySnapshot);
-  return <WorldstreamStage world={world} runtimeState={state} />;
+  return <WorldstreamStage world={world} runtimeState={state} onPresented={onPresented} />;
 }

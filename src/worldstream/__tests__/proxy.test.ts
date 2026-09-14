@@ -188,6 +188,20 @@ function spanOf(bounds: Bounds3, axis: 0 | 1 | 2): number {
  * ------------------------------------------------------------------ */
 
 describe('every semantic object becomes its own slot', () => {
+  it('builds validated coarse slots without meshing and preserves their anchors when detail arrives', async () => {
+    const mesher = recordingMesher();
+    const proposal = compiled(blueprint());
+    let calls = 0;
+    const mesh = async (order: MeshOrder) => { calls++; return mesher.mesh(order); };
+    const coarse = built(await buildProxyWorld(proposal, { mesh, deferMeshes: true }));
+    expect(calls).toBe(0);
+    const first = slotOf(coarse, 'tallHive');
+    expect(first.form).toMatchObject({ kind: 'clay', drawn: true, reason: 'Validated shape; detail is being built.' });
+    const detailed = built(await buildProxyWorld(proposal, { mesh }));
+    expect(calls).toBeGreaterThan(0);
+    expect(slotOf(detailed, 'tallHive').slot).toEqual(first.slot);
+    expect(slotOf(detailed, 'tallHive').form.kind).toBe('mesh');
+  });
   it('builds one slot per object, in the order of the blueprint', async () => {
     const world = built(await build());
     expect(world.slots.map((entry) => entry.slot.stableId)).toEqual([

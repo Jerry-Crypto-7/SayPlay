@@ -307,6 +307,8 @@ export function slotResolutions(world: ProxyWorld): readonly number[] {
 }
 
 export interface ProxyDeps {
+  /** Only for a fully validated blueprint: show stable coarse slots before meshing. */
+  readonly deferMeshes?: boolean;
   /**
    * Objednávka meshe. Vstřikuje se, aby tenhle soubor nemusel znát worker —
    * v produktu je to `createMeshClient().mesh`, v testu atrapa.
@@ -753,7 +755,8 @@ export async function buildProxyWorldFrom(
   // `meshingOrder()` řadí sestupně: když se na úroveň vejde jeden tvar, dostane
   // ho ten, který model označil za nejdůležitější. Zbytek se ani neobjedná —
   // §23 chce, aby degradace nespustila práci, jejíž výsledek se nepoužije.
-  for (const program of meshingOrder(blueprint.shapes).slice(0, budget.heroes)) {
+  const heroPrograms = meshingOrder(blueprint.shapes).slice(0, budget.heroes);
+  for (const program of deps.deferMeshes ? [] : heroPrograms) {
     meshes.set(
       program.shapeId,
       await meshDownTheLadder(program, blueprint.sessionSeed, budget.roughResolution, deps.mesh),
@@ -793,6 +796,10 @@ export async function buildProxyWorldFrom(
 
     if (object.source.kind === 'shape') {
       const program = shapesById.get(object.source.shapeId);
+      if (deps.deferMeshes && program && heroPrograms.includes(program)) return {
+        slot: slotFromForm(object, { localBounds: program.targetBounds, anchors: program.anchors }),
+        form: { rung: 'semantic-clay', kind: 'clay', drawn: true, reason: 'Validated shape; detail is being built.' },
+      };
       // Odkazy jsou oboustranně ověřené (`findBlueprintReferenceIssues`), takže
       // objekt míří na tvar, který v `shapes` je. Prázdné `shapes` na tomhle
       // dokumentu ale tuhle větev pouští — proto se `undefined` čte, ne tvrdí.

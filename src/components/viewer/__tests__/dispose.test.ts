@@ -17,6 +17,7 @@ import {
   BoxGeometry,
   DataTexture,
   Group,
+  InstancedMesh,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
@@ -33,6 +34,17 @@ function texture(): DataTexture {
 }
 
 describe('disposeSubtree', () => {
+  it('releases instancing buffers as well as shared geometry and material exactly once', () => {
+    const geometry = new BoxGeometry(); const material = new MeshBasicMaterial();
+    const instance = new InstancedMesh(geometry, material, 2);
+    const disposeInstance = vi.spyOn(instance, 'dispose');
+    const disposeGeometry = vi.spyOn(geometry, 'dispose'); const disposeMaterial = vi.spyOn(material, 'dispose');
+    const root = new Group(); root.add(instance);
+    disposeSubtree(root);
+    expect(disposeInstance).toHaveBeenCalledTimes(1);
+    expect(disposeGeometry).toHaveBeenCalledTimes(1); expect(disposeMaterial).toHaveBeenCalledTimes(1);
+    expect(root.children).toHaveLength(0);
+  });
   it('odloží geometrii, materiál i texturu z celého podstromu', () => {
     const root = new Group();
     const nested = new Group();

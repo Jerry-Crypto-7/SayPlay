@@ -134,6 +134,9 @@ export interface RepresentationRegistry {
   readonly slots: readonly SlotView[];
   /** Založí slot: obal, transformace, sockety, a volitelně hrubou podobu. */
   open(slot: SemanticSlot, rough?: Object3D | null): SlotView;
+  /** Reconcile an accepted rough form while retaining the wrapper and sockets. */
+  replaceRough(slot: SemanticSlot, rough: Object3D | null): SlotView;
+  remove(stableId: string): DisposalTally;
   view(stableId: string): SlotView | null;
   /** Jediné dveře, kterými se podoba dostane na scénu. */
   offer(candidate: RepresentationCandidate): OfferOutcome;
@@ -161,7 +164,7 @@ export interface RepresentationRegistry {
 }
 
 interface SlotEntry {
-  readonly slot: SemanticSlot;
+  slot: SemanticSlot;
   readonly group: Group;
   readonly sockets: Map<string, Object3D>;
   revision: number;
@@ -288,6 +291,37 @@ export function createRepresentationRegistry(): RepresentationRegistry {
     view(stableId) {
       const entry = entries.get(stableId);
       return entry === undefined ? null : viewOf(entry);
+    },
+
+    replaceRough(slot, rough) {
+      const entry = entries.get(slot.stableId);
+      if (!entry) return this.open(slot, rough);
+      const old = entry.slot;
+      entry.revision++;
+      if (entry.attached) disposeSubtree(entry.attached);
+      if (entry.staged) disposeSubtree(entry.staged);
+      entry.staged = null; entry.stagedHash = null; entry.contentHash = null;
+      entry.attached = rough;
+      if (rough) entry.group.add(rough);
+      if (slot.transform.scale.some((value, index) => value !== old.transform.scale[index])) entry.group.scale.set(...slot.transform.scale);
+      if (slot.transform.translation.some((value, index) => value !== old.transform.translation[index])) entry.group.position.set(...slot.transform.translation);
+      for (const [name, socket] of entry.sockets) if (!slot.anchors.some(anchor => anchor.name === name)) {
+        socket.removeFromParent(); entry.sockets.delete(name);
+      }
+      for (const anchor of slot.anchors) {
+        let socket = entry.sockets.get(anchor.name);
+        if (!socket) { socket = new Object3D(); socket.name = socketName(anchor.name); entry.sockets.set(anchor.name, socket); entry.group.add(socket); }
+        socket.position.set(...anchor.at);
+      }
+      entry.slot = slot;
+      return viewOf(entry);
+    },
+
+    remove(stableId) {
+      const entry = entries.get(stableId);
+      if (!entry) return EMPTY_TALLY;
+      entries.delete(stableId);
+      return disposeSubtree(entry.group);
     },
 
     offer(candidate) {

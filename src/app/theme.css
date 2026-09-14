@@ -239,6 +239,35 @@ body {
   pointer-events: auto;
 }
 
+/* Running controls have their own column; stacking them with source review
+   hid the scene. Keep the established sea/glass palette and quiet typography. */
+.ws-shell[data-controls='true'] {
+  grid-template-columns: minmax(16rem, 20rem) minmax(0, 40rem) minmax(3rem, 1fr);
+}
+.ws-shell[data-controls='true'][data-inspecting='true'] {
+  grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr) minmax(18rem, 22rem);
+}
+.ws-controls, .ws-dock { min-width: 0; }
+.ws-runtime-tools { max-height: 58dvh; overflow: auto; width: 100%; }
+.ws-runtime-tools button, .ws-runtime-tools select { max-width: 100%; }
+.ws-source fieldset { min-width: 0; margin: 0.5rem 0; }
+.ws-source h4 { margin: 0.65rem 0 0.25rem; }
+
+@media (max-width: 760px) {
+  .ws-shell, .ws-shell[data-controls='true'], .ws-shell[data-inspecting='true'],
+  .ws-shell[data-controls='true'][data-inspecting='true'] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto auto;
+    gap: 0.4rem;
+    padding: 0.6rem;
+  }
+  .ws-controls { grid-column: 1; grid-row: 2; width: 100%; }
+  .ws-runtime-tools { max-height: 25dvh; }
+  .ws-dock { grid-column: 1; grid-row: 3; max-height: 35dvh; overflow: auto; }
+  .ws-dock > * { flex-shrink: 0; }
+  .ws-shell .ws-inspect { grid-column: 1; grid-row: 4; max-height: 30dvh; }
+}
+
 /* Inspect. Jeden bod, ne panel: zapnutý stav se pozná podle patiny mědi.
 
    Zásuvka drží **celý pravý sloupec přes oba řádky**, takže sahá od horní hrany

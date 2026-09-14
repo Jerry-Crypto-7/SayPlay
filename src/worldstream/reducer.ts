@@ -87,6 +87,16 @@ export interface ClientState {
   readonly shapes: readonly ShapeView[];
   /** Autoritativní blueprint. Přijde rámcem `blueprint.ready` i snapshotem. */
   readonly blueprint: unknown | null;
+  /**
+   * Co planner z věty přečetl, jakmile to ví — **dřív než blueprint**.
+   *
+   * Compiler je nejdelší volání celé cesty (naměřeno 12. 9. 2026: 64 s proti
+   * 8 s planneru) a po celou tu dobu stála stavová věta na „Writing the
+   * world." bez jediné známky, že se věta vůbec pochopila. Setting a teze
+   * jsou to, co se dá v tu chvíli pravdivě říct. Snapshot je nenese, takže
+   * po reconnectu zůstává to, co klient viděl v rámci.
+   */
+  readonly intent: { readonly setting: string; readonly spatialThesis: string } | null;
   /** Veřejná věta o poruše. Text výjimky poskytovatele sem nikdy nejde. */
   readonly fault: string | null;
 }
@@ -98,6 +108,7 @@ export function initialClientState(): ClientState {
     sequence: 0,
     shapes: [],
     blueprint: null,
+    intent: null,
     fault: null,
   };
 }
@@ -265,8 +276,16 @@ function apply(state: ClientState, event: SessionEvent): ClientState {
     sequence: Math.max(state.sequence, event.sequence),
     shapes,
     blueprint: event.type === 'blueprint.ready' ? (fields.blueprint ?? null) : state.blueprint,
+    intent: event.type === 'intent.ready' ? intentOf(fields) : state.intent,
     fault: event.type === 'session.failed' ? (text(fields.reason) ?? 'the session failed') : state.fault,
   };
+}
+
+/** Jen dvě pole z `intent.ready`, a jen když jsou obě řetězce; jinak se nic netvrdí. */
+function intentOf(fields: Record<string, unknown>): ClientState['intent'] {
+  const setting = text(fields.setting);
+  const spatialThesis = text(fields.spatialThesis);
+  return setting === null || spatialThesis === null ? null : { setting, spatialThesis };
 }
 
 /**
@@ -365,6 +384,7 @@ export function applySnapshot(state: ClientState, snapshot: ClientSnapshot): Cli
     sequence: snapshot.sequence,
     shapes,
     blueprint: snapshot.blueprint ?? state.blueprint,
+    intent: state.intent,
     fault: snapshot.fault ?? state.fault,
   };
 }

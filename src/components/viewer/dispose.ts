@@ -100,9 +100,12 @@ export function disposeSubtree(root: Object3D): DisposalTally {
   const geometries = new Set<BufferGeometry>();
   const materials = new Set<Material>();
   const textures = new Set<Texture>();
+  const instances = new Set<{ dispose(): void }>();
 
   root.traverse((object) => {
     const renderable = object as Renderable;
+    const instanced = object as Object3D & { isInstancedMesh?: boolean; dispose?: () => void };
+    if (instanced.isInstancedMesh && instanced.dispose) instances.add(instanced as { dispose(): void });
     if (renderable.geometry !== undefined) geometries.add(renderable.geometry);
     for (const material of materialsOf(renderable)) {
       materials.add(material);
@@ -116,6 +119,7 @@ export function disposeSubtree(root: Object3D): DisposalTally {
   for (const texture of textures) texture.dispose();
   for (const material of materials) material.dispose();
   for (const geometry of geometries) geometry.dispose();
+  for (const instance of instances) instance.dispose();
 
   root.removeFromParent();
   detach(root);

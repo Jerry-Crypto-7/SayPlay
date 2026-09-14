@@ -110,7 +110,7 @@ export default function WorldstreamApp({
 }) {
   return (
     <main data-testid="worldstream" style={SHELL}>
-      <div className="ws-shell" data-inspecting={inspecting}>
+      <div className="ws-shell" data-inspecting={inspecting} data-controls={controls !== null}>
         <PromptDock axis={axis} status={status} provenance={provenance} change={change}>
           {prompt}
         </PromptDock>

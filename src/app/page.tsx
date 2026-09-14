@@ -14,6 +14,7 @@ import ChangePreview, { type ChangeState } from '@/components/worldstream/Change
 import WorldStatus, { type WorldStatusState } from '@/components/worldstream/WorldStatus';
 import WorldstreamApp from '@/components/worldstream/WorldstreamApp';
 import { createMeshClient, type MeshClient } from '@/shape/mesh-client';
+import { createCachedMeshClient } from '@/shape/mesh-cache';
 import {
   commitChange,
   followSession,
@@ -23,6 +24,7 @@ import {
   type AuthoredProvenance,
   type SessionHandle,
 } from '@/worldstream/client';
+import type { ClientState } from '@/worldstream/reducer';
 import {
   buildProxyWorldFrom,
   PROXY_RUNG_LABELS,
@@ -38,11 +40,15 @@ import BranchComparison from '@/components/worldstream/BranchComparison';
 import RuntimeInteraction from '@/components/worldstream/RuntimeInteraction';
 import SourcePanel, { type SourceGeneration } from '@/components/worldstream/SourcePanel';
 import type { ProjectRevision } from '@/worldstream/evidence-commit';
-import { sourceProxy } from '@/worldstream/source-view';
+import { sourceProxyFromRuntime } from '@/worldstream/source-view';
 import { createRuntimeController } from '@/worldstream/runtime-controller';
 import { createClock, pump } from '@/sim/clock';
 import type { WorldDoc } from '@/ir/worlddoc';
 import { blueprintSchema } from '@/worldstream/schema';
+import { createPipelineMetrics, type PipelineMetricsSnapshot, type PipelineRunHandle, type PipelineStageHandle,
+  type PipelineProvenance } from '@/worldstream/pipeline-metrics';
+
+declare global { interface Window { __worldstreamMetrics?: { snapshot(): PipelineMetricsSnapshot } } }
 
 // `ssr: false` je povinné, ne kosmetické — WebGL2 kontext na serveru
 // neexistuje a `<Canvas>` by při prerenderu spadl na `document`.
@@ -95,6 +101,7 @@ interface SecondAct {
 function firstBlueprint(
   handle: SessionHandle,
   signal: AbortSignal,
+  onIntent?: (intent: NonNullable<ClientState['intent']>) => void,
 ): Promise<Arrival> {
   return new Promise((resolve) => {
     let settled = false;
@@ -107,6 +114,9 @@ function firstBlueprint(
     void followSession(handle, {
       signal,
       onState: (state) => {
+        // Planner odpoví desítky vteřin před compilerem; co přečetl, patří na
+        // obrazovku hned, ne až se světem.
+        if (state.intent !== null && !settled) onIntent?.(state.intent);
         if (state.blueprint !== null) done({ blueprint: state.blueprint });
       },
     })
@@ -118,8 +128,29 @@ function firstBlueprint(
 }
 
 export default function Page() {
+  const [metrics] = useState(() => createPipelineMetrics());
+  const activeMeasurement = useRef<PipelineRunHandle | null>(null);
+  const editMeasurement = useRef<{ run: PipelineRunHandle; review: PipelineStageHandle | null } | null>(null);
+  const [displayMeasurement, setDisplayMeasurement] = useState<{ run: PipelineRunHandle;
+    frame: PipelineStageHandle | null; interaction: PipelineStageHandle | null; initialInputs: number; targetWorld?: ProxyWorld } | null>(null);
+  const registerMeasurement = useCallback((run: PipelineRunHandle) => {
+    activeMeasurement.current = run; setDisplayMeasurement(null);
+  }, []);
+  const measureDisplay = useCallback((run: PipelineRunHandle, provenance: PipelineProvenance, initialInputs = 0,
+    waitForInteraction = true, targetWorld?: ProxyWorld) => {
+    const comparison = metrics.snapshot().runs.find(entry => entry.runId === run.runId)?.stages.some(stage => stage.name === 'compare');
+    setDisplayMeasurement({ run, initialInputs, targetWorld, frame: metrics.startStage(run, 'first-frame', provenance),
+      interaction: comparison || !waitForInteraction ? null : metrics.startStage(run, 'first-interaction', provenance) });
+  }, [metrics]);
+  useEffect(() => {
+    const probe = { snapshot: metrics.snapshot }; window.__worldstreamMetrics = probe;
+    return () => { if (window.__worldstreamMetrics === probe) delete window.__worldstreamMetrics;
+      if (activeMeasurement.current) metrics.finishRun(activeMeasurement.current, 'cancelled'); };
+  }, [metrics]);
   const [sourceProject, setSourceProject] = useState<ProjectRevision | null>(null);
+  const [sourceGeneration, setSourceGeneration] = useState<SourceGeneration>('live');
   const [sourceEpoch, setSourceEpoch] = useState(0);
+  const [cameraReset, setCameraReset] = useState(0);
   const sourceRuntimes = useRef(new Map<ProjectRevision, RuntimeController>());
   const binding = useRef<RuntimeBinding | null>(null);
   const documentRef = useRef<WorldDoc | null>(null);
@@ -130,7 +161,9 @@ export default function Page() {
   const [forkTick, setForkTick] = useState(0);
   const [observationTick, setObservationTick] = useState(0);
   const [controller, setController] = useState<RuntimeController | null>(null);
+  const [recovery, setRecovery] = useState<{ message: string; retry: () => Promise<void>; detailOnly?: boolean } | null>(null);
   const installRuntime = useCallback((id: string, document: WorldDoc) => {
+    setRecovery(null);
     setSourceProject(null);
     const next = bindRuntime(binding.current, id, document);
     binding.current = next;
@@ -142,8 +175,32 @@ export default function Page() {
     setController(next.controller);
   }, []);
   const [world, setWorld] = useState<ProxyWorld | null>(null);
+  const presented = useCallback((paintedWorld: ProxyWorld) => {
+    if (paintedWorld !== world || !displayMeasurement) return;
+    if (displayMeasurement.targetWorld && paintedWorld !== displayMeasurement.targetWorld) return;
+    metrics.finishStage(displayMeasurement.frame); metrics.finishRun(displayMeasurement.run);
+  }, [world, displayMeasurement, metrics]);
+  useEffect(() => {
+    if (!controller || !displayMeasurement) return;
+    const { run, interaction, initialInputs } = displayMeasurement;
+    const observeInput = () => {
+      const inputs = controller.getInputLog();
+      const latest = inputs[inputs.length - 1];
+      // Records a visitor input in a rule-firing step. A timeout may also fire
+      // in that step; this is not independent proof that the input caused it.
+      if (inputs.length > initialInputs && controller.getSnapshot().transitions.some(transition =>
+        transition.tick === latest.tick && transition.inputs.length > 0 && transition.ruleIds.length > 0)) {
+        metrics.finishStage(interaction); metrics.finishRun(run);
+      }
+    };
+    const unsubscribe = controller.subscribe(observeInput); observeInput();
+    return unsubscribe;
+  }, [controller, displayMeasurement, metrics]);
   /** Běží relace? Rozhoduje o stavové větě i o zamčeném tlačítku. */
   const [streaming, setStreaming] = useState(false);
+  /** Co planner z věty přečetl, dokud compiler píše; s novou větou i se světem se maže. */
+  const [intent, setIntent] = useState<ClientState['intent']>(null);
+  const [stopped, setStopped] = useState<string | null>(null);
   const [fault, setFault] = useState<string | null>(null);
   /**
    * Odkud je svět na plátně. `null` znamená „napsal ho model teď".
@@ -233,7 +290,7 @@ export default function Page() {
   const tier = useRef<QualityTier>('full');
 
   useEffect(() => {
-    const client = createMeshClient();
+    const client = createCachedMeshClient(createMeshClient());
     mesher.current = client;
     tier.current = pickQualityTier(window.location.search);
 
@@ -258,6 +315,10 @@ export default function Page() {
    * model teď", což je poprvé v celém produktu pravda.
    */
   const adopt = useCallback((next: SecondAct): void => {
+    // The second session must not complete the first session's pending timings.
+    if (activeMeasurement.current) metrics.finishRun(activeMeasurement.current, 'cancelled');
+    setDisplayMeasurement(null);
+    setStopped(null);
     setSourceEpoch(value => value + 1);
     // **První řádek, ne poslední.** Od téhle chvíle je všechno rozdělané z té
     // předchozí relace neplatné, a poznají to podle tohohle čísla.
@@ -277,7 +338,7 @@ export default function Page() {
     // panel musí výměna sama — jinak by tlačítka zůstala zamčená navždy.
     setChanging(false);
     committed.current = false;
-  }, [installRuntime]);
+  }, [installRuntime, metrics]);
 
   /**
    * **Dějství II: druhá relace, vlastní placený slot, nabídnutý výsledek.**
@@ -303,7 +364,9 @@ export default function Page() {
         if (control.signal.aborted) return;
         setWriting(true);
 
-        const arrival = await firstBlueprint(handle, control.signal);
+        const arrival = await firstBlueprint(handle, control.signal, (read) => {
+          if (!control.signal.aborted) setIntent(read);
+        });
         if (control.signal.aborted || !('blueprint' in arrival)) return;
 
         const parsed = blueprintSchema.safeParse(arrival.blueprint);
@@ -312,7 +375,7 @@ export default function Page() {
         const client = mesher.current;
         if (client === null) return;
         const built = await buildProxyWorldFrom(parsed.data, {
-          mesh: (order) => client.mesh(order),
+          mesh: (order) => client.mesh(order, control.signal),
           quality: tier.current,
         });
         if (control.signal.aborted || built.kind !== 'built') return;
@@ -351,6 +414,8 @@ export default function Page() {
       reading.current = control;
 
       setStreaming(true);
+      setIntent(null);
+      setStopped(null);
       setFault(null);
       setWorld(null);
       binding.current = null;
@@ -369,17 +434,30 @@ export default function Page() {
       setOffer(null);
       setWriting(false);
       generation.current += 1;
+      setRecovery(null);
       committed.current = false;
       // Odpověď staré relace už svým finally ovládání neodemkne.
       // Nový svět proto začíná bez zámku jejího preview nebo commitu.
       setChanging(false);
 
+      const era = generation.current;
+      const measured = metrics.startRun({ generation: era, kind: 'prompt' });
+      registerMeasurement(measured);
+      const requestTiming = metrics.startStage(measured, 'session-request');
       try {
         const handle = await openWorldstreamSession(prompt, { signal: control.signal });
-        const arrival = await firstBlueprint(handle, control.signal);
+        const origin = handle.authored ? 'prepared' : 'unknown';
+        metrics.setRunProvenance(measured, origin);
+        metrics.finishStage(requestTiming, 'completed', origin);
+        const blueprintTiming = metrics.startStage(measured, 'blueprint-wait', origin);
+        const arrival = await firstBlueprint(handle, control.signal, (read) => {
+          if (!control.signal.aborted) setIntent(read);
+        });
+        metrics.finishStage(blueprintTiming, 'blueprint' in arrival ? 'completed' : 'failed');
         if (control.signal.aborted) return;
 
         if (!('blueprint' in arrival)) {
+          metrics.finishRun(measured, 'failed');
           setFault(arrival.fault);
           return;
         }
@@ -387,41 +465,79 @@ export default function Page() {
         // Server blueprint validoval taky. Čte se podruhé, protože mezi tím je
         // síť a `unknown` — bez toho by se dovnitř dostal objekt, o kterém
         // překladač jen věří, že má správný tvar.
+        const validationTiming = metrics.startStage(measured, 'validation', origin);
         const parsed = blueprintSchema.safeParse(arrival.blueprint);
+        metrics.finishStage(validationTiming, parsed.success ? 'completed' : 'failed');
         if (!parsed.success) {
+          metrics.finishRun(measured, 'failed');
           setFault(`the world that arrived does not parse: ${parsed.error.issues[0]?.message ?? '?'}`);
           return;
         }
 
         const client = mesher.current;
-        if (client === null) return;
+        if (client === null) { metrics.finishRun(measured, 'failed'); return; }
+        const coarseTiming = metrics.startStage(measured, 'coarse-build', origin);
+        const coarse = await buildProxyWorldFrom(parsed.data, {
+          mesh: (order) => client.mesh(order, control.signal), quality: tier.current, deferMeshes: true,
+        });
+        if (control.signal.aborted || era !== generation.current) return;
+        metrics.finishStage(coarseTiming, coarse.kind === 'built' ? 'completed' : 'failed');
+        if (coarse.kind !== 'built') { metrics.finishRun(measured, 'failed'); setFault(coarse.reason); return; }
+        const loweringTiming = metrics.startStage(measured, 'lowering', origin);
+        installRuntime(handle.sessionId, parsed.data.world);
+        metrics.finishStage(loweringTiming);
+        measureDisplay(measured, origin);
+        setWorld(coarse); setProvenance(handle.authored); setSessionId(handle.sessionId);
+        const detailTiming = metrics.startStage(measured, 'mesh', origin);
+        let requestedMeshes = 0, cachedMeshes = 0, failedMeshes = 0;
         const built = await buildProxyWorldFrom(parsed.data, {
-          mesh: (order) => client.mesh(order),
+          mesh: async (order) => { requestedMeshes++;
+            try { const result = await client.mesh(order, control.signal); if (result.cacheHit) cachedMeshes++; return result; }
+            catch (error) { failedMeshes++; throw error; } },
           quality: tier.current,
         });
-        if (control.signal.aborted) return;
+        if (control.signal.aborted || era !== generation.current) return;
+        metrics.finishStage(detailTiming, built.kind === 'built' && failedMeshes === 0 ? 'completed' : 'failed',
+          requestedMeshes > 0 && requestedMeshes === cachedMeshes ? 'cache' : origin);
+        metrics.finishRun(measured);
 
         // Odmítnutý svět není svět. Věta o něm je ta, kterou napsal
         // `buildProxyWorldFrom()` — ta ví, na čem stavba ztroskotala.
         if (built.kind === 'built') {
-          installRuntime(handle.sessionId, parsed.data.world);
-          setWorld(built);
-          setProvenance(handle.authored);
-          setSessionId(handle.sessionId);
+          // An edit can win while coarse geometry is already interactive.
+          // Its accepted world must never be overwritten by older detail.
+          if (!committed.current) setWorld(built);
           // **Dějství II začíná jedině nad uvařeným světem.** `authored === null`
           // znamená, že tenhle svět napsal model — druhá relace by pak psala
           // podruhé totéž a platilo by se to dvakrát.
-          if (handle.authored !== null) void runSecondAct(prompt);
+          if (handle.authored !== null && !committed.current) void runSecondAct(prompt);
         } else setFault(built.reason);
       } catch (error: unknown) {
+        metrics.finishRun(measured, control.signal.aborted ? 'cancelled' : 'failed');
         if (control.signal.aborted) return;
         setFault(error instanceof Error ? error.message : String(error));
       } finally {
+        if (control.signal.aborted) metrics.finishRun(measured, 'cancelled');
         if (!control.signal.aborted) setStreaming(false);
       }
     },
-    [installRuntime, runSecondAct, sentence, streaming],
+    [installRuntime, runSecondAct, sentence, streaming, metrics, registerMeasurement, measureDisplay],
   );
+
+  function stopWaiting() {
+    if (changing) return;
+    if (activeMeasurement.current) metrics.finishRun(activeMeasurement.current, 'cancelled');
+    setDisplayMeasurement(null);
+    generation.current++;
+    reading.current?.abort(); secondReading.current?.abort();
+    // A displayed coarse world is still editable. New edits need a fresh signal,
+    // while the old request and its mesh jobs retain their cancelled signal.
+    reading.current = new AbortController();
+    committed.current = true;
+    setStreaming(false); setWriting(false); setOffer(null);
+    setChange(null); setChangeFrom(null); previewBranch.current = null;
+    setStopped('Stopped waiting. Late results will not replace this view. A remote request may still finish.');
+  }
 
   /**
    * Druhá věta → **plán, ne změna**. Design book §4 dějství III: rozsah se
@@ -436,13 +552,17 @@ export default function Page() {
       const prompt = second.trim();
       // The pilot retains one intervention. Chaining edits would require a
       // revisioned history of rule sets before each fork, not just an input log.
-      if (sessionId === null || prompt === '' || changing || comparison !== null) return;
+      if (sessionId === null || prompt === '' || changing || comparison !== null || recovery !== null) return;
       const signal = reading.current?.signal;
       // Známka relace, do které se tenhle plán posílá. Za `await`em už nemusí
       // platit — viz `generation`.
       const era = generation.current;
 
       setChanging(true);
+      const measured = metrics.startRun({ generation: era, kind: 'prompt-edit' });
+      registerMeasurement(measured);
+      editMeasurement.current = { run: measured, review: null };
+      const requestTiming = metrics.startStage(measured, 'change-request');
       previewBranch.current = null;
       try {
         const prepared = documentRef.current && binding.current
@@ -456,7 +576,11 @@ export default function Page() {
         // které skončí 404 nad světem, o kterém porotce nic neví.
         if (era !== generation.current) return;
 
+        const origin = 'authored' in outcome && outcome.authored ? 'prepared' : 'unknown';
+        metrics.setRunProvenance(measured, origin);
+        metrics.finishStage(requestTiming, outcome.kind === 'refused' ? 'failed' : 'completed', origin);
         if (outcome.kind === 'ambiguous') {
+          metrics.finishRun(measured);
           setChange({
             kind: 'candidates',
             reason: outcome.reason,
@@ -466,12 +590,14 @@ export default function Page() {
           return;
         }
         if (outcome.kind === 'refused') {
+          metrics.finishRun(measured, 'failed');
           setChange({ kind: 'refused', message: outcome.detail });
           setChangeFrom(null);
           return;
         }
 
         previewBranch.current = prepared;
+        editMeasurement.current = { run: measured, review: metrics.startStage(measured, 'change-review', origin) };
         setForkTick(0);
         setObservationTick(Math.min(MAX_COMPARISON_TICK, prepared?.source.getSnapshot().observationTick ?? 0));
         setChange({
@@ -485,13 +611,14 @@ export default function Page() {
         setChangeFrom(outcome.authored);
       } catch (error: unknown) {
         if (era !== generation.current) return;
+        metrics.finishRun(measured, signal?.aborted ? 'cancelled' : 'failed');
         setChange({ kind: 'refused', message: error instanceof Error ? error.message : String(error) });
         setChangeFrom(null);
       } finally {
         if (era === generation.current) setChanging(false);
       }
     },
-    [second, sessionId, changing, comparison],
+    [second, sessionId, changing, comparison, recovery, metrics, registerMeasurement],
   );
 
   /**
@@ -521,6 +648,9 @@ export default function Page() {
     }
 
     setChanging(true);
+    const measured = editMeasurement.current?.run ?? metrics.startRun({ generation: era, kind: 'prompt-edit' });
+    metrics.finishStage(editMeasurement.current?.review ?? null);
+    const commitTiming = metrics.startStage(measured, 'commit-request');
     // **Před voláním, ne po něm** — nález nezávislé revize commitu `b0b95da`.
     // Commit trvá vteřiny a dějství II se do toho okna vejde; kdyby se tahle
     // vlajka zvedala až za ním, hotový svět by porotci právě rozdělanou změnu
@@ -538,32 +668,62 @@ export default function Page() {
       // znamenalo postavit na plátno svět jedné relace a do pole druhé věty
       // adresu druhé.
       if (era !== generation.current) return;
+      metrics.finishStage(commitTiming, done.kind === 'refused' ? 'failed' : 'completed');
       if (done.kind === 'refused') {
+        metrics.finishRun(measured, 'failed');
         setChange({ kind: 'refused', message: done.detail });
         return;
       }
-
-      const parsed = blueprintSchema.safeParse(
-        await readBlueprint(sessionId, { ...(signal === undefined ? {} : { signal }) }),
-      );
+      // Acceptance and display are distinct transactions. Retrying this closure
+      // only reads the accepted snapshot; it never sends another commit.
+      const display = async () => {
+      const snapshotTiming = metrics.startStage(measured, 'snapshot-request');
+      let snapshot;
+      try {
+        snapshot = await readBlueprint(sessionId, { ...(signal === undefined ? {} : { signal }) });
+        metrics.finishStage(snapshotTiming);
+      } catch (error) { metrics.finishStage(snapshotTiming, 'failed'); throw error; }
+      const validationTiming = metrics.startStage(measured, 'validation');
+      const parsed = blueprintSchema.safeParse(snapshot);
+      metrics.finishStage(validationTiming, parsed.success ? 'completed' : 'failed');
       if (era !== generation.current) return;
       if (!parsed.success) {
-        setChange({ kind: 'refused', message: 'the changed world does not parse' });
-        return;
+        throw new Error('The accepted world could not be read.');
       }
+      if (done.acceptedRevision && (parsed.data.world.simRevision !== done.acceptedRevision.sim ||
+        parsed.data.world.lookRevision !== done.acceptedRevision.look))
+        throw new Error('The session now has a different revision. Start a new world to continue.');
 
-      const built = await buildProxyWorldFrom(parsed.data, {
-        mesh: (order) => client.mesh(order),
+      let meshFailures = 0;
+      let meshRequests = 0;
+      let cacheHits = 0;
+      const failedShapes = new Set<string>();
+      const buildAccepted = () => buildProxyWorldFrom(parsed.data, {
+        mesh: async (order) => {
+          meshRequests++;
+          try {
+            const mesh = await client.mesh(order, signal);
+            if (mesh.cacheHit) cacheHits++;
+            failedShapes.delete(order.program.shapeId);
+            return mesh;
+          } catch (error) { meshFailures++; failedShapes.add(order.program.shapeId); throw error; }
+        },
         quality: tier.current,
       });
+      const meshTiming = metrics.startStage(measured, 'mesh');
+      const built = await buildAccepted();
+      metrics.finishStage(meshTiming, built.kind === 'built' && meshFailures === 0 ? 'completed' : 'failed',
+        meshRequests > 0 && cacheHits === meshRequests ? 'cache' : 'unknown');
       if (era !== generation.current) return;
       if (built.kind !== 'built') {
-        setChange({ kind: 'refused', message: built.reason });
-        return;
+        throw new Error(built.reason);
       }
 
+      const compareTiming = behavior && prepared ? metrics.startStage(measured, 'compare') : null;
       const compared = behavior && prepared
         ? compareAcceptedBranch(prepared, parsed.data.world, { forkTick, observationTick }) : null;
+      metrics.finishStage(compareTiming, compared?.verdict === 'REJECTED' ? 'failed' : 'completed');
+      const loweringTiming = metrics.startStage(measured, 'lowering');
       if (compared?.verdict === 'COMPARED' && world) {
         const result = compared.snapshot.comparison!;
         const runtime = buildRuntimeWorld(parsed.data.world.sim);
@@ -584,24 +744,76 @@ export default function Page() {
         if (compared?.verdict === 'REJECTED') setComparisonNote(`Change accepted. Comparison unavailable: ${compared.detail}`);
       }
       previewBranch.current = null;
+      metrics.finishStage(loweringTiming);
+      measureDisplay(measured, changeFrom ? 'prepared' : 'unknown', binding.current?.controller.getInputLog().length ?? 0);
       setWorld(built);
       setChange(null);
       setChangeFrom(null);
       setSecond('');
+      setRecovery(null);
+      if (failedShapes.size > 0) {
+        // The accepted document and runtime already work. Retry only its local
+        // representation: no GET, commit, replay, fork, or controller replacement.
+        let retryingDetail = false;
+        const retryDetail = async () => {
+          if (era !== generation.current || documentRef.current !== parsed.data.world || retryingDetail) return;
+          retryingDetail = true; setChanging(true); meshFailures = 0; meshRequests = 0; cacheHits = 0; failedShapes.clear();
+          const retryRun = metrics.startRun({ generation: era, kind: 'prompt-detail-retry', provenance: changeFrom ? 'prepared' : 'unknown' });
+          registerMeasurement(retryRun);
+          const retryMesh = metrics.startStage(retryRun, 'mesh');
+          try {
+            const detailed = await buildAccepted();
+            if (era !== generation.current || documentRef.current !== parsed.data.world) return;
+            metrics.finishStage(retryMesh, detailed.kind === 'built' && meshFailures === 0 ? 'completed' : 'failed',
+              meshRequests > 0 && cacheHits === meshRequests ? 'cache' : 'unknown');
+            if (detailed.kind !== 'built') throw new Error(detailed.reason);
+            if (failedShapes.size > 0) throw new Error('Detailed geometry is still unavailable.');
+            measureDisplay(retryRun, changeFrom ? 'prepared' : 'unknown', 0, false, detailed);
+            setComparison(current => current ? { ...current, changedWorld: detailed } : null);
+            setWorld(current => current === built ? detailed : current);
+            setRecovery(null);
+          } catch (error) {
+            metrics.finishRun(retryRun, signal?.aborted ? 'cancelled' : 'failed');
+            if (era !== generation.current || documentRef.current !== parsed.data.world) return;
+            setRecovery({ detailOnly: true, retry: retryDetail,
+              message: `Your accepted revision is running with coarse geometry. ${error instanceof Error ? error.message : 'Detail unavailable.'}` });
+          } finally { retryingDetail = false; if (era === generation.current) setChanging(false); }
+        };
+        setRecovery({ detailOnly: true, retry: retryDetail,
+          message: `Your change was accepted${done.acceptedRevision ? ` (simulation ${done.acceptedRevision.sim}, appearance ${done.acceptedRevision.look})` : ''}. The accepted revision is running with coarse geometry. You can retry its detail.` });
+      }
+      };
+      let retrying = false;
+      const retry = async () => {
+        if (era !== generation.current || retrying) return;
+        retrying = true; setChanging(true);
+        try { await display(); }
+        catch (error) {
+          if (era !== generation.current) return;
+          binding.current?.controller.setPaused(true);
+          setChange(null);
+          const revision = done.acceptedRevision ? ` (simulation ${done.acceptedRevision.sim}, appearance ${done.acceptedRevision.look})` : '';
+          setRecovery({ message: `Your change was accepted${revision}, but its display could not be updated. The previous view is paused. ${error instanceof Error ? error.message : 'Display unavailable.'}`, retry });
+        } finally { retrying = false; if (era === generation.current) setChanging(false); }
+      };
+      await retry();
     } catch (error: unknown) {
       if (era !== generation.current) return;
+      metrics.finishRun(measured, signal?.aborted ? 'cancelled' : 'failed');
       setChange({ kind: 'refused', message: error instanceof Error ? error.message : String(error) });
     } finally {
       if (era === generation.current) setChanging(false);
     }
-  }, [change, changing, installRuntime, sessionId, world, forkTick, observationTick]);
+  }, [change, changing, installRuntime, sessionId, world, forkTick, observationTick, metrics, changeFrom, measureDisplay, registerMeasurement]);
 
   /** Zahození plánu. Sahá **jen** na panel — svět ani revize se nehnou. */
   const discard = useCallback(() => {
+    if (editMeasurement.current) metrics.finishRun(editMeasurement.current.run, 'cancelled');
+    editMeasurement.current = null;
     previewBranch.current = null;
     setChange(null);
     setChangeFrom(null);
-  }, []);
+  }, [metrics]);
 
   // Pořadí je pořadí pravdy: porucha přebíjí běžící relaci, protože relace
   // skončila; běžící relace přebíjí prázdno, protože se něco děje.
@@ -630,14 +842,17 @@ export default function Page() {
     controller?.setPaused(true);
     reading.current?.abort(); secondReading.current?.abort();
     generation.current++;
+    setRecovery(null);
     binding.current = { sessionId: project.projectRevision, simulation: canonical(project.world.sim), controller: next };
     documentRef.current = project.world;
     previewBranch.current = null;
-    setWorld(sourceProxy(project.world, project.sources[0]?.title ?? 'Source scenario'));
+    setWorld(sourceProxyFromRuntime(built.world, project.sources[0]?.title ?? 'Source scenario'));
     setController(next); setSourceProject(project);
+    setSourceGeneration(_generation);
     setSessionId(null); setComparison(null); setViewOriginal(false); setComparisonNote(null);
     setChange(null); setChangeFrom(null); setOffer(null); setWriting(false);
     setStreaming(false); setChanging(false); setFault(null); setProvenance(null);
+    setStopped(null);
   }
 
   return (
@@ -660,17 +875,30 @@ export default function Page() {
           </button>
         </form>
         <SourcePanel project={sourceProject} controller={controller} epoch={sourceEpoch} disabled={streaming || changing}
+          metrics={metrics} onMeasurementRun={registerMeasurement} onMeasureDisplay={measureDisplay}
+          runtimes={sourceRuntimes.current}
+          onRestore={restored => { sourceRuntimes.current = restored.runtimes; acceptSource(restored.selected, restored.generation); }}
           onBegin={() => { committed.current = true; }}
           onAccept={acceptSource} />
         </>
       }
-      status={<WorldStatus state={status} detail={fault} />}
+      status={<>
+        <WorldStatus state={status} detail={fault} detailPending={streaming && world !== null} intent={world === null ? intent : null} />
+        {(streaming || writing) && <button data-testid="world-cancel" disabled={changing} onClick={stopWaiting}>Stop waiting</button>}
+        {stopped && <p role="status" data-testid="world-cancelled" style={FACTS}>{stopped}</p>}
+      </>}
       provenance={
         <>
           <AuthoredNotice provenance={world === null ? null : provenance} />
+          {world && sourceProject && <p className="ws-provenance" data-testid="world-source-origin">
+            {sourceGeneration === 'fixture' ? 'Scripted source fixture' : 'Live model generation from source'} · schematic geometry
+          </p>}
+          {world && !sourceProject && provenance === null && <p className="ws-provenance" data-testid="world-live-origin">Live model generation</p>}
           {writing ? (
             <p className="ws-provenance" data-testid="second-act-writing">
-              The model is writing its own version of this world.
+              {intent === null
+                ? 'The model is writing its own version of this world.'
+                : `The model read it as ${intent.setting} and is writing its own version.`}
             </p>
           ) : null}
           {offer === null ? null : (
@@ -681,6 +909,10 @@ export default function Page() {
       change={
         sessionId === null || world === null ? null : (
           <>
+            {recovery && <section role="status" data-testid="change-recovery" style={FACTS}>
+              <p>{recovery.message}</p>
+              <button data-testid="change-resync" disabled={changing} onClick={() => void recovery.retry()}>{recovery.detailOnly ? 'Retry accepted detail' : 'Restore accepted change'}</button>
+            </section>}
             {change === null ? null : (
               <ChangePreview
                 state={change}
@@ -711,19 +943,21 @@ export default function Page() {
               <input
                 data-testid="refine-input"
                 aria-label="Change one thing in this world"
-                placeholder="paint the containers rust red"
+                placeholder="make the main arch taller"
                 value={second}
                 onChange={(event) => setSecond(event.target.value)}
                 style={INPUT}
               />
-              <button type="submit" data-testid="refine-submit" disabled={changing || comparison !== null} style={BUTTON}>
+              <button type="submit" data-testid="refine-submit" disabled={changing || comparison !== null || recovery !== null} style={BUTTON}>
                 {changing ? 'Working…' : 'Change it'}
               </button>
             </form>
           </>
         )
       }
-      axis={<div style={{ maxHeight: '48dvh', overflow: 'auto' }}>
+      controls={world ? <div className="ws-runtime-tools">
+        {world && <div style={FACTS}><button data-testid="camera-reset" onClick={() => setCameraReset(value => value + 1)}>Frame scene</button>
+          <span> Drag to orbit · scroll to zoom · arrow keys to pan</span></div>}
         {comparison && <BranchComparison comparison={comparison.result} original={viewOriginal} busy={changing}
           onOriginal={() => {
             binding.current?.controller.setPaused(true);
@@ -741,11 +975,14 @@ export default function Page() {
             setViewOriginal(false);
           }} />}
         {controller === null ? null : <RuntimeControls controller={controller} />}
-      </div>}
+      </div> : null}
       inspect={<><WorldFacts world={world} />{world && !sourceProject && <p style={FACTS} data-testid="no-source-evidence">
         No source evidence is attached to this world. A prompt alone is not a citation.
       </p>}</>}
-      stage={<WorldstreamCanvas world={world} controller={controller} />}
+      stage={<WorldstreamCanvas world={world} controller={controller} reset={cameraReset}
+        onPresented={presented}
+        framing={sourceProject ? 'diagram' : 'scene'}
+        sceneId={sourceProject ? (sourceProject.parent ?? sourceProject).projectRevision : sessionId} />}
     />
   );
 }
@@ -787,7 +1024,7 @@ function AuthoredNotice({
     <p className="ws-provenance" data-testid="world-authored">
       {provenance.match === 'exact'
         ? 'This world was authored ahead of time.'
-        : 'This is the closest world authored ahead of time.'}
+        : 'This is the closest world authored ahead of time. Relevance to your request has not been verified.'}
     </p>
   );
 }

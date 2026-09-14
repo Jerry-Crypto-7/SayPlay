@@ -40,8 +40,20 @@ const SENTENCE: Record<WorldStatusState, string> = {
 export default function WorldStatus({
   state,
   detail = null,
+  detailPending = false,
+  intent = null,
 }: {
   readonly state: WorldStatusState;
+  readonly detailPending?: boolean;
+  /**
+   * Co planner z věty přečetl, dokud compiler ještě píše. Jen v `building`
+   * a jen dokud na plátně nic není: compiler je nejdelší volání celé cesty
+   * (12. 9. 2026: 64 s proti 8 s planneru) a „Writing the world." po celou tu
+   * dobu neřekne, jestli se věta vůbec pochopila. Setting a teze jsou to
+   * jediné, co se v tu chvíli dá pravdivě říct — a jsou to modelova slova,
+   * ne naše.
+   */
+  readonly intent?: { readonly setting: string; readonly spatialThesis: string } | null;
   /**
    * Proč se svět nepostavil, **větou ze serveru nebo ze stavby** — ne kódem
    * a ne výjimkou poskytovatele; do proudu relace se nic jiného nedostane
@@ -56,12 +68,26 @@ export default function WorldStatus({
   const broken = state === 'broken';
   return (
     <p
+      // Keep one polite region through asynchronous phases; an urgent fault
+      // mounts separately rather than changing the existing region's priority.
+      key={broken ? 'fault' : 'progress'}
       className="ws-status"
       data-testid={broken ? 'world-broken' : 'world-status'}
       data-state={state}
-      role={broken ? 'alert' : undefined}
+      role={broken ? 'alert' : 'status'}
+      aria-atomic="true"
     >
-      {SENTENCE[state]}
+      {state === 'building' && detailPending
+        ? 'The validated scene is ready to use. Building its shape detail.'
+        : state === 'building' && intent !== null
+          ? `Read as ${intent.setting}. Writing its geometry.`
+          : SENTENCE[state]}
+      {state === 'building' && !detailPending && intent !== null ? (
+        <span data-testid="world-intent" style={DETAIL}>
+          {' '}
+          {intent.spatialThesis}
+        </span>
+      ) : null}
       {broken && detail !== null && detail !== '' ? (
         <span data-testid="world-fault" style={DETAIL}>
           {' '}

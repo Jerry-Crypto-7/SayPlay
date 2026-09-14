@@ -34,7 +34,7 @@
  */
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
-import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
+import { addAfterEffect, useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import {
   BoxGeometry,
   BufferAttribute,
@@ -46,6 +46,7 @@ import {
 } from 'three';
 
 import type { RuntimeSnapshot } from '@/worldstream/runtime-controller';
+import { canonical } from '@/ir/worlddoc';
 import { PALETTES, type Palette } from '@/kit';
 import type { MeshResult } from '@/shape/mesh-client';
 import type { AnchorSpec, Vec3 } from '@/shape/types';
@@ -191,6 +192,8 @@ function buildRough(entry: ProxySlot, palette: Palette): RoughBuild {
 /** Fakta o jednom slotu. **Syrová**, aby si závěr udělal ten, kdo se ptá. */
 export interface StageSlotProbe {
   readonly stableId: string;
+  readonly objectId: string | null;
+  readonly representationId: string | null;
   readonly rung: ProxyRung;
   /** Kolik uzlů `slot:<id>` scéna doopravdy drží. Právě jeden je ta podmínka. */
   readonly groups: number;
@@ -401,6 +404,7 @@ function largestTextureAxis(root: Object3D): number {
  * ------------------------------------------------------------------ */
 
 interface StageBuild {
+  readonly reconcile: (world: ProxyWorld, palette: Palette) => void;
   /**
    * Registry, ne jen jeho snímek. Sonda i odhalení se ptají **živě**: `SlotView`
    * je hodnota pořízená v okamžiku stavby, takže po `stage()` a `commit()` už
@@ -420,25 +424,6 @@ interface StageBuild {
 }
 
 /**
- * Stavba odmítnutého světa (§27 příčka 6). **Funkce, ne sdílená konstanta:**
- * nese registry, a jedno sdílené registry napříč připojeními komponenty by
- * znamenalo, že dvě plátna píšou do jednoho vlastníka slotů.
- */
-function emptyBuild(): StageBuild {
-  return {
-    registry: createRepresentationRegistry(),
-    views: [],
-    rungs: new Map(),
-    triangles: new Map(),
-    slots: [],
-    scenery: null,
-    sceneryCost: { present: false, triangles: 0, drawCalls: 0 },
-    socketWorld: () => null,
-    dispose: () => {},
-  };
-}
-
-/**
  * Kolikrát se scéna postavila od načtení stránky — **modulová proměnná
  * schválně** (P15 T24).
  *
@@ -450,54 +435,91 @@ function emptyBuild(): StageBuild {
  */
 let stageBuilds = 0;
 
-function buildStage(world: ProxyWorld, palette: Palette): StageBuild {
+export function buildStage(world: ProxyWorld, palette: Palette): StageBuild {
   stageBuilds += 1;
-  if (world.kind !== 'built') return emptyBuild();
-
   const registry = createRepresentationRegistry();
   const rungs = new Map<string, ProxyRung>();
   const triangles = new Map<string, number>();
-  const owned: (() => void)[] = [];
-
-  for (const entry of world.slots) {
-    const rough = buildRough(entry, palette);
-    owned.push(rough.dispose);
-    registry.open(entry.slot, rough.object);
-    rungs.set(entry.slot.stableId, entry.form.rung);
-    triangles.set(entry.slot.stableId, rough.triangles);
-  }
-
-  // Kulisa je zbytek kompozice — kusy, které si nenárokoval žádný slot. Kreslí
-  // se **vedle** slotů a ve světových souřadnicích, takže žádnou transformaci
-  // nedostává: `buildProxyWorld()` jí nechal přesně ty matice, které napsal model.
+  const previous = new Map<string, ProxySlot>();
+  let activeWorld = world;
+  let activePalette: Palette | null = null;
   let scenery: Group | null = null;
   let sceneryCost: StageBuild['sceneryCost'] = { present: false, triangles: 0, drawCalls: 0 };
-  if (world.scenery.length > 0) {
-    const material = clayMaterial({ color: '#ffffff', vertexColors: true });
-    const built = buildPlacementGroup(world.scenery, palette, material, { name: SCENERY_NAME });
-    scenery = built.object;
-    sceneryCost = { present: true, triangles: built.triangles, drawCalls: built.drawCalls };
-    owned.push(() => {
-      built.dispose();
-      material.dispose();
-    });
-  }
-
+  let sceneryKey = '';
+  let disposeScenery = () => {};
+  const reconcile = (next: ProxyWorld, nextPalette: Palette) => {
+    const slots = next.kind === 'built' ? next.slots : [];
+    const replacements = new Map<string, RoughBuild>();
+    const nextScenery = next.kind === 'built' ? next.scenery : [];
+    const nextSceneryKey = canonical({ scenery: nextScenery, palette: nextPalette });
+    let preparedScenery: ReturnType<typeof buildPlacementGroup> | null = null;
+    let sceneryMaterial: ReturnType<typeof clayMaterial> | null = null;
+    try {
+      for (const entry of slots) {
+        const old = previous.get(entry.slot.stableId);
+        if (!old || activePalette !== nextPalette || !sameProxySlot(old, entry))
+          replacements.set(entry.slot.stableId, buildRough(entry, nextPalette));
+      }
+      if (nextSceneryKey !== sceneryKey && nextScenery.length) {
+        sceneryMaterial = clayMaterial({ color: '#ffffff', vertexColors: true });
+        preparedScenery = buildPlacementGroup(nextScenery, nextPalette, sceneryMaterial, { name: SCENERY_NAME });
+      }
+    } catch (error) {
+      replacements.forEach(rough => rough.dispose()); preparedScenery?.dispose(); sceneryMaterial?.dispose(); throw error;
+    }
+    for (const id of previous.keys()) if (!slots.some(entry => entry.slot.stableId === id)) {
+      registry.remove(id); previous.delete(id); rungs.delete(id); triangles.delete(id);
+    }
+    for (const entry of slots) {
+      const id = entry.slot.stableId;
+      const rough = replacements.get(id);
+      if (rough) {
+        registry.replaceRough(entry.slot, rough.object);
+        rungs.set(id, entry.form.rung); triangles.set(id, rough.triangles);
+      }
+      previous.set(id, entry);
+    }
+    if (nextSceneryKey !== sceneryKey) {
+      scenery?.removeFromParent(); disposeScenery();
+      scenery = preparedScenery?.object ?? null;
+      sceneryCost = preparedScenery ? { present: true, triangles: preparedScenery.triangles, drawCalls: preparedScenery.drawCalls }
+        : { present: false, triangles: 0, drawCalls: 0 };
+      disposeScenery = () => { preparedScenery?.dispose(); sceneryMaterial?.dispose(); };
+      sceneryKey = nextSceneryKey;
+    }
+    activeWorld = next; activePalette = nextPalette;
+  };
+  reconcile(world, palette);
   return {
+    reconcile,
     registry,
-    views: registry.slots,
+    get views() { return registry.slots; },
     rungs,
     triangles,
-    slots: world.slots,
-    scenery,
-    sceneryCost,
+    get slots() { return activeWorld.kind === 'built' ? activeWorld.slots : []; },
+    get scenery() { return scenery; },
+    get sceneryCost() { return sceneryCost; },
     socketWorld: (stableId, name) => registry.socketWorld(stableId, name),
     dispose: () => {
       registry.dispose();
       if (scenery !== null) scenery.removeFromParent();
-      for (const release of owned) release();
+      disposeScenery(); previous.clear();
     },
   };
+}
+
+/** Ignore meshing wall time; compare actual render input, including typed buffers. */
+function sameProxySlot(a: ProxySlot, b: ProxySlot): boolean {
+  if (a === b) return true;
+  if (canonical(a.slot) !== canonical(b.slot) || a.form.kind !== b.form.kind) return false;
+  if (a.form.kind === 'mesh' && b.form.kind === 'mesh') {
+    const left = a.form.mesh, right = b.form.mesh;
+    return a.form.resolution === b.form.resolution && left.shapeId === right.shapeId &&
+      canonical(left.bounds) === canonical(right.bounds) && left.vertexCount === right.vertexCount && left.triangleCount === right.triangleCount &&
+      (['positions', 'normals', 'indices'] as const).every(key => left[key].length === right[key].length &&
+        left[key].every((value, index) => value === right[key][index]));
+  }
+  return canonical(a.form) === canonical(b.form);
 }
 
 /* ------------------------------------------------------------------ *
@@ -529,6 +551,8 @@ interface Reveal {
 export interface WorldstreamStageProps {
   readonly runtimeState?: RuntimeSnapshot | null;
   readonly world: ProxyWorld;
+  /** Called after this world's first completed renderer pass, not GPU scanout. */
+  readonly onPresented?: (world: ProxyWorld) => void;
   /**
    * Paleta kusů kompozice.
    *
@@ -574,9 +598,20 @@ export default function WorldstreamStage({
   upgrade = null,
   selected = null,
   onSelect,
+  onPresented,
   labelAnchor,
 }: WorldstreamStageProps): React.ReactElement {
-  const build = useMemo(() => buildStage(world, palette), [world, palette]);
+  const [build] = useState(() => buildStage(world, palette));
+  const reconciled = useRef({ world, palette });
+  const [, setBuildRevision] = useState(0);
+  useLayoutEffect(() => {
+    if (reconciled.current.world === world && reconciled.current.palette === palette) return;
+    if (pending.current) build.registry.abandon(pending.current);
+    pending.current = null; setReveal(null);
+    build.reconcile(world, palette);
+    reconciled.current = { world, palette };
+    setBuildRevision(value => value + 1);
+  }, [build, world, palette]);
   // Transform je absolutní od autorské kotvy; opakovaný render nesčítá posun.
   useLayoutEffect(() => {
     if (runtimeState === null) return;
@@ -589,7 +624,7 @@ export default function WorldstreamStage({
       view.group.visible = entity.active;
       view.group.userData.runtime = entity;
     }
-  }, [build, runtimeState]);
+  }, [build, runtimeState, world]);
   const frames = useRef(0);
   const commits = useRef(0);
   const failures = useRef(new Map<string, string>());
@@ -605,6 +640,29 @@ export default function WorldstreamStage({
   const scene = useThree((state) => state.scene);
   const gl = useThree((state) => state.gl);
   const size = useThree((state) => state.size);
+  const presentation = useRef({ world, onPresented });
+  const presented = useRef(new WeakSet<ProxyWorld>());
+  const pendingPresentation = useRef<{ world: ProxyWorld; frame: number; rendererFrame: number } | null>(null);
+  useLayoutEffect(() => {
+    presentation.current = { world, onPresented };
+    pendingPresentation.current = null;
+  }, [world, onPresented]);
+  useLayoutEffect(() => {
+    // Installed R3F calls global after-effects after all roots' gl.render().
+    // A per-stage candidate plus this renderer's counter excludes callbacks
+    // caused solely by another Canvas, skipped renders or a lost GL context.
+    const remove = addAfterEffect(() => {
+      const candidate = pendingPresentation.current;
+      pendingPresentation.current = null;
+      if (!candidate || candidate.frame !== frames.current || gl.info.render.frame <= candidate.rendererFrame) return;
+      const current = presentation.current;
+      if (candidate.world !== current.world || candidate.world !== reconciled.current.world || presented.current.has(candidate.world)) return;
+      if (!current.onPresented) return;
+      presented.current.add(candidate.world);
+      current.onPresented(candidate.world);
+    });
+    return () => { remove(); pendingPresentation.current = null; };
+  }, [gl]);
   /** Škrábací vektor projekce. `project()` mutuje, takže se nealokuje po snímcích. */
   const projected = useMemo(() => new Vector3(), []);
 
@@ -650,8 +708,12 @@ export default function WorldstreamStage({
     [build, projected, camera, size],
   );
 
-  useFrame(() => {
+  useFrame((state) => {
     frames.current += 1;
+    const current = presentation.current;
+    // Do not claim an automatic pass if another subscriber owns rendering.
+    pendingPresentation.current = root?.parent && !state.internal.priority && current.onPresented && !presented.current.has(current.world)
+      ? { world: current.world, frame: frames.current, rendererFrame: gl.info.render.frame } : null;
 
     const node = labelAnchor?.current ?? null;
     if (node === null) return;
@@ -890,6 +952,8 @@ export default function WorldstreamStage({
           const group = groupNamed(slotGroupName(stableId));
           return {
             stableId,
+            objectId: view?.group.uuid ?? null,
+            representationId: view?.attached?.uuid ?? null,
             rung: build.rungs.get(stableId)!,
             groups: count(slotGroupName(stableId), root),
             forms: { total: count(form, root), inGroup: count(form, group) },
