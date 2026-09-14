@@ -116,8 +116,36 @@ export interface UpstreamRequest {
  * Zmrazený korpus tím dotčený **není**: `evals/frozen/responses/` jsou
  * syntetické odpovědi klíčované podle promptu, ne podle jména modelu, takže
  * `./client` v režimu záznamu čte totéž co dřív.
+ *
+ * **Od 12. 9. 2026 varianta `-fast` téhož modelu** — stejná odpověď, jiná
+ * priorita zpracování u poskytovatele. Naměřeno `live-latency.measure.ts`
+ * nad pěti větami korpusu (`evals/worldstream/latency-report.json`):
+ * medián věty **98 s → 56 s**, p95 **130 s → 79 s**, planner 15,6 → 9,6 s,
+ * compiler 64 → 40 s; napsaná geometrie 5/5 proti 4/5, ten jeden padl na
+ * nevyhratelném světě, ne na tvaru. **Přesto tu `-fast` nestojí — rozhodnutí
+ * uživatele 13. 9. 2026:** ta varianta účtuje předplatnému asi 2,5× víc
+ * tokenů, a to je cena, kterou za 40 s na větu neplatí. Jméno zůstává jen
+ * jako volba měřidla (`WORLDSMITH_LATENCY_MODELS`), ne produktu.
+ *
+ * **Od 13. 9. 2026 `gpt-5.6-luna`** — rozhodnutí uživatele po dvou měřeních
+ * téhož dne (`evals/worldstream/latency-report.json`, `PROJECT-STATUS.md`):
+ * nad 30 větami luna medián **33 s** proti 101 s solu (sol 2× narazil na
+ * strop 120 s), stejný počet vstupních tokenů, poloviční výstup; nad 5 větami
+ * v jednom běhu s `gpt-6-astra` (jen přes Codex CLI, proxy ho nezná) luna
+ * 5/5 za 36 s, astra low 3/5 za 172 s, medium 3/5 za 145 s, high 2/5 za
+ * 221 s. Sol napsal geometrii častěji (27/30 proti 21/30), ale zbylé
+ * neúspěchy luny jsou nevyhratelné světy, ne tvar — to řeší prompt, ne model.
+ *
+ * **Od 13. 9. 2026 večer `gpt-6-astra`** — rozhodnutí uživatele („chci Astru")
+ * po galerii kvality (`e2e/quality-gallery.spec.ts`, `PROJECT-STATUS.md`): nad
+ * pěti větami píše Astra 2–5× bohatší kompozice (katedrála z kontejnerů o třech
+ * patrech proti čtyřem deskám luny, zvlněný terén proti rovině, rozpoznatelné
+ * autokino) a s uvolněnými limity (hloubka tvarů 12, kusů 200) prošla 4/5.
+ * Cena: medián **143 s** na větu proti 35 s luny, a jde jen přes Codex CLI
+ * (`WORLDSMITH_MODEL_ENDPOINT=codex-cli` v `src/server/upstream.ts`), protože
+ * proxy ten model nezná. Úsilí `medium` (low bylo pomalejší i horší).
  */
-export const EMISSION_MODEL = 'gpt-5.6-sol';
+export const EMISSION_MODEL = 'gpt-6-astra';
 
 /**
  * Řádek, za kterým ve zprávě stojí příklad a nic jiného.

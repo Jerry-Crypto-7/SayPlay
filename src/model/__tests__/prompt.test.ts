@@ -261,7 +261,7 @@ describe('zpráva nese slovník i tvar', () => {
 describe('the emission path names the model that actually answers', () => {
   it('refuses any claude-* alias while the model is bought as a subscription', () => {
     expect(EMISSION_MODEL.toLowerCase().startsWith('claude-')).toBe(false);
-    expect(EMISSION_MODEL).toBe('gpt-5.6-sol');
+    expect(EMISSION_MODEL).toBe('gpt-6-astra');
   });
 
   it('sends that same name upstream instead of one written elsewhere', () => {
