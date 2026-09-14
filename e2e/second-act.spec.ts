@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type Response } from '@playwright/test';
 
 /**
  * **Dějství II: model píše svou verzi a nabídne ji** (P15 `T14r-acttwo`,
@@ -26,10 +26,11 @@ import { expect, test, type Page } from '@playwright/test';
  */
 
 /** Věta, kterou sklad zná přesně (`src/worldstream/authored-worlds.json`). */
-const AUTHORED = 'A cathedral of stacked shipping containers around a light well.';
+const AUTHORED = 'A bridge town: houses hanging under a single span over a dry canyon.';
 
-/** Uvařená změna toho světa. Bez modelu je to jediná cesta k `commit`. */
-const REFINE = 'Paint the containers rust red.';
+/** Authored shape edit. The historical prompt also asks for sway, which this
+ * renderer/runtime does not implement and this test does not certify. */
+const REFINE = 'Make the hanging houses bigger and let them sway.';
 
 /** Relace dějství II. Vlastní id je celý smysl: dějství I se ho nesmí dotknout. */
 const ACT_TWO = '11111111-2222-3333-4444-555555555555';
@@ -126,6 +127,29 @@ async function buildWorld(page: Page, sentence: string): Promise<void> {
   });
 }
 
+async function shapeIdentity(page: Page) {
+  return page.evaluate(() => window.__worldstreamStage!.slots().find(slot => slot.stableId === 'hangingHouses')!.representationId);
+}
+
+/** Assert the actual accepted shape and its displayed geometry, not disappearance
+ * of a preview (which also happens when postcommit display recovery is needed).
+ * This does not claim that the authored sway declaration is implemented. */
+async function acceptedShape(page: Page, response: Promise<Response>, previous: string | null) {
+  const received = await response;
+  expect(received.ok()).toBe(true);
+  const result = await received.json();
+  expect(result, JSON.stringify(result)).toMatchObject({ outcome: 'COMMITTED', stableId: 'hangingHouses' });
+  expect(result.representation).not.toBeNull();
+  expect(result.representation).toBeDefined();
+  await expect.poll(() => shapeIdentity(page), { timeout: WORLD_BUDGET_MS }).not.toBe(previous);
+  const slot = await page.evaluate(() => window.__worldstreamStage!.slots().find(entry => entry.stableId === 'hangingHouses')!);
+  expect(slot.representationId).not.toBeNull();
+  expect(slot.rung).not.toBe('semantic-clay');
+  expect(slot.failure).toBeNull();
+  expect(slot.triangles).toBeGreaterThan(0);
+  await expect(page.getByTestId('change-recovery')).toHaveCount(0);
+}
+
 test('dokud porotce nic nezměnil, dějství II svět vymění samo — i s adresou relace', async ({
   page,
 }) => {
@@ -146,6 +170,10 @@ test('dokud porotce nic nezměnil, dějství II svět vymění samo — i s adre
   await expect(page.getByTestId('world-authored')).toHaveCount(0, { timeout: WORLD_BUDGET_MS });
   await expect(page.getByTestId('second-act-writing')).toHaveCount(0);
   await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live');
+  const measurements = await page.evaluate(() => window.__worldstreamMetrics!.snapshot());
+  expect(measurements.runs[0].provenance).toBe('prepared');
+  expect(measurements.runs[0].outcome).toBe('cancelled');
+  expect(measurements.currentRunId).toBeNull();
 
   // **A tohle je ta atomicita.** Svět bez své relace by vypadal správně a druhá
   // věta by pořád mířila do relace dějství I — tedy na jiný svět, než jaký
@@ -163,7 +191,9 @@ test('visitor input protects the running world from a late second act', async ({
   test.setTimeout(180_000);
   const acts = await scriptSecondAct(page);
   await page.goto('/');
-  await buildWorld(page, AUTHORED);
+  // This authored scene exposes visitor actions; the shape-edit bridge fixture
+  // used by the commit races has none.
+  await buildWorld(page, 'A cathedral of stacked shipping containers around a light well.');
   await expect(page.getByTestId('second-act-writing')).toBeVisible();
   await expect(page.getByTestId('runtime-act')).toBeEnabled();
   await page.getByTestId('runtime-act').click();
@@ -189,7 +219,10 @@ test('když porotce změnu commitnul, dějství II se jen nabídne', async ({ pa
   await expect(page.getByTestId('change-preview')).toHaveAttribute('data-kind', 'preview', {
     timeout: WORLD_BUDGET_MS,
   });
+  const previousShape = await shapeIdentity(page);
+  const commitResponse = page.waitForResponse(response => response.url().endsWith('/commit'));
   await page.getByTestId('change-apply').click();
+  await acceptedShape(page, commitResponse, previousShape);
   await expect(page.getByTestId('change-preview')).toHaveCount(0, { timeout: WORLD_BUDGET_MS });
 
   acts.release();
@@ -226,6 +259,8 @@ test('dějství II, které dorazí uprostřed potvrzování změny, svět nepře
   // rozdělaným commitem a na plátně skončil svět jedné relace, v poli druhé
   // věty adresa druhé a popisek původu třetí pravda.
   acts.hold();
+  const previousShape = await shapeIdentity(page);
+  const commitResponse = page.waitForResponse(response => response.url().endsWith('/commit'));
   await page.getByTestId('change-apply').click();
   await expect
     .poll(() => acts.urls.some((url) => url.includes('/commit')), { timeout: 30_000 })
@@ -236,6 +271,7 @@ test('dějství II, které dorazí uprostřed potvrzování změny, svět nepře
   await expect(page.getByTestId('second-act-offer')).toBeVisible({ timeout: WORLD_BUDGET_MS });
 
   acts.releaseCommit();
+  await acceptedShape(page, commitResponse, previousShape);
 
   // A commit doběhne do svého vlastního světa, ne do toho od modelu.
   await expect(page.getByTestId('change-preview')).toHaveCount(0, { timeout: WORLD_BUDGET_MS });

@@ -7,7 +7,7 @@ import surface from '../evals/reality-compiler/museum.sim.json';
 import { openInspect } from './inspect';
 
 // Skutečná hlavní URL a autorovaný svět; žádná placená inference.
-test('pause and a visual commit preserve the running simulation', async ({ page }) => {
+test('unsupported appearance is refused by the actual server while preserving runtime and camera', async ({ page }) => {
   test.setTimeout(180_000);
   await page.route('**/api/worldstream/sessions', async route => {
     if (route.request().postDataJSON()?.live === true) {
@@ -18,7 +18,9 @@ test('pause and a visual commit preserve the running simulation', async ({ page 
   });
   await page.goto('/');
   await page.getByTestId('prompt-input').fill('A cathedral of stacked shipping containers around a light well.');
+  const opened = page.waitForResponse(response => response.url().endsWith('/api/worldstream/sessions') && response.request().method() === 'POST');
   await page.getByTestId('prompt-submit').click();
+  const sessionId = (await (await opened).json()).sessionId as string;
   await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live', { timeout: 90_000 });
   const tick = page.getByTestId('runtime-tick');
   await expect.poll(async () => Number(await tick.getAttribute('data-tick'))).toBeGreaterThan(5);
@@ -27,17 +29,25 @@ test('pause and a visual commit preserve the running simulation', async ({ page 
   const paused = await tick.getAttribute('data-tick');
   const canvas = await page.getByTestId('worldstream-canvas').elementHandle();
   const builds = await page.evaluate(() => window.__worldstreamStage?.builds());
+  const identities = await page.evaluate(() => window.__worldstreamStage!.slots().map(slot => ({ id: slot.stableId, object: slot.objectId })));
+  const sceneCanvas = page.getByTestId('worldstream-canvas').locator('canvas');
+  await sceneCanvas.focus();
+  await page.keyboard.press('ArrowLeft');
+  const camera = await page.evaluate(() => window.__worldstreamStage!.camera());
   await openInspect(page);
+  const beforeDocument = (await (await page.request.get(`/api/worldstream/sessions/${sessionId}`)).json()).blueprint;
   await page.getByTestId('refine-input').fill('Paint the containers rust red.');
   await page.getByTestId('refine-submit').click();
-  await expect(page.getByTestId('change-preview')).toBeVisible({ timeout: 30_000 });
-  await page.getByTestId('change-apply').click();
-  await expect(page.getByTestId('change-preview')).toHaveCount(0, { timeout: 60_000 });
+  await expect(page.getByTestId('change-refusal')).toContainText('not supported in this renderer', { timeout: 30_000 });
+  await expect(page.getByTestId('change-apply')).toHaveCount(0);
+  expect((await (await page.request.get(`/api/worldstream/sessions/${sessionId}`)).json()).blueprint).toEqual(beforeDocument);
   expect(await tick.getAttribute('data-tick')).toBe(paused);
   await expect(page.getByTestId('runtime-pause')).toHaveText('Resume');
   expect(await canvas!.evaluate(node => node.isConnected)).toBe(true);
   const afterLook = await page.evaluate(() => window.__worldstreamStage?.builds());
-  expect(afterLook).toBeGreaterThanOrEqual(builds!);
+  expect(afterLook).toBe(builds);
+  expect(await page.evaluate(() => window.__worldstreamStage!.slots().map(slot => ({ id: slot.stableId, object: slot.objectId })))).toEqual(identities);
+  expect(await page.evaluate(() => window.__worldstreamStage!.camera())).toEqual(camera);
   await page.getByTestId('runtime-pause').click();
   await expect.poll(async () => Number(await tick.getAttribute('data-tick'))).toBeGreaterThan(Number(paused) + 3);
   expect(await page.evaluate(() => window.__worldstreamStage?.builds())).toBe(afterLook);

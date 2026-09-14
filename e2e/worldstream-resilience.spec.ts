@@ -252,15 +252,22 @@ test.describe('worldstream odolnost', () => {
     await page.getByTestId('materialize').click();
     await waitForCommits(page, 0);
     const baseline = await memory(page);
+    const resourceSamples = [{ swap: 1, memory: baseline }];
     expect(baseline.geometries, 'scéna nedrží žádnou geometrii').toBeGreaterThan(0);
     expect(baseline.programs, 'renderer si nevede programy, takže o materiálech nic neřekne').toBeGreaterThan(0);
 
     for (let swap = 2; swap <= SWAPS; swap += 1) {
       await page.getByTestId('materialize').click();
       await waitForCommits(page, swap - 1);
+      resourceSamples.push({ swap, memory: await memory(page) });
     }
 
     const after = await memory(page);
+    await test.info().attach('dev-stage-resource-trend.json', {
+      contentType: 'application/json',
+      body: JSON.stringify({ scope: 'dev-stage/materialize', scripted: true, liveGeneration: false,
+        units: 'renderer resource counts, not VRAM bytes', swaps: SWAPS, baseline, samples: resourceSamples, after }, null, 2),
+    });
     expect(after.geometries, `geometrie ${baseline.geometries} → ${after.geometries}`).toBe(
       baseline.geometries,
     );

@@ -14,9 +14,9 @@ import { QUALITY_TIERS, budgetFor, type QualityTier } from '../src/worldstream/q
  * ## Co tahle sada NEDOKAZUJE, a proč
  *
  * **Padesát snímků za vteřinu se tady certifikovat nedá.** AC úlohy mluví
- * o referenčním desktopu; tenhle běh je headless Chromium přes SwiftShader,
- * tedy softwarový rasterizér bez GPU (`playwright.config.ts`). Číslo naměřené
- * tady by o referenčním stroji netvrdilo nic. Sada proto fps **měří a vypíše**,
+ * o referenčním desktopu; tenhle běh používá renderer zvolený konfigurací
+ * (`playwright.config.ts`), tedy nativní GPU nebo software. Samotná volba
+ * rendereru nedokládá referenční podmínky. Sada proto fps **měří a vypíše**,
  * ale soudí jen to, co v tomhle prostředí smysl dává: že scéna po materializaci
  * dál kreslí. **Padesát fps zůstává neověřené** a stojí to tak i v plánu.
  *
@@ -40,7 +40,7 @@ import { QUALITY_TIERS, budgetFor, type QualityTier } from '../src/worldstream/q
  * `dpr` nemá do čeho kousnout. Sada si proto pro něj otevře okno
  * s `deviceScaleFactor: 2`, kde se ty tři meze poprvé rozejdou, a měří to, co
  * ratio doopravdy platí: **plochu kreslicího bufferu**. Ta na ovladači nezávisí,
- * takže je poctivá i na SwiftShaderu — na rozdíl od snímkové frekvence.
+ * takže platí pro nativní i softwarový renderer; snímková frekvence na nich závisí.
  */
 
 /** Kolik snímků se nechá proběhnout, než se čte. Účet `gl.info` platí až po nich. */
@@ -173,11 +173,9 @@ test.describe('worldstream adaptive quality', () => {
       return window.__worldstreamStage!.frames() - start;
     }, FPS_WINDOW_MS);
 
-    // Naměřené tempo se **vypisuje**, ne soudí proti 50 fps: SwiftShader je
-    // softwarový rasterizér a číslo z něj o referenčním desktopu nic neříká.
-    // Práh je proto „kreslí dál", což je jediné tvrzení, které tohle prostředí
-    // unese.
-    console.log(`[T26] frames in ${FPS_WINDOW_MS} ms on SwiftShader: ${drawn}`);
+    // Naměřené tempo se vypisuje pro nakonfigurovaný renderer. Tento smoke
+    // neověřuje referenční podmínky pro 50 fps; práh zůstává „kreslí dál“.
+    console.log(`[T26] frames in ${FPS_WINDOW_MS} ms on configured renderer: ${drawn}`);
     expect(drawn).toBeGreaterThan(0);
   });
 
