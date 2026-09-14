@@ -1,3 +1,8 @@
+import { execFile } from 'node:child_process';
+import { join } from 'node:path';
+
+import { observePhase, observePhaseAsync } from '../model/phase-observer';
+import { serverPhaseObserver } from './worldstream-metrics';
 /**
  * **Živá větev generování — HTTP volání poskytovatele.**
  *
@@ -128,6 +133,30 @@ export interface UpstreamConfig {
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 8000;
 const DEFAULT_TIMEOUT_MS = 120_000;
+
+/**
+ * **Druhý transport: Codex CLI místo HTTP** (13. 9. 2026, rozhodnutí uživatele
+ * „chci Astru").
+ *
+ * `gpt-6-astra` se přes `claude-code-proxy` zavolat nedá — proxy má seznam
+ * modelů natvrdo a končí u gpt-5.6. Jediná cesta k němu z předplatného je
+ * `codex exec`, tedy proces na každé volání. Vybírá se **hodnotou koncového
+ * bodu**, ne novou proměnnou: `WORLDSMITH_MODEL_ENDPOINT=codex-cli` znamená
+ * „žádná adresa, spusť CLI", a všechno ostatní (model, úsilí, strop volání,
+ * ceník pro odvozené dolary) zůstává jak je. Klíč se u CLI nepoužije — přihlášení
+ * drží Codex sám (`codex login status`) — ale konfigurace ho dál vyžaduje,
+ * aby se tahle větev nedala zapnout omylem prázdným prostředím.
+ *
+ * Prompt je `system` a `user` za sebou, protože CLI má jediné vstupní pole;
+ * odpověď jde přes `parseAnswerText` stejně jako z HTTP. Codex k promptu
+ * přidává vlastní systémový prompt (~11 tis. tokenů) — účtenka je proto
+ * skutečná spotřeba předplatného, ne to, co poslal produkt.
+ *
+ * Výchozí strop volání je tu **240 s, ne 120 s**: Astra píše compiler
+ * v mediánu 100 s a p95 155 s (`evals/worldstream/latency-report.json`).
+ */
+export const CODEX_CLI_ENDPOINT = 'codex-cli';
+const DEFAULT_CLI_TIMEOUT_MS = 240_000;
 
 /**
  * **Proč `low` a ne výchozí hodnota poskytovatele.**
@@ -303,7 +332,7 @@ export function upstreamConfigFromEnv(env: Record<string, string | undefined>): 
       usdPerMTokOut,
     },
     maxOutputTokens,
-    timeoutMs: positiveNumber(env.WORLDSMITH_UPSTREAM_TIMEOUT_MS, DEFAULT_TIMEOUT_MS),
+    timeoutMs: positiveNumber(env.WORLDSMITH_UPSTREAM_TIMEOUT_MS, endpoint === CODEX_CLI_ENDPOINT ? DEFAULT_CLI_TIMEOUT_MS : DEFAULT_TIMEOUT_MS),
     profile,
     callCap,
   };
@@ -378,6 +407,63 @@ function worstCaseUsd(call: GenerationCall, config: UpstreamConfig): number {
     (inputTokens * config.pricing.usdPerMTokIn + config.maxOutputTokens * config.pricing.usdPerMTokOut) /
     1_000_000
   );
+}
+
+/**
+ * **JSON s jednou závorkou navíc nebo méně na konci se přečte, ne zahodí.**
+ *
+ * Naměřeno 13. 9. 2026 (`evals/worldstream/latency-report.json`): `gpt-5.6-terra`
+ * zavíral asi polovinu plannerových odpovědí o `}` navíc a `gpt-5.6-luna`
+ * část compilerových o `}` méně — jinak správný dokument za 25–60 s a tisíce
+ * tokenů, který by tahle brána vyhodila jako `MALFORMED_RESPONSE`, a věta by
+ * porotci nevznikla vůbec. Opravuje se **jen konec dokumentu a nanejvýš o dvě
+ * závorky**: zbytek textu se nesmí změnit, takže cokoli uprostřed (chybějící
+ * čárka, useknutý řetězec) se dál odmítá tak, jak je.
+ */
+export function parseAnswerText(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch (thrown) {
+    const trimmed = text.trimEnd();
+    const closers = missingClosers(trimmed);
+    const candidates = [
+      ...(closers !== null && closers.length > 0 && closers.length <= 2 ? [trimmed + closers] : []),
+      ...(trimmed.endsWith('}') ? [trimmed.slice(0, -1)] : []),
+      ...(trimmed.endsWith('}}') ? [trimmed.slice(0, -2)] : []),
+    ];
+    for (const candidate of candidates) {
+      try {
+        return JSON.parse(candidate);
+      } catch {
+        // další kandidát
+      }
+    }
+    throw thrown;
+  }
+}
+
+/**
+ * Závorky, které na konci chybí, v pořadí, v jakém se mají dopsat; `null`,
+ * když se text zavře dřív, než skončí (závorka navíc), nebo skončí v řetězci.
+ */
+function missingClosers(text: string): string | null {
+  const stack: string[] = [];
+  let inString = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    if (inString) {
+      if (char === '\\') index += 1;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (char === '"') inString = true;
+    else if (char === '{') stack.push('}');
+    else if (char === '[') stack.push(']');
+    else if (char === '}' || char === ']') {
+      if (stack.pop() !== char) return null;
+    }
+  }
+  return inString ? null : stack.reverse().join('');
 }
 
 function usageOf(payload: unknown): Usage | null {
@@ -543,14 +629,96 @@ function readableUsage(usage: Usage | null, text: string, maxOutputTokens: numbe
   return usage;
 }
 
+/**
+ * Co spustit. Na Windows se `codex.cmd` z Node bez shellu nespustí, takže se
+ * volá přímo skript npm instalace přes tenhle `node`; jinde stačí `codex`
+ * z PATH. `WORLDSMITH_CODEX_JS` to přebije pro stroj s jinou instalací.
+ */
+function codexCommand(): { readonly file: string; readonly prefix: readonly string[] } {
+  const script = process.env.WORLDSMITH_CODEX_JS ?? (process.platform === 'win32'
+    ? join(process.env.APPDATA ?? '', 'npm', 'node_modules', '@openai', 'codex', 'bin', 'codex.js')
+    : '');
+  return script === '' ? { file: 'codex', prefix: [] } : { file: process.execPath, prefix: [script] };
+}
+
+function runCodex(args: readonly string[], input: string, timeoutMs: number): Promise<string> {
+  const command = codexCommand();
+  return new Promise((resolve, reject) => {
+    const child = execFile(
+      command.file,
+      [...command.prefix, ...args],
+      { windowsHide: true, timeout: timeoutMs, maxBuffer: 8 * 1024 * 1024 },
+      (error, stdout, stderr) => {
+        if (error) reject(new Error(`${error.killed ? 'codex exec ran past the timeout' : error.message.split('\n')[0]} ${stderr.slice(0, 300)}`.trim()));
+        else resolve(stdout);
+      },
+    );
+    child.stdin?.end(input);
+  });
+}
+
+async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig): Promise<GenerationOutcome> {
+  let output: string;
+  try {
+    output = await observePhaseAsync(serverPhaseObserver, 'provider-http-request', () => runCodex(
+      [
+        'exec', '--ignore-user-config', '--ephemeral', '--skip-git-repo-check', '--sandbox', 'read-only',
+        '-c', 'approval_policy="never"', '-c', 'forced_login_method="chatgpt"', '-c', 'model_provider="openai"',
+        '-c', `model_reasoning_effort="${config.effort}"`,
+        '-c', 'features.shell_tool=false', '-c', 'features.apps=false', '-c', 'web_search="disabled"',
+        '--cd', process.cwd(), '--model', config.model, '--json', '-',
+      ],
+      `${call.request.system}\n\n${call.request.user}`,
+      config.timeoutMs,
+    ));
+  } catch (thrown) {
+    return { ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: `the codex call did not complete: ${(thrown as Error).message}`, usage: null };
+  }
+
+  let events: Record<string, any>[];
+  try {
+    events = output.split(/\r?\n/).filter((line) => line.trim() !== '').map((line) => JSON.parse(line) as Record<string, any>);
+  } catch (thrown) {
+    return { ok: false, reason: 'MALFORMED_RESPONSE', detail: `the codex event stream is not JSON lines: ${(thrown as Error).message}`, usage: null };
+  }
+  const failed = events.find((event) => event.type === 'turn.failed' || event.type === 'error');
+  if (failed !== undefined)
+    return { ok: false, reason: 'UPSTREAM_REJECTED', detail: `codex refused the turn: ${JSON.stringify(failed).slice(0, 300)}`, usage: null };
+  const completion = events.find((event) => event.type === 'turn.completed');
+  const message = [...events].reverse().find((event) => event.type === 'item.completed' && event.item?.type === 'agent_message');
+  const text: unknown = message?.item?.text;
+  if (completion === undefined || typeof text !== 'string')
+    return { ok: false, reason: 'MALFORMED_RESPONSE', detail: 'the codex turn carries no completed message', usage: null };
+
+  const usage = usageOf({ usage: completion.usage });
+  let body: unknown;
+  try {
+    body = observePhase(serverPhaseObserver, 'provider-output-json-parse', () => parseAnswerText(text));
+  } catch (thrown) {
+    return {
+      ok: false,
+      reason: 'MALFORMED_RESPONSE',
+      detail: `the codex answer is not JSON: ${(thrown as Error).message}`,
+      usage: readableUsage(usage, text, config.maxOutputTokens),
+    };
+  }
+  return {
+    ok: true,
+    body,
+    usage: readableUsage(usage, text, config.maxOutputTokens),
+    provenance: { branch: UPSTREAM_BRANCH_ID, source: 'codex-cli', synthetic: false, model: config.model },
+  };
+}
+
 async function generate(
   call: GenerationCall,
   config: UpstreamConfig,
   fetchImpl: typeof fetch,
 ): Promise<GenerationOutcome> {
+  if (config.endpoint === CODEX_CLI_ENDPOINT) return generateViaCodexCli(call, config);
   let response: Response;
   try {
-    response = await fetchImpl(config.endpoint, {
+    response = await observePhaseAsync(serverPhaseObserver, 'provider-http-request', () => fetchImpl(config.endpoint, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -567,7 +735,7 @@ async function generate(
         messages: [{ role: 'user', content: call.request.user }],
       }),
       signal: AbortSignal.timeout(config.timeoutMs),
-    });
+    }));
   } catch (thrown) {
     return {
       ok: false,
@@ -589,7 +757,7 @@ async function generate(
 
   let payload: unknown;
   try {
-    payload = await response.json();
+    payload = await observePhaseAsync(serverPhaseObserver, 'provider-response-json', () => response.json());
   } catch (thrown) {
     return {
       ok: false,
@@ -631,7 +799,7 @@ async function generate(
 
   let body: unknown;
   try {
-    body = JSON.parse(text);
+    body = observePhase(serverPhaseObserver, 'provider-output-json-parse', () => parseAnswerText(text));
   } catch (thrown) {
     return {
       ok: false,

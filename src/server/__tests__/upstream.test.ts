@@ -28,7 +28,9 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { frozenGrammar } from '../../model/client';
@@ -987,3 +989,108 @@ function grepRepo(pattern: RegExp): string[] {
 function grepNames(pattern: RegExp): string[] {
   return [...new Set(gitGrep('-hoE', pattern))].sort();
 }
+
+/**
+ * 7. Transport `codex-cli` — `WORLDSMITH_MODEL_ENDPOINT=codex-cli` spouští
+ * `codex exec --json` místo HTTP. Testuje se **skutečnou cestou procesem**:
+ * `WORLDSMITH_CODEX_JS` ukáže na skript, který zahraje Codex (přečte prompt
+ * ze stdin, vypíše proud událostí), takže se soudí i to, jak se proces spouští
+ * a čte, ne jen parser nad připraveným řetězcem.
+ */
+describe('7. transport codex-cli spustí proces a přečte proud událostí', () => {
+  const CLI_ENV = { ...LIVE_ENV, WORLDSMITH_MODEL_ENDPOINT: 'codex-cli', WORLDSMITH_MODEL: 'gpt-6-astra', WORLDSMITH_MODEL_EFFORT: 'medium' };
+  const scripts = mkdtempSync(join(tmpdir(), 'fake-codex-'));
+
+  /** Skript, který se chová jako Codex: čte stdin, tiskne zadané řádky. */
+  function fakeCodex(name: string, lines: readonly unknown[], extra = ''): string {
+    const file = join(scripts, `${name}.cjs`);
+    writeFileSync(file, [
+      "const chunks = []; process.stdin.on('data', (c) => chunks.push(c));",
+      "process.stdin.on('end', () => {",
+      "  const prompt = Buffer.concat(chunks).toString('utf8');",
+      // Co proces dostal, jde stranou do souboru — do proudu ne: cesty Windows a
+      // uvozovky argumentů by rozbily JSON, který se tu má soudit.
+      `  require('node:fs').writeFileSync(${JSON.stringify(`${file}.seen.json`)}, JSON.stringify({ args: process.argv.slice(2), promptHead: prompt.slice(0, 20) }));`,
+      `  const lines = ${JSON.stringify(lines)};`,
+      '  for (const line of lines) process.stdout.write(JSON.stringify(line) + String.fromCharCode(10));',
+      extra,
+      '});',
+    ].join('\n'));
+    return file;
+  }
+
+  const answer = { hello: 'world' };
+  const okStream = [
+    { type: 'thread.started', thread_id: 't' },
+    { type: 'turn.started' },
+    { type: 'item.completed', item: { id: 'i0', type: 'agent_message', text: JSON.stringify(answer) } },
+    { type: 'turn.completed', usage: { input_tokens: 12000, output_tokens: 300, reasoning_output_tokens: 20 } },
+  ];
+
+  function withScript(file: string, run: () => Promise<void>) {
+    const previous = process.env.WORLDSMITH_CODEX_JS;
+    process.env.WORLDSMITH_CODEX_JS = file;
+    return run().finally(() => {
+      if (previous === undefined) delete process.env.WORLDSMITH_CODEX_JS;
+      else process.env.WORLDSMITH_CODEX_JS = previous;
+    });
+  }
+
+  it('vrátí tělo z agent_message, účtenku z turn.completed a jméno modelu i úsilí předá procesu', async () => {
+    const file = fakeCodex('ok', okStream);
+    await withScript(file, async () => {
+      const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 'SYSTEM TEXT HERE', user: PROMPT } });
+      expect(outcome.ok).toBe(true);
+      if (!outcome.ok) return;
+      expect(outcome.body).toEqual(answer);
+      const seen = JSON.parse(readFileSync(`${file}.seen.json`, 'utf8')) as { args: string[]; promptHead: string };
+      const args = seen.args.join(' ');
+      expect(args).toContain('--model gpt-6-astra');
+      expect(args).toContain('model_reasoning_effort="medium"');
+      expect(args).toContain('--sandbox read-only');
+      expect(args).toContain('features.shell_tool=false');
+      expect(seen.promptHead).toBe('SYSTEM TEXT HERE\n\na ');
+      expect(outcome.usage).toEqual({ inputTokens: 12000, outputTokens: 300 });
+      expect(outcome.provenance).toMatchObject({ source: 'codex-cli', model: 'gpt-6-astra' });
+    });
+  });
+
+  it('turn.failed je odmítnutí, ne výpadek', async () => {
+    const file = fakeCodex('failed', [okStream[0], { type: 'turn.failed', error: { message: 'model not available' } }]);
+    await withScript(file, async () => {
+      const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
+      expect(outcome).toMatchObject({ ok: false, reason: 'UPSTREAM_REJECTED', usage: null });
+    });
+  });
+
+  it('proud bez hotové zprávy a text, který není JSON, jsou vadné odpovědi', async () => {
+    const noMessage = fakeCodex('nomsg', [okStream[0], okStream[1], okStream[3]]);
+    await withScript(noMessage, async () => {
+      const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
+      expect(outcome).toMatchObject({ ok: false, reason: 'MALFORMED_RESPONSE' });
+    });
+    const notJson = fakeCodex('notjson', [okStream[0], okStream[1], { type: 'item.completed', item: { type: 'agent_message', text: '{"extent": [ thirty ]}' } }, okStream[3]]);
+    await withScript(notJson, async () => {
+      const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
+      expect(outcome).toMatchObject({ ok: false, reason: 'MALFORMED_RESPONSE' });
+      if (outcome.ok) return;
+      // Tokeny se spálily, účtenka se tedy čte — s hranicí zdola jako u HTTP.
+      expect(outcome.usage).not.toBeNull();
+    });
+  });
+
+  it('proces, který nedoběhne do stropu, je výpadek a zabije se', async () => {
+    const file = fakeCodex('slow', [okStream[0]], '  setTimeout(() => {}, 30_000);');
+    await withScript(file, async () => {
+      const outcome = await upstreamBranch(liveConfig({ ...CLI_ENV, WORLDSMITH_UPSTREAM_TIMEOUT_MS: '400' })).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
+      expect(outcome).toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE' });
+      if (outcome.ok) return;
+      expect(outcome.detail).toContain('timeout');
+    });
+  });
+
+  it('bez codex-cli v koncovém bodu zůstává výchozí strop 120 s, s ním 240 s', () => {
+    expect(liveConfig().timeoutMs).toBe(120_000);
+    expect(liveConfig(CLI_ENV).timeoutMs).toBe(240_000);
+  });
+});
