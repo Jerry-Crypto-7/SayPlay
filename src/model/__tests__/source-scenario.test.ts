@@ -8,6 +8,7 @@ import { SpendRefusalError } from '../../server/spend-cap';
 import * as provider from '../../server/worldstream-emitter';
 import { runSourceProposal, serverGrammar } from '../../worldstream/sessions';
 import { proposeSourceScenario } from '../source-scenario';
+import { ruleSupportParts } from '../../worldstream/rule-support';
 
 const grammar = serverGrammar();
 if (typeof grammar === 'string') throw new Error(grammar);
@@ -20,8 +21,9 @@ function reply() {
     claims: [{ claimId: 'timing', text: 'The source states 20 seconds.', support: 'sourced',
       interventionId: null, review: { status: 'unchecked' },
       spans: [{ sourceId: 'source', startByte: 0, endByte: 17, excerpt: source.text }] }],
-    bindings: Object.keys(sim.rules).map((id) => ({ bindingId: `binding.${id}`,
-      target: { kind: 'rule', id }, claimIds: ['timing'] })),
+    // Scripted structural coverage, not a claim of semantic support.
+    bindings: ruleSupportParts(sim.rules).map(({ ruleId, part }) => ({
+      target: { kind: 'rule', id: ruleId }, part, claimIds: ['timing'] })),
   };
 }
 async function propose(body: unknown = reply(), overrides: Record<string, unknown> = {}) {
@@ -31,6 +33,43 @@ async function propose(body: unknown = reply(), overrides: Record<string, unknow
 }
 
 describe('source proposal: offline contract fixtures, not semantic model evidence', () => {
+  it('cites an explicit user supplement separately without modifying original bytes or review', async () => {
+    const supplement = '\ufeffTimer duration: 20 seconds.\r\n';
+    const body = reply();
+    body.claims[0].spans = [{ sourceId: 'user_supplement', startByte: 0,
+      endByte: Buffer.byteLength(supplement), excerpt: supplement }];
+    const { result, emit } = await propose(body, { supplement });
+    expect(result.kind).toBe('proposed');
+    if (result.kind !== 'proposed') throw new Error(JSON.stringify(result));
+    expect(result.source.text).toBe(source.text);
+    expect(result.supplements).toMatchObject([{ text: supplement, origin: 'user-supplement', sourceId: 'user_supplement' }]);
+    expect(result.evidence.sources).toHaveLength(2);
+    expect(result.evidence.claims[0].review.status).toBe('unchecked');
+    expect(result.evidence.bindings.map(binding => binding.bindingId)).toEqual(result.evidence.bindings.map((_, index) => `binding_${index}`));
+    const request = emit.mock.calls[0] as unknown as [{ user: string; system: string }];
+    expect(JSON.parse(request[0].user)).toEqual({ sourceId: 'source', text: source.text,
+      supplements: [{ sourceId: 'user_supplement', text: supplement, origin: 'user-supplement' }] });
+    expect(request[0].system).not.toContain(supplement);
+  });
+
+  it('does not allow supplement text to be cited as original source text', async () => {
+    const supplement = 'Duration: 10 seconds.';
+    const body = reply();
+    body.claims[0].spans = [{ sourceId: 'source', startByte: 0, endByte: Buffer.byteLength(supplement), excerpt: supplement }];
+    expect((await propose(body, { supplement })).result).toEqual({ kind: 'rejected', code: 'SOURCE_SPAN_INVALID' });
+  });
+
+  it.each(['', 'x'.repeat(4001), '\ud800'])('rejects malformed supplement before provider setup %#', async supplement => {
+    const { result, emit } = await propose(reply(), { supplement });
+    expect(result).toEqual({ kind: 'rejected', code: 'SUPPLEMENT_INVALID' });
+    expect(emit).not.toHaveBeenCalled();
+  });
+
+  it('blocks reported conflicts between original and supplement', async () => {
+    const body = reply(); body.conflicts = ['Original says 20 seconds; supplement says 10.'];
+    expect((await propose(body, { supplement: 'Duration: 10 seconds.' })).result.kind).toBe('needsClarification');
+  });
+
   it('lowers the returned sim and preserves independent museum outcomes', async () => {
     const { result, emit } = await propose();
     expect(result.kind).toBe('proposed');
@@ -86,8 +125,8 @@ describe('source proposal: offline contract fixtures, not semantic model evidenc
   it.each([
     ['bad span', (b: any) => { b.claims[0].spans[0].startByte = 1; }, 'SOURCE_SPAN_INVALID'],
     ['foreign source', (b: any) => { b.claims[0].spans[0].sourceId = 'other'; }, 'SPAN_SOURCE_MISSING'],
-    ['missing binding', (b: any) => { b.bindings.pop(); }, 'RULE_EVIDENCE_MISSING'],
-    ['foreign rule', (b: any) => { b.bindings[0].target.id = 'absent'; }, 'BINDING_TARGET_MISSING'],
+    ['missing binding', (b: any) => { b.bindings.pop(); }, 'RULE_SUPPORT_MISSING'],
+    ['foreign rule', (b: any) => { b.bindings[0].target.id = 'absent'; }, 'RULE_SUPPORT_TARGET_INVALID'],
     ['missing premise', (b: any) => { b.claims = [{ claimId: 'timing', text: 'Derived', support: 'derived', review: { status: 'unchecked' }, interventionId: null, premiseClaimIds: ['absent'], derivation: 'Because' }]; }, 'PREMISE_MISSING'],
     ['cycle', (b: any) => { b.claims = [{ claimId: 'timing', text: 'Derived', support: 'derived', review: { status: 'unchecked' }, interventionId: null, premiseClaimIds: ['timing'], derivation: 'Because' }]; }, 'CLAIM_CYCLE'],
     ['false review', (b: any) => { b.claims[0].review = { status: 'confirmed', reviewerId: 'model', at: '2026-09-08T00:00:00Z', scope: 'textual-support' }; }, 'REVIEW_NOT_AUTHORIZED'],
@@ -106,6 +145,14 @@ describe('source proposal: offline contract fixtures, not semantic model evidenc
   it('does not round fractional timer ticks', async () => {
     const body = reply(); body.sim.rules.start_countdown.actions[1].durationTicks = 0.5;
     expect((await propose(body)).result.kind).toBe('rejected');
+  });
+
+  it('requires a start duration even when timer capacity is declared', async () => {
+    const body = reply();
+    delete (body.sim.rules.start_countdown.actions[1] as { durationTicks?: number }).durationTicks;
+    const result = (await propose(body)).result;
+    expect(result.kind).toBe('needsClarification');
+    if (result.kind === 'needsClarification') expect(result.questions.join(' ')).toContain('capacity is not a start duration');
   });
 
   it.each([false, true])('requires clarification for an assumed rule (derived=%s)', async (derived) => {

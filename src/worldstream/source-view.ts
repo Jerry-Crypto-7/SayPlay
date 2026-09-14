@@ -1,5 +1,5 @@
 import { buildRuntimeWorld } from '@/ir/build';
-import { createRuntime, entityPlacements } from '@/sim/interpreter';
+import { createRuntime, entityPlacements, type WorldDocRuntime } from '@/sim/interpreter';
 import type { WorldDoc } from '@/ir/worlddoc';
 import type { ProxyWorld } from './proxy';
 
@@ -8,7 +8,13 @@ import type { ProxyWorld } from './proxy';
 export function sourceProxy(world: WorldDoc, title: string): ProxyWorld {
   const built = buildRuntimeWorld(world.sim);
   if (!built.ok) throw new Error('The source scenario cannot run.');
-  const entities = entityPlacements(createRuntime({ ...built.world, trace: [] }));
+  return sourceProxyFromRuntime(built.world, title);
+}
+
+/** Reuse the already lowered document when accepting a source into the runtime.
+ * Initial placements are deliberate: runtime offsets are applied by the Stage. */
+export function sourceProxyFromRuntime(world: WorldDocRuntime, title: string): ProxyWorld {
+  const entities = entityPlacements(createRuntime({ ...world, trace: [] }));
   return { kind: 'built', title, sessionSeed: 1, resolution: 16, quality: 'full', scenery: [],
     slots: entities.map(entity => ({
       slot: { stableId: entity.stableId, label: entity.stableId, role: 'prop', importance: 1,

@@ -4,6 +4,7 @@ import * as provider from '@/server/worldstream-emitter';
 import { resetRateWindows, takeRateSlot } from '@/server/rate-limit';
 import { acquireSlot, releaseSlot, resetConcurrency, MAX_WORLD_GENERATIONS } from '../sessions/route';
 import { POST } from '../source/route';
+import { ruleSupportParts } from '@/worldstream/rule-support';
 
 const input = { title: 'Museum', text: '\ufeffČasovač: 20 sekund.\r\n', origin: 'provided', rights: 'unreviewed' };
 function answer() {
@@ -11,25 +12,51 @@ function answer() {
     claims: [{ claimId: 'duration', text: '20 seconds', support: 'sourced', interventionId: null,
       review: { status: 'unchecked' }, spans: [{ sourceId: 'source', startByte: 0,
         endByte: Buffer.byteLength(input.text), excerpt: input.text }] }],
-    bindings: Object.keys(sim.rules).map(id => ({ bindingId: `binding.${id}`, target: { kind: 'rule', id }, claimIds: ['duration'] })) };
+    bindings: ruleSupportParts(sim.rules).map(({ ruleId, part }) => ({
+      target: { kind: 'rule', id: ruleId }, part, claimIds: ['duration'] })) };
 }
 function request(body: unknown) { return new Request('http://localhost/api/worldstream/source', {
   method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); }
 beforeEach(() => { vi.restoreAllMocks(); resetRateWindows(); resetConcurrency(); });
 
 describe('source HTTP boundary', () => {
+  it('passes a separately validated supplement through the shared provider', async () => {
+    const supplement = 'The timer starts only once.';
+    const emit = vi.fn(async () => answer());
+    vi.spyOn(provider, 'cloudEmitter').mockResolvedValue(emit);
+    const response = await POST(request({ ...input, supplement }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ source: input,
+      supplements: [{ text: supplement, origin: 'user-supplement' }] });
+    const emitted = emit.mock.calls[0] as unknown as [{ user: string }];
+    expect(JSON.parse(emitted[0].user).supplements[0].text).toBe(supplement);
+  });
+
+  it.each(['', 'x'.repeat(4001), '\ud800'])('refuses malformed supplementary input before provider setup %#', async supplement => {
+    const cloud = vi.spyOn(provider, 'cloudEmitter');
+    expect((await POST(request({ ...input, supplement }))).status).toBe(400);
+    expect(cloud).not.toHaveBeenCalled();
+  });
+
   it('calls the shared provider and preserves exact source bytes', async () => {
     const emit = vi.fn(async () => answer());
     vi.spyOn(provider, 'cloudEmitter').mockResolvedValue(emit);
     const response = await POST(request(input));
     expect(response.status).toBe(200);
     expect(response.headers.get('cache-control')).toBe('no-store');
+    const timing = response.headers.get('server-timing');
+    expect(timing).toContain('request-json-parse');
+    expect(timing).toContain('source-emitter');
+    expect(timing).toContain('source-validation-and-lowering');
+    expect(timing).toContain('source-runtime-lowering');
+    expect(response.headers.get('x-worldstream-request-id')).toMatch(/^[a-f0-9-]{36}$/);
     expect(await response.json()).toMatchObject({ kind: 'proposed', generation: 'live', source: input });
     expect(emit).toHaveBeenCalledTimes(1);
     expect(acquireSlot('world')).toBe(true); releaseSlot('world');
   });
   it.each([{ ...input, text: 'x'.repeat(4001) }, { ...input, text: '\ud800' },
-    { ...input, tools: ['shell'] }, { ...input, reviewed: true }, { ...input, text: '' }])('refuses invalid input before provider setup %#', async body => {
+    { ...input, tools: ['shell'] }, { ...input, reviewed: true }, { ...input, parameterConfirmation: { confirmed: true } },
+    { ...input, text: '' }])('refuses invalid input before provider setup %#', async body => {
     const cloud = vi.spyOn(provider, 'cloudEmitter');
     expect((await POST(request(body))).status).toBe(400);
     expect(cloud).not.toHaveBeenCalled();
