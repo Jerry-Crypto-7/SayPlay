@@ -187,6 +187,50 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
     expect(fetchImpl.mock.calls[0][0]).toBe('https://ledger.example.com/pipeline');
   });
 
+  /**
+   * **Integrace Upstash z Vercel Marketplace pojmenuje proměnné po svém**
+   * (14. 9. 2026) a jako „sensitive" je nejde přepsat do našich názvů. Bez
+   * tohohle čtení by nasazení s připojeným úložištěm odmítalo každé placené
+   * volání `STORE_UNCONFIGURED`.
+   */
+  const KV_ENV = {
+    KV_REST_API_URL: 'https://kv.example.com/',
+    KV_REST_API_TOKEN: 'kv-token',
+    KV_REST_API_READ_ONLY_TOKEN: 'kv-read-only',
+  };
+
+  async function firstCall(env: Record<string, string | undefined>) {
+    const fetchImpl = vi.fn<typeof fetch>(async () => pipelineAnswer(0, 0));
+    await ledgerFromEnv(env, fetchImpl)?.add(0, 0);
+    const [url, init] = fetchImpl.mock.calls[0] ?? [];
+    return { url, auth: (init?.headers as Record<string, string> | undefined)?.authorization };
+  }
+
+  it('proměnné integrace Upstash dají knihu přes REST s tokenem pro zápis', async () => {
+    expect(await firstCall({ ...KV_ENV, VERCEL: '1' })).toEqual({
+      url: 'https://kv.example.com/pipeline',
+      auth: 'Bearer kv-token',
+    });
+  });
+
+  it('token jen pro čtení knihu nedá — zápis by s ním padal', () => {
+    const { KV_REST_API_TOKEN: _omit, ...readOnly } = KV_ENV;
+    expect(ledgerFromEnv({ ...readOnly, VERCEL: '1' })).toBeNull();
+  });
+
+  it('výslovný pár má přednost před integrací, i napůl vyplněný', async () => {
+    expect(await firstCall({ ...KV_ENV, ...STORE_ENV, VERCEL: '1' })).toEqual({
+      url: 'https://ledger.example.com/pipeline',
+      auth: 'Bearer token',
+    });
+    // Půlka výslovného páru integraci vypíná, ne doplňuje: kdo sáhl na naše
+    // názvy, míní jiné úložiště, a tichý mix by účtoval jinam.
+    expect(
+      ledgerFromEnv({ ...KV_ENV, WORLDSMITH_SPEND_STORE_URL: STORE_ENV.WORLDSMITH_SPEND_STORE_URL, VERCEL: '1' }),
+    ).toBeNull();
+    expect(ledgerFromEnv({ ...KV_ENV, WORLDSMITH_SPEND_STORE_TOKEN: 'token', VERCEL: '1' })).toBeNull();
+  });
+
   // ⚠ **Tahle aserce se 4. 9. 2026 OBRÁTILA a byla přepsána, ne smazána**
   // (P15 `T29-lambdadetect`). Do té chvíle stačilo, že `VERCEL` nesvítí — a to
   // je přesně signál, který vercelský přepínač *Automatically expose System
@@ -439,6 +483,10 @@ describe('kniha podle prostředí — a `null` znamená ODMÍTAT', () => {
       // A základ, který segment už nese — přesně tvar, ke kterému operátora
       // svádí migrační odstavec v `.env.example`. Segment se připojí i k němu.
       { ...STORE_ENV, WORLDSMITH_SPEND_STORE_PREFIX: 'demo:preview' },
+      // Integrace Upstash je tatáž sdílená kniha pod jinými názvy — klíč o ní
+      // musí vědět stejně jako zápis.
+      { KV_REST_API_URL: 'https://kv.example.com', KV_REST_API_TOKEN: 'kv-token' },
+      { KV_REST_API_URL: 'https://kv.example.com', KV_REST_API_READ_ONLY_TOKEN: 'kv-read-only' },
     ];
 
     for (const env of envs) {

@@ -212,8 +212,20 @@ const BASE_PREFIX = 'worldsmith:spend';
 function sharedStoreFromEnv(
   env: Record<string, string | undefined>,
 ): { readonly url: string; readonly token: string } | null {
-  const url = env.WORLDSMITH_SPEND_STORE_URL?.trim().replace(/\/+$/, '') ?? '';
-  const token = env.WORLDSMITH_SPEND_STORE_TOKEN?.trim() ?? '';
+  // **Druhý pár názvů je integrace Upstash z Vercel Marketplace** (14. 9. 2026):
+  // ta proměnné pojmenuje sama `KV_REST_API_URL` a `KV_REST_API_TOKEN` a jako
+  // „sensitive" je nejde přečíst ani přepsat do našich názvů, aniž by tajemství
+  // prošlo rukama. Výslovný pár má přednost, a to i napůl vyplněný: kdo sáhl
+  // na `WORLDSMITH_SPEND_STORE_*`, míní jiné úložiště, a tiché sklouznutí na
+  // integraci by účtovalo jinam, než si myslí. `KV_REST_API_READ_ONLY_TOKEN`
+  // se nečte nikdy — zápis knihy by s ním padal.
+  const explicit =
+    (env.WORLDSMITH_SPEND_STORE_URL?.trim() ?? '') !== '' ||
+    (env.WORLDSMITH_SPEND_STORE_TOKEN?.trim() ?? '') !== '';
+  const url =
+    (explicit ? env.WORLDSMITH_SPEND_STORE_URL : env.KV_REST_API_URL)?.trim().replace(/\/+$/, '') ??
+    '';
+  const token = (explicit ? env.WORLDSMITH_SPEND_STORE_TOKEN : env.KV_REST_API_TOKEN)?.trim() ?? '';
   // **Půlka konfigurace není konfigurace.** Adresa bez tokenu by dala klíč
   // „sdílíme", ale zápis by neměl kam jít — proto obojí, nebo nic.
   return url !== '' && token !== '' ? { url, token } : null;
@@ -261,7 +273,8 @@ function sharedStoreFromEnv(
  * uživatelské proměnné, které ten přepínač nevypíná: kdo sdílí knihu a nemá
  * známé prostředí, dostane `unknown-env`. Bez sdílené knihy není s čím
  * kolidovat — jediný proces si vede vlastní součet a holý základ platí dál,
- * takže lokálnímu provozu **bez vyplněných `WORLDSMITH_SPEND_STORE_*`** se
+ * takže lokálnímu provozu **bez sdíleného úložiště** (`WORLDSMITH_SPEND_STORE_*`
+ * ani `KV_REST_API_*` z integrace, viz `sharedStoreFromEnv()`) se
  * kniha nepřejmenovala. `VERCEL` zůstává jako druhý, slabší signál: když
  * svítí, je to nasazení tak jako tak.
  *
@@ -273,7 +286,7 @@ function sharedStoreFromEnv(
  * ⚠ **Jedna díra tím zavřená NENÍ a nemá se předstírat, že je:** nasazení
  * s vypnutým přepínačem **a bez sdílené knihy** je z prostředí nerozeznatelné
  * od lokálního běhu, takže dostane knihu v paměti procesu. Zavírá to až
- * vyplněné `WORLDSMITH_SPEND_STORE_*`, což je stejně jediná podoba, ve které
+ * sdílené úložiště (`WORLDSMITH_SPEND_STORE_*` nebo `KV_REST_API_*`), což je stejně jediná podoba, ve které
  * strop na serverless platí (`ledgerFromEnv()` níž).
  *
  * ⚠ **Výslovná předpona je ZÁKLAD jména, ne celé jméno — a je to obrácení
@@ -356,7 +369,7 @@ export function isServerless(env: Record<string, string | undefined>): boolean {
  *
  * | Prostředí | Co vyjde |
  * |---|---|
- * | `WORLDSMITH_SPEND_STORE_URL` + token | sdílená kniha přes REST |
+ * | `WORLDSMITH_SPEND_STORE_URL` + token, jinak `KV_REST_API_URL` + `KV_REST_API_TOKEN` | sdílená kniha přes REST |
  * | bez nich, `VERCEL` nastavené | `null`, tedy zavřené selhání |
  * | bez nich, `VERCEL_ENV` neznámé | `null`, tedy zavřené selhání |
  * | bez nich, známé prostředí mimo Vercel | kniha v paměti procesu, poctivě označená |
