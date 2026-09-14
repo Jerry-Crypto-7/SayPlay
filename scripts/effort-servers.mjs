@@ -7,7 +7,8 @@
  *   --probe  jedno krátké volání astry přes `codex exec` na každou úroveň úsilí;
  *            přijaté úrovně a luna/sol přes proxy → `variants.json`
  *   --start  build jen když je starší než HEAD, pak server na variantu; PID do
- *            `pids.json`, výstup do `os.tmpdir()/worldstream-effort/<id>.log`
+ *            `pids.json`, výstup do `os.tmpdir()/worldstream-effort/<id>.log`;
+ *            běží dál, dokud žijí servery – pouštět na pozadí
  *   --check  počká, až každý server odpoví `ready` na `/api/health`; exit 0 jen
  *            když všechny
  *   --stop   ukončí servery podle PID z `pids.json`
@@ -144,8 +145,12 @@ async function start() {
     };
     if (variant.effort !== undefined) env.WORLDSMITH_MODEL_EFFORT = variant.effort;
     const log = openSync(join(LOGS, `${variant.id}.log`), 'a');
-    const child = spawn(process.execPath, [nextBin, 'start', '-p', String(variant.port)], { cwd: ROOT, env, detached: true, windowsHide: true, stdio: ['ignore', log, log] });
-    child.unref();
+    // Servery zůstávají dětmi tohohle procesu a on čeká, dokud žijí. Odpojené
+    // (`detached` + `unref`) je prostředí agenta 14. 9. 2026 do pár minut
+    // uklidilo všech sedm naráz, s čistým logem; `--start` proto patří do úlohy
+    // na pozadí, která drží rodiče.
+    const child = spawn(process.execPath, [nextBin, 'start', '-p', String(variant.port)], { cwd: ROOT, env, windowsHide: true, stdio: ['ignore', log, log] });
+    child.on('exit', (code) => console.log(`exited   ${variant.id}  code ${code}`));
     pids[variant.id] = child.pid;
     console.log(`started  ${variant.id}  :${variant.port}  pid ${child.pid}`);
   }
@@ -171,7 +176,7 @@ function stop() {
   for (const [id, pid] of Object.entries(JSON.parse(readFileSync(PIDS, 'utf8')))) {
     try {
       if (process.platform === 'win32') execFileSync('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore' });
-      else process.kill(-pid, 'SIGTERM');
+      else process.kill(pid, 'SIGTERM');
       console.log(`stopped  ${id}  pid ${pid}`);
     } catch {
       console.log(`gone     ${id}  pid ${pid}`);
