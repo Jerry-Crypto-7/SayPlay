@@ -203,12 +203,17 @@ describe('[4] písemný popis', () => {
     expect(detailOf(results, 4)).toContain(String(DESCRIPTION_MIN_CHARS));
   });
 
-  it('selže, když je garanční věta změkčená', async () => {
+  it('selže bez sémantického omezení i s úplnou legacy garancí', async () => {
     const dir = repo();
-    rewriteDescription(dir, description().replace('konečnou vstupní stopu', 'vstupní stopu'));
+    rewriteDescription(dir, description().replace('This acknowledgement does not certify semantic correctness. A structurally valid citation is not a semantic guarantee.', GUARANTEE));
     const results = await check(dir);
     expect(failed(results)).toEqual([4]);
-    expect(detailOf(results, 4)).toContain('doslova');
+    expect(detailOf(results, 4)).toContain('semantic-limit');
+  });
+  it('současný popis nevyžaduje legacy DESIGN-BOOK', async () => {
+    const dir = repo();
+    rmSync(join(dir, 'DESIGN-BOOK.md'));
+    expect(failed(await check(dir))).toEqual([]);
   });
 
   it('selže, když popis neuvádí jediné číslo z reportu', async () => {
@@ -223,6 +228,13 @@ describe('[4] písemný popis', () => {
     const dir = repo();
     patchManifest(dir, { measurementReports: ['evals/gates/neexistuje.md'] });
     expect(failed(await check(dir))).toEqual([4]);
+  });
+  it('selže, když uvedený report neobsahuje žádné měření', async () => {
+    const dir = repo();
+    write(dir, 'evals/gates/report.md', 'Measurement remains pending.');
+    const results = await check(dir);
+    expect(failed(results)).toEqual([4]);
+    expect(detailOf(results, 4)).toContain('neobsahují ověřitelné naměřené číslo');
   });
 
   it('selže, když manifest neuvádí jediný report — pak nejde nic ověřit', async () => {
@@ -521,7 +533,7 @@ describe('[8] blind-check', () => {
     // Trackovaný config je nález blind-checku: nese jména, která se nesmí nahrát.
     write(dir, '.gitignore', 'node_modules/\n');
     stage(dir);
-    execFileSync('git', ['commit', '-m', 'leak'], { cwd: dir, stdio: 'ignore' });
+    execFileSync('git', ['--no-replace-objects', 'commit', '-m', 'leak'], { cwd: dir, stdio: 'ignore' });
     expect(failed(await check(dir))).toEqual([8]);
   });
 });

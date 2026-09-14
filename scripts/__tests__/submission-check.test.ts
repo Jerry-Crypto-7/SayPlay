@@ -22,14 +22,14 @@ import {
   distinctiveNumbers,
   focusCategoryInDescription,
   focusCategoryInRegistration,
-  guaranteeSentence,
+  descriptionContractProblems,
   isDeployedUrl,
   isPlaceholder,
   literalWeight,
   mp4DurationSeconds,
   proseOf,
 } from '../submission-check.mjs';
-import { box, mp4 } from './submission-fixture';
+import { box, mp4, description, GUARANTEE } from './submission-fixture';
 
 describe('isDeployedUrl: nasazená adresa, ne localhost', () => {
   it('pustí veřejné jméno přes https', () => {
@@ -87,28 +87,32 @@ describe('mp4DurationSeconds: délka ze skutečných metadat', () => {
   });
 });
 
-describe('guaranteeSentence: čte se ze zdroje, ne z kopie', () => {
-  const design = readFileSync(join(process.cwd(), 'DESIGN-BOOK.md'), 'utf8');
-
-  it('vytáhne větu ze skutečného DESIGN-BOOK.md §6', () => {
-    const sentence = guaranteeSentence(design);
-    expect(sentence).toContain('Každý potvrzený graf nese konečnou přípustnou vstupní stopu');
-    expect(sentence).toContain('Certifikuje to výhradně tento přesný replay');
+describe('current source submission disclosure contract, not semantic certification', () => {
+  it('accepts current project copy without demanding the superseded guarantee', () => {
+    const current = readFileSync(join(process.cwd(), 'docs/submission/description.md'), 'utf8');
+    expect(descriptionContractProblems(current)).toEqual([]);
+    expect(descriptionContractProblems(description())).toEqual([]);
   });
-
-  it('věta ze zdroje sedí na doslovnou citaci v markdownu', () => {
-    // Obě strany musí projít stejnou normalizací. Kdyby ne, doslovná citace
-    // v tučném blockquote by neprošla a kontrola by byla nesplnitelná.
-    const sentence = guaranteeSentence(design)!;
-    expect(proseOf(`# Popis\n\n> **${sentence}**\n`)).toContain(sentence);
+  it.each([
+    ['source-scope', 'one timer intervention', 'unlimited interventions'],
+    ['parameter-review', 'missing or conflicting support blocks acceptance', 'every proposal is accepted'],
+    ['semantic-limit', 'This acknowledgement does not certify semantic correctness. A structurally valid citation is not a semantic guarantee.', 'Semantic correctness is guaranteed.'],
+    ['geometry-limit', 'Geometry is schematic.', 'Geometry is physically exact.'],
+    ['latency-provenance', 'CLI timings include process and transport overhead.', 'CLI timings are provider compute time.'],
+    ['independent-review', 'independent semantic review', 'automated validation'],
+  ])('rejects missing %s even when a legacy guarantee is present', (id, original, replacement) => {
+    expect(descriptionContractProblems(`${description().replace(original, replacement)}\n${GUARANTEE}`)).toEqual([
+      expect.stringContaining(id),
+    ]);
   });
-
-  it('vrátí null, když §6 v dokumentu není', () => {
-    expect(guaranteeSentence('# Kniha\n\n## 7. Něco jiného\n\n> **Věta.**\n')).toBeNull();
+  it('accepts wording and markdown changes instead of requiring an exact quote', () => {
+    const text = description().replace('one timer intervention', '**single** timer intervention')
+      .replace('does not certify semantic correctness', 'cannot guarantee semantic accuracy');
+    expect(descriptionContractProblems(text)).toEqual([]);
   });
-
-  it('vrátí null, když §6 existuje, ale nenese citovanou větu', () => {
-    expect(guaranteeSentence('# Kniha\n\n## 6. Garance\n\nJen próza, žádný blockquote.\n')).toBeNull();
+  it('does not count disclosure hidden inside comments or code', () => {
+    expect(descriptionContractProblems(`<!-- ${description()} -->`)).toHaveLength(6);
+    expect(descriptionContractProblems(`\x60\x60\x60text\n${description()}\n\x60\x60\x60`)).toHaveLength(6);
   });
 });
 
