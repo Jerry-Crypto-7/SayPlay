@@ -27,6 +27,11 @@
     "billing": "subscription",
     "apiFallback": false,
     "walkthrough": "docs/submission/demo-walkthrough.md",
-    "readiness": "evals/reality-compiler/submission-readiness.md"
+    "readiness": "evals/reality-compiler/submission-readiness.md",
+    "operatingProposal": "ops/worldstream-single-process.md",
+    "preparedVideoPath": "video/prepared-walkthrough.mp4",
+    "preparedVideoManifest": "video/prepared-walkthrough.manifest.json",
+    "preparedVideoScope": "scripted fixture, virtual clock, no model calls or human study; not final submission video",
+    "developmentReviewProtocol": "evals/reality-compiler/holdout-v2/protocol.md"
   }
 }
