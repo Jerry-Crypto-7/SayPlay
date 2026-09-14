@@ -24,7 +24,7 @@ describe('controlled browser shutdown with offline Node CLI simulator', () => {
       const ready = new Promise<void>(resolve => { started = resolve; });
       const command = createSubscriptionCommand({ executable: process.execPath,
         prefix: ['-e', `console.log(JSON.stringify({type:'thread.started'})); setInterval(() => {}, 1000);`, '--'],
-        timeoutMs: 5000, progress: () => started() });
+        timeoutMs: 60_000, progress: () => started() });
       // Observe rejection immediately; browser shutdown can complete after the child closes.
       outcome = command([], '', controller.signal).then(() => 'UNEXPECTED_SUCCESS', error => error.message);
       const waiting = waitForSubscriptionClose(controller.signal, 10_000);
@@ -34,7 +34,11 @@ describe('controlled browser shutdown with offline Node CLI simulator', () => {
       await expect(outcome).resolves.toBe('CODEX_CANCELLED');
       await waiting;
     } finally { controller.abort(); await outcome; await browser.close(); }
-  });
+    // Spouští skutečné Chromium třikrát uvnitř paralelní jednotkové sady, takže
+    // 30 s stropu z `vitest.config.mts` je pod zátěží 204 souborů málo na samotný
+    // start prohlížeče. Vnitřní `timeoutMs` je strop příkazu, ne měřená vlastnost —
+    // ta je „zavření page/context/browser zruší běžící příkaz a uvolní čekání".
+  }, 120_000);
   it.each(['CODEX_TIMEOUT', 'CODEX_COMMAND_FAILED', 'UNEXPECTED_SUCCESS'])('reports %s before progress without waiting for readiness', async terminal => {
     const neverReady = new Promise<void>(() => {});
     await expect(waitForSimulatorReady(neverReady, Promise.resolve(terminal)))

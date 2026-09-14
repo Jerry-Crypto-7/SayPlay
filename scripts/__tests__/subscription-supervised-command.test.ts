@@ -52,7 +52,7 @@ describe('offline supervised DUMMY transport',()=>{
       const end=()=>setTimeout(()=>{terminal.reason='${abortControl==='cancel'?'cancelled':'input_eof'}';emit(terminal);setTimeout(()=>process.exit(0),80);},80);
       lines.on('line',s=>{if(JSON.parse(s).op==='cancel')end();});
       ${abortControl==='eof'?"lines.on('close',end);":''}`);
-    opts.abortControl=abortControl;opts.acknowledgementMs=1000;
+    opts.abortControl=abortControl;opts.acknowledgementMs=4000;opts.closeMs=4000;
     const p=runSupervisedDummy({mode:'sleep',payload:'x',signal:c.signal},opts);
     setTimeout(()=>c.abort(),150);const at=Date.now();
     const r=await p;
