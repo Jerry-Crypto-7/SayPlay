@@ -900,6 +900,7 @@ function fakeWorker(): MeshWorkerLike & { queue: MeshJobRequest[]; flush(): void
     queue,
     onmessage: null,
     onerror: null,
+    onmessageerror: null,
     postMessage(message) {
       queue.push(message);
     },
@@ -914,6 +915,13 @@ function fakeWorker(): MeshWorkerLike & { queue: MeshJobRequest[]; flush(): void
   return worker;
 }
 
+/** Queue lifecycle tests do not benchmark the CPU mesher or its time budget. */
+function completeQueueStub(worker: MeshWorkerLike & { queue: MeshJobRequest[] }) {
+  const request = worker.queue.shift(); if (!request) throw new Error('no queued job');
+  worker.onmessage?.({ data: { jobId: request.jobId, ok: true, positions: new Float32Array(9), normals: new Float32Array(9),
+    indices: new Uint32Array([0, 1, 2]), vertexCount: 3, triangleCount: 1, bounds: UNIT_BOUNDS, elapsedMs: 1 } });
+}
+
 describe('klient meshovacího workeru', () => {
   const order = {
     program: { ...programOf(SPHERE), shapeId: 'hero' },
@@ -921,6 +929,190 @@ describe('klient meshovacího workeru', () => {
     resolution: 16,
     bounds: UNIT_BOUNDS,
   };
+
+  it('a late response cannot remove a newer running job', async () => {
+    const worker = fakeWorker(); const client = createMeshClient({ createWorker: () => worker });
+    const first = client.mesh(order); const oldId = worker.queue[0].jobId;
+    completeQueueStub(worker); await first;
+    const second = client.mesh(order);
+    worker.onmessage?.({ data: { jobId: oldId, ok: false, error: 'late old reply' } });
+    expect(client.pending).toBe(1);
+    completeQueueStub(worker); await expect(second).resolves.toMatchObject({ shapeId: 'hero' });
+    expect(client.pending).toBe(0); client.dispose();
+  });
+
+  it('cancels a running job, restarts the worker, and ignores the terminated worker', async () => {
+    const workers = [fakeWorker(), fakeWorker()]; let index = 0;
+    const client = createMeshClient({ createWorker: () => workers[index++] });
+    const control = new AbortController();
+    const first = client.mesh(order, control.signal);
+    const rejected = expect(first).rejects.toMatchObject({ name: 'AbortError' });
+    const second = client.mesh(order);
+    control.abort(); await rejected;
+    expect(workers[0].terminate).toHaveBeenCalledTimes(1);
+    expect(client.pending).toBe(1);
+    completeQueueStub(workers[0]);
+    expect(client.pending).toBe(1);
+    completeQueueStub(workers[1]); await expect(second).resolves.toMatchObject({ shapeId: 'hero' });
+    client.dispose();
+  });
+
+  it('bounds the queue and removes a cancelled queued job before dispatch', async () => {
+    const worker = fakeWorker(); const client = createMeshClient({ createWorker: () => worker, maxPending: 2 });
+    const first = client.mesh(order); const control = new AbortController();
+    const queued = client.mesh(order, control.signal);
+    const rejected = expect(queued).rejects.toMatchObject({ name: 'AbortError' });
+    await expect(client.mesh(order)).rejects.toThrow('queue is full');
+    control.abort(); await rejected;
+    expect(client.pending).toBe(1);
+    completeQueueStub(worker); await first;
+    expect(worker.queue).toHaveLength(0); client.dispose();
+  });
+
+  it('messageerror rejects the running job and completes queued work on a fresh worker', async () => {
+    const workers = [fakeWorker(), fakeWorker()]; let index = 0;
+    const client = createMeshClient({ createWorker: () => workers[index++] });
+    const first = client.mesh(order);
+    const rejected = expect(first).rejects.toThrow('mesh worker response could not be deserialized');
+    const second = client.mesh({ ...order, program: { ...order.program, shapeId: 'after-messageerror' } });
+    expect(client.pending).toBe(2);
+    expect(workers[0].queue).toHaveLength(1);
+    workers[0].onmessageerror?.({ type: 'messageerror' });
+    await rejected;
+    expect(workers[0].terminate).toHaveBeenCalledTimes(1);
+    expect(index).toBe(2);
+    expect(workers[1].queue).toHaveLength(1);
+    expect(client.pending).toBe(1);
+    completeQueueStub(workers[1]);
+    await expect(second).resolves.toMatchObject({ shapeId: 'after-messageerror' });
+    expect(client.pending).toBe(0);
+    client.dispose();
+  });
+
+  it('registers messageerror with EventTarget when a worker has no native handler property', async () => {
+    const workers = [fakeWorker(), fakeWorker()]; let index = 0;
+    const listeners: ((event: unknown) => void)[] = [];
+    const nativeLike = Object.assign(workers[0], { addEventListener: vi.fn((type: 'messageerror', listener: (event: unknown) => void) => {
+      expect(type).toBe('messageerror'); listeners.push(listener);
+    }) });
+    delete nativeLike.onmessageerror;
+    const client = createMeshClient({ createWorker: () => workers[index++] });
+    const first = client.mesh(order), rejected = expect(first).rejects.toThrow('could not be deserialized');
+    const second = client.mesh({ ...order, program: { ...order.program, shapeId: 'event-target-recovery' } });
+    expect(nativeLike.addEventListener).toHaveBeenCalledTimes(1);
+    expect('onmessageerror' in nativeLike).toBe(false);
+    listeners[0]({ type: 'messageerror' }); await rejected;
+    expect(index).toBe(2); expect(client.pending).toBe(1);
+    // Already queued delivery still cannot affect the replacement's job.
+    listeners[0]({ type: 'messageerror' });
+    expect(workers[1].terminate).not.toHaveBeenCalled();
+    completeQueueStub(workers[1]); await expect(second).resolves.toMatchObject({ shapeId: 'event-target-recovery' });
+    expect(client.pending).toBe(0); client.dispose();
+  });
+
+  it('EventTarget listener delivery during cancellation retirement cannot settle or orphan queued work', async () => {
+    const workers = [fakeWorker(), fakeWorker()]; let index = 0, listener: ((event: unknown) => void) | undefined;
+    Object.assign(workers[0], { addEventListener: (_type: 'messageerror', callback: (event: unknown) => void) => { listener = callback; } });
+    workers[0].terminate = vi.fn(() => listener?.({ type: 'messageerror' }));
+    const client = createMeshClient({ createWorker: () => workers[index++] }), control = new AbortController();
+    const first = client.mesh(order, control.signal), rejected = expect(first).rejects.toMatchObject({ name: 'AbortError' });
+    const second = client.mesh(order); control.abort(); await rejected;
+    expect(index).toBe(2); expect(workers[0].terminate).toHaveBeenCalledTimes(1); expect(client.pending).toBe(1);
+    completeQueueStub(workers[1]); await expect(second).resolves.toMatchObject({ shapeId: 'hero' }); client.dispose();
+  });
+
+  it('retires the aborted worker before terminate can deliver a synchronous response', async () => {
+    const workers = [fakeWorker(), fakeWorker()]; let index = 0;
+    const client = createMeshClient({ createWorker: () => workers[index++] });
+    const control = new AbortController();
+    const first = client.mesh(order, control.signal);
+    const rejected = expect(first).rejects.toMatchObject({ name: 'AbortError' });
+    const second = client.mesh({ ...order, program: { ...order.program, shapeId: 'replacement' } });
+    workers[0].terminate = vi.fn(() => {
+      completeQueueStub(workers[0]);
+      workers[0].onerror?.(new Error('during terminate'));
+      workers[0].onmessageerror?.({ type: 'messageerror' });
+    });
+    control.abort();
+    await rejected;
+    expect(index).toBe(2);
+    expect(workers[0].terminate).toHaveBeenCalledTimes(1);
+    expect(workers[1].terminate).not.toHaveBeenCalled();
+    expect(client.pending).toBe(1);
+    completeQueueStub(workers[1]);
+    await expect(second).resolves.toMatchObject({ shapeId: 'replacement' });
+    expect(client.pending).toBe(0);
+    client.dispose();
+  });
+
+  it('disposal rejects running and queued work despite a synchronous terminate response', async () => {
+    const worker = fakeWorker(); const factory = vi.fn(() => worker);
+    const client = createMeshClient({ createWorker: factory });
+    const first = client.mesh(order); const second = client.mesh(order);
+    const firstRejected = expect(first).rejects.toThrow('mesh client is disposed');
+    const secondRejected = expect(second).rejects.toThrow('mesh client is disposed');
+    worker.terminate = vi.fn(() => completeQueueStub(worker));
+    client.dispose();
+    await Promise.all([firstRejected, secondRejected]);
+    expect(factory).toHaveBeenCalledTimes(1);
+    expect(worker.terminate).toHaveBeenCalledTimes(1);
+    expect(client.pending).toBe(0);
+  });
+
+  it('a synchronous postMessage failure cannot reenter termination and orphan the next job', async () => {
+    const workers = [fakeWorker(), fakeWorker()]; let index = 0;
+    const client = createMeshClient({ createWorker: () => workers[index++] });
+    const post = workers[0].postMessage.bind(workers[0]);
+    workers[0].postMessage = request => {
+      if (request.program.shapeId === 'broken') throw new Error('structured clone failed');
+      post(request);
+    };
+    const first = client.mesh(order);
+    const broken = client.mesh({ ...order, program: { ...order.program, shapeId: 'broken' } });
+    const rejected = expect(broken).rejects.toThrow('structured clone failed');
+    const third = client.mesh({ ...order, program: { ...order.program, shapeId: 'after-failure' } });
+    let delivered = false;
+    workers[0].terminate = vi.fn(() => {
+      if (delivered) return;
+      delivered = true;
+      workers[0].onmessageerror?.({ type: 'messageerror' });
+    });
+    completeQueueStub(workers[0]);
+    await first; await rejected;
+    expect(workers[0].terminate).toHaveBeenCalledTimes(1);
+    expect(index).toBe(2);
+    expect(client.pending).toBe(1);
+    expect(workers[1].queue).toHaveLength(1);
+    completeQueueStub(workers[1]);
+    await expect(third).resolves.toMatchObject({ shapeId: 'after-failure' });
+    expect(client.pending).toBe(0);
+    client.dispose();
+  });
+
+  it.each(['failed', 'cancelled'])('ignores a late messageerror from a %s worker', async kind => {
+    const workers = [fakeWorker(), fakeWorker()]; let index = 0;
+    const client = createMeshClient({ createWorker: () => workers[index++] });
+    const control = new AbortController();
+    const first = client.mesh(order, control.signal);
+    const rejected = expect(first).rejects.toBeInstanceOf(Error);
+    const second = client.mesh({ ...order, program: { ...order.program, shapeId: 'replacement' } });
+    // Capture the callback as the browser may have already queued delivery.
+    const late = workers[0].onmessageerror;
+    expect(late).toBeTypeOf('function');
+    if (kind === 'failed') workers[0].onerror?.(new Error('original failure'));
+    else control.abort();
+    await rejected;
+    late?.({ type: 'messageerror' });
+    workers[0].onerror?.(new Error('late old error'));
+    expect(workers[0].terminate).toHaveBeenCalledTimes(1);
+    expect(workers[1].terminate).not.toHaveBeenCalled();
+    expect(index).toBe(2);
+    expect(client.pending).toBe(1);
+    completeQueueStub(workers[1]);
+    await expect(second).resolves.toMatchObject({ shapeId: 'replacement' });
+    expect(client.pending).toBe(0);
+    client.dispose();
+  });
 
   it('pošle práci workeru a vrátí hotový mesh', async () => {
     const worker = fakeWorker();
@@ -1080,6 +1272,26 @@ describe('klient meshovacího workeru', () => {
     await expect(running).rejects.toThrow('mesh client is disposed');
     await expect(waiting).rejects.toThrow('mesh client is disposed');
     expect(worker.terminate).toHaveBeenCalled();
+  });
+
+  it.each(['construction', 'postMessage'])('synchronous %s failure releases the queue and permits retry', async mode => {
+    const worker = fakeWorker();
+    let attempts = 0;
+    const client = createMeshClient({ createWorker: () => {
+      attempts++;
+      if (attempts === 1) {
+        if (mode === 'construction') throw new Error('cannot create worker');
+        return { ...worker, postMessage: () => { throw new Error('cannot clone request'); } };
+      }
+      return worker;
+    } });
+    await expect(client.mesh(order)).rejects.toThrow(/cannot/);
+    expect(client.pending).toBe(0);
+    const retry = client.mesh(order);
+    completeQueueStub(worker);
+    await expect(retry).resolves.toMatchObject({ shapeId: order.program.shapeId });
+    expect(client.pending).toBe(0);
+    client.dispose();
   });
 
   it('pád workeru odmítne běžící práci a frontu dojede na novém', async () => {

@@ -83,6 +83,8 @@ export class MeshEmptyError extends Error {
 }
 
 export interface MeshResult {
+  /** elapsedMs still describes the original computation when this is true. */
+  readonly cacheHit?: boolean;
   readonly shapeId: string;
   readonly positions: Float32Array;
   readonly normals: Float32Array;
@@ -99,9 +101,15 @@ export interface MeshWorkerLike {
   terminate(): void;
   onmessage: ((event: { data: MeshJobResponse }) => void) | null;
   onerror: ((event: unknown) => void) | null;
+  /** Property fallback for injected doubles without EventTarget support. */
+  onmessageerror?: ((event: unknown) => void) | null;
+  /** Some browsers support the event without an onmessageerror IDL property. */
+  addEventListener?(type: 'messageerror', listener: (event: unknown) => void): void;
 }
 
 export interface MeshClientOptions {
+  /** Bound obsolete work; default permits at most 64 queued/running jobs. */
+  readonly maxPending?: number;
   /**
    * Jak se worker vyrábí. Výchozí je `new Worker(new URL('./mesh-worker.ts', …))`,
    * což je zápis, kterému rozumí bundler a sám ten soubor zabalí.
@@ -127,7 +135,7 @@ export interface MeshClientOptions {
 
 export interface MeshClient {
   /** Objedná tvar. Slib se splní hotovým meshem nebo odmítne s důvodem. */
-  mesh(order: MeshOrder): Promise<MeshResult>;
+  mesh(order: MeshOrder, signal?: AbortSignal): Promise<MeshResult>;
   /** Kolik prací čeká ve frontě včetně té běžící. */
   readonly pending: number;
   /** Zavře worker. Nedoběhlé práce se odmítnou. */
@@ -151,6 +159,8 @@ interface QueueEntry {
 }
 
 export function createMeshClient(options: MeshClientOptions = {}): MeshClient {
+  const maxPending = options.maxPending ?? 64;
+  if (!Number.isSafeInteger(maxPending) || maxPending < 1 || maxPending > 256) throw new Error('invalid mesh queue limit');
   const factory = options.createWorker ?? defaultWorkerFactory;
   const queue: QueueEntry[] = [];
   let running: QueueEntry | null = null;
@@ -158,35 +168,43 @@ export function createMeshClient(options: MeshClientOptions = {}): MeshClient {
   let disposed = false;
   let nextJobId = 0;
 
+  function failWorker(created: MeshWorkerLike, event: unknown, fallback: string): void {
+    if (worker !== created) return;
+    // A deserialization failure is a transport failure too: no job response
+    // will settle the running promise, so restart before pumping queued work.
+    const message = event instanceof Error ? event.message : fallback;
+    const failed = running;
+    running = null;
+    worker = null;
+    created.terminate();
+    failed?.reject(new Error(message));
+    pump();
+  }
+
   function ensureWorker(): MeshWorkerLike | null {
     if (worker !== null) return worker;
     if (typeof Worker === 'undefined' && options.createWorker === undefined) return null;
 
-    worker = factory();
-    worker.onmessage = (event) => finish(event.data);
-    worker.onerror = (event) => {
-      // Worker spadl jako celek. Běžící práce má důvod, fronta se rozjede dál
-      // na novém workeru — jinak by jedna vada zastavila celý svět.
-      const message = event instanceof Error ? event.message : 'mesh worker failed';
-      const failed = running;
-      running = null;
-      worker?.terminate();
-      worker = null;
-      failed?.reject(new Error(message));
-      pump();
-    };
+    const created = factory();
+    worker = created;
+    created.onmessage = (event) => { if (worker === created) finish(event.data); };
+    created.onerror = (event) => failWorker(created, event, 'mesh worker failed');
+    const messageError = (event: unknown) => failWorker(created, event, 'mesh worker response could not be deserialized');
+    // Chromium can expose messageerror only through EventTarget: assigning an
+    // unsupported onmessageerror property merely creates an inert expando.
+    if (created.addEventListener) created.addEventListener('messageerror', messageError);
+    else created.onmessageerror = messageError;
     return worker;
   }
 
   function finish(response: MeshJobResponse): void {
     const entry = running;
-    running = null;
     if (entry === null || entry.request.jobId !== response.jobId) {
       // Odpověď na práci, o kterou už nikdo nestojí — po `dispose()` nebo po
       // pádu workeru. Zahodit ji je správně; splnit cizí slib by nebylo.
-      pump();
       return;
     }
+    running = null;
 
     if (response.ok) {
       entry.resolve({
@@ -217,9 +235,22 @@ export function createMeshClient(options: MeshClientOptions = {}): MeshClient {
     if (next === undefined) return;
 
     running = next;
-    const active = ensureWorker();
-    if (active !== null) {
-      active.postMessage(next.request);
+    let active: MeshWorkerLike | null;
+    try {
+      active = ensureWorker();
+      if (active !== null) {
+        active.postMessage(next.request);
+        return;
+      }
+    } catch (error) {
+      // Construction and structured-clone errors are synchronous. They must
+      // release the same queue slot as an asynchronous worker failure.
+      running = null;
+      const retired = worker;
+      worker = null;
+      retired?.terminate();
+      next.reject(error instanceof Error ? error : new Error(String(error)));
+      pump();
       return;
     }
 
@@ -240,8 +271,10 @@ export function createMeshClient(options: MeshClientOptions = {}): MeshClient {
   }
 
   return {
-    mesh(order: MeshOrder): Promise<MeshResult> {
+    mesh(order: MeshOrder, signal?: AbortSignal): Promise<MeshResult> {
       if (disposed) return Promise.reject(new Error('mesh client is disposed'));
+      if (signal?.aborted) return Promise.reject(new DOMException('Mesh request cancelled', 'AbortError'));
+      if (queue.length + (running === null ? 0 : 1) >= maxPending) return Promise.reject(new Error('mesh queue is full'));
       nextJobId += 1;
       const request: MeshJobRequest = {
         jobId: `mesh-${nextJobId}`,
@@ -255,7 +288,24 @@ export function createMeshClient(options: MeshClientOptions = {}): MeshClient {
         unbudgeted: options.unbudgeted === true,
       };
       return new Promise<MeshResult>((resolve, reject) => {
-        queue.push({ request, shapeId: order.program.shapeId, resolve, reject });
+        const cleanup = () => signal?.removeEventListener('abort', abort);
+        const entry: QueueEntry = { request, shapeId: order.program.shapeId,
+          resolve: result => { cleanup(); resolve(result); }, reject: error => { cleanup(); reject(error); } };
+        const abort = () => {
+          if (running === entry) {
+            const retired = worker;
+            worker = null; running = null;
+            retired?.terminate();
+          } else {
+            const index = queue.indexOf(entry);
+            if (index < 0) return;
+            queue.splice(index, 1);
+          }
+          entry.reject(new DOMException('Mesh request cancelled', 'AbortError'));
+          pump();
+        };
+        signal?.addEventListener('abort', abort, { once: true });
+        queue.push(entry);
         pump();
       });
     },
@@ -266,10 +316,11 @@ export function createMeshClient(options: MeshClientOptions = {}): MeshClient {
 
     dispose(): void {
       disposed = true;
-      worker?.terminate();
+      const retired = worker;
       worker = null;
       const stopped = running;
       running = null;
+      retired?.terminate();
       stopped?.reject(new Error('mesh client is disposed'));
       while (queue.length > 0) {
         queue.shift()?.reject(new Error('mesh client is disposed'));
