@@ -7,12 +7,15 @@ import { runSourceProposal, serverGrammar } from '../src/worldstream/sessions';
 import type { SourceObservation } from '../src/worldstream/browser-measurement';
 import type { UpstreamRequest } from '../src/model/prompt';
 import type { Adapter, CaseInput, Checks, Context, Phase, ProductResult } from './measure-reality-compiler';
+import { PARAMETER_KEYS } from '../src/worldstream/source-parameters';
+import type { PipelineMetricsSnapshot } from '../src/worldstream/pipeline-metrics';
 
 export interface BrowserTask {
   actor: string; startTarget: string; finishTarget: string; approachTarget: string; timerId: string;
   actionId: string; waitTicks: number; newDurationTicks: number;
 }
 export interface BrowserArtifact {
+  pipeline?: PipelineMetricsSnapshot | null;
   observation: SourceObservation | null;
   responses: { kind: string; code: string | null; questions: string[]; conflicts: string[]; unsupported: string[] }[];
   problematicStopped: boolean | null;
@@ -35,6 +38,8 @@ export function createBrowserAdapter(options: {
   artifactDirectory?: string;
   timeoutMs?: number;
 }): Adapter & { dispose(): Promise<void> } {
+  // Stop before spending: this historical protocol has no human parameter phase.
+  if (!options.fixture) throw new Error('PARAMETER_REVIEW_REQUIRED');
   let page: Page | null = null;
   let active: Context | null = null;
   const pending = new Set<Promise<Response>>();
@@ -80,7 +85,8 @@ export function createBrowserAdapter(options: {
       screenshot = join(options.artifactDirectory, `pair-${pair}-${phase}.png`);
       await page.screenshot({ path: screenshot }).catch(() => { screenshot = null; });
     }
-    return { observation, renderer, responses: structuredClone(responses), problematicStopped,
+    const pipeline = page && !page.isClosed() ? await page.evaluate(() => window.__worldstreamMetrics?.snapshot() ?? null).catch(() => null) : null;
+    return { observation, renderer, pipeline, responses: structuredClone(responses), problematicStopped,
       rejectedUnchanged, originalBeforeEdit, screenshot, error,
       sourceStatus: page && !page.isClosed() ? await page.getByTestId('source-status').textContent().catch(() => null) : null };
   }
@@ -120,14 +126,14 @@ export function createBrowserAdapter(options: {
           const current = active;
           const request = new Request(route.request().url(), { method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: route.request().postData() });
-          const operation = handleSourceRequest(request, async (source, revision) => {
+          const operation = handleSourceRequest(request, async (source, revision, _deps, supplement) => {
             const start = nodePerformance.now(); let modelMs = 0;
             const result = await runSourceProposal(source, revision, { grammar, emit: async r => {
               const at = nodePerformance.now();
               // A clarified source is a new request, not a transport retry.
               try { return options.fixture ? await options.fixture(r) : await current.emit(r, 'compiler', 0); }
               finally { modelMs += nodePerformance.now() - at; }
-            } });
+            } }, supplement);
             current.recordStage('validation', Math.max(0, nodePerformance.now() - start - modelMs));
             return result;
           }, options.fixture ? 'fixture' : 'live');
@@ -195,7 +201,7 @@ export function createBrowserAdapter(options: {
       context.notUsed('humanWait'); // Stored answers supplied automatically; real human time is a separate study.
       if (phase === 'edit' || options.fixture) context.notUsed('compiler');
       let completed = false;
-      let error: string | null = null;
+      let error: NonNullable<ProductResult['error']> | null = null;
       let timing: ProductResult['timing'];
       try {
         if (phase === 'create') {
@@ -215,6 +221,11 @@ export function createBrowserAdapter(options: {
             await submitSource();
           } else if (input.kind !== 'complete') problematicStopped = false;
           if (responses.at(-1)?.kind !== 'proposed') throw new Error('SOURCE_NOT_PROPOSED');
+          // Only offline fixtures may script acknowledgement. The historical live
+          // protocol has no human parameter-review phase and must fail closed.
+          if (!options.fixture) throw new Error('PARAMETER_REVIEW_REQUIRED');
+          for (const key of PARAMETER_KEYS) await page.getByTestId(`parameter-${key}`).selectOption('supported');
+          await page.getByTestId('source-confirm').click();
           await expect(page.getByTestId('source-status')).toContainText('Source accepted');
           await context.stage('mesh', waitForFrame);
           await context.stage('firstInteraction', async () => {
@@ -236,7 +247,8 @@ export function createBrowserAdapter(options: {
           });
         }
         completed = true;
-      } catch (e) { error = e instanceof Error && /Timeout|timeout|Timed out/.test(e.message) ? 'TIMEOUT' : 'VALIDATION_FAILED'; }
+      } catch (e) { error = e instanceof Error && e.message === 'PARAMETER_REVIEW_REQUIRED' ? e.message :
+        e instanceof Error && /Timeout|timeout|Timed out/.test(e.message) ? 'TIMEOUT' : 'VALIDATION_FAILED'; }
       finally {
         active = null;
         // Nezačít další pár, dokud je předchozí placená odpověď v letu.
@@ -254,7 +266,7 @@ export function createBrowserAdapter(options: {
       if (completed && !timing) { completed = false; error = 'VALIDATION_FAILED'; }
       const artifact = await snapshot(error, phase);
       return { completed, artifact, timing, execution: phase === 'edit' ? 'deterministic' : options.fixture ? 'replay' : 'inference',
-        ...(error ? { error: error as 'TIMEOUT' | 'VALIDATION_FAILED' } : {}) };
+        ...(error ? { error } : {}) };
     },
     async evaluate(input, created, edited) {
       return options.evaluate(input, created as BrowserArtifact ?? null, edited as BrowserArtifact ?? null);

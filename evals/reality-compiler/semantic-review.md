@@ -1,5 +1,11 @@
 # T11 — předání skutečnému hodnotiteli
 
+Nové návrhy z druhé implementační session používají **evidence-v2**: vlastní odkazy pro trigger, každý uzel podmínky (včetně allOf/anyOf/not) a každou akci. Otisk kontroluje vazbu na skutečnou deklaraci. Why i návrh před potvrzením ukazují tyto skupiny; nezávislý hodnotitel musí posoudit význam každé, nikoli jen shodu úryvku s byte spanem. Podpora timer intervence se mění jen u skutečné startTimer akce. Historické v1 archivy a jejich pravidlové review se nepřepisují a UI přiznává jejich menší podrobnost.
+
+`user-supplement` je samostatné uživatelské doplnění s vlastními citacemi a nezměněným původním zdrojem. Sourced zde znamená citaci konkrétního dokumentu, nikoli nezávislou pravdu; doplnění se nesmí započítat jako tvrzení původního zdroje. Potvrzení parametrů nemění unchecked. HTML textarea normalizuje vložené CRLF na LF ještě před odesláním; aplikace zachovává skutečně přijaté source bytes, HTTP/úložná cesta podporuje i CRLF a BOM bez normalizace.
+
+Aktualizace 9. 9.: nové potvrzení sedmi parametrů v aplikaci je pouze acknowledgement uživatele. Nemění `review.status`, nevyplňuje tento formulář a nepřepisuje historické FAIL. Lokální obnova znovu validuje a přehraje deklarovaný program; ani ona nepotvrzuje věrnost modelu zdroji. Při review rozlišit původní pravidlo a jeho podmínky/akce, tvrzené citace a explicitní změnu timeru. U kapacity timeru zvlášť ověřit, zda zdroj skutečně určuje i dobu jeho spuštění. Nová nezávislá série a její protokol jsou otevřené v `holdout-v2/README.md`.
+
 Stav: **NOT_RUN**. Tento návod ani prázdný formulář nejsou lidské hodnocení. Hodnotitel má být nezávislý na implementaci a má posuzovat skutečné výstupy všech 30 párů, včetně neúspěchů.
 
 ## Podklady a pracovní kopie

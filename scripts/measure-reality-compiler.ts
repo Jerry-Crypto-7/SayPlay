@@ -75,7 +75,7 @@ export interface ProductResult {
   execution?: 'inference' | 'deterministic' | 'replay';
   /** Čas browseru od skutečného potvrzení, nikoli od založení stránky. */
   timing?: { wallMs: number; humanWaitMs: number };
-  error?: 'TIMEOUT' | 'REJECTED' | 'VALIDATION_FAILED';
+  error?: 'TIMEOUT' | 'REJECTED' | 'VALIDATION_FAILED' | 'PARAMETER_REVIEW_REQUIRED';
 }
 export interface Adapter {
   prepare?(input: CaseInput, phase: Phase, previous: unknown): Promise<void>;

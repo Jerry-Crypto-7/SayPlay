@@ -124,6 +124,7 @@ export const LIVE_MODELS: readonly LiveModel[] = [
   { id: 'gpt-5.6-mini', wireModel: 'gpt-5.6-mini', provider: 'openai', profile: 'api', wire: 'openai-chat', url: 'https://api.openai.com/v1/chat/completions' },
   { id: 'gpt-5.6-sol', wireModel: 'gpt-5.6-sol', provider: 'openai', profile: 'api', wire: 'openai-chat', url: 'https://api.openai.com/v1/chat/completions' },
   { id: 'gpt-5.6-sol@proxy', wireModel: 'gpt-5.6-sol', provider: 'openai', profile: 'subscription', wire: 'anthropic-messages', url: 'http://localhost:18766/v1/messages' },
+  { id: 'gpt-5.6-sol-fast@proxy', wireModel: 'gpt-5.6-sol-fast', provider: 'openai', profile: 'subscription', wire: 'anthropic-messages', url: 'http://localhost:18766/v1/messages' },
   { id: 'gpt-5.6-terra@proxy', wireModel: 'gpt-5.6-terra', provider: 'openai', profile: 'subscription', wire: 'anthropic-messages', url: 'http://localhost:18766/v1/messages' },
 ];
 
