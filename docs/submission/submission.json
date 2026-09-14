@@ -1,5 +1,5 @@
 {
-  "$comment": "Veřejné demo běží na Vercelu (ověřeno 14. 9. 2026 kouřovým testem 3/3 proti demoUrl). Nasazení zatím nemá model: větu, kterou pokrývá sklad uvařených světů, obslouží hned, živá větev vrací 503, dokud se nenastaví proměnné modelu a sdílený obchod stropu. TODO: MISSING zachovává fail-closed konvenci submission brány. Nejde o dokončené veřejné odevzdání.",
+  "$comment": "Veřejné demo běží na Vercelu (ověřeno 14. 9. 2026 kouřovým testem 3/3 proti demoUrl). Od 14. 9. 2026 má nasazení živý model a sdílený obchod stropu (Upstash), ale model k němu teče dočasným tunelem z vývojového stroje: když tunel neběží, živá větev selže a zůstane jen sklad uvařených světů. Trvalý backend do 25. 11. zatím není. TODO: MISSING zachovává fail-closed konvenci submission brány. Nejde o dokončené veřejné odevzdání.",
   "repositoryUrl": "https://github.com/Jerry-Crypto-7/Hackathon",
   "demoUrl": "https://worldstream-sigma.vercel.app",
   "backendUrl": "https://worldstream-sigma.vercel.app/api/health",
