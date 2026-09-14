@@ -571,6 +571,7 @@ const outcome = (patch: Partial<CaseOutcome> = {}): CaseOutcome => ({
   failure: null,
   rungs: ['g3-reduced'],
   profile: layoutOnly([[0, 0, 0, 1, 1, 1]]),
+  blueprint: null,
   ...patch,
 });
 

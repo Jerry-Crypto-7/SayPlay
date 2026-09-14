@@ -42,7 +42,8 @@ import { createMeshClient, type MeshClient } from '@/shape/mesh-client';
 import { MESH_DETAIL } from '@/shape/types';
 import { shapeContentHash } from '@/worldstream/cache';
 import type { DetailLevel } from '@/worldstream/mesh-gate';
-import { buildProxyWorld, slotResolutions, type ProxyWorld } from '@/worldstream/proxy';
+import { buildProxyWorld, buildProxyWorldFrom, slotResolutions, type ProxyWorld } from '@/worldstream/proxy';
+import { blueprintSchema } from '@/worldstream/schema';
 import {
   budgetFor,
   detailLevelFor,
@@ -57,6 +58,7 @@ import WorldstreamLighting, {
 import WorldstreamStage, {
   type DetailUpgrade,
 } from '../../../components/viewer/WorldstreamStage';
+import WorldstreamCanvas from '../../../components/worldstream/WorldstreamCanvas';
 
 import {
   DEMO_BLUEPRINT,
@@ -137,7 +139,69 @@ function twoFrames(): Promise<void> {
   });
 }
 
+/**
+ * **`?blueprint=<url>` — uložený svět místo ukázky** (13. 9. 2026, galerie
+ * kvality). Měřidlo `live-latency.measure.ts` ukládá hotové blueprinty do
+ * `scratch/quality/`, a `e2e/quality-gallery.spec.ts` je sem podává přes
+ * `page.route()` a fotí je produktovým plátnem (`WorldstreamCanvas`, tedy
+ * s automatickým zarámováním kamery), aby se dva modely daly porovnat na
+ * pohled, ne jen podle toho, že prošly bránou. Svět se staví celý, s hrdiny
+ * vymeshovanými na úroveň kvality — tak, jak ho vidí porotce po doběhnutí.
+ */
+function StoredWorldPage({ url }: { readonly url: string }) {
+  const [world, setWorld] = useState<ProxyWorld | null>(null);
+  const [failure, setFailure] = useState<string | null>(null);
+  const [presented, setPresented] = useState(false);
+
+  useEffect(() => {
+    const client = createMeshClient();
+    let live = true;
+    const tier = pickQualityTier(window.location.search);
+    fetch(url)
+      .then((response) => response.json())
+      .then((document) => {
+        const parsed = blueprintSchema.safeParse((document as { blueprint?: unknown }).blueprint ?? document);
+        if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? 'blueprint does not parse');
+        return buildProxyWorldFrom(parsed.data, { mesh: (order) => client.mesh(order), quality: tier });
+      })
+      .then((built) => {
+        if (live) setWorld(built);
+      })
+      .catch((error: unknown) => {
+        if (live) setFailure(error instanceof Error ? error.message : String(error));
+      });
+    return () => {
+      live = false;
+      client.dispose();
+    };
+  }, [url]);
+
+  return (
+    <main style={{ position: 'fixed', inset: 0, background: UI_TOKENS.pelagic, color: UI_TOKENS.text, font: '13px/1.5 ui-monospace, monospace' }}>
+      <WorldstreamCanvas world={world} onPresented={() => setPresented(true)} />
+      <p data-testid="stage-status" data-presented={presented ? 'true' : 'false'} style={{ position: 'absolute', left: 12, bottom: 10, margin: 0, opacity: 0.75, pointerEvents: 'none' }}>
+        {failure !== null
+          ? `stored world failed: ${failure}`
+          : world === null
+            ? 'building the stored world…'
+            : world.kind === 'built'
+              ? `${world.title} — ${world.slots.length} slots, ${world.quality} quality`
+              : `declined: ${world.reason}`}
+      </p>
+    </main>
+  );
+}
+
 export default function WorldstreamDevPage() {
+  const [stored, setStored] = useState<string | null>(null);
+  useEffect(() => {
+    setStored(new URLSearchParams(window.location.search).get('blueprint'));
+  }, []);
+  if (stored !== null) return <StoredWorldPage url={stored} />;
+  return <DemoWorldPage />;
+}
+
+function DemoWorldPage() {
   const [world, setWorld] = useState<ProxyWorld | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [upgrade, setUpgrade] = useState<DetailUpgrade | null>(null);

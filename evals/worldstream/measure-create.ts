@@ -384,6 +384,8 @@ export interface CaseOutcome {
   /** Příčky, na kterých sloty skončily. Prázdné, když svět nevznikl. */
   readonly rungs: readonly ProxyRung[];
   readonly profile: WorldProfile | null;
+  /** Hotový blueprint, ze kterého svět vznikl — pro galerii kvality. `null`, když nevznikl. */
+  readonly blueprint: WorldstreamBlueprint | null;
 }
 
 export interface CaseDeps {
@@ -492,6 +494,7 @@ export async function driveCreateCase(entry: CreateCase, deps: CaseDeps): Promis
     certified: false,
     rungs: [] as readonly ProxyRung[],
     profile: null,
+    blueprint: null,
   };
 
   // Semínko píše měřidlo a s plánem nemá co dělat, takže se ověří **před**
@@ -593,6 +596,7 @@ export async function driveCreateCase(entry: CreateCase, deps: CaseDeps): Promis
         },
     rungs: world.kind === 'built' ? world.slots.map((entry_) => entry_.form.rung) : [],
     profile: worldProfile(blueprint),
+    blueprint,
   };
 }
 

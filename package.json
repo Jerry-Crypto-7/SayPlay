@@ -28,6 +28,7 @@
     "measure:rejects": "vitest run evals/__tests__/reject-causes.test.ts",
     "measure:hostile": "vitest run evals/__tests__/hostile-report.test.ts",
     "author:worlds": "vitest run --config vitest.measure.mts evals/worldstream/author-worlds.measure.ts",
+    "measure:worldstream-latency": "vitest run --config vitest.measure.mts evals/worldstream/live-latency.measure.ts",
     "measure:worldstream-create": "vitest run --config vitest.measure.mts evals/worldstream/live-create.measure.ts",
     "measure:worldstream-replay": "vitest run --config vitest.measure.mts evals/worldstream/replay-create.measure.ts",
     "measure:reality-compiler": "vitest run --config vitest.measure.mts evals/reality-compiler/benchmark.measure.ts",
