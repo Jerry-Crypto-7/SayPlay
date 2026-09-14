@@ -1,3 +1,4 @@
+import { observePhase, observePhaseAsync, type PhaseObserver } from './phase-observer';
 /**
  * **Druhá věta (P15 T22): grounded refine.**
  *
@@ -444,11 +445,14 @@ export function buildRefineRequest(
     'behavior is a list of RFC 6902 operations, every path rooted at /sim. That is where rules,',
     'entities, sockets and state live. An entity role you write there is a LABEL under the same rule:',
     'camelCase, no spaces (loosePickup, not "loose pickup").',
-    'appearance is a list of RFC 6902 operations, every path rooted at /look. That is where palette,',
-    'materials, lighting and atmosphere live.',
+    'appearance MUST be an empty list. This renderer does not support palette, material, lighting',
+    'or atmosphere edits under /look; any such operation rejects the entire change, including mixed changes.',
+    'Do not pretend that a shape or behavior edit satisfies an appearance-only request.',
     '',
     'The two lists are not labels and they are not interchangeable. An operation under behavior that',
-    'writes to /look gets the whole answer rejected — put it under appearance instead.',
+    'writes to /look gets the whole answer rejected. Do not move unsupported appearance into behavior.',
+    'Entity motion fields (for example /sim/entities/id/motion with kind sway) are not implemented.',
+    'Do not emit or promise them. Use supported simulation rules for behavior; otherwise state the limitation.',
     '',
     'Change the least that makes the sentence true. Every object you do not name keeps its shape, its',
     'state and its place; a change that rewrites the whole world is a wrong answer even when it would',
@@ -476,6 +480,7 @@ export function buildRefineRequest(
  * ------------------------------------------------------------------ */
 
 export interface ChangeInput {
+  readonly observePhase?: PhaseObserver;
   readonly prompt: string;
   readonly blueprint: WorldstreamBlueprint;
   /** Cíl, na kterém se `groundTarget` shodl. Tahle funkce už negrounduje. */
@@ -508,7 +513,7 @@ export type ChangeOutcome =
 export async function planChange(input: ChangeInput): Promise<ChangeOutcome> {
   let answer: unknown;
   try {
-    answer = await input.emit(buildRefineRequest(input.prompt, input.blueprint, input.target));
+    answer = await observePhaseAsync(input.observePhase, 'edit-emitter', () => input.emit(buildRefineRequest(input.prompt, input.blueprint, input.target)));
   } catch (thrown) {
     // `cause` vedle `detail` ze stejného důvodu jako v `worldstream-repair.ts`:
     // odmítnutý strop a mlčící poskytovatel jsou dvě různé věty pro porotce
@@ -520,7 +525,7 @@ export async function planChange(input: ChangeInput): Promise<ChangeOutcome> {
     };
   }
 
-  const read = readRefineEmission(answer, input.target);
+  const read = observePhase(input.observePhase, 'edit-validation', () => readRefineEmission(answer, input.target));
   if (!read.ok) return { kind: 'rejected', reason: read.reason, detail: read.detail };
 
   return { kind: 'planned', plan: read.value };
