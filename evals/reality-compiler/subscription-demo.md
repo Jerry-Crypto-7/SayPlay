@@ -1,5 +1,11 @@
 # Lokální demo přes předplatné
 
+## Aktuální brána — 10. 9. 2026, sedmá auditní session
+
+Výchozí legacy launcher je nyní **zablokovaný před loginem a spawnem** chybou `SUBSCRIPTION_PRODUCTION_NOT_VALIDATED`. Odstraněny jsou binary/distro env overrides. Níže uvedené živé výsledky a spuštění popisují historický stav 8. 9.; nejsou důkazem současné připravenosti. Nový credential-free CLI supervisor, resource envelope a ordinary browser orchestrace se validují odděleně. Max/model `gpt-5.6-sol`/effort `low` zůstávají stejné; žádný API fallback.
+
+Odemčení vyžaduje skutečný pevný dispatcher a ověření jeho filesystem/control/auth/network/resource/cleanup hranic. Synthetic sandbox PASS ani status přihlášení z historického běhu to nenahrazují. Neprovádět přímý login příkaz níže jako náhradu této brány.
+
 Rozhodnutí uživatele, 8. 9. 2026: demo má využít již placený Claude Code / Codex plán. Dodatečný API rozpočet je **0 USD**. Toto upřesnění nahrazuje požadavek na API klíč a USD limit pro demo; nesmí se automaticky zapnout API fallback ani dobíjení.
 
 ## Zvolená cesta a skutečný stav

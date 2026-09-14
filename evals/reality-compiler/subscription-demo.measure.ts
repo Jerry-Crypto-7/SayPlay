@@ -4,8 +4,10 @@ import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { chromium, expect } from '@playwright/test';
 import { it } from 'vitest';
+import { browserRenderer } from '../../scripts/browser-renderer';
 import { EMISSION_MODEL } from '../../src/model/prompt';
 import { subscriptionEmitter } from '../../scripts/codex-subscription';
+import { bindSubscriptionLifetime, waitForSubscriptionClose } from '../../scripts/subscription-lifetime';
 import { fileJournal } from '../../scripts/measure-reality-compiler';
 import { handleSourceRequest } from '../../src/app/api/worldstream/source/handler';
 import { runSourceProposal, serverGrammar } from '../../src/worldstream/sessions';
@@ -27,14 +29,16 @@ it('opens an own local source demo using the signed-in Codex subscription', asyn
   const smoke = process.env.RC_DEMO_SMOKE === '1';
   const guided = process.env.RC_DEMO_GUIDED === '1';
   const baseURL = 'http://127.0.0.1:3116';
+  const lifetime = new AbortController();
   // Own server only, local interface, and no API configuration inherited by Next.
   const server = execFile(process.execPath, ['node_modules/next/dist/bin/next', 'start', '--hostname', '127.0.0.1', '--port', '3116'],
     { windowsHide: true, env: { ...process.env, WORLDSMITH_MODEL_ENDPOINT: '', WORLDSMITH_MODEL_KEY: '' } });
+  const serverClosed = new Promise<void>(resolve => { server.once('close', () => resolve()); });
   let serverError: Error | null = null;
   let listening = false;
   server.stdout?.on('data', chunk => { if (String(chunk).includes('Ready')) listening = true; });
-  server.on('error', error => { serverError = error; });
-  server.on('exit', code => { if (code !== null) serverError = new Error('DEMO_SERVER_EXITED'); });
+  server.on('error', error => { serverError = error; lifetime.abort(); });
+  server.on('exit', () => { serverError = new Error('DEMO_SERVER_EXITED'); lifetime.abort(); });
   const pending = new Set<Promise<Response>>();
   let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
   try {
@@ -45,23 +49,26 @@ it('opens an own local source demo using the signed-in Codex subscription', asyn
       await new Promise(r => setTimeout(r, 500));
     }
     if (!ready) throw new Error('BUILD_REQUIRED_OR_PORT_BUSY');
-    browser = await chromium.launch({ headless: smoke, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+    browser = await chromium.launch({ headless: smoke, args: browserRenderer().args });
     const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: 'block' });
     const page = await context.newPage();
+    bindSubscriptionLifetime(lifetime, browser, context, page);
     await context.route('**/api/**', async route => {
       if (route.request().url() !== `${baseURL}/api/worldstream/source` || route.request().method() !== 'POST') {
         await route.fulfill({ status: 503, json: { kind: 'rejected', code: 'SOURCE_DEMO_ONLY' } }); return;
       }
       const operation = handleSourceRequest(new Request(route.request().url(), { method: 'POST',
         headers: { 'Content-Type': 'application/json' }, body: route.request().postData() }),
-        (source, revision) => runSourceProposal(source, revision, { grammar, emit: provider.emit }));
+        (source, revision, _deps, supplement) => runSourceProposal(source, revision, {
+          grammar, emit: request => provider.emit(request, lifetime.signal),
+        }, supplement));
       pending.add(operation);
       try {
         const response = await operation;
         const body = await response.json();
         journal({ event: 'source-result', kind: body.kind, code: body.code ?? null });
         writeFileSync(resolve(directory, `${randomUUID()}-source.json`), JSON.stringify(body, null, 2));
-        await route.fulfill({ status: response.status, json: body });
+        if (!lifetime.signal.aborted) await route.fulfill({ status: response.status, json: body });
       } finally { pending.delete(operation); }
     });
     await page.goto(baseURL);
@@ -81,7 +88,8 @@ it('opens an own local source demo using the signed-in Codex subscription', asyn
       const response = await reply;
       const result = await response.json();
       if (result.kind !== 'proposed') throw new Error(`LIVE_SOURCE_${result.kind}_${result.code ?? ''}`);
-      await page.waitForFunction(() => !!window.__realityCompiler?.snapshot() && !!window.__worldstreamStage?.ready(), undefined, { timeout: 60_000 });
+      process.stdout.write('Review the seven parameter groups in the browser and confirm them to continue. This is your acknowledgement, not independent semantic review.\n');
+      await page.waitForFunction(() => !!window.__realityCompiler?.snapshot() && !!window.__worldstreamStage?.ready(), undefined, { timeout: 30 * 60_000 });
       const act = async (actionId: string, target: string) => {
         const index = await page.evaluate(({ actionId, target }) => window.__realityCompiler!.snapshot()!.actions
           .findIndex(a => a.actor === 'visitor' && a.actionId === actionId && a.target === target), { actionId, target });
@@ -117,15 +125,20 @@ it('opens an own local source demo using the signed-in Codex subscription', asyn
       expect(comparison.changed.values['f:alarm']).toBe(1);
       await page.screenshot({ path: resolve(directory, 'live-source.png') });
       writeFileSync(resolve(directory, 'observation.json'), JSON.stringify(await page.evaluate(() => window.__realityCompiler?.snapshot()), null, 2));
+      writeFileSync(resolve(directory, 'pipeline.json'), JSON.stringify(await page.evaluate(() => window.__worldstreamMetrics?.snapshot() ?? null), null, 2));
       process.stdout.write(`GUIDED_DEMO_VERIFIED: live generation, actual inputs, original unlocked, changed locked with alarm. Archive: ${directory}\n`);
     }
     if (!smoke) {
-      await Promise.race([new Promise<void>(r => context.on('close', () => r())), new Promise<void>(r => browser!.on('disconnected', () => r())),
-        new Promise<void>(r => { const timer = setTimeout(r, 30 * 60_000); timer.unref(); })]);
+      await waitForSubscriptionClose(lifetime.signal, 30 * 60_000);
     }
   } finally {
-    await Promise.allSettled([...pending]);
-    await browser?.close();
-    server.kill();
+    lifetime.abort();
+    try {
+      await Promise.allSettled([...pending]);
+      await browser?.close();
+    } finally {
+      server.kill();
+      await serverClosed;
+    }
   }
 }, 35 * 60_000);
