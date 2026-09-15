@@ -90,6 +90,14 @@ describe('codex shim', () => {
     expect(() => createShim({ ...base, maxConcurrent: 0 })).toThrow(/maxConcurrent/);
   });
 
+  it('refuses to start with an empty or short key', () => {
+    // Prázdný klíč by se shodoval s prázdnou hlavičkou `x-api-key` – tunel by pustil kohokoli.
+    const base = { model: 'gpt-6-astra', effort: 'high', runsFile: join(tmpdir(), 'unused.json') };
+    expect(() => createShim({ ...base, key: '' })).toThrow(/CODEX_SHIM_KEY/);
+    expect(() => createShim({ ...base, key: 'k'.repeat(31) })).toThrow(/CODEX_SHIM_KEY/);
+    expect(() => createShim({ ...base, key: 'k'.repeat(32) })).not.toThrow();
+  });
+
   it('fails closed with 503 on a damaged run counter and keeps serving', async () => {
     const runsFile = join(mkdtempSync(join(tmpdir(), 'shim-test-')), 'runs.json');
     writeFileSync(runsFile, '{"day":"2026-09-15","ru');
