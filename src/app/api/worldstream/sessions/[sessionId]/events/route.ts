@@ -343,7 +343,11 @@ export function sessionEventStream(
         if (terminal(stored.session.phase)) finish();
       });
 
-      for (const event of log.since(after)) write(sessionFrame(event));
+      let wroteBacklog = false;
+      for (const event of log.since(after)) {
+        write(sessionFrame(event));
+        wroteBacklog = true;
+      }
 
       // Relace, která doběhla dřív, než se klient připojil: backlog je celý
       // příběh a čekat na další rámec by znamenalo čekat navždy.
@@ -351,6 +355,16 @@ export function sessionEventStream(
         finish();
         return;
       }
+
+      // **Obnovení bez nového rámce dostane hlavičky hned, ne za 15 s.** `next`
+      // pošle hlavičky až s prvním kusem těla (`dist/server/pipe-readable.js`,
+      // „don't flush the headers until we've started writing chunks"), a
+      // úspěšná relace zůstává ve fázi `world` otevřená napořád. Klient, který
+      // navázal za posledním číslem, tak visel na `fetch` do prvního heartbeatu.
+      // Naměřeno 15. 9. 2026 na `e2e/worldstream-session.spec.ts:174`: dvě
+      // obnovení po 15 s přetekla strop testu 30 s, na `fc8ed39` i před ním.
+      // Komentář dekodér zahodí, takže první stavový rámec zůstává `id: 1`.
+      if (!wroteBacklog) write(HEARTBEAT_FRAME);
 
       beat = setInterval(() => write(HEARTBEAT_FRAME), HEARTBEAT_MS);
       // Otevřený proud nesmí být důvod, proč proces (nebo běh sady) neskončí.

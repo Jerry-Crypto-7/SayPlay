@@ -813,6 +813,22 @@ describe('proud relace', () => {
     expect(frames[0].sequence).toBe(5);
   });
 
+  it('obnovení bez nového rámce dostane první kus hned, ne za heartbeat', async () => {
+    // `next` pošle hlavičky až s prvním kusem těla a úspěšná relace zůstává
+    // otevřená ve fázi `world`, takže prázdný backlog znamenal 15 s bez
+    // hlaviček — `fetch` klienta, který navázal za posledním číslem, visel.
+    // Soudí se **do vteřiny**: bez meze by čtení počkalo na heartbeat z
+    // intervalu a prošlo by se týmž rámcem o 15 s později (mutant to 15. 9.
+    // přežil přesně takhle).
+    const stored = await generated();
+    const raw = await Promise.race([
+      readRaw(await events(stored.session.sessionId, '?since=4')),
+      new Promise<string>((resolve) => setTimeout(() => resolve('nothing within 1 s'), 1_000)),
+    ]);
+
+    expect(raw).toBe(HEARTBEAT_FRAME);
+  });
+
   it('proud se zavře sám, když relace skončí', async () => {
     const stored = await generated();
     const response = await events(stored.session.sessionId, '?since=4');
