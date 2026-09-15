@@ -1205,4 +1205,17 @@ describe('8. parseAnswerText opraví jen konec, nanejvýš o dvě závorky', () 
   ])('odmítne %s', (_name, text) => {
     expect(() => parseAnswerText(text)).toThrow();
   });
+
+  it('odpověď useknutou na max_tokens nedoplní, i když by jí stačily dvě závorky', async () => {
+    const answer = (stopReason: string) => (async () => new Response(
+      JSON.stringify({ content: [{ type: 'text', text: '{"a":[1,2' }], stop_reason: stopReason, usage: { input_tokens: 10, output_tokens: 10 } }),
+      { status: 200, headers: { 'content-type': 'application/json' } },
+    )) as unknown as typeof fetch;
+    const call = { prompt: PROMPT, request: { model: 'm', system: 's', user: PROMPT } };
+    const cut = await upstreamBranch(liveConfig(), answer('max_tokens')).generate(call);
+    expect(cut).toMatchObject({ ok: false, reason: 'MALFORMED_RESPONSE' });
+    if (!cut.ok) expect(cut.detail).toContain('max_tokens');
+    const finished = await upstreamBranch(liveConfig(), answer('end_turn')).generate(call);
+    expect(finished).toMatchObject({ ok: true, body: { a: [1, 2] } });
+  });
 });

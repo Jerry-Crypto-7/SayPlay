@@ -888,14 +888,18 @@ async function generate(
       usage: null,
     };
 
+  // **Useknutá odpověď se nedoplňuje** (`ship-testgaps`, 15. 9. 2026). Závorky,
+  // které chybí po `stop_reason: max_tokens`, nejsou překlep modelu, ale konec,
+  // který nikdy nepřišel – doplněný by z půlky světa udělal platný dokument.
+  const truncated = (payload as { stop_reason?: unknown } | null)?.stop_reason === 'max_tokens';
   let body: unknown;
   try {
-    body = observePhase(serverPhaseObserver, 'provider-output-json-parse', () => parseAnswerText(text));
+    body = observePhase(serverPhaseObserver, 'provider-output-json-parse', () => (truncated ? JSON.parse(text) : parseAnswerText(text)));
   } catch (thrown) {
     return {
       ok: false,
       reason: 'MALFORMED_RESPONSE',
-      detail: `the upstream text block is not JSON: ${(thrown as Error).message}`,
+      detail: `the upstream text block is not JSON${truncated ? ' (cut at max_tokens)' : ''}: ${(thrown as Error).message}`,
       // **Rozhoduje text, ne úspěch.** Sem se dojde jen s textovým blokem
       // v ruce, takže hranice zdola se z čeho odvodit má — a odvozuje se,
       // i když je odpověď vadná. Návrat výš text nemá, takže tam se účtenka
