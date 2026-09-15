@@ -4,10 +4,15 @@ import { Matrix4, type BufferGeometry } from 'three';
 
 import { pieceById } from '../kit';
 import {
+  anchorTranslation,
+  boundsOfGeometry,
   carve,
   concat,
+  curveOffsets,
   flipWinding,
   placementMatrix,
+  rotationOf,
+  sweepGeometry,
   terrainGeometry,
   trianglesOfGeometry,
 } from './compile';
@@ -27,8 +32,10 @@ import { parseGeomProgram, pieceIdOf, type GeomNode, type GeomProgram } from './
  * kusů týmiž maticemi musí vyjít vrchol po vrcholu totéž, což pinuje
  * `__tests__/placement.test.ts` nad každým uzlem i nad všemi čtyřmi rodinami.
  *
- * **Dva uzly se na umístěný kus převést nedají** a zůstávají sítí:
+ * **Tři uzly se na umístěný kus převést nedají** a zůstávají sítí:
  * - `terrain` — zem je výškové pole, kus v kitu pro ni není,
+ * - `sweep` — profil tažený po křivce je také generovaný tvar; kit se ohnout
+ *   nedá, a právě proto ten uzel vznikl,
  * - `carve` — řez zahazuje trojúhelníky, takže podstrom po něm přestane být
  *   složeninou kusů.
  *
@@ -45,6 +52,21 @@ interface PlacementBase {
    * odřízne jako odvrácenou.
    */
   readonly mirrored: boolean;
+  /**
+   * Řádek programu, kterému tenhle kus patří — **jen když si o to volající
+   * řekl** druhým parametrem `compilePlacements()`. Bez něj je pole všude
+   * `undefined` a plán je bit po bitu tentýž jako dřív.
+   *
+   * K čemu je: `SemanticObject.source` říká „tenhle objekt je z řádku 2", ale
+   * hotový plán je jeden plochý seznam, ve kterém po řádcích není stopa.
+   * Bez razítka se nedá ani vybrat, co do slotu patří, ani odečíst zbytek
+   * kompozice — a objekt, který se nedá vybrat, se nedá ani vyměnit za
+   * podrobnější podobu (design book §13).
+   *
+   * **Bližší vlastník vyhrává.** Razítko se dává jen tomu, kdo ještě žádné
+   * nemá, takže objekt vnořený v jiném objektu zůstane svůj.
+   */
+  readonly owner?: number;
 }
 
 /** Kus kitu. Jeden takový záznam = jeden draw call. */
@@ -53,7 +75,7 @@ export interface PiecePlacement extends PlacementBase {
   readonly pieceId: string;
 }
 
-/** Co kus kitu není: zem a prosekaný podstrom. */
+/** Co kus kitu není: zem, tažený profil a prosekaný podstrom. */
 export interface MeshPlacement extends PlacementBase {
   readonly kind: 'mesh';
   readonly geometry: BufferGeometry;
@@ -61,13 +83,32 @@ export interface MeshPlacement extends PlacementBase {
 
 export type GeomPlacement = PiecePlacement | MeshPlacement;
 
-/** Matice rodiče se násobí **zleva** — dítě si svoje umístění nese v sobě. */
+/**
+ * Matice rodiče se násobí **zleva** — dítě si svoje umístění nese v sobě.
+ *
+ * `owner` se **přenáší**. Kopie vyrobená polem nebo zrcadlem je pořád tentýž
+ * objekt: šest desek z `repeat` je jedna zeď, ne šest zdí.
+ */
 function transformed(placement: GeomPlacement, matrix: Matrix4, mirrors = false): GeomPlacement {
   const composed = new Matrix4().multiplyMatrices(matrix, placement.matrix);
   const mirrored = placement.mirrored !== mirrors;
+  const owner = placement.owner;
   return placement.kind === 'piece'
-    ? { kind: 'piece', pieceId: placement.pieceId, matrix: composed, mirrored }
-    : { kind: 'mesh', geometry: placement.geometry, matrix: composed, mirrored };
+    ? { kind: 'piece', pieceId: placement.pieceId, matrix: composed, mirrored, owner }
+    : { kind: 'mesh', geometry: placement.geometry, matrix: composed, mirrored, owner };
+}
+
+/**
+ * Razítko vlastníka, jen na to, co ještě žádné nemá.
+ *
+ * Objekty se nemění, vyrábí se nové — plán se stejným kusem sdílí `built[]`
+ * mezi rodiči (`group` vrací tytéž záznamy), takže zápis do nich by orazítkoval
+ * i větev, která k vlastníkovi nevede.
+ */
+function stamped(placements: readonly GeomPlacement[], owner: number): readonly GeomPlacement[] {
+  return placements.map((placement) =>
+    placement.owner === undefined ? { ...placement, owner } : placement,
+  );
 }
 
 function geometryOfPiece(id: string): BufferGeometry {
@@ -86,7 +127,20 @@ function placeNode(
         {
           kind: 'mesh',
           geometry: terrainGeometry(node),
-          matrix: placementMatrix(node.at, node.yaw, undefined),
+          matrix: placementMatrix(node.at, rotationOf(node), undefined),
+          mirrored: false,
+        },
+      ];
+
+    case 'sweep':
+      return [
+        {
+          kind: 'mesh',
+          geometry: sweepGeometry(node),
+          // Na rozdíl od terénu si `sweep` bere i `scale`: terén má vlastní
+          // `extent`, takže by měl dvě cesty k téže velikosti, tažený profil
+          // žádnou takovou nemá.
+          matrix: placementMatrix(node.at, rotationOf(node), node.scale),
           mirrored: false,
         },
       ];
@@ -134,11 +188,29 @@ function placeNode(
         const yaw = uniformInt(stream, 0, 3);
         const matrix = placementMatrix(
           [Math.cos(angle) * distance, 0, Math.sin(angle) * distance],
-          yaw,
+          { yaw },
           undefined,
         );
         return built[node.child].map((placement) => transformed(placement, matrix));
       }).flat();
+    }
+
+    case 'arrayAlongCurve':
+      return curveOffsets(node.points, node.count).flatMap((offset) => {
+        const matrix = new Matrix4().makeTranslation(offset.x, offset.y, offset.z);
+        return built[node.child].map((placement) => transformed(placement, matrix));
+      });
+
+    case 'anchorTo': {
+      // Kvádr se bere z **upečeného** cíle, ne ze součtu kvádrů jednotlivých
+      // kusů. Je to dražší o jedno slepení, ale je to jediný způsob, jak dát
+      // touž kotvu jako slučující cesta: obalový kvádr otočeného kusu je menší
+      // než otočený obalový kvádr, a od P13 vlny 1 se otáčí volně, takže by se
+      // ty dvě čísla u každého programu s `pitch` nebo `roll` rozešla.
+      const baked = bakePlacements(built[node.target]);
+      const matrix = anchorTranslation(boundsOfGeometry(baked), node.site, node.offset);
+      baked.dispose();
+      return built[node.child].map((placement) => transformed(placement, matrix));
     }
 
     default: {
@@ -149,7 +221,7 @@ function placeNode(
         {
           kind: 'piece',
           pieceId: id,
-          matrix: placementMatrix(node.at, node.yaw, node.scale),
+          matrix: placementMatrix(node.at, rotationOf(node), node.scale),
           mirrored: false,
         },
       ];
@@ -177,13 +249,26 @@ export function bakePlacements(placements: readonly GeomPlacement[]): BufferGeom
  *
  * Průchod odspodu nahoru jako u slučující cesty: potomek má vždy nižší index
  * než rodič, což vynutil `parseGeomProgram`, takže se nikde nerekurzuje.
+ *
+ * `owners` je nepovinné a **nemění, co vyleze** — jen se do každého záznamu
+ * dopíše řádek, kterému patří (`GeomPlacement.owner`). Volá s ním
+ * `src/worldstream/proxy.ts`, aby uměl kompozici rozdělit na sloty a zbytek.
+ *
+ * **Řádek pod `carve` razítko neuchová**, a je to poctivé: řez slepí podstrom
+ * do jedné sítě a po něm už ta část není složeninou kusů, kterou by šlo
+ * vybrat. Objekt, který si takový řádek nárokoval, spadne o příčku níž na
+ * hlínu — což je vidět, na rozdíl od tichého zmizení.
  */
-export function compilePlacements(input: GeomProgram | unknown): readonly GeomPlacement[] {
+export function compilePlacements(
+  input: GeomProgram | unknown,
+  owners?: ReadonlySet<number>,
+): readonly GeomPlacement[] {
   const program = parseGeomProgram(input);
 
   const built: (readonly GeomPlacement[])[] = [];
   program.nodes.forEach((node, index) => {
-    built[index] = placeNode(node, built);
+    const placed = placeNode(node, built);
+    built[index] = owners?.has(index) === true ? stamped(placed, index) : placed;
   });
   const root = built[program.root];
 

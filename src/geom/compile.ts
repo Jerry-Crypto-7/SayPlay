@@ -1,11 +1,22 @@
 import { uniformInt } from 'pure-rand/distribution/uniformInt';
 import { xoroshiro128plus } from 'pure-rand/generator/xoroshiro128plus';
-import { BufferAttribute, BufferGeometry, Euler, Matrix4, Quaternion, Vector3 } from 'three';
+import {
+  Box3,
+  BufferAttribute,
+  BufferGeometry,
+  CatmullRomCurve3,
+  Euler,
+  Matrix4,
+  Quaternion,
+  Vector3,
+} from 'three';
 
 import { SWATCHES, pieceById, srgbHexToLinear, type SwatchName } from '../kit';
 import {
   parseGeomProgram,
   pieceIdOf,
+  profileArea,
+  type AnchorSite,
   type GeomNode,
   type GeomProgram,
 } from './program';
@@ -31,8 +42,9 @@ import {
  * (`srgbHexToLinear`), takže je `repaint()` z palet umí přebarvit. Terén proto
  * používá odstíny kitu, ne vlastní: `repaint()` na barvě mimo kit vyhodí.
  *
- * **Pět pomocníků je exportovaných kvůli `placements.ts`** — `concat`,
- * `flipWinding`, `placementMatrix`, `terrainGeometry` a `carve`. Druhá cesta
+ * **Šest pomocníků je exportovaných kvůli `placements.ts`** — `concat`,
+ * `flipWinding`, `placementMatrix`, `terrainGeometry`, `sweepGeometry`
+ * a `carve`. Druhá cesta
  * kompilátoru z nich staví plán rozmístění místo jedné sloučené sítě; sám
  * `compileGeomProgram()` se tím nemění, protože na něm stojí zmrazená měření.
  */
@@ -113,18 +125,44 @@ export function flipWinding(geometry: BufferGeometry): void {
   }
 }
 
+/** Tři úhly ve čtvrtinách otáčky. Chybějící osa je nula, ne jiné pořadí skládání. */
+export interface Rotation3 {
+  readonly yaw?: number;
+  readonly pitch?: number;
+  readonly roll?: number;
+}
+
+/**
+ * Úhly uzlu, nebo `undefined`, když žádný nenapsal.
+ *
+ * Rozdíl mezi `undefined` a `{}` je tu podstatný: `place()` podle něj pozná, že
+ * se nemá sahat na vrcholy vůbec, a ta zkratka je jediný důvod, proč program
+ * z holých kusů neplatí za matici, která nic nedělá.
+ */
+export function rotationOf(node: Rotation3): Rotation3 | undefined {
+  const { yaw, pitch, roll } = node;
+  if (yaw === undefined && pitch === undefined && roll === undefined) return undefined;
+  return { yaw, pitch, roll };
+}
+
 export function placementMatrix(
   at: readonly [number, number, number] | undefined,
-  yaw: number | undefined,
+  rotation: Rotation3 | undefined,
   scale: readonly [number, number, number] | undefined,
 ): Matrix4 {
   const [x, y, z] = at ?? [0, 0, 0];
   const [sx, sy, sz] = scale ?? [1, 1, 1];
-  return new Matrix4().compose(
-    new Vector3(x, y, z),
-    new Quaternion().setFromEuler(new Euler(0, ((yaw ?? 0) * Math.PI) / 2, 0)),
-    new Vector3(sx, sy, sz),
+  // Pořadí `XYZ` je výchozí pořadí `Euler`. Program, který `pitch` ani `roll`
+  // nenapsal, projde touž funkcí s touž nulou jako před P13 vlnou 1, takže
+  // vyjde bit po bitu tatáž matice — na tom stojí zmrazená měření kulisy.
+  const quaternion = new Quaternion().setFromEuler(
+    new Euler(
+      ((rotation?.pitch ?? 0) * Math.PI) / 2,
+      ((rotation?.yaw ?? 0) * Math.PI) / 2,
+      ((rotation?.roll ?? 0) * Math.PI) / 2,
+    ),
   );
+  return new Matrix4().compose(new Vector3(x, y, z), quaternion, new Vector3(sx, sy, sz));
 }
 
 /**
@@ -134,11 +172,74 @@ export function placementMatrix(
 function place(
   geometry: BufferGeometry,
   at: readonly [number, number, number] | undefined,
-  yaw: number | undefined,
+  rotation: Rotation3 | undefined,
   scale: readonly [number, number, number] | undefined,
 ): BufferGeometry {
-  if (at === undefined && yaw === undefined && scale === undefined) return geometry;
-  return geometry.applyMatrix4(placementMatrix(at, yaw, scale));
+  if (at === undefined && rotation === undefined && scale === undefined) return geometry;
+  return geometry.applyMatrix4(placementMatrix(at, rotation, scale));
+}
+
+/**
+ * Body na Catmull-Rom křivce, ve kterých sedí kopie `arrayAlongCurve`.
+ *
+ * Sdílený mezi oběma cestami kompilátoru schválně: kdyby si každá počítala
+ * vlastní křivku, rozešly by se v desetinách a `placement.test.ts` by to
+ * ukázal jako posunutou kulisu, ne jako dvě implementace jedné věci.
+ */
+export function curveOffsets(
+  points: readonly (readonly [number, number, number])[],
+  count: number,
+): readonly Vector3[] {
+  const curve = new CatmullRomCurve3(points.map(([x, y, z]) => new Vector3(x, y, z)));
+  return Array.from({ length: count }, (_unused, index) => curve.getPoint(index / (count - 1)));
+}
+
+/**
+ * Kvádr opsaný geometrii — cíl kotvy.
+ *
+ * Prázdná geometrie tu končí výjimkou, ne prázdným kvádrem: `Box3` má v tom
+ * případě `min` na `+Infinity`, ze kterého by vznikl posun o nekonečno a kus
+ * by z obrazu zmizel beze stopy po tom, proč.
+ */
+export function boundsOfGeometry(geometry: BufferGeometry): Box3 {
+  geometry.computeBoundingBox();
+  const box = geometry.boundingBox;
+  if (box === null || box.isEmpty()) {
+    throw new Error('anchorTo targets a node with no geometry to anchor against');
+  }
+  return box;
+}
+
+/** Bod na kvádru, na který `anchorTo` posadí podstrom. */
+export function anchorPointOf(box: Box3, site: AnchorSite): Vector3 {
+  const center = box.getCenter(new Vector3());
+  switch (site) {
+    case 'top':
+      return new Vector3(center.x, box.max.y, center.z);
+    case 'bottom':
+      return new Vector3(center.x, box.min.y, center.z);
+    case 'north':
+      return new Vector3(center.x, center.y, box.min.z);
+    case 'south':
+      return new Vector3(center.x, center.y, box.max.z);
+    case 'east':
+      return new Vector3(box.max.x, center.y, center.z);
+    case 'west':
+      return new Vector3(box.min.x, center.y, center.z);
+    default:
+      return center;
+  }
+}
+
+/** Posun podstromu na kotvu cíle, včetně ručního doladění `offset`. */
+export function anchorTranslation(
+  box: Box3,
+  site: AnchorSite,
+  offset: readonly [number, number, number] | undefined,
+): Matrix4 {
+  const point = anchorPointOf(box, site);
+  const [dx, dy, dz] = offset ?? [0, 0, 0];
+  return new Matrix4().makeTranslation(point.x + dx, point.y + dy, point.z + dz);
 }
 
 /** Výška terénu v bodě `[u, v]`, kde obojí běží od −1 do 1. */
@@ -249,6 +350,151 @@ function flatNormals(position: readonly number[]): Float32Array {
   return normal;
 }
 
+
+/**
+ * Tečny v každém vzorku dráhy, spočítané ze sousedů.
+ *
+ * Degenerovaný krok (dva vzorky na témž místě) si **nese předchozí tečnu**
+ * místo aby sáhl po konstantě: jinak by se rám v tom jediném prstenci prudce
+ * otočil a v tělese by vznikl uzel. Úplně první tečna nemá co zdědit, takže
+ * padne na osu `z` — cesta složená z jediného bodu je odmítnutá už ve
+ * `structuralIssues`, takže se sem taková dráha nedostane.
+ */
+function tangentsOf(samples: readonly Vector3[]): Vector3[] {
+  const tangents: Vector3[] = [];
+  let carried = new Vector3(0, 0, 1);
+
+  for (let index = 0; index < samples.length; index += 1) {
+    const previous = samples[Math.max(0, index - 1)];
+    const next = samples[Math.min(samples.length - 1, index + 1)];
+    const tangent = new Vector3().subVectors(next, previous);
+    if (tangent.lengthSq() > 1e-18) carried = tangent.normalize();
+    tangents.push(carried.clone());
+  }
+
+  return tangents;
+}
+
+/**
+ * Rám v každém vzorku — dvojice os kolmých na tečnu, ve kterých leží profil.
+ *
+ * **Paralelní přenos, ne pevný vektor „nahoru".** Frenetův rám z druhé derivace
+ * se v rovném úseku převrátí, a Gram-Schmidt proti světové svislici degeneruje
+ * přesně tam, kde dráha míří nahoru — tedy u klenby, kvůli které tenhle uzel
+ * vůbec vzniká. Přenos místo toho otočí předchozí normálu o tentýž úhel, o jaký
+ * se otočila tečna, takže se profil po dráze **nekroutí**.
+ *
+ * Po každém kroku se normála znovu srovná do kolmice: přes šedesát čtyři kroků
+ * by ji zaokrouhlení jinak pomalu vyklonilo a plášť by se rozjel.
+ */
+function framesOf(tangents: readonly Vector3[]): readonly { normal: Vector3; binormal: Vector3 }[] {
+  const first = tangents[0];
+  const least =
+    Math.abs(first.x) <= Math.abs(first.y) && Math.abs(first.x) <= Math.abs(first.z)
+      ? new Vector3(1, 0, 0)
+      : Math.abs(first.y) <= Math.abs(first.z)
+        ? new Vector3(0, 1, 0)
+        : new Vector3(0, 0, 1);
+  const normal = new Vector3().crossVectors(first, least).normalize();
+
+  return tangents.map((tangent, index) => {
+    if (index > 0) {
+      const axis = new Vector3().crossVectors(tangents[index - 1], tangent);
+      if (axis.lengthSq() > 1e-18) {
+        const cosine = Math.min(1, Math.max(-1, tangents[index - 1].dot(tangent)));
+        normal.applyAxisAngle(axis.normalize(), Math.acos(cosine));
+      }
+      normal.sub(tangent.clone().multiplyScalar(normal.dot(tangent))).normalize();
+    }
+    return {
+      normal: normal.clone(),
+      binormal: new Vector3().crossVectors(tangent, normal),
+    };
+  });
+}
+
+/**
+ * Profil tažený po dráze — uzavřené těleso, plášť plus obě víka.
+ *
+ * **Uzavřené doslova:** každá hrana patří přesně dvěma trojúhelníkům a všechny
+ * mají vinutí ven. Nekontroluje se to komentářem — `program.test.ts` počítá
+ * hrany a znaménko objemu, protože zrovna tenhle uzel umí vyrobit těleso, které
+ * má správný počet trojúhelníků a přitom je obrácené naruby, a v testu na počet
+ * by prošlo.
+ *
+ * **Profil se otáčí do kladného směru, nesoudí se.** Model, který napíše body
+ * po směru hodinových ručiček, dostane týž oblouk jako model, který je napíše
+ * proti — normalizace do rozpočtu, jak ji dovoluje design book §7.5. Odmítnout
+ * se dá jen profil s nulovou plochou, a to dělá `structuralIssues`.
+ *
+ * **Normály jsou ploché a zapečené do vrcholů.** `MeshToonMaterial` nemá
+ * `flatShading`, takže hladké normály by z klenby udělaly rozmazanou skvrnu.
+ * Je to táž `flatNormals()` jako u terénu, tedy přesně to, co by nad
+ * nezaindexovanou geometrií udělalo `toNonIndexed()` + `computeVertexNormals()`
+ * — druhá implementace téhož by byla druhá pravda o normálách; test to drží
+ * připnuté porovnáním obou cest.
+ */
+export function sweepGeometry(node: Extract<GeomNode, { kind: 'sweep' }>): BufferGeometry {
+  const profile =
+    profileArea(node.profile) < 0 ? [...node.profile].reverse() : [...node.profile];
+  const samples = curveOffsets(node.path, node.segments + 1);
+  const frames = framesOf(tangentsOf(samples));
+
+  // Prstence vrcholů: bod dráhy plus profil rozložený do os jeho rámu.
+  const rings = samples.map((point, index) => {
+    const { normal, binormal } = frames[index];
+    return profile.map(([u, v]) =>
+      new Vector3(
+        point.x + normal.x * u + binormal.x * v,
+        point.y + normal.y * u + binormal.y * v,
+        point.z + normal.z * u + binormal.z * v,
+      ),
+    );
+  });
+
+  const position: number[] = [];
+  const push = (a: Vector3, b: Vector3, c: Vector3) => {
+    position.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+  };
+
+  // Plášť. Pořadí `a → b → c` je proti směru hodinových ručiček při pohledu
+  // zvenčí, takže normála z vektorového součinu míří ven.
+  for (let ring = 0; ring < rings.length - 1; ring += 1) {
+    for (let corner = 0; corner < profile.length; corner += 1) {
+      const next = (corner + 1) % profile.length;
+      const a = rings[ring][corner];
+      const b = rings[ring][next];
+      const c = rings[ring + 1][next];
+      const d = rings[ring + 1][corner];
+      push(a, b, c);
+      push(a, c, d);
+    }
+  }
+
+  // Víka jako vějíř z nultého vrcholu. Přední se obrací, protože se na něj
+  // dívá opačná strana tělesa.
+  const start = rings[0];
+  const end = rings[rings.length - 1];
+  for (let corner = 1; corner < profile.length - 1; corner += 1) {
+    push(start[0], start[corner + 1], start[corner]);
+    push(end[0], end[corner], end[corner + 1]);
+  }
+
+  const [r, g, b] = srgbHexToLinear(SWATCHES[node.swatch]);
+  const color = new Float32Array(position.length);
+  for (let index = 0; index < color.length; index += 3) {
+    color[index] = r;
+    color[index + 1] = g;
+    color[index + 2] = b;
+  }
+
+  return fromAttributes({
+    position: new Float32Array(position),
+    color,
+    normal: flatNormals(position),
+  });
+}
+
 /**
  * Řez kvádrem: zahodí trojúhelníky, jejichž těžiště padne dovnitř.
  *
@@ -293,7 +539,10 @@ export function carve(
 function buildNode(node: GeomNode, built: readonly BufferGeometry[]): BufferGeometry {
   switch (node.kind) {
     case 'terrain':
-      return place(terrainGeometry(node), node.at, node.yaw, undefined);
+      return place(terrainGeometry(node), node.at, rotationOf(node), undefined);
+
+    case 'sweep':
+      return place(sweepGeometry(node), node.at, rotationOf(node), node.scale);
 
     case 'group':
       return concat(node.children.map((child) => built[child].clone()));
@@ -332,7 +581,7 @@ function buildNode(node: GeomNode, built: readonly BufferGeometry[]): BufferGeom
           const yaw = uniformInt(stream, 0, 3);
           const matrix = placementMatrix(
             [Math.cos(angle) * distance, 0, Math.sin(angle) * distance],
-            yaw,
+            { yaw },
             undefined,
           );
           return built[node.child].clone().applyMatrix4(matrix);
@@ -340,11 +589,27 @@ function buildNode(node: GeomNode, built: readonly BufferGeometry[]): BufferGeom
       );
     }
 
+    case 'arrayAlongCurve':
+      return concat(
+        curveOffsets(node.points, node.count).map((offset) =>
+          built[node.child]
+            .clone()
+            .applyMatrix4(new Matrix4().makeTranslation(offset.x, offset.y, offset.z)),
+        ),
+      );
+
+    case 'anchorTo':
+      return built[node.child]
+        .clone()
+        .applyMatrix4(
+          anchorTranslation(boundsOfGeometry(built[node.target]), node.site, node.offset),
+        );
+
     default: {
       const id = pieceIdOf(node.kind, node.variant);
       const piece = pieceById(id);
       if (piece === undefined) throw new Error(`program odkazuje na kus ${id}, který v kitu není`);
-      return place(piece.build(), node.at, node.yaw, node.scale);
+      return place(piece.build(), node.at, rotationOf(node), node.scale);
     }
   }
 }

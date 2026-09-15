@@ -71,11 +71,11 @@ export function patchMonitoring(dir: string, patch: Record<string, unknown>): vo
  * z disku, takže rozbití, které do indexu nedojde, je pro bránu neviditelné.
  */
 export function stage(dir: string): void {
-  execFileSync('git', ['add', '-A'], { cwd: dir, stdio: 'ignore' });
+  execFileSync('git', ['--no-replace-objects', 'add', '-A'], { cwd: dir, stdio: 'ignore' });
   // `git diff` tady nestačí: nový soubor je netrackovaný, takže o něm mlčí –
   // a právě nové soubory sem většina případů kontroly 6 zapisuje. Druhý sloupec
   // porcelánu je stav pracovního stromu; prázdný znamená „všechno je v indexu".
-  const left = execFileSync('git', ['status', '--porcelain'], { cwd: dir, encoding: 'utf8' })
+  const left = execFileSync('git', ['--no-replace-objects', 'status', '--porcelain'], { cwd: dir, encoding: 'utf8' })
     .split('\n')
     .filter((line) => line.length > 1 && line[1] !== ' ');
   if (left.length > 0) throw new Error(`git add -A nepobral: ${left.join(' | ')}`);
@@ -122,8 +122,8 @@ export function mp4(seconds: number, version: 0 | 1 = 0): Buffer {
 // ---------------------------------------------------------------------------
 
 export function description(): string {
-  // Próza musí přelézt práh, citovat garanci doslova a nést naměřené číslo.
-  // Výplň je schválně nudná: kontrola měří délku a citaci, ne sloh.
+  // Synthetic copy meets the current source disclosure contract and cites a
+  // fixture report. None of these sentences establish a real evaluation result.
   const filler = 'Systém bere větu v přirozeném jazyce a vrací hratelný svět, jehož pravidla jsou čitelná. '.repeat(20);
   return [
     '# Worldsmith',
@@ -132,7 +132,11 @@ export function description(): string {
     '',
     filler,
     '',
-    `> **${GUARANTEE}**`,
+    'A short source becomes a discrete spatial scenario with one timer intervention. Geometry is schematic.',
+    'The user reviews seven critical parameter groups before acceptance; missing or conflicting support blocks acceptance.',
+    'This acknowledgement does not certify semantic correctness. A structurally valid citation is not a semantic guarantee.',
+    'CLI timings include process and transport overhead.',
+    'Five-person usability evidence and independent semantic review remain separate requirements.',
     '',
     'Naměřeno na zmrazeném korpusu: 2/27 kandidátů prošlo bez opravy.',
     '',
@@ -294,11 +298,11 @@ export function buildTemplate(): string {
 
   // Git je potřeba dvakrát: `git ls-files` je zdroj sledovaných cest a
   // blind-check bez commitu nemá co číst.
-  execFileSync('git', ['init', '-b', 'main'], { cwd: dir, stdio: 'ignore' });
-  execFileSync('git', ['config', 'user.name', 'worldsmith'], { cwd: dir, stdio: 'ignore' });
-  execFileSync('git', ['config', 'user.email', 'worldsmith@fixture.invalid'], { cwd: dir, stdio: 'ignore' });
+  execFileSync('git', ['--no-replace-objects', 'init', '-b', 'main'], { cwd: dir, stdio: 'ignore' });
+  execFileSync('git', ['--no-replace-objects', 'config', 'user.name', 'worldsmith'], { cwd: dir, stdio: 'ignore' });
+  execFileSync('git', ['--no-replace-objects', 'config', 'user.email', 'worldsmith@fixture.invalid'], { cwd: dir, stdio: 'ignore' });
   stage(dir);
-  execFileSync('git', ['commit', '-m', 'fixture'], { cwd: dir, stdio: 'ignore' });
+  execFileSync('git', ['--no-replace-objects', 'commit', '-m', 'fixture'], { cwd: dir, stdio: 'ignore' });
 
   // Netrackovaný schválně: nese jména, která se nesmí nahrát. Kontrola 1
   // blind-checku selže, kdyby se ocitl v indexu.

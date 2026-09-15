@@ -2,6 +2,8 @@ import { expect, test, type Page, type Response } from '@playwright/test';
 
 import { isWeightRequest } from '../src/model/local/capability';
 
+import { openInspect } from './inspect';
+
 /**
  * Produkt je ovladatelný hned a capability gate předchází stahování modelu
  * (P11 T22, P12 V1 T9).
@@ -66,7 +68,7 @@ test('produkt je ovladatelný do tří sekund a stroj bez WebGPU nestáhne váhy
   });
 
   const started = Date.now();
-  await page.goto('/', { waitUntil: 'commit' });
+  await page.goto('/classic', { waitUntil: 'commit' });
 
   const input = page.getByTestId('prompt-input');
   await input.fill(SENTENCE);
@@ -90,6 +92,12 @@ test('produkt je ovladatelný do tří sekund a stroj bez WebGPU nestáhne váhy
 
   // 1. Stavový uzel je skutečně vyrenderovaný a levný probe pravdivě uzavřel
   //    větev bez modelu. Není to záměrně odpojený komponent.
+  //
+  //    Od P13 vlny 0 T1 bydlí panel v Inspect zásuvce a ta je zavřená. **Motor
+  //    modelu tím ale odpojený není** — probe běží od načtení stránky a
+  //    `visible` řídí jenom vykreslení. Aserce nad `data-phase` po otevření je
+  //    proto pořád tatáž otázka: doběhl probe, a doběhl pravdivě?
+  await openInspect(page);
   await expect(page.getByTestId('model-progress')).toHaveAttribute('data-phase', 'unavailable', {
     timeout: 20_000,
   });

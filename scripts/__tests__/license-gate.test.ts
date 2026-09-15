@@ -9,7 +9,7 @@
  * `FAIL` na všechno — a taková brána neměří nic.
  */
 
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -1631,14 +1631,18 @@ describe('brány se na čerstvém klonu nainstalují samy', () => {
     scripts: Record<string, string>;
   };
 
+  // Od 14. 9. 2026 (`578d438`) jde `prepare` přes skript: stavěcí kontejner
+  // Vercelu nemá `.git` a holé `git config` v něm položilo `npm install`.
+  const PREPARE = 'node scripts/install-git-hooks.mjs';
+  const installer = join(process.cwd(), 'scripts', 'install-git-hooks.mjs');
+
   it('package.json má `prepare`, který hooky zapíná', () => {
-    expect(pkg.scripts.prepare).toBe('git config core.hooksPath .githooks');
+    expect(pkg.scripts.prepare).toBe(PREPARE);
   });
 
   /**
-   * **Co tenhle test dokazuje:** že ten příkaz v čerstvém repozitáři skutečně
-   * nastaví `core.hooksPath`, a že se jeho znění bere z `package.json` — kdyby
-   * `prepare` zmizel nebo se změnil na nefunkční, test zčervená.
+   * **Co tenhle test dokazuje:** že skript z `prepare` v čerstvém repozitáři
+   * skutečně nastaví `core.hooksPath` — kdyby přestal, test zčervená.
    *
    * **Co nedokazuje:** že `npm ci` ten skript zavolá. To je dokumentované chování
    * npm, ne naše, a `npm ci` ve fixtuře by na tenhle strom stahoval Next, React
@@ -1649,10 +1653,20 @@ describe('brány se na čerstvém klonu nainstalují samy', () => {
     created.push(dir);
     execFileSync('git', ['init', '-b', 'main'], { cwd: dir, stdio: 'ignore' });
 
-    execFileSync(pkg.scripts.prepare, { cwd: dir, shell: true, stdio: 'ignore' });
+    execFileSync(process.execPath, [installer], { cwd: dir, stdio: 'ignore' });
 
     const value = execFileSync('git', ['config', 'core.hooksPath'], { cwd: dir, encoding: 'utf8' });
     expect(value.trim()).toBe('.githooks');
+  });
+
+  it('mimo git repozitář skončí nulou a nic nenastaví – tak běží build na Vercelu', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'prepare-nogit-'));
+    created.push(dir);
+
+    const run = spawnSync(process.execPath, [installer], { cwd: dir, encoding: 'utf8' });
+
+    expect(run.status).toBe(0);
+    expect(run.stdout).toContain('mimo git repozitář');
   });
 
   /**

@@ -1,16 +1,26 @@
 /**
- * Průběh emise po SSE — dekodér rámců a čtečka nad `fetch`.
+ * Průběh emise po SSE — čtečka nad `fetch` pro starý kontrakt `/api/emit`.
  *
  * `EventSource` se sem nehodí: umí jen GET, a emise se vyvolává POSTem
  * s `promptId`. Zbývá `fetch` a ruční dekódování `text/event-stream`, což je
  * shodou okolností ta lepší polovina — dekodér je čistá funkce a dá se na něj
  * ptát v Node bez prohlížeče i bez serveru.
  *
- * Dekodér drží zbytek mezi voláními, protože rámec se běžně rozpadne přes dva
- * síťové kusy. Rozpad uprostřed `data:` řádku je stav, který nastane v provozu
- * a v testu nikdy, když si test podává celé rámce — proto na něj `sse.test.ts`
- * míří výslovně.
+ * ## Dekodér se odstěhoval, kontrakt zůstal
+ *
+ * `SseDecoder` bydlí od P15 T17 v `src/worldstream/client.ts` a tenhle soubor
+ * ho **re-exportuje**. Důvod je naměřený, ne estetický: importovala si ho
+ * odsud čtyři místa mimo viewer (`stream.test.ts`, `sessions.test.ts`,
+ * `e2e/worldstream-session.spec.ts` a nově proud relace), takže to nikdy nebyl
+ * kus UI, ale sdílený dekodér drátu na špatné adrese. Dva dekodéry vedle sebe
+ * by se časem rozešly právě v tom, co je na nich těžké — v držení zbytku mezi
+ * síťovými kusy. Import `from './sse'` proto platí dál a pro volající se
+ * nemění nic.
  */
+
+export { SseDecoder, type SseFrame } from '../../worldstream/client';
+
+import { SseDecoder } from '../../worldstream/client';
 
 /** Fáze, které projde `POST /api/emit`. Jména jsou stejná jako `rejection.stage`. */
 export type EmitPhase = 'requested' | 'emitted' | 'schema' | 'references' | 'look' | 'lowering' | 'witness';
@@ -22,53 +32,6 @@ export interface EmitProgress {
    * veličinu, která se při každém běhu liší, a nedal by se pinovat v testu.
    */
   readonly step: number;
-}
-
-export interface SseFrame {
-  readonly event: string;
-  readonly data: string;
-}
-
-/** Rámce z `text/event-stream`, po kusech tak, jak dorazí ze sítě. */
-export class SseDecoder {
-  private buffer = '';
-
-  push(chunk: string): SseFrame[] {
-    this.buffer += chunk;
-    const frames: SseFrame[] = [];
-
-    // Rámec končí prázdným řádkem. `\r\n` i `\n` — spec připouští obojí.
-    const boundary = /\r?\n\r?\n/;
-    let split = boundary.exec(this.buffer);
-    while (split !== null) {
-      const block = this.buffer.slice(0, split.index);
-      this.buffer = this.buffer.slice(split.index + split[0].length);
-      const frame = decodeBlock(block);
-      if (frame !== null) frames.push(frame);
-      split = boundary.exec(this.buffer);
-    }
-
-    return frames;
-  }
-}
-
-function decodeBlock(block: string): SseFrame | null {
-  let event = 'message';
-  const data: string[] = [];
-
-  for (const line of block.split(/\r?\n/)) {
-    if (line === '' || line.startsWith(':')) continue;
-    const colon = line.indexOf(':');
-    const field = colon === -1 ? line : line.slice(0, colon);
-    // Jedna mezera za dvojtečkou patří formátu, ne hodnotě.
-    const raw = colon === -1 ? '' : line.slice(colon + 1);
-    const value = raw.startsWith(' ') ? raw.slice(1) : raw;
-
-    if (field === 'event') event = value;
-    else if (field === 'data') data.push(value);
-  }
-
-  return data.length === 0 ? null : { event, data: data.join('\n') };
 }
 
 export interface EmissionStream {

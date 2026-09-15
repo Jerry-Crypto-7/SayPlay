@@ -1,0 +1,61 @@
+# Vercel nahrává pracovní strom, ne jen to, co je v gitu. Tenhle soubor je proto
+# DRUHÁ závora vedle .gitignore na materiál, který se nesmí dostat ven – bez něj
+# by se spoléhalo na to, že CLI .gitignore respektuje. Důvody u jednotlivých
+# vzorů jsou v .gitignore; tady je jen zrcadlo té části, kde je cena chyby vysoká.
+SECURITY-FINDINGS.md
+blind-check.config.json
+scripts/cleanroom-forbidden.txt
+
+# Interní strategie a pracovní logy.
+/*.md
+!README.md
+!DISCLOSURE.md
+plans/
+.claude/
+ops/**/*.jsonl
+
+# Syrové odpovědi poskytovatele – plné znění promptů i odpovědí.
+evals/live/*
+!evals/live/.gitkeep
+evals/worldstream/create-raw.json
+
+# Tajemství.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.json
+
+# Profil prohlížeče z měření lokálního modelu — naměřeno 5. 9. 2026 **3 936 MB**
+# vah Qwen3 v cache service workeru, jednotlivé soubory přes 100 MB. Git ho
+# ignoruje, Vercel ne, a sám o sobě shodil nasazení 5. 9. 2026
+# (`File size limit exceeded (100 MB)`). ⚠ Dřívější odhad „~2,3 GB" byl o 1,6 GB
+# nízko a svedl rozbor k součtu tří adresářů; tenhle adresář je celé to číslo.
+#
+# S tímhle souborem má nahrávka **necelých 10 MiB v ~650 souborech a největší
+# z nich má 0,55 MiB** (`docs/contact-sheet.png`) — počet souborů kolísá
+# s rozpracovaným stromem, mez 100 MB drží o dva řády
+# — naměřeno 5. 9. 2026 průchodem stromu
+# přes `ignore@5`, tedy týž matcher, jaký CLI na tenhle soubor pouští, a
+# doloženo **bez nasazení**. `.git` je do toho nepočítaný: Vercel ho ignoruje
+# sám a `.git/` se sem schválně NEDOPISUJE, protože z něj CLI čte `VERCEL_GIT_*`.
+# I s ním je nahrávka 29,8 MB, takže mez 100 MB drží tak jako tak.
+tmp-webllm-profile/
+
+# Build si Vercel dělá sám; tohle by jen zdržovalo nahrávání.
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+.playwright-mcp/
+
+# Galerie kvality a pracovní výstupy měřidel — naměřeno 14. 9. 2026 **278 MB**
+# (snímky světů a blueprinty z `e2e/quality-gallery.spec.ts`, `WORLDSMITH_QUALITY_DIR`).
+# Adresář vznikl 13. 9. 2026, tedy až po T41-uploadsize, a sám vytáhl nahrávku
+# z 9,85 MB na **299,6 MB** — zachyceno prvním pokusem o nasazení 14. 9. 2026.
+# Git ho ignoruje, Vercel ne. Do buildu nevstupuje: produkt ho nečte, čte ho
+# jen měřicí stránka `/dev/worldstream?blueprint=` z adresy, kterou dostane.
+scratch/

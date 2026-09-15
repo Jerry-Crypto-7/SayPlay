@@ -438,21 +438,21 @@ export default function PromptBar({
   );
 }
 
+/**
+ * **Formulář se od vlny 0 nekotví sám.**
+ *
+ * Do té doby tu stálo `position: absolute` s `top: 1rem` a vlastní `zIndex` —
+ * pole viselo v horním pruhu a panely v rozích si ten pruh musely nechávat
+ * volný. Teď je vstup obyčejný prvek v toku a o jeho místo se stará dok
+ * (`.ws-dock` v `theme.css`), tedy jediné místo, kde se o kotvení rozhoduje.
+ * Je to táž konvence, kvůli které vznikly sloupce: kdykoli si prvek ukotvil roh
+ * sám, sebral kliknutí sousedovi.
+ */
 const FORM: React.CSSProperties = {
-  position: 'absolute',
-  top: '1rem',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  // O patro výš než panely v rozích. Ty si horní pruh nechávají volný
-  // (`CORNER_BASE` v `src/app/page.tsx`), ale hláška může být delší, než s čím
-  // ten pruh počítá — a vstup s odkazem na záložní větev musí být klikatelný
-  // vždycky, ne jen když se text vejde.
-  zIndex: 3,
   display: 'flex',
   gap: '0.6rem',
   alignItems: 'flex-start',
   flexWrap: 'wrap',
-  width: 'min(46rem, calc(100vw - 2rem))',
   padding: '0.75rem',
   borderRadius: '0.6rem',
   background: 'rgba(12, 22, 26, 0.82)',

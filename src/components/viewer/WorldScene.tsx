@@ -43,8 +43,9 @@ import {
   type BufferGeometry,
 } from 'three';
 
+import { chooseFamily } from '@/geom/family-choice';
 import { SCENE_ROLES, pieceById } from '@/kit';
-import { createClock, pump, runTicks } from '@/sim/clock';
+import { TICK_MS, createClock, pump, runTicks } from '@/sim/clock';
 import { hashHex } from '@/sim/hash';
 import {
   createRuntime,
@@ -67,7 +68,14 @@ import {
   revealedInBatch,
   type AssemblySnapshot,
 } from './Assembly';
-import { planDressing, type DressingKind, type DressingPlan } from './dressing';
+import {
+  dressingSeed,
+  planDressing,
+  FILL_RINGS,
+  type DressingKind,
+  type DressingPlan,
+} from './dressing';
+import { interpolateEntities } from './interpolate';
 import { toonRamp } from './Lighting';
 import { buildScenery, type SceneryBuild } from './scenery';
 import {
@@ -175,7 +183,7 @@ function place(matrix: Matrix4, yaw: number, x: number, y: number, z: number): M
  * nedá zvětšit. Bez toho by spawnutá entita tiše zmizela ze scény, zatímco
  * simulace by s ní dál počítala.
  */
-function buildScene(world: WorldDocRuntime): BuiltScene {
+function buildScene(world: WorldDocRuntime, family: string): BuiltScene {
   const group = new Group();
   const ramp = toonRamp();
   const owned: { dispose: () => void }[] = [ramp];
@@ -197,8 +205,13 @@ function buildScene(world: WorldDocRuntime): BuiltScene {
 
   // Rovina pod dlaždicemi, ne místo nich. Leží uprostřed jejich tloušťky, takže
   // se s ničím nepere o hloubku a je vidět jen tam, kde by jinak byla díra.
+  //
+  // Sahá i pod výplň za hranou mřížky — bez toho by kusy výplně stály nad
+  // prázdnem a vypadaly by, že se vznášejí. Dlaždice pod ně nepatří: dlaždice
+  // je pochozí plocha a výplň pochozí není.
+  const ground = FILL_RINGS * 2 * CELL_SIZE;
   const floor = new Mesh(
-    geometry(new PlaneGeometry(projected.floor.width, projected.floor.depth)),
+    geometry(new PlaneGeometry(projected.floor.width + ground, projected.floor.depth + ground)),
     material(COLORS.floor),
   );
   floor.rotation.x = -Math.PI / 2;
@@ -226,7 +239,11 @@ function buildScene(world: WorldDocRuntime): BuiltScene {
 
   // Kulisa je třetí vrstva scény: za hrací plochou, z programu geometrie, ne
   // z kitu. Stojí až za `kitMaterial`, protože ho sdílí — barvu nese geometrie.
-  const scenery = buildScenery(plan.family, plan.seed, grid, kitMaterial);
+  //
+  // **Rodinu vybírá věta, ne mřížka** — dorazí sem hotová od volajícího.
+  // `plan.family` ze semínka je od vlny 3 T3 jen záloha, na kterou spadne
+  // `chooseFamily` sám, když v `look` není jediné známé slovo.
+  const scenery = buildScenery(family, plan.seed, grid, kitMaterial);
   if (scenery.object !== null) group.add(scenery.object);
   owned.push(scenery);
 
@@ -334,7 +351,9 @@ function buildScene(world: WorldDocRuntime): BuiltScene {
 }
 
 /**
- * Zapíše polohy entit do matic instancí. Volá se po každém tiku, ne každý snímek.
+ * Zapíše polohy entit do matic instancí. Volá se **každý snímek** — dostává
+ * dopočítanou projekci, ne stav runtimu, takže mezi dvěma tiky přepisuje matice
+ * mezipolohami. Do tiku ani do hashovaného stavu odsud nevede nic.
  *
  * Entita s rolí kulisy jde do dávky **svého kusu z kitu**, za jeho nehybnou
  * část; ostatní do dávky podle podoby. Statika se nepřepisuje, jen se za ni
@@ -433,6 +452,15 @@ export interface SceneryReport {
 export interface WorldRunner {
   /** Entity ve světových souřadnicích, v pořadí deklarace a v plné délce. */
   readonly entities: () => readonly ProjectedEntity[];
+  /**
+   * Co scéna naposledy NAKRESLILA, ne co si myslí simulace.
+   *
+   * Mezi dvěma tiky se ty dvě věci liší, a je to ten rozdíl, kvůli kterému
+   * se entity přestaly pohybovat po celých polích. `entities()` zůstává
+   * přesný stav po tiku — na něm stojí každé měření řetězu hashů — takže
+   * mezipoloha potřebuje vlastní okno ven.
+   */
+  readonly drawn: () => readonly ProjectedEntity[];
   /** Kulisa za hrací plochou — jediná cesta, jak se z prohlížeče zeptat, co postavil geom. */
   readonly scenery: () => SceneryReport;
   /**
@@ -443,6 +471,15 @@ export interface WorldRunner {
   readonly dressing: () => readonly DressingBatch[];
   /** Kolik tiků svět odkrokoval. */
   readonly tick: () => number;
+  /**
+   * Kde mezi tiky běh právě je, jako desetinné číslo tiků.
+   *
+   * `tick()` je celé číslo, takže dvě třetiny snímků stojí na místě — a kamera,
+   * která se jím řídí, pod klouzajícími entitami poskakuje. Tohle je táž veličina
+   * spojitě: celý tik plus zlomek z akumulátoru hodin. Roste i po dohrání,
+   * protože hodiny tikají dál, i když stav světa už ne.
+   */
+  readonly progress: () => number;
   /**
    * Jak daleko je stavba světa — a hlavně, ve kterém tiku se objevil první a
    * poslední kus. Obojí je **pozorované za běhu**, ne opsané z rozvrhu, takže
@@ -476,10 +513,20 @@ function inputsForTick(trace: readonly TraceInput[], tick: number): TraceInput[]
 
 export default function WorldScene({
   world,
+  look = null,
   runnerRef,
   inputs,
 }: {
   readonly world: WorldDocRuntime;
+  /**
+   * Část `look` téže emise, ze které je svět. Vybírá **výtvarnou rodinu kulisy**
+   * (`chooseFamily`), takže dvě věty o dvou různých krajinách dostanou dvě různé.
+   *
+   * Nejde do `WorldDocRuntime`: `look` je mimo hashovaný stav schválně
+   * (`src/ir/worlddoc.ts:7`) a `src/sim` nemění tvar. Bez něj rozhodne semínko
+   * světa — tedy stav před vlnou 3, ne pád.
+   */
+  readonly look?: unknown;
   /** Plní ho tahle komponenta; čte `Bridge` ve `Viewer.tsx`. */
   readonly runnerRef: RunnerRef;
   /**
@@ -489,7 +536,12 @@ export default function WorldScene({
    */
   readonly inputs?: (tick: number) => readonly TraceInput[];
 }) {
-  const scene = useMemo(() => buildScene(world), [world]);
+  // Rodina se počítá zvlášť a do stavby jde jako **řetězec**. Kdyby do závislostí
+  // memoizace vstoupil `look`, stačil by volající, který ho píše inline, a scéna
+  // by se přestavovala při každém renderu — tedy koktala by, ne spadla, a nikdo
+  // by to nespojil s prop, která se jen jinak jmenuje.
+  const family = useMemo(() => chooseFamily(look, dressingSeed(world)), [look, world]);
+  const scene = useMemo(() => buildScene(world, family), [world, family]);
   const runtime = useMemo<Runtime>(() => createRuntime(world), [world]);
   const clock = useMemo(() => createClock(), [world]);
   const matrix = useRef(new Matrix4());
@@ -505,26 +557,55 @@ export default function WorldScene({
   );
 
   const advance = useMemo(() => {
-    const drawFromState = () => {
-      const entities = projectEntities(world, entityPlacements(runtime));
-      const shown = writeInstances(
-        scene,
-        entities,
-        matrix.current,
-        assembly.plan.revealedAt(clock.tick),
-      );
+    // Stav před tikem dnes nikde neleží — `entityPlacements` čte živé sloty a
+    // historii nedrží. Tyhle dvě projekce v uzávěru jsou jediné místo, kde je
+    // k dispozici, a leží schválně MIMO runtime: hashuje se `runtime.state`,
+    // takže se odsud do hashe nedostane nic ani omylem.
+    let before = projectEntities(world, entityPlacements(runtime));
+    let after = before;
+    // Co šlo naposledy do matic instancí. Ze stavu runtimu se to dopočítat
+    // nedá — zlomek tiku v něm schválně neexistuje — a je to jediný údaj,
+    // kterým se dá zvenčí poznat mezipoloha od polohy po tiku.
+    let painted: readonly ProjectedEntity[] = before;
+    let paintedReveal = -1;
+
+    const draw = (alpha: number) => {
+      const entities = interpolateEntities(before, after, alpha);
+      const revealed = assembly.plan.revealedAt(clock.tick);
+      // **Snímek, ve kterém se nic nezměnilo, se nekreslí.** `writeInstances`
+      // označí matice každé dávky za změněné, takže by se každý takový snímek
+      // platil novým nahráním celého instančního pole na GPU — a od T4 se kreslí
+      // šedesátkrát za sekundu místo dvacetkrát. Stavba se počítá jako změna:
+      // během odhalování se nikdo nehýbe a bez ní by se scéna přestala stavět.
+      if (entities === painted && revealed === paintedReveal) return entities;
+
+      painted = entities;
+      paintedReveal = revealed;
+      const shown = writeInstances(scene, entities, matrix.current, revealed);
       recordReveal(assembly.log, assembly.plan, clock.tick, shown);
       return entities;
     };
 
     return {
-      drawFromState,
+      draw,
+      drawn: () => painted,
+      // Odkrokuje a **nekreslí**. Kreslení je věc snímku, ne tiku: v jednom
+      // snímku může doběhnout několik tiků a překreslit po každém z nich by
+      // znamenalo zahodit právě tu mezipolohu, kvůli které úloha vznikla.
       run: (count: number) => {
         runTicks(clock, count, (tick) => {
-          if (runtime.runState !== 'running') return;
+          if (runtime.runState !== 'running') {
+            // Po výhře nebo prohře se svět nemění, ale hodiny tikají dál a zlomek
+            // tiku se dál houpe mezi 0 a 1. Kdyby tu obě projekce zůstaly různé,
+            // postava by mezi svými posledními dvěma poli **kmitala donekonečna**
+            // — naměřeno 27. 8. 2026. Srovnáním se dopočet stane nulovým.
+            before = after;
+            return;
+          }
+          before = after;
           step(runtime, inputs === undefined ? inputsForTick(world.trace, tick) : [...inputs(tick)]);
+          after = projectEntities(world, entityPlacements(runtime));
         });
-        drawFromState();
       },
     };
   }, [assembly, clock, inputs, runtime, scene, world]);
@@ -532,12 +613,13 @@ export default function WorldScene({
   // První snímek kreslí výchozí stav, ne prázdno. Bez toho je scéna do prvního
   // tiku prázdná, což vypadá jako vada vykreslení, ne jako svět před startem.
   useEffect(() => {
-    advance.drawFromState();
+    advance.draw(1);
   }, [advance]);
 
   useEffect(() => {
     runnerRef.current = {
       entities: () => projectEntities(world, entityPlacements(runtime)),
+      drawn: () => advance.drawn(),
       scenery: () => ({
         family: scene.scenery.family,
         drawCalls: scene.scenery.drawCalls,
@@ -547,15 +629,25 @@ export default function WorldScene({
       dressing: () =>
         [...scene.kit.entries()].map(([piece, batch]) => ({ piece, instances: batch.mesh.count })),
       tick: () => runtime.tick,
+      // Z HODIN, ne z runtimu: po výhře `runtime.tick` zamrzne, kdežto hodiny
+      // tikají dál. Dojezd kamery se tím pádem nemusí po konci partie přepínat
+      // na snímky, což byl jediný důvod, proč to kdy dělal.
+      progress: () => clock.tick + clock.accumulatorMs / TICK_MS,
       assembly: () => assemblySnapshot(assembly.log, assembly.plan),
-      step: (count: number) => advance.run(count),
+      // `step(n)` je deterministické krokování bez nástěnného času, takže po
+      // něm musí stát přesný stav po tiku (`alpha = 1`), ne mezipoloha. Na tom
+      // stojí každé měření z prohlížeče.
+      step: (count: number) => {
+        advance.run(count);
+        advance.draw(1);
+      },
       runState: () => runtime.runState,
       hash: () => hashHex(runtime.state),
     };
     return () => {
       runnerRef.current = null;
     };
-  }, [advance, assembly, runnerRef, runtime, scene, world]);
+  }, [advance, assembly, clock, runnerRef, runtime, scene, world]);
 
   useEffect(() => () => scene.dispose(), [scene]);
 
@@ -564,6 +656,9 @@ export default function WorldScene({
     // počet tiků. Zbytek pod tikem zůstává v akumulátoru — dělený tik neexistuje.
     const due = pump(clock, delta * 1000);
     if (due > 0) advance.run(due);
+    // Ten zbytek je zároveň jediné, k čemu je nástěnný čas ve vykreslení dobrý:
+    // jak daleko mezi dvěma tiky snímek leží. Simulace ho nevidí.
+    advance.draw(clock.accumulatorMs / TICK_MS);
   });
 
   return <primitive object={scene.group} />;

@@ -1,0 +1,13 @@
+{
+  "note": "P16: eight sentences every variant builds. t1-t3 come from the luna vs. sol test of 2026-09-14, the rest are copied verbatim from the frozen evals/worldstream/create.jsonl.",
+  "sentences": [
+    { "id": "t1", "prompt": "a floating library in the clouds with spiral staircases and glowing books" },
+    { "id": "t2", "prompt": "a desert market with striped tents and an old stone well" },
+    { "id": "t3", "prompt": "a quiet harbor at dusk with fishing boats and a stone lighthouse" },
+    { "id": "c02", "prompt": "A spiral library where the stairs are the shelves." },
+    { "id": "c04", "prompt": "A brutalist observatory, one dome on three splayed legs, on a windswept plateau." },
+    { "id": "c08", "prompt": "A tidal cave with a colony of glowing anemones on the ceiling." },
+    { "id": "c12", "prompt": "A clock tower where the gears are big enough to walk on." },
+    { "id": "c17", "prompt": "A lighthouse in fog so thick the beam is the only straight line." }
+  ]
+}

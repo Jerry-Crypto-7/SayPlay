@@ -251,10 +251,13 @@ function fakeFs(
   };
 }
 
-function deps(fs: ReadinessFs): Parameters<typeof checkReadiness>[1] {
+function deps(
+  fs: ReadinessFs,
+  capMisconfigured: () => boolean = () => false,
+): Parameters<typeof checkReadiness>[1] {
   let tick = 0;
   let issued = 0;
-  return { fs, now: () => (tick += 5), nonce: () => `n${(issued += 1)}` };
+  return { fs, now: () => (tick += 5), nonce: () => `n${(issued += 1)}`, capMisconfigured };
 }
 
 describe('checkReadiness', () => {
@@ -314,6 +317,81 @@ describe('checkReadiness', () => {
   });
 });
 
+/**
+ * **Strop bez knihy je porucha nasazení, ne poskytovatele** (`T29-readinessledger`,
+ * nezávislá revize 4. 9. 2026). Nakonfigurovaný model nad chybějící knihou
+ * odmítne **každé** placené volání (`STORE_UNCONFIGURED`) a porotce přitom čte
+ * „the model could not be reached" — vina padne na poskytovatele, ke kterému se
+ * nikdy nevolalo. Překlep v `VERCEL_ENV` (`prod` místo `production`) tak dneska
+ * projde kontrolou připravenosti a začne brát provoz.
+ */
+describe('checkReadiness — strop bez knihy', () => {
+  it('nakonfigurovaný model bez knihy je NEPŘIPRAVENÝ, a nesáhne přitom na disk', async () => {
+    // ⚠ **Počítají se zápisy, ne přeživší soubory — změřeno.** Nad `fakeFs.files`
+    // mutant, který bránu přesune až za sondu, **přežil**: úspěšný cyklus po sobě
+    // uklidí, takže mapa je prázdná v obou případech. Počítadlo je ten rozdíl.
+    const base = fakeFs({});
+    let zápisů = 0;
+    const fs = {
+      ...base,
+      write: async (path: string, bytes: string) => {
+        zápisů += 1;
+        return base.write(path, bytes);
+      },
+    };
+    const result = await checkReadiness('/var/tmp', deps(fs, () => true));
+
+    expect(result).toMatchObject({ ready: false, reason: 'LEDGER_UNCONFIGURED' });
+    // **Levná větev je i důkaz pořadí.** Kdyby stála až za sondou, platila by
+    // nepřipravená instance zápis a `fsync` při každém dotazu vyvažovače.
+    expect(zápisů, 'sonda zapisovala, ačkoli měla odmítnout dřív').toBe(0);
+  });
+
+  /**
+   * ⚠ **Polarita, a je to celá obhajoba té větve.** Nasazení **bez modelu**
+   * knihu nepotřebuje a musí zůstat v rotaci — dnešní demo běží bez `.env`,
+   * takže bez téhle půlky podmínky by se z rotace vyřadilo celé, včetně
+   * offline větve, korpusu a meshingu, které přes strop vůbec nechodí.
+   */
+  it('nasazení bez modelu zůstává PŘIPRAVENÉ, i když žádnou knihu nemá', async () => {
+    const result = await checkReadiness('/var/tmp', deps(fakeFs({}), () => false));
+
+    expect(result).toMatchObject({ ready: true });
+  });
+
+  /**
+   * **Tenhle test měří zapojení, ne větev.** Dva testy nad ním si `capMisconfigured`
+   * podstrčí, takže by zůstaly zelené i nad továrnou, která se ptá jen na knihu —
+   * a právě ta by dnešní demo bez `.env` vyřadila z rotace.
+   */
+  it('továrna se ptá na obojí: bez modelu mlčí, s modelem a bez knihy křičí', () => {
+    const původní = { ...process.env };
+    try {
+      for (const klíč of ['WORLDSMITH_MODEL_ENDPOINT', 'WORLDSMITH_MODEL_KEY',
+        'WORLDSMITH_USD_PER_MTOK_OUT', 'WORLDSMITH_SPEND_STORE_URL',
+        'WORLDSMITH_SPEND_STORE_TOKEN', 'VERCEL', 'VERCEL_ENV'])
+        delete process.env[klíč];
+
+      expect(
+        nodeReadinessDeps().capMisconfigured(),
+        'demo bez `.env` se vyřadilo z rotace kvůli stropu, který nepotřebuje',
+      ).toBe(false);
+
+      process.env.WORLDSMITH_MODEL_ENDPOINT = 'https://příklad.test/v1/messages';
+      process.env.WORLDSMITH_MODEL_KEY = 'klíč';
+      process.env.WORLDSMITH_USD_PER_MTOK_OUT = '15';
+
+      expect(
+        nodeReadinessDeps().capMisconfigured(),
+        'model bez knihy prošel připravený — každé placené volání pak odmítne',
+      ).toBe(true);
+    } finally {
+      for (const klíč of Object.keys(process.env)) if (!(klíč in původní)) delete process.env[klíč];
+      Object.assign(process.env, původní);
+    }
+  });
+});
+
 describe('checkReadiness nad skutečným souborovým systémem', () => {
   // Bez tohohle bloku je „provede skutečný zápis" splněné jen tvarem: jediná
   // implementace `ReadinessFs` by byla `Map` v testu nad ním, takže by se v
@@ -322,7 +400,7 @@ describe('checkReadiness nad skutečným souborovým systémem', () => {
   afterAll(() => rmSync(real, { recursive: true, force: true }));
 
   it('zapíše, přečte a uklidí skutečný soubor', async () => {
-    const result = await checkReadiness(real, { fs: nodeReadinessFs(), now: () => Date.now(), nonce: () => 'skutecny' });
+    const result = await checkReadiness(real, { fs: nodeReadinessFs(), now: () => Date.now(), nonce: () => 'skutecny', capMisconfigured: () => false });
 
     expect(result.ready).toBe(true);
     expect(readdirSync(real)).toEqual([]);
@@ -338,6 +416,7 @@ describe('checkReadiness nad skutečným souborovým systémem', () => {
       fs: nodeReadinessFs(),
       now: () => Date.now(),
       nonce: () => 'chybejici',
+      capMisconfigured: () => false,
     });
 
     expect(result).toMatchObject({ ready: false, reason: 'WRITE_FAILED' });
@@ -394,7 +473,7 @@ describe('checkReadiness — úklid po selhaném zápisu', () => {
       },
     };
 
-    const result = await checkReadiness('/var/tmp', { fs, now: () => 0, nonce: () => 'x' });
+    const result = await checkReadiness('/var/tmp', { fs, now: () => 0, nonce: () => 'x', capMisconfigured: () => false });
 
     expect(result).toMatchObject({ ready: false, reason: 'WRITE_FAILED' });
     expect(files.size).toBe(0);

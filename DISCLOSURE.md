@@ -6,7 +6,7 @@
 Seznam všeho, co projekt používá a nenapsal si sám, podle `RULES.md` §2:
 zdroj, autor nebo poskytovatel, licence a povinné notices.
 
-## Knihovny (170)
+## Knihovny (171)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
@@ -138,6 +138,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | nanoid@3.3.18 | https://registry.npmjs.org/nanoid/-/nanoid-3.3.18.tgz | Andrey Sitnik | MIT | copyright notice; plné znění licence | Copyright 2017 Andrey Sitnik <andrey@sitnik.ru> |
 | next@16.3.0 | https://registry.npmjs.org/next/-/next-16.3.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) 2025 Vercel, Inc. |
 | obug@2.1.4 | https://registry.npmjs.org/obug/-/obug-2.1.4.tgz | Kevin Deng | MIT | copyright notice; plné znění licence | Copyright © 2025-PRESENT Kevin Deng (https://github.com/sxzz) |
+| OpenAI Codex CLI@0.145.0 | https://raw.githubusercontent.com/openai/codex/rust-v0.145.0/LICENSE | OpenAI | Apache-2.0 | při redistribuci přiložit licenci, zachovat relevantní notices a označit změny | Copyright 2025 OpenAI |
 | opener@1.5.2 | https://registry.npmjs.org/opener/-/opener-1.5.2.tgz | Domenic Denicola (https://domenic.me/) | (WTFPL OR MIT) | žádné — WTFPL notice nevyžaduje; copyright notice; plné znění licence | Copyright © 2012–2020 Domenic Denicola <d@domenic.me> |
 | pathe@2.0.3 | https://registry.npmjs.org/pathe/-/pathe-2.0.3.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Pooya Parsa <pooya@pi0.io> - Daniel Roe <daniel@roe.dev> |
 | picocolors@1.1.1 | https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz | Alexey Raspopov | ISC | copyright notice; plné znění licence | Copyright (c) 2021-2024 Oleksii Raspopov, Kostiantyn Denysov, Anton Verinov |
@@ -210,6 +211,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 - **lightningcss-win32-arm64-msvc@1.33.0** (MPL-2.0): Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká.
 - **lightningcss-win32-x64-msvc@1.33.0** (MPL-2.0): Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká.
 - **lightningcss@1.33.0** (MPL-2.0): Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká.
+- **OpenAI Codex CLI@0.145.0** (Apache-2.0): Externí lokální nástroj instalovaný uživatelem ve WSL2; jeho binárka není zkopírována do repozitáře ani distribuována s tímto handoffem. Verze ověřena oficiálním CLI, licence proti upstream tagu rust-v0.145.0 dne 8. 9. 2026. Odvozený veřejný modelový katalog má vlastní položku níže. Licence kódu CLI není oprávnění k modelové službě ani ke sdílení osobního účtu.
 - **opener@1.5.2** ((WTFPL OR MIT)): Duální licence (WTFPL OR MIT). Bereme větev MIT, která má jasné znění i notice; WTFPL se neuplatňuje.
 
 ### Knihovny — bez deklarovaného autora (100)
@@ -322,34 +324,42 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 
 _Žádná položka._
 
-## Modely (6)
+## Modely (9)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
 | claude-opus-5 | https://docs.anthropic.com/en/docs/about-claude/models | Anthropic | komerční podmínky služby (Anthropic Commercial Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | Anthropic, https://www.anthropic.com/legal/commercial-terms |
 | gpt-5.6 | https://platform.openai.com/docs/models | OpenAI | komerční podmínky služby (OpenAI Business Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
+| gpt-5.6-luna | https://platform.openai.com/docs/models | OpenAI | Podmínky příslušné služby OpenAI; tento lokální běh používá uživatelské předplatné ChatGPT/Codex. Ověření podmínek pro veřejné soutěžní nasazení: MISSING. | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
 | gpt-5.6-mini | https://platform.openai.com/docs/models | OpenAI | komerční podmínky služby (OpenAI Business Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
-| gpt-5.6-sol | https://platform.openai.com/docs/models | OpenAI | komerční podmínky služby (OpenAI Business Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
+| gpt-5.6-sol | https://platform.openai.com/docs/models | OpenAI | Podmínky příslušné služby OpenAI; tento lokální běh používá uživatelské předplatné ChatGPT/Codex. Ověření podmínek pro veřejné soutěžní nasazení: MISSING. | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
+| gpt-5.6-sol-fast | https://platform.openai.com/docs/models | OpenAI | Podmínky příslušné služby OpenAI; tento lokální běh používá uživatelské předplatné ChatGPT/Codex. Ověření podmínek pro veřejné soutěžní nasazení: MISSING. | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
 | gpt-5.6-terra | https://platform.openai.com/docs/models | OpenAI | komerční podmínky služby (OpenAI Business Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
+| gpt-6-astra | https://platform.openai.com/docs/models | OpenAI | Podmínky příslušné služby OpenAI; měření běželo přes uživatelské předplatné ChatGPT/Codex (Codex CLI 0.154.0, codex exec). Ověření podmínek pro veřejné soutěžní nasazení: MISSING. | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
 | Qwen3-1.7B-q4f16_1-MLC | https://huggingface.co/mlc-ai/Qwen3-1.7B-q4f16_1-MLC | Qwen Team, Alibaba Cloud (váhy), MLC AI (kvantovaná konverze pro WebLLM) | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | Qwen3 © Alibaba Group, Apache-2.0; konverze do MLC formátu mlc-ai, https://huggingface.co/mlc-ai/Qwen3-1.7B-q4f16_1-MLC |
 
 ### Modely — licence posouzené jednotlivě
 
-- **claude-opus-5** (komerční podmínky služby (Anthropic Commercial Terms)): Model emisní cesty (src/model/prompt.ts, EMISSION_MODEL). Produkční endpoint je v režimu záznamu a živé volání neprovádí.
+- **claude-opus-5** (komerční podmínky služby (Anthropic Commercial Terms)): Od 6. 9. 2026 se NEVOLÁ a produktu se neúčastní. Do té chvíle stál v src/model/prompt.ts jako EMISSION_MODEL a proxy vracela pod tím jménem odpovědi gpt-5.6-sol; emisní cesta proto jmenuje ten model přímo. Položka zůstává, protože identifikátor je pořád v kódu — v testech a fixturách (evals/harness/**, evals/worldstream/__tests__/**, scripts/__tests__/**).
 - **gpt-5.6** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
+- **gpt-5.6-luna** (Podmínky příslušné služby OpenAI; tento lokální běh používá uživatelské předplatné ChatGPT/Codex. Ověření podmínek pro veřejné soutěžní nasazení: MISSING.): 13. 9. 2026 odpoledne EMISSION_MODEL (nad 30 větami medián 33 s proti 101 s gpt-5.6-sol; 5/5 za 36 s proti gpt-6-astra), týž večer nahrazen gpt-6-astra kvůli kvalitě 3D (galerie e2e/quality-gallery.spec.ts). Produkt ho od té chvíle NEVOLÁ; jmenuje ho měřidlo latence a komentář v src/model/prompt.ts. Volá se přes lokální claude-code-proxy placenou předplatným Codexu, low effort, žádný API fallback.
 - **gpt-5.6-mini** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
-- **gpt-5.6-sol** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
+- **gpt-5.6-sol** (Podmínky příslušné služby OpenAI; tento lokální běh používá uživatelské předplatné ChatGPT/Codex. Ověření podmínek pro veřejné soutěžní nasazení: MISSING.): Reality Compiler lokální demo a benchmark 8. 9. 2026 volají oficiální Codex CLI 0.145.0 ve validovaném WSL2, s ChatGPT přihlášením, gpt-5.6-sol a low effort. Žádný API fallback ani čtení credential souborů. Spotřeba předplatného je evidována; jednotková USD cena není doložena. Historická proxy/API cesta zůstává v repozitáři, ale tento launcher ji nepoužívá. Schválení veřejného hostování prostřednictvím osobního předplatného: MISSING; není součástí předání.
+- **gpt-5.6-sol-fast** (Podmínky příslušné služby OpenAI; tento lokální běh používá uživatelské předplatné ChatGPT/Codex. Ověření podmínek pro veřejné soutěžní nasazení: MISSING.): Produkt ho NEVOLÁ. Jmenuje ho jen měřidlo latence (evals/worldstream/live-latency.measure.ts) a allowlist evals/harness/preflight.ts; naměřeno 12. 9. 2026 (medián věty 98 s → 56 s), ale 13. 9. 2026 zamítnuto jako výchozí model, protože varianta -fast účtuje předplatnému přibližně 2,5× víc tokenů. Volá se přes lokální claude-code-proxy placenou předplatným Codexu, low effort, žádný API fallback.
 - **gpt-5.6-terra** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
+- **gpt-6-astra** (Podmínky příslušné služby OpenAI; měření běželo přes uživatelské předplatné ChatGPT/Codex (Codex CLI 0.154.0, codex exec). Ověření podmínek pro veřejné soutěžní nasazení: MISSING.): Od 13. 9. 2026 večer EMISSION_MODEL v src/model/prompt.ts — model, který WORLDSTREAM světy doopravdy píše. Rozhodnutí uživatele po galerii kvality (e2e/quality-gallery.spec.ts): 2–5× bohatší kompozice než gpt-5.6-luna, za medián 143 s na větu proti 35 s. claude-code-proxy ho nezná, volá se proto spuštěním Codex CLI (codex exec --json, transport codex-cli v src/server/upstream.ts, WORLDSMITH_MODEL_ENDPOINT=codex-cli), s ChatGPT přihlášením, medium effort, sandbox read-only, nástroje vypnuté, žádný API fallback. Spotřeba předplatného je evidována; jednotková USD cena není doložena. Schválení veřejného hostování prostřednictvím osobního předplatného: MISSING.
 - **Qwen3-1.7B-q4f16_1-MLC** (Apache-2.0): Váhy modelu emisní cesty, které si prohlížeč stáhne za běhu (src/model/local/**, WebLLM). Nejsou v repozitáři ani v bundlu, proto to není položka kind: asset. Kvantizace q4f16_1, 979 MB. Sync je nechává být — z package-lock.json se váhy odvodit nedají.
 
-## Datasety (1)
+## Datasety (2)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
+| OpenAI Codex 0.145.0 — derived fixed text model catalog | https://github.com/openai/codex/blob/25af12f7e61572b0bc18ddb1008be543b91519b0/codex-rs/models-manager/models.json | OpenAI | Apache-2.0 | přiložené plné znění licence; zachovaný upstream NOTICE; označení dvou změněných policy hodnot | OpenAI Codex contributors; scripts/vendor/codex-model-catalog.LICENSE, scripts/vendor/codex-model-catalog.NOTICE a scripts/subscription-text-model-catalog.md |
 | zmrazený korpus promptů a kontraktů (evals/frozen, evals/gold.jsonl) | vlastní tvorba v tomhle repozitáři, zmrazená tagem evals-frozen-v2 | worldsmith | MIT | copyright notice; plné znění licence | worldsmith, tenhle repozitář |
 
 ### Datasety — licence posouzené jednotlivě
 
+- **OpenAI Codex 0.145.0 — derived fixed text model catalog** (Apache-2.0): Veřejná konfigurační metadata a instrukční texty jediného modelu gpt-5.6-sol. Pinned raw SHA-256 497d7653bb22358baa29ebd4a70be55ce990b73a64896848a59179485b37db9d; odvozený katalog 59d22b4ae6532d4f869d776e56faaf2ae169f36038375597f4f1e581459b8791. Zachovány všechny ostatní hodnoty, změněny pouze tool_mode=direct a multi_agent_version=disabled. Není to nový benchmark, nezávislý holdout ani modelový výstup. Samotný katalog neprokazuje autentizaci, inference nebo produkční připravenost.
 - **zmrazený korpus promptů a kontraktů (evals/frozen, evals/gold.jsonl)** (MIT): Vlastní data, žádný externí zdroj. Uvedeno proto, že RULES.md §2 žádá disclosure datasetů bez ohledu na to, kdo je autor.
 
 ## Externí služby (2)
@@ -364,14 +374,17 @@ _Žádná položka._
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá.
 
-## Vlastní, ne třetí strana (5)
+## Vlastní, ne třetí strana (8)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
 aby se registrací nedalo nic z výpisu odstranit.
 
+- **claude-sonnet-5** (model): Doslovný identifikátor v src/server/__tests__/upstream.test.ts: test předává změněné model ID mock transportu a ověřuje request body. Tato položka neprohlašuje volání modelu Anthropic v lokálním subscription demu ani existenci modelu tohoto jména.
 - **gemini-9-pro** (model): vymyšlený identifikátor v scripts/__tests__/submission-check-gate.test.ts. Produkt žádný model Google nevolá; zapsat ho jako třetí stranu by bylo nepravdivé tvrzení o tom, co projekt používá.
 - **gpt-neexistuje** (model): vymyšlený identifikátor v evals/harness/__tests__/live.test.ts: oracle větve „poskytovatel takový model nemá". Žádný model tohoto jména neexistuje.
 - **gpt-test** (model): vymyšlený identifikátor v evals/harness/__tests__/kill-gate.test.ts. Existuje právě proto, aby ho registr NEznal — přejmenovat ho na tvar mimo `modelIdsIn` by test nechalo zeleně měřit nic.
 - **mistral-42-large** (model): vymyšlený identifikátor v scripts/__tests__/submission-check-gate.test.ts: oracle větve „model jmenovaný v testu, který registr nezná". Produkt žádný model Mistral AI nevolá a model tohoto jména neexistuje.
+- **Reality Compiler pilot sources** (dataset): Vlastní fiktivní vývojové a holdout podklady vytvořené v tomto repozitáři. Nejde o skutečné bezpečnostní postupy ani externí dokumenty. Výstupy modelu a citace mají samostatný stav review.
+- **Repository implementation fixtures — T13 inventory** (dataset): Vlastní testovací scénáře, implementační konstanty a prompty tohoto projektu; inventura T13 8. 9. 2026 ověřila hlavičky a vazbu na projektové moduly. Registrace kvůli prahu literálů ve stávající submission bráně, nikoli externí dataset.
 - **vlastní zdroje nad prahem literálů** (dataset): Testy, fixtury a samotné skripty brány, které nesou víc než 4 096 B literálů. Napsané v tomhle repozitáři, nikdo třetí je nevlastní. V registru jsou proto, že `submission-check` kontrola 6 (d) žádá položku pro každý soubor nad prahem — váha literálů neumí odlišit první stranu od třetí, a to je vlastnost prahu, ne vada zápisu.

@@ -30,6 +30,8 @@
  * texty by z každé přepsané číslovky udělalo dvojici a rozdíl by se v ní ztratil.
  */
 
+import { SOURCE_LABEL, type EmissionSource } from '@/model/source';
+
 export type SectionId = 'build' | 'rules' | 'goal';
 
 /** Pořadí je pořadí výpisu. */
@@ -454,14 +456,40 @@ function buildLines(sim: Record<string, unknown>, look: Record<string, unknown>)
 }
 
 /**
- * Emise → řádky. Emise, ve které `sim` není, není chyba: model ji smí odmítnout
- * (§13.4) a panel to má říct, ne spadnout.
+ * Prázdná emise → věta, která **jmenuje skutečného původce**.
+ *
+ * Do 3. 9. 2026 tu stálo tvrzení o modelu pro všechny čtyři cesty, a u tří
+ * z nich to byla nepravda: rozpoznávač jsou regulární výrazy, zmrazený korpus
+ * je soubor a zaručená místnost je konstanta — žádná z nich model nevolá.
+ * Panel je na hlavní cestě (`src/app/page.tsx` → `Program.tsx`) a porotce ho
+ * čte v zásuvce Inspect; nepravdivá věta se přitom čte úplně stejně dobře jako
+ * pravdivá, takže tuhle vadu neodhalí nic než tvrzení o původci.
+ *
+ * `source === null` znamená „ještě žádná věta nepadla" — pak se nejmenuje
+ * nikdo, protože se nikdo nepokoušel.
  */
-export function describeEmission(emission: unknown): readonly ProgramLine[] {
+function nothingWritten(source: EmissionSource | null): string {
+  return source === null
+    ? 'No world was written for this sentence.'
+    : `The ${SOURCE_LABEL[source]} wrote no world for this sentence.`;
+}
+
+/**
+ * Emise → řádky. Emise, ve které `sim` není, není chyba: původce ji smí
+ * odmítnout (§13.4) a panel to má říct, ne spadnout.
+ *
+ * `source` je **pravdivý původ toho dokumentu**, ne přání. Chodí sem z téhož
+ * stavu, jaký nese odznak panelu (`Program.tsx`), takže věta a odznak nemůžou
+ * tvrdit každý něco jiného.
+ */
+export function describeEmission(
+  emission: unknown,
+  source: EmissionSource | null = null,
+): readonly ProgramLine[] {
   const body = asRecord(emission);
   const sim = body.sim;
   if (sim === null || sim === undefined)
-    return [{ id: 'build/none', section: 'build', text: 'The model wrote no world for this sentence.' }];
+    return [{ id: 'build/none', section: 'build', text: nothingWritten(source) }];
 
   return buildLines(asRecord(sim), asRecord(body.look));
 }

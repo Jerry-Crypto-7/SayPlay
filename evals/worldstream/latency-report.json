@@ -1,0 +1,160 @@
+{
+  "measuredAt": "2026-09-13T18:58:42.960Z",
+  "sessionSeed": 4021,
+  "caseIds": [
+    "c01",
+    "c07",
+    "c13",
+    "c19",
+    "c25"
+  ],
+  "models": [
+    {
+      "model": "gpt-6-astra@medium#cli",
+      "cases": 5,
+      "callsPerCase": 2.4,
+      "inputTokensPerCase": 38849,
+      "outputTokensPerCase": 4861,
+      "callsWithoutUsage": 0,
+      "notJsonAsWritten": 0,
+      "caseMedianMs": 142581,
+      "caseP95Ms": 258877,
+      "geometryAuthored": 4,
+      "certified": 4,
+      "byStage": {
+        "planner": {
+          "n": 5,
+          "medianMs": 16696,
+          "p95Ms": 19223,
+          "medianAnswerBytes": 967
+        },
+        "compiler": {
+          "n": 5,
+          "medianMs": 103209,
+          "p95Ms": 150385,
+          "medianAnswerBytes": 5440
+        }
+      },
+      "repairCalls": 2,
+      "repairMedianMs": 66303,
+      "repairReasons": {
+        "WORLD_REJECTED · The winning route you attached never reaches a win: horizon 600 exhausted in state running. Rewrite sim": 2
+      },
+      "perCase": [
+        {
+          "id": "c01",
+          "ms": 96466,
+          "rounds": 1,
+          "authored": true,
+          "failure": null
+        },
+        {
+          "id": "c07",
+          "ms": 110846,
+          "rounds": 1,
+          "authored": true,
+          "failure": null
+        },
+        {
+          "id": "c13",
+          "ms": 258877,
+          "rounds": 2,
+          "authored": false,
+          "failure": {
+            "stage": "witness",
+            "detail": "witness: horizon 600 exhausted in state running"
+          }
+        },
+        {
+          "id": "c19",
+          "ms": 142581,
+          "rounds": 1,
+          "authored": true,
+          "failure": null
+        },
+        {
+          "id": "c25",
+          "ms": 185687,
+          "rounds": 2,
+          "authored": true,
+          "failure": null
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.6-luna@low",
+      "cases": 5,
+      "callsPerCase": 2.2,
+      "inputTokensPerCase": 8996,
+      "outputTokensPerCase": 1770,
+      "callsWithoutUsage": 0,
+      "notJsonAsWritten": 4,
+      "caseMedianMs": 34565,
+      "caseP95Ms": 56698,
+      "geometryAuthored": 3,
+      "certified": 3,
+      "byStage": {
+        "planner": {
+          "n": 5,
+          "medianMs": 10798,
+          "p95Ms": 11434,
+          "medianAnswerBytes": 1134
+        },
+        "compiler": {
+          "n": 5,
+          "medianMs": 23766,
+          "p95Ms": 32593,
+          "medianAnswerBytes": 2203
+        }
+      },
+      "repairCalls": 1,
+      "repairMedianMs": 20949,
+      "repairReasons": {
+        "WORLD_REJECTED · The winning route you attached never reaches a win: horizon 600 exhausted in state running. Rewrite sim": 1
+      },
+      "perCase": [
+        {
+          "id": "c01",
+          "ms": 25894,
+          "rounds": 1,
+          "authored": true,
+          "failure": null
+        },
+        {
+          "id": "c07",
+          "ms": 34565,
+          "rounds": 0,
+          "authored": false,
+          "failure": {
+            "stage": "unavailable",
+            "detail": "Error: MALFORMED_RESPONSE: the upstream text block is not JSON: Unterminated string in JSON at position 2338 (line 1 column 2339)"
+          }
+        },
+        {
+          "id": "c13",
+          "ms": 43915,
+          "rounds": 1,
+          "authored": true,
+          "failure": null
+        },
+        {
+          "id": "c19",
+          "ms": 56698,
+          "rounds": 2,
+          "authored": false,
+          "failure": {
+            "stage": "witness",
+            "detail": "witness: horizon 600 exhausted in state running"
+          }
+        },
+        {
+          "id": "c25",
+          "ms": 21110,
+          "rounds": 1,
+          "authored": true,
+          "failure": null
+        }
+      ]
+    }
+  ]
+}

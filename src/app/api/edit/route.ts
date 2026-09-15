@@ -33,7 +33,11 @@
  * Tatáž hranice jako u `/api/emit`, protože ji konzumuje týž scorer: **400**
  * nevalidní požadavek, **404** neznámý editační prompt nebo dvojice (svět,
  * prompt), kterou zmrazení nekryje, **408** tělo bez deadlinu, **413** tělo přes
- * strop, **409** zastaralá revize, **503** nečitelný nebo podvržený korpus.
+ * strop, **409** zastaralá revize, **429** dvojí — překročená frekvence nebo
+ * plná fronta čtení těl, obojí s hlavičkou `retry-after` (`T28-editrate`),
+ * **503** dvojí — nečitelný nebo podvržený
+ * korpus, a od `f81d019` taky `REPLAY_DISABLED`, tedy vypnutý provoz
+ * (`off: ["all"]`, brána hned na začátku handleru).
  * Všechno ostatní je **200 s verdiktem** — patch, který se nedá směrovat,
  * aplikovat, snížit nebo jehož svědek po editaci nedojde do výhry, je *naměřený
  * výsledek*, ne chyba serveru.
@@ -45,6 +49,48 @@
  * okamžitě a zůstane v platnosti i tehdy, když pravidla neprojdou verifikací.
  * `applied` říká, které půlky si volající smí nechat — a `sim` mezi nimi je jen
  * tehdy, když jeho svědek po editaci znovu došel do výhry.
+ *
+ * ## Proč tyhle dveře NEJSOU za čítačem placených volání
+ *
+ * `T28-editungated` chtěla, aby si `/api/edit` bralo slot z téhož čítače jako
+ * `/api/generate` a worldstreamové dveře. **Změřeno 4. 9. 2026 a zamítnuto,
+ * dvakrát nezávisle:**
+ *
+ * 1. **Nejsou to placené dveře.** `emitPatch()` přehrává zmrazený korpus
+ *    (`src/model/client.ts`) — tenhle soubor neimportuje ani upstream klienta,
+ *    ani `fetch`, ani strop utrácení. Placených volání odsud vede **nula**.
+ *    Sdílený čítač má strop 4 a `MAX_WORLD_GENERATIONS = 3` v něm drží čtvrtý
+ *    slot pro druhou větu (`dc58740`). Pustit na něj **neplacené** dveře
+ *    znamená, že anonymní provoz sem obsadí všechny čtyři sloty a **odmítne
+ *    ty placené** — tedy přesně to vyhladovění, které `dc58740` odstranil.
+ * 2. **Čítač by ohradil špatný úsek.** Mezi `await readBody` a odpovědí **není
+ *    jediný `await`** — `migrateWorldDoc`, `frozenPrompt`, `frozenGrammar`,
+ *    `emitPatch`, `routePatch` i `commitRoutedParts` doběhnou synchronně
+ *    v jednom taktu smyčky, takže se do drahé části nemá jak dostat druhý
+ *    požadavek a čítač kolem ní by ukazoval nejvýš jedna.
+ *
+ *    ⚠ **Neznamená to, že „čítač tady nemůže nikdy sepnout" — revize 4. 9. 2026
+ *    tu formulaci vyvrátila a je opravená.** Čítač vzatý na *vstupu* handleru
+ *    sepne dobře: `readBody` čeká až `BODY_DEADLINE_MS = 5 000`
+ *    (`src/http/body.ts`), takže N klientů, kteří pošlou hlavičky a pak mlčí,
+ *    sedí uvnitř `POST` současně. Ohradil by ale **okno čtení těla**, ne těch
+ *    15 ms CPU — a to okno mělo do 4. 9. 2026 strop jen na velikost
+ *    (`MAX_BODY_BYTES`), ne na počet. Zavřela to `T28-editrate` spolu
+ *    s omezením frekvence, protože je to táž mez a stavět ji dvakrát nemá
+ *    smysl.
+ *
+ * **Co s tím naměřeným tedy JE, od `T28-editrate`:** jeden požadavek stojí
+ * **medián 15,3 ms, p95 27,7 ms a max 38,6 ms** synchronního CPU na smyčce
+ * (60 měření nad tělem o 1 784 B, po zahřátí cache korpusu), takže ~66
+ * požadavků za sekundu zastaví celou instanci — a s ní SSE proudy, preview
+ * i snapshot. Zavírají to **dvě meze, ne čítač v letu**: strop na frekvenci
+ * (`src/server/rate-limit.ts`, 50 požadavků za 10 s na dvojici dveře–volající,
+ * odvozené z toho p95) a strop na okno čtení těla, který je sám dvojí —
+ * `MAX_CONCURRENT_BODY_READS_PER_CALLER` na počet a `MAX_BUFFERED_BODY_BYTES`
+ * na paměť, kterou rozečtená těla drží (`src/http/body.ts`).
+ * ⚠ Obě jsou meze **na instanci**, ne na nasazení (`T28-fleetrate`); co to
+ * znamená, proč to tak zůstává a co se tím vzdává, stojí v hlavičce
+ * `rate-limit.ts`.
  *
  * ## Endpoint NEČTE `allowedPaths`
  *
@@ -60,12 +106,19 @@ import { randomUUID } from 'node:crypto';
 
 import type { Operation } from 'rfc6902';
 
-import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
+import { bodyRefusalResponse, readBody } from '../../../http/body';
 import type { PartPatch } from '../../../ir/revision';
 import { migrateWorldDoc, type WorldDoc } from '../../../ir/worlddoc';
 import { emitPatch, frozenGrammar, frozenPrompt, type ClientFailure } from '../../../model/client';
+import { killState } from '../../../server/kill-switch';
+import { callerKey, trustedCallerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '../../../server/rate-limit';
 import { buildEditRequest } from '../../../model/edit-prompt';
 import { withRequest } from '../../../obs/trace';
+import {
+  PUBLIC_CORPUS_FAULT,
+  logRateLimited,
+  logStickyFault,
+} from '../../../server/public-faults';
 import { routePatch, type Lane, type RoutedPatch, type RoutingAnomaly } from '../../../patch/router';
 import { commitRoutedParts, staleRevision, type BaseRevision, type CommitOutcome } from './commit';
 
@@ -89,12 +142,71 @@ function badRequest(requestId: string, code: string, message: string, field?: st
  * nad ním, rozbitý korpus by se vydával za naměřený výsledek.
  */
 function corpusUnavailable(requestId: string, failure: ClientFailure): Response {
-  if (failure.reason === 'BASE_WORLD_MISMATCH' || failure.reason === 'NO_FROZEN_RESPONSE')
+  // Ven veřejný text, operátorovi ten pravý — viz `src/server/public-faults.ts`.
+  const message = PUBLIC_CORPUS_FAULT[failure.reason];
+
+  if (failure.reason === 'BASE_WORLD_MISMATCH' || failure.reason === 'NO_FROZEN_RESPONSE') {
+    /**
+     * **Tohle není vada serveru, a proto se nesmí zapisovat jako by byla** —
+     * nález dvou nezávislých revizí 1. 9. 2026, obě `blocking`.
+     *
+     * `BASE_WORLD_MISMATCH` vybírá **volající** tím, jaký `worldDoc` a
+     * `promptId` pošle: „pro tuhle dvojici zmrazený záznam není" je běžný omyl
+     * klienta, ne porucha. Do 1. 9. 2026 se logoval bezpodmínečně spolu
+     * s vadami korpusu, takže na **zdravém** korpusu stačilo poslat platný svět
+     * s cizím `promptId` a log rostl o řádek na požadavek. Naměřeno: čtrnáct
+     * z patnácti zmrazených světů tu dvojici nesplní, a demo je samo vydává.
+     *
+     * Mlčet úplně by ale zahodilo jediný signál o tom, že klient a korpus se
+     * rozešly, takže milníky: 1., 10., 100. výskyt. Rozdíl proti vadě korpusu
+     * níž je v tom, **čí je to stav** — tenhle je volajícího, takže bound musí
+     * být na rychlosti, ne na lepivosti.
+     *
+     * ## Proč `NO_FROZEN_RESPONSE` odbočuje jinam — kontrolní revize 1. 9. 2026
+     *
+     * **Na těchhle dveřích si ho volající vybrat neumí.** `frozenPrompt(promptId)`
+     * odmítne neznámé i nesprávně otypované id o sto řádků níž jako
+     * `UNKNOWN_PROMPT`, takže sem ten důvod dojde **jen** tehdy, když
+     * v korpusu chybí odpověď na prompt, který v něm je. To je stav serveru —
+     * díra ve zmrazeném artefaktu — a patří mu lepivá mez.
+     *
+     * Následek sdíleného boundu byl přesně ten, proti kterému je lepivá mez
+     * psaná: `logRateLimited` klíčuje `(dveře, kód)`, takže několik různých děr
+     * sdílí jedno počítadlo a druhá ani třetí se neohlásí nikdy. Lepivá mez
+     * klíčuje `detail`, tedy konkrétní záznam, a její strop drží, protože
+     * `promptId` je tady už porovnaný se zmrazenými id: do klíče neteče nic od
+     * volajícího a počet je omezený velikostí korpusu.
+     *
+     * **Rozdělení nemění odpověď ven ani o bajt** — obojí je pořád 404
+     * s kódem `UNKNOWN_PAIR`. Co se ale nesmí tvrdit (a první verze tohohle
+     * odstavce to tvrdila) je, že volající ty dva stavy od sebe nerozezná:
+     * `message` je `PUBLIC_CORPUS_FAULT[failure.reason]` o třicet řádků výš,
+     * a ty dvě věty se liší doslova. Dvacet pět dotazů tedy vyjmenuje, které
+     * editační odpovědi tomuhle nasazení chybí.
+     *
+     * **Sjednotit ten text by tu třídu nezavřelo — změřeno, ne odhadnuto.**
+     * `/api/emit` vrací neověřenému volajícímu `code: outcome.failure.reason`
+     * (`emit/route.ts:199`), tedy tentýž důvod rovnou jako kód, ne jen jako
+     * větu. Vyjmenovat tak jde i tam, jen pro tvořivou větev. A protože
+     * `evals/frozen/**` je commitnutý artefakt v repu, které jde podle
+     * `RULES.md` §2 ven, není tím prozrazený obsah korpusu, ale **rozdíl
+     * nasazení proti repu**. Kdyby se to jednou zavírat mělo, patří to na
+     * všechny dveře naráz a do `PUBLIC_CORPUS_FAULT`, ne sem.
+     */
+    if (failure.reason === 'BASE_WORLD_MISMATCH')
+      logRateLimited('edit', requestId, failure.reason, failure.detail);
+    else logStickyFault('edit', requestId, failure.reason, failure.detail);
     return Response.json(
-      { requestId, error: { code: 'UNKNOWN_PAIR', message: failure.detail, field: 'worldDoc' } },
+      { requestId, error: { code: 'UNKNOWN_PAIR', message, field: 'worldDoc' } },
       { status: 404 },
     );
-  return Response.json({ requestId, error: { code: failure.reason, message: failure.detail } }, { status: 503 });
+  }
+
+  // Vada korpusu je naopak lepivý stav serveru: jednou nečitelný soubor je
+  // nečitelný napořád a `detail` u `CORPUS_UNREADABLE` nese absolutní cestu na
+  // disku včetně jména účtu. Jeden řádek za vadu, ne za požadavek.
+  logStickyFault('edit', requestId, failure.reason, failure.detail);
+  return Response.json({ requestId, error: { code: failure.reason, message } }, { status: 503 });
 }
 
 function parseBaseRevision(value: unknown): BaseRevision | null {
@@ -109,23 +221,67 @@ export async function POST(request: Request): Promise<Response> {
   const requestId = randomUUID();
 
   return withRequest(requestId, async () => {
-    const raw = await readBody(request);
-    if (!raw.ok)
-      return raw.reason === 'TOO_LARGE'
-        ? Response.json(
-            {
-              requestId,
-              error: { code: 'PAYLOAD_TOO_LARGE', message: `request body exceeds ${MAX_BODY_BYTES} bytes` },
-            },
-            { status: 413 },
-          )
-        : Response.json(
-            {
-              requestId,
-              error: { code: 'BODY_TIMEOUT', message: `request body did not arrive within ${BODY_DEADLINE_MS} ms` },
-            },
-            { status: 408 },
-          );
+    /**
+     * **Vypínač je první brána, před čtením těla** — týž vzor jako
+     * u worldstreamových dveří. Vypnuté dveře nesmí stát víc než jeden
+     * `readFileSync` nad souborem o pár řádcích.
+     *
+     * Čte se `replay`, ne `sessions`: tyhle dveře nic neplatí (přehrávají
+     * zmrazený korpus), takže je **rozbitý** ovládací soubor nechává běžet
+     * ze stejného důvodu jako snapshoty. Vypne je jedině výslovné
+     * `off: ["all"]`, tedy „vypni provoz" — a to na ně dosáhnout musí, protože
+     * jeden požadavek stojí medián 15,3 ms synchronního CPU na smyčce a bez
+     * tohohle řádku byl jediným zastavením redeploy.
+     */
+    if ((await killState(process.env)).replay) {
+      logRateLimited('edit', requestId, 'REPLAY_DISABLED', 'kill switch: all');
+      return Response.json(
+        {
+          requestId,
+          error: { code: 'REPLAY_DISABLED', message: 'editing worlds is switched off right now' },
+        },
+        { status: 503 },
+      );
+    }
+
+    /**
+     * **Strop na frekvenci je druhá brána, pořád před čtením těla.** Je to ta
+     * mez, kterou naměřená vada téhle route doopravdy potřebuje: 15,3 ms CPU
+     * na požadavek znamená, že ~66 požadavků za sekundu zastaví instanci, a
+     * fronta čtení těla na to nesáhne — kdo posílá celá těla, ji nikdy
+     * nenaplní. Odůvodnění čísel i toho, proč je mez na proces, je
+     * v `src/server/rate-limit.ts`.
+     */
+    const slot = takeRateSlot('edit', trustedCallerKey(request) ?? callerKey(request));
+    if (!slot.allowed) {
+      logRateLimited('edit', requestId, rateLimitCode(slot), `${String(slot.count)} in window`);
+      return rateLimitedResponse(requestId, slot);
+    }
+
+    /**
+     * **Čtení těla je uvnitř `try`, a je to jediný důvod, proč tenhle handler
+     * odpoví vždycky.** `readBody()` vrací svoje meze jako hodnotu, ale samo
+     * `reader.read()` se odmítnout může — přerušené spojení, vadná komprese —
+     * a odpověď by pak složil Next.js: pětistovka bez `requestId`, tedy jediný
+     * požadavek v provozu, který se nedá spárovat s řádkem v logu. Naměřeno
+     * nezávislou revizí 1. 9. 2026, týž vzor jako v `/api/generate`.
+     */
+    let raw;
+    try {
+      raw = await readBody(request);
+    } catch (thrown) {
+      logRateLimited(
+        'edit',
+        requestId,
+        'BODY_UNREADABLE',
+        thrown instanceof Error ? thrown.message : String(thrown),
+      );
+      return badRequest(requestId, 'BODY_UNREADABLE', 'the request body could not be read');
+    }
+    // Kódy i hlášky jsou beze změny; přibyl třetí důvod (`BUSY`, tedy plná
+    // fronta čtení) a překlad se přestěhoval k mezi do `src/http/body.ts`,
+    // aby ho čtvery dveře nedržely čtyřikrát.
+    if (!raw.ok) return bodyRefusalResponse(requestId, raw);
 
     let body: unknown;
     try {

@@ -1,0 +1,330 @@
+/**
+ * Klient meshovacího workeru — hlavní vlákno si tudy objednává tvary.
+ *
+ * ## Jeden worker, fronta, žádná souběžnost
+ *
+ * Tvary chodí po jednom. Dva workery by běžely paralelně a hotový mesh by
+ * dorazil dřív, jenže **pořadí je vlastnost produktu**: `priority` v programu
+ * říká, co má porotce vidět první. Fronta, která se řídí prioritou, je proto
+ * víc než propustnost — a druhé jádro stejně potřebuje prohlížeč na kreslení.
+ *
+ * ## Proč se na hlavní vlákno nikdy neuteče samo
+ *
+ * `createMeshClient()` bez workeru **selže**, místo aby tiše počítalo tady.
+ * Tichý ústup je ta nejdražší varianta ze všech: v testu i na vývojářském
+ * stroji všechno funguje, a na porotcově notebooku scéna zamrzne na dvě
+ * sekundy bez jediné stopy v logu. Kdo tenhle ústup chce, řekne si o něj
+ * `allowMainThread` a ví, co dělá.
+ */
+
+import { handleMeshJob, type MeshJobRequest, type MeshJobResponse } from './mesh-worker';
+import type { Bounds3, ShapeProgram } from './types';
+
+/**
+ * To, co si o tvar říká zbytek produktu. `jobId` doplní klient.
+ *
+ * Program je tu **celý**, ne trojice `nodes` / `root` / `shapeId`. Ořezaný
+ * `Pick` vypadal skromněji, ale bránu ve workeru zúžil na to, co mu zbylo:
+ * `targetBounds`, `anchors` ani rozpočty by neměla nad čím soudit. Oba dnešní
+ * volající celý program stejně mají.
+ */
+export interface MeshOrder {
+  readonly program: ShapeProgram;
+  readonly sessionSeed: number;
+  readonly resolution: number;
+  /**
+   * Kvádr zadání **syrový**. Objednávka říká, kam tvar patří; rezervu jedné
+   * buňky si k tomu přidá worker (`paddedBounds` v `handleMeshJob`), aby
+   * tvar napsaný přes svůj vlastní obal nezmizel. Přidat ji i tady znamená
+   * nafouknout kvádr dvakrát.
+   */
+  readonly bounds: Bounds3;
+}
+
+/**
+ * Odmítnutí na **rozpočtu příčky** (`MeshJobFailure.overBudget`), tedy na
+ * trojúhelnících nebo na čase.
+ *
+ * Je to vlastní třída, a ne jen jiná věta, protože se na ni reaguje: proxy
+ * tvar přemeshuje na hrubší mřížce (`COARSER_GRIDS`), místo aby objekt spadl
+ * na krabici. Odlišit ji podle textu hlášky by znamenalo, že přepsaná hláška
+ * tu reakci tiše vypne — a hláška je psaná pro porotce, takže se přepisovat
+ * bude. Prázdný mesh má vlastní třídu `MeshEmptyError` níž, protože se na něj
+ * od `T14r-boundspad` reaguje taky; vadné zadání a brána programu zůstávají
+ * obyčejný `Error`, protože ty na mřížce nezávisejí.
+ */
+export class MeshBudgetError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'MeshBudgetError';
+  }
+}
+
+/**
+ * Odmítnutí na **prázdném meshi** (`MeshJobFailure.emptyMesh`), tedy na tom,
+ * že v objednaném kvádru i s rezervou workeru žádný povrch nebyl.
+ *
+ * Vlastní třída ze stejného důvodu jako `MeshBudgetError`: proxy na ni reaguje
+ * sestupem o příčku níž. **Není to opakování téhož výpočtu** — rezervu si
+ * přidává worker jako `1/resolution` kvádru, takže hrubší příčka rezervuje
+ * víc (24³ dá 4,17 % proti 3,13 % na 32³) a tvar, který svou krabici přeteče
+ * o kousek víc než jednu buňku, se do ní na hrubší příčce vejde.
+ *
+ * Odlišit ji podle textu hlášky by znamenalo, že přepsaná hláška tu reakci
+ * tiše vypne — hláška je psaná pro porotce, takže se přepisovat bude.
+ * Ostatní odmítnutí (vadné zadání, brána programu) zůstávají obyčejný
+ * `Error`: opakovat je nemá co změnit, protože na mřížce nezávisejí.
+ */
+export class MeshEmptyError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'MeshEmptyError';
+  }
+}
+
+export interface MeshResult {
+  /** elapsedMs still describes the original computation when this is true. */
+  readonly cacheHit?: boolean;
+  readonly shapeId: string;
+  readonly positions: Float32Array;
+  readonly normals: Float32Array;
+  readonly indices: Uint32Array;
+  readonly vertexCount: number;
+  readonly triangleCount: number;
+  readonly bounds: Bounds3;
+  readonly elapsedMs: number;
+}
+
+/** Minimum, které klient od workeru potřebuje. Test sem dosadí atrapu. */
+export interface MeshWorkerLike {
+  postMessage(message: MeshJobRequest): void;
+  terminate(): void;
+  onmessage: ((event: { data: MeshJobResponse }) => void) | null;
+  onerror: ((event: unknown) => void) | null;
+  /** Property fallback for injected doubles without EventTarget support. */
+  onmessageerror?: ((event: unknown) => void) | null;
+  /** Some browsers support the event without an onmessageerror IDL property. */
+  addEventListener?(type: 'messageerror', listener: (event: unknown) => void): void;
+}
+
+export interface MeshClientOptions {
+  /** Bound obsolete work; default permits at most 64 queued/running jobs. */
+  readonly maxPending?: number;
+  /**
+   * Jak se worker vyrábí. Výchozí je `new Worker(new URL('./mesh-worker.ts', …))`,
+   * což je zápis, kterému rozumí bundler a sám ten soubor zabalí.
+   */
+  readonly createWorker?: () => MeshWorkerLike;
+  /** Povolit počítání na hlavním vlákně, když worker není. Výchozí `false`. */
+  readonly allowMainThread?: boolean;
+  /**
+   * Měřit bez rozpočtu. Výchozí `false`, tedy rozpočet platí.
+   *
+   * Je to volba **celého klienta**, ne jedné objednávky, a schválně: klient
+   * s tímhle přepínačem má `/dev/mesh-budget` a nikdo jiný. Kdyby to bylo
+   * pole `MeshOrder`, mohla by si o něj říct jedna objednávka kdekoli
+   * v produktu — a rozpočet by se dal obejít omylem, ne rozhodnutím.
+   *
+   * **Nevypíná worker.** Práce dál běží mimo hlavní vlákno, takže `elapsedMs`
+   * znamená u souzených i nesouzených řádků reportu totéž. Ústup na hlavní
+   * vlákno je jiná volba s jiným jménem (`allowMainThread`) a ta dvě se
+   * nesmějí zaměnit: měření mimo worker by dva sloupce reportu tiše rozešlo.
+   */
+  readonly unbudgeted?: boolean;
+}
+
+export interface MeshClient {
+  /** Objedná tvar. Slib se splní hotovým meshem nebo odmítne s důvodem. */
+  mesh(order: MeshOrder, signal?: AbortSignal): Promise<MeshResult>;
+  /** Kolik prací čeká ve frontě včetně té běžící. */
+  readonly pending: number;
+  /** Zavře worker. Nedoběhlé práce se odmítnou. */
+  dispose(): void;
+}
+
+function defaultWorkerFactory(): MeshWorkerLike {
+  // `new URL(..., import.meta.url)` je zápis, který webpack i turbopack poznají
+  // a worker z něj zabalí. Řetězcová cesta by se nezabalila a v produkci by
+  // vrátila 404 — bez chyby v konzoli, protože worker mlčí.
+  return new Worker(new URL('./mesh-worker.ts', import.meta.url), {
+    type: 'module',
+  }) as unknown as MeshWorkerLike;
+}
+
+interface QueueEntry {
+  readonly request: MeshJobRequest;
+  readonly shapeId: string;
+  readonly resolve: (result: MeshResult) => void;
+  readonly reject: (error: Error) => void;
+}
+
+export function createMeshClient(options: MeshClientOptions = {}): MeshClient {
+  const maxPending = options.maxPending ?? 64;
+  if (!Number.isSafeInteger(maxPending) || maxPending < 1 || maxPending > 256) throw new Error('invalid mesh queue limit');
+  const factory = options.createWorker ?? defaultWorkerFactory;
+  const queue: QueueEntry[] = [];
+  let running: QueueEntry | null = null;
+  let worker: MeshWorkerLike | null = null;
+  let disposed = false;
+  let nextJobId = 0;
+
+  function failWorker(created: MeshWorkerLike, event: unknown, fallback: string): void {
+    if (worker !== created) return;
+    // A deserialization failure is a transport failure too: no job response
+    // will settle the running promise, so restart before pumping queued work.
+    const message = event instanceof Error ? event.message : fallback;
+    const failed = running;
+    running = null;
+    worker = null;
+    created.terminate();
+    failed?.reject(new Error(message));
+    pump();
+  }
+
+  function ensureWorker(): MeshWorkerLike | null {
+    if (worker !== null) return worker;
+    if (typeof Worker === 'undefined' && options.createWorker === undefined) return null;
+
+    const created = factory();
+    worker = created;
+    created.onmessage = (event) => { if (worker === created) finish(event.data); };
+    created.onerror = (event) => failWorker(created, event, 'mesh worker failed');
+    const messageError = (event: unknown) => failWorker(created, event, 'mesh worker response could not be deserialized');
+    // Chromium can expose messageerror only through EventTarget: assigning an
+    // unsupported onmessageerror property merely creates an inert expando.
+    if (created.addEventListener) created.addEventListener('messageerror', messageError);
+    else created.onmessageerror = messageError;
+    return worker;
+  }
+
+  function finish(response: MeshJobResponse): void {
+    const entry = running;
+    if (entry === null || entry.request.jobId !== response.jobId) {
+      // Odpověď na práci, o kterou už nikdo nestojí — po `dispose()` nebo po
+      // pádu workeru. Zahodit ji je správně; splnit cizí slib by nebylo.
+      return;
+    }
+    running = null;
+
+    if (response.ok) {
+      entry.resolve({
+        shapeId: entry.shapeId,
+        positions: response.positions,
+        normals: response.normals,
+        indices: response.indices,
+        vertexCount: response.vertexCount,
+        triangleCount: response.triangleCount,
+        bounds: response.bounds,
+        elapsedMs: response.elapsedMs,
+      });
+    } else {
+      entry.reject(
+        response.overBudget === true
+          ? new MeshBudgetError(response.error)
+          : response.emptyMesh === true
+            ? new MeshEmptyError(response.error)
+            : new Error(response.error),
+      );
+    }
+    pump();
+  }
+
+  function pump(): void {
+    if (disposed || running !== null) return;
+    const next = queue.shift();
+    if (next === undefined) return;
+
+    running = next;
+    let active: MeshWorkerLike | null;
+    try {
+      active = ensureWorker();
+      if (active !== null) {
+        active.postMessage(next.request);
+        return;
+      }
+    } catch (error) {
+      // Construction and structured-clone errors are synchronous. They must
+      // release the same queue slot as an asynchronous worker failure.
+      running = null;
+      const retired = worker;
+      worker = null;
+      retired?.terminate();
+      next.reject(error instanceof Error ? error : new Error(String(error)));
+      pump();
+      return;
+    }
+
+    if (!options.allowMainThread) {
+      running = null;
+      next.reject(
+        new Error(
+          'mesh worker unavailable: pass allowMainThread to accept a frozen frame instead',
+        ),
+      );
+      pump();
+      return;
+    }
+
+    // Vědomý ústup. Je synchronní, takže hlavní vlákno stojí — a právě proto
+    // se sem nedá dostat omylem.
+    finish(handleMeshJob(next.request).response);
+  }
+
+  return {
+    mesh(order: MeshOrder, signal?: AbortSignal): Promise<MeshResult> {
+      if (disposed) return Promise.reject(new Error('mesh client is disposed'));
+      if (signal?.aborted) return Promise.reject(new DOMException('Mesh request cancelled', 'AbortError'));
+      if (queue.length + (running === null ? 0 : 1) >= maxPending) return Promise.reject(new Error('mesh queue is full'));
+      nextJobId += 1;
+      const request: MeshJobRequest = {
+        jobId: `mesh-${nextJobId}`,
+        program: order.program,
+        sessionSeed: order.sessionSeed,
+        resolution: order.resolution,
+        bounds: order.bounds,
+        // Vždycky vypsané, i když je `false`: pak se dá na jedné odchycené
+        // zprávě přečíst, co si klient o rozpočtu myslí, místo aby se to
+        // muselo dovozovat z chybějícího pole.
+        unbudgeted: options.unbudgeted === true,
+      };
+      return new Promise<MeshResult>((resolve, reject) => {
+        const cleanup = () => signal?.removeEventListener('abort', abort);
+        const entry: QueueEntry = { request, shapeId: order.program.shapeId,
+          resolve: result => { cleanup(); resolve(result); }, reject: error => { cleanup(); reject(error); } };
+        const abort = () => {
+          if (running === entry) {
+            const retired = worker;
+            worker = null; running = null;
+            retired?.terminate();
+          } else {
+            const index = queue.indexOf(entry);
+            if (index < 0) return;
+            queue.splice(index, 1);
+          }
+          entry.reject(new DOMException('Mesh request cancelled', 'AbortError'));
+          pump();
+        };
+        signal?.addEventListener('abort', abort, { once: true });
+        queue.push(entry);
+        pump();
+      });
+    },
+
+    get pending(): number {
+      return queue.length + (running === null ? 0 : 1);
+    },
+
+    dispose(): void {
+      disposed = true;
+      const retired = worker;
+      worker = null;
+      const stopped = running;
+      running = null;
+      retired?.terminate();
+      stopped?.reject(new Error('mesh client is disposed'));
+      while (queue.length > 0) {
+        queue.shift()?.reject(new Error('mesh client is disposed'));
+      }
+    },
+  };
+}

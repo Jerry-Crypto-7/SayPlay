@@ -7,11 +7,21 @@
  * v žádném jiném testu neprojeví.
  */
 
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { withoutCredentials } from '../../../../server/public-faults';
+import {
+  MAX_REQUESTS_PER_WINDOW,
+  RATE_WINDOW_MS,
+  resetRateWindows,
+  takeRateSlot,
+} from '../../../../server/rate-limit';
+import { resetProcessSpendCap } from '../../../../server/spend-cap';
 
 import { frozenPrompts } from '../../../../model/client';
 
@@ -25,6 +35,20 @@ const temporary: string[] = [];
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
+  // **Nutné od 1. 9. 2026, kdy sem přibyl podvržený `process.cwd()`.** Bez
+  // toho by špionáž na `cwd` přežila do dalších testů a ty by běžely nad
+  // dočasným adresářem místo nad repozitářem — zelené z úplně jiného důvodu.
+  vi.restoreAllMocks();
+  // **Strop procesu taky, a od P15 T29 nutně.** Bydlí na `globalThis`, takže
+  // `resetModules()` ho nezahodí a další test by začínal s cizím zůstatkem.
+  // Statický import stačí i po resetu modulů: maže se klíč na `globalThis`,
+  // který je pro všechny instance toho modulu jeden.
+  resetProcessSpendCap();
+  // **Okna stropu frekvence taky, a ze stejného důvodu.** Bydlí na
+  // `globalThis` a plní je i odmítnuté požadavky, takže bez tohohle by sada
+  // přes padesát případů mez naplnila sama a červená by vyskočila na náhodném
+  // případu, který s frekvencí nemá nic společného.
+  resetRateWindows();
   vi.resetModules();
   for (const dir of temporary.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
@@ -33,8 +57,23 @@ interface ResponseBody {
   readonly requestId: string;
   readonly branch?: string;
   readonly emission?: unknown;
+  /** Zůstat MÁ: počet tokenů je vlastnost volání, ne ceníku. */
+  readonly usage?: { readonly inputTokens: number; readonly outputTokens: number };
+  /** Zmizet MÁ: druhá polovina dvojice, ze které jde ceník dopočítat. */
   readonly costUsd?: number;
+  readonly provenance?: Record<string, string | boolean>;
   readonly error?: { readonly code: string; readonly message: string; readonly category?: string };
+}
+
+/** Všechna jména klíčů v odpovědi, do libovolné hloubky. */
+function keysDeep(value: unknown, into: string[] = []): string[] {
+  if (Array.isArray(value)) for (const item of value) keysDeep(item, into);
+  else if (value !== null && typeof value === 'object')
+    for (const [key, inner] of Object.entries(value)) {
+      into.push(key);
+      keysDeep(inner, into);
+    }
+  return into;
 }
 
 /**
@@ -44,12 +83,20 @@ interface ResponseBody {
  * prostředí — a **jedno načtení je jedna instance stropu**. Test, který chce
  * ověřit hromadění útraty přes víc požadavků, proto volá `POST` z jednoho
  * načtení opakovaně, ne `post()` dvakrát.
+ *
+ * ⚠ **Od P15 T29 to `vi.resetModules()` samo nezařídí.** Strop bydlí na
+ * `globalThis`, ne v modulové proměnné, právě proto, aby přežil druhý graf
+ * modulů — a přežije tím pádem i reset v testu. Bez `resetProcessSpendCap()`
+ * by si druhé načtení v témže souboru odneslo zůstatek prvního a testy by
+ * padaly v pořadí, ve kterém běží. Tuhle vlastnost (jeden strop napříč
+ * načteními) měří schválně vlastní test níž, ne tenhle pomocník.
  */
 async function loadRoute(env: Record<string, string> = {}) {
   // Každé načtení začíná od čistého prostředí, jinak by druhé v jednom testu
   // zdědilo nastavení prvního a tvrdilo něco jiného, než co se měří.
   vi.unstubAllEnvs();
   for (const [key, value] of Object.entries(env)) vi.stubEnv(key, value);
+  resetProcessSpendCap();
   vi.resetModules();
   const { POST } = await import('../route');
   return async (body: string) => {
@@ -70,13 +117,98 @@ function controlFile(contents: string): string {
   return path;
 }
 
+/* ------------------------------------------------------------------ *
+ * Korpus, který je celý v pořádku a jednu odpověď přesto nemá.
+ * ------------------------------------------------------------------ */
+
+const GAP_PROMPT = 'a room whose frozen answer went missing';
+const GAP_ID = 'gap-create-1';
+
+/**
+ * Postaví ve **dočasném** adresáři zmrazený korpus, který projde všemi
+ * kontrolami — hash souboru proti `MANIFEST.lock` i tvar záznamů — a přitom
+ * v `responses/index.jsonl` odpověď na `GAP_ID` nemá.
+ *
+ * Nesahá se tím na `evals/frozen/`: `FROZEN_DIR` vzniká z `process.cwd()` při
+ * načtení modulu, takže stačí podvrhnout `cwd` a shodit cache modulů. Je to týž
+ * postup jako v `src/server/__tests__/public-faults.test.ts`, jen tam je
+ * adresář prázdný a tady je korpus platný a neúplný — což je přesně ten rozdíl,
+ * který se měří.
+ */
+function corpusWithoutOneAnswer(
+  fault: 'missing' | 'tampered' | 'unreadable' = 'missing',
+): { readonly log: string[] } {
+  const dir = mkdtempSync(join(tmpdir(), 'worldsmith-gap-'));
+  temporary.push(dir);
+  const frozen = join(dir, 'evals', 'frozen');
+  mkdirSync(join(frozen, 'responses'), { recursive: true });
+
+  // Protokol se opisuje ze skutečného korpusu, protože z něj `frozenGrammar()`
+  // skládá slovník a routa se bez něj k větvi vůbec nedostane.
+  const protocol = readFileSync('evals/frozen/protocol.v1.json', 'utf8').replace(/\r\n/g, '\n');
+  const prompts = `${JSON.stringify({ id: GAP_ID, kind: 'create', prompt: GAP_PROMPT })}\n`;
+
+  // Soubor odpovědí existuje a hashuje se správně; rozbitá je jen odpověď na
+  // `GAP_ID`, a to dvěma způsoby, které se soudí oba. Prázdný soubor by se
+  // choval jako nečitelný korpus, což je vada, kterou už měří jiná sada.
+  const other = { branch: 'create', forPrompt: 'some-other-prompt', synthetic: true, body: { emitted: true } };
+  const lines = [
+    JSON.stringify({
+      ...other,
+      sha256: createHash('sha256').update(JSON.stringify(other.body)).digest('hex'),
+    }),
+  ];
+  // `tampered`: záznam **je** na místě, jen se rozešel s vlastním otiskem —
+  // podvržená odpověď, ne chybějící. Zvenku to musí být totéž.
+  if (fault === 'tampered')
+    lines.push(
+      JSON.stringify({
+        branch: 'create',
+        forPrompt: GAP_ID,
+        synthetic: true,
+        body: { emitted: true },
+        sha256: '0'.repeat(64),
+      }),
+    );
+  const responses = `${lines.join('\n')}\n`;
+
+  const files: Record<string, string> = {
+    'protocol.v1.json': protocol,
+    'prompts.v1.jsonl': prompts,
+    // `unreadable`: soubor odpovědí **není**, zbytek korpusu je v pořádku.
+    // Je to jediná cesta, jak se dostat k `UPSTREAM_UNAVAILABLE` z větve
+    // zdarma: slovník i seznam promptů projdou, takže routa dojde až do
+    // generování, a teprve tam se čtení souboru odpovědí rozbije. Prázdný
+    // adresář by ji zastavil dřív, u `frozenGrammar()`.
+    ...(fault === 'unreadable' ? {} : { 'responses/index.jsonl': responses }),
+  };
+  const manifest: Record<string, string> = {};
+  for (const [relative, contents] of Object.entries(files)) {
+    writeFileSync(join(frozen, relative), contents, 'utf8');
+    manifest[relative] = createHash('sha256').update(Buffer.from(contents, 'utf8')).digest('hex');
+  }
+  writeFileSync(join(frozen, 'MANIFEST.lock'), JSON.stringify({ files: manifest }), 'utf8');
+
+  vi.spyOn(process, 'cwd').mockReturnValue(dir);
+  const log: string[] = [];
+  vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+    log.push(String(line));
+  });
+  vi.resetModules();
+  return { log };
+}
+
 describe('POST /api/generate', () => {
   it('vydá emisi z offline větve, když prostředí neříká jinak', async () => {
     const { status, json } = await post(JSON.stringify({ prompt: FROZEN_CREATE.prompt }));
     expect(status).toBe(200);
     expect(json.branch).toBe('mock');
     expect(typeof json.emission).toBe('object');
-    expect(json.costUsd).toBe(0);
+    // Že offline větev nic nestojí, se od 1. 9. 2026 nesoudí přes `costUsd` —
+    // ten se ven neposílá vůbec (viz blok o ceníku dole). Tvrzení zůstalo,
+    // jen ho nese spotřeba, a ta je u zmrazené odpovědi nulová.
+    expect(json.usage).toEqual({ inputTokens: 0, outputTokens: 0 });
+    expect(json.costUsd).toBeUndefined();
   });
 
   it('prompt mimo zmrazený korpus je 404, ne chyba serveru', async () => {
@@ -151,7 +283,7 @@ describe('POST /api/generate', () => {
         WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
         WORLDSMITH_MODEL_KEY: 'test-key',
         WORLDSMITH_USD_PER_MTOK_OUT: '15',
-        WORLDSMITH_SPEND_CAP_FILE: path,
+        WORLDSMITH_CONTROL_FILE: path,
       });
 
       expect(status).toBe(503);
@@ -223,7 +355,7 @@ describe('POST /api/generate', () => {
 
   it('rozbitý vypínač je 503, ne tichý průchod bez stropu', async () => {
     const { status, json } = await post(JSON.stringify({ prompt: FROZEN_CREATE.prompt }), {
-      WORLDSMITH_SPEND_CAP_FILE: controlFile('{ rozbito'),
+      WORLDSMITH_CONTROL_FILE: controlFile('{ rozbito'),
     });
     expect(status).toBe(503);
     expect(json.error?.code).toBe('CONTROL_UNREADABLE');
@@ -240,11 +372,1266 @@ describe('POST /api/generate', () => {
     expect(offline.status).toBe(200);
   });
 
+  /**
+   * **Naměřeno nezávislou revizí 1. 9. 2026: 250 požadavků = 250 řádků.**
+   * `BRANCH_UNCONFIGURED` mělo v tabulce `always`, jenže tady se nikam nevolá,
+   * cena je nula a `SpendCap` nulové rezervace do počtu volání nepočítá —
+   * strop, o který se ten řádek opíral, se tedy nikdy nezapojil. Spouštěč je
+   * překlep operátora v klíči: nasazené demo pak píše řádek na každý požadavek
+   * porotce.
+   */
+  it('živá větev bez konfigurace napíše operátorovi jednou, ne na každý požadavek', async () => {
+    const logged: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+      logged.push(String(line));
+    });
+
+    // Jedno načtení, dvacet požadavků — bound je stav procesu, takže druhé
+    // načtení by ho zahodilo a test by měřil jenom sám sebe.
+    const call = await loadRoute({ WORLDSMITH_BRANCH: 'live' });
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const { status } = await call(JSON.stringify({ prompt: FROZEN_CREATE.prompt }));
+      expect(status).toBe(503);
+    }
+
+    expect(
+      logged.filter((line) => line.includes('BRANCH_UNCONFIGURED')),
+      '20 požadavků na nenakonfigurovanou větev napsalo víc než jeden řádek',
+    ).toHaveLength(1);
+  });
+
   it('každá odpověď nese korelační ID', async () => {
     const ok = await post(JSON.stringify({ prompt: FROZEN_CREATE.prompt }));
     const bad = await post(JSON.stringify({ prompt: '' }));
     expect(typeof ok.json.requestId).toBe('string');
     expect(typeof bad.json.requestId).toBe('string');
     expect(ok.json.requestId).not.toBe(bad.json.requestId);
+  });
+
+  /**
+   * Adresa v odpovědi vypadá jako poctivá diagnostika a čte se úplně stejně
+   * dobře jako věta bez ní — proto se to soudí strojově, ne okem. Spouštěč je
+   * dosažitelný **bez útočníka**: adresa bez schématu je běžný překlep při
+   * kopírování z `.env.example` a `fetch` z ní složí
+   * `Failed to parse URL from <celá adresa včetně query>`.
+   */
+  it('selhání generování neposílá ven nakonfigurovanou adresu', async () => {
+    const endpoint = 'upstream.invalid/v1/messages?tenant=acme-worldsmith';
+    const logged: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+      logged.push(String(line));
+    });
+
+    const { status, json } = await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+      WORLDSMITH_BRANCH: 'live',
+      WORLDSMITH_MODEL_ENDPOINT: endpoint,
+      WORLDSMITH_MODEL_KEY: 'test-key',
+      WORLDSMITH_USD_PER_MTOK_OUT: '15',
+    });
+
+    expect(status).toBe(502);
+    expect(json.error?.code).toBe('UPSTREAM_UNAVAILABLE');
+
+    const message = String(json.error?.message);
+    expect(message).not.toContain(endpoint);
+    // Ne jen celá adresa: kterýkoli devítiznakový kus z ní stačí, aby se
+    // hostitel nebo tenant dal poskládat zpátky.
+    for (let at = 0; at + 9 <= endpoint.length; at += 1)
+      expect(message, `ven odešel kus adresy „${endpoint.slice(at, at + 9)}"`).not.toContain(
+        endpoint.slice(at, at + 9),
+      );
+
+    // Druhá půlka téhož: ořezat ven se smí jen tak, aby to operátor pořád
+    // našel. Kanál je stderr procesu, který vidí jen ten, kdo server provozuje.
+    expect(logged.join('\n')).toContain(endpoint);
+    expect(logged.join('\n')).toContain(String(json.requestId));
+  });
+
+  it('ani operátorův log nenese heslo z adresy', async () => {
+    // „Operátorův stderr" je na cílové platformě runtime log viditelný celému
+    // projektu a všem odtokům — nález nezávislé revize 31. 8. 2026. Adresa se
+    // do něj píše dál, protože bez ní ten řádek nic nediagnostikuje; heslo ne.
+    const logged: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+      logged.push(String(line));
+    });
+
+    await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+      WORLDSMITH_BRANCH: 'live',
+      WORLDSMITH_MODEL_ENDPOINT: 'operator:hunter2@upstream.invalid/v1/messages',
+      WORLDSMITH_MODEL_KEY: 'test-key',
+      WORLDSMITH_USD_PER_MTOK_OUT: '15',
+    });
+
+    expect(logged.join('\n'), 'do logu odešlo heslo').not.toContain('hunter2');
+
+    // Že hostitel v logu naopak **zůstat má**, drží test nad adresou bez
+    // schématu výš. Tady ho `fetch` do hlášky nedá vůbec (vrací holé „fetch
+    // failed"), takže by se tu nedalo měřit — naměřeno, ne odhadnuto.
+    expect(withoutCredentials('at https://operator:hunter2@upstream.invalid/v1')).toBe(
+      'at https://<credentials>@upstream.invalid/v1',
+    );
+  });
+
+  /**
+   * Druhý vchod k téže kořisti, a proto vlastní tvrzení.
+   *
+   * `readFrozen()` skládá detail jako „<soubor> is not readable under <cesta>",
+   * kde ta cesta je **absolutní, včetně jména účtu** — přesně to, co si test
+   * o vypínači stropu výš zakazuje posílat ven. Spustit ten stav za běhu by
+   * znamenalo rozbít `evals/frozen/` na disku, což je zmrazená sada a nesahá
+   * se na ni, takže se to soudí **nad zdrojem**: v routě nesmí zůstat místo,
+   * kde `grammar.detail` teče do odpovědi.
+   */
+  it('detail od zmrazeného korpusu nikam do odpovědi neteče', () => {
+    const source = readFileSync(new URL('../route.ts', import.meta.url), 'utf8');
+    const uses = source.match(/grammar\.detail/g) ?? [];
+
+    expect(uses).toHaveLength(1);
+    // Jméno funkce se 1. 9. 2026 změnilo z `logForOperator` na
+    // `logStickyFault`, protože ten zápis od té doby nese bound. Tvrzení je
+    // pořád totéž: jediné užití `grammar.detail` je zápis operátorovi.
+    expect(source).toContain('logStickyFault(requestId, grammar.reason, grammar.detail)');
+    expect(source).toContain('PUBLIC_CORPUS_FAULT[grammar.reason]');
+  });
+
+  /**
+   * **Čtyři nálezy nezávislé revize 31. 8. 2026, uzavřené 1. 9. 2026.** Všechny
+   * čtyři vypadají v jednotkovém běhu zeleně a projeví se až na nasazeném
+   * serveru — proto mají vlastní pin, a proto se každý soudí nad tím, co
+   * doopravdy odešlo (odpověď, nebo řádek na stderr), ne nad zdrojem.
+   */
+  describe('co jde ven a co jde operátorovi', () => {
+    /** Odchytí stderr routy. Vrací pole řádků, do kterého route zapisuje. */
+    function captureOperatorLog(): string[] {
+      const logged: string[] = [];
+      vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+        logged.push(String(line));
+      });
+      return logged;
+    }
+
+    /**
+     * `NO_SOURCE` je u offline větve **normální odpověď**, ne porucha: porotce
+     * má právo zkoušet vlastní věty (`RULES.md` §3.3) a každá mimo zmrazený
+     * korpus sem dojde. Kdyby se logovala, zaplnila by nejběžnější odpověď dema
+     * operátorův log a skutečné `UPSTREAM_*` by se v něm ztratilo přesně ve
+     * chvíli, kdy je někdo hledá.
+     */
+    it('prompt mimo korpus nezapíše operátorovi nic, na rozdíl od skutečné poruchy', async () => {
+      const logged = captureOperatorLog();
+
+      const missing = await post(JSON.stringify({ prompt: 'svět, na který záznam nikdy nebyl' }));
+      expect(missing.status).toBe(404);
+      expect(logged, 'běžná odpověď 404 zapsala operátorovi řádek').toEqual([]);
+
+      // Druhá půlka téhož tvrzení: ticho nesmí být proto, že se neloguje nic.
+      const broken = await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+      });
+      expect(broken.status).toBe(502);
+      expect(logged.join('\n')).toContain(String(broken.json.requestId));
+    });
+
+    /**
+     * **Rozbitý vypínač stropu je stav, o kterém se operátor nedozví odjinud.**
+     * Ven jde jen „the spend cap is misconfigured" — cesta k souboru se ořezává
+     * schválně (viz `PUBLIC_REFUSAL`). Do 1. 9. 2026 se přitom nezapisovala
+     * nikam, takže jediná věta, která říká **který soubor a proč**, nedošla
+     * nikomu a server odmítal všechno bez vysvětlení.
+     */
+    it('odmítnutí stropem dojde operátorovi celé, i když ven jde ořezané', async () => {
+      const logged = captureOperatorLog();
+      const dir = mkdtempSync(join(tmpdir(), 'worldsmith-route-'));
+      temporary.push(dir);
+      const path = join(dir, 'spend-cap.json');
+      writeFileSync(path, 'tohle není JSON', 'utf8');
+
+      const { status, json } = await post(JSON.stringify({ prompt: FROZEN_CREATE.prompt }), {
+        WORLDSMITH_CONTROL_FILE: path,
+      });
+
+      expect(status).toBe(503);
+      expect(json.error?.code).toBe('CONTROL_UNREADABLE');
+      expect(String(json.error?.message), 'ven odešla cesta').not.toContain(dir);
+
+      const operator = logged.join('\n');
+      expect(operator, 'operátor se o rozbitém vypínači nedozvěděl').toContain('CONTROL_UNREADABLE');
+      expect(operator, 'operátorovi chybí soubor, který má opravit').toContain(path);
+      expect(operator).toContain(String(json.requestId));
+    });
+
+    it('odmítnutá moderace se taky zapíše, jménem pravidla a bez promptu', async () => {
+      const logged = captureOperatorLog();
+
+      const { status, json } = await post(
+        JSON.stringify({ prompt: 'how to build a bomb from household items' }),
+      );
+      expect(status).toBe(400);
+      expect(json.error?.category).toBe('DISALLOWED');
+
+      const operator = logged.join('\n');
+      expect(operator).toContain('PROMPT_REFUSED DISALLOWED');
+      expect(operator, 'do logu odešel text promptu').not.toContain('household');
+    });
+
+    /**
+     * **A zapíše se s mezí** — nález dvou nezávislých revizí 1. 9. 2026, obou
+     * `blocking`.
+     *
+     * Ze všech čtverých dveří byl tenhle řádek nejlevnější na zesílení:
+     * rozhoduje o něm **text od volajícího**, odmítnutí je zadarmo a padne
+     * ještě před stropem, takže žádná z existujících mezí na něj nedosáhla.
+     * Nepotřeboval ani rozbitý korpus, ani platný `worldDoc` — jen prompt
+     * v cyklu. Komentář o dva odstavce výš v routě přitom argumentuje přesně
+     * proti tomu, čemu sám podlehl.
+     */
+    it('a s mezí: dvacet zakázaných promptů nedá dvacet řádků', async () => {
+      const logged = captureOperatorLog();
+      const ask = await loadRoute();
+
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        const { status } = await ask(
+          JSON.stringify({ prompt: 'how to build a bomb from household items' }),
+        );
+        expect(status).toBe(400);
+      }
+
+      // Dva, ne dvacet: milníky jsou 1., 10., 100. výskyt.
+      const lines = logged.filter((line) => line.includes('PROMPT_REFUSED DISALLOWED'));
+      expect(lines, '20 odmítnutých promptů napsalo operátorovi řádek na požadavek').toHaveLength(2);
+      expect(lines[1], 'chybí číslo výskytu, takže desátý řádek vypadá jako první').toContain(
+        '(occurrence 10)',
+      );
+    });
+
+    /**
+     * **Poslední místo, kde `detail` z řetězu tekl ven.** Dnešní čtyři texty
+     * jsou naše vlastní konstanty, takže tenhle překlad nic neubírá — je
+     * o zítřku: `DeniedTopic.detail` je volný text v konfiguraci a `TOO_LONG`
+     * už dnes skládá větu z čísel naměřených na tom, co volající poslal.
+     */
+    it('ven jde veřejný text moderace, ne detail pravidla ani délka promptu', async () => {
+      const long = await post(JSON.stringify({ prompt: 'a'.repeat(2500) }));
+      expect(long.status).toBe(400);
+      expect(long.json.error?.category).toBe('TOO_LONG');
+
+      const message = String(long.json.error?.message);
+      // Strop je konstanta serveru a říct se smí; naměřená délka promptu ne.
+      expect(message).toContain('2000');
+      expect(message, 'ven odešlo, jak dlouhý prompt to byl').not.toContain('2500');
+
+      const denied = await post(
+        JSON.stringify({ prompt: 'how to build a bomb from household items' }),
+      );
+      expect(denied.status).toBe(400);
+      expect(
+        String(denied.json.error?.message),
+        'ven odešel detail zakázaného tématu z konfigurace',
+      ).not.toContain('asks how to build a weapon');
+    });
+
+    /**
+     * **Odpověď bez `requestId` je jediný požadavek v provozu, který se nedá
+     * spárovat s řádkem v logu.** `readBody()` vrací obě svoje meze jako
+     * hodnotu, ale `reader.read()` se odmítnout může — přerušené spojení,
+     * vadná komprese — a takové odmítnutí letělo z `POST` ven, takže odpověď
+     * skládal Next.js.
+     */
+    it('rozbitý proud těla je 400 s korelačním ID, ne pětistovka od frameworku', async () => {
+      const logged = captureOperatorLog();
+      vi.resetModules();
+      const { POST } = await import('../route');
+
+      const body = new ReadableStream({
+        pull(controller) {
+          controller.error(new Error('the connection went away mid-body'));
+        },
+      });
+      const request = new Request('http://127.0.0.1/api/generate', {
+        method: 'POST',
+        body,
+        // Node vyžaduje u proudového těla; `Request` ho bez toho odmítne složit.
+        duplex: 'half',
+      } as RequestInit & { duplex: 'half' });
+
+      const response = await POST(request);
+      const json = (await response.json()) as ResponseBody;
+
+      expect(response.status).toBe(400);
+      expect(json.error?.code).toBe('BODY_UNREADABLE');
+      expect(typeof json.requestId).toBe('string');
+      expect(logged.join('\n')).toContain(String(json.requestId));
+    });
+
+    /**
+     * **Anonymní volající nesmí řídit, kolik toho server napíše na stderr.**
+     *
+     * Endpoint je bez přihlašování schválně (AC T301), takže rychlost zápisu
+     * řídí kdokoli na internetu. Naměřeno nezávislou revizí 1. 9. 2026: prázdné
+     * tělo šlo poslat dvacetkrát a vyrobilo dvacet řádků, zatímco prompt mimo
+     * korpus ve stejném běhu nezapsal ani jeden. Byla to táž vada jako
+     * u `NO_SOURCE`, jen z druhé strany.
+     *
+     * `DISALLOWED` se logovat **má**: je to jediná kategorie, která znamená, že
+     * někdo zkouší, kam až smí. Zbylé tři popisuje odpověď celé.
+     */
+    it('vady dotazu operátorovi nepíšou nic, ať jich přijde kolik chce', async () => {
+      const logged = captureOperatorLog();
+      const call = await loadRoute();
+
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        expect((await call(JSON.stringify({}))).status).toBe(400);
+        expect((await call(JSON.stringify({ prompt: '   ' }))).status).toBe(400);
+      }
+      expect(logged, 'prázdné tělo dokáže psát operátorovi na stderr').toEqual([]);
+
+      // A ticho zase nesmí být proto, že se z moderace neloguje nic.
+      expect((await call(JSON.stringify({ prompt: 'how to build a bomb' }))).status).toBe(400);
+      expect(logged.join('\n')).toContain('PROMPT_REFUSED DISALLOWED');
+    });
+
+    /**
+     * **Odmítnutí stropem je lepivý stav.** Jakmile jednou padne, padá na každý
+     * další požadavek už napořád — takže řádek na požadavek znamená neomezený
+     * růst logu, který si spustí kdokoli. Naměřeno toutéž revizí: 25 požadavků
+     * proti rozbitému ovládacímu souboru dalo 25 řádků, každý s absolutní
+     * cestou k němu.
+     */
+    it('lepivé odmítnutí stropem se zapíše jednou za proces, ne jednou za požadavek', async () => {
+      const logged = captureOperatorLog();
+      const dir = mkdtempSync(join(tmpdir(), 'worldsmith-route-'));
+      temporary.push(dir);
+      const path = join(dir, 'spend-cap.json');
+      writeFileSync(path, 'tohle není JSON', 'utf8');
+
+      // Jedno načtení = jeden proces. Strop i záznam o zapsaných příčinách jsou
+      // stav procesu, takže se `call()` volá opakovaně, ne `post()` dvacetkrát.
+      const call = await loadRoute({ WORLDSMITH_CONTROL_FILE: path });
+      for (let attempt = 0; attempt < 25; attempt += 1)
+        expect((await call(JSON.stringify({ prompt: FROZEN_CREATE.prompt }))).status).toBe(503);
+
+      const lines = logged.filter((line) => line.includes('CONTROL_UNREADABLE'));
+      expect(lines, '25 požadavků napsalo operátorovi víc než jeden řádek').toHaveLength(1);
+      // První výskyt musí nést všechno, protože druhý nebude.
+      expect(lines[0]).toContain(path);
+    });
+
+    /**
+     * **Úspěšná odpověď vypadá jako poctivá auditovatelnost a je to únik
+     * nastavení** — nález nezávislé revize 31. 8. 2026.
+     *
+     * Dvě věci naráz, každá jinou cestou. `provenance.model` je doslova hodnota
+     * `WORLDSMITH_MODEL` tohohle nasazení. A `usage` s `costUsd` jsou **dvě
+     * rovnice o dvou neznámých**: `costUsd()` je lineární a její tvar je
+     * veřejný, takže dva prompty s různým poměrem vstupu a výstupu vydají
+     * `usdPerMTokIn` i `usdPerMTokOut` přesně.
+     *
+     * Soudí se to **nad celým tělem, ne nad jedním klíčem**: jméno modelu se
+     * hledá jako řetězec kdekoli v odpovědi a `costUsd` jako jméno klíče do
+     * libovolné hloubky. Přesunout tutéž hodnotu o patro jinam je totiž přesně
+     * to, co by opravu obešlo, aniž by se kterýkoli test ozval.
+     */
+    /**
+     * **Číslo, které jde ven, není účtenka poskytovatele** — nález nezávislé
+     * revize 1. 9. 2026 (`T9-usagereport`, LOW). Routa to pole odůvodňovala
+     * jako poctivou vlastnost volání, jenže `readableUsage()` podhlášený výstup
+     * zvedne na hranici odvozenou z délky textu. Rozhodnutí bylo přepsat popis,
+     * ne rozdělit pole: publikovat účtenku, kterou si server odmítl nechat pro
+     * účet, je horší odpověď než popsat, co to číslo je.
+     *
+     * Testuje se to obojí naráz, protože ani jedna půlka sama nestačí. Chování
+     * ukazuje, že se číslo dopočítává; lexikální aserce hlídá, že to routa
+     * nepopisuje jinak — a to je celý ten nález, protože vada nebyla v čísle.
+     */
+    it('hlášená spotřeba je účetní základ, a routa to tak i popisuje', async () => {
+      // 3000 znaků textu dá hranici 250 výstupních tokenů (dělitel 12).
+      const pad = 'x'.repeat(3000 - JSON.stringify({ emitted: true, pad: '' }).length);
+      const emission = JSON.stringify({ emitted: true, pad });
+      expect(emission).toHaveLength(3000);
+
+      vi.stubGlobal('fetch', () =>
+        Promise.resolve(
+          Response.json({
+            content: [{ type: 'text', text: emission }],
+            usage: { input_tokens: 0, output_tokens: 1 },
+          }),
+        ),
+      );
+
+      const { status, json } = await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_USD_PER_MTOK_IN: '3',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        WORLDSMITH_SPEND_CAP_USD: '1000',
+      });
+
+      expect(status).toBe(200);
+      // Poskytovatel řekl 1. Ven jde 250 — účetní základ, ne spálená spotřeba.
+      expect(json.usage).toEqual({ inputTokens: 0, outputTokens: 250 });
+
+      const source = readFileSync(new URL('../route.ts', import.meta.url), 'utf8');
+      // Věta, která tu stála do 1. 9. 2026 a slibovala spálené tokeny.
+      expect(source, 'routa pořád slibuje spotřebu, kterou nevrací').not.toContain('kolik toho model');
+      expect(source, 'popis účetního základu z routy zmizel').toContain('ze kterého se počítal účet');
+    });
+
+    it('úspěch nevydá ceník ani jméno modelu, a poctivost si nechá', async () => {
+      const model = 'privately-pinned-model-7c1f';
+      vi.stubGlobal('fetch', () =>
+        Promise.resolve(
+          Response.json({
+            content: [{ type: 'text', text: '{"emitted":true}' }],
+            usage: { input_tokens: 100, output_tokens: 200 },
+          }),
+        ),
+      );
+
+      const { status, json } = await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_MODEL: model,
+        WORLDSMITH_USD_PER_MTOK_IN: '3',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        WORLDSMITH_SPEND_CAP_USD: '1000',
+      });
+
+      expect(status).toBe(200);
+      expect(JSON.stringify(json), 'ven odešlo jméno modelu z prostředí').not.toContain(model);
+      expect(keysDeep(json), 'ven odešla druhá polovina dvojice na ceník').not.toContain('costUsd');
+
+      // A ticho nesmí být proto, že se ořezalo všechno. Doklad o původu je
+      // důvod, proč `provenance` v odpovědi vůbec je (RUN-01).
+      expect(json.provenance?.source).toBe('upstream-http');
+      expect(json.provenance?.synthetic).toBe(false);
+      expect(json.usage).toEqual({ inputTokens: 100, outputTokens: 200 });
+    });
+
+    /**
+     * **Účetní řádek byl pátá cesta téže třídy** — nález kontrolní revize nad
+     * `cdf2c06` (tedy nad commitem, který ty první čtyři zavřel), `VERDICT:
+     * blocking`.
+     *
+     * Opíral se přesně o tu větu, kterou ten commit vyvrátil: „účtovat je co jen
+     * u placeného volání a ta omezuje strop". Jenže strop je paměť procesu,
+     * kterou chladný start nuluje, a nad `{"enabled":false,"capUsd":0}` neplatí vůbec (samotné `enabled:false` je rozbitý vypínač, ne vypnutý strop) —
+     * naměřeno 250 požadavků = 250 řádků, každý se jménem modelu z prostředí.
+     *
+     * **Dopsat `model` do `PUBLIC_PROVENANCE` by to nezavřelo** a je to slepá
+     * ulička, ne menší varianta: řádek vyrobí už samo `costUsd > 0`, takže by
+     * se rozhodnutí o schovaném jménu modelu zrušilo za nic.
+     */
+    it('účetní řádek má mez, a součet se tím neztratí', async () => {
+      const logged = captureOperatorLog();
+      vi.stubGlobal('fetch', () =>
+        Promise.resolve(
+          Response.json({
+            content: [{ type: 'text', text: '{"emitted":true}' }],
+            usage: { input_tokens: 100, output_tokens: 200 },
+          }),
+        ),
+      );
+
+      const ask = await loadRoute({
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_MODEL: 'privately-pinned-model-7c1f',
+        WORLDSMITH_USD_PER_MTOK_IN: '3',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        // **Strop je pět dolarů, ne tisíc, a je to součást měření**: krok je
+        // setina skutečného stropu, takže nad tisícem by byl 10 USD a sto
+        // padesát volání za 0,50 USD by nenapsalo nic než první řádek.
+        WORLDSMITH_SPEND_CAP_USD: '5',
+      });
+
+      // Jedno volání stojí (100 × 3 + 200 × 15) / 1e6 = 0,0033 USD.
+      //
+      // **150, a nesmí to být milník.** Do 1. 9. 2026 tu stálo 100 a test tím
+      // nedokázal chytit implementaci, kterou měl hlídat — nález kontrolní
+      // revize, ověřený mutací. 100 je totiž samo milníkem (1., 10., 100.),
+      // takže milníková verze napsala poslední řádek přesně na posledním volání
+      // a zaostala o 0,000 USD; všech šest tvrzení pod tím prošlo i nad kódem,
+      // který tenhle commit odstraňuje. Při 150 zaostane o 0,165 USD, tedy
+      // 3,3násobek kroku, a test zčervená.
+      const CALLS = 150;
+      const PER_CALL = 0.0033;
+      for (let attempt = 0; attempt < CALLS; attempt += 1) {
+        // **Okno frekvence se posouvá, protože se tu měří účetní kniha.**
+        // 150 volání z jedné adresy je nad `MAX_REQUESTS_PER_WINDOW`, ale to
+        // jsou jiné dveře — nechat je sepnout tady by test měřil je a mlčel
+        // o tom, co má hlídat. Mez sama má vlastní sadu.
+        resetRateWindows();
+        const { status } = await ask(JSON.stringify({ prompt: 'bludiště s klíčem' }));
+        expect(status).toBe(200);
+      }
+
+      const lines = logged.filter((line) => line.includes('ACCOUNTING'));
+      const totalOf = (line: string): number =>
+        Number(/totalUsd=([0-9.]+)/.exec(line)?.[1] ?? Number.NaN);
+
+      // **Mez je v dolarech, ne v požadavcích** — krok je setina stropu, tedy
+      // nad stropem 5 USD pět centů. Sto padesát volání za 0,495 USD proto dá
+      // nejvýš jedenáct řádků…
+      const step = 5 / 100;
+      expect(
+        lines.length,
+        `${CALLS} volání napsalo operátorovi řádek na požadavek`,
+      ).toBeLessThanOrEqual(Math.ceil((CALLS * PER_CALL) / step) + 1);
+      expect(lines.length, 'operátor se o utrácení nedozvěděl vůbec').toBeGreaterThan(1);
+
+      // …a hlavně: **poslední řádek nesmí zaostat za skutečností o víc než krok**.
+      // Tohle je ta vlastnost, kterou milníky neuměly — u nich stál poslední
+      // řádek na 40 % skutečné útraty a nic to nepoznalo.
+      const spent = CALLS * PER_CALL;
+      expect(spent - totalOf(lines[lines.length - 1])).toBeLessThanOrEqual(step + 1e-9);
+
+      // A součet je za **všechna** volání, ne jen za zapsaná: první řádek se
+      // píše vždycky (že nasazení začalo utrácet, se propásnout nesmí), takže
+      // stojí přesně na jednom volání.
+      expect(lines[0]).toContain(`totalUsd=${PER_CALL.toFixed(6)}`);
+      // Cena toho jednoho volání zůstává vedle součtu; bez ní se z řádku nepozná
+      // ceník, jen celková útrata.
+      expect(lines[0]).toContain('costUsd=0.0033');
+    });
+
+    /**
+     * **Zvednutý strop nesmí znásobit počet řádků** — nález kontrolní revize
+     * 1. 9. 2026, naměřený 200násobek.
+     *
+     * Krok byl `DEFAULT_CAP_USD / 100`, tedy pevných 5 centů z literálu
+     * v `spend-cap.ts`, jenže skutečný strop nese prostředí. Nad stropem
+     * 1000 USD to dávalo mez `1000 / 0,05` = **20 000 řádků za proces** proti
+     * slíbené stovce — a komentář u toho tvrdil „když se strop zvedne, zvedne
+     * se s ním". Teď je krok setina **skutečného** stropu, takže mez v počtu
+     * řádků na stropu nezávisí vůbec.
+     */
+    it('dvěstěkrát vyšší strop nedá dvěstěkrát víc účetních řádků', async () => {
+      const logged = captureOperatorLog();
+      vi.stubGlobal('fetch', () =>
+        Promise.resolve(
+          Response.json({
+            content: [{ type: 'text', text: '{"emitted":true}' }],
+            usage: { input_tokens: 100, output_tokens: 200 },
+          }),
+        ),
+      );
+
+      const ask = await loadRoute({
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_MODEL: 'privately-pinned-model-7c1f',
+        WORLDSMITH_USD_PER_MTOK_IN: '3',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        // Týž běh jako test nad tímhle, jen strop je dvěstěkrát vyšší.
+        WORLDSMITH_SPEND_CAP_USD: '1000',
+      });
+
+      for (let attempt = 0; attempt < 150; attempt += 1) {
+        // Viz test nad tímhle: měří se účetní kniha, ne strop frekvence.
+        resetRateWindows();
+        const { status } = await ask(JSON.stringify({ prompt: 'bludiště s klíčem' }));
+        expect(status).toBe(200);
+      }
+
+      // Sto padesát volání za 0,495 USD proti kroku 10 USD: **jediný** řádek,
+      // ten povinný první. S pevným krokem jich bylo jedenáct, tedy tolik, co
+      // při dvěstěkrát nižším stropu — což je právě ta neúměra.
+      const lines = logged.filter((line) => line.includes('ACCOUNTING'));
+      expect(lines, 'krok se neodvozuje ze skutečného stropu').toHaveLength(1);
+    });
+
+    /**
+     * **Účtenka, která není konečné číslo, nesmí mez zrušit** — nález kontrolní
+     * revize 1. 9. 2026.
+     *
+     * `usageOf()` (`src/server/upstream.ts`) pouští `Infinity` od poskytovatele
+     * dál schválně, protože ho zahodí `release()` ve stropu. `logAccounting` je
+     * ale **druhý** konzument téhož čísla: jediné `1e999` udělá z běžícího
+     * součtu `Infinity`, `Infinity - Infinity` je `NaN`, porovnání s krokem je
+     * napořád nepravda — a od té chvíle píše řádek **každý** placený požadavek.
+     * Mez by zmizela přesně u toho poskytovatele, kvůli kterému se log čte.
+     */
+    it('otrávená účtenka se do součtu dostane jako to, co strop strhl', async () => {
+      const logged = captureOperatorLog();
+      // `Response.json` by `Infinity` uložilo jako `null`, takže tělo musí jít
+      // jako text — `JSON.parse('1e999')` dá `Infinity` typu number.
+      vi.stubGlobal('fetch', () =>
+        Promise.resolve(
+          new Response(
+            '{"content":[{"type":"text","text":"{\\"emitted\\":true}"}],"usage":{"input_tokens":1e999,"output_tokens":1}}',
+            { headers: { 'content-type': 'application/json' } },
+          ),
+        ),
+      );
+
+      const ask = await loadRoute({
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_MODEL: 'privately-pinned-model-7c1f',
+        WORLDSMITH_USD_PER_MTOK_IN: '3',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        WORLDSMITH_SPEND_CAP_USD: '1000',
+      });
+
+      for (let attempt = 0; attempt < 6; attempt += 1) {
+        const { status } = await ask(JSON.stringify({ prompt: 'bludiště s klíčem' }));
+        expect(status).toBe(200);
+      }
+
+      // **Šest požadavků, jeden řádek** — mez drží krok v dolarech (setina
+      // stropu, tedy 10 USD), a šest rezervací po ~0,13 USD ho nepřekročí.
+      const accounting = logged.filter((line) => line.includes('ACCOUNTING'));
+      expect(accounting, 'otrávená účtenka píše řádek na požadavek').toHaveLength(1);
+
+      // **A tohle je ta změna z 1. 9. 2026, ne jen jiné číslo výš.** Dokud se
+      // otrávená částka ořezávala až tady u konzumenta, řádek nevznikl vůbec
+      // (`Infinity` se do součtu nepustil) — takže těch ~0,8 USD, které strop
+      // doopravdy strhl, nebylo v logu **nikde**. Součet teď nese strženou
+      // rezervaci, protože `runPipeline` hlásí to, co `settle()` odečetl.
+      const totalUsd = Number(/totalUsd=([0-9.]+)/.exec(accounting[0]!)?.[1]);
+      expect(Number.isFinite(totalUsd), accounting[0]).toBe(true);
+      expect(totalUsd).toBeGreaterThan(0);
+      // Ne cena té otrávené účtenky, ale rezervace jednoho volání.
+      expect(totalUsd).toBeLessThan(1);
+    });
+
+    /**
+     * **Selhání, které stálo peníze, se do součtu počítá taky** — nález
+     * nezávislé revize 1. 9. 2026, `VERDICT: blocking`.
+     *
+     * `BILLED_ON_FAILURE` (`src/server/pipeline.ts`) účtuje `MALFORMED_RESPONSE`
+     * i `UPSTREAM_UNAVAILABLE` rezervací, protože poskytovatel odpověděl a to se
+     * platí. Dokud se přičítalo jen z úspěchů, `totalUsd` podhlašovalo právě
+     * tehdy, když poskytovatel zlobí — tedy směrem, který peníze schovává, a
+     * v logu nebylo čím ten rozdíl vysvětlit.
+     */
+    it('a selhání, které se účtuje, se do součtu započítá', async () => {
+      const logged = captureOperatorLog();
+      // Odpoví 200 s tělem, které server nepřečte → `MALFORMED_RESPONSE`,
+      // účtované rezervací.
+      vi.stubGlobal('fetch', () =>
+        Promise.resolve(Response.json({ content: [{ type: 'text', text: 'not json at all' }] })),
+      );
+
+      const ask = await loadRoute({
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_MODEL: 'privately-pinned-model-7c1f',
+        WORLDSMITH_USD_PER_MTOK_IN: '3',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        WORLDSMITH_SPEND_CAP_USD: '1000',
+      });
+
+      const { status } = await ask(JSON.stringify({ prompt: 'bludiště s klíčem' }));
+      expect(status, 'fixtura přestala být účtovaným selháním').toBe(502);
+
+      const accounting = logged.filter((line) => line.includes('ACCOUNTING'));
+      expect(accounting, 'zaplacené selhání se do účetnictví nedostalo').toHaveLength(1);
+
+      // **Musí to být celá rezervace, ne „nějaké číslo nad nulou".** Pouhé
+      // `> 0` tady stálo do 1. 9. 2026 a kontrolní revize na něm ukázala
+      // přeživšího mutanta: implementace, která by účtovala pár tokenů místo
+      // rezervace, by tou asercí prošla. Dolní hranice se odvozuje, ne opisuje —
+      // rezervace je `vstupní tokeny × cena_in + maxOutputTokens × cena_out`,
+      // takže i bez znalosti délky promptu je nejméně 8000 × 15 / 1e6.
+      const RESERVATION_FLOOR = (8000 * 15) / 1_000_000;
+      expect(
+        Number(/totalUsd=([0-9.]+)/.exec(accounting[0])?.[1] ?? 0),
+        'účtované selhání se zaúčtovalo méně než celou rezervací',
+      ).toBeGreaterThanOrEqual(RESERVATION_FLOOR);
+    });
+
+    it('zmrazená větev si nechá celou svoji stopu, protože je to veřejný artefakt', async () => {
+      // Druhá půlka téhož: výčet povolených klíčů se nesmí splést s „ořízni
+      // provenance". Čtveřice zmrazené větve popisuje commitnutý soubor
+      // v repozitáři, ne nastavení serveru, a bez ní není čím doložit, že
+      // odpověď nevznikla za běhu.
+      const { status, json } = await post(JSON.stringify({ prompt: FROZEN_CREATE.prompt }));
+
+      expect(status).toBe(200);
+      expect(json.provenance?.source).toBe('frozen-manifest');
+      expect(json.provenance?.file).toBe('responses/index.jsonl');
+      expect(typeof json.provenance?.bodySha256).toBe('string');
+      expect(typeof json.provenance?.declaredVerdict).toBe('string');
+      expect(json.provenance?.promptId).toBe(FROZEN_CREATE.id);
+    });
+
+    it('co se z odpovědi zahodí, dojde operátorovi celé', async () => {
+      // Ořezat ven se smí jen tak, aby to operátor pořád našel — táž doktrína
+      // jako u adresy poskytovatele. Bez tohohle řádku by nasazení, které jede
+      // na jiném modelu, než si operátor myslí, nešlo poznat odnikud.
+      const logged = captureOperatorLog();
+      const model = 'privately-pinned-model-7c1f';
+      vi.stubGlobal('fetch', () =>
+        Promise.resolve(
+          Response.json({
+            content: [{ type: 'text', text: '{"emitted":true}' }],
+            usage: { input_tokens: 100, output_tokens: 200 },
+          }),
+        ),
+      );
+
+      const { status, json } = await post(JSON.stringify({ prompt: 'bludiště s klíčem' }), {
+        WORLDSMITH_BRANCH: 'live',
+        WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+        WORLDSMITH_MODEL_KEY: 'test-key',
+        WORLDSMITH_MODEL: model,
+        WORLDSMITH_USD_PER_MTOK_IN: '3',
+        WORLDSMITH_USD_PER_MTOK_OUT: '15',
+        WORLDSMITH_SPEND_CAP_USD: '1000',
+      });
+      expect(status).toBe(200);
+
+      const operator = logged.join('\n');
+      expect(operator, 'operátor se nedozvěděl, na jakém modelu to běží').toContain(model);
+      // (100 × 3 + 200 × 15) / 1e6
+      expect(operator, 'operátorovi chybí cena volání').toContain('costUsd=0.0033');
+      expect(operator).toContain(String(json.requestId));
+    });
+
+    /**
+     * **Ten účetní řádek je omezený tím, co ho vyrábí, ne tím, kdo ho volá.**
+     *
+     * Endpoint nechce přihlášení (AC T301), takže řádek na úspěšný požadavek by
+     * znamenal neomezený růst logu, který si spustí kdokoli — táž vada jako
+     * u lepivého odmítnutí stropem o kus výš. Offline větev ale nic nestojí
+     * a v `provenance` nezadržuje nic, takže **nemá co účtovat** a mlčí; na
+     * placené větvi je počet těch řádků shora omezený stropem počtu volání,
+     * tedy týmž mechanismem, který omezuje peníze.
+     */
+    it('úspěch na offline větvi nenapíše operátorovi nic, ať jich přijde kolik chce', async () => {
+      const logged = captureOperatorLog();
+      const call = await loadRoute();
+
+      for (let attempt = 0; attempt < 20; attempt += 1)
+        expect((await call(JSON.stringify({ prompt: FROZEN_CREATE.prompt }))).status).toBe(200);
+
+      expect(logged, 'úspěch zdarma dokáže psát operátorovi na stderr').toEqual([]);
+    });
+
+    /**
+     * **`NO_SOURCE` mlčel za dvě různé věci, a jedna z nich je porucha** —
+     * nález nezávislé revize 1. 9. 2026.
+     *
+     * „Porotce napsal vlastní větu" je u offline větve normální odpověď a
+     * logovat se nemá; `RULES.md` §3.3 mu ty pokusy výslovně dovoluje. „Prompt
+     * v korpusu je, ale odpověď k němu chybí" je proti tomu díra ve zmrazené
+     * sadě, o které se nikdo nedozví, dokud ji někdo netrefí. Do téhle opravy
+     * nesly obě situace **týž důvod**, takže filtr logu neměl podle čeho je
+     * rozlišit a mlčel na obě.
+     */
+    it('chybějící odpověď na známý prompt dojde operátorovi, neznámá věta ne', async () => {
+      const { log } = corpusWithoutOneAnswer();
+      const { POST } = await import('../route');
+      const ask = async (prompt: string) => {
+        const response = await POST(
+          new Request('http://127.0.0.1/api/generate', { method: 'POST', body: JSON.stringify({ prompt }) }),
+        );
+        return { status: response.status, json: (await response.json()) as ResponseBody };
+      };
+
+      const gap = await ask(GAP_PROMPT);
+      expect(gap.status).toBe(404);
+      const operator = log.join('\n');
+      expect(operator, 'díra v korpusu se nedozvěděl nikdo').toContain('NO_FROZEN_ANSWER');
+      expect(operator, 'operátorovi chybí záznam, který má doplnit').toContain(GAP_ID);
+      expect(operator).toContain(String(gap.json.requestId));
+
+      // A ticho u té benigní musí zůstat tichem.
+      const before = log.length;
+      const unknown = await ask('a sentence this corpus has never heard of');
+      expect(unknown.status).toBe(404);
+      expect(log.length, 'vlastní věta porotce napsala operátorovi řádek').toBe(before);
+    });
+
+    /**
+     * **Zvenku se ty dvě situace rozeznat nesmí.** „Mám rozbitý korpus" je stav
+     * serveru; kdyby ho odpověď prozradila kódem nebo textem, dal by se korpus
+     * obcházet po záznamech a zjistit, které chybí. Soudí se proto celá
+     * odpověď, ne jen její kus — jediné, co se smí lišit, je korelační ID.
+     */
+    it('díra v korpusu vypadá zvenku přesně jako neznámá věta', async () => {
+      corpusWithoutOneAnswer();
+      const { POST } = await import('../route');
+      const ask = async (prompt: string) => {
+        const response = await POST(
+          new Request('http://127.0.0.1/api/generate', { method: 'POST', body: JSON.stringify({ prompt }) }),
+        );
+        const { requestId, ...rest } = (await response.json()) as ResponseBody & Record<string, unknown>;
+        expect(typeof requestId).toBe('string');
+        return { status: response.status, body: rest };
+      };
+
+      const gap = await ask(GAP_PROMPT);
+      const unknown = await ask('a sentence this corpus has never heard of');
+      expect(gap.status).toBe(unknown.status);
+      expect(gap.body).toEqual(unknown.body);
+      expect(gap.body).toMatchObject({ error: { code: 'NO_SOURCE' } });
+    });
+
+    /**
+     * **Vada korpusu je lepivá**, takže řádek na požadavek by byl log, který si
+     * kdokoli natáhne donekonečna — táž vada jako u odmítnutí stropem výš.
+     * Klíčem je konkrétní záznam, ne důvod: tisíc požadavků na jednu díru dá
+     * jeden řádek, ale tři díry dají tři.
+     */
+    it('vada korpusu se zapíše jednou za záznam, ne jednou za požadavek', async () => {
+      const { log } = corpusWithoutOneAnswer();
+      const { POST } = await import('../route');
+
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        const response = await POST(
+          new Request('http://127.0.0.1/api/generate', {
+            method: 'POST',
+            body: JSON.stringify({ prompt: GAP_PROMPT }),
+          }),
+        );
+        expect(response.status).toBe(404);
+      }
+
+      expect(
+        log.filter((line) => line.includes('NO_FROZEN_ANSWER')),
+        '20 požadavků napsalo operátorovi víc než jeden řádek',
+      ).toHaveLength(1);
+    });
+
+    /**
+     * **Sourozenec téže vady, naměřený nezávislou revizí 1. 9. 2026.**
+     *
+     * „Odpověď chybí" a „odpověď je na místě, ale rozešla se s vlastním
+     * otiskem" jsou obojí díra v jednom záznamu zmrazené sady. Dokud o tom
+     * rozhodoval ternár na jediném důvodu, spadl ten druhý do „nedovolali jsme
+     * se k modelu": **502 a řádek na každý požadavek**, tedy přesně to, čemu se
+     * u jeho dvojčete zabraňovalo — a k tomu vzkaz „tenhle prompt tvůj korpus
+     * zná", který je stav serveru.
+     */
+    it('podvržený záznam vypadá zvenku stejně jako chybějící, a taky se zapíše jen jednou', async () => {
+      const { log } = corpusWithoutOneAnswer('tampered');
+      const { POST } = await import('../route');
+      const ask = async (prompt: string) => {
+        const response = await POST(
+          new Request('http://127.0.0.1/api/generate', { method: 'POST', body: JSON.stringify({ prompt }) }),
+        );
+        const { requestId, ...rest } = (await response.json()) as ResponseBody & Record<string, unknown>;
+        return { status: response.status, body: rest };
+      };
+
+      const tampered = await ask(GAP_PROMPT);
+      const unknown = await ask('a sentence this corpus has never heard of');
+      expect(tampered.status, 'podvržený záznam odpovídá jinak než neznámá věta').toBe(404);
+      expect(tampered.body).toEqual(unknown.body);
+
+      // Operátor to naopak vědět má — a je to vada záznamu, ne modelu.
+      const operator = log.join('\n');
+      expect(operator, 'operátor dostal „nedovolali jsme se k modelu"').not.toContain(
+        'UPSTREAM_UNAVAILABLE',
+      );
+      // **Musí to být dvojice, ne samotné slovo.** `toContain('RESPONSE_TAMPERED')`
+      // tu stálo do 1. 9. 2026 a bylo bezvýznamné: i před opravou zněl řádek
+      // `UPSTREAM_UNAVAILABLE RESPONSE_TAMPERED: …`, tedy to slovo obsahoval taky.
+      // Ověřeno mutací — celý test drží dvě jiné aserce. Tuhle dvojici umí
+      // vyrobit jen tabulka, která podvržený záznam posílá na `NO_FROZEN_ANSWER`.
+      expect(operator, 'vada záznamu se operátorovi ohlásila jiným důvodem').toMatch(
+        /NO_FROZEN_ANSWER\W+RESPONSE_TAMPERED/,
+      );
+
+      const before = log.length;
+      for (let attempt = 0; attempt < 20; attempt += 1) await ask(GAP_PROMPT);
+      expect(log.length, '20 požadavků na podvržený záznam psalo operátorovi pořád dokola').toBe(
+        before,
+      );
+    });
+
+    /**
+     * **Větev zdarma taky umí `UPSTREAM_UNAVAILABLE`, a to celou tabulku
+     * vyvrátilo** — nález dvou nezávislých revizí 1. 9. 2026.
+     *
+     * `OPERATOR_LOG` mu dávalo `always` na základě věty „bez odchozího volání
+     * nevznikne, a placená volání omezuje strop". Obojí je nepravda: offline
+     * větev ho vrací u rozbitého korpusu, `pipeline.ts` na něj překládá
+     * jakoukoli výjimku z generování, a `SpendCap` **nulové rezervace do počtu
+     * volání nepočítá**, takže strop se nezapojí vůbec.
+     *
+     * Spouštěč není útočník, ale neúplné nasazení: `evals/frozen/**` se
+     * nezabalí celý, protokol i seznam promptů projdou, a teprve soubor
+     * odpovědí chybí. Každý požadavek pak psal řádek s absolutní cestou na
+     * disku serveru včetně jména účtu.
+     */
+    it('vada, kterou umí i větev zdarma, se zapisuje s mezí', async () => {
+      const { log } = corpusWithoutOneAnswer('unreadable');
+      const { POST } = await import('../route');
+
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        const response = await POST(
+          new Request('http://127.0.0.1/api/generate', {
+            method: 'POST',
+            body: JSON.stringify({ prompt: GAP_PROMPT }),
+          }),
+        );
+        // Rozbité prostředí, ne chybějící odpověď — 404 by ho vydalo jako
+        // naměřený výsledek.
+        expect(response.status).toBe(502);
+      }
+
+      // Dva, ne dvacet: milníky jsou 1., 10., 100. výskyt.
+      const lines = log.filter((line) => line.includes('UPSTREAM_UNAVAILABLE'));
+      expect(lines, '20 požadavků napsalo operátorovi řádek na požadavek').toHaveLength(2);
+      expect(lines[1]).toContain('(occurrence 10)');
+    });
+  });
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Nápor: strop na placená volání v letu (P15 T28).
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Tyhle dveře do 3. 9. 2026 neomezovalo nic** a bylo to naměřené, ne tušené:
+ * dokud počítadlo volání započítávalo i větev zdarma, byl to náhodou jediný
+ * strop neověřeného provozu, a `e8783d4` ten náhodný strop odstranil.
+ *
+ * První pokus o opravu byla brána na promlčeném rozpočtu a **nezávislá revize
+ * ji vyvrátila měřením**: odmítá až po 12 s čekání, jenže čtení těla má vlastní
+ * strop 5 s, takže nemohla odmítnout nikdy nikoho. Drží to proto čítač
+ * souběžných generací, sdílený se worldstreamovými dveřmi — a soudí se tu obojí,
+ * co se na něm dá porušit tiše: **že kousne** a **že slot zase pustí**.
+ *
+ * **Modul se načítá jednou pro celý test, ne přes `post()`.** Ten helper mezi
+ * požadavky shazuje registr modulů, takže čítač by se pokaždé narodil znovu na
+ * nule — obsazené sloty by zmizely a zelená by neznamenala nic.
+ */
+/** Věta ze zmrazeného korpusu, zúžená na řetězec mimo uzávěr. */
+const CROWD_PROMPT: string = FROZEN_CREATE.prompt;
+
+describe('POST /api/generate pod náporem', () => {
+  async function loadOnce() {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+    const { POST } = await import('../route');
+    // **Až za routou**, aby to byla táž instance modulu, jakou si vzala ona.
+    const slots = await import('../../worldstream/sessions/route');
+    const send = async () => {
+      const response = await POST(
+        new Request('http://127.0.0.1/api/generate', {
+          method: 'POST',
+          body: JSON.stringify({ prompt: CROWD_PROMPT }),
+        }),
+      );
+      return { status: response.status, json: (await response.json()) as ResponseBody };
+    };
+    return { ...slots, send };
+  }
+
+  it('požadavek nad strop souběžných generací dostane 503, ne volání modelu', async () => {
+    const { DOOR_CEILING, MAX_CONCURRENT_GENERATIONS, acquireSlot, releaseSlot, send } =
+      await loadOnce();
+    // **Odmítnutí musí být vidět v operátorském logu.** Bez řádku neodliší
+    // nikdo „strop nás ochránil" od „nikdo nepřišel", a orákulum téhle brány
+    // je na nasazené adrese nepozorovatelné — 503 vidí jen ten, kdo ho dostal.
+    // `loadOnce()` shodil registr modulů, takže počítadlo `logRateLimited`
+    // začíná na nule a tenhle výskyt je první, tedy milník.
+    const log: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+      log.push(String(line));
+    });
+    // Nasytí se **strop těchhle dveří**, ne celý čítač: `/api/generate` má od
+    // druhého kola revize `T22-doorcounters` vlastní čítač, aby nevyhladovělo
+    // zakládání relace ani preview druhé věty.
+    for (let taken = 0; taken < DOOR_CEILING.generate; taken += 1)
+      expect(acquireSlot('generate')).toBe(true);
+
+    try {
+      const { status, json } = await send();
+      expect(status).toBe(503);
+      expect(json.error?.code).toBe('TOO_MANY_GENERATIONS');
+    } finally {
+      for (let taken = 0; taken < DOOR_CEILING.generate; taken += 1) releaseSlot('generate');
+    }
+
+    const refusals = log.filter((line) => line.includes('TOO_MANY_GENERATIONS'));
+    expect(refusals, 'odmítnutí náporem neodešlo operátorovi').toHaveLength(1);
+    expect(refusals[0]).toContain('[generate]');
+    // **Číslo doslova, ne interpolované.** Se stejnou konstantou na obou
+    // stranách by se strop dal zvednout ze čtyř na čtyřicet a test by zůstal
+    // zelený — log by se pořád shodoval sám se sebou, jen o řád výš. Nález
+    // nezávislé revize 3. 9. 2026. **„on this instance" je součást tvrzení:**
+    // čítač je stav modulu, takže na Vercelu ho každá instance má vlastní.
+    // **Věta nesmí tvrdit, že tři generace běží.** Sloty může držet preview
+    // druhé věty, a hláška, která o nich mluví jako o světech, pošle operátora
+    // hledat generaci, která neexistuje. Nález revize 4. 9. 2026.
+    //
+    // **Od `T22-doorcounters` řádek rovnou jmenuje, které dveře ty sloty
+    // drží** — tady jsou to démové dveře a nic jiného, takže operátor ví, kam
+    // se dívat, aniž by hádal.
+    expect(refusals[0]).toContain(
+      'paid slots in flight: 0 world + 2 generate + 0 refine of 6 on this instance; ' +
+        'the generate door may hold 2',
+    );
+    expect(refusals[0], 'hláška tvrdí o slotech víc, než čítač ví').not.toContain(
+      'open to new worlds are in flight',
+    );
+    expect(DOOR_CEILING.generate, 'strop se pohnul — přepiš i větu v logu').toBe(2);
+    expect(MAX_CONCURRENT_GENERATIONS, 'čítač se pohnul — přepiš i větu v logu').toBe(6);
+  });
+
+  it('nasycené zakládání relace tyhle dveře nezavře — každé mají vlastní čítač', async () => {
+    // **Zrcadlo nálezu druhého kola nezávislé revize 4. 9. 2026.** Do té doby
+    // si `/api/generate` bralo slot pod jménem `world`, tedy z týchž slotů jako
+    // `POST /api/worldstream/sessions`. Vyhladovění šlo oběma směry a tenhle
+    // test měří ten, který jde přes **skutečnou routu**: nasytit dveře `world`
+    // a poslat větu sem. Se sdíleným čítačem je odpověď 503.
+    const { DOOR_CEILING, acquireSlot, releaseSlot, send } = await loadOnce();
+    for (let taken = 0; taken < DOOR_CEILING.world; taken += 1)
+      expect(acquireSlot('world'), `slot ${taken} zakládání relace měl být volný`).toBe(true);
+
+    try {
+      const { status } = await send();
+      expect(status, 'zakládání relace zavřelo demo dveře — sdílený čítač je zpátky').toBe(200);
+    } finally {
+      for (let taken = 0; taken < DOOR_CEILING.world; taken += 1) releaseSlot('world');
+    }
+  });
+
+  it('slot se po odbavení vrátí, takže dveře nezůstanou zavřené', async () => {
+    // Bez tohohle by prošel i strop, který se s každým požadavkem o jedna
+    // sníží — a po čtyřech větách by demo zavřelo samo sebe.
+    const { MAX_CONCURRENT_GENERATIONS, send } = await loadOnce();
+    for (let round = 0; round < MAX_CONCURRENT_GENERATIONS + 2; round += 1) {
+      const { status } = await send();
+      expect(status).toBe(200);
+    }
+  });
+
+  it('brána souběhu stojí ve zdroji PŘED čtením zmrazeného protokolu', () => {
+    // Nález druhého kola revize 3. 9. 2026: slot se bral **za**
+    // `frozenGrammar()`, tedy obráceně než u sesterských dveří, které to mají
+    // naměřené. tehdy `readFrozen` memoizované nebylo — dva `readFileSync`, sha256
+    // a `JSON.parse` na smyčce událostí za každé volání — takže požadavek
+    // odsouzený k 503 platil ~2 ms úplně zablokovaného Node. Tisíc odmítnutí
+    // = 2,2 s, po které stojí i SSE proudy, snapshoty a zdravotní sonda.
+    //
+    // ⚠ **Od `f5b1b49` memoizované je**, takže tuhle cenu platí jen první
+    // požadavek na instanci. Brána zůstává před čtením ze stejného důvodu:
+    // každá nová instance ji platí znovu.
+    //
+    // Soudí se **pořadí ve zdroji**, protože zevnitř jednoho procesu to jinak
+    // změřit nejde: čtení protokolu nemá pozorovatelný následek, na kterém by
+    // se odmítnutá cesta dala chytit, a časové měření by soudilo stroj. Je to
+    // táž brána, jakou má `worldstream/sessions/route.ts`.
+    //
+    // **Komentáře se odstřihnou** — zakomentovaný `acquireSlot()` výš by
+    // jinak bránu prošel, aniž by se cokoli vykonalo.
+    const source = readFileSync('src/app/api/generate/route.ts', 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    const gate = source.indexOf("if (!acquireSlot('generate'))");
+    const grammarRead = source.indexOf('const grammar = frozenGrammar();');
+
+    expect(gate, 'brána souběhu ve zdroji chybí').toBeGreaterThan(-1);
+    expect(grammarRead, 'čtení protokolu ve zdroji chybí').toBeGreaterThan(-1);
+    expect(gate, 'brána souběhu je až za čtením protokolu').toBeLessThan(grammarRead);
+  });
+
+  it('nečitelný protokol vrátí slot, a vrátí ho právě jednou', async () => {
+    // Druhá polovina té výměny: slot vzatý před čtením se musí vrátit, když
+    // protokol přečíst nejde. Bez toho by nečitelný korpus slot spolkl a po
+    // čtyřech požadavcích by neprošel nikdo — dveře zavřené natrvalo vadou,
+    // která se sama nespraví.
+    //
+    // Soudí se **chování**, ne zdroj: lexikální brána nad `releaseSlot();`
+    // pustí i vrácení přesunuté před podmínku, po kterém by každý úspěšný
+    // požadavek vracel dvakrát a čítač šel do záporu. Počet volných slotů po
+    // odmítnutí obojí odliší.
+    const dir = mkdtempSync(join(tmpdir(), 'worldsmith-slotrelease-'));
+    temporary.push(dir);
+    vi.spyOn(process, 'cwd').mockReturnValue(dir);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.resetModules();
+
+    const { POST } = await import('../route');
+    const { DOOR_CEILING, acquireSlot } = await import('../../worldstream/sessions/route');
+
+    const response = await POST(
+      new Request('http://127.0.0.1/api/generate', {
+        method: 'POST',
+        body: JSON.stringify({ prompt: CROWD_PROMPT }),
+      }),
+    );
+    expect(response.status).toBe(503);
+    expect(((await response.json()) as ResponseBody).error?.code).toBe('CORPUS_UNREADABLE');
+
+    // **Sonda se ptá `generate`, tedy dveří, kterými ten slot odešel.** Cizí
+    // dveře mají vlastní strop, takže by poslední pokus odmítly samy a o
+    // `running.generate` by neřekly nic — přesně tak byla tahle sonda
+    // dekorativní, než to našla revize.
+    for (let taken = 0; taken < DOOR_CEILING.generate; taken += 1)
+      expect(acquireSlot('generate'), `slot ${taken} měl být volný — odmítnutí ho nevrátilo`).toBe(
+        true,
+      );
+    expect(acquireSlot('generate'), 'čítač je v záporu — slot se vrátil víckrát než jednou').toBe(
+      false,
+    );
+  });
+});
+
+describe('strop na frekvenci dorazí až ke dveřím', () => {
+  it('padesátý první požadavek v okně je 429 s retry-after, ne 200', async () => {
+    // Okno se plní přímo čítačem, ne padesáti HTTP požadavky: měří se tady
+    // **zapojení** meze do těchhle dveří, ne mez sama (ta má vlastní sadu
+    // v `src/server/__tests__/rate-limit.test.ts`).
+    //
+    // ⚠ **Hodiny se mrazí, a viděla to spadnout revize, ne teorie.** Okno je
+    // pevný desetivteřinový kbelík na absolutním čase a mezi naplněním
+    // a asercí sedí `await import('../route')`, tedy načtení celého modulu.
+    // Když ten import protne hranici kbelíku, čítač se vynuluje a vyjde 200
+    // (naměřeno 6. 9. 2026 ve vícesouborovém běhu; při opakování zelená).
+    // Oba sousední případy níž mrazily čas od začátku, tenhle zůstal pozadu.
+    const uprostředKbelíku = 1_770_000_000_000 + RATE_WINDOW_MS / 2;
+    const hodiny = vi.spyOn(Date, 'now').mockReturnValue(uprostředKbelíku);
+    try {
+      for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1)
+        takeRateSlot('generate', 'unknown');
+      const { POST } = await import('../route');
+      const response = await POST(
+        new Request('http://127.0.0.1/api/generate', {
+          method: 'POST',
+          body: JSON.stringify({ prompt: CROWD_PROMPT }),
+        }),
+      );
+      expect(response.status).toBe(429);
+      expect(Number(response.headers.get('retry-after'))).toBeGreaterThanOrEqual(1);
+      expect(((await response.json()) as ResponseBody).error?.code).toBe('TOO_MANY_REQUESTS');
+    } finally {
+      hodiny.mockRestore();
+      resetRateWindows();
+    }
+  });
+
+  /**
+   * **Mimo platformu dostanou dvě různé hodnoty `x-forwarded-for` od jednoho
+   * volajícího dvě přihrádky** — pin **záchranné cesty**, ne doktríny
+   * (`T29-freeunbounded`).
+   *
+   * Klíč skládá `trustedCallerKey(request) ?? callerKey(request)`. Bez
+   * `VERCEL=1` je levá strana `null`, takže se klíčuje ze vstupu volajícího a
+   * rotace hlavičky dá nové přihrádky. **Ten pád je nutný, ne opomenutí:** bez
+   * něj by mimo platformu spadli všichni volající do jedné přihrádky, což je
+   * měřeně horší než žádná mez (hlavička `rate-limit.ts`). Test proto pinuje
+   * pád samotný — kdyby zmizel, tenhle případ zčervená dřív, než se to pozná
+   * na nasazení. Uzavřenou stranu měří test hned za ním.
+   *
+   * ⚠ **Okno se plní PŘES route, ne čítačem.** Sousední test výš volá
+   * `takeRateSlot()` napřímo, což měří zapojení meze, ale **klíč nezkouší
+   * vůbec** — mutace `callerKey(request)` na konstantu by ho nechala zeleného
+   * (přesně ta vada se naměřila 5. 9. 2026 na sesterském pinu v
+   * `sessions.test.ts`). Klíč si tady musí odvodit route sama.
+   *
+   * Plní se **nečitelným tělem**: slot frekvence se bere před čtením těla a
+   * počítá se i odmítnutý požadavek, takže padesát 400 naplní okno a nespustí
+   * ani jednu emisi.
+   */
+  it('jinou hlavičkou dostane týž volající druhou přihrádku, a je to vědomá cena', async () => {
+    const PRVNÍ = '198.51.100.7';
+    const DRUHÁ = '203.0.113.7';
+
+    // ⚠ **Hodiny se zamrazí ze stejného důvodu jako u sesterského pinu.** Okno
+    // je pevný desetivteřinový kbelík ukotvený na absolutním čase; když těch
+    // padesát dva volání protne jeho hranici, čítač se uprostřed smyčky
+    // vynuluje a vyjde 400 místo 429. Zmrazený čas leží uprostřed kbelíku.
+    const uprostředKbelíku = 1_770_000_000_000 + RATE_WINDOW_MS / 2;
+    const hodiny = vi.spyOn(Date, 'now').mockReturnValue(uprostředKbelíku);
+    const { POST } = await import('../route');
+    const nečitelný = (forwarded: string): Request =>
+      new Request('http://127.0.0.1/api/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-forwarded-for': forwarded },
+        body: '{ not json',
+      });
+
+    try {
+      for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) {
+        const plnící = await POST(nečitelný(PRVNÍ));
+        expect(plnící.status, `plnící požadavek ${String(taken)} nedošel ke slotu`).toBe(400);
+      }
+
+      const zavřená = await POST(nečitelný(PRVNÍ));
+      expect(zavřená.status, 'okno se přes route nenaplnilo — pin by dál neměřil nic').toBe(429);
+
+      // Táž ruka, jiná hlavička. Kdyby route klíčovala z něčeho, do čeho
+      // volající nemluví, skončil by tenhle požadavek v téže přihrádce a
+      // vyšlo by 429.
+      const druhá = await POST(nečitelný(DRUHÁ));
+      expect(
+        druhá.status,
+        'klíč frekvence se přestal brát z hlavičky — přepiš doktrínu v rate-limit.ts a v generate/route.ts, nemaž tenhle test',
+      ).toBe(400);
+    } finally {
+      hodiny.mockRestore();
+      resetRateWindows();
+    }
+  });
+
+  /**
+   * **Na platformě si útočník cizí přihrádku nevybere** — druhá strana téhož
+   * klíče a uzavření blokujícího nálezu nezávislé revize z 6. 9. 2026.
+   *
+   * S `VERCEL=1` čte `trustedCallerKey()` `x-vercel-forwarded-for`, tedy
+   * hlavičku, kterou píše edge platformy a volající do ní nemluví. Útočník
+   * proto naplní **svou** přihrádku, i když do `x-forwarded-for` napíše první
+   * položkou adresu oběti — a oběť projde.
+   *
+   * ⚠ **Bez tohohle testu je oprava neměřená v tom jediném prostředí, kde na
+   * ní záleží.** Demo běží na platformě; sada běží bez ní, takže všech 46
+   * ostatních případů měří **záchrannou cestu**.
+   */
+  it('na platformě naplní útočník s hlavičkou oběti svou vlastní přihrádku', async () => {
+    const OBĚŤ = '198.51.100.4';
+    const ÚTOČNÍK = '203.0.113.99';
+
+    vi.stubEnv('VERCEL', '1');
+    const uprostředKbelíku = 1_770_000_000_000 + RATE_WINDOW_MS / 2;
+    const hodiny = vi.spyOn(Date, 'now').mockReturnValue(uprostředKbelíku);
+    const { POST } = await import('../route');
+    const nečitelný = (forwarded: string, platforma: string): Request =>
+      new Request('http://127.0.0.1/api/generate', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-forwarded-for': forwarded,
+          'x-vercel-forwarded-for': platforma,
+        },
+        body: '{ not json',
+      });
+
+    try {
+      for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) {
+        const plnící = await POST(nečitelný(`${OBĚŤ}, ${ÚTOČNÍK}`, ÚTOČNÍK));
+        expect(plnící.status, `plnící požadavek ${String(taken)} nedošel ke slotu`).toBe(400);
+      }
+
+      const útočníkovi = await POST(nečitelný(`${OBĚŤ}, ${ÚTOČNÍK}`, ÚTOČNÍK));
+      expect(útočníkovi.status, 'útočníkovi se okno nenaplnilo — pin neměří nic').toBe(429);
+
+      const obětí = await POST(nečitelný(OBĚŤ, OBĚŤ));
+      expect(
+        obětí.status,
+        'útok míří zpátky na oběť — klíč se přestal brát z důvěryhodného konce řetězu',
+      ).toBe(400);
+    } finally {
+      hodiny.mockRestore();
+      resetRateWindows();
+      vi.unstubAllEnvs();
+    }
   });
 });

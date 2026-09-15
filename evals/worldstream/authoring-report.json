@@ -1,0 +1,286 @@
+{
+  "measuredAt": "2026-09-06T13:17:56.193Z",
+  "attempted": 37,
+  "kept": 15,
+  "causes": {
+    "witness": 5,
+    "clay": 5,
+    "unavailable": 3,
+    "shape": 3,
+    "planner": 1,
+    "lowering": 1,
+    "geom": 1,
+    "grounding": 2,
+    "refine": 1
+  },
+  "secondsTotal": 6649,
+  "results": [
+    {
+      "id": "c02",
+      "kept": false,
+      "cause": "witness",
+      "seconds": 217.538,
+      "calls": 4
+    },
+    {
+      "id": "c03",
+      "kept": true,
+      "cause": null,
+      "seconds": 210.74,
+      "calls": 4
+    },
+    {
+      "id": "c04",
+      "kept": true,
+      "cause": null,
+      "seconds": 158.897,
+      "calls": 3
+    },
+    {
+      "id": "c05",
+      "kept": false,
+      "cause": "witness",
+      "seconds": 231.271,
+      "calls": 4
+    },
+    {
+      "id": "c06",
+      "kept": false,
+      "cause": "witness",
+      "seconds": 203.646,
+      "calls": 4
+    },
+    {
+      "id": "c07",
+      "kept": false,
+      "cause": "clay",
+      "seconds": 176.691,
+      "calls": 4
+    },
+    {
+      "id": "c08",
+      "kept": false,
+      "cause": "unavailable",
+      "seconds": 204.806,
+      "calls": 3
+    },
+    {
+      "id": "c09",
+      "kept": true,
+      "cause": null,
+      "seconds": 211.778,
+      "calls": 3
+    },
+    {
+      "id": "c10",
+      "kept": true,
+      "cause": null,
+      "seconds": 200.702,
+      "calls": 3
+    },
+    {
+      "id": "c11",
+      "kept": false,
+      "cause": "clay",
+      "seconds": 162.081,
+      "calls": 3
+    },
+    {
+      "id": "c12",
+      "kept": false,
+      "cause": "witness",
+      "seconds": 224.045,
+      "calls": 4
+    },
+    {
+      "id": "c13",
+      "kept": false,
+      "cause": "witness",
+      "seconds": 245.031,
+      "calls": 4
+    },
+    {
+      "id": "c14",
+      "kept": false,
+      "cause": "unavailable",
+      "seconds": 247.316,
+      "calls": 3
+    },
+    {
+      "id": "c15",
+      "kept": true,
+      "cause": null,
+      "seconds": 280.039,
+      "calls": 4
+    },
+    {
+      "id": "c16",
+      "kept": false,
+      "cause": "shape",
+      "seconds": 296.92,
+      "calls": 4
+    },
+    {
+      "id": "c17",
+      "kept": true,
+      "cause": null,
+      "seconds": 147.067,
+      "calls": 3
+    },
+    {
+      "id": "c18",
+      "kept": false,
+      "cause": "planner",
+      "seconds": 28.265,
+      "calls": 1
+    },
+    {
+      "id": "c19",
+      "kept": false,
+      "cause": "shape",
+      "seconds": 213.028,
+      "calls": 4
+    },
+    {
+      "id": "c20",
+      "kept": true,
+      "cause": null,
+      "seconds": 225.891,
+      "calls": 4
+    },
+    {
+      "id": "c21",
+      "kept": false,
+      "cause": "clay",
+      "seconds": 183.05,
+      "calls": 3
+    },
+    {
+      "id": "c22",
+      "kept": false,
+      "cause": "clay",
+      "seconds": 147.867,
+      "calls": 3
+    },
+    {
+      "id": "c23",
+      "kept": false,
+      "cause": "unavailable",
+      "seconds": 219.628,
+      "calls": 3
+    },
+    {
+      "id": "c24",
+      "kept": true,
+      "cause": null,
+      "seconds": 231.617,
+      "calls": 4
+    },
+    {
+      "id": "c25",
+      "kept": true,
+      "cause": null,
+      "seconds": 189.308,
+      "calls": 4
+    },
+    {
+      "id": "c26",
+      "kept": false,
+      "cause": "lowering",
+      "seconds": 331.948,
+      "calls": 4
+    },
+    {
+      "id": "c27",
+      "kept": true,
+      "cause": null,
+      "seconds": 124.695,
+      "calls": 3
+    },
+    {
+      "id": "c28",
+      "kept": false,
+      "cause": "geom",
+      "seconds": 564.904,
+      "calls": 3
+    },
+    {
+      "id": "c29",
+      "kept": false,
+      "cause": "shape",
+      "seconds": 228.672,
+      "calls": 4
+    },
+    {
+      "id": "c30",
+      "kept": false,
+      "cause": "clay",
+      "seconds": 248.792,
+      "calls": 4
+    },
+    {
+      "id": "r02",
+      "kept": true,
+      "cause": null,
+      "detail": null,
+      "seconds": 58.751,
+      "calls": 1
+    },
+    {
+      "id": "r05",
+      "kept": true,
+      "cause": null,
+      "detail": null,
+      "seconds": 92.061,
+      "calls": 1
+    },
+    {
+      "id": "r10",
+      "kept": false,
+      "cause": "grounding",
+      "detail": "NO_MATCH",
+      "seconds": 0.016,
+      "calls": 0
+    },
+    {
+      "id": "r12",
+      "kept": true,
+      "cause": null,
+      "detail": null,
+      "seconds": 21.682,
+      "calls": 1
+    },
+    {
+      "id": "r14",
+      "kept": false,
+      "cause": "refine",
+      "detail": "SHAPE_INVALID: node 11 references node 14 at or above itself",
+      "seconds": 49.512,
+      "calls": 1
+    },
+    {
+      "id": "r15",
+      "kept": true,
+      "cause": null,
+      "detail": null,
+      "seconds": 43.768,
+      "calls": 1
+    },
+    {
+      "id": "r17",
+      "kept": true,
+      "cause": null,
+      "detail": null,
+      "seconds": 26.742,
+      "calls": 1
+    },
+    {
+      "id": "r20",
+      "kept": false,
+      "cause": "grounding",
+      "detail": "NO_MATCH",
+      "seconds": 0.008,
+      "calls": 0
+    }
+  ]
+}

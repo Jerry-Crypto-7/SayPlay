@@ -16,14 +16,18 @@
  * zvlášť, což je křížová kontrola, ne zdroj pravdy.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, posix, relative, resolve, sep } from 'node:path';
 import { applyPatch, type Operation } from 'rfc6902';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type PartPatch } from '../../../../ir/revision';
 import { peelEnvelope, sealSimHash, type WorldDoc } from '../../../../ir/worlddoc';
 import { routePatch } from '../../../../patch/router';
 import { commitRoutedParts, staleRevision } from '../commit';
+import { MAX_CONCURRENT_BODY_READS_UNIDENTIFIED, openBodyReads, readBody } from '../../../../http/body';
+import { MAX_REQUESTS_PER_WINDOW, resetRateWindows, takeRateSlot } from '../../../../server/rate-limit';
 import { POST } from '../route';
 
 // ---------------------------------------------------------------------------
@@ -279,6 +283,19 @@ async function edit(promptId: string, doc?: WorldDoc, revision?: { sim: number; 
 }
 
 // ---------------------------------------------------------------------------
+
+
+/**
+ * **Strop na frekvenci se před každým případem nuluje, a není to obcházení
+ * meze.** Okna `takeRateSlot()` jsou proces-globální (`src/server/rate-limit.ts`)
+ * a tahle sada vystřelí na jedny dveře víc než `MAX_REQUESTS_PER_WINDOW`
+ * požadavků za desetisekundové okno — což žádný člověk neudělá, ale sada ano.
+ * Bez tohohle řádku začne od padesátého prvního požadavku odpovídat 429 a
+ * červená se objeví na náhodném případu podle pořadí, ne na tom vadném.
+ */
+beforeEach(() => {
+  resetRateWindows();
+});
 
 describe('celá zmrazená editační sada projde endpointem', () => {
   it('má právě 25 editačních promptů a žádný z nich nekončí 5xx', async () => {
@@ -976,6 +993,344 @@ describe('hranice požadavku', () => {
       });
       expect(response.status, `${id} nesmí projít jako editační prompt`).toBe(404);
       expect((response.body.error as { code: string }).code).toBe('UNKNOWN_PROMPT');
+    }
+  });
+});
+
+describe('strop souběhu sem nepatří, a je to změřené', () => {
+  const Q_SINGLE = String.fromCharCode(39);
+  const Q_DOUBLE = String.fromCharCode(34);
+  const Q_BACKTICK = String.fromCharCode(96);
+  const BACKSLASH = String.fromCharCode(92);
+
+  /**
+   * Zdroj bez komentářů — blokové celé, řádkové **kdekoli na řádku**.
+   *
+   * ⚠ **Ukotvit řádkový komentář na začátek řádku nestačí, a je to naměřený
+   * nález nezávislé revize 4. 9. 2026** (`VERDICT: blocking`, CONFIRMED
+   * spuštěním). Nad kotvou na začátek řádku stačilo dopsat na konec řádku kódu
+   * komentář, který zmiňuje cestu k stropu utrácení, a obě brány níž zčervenaly,
+   * aniž se cokoli změnilo na chování. Zrovna tenhle soubor o těch cestách
+   * v komentářích mluví hodně, takže je to falešný poplach na pravděpodobném
+   * místě.
+   *
+   * Hlídá se přitom uvozovka: dvě lomítka uvnitř řetězce (typicky v URL) nejsou
+   * komentář a zbytek řádku se za nimi zahodit nesmí.
+   */
+  const stripComments = (source: string): string =>
+    source
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split(/\r?\n/)
+      .map((line) => {
+        let quote: string | null = null;
+        for (let i = 0; i < line.length; i += 1) {
+          const char = line[i];
+          if (char === BACKSLASH) {
+            i += 1;
+            continue;
+          }
+          if (quote !== null) {
+            if (char === quote) quote = null;
+            continue;
+          }
+          if (char === Q_SINGLE || char === Q_DOUBLE || char === Q_BACKTICK) {
+            quote = char;
+            continue;
+          }
+          if (char === '/' && line[i + 1] === '/') return line.slice(0, i);
+        }
+        return line;
+      })
+      .join('\n');
+
+  const ROUTE = 'src/app/api/edit/route.ts';
+
+  /**
+   * Každý tvar, kterým jde v tomhle repu přitáhnout modul.
+   *
+   * ⚠ **Uvozovka rozhodovala o platnosti celé brány, a je to naměřený nález
+   * nezávislé revize 4. 9. 2026** (`VERDICT: blocking`, CONFIRMED spuštěním).
+   * Předchozí podoba četla jen `from` s apostrofy, takže tentýž import zapsaný
+   * uvozovkami — jediný jiný znak — vzal neplaceným dveřím slot z čítače
+   * placených volání a sada zůstala **zelená, 35/35**. Toutéž dírou prošel
+   * `export … from`, `import` kvůli vedlejšímu účinku, dynamický `import()`
+   * i `require()`.
+   */
+  const IMPORT_SPECIFIER = /(?:\bfrom\b|\bimport\b|\brequire\b)\s*\(?\s*['"]([^'"]+)['"]/g;
+
+  /**
+   * **Kam ten soubor sahá — rozřešeně, ne jako text.**
+   *
+   * Vrací cesty modulů, které `file` přitáhne relativně nebo přes `@/`. Balíčky
+   * se zahazují: ty do repa nepatří a jejich obsah tenhle test nehlídá.
+   *
+   * Existuje proto, že obě brány níž byly do 4. 9. 2026 seznamy řetězců, a dvě
+   * nezávislé revize je obešly beze změny chování — jednu novým souborem, který
+   * v seznamu nebyl, druhou zápisem `from '../../route'`, který ani jeden
+   * z hlídaných řetězců nenese.
+   */
+  function resolvedImports(file: string): string[] {
+    const source = stripComments(readFileSync(file, 'utf8'));
+    const found: string[] = [];
+    for (const match of source.matchAll(IMPORT_SPECIFIER)) {
+      const specifier = match[1];
+      const base = specifier.startsWith('.')
+        ? resolve(dirname(file), specifier)
+        : specifier.startsWith('@/')
+          ? resolve('src', specifier.slice(2))
+          : null;
+      if (base === null) continue;
+      const hit = [`${base}.ts`, `${base}.tsx`, join(base, 'index.ts')].find((candidate) =>
+        existsSync(candidate),
+      );
+      if (hit !== undefined) found.push(relative(process.cwd(), hit).split(sep).join(posix.sep));
+    }
+    return found;
+  }
+
+  /**
+   * Všechno, kam se z `entry` dá dojít po týchž hranách. `stopAt` se do uzávěru
+   * nedostane a nechodí se ani skrz něj.
+   */
+  function importClosure(entry: string, stopAt: readonly string[] = []): Set<string> {
+    const seen = new Set<string>();
+    const stack = [entry];
+    while (stack.length > 0) {
+      const next = stack.pop() as string;
+      if (seen.has(next) || stopAt.includes(next)) continue;
+      seen.add(next);
+      stack.push(...resolvedImports(next));
+    }
+    return seen;
+  }
+
+  /**
+   * Modul toho **jediného** povoleného `await` — čtení těla, které celý úsek
+   * začíná. Je vyňatý jmenovitě, protože být asynchronní je celý jeho účel,
+   * a nechodí se ani skrz něj: co dělá, děje se uvnitř toho jednoho `await`.
+   *
+   * **Naměřeno 4. 9. 2026, ne odhadnuto:** uzávěr `route.ts` bez tohohle modulu
+   * má **29 souborů a `await`/`async`/`.then(` nenese ani jeden**. Návrh revize
+   * „seznam volaných odvodit z importů" by tedy bez téhle jediné výjimky svítil
+   * červeně nad kódem, který je v pořádku.
+   */
+  const BODY_MODULE = 'src/http/body.ts';
+
+  /**
+   * Druhá výjimka, a je z téhož důvodu (P15 `T30-controllever`).
+   *
+   * Vypínač je od té úlohy `async`: ovládací povel má na nasazení druhý zdroj
+   * — sdílený klíč v obchodě, protože zapisovatelný disk pro celou flotilu na
+   * Vercelu není. Tahle route ho čte `awaitem` **úplně první, před čtením
+   * těla**, takže do drahého úseku nesahá; brána o kus níž to tvrdí zvlášť
+   * a tvrdí to nad textem route, ne nad tímhle seznamem.
+   *
+   * ⚠ **Vyjmout modul znamená vyjmout i to, co si přitáhne** (`control-file`
+   * a `spend-store`) — a je to schválně: uzávěr se dělí podle toho, jestli je
+   * kód v drahém úseku, ne podle toho, jak se jmenuje. Kdyby vypínač někdy
+   * přestal být první branou, ozve se aserce nad textem route, ne tenhle řádek.
+   */
+  const KILL_MODULE = 'src/server/kill-switch.ts';
+
+  /**
+   * **Nedosažitelná brána vypadá jako brána.** `T28-editungated` chtěla tyhle
+   * dveře pověsit na čítač placených volání v letu. Měření to zamítlo dvakrát:
+   * placených volání odsud vede nula (`emitPatch` přehrává zmrazený korpus),
+   * a čítač v letu by tu **nikdy nesepnul** — mezi `await readBody` a odpovědí
+   * není jediný `await`, takže celý drahý úsek doběhne v jednom taktu smyčky
+   * a druhý požadavek se do něj nemá jak dostat.
+   *
+   * Tenhle test tu druhou půlku drží. Kdyby do handleru přibyl `await`, úsek by
+   * se stal přerušitelným, dva požadavky by se v něm potkaly a **rozhodnutí
+   * „čítač sem nepatří" by přestalo platit** — což je přesně ta chvíle, kdy se
+   * má někdo podívat znovu, a ne se to dozvědět z nasazení.
+   */
+  it('mezi čtením těla a odpovědí není jediný await', () => {
+    const routeCode = stripComments(readFileSync(ROUTE, 'utf8'));
+
+    // **Dělí se to čtením těla, ne počtem tokenů na celý soubor.** Do
+    // `T30-controllever` stačilo počítat `await` v celé route, protože byl
+    // jediný. Od té chvíle je vypínač `async` — ovládací povel má na nasazení
+    // druhý zdroj (sdílený klíč, protože zapisovatelný disk tam není) — takže
+    // by pouhý počet svítil červeně nad awaitem, který stojí **před** drahým
+    // úsekem a nic v něm nepřerušuje. Soudí se proto rovnou to, co hlavička
+    // tvrdí: za čtením těla není ani jeden.
+    const BODY_READ = 'raw = await readBody(request);';
+    expect(routeCode, 'jediný await už není čtení těla').toContain(BODY_READ);
+    const cut = routeCode.indexOf(BODY_READ) + BODY_READ.length;
+
+    const inSpan = routeCode.slice(cut).match(/\bawait\b/g) ?? [];
+    expect(inSpan, 'v drahém úseku za čtením těla přibyl await').toHaveLength(0);
+
+    // A před tělem taky ne víc než ten jeden vypínač: nový `await` kdekoli
+    // v handleru se má ozvat, jen se u něj má dát rozhodnout, kam padl.
+    const beforeBody = routeCode.slice(0, routeCode.indexOf(BODY_READ));
+    expect(beforeBody.match(/\bawait\b/g) ?? [], 'před čtením těla přibyl await').toHaveLength(1);
+    expect(beforeBody, 'ten await před tělem už není vypínač').toContain(
+      'await killState(process.env)',
+    );
+    // **`.then(` se soudí i tady, ne jen u volaných** — routovaný nález
+    // 4. 9. 2026: vrátit z route promise s připojeným `.then(` přidá nula
+    // tokenů `await` a úsek přesto přeruší.
+    expect(routeCode, 'route sama uhnula do mikrotasku').not.toContain('.then(');
+
+    // **Celý dosažitelný uzávěr, ne přímí sousedé.** Ruční seznam dvou souborů
+    // obešla revize novým modulem; seznam odvozený jen z přímých importů by
+    // obešla **hloubkou** — asynchronní práce o jeden skok za `commit.ts` je
+    // z route neviditelná úplně stejně.
+    const span = [...importClosure(ROUTE, [BODY_MODULE, KILL_MODULE])].filter(
+      (file) => file !== ROUTE,
+    );
+    expect(span, 'rozřešení importů nic nenašlo — brána by soudila prázdno').not.toEqual([]);
+    expect(span, 'modul s commitem se z route přestal importovat').toContain(
+      'src/app/api/edit/commit.ts',
+    );
+
+    for (const callee of span) {
+      const code = stripComments(readFileSync(callee, 'utf8'));
+      expect(code.match(/\bawait\b/g) ?? [], `${callee}: přibyl await`).toHaveLength(0);
+      expect(code.match(/\basync\b/g) ?? [], `${callee}: přibyl async`).toHaveLength(0);
+      expect(code, `${callee}: přibyl .then(`).not.toContain('.then(');
+    }
+  });
+
+  /**
+   * A první půlka: tenhle soubor **nesmí** sáhnout na čítač placených volání.
+   * Neplacené dveře na něm obsadí sloty, ze kterých se platí za svět a za
+   * druhou větu — vyhladovění, které `dc58740` odstranil.
+   */
+  it('neplacené dveře neimportují ani čítač, ani strop utrácení', () => {
+    // **Soudí se rozřešený graf, ne text souboru.** Seznam řetězců revize
+    // obešla: `changes/route.ts` už dnes týž čítač importuje zápisem
+    // `from '../../route'`, který ani jeden z hlídaných řetězců nenese, takže
+    // jednořádkový re-export kdekoli po cestě bránu obejde. A druhým směrem
+    // svítil falešně: zmínit cestu ke stropu utrácení v hlavičce route ji
+    // rozsvítilo červeně, zrovna v souboru, kde se ta cesta nejspíš píše.
+    const reachable = importClosure(ROUTE);
+
+    expect(reachable.size, 'graf se nerozvinul — brána by soudila prázdno').toBeGreaterThan(5);
+    expect(
+      [...reachable].filter((file) => file === 'src/server/spend-cap.ts'),
+      'edit route dosáhne na strop utrácení, ačkoli nic neplatí',
+    ).toEqual([]);
+    expect(
+      [...reachable].filter((file) => file === 'src/app/api/worldstream/sessions/route.ts'),
+      'edit route dosáhne na modul s čítačem placených volání',
+    ).toEqual([]);
+  });
+
+  /**
+   * **Vypínač musí dosáhnout i sem.** Revize 4. 9. 2026 naměřila, že
+   * `off: ["all"]` zastavil relace, refine, upstream i snapshoty, a `/api/edit`
+   * bralo anonymní požadavky dál — jediné zastavení byl redeploy. Jsou to
+   * neplacené dveře, takže rozbitý ovládací soubor je nechává běžet; vypne je
+   * jedině výslovné „vypni provoz".
+   */
+  it('off: all zavře i tyhle dveře, a rozbitý soubor ne', async () => {
+    const world = baseDoc(contractOf(ids[0]).baseWorld as string);
+    const payload = {
+      worldDoc: world,
+      baseRevision: { sim: world.simRevision, look: world.lookRevision },
+      promptId: ids[0],
+    };
+
+    const control = join(mkdtempSync(join(tmpdir(), 'edit-kill-')), 'control.json');
+    try {
+      writeFileSync(control, JSON.stringify({ off: ['all'] }), 'utf8');
+      vi.stubEnv('WORLDSMITH_CONTROL_FILE', control);
+      const off = await post(payload);
+      expect(off.status, 'vypnutý provoz tyhle dveře nezavřel').toBe(503);
+      expect(off.body.error).toMatchObject({ code: 'REPLAY_DISABLED' });
+
+      // Rozbitý soubor je překlep operátora a nesmí položit i to, co nic nestojí.
+      writeFileSync(control, '{ rozbito', 'utf8');
+      expect(
+        (await post(payload)).status,
+        'překlep v ovládacím souboru zavřel neplacené dveře',
+      ).toBe(200);
+
+      // A vypnout tři placené vrstvy se těchhle dveří taky netýká.
+      writeFileSync(control, JSON.stringify({ off: ['sessions', 'refine'] }), 'utf8');
+      expect((await post(payload)).status).toBe(200);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});
+
+describe('plná fronta čtení těla dorazí až ke dveřím', () => {
+  /** Klient, který pošle hlavičky a pak mlčí — drží slot až do deadlinu. */
+  function stalled(): { readonly request: Request; readonly finish: () => void } {
+    let close = (): void => undefined;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        close = () => {
+          controller.close();
+        };
+      },
+    });
+    const request = new Request('http://127.0.0.1/api/edit', {
+      method: 'POST',
+      body,
+      duplex: 'half',
+    } as RequestInit & { duplex: 'half' });
+    return { request, finish: () => { close(); } };
+  }
+
+  it('vrací 429 s retry-after, ne 408 a ne 200', async () => {
+    // **Jednotkový test nad `readBody` tohle neuhlídá.** Mez může být správná
+    // a dveře ji přesto nemusí přeložit — do 4. 9. 2026 tu stálo
+    // `reason === 'TOO_LARGE' ? 413 : 408`, takže nápor by odsud odešel jako
+    // „tvoje tělo dorazilo pomalu".
+    //
+    // Požadavky testu nenesou hlavičku proxy, takže spadají do kbelíku
+    // nerozeznaných — plní se proto jeho strop a odmítnutí je `instance`,
+    // ne obvinění volajícího (`src/http/body.ts`).
+    const held = Array.from({ length: MAX_CONCURRENT_BODY_READS_UNIDENTIFIED }, stalled);
+    const pending = held.map((h) => readBody(h.request, 60_000));
+    try {
+      expect(openBodyReads()).toBe(MAX_CONCURRENT_BODY_READS_UNIDENTIFIED);
+      const response = await POST(
+        new Request('http://127.0.0.1/api/edit', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ promptId: 'E01' }),
+        }),
+      );
+      expect(response.status).toBe(429);
+      expect(response.headers.get('retry-after')).toBe('5');
+      expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
+        'SERVER_AT_CAPACITY',
+      );
+    } finally {
+      for (const h of held) h.finish();
+      await Promise.all(pending);
+    }
+    expect(openBodyReads()).toBe(0);
+  });
+});
+
+describe('strop na frekvenci dorazí až ke dveřím', () => {
+  it('padesátý první požadavek v okně je 429 s retry-after, ne 200', async () => {
+    // Okno se plní přímo čítačem, ne padesáti HTTP požadavky: měří se tady
+    // **zapojení** meze do těchhle dveří, ne mez sama (ta má vlastní sadu
+    // v `src/server/__tests__/rate-limit.test.ts`).
+    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) takeRateSlot('edit', 'unknown');
+    try {
+      const response = await POST(
+        new Request('http://127.0.0.1/api/edit', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ promptId: 'E01' }),
+        }),
+      );
+      expect(response.status).toBe(429);
+      expect(Number(response.headers.get('retry-after'))).toBeGreaterThanOrEqual(1);
+      expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
+        'TOO_MANY_REQUESTS',
+      );
+    } finally {
+      resetRateWindows();
     }
   });
 });

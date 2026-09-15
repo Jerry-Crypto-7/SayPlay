@@ -94,14 +94,58 @@ export interface UpstreamRequest {
 }
 
 /**
- * Model, proti kterému P1 měří.
+ * **Model, který ty světy doopravdy píše, jménem, jakým se o něj žádá.**
  *
- * V Phase 3 se **nevolá** — `./client` běží v režimu záznamu proti
- * `evals/frozen/responses/`. Jméno je tu proto, že se zaznamenává do
- * požadavku, a záznam bez jména modelu by po HALT bráně nešlo srovnat s živým
- * během (T18).
+ * Je to `gpt-5.6-sol` od OpenAI, placený **předplatným Codexu** přes lokální
+ * `claude-code-proxy`, která mluví formátem Anthropic Messages. Žádný měřený
+ * klíč se nekupuje a po tokenech se neúčtuje nic — jediná mez, která kousne,
+ * je `WORLDSMITH_CALL_CAP`, tedy počet volání.
+ *
+ * ⛔ **Do 6. 9. 2026 tady stálo `claude-opus-5` a byla to nepravda, kterou
+ * měřidlo zapisovalo na disk.** Naměřeno z logu proxy: **53 z 53 volání**
+ * požádalo o `claude-opus-5`, proxy je poslala na `provider: codex`,
+ * `model: gpt-5.6-sol` — a odpověď vrátila **označenou jako `claude-opus-5`**.
+ * Archiv i `create-report.json` tedy zapisovaly jméno modelu, který se
+ * produktu neúčastní, a `RULES.md` §2 chce u každého modelu a API pravdivý
+ * zdroj, poskytovatele a licenci. Anthropic mezi backendy proxy není a Max
+ * plán není HTTP endpoint; serverová cesta produktu se na něj napojit neumí.
+ *
+ * **Alias se sem nesmí vrátit.** Hlídá to `__tests__/prompt.test.ts`, který
+ * odmítne jakékoli jméno tvaru `claude-*`, dokud platí rozhodnutí `G2` (a).
+ *
+ * Zmrazený korpus tím dotčený **není**: `evals/frozen/responses/` jsou
+ * syntetické odpovědi klíčované podle promptu, ne podle jména modelu, takže
+ * `./client` v režimu záznamu čte totéž co dřív.
+ *
+ * **Od 12. 9. 2026 varianta `-fast` téhož modelu** — stejná odpověď, jiná
+ * priorita zpracování u poskytovatele. Naměřeno `live-latency.measure.ts`
+ * nad pěti větami korpusu (`evals/worldstream/latency-report.json`):
+ * medián věty **98 s → 56 s**, p95 **130 s → 79 s**, planner 15,6 → 9,6 s,
+ * compiler 64 → 40 s; napsaná geometrie 5/5 proti 4/5, ten jeden padl na
+ * nevyhratelném světě, ne na tvaru. **Přesto tu `-fast` nestojí — rozhodnutí
+ * uživatele 13. 9. 2026:** ta varianta účtuje předplatnému asi 2,5× víc
+ * tokenů, a to je cena, kterou za 40 s na větu neplatí. Jméno zůstává jen
+ * jako volba měřidla (`WORLDSMITH_LATENCY_MODELS`), ne produktu.
+ *
+ * **Od 13. 9. 2026 `gpt-5.6-luna`** — rozhodnutí uživatele po dvou měřeních
+ * téhož dne (`evals/worldstream/latency-report.json`, `PROJECT-STATUS.md`):
+ * nad 30 větami luna medián **33 s** proti 101 s solu (sol 2× narazil na
+ * strop 120 s), stejný počet vstupních tokenů, poloviční výstup; nad 5 větami
+ * v jednom běhu s `gpt-6-astra` (jen přes Codex CLI, proxy ho nezná) luna
+ * 5/5 za 36 s, astra low 3/5 za 172 s, medium 3/5 za 145 s, high 2/5 za
+ * 221 s. Sol napsal geometrii častěji (27/30 proti 21/30), ale zbylé
+ * neúspěchy luny jsou nevyhratelné světy, ne tvar — to řeší prompt, ne model.
+ *
+ * **Od 13. 9. 2026 večer `gpt-6-astra`** — rozhodnutí uživatele („chci Astru")
+ * po galerii kvality (`e2e/quality-gallery.spec.ts`, `PROJECT-STATUS.md`): nad
+ * pěti větami píše Astra 2–5× bohatší kompozice (katedrála z kontejnerů o třech
+ * patrech proti čtyřem deskám luny, zvlněný terén proti rovině, rozpoznatelné
+ * autokino) a s uvolněnými limity (hloubka tvarů 12, kusů 200) prošla 4/5.
+ * Cena: medián **143 s** na větu proti 35 s luny, a jde jen přes Codex CLI
+ * (`WORLDSMITH_MODEL_ENDPOINT=codex-cli` v `src/server/upstream.ts`), protože
+ * proxy ten model nezná. Úsilí `medium` (low bylo pomalejší i horší).
  */
-export const EMISSION_MODEL = 'claude-opus-5';
+export const EMISSION_MODEL = 'gpt-6-astra';
 
 /**
  * Řádek, za kterým ve zprávě stojí příklad a nic jiného.
@@ -257,10 +301,12 @@ export function buildEmissionRequest(prompt: string, grammar: Grammar): Upstream
     'sim.layout   { width, height } — positive integers, the grid measured in cells. Required.',
     'sim.sockets  { <socketName>: [x, y] } — named cells. Everything positional names a socket.',
     'sim.entities { <stableId>: { role, socket, state, locked } } — an OBJECT keyed by stableId, never a list.',
-    '             socket names a sim.sockets entry. role is a FREE label, not a fixed list: the system',
-    '             reads exactly two of them, "actor" for the player (exactly one) and "agent" for an NPC.',
-    '             Every other role is yours to name after what the thing is in the request, and naming it',
-    '             well pays off, because onPickup can fire on a role instead of on one named entity.',
+    '             socket names a sim.sockets entry. role is a FREE label, not a fixed list, but it is a',
+    '             LABEL: camelCase, no spaces (loosePickup, not "loose pickup").',
+    '             The system reads exactly two of them, "actor" for the player (exactly one) and "agent"',
+    '             for an NPC. Every other role is yours to name after what the thing is in the request,',
+    '             and naming it well pays off, because onPickup can fire on a role instead of on one',
+    '             named entity.',
     'sim.rules    { <ruleId>: { phase, priority, event, condition, actions } } — an OBJECT keyed by ruleId,',
     '             never a list. The key is how a later edit names one rule, so it has to be stable.',
     '             event and condition and every entry of actions carry their name under "kind".',

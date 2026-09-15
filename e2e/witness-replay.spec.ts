@@ -24,7 +24,7 @@ const vault = vaultWorld as unknown as VerifiableWorld;
 const unwinnable = unwinnableWorld as unknown as VerifiableWorld;
 
 async function bridge(page: import('@playwright/test').Page) {
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith?.verify !== undefined, undefined, {
     timeout: 30_000,
   });

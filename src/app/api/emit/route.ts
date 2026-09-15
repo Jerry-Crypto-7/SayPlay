@@ -12,7 +12,8 @@
  * **404** neznámý zmrazený prompt. **408** tělo, které nedorazilo do
  * `BODY_DEADLINE_MS`. **413** tělo přes strop. **503** nečitelný
  * nebo podvržený zmrazený korpus — rozbité prostředí, o kterém se nesmí nic
- * skórovat. Všechno ostatní je **200 s verdiktem**: emise, která neprošla
+ * skórovat — a od `T28-killemit` taky **vypnutý provoz** (`REPLAY_DISABLED`,
+ * jedině na `off: ["all"]`). Všechno ostatní je **200 s verdiktem**: emise, která neprošla
  * schématem, nese osiřelý odkaz, nejde snížit nebo její svědek nedojde do výhry,
  * je *naměřený výsledek*, ne chyba serveru. Kdyby se z toho dělalo 5xx, měřicí
  * běh v T17 by nerozeznal vadný svět od spadlého potrubí — a přesně to je
@@ -54,8 +55,15 @@
 
 import { randomUUID } from 'node:crypto';
 
-import { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody } from '../../../http/body';
+import { BODY_DEADLINE_MS, MAX_BODY_BYTES, bodyRefusalResponse, readBody } from '../../../http/body';
 import { withRequest } from '../../../obs/trace';
+import { killState } from '../../../server/kill-switch';
+import { callerKey, trustedCallerKey, rateLimitCode, rateLimitedResponse, takeRateSlot } from '../../../server/rate-limit';
+import {
+  PUBLIC_CORPUS_FAULT,
+  logRateLimited,
+  logStickyFault,
+} from '../../../server/public-faults';
 import { runEmission } from './chain';
 
 /** `AsyncLocalStorage` i čtení zmrazeného korpusu potřebují Node, ne edge. */
@@ -69,37 +77,80 @@ export const runtime = 'nodejs';
 export { BODY_DEADLINE_MS, MAX_BODY_BYTES, readBody };
 
 /**
+ * **Vypínač je první brána, před čtením těla** — týž vzor jako v `/api/edit`
+ * a u worldstreamových dveří. Vypnuté dveře nesmí stát víc než jeden
+ * `readFileSync` nad souborem o pár řádcích, kdežto `readPromptId()` níž čeká
+ * na tělo až `BODY_DEADLINE_MS`.
+ *
+ * Čte se `replay`, ne `sessions` ani `upstream`: obě emitovací cesty přehrávají
+ * **zmrazený korpus** a neplatí se na nich nic, takže je **rozbitý** ovládací
+ * soubor nechává běžet ze stejného důvodu jako snapshoty. Vypne je jedině
+ * výslovné `off: ["all"]`, tedy „vypni provoz".
+ *
+ * **Sdílené, protože ty dveře jsou dvoje a mez na nich musí být táž** — přesně
+ * z toho důvodu, proč je sdílený i `readPromptId()` pod tímhle. Kdyby si každá
+ * cesta nesla vlastní kopii, dala by se jedna použít k obejití druhé. To se
+ * 4. 9. 2026 stalo doopravdy: remediace zavřela `/api/edit` a tyhle dvoje dveře
+ * téže třídy braly anonymní požadavky dál, přičemž `/api/emit/stream` navrch
+ * otevíral nová SSE spojení a držel je.
+ *
+ * `route` jde jen do logu, aby se v něm poznalo, které z těch dvou cest se to
+ * týká.
+ */
+export async function replayDisabled(requestId: string, route: string): Promise<Response | null> {
+  if (!(await killState(process.env)).replay) return null;
+  logRateLimited(route, requestId, 'REPLAY_DISABLED', 'kill switch: all');
+  return Response.json(
+    {
+      requestId,
+      error: { code: 'REPLAY_DISABLED', message: 'replaying worlds is switched off right now' },
+    },
+    { status: 503 },
+  );
+}
+
+/**
  * Přečte tělo a vytáhne z něj `promptId`, nebo rovnou vrátí chybovou odpověď.
  *
  * Sdílí to s `stream/route.ts`: obě cesty přijímají tentýž požadavek a mez
  * velikosti i času musí být na obou stejná, jinak by se dala jedna z nich
- * použít k obejití druhé.
+ * použít k obejití druhé. `route` je jméno těch dveří — jde jen do logu, aby
+ * se v něm poznalo, která z těch dvou cest mluví.
+ *
+ * ⚠ **Čtení těla je uvnitř `try`, a je to jediný důvod, proč obě ty cesty
+ * odpovědí vždycky.** `readBody()` vrací svoje meze jako hodnotu, ale samo
+ * `reader.read()` se **odmítnout** může — přerušené spojení, vadná komprese —
+ * a to odmítnutí by proletělo ven. Odpověď by pak složil Next.js: pětistovka
+ * bez `requestId`, tedy jediný požadavek v provozu, který se nedá spárovat
+ * s řádkem v logu. Naměřeno nezávislou revizí 1. 9. 2026; `/api/generate` má
+ * tutéž opravu od `d5970e7`.
  */
 export async function readPromptId(
   request: Request,
   requestId: string,
+  route: string,
 ): Promise<{ readonly ok: true; readonly promptId: string } | { readonly ok: false; readonly response: Response }> {
-  const raw = await readBody(request);
-  if (!raw.ok)
+  let raw;
+  try {
+    raw = await readBody(request);
+  } catch (thrown) {
+    logRateLimited(
+      route,
+      requestId,
+      'BODY_UNREADABLE',
+      thrown instanceof Error ? thrown.message : String(thrown),
+    );
     return {
       ok: false,
-      response:
-        raw.reason === 'TOO_LARGE'
-          ? Response.json(
-              {
-                requestId,
-                error: { code: 'PAYLOAD_TOO_LARGE', message: `request body exceeds ${MAX_BODY_BYTES} bytes` },
-              },
-              { status: 413 },
-            )
-          : Response.json(
-              {
-                requestId,
-                error: { code: 'BODY_TIMEOUT', message: `request body did not arrive within ${BODY_DEADLINE_MS} ms` },
-              },
-              { status: 408 },
-            ),
+      response: Response.json(
+        { requestId, error: { code: 'BODY_UNREADABLE', message: 'the request body could not be read' } },
+        { status: 400 },
+      ),
     };
+  }
+  // Třetí důvod (`BUSY`) a jeden překlad pro všechny dveře — viz
+  // `bodyRefusalResponse()` v `src/http/body.ts`.
+  if (!raw.ok) return { ok: false, response: bodyRefusalResponse(requestId, raw) };
 
   let body: unknown;
   try {
@@ -138,7 +189,18 @@ export async function POST(request: Request): Promise<Response> {
   const requestId = randomUUID();
 
   return withRequest(requestId, async () => {
-    const parsed = await readPromptId(request, requestId);
+    const disabled = await replayDisabled(requestId, 'emit');
+    if (disabled !== null) return disabled;
+
+    // Strop na frekvenci, pořád před čtením těla — táž mez a totéž odůvodnění
+    // jako u `/api/edit`, viz `src/server/rate-limit.ts`.
+    const slot = takeRateSlot('emit', trustedCallerKey(request) ?? callerKey(request));
+    if (!slot.allowed) {
+      logRateLimited('emit', requestId, rateLimitCode(slot), `${String(slot.count)} in window`);
+      return rateLimitedResponse(requestId, slot);
+    }
+
+    const parsed = await readPromptId(request, requestId, 'emit');
     if (!parsed.ok) return parsed.response;
 
     const outcome = runEmission(parsed.promptId);
@@ -150,11 +212,27 @@ export async function POST(request: Request): Promise<Response> {
      * nebo podvržený soubor nevypovídají o modelu nic; kdyby to endpoint vydal jako
      * 200 s odmítnutím, T17 by to započítal jako vadnou emisi.
      */
-    if (outcome.kind === 'unavailable')
+    if (outcome.kind === 'unavailable') {
+      // Ven veřejný text, operátorovi ten pravý — viz `src/server/public-faults.ts`.
+      // `failure.detail` nese u `CORPUS_UNREADABLE` absolutní cestu na disku
+      // včetně jména účtu, a tyhle dveře jsou stejně veřejné jako `/api/generate`.
+      //
+      // **Lepivě, ne na požadavek** — nález dvou nezávislých revizí 1. 9. 2026.
+      // Bound byl do té chvíle jen v `/api/generate`, takže na nasazení bez
+      // `evals/frozen/**` psaly tyhle dveře jeden řádek s absolutní cestou na
+      // každý požadavek. Vada korpusu je jeden stav, tedy jeden řádek.
+      logStickyFault('emit', requestId, outcome.failure.reason, outcome.failure.detail);
       return Response.json(
-        { requestId, error: { code: outcome.failure.reason, message: outcome.failure.detail } },
+        {
+          requestId,
+          error: {
+            code: outcome.failure.reason,
+            message: PUBLIC_CORPUS_FAULT[outcome.failure.reason],
+          },
+        },
         { status: 503 },
       );
+    }
 
     if (outcome.kind === 'unknown-prompt')
       return Response.json(

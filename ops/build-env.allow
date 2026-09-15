@@ -71,6 +71,37 @@ WORLDSMITH_BUILD_TREE
 # Kam `next.config.mjs` připisuje množinu proměnných, kterou build doopravdy vidí.
 WORLDSMITH_ENV_REPORT
 
+# --- co se sem nikdy nedopisuje: NIC, CO SE ČTE ZA BĚHU ---
+#
+# Pravidlo je jmenovitě širší než „žádné secrety" a od P15 T30 je takhle
+# napsané schválně. Tenhle seznam určuje, co build VIDÍ, a co build vidí, může
+# skončit v klientském bundlu — stačí jediné `process.env.X` v komponentě,
+# kterou Next předrenderuje. Proměnná čtená za běhu tedy nemá důvod tady být
+# ani tehdy, když sama tajemství nenese: přidat ji znamená vystavit ji buildu
+# zadarmo, bez jediného volajícího, který by z toho něco měl.
+#
+# Celá ta třída, jmenovitě — jsou to všechno proměnné běžícího serveru:
+#
+#   WORLDSMITH_MODEL_KEY        klíč poskytovatele
+#   WORLDSMITH_MODEL_ENDPOINT   adresa poskytovatele
+#   WORLDSMITH_CONTROL_FILE     strop utrácení a kill switche (T29, T30)
+#   WORLDSMITH_SPEND_STORE_URL  sdílená účetní kniha
+#   WORLDSMITH_SPEND_STORE_TOKEN  pověření k ní
+#
+# Ty dvě prostřední jsou důvod, proč se pravidlo přeformulovalo: ani jedna
+# nenese ve jméně `KEY`, `SECRET` ani `TOKEN`, takže jediná aserce o tvaru
+# jména by je propustila. Adresa poskytovatele v klientském bundlu je přitom
+# návod, kam posílat cizí požadavky, a cesta k ovládacímu souboru je rozvržení
+# disku serveru.
+#
+# Klíč k placenému modelu čte výhradně serverová cesta za běhu
+# (`upstreamConfigFromEnv` v `src/server/upstream.ts`), nikdy build.
+#
+# Hlídá to `src/server/__tests__/upstream.test.ts` **dvěma** asercemi: jednou na
+# tvar jména a jednou na uzavřený seznam `WORLDSMITH_*` jmen, která sem patří.
+# Ta druhá je ta, která zavírá případ výš — nové jméno se na seznam dostane
+# jedině tím, že ho tam někdo vědomě dopíše i v testu.
+
 [platform]
 
 # --- přimíchá Windows do každého potomka, i s vlastním prostředím ---

@@ -79,11 +79,23 @@ export default function ModelProgress({
   /** Dostane hotový model. Nepovinné — komponenta funguje i tehdy, když ho nikdo nechce. */
   onReady,
   onState,
+  visible = true,
 }: {
   /** Dostane hotový model; stránka ho předá promptové cestě. */
   readonly onReady?: (engine: ChatEngine) => void;
   /** Dostane každý pravdivý stav, včetně `unavailable`. */
   readonly onState?: (state: ModelState) => void;
+  /**
+   * Má se panel vykreslit?
+   *
+   * **Není to `display: none` a není to úklid.** Od vlny 0 bydlí panel v Inspect
+   * zásuvce, která je zavřená; jenže tahle komponenta není jenom panel — její
+   * efekt spouští probe WebGPU, stahuje váhy a hotový engine podává promptové
+   * cestě. Odpojit ji se zavřenou zásuvkou by znamenalo, že se model nikdy
+   * nezačne načítat. Zůstává tedy připojená pořád a nevykreslí nic, dokud se
+   * někdo nepodívá. `onState` běží tak jako tak — stránka o fázi ví i zavřená.
+   */
+  readonly visible?: boolean;
 } = {}) {
   const [state, setState] = useState<ModelState>(INITIAL);
   // Odpojená komponenta nesmí sahat na stav: stahování běží déle než leckterá
@@ -129,6 +141,8 @@ export default function ModelProgress({
   }, [onReady, onState]);
 
   const caption = captionFor(state);
+
+  if (!visible) return null;
 
   return (
     <div

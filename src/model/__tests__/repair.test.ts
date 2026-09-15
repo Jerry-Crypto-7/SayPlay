@@ -9,8 +9,12 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { buildRuntimeWorld } from '../../ir/build';
+import { ID_PATTERN } from '../../ir/types';
+import { ruleKeyFault } from '../../ir/worlddoc';
+import { SHAPE_IDENTIFIER_PATTERN } from '../../shape/schema';
 import { EXAMPLE_MARKER, buildEmissionRequest, type Grammar } from '../prompt';
-import { repairEmission } from '../repair';
+import { repairEmission, toIdentifier } from '../repair';
 
 const grammar = (): Grammar => ({
   surfaceEvents: ['onStart', 'onEnterZone', 'onCollide', 'onAction', 'onPickup'],
@@ -29,6 +33,40 @@ function example(): Doc {
 }
 
 const kinds = (result: ReturnType<typeof repairEmission>) => result.notes.map((note) => note.kind);
+
+describe('co oprava nesmí ztratit', () => {
+  it('pravidlo pod klíčem __proto__ nezmizí — pojmenuje se jako vada', () => {
+    // **Nález nezávislé revize 4. 9. 2026, ověřený spuštěním v node.** Tabulka
+    // pravidel se skládala přiřazením do `{}`, a `repaired['__proto__'] = {…}`
+    // vlastní klíč nezaloží: zavolá setter prototypu. Pravidlo tedy z tabulky
+    // **zmizelo** a hotové tabulce se navíc vyměnil prototyp — svět se pak
+    // certifikuje o jeden zákon chudší, aniž kdokoli řekne proč.
+    //
+    // Vstup se skládá `Object.fromEntries`, protože ta zakládá vlastnosti
+    // definicí, ne přiřazením — přesně jako `JSON.parse`, kterým odpověď modelu
+    // doopravdy přichází. Napsat `{ __proto__: … }` v literálu by vyrobilo něco
+    // jiného: prototyp, ne klíč.
+    const doc = example();
+    const rules = doc.sim.rules as Record<string, unknown>;
+    const [firstKey] = Object.keys(rules);
+    const poisoned = Object.fromEntries([...Object.entries(rules), ['__proto__', rules[firstKey]]]);
+    expect(Object.keys(poisoned), 'fixtura ten klíč ztratila už na vstupu').toContain('__proto__');
+
+    const repaired = (
+      repairEmission({ ...doc, sim: { ...doc.sim, rules: poisoned } }).document as Doc
+    ).sim;
+    const table = repaired.rules as Record<string, unknown>;
+
+    expect(Object.keys(table), 'zákon zmizel z tabulky').toContain('__proto__');
+    expect(Object.keys(table)).toHaveLength(Object.keys(poisoned).length);
+    expect(Object.getPrototypeOf(table), 'tabulce se vyměnil prototyp').toBe(Object.prototype);
+
+    // A druhá polovina toho slibu: **nezakládá se nový invariant**. Klíč, na
+    // který se rozbor cesty nedostane, pojmenuje ta větev, která na to už je —
+    // stejně jako `constructor` a `prototype`, které tudy chodí správně dnes.
+    expect(ruleKeyFault(repaired)?.detail).toContain('__proto__');
+  });
+});
 
 describe('co oprava dělá', () => {
   it('dohledá svědka, kterého model nenapsal', () => {
@@ -382,5 +420,175 @@ describe('kde přesně je hranice zásahu', () => {
     expect(kinds(result)).toContain('witnessSolved');
     expect(witness.H_cert, 'přání modelu zůstalo horizontem hledání').toBe(600);
     expect(witness.ops.length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * **Každý řetězec níž je naměřený, ne vymyšlený.** Pochází z archivu běhu `T14`
+ * (`evals/worldstream/create-raw.json`, 104 odpovědí, 6. 9. 2026), který je
+ * gitignorovaný — proto jsou hodnoty opsané sem. Poměry z toho archivu, které
+ * tenhle blok hlídá: `materialIntent` 60 vadných ze 112, `role` 3 ze 479,
+ * a **528 platných hodnot, na které se nesmí sáhnout**.
+ */
+describe('narovnání identifikátoru', () => {
+  const MEASURED_PHRASES: readonly (readonly [string, string])[] = [
+    ['weathered corrugated steel', 'weatheredCorrugatedSteel'],
+    ['wet projecting eaves', 'wetProjectingEaves'],
+    ['stagnant floodwater', 'stagnantFloodwater'],
+    ['rain-darkened courtyard curb', 'rainDarkenedCourtyardCurb'],
+    ['patched timber homes with iron hangers', 'patchedTimberHomesWithIronHangers'],
+  ];
+
+  /** Naměřené hodnoty, které prošly. Byte za byte je vrátí obě vrstvy. */
+  const MEASURED_VALID: readonly string[] = [
+    'weathered_stone',
+    'living_bark_and_hewn_timber',
+    'agedClockworkMetal',
+    'actor',
+    'traversableMachinery',
+  ];
+
+  it('přečte frázi jako identifikátor platný na obou vrstvách naráz', () => {
+    for (const [wrote, read] of MEASURED_PHRASES) {
+      expect(toIdentifier(wrote, SHAPE_IDENTIFIER_PATTERN), wrote).toBe(read);
+      expect(toIdentifier(wrote, ID_PATTERN), wrote).toBe(read);
+      // Celý smysl jednoho pravidla místo dvou: co vyleze, projde oběma vzory.
+      expect(SHAPE_IDENTIFIER_PATTERN.test(read), read).toBe(true);
+      expect(ID_PATTERN.test(read), read).toBe(true);
+    }
+  });
+
+  it('nesáhne na hodnotu, která už platná je', () => {
+    // Bez téhle aserce projde narovnání, které rozpadá na slova vždycky — a
+    // `weathered_stone` by z něj vylezlo jako `weatheredStone`, tedy jiný
+    // materiál než ten, který model napsal.
+    for (const value of MEASURED_VALID) {
+      const pattern = SHAPE_IDENTIFIER_PATTERN.test(value) ? SHAPE_IDENTIFIER_PATTERN : ID_PATTERN;
+      expect(toIdentifier(value, pattern), value).toBe(value);
+    }
+  });
+
+  it('nechá být hodnotu, kterou přijímá vrstva, na které stojí', () => {
+    // ⚠ **`outdoor-space` je naměřený případ obojího naráz.** Je to jediná
+    // vadná `role` celého běhu (3 výskyty ze 479), takže IR ji odmítne a
+    // narovná se — jenže tvarová vrstva pomlčku bere. Kdyby se obě vrstvy
+    // narovnávaly přísnějším vzorem, přepsala by se hodnota, kterou nikdo
+    // neodmítl. Vzor rozhoduje o obojím: co je vada i co z ní vznikne.
+    expect(toIdentifier('outdoor-space', ID_PATTERN)).toBe('outdoorSpace');
+    expect(toIdentifier('outdoor-space', SHAPE_IDENTIFIER_PATTERN)).toBe('outdoor-space');
+
+    expect(toIdentifier('9lives', SHAPE_IDENTIFIER_PATTERN)).toBe('9lives');
+    expect(toIdentifier('geom:panel.floor', SHAPE_IDENTIFIER_PATTERN)).toBe('geom:panel.floor');
+  });
+
+  it('nevymýšlí identifikátor tam, kde žádný nevznikne', () => {
+    // Selhání jsou stejně důležitá jako úspěchy: dopsat předponu k `3rd floor`
+    // nebo useknout konec dlouhého řetězce je hádání, ne oprava.
+    expect(toIdentifier('', ID_PATTERN), 'prázdný řetězec').toBeNull();
+    expect(toIdentifier('   ', ID_PATTERN), 'samé mezery').toBeNull();
+    expect(toIdentifier('— · —', ID_PATTERN), 'samá interpunkce').toBeNull();
+    expect(toIdentifier(42, ID_PATTERN), 'nebyl to řetězec').toBeNull();
+    expect(toIdentifier(null, ID_PATTERN), 'nebyl to řetězec').toBeNull();
+    expect(toIdentifier('3rd floor', ID_PATTERN), 'IR chce první písmeno').toBeNull();
+    expect(toIdentifier('weathered '.repeat(9), ID_PATTERN), 'delší než 64 znaků').toBeNull();
+  });
+
+  it('narovná roli u entity i v pravidle, které se jí drží', () => {
+    // ⚠ **Tohle je celý důvod, proč je narovnání dokumentové, ne polní.**
+    // `onPickup` se smí klíčovat rolí a `entitiesWithRole()` porovnává řetězce
+    // na rovnost, takže přepis jen u entity vyrobí pravidlo, které nikoho
+    // nenajde — a lowering spadne na `no entity matches role`.
+    const doc = example();
+    const entities = doc.sim.entities as Record<string, Record<string, unknown>>;
+    const rules = doc.sim.rules as Record<string, Record<string, unknown>>;
+    const [ruleId, byRole] =
+      Object.entries(rules).find(
+        ([, rule]) => (rule.event as Record<string, unknown>).kind === 'onPickup',
+      ) ?? [];
+    expect(byRole, 'fixtura ztratila pravidlo klíčované rolí').toBeDefined();
+
+    const sim = {
+      ...doc.sim,
+      entities: { ...entities, card: { ...entities.card, role: 'loose pickup' } },
+      rules: {
+        ...rules,
+        [ruleId as string]: { ...byRole, event: { kind: 'onPickup', role: 'loose pickup' } },
+      },
+    };
+
+    const result = repairEmission({ ...doc, sim });
+    const repaired = (result.document as Doc).sim;
+    const repairedEntities = repaired.entities as Record<string, Record<string, unknown>>;
+    const repairedRules = repaired.rules as Record<string, Record<string, unknown>>;
+
+    expect(kinds(result).filter((kind) => kind === 'roleStraightened'), 'nota má být jedna na roli').toHaveLength(1);
+    expect(repairedEntities.card.role).toBe('loosePickup');
+    expect((repairedRules[ruleId as string].event as Record<string, unknown>).role).toBe('loosePickup');
+
+    const built = buildRuntimeWorld(repaired);
+    expect(built.ok ? [] : built.issues, 'svět se po narovnání nepostavil').toEqual([]);
+  });
+
+  it('nechá roli být, když identifikátor už je', () => {
+    const result = repairEmission(example());
+    expect(kinds(result)).not.toContain('roleStraightened');
+  });
+});
+
+/**
+ * **Nález nezávislé revize 7. 9. 2026, ověřený spuštěním.** Pravopisný přepis
+ * přestává být pravopisem ve chvíli, kdy vyrobí jméno, které v dokumentu už
+ * někdo nese. Tři scénáře níž jsou ty, které revize doopravdy spustila.
+ */
+describe('narovnání role se odmítne tam, kde by slilo dvě role v jednu', () => {
+  const withRoles = (extra: Record<string, unknown>) => {
+    const doc = example();
+    const entities = doc.sim.entities as Record<string, Record<string, unknown>>;
+    return { ...doc, sim: { ...doc.sim, entities: { ...entities, ...extra } } };
+  };
+
+  it('nechá roli být, když by narovnaná patřila jiné entitě', () => {
+    // `card` nese `pickup`. `decoy` s `"pickup "` by se narovnal na tutéž roli,
+    // a od té chvíle by `onPickup{role:"pickup"}` střílel na obě entity —
+    // a `countInZone{tag:"pickup"}` počítal dvě tam, kde model napsal jednu.
+    const result = repairEmission(
+      withRoles({ decoy: { role: 'pickup ', socket: 'leverPad', state: 'loose' } }),
+    );
+    const entities = (result.document as Doc).sim.entities as Record<string, Record<string, unknown>>;
+
+    expect(kinds(result)).not.toContain('roleStraightened');
+    expect(entities.decoy.role, 'role se slila s cizí').toBe('pickup ');
+  });
+
+  it('nevyrobí dvě stejné role ze dvou různých frází', () => {
+    const result = repairEmission(
+      withRoles({
+        alpha: { role: 'loose pickup', socket: 'leverPad', state: 'loose' },
+        beta: { role: 'loose-pickup', socket: 'cardPad', state: 'loose' },
+      }),
+    );
+    const entities = (result.document as Doc).sim.entities as Record<string, Record<string, unknown>>;
+    const roles = [entities.alpha.role, entities.beta.role];
+
+    expect(new Set(roles).size, 'dvě různé role modelu splynuly v jednu').toBe(2);
+  });
+
+  it('nevyrobí `actor` ani `agent`, protože to není pravopis, ale volba hrdiny', () => {
+    // ⚠ Nejhorší instance nálezu: `build.ts` i `solve.ts` berou **první**
+    // entitu s rolí `actor`, takže narovnaný `decoy` před `player` by přebral
+    // avatara i vítěznou cestu. Odmítá se, i kdyby bylo jméno volné.
+    const result = repairEmission(
+      withRoles({ decoy: { role: 'actor!', socket: 'leverPad', state: 'idle' } }),
+    );
+    const entities = (result.document as Doc).sim.entities as Record<string, Record<string, unknown>>;
+
+    expect(kinds(result)).not.toContain('roleStraightened');
+    expect(entities.decoy.role).toBe('actor!');
+
+    const built = buildRuntimeWorld((result.document as Doc).sim);
+    const actors = built.ok
+      ? built.world.ir.entities.filter((entity) => entity.role === 'actor')
+      : [];
+    expect(actors.length, 'narovnání vyrobilo druhého avatara').toBeLessThan(2);
   });
 });

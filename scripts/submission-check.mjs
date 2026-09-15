@@ -78,7 +78,6 @@ const REPO = process.cwd();
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 
 export const MANIFEST_FILE = 'docs/submission/submission.json';
-export const DESIGN_BOOK_FILE = 'DESIGN-BOOK.md';
 export const PLAN_FILE = 'plans/P8-odevzdani.md';
 export const REGISTRY_FILE = 'disclosure.json';
 
@@ -320,24 +319,29 @@ export function mp4DurationSeconds(buffer) {
   return timescale > 0 ? duration / timescale : null;
 }
 
-/**
- * Garanční věta z `DESIGN-BOOK.md` §6, tak jak tam stojí.
- *
- * **Čte se ze zdroje, ne z kopie v tomhle souboru.** Kopie by se rozešla s
- * originálem přesně ve chvíli, kdy někdo garanci změkčí — a kontrola by pak
- * hlídala nezměkčenost proti zastaralému textu, tedy nic.
- *
- * Vrací větu **po `proseOf()`**, tedy stejnou normalizací, jakou projde popis.
- * Věta nese zvýraznění i zpětné apostrofy (`` `win()` ``) a citace v popisu je
- * ponese jinak — porovnávat dvě různě normalizované strany by znamenalo, že
- * doslovná citace neprojde a kontrola bude vypadat jako nesplnitelná.
+/** Current English submission copy contract, aligned with the Reality Compiler
+ * source pilot in README and plan 19 A12. These are disclosure requirements,
+ * not an automated semantic review. Wording and layout may change; there is no
+ * required quotation from the superseded DESIGN-BOOK or claimed success rate.
+ * A human still checks consistency and the meaning of the complete description.
  */
-export function guaranteeSentence(designBook) {
-  const section = designBook.split(/^## /m).find((part) => part.startsWith('6. Garance'));
-  if (!section) return null;
-  const quoted = section.split('\n').find((line) => line.startsWith('> '));
-  if (!quoted) return null;
-  return proseOf(quoted);
+const DESCRIPTION_DISCLOSURES = [
+  ['source-scope', /\bshort\b[^.!?]{0,100}\b(?:source|text)\b/i,
+    /\bdiscrete\b[^.!?]{0,80}\b(?:spatial|procedure|scenario|movement)/i,
+    /\b(?:one|single) timer intervention\b/i],
+  ['parameter-review', /\b(?:user|human)\b[^.!?]{0,120}\breviews?\b[^.!?]{0,80}\b(?:seven|7)\b[^.!?]{0,60}\bparameter/i,
+    /\b(?:missing|conflicting)\b[^.!?]{0,100}\bblocks? acceptance\b/i],
+  ['semantic-limit', /\b(?:not a semantic guarantee|(?:does not|cannot) (?:certify|guarantee|establish) semantic (?:correctness|accuracy))\b/i],
+  ['geometry-limit', /\bgeometry\b[^.!?]{0,35}\bschematic\b/i],
+  ['latency-provenance', /\b(?:CLI|generation|creation) timings?\b[^.!?]{0,100}\b(?:include|includes)\b[^.!?]{0,100}\b(?:process|transport) overhead\b/i],
+  ['independent-review', /\bindependent semantic review\b/i, /\b(?:usability|human|five.person)\b[^.!?]{0,100}\b(?:evidence|study|review)\b/i],
+];
+
+export function descriptionContractProblems(text) {
+  // Comments/code are not disclosures visible in the written submission.
+  const prose = proseOf(text.replace(/<!--[\s\S]*?-->/g, '').replace(/```[\s\S]*?```|~~~[\s\S]*?~~~/g, ''));
+  return DESCRIPTION_DISCLOSURES.filter(([, ...patterns]) => !patterns.every(pattern => pattern.test(prose)))
+    .map(([id]) => `chybí aktuální disclosure ${id} (Reality Compiler source pilot)`);
 }
 
 /** Text bez rozdílů, které nejsou obsahem: zalomení, dvojité mezery, nbsp. */
@@ -561,7 +565,7 @@ check(3, 'demo video existuje a je pod 3:00', false, ({ repo, manifest }) => {
   return null;
 });
 
-check(4, 'písemný popis existuje a není zástupný', false, ({ repo, manifest }) => {
+export function checkDescription({ repo, manifest }) {
   const path = manifest.descriptionPath;
   if (isPlaceholder(path)) return `descriptionPath není v ${MANIFEST_FILE} vyplněná`;
   if (!existsSync(join(repo, path))) return `${path} neexistuje`;
@@ -573,15 +577,7 @@ check(4, 'písemný popis existuje a není zástupný', false, ({ repo, manifest
     problems.push(`${path} má ${prose.length} znaků prózy, práh je ${DESCRIPTION_MIN_CHARS}`);
   }
 
-  // Garance se cituje doslova a nezměkčená. Kdyby se citovala volně, popis by
-  // slíbil víc, než systém umí — a to je jediné tvrzení v celé přihlášce, které
-  // se dá vyvrátit jedním protipříkladem.
-  const sentence = guaranteeSentence(readText(repo, DESIGN_BOOK_FILE));
-  if (!sentence) {
-    problems.push(`${DESIGN_BOOK_FILE} §6 nemá čitelnou garanční větu — proti čemu by se popis měřil?`);
-  } else if (!proseOf(text).includes(sentence)) {
-    problems.push(`${path} necituje garanční větu z ${DESIGN_BOOK_FILE} §6 doslova`);
-  }
+  problems.push(...descriptionContractProblems(text).map(problem => `${path}: ${problem}`));
 
   // Aspoň jedno naměřené číslo. Popis bez čísel je marketing; číslo, které
   // v žádném reportu není, je odhad vydávaný za měření.
@@ -598,13 +594,16 @@ check(4, 'písemný popis existuje a není zástupný', false, ({ repo, manifest
       for (const number of distinctiveNumbers(readText(repo, report))) measured.add(number);
     }
     const cited = [...distinctiveNumbers(text)].filter((number) => measured.has(number));
-    if (measured.size > 0 && cited.length === 0) {
+    if (measured.size === 0) {
+      problems.push(`reporty ${reports.join(', ')} neobsahují ověřitelné naměřené číslo`);
+    } else if (cited.length === 0) {
       problems.push(`${path} neuvádí jediné číslo, které by stálo v ${reports.join(', ')}`);
     }
   }
 
   return summarize(problems);
-});
+}
+check(4, 'písemný popis existuje a není zástupný', false, checkDescription);
 
 check(5, 'focus kategorie je zvolená a shodná s registrací', false, ({ repo, manifest }) => {
   const path = manifest.descriptionPath;
@@ -829,7 +828,7 @@ export async function main(argv = []) {
         '  node scripts/submission-check.mjs             plný běh proti nasazené adrese',
         '  node scripts/submission-check.mjs --offline   přeskočí síťové kontroly, exit 2',
         '',
-        `Vstupy: ${MANIFEST_FILE}, ${REGISTRY_FILE}, ${PLAN_FILE}, ${DESIGN_BOOK_FILE}.`,
+        `Vstupy: ${MANIFEST_FILE}, ${REGISTRY_FILE}, ${PLAN_FILE}. Popis: aktuální Reality Compiler disclosure kontrakt.`,
         'Exit 0 jen když prošlo všech osm kontrol. Přeskočená kontrola není splněná.',
       ].join('\n'),
     );

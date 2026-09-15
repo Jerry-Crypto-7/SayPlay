@@ -66,7 +66,7 @@ let pageReplays = -1;
 async function sessions(page: Page, request: APIRequestContext): Promise<SessionReport> {
   if (cached !== null) return cached;
 
-  await page.goto('/');
+  await page.goto('/classic');
   await page.waitForFunction(() => window.__worldsmith?.verify !== undefined, undefined, { timeout: 60_000 });
 
   try {

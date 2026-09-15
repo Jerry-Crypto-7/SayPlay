@@ -7,7 +7,8 @@
     "node": ">=22.17.0 <23"
   },
   "scripts": {
-    "prepare": "git config core.hooksPath .githooks",
+    "demo:subscription": "vitest run --config vitest.measure.mts evals/reality-compiler/subscription-demo.measure.ts",
+    "prepare": "node scripts/install-git-hooks.mjs",
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
@@ -22,9 +23,20 @@
     "measure:grammar": "playwright test e2e/local-model-grammar.spec.ts --grep @measure",
     "measure:corpus": "playwright test e2e/corpus-measure.spec.ts --grep @measure",
     "prove:budgets": "node scripts/prove-budgets.mjs",
+    "measure:mesh": "playwright test e2e/mesh-budget.spec.ts --project=chromium --grep @measure",
     "measure:divergence": "playwright test e2e/divergence.spec.ts --grep @measure",
     "measure:rejects": "vitest run evals/__tests__/reject-causes.test.ts",
-    "measure:hostile": "vitest run evals/__tests__/hostile-report.test.ts"
+    "measure:hostile": "vitest run evals/__tests__/hostile-report.test.ts",
+    "author:worlds": "vitest run --config vitest.measure.mts evals/worldstream/author-worlds.measure.ts",
+    "measure:worldstream-latency": "vitest run --config vitest.measure.mts evals/worldstream/live-latency.measure.ts",
+    "measure:worldstream-create": "vitest run --config vitest.measure.mts evals/worldstream/live-create.measure.ts",
+    "measure:worldstream-replay": "vitest run --config vitest.measure.mts evals/worldstream/replay-create.measure.ts",
+    "measure:effort": "playwright test -c playwright.effort.ts --grep @measure",
+    "measure:reality-compiler": "vitest run --config vitest.measure.mts evals/reality-compiler/benchmark.measure.ts",
+    "measure:reality-compiler-cold": "vitest run --config vitest.measure.mts evals/reality-compiler/cold-browser.measure.ts",
+    "measure:reality-compiler-subscription": "vitest run --config vitest.measure.mts evals/reality-compiler/subscription-benchmark.measure.ts",
+    "study:reality-compiler": "vitest run --config vitest.measure.mts evals/reality-compiler/study-session.measure.ts",
+    "evaluate:reality-compiler": "vitest run --config vitest.measure.mts evals/reality-compiler/review.measure.ts"
   },
   "dependencies": {
     "@mlc-ai/web-llm": "0.2.84",

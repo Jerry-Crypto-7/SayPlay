@@ -110,16 +110,21 @@ export interface LiveModel {
  * profil `subscription` nesmí umět zavolat placený endpoint, takže se ta dvě
  * URL nikde neskládají z base a cesty — každá je zapsaná celá.
  *
- * `EMISSION_MODEL` v `src/model/prompt.ts` zůstává `claude-opus-5`, protože
- * pojmenovává model **zmrazeného** korpusu a ten se přepsat nesmí (AC T2b).
- * Živý běh jméno přepíše až v požadavku, který skutečně odešle — a uloží ho
- * takhle přepsané, aby záznam nesl model, který doopravdy odpověděl.
+ * ⚠ **`EMISSION_MODEL` v `src/model/prompt.ts` je od 6. 9. 2026 `gpt-5.6-sol`,
+ * ne `claude-opus-5`.** Do té chvíle tu stálo, že alias zůstává, protože
+ * pojmenovává model zmrazeného korpusu — jenže `evals/frozen/responses/` jsou
+ * syntetické odpovědi klíčované podle promptu, ne podle jména modelu, takže
+ * zmrazený korpus tou změnou dotčený není a AC T2b platí dál. Skutečná cena
+ * aliasu byla opačná: proxy vracela odpovědi `gpt-5.6-sol` **označené jako
+ * `claude-opus-5`**, takže archiv i report zapisovaly nepravdu do dokumentu,
+ * který jde do přihlášky. Rozhodnutí `G2` (a) ji ruší — žádá se přímo jménem.
  */
 export const LIVE_MODELS: readonly LiveModel[] = [
   { id: 'gpt-5.6', wireModel: 'gpt-5.6', provider: 'openai', profile: 'api', wire: 'openai-chat', url: 'https://api.openai.com/v1/chat/completions' },
   { id: 'gpt-5.6-mini', wireModel: 'gpt-5.6-mini', provider: 'openai', profile: 'api', wire: 'openai-chat', url: 'https://api.openai.com/v1/chat/completions' },
   { id: 'gpt-5.6-sol', wireModel: 'gpt-5.6-sol', provider: 'openai', profile: 'api', wire: 'openai-chat', url: 'https://api.openai.com/v1/chat/completions' },
   { id: 'gpt-5.6-sol@proxy', wireModel: 'gpt-5.6-sol', provider: 'openai', profile: 'subscription', wire: 'anthropic-messages', url: 'http://localhost:18766/v1/messages' },
+  { id: 'gpt-5.6-sol-fast@proxy', wireModel: 'gpt-5.6-sol-fast', provider: 'openai', profile: 'subscription', wire: 'anthropic-messages', url: 'http://localhost:18766/v1/messages' },
   { id: 'gpt-5.6-terra@proxy', wireModel: 'gpt-5.6-terra', provider: 'openai', profile: 'subscription', wire: 'anthropic-messages', url: 'http://localhost:18766/v1/messages' },
 ];
 

@@ -5,13 +5,25 @@
  * dorazily. Dvě cesty ke stejnému řetězu se rozejdou tiše: streamovaná verze
  * začne vracet o pole míň, viewer podle toho postaví scénu a nikdo se nedozví,
  * že se to liší od toho, co změřil offline běh.
+ *
+ * Druhá půlka souboru soudí **pád uvnitř proudu**, a je to jiná třída tvrzení:
+ * tam se neměří, co dorazilo, ale že vůbec něco dorazilo. Hlavičky jsou v tu
+ * chvíli dávno u klienta, takže mlčící proud vypadá zvenčí jako úspěch.
  */
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { POST as emit } from '../route';
 import { SseDecoder } from '../../../../components/viewer/sse';
+import type { EmissionOutcome, EmitPhase } from '../chain';
 import { POST as stream } from '../stream/route';
+import {
+  MAX_REQUESTS_PER_WINDOW,
+  resetRateWindows,
+  takeRateSlot,
+} from '../../../../server/rate-limit';
+
+type Route = (request: Request) => Promise<Response>;
 
 interface Collected {
   readonly status: number;
@@ -20,16 +32,17 @@ interface Collected {
   readonly result: Record<string, unknown> | null;
 }
 
-function request(body: unknown): Request {
+function request(body: unknown, signal?: AbortSignal): Request {
   return new Request('http://127.0.0.1/api/emit/stream', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
+    ...signal ? { signal } : {},
   });
 }
 
-async function collect(body: unknown): Promise<Collected> {
-  const response = await stream(request(body));
+async function collect(body: unknown, post: Route = stream): Promise<Collected> {
+  const response = await post(request(body));
   const contentType = response.headers.get('content-type');
   if (response.body === null) return { status: response.status, contentType, phases: [], result: null };
 
@@ -51,9 +64,19 @@ async function collect(body: unknown): Promise<Collected> {
   return { status: response.status, contentType, phases, result };
 }
 
-/** Bez `requestId`, který je z definice pokaždé jiný. */
+/**
+ * Bez obálky kanálu — tedy bez `requestId`, který je z definice pokaždé jiný,
+ * a bez `resultKind`.
+ *
+ * **`resultKind` se odečítá ze stejného důvodu, z jakého se neporovnává stavový
+ * kód:** je to obálka, ne verdikt. `/api/emit` tutéž informaci nese jako 200 /
+ * 404 / 503 a do těla ji nepíše; proud ji do těla psát musí, protože v okamžiku,
+ * kdy se to pozná, jsou hlavičky pryč. Kdyby se počítala do porovnání, tenhle
+ * test by hlásil rozdíl tam, kde žádný není — obě cesty říkají totéž, jen jinou
+ * částí odpovědi. **Verdikt sám se pořád porovnává celý.**
+ */
 function comparable(body: Record<string, unknown>): Record<string, unknown> {
-  const { requestId: _ignored, ...rest } = body;
+  const { requestId: _ignored, resultKind: _envelope, ...rest } = body;
   return rest;
 }
 
@@ -75,6 +98,11 @@ describe('kanál s průběhem', () => {
     const response = await stream(request({ promptId: 'C01' }));
     const raw = await new Response(response.body).text();
     const steps = [...raw.matchAll(/"step":(\d+)/g)].map((match) => Number(match[1]));
+    // **Nejdřív že vůbec nějaké jsou.** Bez tohohle řádku obě strany aserce níž
+    // vycházejí z `steps`, takže proud, který nepošle jediný `progress`, dá
+    // `[] === []` a test zůstane zelený — přesně u regrese, která ze smyčky
+    // vyhodí `send()`. Nález nezávislé revize 3. 9. 2026.
+    expect(steps.length).toBeGreaterThan(3);
     expect(steps).toEqual(steps.map((_, index) => index + 1));
   });
 
@@ -134,9 +162,379 @@ describe('kanál s průběhem', () => {
     expect((collected.result as { error: { code: string } }).error.code).toBe('UNKNOWN_PROMPT');
   });
 
+  it('verdikt se hlásí jako verdikt, neznámý prompt jako neznámý prompt', async () => {
+    // `/api/emit` tenhle rozdíl nese **stavovým kódem** (200 / 404 / 503).
+    // Proud ho tak nést nemůže, protože hlavičky odešly dřív, než se to dá
+    // poznat — jede proto v těle jako `resultKind`.
+    const good = await collect({ promptId: 'C01' });
+    expect(good.result?.resultKind).toBe('verdict');
+
+    const unknown = await collect({ promptId: 'NOPE' });
+    expect(unknown.result?.resultKind).toBe('unknown-prompt');
+  });
+
   it('nevalidní tělo odpoví 400 a vůbec nestreamuje', async () => {
     const response = await stream(request({ nope: 1 }));
     expect(response.status).toBe(400);
     expect(response.headers.get('content-type')).toContain('application/json');
+  });
+});
+
+/**
+ * Načte routu s řetězem, který jde **za běhu rozbít** — a než se rozbije, je
+ * to ten skutečný řetěz.
+ *
+ * ⚠ **Ta přepínatelnost je celé jádro téhle sady, ne pohodlí.** Do 2. 9. 2026
+ * se zrušení proudu zkoušelo výhradně nad podvrženým pádem, takže výjimka,
+ * kterou `catch` v routě dostal, byla vždycky ten podvrh — **nikdy**
+ * `TypeError` z `enqueue`, který v provozu vyrobí odchod klienta. Sada tím
+ * certifikovala zařazení, které je špatně, a pět zabitých mutantů z pěti to
+ * nechytilo: mutační kontrola měří, jestli aserce nejsou ozdobné, ne jestli
+ * fixtura vyrábí ten svět, který vyrobí provoz. **Zrušení se proto od téhle
+ * revize zkouší nad zdravým řetězem** a `breakChain()` se volá jen tam, kde se
+ * soudí skutečný pád.
+ *
+ * Modul se načítá znovu, protože `logRateLimited` si počítadlo drží jako stav
+ * modulu: bez `resetModules()` by druhý test v tomhle souboru byl už druhým
+ * výskytem téhož klíče, mez by ho zahodila a test by měřil počítadlo místo
+ * opravy.
+ */
+async function loadStream(): Promise<{
+  readonly post: Route;
+  readonly log: string[];
+  readonly breakChain: () => void;
+  readonly silenceChain: () => void;
+  readonly poisonChain: () => void;
+}> {
+  vi.resetModules();
+  let mode: 'healthy' | 'broken' | 'silent' | 'poisoned' = 'healthy';
+  vi.doMock('../chain', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('../chain')>();
+    let calls = 0;
+    return {
+      ...actual,
+      emissionSteps: function* (promptId: string): Generator<EmitPhase, EmissionOutcome, void> {
+        if (mode === 'healthy') return yield* actual.emissionSteps(promptId);
+        // Řetěz, který **nevydá jedinou fázi** a rovnou vrátí verdikt. Slouží
+        // jedinému účelu: posunout zrušení až na `enqueue` rámce `result`.
+        if (mode === 'silent') return { kind: 'unknown-prompt' };
+        // Verdikt, který se nedá serializovat: `BigInt` položí `JSON.stringify`.
+        // Slouží k rozlišení „rámec se nedal zapsat" od „rámec se nedal složit".
+        // Prochází poslední větví, tedy `write('result', { …outcome.body })`.
+        if (mode === 'poisoned') return { body: { poison: 1n } } as unknown as EmissionOutcome;
+        calls += 1;
+        throw new Error(`the chain came apart (${calls})`);
+      },
+    };
+  });
+
+  const log: string[] = [];
+  vi.spyOn(console, 'error').mockImplementation((line: unknown) => {
+    log.push(String(line));
+  });
+
+  const { POST } = await import('../stream/route');
+  return {
+    post: POST,
+    log,
+    breakChain: () => {
+      mode = 'broken';
+    },
+    silenceChain: () => {
+      mode = 'silent';
+    },
+    poisonChain: () => {
+      mode = 'poisoned';
+    },
+  };
+}
+
+/**
+ * Podvrhne řetěz tak, že první krok emise vyhodí — tedy **za** odeslanými
+ * hlavičkami a za prvním rámcem `progress`, což je přesně to okno, ve kterém
+ * do 1. 9. 2026 nevznikla ani odpověď, ani řádek v logu.
+ */
+async function loadBrokenStream(): Promise<{ readonly post: Route; readonly log: string[] }> {
+  const loaded = await loadStream();
+  loaded.breakChain();
+  return loaded;
+}
+
+/**
+ * Klient, který odejde uprostřed emise — `Viewer.tsx` to dělá při každé změně
+ * promptu.
+ *
+ * Zrušit se musí **hned po `POST`**, a je to deterministické: `start()` v tu
+ * chvíli čeká na `flush()`, tedy na časovač, a mikroúlohy se vyprázdní dřív než
+ * kterýkoli časovač. Řetěz se proto poprvé protočí až po tomhle zrušení.
+ */
+async function leaveMidStream(post: Route, promptId: string): Promise<void> {
+  const response = await post(request({ promptId }));
+  await response.body!.cancel();
+  // A pak nechat `start()` doběhnout až do výjimky.
+  await new Promise((resolve) => setTimeout(resolve, 20));
+}
+
+/**
+ * Požadavek, jehož tělo **nikdo nezačne číst** — tedy to okno, ve kterém
+ * `pipeToNodeResponse` mlčky odejde, protože odpověď je už zničená
+ * (`node_modules/next/dist/server/pipe-readable.js:120–124`).
+ *
+ * **Nečíst tělo je celá fixtura, ne úspora řádku.** Kdyby ho test četl,
+ * zrušení by proud errorovalo a vyhodilo by `enqueue` — tedy ten *druhý*
+ * sentinel, který je zavřený od 1. 9. 2026. Tenhle test měří přesně ten stav,
+ * ve kterém `enqueue` nikdy neselže, a bez kontroly signálu proto neexistuje
+ * ani rámec, ani řádek.
+ *
+ * Čeká se přes časovač, protože `start()` mezi rámci parkuje na `flush()`,
+ * a to je taky časovač.
+ *
+ * ⚠ **Zrušit se musí až po `await post(...)`, a je to nosné, ne kosmetické.**
+ * První podoba téhle fixtury rušila signál souběžně s během routy, takže
+ * `start()` viděl zrušení ještě před rámcem `requested`. Po `await` je
+ * `start()` deterministicky zaparkovaný na prvním `flush()`, tedy na časovači,
+ * protože mikroúlohy se vyprázdní dřív než kterýkoli časovač.
+ *
+ * ⚠ **Signál, který je zrušený už při stavbě požadavku, se sem nehodí, a je to
+ * naměřené.** Nález nezávislé revize 3. 9. 2026, `VERDICT: routed`: takovému
+ * požadavku Next zahodí tělo (`...signal.aborted ? {} : { body }`,
+ * `node_modules/next/dist/server/web/spec-extension/adapters/next-request.js:114`),
+ * takže `readPromptId()` odpoví 400 a `start()` se nepostaví. Test nad takovou
+ * fixturou by certifikoval řádek, který v provozu nikdy nevznikne — a byl tu,
+ * dokud ho ta revize nezměřila.
+ */
+async function goneMidStream(post: Route, promptId: string, gone: AbortController): Promise<void> {
+  await post(request({ promptId }, gone.signal));
+  gone.abort();
+  await new Promise((resolve) => setTimeout(resolve, 40));
+}
+
+describe('proud, který nikdo nezačne číst', () => {
+  afterEach(() => {
+    vi.doUnmock('../chain');
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it('spojení pryč uprostřed emise nechá řádek i tehdy, když enqueue nikdy neselže', async () => {
+    // Druhá půlka téhož okna, a **jediná, kde je zápis rámce už za sebou**:
+    // spojení vydrží přes hlavičky i přes `requested` a zmizí, dokud `start()`
+    // čeká na první `flush()`. Proud se pořád nezačal číst, takže `enqueue`
+    // projde a starý sentinel se nemá čeho chytit.
+    const { post, log } = await loadStream();
+    await goneMidStream(post, 'C01', new AbortController());
+
+    expect(log).toHaveLength(1);
+    expect(log[0]).toContain('STREAM_CANCELLED');
+  });
+
+  it('pád řetězu po zrušeném spojení je pořád pád, ne zrušení', async () => {
+    // **Tohle je ta regrese, kterou nová kontrola mohla vyrobit**, a proto má
+    // vlastní test nad požadavkem, který signál doopravdy nese: `catch` musí
+    // dál soudit podle toho, **co vyhodilo**, ne podle toho, v jakém stavu je
+    // spojení. Řetěz vyhodí ze `steps.next()`, tedy mimo `write()` — nálepka
+    // proto zůstává `STREAM_FAILED`, i když je signál v tu chvíli zrušený.
+    const { post, log, breakChain } = await loadStream();
+    breakChain();
+    await goneMidStream(post, 'C01', new AbortController());
+
+    expect(log).toHaveLength(1);
+    expect(log[0]).toContain('STREAM_FAILED');
+    expect(log[0]).not.toContain('STREAM_CANCELLED');
+    expect(log[0]).toContain('the chain came apart (1)');
+  });
+});
+
+describe('pád uvnitř proudu', () => {
+  afterEach(() => {
+    vi.doUnmock('../chain');
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it('skončí rámcem result, který se dá spárovat s řádkem operátora', async () => {
+    const { post, log } = await loadBrokenStream();
+    const collected = await collect({ promptId: 'C01' }, post);
+
+    // Zvenčí to pořád vypadá jako úspěch, a to je celý ten problém: 200,
+    // hlavičky proudu, první rámec průběhu. Nosné je, co přijde po nich.
+    expect(collected.status).toBe(200);
+    expect(collected.phases).toEqual(['requested']);
+
+    const result = collected.result as { requestId: string; error: { code: string; message: string } };
+    expect(result.error.code).toBe('STREAM_FAILED');
+    // Text výjimky je diagnostika serveru a ven nepatří — táž doktrína jako
+    // u `PUBLIC_CORPUS_FAULT`.
+    expect(result.error.message).not.toContain('the chain came apart');
+    expect(typeof result.requestId).toBe('string');
+
+    // A druhá půlka téhož: operátor dostane přesně jeden řádek, nese text
+    // výjimky a **totéž `requestId`**, takže podpora má co dohledat.
+    expect(log).toHaveLength(1);
+    expect(log[0]).toContain('STREAM_FAILED');
+    expect(log[0]).toContain('the chain came apart (1)');
+    expect(log[0]).toContain(result.requestId);
+  });
+
+  it('napíše operátorovi i tehdy, když klient proud zruší — a jmenuje to zrušením', async () => {
+    // Tohle je ten případ, kvůli kterému je zápis **před** `enqueue`: na
+    // zrušeném proudu `enqueue` vyhodí, takže řádek psaný za ním by nevznikl
+    // právě u požadavku, o kterém se operátor potřebuje dozvědět.
+    //
+    // **Řetěz je tady zdravý, a to je nosné.** Jediná výjimka, která v tomhle
+    // testu může vzniknout, je `TypeError: Invalid state: Controller is already
+    // closed` ze samotného `enqueue` — tedy přesně ta hodnota, kterou vyrobí
+    // odchod klienta v provozu. Nad podvrženým pádem tenhle test měřil roky
+    // něco jiného, než si myslel.
+    const { post, log } = await loadStream();
+    await leaveMidStream(post, 'C01');
+
+    expect(log).toHaveLength(1);
+    // A jmenuje to **zrušením**, ne pádem: odchod klienta není porucha.
+    expect(log[0]).toContain('STREAM_CANCELLED');
+    expect(log[0]).not.toContain('STREAM_FAILED');
+  });
+
+  it('pád řetězu PO zrušení je pád, ne zrušení', async () => {
+    // ⛔ **Druhý blokující nález revize z 1. 9. 2026, kolo 2.** Oprava kola 1
+    // soudila podle stavu proudu (`cancelled ? … : …`), a stav proudu říká,
+    // **co se stalo proudu** — ne **co vyhodilo**. V tomhle okně se ty dvě věci
+    // rozcházejí: klient odejde, a teprve pak spadne řetěz. Nálepka „zrušení"
+    // by ten pád schovala, a protože každé obyčejné proklikání týž klíč
+    // posouvá, po pár kliknutích by se zahodil úplně.
+    //
+    // Zrušení dorazí, dokud `start()` čeká na první `flush()`; řetěz vyhodí až
+    // na `steps.next()` hned za ním, tedy dřív, než se dojde k jakémukoli
+    // `enqueue`. Výjimka proto **není** `TypeError` z proudu a nálepka to musí
+    // poznat.
+    const { post, log, breakChain } = await loadStream();
+    breakChain();
+    await leaveMidStream(post, 'C01');
+
+    expect(log).toHaveLength(1);
+    expect(log[0]).toContain('STREAM_FAILED');
+    expect(log[0]).not.toContain('STREAM_CANCELLED');
+    expect(log[0]).toContain('the chain came apart (1)');
+  });
+
+  it('zrušení, které potká až rámec verdiktu, je pořád zrušení', async () => {
+    // **Tenhle test hlídá rozsah opravy, ne její princip.** Návrh revize zněl
+    // „sentinel ze `send()`", jenže zápisů rámců je v `start()` pět a `send()`
+    // je jeden z nich. Zrušení, které dorazí během **posledního** `flush()`,
+    // nepotká žádný `progress` — potká `enqueue` rámce `result`. S obalem jen
+    // kolem `send()` by z toho byl `STREAM_FAILED`, tedy týž falešný poplach
+    // o kus vedle.
+    //
+    // Řetěz proto nevydá jedinou fázi: `start()` pošle `requested`, zaparkuje
+    // na prvním `flush()` — a to je přesně okno, ve kterém zrušení dorazí.
+    // Další zápis v pořadí je už verdikt.
+    const { post, log, silenceChain } = await loadStream();
+    silenceChain();
+    await leaveMidStream(post, 'C01');
+
+    expect(log).toHaveLength(1);
+    expect(log[0]).toContain('STREAM_CANCELLED');
+    expect(log[0]).not.toContain('STREAM_FAILED');
+  });
+
+  it('spadlé potrubí se ve skórování nesmí potkat s odmítnutým světem', async () => {
+    // **To je celý smysl `resultKind`.** Rozbité potrubí i neznámý prompt dnes
+    // odejdou jako 200 s polem `error`, takže bez diskriminátoru je od sebe
+    // odliší jedině to, že v jednom „nějak chybí `doc`". Pád kanálu není
+    // výsledek světa a nesmí se dostat do čísel jako svět, který se nepovedl.
+    const { post } = await loadBrokenStream();
+    const broken = await collect({ promptId: 'C01' }, post);
+    const rejected = await collect({ promptId: 'NOPE' });
+
+    expect(broken.result?.resultKind).toBe('stream-fault');
+    expect(rejected.result?.resultKind).toBe('unknown-prompt');
+    expect(broken.result?.resultKind).not.toBe(rejected.result?.resultKind);
+    // A ani jedno není verdikt — skórovat se smí jedině ten.
+    expect(broken.result?.resultKind).not.toBe('verdict');
+  });
+
+  it('rámec, který se nedá složit, je pád — ne zrušení', async () => {
+    // **Nález nezávislé revize 3. 9. 2026.** Sentinel má znamenat „proud už
+    // nikdo nedrží", a to je jediná věc, kterou umí vyrobit `enqueue`. Kdyby
+    // se bajty skládaly **uvnitř** téhož `try`, spadlo by do sentinelu
+    // i selhání `JSON.stringify` — a operátor by na skutečnou vadu
+    // serializace dostal řádek „klient odešel". Ta hranice byla do teď jen
+    // v komentáři.
+    const { post, log, poisonChain } = await loadStream();
+    poisonChain();
+    await collect({ promptId: 'C01' }, post);
+
+    expect(log).toHaveLength(1);
+    expect(log[0]).toContain('STREAM_FAILED');
+    expect(log[0]).not.toContain('STREAM_CANCELLED');
+  });
+
+  it('odchod klienta nespotřebuje výskyt, na kterém by se ohlásil skutečný pád', async () => {
+    // **Nález nezávislé revize, `VERDICT: blocking`.** `logRateLimited` vydá 1.,
+    // 10. a 100. výskyt klíče, takže se sdíleným kódem by první odchod klienta
+    // spotřeboval výskyt číslo jedna a pád hned po něm by byl druhý — tedy
+    // žádný řádek. A odchod klienta je běžný provoz: `Viewer.tsx` volá `abort()`
+    // při každé změně promptu i při odchodu ze stránky.
+    const { post, log, breakChain } = await loadStream();
+
+    // Nejdřív obyčejné proklikání nad **zdravým** řetězem: klient odejde
+    // uprostřed emise a výjimku vyrobí `enqueue`, jako v provozu.
+    await leaveMidStream(post, 'C01');
+    // A teprve pak skutečný pád řetězu, který se ohlásit musí.
+    breakChain();
+    await collect({ promptId: 'C05' }, post);
+
+    expect(log).toHaveLength(2);
+    expect(log[0]).toContain('STREAM_CANCELLED');
+    expect(log[1]).toContain('STREAM_FAILED');
+    // Oba jsou první svého druhu — pád nezdědil rozpočet po zrušení.
+    expect(log[1]).toContain('occurrence 1');
+  });
+
+  it('dva různé pády v jednom procesu dají dva řádky, ne jeden', async () => {
+    // `logRateLimited` klíčuje `(dveře, kód)` a **lepivou** mez tady mít nesmí:
+    // `detail` je text výjimky, tedy hodnota bez uzavřeného oboru, a lepivá
+    // množina by z paměti udělala funkci počtu cest v kódu. Ta volba platí.
+    //
+    // **Co se 1. 9. 2026 změnilo, je počet řádků, který z ní plyne.** Do té doby
+    // se druhý pád ztratil pod počítadlem prvního; od té doby `logRateLimited`
+    // vydá první výskyt každé **nové příčiny** v okně, nejvýš
+    // `MAX_DETAILS_PER_WINDOW` na okno (`src/server/public-faults.ts`). Strop je
+    // pořád konstanta, jen o řád vyšší než jedna — a dva různé pády jsou dvě
+    // různé poruchy, o kterých operátor potřebuje vědět obě.
+    //
+    // Že se **opakování téže příčiny** pořád nevydá, se soudí v
+    // `src/server/__tests__/public-faults.test.ts`: tahle fixtura to ukázat
+    // nemůže, protože každý pád očísluje vlastním textem.
+    const { post, log } = await loadBrokenStream();
+    await collect({ promptId: 'C01' }, post);
+    await collect({ promptId: 'C05' }, post);
+
+    expect(log).toHaveLength(2);
+    expect(log[0]).toContain('occurrence 1');
+    expect(log[0]).toContain('the chain came apart (1)');
+    expect(log[1]).toContain('the chain came apart (2)');
+  });
+});
+
+describe('strop na frekvenci dorazí až ke dveřím', () => {
+  afterEach(() => {
+    resetRateWindows();
+  });
+
+  it('padesátý první požadavek v okně je 429 s retry-after, ne proud', async () => {
+    // **Musí to být obyčejná odpověď, ne rámec.** Za hlavičkami
+    // `text/event-stream` je stav 200 dávno u klienta, takže brána o kus níž
+    // by uměla leda `stream-fault` — tedy nápor vydávaný za poruchu potrubí.
+    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1)
+      takeRateSlot('emit/stream', 'unknown');
+
+    const response = await stream(request({ promptId: 'C01' }));
+    expect(response.status).toBe(429);
+    expect(response.headers.get('content-type')).not.toContain('text/event-stream');
+    expect(Number(response.headers.get('retry-after'))).toBeGreaterThanOrEqual(1);
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
+      'TOO_MANY_REQUESTS',
+    );
   });
 });

@@ -1,0 +1,285 @@
+{
+  "version": 1,
+  "status": "independent-development-oracle",
+  "source": "museum-source.txt",
+  "tickConvention": "Input N is processed by step at runtime.tick=N. Its effects are observed at snapshot N+1.",
+  "assumptions": [
+    "Open rectangular room; positions and movement speed are authored layout choices.",
+    "Outcome is the case/alarm state; the observation clock continues after success or failure.",
+    "Initial timer capacity stays 400 in both branches; only startTimer.durationTicks changes."
+  ],
+  "baselineLimitTicks": 400,
+  "changedLimitTicks": 200,
+  "compareTick": 300,
+  "cases": [
+    {
+      "id": "within_limit",
+      "inputs": [
+        {
+          "tick": 20,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorA"
+        },
+        {
+          "tick": 21,
+          "actor": "visitor",
+          "actionId": "moveTo",
+          "target": "approachB"
+        },
+        {
+          "tick": 260,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorB"
+        }
+      ],
+      "snapshotTick": 300,
+      "expected": {
+        "caseUnlocked": true,
+        "alarm": false
+      }
+    },
+    {
+      "id": "exact_deadline",
+      "inputs": [
+        {
+          "tick": 20,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorA"
+        },
+        {
+          "tick": 21,
+          "actor": "visitor",
+          "actionId": "moveTo",
+          "target": "approachB"
+        },
+        {
+          "tick": 420,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorB"
+        }
+      ],
+      "snapshotTick": 421,
+      "expected": {
+        "caseUnlocked": false,
+        "alarm": true
+      }
+    },
+    {
+      "id": "last_valid_tick",
+      "inputs": [
+        {
+          "tick": 20,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorA"
+        },
+        {
+          "tick": 21,
+          "actor": "visitor",
+          "actionId": "moveTo",
+          "target": "approachB"
+        },
+        {
+          "tick": 419,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorB"
+        }
+      ],
+      "snapshotTick": 420,
+      "expected": {
+        "caseUnlocked": true,
+        "alarm": false
+      }
+    },
+    {
+      "id": "after_deadline",
+      "inputs": [
+        {
+          "tick": 20,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorA"
+        },
+        {
+          "tick": 21,
+          "actor": "visitor",
+          "actionId": "moveTo",
+          "target": "approachB"
+        },
+        {
+          "tick": 440,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorB"
+        }
+      ],
+      "snapshotTick": 441,
+      "expected": {
+        "caseUnlocked": false,
+        "alarm": true
+      }
+    },
+    {
+      "id": "early_B_not_remembered",
+      "inputs": [
+        {
+          "tick": 0,
+          "actor": "visitor",
+          "actionId": "moveTo",
+          "target": "approachB"
+        },
+        {
+          "tick": 10,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorB"
+        },
+        {
+          "tick": 11,
+          "actor": "visitor",
+          "actionId": "moveTo",
+          "target": "approachA"
+        },
+        {
+          "tick": 20,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorA"
+        }
+      ],
+      "snapshotTick": 421,
+      "expected": {
+        "caseUnlocked": false,
+        "alarm": true
+      }
+    },
+    {
+      "id": "repeat_A_no_restart",
+      "inputs": [
+        {
+          "tick": 20,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorA"
+        },
+        {
+          "tick": 100,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorA"
+        }
+      ],
+      "snapshotTick": 421,
+      "expected": {
+        "caseUnlocked": false,
+        "alarm": true
+      }
+    },
+    {
+      "id": "remote_B_ignored",
+      "inputs": [
+        {
+          "tick": 20,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorA"
+        },
+        {
+          "tick": 260,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorB"
+        }
+      ],
+      "snapshotTick": 300,
+      "expected": {
+        "caseUnlocked": false,
+        "alarm": false
+      }
+    },
+    {
+      "id": "remote_A_ignored",
+      "inputs": [
+        {
+          "tick": 0,
+          "actor": "visitor",
+          "actionId": "moveTo",
+          "target": "approachB"
+        },
+        {
+          "tick": 20,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorA"
+        },
+        {
+          "tick": 21,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorB"
+        }
+      ],
+      "snapshotTick": 500,
+      "expected": {
+        "caseUnlocked": false,
+        "alarm": false
+      }
+    },
+    {
+      "id": "success_stays_success",
+      "inputs": [
+        {
+          "tick": 20,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorA"
+        },
+        {
+          "tick": 21,
+          "actor": "visitor",
+          "actionId": "moveTo",
+          "target": "approachB"
+        },
+        {
+          "tick": 260,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorB"
+        },
+        {
+          "tick": 261,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorB"
+        },
+        {
+          "tick": 262,
+          "actor": "visitor",
+          "actionId": "moveTo",
+          "target": "approachA"
+        },
+        {
+          "tick": 280,
+          "actor": "visitor",
+          "actionId": "activate",
+          "target": "sensorA"
+        }
+      ],
+      "snapshotTick": 500,
+      "expected": {
+        "caseUnlocked": true,
+        "alarm": false
+      }
+    }
+  ],
+  "changedExpected": {
+    "caseUnlocked": false,
+    "alarm": true
+  },
+  "sourceSha256": "c4ace92726823485b4954ff38d1e49a480e653358651621f0e98ebe91be9db9f"
+}

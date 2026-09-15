@@ -20,6 +20,17 @@
   --ws-negative: #e2622c;
   --ws-accent: #2f9e8f;
 
+  /* Paleta WORLDSTREAM (design book §15.1). Kopie `UI_TOKENS`, hlídá
+     `src/app/__tests__/theme.test.ts` — včetně toho, že ani jeden odstín
+     nespadne do fialového pásma 250–320°. */
+  --ws-pelagic: #07141f;
+  --ws-basalt: #16262f;
+  --ws-clay: #c8a987;
+  --ws-nacre: #d8e7e2;
+  --ws-verdigris: #2e8f86;
+  --ws-amber: #f1b24a;
+  --ws-coral: #df6b62;
+
   /* Stín pod textem HUD. Text leží na 3D scéně, jejíž jas nikdo neřídí, takže
      bez něj je nad světlou podlahou nečitelný. */
   --ws-text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
@@ -108,5 +119,341 @@ body {
   font-size: 0.8rem;
   color: var(--ws-muted);
   text-shadow: var(--ws-text-shadow);
+  pointer-events: none;
+}
+
+/* --- Skořápka WORLDSTREAM --------------------------------------------------
+   Plátno je celý viewport a rozhraní není sada karet v rozích (design book
+   §15.3). Zbývají tři věci u spodní hrany: dok se vstupem a stavovou větou,
+   herní ovládání a jeden diskrétní bod, ze kterého se otevírá Inspect.
+
+   ## Proč je překryv MŘÍŽKA, a ne čtyři absolutně kotvené rohy
+
+   Tenhle repozitář má překryv v rohu **počtvrté**. Pokaždé to vypadalo jinak a
+   pokaždé to byla tatáž věc: dva průsvitné boxy se potkaly a jeden druhému sebral
+   kliknutí, což se okem nepozná. Naposledy 27. 8. 2026 — otevřená Inspect zásuvka
+   si lehla přes `Build the world` a tři sady stály červené.
+
+   Absolutní kotvení tu vadu **umožňuje z definice**: dva boxy se kotví nezávisle,
+   takže jestli se protnou, rozhodne až běhové rozvržení. Mřížka to zavírá jinak —
+   dok, ovládání a zásuvka bydlí každý ve svém sloupci, takže se protnout **nemají
+   kde**. Nový prvek skořápky patří do některé buňky, ne na vlastní
+   `position: absolute` s rohem.
+
+   Pořadí v DOM je přitom volné, protože o umístění rozhoduje `grid-column`
+   a `grid-row`. Toho se využívá: dok stojí v DOM **první**, aby prvním
+   interaktivním prvkem stránky zůstal vstup pro větu, a přitom se kreslí
+   uprostřed mezi ovládáním a zásuvkou. */
+
+.ws-shell {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  /* Tři sloupce: ovládání · dok · Inspect. Prostřední má strop, krajní berou
+     zbytek. `minmax(0, …)` je nutnost — bez něj sloupec neumí být užší než
+     obsah a mřížka by přetekla přes okno. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 46rem) minmax(0, 1fr);
+  /* Horní řádek je volná plocha světa, dolní pruh patří rozhraní. */
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.75rem;
+  padding: 1rem;
+  /* Překryv kryje celé plátno, takže by jinak spolkl každé kliknutí do scény.
+     Klikatelnost si zapíná každá buňka sama. */
+  pointer-events: none;
+}
+
+/* Otevřená zásuvka potřebuje víc než třetinu, jinak by se panely srazily do
+   sloupce užšího, než je jejich vlastní šířka, a přetekly by z něj. */
+.ws-shell[data-inspecting='true'] {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 46rem) minmax(21rem, auto);
+}
+
+.ws-dock {
+  grid-row: 2;
+  grid-column: 2;
+  display: flex;
+  /* Obráceně schválně: opticky je věta nad polem, ale v DOM stojí pole první,
+     aby zůstalo prvním interaktivním prvkem stránky. */
+  flex-direction: column-reverse;
+  gap: 0.5rem;
+  /* Dok sám kliknutí nebere — bere je jen to, co v něm doopravdy stojí.
+     Bez toho by mezera mezi větou a polem byla neviditelný pruh přes svět. */
+  pointer-events: none;
+}
+
+.ws-dock > * {
+  pointer-events: auto;
+}
+
+.ws-source input, .ws-source textarea, .ws-source select, .ws-source button {
+  color: #cfe3e6;
+  background: #132022;
+  border: 1px solid #426068;
+  border-radius: 4px;
+  padding: 0.4rem 0.5rem;
+  font: inherit;
+  max-width: 100%;
+}
+.ws-source button, .ws-source summary { cursor: pointer; }
+.ws-source :focus-visible { outline: 2px solid #7fd4c1; outline-offset: 2px; }
+.ws-source :disabled { opacity: 0.6; cursor: default; }
+.ws-source dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.2rem 0.75rem; }
+.ws-source dd { margin: 0; }
+.ws-source blockquote { margin: 0.5rem 0; padding-left: 0.75rem; border-left: 2px solid #7fd4c1; }
+
+.ws-status {
+  margin: 0;
+  padding: 0 0.2rem;
+  color: var(--ws-nacre);
+  text-shadow: var(--ws-text-shadow);
+  font-size: 0.9rem;
+  /* Věta je sdělení, ne ovladač. */
+  pointer-events: none;
+}
+
+.ws-status[data-state='broken'] {
+  color: var(--ws-coral);
+}
+
+.ws-status[data-state='live'] {
+  color: var(--ws-amber);
+}
+
+/* Herní ovládání. Zůstává mimo Inspect schválně: bez něj se svět, který právě
+   vznikl, nedá hrát, a to není diagnostika, to je produkt. */
+
+.ws-controls {
+  grid-row: 2;
+  grid-column: 1;
+  justify-self: start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.ws-controls > * {
+  pointer-events: auto;
+}
+
+/* Running controls have their own column; stacking them with source review
+   hid the scene. Keep the established sea/glass palette and quiet typography. */
+.ws-shell[data-controls='true'] {
+  grid-template-columns: minmax(16rem, 20rem) minmax(0, 40rem) minmax(3rem, 1fr);
+}
+.ws-shell[data-controls='true'][data-inspecting='true'] {
+  grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr) minmax(18rem, 22rem);
+}
+.ws-controls, .ws-dock { min-width: 0; }
+.ws-runtime-tools { max-height: 58dvh; overflow: auto; width: 100%; }
+.ws-runtime-tools button, .ws-runtime-tools select { max-width: 100%; }
+.ws-source fieldset { min-width: 0; margin: 0.5rem 0; }
+.ws-source h4 { margin: 0.65rem 0 0.25rem; }
+
+@media (max-width: 760px) {
+  .ws-shell, .ws-shell[data-controls='true'], .ws-shell[data-inspecting='true'],
+  .ws-shell[data-controls='true'][data-inspecting='true'] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto auto;
+    gap: 0.4rem;
+    padding: 0.6rem;
+  }
+  .ws-controls { grid-column: 1; grid-row: 2; width: 100%; }
+  .ws-runtime-tools { max-height: 25dvh; }
+  .ws-dock { grid-column: 1; grid-row: 3; max-height: 35dvh; overflow: auto; }
+  .ws-dock > * { flex-shrink: 0; }
+  .ws-shell .ws-inspect { grid-column: 1; grid-row: 4; max-height: 30dvh; }
+}
+
+/* Inspect. Jeden bod, ne panel: zapnutý stav se pozná podle patiny mědi.
+
+   Zásuvka drží **celý pravý sloupec přes oba řádky**, takže sahá od horní hrany
+   k přepínači dole. Panely tím pádem nemají kudy zasáhnout do doku ani do
+   ovládání — jsou v jiném sloupci. */
+
+.ws-inspect {
+  grid-row: 1 / 3;
+  grid-column: 3;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  /* Přepínač je v DOM poslední; tohle ho drží u spodní hrany sloupce. */
+  justify-content: flex-end;
+  gap: 0.5rem;
+  min-height: 0;
+  pointer-events: none;
+}
+
+.ws-inspect > * {
+  pointer-events: auto;
+}
+
+/* Uzly, které musí být připojené i se zavřenou zásuvkou. Prázdné to je nulově
+   vysoký div — `margin-bottom: auto` je tedy jediné, co dělá i zavřený: odtlačí
+   panely k horní hraně sloupce a přepínač nechá dole. */
+.ws-inspect-background {
+  margin-bottom: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  /* Průchozí schválně: co v něm stojí, si klikatelnost zapíná samo. */
+  pointer-events: none;
+}
+
+.ws-inspect-panels {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  /* Sloupec, ne hromada. Panely uvnitř se nekotví samy. */
+  min-height: 0;
+  max-width: 100%;
+  overflow-y: auto;
+  /* Vodorovně se neroluje: panel širší než sloupec se ořízne, a ořezaná plocha
+     nebere kliknutí — což je přesně to, co se od ní chce. */
+  overflow-x: hidden;
+}
+
+.ws-inspect-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid rgba(216, 231, 226, 0.18);
+  border-radius: 999px;
+  background: rgba(22, 38, 47, 0.72);
+  color: var(--ws-nacre);
+  font: inherit;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.ws-inspect-toggle::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--ws-verdigris);
+}
+
+.ws-inspect-toggle[aria-expanded='true'] {
+  border-color: var(--ws-verdigris);
+}
+
+/* --- Druhá věta (T23) -----------------------------------------------------
+
+   Dvě věci nad plátnem: kotvený popisek vybraného objektu a panel s rozsahem
+   změny.
+
+   **Popisek je jediný prvek skořápky mimo mřížku, a je to výjimka s důvodem.**
+   Buňka mřížky drží roh; popisek drží *objekt*, takže se jeho poloha počítá
+   z kamery a stage mu ji každý snímek přepisuje. Kotvit ho do buňky by ho
+   naopak přišpendlilo na místo, ze kterého by na objekt neukazoval. Kliknutí
+   nebere — je to sdělení, ne ovladač, a nad plátnem by kradl výběr. */
+
+.ws-object-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  /* `translate(-50%, -100%)` posadí popisek nad kotvu a vycentruje ho; zbytek
+     transformace píše stage. */
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--ws-verdigris);
+  border-radius: 0.25rem;
+  background: rgba(7, 20, 31, 0.82);
+  color: var(--ws-nacre);
+  text-shadow: var(--ws-text-shadow);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Panel rozsahu. Bydlí v doku jako třetí dítě, takže ho `column-reverse`
+   posadí nad stavovou větu i nad pole. */
+
+.ws-change {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--ws-verdigris);
+  border-radius: 0.35rem;
+  background: rgba(7, 20, 31, 0.88);
+  color: var(--ws-nacre);
+  font-size: 0.9rem;
+}
+
+.ws-change-lead,
+.ws-change-scope,
+.ws-change-preserved {
+  margin: 0;
+}
+
+.ws-change-scope {
+  color: var(--ws-amber);
+}
+
+.ws-change-preserved {
+  color: var(--ws-muted);
+  font-size: 0.82rem;
+}
+
+.ws-change-candidates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ws-change-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ws-change button {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--ws-verdigris);
+  border-radius: 0.25rem;
+  background: rgba(22, 38, 47, 0.72);
+  color: var(--ws-nacre);
+  font: inherit;
+  cursor: pointer;
+}
+
+.ws-change button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.ws-change .ws-change-primary {
+  background: var(--ws-verdigris);
+  color: var(--ws-pelagic);
+}
+
+/* Popisek původu světa (`T45-honestlabel`).
+
+   Bydlí v doku, ne ve vlastním rohu — konvence rohů v `CLAUDE.md`. Je tišší
+   než stavová věta schválně: říká, čí je to práce, ne co se právě stalo, a
+   dvě stejně hlasitá sdělení nad sebou si berou pozornost navzájem. Tišší ale
+   neznamená schovaný: kontrast drží perleť, ne šedá na tmavé. */
+
+.ws-provenance {
+  margin: 0;
+  padding: 0 0.2rem;
+  color: var(--ws-nacre);
+  opacity: 0.78;
+  text-shadow: var(--ws-text-shadow);
+  font-size: 0.8rem;
+  /* Věta je sdělení, ne ovladač — stejně jako `.ws-status`. */
   pointer-events: none;
 }

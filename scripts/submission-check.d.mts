@@ -5,7 +5,6 @@
  */
 
 export declare const MANIFEST_FILE: string;
-export declare const DESIGN_BOOK_FILE: string;
 export declare const PLAN_FILE: string;
 export declare const REGISTRY_FILE: string;
 export declare const PLACEHOLDER: RegExp;
@@ -26,8 +25,9 @@ export declare function isDeployedUrl(value: unknown): string | null;
 /** Délka MP4 v sekundách z boxu `mvhd`; `null`, když se box nenajde. */
 export declare function mp4DurationSeconds(buffer: Buffer): number | null;
 
-/** Garanční věta z `DESIGN-BOOK.md` §6, normalizovaná. */
-export declare function guaranteeSentence(designBook: string): string | null;
+/** Lexical disclosure lint for current English source-pilot copy, not semantic review. */
+export declare function descriptionContractProblems(text: string): string[];
+export declare function checkDescription(context: { repo: string; manifest: Record<string, unknown> }): string | null;
 
 /** Text bez rozdílů, které nejsou obsahem: zalomení, dvojité mezery, nbsp. */
 export declare function normalizeProse(text: string): string;

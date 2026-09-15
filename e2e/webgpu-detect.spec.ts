@@ -22,7 +22,7 @@ import { expect, test } from '@playwright/test';
 import { detectRuntime, isWeightRequest, type RuntimeEnvironment } from '../src/model/local/capability';
 
 test('bez akcelerace nevyjde large', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/classic');
 
   const environment = await page.evaluate(
     async (): Promise<{ gpuObjectPresent: boolean; hasWebGpu: boolean; deviceMemoryGb: number | undefined }> => {
@@ -76,7 +76,7 @@ test('bez akcelerace neodejde jediný požadavek na doménu vah', async ({ page 
     if (isWeightRequest(request.url())) weightRequests.push(request.url());
   });
 
-  await page.goto('/');
+  await page.goto('/classic');
   // Detekce má být hotová dřív, než by cokoli začalo stahovat. Pět sekund je
   // schválně víc, než kolik trvá první snímek — kdyby se váhy tahaly opožděně,
   // tenhle test je má stihnout zahlédnout.

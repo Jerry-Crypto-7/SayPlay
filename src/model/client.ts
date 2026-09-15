@@ -51,15 +51,38 @@ import type { Grammar, UpstreamRequest } from './prompt';
 const FROZEN_DIR = join(process.cwd(), 'evals', 'frozen');
 const RESPONSES_FILE = 'responses/index.jsonl';
 
-export type ClientReason =
+/**
+ * Vada **celého zmrazeného souboru**, ne jednoho záznamu v něm.
+ *
+ * Obě znamenají rozbité prostředí: server v tomhle stavu neobsluhuje nikoho.
+ */
+export type CorpusReason =
   /** Zmrazený soubor se rozešel s `MANIFEST.lock`. */
   | 'MANIFEST_MISMATCH'
   /** Soubor zmrazeného korpusu nejde přečíst — rozbité prostředí, ne emise. */
-  | 'CORPUS_UNREADABLE'
-  /** Pro tenhle prompt zmrazená odpověď neexistuje. */
-  | 'NO_FROZEN_RESPONSE'
-  /** Tělo se rozešlo s vlastním `sha256`, nebo mu chybí hlavička. */
-  | 'RESPONSE_TAMPERED'
+  | 'CORPUS_UNREADABLE';
+
+/**
+ * **Přesně ty důvody, které umí vyrobit `emitWorld()`** — nic víc.
+ *
+ * Ta úzkost je celý smysl typu a je naměřená: dokud `emitWorld()` deklaroval
+ * celý `ClientReason`, musela tabulka `BRANCH_FAULT` (`src/server/mock`)
+ * rozhodnout i o dvou editačních důvodech, které jí nikdy nemohly přijít — a
+ * **rozhodla je opačně, než jak to stojí na obou místech, která je definují**
+ * (nález nezávislé revize 1. 9. 2026). `BASE_WORLD_MISSING` tam mířil na
+ * `NO_FROZEN_ANSWER`, tedy na 404, přestože komentář o pár řádků níž říká, že
+ * schovat ho pod chybějící odpověď znamená vydat rozbité prostředí jako 404,
+ * a `/api/edit` ho z větve 404 schválně vyjímá a vrací 503.
+ *
+ * Rozhodnutí „předem" o důvodu, který se dnes nedá vyrobit, není záruka: je to
+ * odpověď na otázku, kterou nikdo nepoložil, a nemá ji kdo zkontrolovat. Když
+ * se množina jednou rozšíří, má **spadnout `tsc`** a rozhodnout to člověk,
+ * který u toho bude mít kontext.
+ */
+export type EmitReason = CorpusReason | 'NO_FROZEN_RESPONSE' | 'RESPONSE_TAMPERED';
+
+export type ClientReason =
+  | EmitReason
   /** Editační záznam existuje, ale je vázaný na jiný svět, než jaký přišel. */
   | 'BASE_WORLD_MISMATCH'
   /**
@@ -71,9 +94,14 @@ export type ClientReason =
    */
   | 'BASE_WORLD_MISSING';
 
-export interface ClientFailure {
+/**
+ * Selhání klienta. Parametr `R` je **množina důvodů, které to konkrétní volání
+ * umí vrátit** — bez něj je to celý `ClientReason`, tedy dnešní chování všude,
+ * kde na užší množině nezáleží.
+ */
+export interface ClientFailure<R extends ClientReason = ClientReason> {
   readonly ok: false;
-  readonly reason: ClientReason;
+  readonly reason: R;
   readonly detail: string;
 }
 
@@ -95,15 +123,58 @@ export interface ClientSuccess {
 
 export type ClientResult = ClientSuccess | ClientFailure;
 
-type Read<T> = { readonly ok: true; readonly value: T } | ClientFailure;
+/** Výsledek `emitWorld()`. Užší než `ClientResult`, viz `EmitReason`. */
+export type EmitResult = ClientSuccess | ClientFailure<EmitReason>;
+
+type Read<T, R extends ClientReason = ClientReason> =
+  | { readonly ok: true; readonly value: T }
+  | ClientFailure<R>;
+
+/**
+ * Ověřené soubory, které už se v tomhle procesu jednou přečetly.
+ *
+ * **Cache smí existovat jen proto, že ten korpus je zmrazený.** Obsah je
+ * zamčený hashem v `MANIFEST.lock`, takže „přečti znovu" nemůže dát jinou
+ * odpověď — na rozdíl od ovládacího souboru stropu, který se schválně čte při
+ * každém volání, aby operátor mohl za incidentu sáhnout na páku bez restartu.
+ *
+ * ⚠ **Ověření hashem se tím posouvá z „při každém volání" na „jednou za
+ * instanci modulu", a to je vědomá výměna.** Proces, který soubor přečetl a
+ * kterému se `evals/frozen/` **pod rukama** změní, bude dál vydávat staré
+ * bajty a `MANIFEST_MISMATCH` už nezvedne. Do repa nikdo do toho adresáře
+ * nezapisuje a nasazený souborový systém je jen pro čtení, takže jediný živý
+ * tvar je `next dev` nad pracovním stromem, který někdo edituje — tam si
+ * změny korpusu vyžádají restart. Zmrazení jako takové to neoslabuje:
+ * `evals/__tests__/frozen.test.ts` hashuje z disku, ne přes tenhle klient.
+ *
+ * **Ukládá se jen úspěch.** Nečitelný korpus je vada stroje nebo nasazení a ta
+ * se dá spravit; zapamatovaný neúspěch by z jednoho výpadku disku udělal stav,
+ * ze kterého se instance nedostane jinak než restartem. Neúspěšná cesta navíc
+ * spadne na prvním `readFileSync` a hash nepočítá, takže je levná i bez cache.
+ *
+ * **Žije a umírá s modulem**, ne s procesem — a to je nosné pro sadu: klient si
+ * `FROZEN_DIR` počítá z `process.cwd()` při importu, takže test, který podvrhne
+ * pracovní adresář a načte modul znovu (`clientAt()` v `client.test.ts`),
+ * dostane prázdnou cache. Kdyby cache modul přežila, druhý kořen by četl
+ * z prvního a zelená by znamenala jen „poprvé se to přečetlo správně".
+ */
+const frozenFiles = new Map<string, string>();
 
 /**
  * Přečte zmrazený soubor a **ověří jeho hash proti `MANIFEST.lock`**.
  *
  * `MANIFEST.lock` normalizuje CRLF na LF **před** hashováním. Bez toho by hash
  * téhož souboru závisel na stroji, na kterém se repo checkoutovalo.
+ *
+ * Čte **nejvýš jednou na cestu a proces** — viz `frozenFiles`. Bez toho stály
+ * čtyři dveře, které `frozenGrammar()` volají, dva `readFileSync` a sha256 nad
+ * 26 kB na **každém** požadavku, synchronně na smyčce událostí, a platilo se to
+ * i na neplacené větvi a před stropem souběhu.
  */
-function readFrozen(relativePath: string): Read<string> {
+function readFrozen(relativePath: string): Read<string, CorpusReason> {
+  const cached = frozenFiles.get(relativePath);
+  if (cached !== undefined) return { ok: true, value: cached };
+
   let manifest: { files?: Record<string, string> };
   let text: string;
   try {
@@ -128,10 +199,11 @@ function readFrozen(relativePath: string): Read<string> {
       detail: `${relativePath} hashes to ${actual}, MANIFEST.lock says ${String(expected)}`,
     };
 
+  frozenFiles.set(relativePath, text);
   return { ok: true, value: text };
 }
 
-function readJsonl(relativePath: string): Read<Record<string, unknown>[]> {
+function readJsonl(relativePath: string): Read<Record<string, unknown>[], CorpusReason> {
   const file = readFrozen(relativePath);
   if (!file.ok) return file;
   try {
@@ -148,8 +220,17 @@ function readJsonl(relativePath: string): Read<Record<string, unknown>[]> {
   }
 }
 
+/**
+ * Hotový slovník. Druhá polovina téže cache: `frozenFiles` ušetří obě čtení
+ * a hash, tohle navíc `JSON.parse` nad 26 kB, který se jinak platí znovu na
+ * každém požadavku všech čtyř dveří.
+ */
+let frozenGrammarValue: Grammar | null = null;
+
 /** Slovník ze zmrazeného protokolu — prompt si ho nesmí opsat. */
 export function frozenGrammar(): Read<Grammar> {
+  if (frozenGrammarValue !== null) return { ok: true, value: frozenGrammarValue };
+
   const file = readFrozen('protocol.v1.json');
   if (!file.ok) return file;
   let protocol: {
@@ -161,16 +242,14 @@ export function frozenGrammar(): Read<Grammar> {
   } catch (thrown) {
     return { ok: false, reason: 'CORPUS_UNREADABLE', detail: `protocol.v1.json: ${(thrown as Error).message}` };
   }
-  return {
-    ok: true,
-    value: {
-      surfaceEvents: protocol.grammar.surfaceEvents,
-      conditions: protocol.grammar.conditions,
-      actions: protocol.grammar.actions,
-      simFields: protocol.worldDoc.sim.fields,
-      lookFields: protocol.worldDoc.look.fields,
-    },
+  frozenGrammarValue = {
+    surfaceEvents: protocol.grammar.surfaceEvents,
+    conditions: protocol.grammar.conditions,
+    actions: protocol.grammar.actions,
+    simFields: protocol.worldDoc.sim.fields,
+    lookFields: protocol.worldDoc.look.fields,
   };
+  return { ok: true, value: frozenGrammarValue };
 }
 
 export interface FrozenPrompt {
@@ -220,7 +299,7 @@ export function frozenPrompt(id: string): Read<FrozenPrompt | null> {
  * funkce skutečným voláním, tvar téhle hranice se nezmění a záznam bude pořád
  * ten, který se doopravdy odeslal.
  */
-export function emitWorld(promptId: string, request: UpstreamRequest): ClientResult {
+export function emitWorld(promptId: string, request: UpstreamRequest): EmitResult {
   const record = verifiedRecord(promptId, 'create');
   if (!record.ok) return record;
 
@@ -244,7 +323,7 @@ interface VerifiedRecord {
  * kopie kontrol je přesně ta třída vady, kterou brána nad T13 našla u čtení
  * promptů — jedna cesta hash ověřovala, druhá ne, a rozdíl neuhlídal nikdo.
  */
-function verifiedRecord(promptId: string, branch: 'create' | 'edit'): Read<VerifiedRecord> {
+function verifiedRecord(promptId: string, branch: 'create' | 'edit'): Read<VerifiedRecord, EmitReason> {
   const records = readJsonl(RESPONSES_FILE);
   if (!records.ok) return records;
 

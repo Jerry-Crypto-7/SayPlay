@@ -31,6 +31,32 @@ export interface DisposalTally {
   readonly textures: number;
 }
 
+/**
+ * Nula odložených zdrojů.
+ *
+ * Existuje proto, aby volající, který **nic neodkládal**, vracel součet místo
+ * `null`. `RepresentationRegistry` (T18) odkládá po každé výměně podoby a
+ * občas nemá co — a `null` v tom součtu by znamenalo dvě různá „nic":
+ * „neodložilo se" a „ta cesta se nespustila".
+ */
+export const EMPTY_TALLY: DisposalTally = { geometries: 0, materials: 0, textures: 0 };
+
+/**
+ * Součet dvou účtů. Slot po slotu, ne po celé scéně naráz.
+ *
+ * ⚠ **Sčítá se, nesjednocuje.** Dva `disposeSubtree()` nad týmž objektem by
+ * dohromady daly dvojnásobek, protože deduplikace platí uvnitř jednoho volání.
+ * Je to schválně: „odloženo právě jednou" se má hlídat tam, kde se rozhoduje,
+ * co odejde, a součet je to jediné, co takovou chybu ukáže.
+ */
+export function addTallies(left: DisposalTally, right: DisposalTally): DisposalTally {
+  return {
+    geometries: left.geometries + right.geometries,
+    materials: left.materials + right.materials,
+    textures: left.textures + right.textures,
+  };
+}
+
 /** Jen to z `Object3D`, na co úklid sahá. Mesh, Line, Points i Sprite to splňují. */
 interface Renderable extends Object3D {
   geometry?: BufferGeometry;
@@ -74,9 +100,12 @@ export function disposeSubtree(root: Object3D): DisposalTally {
   const geometries = new Set<BufferGeometry>();
   const materials = new Set<Material>();
   const textures = new Set<Texture>();
+  const instances = new Set<{ dispose(): void }>();
 
   root.traverse((object) => {
     const renderable = object as Renderable;
+    const instanced = object as Object3D & { isInstancedMesh?: boolean; dispose?: () => void };
+    if (instanced.isInstancedMesh && instanced.dispose) instances.add(instanced as { dispose(): void });
     if (renderable.geometry !== undefined) geometries.add(renderable.geometry);
     for (const material of materialsOf(renderable)) {
       materials.add(material);
@@ -90,6 +119,7 @@ export function disposeSubtree(root: Object3D): DisposalTally {
   for (const texture of textures) texture.dispose();
   for (const material of materials) material.dispose();
   for (const geometry of geometries) geometry.dispose();
+  for (const instance of instances) instance.dispose();
 
   root.removeFromParent();
   detach(root);

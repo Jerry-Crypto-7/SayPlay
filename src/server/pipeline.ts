@@ -58,6 +58,21 @@ export type GenerationFailureReason =
   | 'MALFORMED_RESPONSE'
   /** Větev pro tenhle prompt žádný zdroj odpovědi nemá. */
   | 'NO_SOURCE'
+  /**
+   * Zdroj ten prompt **zná**, ale odpověď k němu chybí.
+   *
+   * Zvenku je to totéž co `NO_SOURCE` a zůstat to tak musí — rozdíl mezi
+   * „neznám tvou větu" a „mám rozbitý korpus" je stav serveru a volajícímu do
+   * něj nic není. Uvnitř je to ale opak: `NO_SOURCE` je u offline větve
+   * **normální odpověď** na vlastní větu porotce, kdežto tohle je **vada
+   * zmrazené sady**, kterou se nikdo nedozví, dokud ji někdo netrefí.
+   *
+   * Do 1. 9. 2026 nesly obě situace tentýž důvod, takže filtr logu v
+   * `/api/generate` musel mlčet na obě — a mlčel na tu, která je porucha.
+   * Naměřeno nezávislou revizí; zatím **latentní**: 15 create promptů,
+   * 0 chybějících odpovědí.
+   */
+  | 'NO_FROZEN_ANSWER'
   /** Větvi chybí konfigurace, takže se nevolalo nikam. */
   | 'BRANCH_UNCONFIGURED';
 
@@ -106,6 +121,8 @@ const BILLED_ON_FAILURE: Record<GenerationFailureReason, 'estimate' | 'nothing'>
   MALFORMED_RESPONSE: 'estimate',
   UPSTREAM_REJECTED: 'nothing',
   NO_SOURCE: 'nothing',
+  // Nikam se nevolalo, jen se to poznalo o krok později než u `NO_SOURCE`.
+  NO_FROZEN_ANSWER: 'nothing',
   BRANCH_UNCONFIGURED: 'nothing',
 };
 
@@ -168,7 +185,7 @@ export async function runPipeline(prompt: unknown, deps: PipelineDeps): Promise<
     request: buildEmissionRequest(verdict.prompt, deps.grammar),
   };
 
-  const reservation = deps.cap.reserve(deps.branch.worstCaseUsd(call));
+  const reservation = await deps.cap.reserve(deps.branch.worstCaseUsd(call));
   if (!reservation.ok)
     return {
       outcome: 'REFUSED',
@@ -183,14 +200,20 @@ export async function runPipeline(prompt: unknown, deps: PipelineDeps): Promise<
   try {
     generated = await deps.branch.generate(call);
   } catch (thrown) {
-    reservation.settle('unknown');
+    // **Vyrovnat na vlastním řádku, ne uvnitř literálu.** Vlastnosti objektu se
+    // vyhodnocují v pořadí zápisu, takže vyrovnání za `detail` by u výjimky,
+    // ze které `.message` přečíst nejde (`Promise.reject(null)`), neproběhlo
+    // vůbec — TypeError by vylétl dřív a rezervace by visela až do konce
+    // procesu. Nasazení by pak odmítalo 429 na stropu, který nic neutratil.
+    // Naměřeno nezávislou revizí 1. 9. 2026 nad `10e8b8b`.
+    const settledUsd = await reservation.settle('unknown');
     return {
       outcome: 'FAILED',
       stage: 'generation',
       branch: deps.branch.id,
       reason: 'UPSTREAM_UNAVAILABLE',
       detail: `the ${deps.branch.id} branch threw: ${(thrown as Error).message}`,
-      costUsd: reservation.reservedUsd,
+      costUsd: settledUsd,
     };
   }
 
@@ -199,13 +222,18 @@ export async function runPipeline(prompt: unknown, deps: PipelineDeps): Promise<
     // vyhozená výjimka výš. Nula by znamenala, že poskytovatel, který `usage`
     // vynechá, volá zadarmo a strop ho nikdy neuvidí.
     const spent = generated.usage === null ? null : costUsd(generated.usage, deps.branch.pricing);
-    reservation.settle(spent ?? 'unknown');
     return {
       outcome: 'GENERATED',
       branch: deps.branch.id,
       body: generated.body,
       usage: generated.usage ?? { inputTokens: 0, outputTokens: 0 },
-      costUsd: spent ?? reservation.reservedUsd,
+      // **Hlásí se stržené, ne poslané.** `settle()` účtenku, která nedává
+      // smysl, zahodí a strhne celou rezervaci — a do 1. 9. 2026 se to nikdo
+      // nedozvěděl: `{input_tokens: -1e9}` strhlo 0,2195 USD a vrátilo sem
+      // `-5000`, `{input_tokens: 1e999}` vrátilo `Infinity`. Je to jediný
+      // účetní údaj, který produkt vydává, takže operátor hledající, kam se
+      // rozpočet poděl, dostal součet, který se stropem nesedí.
+      costUsd: await reservation.settle(spent ?? 'unknown'),
       provenance: generated.provenance,
     };
   }
@@ -216,14 +244,13 @@ export async function runPipeline(prompt: unknown, deps: PipelineDeps): Promise<
       : BILLED_ON_FAILURE[generated.reason] === 'estimate'
         ? reservation.reservedUsd
         : 0;
-  reservation.settle(billed);
-
   return {
     outcome: 'FAILED',
     stage: 'generation',
     branch: deps.branch.id,
     reason: generated.reason,
     detail: generated.detail,
-    costUsd: billed,
+    // Táž věc jako u úspěchu: `billed` je návrh, `settle()` je rozhodnutí.
+    costUsd: await reservation.settle(billed),
   };
 }

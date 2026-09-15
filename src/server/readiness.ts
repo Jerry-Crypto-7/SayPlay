@@ -38,6 +38,9 @@
  * kvůli kterým tahle sonda existuje, zůstane neověřená. Verdikt to musí unést
  * dál, jinak sonda trvale hlásí záruku, kterou přestala kontrolovat.
  */
+import { ledgerFromEnv } from './spend-store';
+import { upstreamConfigFromEnv } from './upstream';
+
 export interface WriteOutcome {
   /** `true` = zápis se vynutil na zařízení. `false` = svazek `fsync` neumí. */
   readonly durabilityVerified: boolean;
@@ -58,7 +61,18 @@ export type ReadinessFailure =
   /** Přečetlo se něco jiného, než co se zapsalo. */
   | 'READBACK_MISMATCH'
   /** Zápis i čtení prošly, ale sonda po sobě neumí uklidit. */
-  | 'CLEANUP_FAILED';
+  | 'CLEANUP_FAILED'
+  /**
+   * Model je nakonfigurovaný, ale strop utrácení nemá knihu
+   * (`T29-readinessledger`).
+   *
+   * **Je to jediná třída, která neměří disk, a patří sem přesto.** Takové
+   * nasazení **každé** placené volání odmítne (`STORE_UNCONFIGURED`), porotce
+   * přitom čte „the model could not be reached" a vina padne na poskytovatele.
+   * Překlep v `VERCEL_ENV` (`Production ` projde, `prod` ne) tak dnes projde
+   * kontrolou připravenosti a začne brát provoz.
+   */
+  | 'LEDGER_UNCONFIGURED';
 
 export interface Ready {
   readonly ready: true;
@@ -96,6 +110,19 @@ export interface ReadinessDeps {
    * zdravém disku, což je horší než žádná kontrola.
    */
   readonly nonce: () => string;
+  /**
+   * `true`, když je model nakonfigurovaný a strop utrácení přesto nemá knihu.
+   *
+   * **Je to parametr, ne dotaz uvnitř sondy.** `checkReadiness` na peněžní
+   * cestu nesahá vůbec; složí to `nodeReadinessDeps()` níž, takže se ta větev
+   * dá v testu vyrobit bez `.env` a bez sdílené knihy.
+   *
+   * ⚠ **Obě půlky té podmínky jsou nutné.** Nasazení bez modelu knihu
+   * nepotřebuje a **má zůstat v rotaci**: dnesšní demo běží bez `.env`, takže
+   * sám chybějící strop by ho z rotace vyřadil celé — včetně offline větve,
+   * korpusu a meshingu, které přes strop vůbec nechodí.
+   */
+  readonly capMisconfigured: () => boolean;
 }
 
 function message(error: unknown): string {
@@ -114,6 +141,18 @@ export async function checkReadiness(directory: string, deps: ReadinessDeps): Pr
   const probePath = `${directory}/readiness-${token}.probe`;
   const payload = `worldsmith readiness ${token}`;
   const elapsed = (): number => deps.now() - started;
+
+  // **Nejdřív to, co disk nestojí a samo se nikdy nespraví.** Špatně
+  // nakonfigurovaný strop není přechodný stav: instance by brala provoz a
+  // každé placené volání odmítala, s vinou svedenou na poskytovatele.
+  if (deps.capMisconfigured())
+    return {
+      ready: false,
+      probePath,
+      elapsedMs: elapsed(),
+      reason: 'LEDGER_UNCONFIGURED',
+      detail: 'model je nakonfigurovaný, ale strop utrácení nemá knihu',
+    };
 
   let written: WriteOutcome;
   try {
@@ -258,5 +297,7 @@ export function nodeReadinessDeps(): ReadinessDeps {
     fs: nodeReadinessFs(),
     now: () => Date.now(),
     nonce: () => `${process.pid}-${(probesIssued += 1)}`,
+    capMisconfigured: () =>
+      upstreamConfigFromEnv(process.env) !== null && ledgerFromEnv(process.env) === null,
   };
 }

@@ -15,7 +15,9 @@
  */
 
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import { MAX_REQUESTS_PER_WINDOW, resetRateWindows, takeRateSlot } from '../../../../server/rate-limit';
 
 import { ENVELOPE_ANNOTATIONS, simHashOf, validateLook, worldDocSchema } from '../../../../ir/worlddoc';
 import { MAX_BODY_BYTES, POST, readBody } from '../route';
@@ -60,6 +62,19 @@ async function emit(promptId: string): Promise<EmitBody> {
 
 /** Všech 15 najednou — sada se čte z kontraktů, ne z ručního seznamu. */
 const ids = contracts.map((contract) => contract.id);
+
+
+/**
+ * **Strop na frekvenci se před každým případem nuluje, a není to obcházení
+ * meze.** Okna `takeRateSlot()` jsou proces-globální (`src/server/rate-limit.ts`)
+ * a tahle sada vystřelí na jedny dveře víc než `MAX_REQUESTS_PER_WINDOW`
+ * požadavků za desetisekundové okno — což žádný člověk neudělá, ale sada ano.
+ * Bez tohohle řádku začne od padesátého prvního požadavku odpovídat 429 a
+ * červená se objeví na náhodném případu podle pořadí, ne na tom vadném.
+ */
+beforeEach(() => {
+  resetRateWindows();
+});
 
 describe('celá zmrazená create sada projde endpointem', () => {
   it('má právě 15 create promptů a žádný z nich nekončí 5xx', async () => {
@@ -271,5 +286,29 @@ describe('stavový kontrakt', () => {
     expect((await post('C01')).status).toBe(400);
     // `E01` existuje, ale je editační — druhá větev je T14.
     for (const id of ['C99', 'E01']) expect((await post({ promptId: id })).status, id).toBe(404);
+  });
+});
+
+describe('strop na frekvenci dorazí až ke dveřím', () => {
+  it('padesátý první požadavek v okně je 429 s retry-after, ne 200', async () => {
+    // Okno se plní přímo čítačem — měří se zapojení meze do těchhle dveří,
+    // ne mez sama (`src/server/__tests__/rate-limit.test.ts`).
+    for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) takeRateSlot('emit', 'unknown');
+    try {
+      const response = await POST(
+        new Request('http://127.0.0.1/api/emit', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ promptId: 'C01' }),
+        }),
+      );
+      expect(response.status).toBe(429);
+      expect(Number(response.headers.get('retry-after'))).toBeGreaterThanOrEqual(1);
+      expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
+        'TOO_MANY_REQUESTS',
+      );
+    } finally {
+      resetRateWindows();
+    }
   });
 });

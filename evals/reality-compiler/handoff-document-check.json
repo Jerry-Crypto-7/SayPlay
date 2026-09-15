@@ -1,0 +1,31 @@
+{
+  "checkedAt": "2026-09-08T15:25:38.359Z",
+  "scope": "Local document consistency; not a public submission gate",
+  "readme": true,
+  "walkthrough": true,
+  "category": "procedural worlds",
+  "reports": [
+    {
+      "path": "evals/reality-compiler/subscription-report.md",
+      "exists": true
+    },
+    {
+      "path": "evals/reality-compiler/subscription-demo.md",
+      "exists": true
+    },
+    {
+      "path": "evals/reality-compiler/decision.md",
+      "exists": true
+    },
+    {
+      "path": "evals/reality-compiler/user-study-results.json",
+      "exists": true
+    }
+  ],
+  "sharedMeasuredNumbers": [
+    "93.611"
+  ],
+  "legacyGuaranteeQuoted": false,
+  "legacyContract": "Historical DESIGN-BOOK guarantee is not claimed by this pilot; reconcile before public release",
+  "publication": "NOT_RUN; URL, video, registration and operational evidence are still missing"
+}

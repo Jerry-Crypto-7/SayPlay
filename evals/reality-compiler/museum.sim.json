@@ -1,0 +1,256 @@
+{
+  "layout": {
+    "kind": "corridor",
+    "width": 10,
+    "height": 3
+  },
+  "grid": {
+    "cell": 1
+  },
+  "sockets": {
+    "entry": [
+      1,
+      1
+    ],
+    "sensorA": [
+      2,
+      1
+    ],
+    "sensorB": [
+      8,
+      1
+    ],
+    "approachB": [
+      7,
+      1
+    ],
+    "case": [
+      9,
+      1
+    ]
+  },
+  "collisionAabb": {},
+  "entities": {
+    "visitor": {
+      "role": "actor",
+      "socket": "entry"
+    },
+    "sensorA": {
+      "role": "sensor",
+      "socket": "sensorA"
+    },
+    "sensorB": {
+      "role": "sensor",
+      "socket": "sensorB"
+    },
+    "approachA": {
+      "role": "marker",
+      "socket": "entry"
+    },
+    "approachB": {
+      "role": "marker",
+      "socket": "approachB"
+    },
+    "case": {
+      "role": "display",
+      "socket": "case",
+      "locked": true
+    }
+  },
+  "state": {
+    "flags": {
+      "started": false,
+      "alarm": false
+    },
+    "timers": {
+      "countdown": {
+        "durationTicks": 400,
+        "initial": 0
+      }
+    },
+    "zones": {
+      "nearA": [
+        [
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          3,
+          1,
+          1,
+          1
+        ],
+        [
+          2,
+          0,
+          1,
+          1
+        ],
+        [
+          2,
+          2,
+          1,
+          1
+        ]
+      ],
+      "nearB": [
+        [
+          7,
+          1,
+          1,
+          1
+        ],
+        [
+          9,
+          1,
+          1,
+          1
+        ],
+        [
+          8,
+          0,
+          1,
+          1
+        ],
+        [
+          8,
+          2,
+          1,
+          1
+        ]
+      ]
+    }
+  },
+  "rules": {
+    "start_countdown": {
+      "event": {
+        "kind": "onAction",
+        "actionId": "activate",
+        "target": "sensorA"
+      },
+      "condition": {
+        "kind": "allOf",
+        "operands": [
+          {
+            "kind": "flagIs",
+            "ref": "started",
+            "value": false
+          },
+          {
+            "kind": "flagIs",
+            "ref": "alarm",
+            "value": false
+          },
+          {
+            "kind": "lockedIs",
+            "target": "case",
+            "value": true
+          },
+          {
+            "kind": "inZone",
+            "entity": "visitor",
+            "zone": "nearA"
+          }
+        ]
+      },
+      "actions": [
+        {
+          "kind": "setFlag",
+          "ref": "started",
+          "value": true
+        },
+        {
+          "kind": "startTimer",
+          "ref": "countdown",
+          "durationTicks": 400
+        }
+      ]
+    },
+    "unlock_case": {
+      "event": {
+        "kind": "onAction",
+        "actionId": "activate",
+        "target": "sensorB"
+      },
+      "condition": {
+        "kind": "allOf",
+        "operands": [
+          {
+            "kind": "flagIs",
+            "ref": "started",
+            "value": true
+          },
+          {
+            "kind": "flagIs",
+            "ref": "alarm",
+            "value": false
+          },
+          {
+            "kind": "lockedIs",
+            "target": "case",
+            "value": true
+          },
+          {
+            "kind": "inZone",
+            "entity": "visitor",
+            "zone": "nearB"
+          },
+          {
+            "kind": "timerRunning",
+            "ref": "countdown"
+          }
+        ]
+      },
+      "actions": [
+        {
+          "kind": "setLocked",
+          "target": "case",
+          "value": false
+        },
+        {
+          "kind": "stopTimer",
+          "ref": "countdown"
+        }
+      ]
+    },
+    "expire_countdown": {
+      "event": {
+        "kind": "onTimerEnd",
+        "timer": "countdown"
+      },
+      "condition": {
+        "kind": "allOf",
+        "operands": [
+          {
+            "kind": "flagIs",
+            "ref": "started",
+            "value": true
+          },
+          {
+            "kind": "flagIs",
+            "ref": "alarm",
+            "value": false
+          },
+          {
+            "kind": "lockedIs",
+            "target": "case",
+            "value": true
+          }
+        ]
+      },
+      "actions": [
+        {
+          "kind": "setFlag",
+          "ref": "alarm",
+          "value": true
+        }
+      ]
+    }
+  },
+  "witness": {
+    "tier": "short",
+    "ops": []
+  }
+}
