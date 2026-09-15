@@ -45,7 +45,11 @@ test('věta mimo sklad dostane svět a produkt to řekne nahlas', async ({ page 
   // Text **jmenuje, co se stalo**, a neomlouvá se. Anglicky, protože viditelná
   // měď produktu je anglicky (`CLAUDE.md`, Konvence) — a protože se do pole
   // píšou anglické věty.
-  await expect(notice).toHaveText('This is the closest world authored ahead of time.');
+  // Druhá věta přibyla v `ec2163e` (14. 9. 2026): nejbližší svět nikdo
+  // neporovnal s tím, co porotce napsal, a popisek to má říct.
+  await expect(notice).toHaveText(
+    'This is the closest world authored ahead of time. Relevance to your request has not been verified.',
+  );
 
   // Popisek bydlí v doku, ne ve vlastním rohu (konvence rohů v `CLAUDE.md`).
   // Šestý absolutně kotvený box je přesně ta vada, kvůli které `.ws-shell`
