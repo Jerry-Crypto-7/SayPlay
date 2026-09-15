@@ -104,9 +104,16 @@ function removeRow(table: RawTable, at: number): RawTable {
   return { ...shifted, nodes };
 }
 
-/** Potomek musí ležet pod rodičem — jinak nejde nic rozvinout ani dojít. */
+/**
+ * Potomek musí ležet pod rodičem — jinak nejde nic rozvinout ani dojít.
+ * Kořen `-1` nebo `1.5` od modelu by jinak prošel jen horní mezí a
+ * `reattachOrDropOrphans` by sáhl na neexistující uzel; výjimka z narovnání
+ * shodí celé generování místo odmítnutí branou a opravného kola.
+ */
 function monotonic(table: RawTable): boolean {
   return (
+    Number.isInteger(table.root) &&
+    table.root >= 0 &&
     table.root < table.nodes.length &&
     table.nodes.every((node, index) => refsOf(node).every((ref) => ref < index))
   );

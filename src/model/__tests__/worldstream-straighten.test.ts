@@ -69,6 +69,17 @@ describe('a valid program is left exactly as written', () => {
     expect(straightenShape(null, 0, adjustments)).toBeNull();
     expect(adjustments).toEqual([]);
   });
+
+  it('a root that is not a row index is left for the gate instead of throwing', () => {
+    // Codex review 15. 9. 2026: kořen -1 prošel jen horní mezí a narovnání spadlo,
+    // takže generování skončilo výjimkou místo odmítnutí a opravného kola.
+    for (const root of [-1, 1.5]) {
+      const table = { version: GEOM_VERSION, nodes: [{ kind: 'group', children: [] }], root };
+      const adjustments: BlueprintAdjustment[] = [];
+      expect(straightenGeometry(table, adjustments).value, `root ${root}`).toEqual(table);
+      expect(validateGeomProgram(table).ok, `root ${root}`).toBe(false);
+    }
+  });
 });
 
 describe('a group wider than 16 children is nested, not refused', () => {
