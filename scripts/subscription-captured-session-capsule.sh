@@ -39,7 +39,9 @@ finally:
     for fd in reversed(fds):
         os.close(fd)
 UTS_PY
-cli=/home/troy/.codex/packages/standalone/releases/0.145.0-x86_64-unknown-linux-musl/bin/codex
+# Home from passwd, not $HOME: the probes launch this capsule under `env -i`.
+home=$(getent passwd "$(id -u)" | cut -d: -f6)
+cli="$home"/.codex/packages/standalone/releases/0.145.0-x86_64-unknown-linux-musl/bin/codex
 [ -f "$cli" ] && [ ! -L "$cli" ] || exit 65
 mount --make-rprivate /
 mount -t tmpfs -o nosuid,nodev,size=64m tmpfs /tmp
@@ -51,7 +53,7 @@ mkdir "$root/usr/bin" "$root/usr/lib" "$root/usr/lib64"
 mkdir "$root/bin" "$root/lib" "$root/lib64"
 cp -L /usr/bin/python3 /usr/bin/setpriv "$root/usr/bin/"
 cp "$cli" "$root/usr/bin/codex"
-cp /home/troy/.codex/packages/standalone/releases/0.145.0-x86_64-unknown-linux-musl/codex-resources/bwrap "$root/usr/bin/bwrap"
+cp "$home"/.codex/packages/standalone/releases/0.145.0-x86_64-unknown-linux-musl/codex-resources/bwrap "$root/usr/bin/bwrap"
 stdlib=$(/usr/bin/python3 -I -S -c 'import sysconfig; print(sysconfig.get_path("stdlib"))')
 case "$stdlib" in /usr/lib/python3.[0-9]*) ;; *) exit 64 ;; esac
 cp -R "$stdlib" "$root/usr/lib/"

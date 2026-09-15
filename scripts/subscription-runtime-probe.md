@@ -6,7 +6,7 @@ subscription bridge remains separate and has not been migrated to the dummy
 supervisor. No login command is part of this probe.
 
 The executable inventory only resolves metadata in named installation locations.
-It found `/home/troy/.local/bin/codex`, resolving to the standalone Linux musl
+It found `~/.local/bin/codex`, resolving to the standalone Linux musl
 0.145.0 package. A clean `/usr/local/bin:/usr/bin:/bin` PATH had no CLI, while the
 inherited WSL PATH selected a Windows npm wrapper. A PATH lookup is consequently
 not an acceptable production executable identity.

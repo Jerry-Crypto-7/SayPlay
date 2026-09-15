@@ -11,7 +11,7 @@ export const SUBSCRIPTION_PRODUCTION_PROFILE = Object.freeze({
   id: 'codex-chatgpt-wsl-production-v1', model: 'gpt-6-astra', effort: 'low',
   billing: 'subscription', apiFallback: false, distro: 'Ubuntu-24.04',
   runtimeVersion: '0.145.0',
-  runtimeSource: '/home/troy/.codex/packages/standalone/releases/0.145.0-x86_64-unknown-linux-musl/bin/codex',
+  runtimeSource: '~/.codex/packages/standalone/releases/0.145.0-x86_64-unknown-linux-musl/bin/codex',
   jobDeadlineMs: 180_000, commandDeadlineMs: 200_000,
   killGraceMs: 5_000, maxOutputBytes: 8 * 1024 * 1024,
 } as const);
