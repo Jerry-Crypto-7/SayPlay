@@ -48,8 +48,11 @@ interface Acts {
   readonly urls: readonly string[];
 }
 
-/** `failure` pošle místo blueprintu `session.failed` s tímhle důvodem. */
-async function scriptSecondAct(page: Page, failure?: string): Promise<Acts> {
+/**
+ * `failure` pošle místo blueprintu `session.failed` s tímhle důvodem;
+ * `blueprint` pošle místo blueprintu dějství I tenhle.
+ */
+async function scriptSecondAct(page: Page, failure?: string, blueprint?: unknown): Promise<Acts> {
   let firstSession: string | null = null;
   let release = (): void => {};
   const gate = new Promise<void>((resolve) => {
@@ -101,13 +104,16 @@ async function scriptSecondAct(page: Page, failure?: string): Promise<Acts> {
       `data: ${JSON.stringify({ sessionId: ACT_TWO, sequence, type, at: '1970-01-01T00:00:00.000Z', payload })}\n\n`;
     if (failure !== undefined)
       return route.fulfill({ status: 200, contentType: 'text/event-stream', body: frame(1, 'session.failed', { reason: failure }) });
-    const snapshot = await page.request.get(`/api/worldstream/sessions/${firstSession!}`);
-    const { blueprint } = (await snapshot.json()) as { blueprint: unknown };
+    let written = blueprint;
+    if (written === undefined) {
+      const snapshot = await page.request.get(`/api/worldstream/sessions/${firstSession!}`);
+      written = ((await snapshot.json()) as { blueprint: unknown }).blueprint;
+    }
 
     return route.fulfill({
       status: 200,
       contentType: 'text/event-stream',
-      body: frame(1, 'blueprint.ready', { blueprint }) + frame(2, 'session.complete', {}),
+      body: frame(1, 'blueprint.ready', { blueprint: written }) + frame(2, 'session.complete', {}),
     });
   });
 
@@ -122,6 +128,31 @@ async function scriptSecondAct(page: Page, failure?: string): Promise<Acts> {
     },
     urls,
   };
+}
+
+/**
+ * Od téhle chvíle dějství I nové věty visí na drátě, dokud se nepustí, a dveře
+ * dějství II odmítnou (503) jako nasazení bez modelu. `runSecondAct` hlášku
+ * maže i sám na svém začátku, takže bez zdržení by každý test nad hláškou
+ * prošel díky dalšímu dějství, ne díky tomu, co soudí (`ship-testgaps2`).
+ */
+async function holdNextSentence(page: Page): Promise<{ readonly release: () => void }> {
+  let release = (): void => {};
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/api/worldstream/sessions', async (route) => {
+    const body = JSON.parse(route.request().postData() ?? '{}') as { live?: boolean };
+    if (body.live === true)
+      return route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: { code: 'LIVE_UNAVAILABLE', message: 'the model is not writing worlds on this instance' } }),
+      });
+    await gate;
+    return route.fallback();
+  });
+  return { release };
 }
 
 async function buildWorld(page: Page, sentence: string): Promise<void> {
@@ -209,6 +240,63 @@ test('dějství II, které nedorazí, to řekne a svět nechá', async ({ page }
   await expect(page.getByTestId('second-act-missed')).toContainText('did not pass the checks', { timeout: WORLD_BUDGET_MS });
   await expect(page.getByTestId('second-act-writing')).toHaveCount(0);
   await expect(page.getByTestId('world-authored')).toBeVisible();
+});
+
+test('dějství II s blueprintem, který neprojde schématem, to řekne a svět nechá', async ({ page }) => {
+  test.setTimeout(180_000);
+  const acts = await scriptSecondAct(page, undefined, { world: 'not a world' });
+  await page.goto('/');
+  await buildWorld(page, AUTHORED);
+  await expect(page.getByTestId('second-act-writing')).toBeVisible();
+
+  acts.release();
+
+  await expect(page.getByTestId('second-act-missed')).toContainText('does not parse', { timeout: WORLD_BUDGET_MS });
+  await expect(page.getByTestId('world-authored')).toBeVisible();
+});
+
+test('nová věta smaže hlášku o nedoručeném dějství II hned, ne až s dalším dějstvím', async ({ page }) => {
+  test.setTimeout(240_000);
+  const acts = await scriptSecondAct(page, 'the model wrote a world that did not pass the checks');
+  await page.goto('/');
+  await buildWorld(page, AUTHORED);
+  acts.release();
+  const missed = page.getByTestId('second-act-missed');
+  await expect(missed).toContainText('did not pass the checks', { timeout: WORLD_BUDGET_MS });
+
+  const next = await holdNextSentence(page);
+  await page.getByTestId('prompt-input').fill(AUTHORED);
+  await page.getByTestId('prompt-submit').click();
+  await expect(missed).toHaveCount(0);
+
+  next.release();
+  await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live', { timeout: WORLD_BUDGET_MS });
+  await expect(missed).toHaveCount(0);
+});
+
+test('dějství II staré věty, useknuté novou větou, žádnou hlášku nenechá', async ({ page }) => {
+  test.setTimeout(240_000);
+  // Proud dějství II se nepustí: model staré věty pořád píše.
+  await scriptSecondAct(page);
+  await page.goto('/');
+  await buildWorld(page, AUTHORED);
+  const writing = page.getByTestId('second-act-writing');
+  await expect(writing).toBeVisible();
+
+  const next = await holdNextSentence(page);
+  await page.getByTestId('prompt-input').fill(AUTHORED);
+  await page.getByTestId('prompt-submit').click();
+  await expect(writing).toHaveCount(0);
+  // Useknuté čtení se vrátí jako `fault` a do hlášky ho nepustí dotaz na
+  // `aborted` hned za `firstBlueprint`; bez něj by porotce nad novou větou četl
+  // přerušení jako důvod, proč verze modelu nedorazila. Dva snímky nechají
+  // zrušení doběhnout a Reactu vykreslit.
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  await expect(page.getByTestId('second-act-missed')).toHaveCount(0);
+
+  next.release();
+  await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live', { timeout: WORLD_BUDGET_MS });
+  await expect(page.getByTestId('second-act-missed')).toHaveCount(0);
 });
 
 test('visitor input protects the running world from a late second act', async ({ page }) => {
