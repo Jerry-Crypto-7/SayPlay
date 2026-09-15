@@ -27,7 +27,7 @@
  */
 import { execFile, spawn } from 'node:child_process';
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -55,12 +55,15 @@ function codexCommand() {
  * **za** `exec` – před ním je codex tiše ignoruje. Podagenti (`collaboration.*`)
  * zůstávají i s `multi_agent=false`; drží je jen strop času a denní strop.
  */
-const TOOL_SWITCHES = ['view_image', 'image_generation', 'code_mode_host', 'multi_agent', 'browser_use', 'computer_use', 'plugins', 'goals']
-  .flatMap((feature) => ['-c', `features.${feature}=false`]);
+const TOOL_SWITCHES = [
+  'view_image', 'image_generation', 'code_mode_host', 'multi_agent', 'browser_use', 'computer_use', 'plugins', 'goals',
+  // Z revize 15. 9.: globální hooky vlastníka, prohlížeč přes CDP, skilly a unified exec.
+  'hooks', 'browser_use_external', 'browser_use_full_cdp_access', 'in_app_browser', 'skill_search', 'skill_mcp_dependency_install', 'sleep_tool', 'unified_exec',
+].flatMap((feature) => ['-c', `features.${feature}=false`]);
 
 function codexArgs(model, effort, cwd) {
   return [
-    'exec', '--ignore-user-config', '--ephemeral', '--skip-git-repo-check', '--sandbox', 'read-only',
+    'exec', '--ignore-user-config', '--ignore-rules', '--ephemeral', '--skip-git-repo-check', '--sandbox', 'read-only',
     '-c', 'approval_policy="never"', '-c', 'forced_login_method="chatgpt"', '-c', 'model_provider="openai"',
     '-c', `model_reasoning_effort="${effort}"`,
     '-c', 'features.shell_tool=false', '-c', 'features.apps=false', '-c', 'web_search="disabled"',
@@ -87,10 +90,14 @@ const digest = (value) => createHash('sha256').update(value).digest();
 function takeRun(file, limit, now) {
   const day = new Date(now()).toISOString().slice(0, 10);
   const saved = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
+  // Poškozené počítadlo musí zavřít, ne otevřít: `'abc' >= 150` je nepravda.
+  if (saved !== null && !Number.isInteger(saved.runs)) throw new Error('the run counter file is damaged');
   const runs = saved?.day === day ? saved.runs : 0;
   if (runs >= limit) return false;
   mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(file, JSON.stringify({ day, runs: runs + 1 }));
+  // Přes dočasný soubor a přejmenování: zápis utnutý v půlce nesmí nechat nečitelné počítadlo.
+  writeFileSync(`${file}.tmp`, JSON.stringify({ day, runs: runs + 1 }));
+  renameSync(`${file}.tmp`, file);
   return true;
 }
 
@@ -133,6 +140,9 @@ export function createShim({
   if (typeof key !== 'string' || key.length < 32) throw new Error('CODEX_SHIM_KEY must be at least 32 characters');
   if (typeof model !== 'string' || model.trim() === '') throw new Error('CODEX_SHIM_MODEL is required');
   if (!EFFORTS.includes(effort)) throw new Error(`CODEX_SHIM_EFFORT must be one of ${EFFORTS.join(', ')}`);
+  // `Number('15O')` je NaN a `runs >= NaN` nikdy neplatí – překlep by strop tiše vypnul.
+  for (const [name, value, least] of [['dailyRuns', dailyRuns, 0], ['maxConcurrent', maxConcurrent, 1], ['timeoutMs', timeoutMs, 1], ['maxBodyBytes', maxBodyBytes, 1]])
+    if (!Number.isInteger(value) || value < least) throw new Error(`${name} must be a whole number of at least ${least}`);
   const keyDigest = digest(key);
   let running = 0;
 
@@ -175,19 +185,33 @@ export function createShim({
       if (prompt === null) return send(400, { type: 'error', error: { type: 'invalid_request_error', message: 'no_user_text' } });
       // Souběh před rozpočtem: odmítnutí kvůli plnému mostu nesmí spálit denní spuštění.
       if (running >= maxConcurrent) return send(429, { type: 'error', error: { type: 'rate_limit_error', message: 'busy' } });
-      if (!takeRun(runsFile, dailyRuns, now)) return send(429, { type: 'error', error: { type: 'rate_limit_error', message: 'SHIM_BUDGET_EXHAUSTED' } });
+      // Výjimka v handleru by shodila celý proces – a nečitelné počítadlo by ho
+      // shazovalo při každém dalším požadavku. Nečitelné počítadlo tedy zavírá.
+      let allowed;
+      try {
+        allowed = takeRun(runsFile, dailyRuns, now);
+      } catch {
+        return send(503, { type: 'error', error: { type: 'api_error', message: 'budget_unreadable' } });
+      }
+      if (!allowed) return send(429, { type: 'error', error: { type: 'rate_limit_error', message: 'SHIM_BUDGET_EXHAUSTED' } });
       run(prompt);
     });
 
     function run(prompt) {
-      running += 1;
-      const cwd = mkdtempSync(join(tmpdir(), 'codex-shim-'));
+      let cwd;
+      try {
+        cwd = mkdtempSync(join(tmpdir(), 'codex-shim-'));
+      } catch {
+        return send(503, { type: 'error', error: { type: 'api_error', message: 'scratch_unavailable' } });
+      }
       const child = spawn(command.file, [...command.prefix, ...codexArgs(model, effort, cwd)], {
         cwd,
         env: Object.fromEntries(ENV_ALLOWLIST.filter((name) => process.env[name] !== undefined).map((name) => [name, process.env[name]])),
         windowsHide: true,
         detached: process.platform !== 'win32',
       });
+      // Slot až po spuštění, ve stejném tiku jako kontrola souběhu – nic mezi nimi nepoběží.
+      running += 1;
       let stdout = '';
       let outputBytes = 0;
       let cut = null;
@@ -216,7 +240,12 @@ export function createShim({
         done = true;
         clearTimeout(timer);
         running -= 1;
-        rmSync(cwd, { recursive: true, force: true });
+        try {
+          // Na Windows drží adresář ještě chvíli dozabíjený proces (EBUSY); `force` to nespolkne.
+          rmSync(cwd, { recursive: true, force: true, maxRetries: 5 });
+        } catch {
+          log(`scratch directory left behind: ${cwd}`);
+        }
         if (cut === 'disconnected') return log(`disconnected  ${now() - started} ms`);
         if (cut === 'timeout') return send(504, { type: 'error', error: { type: 'timeout_error', message: 'codex_timeout' } });
         if (cut === 'output' || code !== 0) return send(502, { type: 'error', error: { type: 'api_error', message: 'codex_failed' } });

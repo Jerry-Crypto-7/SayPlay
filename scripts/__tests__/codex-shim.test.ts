@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -81,7 +81,29 @@ describe('codex shim', () => {
     for (const feature of ['view_image', 'image_generation', 'code_mode_host'])
       expect(spawn.args.indexOf(`features.${feature}=false`), feature).toBeGreaterThan(spawn.args.indexOf('exec'));
     expect(spawn.stdin).toBe('SYSTEM\n\na harbor at dusk');
+    expect(JSON.stringify(spawn), 'the key reached the child').not.toContain(KEY);
   });
+
+  it('refuses to start with a budget or limit that is not a whole number', () => {
+    const base = { key: KEY, model: 'gpt-6-astra', effort: 'high', runsFile: join(tmpdir(), 'unused.json') };
+    expect(() => createShim({ ...base, dailyRuns: Number('15O') })).toThrow(/dailyRuns/);
+    expect(() => createShim({ ...base, maxConcurrent: 0 })).toThrow(/maxConcurrent/);
+  });
+
+  it('fails closed with 503 on a damaged run counter and keeps serving', async () => {
+    const runsFile = join(mkdtempSync(join(tmpdir(), 'shim-test-')), 'runs.json');
+    writeFileSync(runsFile, '{"day":"2026-09-15","ru');
+    const shim = await start('ok', { runsFile });
+    expect((await post(shim.url)).status).toBe(503);
+    expect((await post(shim.url)).status).toBe(503);
+    expect(shim.spawns()).toHaveLength(0);
+  });
+
+  it('returns the slot when a run ends', async () => {
+    const shim = await start('hang', { maxConcurrent: 1, timeoutMs: 1_500 });
+    expect((await post(shim.url)).status).toBe(504);
+    expect((await post(shim.url)).status, 'the first run kept its slot').toBe(504);
+  }, 20_000);
 
   it('refuses a missing or wrong key with 401 and never starts codex', async () => {
     const shim = await start('ok');
