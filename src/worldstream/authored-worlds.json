@@ -876,7 +876,7 @@
               {
                 "kind": "repeat",
                 "child": 10,
-                "count": 5,
+                "count": 3,
                 "step": [
                   3,
                   0,
@@ -887,7 +887,7 @@
                 "kind": "translate",
                 "child": 11,
                 "offset": [
-                  -6,
+                  -3,
                   0,
                   0
                 ]
@@ -896,12 +896,12 @@
             "root": 12,
             "targetBounds": {
               "min": [
-                -7.5,
+                -4.5,
                 -2.2,
                 -1.5
               ],
               "max": [
-                7.5,
+                4.5,
                 3.1,
                 1.5
               ]
@@ -953,12 +953,12 @@
             },
             "targetBounds": {
               "min": [
-                -7.5,
+                -4.5,
                 -0.5,
                 -1.5
               ],
               "max": [
-                7.5,
+                4.5,
                 3.1,
                 1.5
               ]
@@ -1106,7 +1106,7 @@
               "hangingHouses": {
                 "family": "suspended timber dwellings",
                 "params": {
-                  "houseCount": 5,
+                  "houseCount": 3,
                   "attachmentDensity": 4
                 }
               },
@@ -1270,7 +1270,7 @@
                 {
                   "kind": "repeat",
                   "child": 10,
-                  "count": 5,
+                  "count": 3,
                   "step": [
                     3,
                     0,
@@ -1281,7 +1281,7 @@
                   "kind": "translate",
                   "child": 11,
                   "offset": [
-                    -6,
+                    -3,
                     0,
                     0
                   ]
@@ -1290,12 +1290,12 @@
               "root": 12,
               "targetBounds": {
                 "min": [
-                  -7.8,
+                  -4.8,
                   -2.3,
                   -1.8
                 ],
                 "max": [
-                  7.8,
+                  4.8,
                   3.1,
                   1.8
                 ]

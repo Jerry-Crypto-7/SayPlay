@@ -199,9 +199,7 @@ test('dějství II, které nedorazí, to řekne a svět nechá', async ({ page }
   test.setTimeout(180_000);
   const acts = await scriptSecondAct(page, 'the model wrote a world that did not pass the checks');
   await page.goto('/');
-  // Katedrála, ne `AUTHORED`: uvařený „bridge town" od 14. 9. 2026 odmítá brána
-  // opakovaného hrdiny (`hangingHouses` 2,9×), takže dějství I s ním nedoběhne.
-  await buildWorld(page, 'A cathedral of stacked shipping containers around a light well.');
+  await buildWorld(page, AUTHORED);
   await expect(page.getByTestId('second-act-writing')).toBeVisible();
 
   acts.release();

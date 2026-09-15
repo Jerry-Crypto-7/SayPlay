@@ -109,7 +109,7 @@ describe('a hero repeated inside its own shape', () => {
    * tím odmítl. Když číslo poroste, není to samo o sobě chyba — je to důvod
    * podívat se, který tvar přibyl a proč.
    */
-  it('touches two of the sixty-two shapes on disk and no more', () => {
+  it('touches one of the sixty-two shapes on disk and no more', () => {
     const programs: { id: string; program: unknown }[] = [];
     const visit = (value: unknown, origin: string): void => {
       if (value === null || typeof value !== 'object') return;
@@ -129,8 +129,11 @@ describe('a hero repeated inside its own shape', () => {
     }
     // Naměřeno 14. 9. 2026: `hangingHouses` 2,90× a `ribcageTrees` 2,52×.
     // Třetí tvar s polem u kořene (`sortingChutes`) je na 1,01× a projde.
+    // **`hangingHouses` byl uvařený svět** a brána ho od 14. 9. odmítala, takže
+    // věta o mostě neukázala nic a pět e2e testů dějství II stálo červeně.
+    // 15. 9. 2026 přeautorován na tři domy místo pěti, pod prahem.
     expect([...new Set([...refused].map((value) => value.split(':')[1]))].sort())
-      .toEqual(['hangingHouses', 'ribcageTrees']);
+      .toEqual(['ribcageTrees']);
     expect(programs.length).toBeGreaterThan(40);
   });
 });

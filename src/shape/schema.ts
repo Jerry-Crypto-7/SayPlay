@@ -440,6 +440,8 @@ function boundsIssue(
  * (`sortingChutes`)**. Nad 3,0× není žádný. Mezi 1,01 a 2,52 je tedy prázdno
  * a práh 2,0 leží v něm — není naladěný na jeden vzorek, jen ho nemá kam
  * minout. Zbylých 59 tvarů pole u kořene nemá a tahle kontrola o nich mlčí.
+ * `hangingHouses` je uvařený svět „bridge town"; 15. 9. 2026 se přeautoroval
+ * na tři domy místo pěti, aby bránou prošel.
  *
  * ⚠ **Nezaměňovat s `boundsIssue`.** Ta soudí tvar, který si krabice nevšímá;
  * tahle soudí krabici, která je správně velká na to, co se do ní napsalo, jen
