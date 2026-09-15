@@ -45,6 +45,7 @@ describe('server phase diagnostics', () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     vi.spyOn(provider, 'cloudEmitter').mockResolvedValue(async () => ({}));
     vi.spyOn(sessions, 'runGeneration').mockImplementation(async (stored, _prompt, deps) => {
+      await new Promise(resolve => setTimeout(resolve, 25));
       if (code === null) return;
       deps.log?.(code, 'private gate detail');
       stored.fault = sessions.SESSION_FAULTS[code];
@@ -59,7 +60,8 @@ describe('server phase diagnostics', () => {
       requestId: ((await response.json()) as { requestId: string }).requestId,
       provenance: live ? 'live' : 'prepared', outcome, code, fault: code === null ? null : sessions.SESSION_FAULTS[code],
     })]);
-    expect(ended[0].ms).toBeGreaterThanOrEqual(0);
+    // Generace trvá 25 ms, takže `ms` musí nést délku, ne jen nezápornou nulu.
+    expect(ended[0].ms).toBeGreaterThanOrEqual(20);
     expect(JSON.stringify(ended)).not.toContain('private gate detail');
   });
 

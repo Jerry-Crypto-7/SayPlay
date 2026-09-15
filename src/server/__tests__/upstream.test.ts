@@ -1213,6 +1213,27 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
     });
   });
 
+  it('codex, který se nespustí, je výpadek, ne pád serveru', async () => {
+    // `spawn` bez spustitelného souboru vystřelí `error` místo `close`; bez
+    // posluchače by nezachycená událost shodila celý proces serveru
+    // (`ship-testgaps2`). Prázdné `WORLDSMITH_CODEX_JS` znamená `codex` z PATH,
+    // a PATH tady míří do prázdného adresáře.
+    const empty = mkdtempSync(join(tmpdir(), 'no-codex-'));
+    const saved = { script: process.env.WORLDSMITH_CODEX_JS, path: process.env.PATH };
+    process.env.WORLDSMITH_CODEX_JS = '';
+    process.env.PATH = empty;
+    try {
+      const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
+      expect(outcome).toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE' });
+      if (outcome.ok) return;
+      expect(outcome.detail).toContain('ENOENT');
+    } finally {
+      if (saved.script === undefined) delete process.env.WORLDSMITH_CODEX_JS;
+      else process.env.WORLDSMITH_CODEX_JS = saved.script;
+      process.env.PATH = saved.path;
+    }
+  });
+
   it('bez codex-cli v koncovém bodu zůstává výchozí strop 120 s, s ním 240 s', () => {
     expect(liveConfig().timeoutMs).toBe(120_000);
     expect(liveConfig(CLI_ENV).timeoutMs).toBe(240_000);
@@ -1253,5 +1274,9 @@ describe('8. parseAnswerText opraví jen konec, nanejvýš o dvě závorky', () 
     if (!cut.ok) expect(cut.detail).toContain('max_tokens');
     const finished = await upstreamBranch(liveConfig(), answer('end_turn')).generate(call);
     expect(finished).toMatchObject({ ok: true, body: { a: [1, 2] } });
+    // Useknutí znamená jen `max_tokens`. Porovnání `!== 'end_turn'` by tuhle
+    // odpověď odmítlo taky a obě věty nad tímhle řádkem by prošly dál.
+    const stopped = await upstreamBranch(liveConfig(), answer('stop_sequence')).generate(call);
+    expect(stopped).toMatchObject({ ok: true, body: { a: [1, 2] } });
   });
 });
