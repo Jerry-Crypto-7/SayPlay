@@ -663,6 +663,9 @@ const CODEX_TOOL_SWITCHES = [
 
 const MAX_CODEX_OUTPUT_BYTES = 8 * 1024 * 1024;
 
+/** Jak dlouho se po zabití čeká na `close`, než se skončí bez něj. */
+const CODEX_KILL_GRACE_MS = 2_000;
+
 function codexArgs(model: string, effort: string, cwd: string): string[] {
   return [
     'exec', '--ignore-user-config', '--ignore-rules', '--ephemeral', '--skip-git-repo-check', '--sandbox', 'read-only',
@@ -697,20 +700,30 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
       windowsHide: true,
       detached: process.platform !== 'win32',
     });
-    let stdout = '';
+    // Buffery, ne řetězec: znak UTF-8 rozdělený mezi dvě čtení roury by se
+    // po kouscích dekódoval na U+FFFD (revize 15. 9. 2026, naměřeno 6 z 7 hranic).
+    const chunks: Buffer[] = [];
     let stderr = '';
     let outputBytes = 0;
     let cut: string | null = null;
     let done = false;
+    let grace: ReturnType<typeof setTimeout> | undefined;
     const stop = (why: string) => {
       cut ??= why;
       killCodexTree(child);
+      // Obal, který už skončil, `taskkill /T` nenajde, a `close` pak nepřijde,
+      // dokud rouru drží potomek, který ho přežil. Roury se proto zavřou a po
+      // krátké lhůtě se končí i bez `close` – odpověď ani adresář na sirotkovi
+      // viset nesmí (revize 15. 9. 2026).
+      child.stdout.destroy();
+      child.stderr.destroy();
+      grace ??= setTimeout(() => finish(null), CODEX_KILL_GRACE_MS);
     };
     const timer = setTimeout(() => stop('codex exec ran past the timeout'), timeoutMs);
     child.stdout.on('data', (chunk: Buffer) => {
       outputBytes += chunk.length;
       if (outputBytes > MAX_CODEX_OUTPUT_BYTES) stop('codex exec wrote more than 8 MiB');
-      else stdout += chunk;
+      else chunks.push(chunk);
     });
     child.stderr.on('data', (chunk: Buffer) => {
       if (stderr.length < 300) stderr += chunk;
@@ -724,6 +737,7 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
       if (done) return;
       done = true;
       clearTimeout(timer);
+      clearTimeout(grace);
       try {
         // Na Windows drží adresář ještě chvíli dozabíjený proces (EBUSY).
         rmSync(cwd, { recursive: true, force: true, maxRetries: 5 });
@@ -731,7 +745,7 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
         /* prázdný adresář v tmp nikomu neublíží */
       }
       const reason = cut ?? failure;
-      if (reason === null) resolve(stdout);
+      if (reason === null) resolve(Buffer.concat(chunks).toString('utf8'));
       else reject(new Error(`${reason} ${stderr.slice(0, 300)}`.trim()));
     };
     child.on('error', (error) => finish(error.message.split('\n')[0]));

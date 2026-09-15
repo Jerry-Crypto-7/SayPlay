@@ -1138,6 +1138,45 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
     }
   }, 20_000);
 
+  // Revize `ship-codexcli` 15. 9. 2026.
+  it('odpověď s diakritikou přes víc čtení roury nepoškodí', async () => {
+    const name = 'ž€'.repeat(60_000);
+    const file = fakeCodex('utf8', [okStream[0], okStream[1], { type: 'item.completed', item: { type: 'agent_message', text: JSON.stringify({ name }) } }, okStream[3]]);
+    await withScript(file, async () => {
+      const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
+      expect(outcome.ok).toBe(true);
+      if (!outcome.ok) return;
+      expect(outcome.body).toEqual({ name });
+    });
+  });
+
+  it('skončí i s obalem, který umřel dřív než potomek držící rouru', async () => {
+    const marker = join(scripts, 'orphan.cjs.orphan');
+    // Obal hned skončí a stdout drží potomek. `taskkill /T` přes mrtvý PID
+    // nenajde nic a `close` by přišel, až potomek skončí sám – za 60 s.
+    const file = fakeCodex('orphan', [okStream[0]], [
+      "  const orphan = require('node:child_process').spawn(process.execPath, ['-e', 'setTimeout(() => {}, 60000)'], { stdio: ['ignore', 'inherit', 'ignore'], detached: process.platform === 'win32' });",
+      `  require('node:fs').writeFileSync(${JSON.stringify(marker)}, String(orphan.pid));`,
+      '  process.exit(0);',
+    ].join('\n'));
+    let orphan = 0;
+    try {
+      await withScript(file, async () => {
+        const started = Date.now();
+        const outcome = await upstreamBranch(liveConfig({ ...CLI_ENV, WORLDSMITH_UPSTREAM_TIMEOUT_MS: '1500' })).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
+        orphan = Number(readFileSync(marker, 'utf8'));
+        expect(outcome).toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE' });
+        expect(Date.now() - started, 'volání čekalo na sirotka').toBeLessThan(10_000);
+      });
+    } finally {
+      try {
+        if (orphan > 0) process.kill(orphan);
+      } catch {
+        /* už neběží */
+      }
+    }
+  }, 30_000);
+
   it('bez codex-cli v koncovém bodu zůstává výchozí strop 120 s, s ním 240 s', () => {
     expect(liveConfig().timeoutMs).toBe(120_000);
     expect(liveConfig(CLI_ENV).timeoutMs).toBe(240_000);

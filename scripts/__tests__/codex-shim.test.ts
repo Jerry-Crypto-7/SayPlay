@@ -241,4 +241,22 @@ describe('codex shim', () => {
     expect((await noText.json()).error.message).toBe('no_user_text');
     expect(shim.spawns()).toHaveLength(0);
   });
+
+  // Revize `ship-codexcli` 15. 9. 2026.
+  it('keeps a UTF-8 answer intact across pipe reads', async () => {
+    const shim = await start('utf8');
+    const response = await post(shim.url);
+    expect(response.status).toBe(200);
+    const text = (await response.json()).content[0].text as string;
+    expect(text).not.toContain('�');
+    expect(JSON.parse(text)).toEqual({ name: 'ž€'.repeat(60_000) });
+  });
+
+  it('ends a run whose wrapper died while a descendant holds the pipe, and frees the slot', async () => {
+    const shim = await start('orphan', { maxConcurrent: 1, timeoutMs: 1_500 });
+    const started = Date.now();
+    expect((await post(shim.url)).status).toBe(504);
+    expect(Date.now() - started, 'the run waited for the orphan').toBeLessThan(10_000);
+    expect((await post(shim.url)).status, 'the orphaned run kept its slot').toBe(504);
+  }, 30_000);
 });

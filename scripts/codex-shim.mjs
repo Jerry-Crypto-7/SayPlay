@@ -37,9 +37,11 @@ import { pathToFileURL } from 'node:url';
 
 const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
 const MAX_OUTPUT_BYTES = 8 * 1024 * 1024;
+/** Jak dlouho se po zabití čeká na `close`, než se skončí bez něj. */
+const KILL_GRACE_MS = 2_000;
 
 /** Co codex potřebuje ke spuštění a k přihlášení v `~/.codex` – nic víc, žádné klíče aplikace. */
-const ENV_ALLOWLIST = ['PATH', 'Path', 'PATHEXT', 'SystemRoot', 'SYSTEMROOT', 'windir', 'ComSpec', 'APPDATA', 'LOCALAPPDATA', 'USERPROFILE', 'HOME', 'HOMEDRIVE', 'HOMEPATH', 'TEMP', 'TMP', 'CODEX_HOME'];
+export const ENV_ALLOWLIST = ['PATH', 'Path', 'PATHEXT', 'SystemRoot', 'SYSTEMROOT', 'windir', 'ComSpec', 'APPDATA', 'LOCALAPPDATA', 'USERPROFILE', 'HOME', 'HOMEDRIVE', 'HOMEPATH', 'TEMP', 'TMP', 'CODEX_HOME'];
 
 /** Jako `codexCommand()` v `src/server/upstream.ts`, jen bez přepisu z prostředí. */
 function codexCommand() {
@@ -63,7 +65,7 @@ const TOOL_SWITCHES = [
   'hooks', 'browser_use_external', 'browser_use_full_cdp_access', 'in_app_browser', 'skill_search', 'skill_mcp_dependency_install', 'sleep_tool', 'unified_exec',
 ].flatMap((feature) => ['-c', `features.${feature}=false`]);
 
-function codexArgs(model, effort, cwd) {
+export function codexArgs(model, effort, cwd) {
   return [
     'exec', '--ignore-user-config', '--ignore-rules', '--ephemeral', '--skip-git-repo-check', '--sandbox', 'read-only',
     '-c', 'approval_policy="never"', '-c', 'forced_login_method="chatgpt"', '-c', 'model_provider="openai"',
@@ -75,7 +77,7 @@ function codexArgs(model, effort, cwd) {
 }
 
 /** Na Windows `taskkill /T` přes PID obalu, dokud obal žije; jinde celá skupina procesů. */
-function killTree(child) {
+export function killTree(child) {
   if (process.platform === 'win32') execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true }, () => {});
   else {
     try {
@@ -214,13 +216,22 @@ export function createShim({
       });
       // Slot až po spuštění, ve stejném tiku jako kontrola souběhu – nic mezi nimi nepoběží.
       running += 1;
-      let stdout = '';
+      // Buffery, ne řetězec: znak UTF-8 rozdělený mezi dvě čtení roury by se
+      // po kouscích dekódoval na U+FFFD (revize 15. 9. 2026).
+      const chunks = [];
       let outputBytes = 0;
       let cut = null;
       let done = false;
+      let grace = null;
       const stop = (why) => {
         cut ??= why;
         killTree(child);
+        // Obal, který už skončil, `taskkill /T` nenajde, a `close` nepřijde,
+        // dokud rouru drží potomek, který ho přežil – slot by zůstal obsazený
+        // navždy. Roury se zavřou a po lhůtě se končí i bez `close`.
+        child.stdout.destroy();
+        child.stderr.destroy();
+        grace ??= setTimeout(() => finish(-1), KILL_GRACE_MS);
       };
       const timer = setTimeout(() => stop('timeout'), timeoutMs);
       res.on('close', () => {
@@ -229,7 +240,7 @@ export function createShim({
       child.stdout.on('data', (chunk) => {
         outputBytes += chunk.length;
         if (outputBytes > MAX_OUTPUT_BYTES) stop('output');
-        else stdout += chunk;
+        else chunks.push(chunk);
       });
       child.stderr.resume();
       child.stdin.on('error', () => {});
@@ -241,6 +252,7 @@ export function createShim({
         if (done) return;
         done = true;
         clearTimeout(timer);
+        clearTimeout(grace);
         running -= 1;
         try {
           // Na Windows drží adresář ještě chvíli dozabíjený proces (EBUSY); `force` to nespolkne.
@@ -251,7 +263,7 @@ export function createShim({
         if (cut === 'disconnected') return log(`disconnected  ${now() - started} ms`);
         if (cut === 'timeout') return send(504, { type: 'error', error: { type: 'timeout_error', message: 'codex_timeout' } });
         if (cut === 'output' || code !== 0) return send(502, { type: 'error', error: { type: 'api_error', message: 'codex_failed' } });
-        const answer = answerOf(stdout);
+        const answer = answerOf(Buffer.concat(chunks).toString('utf8'));
         if (answer.error !== undefined) return send(502, { type: 'error', error: { type: 'api_error', message: answer.error } });
         send(200, {
           id: `msg_shim_${randomBytes(8).toString('hex')}`,

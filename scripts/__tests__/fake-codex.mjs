@@ -19,8 +19,20 @@ process.stdin.on('end', () => {
     setInterval(() => {}, 1000);
     return;
   }
+  if (mode === 'orphan') {
+    // Obal hned skončí a stdout drží potomek, který ho přežil: `taskkill /T` přes
+    // mrtvý PID obalu nenajde nic a `close` by přišel, až potomek skončí sám.
+    const orphan = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 60000)'], { stdio: ['ignore', 'inherit', 'ignore'], detached: process.platform === 'win32' });
+    appendFileSync(log, `${JSON.stringify({ ...record, grandchild: orphan.pid })}\n`);
+    process.exit(0);
+  }
   appendFileSync(log, `${JSON.stringify(record)}\n`);
-  if (mode === 'ok') {
+  if (mode === 'utf8') {
+    // Stovky kB znaků o dvou a třech bajtech: hranice čtení roury je rozpůlí.
+    const text = JSON.stringify({ name: 'ž€'.repeat(60_000) });
+    process.stdout.write(`${JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text } })}\n`);
+    process.stdout.write(`${JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 120, output_tokens: 30 } })}\n`);
+  } else if (mode === 'ok') {
     process.stdout.write(`${JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: '{"ok":true}' } })}\n`);
     process.stdout.write(`${JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 120, output_tokens: 30 } })}\n`);
   } else if (mode === 'rejected') {
