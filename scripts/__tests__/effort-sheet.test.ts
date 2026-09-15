@@ -59,6 +59,13 @@ describe('the blind key', () => {
     expect(() => reveal(key, { t1: { H: 5 } })).toThrow(/H/);
   });
 
+  // Hodnocení mimo 1–5 by posunulo průměr a korunovalo jinou variantu, bez chyby.
+  it.each([0, 6, 2.5, '3', null])('refuses a rating that is not a whole number 1–5 (%s)', (score) => {
+    const key = buildKey(VARIANTS, ['t1'], 7);
+    const letter = Object.keys(key.sections.t1!)[0]!;
+    expect(() => reveal(key, { t1: { [letter]: score } })).toThrow(/1–5/);
+  });
+
   it('names no variant, model or effort anywhere in the sheet', () => {
     const html = sheetFor(buildKey(VARIANTS, SENTENCES.map((sentence) => sentence.id), 7), { variant: 'astra-high', sentence: 't1' });
     expect(html).not.toMatch(/\b(astra|luna|sol|low|medium|high|xhigh|gpt)\b/i);

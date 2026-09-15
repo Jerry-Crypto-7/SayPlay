@@ -198,4 +198,47 @@ describe('codex shim', () => {
     const [spawn] = shim.spawns();
     await until(() => !alive(spawn.pid) && !alive(spawn.grandchild!), 'the tree to die');
   }, 20_000);
+
+  // Mezery z revize testů před `/ship` 15. 9. 2026 (`ship-testgaps`).
+  it('counts the daily budget across two shims over the same run file', async () => {
+    const runsFile = join(mkdtempSync(join(tmpdir(), 'shim-test-')), 'runs.json');
+    const first = await start('ok', { runsFile, dailyRuns: 1 });
+    const second = await start('ok', { runsFile, dailyRuns: 1 });
+    expect((await post(first.url)).status).toBe(200);
+    expect((await post(second.url)).status, 'the second shim ran on a spent budget').toBe(429);
+    expect(second.spawns()).toHaveLength(0);
+  });
+
+  it('opens a fresh budget at UTC midnight', async () => {
+    let clock = Date.parse('2026-09-15T23:59:00Z');
+    const shim = await start('ok', { dailyRuns: 1, now: () => clock });
+    expect((await post(shim.url)).status).toBe(200);
+    expect((await post(shim.url)).status).toBe(429);
+    clock = Date.parse('2026-09-16T00:00:30Z');
+    expect((await post(shim.url)).status).toBe(200);
+  });
+
+  it('spends the budget on a failed run too', async () => {
+    const shim = await start('fail', { dailyRuns: 1 });
+    expect((await post(shim.url)).status).toBe(502);
+    expect((await post(shim.url)).status, 'a failed run gave its budget back').toBe(429);
+  });
+
+  it('returns the slot when codex cannot even start', async () => {
+    const missing = join(mkdtempSync(join(tmpdir(), 'shim-test-')), 'no-such-codex.exe');
+    const shim = await start('ok', { maxConcurrent: 1, command: { file: missing, prefix: [] } });
+    expect((await post(shim.url)).status).toBe(502);
+    expect((await post(shim.url)).status, 'the failed start kept its slot').toBe(502);
+  });
+
+  it('answers 400 to a body that is not JSON or carries no user text, and never starts codex', async () => {
+    const shim = await start('ok');
+    const notJson = await post(shim.url, { payload: '{"messages": [' });
+    expect(notJson.status).toBe(400);
+    expect((await notJson.json()).error.message).toBe('body_not_json');
+    const noText = await post(shim.url, { payload: JSON.stringify({ system: 'SYSTEM', messages: [{ role: 'user', content: [] }] }) });
+    expect(noText.status).toBe(400);
+    expect((await noText.json()).error.message).toBe('no_user_text');
+    expect(shim.spawns()).toHaveLength(0);
+  });
 });

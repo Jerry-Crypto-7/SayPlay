@@ -37,7 +37,7 @@ import { frozenGrammar } from '../../model/client';
 import type { Grammar } from '../../model/prompt';
 import { runPipeline } from '../pipeline';
 import { SpendCap } from '../spend-cap';
-import { upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
+import { parseAnswerText, upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
 
 const grammarRead = frozenGrammar();
 if (!grammarRead.ok) throw new Error(`frozen grammar unreadable: ${grammarRead.detail}`);
@@ -1141,5 +1141,29 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
   it('bez codex-cli v koncovém bodu zůstává výchozí strop 120 s, s ním 240 s', () => {
     expect(liveConfig().timeoutMs).toBe(120_000);
     expect(liveConfig(CLI_ENV).timeoutMs).toBe(240_000);
+  });
+});
+
+/**
+ * 8. `parseAnswerText` opraví jen konec dokumentu a nanejvýš o dvě závorky
+ * (`ship-testgaps`, 15. 9. 2026). Cokoli uprostřed se odmítá tak, jak je.
+ */
+describe('8. parseAnswerText opraví jen konec, nanejvýš o dvě závorky', () => {
+  it.each([
+    ['celý dokument', '{"a":1}', { a: 1 }],
+    ['jedna "}" navíc', '{"a":{"b":1}}}', { a: { b: 1 } }],
+    ['dvě "}" navíc', '{"a":{"b":1}}}}', { a: { b: 1 } }],
+    ['jedna "}" chybí', '{"a":{"b":1}', { a: { b: 1 } }],
+    ['chybí "]" i "}"', '{"a":[1,2', { a: [1, 2] }],
+  ])('přečte %s', (_name, text, expected) => {
+    expect(parseAnswerText(text)).toEqual(expected);
+  });
+
+  it.each([
+    ['tři chybějící závorky', '{"a":{"b":[1'],
+    ['chybějící čárka uprostřed', '{"a":1 "b":2}'],
+    ['useknutý řetězec', '{"a":"abc'],
+  ])('odmítne %s', (_name, text) => {
+    expect(() => parseAnswerText(text)).toThrow();
   });
 });
