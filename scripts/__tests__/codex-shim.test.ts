@@ -78,19 +78,34 @@ describe('killTree', () => {
   // `ship-pidreuse`: po `exit` obalu Windows jeho PID uvolní a smí ho dostat
   // cizí proces, takže `taskkill /F` na ten PID by zabil něco, co nám nepatří.
   // Oba procesy jsou vlastní, takže skutečný `taskkill` nesáhne na nic cizího.
-  it.runIf(process.platform === 'win32')('na obal, který už skončil, taskkill nepošle; na živý ano', async () => {
+  it.runIf(process.platform === 'win32')('na obal, který už skončil, taskkill nepošle; na živý ano, a roury zavře až po něm', async () => {
     const taskkills = () => vi.mocked(execFile).mock.calls.filter(([file]) => file === 'taskkill');
     vi.mocked(execFile).mockClear();
 
     const gone = spawn(process.execPath, ['-e', ''], { stdio: 'ignore' });
     await new Promise((resolve) => gone.once('exit', resolve));
-    killTree(gone);
+    let goneClosed = false;
+    killTree(gone, () => {
+      goneClosed = true;
+    });
     expect(taskkills(), 'taskkill šel na PID obalu, který už skončil').toEqual([]);
+    expect(goneClosed, 'roury obalu, který už skončil, zůstaly otevřené').toBe(true);
 
+    // Zavřená roura sama obal ukončí a jeho PID se uvolní; `taskkill`, který ho
+    // vyhledá o desítky milisekund později, by trefil cizí proces
+    // (security-reviewer před `/ship` 15. 9. 2026). Roury proto až po něm.
+    const actual = await vi.importActual<typeof import('node:child_process')>('node:child_process');
+    let returned = false;
+    vi.mocked(execFile).mockImplementationOnce(((file: string, args: string[], options: object, callback: () => void) =>
+      actual.execFile(file, args, options, () => {
+        returned = true;
+        callback();
+      })) as never);
     const running = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });
     await until(() => running.pid !== undefined && alive(running.pid), 'the wrapper to start');
-    killTree(running);
+    const closedAfterTaskkill = await new Promise<boolean>((resolve) => killTree(running, () => resolve(returned)));
     expect(taskkills()).toHaveLength(1);
+    expect(closedAfterTaskkill, 'roury se zavřely dřív, než taskkill doběhl').toBe(true);
     await until(() => !alive(running.pid!), 'the wrapper to die');
   });
 });
@@ -183,6 +198,17 @@ describe('codex shim', () => {
     const refused = await post(refusing.url);
     expect(refused.status).toBe(502);
     expect((await refused.json()).error.message).toBe('codex_rejected');
+  });
+
+  it('cuts a run past 8 MiB of output as a failure and sends taskkill at most once', async () => {
+    // Roury se zavírají až po `taskkill`, takže data mezitím tečou dál; další
+    // kus nad stropem nesmí pouštět další `taskkill` (/ship 15. 9. 2026).
+    const shim = await start('flood');
+    vi.mocked(execFile).mockClear();
+    const response = await post(shim.url);
+    expect(response.status).toBe(502);
+    expect((await response.json()).error.message).toBe('codex_failed');
+    expect(vi.mocked(execFile).mock.calls.filter(([file]) => file === 'taskkill').length).toBeLessThanOrEqual(1);
   });
 
   it('stops starting codex once the daily run budget is spent', async () => {

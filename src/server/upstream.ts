@@ -679,24 +679,29 @@ function codexArgs(model: string, effort: string, cwd: string): string[] {
 
 /**
  * Na Windows `taskkill /T` přes PID obalu, **jen dokud obal žije**; jinde celá
- * skupina procesů.
+ * skupina procesů. `afterKill` zavírá roury **až po doběhnutí `taskkill`**.
  *
  * Po `exit` obalu Windows jeho PID uvolní a smí ho dostat cizí proces, takže
  * `taskkill /F` by zabil něco, co nám nepatří (`ship-pidreuse`, revize
- * 15. 9. 2026). Sirotka za mrtvým obalem ten PID stejně nenajde – s ním se
- * vypořádají zavřené roury a lhůta ve `stop`. ID skupiny na POSIXu se
- * neuvolní, dokud v ní někdo žije, takže tam se zabíjí dál.
+ * 15. 9. 2026). Proto ani roury nejdou zavřít dřív: zavřená roura sama obal
+ * ukončí, a `taskkill`, který PID vyhledá o desítky milisekund později, by
+ * trefil uvolněné číslo (security-reviewer před `/ship` 15. 9. 2026). Sirotka
+ * za mrtvým obalem ten PID stejně nenajde – s ním se vypořádají zavřené roury
+ * a lhůta ve `stop`. ID skupiny na POSIXu se neuvolní, dokud v ní někdo žije,
+ * takže tam se zabíjí dál.
  */
-function killCodexTree(child: ChildProcess): void {
+export function killCodexTree(child: ChildProcess, afterKill: () => void): void {
   if (process.platform === 'win32') {
     if (child.exitCode === null && child.signalCode === null)
-      execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true }, () => {});
+      execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true }, () => afterKill());
+    else afterKill();
   } else {
     try {
       process.kill(-(child.pid ?? 0), 'SIGKILL');
     } catch {
       /* skupina už neexistuje */
     }
+    afterKill();
   }
 }
 
@@ -720,15 +725,19 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
     let done = false;
     let grace: ReturnType<typeof setTimeout> | undefined;
     const stop = (why: string) => {
-      cut ??= why;
-      killCodexTree(child);
+      // Jen jednou: roury se zavírají až po `taskkill`, takže data mezitím tečou
+      // dál a každý další kus nad 8 MiB by pouštěl další `taskkill`.
+      if (cut !== null) return;
+      cut = why;
       // Na obal, který už skončil, se `taskkill` neposílá, a `close` pak nepřijde,
       // dokud rouru drží potomek, který ho přežil. Roury se proto zavřou a po
       // krátké lhůtě se končí i bez `close` – odpověď ani adresář na sirotkovi
       // viset nesmí (revize 15. 9. 2026).
-      child.stdout.destroy();
-      child.stderr.destroy();
-      grace ??= setTimeout(() => finish(null), CODEX_KILL_GRACE_MS);
+      killCodexTree(child, () => {
+        child.stdout.destroy();
+        child.stderr.destroy();
+      });
+      grace = setTimeout(() => finish(null), CODEX_KILL_GRACE_MS);
     };
     const timer = setTimeout(() => stop('codex exec ran past the timeout'), timeoutMs);
     child.stdout.on('data', (chunk: Buffer) => {

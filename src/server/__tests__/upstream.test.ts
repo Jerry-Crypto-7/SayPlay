@@ -38,7 +38,7 @@ import { frozenGrammar } from '../../model/client';
 import type { Grammar } from '../../model/prompt';
 import { runPipeline } from '../pipeline';
 import { SpendCap } from '../spend-cap';
-import { parseAnswerText, upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
+import { killCodexTree, parseAnswerText, upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
 
 // `execFile` se obaluje, ne nahrazuje: `taskkill` doopravdy běží a test sirotka
 // jen čte, s čím se volal (`ship-pidreuse`).
@@ -1191,6 +1191,33 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
     }
   }, 30_000);
 
+  // Security-reviewer před `/ship` 15. 9. 2026: zavřená roura sama obal ukončí
+  // a jeho PID se uvolní; `taskkill`, který ho vyhledá o desítky milisekund
+  // později, by trefil cizí proces. Roury se proto zavírají až po něm.
+  it.runIf(process.platform === 'win32')('roury zavře až po doběhnutí taskkill, u mrtvého obalu hned', async () => {
+    const actual = await vi.importActual<typeof import('node:child_process')>('node:child_process');
+    const gone = actual.spawn(process.execPath, ['-e', ''], { stdio: 'ignore' });
+    await new Promise((resolve) => gone.once('exit', resolve));
+    let goneClosed = false;
+    killCodexTree(gone, () => {
+      goneClosed = true;
+    });
+    expect(goneClosed, 'roury obalu, který už skončil, zůstaly otevřené').toBe(true);
+
+    let returned = false;
+    vi.mocked(execFile).mockImplementationOnce(((file: string, args: string[], options: object, callback: () => void) =>
+      actual.execFile(file, args, options, () => {
+        returned = true;
+        callback();
+      })) as never);
+    const running = actual.spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });
+    await new Promise((resolve) => running.once('spawn', resolve));
+    const exited = new Promise((resolve) => running.once('exit', resolve));
+    const closedAfterTaskkill = await new Promise<boolean>((resolve) => killCodexTree(running, () => resolve(returned)));
+    expect(closedAfterTaskkill, 'roury se zavřely dřív, než taskkill doběhl').toBe(true);
+    await exited;
+  });
+
   // Revize testových mezer před /ship 15. 9. 2026: spadlý codex s rozepsaným
   // proudem je výpadek, ne vadná odpověď, která by si řekla o placenou opravu.
   it('proces, který skončí nenulovým kódem, je výpadek i s rozepsaným proudem', async () => {
@@ -1206,8 +1233,12 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
   it('proud delší než 8 MiB se utne jako výpadek', async () => {
     const file = fakeCodex('flood', [okStream[0]], "  process.stdout.write('x'.repeat(9 * 1024 * 1024));");
     await withScript(file, async () => {
+      vi.mocked(execFile).mockClear();
       const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
       expect(outcome).toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE' });
+      // Roury se zavírají až po `taskkill`, takže data mezitím tečou dál; další
+      // kus nad stropem nesmí pouštět další `taskkill` (/ship 15. 9. 2026).
+      expect(vi.mocked(execFile).mock.calls.filter(([name]) => name === 'taskkill').length).toBeLessThanOrEqual(1);
       if (outcome.ok) return;
       expect(outcome.detail).toContain('8 MiB');
     });

@@ -23,5 +23,8 @@ export declare interface ShimOptions {
 
 export declare function createShim(options: ShimOptions): Server;
 
-/** Zabije strom procesů codexu; na Windows jen dokud obal žije (`ship-pidreuse`). */
-export declare function killTree(child: ChildProcess): void;
+/**
+ * Zabije strom procesů codexu; na Windows jen dokud obal žije (`ship-pidreuse`).
+ * `afterKill` přijde až po doběhnutí `taskkill`, jinde hned.
+ */
+export declare function killTree(child: ChildProcess, afterKill: () => void): void;
