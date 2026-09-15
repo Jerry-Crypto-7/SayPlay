@@ -457,14 +457,24 @@ function repeatedHeroIssue(
 ): string | null {
   // Sestup od kořene přes pole a přes uzly, které jen posunou celek. Zastav se
   // na prvním uzlu, který doopravdy tvoří tvar.
+  //
+  // **`scale` cestou dolů se násobí do jednotky** (revize před `/ship`
+  // 15. 9. 2026, `ship-shapescale`). Obal jednotky je v souřadnicích pod
+  // všemi `scale`, krabice nad nimi — bez násobku z tvaru v `scale 2`
+  // s dvojnásobnou krabicí vyšel poměr dvakrát větší a odmítl se, zatímco
+  // bez obalu prošel. Činitele se násobí po osách; `rotate` mezi nimi osy
+  // prohodí a tady se nesleduje, takže u nerovnoměrného `scale` nad
+  // otočením je poměr jen odhad.
   let unit = root;
   let copies = 1;
+  const scale = [1, 1, 1];
   for (;;) {
     const node = nodes[unit];
     if (node === undefined) return null;
     const arrayed = (ARRAY_KINDS as readonly string[]).includes(node.kind);
     if (!arrayed && !(TRANSFORM_KINDS as readonly string[]).includes(node.kind)) break;
     if (arrayed && 'count' in node) copies *= node.count;
+    if (node.kind === 'scale') node.factor.forEach((factor, axis) => { scale[axis] *= factor; });
     unit = (node as { child: number }).child;
   }
   if (copies < 2) return null;
@@ -474,7 +484,7 @@ function repeatedHeroIssue(
 
   const longest = (min: readonly number[], max: readonly number[]) =>
     Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]);
-  const unitSide = longest(hull.min, hull.max);
+  const unitSide = Math.max(...[0, 1, 2].map((axis) => (hull.max[axis] - hull.min[axis]) * scale[axis]));
   if (unitSide <= 0) return null;
   const ratio = longest(target.min, target.max) / unitSide;
   if (ratio < MAX_REPEATED_HERO_RATIO) return null;

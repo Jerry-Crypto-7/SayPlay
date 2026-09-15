@@ -27,7 +27,61 @@ function ribcageTrees(): ShapeProgram {
   };
 }
 
+/** Řada dvou krychlí o hraně 2 m v krabici 3,5 m — poměr 1,75×, pod prahem. */
+function boxRow(): ShapeProgram {
+  return {
+    shapeId: 'boxRow',
+    stableId: 'boxRow',
+    nodes: [
+      { kind: 'box', size: [2, 2, 2] },
+      { kind: 'translate', child: 0, offset: [-0.75, 0, 0] },
+      { kind: 'repeat', child: 1, count: 2, step: [1.5, 0, 0] },
+    ],
+    root: 2,
+    targetBounds: { min: [-1.75, -1, -1], max: [1.75, 1, 1] },
+    anchors: [],
+    materialIntent: 'stone',
+    priority: 1,
+  };
+}
+
+/** Týž program zabalený do `scale` a s krabicí zvětšenou stejně — na plátně je to tentýž tvar. */
+function scaledBy(program: ShapeProgram, factor: number): ShapeProgram {
+  return {
+    ...program,
+    nodes: [...program.nodes, { kind: 'scale', child: program.root, factor: [factor, factor, factor] }],
+    root: program.nodes.length,
+    targetBounds: {
+      min: program.targetBounds.min.map((value) => value * factor) as [number, number, number],
+      max: program.targetBounds.max.map((value) => value * factor) as [number, number, number],
+    },
+  };
+}
+
+const repeatsIssue = (program: ShapeProgram) =>
+  validateShapeProgram(program).issues.some((value) => value.includes('repeats one'));
+
 describe('a hero repeated inside its own shape', () => {
+  /**
+   * Revize před `/ship` 15. 9. 2026 (Codex P2, `ship-shapescale`): jednotka se
+   * měřila v souřadnicích pod `scale`, krabice nad ním. `scale 2` s dvojnásobnou
+   * krabicí tak z poměru 1,75× udělal 3,5× a odmítl tvar, který bez obalu
+   * prošel; `scale 0,5` naopak pustil c07.
+   */
+  it.each([
+    ['boxRow', 2, boxRow],
+    ['boxRow', 0.5, boxRow],
+    ['ribcageTrees', 2, ribcageTrees],
+    ['ribcageTrees', 0.5, ribcageTrees],
+  ] as const)('judges %s wrapped in scale %s like the same shape unwrapped', (_name, factor, make) => {
+    expect(repeatsIssue(scaledBy(make(), factor))).toBe(repeatsIssue(make()));
+  });
+
+  it('keeps the two unwrapped shapes on either side of the threshold', () => {
+    expect(repeatsIssue(boxRow())).toBe(false);
+    expect(repeatsIssue(ribcageTrees())).toBe(true);
+  });
+
   it('refuses c07 and names the unit, the copies and the cell it would get', () => {
     const result = validateShapeProgram(ribcageTrees());
     expect(result.ok).toBe(false);
