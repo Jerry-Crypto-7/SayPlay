@@ -18,11 +18,13 @@
  * jen známým prostředím. Proč cena, když jde o předplatné: bez ceny výstupu
  * `upstreamConfigFromEnv()` živou větev vypne.
  */
-import { execFile, execFileSync, execSync, spawn } from 'node:child_process';
-import { existsSync, mkdirSync, openSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { execFileSync, execSync, spawn } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { ENV_ALLOWLIST, codexArgs, killTree } from './codex-shim.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = join(ROOT, 'evals', 'worldstream', 'effort');
@@ -51,34 +53,68 @@ function codexCommand() {
   return script === '' ? { file: 'codex', prefix: [] } : { file: process.execPath, prefix: [script] };
 }
 
-/** Jedno volání na úroveň, se stejnými přepínači jako `generateViaCodexCli()`; výsledek je přijato/odmítnuto s důvodem. */
+/**
+ * Jedno volání na úroveň, týmž spuštěním jako most (`scripts/codex-shim.mjs`):
+ * prázdný dočasný adresář, prostředí z allowlistu, `--ignore-rules` a vypnuté
+ * nástroje, a po stropu zabitý celý strom – timeout `execFile` zabil jen obal
+ * (revize 15. 9. 2026). Výsledek je přijato/odmítnuto s důvodem.
+ */
 function probeEffort(effort) {
   const command = codexCommand();
-  const args = [
-    ...command.prefix,
-    'exec', '--ignore-user-config', '--ephemeral', '--skip-git-repo-check', '--sandbox', 'read-only',
-    '-c', 'approval_policy="never"', '-c', 'forced_login_method="chatgpt"', '-c', 'model_provider="openai"',
-    '-c', `model_reasoning_effort="${effort}"`,
-    '-c', 'features.shell_tool=false', '-c', 'features.apps=false', '-c', 'web_search="disabled"',
-    '--cd', ROOT, '--model', ASTRA, '--json', '-',
-  ];
+  const cwd = mkdtempSync(join(tmpdir(), 'effort-probe-'));
   const started = Date.now();
   return new Promise((resolve) => {
-    const child = execFile(command.file, args, { windowsHide: true, timeout: PROBE_TIMEOUT_MS, maxBuffer: 8 * 1024 * 1024 },
-      (error, stdout, stderr) => {
-        const ms = Date.now() - started;
-        const events = stdout.split(/\r?\n/).filter((line) => line.trim().startsWith('{')).map((line) => JSON.parse(line));
-        const failed = events.find((event) => event.type === 'turn.failed' || event.type === 'error');
-        const completed = events.find((event) => event.type === 'turn.completed');
-        if (completed !== undefined && failed === undefined) resolve({ effort, accepted: true, ms, usage: completed.usage ?? null });
-        else resolve({
-          effort, accepted: false, ms,
-          reason: failed !== undefined ? JSON.stringify(failed).slice(0, 300)
-            : error?.killed ? 'codex exec ran past the probe timeout'
-            : `${error?.message.split('\n')[0] ?? 'no turn.completed'} ${stderr.slice(0, 300)}`.trim(),
-        });
+    const child = spawn(command.file, [...command.prefix, ...codexArgs(ASTRA, effort, cwd)], {
+      cwd,
+      env: Object.fromEntries(ENV_ALLOWLIST.filter((name) => process.env[name] !== undefined).map((name) => [name, process.env[name]])),
+      windowsHide: true,
+      detached: process.platform !== 'win32',
+    });
+    const chunks = [];
+    let stderr = '';
+    let timedOut = false;
+    let done = false;
+    const finish = (failure) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      try {
+        rmSync(cwd, { recursive: true, force: true, maxRetries: 5 });
+      } catch {
+        /* prázdný adresář v tmp nikomu neublíží */
+      }
+      const ms = Date.now() - started;
+      let events = [];
+      try {
+        events = Buffer.concat(chunks).toString('utf8').split(/\r?\n/).filter((line) => line.trim().startsWith('{')).map((line) => JSON.parse(line));
+      } catch {
+        /* vadný proud je nepřijatá úroveň */
+      }
+      const failed = events.find((event) => event.type === 'turn.failed' || event.type === 'error');
+      const completed = events.find((event) => event.type === 'turn.completed');
+      if (!timedOut && completed !== undefined && failed === undefined) resolve({ effort, accepted: true, ms, usage: completed.usage ?? null });
+      else resolve({
+        effort, accepted: false, ms,
+        reason: failed !== undefined ? JSON.stringify(failed).slice(0, 300)
+          : timedOut ? 'codex exec ran past the probe timeout'
+          : `${failure ?? 'no turn.completed'} ${stderr.slice(0, 300)}`.trim(),
       });
-    child.stdin?.end('Reply with the single word OK.');
+    };
+    const timer = setTimeout(() => {
+      timedOut = true;
+      killTree(child);
+      child.stdout.destroy();
+      child.stderr.destroy();
+      setTimeout(() => finish(null), 2_000);
+    }, PROBE_TIMEOUT_MS);
+    child.stdout.on('data', (chunk) => chunks.push(chunk));
+    child.stderr.on('data', (chunk) => {
+      if (stderr.length < 300) stderr += chunk;
+    });
+    child.stdin.on('error', () => {});
+    child.stdin.end('Reply with the single word OK.');
+    child.on('error', (error) => finish(error.message.split('\n')[0]));
+    child.on('close', (code) => finish(code === 0 ? null : `codex exec exited with code ${code}`));
   });
 }
 
