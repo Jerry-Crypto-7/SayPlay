@@ -121,6 +121,12 @@ export interface SessionHandle {
    * vznikl dopředu a jeho věta ho jen našla (`T45-honestlabel`).
    */
   readonly authored: AuthoredProvenance | null;
+  /**
+   * Proud relace, který přišel rovnou v odpovědi na otevření (P16
+   * `T8-stream404`), nebo nic, když server odpověděl 202 s adresami. Čte se
+   * jednou — první čtení `followSession()`; obnovení jde přes `events`.
+   */
+  readonly stream?: Response;
 }
 
 export interface ClientOptions {
@@ -186,13 +192,28 @@ export async function openWorldstreamSession(
   const call = options.fetch ?? fetch;
   const response = await call('/api/worldstream/sessions', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', accept: 'text/event-stream, application/json' },
     // **Klíč se posílá jen tehdy, když něco znamená.** Dveře přijímají prompt
     // a `live` a nic jiného, takže `live: false` by byl klíč navíc, který nic
     // nemění — a tělo dějství I má zůstat tím, čím bylo.
     body: JSON.stringify(options.live === true ? { prompt, live: true } : { prompt }),
     signal: options.signal,
   });
+
+  // **Proud v odpovědi je hlavní cesta** (P16 `T8-stream404`): na Vercelu smí
+  // druhý požadavek na `/events` dopadnout na instanci, která relaci nezná.
+  // Odmítnutí chodí dál jako JSON a 202 s adresami se čte po staru.
+  const opened = response.headers.get('x-worldstream-session');
+  if (response.ok && opened !== null && response.body !== null) {
+    const provenance = response.headers.get('x-worldstream-authored');
+    return {
+      sessionId: opened,
+      events: `/api/worldstream/sessions/${opened}/events`,
+      snapshot: `/api/worldstream/sessions/${opened}`,
+      authored: provenance === 'exact' || provenance === 'nearest' ? { match: provenance } : null,
+      stream: response,
+    };
+  }
 
   const body = (await response.json().catch(() => null)) as
     | (Partial<SessionHandle> & { error?: { code?: string; message?: string } })
@@ -252,9 +273,12 @@ export async function followSession(
   let state = initialClientState();
   let since = options.since ?? 0;
   let resumes = 0;
+  // Proud z odpovědi na otevření začíná od nuly a dá se přečíst jen jednou.
+  let opened = since === 0 ? handle.stream : undefined;
 
   for (;;) {
-    const outcome = await readOnce(call, handle, since, state, options);
+    const outcome = await readOnce(call, handle, since, state, options, opened);
+    opened = undefined;
     state = outcome.state;
 
     if (outcome.stop === 'done' || outcome.stop === 'aborted') return state;
@@ -290,13 +314,16 @@ async function readOnce(
   since: number,
   start: ClientState,
   options: FollowOptions,
+  opened: Response | undefined,
 ): Promise<ReadOutcome> {
   let state = start;
 
-  const response = await call(`${handle.events}?since=${since}`, {
-    headers: { accept: 'text/event-stream' },
-    signal: options.signal,
-  });
+  const response =
+    opened ??
+    (await call(`${handle.events}?since=${since}`, {
+      headers: { accept: 'text/event-stream' },
+      signal: options.signal,
+    }));
   if (!response.ok || response.body === null)
     throw new Error(`the world stream refused to open: HTTP ${response.status}`);
 

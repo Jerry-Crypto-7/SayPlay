@@ -82,7 +82,7 @@ import { clearInterval, setInterval } from 'node:timers';
 import { killState } from '@/server/kill-switch';
 
 import type { SessionEvent } from '../../../../../../worldstream/events';
-import { getSession } from '../../../../../../worldstream/sessions';
+import { getSession, type StoredSession } from '../../../../../../worldstream/sessions';
 
 export const runtime = 'nodejs';
 
@@ -247,8 +247,30 @@ export async function GET(
       { status: 404, headers: { 'cache-control': 'no-store' } },
     );
 
+  return sessionEventStream(sessionId, stored, after, request.signal);
+}
+
+/**
+ * Proud jedné relace od čísla `after`, jako hotová odpověď.
+ *
+ * **Volají ho dvoje dveře, ne jedny** (P16 `T8-stream404`). Registr relací
+ * je paměť instance, a na Vercelu `GET /events` občas dopadl na jinou
+ * instanci než `POST`, který relaci založil — naměřeno 15. 9. 2026: 202
+ * a o vteřinu později 404, porotce bez světa. `POST /sessions` proto na
+ * požádání vrátí tentýž proud rovnou ve své odpovědi, tedy z instance, na
+ * které generace běží. Tahle route zůstává pro obnovení spojení.
+ *
+ * `headers` jsou hlavičky navíc, které nese jen odpověď na založení.
+ */
+export function sessionEventStream(
+  sessionId: string,
+  stored: StoredSession,
+  after: number,
+  signal: AbortSignal,
+  headers: Readonly<Record<string, string>> = {},
+): Response {
   // **Slot až tady, za 400 i za 404.** Odmítnutý požadavek nesmí obsadit
-  // místo, které pak nikdo nevrátí — a obě větve nad tímhle řádkem se vracejí
+  // místo, které pak nikdo nevrátí — a obě větve před voláním se vracejí
   // dřív, než by měly co uklízet.
   if (!acquireStream(sessionId))
     return Response.json(
@@ -352,8 +374,8 @@ export async function GET(
   // takže by odběr i patnáctivteřinový časovač přežily požadavek, který se
   // nikdy nezačal číst. Doměřeno nezávislou revizí 2. 9. 2026 nad předem
   // zrušeným signálem (stav 200, odběr zapsaný, úklid neproběhl).
-  if (request.signal.aborted) release();
-  else request.signal.addEventListener('abort', () => release(), { once: true });
+  if (signal.aborted) release();
+  else signal.addEventListener('abort', () => release(), { once: true });
 
   return new Response(stream, {
     headers: {
@@ -364,6 +386,7 @@ export async function GET(
       'cache-control': 'no-store, no-transform',
       // A tohle je proti obrácené proxy, ne proti kompresi v procesu.
       'x-accel-buffering': 'no',
+      ...headers,
     },
   });
 }

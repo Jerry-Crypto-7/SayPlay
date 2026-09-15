@@ -665,6 +665,39 @@ describe('openWorldstreamSession', () => {
     expect(handle).toEqual(HANDLE);
   });
 
+  it('proud z odpovědi na otevření se dočte bez druhého požadavku', async () => {
+    // **P16 `T8-stream404`.** Druhý požadavek na `/events` smí na Vercelu
+    // dopadnout na instanci, která relaci nezná. Kdyby čtečka proud
+    // z odpovědi zahodila a šla na `events`, lokálně by to vypadalo stejně.
+    const { session } = generation();
+    session.advance('complete', {});
+    const frames = session.events.all().map(sessionFrame);
+    const calls: Call[] = [];
+    let accept: string | null = null;
+    const call: typeof fetch = async (input, init) => {
+      calls.push({ url: String(input), method: init?.method ?? 'GET' });
+      if (init?.method !== 'POST') throw new Error(`nečekaný požadavek na ${String(input)}`);
+      accept = new Headers(init.headers).get('accept');
+      return new Response(body(frames, false), {
+        status: 200,
+        headers: {
+          'content-type': 'text/event-stream; charset=utf-8',
+          'x-worldstream-session': SESSION_ID,
+          'x-worldstream-authored': 'exact',
+        },
+      });
+    };
+
+    const handle = await openWorldstreamSession('a drowned cathedral', { fetch: call });
+    const state = await followSession(handle, { fetch: call, maxResumes: 0 });
+
+    expect(accept).toContain('text/event-stream');
+    expect(handle.sessionId).toBe(SESSION_ID);
+    expect(handle.authored).toEqual({ match: 'exact' });
+    expect(state.phase).toBe('complete');
+    expect(calls).toEqual([{ url: '/api/worldstream/sessions', method: 'POST' }]);
+  });
+
   it('původ ze skladu se veze s adresami, ne zvlášť', async () => {
     const handle = await openWorldstreamSession('a place nobody wrote', {
       fetch: async () =>

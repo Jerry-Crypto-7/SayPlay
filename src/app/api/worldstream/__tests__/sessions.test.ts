@@ -249,6 +249,36 @@ describe('založení relace', () => {
     expect(body).not.toHaveProperty('blueprint');
   });
 
+  it('na požádání vrátí proud relace rovnou v odpovědi, ne přes druhé dveře', async () => {
+    // **P16 `T8-stream404`.** Registr relací je paměť instance a na Vercelu
+    // dopadl `GET /events` o vteřinu později na jinou instanci: 202, pak 404.
+    // Proud v odpovědi na založení jde z instance, která relaci drží. Kdyby
+    // route hlavičku `accept` ignorovala, klient spadne na druhé dveře a
+    // lokálně, na jedné instanci, to vypadá stejně.
+    const response = await createSession(
+      new Request('http://127.0.0.1/api/worldstream/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', accept: 'text/event-stream, application/json' },
+        body: JSON.stringify({ prompt: 'A cathedral of stacked shipping containers around a light well.' }),
+      }),
+    );
+    const sessionId = response.headers.get('x-worldstream-session');
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('text/event-stream; charset=utf-8');
+    expect(sessionId).toMatch(/[0-9a-f-]{36}/);
+    expect(response.headers.get('x-worldstream-authored')).toBe('exact');
+
+    const frames = await readFrames(response, 4);
+    expect(frames.map((frame) => frame.type)).toEqual([
+      'session.accepted',
+      'intent.ready',
+      'blueprint.ready',
+      'world.ready',
+    ]);
+    expect(new Set(frames.map((frame) => frame.sessionId))).toEqual(new Set([sessionId]));
+  });
+
   it('odpověď přizná, že svět jde ze skladu, a jak přesně věta trefila', async () => {
     // Bez tohohle klíče nemá popisek `T45-honestlabel` odkud vzniknout:
     // `chooseAuthored()` běží na serveru a klient sklad nevidí. Sada běží bez

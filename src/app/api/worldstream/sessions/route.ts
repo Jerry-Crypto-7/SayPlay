@@ -86,6 +86,7 @@ import {
 } from '../../../../server/rate-limit';
 import { logRateLimited } from '../../../../server/public-faults';
 import { chooseAuthored, emitterFor } from '../../../../worldstream/authored';
+import { sessionEventStream } from './[sessionId]/events/route';
 import {
   MAX_SESSIONS_PER_CALLER,
   newSessionSeed,
@@ -717,6 +718,19 @@ export async function POST(request: Request): Promise<Response> {
       // se ta vlastnost změřit nedá.
       void settled;
     }
+
+    // **Proud v téže odpovědi, když si o něj klient řekne** (P16 `T8-stream404`).
+    // Registr relací je paměť instance a druhý požadavek na `/events` smí na
+    // Vercelu dopadnout na instanci, která relaci nezná — naměřeno 15. 9. 2026
+    // jako 202 a o vteřinu později 404, porotce bez světa. Odpověď na založení
+    // odchází z instance, na které generace běží, takže tuhle relaci zná vždycky.
+    // Bez `accept: text/event-stream` zůstává 202 s adresami jako dosud.
+    if ((request.headers.get('accept') ?? '').includes('text/event-stream'))
+      return sessionEventStream(sessionId, stored, 0, request.signal, {
+        'x-worldstream-session': sessionId,
+        // Týž původ jako klíč `authored` v JSONu níž a ze stejného důvodu chybí, když píše model.
+        ...(served === null ? {} : { 'x-worldstream-authored': served.match }),
+      });
 
     return Response.json(
       {

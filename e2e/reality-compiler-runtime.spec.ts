@@ -22,7 +22,8 @@ test('unsupported appearance is refused by the actual server while preserving ru
   const liveRefused = page.waitForResponse(response => response.url().endsWith('/api/worldstream/sessions')
     && response.request().postDataJSON()?.live === true);
   await page.getByTestId('prompt-submit').click();
-  const sessionId = (await (await opened).json()).sessionId as string;
+  // Dějství I odpovídá proudem (P16 `T8-stream404`); id relace nese hlavička.
+  const sessionId = (await (await opened).headerValue('x-worldstream-session')) as string;
   await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live', { timeout: 90_000 });
   const tick = page.getByTestId('runtime-tick');
   await expect.poll(async () => Number(await tick.getAttribute('data-tick'))).toBeGreaterThan(5);

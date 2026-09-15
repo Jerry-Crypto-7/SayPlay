@@ -72,13 +72,15 @@ async function scriptSecondAct(page: Page, failure?: string): Promise<Acts> {
   });
 
   // Dějství I projde na skutečný server; zapamatuje se jen adresa jeho relace.
+  // Odpověď je proud, který sám neskončí (P16 `T8-stream404`), takže se id čte
+  // z hlavičky při jejím příchodu — `route.fetch()` by na jejím těle visel.
+  page.on('response', (response) => {
+    const id = response.headers()['x-worldstream-session'];
+    if (id !== undefined && id !== ACT_TWO) firstSession = id;
+  });
   await page.route('**/api/worldstream/sessions', async (route) => {
     const body = JSON.parse(route.request().postData() ?? '{}') as { live?: boolean };
-    if (body.live !== true) {
-      const response = await route.fetch();
-      firstSession = ((await response.json()) as { sessionId: string }).sessionId;
-      return route.fulfill({ response });
-    }
+    if (body.live !== true) return route.fallback();
     return route.fulfill({
       status: 202,
       contentType: 'application/json',
