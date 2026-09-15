@@ -19,11 +19,16 @@ test('unsupported appearance is refused by the actual server while preserving ru
   await page.goto('/');
   await page.getByTestId('prompt-input').fill('A cathedral of stacked shipping containers around a light well.');
   const opened = page.waitForResponse(response => response.url().endsWith('/api/worldstream/sessions') && response.request().method() === 'POST');
+  const liveRefused = page.waitForResponse(response => response.url().endsWith('/api/worldstream/sessions')
+    && response.request().postDataJSON()?.live === true);
   await page.getByTestId('prompt-submit').click();
   const sessionId = (await (await opened).json()).sessionId as string;
   await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live', { timeout: 90_000 });
   const tick = page.getByTestId('runtime-tick');
   await expect.poll(async () => Number(await tick.getAttribute('data-tick'))).toBeGreaterThan(5);
+  // Odmítnuté dveře nic neslíbily, takže hláška o nedoručeném dějství II lhát nesmí.
+  expect((await liveRefused).status()).toBe(503);
+  await expect(page.getByTestId('second-act-missed')).toHaveCount(0);
   await page.getByTestId('runtime-pause').click();
   await expect(page.getByTestId('runtime-pause')).toHaveText('Resume');
   const paused = await tick.getAttribute('data-tick');
