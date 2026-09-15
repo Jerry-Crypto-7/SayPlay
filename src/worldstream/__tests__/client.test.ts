@@ -698,6 +698,60 @@ describe('openWorldstreamSession', () => {
     expect(calls).toEqual([{ url: '/api/worldstream/sessions', method: 'POST' }]);
   });
 
+  it('po zavřeném proudu z otevření naváže přes `events`, ne znovu z téže odpovědi', async () => {
+    // Úspěšná relace zůstává otevřená ve fázi `world` a Vercel odpověď na POST
+    // po `maxDuration` usekne, takže tohle navázání je u delší relace běžná
+    // cesta. Odpověď z otevření se dá přečíst jen jednou (revize testů před
+    // `/ship` 15. 9. 2026).
+    const { session } = generation();
+    const opening = session.events.all().map(sessionFrame);
+    const last = session.events.sequence;
+    session.advance('complete', {});
+    const rest = session.events.all().filter((event) => event.sequence > last).map(sessionFrame);
+    const stream = { 'content-type': 'text/event-stream; charset=utf-8' };
+    const calls: Call[] = [];
+    const call: typeof fetch = async (input, init) => {
+      const url = String(input);
+      calls.push({ url, method: init?.method ?? 'GET' });
+      if (init?.method === 'POST')
+        return new Response(body(opening, false), { status: 200, headers: { ...stream, 'x-worldstream-session': SESSION_ID } });
+      if (url === `${HANDLE.events}?since=${last}`) return new Response(body(rest, false), { status: 200, headers: stream });
+      throw new Error(`nečekaný požadavek na ${url}`);
+    };
+
+    const handle = await openWorldstreamSession('a drowned cathedral', { fetch: call });
+    const state = await followSession(handle, { fetch: call, maxResumes: 1 });
+
+    expect(state.phase).toBe('complete');
+    expect(calls).toEqual([
+      { url: '/api/worldstream/sessions', method: 'POST' },
+      { url: `${HANDLE.events}?since=${last}`, method: 'GET' },
+    ]);
+  });
+
+  it('proud bez hlavičky původu je svět od modelu, neznámý původ taky', async () => {
+    // Popisek „authored ahead of time" je tvrzení (`T45-honestlabel`): bez
+    // hlavičky ho klient nesmí domyslet, stejně jako u odpovědi 202 bez klíče.
+    const open = async (authored?: string) =>
+      (
+        await openWorldstreamSession('a drowned cathedral', {
+          fetch: async () =>
+            new Response(body([], false), {
+              status: 200,
+              headers: {
+                'content-type': 'text/event-stream; charset=utf-8',
+                'x-worldstream-session': SESSION_ID,
+                ...(authored === undefined ? {} : { 'x-worldstream-authored': authored }),
+              },
+            }),
+        })
+      ).authored;
+
+    expect(await open()).toBeNull();
+    expect(await open('nearest')).toEqual({ match: 'nearest' });
+    expect(await open('somewhere-in-between')).toBeNull();
+  });
+
   it('původ ze skladu se veze s adresami, ne zvlášť', async () => {
     const handle = await openWorldstreamSession('a place nobody wrote', {
       fetch: async () =>

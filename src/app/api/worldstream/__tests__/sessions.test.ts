@@ -1813,6 +1813,37 @@ describe('zdroj emise: dějství I ze skladu, dějství II od modelu', () => {
     }
   });
 
+  it('proud v odpovědi nepřizná sklad, když svět píše model', async () => {
+    // Hlavička `x-worldstream-authored` je týž popisek `T45-honestlabel` jako
+    // klíč `authored` v JSONu. Kdyby ji route posílala i bez skladu, porotce by
+    // nad světem od modelu četl, že je uvařený předem – i u věty, kterou sklad
+    // zná přesně (revize testů před `/ship` 15. 9. 2026). Stojí tady, za testem
+    // stropu utrácení: živé volání z modulového stropu ubere a ten ho rezervuje celý.
+    stubCloud();
+    try {
+      const response = await createSession(
+        new Request('http://127.0.0.1/api/worldstream/sessions', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', accept: 'text/event-stream, application/json' },
+          body: JSON.stringify({ prompt: AUTHORED.prompt, live: true }),
+        }),
+      );
+
+      const sessionId = response.headers.get('x-worldstream-session');
+      expect(response.status).toBe(200);
+      expect(sessionId).toMatch(/[0-9a-f-]{36}/);
+      expect(response.headers.get('x-worldstream-authored')).toBeNull();
+      // Po sobě nenechá běžící generaci: čeká se na její poruchu na
+      // `model.invalid`, ne na fázi – tu by ukončila i zavřená odpověď.
+      await vi.waitFor(() => {
+        if ((getSession(sessionId!)?.fault ?? null) === null) throw new Error('generace ještě běží');
+      }, { timeout: 20_000, interval: 25 });
+      await response.body?.cancel();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it('dějství II bez modelu relaci vůbec neotevře', async () => {
     // **Relace, která hned spadne, není zadarmo:** ubere volajícímu jedno místo
     // z `MAX_SESSIONS_PER_CALLER` a porotci nedá nic — dějství I mu přitom
