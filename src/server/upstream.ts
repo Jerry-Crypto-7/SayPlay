@@ -677,10 +677,21 @@ function codexArgs(model: string, effort: string, cwd: string): string[] {
   ];
 }
 
-/** Na Windows `taskkill /T` přes PID obalu, dokud obal žije; jinde celá skupina procesů. */
+/**
+ * Na Windows `taskkill /T` přes PID obalu, **jen dokud obal žije**; jinde celá
+ * skupina procesů.
+ *
+ * Po `exit` obalu Windows jeho PID uvolní a smí ho dostat cizí proces, takže
+ * `taskkill /F` by zabil něco, co nám nepatří (`ship-pidreuse`, revize
+ * 15. 9. 2026). Sirotka za mrtvým obalem ten PID stejně nenajde – s ním se
+ * vypořádají zavřené roury a lhůta ve `stop`. ID skupiny na POSIXu se
+ * neuvolní, dokud v ní někdo žije, takže tam se zabíjí dál.
+ */
 function killCodexTree(child: ChildProcess): void {
-  if (process.platform === 'win32') execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true }, () => {});
-  else {
+  if (process.platform === 'win32') {
+    if (child.exitCode === null && child.signalCode === null)
+      execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true }, () => {});
+  } else {
     try {
       process.kill(-(child.pid ?? 0), 'SIGKILL');
     } catch {
@@ -711,7 +722,7 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
     const stop = (why: string) => {
       cut ??= why;
       killCodexTree(child);
-      // Obal, který už skončil, `taskkill /T` nenajde, a `close` pak nepřijde,
+      // Na obal, který už skončil, se `taskkill` neposílá, a `close` pak nepřijde,
       // dokud rouru drží potomek, který ho přežil. Roury se proto zavřou a po
       // krátké lhůtě se končí i bez `close` – odpověď ani adresář na sirotkovi
       // viset nesmí (revize 15. 9. 2026).

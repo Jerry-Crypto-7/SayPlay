@@ -1,12 +1,20 @@
+import { execFile, spawn } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createShim, type ShimOptions } from '../codex-shim.mjs';
+import { createShim, killTree, type ShimOptions } from '../codex-shim.mjs';
+
+// `execFile` se obaluje, ne nahrazuje: `taskkill` doopravdy běží a test jen
+// čte, s čím se volal (`ship-pidreuse`).
+vi.mock('node:child_process', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:child_process')>();
+  return { ...actual, execFile: vi.fn(actual.execFile) };
+});
 
 /**
  * P16 T6 – most je za tunelem veřejně dosažitelný, nikdo ho nehlídá, drží klíč
@@ -65,6 +73,27 @@ async function until(condition: () => boolean, what: string, ms = 8_000) {
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
 }
+
+describe('killTree', () => {
+  // `ship-pidreuse`: po `exit` obalu Windows jeho PID uvolní a smí ho dostat
+  // cizí proces, takže `taskkill /F` na ten PID by zabil něco, co nám nepatří.
+  // Oba procesy jsou vlastní, takže skutečný `taskkill` nesáhne na nic cizího.
+  it.runIf(process.platform === 'win32')('na obal, který už skončil, taskkill nepošle; na živý ano', async () => {
+    const taskkills = () => vi.mocked(execFile).mock.calls.filter(([file]) => file === 'taskkill');
+    vi.mocked(execFile).mockClear();
+
+    const gone = spawn(process.execPath, ['-e', ''], { stdio: 'ignore' });
+    await new Promise((resolve) => gone.once('exit', resolve));
+    killTree(gone);
+    expect(taskkills(), 'taskkill šel na PID obalu, který už skončil').toEqual([]);
+
+    const running = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });
+    await until(() => running.pid !== undefined && alive(running.pid), 'the wrapper to start');
+    killTree(running);
+    expect(taskkills()).toHaveLength(1);
+    await until(() => !alive(running.pid!), 'the wrapper to die');
+  });
+});
 
 describe('codex shim', () => {
   it('answers in the Messages format with the pinned model and effort, whatever the body asks for', async () => {

@@ -76,10 +76,16 @@ export function codexArgs(model, effort, cwd) {
   ];
 }
 
-/** Na Windows `taskkill /T` přes PID obalu, dokud obal žije; jinde celá skupina procesů. */
+/**
+ * Na Windows `taskkill /T` přes PID obalu, jen dokud obal žije; jinde celá skupina procesů.
+ * Po `exit` obalu smí jeho PID dostat cizí proces (`ship-pidreuse`); celé
+ * odůvodnění je u `killCodexTree` v `src/server/upstream.ts`.
+ */
 export function killTree(child) {
-  if (process.platform === 'win32') execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true }, () => {});
-  else {
+  if (process.platform === 'win32') {
+    if (child.exitCode === null && child.signalCode === null)
+      execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true }, () => {});
+  } else {
     try {
       process.kill(-child.pid, 'SIGKILL');
     } catch {
@@ -226,7 +232,7 @@ export function createShim({
       const stop = (why) => {
         cut ??= why;
         killTree(child);
-        // Obal, který už skončil, `taskkill /T` nenajde, a `close` nepřijde,
+        // Na obal, který už skončil, se `taskkill` neposílá, a `close` nepřijde,
         // dokud rouru drží potomek, který ho přežil – slot by zůstal obsazený
         // navždy. Roury se zavřou a po lhůtě se končí i bez `close`.
         child.stdout.destroy();

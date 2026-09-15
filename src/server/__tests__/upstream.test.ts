@@ -26,8 +26,9 @@
  * prohlédnutý.**
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import { execFile } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -38,6 +39,13 @@ import type { Grammar } from '../../model/prompt';
 import { runPipeline } from '../pipeline';
 import { SpendCap } from '../spend-cap';
 import { parseAnswerText, upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
+
+// `execFile` se obaluje, ne nahrazuje: `taskkill` doopravdy běží a test sirotka
+// jen čte, s čím se volal (`ship-pidreuse`).
+vi.mock('node:child_process', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:child_process')>();
+  return { ...actual, execFile: vi.fn(actual.execFile) };
+});
 
 const grammarRead = frozenGrammar();
 if (!grammarRead.ok) throw new Error(`frozen grammar unreadable: ${grammarRead.detail}`);
@@ -1162,11 +1170,17 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
     let orphan = 0;
     try {
       await withScript(file, async () => {
+        vi.mocked(execFile).mockClear();
         const started = Date.now();
         const outcome = await upstreamBranch(liveConfig({ ...CLI_ENV, WORLDSMITH_UPSTREAM_TIMEOUT_MS: '1500' })).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
         orphan = Number(readFileSync(marker, 'utf8'));
         expect(outcome).toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE' });
         expect(Date.now() - started, 'volání čekalo na sirotka').toBeLessThan(10_000);
+        // Obal skončil hned, takže jeho PID už smí patřit cizímu procesu (`ship-pidreuse`).
+        expect(
+          vi.mocked(execFile).mock.calls.filter(([file]) => file === 'taskkill'),
+          'taskkill šel na PID obalu, který už skončil',
+        ).toEqual([]);
       });
     } finally {
       try {
