@@ -63,7 +63,8 @@ describe('the blind key', () => {
   it.each([0, 6, 2.5, '3', null])('refuses a rating that is not a whole number 1–5 (%s)', (score) => {
     const key = buildKey(VARIANTS, ['t1'], 7);
     const letter = Object.keys(key.sections.t1!)[0]!;
-    expect(() => reveal(key, { t1: { [letter]: score } })).toThrow(/1–5/);
+    // Arch se čte z JSON, takže typ `number` tu nic nezaručuje.
+    expect(() => reveal(key, { t1: { [letter]: score as unknown as number } })).toThrow(/1–5/);
   });
 
   it('names no variant, model or effort anywhere in the sheet', () => {
