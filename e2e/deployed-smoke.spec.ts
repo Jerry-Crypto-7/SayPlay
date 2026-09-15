@@ -103,6 +103,10 @@ test('první věta na hlavní stránce postaví živý svět od modelu', async (
   await fillStable(page, LIVE_PROMPT);
   await page.getByTestId('prompt-submit').click();
 
-  await expect(page.getByTestId('world-live-origin')).toBeVisible({ timeout: 330_000 });
+  // Nedoručený svět od 15. 9. 2026 řekne proč (`second-act-missed`); test pak
+  // skončí hned a s tím důvodem, ne až po 330 s mlčení (P16 `T8-silentlive`).
+  const missed = page.getByTestId('second-act-missed');
+  await expect(page.getByTestId('world-live-origin').or(missed)).toBeVisible({ timeout: 330_000 });
+  expect((await missed.count()) === 0 ? '' : await missed.textContent(), 'živý svět nedorazil').toBe('');
   expect(errors, `stránka vyhodila chybu: ${errors.join(' | ')}`).toEqual([]);
 });

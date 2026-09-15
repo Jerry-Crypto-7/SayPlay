@@ -632,6 +632,10 @@ export async function POST(request: Request): Promise<Response> {
     const metrics = currentServerMetrics();
     metrics?.setProvenance(live ? 'live' : 'prepared');
     const finishGeneration = metrics?.observe('background-generation');
+    const generationStarted = Date.now();
+    // Kód poruchy, kterým generování skončilo — pro řádek `worldstream.generation`
+    // v `finally` níž.
+    let endedWith: string | null = null;
     const work = (
       emit === null
         ? Promise.resolve().then(() => {
@@ -641,13 +645,16 @@ export async function POST(request: Request): Promise<Response> {
         : runGeneration(stored, verdict.prompt, {
             emit,
             grammar,
-            log: (fault: SessionFault, detail: string) =>
-              logRateLimited('worldstream/sessions', requestId, fault, detail),
+            log: (fault: SessionFault, detail: string) => {
+              endedWith = fault;
+              logRateLimited('worldstream/sessions', requestId, fault, detail);
+            },
           })
     ).catch((thrown: unknown) => {
       // An unexpected rejection can bypass runGeneration's stored.fault path.
       // Preserve the original rejection while closing telemetry as failed;
       // the idempotent finalizer below still releases the paid slot.
+      endedWith ??= 'UNEXPECTED_REJECTION';
       finishGeneration?.('failed');
       throw thrown;
     });
@@ -678,6 +685,25 @@ export async function POST(request: Request): Promise<Response> {
       if (live) releaseSlot('world');
       finishGeneration?.(stored.fault ? 'failed' : 'completed');
       reportServerMetrics(metrics);
+      // **Jak generování skončilo, jedním řádkem** (P16 `T8-silentlive`).
+      // Snímek metrik výš nese jen `failed`/`completed` a kód poruchy šel dosud
+      // jen přes `logRateLimited`, který opakovanou příčinu v okně spolkne. Na
+      // produkci se tak 15. 9. 2026 nedalo říct, jestli živý svět odmítla brána,
+      // nebo jen nedorazil proud. `fault` je veřejná věta ze `SESSION_FAULTS`,
+      // žádný detail brány ani text modelu.
+      try {
+        console.info(JSON.stringify({
+          event: 'worldstream.generation',
+          requestId,
+          provenance: live ? 'live' : 'prepared',
+          outcome: endedWith === null && stored.fault === null ? 'world' : 'failed',
+          code: endedWith,
+          fault: stored.fault,
+          ms: Date.now() - generationStarted,
+        }));
+      } catch {
+        /* Telemetrie nesmí změnit úklid slotu. */
+      }
     });
     try {
       after(settled);

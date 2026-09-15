@@ -24,12 +24,42 @@ describe('server phase diagnostics', () => {
     expect(background).toBeInstanceOf(Promise);
     await expect(background).rejects.toBe(fault);
     const entries = log.mock.calls.map(call => JSON.parse(call[0] as string));
-    const phases = entries.flatMap(entry => entry.phases).filter(phase => phase.name === 'background-generation');
+    const phases = entries.filter(entry => entry.event === 'worldstream.server-timing').flatMap(entry => entry.phases)
+      .filter(phase => phase.name === 'background-generation');
     expect(phases.some(phase => phase.outcome === 'failed' && phase.elapsedMs !== null)).toBe(true);
     expect(phases.some(phase => phase.outcome === 'completed')).toBe(false);
+    expect(entries.filter(entry => entry.event === 'worldstream.generation'))
+      .toEqual([expect.objectContaining({ outcome: 'failed', code: 'UNEXPECTED_REJECTION' })]);
     expect(JSON.stringify(entries)).not.toContain(fault.message);
     for (let i = 0; i < MAX_WORLD_GENERATIONS; i++) expect(acquireSlot('world')).toBe(true);
     expect(acquireSlot('world')).toBe(false);
+  });
+
+  /** P16 `T8-silentlive`: bez kódu poruchy se na produkci nedalo odlišit odmítnutí brány od nedoručeného proudu. */
+  it.each([
+    { name: 'a world', code: null, outcome: 'world' },
+    { name: 'a refused blueprint', code: 'BLUEPRINT_REJECTED', outcome: 'failed' },
+  ] as const)('logs how the background generation ended: $name', async ({ code, outcome }) => {
+    const log = vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.spyOn(provider, 'cloudEmitter').mockResolvedValue(async () => ({}));
+    vi.spyOn(sessions, 'runGeneration').mockImplementation(async (stored, _prompt, deps) => {
+      if (code === null) return;
+      deps.log?.(code, 'private gate detail');
+      stored.fault = sessions.SESSION_FAULTS[code];
+    });
+    const response = await POST(new Request('http://localhost/api/worldstream/sessions', {
+      method: 'POST', body: JSON.stringify({ prompt: 'a salt flat with an iron mast', live: true }),
+    }));
+    expect(response.status).toBe(202);
+    await vi.mocked(after).mock.calls.at(-1)?.[0];
+    const ended = log.mock.calls.map(call => JSON.parse(call[0] as string)).filter(entry => entry.event === 'worldstream.generation');
+    expect(ended).toEqual([expect.objectContaining({
+      requestId: ((await response.json()) as { requestId: string }).requestId,
+      provenance: 'live', outcome, code, fault: code === null ? null : sessions.SESSION_FAULTS[code],
+    })]);
+    expect(ended[0].ms).toBeGreaterThanOrEqual(0);
+    expect(JSON.stringify(ended)).not.toContain('private gate detail');
   });
 
   it.each(['{"ok":true}', 'not-json'])('separates upstream fetch, response body and model-output parse: %s', async output => {

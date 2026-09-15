@@ -48,7 +48,8 @@ interface Acts {
   readonly urls: readonly string[];
 }
 
-async function scriptSecondAct(page: Page): Promise<Acts> {
+/** `failure` pošle místo blueprintu `session.failed` s tímhle důvodem. */
+async function scriptSecondAct(page: Page, failure?: string): Promise<Acts> {
   let firstSession: string | null = null;
   let release = (): void => {};
   const gate = new Promise<void>((resolve) => {
@@ -94,10 +95,12 @@ async function scriptSecondAct(page: Page): Promise<Acts> {
   // sám nikdy neskončí, takže protáhnout ho přes `route.fetch()` by ho zaseklo.
   await page.route(`**/api/worldstream/sessions/${ACT_TWO}/events*`, async (route) => {
     await gate;
-    const snapshot = await page.request.get(`/api/worldstream/sessions/${firstSession!}`);
-    const { blueprint } = (await snapshot.json()) as { blueprint: unknown };
     const frame = (sequence: number, type: string, payload: unknown): string =>
       `data: ${JSON.stringify({ sessionId: ACT_TWO, sequence, type, at: '1970-01-01T00:00:00.000Z', payload })}\n\n`;
+    if (failure !== undefined)
+      return route.fulfill({ status: 200, contentType: 'text/event-stream', body: frame(1, 'session.failed', { reason: failure }) });
+    const snapshot = await page.request.get(`/api/worldstream/sessions/${firstSession!}`);
+    const { blueprint } = (await snapshot.json()) as { blueprint: unknown };
 
     return route.fulfill({
       status: 200,
@@ -185,6 +188,27 @@ test('dokud porotce nic nezměnil, dějství II svět vymění samo — i s adre
       timeout: 30_000,
     })
     .toBe(true);
+});
+
+/**
+ * **Nedoručené dějství II svět nechá, ale řekne proč** (P16 `T8-silentlive`).
+ * Do 15. 9. 2026 tu zmizelo jen „is writing" a nic víc — porotce to četl jako
+ * „pořád tentýž svět" a z produkce se nedalo poznat, co selhalo.
+ */
+test('dějství II, které nedorazí, to řekne a svět nechá', async ({ page }) => {
+  test.setTimeout(180_000);
+  const acts = await scriptSecondAct(page, 'the model wrote a world that did not pass the checks');
+  await page.goto('/');
+  // Katedrála, ne `AUTHORED`: uvařený „bridge town" od 14. 9. 2026 odmítá brána
+  // opakovaného hrdiny (`hangingHouses` 2,9×), takže dějství I s ním nedoběhne.
+  await buildWorld(page, 'A cathedral of stacked shipping containers around a light well.');
+  await expect(page.getByTestId('second-act-writing')).toBeVisible();
+
+  acts.release();
+
+  await expect(page.getByTestId('second-act-missed')).toContainText('did not pass the checks', { timeout: WORLD_BUDGET_MS });
+  await expect(page.getByTestId('second-act-writing')).toHaveCount(0);
+  await expect(page.getByTestId('world-authored')).toBeVisible();
 });
 
 test('visitor input protects the running world from a late second act', async ({ page }) => {

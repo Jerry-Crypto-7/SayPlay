@@ -250,6 +250,8 @@ export default function Page() {
    * způsob, jak ten popisek nemůže lhát.
    */
   const [writing, setWriting] = useState(false);
+  /** Proč dějství II nedorazilo, když už porotce četl „is writing". `null` = není co hlásit. */
+  const [secondActMiss, setSecondActMiss] = useState<string | null>(null);
   /**
    * Sáhl porotce do světa, který má na plátně?
    *
@@ -348,13 +350,27 @@ export default function Page() {
    * blueprint ani commit porotce nemá tahle větev jak přepsat, a to je
    * konstrukce, ne hlídání (debata Opus ↔ Codex 7. 9. 2026, nález F2).
    *
-   * **Spadlé dějství II nemění na plátně nic** — žádná porucha, žádné prázdno.
+   * **Spadlé dějství II nemění na plátně svět** — žádná porucha, žádné prázdno.
    * Porotce má na plátně svět z dějství I a ten platí dál.
+   *
+   * **Mlčet o tom ale nesmí.** Do 15. 9. 2026 končilo pět různých selhání
+   * stejně — zmizelo „is writing" a nic víc. Porotce to četl jako „pořád
+   * tentýž svět" (P15 `G1-modelab`) a na produkci se z toho nedalo poznat, jestli
+   * svět odmítla brána, nebo nedorazil proud (P16 `T8-silentlive`). Každá větev
+   * proto řekne jednou větou, na čem ztroskotala.
    */
   const runSecondAct = useCallback(
     async (prompt: string): Promise<void> => {
       const control = new AbortController();
       secondReading.current = control;
+      setSecondActMiss(null);
+      const miss = (reason: string): void => {
+        if (!control.signal.aborted) setSecondActMiss(reason);
+      };
+      // Odmítnuté dveře (`LIVE_UNAVAILABLE` na nasazení bez modelu) přijdou
+      // dřív, než se „is writing" ukáže — tam porotci nikdo nic neslíbil
+      // a hláška o nedoručené verzi by lhala stejně jako ten popisek.
+      let shown = false;
 
       try {
         const handle = await openWorldstreamSession(prompt, {
@@ -363,22 +379,25 @@ export default function Page() {
         });
         if (control.signal.aborted) return;
         setWriting(true);
+        shown = true;
 
         const arrival = await firstBlueprint(handle, control.signal, (read) => {
           if (!control.signal.aborted) setIntent(read);
         });
-        if (control.signal.aborted || !('blueprint' in arrival)) return;
+        if (control.signal.aborted) return;
+        if (!('blueprint' in arrival)) return miss(arrival.fault);
 
         const parsed = blueprintSchema.safeParse(arrival.blueprint);
-        if (!parsed.success) return;
+        if (!parsed.success) return miss(`its world does not parse: ${parsed.error.issues[0]?.message ?? '?'}`);
 
         const client = mesher.current;
-        if (client === null) return;
+        if (client === null) return miss('the mesher is not running');
         const built = await buildProxyWorldFrom(parsed.data, {
           mesh: (order) => client.mesh(order, control.signal),
           quality: tier.current,
         });
-        if (control.signal.aborted || built.kind !== 'built') return;
+        if (control.signal.aborted) return;
+        if (built.kind !== 'built') return miss(built.reason);
 
         // **Tady se rozhoduje, jestli je to výměna, nebo nabídka.** Automaticky
         // přepsat svět, do kterého porotce zasáhl, nemá žádné produktové
@@ -386,8 +405,8 @@ export default function Page() {
         const next: SecondAct = { world: built, sessionId: handle.sessionId, document: parsed.data.world };
         if (committed.current || (binding.current?.controller.getInputLog().length ?? 0) > 0) setOffer(next);
         else adopt(next);
-      } catch {
-        // Odmítnuté dveře i spadlá relace končí stejně: mlčením.
+      } catch (error: unknown) {
+        if (shown) miss(error instanceof Error ? error.message : String(error));
       } finally {
         if (!control.signal.aborted) setWriting(false);
       }
@@ -433,6 +452,7 @@ export default function Page() {
       setChangeFrom(null);
       setOffer(null);
       setWriting(false);
+      setSecondActMiss(null);
       generation.current += 1;
       setRecovery(null);
       committed.current = false;
@@ -850,7 +870,7 @@ export default function Page() {
     setController(next); setSourceProject(project);
     setSourceGeneration(_generation);
     setSessionId(null); setComparison(null); setViewOriginal(false); setComparisonNote(null);
-    setChange(null); setChangeFrom(null); setOffer(null); setWriting(false);
+    setChange(null); setChangeFrom(null); setOffer(null); setWriting(false); setSecondActMiss(null);
     setStreaming(false); setChanging(false); setFault(null); setProvenance(null);
     setStopped(null);
   }
@@ -901,6 +921,11 @@ export default function Page() {
                 : `The model read it as ${intent.setting} and is writing its own version.`}
             </p>
           ) : null}
+          {secondActMiss === null ? null : (
+            <p className="ws-provenance" data-testid="second-act-missed">
+              {`The model's own version did not arrive (${secondActMiss}). This world stays.`}
+            </p>
+          )}
           {offer === null ? null : (
             <SecondActOffer onShow={() => adopt(offer)} onKeep={() => setOffer(null)} />
           )}
