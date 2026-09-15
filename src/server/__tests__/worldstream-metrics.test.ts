@@ -37,9 +37,10 @@ describe('server phase diagnostics', () => {
 
   /** P16 `T8-silentlive`: bez kódu poruchy se na produkci nedalo odlišit odmítnutí brány od nedoručeného proudu. */
   it.each([
-    { name: 'a world', code: null, outcome: 'world' },
-    { name: 'a refused blueprint', code: 'BLUEPRINT_REJECTED', outcome: 'failed' },
-  ] as const)('logs how the background generation ended: $name', async ({ code, outcome }) => {
+    { name: 'a world', code: null, outcome: 'world', live: true },
+    { name: 'a refused blueprint', code: 'BLUEPRINT_REJECTED', outcome: 'failed', live: true },
+    { name: 'a prepared world', code: null, outcome: 'world', live: false },
+  ] as const)('logs how the background generation ended: $name', async ({ code, outcome, live }) => {
     const log = vi.spyOn(console, 'info').mockImplementation(() => undefined);
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     vi.spyOn(provider, 'cloudEmitter').mockResolvedValue(async () => ({}));
@@ -49,14 +50,14 @@ describe('server phase diagnostics', () => {
       stored.fault = sessions.SESSION_FAULTS[code];
     });
     const response = await POST(new Request('http://localhost/api/worldstream/sessions', {
-      method: 'POST', body: JSON.stringify({ prompt: 'a salt flat with an iron mast', live: true }),
+      method: 'POST', body: JSON.stringify({ prompt: 'a salt flat with an iron mast', live }),
     }));
     expect(response.status).toBe(202);
     await vi.mocked(after).mock.calls.at(-1)?.[0];
     const ended = log.mock.calls.map(call => JSON.parse(call[0] as string)).filter(entry => entry.event === 'worldstream.generation');
     expect(ended).toEqual([expect.objectContaining({
       requestId: ((await response.json()) as { requestId: string }).requestId,
-      provenance: 'live', outcome, code, fault: code === null ? null : sessions.SESSION_FAULTS[code],
+      provenance: live ? 'live' : 'prepared', outcome, code, fault: code === null ? null : sessions.SESSION_FAULTS[code],
     })]);
     expect(ended[0].ms).toBeGreaterThanOrEqual(0);
     expect(JSON.stringify(ended)).not.toContain('private gate detail');

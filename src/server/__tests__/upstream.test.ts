@@ -1177,6 +1177,28 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
     }
   }, 30_000);
 
+  // Revize testových mezer před /ship 15. 9. 2026: spadlý codex s rozepsaným
+  // proudem je výpadek, ne vadná odpověď, která by si řekla o placenou opravu.
+  it('proces, který skončí nenulovým kódem, je výpadek i s rozepsaným proudem', async () => {
+    const file = fakeCodex('crash', [okStream[0]], '  process.exit(3);');
+    await withScript(file, async () => {
+      const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
+      expect(outcome).toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE' });
+      if (outcome.ok) return;
+      expect(outcome.detail).toContain('code 3');
+    });
+  });
+
+  it('proud delší než 8 MiB se utne jako výpadek', async () => {
+    const file = fakeCodex('flood', [okStream[0]], "  process.stdout.write('x'.repeat(9 * 1024 * 1024));");
+    await withScript(file, async () => {
+      const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
+      expect(outcome).toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE' });
+      if (outcome.ok) return;
+      expect(outcome.detail).toContain('8 MiB');
+    });
+  });
+
   it('bez codex-cli v koncovém bodu zůstává výchozí strop 120 s, s ním 240 s', () => {
     expect(liveConfig().timeoutMs).toBe(120_000);
     expect(liveConfig(CLI_ENV).timeoutMs).toBe(240_000);
