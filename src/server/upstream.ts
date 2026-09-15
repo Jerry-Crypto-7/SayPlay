@@ -1,4 +1,6 @@
-import { execFile } from 'node:child_process';
+import { type ChildProcess, execFile, spawn } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { observePhase, observePhaseAsync } from '../model/phase-observer';
@@ -641,19 +643,99 @@ function codexCommand(): { readonly file: string; readonly prefix: readonly stri
   return script === '' ? { file: 'codex', prefix: [] } : { file: process.execPath, prefix: [script] };
 }
 
-function runCodex(args: readonly string[], input: string, timeoutMs: number): Promise<string> {
+/**
+ * Tvrdost převzatá z mostu `scripts/codex-shim.mjs` (revize před `/ship`
+ * 15. 9. 2026, `ship-codexcli`) – tytéž tři meze, tytéž seznamy:
+ *
+ * - **prostředí z allowlistu.** Codex dřív dědil celé prostředí serveru, tedy
+ *   i `WORLDSMITH_MODEL_KEY` a token KV;
+ * - **prázdný dočasný adresář** místo kořene repozitáře s interními dokumenty
+ *   a `.env.local`, a `--ignore-rules` spolu s vypnutými nástroji;
+ * - **vlastní časovač zabíjí celý strom.** `codex.js` spouští nativní binárku
+ *   jako dítě a timeout `execFile` zabil jen obal – codex dál pálil předplatné.
+ */
+const CODEX_ENV_ALLOWLIST = ['PATH', 'Path', 'PATHEXT', 'SystemRoot', 'SYSTEMROOT', 'windir', 'ComSpec', 'APPDATA', 'LOCALAPPDATA', 'USERPROFILE', 'HOME', 'HOMEDRIVE', 'HOMEPATH', 'TEMP', 'TMP', 'CODEX_HOME'];
+
+const CODEX_TOOL_SWITCHES = [
+  'view_image', 'image_generation', 'code_mode_host', 'multi_agent', 'browser_use', 'computer_use', 'plugins', 'goals',
+  'hooks', 'browser_use_external', 'browser_use_full_cdp_access', 'in_app_browser', 'skill_search', 'skill_mcp_dependency_install', 'sleep_tool', 'unified_exec',
+].flatMap((feature) => ['-c', `features.${feature}=false`]);
+
+const MAX_CODEX_OUTPUT_BYTES = 8 * 1024 * 1024;
+
+function codexArgs(model: string, effort: string, cwd: string): string[] {
+  return [
+    'exec', '--ignore-user-config', '--ignore-rules', '--ephemeral', '--skip-git-repo-check', '--sandbox', 'read-only',
+    '-c', 'approval_policy="never"', '-c', 'forced_login_method="chatgpt"', '-c', 'model_provider="openai"',
+    '-c', `model_reasoning_effort="${effort}"`,
+    '-c', 'features.shell_tool=false', '-c', 'features.apps=false', '-c', 'web_search="disabled"',
+    ...CODEX_TOOL_SWITCHES,
+    '--cd', cwd, '--model', model, '--json', '-',
+  ];
+}
+
+/** Na Windows `taskkill /T` přes PID obalu, dokud obal žije; jinde celá skupina procesů. */
+function killCodexTree(child: ChildProcess): void {
+  if (process.platform === 'win32') execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true }, () => {});
+  else {
+    try {
+      process.kill(-(child.pid ?? 0), 'SIGKILL');
+    } catch {
+      /* skupina už neexistuje */
+    }
+  }
+}
+
+function runCodex(model: string, effort: string, input: string, timeoutMs: number): Promise<string> {
   const command = codexCommand();
+  const cwd = mkdtempSync(join(tmpdir(), 'worldsmith-codex-'));
   return new Promise((resolve, reject) => {
-    const child = execFile(
-      command.file,
-      [...command.prefix, ...args],
-      { windowsHide: true, timeout: timeoutMs, maxBuffer: 8 * 1024 * 1024 },
-      (error, stdout, stderr) => {
-        if (error) reject(new Error(`${error.killed ? 'codex exec ran past the timeout' : error.message.split('\n')[0]} ${stderr.slice(0, 300)}`.trim()));
-        else resolve(stdout);
-      },
-    );
-    child.stdin?.end(input);
+    const child = spawn(command.file, [...command.prefix, ...codexArgs(model, effort, cwd)], {
+      cwd,
+      // Přetypování jen kvůli typu Next, který v `ProcessEnv` vyžaduje `NODE_ENV`.
+      env: Object.fromEntries(CODEX_ENV_ALLOWLIST.filter((name) => process.env[name] !== undefined).map((name) => [name, process.env[name]])) as NodeJS.ProcessEnv,
+      windowsHide: true,
+      detached: process.platform !== 'win32',
+    });
+    let stdout = '';
+    let stderr = '';
+    let outputBytes = 0;
+    let cut: string | null = null;
+    let done = false;
+    const stop = (why: string) => {
+      cut ??= why;
+      killCodexTree(child);
+    };
+    const timer = setTimeout(() => stop('codex exec ran past the timeout'), timeoutMs);
+    child.stdout.on('data', (chunk: Buffer) => {
+      outputBytes += chunk.length;
+      if (outputBytes > MAX_CODEX_OUTPUT_BYTES) stop('codex exec wrote more than 8 MiB');
+      else stdout += chunk;
+    });
+    child.stderr.on('data', (chunk: Buffer) => {
+      if (stderr.length < 300) stderr += chunk;
+    });
+    child.stdin.on('error', () => {});
+    child.stdin.end(input);
+
+    // `close`, ne `exit`: přijde, až pustí roury celý strom, takže adresář se
+    // maže a odpověď vrací po doložitelném konci, ne po smrti obalu.
+    const finish = (failure: string | null) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      try {
+        // Na Windows drží adresář ještě chvíli dozabíjený proces (EBUSY).
+        rmSync(cwd, { recursive: true, force: true, maxRetries: 5 });
+      } catch {
+        /* prázdný adresář v tmp nikomu neublíží */
+      }
+      const reason = cut ?? failure;
+      if (reason === null) resolve(stdout);
+      else reject(new Error(`${reason} ${stderr.slice(0, 300)}`.trim()));
+    };
+    child.on('error', (error) => finish(error.message.split('\n')[0]));
+    child.on('close', (code) => finish(code === 0 ? null : `codex exec exited with code ${code}`));
   });
 }
 
@@ -661,13 +743,8 @@ async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig)
   let output: string;
   try {
     output = await observePhaseAsync(serverPhaseObserver, 'provider-http-request', () => runCodex(
-      [
-        'exec', '--ignore-user-config', '--ephemeral', '--skip-git-repo-check', '--sandbox', 'read-only',
-        '-c', 'approval_policy="never"', '-c', 'forced_login_method="chatgpt"', '-c', 'model_provider="openai"',
-        '-c', `model_reasoning_effort="${config.effort}"`,
-        '-c', 'features.shell_tool=false', '-c', 'features.apps=false', '-c', 'web_search="disabled"',
-        '--cd', process.cwd(), '--model', config.model, '--json', '-',
-      ],
+      config.model,
+      config.effort,
       `${call.request.system}\n\n${call.request.user}`,
       config.timeoutMs,
     ));

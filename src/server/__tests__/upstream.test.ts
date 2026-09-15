@@ -28,7 +28,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -1010,7 +1010,7 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
       "  const prompt = Buffer.concat(chunks).toString('utf8');",
       // Co proces dostal, jde stranou do souboru — do proudu ne: cesty Windows a
       // uvozovky argumentů by rozbily JSON, který se tu má soudit.
-      `  require('node:fs').writeFileSync(${JSON.stringify(`${file}.seen.json`)}, JSON.stringify({ args: process.argv.slice(2), promptHead: prompt.slice(0, 20) }));`,
+      `  require('node:fs').writeFileSync(${JSON.stringify(`${file}.seen.json`)}, JSON.stringify({ args: process.argv.slice(2), promptHead: prompt.slice(0, 20), cwd: process.cwd(), envKeys: Object.keys(process.env) }));`,
       `  const lines = ${JSON.stringify(lines)};`,
       '  for (const line of lines) process.stdout.write(JSON.stringify(line) + String.fromCharCode(10));',
       extra,
@@ -1038,21 +1038,35 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
 
   it('vrátí tělo z agent_message, účtenku z turn.completed a jméno modelu i úsilí předá procesu', async () => {
     const file = fakeCodex('ok', okStream);
-    await withScript(file, async () => {
-      const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 'SYSTEM TEXT HERE', user: PROMPT } });
-      expect(outcome.ok).toBe(true);
-      if (!outcome.ok) return;
-      expect(outcome.body).toEqual(answer);
-      const seen = JSON.parse(readFileSync(`${file}.seen.json`, 'utf8')) as { args: string[]; promptHead: string };
-      const args = seen.args.join(' ');
-      expect(args).toContain('--model gpt-6-astra');
-      expect(args).toContain('model_reasoning_effort="medium"');
-      expect(args).toContain('--sandbox read-only');
-      expect(args).toContain('features.shell_tool=false');
-      expect(seen.promptHead).toBe('SYSTEM TEXT HERE\n\na ');
-      expect(outcome.usage).toEqual({ inputTokens: 12000, outputTokens: 300 });
-      expect(outcome.provenance).toMatchObject({ source: 'codex-cli', model: 'gpt-6-astra' });
-    });
+    // Klíč aplikace v prostředí serveru: codex ho vidět nesmí (`ship-codexcli`).
+    const previousKey = process.env.WORLDSMITH_MODEL_KEY;
+    process.env.WORLDSMITH_MODEL_KEY = 'canary-key-that-must-not-reach-codex';
+    try {
+      await withScript(file, async () => {
+        const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 'SYSTEM TEXT HERE', user: PROMPT } });
+        expect(outcome.ok).toBe(true);
+        if (!outcome.ok) return;
+        expect(outcome.body).toEqual(answer);
+        const seen = JSON.parse(readFileSync(`${file}.seen.json`, 'utf8')) as { args: string[]; promptHead: string; cwd: string; envKeys: string[] };
+        const args = seen.args.join(' ');
+        expect(args).toContain('--model gpt-6-astra');
+        expect(args).toContain('model_reasoning_effort="medium"');
+        expect(args).toContain('--sandbox read-only');
+        expect(args).toContain('features.shell_tool=false');
+        expect(args).toContain('--ignore-rules');
+        expect(args).toContain('features.view_image=false');
+        expect(seen.promptHead).toBe('SYSTEM TEXT HERE\n\na ');
+        expect(seen.envKeys).not.toContain('WORLDSMITH_MODEL_KEY');
+        // Dočasný adresář, ne kořen repa – a po konci volání už neexistuje.
+        expect(seen.cwd).not.toBe(process.cwd());
+        expect(existsSync(seen.cwd)).toBe(false);
+        expect(outcome.usage).toEqual({ inputTokens: 12000, outputTokens: 300 });
+        expect(outcome.provenance).toMatchObject({ source: 'codex-cli', model: 'gpt-6-astra' });
+      });
+    } finally {
+      if (previousKey === undefined) delete process.env.WORLDSMITH_MODEL_KEY;
+      else process.env.WORLDSMITH_MODEL_KEY = previousKey;
+    }
   });
 
   it('turn.failed je odmítnutí, ne výpadek', async () => {
@@ -1088,6 +1102,41 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
       expect(outcome.detail).toContain('timeout');
     });
   });
+
+  it('po stropu zabije celý strom, i vnuka za obalem', async () => {
+    const marker = join(scripts, 'tree.cjs.grandchild');
+    // Vnuk stojí za nativní binárkou, kterou skutečný `codex.js` spouští jako
+    // dítě. Na Windows `detached`, jinak ho libuv strčí do job objectu obalu
+    // a umře s ním sám – test by nepoznal zabitý strom od zabitého obalu
+    // (totéž v `scripts/__tests__/fake-codex.mjs`).
+    const file = fakeCodex('tree', [okStream[0]], [
+      "  const grandchild = require('node:child_process').spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore', detached: process.platform === 'win32' });",
+      `  require('node:fs').writeFileSync(${JSON.stringify(marker)}, String(grandchild.pid));`,
+      '  setInterval(() => {}, 1000);',
+    ].join('\n'));
+    const alive = (pid: number) => {
+      try {
+        process.kill(pid, 0);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    let grandchild = 0;
+    try {
+      await withScript(file, async () => {
+        const outcome = await upstreamBranch(liveConfig({ ...CLI_ENV, WORLDSMITH_UPSTREAM_TIMEOUT_MS: '2000' })).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
+        expect(outcome).toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE' });
+        grandchild = Number(readFileSync(marker, 'utf8'));
+        expect(grandchild).toBeGreaterThan(0);
+        const deadline = Date.now() + 10_000;
+        while (alive(grandchild) && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 100));
+        expect(alive(grandchild), 'vnuk přežil timeout a dál by pálil předplatné').toBe(false);
+      });
+    } finally {
+      if (grandchild > 0 && alive(grandchild)) process.kill(grandchild);
+    }
+  }, 20_000);
 
   it('bez codex-cli v koncovém bodu zůstává výchozí strop 120 s, s ním 240 s', () => {
     expect(liveConfig().timeoutMs).toBe(120_000);

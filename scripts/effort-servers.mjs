@@ -153,7 +153,9 @@ async function start() {
     // (`detached` + `unref`) je prostředí agenta 14. 9. 2026 do pár minut
     // uklidilo všech sedm naráz, s čistým logem; `--start` proto patří do úlohy
     // na pozadí, která drží rodiče.
-    const child = spawn(process.execPath, [nextBin, 'start', '-p', String(variant.port)], { cwd: ROOT, env, windowsHide: true, stdio: ['ignore', log, log] });
+    // `-H 127.0.0.1`: bez něj `next start` poslouchá na 0.0.0.0 a s živou větví
+    // `codex-cli` by větu na cizí předplatné poslal kdokoli z LAN.
+    const child = spawn(process.execPath, [nextBin, 'start', '-p', String(variant.port), '-H', '127.0.0.1'], { cwd: ROOT, env, windowsHide: true, stdio: ['ignore', log, log] });
     child.on('exit', (code) => console.log(`exited   ${variant.id}  code ${code}`));
     pids[variant.id] = child.pid;
     console.log(`started  ${variant.id}  :${variant.port}  pid ${child.pid}`);

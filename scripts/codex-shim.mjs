@@ -8,7 +8,9 @@
  *
  * Volání codexu je totéž jako `generateViaCodexCli()` v `src/server/upstream.ts`
  * (tytéž přepínače, prompt `system + "\n\n" + user`, poslední `agent_message`),
- * s pěti rozdíly z debaty 15. 9. 2026 (`.claude/debate/codex-shim-decision.md`):
+ * s pěti rozdíly z debaty 15. 9. 2026 (`.claude/debate/codex-shim-decision.md`).
+ * Prázdný adresář, allowlist prostředí a zabíjení stromu od `ship-codexcli`
+ * (15. 9. 2026) umí i přímá cesta; zbylé tři rozdíly platí dál:
  *
  *   - model a úsilí jen z `CODEX_SHIM_MODEL` / `CODEX_SHIM_EFFORT`, pole `model`
  *     v požadavku se ignoruje;
