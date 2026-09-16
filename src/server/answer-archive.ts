@@ -169,14 +169,14 @@ export function wouldBeCommitted(dir: string, cwd: string = process.cwd(), file 
   while (!existsSync(base) && dirname(base) !== base) base = dirname(base);
   const env = { ...process.env };
   for (const key of Object.keys(env)) if (REPO_REDIRECT.test(key)) delete env[key];
-  const ignored = spawnSync('git', ['-C', base, 'check-ignore', '-q', '--', join(target, file)], { stdio: 'ignore', env }).status;
+  const ignored = spawnSync('git', ['-C', base, '-c', 'core.excludesFile=', 'check-ignore', '-q', '--', join(target, file)], { stdio: 'ignore', env }).status;
   if (ignored === 0) return false;
   // Junction nebo symlink git projde, cesta na disku ne – soudí se obě.
   if (ignored === 128) return insideRepo(base) || insideRepo(realpathSync.native(base));
   return true;
 }
 
-/** Proměnné, které gitu přesměrují repo, hledání nebo konfiguraci (i `core.excludesFile`). */
+/** Proměnné, které gitu přesměrují repo, hledání nebo konfiguraci. Globální `core.excludesFile` (i přes `HOME`) vypíná `-c` výš: soudí jen pravidla repa. */
 const REPO_REDIRECT = /^GIT_(DIR|WORK_TREE|INDEX_FILE|CEILING_DIRECTORIES|COMMON_DIR|CONFIG.*)$/i;
 
 /** Leží `dir` nebo některý jeho rodič vedle `.git` (adresáře i souboru worktree)? */

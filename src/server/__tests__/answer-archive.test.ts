@@ -209,6 +209,14 @@ describe('archiv odpovědí modelu', () => {
     vi.stubEnv('GIT_CONFIG_KEY_0', 'core.excludesFile');
     vi.stubEnv('GIT_CONFIG_VALUE_0', excludes);
     expect(wouldBeCommitted('src/server/answers')).toBe(true);
+
+    // Totéž přes globální konfiguraci v podvrženém domově.
+    vi.unstubAllEnvs();
+    const home = scratch('worldsmith-archive-home-');
+    writeFileSync(join(home, '.gitconfig'), `[core]\n\texcludesFile = ${excludes.replaceAll('\\', '/')}\n`);
+    vi.stubEnv('HOME', home);
+    vi.stubEnv('XDG_CONFIG_HOME', home);
+    expect(wouldBeCommitted('src/server/answers')).toBe(true);
   });
 
   it('bez nastavené proměnné nezapíše na disk nic', async () => {
