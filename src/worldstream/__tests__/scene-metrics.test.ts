@@ -73,14 +73,17 @@ describe('scene metrics', () => {
     const floating: GeomProgram = {
       version: GEOM_VERSION,
       nodes: [
-        { kind: 'fixture', variant: 'crate', at: [0, 3, 0] },
-        { kind: 'fixture', variant: 'crate', at: [0.1, 3, 0] },
-        { kind: 'group', children: [0, 1] },
+        { kind: 'fixture', variant: 'crate', at: [0, 0.3, 0] },
+        { kind: 'fixture', variant: 'crate', at: [0.1, 0.3, 0] },
+        { kind: 'panel', variant: 'window', at: [5, 3, 0] },
+        { kind: 'group', children: [0, 1, 2] },
       ],
-      root: 2,
+      root: 3,
     } as GeomProgram;
-    const hanging = sceneMetrics({ geometry: floating, objects: [placed(crates, 2)], shapes: [] }, [crates]);
-    expect(hanging.unsupportedPieces).toBe(2);
+    // Report měří scénu, jak ji uvidí kamera – po usazení (`src/geom/settle.ts`):
+    // bedny stojí na podlaze a prolínají se, okno zůstává viset nahoře.
+    const hanging = sceneMetrics({ geometry: floating, objects: [placed(crates, 3)], shapes: [] }, [crates]);
+    expect(hanging.unsupportedPieces).toBe(1);
     expect(hanging.collisions).toBe(1);
     expect(report.collisions).toBe(0);
   });

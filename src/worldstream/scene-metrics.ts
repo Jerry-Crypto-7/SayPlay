@@ -17,7 +17,7 @@ import type { WorldstreamBlueprint } from './schema';
 export interface SceneMetrics {
   /** Umístěné kusy kitu po rozvinutí plus hrdinské tvary. */
   readonly visiblePieces: number;
-  /** Kusy kitu, které nic nedrží (`src/geom/contact.ts`). */
+  /** Kusy kitu, které nic nedrží ani po usazení (`src/geom/contact.ts`, `settle.ts`). */
   readonly unsupportedPieces: number;
   /** Dvojice kusů kitu, které se prolínají. */
   readonly collisions: number;

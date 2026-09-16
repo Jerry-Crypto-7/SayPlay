@@ -17,6 +17,7 @@ import {
   trianglesOfGeometry,
 } from './compile';
 import { parseGeomProgram, pieceIdOf, type GeomNode, type GeomProgram } from './program';
+import { settlePlacements } from './settle';
 
 /**
  * Druhá cesta kompilátoru: z programu udělá **plán rozmístění**, ne jednu síť.
@@ -258,10 +259,15 @@ export function bakePlacements(placements: readonly GeomPlacement[]): BufferGeom
  * do jedné sítě a po něm už ta část není složeninou kusů, kterou by šlo
  * vybrat. Objekt, který si takový řádek nárokoval, spadne o příčku níž na
  * hlínu — což je vidět, na rozdíl od tichého zmizení.
+ *
+ * **Kus, který nic nedrží, se usadí** na plochu pod sebou (`settle.ts`, P19
+ * T9) — to je to, co kamera uvidí. `settle: false` vrátí plán přesně podle
+ * programu; chce ho orákulum, které porovnává tuhle cestu se slučující.
  */
 export function compilePlacements(
   input: GeomProgram | unknown,
   owners?: ReadonlySet<number>,
+  { settle = true }: { readonly settle?: boolean } = {},
 ): readonly GeomPlacement[] {
   const program = parseGeomProgram(input);
 
@@ -297,5 +303,5 @@ export function compilePlacements(
     throw new Error('program compiled to an empty geometry: nothing is left after the carves');
   }
 
-  return root;
+  return settle ? settlePlacements(root) : root;
 }
