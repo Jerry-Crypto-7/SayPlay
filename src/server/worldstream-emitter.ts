@@ -3,6 +3,7 @@ import { serverPhaseObserver } from './worldstream-metrics';
 /** Shared provider and spend reservation for world and source proposals. */
 import type { UpstreamRequest } from '../model/prompt';
 import type { BlueprintEmitter } from '../model/worldstream-repair';
+import { answerArchive } from './answer-archive';
 import { killState } from './kill-switch';
 import { costUsd, processSpendCap, SpendRefusalError } from './spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from './upstream';
@@ -35,6 +36,12 @@ export async function cloudEmitter(): Promise<BlueprintEmitter | null> {
 
   const branch = upstreamBranch(config);
   const cap = WORLDSTREAM_SPEND_CAP;
+  // **Archiv patří sem, protože klíč a adresu drží jedině tahle vrstva.**
+  // Jeden emitor je jedna relace: route ho staví na požadavek, a to ještě
+  // dřív, než relace dostane své `sessionId` (`sessions/route.ts:448` proti
+  // `:540`), takže si archiv razí vlastní id a volání pod ním čísluje.
+  const archive = answerArchive(process.env, config);
+  let calls = 0;
 
   return async (request: UpstreamRequest): Promise<unknown> => {
     const call = { prompt: request.user, request };
@@ -56,6 +63,21 @@ export async function cloudEmitter(): Promise<BlueprintEmitter | null> {
     }
 
     await reservation.settle(outcome.usage === null ? 'unknown' : costUsd(outcome.usage, branch.pricing));
+
+    // **Archivuje se i odmítnutá odpověď.** Otázka, kvůli které archiv vznikl
+    // („kde se to akvárium ztratilo"), se u věty, kterou model odmítl napsat,
+    // odpovídá právě tím odmítnutím. **Zápis nesmí nikdy zabít větu** — svět
+    // pro porotce je to, o co tu jde, archiv je poznámka pro autora.
+    if (archive !== null) {
+      calls += 1;
+      try {
+        await archive.write(calls, request, outcome.ok ? outcome.body : { error: outcome.reason, detail: outcome.detail });
+      } catch {
+        // Úmyslně tiše: cesta, na kterou nejde psát, je vada měřicího běhu,
+        // ne relace u porotce.
+      }
+    }
+
     if (!outcome.ok) throw new Error(`${outcome.reason}: ${outcome.detail}`);
     return outcome.body;
   };
