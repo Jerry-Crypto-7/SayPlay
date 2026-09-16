@@ -49,11 +49,24 @@ export default function WorldStatus({
    * Co planner z věty přečetl, dokud compiler ještě píše. Jen v `building`
    * a jen dokud na plátně nic není: compiler je nejdelší volání celé cesty
    * (12. 9. 2026: 64 s proti 8 s planneru) a „Writing the world." po celou tu
-   * dobu neřekne, jestli se věta vůbec pochopila. Setting a teze jsou to
-   * jediné, co se v tu chvíli dá pravdivě říct — a jsou to modelova slova,
+   * dobu neřekne, jestli se věta vůbec pochopila. Jsou to modelova slova,
    * ne naše.
+   *
+   * **Hrdinové a abstrakce přibyly v P18 T5.** Věta o uspořádání sama neřekne,
+   * které objekty ze zadání porotce dostane; `heroObjects` jsou jeho vlastní
+   * slova zpátky, a `unsupported` je to, co model vědomě neumí — a co se
+   * **vypíše místo zamlčení**, protože zamlčená abstrakce se pozná až na
+   * hotovém světě, kde vypadá jako vada.
+   *
+   * Seznamy jsou nepovinné: `classic/page.tsx` záměr neposílá vůbec a rámec
+   * bez seznamu o hrdinech nic netvrdí.
    */
-  readonly intent?: { readonly setting: string; readonly spatialThesis: string } | null;
+  readonly intent?: {
+    readonly setting: string;
+    readonly spatialThesis: string;
+    readonly heroObjects?: readonly string[];
+    readonly unsupported?: readonly string[];
+  } | null;
   /**
    * Proč se svět nepostavil, **větou ze serveru nebo ze stavby** — ne kódem
    * a ne výjimkou poskytovatele; do proudu relace se nic jiného nedostane
@@ -66,6 +79,15 @@ export default function WorldStatus({
   readonly detail?: string | null;
 }) {
   const broken = state === 'broken';
+  /**
+   * Čte se modelův záměr právě teď?
+   *
+   * `detailPending` ho přebíjí schválně: v tu chvíli scéna na plátně **už
+   * stojí** a věta o tom, co se teprve čte, by lhala o pořadí.
+   */
+  const reading = state === 'building' && !detailPending ? (intent ?? null) : null;
+  const heroes = reading?.heroObjects ?? [];
+  const unsupported = reading?.unsupported ?? [];
   return (
     <p
       // Keep one polite region through asynchronous phases; an urgent fault
@@ -79,13 +101,25 @@ export default function WorldStatus({
     >
       {state === 'building' && detailPending
         ? 'The validated scene is ready to use. Building its shape detail.'
-        : state === 'building' && intent !== null
-          ? `Read as ${intent.setting}. Writing its geometry.`
+        : reading !== null
+          ? `Read as ${reading.setting}. Writing its geometry.`
           : SENTENCE[state]}
-      {state === 'building' && !detailPending && intent !== null ? (
+      {reading !== null ? (
         <span data-testid="world-intent" style={DETAIL}>
           {' '}
-          {intent.spatialThesis}
+          {reading.spatialThesis}
+        </span>
+      ) : null}
+      {heroes.length > 0 ? (
+        <span data-testid="world-intent-heroes" style={DETAIL}>
+          {' '}
+          {`Building: ${heroes.join(', ')}.`}
+        </span>
+      ) : null}
+      {unsupported.length > 0 ? (
+        <span data-testid="world-intent-unsupported" style={DETAIL}>
+          {' '}
+          {`Not simulated: ${unsupported.join(', ')}.`}
         </span>
       ) : null}
       {broken && detail !== null && detail !== '' ? (

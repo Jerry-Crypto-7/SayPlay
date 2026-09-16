@@ -95,8 +95,19 @@ export interface ClientState {
    * world." bez jediné známky, že se věta vůbec pochopila. Setting a teze
    * jsou to, co se dá v tu chvíli pravdivě říct. Snapshot je nenese, takže
    * po reconnectu zůstává to, co klient viděl v rámci.
+   *
+   * **Čtyři pole, ne dvě — P18 T5.** Server posílá celou čtveřici od
+   * `sessions.ts:952` a klient si z ní do té doby bral půlku: hrdiny i seznam
+   * abstrakcí zahazoval `intentOf()`, takže se porotce za celý compiler
+   * nedozvěděl, které objekty ze své věty dostane a co systém neumí.
+   * Seznamy jsou vždycky pole — chybějící seznam je prázdný, viz `stringList`.
    */
-  readonly intent: { readonly setting: string; readonly spatialThesis: string } | null;
+  readonly intent: {
+    readonly setting: string;
+    readonly spatialThesis: string;
+    readonly heroObjects: readonly string[];
+    readonly unsupported: readonly string[];
+  } | null;
   /** Veřejná věta o poruše. Text výjimky poskytovatele sem nikdy nejde. */
   readonly fault: string | null;
 }
@@ -149,6 +160,19 @@ function record(payload: unknown): Record<string, unknown> {
 
 function text(value: unknown): string | null {
   return typeof value === 'string' && value !== '' ? value : null;
+}
+
+/**
+ * Seznam řetězců z rámce, nebo prázdný.
+ *
+ * Rámec jde po drátě a jeho payload je `unknown`, takže se **soudí každý
+ * prvek**, ne jen `Array.isArray`. Jediné číslo uvnitř by jinak doteklo až do
+ * `join()` ve stavové větě a porotce by četl „7" mezi jmény objektů.
+ */
+function stringList(value: unknown): readonly string[] {
+  return Array.isArray(value) && value.every((entry) => typeof entry === 'string')
+    ? (value as readonly string[])
+    : [];
 }
 
 /**
@@ -281,11 +305,27 @@ function apply(state: ClientState, event: SessionEvent): ClientState {
   };
 }
 
-/** Jen dvě pole z `intent.ready`, a jen když jsou obě řetězce; jinak se nic netvrdí. */
+/**
+ * Záměr z `intent.ready`. **Rozhodují dvě pole, nesou se čtyři.**
+ *
+ * Setting a teze jsou povinné: bez nich se o pochopení věty nedá tvrdit nic a
+ * stav zůstane `null`. Seznamy povinné nejsou a **chybějící seznam je prázdný
+ * seznam** — na rozdíl od mřížky výš, kde se ty dva stavy slít nesmějí. Tady
+ * ani jeden nic netvrdí: planner smí `unsupported` vrátit prázdné vědomě
+ * („nic jsem neabstrahoval") a rámec, který pole nenese, o hrdinech mlčí
+ * stejně. Věta nad tím pak buď má co vypsat, nebo popisek nenapíše vůbec.
+ */
 function intentOf(fields: Record<string, unknown>): ClientState['intent'] {
   const setting = text(fields.setting);
   const spatialThesis = text(fields.spatialThesis);
-  return setting === null || spatialThesis === null ? null : { setting, spatialThesis };
+  return setting === null || spatialThesis === null
+    ? null
+    : {
+        setting,
+        spatialThesis,
+        heroObjects: stringList(fields.heroObjects),
+        unsupported: stringList(fields.unsupported),
+      };
 }
 
 /**

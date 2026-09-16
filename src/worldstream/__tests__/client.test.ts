@@ -131,11 +131,69 @@ describe('reduceEvent', () => {
     const state = feed([events[0], told]);
     expect(state.phase).toBe('intent');
     expect(state.blueprint).toBeNull();
-    expect(state.intent).toEqual({ setting: 'a drowned cathedral', spatialThesis: 'One nave, flooded to the capitals.' });
+    // Rámec bez seznamů je pořád platný záměr: **chybějící seznam je prázdný
+    // seznam**, ne zahozený rámec. Setting a teze jsou jediná dvě povinná pole.
+    expect(state.intent).toEqual({
+      setting: 'a drowned cathedral',
+      spatialThesis: 'One nave, flooded to the capitals.',
+      heroObjects: [],
+      unsupported: [],
+    });
 
     // Blueprint ho nepřepíše — věta o pochopení platí, dokud relace žije.
     const rest = events.slice(events.indexOf(intentFrame) + 1);
     expect(feed(rest, state).intent).toEqual(state.intent);
+  });
+
+  /**
+   * **Server ta dvě pole posílá už dávno a klient je do T5 zahazoval.**
+   * `sessions.ts:952` nese `heroObjects` i `unsupported` z plannera, `intentOf()`
+   * si ale bral jen `setting` a `spatialThesis` — takže jediné, co porotce po
+   * dobu stodesetivteřinového compileru četl, byla jedna věta o uspořádání.
+   * Pin je na tom, že rámec **projde celý**: kdyby se seznamy zase ztratily,
+   * stránka by vypadala úplně stejně jako předtím a nic by nezčervenalo.
+   */
+  it('`intent.ready` donese i hrdiny a to, co model neumí', () => {
+    const { events } = generation();
+    const intentFrame = events.find((event) => event.type === 'intent.ready')!;
+    const told = {
+      ...intentFrame,
+      payload: {
+        setting: 'a drowned cathedral',
+        spatialThesis: 'One nave, flooded to the capitals.',
+        heroObjects: ['the flooded nave', 'the drowned altar'],
+        unsupported: ['the water is a surface, not a fluid you can displace'],
+      },
+    };
+
+    const state = feed([events[0], told]);
+
+    expect(state.intent?.heroObjects).toEqual(['the flooded nave', 'the drowned altar']);
+    expect(state.intent?.unsupported).toEqual([
+      'the water is a surface, not a fluid you can displace',
+    ]);
+  });
+
+  it('seznam, který není seznamem řetězců, se zahodí a záměr přežije', () => {
+    // Rámec je `unknown` a čte se z drátu. Číslo v `heroObjects` nesmí shodit
+    // stavovou větu — teze je pořád pravda a je to to hlavní, co se říká.
+    const { events } = generation();
+    const intentFrame = events.find((event) => event.type === 'intent.ready')!;
+    const told = {
+      ...intentFrame,
+      payload: {
+        setting: 'a drowned cathedral',
+        spatialThesis: 'One nave, flooded to the capitals.',
+        heroObjects: [7, 'the drowned altar'],
+        unsupported: 'not an array',
+      },
+    };
+
+    const state = feed([events[0], told]);
+
+    expect(state.intent?.setting).toBe('a drowned cathedral');
+    expect(state.intent?.heroObjects).toEqual([]);
+    expect(state.intent?.unsupported).toEqual([]);
   });
 
   it('je idempotentní: tentýž rámec podruhé stavem nehne', () => {
