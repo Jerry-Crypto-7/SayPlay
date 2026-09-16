@@ -25,7 +25,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, realpathSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { homedir, tmpdir } from 'node:os';
@@ -77,7 +77,7 @@ function homesOf(env: Record<string, string | undefined>): readonly RegExp[] {
   // (`upstream.ts`). Bere se část za `X:\Users\` od kořene disku; společné
   // profily nejsou jméno člověka a maskovat je by jen rozžvýkalo text.
   for (const temp of [env.TEMP, env.TMP, tmpdir()]) {
-    const name = temp === undefined ? undefined : /^[A-Za-z]:[\\/]Users[\\/]([^\\/]{3,})/i.exec(temp)?.[1];
+    const name = temp === undefined ? undefined : /^(?:\\\\\?\\)?[A-Za-z]:[\\/]Users[\\/]([^\\/]{3,})/i.exec(temp)?.[1];
     if (name !== undefined && !SHARED_PROFILES.has(name.toLowerCase())) names.add(name);
   }
   const escape = (literal: string): string => literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -163,20 +163,21 @@ function redact(value: unknown, secrets: readonly string[], homes: readonly RegE
  * říct, že soubory ven nepůjdou. Proměnné `GIT_*`, které repo přesměrují,
  * se gitu nepředávají: soudí se cesta, ne prostředí serveru.
  */
-export function wouldBeCommitted(dir: string, cwd: string = process.cwd()): boolean {
+export function wouldBeCommitted(dir: string, cwd: string = process.cwd(), file = 'x-1.json'): boolean {
   const target = resolve(cwd, dir);
   let base = target;
   while (!existsSync(base) && dirname(base) !== base) base = dirname(base);
   const env = { ...process.env };
-  for (const key of Object.keys(env)) if (REPO_REDIRECTS.has(key.toUpperCase())) delete env[key];
-  // Jméno ve tvaru, jaký `write()` opravdu zapíše: `<caseId>-<call>.json`.
-  const ignored = spawnSync('git', ['-C', base, 'check-ignore', '-q', '--', join(target, 'x-1.json')], { stdio: 'ignore', env }).status;
+  for (const key of Object.keys(env)) if (REPO_REDIRECT.test(key)) delete env[key];
+  const ignored = spawnSync('git', ['-C', base, 'check-ignore', '-q', '--', join(target, file)], { stdio: 'ignore', env }).status;
   if (ignored === 0) return false;
-  if (ignored === 128) return insideRepo(base);
+  // Junction nebo symlink git projde, cesta na disku ne – soudí se obě.
+  if (ignored === 128) return insideRepo(base) || insideRepo(realpathSync.native(base));
   return true;
 }
 
-const REPO_REDIRECTS = new Set(['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_CEILING_DIRECTORIES', 'GIT_COMMON_DIR']);
+/** Proměnné, které gitu přesměrují repo, hledání nebo konfiguraci (i `core.excludesFile`). */
+const REPO_REDIRECT = /^GIT_(DIR|WORK_TREE|INDEX_FILE|CEILING_DIRECTORIES|COMMON_DIR|CONFIG.*)$/i;
 
 /** Leží `dir` nebo některý jeho rodič vedle `.git` (adresáře i souboru worktree)? */
 function insideRepo(dir: string): boolean {
@@ -234,8 +235,14 @@ export function answerArchive(
         request: redact({ model: request.model, system: request.system, user: request.user }, secrets, homes),
         answer: redact(answer, secrets, homes),
       };
+      // Jméno se soudí celé, jak se zapíše: vzor `*-1.json` by pustil první volání a vzal druhé.
+      const file = `${caseId}-${String(call)}.json`;
+      if (wouldBeCommitted(dir, process.cwd(), file)) {
+        console.warn(`[worldstream] skipped ${file}: git would commit it or cannot tell`);
+        return;
+      }
       await mkdir(dir, { recursive: true });
-      await writeFile(join(dir, `${caseId}-${String(call)}.json`), JSON.stringify(entry, null, 2), 'utf8');
+      await writeFile(join(dir, file), JSON.stringify(entry, null, 2), 'utf8');
     },
   };
 }

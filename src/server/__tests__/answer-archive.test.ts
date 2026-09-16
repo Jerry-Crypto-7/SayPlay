@@ -23,7 +23,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -178,6 +178,37 @@ describe('archiv odpovědí modelu', () => {
     expect(spawnSync('git', ['init', '-q', repo]).status).toBe(0);
     writeFileSync(join(repo, '.gitignore'), 'answer.json\n');
     expect(wouldBeCommitted(join(repo, 'answers'))).toBe(true);
+  });
+
+  it('každé volání soudí své vlastní jméno, ne jen první', async () => {
+    const repo = scratch('worldsmith-archive-each-');
+    expect(spawnSync('git', ['init', '-q', repo]).status).toBe(0);
+    writeFileSync(join(repo, '.gitignore'), '*-1.json\n');
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const dir = join(repo, 'answers');
+    const archive = answerArchive({ WORLDSMITH_ARCHIVE_DIR: dir }, liveConfig());
+    await archive!.write(REQUEST, { n: 1 });
+    await archive!.write(REQUEST, { n: 2 });
+    expect(readdirSync(dir)).toEqual([`${archive!.caseId}-1.json`]);
+  });
+
+  /** Git junction projde a ohlásí „mimo repozitář" (128); cesta na disku `.git` nemá. */
+  it('junction do cizího repa archiv vypne', () => {
+    const repo = scratch('worldsmith-archive-junction-');
+    expect(spawnSync('git', ['init', '-q', repo]).status).toBe(0);
+    mkdirSync(join(repo, 'sub'));
+    const link = join(scratch('worldsmith-archive-link-'), 'link');
+    symlinkSync(join(repo, 'sub'), link, 'junction');
+    expect(wouldBeCommitted(link)).toBe(true);
+  });
+
+  it('konfigurace gitu z prostředí ignorování nepodvrhne', () => {
+    const excludes = join(scratch('worldsmith-archive-excludes-'), 'ignore');
+    writeFileSync(excludes, '*\n');
+    vi.stubEnv('GIT_CONFIG_COUNT', '1');
+    vi.stubEnv('GIT_CONFIG_KEY_0', 'core.excludesFile');
+    vi.stubEnv('GIT_CONFIG_VALUE_0', excludes);
+    expect(wouldBeCommitted('src/server/answers')).toBe(true);
   });
 
   it('bez nastavené proměnné nezapíše na disk nic', async () => {
@@ -360,6 +391,13 @@ describe('archiv odpovědí modelu', () => {
     const raw = readFileSync(join(dir, readdirSync(dir)[0]!), 'utf8');
     expect(raw).not.toContain('JANEDO~1');
     expect(raw).toContain('codex-x denied');
+  });
+
+  it('krátké jméno najde i v TEMP s předponou \\\\?\\', async () => {
+    const dir = scratch('worldsmith-archive-long-');
+    const archive = answerArchive({ WORLDSMITH_ARCHIVE_DIR: dir, TEMP: '\\\\?\\C:\\Users\\JANEDO~1\\AppData\\Local\\Temp' }, liveConfig());
+    await archive!.write(REQUEST, { detail: 'owner JANEDO~1 denied' });
+    expect(readFileSync(join(dir, readdirSync(dir)[0]!), 'utf8')).not.toContain('JANEDO~1');
   });
 
   it('z TEMP bere jen jméno pod X:\\Users, ne společný profil ani hlubší Users', async () => {
