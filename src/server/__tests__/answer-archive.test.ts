@@ -278,10 +278,42 @@ describe('archiv odpovědí modelu', () => {
   it('krátký domov jako HOME=/ nepřepíše každé lomítko', async () => {
     const dir = scratch('worldsmith-archive-root-');
     const archive = answerArchive({ WORLDSMITH_ARCHIVE_DIR: dir, HOME: '/', USERPROFILE: 'C:' }, liveConfig());
-    await archive!.write(1, REQUEST, { detail: 'see /usr/local/bin/codex' });
+    await archive!.write(REQUEST, { detail: 'see /usr/local/bin/codex' });
 
     const raw = readFileSync(join(dir, readdirSync(dir)[0]!), 'utf8');
     expect(raw).toContain('see /usr/local/bin/codex');
+  });
+
+  /**
+   * Druhá věta staví nový emitor. S id relace musí pokračovat v číslování
+   * téže relace, jinak nový soubor nese `call: 1` a nedá se spojit se světem.
+   */
+  it('dvě věty nad touž relací skončí pod týmž caseId s rostoucím call', async () => {
+    const dir = scratch('worldsmith-archive-session-');
+    configure(dir);
+    const sessionId = 'f0e1d2c3-b4a5-4697-8899-aabbccddeeff';
+
+    const { cloudEmitter } = await import('../worldstream-emitter');
+    await (await cloudEmitter(sessionId))!(REQUEST);
+    await (await cloudEmitter(sessionId))!({ ...REQUEST, user: 'make the aquarium bigger' });
+
+    const entries = readdirSync(dir).map(
+      (name) => JSON.parse(readFileSync(join(dir, name), 'utf8')) as { caseId: string; call: number },
+    );
+    expect(entries.map((entry) => entry.caseId)).toEqual([sessionId, sessionId]);
+    expect(entries.map((entry) => entry.call).sort()).toEqual([1, 2]);
+  });
+
+  it('id relace, které by opustilo adresář, nahradí vlastním', async () => {
+    const dir = scratch('worldsmith-archive-escape-');
+    configure(join(dir, 'answers'));
+
+    const { cloudEmitter } = await import('../worldstream-emitter');
+    await (await cloudEmitter('../escaped'))!(REQUEST);
+
+    expect(readdirSync(dir)).toEqual(['answers']);
+    const [name] = readdirSync(join(dir, 'answers'));
+    expect(name).not.toContain('escaped');
   });
 
   it('chyba zápisu neshodí generování světa', async () => {

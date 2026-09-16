@@ -113,7 +113,7 @@ export async function POST(
   context: { params: Promise<{ sessionId: string }> },
 ): Promise<Response> {
   const { sessionId } = await context.params;
-  return createChange(request, sessionId, await cloudEmitter());
+  return createChange(request, sessionId, await cloudEmitter(sessionId));
 }
 
 /**

@@ -72,8 +72,19 @@ export interface ArchiveEntry {
 export interface AnswerArchive {
   /** Id relace, pod kterým tenhle archiv píše. Je i v názvu souboru. */
   readonly caseId: string;
-  write(call: number, request: UpstreamRequest, answer: unknown): Promise<void>;
+  /** Zapíše další volání relace; číslo volání roste napříč emitory téže relace. */
+  write(request: UpstreamRequest, answer: unknown): Promise<void>;
 }
+
+/**
+ * Poslední číslo volání na relaci. Druhá věta staví nový emitor, a kdyby se
+ * počítalo v emitoru, spadla by každá na `call: 1` a přepsala soubor první.
+ * Plní se jen s nastaveným archivem, tedy v měřicím běhu, ne u porotce.
+ */
+const callsByCase = new Map<string, number>();
+
+/** Id relace jde do názvu souboru, takže projde jen tvar, který cestu neopustí. */
+const CASE_ID = /^[A-Za-z0-9_-]{1,64}$/;
 
 /** Nahradí známé literály v celém stromu: tajemství značkou `[redacted]`, domov `[home]`. Vstup se nemění. */
 function redact(value: unknown, secrets: readonly string[], homes: readonly string[]): unknown {
@@ -118,6 +129,8 @@ export function wouldBeCommitted(dir: string, cwd: string = process.cwd()): bool
 export function answerArchive(
   env: Record<string, string | undefined>,
   config: UpstreamConfig,
+  /** Id existující relace (druhá věta); bez něj si archiv razí vlastní. */
+  sessionId?: string,
 ): AnswerArchive | null {
   const dir = env.WORLDSMITH_ARCHIVE_DIR;
   if (dir === undefined || dir.length === 0) return null;
@@ -141,11 +154,13 @@ export function answerArchive(
     config.endpoint === CODEX_CLI_ENDPOINT ? '' : config.endpoint,
   ].filter((secret) => secret.length > 0);
   const homes = homesOf(env);
-  const caseId = randomUUID();
+  const caseId = sessionId !== undefined && CASE_ID.test(sessionId) ? sessionId : randomUUID();
 
   return {
     caseId,
-    async write(call: number, request: UpstreamRequest, answer: unknown): Promise<void> {
+    async write(request: UpstreamRequest, answer: unknown): Promise<void> {
+      const call = (callsByCase.get(caseId) ?? 0) + 1;
+      callsByCase.set(caseId, call);
       const entry: ArchiveEntry = {
         caseId,
         call,

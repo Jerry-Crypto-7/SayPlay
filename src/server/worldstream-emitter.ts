@@ -24,7 +24,7 @@ export const WORLDSTREAM_SPEND_CAP = processSpendCap();
  * kterém je ta příčina vidět, a `RULES.md` §3.3 mu dává právo zkoušet vlastní
  * věty i tehdy, když je nasazení bez klíče.
  */
-export async function cloudEmitter(): Promise<BlueprintEmitter | null> {
+export async function cloudEmitter(sessionId?: string): Promise<BlueprintEmitter | null> {
   // **Kill switch `upstream` vypadá odsud stejně jako chybějící klíč**, a je to
   // schválně: obě cesty končí `session.failed` s veřejnou větou „the model could
   // not be reached", takže porotci zůstane proud, ve kterém je ta příčina vidět.
@@ -37,11 +37,11 @@ export async function cloudEmitter(): Promise<BlueprintEmitter | null> {
   const branch = upstreamBranch(config);
   const cap = WORLDSTREAM_SPEND_CAP;
   // **Archiv patří sem, protože klíč a adresu drží jedině tahle vrstva.**
-  // Jeden emitor je jedna relace: route ho staví na požadavek, a to ještě
-  // dřív, než relace dostane své `sessionId` (`sessions/route.ts:448` proti
-  // `:540`), takže si archiv razí vlastní id a volání pod ním čísluje.
-  const archive = answerArchive(process.env, config);
-  let calls = 0;
+  // Stavba světa staví emitor dřív, než relace dostane své `sessionId`
+  // (`sessions/route.ts:448` proti `:540`), takže si archiv razí vlastní id.
+  // Druhá věta (`changes/route.ts`) id relace zná a předá ho — její volání
+  // pak pokračují v číslování téže relace.
+  const archive = answerArchive(process.env, config, sessionId);
   let archiveFailed = false;
 
   return async (request: UpstreamRequest): Promise<unknown> => {
@@ -70,9 +70,8 @@ export async function cloudEmitter(): Promise<BlueprintEmitter | null> {
     // odpovídá právě tím odmítnutím. **Zápis nesmí nikdy zabít větu** — svět
     // pro porotce je to, o co tu jde, archiv je poznámka pro autora.
     if (archive !== null) {
-      calls += 1;
       try {
-        await archive.write(calls, request, outcome.ok ? outcome.body : { error: outcome.reason, detail: outcome.detail });
+        await archive.write(request, outcome.ok ? outcome.body : { error: outcome.reason, detail: outcome.detail });
       } catch (thrown) {
         // **Svět se kvůli archivu nezruší nikdy** — porotci jde o svět, archiv
         // je poznámka pro autora. Úplně tiše to ale být nesmí (nález nezávislé
