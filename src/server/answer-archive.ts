@@ -25,7 +25,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, realpathSync } from 'node:fs';
+import { existsSync, lstatSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { homedir, tmpdir } from 'node:os';
@@ -162,17 +162,26 @@ function redact(value: unknown, secrets: readonly string[], homes: readonly RegE
  * **Chybějící git nebo jiná chyba archiv vypne taky** – bez odpovědi se nedá
  * říct, že soubory ven nepůjdou. Proměnné `GIT_*`, které repo přesměrují,
  * se gitu nepředávají: soudí se cesta, ne prostředí serveru.
+ *
+ * ⚠ **Neviditelné zůstává repo s gitdirem jinde** (`--git-dir=~/.dotfiles
+ * --work-tree=~`): nad cílem žádné `.git` neleží a git odpoví 128. Archiv proto
+ * patří do ignorované cesty známého repa, ne do domova.
  */
 export function wouldBeCommitted(dir: string, cwd: string = process.cwd(), file = 'x-1.json'): boolean {
   const target = resolve(cwd, dir);
+  // Odkaz kdekoli v cestě se odmítá celý: nefunkční junction `existsSync` nevidí,
+  // git za ním soudí jiný adresář a cíl se může objevit až mezi kontrolou a zápisem.
+  for (let at = target; ; at = dirname(at)) {
+    if (lstatSync(at, { throwIfNoEntry: false })?.isSymbolicLink() === true) return true;
+    if (dirname(at) === at) break;
+  }
   let base = target;
   while (!existsSync(base) && dirname(base) !== base) base = dirname(base);
   const env = { ...process.env };
   for (const key of Object.keys(env)) if (REPO_REDIRECT.test(key)) delete env[key];
   const ignored = spawnSync('git', ['-C', base, '-c', 'core.excludesFile=', 'check-ignore', '-q', '--', join(target, file)], { stdio: 'ignore', env }).status;
   if (ignored === 0) return false;
-  // Junction nebo symlink git projde, cesta na disku ne – soudí se obě.
-  if (ignored === 128) return insideRepo(base) || insideRepo(realpathSync.native(base));
+  if (ignored === 128) return insideRepo(base);
   return true;
 }
 

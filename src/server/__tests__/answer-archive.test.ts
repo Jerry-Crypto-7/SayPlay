@@ -200,6 +200,11 @@ describe('archiv odpovědí modelu', () => {
     const link = join(scratch('worldsmith-archive-link-'), 'link');
     symlinkSync(join(repo, 'sub'), link, 'junction');
     expect(wouldBeCommitted(link)).toBe(true);
+
+    // Nefunkční junction: cíl ještě neexistuje, `existsSync` odkaz nevidí.
+    const dangling = join(scratch('worldsmith-archive-dangling-'), 'link');
+    symlinkSync(join(repo, 'later'), dangling, 'junction');
+    expect(wouldBeCommitted(join(dangling, 'answers'))).toBe(true);
   });
 
   it('konfigurace gitu z prostředí ignorování nepodvrhne', () => {
