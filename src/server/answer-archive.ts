@@ -75,9 +75,13 @@ function homesOf(env: Record<string, string | undefined>): readonly RegExp[] {
   const byName = [...names].sort(longestFirst);
   return [
     ...[...paths].sort(longestFirst).map((path) => new RegExp(escape(path), 'gi')),
-    ...byName.map((name) => new RegExp(`(?<=^|[^A-Za-z0-9[]|%5C|%2F)${escape(name)}(?![A-Za-z0-9\\]])`, 'gi')),
+    // Hranaté závorky se vylučují jen u jména `home`, aby nepřepsalo vlastní značku.
+    ...byName.map((name) => {
+      const marker = name.toLowerCase() === 'home';
+      return new RegExp(`(?<=^|[^A-Za-z0-9${marker ? '[' : ''}]|%5C|%2F)${escape(name)}(?![A-Za-z0-9${marker ? '\\]' : ''}])`, 'gi');
+    }),
     // `jane.doe` → `j(?:a(?:n(?:…)?)?)?`: kterýkoli začátek jména za lomítkem na konci.
-    ...byName.map((name) => new RegExp(`(?<=[\\\\/])${[...name].reduceRight((inner, char) => `${escape(char)}(?:${inner})?`, '')}$`, 'i')),
+    ...byName.map((name) => new RegExp(`(?<=[\\\\/]|%5C|%2F)${[...name].reduceRight((inner, char) => `${escape(char)}(?:${inner})?`, '')}$`, 'i')),
   ];
 }
 

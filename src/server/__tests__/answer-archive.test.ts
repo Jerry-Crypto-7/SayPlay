@@ -304,6 +304,8 @@ describe('archiv odpovědí modelu', () => {
       cut: 'codex exec exited with code 1 sandbox: C:\\Users\\jane.d',
       json: 'codex refused the turn: {"message":"C:\\\\Users\\\\tom',
       prose: 'rooted grass and roots, a root cellar',
+      bracket: 'user [jane.doe] denied',
+      encoded: 'GET /files?p=C:%5CUsers%5Cjane.d',
       'C:\\Users\\jane.doe': 'key',
     });
 
