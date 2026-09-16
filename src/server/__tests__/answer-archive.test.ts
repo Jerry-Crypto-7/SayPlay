@@ -28,7 +28,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { answerArchive } from '../answer-archive';
+import { answerArchive, wouldBeCommitted } from '../answer-archive';
 import { resetProcessSpendCap } from '../spend-cap';
 import { upstreamConfigFromEnv } from '../upstream';
 
@@ -126,6 +126,24 @@ describe('archiv odpovědí modelu', () => {
     const config = liveConfig();
     expect(answerArchive({}, config)).toBeNull();
     expect(answerArchive({ WORLDSMITH_ARCHIVE_DIR: '' }, config)).toBeNull();
+  });
+
+  /**
+   * **Archiv nese plné znění promptů a repo jde ven** (`RULES.md` §2).
+   * Adresář, který git nevidí jako ignorovaný, se odmítne — nezáleží na tom,
+   * kam ho operátor namíří. Soudí se nad skutečným `.gitignore` tohohle repa.
+   */
+  it('odmítne adresář, který by git vzal do commitu', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(wouldBeCommitted('src/server/answers')).toBe(true);
+    expect(answerArchive({ WORLDSMITH_ARCHIVE_DIR: 'src/server/answers' }, liveConfig())).toBeNull();
+    expect(warn).toHaveBeenCalledOnce();
+  });
+
+  it('pustí ignorovaný adresář i cestu mimo repozitář', () => {
+    expect(wouldBeCommitted('plans/P19/answers')).toBe(false);
+    expect(wouldBeCommitted(scratch('worldsmith-archive-outside-'))).toBe(false);
+    expect(answerArchive({ WORLDSMITH_ARCHIVE_DIR: 'plans/P19/answers' }, liveConfig())).not.toBeNull();
   });
 
   it('bez nastavené proměnné nezapíše na disk nic', async () => {

@@ -24,6 +24,7 @@
  * tenhle běží za živého provozu u porotce, ten druhý v měřicím běhu.
  */
 
+import { spawnSync } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
@@ -68,6 +69,23 @@ function redact(value: unknown, secrets: readonly string[]): unknown {
 }
 
 /**
+ * Leží soubor v tomhle adresáři v cestě, kterou by git vzal do commitu?
+ *
+ * **Archiv nese plné znění promptů i odpovědí** — tutéž třídu dat jako
+ * `evals/live/*` a `create-raw.json`, které `.gitignore` drží venku, protože
+ * repo jde podle `RULES.md` §2 ven. Adresář si ale jmenuje operátor, takže
+ * pravidlo v `.gitignore` by krylo jen jednu cestu. Soudí se proto každá.
+ *
+ * Rozhoduje **návratový kód** `git check-ignore`, ne vypsaný řádek: 0 =
+ * ignorováno, 1 = git by soubor vzal. Cesta mimo repozitář (128) nebo chybějící
+ * git do commitu doputovat nemůže, a tak se pouští.
+ */
+export function wouldBeCommitted(dir: string, cwd: string = process.cwd()): boolean {
+  const probe = spawnSync('git', ['check-ignore', '-q', '--', join(dir, 'answer.json')], { cwd, stdio: 'ignore' });
+  return probe.status === 1;
+}
+
+/**
  * Archiv, nebo `null`, když ho nikdo neobjednal.
  *
  * **Nenastavená proměnná znamená, že nevznikne žádný soubor** — ne prázdný
@@ -80,6 +98,10 @@ export function answerArchive(
 ): AnswerArchive | null {
   const dir = env.WORLDSMITH_ARCHIVE_DIR;
   if (dir === undefined || dir.length === 0) return null;
+  if (wouldBeCommitted(dir)) {
+    console.warn(`[worldstream] the answer archive is off: git would commit ${dir}; point WORLDSMITH_ARCHIVE_DIR at an ignored path`);
+    return null;
+  }
 
   // Prázdný literál by nahradil všechno; konfigurace ho sem nepustí, ale
   // filtr je levnější než důvěra v cizí invariant o jeden soubor dál.
