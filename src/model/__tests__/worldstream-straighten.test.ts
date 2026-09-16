@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { GEOM_LIMITS, GEOM_VERSION, instanceCounts, parseGeomProgram, validateGeomProgram } from '../../geom/program';
 import { validateShapeProgram } from '../../shape/schema';
 import type { BlueprintAdjustment } from '../worldstream-compiler';
-import { straightenGeometry, straightenShape } from '../worldstream-straighten';
+import { HERO_CENTRE_PULL, HERO_MIN_SHARE, straightenGeometry, straightenHeroes, straightenShape } from '../worldstream-straighten';
 
 const GEOMETRY: Record<string, unknown> = {
   version: GEOM_VERSION,
@@ -260,5 +260,67 @@ describe('a program over the instance budget is trimmed by the widest multiplier
     expect(expanded).toBeGreaterThan(GEOM_LIMITS.maxInstances / 2);
     expect(adjustments.every((a) => a.reason.includes('maxInstances'))).toBe(true);
     expect(adjustments.map((a) => a.path).sort()).toEqual(['geometry/nodes/1/count', 'geometry/nodes/2/count']);
+  });
+});
+
+describe('a small hero is grown and pulled towards the centre', () => {
+  const box = (min: [number, number, number], max: [number, number, number]) => ({ min, max });
+  const room = { stableId: 'room', role: 'architecture', targetBounds: box([-10, 0, -10], [10, 4, 10]) };
+  const chair = { stableId: 'chair', role: 'prop', targetBounds: box([6, 0, 6], [7, 1, 7]) };
+
+  it('grows a hero below the share and moves it halfway to the centre, keeping its base', () => {
+    const adjustments: BlueprintAdjustment[] = [];
+    const hero = { stableId: 'aquarium', role: 'hero', targetBounds: box([7, 0.5, 7], [9, 1.5, 9]) };
+    const [roomOut, chairOut, heroOut] = straightenHeroes([room, chair, hero], adjustments);
+    const width = heroOut.max[0] - heroOut.min[0];
+    expect(width).toBeCloseTo(20 * HERO_MIN_SHARE);
+    expect((heroOut.min[0] + heroOut.max[0]) / 2).toBeCloseTo(8 * (1 - HERO_CENTRE_PULL));
+    expect((heroOut.min[2] + heroOut.max[2]) / 2).toBeCloseTo(8 * (1 - HERO_CENTRE_PULL));
+    expect(heroOut.min[1]).toBe(0.5);
+    expect(heroOut.max[1]).toBeCloseTo(0.5 + 1 * 3);
+    expect(roomOut).toEqual(room.targetBounds);
+    expect(chairOut).toEqual(chair.targetBounds);
+    expect(adjustments.map((a) => a.path)).toEqual(['objects/aquarium/targetBounds']);
+  });
+
+  it('leaves a hero that is already large exactly where it was', () => {
+    const adjustments: BlueprintAdjustment[] = [];
+    const hero = { stableId: 'fireplace', role: 'hero', targetBounds: box([2, 0, 2], [9, 3, 4]) };
+    const [, , heroOut] = straightenHeroes([room, chair, hero], adjustments);
+    expect(heroOut).toEqual(hero.targetBounds);
+    expect(adjustments).toEqual([]);
+  });
+
+  it('never moves a prop, however small', () => {
+    const adjustments: BlueprintAdjustment[] = [];
+    const tiny = { stableId: 'cup', role: 'prop', targetBounds: box([9, 0, 9], [9.1, 0.1, 9.1]) };
+    expect(straightenHeroes([room, tiny], adjustments)).toEqual([room.targetBounds, tiny.targetBounds]);
+    expect(adjustments).toEqual([]);
+  });
+
+  it('leaves a scene with a single object alone', () => {
+    const adjustments: BlueprintAdjustment[] = [];
+    const hero = { stableId: 'dog', role: 'hero', targetBounds: box([0, 0, 0], [0.5, 0.5, 0.5]) };
+    expect(straightenHeroes([hero], adjustments)).toEqual([hero.targetBounds]);
+    expect(adjustments).toEqual([]);
+  });
+});
+
+describe('hero growth has a ceiling', () => {
+  it('grows a tiny hero at most four times', () => {
+    const adjustments: BlueprintAdjustment[] = [];
+    const room = { stableId: 'room', role: 'architecture', targetBounds: { min: [-10, 0, -10] as [number, number, number], max: [10, 4, 10] as [number, number, number] } };
+    const hero = { stableId: 'fish', role: 'hero', targetBounds: { min: [0, 0, 0] as [number, number, number], max: [0.5, 0.5, 0.5] as [number, number, number] } };
+    const [, out] = straightenHeroes([room, hero], adjustments);
+    expect(out.max[0] - out.min[0]).toBeCloseTo(2);
+  });
+
+  it('never grows a hero above the tallest thing in the scene', () => {
+    const adjustments: BlueprintAdjustment[] = [];
+    const room = { stableId: 'room', role: 'architecture', targetBounds: { min: [-10, 0, -10] as [number, number, number], max: [10, 3, 10] as [number, number, number] } };
+    const hero = { stableId: 'tank', role: 'hero', targetBounds: { min: [0, 0, 0] as [number, number, number], max: [2, 2, 2] as [number, number, number] } };
+    const [, out] = straightenHeroes([room, hero], adjustments);
+    expect(out.max[1]).toBeCloseTo(3);
+    expect(out.max[0] - out.min[0]).toBeCloseTo(3);
   });
 });

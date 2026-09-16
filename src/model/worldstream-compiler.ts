@@ -72,7 +72,7 @@ import { repairEmission, toIdentifier, type RepairNote } from './repair';
 import { buildCompilerRequest, COMPILER_STAGE, EXAMPLE_BLUEPRINT_ANSWER } from './worldstream-prompt';
 import { isExampleEmission, type Grammar, type UpstreamRequest } from './prompt';
 import type { PlannedObject, PlannerEmission } from './worldstream-intent';
-import { straightenGeometry, straightenShape } from './worldstream-straighten';
+import { straightenGeometry, straightenHeroes, straightenShape } from './worldstream-straighten';
 
 export { COMPILER_STAGE };
 
@@ -622,9 +622,12 @@ export function compileBlueprint(
     );
   }
 
-  const objects = plan.objects
+  const unsized = plan.objects
     .map((object) => placed.get(object.stableId))
     .filter((object): object is SemanticObject => object !== undefined);
+  // Hrdina, o kterém věta je, musí být vidět: malý se zvětší a posune ke středu.
+  const sized = straightenHeroes(unsized, adjustments);
+  const objects = unsized.map((object, index) => ({ ...object, targetBounds: sized[index] }));
 
   // --- světový graf ------------------------------------------------------
 

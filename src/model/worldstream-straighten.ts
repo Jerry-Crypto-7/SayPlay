@@ -401,3 +401,85 @@ export function straightenShape(raw: unknown, index: number, adjustments: Bluepr
 
   return { ...out.rest, nodes: out.nodes, root: out.root };
 }
+
+/* ------------------------------------------------------------------ *
+ * Hrdinové.
+ * ------------------------------------------------------------------ */
+
+type Box = { min: [number, number, number]; max: [number, number, number] };
+
+export interface HeroCandidate {
+  readonly stableId: string;
+  readonly role: string;
+  readonly targetBounds: Box;
+}
+
+/**
+ * Hrdina užší než tenhle podíl půdorysu scény se zvětší právě na něj.
+ * Měřený důvod: zvětšení a vycentrování objektu zvedlo rozpoznání kategorie
+ * místnosti o +9,5 procentního bodu (P19 `F1-dukazy-a-reserse.md` §4).
+ */
+export const HERO_MIN_SHARE = 0.3;
+/** Kolik ze vzdálenosti ke středu scény hrdina ujde. */
+export const HERO_CENTRE_PULL = 0.5;
+/** Zvětšení nad tenhle násobek by z hrnku udělalo budovu. */
+const HERO_MAX_GROWTH = 4;
+
+const widest = (box: Box): number => Math.max(box.max[0] - box.min[0], box.max[2] - box.min[2]);
+
+/**
+ * Malého hrdinu zvětší (od středu podstavy, spodek zůstává, kde byl) a
+ * posune půl cesty ke středu scény. **Objekt bez role hrdiny se nehne ani
+ * o jednotku** a hrdina, který už velký je, také ne — zvětšit všechno je
+ * stejná vada jako nezvětšit nic. Hrdina nepřeroste nejvyšší kvádr scény.
+ * Každá změna jde do `adjustments`.
+ *
+ * Půdorys scény je sjednocení všech deklarovaných kvádrů. Scéna s jediným
+ * objektem nemá s čím srovnávat a zůstane beze změny.
+ */
+export function straightenHeroes(
+  objects: readonly HeroCandidate[],
+  adjustments: BlueprintAdjustment[],
+): Box[] {
+  const bounds = objects.map((object) => ({
+    min: [...object.targetBounds.min] as Box['min'],
+    max: [...object.targetBounds.max] as Box['max'],
+  }));
+  if (objects.length < 2) return bounds;
+
+  const scene: Box = {
+    min: [0, 1, 2].map((axis) => Math.min(...bounds.map((box) => box.min[axis]))) as Box['min'],
+    max: [0, 1, 2].map((axis) => Math.max(...bounds.map((box) => box.max[axis]))) as Box['max'],
+  };
+  const target = widest(scene) * HERO_MIN_SHARE;
+  const centre = [(scene.min[0] + scene.max[0]) / 2, (scene.min[2] + scene.max[2]) / 2];
+
+  objects.forEach((object, index) => {
+    const box = bounds[index];
+    const width = widest(box);
+    if (object.role !== 'hero' || width <= 0 || width >= target) return;
+    // Nad nejvyšší věc scény hrdina nepřeroste: akvárium nesmí prorazit strop.
+    const tall = box.max[1] - box.min[1];
+    const headroom = tall > 0 ? (scene.max[1] - box.min[1]) / tall : HERO_MAX_GROWTH;
+    const growth = Math.min(target / width, HERO_MAX_GROWTH, headroom);
+    if (growth <= 1) return;
+    const baseX = (box.min[0] + box.max[0]) / 2;
+    const baseZ = (box.min[2] + box.max[2]) / 2;
+    const x = baseX + (centre[0] - baseX) * HERO_CENTRE_PULL;
+    const z = baseZ + (centre[1] - baseZ) * HERO_CENTRE_PULL;
+    const half = [0, 2].map((axis) => ((box.max[axis] - box.min[axis]) / 2) * growth);
+    const height = (box.max[1] - box.min[1]) * growth;
+    const next: Box = {
+      min: [x - half[0], box.min[1], z - half[1]],
+      max: [x + half[0], box.min[1] + height, z + half[1]],
+    };
+    adjustments.push({
+      path: `objects/${object.stableId}/targetBounds`,
+      reason: `the sentence is about ${object.stableId}, so the system grew it ${growth.toFixed(2)}x and moved it halfway to the centre of the scene`,
+      from: width,
+      to: widest(next),
+    });
+    bounds[index] = next;
+  });
+  return bounds;
+}
