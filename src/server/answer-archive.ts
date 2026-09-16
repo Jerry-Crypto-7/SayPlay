@@ -28,7 +28,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
-import { homedir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 
 import type { UpstreamRequest } from '../model/prompt';
@@ -70,6 +70,12 @@ function homesOf(env: Record<string, string | undefined>): readonly RegExp[] {
     paths.add(slashed.replaceAll('/', '\\\\'));
     const name = slashed.split('/').filter((part) => part.length > 0).at(-1);
     if (name !== undefined && name.length >= 3) names.add(name);
+  }
+  // Krátký tvar 8.3 (`JANEDO~1`) nese jen `TEMP`, a v něm vzniká adresář Codexu
+  // (`upstream.ts`). Bere se část za `Users`, jiný tvar domova tam nebývá.
+  for (const temp of [env.TEMP, env.TMP, tmpdir()]) {
+    const name = temp === undefined ? undefined : /[\\/]Users[\\/]([^\\/]{3,})/i.exec(temp)?.[1];
+    if (name !== undefined) names.add(name);
   }
   const escape = (literal: string): string => literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const longestFirst = (a: string, b: string): number => b.length - a.length;

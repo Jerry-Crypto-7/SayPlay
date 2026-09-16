@@ -330,6 +330,19 @@ describe('archiv odpovědí modelu', () => {
     expect(raw).toContain('rooted grass and roots, a [home] cellar');
   });
 
+  it('krátké jméno 8.3 z TEMP zamaskuje', async () => {
+    const dir = scratch('worldsmith-archive-short-');
+    const archive = answerArchive(
+      { WORLDSMITH_ARCHIVE_DIR: dir, USERPROFILE: 'C:\\Users\\jane.doe', TEMP: 'C:\\Users\\JANEDO~1\\AppData\\Local\\Temp' },
+      liveConfig(),
+    );
+    await archive!.write(REQUEST, { detail: 'sandbox: C:\\Users\\JANEDO~1\\AppData\\Local\\Temp\\codex-x denied' });
+
+    const raw = readFileSync(join(dir, readdirSync(dir)[0]!), 'utf8');
+    expect(raw).not.toContain('JANEDO~1');
+    expect(raw).toContain('codex-x denied');
+  });
+
   it('krátký domov jako HOME=/ nepřepíše každé lomítko', async () => {
     const dir = scratch('worldsmith-archive-root-');
     const archive = answerArchive({ WORLDSMITH_ARCHIVE_DIR: dir, HOME: '/', USERPROFILE: 'C:' }, liveConfig());

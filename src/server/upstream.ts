@@ -719,7 +719,10 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
     // Buffery, ne řetězec: znak UTF-8 rozdělený mezi dvě čtení roury by se
     // po kouscích dekódoval na U+FFFD (revize 15. 9. 2026, naměřeno 6 z 7 hranic).
     const chunks: Buffer[] = [];
-    let stderr = '';
+    // Totéž platí pro stderr: jméno uživatele s diakritikou rozdělené mezi dvě
+    // čtení by dostalo U+FFFD a redakce archivu by ho nepoznala.
+    const stderrChunks: Buffer[] = [];
+    let stderrBytes = 0;
     let outputBytes = 0;
     let cut: string | null = null;
     let done = false;
@@ -746,7 +749,9 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
       else chunks.push(chunk);
     });
     child.stderr.on('data', (chunk: Buffer) => {
-      if (stderr.length < 300) stderr += chunk;
+      if (stderrBytes >= 1200) return;
+      stderrChunks.push(chunk);
+      stderrBytes += chunk.length;
     });
     child.stdin.on('error', () => {});
     child.stdin.end(input);
@@ -766,7 +771,7 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
       }
       const reason = cut ?? failure;
       if (reason === null) resolve(Buffer.concat(chunks).toString('utf8'));
-      else reject(new Error(`${reason} ${stderr.slice(0, 300)}`.trim()));
+      else reject(new Error(`${reason} ${Buffer.concat(stderrChunks).toString('utf8').slice(0, 300)}`.trim()));
     };
     child.on('error', (error) => finish(error.message.split('\n')[0]));
     child.on('close', (code) => finish(code === 0 ? null : `codex exec exited with code ${code}`));

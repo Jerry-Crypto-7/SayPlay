@@ -1230,6 +1230,21 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
     });
   });
 
+  // Revize R2 z P19: jméno s diakritikou rozdělené mezi dvě čtení stderr nesmí
+  // dostat U+FFFD, jinak ho redakce archivu nepozná.
+  it('znak UTF-8 rozdělený mezi dvě čtení stderr zůstane celý', async () => {
+    const file = fakeCodex('split-stderr', [okStream[0]], [
+      '  process.stderr.write(Buffer.from([0x74, 0x6f, 0x6d, 0xc3]));',
+      '  setTimeout(() => { process.stderr.write(Buffer.from([0xa1, 0x73])); setTimeout(() => process.exit(1), 50); }, 100);',
+    ].join('\n'));
+    await withScript(file, async () => {
+      const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
+      expect(outcome.ok).toBe(false);
+      if (outcome.ok) return;
+      expect(outcome.detail).toContain('tomás');
+    });
+  });
+
   it('proud delší než 8 MiB se utne jako výpadek', async () => {
     const file = fakeCodex('flood', [okStream[0]], "  process.stdout.write('x'.repeat(9 * 1024 * 1024));");
     await withScript(file, async () => {
