@@ -22,6 +22,7 @@
  * nad souborem, který žádné tajemství nenese.
  */
 
+import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -144,6 +145,20 @@ describe('archiv odpovědí modelu', () => {
     expect(wouldBeCommitted('plans/P19/answers')).toBe(false);
     expect(wouldBeCommitted(scratch('worldsmith-archive-outside-'))).toBe(false);
     expect(answerArchive({ WORLDSMITH_ARCHIVE_DIR: 'plans/P19/answers' }, liveConfig())).not.toBeNull();
+  });
+
+  /** Absolutní cesta do cizího repa soudí jeho `.gitignore`, ne náš. */
+  it('v cizím repozitáři rozhoduje jeho check-ignore, bez gitu se archiv vypne', () => {
+    const repo = scratch('worldsmith-archive-foreign-');
+    expect(spawnSync('git', ['init', '-q', repo]).status).toBe(0);
+    writeFileSync(join(repo, '.gitignore'), 'ignored/\n');
+    expect(wouldBeCommitted(join(repo, 'answers'))).toBe(true);
+    expect(wouldBeCommitted(join(repo, 'ignored', 'answers'))).toBe(false);
+
+    // Jen jednou: Windows nedbá velikosti písmen a druhý stub `Path` by si jako
+    // původní hodnotu zapamatoval už prázdnou – PATH by zůstal prázdný i dál.
+    vi.stubEnv('PATH', '');
+    expect(wouldBeCommitted(scratch('worldsmith-archive-nogit-'))).toBe(true);
   });
 
   it('bez nastavené proměnné nezapíše na disk nic', async () => {

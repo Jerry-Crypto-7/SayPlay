@@ -25,10 +25,11 @@
  */
 
 import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 
 import type { UpstreamRequest } from '../model/prompt';
 import { CODEX_CLI_ENDPOINT, type UpstreamConfig } from './upstream';
@@ -141,12 +142,24 @@ function redact(value: unknown, secrets: readonly string[], homes: readonly RegE
  * pravidlo v `.gitignore` by krylo jen jednu cestu. Soudí se proto každá.
  *
  * Rozhoduje **návratový kód** `git check-ignore`, ne vypsaný řádek: 0 =
- * ignorováno, 1 = git by soubor vzal. Cesta mimo repozitář (128) nebo chybějící
- * git do commitu doputovat nemůže, a tak se pouští.
+ * ignorováno, 1 = git by soubor vzal.
+ *
+ * **Git se ptá v cílovém adresáři, ne v tomhle repu** (nález revize 16. 9.):
+ * absolutní cesta může mířit do jiného repozitáře, a ten má vlastní
+ * `.gitignore`. Adresář ještě nemusí existovat, proto nejbližší existující
+ * rodič. Kód 128 pustí zápis jen tehdy, když `rev-parse` potvrdí, že rodič
+ * v žádném repozitáři neleží; **chybějící git nebo jiná chyba archiv vypne** –
+ * bez odpovědi se nedá říct, že soubory ven nepůjdou.
  */
 export function wouldBeCommitted(dir: string, cwd: string = process.cwd()): boolean {
-  const probe = spawnSync('git', ['check-ignore', '-q', '--', join(dir, 'answer.json')], { cwd, stdio: 'ignore' });
-  return probe.status === 1;
+  const target = resolve(cwd, dir);
+  let base = target;
+  while (!existsSync(base) && dirname(base) !== base) base = dirname(base);
+  const git = (args: readonly string[]) => spawnSync('git', ['-C', base, ...args], { stdio: 'ignore' }).status;
+  const ignored = git(['check-ignore', '-q', '--', join(target, 'answer.json')]);
+  if (ignored === 0) return false;
+  if (ignored === 128) return git(['rev-parse', '--is-inside-work-tree']) !== 128;
+  return true;
 }
 
 /**
@@ -165,7 +178,7 @@ export function answerArchive(
   const dir = env.WORLDSMITH_ARCHIVE_DIR;
   if (dir === undefined || dir.length === 0) return null;
   if (wouldBeCommitted(dir)) {
-    console.warn(`[worldstream] the answer archive is off: git would commit ${dir}; point WORLDSMITH_ARCHIVE_DIR at an ignored path`);
+    console.warn(`[worldstream] the answer archive is off: git would commit ${dir} or cannot tell; point WORLDSMITH_ARCHIVE_DIR at an ignored path`);
     return null;
   }
 
