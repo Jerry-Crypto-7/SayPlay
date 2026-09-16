@@ -44,15 +44,29 @@ export const HOME_MARK = '[home]';
  * chybějící binárka nebo chyba sandboxu zapíše do archivu skutečné jméno
  * uživatele. Kratší než čtyři znaky se nebere: `HOME=/` v kontejneru by
  * jinak přepsalo každé lomítko v souboru.
+ *
+ * Cesta přichází ve třech tvarech lomítek, protože `upstream.ts` ukládá chybu
+ * přes `JSON.stringify` a zpětná lomítka se tím zdvojí; Windows navíc nedbá
+ * velikosti písmen. **Samotné jméno uživatele se maskuje taky** (od tří
+ * znaků): stderr je useknuté na 300 bajtů a cesta může skončit uprostřed, kde
+ * ji celou nenajde žádný z tvarů.
  */
-function homesOf(env: Record<string, string | undefined>): readonly string[] {
-  const homes = new Set<string>();
+function homesOf(env: Record<string, string | undefined>): readonly RegExp[] {
+  const paths = new Set<string>();
+  const names = new Set<string>();
   for (const home of [env.USERPROFILE, env.HOME, homedir()]) {
     if (home === undefined || home.length < 4) continue;
-    homes.add(home);
-    homes.add(home.replaceAll('\\', '/'));
+    const slashed = home.replaceAll('\\', '/');
+    paths.add(home);
+    paths.add(slashed);
+    paths.add(slashed.replaceAll('/', '\\\\'));
+    const name = slashed.split('/').filter((part) => part.length > 0).at(-1);
+    if (name !== undefined && name.length >= 3) names.add(name);
   }
-  return [...homes].sort((a, b) => b.length - a.length);
+  const longestFirst = (a: string, b: string): number => b.length - a.length;
+  return [...[...paths].sort(longestFirst), ...[...names].sort(longestFirst)].map(
+    (literal) => new RegExp(literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'),
+  );
 }
 
 /**
@@ -87,10 +101,10 @@ const callsByCase = new Map<string, number>();
 const CASE_ID = /^[A-Za-z0-9_-]{1,64}$/;
 
 /** Nahradí známé literály v celém stromu: tajemství značkou `[redacted]`, domov `[home]`. Vstup se nemění. */
-function redact(value: unknown, secrets: readonly string[], homes: readonly string[]): unknown {
+function redact(value: unknown, secrets: readonly string[], homes: readonly RegExp[]): unknown {
   if (typeof value === 'string') {
     const hidden = secrets.reduce((carry, secret) => carry.split(secret).join(REDACTED), value);
-    return homes.reduce((carry, home) => carry.split(home).join(HOME_MARK), hidden);
+    return homes.reduce((carry, home) => carry.replace(home, HOME_MARK), hidden);
   }
   if (Array.isArray(value)) return value.map((item) => redact(item, secrets, homes));
   if (value !== null && typeof value === 'object') {

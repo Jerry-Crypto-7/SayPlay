@@ -275,6 +275,27 @@ describe('archiv odpovědí modelu', () => {
     expect(raw).toContain('codex.cmd');
   });
 
+  /**
+   * `upstream.ts` ukládá chybu přes `JSON.stringify`, takže lomítka v `detail`
+   * jsou zdvojená; stderr je navíc useknuté a může skončit uprostřed cesty.
+   */
+  it('domov nenajde ani ve zdvojených lomítkách, malými písmeny a useknutý', async () => {
+    const dir = scratch('worldsmith-archive-escaped-');
+    const home = 'C:\\Users\\Jane.Doe';
+    const archive = answerArchive({ WORLDSMITH_ARCHIVE_DIR: dir, USERPROFILE: home }, liveConfig());
+    await archive!.write(REQUEST, {
+      detail: JSON.stringify({ reason: 'MODEL_UNAVAILABLE', detail: `spawn ${home}\\AppData\\codex.cmd` }),
+      lower: 'c:\\users\\jane.doe\\.codex',
+      cut: 'sandbox denied C:\\Users\\jane.doe\\AppDa',
+      bare: 'owner jane.doe',
+    });
+
+    const raw = readFileSync(join(dir, readdirSync(dir)[0]!), 'utf8');
+    expect(raw.toLowerCase()).not.toContain('jane.doe');
+    expect(raw).toContain('codex.cmd');
+    expect(raw).toContain('owner [home]');
+  });
+
   it('krátký domov jako HOME=/ nepřepíše každé lomítko', async () => {
     const dir = scratch('worldsmith-archive-root-');
     const archive = answerArchive({ WORLDSMITH_ARCHIVE_DIR: dir, HOME: '/', USERPROFILE: 'C:' }, liveConfig());
