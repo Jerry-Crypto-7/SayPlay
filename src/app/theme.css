@@ -35,6 +35,21 @@
      bez něj je nad světlou podlahou nečitelný. */
   --ws-text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
   --ws-ui-font: ui-sans-serif, system-ui, sans-serif;
+
+  /* Rozměry skořápky. Čte je mřížka rozhraní (`.ws-shell`) **i volná plocha
+     plátna**, a je to jediný důvod, proč to jsou proměnné: dvě opsaná čísla by
+     se rozešla a plátno by zase leželo pod dokem. Barva tu žádná není schválně
+     — `theme.test.ts` hlídá, že barevný token v `:root` nevznikne mimo
+     `UI_TOKENS`, a rozměr do toho seznamu nepatří. */
+  --ws-shell-pad: 1rem;
+  --ws-shell-gap: 0.75rem;
+  /* Dolní pruh rozhraní. **Pevná výška, ne `auto`** (P18 T2): plátno si o svou
+     volnou plochu musí umět říct dopředu a plocha odvozená z obsahu doku by se
+     hnula s každou delší stavovou větou. Co se do pruhu nevejde, roluje se
+     uvnitř doku — dřív to přeteklo přes svět. */
+  --ws-shell-strip: 10rem;
+  /* Pravý sloupec s otevřenou zásuvkou. Pevný ze stejného důvodu. */
+  --ws-inspect-column: 22rem;
 }
 
 :root[data-palette='cvd'] {
@@ -154,11 +169,12 @@ body {
      zbytek. `minmax(0, …)` je nutnost — bez něj sloupec neumí být užší než
      obsah a mřížka by přetekla přes okno. */
   grid-template-columns: minmax(0, 1fr) minmax(0, 46rem) minmax(0, 1fr);
-  /* Horní řádek je volná plocha světa, dolní pruh patří rozhraní. */
-  grid-template-rows: minmax(0, 1fr) auto;
+  /* Horní řádek je volná plocha světa, dolní pruh patří rozhraní — a ten pruh
+     má od T2 pevnou výšku, protože se o ni opírá plátno níž. */
+  grid-template-rows: minmax(0, 1fr) var(--ws-shell-strip);
   align-items: end;
-  gap: 0.75rem;
-  padding: 1rem;
+  gap: var(--ws-shell-gap);
+  padding: var(--ws-shell-pad);
   /* Překryv kryje celé plátno, takže by jinak spolkl každé kliknutí do scény.
      Klikatelnost si zapíná každá buňka sama. */
   pointer-events: none;
@@ -167,7 +183,41 @@ body {
 /* Otevřená zásuvka potřebuje víc než třetinu, jinak by se panely srazily do
    sloupce užšího, než je jejich vlastní šířka, a přetekly by z něj. */
 .ws-shell[data-inspecting='true'] {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 46rem) minmax(21rem, auto);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 46rem) var(--ws-inspect-column);
+}
+
+/* --- Volná plocha plátna ---------------------------------------------------
+
+   **Rozhraní se přes svět nekreslí** (P18 T2). Do 16. 9. 2026 bylo plátno celý
+   viewport a dok, ovládání i panely ležely na něm; sloupce mřížky zaručovaly
+   jen to, že se ty tři neperou mezi sebou. Se scénou se pral pořád každý z nich
+   — a je to tatáž vada, jakou mřížka zavírala uvnitř rozhraní, jen o patro níž.
+
+   Plátno proto končí tam, kde rozhraní začíná: dolní pruh a s otevřenou
+   zásuvkou i pravý sloupec jsou pro svět mimo hru. Čísla jsou tytéž proměnné,
+   ze kterých je postavená mřížka, plus jedna mezera navíc, aby se obdélníky ani
+   nedotýkaly.
+
+   **Proč `max-width`/`max-height`, a ne `position: absolute` s `inset`:**
+   `<Canvas>` z `@react-three/fiber` si píše `position`, `width` a `height`
+   **inline**, takže by je stylopis přebil jedině přes `!important`. Strop je
+   jiná vlastnost, inline ji nikdo nenastavuje a výsledek je tentýž. Plátno
+   zároveň zůstává v toku u levého horního rohu, a **to je podmínka, ne
+   náhoda**: `WorldstreamStage.toScreen()` vrací souřadnice v pixelech plátna a
+   popisek objektu je píše do `transform` prvku kotveného k `<main>`. Posunout
+   počátek plátna by rozhodilo popisky i kliknutí vedená sondou `screen()`.
+
+   Selektor jde přes `data-testid`, protože plátno vlastní třídu nemá a
+   `WorldstreamCanvas.tsx` patří jiné úloze. Sourozenecký `~` drží pravidlo u
+   stránek se skořápkou — `/dev/worldstream` kreslí totéž plátno bez ní a tam se
+   nic zmenšovat nemá. */
+
+.ws-shell ~ [data-testid='worldstream-canvas'] {
+  max-height: calc(100% - var(--ws-shell-strip) - var(--ws-shell-pad) - var(--ws-shell-gap));
+}
+
+.ws-shell[data-inspecting='true'] ~ [data-testid='worldstream-canvas'] {
+  max-width: calc(100% - var(--ws-inspect-column) - var(--ws-shell-pad) - var(--ws-shell-gap));
 }
 
 .ws-dock {
@@ -245,27 +295,43 @@ body {
   grid-template-columns: minmax(16rem, 20rem) minmax(0, 40rem) minmax(3rem, 1fr);
 }
 .ws-shell[data-controls='true'][data-inspecting='true'] {
-  grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr) minmax(18rem, 22rem);
+  grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr) var(--ws-inspect-column);
 }
 .ws-controls, .ws-dock { min-width: 0; }
-.ws-runtime-tools { max-height: 58dvh; overflow: auto; width: 100%; }
+/* Nic v dolním pruhu nesmí být vyšší než pruh sám. Dokud plátno leželo pod
+   rozhraním, bylo jedno, kam dok nebo ovládání vyrostou — strop `58dvh` je
+   z té doby. Teď je pruh hranice mezi rozhraním a světem, takže přebytek
+   roluje uvnitř, místo aby se vysunul přes scénu. */
+.ws-controls, .ws-dock { max-height: var(--ws-shell-strip); overflow-y: auto; }
+.ws-runtime-tools { max-height: var(--ws-shell-strip); overflow: auto; width: 100%; }
 .ws-runtime-tools button, .ws-runtime-tools select { max-width: 100%; }
 .ws-source fieldset { min-width: 0; margin: 0.5rem 0; }
 .ws-source h4 { margin: 0.65rem 0 0.25rem; }
 
 @media (max-width: 760px) {
+  /* Na úzké obrazovce stojí rozhraní ve třech řádcích pod sebou, takže pruh
+     pro plátno je součet jejich stropů (16 + 22 + 14 dvh), tří mezer a
+     odsazení. Ty stropy se od téhle chvíle **sčítat musí**: kdyby jeden
+     povyrostl, plátno by pod ním zase leželo. Zásuvka je tu přes celou šířku,
+     takže vedle plátna nestojí nic a pravý sloupec je nulový. */
+  :root {
+    --ws-shell-pad: 0.6rem;
+    --ws-shell-gap: 0.4rem;
+    --ws-shell-strip: calc(52dvh + 2rem);
+    --ws-inspect-column: 0rem;
+  }
   .ws-shell, .ws-shell[data-controls='true'], .ws-shell[data-inspecting='true'],
   .ws-shell[data-controls='true'][data-inspecting='true'] {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr) auto auto auto;
-    gap: 0.4rem;
-    padding: 0.6rem;
+    gap: var(--ws-shell-gap);
+    padding: var(--ws-shell-pad);
   }
-  .ws-controls { grid-column: 1; grid-row: 2; width: 100%; }
-  .ws-runtime-tools { max-height: 25dvh; }
-  .ws-dock { grid-column: 1; grid-row: 3; max-height: 35dvh; overflow: auto; }
+  .ws-controls { grid-column: 1; grid-row: 2; width: 100%; max-height: 16dvh; }
+  .ws-runtime-tools { max-height: 16dvh; }
+  .ws-dock { grid-column: 1; grid-row: 3; max-height: 22dvh; overflow: auto; }
   .ws-dock > * { flex-shrink: 0; }
-  .ws-shell .ws-inspect { grid-column: 1; grid-row: 4; max-height: 30dvh; }
+  .ws-shell .ws-inspect { grid-column: 1; grid-row: 4; max-height: 14dvh; }
 }
 
 /* Inspect. Jeden bod, ne panel: zapnutý stav se pozná podle patiny mědi.
