@@ -27,12 +27,33 @@
 import { spawnSync } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
+import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 import type { UpstreamRequest } from '../model/prompt';
 import { CODEX_CLI_ENDPOINT, type UpstreamConfig } from './upstream';
 
 export const REDACTED = '[redacted]';
+export const HOME_MARK = '[home]';
+
+/**
+ * Domovské adresáře, jak se můžou objevit v chybovém výstupu Codexu.
+ *
+ * Větev `codex-cli` nese v `detail` až 300 bajtů stderr a
+ * `CODEX_ENV_ALLOWLIST` vědomě propouští `USERPROFILE` / `HOME`, takže
+ * chybějící binárka nebo chyba sandboxu zapíše do archivu skutečné jméno
+ * uživatele. Kratší než čtyři znaky se nebere: `HOME=/` v kontejneru by
+ * jinak přepsalo každé lomítko v souboru.
+ */
+function homesOf(env: Record<string, string | undefined>): readonly string[] {
+  const homes = new Set<string>();
+  for (const home of [env.USERPROFILE, env.HOME, homedir()]) {
+    if (home === undefined || home.length < 4) continue;
+    homes.add(home);
+    homes.add(home.replaceAll('\\', '/'));
+  }
+  return [...homes].sort((a, b) => b.length - a.length);
+}
 
 /**
  * Jeden požadavek a jedna odpověď, obojí po redakci.
@@ -54,15 +75,17 @@ export interface AnswerArchive {
   write(call: number, request: UpstreamRequest, answer: unknown): Promise<void>;
 }
 
-/** Nahradí známé literály v celém stromu. Vstup se nemění. */
-function redact(value: unknown, secrets: readonly string[]): unknown {
-  if (typeof value === 'string')
-    return secrets.reduce((carry, secret) => carry.split(secret).join(REDACTED), value);
-  if (Array.isArray(value)) return value.map((item) => redact(item, secrets));
+/** Nahradí známé literály v celém stromu: tajemství značkou `[redacted]`, domov `[home]`. Vstup se nemění. */
+function redact(value: unknown, secrets: readonly string[], homes: readonly string[]): unknown {
+  if (typeof value === 'string') {
+    const hidden = secrets.reduce((carry, secret) => carry.split(secret).join(REDACTED), value);
+    return homes.reduce((carry, home) => carry.split(home).join(HOME_MARK), hidden);
+  }
+  if (Array.isArray(value)) return value.map((item) => redact(item, secrets, homes));
   if (value !== null && typeof value === 'object') {
     const clean: Record<string, unknown> = {};
     for (const [key, nested] of Object.entries(value as Record<string, unknown>))
-      clean[key] = redact(nested, secrets);
+      clean[key] = redact(nested, secrets, homes);
     return clean;
   }
   return value;
@@ -117,6 +140,7 @@ export function answerArchive(
     config.apiKey,
     config.endpoint === CODEX_CLI_ENDPOINT ? '' : config.endpoint,
   ].filter((secret) => secret.length > 0);
+  const homes = homesOf(env);
   const caseId = randomUUID();
 
   return {
@@ -125,8 +149,8 @@ export function answerArchive(
       const entry: ArchiveEntry = {
         caseId,
         call,
-        request: redact({ model: request.model, system: request.system, user: request.user }, secrets),
-        answer: redact(answer, secrets),
+        request: redact({ model: request.model, system: request.system, user: request.user }, secrets, homes),
+        answer: redact(answer, secrets, homes),
       };
       await mkdir(dir, { recursive: true });
       await writeFile(join(dir, `${caseId}-${String(call)}.json`), JSON.stringify(entry, null, 2), 'utf8');

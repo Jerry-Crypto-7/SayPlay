@@ -249,6 +249,41 @@ describe('archiv odpovědí modelu', () => {
     expect(raw).not.toContain(KEY);
   });
 
+  /**
+   * Chyba sandboxu na větvi `codex-cli` nese v `detail` cestu do profilu,
+   * tedy skutečné jméno uživatele. Do archivu se dostane jen značka.
+   */
+  it('domovskou cestu z chybového výstupu nahradí značkou', async () => {
+    const dir = scratch('worldsmith-archive-home-');
+    configure(dir);
+    const home = 'C:\\Users\\jane.doe';
+    vi.stubEnv('USERPROFILE', home);
+    generate.mockResolvedValue({
+      ok: false,
+      reason: 'MODEL_UNAVAILABLE',
+      detail: `spawn failed: ${home}\\AppData\\Roaming\\npm\\codex.cmd and C:/Users/jane.doe/.codex`,
+      usage: null,
+    });
+
+    const { cloudEmitter } = await import('../worldstream-emitter');
+    const emit = await cloudEmitter();
+    await expect(emit!(REQUEST)).rejects.toThrow();
+
+    const raw = readFileSync(join(dir, readdirSync(dir)[0]!), 'utf8');
+    expect(raw).not.toContain('jane.doe');
+    expect(raw).toContain('[home]');
+    expect(raw).toContain('codex.cmd');
+  });
+
+  it('krátký domov jako HOME=/ nepřepíše každé lomítko', async () => {
+    const dir = scratch('worldsmith-archive-root-');
+    const archive = answerArchive({ WORLDSMITH_ARCHIVE_DIR: dir, HOME: '/', USERPROFILE: 'C:' }, liveConfig());
+    await archive!.write(1, REQUEST, { detail: 'see /usr/local/bin/codex' });
+
+    const raw = readFileSync(join(dir, readdirSync(dir)[0]!), 'utf8');
+    expect(raw).toContain('see /usr/local/bin/codex');
+  });
+
   it('chyba zápisu neshodí generování světa', async () => {
     const dir = scratch('worldsmith-archive-blocked-');
     // Souborem místo adresáře: `mkdir` na tuhle cestu selže vždycky a všude.
