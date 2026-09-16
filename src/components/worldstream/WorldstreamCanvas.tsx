@@ -34,7 +34,7 @@ import WorldstreamLighting, {
   WORLDSTREAM_SHADOWS,
 } from '@/components/viewer/WorldstreamLighting';
 import WorldstreamStage from '@/components/viewer/WorldstreamStage';
-import { FRAMING_FOV, frameScene, type Bounds } from '@/worldstream/framing';
+import { FRAMING_FOV, frameScene, type Bounds, type SafeArea } from '@/worldstream/framing';
 import { applyDiagramProjection, frameDiagram } from '@/worldstream/diagram-framing';
 import type { RuntimeController, RuntimeSnapshot } from '@/worldstream/runtime-controller';
 import { CELL_SIZE } from '@/components/viewer/projection';
@@ -73,6 +73,41 @@ function heroCenter(world: ProxyWorld): { x: number; y: number; z: number } | nu
 
   const { min, max } = best.worldBounds;
   return { x: (min[0] + max[0]) / 2, y: (min[1] + max[1]) / 2, z: (min[2] + max[2]) / 2 };
+}
+
+/**
+ * Kolik hran plátna kryje rozhraní, v podílu jeho rozměru.
+ *
+ * Skořápka je mřížka přes celý viewport (`theme.css` `.ws-shell`), ne panel
+ * vedle scény: dolní řádek patří doku, krajní sloupce ovládání a zásuvce
+ * Inspect. Rámovat do celého okna tedy znamená postavit hrdinu pod dok.
+ *
+ * **Měří se z DOM za běhu**, protože napsat ta čísla natvrdo nejde: sloupce
+ * mění šířku podle `data-controls` a `data-inspecting` (`minmax(0, 1fr)` proti
+ * `minmax(16rem, 20rem)`), pod 760 px se mřížka překlápí do jediného sloupce a
+ * dok roste s délkou stavové věty.
+ *
+ * Boční sloupec se počítá, jen když sahá **nad** dok. Ovládání i přepínač
+ * Inspect jinak stojí v dolním pruhu, který je odečtený už jednou, a odečíst
+ * ho podruhé by scénu bezdůvodně odtlačilo do dálky.
+ */
+function measureSafeArea(canvas: HTMLCanvasElement): SafeArea {
+  const frame = canvas.getBoundingClientRect();
+  const box = (selector: string): DOMRect | null =>
+    document.querySelector(selector)?.getBoundingClientRect() ?? null;
+
+  const dock = box('.ws-dock');
+  const dockTop = dock?.top ?? frame.bottom;
+  const side = (rect: DOMRect | null, share: number): number =>
+    rect === null || rect.top >= dockTop ? 0 : share;
+
+  const controls = box('.ws-controls');
+  const panels = box('.ws-inspect-panels');
+  return {
+    bottom: (frame.bottom - dockTop) / frame.height,
+    left: side(controls, ((controls?.right ?? 0) - frame.left) / frame.width),
+    right: side(panels, (frame.right - (panels?.left ?? 0)) / frame.width),
+  };
 }
 
 /**
@@ -119,6 +154,10 @@ function FrameCamera({ world, controller, sceneId, reset, framing }: { readonly 
       hero: heroCenter(world),
       aspect: size.width / size.height,
       fov: FRAMING_FOV,
+      // Měří se tady, ne v `frameScene`: rámování musí zůstat čistá funkce.
+      // Změna zásuvky pohledem nehne schválně — přerámovat pod rukou někomu,
+      // kdo si scénu zrovna otočil, je horší vada než hrdina o kus níž.
+      safeArea: measureSafeArea(canvas),
     });
     camera.position.set(view.eye.x, view.eye.y, view.eye.z);
     controls.target.set(view.target.x, view.target.y, view.target.z);
