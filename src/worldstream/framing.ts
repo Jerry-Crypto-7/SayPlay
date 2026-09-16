@@ -182,6 +182,81 @@ function cover(share: number | undefined): number {
 }
 
 /**
+ * Obdélník na obrazovce. Vlastní typ, aby modul nezávisel na DOM — `DOMRect`
+ * má stejná čtyři pole, takže se sem dá předat rovnou.
+ */
+export interface Rect {
+  readonly left: number;
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+}
+
+/** Protínají se ty dva obdélníky vodorovně, resp. svisle? */
+function overlapsX(a: Rect, b: Rect): boolean {
+  return a.left < b.right && a.right > b.left;
+}
+
+function overlapsY(a: Rect, b: Rect): boolean {
+  return a.top < b.bottom && a.bottom > b.top;
+}
+
+/**
+ * Zakrytý podíl hran z naměřených obdélníků.
+ *
+ * ## Proč to není počítané v komponentě (P18 T2b)
+ *
+ * Do 16. 9. 2026 to tam počítané bylo, a byla to **tichá vada složená ze dvou
+ * zelených úloh**. T1 měřila překryv rozhraní s plátnem jako rozdíl hran
+ * (`frame.bottom − dock.top`), což platilo, dokud plátno bylo celý viewport.
+ * T2 pak zmenšila **samo plátno**, takže žádný překryv nezbyl — a tentýž
+ * rozdíl začal vycházet **záporně**. `cover()` ho ořízl na nulu, takže se nic
+ * nerozbilo nahlas: `safeArea` prostě zmlkla a rámování se vrátilo k chování
+ * před T1. Jednotkové testy T1 na to nemohly přijít, protože si `safeArea`
+ * předávají přímo a DOM nikdy neviděly.
+ *
+ * Horší půlka téže vady byla `left`: počítal se jako `controls.right −
+ * frame.left`, tedy **kladné** číslo i tehdy, když ovládání stojí docela mimo
+ * plátno. Zúžil by jehlan zleva bez důvodu a na snímku by to vypadalo jen jako
+ * „svět je nějak daleko".
+ *
+ * Proto se tu měří **skutečný průnik**, ne rozdíl hran: hrana se počítá jedině
+ * tehdy, když ji ten obdélník doopravdy překrývá i na druhé ose. Když plátno
+ * pod rozhraním nesahá, vyjde nula — a nula je tady správná odpověď, ne
+ * selhání: zmenšené plátno už svou volnou plochou je.
+ */
+export function safeAreaFromRects(
+  frame: Rect,
+  covers: {
+    readonly bottom?: Rect | null;
+    readonly left?: Rect | null;
+    readonly right?: Rect | null;
+  },
+): SafeArea {
+  const width = frame.right - frame.left;
+  const height = frame.bottom - frame.top;
+  // Plátno, které se ještě nerozvrhlo, je nulové. Dělit jím by dalo `Infinity`
+  // v každé hraně; „nic nekryje" je jediná odpověď, která z toho dává snímek.
+  if (!(width > 0) || !(height > 0)) return {};
+
+  const { bottom, left, right } = covers;
+  return {
+    bottom:
+      bottom != null && overlapsX(frame, bottom) && overlapsY(frame, bottom)
+        ? Math.max(0, frame.bottom - bottom.top) / height
+        : 0,
+    left:
+      left != null && overlapsX(frame, left) && overlapsY(frame, left)
+        ? Math.max(0, left.right - frame.left) / width
+        : 0,
+    right:
+      right != null && overlapsX(frame, right) && overlapsY(frame, right)
+        ? Math.max(0, frame.right - right.left) / width
+        : 0,
+  };
+}
+
+/**
  * Kde kamera stojí kolem scény, v radiánech od osy `−z`.
  *
  * Zachovává pohled, který produkt měl na `[7, 7, 9]`: zboku a zepředu, takže se

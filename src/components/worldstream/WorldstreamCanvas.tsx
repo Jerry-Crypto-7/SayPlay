@@ -34,7 +34,7 @@ import WorldstreamLighting, {
   WORLDSTREAM_SHADOWS,
 } from '@/components/viewer/WorldstreamLighting';
 import WorldstreamStage from '@/components/viewer/WorldstreamStage';
-import { FRAMING_FOV, frameScene, type Bounds, type SafeArea } from '@/worldstream/framing';
+import { FRAMING_FOV, frameScene, safeAreaFromRects, type Bounds, type SafeArea } from '@/worldstream/framing';
 import { applyDiagramProjection, frameDiagram } from '@/worldstream/diagram-framing';
 import type { RuntimeController, RuntimeSnapshot } from '@/worldstream/runtime-controller';
 import { CELL_SIZE } from '@/components/viewer/projection';
@@ -92,22 +92,17 @@ function heroCenter(world: ProxyWorld): { x: number; y: number; z: number } | nu
  * ho podruhé by scénu bezdůvodně odtlačilo do dálky.
  */
 function measureSafeArea(canvas: HTMLCanvasElement): SafeArea {
-  const frame = canvas.getBoundingClientRect();
   const box = (selector: string): DOMRect | null =>
     document.querySelector(selector)?.getBoundingClientRect() ?? null;
 
-  const dock = box('.ws-dock');
-  const dockTop = dock?.top ?? frame.bottom;
-  const side = (rect: DOMRect | null, share: number): number =>
-    rect === null || rect.top >= dockTop ? 0 : share;
-
-  const controls = box('.ws-controls');
-  const panels = box('.ws-inspect-panels');
-  return {
-    bottom: (frame.bottom - dockTop) / frame.height,
-    left: side(controls, ((controls?.right ?? 0) - frame.left) / frame.width),
-    right: side(panels, (frame.right - (panels?.left ?? 0)) / frame.width),
-  };
+  // Sbírá se tady, počítá se ve `framing.ts`. Rozdíl hran, který tu stál do
+  // 16. 9. 2026, přestal platit ve chvíli, kdy T2 zmenšila samo plátno — celý
+  // ten příběh je u `safeAreaFromRects()`.
+  return safeAreaFromRects(canvas.getBoundingClientRect(), {
+    bottom: box('.ws-dock'),
+    left: box('.ws-controls'),
+    right: box('.ws-inspect-panels'),
+  });
 }
 
 /**
