@@ -1,0 +1,1788 @@
+{
+ "note": "P19 R6: Astra answer for the checkout sentence (16. 9. 2026); its rules never reach a win. Prompt removed.",
+ "plan": {
+  "intent": {
+   "setting": "a crowded supermarket checkout line used to practice navigating social anxiety",
+   "mood": "busy, socially demanding, everyday",
+   "spatialThesis": "Shoppers queue between merchandise aisles and the checkout counter, so reaching the cashier requires waiting among other people and taking a turn.",
+   "actors": [
+    "the person practicing",
+    "other shoppers",
+    "the cashier"
+   ],
+   "heroObjects": [
+    "the crowded checkout queue",
+    "the checkout counter"
+   ],
+   "interactions": [
+    "wait among other shoppers and advance as the queue moves",
+    "exchange a greeting with the cashier",
+    "place groceries on the checkout belt and pay",
+    "practice asking for a moment when feeling overwhelmed"
+   ],
+   "unsupported": [
+    "social anxiety is represented through opportunities to practice everyday encounters; the place cannot determine what the person feels or whether their anxiety improves"
+   ]
+  },
+  "objects": [
+   {
+    "stableId": "supermarketInterior",
+    "label": "the supermarket",
+    "synonyms": [
+     "supermarket",
+     "store",
+     "grocery store",
+     "shop",
+     "store interior"
+    ],
+    "role": "architecture",
+    "importance": 2
+   },
+   {
+    "stableId": "checkoutQueue",
+    "label": "the crowded checkout queue",
+    "synonyms": [
+     "queue",
+     "line",
+     "checkout line",
+     "checkout queue",
+     "crowd",
+     "shoppers",
+     "customers",
+     "people"
+    ],
+    "role": "hero",
+    "importance": 3
+   },
+   {
+    "stableId": "checkoutCounter",
+    "label": "the checkout counter",
+    "synonyms": [
+     "checkout",
+     "counter",
+     "checkout counter",
+     "register",
+     "cash register",
+     "till",
+     "checkout station"
+    ],
+    "role": "hero",
+    "importance": 3
+   },
+   {
+    "stableId": "checkoutBelt",
+    "label": "the checkout belt",
+    "synonyms": [
+     "belt",
+     "conveyor",
+     "conveyor belt",
+     "checkout conveyor"
+    ],
+    "role": "prop",
+    "importance": 2
+   },
+   {
+    "stableId": "groceries",
+    "label": "the groceries",
+    "synonyms": [
+     "groceries",
+     "shopping",
+     "items",
+     "food",
+     "purchases"
+    ],
+    "role": "prop",
+    "importance": 2
+   },
+   {
+    "stableId": "paymentTerminal",
+    "label": "the payment terminal",
+    "synonyms": [
+     "terminal",
+     "payment terminal",
+     "card reader",
+     "card machine",
+     "payment machine"
+    ],
+    "role": "prop",
+    "importance": 2
+   },
+   {
+    "stableId": "merchandiseShelves",
+    "label": "the merchandise shelves",
+    "synonyms": [
+     "shelves",
+     "shelving",
+     "racks",
+     "grocery shelves",
+     "displays"
+    ],
+    "role": "prop",
+    "importance": 1
+   },
+   {
+    "stableId": "shoppingCarts",
+    "label": "the shopping carts",
+    "synonyms": [
+     "carts",
+     "cart",
+     "shopping cart",
+     "trolleys",
+     "trolley",
+     "shopping trolley"
+    ],
+    "role": "prop",
+    "importance": 1
+   }
+  ]
+ },
+ "answer": {
+  "geometry": {
+   "version": "geom-program-v1",
+   "nodes": [
+    {
+     "kind": "panel",
+     "variant": "floor",
+     "at": [
+      3,
+      -0.1,
+      4
+     ],
+     "scale": [
+      6,
+      0.2,
+      8
+     ]
+    },
+    {
+     "kind": "repeat",
+     "child": 0,
+     "count": 3,
+     "step": [
+      6,
+      0,
+      0
+     ]
+    },
+    {
+     "kind": "repeat",
+     "child": 1,
+     "count": 2,
+     "step": [
+      0,
+      0,
+      8
+     ]
+    },
+    {
+     "kind": "panel",
+     "variant": "wall",
+     "at": [
+      3,
+      1.8,
+      0
+     ],
+     "scale": [
+      6,
+      3.6,
+      0.2
+     ]
+    },
+    {
+     "kind": "repeat",
+     "child": 3,
+     "count": 3,
+     "step": [
+      6,
+      0,
+      0
+     ]
+    },
+    {
+     "kind": "panel",
+     "variant": "wall",
+     "at": [
+      0,
+      1.8,
+      4
+     ],
+     "scale": [
+      0.2,
+      3.6,
+      8
+     ]
+    },
+    {
+     "kind": "repeat",
+     "child": 5,
+     "count": 2,
+     "step": [
+      0,
+      0,
+      8
+     ]
+    },
+    {
+     "kind": "fixture",
+     "variant": "lamp",
+     "at": [
+      5,
+      3.2,
+      5
+     ],
+     "scale": [
+      2,
+      0.2,
+      0.5
+     ]
+    },
+    {
+     "kind": "repeat",
+     "child": 7,
+     "count": 3,
+     "step": [
+      4,
+      0,
+      0
+     ]
+    },
+    {
+     "kind": "actor",
+     "variant": "tall",
+     "at": [
+      10,
+      0,
+      2
+     ],
+     "yaw": 0,
+     "scale": [
+      0.75,
+      1.65,
+      0.65
+     ]
+    },
+    {
+     "kind": "group",
+     "children": [
+      2,
+      4,
+      6,
+      8,
+      9
+     ]
+    },
+    {
+     "kind": "panel",
+     "variant": "floor",
+     "at": [
+      7.8,
+      1.03,
+      4
+     ],
+     "scale": [
+      3.2,
+      0.12,
+      1.1
+     ]
+    },
+    {
+     "kind": "panel",
+     "variant": "railing",
+     "at": [
+      7.8,
+      1.08,
+      3.38
+     ],
+     "scale": [
+      3.3,
+      0.16,
+      0.12
+     ]
+    },
+    {
+     "kind": "mirror",
+     "child": 12,
+     "axis": "z",
+     "about": 4
+    },
+    {
+     "kind": "group",
+     "children": [
+      11,
+      13
+     ]
+    },
+    {
+     "kind": "fixture",
+     "variant": "crate",
+     "at": [
+      7,
+      1.2,
+      4
+     ],
+     "scale": [
+      0.42,
+      0.28,
+      0.42
+     ]
+    },
+    {
+     "kind": "organic",
+     "variant": "pebble",
+     "at": [
+      7.65,
+      1.2,
+      4
+     ],
+     "scale": [
+      0.24,
+      0.22,
+      0.24
+     ]
+    },
+    {
+     "kind": "repeat",
+     "child": 16,
+     "count": 3,
+     "step": [
+      0.24,
+      0,
+      0
+     ]
+    },
+    {
+     "kind": "fixture",
+     "variant": "barrel",
+     "at": [
+      8.5,
+      1.3,
+      4
+     ],
+     "scale": [
+      0.22,
+      0.4,
+      0.22
+     ]
+    },
+    {
+     "kind": "group",
+     "children": [
+      15,
+      17,
+      18
+     ]
+    },
+    {
+     "kind": "fixture",
+     "variant": "terminal",
+     "at": [
+      10.75,
+      1.16,
+      4.3
+     ],
+     "yaw": 2,
+     "scale": [
+      0.4,
+      0.5,
+      0.38
+     ]
+    },
+    {
+     "kind": "panel",
+     "variant": "floor",
+     "at": [
+      3.3,
+      0.3,
+      7
+     ],
+     "scale": [
+      3.8,
+      0.12,
+      1.3
+     ]
+    },
+    {
+     "kind": "repeat",
+     "child": 21,
+     "count": 3,
+     "step": [
+      0,
+      0.65,
+      0
+     ]
+    },
+    {
+     "kind": "column",
+     "variant": "post",
+     "at": [
+      1.45,
+      0.95,
+      7
+     ],
+     "scale": [
+      0.12,
+      1.9,
+      1.3
+     ]
+    },
+    {
+     "kind": "repeat",
+     "child": 23,
+     "count": 2,
+     "step": [
+      3.7,
+      0,
+      0
+     ]
+    },
+    {
+     "kind": "fixture",
+     "variant": "crate",
+     "at": [
+      1.9,
+      0.52,
+      7
+     ],
+     "scale": [
+      0.42,
+      0.3,
+      0.65
+     ]
+    },
+    {
+     "kind": "repeat",
+     "child": 25,
+     "count": 6,
+     "step": [
+      0.55,
+      0,
+      0
+     ]
+    },
+    {
+     "kind": "repeat",
+     "child": 26,
+     "count": 3,
+     "step": [
+      0,
+      0.65,
+      0
+     ]
+    },
+    {
+     "kind": "group",
+     "children": [
+      22,
+      24,
+      27
+     ]
+    },
+    {
+     "kind": "repeat",
+     "child": 28,
+     "count": 2,
+     "step": [
+      0,
+      0,
+      4
+     ]
+    },
+    {
+     "kind": "panel",
+     "variant": "half",
+     "at": [
+      14.6,
+      0.9,
+      12
+     ],
+     "scale": [
+      0.08,
+      0.55,
+      1.1
+     ]
+    },
+    {
+     "kind": "repeat",
+     "child": 30,
+     "count": 2,
+     "step": [
+      0.8,
+      0,
+      0
+     ]
+    },
+    {
+     "kind": "panel",
+     "variant": "half",
+     "at": [
+      15,
+      0.9,
+      11.45
+     ],
+     "scale": [
+      0.8,
+      0.55,
+      0.08
+     ]
+    },
+    {
+     "kind": "panel",
+     "variant": "floor",
+     "at": [
+      15,
+      0.6,
+      12
+     ],
+     "scale": [
+      0.8,
+      0.08,
+      1.1
+     ]
+    },
+    {
+     "kind": "sweep",
+     "profile": [
+      [
+       -0.035,
+       -0.035
+      ],
+      [
+       0.035,
+       -0.035
+      ],
+      [
+       0.035,
+       0.035
+      ],
+      [
+       -0.035,
+       0.035
+      ]
+     ],
+     "path": [
+      [
+       14.6,
+       0.3,
+       11.6
+      ],
+      [
+       14.6,
+       0.55,
+       12.45
+      ],
+      [
+       14.6,
+       1.2,
+       12.7
+      ],
+      [
+       15.4,
+       1.2,
+       12.7
+      ],
+      [
+       15.4,
+       0.55,
+       12.45
+      ],
+      [
+       15.4,
+       0.3,
+       11.6
+      ]
+     ],
+     "segments": 12,
+     "swatch": "deep",
+     "at": [
+      0,
+      0,
+      0
+     ],
+     "scale": [
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "kind": "organic",
+     "variant": "pebble",
+     "at": [
+      14.65,
+      0.17,
+      11.65
+     ],
+     "scale": [
+      0.22,
+      0.3,
+      0.22
+     ]
+    },
+    {
+     "kind": "repeat",
+     "child": 35,
+     "count": 2,
+     "step": [
+      0.7,
+      0,
+      0
+     ]
+    },
+    {
+     "kind": "repeat",
+     "child": 36,
+     "count": 2,
+     "step": [
+      0,
+      0,
+      0.85
+     ]
+    },
+    {
+     "kind": "group",
+     "children": [
+      31,
+      32,
+      33,
+      34,
+      37
+     ]
+    },
+    {
+     "kind": "repeat",
+     "child": 38,
+     "count": 2,
+     "step": [
+      1.4,
+      0,
+      0
+     ]
+    },
+    {
+     "kind": "group",
+     "children": [
+      10,
+      14,
+      19,
+      20,
+      29,
+      39
+     ]
+    }
+   ],
+   "root": 40
+  },
+  "shapes": [
+   {
+    "shapeId": "checkoutQueueShape",
+    "stableId": "checkoutQueue",
+    "nodes": [
+     {
+      "kind": "capsule",
+      "height": 0.55,
+      "radius": 0.24
+     },
+     {
+      "kind": "translate",
+      "child": 0,
+      "offset": [
+       0,
+       1.06,
+       0
+      ]
+     },
+     {
+      "kind": "sphere",
+      "radius": 0.18
+     },
+     {
+      "kind": "translate",
+      "child": 2,
+      "offset": [
+       0,
+       1.68,
+       0
+      ]
+     },
+     {
+      "kind": "capsule",
+      "height": 0.53,
+      "radius": 0.095
+     },
+     {
+      "kind": "translate",
+      "child": 4,
+      "offset": [
+       -0.13,
+       0.37,
+       0
+      ]
+     },
+     {
+      "kind": "translate",
+      "child": 4,
+      "offset": [
+       0.13,
+       0.37,
+       0
+      ]
+     },
+     {
+      "kind": "capsule",
+      "height": 0.42,
+      "radius": 0.075
+     },
+     {
+      "kind": "rotate",
+      "child": 7,
+      "yaw": 0,
+      "pitch": 0,
+      "roll": 0.18
+     },
+     {
+      "kind": "translate",
+      "child": 8,
+      "offset": [
+       -0.3,
+       1.03,
+       0
+      ]
+     },
+     {
+      "kind": "rotate",
+      "child": 7,
+      "yaw": 0,
+      "pitch": 0,
+      "roll": -0.18
+     },
+     {
+      "kind": "translate",
+      "child": 10,
+      "offset": [
+       0.3,
+       1.03,
+       0
+      ]
+     },
+     {
+      "kind": "union",
+      "children": [
+       1,
+       3,
+       5,
+       6,
+       9,
+       11
+      ],
+      "k": 0.035
+     },
+     {
+      "kind": "translate",
+      "child": 12,
+      "offset": [
+       -0.13,
+       0,
+       -1.3
+      ]
+     },
+     {
+      "kind": "scale",
+      "child": 12,
+      "factor": [
+       1.12,
+       0.94,
+       1.1
+      ]
+     },
+     {
+      "kind": "translate",
+      "child": 14,
+      "offset": [
+       0.13,
+       0,
+       0
+      ]
+     },
+     {
+      "kind": "scale",
+      "child": 12,
+      "factor": [
+       0.93,
+       1.04,
+       0.96
+      ]
+     },
+     {
+      "kind": "translate",
+      "child": 16,
+      "offset": [
+       -0.08,
+       0,
+       1.3
+      ]
+     },
+     {
+      "kind": "roundBox",
+      "size": [
+       0.32,
+       0.42,
+       0.26
+      ],
+      "radius": 0.045
+     },
+     {
+      "kind": "translate",
+      "child": 18,
+      "offset": [
+       0.36,
+       0.61,
+       -1.3
+      ]
+     },
+     {
+      "kind": "translate",
+      "child": 18,
+      "offset": [
+       -0.36,
+       0.61,
+       1.3
+      ]
+     },
+     {
+      "kind": "union",
+      "children": [
+       13,
+       15,
+       17,
+       19,
+       20
+      ]
+     }
+    ],
+    "root": 21,
+    "targetBounds": {
+     "min": [
+      -0.65,
+      -0.04,
+      -1.65
+     ],
+     "max": [
+      0.65,
+      2,
+      1.65
+     ]
+    },
+    "anchors": [
+     {
+      "name": "front",
+      "at": [
+       0,
+       0,
+       -1.65
+      ],
+      "normal": [
+       0,
+       0,
+       -1
+      ]
+     },
+     {
+      "name": "back",
+      "at": [
+       0,
+       0,
+       1.65
+      ],
+      "normal": [
+       0,
+       0,
+       1
+      ]
+     }
+    ],
+    "materialIntent": "everydayClothing",
+    "priority": 10
+   },
+   {
+    "shapeId": "checkoutCounterShape",
+    "stableId": "checkoutCounter",
+    "nodes": [
+     {
+      "kind": "roundBox",
+      "size": [
+       5.6,
+       0.95,
+       1.65
+      ],
+      "radius": 0.1
+     },
+     {
+      "kind": "translate",
+      "child": 0,
+      "offset": [
+       0,
+       0.475,
+       0
+      ]
+     },
+     {
+      "kind": "box",
+      "size": [
+       1.75,
+       0.8,
+       0.85
+      ]
+     },
+     {
+      "kind": "translate",
+      "child": 2,
+      "offset": [
+       1.25,
+       0.39,
+       -0.65
+      ]
+     },
+     {
+      "kind": "subtract",
+      "children": [
+       1,
+       3
+      ]
+     },
+     {
+      "kind": "roundBox",
+      "size": [
+       5.85,
+       0.16,
+       1.85
+      ],
+      "radius": 0.055
+     },
+     {
+      "kind": "translate",
+      "child": 5,
+      "offset": [
+       0,
+       1,
+       0
+      ]
+     },
+     {
+      "kind": "box",
+      "size": [
+       3.3,
+       0.3,
+       1.2
+      ]
+     },
+     {
+      "kind": "translate",
+      "child": 7,
+      "offset": [
+       -1.05,
+       1.08,
+       0
+      ]
+     },
+     {
+      "kind": "subtract",
+      "children": [
+       6,
+       8
+      ]
+     },
+     {
+      "kind": "roundBox",
+      "size": [
+       1.18,
+       0.1,
+       1.32
+      ],
+      "radius": 0.06
+     },
+     {
+      "kind": "translate",
+      "child": 10,
+      "offset": [
+       2.25,
+       1.1,
+       0
+      ]
+     },
+     {
+      "kind": "union",
+      "children": [
+       4,
+       9,
+       11
+      ]
+     }
+    ],
+    "root": 12,
+    "targetBounds": {
+     "min": [
+      -3,
+      -0.03,
+      -1
+     ],
+     "max": [
+      3,
+      1.2,
+      1
+     ]
+    },
+    "anchors": [
+     {
+      "name": "belt",
+      "at": [
+       -1.05,
+       1,
+       0
+      ],
+      "normal": [
+       0,
+       1,
+       0
+      ]
+     },
+     {
+      "name": "payment",
+      "at": [
+       1.9,
+       1.08,
+       0.3
+      ],
+      "normal": [
+       0,
+       1,
+       0
+      ]
+     },
+     {
+      "name": "cashier",
+      "at": [
+       1.25,
+       0,
+       -1
+      ],
+      "normal": [
+       0,
+       0,
+       -1
+      ]
+     }
+    ],
+    "materialIntent": "laminatedCheckout",
+    "priority": 11
+   }
+  ],
+  "placements": [
+   {
+    "stableId": "supermarketInterior",
+    "source": {
+     "kind": "geom",
+     "node": 10
+    },
+    "targetBounds": {
+     "min": [
+      -0.1,
+      -0.2,
+      -0.1
+     ],
+     "max": [
+      18,
+      3.6,
+      16
+     ]
+    }
+   },
+   {
+    "stableId": "checkoutQueue",
+    "source": {
+     "kind": "shape",
+     "shapeId": "checkoutQueueShape"
+    },
+    "targetBounds": {
+     "min": [
+      9.35,
+      -0.04,
+      6.85
+     ],
+     "max": [
+      10.65,
+      2,
+      10.15
+     ]
+    }
+   },
+   {
+    "stableId": "checkoutCounter",
+    "source": {
+     "kind": "shape",
+     "shapeId": "checkoutCounterShape"
+    },
+    "targetBounds": {
+     "min": [
+      5.85,
+      -0.03,
+      3
+     ],
+     "max": [
+      11.85,
+      1.2,
+      5
+     ]
+    }
+   },
+   {
+    "stableId": "checkoutBelt",
+    "source": {
+     "kind": "geom",
+     "node": 14
+    },
+    "targetBounds": {
+     "min": [
+      6.15,
+      0.97,
+      3.3
+     ],
+     "max": [
+      9.45,
+      1.16,
+      4.7
+     ]
+    }
+   },
+   {
+    "stableId": "groceries",
+    "source": {
+     "kind": "geom",
+     "node": 19
+    },
+    "targetBounds": {
+     "min": [
+      6.79,
+      1.06,
+      3.67
+     ],
+     "max": [
+      8.65,
+      1.55,
+      4.33
+     ]
+    }
+   },
+   {
+    "stableId": "paymentTerminal",
+    "source": {
+     "kind": "geom",
+     "node": 20
+    },
+    "targetBounds": {
+     "min": [
+      10.5,
+      1.08,
+      4.05
+     ],
+     "max": [
+      11,
+      1.66,
+      4.55
+     ]
+    }
+   },
+   {
+    "stableId": "merchandiseShelves",
+    "source": {
+     "kind": "geom",
+     "node": 29
+    },
+    "targetBounds": {
+     "min": [
+      1.35,
+      0,
+      6.3
+     ],
+     "max": [
+      5.25,
+      1.95,
+      11.7
+     ]
+    }
+   },
+   {
+    "stableId": "shoppingCarts",
+    "source": {
+     "kind": "geom",
+     "node": 39
+    },
+    "targetBounds": {
+     "min": [
+      14.5,
+      0,
+      11.35
+     ],
+     "max": [
+      16.9,
+      1.3,
+      12.8
+     ]
+    }
+   }
+  ],
+  "world": {
+   "irVersion": "v1",
+   "simRevision": 0,
+   "lookRevision": 0,
+   "sim": {
+    "layout": {
+     "width": 19,
+     "height": 17
+    },
+    "grid": {
+     "cell": 1
+    },
+    "sockets": {
+     "entrancePad": [
+      10,
+      14
+     ],
+     "queueTailPad": [
+      10,
+      11
+     ],
+     "queuePad": [
+      10,
+      8
+     ],
+     "clearedQueuePad": [
+      13,
+      6
+     ],
+     "customerTurnPad": [
+      10,
+      6
+     ],
+     "cashierPad": [
+      10,
+      2
+     ],
+     "counterPad": [
+      10,
+      4
+     ],
+     "beltPad": [
+      8,
+      4
+     ],
+     "groceriesPad": [
+      7,
+      4
+     ],
+     "terminalPad": [
+      11,
+      4
+     ],
+     "shelvesPad": [
+      3,
+      9
+     ],
+     "cartsPad": [
+      15,
+      12
+     ],
+     "interiorPad": [
+      1,
+      1
+     ]
+    },
+    "collisionAabb": {
+     "checkoutCounter": [
+      6,
+      3,
+      6,
+      2
+     ],
+     "merchandiseShelves": [
+      1,
+      6,
+      5,
+      6
+     ],
+     "shoppingCarts": [
+      14,
+      11,
+      3,
+      2
+     ]
+    },
+    "entities": {
+     "practicingPerson": {
+      "role": "actor",
+      "socket": "entrancePad",
+      "state": "arriving",
+      "locked": false
+     },
+     "cashier": {
+      "role": "agent",
+      "socket": "cashierPad",
+      "state": "serving",
+      "locked": false
+     },
+     "supermarketInterior": {
+      "role": "architecture",
+      "socket": "interiorPad",
+      "state": "open",
+      "locked": false
+     },
+     "checkoutQueue": {
+      "role": "shoppers",
+      "socket": "queuePad",
+      "state": "waiting",
+      "locked": false
+     },
+     "checkoutCounter": {
+      "role": "checkout",
+      "socket": "counterPad",
+      "state": "servingOthers",
+      "locked": false
+     },
+     "checkoutBelt": {
+      "role": "conveyor",
+      "socket": "beltPad",
+      "state": "ready",
+      "locked": false
+     },
+     "groceries": {
+      "role": "purchases",
+      "socket": "groceriesPad",
+      "state": "withShopper",
+      "locked": false
+     },
+     "paymentTerminal": {
+      "role": "paymentDevice",
+      "socket": "terminalPad",
+      "state": "idle",
+      "locked": false
+     },
+     "merchandiseShelves": {
+      "role": "merchandise",
+      "socket": "shelvesPad",
+      "state": "stocked",
+      "locked": false
+     },
+     "shoppingCarts": {
+      "role": "carts",
+      "socket": "cartsPad",
+      "state": "parked",
+      "locked": false
+     }
+    },
+    "state": {
+     "counters": {},
+     "flags": {
+      "joinedQueue": {
+       "init": false
+      },
+      "yourTurn": {
+       "init": false
+      },
+      "greeted": {
+       "init": false
+      },
+      "itemsPlaced": {
+       "init": false
+      },
+      "paid": {
+       "init": false
+      },
+      "momentRequested": {
+       "init": false
+      }
+     },
+     "timers": {
+      "queueWait": {
+       "durationTicks": 60,
+       "init": 0
+      }
+     },
+     "zones": {
+      "checkoutArea": [
+       [
+        7,
+        5,
+        6,
+        7
+       ]
+      ]
+     },
+     "slots": 0,
+     "pool": {}
+    },
+    "rules": {
+     "joinQueue": {
+      "phase": 0,
+      "priority": 0,
+      "event": {
+       "kind": "onEnterZone",
+       "entity": "practicingPerson",
+       "zone": "queueTailPad"
+      },
+      "condition": {
+       "kind": "flagIs",
+       "flag": "joinedQueue",
+       "value": false
+      },
+      "actions": [
+       {
+        "kind": "setFlag",
+        "flag": "joinedQueue",
+        "value": true
+       },
+       {
+        "kind": "setState",
+        "target": "practicingPerson",
+        "value": "waiting"
+       },
+       {
+        "kind": "startTimer",
+        "timer": "queueWait"
+       }
+      ]
+     },
+     "advanceQueue": {
+      "phase": 0,
+      "priority": 0,
+      "event": {
+       "kind": "onTimerEnd",
+       "timer": "queueWait"
+      },
+      "condition": null,
+      "actions": [
+       {
+        "kind": "moveTo",
+        "target": "checkoutQueue",
+        "socket": "clearedQueuePad",
+        "ticks": 20
+       },
+       {
+        "kind": "setState",
+        "target": "checkoutQueue",
+        "value": "leaving"
+       },
+       {
+        "kind": "setFlag",
+        "flag": "yourTurn",
+        "value": true
+       },
+       {
+        "kind": "setState",
+        "target": "checkoutCounter",
+        "value": "yourTurn"
+       },
+       {
+        "kind": "setState",
+        "target": "cashier",
+        "value": "welcoming"
+       }
+      ]
+     },
+     "greetCashier": {
+      "phase": 0,
+      "priority": 0,
+      "event": {
+       "kind": "onAction",
+       "actor": "practicingPerson",
+       "actionId": "greet",
+       "target": "cashier"
+      },
+      "condition": {
+       "kind": "allOf",
+       "operands": [
+        {
+         "kind": "flagIs",
+         "flag": "yourTurn",
+         "value": true
+        },
+        {
+         "kind": "inZone",
+         "entity": "practicingPerson",
+         "zone": "customerTurnPad"
+        }
+       ]
+      },
+      "actions": [
+       {
+        "kind": "setFlag",
+        "flag": "greeted",
+        "value": true
+       },
+       {
+        "kind": "setState",
+        "target": "cashier",
+        "value": "greetingReturned"
+       },
+       {
+        "kind": "setState",
+        "target": "practicingPerson",
+        "value": "greeted"
+       }
+      ]
+     },
+     "placeGroceries": {
+      "phase": 0,
+      "priority": 0,
+      "event": {
+       "kind": "onAction",
+       "actor": "practicingPerson",
+       "actionId": "placeGroceries",
+       "target": "checkoutBelt"
+      },
+      "condition": {
+       "kind": "allOf",
+       "operands": [
+        {
+         "kind": "flagIs",
+         "flag": "greeted",
+         "value": true
+        },
+        {
+         "kind": "flagIs",
+         "flag": "itemsPlaced",
+         "value": false
+        },
+        {
+         "kind": "inZone",
+         "entity": "practicingPerson",
+         "zone": "customerTurnPad"
+        }
+       ]
+      },
+      "actions": [
+       {
+        "kind": "moveTo",
+        "target": "groceries",
+        "socket": "beltPad",
+        "ticks": 1
+       },
+       {
+        "kind": "setState",
+        "target": "groceries",
+        "value": "onBelt"
+       },
+       {
+        "kind": "setFlag",
+        "flag": "itemsPlaced",
+        "value": true
+       },
+       {
+        "kind": "setState",
+        "target": "paymentTerminal",
+        "value": "ready"
+       }
+      ]
+     },
+     "askForMoment": {
+      "phase": 0,
+      "priority": 1,
+      "event": {
+       "kind": "onAction",
+       "actor": "practicingPerson",
+       "actionId": "askForMoment",
+       "target": "cashier"
+      },
+      "condition": {
+       "kind": "inZone",
+       "entity": "practicingPerson",
+       "zone": "checkoutArea"
+      },
+      "actions": [
+       {
+        "kind": "setFlag",
+        "flag": "momentRequested",
+        "value": true
+       },
+       {
+        "kind": "setState",
+        "target": "cashier",
+        "value": "takeYourTime"
+       }
+      ]
+     },
+     "pay": {
+      "phase": 0,
+      "priority": 0,
+      "event": {
+       "kind": "onAction",
+       "actor": "practicingPerson",
+       "actionId": "pay",
+       "target": "paymentTerminal"
+      },
+      "condition": {
+       "kind": "allOf",
+       "operands": [
+        {
+         "kind": "flagIs",
+         "flag": "itemsPlaced",
+         "value": true
+        },
+        {
+         "kind": "flagIs",
+         "flag": "paid",
+         "value": false
+        },
+        {
+         "kind": "inZone",
+         "entity": "practicingPerson",
+         "zone": "customerTurnPad"
+        }
+       ]
+      },
+      "actions": [
+       {
+        "kind": "setFlag",
+        "flag": "paid",
+        "value": true
+       },
+       {
+        "kind": "setState",
+        "target": "paymentTerminal",
+        "value": "accepted"
+       },
+       {
+        "kind": "setState",
+        "target": "cashier",
+        "value": "thankYou"
+       },
+       {
+        "kind": "emit",
+        "signal": "paymentComplete"
+       }
+      ]
+     },
+     "win": {
+      "phase": 1,
+      "priority": 0,
+      "event": {
+       "kind": "onSignal",
+       "name": "paymentComplete"
+      },
+      "condition": {
+       "kind": "flagIs",
+       "flag": "paid",
+       "value": true
+      },
+      "actions": [
+       {
+        "kind": "win"
+       }
+      ]
+     }
+    }
+   },
+   "look": {
+    "modules": {
+     "practicingPerson": {
+      "appearance": "everydayShopper"
+     },
+     "cashier": {
+      "appearance": "storeApron",
+      "dialogue": {
+       "welcoming": "Hello! You're next.",
+       "greetingReturned": "Hello. You can put your groceries on the belt.",
+       "takeYourTime": "Of course. Take your time.",
+       "thankYou": "Thank you. Have a good day."
+      }
+     },
+     "checkoutQueue": {
+      "appearance": "variedEverydayClothing",
+      "spacing": "closeWithoutContact"
+     },
+     "checkoutCounter": {
+      "surface": "laminateWithMetalTrim"
+     },
+     "checkoutBelt": {
+      "surface": "ribbedRubber"
+     },
+     "groceries": {
+      "visibilityByState": {
+       "withShopper": false,
+       "onBelt": true
+      }
+     },
+     "paymentTerminal": {
+      "screenByState": {
+       "idle": "Waiting",
+       "ready": "Ready to pay",
+       "accepted": "Payment accepted"
+      }
+     },
+     "merchandiseShelves": {
+      "packaging": "mixedEverydayGroceries"
+     },
+     "shoppingCarts": {
+      "surface": "wireAndPlastic"
+     }
+    },
+    "palette": {
+     "shell": "#E4E0D6",
+     "deep": "#343C40",
+     "accent": "#427C78",
+     "warm": "#B87554",
+     "sand": "#C7B58E",
+     "moss": "#738462"
+    },
+    "lightRig": {
+     "kind": "overheadArea",
+     "intensity": 0.95,
+     "temperatureKelvin": 4200,
+     "shadowSoftness": 0.75
+    },
+    "atmosphere": {
+     "kind": "indoor",
+     "haze": 0,
+     "mood": "busyEveryday",
+     "experienceNote": "Practice everyday encounters at your own pace. Completion records checkout actions, not feelings or changes in anxiety."
+    },
+    "materialRoles": {
+     "everydayClothing": {
+      "roughness": 0.95
+     },
+     "laminatedCheckout": {
+      "roughness": 0.45
+     },
+     "cartMetal": {
+      "roughness": 0.3,
+      "metalness": 0.8
+     },
+     "beltRubber": {
+      "roughness": 0.9
+     }
+    },
+    "camera": {
+     "kind": "orbit",
+     "target": [
+      9,
+      0.9,
+      7
+     ],
+     "position": [
+      20,
+      16,
+      23
+     ],
+     "fieldOfView": 48
+    },
+    "audio": {
+     "ambience": "subduedShopperConversation",
+     "details": [
+      "scannerBeeps",
+      "cartWheels",
+      "beltHum"
+     ],
+     "volume": 0.35
+    }
+   }
+  }
+ }
+}

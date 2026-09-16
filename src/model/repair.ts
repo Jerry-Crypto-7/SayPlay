@@ -71,8 +71,12 @@ export interface RepairResult {
  * `maxNodes` je v replayech, ne v čase — hledání musí v prohlížeči i v Node
  * skončit stejně. 20 000 replayů malého světa je řádově desetiny sekundy a
  * proti 40+ sekundám emise je to šum.
+ *
+ * **Velký svět ale ne** – proto i `maxTicks`. Nejdražší úspěšné hledání
+ * v archivu P19 stálo 14 805 tiků (171 replayů); 40 000 je 2,7× víc a
+ * nevyhratelný svět pokladny zamítne za ~12 s místo 127–167 s.
  */
-const SOLVE_BUDGET = { maxNodes: 20_000, maxDepth: 6, settleTicks: 30 } as const;
+const SOLVE_BUDGET = { maxNodes: 20_000, maxTicks: 40_000, maxDepth: 6, settleTicks: 30 } as const;
 
 function asRecord(value: unknown): Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)

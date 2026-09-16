@@ -57,6 +57,15 @@ export interface SolveOptions {
    * je to jediná mez, která dá v prohlížeči i v Node tutéž odpověď.
    */
   readonly maxNodes: number;
+  /**
+   * Kolik tiků smí hledání celkem odsimulovat, přes všechny replaye.
+   *
+   * `maxNodes` sám nestačí: replay jde od nuly, takže cena uzlu roste s hloubkou
+   * i s velikostí světa. Naměřeno 16. 9. 2026 (P19 R6): svět pokladny s
+   * nevyhratelnými pravidly vyčerpal 20 000 replayů za 127–167 s a nic nenašel,
+   * přičemž nejdražší úspěšné hledání v archivu stálo 171 replayů.
+   */
+  readonly maxTicks: number;
   /** Nejvyšší počet vstupů v hledané stopě. */
   readonly maxDepth: number;
   /**
@@ -176,12 +185,14 @@ export function solveWitness(world: VerifiableWorld, options: SolveOptions): Sol
   // Svět, který vyhraje sám, se nedokazuje — hledač by mu vydal certifikát za
   // to, že hráč není potřeba. Laťka se tím nesmí snížit: takový svět zůstane
   // odmítnutý svým vlastním důvodem, přesně jako doteď.
-  if (replay(world, [], policy.maxHorizonTicks).runState === 'won') return null;
+  const alone = replay(world, [], policy.maxHorizonTicks);
+  if (alone.runState === 'won') return null;
 
   const depthCap = Math.min(options.maxDepth, policy.maxInputs);
   const settle = Math.max(1, options.settleTicks);
 
   let nodes = 0;
+  let ticks = alone.tick;
   let frontier: (readonly TraceInput[])[] = [[]];
   const seen = new Set<string>();
 
@@ -192,7 +203,7 @@ export function solveWitness(world: VerifiableWorld, options: SolveOptions): Sol
       if (tick >= policy.maxHorizonTicks) continue;
 
       for (const move of alphabet) {
-        if (nodes >= options.maxNodes) return null;
+        if (nodes >= options.maxNodes || ticks >= options.maxTicks) return null;
         const input: TraceInput =
           move.target === undefined
             ? { tick, actor, actionId: move.actionId }
@@ -201,6 +212,7 @@ export function solveWitness(world: VerifiableWorld, options: SolveOptions): Sol
 
         nodes += 1;
         const outcome = replay(world, candidate, tick + settle);
+        ticks += outcome.tick;
 
         if (outcome.runState === 'won') {
           // Ověřuje se TÍMTÉŽ verifikátorem, jaký soudí stopu od modelu. Hledač

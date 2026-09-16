@@ -431,7 +431,7 @@ describe('the world graph is the one the existing pipeline already reads', () =>
     const built = buildRuntimeWorld(compiled.value.world.sim);
     expect(built.ok).toBe(true);
     if (!built.ok) return;
-    const found = solveWitness(built.world, { maxNodes: 20_000, maxDepth: 6, settleTicks: 40 });
+    const found = solveWitness(built.world, { maxNodes: 20_000, maxTicks: 100_000, maxDepth: 6, settleTicks: 40 });
     expect(found).not.toBeNull();
     expect(found?.ops.length).toBeGreaterThan(0);
   });
@@ -980,4 +980,25 @@ describe('the two fields the prompt used to leave without an alphabet', () => {
     expect(SHAPE_IDENTIFIER_PATTERN.test('brushedSteel')).toBe(true);
     expect(ID_PATTERN.test('loosePickup')).toBe(true);
   });
+});
+
+/**
+ * **Nevyhratelný velký svět se zamítne za sekundy, ne za minuty** (P19 R6).
+ * Odpověď Astry na větu s pokladnou vyčerpala 20 000 replayů hledače za
+ * 127–167 s; strop v tikách ji zamítne s týmž důvodem. Mez času je volná
+ * schválně – pod zátěží celé sady se časové testy hýbou, tady jde o řád.
+ */
+describe('rozpočet hledání svědka', () => {
+  it('zamítne nevyhratelnou pokladnu týmž důvodem a v řádu sekund', () => {
+    const fixture = JSON.parse(readFileSync(new URL('./fixtures/unwinnable-checkout.json', import.meta.url), 'utf8')) as {
+      plan: PlannerEmission;
+      answer: unknown;
+    };
+    const started = performance.now();
+    const result = compileBlueprint(fixture.answer, fixture.plan, { sessionSeed: 1, upstream: UPSTREAM });
+
+    expect(result.ok).toBe(false);
+    expect(JSON.stringify(result)).toContain('witness: horizon 600 exhausted');
+    expect(performance.now() - started).toBeLessThan(40_000);
+  }, 120_000);
 });
