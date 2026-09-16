@@ -29,7 +29,7 @@ import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 
 import type { UpstreamRequest } from '../model/prompt';
-import type { UpstreamConfig } from './upstream';
+import { CODEX_CLI_ENDPOINT, type UpstreamConfig } from './upstream';
 
 export const REDACTED = '[redacted]';
 
@@ -83,7 +83,18 @@ export function answerArchive(
 
   // Prázdný literál by nahradil všechno; konfigurace ho sem nepustí, ale
   // filtr je levnější než důvěra v cizí invariant o jeden soubor dál.
-  const secrets = [config.apiKey, config.endpoint].filter((secret) => secret.length > 0);
+  //
+  // ⚠ **`codex-cli` je sentinel, ne adresa, a redigovat se nesmí** (nález
+  // nezávislé revize 16. 9. 2026). Na téhle větvi žádný koncový bod neexistuje
+  // — hodnota znamená „žádná adresa, spusť CLI" (`CODEX_CLI_ENDPOINT`) — takže
+  // by ta redakce nechránila nic a přitom vymazala každou zmínku o codex-cli
+  // v odpovědi modelu. Mazání je tu slepá záměna podřetězce: co se jednou
+  // přepíše na `[redacted]`, se z archivu nedá dostat zpátky, a „klíč tam
+  // není" platí i nad rozžvýkaným souborem.
+  const secrets = [
+    config.apiKey,
+    config.endpoint === CODEX_CLI_ENDPOINT ? '' : config.endpoint,
+  ].filter((secret) => secret.length > 0);
   const caseId = randomUUID();
 
   return {

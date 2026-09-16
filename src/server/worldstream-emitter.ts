@@ -42,6 +42,7 @@ export async function cloudEmitter(): Promise<BlueprintEmitter | null> {
   // `:540`), takže si archiv razí vlastní id a volání pod ním čísluje.
   const archive = answerArchive(process.env, config);
   let calls = 0;
+  let archiveFailed = false;
 
   return async (request: UpstreamRequest): Promise<unknown> => {
     const call = { prompt: request.user, request };
@@ -72,9 +73,17 @@ export async function cloudEmitter(): Promise<BlueprintEmitter | null> {
       calls += 1;
       try {
         await archive.write(calls, request, outcome.ok ? outcome.body : { error: outcome.reason, detail: outcome.detail });
-      } catch {
-        // Úmyslně tiše: cesta, na kterou nejde psát, je vada měřicího běhu,
-        // ne relace u porotce.
+      } catch (thrown) {
+        // **Svět se kvůli archivu nezruší nikdy** — porotci jde o svět, archiv
+        // je poznámka pro autora. Úplně tiše to ale být nesmí (nález nezávislé
+        // revize): deset zaplacených volání a nula souborů vypadá přesně jako
+        // běh, který se nearchivoval vůbec, a měřicí běh P19 na těch souborech
+        // stojí. Hlásí se **jednou za emitor**, ne na každé volání — deset
+        // stejných řádků je tentýž šum jako ticho.
+        if (!archiveFailed) {
+          archiveFailed = true;
+          console.warn(`[worldstream] the answer archive could not be written: ${String(thrown)}`);
+        }
       }
     }
 

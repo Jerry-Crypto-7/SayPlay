@@ -96,6 +96,7 @@ beforeEach(() => {
 afterEach(() => {
   for (const dir of temporary.splice(0)) rmSync(dir, { recursive: true, force: true });
   vi.unstubAllEnvs();
+  vi.restoreAllMocks();
   resetProcessSpendCap();
 });
 
@@ -203,16 +204,65 @@ describe('archiv odpovědí modelu', () => {
     expect(raw).toContain('if the grammar is missing');
   });
 
+  /**
+   * **Sentinel se neredaguje.** `codex-cli` neznamená adresu, ale „žádná
+   * adresa, spusť CLI" — a je to zároveň slovo, které model umí napsat. Slepá
+   * záměna podřetězce by z archivu vymazala obsah, kvůli kterému vzniká,
+   * a nikdo by si toho nevšiml: „klíč tam není" platí i nad rozžvýkaným
+   * souborem. Klíč se přitom maže dál.
+   */
+  it('sentinel codex-cli zůstane, klíč zmizí', async () => {
+    const dir = scratch('worldsmith-archive-cli-');
+    configure(dir);
+    vi.stubEnv('WORLDSMITH_MODEL_ENDPOINT', 'codex-cli');
+    generate.mockResolvedValue({
+      ok: true,
+      body: { world: 'a codex-cli terminal glowing on a desk' },
+      usage: null,
+    });
+
+    const { cloudEmitter } = await import('../worldstream-emitter');
+    const emit = await cloudEmitter();
+    await emit!({ ...REQUEST, system: `run codex-cli with ${KEY}` });
+
+    const raw = readFileSync(join(dir, readdirSync(dir)[0]!), 'utf8');
+    expect(raw).toContain('a codex-cli terminal glowing on a desk');
+    expect(raw).toContain('run codex-cli with [redacted]');
+    expect(raw).not.toContain(KEY);
+  });
+
   it('chyba zápisu neshodí generování světa', async () => {
     const dir = scratch('worldsmith-archive-blocked-');
     // Souborem místo adresáře: `mkdir` na tuhle cestu selže vždycky a všude.
     const blocked = join(dir, 'not-a-directory');
     writeFileSync(blocked, 'x', 'utf8');
     configure(join(blocked, 'answers'));
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const { cloudEmitter } = await import('../worldstream-emitter');
     const emit = await cloudEmitter();
 
     await expect(emit!(REQUEST)).resolves.toEqual(ANSWER_BODY);
+  });
+
+  /**
+   * **Nula souborů po deseti zaplacených voláních nesmí vypadat jako běh,
+   * který se nearchivoval.** Hlásí se jednou za emitor: deset stejných řádků
+   * je tentýž šum jako ticho.
+   */
+  it('selhání zápisu se ohlásí jednou, ne na každé volání', async () => {
+    const dir = scratch('worldsmith-archive-warn-');
+    const blocked = join(dir, 'not-a-directory');
+    writeFileSync(blocked, 'x', 'utf8');
+    configure(join(blocked, 'answers'));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const { cloudEmitter } = await import('../worldstream-emitter');
+    const emit = await cloudEmitter();
+    await emit!(REQUEST);
+    await emit!(REQUEST);
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0]![0]).toContain('the answer archive could not be written');
   });
 });
