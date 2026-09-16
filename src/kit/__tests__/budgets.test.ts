@@ -36,6 +36,11 @@ describe('kit se vejde do rozpočtu', () => {
     'fixture.couch',
     'fixture.reception',
     'actor.seated',
+    // P19 T7: venkovní vodítka pro pláž, park a balkon.
+    'organic.waterline',
+    'organic.path',
+    'panel.railing',
+    'panel.facade',
   ])('%s je v kitu', (id) => {
     expect(KIT.some((piece) => piece.id === id)).toBe(true);
   });

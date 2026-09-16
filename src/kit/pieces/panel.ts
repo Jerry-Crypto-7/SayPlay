@@ -77,4 +77,19 @@ export const panelPieces: readonly Piece[] = [
         { geometry: new BoxGeometry(1.3, 0.1, 1.3), swatch: 'deep', position: [0, -0.38, 0] },
       ]),
   },
+  // P19 T7: průčelí domu – balkon a ulice se bez něj čtou jako volná plocha.
+  {
+    id: 'panel.facade',
+    category: 'panel',
+    build: () =>
+      assemble([
+        { geometry: new BoxGeometry(2, 3, 0.2), swatch: 'shell' },
+        { geometry: new BoxGeometry(2.04, 0.08, 0.26), swatch: 'sand', position: [0, 0, 0] },
+        { geometry: new BoxGeometry(2.04, 0.08, 0.26), swatch: 'sand', position: [0, 1.46, 0] },
+        { geometry: new BoxGeometry(0.46, 0.7, 0.04), swatch: 'accent', position: [-0.5, 0.75, 0.11] },
+        { geometry: new BoxGeometry(0.46, 0.7, 0.04), swatch: 'accent', position: [0.5, 0.75, 0.11] },
+        { geometry: new BoxGeometry(0.46, 0.7, 0.04), swatch: 'accent', position: [-0.5, -0.7, 0.11] },
+        { geometry: new BoxGeometry(0.46, 0.7, 0.04), swatch: 'accent', position: [0.5, -0.7, 0.11] },
+      ]),
+  },
 ];

@@ -28,11 +28,13 @@ import { Mesh, type BufferGeometry, type Object3D } from 'three';
  *
  * `maxPieces` **48** od 16. 9. 2026 (P19 T6): šest kusů, podle kterých se
  * místnost pozná (akvárium, krb, pokladna, lehátko, recepce, sedící postava).
- * Zvedá se s každým novým kusem vědomě; rezervu drží test na dva kusy.
+ * **51** od téhož dne (P19 T7): venkovní vodítka – průčelí, okraj vody, cesta
+ * parkem; zábradlí v kitu už bylo. Zvedá se s každým novým kusem vědomě;
+ * rezervu drží test na dva kusy.
  */
 export const KIT_BUDGETS = {
   minPieces: 36,
-  maxPieces: 48,
+  maxPieces: 51,
   maxDrawCallsPerWorld: 200,
   maxTrianglesPerWorld: 120_000,
   maxTrianglesPerPiece: 1_200,

@@ -79,6 +79,7 @@ const FLAT_PIECES = [
   'panel.railing',
   'panel.window',
   'panel.roof',
+  'panel.facade',
   'fixture.crate',
   'fixture.sign',
   'fixture.terminal',
@@ -113,8 +114,8 @@ describe('hranaté kusy zůstaly hranaté', () => {
     geometry.dispose();
   });
 
-  it('hranatých kusů je dvacet pět a všechny v kitu existují', () => {
-    expect(FLAT_PIECES.length).toBe(25);
+  it('hranatých kusů je dvacet šest a všechny v kitu existují', () => {
+    expect(FLAT_PIECES.length).toBe(26);
     const ids = new Set(KIT.map((piece) => piece.id));
     for (const id of FLAT_PIECES) expect(ids.has(id), id).toBe(true);
   });

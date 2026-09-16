@@ -117,8 +117,8 @@ export type AnchorSite = (typeof ANCHOR_SITES)[number];
 export const MASS_VARIANTS = ['block', 'wedge', 'step', 'plinth', 'stack', 'bevel'] as const;
 export const COLUMN_VARIANTS = ['pillar', 'capital', 'fluted', 'post', 'twisted', 'broken'] as const;
 export const ARCH_VARIANTS = ['round', 'flat', 'doorway', 'portal', 'buttress'] as const;
-export const PANEL_VARIANTS = ['wall', 'half', 'floor', 'ramp', 'railing', 'window', 'roof'] as const;
-export const ORGANIC_VARIANTS = ['pebble', 'boulder', 'cluster', 'shrub', 'tree', 'reed'] as const;
+export const PANEL_VARIANTS = ['wall', 'half', 'floor', 'ramp', 'railing', 'window', 'roof', 'facade'] as const;
+export const ORGANIC_VARIANTS = ['pebble', 'boulder', 'cluster', 'shrub', 'tree', 'reed', 'waterline', 'path'] as const;
 export const FIXTURE_VARIANTS = [
   'crate',
   'barrel',
