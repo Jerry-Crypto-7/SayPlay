@@ -25,7 +25,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, lstatSync } from 'node:fs';
+import { existsSync, lstatSync, realpathSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { homedir, tmpdir } from 'node:os';
@@ -181,7 +181,8 @@ export function wouldBeCommitted(dir: string, cwd: string = process.cwd(), file 
   for (const key of Object.keys(env)) if (REPO_REDIRECT.test(key)) delete env[key];
   const ignored = spawnSync('git', ['-C', base, '-c', 'core.excludesFile=', 'check-ignore', '-q', '--', join(target, file)], { stdio: 'ignore', env }).status;
   if (ignored === 0) return false;
-  if (ignored === 128) return insideRepo(base);
+  // Disk ze `subst` není odkaz, a git ho přesto dovede do repa – soudí se i skutečná cesta.
+  if (ignored === 128) return insideRepo(base) || insideRepo(realpathSync.native(base));
   return true;
 }
 

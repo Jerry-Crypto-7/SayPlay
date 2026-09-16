@@ -23,7 +23,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -205,6 +205,21 @@ describe('archiv odpovědí modelu', () => {
     const dangling = join(scratch('worldsmith-archive-dangling-'), 'link');
     symlinkSync(join(repo, 'later'), dangling, 'junction');
     expect(wouldBeCommitted(join(dangling, 'answers'))).toBe(true);
+  });
+
+  /** `subst` disk není odkaz; git ho dovede do repa a ohlásí 128. */
+  it.runIf(process.platform === 'win32')('subst disk do podadresáře repa archiv vypne', () => {
+    const repo = scratch('worldsmith-archive-subst-');
+    expect(spawnSync('git', ['init', '-q', repo]).status).toBe(0);
+    mkdirSync(join(repo, 'src'));
+    const letter = [...'QRSTUVWXYZ'].find((candidate) => !existsSync(`${candidate}:\\`));
+    expect(letter, 'žádné volné písmeno disku').toBeDefined();
+    expect(spawnSync('subst', [`${letter}:`, join(repo, 'src')]).status).toBe(0);
+    try {
+      expect(wouldBeCommitted(`${letter}:/answers`)).toBe(true);
+    } finally {
+      spawnSync('subst', [`${letter}:`, '/D']);
+    }
   });
 
   it('konfigurace gitu z prostředí ignorování nepodvrhne', () => {
