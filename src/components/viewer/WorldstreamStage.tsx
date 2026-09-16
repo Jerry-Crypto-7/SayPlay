@@ -55,7 +55,7 @@ import type { ProxyRung, ProxySlot, ProxyWorld } from '@/worldstream/proxy';
 import { budgetFor, type QualityBudget, type QualityTier } from '@/worldstream/quality';
 import { boundsExtent, type SlotTransform } from '@/worldstream/slots';
 
-import { clayMaterial } from './ClayMaterial';
+import { clayMaterial, shadeForRole } from './ClayMaterial';
 import { CELL_SIZE } from './projection';
 import Materialize, { createRevealPlan, type RevealPlan } from './Materialize';
 import { RepresentationSlots } from './RepresentationSlot';
@@ -132,7 +132,8 @@ function buildRough(entry: ProxySlot, palette: Palette): RoughBuild {
 
   if (entry.form.kind === 'mesh') {
     const geometry = geometryFromMesh(entry.form.mesh);
-    const material = clayMaterial();
+    // Odstín nese **role slotu**, ne jeden token hlíny na všechno (P18 T3).
+    const material = clayMaterial({ color: shadeForRole(entry.slot.role, palette) });
     const mesh = new Mesh(geometry, material);
     mesh.name = name;
     mesh.castShadow = true;
@@ -170,7 +171,7 @@ function buildRough(entry: ProxySlot, palette: Palette): RoughBuild {
   if (!entry.form.drawn) return NOTHING;
 
   const geometry = clayBox(boundsExtent(entry.slot.localBounds));
-  const material = clayMaterial();
+  const material = clayMaterial({ color: shadeForRole(entry.slot.role, palette) });
   const box = new Mesh(geometry, material);
   box.name = name;
   box.castShadow = true;
@@ -788,7 +789,10 @@ export default function WorldstreamStage({
     }
 
     const geometry = geometryFromMesh(upgrade.mesh);
-    const material = clayMaterial();
+    // Týž odstín jako hrubá podoba (P18 T3). Bez toho by objekt při výměně
+    // podoby přeskočil ze své barvy zpátky na hlínu — §13.2 chce, aby výměnu
+    // přežila identita, a barva je to, podle čeho ji porotce pozná.
+    const material = clayMaterial({ color: shadeForRole(entry.slot.role, palette) });
     const detail = new Mesh(geometry, material);
     detail.name = detailName(upgrade.stableId);
     detail.castShadow = true;
@@ -816,7 +820,7 @@ export default function WorldstreamStage({
       durationMs: plan.durationMs,
     };
     setReveal({ stableId: upgrade.stableId, object: detail, plan });
-  }, [upgrade, build]);
+  }, [upgrade, build, palette]);
 
   /**
    * §13.3 bod 6. **Nezavírá se přes updater `setReveal`**, protože commit je

@@ -85,6 +85,36 @@ export const WORLDSTREAM_KEY_LIGHT = {
   color: '#ffe4b5',
 } as const;
 
+/**
+ * Výplň zleva, studená. Bez ní je odvrácená strana žeber černá plocha.
+ *
+ * **Data, ne jen atributy v JSX** — ze stejného důvodu jako `WORLDSTREAM_KEY_LIGHT`
+ * hned nad tím: měření nebo druhá scéna, která si čísla napíše po svém, soudí
+ * jinak nasvícený snímek než produkt. Do P18 T3 tahle dvě světla jako data
+ * nebyla, takže se nedalo strojově ověřit ani to, jestli vůbec svítí.
+ */
+export const WORLDSTREAM_FILL_LIGHT = {
+  position: [-30, 12, 10],
+  intensity: 0.5,
+  color: '#7fb6c6',
+} as const;
+
+/**
+ * Obrys zezadu, měděný. Na tmavém pozadí je to jediné, čím se silueta
+ * hrdinského tvaru odlepí od mlhy.
+ *
+ * **Posunutý z osy, ne uprostřed.** Když stál na `x = -6`, jeho odlesk na
+ * hladině spadl přesně pod střed kompozice a stal se z něj svislý pruh přes
+ * celou dolní třetinu obrazu — tedy nejjasnější věc ve snímku byla prázdná
+ * voda. Odsazení odlesk odsune stranou, kde drží hloubku místo aby soupeřil
+ * s věží.
+ */
+export const WORLDSTREAM_RIM_LIGHT = {
+  position: [-24, 15, -32],
+  intensity: 0.62,
+  color: UI_TOKENS.verdigris,
+} as const;
+
 /** Polovina hrany stínového ortho-boxu. Pokryje celou kompozici cílového snímku. */
 const SHADOW_EXTENT = 40;
 
@@ -152,17 +182,16 @@ export default function WorldstreamLighting({
         shadow-bias={-0.0006}
         shadow-normalBias={0.05}
       />
-      {/* Výplň zleva, studená. Bez ní je odvrácená strana žeber černá plocha. */}
-      <directionalLight position={[-30, 12, 10]} intensity={0.5} color="#7fb6c6" />
-      {/* Obrys zezadu, měděný. Na tmavém pozadí je to jediné, čím se silueta
-          hrdinského tvaru odlepí od mlhy.
-
-          **Posunutý z osy, ne uprostřed.** Když stál na `x = -6`, jeho odlesk na
-          hladině spadl přesně pod střed kompozice a stal se z něj svislý pruh
-          přes celou dolní třetinu obrazu — tedy nejjasnější věc ve snímku byla
-          prázdná voda. Odsazení odlesk odsune stranou, kde drží hloubku místo
-          aby soupeřil s věží. */}
-      <directionalLight position={[-24, 15, -32]} intensity={0.62} color={UI_TOKENS.verdigris} />
+      <directionalLight
+        position={[...WORLDSTREAM_FILL_LIGHT.position]}
+        intensity={WORLDSTREAM_FILL_LIGHT.intensity}
+        color={WORLDSTREAM_FILL_LIGHT.color}
+      />
+      <directionalLight
+        position={[...WORLDSTREAM_RIM_LIGHT.position]}
+        intensity={WORLDSTREAM_RIM_LIGHT.intensity}
+        color={WORLDSTREAM_RIM_LIGHT.color}
+      />
     </>
   );
 }

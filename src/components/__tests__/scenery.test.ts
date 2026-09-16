@@ -6,7 +6,12 @@ import { CELL_SIZE } from '@/components/viewer/projection';
 import { FILL_RINGS } from '@/components/viewer/dressing';
 import { FAMILIES } from '@/geom/families';
 import { compilePlacements } from '@/geom/placements';
-import { KIT_BUDGETS } from '@/kit';
+import { KIT_BUDGETS, PALETTES } from '@/kit';
+import { shadeForRole } from '@/components/viewer/ClayMaterial';
+import {
+  WORLDSTREAM_FILL_LIGHT,
+  WORLDSTREAM_KEY_LIGHT,
+} from '@/components/viewer/WorldstreamLighting';
 
 /**
  * Kulisa musí stát **za** hrací plochou a vejít se do rozpočtu.
@@ -233,5 +238,74 @@ describe('buildScenery', () => {
     expect(built.drawCalls).toBe(0);
     expect(built.triangles).toBe(0);
     built.dispose();
+  });
+});
+
+/**
+ * Světlo a hmota — P18 T3.
+ *
+ * **Snímky z živých běhů ukazují šedé desky na jednom odstínu**, a příčina není
+ * ve světlech: rig má čtyři a mlhu. Je v materiálu — `buildRough()` dává
+ * hrdinům i hliněným kvádrům `clayMaterial()` **bez odstínu**, takže se celý
+ * svět vykreslí jednou barvou hlíny. Paletu a barvy ve vrcholech dostanou dnes
+ * jen kusy kitu.
+ *
+ * Proto se tu měří dvě věci naráz: že světla vůbec svítí (to je levná pojistka
+ * proti tomu, aby výtvarné ladění některé z nich omylem zhaslo) a že **role
+ * slotu rozhoduje o odstínu**. Druhé je ta vlastnost, kterou z hotového snímku
+ * nikdo nepojmenuje: obraz vypadá jako obraz, jen jsou v něm všechny věci
+ * stejné.
+ */
+describe('hmota čte roli slotu', () => {
+  /** Odstín ve stupních, 0 je červená. Fialové pásmo je 250–320°. */
+  function hueOf(hex: string): number {
+    const value = Number.parseInt(hex.replace('#', ''), 16);
+    const r = ((value >> 16) & 255) / 255;
+    const g = ((value >> 8) & 255) / 255;
+    const b = (value & 255) / 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const span = max - min;
+    if (span === 0) return 0;
+    const raw =
+      max === r ? (g - b) / span : max === g ? 2 + (b - r) / span : 4 + (r - g) / span;
+    return ((raw * 60) % 360 + 360) % 360;
+  }
+
+  it('klíčové i doplňkové světlo doopravdy svítí', () => {
+    expect(WORLDSTREAM_KEY_LIGHT.intensity).toBeGreaterThan(0);
+    expect(WORLDSTREAM_FILL_LIGHT.intensity).toBeGreaterThan(0);
+  });
+
+  it('terén, architektura a hrdina dostanou každý jiný odstín', () => {
+    // `wall` z AC úlohy mezi rolemi není — `INTENT_ROLES` je
+    // `architecture · hero · prop · terrain · effect`, a zeď je architektura.
+    const terrain = shadeForRole('terrain', PALETTES.harbor);
+    const architecture = shadeForRole('architecture', PALETTES.harbor);
+    const hero = shadeForRole('hero', PALETTES.harbor);
+
+    expect(new Set([terrain, architecture, hero]).size, 'role se slily do jednoho odstínu').toBe(3);
+  });
+
+  it('každá role vrací odstín z palety, ne vlastní hex', () => {
+    // Odstín mimo paletu by `repaint()` odmítl a kus by se nevykreslil vůbec.
+    const swatches = new Set(Object.values(PALETTES.harbor));
+    for (const role of ['architecture', 'hero', 'prop', 'terrain', 'effect'] as const) {
+      expect(swatches, `role ${role} má odstín mimo paletu`).toContain(
+        shadeForRole(role, PALETTES.harbor),
+      );
+    }
+  });
+
+  it('žádná role nesáhne po fialové, v žádné paletě', () => {
+    // Globální pravidlo designu. Hlídá se strojově, ne komentářem.
+    for (const palette of Object.values(PALETTES)) {
+      for (const role of ['architecture', 'hero', 'prop', 'terrain', 'effect'] as const) {
+        const hue = hueOf(shadeForRole(role, palette));
+        expect(hue < 250 || hue > 320, `role ${role} má fialový odstín ${hue.toFixed(0)}°`).toBe(
+          true,
+        );
+      }
+    }
   });
 });
