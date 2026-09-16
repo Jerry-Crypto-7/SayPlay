@@ -161,6 +161,25 @@ describe('archiv odpovědí modelu', () => {
     expect(wouldBeCommitted(scratch('worldsmith-archive-nogit-'))).toBe(true);
   });
 
+  /** Git vrací 128 i repu, kterému nevěří – to ale commitovat umí. */
+  it('nedůvěryhodné repo archiv vypne, nepustí ho', () => {
+    vi.stubEnv('GIT_TEST_ASSUME_DIFFERENT_OWNER', '1');
+    expect(wouldBeCommitted('src/newdir')).toBe(true);
+  });
+
+  it('proměnné GIT_* přesměrování gitu archiv nepustí', () => {
+    vi.stubEnv('GIT_DIR', join(scratch('worldsmith-archive-gitdir-'), 'none'));
+    expect(wouldBeCommitted('src/server/answers')).toBe(true);
+  });
+
+  /** Ignorovaný jen `answer.json` neříká nic o `<relace>-<n>.json`, které se zapíšou. */
+  it('soudí jméno souboru, jaké archiv opravdu zapíše', () => {
+    const repo = scratch('worldsmith-archive-name-');
+    expect(spawnSync('git', ['init', '-q', repo]).status).toBe(0);
+    writeFileSync(join(repo, '.gitignore'), 'answer.json\n');
+    expect(wouldBeCommitted(join(repo, 'answers'))).toBe(true);
+  });
+
   it('bez nastavené proměnné nezapíše na disk nic', async () => {
     const dir = scratch('worldsmith-archive-off-');
     configure(null);
@@ -341,6 +360,16 @@ describe('archiv odpovědí modelu', () => {
     const raw = readFileSync(join(dir, readdirSync(dir)[0]!), 'utf8');
     expect(raw).not.toContain('JANEDO~1');
     expect(raw).toContain('codex-x denied');
+  });
+
+  it('z TEMP bere jen jméno pod X:\\Users, ne společný profil ani hlubší Users', async () => {
+    const dir = scratch('worldsmith-archive-shared-');
+    const detail = 'Public build by bob';
+    for (const temp of ['C:\\Users\\Public\\Temp', 'D:\\build\\Users\\bob\\tmp']) {
+      const archive = answerArchive({ WORLDSMITH_ARCHIVE_DIR: dir, USERPROFILE: 'C:\\Users\\jane.doe', TEMP: temp, TMP: temp }, liveConfig());
+      await archive!.write(REQUEST, { detail });
+    }
+    for (const file of readdirSync(dir)) expect(readFileSync(join(dir, file), 'utf8')).toContain(detail);
   });
 
   it('krátký domov jako HOME=/ nepřepíše každé lomítko', async () => {

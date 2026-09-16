@@ -59,6 +59,8 @@ export const HOME_MARK = '[home]';
  * celou cestu, ani na celé jméno. Za lomítkem se proto maskuje i každý
  * začátek jména.
  */
+const SHARED_PROFILES = new Set(['public', 'default', 'default user', 'all users']);
+
 function homesOf(env: Record<string, string | undefined>): readonly RegExp[] {
   const paths = new Set<string>();
   const names = new Set<string>();
@@ -72,10 +74,11 @@ function homesOf(env: Record<string, string | undefined>): readonly RegExp[] {
     if (name !== undefined && name.length >= 3) names.add(name);
   }
   // Krátký tvar 8.3 (`JANEDO~1`) nese jen `TEMP`, a v něm vzniká adresář Codexu
-  // (`upstream.ts`). Bere se část za `Users`, jiný tvar domova tam nebývá.
+  // (`upstream.ts`). Bere se část za `X:\Users\` od kořene disku; společné
+  // profily nejsou jméno člověka a maskovat je by jen rozžvýkalo text.
   for (const temp of [env.TEMP, env.TMP, tmpdir()]) {
-    const name = temp === undefined ? undefined : /[\\/]Users[\\/]([^\\/]{3,})/i.exec(temp)?.[1];
-    if (name !== undefined) names.add(name);
+    const name = temp === undefined ? undefined : /^[A-Za-z]:[\\/]Users[\\/]([^\\/]{3,})/i.exec(temp)?.[1];
+    if (name !== undefined && !SHARED_PROFILES.has(name.toLowerCase())) names.add(name);
   }
   const escape = (literal: string): string => literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const longestFirst = (a: string, b: string): number => b.length - a.length;
@@ -153,19 +156,34 @@ function redact(value: unknown, secrets: readonly string[], homes: readonly RegE
  * **Git se ptá v cílovém adresáři, ne v tomhle repu** (nález revize 16. 9.):
  * absolutní cesta může mířit do jiného repozitáře, a ten má vlastní
  * `.gitignore`. Adresář ještě nemusí existovat, proto nejbližší existující
- * rodič. Kód 128 pustí zápis jen tehdy, když `rev-parse` potvrdí, že rodič
- * v žádném repozitáři neleží; **chybějící git nebo jiná chyba archiv vypne** –
- * bez odpovědi se nedá říct, že soubory ven nepůjdou.
+ * rodič. **Kód 128 neznamená jen „mimo repozitář"** – git ho vrací i pro repo,
+ * kterému nevěří (`safe.directory`), a to by soubory commitnout umělo. Při 128
+ * proto rozhoduje disk: leží-li nad cílem `.git`, archiv se vypne.
+ * **Chybějící git nebo jiná chyba archiv vypne taky** – bez odpovědi se nedá
+ * říct, že soubory ven nepůjdou. Proměnné `GIT_*`, které repo přesměrují,
+ * se gitu nepředávají: soudí se cesta, ne prostředí serveru.
  */
 export function wouldBeCommitted(dir: string, cwd: string = process.cwd()): boolean {
   const target = resolve(cwd, dir);
   let base = target;
   while (!existsSync(base) && dirname(base) !== base) base = dirname(base);
-  const git = (args: readonly string[]) => spawnSync('git', ['-C', base, ...args], { stdio: 'ignore' }).status;
-  const ignored = git(['check-ignore', '-q', '--', join(target, 'answer.json')]);
+  const env = { ...process.env };
+  for (const key of Object.keys(env)) if (REPO_REDIRECTS.has(key.toUpperCase())) delete env[key];
+  // Jméno ve tvaru, jaký `write()` opravdu zapíše: `<caseId>-<call>.json`.
+  const ignored = spawnSync('git', ['-C', base, 'check-ignore', '-q', '--', join(target, 'x-1.json')], { stdio: 'ignore', env }).status;
   if (ignored === 0) return false;
-  if (ignored === 128) return git(['rev-parse', '--is-inside-work-tree']) !== 128;
+  if (ignored === 128) return insideRepo(base);
   return true;
+}
+
+const REPO_REDIRECTS = new Set(['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_CEILING_DIRECTORIES', 'GIT_COMMON_DIR']);
+
+/** Leží `dir` nebo některý jeho rodič vedle `.git` (adresáře i souboru worktree)? */
+function insideRepo(dir: string): boolean {
+  for (let at = dir; ; at = dirname(at)) {
+    if (existsSync(join(at, '.git'))) return true;
+    if (dirname(at) === at) return false;
+  }
 }
 
 /**
