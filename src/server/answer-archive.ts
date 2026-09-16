@@ -48,8 +48,15 @@ export const HOME_MARK = '[home]';
  * Cesta přichází ve třech tvarech lomítek, protože `upstream.ts` ukládá chybu
  * přes `JSON.stringify` a zpětná lomítka se tím zdvojí; Windows navíc nedbá
  * velikosti písmen. **Samotné jméno uživatele se maskuje taky** (od tří
- * znaků): stderr je useknuté na 300 bajtů a cesta může skončit uprostřed, kde
- * ji celou nenajde žádný z tvarů.
+ * znaků), ale jen jako celé slovo: jméno `root` nebo `tom` by jinak rozžvýkalo
+ * „rooted" a „atom" v textu, který P19 T3 analyzuje. Výjimka je `%5C`/`%2F`
+ * před jménem, tedy cesta v URL.
+ *
+ * **Useknuté jméno se maskuje na konci řetězce** (nález revize 16. 9.). Obě
+ * místa, kde `upstream.ts` stderr krátí na 300 znaků (`:769`, `:797`), nechají
+ * useknutý kus na samém konci `detail`, a `C:\Users\jane.d` nesedí ani na
+ * celou cestu, ani na celé jméno. Za lomítkem se proto maskuje i každý
+ * začátek jména.
  */
 function homesOf(env: Record<string, string | undefined>): readonly RegExp[] {
   const paths = new Set<string>();
@@ -63,10 +70,15 @@ function homesOf(env: Record<string, string | undefined>): readonly RegExp[] {
     const name = slashed.split('/').filter((part) => part.length > 0).at(-1);
     if (name !== undefined && name.length >= 3) names.add(name);
   }
+  const escape = (literal: string): string => literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const longestFirst = (a: string, b: string): number => b.length - a.length;
-  return [...[...paths].sort(longestFirst), ...[...names].sort(longestFirst)].map(
-    (literal) => new RegExp(literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'),
-  );
+  const byName = [...names].sort(longestFirst);
+  return [
+    ...[...paths].sort(longestFirst).map((path) => new RegExp(escape(path), 'gi')),
+    ...byName.map((name) => new RegExp(`(?<=^|[^A-Za-z0-9[]|%5C|%2F)${escape(name)}(?![A-Za-z0-9\\]])`, 'gi')),
+    // `jane.doe` → `j(?:a(?:n(?:…)?)?)?`: kterýkoli začátek jména za lomítkem na konci.
+    ...byName.map((name) => new RegExp(`(?<=[\\\\/])${[...name].reduceRight((inner, char) => `${escape(char)}(?:${inner})?`, '')}$`, 'i')),
+  ];
 }
 
 /**
@@ -110,7 +122,7 @@ function redact(value: unknown, secrets: readonly string[], homes: readonly RegE
   if (value !== null && typeof value === 'object') {
     const clean: Record<string, unknown> = {};
     for (const [key, nested] of Object.entries(value as Record<string, unknown>))
-      clean[key] = redact(nested, secrets, homes);
+      clean[redact(key, secrets, homes) as string] = redact(nested, secrets, homes);
     return clean;
   }
   return value;

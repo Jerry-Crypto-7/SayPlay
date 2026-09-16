@@ -296,6 +296,23 @@ describe('archiv odpovědí modelu', () => {
     expect(raw).toContain('owner [home]');
   });
 
+  /** `upstream.ts` krátí stderr na 300 znaků, a řez může padnout doprostřed jména. */
+  it('useknuté jméno na konci detailu zamaskuje, jméno uvnitř slova nechá být', async () => {
+    const dir = scratch('worldsmith-archive-cut-');
+    const archive = answerArchive({ WORLDSMITH_ARCHIVE_DIR: dir, USERPROFILE: 'C:\\Users\\jane.doe', HOME: '/root' }, liveConfig());
+    await archive!.write(REQUEST, {
+      cut: 'codex exec exited with code 1 sandbox: C:\\Users\\jane.d',
+      json: 'codex refused the turn: {"message":"C:\\\\Users\\\\tom',
+      prose: 'rooted grass and roots, a root cellar',
+      'C:\\Users\\jane.doe': 'key',
+    });
+
+    const raw = readFileSync(join(dir, readdirSync(dir)[0]!), 'utf8');
+    expect(raw).not.toContain('jane.d');
+    expect(raw).not.toMatch(/Users\\\\+tom/);
+    expect(raw).toContain('rooted grass and roots, a [home] cellar');
+  });
+
   it('krátký domov jako HOME=/ nepřepíše každé lomítko', async () => {
     const dir = scratch('worldsmith-archive-root-');
     const archive = answerArchive({ WORLDSMITH_ARCHIVE_DIR: dir, HOME: '/', USERPROFILE: 'C:' }, liveConfig());
