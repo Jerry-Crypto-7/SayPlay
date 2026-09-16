@@ -84,6 +84,7 @@ const FLAT_PIECES = [
   'fixture.terminal',
   'fixture.pipe',
   'fixture.bench',
+  'fixture.reception',
   'organic.reed',
 ] as const;
 
@@ -112,8 +113,8 @@ describe('hranaté kusy zůstaly hranaté', () => {
     geometry.dispose();
   });
 
-  it('hranatých kusů je dvacet čtyři a všechny v kitu existují', () => {
-    expect(FLAT_PIECES.length).toBe(24);
+  it('hranatých kusů je dvacet pět a všechny v kitu existují', () => {
+    expect(FLAT_PIECES.length).toBe(25);
     const ids = new Set(KIT.map((piece) => piece.id));
     for (const id of FLAT_PIECES) expect(ids.has(id), id).toBe(true);
   });

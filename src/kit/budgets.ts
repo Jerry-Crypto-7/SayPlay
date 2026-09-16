@@ -25,10 +25,14 @@ import { Mesh, type BufferGeometry, type Object3D } from 'three';
  * a je to tak správně — strop je rozpočet **světa** se 120 umístěnými kusy,
  * ne popis kitu. Kdyby se strop stáhl na naměřenou hodnotu, přestal by to být
  * rozpočet a stal by se z něj detektor změn.
+ *
+ * `maxPieces` **48** od 16. 9. 2026 (P19 T6): šest kusů, podle kterých se
+ * místnost pozná (akvárium, krb, pokladna, lehátko, recepce, sedící postava).
+ * Zvedá se s každým novým kusem vědomě; rezervu drží test na dva kusy.
  */
 export const KIT_BUDGETS = {
   minPieces: 36,
-  maxPieces: 44,
+  maxPieces: 48,
   maxDrawCallsPerWorld: 200,
   maxTrianglesPerWorld: 120_000,
   maxTrianglesPerPiece: 1_200,

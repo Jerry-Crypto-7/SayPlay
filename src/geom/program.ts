@@ -128,8 +128,13 @@ export const FIXTURE_VARIANTS = [
   'hatch',
   'pipe',
   'bench',
+  'aquarium',
+  'fireplace',
+  'checkout',
+  'couch',
+  'reception',
 ] as const;
-export const ACTOR_VARIANTS = ['tall', 'squat', 'drone', 'quadruped'] as const;
+export const ACTOR_VARIANTS = ['tall', 'squat', 'drone', 'quadruped', 'seated'] as const;
 
 /** Zem. Jeden ze dvou tvarů bez kusu v kitu — generuje se výškovým polem. */
 export const TERRAIN_VARIANTS = ['flat', 'ridge', 'basin', 'plateau'] as const;

@@ -52,4 +52,23 @@ export const actorPieces: readonly Piece[] = [
         { geometry: new BoxGeometry(0.09, 0.34, 0.09), swatch: 'deep', position: [0.12, -0.25, -0.24] },
       ]),
   },
+  // P19 T6: posluchač ve třídě, pacient v čekárně. Sed je pozice, ne animace,
+  // takže je to vlastní kus i se židlí – bez ní by postava visela ve vzduchu.
+  {
+    id: 'actor.seated',
+    category: 'actor',
+    build: () =>
+      assemble([
+        { geometry: new BoxGeometry(0.48, 0.06, 0.46), swatch: 'deep', position: [0, -0.1, 0] },
+        { geometry: new BoxGeometry(0.48, 0.5, 0.06), swatch: 'deep', position: [0, 0.18, -0.22] },
+        { geometry: new BoxGeometry(0.05, 0.34, 0.05), swatch: 'deep', position: [-0.2, -0.3, 0.18] },
+        { geometry: new BoxGeometry(0.05, 0.34, 0.05), swatch: 'deep', position: [0.2, -0.3, 0.18] },
+        { geometry: new BoxGeometry(0.05, 0.34, 0.05), swatch: 'deep', position: [-0.2, -0.3, -0.18] },
+        { geometry: new BoxGeometry(0.05, 0.34, 0.05), swatch: 'deep', position: [0.2, -0.3, -0.18] },
+        { geometry: new CylinderGeometry(0.16, 0.2, 0.5, 6), swatch: 'accent', position: [0, 0.2, -0.06] },
+        { geometry: new IcosahedronGeometry(0.17, 0), swatch: 'sand', position: [0, 0.6, -0.04] },
+        { geometry: new BoxGeometry(0.3, 0.12, 0.38), swatch: 'accent', position: [0, -0.02, 0.14] },
+        { geometry: new BoxGeometry(0.28, 0.34, 0.1), swatch: 'shell', position: [0, -0.24, 0.3] },
+      ]),
+  },
 ];
