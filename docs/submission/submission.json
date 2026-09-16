@@ -16,10 +16,9 @@
     "evals/reality-compiler/holdout-v1"
   ],
   "measurementReports": [
-    "evals/reality-compiler/subscription-report.md",
-    "evals/reality-compiler/subscription-demo.md",
-    "evals/reality-compiler/decision.md",
-    "evals/reality-compiler/user-study-results.json"
+    "evals/worldstream/latency-report.json",
+    "evals/worldstream/create-report.json",
+    "evals/reality-compiler/decision.md"
   ],
   "localDemo": {
     "command": "npm run demo:subscription",

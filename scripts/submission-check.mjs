@@ -319,21 +319,38 @@ export function mp4DurationSeconds(buffer) {
   return timescale > 0 ? duration / timescale : null;
 }
 
-/** Current English submission copy contract, aligned with the Reality Compiler
- * source pilot in README and plan 19 A12. These are disclosure requirements,
- * not an automated semantic review. Wording and layout may change; there is no
- * required quotation from the superseded DESIGN-BOOK or claimed success rate.
- * A human still checks consistency and the meaning of the complete description.
+/** Current English submission copy contract for WORLDSTREAM — the product the
+ * judge actually opens: a sentence becomes a 3D world with executable rules.
+ *
+ * **Přepsáno 16. 9. 2026 (P18 T10).** Do té doby tenhle seznam vymáhal slovník
+ * Reality Compiler pilotu — „seven parameter groups", „one timer intervention",
+ * „short source". Ta věta popisuje jiný produkt, než jaký je na demo adrese, a
+ * kontrola tím nutila popis lhát: zelená brána nad popisem cizího produktu je
+ * horší než červená. Sedm položek níž jsou omezení **tohoto** produktu a každé
+ * je doložené — `docs/demo/judge-runbook.md` (náhrada uvařeným světem, limit
+ * druhé věty, chybějící přetáčení času), `evals/worldstream/latency-report.json`
+ * (původ časů) a hodnocení G1 (2 z 10 poznaných místností).
+ *
+ * Jsou to disclosure požadavky, ne automatická sémantická revize. Formulace i
+ * rozvržení se smí měnit; smysl celého popisu pořád soudí člověk.
  */
 const DESCRIPTION_DISCLOSURES = [
-  ['source-scope', /\bshort\b[^.!?]{0,100}\b(?:source|text)\b/i,
-    /\bdiscrete\b[^.!?]{0,80}\b(?:spatial|procedure|scenario|movement)/i,
-    /\b(?:one|single) timer intervention\b/i],
-  ['parameter-review', /\b(?:user|human)\b[^.!?]{0,120}\breviews?\b[^.!?]{0,80}\b(?:seven|7)\b[^.!?]{0,60}\bparameter/i,
-    /\b(?:missing|conflicting)\b[^.!?]{0,100}\bblocks? acceptance\b/i],
+  ['sentence-scope', /\bsentence\b[^.!?]{0,120}\b(?:3D|three.dimensional)\b/i,
+    /\bdeterministic\b[^.!?]{0,80}\brules?\b/i],
+  // Porotce smí psát vlastní věty (`RULES.md` §3.3). Že na neznámou větu
+  // odpoví nejbližší uvařený svět, je ta nejdůležitější věc, kterou o sobě
+  // tenhle produkt musí říct nahlas — a musí říct i to, že to přizná na obrazovce.
+  ['authored-fallback', /\bnearest\b[^.!?]{0,80}\bauthored world\b/i,
+    /\bauthored world\b[^.!?]{0,80}\blabels?\b/i],
+  ['second-sentence-limit', /\bsecond sentence\b/i, /\b(?:refused|rejected|declined)\b/i],
+  ['no-time-rewind', /\btime rewind\b[^.!?]{0,120}\bnot on\b/i],
+  // Nejdůležitější omezení tohohle produktu a jediné, které se z hotového
+  // snímku nepozná: svět projde všemi strukturálními kontrolami a přitom
+  // neznamená, co věta říkala. G1 (16. 9. 2026) to naměřila jako 2 z 10.
   ['semantic-limit', /\b(?:not a semantic guarantee|(?:does not|cannot) (?:certify|guarantee|establish) semantic (?:correctness|accuracy))\b/i],
   ['geometry-limit', /\bgeometry\b[^.!?]{0,35}\bschematic\b/i],
-  ['latency-provenance', /\b(?:CLI|generation|creation) timings?\b[^.!?]{0,100}\b(?:include|includes)\b[^.!?]{0,100}\b(?:process|transport) overhead\b/i],
+  ['latency-provenance', /\b(?:CLI|generation|creation) timings?\b[^.!?]{0,100}\b(?:include|includes)\b[^.!?]{0,100}\b(?:process|transport) overhead\b/i,
+    /\bauthored store\b[^.!?]{0,60}\bnot a live model\b/i],
   ['independent-review', /\bindependent semantic review\b/i, /\b(?:usability|human|five.person)\b[^.!?]{0,100}\b(?:evidence|study|review)\b/i],
 ];
 
@@ -341,7 +358,7 @@ export function descriptionContractProblems(text) {
   // Comments/code are not disclosures visible in the written submission.
   const prose = proseOf(text.replace(/<!--[\s\S]*?-->/g, '').replace(/```[\s\S]*?```|~~~[\s\S]*?~~~/g, ''));
   return DESCRIPTION_DISCLOSURES.filter(([, ...patterns]) => !patterns.every(pattern => pattern.test(prose)))
-    .map(([id]) => `chybí aktuální disclosure ${id} (Reality Compiler source pilot)`);
+    .map(([id]) => `chybí aktuální disclosure ${id} (WORLDSTREAM)`);
 }
 
 /** Text bez rozdílů, které nejsou obsahem: zalomení, dvojité mezery, nbsp. */

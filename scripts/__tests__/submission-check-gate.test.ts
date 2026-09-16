@@ -205,11 +205,33 @@ describe('[4] písemný popis', () => {
 
   it('selže bez sémantického omezení i s úplnou legacy garancí', async () => {
     const dir = repo();
-    rewriteDescription(dir, description().replace('This acknowledgement does not certify semantic correctness. A structurally valid citation is not a semantic guarantee.', GUARANTEE));
+    rewriteDescription(dir, description().replace('This acknowledgement does not certify semantic correctness.', GUARANTEE));
     const results = await check(dir);
     expect(failed(results)).toEqual([4]);
     expect(detailOf(results, 4)).toContain('semantic-limit');
   });
+  // Náhrada uvařeným světem je to, co porotce uvidí nejčastěji, a zároveň to,
+  // co se dá z popisu nejsnáz vynechat: popis bez té věty čte líp a tvrdí
+  // něco, co produkt neumí. Proto má vlastní případ, ne jen položku v seznamu.
+  it('selže, když popis zamlčí náhradu nejbližším uvařeným světem', async () => {
+    const dir = repo();
+    rewriteDescription(dir, description().replace(
+      'A sentence the store does not recognise is answered by the nearest authored world, and the product labels that substitution.',
+      'Every sentence is answered by a freshly generated world.',
+    ));
+    const results = await check(dir);
+    expect(failed(results)).toEqual([4]);
+    expect(detailOf(results, 4)).toContain('authored-fallback');
+  });
+
+  it('selže, když popis zamlčí, že přetáčení času není na porotcově cestě', async () => {
+    const dir = repo();
+    rewriteDescription(dir, description().replace('Time rewind and branching futures are not on the judge path.', ''));
+    const results = await check(dir);
+    expect(failed(results)).toEqual([4]);
+    expect(detailOf(results, 4)).toContain('no-time-rewind');
+  });
+
   it('současný popis nevyžaduje legacy DESIGN-BOOK', async () => {
     const dir = repo();
     rmSync(join(dir, 'DESIGN-BOOK.md'));
