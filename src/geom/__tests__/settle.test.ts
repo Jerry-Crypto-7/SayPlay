@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BoxGeometry, Matrix4 } from 'three';
+import { BoxGeometry, Matrix4, Vector3 } from 'three';
 
 import { placedBoxes, unsupported } from '../contact';
 import { compilePlacements, type GeomPlacement } from '../placements';
@@ -89,5 +89,75 @@ describe('settling placed pieces', () => {
     expect(bottomOf(standing, 0)).toBeCloseTo(0);
     const again = settlePlacements(standing);
     expect(again[0].matrix.equals(standing[0].matrix)).toBe(true);
+  });
+});
+
+describe('joining wall panels and seating roofs', () => {
+  const wallBottom = (): number => {
+    const raw = compilePlacements(program([{ kind: 'panel', variant: 'wall', at: [0, 0, 0] }]), undefined, { settle: false });
+    return -bottomOf(raw, 0);
+  };
+
+  it('stretches a row of twenty panels with gaps into one wall without gaps', () => {
+    const y = wallBottom();
+    const placements = compilePlacements({
+      version: GEOM_VERSION,
+      nodes: [
+        { kind: 'panel', variant: 'wall', at: [0, y, 2] },
+        { kind: 'repeat', child: 0, count: 16, step: [1.3, 0, 0] },
+        { kind: 'panel', variant: 'wall', at: [20.8, y, 2] },
+        { kind: 'repeat', child: 2, count: 4, step: [1.3, 0, 0] },
+        { kind: 'group', children: [1, 3] },
+      ],
+      root: 4,
+    } as GeomProgram);
+    const boxes = placedBoxes(placements)
+      .filter((entry) => entry.pieceId === 'panel.wall')
+      .map((entry) => entry.box)
+      .sort((a, b) => a.min.x - b.min.x);
+    expect(boxes).toHaveLength(20);
+    for (let i = 1; i < boxes.length; i += 1) {
+      expect(boxes[i].min.x - boxes[i - 1].max.x).toBeCloseTo(0, 5);
+    }
+    // Délka stěny zůstane – natahuje se panel, rozteč ne.
+    expect(boxes[0].getCenter(new Vector3()).x).toBeCloseTo(0);
+    expect(placedBoxes(placements).length).toBe(20);
+  });
+
+  it('leaves a row whose spacing is a deliberate gap', () => {
+    const y = wallBottom();
+    const nodes: GeomNode[] = [
+      { kind: 'panel', variant: 'wall', at: [0, y, 0] },
+      { kind: 'repeat', child: 0, count: 5, step: [3, 0, 0] },
+      { kind: 'panel', variant: 'wall', at: [0, y, 4] },
+      { kind: 'repeat', child: 2, count: 5, step: [1, 0, 0] },
+    ];
+    const raw = compilePlacements(program(nodes), undefined, { settle: false });
+    const settled = compilePlacements(program(nodes));
+    settled.forEach((placement, index) => {
+      expect(placement.matrix.equals(raw[index].matrix)).toBe(true);
+    });
+  });
+
+  it('seats a roof hanging over a cabin on the top edge of the cabin', () => {
+    const raw = compilePlacements(program([{ kind: 'mass', variant: 'block', at: [0, 0, 0], scale: [1.4, 2, 1.4] }]), undefined, { settle: false });
+    const lift = -bottomOf(raw, 0);
+    const placements = compilePlacements(
+      program([
+        { kind: 'mass', variant: 'block', at: [0, lift, 0], scale: [1.4, 2, 1.4] },
+        { kind: 'panel', variant: 'roof', at: [0, 5, 0] },
+      ]),
+    );
+    expect(bottomOf(placements, 1)).toBeCloseTo(topOf(placements, 0));
+  });
+
+  it('keeps a roof over a room when only a table stands under it', () => {
+    const nodes: GeomNode[] = [
+      { kind: 'fixture', variant: 'crate', at: [0, 0.3, 0] },
+      { kind: 'panel', variant: 'roof', at: [0, 3, 0], scale: [6, 1, 6] },
+    ];
+    const raw = compilePlacements(program(nodes), undefined, { settle: false });
+    const settled = compilePlacements(program(nodes));
+    expect(settled[1].matrix.equals(raw[1].matrix)).toBe(true);
   });
 });
