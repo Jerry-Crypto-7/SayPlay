@@ -707,6 +707,31 @@ describe('the compiler request', () => {
     expect(request.system).toContain('sim.witness  omitted — the system writes it');
   });
 
+  /**
+   * ⚠ **Tenhle pin nic nového nezavádí — drží větu, která v promptu už stojí.**
+   *
+   * P18 T7 plánovala pravidlo o dosažitelné výhře do promptu *dopsat*. Naměřeno
+   * 16. 9. 2026: je tam dvakrát. Jednou ve vloženém kontraktu („THE WORLD MUST BE
+   * WINNABLE", hlídá `prompt.test.ts:151`) a podruhé vlastními slovy compileru
+   * hned za zavřením `NO_FIT`. Třetí formulace by byla jen delší prompt.
+   *
+   * Hlídat se to ale musí, protože je to přesně ta třída vady, kterou oko
+   * nechytí: kdyby ta věta z promptu zmizela při jeho zkracování (T8 chce
+   * zkracovat, co model píše), model by o dosažitelnosti výhry nedostal ani
+   * slovo a **všechno by dál vypadalo zeleně**. Pořadí je součástí tvrzení:
+   * věta patří za zrušení `NO_FIT`, ne před ně, jinak si ji model přečte jako
+   * přebitou tím, co stojí pod ní.
+   */
+  it('says in its own words that the win must be reachable, after the contract it embeds', () => {
+    const close = request.system.indexOf('On this path you do not have it');
+    const reaching = request.system.indexOf('a win rule that says what reaching it means');
+    const never = request.system.indexOf('it is never unreachable');
+
+    expect(close).toBeGreaterThan(-1);
+    expect(reaching).toBeGreaterThan(close);
+    expect(never).toBeGreaterThan(reaching);
+  });
+
   it('closes the NO_FIT door the embedded contract opens, and closes it after it', () => {
     // ⚠ **Pořadí je celé tvrzení, ne detail zápisu.** Vložený světový kontrakt
     // `NO_FIT` nabízí právem — sdílí ho cesta, kde za větou nemusí nic stát.
