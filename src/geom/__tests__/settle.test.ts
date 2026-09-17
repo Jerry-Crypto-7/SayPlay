@@ -50,6 +50,30 @@ describe('settling placed pieces', () => {
     expect(unsupported(placedBoxes(placements))).toEqual([]);
   });
 
+  it('settles the support first, so a thing on a hanging table lands with it', () => {
+    // Pořadí odspodu nahoru je jediné, co tenhle případ drží. Bedna stojí na
+    // desce, takže je od začátku podepřená: shora dolů se přeskočí jako „už
+    // stojí", stůl pod ní pak spadne a bedna zůstane viset ve vzduchu. Ostatní
+    // případy v souboru mají podpěru rovnou na podlaze, takže je pořadí míjí.
+    const table = compilePlacements(program([{ kind: 'mass', variant: 'block', at: [0, 0, 0], scale: [2, 1, 2] }]), undefined, { settle: false });
+    const crate = compilePlacements(program([{ kind: 'fixture', variant: 'crate', at: [0, 0, 0] }]), undefined, { settle: false });
+    const tableAt = 2 - bottomOf(table, 0);
+    const crateAt = topOf(table, 0) + tableAt - bottomOf(crate, 0);
+    const nodes: GeomNode[] = [
+      { kind: 'mass', variant: 'block', at: [0, tableAt, 0], scale: [2, 1, 2] },
+      { kind: 'fixture', variant: 'crate', at: [0.2, crateAt, 0.1] },
+    ];
+
+    const hanging = compilePlacements(program(nodes), undefined, { settle: false });
+    expect(bottomOf(hanging, 0), 'stůl má viset, jinak se pořadí neměří').toBeCloseTo(2);
+    expect(bottomOf(hanging, 1), 'bedna má stát na desce už před usazením').toBeCloseTo(topOf(hanging, 0));
+
+    const settled = settlePlacements(hanging);
+    expect(bottomOf(settled, 0)).toBeCloseTo(0);
+    expect(bottomOf(settled, 1)).toBeCloseTo(topOf(settled, 0));
+    expect(unsupported(placedBoxes(settled))).toEqual([]);
+  });
+
   it('leaves the window, the balcony slab and the roof where the model put them', () => {
     const nodes: GeomNode[] = [
       { kind: 'panel', variant: 'window', at: [0, 2, 0] },
