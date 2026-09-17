@@ -227,10 +227,17 @@ export function answerArchive(
   // v odpovědi modelu. Mazání je tu slepá záměna podřetězce: co se jednou
   // přepíše na `[redacted]`, se z archivu nedá dostat zpátky, a „klíč tam
   // není" platí i nad rozžvýkaným souborem.
+  // Nejdelší literál první (nález revize 16. 9. 2026). Adresa s pověřením
+  // v query stringu klíč **obsahuje**, takže přepsat dřív klíč znamená rozbít
+  // literál adresy: `…/v1?key=<klíč>` se změní na `…/v1?key=[redacted]`, na ten
+  // tvar už adresa nesedí a jméno vnitřního stroje projde do archivu. Homy se
+  // řadí stejně a ze stejného důvodu.
   const secrets = [
     config.apiKey,
     config.endpoint === CODEX_CLI_ENDPOINT ? '' : config.endpoint,
-  ].filter((secret) => secret.length > 0);
+  ]
+    .filter((secret) => secret.length > 0)
+    .sort((a, b) => b.length - a.length);
   const homes = homesOf(env);
   const caseId = sessionId !== undefined && CASE_ID.test(sessionId) ? sessionId : randomUUID();
 

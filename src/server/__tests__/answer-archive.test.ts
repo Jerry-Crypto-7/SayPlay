@@ -316,6 +316,36 @@ describe('archiv odpovědí modelu', () => {
   });
 
   /**
+   * **Pořadí redakce, ne jen její seznam** (nález revize 16. 9. 2026).
+   *
+   * Adresa s pověřením v query stringu klíč **obsahuje**. Když se přepisoval
+   * první klíč, změnil se tím i text adresy (`…?key=[redacted]`), původní
+   * literál adresy na něj přestal sedět a jméno vnitřního stroje projelo do
+   * souboru. Fixtura nahoře tu vadu chytit nemůže: její `KEY` v `ENDPOINT`
+   * není, takže na pořadí nezáleží. Tady je uvnitř schválně.
+   */
+  it('adresu neprozradí, ani když v sobě nese klíč', async () => {
+    const dir = scratch('worldsmith-archive-order-');
+    const endpoint = `https://gw.internal.example.com/v1/messages?key=${KEY}`;
+    const config = upstreamConfigFromEnv({
+      WORLDSMITH_MODEL_ENDPOINT: endpoint,
+      WORLDSMITH_MODEL_KEY: KEY,
+      WORLDSMITH_MODEL_PROFILE: 'subscription',
+      WORLDSMITH_CALL_CAP: '10',
+      WORLDSMITH_USD_PER_MTOK_OUT: '1',
+    });
+    expect(config).not.toBeNull();
+
+    const archive = answerArchive({ WORLDSMITH_ARCHIVE_DIR: dir }, config!);
+    await archive!.write(REQUEST, { detail: `Failed to parse URL from ${endpoint}` });
+
+    const raw = readFileSync(join(dir, readdirSync(dir)[0]!), 'utf8');
+    expect(raw, 'jméno vnitřního stroje prošlo do archivu').not.toContain('gw.internal.example.com');
+    expect(raw).not.toContain(KEY);
+    expect(raw).toContain('Failed to parse URL from [redacted]');
+  });
+
+  /**
    * **Sentinel se neredaguje.** `codex-cli` neznamená adresu, ale „žádná
    * adresa, spusť CLI" — a je to zároveň slovo, které model umí napsat. Slepá
    * záměna podřetězce by z archivu vymazala obsah, kvůli kterému vzniká,
