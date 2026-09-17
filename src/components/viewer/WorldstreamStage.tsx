@@ -75,7 +75,7 @@ import { createAssetLoader } from '@/assets/loader';
 import { createAssetCache } from '@/assets/cache';
 import { WORLDSTREAM_ASSETS } from '@/assets/catalog';
 import { applyRuntimeAppearance } from './runtime-appearance';
-import { observeVisibility, projectedExtent, selectAssetLod,visibleIntersection } from '@/scene/visibility';
+import { framePressure,observeVisibility, projectedExtent, selectAssetLod,visibleIntersection } from '@/scene/visibility';
 import type { VisualObservation } from '@/scene/visibility-report';
 import { surfaceMaterial } from '@/assets/materials';
 import {createCutawayController,planCutaway} from './cutaway';
@@ -847,15 +847,18 @@ export default function WorldstreamStage({
     if(!adaptiveAssets || clock.elapsedTime-lastLodCheck.current<ZONE_STREAM_POLICY.intervalSeconds) return;
     lastLodCheck.current=clock.elapsedTime;
     zones.prune(new Set(build.slots.map(entry=>entry.slot.stableId)));
+    // Účet za poslední snímek, ne konstanta: renderer ho sám nuluje na začátku
+    // každého snímku, takže je to cena té scény, na kterou se teď někdo dívá.
+    const pressure=framePressure({drawCalls:gl.info.render.calls,triangles:gl.info.render.triangles});
     for(const entry of build.slots) {
       if(entry.form.kind!=='asset') continue;
       const view=build.registry.view(entry.slot.stableId),resolved=WORLDSTREAM_ASSETS.resolve(entry.form.reference);
       if(!view || !resolved.ok) continue;
       const projection=projectedExtent(entry.slot.localBounds,view.group,camera,size.width,size.height);
-      const decision=zones.decide({id:entry.slot.stableId,importance:entry.slot.role==='hero'?3:entry.slot.importance,distance:projection.box.distanceToPoint(camera.position),inFrame:projection.inFrame,suspended:build.suspended.has(entry.slot.stableId),now:clock.elapsedTime});
+      const decision=zones.decide({id:entry.slot.stableId,importance:entry.slot.role==='hero'?3:entry.slot.importance,distance:projection.box.distanceToPoint(camera.position),inFrame:projection.inFrame,suspended:build.suspended.has(entry.slot.stableId),now:clock.elapsedTime,pressure});
       if(decision==='suspend')build.suspendAsset(entry.slot.stableId);
       if(decision!=='resume'&&build.suspended.has(entry.slot.stableId))continue;
-      const level=selectAssetLod(resolved.asset.lods,projection.screenPixels,entry.slot.importance,build.assetLevels.get(entry.slot.stableId)??null);
+      const level=selectAssetLod(resolved.asset.lods,projection.screenPixels,entry.slot.importance,build.assetLevels.get(entry.slot.stableId)??null,pressure);
       build.requestAssetLod(entry.slot.stableId,level,(id,reason)=>{if(reason===null)failures.current.delete(id);else failures.current.set(id,reason);});
     }
   });

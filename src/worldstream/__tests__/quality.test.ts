@@ -244,6 +244,41 @@ describe('úroveň před meshing fan-outem', () => {
     }
   });
 
+  it('nejnižší úroveň významový objekt zjednoduší, nikdy ho nezahodí', async () => {
+    // **To jediné tvrzení téhle úlohy, které by se dalo porušit tiše.** Objekt,
+    // který se nevejde do hrdinského rozpočtu, spadne na hlínu — a hlína se
+    // pořád kreslí. Kdyby ho degradace místo toho vynechala ze `slots` nebo mu
+    // dala `drawn: false`, vypadal by svět po ránu jen chudší a nikdo by
+    // nepoznal, že mu z věty zmizel předmět. Test to soudí nad **identitami**,
+    // ne nad počtem: porovnává, co se objednalo, s tím, co se nakreslilo.
+    const mesh = vi.fn<(order: MeshOrder) => Promise<MeshResult>>(async () => meshOf());
+    const outcome = outcomeWithThreeShapes();
+    const ordered = (outcome as unknown as { result: { value: { objects: { stableId: string }[] } } })
+      .result.value.objects.map((object) => object.stableId);
+
+    for (const tier of QUALITY_TIERS) {
+      const world = await buildProxyWorld(outcomeWithThreeShapes(), { mesh, quality: tier });
+      if (world.kind !== 'built') throw new Error(`svět se nepostavil na úrovni ${tier}`);
+
+      expect(world.slots.map((entry) => entry.slot.stableId).sort()).toEqual([...ordered].sort());
+      // `drawn` nese jen hlína a asset; mesh a placements se kreslí vždy.
+      // `drawn: false` je u hlíny legitimní jen tam, kde geometrie objektu
+      // v obraze stojí pod cizím uzlem — tenhle blueprint žádnou geometrii
+      // nemá, takže tady je to prostě zahozený objekt.
+      for (const entry of world.slots) {
+        const drawn = entry.form.kind === 'clay' || entry.form.kind === 'asset' ? entry.form.drawn : true;
+        expect({ id: entry.slot.stableId, drawn }).toEqual({ id: entry.slot.stableId, drawn: true });
+      }
+    }
+
+    // A zároveň se na `safe` doopravdy degradovalo — jinak by test výš platil
+    // triviálně, protože by se prostě vymeshovalo všechno.
+    const safe = await buildProxyWorld(outcomeWithThreeShapes(), { mesh, quality: 'safe' });
+    if (safe.kind !== 'built') throw new Error('svět se nepostavil');
+    expect(safe.slots.filter((entry) => entry.form.kind === 'mesh')).toHaveLength(budgetFor('safe').heroes);
+    expect(safe.slots.filter((entry) => entry.form.kind === 'clay').length).toBeGreaterThan(0);
+  });
+
   it('všechny objednávky jedné stavby nesou tutéž mřížku', async () => {
     const mesh = vi.fn<(order: MeshOrder) => Promise<MeshResult>>(async () => meshOf());
     await buildProxyWorld(outcomeWithThreeShapes(), { mesh, quality: 'full' });

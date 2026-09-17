@@ -1,5 +1,6 @@
 import { Box3, Camera, Frustum, Matrix4, Object3D, Raycaster, Vector3, Mesh,type Material } from 'three';
 import type { Bounds3 } from '@/shape/types';
+import { VIEWER_BUDGETS } from '@/kit/budgets';
 import type { VisualObservation } from './visibility-report';
 
 export function projectedExtent(bounds: Bounds3, group: Object3D, camera: Camera, width: number, height: number) {
@@ -57,17 +58,72 @@ export function observeVisibility(stableId: string, bounds: Bounds3, group: Obje
   return result;
 }
 
-/** Hysteresis prevents repeated network/decode work near the LOD boundary. */
-export function selectAssetLod(lods: readonly {level:number;minScreenPixels:number}[], pixels: number, importance: number, current: number | null): number {
+/**
+ * Prahy LOD a streamování. **Runtime kopie `data/profiles/web-viewer.json`**,
+ * stejnou dohodou jako `VIEWER_BUDGETS`: profil je zdroj čísel, kód je nosí a
+ * `src/scene/__tests__/viewer-profile.test.ts` jde červeně, jakmile se rozejdou.
+ * Import profilu do bundlu záměrně není — adresář `data/` není součástí
+ * klientské cesty.
+ */
+export const LOD_POLICY = {
+  /** Pixely musí přebývat o 20 %, než se slot vrátí na jemnější úroveň. */
+  coarserHysteresis: 1.2,
+  /** A chybět o 20 %, než spadne na hrubší. Dohromady mrtvé pásmo kolem prahu. */
+  finerHysteresis: 0.8,
+  /** Hrdina. Nikdy se nezahazuje; pod tlakem se jen zjednoduší. */
+  heroImportance: 3,
+  /** O kolik příček smí hrdina klesnout, když je snímek nad rozpočtem. */
+  heroCoarserLevels: 1,
+  /** Od jakého podílu rozpočtu se snímek považuje za přetížený. */
+  overBudgetRatio: 1,
+} as const;
+
+/**
+ * Jak moc je **naměřený** snímek nad rozpočtem plátna.
+ *
+ * Vrací podíl, ne booleovskou odpověď: 0,4 je poloprázdný snímek, 1 přesně na
+ * stropu, 1,8 skoro dvojnásobek. Rozhoduje ta dražší z obou os — snímek, který
+ * se vejde do trojúhelníků a přetéká draw cally, je přetížený stejně.
+ *
+ * Vstup je `gl.info.render` za poslední snímek, tedy **měření, ne konstanta**.
+ * To je celý rozdíl proti stavu do 17. 9. 2026, kdy LOD i culling rozhodovaly
+ * podle pevných vzdáleností a velikostí bez ohledu na to, co snímek doopravdy
+ * stál.
+ */
+export function framePressure(
+  measured: { readonly drawCalls: number; readonly triangles: number },
+  budget: { readonly maxDrawCallsPerFrame: number; readonly maxTrianglesPerFrame: number } = VIEWER_BUDGETS,
+): number {
+  return Math.max(
+    measured.drawCalls / budget.maxDrawCallsPerFrame,
+    measured.triangles / budget.maxTrianglesPerFrame,
+  );
+}
+
+/**
+ * Úroveň detailu jednoho assetu: **viditelná velikost a naměřená cena snímku**.
+ *
+ * Hystereze brání opakovanému stahování a dekódování na prahu. `pressure` je
+ * výstup `framePressure()`; dokud je snímek pod rozpočtem, nemění nic. Nad
+ * rozpočtem posune volbu o jednu příčku k hrubšímu — **včetně hrdiny**, který
+ * do té chvíle seděl napevno na nejjemnější úrovni. Hrdina tím zchudne o detail,
+ * nikdy nezmizí: nejhorší, co se mu stane, je nejhrubší příčka jeho vlastního
+ * seznamu.
+ */
+export function selectAssetLod(lods: readonly {level:number;minScreenPixels:number}[], pixels: number, importance: number, current: number | null, pressure = 0): number {
   const sorted=[...lods].sort((a,b)=>a.level-b.level);
   if(!sorted.length) return 0;
-  if(importance===3) return sorted[0].level;
-  const desired=sorted.find(lod=>pixels>=lod.minScreenPixels) ?? sorted[sorted.length-1];
+  const overBudget=pressure>LOD_POLICY.overBudgetRatio;
+  const coarser=(level:number,steps:number)=>sorted[Math.min(sorted.findIndex(lod=>lod.level===level)+steps,sorted.length-1)].level;
+  if(importance===LOD_POLICY.heroImportance)
+    return overBudget?coarser(sorted[0].level,LOD_POLICY.heroCoarserLevels):sorted[0].level;
+  const fromPixels=sorted.find(lod=>pixels>=lod.minScreenPixels) ?? sorted[sorted.length-1];
+  const desired=sorted.find(lod=>lod.level===(overBudget?coarser(fromPixels.level,1):fromPixels.level)) ?? fromPixels;
   const previous=sorted.find(lod=>lod.level===current);
   if(previous && desired.level!==previous.level) {
     const threshold=desired.level<previous.level?desired.minScreenPixels:previous.minScreenPixels;
-    if(desired.level<previous.level && pixels<threshold*1.2) return previous.level;
-    if(desired.level>previous.level && pixels>threshold*0.8) return previous.level;
+    if(desired.level<previous.level && pixels<threshold*LOD_POLICY.coarserHysteresis) return previous.level;
+    if(desired.level>previous.level && pixels>threshold*LOD_POLICY.finerHysteresis && !overBudget) return previous.level;
   }
   return desired.level;
 }
