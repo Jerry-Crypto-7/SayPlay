@@ -4,6 +4,7 @@ import { createRuntime, entityPlacements, type EntityPlacement, type RunState, t
 import { advance, createTimeline, seekTo, type Timeline } from '@/sim/timeline';
 import { rebranchAt, type RebranchRejection } from '@/sim/rebranch';
 import { runtimeActions, sameAction, type RuntimeAction } from './runtime-input';
+import { hashHex } from '@/sim/hash';
 
 export interface RuntimeTransition {
   readonly tick: number;
@@ -12,6 +13,7 @@ export interface RuntimeTransition {
 }
 
 export interface RuntimeSnapshot {
+  readonly stateHash: string;
   readonly observationTick: number;
   readonly tick: number;
   readonly endedAtTick: number | null;
@@ -47,7 +49,9 @@ function ownRuntime(initial: Runtime, timeline: Timeline) {
   const listeners = new Set<() => void>();
   let paused = false;
   let observationTick = runtime.tick;
+  const inputEffects = new Map<number, readonly string[]>();
   const snapshot = (): RuntimeSnapshot => Object.freeze({
+    stateHash: hashHex(runtime.state),
     observationTick,
     tick: runtime.tick,
     endedAtTick: runtime.runState === 'running' ? null : runtime.tick,
@@ -75,6 +79,7 @@ function ownRuntime(initial: Runtime, timeline: Timeline) {
     const tick = runtime.tick;
     const stepInputs = inputs.filter(input => input.tick === tick);
     const result = advance(timeline, runtime, stepInputs);
+    if (stepInputs.length) inputEffects.set(tick, Object.freeze([...result.fired]));
     highWaterTick = Math.max(highWaterTick, runtime.tick);
     if (stepInputs.length || result.fired.length) {
       transitions = Object.freeze([...transitions, Object.freeze({ tick,
@@ -104,6 +109,13 @@ function ownRuntime(initial: Runtime, timeline: Timeline) {
       return { verdict: 'REBRANCHED', atFork, atObservation: branch.getSnapshot(), controller: branch };
     },
     getInputLog: () => Object.freeze(inputs.map(input => Object.freeze({ ...input }))),
+    /** Rules fired during each input tick, not a claim of per-action causality. */
+    getInputEffects: (fromTick: number) => Object.freeze(inputs.filter(input => input.tick >= fromTick && input.tick < observationTick)
+      .map(input => Object.freeze({ input: Object.freeze({ ...input }),
+        status: input.tick >= runtime.tick ? 'terminal' as const
+          : (inputEffects.get(input.tick)?.length ?? 0) > 0 ? 'rules-fired' as const : 'no-rule-fired' as const,
+        ruleIds: inputEffects.get(input.tick) ?? Object.freeze([] as string[]),
+      }))),
     dispatch: (action: RuntimeAction) => {
       if (!current.canInput) return { ok: false as const, reason: 'Resume at the latest tick to interact.' };
       if (!actions.some(candidate => sameAction(candidate, action))) {
@@ -142,6 +154,7 @@ function ownRuntime(initial: Runtime, timeline: Timeline) {
       validateTick(tick);
       if (tick < runtime.tick) {
         seekTo(timeline, runtime, tick);
+        for (const inputTick of inputEffects.keys()) if (inputTick >= tick) inputEffects.delete(inputTick);
         transitions = Object.freeze(transitions.filter(entry => entry.tick < runtime.tick));
       } else {
         while (runtime.tick < tick && runtime.runState === 'running') advanceOne();

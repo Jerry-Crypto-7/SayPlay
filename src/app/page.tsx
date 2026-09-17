@@ -8,7 +8,7 @@
  */
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
 
 import ChangePreview, { type ChangeState } from '@/components/worldstream/ChangePreview';
 import WorldStatus, { type WorldStatusState } from '@/components/worldstream/WorldStatus';
@@ -21,12 +21,14 @@ import {
   openWorldstreamSession,
   readBlueprint,
   requestChange,
+  restoreComparison,
   type AuthoredProvenance,
   type SessionHandle,
 } from '@/worldstream/client';
 import type { ClientState } from '@/worldstream/reducer';
 import {
   buildProxyWorldFrom,
+  buildVisualPreviewFrom,
   PROXY_RUNG_LABELS,
   type ProxyWorld,
 } from '@/worldstream/proxy';
@@ -44,7 +46,9 @@ import { sourceProxyFromRuntime } from '@/worldstream/source-view';
 import { createRuntimeController } from '@/worldstream/runtime-controller';
 import { createClock, pump } from '@/sim/clock';
 import type { WorldDoc } from '@/ir/worlddoc';
-import { blueprintSchema } from '@/worldstream/schema';
+import { blueprintSchema, visualPreviewSchema, type VisualPreview } from '@/worldstream/schema';
+import { visibilityReport } from '@/scene/visibility-report';
+import type { ShapeDetailAssessment } from '@/shape/detail-policy';
 import { createPipelineMetrics, type PipelineMetricsSnapshot, type PipelineRunHandle, type PipelineStageHandle,
   type PipelineProvenance } from '@/worldstream/pipeline-metrics';
 
@@ -55,6 +59,7 @@ declare global { interface Window { __worldstreamMetrics?: { snapshot(): Pipelin
 const WorldstreamCanvas = dynamic(() => import('@/components/worldstream/WorldstreamCanvas'), {
   ssr: false,
 });
+const FutureViews = dynamic(() => import('@/components/worldstream/FutureViews'), { ssr: false });
 
 /**
  * Věta, kterou porotce uvidí, když relace skončí bez světa a bez důvodu.
@@ -102,9 +107,11 @@ function firstBlueprint(
   handle: SessionHandle,
   signal: AbortSignal,
   onIntent?: (intent: NonNullable<ClientState['intent']>) => void,
+  onVisualPreview?: (preview:VisualPreview) => void,
 ): Promise<Arrival> {
   return new Promise((resolve) => {
     let settled = false;
+    let lastPreview:VisualPreview|null=null;
     const done = (arrival: Arrival): void => {
       if (settled) return;
       settled = true;
@@ -117,6 +124,9 @@ function firstBlueprint(
         // Planner odpoví desítky vteřin před compilerem; co přečetl, patří na
         // obrazovku hned, ne až se světem.
         if (state.intent !== null && !settled) onIntent?.(state.intent);
+        if (!settled && !state.blueprint && state.visualPreview && state.visualPreview!==lastPreview) {
+          lastPreview=state.visualPreview;onVisualPreview?.(state.visualPreview);
+        }
         if (state.blueprint !== null) done({ blueprint: state.blueprint });
       },
     })
@@ -151,14 +161,17 @@ export default function Page() {
   const [sourceGeneration, setSourceGeneration] = useState<SourceGeneration>('live');
   const [sourceEpoch, setSourceEpoch] = useState(0);
   const [cameraReset, setCameraReset] = useState(0);
+  const [focusId, setFocusId] = useState<string | null>(null);
+  const [cutaway, setCutaway] = useState(true);
   const sourceRuntimes = useRef(new Map<ProjectRevision, RuntimeController>());
   const binding = useRef<RuntimeBinding | null>(null);
   const documentRef = useRef<WorldDoc | null>(null);
   const previewBranch = useRef<PreparedBranch | null>(null);
-  const [comparison, setComparison] = useState<{ result: Comparison; world: ProxyWorld; source: RuntimeController; changedWorld: ProxyWorld } | null>(null);
+  const [comparison, setComparison] = useState<{ result: Comparison; world: ProxyWorld; source: RuntimeController; changedWorld: ProxyWorld; summary: string } | null>(null);
   const [viewOriginal, setViewOriginal] = useState(false);
   const [comparisonNote, setComparisonNote] = useState<string | null>(null);
   const [forkTick, setForkTick] = useState(0);
+  const rewindChoice = useRef<{ tick: number; end: number } | null>(null);
   const [observationTick, setObservationTick] = useState(0);
   const [controller, setController] = useState<RuntimeController | null>(null);
   const [recovery, setRecovery] = useState<{ message: string; retry: () => Promise<void>; detailOnly?: boolean } | null>(null);
@@ -168,16 +181,22 @@ export default function Page() {
     const next = bindRuntime(binding.current, id, document);
     binding.current = next;
     documentRef.current = document;
+    rewindChoice.current = null;
     previewBranch.current = null;
     setComparison(null);
+    setFocusId(null);
     setViewOriginal(false);
     setComparisonNote(null);
     setController(next.controller);
   }, []);
   const [world, setWorld] = useState<ProxyWorld | null>(null);
+  const [visualWorld,setVisualWorld]=useState<ProxyWorld|null>(null);
+  const [visualStage,setVisualStage]=useState<VisualPreview['stage']>(undefined);
+  const displayedWorld=world??visualWorld;
+  // Keep the one-attempt inspection budget when the drawer closes/reopens.
+  const visualRepairAttempts=useMemo(()=>new Set<string>(),[displayedWorld]);
   const presented = useCallback((paintedWorld: ProxyWorld) => {
-    if (paintedWorld !== world || !displayMeasurement) return;
-    if (displayMeasurement.targetWorld && paintedWorld !== displayMeasurement.targetWorld) return;
+    if (!displayMeasurement || paintedWorld !== (displayMeasurement.targetWorld ?? world)) return;
     metrics.finishStage(displayMeasurement.frame); metrics.finishRun(displayMeasurement.run);
   }, [world, displayMeasurement, metrics]);
   useEffect(() => {
@@ -211,6 +230,7 @@ export default function Page() {
    */
   const [provenance, setProvenance] = useState<AuthoredProvenance | null>(null);
   const [sentence, setSentence] = useState('');
+  const [generationMode, setGenerationMode] = useState<'live' | 'prepared'>('live');
   const [inspecting, setInspecting] = useState(false);
   const toggleInspect = useCallback(() => setInspecting((was) => !was), []);
 
@@ -342,78 +362,6 @@ export default function Page() {
     committed.current = false;
   }, [installRuntime, metrics]);
 
-  /**
-   * **Dějství II: druhá relace, vlastní placený slot, nabídnutý výsledek.**
-   *
-   * Běží jedině nad uvařeným světem — když první větu psal model, není co
-   * dohánět. Odsud dál se nesahá na nic z dějství I: jiná relace znamená, že
-   * blueprint ani commit porotce nemá tahle větev jak přepsat, a to je
-   * konstrukce, ne hlídání (debata Opus ↔ Codex 7. 9. 2026, nález F2).
-   *
-   * **Spadlé dějství II nemění na plátně svět** — žádná porucha, žádné prázdno.
-   * Porotce má na plátně svět z dějství I a ten platí dál.
-   *
-   * **Mlčet o tom ale nesmí.** Do 15. 9. 2026 končilo pět různých selhání
-   * stejně — zmizelo „is writing" a nic víc. Porotce to četl jako „pořád
-   * tentýž svět" (P15 `G1-modelab`) a na produkci se z toho nedalo poznat, jestli
-   * svět odmítla brána, nebo nedorazil proud (P16 `T8-silentlive`). Každá větev
-   * proto řekne jednou větou, na čem ztroskotala.
-   */
-  const runSecondAct = useCallback(
-    async (prompt: string): Promise<void> => {
-      const control = new AbortController();
-      secondReading.current = control;
-      setSecondActMiss(null);
-      const miss = (reason: string): void => {
-        if (!control.signal.aborted) setSecondActMiss(reason);
-      };
-      // Odmítnuté dveře (`LIVE_UNAVAILABLE` na nasazení bez modelu) přijdou
-      // dřív, než se „is writing" ukáže — tam porotci nikdo nic neslíbil
-      // a hláška o nedoručené verzi by lhala stejně jako ten popisek.
-      let shown = false;
-
-      try {
-        const handle = await openWorldstreamSession(prompt, {
-          signal: control.signal,
-          live: true,
-        });
-        if (control.signal.aborted) return;
-        setWriting(true);
-        shown = true;
-
-        const arrival = await firstBlueprint(handle, control.signal, (read) => {
-          if (!control.signal.aborted) setIntent(read);
-        });
-        if (control.signal.aborted) return;
-        if (!('blueprint' in arrival)) return miss(arrival.fault);
-
-        const parsed = blueprintSchema.safeParse(arrival.blueprint);
-        if (!parsed.success) return miss(`its world does not parse: ${parsed.error.issues[0]?.message ?? '?'}`);
-
-        const client = mesher.current;
-        if (client === null) return miss('the mesher is not running');
-        const built = await buildProxyWorldFrom(parsed.data, {
-          mesh: (order) => client.mesh(order, control.signal),
-          quality: tier.current,
-        });
-        if (control.signal.aborted) return;
-        if (built.kind !== 'built') return miss(built.reason);
-
-        // **Tady se rozhoduje, jestli je to výměna, nebo nabídka.** Automaticky
-        // přepsat svět, do kterého porotce zasáhl, nemá žádné produktové
-        // odůvodnění; dokud nezasáhl, je výměna to, co chtěl.
-        const next: SecondAct = { world: built, sessionId: handle.sessionId, document: parsed.data.world };
-        if (committed.current || (binding.current?.controller.getInputLog().length ?? 0) > 0) setOffer(next);
-        else adopt(next);
-      } catch (error: unknown) {
-        if (shown) miss(error instanceof Error ? error.message : String(error));
-      } finally {
-        if (!control.signal.aborted) setWriting(false);
-      }
-    },
-    [adopt],
-  );
-
   const submit = useCallback(
     async (event: FormEvent): Promise<void> => {
       event.preventDefault();
@@ -437,8 +385,10 @@ export default function Page() {
       setStopped(null);
       setFault(null);
       setWorld(null);
+      setVisualWorld(null);
       binding.current = null;
       documentRef.current = null;
+      rewindChoice.current = null;
       previewBranch.current = null;
       setComparison(null);
       setViewOriginal(false);
@@ -465,13 +415,21 @@ export default function Page() {
       registerMeasurement(measured);
       const requestTiming = metrics.startStage(measured, 'session-request');
       try {
-        const handle = await openWorldstreamSession(prompt, { signal: control.signal });
+        const handle = await openWorldstreamSession(prompt, { signal: control.signal, live: generationMode === 'live' });
         const origin = handle.authored ? 'prepared' : 'unknown';
         metrics.setRunProvenance(measured, origin);
         metrics.finishStage(requestTiming, 'completed', origin);
         const blueprintTiming = metrics.startStage(measured, 'blueprint-wait', origin);
+        let previewVersion=0;
         const arrival = await firstBlueprint(handle, control.signal, (read) => {
           if (!control.signal.aborted) setIntent(read);
+        }, (preview) => {
+          const version=++previewVersion;
+          const parsed=visualPreviewSchema.safeParse(preview),client=mesher.current;
+          if(!parsed.success||!client)return;
+          void buildVisualPreviewFrom(parsed.data,{mesh:order=>client.mesh(order,control.signal),quality:tier.current})
+            .then(built=>{if(!control.signal.aborted&&era===generation.current&&version===previewVersion&&built.kind==='built'){setVisualStage(parsed.data.stage);setVisualWorld(built);}})
+            .catch(()=>{/* The rejected simulation stays rejected if its optional visual preview also fails. */});
         });
         metrics.finishStage(blueprintTiming, 'blueprint' in arrival ? 'completed' : 'failed');
         if (control.signal.aborted) return;
@@ -481,6 +439,7 @@ export default function Page() {
           setFault(arrival.fault);
           return;
         }
+        previewVersion++;setVisualWorld(null);
 
         // Server blueprint validoval taky. Čte se podruhé, protože mezi tím je
         // síť a `unknown` — bez toho by se dovnitř dostal objekt, o kterém
@@ -527,10 +486,7 @@ export default function Page() {
           // An edit can win while coarse geometry is already interactive.
           // Its accepted world must never be overwritten by older detail.
           if (!committed.current) setWorld(built);
-          // **Dějství II začíná jedině nad uvařeným světem.** `authored === null`
-          // znamená, že tenhle svět napsal model — druhá relace by pak psala
-          // podruhé totéž a platilo by se to dvakrát.
-          if (handle.authored !== null && !committed.current) void runSecondAct(prompt);
+
         } else setFault(built.reason);
       } catch (error: unknown) {
         metrics.finishRun(measured, control.signal.aborted ? 'cancelled' : 'failed');
@@ -541,7 +497,7 @@ export default function Page() {
         if (!control.signal.aborted) setStreaming(false);
       }
     },
-    [installRuntime, runSecondAct, sentence, streaming, metrics, registerMeasurement, measureDisplay],
+    [installRuntime, generationMode, sentence, streaming, metrics, registerMeasurement, measureDisplay],
   );
 
   function stopWaiting() {
@@ -588,6 +544,7 @@ export default function Page() {
         const prepared = documentRef.current && binding.current
           ? prepareBranch(documentRef.current, binding.current.controller) : null;
         const outcome = await requestChange(sessionId, prompt, {
+          comparison: true,
           ...(signal === undefined ? {} : { signal }),
           ...(stableId === undefined ? {} : { stableId }),
         });
@@ -618,8 +575,9 @@ export default function Page() {
 
         previewBranch.current = prepared;
         editMeasurement.current = { run: measured, review: metrics.startStage(measured, 'change-review', origin) };
-        setForkTick(0);
-        setObservationTick(Math.min(MAX_COMPARISON_TICK, prepared?.source.getSnapshot().observationTick ?? 0));
+        setForkTick(rewindChoice.current?.tick ?? 0);
+        setObservationTick(Math.min(MAX_COMPARISON_TICK, Math.max(rewindChoice.current?.end ?? 0,
+          prepared?.source.getSnapshot().observationTick ?? 0)));
         setChange({
           kind: 'preview',
           changeId: outcome.changeId,
@@ -657,7 +615,7 @@ export default function Page() {
     const era = generation.current;
     const prepared = previewBranch.current;
     const behavior = change.scope.behavior > 0;
-    if (behavior && prepared && prepared.base.inputCount !== prepared.source.getInputLog().length) {
+    if (behavior && prepared && (prepared.base.comparisonRevision !== 0 || prepared.base.inputCount !== prepared.source.getInputLog().length)) {
       setChange({ kind: 'refused', message: 'Visitor inputs changed after the preview. Request the change again.' });
       return;
     }
@@ -683,6 +641,8 @@ export default function Page() {
     try {
       const done = await commitChange(sessionId, change.changeId, {
         ...(signal === undefined ? {} : { signal }),
+        ...(behavior && prepared ? { comparison: { base: { ...prepared.base, comparisonRevision: 0 as const },
+          inputs: [...prepared.source.getInputLog()], forkTick, observationTick } } : {}),
       });
       // Svět se pod tímhle commitem mohl vyměnit. Zapsat jeho výsledek by
       // znamenalo postavit na plátno svět jedné relace a do pole druhé věty
@@ -700,7 +660,7 @@ export default function Page() {
       const snapshotTiming = metrics.startStage(measured, 'snapshot-request');
       let snapshot;
       try {
-        snapshot = await readBlueprint(sessionId, { ...(signal === undefined ? {} : { signal }) });
+        snapshot = done.acceptedBlueprint ?? await readBlueprint(sessionId, { ...(signal === undefined ? {} : { signal }) });
         metrics.finishStage(snapshotTiming);
       } catch (error) { metrics.finishStage(snapshotTiming, 'failed'); throw error; }
       const validationTiming = metrics.startStage(measured, 'validation');
@@ -740,7 +700,7 @@ export default function Page() {
       }
 
       const compareTiming = behavior && prepared ? metrics.startStage(measured, 'compare') : null;
-      const compared = behavior && prepared
+      const compared = done.comparison ? { verdict: 'COMPARED' as const, snapshot: { comparison: done.comparison } } : behavior && prepared
         ? compareAcceptedBranch(prepared, parsed.data.world, { forkTick, observationTick }) : null;
       metrics.finishStage(compareTiming, compared?.verdict === 'REJECTED' ? 'failed' : 'completed');
       const loweringTiming = metrics.startStage(measured, 'lowering');
@@ -753,10 +713,11 @@ export default function Page() {
         const next = fork.controller;
         next.setPaused(true);
         prepared!.source.setPaused(true);
+        prepared!.source.observeAt(result.observationTick);
         binding.current = { sessionId, simulation: canonical(parsed.data.world.sim), controller: next };
         documentRef.current = parsed.data.world;
         setController(next);
-        setComparison({ result, world, source: prepared!.source, changedWorld: built });
+        setComparison({ result, world, source: prepared!.source, changedWorld: built, summary: change.summary });
         setViewOriginal(false);
         setComparisonNote(null);
       } else {
@@ -838,7 +799,7 @@ export default function Page() {
   // Pořadí je pořadí pravdy: porucha přebíjí běžící relaci, protože relace
   // skončila; běžící relace přebíjí prázdno, protože se něco děje.
   const status: WorldStatusState =
-    fault !== null ? 'broken' : streaming ? 'building' : world === null ? 'empty' : 'live';
+    visualWorld && !world ? 'preview' : fault !== null ? 'broken' : streaming ? 'building' : world === null ? 'empty' : 'live';
 
   function acceptSource(project: ProjectRevision, _generation: SourceGeneration) {
     let next = sourceRuntimes.current.get(project);
@@ -867,6 +828,7 @@ export default function Page() {
     documentRef.current = project.world;
     previewBranch.current = null;
     setWorld(sourceProxyFromRuntime(built.world, project.sources[0]?.title ?? 'Source scenario'));
+    setVisualWorld(null);
     setController(next); setSourceProject(project);
     setSourceGeneration(_generation);
     setSessionId(null); setComparison(null); setViewOriginal(false); setComparisonNote(null);
@@ -881,7 +843,12 @@ export default function Page() {
       onInspect={toggleInspect}
       prompt={
         <>
-        <form onSubmit={(event) => void submit(event)} data-testid="prompt-form" style={FORM}>
+        <form onSubmit={(event) => void submit(event)} data-testid="prompt-form" className="ws-prompt-form" style={FORM}>
+          <label className="ws-generation-mode">World source <select data-testid="generation-mode" value={generationMode} disabled={streaming}
+            onChange={event => setGenerationMode(event.target.value as 'live' | 'prepared')}>
+            <option value="live">Generate my world</option>
+            <option value="prepared">Prepared demo</option>
+          </select></label>
           <input
             data-testid="prompt-input"
             aria-label="Describe a place"
@@ -904,6 +871,10 @@ export default function Page() {
       }
       status={<>
         <WorldStatus state={status} detail={fault} detailPending={streaming && world !== null} intent={world === null ? intent : null} />
+        {visualWorld && !world && <p style={FACTS} data-testid="visual-preview-notice" data-stage={visualStage??'compiler-visuals'}>
+          {visualStage==='intent-layout' ? 'Provisional layout from your plan. Placement and unfinished forms may change.' : 'Noninteractive scene preview.'}
+          {' '}{stopped ? 'Waiting stopped before an accepted world arrived.' : streaming ? visualStage==='intent-layout' ? 'Building and checking the rules.' : 'Checking a repair to the rules.' : 'The rules did not pass verification.'}
+          {' '}Actions, time travel and sharing are unavailable.</p>}
         {(streaming || writing) && <button data-testid="world-cancel" disabled={changing} onClick={stopWaiting}>Stop waiting</button>}
         {stopped && <p role="status" data-testid="world-cancelled" style={FACTS}>{stopped}</p>}
       </>}
@@ -950,11 +921,19 @@ export default function Page() {
             <AuthoredChangeNotice provenance={change === null ? null : changeFrom} />
             {change?.kind === 'preview' && change.scope.behavior > 0 && <fieldset style={{ ...FACTS, maxWidth: 'none' }}>
               <legend>Compare the same visitor inputs</legend>
+              <label>Change begins at {(forkTick / 20).toFixed(1)}s
+                <input aria-label="Change begins" type="range" min={0} max={Math.max(observationTick,1)} value={forkTick}
+                  onChange={event => setForkTick(event.target.valueAsNumber)} /></label>
+              <label>Look ahead {(observationTick / 20).toFixed(1)}s
+                <input aria-label="Look ahead" type="range" min={forkTick} max={Math.min(MAX_COMPARISON_TICK,Math.max(400,observationTick))}
+                  value={observationTick} onChange={event => setObservationTick(event.target.valueAsNumber)} /></label>
+              <details><summary>Exact simulation times</summary>
               <label>Fork tick <input data-testid="branch-fork-input" type="number" min={0} max={MAX_COMPARISON_TICK}
                 value={forkTick} disabled={changing} onChange={e => setForkTick(e.target.valueAsNumber)} /></label>
               <label>Observation tick <input data-testid="branch-observation-input" type="number" min={forkTick} max={MAX_COMPARISON_TICK}
                 value={observationTick} disabled={changing} onChange={e => setObservationTick(e.target.valueAsNumber)} /></label>
-              <p>Fork before the timer starts. Both branches replay your recorded actions.</p>
+              </details>
+              <p>Return before the action you want to change. Both futures replay your recorded actions.</p>
             </fieldset>}
             {comparisonNote && <p role="status" data-testid="branch-note" style={FACTS}>{comparisonNote}</p>}
             <form
@@ -980,10 +959,26 @@ export default function Page() {
           </>
         )
       }
-      controls={world ? <div className="ws-runtime-tools">
-        {world && <div style={FACTS}><button data-testid="camera-reset" onClick={() => setCameraReset(value => value + 1)}>Frame scene</button>
-          <span> Drag to orbit · scroll to zoom · arrow keys to pan</span></div>}
-        {comparison && <BranchComparison comparison={comparison.result} original={viewOriginal} busy={changing}
+      controls={displayedWorld ? <div className="ws-runtime-tools">
+        {comparison && <BranchComparison comparison={comparison.result} original={viewOriginal} busy={changing} summary={comparison.summary}
+          onRestart={() => {
+            if (!sessionId || !documentRef.current) return;
+            const accepted = documentRef.current;
+            const restoreEra = generation.current;
+            setChanging(true);
+            void restoreComparison(sessionId, { simRevision: accepted.simRevision, lookRevision: accepted.lookRevision, simHash: accepted.simHash })
+              .then(restored => {
+                if (generation.current !== restoreEra || documentRef.current !== accepted) return;
+                restored = blueprintSchema.parse(restored);
+                const source = comparison.source;
+                source.observeAt(comparison.result.forkTick); source.setPaused(true);
+                binding.current = { sessionId, simulation: canonical(restored.world.sim), controller: source };
+                documentRef.current = restored.world;
+                setController(source); setWorld(comparison.changedWorld); setComparison(null); setViewOriginal(false);
+                setChange(null); previewBranch.current = null; setComparisonNote('Original rules restored. Try another change; your scene stays.');
+              }).catch(error => { if (generation.current === restoreEra) setComparisonNote(error instanceof Error ? error.message : 'The original rules could not be restored.'); })
+              .finally(() => { if (generation.current === restoreEra) setChanging(false); });
+          }}
           onOriginal={() => {
             binding.current?.controller.setPaused(true);
             setController(comparison.source);
@@ -999,13 +994,24 @@ export default function Page() {
             setWorld(comparison.changedWorld);
             setViewOriginal(false);
           }} />}
-        {controller === null ? null : <RuntimeControls controller={controller} />}
+        {controller === null ? null : comparison
+          ? <details><summary>Visitor replay</summary><RuntimeControls controller={controller} comparing /></details>
+          : <RuntimeControls controller={controller} onRewind={(tick,end) => { rewindChoice.current={tick,end}; setForkTick(tick); }} />}
+        <div style={FACTS}><button data-testid="camera-reset" onClick={() => { setFocusId(null); setCameraReset(value => value + 1); }}>Frame scene</button>
+          <span> Drag to orbit · scroll to zoom · arrow keys to pan</span></div>
+        {displayedWorld?.kind === 'built' && displayedWorld.environment?.kind === 'interior' && <div style={FACTS}>
+          <button data-testid="cutaway-toggle" aria-pressed={cutaway} onClick={() => setCutaway(value => !value)}>{cutaway ? 'Show full walls' : 'Cut away walls'}</button>
+          <span>{cutaway ? ' Cutaway inspection · rules and collisions stay unchanged' : ' Full architecture'}</span>
+        </div>}
       </div> : null}
-      inspect={<><WorldFacts world={world} />{world && !sourceProject && <p style={FACTS} data-testid="no-source-evidence">
+      inspect={<><WorldFacts world={displayedWorld} repairAttempts={visualRepairAttempts} allowAssetRepair={world?.kind==='built'&&!comparison&&!sourceProject}
+        onFocus={comparison ? undefined : id => { setFocusId(id); setCameraReset(value => value + 1); }} />{world && !sourceProject && <p style={FACTS} data-testid="no-source-evidence">
         No source evidence is attached to this world. A prompt alone is not a citation.
       </p>}</>}
-      stage={<WorldstreamCanvas world={world} controller={controller} reset={cameraReset}
-        onPresented={presented}
+      stage={comparison && binding.current ? <FutureViews original={comparison.world} changed={comparison.changedWorld}
+        source={comparison.source} target={binding.current.controller} forkTick={comparison.result.forkTick}
+        endTick={comparison.result.observationTick} reset={cameraReset} onPresented={presented} cutaway={cutaway} /> : <WorldstreamCanvas world={displayedWorld} controller={world?controller:null} reset={cameraReset}
+        onPresented={presented} focusId={focusId} cutaway={cutaway}
         framing={sourceProject ? 'diagram' : 'scene'}
         sceneId={sourceProject ? (sourceProject.parent ?? sourceProject).projectRevision : sessionId} />}
     />
@@ -1124,7 +1130,18 @@ function AuthoredChangeNotice({
  * `RepairRounds`, `ModelProgress`) sem **nejde**: stojí nad lokální emisí a
  * `WorldDocRuntime`, tedy nad systémem, který na `/classic` zůstal celý.
  */
-function WorldFacts({ world }: { readonly world: ProxyWorld | null }) {
+function WorldFacts({ world, onFocus, allowAssetRepair, repairAttempts }: { readonly world: ProxyWorld | null; onFocus?: (id: string) => void;
+  allowAssetRepair: boolean; repairAttempts: Set<string> }) {
+  const [visibility, setVisibility] = useState<ReturnType<typeof visibilityReport> | null>(null);
+  const [detail, setDetail] = useState<readonly {id:string; assessment:ShapeDetailAssessment; action:{kind:'repeat-instanced'|'unsupported';reason:string}|null}[]>([]);
+  const [attempted, setAttempted] = useState<ReadonlySet<string>>(()=>new Set(repairAttempts));
+  const [assetRepairs,setAssetRepairs]=useState<ReturnType<NonNullable<Window['__worldstreamStage']>['slots']>>([]);
+  const [repairMessage,setRepairMessage]=useState<string|null>(null);
+  const era=useRef(0);
+  useEffect(() => {
+    era.current++;setVisibility(null);setDetail([]);setAttempted(new Set(repairAttempts));setAssetRepairs([]);setRepairMessage(null);
+    return ()=>{era.current++;};
+  }, [world,repairAttempts]);
   if (world === null || world.kind !== 'built') return null;
 
   return (
@@ -1138,6 +1155,54 @@ function WorldFacts({ world }: { readonly world: ProxyWorld | null }) {
           </li>
         ))}
       </ol>
+        <button data-testid="inspect-visibility" onClick={() => {
+          const stage=window.__worldstreamStage;
+          setVisibility(world.sceneSpec ? visibilityReport(world.sceneSpec,stage?.visibility() ?? []) : null);
+          setDetail((stage?.slots() ?? []).flatMap(slot=>slot.detailAssessment ? [{id:slot.stableId,assessment:slot.detailAssessment,action:slot.samplingAction}] : []));
+          setAssetRepairs(stage?.slots()??[]);
+        }}>
+          Check this view
+        </button>
+        {allowAssetRepair && assetRepairs.some(slot=>slot.assetRetry.status!=='unavailable') && <div data-testid="asset-repair-report">
+          <p>One retry can reload the same approved object after a download or loading failure. It does not change the world or its rules.</p>
+          {assetRepairs.filter(slot=>slot.assetRetry.status!=='unavailable').map(slot=><p key={slot.stableId} data-testid="asset-repair-row" data-object={slot.stableId}>
+            {slot.stableId}: {slot.assetRetry.status}{slot.assetRetry.reason ? ` · ${slot.assetRetry.reason}` : ''}
+            {slot.assetRetry.status==='available' && <button data-testid="asset-repair-retry" disabled={attempted.has(slot.stableId)} onClick={async()=>{
+              const stage=window.__worldstreamStage;if(!stage||repairAttempts.has(slot.stableId))return;
+              const currentEra=era.current;repairAttempts.add(slot.stableId);setAttempted(new Set(repairAttempts));
+              setRepairMessage(`Reloading ${slot.stableId}…`);
+              try{
+                const result=await stage.retryAsset(slot.stableId);
+                if(era.current!==currentEra||window.__worldstreamStage!==stage)return;
+                setAssetRepairs(stage.slots());setVisibility(world.sceneSpec?visibilityReport(world.sceneSpec,stage.visibility()):null);
+                setRepairMessage(result.status==='loaded'?`${slot.stableId} reloaded. Check this view; recognition still needs human review.`
+                  :`${slot.stableId}: ${result.status}. ${result.reason??'The object was not replaced.'}`);
+              }catch{
+                if(era.current===currentEra&&window.__worldstreamStage===stage)setRepairMessage(`${slot.stableId}: reload failed. No further automatic attempt is available.`);
+              }
+            }}>Retry this object</button>}
+          </p>)}
+        </div>}
+        {allowAssetRepair&&repairMessage&&<p role="status" data-testid="asset-repair-status">{repairMessage}</p>}
+        {detail.some(item=>item.assessment.recommendation) && <div data-testid="shape-detail-report">
+          <p>Shape sampling diagnostics. Recognition still needs human review.</p>
+          {detail.filter(item=>item.assessment.recommendation).map(item=><p key={item.id}><strong>{item.id}</strong>: {item.action?.kind==='repeat-instanced'
+            ? `Applied: ${item.action.reason} The original whole-object grid had a sampling risk; inspect the resulting detail.`
+            : <>{item.assessment.recommendation}{item.action ? ` Automatic change unavailable: ${item.action.reason}` : ''}</>}</p>)}
+        </div>}
+      {world.sceneSpec && <>
+        {visibility && <div data-testid="visibility-report">
+          <p>Five sampled sight lines per object; 24px diagnostic minimum. Recognition still needs human review. Recheck after one targeted camera adjustment.</p>
+          {visibility.map((requirement,index) => <div key={index}><strong>{requirement.description}</strong>
+            {requirement.instances.map(instance => <p key={instance.stableId}>{instance.stableId}: {instance.status}
+              {instance.observation ? ` · ${Math.round(instance.observation.screenPixels)}px` : ''}
+              {instance.repair ? ` · ${instance.repair}` : ''}
+              {instance.status === 'loaded' && onFocus && <button disabled={attempted.has(instance.stableId)}
+                onClick={() => { repairAttempts.add(instance.stableId);setAttempted(new Set(repairAttempts));onFocus(instance.stableId); }}>Inspect this object</button>}
+              {attempted.has(instance.stableId) && instance.status === 'loaded' ? ' · One targeted repair attempted; recheck. If still hidden, geometry or occlusion needs review.' : ''}</p>)}
+          </div>)}
+        </div>}
+      </>}
     </section>
   );
 }
@@ -1199,10 +1264,16 @@ const BUTTON: React.CSSProperties = {
 };
 
 /** Jediné živé hodiny. Pauza zahodí nástěnný zbytek, nikoli stav enginu. */
-function RuntimeControls({ controller }: { readonly controller: RuntimeController }) {
+function RuntimeControls({ controller, comparing = false, onRewind }: { readonly controller: RuntimeController; readonly comparing?: boolean;
+  readonly onRewind?: (tick:number,end:number)=>void }) {
   const state = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
+  const furthest = useRef(state.observationTick);
+  const previousController = useRef(controller);
+  if (previousController.current !== controller) { previousController.current=controller; furthest.current=state.observationTick; }
+  furthest.current = Math.max(furthest.current,state.observationTick);
+  const rewind = (tick:number) => { controller.setPaused(true); controller.observeAt(tick); onRewind?.(tick,furthest.current); };
   useEffect(() => {
-    if (state.paused || state.endedAtTick !== null) return;
+    if (comparing || state.paused || state.endedAtTick !== null) return;
     const clock = createClock();
     let last = performance.now();
     const timer = window.setInterval(() => {
@@ -1212,19 +1283,29 @@ function RuntimeControls({ controller }: { readonly controller: RuntimeControlle
       controller.advanceTicks(due);
     }, 50);
     return () => window.clearInterval(timer);
-  }, [controller, state.paused, state.endedAtTick]);
+  }, [controller, state.paused, state.endedAtTick, comparing]);
   return (
     <section data-testid="runtime-controls" style={{ ...FACTS, maxWidth: 'none', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.65rem' }} aria-label="Simulation controls">
-      <div data-testid="runtime-tick" data-tick={state.tick}>Tick {state.tick}</div>
+      <RuntimeInteraction controller={controller} readOnly={comparing} />
+      {!comparing && <div style={{flexBasis:'100%'}}>
+        <label>Time · {(state.observationTick/20).toFixed(1)}s <input data-testid="world-time" type="range" min={0}
+          max={Math.max(1,furthest.current)} value={state.observationTick} onChange={event => rewind(event.target.valueAsNumber)} /></label>
+        <button data-testid="rewind-before-action" disabled={controller.getInputLog().length===0}
+          onClick={() => rewind(controller.getInputLog().at(-1)!.tick)}>Before my last action</button>
+        <details><summary>Your actions</summary>{controller.getInputLog().map((input,index) => <button key={index}
+          onClick={() => rewind(input.tick)}>{(input.tick/20).toFixed(1)}s · {input.actionId} {input.target ?? ''}</button>)}</details>
+      </div>}
       <div data-testid="runtime-state">{state.runState}</div>
-      {state.endedAtTick !== null && <div>Ended at tick {state.endedAtTick}</div>}
-      <div data-testid="runtime-observation">Observation tick {state.observationTick}</div>
       <button type="button" data-testid="runtime-pause" style={BUTTON}
-        disabled={state.endedAtTick !== null}
+        disabled={comparing || state.endedAtTick !== null}
         onClick={() => controller.setPaused(!state.paused)}>
         {state.paused ? 'Resume' : 'Pause'}
       </button>
-      <RuntimeInteraction controller={controller} />
+      <details><summary>Simulation details</summary>
+        <div data-testid="runtime-tick" data-tick={state.tick}>Tick {state.tick}</div>
+        {state.endedAtTick !== null && <div>Ended at tick {state.endedAtTick}</div>}
+        <div data-testid="runtime-observation">Observation tick {state.observationTick}</div>
+      </details>
     </section>
   );
 }

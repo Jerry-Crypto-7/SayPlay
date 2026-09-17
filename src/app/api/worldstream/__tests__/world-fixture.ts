@@ -180,6 +180,6 @@ export function grammar() {
 export async function generated(): Promise<StoredSession> {
   // Vlastní `sessionId` je i vlastní kbelík, takže kvóta tu kousnout nemůže.
   const stored = openSession(`test-${newSessionSeed()}`, 4021)!;
-  await runGeneration(stored, PLAN.intent.setting, { emit: scripted().emit, grammar: grammar() });
+  await runGeneration(stored, PLAN.intent.setting, { legacyPlan: true, emit: scripted().emit, grammar: grammar() });
   return stored;
 }

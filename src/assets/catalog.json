@@ -1,0 +1,759 @@
+{
+  "version": "worldstream-assets-v1",
+  "assets": [
+    {
+      "assetId": "aquarium",
+      "version": 1,
+      "hash": "a952dca820b397c396b74aef7fe0f53e73f6628a3c8d8a6b6d5bdb4a66f32c64",
+      "label": "Glass aquarium with fish",
+      "tags": [
+        "aquarium",
+        "glass",
+        "transparent",
+        "fish"
+      ],
+      "style": "original stylized PBR",
+      "thumbnail": "/assets/worldstream/aquarium.png",
+      "provenance": {
+        "source": "scripts/assets/originals.mjs",
+        "author": "Worldsmith project — Codex-assisted original geometry",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
+        "importedAt": "2026-09-17",
+        "sourceHash": "efc1f83a22b3fa00478d34fb266152135bf0ed1d996499295828960039f68102"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -0.5099999904632568,
+          8.940696724635266e-10,
+          -0.25
+        ],
+        "max": [
+          0.5099999904632568,
+          0.6575000000745058,
+          0.25
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/aquarium-lod0.glb",
+          "hash": "a952dca820b397c396b74aef7fe0f53e73f6628a3c8d8a6b6d5bdb4a66f32c64",
+          "bytes": 70708,
+          "triangles": 2308,
+          "decodedGeometryBytes": 54360,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/aquarium-lod1.glb",
+          "hash": "002e174e1c236dd3f3a0ade6c997e0587a35bdb938bf459a0d64f0a81e4623a2",
+          "bytes": 32428,
+          "triangles": 432,
+          "decodedGeometryBytes": 16128,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "charcoal-polymer",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-1",
+          "name": "transparent-aquarium-glass",
+          "alphaMode": "BLEND",
+          "doubleSided": true
+        },
+        {
+          "id": "material-2",
+          "name": "transparent-water",
+          "alphaMode": "BLEND",
+          "doubleSided": true
+        },
+        {
+          "id": "material-3",
+          "name": "sand",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-4",
+          "name": "golden-fish",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-5",
+          "name": "leaf-green",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -0.5099999904632568,
+              8.940696724635266e-10,
+              -0.25
+            ],
+            "max": [
+              0.5099999904632568,
+              0.6575000000745058,
+              0.25
+            ]
+          }
+        }
+      ],
+      "sockets": [],
+      "supportSurfaces": [],
+      "parts": []
+    },
+    {
+      "assetId": "seated-person",
+      "version": 1,
+      "hash": "897af170487ae7f1ecb8b7f546e7b892b31ab8977035196eac05709dcf0fa430",
+      "label": "Seated person",
+      "tags": [
+        "human",
+        "person",
+        "seated",
+        "listener"
+      ],
+      "style": "original stylized PBR",
+      "thumbnail": "/assets/worldstream/seated-person.png",
+      "provenance": {
+        "source": "scripts/assets/originals.mjs",
+        "author": "Worldsmith project — Codex-assisted original geometry",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
+        "importedAt": "2026-09-17",
+        "sourceHash": "efc1f83a22b3fa00478d34fb266152135bf0ed1d996499295828960039f68102"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -0.3121029077131621,
+          0,
+          -0.22000000000000003
+        ],
+        "max": [
+          0.3121029077131621,
+          1.485,
+          0.5
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/seated-person-lod0.glb",
+          "hash": "897af170487ae7f1ecb8b7f546e7b892b31ab8977035196eac05709dcf0fa430",
+          "bytes": 156624,
+          "triangles": 6560,
+          "decodedGeometryBytes": 142128,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/seated-person-lod1.glb",
+          "hash": "45ab38fc65f491ef308d3741e2ae25e3d350cbc7ff54d097f89d8000d5119c2c",
+          "bytes": 40392,
+          "triangles": 896,
+          "decodedGeometryBytes": 26064,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "teal-woven-fabric",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-1",
+          "name": "warm-skin",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-2",
+          "name": "dark-hair",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-3",
+          "name": "charcoal-polymer",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -0.3121029077131621,
+              0,
+              -0.22000000000000003
+            ],
+            "max": [
+              0.3121029077131621,
+              1.485,
+              0.5
+            ]
+          }
+        }
+      ],
+      "sockets": [
+        {
+          "id": "seat",
+          "at": [
+            0,
+            0.46,
+            -0.05
+          ],
+          "normal": [
+            0,
+            -1,
+            0
+          ]
+        }
+      ],
+      "supportSurfaces": [],
+      "parts": []
+    },
+    {
+      "assetId": "desktop-terminal",
+      "version": 1,
+      "hash": "9a1b2eca1f60369e780be3db1ab7321b600a38c71c5a7d8409607a9534e4ce38",
+      "label": "Desktop computer terminal",
+      "tags": [
+        "device",
+        "computer",
+        "monitor",
+        "terminal"
+      ],
+      "style": "original stylized PBR",
+      "thumbnail": "/assets/worldstream/desktop-terminal.png",
+      "provenance": {
+        "source": "scripts/assets/originals.mjs",
+        "author": "Worldsmith project — Codex-assisted original geometry",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
+        "importedAt": "2026-09-17",
+        "sourceHash": "efc1f83a22b3fa00478d34fb266152135bf0ed1d996499295828960039f68102"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -0.29499998688697815,
+          -1.862645142292063e-10,
+          -0.11500000208616257
+        ],
+        "max": [
+          0.29499998688697815,
+          0.5500000071525574,
+          0.27000000029802323
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/desktop-terminal-lod0.glb",
+          "hash": "9a1b2eca1f60369e780be3db1ab7321b600a38c71c5a7d8409607a9534e4ce38",
+          "bytes": 56404,
+          "triangles": 456,
+          "decodedGeometryBytes": 24624,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/desktop-terminal-lod1.glb",
+          "hash": "4db0f728f1f3e94dabe8e920f07de3c9e2dd878e874d8a4d786841bac904ebf6",
+          "bytes": 12892,
+          "triangles": 96,
+          "decodedGeometryBytes": 5184,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "brushed-steel",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-1",
+          "name": "charcoal-polymer",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-2",
+          "name": "display",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-3",
+          "name": "display-line-0",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-4",
+          "name": "display-line-1",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-5",
+          "name": "display-line-2",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -0.29499998688697815,
+              -1.862645142292063e-10,
+              -0.11500000208616257
+            ],
+            "max": [
+              0.29499998688697815,
+              0.5500000071525574,
+              0.27000000029802323
+            ]
+          }
+        }
+      ],
+      "sockets": [],
+      "supportSurfaces": [],
+      "parts": []
+    },
+    {
+      "assetId": "lounge-chair",
+      "version": 1,
+      "hash": "088e2d1853324f92ac452baaf2feb8734ae5819f68de5bf9d39b0da2893f89a0",
+      "label": "Walnut lounge chair",
+      "tags": [
+        "chair",
+        "furniture",
+        "seat"
+      ],
+      "style": "original stylized PBR",
+      "thumbnail": "/assets/worldstream/lounge-chair.png",
+      "provenance": {
+        "source": "scripts/assets/originals.mjs",
+        "author": "Worldsmith project — Codex-assisted original geometry",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
+        "importedAt": "2026-09-17",
+        "sourceHash": "efc1f83a22b3fa00478d34fb266152135bf0ed1d996499295828960039f68102"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -0.3074999988079071,
+          -2.980232227667301e-9,
+          -0.3366302919365368
+        ],
+        "max": [
+          0.3074999988079071,
+          1.065140307144326,
+          0.29499998688697815
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/lounge-chair-lod0.glb",
+          "hash": "088e2d1853324f92ac452baaf2feb8734ae5819f68de5bf9d39b0da2893f89a0",
+          "bytes": 27956,
+          "triangles": 404,
+          "decodedGeometryBytes": 18360,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/lounge-chair-lod1.glb",
+          "hash": "8f2b786df59ccf7b36e685bc3082737791b86d76fda6671d4d53e0749f4c4797",
+          "bytes": 19856,
+          "triangles": 212,
+          "decodedGeometryBytes": 10296,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "oiled-walnut",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-1",
+          "name": "teal-woven-fabric",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -0.3074999988079071,
+              -2.980232227667301e-9,
+              -0.3366302919365368
+            ],
+            "max": [
+              0.3074999988079071,
+              1.065140307144326,
+              0.29499998688697815
+            ]
+          }
+        }
+      ],
+      "sockets": [
+        {
+          "id": "seat",
+          "at": [
+            0,
+            0.565,
+            0
+          ],
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        }
+      ],
+      "supportSurfaces": [
+        {
+          "id": "seat",
+          "center": [
+            0,
+            0.565,
+            0
+          ],
+          "width": 0.55,
+          "depth": 0.54
+        }
+      ],
+      "parts": []
+    },
+    {
+      "assetId": "potted-plant",
+      "version": 1,
+      "hash": "7e49745ab2fd0ee016e18e0e6d2321245e1fc94903d24f8b1bd2457a407be1fa",
+      "label": "Broadleaf potted plant",
+      "tags": [
+        "organic",
+        "plant",
+        "foliage",
+        "pot"
+      ],
+      "style": "original stylized PBR",
+      "thumbnail": "/assets/worldstream/potted-plant.png",
+      "provenance": {
+        "source": "scripts/assets/originals.mjs",
+        "author": "Worldsmith project — Codex-assisted original geometry",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
+        "importedAt": "2026-09-17",
+        "sourceHash": "efc1f83a22b3fa00478d34fb266152135bf0ed1d996499295828960039f68102"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -0.39846584353433623,
+          2.980232227667301e-9,
+          -0.3846715654509445
+        ],
+        "max": [
+          0.3862631106197112,
+          1.2350000023841858,
+          0.390653305194585
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/potted-plant-lod0.glb",
+          "hash": "7e49745ab2fd0ee016e18e0e6d2321245e1fc94903d24f8b1bd2457a407be1fa",
+          "bytes": 112324,
+          "triangles": 4280,
+          "decodedGeometryBytes": 98568,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/potted-plant-lod1.glb",
+          "hash": "b0eadf281fd93e9d0888fc81938d5acb839c170af28e83dbe96232867b248fb3",
+          "bytes": 34448,
+          "triangles": 656,
+          "decodedGeometryBytes": 20808,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "terracotta",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-1",
+          "name": "dark-soil",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-2",
+          "name": "oiled-walnut",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-3",
+          "name": "leaf-green",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -0.39846584353433623,
+              2.980232227667301e-9,
+              -0.3846715654509445
+            ],
+            "max": [
+              0.3862631106197112,
+              1.2350000023841858,
+              0.390653305194585
+            ]
+          }
+        }
+      ],
+      "sockets": [],
+      "supportSurfaces": [],
+      "parts": []
+    },
+    {
+      "assetId": "panel-door",
+      "version": 1,
+      "hash": "2381f57fb9886d5b757d201bf2ceaa1569827a6dae59276e0eb7b9dd7bb264bc",
+      "label": "Panel door with hinged leaf",
+      "tags": [
+        "door",
+        "hinge",
+        "architecture"
+      ],
+      "style": "original stylized PBR",
+      "thumbnail": "/assets/worldstream/panel-door.png",
+      "provenance": {
+        "source": "scripts/assets/originals.mjs",
+        "author": "Worldsmith project — Codex-assisted original geometry",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
+        "importedAt": "2026-09-17",
+        "sourceHash": "efc1f83a22b3fa00478d34fb266152135bf0ed1d996499295828960039f68102"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -0.550000011920929,
+          3.814697269177714e-8,
+          -0.10350000018626451
+        ],
+        "max": [
+          0.550000011920929,
+          2.1999999991059305,
+          0.10350000018626451
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/panel-door-lod0.glb",
+          "hash": "2381f57fb9886d5b757d201bf2ceaa1569827a6dae59276e0eb7b9dd7bb264bc",
+          "bytes": 26936,
+          "triangles": 304,
+          "decodedGeometryBytes": 14688,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/panel-door-lod1.glb",
+          "hash": "e6c3b144728bd7814f3f269a03a53a329003e70c57bd9d0f91de7bd342a97205",
+          "bytes": 22888,
+          "triangles": 208,
+          "decodedGeometryBytes": 10656,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "oiled-walnut",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-1",
+          "name": "warm-panel",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-2",
+          "name": "warm-panel",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-3",
+          "name": "warm-panel",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-4",
+          "name": "warm-panel",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-5",
+          "name": "brushed-steel",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -0.550000011920929,
+              3.814697269177714e-8,
+              -0.10350000018626451
+            ],
+            "max": [
+              0.550000011920929,
+              2.1999999991059305,
+              0.10350000018626451
+            ]
+          }
+        }
+      ],
+      "sockets": [
+        {
+          "id": "hinge",
+          "at": [
+            -0.47,
+            0,
+            0
+          ],
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        }
+      ],
+      "supportSurfaces": [],
+      "parts": [
+        {
+          "id": "leaf",
+          "node": "door-leaf",
+          "pivot": [
+            -0.47,
+            0,
+            0
+          ],
+          "sockets": [
+            "hinge"
+          ]
+        }
+      ]
+    }
+  ]
+}

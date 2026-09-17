@@ -33,6 +33,9 @@
  * vada serveru a donekonečna se z ní zotavovat znamená točit se na místě.
  */
 
+import type { ComparisonCommit } from './accepted-branch';
+import type { BranchComparison } from './branch-controller';
+import type { WorldstreamBlueprint } from './schema';
 import {
   applySnapshot,
   initialClientState,
@@ -324,6 +327,10 @@ async function readOnce(
       headers: { accept: 'text/event-stream' },
       signal: options.signal,
     }));
+  if(response.status===409) {
+    const failure=await response.json().catch(()=>null) as {error?:{code?:string}}|null;
+    if(failure?.error?.code==='EVENT_HISTORY_TRUNCATED')return {state,stop:'gap'};
+  }
   if (!response.ok || response.body === null)
     throw new Error(`the world stream refused to open: HTTP ${response.status}`);
 
@@ -450,7 +457,7 @@ export type ChangeOutcomeRead = ChangePreviewed | ChangeAmbiguous | ChangeRefuse
 export async function requestChange(
   sessionId: string,
   prompt: string,
-  options: ClientOptions & { readonly stableId?: string } = {},
+  options: ClientOptions & { readonly stableId?: string; readonly comparison?: boolean } = {},
 ): Promise<ChangeOutcomeRead> {
   const call = options.fetch ?? fetch;
   const response = await call(`/api/worldstream/sessions/${sessionId}/changes`, {
@@ -459,6 +466,7 @@ export async function requestChange(
     body: JSON.stringify({
       prompt,
       ...(options.stableId === undefined ? {} : { stableId: options.stableId }),
+      ...(options.comparison === undefined ? {} : { comparison: options.comparison }),
     }),
     signal: options.signal,
   });
@@ -514,25 +522,29 @@ export async function requestChange(
 /** Jak dopadl commit. Odmítnutí je 200 s verdiktem, ne výjimka. */
 export type ChangeCommitted =
   | { readonly kind: 'committed'; readonly stableId: string; readonly summary: string;
+      readonly acceptedBlueprint?: WorldstreamBlueprint;
+      readonly comparison?: BranchComparison;
       readonly acceptedRevision?: { readonly sim: number; readonly look: number } }
   | { readonly kind: 'refused'; readonly detail: string };
 
 /**
  * Potvrzení plánu — **jediné místo, kde se svět mění**.
  *
- * Nevrací nový blueprint schválně: autoritativní stav je snapshot relace
- * (§21), takže volající si o svět řekne toutéž cestou, kterou by ho dostal po
- * reconnectu. Druhá kopie světa v odpovědi commitu by byla druhá pravda.
+ * A4 vrací přesně uložený snapshot a porovnání ověřené před jeho uložením.
+ * Ostatní změny zachovávají obnovu přes snapshot relace.
  */
 export async function commitChange(
   sessionId: string,
   changeId: string,
-  options: ClientOptions = {},
+  options: ClientOptions & { readonly comparison?: ComparisonCommit } = {},
 ): Promise<ChangeCommitted> {
   const call = options.fetch ?? fetch;
   const response = await call(
     `/api/worldstream/sessions/${sessionId}/changes/${changeId}/commit`,
-    { method: 'POST', signal: options.signal },
+    { method: 'POST', signal: options.signal,
+      ...(options.comparison === undefined ? {} : {
+        headers: { 'content-type': 'application/json' }, body: JSON.stringify(options.comparison),
+      }) },
   );
 
   const body = (await response.json().catch(() => null)) as Record<string, unknown> | null;
@@ -564,7 +576,9 @@ export async function commitChange(
   return {
     kind: 'committed',
     stableId: String(body.stableId ?? ''),
-    summary: String(body.summary ?? ''),
+      summary: String(body.summary ?? ''),
+      ...(body.acceptedBlueprint === undefined ? {} : { acceptedBlueprint: body.acceptedBlueprint as WorldstreamBlueprint }),
+      ...(body.comparison === undefined ? {} : { comparison: body.comparison as BranchComparison }),
     ...(typeof sim === 'number' && Number.isSafeInteger(sim) && sim >= 0 &&
       typeof look === 'number' && Number.isSafeInteger(look) && look >= 0 ? { acceptedRevision: { sim, look } } : {}),
   };
@@ -589,4 +603,17 @@ export async function readBlueprint(
   if (response.status === 404) throw new Error('The session is unavailable (HTTP 404). It may have expired or the server restarted. Start a new world.');
   if (!response.ok) throw new Error(`the world snapshot is gone: HTTP ${response.status}`);
   return ((await response.json()) as ClientSnapshot).blueprint ?? null;
+}
+
+/** Restore server-recorded comparison rules, retaining a monotonically newer revision. */
+export async function restoreComparison(sessionId: string,
+  expected: { readonly simRevision: number; readonly lookRevision: number; readonly simHash: string },
+  options: ClientOptions = {}): Promise<WorldstreamBlueprint> {
+  const response = await (options.fetch ?? fetch)(`/api/worldstream/sessions/${sessionId}/comparison/restore`, {
+    method: 'POST', signal: options.signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify(expected),
+  });
+  const body = await response.json().catch(() => null);
+  if (!response.ok || body?.outcome !== 'RESTORED')
+    throw new Error(refusal('the original rules were not restored', body?.error, response.status));
+  return body.acceptedBlueprint as WorldstreamBlueprint;
 }

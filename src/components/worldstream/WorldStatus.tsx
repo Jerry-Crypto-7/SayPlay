@@ -23,7 +23,7 @@
  */
 
 /** Co se o světě dá pravdivě říct. Pořadí je pořadí, ve kterém se stavy střídají. */
-export type WorldStatusState = 'empty' | 'building' | 'broken' | 'live';
+export type WorldStatusState = 'empty' | 'building' | 'broken' | 'live' | 'preview';
 
 /**
  * Copy pro každý stav. Anglicky, protože **viditelná měď produktu je anglicky**
@@ -35,6 +35,7 @@ const SENTENCE: Record<WorldStatusState, string> = {
   building: 'Writing the world.',
   broken: 'That sentence did not produce a world that can run.',
   live: 'The world is live.',
+  preview: 'Scene preview only. Its rules are not verified.',
 };
 
 export default function WorldStatus({
@@ -62,6 +63,7 @@ export default function WorldStatus({
    * bez seznamu o hrdinech nic netvrdí.
    */
   readonly intent?: {
+    readonly sceneSpec?: import('@/scene/spec').SceneSpec;
     readonly setting: string;
     readonly spatialThesis: string;
     readonly heroObjects?: readonly string[];
@@ -116,13 +118,17 @@ export default function WorldStatus({
           {`Building: ${heroes.join(', ')}.`}
         </span>
       ) : null}
+      {reading?.sceneSpec && <span data-testid="world-intent-counts" style={DETAIL}>
+        {reading.sceneSpec.requirements.filter(requirement => requirement.provenance.kind === 'requested')
+          .map(requirement => `${requirement.polarity === 'forbidden' ? 'Without' : requirement.count} ${requirement.description}`).join(' · ')}
+      </span>}
       {unsupported.length > 0 ? (
         <span data-testid="world-intent-unsupported" style={DETAIL}>
           {' '}
           {`Not simulated: ${unsupported.join(', ')}.`}
         </span>
       ) : null}
-      {broken && detail !== null && detail !== '' ? (
+      {(broken || state === 'preview') && detail !== null && detail !== '' ? (
         <span data-testid="world-fault" style={DETAIL}>
           {' '}
           {detail}

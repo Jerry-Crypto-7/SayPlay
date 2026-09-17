@@ -1,5 +1,6 @@
 import { observePhase, observePhaseAsync } from '../model/phase-observer';
 import { serverPhaseObserver } from '../server/worldstream-metrics';
+import type { createServerMetrics } from '../server/worldstream-metrics';
 /**
  * **Serverová polovina relace: kdo si ji pamatuje a kdo ji naplní** (P13 T16).
  *
@@ -54,6 +55,10 @@ import { shareWorld } from './snapshot-store';
 import { proposeSourceScenario, type SourceScenarioResult } from '../model/source-scenario';
 import { cloudEmitter } from '../server/worldstream-emitter';
 import { createEvidenceProject } from './evidence-commit';
+import { sealSimHash, simHashOf, type WorldDoc } from '@/ir/worlddoc';
+import {openOrdinarySessionStore,SessionStoreError} from '@/server/session-store';
+import {createSessionPersistence} from '@/server/session-persistence';
+import {buildIntentPreview} from '@/scene/intent-preview';
 
 // Source projects have a single authoritative snapshot, separate from the
 // legacy blueprint workflow. T9 reads this complete world/evidence pair.
@@ -361,6 +366,7 @@ export const MAX_SESSIONS_PER_CALLER = 8;
 export const QUOTA_ENGAGES_AT = MAX_LIVE_SESSIONS / 2;
 
 export interface StoredSession {
+  recovery?:{readonly kind:'restored'|'interrupted';readonly pendingChanges:'invalidated';readonly sourceProjects:'not-restored'};
   readonly session: GenerationSession;
   /**
    * Klíč volajícího, který relaci založil.
@@ -381,6 +387,13 @@ export interface StoredSession {
   readonly owner: string;
   /** Autoritativní blueprint pro reconnect (§21). `null`, dokud nevznikl. */
   blueprint: WorldstreamBlueprint | null;
+  /** Separately validated visuals only; never an accepted simulation. */
+  visualPreview?: import('./schema').VisualPreview | null;
+  /** Request-local diagnostics survive reconnect, never enter blueprint/hash/replay. */
+  generationMetrics?: ReturnType<typeof createServerMetrics>;
+  /** One server-owned A4 origin. Never restored from client JSON or across process restarts. */
+  comparisonOrigin?: { readonly original: WorldDoc; readonly acceptedSimHash: string;
+    readonly acceptedSimRevision: number; readonly stableId: string } | null;
   /**
    * Id uvařeného světa, ze kterého tahle relace vznikla, nebo `null`, když ji
    * napsal model (`T35-actsthree4`).
@@ -416,7 +429,58 @@ export interface StoredSession {
   readonly changes: Map<string, PendingChange>;
 }
 
-const live = new Map<string, StoredSession>();
+const host=globalThis as typeof globalThis & {__worldstreamOrdinarySessions?:Map<string,StoredSession>;__worldstreamSessionDisk?:{
+  path:string;adapter:ReturnType<typeof createSessionPersistence>|null;failed:boolean;exit?:()=>void}};
+const live = host.__worldstreamOrdinarySessions??(host.__worldstreamOrdinarySessions=new Map<string,StoredSession>());
+/** Explicit host wiring; absent env preserves the in-memory default. */
+export function assertSessionStorageReady():void {
+  const path=process.env.WORLDSMITH_SESSION_STORE_FILE,existing=host.__worldstreamSessionDisk;
+  if(existing) {
+    if(existing.failed||existing.path!==path)throw new SessionStoreError();
+    existing.adapter?.healthy();return;
+  }
+  if(path===undefined)return;
+  const state:{path:string;adapter:ReturnType<typeof createSessionPersistence>|null;failed:boolean;exit?:()=>void}={path,adapter:null,failed:false};host.__worldstreamSessionDisk=state;
+  try {
+    if(process.env.WORLDSMITH_OWNER_IDENTITY!=='trusted-proxy'||process.env.VERCEL!==undefined)throw new SessionStoreError();
+    const store=openOrdinarySessionStore(path);
+    try{state.adapter=createSessionPersistence(live,store);}catch(error){store.close();throw error;}
+    for(const [id,stored] of live)idleFor(id,stored,Date.now());
+    state.exit=()=>{try{state.adapter?.close();}catch{/* A failed exit never steals another owner's lock. */}};
+    process.once('exit',state.exit);
+  }catch{state.failed=true;throw new SessionStoreError();}
+}
+/** Test lifecycle seam: simulates a stopped process without deleting the disk checkpoint. */
+export function resetSessionStorageForTests():void {
+  const exit=host.__worldstreamSessionDisk?.exit;if(exit)process.removeListener('exit',exit);
+  host.__worldstreamSessionDisk?.adapter?.close();delete host.__worldstreamSessionDisk;live.clear();watched.clear();
+}
+function flushSessionStorage():void {host.__worldstreamSessionDisk?.adapter?.flush();}
+
+/** Return to the original rules as a NEW accepted revision; appearance is unchanged. */
+export function restoreComparisonOrigin(stored: StoredSession, expected: { simRevision: number; lookRevision: number; simHash: string }) {
+  const blueprint = stored.blueprint;
+  const origin = stored.comparisonOrigin;
+  const reject = (code: string, detail: string) => ({ ok: false as const, code, detail });
+  if (!blueprint || !origin) return reject('NO_COMPARISON', 'There is no accepted comparison to return from.');
+  const current = blueprint.world;
+  if (current.simRevision !== expected.simRevision || current.lookRevision !== expected.lookRevision || current.simHash !== expected.simHash
+    || current.simHash !== origin.acceptedSimHash || current.simRevision !== origin.acceptedSimRevision)
+    return reject('STALE_REVISION', 'The world changed after this comparison.');
+  if (current.simRevision >= Number.MAX_SAFE_INTEGER || origin.original.simHash !== simHashOf(origin.original))
+    return reject('INVALID_ORIGIN', 'The original simulation cannot be restored.');
+  const world = sealSimHash({ ...current, sim: structuredClone(origin.original.sim), simRevision: current.simRevision + 1 });
+  const next = { ...blueprint, world };
+  // All validation precedes this synchronous write. No revision is rolled back.
+  stored.blueprint = next;
+  stored.comparisonOrigin = null;
+  stored.changes.clear();
+  stored.session.events.append('patch.committed', { stableId: origin.stableId, applied: ['sim'],
+    changedLeaves: ['/sim/rules'], revisions: { sim: { before: current.simRevision, after: world.simRevision },
+      look: { before: current.lookRevision, after: world.lookRevision } }, representation: null,
+    comparisonRestored: true }, origin.stableId);
+  return { ok: true as const, blueprint: next };
+}
 
 /**
  * Jak dlouho smí relace stát bez jediného nového rámce, než ji registr pustí.
@@ -542,6 +606,8 @@ function release(sessionId: string): void {
     stored.session.fail(SESSION_FAULTS.SESSION_RELEASED);
   }
   live.delete(sessionId);
+  stored?.session.events.beforePublish(null);
+  flushSessionStorage();
   // **Previewy se pouštějí, ne jen odkazují** (`T22-previewleak`). Že visí na
   // `StoredSession`, stačí jen tehdy, když ten objekt nikdo jiný nedrží — a
   // route druhé věty ho drží přes celé volání modelu (`T16-changeafterrelease`).
@@ -732,11 +798,15 @@ function callerHolds(owner: string): number {
  * nedá. Provoz ho nepředává.
  */
 export function putSession(stored: StoredSession, now: number = Date.now()): boolean {
+  assertSessionStorageReady();
   sweepIdle(now);
   if (live.size >= QUOTA_ENGAGES_AT && callerHolds(stored.owner) >= MAX_SESSIONS_PER_CALLER)
     return false;
 
   const sessionId = stored.session.sessionId;
+  // Durable admission never creates a transient 65-record checkpoint or
+  // evicts an accepted other owner's record just to accept a new request.
+  if(host.__worldstreamSessionDisk&&live.size>=MAX_LIVE_SESSIONS&&!live.has(sessionId))throw new SessionStoreError();
   live.set(sessionId, stored);
   // **Hodina stárnutí začíná nováčkovi běžet tady, ne až při příštím zametení.**
   // `idleFor` na neznámé relaci jen založí záznam a vrátí `false`; kdyby se
@@ -744,10 +814,13 @@ export function putSession(stored: StoredSession, now: number = Date.now()): boo
   // `watchedSessionCount()` by nesouhlasil s `live`.
   idleFor(sessionId, stored, now);
   evictOverCap(sessionId);
+  host.__worldstreamSessionDisk?.adapter?.bind(stored);
+  flushSessionStorage();
   return true;
 }
 
 export function getSession(sessionId: string): StoredSession | null {
+  assertSessionStorageReady();
   return live.get(sessionId) ?? null;
 }
 
@@ -886,6 +959,8 @@ export const SESSION_FAULTS = {
 export type SessionFault = keyof typeof SESSION_FAULTS;
 
 export interface GenerationDeps {
+  /** Only archived fixture callers may opt out of the current planner contract. */
+  readonly legacyPlan?: boolean;
   /** Model. Jedno volání, jeden požadavek — strop řeší volající. */
   readonly emit: BlueprintEmitter;
   readonly grammar: Grammar;
@@ -939,7 +1014,7 @@ export async function runGeneration(
   let plan;
   try {
     const answer = await observePhaseAsync(serverPhaseObserver, 'intent-emitter', () => deps.emit(buildIntentRequest(prompt)));
-    plan = observePhase(serverPhaseObserver, 'intent-validation', () => readPlannerEmission(answer));
+    plan = observePhase(serverPhaseObserver, 'intent-validation', () => readPlannerEmission(answer, { prompt, requireSceneSpec: deps.legacyPlan !== true }));
   } catch (thrown) {
     stop(unreachableFault(thrown), thrown instanceof Error ? thrown.message : String(thrown));
     return;
@@ -954,7 +1029,19 @@ export async function runGeneration(
     spatialThesis: plan.value.intent.spatialThesis,
     heroObjects: plan.value.intent.heroObjects,
     unsupported: plan.value.intent.unsupported,
+    ...(plan.value.sceneSpec ? { sceneSpec: plan.value.sceneSpec } : {}),
   });
+
+  // This is derived from this request's validated identities and relations,
+  // never a prepared scene or an accepted runtime. Unsupported plans skip it.
+  if (deps.legacyPlan !== true && session.phase === 'intent') {
+    const early = observePhase(serverPhaseObserver, 'intent-layout-preview',
+      () => buildIntentPreview(plan.value, { sessionSeed: session.sessionSeed }));
+    if (early.ok) {
+      stored.visualPreview = early.preview;
+      session.events.append('visual.preview', { preview: early.preview, attempt: 0 });
+    }
+  }
 
   const outcome = await compileWithRepair({
     observePhase: serverPhaseObserver,
@@ -962,6 +1049,11 @@ export async function runGeneration(
     grammar: deps.grammar,
     sessionSeed: session.sessionSeed,
     emit: deps.emit,
+    onVisualPreview: (preview, attempt) => {
+      if (session.phase !== 'intent') return;
+      stored.visualPreview = preview;
+      session.events.append('visual.preview', { preview, attempt });
+    },
   });
 
   if (outcome.kind !== 'compiled') {
@@ -981,13 +1073,14 @@ export async function runGeneration(
   }
 
   const blueprint = outcome.result.value;
+  stored.visualPreview = null;
   stored.blueprint = blueprint;
 
   // **Blueprint jde celý jedním rámcem, `world.ready` je pak jen povel.**
   // Klient, který se připojí až po něm, si ho vezme ze snapshotu (§21) — proto
   // je autoritativní snapshot, ne rámec, a proto se blueprint neposílá dvakrát.
   session.advance('blueprint', { blueprint, rounds: outcome.rounds.length });
-  session.register(blueprint.objects.map((object) => object.stableId));
+  session.registerBlueprint(blueprint);
   // **Hotový svět dostane adresu, která přežije relaci** (T30, §22.4). Relace
   // je živá věc — vypadne z registru, skončí s procesem, stojí slot. Sdílený
   // svět je záznam, který se dá číst i ve chvíli, kdy je model vypnutý.

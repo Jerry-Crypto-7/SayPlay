@@ -2,6 +2,12 @@ import { expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import WorldStatus from '../WorldStatus';
 
+it('labels unverified geometry as preview and retains the rejection reason',()=>{
+  const html=renderToStaticMarkup(WorldStatus({state:'preview',detail:'No verified rules.',detailPending:true}));
+  expect(html).toContain('Scene preview only');expect(html).toContain('No verified rules.');
+  expect(html).not.toContain('The world is live');expect(html).not.toContain('ready to use');
+});
+
 it('keeps asynchronous phase messages polite and atomic, with a separate urgent fault', () => {
   const phases = [
     { state: 'empty' as const, text: 'Describe a place' },

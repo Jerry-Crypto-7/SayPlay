@@ -547,6 +547,15 @@ function streamResponse(stream: ReadableStream<Uint8Array>): Response {
 }
 
 describe('followSession', () => {
+  it('reloads an authoritative snapshot after a persisted event backlog was truncated', async () => {
+    const {session}=generation();session.advance('complete',{});const calls:string[]=[];
+    const state=await followSession(HANDLE,{maxResumes:2,fetch:async(input)=>{
+      const url=String(input);calls.push(url);
+      return url===HANDLE.snapshot?Response.json(session.snapshot()):Response.json({error:{code:'EVENT_HISTORY_TRUNCATED'}},{status:409});
+    }});
+    expect(state.phase).toBe('complete');expect(state.sequence).toBe(session.events.sequence);
+    expect(calls).toEqual([`${HANDLE.events}?since=0`,HANDLE.snapshot]);
+  });
   it('přečte celou relaci a skončí na koncové fázi', async () => {
     const { session } = generation();
     session.advance('complete', {});
@@ -896,6 +905,29 @@ describe('openWorldstreamSession', () => {
  * v panelu změny na obrazovce.
  */
 describe('requestChange a commitChange – co se ukáže při odmítnutí', () => {
+  it('sends the bounded visitor history and returns the atomic accepted snapshot', async () => {
+    const comparison = { base: { simRevision: 3, simHash: 'abc', comparisonRevision: 0 as const, inputCount: 1 },
+      inputs: [{ tick: 2, actor: 'visitor', actionId: 'activate', target: 'door' }], forkTick: 1, observationTick: 8 };
+    const acceptedBlueprint = { world: { simRevision: 4, lookRevision: 0 } };
+    const result = await commitChange(SESSION_ID, 'change-1', { comparison,
+      fetch: async (_url, options) => {
+        expect(options?.method).toBe('POST');
+        expect(JSON.parse(String(options?.body))).toEqual(comparison);
+        expect(options?.headers).toEqual({ 'content-type': 'application/json' });
+        return Response.json({ outcome: 'COMMITTED', acceptedBlueprint,
+          comparison: { forkTick: 1, observationTick: 8 }, revisions: { sim: { after: 4 }, look: { after: 0 } } });
+      } });
+    expect(result).toMatchObject({ kind: 'committed', acceptedBlueprint,
+      comparison: { forkTick: 1, observationTick: 8 }, acceptedRevision: { sim: 4, look: 0 } });
+  });
+
+  it('keeps a bodyless commit compatible with older snapshot recovery', async () => {
+    const result = await commitChange(SESSION_ID, 'change-1', { fetch: async (_url, options) => {
+      expect(options?.body).toBeUndefined();
+      return Response.json({ outcome: 'COMMITTED' });
+    } });
+    expect(result).toEqual({ kind: 'committed', stableId: '', summary: '' });
+  });
   it('ven jde věta serveru a kód se veze za ní, ne místo ní', async () => {
     await expect(
       requestChange(SESSION_ID, 'make the mast taller', {

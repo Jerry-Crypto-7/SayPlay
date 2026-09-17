@@ -224,7 +224,7 @@ describe('hotový svět dostane adresu sám', () => {
   it('generace, která došla na konec, je čitelná pod svou adresou', async () => {
     const emitter = scripted();
     const stored = openSession('shared-happy', 4021)!;
-    await runGeneration(stored, PLAN.intent.setting, { emit: emitter.emit, grammar: grammar() });
+    await runGeneration(stored, PLAN.intent.setting, { emit: emitter.emit, grammar: grammar(), legacyPlan: true });
 
     expect(stored.session.phase).toBe('world');
     expect(stored.sharedWorld).not.toBeNull();
@@ -246,7 +246,7 @@ describe('hotový svět dostane adresu sám', () => {
   it('snapshot relace tu adresu vydá, jinak by ji nikdo nemohl předat dál', async () => {
     const emitter = scripted();
     const stored = openSession('shared-address', 4021)!;
-    await runGeneration(stored, PLAN.intent.setting, { emit: emitter.emit, grammar: grammar() });
+    await runGeneration(stored, PLAN.intent.setting, { emit: emitter.emit, grammar: grammar(), legacyPlan: true });
 
     const response = await readSnapshot(new Request('http://127.0.0.1/x'), {
       params: Promise.resolve({ sessionId: 'shared-address' }),

@@ -32,6 +32,7 @@ import { isRecord } from './aabb';
 
 import type { Rejection } from '../certify';
 import type { TraceInput } from '../../sim/interpreter';
+import { boundedSearchDetail, type WitnessSearchEvidence } from '../repair';
 
 /**
  * Co k odmítnutí přidává emise sama.
@@ -42,6 +43,7 @@ import type { TraceInput } from '../../sim/interpreter';
  * kontextu vyjde kratší, ale pořád použitelná věta.
  */
 export interface RejectionContext {
+  readonly witnessSearch?: WitnessSearchEvidence;
   /** Kroky svědka z emise, na které ukazuje `Rejection.atStep`. */
   readonly witness?: readonly TraceInput[];
   /** Horizont, o který si emise řekla. Pro doporučení tieru u `NO_FIT`. */
@@ -140,6 +142,7 @@ function describeWitnessFault(
 ): string {
   switch (reason) {
     case 'NO_WIN':
+      if (boundedSearchDetail(context.witnessSearch)) return boundedSearchDetail(context.witnessSearch)!;
       return `The winning route you attached never reaches a win: ${detail}.`;
 
     case 'STEP_UNREACHABLE':
@@ -190,6 +193,8 @@ function whatToDo(rejection: Rejection, context: RejectionContext): string {
 function witnessTodo(rejection: Rejection, context: RejectionContext): string {
   switch (rejection.reason) {
     case 'NO_WIN':
+      if (boundedSearchDetail(context.witnessSearch))
+        return 'Check the declared input actions, movement destinations, timers and transient guards against the requested behavior. Preserve correct geometry and rules. Do not add an unconditional win, increase the horizon, or claim a route is impossible solely because bounded search did not find it.';
       return 'Rewrite sim.witness.ops so the moves actually trigger the rule whose action is win, or fix the rule that was supposed to fire.';
 
     case 'STEP_UNREACHABLE':

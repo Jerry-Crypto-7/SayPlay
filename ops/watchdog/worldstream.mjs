@@ -98,6 +98,8 @@ export const PROBE_PROMPT = 'a small stone room with a single door';
  * se v logu po incidentu četlo jen „selhalo".
  */
 export const PROBE_FAILURES = [
+  /** Entire probe (including response bodies) exceeded its wall-clock budget. */
+  'PROBE_TIMEOUT',
   /** `/api/health` neodpovědělo, nebo odpovědělo „nepřipraven". */
   'HEALTH_NOT_READY',
   /** Zakládání relace neskončilo očekávanou 202 s `sessionId`. */
@@ -231,7 +233,7 @@ async function checkGeneration(target, fetchImpl, clock) {
  * síťování a bez čekání změřit i každá cesta selhání — a právě ty jsou to,
  * kvůli čemu hlídač existuje.
  */
-export async function probeWorldstream(options) {
+async function runProbe(options) {
   const {
     target,
     fetchImpl = fetch,
@@ -283,6 +285,26 @@ export async function probeWorldstream(options) {
   }
 
   return { ok: true, checks };
+}
+
+/** A stalled socket or response body cannot keep the operational watchdog alive forever. */
+export async function probeWorldstream(options) {
+  const timeoutMs = options.timeoutMs ?? 30_000;
+  if (!Number.isFinite(timeoutMs) || timeoutMs < 1 || timeoutMs > 3_600_000)
+    throw new Error('timeoutMs must be between 1 and 3600000');
+  const controller = new AbortController();
+  const fetchImpl = options.fetchImpl ?? fetch;
+  let timer;
+  const timeout = new Promise(resolve => {
+    timer = setTimeout(() => {
+      controller.abort();
+      resolve({ ok: false, reason: 'PROBE_TIMEOUT', detail: 'The complete probe exceeded its deadline.', checks: {} });
+    }, timeoutMs);
+  });
+  try {
+    return await Promise.race([runProbe({ ...options, fetchImpl: (url, init) =>
+      fetchImpl(url, { ...init, signal: controller.signal }) }), timeout]);
+  } finally { clearTimeout(timer); }
 }
 
 /* ------------------------------------------------------------------ *
@@ -338,6 +360,7 @@ async function main() {
   // horní mez je to, co dělá ze smyčky konečnou, dolní to, co jí brání
   // vytáčet se na minimu operačního systému.
   const durations = {
+    'timeout-ms': { fallback: 30_000, min: 1, max: 3_600_000 },
     'deadline-ms': { fallback: DEFAULT_WORLD_DEADLINE_MS, min: 1, max: 3_600_000 },
     'poll-ms': { fallback: DEFAULT_POLL_MS, min: 1, max: 300_000 },
   };
@@ -362,6 +385,7 @@ async function main() {
     allowGeneration: flag('allow-generation'),
     deadlineMs: Number(argument('deadline-ms', String(DEFAULT_WORLD_DEADLINE_MS))),
     pollMs: Number(argument('poll-ms', String(DEFAULT_POLL_MS))),
+    timeoutMs: Number(argument('timeout-ms', '30000')),
   });
 
   record(logPath, { event: verdict.ok ? 'watchdog.ok' : 'watchdog.failed', target, ...verdict }, 4);

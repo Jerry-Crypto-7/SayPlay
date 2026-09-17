@@ -1,3 +1,6 @@
+import {withSessionStorageResponse} from '@/server/session-persistence';
+import {assertSessionStorageReady} from '@/worldstream/sessions';
+import {ownerIdentityRejection} from '@/server/owner-identity';
 import { observePhase, observePhaseAsync } from '@/model/phase-observer';
 import { APPEARANCE_UNSUPPORTED, hasUnsupportedAppearance, hasUnsupportedMotion, MOTION_UNSUPPORTED } from '@/server/worldstream-capabilities';
 import { withServerMetrics, serverPhaseObserver } from '@/server/worldstream-metrics';
@@ -58,6 +61,9 @@ import {
 } from '@/server/rate-limit';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 import { getSession, markRejected, peekChange, takeChange } from '@/worldstream/sessions';
+import { readBody, bodyRefusalResponse } from '@/http/body';
+import { compareCommitCandidate, comparisonCommitSchema, type ComparisonCommit, type BranchComparison } from '@/worldstream/accepted-branch';
+import {prepareComparisonCommit} from '@/worldstream/comparison-commit';
 
 export const runtime = 'nodejs';
 
@@ -65,7 +71,7 @@ function fail(status: number, code: string, message: string): Response {
   return Response.json({ error: { code, message } }, { status });
 }
 
-export async function POST(
+async function handleDurablePOST(
   request: Request,
   context: { params: Promise<{ sessionId: string; changeId: string }> },
 ): Promise<Response> {
@@ -93,6 +99,8 @@ export async function POST(
    * (`T22-takeearly`) — takže jedno zaplacené preview koupí neomezené
    * opakování téhle práce. Brána je proto tady, ne u placení.
    */
+  const identityRejection=ownerIdentityRejection(request);
+  if(identityRejection)return identityRejection;
   const slot = takeRateSlot('commit', trustedCallerKey(request) ?? callerKey(request));
   if (!slot.allowed) {
     logRateLimited(
@@ -102,6 +110,23 @@ export async function POST(
       `${String(slot.count)} in window`,
     );
     return rateLimitedResponse(requestId, slot);
+  }
+
+  // Read before resolving mutable session state: no await is permitted between
+  // the revision check, comparison gate and the single accepted snapshot write.
+  let comparisonRequest: ComparisonCommit | null = null;
+  if (request.body !== null) {
+    const raw = await readBody(request);
+    if (!raw.ok) return bodyRefusalResponse(requestId, raw);
+    // Next may expose an empty stream for a bodyless POST. It is the same
+    // legacy shape-only commit as Request.body === null, not malformed JSON.
+    if (raw.text.length > 0) {
+      let body: unknown;
+      try { body = JSON.parse(raw.text); } catch { return fail(400, 'INVALID_COMPARISON', 'Expected a comparison request.'); }
+      const parsed = comparisonCommitSchema.safeParse(body);
+      if (!parsed.success) return fail(400, 'INVALID_COMPARISON', 'Expected bounded comparison ticks and visitor inputs.');
+      comparisonRequest = parsed.data;
+    }
   }
 
   const stored = getSession(sessionId);
@@ -214,7 +239,9 @@ export async function POST(
    * nepojmenuje cestu, ze které by se dala rozhodnout dráha), takže poslat ji
    * tam by z legitimní změny podoby udělalo vadu.
    */
-  let committed: CommitOutcome = {
+  let comparison: BranchComparison | null = null;
+  if(comparisonRequest!==null&&plan.shape!==null)return fail(422,'COMPARISON_REJECTED','A rule comparison cannot also replace geometry.');
+  let committed: Omit<CommitOutcome,'outcome'>&{outcome:CommitOutcome['outcome']|'COMPARISON_VALIDATED'} = {
     outcome: 'CERTIFIED',
     applied: [],
     changedLeaves: [],
@@ -242,20 +269,22 @@ export async function POST(
         { status: 409 },
       );
 
-    committed = observePhase(serverPhaseObserver, 'edit-commit-validation', () => commitRoutedParts(
-      doc,
-      routing.patches.map(
+    const patches = routing.patches.map(
         (routed: RoutedPatch): PartPatch => ({
           part: routed.part,
           baseRevision: routed.part === 'sim' ? basedOn.sim : basedOn.look,
           operations: routed.operations,
         }),
-      ),
-    ));
+      );
+    if(comparisonRequest!==null){
+      const prepared=observePhase(serverPhaseObserver,'edit-comparison-validation',()=>prepareComparisonCommit(doc,patches,comparisonRequest));
+      if(!prepared.ok)return fail(422,'COMPARISON_REJECTED',`${prepared.reason}: ${prepared.detail}`);
+      committed=prepared;comparison=prepared.comparison;
+    }else committed=observePhase(serverPhaseObserver,'edit-commit-validation',()=>commitRoutedParts(doc,patches));
 
     // Jediné místo, kde se rozhoduje o atomičnosti: dokud tohle neprojde, do
     // `stored` se nezapsalo nic a zapsat se nemá.
-    if (committed.outcome !== 'CERTIFIED')
+    if (committed.outcome === 'REJECTED')
       return rejected(stored, changeId, plan.stableId, doc, committed.rejections);
   }
 
@@ -265,12 +294,23 @@ export async function POST(
       { stage: 'apply', reason: 'BLUEPRINT_INVALID', pointer: '/shapes', detail: next },
     ]);
 
+  if (comparisonRequest !== null && comparison===null) {
+    if (plan.shape !== null) return fail(422, 'COMPARISON_REJECTED', 'A rule comparison cannot also replace geometry.');
+    const compared = observePhase(serverPhaseObserver, 'edit-branch-comparison',
+      () => compareCommitCandidate(doc, next.world, comparisonRequest));
+    if (compared.verdict === 'REJECTED')
+      return fail(422, 'COMPARISON_REJECTED', `${compared.reason}: ${compared.detail}`);
+    comparison = compared.snapshot.comparison;
+  }
+
   // **Odtud dolů se svět mění, takže teď a jen teď se preview spotřebuje.**
   // Od `peekChange` výš sem nevede jediný `await`, takže mezi kontrolou a
   // vyzvednutím se nemá kdy vklínit druhý požadavek — dvojí commit téhož
   // preview pořád není možný.
   takeChange(stored, changeId);
   stored.blueprint = next;
+  stored.comparisonOrigin = comparison === null ? null : { original: structuredClone(doc),
+    acceptedSimHash: next.world.simHash, acceptedSimRevision: next.world.simRevision, stableId: plan.stableId };
   const revision = plan.shape === null ? null : stored.session.revise(plan.stableId);
 
   stored.session.events.append(
@@ -297,6 +337,9 @@ export async function POST(
     /** Nová revize podoby, nebo `null`, když se tvar neměnil a mesh zůstává. */
     representation: revision,
     certificate: committed.certificate,
+    validation: comparison===null?'classic':'comparison-only',
+    // This is the very snapshot stored above, not another independently built world.
+    ...(comparison === null ? {} : { acceptedBlueprint: next, comparison }),
   });
   });
 }
@@ -372,4 +415,8 @@ function revisionsOf(
     sim: { before: before.simRevision, after: after.simRevision },
     look: { before: before.lookRevision, after: after.lookRevision },
   };
+}
+
+export async function POST(...args:Parameters<typeof handleDurablePOST>):Promise<Response> {
+  return withSessionStorageResponse(async()=>{assertSessionStorageReady();return handleDurablePOST(...args);});
 }

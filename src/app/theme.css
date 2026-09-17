@@ -47,7 +47,7 @@
      volnou plochu musí umět říct dopředu a plocha odvozená z obsahu doku by se
      hnula s každou delší stavovou větou. Co se do pruhu nevejde, roluje se
      uvnitř doku — dřív to přeteklo přes svět. */
-  --ws-shell-strip: 10rem;
+  --ws-shell-strip: 16rem;
   /* Pravý sloupec s otevřenou zásuvkou. Pevný ze stejného důvodu. */
   --ws-inspect-column: 22rem;
 }
@@ -212,11 +212,12 @@ body {
    stránek se skořápkou — `/dev/worldstream` kreslí totéž plátno bez ní a tam se
    nic zmenšovat nemá. */
 
-.ws-shell ~ [data-testid='worldstream-canvas'] {
+.ws-shell ~ [data-testid='worldstream-canvas'], .ws-shell ~ .ws-futures {
   max-height: calc(100% - var(--ws-shell-strip) - var(--ws-shell-pad) - var(--ws-shell-gap));
 }
 
-.ws-shell[data-inspecting='true'] ~ [data-testid='worldstream-canvas'] {
+.ws-shell[data-inspecting='true'] ~ [data-testid='worldstream-canvas'],
+.ws-shell[data-inspecting='true'] ~ .ws-futures {
   max-width: calc(100% - var(--ws-inspect-column) - var(--ws-shell-pad) - var(--ws-shell-gap));
 }
 
@@ -309,6 +310,8 @@ body {
 .ws-source h4 { margin: 0.65rem 0 0.25rem; }
 
 @media (max-width: 760px) {
+  .ws-prompt-form { flex-wrap: wrap; }
+  .ws-generation-mode { flex-basis: 100%; }
   /* Na úzké obrazovce stojí rozhraní ve třech řádcích pod sebou, takže pruh
      pro plátno je součet jejich stropů (16 + 22 + 14 dvh), tří mezer a
      odsazení. Ty stropy se od téhle chvíle **sčítat musí**: kdyby jeden
@@ -522,4 +525,16 @@ body {
   font-size: 0.8rem;
   /* Věta je sdělení, ne ovladač — stejně jako `.ws-status`. */
   pointer-events: none;
+}
+.ws-futures { width: 100%; height: 100%; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto minmax(0, 1fr); }
+.ws-future-toolbar { grid-column: 1 / -1; padding: .7rem 1rem; background: #101b20; color: #e8eeea; display: flex; gap: 1rem; align-items: center; }
+.ws-future-toolbar label { flex: 1; }
+.ws-future-toolbar input { width: 55%; margin-left: 1rem; }
+.ws-futures section { min-width: 0; min-height: 0; position: relative; border-right: 1px solid #52676d; }
+.ws-futures section > strong { position: absolute; z-index: 1; top: 1rem; left: 1rem; color: #e8eeea; background: #101b20; padding: .3rem .7rem; }
+@media (max-width: 760px) {
+  .ws-futures { grid-template-columns: 1fr; }
+  .ws-future-toolbar { flex-wrap: wrap; gap: .4rem; }
+  .ws-future-toolbar label { flex-basis: 100%; }
+  .ws-futures[data-side="original"] .ws-future-changed, .ws-futures[data-side="changed"] .ws-future-original { display: none; }
 }

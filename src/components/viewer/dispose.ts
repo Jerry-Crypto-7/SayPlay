@@ -41,6 +41,13 @@ export interface DisposalTally {
  */
 export const EMPTY_TALLY: DisposalTally = { geometries: 0, materials: 0, textures: 0 };
 
+const subtreeOwners = new WeakMap<Object3D, () => void>();
+
+/** Cached instances own a lease, not the shared GPU resources underneath. */
+export function registerSubtreeDisposer(root: Object3D, release: () => void): void {
+  subtreeOwners.set(root, release);
+}
+
 /**
  * Součet dvou účtů. Slot po slotu, ne po celé scéně naráz.
  *
@@ -102,7 +109,13 @@ export function disposeSubtree(root: Object3D): DisposalTally {
   const textures = new Set<Texture>();
   const instances = new Set<{ dispose(): void }>();
 
-  root.traverse((object) => {
+  const visit = (object: Object3D): void => {
+    const release = subtreeOwners.get(object);
+    if (release) {
+      subtreeOwners.delete(object);
+      release();
+      return;
+    }
     const renderable = object as Renderable;
     const instanced = object as Object3D & { isInstancedMesh?: boolean; dispose?: () => void };
     if (instanced.isInstancedMesh && instanced.dispose) instances.add(instanced as { dispose(): void });
@@ -111,7 +124,9 @@ export function disposeSubtree(root: Object3D): DisposalTally {
       materials.add(material);
       for (const texture of texturesOf(material)) textures.add(texture);
     }
-  });
+    for (const child of [...object.children]) visit(child);
+  };
+  visit(root);
 
   // Pořadí je textury → materiály → geometrie: materiál po `dispose()` pořád
   // drží odkaz na texturu, takže opačné pořadí by nic nerozbilo, ale čtení

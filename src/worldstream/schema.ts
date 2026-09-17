@@ -32,13 +32,16 @@
  */
 
 import { z } from 'zod';
+import { assetReferenceSchema } from '@/assets/schema';
 
 import { GEOM_LIMITS, geomProgramSchema } from '@/geom/program';
-import { worldDocSchema } from '@/ir/worlddoc';
+import { worldDocSchema, validateLook } from '@/ir/worlddoc';
 import { INTENT_ROLES, readIntent, type IntentSummary } from '@/model/worldstream-intent';
+import { sceneSpecSchema, readSceneSpec } from '@/scene/spec';
 import { shapeProgramSchema } from '@/shape/schema';
 
 export const BLUEPRINT_VERSION = 'worldstream-v1';
+export const BLUEPRINT_VERSION_V2 = 'worldstream-v2';
 
 /**
  * Meze světových souřadnic. **Táž hodnota jako `coordinate` v
@@ -108,15 +111,35 @@ export const worldBoundsSchema = z
   });
 
 /**
- * Odkud objekt bere svoji hmotu. Buď je to řádek kompozice, nebo hrdinský tvar
- * — třetí možnost neexistuje a `discriminatedUnion` to drží tvarem.
+ * Zdroj reprezentace: kompozice, SDF nebo verzovaný katalogový asset (v2).
  */
 export const semanticSourceSchema = z.discriminatedUnion('kind', [
   z
     .object({ kind: z.literal('geom'), node: z.int().min(0).max(GEOM_LIMITS.maxNodes - 1) })
     .strict(),
   z.object({ kind: z.literal('shape'), shapeId: identifier }).strict(),
+  assetReferenceSchema,
 ]);
+
+/** Pevný kontrakt objektu ve světových souřadnicích, nezávislý na LOD/modelu. */
+export const objectBindingSchema = z.object({
+  entityId: identifier.optional(),
+  signalFlag: identifier.optional(),
+  collider: worldBoundsSchema,
+  sockets: z.array(z.object({ id: identifier, at: vector3,
+    normal: z.tuple([z.number().finite(), z.number().finite(), z.number().finite()])
+      .refine(v => Math.abs(Math.hypot(...v) - 1) < 0.0001),
+  }).strict()).max(64),
+  parts: z.array(z.object({ id: identifier, sockets: z.array(identifier).max(32) }).strict()).max(64),
+}).strict().superRefine((binding, ctx) => {
+  for (const key of ['sockets', 'parts'] as const) {
+    if (new Set(binding[key].map(item => item.id)).size !== binding[key].length)
+      ctx.addIssue({ code: 'custom', path: [key], message: 'Duplicate binding identity' });
+  }
+  const sockets = new Set(binding.sockets.map(socket => socket.id));
+  if (binding.parts.some(part => part.sockets.some(id => !sockets.has(id))))
+    ctx.addIssue({ code: 'custom', path: ['parts'], message: 'Part references an undeclared socket' });
+});
 
 /**
  * `SemanticObject` (§9.4) — sémantická polovina od plannera plus geometrická
@@ -133,6 +156,10 @@ export const semanticObjectSchema = z
     synonyms: z.array(z.string().min(1).max(120)).max(16),
     role: z.enum(INTENT_ROLES),
     source: semanticSourceSchema,
+    binding: objectBindingSchema.optional(),
+    stretchAxes: z.array(z.enum(['x', 'y', 'z'])).max(3).optional(),
+    yaw: z.number().finite().min(-Math.PI).max(Math.PI).optional(),
+    supportSocket: identifier.optional(),
     targetBounds: worldBoundsSchema,
     importance: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
   })
@@ -165,9 +192,9 @@ export const intentSummarySchema = z
  * Obálka.
  * ------------------------------------------------------------------ */
 
-export const blueprintSchema = z
+const blueprintEnvelopeSchema = z
   .object({
-    version: z.literal(BLUEPRINT_VERSION),
+    version: z.enum([BLUEPRINT_VERSION, BLUEPRINT_VERSION_V2]),
     /**
      * Semínko relace. Píše ho **systém**, ne model: jediná PRNG projektu je
      * `pure-rand` a bere celé číslo, takže rozsah je kladný 32bitový, aby se
@@ -176,12 +203,56 @@ export const blueprintSchema = z
     sessionSeed: z.int().min(0).max(2_147_483_647),
     title: z.string().min(1).max(120),
     intent: intentSummarySchema,
+    sceneSpec: sceneSpecSchema.optional(),
     world: worldDocSchema,
     geometry: geomProgramSchema,
     objects: z.array(semanticObjectSchema).min(1).max(64),
     shapes: z.array(shapeProgramSchema).max(MAX_HERO_SHAPES),
   })
   .strict();
+function validateVisualEnvelope(blueprint: Pick<z.infer<typeof blueprintEnvelopeSchema>, 'version' | 'sceneSpec' | 'objects'>, ctx: z.RefinementCtx) {
+    if (blueprint.sceneSpec) {
+      const result = readSceneSpec(blueprint.sceneSpec);
+      if (typeof result === 'string') ctx.addIssue({ code: 'custom', path: ['sceneSpec'], message: result });
+      for (const instance of blueprint.sceneSpec.instances) {
+        if (instance.role !== 'effect' && !blueprint.objects.some(object => object.stableId === instance.stableId))
+          ctx.addIssue({ code: 'custom', path: ['sceneSpec'], message: `Missing semantic instance ${instance.stableId}` });
+      }
+    }
+    blueprint.objects.forEach((object, index) => {
+      if (blueprint.version === BLUEPRINT_VERSION &&
+        (object.source.kind === 'asset' || object.binding !== undefined || object.stretchAxes !== undefined || object.yaw !== undefined || object.supportSocket !== undefined))
+        ctx.addIssue({ code: 'custom', path: ['objects', index], message: 'Asset references and bindings require worldstream-v2' });
+      if (object.source.kind === 'asset' && object.binding === undefined)
+        ctx.addIssue({ code: 'custom', path: ['objects', index, 'binding'], message: 'Assets require a representation-independent binding' });
+      if (object.stretchAxes && (object.source.kind !== 'asset' || new Set(object.stretchAxes).size !== object.stretchAxes.length))
+        ctx.addIssue({ code: 'custom', path: ['objects', index, 'stretchAxes'], message: 'Stretch axes must be unique and apply only to assets' });
+      if (object.yaw !== undefined && object.source.kind !== 'asset')
+        ctx.addIssue({code:'custom',path:['objects',index,'yaw'],message:'Yaw applies only to normalized asset frames'});
+      if (object.supportSocket && (object.source.kind!=='asset' || !object.binding?.sockets.some(socket=>socket.id===object.supportSocket)))
+        ctx.addIssue({code:'custom',path:['objects',index,'supportSocket'],message:'Support socket must be an accepted asset binding socket'});
+    });
+  }
+
+export const blueprintSchema = blueprintEnvelopeSchema.superRefine(validateVisualEnvelope);
+/** A preview cannot carry a simulation, hash, revision or certificate. */
+export const visualPreviewSchema = z.object({
+  kind: z.literal('visual-preview'), interactive: z.literal(false),
+  stage: z.enum(['intent-layout', 'compiler-visuals']).optional(),
+  version: blueprintEnvelopeSchema.shape.version, sessionSeed: blueprintEnvelopeSchema.shape.sessionSeed,
+  title: blueprintEnvelopeSchema.shape.title, intent: intentSummarySchema, sceneSpec: sceneSpecSchema.optional(),
+  geometry: geomProgramSchema, objects: blueprintEnvelopeSchema.shape.objects, shapes: blueprintEnvelopeSchema.shape.shapes,
+  look: worldDocSchema.shape.look,
+  validation: z.object({ layout: z.enum(['checked', 'not-requested']), limitations: z.array(z.string().max(500)).max(128) }).strict(),
+}).strict().superRefine((preview, ctx) => {
+  validateVisualEnvelope(preview, ctx);
+  for (const issue of validateLook(preview.look).issues) ctx.addIssue({ code: 'custom', path: ['look'], message: issue });
+  preview.objects.forEach((object, i) => {
+    if (object.binding?.entityId !== undefined || object.binding?.signalFlag !== undefined)
+      ctx.addIssue({ code: 'custom', path: ['objects', i, 'binding'], message: 'Preview cannot bind simulation entities or flags' });
+  });
+});
+export type VisualPreview = z.infer<typeof visualPreviewSchema>;
 
 export type SemanticSource = z.infer<typeof semanticSourceSchema>;
 export type SemanticObject = z.infer<typeof semanticObjectSchema>;

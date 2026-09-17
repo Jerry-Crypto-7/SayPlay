@@ -32,6 +32,14 @@ const ASPECT = 16 / 9;
 /** Běžný svět produktu: mřížka zhruba 12×8 s kulisou kolem a nízkou zástavbou. */
 const WORLD: Bounds = { min: { x: -14, y: 0, z: -10 }, max: { x: 14, y: 6, z: 10 } };
 
+it('centers an indoor inspection subject in the free viewport without cropping its room', () => {
+  const bounds={min:{x:-4,y:0,z:-3},max:{x:4,y:3,z:3}},hero={x:0,y:1,z:0};
+  const view=frameScene({bounds,hero,aspect:ASPECT,pitch:Math.PI*.27,heroHeight:.5});
+  expect(project(hero,view.eye,view.target,view.fov,ASPECT).y).toBeCloseTo(0,8);
+  for(const x of [-4,4])for(const y of [0,3])for(const z of [-3,3])
+    expect(insideFrustum({x,y,z},view.eye,view.target,view.fov,ASPECT)).toBe(true);
+});
+
 /** Osm rohů obalu. Koule opsaná obalu je odhad, rohy jsou odpověď. */
 function cornersOf(bounds: Bounds): readonly { x: number; y: number; z: number }[] {
   const out: { x: number; y: number; z: number }[] = [];

@@ -1,3 +1,5 @@
+import {withSessionStorageResponse} from '@/server/session-persistence';
+import {assertSessionStorageReady} from '@/worldstream/sessions';
 /**
  * `GET /api/worldstream/sessions/:id/events` — proud relace, který jde obnovit
  * (P13 T16, §20 a §21).
@@ -80,6 +82,7 @@
 import { clearInterval, setInterval } from 'node:timers';
 
 import { killState } from '@/server/kill-switch';
+import {serverIsDraining,registerStreamDrain} from '@/server/shutdown';
 
 import type { SessionEvent } from '../../../../../../worldstream/events';
 import { getSession, type StoredSession } from '../../../../../../worldstream/sessions';
@@ -206,7 +209,7 @@ export function readResumePoint(request: Request): ResumePoint {
   return { ok: true, after };
 }
 
-export async function GET(
+async function handleDurableGET(
   request: Request,
   context: { params: Promise<{ sessionId: string }> },
 ): Promise<Response> {
@@ -269,6 +272,9 @@ export function sessionEventStream(
   signal: AbortSignal,
   headers: Readonly<Record<string, string>> = {},
 ): Response {
+  if(serverIsDraining())return Response.json({error:{code:'SERVER_DRAINING',message:'The server is restarting. Reconnect shortly.'}},{status:503,headers:{'cache-control':'no-store','retry-after':'1'}});
+  if(after<stored.session.events.floor)return Response.json({error:{code:'EVENT_HISTORY_TRUNCATED',message:'Reload the authoritative session snapshot before reconnecting.'},sequence:stored.session.events.sequence},
+    {status:409,headers:{'cache-control':'no-store'}});
   // **Slot až tady, za 400 i za 404.** Odmítnutý požadavek nesmí obsadit
   // místo, které pak nikdo nevrátí — a obě větve před voláním se vracejí
   // dřív, než by měly co uklízet.
@@ -288,8 +294,10 @@ export function sessionEventStream(
   let unsubscribe: (() => void) | null = null;
   let beat: ReturnType<typeof setInterval> | null = null;
   let holdsSlot = true;
+  let unregisterDrain:(()=>void)|null=null;
 
   function release(): void {
+    unregisterDrain?.();unregisterDrain=null;
     unsubscribe?.();
     unsubscribe = null;
     if (beat !== null) clearInterval(beat);
@@ -369,6 +377,7 @@ export function sessionEventStream(
       beat = setInterval(() => write(HEARTBEAT_FRAME), HEARTBEAT_MS);
       // Otevřený proud nesmí být důvod, proč proces (nebo běh sady) neskončí.
       beat.unref();
+      unregisterDrain=registerStreamDrain(finish);
     },
   });
 
@@ -403,4 +412,8 @@ export function sessionEventStream(
       ...headers,
     },
   });
+}
+
+export async function GET(...args:Parameters<typeof handleDurableGET>):Promise<Response> {
+  return withSessionStorageResponse(async()=>{assertSessionStorageReady();return handleDurableGET(...args);});
 }

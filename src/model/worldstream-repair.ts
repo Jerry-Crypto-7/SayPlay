@@ -1,4 +1,6 @@
 import { observePhase, observePhaseAsync, type PhaseObserver } from './phase-observer';
+import { WORLDSTREAM_ASSETS } from '@/assets/catalog';
+import type { VisualPreview } from '@/worldstream/schema';
 /**
  * **Sebeoprava blueprintu (P13 T12): odmítnutí compileru → další pokus.**
  *
@@ -166,6 +168,8 @@ const MAX_ISSUES_IN_SENTENCE = 6;
  * kterému se celý modul vyhýbá.
  */
 const WHAT_TO_DO: Readonly<Record<CompilerRejection, string>> = {
+  LAYOUT_INVALID:
+    'Fix the named spatial relation or blocked opening using actual object bounds. Preserve identities, bindings and required counts; do not hide the relation or remove the requested object.',
   NOT_AN_OBJECT:
     'Answer with one JSON object whose fields are exactly geometry, shapes, placements and world.',
   WRONG_SHAPE:
@@ -357,11 +361,32 @@ export function buildRepairRequest(
   previous: unknown,
   fault: BlueprintFault,
 ): UpstreamRequest {
+  const inputDiagnosis = visitorInputDiagnosis(previous, fault);
   return {
     model: first.model,
     system: first.system,
-    user: repairRequest(first.user, previous, blueprintRejectionSentence(fault)),
+    user: repairRequest(first.user, previous, `${blueprintRejectionSentence(fault)}${inputDiagnosis}`),
   };
+}
+
+/** Grounded feedback for a missing activation input, not a rewrite of authored behavior.
+ * onClick lowers to clicked; visitor dispatch and witness replay only produce acted.
+ * Keep frozen grammar and simulator semantics intact. */
+function visitorInputDiagnosis(previous: unknown, fault: BlueprintFault): string {
+  if (fault.reason !== 'WORLD_REJECTED' || fault.world?.rejection.stage !== 'witness'
+    || fault.world.rejection.reason !== 'NO_WIN') return '';
+  const record = (value: unknown): Record<string, unknown> =>
+    value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+  const sim = record(record(record(previous).world).sim), rules = record(sim.rules);
+  const clicked = Object.entries(rules).filter(([, rule]) => record(record(rule).event).kind === 'onClick');
+  if (!clicked.length) return '';
+  const actors = Object.entries(record(sim.entities)).filter(([, entity]) => record(entity).role === 'actor').map(([id]) => id);
+  const event = record(record(clicked[0][1]).event);
+  const target = typeof event.entity === 'string' ? event.entity : '<existing visible object entity>';
+  const example = { kind: 'onAction', actor: actors[0] ?? '<existing visible actor entity>', actionId: 'activate', target };
+  return `\nINPUT_CONTRACT: ${clicked.slice(0, 6).map(([id]) => JSON.stringify(id)).join(', ')} use onClick, but visitor controls and witness replay emit onAction/acted, not clicked.`
+    + ` These click rules cannot be triggered by sim.witness.ops. Use an explicit declared visitor action, for example ${JSON.stringify(example)},`
+    + ' with matching actor/actionId/target in the witness. Keep the requested state-changing effects and their guards; do not add an unconditional win or increase the horizon. Keep geometry and placements unchanged.';
 }
 
 /**
@@ -395,6 +420,7 @@ function sameFault(before: BlueprintFault, after: BlueprintFault): boolean {
 export type BlueprintEmitter = (request: UpstreamRequest) => Promise<unknown>;
 
 export interface RepairInput {
+  readonly onVisualPreview?: (preview: VisualPreview, attempt: number) => void;
   readonly observePhase?: PhaseObserver;
   readonly plan: PlannerEmission;
   readonly grammar: Grammar;
@@ -464,6 +490,7 @@ export async function compileWithRepair(input: RepairInput): Promise<BlueprintOu
     const result = observePhase(input.observePhase, 'blueprint-validation-and-lowering', () => compileBlueprint(answer, input.plan, {
       sessionSeed: input.sessionSeed,
       upstream: request,
+      assets: WORLDSTREAM_ASSETS,
     }));
     const ms = clock() - startedAt;
 
@@ -471,6 +498,8 @@ export async function compileWithRepair(input: RepairInput): Promise<BlueprintOu
       rounds.push({ attempt, fault: null, ms });
       return { kind: 'compiled', result, rounds };
     }
+
+    if (result.preview) input.onVisualPreview?.(result.preview, attempt);
 
     const fault: BlueprintFault = {
       reason: result.reason,

@@ -1,3 +1,4 @@
+import {ownerIdentityRejection} from '@/server/owner-identity';
 /**
  * `POST /api/emit/stream` — tentýž verdikt jako `/api/emit`, ale s průběhem.
  *
@@ -273,6 +274,8 @@ export async function POST(request: Request): Promise<Response> {
     // důvodu, kvůli kterému je před ním vypínač: za hlavičkami
     // `text/event-stream` je stav 200 u klienta a 429 se poslat nedá. Tyhle
     // dveře stojí navíc celý replay svědka, tedy nejdražší krok emise.
+    const identityRejection=ownerIdentityRejection(request);
+    if(identityRejection)return identityRejection;
     const slot = takeRateSlot('emit/stream', trustedCallerKey(request) ?? callerKey(request));
     if (!slot.allowed) {
       logRateLimited(

@@ -1,0 +1,37 @@
+[Unit]
+Description=WORLDSTREAM P20 single-process host (requires operator provisioning)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=worldstream
+Group=worldstream
+WorkingDirectory=/srv/worldstream/current
+Environment=NODE_ENV=production
+Environment=NEXT_TELEMETRY_DISABLED=1
+Environment=HOME=/var/lib/worldstream
+EnvironmentFile=/etc/worldstream/host.env
+ExecStartPre=/usr/bin/node /srv/worldstream/current/ops/host/preflight.mjs
+ExecStart=/usr/bin/node /srv/worldstream/current/node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3116
+Restart=on-failure
+RestartSec=10
+KillMode=control-group
+TimeoutStopSec=310
+StateDirectory=worldstream
+LogsDirectory=worldstream
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/worldstream /var/log/worldstream /srv/worldstream/current/.next/cache
+MemoryMax=8G
+TasksMax=256
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

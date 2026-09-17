@@ -20,16 +20,15 @@
  * nikdy nedojde**. Objekt pak zůstane navždy v hrubé podobě a nikde se to
  * neohlásí, protože formálně je všechno platné.
  *
- * ## Co se tu schválně NEkontroluje
- *
- * Vazba mezi `objects[].stableId` a `world.sim.entities`. Sémantický objekt je
- * kus prostoru, entita je hráč nebo věc, se kterou se dá manipulovat — jsou to
- * dva různé slovníky a většina objektů (zdi, terén, mlha) žádnou entitu nemá
- * a mít nemá. Vynucovat shodu by znamenalo, že model musí ze zdi udělat entitu,
- * jen aby prošel.
+ * V1 nevyžaduje entitu pro každý vizuální objekt (zdi a terén ji nemají).
+ * V2 ověřuje explicitní binding.entityId, pokud jej objekt deklaruje.
+ * Výchozí katalog je lokální allowlist; testy a import mohou předat vlastní.
  */
 
 import { placedFrom, reachableFrom } from '@/geom/program';
+import type { AssetManifest } from '@/assets/manifest';
+import { WORLDSTREAM_ASSETS } from '@/assets/catalog';
+import { assetObjectIssues } from '@/assets/binding';
 
 import type { WorldstreamBlueprint } from './schema';
 
@@ -48,6 +47,19 @@ export interface BlueprintReference {
  */
 export function findBlueprintReferenceIssues(
   blueprint: WorldstreamBlueprint,
+  assets: AssetManifest = WORLDSTREAM_ASSETS,
+): BlueprintReference[] {
+  return findReferences(blueprint, assets, blueprint.world.sim);
+}
+
+export function findVisualReferenceIssues(
+  visual: Pick<WorldstreamBlueprint, 'geometry' | 'objects' | 'shapes'>,
+  assets: AssetManifest = WORLDSTREAM_ASSETS,
+): BlueprintReference[] { return findReferences(visual, assets); }
+
+function findReferences(
+  blueprint: Pick<WorldstreamBlueprint, 'geometry' | 'objects' | 'shapes'>,
+  assets: AssetManifest, sim?: WorldstreamBlueprint['world']['sim'],
 ): BlueprintReference[] {
   const issues: BlueprintReference[] = [];
   const fail = (where: string, detail: string) => issues.push({ where, detail });
@@ -92,9 +104,29 @@ export function findBlueprintReferenceIssues(
    * takže „vem si druhou kopii" není co napsat.
    */
   const rowClaimedBy = new Map<number, number>();
+  const entityClaimedBy = new Map<string, number>();
 
   blueprint.objects.forEach((object, index) => {
     const where = `objects/${index}/source`;
+    const entityId = object.binding?.entityId;
+    if (sim && object.binding?.signalFlag && !Object.hasOwn((sim.state as { flags?: object } | undefined)?.flags ?? {}, object.binding.signalFlag))
+      fail(`objects/${index}/binding/signalFlag`, `names missing flag ${object.binding.signalFlag}`);
+    if (sim && entityId !== undefined) {
+      const entities = sim.entities;
+      if (!entities || typeof entities !== 'object' || !Object.hasOwn(entities, entityId))
+        fail(`objects/${index}/binding/entityId`, `names missing entity ${entityId}`);
+      if (entityClaimedBy.has(entityId)) fail(`objects/${index}/binding/entityId`, `entity ${entityId} already has a visual object`);
+      entityClaimedBy.set(entityId, index);
+    }
+    if (object.source.kind === 'asset') {
+      const resolved = assets?.resolve(object.source);
+      if (!resolved?.ok) {
+        fail(where, resolved?.reason ?? 'Asset catalog is unavailable');
+        return;
+      }
+      for (const issue of assetObjectIssues(object, resolved.asset)) fail(where, issue);
+      return;
+    }
     if (object.source.kind === 'geom') {
       const node = object.source.node;
       if (node >= blueprint.geometry.nodes.length) {

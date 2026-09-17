@@ -49,9 +49,12 @@ import type { IntentRole } from '@/model/worldstream-intent';
 import type { AnchorSpec, Bounds3, Vec3 } from '@/shape/types';
 
 import type { SemanticObject, SemanticSource } from './schema';
+import { fitAsset } from '@/assets/manifest';
+import type { AssetRecord } from '@/assets/schema';
+import {inversePoint,inverseNormal,transformPoint,transformBounds} from '@/assets/transform';
 
 /**
- * Slot → svět. Nejdřív `scale`, pak `translation`, po složkách.
+ * Slot → svět. Scale, optional normalized-asset yaw, then translation.
  *
  * Rozložené na dvě trojice místo `Matrix4` schválně: tenhle soubor čte
  * i měřidlo v Node a serverová větev, a `three` je 600 kB, které tam nemají
@@ -60,9 +63,12 @@ import type { SemanticObject, SemanticSource } from './schema';
 export interface SlotTransform {
   readonly scale: Vec3;
   readonly translation: Vec3;
+  readonly rotationY?: number;
 }
 
 export interface SemanticSlot {
+  readonly surface?: import('@/assets/materials').Surface;
+  readonly binding?: SemanticObject['binding'];
   /** Identita objektu. Přežívá výměnu podoby i druhou větu (§13.2). */
   readonly stableId: string;
   readonly label: string;
@@ -79,10 +85,31 @@ export interface SemanticSlot {
   readonly anchors: readonly AnchorSpec[];
 }
 
+/** Asset frame is normalized once; every LOD uses this exact frame. */
+export function slotFromAsset(object: SemanticObject, asset: AssetRecord): SemanticSlot {
+  const transform = fitAsset(asset, object.targetBounds, object.stretchAxes, object.yaw);
+  const localBounds = asset.bounds;
+  return {
+    stableId: object.stableId, label: object.label, role: object.role, importance: object.importance,
+    source: object.source, binding: object.binding, localBounds, transform,
+    worldBounds: transformBounds(transform,localBounds),
+    anchors: bindingAnchors(object, transform),
+  };
+}
+
 /** Co o své podobě ví ten, kdo ji napsal. */
 export interface SlotForm {
   readonly localBounds: Bounds3;
   readonly anchors: readonly AnchorSpec[];
+}
+
+function bindingAnchors(object: SemanticObject, transform: SlotTransform): readonly AnchorSpec[] {
+  return (object.binding?.sockets ?? []).map(socket => {
+    return { name: socket.id,
+      at: inversePoint(transform,socket.at),
+      normal: inverseNormal(transform,socket.normal),
+    };
+  });
 }
 
 /* ------------------------------------------------------------------ *
@@ -114,11 +141,7 @@ export function centeredBounds(bounds: Bounds3): Bounds3 {
 
 /** Bod prostorem slotu do světa. Používá to kreslení kotev i testy. */
 export function toWorld(transform: SlotTransform, point: Vec3): Vec3 {
-  return [
-    point[0] * transform.scale[0] + transform.translation[0],
-    point[1] * transform.scale[1] + transform.translation[1],
-    point[2] * transform.scale[2] + transform.translation[2],
-  ];
+  return transformPoint(transform,point);
 }
 
 /* ------------------------------------------------------------------ *
@@ -227,10 +250,11 @@ export function slotFromForm(object: SemanticObject, form: SlotForm): SemanticSl
     role: object.role,
     importance: object.importance,
     source: object.source,
+    binding: object.binding,
     localBounds: form.localBounds,
     worldBounds: object.targetBounds,
     transform: { scale, translation },
-    anchors: form.anchors,
+    anchors: object.binding ? bindingAnchors(object, { scale, translation }) : form.anchors,
   };
 }
 
@@ -270,9 +294,10 @@ export function slotFromWorldForm(
     role: object.role,
     importance: object.importance,
     source: object.source,
+    binding: object.binding,
     localBounds,
     worldBounds,
     transform: { scale: [1, 1, 1], translation: center },
-    anchors: derivedAnchors(localBounds, localPieces),
+    anchors: object.binding ? bindingAnchors(object, { scale: [1, 1, 1], translation: center }) : derivedAnchors(localBounds, localPieces),
   };
 }

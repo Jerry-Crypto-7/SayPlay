@@ -41,6 +41,11 @@ import { CELL_SIZE } from '@/components/viewer/projection';
 import type { ProxyWorld } from '@/worldstream/proxy';
 import { budgetFor, type QualityTier } from '@/worldstream/quality';
 
+export interface SharedCamera {
+  current: { eye: number[]; target: number[] } | null;
+  listeners: Set<() => void>;
+}
+
 /**
  * Obal všech slotů, nebo `null` u prázdného světa.
  *
@@ -113,14 +118,34 @@ function measureSafeArea(canvas: HTMLCanvasElement): SafeArea {
  * pro novou session/source identitu a na výslovný reset. Editace, pohyb
  * návštěvníka i doplnění detailu zachovají ruční pohled.
  */
-function FrameCamera({ world, controller, sceneId, reset, framing }: { readonly world: ProxyWorld | null;
+function FrameCamera({ world, controller, sceneId, reset, framing, sharedCamera, focusId }: { readonly world: ProxyWorld | null;
   readonly controller: RuntimeController | null; readonly sceneId: string | null; readonly reset: number;
-  readonly framing: 'scene' | 'diagram' }) {
+  readonly framing: 'scene' | 'diagram'; readonly sharedCamera?: SharedCamera; readonly focusId?: string | null }) {
   const camera = useThree((state) => state.camera);
   const canvas = useThree((state) => state.gl.domElement);
   const size = useThree((state) => state.size);
   const controls = useMemo(() => new OrbitControls(camera), [camera]);
-  const framed = useRef<{ sceneId: string | null; reset: number; framing: 'scene' | 'diagram' } | null>(null);
+  const framed = useRef<{ sceneId: string | null; reset: number; framing: 'scene' | 'diagram'; focusId?: string | null } | null>(null);
+
+  useEffect(() => {
+    if (!sharedCamera) return;
+    let receiving = false;
+    const receive = () => {
+      if (!sharedCamera.current) return;
+      receiving = true;
+      camera.position.fromArray(sharedCamera.current.eye);
+      controls.target.fromArray(sharedCamera.current.target);
+      controls.update(); receiving = false;
+    };
+    const publish = () => {
+      if (receiving) return;
+      sharedCamera.current = { eye: camera.position.toArray(), target: controls.target.toArray() };
+      for (const listener of sharedCamera.listeners) if (listener !== receive) listener();
+    };
+    sharedCamera.listeners.add(receive); receive();
+    controls.addEventListener('change', publish);
+    return () => { sharedCamera.listeners.delete(receive); controls.removeEventListener('change', publish); };
+  }, [camera, controls, sharedCamera]);
 
   useEffect(() => {
     canvas.tabIndex = 0;
@@ -141,12 +166,14 @@ function FrameCamera({ world, controller, sceneId, reset, framing }: { readonly 
 
   useEffect(() => {
     if (world === null) { framed.current = null; return; }
-    if (framed.current?.sceneId === sceneId && framed.current.reset === reset && framed.current.framing === framing) return;
-    const bounds = worldExtent(world, controller?.getSnapshot() ?? null);
+    if (framed.current?.sceneId === sceneId && framed.current.reset === reset && framed.current.framing === framing && framed.current.focusId === focusId) return;
+    const focused = world.kind === 'built' && focusId ? {...world, slots: world.slots.filter(entry => entry.slot.stableId === focusId)} : world;
+    const bounds = worldExtent(focused, controller?.getSnapshot() ?? null);
     if (bounds === null) return;
     const view = framing === 'diagram' ? frameDiagram(bounds, size.width / size.height) : frameScene({
       bounds,
-      hero: heroCenter(world),
+      hero: heroCenter(focused),
+      ...(world.kind === 'built' && world.environment?.kind === 'interior' ? {pitch: Math.PI * 0.27, heroHeight: 0.5} : {}),
       aspect: size.width / size.height,
       fov: FRAMING_FOV,
       // Měří se tady, ne v `frameScene`: rámování musí zůstat čistá funkce.
@@ -158,19 +185,23 @@ function FrameCamera({ world, controller, sceneId, reset, framing }: { readonly 
     controls.target.set(view.target.x, view.target.y, view.target.z);
     controls.update();
     camera.updateProjectionMatrix();
-    framed.current = { sceneId, reset, framing };
-  }, [world, controller, sceneId, reset, framing, camera, controls, size.height, size.width]);
+    framed.current = { sceneId, reset, framing, focusId };
+  }, [world, controller, sceneId, reset, framing, focusId, camera, controls, size.height, size.width]);
 
   return null;
 }
 
-export default function WorldstreamCanvas({ world, controller = null, sceneId = null, reset = 0, framing = 'scene', onPresented }: {
+export default function WorldstreamCanvas({ world, controller = null, sceneId = null, reset = 0, framing = 'scene', onPresented, sharedCamera, adaptiveAssets, focusId,cutaway=true }: {
   readonly world: ProxyWorld | null;
   readonly controller?: RuntimeController | null;
   readonly sceneId?: string | null;
   readonly reset?: number;
   readonly framing?: 'scene' | 'diagram';
   readonly onPresented?: (world: ProxyWorld) => void;
+  readonly sharedCamera?: SharedCamera;
+  readonly adaptiveAssets?: boolean;
+  readonly focusId?: string | null;
+  readonly cutaway?:boolean;
 }) {
   // Úroveň se čte ze **světa**, ne z volajícího: kdo svět dostane, ví, proti
   // jakému rozpočtu se má soudit (`proxy.ts`). Prázdné plátno kreslí `full`,
@@ -187,9 +218,9 @@ export default function WorldstreamCanvas({ world, controller = null, sceneId = 
       // horní mez, ne příkaz vykreslovat na ni i na stroji, který ji nemá.
       dpr={[1, budgetFor(quality).pixelRatio]}
     >
-      <WorldstreamLighting quality={quality} />
-      <FrameCamera world={world} controller={controller} sceneId={sceneId} reset={reset} framing={framing} />
-      {world !== null && world.kind === 'built' && <RuntimeStage key={sceneId} world={world} controller={controller} onPresented={onPresented} />}
+      <WorldstreamLighting quality={quality} environment={world?.kind === 'built' ? world.environment : undefined} />
+      <FrameCamera world={world} controller={controller} sceneId={sceneId} reset={reset} framing={framing} sharedCamera={sharedCamera} focusId={focusId} />
+      {world !== null && world.kind === 'built' && <RuntimeStage key={sceneId} world={world} controller={controller} onPresented={onPresented} adaptiveAssets={adaptiveAssets} cutaway={cutaway} />}
     </Canvas>
   );
 }
@@ -197,9 +228,9 @@ export default function WorldstreamCanvas({ world, controller = null, sceneId = 
 const subscribeEmpty = () => () => {};
 const emptySnapshot = () => null;
 
-function RuntimeStage({ world, controller, onPresented }: { readonly world: ProxyWorld; readonly controller: RuntimeController | null;
-  readonly onPresented?: (world: ProxyWorld) => void }) {
+function RuntimeStage({ world, controller, onPresented, adaptiveAssets,cutaway }: { readonly world: ProxyWorld; readonly controller: RuntimeController | null;
+  readonly onPresented?: (world: ProxyWorld) => void; readonly adaptiveAssets?: boolean;readonly cutaway?:boolean }) {
   const state = useSyncExternalStore(controller?.subscribe ?? subscribeEmpty,
     controller?.getSnapshot ?? emptySnapshot, emptySnapshot);
-  return <WorldstreamStage world={world} runtimeState={state} onPresented={onPresented} />;
+  return <WorldstreamStage world={world} runtimeState={state} onPresented={onPresented} adaptiveAssets={adaptiveAssets} cutaway={cutaway} />;
 }

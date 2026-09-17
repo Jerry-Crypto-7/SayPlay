@@ -5,7 +5,7 @@ import { buildRuntimeWorld } from '@/ir/build';
 import { sealSimHash } from '@/ir/worlddoc';
 import { commitPart } from '@/ir/revision';
 import { createRuntimeController } from '../runtime-controller';
-import { compareAcceptedBranch, prepareBranch } from '../accepted-branch';
+import { compareAcceptedBranch, compareCommitCandidate, prepareBranch } from '../accepted-branch';
 
 function setup(embedded = false) {
   const sim = structuredClone(surface);
@@ -25,6 +25,33 @@ function setup(embedded = false) {
 }
 
 describe('accepted change to branch adapter', () => {
+  it('prepares the same accepted replay on server and client with identical state hashes', () => {
+    const { document, accepted, prepared, source, compare } = setup();
+    const request = { base: prepared.base, inputs: source.getInputLog(), forkTick: 0, observationTick: 300 };
+    const server = compareCommitCandidate(document, accepted, request);
+    const client = compare();
+    expect(server).toEqual(client);
+    expect(compareCommitCandidate(document, accepted, request)).toEqual(server);
+    if (server.verdict !== 'COMPARED') throw new Error(server.detail);
+    const result = server.snapshot.comparison!;
+    expect(result.original.stateHash).not.toBe(result.changed.stateHash);
+    expect(result.originalAtFork.stateHash).toBe(result.changedAtFork.stateHash);
+    expect(result.inputEffects.original).toHaveLength(request.inputs.length);
+    expect(result.inputEffects.changed.at(-1)?.status).toBe('no-rule-fired');
+  });
+
+  it.each(['hash', 'revision', 'inputs', 'budget', 'order'])('rejects invalid pre-commit %s without source changes', kind => {
+    const { document, accepted, prepared, source } = setup();
+    const before = source.getSnapshot();
+    const request = { base: { ...prepared.base }, inputs: [...source.getInputLog()], forkTick: 0, observationTick: 300 };
+    if (kind === 'hash') request.base.simHash = 'wrong';
+    if (kind === 'revision') request.base.simRevision++;
+    if (kind === 'inputs') request.base.inputCount++;
+    if (kind === 'budget') request.observationTick = 12001;
+    if (kind === 'order') request.inputs.reverse();
+    expect(compareCommitCandidate(document, accepted, request).verdict).toBe('REJECTED');
+    expect(source.getSnapshot()).toBe(before);
+  });
   it.each([false, true])('compares map rules with embedded IDs=%s without mutating the original', embedded => {
     const { source, compare } = setup(embedded);
     const before = source.getSnapshot();
@@ -46,24 +73,78 @@ describe('accepted change to branch adapter', () => {
     expect(compareAcceptedBranch(prepared, committed.doc, { forkTick: 0, observationTick: 300 }).verdict).toBe('COMPARED');
   });
 
-  it.each(['extra edit', 'stale revision', 'bad hash', 'look edit', 'no change', 'identity edit'])('refuses %s without publishing a comparison', kind => {
+  it.each(['extra edit', 'stale revision', 'bad hash', 'look edit', 'no change', 'identity edit', 'timer beyond capacity'])('refuses %s without publishing a comparison', kind => {
     const { accepted, prepared } = setup();
     if (kind === 'extra edit') (accepted.sim.rules as typeof surface.rules).unlock_case.actions.pop();
     if (kind === 'stale revision') accepted.simRevision = 3;
     if (kind === 'look edit') accepted.lookRevision++;
     if (kind === 'no change') (accepted.sim.rules as typeof surface.rules).start_countdown.actions[1].durationTicks = 400;
     if (kind === 'identity edit') Object.assign((accepted.sim.rules as typeof surface.rules).start_countdown, { id: 'other' });
+    if (kind === 'timer beyond capacity') (accepted.sim.rules as typeof surface.rules).start_countdown.actions[1].durationTicks = 401;
     const next = sealSimHash(accepted);
     if (kind === 'bad hash') next.simHash = 'wrong';
     expect(compareAcceptedBranch(prepared, next, { forkTick: 0, observationTick: 300 }).verdict).toBe('REJECTED');
     expect(prepared.controller.getSnapshot()).toEqual({ revision: 0, comparison: null });
   });
 
-  it('refuses inputs added after preview and an active timer fork', () => {
+  it('preserves an active countdown and refuses inputs added after preview', () => {
+    const active = setup();
+    const result = compareAcceptedBranch(active.prepared, active.accepted, { forkTick: 22, observationTick: 300 });
+    expect(result.verdict).toBe('COMPARED');
+    if (result.verdict === 'COMPARED') {
+      const comparison = result.snapshot.comparison!;
+      expect(comparison.changedAtFork.values).toEqual(comparison.originalAtFork.values);
+      expect(comparison.changedAtFork.entities).toEqual(comparison.originalAtFork.entities);
+      expect(comparison.changedAtFork.tick).toBe(comparison.originalAtFork.tick);
+      expect(comparison.changed.values).toEqual(comparison.original.values);
+      expect(comparison.changedAtFork.values['t:countdown']).toBeGreaterThan(0);
+    }
     const { prepared, accepted, source } = setup();
-    expect(compareAcceptedBranch(prepared, accepted, { forkTick: 22, observationTick: 300 })).toMatchObject({ verdict: 'REJECTED', reason: 'ACTIVE_TIMER' });
     source.dispatch(source.actions[0]);
     expect(compareAcceptedBranch(prepared, accepted, { forkTick: 0, observationTick: 300 })).toMatchObject({ verdict: 'REJECTED', reason: 'STALE_INPUTS' });
+  });
+
+  it.each([
+    ['start condition', 'start_countdown', 'condition', -1, { kind: 'flagIs', ref: 'started', value: true }, { 'e:case:locked': 1 }],
+    ['unlock condition', 'unlock_case', 'condition', -1, { kind: 'flagIs', ref: 'started', value: false }, { 'e:case:locked': 1 }],
+    ['disable starting flag', 'start_countdown', 'action', 0, { kind: 'setFlag', ref: 'started', value: false }, { 'e:case:locked': 1 }],
+    ['activate alarm', 'start_countdown', 'action', 0, { kind: 'setFlag', ref: 'alarm', value: true }, { 'f:alarm': 1 }],
+    ['keep case locked', 'unlock_case', 'action', 0, { kind: 'setLocked', target: 'case', value: true }, { 'e:case:locked': 1 }],
+    ['alarm instead of stopping timer', 'unlock_case', 'action', 1, { kind: 'setFlag', ref: 'alarm', value: true }, { 'f:alarm': 1 }],
+  ] as const)('compares the observable non-timer intervention: %s', (_, ruleId, kind, index, replacement, expected) => {
+    const { document, prepared, source } = setup();
+    const draft = structuredClone(document);
+    const rules = draft.sim.rules as Record<string, { condition: unknown; actions: unknown[] }>;
+    if (kind === 'condition') rules[ruleId].condition = replacement;
+    else rules[ruleId].actions[index] = replacement;
+    const accepted = sealSimHash({ ...draft, simRevision: 1 });
+    const before = source.getSnapshot();
+    const result = compareAcceptedBranch(prepared, accepted, { forkTick: 10, observationTick: 300 });
+    expect(result.verdict).toBe('COMPARED');
+    if (result.verdict !== 'COMPARED') return;
+    const c = result.snapshot.comparison!;
+    expect(c.intervention).toMatchObject({ kind, ruleId });
+    expect(c.timerId).toBeUndefined();
+    expect(c.changedAtFork).toEqual(c.originalAtFork);
+    expect(c.changed.values).toMatchObject(expected);
+    expect(c.changed.values).not.toEqual(c.original.values);
+    expect(c.inputLog).toEqual(source.getInputLog());
+    expect(source.getSnapshot()).toBe(before);
+  });
+
+  it.each(['new symbol', 'hidden null metadata', 'trigger', 'two actions', 'declaration'])('rejects %s without publishing or changing runtime', kind => {
+    const { document, prepared, source } = setup();
+    const draft = structuredClone(document);
+    const rules = draft.sim.rules as Record<string, { condition: unknown; actions: unknown[]; event: unknown; note?: null }>;
+    rules.start_countdown.actions[0] = { kind: 'setFlag', ref: kind === 'new symbol' ? 'undeclared' : 'alarm', value: true };
+    if (kind === 'hidden null metadata') rules.start_countdown.note = null;
+    if (kind === 'trigger') rules.start_countdown.event = { kind: 'onStart' };
+    if (kind === 'two actions') rules.start_countdown.actions[1] = { kind: 'setFlag', ref: 'started', value: true };
+    if (kind === 'declaration') (draft.sim.state as typeof surface.state).timers.countdown.durationTicks = 600;
+    const before = source.getSnapshot();
+    expect(compareAcceptedBranch(prepared, sealSimHash({ ...draft, simRevision: 1 }), { forkTick: 0, observationTick: 300 }).verdict).toBe('REJECTED');
+    expect(source.getSnapshot()).toBe(before);
+    expect(prepared.controller.getSnapshot().comparison).toBeNull();
   });
 
   it('continues a nonzero fork without retroactively applying the edit before the fork', () => {

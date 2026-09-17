@@ -6,7 +6,7 @@
 Seznam všeho, co projekt používá a nenapsal si sám, podle `RULES.md` §2:
 zdroj, autor nebo poskytovatel, licence a povinné notices.
 
-## Knihovny (171)
+## Knihovny (172)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
@@ -113,6 +113,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | fdir@6.5.0 | https://registry.npmjs.org/fdir/-/fdir-6.5.0.tgz | thecodrr | MIT | copyright notice; plné znění licence | Copyright 2023 Abdullah Atta |
 | fflate@0.8.3 | https://registry.npmjs.org/fflate/-/fflate-0.8.3.tgz | Arjun Barrett | MIT | copyright notice; plné znění licence | Copyright (c) 2026 Arjun Barrett |
 | fsevents@2.3.2 | https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k fsevents, viz https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz |
+| gltf-validator@2.0.0-dev.3.10 | https://registry.npmjs.org/gltf-validator/-/gltf-validator-2.0.0-dev.3.10.tgz | The Khronos Group Inc. | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | gzip-size@6.0.0 | https://registry.npmjs.org/gzip-size/-/gzip-size-6.0.0.tgz | Sindre Sorhus | MIT | copyright notice; plné znění licence | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |
 | html-escaper@2.0.2 | https://registry.npmjs.org/html-escaper/-/html-escaper-2.0.2.tgz | Andrea Giammarchi | MIT | copyright notice; plné znění licence | Copyright (C) 2017-present by Andrea Giammarchi - @WebReflection |
 | chai@6.2.2 | https://registry.npmjs.org/chai/-/chai-6.2.2.tgz | Jake Luer | MIT | copyright notice; plné znění licence | Copyright (c) 2017 Chai.js Assertion Library |
@@ -324,7 +325,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 
 _Žádná položka._
 
-## Modely (9)
+## Modely (10)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
@@ -336,6 +337,7 @@ _Žádná položka._
 | gpt-5.6-sol-fast | https://platform.openai.com/docs/models | OpenAI | Podmínky příslušné služby OpenAI; tento lokální běh používá uživatelské předplatné ChatGPT/Codex. Ověření podmínek pro veřejné soutěžní nasazení: MISSING. | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
 | gpt-5.6-terra | https://platform.openai.com/docs/models | OpenAI | komerční podmínky služby (OpenAI Business Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
 | gpt-6-astra | https://platform.openai.com/docs/models | OpenAI | Podmínky příslušné služby OpenAI; měření běželo přes uživatelské předplatné ChatGPT/Codex (Codex CLI 0.154.0, codex exec). Ověření podmínek pro veřejné soutěžní nasazení: MISSING. | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
+| meshy-6 | https://docs.meshy.ai/en/api/text-to-3d | Meshy | Meshy Terms of Use; service model, no weights redistributed | Output licensing must be recorded before any asset is imported | Meshy, https://www.meshy.ai/terms-of-use |
 | Qwen3-1.7B-q4f16_1-MLC | https://huggingface.co/mlc-ai/Qwen3-1.7B-q4f16_1-MLC | Qwen Team, Alibaba Cloud (váhy), MLC AI (kvantovaná konverze pro WebLLM) | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | Qwen3 © Alibaba Group, Apache-2.0; konverze do MLC formátu mlc-ai, https://huggingface.co/mlc-ai/Qwen3-1.7B-q4f16_1-MLC |
 
 ### Modely — licence posouzené jednotlivě
@@ -348,6 +350,7 @@ _Žádná položka._
 - **gpt-5.6-sol-fast** (Podmínky příslušné služby OpenAI; tento lokální běh používá uživatelské předplatné ChatGPT/Codex. Ověření podmínek pro veřejné soutěžní nasazení: MISSING.): Produkt ho NEVOLÁ. Jmenuje ho jen měřidlo latence (evals/worldstream/live-latency.measure.ts) a allowlist evals/harness/preflight.ts; naměřeno 12. 9. 2026 (medián věty 98 s → 56 s), ale 13. 9. 2026 zamítnuto jako výchozí model, protože varianta -fast účtuje předplatnému přibližně 2,5× víc tokenů. Volá se přes lokální claude-code-proxy placenou předplatným Codexu, low effort, žádný API fallback.
 - **gpt-5.6-terra** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
 - **gpt-6-astra** (Podmínky příslušné služby OpenAI; měření běželo přes uživatelské předplatné ChatGPT/Codex (Codex CLI 0.154.0, codex exec). Ověření podmínek pro veřejné soutěžní nasazení: MISSING.): Od 13. 9. 2026 večer EMISSION_MODEL v src/model/prompt.ts — model, který WORLDSTREAM světy doopravdy píše. Rozhodnutí uživatele po galerii kvality (e2e/quality-gallery.spec.ts): 2–5× bohatší kompozice než gpt-5.6-luna, za medián 143 s na větu proti 35 s. claude-code-proxy ho nezná, volá se proto spuštěním Codex CLI (codex exec --json, transport codex-cli v src/server/upstream.ts, WORLDSMITH_MODEL_ENDPOINT=codex-cli), s ChatGPT přihlášením, medium effort, sandbox read-only, nástroje vypnuté, žádný API fallback. Spotřeba předplatného je evidována; jednotková USD cena není doložena. Schválení veřejného hostování prostřednictvím osobního předplatného: MISSING.
+- **meshy-6** (Meshy Terms of Use; service model, no weights redistributed): Pinned identifier in the prepared T12 adapter. No live generation or model weights used. See Meshy API entry; mocked lifecycle tests do not establish output quality or rights.
 - **Qwen3-1.7B-q4f16_1-MLC** (Apache-2.0): Váhy modelu emisní cesty, které si prohlížeč stáhne za běhu (src/model/local/**, WebLLM). Nejsou v repozitáři ani v bundlu, proto to není položka kind: asset. Kvantizace q4f16_1, 979 MB. Sync je nechává být — z package-lock.json se váhy odvodit nedají.
 
 ## Datasety (2)
@@ -362,24 +365,45 @@ _Žádná položka._
 - **OpenAI Codex 0.145.0 — derived fixed text model catalog** (Apache-2.0): Veřejná konfigurační metadata a instrukční texty jediného modelu gpt-5.6-sol. Pinned raw SHA-256 497d7653bb22358baa29ebd4a70be55ce990b73a64896848a59179485b37db9d; odvozený katalog 59d22b4ae6532d4f869d776e56faaf2ae169f36038375597f4f1e581459b8791. Zachovány všechny ostatní hodnoty, změněny pouze tool_mode=direct a multi_agent_version=disabled. Není to nový benchmark, nezávislý holdout ani modelový výstup. Samotný katalog neprokazuje autentizaci, inference nebo produkční připravenost.
 - **zmrazený korpus promptů a kontraktů (evals/frozen, evals/gold.jsonl)** (MIT): Vlastní data, žádný externí zdroj. Uvedeno proto, že RULES.md §2 žádá disclosure datasetů bez ohledu na to, kdo je autor.
 
-## Externí služby (2)
+## Externí služby (3)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
+| Meshy API (prepared adapter only) | https://api.meshy.ai/ | Meshy | Meshy Terms of Use; output rights depend on the actual plan | No generated Meshy asset is distributed; future imports must record plan-specific license and attribution | Meshy, https://www.meshy.ai/terms-of-use |
 | npm registry | https://registry.npmjs.org | npm, Inc. (GitHub) | npm Open-Source Terms of Use | žádné pro konzumenta registru | npm, Inc., https://docs.npmjs.com/policies/terms |
 | OpenAI Chat Completions API | https://api.openai.com/v1/chat/completions | OpenAI | komerční podmínky služby (OpenAI Business Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
 
 ### Externí služby — licence posouzené jednotlivě
 
+- **Meshy API (prepared adapter only)** (Meshy Terms of Use; output rights depend on the actual plan): Reviewed official terms and ownership help on 2026-09-17. Only an injected mock adapter is tested; no account, paid credits or live job authorized. Free-plan output uses CC BY 4.0; paid output rights require lawful inputs and the actual plan terms. Each future import requires its own provenance and license evidence.
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá.
 
-## Vlastní, ne třetí strana (8)
+## Vlastní, ne třetí strana (27)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
 aby se registrací nedalo nic z výpisu odstranit.
 
+- **public/assets/worldstream/aquarium-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/aquarium-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/aquarium.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/desktop-terminal-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/desktop-terminal-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/desktop-terminal.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/lounge-chair-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/lounge-chair-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/lounge-chair.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/panel-door-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/panel-door-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/panel-door.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/potted-plant-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/potted-plant-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/potted-plant.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/PROVENANCE.md** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/seated-person-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/seated-person-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/seated-person.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **claude-sonnet-5** (model): Doslovný identifikátor v src/server/__tests__/upstream.test.ts: test předává změněné model ID mock transportu a ověřuje request body. Tato položka neprohlašuje volání modelu Anthropic v lokálním subscription demu ani existenci modelu tohoto jména.
 - **gemini-9-pro** (model): vymyšlený identifikátor v scripts/__tests__/submission-check-gate.test.ts. Produkt žádný model Google nevolá; zapsat ho jako třetí stranu by bylo nepravdivé tvrzení o tom, co projekt používá.
 - **gpt-neexistuje** (model): vymyšlený identifikátor v evals/harness/__tests__/live.test.ts: oracle větve „poskytovatel takový model nemá". Žádný model tohoto jména neexistuje.

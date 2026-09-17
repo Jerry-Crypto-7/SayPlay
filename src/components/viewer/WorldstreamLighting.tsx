@@ -31,7 +31,9 @@
 
 import { useThree } from '@react-three/fiber';
 import { useEffect } from 'react';
-import { ACESFilmicToneMapping, Fog, VSMShadowMap } from 'three';
+import { ACESFilmicToneMapping, Color, Fog, VSMShadowMap, PMREMGenerator } from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import type { SceneEnvironment } from '@/scene/environment';
 
 import { UI_TOKENS, VIEWER_BUDGETS } from '@/kit';
 import { budgetFor, type QualityTier } from '@/worldstream/quality';
@@ -138,6 +140,8 @@ function shadowMapSize(quality: QualityTier): number {
 
 export default function WorldstreamLighting({
   quality = 'full',
+  reference,
+  environment,
 }: {
   /**
    * Úroveň kvality. Výchozí `full`, tedy rig, jaký scéna měla do `T26` —
@@ -145,33 +149,48 @@ export default function WorldstreamLighting({
    * zvyklý.
    */
   readonly quality?: QualityTier;
+  readonly environment?: SceneEnvironment;
+  /** Explicit opt-in for the manual visual ceiling gallery. Defaults stay unchanged. */
+  readonly reference?: { readonly kind: 'interior' | 'courtyard' | 'observatory'; readonly lamp: readonly [number, number, number]; readonly on: boolean };
 } = {}) {
   const scene = useThree((state) => state.scene);
+  const gl = useThree((state) => state.gl);
   const shadowSize = shadowMapSize(quality);
 
   useEffect(() => {
-    scene.fog = new Fog(WORLDSTREAM_FOG.color, WORLDSTREAM_FOG.near, WORLDSTREAM_FOG.far);
+    scene.fog = new Fog(environment?.background ?? WORLDSTREAM_FOG.color, WORLDSTREAM_FOG.near, WORLDSTREAM_FOG.far);
     return () => {
       scene.fog = null;
     };
-  }, [scene]);
+  }, [scene, environment?.background]);
+  useEffect(() => {
+    if (!environment) return;
+    const previous = { background: scene.background, environment: scene.environment, intensity: scene.environmentIntensity };
+    const generator = new PMREMGenerator(gl), room = new RoomEnvironment();
+    const map = generator.fromScene(room,0.04);
+    room.dispose(); generator.dispose();
+    scene.background = new Color(environment.background); scene.environment = map.texture;
+    scene.environmentIntensity = environment.night ? 0.2 : 0.55;
+    return () => { scene.background=previous.background; scene.environment=previous.environment;
+      scene.environmentIntensity=previous.intensity; map.dispose(); };
+  }, [scene,gl,environment]);
 
   return (
     <>
       {/* Obloha měděná, dno pelagické. I neosvětlená plocha tak nese informaci
           o tom, kudy je nahoru — u organického tvaru je to jediné, co drží
           objem, když na něj nesvítí hlavní světlo. */}
-      <hemisphereLight args={[UI_TOKENS.verdigris, UI_TOKENS.pelagic, 0.55]} />
+      <hemisphereLight args={environment ? ['#d4e7ee','#706451',environment.hemisphereIntensity] : reference ? ['#d4e7ee', '#706451', 0.6] : [UI_TOKENS.verdigris, UI_TOKENS.pelagic, 0.55]} />
       <directionalLight
         castShadow
         position={[...WORLDSTREAM_KEY_LIGHT.position]}
-        intensity={WORLDSTREAM_KEY_LIGHT.intensity}
+        intensity={environment?.keyIntensity ?? (reference?.kind === 'observatory' ? 1.3 : WORLDSTREAM_KEY_LIGHT.intensity)}
         color={WORLDSTREAM_KEY_LIGHT.color}
         shadow-mapSize={[shadowSize, shadowSize]}
-        shadow-camera-left={-SHADOW_EXTENT}
-        shadow-camera-right={SHADOW_EXTENT}
-        shadow-camera-top={SHADOW_EXTENT}
-        shadow-camera-bottom={-SHADOW_EXTENT}
+        shadow-camera-left={reference ? -15 : -SHADOW_EXTENT}
+        shadow-camera-right={reference ? 15 : SHADOW_EXTENT}
+        shadow-camera-top={reference ? 15 : SHADOW_EXTENT}
+        shadow-camera-bottom={reference ? -15 : -SHADOW_EXTENT}
         // Utažené na scénu, ne od nuly do nekonečna: VSM ukládá hloubku a její
         // druhou mocninu, takže volný rozsah rozpustí přesnost a stín začne
         // prosakovat skrz žebra. Světlo stojí ~47 jednotek od počátku.
@@ -180,18 +199,18 @@ export default function WorldstreamLighting({
         shadow-radius={3}
         shadow-blurSamples={12}
         shadow-bias={-0.0006}
-        shadow-normalBias={0.05}
+        shadow-normalBias={reference ? 0.012 : 0.05}
       />
       <directionalLight
         position={[...WORLDSTREAM_FILL_LIGHT.position]}
         intensity={WORLDSTREAM_FILL_LIGHT.intensity}
         color={WORLDSTREAM_FILL_LIGHT.color}
       />
-      <directionalLight
+      {reference ? <pointLight position={[...reference.lamp]} intensity={reference.on ? 65 : 0} color="#ffce87" distance={12} decay={2} /> : <directionalLight
         position={[...WORLDSTREAM_RIM_LIGHT.position]}
         intensity={WORLDSTREAM_RIM_LIGHT.intensity}
         color={WORLDSTREAM_RIM_LIGHT.color}
-      />
+      />}
     </>
   );
 }

@@ -52,32 +52,38 @@
  */
 
 import { parseGeomProgram, validateGeomProgram } from '../geom/program';
-import { canonical } from '../ir/worlddoc';
+import { canonical, validateLook } from '../ir/worlddoc';
 import { SHAPE_IDENTIFIER_PATTERN, validateShapeProgram } from '../shape/schema';
 import type { ShapeProgram } from '../shape/types';
 import {
   MIN_TARGET_EXTENT,
   WORLD_COORDINATE_LIMIT,
   blueprintSchema,
+  visualPreviewSchema,
+  semanticSourceSchema,
   validateBlueprint,
   type SemanticObject,
   type SemanticSource,
   type WorldstreamBlueprint,
+  type VisualPreview,
 } from '../worldstream/schema';
-import { findBlueprintReferenceIssues } from '../worldstream/references';
+import { findBlueprintReferenceIssues, findVisualReferenceIssues } from '../worldstream/references';
 
 import { certifySteps, type Rejection, type Verdict } from './certify';
 import { contextFromEmission, type RejectionContext } from './local/rejection-prompt';
-import { repairEmission, toIdentifier, type RepairNote } from './repair';
+import { repairEmission, toIdentifier, boundedSearchDetail, type RepairNote } from './repair';
 import { buildCompilerRequest, COMPILER_STAGE, EXAMPLE_BLUEPRINT_ANSWER } from './worldstream-prompt';
 import { isExampleEmission, type Grammar, type UpstreamRequest } from './prompt';
 import type { PlannedObject, PlannerEmission } from './worldstream-intent';
 import { straightenGeometry, straightenHeroes, straightenShape } from './worldstream-straighten';
+import { architectureSchema, lowerArchitecture, type Architecture } from '@/scene/architecture';
+import { measureLayout, orientFacingAssets } from '@/scene/layout';
+import { validateLayout } from '@/scene/constraints';
 
 export { COMPILER_STAGE };
 
 /** Pole, která model smí napsat. Cokoli navíc je odmítnutí. */
-const ANSWER_FIELDS = ['geometry', 'shapes', 'placements', 'world'] as const;
+const ANSWER_FIELDS = ['geometry', 'shapes', 'placements', 'world', 'architecture'] as const;
 
 export type CompilerRejection =
   /** Odpověď není objekt, nebo je to pole. */
@@ -96,6 +102,7 @@ export type CompilerRejection =
   | 'REFERENCE_BROKEN'
   /** Hotová obálka neprošla vlastním schématem. */
   | 'BLUEPRINT_INVALID'
+  | 'LAYOUT_INVALID'
   /** Světový graf neprošel řetězem certifikace. */
   | 'WORLD_REJECTED';
 
@@ -155,9 +162,11 @@ export type CompilerResult =
        * Věta pro model si na to sáhne strážcem a jinak spadne na obecnou radu.
        */
       readonly world?: WorldRejection;
+      readonly preview?: VisualPreview;
     };
 
 export interface CompileOptions {
+  readonly assets?: import('@/assets/manifest').AssetManifest;
   /** Semínko relace. Píše ho systém, ne model. */
   readonly sessionSeed: number;
   /** Co se doopravdy poslalo nahoru. Zaznamenává se do verdiktu. */
@@ -169,7 +178,7 @@ function reject(
   detail: string,
   issues: readonly string[] = [],
   world?: WorldRejection,
-): CompilerResult {
+): Extract<CompilerResult, { ok: false }> {
   // Klíč se nepřipisuje s `undefined`, protože rovnost odmítnutí se porovnává
   // po polích a přítomný prázdný klíč je jiný objekt než nepřítomný.
   return world === undefined
@@ -400,7 +409,7 @@ function straightenMaterialIntent(
  * Placements.
  * ------------------------------------------------------------------ */
 
-function readSource(value: unknown): SemanticSource | string {
+function readSource(value: unknown, assets?: CompileOptions['assets']): SemanticSource | string {
   if (!isRecord(value)) return 'source is not an object';
   if (value.kind === 'geom') {
     if (typeof value.node !== 'number' || !Number.isInteger(value.node) || value.node < 0)
@@ -412,7 +421,20 @@ function readSource(value: unknown): SemanticSource | string {
       return 'source.shapeId is missing';
     return { kind: 'shape', shapeId: value.shapeId };
   }
-  return `source.kind ${JSON.stringify(value.kind)} is neither "geom" nor "shape"`;
+  if (value.kind === 'asset') {
+    // Emission-only shorthand resolves against the exact request's approved
+    // catalog. The stored blueprint still carries immutable version + hash.
+    if ('key' in value) {
+      if (Object.keys(value).some(key => key !== 'kind' && key !== 'key') || typeof value.key !== 'string')
+        return 'source.asset key must be the sole selector';
+      const selected = assets?.candidates().find(asset => `${asset.assetId}@${asset.version}` === value.key);
+      if (!selected) return 'source.asset key is absent from the approved catalog';
+      return {kind:'asset',assetId:selected.assetId,version:selected.version,hash:selected.hash};
+    }
+    const parsed = semanticSourceSchema.safeParse(value);
+    return parsed.success ? parsed.data : 'source.asset identity/version/hash is invalid';
+  }
+  return `source.kind ${JSON.stringify(value.kind)} is not "geom", "shape" or "asset"`;
 }
 
 /** Řádky geometrie, ze kterých placements berou objekt — narovnání je nesmí vyhodit. */
@@ -457,6 +479,34 @@ export function compileBlueprint(
       extra.map((key) => `/${key}: not one of ${ANSWER_FIELDS.join(', ')}`),
     );
 
+  let architecture: Architecture = [];
+  let passages: ReturnType<typeof lowerArchitecture>['passages'] = [];
+  if (answer.architecture !== undefined) {
+    const parsed = architectureSchema.safeParse(answer.architecture);
+    if (!parsed.success) return reject('WRONG_SHAPE', `architecture: ${parsed.error.message}`);
+    architecture = parsed.data;
+    if (!isRecord(answer.geometry) || !Array.isArray(answer.geometry.nodes) || !Array.isArray(answer.placements))
+      return reject('WRONG_SHAPE', 'architecture requires geometry.nodes and placements arrays');
+    try {
+      const lowered = lowerArchitecture(architecture, answer.geometry.nodes.length);
+      passages = lowered.passages;
+      const roots: number[] = [...lowered.roots.values()];
+      if (answer.geometry.nodes.length > 0 && typeof answer.geometry.root === 'number') roots.unshift(answer.geometry.root);
+      const nodes = [...answer.geometry.nodes, ...lowered.nodes];
+      if (roots.length > 0) nodes.push({kind:'group',children:roots});
+      const placements = answer.placements.map((entry: unknown) => {
+        if (!isRecord(entry) || !isRecord(entry.source) || entry.source.kind !== 'architecture') return entry;
+        const node = typeof entry.stableId === 'string' ? lowered.roots.get(entry.stableId) : undefined;
+        if (node === undefined) throw new Error('architecture placement must match an authored room/corridor stableId');
+        return {...entry,source:{kind:'geom',node}};
+      });
+      for (const stableId of lowered.roots.keys())
+        if (!placements.some((p: unknown) => isRecord(p) && p.stableId === stableId)) throw new Error(`architecture ${stableId} has no placement`);
+      answer = {...answer,geometry:{...answer.geometry,nodes,root:nodes.length-1},placements};
+    } catch (error) { return reject('LAYOUT_INVALID', error instanceof Error ? error.message : String(error)); }
+  }
+
+  if (!isRecord(answer)) return reject('NOT_AN_OBJECT', 'the answer is not an object');
   // --- geometrie ---------------------------------------------------------
 
   if (typeof answer.geometry === 'string')
@@ -580,7 +630,7 @@ export function compileBlueprint(
     if (placed.has(stableId))
       return reject('PLACEMENT_MISMATCH', `${where} places ${stableId} a second time`);
 
-    const written = readSource(raw.source);
+    const written = readSource(raw.source, options.assets);
     if (typeof written === 'string') return reject('WRONG_SHAPE', `${where}.${written}`);
     // Narovnání geometrie mohlo řádky posunout; placement ukazuje do téže tabulky.
     const source: SemanticSource =
@@ -599,6 +649,10 @@ export function compileBlueprint(
       synonyms: [...object.synonyms],
       role: object.role,
       source,
+      ...(raw.binding !== undefined ? { binding: raw.binding as SemanticObject['binding'] } : {}),
+      ...(raw.stretchAxes !== undefined ? { stretchAxes: raw.stretchAxes as SemanticObject['stretchAxes'] } : {}),
+      ...(raw.yaw !== undefined ? {yaw:raw.yaw as number} : {}),
+      ...(raw.supportSocket !== undefined ? {supportSocket:raw.supportSocket as string} : {}),
       targetBounds,
       importance: object.importance,
     });
@@ -626,8 +680,16 @@ export function compileBlueprint(
     .map((object) => placed.get(object.stableId))
     .filter((object): object is SemanticObject => object !== undefined);
   // Hrdina, o kterém věta je, musí být vidět: malý se zvětší a posune ke středu.
-  const sized = straightenHeroes(unsized, adjustments);
-  const objects = unsized.map((object, index) => ({ ...object, targetBounds: sized[index] }));
+  // A semantic layout may not be silently moved/scaled by the old hero heuristic.
+  const sized = plan.sceneSpec ? unsized.map((object) => object.targetBounds) : straightenHeroes(unsized, adjustments);
+  let objects = unsized.map((object, index) => ({ ...object, targetBounds: sized[index] }));
+  if (plan.sceneSpec?.relations.some(relation=>relation.relation==='facing')) {
+    try {
+      const oriented=orientFacingAssets(objects,plan.sceneSpec,geometry,options.assets);
+      objects=oriented.objects;
+      for(const id of oriented.oriented)adjustments.push({path:`objects/${id}/yaw`,reason:'Derived asset yaw from facing relation; accepted binding is unchanged'});
+    } catch(error) {return reject('LAYOUT_INVALID',`Facing layout: ${error instanceof Error?error.message:String(error)}`);}
+  }
 
   // --- světový graf ------------------------------------------------------
 
@@ -649,11 +711,14 @@ export function compileBlueprint(
   const verdict = step.value;
 
   if (verdict.body.outcome !== 'CERTIFIED' || verdict.body.doc === null) {
-    const rejection = verdict.body.rejection;
+    const rawRejection = verdict.body.rejection;
+    const searchDetail = boundedSearchDetail(repaired.witnessSearch);
+    const rejection = rawRejection?.stage === 'witness' && rawRejection.reason === 'NO_WIN' && searchDetail
+      ? {...rawRejection,detail:`${searchDetail} Final replay: ${rawRejection.detail}`} : rawRejection;
     // `detail` zůstává předponovanou větou schválně: čte ji člověk v Inspect
     // zásuvce a porovnává se jí nepohnuté odmítnutí. Fázi si ale odteď nikdo
     // neparsuje zpátky — jede vedle jako pole.
-    return reject(
+    const failure = reject(
       'WORLD_REJECTED',
       rejection === null
         ? 'the world graph did not certify'
@@ -661,17 +726,47 @@ export function compileBlueprint(
       rejection === null ? [] : rejection.issues,
       rejection === null
         ? undefined
-        : { rejection, context: contextFromEmission(repaired.document) },
+        : { rejection, context: {...contextFromEmission(repaired.document), ...(repaired.witnessSearch ? {witnessSearch:repaired.witnessSearch} : {})} },
     );
+    // A separately validated visual payload may survive failed logic. It never
+    // masquerades as a WorldDoc and carries no simulation bindings or hashes.
+    const look = isRecord(repaired.document) ? repaired.document.look : undefined;
+    if (!validateLook(look).ok) return failure;
+    const visualObjects = objects.map(object => {
+      if (!object.binding) return object;
+      const { entityId: _entity, signalFlag: _signal, ...binding } = object.binding;
+      return { ...object, binding };
+    });
+    const candidate = visualPreviewSchema.safeParse({ kind: 'visual-preview', interactive: false,
+      version: visualObjects.some(object => object.source.kind === 'asset' || object.binding || object.stretchAxes || object.yaw !== undefined) ? 'worldstream-v2' : 'worldstream-v1',
+      sessionSeed: options.sessionSeed, title: titleOf(plan.intent), intent: plan.intent,
+      ...(plan.sceneSpec ? { sceneSpec: plan.sceneSpec } : {}), geometry, objects: visualObjects, shapes, look,
+      validation: { layout: plan.sceneSpec || architecture.length ? 'checked' : 'not-requested', limitations: [] } });
+    if (!candidate.success || findVisualReferenceIssues(candidate.data, options.assets).length) return failure;
+    if (plan.sceneSpec || architecture.length) {
+      try {
+        const bodies = measureLayout(visualObjects, geometry, options.assets).map(body => {
+          const room = architecture.find(entry => entry.stableId === body.stableId);
+          return room ? { ...body, supports: [{ min: [room.at[0]-room.width/2,room.at[1],room.at[2]-room.depth/2] as const,
+            max: [room.at[0]+room.width/2,room.at[1],room.at[2]+room.depth/2] as const }] } : body;
+        });
+        const issues = validateLayout(plan.sceneSpec, bodies, passages);
+        if (issues.some(issue => issue.kind === 'unsatisfied')) return failure;
+        candidate.data.validation.limitations = issues.map(issue => `${issue.subjectId}: ${issue.detail}`).slice(0, 128);
+      } catch { return failure; }
+    }
+    return { ...failure, preview: candidate.data };
   }
 
   // --- obálka ------------------------------------------------------------
 
   const draft = {
-    version: 'worldstream-v1',
+    version: objects.some(object => object.source.kind === 'asset' || object.binding || object.stretchAxes || object.yaw!==undefined)
+      ? 'worldstream-v2' : 'worldstream-v1',
     sessionSeed: options.sessionSeed,
     title: titleOf(plan.intent),
     intent: plan.intent,
+    ...(plan.sceneSpec ? {sceneSpec:plan.sceneSpec} : {}),
     world: verdict.body.doc,
     geometry,
     objects,
@@ -684,13 +779,26 @@ export function compileBlueprint(
 
   const blueprint = blueprintSchema.parse(draft);
 
-  const references = findBlueprintReferenceIssues(blueprint);
+  const references = findBlueprintReferenceIssues(blueprint, options.assets);
   if (references.length > 0)
     return reject(
       'REFERENCE_BROKEN',
       `${references[0].where} ${references[0].detail}`,
       references.map((issue) => `${issue.where}: ${issue.detail}`),
     );
+
+  if (plan.sceneSpec || architecture.length > 0) {
+    try {
+      const bodies = measureLayout(objects, geometry, options.assets).map((body) => {
+        const room = architecture.find((entry) => entry.stableId === body.stableId);
+        return room ? {...body,supports:[{min:[room.at[0]-room.width/2,room.at[1],room.at[2]-room.depth/2] as const,max:[room.at[0]+room.width/2,room.at[1],room.at[2]+room.depth/2] as const}]} : body;
+      });
+      const issues = validateLayout(plan.sceneSpec,bodies,passages);
+      const failures = issues.filter((issue) => issue.kind === 'unsatisfied');
+      if (failures.length) return reject('LAYOUT_INVALID',`${failures[0].subjectId}: ${failures[0].detail}`,failures.map((issue) => `${issue.subjectId}: ${issue.detail}`));
+      for (const issue of issues) adjustments.push({path:`layout/${issue.subjectId}`,reason:`unsupported relation verification: ${issue.detail}`});
+    } catch (error) { return reject('LAYOUT_INVALID',`Cannot measure layout: ${error instanceof Error ? error.message : String(error)}`); }
+  }
 
   return {
     ok: true,

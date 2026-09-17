@@ -56,6 +56,7 @@ describe('an authored world goes down the same path a live emission does', () =>
     const stored = openSession('authored-happy', 4021)!;
     const seen: string[] = [];
     await runGeneration(stored, KNOWN.prompt, {
+      legacyPlan: true, // Explicit archived prepared plan, not a new live emission.
       emit: emit!,
       grammar: serverGrammar() as ReturnType<typeof grammar>,
       log: (fault, detail) => seen.push(`${fault}: ${detail}`),
@@ -74,6 +75,7 @@ describe('an authored world goes down the same path a live emission does', () =>
     const stored = openSession('authored-broken', 4021)!;
     const seen: string[] = [];
     await runGeneration(stored, KNOWN.prompt, {
+      legacyPlan: true, // Explicit archived prepared plan, not a new live emission.
       emit: emit!,
       grammar: serverGrammar() as ReturnType<typeof grammar>,
       log: (fault, detail) => seen.push(`${fault}: ${detail}`),
@@ -370,6 +372,7 @@ describe('emitor uvařené změny odpovídá jen na svoji fázi', () => {
     // sada s opsaným požadavkem by zůstala zelená a sklad by v provozu mlčel.
     const stored = openSession('authored-refine', 4021)!;
     await runGeneration(stored, KNOWN.prompt, {
+      legacyPlan: true, // Explicit archived prepared plan, not a new live emission.
       emit: authoredEmitter(KNOWN.prompt)!,
       grammar: serverGrammar() as ReturnType<typeof grammar>,
     });

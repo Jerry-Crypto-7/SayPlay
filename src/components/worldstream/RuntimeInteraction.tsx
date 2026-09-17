@@ -4,7 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import type { RuntimeController } from '@/worldstream/runtime-controller';
 
 /** Controls send inputs; all positions, outcomes and rule IDs come back from the runtime. */
-export default function RuntimeInteraction({ controller }: { readonly controller: RuntimeController }) {
+export default function RuntimeInteraction({ controller, readOnly = false }: { readonly controller: RuntimeController; readonly readOnly?: boolean }) {
   const state = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
   const [selected, setSelected] = useState('0');
   const [message, setMessage] = useState('Choose a destination or an action. Activation requires reaching the sensor.');
@@ -20,13 +20,14 @@ export default function RuntimeInteraction({ controller }: { readonly controller
         {entry.actionId === 'moveTo' ? 'Walk to' : entry.actionId} {entry.target ?? ''} ({entry.actor})
       </option>)}
     </select></label>
-    <button type="button" data-testid="runtime-act" disabled={!state.canInput || !action} onClick={() => {
+    <button type="button" data-testid="runtime-act" disabled={readOnly || !state.canInput || !action} onClick={() => {
       if (!action) return;
       const result = controller.dispatch(action);
       setMessage(!result.ok ? result.reason : result.runState === 'runtimeFault' ? 'Simulation fault; no transition applied.'
         : `Input at tick ${result.tick}. ${result.ruleIds.length ? `Applied: ${result.ruleIds.join(', ')}` : 'No rule applied; conditions were not met.'}`);
     }}>Perform action</button>
     <output data-testid="runtime-input-result" aria-live="polite">{message}</output>
+    <details><summary>Action details</summary>
     <div data-testid="runtime-positions">{state.entities.filter(entity =>
       controller.actions.some(entry => entry.actor === entity.stableId)).map(entity =>
       <span key={entity.stableId}>{entity.stableId}: ({entity.x}, {entity.y}) </span>)}</div>
@@ -44,6 +45,7 @@ export default function RuntimeInteraction({ controller }: { readonly controller
           {' → '}{entry.ruleIds.join(', ') || 'No rule applied'}
         </li>)}
       </ol>
+    </details>
     </details>
   </section>;
 }

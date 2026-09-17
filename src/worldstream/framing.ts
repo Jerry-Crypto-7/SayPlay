@@ -456,6 +456,10 @@ export interface FrameSceneInput {
   readonly azimuth?: number;
   /** Kolik snímku má zabírat obloha. Výchozí `SKY_SHARE`. */
   readonly skyShare?: number;
+  /** Optional inspection composition, in radians; defaults preserve outdoor framing. */
+  readonly pitch?: number;
+  /** Vertical fraction of the free viewport, measured from the bottom. */
+  readonly heroHeight?: number;
   /**
    * Zakrytý podíl hran snímku. Bez něj se rámuje do celého okna, což je dodnes
    * platný vstup — `/dev/worldstream` ani sledovací kamera překryv nemají.
@@ -496,7 +500,11 @@ export function frameScene(input: FrameSceneInput): Framing {
   // to je přesně `pitchForSky` se zmenšeným podílem. Vedlejším účinkem je právě
   // ten svislý posun, který dolní pruh vyžaduje: kamera klopí víc, obraz jde
   // nahoru. Při `bottom = 0` je součin s jedničkou přesný a klopení je dnešní.
-  const pitch = pitchForSky((input.skyShare ?? SKY_SHARE) * (1 - bottom), fov);
+  const pitch = input.pitch !== undefined && Number.isFinite(input.pitch)
+    ? Math.max(0,Math.min(Math.PI * 0.42,input.pitch))
+    : pitchForSky((input.skyShare ?? SKY_SHARE) * (1 - bottom), fov);
+  const heroHeight = input.heroHeight !== undefined && Number.isFinite(input.heroHeight)
+    ? Math.max(0.2,Math.min(0.8,input.heroHeight)) : HERO_HEIGHT;
   const hero = isFinitePoint(input.hero) ? input.hero : center;
 
   // Koule opsaná obalu je odhad startovní vzdálenosti, ne odpověď: osa pohledu
@@ -532,7 +540,7 @@ export function frameScene(input: FrameSceneInput): Framing {
   // zaokrouhlení (odečítá se nula). Při dolním pruhu 0,3 vyjde **záporný**, tedy
   // cíl klesne pod hrdinu — kamera už klopí tak, že by hrdina jinak vyjel nad
   // třetinu.
-  const drop = 1 - 2 * bottom - 2 * HERO_HEIGHT * (1 - bottom);
+  const drop = 1 - 2 * bottom - 2 * heroHeight * (1 - bottom);
   const lift = (span: number): number =>
     (drop * tanV * span) / (Math.cos(pitch) - drop * tanV * Math.sin(pitch));
 
@@ -570,7 +578,7 @@ export function frameScene(input: FrameSceneInput): Framing {
     pitch,
     distance,
     skyShare: skyShareForPitch(pitch, fov),
-    heroHeight: HERO_HEIGHT,
+    heroHeight,
     fallback,
   };
 }
@@ -609,4 +617,13 @@ export function followSeat(
   // Osa pohledu jde z oka na `hrdina + lift`. Aby klesala právě o `pitch`, musí
   // platit `(offset.y − lift) / offset.z = tan(pitch)`.
   return { offset, lift: offset.y - offset.z * Math.tan(pitch), pitch };
+}
+/** A seekable 20 s review path; camera-only, outside deterministic simulation state. */
+export function referenceCameraAt(points: readonly (readonly [number, number, number])[], seconds: number): [number, number, number] {
+  if (points.length < 2 || !Number.isFinite(seconds)) throw new Error('Invalid reference camera path');
+  const t = Math.max(0, Math.min(20, seconds)) / 20 * (points.length - 1);
+  const index = Math.min(points.length - 2, Math.floor(t));
+  const fraction = t - index;
+  const ease = fraction * fraction * (3 - 2 * fraction);
+  return [0, 1, 2].map(axis => points[index][axis] + (points[index + 1][axis] - points[index][axis]) * ease) as [number, number, number];
 }

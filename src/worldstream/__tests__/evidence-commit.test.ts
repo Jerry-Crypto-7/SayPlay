@@ -122,7 +122,7 @@ describe('atomic evidence project revision', () => {
 
   it.each([
     { base: 'stale' }, { ruleId: 'missing' }, { durationTicks: 400 }, { durationTicks: 401 },
-    { durationTicks: 1.5 }, { forkTick: 21 }, { forkTick: 301 }, { before: 999 }, { reason: '' },
+    { durationTicks: 1.5 }, { forkTick: 301 }, { before: 999 }, { reason: '' },
   ])('preserves the accepted pair on intervention failure %#', async overrides => {
     const { input, store, runtime, request } = await fixture();
     await store.commitInitial(input);

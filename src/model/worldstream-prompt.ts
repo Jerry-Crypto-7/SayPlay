@@ -60,6 +60,8 @@ import { SHAPE_LIMITS, type ShapeNodeKind } from '../shape/types';
 import { EMISSION_MODEL, buildEmissionRequest, type Grammar, type UpstreamRequest } from './prompt';
 import { PLANNER_ANSWER_FIELDS, type PlannerEmission } from './worldstream-intent';
 import { REFINE_ANSWER_FIELDS } from './worldstream-refine';
+import { WORLDSTREAM_ASSETS } from '@/assets/catalog';
+import { buildAssetBrief } from './worldstream-asset-brief';
 
 /** Značka fáze. Odlišuje blueprint od plánu i od staré emise v logu i v provenance. */
 export const COMPILER_STAGE = 'worldstream-blueprint';
@@ -387,9 +389,6 @@ export function requestStage(request: UpstreamRequest): 'planner' | 'compiler' |
 }
 
 export function buildCompilerRequest(plan: PlannerEmission, grammar: Grammar): UpstreamRequest {
-  const heroIds = plan.objects
-    .filter((object) => object.role === 'hero')
-    .map((object) => object.stableId);
   const placeableIds = plan.objects
     .filter((object) => object.role !== 'effect')
     .map((object) => object.stableId);
@@ -399,24 +398,37 @@ export function buildCompilerRequest(plan: PlannerEmission, grammar: Grammar): U
     'Somebody else already decided WHAT the place is. You decide how it stands up.',
     '',
     'Answer with a single JSON object and nothing else. Its top-level fields are exactly:',
-    `${COMPILER_ANSWER_FIELDS.join(', ')}. Anything else is rejected, including a title —`,
+    `${COMPILER_ANSWER_FIELDS.join(', ')}. The only optional additional field is architecture. Other fields are rejected, including a title —`,
     'the system writes that from the intent you were given.',
+    'Optional architecture is an array of authored rooms/corridors: {stableId,kind:"room"|"corridor",at:[x,y,z],width,depth,height,thickness,openings:[{wall:"north"|"south"|"east"|"west",offset,width,height}]}.',
+    'at is floor center in meters. Openings start at offset from the negative end of that wall and cut from floor upward. Walls are continuous, floors are continuous slabs; no roof is added.',
+    'Use source:{kind:"architecture"} on the matching stableId placement. This lowers into your authored geometry; never duplicate those walls in geometry.nodes. geometry may have nodes:[] when architecture supplies it.',
+    'Keep opening approach areas clear (0.6m on either side). Satisfy sceneSpec relations using actual contain-fit asset dimensions, +Z forward and declared support surfaces. near means at most 2m surface distance.',
     '',
     capabilityManifest(),
     '',
     'PLACEMENTS bind the two together. One entry per object you were given, except objects whose role',
     'is "effect" — air, light and weather have no geometry and are carried by the look layer.',
     'Each entry carries: stableId (one of the ids you were given, never a new one),',
-    'source ({ kind: "geom", node: <row index> } or { kind: "shape", shapeId: <one of yours> }),',
+    'source ({ kind: "geom", node: <row index> }, { kind: "shape", shapeId: <one of yours> }, or an exact approved asset source below),',
     'targetBounds { min, max } in WORLD space — the box the object occupies on the ground.',
     '',
     'THE LINK RUNS BOTH WAYS. A shape names its object in stableId and that object must source from',
     'that shape. A shape nobody sources from is meshed and never shown, and the object stays a rough',
     'lump for ever with nothing reporting it.',
     '',
-    `Write a shape, not kit pieces, for the object the sentence is really about: ${heroIds.length > 0 ? heroIds.join(', ') : 'the object with the highest importance'}.`,
-    'That is what the distance field is for — the kit builds architecture and cannot build a bone,',
-    'a root, a hull or a hive. Everything else is cheaper and steadier as composition.',
+    'Choose an approved asset for a matching known object, parametric composition for architecture/terrain,',
+    'and an authored shape for unusual forms. Heroes are NOT required to be shapes. Preserve every identity.',
+    'Candidates are suggestions: a surreal object must not be renamed to fit the catalog. A cache miss is explicit.',
+    'For assets write binding { collider: targetBounds, sockets: [], parts: [] }; add entityId only for an existing sim entity.',
+    'If using sockets or parts, transform the approved local sockets into world space with uniform bottom-centered contain fit.',
+    'Preserve native proportions and meters. Five people need five placements; sharing an asset never merges their identities.',
+    'Asset placements may carry yaw in radians from -PI to PI. Native forward is +Z; toward a target use atan2(target.x-subject.x,target.z-subject.z).',
+    'Missing asset yaw is derived from a facing relation. Explicit yaw is respected and checked. Sockets and collider remain accepted world coordinates and must match the rotated fit; never combine nonzero yaw with anisotropic stretch.',
+    'For seated/on contacts, placement.supportSocket names an imported downward socket (for example seat) already declared in binding.sockets. Position that exact world socket on the target support surface, not the feet on top of the chair.',
+    'Terrain on-relations are checked against actual triangles at the contact. Do not use the top of the terrain bounding bounds as ground height; wide rigid feet intersecting a slope are rejected with a contact diagnostic.',
+    'For a visible lamp or terminal status, binding.signalFlag may name an existing sim.state.flags entry; the renderer displays its current value. Never invent a flag outside world.sim.',
+    'Honor sceneSpec counts, negations and relationships. Use an opening and clear passage for every usable door.',
     '',
     'You never answer with the name of a style, a family or a preset. There is no library of finished',
     'places to pick from. If you write a string where a program belongs, the answer is rejected as',
@@ -438,10 +450,15 @@ export function buildCompilerRequest(plan: PlannerEmission, grammar: Grammar): U
     // doslova, takže se ta nabídka musí zavřít tady, ne v něm.
     'THE CONTRACT ABOVE OFFERS YOU NO_FIT. On this path you do not have it.',
     'It is written for a stage that may be handed a sentence with nothing behind it. You are handed',
-    'a place that already stands, so there is always a sim to write: whoever walks in, one socket the',
-    'place already contains, and a win rule that says what reaching it means. That is the whole',
-    'minimum, and it is never unreachable. Answering with sim: null here is not honesty — it is a',
-    'place nobody can enter, and it is rejected exactly like a broken one.',
+    'a concrete requested place. Propose a reachable action using a visible object already present:',
+    'open its door, switch its lamp, or activate its mechanism. Bind that object to the corresponding entity.',
+    'The objective must express this action. Do not invent an invisible universal win trigger.',
+    'VISITOR INPUT CONTRACT: visible controls dispatch onAction, never onClick. For a terminal or switch,',
+    'declare event {kind:"onAction",actor:"<existing actor entity>",actionId:"activate",target:"<visible object entity>"}.',
+    'onClick is a legacy surface event with no visitor input producer in this runtime; do not use it for interactive rules.',
+    'A witness step is {tick:0,actor:"<same actor>",actionId:"activate",target:"<same object>"}. Keep the actual requested effects',
+    'and derive the objective from their resulting state. A win alone is not a replacement for switching the visible lamp.',
+    'Rules and witness still have to certify; visual quality never excuses invalid behavior.',
     '',
     BLUEPRINT_EXAMPLE_MARKER,
     // **Odsazení tu musí zůstat**, ze stejného naměřeného důvodu jako
@@ -463,6 +480,9 @@ export function buildCompilerRequest(plan: PlannerEmission, grammar: Grammar): U
     '',
     'Build this place. This is the whole brief; there is no other text behind it:',
     canonical(plan),
+    'APPROVED REPRESENTATION CANDIDATES (exact sources only; no URLs):',
+    'Each object lists short candidate keys. Emit source:{kind:"asset",key:"assetId@version"}; the compiler resolves the immutable hash from this approved dictionary. Full exact source references remain accepted. Never combine key with other source fields. Shared candidates never merge object identities.',
+    canonical(buildAssetBrief(plan.objects, WORLDSTREAM_ASSETS)),
   ].join('\n');
 
   return { model: EMISSION_MODEL, system, user };

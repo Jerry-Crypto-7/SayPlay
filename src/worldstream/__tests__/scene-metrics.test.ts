@@ -4,6 +4,7 @@ import { GEOM_VERSION, type GeomProgram } from '../../geom/program';
 import type { PlannedObject } from '../../model/worldstream-intent';
 import type { SemanticObject } from '../schema';
 import { sceneMetrics } from '../scene-metrics';
+import {WORLDSTREAM_ASSETS} from '../../assets/catalog';
 
 /**
  * „Medián 3 objekty" z P18 počítal deklarované objekty. Tenhle report se umí
@@ -43,6 +44,25 @@ const aquarium = planned('aquarium', 'aquarium', 'hero');
 const mist = planned('mist', 'mist', 'effect');
 
 describe('scene metrics', () => {
+  it('reports resolved catalog assets as unobserved, never missing or rendered',()=>{
+    const asset=WORLDSTREAM_ASSETS.candidates()[0];
+    const object:SemanticObject={...placed(aquarium,0),source:{kind:'asset',assetId:asset.assetId,version:asset.version,hash:asset.hash}};
+    const report=sceneMetrics({geometry,objects:[placed(bench,2),object],shapes:[]},[bench,aquarium]);
+    expect(report.nounCoverage).toBeNull();expect(report.metricScope).toBe('hybrid-partial');
+    expect(report.missing).toEqual([]);expect(report.unknown).toEqual(['aquarium']);
+    expect(report.nounCoverageBounds).toEqual({lower:0.5,upper:1});
+    expect(report.representationEvidence[1]).toMatchObject({declared:true,catalogResolved:true,geometryBuilt:null,loaded:'unobserved'});
+    expect(report.visiblePieces).toBe(7);
+  });
+  it('distinguishes stale references and absent nouns from valid unresolved render evidence',()=>{
+    const asset=WORLDSTREAM_ASSETS.candidates()[0];
+    const object:SemanticObject={...placed(aquarium,0),source:{kind:'asset',assetId:asset.assetId,version:asset.version,hash:'0'.repeat(64)}};
+    const report=sceneMetrics({geometry,objects:[object],shapes:[]},[aquarium,bench]);
+    expect(report.missing).toEqual(['aquarium','bench']);expect(report.unknown).toEqual([]);
+    expect(report.representationEvidence[0]).toMatchObject({catalogResolved:false,loaded:'unobserved'});
+    expect(report.representationEvidence[0].reason).toBeTruthy();
+    expect(report.representationEvidence[1]).toMatchObject({declared:false,source:'absent'});
+  });
   it('counts pieces after the repeat is expanded, not declared objects', () => {
     const report = sceneMetrics({ geometry, objects: [placed(crates, 1), placed(bench, 2)], shapes: [] }, [crates, bench]);
     expect(report.visiblePieces).toBe(7);

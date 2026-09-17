@@ -40,6 +40,8 @@ import {
   BufferAttribute,
   BufferGeometry,
   Group,
+  InstancedMesh,
+  Matrix4,
   Mesh,
   Vector3,
   type Object3D,
@@ -47,6 +49,7 @@ import {
 
 import type { RuntimeSnapshot } from '@/worldstream/runtime-controller';
 import { canonical } from '@/ir/worlddoc';
+import { planRootRepeat, repeatedBounds, type RepeatInstances } from '@/shape/repeat-plan';
 import { PALETTES, type Palette } from '@/kit';
 import type { MeshResult } from '@/shape/mesh-client';
 import type { AnchorSpec, Vec3 } from '@/shape/types';
@@ -67,6 +70,22 @@ import {
   type SlotView,
 } from './representation';
 import { buildPlacementGroup } from './scenery';
+import { registerSubtreeDisposer } from './dispose';
+import { createAssetLoader } from '@/assets/loader';
+import { createAssetCache } from '@/assets/cache';
+import { WORLDSTREAM_ASSETS } from '@/assets/catalog';
+import { applyRuntimeAppearance } from './runtime-appearance';
+import { observeVisibility, projectedExtent, selectAssetLod,visibleIntersection } from '@/scene/visibility';
+import type { VisualObservation } from '@/scene/visibility-report';
+import { surfaceMaterial } from '@/assets/materials';
+import {createCutawayController,planCutaway} from './cutaway';
+import {createZoneTracker,ZONE_STREAM_POLICY,zoneKey} from '@/scene/zones';
+import {assessShapeDetail,type ShapeDetailAssessment} from '@/shape/detail-policy';
+import {MESH_DETAIL} from '@/shape/types';
+import {createRenderProfiler,type RenderTiming} from './gpu-profile';
+
+const assetLoader = createAssetLoader(WORLDSTREAM_ASSETS);
+const assetCache = createAssetCache(assetLoader);
 
 /** Jméno skupiny kulisy. Sonda i testy ji hledají podle něj, ne podle pořadí. */
 export const SCENERY_NAME = 'worldstream:scenery';
@@ -133,15 +152,17 @@ function buildRough(entry: ProxySlot, palette: Palette): RoughBuild {
   if (entry.form.kind === 'mesh') {
     const geometry = geometryFromMesh(entry.form.mesh);
     // Odstín nese **role slotu**, ne jeden token hlíny na všechno (P18 T3).
-    const material = clayMaterial({ color: shadeForRole(entry.slot.role, palette) });
-    const mesh = new Mesh(geometry, material);
+    const material = entry.slot.surface ? surfaceMaterial(entry.slot.surface) : clayMaterial({ color: shadeForRole(entry.slot.role, palette) });
+    const mesh = entry.form.repeat ? new InstancedMesh(geometry,material,entry.form.repeat.offsets.length) : new Mesh(geometry, material);
+    if(mesh instanceof InstancedMesh)entry.form.repeat!.offsets.forEach((offset,index)=>mesh.setMatrixAt(index,new Matrix4().makeTranslation(...offset)));
     mesh.name = name;
-    mesh.castShadow = true;
+    mesh.castShadow = !material.transparent;
     mesh.receiveShadow = true;
     return {
       object: mesh,
-      triangles: entry.form.mesh.triangleCount,
+      triangles: entry.form.mesh.triangleCount*(entry.form.repeat?.offsets.length??1),
       dispose: () => {
+        if(mesh instanceof InstancedMesh)mesh.dispose();
         geometry.dispose();
         material.dispose();
       },
@@ -152,8 +173,12 @@ function buildRough(entry: ProxySlot, palette: Palette): RoughBuild {
     // Kusy kitu vezou odstín ve vrcholech a `repaint` je přebarvuje paletou,
     // takže základ musí být bílý s `vertexColors` — jinak se celý řádek
     // kompozice vykreslí jedním odstínem hlíny (past zapsaná u `ClayOverrides`).
-    const material = clayMaterial({ color: '#ffffff', vertexColors: true });
-    const built = buildPlacementGroup(entry.form.placements, palette, material, { name });
+    const material = entry.slot.surface ? surfaceMaterial(entry.slot.surface) : clayMaterial({ color: '#ffffff', vertexColors: true });
+    const built = buildPlacementGroup(entry.form.placements, palette, material, { name, shadows: !material.transparent });
+    built.object.traverse(node=>{
+      if(node instanceof Mesh) node.frustumCulled=true;
+      if(node instanceof InstancedMesh) node.computeBoundingSphere();
+    });
     built.object.castShadow = true;
     return {
       object: built.object,
@@ -173,6 +198,11 @@ function buildRough(entry: ProxySlot, palette: Palette): RoughBuild {
   const geometry = clayBox(boundsExtent(entry.slot.localBounds));
   const material = clayMaterial({ color: shadeForRole(entry.slot.role, palette) });
   const box = new Mesh(geometry, material);
+  // Asset bounds are authored in meters and need not be centered on the pivot.
+  if (entry.form.kind === 'asset') {
+    const { min, max } = entry.slot.localBounds;
+    box.position.set(...min.map((value, axis) => (value + max[axis]) / 2) as [number, number, number]);
+  }
   box.name = name;
   box.castShadow = true;
   box.receiveShadow = true;
@@ -191,7 +221,11 @@ function buildRough(entry: ProxySlot, palette: Palette): RoughBuild {
  * ------------------------------------------------------------------ */
 
 /** Fakta o jednom slotu. **Syrová**, aby si závěr udělal ten, kdo se ptá. */
+export type AssetRetryResult = {status:'loaded'|'failed'|'stale'|'unavailable'|'exhausted';stableId:string;reason:string|null};
+export type AssetRetryState = {status:'unavailable'|'available'|'running'|'exhausted'|'succeeded';reason:string|null};
 export interface StageSlotProbe {
+  readonly assetRetry: AssetRetryState;
+  readonly asset?: { readonly nodes: readonly string[]; readonly materials: readonly { name: string; transparent: boolean; roughness: number; metalness: number }[] };
   readonly stableId: string;
   readonly objectId: string | null;
   readonly representationId: string | null;
@@ -222,6 +256,9 @@ export interface StageSlotProbe {
    * `null` znamená „nic se nepokazilo", ne „nic se nezkoušelo".
    */
   readonly failure: string | null;
+  readonly detailAssessment:ShapeDetailAssessment|null;
+  readonly samplingAction:{kind:'repeat-instanced'|'unsupported';reason:string}|null;
+  readonly internalInstances:number;
   /**
    * Kolik trojúhelníků obal doopravdy kreslí — **čteno ze scény**, ne z účtu
    * pořízeného při stavbě. Během odhalení je to součet obou podob.
@@ -313,6 +350,12 @@ export interface StageRevealProbe {
 }
 
 export interface StageProbe {
+  retryAsset:(stableId:string)=>Promise<AssetRetryResult>;
+  measureRender:(count?:number)=>Promise<RenderTiming>;
+  streaming:()=>{readonly suspended:readonly string[];readonly acquisitions:number;readonly evictions:number;readonly cacheEntries:number;readonly cameraZone:string};
+  assetLoads:()=>readonly import('@/assets/loader').AssetLoadTiming[];
+  cutaway:()=>{readonly requested:boolean;readonly active:boolean;readonly height:number|null;readonly architectureIds:readonly string[]};
+  visibility: () => readonly VisualObservation[];
   /** Postavila se scéna z hrubého světa? Do té doby jsou ostatní odpovědi prázdné. */
   ready: () => boolean;
   slots: () => readonly StageSlotProbe[];
@@ -371,8 +414,10 @@ export interface StageProbe {
 }
 
 declare global {
+  interface HTMLCanvasElement { __worldstreamStage?:StageProbe }
   interface Window {
     __worldstreamStage?: StageProbe;
+    __worldstreamStages?: Record<string,StageProbe>;
   }
 }
 
@@ -405,6 +450,14 @@ function largestTextureAxis(root: Object3D): number {
  * ------------------------------------------------------------------ */
 
 interface StageBuild {
+  retryAsset:(id:string,onError:(id:string,reason:string|null)=>void)=>Promise<AssetRetryResult>;
+  assetRetryState:(id:string)=>AssetRetryState;
+  readonly suspendAsset:(id:string)=>boolean;
+  readonly suspended:ReadonlySet<string>;
+  readonly streamStats:{acquisitions:number;evictions:number};
+  readonly requestAssetLod: (stableId: string, level: number, onError: (id: string, reason: string | null) => void) => () => void;
+  readonly assetLevels: ReadonlyMap<string, number>;
+  readonly loadAssets: (onError: (id: string, reason: string | null) => void) => () => void;
   readonly reconcile: (world: ProxyWorld, palette: Palette) => void;
   /**
    * Registry, ne jen jeho snímek. Sonda i odhalení se ptají **živě**: `SlotView`
@@ -436,12 +489,21 @@ interface StageBuild {
  */
 let stageBuilds = 0;
 
-export function buildStage(world: ProxyWorld, palette: Palette): StageBuild {
+export function buildStage(world: ProxyWorld, palette: Palette, assets: Pick<typeof assetCache, 'acquire'> = assetCache): StageBuild {
   stageBuilds += 1;
   const registry = createRepresentationRegistry();
   const rungs = new Map<string, ProxyRung>();
   const triangles = new Map<string, number>();
   const previous = new Map<string, ProxySlot>();
+  const assetLevels = new Map<string, number>();
+  const suspended=new Set<string>();
+  const streamStats={acquisitions:0,evictions:0};
+  type AssetRequest={entry:ProxySlot;level:number;cancelled:boolean;failure:string|null;done:Promise<AssetRetryResult>;finish:(result:AssetRetryResult)=>void};
+  const requests = new Map<string, AssetRequest>();
+  const retryAttempts=new Map<string,{key:string;state:AssetRetryState}>();
+  const entryKey=(entry:ProxySlot)=>canonical({slot:entry.slot,reference:entry.form.kind==='asset'?entry.form.reference:null});
+  const cancelRequest=(id:string)=>{const request=requests.get(id);if(request){request.cancelled=true;request.finish({status:'stale',stableId:id,reason:'Accepted representation changed or request was cancelled.'});}};
+  let disposed = false;
   let activeWorld = world;
   let activePalette: Palette | null = null;
   let scenery: Group | null = null;
@@ -458,7 +520,8 @@ export function buildStage(world: ProxyWorld, palette: Palette): StageBuild {
     try {
       for (const entry of slots) {
         const old = previous.get(entry.slot.stableId);
-        if (!old || activePalette !== nextPalette || !sameProxySlot(old, entry))
+        const onlyAssetLod = old?.form.kind === 'asset' && entry.form.kind === 'asset' && canonical(old.slot) === canonical(entry.slot) && canonical(old.form.reference) === canonical(entry.form.reference);
+        if (!onlyAssetLod && (!old || activePalette !== nextPalette || !sameProxySlot(old, entry)))
           replacements.set(entry.slot.stableId, buildRough(entry, nextPalette));
       }
       if (nextSceneryKey !== sceneryKey && nextScenery.length) {
@@ -469,15 +532,18 @@ export function buildStage(world: ProxyWorld, palette: Palette): StageBuild {
       replacements.forEach(rough => rough.dispose()); preparedScenery?.dispose(); sceneryMaterial?.dispose(); throw error;
     }
     for (const id of previous.keys()) if (!slots.some(entry => entry.slot.stableId === id)) {
-      registry.remove(id); previous.delete(id); rungs.delete(id); triangles.delete(id);
+      cancelRequest(id);retryAttempts.delete(id);registry.remove(id); previous.delete(id); rungs.delete(id); triangles.delete(id); assetLevels.delete(id); requests.delete(id);suspended.delete(id);
     }
     for (const entry of slots) {
       const id = entry.slot.stableId;
       const rough = replacements.get(id);
       if (rough) {
+        suspended.delete(id);
         registry.replaceRough(entry.slot, rough.object);
         rungs.set(id, entry.form.rung); triangles.set(id, rough.triangles);
       }
+      if(previous.get(id)!==entry)cancelRequest(id);
+      if(retryAttempts.get(id)?.key!==entryKey(entry))retryAttempts.delete(id);
       previous.set(id, entry);
     }
     if (nextSceneryKey !== sceneryKey) {
@@ -491,7 +557,91 @@ export function buildStage(world: ProxyWorld, palette: Palette): StageBuild {
     activeWorld = next; activePalette = nextPalette;
   };
   reconcile(world, palette);
+  const requestAssetLod: StageBuild['requestAssetLod'] = (id, level, onError) => {
+    const entry=previous.get(id);
+    if (!entry || entry.form.kind !== 'asset') return () => {};
+    const {reference}=entry.form;
+    const view=registry.view(id);
+    const resolved=WORLDSTREAM_ASSETS.resolve(reference);
+    const targetHash=resolved.ok?resolved.asset.lods.find(lod=>lod.level===level)?.hash:undefined;
+    if (!view || !targetHash) return () => {};
+    const old=requests.get(id);
+    if(old&&retryAttempts.get(id)?.state.status==='running'&&!old.cancelled)return ()=>{};
+    if (old && old.entry===entry && old.level===level && !old.cancelled) return () => {};
+    if(old) cancelRequest(id);
+    if(view.contentHash===targetHash) {assetLevels.set(id,level);requests.delete(id);return () => {};}
+    let finish!:(result:AssetRetryResult)=>void;
+    const done=new Promise<AssetRetryResult>(resolve=>{finish=resolve;});
+    const request:AssetRequest={entry,level,cancelled:false,failure:null,done,finish};requests.set(id,request);
+    suspended.delete(id);streamStats.acquisitions++;
+    const revision=view.revision;
+    onError(id,null);
+    void assets.acquire(reference,level).then(lease=>{
+      if(request.cancelled || disposed || previous.get(id)!==entry) {lease.release();finish({status:'stale',stableId:id,reason:'Accepted representation changed.'});return;}
+      lease.object.name=formName(id);
+      lease.object.traverse(node=>{
+        if(!(node instanceof Mesh)) return;
+        const materials=Array.isArray(node.material)?node.material:[node.material];
+        node.castShadow=materials.every(material=>!material.transparent);node.receiveShadow=true;
+      });
+      registerSubtreeDisposer(lease.object,lease.release);
+      const offered=registry.offer({stableId:id,revision,object:lease.object,bounds:entry.slot.localBounds,contentHash:lease.hash});
+      if(offered.ok) {rungs.set(id,'g3-ready');triangles.set(id,lease.triangles);assetLevels.set(id,level);finish({status:'loaded',stableId:id,reason:null});}
+      else {onError(id,offered.refusal);finish({status:offered.refusal==='STALE_REVISION'?'stale':'failed',stableId:id,reason:offered.refusal});}
+    }).catch(error=>{
+      if(!request.cancelled && !disposed && previous.get(id)===entry) {
+        request.failure=error instanceof Error?error.message:'Asset loading failed';onError(id,request.failure);
+        finish({status:'failed',stableId:id,reason:request.failure});
+      }else finish({status:'stale',stableId:id,reason:'Accepted representation changed.'});
+    });
+    return ()=>{request.cancelled=true;finish({status:'stale',stableId:id,reason:'Request cancelled.'});};
+  };
+  const assetRetryState:StageBuild['assetRetryState']=(id)=>{
+    const entry=previous.get(id),view=registry.view(id),request=requests.get(id);
+    if(disposed||!entry||entry.form.kind!=='asset'||!view||suspended.has(id))return {status:'unavailable',reason:null};
+    const attempted=retryAttempts.get(id);
+    if(attempted?.key===entryKey(entry))return attempted.state;
+    if(view.contentHash===null&&request?.entry===entry&&!request.cancelled&&request.failure)return {status:'available',reason:request.failure};
+    return {status:'unavailable',reason:null};
+  };
   return {
+    assetRetryState,
+    async retryAsset(id,onError){
+      const state=assetRetryState(id),entry=previous.get(id),failed=requests.get(id);
+      if(state.status!=='available'||!entry||!failed)return {status:state.status==='unavailable'?'unavailable':'exhausted',stableId:id,reason:state.reason};
+      const attempt={key:entryKey(entry),state:{status:'running',reason:null} as AssetRetryState};retryAttempts.set(id,attempt);
+      // Explicit retry alone evicts the failed deduplication token; normal LOD
+      // checks must not create an automatic retry loop after transport failure.
+      cancelRequest(id);requests.delete(id);
+      requestAssetLod(id,failed.level,onError);
+      const request=requests.get(id);
+      const result:AssetRetryResult=request?await request.done:{status:'unavailable',stableId:id,reason:'Accepted asset unavailable.'};
+      if(retryAttempts.get(id)===attempt)attempt.state={status:result.status==='loaded'?'succeeded':'exhausted',reason:result.reason};
+      return result;
+    },
+    suspendAsset(id) {
+      const entry=previous.get(id),view=registry.view(id);
+      if(!entry||entry.form.kind!=='asset'||entry.slot.importance>=3||entry.slot.role==='hero'||!view||suspended.has(id))return false;
+      cancelRequest(id);requests.delete(id);
+      const rough=buildRough(entry,activePalette??palette);
+      const position=view.group.position.clone(),quaternion=view.group.quaternion.clone(),scale=view.group.scale.clone();
+      registry.replaceRough(entry.slot,rough.object);
+      view.group.position.copy(position);view.group.quaternion.copy(quaternion);view.group.scale.copy(scale);
+      rungs.set(id,'semantic-clay');triangles.set(id,rough.triangles);assetLevels.delete(id);suspended.add(id);streamStats.evictions++;
+      return true;
+    },
+    suspended,streamStats,
+    loadAssets(onError) {
+      const cancel: (()=>void)[]=[];
+      for (const entry of previous.values()) {
+        if (entry.form.kind !== 'asset') continue;
+        if(suspended.has(entry.slot.stableId))continue;
+        cancel.push(requestAssetLod(entry.slot.stableId,entry.form.level,onError));
+      }
+      return () => {cancel.forEach(stop=>stop());};
+    },
+    requestAssetLod,
+    assetLevels,
     reconcile,
     registry,
     get views() { return registry.slots; },
@@ -502,6 +652,8 @@ export function buildStage(world: ProxyWorld, palette: Palette): StageBuild {
     get sceneryCost() { return sceneryCost; },
     socketWorld: (stableId, name) => registry.socketWorld(stableId, name),
     dispose: () => {
+      disposed = true;
+      for(const id of requests.keys())cancelRequest(id);
       registry.dispose();
       if (scenery !== null) scenery.removeFromParent();
       disposeScenery(); previous.clear();
@@ -515,7 +667,7 @@ function sameProxySlot(a: ProxySlot, b: ProxySlot): boolean {
   if (canonical(a.slot) !== canonical(b.slot) || a.form.kind !== b.form.kind) return false;
   if (a.form.kind === 'mesh' && b.form.kind === 'mesh') {
     const left = a.form.mesh, right = b.form.mesh;
-    return a.form.resolution === b.form.resolution && left.shapeId === right.shapeId &&
+    return canonical(a.form.repeat??null)===canonical(b.form.repeat??null) && a.form.resolution === b.form.resolution && left.shapeId === right.shapeId &&
       canonical(left.bounds) === canonical(right.bounds) && left.vertexCount === right.vertexCount && left.triangleCount === right.triangleCount &&
       (['positions', 'normals', 'indices'] as const).every(key => left[key].length === right[key].length &&
         left[key].every((value, index) => value === right[key][index]));
@@ -537,10 +689,24 @@ function sameProxySlot(a: ProxySlot, b: ProxySlot): boolean {
  * porovnávalo mesh sám se sebou.
  */
 export interface DetailUpgrade {
+  readonly repeat?: RepeatInstances;
   readonly stableId: string;
   readonly contentHash: string;
   readonly level: DetailLevel;
   readonly mesh: MeshResult;
+}
+
+/** Validate unit geometry and the exact original-program instance plan before GPU allocation. */
+export function admitDetailUpgrade(entry:ProxySlot,upgrade:DetailUpgrade) {
+  const preserve=entry.form.kind==='mesh'&&!!entry.form.repeat;
+  const plan=entry.detailProgram?planRootRepeat(entry.detailProgram,MESH_DETAIL[upgrade.level].resolution,preserve):null;
+  if((preserve&&!upgrade.repeat)||(upgrade.repeat&&(plan?.kind!=='repeat-instanced'||canonical(plan.instances)!==canonical(upgrade.repeat))))
+    return {ok:false as const,rejection:'REPEAT_PLAN_MISMATCH'};
+  const verdict=admitMesh(upgrade.mesh,{bounds:upgrade.repeat?.unitBounds??entry.slot.localBounds,level:upgrade.level});
+  if(!verdict.ok)return verdict;
+  const triangles=upgrade.mesh.triangleCount*(upgrade.repeat?.offsets.length??1);
+  if(triangles>MESH_DETAIL[upgrade.level].maxTriangles)return {ok:false as const,rejection:'TRIANGLE_BUDGET'};
+  return {ok:true as const,triangles,bounds:upgrade.repeat?repeatedBounds(verdict.bounds,upgrade.repeat):verdict.bounds};
 }
 
 interface Reveal {
@@ -550,6 +716,8 @@ interface Reveal {
 }
 
 export interface WorldstreamStageProps {
+  readonly cutaway?:boolean;
+  readonly adaptiveAssets?: boolean;
   readonly runtimeState?: RuntimeSnapshot | null;
   readonly world: ProxyWorld;
   /** Called after this world's first completed renderer pass, not GPU scanout. */
@@ -595,6 +763,8 @@ export interface WorldstreamStageProps {
 export default function WorldstreamStage({
   world,
   runtimeState = null,
+  adaptiveAssets = runtimeState !== null,
+  cutaway = true,
   palette = PALETTES.harbor,
   upgrade = null,
   selected = null,
@@ -603,6 +773,13 @@ export default function WorldstreamStage({
   labelAnchor,
 }: WorldstreamStageProps): React.ReactElement {
   const [build] = useState(() => buildStage(world, palette));
+  useFrame(() => {
+    if (!runtimeState) return;
+    for (const { slot } of build.slots) {
+      const view = build.views.find(entry => entry.stableId === slot.stableId);
+      if (view) applyRuntimeAppearance(view.group, slot, runtimeState);
+    }
+  });
   const reconciled = useRef({ world, palette });
   const [, setBuildRevision] = useState(0);
   useLayoutEffect(() => {
@@ -617,8 +794,9 @@ export default function WorldstreamStage({
   useLayoutEffect(() => {
     if (runtimeState === null) return;
     for (const entity of runtimeState.entities) {
-      const view = build.views.find((candidate) => candidate.stableId === entity.stableId);
-      const slot = build.slots.find((candidate) => candidate.slot.stableId === entity.stableId)?.slot;
+      const slot = build.slots.find(({ slot }) =>
+        (slot.binding ? slot.binding.entityId : slot.stableId) === entity.stableId)?.slot;
+      const view = build.views.find((candidate) => candidate.stableId === slot?.stableId);
       if (!view || !slot) continue;
       const origin = slot.transform.translation;
       view.group.position.set(origin[0] + entity.dx * CELL_SIZE, origin[1], origin[2] + entity.dy * CELL_SIZE);
@@ -629,6 +807,11 @@ export default function WorldstreamStage({
   const frames = useRef(0);
   const commits = useRef(0);
   const failures = useRef(new Map<string, string>());
+  const detailResolutions=useRef(new Map<string,{hash:string;resolution:number}>());
+  useEffect(() => build.loadAssets((id, reason) => {
+    if (reason === null) failures.current.delete(id);
+    else failures.current.set(id, reason);
+  }), [build, world, palette]);
   /**
    * Slot, jehož odhalení běží a ještě se neuzavřelo. Jedna hodnota, kterou vidí
    * i `finishReveal` — bez ní by se commit dal spustit dvakrát, viz tam.
@@ -640,7 +823,42 @@ export default function WorldstreamStage({
   const camera = useThree((state) => state.camera);
   const scene = useThree((state) => state.scene);
   const gl = useThree((state) => state.gl);
+  const profiler=useMemo(()=>createRenderProfiler(gl),[gl]);
+  useEffect(()=>()=>profiler.dispose(),[profiler]);
   const size = useThree((state) => state.size);
+  const [cutawayController]=useState(createCutawayController);
+  const cutawayPlan=useMemo(()=>planCutaway(world),[world]);
+  useLayoutEffect(()=>{
+    const previous=gl.localClippingEnabled;gl.localClippingEnabled=true;
+    return ()=>{cutawayController.dispose();gl.localClippingEnabled=previous;};
+  },[gl,cutawayController]);
+  useFrame(()=>{
+    const ids=cutaway&&cutawayPlan?new Set(cutawayPlan.architectureIds):new Set<string>();
+    cutawayController.update(build.views.filter(view=>ids.has(view.stableId)).map(view=>view.group),cutaway&&cutawayPlan?cutawayPlan.height:null);
+  });
+  const lastLodCheck = useRef(-Infinity);
+  const [zones]=useState(createZoneTracker);
+  useEffect(()=>{
+    if(adaptiveAssets)return;
+    for(const entry of build.slots)if(entry.form.kind==='asset'&&build.suspended.has(entry.slot.stableId))
+      build.requestAssetLod(entry.slot.stableId,entry.form.level,(id,reason)=>{if(reason===null)failures.current.delete(id);else failures.current.set(id,reason);});
+  },[adaptiveAssets,build]);
+  useFrame(({clock})=>{
+    if(!adaptiveAssets || clock.elapsedTime-lastLodCheck.current<ZONE_STREAM_POLICY.intervalSeconds) return;
+    lastLodCheck.current=clock.elapsedTime;
+    zones.prune(new Set(build.slots.map(entry=>entry.slot.stableId)));
+    for(const entry of build.slots) {
+      if(entry.form.kind!=='asset') continue;
+      const view=build.registry.view(entry.slot.stableId),resolved=WORLDSTREAM_ASSETS.resolve(entry.form.reference);
+      if(!view || !resolved.ok) continue;
+      const projection=projectedExtent(entry.slot.localBounds,view.group,camera,size.width,size.height);
+      const decision=zones.decide({id:entry.slot.stableId,importance:entry.slot.role==='hero'?3:entry.slot.importance,distance:projection.box.distanceToPoint(camera.position),inFrame:projection.inFrame,suspended:build.suspended.has(entry.slot.stableId),now:clock.elapsedTime});
+      if(decision==='suspend')build.suspendAsset(entry.slot.stableId);
+      if(decision!=='resume'&&build.suspended.has(entry.slot.stableId))continue;
+      const level=selectAssetLod(resolved.asset.lods,projection.screenPixels,entry.slot.importance,build.assetLevels.get(entry.slot.stableId)??null);
+      build.requestAssetLod(entry.slot.stableId,level,(id,reason)=>{if(reason===null)failures.current.delete(id);else failures.current.set(id,reason);});
+    }
+  });
   const presentation = useRef({ world, onPresented });
   const presented = useRef(new WeakSet<ProxyWorld>());
   const pendingPresentation = useRef<{ world: ProxyWorld; frame: number; rendererFrame: number } | null>(null);
@@ -744,7 +962,8 @@ export default function WorldstreamStage({
       // protne, a poslední (nejvzdálenější) by přepsala tu, na kterou porotce
       // ukázal.
       event.stopPropagation();
-      onSelect?.(slotIdOfNode(event.object));
+      const hit=event.intersections.find(visibleIntersection);
+      onSelect?.(hit?slotIdOfNode(hit.object):null);
     },
     [onSelect],
   );
@@ -779,10 +998,7 @@ export default function WorldstreamStage({
     // **Brána první, uzel až potom.** Kdyby se mesh nejdřív zabalil do `Mesh`
     // a teprve pak soudil, drží odmítnutý artefakt geometrii na GPU po celou
     // dobu, než ho někdo odloží — a odmítnutých je na failure cestách většina.
-    const verdict = admitMesh(upgrade.mesh, {
-      bounds: entry.slot.localBounds,
-      level: upgrade.level,
-    });
+    const verdict = admitDetailUpgrade(entry,upgrade);
     if (!verdict.ok) {
       failures.current.set(upgrade.stableId, verdict.rejection);
       return;
@@ -792,10 +1008,11 @@ export default function WorldstreamStage({
     // Týž odstín jako hrubá podoba (P18 T3). Bez toho by objekt při výměně
     // podoby přeskočil ze své barvy zpátky na hlínu — §13.2 chce, aby výměnu
     // přežila identita, a barva je to, podle čeho ji porotce pozná.
-    const material = clayMaterial({ color: shadeForRole(entry.slot.role, palette) });
-    const detail = new Mesh(geometry, material);
+    const material = entry.slot.surface ? surfaceMaterial(entry.slot.surface) : clayMaterial({ color: shadeForRole(entry.slot.role, palette) });
+    const detail = upgrade.repeat ? new InstancedMesh(geometry,material,upgrade.repeat.offsets.length) : new Mesh(geometry, material);
+    if(detail instanceof InstancedMesh)upgrade.repeat!.offsets.forEach((offset,index)=>detail.setMatrixAt(index,new Matrix4().makeTranslation(...offset)));
     detail.name = detailName(upgrade.stableId);
-    detail.castShadow = true;
+    detail.castShadow = !material.transparent;
     detail.receiveShadow = true;
 
     // Odmítnutého kandidáta odloží `stage()` sama, na každé ze svých cest.
@@ -812,6 +1029,7 @@ export default function WorldstreamStage({
     }
 
     failures.current.delete(upgrade.stableId);
+    detailResolutions.current.set(upgrade.stableId,{hash:upgrade.contentHash,resolution:MESH_DETAIL[upgrade.level].resolution});
     pending.current = upgrade.stableId;
     const plan = createRevealPlan();
     lastReveal.current = {
@@ -889,7 +1107,18 @@ export default function WorldstreamStage({
       return found;
     };
 
-    window.__worldstreamStage = {
+    const probe:StageProbe = {
+      retryAsset:(id)=>build.retryAsset(id,(stableId,reason)=>{if(reason===null)failures.current.delete(stableId);else failures.current.set(stableId,reason);}),
+      measureRender:profiler.measure,
+      streaming:()=>({suspended:[...build.suspended],...build.streamStats,cacheEntries:assetCache.size,cameraZone:zoneKey(camera.position.toArray())}),
+      assetLoads:()=>assetLoader.timings?.()??[],
+      cutaway:()=>({requested:cutaway,active:cutaway&&cutawayPlan!==null,height:cutaway&&cutawayPlan?cutawayPlan.height:null,architectureIds:cutawayPlan?.architectureIds??[]}),
+      visibility: () => build.slots.flatMap(entry=>{
+        const view=build.registry.view(entry.slot.stableId);
+        if(!view) return [];
+        const loaded=entry.form.kind==='asset'?view.contentHash!==null:view.attached!==null;
+        return [observeVisibility(entry.slot.stableId,entry.slot.localBounds,view.group,loaded,camera,scene,size.width,size.height)];
+      }),
       ready: () => build.views.length > 0,
       frames: () => frames.current,
       builds: () => stageBuilds,
@@ -951,11 +1180,24 @@ export default function WorldstreamStage({
           // **Živě z registry, ne ze snímku `views`.** Ten se pořídil při
           // stavbě a o `stage()` ani `commit()` nikdy neuslyší.
           const view = build.registry.view(stableId);
+          const upgradedDetail=detailResolutions.current.get(stableId);
+          const actualDetailResolution=upgradedDetail?.hash===view?.contentHash?upgradedDetail?.resolution:undefined;
           const form = formName(stableId);
           const detail = detailName(stableId);
           const group = groupNamed(slotGroupName(stableId));
+          const assetNodes: string[] = [];
+          const assetMaterials = new Map<string, { name: string; transparent: boolean; roughness: number; metalness: number }>();
+          if (entry.form.kind === 'asset' && view?.contentHash) view.attached?.traverse(node => {
+            assetNodes.push(node.name);
+            if (!(node instanceof Mesh)) return;
+            for (const material of Array.isArray(node.material) ? node.material : [node.material])
+              assetMaterials.set(material.uuid, { name: material.name, transparent: material.transparent,
+                roughness: material.roughness, metalness: material.metalness });
+          });
           return {
+            ...(entry.form.kind === 'asset' ? { asset: { nodes: assetNodes, materials: [...assetMaterials.values()] } } : {}),
             stableId,
+            assetRetry:build.assetRetryState(stableId),
             objectId: view?.group.uuid ?? null,
             representationId: view?.attached?.uuid ?? null,
             rung: build.rungs.get(stableId)!,
@@ -965,11 +1207,16 @@ export default function WorldstreamStage({
             staged: view?.staged != null,
             contentHash: view?.contentHash ?? null,
             failure: failures.current.get(stableId) ?? null,
+            detailAssessment:entry.detailProgram&&(actualDetailResolution!==undefined||entry.form.kind==='mesh')
+              ?assessShapeDetail(entry.detailProgram,actualDetailResolution??(entry.form.kind==='mesh'?entry.form.resolution:32)):null,
+            samplingAction:entry.form.kind==='mesh'?entry.form.samplingAction??null:null,
+            internalInstances:entry.form.kind==='mesh'?entry.form.repeat?.offsets.length??1:1,
             attached: view?.attached != null,
             triangles: trianglesUnder(group),
             transform: group === null ? transform : {
               scale: [group.scale.x, group.scale.y, group.scale.z],
               translation: [group.position.x, group.position.y, group.position.z],
+              ...(group.rotation.y===0?{}:{rotationY:group.rotation.y}),
             },
             anchors,
             // Kotva slotu je socket obalu, takže `socketWorld` ho vždycky najde
@@ -981,10 +1228,16 @@ export default function WorldstreamStage({
           };
         }),
     };
+    window.__worldstreamStage=probe;
+    gl.domElement.__worldstreamStage=probe;
+    const canvasKey=gl.domElement.dataset.worldstreamStageId??(gl.domElement.dataset.worldstreamStageId=crypto.randomUUID());
+    (window.__worldstreamStages??={})[canvasKey]=probe;
     return () => {
-      delete window.__worldstreamStage;
+      if(window.__worldstreamStage===probe)delete window.__worldstreamStage;
+      if(gl.domElement.__worldstreamStage===probe)delete gl.domElement.__worldstreamStage;
+      if(window.__worldstreamStages?.[canvasKey]===probe)delete window.__worldstreamStages[canvasKey];
     };
-  }, [build, root, reveal, camera, gl, scene, toScreen, world]);
+  }, [build, root, reveal, camera, gl, scene, toScreen, world,cutaway,cutawayPlan,profiler]);
 
   return (
     <group ref={setRoot} name="worldstream:stage" onClick={pick} onPointerMissed={miss}>

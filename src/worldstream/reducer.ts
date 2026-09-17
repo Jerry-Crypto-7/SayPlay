@@ -49,6 +49,8 @@
  */
 
 import { meshResolution } from './cache';
+import { visualPreviewSchema, type VisualPreview } from './schema';
+import { readSceneSpec, type SceneSpec } from '@/scene/spec';
 import type { MeshFailure, MeshResolution } from './cache';
 import type { SessionEvent, SessionEventType } from './events';
 import type { RepresentationRung, SessionPhase } from './session';
@@ -87,6 +89,7 @@ export interface ClientState {
   readonly shapes: readonly ShapeView[];
   /** Autoritativní blueprint. Přijde rámcem `blueprint.ready` i snapshotem. */
   readonly blueprint: unknown | null;
+  readonly visualPreview?: VisualPreview | null;
   /**
    * Co planner z věty přečetl, jakmile to ví — **dřív než blueprint**.
    *
@@ -103,6 +106,7 @@ export interface ClientState {
    * Seznamy jsou vždycky pole — chybějící seznam je prázdný, viz `stringList`.
    */
   readonly intent: {
+    readonly sceneSpec?: SceneSpec;
     readonly setting: string;
     readonly spatialThesis: string;
     readonly heroObjects: readonly string[];
@@ -119,6 +123,7 @@ export function initialClientState(): ClientState {
     sequence: 0,
     shapes: [],
     blueprint: null,
+    visualPreview: null,
     intent: null,
     fault: null,
   };
@@ -281,6 +286,8 @@ function apply(state: ClientState, event: SessionEvent): ClientState {
   const phase = PHASE_OF[event.type];
   const fields = record(event.payload);
   const stableId = text(fields.stableId);
+  const preview = event.type === 'visual.preview' && state.phase === 'intent' && state.blueprint === null
+    ? visualPreviewSchema.safeParse(fields.preview) : null;
 
   const shapes =
     stableId === null
@@ -300,6 +307,7 @@ function apply(state: ClientState, event: SessionEvent): ClientState {
     sequence: Math.max(state.sequence, event.sequence),
     shapes,
     blueprint: event.type === 'blueprint.ready' ? (fields.blueprint ?? null) : state.blueprint,
+    visualPreview: event.type === 'blueprint.ready' ? null : preview?.success ? preview.data : state.visualPreview ?? null,
     intent: event.type === 'intent.ready' ? intentOf(fields) : state.intent,
     fault: event.type === 'session.failed' ? (text(fields.reason) ?? 'the session failed') : state.fault,
   };
@@ -318,6 +326,7 @@ function apply(state: ClientState, event: SessionEvent): ClientState {
 function intentOf(fields: Record<string, unknown>): ClientState['intent'] {
   const setting = text(fields.setting);
   const spatialThesis = text(fields.spatialThesis);
+  const spec = fields.sceneSpec === undefined ? null : readSceneSpec(fields.sceneSpec);
   return setting === null || spatialThesis === null
     ? null
     : {
@@ -325,6 +334,7 @@ function intentOf(fields: Record<string, unknown>): ClientState['intent'] {
         spatialThesis,
         heroObjects: stringList(fields.heroObjects),
         unsupported: stringList(fields.unsupported),
+        ...(spec && typeof spec !== 'string' ? { sceneSpec: spec } : {}),
       };
 }
 
@@ -366,6 +376,7 @@ export interface ClientSnapshot {
     readonly state: { readonly kind: string; readonly [key: string]: unknown };
   }[];
   readonly blueprint?: unknown;
+  readonly visualPreview?: unknown;
   readonly fault?: string | null;
 }
 
@@ -424,6 +435,8 @@ export function applySnapshot(state: ClientState, snapshot: ClientSnapshot): Cli
     sequence: snapshot.sequence,
     shapes,
     blueprint: snapshot.blueprint ?? state.blueprint,
+    visualPreview: (snapshot.blueprint ?? state.blueprint) !== null ? null
+      : Object.hasOwn(snapshot, 'visualPreview') ? (visualPreviewSchema.safeParse(snapshot.visualPreview).data ?? null) : state.visualPreview ?? null,
     intent: state.intent,
     fault: snapshot.fault ?? state.fault,
   };

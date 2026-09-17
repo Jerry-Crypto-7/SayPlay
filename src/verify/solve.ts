@@ -170,56 +170,91 @@ function replay(world: VerifiableWorld, trace: readonly TraceInput[], untilTick:
  * vlastním důvodem.
  */
 export function solveWitness(world: VerifiableWorld, options: SolveOptions): SolveResult | null {
+  return solveWitnessDetailed(world, options).result;
+}
+
+export interface SolveDiagnostic {
+  readonly status: 'solved' | 'search-exhausted' | 'budget-exhausted' | 'ineligible';
+  readonly result: SolveResult | null;
+  readonly nodes: number;
+  /** Replay ticks, including the independent certification replay of a winning trace. */
+  readonly ticks: number;
+}
+
+/** Bounded search failure is not a proof that the world is unwinnable. */
+export function solveWitnessDetailed(world: VerifiableWorld, options: SolveOptions): SolveDiagnostic {
+  let nodes = 0, ticks = 0;
+  let capped = false;
+  const done = (status: SolveDiagnostic['status'], result: SolveResult | null = null): SolveDiagnostic => ({status,result,nodes,ticks});
   // Táž politika, jakou si vezme verifikátor — ne vlastní. Kdyby si hledač
   // horizont počítal sám, uměl by najít stopu, kterou pak verifikátor odmítne
   // jako `NO_FIT`, a rozdíl by se projevil až u porotce.
   const policy = resolvePolicy(world.certification ?? DEFAULT_REQUEST);
-  if (policy === null) return null;
+  if (policy === null) return done('ineligible');
 
   const actor = actorOf(world);
-  if (actor === null) return null;
+  if (actor === null) return done('ineligible');
 
   const alphabet = inputAlphabet(world, actor);
-  if (alphabet.length === 0) return null;
+  if (alphabet.length === 0) return done('ineligible');
 
   // Svět, který vyhraje sám, se nedokazuje — hledač by mu vydal certifikát za
   // to, že hráč není potřeba. Laťka se tím nesmí snížit: takový svět zůstane
   // odmítnutý svým vlastním důvodem, přesně jako doteď.
-  const alone = replay(world, [], policy.maxHorizonTicks);
-  if (alone.runState === 'won') return null;
+  const alone = replay(world, [], Math.min(policy.maxHorizonTicks, Math.max(0, options.maxTicks) - 1));
+  ticks += alone.tick;
+  if (alone.runState === 'won') return done('ineligible');
+  if (ticks >= options.maxTicks) return done('budget-exhausted');
 
   const depthCap = Math.min(options.maxDepth, policy.maxInputs);
   const settle = Math.max(1, options.settleTicks);
+  const actions = alphabet.filter(move => move.actionId !== 'moveTo');
+  const navigation = alphabet.filter(move => move.actionId === 'moveTo');
 
-  let nodes = 0;
-  let ticks = alone.tick;
+  // Reserve within the existing total, never reset the budget after the coarse BFS.
+  // Existing successful ordering remains unchanged within this primary allocation.
+  const reserve = actions.length > 0 && depthCap > 0 ? Math.floor(options.maxTicks / 4) : 0;
+  const primaryTicks = Math.max(ticks, options.maxTicks - reserve);
+  const input = (move: InputMove, tick: number): TraceInput => move.target === undefined
+    ? {tick,actor,actionId:move.actionId} : {tick,actor,actionId:move.actionId,target:move.target};
+  const attempt = (candidate: readonly TraceInput[], until: number, limit: number): Replay | null => {
+    if (nodes >= options.maxNodes || ticks >= limit) { capped = true; return null; }
+    nodes += 1;
+    const last = Math.min(until, policy.maxHorizonTicks - 1, limit - ticks - 1);
+    const outcome = replay(world, candidate, last);
+    ticks += outcome.tick;
+    if (outcome.runState === 'running' && last < Math.min(until, policy.maxHorizonTicks - 1)) capped = true;
+    return outcome;
+  };
+  const certify = (candidate: readonly TraceInput[], outcome: Replay): SolveDiagnostic | null => {
+    if (outcome.runState !== 'won') return null;
+    // The verifier follows the same deterministic trace and cannot run beyond
+    // its observed win tick. Charge that replay too, before executing it.
+    if (ticks + outcome.tick > options.maxTicks) return done('budget-exhausted');
+    ticks += outcome.tick;
+    const verdict = verifyWitness({...world,trace:candidate},candidate);
+    return verdict.verdict === 'CERTIFIED' ? done('solved',{ops:candidate,nodes,wonAtTick:outcome.tick}) : null;
+  };
   let frontier: (readonly TraceInput[])[] = [[]];
   const seen = new Set<string>();
 
-  for (let depth = 0; depth < depthCap; depth += 1) {
+  primary: for (let depth = 0; depth < depthCap; depth += 1) {
     const next: (readonly TraceInput[])[] = [];
     for (const trace of frontier) {
       const tick = trace.length * settle;
       if (tick >= policy.maxHorizonTicks) continue;
 
       for (const move of alphabet) {
-        if (nodes >= options.maxNodes || ticks >= options.maxTicks) return null;
-        const input: TraceInput =
-          move.target === undefined
-            ? { tick, actor, actionId: move.actionId }
-            : { tick, actor, actionId: move.actionId, target: move.target };
-        const candidate = [...trace, input];
-
-        nodes += 1;
-        const outcome = replay(world, candidate, tick + settle);
-        ticks += outcome.tick;
+        const candidate = [...trace, input(move,tick)];
+        const outcome = attempt(candidate,tick+settle,primaryTicks);
+        if (!outcome) break primary;
 
         if (outcome.runState === 'won') {
           // Ověřuje se TÍMTÉŽ verifikátorem, jaký soudí stopu od modelu. Hledač
           // si nesmí vydat vlastní certifikát — pak by existovaly dvě definice
           // toho, co je dohratelné, a rozešly by se.
-          const verdict = verifyWitness({ ...world, trace: candidate }, candidate);
-          if (verdict.verdict === 'CERTIFIED') return { ops: candidate, nodes, wonAtTick: outcome.tick };
+          const result = certify(candidate,outcome);
+          if (result) return result;
           continue;
         }
         if (outcome.runState !== 'running') continue;
@@ -235,5 +270,30 @@ export function solveWitness(world: VerifiableWorld, options: SolveOptions): Sol
     frontier = next;
   }
 
-  return null;
+  // Temporal fallback: no invented effects or model witness. Navigation is still
+  // the same input alphabet; only the time of a real player action changes.
+  // Interleave waiting actions and fine movement/action pairs, so neither family
+  // can consume the reserved budget before the other receives any exploration.
+  for (let slot = 0; slot < policy.maxHorizonTicks; slot += 1) {
+    const delayedTick = slot * settle;
+    if (delayedTick >= policy.maxHorizonTicks && slot >= settle) break;
+    for (const action of actions) {
+      if (depthCap >= 1 && delayedTick < policy.maxHorizonTicks) {
+        const candidate = [input(action,delayedTick)];
+        const outcome = attempt(candidate,delayedTick+settle,options.maxTicks);
+        if (!outcome) return done('budget-exhausted');
+        const result = certify(candidate,outcome);
+        if (result) return result;
+      }
+      if (depthCap < 2 || slot === 0 || slot >= settle) continue;
+      for (const move of navigation) {
+        const candidate = [input(move,0),input(action,slot)];
+        const outcome = attempt(candidate,slot+settle,options.maxTicks);
+        if (!outcome) return done('budget-exhausted');
+        const result = certify(candidate,outcome);
+        if (result) return result;
+      }
+    }
+  }
+  return done(capped ? 'budget-exhausted' : 'search-exhausted');
 }

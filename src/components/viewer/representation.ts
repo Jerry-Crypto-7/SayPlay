@@ -258,6 +258,7 @@ export function createRepresentationRegistry(): RepresentationRegistry {
       group.name = slotGroupName(slot.stableId);
       group.scale.set(...slot.transform.scale);
       group.position.set(...slot.transform.translation);
+      group.rotation.y=slot.transform.rotationY??0;
 
       const sockets = new Map<string, Object3D>();
       for (const anchor of slot.anchors) {
@@ -305,6 +306,7 @@ export function createRepresentationRegistry(): RepresentationRegistry {
       if (rough) entry.group.add(rough);
       if (slot.transform.scale.some((value, index) => value !== old.transform.scale[index])) entry.group.scale.set(...slot.transform.scale);
       if (slot.transform.translation.some((value, index) => value !== old.transform.translation[index])) entry.group.position.set(...slot.transform.translation);
+      if (slot.transform.rotationY!==old.transform.rotationY) entry.group.rotation.y=slot.transform.rotationY??0;
       for (const [name, socket] of entry.sockets) if (!slot.anchors.some(anchor => anchor.name === name)) {
         socket.removeFromParent(); entry.sockets.delete(name);
       }

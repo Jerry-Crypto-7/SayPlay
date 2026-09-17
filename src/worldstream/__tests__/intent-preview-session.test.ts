@@ -1,0 +1,35 @@
+import {afterEach,expect,it,vi} from 'vitest';
+import {PLAN,ANSWER,grammar} from '@/app/api/worldstream/__tests__/world-fixture';
+import {clearSessions,openSession,runGeneration} from '../sessions';
+import {GET} from '@/app/api/worldstream/sessions/[sessionId]/route';
+import type {PlannerEmission} from '@/model/worldstream-intent';
+afterEach(clearSessions);
+function ownPlan():PlannerEmission {
+  const provenance={kind:'inferred' as const,reason:'Explicit regression fixture'};
+  return {...structuredClone(PLAN),sceneSpec:{version:1,clarifications:[],relations:[],
+    requirements:PLAN.objects.map(o=>({id:o.stableId,description:o.label,priority:'main',polarity:'required',count:1,instanceIds:[o.stableId],provenance})),
+    instances:PLAN.objects.map(o=>({stableId:o.stableId,requirementIds:[o.stableId],role:o.role,provenance,attributes:[],orientation:{description:'upright',provenance}}))}};
+}
+it('publishes own validated layout before the compiler returns, reconnects without runtime, and replaces only on acceptance',async()=>{
+  const stored=openSession('early-layout-session',4021)!;let calls=0,finish!:(value:unknown)=>void;
+  const pending=runGeneration(stored,PLAN.intent.setting,{grammar:grammar(),emit:async()=>{
+    calls++;return calls===1?ownPlan():new Promise(resolve=>{finish=resolve;});
+  }});
+  await vi.waitFor(()=>expect(stored.visualPreview?.stage).toBe('intent-layout'));
+  expect(calls).toBe(2);expect(stored.blueprint).toBeNull();expect(stored.sharedWorld).toBeNull();
+  const events=stored.session.events.all();
+  expect(events.findIndex(e=>e.type==='intent.ready')).toBeLessThan(events.findIndex(e=>e.type==='visual.preview'));
+  expect(events.some(e=>e.type==='world.ready'||e.type==='blueprint.ready')).toBe(false);
+  const response=await GET(new Request('http://localhost'),{params:Promise.resolve({sessionId:'early-layout-session'})});
+  const snapshot=await response.json();expect(snapshot.blueprint).toBeNull();
+  expect(snapshot.visualPreview).toMatchObject({interactive:false,stage:'intent-layout'});
+  finish(ANSWER);await pending;
+  expect(stored.session.phase).toBe('world');expect(stored.visualPreview).toBeNull();expect(stored.blueprint).not.toBeNull();
+});
+it('unsupported early relations skip the optional layout and still request real compilation',async()=>{
+  const plan=ownPlan();plan.sceneSpec!.relations.push({subjectId:'ironMast',targetId:'saltFlat',relation:'against',provenance:{kind:'inferred',reason:'Explicit unsupported early relation'}});
+  const stored=openSession('early-layout-unsupported',4021)!;let calls=0;
+  await runGeneration(stored,PLAN.intent.setting,{grammar:grammar(),emit:async()=>++calls===1?plan:{geometry:'invalid'}});
+  expect(calls).toBeGreaterThan(1);expect(stored.visualPreview).toBeUndefined();expect(stored.blueprint).toBeNull();
+  expect(stored.session.events.all().some(e=>e.type==='visual.preview')).toBe(false);
+});

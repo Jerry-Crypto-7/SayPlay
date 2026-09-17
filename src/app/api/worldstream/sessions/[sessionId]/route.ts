@@ -1,3 +1,5 @@
+import {withSessionStorageResponse} from '@/server/session-persistence';
+import {assertSessionStorageReady} from '@/worldstream/sessions';
 /**
  * `GET /api/worldstream/sessions/:id` — autoritativní snapshot (P13 T16, §21).
  *
@@ -17,7 +19,7 @@ import { getSession } from '../../../../../worldstream/sessions';
 
 export const runtime = 'nodejs';
 
-export async function GET(
+async function handleDurableGET(
   _request: Request,
   context: { params: Promise<{ sessionId: string }> },
 ): Promise<Response> {
@@ -56,7 +58,10 @@ export async function GET(
       sequence: snapshot.sequence,
       representations: snapshot.representations,
       blueprint: stored.blueprint,
+      visualPreview: stored.visualPreview ?? null,
       fault: stored.fault,
+      generationMetrics: stored.generationMetrics?.snapshot() ?? null,
+      recovery:stored.recovery??null,
       // Adresa hotového světa, nebo `null`. Je to jediné místo, kde se adresa
       // dozví prohlížeč té relace — a tím i jediný člověk, který ji smí předat
       // dál. Bez toho by sdílené světy měly adresu, kterou nikdo nezná.
@@ -65,4 +70,8 @@ export async function GET(
     },
     { headers: { 'cache-control': 'no-store' } },
   );
+}
+
+export async function GET(...args:Parameters<typeof handleDurableGET>):Promise<Response> {
+  return withSessionStorageResponse(async()=>{assertSessionStorageReady();return handleDurableGET(...args);});
 }

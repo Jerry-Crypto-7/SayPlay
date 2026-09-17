@@ -1,3 +1,6 @@
+import {withSessionStorageResponse} from '@/server/session-persistence';
+import {assertSessionStorageReady} from '@/worldstream/sessions';
+import {ownerIdentityRejection} from '@/server/owner-identity';
 import { observePhaseAsync } from '@/model/phase-observer';
 import { withServerMetrics, serverPhaseObserver, currentServerMetrics, reportServerMetrics } from '@/server/worldstream-metrics';
 /**
@@ -345,7 +348,7 @@ function readPrompt(text: string): PromptRead | { readonly ok: false; readonly c
   return { ok: true, prompt: (body as { prompt?: unknown }).prompt, live: live === true };
 }
 
-export async function POST(request: Request): Promise<Response> {
+async function handleDurablePOST(request: Request): Promise<Response> {
   const requestId = randomUUID();
 
   return withRequest(requestId, () => withServerMetrics(requestId, 'prompt', async () => {
@@ -371,6 +374,8 @@ export async function POST(request: Request): Promise<Response> {
     // Strop na frekvenci, hned za vypínačem a před čtením těla. Tyhle dveře
     // stojí navíc placená volání, takže čítač souběhu níž zůstává — frekvence
     // a souběh měří dvě různé věci a jedna druhou nenahradí.
+    const identityRejection=ownerIdentityRejection(request);
+    if(identityRejection)return identityRejection;
     const slot = takeRateSlot('sessions', trustedCallerKey(request) ?? callerKey(request));
     if (!slot.allowed) {
       logRateLimited(
@@ -569,8 +574,12 @@ export async function POST(request: Request): Promise<Response> {
     // přepínač *Automatically expose System Environment Variables* zháší
     // `VERCEL` i `VERCEL_ENV` naráz, a s vypnutým přepínačem je kvóta i tam
     // vypnutá. Tvrdit „na Vercelu klíč je" bez té podmínky je nepravda.
+    // P20: explicit authenticated-proxy mode is verified above; its principal
+    // also enables this quota on a single-process host without claiming Vercel.
     const owner = trustedCallerKey(request) ?? UNIDENTIFIED_CALLER;
-    const stored = openSession(sessionId, newSessionSeed(), Date.now(), owner);
+    let stored:ReturnType<typeof openSession>;
+    try{stored=openSession(sessionId,newSessionSeed(),Date.now(),owner);}
+    catch(error){if(live)releaseSlot('world');throw error;}
     // **Nad vlastní kvótou se odmítá nováček, a slot se vrací.** Je to ten
     // další `return` mezi `acquireSlot('world')` a `work.finally`, o kterém
     // mluví komentář výš: bez `releaseSlot` by každé odmítnutí natrvalo ubralo
@@ -631,6 +640,7 @@ export async function POST(request: Request): Promise<Response> {
     // přes celý sklad znamená vydat cizí cíl.
     stored.authoredWorldId = served?.world.id ?? null;
     const metrics = currentServerMetrics();
+    stored.generationMetrics = metrics;
     metrics?.setProvenance(live ? 'live' : 'prepared');
     const finishGeneration = metrics?.observe('background-generation');
     const generationStarted = Date.now();
@@ -644,6 +654,7 @@ export async function POST(request: Request): Promise<Response> {
             stored.session.fail(stored.fault);
           })
         : runGeneration(stored, verdict.prompt, {
+            legacyPlan: served !== null,
             emit,
             grammar,
             log: (fault: SessionFault, detail: string) => {
@@ -746,4 +757,8 @@ export async function POST(request: Request): Promise<Response> {
       { status: 202 },
     );
   }));
+}
+
+export async function POST(...args:Parameters<typeof handleDurablePOST>):Promise<Response> {
+  return withSessionStorageResponse(async()=>{assertSessionStorageReady();return handleDurablePOST(...args);});
 }

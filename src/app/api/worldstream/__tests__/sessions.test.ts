@@ -868,7 +868,7 @@ describe('generace se scriptovaným emitorem', () => {
   it('projde tři fáze v pořadí a dvěma voláními modelu', async () => {
     const emitter = scripted();
     const stored = openSession('scripted-happy', 4021)!;
-    await runGeneration(stored, PLAN.intent.setting, { emit: emitter.emit, grammar: grammar() });
+    await runGeneration(stored, PLAN.intent.setting, { legacyPlan: true, emit: emitter.emit, grammar: grammar() });
 
     expect(stored.session.phase).toBe('world');
     expect(stored.fault).toBeNull();
@@ -897,7 +897,7 @@ describe('generace se scriptovaným emitorem', () => {
 
   it('model, který nedodá záměr, skončí relaci veřejnou větou', async () => {
     const stored = openSession('scripted-rejected', 4021)!;
-    await runGeneration(stored, PLAN.intent.setting, {
+    await runGeneration(stored, PLAN.intent.setting, { legacyPlan: true,
       emit: async () => ({ intent: 'a salt flat' }),
       grammar: grammar(),
     });
@@ -909,7 +909,7 @@ describe('generace se scriptovaným emitorem', () => {
 
   it('nedostupný model skončí relaci, ne nezachyceným slibem', async () => {
     const stored = openSession('scripted-unavailable', 4021)!;
-    await runGeneration(stored, PLAN.intent.setting, {
+    await runGeneration(stored, PLAN.intent.setting, { legacyPlan: true,
       emit: async () => {
         throw new Error('connect ECONNREFUSED https://provider.example/v1?key=sk-secret');
       },
@@ -955,7 +955,7 @@ describe('generace se scriptovaným emitorem', () => {
     it('odmítnutí u plánovače dá vlastní větu, ne poruchu modelu', async () => {
       const stored = openSession('scripted-cap-planner', 4021)!;
       const logged: string[] = [];
-      await runGeneration(stored, PLAN.intent.setting, {
+      await runGeneration(stored, PLAN.intent.setting, { legacyPlan: true,
         emit: async () => {
           throw refusal('STORE_UNCONFIGURED');
         },
@@ -976,7 +976,7 @@ describe('generace se scriptovaným emitorem', () => {
     it('odmítnutí u kompilátoru projde přes opravnou smyčku se stejným verdiktem', async () => {
       const stored = openSession('scripted-cap-compiler', 4021)!;
       let calls = 0;
-      await runGeneration(stored, PLAN.intent.setting, {
+      await runGeneration(stored, PLAN.intent.setting, { legacyPlan: true,
         emit: async () => {
           calls += 1;
           if (calls === 1) return { intent: PLAN.intent, objects: PLAN.objects };
@@ -993,7 +993,7 @@ describe('generace se scriptovaným emitorem', () => {
 
     it('mlčící poskytovatel zůstává poruchou modelu', async () => {
       const stored = openSession('scripted-cap-control', 4021)!;
-      await runGeneration(stored, PLAN.intent.setting, {
+      await runGeneration(stored, PLAN.intent.setting, { legacyPlan: true,
         emit: async () => {
           // Táž zpráva, jinak vyhozená. Kdyby se rozhodovalo podle textu,
           // tenhle test by spadl spolu s tím výš.
@@ -1438,6 +1438,33 @@ describe('strop na frekvenci dorazí až k zakládání relace', () => {
  * **kvóta by mlčky nedělala nic** a celá ochrana by byla dekorace. Tenhle
  * soubor je jediné místo, kde se dá pinovat, že provoz posílá skutečný klíč.
  */
+describe('explicit single-process proxy owner quota',()=>{
+  const fixtureSecret='FIXTURE_ONLY_NOT_A_REAL_SECRET_000000000000';
+  const request=(owner:string,key=fixtureSecret)=>{
+    const req=createRequest({prompt:'A calm reading room'});
+    req.headers.set('x-worldsmith-owner',owner);req.headers.set('x-worldsmith-proxy-key',key);
+    req.headers.set('x-forwarded-for','same-shared-NAT');req.headers.set('x-vercel-forwarded-for','spoofed-victim');return req;
+  };
+  beforeEach(()=>{vi.stubEnv('VERCEL',undefined);vi.stubEnv('WORLDSMITH_OWNER_IDENTITY','trusted-proxy');vi.stubEnv('WORLDSMITH_OWNER_PROXY_SECRET',fixtureSecret);});
+  afterEach(()=>vi.unstubAllEnvs());
+  it('enforces independent route quotas for three owners and rejects forged headers before session admission',async()=>{
+    resetRateWindows();
+    for(let i=0;i<QUOTA_ENGAGES_AT;i++)openSession(`proxy-filler-${i}`,i+1,Date.now(),`filler-${i}`)!.session.events.subscribe(()=>{});
+    const retained:string[]=[];
+    for(const owner of ['alice','bob','carol']) {
+      for(let i=0;i<MAX_SESSIONS_PER_CALLER;i++) {
+        const response=await createSession(request(owner));expect(response.status).toBe(202);
+        retained.push(((await response.json()) as {sessionId:string}).sessionId);
+      }
+      const denied=await createSession(request(owner));expect(denied.status).toBe(429);
+      expect((await denied.json()).error.code).toBe('TOO_MANY_SESSIONS_PER_CALLER');
+    }
+    const before=liveSessionCount();
+    for(const key of ['forged',''])expect((await createSession(request('alice',key))).status).toBe(403);
+    expect(liveSessionCount()).toBe(before);expect(retained.every(id=>getSession(id)!==null)).toBe(true);
+  });
+});
+
 describe('relaci zakládá klíč volajícího, ne anonym', () => {
   /**
    * **Tenhle blok popisuje nasazení na Vercelu, a od 5. 9. 2026 to musí říct

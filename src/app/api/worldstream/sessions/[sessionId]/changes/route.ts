@@ -1,5 +1,10 @@
+import {withSessionStorageResponse} from '@/server/session-persistence';
+import {assertSessionStorageReady} from '@/worldstream/sessions';
+import {ownerIdentityRejection} from '@/server/owner-identity';
 import { observePhase, observePhaseAsync } from '@/model/phase-observer';
 import { APPEARANCE_UNSUPPORTED, hasUnsupportedAppearance, hasUnsupportedMotion, MOTION_UNSUPPORTED, SHAPE_ONLY_MOTION_SUMMARY } from '@/server/worldstream-capabilities';
+import {routePatch} from '@/patch/router';
+import {prepareComparisonCandidate} from '@/worldstream/comparison-candidate';
 import { withServerMetrics, serverPhaseObserver, currentServerMetrics } from '@/server/worldstream-metrics';
 /**
  * `POST /api/worldstream/sessions/:id/changes` — **preview druhé věty** (P15 T22, §21).
@@ -78,6 +83,7 @@ function fail(requestId: string, status: number, code: string, message: string):
 interface ChangeRequest {
   readonly prompt: unknown;
   readonly stableId?: string;
+  readonly comparison?: boolean;
 }
 
 type BodyRead = { ok: true; value: ChangeRequest } | { ok: false; code: string; message: string };
@@ -93,7 +99,7 @@ function readChangeBody(text: string): BodyRead {
   if (body === null || typeof body !== 'object' || Array.isArray(body))
     return { ok: false, code: 'BODY_NOT_AN_OBJECT', message: 'the request body is not a JSON object' };
 
-  const extra = Object.keys(body).filter((key) => key !== 'prompt' && key !== 'stableId');
+  const extra = Object.keys(body).filter((key) => key !== 'prompt' && key !== 'stableId' && key !== 'comparison');
   if (extra.length > 0)
     return {
       ok: false,
@@ -101,14 +107,15 @@ function readChangeBody(text: string): BodyRead {
       message: `this endpoint takes a prompt and an optional stableId; it will not accept ${extra.join(', ')}`,
     };
 
-  const { prompt, stableId } = body as { prompt?: unknown; stableId?: unknown };
+  const { prompt, stableId, comparison } = body as { prompt?: unknown; stableId?: unknown; comparison?: unknown };
+  if (comparison !== undefined && typeof comparison !== 'boolean') return {ok:false,code:'INVALID_COMPARISON',message:'comparison must be a boolean'};
   if (stableId !== undefined && typeof stableId !== 'string')
     return { ok: false, code: 'INVALID_STABLE_ID', message: 'stableId must be a string' };
 
-  return { ok: true, value: { prompt, ...(stableId === undefined ? {} : { stableId }) } };
+  return { ok: true, value: { prompt, ...(comparison === undefined ? {} : { comparison }), ...(stableId === undefined ? {} : { stableId }) } };
 }
 
-export async function POST(
+async function handleDurablePOST(
   request: Request,
   context: { params: Promise<{ sessionId: string }> },
 ): Promise<Response> {
@@ -171,6 +178,8 @@ export async function createChange(
     // Strop na frekvenci, hned za vypínačem a před čtením těla. Tyhle dveře
     // stojí navíc placené volání, takže čítač souběhu níž zůstává — frekvence
     // a souběh měří dvě různé věci a jedna druhou nenahradí.
+    const identityRejection=ownerIdentityRejection(request);
+    if(identityRejection)return identityRejection;
     const slot = takeRateSlot('changes', trustedCallerKey(request) ?? callerKey(request));
     if (!slot.allowed) {
       logRateLimited(
@@ -380,6 +389,15 @@ export async function createChange(
       // reuse the old summary or silently narrow an already stored preview.
       plan = { ...plan, behavior: [], summary: SHAPE_ONLY_MOTION_SUMMARY };
     }
+    // The main UI compares every behavior edit. Validate its typed/scope contract
+    // before offering confirmation; a winning witness is not required for A4.
+    if(read.value.comparison === true && plan.behavior.length>0){
+      if(plan.shape!==null)return fail(requestId,422,'COMPARISON_REJECTED','A rule comparison cannot also replace geometry.');
+      const routed=routePatch({operations:plan.behavior},blueprint.world);
+      if(routed.verdict==='REJECTED')return fail(requestId,422,'COMPARISON_REJECTED',routed.detail);
+      const prepared=prepareComparisonCandidate(blueprint.world,routed.patches.map(p=>({part:p.part,baseRevision:blueprint.world.simRevision,operations:p.operations})));
+      if(!prepared.ok)return fail(requestId,422,'COMPARISON_REJECTED',`${prepared.reason}: ${prepared.detail}`);
+    }
     const target = grounding.target;
     const change: PendingChange = {
       changeId: randomUUID(),
@@ -425,4 +443,8 @@ export async function createChange(
       commit: `/api/worldstream/sessions/${sessionId}/changes/${change.changeId}/commit`,
     });
   }));
+}
+
+export async function POST(...args:Parameters<typeof handleDurablePOST>):Promise<Response> {
+  return withSessionStorageResponse(async()=>{assertSessionStorageReady();return handleDurablePOST(...args);});
 }

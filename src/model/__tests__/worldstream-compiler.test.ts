@@ -43,6 +43,8 @@ import { SCHEMA_NODE_KINDS, SHAPE_IDENTIFIER_PATTERN, validateShapeProgram } fro
 import { solveWitness } from '../../verify/solve';
 import { verifyWitness } from '../../verify/witness';
 import { blueprintSchema } from '../../worldstream/schema';
+import { asset } from '@/assets/__fixtures__/catalog';
+import { createAssetManifest } from '@/assets/manifest';
 import { type Grammar, type UpstreamRequest } from '../prompt';
 import {
   BLUEPRINT_EXAMPLE_MARKER,
@@ -239,10 +241,51 @@ const OWN_ANSWER: Record<string, unknown> = {
 /** Kopie fixtury s jednou změněnou částí. */
 const answerWith = (patch: Record<string, unknown>): unknown => ({ ...OWN_ANSWER, ...patch });
 
+it('compiles approved asset placements as v2 and rejects a catalog miss', () => {
+  const model = asset();
+  const assets = createAssetManifest({ version: 'worldstream-assets-v1', assets: [model] });
+  const answer = answerWith({ shapes: [], placements: OWN_PLACEMENTS.map(placement =>
+    placement.stableId !== 'tallHive' ? placement : { ...placement,
+      source: { kind: 'asset', assetId: model.assetId, version: model.version, hash: model.hash },
+      binding: { entityId: 'postGate', collider: placement.targetBounds, sockets: [], parts: [{ id: 'body', sockets: [] }] },
+    }) });
+  const result = expectOk(compileBlueprint(answer, PLAN, { sessionSeed: 4021, upstream: UPSTREAM, assets }));
+  expect(result.value.version).toBe('worldstream-v2');
+  expect(result.value.objects.find(object => object.stableId === 'tallHive')?.binding?.entityId).toBe('postGate');
+  const compact = structuredClone(answer) as {placements: {stableId:string;source:unknown}[]};
+  compact.placements.find(placement=>placement.stableId==='tallHive')!.source={kind:'asset',key:`${model.assetId}@${model.version}`};
+  expect(expectOk(compileBlueprint(compact,PLAN,{sessionSeed:4021,upstream:UPSTREAM,assets})).value).toEqual(result.value);
+  expect(compileBlueprint(compact,PLAN,{sessionSeed:4021,upstream:UPSTREAM})).toMatchObject({ok:false,reason:'WRONG_SHAPE'});
+  compact.placements.find(placement=>placement.stableId==='tallHive')!.source={kind:'asset',key:`${model.assetId}@${model.version}`,hash:'forged'};
+  expect(compileBlueprint(compact,PLAN,{sessionSeed:4021,upstream:UPSTREAM,assets})).toMatchObject({ok:false,reason:'WRONG_SHAPE'});
+  expect(compileBlueprint(answer, PLAN, { sessionSeed: 4021, upstream: UPSTREAM })).toMatchObject({ ok: false, reason: 'REFERENCE_BROKEN' });
+});
+
 function expectOk(result: CompilerResult): Extract<CompilerResult, { ok: true }> {
   if (!result.ok) throw new Error(`${result.reason}: ${result.detail}`);
   return result;
 }
+
+describe('P20 architecture is lowered through the production compiler', () => {
+  const architecture = [{stableId:'readingRoom',kind:'room',at:[0,0,0],width:8,depth:4,height:3,thickness:0.2,openings:[{wall:'south',offset:3,width:2,height:2.2}]}];
+  const plan: PlannerEmission = {...PLAN,objects:[{stableId:'readingRoom',label:'Reading room',synonyms:['room'],role:'architecture',importance:3}]};
+  const answer = {architecture,geometry:{version:GEOM_VERSION,nodes:[],root:0},shapes:[],placements:[{stableId:'readingRoom',source:{kind:'architecture'},targetBounds:{min:[-4,0,-2],max:[4,3,2]}}],world:OWN_WORLD};
+  it('compiles authored dimensions and openings without a reference-scene fallback', () => {
+    const result = expectOk(compileBlueprint(answer,plan,{sessionSeed:4021,upstream:UPSTREAM}));
+    expect(result.value.objects[0].source.kind).toBe('geom');
+    expect(result.value.geometry.nodes.filter((node) => node.kind === 'sweep')).toHaveLength(7);
+    expect(result.value.world.sim.entities).toHaveProperty('walker');
+    expect(expectOk(compileBlueprint(answer,plan,{sessionSeed:4021,upstream:UPSTREAM})).value).toEqual(result.value);
+  });
+  it('refuses a table that physically blocks the authored opening', () => {
+    const obstructed = {...answer,geometry:{version:GEOM_VERSION,nodes:[{kind:'fixture',variant:'crate',at:[0,0.3,2]}],root:0},placements:[...answer.placements,{stableId:'table',source:{kind:'geom',node:0},targetBounds:{min:[-0.5,0,1.5],max:[0.5,1,2.5]}}]};
+    const withTable: PlannerEmission = {...plan,objects:[...plan.objects,{stableId:'table',label:'table',synonyms:[],role:'prop',importance:1}]};
+    expect(compileBlueprint(obstructed,withTable,{sessionSeed:4021,upstream:UPSTREAM})).toMatchObject({ok:false,reason:'LAYOUT_INVALID',detail:expect.stringContaining('blocks opening')});
+  });
+  it('does not accept missing architecture identity', () => {
+    expect(compileBlueprint({...answer,architecture:[{...architecture[0],stableId:'otherRoom'}]},plan,{sessionSeed:4021,upstream:UPSTREAM})).toMatchObject({ok:false,reason:'LAYOUT_INVALID'});
+  });
+});
 
 /* ================================================================== *
  * 1. Šťastná cesta.
@@ -441,7 +484,17 @@ describe('the world graph is the one the existing pipeline already reads', () =>
     delete world.sim.rules.win;
     const result = compile(answerWith({ world }));
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toBe('WORLD_REJECTED');
+    if (!result.ok) {
+      expect(result.reason).toBe('WORLD_REJECTED');
+      expect(result.world?.rejection.reason).toBe('NO_WIN');
+      expect(result.world?.context.witnessSearch?.status).toBe('search-exhausted');
+      expect(result.detail).toContain('not proof that the world is unwinnable');
+      expect(result.world?.context.witnessSearch?.ticks).toBeLessThanOrEqual(40_000);
+      const feedback=blueprintRejectionSentence(result);
+      expect(feedback).toContain('Bounded witness search search-exhausted');
+      expect(feedback).not.toContain('winning route you attached');
+      expect(feedback).not.toContain('Rewrite sim.witness.ops');
+    }
   });
 
   it('rejects a world with a dangling name before it ever runs', () => {
@@ -722,10 +775,10 @@ describe('the compiler request', () => {
    * věta patří za zrušení `NO_FIT`, ne před ně, jinak si ji model přečte jako
    * přebitou tím, co stojí pod ní.
    */
-  it('says in its own words that the win must be reachable, after the contract it embeds', () => {
+  it('requires a reachable interaction with a visible requested object, after the embedded contract', () => {
     const close = request.system.indexOf('On this path you do not have it');
-    const reaching = request.system.indexOf('a win rule that says what reaching it means');
-    const never = request.system.indexOf('it is never unreachable');
+    const reaching = request.system.indexOf('Propose a reachable action using a visible object already present');
+    const never = request.system.indexOf('Do not invent an invisible universal win trigger');
 
     expect(close).toBeGreaterThan(-1);
     expect(reaching).toBeGreaterThan(close);
@@ -998,7 +1051,14 @@ describe('rozpočet hledání svědka', () => {
     const result = compileBlueprint(fixture.answer, fixture.plan, { sessionSeed: 1, upstream: UPSTREAM });
 
     expect(result.ok).toBe(false);
-    expect(JSON.stringify(result)).toContain('witness: horizon 600 exhausted');
+    if(result.ok)throw new Error('Expected bounded search rejection');
+    expect(result.world?.rejection.reason).toBe('NO_WIN');
+    expect(result.world?.context.witnessSearch?.status).toBe('budget-exhausted');
+    expect(result.world?.context.witnessSearch?.ticks).toBe(40_000);
+    expect(result.detail).toContain('Final replay: horizon 600 exhausted');
+    const feedback=blueprintRejectionSentence(result);
+    expect(feedback).toContain('not proof that the world is unwinnable');
+    expect(feedback).not.toContain('Rewrite sim.witness.ops');
     expect(performance.now() - started).toBeLessThan(40_000);
   }, 120_000);
 });

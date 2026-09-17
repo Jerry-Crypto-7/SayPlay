@@ -519,11 +519,13 @@ describe('zadání pro model', () => {
     expect(request.system).toContain('Nothing here rewrites it for you');
   });
 
-  it('říká totéž o roli, kterou druhá věta zapisuje do /sim', () => {
-    const near = windowAround(request.system, 'role you write there');
-
-    expect(near).toContain('camelCase');
-    expect(near).toContain('no spaces');
+  it('describes the production A4 boundary without permitting entity rewrites', () => {
+    expect(request.system).toContain('exactly ONE existing rule');
+    expect(request.system).toContain('either its condition OR ONE existing action');
+    expect(request.system).toContain('Preserve all triggers, event targets, metadata and action count/order');
+    expect(request.system).toContain('Do not change entities, sockets, initial state');
+    expect(request.system).toContain('A shape-only edit remains supported');
+    expect(request.system).not.toContain('role you write there');
   });
 });
 

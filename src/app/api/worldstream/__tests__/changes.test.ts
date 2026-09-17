@@ -51,6 +51,7 @@ import {
   MAX_LIVE_SESSIONS,
   openSession,
   putChange,
+  peekChange,
   type StoredSession,
 } from '@/worldstream/sessions';
 
@@ -66,6 +67,7 @@ import {
   slotsDetail,
 } from '../sessions/route';
 import { POST as commitChange } from '../sessions/[sessionId]/changes/[changeId]/commit/route';
+import { POST as restoreComparison } from '../sessions/[sessionId]/comparison/restore/route';
 import { POST as previewChange, createChange } from '../sessions/[sessionId]/changes/route';
 import { ANSWER, generated } from './world-fixture';
 
@@ -852,6 +854,50 @@ describe('preview druhé věty', () => {
  * ------------------------------------------------------------------ */
 
 describe('commit druhé věty', () => {
+  it.each([false, true])('A4 pre-commit comparison is atomic (invalid fork=%s)', async invalid => {
+    const stored = await generated();
+    const doc = worldOf(stored);
+    const change = pending(stored, plan({ behavior: [{ op: 'replace',
+      path: '/sim/rules/guard/condition', value: { kind: 'stateIs', target: 'saltFlat', state: 'dry' } }] }));
+    const before = JSON.stringify(stored.blueprint);
+    const response = await commitChange(new Request('http://127.0.0.1/commit', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ base: { simRevision: doc.simRevision, simHash: doc.simHash,
+        comparisonRevision: 0, inputCount: 0 }, inputs: [], forkTick: invalid ? 2 : 0, observationTick: 1 }),
+    }), { params: Promise.resolve({ sessionId: stored.session.sessionId, changeId: change.changeId }) });
+    const result = await body(response);
+    if (invalid) {
+      expect(response.status).toBe(422);
+      expect(result.error).toMatchObject({ code: 'COMPARISON_REJECTED' });
+      expect(JSON.stringify(stored.blueprint)).toBe(before);
+      expect(peekChange(stored, change.changeId)).not.toBeNull();
+    } else {
+      expect(result.outcome, JSON.stringify(result)).toBe('COMMITTED');
+      expect(result.acceptedBlueprint).toEqual(stored.blueprint);
+      expect(result.comparison).toMatchObject({ intervention: { kind: 'condition', ruleId: 'guard' },
+        originalAtFork: { tick: 0 }, changedAtFork: { tick: 0 } });
+      expect(worldOf(stored).simRevision).toBe(doc.simRevision + 1);
+      const accepted = worldOf(stored);
+      const geometry = stored.blueprint!.objects;
+      const restore = (payload: unknown) => restoreComparison(new Request('http://127.0.0.1/restore', {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload),
+      }), { params: Promise.resolve({ sessionId: stored.session.sessionId }) });
+      const expected = { simRevision: accepted.simRevision, lookRevision: accepted.lookRevision, simHash: accepted.simHash };
+      expect((await restore({ ...expected, simHash: 'stale' })).status).toBe(409);
+      expect(worldOf(stored)).toBe(accepted);
+      expect((await restore({ ...expected, original: doc })).status).toBe(400);
+      expect(worldOf(stored)).toBe(accepted);
+      const restored = await restore(expected);
+      expect(restored.status).toBe(200);
+      expect((await body(restored)).acceptedBlueprint).toEqual(stored.blueprint);
+      expect(worldOf(stored).sim).toEqual(doc.sim);
+      expect(worldOf(stored).simRevision).toBe(accepted.simRevision + 1);
+      expect(stored.blueprint!.objects).toBe(geometry);
+      expect(stored.comparisonOrigin).toBeNull();
+      expect((await restore(expected)).status).toBe(409);
+    }
+  });
+
   it('neznámé preview je 404', async () => {
     const stored = await generated();
     const response = await commit(stored.session.sessionId, 'never-existed');
@@ -1392,14 +1438,14 @@ describe('razítková brána stojí na tom, že se čas na server nedostal', () 
     return found;
   }
 
-  function importClosure(entry: string, boundary?: string): Set<string> {
+  function importClosure(entry: string, boundary?: string | readonly string[]): Set<string> {
     const seen = new Set<string>();
     const stack = [entry];
     while (stack.length > 0) {
       const next = stack.pop() as string;
       if (seen.has(next)) continue;
       seen.add(next);
-      if (next === boundary) continue;
+      if (typeof boundary === 'string' ? next === boundary : boundary?.includes(next)) continue;
       stack.push(...resolvedImports(next));
     }
     return seen;
@@ -1416,14 +1462,22 @@ describe('razítková brána stojí na tom, že se čas na server nedostal', () 
     );
   });
 
-  it('legacy dveře nedosáhnou na přetáčení času mimo oddělenou project transakci', () => {
+  it('server replay remains behind pure comparison or project boundaries', () => {
     // T8 privately replays a source project, never rolling back the legacy
     // blueprint or its rejectedAt stamps. Keep checking the FULL closure for
     // blueprint writers below; do not exempt project code from that invariant.
     expect(
-      routes.filter((route) => importClosure(route, 'src/worldstream/evidence-commit.ts').has(REBRANCH)),
+      routes.filter((route) => importClosure(route, ['src/worldstream/evidence-commit.ts',
+        ...(route.includes('/changes/[changeId]/commit/') ? ['src/worldstream/accepted-branch.ts'] : [])]).has(REBRANCH)),
       'přetáčení času dostalo serverové dveře, takže svět umí jít na dřívější revizi a razítková brána se nad ním znovu otevře — otevři T22-rewindrevision',
     ).toEqual([]);
+  });
+
+  it('A4 comparison cannot access the mutable session or blueprint registry', () => {
+    const comparison = importClosure('src/worldstream/accepted-branch.ts');
+    expect(comparison.has('src/worldstream/sessions.ts')).toBe(false);
+    expect(comparison.has('src/worldstream/session.ts')).toBe(false);
+    expect(comparison.has('src/worldstream/snapshot-store.ts')).toBe(false);
   });
 
   it('project transakce nemá přístup k mutable legacy relaci ani registru blueprintů', () => {

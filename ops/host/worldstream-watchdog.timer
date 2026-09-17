@@ -1,0 +1,11 @@
+[Unit]
+Description=Probe WORLDSTREAM without model calls
+
+[Timer]
+OnBootSec=60
+OnUnitActiveSec=60
+AccuracySec=5
+Unit=worldstream-watchdog.service
+
+[Install]
+WantedBy=timers.target
