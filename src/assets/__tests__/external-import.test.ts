@@ -112,4 +112,29 @@ describe('offline external GLB quarantine importer', () => {
     await expect(importExternal({ input, metadata, outputName: '../public/assets/worldstream' })).rejects.toThrow('Quarantine');
     await expect(importExternal({ input, metadata: { ...metadata, front: '-Z' }, outputName: outputName() })).rejects.toThrow('perpendicular');
   });
+
+  it('writes the declared licence, origin and the real source hash into the registry entry', async () => {
+    const result = await importExternal({ input, metadata, outputName: outputName() });
+    const sourceHash = createHash('sha256').update(await readFile(input)).digest('hex');
+    expect(result.candidate.provenance).toEqual({
+      source: input, author: metadata.author, license: metadata.license, importedAt: metadata.importedAt,
+      licenseEvidence: `/assets/worldstream/${metadata.assetId}/license-evidence.txt`, sourceHash });
+    const proof = await readFile(evidence);
+    expect(await readFile(`${result.output}/license-evidence.txt`)).toEqual(proof);
+    expect(await readFile(`${result.output}/source-evidence.txt`)).toEqual(proof);
+    const report = JSON.parse(await readFile(`${result.output}/report.json`, 'utf8'));
+    const proofHash = createHash('sha256').update(proof).digest('hex');
+    expect(report).toMatchObject({ sourceHash, evidence: { licenseHash: proofHash, sourceEvidenceHash: proofHash } });
+  });
+
+  it('refuses an asset whose licence or origin is absent from the registry entry', async () => {
+    const { candidate } = await importExternal({ input, metadata, outputName: outputName() });
+    const { provenance, ...stripped } = candidate;
+    const registry = (asset: unknown) => createAssetManifest({ version: 'worldstream-assets-v1', assets: [asset] });
+    expect(() => registry(stripped)).toThrow();
+    for (const field of ['license', 'source', 'author', 'licenseEvidence', 'sourceHash'])
+      expect(() => registry({ ...candidate, provenance: { ...provenance, [field]: undefined } })).toThrow();
+    await expect(importExternal({ input, outputName: outputName(),
+      metadata: { ...metadata, licenseEvidence: 'asset-quarantine/no-such-license-proof.txt' } })).rejects.toThrow();
+  });
 });
