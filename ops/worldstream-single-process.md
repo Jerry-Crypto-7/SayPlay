@@ -101,3 +101,19 @@ Persistují se idempotency request/candidate, task IDs/credits, referenční met
 Všichni klienti procesu musí sdílet **jeden** `createAssetJobs({...existingDeps, store})`; nepouštět nového koordinátora na request. Mock fixture se třemi klienty přes skutečný filesystem doložila dva running + jeden queued, restart queued/known-task, cancel uvolňující slot, nejistý initial i refine POST bez opakování a starého writeru odmítnutého po převzetí. JSON i schema corruption failclosed; image backup overflow odmítnut před paměťovou mutací a bez změny diskového souboru. **18/18 cílených testů PASS, typecheck PASS.** Žádné provider calls, účet, deployment ani persistentní ordinary session vznikly.
 
 Další provozní krok: na již autorizovaném Linux hostu explicitně připojit store na trvalý service-owned volume, ověřit graceful stop a cold start pod stejným service userem, power-loss/crash postup a provider reconciliation. Zvlášť zůstává ordinary session persistence, spend reservation/reconciliation pro asset job a lidské schválení cizího importu.
+
+## Pět provozních případů a kde je každý doložený (P20 A5/T17, 17. 9. 2026)
+
+Tabulka existuje proto, že důkazy k jednomu tvrzení leží v pěti souborech a dva z nich příkaz úlohy nespouští. Uvedeno je vždy jméno testu, ne jen soubor.
+
+| Případ | Kde je doložený | Co drží |
+|---|---|---|
+| Restart uprostřed tvorby | `src/server/__tests__/session-persistence.test.ts` — *records interrupted creation explicitly without reissuing any model work* | přerušená tvorba se zapíše jako přerušená a **nevydá se za ni nová práce modelu** |
+| Reconnect do přijaté revize | tamtéž — *restores three known owners, accepted revisions, comparison and reconnect snapshot exactly* a *retains bounded event backlog and tells a stale reconnect to fetch the authoritative snapshot* | revize a snapshot se obnoví přesně; zastaralý reconnect se pošle pro autoritativní snapshot |
+| Souběh tří uživatelů | `src/server/__tests__/owner-identity.test.ts` — *keeps three authenticated principals separate and ignores caller forwarding chains* | tři principálové se nesmíchají a hlavička od volajícího identitu nepřepíše |
+| Selhání providera | `src/server/__tests__/upstream.test.ts` — *turn.failed je odmítnutí, ne výpadek*, *proces, který nedoběhne do stropu, je výpadek a zabije se*, *proces, který skončí nenulovým kódem*, *proud delší než 8 MiB*, *codex, který se nespustí, je výpadek, ne pád serveru* | pět různých způsobů selhání, a žádný z nich neshodí server |
+| Vyčerpání rozpočtu | `src/server/__tests__/spend-cap.test.ts` — *odmítne volání, které by rozpočet přeteklo*; `spend-store.test.ts` — *dva souběžné požadavky na poslední kredit nedostanou tentýž součet*, *sdílí stav, ne jen referenci*, *má časový limit* | strop drží nad **sdíleným** úložištěm, ne nad pamětí procesu, a souběh o poslední kredit nedá dvěma volajícím totéž číslo |
+
+Naměřeno 17. 9. 2026: `npx vitest run ops/__tests__ src/server/__tests__/session-persistence.test.ts src/server/__tests__/shutdown.test.ts src/server/__tests__/owner-identity.test.ts` → **55/55**, a `npx vitest run src/server/__tests__/spend-store.test.ts src/server/__tests__/spend-cap.test.ts src/server/__tests__/upstream.test.ts` → **192/192**. Druhý příkaz je ten, který zadání úlohy nejmenuje a bez kterého dvě položky tabulky nemají důkaz.
+
+⚠ **Tohle jsou testy, ne provoz.** Žádný z nich neběžel na cílovém hostu, nikdo nic neobjednal a nenasadil. Restart, reconnect a tři návštěvníci na skutečném Linuxu zůstávají na operátorovi; T17 je dál PARTIAL / NOT_DEPLOYED.
