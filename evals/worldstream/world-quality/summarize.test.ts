@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
 import type { CaseOutcome } from '../measure-create';
 import { summarizeQualityRun, summarizeQualityStages, summarizeQualityRepairs } from './summarize';
@@ -65,4 +66,43 @@ it('does not allow duplicate, unknown or malformed observations to inflate evide
   expect(() => summarizeQualityRun(['t1'], [outcome('t2', 1, true)])).toThrow();
   expect(() => summarizeQualityRun(['t1'], [outcome('t1', NaN, true)])).toThrow();
   expect(() => summarizeQualityRun(['t1', 't1'], [])).toThrow();
+});
+
+/**
+ * **`results.json` je citovatelný záznam a `report.md` ho nesmí přepsat.**
+ *
+ * Obě série leží v `plans/P20/t18-hybrid-*`, které jsou gitignorované, takže
+ * čistý klon je nepřepočítá — jediné, co tu zbývá ohlídat, je vnitřní
+ * konzistence toho záznamu a to, že se text nad ním nerozešel s čísly.
+ * Naměřeno 17. 9. 2026: v2 série se zastavila na 18 z 30 vět a napsat ji
+ * jako 30/30 je přesně ta chyba, kterou tenhle test hlídá.
+ */
+it('keeps the world-quality report on the numbers results.json actually holds', () => {
+  const results = JSON.parse(readFileSync(new URL('./results.json', import.meta.url), 'utf8'));
+  const report = readFileSync(new URL('./report.md', import.meta.url), 'utf8');
+
+  for (const series of results.series) {
+    const { compiled, rejected, unavailable, pending } = series.outcomes;
+    expect(compiled + rejected + unavailable, `${series.id} completed`).toBe(series.completed);
+    expect(series.completed + pending, `${series.id} denominator`).toBe(results.denominator);
+    expect(pending, `${series.id} pending`).toBe(series.pending);
+    const failures: number = Object.values<number>(series.failuresByReason).reduce((sum, n) => sum + n, 0);
+    expect(failures, `${series.id} failures`).toBe(rejected + unavailable);
+    expect(series.certifiedBlueprints).toBeLessThanOrEqual(compiled);
+  }
+
+  const v2 = results.series.find((s: { id: string }) => s.id === 'v2-final');
+  // Uzavření na neúplné sérii musí být v reportu napsané, i s důvodem.
+  expect(report).toContain(`${String(v2.completed)} / ${String(v2.denominator ?? results.denominator)}`);
+  expect(report).toContain(v2.stopReason);
+  expect(report).toMatch(/Nikde se nesmí psát jako 30\/30/);
+  expect(report).toContain(String(v2.modelCalls));
+  expect(report).toContain(String(v2.certifiedBlueprints));
+
+  // Každá brána nese buď verdikt, nebo PENDING_ s pojmenovaným chybějícím vstupem.
+  for (const [gate, entry] of Object.entries<{ status: string; why: string }>(results.gates)) {
+    expect(entry.status, gate).toMatch(/^(PASS|FAIL|PENDING_[A-Z_]+)$/);
+    expect(entry.why.length, gate).toBeGreaterThan(20);
+  }
+  expect(Object.values(results.gates).some((g) => (g as { status: string }).status === 'PASS')).toBe(false);
 });
