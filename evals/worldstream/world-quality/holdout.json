@@ -1,0 +1,528 @@
+[
+  {
+    "id": "h01",
+    "category": "interior",
+    "prompt": "A ceramics studio with exactly three blue stools around a wooden workbench, a kiln against the back wall and a switch that turns on its red indicator.",
+    "spatialThesis": "A ceramics studio with exactly three blue stools around a wooden workbench, a kiln against the back wall and a switch that turns on its red indicator.",
+    "heroObjects": [
+      "three blue stools",
+      "wooden workbench",
+      "kiln against back wall"
+    ],
+    "mustName": [
+      "three blue stools",
+      "wooden workbench",
+      "kiln against back wall"
+    ],
+    "visibleBeat": "switch turns on kiln indicator",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "three blue stools",
+      "wooden workbench",
+      "kiln against back wall"
+    ]
+  },
+  {
+    "id": "h02",
+    "category": "interior",
+    "prompt": "A railway ticket hall with two brass ticket machines beside a large window, a clear passage between them and a gate opened by taking a ticket.",
+    "spatialThesis": "A railway ticket hall with two brass ticket machines beside a large window, a clear passage between them and a gate opened by taking a ticket.",
+    "heroObjects": [
+      "two brass machines",
+      "large window",
+      "clear passage"
+    ],
+    "mustName": [
+      "two brass machines",
+      "large window",
+      "clear passage"
+    ],
+    "visibleBeat": "taking ticket opens gate",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "two brass machines",
+      "large window",
+      "clear passage"
+    ]
+  },
+  {
+    "id": "h03",
+    "category": "interior",
+    "prompt": "A greenhouse cafe with four chairs around a round table, hanging plants above it and a glass door that opens from a nearby button.",
+    "spatialThesis": "A greenhouse cafe with four chairs around a round table, hanging plants above it and a glass door that opens from a nearby button.",
+    "heroObjects": [
+      "four chairs",
+      "round table",
+      "plants above table",
+      "glass door"
+    ],
+    "mustName": [
+      "four chairs",
+      "round table",
+      "plants above table",
+      "glass door"
+    ],
+    "visibleBeat": "button opens door",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "four chairs",
+      "round table",
+      "plants above table",
+      "glass door"
+    ]
+  },
+  {
+    "id": "h04",
+    "category": "interior",
+    "prompt": "A small repair shop with a bicycle on a raised platform, two tool cabinets against the wall and a lever that lights the workbench.",
+    "spatialThesis": "A small repair shop with a bicycle on a raised platform, two tool cabinets against the wall and a lever that lights the workbench.",
+    "heroObjects": [
+      "bicycle on platform",
+      "two tool cabinets",
+      "workbench"
+    ],
+    "mustName": [
+      "bicycle on platform",
+      "two tool cabinets",
+      "workbench"
+    ],
+    "visibleBeat": "lever lights workbench",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "bicycle on platform",
+      "two tool cabinets",
+      "workbench"
+    ]
+  },
+  {
+    "id": "h05",
+    "category": "interior",
+    "prompt": "A library reading alcove with exactly two people seated on a green sofa, a floor lamp to its left and a switch that lights the lamp.",
+    "spatialThesis": "A library reading alcove with exactly two people seated on a green sofa, a floor lamp to its left and a switch that lights the lamp.",
+    "heroObjects": [
+      "two seated people",
+      "green sofa",
+      "lamp to left"
+    ],
+    "mustName": [
+      "two seated people",
+      "green sofa",
+      "lamp to left"
+    ],
+    "visibleBeat": "switch lights lamp",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "two seated people",
+      "green sofa",
+      "lamp to left"
+    ]
+  },
+  {
+    "id": "h06",
+    "category": "outdoor",
+    "prompt": "A rocky harbor with three moored boats, a wooden pier connected to the shore and a beacon that lights when the player reaches the pier.",
+    "spatialThesis": "A rocky harbor with three moored boats, a wooden pier connected to the shore and a beacon that lights when the player reaches the pier.",
+    "heroObjects": [
+      "three boats",
+      "pier connected to shore",
+      "beacon"
+    ],
+    "mustName": [
+      "three boats",
+      "pier connected to shore",
+      "beacon"
+    ],
+    "visibleBeat": "reach pier lights beacon",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "three boats",
+      "pier connected to shore",
+      "beacon"
+    ]
+  },
+  {
+    "id": "h07",
+    "category": "outdoor",
+    "prompt": "A snowy campsite with two orange tents facing a stone fire pit, pine trees behind them and a button that lights a lantern.",
+    "spatialThesis": "A snowy campsite with two orange tents facing a stone fire pit, pine trees behind them and a button that lights a lantern.",
+    "heroObjects": [
+      "two orange tents",
+      "tents face fire pit",
+      "pine trees behind"
+    ],
+    "mustName": [
+      "two orange tents",
+      "tents face fire pit",
+      "pine trees behind"
+    ],
+    "visibleBeat": "button lights lantern",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "two orange tents",
+      "tents face fire pit",
+      "pine trees behind"
+    ]
+  },
+  {
+    "id": "h08",
+    "category": "outdoor",
+    "prompt": "A terraced orchard with four apple trees on uneven ground, a path between them and a wooden gate opened by a lever.",
+    "spatialThesis": "A terraced orchard with four apple trees on uneven ground, a path between them and a wooden gate opened by a lever.",
+    "heroObjects": [
+      "four apple trees",
+      "uneven ground",
+      "clear path",
+      "wooden gate"
+    ],
+    "mustName": [
+      "four apple trees",
+      "uneven ground",
+      "clear path",
+      "wooden gate"
+    ],
+    "visibleBeat": "lever opens gate",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "four apple trees",
+      "uneven ground",
+      "clear path",
+      "wooden gate"
+    ]
+  },
+  {
+    "id": "h09",
+    "category": "outdoor",
+    "prompt": "A canal lock with two stone banks connected by a narrow bridge, a metal control wheel and a signal that changes from red to green when the wheel is used.",
+    "spatialThesis": "A canal lock with two stone banks connected by a narrow bridge, a metal control wheel and a signal that changes from red to green when the wheel is used.",
+    "heroObjects": [
+      "two stone banks",
+      "connecting bridge",
+      "metal wheel"
+    ],
+    "mustName": [
+      "two stone banks",
+      "connecting bridge",
+      "metal wheel"
+    ],
+    "visibleBeat": "wheel changes signal to green",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "two stone banks",
+      "connecting bridge",
+      "metal wheel"
+    ]
+  },
+  {
+    "id": "h10",
+    "category": "outdoor",
+    "prompt": "A desert rest stop with a shaded water trough, three palm trees and a low stone arch; collecting a token opens the pump cover.",
+    "spatialThesis": "A desert rest stop with a shaded water trough, three palm trees and a low stone arch; collecting a token opens the pump cover.",
+    "heroObjects": [
+      "shaded trough",
+      "three palms",
+      "low stone arch",
+      "pump cover"
+    ],
+    "mustName": [
+      "shaded trough",
+      "three palms",
+      "low stone arch",
+      "pump cover"
+    ],
+    "visibleBeat": "token opens pump cover",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "shaded trough",
+      "three palms",
+      "low stone arch",
+      "pump cover"
+    ]
+  },
+  {
+    "id": "h11",
+    "category": "fantastic",
+    "prompt": "A floating observatory with two copper domes connected by a glass walkway and a lever that opens one dome.",
+    "spatialThesis": "A floating observatory with two copper domes connected by a glass walkway and a lever that opens one dome.",
+    "heroObjects": [
+      "two copper domes",
+      "connecting glass walkway"
+    ],
+    "mustName": [
+      "two copper domes",
+      "connecting glass walkway"
+    ],
+    "visibleBeat": "lever opens one dome",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "two copper domes",
+      "connecting glass walkway"
+    ]
+  },
+  {
+    "id": "h12",
+    "category": "fantastic",
+    "prompt": "A spiral stone tower built around a giant living tree, a balcony connected to the entrance and a bell that lights the doorway when rung.",
+    "spatialThesis": "A spiral stone tower built around a giant living tree, a balcony connected to the entrance and a bell that lights the doorway when rung.",
+    "heroObjects": [
+      "spiral tower",
+      "giant tree",
+      "connected balcony",
+      "bell"
+    ],
+    "mustName": [
+      "spiral tower",
+      "giant tree",
+      "connected balcony",
+      "bell"
+    ],
+    "visibleBeat": "ring bell lights doorway",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "spiral tower",
+      "giant tree",
+      "connected balcony",
+      "bell"
+    ]
+  },
+  {
+    "id": "h13",
+    "category": "fantastic",
+    "prompt": "A crystal greenhouse inside a hollow asteroid, with three raised planting beds and a door unlocked by touching a glowing crystal.",
+    "spatialThesis": "A crystal greenhouse inside a hollow asteroid, with three raised planting beds and a door unlocked by touching a glowing crystal.",
+    "heroObjects": [
+      "hollow asteroid",
+      "crystal greenhouse",
+      "three raised beds"
+    ],
+    "mustName": [
+      "hollow asteroid",
+      "crystal greenhouse",
+      "three raised beds"
+    ],
+    "visibleBeat": "touch crystal unlocks door",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "hollow asteroid",
+      "crystal greenhouse",
+      "three raised beds"
+    ]
+  },
+  {
+    "id": "h14",
+    "category": "fantastic",
+    "prompt": "A miniature city on the back of a stone turtle, with two bridges joining three towers and a switch that lights the central tower.",
+    "spatialThesis": "A miniature city on the back of a stone turtle, with two bridges joining three towers and a switch that lights the central tower.",
+    "heroObjects": [
+      "stone turtle",
+      "three towers",
+      "two connecting bridges"
+    ],
+    "mustName": [
+      "stone turtle",
+      "three towers",
+      "two connecting bridges"
+    ],
+    "visibleBeat": "switch lights central tower",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "stone turtle",
+      "three towers",
+      "two connecting bridges"
+    ]
+  },
+  {
+    "id": "h15",
+    "category": "fantastic",
+    "prompt": "An underwater archive with curved glass walls, two shelves of sealed books and a pressure plate that opens a circular hatch.",
+    "spatialThesis": "An underwater archive with curved glass walls, two shelves of sealed books and a pressure plate that opens a circular hatch.",
+    "heroObjects": [
+      "curved glass walls",
+      "two book shelves",
+      "circular hatch"
+    ],
+    "mustName": [
+      "curved glass walls",
+      "two book shelves",
+      "circular hatch"
+    ],
+    "visibleBeat": "plate opens hatch",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "curved glass walls",
+      "two book shelves",
+      "circular hatch"
+    ]
+  },
+  {
+    "id": "h16",
+    "category": "unusual-object",
+    "prompt": "A workshop with an ordinary chair beside a freestanding hourglass shaped like a branching coral; a button changes the hourglass light from amber to blue.",
+    "spatialThesis": "A workshop with an ordinary chair beside a freestanding hourglass shaped like a branching coral; a button changes the hourglass light from amber to blue.",
+    "heroObjects": [
+      "ordinary chair",
+      "coral-shaped hourglass"
+    ],
+    "mustName": [
+      "ordinary chair",
+      "coral-shaped hourglass"
+    ],
+    "visibleBeat": "button changes amber light to blue",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "ordinary chair",
+      "coral-shaped hourglass"
+    ]
+  },
+  {
+    "id": "h17",
+    "category": "unusual-object",
+    "prompt": "A stone courtyard with two benches facing a musical sculpture made of nested hollow moons; using its lever lights the smallest moon.",
+    "spatialThesis": "A stone courtyard with two benches facing a musical sculpture made of nested hollow moons; using its lever lights the smallest moon.",
+    "heroObjects": [
+      "two facing benches",
+      "nested hollow moon sculpture"
+    ],
+    "mustName": [
+      "two facing benches",
+      "nested hollow moon sculpture"
+    ],
+    "visibleBeat": "lever lights smallest moon",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "two facing benches",
+      "nested hollow moon sculpture"
+    ]
+  },
+  {
+    "id": "h18",
+    "category": "unusual-object",
+    "prompt": "A kitchen with a wooden table and a teapot whose spout forms a double helix, twice the height of two cups beside it; a switch lights the teapot.",
+    "spatialThesis": "A kitchen with a wooden table and a teapot whose spout forms a double helix, twice the height of two cups beside it; a switch lights the teapot.",
+    "heroObjects": [
+      "wooden table",
+      "double-helix spout teapot",
+      "two cups",
+      "teapot twice cup height"
+    ],
+    "mustName": [
+      "wooden table",
+      "double-helix spout teapot",
+      "two cups",
+      "teapot twice cup height"
+    ],
+    "visibleBeat": "switch lights teapot",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "wooden table",
+      "double-helix spout teapot",
+      "two cups",
+      "teapot twice cup height"
+    ]
+  },
+  {
+    "id": "h19",
+    "category": "unusual-object",
+    "prompt": "A garden pavilion containing a mechanical flower with six metallic petals above a stone pedestal; pressing a button opens the petals.",
+    "spatialThesis": "A garden pavilion containing a mechanical flower with six metallic petals above a stone pedestal; pressing a button opens the petals.",
+    "heroObjects": [
+      "garden pavilion",
+      "six metallic petals",
+      "flower above pedestal"
+    ],
+    "mustName": [
+      "garden pavilion",
+      "six metallic petals",
+      "flower above pedestal"
+    ],
+    "visibleBeat": "button opens petals",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "garden pavilion",
+      "six metallic petals",
+      "flower above pedestal"
+    ]
+  },
+  {
+    "id": "h20",
+    "category": "unusual-object",
+    "prompt": "A museum hall with a transparent cube enclosing a knotted ribbon staircase, a chair for scale and a switch that lights the staircase.",
+    "spatialThesis": "A museum hall with a transparent cube enclosing a knotted ribbon staircase, a chair for scale and a switch that lights the staircase.",
+    "heroObjects": [
+      "transparent cube",
+      "knotted ribbon staircase inside",
+      "chair for scale"
+    ],
+    "mustName": [
+      "transparent cube",
+      "knotted ribbon staircase inside",
+      "chair for scale"
+    ],
+    "visibleBeat": "switch lights staircase",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "transparent cube",
+      "knotted ribbon staircase inside",
+      "chair for scale"
+    ]
+  }
+]

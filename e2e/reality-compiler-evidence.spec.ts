@@ -233,6 +233,7 @@ test('keyboard source input enforces size and ordinary prompts never inherit sou
   await expect(page.getByTestId('source-input')).toBeVisible();
   await page.getByTestId('source-input').fill('x'.repeat(4001));
   await expect(page.getByTestId('source-submit')).toBeDisabled();
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('An ordinary museum');
   await page.getByTestId('prompt-input').press('Enter');
   await expect(page.getByTestId('runtime-act')).toBeEnabled({ timeout: 30_000 });
@@ -440,6 +441,7 @@ test('a late source response cannot replace a newer ordinary world', async ({ pa
   await page.getByTestId('source-input').fill(text);
   const sent = page.waitForRequest('**/api/worldstream/source');
   await page.getByTestId('source-submit').click(); await sent;
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('A different world');
   await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('runtime-act')).toBeEnabled({ timeout: 30_000 });

@@ -114,6 +114,7 @@ test('rozhraní nekreslí přes plátno: dok, ovládání ani panely se s ním n
   test.setTimeout(180_000);
 
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   // Zásuvka se otevírá **před** větou: zavřená panely doopravdy odpojuje.
   await openInspect(page);
 

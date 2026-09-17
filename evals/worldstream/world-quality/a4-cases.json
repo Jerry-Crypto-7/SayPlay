@@ -1,0 +1,145 @@
+[
+  {
+    "id": "a01",
+    "kind": "condition",
+    "baseRule": "A gate opens on use only while a key is held.",
+    "changePrompt": "The gate opens on use without the key.",
+    "inputs": [
+      "use gate without key"
+    ],
+    "expectedOriginal": "closed",
+    "expectedChanged": "open",
+    "fork": "Immediately before the first listed input; preserve state, queue, RNG and prior inputs.",
+    "horizonTicks": 400,
+    "structuralChangesAllowed": false
+  },
+  {
+    "id": "a02",
+    "kind": "condition",
+    "baseRule": "A lamp lights on use only while a switch flag is on.",
+    "changePrompt": "The lamp lights on use while the switch flag is off.",
+    "inputs": [
+      "use lamp while switch off"
+    ],
+    "expectedOriginal": "dark",
+    "expectedChanged": "lit",
+    "fork": "Immediately before the first listed input; preserve state, queue, RNG and prior inputs.",
+    "horizonTicks": 400,
+    "structuralChangesAllowed": false
+  },
+  {
+    "id": "a03",
+    "kind": "condition",
+    "baseRule": "A door opens on use only after three crystals are collected.",
+    "changePrompt": "The door opens on use after one crystal is collected.",
+    "inputs": [
+      "collect one crystal",
+      "use door"
+    ],
+    "expectedOriginal": "closed",
+    "expectedChanged": "open",
+    "fork": "Immediately before the first listed input; preserve state, queue, RNG and prior inputs.",
+    "horizonTicks": 400,
+    "structuralChangesAllowed": false
+  },
+  {
+    "id": "a04",
+    "kind": "action",
+    "baseRule": "A button sets a lamp flag on.",
+    "changePrompt": "The button sets the lamp flag off.",
+    "inputs": [
+      "use button with lamp initially on"
+    ],
+    "expectedOriginal": "lit",
+    "expectedChanged": "dark",
+    "fork": "Immediately before the first listed input; preserve state, queue, RNG and prior inputs.",
+    "horizonTicks": 400,
+    "structuralChangesAllowed": false
+  },
+  {
+    "id": "a05",
+    "kind": "action",
+    "baseRule": "A lever opens an existing gate.",
+    "changePrompt": "The lever closes the gate.",
+    "inputs": [
+      "use lever with gate initially open"
+    ],
+    "expectedOriginal": "open",
+    "expectedChanged": "closed",
+    "fork": "Immediately before the first listed input; preserve state, queue, RNG and prior inputs.",
+    "horizonTicks": 400,
+    "structuralChangesAllowed": false
+  },
+  {
+    "id": "a06",
+    "kind": "action",
+    "baseRule": "A pressure plate lights the left of two existing lamps.",
+    "changePrompt": "The plate lights the right lamp instead.",
+    "inputs": [
+      "enter plate with both lamps off"
+    ],
+    "expectedOriginal": "left lit, right dark",
+    "expectedChanged": "left dark, right lit",
+    "fork": "Immediately before the first listed input; preserve state, queue, RNG and prior inputs.",
+    "horizonTicks": 400,
+    "structuralChangesAllowed": false
+  },
+  {
+    "id": "a07",
+    "kind": "condition",
+    "baseRule": "A hatch opens on use only with a helmet equipped.",
+    "changePrompt": "The hatch opens on use without a helmet.",
+    "inputs": [
+      "use hatch without helmet"
+    ],
+    "expectedOriginal": "closed",
+    "expectedChanged": "open",
+    "fork": "Immediately before the first listed input; preserve state, queue, RNG and prior inputs.",
+    "horizonTicks": 400,
+    "structuralChangesAllowed": false
+  },
+  {
+    "id": "a08",
+    "kind": "action",
+    "baseRule": "A switch toggles an existing beacon.",
+    "changePrompt": "The switch always turns the beacon on.",
+    "inputs": [
+      "use switch twice with beacon initially off"
+    ],
+    "expectedOriginal": "dark",
+    "expectedChanged": "lit",
+    "fork": "Immediately before the first listed input; preserve state, queue, RNG and prior inputs.",
+    "horizonTicks": 400,
+    "structuralChangesAllowed": false
+  },
+  {
+    "id": "a09",
+    "kind": "timer",
+    "baseRule": "A button starts a timer that opens a gate after 100 ticks.",
+    "changePrompt": "The timer opens the gate after 40 ticks.",
+    "inputs": [
+      "use button",
+      "wait 60 ticks"
+    ],
+    "expectedOriginal": "closed",
+    "expectedChanged": "open",
+    "fork": "Immediately before the first listed input; preserve state, queue, RNG and prior inputs.",
+    "horizonTicks": 400,
+    "structuralChangesAllowed": false
+  },
+  {
+    "id": "a10",
+    "kind": "timer",
+    "baseRule": "A button starts a timer that extinguishes a lamp after 40 ticks.",
+    "changePrompt": "The lamp stays on for 100 ticks after the button.",
+    "inputs": [
+      "use button with lamp initially on",
+      "wait 60 ticks"
+    ],
+    "expectedOriginal": "dark",
+    "expectedChanged": "lit",
+    "fork": "Immediately before the first listed input; preserve state, queue, RNG and prior inputs.",
+    "horizonTicks": 400,
+    "structuralChangesAllowed": false
+  }
+]

@@ -59,6 +59,7 @@ test('kořen je worldstreamové plátno, ne stará herní scéna', async ({ page
   test.setTimeout(120_000);
 
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await expect(page.getByTestId('worldstream-canvas')).toHaveCount(1);
 
   // Stará scéna tu **není**, a je to celý smysl přestěhování. `stage-canvas`
@@ -94,6 +95,7 @@ test('věta postaví svět a ten dojde až na plátno', async ({ page }) => {
   test.setTimeout(180_000);
 
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await buildWorld(page, AUTHORED);
 
   // **Sloty, ne jeden objekt.** Prázdný slot v hrubém světě neexistuje
@@ -118,6 +120,7 @@ test('Inspect nad hlavní cestou vypisuje sloty, ne panely staré scény', async
   test.setTimeout(180_000);
 
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await buildWorld(page, AUTHORED);
   await openInspect(page);
 
@@ -147,6 +150,7 @@ test('věta, kterou nikdo nepředvídal, dostane svět, ne prázdno', async ({ p
   test.setTimeout(180_000);
 
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await buildWorld(page, 'A greenhouse swallowed by a glacier, its panes still warm.');
 
   expect(await page.evaluate(() => window.__worldstreamStage!.slots().length)).toBeGreaterThan(0);

@@ -6,6 +6,10 @@ import { sealSimHash } from '../src/ir/worlddoc';
 import { commitPart } from '../src/ir/revision';
 import surface from '../evals/reality-compiler/museum.sim.json';
 import { openInspect } from './inspect';
+import catalog from '../src/assets/catalog.json';
+import { mkdir, writeFile } from 'node:fs/promises';
+import {join} from 'node:path';
+import sharp from 'sharp';
 
 // Software WebGL builds the fixture before the interaction assertions begin.
 test.setTimeout(90_000);
@@ -16,6 +20,7 @@ async function museum(page: Page, options: {
   refuse?: boolean; hold?: boolean; failSnapshot?: boolean;
   snapshotStatus?: number; staleSnapshot?: boolean; holdRecovery?: boolean;
   failReplacement?: boolean; meshAfterCommit?: boolean; appearanceRefused?: boolean;
+  nonTimer?: boolean;
 } = {}) {
   const sim = structuredClone(surface);
   Object.entries(sim.rules).forEach(([id, rule]) => Object.assign(rule, { id }));
@@ -27,6 +32,15 @@ async function museum(page: Page, options: {
     objects: [{ stableId: 'visitor', label: 'the visitor', synonyms: [], role: 'prop', importance: 1,
       source: { kind: 'geom', node: 5 }, targetBounds: { min: [4.1, 0, 5.1], max: [4.9, 0.7, 5.9] } }],
   });
+  if (options.nonTimer) {
+    const asset = catalog.assets.find(item => item.assetId === 'desktop-terminal')!;
+    const targetBounds = { min: [2, 0, 2], max: [3.1, 0.8, 2.65] };
+    blueprint = blueprintSchema.parse({ ...blueprint, version: 'worldstream-v2', objects: [...blueprint.objects, {
+      stableId: 'alarmSignal', label: 'alarm terminal', synonyms: [], role: 'hero', importance: 3,
+      source: { kind: 'asset', assetId: asset.assetId, version: asset.version, hash: asset.hash }, targetBounds,
+      binding: { collider: targetBounds, sockets: [], parts: [], signalFlag: 'alarm' },
+    }] });
+  }
   const id = '22222222-3333-4444-5555-666666666666';
   const original = structuredClone(blueprint);
   let sessions = 0;
@@ -55,8 +69,8 @@ async function museum(page: Page, options: {
     if (options.appearanceRefused) return route.fulfill({ status: 422, json: { error: {
       code: 'APPEARANCE_UNSUPPORTED', message: 'Appearance palette, material, lighting and atmosphere edits are not supported in this renderer. Shape edits remain available; nothing was changed.',
     } } });
-    expect(route.request().postDataJSON().prompt).toBe('Shorten the sensor countdown from 20 seconds to 10 seconds.');
-    return route.fulfill({ json: { changeId: 'timer-change', summary: 'Shorten the sensor countdown to 10 seconds.',
+    expect(route.request().postDataJSON().prompt).toBe(options.nonTimer ? 'The first sensor activates the alarm.' : 'Shorten the sensor countdown from 20 seconds to 10 seconds.');
+    return route.fulfill({ json: { changeId: 'timer-change', summary: options.nonTimer ? 'The first sensor activates the alarm.' : 'Shorten the sensor countdown to 10 seconds.',
       target: { stableId: 'visitor', label: 'sensor countdown' }, scope: { shape: options.meshAfterCommit === true, behavior: 1, appearance: 0 },
       preserved: ['visitor', 'case', 'alarm'], authored: { match: 'exact' } } });
   });
@@ -65,7 +79,9 @@ async function museum(page: Page, options: {
     if (options.hold) await held;
     if (options.refuse) return route.fulfill({ json: { outcome: 'REJECTED', rejections: [{ detail: 'Stale server revision.' }] } });
     const result = commitPart(blueprint.world, { part: 'sim', baseRevision: 0,
-      operations: [{ op: 'replace', path: '/rules/start_countdown/actions/1/durationTicks', value: 200 }] });
+      operations: options.nonTimer
+        ? [{ op: 'replace', path: '/rules/start_countdown/actions/0', value: { kind: 'setFlag', ref: 'alarm', value: true } }]
+        : [{ op: 'replace', path: '/rules/start_countdown/actions/1/durationTicks', value: 200 }] });
     expect(result.verdict).toBe('COMMITTED');
     if (result.verdict !== 'COMMITTED') throw new Error('fixture patch rejected');
     blueprint = { ...blueprint, world: result.doc };
@@ -80,6 +96,12 @@ async function museum(page: Page, options: {
     return route.fulfill({ json: { outcome: 'COMMITTED', stableId: 'visitor', summary: 'Shortened countdown',
       revisions: { sim: { before: 0, after: blueprint.world.simRevision }, look: { before: 0, after: blueprint.world.lookRevision } } } });
   });
+  await page.route(`**/api/worldstream/sessions/${id}/comparison/restore`, route => {
+    const expected=route.request().postDataJSON();
+    expect(expected.simRevision).toBe(blueprint.world.simRevision);
+    blueprint={...blueprint,world:sealSimHash({...blueprint.world,sim:original.world.sim,simRevision:blueprint.world.simRevision+1})};
+    return route.fulfill({json:{outcome:'RESTORED',acceptedBlueprint:blueprint}});
+  });
   let snapshotFailed = false;
   await page.route(`**/api/worldstream/sessions/${id}`, async route => {
     snapshots++;
@@ -92,6 +114,7 @@ async function museum(page: Page, options: {
     return route.fulfill({ json: { blueprint: snapshot } });
   });
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('Museum branch fixture');
   await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('runtime-act')).toBeEnabled({ timeout: 30_000 });
@@ -102,11 +125,70 @@ async function act(page: Page, label: string) {
   await page.getByTestId('runtime-action').selectOption({ label });
   await page.getByTestId('runtime-act').click();
 }
-async function preview(page: Page) {
-  await page.getByTestId('refine-input').fill('Shorten the sensor countdown from 20 seconds to 10 seconds.');
+async function preview(page: Page, prompt = 'Shorten the sensor countdown from 20 seconds to 10 seconds.') {
+  await page.getByTestId('refine-input').fill(prompt);
   await page.getByTestId('refine-submit').click();
   await expect(page.getByTestId('change-preview')).toHaveAttribute('data-kind', 'preview');
+  await page.getByText('Exact simulation times', {exact:true}).click();
 }
+
+test('an accepted non-timer action compares the same visitor input on the main page', async ({ page }, info) => {
+  const server = await museum(page, { nonTimer: true });
+  await act(page, 'activate sensorA (visitor)');
+  await page.getByTestId('runtime-pause').click();
+  const tick = Number(await page.getByTestId('runtime-tick').getAttribute('data-tick'));
+  await expect(page.getByTestId('runtime-value-f:alarm')).toHaveText('alarm: off');
+  await page.getByTestId('rewind-before-action').click();
+  await preview(page, 'The first sensor activates the alarm.');
+  await page.getByTestId('branch-observation-input').fill(String(tick + 40));
+  await page.getByTestId('change-apply').click();
+  await expect(page.getByTestId('branch-rule')).toContainText('start_countdown: action changed');
+  await expect(page.getByTestId('branch-horizon')).toContainText('same 1 visitor inputs');
+  await expect(page.getByTestId('branch-value-f:alarm').locator('td')).toHaveText(['off', 'on']);
+  await expect(page.getByTestId('runtime-value-f:alarm')).toHaveText('alarm: on');
+  await expect(page.getByTestId('future-views')).toBeVisible();
+  await expect(page.getByTestId('future-views').locator('canvas')).toHaveCount(2);
+  await page.waitForTimeout(800); // asset decode and the first complete render pass
+  const canvases = page.getByTestId('future-views').locator('canvas');
+  const images = await Promise.all([canvases.nth(0).screenshot(), canvases.nth(1).screenshot()]);
+  const pixels = await Promise.all(images.map(buffer => sharp(buffer).resize(640,480).removeAlpha().raw().toBuffer()));
+  let different = 0;
+  for (let i=0; i<pixels[0].length; i+=3) if (Math.max(...[0,1,2].map(c => Math.abs(pixels[0][i+c]-pixels[1][i+c]))) > 20) different++;
+  expect(different / (640*480)).toBeGreaterThan(0.001);
+  const artifacts=info.outputPath('a4');
+  await mkdir(artifacts, { recursive: true });
+  const futureBounds=await page.getByTestId('future-views').boundingBox();
+  const controlBounds=await page.locator('.ws-controls').boundingBox();
+  expect(futureBounds!.y+futureBounds!.height).toBeLessThanOrEqual(controlBounds!.y);
+  const budget = await canvases.evaluateAll(elements => Promise.all(elements.map(async element => {
+    const probe = (element as HTMLCanvasElement).__worldstreamStage!;
+    return { quality: probe.quality(), memory: probe.memory(), camera: probe.camera(), renderTiming:await probe.measureRender(60) };
+  })));
+  for (const view of budget) expect(view.quality!.drawCalls).toBeLessThanOrEqual(view.quality!.budget.maxDrawCalls);
+  expect(budget[0].camera).toEqual(budget[1].camera);
+  await writeFile(join(artifacts,'two-view-gpu-budget.json'),JSON.stringify({provenance:'production-browser deterministic fixture, two WebGL contexts',
+    views:budget,totalDrawCalls:budget.reduce((sum,view)=>sum+view.quality!.drawCalls,0),
+    limitation:'GPU render queries measured per context; CPU asset cache shared; GPU buffers belong to separate contexts. Not target-notebook G-P evidence.'},null,2));
+  await page.screenshot({ path: join(artifacts,'two-futures-gpu.png') });
+  await page.getByTestId('future-time').focus();
+  await page.getByTestId('future-time').press('Home');
+  await expect(page.getByTestId('future-time')).toHaveValue((await page.getByTestId('future-time').getAttribute('min'))!);
+  await page.getByTestId('future-time').press('End');
+  await page.setViewportSize({width:390,height:844});
+  await page.getByRole('button', {name:'Original view',exact:true}).click();
+  await expect(page.getByRole('region',{name:'Original future'})).toBeVisible();
+  await expect(page.getByRole('region',{name:'Changed future'})).toBeHidden();
+  await page.screenshot({ path: join(artifacts,'mobile-future.png') });
+  await page.setViewportSize({width:1280,height:900});
+  expect(server.commits()).toBe(1);
+  await page.getByTestId('branch-original').click();
+  await expect(page.getByTestId('runtime-value-f:alarm')).toHaveText('alarm: off');
+  await page.getByTestId('branch-restart').click();
+  await expect(page.getByTestId('future-views')).toHaveCount(0);
+  await expect(page.getByTestId('refine-submit')).toBeEnabled();
+  await preview(page, 'The first sensor activates the alarm.');
+  await expect(page.getByTestId('change-apply')).toBeEnabled();
+});
 
 test('an unsupported appearance preview explains the limitation and preserves the running world', async ({ page }) => {
   const server = await museum(page, { appearanceRefused: true });
@@ -198,7 +280,10 @@ test('worker failure after acceptance keeps the committed branch usable with an 
   const fallback = page.getByTestId('world-facts-slot').filter({ hasText: 'the visitor' });
   await expect(fallback).toHaveAttribute('data-rung', 'semantic-clay');
   await expect(fallback).toContainText('TEST_ACCEPTED_MESH_UNAVAILABLE');
-  expect(await page.evaluate(() => window.__worldstreamStage!.slots().find(slot => slot.stableId === 'visitor')!.objectId)).toBe(originalObject);
+  const changedCanvas = page.getByTestId('future-views').locator('.ws-future-changed canvas');
+  await expect.poll(() => changedCanvas.evaluate(canvas => (canvas as HTMLCanvasElement).__worldstreamStage?.ready())).toBe(true);
+  const changedObject = await changedCanvas.evaluate(canvas => (canvas as HTMLCanvasElement).__worldstreamStage!.slots().find(slot => slot.stableId === 'visitor')!.objectId);
+  expect(changedObject).not.toBeNull(); // a separate renderer owns a separate Object3D, with the same stableId
   await expect(page.getByTestId('change-recovery')).toContainText('accepted (simulation 1');
   await expect(page.getByTestId('change-resync')).toHaveText('Retry accepted detail');
   await page.getByTestId('change-resync').click();
@@ -210,21 +295,21 @@ test('worker failure after acceptance keeps the committed branch usable with an 
   await expect(page.getByTestId('runtime-value-f:alarm')).toHaveText('alarm: off');
   await page.getByTestId('branch-changed').click();
   await expect(page.getByTestId('runtime-value-f:alarm')).toHaveText('alarm: on');
-  await expect(page.getByTestId('runtime-pause')).toBeEnabled();
+  await expect(page.getByTestId('runtime-pause')).toBeDisabled();
   const acceptedTick = await page.getByTestId('runtime-tick').getAttribute('data-tick');
   await page.getByTestId('branch-original').click();
   await page.evaluate(() => { document.body.dataset.allowAcceptedMesh = 'true'; });
   await page.getByTestId('change-resync').click();
   await expect(page.getByTestId('change-recovery')).toHaveCount(0);
   await expect(page.getByTestId('runtime-value-f:alarm')).toHaveText('alarm: off');
-  const pendingRetry = await page.evaluate(() => window.__worldstreamMetrics!.snapshot().runs.at(-1)!);
-  expect(pendingRetry.kind).toBe('prompt-detail-retry');
-  expect(pendingRetry.stages.find(stage => stage.name === 'first-frame')?.outcome).toBe('pending');
+  // Both futures are rendered simultaneously, so changed detail can paint
+  // while the original branch is selected in the textual inspector.
+  await expect.poll(async () => page.evaluate(() => window.__worldstreamMetrics!.snapshot().runs.at(-1)?.outcome)).toBe('completed');
   await page.getByTestId('branch-changed').click();
   await expect(fallback).not.toHaveAttribute('data-rung', 'semantic-clay');
   await expect(page.getByTestId('runtime-tick')).toHaveAttribute('data-tick', acceptedTick!);
   await expect(page.getByTestId('branch-value-f:alarm').locator('td')).toHaveText(['off', 'on']);
-  expect(await page.evaluate(() => window.__worldstreamStage!.slots().find(slot => slot.stableId === 'visitor')!.objectId)).toBe(originalObject);
+  expect(await changedCanvas.evaluate(canvas => (canvas as HTMLCanvasElement).__worldstreamStage!.slots().find(slot => slot.stableId === 'visitor')!.objectId)).toBe(changedObject);
   await expect.poll(async () => page.evaluate(() => window.__worldstreamMetrics!.snapshot().runs.at(-1)?.outcome)).toBe('completed');
   const retries = await page.evaluate(() => window.__worldstreamMetrics!.snapshot().runs.filter(run => run.kind === 'prompt-detail-retry'));
   expect(retries.map(run => run.outcome)).toEqual(['failed', 'completed']);
@@ -382,7 +467,7 @@ test('confirmed timer change compares the same inputs and horizon and returns to
   await expect(page.getByTestId('world-authored')).toContainText('authored ahead of time');
   await expect(page.getByText('Generated now', { exact: true })).toHaveCount(0);
   await page.getByTestId('branch-original').click();
-  await expect(page.getByTestId('runtime-tick')).toHaveAttribute('data-tick', originalTick!);
+  await expect(page.getByTestId('runtime-tick')).toHaveAttribute('data-tick', String(horizon));
   await expect(page.getByTestId('runtime-value-e:case:locked')).toHaveText('case: unlocked');
   await expect(page.getByTestId('refine-submit')).toBeDisabled();
   await page.getByTestId('branch-changed').click();

@@ -24,6 +24,10 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
+import { join, resolve } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { cpus, platform, release } from 'node:os';
 
 import { describe, expect, it } from 'vitest';
 
@@ -35,12 +39,15 @@ import { createMeshClient } from '@/shape/mesh-client';
 
 import { readCorpus, type CreateCase } from './lock.mjs';
 import { driveCreateCase, liveEmitter, percentile95, type CaseOutcome } from './measure-create';
+import { readQualityCases } from './world-quality/corpus';
 
 const SESSION_SEED = 4021;
 const REPAIR_PREFIX = 'Your previous answer was rejected';
 
-const REPORT_FILE = fileURLToPath(new URL('./latency-report.json', import.meta.url));
-const RAW_FILE = fileURLToPath(new URL('../../scratch/latency-raw.json', import.meta.url));
+// Explicit P20 run directories retain failures and answers without rewriting older reports.
+const P20_DIR = process.env.P20_RUN_DIR ? resolve(process.env.P20_RUN_DIR) : null;
+const REPORT_FILE = P20_DIR ? join(P20_DIR, 'latency-report.json') : fileURLToPath(new URL('./latency-report.json', import.meta.url));
+const RAW_FILE = P20_DIR ? join(P20_DIR, 'latency-raw.json') : fileURLToPath(new URL('../../scratch/latency-raw.json', import.meta.url));
 
 interface CallRecord {
   readonly model: string;
@@ -251,8 +258,21 @@ describe('per-call latency of the live create path', () => {
     const grammar = frozenGrammar();
     if (!grammar.ok) throw new Error(`${grammar.reason}: ${grammar.detail}`);
 
-    const cases = pickCases(corpus.create as CreateCase[]);
+    const cases = P20_DIR ? readQualityCases('all') : pickCases(corpus.create as CreateCase[]);
     const variants = variantsFromEnv();
+    if (P20_DIR) {
+      expect(variants.map((v) => [v.model, v.effort])).toEqual([['gpt-6-astra', 'medium']]);
+      mkdirSync(P20_DIR, { recursive: false });
+      mkdirSync(join(P20_DIR, 'answers'));
+      writeFileSync(join(P20_DIR, 'environment.json'), JSON.stringify({
+        kind: 'live-generation', startedAt: new Date().toISOString(), node: process.version,
+        os: `${platform()} ${release()}`, cpu: cpus()[0]?.model,
+        commit: execFileSync('git', ['--no-replace-objects', 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+        dirtyDiffHash: createHash('sha256').update(execFileSync('git', ['--no-replace-objects', 'diff', 'HEAD'])).digest('hex'),
+        variants, speed: 'standard', sessionSeed: SESSION_SEED, browser: null, gpu: null,
+        browserMetrics: 'pending; Node harness does not measure first visible composition or frame time',
+      }, null, 2));
+    }
     const mesh = createMeshClient({ allowMainThread: true });
     const raw: CallRecord[] = [];
     const summaries: ReturnType<typeof summarise>[] = [];
@@ -305,11 +325,12 @@ describe('per-call latency of the live create path', () => {
                 // Celá odpověď na disk — bez ní se nedá říct, jestli je vada v modelu, nebo v cestě k němu.
                 writeFileSync(
                   // `#cli` v popisku by v URL bylo fragmentem a jméno souboru by se uťalo.
-                  fileURLToPath(new URL(`../../scratch/latency-failed-${model.replace('#', '+')}-${entry.id}-${String(call)}.txt`, import.meta.url)),
+                  P20_DIR ? join(P20_DIR, 'answers', `${entry.id}-${call}-failed.txt`) : fileURLToPath(new URL(`../../scratch/latency-failed-${model.replace('#', '+')}-${entry.id}-${String(call)}.txt`, import.meta.url)),
                   tap.lastText(),
                 );
                 throw thrown;
               } finally {
+                if (P20_DIR) writeFileSync(join(P20_DIR, 'answers', `${entry.id}-${call}.json`), JSON.stringify({ request, answer, ok }, null, 2));
                 const record: CallRecord = {
                   model,
                   caseId: entry.id,
@@ -326,6 +347,7 @@ describe('per-call latency of the live create path', () => {
                 };
                 modelCalls.push(record);
                 raw.push(record);
+                if (P20_DIR) writeFileSync(RAW_FILE, JSON.stringify(raw, null, 2));
                 process.stdout.write(
                   `  ${entry.id} #${call} ${record.stage ?? '?'}${record.repair ? ' repair' : ''} ${Math.round(record.ms)} ms ${record.answerBytes} B in ${String(record.inputTokens ?? '?')} out ${String(record.outputTokens ?? '?')}${record.reason ? ` · ${record.reason}` : ''}\n`,
                 );
@@ -340,13 +362,16 @@ describe('per-call latency of the live create path', () => {
           // Hotový svět na disk pro galerii kvality (`e2e/quality-gallery.spec.ts`):
           // čísla výš říkají, že svět prošel, ne jak vypadá.
           if (done.blueprint !== null) {
-            const dir = fileURLToPath(new URL(`../../scratch/quality/${model.replace('#', '+')}/`, import.meta.url));
+            const dir = P20_DIR ? join(P20_DIR, 'quality', model.replace('#', '+')) : fileURLToPath(new URL(`../../scratch/quality/${model.replace('#', '+')}/`, import.meta.url));
             mkdirSync(dir, { recursive: true });
-            writeFileSync(`${dir}${entry.id}.json`, JSON.stringify({ id: entry.id, prompt: entry.prompt, model, blueprint: done.blueprint }, null, 2));
+            writeFileSync(join(dir, `${entry.id}.json`), JSON.stringify({ id: entry.id, prompt: entry.prompt, model, blueprint: done.blueprint }, null, 2));
           }
+          if (P20_DIR) writeFileSync(join(P20_DIR, 'outcomes.json'), JSON.stringify(outcomes, null, 2));
           process.stdout.write(
             `${entry.id} ${done.geometryAuthored ? 'authored' : (done.failure?.stage ?? 'lost')} ${Math.round(done.latencyMs)} ms, ${done.rounds} round(s)\n`,
           );
+          // An unavailable transport provides no case evidence; do not repeat a broken login/runtime 30 times.
+          if (P20_DIR && done.failure?.stage === 'unavailable') break;
         }
         summaries.push(summarise(model, outcomes, modelCalls, tap.notJsonAsWritten()));
       }
@@ -361,5 +386,6 @@ describe('per-call latency of the live create path', () => {
     }
 
     expect(summaries.length).toBe(variants.length);
+    if (P20_DIR) expect(summaries.every((summary) => summary.cases === cases.length), 'incomplete live baseline; see outcomes.json').toBe(true);
   }, 180 * 60_000);
 });

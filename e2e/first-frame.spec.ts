@@ -74,6 +74,7 @@ const REPORT = 'evals/worldstream/first-frame.json';
 
 async function measure(page: import('@playwright/test').Page, sentence: string): Promise<number> {
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'empty');
 
   await page.getByTestId('prompt-input').fill(sentence);
@@ -136,6 +137,7 @@ async function harvest(
   });
 
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill(EXACT);
   await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live', {
@@ -243,6 +245,7 @@ test('modelovo čtení věty je na obrazovce dřív než jeho svět', async ({ p
   });
 
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   const status = page.getByTestId('world-status');
   await expect(status).toHaveAttribute('data-state', 'empty');
   await page.getByTestId('prompt-input').fill(EXACT);
