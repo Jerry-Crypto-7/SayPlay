@@ -93,12 +93,18 @@ describe('current source submission disclosure contract, not semantic certificat
     expect(descriptionContractProblems(current)).toEqual([]);
     expect(descriptionContractProblems(description())).toEqual([]);
   });
+  // Každý řádek smí rozbít **právě jedno** omezení – proto se proti fixtuře
+  // nahrazuje věta, kterou vymáhá jediná položka kontraktu. Když se kontrakt
+  // přepíše a tenhle seznam ne, nahrazení přestane cokoli měnit a popis zůstane
+  // vyhovující: výsledek je `[]` místo jednoho `id`, a případ zčervená.
   it.each([
-    ['source-scope', 'one timer intervention', 'unlimited interventions'],
-    ['parameter-review', 'missing or conflicting support blocks acceptance', 'every proposal is accepted'],
-    ['semantic-limit', 'This acknowledgement does not certify semantic correctness. A structurally valid citation is not a semantic guarantee.', 'Semantic correctness is guaranteed.'],
+    ['sentence-scope', 'becomes a 3D world', 'becomes a flat picture'],
+    ['authored-fallback', 'the nearest authored world', 'a substitute world'],
+    ['second-sentence-limit', 'any other target is refused', 'any other target is accepted'],
+    ['no-time-rewind', 'are not on the judge path', 'are on the judge path'],
+    ['semantic-limit', 'does not certify semantic correctness', 'guarantees semantic correctness'],
     ['geometry-limit', 'Geometry is schematic.', 'Geometry is physically exact.'],
-    ['latency-provenance', 'CLI timings include process and transport overhead.', 'CLI timings are provider compute time.'],
+    ['latency-provenance', 'Creation timings include process and transport overhead', 'Creation timings are provider compute time'],
     ['independent-review', 'independent semantic review', 'automated validation'],
   ])('rejects missing %s even when a legacy guarantee is present', (id, original, replacement) => {
     expect(descriptionContractProblems(`${description().replace(original, replacement)}\n${GUARANTEE}`)).toEqual([
@@ -106,13 +112,19 @@ describe('current source submission disclosure contract, not semantic certificat
     ]);
   });
   it('accepts wording and markdown changes instead of requiring an exact quote', () => {
-    const text = description().replace('one timer intervention', '**single** timer intervention')
+    const text = description().replace('a 3D world', 'a **3D** world')
       .replace('does not certify semantic correctness', 'cannot guarantee semantic accuracy');
     expect(descriptionContractProblems(text)).toEqual([]);
   });
   it('does not count disclosure hidden inside comments or code', () => {
-    expect(descriptionContractProblems(`<!-- ${description()} -->`)).toHaveLength(6);
-    expect(descriptionContractProblems(`\x60\x60\x60text\n${description()}\n\x60\x60\x60`)).toHaveLength(6);
+    // Počet se čte z kontraktu, ne z ruky: nad prázdným textem chybí všechno.
+    // Připíchnuté číslo by se po každém přepsání kontraktu rozešlo s realitou,
+    // což je přesně to, co se 16. 9. stalo. Nula na pravé straně by znamenala,
+    // že komentář prošel jako disclosure.
+    const all = descriptionContractProblems('').length;
+    expect(all).toBeGreaterThan(0);
+    expect(descriptionContractProblems(`<!-- ${description()} -->`)).toHaveLength(all);
+    expect(descriptionContractProblems(`\x60\x60\x60text\n${description()}\n\x60\x60\x60`)).toHaveLength(all);
   });
 });
 
