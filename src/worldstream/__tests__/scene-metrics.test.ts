@@ -108,3 +108,55 @@ describe('scene metrics', () => {
     expect(report.collisions).toBe(0);
   });
 });
+
+/* ------------------------------------------------------------------ *
+ * A3 — kontakt, kolize a počty za každou reprezentaci.
+ * ------------------------------------------------------------------ */
+
+describe('kontakt a kolize na jeden objekt', () => {
+  // Dvě bedny stojí přesně na sobě: uvnitř jednoho objektu je to stavba,
+  // mezi dvěma objekty je to prolnutí. Bez rozlišení podle vlastníka by
+  // report hlásil kolizi u každého objektu složeného z víc než jednoho kusu —
+  // a nikdo by nepoznal, že „12 kolizí" znamená dvanáct správně poskládaných
+  // věcí.
+  const stack: GeomProgram = {
+    version: GEOM_VERSION,
+    nodes: [
+      { kind: 'fixture', variant: 'crate', at: [0, 0, 0] },
+      { kind: 'fixture', variant: 'crate', at: [0, 0, 0] },
+      { kind: 'group', children: [0, 1] },
+      { kind: 'group', children: [2] },
+    ],
+    root: 3,
+  } as GeomProgram;
+
+  it('prolnutí uvnitř jednoho objektu není kolize, mezi dvěma objekty ano', () => {
+    const left = planned('left', 'left crate');
+    const right = planned('right', 'right crate');
+
+    const together = sceneMetrics({ geometry: stack, objects: [placed(left, 2)], shapes: [] }, [left]);
+    expect(together.representationEvidence[0]).toMatchObject({ instances: 2, collisions: 0 });
+
+    const apart = sceneMetrics(
+      { geometry: stack, objects: [placed(left, 0), placed(right, 1)], shapes: [] },
+      [left, right],
+    );
+    expect(apart.representationEvidence.map((item) => item.collisions)).toEqual([1, 1]);
+    expect(apart.representationEvidence.map((item) => item.instances)).toEqual([1, 1]);
+  });
+
+  it('rozvinutá řada se počítá po kusech a asset přispěje svým jediným kvádrem', () => {
+    const asset = WORLDSTREAM_ASSETS.candidates()[0];
+    const floating: SemanticObject = {
+      ...placed(aquarium, 0),
+      source: { kind: 'asset', assetId: asset.assetId, version: asset.version, hash: asset.hash },
+      // Vysoko nad podlahou a nad ničím: jeden kvádr, který nic nedrží.
+      targetBounds: { min: [40, 9, 40], max: [41, 10, 41] },
+    };
+    const report = sceneMetrics({ geometry, objects: [placed(crates, 1), floating], shapes: [] }, [crates, aquarium]);
+    expect(report.representationEvidence[0].instances).toBe(6);
+    expect(report.representationEvidence[1]).toMatchObject({ instances: 1, unsupported: 1, collisions: 0 });
+    // Scénové součty zůstávají metrikou kitu — kvádr assetu je nesmí hnout.
+    expect(report.collisions).toBe(0);
+  });
+});

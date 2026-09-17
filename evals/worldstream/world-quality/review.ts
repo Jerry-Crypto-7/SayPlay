@@ -27,6 +27,7 @@ export function reviewScene(input:{
     evidence:{browser:input.browser?.artifact??null,human:input.human?{reviewer:input.human.reviewer,artifact:input.human.artifact}:null},
     limits:['Catalog resolution does not establish loading or rendering.',
       'Legacy piece/support/collision metrics exclude assets and do not measure camera visibility.',
+      'Per-instance contact and collision counts are axis-aligned box tests: a shape or asset contributes one box, its own targetBounds.',
       'Ray samples do not establish human recognizability.'],
   };
 }
