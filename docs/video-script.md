@@ -1,4 +1,32 @@
+# Scénář aktuálního živého A4 videa — 1:30
+
+Finální místní [worldstream-a4-live.mp4](../videos/worldstream-a4/worldstream-a4-live.mp4): skutečný souvislý browser záznam v3 a jeho skutečný závěrečný snímek. Žádná publikace, fixture substituce ani lidská studie. [Storyboard, asset provenance a encoded QA](../videos/worldstream-a4/README.md).
+
+| Čas videa | Zdroj a obsah |
+|---|---|
+| 0:00–0:06 | Úvod „Přetoč a přepiš“ a přesné vlastní zadání čítárny s akváriem, dvěma sedícími lidmi a terminálem ovládajícím signál. |
+| 0:06–0:58 | Celých prvních 260 s browser záznamu, přiznaně zrychlených 5×. Skutečný čas od odeslání k ovládání byl 258,445 s. |
+| 0:58–1:09,84 | Posledních 11,84 s stejného záznamu 1×: skutečná akce, návrat, modelový návrh a potvrzení. |
+| 1:09,84–1:30 | Skutečný hires snímek dvou synchronních budoucností. Vlevo signál svítí, vpravo zůstává zhasnutý. |
+
+Obě větve této ukázky jsou `won`. Změnil se jediný list akce `signalOn:true → false`, nikoli tvrzený výsledek won/running. Commit vrací `comparison-only` bez nového winning certificate. Naměřených 8,555 s následné A4 cesty není délka posledního úseku záznamu ani samostatná latence replay.
+
+Výstup má 1920 × 1080, 30 fps, 2700 snímků, 90 s a žádný zvuk. Původní browser video 800 × 450/25 fps je zvětšené; drobné UI písmo má omezenou čitelnost. Závěrečný samostatný screenshot je nativní 1920 × 1080. Sedm zakódovaných snímků bylo skutečně prohlédnuto.
+
+Toto jediné živé pozorování nesplňuje cíl latence a nedokládá obecnou kvalitu, nezávislé lidské hodnocení nebo veřejný provoz. Video už lokálně existuje; veřejné odevzdání nebylo provedeno. Historický draft `worldstream-a4-local.mp4` zůstává označeným odděleným artefaktem.
+
+---
+
+<details>
+<summary>Historický 2:44 scénář — pouze archiv, nepoužívat pro aktuální produkt</summary>
+
+Následující časová osa, povinné beaty starého checkeru, offline fallback a panel-only rewind jsou superseded. Nepředstavují aktuální video ani dnešní funkce hlavní cesty. Historická čísla jsou zachována beze změny.
+
 # Scénář dema — 2:44 ze 3:00
+
+**P20 lokální pracovní video, 17. 9. 2026:** [90sekundový MP4](../videos/worldstream-a4/worldstream-a4-local.mp4) a [původ, ověření a limity](../videos/worldstream-a4/README.md). Obsahuje označený archiv živé čítárny a oddělené A4/dveřní fixtures. Není finální veřejnou přejímkou ani souvislým záznamem celé živé cesty. Následující scénář je historický.
+
+> **Historický scénář, nepoužívat pro nové P20 video.** P20 A4 má ukázat vlastní generaci → akci → návrat před akci → náhled nečasovačové změny → potvrzení → dvě synchronní budoucnosti s viditelným rozdílem. Níže uvedený offline beat a panel-only rewind popisují starou variantu. Finální video čeká na přijatou generaci a provoz; finální publikované video zatím není hotové. Případné zkrácení čekání musí být označené a skutečný čas uvedený.
 
 Tvrdý limit je **3:00** (`RULES.md` §2). Tenhle scénář má **2:44**, takže na střih
 zbývá šestnáct sekund. Stopáž hlídá `node scripts/video-check.mjs docs/video-script.md`
@@ -70,3 +98,5 @@ Každé je naměřené v repozitáři, ne odhad.
 
 **Nepoužívej „svět se postaví do dvou sekund".** Je to cíl ze specifikace, ne číslo
 naměřené od věty k hotovému snímku. Obhajitelné znění je to v tabulce výš.
+
+</details>

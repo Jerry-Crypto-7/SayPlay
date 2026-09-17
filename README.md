@@ -1,10 +1,10 @@
-# WORLDSTREAM
+﻿# WORLDSTREAM
 
-A sentence in plain English becomes a 3D world you can look at and that runs. The model writes two declarative programs — the composition of the space, and the shape of its hero objects as signed distance fields that the browser meshes itself. A deterministic runtime executes the rules; the model never runs generated code. A second sentence changes one object of the world that is already standing, instead of building a new one.
+Describe a place, act in its world, rewind, preview one rule change, and compare two synchronized futures. The current P20 product combines approved GLB/PBR objects, parametric architecture and terrain, and SDF geometry for unusual forms. A deterministic runtime executes declarative rules; the model never runs generated code.
 
-Everything happens in the browser. There is no install, no plugin, and no loading screen before the first world.
+**Current delivery is local.** [Watch the 90-second live A4 video](videos/worldstream-a4/worldstream-a4-live.mp4) or follow the [demo runbook](docs/demo/judge-runbook.md). Public operation, independent human review and the product acceptance gates remain unverified or incomplete; see [PROJECT-STATUS.md](PROJECT-STATUS.md).
 
-## Run it
+## Run locally
 
 ```powershell
 npm ci
@@ -13,29 +13,33 @@ npm run build
 npm run start
 ```
 
-`npm run start` is the supported path. `next dev` breaks the session registry, so the live branch returns 404 on its event stream there.
+Use the production build for verification. Live generation additionally requires the already authorized, configured server-side model transport and spend controls; these commands alone do not configure that service. See the [local walkthrough](docs/submission/demo-walkthrough.md). Do not use Next dev as acceptance evidence.
 
-Type a sentence into **Describe a place** and the world builds. Open **Inspect** at the bottom right to see the objects of the world and the tier each one is drawn at — meshed hero shape, composed kit piece, or clay. **Change one thing in this world** takes the second sentence: it shows the plan first — which object changes, what happens to it, and which objects the change does not name — and nothing moves until you press *Apply*.
+The main page defaults to **Generate my world**: submitting your prompt starts one live session. A failed or unavailable generation reports its reason, without silently substituting an authored world. **Prepared demo** is a separate explicit choice and remains labeled even for exact matches; it does not automatically become a live generation in the background.
 
-## What it does not do, stated plainly
+A provisional layout or validated visual preview can appear before accepted rules. Such a preview is noninteractive, is not a simulation or replay, and does not certify the requested meaning. Once a world is accepted, perform an available action, choose **Before my last action**, propose a compatible change, inspect the preview and confirm. Desktop comparison shows two views with shared time and camera; mobile lets you switch views.
 
-- **An unrecognised sentence is answered by the nearest authored world**, and the product says so on screen. When a sentence is recognised exactly, no such note appears — the note belongs to substitution, not to every world.
-- **The second sentence has an authored change for only 5 of the 11 stored worlds.** Any other target is refused with a stated reason, not with a borrowed error about a model outage that never happened.
-- **Time rewind and branching futures are not on this path.** They are built and tested, but they live on a development route; nothing here should be read as a claim that a visitor can rewind time.
-- **The live model path runs only from the author's development machine** through the Codex CLI. When it is absent, the hosted deployment answers from the authored store.
-- **Geometry is schematic.**
-- **A world that passes every check does not certify semantic correctness.** The runtime proves the rules are consistent and the world can be won, never that it means what the sentence meant. The most recent internal review recognised 2 of 10 rendered rooms from the sentence that produced them, which is the measured size of that gap.
+## What is demonstrated
 
-## Measured
+One recorded production-browser A4 run on 17 September 2026 generated the requested reading room with an aquarium, two seated people, a terminal and a signal light. The accepted, controllable world arrived in **258.445 s**; the subsequent A4 path took **8.555 s**. This is one observation, not a percentile or a performance guarantee, and concurrent work was running.
 
-Five sentences against the cloud model, 13 September 2026: **2.4 model calls per sentence**, a median of **143 s** to a finished world, a 95th percentile of **259 s**. Over a separate 30-sentence run the model authored the hero geometry for **0.3** of the attempts. Creation timings include process and transport overhead, and the judge-path timings were measured over the authored store, not a live model.
+The same terminal action sets `signalOn` to true in the original future and false in the changed future. Both futures in this example are `won`; the visible difference is the light. The comparison commit returns `validation: comparison-only` and `certificate: null`: it validates the supported comparison, not a new winning certificate for the alternative.
 
-- [Sentence latency and stage breakdown](evals/worldstream/latency-report.json)
-- [Thirty-sentence creation run](evals/worldstream/create-report.json)
-- [First frame on the cooked path](evals/worldstream/first-frame.json)
-- [What a visitor sees, beat by beat](docs/demo/judge-runbook.md)
+- [Raw recording, requests, timing and screenshots](plans/P20/live-browser-v3-20260917-1825/README.md)
+- [Final video provenance, timing and encoded QA](videos/worldstream-a4/README.md)
+- [Current P20 implementation and remaining gates](plans/P20-svet-a-dve-budoucnosti-2026-09-17.md)
 
-## Checks
+The video openly speeds the first 260 seconds of its browser recording by 5×. Its original 800 × 450 browser footage is enlarged; the closing screenshot is 1920 × 1080. This automated browser recording is not a human study or proof of general prompt support.
+
+## Limits
+
+- Comparison supports bounded compatible edits of an existing rule condition, action or timer. Structural or unsupported edits are refused. Restore-original accepts a new revision without regenerating geometry; a page reload does not restore the visitor's local input history.
+- Prepared scenes and their authored changes have limited coverage. They are demonstrations, not evidence of fresh generation.
+- Structural validation and a successful deterministic witness do not certify semantic fidelity, recognizable objects or convincing appearance. Search exhaustion is not proof that a world cannot be won.
+- Hand-authored `/dev/reference-scenes` are renderer calibration fixtures, never hidden generation fallbacks. Human visual evaluation, provider evidence and hosted-operation evidence remain separate gates.
+- The single 258.445-second observation does not meet the P20 latency target.
+
+## Checks and attribution
 
 ```powershell
 npm run typecheck
@@ -44,8 +48,8 @@ npm run test:e2e
 node scripts/submission-check.mjs
 ```
 
-Local Windows Playwright graphics tests use the hardware GPU through Direct3D 11; `e2e/gpu-renderer.spec.ts` records the actual WebGL renderer. CI defaults to software rendering, so keep hardware and software timings apart.
+Use targeted suites for changed behavior. Windows graphics tests record the actual hardware renderer; software-rendered CI and hardware timings are distinct. Third-party materials are documented in [DISCLOSURE.md](DISCLOSURE.md), generated from `disclosure.json`.
 
-## Third-party material
+## Historical measurements
 
-Every library, asset, model, dataset and API is listed with its source, author, licence and required notices in [`DISCLOSURE.md`](DISCLOSURE.md), generated from `disclosure.json` by `npm run disclosure`.
+The 13 September experiments (five prompts: 2.4 calls/prompt, median 143 s, p95 259 s; a separate 30-prompt run) concern an earlier compiler. They are not acceptance results for the current hybrid version: [latency report](evals/worldstream/latency-report.json), [creation report](evals/worldstream/create-report.json), [prepared-path first frame](evals/worldstream/first-frame.json). Historical authored-store behavior and visual judgments are retained in the historical sections of the [runbook](docs/demo/judge-runbook.md); they do not describe today's default live path.

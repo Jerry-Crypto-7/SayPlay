@@ -1,4 +1,47 @@
+# Runbook — aktuální lokální P20 cesta
+
+Stav 17. 9. 2026. Vlastní zadání → přijatý živý svět → akce → návrat → návrh změny → potvrzení → dvě synchronní budoucnosti je na hlavní stránce. Geometrie je hybridní GLB/PBR, parametrická a SDF. [Hotové místní video](../../videos/worldstream-a4/worldstream-a4-live.mp4) a [jeho QA](../../videos/worldstream-a4/README.md) dokládají jeden skutečný průchod; nejde o veřejně přijatou službu nebo lidskou studii.
+
+1. Použij produkční lokální build a nakonfigurovaný autorizovaný modelový transport. V **World source** ponech **Generate my world**. Odeslání vlastního zadání zahájí jednu živou session. Chyba služby se zobrazí bez automatické prepared náhrady.
+2. Sleduj skutečný postup. Časný layout a případný vizuální preview jsou prozatímní a neinteraktivní; nejsou živou simulací ani certifikací významu. Až přijatý svět zpřístupní akce. Inspect a případný výřez stěn pomáhají prohlídce; katalogový odkaz sám neprokazuje rozpoznatelnost.
+3. Proveď dostupnou akci a použij **Before my last action**. Navrhni jednu kompatibilní změnu existující podmínky, akce nebo timeru. Nejednoznačný cíl zvol z nabídky; nepodporovanou strukturu nech odmítnout.
+4. Přečti návrh před potvrzením. Potvrzená alternativa má validaci `comparison-only`, bez nového vítězného certifikátu. Větve porovnávají stejné návštěvnické vstupy se zachovaným stavem na forku; alternativa nemusí vyhrát.
+5. Prohlédni oba pohledy, společný čas a kameru. Mobil přepíná pohled. Návrat k původním pravidlům přijme novou revizi bez regenerace geometrie; lokální input history se neobnoví reloadem.
+
+## Konkrétní zaznamenané pozorování
+
+[Živý v3 průchod](../../plans/P20/live-browser-v3-20260917-1825/README.md): čítárna s akváriem, dvěma sedícími lidmi, terminálem a signálem. Přijatý ovladatelný svět po **258,445 s**, následná A4 cesta **8,555 s**. Jediné pozorování, ne p95, při souběžné další práci. Cíl latence tím není splněn.
+
+Terminál po stejné akci zapne původní signál a ve změněné větvi jej nechá vypnutý. Obě větve mají `won`; rozdíl je signalOn on/off. Raw requests potvrzují `certificate:null` a comparison-only. Ve 90sekundovém videu je prvních 260 s záznamu označeně 5× zrychlených. Zdroj má 800 × 450, závěr používá samostatný 1920 × 1080 screenshot.
+
+## Prepared režim a hranice
+
+**Prepared demo** je samostatná explicitní volba, vždy označená včetně přesné shody. Automaticky nespouští živé nahrazení na pozadí. Její omezené authored změny nejsou obecnou podporou vlastního zadání. Vývojové `/dev/reference-scenes` nejsou generace ani skrytý fallback.
+
+Úspěšná strukturální kontrola, nalezená vítězná stopa a deterministický replay necertifikují význam ani přesvědčivý vzhled. Lidská vizuální přejímka, širší spolehlivost generace, provider a veřejný provoz mají vlastní otevřené brány. Detaily: [P20](../../plans/P20-svet-a-dve-budoucnosti-2026-09-17.md), [stav](../../PROJECT-STATUS.md), [walkthrough](../submission/demo-walkthrough.md).
+
+---
+
+<details>
+<summary>Historický runbook a naměřené údaje — nejsou aktuální produktové sliby</summary>
+
+Následující text zachovává starší pozorování beze změny. Automatický fallback, mlčení o exact prepared původu, dev-only branching, pending video a odhady rychlosti notebooku jsou historická tvrzení, která současný postup výše nepřebírá.
+
 # Runbook: co porotce uvidí a kdy
+
+## Aktuální P20, 17. 9. 2026 — lokální vývojová verze
+
+Hlavní cesta je vlastní zadání → ověřený svět → akce → návrat před akci → návrh změny pravidla → potvrzení → dvě synchronní budoucnosti. V produktu lze použít GLB/PBR, parametrickou geometrii i SDF. Prepared světy jsou tak označené. Vývojové reference `/dev/reference-scenes` nejsou živá generace ani fallback.
+
+1. V produkčním lokálním buildu zadej vlastní scénu. Během tvorby sleduj ledger požadavků. Za live se považuje až svět s ověřenými pravidly; čas generování zaznamenej zvlášť.
+2. Prohlédni skutečné objekty, případně použij označený vratný výřez stěn nebo Inspect → Check this view. Katalogový odkaz není důkaz rozpoznatelnosti.
+3. Proveď akci. Použij návrat před ni, napiš změnu podmínky/akce existujícího pravidla a přečti návrh před potvrzením.
+4. Po potvrzení porovnej stejné místo a okamžik. Kamera a čas jsou společné; na mobilu přepni pohled. Sleduj vizuální důsledek, nejen tabulku stavů.
+5. „Try another change from the original“ obnoví původní pravidla jako novou přijatou revizi a dovolí další návrh bez nové geometrie. Historie je pouze v této záložce; reload ji neobnoví.
+
+Důkazy a limity: [P20](../../plans/P20-svet-a-dve-budoucnosti-2026-09-17.md), [A4](../../plans/P20/t15-two-futures.md), [průběžná přejímka](../../evals/worldstream/world-quality/report.md). Nový živý hybridní smoke trval 266,24 s; cíl 45/90 s tedy tímto případem nesplnil. Veřejné nasazení této verze, finální video a lidská přejímka nejsou hotové.
+
+## Historický runbook a měření — nepřebírat jako aktuální P20 schopnosti
 
 Tenhle soubor popisuje **porotcův průchod z jeho strany** – co je na obrazovce,
 v jakém pořadí a jak dlouho na to čeká. Není to popis architektury; co se děje
@@ -202,3 +245,5 @@ podoba se ptala „zůstal aspoň jeden objekt něčím jiným než hlínou?" a 
 – s meshovačem `g2-rich, g3-reduced, g2-rich`, bez něj `g2-rich, semantic-clay,
 g2-rich`. Do hlíny spadne **právě hrdinský tvar**, takže se sada musí ptát na
 příčku `g3-reduced` jménem. Slabší otázka by tenhle výpadek propustila.
+
+</details>
