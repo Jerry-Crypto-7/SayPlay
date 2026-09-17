@@ -1,5 +1,5 @@
 {
-  "replayedAt": "2026-09-08T19:03:47.214Z",
+  "replayedAt": "2026-09-17T20:53:14.376Z",
   "archivedRun": {
     "measuredAt": "2026-09-06T21:40:13.751Z",
     "sessionSeed": 4021
@@ -22,17 +22,17 @@
   },
   "after": {
     "attempted": 30,
-    "geometryAuthored": 21,
+    "geometryAuthored": 19,
     "failuresByStage": {
       "planner": 1,
       "schema": 0,
       "copied": 0,
       "reference": 0,
       "geom": 0,
-      "shape": 0,
+      "shape": 1,
       "lowering": 0,
       "witness": 6,
-      "clay": 0,
+      "clay": 1,
       "unavailable": 2
     }
   },
@@ -74,23 +74,9 @@
     {
       "id": "c07",
       "from": "clay",
-      "to": "authored",
-      "detail": null,
-      "rungs": [
-        "g3-reduced",
-        "g2-rich"
-      ]
-    },
-    {
-      "id": "c08",
-      "from": "clay",
-      "to": "authored",
-      "detail": null,
-      "rungs": [
-        "g2-rich",
-        "g3-reduced",
-        "g2-rich"
-      ]
+      "to": "shape",
+      "detail": "shapes[0]: shape repeats one 6.5 m unit 9 times, so targetBounds is 2.8× that unit and the mesh grid gives it 56 cm cells. Write the unit once, sized to its own targetBounds, and place the 9 copies in the composition instead",
+      "rungs": []
     },
     {
       "id": "c09",
@@ -109,7 +95,7 @@
       "id": "c11",
       "from": "clay",
       "to": "witness",
-      "detail": "witness: horizon 600 exhausted in state running",
+      "detail": "witness: Bounded witness search search-exhausted: 48/20000 replay nodes, 6139/40000 ticks; max input depth 6, coarse spacing 30. No certified route was found within this search. This is not proof that the world is unwinnable. Final replay: horizon 600 exhausted in state running",
       "rungs": []
     },
     {
@@ -128,7 +114,7 @@
       "id": "c13",
       "from": "shape",
       "to": "witness",
-      "detail": "witness: horizon 600 exhausted in state running",
+      "detail": "witness: Bounded witness search search-exhausted: 421/20000 replay nodes, 34020/40000 ticks; max input depth 6, coarse spacing 30. No certified route was found within this search. This is not proof that the world is unwinnable. Final replay: horizon 600 exhausted in state running",
       "rungs": []
     },
     {
@@ -180,21 +166,21 @@
       "id": "c24",
       "from": "clay",
       "to": "witness",
-      "detail": "witness: horizon 600 exhausted in state running",
+      "detail": "witness: Bounded witness search search-exhausted: 12/20000 replay nodes, 1243/40000 ticks; max input depth 6, coarse spacing 30. No certified route was found within this search. This is not proof that the world is unwinnable. Final replay: horizon 600 exhausted in state running",
       "rungs": []
     },
     {
       "id": "c26",
       "from": "shape",
       "to": "witness",
-      "detail": "witness: horizon 600 exhausted in state running",
+      "detail": "witness: Bounded witness search search-exhausted: 369/20000 replay nodes, 32319/40000 ticks; max input depth 6, coarse spacing 30. No certified route was found within this search. This is not proof that the world is unwinnable. Final replay: horizon 600 exhausted in state running",
       "rungs": []
     },
     {
       "id": "c27",
       "from": "authored",
       "to": "witness",
-      "detail": "witness: horizon 600 exhausted in state running",
+      "detail": "witness: Bounded witness search search-exhausted: 6/20000 replay nodes, 907/40000 ticks; max input depth 6, coarse spacing 30. No certified route was found within this search. This is not proof that the world is unwinnable. Final replay: horizon 600 exhausted in state running",
       "rungs": []
     },
     {
