@@ -57,7 +57,7 @@ import { canonical } from '../ir/worlddoc';
 import { SHAPE_NODE_GROUPS } from '../shape/schema';
 import { SHAPE_LIMITS, type ShapeNodeKind } from '../shape/types';
 
-import { EMISSION_MODEL, buildEmissionRequest, type Grammar, type UpstreamRequest } from './prompt';
+import { EMISSION_MODEL, EXAMPLE_MARKER, buildEmissionRequest, type Grammar, type UpstreamRequest } from './prompt';
 import { PLANNER_ANSWER_FIELDS, type PlannerEmission } from './worldstream-intent';
 import { REFINE_ANSWER_FIELDS } from './worldstream-refine';
 import { CHUNK_FIELDS, EMISSION_CHUNKS, type ChunkName } from './emission-merge';
@@ -302,6 +302,16 @@ export const EXAMPLE_ONLY_IDENTIFIERS: readonly string[] = [
  * to jako jeho volba.
  */
 export function capabilityManifest(): string {
+  return [geometryVocabulary(), '', shapeVocabulary()].join('\n');
+}
+
+/**
+ * Slovník kompozice. Od P21 T7 je oddělený od slovníku tvarů, protože kus,
+ * který píše jen pravidla světa, nepotřebuje ani jeden — a kus, který píše
+ * geometrii, nepotřebuje ten druhý. Rozdělení je **čistě řez v textu**:
+ * `capabilityManifest()` obě půlky vrací pořád složené, bajtově jak dřív.
+ */
+export function geometryVocabulary(): string {
   const pieceLines = (Object.keys(PIECE_VARIANTS) as PieceKind[]).map(
     (kind) => `  ${kind}: ${PIECE_VARIANTS[kind].join(' | ')}`,
   );
@@ -309,11 +319,6 @@ export function capabilityManifest(): string {
   const geomLines = SHAPE_KINDS.map(
     (kind) => `  ${kind} — ${GEOM_NODE_ARGUMENTS[kind]}`,
   ).concat(OPERATION_KINDS.map((kind) => `  ${kind} — ${GEOM_NODE_ARGUMENTS[kind]}`));
-
-  const shapeLines = Object.entries(SHAPE_NODE_GROUPS).flatMap(([group, kinds]) => [
-    `  ${group}:`,
-    ...kinds.map((kind) => `    ${kind} — ${SHAPE_NODE_ARGUMENTS[kind]}`),
-  ]);
 
   return [
     'GEOMETRY — the composition. One flat table of nodes; every child index points STRICTLY LOWER',
@@ -331,7 +336,17 @@ export function capabilityManifest(): string {
     '',
     'Geometry nodes:',
     ...geomLines,
-    '',
+  ].join('\n');
+}
+
+/** Slovník tvarů. Důvod oddělení je u `geometryVocabulary()`. */
+export function shapeVocabulary(): string {
+  const shapeLines = Object.entries(SHAPE_NODE_GROUPS).flatMap(([group, kinds]) => [
+    `  ${group}:`,
+    ...kinds.map((kind) => `    ${kind} — ${SHAPE_NODE_ARGUMENTS[kind]}`),
+  ]);
+
+  return [
     'SHAPES — hero objects, written as a distance field the browser meshes itself. Same table rule:',
     'children point strictly lower, root is last, every row reachable.',
     `At most ${SHAPE_LIMITS.maxNodes} rows, depth ${SHAPE_LIMITS.maxDepth}, ${SHAPE_LIMITS.maxInstances} copies after arrays expand,`,
@@ -447,6 +462,28 @@ export function requestChunk(request: UpstreamRequest): ChunkName | null {
  * něj pozná fázi. Kus se pod něj dopisuje jako zúžení: tvar odpovědi je pořád
  * týž, píše se z něj jen část.
  */
+/**
+ * Kontrakt světa bez vlastního ukázkového světa.
+ *
+ * Řeže se **podle exportovaného `EXAMPLE_MARKER`**, ne podle opsané věty:
+ * kdyby ten řádek v `prompt.ts` někdo změnil, tohle spadne na kontrole níž
+ * místo aby tiše vložilo ukázku zpátky. Tutéž cestu bere i lokální větev
+ * (`src/model/local/engine.ts`), když ukázku vypouští z opravného kola.
+ */
+function contractWithoutExample(grammar: Grammar): string {
+  const contract = buildEmissionRequest('', grammar, { allowNoFit: false }).system;
+  const markerAt = contract.indexOf(EXAMPLE_MARKER);
+  if (markerAt < 0) throw new Error('world contract no longer carries EXAMPLE_MARKER');
+  return contract.slice(0, markerAt).trimEnd();
+}
+
+/** Ukázka zúžená na pole, která ten kus píše. Celá odpověď vidí celou ukázku. */
+function exampleFor(chunk: ChunkName | undefined): Record<string, unknown> {
+  const whole = EXAMPLE_BLUEPRINT_ANSWER as unknown as Record<string, unknown>;
+  if (chunk === undefined) return whole;
+  return Object.fromEntries(Object.entries(whole).filter(([field]) => CHUNK_FIELDS[chunk].includes(field)));
+}
+
 export function buildCompilerRequest(
   plan: PlannerEmission,
   grammar: Grammar,
@@ -456,6 +493,16 @@ export function buildCompilerRequest(
     .filter((object) => object.role !== 'effect')
     .map((object) => object.stableId);
 
+  /**
+   * **Píše tenhle požadavek tohle pole?** U celé odpovědi vždycky, u kusu jen
+   * podle téhož seznamu, kterým se odpovědi slepují zpátky (`CHUNK_FIELDS`).
+   *
+   * Tím je zúžení zadání a řez odpovědi **jedno rozhodnutí, ne dvě**: kus,
+   * který by dostal slovník k poli, jež psát nesmí, by se ho snažil napsat
+   * a slepení by ho odmítlo.
+   */
+  const writes = (field: string): boolean => chunk === undefined || CHUNK_FIELDS[chunk].includes(field);
+
   const system = [
     'You are given a finished description of a place and you write the geometry that builds it.',
     'Somebody else already decided WHAT the place is. You decide how it stands up.',
@@ -464,13 +511,26 @@ export function buildCompilerRequest(
     `${COMPILER_ANSWER_FIELDS.join(', ')}. The only optional additional field is architecture. Other fields are rejected, including a title —`,
     'the system writes that from the intent you were given.',
     ...(chunk === undefined ? [] : chunkNarrowing(chunk)),
-    'Optional architecture is an array of authored rooms/corridors: {stableId,kind:"room"|"corridor",at:[x,y,z],width,depth,height,thickness,openings:[{wall:"north"|"south"|"east"|"west",offset,width,height}]}.',
-    'at is floor center in meters. Openings start at offset from the negative end of that wall and cut from floor upward. Walls are continuous, floors are continuous slabs; no roof is added.',
-    'Use source:{kind:"architecture"} on the matching stableId placement. This lowers into your authored geometry; never duplicate those walls in geometry.nodes. geometry may have nodes:[] when architecture supplies it.',
-    'Keep opening approach areas clear (0.6m on either side). Satisfy sceneSpec relations using actual contain-fit asset dimensions, +Z forward and declared support surfaces. near means at most 2m surface distance.',
+    ...(writes('architecture')
+      ? [
+          'Optional architecture is an array of authored rooms/corridors: {stableId,kind:"room"|"corridor",at:[x,y,z],width,depth,height,thickness,openings:[{wall:"north"|"south"|"east"|"west",offset,width,height}]}.',
+          'at is floor center in meters. Openings start at offset from the negative end of that wall and cut from floor upward. Walls are continuous, floors are continuous slabs; no roof is added.',
+        ]
+      : []),
+    ...(writes('architecture') || writes('placements')
+      ? [
+          'Use source:{kind:"architecture"} on the matching stableId placement. This lowers into your authored geometry; never duplicate those walls in geometry.nodes. geometry may have nodes:[] when architecture supplies it.',
+          'Keep opening approach areas clear (0.6m on either side). Satisfy sceneSpec relations using actual contain-fit asset dimensions, +Z forward and declared support surfaces. near means at most 2m surface distance.',
+        ]
+      : []),
     '',
-    capabilityManifest(),
+    ...(writes('geometry') || writes('architecture') ? [geometryVocabulary()] : []),
+    ...(writes('geometry') && writes('shapes') ? [''] : []),
+    ...(writes('shapes') ? [shapeVocabulary()] : []),
     '',
+    ...(!writes('placements')
+      ? []
+      : [
     'PLACEMENTS bind the two together. One entry per object you were given, except objects whose role',
     'is "effect" — air, light and weather have no geometry and are carried by the look layer.',
     'Each entry carries: stableId (one of the ids you were given, never a new one),',
@@ -494,14 +554,28 @@ export function buildCompilerRequest(
     'For a visible lamp or terminal status, binding.signalFlag may name an existing sim.state.flags entry; the renderer displays its current value. Never invent a flag outside world.sim.',
     'Honor sceneSpec counts, negations and relationships. Use an opening and clear passage for every usable door.',
     '',
-    'You never answer with the name of a style, a family or a preset. There is no library of finished',
-    'places to pick from. If you write a string where a program belongs, the answer is rejected as',
-    'geometry you did not author, because that is exactly what it is.',
-    '',
+        ]),
+    ...(writes('world')
+      ? []
+      : [
+          'You never answer with the name of a style, a family or a preset. There is no library of finished',
+          'places to pick from. If you write a string where a program belongs, the answer is rejected as',
+          'geometry you did not author, because that is exactly what it is.',
+          '',
+        ]),
+    ...(!writes('world')
+      ? []
+      : [
     WORLD_CONTRACT_MARKER,
     // Vloženo doslova z `buildEmissionRequest`. Prompt je prázdný schválně:
     // bere se jen systémová část, do které se text zadání nikdy nedostane.
-    buildEmissionRequest('', grammar).system,
+    //
+    // **Bez vlastní ukázky a bez nabídky odmítnout — P21 T7.** Ukázkový svět
+    // z `prompt.ts` (2 700 znaků) ukazuje tytéž fáze `sim` a `look`, které
+    // o kus níž ukazuje ukázkový blueprint ve svém poli `world`, a platily se
+    // obě; test `prompt-size.test.ts` to pokrytí drží. `allowNoFit: false`
+    // řeší totéž na straně nabídky — důvod je u `EmissionRequestOptions`.
+    contractWithoutExample(grammar),
     WORLD_CONTRACT_END,
     '',
     // ⚠ **Zavření `NO_FIT` je oprava naměřeného zaseknutí, ne opatrnost.**
@@ -510,11 +584,11 @@ export function buildCompilerRequest(
     // `sim: null`, `simOutcome: "NO_FIT"`. Tři opravná kola ho z toho
     // nedostala, protože věta o odmítnutí sama nabízela „keep declining".
     // Kontrakt nad tímhle blokem tu nabídku dělá právem: sdílí se s cestou,
-    // kde model dostane holou větu a nemusí za ní nic stát. Sem se ale vkládá
-    // doslova, takže se ta nabídka musí zavřít tady, ne v něm.
-    'THE CONTRACT ABOVE OFFERS YOU NO_FIT. On this path you do not have it.',
-    'It is written for a stage that may be handed a sentence with nothing behind it. You are handed',
-    'a concrete requested place. Propose a reachable action using a visible object already present:',
+    // kde model dostane holou větu a nemusí za ní nic stát. **Od P21 T7 se
+    // sem vkládá bez ní** (`allowNoFit: false`), takže tady zbývá jen ta
+    // kladná polovina — co místo odmítnutí udělat.
+    'You do not have NO_FIT on this path: you are handed a concrete requested place.',
+    'Propose a reachable action using a visible object already present:',
     'open its door, switch its lamp, or activate its mechanism. Bind that object to the corresponding entity.',
     'The objective must express this action. Do not invent an invisible universal win trigger.',
     'VISITOR INPUT CONTRACT: visible controls dispatch onAction, never onClick. For a terminal or switch,',
@@ -524,12 +598,15 @@ export function buildCompilerRequest(
     'and derive the objective from their resulting state. A win alone is not a replacement for switching the visible lamp.',
     'Rules and witness still have to certify; visual quality never excuses invalid behavior.',
     '',
+        ]),
     BLUEPRINT_EXAMPLE_MARKER,
     // **Odsazení tu musí zůstat**, ze stejného naměřeného důvodu jako
     // u ukázky v `./prompt.ts`: kompaktní ukázka zkrátila odpovědi a zaplatila
     // se vynechanými poli. Model si odsazený příklad prochází po řádcích jako
-    // seznam polí; na jednom dlouhém řádku tu oporu ztratí.
-    JSON.stringify(EXAMPLE_BLUEPRINT_ANSWER, null, 2),
+    // seznam polí; na jednom dlouhém řádku tu oporu ztratí. Kus proto ukázku
+    // **nezkracuje formátem, ale rozsahem**: vidí celá ta pole, která píše,
+    // odsazená jako vždycky, a ta ostatní nevidí vůbec.
+    JSON.stringify(exampleFor(chunk), null, 2),
   ].join('\n');
 
   const user = [
@@ -538,15 +615,23 @@ export function buildCompilerRequest(
     'table or its shape table is rejected even if you rename everything around them.',
     `Do not reuse these example-only names: ${EXAMPLE_ONLY_IDENTIFIERS.join(', ')}.`,
     '',
-    `Every one of these objects needs a placement: ${placeableIds.join(', ')}.`,
-    'An object you were given and did not place is an object the sentence asked for and the world',
-    'does not contain.',
-    '',
+    ...(writes('placements')
+      ? [
+          `Every one of these objects needs a placement: ${placeableIds.join(', ')}.`,
+          'An object you were given and did not place is an object the sentence asked for and the world',
+          'does not contain.',
+          '',
+        ]
+      : []),
     'Build this place. This is the whole brief; there is no other text behind it:',
     canonical(plan),
-    'APPROVED REPRESENTATION CANDIDATES (exact sources only; no URLs):',
-    'Each object lists short candidate keys. Emit source:{kind:"asset",key:"assetId@version"}; the compiler resolves the immutable hash from this approved dictionary. Full exact source references remain accepted. Never combine key with other source fields. Shared candidates never merge object identities.',
-    canonical(buildAssetBrief(plan.objects, WORLDSTREAM_ASSETS)),
+    ...(writes('placements')
+      ? [
+          'APPROVED REPRESENTATION CANDIDATES (exact sources only; no URLs):',
+          'Each object lists short candidate keys. Emit source:{kind:"asset",key:"assetId@version"}; the compiler resolves the immutable hash from this approved dictionary. Full exact source references remain accepted. Never combine key with other source fields. Shared candidates never merge object identities.',
+          canonical(buildAssetBrief(plan.objects, WORLDSTREAM_ASSETS)),
+        ]
+      : []),
   ].join('\n');
 
   return { model: EMISSION_MODEL, system, user };

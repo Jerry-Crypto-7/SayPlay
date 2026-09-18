@@ -45,7 +45,7 @@ import { verifyWitness } from '../../verify/witness';
 import { blueprintSchema } from '../../worldstream/schema';
 import { asset } from '@/assets/__fixtures__/catalog';
 import { createAssetManifest } from '@/assets/manifest';
-import { type Grammar, type UpstreamRequest } from '../prompt';
+import { buildEmissionRequest, type Grammar, type UpstreamRequest } from '../prompt';
 import {
   BLUEPRINT_EXAMPLE_MARKER,
   EXAMPLE_BLUEPRINT_ANSWER,
@@ -406,13 +406,18 @@ describe('a copied example is not an answer', () => {
     if (!result.ok) expect(result.reason).toBe('EXAMPLE_COPIED');
   });
 
-  it('rejects the world example embedded in the world contract too', () => {
-    const contract = buildCompilerRequest(PLAN, grammar()).system;
+  /**
+   * **Od P21 T7 se ta ukázka do compilerového promptu nevkládá** — kontrakt se
+   * řeže před ní, protože tytéž fáze `sim` a `look` ukazuje ukázkový blueprint
+   * ve svém poli `world` (drží to `prompt-size.test.ts`). Brána proti jejímu
+   * opsání ale platí dál: na holé větě ji model pořád vidí, a odtud se sem
+   * doteď dostávala. Test si ji proto bere z té cesty, kde se ukazuje.
+   */
+  it('rejects the world example shown on the bare-sentence path', () => {
+    const contract = buildEmissionRequest('', grammar()).system;
     const start = contract.indexOf('{\n  "irVersion"');
     expect(start).toBeGreaterThan(-1);
-    const end = contract.indexOf(WORLD_CONTRACT_END);
-    expect(end).toBeGreaterThan(start);
-    const block = contract.slice(start, end);
+    const block = contract.slice(start);
     const world = JSON.parse(block.slice(0, block.lastIndexOf('}') + 1)) as unknown;
     const result = compile(answerWith({ world }));
     expect(result.ok).toBe(false);
@@ -776,7 +781,7 @@ describe('the compiler request', () => {
    * přebitou tím, co stojí pod ní.
    */
   it('requires a reachable interaction with a visible requested object, after the embedded contract', () => {
-    const close = request.system.indexOf('On this path you do not have it');
+    const close = request.system.indexOf('You do not have NO_FIT on this path');
     const reaching = request.system.indexOf('Propose a reachable action using a visible object already present');
     const never = request.system.indexOf('Do not invent an invisible universal win trigger');
 
@@ -785,16 +790,20 @@ describe('the compiler request', () => {
     expect(never).toBeGreaterThan(reaching);
   });
 
-  it('closes the NO_FIT door the embedded contract opens, and closes it after it', () => {
-    // ⚠ **Pořadí je celé tvrzení, ne detail zápisu.** Vložený světový kontrakt
-    // `NO_FIT` nabízí právem — sdílí ho cesta, kde za větou nemusí nic stát.
-    // Tady za ní stojí hotové místo, takže se nabídka ruší, a zrušení, které by
-    // stálo nad ní, by si model přečetl jako přebité tím, co je pod ním.
-    const offer = request.system.indexOf('simOutcome: "NO_FIT"');
-    const close = request.system.indexOf('On this path you do not have it');
-
-    expect(offer).toBeGreaterThan(-1);
-    expect(close).toBeGreaterThan(offer);
+  /**
+   * ⚠ **Do P21 T7 tenhle test hlídal POŘADÍ: nabídka odmítnout, a pod ní její
+   * zrušení.** Nabídka se od 18. 9. do compilerového promptu nevkládá vůbec
+   * (`allowNoFit: false`), takže tvrzení o pořadí je bezpředmětné — a mlčky ho
+   * upravit na „zrušení někde je" by z něj udělalo ozdobu. Tvrzení je proto
+   * silnější než dřív: **na téhle cestě se odmítnout nenabízí nikde**, a
+   * kladná půlka té věty zůstává.
+   *
+   * Že ji holá věta dál nabízí, drží `prompt-size.test.ts`; zaseknutí, které
+   * ten zákaz vyrobilo, je popsané u `EmissionRequestOptions`.
+   */
+  it('never offers NO_FIT on this path, and still says what to do instead', () => {
+    expect(request.system).not.toContain('simOutcome: "NO_FIT"');
+    expect(request.system).toContain('You do not have NO_FIT on this path');
   });
 
   it('names every node of both languages in the manifest', () => {
