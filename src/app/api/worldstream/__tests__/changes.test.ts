@@ -259,6 +259,57 @@ describe('preview druhé věty', () => {
     expect((await body(withoutModel)).error).toMatchObject({ code: 'NO_AUTHORED_CHANGE' });
   });
 
+  /**
+   * P21 T9: věta se řeže na kusy **před** groundingem a před modelem.
+   * Věta bez obsahu projde moderací a model by na ni objekt vymyslel — tady
+   * je odmítnutá zadarmo. Dlouhá věta jde modelu po prvním kusu a zbytek se
+   * vrací porotci jako fronta, ne tiše zahozený.
+   */
+  it('věta bez obsahu je NO_CONTENT a model se nevolá', async () => {
+    const stored = await generated();
+    const asked: string[] = [];
+    const response = await preview(stored.session.sessionId, { prompt: 'ok add something nice please' }, (request) => {
+      asked.push(request.user);
+      return Promise.resolve(LANTERN_ANSWER);
+    });
+    expect(response.status).toBe(200);
+    expect(await body(response)).toMatchObject({ outcome: 'REJECTED', reason: 'NO_CONTENT' });
+    expect(asked).toHaveLength(0);
+    expect(stored.session.events.all().at(-1)).toMatchObject({ type: 'patch.rejected', payload: { reason: 'NO_CONTENT' } });
+  });
+
+  it('dlouhá věta jde modelu po prvním kusu a zbytek se vrací jako fronta', async () => {
+    const stored = await generated();
+    const asked: string[] = [];
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'add a lantern at the far edge, then put a bell on the mast. When the bell rings, the lantern lights up.' },
+      (request) => {
+        asked.push(request.user);
+        return Promise.resolve(LANTERN_ANSWER);
+      },
+    );
+    expect(asked).toHaveLength(1);
+    expect(asked[0]).toContain('add a lantern at the far edge');
+    expect(asked[0]).not.toContain('bell');
+    expect(await body(response)).toMatchObject({
+      outcome: 'PREVIEW',
+      target: { stableId: 'lantern' },
+      pieces: { asked: 'add a lantern at the far edge', remaining: ['put a bell on the mast', 'When the bell rings, the lantern lights up'] },
+    });
+  });
+
+  it('věta o jednom kusu jde modelu doslova a `pieces` v odpovědi není', async () => {
+    const stored = await generated();
+    const asked: string[] = [];
+    const response = await preview(stored.session.sessionId, { prompt: 'add a lantern at the far edge.' }, (request) => {
+      asked.push(request.user);
+      return Promise.resolve(LANTERN_ANSWER);
+    });
+    expect(asked[0]).toContain('add a lantern at the far edge.');
+    expect(await body(response)).not.toHaveProperty('pieces');
+  });
+
   it('jasná věta bez nakonfigurovaného modelu je 503, relace zůstane živá', async () => {
     const stored = await generated();
     const response = await preview(stored.session.sessionId, { prompt: 'make the mast taller' }, null);

@@ -65,6 +65,7 @@ import {
   type RefinePlan,
 } from '@/model/worldstream-refine';
 import type { BlueprintEmitter } from '@/model/worldstream-repair';
+import { planIncrement } from '@/model/incremental-planner';
 import { withRequest } from '@/obs/trace';
 import { killState } from '@/server/kill-switch';
 import { moderatePrompt } from '@/server/moderation';
@@ -263,10 +264,27 @@ export async function createChange(
     const verdict = moderatePrompt(read.value.prompt);
     if (!verdict.ok) return fail(requestId, 400, verdict.category, verdict.detail);
 
+    // **Jedna věta = jeden kus** (P21 T9), rozhodnuto před groundingem a před
+    // modelem. Věta bez obsahu („ok add something nice") projde moderací a model
+    // by na ni objekt vymyslel — tady je odmítnutá zadarmo. Věta o víc věcech
+    // jde dál jen svým prvním kusem; zbytek se vrací porotci jako fronta, aby
+    // ho poslal další větou. Věta o jedné věci jde dál **doslova**, ne
+    // ořezaná: sklad uvařených změn ji hledá podle textu.
+    const increment = planIncrement(verdict.prompt);
+    if (!increment.ok) {
+      stored.session.events.append('patch.rejected', { reason: increment.reason, detail: increment.detail });
+      return Response.json({ requestId, outcome: 'REJECTED', reason: increment.reason, detail: increment.detail });
+    }
+    const pieces =
+      increment.pieces.length > 1
+        ? { asked: increment.pieces[0].text, remaining: increment.pieces.slice(1).map((piece) => piece.text) }
+        : null;
+    const sentence = pieces === null ? verdict.prompt : pieces.asked;
+
     // **Grounding je před modelem, a proto je zadarmo.** Nejasná věta se vrátí
     // jako nabídka i na nasazení bez klíče: je to odpověď o světě, ne o modelu,
     // a platit za otázku, na kterou se ještě nikdo nezeptal, je čistá ztráta.
-    const grounding = groundTarget(verdict.prompt, blueprint.objects, read.value.stableId);
+    const grounding = groundTarget(sentence, blueprint.objects, read.value.stableId);
     // `NO_MATCH` bez `stableId` je věta o něčem, co ve světě není — a od P21 T8
     // je to zadání, ne odmítnutí. `target === null` níž znamená právě tohle.
     const adding = !grounding.ok && grounding.reason === 'NO_MATCH';
@@ -282,7 +300,7 @@ export async function createChange(
     // **Živý model má přednost, sklad je za ním** (`T35-actsthree4`) — táž
     // záložní větev a totéž pořadí jako u zakládání relace. Sklad má jen změny
     // existujících objektů; nový objekt bez modelu nikdo nenapíše.
-    const authored = cloud === null && target !== null ? authoredChangeFor(stored, verdict.prompt, target.stableId) : null;
+    const authored = cloud === null && target !== null ? authoredChangeFor(stored, sentence, target.stableId) : null;
     const emit = cloud ?? (authored === null ? null : changeEmitterFor(authored.change));
 
     // `null` znamená „cloudová větev není nakonfigurovaná a sklad na tenhle
@@ -341,7 +359,7 @@ export async function createChange(
     try {
       outcome = await planChange({
         observePhase: serverPhaseObserver,
-        prompt: verdict.prompt,
+        prompt: sentence,
         blueprint,
         target,
         emit,
@@ -467,6 +485,9 @@ export async function createChange(
       // větu: přehrávanou změnu porotce odhalí tím, že dvě různé věty udělají
       // totéž, a produkt to má říct dřív než on.
       ...(authored === null ? {} : { authored: { match: authored.match } }),
+      // **Jen když se věta řezala** (P21 T9): co z ní šlo modelu a co porotci
+      // zbývá poslat další větou. Věta o jedné věci pole nenese.
+      ...(pieces === null ? {} : { pieces }),
       basedOn: change.basedOn,
       commit: `/api/worldstream/sessions/${sessionId}/changes/${change.changeId}/commit`,
     });

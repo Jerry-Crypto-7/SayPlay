@@ -421,6 +421,11 @@ export interface ChangePreviewed {
   readonly preserved: readonly string[];
   /** `null`, když změnu psal model. Jinak odkud se vzala (`T45-honestlabel`). */
   readonly authored: AuthoredProvenance | null;
+  /**
+   * Věta mluvila o víc věcech (P21 T9): `asked` šlo modelu, `remaining` čeká
+   * na další věty. Chybí, když věta byla o jedné věci.
+   */
+  readonly pieces?: { readonly asked: string; readonly remaining: readonly string[] };
 }
 
 /** Věta byla nejasná — server nabízí objekty, mezi kterými se má vybrat. */
@@ -518,6 +523,7 @@ export async function requestChange(
     scope: body.scope as ChangePreviewed['scope'],
     preserved: (body.preserved ?? []) as readonly string[],
     authored: match === 'exact' || match === 'nearest' ? { match } : null,
+    ...(body.pieces === undefined ? {} : { pieces: body.pieces as ChangePreviewed['pieces'] }),
   };
 }
 

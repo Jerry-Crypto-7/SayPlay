@@ -233,7 +233,9 @@ export type RefineRejection =
   /** Id nového objektu už ve světě někdo nese: objekt, entita, tvar nebo socket. */
   | 'IDENTITY_TAKEN'
   /** Svět už nese tolik hrdinských tvarů, kolik rozpočet meshování unese. */
-  | 'SHAPE_BUDGET';
+  | 'SHAPE_BUDGET'
+  /** Přidání nese víc než jednu entitu nebo víc než jedno pravidlo (P21 T9: jedna věta = jeden kus). */
+  | 'TOO_MANY_PIECES';
 
 export type RefineResult =
   | { readonly ok: true; readonly value: RefinePlan; readonly stage: typeof REFINER_STAGE }
@@ -529,6 +531,18 @@ export function readAdditionEmission(value: unknown, blueprint: WorldstreamBluep
       detail: behavior,
     };
 
+  // **Jedna věta = jeden kus** (P21 T9). Věta už přišla rozřezaná
+  // (`planIncrement`), takže druhá entita nebo druhé pravidlo v odpovědi je
+  // model, který si přibral, co nikdo neobjednal — a dosah ani schéma to
+  // nechytí, protože obojí je nové a nesahá na nic cizího.
+  const pieces = countPieces(behavior);
+  if (pieces.entities > 1 || pieces.rules > 1)
+    return {
+      ok: false,
+      reason: 'TOO_MANY_PIECES',
+      detail: `${String(pieces.entities)} entities and ${String(pieces.rules)} rules; one sentence adds ONE object and at most ONE rule`,
+    };
+
   return {
     ok: true,
     stage: REFINER_STAGE,
@@ -541,6 +555,19 @@ export function readAdditionEmission(value: unknown, blueprint: WorldstreamBluep
       addition: { object: { ...object, source: { kind: 'shape', shapeId: shape.shapeId } }, shape },
     },
   };
+}
+
+/** Kolik entit a pravidel operace přidání zakládají. Cesta rozhoduje, `op` soudí router. */
+function countPieces(operations: readonly Operation[]): { readonly entities: number; readonly rules: number } {
+  let entities = 0;
+  let rules = 0;
+  for (const operation of operations) {
+    const [root, collection, name, ...rest] = pointerTokens(operation.path);
+    if (root !== 'sim' || name === undefined || rest.length > 0) continue;
+    if (collection === 'entities') entities += 1;
+    if (collection === 'rules') rules += 1;
+  }
+  return { entities, rules };
 }
 
 /* ------------------------------------------------------------------ *
@@ -673,8 +700,9 @@ function additionBrief(blueprint: WorldstreamBlueprint): string {
 export function buildAdditionRequest(sentence: string, blueprint: WorldstreamBlueprint): UpstreamRequest {
   const system = [
     'A world is already running and a person has just asked for something that is not in it yet.',
-    'You answer with ONE new object and nothing else. You never rewrite the world and you never',
-    'touch an object that already stands in it.',
+    'You answer with ONE new object and nothing else: ONE object and at most ONE rule for it. Their',
+    'sentence names one thing; if it seems to ask for two, answer with the first only. You never',
+    'rewrite the world and you never touch an object that already stands in it.',
     '',
     'Answer with a single JSON object whose top-level fields are exactly:',
     `${ADDITION_ANSWER_FIELDS.join(', ')}.`,

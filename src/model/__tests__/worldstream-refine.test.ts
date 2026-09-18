@@ -23,6 +23,7 @@ import { blueprintSchema, MAX_HERO_SHAPES, type WorldstreamBlueprint } from '@/w
 
 import type { UpstreamRequest } from '../prompt';
 import {
+  buildAdditionRequest,
   buildRefineRequest,
   groundTarget,
   planChange,
@@ -695,6 +696,33 @@ describe('čtení nového objektu', () => {
 
   it('odpověď bez tvaru je WRONG_SHAPE — nový objekt bez podoby nemá co ukázat', () => {
     expect(reasonOf(readAdditionEmission(addition({ shape: null }), BLUEPRINT))).toContain('WRONG_SHAPE');
+  });
+
+  /**
+   * P21 T9: jedna věta = jeden kus. Model na „add a lantern and a bell" umí
+   * vrátit oba jako dvě entity, nebo k jednomu objektu přibalit dvě pravidla —
+   * obojí projde schématem i dosahem a vypadá jako úspěch. Strop je tady, ne
+   * v zadání: zadání je prosba, tohle je brána.
+   */
+  describe('strop na jeden kus', () => {
+    const entity = (name: string) => ({ op: 'add', path: `/sim/entities/${name}`, value: { role: 'prop', socket: 'farPad', state: 'idle' } });
+    const rule = (name: string) => ({ op: 'add', path: `/sim/rules/${name}`, value: { when: 'tick', then: [] } });
+
+    it('jeden objekt a jedno pravidlo projdou', () => {
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), rule('signpostGlows')] }), BLUEPRINT))).toBe('ok');
+    });
+
+    it('dvě entity jsou TOO_MANY_PIECES', () => {
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), entity('bell')] }), BLUEPRINT))).toContain('TOO_MANY_PIECES: 2 entities and 0 rules');
+    });
+
+    it('dvě pravidla jsou TOO_MANY_PIECES', () => {
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), rule('a'), rule('b')] }), BLUEPRINT))).toContain('TOO_MANY_PIECES: 1 entities and 2 rules');
+    });
+
+    it('zadání pro model říká jeden objekt a nejvýš jedno pravidlo', () => {
+      expect(buildAdditionRequest('add a signpost', BLUEPRINT).system).toContain('ONE object and at most ONE rule');
+    });
   });
 
   it('planChange bez cíle jde na přidání a plán nese `addition`', async () => {
