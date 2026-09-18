@@ -19,13 +19,14 @@
 import { describe, expect, it } from 'vitest';
 
 import { GEOM_VERSION } from '@/geom/program';
-import { blueprintSchema, type WorldstreamBlueprint } from '@/worldstream/schema';
+import { blueprintSchema, MAX_HERO_SHAPES, type WorldstreamBlueprint } from '@/worldstream/schema';
 
 import type { UpstreamRequest } from '../prompt';
 import {
   buildRefineRequest,
   groundTarget,
   planChange,
+  readAdditionEmission,
   readRefineEmission,
   type GroundingCandidate,
 } from '../worldstream-refine';
@@ -599,5 +600,113 @@ describe('planChange', () => {
     });
     expect(outcome.kind).toBe('rejected');
     if (outcome.kind === 'rejected') expect(outcome.reason).toBe('EMPTY_CHANGE');
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Založení nového objektu (P21 T8)
+ * ------------------------------------------------------------------ */
+
+const SIGNPOST = {
+  shapeId: 'signPole',
+  stableId: 'signpost',
+  nodes: [{ kind: 'prism', sides: 6, radius: 0.1, height: 2 }],
+  root: 0,
+  targetBounds: { min: [-0.2, -1.05, -0.2], max: [0.2, 1.05, 0.2] },
+  anchors: [],
+  materialIntent: 'wood',
+  priority: 4,
+};
+
+function addition(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    summary: 'a signpost stands at the far end of the bridge',
+    object: {
+      stableId: 'signpost',
+      label: 'the signpost',
+      synonyms: ['the sign'],
+      role: 'prop',
+      targetBounds: { min: [9.6, 0, 3.6], max: [10.4, 2.1, 4.4] },
+      importance: 1,
+    },
+    shape: SIGNPOST,
+    behavior: [{ op: 'add', path: '/sim/entities/signpost', value: { role: 'prop', socket: 'farPad', state: 'idle' } }],
+    ...overrides,
+  };
+}
+
+function reasonOf(read: ReturnType<typeof readAdditionEmission>): string {
+  return read.ok ? 'ok' : `${read.reason}: ${read.detail}`;
+}
+
+describe('čtení nového objektu', () => {
+  it('šťastná cesta: plán nese objekt se zdrojem dosazeným z tvaru a `shape` je null', () => {
+    const read = readAdditionEmission(addition(), BLUEPRINT);
+    expect(reasonOf(read)).toBe('ok');
+    if (!read.ok) return;
+    expect(read.value).toMatchObject({
+      stableId: 'signpost',
+      shape: null,
+      appearance: [],
+      addition: { object: { stableId: 'signpost', source: { kind: 'shape', shapeId: 'signPole' } }, shape: { shapeId: 'signPole' } },
+    });
+    expect(read.value.behavior).toHaveLength(1);
+  });
+
+  it.each([
+    ['objekt', { stableId: 'stoneBridge' }, 'stoneBridge'],
+    ['entita v sim', { stableId: 'walker' }, 'walker'],
+    ['socket v sim', { stableId: 'farPad' }, 'farPad'],
+  ])('jméno, které už nese %s, je IDENTITY_TAKEN', (_what, patch, name) => {
+    const body = addition();
+    body.object = { ...(body.object as object), ...patch };
+    body.shape = { ...SIGNPOST, stableId: name };
+    expect(reasonOf(readAdditionEmission(body, BLUEPRINT))).toContain(`IDENTITY_TAKEN: ${name}`);
+  });
+
+  it('tvar pojmenovaný jako existující tvar je IDENTITY_TAKEN, a tvar pojmenovaný jako objekt taky', () => {
+    expect(reasonOf(readAdditionEmission(addition({ shape: { ...SIGNPOST, shapeId: 'bridgeSpan' } }), BLUEPRINT))).toContain('IDENTITY_TAKEN: bridgeSpan');
+    expect(reasonOf(readAdditionEmission(addition({ shape: { ...SIGNPOST, shapeId: 'signpost' } }), BLUEPRINT))).toContain('IDENTITY_TAKEN: signpost names both');
+  });
+
+  it('svět s plným rozpočtem tvarů odmítne SHAPE_BUDGET, ne až meshing', () => {
+    const full = { ...BLUEPRINT, shapes: Array.from({ length: MAX_HERO_SHAPES }, (_, i) => ({ ...BRIDGE_SPAN, shapeId: `span${i}`, stableId: `bridge${i}` })) } as WorldstreamBlueprint;
+    expect(reasonOf(readAdditionEmission(addition(), full))).toContain('SHAPE_BUDGET');
+  });
+
+  it('tvar, který patří jinému objektu než tomu novému, je WRONG_TARGET', () => {
+    expect(reasonOf(readAdditionEmission(addition({ shape: { ...SIGNPOST, stableId: 'stoneBridge' } }), BLUEPRINT))).toContain('WRONG_TARGET');
+  });
+
+  it('objekt s dosazeným `source` nebo bez kvádru je OBJECT_INVALID', () => {
+    const withSource = addition();
+    withSource.object = { ...(withSource.object as object), source: { kind: 'shape', shapeId: 'signPole' } };
+    expect(reasonOf(readAdditionEmission(withSource, BLUEPRINT))).toContain('OBJECT_INVALID');
+    const noBounds = addition();
+    const { targetBounds: _bounds, ...rest } = noBounds.object as Record<string, unknown>;
+    noBounds.object = rest;
+    expect(reasonOf(readAdditionEmission(noBounds, BLUEPRINT))).toContain('OBJECT_INVALID: object/targetBounds');
+  });
+
+  it('operace do `/look` pod `behavior` je WRONG_PART, ne přeřazená operace', () => {
+    const read = readAdditionEmission(addition({ behavior: [{ op: 'replace', path: '/look/palette', value: 'sand' }] }), BLUEPRINT);
+    expect(reasonOf(read)).toContain('WRONG_PART');
+  });
+
+  it('odpověď bez tvaru je WRONG_SHAPE — nový objekt bez podoby nemá co ukázat', () => {
+    expect(reasonOf(readAdditionEmission(addition({ shape: null }), BLUEPRINT))).toContain('WRONG_SHAPE');
+  });
+
+  it('planChange bez cíle jde na přidání a plán nese `addition`', async () => {
+    const asked: UpstreamRequest[] = [];
+    const outcome = await planChange({
+      prompt: 'add a signpost at the far end',
+      blueprint: BLUEPRINT,
+      target: null,
+      emit: async (request) => { asked.push(request); return addition(); },
+    });
+    expect(asked).toHaveLength(1);
+    expect(outcome.kind).toBe('planned');
+    if (outcome.kind === 'planned') expect(outcome.plan.addition?.object.stableId).toBe('signpost');
   });
 });

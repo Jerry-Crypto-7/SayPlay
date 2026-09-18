@@ -616,7 +616,9 @@ export default function Page() {
     const signal = reading.current?.signal;
     const era = generation.current;
     const prepared = previewBranch.current;
-    const behavior = change.scope.behavior > 0;
+    // Přidání se nesrovnává: svět před ním ten objekt neměl, takže není s čím
+    // (server takové tělo odmítá 422). Operace přidání jdou commitem bez větve.
+    const behavior = change.scope.behavior > 0 && change.scope.addition !== true;
     if (behavior && prepared && (prepared.base.comparisonRevision !== 0 || prepared.base.inputCount !== prepared.source.getInputLog().length)) {
       setChange({ kind: 'refused', message: 'Visitor inputs changed after the preview. Request the change again.' });
       return;

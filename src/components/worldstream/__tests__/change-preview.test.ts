@@ -30,6 +30,13 @@ describe('scopeParts', () => {
     ]);
   });
 
+  it('přidání se hlásí jako nový objekt, před operacemi, které ho zakládají', () => {
+    expect(scopeParts({ shape: false, behavior: 3, appearance: 0, addition: true })).toEqual([
+      'a new object',
+      '3 behaviour changes',
+    ]);
+  });
+
   it('drží pořadí faset tvar → chování → vzhled', () => {
     expect(scopeParts({ shape: true, behavior: 3, appearance: 2 })).toEqual([
       'a new shape',

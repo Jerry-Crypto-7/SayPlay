@@ -415,6 +415,8 @@ export interface ChangePreviewed {
     readonly shape: boolean;
     readonly behavior: number;
     readonly appearance: number;
+    /** Věta zakládá objekt, který ve světě nebyl (P21 T8). Starší server pole neposílá. */
+    readonly addition?: boolean;
   };
   readonly preserved: readonly string[];
   /** `null`, když změnu psal model. Jinak odkud se vzala (`T45-honestlabel`). */

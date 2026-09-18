@@ -17,7 +17,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { canonical } from '../../ir/worlddoc';
-import { changedLeafEffects, changedLeaves } from '../scope';
+import { additionScopeIssue, changedLeafEffects, changedLeaves } from '../scope';
 
 describe('`null` a chybějící klíč jsou dvě různé adresy', () => {
   it('reprodukce nálezu: `canonical` je pro tu dvojici slepá', () => {
@@ -119,5 +119,67 @@ describe('dosah se nedá zmenšit přepsáním předka', () => {
       '/sim/route/1',
       '/sim/route/2',
     ]);
+  });
+});
+
+describe('dosah přidání: nový objekt smí světu jen přidávat, a jen pod svým klíčem', () => {
+  const before = {
+    sockets: { startPad: [1, 4], mastPad: [10, 4] },
+    collisionAabb: { surveyor: [1, 4, 1, 1] },
+    entities: { surveyor: { role: 'actor', socket: 'startPad', state: 'idle' } },
+    rules: { reach: { phase: 0, actions: [{ kind: 'win' }] } },
+    state: { flags: {} },
+  };
+  // `sim` je v dokumentu `unknown` a testy do kopie schválně sahají na klíče,
+  // které v ní nejsou — typ kopie je proto volný, ne odvozený z `before`.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const withLantern = (patch: (draft: any) => void): unknown => {
+    const draft = structuredClone(before);
+    patch(draft);
+    return draft;
+  };
+
+  it('vlastní entita, vlastní kvádr, nový socket a nové pravidlo projdou', () => {
+    const after = withLantern((draft) => {
+      draft.sockets.lanternPad = [3, 1];
+      draft.collisionAabb.lantern = [3, 1, 1, 1];
+      draft.entities.lantern = { role: 'prop', socket: 'lanternPad', state: 'unlit' };
+      draft.rules.light = { phase: 0, actions: [{ kind: 'setState', entity: 'lantern', state: 'lit' }] };
+    });
+    expect(additionScopeIssue(before, after, 'lantern')).toBeNull();
+  });
+
+  it('`replace` cizího listu je porušení, i když se vedle něj lucerna přidala správně', () => {
+    const after = withLantern((draft) => {
+      draft.entities.lantern = { role: 'prop', socket: 'startPad', state: 'unlit' };
+      draft.entities.surveyor.state = 'lit';
+    });
+    expect(additionScopeIssue(before, after, 'lantern')).toMatchObject({ pointer: '/sim/entities/surveyor/state', detail: expect.stringContaining('replaced') });
+  });
+
+  it('`remove` čehokoli je porušení', () => {
+    const after = withLantern((draft) => { delete draft.rules.reach; });
+    expect(additionScopeIssue(before, after, 'lantern')).toMatchObject({ pointer: '/sim/rules/reach/actions/0/kind', detail: expect.stringContaining('removed') });
+  });
+
+  it('`add` pod cizí entitou je porušení — cesta o dosahu lže, list ne', () => {
+    const after = withLantern((draft) => { draft.entities.surveyor.motion = { kind: 'drift' }; });
+    expect(additionScopeIssue(before, after, 'lantern')).toMatchObject({ pointer: '/sim/entities/surveyor/motion/kind', detail: expect.stringContaining('belongs to surveyor') });
+  });
+
+  it('čistý `add` dovnitř socketu nebo pravidla, které už stály, je porušení', () => {
+    const after = withLantern((draft) => { draft.sockets.startPad = [1, 4, 0]; });
+    expect(additionScopeIssue(before, after, 'lantern')).toMatchObject({ pointer: '/sim/sockets/startPad/2', detail: expect.stringContaining('already existed') });
+    const rule = withLantern((draft) => { draft.rules.reach.condition = null; });
+    expect(additionScopeIssue(before, rule, 'lantern')).toMatchObject({ pointer: '/sim/rules/reach/condition', detail: expect.stringContaining('already existed') });
+  });
+
+  it('tabulka mimo seznam (`state`) je porušení i pro čistý `add`', () => {
+    const after = withLantern((draft) => { draft.state.flags = { lanternLit: false }; });
+    expect(additionScopeIssue(before, after, 'lantern')).toMatchObject({ pointer: '/sim/state/flags/lanternLit' });
+  });
+
+  it('beze změny není co soudit', () => {
+    expect(additionScopeIssue(before, structuredClone(before), 'lantern')).toBeNull();
   });
 });

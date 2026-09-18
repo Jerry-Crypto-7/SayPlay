@@ -48,8 +48,9 @@ import { randomUUID } from 'node:crypto';
 
 import { commitRoutedParts, staleRevision, type CommitOutcome } from '@/app/api/edit/commit';
 import type { PartPatch } from '@/ir/revision';
-import type { RejectionNote } from '@/model/worldstream-refine';
+import { takenIdentities, type Addition, type RejectionNote } from '@/model/worldstream-refine';
 import { routePatch, type RoutedPatch } from '@/patch/router';
+import { additionScopeIssue } from '@/patch/scope';
 import { killState } from '@/server/kill-switch';
 import { logRateLimited } from '@/server/public-faults';
 import {
@@ -59,7 +60,8 @@ import {
   rateLimitedResponse,
   takeRateSlot,
 } from '@/server/rate-limit';
-import type { WorldstreamBlueprint } from '@/worldstream/schema';
+import { findBlueprintReferenceIssues } from '@/worldstream/references';
+import { blueprintSchema, type WorldstreamBlueprint } from '@/worldstream/schema';
 import { getSession, markRejected, peekChange, takeChange } from '@/worldstream/sessions';
 import { readBody, bodyRefusalResponse } from '@/http/body';
 import { compareCommitCandidate, comparisonCommitSchema, type ComparisonCommit, type BranchComparison } from '@/worldstream/accepted-branch';
@@ -219,7 +221,10 @@ async function handleDurablePOST(
       { status: 409 },
     );
 
-  if (representation !== basedOn.representation)
+  // **Nový objekt revizi ještě nemá** (P21 T8): registr ho pozná až po tomhle
+  // commitu, takže `revisionOf` vrací `null` a preview ho poctivě založilo na
+  // nule. Bez dorovnání by každé přidání padlo na `STALE_REVISION`.
+  if ((representation ?? 0) !== basedOn.representation)
     return Response.json(
       {
         error: {
@@ -234,6 +239,27 @@ async function handleDurablePOST(
   const operations = [...plan.behavior, ...plan.appearance];
 
   /**
+   * **Jméno nového objektu se soudí znovu, nad světem, jaký je teď** (P21 T8).
+   * `readAdditionEmission` ho ověřilo nad světem z doby preview; mezi preview
+   * a commitem mohl jiný commit totéž jméno založit, a `registerBlueprint` by
+   * pak na `Registered object has changed` shodil dveře pětistovkou místo
+   * verdiktu, který se dá přečíst.
+   */
+  if (plan.addition !== null) {
+    const taken = takenIdentities(blueprint);
+    const clash = [plan.addition.object.stableId, plan.addition.shape.shapeId].find((name) => taken.has(name));
+    if (clash !== undefined)
+      return rejected(stored, changeId, plan.stableId, doc, [
+        {
+          stage: 'apply',
+          reason: 'IDENTITY_TAKEN',
+          pointer: '/objects',
+          detail: `${clash} is already used in this world; a new object needs a name nothing else carries`,
+        },
+      ]);
+  }
+
+  /**
    * Změna jen tvaru dokument nezasáhne, takže se do řetězu vůbec nevstupuje.
    * Prázdná obálka je pro router odmítnutí (a správně — patch bez operací
    * nepojmenuje cestu, ze které by se dala rozhodnout dráha), takže poslat ji
@@ -241,6 +267,11 @@ async function handleDurablePOST(
    */
   let comparison: BranchComparison | null = null;
   if(comparisonRequest!==null&&plan.shape!==null)return fail(422,'COMPARISON_REJECTED','A rule comparison cannot also replace geometry.');
+  // Přidání se nesrovnává — svět před ním ten objekt neměl, takže není s čím
+  // (preview to odmítá stejně; tady se to opakuje, protože tělo commitu píše
+  // klient a preview mu v tom nezabrání).
+  if (comparisonRequest !== null && plan.addition !== null)
+    return fail(422, 'COMPARISON_REJECTED', 'A new object has no earlier future to compare against.');
   let committed: Omit<CommitOutcome,'outcome'>&{outcome:CommitOutcome['outcome']|'COMPARISON_VALIDATED'} = {
     outcome: 'CERTIFIED',
     applied: [],
@@ -286,12 +317,23 @@ async function handleDurablePOST(
     // `stored` se nezapsalo nic a zapsat se nemá.
     if (committed.outcome === 'REJECTED')
       return rejected(stored, changeId, plan.stableId, doc, committed.rejections);
+
+    // **Dosah přidání je diff stavu, ne cesty operací** — táž brána jako na
+    // preview (`additionScopeIssue`), znovu, protože tady se svět doopravdy
+    // ukládá a preview mohlo vzniknout nad jiným `sim`, než jaký je teď.
+    if (plan.addition !== null) {
+      const issue = additionScopeIssue(doc.sim, committed.after.sim, plan.stableId);
+      if (issue !== null)
+        return rejected(stored, changeId, plan.stableId, doc, [
+          { stage: 'routing', reason: 'ALLOWED_PATH', pointer: issue.pointer, detail: issue.detail },
+        ]);
+    }
   }
 
-  const next = observePhase(serverPhaseObserver, 'edit-next-blueprint', () => nextBlueprint(blueprint, committed.after, plan.shape));
+  const next = observePhase(serverPhaseObserver, 'edit-next-blueprint', () => nextBlueprint(blueprint, committed.after, plan.shape, plan.addition));
   if (typeof next === 'string')
     return rejected(stored, changeId, plan.stableId, doc, [
-      { stage: 'apply', reason: 'BLUEPRINT_INVALID', pointer: '/shapes', detail: next },
+      { stage: 'apply', reason: 'BLUEPRINT_INVALID', pointer: plan.addition === null ? '/shapes' : '/objects', detail: next },
     ]);
 
   if (comparisonRequest !== null && comparison===null) {
@@ -309,6 +351,11 @@ async function handleDurablePOST(
   // preview pořád není možný.
   takeChange(stored, changeId);
   stored.blueprint = next;
+  // Nový objekt vstupuje do registru podob na revizi 0 a ve stavu `planned`,
+  // přesně jako objekty první věty; ty dosavadní `registerBlueprint` nechá být
+  // (reconnect je pro něj totéž, co tohle). Bez registrace by doručení meshe
+  // nového tvaru padlo na `UNKNOWN_OBJECT`.
+  if (plan.addition !== null) stored.session.registerBlueprint(next);
   stored.comparisonOrigin = comparison === null ? null : { original: structuredClone(doc),
     acceptedSimHash: next.world.simHash, acceptedSimRevision: next.world.simRevision, stableId: plan.stableId };
   const revision = plan.shape === null ? null : stored.session.revise(plan.stableId);
@@ -387,12 +434,35 @@ function rejected(
  * `map` tiše přešel: commit by prošel, revize podoby by se zvedla a prohlížeč
  * by přemeshoval **starou** podobu — změna, kterou porotce odsouhlasil a která
  * se nikdy nestala.
+ *
+ * **Přidání** (P21 T8) objekt i tvar **připojí**, nic nevyměňuje — a protože
+ * je to jediná cesta, kterou do hotového světa vstupuje nový řádek `objects`,
+ * projde výsledek celým schématem i kontrolou odkazů, stejně jako blueprint
+ * první věty. Dosavadní objekty jdou dál týmiž referencemi, takže registr je
+ * při `registerBlueprint` pozná jako nezměněné.
  */
 function nextBlueprint(
   blueprint: WorldstreamBlueprint,
   world: WorldstreamBlueprint['world'],
   shape: WorldstreamBlueprint['shapes'][number] | null,
+  addition: Addition | null,
 ): WorldstreamBlueprint | string {
+  if (addition !== null) {
+    const candidate: WorldstreamBlueprint = {
+      ...blueprint,
+      world,
+      objects: [...blueprint.objects, addition.object],
+      shapes: [...blueprint.shapes, addition.shape],
+    };
+    const parsed = blueprintSchema.safeParse(candidate);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      return `${issue.path.join('/')}: ${issue.message}`;
+    }
+    const issues = findBlueprintReferenceIssues(candidate);
+    return issues.length === 0 ? candidate : `${issues[0].where}: ${issues[0].detail}`;
+  }
+
   if (shape === null) return { ...blueprint, world };
 
   let replaced = 0;

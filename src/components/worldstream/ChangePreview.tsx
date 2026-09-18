@@ -52,6 +52,8 @@ export interface ChangeScope {
   readonly shape: boolean;
   readonly behavior: number;
   readonly appearance: number;
+  /** Věta zakládá objekt, který ve světě nebyl (P21 T8). */
+  readonly addition?: boolean;
 }
 
 export type ChangeState =
@@ -94,6 +96,7 @@ export interface ChangePreviewProps {
  */
 export function scopeParts(scope: ChangeScope): readonly string[] {
   const parts: string[] = [];
+  if (scope.addition) parts.push('a new object');
   if (scope.shape) parts.push('a new shape');
   if (scope.behavior > 0)
     parts.push(`${scope.behavior} behaviour ${scope.behavior === 1 ? 'change' : 'changes'}`);
