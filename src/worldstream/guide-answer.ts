@@ -160,3 +160,29 @@ export function routeMarkers(world: ProxyWorld, highlight: readonly string[]): r
   }
   return markers;
 }
+
+/**
+ * Kde ve světě stojí sám průvodce.
+ *
+ * Postava musí stát **dřív, než padne první otázka** — porotce se nezeptá
+ * někoho, koho nevidí. Místo se proto počítá ze světa, ne z odpovědi: střed
+ * půdorysu všech slotů, posunutý k jižní hraně a na zem. Jižní proto, že tam
+ * se scéna otevírá kamerou (výchozí pozice `[17, 12, 21]` ve
+ * `WorldstreamCanvas`), takže postava stojí čelem k porotci a ne za zdí.
+ *
+ * `null` je poctivá odpověď na svět, který ještě nemá hmotu: postavit figuru
+ * nad prázdno by ukázalo průvodce ve světě, který neexistuje.
+ */
+export function guideStand(world: ProxyWorld): readonly [number, number, number] | null {
+  if (world.kind !== 'built' || world.slots.length === 0) return null;
+
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxZ = -Infinity;
+  for (const { slot } of world.slots) {
+    minX = Math.min(minX, slot.worldBounds.min[0]);
+    maxX = Math.max(maxX, slot.worldBounds.max[0]);
+    minY = Math.min(minY, slot.worldBounds.min[1]);
+    maxZ = Math.max(maxZ, slot.worldBounds.max[2]);
+  }
+  // Tři čtvrtě metru dovnitř od hrany: postava patří do světa, ne vedle něj.
+  return [(minX + maxX) / 2, minY, maxZ - 0.75];
+}

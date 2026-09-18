@@ -40,7 +40,16 @@ import type { RuntimeController, RuntimeSnapshot } from '@/worldstream/runtime-c
 import { CELL_SIZE } from '@/components/viewer/projection';
 import type { ProxyWorld } from '@/worldstream/proxy';
 import { budgetFor, type QualityTier } from '@/worldstream/quality';
-import { routeMarkers } from '@/worldstream/guide-answer';
+import { guideStand, routeMarkers, type RouteMarker } from '@/worldstream/guide-answer';
+
+/** Co o průvodci ví scéna: kde stojí a které zastávky kreslí. */
+export interface GuideProbe {
+  (): { readonly figure: readonly [number, number, number] | null; readonly stops: readonly string[] };
+}
+
+declare global {
+  interface Window { __worldstreamGuide?: GuideProbe }
+}
 
 export interface SharedCamera {
   current: { eye: number[]; target: number[] } | null;
@@ -202,8 +211,7 @@ function FrameCamera({ world, controller, sceneId, reset, framing, sharedCamera,
  *
  * Jantarová, ne fialová: viz `rules/design-output.md`.
  */
-function RouteRings({ world, highlight }: { readonly world: ProxyWorld; readonly highlight: readonly string[] }) {
-  const markers = useMemo(() => routeMarkers(world, highlight), [world, highlight]);
+function RouteRings({ markers }: { readonly markers: readonly RouteMarker[] }) {
   if (markers.length === 0) return null;
 
   return (
@@ -219,6 +227,31 @@ function RouteRings({ world, highlight }: { readonly world: ProxyWorld; readonly
           <meshBasicMaterial color="#f59e0b" transparent opacity={0.85} depthWrite={false} />
         </mesh>
       ))}
+    </group>
+  );
+}
+
+/**
+ * Postava průvodce ve scéně (P21 T14).
+ *
+ * Je to **schválně figura, ne portrét**: tvary ve světě píše model a tahle
+ * postava je jediné, co do scény přidává produkt sám. Kdyby si hrála na
+ * obyvatele toho světa, tvrdila by o něm něco, co v žádné emisi nestojí.
+ *
+ * Tyrkysová, ne jantarová: prstence cesty jsou jantarové a průvodce má být na
+ * první pohled něco jiného než zastávka. A nikdy ne fialová — `design-output`.
+ */
+function GuideFigure({ at }: { readonly at: readonly [number, number, number] }) {
+  return (
+    <group name="guide-figure" position={[at[0], at[1], at[2]]}>
+      <mesh position={[0, 0.57, 0]} castShadow>
+        <capsuleGeometry args={[0.22, 0.7, 4, 12]} />
+        <meshStandardMaterial color="#2dd4bf" roughness={0.55} />
+      </mesh>
+      <mesh position={[0, 1.28, 0]} castShadow>
+        <sphereGeometry args={[0.18, 16, 12]} />
+        <meshStandardMaterial color="#99f6e4" roughness={0.6} />
+      </mesh>
     </group>
   );
 }
@@ -242,6 +275,17 @@ export default function WorldstreamCanvas({ world, controller = null, sceneId = 
   // protože nekreslí nic.
   const quality: QualityTier = world?.kind === 'built' ? world.quality : 'full';
 
+  const stand = useMemo(() => (world === null ? null : guideStand(world)), [world]);
+  const markers = useMemo(() => (world === null ? [] : routeMarkers(world, routeHighlight ?? [])), [world, routeHighlight]);
+  // Sonda pro e2e, stejným způsobem jako `__worldstreamStage`. Ptá se na to,
+  // co se z obrázku plátna přečíst nedá: **stojí tu postava a které zastávky
+  // scéna doopravdy zvýraznila** — zvýraznit jde jen slot, který má hmotu,
+  // takže odpověď průvodce a nakreslené prstence nejsou totéž.
+  useEffect(() => {
+    window.__worldstreamGuide = () => ({ figure: stand, stops: markers.map((marker) => marker.stableId) });
+    return () => { delete window.__worldstreamGuide; };
+  }, [stand, markers]);
+
   return (
     <Canvas
       data-testid="worldstream-canvas"
@@ -255,7 +299,8 @@ export default function WorldstreamCanvas({ world, controller = null, sceneId = 
       <WorldstreamLighting quality={quality} environment={world?.kind === 'built' ? world.environment : undefined} />
       <FrameCamera world={world} controller={controller} sceneId={sceneId} reset={reset} framing={framing} sharedCamera={sharedCamera} focusId={focusId} />
       {world !== null && world.kind === 'built' && <RuntimeStage key={sceneId} world={world} controller={controller} onPresented={onPresented} adaptiveAssets={adaptiveAssets} cutaway={cutaway} />}
-      {world !== null && routeHighlight !== undefined && <RouteRings world={world} highlight={routeHighlight} />}
+      {stand !== null && <GuideFigure at={stand} />}
+      <RouteRings markers={markers} />
     </Canvas>
   );
 }

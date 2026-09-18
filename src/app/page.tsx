@@ -163,6 +163,8 @@ export default function Page() {
   const [cameraReset, setCameraReset] = useState(0);
   const [focusId, setFocusId] = useState<string | null>(null);
   const [cutaway, setCutaway] = useState(true);
+  /** Zastávky cesty, kterou naposledy našel průvodce. Prázdné, dokud se nikdo nezeptal. */
+  const [routeHighlight, setRouteHighlight] = useState<readonly string[]>([]);
   const sourceRuntimes = useRef(new Map<ProjectRevision, RuntimeController>());
   const binding = useRef<RuntimeBinding | null>(null);
   const documentRef = useRef<WorldDoc | null>(null);
@@ -996,7 +998,7 @@ export default function Page() {
           }} />}
         {controller === null ? null : comparison
           ? <details><summary>Visitor replay</summary><RuntimeControls controller={controller} comparing /></details>
-          : <RuntimeControls controller={controller} onRewind={(tick,end) => { rewindChoice.current={tick,end}; setForkTick(tick); }} />}
+          : <RuntimeControls controller={controller} onRoute={setRouteHighlight} onRewind={(tick,end) => { rewindChoice.current={tick,end}; setForkTick(tick); }} />}
         <div style={FACTS}><button data-testid="camera-reset" onClick={() => { setFocusId(null); setCameraReset(value => value + 1); }}>Frame scene</button>
           <span> Drag to orbit · scroll to zoom · arrow keys to pan</span></div>
         {displayedWorld?.kind === 'built' && displayedWorld.environment?.kind === 'interior' && <div style={FACTS}>
@@ -1011,7 +1013,7 @@ export default function Page() {
       stage={comparison && binding.current ? <FutureViews original={comparison.world} changed={comparison.changedWorld}
         source={comparison.source} target={binding.current.controller} forkTick={comparison.result.forkTick}
         endTick={comparison.result.observationTick} reset={cameraReset} onPresented={presented} cutaway={cutaway} /> : <WorldstreamCanvas world={displayedWorld} controller={world?controller:null} reset={cameraReset}
-        onPresented={presented} focusId={focusId} cutaway={cutaway}
+        onPresented={presented} focusId={focusId} cutaway={cutaway} routeHighlight={routeHighlight}
         framing={sourceProject ? 'diagram' : 'scene'}
         sceneId={sourceProject ? (sourceProject.parent ?? sourceProject).projectRevision : sessionId} />}
     />
@@ -1264,8 +1266,8 @@ const BUTTON: React.CSSProperties = {
 };
 
 /** Jediné živé hodiny. Pauza zahodí nástěnný zbytek, nikoli stav enginu. */
-function RuntimeControls({ controller, comparing = false, onRewind }: { readonly controller: RuntimeController; readonly comparing?: boolean;
-  readonly onRewind?: (tick:number,end:number)=>void }) {
+function RuntimeControls({ controller, comparing = false, onRewind, onRoute }: { readonly controller: RuntimeController; readonly comparing?: boolean;
+  readonly onRewind?: (tick:number,end:number)=>void; readonly onRoute?: (highlight: readonly string[]) => void }) {
   const state = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
   const furthest = useRef(state.observationTick);
   const previousController = useRef(controller);
@@ -1286,7 +1288,7 @@ function RuntimeControls({ controller, comparing = false, onRewind }: { readonly
   }, [controller, state.paused, state.endedAtTick, comparing]);
   return (
     <section data-testid="runtime-controls" style={{ ...FACTS, maxWidth: 'none', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.65rem' }} aria-label="Simulation controls">
-      <RuntimeInteraction controller={controller} readOnly={comparing} />
+      <RuntimeInteraction controller={controller} readOnly={comparing} onRoute={onRoute} />
       {!comparing && <div style={{flexBasis:'100%'}}>
         <label>Time · {(state.observationTick/20).toFixed(1)}s <input data-testid="world-time" type="range" min={0}
           max={Math.max(1,furthest.current)} value={state.observationTick} onChange={event => rewind(event.target.valueAsNumber)} /></label>
