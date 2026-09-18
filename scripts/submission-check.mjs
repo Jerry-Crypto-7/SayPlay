@@ -465,17 +465,34 @@ export function modelTablePaths(manifest) {
   return [...new Set(all)];
 }
 
+/** Adresáře, jejichž obsah se nikam nenasazuje. */
+const TOOLING_ROOTS = ['scripts/', 'ops/', 'evals/', 'e2e/'];
+
 /**
- * Test nebo fixtura, tedy kód, který se nikam nenasazuje.
+ * Nástroj, ne produkt: testy, fixtury, měřicí harnesy a provozní skripty.
  *
- * Smí jmenovat model mimo tabulku, protože **rozptýlený literál v testu není ta
- * díra, kvůli které kontrola vzniká**: test se nevolá za běhu a jeho účelem
- * bývá právě identifikátor, který tabulka nezná. Registraci to nepromíjí —
- * podmínka výš platí i tady, takže třetí strana jmenovaná jenom v testu
- * z disclosure neuteče.
+ * Pravidlo o **umístění** literálu platí na produkt — `src/**` a nasazený
+ * runtime. Nástroj z něj vyjmutý je proto, že rozptýlený literál v produkci
+ * je ta díra, kvůli které kontrola vznikla; literál v nástroji se za běhu
+ * nikam nedostane a bývá právě tím, co ten nástroj měří nebo ověřuje.
+ *
+ * **Registraci to nepromíjí** — podmínka výš platí i tady, takže třetí strana
+ * jmenovaná jenom v harnesu z disclosure neuteče.
+ *
+ * Rozhodnuto 18. 9. 2026 nad naměřenými 15 nálezy (0 nezveřejněných modelů,
+ * 10 v `*.measure.ts`, 5 v provozních a měřicích skriptech). Druhá zvažovaná
+ * podoba — napojit všech 15 souborů na jediný zdroj jména — je zamítnutá:
+ * `ops/host/preflight.mjs` tvrdí, že proměnná prostředí se rovná
+ * `gpt-6-astra`, a kdyby to jméno četl z téhož místa, prošlo by mu cokoli.
+ *
+ * Polarita je schválně opačná než allowlist cest: vyjmenované jsou
+ * **nástroje**, takže nový adresář produktu spadá pod pravidlo od prvního
+ * dne, aniž si na něj někdo vzpomene.
  */
-export function isFixturePath(path) {
-  return /(^|\/)__tests__(\/|$)/.test(path) || /\.test\.(ts|tsx|mts|mjs|js)$/.test(path);
+export function isToolingPath(path) {
+  return TOOLING_ROOTS.some((root) => path.startsWith(root))
+    || /(^|[/])__tests__([/]|$)/.test(path)
+    || /[.](test|measure)[.](ts|tsx|mts|mjs|js)$/.test(path);
 }
 
 /** Cesty deklarované položkami `kind: dataset`. */
@@ -669,9 +686,11 @@ check(6, 'disclosure je úplná napříč pěti třídami', false, ({ repo, mani
   // Nová podoba se ptá na obojí a v tomhle pořadí:
   //  1. **každý** identifikátor kdekoli musí být v registru jako `kind: model`
   //     — to je disclosure otázka a je přísnější než dřív;
-  //  2. mimo deklarované tabulky ho smí jmenovat jen test nebo fixtura —
-  //     to je otázka pořádku v kódu a zůstává, protože právě rozptýlený
-  //     literál v produkci je ta díra, kvůli které kontrola vznikla.
+  //  2. mimo deklarované tabulky ho smí jmenovat jen nástroj — test, fixtura,
+  //     měřicí harness nebo provozní skript — to je otázka pořádku v kódu
+  //     a zůstává, protože právě rozptýlený literál v produkci je ta díra,
+  //     kvůli které kontrola vznikla. Hranici drží `isToolingPath()` a její
+  //     odůvodnění stojí u ní.
   const tables = modelTablePaths(manifest);
   if (tables.length === 0) {
     problems.push(`${MANIFEST_FILE} neurčuje "modelTablePaths" — bez nich není co allowlistovat`);
@@ -690,7 +709,7 @@ check(6, 'disclosure je úplná napříč pěti třídami', false, ({ repo, mani
     for (const id of ids) {
       if (!known.has(id)) problems.push(`${path}: model "${id}" není v registru jako kind: model`);
     }
-    if (tables.includes(path) || isFixturePath(path)) continue;
+    if (tables.includes(path) || isToolingPath(path)) continue;
     // Hlásí se cesta, ne jen jméno — jinak se nedá opravit.
     problems.push(`${path} jmenuje model ${[...ids].join(', ')} mimo tabulky ${tables.join(', ')}`);
   }

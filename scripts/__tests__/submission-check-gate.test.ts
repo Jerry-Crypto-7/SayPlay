@@ -344,6 +344,39 @@ describe('[6] disclosure napříč pěti třídami', () => {
     expect(failed(await check(dir))).toEqual([]);
   });
 
+  /**
+   * Trojice drží rozhodnutí z 18. 9. 2026: pravidlo o **umístění** literálu
+   * platí na produkt, nástroj je z něj vyjmutý podle role, a registrační
+   * půlka pravidla se tím nehne ani o kus.
+   *
+   * Naměřeno před rozhodnutím: 15 nálezů, z toho 0 nezveřejněných modelů —
+   * samé měřicí harnesy a provozní skripty. Zamítnutá alternativa byla
+   * dopsat těch 15 cest do `modelTablePaths`, čímž by pravidlo přestalo
+   * cokoli znamenat.
+   */
+  it('registrovaný model v provozním skriptu projde — nástroj není produkt', async () => {
+    const dir = repo();
+    write(dir, 'scripts/host-preflight.mjs', "export const expected = 'claude-opus-5';");
+    stage(dir);
+    expect(failed(await check(dir))).toEqual([]);
+  });
+
+  it('měřicí harness projde i uvnitř src — o výjimce rozhoduje role, ne adresář', async () => {
+    const dir = repo();
+    write(dir, 'src/latency.measure.ts', "export const model = 'claude-opus-5';");
+    stage(dir);
+    expect(failed(await check(dir))).toEqual([]);
+  });
+
+  it('NEregistrovaný model v provozním skriptu je pořád nález', async () => {
+    const dir = repo();
+    write(dir, 'scripts/host-preflight.mjs', "export const expected = 'mistral-42-large';");
+    stage(dir);
+    const results = await check(dir);
+    expect(failed(results)).toEqual([6]);
+    expect(detailOf(results, 6)).toContain('mistral-42-large');
+  });
+
   it('položka první strany registraci splní — a nic víc po ní chtít nejde', async () => {
     const dir = repo();
     // Vymyšlený identifikátor ve fixtuře. Přejmenovat ho nejde (existuje proto,
