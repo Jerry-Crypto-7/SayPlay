@@ -70,11 +70,21 @@ const HOLLOW = new Set([
   'perhaps', 'sure', 'well', 'so', 'um', 'uh', 'huh', 'hello', 'hi', 'hey', 'idk', 'whatever', 'random',
 ]);
 
+/**
+ * Za členem stojí věc, ať se jmenuje jakkoli: „a well", „an ox" jsou obsah, i když
+ * „well" je jinak výplň a „ox" má dvě písmena. Zástupné slovo („a thing", „the same
+ * one") věc nepojmenovává, a „new" člen jen prodlužuje („a new well").
+ */
+const DETERMINER = new Set(['a', 'an', 'the', 'another', 'one', 'two', 'three', 'some', 'new']);
+const PLACEHOLDER = new Set(['thing', 'things', 'stuff', 'one', 'ones', 'something', 'anything', 'it', 'same', 'other', 'more', 'new']);
+
 function hasContent(text: string): boolean {
-  return text
-    .toLowerCase()
-    .split(/[^a-z]+/)
-    .some((word) => word.length >= 3 && !HOLLOW.has(word));
+  const words = text.toLowerCase().split(/[^a-z]+/).filter((word) => word.length > 0);
+  return words.some(
+    (word, index) =>
+      (word.length >= 3 && !HOLLOW.has(word)) ||
+      (index > 0 && DETERMINER.has(words[index - 1]) && !PLACEHOLDER.has(word)),
+  );
 }
 
 function kindOf(text: string): PieceKind {

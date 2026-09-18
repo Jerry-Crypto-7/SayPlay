@@ -75,6 +75,16 @@ describe('věta bez obsahu', () => {
     expect(planIncrement(sentence)).toMatchObject({ ok: false, reason: 'NO_CONTENT' });
   });
 
+  // Naměřeno 18. 9. 2026: „well" a „new" sedí v seznamu prázdných slov a „ox" má
+  // dvě písmena, takže „add a well" bylo NO_CONTENT — na světě, který je o studni.
+  it.each(['add a well', 'there is a well', 'add a new well here', 'add an ox'])('%s je jeden kus — za členem stojí věc', (sentence) => {
+    expect(planIncrement(sentence)).toMatchObject({ ok: true, pieces: [{ kind: 'object', text: sentence }] });
+  });
+
+  it('člen bez věci za ním obsah nedělá', () => {
+    expect(planIncrement('well, add another one')).toMatchObject({ ok: false, reason: 'NO_CONTENT' });
+  });
+
   it('prázdný kus se zahodí, obsahový zůstane', () => {
     const read = planIncrement('ok. add a lantern by the gate. thanks');
     expect(read.ok && read.pieces).toEqual([{ kind: 'object', text: 'add a lantern by the gate' }]);
