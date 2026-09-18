@@ -720,6 +720,20 @@ describe('čtení nového objektu', () => {
       expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), rule('a'), rule('b')] }), BLUEPRINT))).toContain('TOO_MANY_PIECES: 1 entities and 2 rules');
     });
 
+    // Naměřeno 18. 9. 2026: zápis celé tabulky nesl dvě pravidla v jedné operaci
+    // a strop je nepočítal — brána dosahu vidí jen čerstvé listy, a ty jí nevadí.
+    it('dvě pravidla zapsaná jako celá tabulka jsou taky TOO_MANY_PIECES', () => {
+      const sim = BLUEPRINT.world.sim as { readonly rules?: Record<string, unknown> };
+      const table = { op: 'add', path: '/sim/rules', value: { ...(sim.rules ?? {}), a: { when: 'tick', then: [] }, b: { when: 'tick', then: [] } } };
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), table] }), BLUEPRINT))).toContain('TOO_MANY_PIECES: 1 entities and 2 rules');
+    });
+
+    it('celá tabulka s jedním novým pravidlem projde', () => {
+      const sim = BLUEPRINT.world.sim as { readonly rules?: Record<string, unknown> };
+      const table = { op: 'add', path: '/sim/rules', value: { ...(sim.rules ?? {}), a: { when: 'tick', then: [] } } };
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), table] }), BLUEPRINT))).toBe('ok');
+    });
+
     it('zadání pro model říká jeden objekt a nejvýš jedno pravidlo', () => {
       expect(buildAdditionRequest('add a signpost', BLUEPRINT).system).toContain('ONE object and at most ONE rule');
     });

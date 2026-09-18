@@ -535,7 +535,7 @@ export function readAdditionEmission(value: unknown, blueprint: WorldstreamBluep
   // (`planIncrement`), takže druhá entita nebo druhé pravidlo v odpovědi je
   // model, který si přibral, co nikdo neobjednal — a dosah ani schéma to
   // nechytí, protože obojí je nové a nesahá na nic cizího.
-  const pieces = countPieces(behavior);
+  const pieces = countPieces(behavior, blueprint.world.sim);
   if (pieces.entities > 1 || pieces.rules > 1)
     return {
       ok: false,
@@ -557,17 +557,29 @@ export function readAdditionEmission(value: unknown, blueprint: WorldstreamBluep
   };
 }
 
-/** Kolik entit a pravidel operace přidání zakládají. Cesta rozhoduje, `op` soudí router. */
-function countPieces(operations: readonly Operation[]): { readonly entities: number; readonly rules: number } {
-  let entities = 0;
-  let rules = 0;
+/**
+ * Kolik entit a pravidel operace přidání zakládají. Cesta rozhoduje, `op` soudí
+ * router. Zápis celé tabulky (`/sim/rules` s objektem) počítá každý klíč, který
+ * ve světě ještě nebyl — jinak by dvě pravidla prošla stropem v jedné operaci,
+ * protože brána dosahu vidí jen čerstvé listy a ty jí nevadí.
+ */
+function countPieces(operations: readonly Operation[], sim: unknown): { readonly entities: number; readonly rules: number } {
+  const tables = sim as { readonly entities?: unknown; readonly rules?: unknown };
+  const counts = { entities: 0, rules: 0 };
   for (const operation of operations) {
     const [root, collection, name, ...rest] = pointerTokens(operation.path);
-    if (root !== 'sim' || name === undefined || rest.length > 0) continue;
-    if (collection === 'entities') entities += 1;
-    if (collection === 'rules') rules += 1;
+    if (root !== 'sim' || rest.length > 0 || (collection !== 'entities' && collection !== 'rules')) continue;
+    if (name !== undefined) {
+      counts[collection] += 1;
+      continue;
+    }
+    const written = 'value' in operation ? operation.value : null;
+    if (written === null || typeof written !== 'object' || Array.isArray(written)) continue;
+    const existing = tables[collection];
+    const known = existing !== null && typeof existing === 'object' ? (existing as Record<string, unknown>) : {};
+    counts[collection] += Object.keys(written).filter((key) => !Object.hasOwn(known, key)).length;
   }
-  return { entities, rules };
+  return counts;
 }
 
 /* ------------------------------------------------------------------ *
