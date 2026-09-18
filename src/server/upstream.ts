@@ -54,6 +54,8 @@ import { serverPhaseObserver } from './worldstream-metrics';
  */
 
 import { EMISSION_MODEL } from '../model/prompt';
+import type { ChunkName } from '../model/emission-merge';
+import { requestChunk } from '../model/worldstream-prompt';
 
 import type { GenerationBranch, GenerationCall, GenerationOutcome } from './pipeline';
 import type { Pricing, Usage } from './spend-cap';
@@ -208,6 +210,39 @@ function positiveNumber(raw: string | undefined, fallback: number): number {
 function effortLevel(raw: string | undefined): Effort {
   const value = (raw ?? '').trim().toLowerCase();
   return (EFFORT_LEVELS as readonly string[]).includes(value) ? (value as Effort) : DEFAULT_EFFORT;
+}
+
+/**
+ * **Kolik uvažování si který kus světa zaslouží — jediné místo, kde to stojí.**
+ *
+ * Naměřeno 14. 9. 2026 (`evals/worldstream/latency-report.json`):
+ * `gpt-6-astra@high` má medián 258 s a tři světy ze sedmi přes 300 s, což je
+ * mez, ve které hosting spojení utne; `astra@low` doručila 8 z 8 při mediánu
+ * 142 s. Plošně snížit úsilí ale nejde: geometrie je to jediné, co tenhle
+ * produkt prodává, a slepě ji nikdo neporovnal. Vysoké úsilí proto platíme
+ * tam, **odkud pochází 3D** (`architecture` píše geometrii a kulisu,
+ * `objects` tvary a jejich umístění), a pravidla světa jedou nízko — ta jsou
+ * graf událostí nad hotovým rejstříkem plánovače, ne prostorová úvaha.
+ *
+ * Tabulka je úplná nad `ChunkName`, takže nový kus bez rozhodnutí o úsilí
+ * neprojde typovou kontrolou. Jiné požadavky (plánovač, celý kompilátor,
+ * změna běžícího světa) žádný kus nenesou a jedou dál na úsilí z prostředí —
+ * to je dnešní chování a tahle úloha na něj nesahá.
+ */
+export const CHUNK_EFFORT: Readonly<Record<ChunkName, Effort>> = {
+  architecture: 'high',
+  objects: 'high',
+  rules: 'low',
+};
+
+/**
+ * Úsilí pro jedno volání. Rozhoduje **požadavek**, ne volající: kus se čte
+ * z textu (`requestChunk`), takže přiřazení platí i na cestě, která si o něj
+ * neřekla — přehrání archivu, opravné kolo, cokoli dalšího.
+ */
+export function effortForCall(call: GenerationCall, config: UpstreamConfig): Effort {
+  const chunk = requestChunk(call.request);
+  return chunk === null ? config.effort : CHUNK_EFFORT[chunk];
 }
 
 /**
@@ -783,7 +818,7 @@ async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig)
   try {
     output = await observePhaseAsync(serverPhaseObserver, 'provider-http-request', () => runCodex(
       config.model,
-      config.effort,
+      effortForCall(call, config),
       `${call.request.system}\n\n${call.request.user}`,
       config.timeoutMs,
     ));
@@ -846,7 +881,7 @@ async function generate(
         max_tokens: config.maxOutputTokens,
         // `effort` bydlí uvnitř `output_config`, ne nahoře — nahoře ho API
         // neuvidí a mlčky pojede na výchozím `high`.
-        output_config: { effort: config.effort },
+        output_config: { effort: effortForCall(call, config) },
         system: call.request.system,
         messages: [{ role: 'user', content: call.request.user }],
       }),

@@ -373,15 +373,24 @@ export const COMPILER_ANSWER_FIELDS = ['geometry', 'shapes', 'placements', 'worl
  * vazba, která hranici kusu překračuje, je `placements → geometry.nodes[i]`,
  * a tu po slepení kontroluje `mergeEmissionChunks`.
  */
+/**
+ * Věta, kterou se kus v požadavku přihlásí — a podle které se zpátky pozná
+ * (`requestChunk`). Je to funkce, a ne text na dvou místech, ze stejného
+ * důvodu, jaký je u `PLANNER_ANSWER_FIELDS`: dvě kopie se rozejdou a
+ * rozlišovač tiše přestane rozlišovat.
+ */
+function chunkClaim(chunk: ChunkName): string {
+  return `YOU ARE WRITING ONE PART OF THAT ANSWER. Write exactly these top-level fields and no others: ${CHUNK_FIELDS[chunk].join(', ')}.`;
+}
+
 function chunkNarrowing(chunk: ChunkName): string[] {
-  const mine = CHUNK_FIELDS[chunk].join(', ');
   const theirs = EMISSION_CHUNKS.filter((name) => name !== chunk)
     .flatMap((name) => CHUNK_FIELDS[name])
     .join(', ');
 
   return [
     '',
-    `YOU ARE WRITING ONE PART OF THAT ANSWER. Write exactly these top-level fields and no others: ${mine}.`,
+    chunkClaim(chunk),
     `The fields ${theirs} are being written right now by parallel requests against this same registry.`,
     'Leave them out entirely. A field written twice is rejected by the merge, not silently overwritten,',
     'so an empty placeholder is worse than an absent field.',
@@ -416,6 +425,17 @@ export function requestStage(request: UpstreamRequest): 'planner' | 'compiler' |
   if (request.system.includes(`${PLANNER_ANSWER_FIELDS.join(', ')}.`)) return 'planner';
   if (request.system.includes(`${REFINE_ANSWER_FIELDS.join(', ')}.`)) return 'refine';
   return null;
+}
+
+/**
+ * Který kus si tenhle požadavek říká napsat, nebo `null` u celé odpovědi.
+ *
+ * Je to táž cesta jako u `requestStage()` — rozhoduje text požadavku, ne
+ * pořadí ani proměnná vedle něj — takže to platí i na požadavek přečtený
+ * z archivu, kde žádný volající není.
+ */
+export function requestChunk(request: UpstreamRequest): ChunkName | null {
+  return EMISSION_CHUNKS.find((chunk) => request.system.includes(chunkClaim(chunk))) ?? null;
 }
 
 /**
