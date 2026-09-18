@@ -538,3 +538,60 @@ body {
   .ws-future-toolbar label { flex-basis: 100%; }
   .ws-futures[data-side="original"] .ws-future-changed, .ws-futures[data-side="changed"] .ws-future-original { display: none; }
 }
+
+/* --- Prázdná scéna (P21 T10) ----------------------------------------------
+
+   Horní řádek mřížky, prostřední sloupec: volná plocha světa nad dokem. Je to
+   buňka, ne kotvený box — čtvrtý `position: absolute` s rohem je přesně ta
+   vada, kvůli které `.ws-shell` vznikla. Sama kliknutí nebere, jen tlačítko
+   v ní; jinak by karta uprostřed brala scéně orbit myší. */
+
+.ws-empty {
+  grid-row: 1;
+  grid-column: 2;
+  justify-self: center;
+  align-self: center;
+  pointer-events: none;
+}
+
+.ws-empty > * {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: 34rem;
+  padding: 1rem 1.4rem;
+  border-radius: 0.5rem;
+  background: rgba(7, 20, 31, 0.72);
+  color: var(--ws-nacre);
+  text-align: center;
+  text-shadow: var(--ws-text-shadow);
+}
+
+.ws-empty-lead {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.ws-empty-next {
+  margin: 0;
+  color: var(--ws-muted);
+  font-size: 0.88rem;
+}
+
+.ws-empty-example {
+  pointer-events: auto;
+  cursor: pointer;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--ws-verdigris);
+  border-radius: 0.35rem;
+  background: rgba(46, 143, 134, 0.18);
+  color: var(--ws-nacre);
+  font: inherit;
+  font-style: italic;
+}
+
+.ws-empty-example:hover,
+.ws-empty-example:focus-visible {
+  background: rgba(46, 143, 134, 0.36);
+}

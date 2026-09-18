@@ -134,3 +134,74 @@ test('one sentence adds a new object to a live world without touching what alrea
   save();
   expect(errors).toEqual([]);
 });
+
+/* ------------------------------------------------------------------ *
+ * Obrazovka rozhovoru bez modelu (P21 T10)
+ * ------------------------------------------------------------------ */
+
+/** Uvařený svět a jeho uvařená změna — tytéž věty jako v `second-act.spec.ts`. */
+const PREPARED_WORLD = 'A bridge town: houses hanging under a single span over a dry canyon.';
+const PREPARED_CHANGE = 'Make the hanging houses bigger and let them sway.';
+const QUEUED = 'add a small brass bell by the far edge';
+
+/**
+ * Zdarma a při každém běhu: prázdná nasvícená scéna s jedním příkladem, svět
+ * z uvařeného skladu, a věta o dvou věcech, která se pošle po kusech. Co se tu
+ * soudí, je **rozvržení a tok**, ne model — proto uvařený sklad, ne `EVAL_LIVE`.
+ *
+ * Dvě pasti, které tenhle test jmenuje: (1) příklad je tlačítko a stojí v
+ * horním řádku mřížky, takže kdyby předběhl vstup nebo si lehl přes dok, nikdo
+ * by to na snímku neviděl; (2) fronta kusů se po `Apply` předvyplní do pole —
+ * bez toho by druhá věc z věty tiše zmizela a porotce by měl za to, že ji
+ * svět odmítl.
+ */
+test('the page opens on an empty lit scene, and later sentences add to the world instead of rebuilding it', async ({ page }) => {
+  test.setTimeout(240_000);
+  let worldsBuilt = 0;
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/worldstream/sessions') worldsBuilt += 1;
+  });
+
+  await page.setViewportSize({ width: 1600, height: 900 });
+  await page.goto('/');
+  const empty = page.getByTestId('empty-scene');
+  await expect(empty).toBeVisible();
+  // Prvním interaktivním prvkem zůstává pole — příklad je za ním v DOM.
+  const order = await page.evaluate(() => {
+    const nodes = [...document.querySelectorAll<HTMLElement>('input, button')].map((node) => node.dataset.testid ?? '');
+    return { input: nodes.indexOf('prompt-input'), example: nodes.indexOf('example-sentence') };
+  });
+  expect(order.input).toBeGreaterThan(-1);
+  expect(order.input).toBeLessThan(order.example);
+  // Příklad pole vyplní a předá mu kurzor; neodesílá.
+  await page.getByTestId('example-sentence').click();
+  await expect(page.getByTestId('prompt-input')).toHaveValue('a drowned cathedral lit from below');
+  await expect(page.getByTestId('prompt-input')).toBeFocused();
+  expect(worldsBuilt).toBe(0);
+
+  await page.getByTestId('generation-mode').selectOption('prepared');
+  await page.getByTestId('prompt-input').fill(PREPARED_WORLD);
+  await page.getByTestId('prompt-submit').click();
+  await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live', { timeout: 90_000 });
+  await expect(empty).toHaveCount(0);
+  expect(worldsBuilt).toBe(1);
+  // Čas a druhá věta jsou na témže světě druhé gesto.
+  await expect(page.getByTestId('runtime-controls')).toBeVisible();
+  await expect(page.getByTestId('world-time')).toBeVisible();
+  await expect(page.getByTestId('refine-input')).toBeVisible();
+
+  await page.getByTestId('refine-input').fill(`${PREPARED_CHANGE} Then ${QUEUED}.`);
+  await page.getByTestId('refine-submit').click();
+  const panel = page.getByTestId('change-preview');
+  await expect(panel).toHaveAttribute('data-kind', 'preview', { timeout: 90_000 });
+  await expect(page.getByTestId('change-target')).toHaveText(/hanging houses/i);
+  await expect(page.getByTestId('change-queue')).toContainText(QUEUED);
+
+  await page.getByTestId('change-apply').click();
+  await expect(panel).toHaveCount(0, { timeout: 120_000 });
+  await expect(page.getByTestId('refine-submit')).toBeEnabled({ timeout: 120_000 });
+  // Zbytek věty čeká v poli, svět se nepřestavěl a čas zůstal.
+  await expect(page.getByTestId('refine-input')).toHaveValue(QUEUED);
+  expect(worldsBuilt).toBe(1);
+  await expect(page.getByTestId('world-time')).toBeVisible();
+});

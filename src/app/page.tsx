@@ -310,6 +310,8 @@ export default function Page() {
   const mesher = useRef<MeshClient | null>(null);
   /** Čtení právě běžící relace. Nová věta to předchozí zruší. */
   const reading = useRef<AbortController | null>(null);
+  /** Pole na větu — příklad z prázdné scény ho vyplní a předá mu kurzor (P21 T10). */
+  const promptInput = useRef<HTMLInputElement | null>(null);
   /** Úroveň kvality. Čte se jednou, po připojení — sahá na `document`. */
   const tier = useRef<QualityTier>('full');
 
@@ -587,6 +589,7 @@ export default function Page() {
           target: outcome.target,
           scope: outcome.scope,
           preserved: outcome.preserved,
+          ...(outcome.pieces === undefined ? {} : { pieces: outcome.pieces }),
         });
         setChangeFrom(outcome.authored);
       } catch (error: unknown) {
@@ -734,7 +737,11 @@ export default function Page() {
       setWorld(built);
       setChange(null);
       setChangeFrom(null);
-      setSecond('');
+      // Fronta kusů (P21 T9/T10): zbytek věty se předvyplní do pole, aby další
+      // odeslání pokračovalo tam, kde tahle věta skončila. Spojené tečkou, tedy
+      // hranicí, na které server řeže — pošle se zase jen první kus a zbytek
+      // se vrátí jako nová fronta.
+      setSecond(change.pieces === undefined ? '' : change.pieces.remaining.join('. '));
       setRecovery(null);
       if (failedShapes.size > 0) {
         // The accepted document and runtime already work. Retry only its local
@@ -845,6 +852,9 @@ export default function Page() {
     <WorldstreamApp
       inspecting={inspecting}
       onInspect={toggleInspect}
+      empty={displayedWorld === null && !streaming && fault === null ? (
+        <EmptyScene onExample={(text) => { setSentence(text); promptInput.current?.focus(); }} />
+      ) : null}
       prompt={
         <>
         <form onSubmit={(event) => void submit(event)} data-testid="prompt-form" className="ws-prompt-form" style={FORM}>
@@ -854,6 +864,7 @@ export default function Page() {
             <option value="prepared">Prepared demo</option>
           </select></label>
           <input
+            ref={promptInput}
             data-testid="prompt-input"
             aria-label="Describe a place"
             placeholder="a drowned cathedral lit from below"
@@ -1019,6 +1030,33 @@ export default function Page() {
         framing={sourceProject ? 'diagram' : 'scene'}
         sceneId={sourceProject ? (sourceProject.parent ?? sourceProject).projectRevision : sessionId} />}
     />
+  );
+}
+
+/** Věta, kterou prázdná scéna nabízí. Táž, co stojí v `placeholder` pole. */
+const EXAMPLE_SENTENCE = 'a drowned cathedral lit from below';
+
+/**
+ * Prázdná nasvícená scéna s jedním příkladem věty (P21 T10).
+ *
+ * Do T10 byla výchozí obrazovka plátno bez ničeho a pole s `placeholder`em —
+ * cizí člověk (G-V) nevěděl, že se má psát celou větou, ani že svět pak
+ * poroste po větách. Tři řádky: co udělat, jeden příklad k odkliknutí, a co
+ * přijde potom. Příklad je tlačítko, které pole **vyplní, ne odešle** —
+ * odeslání je rozhodnutí porotce a stojí placené volání.
+ *
+ * Mizí s prvním světem, s prvním náhledem i s rozběhnutou stavbou, protože
+ * v té chvíli už plátno mluví samo.
+ */
+function EmptyScene({ onExample }: { readonly onExample: (sentence: string) => void }) {
+  return (
+    <section data-testid="empty-scene" aria-label="How to begin">
+      <p className="ws-empty-lead">Describe a place in one sentence, and it will stand here.</p>
+      <button type="button" data-testid="example-sentence" className="ws-empty-example" onClick={() => onExample(EXAMPLE_SENTENCE)}>
+        Try: {EXAMPLE_SENTENCE}
+      </button>
+      <p className="ws-empty-next">Then keep talking. Each sentence adds one thing or changes one rule, and time can always be rewound.</p>
+    </section>
   );
 }
 

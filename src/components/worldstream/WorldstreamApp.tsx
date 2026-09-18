@@ -95,7 +95,13 @@ export default function WorldstreamApp({
    * žádná buňka, a nad plátnem, protože ukazuje do scény.
    */
   readonly label?: ReactNode;
-  /** Prázdný stav uprostřed plátna, dokud nepadla první věta. */
+  /**
+   * Prázdný stav nad volnou plochou plátna, dokud nepadla první věta (P21 T10).
+   *
+   * Bydlí v **horním řádku mřížky**, ne mimo ni: mimo `.ws-shell` by to byl
+   * čtvrtý absolutně kotvený box, a v DOM stojí **za** dokem, aby příklad věty
+   * — je to tlačítko — nepředběhl vstup jako první interaktivní prvek.
+   */
   readonly empty?: ReactNode;
   /** Herní ovládání vlevo dole. Stojí tam jen tehdy, když je co hrát. */
   readonly controls?: ReactNode;
@@ -118,9 +124,9 @@ export default function WorldstreamApp({
         <InspectDrawer open={inspecting} onToggle={onInspect} background={inspectBackground}>
           {inspect}
         </InspectDrawer>
+        {empty === null ? null : <div className="ws-empty">{empty}</div>}
       </div>
       {label}
-      {empty}
       {stage}
     </main>
   );
