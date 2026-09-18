@@ -1,0 +1,522 @@
+{
+  "measuredAt": "2026-09-18T11:43:58.983Z",
+  "kind": "deterministic replay of archived compiler answers — zero model calls, no HTTP",
+  "source": "evals/worldstream/create-raw.json (2026-09-06 archive, seed 4021)",
+  "sessionSeed": 4021,
+  "answersInArchive": 72,
+  "referenceCompiled": 52,
+  "identicalBlueprint": 52,
+  "driftedBlueprint": 0,
+  "mergeRejections": 0,
+  "rejectionsByReason": {},
+  "warnings": [
+    "The answers were written by a model that saw the whole world at once. This measures only whether the merge loses anything; it says nothing about how well a model writes one chunk blind.",
+    "Cases whose reference answer does not compile today are excluded from the denominator, never counted as a pass."
+  ],
+  "cases": [
+    {
+      "id": "c01#2",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c01#3",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c01#4",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c02#6",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c02#7",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c02#8",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c03#10",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c03#11",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c03#12",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c04#14",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c04#15",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c05#17",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c05#18",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c05#19",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c06#21",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c06#22",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c07#24",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c07#25",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c08#27",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c08#28",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c09#30",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c09#31",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c10#33",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c10#34",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c10#35",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c11#37",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c11#38",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c11#39",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c12#41",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c13#43",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c13#44",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c13#45",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c14#47",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c15#50",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c15#51",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c15#52",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c16#54",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c16#55",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c16#56",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c17#58",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c17#59",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c19#62",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c19#63",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c19#64",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c20#66",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c20#67",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c20#68",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c21#70",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c21#71",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c21#72",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c22#74",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c22#75",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c23#77",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c23#78",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c23#79",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c24#81",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c24#82",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c24#83",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c25#85",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c25#86",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c26#88",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c26#89",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c26#90",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c27#92",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c27#93",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": false,
+      "identical": true
+    },
+    {
+      "id": "c27#94",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c29#98",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c29#99",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c29#100",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c30#102",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c30#103",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    },
+    {
+      "id": "c30#104",
+      "chunks": 3,
+      "merged": true,
+      "referenceCompiled": true,
+      "identical": true
+    }
+  ]
+}

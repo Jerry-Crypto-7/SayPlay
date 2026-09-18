@@ -62,6 +62,7 @@ import {
 } from './worldstream-compiler';
 import type { Grammar, UpstreamRequest } from './prompt';
 import type { PlannerEmission } from './worldstream-intent';
+import { EMISSION_CHUNKS, mergeEmissionChunks, type ChunkAnswer } from './emission-merge';
 
 /** Přijatý blueprint i s verdiktem, osekáními a opravami. */
 export type CompiledBlueprint = Extract<CompilerResult, { readonly ok: true }>;
@@ -442,6 +443,77 @@ export interface RepairInput {
    * nekupuje nic a jen zahazuje rozdělanou práci.
    */
   readonly maxRounds?: number;
+  /**
+   * Napsat svět na několik požadavků místo jednoho.
+   *
+   * **Výchozí je `false`, tedy dnešní jediné volání.** Rozřezání se zapíná
+   * volajícímu, protože mění počet placených volání na jeden svět — z jednoho
+   * na tři. Že se kusy dají slepit beze ztráty, je naměřené nad archivem
+   * (`evals/worldstream/chunked-compile.json`: 52 z 52 bajtově týž blueprint);
+   * že je Astra dobře napíše, když nevidí zbytek světa, naměřené **není**
+   * a čeká na živý běh.
+   *
+   * Kusy se tady posílají **po jednom, v pořadí**. Souběh je T5 a patří k němu
+   * i účtování každého kusu zvlášť — dřív než to platí strop útraty, se
+   * souběžně nic pouštět nemá.
+   */
+  readonly chunked?: boolean;
+}
+
+/**
+ * Jedno kolo přes několik kusů: N požadavků, jedna slepená odpověď, jeden
+ * blueprint.
+ *
+ * `null` znamená „tudy to nešlo, zkus to jedním voláním" — a vrací se **jen**
+ * když se kusu nedostalo odpovědi vůbec (rozbité prostředí). Odmítnutí od
+ * brány i rozpor při slepení jsou výsledky, ne důvod tiše přejít na starou
+ * cestu: kdyby se přecházelo, report by ukazoval úspěch tam, kde řezání
+ * selhalo.
+ */
+async function emitChunks(input: RepairInput, clock: () => number): Promise<BlueprintOutcome | null> {
+  const startedAt = clock();
+  const answers: ChunkAnswer[] = [];
+  let lastRequest = buildCompilerRequest(input.plan, input.grammar);
+
+  for (const chunk of EMISSION_CHUNKS) {
+    const request = buildCompilerRequest(input.plan, input.grammar, chunk);
+    lastRequest = request;
+    try {
+      answers.push({
+        chunk,
+        answer: await observePhaseAsync(input.observePhase, 'blueprint-emitter', () => input.emit(request)),
+      });
+    } catch (thrown) {
+      const message = thrown instanceof Error ? `${thrown.name}: ${thrown.message}` : String(thrown);
+      return { kind: 'unavailable', detail: `chunk ${chunk}: ${message}`, cause: thrown, rounds: [] };
+    }
+  }
+
+  const merged = mergeEmissionChunks(answers);
+  const ms = clock() - startedAt;
+  if (!merged.ok) {
+    const fault: BlueprintFault = { reason: 'WRONG_SHAPE', detail: `${merged.reason}: ${merged.detail}`, issues: [] };
+    return { kind: 'rejected', fault, rounds: [{ attempt: 1, fault, ms }] };
+  }
+
+  const result = observePhase(input.observePhase, 'blueprint-validation-and-lowering', () =>
+    compileBlueprint(merged.answer, input.plan, {
+      sessionSeed: input.sessionSeed,
+      upstream: lastRequest,
+      assets: WORLDSTREAM_ASSETS,
+    }),
+  );
+
+  if (result.ok) return { kind: 'compiled', result, rounds: [{ attempt: 1, fault: null, ms }] };
+
+  if (result.preview) input.onVisualPreview?.(result.preview, 1);
+  const fault: BlueprintFault = {
+    reason: result.reason,
+    detail: result.detail,
+    issues: result.issues,
+    ...(result.world === undefined ? {} : { world: result.world }),
+  };
+  return { kind: 'rejected', fault, rounds: [{ attempt: 1, fault, ms }] };
 }
 
 /**
@@ -463,6 +535,14 @@ export async function compileWithRepair(input: RepairInput): Promise<BlueprintOu
 
   const first = buildCompilerRequest(input.plan, input.grammar);
   const clock = input.now ?? Date.now;
+
+  if (input.chunked === true) {
+    const chunked = await emitChunks(input, clock);
+    // Slepení selhalo → je to vada odpovědi jako každá jiná a jde do téhož
+    // tvaru výsledku. Nepřepisuje se na jediné volání potichu: to by zakrylo,
+    // že řezání v tomhle případě nefunguje, a report by četl úspěch.
+    if (chunked !== null) return chunked;
+  }
 
   const rounds: BlueprintRound[] = [];
   const seen: BlueprintFault[] = [];

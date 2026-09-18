@@ -60,6 +60,7 @@ import { SHAPE_LIMITS, type ShapeNodeKind } from '../shape/types';
 import { EMISSION_MODEL, buildEmissionRequest, type Grammar, type UpstreamRequest } from './prompt';
 import { PLANNER_ANSWER_FIELDS, type PlannerEmission } from './worldstream-intent';
 import { REFINE_ANSWER_FIELDS } from './worldstream-refine';
+import { CHUNK_FIELDS, EMISSION_CHUNKS, type ChunkName } from './emission-merge';
 import { WORLDSTREAM_ASSETS } from '@/assets/catalog';
 import { buildAssetBrief } from './worldstream-asset-brief';
 
@@ -365,6 +366,35 @@ export function capabilityManifest(): string {
 export const COMPILER_ANSWER_FIELDS = ['geometry', 'shapes', 'placements', 'world'] as const;
 
 /**
+ * Věty, kterými se celý požadavek zúží na jeden kus.
+ *
+ * Kusy běží souběžně nad **týmž rejstříkem plánovače**, takže každý vidí
+ * všechny identity — nevidí jen text, který zrovna píšou ostatní. Jediná
+ * vazba, která hranici kusu překračuje, je `placements → geometry.nodes[i]`,
+ * a tu po slepení kontroluje `mergeEmissionChunks`.
+ */
+function chunkNarrowing(chunk: ChunkName): string[] {
+  const mine = CHUNK_FIELDS[chunk].join(', ');
+  const theirs = EMISSION_CHUNKS.filter((name) => name !== chunk)
+    .flatMap((name) => CHUNK_FIELDS[name])
+    .join(', ');
+
+  return [
+    '',
+    `YOU ARE WRITING ONE PART OF THAT ANSWER. Write exactly these top-level fields and no others: ${mine}.`,
+    `The fields ${theirs} are being written right now by parallel requests against this same registry.`,
+    'Leave them out entirely. A field written twice is rejected by the merge, not silently overwritten,',
+    'so an empty placeholder is worse than an absent field.',
+    ...(chunk === 'objects'
+      ? [
+          'Your placements may point at geometry rows you did not write: source {kind:"geom",node:<row>}',
+          'indexes the geometry table from the architecture part, in the order it declares it.',
+        ]
+      : []),
+  ];
+}
+
+/**
  * Která ze tří fází si o tenhle požadavek řekla.
  *
  * ⚠ **Rozhoduje seznam žádaných polí, NIKDY pořadí volání — naměřeno
@@ -388,7 +418,20 @@ export function requestStage(request: UpstreamRequest): 'planner' | 'compiler' |
   return null;
 }
 
-export function buildCompilerRequest(plan: PlannerEmission, grammar: Grammar): UpstreamRequest {
+/**
+ * Kus, o který si tenhle požadavek říká. `undefined` = celá odpověď, tedy
+ * dnešní jediné volání.
+ *
+ * **Narovnání, ne protiřečení.** Seznam „top-level fields are exactly" zůstává
+ * v požadavku beze změny — čte ho `requestStage()` a přehrávání archivu podle
+ * něj pozná fázi. Kus se pod něj dopisuje jako zúžení: tvar odpovědi je pořád
+ * týž, píše se z něj jen část.
+ */
+export function buildCompilerRequest(
+  plan: PlannerEmission,
+  grammar: Grammar,
+  chunk?: ChunkName,
+): UpstreamRequest {
   const placeableIds = plan.objects
     .filter((object) => object.role !== 'effect')
     .map((object) => object.stableId);
@@ -400,6 +443,7 @@ export function buildCompilerRequest(plan: PlannerEmission, grammar: Grammar): U
     'Answer with a single JSON object and nothing else. Its top-level fields are exactly:',
     `${COMPILER_ANSWER_FIELDS.join(', ')}. The only optional additional field is architecture. Other fields are rejected, including a title —`,
     'the system writes that from the intent you were given.',
+    ...(chunk === undefined ? [] : chunkNarrowing(chunk)),
     'Optional architecture is an array of authored rooms/corridors: {stableId,kind:"room"|"corridor",at:[x,y,z],width,depth,height,thickness,openings:[{wall:"north"|"south"|"east"|"west",offset,width,height}]}.',
     'at is floor center in meters. Openings start at offset from the negative end of that wall and cut from floor upward. Walls are continuous, floors are continuous slabs; no roof is added.',
     'Use source:{kind:"architecture"} on the matching stableId placement. This lowers into your authored geometry; never duplicate those walls in geometry.nodes. geometry may have nodes:[] when architecture supplies it.',
