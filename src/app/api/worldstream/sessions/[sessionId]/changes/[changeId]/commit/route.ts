@@ -331,9 +331,9 @@ async function handleDurablePOST(
   }
 
   const next = observePhase(serverPhaseObserver, 'edit-next-blueprint', () => nextBlueprint(blueprint, committed.after, plan.shape, plan.addition));
-  if (typeof next === 'string')
+  if (!('world' in next))
     return rejected(stored, changeId, plan.stableId, doc, [
-      { stage: 'apply', reason: 'BLUEPRINT_INVALID', pointer: plan.addition === null ? '/shapes' : '/objects', detail: next },
+      { stage: 'apply', reason: 'BLUEPRINT_INVALID', pointer: next.pointer, detail: next.detail },
     ]);
 
   if (comparisonRequest !== null && comparison===null) {
@@ -349,13 +349,19 @@ async function handleDurablePOST(
   // Od `peekChange` výš sem nevede jediný `await`, takže mezi kontrolou a
   // vyzvednutím se nemá kdy vklínit druhý požadavek — dvojí commit téhož
   // preview pořád není možný.
+  //
+  // **Registr podob dřív než dokument a než spotřeba preview.** Nový objekt
+  // vstupuje do registru na revizi 0 a ve stavu `planned`, přesně jako objekty
+  // první věty; ty dosavadní `registerBlueprint` nechá být (reconnect je pro něj
+  // totéž). Bez registrace by doručení meshe nového tvaru padlo na
+  // `UNKNOWN_OBJECT`. Je to jediný krok tady dole, který umí vyhodit — když se
+  // někdy registr rozejde s dokumentem (`Registered object has changed`, dnes
+  // bez volajícího, který by to způsobil) — a výjimka **před** zápisem nechá
+  // preview i svět tam, kde byly, místo půlky commitu, kterou tenhle soubor
+  // nahoře zakazuje (nález revize `bae05c0`).
+  if (plan.addition !== null) stored.session.registerBlueprint(next);
   takeChange(stored, changeId);
   stored.blueprint = next;
-  // Nový objekt vstupuje do registru podob na revizi 0 a ve stavu `planned`,
-  // přesně jako objekty první věty; ty dosavadní `registerBlueprint` nechá být
-  // (reconnect je pro něj totéž, co tohle). Bez registrace by doručení meshe
-  // nového tvaru padlo na `UNKNOWN_OBJECT`.
-  if (plan.addition !== null) stored.session.registerBlueprint(next);
   stored.comparisonOrigin = comparison === null ? null : { original: structuredClone(doc),
     acceptedSimHash: next.world.simHash, acceptedSimRevision: next.world.simRevision, stableId: plan.stableId };
   const revision = plan.shape === null ? null : stored.session.revise(plan.stableId);
@@ -446,7 +452,7 @@ function nextBlueprint(
   world: WorldstreamBlueprint['world'],
   shape: WorldstreamBlueprint['shapes'][number] | null,
   addition: Addition | null,
-): WorldstreamBlueprint | string {
+): WorldstreamBlueprint | { pointer: string; detail: string } {
   if (addition !== null) {
     const candidate: WorldstreamBlueprint = {
       ...blueprint,
@@ -455,12 +461,15 @@ function nextBlueprint(
       shapes: [...blueprint.shapes, addition.shape],
     };
     const parsed = blueprintSchema.safeParse(candidate);
+    // Ukazatel míří tam, kde schéma nebo odkazy selhaly, ne paušálně na
+    // `/objects`: plný rozpočet tvarů (`shapes: too big`, když mezi preview a
+    // commitem přibyl jiný objekt) je vada `/shapes`, a porotce má číst tu.
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
-      return `${issue.path.join('/')}: ${issue.message}`;
+      return { pointer: `/${issue.path.join('/')}`, detail: issue.message };
     }
     const issues = findBlueprintReferenceIssues(candidate);
-    return issues.length === 0 ? candidate : `${issues[0].where}: ${issues[0].detail}`;
+    return issues.length === 0 ? candidate : { pointer: `/${issues[0].where}`, detail: issues[0].detail };
   }
 
   if (shape === null) return { ...blueprint, world };
@@ -474,7 +483,7 @@ function nextBlueprint(
 
   return replaced === 1
     ? { ...blueprint, world, shapes }
-    : `the world has ${replaced} hero shapes named ${shape.shapeId}, so the new form has nowhere to land`;
+    : { pointer: '/shapes', detail: `the world has ${replaced} hero shapes named ${shape.shapeId}, so the new form has nowhere to land` };
 }
 
 function revisionsOf(

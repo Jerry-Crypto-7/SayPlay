@@ -37,6 +37,7 @@ import { BODY_DEADLINE_MS, MAX_CONCURRENT_BODY_READS_UNIDENTIFIED, readBody } fr
 import type { UpstreamRequest } from '@/model/prompt';
 import { resetFaultLog } from '@/server/public-faults';
 import { DEFAULT_CAP_USD, SpendRefusalError } from '@/server/spend-cap';
+import { MAX_HERO_SHAPES } from '@/worldstream/schema';
 import {
   callerKey,
   MAX_REQUESTS_PER_WINDOW,
@@ -2330,6 +2331,56 @@ describe('přidání nového objektu', () => {
     expect(JSON.stringify(stored.blueprint)).toBe(before.bytes);
     expect(stored.session.revisionOf('lantern')).toBeNull();
     // Odmítnutí preview nespálí — platí i pro přidání.
+    expect(peekChange(stored, change.changeId)).not.toBeNull();
+  });
+
+  it('přidání bez jediné operace je čistě vizuální objekt: řetěz pravidel se nespouští a sim stojí', async () => {
+    // Nález revize `bae05c0`: `readAdditionEmission` prázdné `behavior` přijme
+    // a route pak obejde router, staleRevision i svědka. To je záměr — objekt
+    // bez entity v1 povoluje — ale nikdo to nepřipíchl.
+    const stored = await generated();
+    const before = untouchedOf(stored);
+    const hashBefore = worldOf(stored).simHash;
+    const change = pending(stored, additionPlan(stored, { ...LANTERN_ANSWER, behavior: [] }));
+
+    const read = await body(await commit(stored.session.sessionId, change.changeId));
+    expect(read).toMatchObject({ outcome: 'COMMITTED', stableId: 'lantern', applied: [], representation: null });
+    expect(stored.blueprint!.objects.map((object) => object.stableId)).toEqual(['saltFlat', 'ironMast', 'lantern']);
+    expect(stored.blueprint!.shapes.map((shape) => shape.shapeId)).toEqual(['mastPost', 'lanternBody']);
+    expect(JSON.stringify((worldOf(stored).sim as { entities: unknown }).entities)).toBe(before.entities);
+    expect(worldOf(stored).simRevision).toBe(0);
+    expect(worldOf(stored).simHash).toBe(hashBefore);
+    expect(stored.session.revisionOf('lantern')).toBe(0);
+  });
+
+  it('plný rozpočet tvarů mezi preview a commitem odmítne s ukazatelem na /shapes, ne /objects', async () => {
+    const stored = await generated();
+    const change = pending(stored, additionPlan(stored));
+    // Svět se mezitím naplnil až po strop — jinou cestou, než je tenhle commit.
+    const filler = Array.from({ length: MAX_HERO_SHAPES - stored.blueprint!.shapes.length }, (_, i) => ({
+      ...stored.blueprint!.shapes[0], shapeId: `filler${i}`, stableId: `fillerObject${i}`,
+    }));
+    stored.blueprint = { ...stored.blueprint!, shapes: [...stored.blueprint!.shapes, ...filler] };
+    const before = untouchedOf(stored);
+
+    const read = await body(await commit(stored.session.sessionId, change.changeId));
+    expect(read.outcome).toBe('REJECTED');
+    expect(read.rejections).toMatchObject([{ reason: 'BLUEPRINT_INVALID', pointer: '/shapes' }]);
+    expect(JSON.stringify(stored.blueprint)).toBe(before.bytes);
+    expect(stored.session.revisionOf('lantern')).toBeNull();
+    expect(peekChange(stored, change.changeId)).not.toBeNull();
+  });
+
+  it('když registr podob nový objekt odmítne, preview i svět zůstanou tam, kde byly', async () => {
+    // Pořadí zápisů: registr → spotřeba preview → dokument. Výjimka registru
+    // (dnes bez volajícího, který by ji vyvolal) nesmí nechat půlku commitu.
+    const stored = await generated();
+    const before = untouchedOf(stored);
+    const change = pending(stored, additionPlan(stored));
+    vi.spyOn(stored.session, 'registerBlueprint').mockImplementation(() => { throw new Error('registry refused'); });
+
+    await expect(commit(stored.session.sessionId, change.changeId)).rejects.toThrow('registry refused');
+    expect(JSON.stringify(stored.blueprint)).toBe(before.bytes);
     expect(peekChange(stored, change.changeId)).not.toBeNull();
   });
 
