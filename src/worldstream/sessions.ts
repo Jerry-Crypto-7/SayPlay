@@ -59,6 +59,7 @@ import { sealSimHash, simHashOf, type WorldDoc } from '@/ir/worlddoc';
 import {openOrdinarySessionStore,SessionStoreError} from '@/server/session-store';
 import {createSessionPersistence} from '@/server/session-persistence';
 import {buildIntentPreview} from '@/scene/intent-preview';
+import {buildMassingPreview} from '@/scene/massing-preview';
 
 // Source projects have a single authoritative snapshot, separate from the
 // legacy blueprint workflow. T9 reads this complete world/evidence pair.
@@ -1037,9 +1038,19 @@ export async function runGeneration(
   if (deps.legacyPlan !== true && session.phase === 'intent') {
     const early = observePhase(serverPhaseObserver, 'intent-layout-preview',
       () => buildIntentPreview(plan.value, { sessionSeed: session.sessionSeed }));
-    if (early.ok) {
-      stored.visualPreview = early.preview;
-      session.events.append('visual.preview', { preview: early.preview, attempt: 0 });
+    // **Odmítnutí přísného náhledu nesmí znamenat prázdnou obrazovku.**
+    // Naměřeno nad osmnácti plány série T18: tímhle profilem projde jeden
+    // (`intent-preview.ts`). Zbylých sedmnáct porotců do příchodu blueprintu
+    // nevidělo nic — proto sem jde hrubý hmotový model, který relace nečte
+    // a nemá tedy co odmítnout. Že je hrubý, nese sám náhled
+    // (`MASSING_PREVIEW_NOTICE`), ne tenhle rámec: přes snapshot §21 jde
+    // jedině `visualPreview`, takže pole na payloadu by reconnect nepřežilo.
+    const rough = early.ok ? null : observePhase(serverPhaseObserver, 'intent-massing-preview',
+      () => buildMassingPreview(plan.value, { sessionSeed: session.sessionSeed }));
+    const preview = early.ok ? early.preview : rough?.ok ? rough.preview : null;
+    if (preview) {
+      stored.visualPreview = preview;
+      session.events.append('visual.preview', { preview, attempt: 0 });
     }
   }
 
