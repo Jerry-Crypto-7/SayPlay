@@ -83,7 +83,7 @@ import { validateLayout } from '@/scene/constraints';
 export { COMPILER_STAGE };
 
 /** Pole, která model smí napsat. Cokoli navíc je odmítnutí. */
-const ANSWER_FIELDS = ['geometry', 'shapes', 'placements', 'world', 'architecture'] as const;
+export const ANSWER_FIELDS = ['geometry', 'shapes', 'placements', 'world', 'architecture'] as const;
 
 export type CompilerRejection =
   /** Odpověď není objekt, nebo je to pole. */

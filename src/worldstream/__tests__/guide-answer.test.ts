@@ -65,6 +65,12 @@ describe('věta vzniká z cesty a z ničeho jiného', () => {
     expect(positions.every((position) => position > -1)).toBe(true);
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
     expect(sentence.text).toContain(route.target);
+
+    // Zvýraznění jsou zastávky cesty v jejím pořadí, každá jednou. Prázdné
+    // zvýraznění by věta nijak neprozradila — scéna by jen nic neukázala.
+    const stops = [...new Set(route.ops.flatMap((op) => (op.target === undefined ? [] : [op.target])))];
+    expect(stops.length).toBeGreaterThan(0);
+    expect(sentence.highlight).toEqual(stops);
   });
 
   it('cíl mimo svět nedostane ani jedno jméno ze světa', () => {

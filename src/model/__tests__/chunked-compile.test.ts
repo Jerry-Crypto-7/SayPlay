@@ -27,7 +27,7 @@ import {
   type ChunkAnswer,
 } from '../emission-merge';
 import { type Grammar } from '../prompt';
-import { compileBlueprint } from '../worldstream-compiler';
+import { ANSWER_FIELDS, compileBlueprint } from '../worldstream-compiler';
 import { compileWithRepair } from '../worldstream-repair';
 import { readPlannerEmission } from '../worldstream-intent';
 import { buildCompilerRequest, requestStage } from '../worldstream-prompt';
@@ -75,7 +75,7 @@ describe('řezání a slepování kompilátorové odpovědi', () => {
     expect(back.sort()).toEqual(Object.keys(ANSWER).sort());
   });
 
-  it('dvakrát napsané pole je pojmenovaný rozpor, ne poslední zápis', () => {
+  it('pole cizího kusu je pojmenovaný rozpor, ne poslední zápis', () => {
     const parts = splitAnswerIntoChunks(ANSWER);
     const architecture = parts.find((part) => part.chunk === 'architecture');
     expect(architecture).toBeDefined();
@@ -92,6 +92,38 @@ describe('řezání a slepování kompilátorové odpovědi', () => {
       ok: false,
       reason: 'FIELD_NOT_IN_CHUNK',
     });
+  });
+
+  it('dvě odpovědi na jeden kus se odmítnou, ne že vyhraje poslední', () => {
+    // Stejný kus přišel dvakrát — třeba po opravném kole, které nezahodilo
+    // první odpověď. Bez stráže by druhá `world` tiše přepsala první a svět
+    // by vypadal hotově s pravidly, která nikdo nekontroloval.
+    const parts = splitAnswerIntoChunks(ANSWER);
+    const again: ChunkAnswer = {
+      chunk: 'rules',
+      answer: { world: { ...(ANSWER.world as Record<string, unknown>), rules: [] } },
+    };
+    const merged = mergeEmissionChunks([...parts, again]);
+
+    expect(merged).toMatchObject({ ok: false, reason: 'FIELD_WRITTEN_TWICE' });
+    if (merged.ok) return;
+    expect(merged.detail).toContain('world');
+  });
+
+  it('každé pole, které kompilátor přijme, má svůj kus — i volitelná architektura', () => {
+    // Archivovaná odpověď `architecture` nenese, takže test nad ní tuhle
+    // vazbu nepřipíchne: kus by o to pole mohl přijít a slepení by pak
+    // hmotový náhled odmítalo jako cizí zápis.
+    const owned = EMISSION_CHUNKS.flatMap((chunk) => CHUNK_FIELDS[chunk]);
+    for (const field of ANSWER_FIELDS) expect(owned, `pole ${field} nemá kus`).toContain(field);
+
+    const parts = splitAnswerIntoChunks({ ...ANSWER, architecture: { rooms: [] } });
+    expect(parts.find((part) => part.chunk === 'architecture')?.answer).toHaveProperty('architecture');
+
+    const merged = mergeEmissionChunks(parts);
+    expect(merged.ok, merged.ok ? '' : JSON.stringify(merged)).toBe(true);
+    if (!merged.ok) return;
+    expect(merged.answer.architecture).toEqual({ rooms: [] });
   });
 
   it('dva zápisy jedné identity se odmítnou, ne slijí', () => {
