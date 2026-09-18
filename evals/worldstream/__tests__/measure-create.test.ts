@@ -1454,10 +1454,16 @@ describe('the committed replay artifact holds up on its own', () => {
     expect(toAuthored - fromAuthored).toBe(gained);
   });
 
-  it('says out loud which of its numbers a slower machine would move', () => {
+  it('says out loud that the clock is not in its verdict, and who leaned on it', () => {
+    // Do 18. 9. 2026 tu stála výhrada, že pomalejší stroj číslo posune. Od P20 F4
+    // ho neposune – přehrání strop času neuplatňuje – a artefakt místo výhrady
+    // nese jmenný seznam tvarů, které by ten strop vzal. Bez něj by `20 z 30`
+    // vypadalo jako číslo, do kterého hodiny nikdy nemluvily.
     expect(artifact.wallClock.length).toBeGreaterThan(0);
-    expect(artifact.wallClock.join(' ')).toMatch(/wall clock/i);
+    expect(artifact.wallClock.join(' ')).toMatch(/does not apply the mesh time budget/i);
     expect(artifact.measures.join(' ')).toMatch(/never the model/i);
+    expect(artifact.after.timeWaived).toBe(artifact.timeWaived.length);
+    for (const entry of artifact.timeWaived) expect(entry.shapes.length).toBeGreaterThan(0);
   });
 });
 
