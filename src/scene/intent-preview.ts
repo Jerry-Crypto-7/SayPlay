@@ -19,7 +19,24 @@ const one=vec(1,1,1);
 const center=(b:Bounds3)=>vec((b.min[0]+b.max[0])/2,(b.min[1]+b.max[1])/2,(b.min[2]+b.max[2])/2);
 
 /** A bounded, provisional disposition of this exact plan, never a WorldDoc or
- * a replacement reference scene. Unsupported relations fail closed. No network. */
+ * a replacement reference scene. Unsupported relations fail closed. No network.
+ *
+ * ⚠ **Tohle je výjimečný případ, ne fáze hlavní cesty – rozhodnuto 18. 9. 2026
+ * (P20 F1).** Nad 18 archivovanými plány série T18 projde tímhle profilem
+ * **jeden**. Devět padá na mezi „nejvýš jedna místnost a jeden terén", jenže
+ * hned za ní stojí slovník: zvednout jen ten strop pustí dál **nula** dalších
+ * plánů, zvednout strop i oba slovníky pustí **jeden**, protože pod tím leží
+ * stěna relačních mezí (sedm plánů má řetězec `connected-to`, tři nesplněnou
+ * relaci, dva `facing`, dva kontejner).
+ *
+ * Rozšíření profilu tedy není doladění dvou kontrol, je to přepsání relačního
+ * layoutu za měřených +1 z 18 – a proto se **nedělá**. Kdo sem sáhne s úmyslem
+ * pustit dál víc plánů, ať to nejdřív změří nad těmi samými 18 plány; bez toho
+ * měření se rozšíření necommituje.
+ *
+ * Následek pro texty: náhled se nikde nesmí popisovat jako pokrytá fáze cesty
+ * porotce (`plans/P20/t16-progressive.md`, `docs/demo/judge-runbook.md`).
+ */
 export function buildIntentPreview(plan:PlannerEmission,options:{sessionSeed:number;assets?:AssetManifest}):IntentPreviewResult {
   const fail=(reason:string,...details:string[]):IntentPreviewResult=>({ok:false,reason,details});
   const assets=options.assets??WORLDSTREAM_ASSETS;
