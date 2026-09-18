@@ -164,7 +164,19 @@ test('after the rule is rewritten the guide answers from the new rules', async (
   // Přepsaná větev běží dál pod „Visitor replay"; průvodce v ní odpovídá
   // z pravidel, která platí teď.
   await page.getByText('Visitor replay', { exact: true }).click();
-  await expect(page.getByTestId('guide-answer'), 'odpověď z minulých pravidel přežila výměnu světa').toHaveText('');
+  await ask(page, QUESTION);
+  await expect(page.getByTestId('guide-answer')).toHaveText(REWRITTEN_ANSWER);
+
+  // **Tady se to láme.** Obě větve běží pod týmž panelem a porotce mezi nimi
+  // přepíná jedním kliknutím. Věta z přepsaných pravidel nad původní větví je
+  // ta nepravda, kterou okem nikdo nepozná — obě znějí rozumně.
+  await page.getByTestId('branch-original').click();
+  await expect(page.getByTestId('guide-answer'), 'věta z přepsaných pravidel zůstala viset nad původní větví').toHaveText('');
+  await ask(page, QUESTION);
+  await expect(page.getByTestId('guide-answer')).toHaveText(ORIGINAL_ANSWER);
+
+  await page.getByTestId('branch-changed').click();
+  await expect(page.getByTestId('guide-answer'), 'věta z původních pravidel zůstala viset nad přepsanou větví').toHaveText('');
   await ask(page, QUESTION);
   await expect(page.getByTestId('guide-answer')).toHaveText(REWRITTEN_ANSWER);
 

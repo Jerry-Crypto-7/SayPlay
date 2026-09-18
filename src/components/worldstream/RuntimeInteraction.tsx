@@ -55,14 +55,23 @@ export default function RuntimeInteraction({ controller, readOnly = false, onRou
   const [selected, setSelected] = useState('0');
   const [message, setMessage] = useState('Choose a destination or an action. Activation requires reaching the sensor.');
   const [question, setQuestion] = useState('');
-  const [guide, setGuide] = useState<GuideSentence | null>(null);
+  /**
+   * Odpověď **i s během, ze kterého pochází**.
+   *
+   * Uklidit ji při výměně běhu by bylo o řádek kratší a o jednu tichou chybu
+   * horší: zapomenutý úklid vypadá úplně stejně jako hotová práce, protože
+   * stará věta pořád dává smysl. Takhle se věta z minulých pravidel nemá jak
+   * zobrazit — porovnává se s tím, co běží teď, a jinak ji nikdo nedostane.
+   * Porotce tu výměnu udělá jedním kliknutím: „Return to original" a „Show
+   * changed run" prohodí běh pod týmž panelem.
+   */
+  const [guide, setGuide] = useState<{ readonly controller: RuntimeController; readonly sentence: GuideSentence | null } | null>(null);
   const [asking, setAsking] = useState(false);
+  const shown = guide?.controller === controller ? guide.sentence : null;
   useEffect(() => {
     setSelected('0');
     setMessage('Choose a destination or an action. Activation requires reaching the sensor.');
-    // Jiný běh světa znamená jiná pravidla. Věta, která platila v předchozím,
-    // by se od platné nedala rozeznat, takže odchází i se svým zvýrazněním.
-    setGuide(null);
+    // Zvýraznění bydlí ve stránce, ne tady, takže o výměně běhu musí slyšet.
     setAsking(false);
     onRoute?.([]);
   }, [controller, onRoute]);
@@ -73,7 +82,7 @@ export default function RuntimeInteraction({ controller, readOnly = false, onRou
   useEffect(() => {
     if (!asking) return;
     const answer = askGuide(controller.getReplayDocument(), question);
-    setGuide(answer);
+    setGuide({ controller, sentence: answer });
     setAsking(false);
     onRoute?.(answer?.highlight ?? []);
   }, [asking, controller, question, onRoute]);
@@ -96,7 +105,7 @@ export default function RuntimeInteraction({ controller, readOnly = false, onRou
       style={{ maxWidth: '100%', color: '#171717' }} onChange={event => setQuestion(event.target.value)} /></label>
     <button type="button" data-testid="guide-ask" disabled={asking || askedName(question) === null}
       onClick={() => setAsking(true)}>Ask the guide</button>
-    <output data-testid="guide-answer" aria-live="polite">{asking ? 'Looking for a way…' : guide?.text ?? ''}</output>
+    <output data-testid="guide-answer" aria-live="polite">{asking ? 'Looking for a way…' : shown?.text ?? ''}</output>
     <details><summary>Action details</summary>
     <div data-testid="runtime-positions">{state.entities.filter(entity =>
       controller.actions.some(entry => entry.actor === entity.stableId)).map(entity =>
