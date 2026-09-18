@@ -40,6 +40,7 @@ import type { RuntimeController, RuntimeSnapshot } from '@/worldstream/runtime-c
 import { CELL_SIZE } from '@/components/viewer/projection';
 import type { ProxyWorld } from '@/worldstream/proxy';
 import { budgetFor, type QualityTier } from '@/worldstream/quality';
+import { routeMarkers } from '@/worldstream/guide-answer';
 
 export interface SharedCamera {
   current: { eye: number[]; target: number[] } | null;
@@ -191,7 +192,38 @@ function FrameCamera({ world, controller, sceneId, reset, framing, sharedCamera,
   return null;
 }
 
-export default function WorldstreamCanvas({ world, controller = null, sceneId = null, reset = 0, framing = 'scene', onPresented, sharedCamera, adaptiveAssets, focusId,cutaway=true }: {
+/**
+ * Zvýraznění cesty, kterou průvodce našel (P21 T13).
+ *
+ * Kreslí se **prstenec na zemi kolem každé zastávky**, ne obarvený objekt:
+ * materiál slotu nese podobu, kterou napsal model, a přebarvit ji kvůli
+ * odpovědi by z ní udělalo něco jiného, než co ten svět je. Prstenec leží
+ * mimo hashovaný stav — je to vykreslení, ne událost simulace.
+ *
+ * Jantarová, ne fialová: viz `rules/design-output.md`.
+ */
+function RouteRings({ world, highlight }: { readonly world: ProxyWorld; readonly highlight: readonly string[] }) {
+  const markers = useMemo(() => routeMarkers(world, highlight), [world, highlight]);
+  if (markers.length === 0) return null;
+
+  return (
+    <group name="guide-route">
+      {markers.map((marker) => (
+        <mesh
+          key={marker.stableId}
+          position={[marker.at[0], marker.at[1] + 0.02, marker.at[2]]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          renderOrder={2}
+        >
+          <ringGeometry args={[marker.radius * 1.08, marker.radius * 1.3, 48]} />
+          <meshBasicMaterial color="#f59e0b" transparent opacity={0.85} depthWrite={false} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+export default function WorldstreamCanvas({ world, controller = null, sceneId = null, reset = 0, framing = 'scene', onPresented, sharedCamera, adaptiveAssets, focusId,cutaway=true, routeHighlight }: {
   readonly world: ProxyWorld | null;
   readonly controller?: RuntimeController | null;
   readonly sceneId?: string | null;
@@ -202,6 +234,8 @@ export default function WorldstreamCanvas({ world, controller = null, sceneId = 
   readonly adaptiveAssets?: boolean;
   readonly focusId?: string | null;
   readonly cutaway?:boolean;
+  /** Zastávky cesty od průvodce, v jejím pořadí. Prázdné pole nekreslí nic. */
+  readonly routeHighlight?: readonly string[];
 }) {
   // Úroveň se čte ze **světa**, ne z volajícího: kdo svět dostane, ví, proti
   // jakému rozpočtu se má soudit (`proxy.ts`). Prázdné plátno kreslí `full`,
@@ -221,6 +255,7 @@ export default function WorldstreamCanvas({ world, controller = null, sceneId = 
       <WorldstreamLighting quality={quality} environment={world?.kind === 'built' ? world.environment : undefined} />
       <FrameCamera world={world} controller={controller} sceneId={sceneId} reset={reset} framing={framing} sharedCamera={sharedCamera} focusId={focusId} />
       {world !== null && world.kind === 'built' && <RuntimeStage key={sceneId} world={world} controller={controller} onPresented={onPresented} adaptiveAssets={adaptiveAssets} cutaway={cutaway} />}
+      {world !== null && routeHighlight !== undefined && <RouteRings world={world} highlight={routeHighlight} />}
     </Canvas>
   );
 }
