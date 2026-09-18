@@ -3,7 +3,10 @@ import {assertSessionStorageReady} from '@/worldstream/sessions';
 import {ownerIdentityRejection} from '@/server/owner-identity';
 import { observePhase, observePhaseAsync } from '@/model/phase-observer';
 import { APPEARANCE_UNSUPPORTED, hasUnsupportedAppearance, hasUnsupportedMotion, MOTION_UNSUPPORTED, SHAPE_ONLY_MOTION_SUMMARY } from '@/server/worldstream-capabilities';
-import {routePatch} from '@/patch/router';
+import { routePatch, type RoutedPatch } from '@/patch/router';
+import { additionScopeIssue } from '@/patch/scope';
+import { commitRoutedParts } from '@/app/api/edit/commit';
+import type { PartPatch } from '@/ir/revision';
 import {prepareComparisonCandidate} from '@/worldstream/comparison-candidate';
 import { withServerMetrics, serverPhaseObserver, currentServerMetrics } from '@/server/worldstream-metrics';
 /**
@@ -24,6 +27,10 @@ import { withServerMetrics, serverPhaseObserver, currentServerMetrics } from '@/
  * 3. **Grounding** — a ten je **před** modelem, tedy zadarmo. Nejasná věta se
  *    vrátí jako nabídka kandidátů a nestojí ani jedno placené volání. Je to
  *    zároveň jediný způsob, jak se druhá věta smí splést: nabídkou, ne odhadem.
+ *    **Věta bez cíle není nejasná — zakládá nový objekt** (P21 T8): `NO_MATCH`
+ *    jde k modelu jako zadání „přidej", ne zpátky jako nabídka celého světa.
+ *    Nabídka zůstává tam, kde je věta doopravdy nerozhodnutá (`AMBIGUOUS`) nebo
+ *    kde klient tvrdí id, které svět nemá (`UNKNOWN_ID`).
  *
  * Za nimi stojí ještě **strop souběhu** — týž čítač jako u zakládání relace.
  * Není to brána vstupu, protože se bere až těsně před placeným voláním.
@@ -70,6 +77,7 @@ import {
   chooseAuthoredChange,
 } from '@/worldstream/authored';
 import { preservedBy } from '@/worldstream/preserved';
+import type { WorldstreamBlueprint } from '@/worldstream/schema';
 import { getSession, putChange, SESSION_FAULTS } from '@/worldstream/sessions';
 
 import { acquireSlot, cloudEmitter, releaseSlot, slotsDetail } from '../../route';
@@ -259,17 +267,22 @@ export async function createChange(
     // jako nabídka i na nasazení bez klíče: je to odpověď o světě, ne o modelu,
     // a platit za otázku, na kterou se ještě nikdo nezeptal, je čistá ztráta.
     const grounding = groundTarget(verdict.prompt, blueprint.objects, read.value.stableId);
-    if (!grounding.ok)
+    // `NO_MATCH` bez `stableId` je věta o něčem, co ve světě není — a od P21 T8
+    // je to zadání, ne odmítnutí. `target === null` níž znamená právě tohle.
+    const adding = !grounding.ok && grounding.reason === 'NO_MATCH';
+    if (!grounding.ok && !adding)
       return Response.json({
         requestId,
         outcome: 'AMBIGUOUS',
         reason: grounding.reason,
         candidates: grounding.candidates,
       });
+    const target = grounding.ok ? grounding.target : null;
 
     // **Živý model má přednost, sklad je za ním** (`T35-actsthree4`) — táž
-    // záložní větev a totéž pořadí jako u zakládání relace.
-    const authored = cloud === null ? authoredChangeFor(stored, verdict.prompt, grounding.target.stableId) : null;
+    // záložní větev a totéž pořadí jako u zakládání relace. Sklad má jen změny
+    // existujících objektů; nový objekt bez modelu nikdo nenapíše.
+    const authored = cloud === null && target !== null ? authoredChangeFor(stored, verdict.prompt, target.stableId) : null;
     const emit = cloud ?? (authored === null ? null : changeEmitterFor(authored.change));
 
     // `null` znamená „cloudová větev není nakonfigurovaná a sklad na tenhle
@@ -330,7 +343,7 @@ export async function createChange(
         observePhase: serverPhaseObserver,
         prompt: verdict.prompt,
         blueprint,
-        target: grounding.target,
+        target,
         emit,
       });
     } finally {
@@ -389,16 +402,29 @@ export async function createChange(
       // reuse the old summary or silently narrow an already stored preview.
       plan = { ...plan, behavior: [], summary: SHAPE_ONLY_MOTION_SUMMARY };
     }
+    // **Dosah přidání se soudí nad skutečným dokumentem už tady**, ne až na
+    // commitu: brána je diff stavu (`additionScopeIssue`), takže potřebuje
+    // dokument po patchi — a `commitRoutedParts` je čistá funkce nad kopií,
+    // takže dry run do relace nezapíše nic. Porotce tak vidí `ALLOWED_PATH`
+    // dřív, než by klikl na commit, a commit soudí toutéž funkcí ještě jednou.
+    if (plan.addition !== null && plan.behavior.length > 0) {
+      const out = additionOutOfScope(plan.behavior, blueprint.world, plan.stableId);
+      if (out !== null) {
+        stored.session.events.append('patch.rejected', { reason: out.reason, detail: out.detail });
+        return Response.json({ requestId, outcome: 'REJECTED', reason: out.reason, detail: out.detail });
+      }
+    }
     // The main UI compares every behavior edit. Validate its typed/scope contract
     // before offering confirmation; a winning witness is not required for A4.
-    if(read.value.comparison === true && plan.behavior.length>0){
+    // Přidání se nesrovnává: svět před ním ten objekt neměl, takže není s čím.
+    if(read.value.comparison === true && plan.behavior.length>0 && plan.addition === null){
       if(plan.shape!==null)return fail(requestId,422,'COMPARISON_REJECTED','A rule comparison cannot also replace geometry.');
       const routed=routePatch({operations:plan.behavior},blueprint.world);
       if(routed.verdict==='REJECTED')return fail(requestId,422,'COMPARISON_REJECTED',routed.detail);
       const prepared=prepareComparisonCandidate(blueprint.world,routed.patches.map(p=>({part:p.part,baseRevision:blueprint.world.simRevision,operations:p.operations})));
       if(!prepared.ok)return fail(requestId,422,'COMPARISON_REJECTED',`${prepared.reason}: ${prepared.detail}`);
     }
-    const target = grounding.target;
+    const named = plan.addition === null ? target! : plan.addition.object;
     const change: PendingChange = {
       changeId: randomUUID(),
       plan,
@@ -416,6 +442,8 @@ export async function createChange(
       shape: plan.shape !== null,
       behavior: plan.behavior.length,
       appearance: plan.appearance.length,
+      /** Věta zakládá objekt, který ve světě nebyl (P21 T8). */
+      addition: plan.addition !== null,
     };
 
     stored.session.events.append(
@@ -429,7 +457,7 @@ export async function createChange(
       changeId: change.changeId,
       outcome: 'PREVIEW',
       summary: plan.summary,
-      target: { stableId: target.stableId, label: target.label },
+      target: { stableId: named.stableId, label: named.label },
       scope,
       // §4 ukazuje porotci vedle rozsahu i to, co změna **nechá být**. Je to
       // polovina slibu „bez resetu" a bez ní se ta věta nedá ověřit očima.
@@ -443,6 +471,37 @@ export async function createChange(
       commit: `/api/worldstream/sessions/${sessionId}/changes/${change.changeId}/commit`,
     });
   }));
+}
+
+/**
+ * Sáhly by operace přidání na něco, co už ve světě stálo?
+ *
+ * Dry run stávajícím řetězem — router rozhodne dráhu, `commitRoutedParts`
+ * provede patch nad kopií — a pak diff `sim` před a po. Odmítnutí routeru nebo
+ * commitu se vrací pod svým jménem: jsou to jiné vady než cizí cesta a porotce
+ * má číst tu pravou.
+ */
+function additionOutOfScope(
+  operations: RefinePlan['behavior'],
+  doc: WorldstreamBlueprint['world'],
+  stableId: string,
+): { readonly reason: string; readonly detail: string } | null {
+  const routing = routePatch({ operations }, doc);
+  if (routing.verdict === 'REJECTED') return { reason: routing.reason, detail: routing.detail };
+
+  const patches = routing.patches.map(
+    (routed: RoutedPatch): PartPatch => ({
+      part: routed.part,
+      baseRevision: routed.part === 'sim' ? doc.simRevision : doc.lookRevision,
+      operations: routed.operations,
+    }),
+  );
+  const committed = commitRoutedParts(doc, patches);
+  if (committed.outcome === 'REJECTED')
+    return { reason: committed.rejections[0].reason, detail: committed.rejections[0].detail };
+
+  const issue = additionScopeIssue(doc.sim, committed.after.sim, stableId);
+  return issue === null ? null : { reason: 'ALLOWED_PATH', detail: issue.detail };
 }
 
 export async function POST(...args:Parameters<typeof handleDurablePOST>):Promise<Response> {

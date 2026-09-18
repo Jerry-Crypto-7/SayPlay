@@ -166,6 +166,26 @@ export const semanticObjectSchema = z
   .strict();
 
 /**
+ * **Objekt, který zakládá druhá věta** (P21 T8) — sémantická polovina plus
+ * cílový kvádr, **bez `source`**.
+ *
+ * Zdroj se dosazuje, ne píše: nový objekt kreslí vždycky hrdinský tvar, který
+ * přijde ve stejné odpovědi, takže `source` je `{ kind: 'shape', shapeId }`
+ * a jeho jediná možná hodnota stojí v tom tvaru. Nechat to model psát by
+ * znamenalo druhé místo, kde se dá ukázat na cizí tvar nebo řádek kompozice,
+ * který si už nárokuje někdo jiný. Vazby (`binding`, assety) sem nepatří —
+ * jsou to v2 kontrakty katalogu, ne věta porotce.
+ *
+ * `.pick()` ze `semanticObjectSchema`, ne opis: kdyby se pohnula abeceda
+ * identifikátoru nebo meze kvádru, pohnou se tady s ní.
+ */
+export const additionObjectSchema = semanticObjectSchema
+  .pick({ stableId: true, label: true, synonyms: true, role: true, targetBounds: true, importance: true })
+  .strict();
+
+export type AdditionObject = z.infer<typeof additionObjectSchema>;
+
+/**
  * `intent` — **jedna definice, ta plannerova**.
  *
  * `.nonoptional()` je pás vedle šlí a je to **naměřeně tak**, ne odhadem.

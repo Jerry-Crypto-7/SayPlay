@@ -52,7 +52,7 @@
  */
 
 import { canonical } from '../ir/worlddoc';
-import { pointerOf } from './reject';
+import { pointerOf, pointerTokens } from './reject';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -158,4 +158,86 @@ export function changedLeafEffects(before: unknown, after: unknown, prefix = '')
 /** Samotné adresy. Projekce `changedLeafEffects`, aby existoval jeden výpočet. */
 export function changedLeaves(before: unknown, after: unknown, prefix = ''): readonly string[] {
   return changedLeafEffects(before, after, prefix).map((leaf) => leaf.path);
+}
+
+/* ------------------------------------------------------------------ *
+ * Dosah věty, která zakládá nový objekt (P21 T8).
+ * ------------------------------------------------------------------ */
+
+/**
+ * Tabulky `sim`, do kterých smí nový objekt psát, a **pod jakým klíčem**.
+ *
+ * `own` — klíč je id nového objektu: entita a její půdorys.
+ * `fresh` — klíč je nový, tedy před změnou v tabulce nebyl: socket, pravidlo.
+ *
+ * Nic jiného. `state` sem nepatří schválně: příznaky, časovače a čítače jsou
+ * počáteční stav světa, který si porotce rozehrál, a nový předmět do něj nemá
+ * co mluvit. Až věta, která zákon potřebuje s příznakem, ukáže naměřený případ,
+ * rozšíří se tabulka tady — na jednom místě, které soudí preview i commit.
+ */
+const ADDITION_TABLES: Readonly<Record<string, 'own' | 'fresh'>> = {
+  entities: 'own',
+  collisionAabb: 'own',
+  sockets: 'fresh',
+  rules: 'fresh',
+};
+
+export interface AdditionScopeIssue {
+  /** List, který kontrakt porušil — první v seřazené množině. */
+  readonly pointer: string;
+  readonly detail: string;
+}
+
+/**
+ * Sáhla změna jen na nový objekt?
+ *
+ * Soudí se **diffem `sim` před a po**, ze stejného důvodu jako celý tenhle
+ * soubor: cesty v operacích o dosahu lžou, listy ne. Věta, která zakládá
+ * objekt, smí světu jen **přidávat** — každý změněný list má účinek `add`
+ * a leží pod tabulkou z `ADDITION_TABLES` pod klíčem, který novému objektu
+ * patří. `replace` nebo `remove` kdekoli znamená, že se hnul stav nebo
+ * identita něčeho, co už stálo; `add` pod cizím klíčem (`/sim/entities/
+ * surveyor/motion`) totéž.
+ *
+ * Vrací první porušení, ne všechna: na rozdíl od kontroly odkazů tohle nejde
+ * do sebeopravy — odmítnutá druhá věta se porotci vrací celá a on píše novou.
+ */
+export function additionScopeIssue(
+  beforeSim: unknown,
+  afterSim: unknown,
+  stableId: string,
+): AdditionScopeIssue | null {
+  const before = isRecord(beforeSim) ? beforeSim : {};
+
+  for (const leaf of changedLeafEffects(beforeSim, afterSim, '/sim')) {
+    const [, table, key] = pointerTokens(leaf.path);
+
+    if (leaf.effect !== 'add')
+      return {
+        pointer: leaf.path,
+        detail: `adding ${stableId} may only add, but ${leaf.path} was ${leaf.effect}d`,
+      };
+
+    const rule = table === undefined ? undefined : ADDITION_TABLES[table];
+    if (rule === undefined || key === undefined)
+      return {
+        pointer: leaf.path,
+        detail: `${leaf.path} is outside the tables a new object may write (${Object.keys(ADDITION_TABLES).map((name) => `/sim/${name}`).join(', ')})`,
+      };
+
+    if (rule === 'own' && key !== stableId)
+      return {
+        pointer: leaf.path,
+        detail: `${leaf.path} belongs to ${key}, and adding ${stableId} may not touch another object`,
+      };
+
+    const existing = before[table];
+    if (rule === 'fresh' && isRecord(existing) && Object.hasOwn(existing, key))
+      return {
+        pointer: leaf.path,
+        detail: `${leaf.path} writes into ${key}, which already existed before ${stableId} was added`,
+      };
+  }
+
+  return null;
 }

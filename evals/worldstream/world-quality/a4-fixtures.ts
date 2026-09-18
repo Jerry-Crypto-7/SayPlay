@@ -66,7 +66,7 @@ export function a4Fixture(spec:A4Spec):A4Fixture {
   const observations=spec.kind==='timer'?[{tick:80,original,changed},{tick:400,original:Object.fromEntries(Object.keys(original).map(k=>[k,0])),changed:Object.fromEntries(Object.keys(changed).map(k=>[k,0]))}]:[{tick:400,original,changed}];
   if(spec.id==='a08')observations.unshift({tick:30,original:{'f:lamp':1},changed:{'f:lamp':1}});
   return {spec,blueprint,targetId,inputs,forkTick:inputs[0].tick-1,observations,
-    oracle:{stableId:targetId,summary:'Local expected patch, not sent to model',shape:null,appearance:[],behavior:[op==='remove'?{op,path:`/sim/rules/${ruleId}${path}`}:{op,path:`/sim/rules/${ruleId}${path}`,value}]}};
+    oracle:{stableId:targetId,summary:'Local expected patch, not sent to model',shape:null,addition:null,appearance:[],behavior:[op==='remove'?{op,path:`/sim/rules/${ruleId}${path}`}:{op,path:`/sim/rules/${ruleId}${path}`,value}]}};
 }
 
 /** Same pure production commit/validation/comparison chain as the HTTP route.

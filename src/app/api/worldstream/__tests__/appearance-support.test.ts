@@ -24,7 +24,7 @@ describe('public renderer appearance capability', () => {
     const stored = await generated();
     const before = stored.blueprint!;
     const revision = stored.session.revisionOf('ironMast')!;
-    putChange(stored, { changeId: 'legacy-look', plan: { stableId: 'ironMast', summary: 'warmer mast', shape: null,
+    putChange(stored, { changeId: 'legacy-look', plan: { stableId: 'ironMast', summary: 'warmer mast', shape: null, addition: null,
       appearance: mode === 'mislabelled' ? [] : appearance,
       behavior: mode === 'mixed' ? [{ op: 'replace', path: '/sim/entities', value: {} }] : mode === 'mislabelled' ? appearance : [] },
       basedOn: { representation: revision, sim: before.world.simRevision, look: before.world.lookRevision } });

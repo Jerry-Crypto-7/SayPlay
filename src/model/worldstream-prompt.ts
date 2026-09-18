@@ -34,8 +34,8 @@
  *
  * Slovník uzlů, varianty kusů, kotvy, odstíny i všechny stropy se čtou
  * z `src/geom/program.ts` a `src/shape/schema.ts`. Argumenty jednotlivých uzlů
- * odvodit nejdou — ty stojí v tabulkách níž, a **jejich úplnost hlídá
- * překladač**: `Record<ShapeNodeKind, string>` bez jednoho klíče se nepřeloží.
+ * odvodit nejdou — ty stojí v tabulce níž a v `shape-vocabulary.ts`, a **jejich
+ * úplnost hlídá překladač**: `Record<ShapeNodeKind, string>` bez jednoho klíče se nepřeloží.
  * To je pojistka, kterou test nepotřebuje; test navíc hlídá, že se každé jméno
  * do hotového textu doopravdy dostalo.
  */
@@ -54,12 +54,11 @@ import {
   type PieceKind,
 } from '../geom/program';
 import { canonical } from '../ir/worlddoc';
-import { SHAPE_NODE_GROUPS } from '../shape/schema';
-import { SHAPE_LIMITS, type ShapeNodeKind } from '../shape/types';
 
 import { EMISSION_MODEL, EXAMPLE_MARKER, buildEmissionRequest, type Grammar, type UpstreamRequest } from './prompt';
 import { PLANNER_ANSWER_FIELDS, type PlannerEmission } from './worldstream-intent';
-import { REFINE_ANSWER_FIELDS } from './worldstream-refine';
+import { ADDITION_ANSWER_FIELDS, REFINE_ANSWER_FIELDS } from './worldstream-refine';
+import { shapeVocabulary } from './shape-vocabulary';
 import { CHUNK_FIELDS, EMISSION_CHUNKS, type ChunkName } from './emission-merge';
 import { WORLDSTREAM_ASSETS } from '@/assets/catalog';
 import { buildAssetBrief } from './worldstream-asset-brief';
@@ -108,35 +107,6 @@ const GEOM_NODE_ARGUMENTS: Readonly<Record<GeomNodeKind, string>> = {
   scatter: 'child, count (2 to 24), radius (0.5 to 32), seed',
   arrayAlongCurve: `child, count (2 to 24), points [[x,y,z], ...] (2 to ${MAX_CURVE_POINTS}) — copies are moved, never turned along the tangent`,
   anchorTo: `child, target (another node), site (${ANCHOR_SITES.join('|')}), offset — the TARGET is a reference and is not built, so put it in the same group if you want to see it`,
-};
-
-const SHAPE_NODE_ARGUMENTS: Readonly<Record<ShapeNodeKind, string>> = {
-  sphere: 'radius',
-  box: 'size [w,h,d] — the FULL size, not the half-extent',
-  roundBox: 'size [w,h,d], radius',
-  capsule: 'height, radius',
-  cylinder: 'height, radius',
-  cone: 'height, radius',
-  torus: 'majorRadius, minorRadius',
-  plane: 'normal [x,y,z], offset',
-  prism: 'sides (3 to 12), radius, height',
-  ellipsoid: 'radii [rx,ry,rz]',
-  union: 'children [i, ...] (2 to 8), k — k is the blend radius; LEAVE IT OUT for a sharp edge, never write 0',
-  subtract: 'children [i, ...] — the first child minus the rest, k optional',
-  intersect: 'children [i, ...], k optional',
-  translate: 'child, offset [x,y,z]',
-  rotate: 'child, yaw, pitch, roll (radians)',
-  scale: 'child, factor [sx,sy,sz] (0.05 to 20, never negative — use mirror to flip)',
-  mirror: 'child, axis, about',
-  twist: 'child, axis, radiansPerUnit (-8 to 8)',
-  bend: 'child, axis, curvature (-8 to 8)',
-  taper: 'child, axis, amount (-4 to 4)',
-  displace: 'child, amplitude (0 to 8), frequency (0.01 to 16), seed — surface noise, the expensive node',
-  revolve: 'child, axis, radius, sweep (0.05 to 2*PI radians, the WHOLE angle: PI is a half arch)',
-  repeat: 'child, count (2 to 64), step [x,y,z]',
-  radialArray: 'child, count, axis, radius',
-  arrayAlongCurve: `child, count, points [[x,y,z], ...] (2 to ${SHAPE_LIMITS.maxCurvePoints})`,
-  clip: 'child, region { kind: "halfSpace", normal, offset } or { kind: "box", center, size }',
 };
 
 /* ------------------------------------------------------------------ *
@@ -339,39 +309,12 @@ export function geometryVocabulary(): string {
   ].join('\n');
 }
 
-/** Slovník tvarů. Důvod oddělení je u `geometryVocabulary()`. */
-export function shapeVocabulary(): string {
-  const shapeLines = Object.entries(SHAPE_NODE_GROUPS).flatMap(([group, kinds]) => [
-    `  ${group}:`,
-    ...kinds.map((kind) => `    ${kind} — ${SHAPE_NODE_ARGUMENTS[kind]}`),
-  ]);
-
-  return [
-    'SHAPES — hero objects, written as a distance field the browser meshes itself. Same table rule:',
-    'children point strictly lower, root is last, every row reachable.',
-    `At most ${SHAPE_LIMITS.maxNodes} rows, depth ${SHAPE_LIMITS.maxDepth}, ${SHAPE_LIMITS.maxInstances} copies after arrays expand,`,
-    `and ${SHAPE_LIMITS.maxEvaluations} distance evaluations per grid cell. That last one is the real cost:`,
-    'a shared subtree is free in the copy count and is not free here.',
-    '',
-    'Shape nodes:',
-    ...shapeLines,
-    '',
-    'A shape carries: shapeId, stableId (the object it belongs to), nodes, root, targetBounds',
-    '{ min, max } in SHAPE space, anchors [{ name, at, normal }] where sockets sit, materialIntent',
-    '(camelCase, no spaces — a name, never a colour and never a phrase: brushedSteel, not "brushed steel"),',
-    'priority (higher is meshed first).',
-    'You do NOT write grid resolution, quality, cost or meshing order. Those are pipeline decisions.',
-    // **Naměřeno 14. 9. 2026 na c07.** „Les, kde stromy jsou hrudní koše" přišel
-    // jako jeden tvar: strom o 5,3 m se žebry 15 cm, zopakovaný 3× a 2×, takže
-    // targetBounds byl 14,5 m a buňka mřížky 45 cm — žebra se rozpadla. Mřížka
-    // je pevná, takže opakování se platí rozlišením a platí se zbytečně. Brána
-    // `repeatedHeroIssue` to odmítá; tenhle odstavec je ta věta předem.
-    'ONE shape is ONE object. If a hero appears many times — a forest of the same tree, a row of',
-    'the same lamp — write it ONCE, with targetBounds around that single copy, and put the copies',
-    'in the composition. The mesh grid is fixed, so a targetBounds stretched around repeated copies',
-    'spends its resolution on the gaps between them and the detail inside each one is lost.',
-  ].join('\n');
-}
+/**
+ * Slovník tvarů. Důvod oddělení od geometrie je u `geometryVocabulary()`;
+ * bydlí v `shape-vocabulary.ts`, protože ho čte i druhá věta a ta by odsud
+ * importovat nemohla bez cyklu.
+ */
+export { shapeVocabulary };
 
 /* ------------------------------------------------------------------ *
  * Požadavek.
@@ -439,6 +382,8 @@ export function requestStage(request: UpstreamRequest): 'planner' | 'compiler' |
   if (request.system.includes(`${COMPILER_ANSWER_FIELDS.join(', ')}.`)) return 'compiler';
   if (request.system.includes(`${PLANNER_ANSWER_FIELDS.join(', ')}.`)) return 'planner';
   if (request.system.includes(`${REFINE_ANSWER_FIELDS.join(', ')}.`)) return 'refine';
+  // Založení nového objektu je táž fáze — druhá věta — s jiným seznamem polí.
+  if (request.system.includes(`${ADDITION_ANSWER_FIELDS.join(', ')}.`)) return 'refine';
   return null;
 }
 

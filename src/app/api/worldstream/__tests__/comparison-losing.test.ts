@@ -13,7 +13,7 @@ import {createChange} from '../sessions/[sessionId]/changes/route';
 const blueprint=blueprintSchema.parse(JSON.parse(readFileSync('plans/P20/live-browser-v2-20260917-1800/result.json','utf8')).snapshot.body.blueprint);
 const original=blueprint.world;
 const behavior=[{op:'replace' as const,path:'/sim/rules/activateSignal/actions/1/value',value:false}];
-const plan={stableId:'computerTerminal',summary:'The same signal action leaves the flag false.',shape:null,appearance:[],behavior};
+const plan={stableId:'computerTerminal',summary:'The same signal action leaves the flag false.',shape:null,addition:null,appearance:[],behavior};
 const request={base:{simRevision:original.simRevision,simHash:original.simHash,comparisonRevision:0,inputCount:1},inputs:[{tick:1,actor:'firstPerson',actionId:'activate',target:'computerTerminal'}],forkTick:0,observationTick:20};
 function patches(){const r=routePatch({operations:behavior},original);if(r.verdict==='REJECTED')throw Error(r.reason);return r.patches.map(p=>({...p,baseRevision:original.simRevision}));}
 async function fixture(){const stored=await generated();stored.blueprint=structuredClone(blueprint);stored.session.register(blueprint.objects.map(o=>o.stableId));putChange(stored,{changeId:'losing',plan,basedOn:{representation:0,sim:original.simRevision,look:original.lookRevision}});return stored;}

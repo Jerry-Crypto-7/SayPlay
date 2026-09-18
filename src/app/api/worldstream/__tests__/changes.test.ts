@@ -139,6 +139,7 @@ function plan(overrides: Partial<RefinePlan> = {}): RefinePlan {
     shape: null,
     behavior: [],
     appearance: [],
+    addition: null,
     ...overrides,
   };
 }
@@ -227,13 +228,34 @@ describe('preview druhé věty', () => {
   it('nejasná věta vrátí kandidáty, a to i bez klíče k modelu', async () => {
     // Grounding je před modelem. Kdyby byl za ním, tahle odpověď by na nasazení
     // bez `.env` neexistovala a porotce by místo nabídky dostal 503.
+    // **Nejasná** znamená nerozhodnutá — `the mast` i `the flat` jsou stejně
+    // dlouhé. Věta bez jakéhokoli cíle už nejasná není: od P21 T8 zakládá objekt.
     const stored = await generated();
-    const response = await preview(stored.session.sessionId, { prompt: 'make it nicer' }, null);
+    const response = await preview(stored.session.sessionId, { prompt: 'raise the mast and the flat' }, null);
     expect(response.status).toBe(200);
     const read = await body(response);
     expect(read.outcome).toBe('AMBIGUOUS');
-    expect(read.reason).toBe('NO_MATCH');
+    expect(read.reason).toBe('AMBIGUOUS');
     expect(read.candidates).toHaveLength(2);
+  });
+
+  it('věta bez cíle ve světě jde k modelu jako přidání, ne zpátky jako nabídka', async () => {
+    // P21 T8: `NO_MATCH` už není odmítnutí. Bez modelu a bez skladu je to 503
+    // `NO_AUTHORED_CHANGE` — a to je pravda o nasazení, ne o větě.
+    const stored = await generated();
+    const asked: string[] = [];
+    const response = await preview(stored.session.sessionId, { prompt: 'add a lantern at the far edge' }, (request) => {
+      asked.push(request.system);
+      return Promise.resolve({});
+    });
+    expect(asked).toHaveLength(1);
+    expect(asked[0]).toContain('ONE new object');
+    // Prázdná odpověď modelu je odmítnutí přidání, ne nabídka kandidátů.
+    expect(await body(response)).toMatchObject({ outcome: 'REJECTED', reason: 'WRONG_SHAPE' });
+
+    const withoutModel = await preview(stored.session.sessionId, { prompt: 'add a lantern at the far edge' }, null);
+    expect(withoutModel.status).toBe(503);
+    expect((await body(withoutModel)).error).toMatchObject({ code: 'NO_AUTHORED_CHANGE' });
   });
 
   it('jasná věta bez nakonfigurovaného modelu je 503, relace zůstane živá', async () => {
@@ -311,7 +333,7 @@ describe('preview druhé věty', () => {
     const read = await body(response);
     expect(read.outcome).toBe('PREVIEW');
     expect(read.target).toMatchObject({ stableId: 'ironMast' });
-    expect(read.scope).toEqual({ shape: true, behavior: 0, appearance: 0 });
+    expect(read.scope).toEqual({ shape: true, behavior: 0, appearance: 0, addition: false });
     expect(read.preserved).toEqual(['the salt flat']);
 
     // **Žádný meshing před commitem.** Podoba stojí tam, kde stála, revize se

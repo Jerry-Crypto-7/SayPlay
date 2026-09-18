@@ -42,9 +42,16 @@ import type { Operation } from 'rfc6902';
 
 import { pointerTokens } from '@/patch/reject';
 import { shapeProgramSchema, validateShapeProgram } from '@/shape/schema';
-import type { SemanticObject, WorldstreamBlueprint } from '@/worldstream/schema';
+import {
+  additionObjectSchema,
+  MAX_HERO_SHAPES,
+  type AdditionObject,
+  type SemanticObject,
+  type WorldstreamBlueprint,
+} from '@/worldstream/schema';
 
 import { EMISSION_MODEL, type UpstreamRequest } from './prompt';
+import { shapeVocabulary } from './shape-vocabulary';
 import type { BlueprintEmitter } from './worldstream-repair';
 
 /** Značka fáze do provenance. Třetí modelová fáze vedle plannera a compileru. */
@@ -177,16 +184,39 @@ export function groundTarget(
  * Emise.
  * ------------------------------------------------------------------ */
 
+type HeroShape = WorldstreamBlueprint['shapes'][number];
+
+/**
+ * **Nový objekt, který věta zakládá** (P21 T8).
+ *
+ * Objekt a jeho tvar přicházejí spolu a spolu se i commitnou: `object.source`
+ * ukazuje na `shape.shapeId` a `shape.stableId` zpátky na objekt. Ten
+ * oboustranný odkaz je dosazený při čtení, ne napsaný modelem — viz
+ * `additionObjectSchema`.
+ */
+export interface Addition {
+  readonly object: SemanticObject;
+  readonly shape: HeroShape;
+}
+
 export interface RefinePlan {
+  /** Cíl věty — nebo u `addition` id objektu, který věta zakládá. */
   readonly stableId: string;
   /** Jedna věta pro člověka: co se stane. Jde do preview, ne do dokumentu. */
   readonly summary: string;
   /** Nová podoba hrdinského tvaru, nebo `null`, když se tvar nemění. */
-  readonly shape: WorldstreamBlueprint['shapes'][number] | null;
+  readonly shape: HeroShape | null;
   /** Operace do `/sim` — pravidla, entity, stav. */
   readonly behavior: readonly Operation[];
   /** Operace do `/look` — paleta, materiály, atmosféra. */
   readonly appearance: readonly Operation[];
+  /**
+   * Objekt, který ve světě nebyl a věta ho zakládá — nebo `null`, když věta
+   * mění něco, co už stojí. **`shape` je u přidání vždycky `null`:** nový tvar
+   * jede tady, aby výměna podoby existujícího objektu (revize, meshing,
+   * srovnání dvou budoucností) zůstala tím jediným, čím byla.
+   */
+  readonly addition: Addition | null;
 }
 
 export type RefineRejection =
@@ -197,7 +227,13 @@ export type RefineRejection =
   | 'WRONG_PART'
   | 'SHAPE_INVALID'
   | 'NO_SHAPE_SOURCE'
-  | 'EMPTY_CHANGE';
+  | 'EMPTY_CHANGE'
+  /** Nový objekt nesplnil schéma — chybí popisek, kvádr, role. */
+  | 'OBJECT_INVALID'
+  /** Id nového objektu už ve světě někdo nese: objekt, entita, tvar nebo socket. */
+  | 'IDENTITY_TAKEN'
+  /** Svět už nese tolik hrdinských tvarů, kolik rozpočet meshování unese. */
+  | 'SHAPE_BUDGET';
 
 export type RefineResult =
   | { readonly ok: true; readonly value: RefinePlan; readonly stage: typeof REFINER_STAGE }
@@ -380,7 +416,130 @@ export function readRefineEmission(value: unknown, target: SemanticObject): Refi
   return {
     ok: true,
     stage: REFINER_STAGE,
-    value: { stableId: target.stableId, summary: summary.trim(), shape, behavior, appearance },
+    value: { stableId: target.stableId, summary: summary.trim(), shape, behavior, appearance, addition: null },
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * Založení nového objektu (P21 T8).
+ * ------------------------------------------------------------------ */
+
+/**
+ * Všechna jména, která už ve světě někdo nese. Nový objekt nesmí nést žádné
+ * z nich — a to napříč tabulkami, ne jen mezi objekty: `stableId` je zároveň
+ * klíč entity v `sim`, klíč registru podob a `data-line-id` v DOM, takže
+ * shoda s existujícím tvarem nebo socketem by se projevila jinde než tam, kde
+ * by ji kdo hledal.
+ */
+export function takenIdentities(blueprint: WorldstreamBlueprint): ReadonlySet<string> {
+  const sim = blueprint.world.sim as { readonly entities?: unknown; readonly sockets?: unknown };
+  const keysOf = (table: unknown): string[] =>
+    table !== null && typeof table === 'object' && !Array.isArray(table) ? Object.keys(table) : [];
+  return new Set([
+    ...blueprint.objects.map((object) => object.stableId),
+    ...blueprint.shapes.map((shape) => shape.shapeId),
+    ...blueprint.shapes.map((shape) => shape.stableId),
+    ...keysOf(sim.entities),
+    ...keysOf(sim.sockets),
+  ]);
+}
+
+/**
+ * Přečte odpověď modelu jako založení nového objektu, nebo řekne proč ne.
+ *
+ * Táž pravidla jako u `readRefineEmission`, plus tři, která výměna nemá:
+ * objekt musí projít schématem, jeho id nesmí ve světě nikdo nést a tvarů
+ * nesmí být víc, než kolik unese rozpočet meshování. **`appearance` tu není
+ * vůbec** — nový objekt vzhled nemění a přijmout pole, které by se stejně
+ * odmítlo (`hasUnsupportedAppearance`), by jen posunulo odmítnutí o kolo dál.
+ *
+ * Co se tady **nesoudí**, je dosah operací v `behavior`: jestli sáhly jen na
+ * nový objekt, rozhoduje diff stavu v `src/patch/scope.ts` nad skutečným
+ * dokumentem, na preview i na commitu. Číst to z cest operací by byla druhá
+ * brána, a slabší — `replace /sim` má cestu, která nic nezakazuje.
+ */
+export function readAdditionEmission(value: unknown, blueprint: WorldstreamBlueprint): RefineResult {
+  if (value === null || typeof value !== 'object' || Array.isArray(value))
+    return { ok: false, reason: 'NOT_AN_OBJECT', detail: 'the answer is not a JSON object' };
+
+  const body = value as Record<string, unknown>;
+
+  const worldDocFields = WORLD_DOC_FIELDS.filter((field) => field in body);
+  if (worldDocFields.length > 0)
+    return {
+      ok: false,
+      reason: 'WORLD_DOC_RETURNED',
+      detail: `the answer carries world graph fields (${worldDocFields.join(', ')}); this stage answers with one new object, not a world`,
+    };
+
+  const summary = body.summary;
+  if (typeof summary !== 'string' || summary.trim().length === 0)
+    return { ok: false, reason: 'WRONG_SHAPE', detail: 'summary is missing or empty' };
+
+  if (body.shape === null || body.shape === undefined)
+    return { ok: false, reason: 'WRONG_SHAPE', detail: 'a new object needs a shape, and the answer has none' };
+
+  const parsedObject = additionObjectSchema.safeParse(body.object);
+  if (!parsedObject.success)
+    return {
+      ok: false,
+      reason: 'OBJECT_INVALID',
+      detail: `object/${parsedObject.error.issues[0].path.join('/')}: ${parsedObject.error.issues[0].message}`,
+    };
+  const object: AdditionObject = parsedObject.data;
+
+  if (blueprint.shapes.length >= MAX_HERO_SHAPES)
+    return {
+      ok: false,
+      reason: 'SHAPE_BUDGET',
+      detail: `this world already carries ${String(MAX_HERO_SHAPES)} hero shapes, which is all the mesh budget allows`,
+    };
+
+  const validation = validateShapeProgram(body.shape);
+  if (!validation.ok) return { ok: false, reason: 'SHAPE_INVALID', detail: validation.issues[0] };
+  const shape = shapeProgramSchema.parse(body.shape);
+
+  if (shape.stableId !== object.stableId)
+    return {
+      ok: false,
+      reason: 'WRONG_TARGET',
+      detail: `the shape belongs to ${shape.stableId}, but the new object is ${object.stableId}`,
+    };
+
+  const taken = takenIdentities(blueprint);
+  for (const name of [object.stableId, shape.shapeId])
+    if (taken.has(name))
+      return {
+        ok: false,
+        reason: 'IDENTITY_TAKEN',
+        detail: `${name} is already used in this world; a new object needs a name nothing else carries`,
+      };
+  if (shape.shapeId === object.stableId)
+    return {
+      ok: false,
+      reason: 'IDENTITY_TAKEN',
+      detail: `${object.stableId} names both the object and its shape; the shape needs its own name`,
+    };
+
+  const behavior = readOperations(body.behavior ?? [], 'behavior');
+  if (typeof behavior === 'string')
+    return {
+      ok: false,
+      reason: Array.isArray(body.behavior) ? 'WRONG_PART' : 'WRONG_SHAPE',
+      detail: behavior,
+    };
+
+  return {
+    ok: true,
+    stage: REFINER_STAGE,
+    value: {
+      stableId: object.stableId,
+      summary: summary.trim(),
+      shape: null,
+      behavior,
+      appearance: [],
+      addition: { object: { ...object, source: { kind: 'shape', shapeId: shape.shapeId } }, shape },
+    },
   };
 }
 
@@ -481,6 +640,86 @@ export function buildRefineRequest(
   return { model: EMISSION_MODEL, system, user };
 }
 
+/**
+ * Pole odpovědi, když věta **zakládá** objekt. Čte to `requestStage()` stejně
+ * jako `REFINE_ANSWER_FIELDS`, a ze stejného důvodu se seznam do systémové
+ * věty neopisuje ručně.
+ */
+export const ADDITION_ANSWER_FIELDS = ['summary', 'object', 'shape', 'behavior'] as const;
+
+/**
+ * Co model o světě uvidí, když do něj přidává. **Víc než u výměny**: nový
+ * objekt musí někam stát, takže model potřebuje kvádry všeho, co už stojí,
+ * a jména, která už nesmí použít. Program kompozice zůstává mimo — místo
+ * v prostoru říkají kvádry, ne řádky, ze kterých vznikly.
+ */
+function additionBrief(blueprint: WorldstreamBlueprint): string {
+  return JSON.stringify(
+    {
+      objects: blueprint.objects.map((object) => ({
+        stableId: object.stableId,
+        label: object.label,
+        role: object.role,
+        targetBounds: object.targetBounds,
+      })),
+      takenNames: [...takenIdentities(blueprint)].sort(),
+      sim: blueprint.world.sim,
+    },
+    null,
+    2,
+  );
+}
+
+export function buildAdditionRequest(sentence: string, blueprint: WorldstreamBlueprint): UpstreamRequest {
+  const system = [
+    'A world is already running and a person has just asked for something that is not in it yet.',
+    'You answer with ONE new object and nothing else. You never rewrite the world and you never',
+    'touch an object that already stands in it.',
+    '',
+    'Answer with a single JSON object whose top-level fields are exactly:',
+    `${ADDITION_ANSWER_FIELDS.join(', ')}.`,
+    '',
+    'summary is ONE sentence, written for the person who asked, saying what will appear and where.',
+    'They read it before anything happens and decide whether to go ahead.',
+    '',
+    'object is { stableId, label, synonyms, role, importance, targetBounds }. stableId is camelCase,',
+    'unique, and NOT one of takenNames in the request. label is what a person would call it; synonyms',
+    'are other words they might use. role is one of architecture, hero, prop, terrain, effect.',
+    'importance is 0 to 3. targetBounds { min, max } is where it stands, in the same WORLD',
+    'coordinates as the objects in the request — put it on the ground, next to what it belongs to,',
+    'and do not overlap an existing object.',
+    '',
+    'shape is the ShapeProgram that draws it. Its stableId is the object stableId; its shapeId is',
+    'its own name, also not in takenNames. Its targetBounds are in SHAPE space, centred on the origin.',
+    '',
+    shapeVocabulary(),
+    '',
+    'behavior is a list of RFC 6902 operations that give the new object a place in the simulation,',
+    'and it may be empty. Every operation is "add". Allowed paths, and only these:',
+    '  /sim/entities/<stableId>          the new object as an entity: { role, socket, state }',
+    '  /sim/sockets/<newSocket>          a NEW grid cell [x, y] inside sim.layout, for that entity',
+    '  /sim/collisionAabb/<stableId>     its footprint [x, y, w, h] in grid cells',
+    '  /sim/rules/<newRule>              a NEW rule, in the same form as the rules in the request',
+    'Never write to an existing entity, socket, rule, state or flag. Never replace, remove or move',
+    'anything. A rule that changes how an existing object behaves is a different request and the',
+    'whole answer is rejected for it. Every object you do not name keeps its shape, its state and',
+    'its place.',
+    '',
+    'Fields like sim, look or irVersion at the top level belong to a different stage, and an answer',
+    'carrying them is rejected whole.',
+  ].join('\n');
+
+  const user = [
+    'This is the world as it stands right now. Add to it, do not rewrite it:',
+    additionBrief(blueprint),
+    '',
+    'Their sentence:',
+    sentence,
+  ].join('\n');
+
+  return { model: EMISSION_MODEL, system, user };
+}
+
 /* ------------------------------------------------------------------ *
  * Jedno kolo: věta → preview.
  * ------------------------------------------------------------------ */
@@ -489,8 +728,13 @@ export interface ChangeInput {
   readonly observePhase?: PhaseObserver;
   readonly prompt: string;
   readonly blueprint: WorldstreamBlueprint;
-  /** Cíl, na kterém se `groundTarget` shodl. Tahle funkce už negrounduje. */
-  readonly target: SemanticObject;
+  /**
+   * Cíl, na kterém se `groundTarget` shodl — tahle funkce už negrounduje.
+   * **`null` znamená, že věta ve světě cíl nemá a zakládá nový objekt**
+   * (P21 T8): grounding vrátil `NO_MATCH` a volající se rozhodl přidávat,
+   * ne nabízet kandidáty.
+   */
+  readonly target: SemanticObject | null;
   readonly emit: BlueprintEmitter;
 }
 
@@ -517,9 +761,15 @@ export type ChangeOutcome =
  * a ven ho pouští až volající — přeložený na veřejnou větu.
  */
 export async function planChange(input: ChangeInput): Promise<ChangeOutcome> {
+  const { target } = input;
+  const request =
+    target === null
+      ? buildAdditionRequest(input.prompt, input.blueprint)
+      : buildRefineRequest(input.prompt, input.blueprint, target);
+
   let answer: unknown;
   try {
-    answer = await observePhaseAsync(input.observePhase, 'edit-emitter', () => input.emit(buildRefineRequest(input.prompt, input.blueprint, input.target)));
+    answer = await observePhaseAsync(input.observePhase, 'edit-emitter', () => input.emit(request));
   } catch (thrown) {
     // `cause` vedle `detail` ze stejného důvodu jako v `worldstream-repair.ts`:
     // odmítnutý strop a mlčící poskytovatel jsou dvě různé věty pro porotce
@@ -531,7 +781,9 @@ export async function planChange(input: ChangeInput): Promise<ChangeOutcome> {
     };
   }
 
-  const read = observePhase(input.observePhase, 'edit-validation', () => readRefineEmission(answer, input.target));
+  const read = observePhase(input.observePhase, 'edit-validation', () =>
+    target === null ? readAdditionEmission(answer, input.blueprint) : readRefineEmission(answer, target),
+  );
   if (!read.ok) return { kind: 'rejected', reason: read.reason, detail: read.detail };
 
   return { kind: 'planned', plan: read.value };

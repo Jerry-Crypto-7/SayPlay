@@ -21,7 +21,7 @@ describe('public runtime motion capability', () => {
     }));
     const preview = await response.json();
     expect(response.status).toBe(200);
-    expect(preview.scope).toEqual({ shape: true, behavior: 0, appearance: 0 });
+    expect(preview.scope).toEqual({ shape: true, behavior: 0, appearance: 0, addition: false });
     expect(preview.summary).toContain('Only the shape');
     expect(preview.summary).toContain('not supported');
     expect(preview.summary).toContain('Behavior stays unchanged');
@@ -55,7 +55,7 @@ describe('public runtime motion capability', () => {
       { op: 'add' as const, path: '/sim/entities/mastBase/staged', value: mode === 'array' ? [entity] : entity },
       { op: 'copy' as const, from: `/sim/entities/mastBase/staged${mode === 'array' ? '/0' : ''}`, path: '/sim/entities/mastBase' },
     ];
-    putChange(stored, { changeId: 'old-motion', plan: { stableId: 'ironMast', summary: 'taller and swaying',
+    putChange(stored, { changeId: 'old-motion', plan: { stableId: 'ironMast', summary: 'taller and swaying', addition: null,
       shape: before.shapes[0], behavior, appearance: [] },
       basedOn: { representation: revision, sim: before.world.simRevision, look: before.world.lookRevision } });
     for (let attempt = 0; attempt < 2; attempt++) {

@@ -37,7 +37,7 @@ function comparison(stored:StoredSession){
 describe('durable ordinary sessions through actual host registry and routes',()=>{
   it('persists an accepted rule commit and refuses a later commit if disk ownership is lost',async()=>{
     const file=setup(),stored=accepted('ordinary-commit'),stableId='tallHive';
-    const pending=(changeId:string,value:unknown)=>putChange(stored,{changeId,plan:{stableId,summary:'fixture rule',shape:null,behavior:[{op:'replace',path:'/sim/rules/calmHive/condition',value}],appearance:[]},basedOn:{representation:stored.session.revisionOf(stableId)??0,sim:stored.blueprint!.world.simRevision,look:stored.blueprint!.world.lookRevision}});
+    const pending=(changeId:string,value:unknown)=>putChange(stored,{changeId,plan:{stableId,summary:'fixture rule',shape:null,addition:null,behavior:[{op:'replace',path:'/sim/rules/calmHive/condition',value}],appearance:[]},basedOn:{representation:stored.session.revisionOf(stableId)??0,sim:stored.blueprint!.world.simRevision,look:stored.blueprint!.world.lookRevision}});
     const call=(changeId:string)=>commit(new Request(request(),{method:'POST'}),{params:Promise.resolve({sessionId:stored.session.sessionId,changeId})});
     pending('first',null);expect((await call('first')).status).toBe(200);
     const revision=stored.blueprint!.world.simRevision,before=readFileSync(file,'utf8');pending('second',{kind:'hasItem',slot:0,item:'smoker'});
