@@ -93,6 +93,11 @@ export interface MeshResult {
   readonly triangleCount: number;
   readonly bounds: Bounds3;
   readonly elapsedMs: number;
+  /**
+   * Prošlo, ale až díky `untimed`: `elapsedMs` je nad `MESH_DETAIL[…].maxMs`.
+   * Bez té volby se sem nedostane, protože tam takový mesh skončí odmítnutím.
+   */
+  readonly overTime?: true;
 }
 
 /** Minimum, které klient od workeru potřebuje. Test sem dosadí atrapu. */
@@ -131,6 +136,19 @@ export interface MeshClientOptions {
    * nesmějí zaměnit: měření mimo worker by dva sloupce reportu tiše rozešlo.
    */
   readonly unbudgeted?: boolean;
+  /**
+   * Nesoudit podle času, ale pořád podle trojúhelníků. Výchozí `false`.
+   *
+   * Klient s tímhle přepínačem má **přehrání archivu** a nikdo jiný
+   * (`evals/worldstream/replay-create.measure.ts`). Důvod je v
+   * `MeshJobRequest.untimed`: `maxMs` měří stroj, a v běhu, který má měřit kód,
+   * se pak pohyb zátěže čte jako pohyb kódu.
+   *
+   * **Není to `unbudgeted`.** Ten vypne celý rozpočet včetně trojúhelníků, tedy
+   * i mez, která na stroji nezávisí. Tohle vypne jedině hodiny, a co se o ně
+   * opřelo, přizná v `MeshResult.overTime`.
+   */
+  readonly untimed?: boolean;
 }
 
 export interface MeshClient {
@@ -216,6 +234,7 @@ export function createMeshClient(options: MeshClientOptions = {}): MeshClient {
         triangleCount: response.triangleCount,
         bounds: response.bounds,
         elapsedMs: response.elapsedMs,
+        ...(response.overTime === true ? { overTime: true as const } : {}),
       });
     } else {
       entry.reject(
@@ -286,6 +305,7 @@ export function createMeshClient(options: MeshClientOptions = {}): MeshClient {
         // zprávě přečíst, co si klient o rozpočtu myslí, místo aby se to
         // muselo dovozovat z chybějícího pole.
         unbudgeted: options.unbudgeted === true,
+        untimed: options.untimed === true,
       };
       return new Promise<MeshResult>((resolve, reject) => {
         const cleanup = () => signal?.removeEventListener('abort', abort);

@@ -1,5 +1,5 @@
 {
-  "replayedAt": "2026-09-17T20:53:14.376Z",
+  "replayedAt": "2026-09-18T08:32:33.573Z",
   "archivedRun": {
     "measuredAt": "2026-09-06T21:40:13.751Z",
     "sessionSeed": 4021
@@ -22,7 +22,7 @@
   },
   "after": {
     "attempted": 30,
-    "geometryAuthored": 19,
+    "geometryAuthored": 20,
     "failuresByStage": {
       "planner": 1,
       "schema": 0,
@@ -32,10 +32,43 @@
       "shape": 1,
       "lowering": 0,
       "witness": 6,
-      "clay": 1,
+      "clay": 0,
       "unavailable": 2
-    }
+    },
+    "timeWaived": 5
   },
+  "timeWaived": [
+    {
+      "id": "c01",
+      "shapes": [
+        "stackedContainers"
+      ]
+    },
+    {
+      "id": "c03",
+      "shapes": [
+        "hangingHouses"
+      ]
+    },
+    {
+      "id": "c08",
+      "shapes": [
+        "glowingAnemoneColony"
+      ]
+    },
+    {
+      "id": "c12",
+      "shapes": [
+        "walkableClockGears"
+      ]
+    },
+    {
+      "id": "c30",
+      "shapes": [
+        "simulatedPopulation"
+      ]
+    }
+  ],
   "moved": [
     {
       "id": "c01",
@@ -77,6 +110,17 @@
       "to": "shape",
       "detail": "shapes[0]: shape repeats one 6.5 m unit 9 times, so targetBounds is 2.8× that unit and the mesh grid gives it 56 cm cells. Write the unit once, sized to its own targetBounds, and place the 9 copies in the composition instead",
       "rungs": []
+    },
+    {
+      "id": "c08",
+      "from": "clay",
+      "to": "authored",
+      "detail": null,
+      "rungs": [
+        "g2-rich",
+        "g3-reduced",
+        "g2-rich"
+      ]
     },
     {
       "id": "c09",
@@ -213,9 +257,10 @@
     "A fix that saves a repair round changes which archived answer gets spent, so the world downstream is a different world. Counts that move for that reason say nothing about meaning."
   ],
   "wallClock": [
-    "The rung a shape lands on is decided partly by wall clock: MESH_DETAIL budgets cap maxMs alongside maxTriangles, so a slower machine can push a shape one rung further down than this file records.",
-    "Measured on the archived run: four of the eight shapes rescued by COARSER_GRIDS had missed the rough budget on time, not on triangles, and glowingAnemoneColony alone gave 363 and 421 ms in two runs of the same archive.",
-    "Everything else here is deterministic: the answers come from the archive, the compiler and the mesher are hand written, and the session seed is fixed, so the same machine replaying the same archive gives the same verdicts.",
+    "This replay does not apply the mesh time budget. MESH_DETAIL caps maxMs next to maxTriangles, and maxMs measures the machine, not the program: the same commit over the same archive gave c08 380, 410 and 722 ms against a 350 ms rough budget, and scored 21 of 30 in one run and 20 in the next.",
+    "Shapes that leaned on that waiver are named in timeWaived, case by case. Read geometryAuthored with that list in hand: without it, a number that moved because the machine was busy reads as a code change, which is the mistake finding P20 F2 made.",
+    "Triangle budgets are still applied, and so is every other gate. maxTriangles is a property of the program, so it says the same thing on any machine; only the clock was taken out of the verdict.",
+    "Everything else here is deterministic: the answers come from the archive, the compiler and the mesher are hand written, and the session seed is fixed, so the same archive gives the same verdicts on any machine.",
     "Latency is deliberately absent. It measured the paid provider, and a replay that spends nothing cannot honestly report it."
   ]
 }

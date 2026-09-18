@@ -86,7 +86,16 @@ describe('the archived run, replayed against the current code', () => {
       const grammar = frozenGrammar();
       if (!grammar.ok) throw new Error(`${grammar.reason}: ${grammar.detail}`);
 
-      const mesh = createMeshClient({ allowMainThread: true });
+      // **`untimed`: přehrání neuplatňuje strop času – rozhodnuto 18. 9. 2026
+      // (P20 F4).** `MESH_DETAIL.rough.maxMs` je naměřený čas stroje, ne vlastnost
+      // programu: týž commit `4ea6c10` dal nad týmž archivem 21/30 i 20/30 a c08 se
+      // pohyboval mezi 380 a 722 ms proti stropu 350. V čísle, které má měřit kód,
+      // se takový rozdíl čte jako regrese – přesně to udělal nález F2.
+      //
+      // Rozpočet trojúhelníků platí dál: `maxTriangles` je vlastnost programu,
+      // takové číslo říká na každém stroji totéž. Kdo se o hodiny opřel, stojí
+      // jmenovitě v `timeWaived` – v artefaktu i ve výpisu níž.
+      const mesh = createMeshClient({ allowMainThread: true, untimed: true });
       const cases: CaseOutcome[] = [];
       try {
         for (const entry of corpus.create as CreateCase[]) {
@@ -143,6 +152,12 @@ describe('the archived run, replayed against the current code', () => {
           ...after.cases
             .filter((entry) => entry.failure !== null)
             .map((entry) => `  ${entry.id} ${entry.failure!.stage}: ${entry.failure!.detail}`),
+          '',
+          comparison.timeWaived.length === 0
+            ? 'no shape leaned on the waived time budget: every mesh fitted maxMs too'
+            : `${String(comparison.timeWaived.length)} sentences kept a shape the time budget would have refused, and the clock is not applied here:\n  ${comparison.timeWaived
+                .map((entry) => `${entry.id}: ${entry.shapes.join(', ')}`)
+                .join('\n  ')}`,
           '',
           `written to ${REPLAY_FILE}`,
           '',
@@ -229,7 +244,9 @@ describe('the progressive phases, timed over the archive', () => {
       const samples: Record<Phase, number[]> = { intent: [], layout: [], materials: [], detail: [] };
       const notReached: Record<Phase, string[]> = { intent: [], layout: [], materials: [], detail: [] };
       const upstream: number[] = [];
-      const mesh = createMeshClient({ allowMainThread: true });
+      // `untimed` ze stejného důvodu jako u verdiktů výš: fáze `detail` má měřit,
+      // jak dlouho meshing trvá, ne odmítat tvar podle zatížení stroje.
+      const mesh = createMeshClient({ allowMainThread: true, untimed: true });
       const clock = () => performance.now();
 
       try {

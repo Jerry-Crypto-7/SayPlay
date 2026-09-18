@@ -23,7 +23,7 @@ import {
   type MeshWorkerLike,
 } from '../mesh-client';
 import { validateShapeProgram } from '../schema';
-import { handleMeshJob, type MeshJobRequest, type MeshJobResponse } from '../mesh-worker';
+import { handleMeshJob, judgeBudget, type MeshJobRequest, type MeshJobResponse } from '../mesh-worker';
 import { meshShapeProgram, paddedBounds, type ShapeMesh } from '../surface-nets';
 import { MESH_DETAIL, type Bounds3, type ShapeNode, type ShapeProgram } from '../types';
 
@@ -1330,5 +1330,109 @@ describe('klient meshovacího workeru', () => {
     const recovered = await queued;
     expect(recovered.shapeId).toBe('after-crash');
     expect(recovered.triangleCount).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * **Přehrání archivu neuplatňuje strop času – P20 F4.**
+ *
+ * `maxMs` je naměřený čas stroje: týž commit dal nad týmž archivem c08
+ * 380, 410 i 722 ms proti stropu 350, a tím i 21/30 v jednom běhu a 20/30
+ * v dalším. `geometryAuthored` se přitom cituje jako číslo o kódu.
+ *
+ * Soudí se proto přes `judgeBudget`, ne přes skutečně pomalý tvar: takový test
+ * by měřil stroj, na kterém běží, a červeně by svítil podle zátěže.
+ */
+describe('výjimka ze stropu času platí jen na čas', () => {
+  const rough = MESH_DETAIL.rough;
+  const overTime = { resolution: rough.resolution, triangleCount: rough.maxTriangles - 1, elapsedMs: rough.maxMs + 1 };
+
+  it('bez výjimky přetečený čas pořád odmítá', () => {
+    const verdict = judgeBudget(overTime);
+    expect(verdict.kind).toBe('refused');
+    if (verdict.kind !== 'refused') return;
+    expect(verdict.error).toContain('above maxMs');
+  });
+
+  it('s výjimkou projde a přizná se k tomu', () => {
+    expect(judgeBudget({ ...overTime, untimed: true }).kind).toBe('waived-time');
+  });
+
+  it('výjimka nekryje trojúhelníky, protože ty na stroji nezávisejí', () => {
+    // **Tohle je celý důvod, proč `untimed` není `unbudgeted`.** Kdyby
+    // přehrání pustilo i přetečené trojúhelníky, přestalo by měřit bránu,
+    // která dává na každém stroji stejný verdikt.
+    const verdict = judgeBudget({
+      resolution: rough.resolution,
+      triangleCount: rough.maxTriangles + 1,
+      elapsedMs: rough.maxMs + 1,
+      untimed: true,
+    });
+    expect(verdict.kind).toBe('refused');
+    if (verdict.kind !== 'refused') return;
+    expect(verdict.error).toContain('above maxTriangles');
+  });
+
+  it('nesouzená práce projde pořád, a bez známky o čase', () => {
+    expect(judgeBudget({ ...overTime, triangleCount: rough.maxTriangles + 1, unbudgeted: true }).kind).toBe('pass');
+  });
+
+  it('co se do rozpočtu vešlo, si známku nevyrobí ani s výjimkou', () => {
+    // Bez téhle aserce by mutace „vždycky waived-time" prošla a artefakt by
+    // jmenoval každý tvar světa jako zachráněný hodinami.
+    const inside = { resolution: rough.resolution, triangleCount: 10, elapsedMs: rough.maxMs - 1 };
+    expect(judgeBudget({ ...inside, untimed: true }).kind).toBe('pass');
+    expect(judgeBudget(inside).kind).toBe('pass');
+  });
+
+  it('skutečný mesh v rozpočtu známku nenese', () => {
+    const response = handleMeshJob({
+      jobId: 'job-untimed-fast',
+      program: programOf(SPHERE),
+      sessionSeed: SEED,
+      resolution: 16,
+      bounds: UNIT_BOUNDS,
+      untimed: true,
+    }).response;
+    expect(response.ok).toBe(true);
+    if (!response.ok) return;
+    expect(response.overTime).toBeUndefined();
+  });
+});
+
+describe('klient nese výjimku tam a známku zpátky', () => {
+  const order = { program: { ...programOf(SPHERE), shapeId: 'hero' }, sessionSeed: SEED, resolution: 16, bounds: UNIT_BOUNDS };
+
+  it('výchozí klient si o výjimku neříká, přehrávací ano', async () => {
+    const strict = fakeWorker();
+    const loose = fakeWorker();
+    const a = createMeshClient({ createWorker: () => strict });
+    const b = createMeshClient({ createWorker: () => loose, untimed: true });
+
+    const first = a.mesh(order);
+    const second = b.mesh(order);
+    expect(strict.queue[0].untimed).toBe(false);
+    expect(loose.queue[0].untimed).toBe(true);
+    strict.flush();
+    loose.flush();
+    await Promise.all([first, second]);
+  });
+
+  it('známka z workeru dorazí až do výsledku', async () => {
+    // Bez tohohle by se `overTime` ztratilo v klientovi a měřidlo by
+    // vypisovalo prázdný seznam nad během, kde se o hodiny opřel každý druhý tvar.
+    const worker = fakeWorker();
+    const client = createMeshClient({ createWorker: () => worker, untimed: true });
+    const promise = client.mesh(order);
+    const request = worker.queue.shift();
+    if (request === undefined) throw new Error('no queued job');
+    worker.onmessage?.({
+      data: {
+        jobId: request.jobId, ok: true, positions: new Float32Array(9), normals: new Float32Array(9),
+        indices: new Uint32Array([0, 1, 2]), vertexCount: 3, triangleCount: 1, bounds: UNIT_BOUNDS,
+        elapsedMs: MESH_DETAIL.rough.maxMs + 60, overTime: true,
+      },
+    });
+    expect((await promise).overTime).toBe(true);
   });
 });

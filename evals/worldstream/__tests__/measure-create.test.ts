@@ -41,6 +41,7 @@ import {
   FAILURE_STAGES,
   GEOMETRY_AUTHORED_FLOOR,
   REDACTED,
+  REPLAY_WALL_CLOCK_CAVEAT,
   ROUGH_WORLD_P95_MS,
   WORLD_DISTANCE_FLOOR,
   archiveEmitter,
@@ -302,6 +303,13 @@ const meshOk = (order: MeshOrder): Promise<MeshResult> =>
     bounds: order.bounds,
     elapsedMs: 1,
   });
+
+/**
+ * Meshovač, který uspl jen díky výjimce ze stropu času (`untimed`).
+ * Přesně to vrací worker v přehrání archivu.
+ */
+const meshOverTime = (order: MeshOrder): Promise<MeshResult> =>
+  meshOk(order).then((result) => ({ ...result, elapsedMs: 410, overTime: true as const }));
 
 /** Meshovač, který odmítne. Slot z něj spadne na hlínu. */
 const meshFails = (): Promise<MeshResult> =>
@@ -572,6 +580,7 @@ const outcome = (patch: Partial<CaseOutcome> = {}): CaseOutcome => ({
   rungs: ['g3-reduced'],
   profile: layoutOnly([[0, 0, 0, 1, 1, 1]]),
   blueprint: null,
+  timeWaived: [],
   ...patch,
 });
 
@@ -1380,13 +1389,16 @@ describe('the replay leaves a number the repo can check', () => {
     ]);
   });
 
-  it('carries the wall-clock caveat into the file itself', () => {
-    // Bez téhle věty je artefakt čtený za rok nepravdivý: příčka, na které tvar
-    // skončí, se rozhoduje mimo jiné časem, takže pomalejší stroj dá jiné číslo.
+  it('carries the clock caveat into the file itself', () => {
+    // Bez téhle věty je artefakt čtený za rok nepravdivý. Do 18. 9. 2026 tu
+    // stálo, že příčku rozhoduje mimo jiné čas, a tak to bylo; od P20 F4 se
+    // čas v přehrání neuplatňuje a soubor to musí říct sám, včetně toho, že
+    // rozpočet trojúhelníků platí dál.
     const empty = report([]);
     const diff = compareReplay(empty, empty, '2026-09-08T00:00:00.000Z');
-    expect(diff.wallClock.join(' ')).toMatch(/wall clock/i);
+    expect(diff.wallClock.join(' ')).toMatch(/does not apply the mesh time budget/i);
     expect(diff.wallClock.join(' ')).toMatch(/maxMs/);
+    expect(diff.wallClock.join(' ')).toMatch(/Triangle budgets are still applied/i);
   });
 
   it('refuses to be read as a measurement of the model', () => {
@@ -1446,5 +1458,56 @@ describe('the committed replay artifact holds up on its own', () => {
     expect(artifact.wallClock.length).toBeGreaterThan(0);
     expect(artifact.wallClock.join(' ')).toMatch(/wall clock/i);
     expect(artifact.measures.join(' ')).toMatch(/never the model/i);
+  });
+});
+
+/* ================================================================== *
+ * 9. Strop času, který přehrání neuplatňuje (P20 F4).
+ * ================================================================== */
+
+describe('a shape that only fitted because the clock was waived is named', () => {
+  it('names the shapes, and only those that leaned on the waiver', async () => {
+    const waived = await drive({ mesh: meshOverTime }).outcome;
+    const clean = await drive().outcome;
+
+    // Obě věty jsou jinak totéž: authored, stejný blueprint, stejné příčky.
+    // Rozdíl je jedině v tom, že jedné z nich by strop času hrdinu vzal.
+    expect(waived.geometryAuthored).toBe(true);
+    expect(clean.geometryAuthored).toBe(true);
+    expect(clean.timeWaived).toEqual([]);
+    expect(waived.timeWaived.length).toBeGreaterThan(0);
+  });
+
+  it('counts the sentences in the totals, not the shapes', () => {
+    const report = buildCreateReport(
+      [outcome({ id: 'a', timeWaived: ['hero-1', 'hero-2'] }), outcome({ id: 'b' })],
+      { sessionSeed: SEED, measuredAt: 'now', paidCalls: 0, pricing: 'none' },
+    );
+    expect(report.totals.timeWaived).toBe(1);
+  });
+
+  it('carries the names into the replay artifact, beside the number they explain', () => {
+    const before = buildCreateReport([outcome({ id: 'c08' })], {
+      sessionSeed: SEED, measuredAt: 'then', paidCalls: 4, pricing: 'charged',
+    });
+    const after = buildCreateReport([outcome({ id: 'c08', timeWaived: ['anemone'] })], {
+      sessionSeed: SEED, measuredAt: 'now', paidCalls: 0, pricing: 'none',
+    });
+
+    const diff = compareReplay(before, after, '2026-09-18T00:00:00.000Z');
+    expect(diff.after.timeWaived).toBe(1);
+    expect(diff.timeWaived).toEqual([{ id: 'c08', shapes: ['anemone'] }]);
+    // Věta se nepohnula – a právě proto tu ten seznam musí být: bez něj by
+    // artefakt tvrdil „nic se nezměnilo" nad během, kde hrdinu udržely hodiny.
+    expect(diff.moved).toEqual([]);
+  });
+
+  it('says in the file itself that the clock is not applied here', () => {
+    // Artefakt cestuje bez plánu i bez commit zprávy, takže tohle je jediné
+    // místo, kde se to čtenář dozví.
+    const joined = REPLAY_WALL_CLOCK_CAVEAT.join(' ');
+    expect(joined).toContain('does not apply the mesh time budget');
+    expect(joined).toContain('timeWaived');
+    expect(joined).toContain('Triangle budgets are still applied');
   });
 });
