@@ -2311,6 +2311,31 @@ function untouchedOf(stored: StoredSession) {
 }
 
 describe('přidání nového objektu', () => {
+  // Skutečné UI posílá `comparison: true` vždycky (page.tsx); přidání se nesmí
+  // dostat do srovnávací větve, protože svět před ním ten objekt neměl.
+  it('preview se srovnáním přidání nesrovnává a vrátí PREVIEW', async () => {
+    const stored = await generated();
+    const previewed = await body(
+      await preview(stored.session.sessionId, { prompt: 'add a lantern at the far edge', comparison: true }, () => Promise.resolve(LANTERN_ANSWER)),
+    );
+    expect(previewed, JSON.stringify(previewed)).toMatchObject({
+      outcome: 'PREVIEW',
+      target: { stableId: 'lantern' },
+      scope: { addition: true },
+    });
+  });
+
+  it('preview odmítne přidání, které sahá na cizí objekt, pod ALLOWED_PATH', async () => {
+    const stored = await generated();
+    const answer = {
+      ...LANTERN_ANSWER,
+      behavior: [...LANTERN_ANSWER.behavior, { op: 'replace', path: '/sim/entities/surveyor/state', value: 'lit' }],
+    };
+    const previewed = await body(await preview(stored.session.sessionId, { prompt: 'add a lantern at the far edge' }, () => Promise.resolve(answer)));
+    expect(previewed, JSON.stringify(previewed)).toMatchObject({ outcome: 'REJECTED', reason: 'ALLOWED_PATH' });
+    expect(stored.session.events.all().at(-1)).toMatchObject({ type: 'patch.rejected', payload: { reason: 'ALLOWED_PATH' } });
+  });
+
   it('věta bez cíle projde previewm i commitem a staré objekty se nehnou', async () => {
     const stored = await generated();
     const before = untouchedOf(stored);
