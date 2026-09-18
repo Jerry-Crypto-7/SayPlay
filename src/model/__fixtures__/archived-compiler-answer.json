@@ -1,0 +1,736 @@
+{
+  "note": "Jedna archivovaná dvojice plánovač + kompilátor z běhu 6. 9. 2026 (seed 4021, case c01). Archiv create-raw.json je gitignorovaný, takže tenhle výřez je jediné místo, kde ta odpověď přežije čistý klon.",
+  "caseId": "c01",
+  "prompt": "A cathedral of stacked shipping containers around a light well.",
+  "plan": {
+    "intent": {
+      "setting": "a cathedral formed from stacked shipping containers around a light well",
+      "mood": "monumental, industrial, contemplative",
+      "spatialThesis": "Stacked shipping containers enclose a central light well, making the surrounding structure both the cathedral walls and a frame for the open core.",
+      "actors": [],
+      "heroObjects": [
+        "the stacked shipping containers",
+        "the light well"
+      ],
+      "interactions": [],
+      "unsupported": []
+    },
+    "objects": [
+      {
+        "stableId": "containerCathedral",
+        "label": "the container cathedral",
+        "synonyms": [
+          "the cathedral",
+          "the shipping-container cathedral",
+          "the structure"
+        ],
+        "role": "architecture",
+        "importance": 3
+      },
+      {
+        "stableId": "stackedContainers",
+        "label": "the stacked shipping containers",
+        "synonyms": [
+          "the shipping containers",
+          "the containers",
+          "the container stacks",
+          "the stacked containers"
+        ],
+        "role": "hero",
+        "importance": 3
+      },
+      {
+        "stableId": "centralLightWell",
+        "label": "the light well",
+        "synonyms": [
+          "the central light well",
+          "the lightwell",
+          "the open core",
+          "the central void"
+        ],
+        "role": "hero",
+        "importance": 3
+      },
+      {
+        "stableId": "wellDaylight",
+        "label": "the daylight in the light well",
+        "synonyms": [
+          "the daylight",
+          "the natural light",
+          "the light"
+        ],
+        "role": "effect",
+        "importance": 1
+      }
+    ]
+  },
+  "answer": {
+    "geometry": {
+      "version": "geom-program-v1",
+      "nodes": [
+        {
+          "kind": "panel",
+          "variant": "floor",
+          "at": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "roll": 0,
+          "scale": [
+            8,
+            1,
+            7
+          ]
+        },
+        {
+          "kind": "mass",
+          "variant": "plinth",
+          "at": [
+            0,
+            0.2,
+            0
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "roll": 0,
+          "scale": [
+            3.4,
+            0.4,
+            3.4
+          ]
+        },
+        {
+          "kind": "arch",
+          "variant": "portal",
+          "at": [
+            0,
+            3.5,
+            -8
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "roll": 0,
+          "scale": [
+            4,
+            4,
+            1
+          ]
+        },
+        {
+          "kind": "mirror",
+          "child": 2,
+          "axis": "z",
+          "about": 0
+        },
+        {
+          "kind": "column",
+          "variant": "post",
+          "at": [
+            -8.5,
+            3,
+            -6.5
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "roll": 0,
+          "scale": [
+            0.5,
+            6,
+            0.5
+          ]
+        },
+        {
+          "kind": "repeat",
+          "child": 4,
+          "count": 5,
+          "step": [
+            4.25,
+            0,
+            0
+          ]
+        },
+        {
+          "kind": "mirror",
+          "child": 5,
+          "axis": "z",
+          "about": 0
+        },
+        {
+          "kind": "panel",
+          "variant": "roof",
+          "at": [
+            0,
+            6.5,
+            -6.5
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "roll": 0,
+          "scale": [
+            8,
+            0.3,
+            1
+          ]
+        },
+        {
+          "kind": "mirror",
+          "child": 7,
+          "axis": "z",
+          "about": 0
+        },
+        {
+          "kind": "group",
+          "children": [
+            0,
+            1,
+            2,
+            3,
+            5,
+            6,
+            7,
+            8
+          ]
+        }
+      ],
+      "root": 9
+    },
+    "shapes": [
+      {
+        "shapeId": "stackedContainersShape",
+        "stableId": "stackedContainers",
+        "nodes": [
+          {
+            "kind": "roundBox",
+            "size": [
+              3.6,
+              1.35,
+              1.8
+            ],
+            "radius": 0.08
+          },
+          {
+            "kind": "translate",
+            "child": 0,
+            "offset": [
+              0,
+              0.75,
+              0
+            ]
+          },
+          {
+            "kind": "repeat",
+            "child": 1,
+            "count": 5,
+            "step": [
+              4,
+              0,
+              0
+            ]
+          },
+          {
+            "kind": "translate",
+            "child": 2,
+            "offset": [
+              -8,
+              0,
+              -6
+            ]
+          },
+          {
+            "kind": "repeat",
+            "child": 3,
+            "count": 3,
+            "step": [
+              0,
+              1.5,
+              0
+            ]
+          },
+          {
+            "kind": "translate",
+            "child": 2,
+            "offset": [
+              -8,
+              0,
+              6
+            ]
+          },
+          {
+            "kind": "repeat",
+            "child": 5,
+            "count": 3,
+            "step": [
+              0,
+              1.5,
+              0
+            ]
+          },
+          {
+            "kind": "rotate",
+            "child": 1,
+            "yaw": 1.5707963268,
+            "pitch": 0,
+            "roll": 0
+          },
+          {
+            "kind": "repeat",
+            "child": 7,
+            "count": 3,
+            "step": [
+              0,
+              0,
+              4
+            ]
+          },
+          {
+            "kind": "translate",
+            "child": 8,
+            "offset": [
+              -8,
+              0,
+              -4
+            ]
+          },
+          {
+            "kind": "repeat",
+            "child": 9,
+            "count": 3,
+            "step": [
+              0,
+              1.5,
+              0
+            ]
+          },
+          {
+            "kind": "translate",
+            "child": 8,
+            "offset": [
+              8,
+              0,
+              -4
+            ]
+          },
+          {
+            "kind": "repeat",
+            "child": 11,
+            "count": 3,
+            "step": [
+              0,
+              1.5,
+              0
+            ]
+          },
+          {
+            "kind": "union",
+            "children": [
+              4,
+              6,
+              10,
+              12
+            ]
+          }
+        ],
+        "root": 13,
+        "targetBounds": {
+          "min": [
+            -10,
+            0,
+            -7
+          ],
+          "max": [
+            10,
+            5,
+            7
+          ]
+        },
+        "anchors": [
+          {
+            "name": "openCore",
+            "at": [
+              0,
+              0,
+              0
+            ],
+            "normal": [
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "name": "upperWalk",
+            "at": [
+              0,
+              4.8,
+              -6
+            ],
+            "normal": [
+              0,
+              1,
+              0
+            ]
+          }
+        ],
+        "materialIntent": "weathered corrugated steel",
+        "priority": 12
+      },
+      {
+        "shapeId": "centralLightWellShape",
+        "stableId": "centralLightWell",
+        "nodes": [
+          {
+            "kind": "cylinder",
+            "height": 0.35,
+            "radius": 3
+          },
+          {
+            "kind": "cylinder",
+            "height": 0.6,
+            "radius": 2.35
+          },
+          {
+            "kind": "subtract",
+            "children": [
+              0,
+              1
+            ]
+          },
+          {
+            "kind": "translate",
+            "child": 2,
+            "offset": [
+              0,
+              0.25,
+              0
+            ]
+          },
+          {
+            "kind": "box",
+            "size": [
+              0.3,
+              6.5,
+              0.3
+            ]
+          },
+          {
+            "kind": "translate",
+            "child": 4,
+            "offset": [
+              0,
+              3.25,
+              0
+            ]
+          },
+          {
+            "kind": "radialArray",
+            "child": 5,
+            "count": 4,
+            "axis": "y",
+            "radius": 2.65
+          },
+          {
+            "kind": "torus",
+            "majorRadius": 2.65,
+            "minorRadius": 0.2
+          },
+          {
+            "kind": "translate",
+            "child": 7,
+            "offset": [
+              0,
+              6.4,
+              0
+            ]
+          },
+          {
+            "kind": "union",
+            "children": [
+              3,
+              6,
+              8
+            ]
+          }
+        ],
+        "root": 9,
+        "targetBounds": {
+          "min": [
+            -3.1,
+            0,
+            -3.1
+          ],
+          "max": [
+            3.1,
+            6.7,
+            3.1
+          ]
+        },
+        "anchors": [
+          {
+            "name": "wellCenter",
+            "at": [
+              0,
+              0.3,
+              0
+            ],
+            "normal": [
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "name": "skyOpening",
+            "at": [
+              0,
+              6.6,
+              0
+            ],
+            "normal": [
+              0,
+              1,
+              0
+            ]
+          }
+        ],
+        "materialIntent": "dark steel framing",
+        "priority": 14
+      }
+    ],
+    "placements": [
+      {
+        "stableId": "containerCathedral",
+        "source": {
+          "kind": "geom",
+          "node": 9
+        },
+        "targetBounds": {
+          "min": [
+            -10,
+            0,
+            -9
+          ],
+          "max": [
+            10,
+            7,
+            9
+          ]
+        }
+      },
+      {
+        "stableId": "stackedContainers",
+        "source": {
+          "kind": "shape",
+          "shapeId": "stackedContainersShape"
+        },
+        "targetBounds": {
+          "min": [
+            -10,
+            0,
+            -7
+          ],
+          "max": [
+            10,
+            5,
+            7
+          ]
+        }
+      },
+      {
+        "stableId": "centralLightWell",
+        "source": {
+          "kind": "shape",
+          "shapeId": "centralLightWellShape"
+        },
+        "targetBounds": {
+          "min": [
+            -3.1,
+            0,
+            -3.1
+          ],
+          "max": [
+            3.1,
+            6.7,
+            3.1
+          ]
+        }
+      }
+    ],
+    "world": {
+      "irVersion": "v1",
+      "simRevision": 0,
+      "lookRevision": 0,
+      "sim": {
+        "layout": {
+          "width": 21,
+          "height": 19
+        },
+        "grid": {
+          "cell": 1
+        },
+        "sockets": {
+          "entrancePad": [
+            10,
+            17
+          ],
+          "cathedralPad": [
+            10,
+            10
+          ],
+          "containerWallPad": [
+            3,
+            10
+          ],
+          "wellPad": [
+            10,
+            9
+          ]
+        },
+        "collisionAabb": {
+          "visitor": [
+            10,
+            17,
+            1,
+            1
+          ],
+          "containerCathedral": [
+            1,
+            1,
+            19,
+            17
+          ],
+          "stackedContainers": [
+            1,
+            3,
+            19,
+            13
+          ],
+          "centralLightWell": [
+            7,
+            6,
+            7,
+            7
+          ]
+        },
+        "entities": {
+          "visitor": {
+            "role": "actor",
+            "socket": "entrancePad",
+            "state": "walking"
+          },
+          "containerCathedral": {
+            "role": "architecture",
+            "socket": "cathedralPad",
+            "state": "standing",
+            "locked": false
+          },
+          "stackedContainers": {
+            "role": "enclosure",
+            "socket": "containerWallPad",
+            "state": "stacked",
+            "locked": false
+          },
+          "centralLightWell": {
+            "role": "goal",
+            "socket": "wellPad",
+            "state": "open",
+            "locked": false
+          }
+        },
+        "state": {
+          "counters": {},
+          "flags": {},
+          "timers": {},
+          "zones": {},
+          "slots": 0,
+          "pool": {}
+        },
+        "rules": {
+          "win": {
+            "phase": 0,
+            "priority": 0,
+            "event": {
+              "kind": "onEnterZone",
+              "entity": "visitor",
+              "zone": "wellPad"
+            },
+            "condition": null,
+            "actions": [
+              {
+                "kind": "win"
+              }
+            ]
+          }
+        }
+      },
+      "look": {
+        "modules": {
+          "containerCathedral": {
+            "family": "industrial nave",
+            "params": {
+              "scale": 1,
+              "openness": 0.62
+            }
+          },
+          "stackedContainers": {
+            "family": "corrugated enclosure",
+            "params": {
+              "weathering": 0.72,
+              "jointContrast": 0.8
+            }
+          },
+          "centralLightWell": {
+            "family": "open vertical core",
+            "params": {
+              "brightness": 1.4,
+              "edgeGlow": 0.35
+            }
+          }
+        },
+        "palette": {
+          "steel": "deep oxidized blue",
+          "rust": "muted warm oxide",
+          "floor": "charcoal concrete",
+          "well": "pale daylight"
+        },
+        "lightRig": {
+          "kind": "open-sky shaft",
+          "keyDirection": [
+            0,
+            -1,
+            0
+          ],
+          "wellIntensity": 2.2,
+          "ambientIntensity": 0.28
+        },
+        "atmosphere": {
+          "kind": "clear industrial haze",
+          "density": 0.08,
+          "mood": "monumental contemplative"
+        },
+        "materialRoles": {
+          "containerShell": "weathered painted steel",
+          "structuralFrame": "dark steel",
+          "ground": "sealed concrete",
+          "lightWellRim": "brushed metal"
+        },
+        "camera": {
+          "kind": "orbit",
+          "target": [
+            0,
+            2.8,
+            0
+          ],
+          "distance": 24,
+          "height": 10
+        },
+        "audio": {
+          "ambience": "distant metal resonance",
+          "reverb": 0.82
+        }
+      }
+    }
+  }
+}
