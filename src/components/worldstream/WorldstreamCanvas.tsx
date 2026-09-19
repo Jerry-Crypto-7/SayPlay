@@ -354,6 +354,14 @@ function LookTransition({ bindings, environment, controller }: { readonly bindin
     gl.toneMappingExposure = now.exposure;
   });
 
+  // Renderer i mlha přežijí nový svět (plátno nemá `key`), a nikdo jiný
+  // expozici ani dosah mlhy nepíše – po odpojení tweenu se proto vrací
+  // na základ, jinak by svět bez vazeb zůstal potmě po bouři.
+  useEffect(() => () => {
+    gl.toneMappingExposure = WORLDSTREAM_GL.toneMappingExposure;
+    if (scene.fog instanceof Fog) scene.fog.far = WORLDSTREAM_FOG.far;
+  }, [gl, scene]);
+
   useEffect(() => {
     const probe: LookProbe = () => {
       const snapshot = controller?.getSnapshot() ?? null;
