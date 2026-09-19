@@ -275,5 +275,208 @@
       "outputTokens": 4695,
       "ok": true
     }
-  ]
+  ],
+  "phase5": {
+    "measuredAt": "2026-09-19T10:48:25.391Z",
+    "plan": "P21 T21 – one live run after T18 (slim sceneSpec) + T19 (planner at low effort)",
+    "model": "gpt-6-astra@medium#cli",
+    "effort": "medium",
+    "plannerEffort": "low",
+    "cases": 2,
+    "caseIds": [
+      "c01",
+      "c16"
+    ],
+    "chunked": false,
+    "callCap": 9,
+    "calls": 7,
+    "byStage": {
+      "planner": {
+        "n": 2,
+        "medianMs": 59874,
+        "p95Ms": 65040,
+        "medianAnswerBytes": 5739,
+        "medianOutputTokens": 1867
+      },
+      "compiler": {
+        "n": 2,
+        "medianMs": 164270,
+        "p95Ms": 187611,
+        "medianAnswerBytes": 8065,
+        "medianOutputTokens": 5322
+      }
+    },
+    "previous": {
+      "morning19": {
+        "measuredAt": "2026-09-19T08:55:08.117Z",
+        "plannerMedianMs": 75025,
+        "plannerAnswerBytes": 6794,
+        "plannerOutputTokens": 2296,
+        "note": "the 2026-09-19 morning run above in this file: chunked compiler, planner on the environment effort, full sceneSpec"
+      },
+      "baseline13": {
+        "measuredAt": "2026-09-13T18:58:42.960Z",
+        "plannerMedianMs": 16696,
+        "note": "Baseline measured 2026-09-13 on 5 sentences with gpt-6-astra@medium#cli (one compiler call per world, @medium); this run measures fewer sentences in concurrent chunks, so compare per sentence where the id matches, and read the medians as different denominators."
+      }
+    },
+    "target": {
+      "plannerMs": 30000,
+      "answerBytes": 4000,
+      "note": "P21 T21 goal, stated as a goal – the measured number decides, not this line"
+    },
+    "perCase": [
+      {
+        "id": "c01",
+        "plannerMs": 65040,
+        "plannerAnswerBytes": 5797,
+        "plannerOutputTokens": 2017,
+        "compilerMs": 164270,
+        "rounds": 2,
+        "authored": true,
+        "certified": true,
+        "failure": null,
+        "phases": {
+          "toMassingPreviewMs": 65041,
+          "toFirstChunkMs": null,
+          "toFirstObjectMs": 424611,
+          "toPlayableMs": 424611,
+          "toFullDetailMs": 424763
+        }
+      },
+      {
+        "id": "c16",
+        "plannerMs": 59874,
+        "plannerAnswerBytes": 5739,
+        "plannerOutputTokens": 1867,
+        "compilerMs": 187611,
+        "rounds": 3,
+        "authored": false,
+        "certified": false,
+        "failure": {
+          "stage": "schema",
+          "detail": "firstChute: connected-to capsuleSorter: no adjoining face connects the objects"
+        },
+        "phases": {
+          "toMassingPreviewMs": 59875,
+          "toFirstChunkMs": null,
+          "toFirstObjectMs": null,
+          "toPlayableMs": null,
+          "toFullDetailMs": 504595
+        }
+      }
+    ],
+    "calls5": [
+      {
+        "caseId": "c01",
+        "call": 1,
+        "stage": "planner",
+        "chunk": null,
+        "repair": false,
+        "reason": null,
+        "ms": 65040,
+        "endedAtMs": 65041,
+        "answerBytes": 5797,
+        "inputTokens": 15974,
+        "outputTokens": 2017,
+        "ok": true
+      },
+      {
+        "caseId": "c01",
+        "call": 2,
+        "stage": "compiler",
+        "chunk": null,
+        "repair": false,
+        "reason": null,
+        "ms": 164270,
+        "endedAtMs": 229323,
+        "answerBytes": 8065,
+        "inputTokens": 23785,
+        "outputTokens": 5322,
+        "ok": true
+      },
+      {
+        "caseId": "c01",
+        "call": 3,
+        "stage": "compiler",
+        "chunk": null,
+        "repair": true,
+        "reason": "LAYOUT_INVALID · containerFour: on containerOne: base does not rest inside a declared support surface. Also wrong, and e",
+        "ms": 194734,
+        "endedAtMs": 424375,
+        "answerBytes": 12172,
+        "inputTokens": 26820,
+        "outputTokens": 6368,
+        "ok": true
+      },
+      {
+        "caseId": "c16",
+        "call": 1,
+        "stage": "planner",
+        "chunk": null,
+        "repair": false,
+        "reason": null,
+        "ms": 59874,
+        "endedAtMs": 59875,
+        "answerBytes": 5739,
+        "inputTokens": 15975,
+        "outputTokens": 1867,
+        "ok": true
+      },
+      {
+        "caseId": "c16",
+        "call": 2,
+        "stage": "compiler",
+        "chunk": null,
+        "repair": false,
+        "reason": null,
+        "ms": 187611,
+        "endedAtMs": 247489,
+        "answerBytes": 9921,
+        "inputTokens": 23845,
+        "outputTokens": 6119,
+        "ok": true
+      },
+      {
+        "caseId": "c16",
+        "call": 3,
+        "stage": "compiler",
+        "chunk": null,
+        "repair": true,
+        "reason": "SHAPE_INVALID · shapes[n]: shape overflows its own targetBounds on x, y, z: generated bounds were 4.7× the requested vol",
+        "ms": 113503,
+        "endedAtMs": 360998,
+        "answerBytes": 9897,
+        "inputTokens": 27462,
+        "outputTokens": 3599,
+        "ok": true
+      },
+      {
+        "caseId": "c16",
+        "call": 4,
+        "stage": "compiler",
+        "chunk": null,
+        "repair": true,
+        "reason": "BLUEPRINT_INVALID · blueprint:/shapes: Too big: expected array to have <=3 items. Fix that field and send the whole answ",
+        "ms": 142950,
+        "endedAtMs": 504246,
+        "answerBytes": 10380,
+        "inputTokens": 27389,
+        "outputTokens": 4626,
+        "ok": true
+      }
+    ],
+    "attempts": {
+      "killed": {
+        "calls": 1,
+        "note": "first attempt 2026-09-19 ~10:45 UTC was reaped with the session before its second call; its one planner call (c01) measured 83235 ms / 7589 B / 2489 output tokens and wrote no artefact"
+      },
+      "measured": {
+        "calls": 7,
+        "callCap": 9,
+        "note": "cap lowered from 10 to 9 so the phase-5 total (1 + 9 + 6 for T22) stays within the 16 calls the plan allows"
+      }
+    },
+    "verdict": "planner median 59874 ms (-20 % vs the morning 75025 ms) and 5739 B (-16 % vs 6794 B); the goal (<= 30 s, <= 4000 B) is not met - the answer stays over half sceneSpec. Side finding: the single compiler call costs 164-188 s per world plus 113-195 s per repair round, so time to playable was 424763 ms on c01 and c16 never became playable (schema after 3 rounds); the chunked morning compiler was faster per world."
+  }
 }

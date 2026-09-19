@@ -173,9 +173,7 @@ describe('latency-p21.json – dvě věty po P21 vedle měření ze 13. 9.', () 
   });
 });
 
-// ⚠ Dočasné: `skipIf` odstranit, jakmile T21 živě doběhne a blok `phase5` v artefaktu je.
-// Do té doby by pin na `toBeDefined` držel celou sadu červenou kvůli běhu, který ještě nebyl.
-describe.skipIf(report.phase5 === undefined)('latency-p21.json › phase5 – plánovač po štíhlém sceneSpec a nízkém úsilí (T21)', () => {
+describe('latency-p21.json › phase5 – plánovač po štíhlém sceneSpec a nízkém úsilí (T21)', () => {
   const phase5 = report.phase5;
 
   it('blok existuje, má obě věty a jede jedním voláním kompilátoru, ne po kusech', () => {
