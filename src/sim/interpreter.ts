@@ -122,6 +122,33 @@ export interface StepResult {
    * prázdné pole: stav se atomicky vrátil na začátek tiku, takže se nestalo nic.
    */
   readonly fired: readonly string[];
+  /**
+   * Kauzální stopa tiku: každé pravidlo, jehož hrana nastala, a u spuštěného
+   * přesně to, co zapsalo. Leží **vedle** stavu, ne v něm — do hashe nevstupuje
+   * a `runtime.explain = false` ji vypne, aniž se pohne jediné slovo stavu.
+   * Tik ukončený `runtimeFault` vrací prázdné pole ze stejného důvodu jako
+   * `fired`: stav se vrátil, takže se nic nezapsalo.
+   */
+  readonly explain: readonly RuleFiring[];
+}
+
+/** Jeden zápis slotu ve fázi 3. `after` je hodnota po clampu, ne požadovaná. */
+export interface SlotWrite {
+  readonly slot: string;
+  readonly before: number;
+  readonly after: number;
+}
+
+/**
+ * Pravidlo, jehož hrana v tomhle tiku nastala. `guardHeld: false` je pravidlo,
+ * které stráž zastavila — má prázdné `writes` a ve `fired` není. Bez té větve by
+ * pole `guardHeld` bylo konstanta a „proč se dveře neotevřely" by stopa neuměla.
+ */
+export interface RuleFiring {
+  readonly ruleId: string;
+  readonly predicate: string;
+  readonly guardHeld: boolean;
+  readonly writes: readonly SlotWrite[];
 }
 
 const SYMBOL_NONE = 'none';
@@ -174,6 +201,8 @@ export interface Runtime {
   /** Jména zón se čtou z deklarace jednou, ne v každém tiku. */
   readonly zoneNames: readonly string[];
   readonly budget: Budget;
+  /** Sbírat `StepResult.explain`? Vypíná se jen kvůli pinu, že záznam stav nemění. */
+  explain: boolean;
   state: Uint32Array;
   runState: RunState;
   fault: FaultReason | null;
@@ -188,7 +217,7 @@ export interface Runtime {
 
 const ENTITY_FIELDS = ['state', 'locked', 'x', 'y', 'active', 'freeze', 'moveTo', 'moveTicks'] as const;
 
-function entitySlotId(stableId: string, field: (typeof ENTITY_FIELDS)[number]): string {
+export function entitySlotId(stableId: string, field: (typeof ENTITY_FIELDS)[number]): string {
   return `e:${stableId}:${field}`;
 }
 
@@ -311,6 +340,7 @@ export function createRuntime(doc: WorldDocRuntime): Runtime {
     predicateIndex,
     zoneNames: Object.keys(doc.space.zones),
     budget: { remaining: ir.limits.maxRuleFiringsPerTick },
+    explain: true,
     state: createState(layout),
     runState: 'running',
     fault: null,
@@ -589,35 +619,49 @@ function sense(runtime: Runtime, counts: Record<Phase, number>): Observation {
 // Fáze 3 — apply
 // ---------------------------------------------------------------------------
 
-function writeRef(runtime: Runtime, ref: StateRef, value: number | boolean | string): void {
-  const { layout } = runtime;
+/**
+ * Obal nad `writeSlot` pro fázi 3: se zapnutou stopou si přečte hodnotu před
+ * zápisem a po něm. Čtení po zápisu je schválně — `writeSlot` clampuje a stopa
+ * má říkat, co ve stavu doopravdy je, ne co pravidlo chtělo.
+ */
+function write(runtime: Runtime, sink: SlotWrite[] | null, id: string, value: number): void {
+  if (sink === null) {
+    writeSlot(runtime.layout, runtime.state, id, value);
+    return;
+  }
+  const before = readSlot(runtime.layout, runtime.state, id);
+  writeSlot(runtime.layout, runtime.state, id, value);
+  sink.push({ slot: id, before, after: readSlot(runtime.layout, runtime.state, id) });
+}
+
+function writeRef(runtime: Runtime, sink: SlotWrite[] | null, ref: StateRef, value: number | boolean | string): void {
   switch (ref.space) {
     case 'counter':
-      writeSlot(layout, runtime.state, `c:${ref.slot}`, Number(value));
+      write(runtime, sink, `c:${ref.slot}`, Number(value));
       break;
     case 'flag':
-      writeSlot(layout, runtime.state, `f:${ref.slot}`, value === true ? 1 : 0);
+      write(runtime, sink, `f:${ref.slot}`, value === true ? 1 : 0);
       break;
     case 'timer':
-      writeSlot(layout, runtime.state, `t:${ref.slot}`, Number(value));
+      write(runtime, sink, `t:${ref.slot}`, Number(value));
       break;
     case 'inventory': {
       const id = `i:${ref.slot}`;
-      writeSlot(layout, runtime.state, id, runtime.slotEnums.get(id)?.index.get(String(value)) ?? 0);
+      write(runtime, sink, id, runtime.slotEnums.get(id)?.index.get(String(value)) ?? 0);
       break;
     }
     case 'memory': {
       const id = `m:${ref.agent}#${ref.index}`;
-      writeSlot(layout, runtime.state, id, runtime.slotEnums.get(id)?.index.get(String(value)) ?? 0);
+      write(runtime, sink, id, runtime.slotEnums.get(id)?.index.get(String(value)) ?? 0);
       break;
     }
     case 'entityState': {
       const table = runtime.entityStates.get(ref.entity);
-      writeSlot(layout, runtime.state, entitySlotId(ref.entity, 'state'), table?.index.get(String(value)) ?? 0);
+      write(runtime, sink, entitySlotId(ref.entity, 'state'), table?.index.get(String(value)) ?? 0);
       break;
     }
     case 'locked':
-      writeSlot(layout, runtime.state, entitySlotId(ref.entity, 'locked'), value === true ? 1 : 0);
+      write(runtime, sink, entitySlotId(ref.entity, 'locked'), value === true ? 1 : 0);
       break;
     case 'observed':
     case 'pulse':
@@ -677,51 +721,51 @@ function activeCount(runtime: Runtime): number {
 
 type EffectOutcome = 'ok' | 'won' | 'lost' | FaultReason;
 
-function applyEffect(runtime: Runtime, effect: IrEffect, obs: Observation): EffectOutcome {
+function applyEffect(runtime: Runtime, sink: SlotWrite[] | null, effect: IrEffect, obs: Observation): EffectOutcome {
   const { layout, limits, doc } = runtime;
   switch (effect.op) {
     case 'assign':
-      writeRef(runtime, effect.ref, evalNode(doc.ir, effect.value, obs));
+      writeRef(runtime, sink, effect.ref, evalNode(doc.ir, effect.value, obs));
       return 'ok';
     case 'addCounter': {
       const id = `c:${effect.slot}`;
-      writeSlot(layout, runtime.state, id, readSlot(layout, runtime.state, id) + effect.delta);
+      write(runtime, sink, id, readSlot(layout, runtime.state, id) + effect.delta);
       return 'ok';
     }
     case 'startTimer':
-      writeSlot(layout, runtime.state, `t:${effect.slot}`, effect.durationTicks);
+      write(runtime, sink, `t:${effect.slot}`, effect.durationTicks);
       return 'ok';
     case 'stopTimer':
-      writeSlot(layout, runtime.state, `t:${effect.slot}`, 0);
+      write(runtime, sink, `t:${effect.slot}`, 0);
       return 'ok';
     case 'spawn': {
       if (activeCount(runtime) >= limits.maxEntities) return 'entity-cap';
       const id = lowestInactive(runtime, effect.poolTag);
       if (id === null) return 'ok';
       const cell = doc.space.sockets[effect.socket] ?? [0, 0];
-      writeSlot(layout, runtime.state, entitySlotId(id, 'active'), 1);
-      writeSlot(layout, runtime.state, entitySlotId(id, 'x'), cell[0]);
-      writeSlot(layout, runtime.state, entitySlotId(id, 'y'), cell[1]);
+      write(runtime, sink, entitySlotId(id, 'active'), 1);
+      write(runtime, sink, entitySlotId(id, 'x'), cell[0]);
+      write(runtime, sink, entitySlotId(id, 'y'), cell[1]);
       return 'ok';
     }
     case 'despawn':
-      writeSlot(layout, runtime.state, entitySlotId(effect.entity, 'active'), 0);
+      write(runtime, sink, entitySlotId(effect.entity, 'active'), 0);
       return 'ok';
     case 'moveTo': {
       const cell = doc.space.sockets[effect.socket];
       if (cell === undefined) return 'ok';
-      writeSlot(layout, runtime.state, entitySlotId(effect.entity, 'moveTo'), cell[0] * (limits.gridHeight + 1) + cell[1] + 1);
-      writeSlot(layout, runtime.state, entitySlotId(effect.entity, 'moveTicks'), effect.ticks);
+      write(runtime, sink, entitySlotId(effect.entity, 'moveTo'), cell[0] * (limits.gridHeight + 1) + cell[1] + 1);
+      write(runtime, sink, entitySlotId(effect.entity, 'moveTicks'), effect.ticks);
       return 'ok';
     }
     case 'freeze':
-      writeSlot(layout, runtime.state, entitySlotId(effect.entity, 'freeze'), effect.ticks);
+      write(runtime, sink, entitySlotId(effect.entity, 'freeze'), effect.ticks);
       return 'ok';
     case 'giveItem':
-      writeRef(runtime, { space: 'inventory', slot: effect.slot }, effect.item);
+      writeRef(runtime, sink, { space: 'inventory', slot: effect.slot }, effect.item);
       return 'ok';
     case 'takeItem':
-      writeRef(runtime, { space: 'inventory', slot: effect.slot }, SYMBOL_EMPTY);
+      writeRef(runtime, sink, { space: 'inventory', slot: effect.slot }, SYMBOL_EMPTY);
       return 'ok';
     case 'emit':
       // Zapisuje se do fronty, ze které se v TOMHLE tiku nečerpá. Přetečení je
@@ -816,6 +860,7 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
       firings: 0,
       iterations: counts,
       fired: [],
+      explain: [],
     };
   }
 
@@ -841,6 +886,7 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
       firings: 0,
       iterations: counts,
       fired: [],
+      explain: [],
     };
   }
 
@@ -855,6 +901,10 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
   // Fáze 2 — spouštěče a stráže proti PRE-STAVU tiku.
   const triggerBound = phaseBound('trigger' satisfies Phase, limits);
   const fired: IrRule[] = [];
+  // Stopa vzniká tady, v pořadí vykonání, a `sinks[i]` patří k `fired[i]`: fáze 3
+  // do něj dopíše zápisy, takže záznam o pravidlu a jeho zápisy jsou jeden objekt.
+  const explain: RuleFiring[] = [];
+  const sinks: (SlotWrite[] | null)[] = [];
   for (let i = 0; i < triggerBound && i < runtime.ruleOrder.length; i += 1) {
     counts.trigger += 1;
     const rule = runtime.ruleOrder[i];
@@ -864,8 +914,12 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
     const now = evalBool(runtime.doc.ir, expr, observation);
     const edge = rule.trigger.became ? !was && now : was && !now;
     if (!edge) continue;
-    if (rule.guard !== null && !evalBool(runtime.doc.ir, rule.guard, observation)) continue;
+    const guardHeld = rule.guard === null || evalBool(runtime.doc.ir, rule.guard, observation);
+    const writes: SlotWrite[] | null = runtime.explain ? [] : null;
+    if (writes !== null) explain.push({ ruleId: rule.ruleId, predicate: rule.trigger.predicate, guardHeld, writes });
+    if (!guardHeld) continue;
     fired.push(rule);
+    sinks.push(writes);
   }
 
   // Fáze 3 — akce ve stabilním pořadí, každá za jednotku klesajícího rozpočtu.
@@ -883,7 +937,7 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
     const effectBound = limits.maxRuleFiringsPerTick;
     for (let e = 0; e < effectBound && e < rule.effects.length && fault === null; e += 1) {
       counts.apply += 1;
-      const result = applyEffect(runtime, runtime.doc.ir.effects[rule.effects[e]], observation);
+      const result = applyEffect(runtime, sinks[i], runtime.doc.ir.effects[rule.effects[e]], observation);
       if (result === 'won') outcome = 'won';
       else if (result === 'lost') outcome = 'lost';
       else if (result !== 'ok') fault = result;
@@ -906,6 +960,7 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
       firings: before - runtime.budget.remaining,
       iterations: counts,
       fired: [],
+      explain: [],
     };
   }
 
@@ -926,6 +981,7 @@ export function step(runtime: Runtime, inputs: readonly TraceInput[]): StepResul
     firings: before - runtime.budget.remaining,
     iterations: counts,
     fired: applied,
+    explain,
   };
 }
 
