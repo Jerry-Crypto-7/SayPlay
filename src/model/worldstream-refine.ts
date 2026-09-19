@@ -566,18 +566,30 @@ export function readAdditionEmission(value: unknown, blueprint: WorldstreamBluep
 function countPieces(operations: readonly Operation[], sim: unknown): { readonly entities: number; readonly rules: number } {
   const tables = sim as { readonly entities?: unknown; readonly rules?: unknown };
   const counts = { entities: 0, rules: 0 };
+  const freshKeys = (collection: 'entities' | 'rules', written: unknown): number => {
+    if (written === null || typeof written !== 'object' || Array.isArray(written)) return 0;
+    const existing = tables[collection];
+    const known = existing !== null && typeof existing === 'object' ? (existing as Record<string, unknown>) : {};
+    return Object.keys(written).filter((key) => !Object.hasOwn(known, key)).length;
+  };
   for (const operation of operations) {
     const [root, collection, name, ...rest] = pointerTokens(operation.path);
-    if (root !== 'sim' || rest.length > 0 || (collection !== 'entities' && collection !== 'rules')) continue;
+    if (root !== 'sim' || rest.length > 0) continue;
+    const written = 'value' in operation ? operation.value : null;
+    // Přepis celého `/sim` (nález revize 19. 9. 2026): tabulky jsou uvnitř hodnoty
+    // a čerstvé klíče se počítají stejně, jako by přišly po jedné.
+    if (collection === undefined) {
+      const doc = written as { readonly entities?: unknown; readonly rules?: unknown } | null;
+      counts.entities += freshKeys('entities', doc?.entities);
+      counts.rules += freshKeys('rules', doc?.rules);
+      continue;
+    }
+    if (collection !== 'entities' && collection !== 'rules') continue;
     if (name !== undefined) {
       counts[collection] += 1;
       continue;
     }
-    const written = 'value' in operation ? operation.value : null;
-    if (written === null || typeof written !== 'object' || Array.isArray(written)) continue;
-    const existing = tables[collection];
-    const known = existing !== null && typeof existing === 'object' ? (existing as Record<string, unknown>) : {};
-    counts[collection] += Object.keys(written).filter((key) => !Object.hasOwn(known, key)).length;
+    counts[collection] += freshKeys(collection, written);
   }
   return counts;
 }

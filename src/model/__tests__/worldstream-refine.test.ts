@@ -734,6 +734,20 @@ describe('čtení nového objektu', () => {
       expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), table] }), BLUEPRINT))).toBe('ok');
     });
 
+    // Nález revize 19. 9. 2026: cesta přesně `/sim` neměla tabulku, tak ji
+    // strop přeskočil — a přepis celého `sim` unesl dvě pravidla jako jedna operace.
+    it('dvě pravidla zapsaná přepisem celého /sim jsou taky TOO_MANY_PIECES', () => {
+      const sim = BLUEPRINT.world.sim as { readonly rules?: Record<string, unknown> };
+      const whole = { op: 'replace', path: '/sim', value: { ...(sim as object), rules: { ...(sim.rules ?? {}), a: { when: 'tick', then: [] }, b: { when: 'tick', then: [] } } } };
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), whole] }), BLUEPRINT))).toContain('TOO_MANY_PIECES: 1 entities and 2 rules');
+    });
+
+    it('přepis celého /sim s jedním novým pravidlem projde stropem', () => {
+      const sim = BLUEPRINT.world.sim as { readonly rules?: Record<string, unknown> };
+      const whole = { op: 'replace', path: '/sim', value: { ...(sim as object), rules: { ...(sim.rules ?? {}), a: { when: 'tick', then: [] } } } };
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), whole] }), BLUEPRINT))).not.toContain('TOO_MANY_PIECES');
+    });
+
     it('zadání pro model říká jeden objekt a nejvýš jedno pravidlo', () => {
       expect(buildAdditionRequest('add a signpost', BLUEPRINT).system).toContain('ONE object and at most ONE rule');
     });
