@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="1200" height="420" role="img" aria-labelledby="title desc">
+  <title id="title">WORLDSTREAM architecture: language to plan to WorldDoc to a verified deterministic runtime to two futures</title>
+  <desc id="desc">A sentence goes to a planner, the plan is compiled into a WorldDoc, the WorldDoc is checked and run by a deterministic runtime, and one rule change forks the run into two synchronized futures.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#9fb0b3"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#f1b24a"/>
+    </marker>
+  </defs>
+  <style>
+    .box { fill: #16262f; stroke: #2f9e8f; stroke-width: 2; rx: 10; }
+    .box-fork { fill: #16262f; stroke: #f1b24a; stroke-width: 2; rx: 10; }
+    .title { font: 600 18px system-ui, -apple-system, "Segoe UI", sans-serif; fill: #dfe8ea; }
+    .note { font: 13px system-ui, -apple-system, "Segoe UI", sans-serif; fill: #9fb0b3; }
+    .side { font: 12px system-ui, -apple-system, "Segoe UI", sans-serif; fill: #8fbf4a; }
+    .flow { stroke: #9fb0b3; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .fork { stroke: #f1b24a; stroke-width: 2; fill: none; marker-end: url(#arrow-accent); }
+  </style>
+
+  <rect width="1200" height="420" fill="#0b1114"/>
+
+  <!-- 1 Language -->
+  <rect class="box" x="30" y="120" width="190" height="110"/>
+  <text class="title" x="125" y="160" text-anchor="middle">Language</text>
+  <text class="note" x="125" y="185" text-anchor="middle">one English sentence</text>
+  <text class="note" x="125" y="205" text-anchor="middle">later: one rule change</text>
+
+  <!-- 2 Plan -->
+  <rect class="box" x="260" y="120" width="190" height="110"/>
+  <text class="title" x="355" y="160" text-anchor="middle">Plan</text>
+  <text class="note" x="355" y="185" text-anchor="middle">planner: intent, objects,</text>
+  <text class="note" x="355" y="205" text-anchor="middle">relations, goal</text>
+
+  <!-- 3 WorldDoc -->
+  <rect class="box" x="490" y="120" width="190" height="110"/>
+  <text class="title" x="585" y="160" text-anchor="middle">WorldDoc</text>
+  <text class="note" x="585" y="185" text-anchor="middle">compiler: sim (rules, state)</text>
+  <text class="note" x="585" y="205" text-anchor="middle">+ look (geometry, light)</text>
+
+  <!-- 4 Verified deterministic runtime -->
+  <rect class="box" x="720" y="105" width="230" height="140"/>
+  <text class="title" x="835" y="140" text-anchor="middle">Verified deterministic</text>
+  <text class="title" x="835" y="162" text-anchor="middle">runtime</text>
+  <text class="note" x="835" y="190" text-anchor="middle">schema + reference checks,</text>
+  <text class="note" x="835" y="208" text-anchor="middle">witness search, replay hash,</text>
+  <text class="note" x="835" y="226" text-anchor="middle">20 ticks per second, no wall time</text>
+
+  <!-- 5 Two futures -->
+  <rect class="box-fork" x="990" y="60" width="180" height="80"/>
+  <text class="title" x="1080" y="92" text-anchor="middle">Original future</text>
+  <text class="note" x="1080" y="115" text-anchor="middle">rules as compiled</text>
+
+  <rect class="box-fork" x="990" y="210" width="180" height="80"/>
+  <text class="title" x="1080" y="242" text-anchor="middle">Changed future</text>
+  <text class="note" x="1080" y="265" text-anchor="middle">one law rewritten in words</text>
+
+  <!-- arrows -->
+  <path class="flow" d="M220 175 H255"/>
+  <path class="flow" d="M450 175 H485"/>
+  <path class="flow" d="M680 175 H715"/>
+  <path class="fork" d="M950 150 C 970 150, 970 100, 985 100"/>
+  <path class="fork" d="M950 200 C 970 200, 970 250, 985 250"/>
+
+  <!-- fork label -->
+  <text class="note" x="968" y="171" text-anchor="middle">rewind</text>
+  <text class="note" x="968" y="187" text-anchor="middle">to a tick</text>
+
+  <!-- side notes under the row -->
+  <text class="side" x="125" y="275" text-anchor="middle">blocks guessed from the words</text>
+  <text class="side" x="125" y="292" text-anchor="middle">appear before the planner answers</text>
+
+  <text class="side" x="355" y="275" text-anchor="middle">an identical sentence reuses</text>
+  <text class="side" x="355" y="292" text-anchor="middle">the earlier answer, and says so</text>
+
+  <text class="side" x="585" y="275" text-anchor="middle">the model never emits code;</text>
+  <text class="side" x="585" y="292" text-anchor="middle">a rule can bind sky and weather</text>
+
+  <text class="side" x="835" y="275" text-anchor="middle">every rule firing is recorded beside</text>
+  <text class="side" x="835" y="292" text-anchor="middle">the state; the Why panel reads it</text>
+
+  <text class="side" x="1080" y="320" text-anchor="middle">shared clock and camera;</text>
+  <text class="side" x="1080" y="337" text-anchor="middle">difference written from the state diff</text>
+
+  <!-- footer -->
+  <text class="note" x="600" y="385" text-anchor="middle">Only sim is hashed. Geometry, particles, camera and sound stay outside the hash, so a look change never invalidates a certificate.</text>
+</svg>
