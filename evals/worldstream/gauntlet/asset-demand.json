@@ -1778,5 +1778,252 @@
       "weight": 1,
       "coveredBy": null
     }
-  ]
+  ],
+  "afterT11": {
+    "note": "Druhý běh měření po P22 T11 (24 nových modelů). Původní pole výše jsou stav před T11; měřidlo přepisuje soubor celý, proto je druhý běh zapsaný tady a ne místo něj.",
+    "measuredAt": "2026-09-19",
+    "before": {
+      "catalogAssets": 6,
+      "coverageByWeight": 0.12,
+      "coveredKinds": 15,
+      "missingKinds": 233
+    },
+    "catalogAssets": 30,
+    "coverageByWeight": 0.446,
+    "coveredKinds": 49,
+    "missingKinds": 199,
+    "top24": [
+      "customer",
+      "fireplace",
+      "garden",
+      "pier",
+      "platform",
+      "river",
+      "sofa",
+      "water",
+      "alcove",
+      "balcony",
+      "barrel",
+      "beach",
+      "bicycle",
+      "cafe",
+      "counter",
+      "flower",
+      "forest",
+      "hall",
+      "kiln",
+      "lake",
+      "light",
+      "office",
+      "park",
+      "pit"
+    ],
+    "coveredByCatalog": [
+      {
+        "kind": "tree",
+        "weight": 21,
+        "coveredBy": "catalog:oak-tree"
+      },
+      {
+        "kind": "chair",
+        "weight": 17,
+        "coveredBy": "catalog:lounge-chair"
+      },
+      {
+        "kind": "table",
+        "weight": 12,
+        "coveredBy": "catalog:dining-table"
+      },
+      {
+        "kind": "door",
+        "weight": 11,
+        "coveredBy": "catalog:panel-door"
+      },
+      {
+        "kind": "gate",
+        "weight": 11,
+        "coveredBy": "catalog:iron-gate"
+      },
+      {
+        "kind": "boat",
+        "weight": 9,
+        "coveredBy": "catalog:rowing-boat"
+      },
+      {
+        "kind": "machine",
+        "weight": 9,
+        "coveredBy": "catalog:steam-machine"
+      },
+      {
+        "kind": "cabinet",
+        "weight": 7,
+        "coveredBy": "catalog:storage-cabinet"
+      },
+      {
+        "kind": "stool",
+        "weight": 7,
+        "coveredBy": "catalog:bar-stool"
+      },
+      {
+        "kind": "switch",
+        "weight": 7,
+        "coveredBy": "catalog:wall-switch"
+      },
+      {
+        "kind": "button",
+        "weight": 6,
+        "coveredBy": "catalog:push-button"
+      },
+      {
+        "kind": "cabin",
+        "weight": 6,
+        "coveredBy": "catalog:log-cabin"
+      },
+      {
+        "kind": "lever",
+        "weight": 6,
+        "coveredBy": "catalog:floor-lever"
+      },
+      {
+        "kind": "wall",
+        "weight": 6,
+        "coveredBy": "catalog:stone-wall"
+      },
+      {
+        "kind": "window",
+        "weight": 6,
+        "coveredBy": "catalog:framed-window"
+      },
+      {
+        "kind": "workbench",
+        "weight": 6,
+        "coveredBy": "catalog:workbench"
+      },
+      {
+        "kind": "bridge",
+        "weight": 5,
+        "coveredBy": "catalog:wooden-bridge"
+      },
+      {
+        "kind": "dog",
+        "weight": 5,
+        "coveredBy": "catalog:dog"
+      },
+      {
+        "kind": "elevator",
+        "weight": 5,
+        "coveredBy": "catalog:elevator-car"
+      },
+      {
+        "kind": "lamp",
+        "weight": 5,
+        "coveredBy": "catalog:floor-lamp"
+      },
+      {
+        "kind": "lantern",
+        "weight": 5,
+        "coveredBy": "catalog:hanging-lantern"
+      },
+      {
+        "kind": "plant",
+        "weight": 5,
+        "coveredBy": "catalog:potted-plant"
+      },
+      {
+        "kind": "tent",
+        "weight": 5,
+        "coveredBy": "catalog:canvas-tent"
+      },
+      {
+        "kind": "tower",
+        "weight": 5,
+        "coveredBy": "catalog:watchtower"
+      },
+      {
+        "kind": "beacon",
+        "weight": 4,
+        "coveredBy": "catalog:fire-beacon"
+      },
+      {
+        "kind": "building",
+        "weight": 4,
+        "coveredBy": "catalog:townhouse"
+      },
+      {
+        "kind": "classroom",
+        "weight": 4,
+        "coveredBy": "catalog:classroom"
+      },
+      {
+        "kind": "person",
+        "weight": 4,
+        "coveredBy": "catalog:seated-person"
+      },
+      {
+        "kind": "aquarium",
+        "weight": 3,
+        "coveredBy": "catalog:aquarium"
+      },
+      {
+        "kind": "ship",
+        "weight": 3,
+        "coveredBy": "catalog:rowing-boat"
+      },
+      {
+        "kind": "desk",
+        "weight": 2,
+        "coveredBy": "catalog:dining-table"
+      },
+      {
+        "kind": "house",
+        "weight": 2,
+        "coveredBy": "catalog:townhouse"
+      },
+      {
+        "kind": "camp",
+        "weight": 1,
+        "coveredBy": "catalog:canvas-tent"
+      },
+      {
+        "kind": "campsite",
+        "weight": 1,
+        "coveredBy": "catalog:canvas-tent"
+      },
+      {
+        "kind": "cottage",
+        "weight": 1,
+        "coveredBy": "catalog:log-cabin"
+      },
+      {
+        "kind": "entrance",
+        "weight": 1,
+        "coveredBy": "catalog:iron-gate"
+      },
+      {
+        "kind": "hut",
+        "weight": 1,
+        "coveredBy": "catalog:log-cabin"
+      },
+      {
+        "kind": "listener",
+        "weight": 1,
+        "coveredBy": "catalog:seated-person"
+      },
+      {
+        "kind": "shelf",
+        "weight": 1,
+        "coveredBy": "catalog:storage-cabinet"
+      },
+      {
+        "kind": "terminal",
+        "weight": 1,
+        "coveredBy": "catalog:desktop-terminal"
+      },
+      {
+        "kind": "watchtower",
+        "weight": 1,
+        "coveredBy": "catalog:watchtower"
+      }
+    ]
+  }
 }
