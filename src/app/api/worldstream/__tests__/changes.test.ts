@@ -53,6 +53,8 @@ import {
   openSession,
   putChange,
   peekChange,
+  newSessionSeed,
+  runGeneration,
   type StoredSession,
 } from '@/worldstream/sessions';
 
@@ -70,7 +72,8 @@ import {
 import { POST as commitChange } from '../sessions/[sessionId]/changes/[changeId]/commit/route';
 import { POST as restoreComparison } from '../sessions/[sessionId]/comparison/restore/route';
 import { POST as previewChange, createChange } from '../sessions/[sessionId]/changes/route';
-import { ANSWER, generated } from './world-fixture';
+import { ANSWER, generated, grammar } from './world-fixture';
+import { stormBellAnswers } from '../../../../../e2e/fixtures/storm-bell';
 
 /* ------------------------------------------------------------------ *
  * Volání route.
@@ -2478,5 +2481,108 @@ describe('přidání nového objektu', () => {
     expect((await body(response)).error).toMatchObject({ code: 'COMPARISON_REJECTED', message: 'A new object has no earlier future to compare against.' });
     expect(JSON.stringify(stored.blueprint)).toBe(before.bytes);
     expect(peekChange(stored, change.changeId)).not.toBeNull();
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * P22 T19 – druhá věta nesmí nechat viset vazbu vzhledu ani signálu.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Nález nezávislé revize fáze 4 (`T12-1.md`, nález 1): commit jen pravidel
+ * skládal blueprint bez kontroly odkazů, takže věta, která odstraní příznak,
+ * nechala `lookBindings[].variable` i `binding.signalFlag` ukazovat do prázdna.
+ * `lookBindings` není směrovatelná část (`ROUTABLE = sim|look`), takže to
+ * žádný další patch neopraví – a `session-store.ts` pak záznam odmítne a otráví
+ * trvalé úložiště všem relacím. Rozhodnutí je **odmítnout**, ne prořezat:
+ * prořezání by tiše změnilo svět, o který porotce žádal.
+ *
+ * Svět je zvon s bouří z `e2e/fixtures/storm-bell.ts` – přesně ta fixtura,
+ * na které revize díru předvedla – prohnaný skutečným kompilátorem, takže
+ * `lookBindings` i `signalFlag` v něm napsal produkční kód, ne test.
+ */
+describe('commit, který nechá viset vazbu na příznak', () => {
+  async function stormBell(): Promise<StoredSession> {
+    const { planner, compiler } = stormBellAnswers();
+    let calls = 0;
+    const stored = openSession(`test-${newSessionSeed()}`, 1722)!;
+    await runGeneration(stored, 'A hilltop bell that starts a storm when rung', {
+      legacyPlan: true,
+      emit: () => { calls += 1; return Promise.resolve(calls === 1 ? planner : compiler); },
+      grammar: grammar(),
+    });
+    if (stored.blueprint === null) throw new Error(`storm-bell world did not build: ${stored.session.phase}`);
+    return stored;
+  }
+
+  /** Pravidla bez příznaku: zvon jen odemkne bránu, průchod nic nepodmiňuje. Svědek dál vede k výhře. */
+  const WITHOUT_STORM: RefinePlan['behavior'] = [
+    { op: 'replace', path: '/sim/rules/ring/actions', value: [
+      { kind: 'setState', entity: 'bell', value: 'ringing' },
+      { kind: 'setLocked', entity: 'gate', value: false },
+    ] },
+    { op: 'replace', path: '/sim/rules/pass/condition', value: null },
+    { op: 'remove', path: '/sim/state/flags/storm' },
+  ];
+
+  function bindingOf(stored: StoredSession, stableId: string) {
+    return stored.blueprint!.objects.find((object) => object.stableId === stableId)?.binding;
+  }
+
+  it('fixtura nese obě vazby, jinak by testy níž neměřily nic', async () => {
+    const stored = await stormBell();
+    expect(stored.blueprint!.lookBindings).toEqual([{ variable: 'storm', values: { '0': 'day', '1': 'storm' } }]);
+    expect(bindingOf(stored, 'bell')?.signalFlag).toBe('storm');
+  });
+
+  it('odstranění příznaku, na který ukazuje lookBindings, je BLUEPRINT_INVALID a svět se nehne', async () => {
+    const stored = await stormBell();
+    // Signál zvonu pryč, aby tu zbyla jen vazba vzhledu a verdikt ukázal na ni.
+    stored.blueprint = { ...stored.blueprint!, objects: stored.blueprint!.objects.map((object) =>
+      object.stableId === 'bell' ? { ...object, binding: { ...object.binding!, signalFlag: undefined } } : object) };
+    const before = JSON.stringify(stored.blueprint);
+    const change = pending(stored, plan({ stableId: 'bell', summary: 'the bell no longer calls the storm', behavior: WITHOUT_STORM }));
+
+    const response = await commit(stored.session.sessionId, change.changeId);
+    expect(response.status).toBe(200);
+    expect(await body(response)).toMatchObject({
+      outcome: 'REJECTED',
+      rejections: [{ stage: 'apply', reason: 'BLUEPRINT_INVALID', pointer: '/lookBindings/0/variable' }],
+    });
+    expect(JSON.stringify(stored.blueprint)).toBe(before);
+    expect(worldOf(stored).simRevision).toBe(0);
+    expect(peekChange(stored, change.changeId)).not.toBeNull();
+  });
+
+  it('odstranění příznaku, na který ukazuje signalFlag, je BLUEPRINT_INVALID a svět se nehne', async () => {
+    const stored = await stormBell();
+    // Vazba vzhledu pryč, aby tu zbyl jen signál objektu a verdikt ukázal na něj.
+    stored.blueprint = { ...stored.blueprint!, lookBindings: undefined };
+    const before = JSON.stringify(stored.blueprint);
+    const change = pending(stored, plan({ stableId: 'bell', summary: 'the bell no longer calls the storm', behavior: WITHOUT_STORM }));
+
+    const response = await commit(stored.session.sessionId, change.changeId);
+    expect(response.status).toBe(200);
+    expect(await body(response)).toMatchObject({
+      outcome: 'REJECTED',
+      rejections: [{ stage: 'apply', reason: 'BLUEPRINT_INVALID', pointer: '/objects/1/binding/signalFlag' }],
+    });
+    expect(JSON.stringify(stored.blueprint)).toBe(before);
+    expect(worldOf(stored).simRevision).toBe(0);
+    expect(peekChange(stored, change.changeId)).not.toBeNull();
+  });
+
+  it('změna pravidel, která příznak nechá být, se commitne – brána nesmí odmítat naslepo', async () => {
+    const stored = await stormBell();
+    const change = pending(stored, plan({ stableId: 'bell', summary: 'the gate matters more', behavior: [
+      { op: 'replace', path: '/sim/rules/pass/priority', value: 3 },
+    ] }));
+
+    const response = await commit(stored.session.sessionId, change.changeId);
+    expect(response.status).toBe(200);
+    expect(await body(response)).toMatchObject({ outcome: 'COMMITTED', applied: ['sim'] });
+    expect(worldOf(stored).simRevision).toBe(1);
+    expect(stored.blueprint!.lookBindings).toEqual([{ variable: 'storm', values: { '0': 'day', '1': 'storm' } }]);
+    expect(bindingOf(stored, 'bell')?.signalFlag).toBe('storm');
   });
 });

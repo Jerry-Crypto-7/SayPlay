@@ -446,6 +446,14 @@ function rejected(
  * projde výsledek celým schématem i kontrolou odkazů, stejně jako blueprint
  * první věty. Dosavadní objekty jdou dál týmiž referencemi, takže registr je
  * při `registerBlueprint` pozná jako nezměněné.
+ *
+ * **Kontrola odkazů běží nad každým kandidátem, ne jen nad přidáním** (P22
+ * T19, nález nezávislé revize fáze 4). Věta, která odstraní příznak nebo
+ * čítač, nechá `lookBindings[].variable` a `binding.signalFlag` ukazovat do
+ * prázdna – a protože `lookBindings` ani `objects` nejsou směrovatelná část,
+ * žádná další věta to už neopraví; `session-store` pak takový záznam odmítne
+ * a s ním celé trvalé úložiště. Odmítá se, neprořezává: prořezaná vazba by
+ * tiše změnila svět, o který porotce žádal.
  */
 function nextBlueprint(
   blueprint: WorldstreamBlueprint,
@@ -468,11 +476,10 @@ function nextBlueprint(
       const issue = parsed.error.issues[0];
       return { pointer: `/${issue.path.join('/')}`, detail: issue.message };
     }
-    const issues = findBlueprintReferenceIssues(candidate);
-    return issues.length === 0 ? candidate : { pointer: `/${issues[0].where}`, detail: issues[0].detail };
+    return referenced(candidate);
   }
 
-  if (shape === null) return { ...blueprint, world };
+  if (shape === null) return referenced({ ...blueprint, world });
 
   let replaced = 0;
   const shapes = blueprint.shapes.map((program) => {
@@ -482,8 +489,14 @@ function nextBlueprint(
   });
 
   return replaced === 1
-    ? { ...blueprint, world, shapes }
+    ? referenced({ ...blueprint, world, shapes })
     : { pointer: '/shapes', detail: `the world has ${replaced} hero shapes named ${shape.shapeId}, so the new form has nowhere to land` };
+}
+
+/** Kandidát, jehož odkazy sedí – nebo první osiřelý odkaz s cestou k němu. */
+function referenced(candidate: WorldstreamBlueprint): WorldstreamBlueprint | { pointer: string; detail: string } {
+  const issues = findBlueprintReferenceIssues(candidate);
+  return issues.length === 0 ? candidate : { pointer: `/${issues[0].where}`, detail: issues[0].detail };
 }
 
 function revisionsOf(
