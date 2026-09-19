@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readPlannerEmission, buildIntentRequest } from '@/model/worldstream-intent';
-import { auditRequirements } from '../requirements';
+import { auditForbidden, auditRelations, auditRequirements, scoreSemantics } from '../requirements';
 import { readSceneSpec, type SceneSpec } from '../spec';
 
 const prompt = 'Čítárna s pěti posluchači u akvária. Posluchači hledí na akvárium. Bez stolů. Jeden modrý chronokvět je uvnitř akvária.';
@@ -88,5 +88,84 @@ describe('P20 semantic requirements: manually authored prompt expectations', () 
     spec.clarifications = [{ question: 'Má být chronokvět u posluchače, nebo uvnitř akvária?', affects: 'appearance', assumption: 'Použito explicitní uvnitř akvária.' }];
     expect(readSceneSpec(spec)).toEqual(spec);
     expect(buildIntentRequest(prompt).system).toContain('Only a result-changing ambiguity');
+  });
+});
+
+/**
+ * **Sémantické skóre nad orákulem (P22 T2) — pin na směr vztahu a zakázaný objekt.**
+ *
+ * Vztah přijatý bez ohledu na směr dá 100 % a nic neměří: „kočka pod stolem"
+ * a „stůl pod kočkou" by byly totéž. Zakázaný objekt, který se přehlédne,
+ * vypadá jako bohatší svět. Fixture: stůl se třemi hrnky a kočkou pod ním.
+ */
+describe('P22 semantic score: relations, forbidden objects and the combined score', () => {
+  const sentence = 'A table with three cups on it and a cat under the table.';
+  const cups = ['cup1', 'cup2', 'cup3'];
+  function tableFixture(): SceneSpec {
+    const groups = [
+      { id: 'table', quote: 'A table', ids: ['table'], role: 'hero' as const },
+      { id: 'cups', quote: 'three cups on it', ids: cups, role: 'prop' as const },
+      { id: 'cat', quote: 'a cat under the table', ids: ['cat'], role: 'hero' as const },
+    ];
+    return {
+      version: 1,
+      requirements: groups.map((g) => ({ id: g.id, description: g.quote, priority: 'main' as const, polarity: 'required' as const, count: g.ids.length, instanceIds: g.ids, provenance: requested(g.quote) })),
+      instances: groups.flatMap((g) => g.ids.map((stableId) => ({ stableId, requirementIds: [g.id], role: g.role, provenance: requested(g.quote), attributes: [], orientation: { description: 'upright', provenance: inferred } }))),
+      relations: [
+        ...cups.map((subjectId) => ({ subjectId, relation: 'on' as const, targetId: 'table', provenance: requested('three cups on it') })),
+        { subjectId: 'table', relation: 'on', targetId: 'cat', provenance: requested('a cat under the table') },
+      ],
+      clarifications: [],
+    };
+  }
+  const oracle = {
+    required: [{ quote: 'table', count: 1 }, { quote: 'cups', count: 3 }, { quote: 'cat', count: 1 }],
+    relations: [
+      { subject: 'cups', relation: 'on' as const, object: 'table' },
+      { subject: 'cat', relation: 'under' as const, object: 'table' },
+    ],
+  };
+
+  it('accepts a satisfied relation and fails one whose direction is reversed', () => {
+    const spec = tableFixture();
+    expect(typeof readSceneSpec(spec, undefined, sentence)).not.toBe('string');
+    expect(auditRelations(spec, [{ subject: 'cups', relation: 'on', object: 'table' }])).toEqual([]);
+    expect(auditRelations(spec, [{ subject: 'cat', relation: 'under', object: 'table' }])).toEqual([]);
+    expect(auditRelations(spec, [{ subject: 'table', relation: 'under', object: 'cat' }])).toEqual(['Missing relation: table under cat']);
+    expect(auditRelations(spec, [{ subject: 'table', relation: 'on', object: 'cups' }])).toEqual(['Missing relation: table on cups']);
+  });
+
+  it('fails a forbidden object that is present and passes one that is absent', () => {
+    const spec = tableFixture();
+    expect(auditForbidden(spec, ['sofa'])).toEqual([]);
+    expect(auditForbidden(spec, ['cat'])).toEqual(['Forbidden object present: cat']);
+  });
+
+  it('scores the fixture 1.0 and reports each component', () => {
+    const score = scoreSemantics(tableFixture(), oracle);
+    expect(score).toEqual({ presence: 1, counts: 1, relations: 1, forbidden: 1, score: 1, failures: [] });
+  });
+
+  it('scores an empty relations oracle as 1.0 for relations and a missing count as a counts failure', () => {
+    const spec = tableFixture();
+    spec.requirements[1].count = 2;
+    spec.requirements[1].instanceIds = ['cup1', 'cup2'];
+    spec.instances = spec.instances.filter((i) => i.stableId !== 'cup3');
+    spec.relations = spec.relations.filter((r) => r.subjectId !== 'cup3');
+    const score = scoreSemantics(spec, { required: oracle.required });
+    expect(score.relations).toBe(1);
+    expect(score.presence).toBe(1);
+    expect(score.counts).toBeCloseTo(2 / 3);
+    expect(score.failures).toEqual(['Expected 3 instances for: cups']);
+    expect(score.score).toBeCloseTo((1 + 2 / 3 + 1 + 1) / 4);
+  });
+
+  it('lowers the score for a forbidden object and a reversed relation', () => {
+    const spec = tableFixture();
+    spec.relations[3] = { subjectId: 'cat', relation: 'on', targetId: 'table', provenance: requested('a cat under the table') };
+    const score = scoreSemantics(spec, { ...oracle, forbidden: ['cat'] });
+    expect(score.relations).toBe(0.5);
+    expect(score.forbidden).toBe(0);
+    expect(score.failures).toEqual(['Missing relation: cat under table', 'Forbidden object present: cat']);
   });
 });

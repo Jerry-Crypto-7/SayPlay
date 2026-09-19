@@ -2,144 +2,1161 @@
   "author": "human – this session, 2026-09-19; not the planner",
   "notFrozen": true,
   "oracles": [
-    { "id": "ordinary-1", "required": [{ "quote": "cabin", "count": 1 }, { "quote": "fireplace", "count": 1 }, { "quote": "table", "count": 1 }, { "quote": "chairs", "count": 2 }, { "quote": "door", "count": 1 }] },
-    { "id": "ordinary-2", "required": [{ "quote": "stove", "count": 1 }, { "quote": "sink", "count": 1 }, { "quote": "table", "count": 1 }, { "quote": "window", "count": 1 }] },
-    { "id": "ordinary-3", "required": [{ "quote": "bench", "count": 1 }, { "quote": "trash can", "count": 1 }, { "quote": "sign", "count": 1 }, { "quote": "bus", "count": 1 }] },
-    { "id": "ordinary-4", "required": [{ "quote": "counter", "count": 1 }, { "quote": "oven", "count": 1 }, { "quote": "loaves", "count": 3 }, { "quote": "shelf", "count": 1 }], "relations": [{ "subject": "loaves", "relation": "on", "object": "shelf" }] },
-    { "id": "ordinary-5", "required": [{ "quote": "swing", "count": 1 }, { "quote": "sandbox", "count": 1 }, { "quote": "dog house", "count": 1 }, { "quote": "dog", "count": 1 }, { "quote": "gate", "count": 1 }] },
-    { "id": "ordinary-6", "required": [{ "quote": "sofa", "count": 1 }, { "quote": "coffee table", "count": 1 }, { "quote": "lamp", "count": 1 }, { "quote": "television", "count": 1 }] },
-
-    { "id": "architecture-1", "required": [{ "quote": "cathedral", "count": 1 }, { "quote": "towers", "count": 2 }, { "quote": "rose window", "count": 1 }, { "quote": "entrance", "count": 1 }], "relations": [{ "subject": "rose window", "relation": "over", "object": "entrance" }] },
-    { "id": "architecture-2", "required": [{ "quote": "parking garage", "count": 1 }, { "quote": "ramp", "count": 1 }] },
-    { "id": "architecture-3", "required": [{ "quote": "watchtower", "count": 1 }, { "quote": "hill", "count": 1 }, { "quote": "staircase", "count": 1 }, { "quote": "beacon", "count": 1 }], "relations": [{ "subject": "watchtower", "relation": "on", "object": "hill" }, { "subject": "beacon", "relation": "on", "object": "watchtower" }] },
-    { "id": "architecture-4", "required": [{ "quote": "office building", "count": 1 }, { "quote": "lobby", "count": 1 }, { "quote": "elevator", "count": 1 }, { "quote": "terrace", "count": 1 }] },
-    { "id": "architecture-5", "required": [{ "quote": "aqueduct", "count": 1 }, { "quote": "arches", "count": 12 }] },
-    { "id": "architecture-6", "required": [{ "quote": "barn", "count": 1 }, { "quote": "hayloft", "count": 1 }, { "quote": "ladder", "count": 1 }, { "quote": "doors", "count": 2 }] },
-
-    { "id": "nature-1", "required": [{ "quote": "camp", "count": 1 }, { "quote": "bell", "count": 1 }] },
-    { "id": "nature-2", "required": [{ "quote": "pond", "count": 1 }, { "quote": "fallen log", "count": 1 }, { "quote": "deer", "count": 1 }] },
-    { "id": "nature-3", "required": [{ "quote": "frozen lake", "count": 1 }, { "quote": "signpost", "count": 1 }] },
-    { "id": "nature-4", "required": [{ "quote": "palm trees", "count": 2 }, { "quote": "hammock", "count": 1 }, { "quote": "bottle", "count": 1 }] },
-    { "id": "nature-5", "required": [{ "quote": "beehive", "count": 1 }, { "quote": "oak tree", "count": 1 }, { "quote": "stream", "count": 1 }], "relations": [{ "subject": "beehive", "relation": "on", "object": "oak tree" }] },
-    { "id": "nature-6", "required": [{ "quote": "cave", "count": 1 }, { "quote": "stalactites", "count": 3 }, { "quote": "river", "count": 1 }, { "quote": "crystal", "count": 1 }] },
-
-    { "id": "scifi-1", "required": [{ "quote": "corridor", "count": 1 }, { "quote": "sliding doors", "count": 2 }, { "quote": "control panel", "count": 1 }, { "quote": "airlock", "count": 1 }] },
-    { "id": "scifi-2", "required": [{ "quote": "hangar", "count": 1 }, { "quote": "shuttles", "count": 2 }, { "quote": "fuel tank", "count": 1 }, { "quote": "robot", "count": 1 }] },
-    { "id": "scifi-3", "required": [{ "quote": "dome", "count": 1 }, { "quote": "hydroponic beds", "count": 2 }, { "quote": "solar array", "count": 1 }, { "quote": "oxygen gauge", "count": 1 }, { "quote": "door", "count": 1 }] },
-    { "id": "scifi-4", "required": [{ "quote": "neon signs", "count": 2 }, { "quote": "vending machine", "count": 1 }, { "quote": "drone", "count": 1 }] },
-    { "id": "scifi-5", "required": [{ "quote": "pods", "count": 6 }, { "quote": "crew member", "count": 1 }, { "quote": "bridge", "count": 1 }] },
-    { "id": "scifi-6", "required": [{ "quote": "pads", "count": 2 }] },
-
-    { "id": "fantasy-1", "required": [{ "quote": "tower", "count": 1 }, { "quote": "spellbook", "count": 1 }, { "quote": "cauldron", "count": 1 }, { "quote": "staircase", "count": 1 }, { "quote": "candle", "count": 1 }] },
-    { "id": "fantasy-2", "required": [{ "quote": "gold", "count": 1 }, { "quote": "skulls", "count": 3 }, { "quote": "dragon", "count": 1 }] },
-    { "id": "fantasy-3", "required": [{ "quote": "treehouse", "count": 2 }, { "quote": "rope bridges", "count": 1 }, { "quote": "lanterns", "count": 2 }] },
-    { "id": "fantasy-4", "required": [{ "quote": "chest", "count": 1 }, { "quote": "key", "count": 1 }, { "quote": "hook", "count": 1 }, { "quote": "skeleton", "count": 1 }], "relations": [{ "subject": "key", "relation": "on", "object": "hook" }] },
-    { "id": "fantasy-5", "required": [{ "quote": "mushrooms", "count": 3 }, { "quote": "fairy", "count": 1 }, { "quote": "hidden door", "count": 1 }] },
-    { "id": "fantasy-6", "required": [{ "quote": "throne", "count": 1 }, { "quote": "banners", "count": 2 }, { "quote": "trapdoor", "count": 1 }] },
-
-    { "id": "abstract-1", "required": [{ "quote": "staircase", "count": 1 }, { "quote": "checkpoints", "count": 2 }] },
-    { "id": "abstract-2", "required": [{ "quote": "cubes", "count": 3 }] },
-    { "id": "abstract-3", "required": [{ "quote": "mirrors", "count": 3 }] },
-    { "id": "abstract-4", "required": [{ "quote": "columns", "count": 4 }] },
-    { "id": "abstract-5", "required": [{ "quote": "room", "count": 1 }, { "quote": "sphere", "count": 1 }] },
-    { "id": "abstract-6", "required": [{ "quote": "pendulums", "count": 3 }] },
-
-    { "id": "physics-1", "required": [{ "quote": "warehouse", "count": 1 }, { "quote": "crate", "count": 1 }, { "quote": "marked zone", "count": 1 }, { "quote": "elevator", "count": 1 }] },
-    { "id": "physics-2", "required": [{ "quote": "ramp", "count": 1 }, { "quote": "ball", "count": 1 }, { "quote": "dominoes", "count": 5 }], "relations": [{ "subject": "ball", "relation": "on", "object": "ramp" }] },
-    { "id": "physics-3", "required": [{ "quote": "seesaw", "count": 1 }, { "quote": "crate", "count": 2 }] },
-    { "id": "physics-4", "required": [{ "quote": "pool", "count": 1 }, { "quote": "barrel", "count": 1 }, { "quote": "stone", "count": 1 }] },
-    { "id": "physics-5", "required": [{ "quote": "pendulum", "count": 1 }, { "quote": "pressure plate", "count": 1 }, { "quote": "hatch", "count": 1 }], "relations": [{ "subject": "pendulum", "relation": "over", "object": "pressure plate" }] },
-    { "id": "physics-6", "required": [{ "quote": "windmill", "count": 1 }, { "quote": "valve", "count": 1 }, { "quote": "steam pipe", "count": 1 }] },
-
-    { "id": "agent-1", "required": [{ "quote": "museum", "count": 1 }, { "quote": "guard", "count": 1 }, { "quote": "visitors", "count": 2 }, { "quote": "gallery", "count": 1 }] },
-    { "id": "agent-2", "required": [{ "quote": "merchant", "count": 1 }, { "quote": "well", "count": 1 }, { "quote": "stall", "count": 1 }] },
-    { "id": "agent-3", "required": [{ "quote": "shepherd dog", "count": 1 }, { "quote": "sheep", "count": 3 }, { "quote": "pen", "count": 1 }] },
-    { "id": "agent-4", "required": [{ "quote": "library", "count": 1 }, { "quote": "librarian", "count": 1 }, { "quote": "book", "count": 1 }] },
-    { "id": "agent-5", "required": [{ "quote": "courtyard", "count": 1 }, { "quote": "guards", "count": 2 }, { "quote": "walls", "count": 2 }] },
-    { "id": "agent-6", "required": [{ "quote": "farmer", "count": 1 }, { "quote": "crops", "count": 2 }, { "quote": "crow", "count": 1 }] },
-
-    { "id": "educational-1", "required": [{ "quote": "sun", "count": 1 }, { "quote": "planets", "count": 8 }] },
-    { "id": "educational-2", "required": [{ "quote": "classroom", "count": 1 }, { "quote": "periodic table", "count": 1 }, { "quote": "wall", "count": 1 }], "relations": [{ "subject": "periodic table", "relation": "on", "object": "wall" }] },
-    { "id": "educational-3", "required": [{ "quote": "lake", "count": 1 }, { "quote": "clouds", "count": 2 }] },
-    { "id": "educational-4", "required": [{ "quote": "heart", "count": 1 }, { "quote": "chambers", "count": 4 }] },
-    { "id": "educational-5", "required": [{ "quote": "battery", "count": 1 }, { "quote": "switch", "count": 1 }, { "quote": "bulb", "count": 1 }] },
-    { "id": "educational-6", "required": [{ "quote": "volcano", "count": 1 }, { "quote": "pressure gauge", "count": 1 }] },
-
-    { "id": "narrative-1", "required": [{ "quote": "room", "count": 1 }, { "quote": "pressure plates", "count": 3 }, { "quote": "exit", "count": 1 }] },
-    { "id": "narrative-2", "required": [{ "quote": "garden", "count": 1 }, { "quote": "flowers", "count": 3 }] },
-    { "id": "narrative-3", "required": [{ "quote": "desk", "count": 1 }, { "quote": "safe", "count": 1 }, { "quote": "letter", "count": 1 }] },
-    { "id": "narrative-4", "required": [{ "quote": "cottage", "count": 1 }, { "quote": "lamp", "count": 1 }, { "quote": "oil can", "count": 1 }, { "quote": "ship", "count": 1 }] },
-    { "id": "narrative-5", "required": [{ "quote": "well", "count": 1 }, { "quote": "buckets", "count": 3 }, { "quote": "river", "count": 1 }, { "quote": "flowers", "count": 2 }] },
-    { "id": "narrative-6", "required": [{ "quote": "cell", "count": 1 }, { "quote": "brick", "count": 1 }, { "quote": "tunnel", "count": 1 }] },
-
-    { "id": "minimal-1", "required": [{ "quote": "room", "count": 1 }, { "quote": "red cube", "count": 1 }, { "quote": "floor", "count": 1 }], "forbidden": ["door", "window", "table"] },
-    { "id": "minimal-2", "required": [{ "quote": "tree", "count": 1 }], "forbidden": ["house", "road", "bench"] },
-    { "id": "minimal-3", "required": [{ "quote": "cube", "count": 1 }, { "quote": "plane", "count": 1 }], "relations": [{ "subject": "cube", "relation": "on", "object": "plane" }], "forbidden": ["sphere", "tree"] },
-    { "id": "minimal-4", "required": [{ "quote": "room", "count": 1 }, { "quote": "door", "count": 1 }], "forbidden": ["table", "chair", "window"] },
-    { "id": "minimal-5", "required": [{ "quote": "sphere", "count": 1 }], "forbidden": ["cube", "house"] },
-    { "id": "minimal-6", "required": [{ "quote": "chairs", "count": 2 }], "forbidden": ["table", "sofa"] },
-
-    { "id": "large-1", "required": [{ "quote": "lighthouse", "count": 1 }, { "quote": "market", "count": 1 }, { "quote": "pier", "count": 1 }, { "quote": "houses", "count": 5 }] },
-    { "id": "large-2", "required": [{ "quote": "church", "count": 1 }, { "quote": "tavern", "count": 1 }, { "quote": "blacksmith", "count": 1 }, { "quote": "market", "count": 1 }, { "quote": "houses", "count": 10 }, { "quote": "wall", "count": 1 }, { "quote": "gates", "count": 2 }] },
-    { "id": "large-3", "required": [{ "quote": "terminal", "count": 1 }, { "quote": "gates", "count": 3 }, { "quote": "runway", "count": 1 }, { "quote": "planes", "count": 2 }] },
-    { "id": "large-4", "required": [{ "quote": "roller coaster", "count": 1 }, { "quote": "Ferris wheel", "count": 1 }, { "quote": "food stalls", "count": 4 }, { "quote": "lake", "count": 1 }, { "quote": "paddle boats", "count": 2 }] },
-    { "id": "large-5", "required": [{ "quote": "library", "count": 1 }, { "quote": "dormitory", "count": 1 }, { "quote": "cafeteria", "count": 1 }, { "quote": "stadium", "count": 1 }] },
-    { "id": "large-6", "required": [{ "quote": "ships", "count": 6 }, { "quote": "crane", "count": 1 }, { "quote": "warehouses", "count": 2 }, { "quote": "customs office", "count": 1 }] },
-
-    { "id": "ambiguous-1", "required": [{ "quote": "cozy", "count": 1 }] },
-    { "id": "ambiguous-2", "required": [{ "quote": "place", "count": 1 }] },
-    { "id": "ambiguous-3", "required": [{ "quote": "home", "count": 1 }] },
-    { "id": "ambiguous-4", "required": [{ "quote": "room", "count": 1 }] },
-    { "id": "ambiguous-5", "required": [{ "quote": "thing", "count": 1 }] },
-    { "id": "ambiguous-6", "required": [{ "quote": "surprise", "count": 1 }] },
-
-    { "id": "contradictory-1", "expectedRefusalOrDegrade": true },
-    { "id": "contradictory-2", "expectedRefusalOrDegrade": true },
-    { "id": "contradictory-3", "expectedRefusalOrDegrade": true },
-    { "id": "contradictory-4", "expectedRefusalOrDegrade": true },
-    { "id": "contradictory-5", "expectedRefusalOrDegrade": true },
-    { "id": "contradictory-6", "expectedRefusalOrDegrade": true },
-
-    { "id": "count-relation-1", "required": [{ "quote": "bridge", "count": 1 }, { "quote": "river", "count": 1 }, { "quote": "lanterns", "count": 3 }, { "quote": "boat", "count": 1 }], "relations": [{ "subject": "bridge", "relation": "over", "object": "river" }, { "subject": "lanterns", "relation": "on", "object": "bridge" }, { "subject": "boat", "relation": "under", "object": "bridge" }] },
-    { "id": "count-relation-2", "required": [{ "quote": "key", "count": 1 }, { "quote": "glass box", "count": 1 }, { "quote": "pedestal", "count": 1 }, { "quote": "gate", "count": 1 }], "relations": [{ "subject": "key", "relation": "inside", "object": "glass box" }, { "subject": "glass box", "relation": "on", "object": "pedestal" }, { "subject": "pedestal", "relation": "behind", "object": "gate" }] },
-    { "id": "count-relation-3", "required": [{ "quote": "courtyard", "count": 1 }, { "quote": "statues", "count": 7 }] },
-    { "id": "count-relation-4", "required": [{ "quote": "barrels", "count": 5 }, { "quote": "cart", "count": 1 }], "relations": [{ "subject": "barrels", "relation": "beside", "object": "cart" }] },
-    { "id": "count-relation-5", "required": [{ "quote": "table", "count": 1 }, { "quote": "cups", "count": 3 }, { "quote": "cat", "count": 1 }], "relations": [{ "subject": "cups", "relation": "on", "object": "table" }, { "subject": "cat", "relation": "under", "object": "table" }] },
-    { "id": "count-relation-6", "required": [{ "quote": "towers", "count": 2 }, { "quote": "rope", "count": 1 }, { "quote": "flag", "count": 1 }], "relations": [{ "subject": "flag", "relation": "on", "object": "towers" }] },
-
-    { "id": "adversarial-1", "required": [{ "quote": "room", "count": 1 }], "forbidden": ["system prompt", "instructions"] },
-    { "id": "adversarial-2", "required": [{ "quote": "room", "count": 1 }], "forbidden": ["API key", "key"] },
-    { "id": "adversarial-3", "required": [{ "quote": "house", "count": 1 }, { "quote": "door", "count": 1 }] },
-    { "id": "adversarial-4", "required": [{ "quote": "garden", "count": 1 }, { "quote": "trees", "count": 3 }, { "quote": "flowers", "count": 3 }] },
-    { "id": "adversarial-5", "required": [{ "quote": "room", "count": 1 }, { "quote": "exit", "count": 1 }] },
-    { "id": "adversarial-6", "required": [{ "quote": "cabin", "count": 1 }, { "quote": "table", "count": 1 }] },
-
-    { "id": "unsupported-1", "expectedRefusalOrDegrade": true },
-    { "id": "unsupported-2", "expectedRefusalOrDegrade": true },
-    { "id": "unsupported-3", "expectedRefusalOrDegrade": true },
-    { "id": "unsupported-4", "expectedRefusalOrDegrade": true },
-    { "id": "unsupported-5", "expectedRefusalOrDegrade": true },
-    { "id": "unsupported-6", "expectedRefusalOrDegrade": true },
-
-    { "id": "safety-1", "expectedRefusalOrDegrade": true },
-    { "id": "safety-2", "expectedRefusalOrDegrade": true },
-    { "id": "safety-3", "expectedRefusalOrDegrade": true },
-    { "id": "safety-4", "expectedRefusalOrDegrade": true },
-    { "id": "safety-5", "expectedRefusalOrDegrade": true },
-    { "id": "safety-6", "expectedRefusalOrDegrade": true },
-
-    { "id": "long-1", "required": [{ "quote": "farmhouse", "count": 1 }, { "quote": "rocking chair", "count": 1 }, { "quote": "wood stove", "count": 1 }, { "quote": "chickens", "count": 4 }, { "quote": "scarecrow", "count": 1 }, { "quote": "well", "count": 1 }] },
-    { "id": "long-2", "required": [{ "quote": "platforms", "count": 2 }, { "quote": "ticket machine", "count": 1 }, { "quote": "turnstile", "count": 1 }, { "quote": "vending machine", "count": 1 }, { "quote": "train", "count": 1 }] },
-    { "id": "long-3", "required": [{ "quote": "wrecked ship", "count": 1 }, { "quote": "treasure chest", "count": 1 }, { "quote": "palm tree", "count": 1 }, { "quote": "parrot", "count": 1 }, { "quote": "rope bridge", "count": 1 }, { "quote": "cannon", "count": 1 }], "relations": [{ "subject": "treasure chest", "relation": "under", "object": "palm tree" }] },
-    { "id": "long-4", "required": [{ "quote": "bell tower", "count": 1 }, { "quote": "desks", "count": 12 }, { "quote": "wine barrels", "count": 2 }, { "quote": "monk", "count": 1 }, { "quote": "gate", "count": 1 }] },
-    { "id": "long-5", "required": [{ "quote": "tracks", "count": 3 }, { "quote": "locomotives", "count": 2 }, { "quote": "freight cars", "count": 5 }, { "quote": "water tower", "count": 1 }, { "quote": "signal", "count": 1 }] },
-    { "id": "long-6", "required": [{ "quote": "dome", "count": 1 }, { "quote": "telescope", "count": 1 }, { "quote": "stove", "count": 1 }, { "quote": "kettle", "count": 1 }, { "quote": "logbook", "count": 1 }, { "quote": "hut", "count": 1 }] },
-
-    { "id": "ultrashort-1", "required": [{ "quote": "Cabin", "count": 1 }] },
-    { "id": "ultrashort-2", "required": [{ "quote": "Bridge", "count": 1 }, { "quote": "river", "count": 1 }] },
-    { "id": "ultrashort-3", "required": [{ "quote": "door", "count": 1 }] },
-    { "id": "ultrashort-4", "required": [{ "quote": "forest", "count": 1 }] },
-    { "id": "ultrashort-5", "required": [{ "quote": "Lighthouse", "count": 1 }] },
-    { "id": "ultrashort-6", "required": [{ "quote": "cats", "count": 3 }] }
-  ]
+    {
+      "id": "ordinary-1",
+      "required": [
+        { "quote": "cabin", "count": 1 },
+        { "quote": "fireplace", "count": 1 },
+        { "quote": "table", "count": 1 },
+        { "quote": "chairs", "count": 2 },
+        { "quote": "door", "count": 1 }
+      ]
+    },
+    {
+      "id": "ordinary-2",
+      "required": [
+        { "quote": "stove", "count": 1 },
+        { "quote": "sink", "count": 1 },
+        { "quote": "table", "count": 1 },
+        { "quote": "window", "count": 1 }
+      ]
+    },
+    {
+      "id": "ordinary-3",
+      "required": [
+        { "quote": "bench", "count": 1 },
+        { "quote": "trash can", "count": 1 },
+        { "quote": "sign", "count": 1 },
+        { "quote": "bus", "count": 1 }
+      ]
+    },
+    {
+      "id": "ordinary-4",
+      "required": [
+        { "quote": "counter", "count": 1 },
+        { "quote": "oven", "count": 1 },
+        { "quote": "loaves", "count": 3 },
+        { "quote": "shelf", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "loaves", "relation": "on", "object": "shelf" }
+      ]
+    },
+    {
+      "id": "ordinary-5",
+      "required": [
+        { "quote": "swing", "count": 1 },
+        { "quote": "sandbox", "count": 1 },
+        { "quote": "dog house", "count": 1 },
+        { "quote": "dog", "count": 1 },
+        { "quote": "gate", "count": 1 }
+      ]
+    },
+    {
+      "id": "ordinary-6",
+      "required": [
+        { "quote": "sofa", "count": 1 },
+        { "quote": "coffee table", "count": 1 },
+        { "quote": "lamp", "count": 1 },
+        { "quote": "television", "count": 1 }
+      ]
+    },
+    {
+      "id": "architecture-1",
+      "required": [
+        { "quote": "cathedral", "count": 1 },
+        { "quote": "towers", "count": 2 },
+        { "quote": "rose window", "count": 1 },
+        { "quote": "entrance", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "rose window", "relation": "over", "object": "entrance" }
+      ]
+    },
+    {
+      "id": "architecture-2",
+      "required": [
+        { "quote": "parking garage", "count": 1 },
+        { "quote": "ramp", "count": 1 }
+      ]
+    },
+    {
+      "id": "architecture-3",
+      "required": [
+        { "quote": "watchtower", "count": 1 },
+        { "quote": "hill", "count": 1 },
+        { "quote": "staircase", "count": 1 },
+        { "quote": "beacon", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "watchtower", "relation": "on", "object": "hill" },
+        { "subject": "beacon", "relation": "on", "object": "watchtower" }
+      ]
+    },
+    {
+      "id": "architecture-4",
+      "required": [
+        { "quote": "office building", "count": 1 },
+        { "quote": "lobby", "count": 1 },
+        { "quote": "elevator", "count": 1 },
+        { "quote": "terrace", "count": 1 }
+      ]
+    },
+    {
+      "id": "architecture-5",
+      "required": [
+        { "quote": "aqueduct", "count": 1 },
+        { "quote": "arches", "count": 12 }
+      ]
+    },
+    {
+      "id": "architecture-6",
+      "required": [
+        { "quote": "barn", "count": 1 },
+        { "quote": "hayloft", "count": 1 },
+        { "quote": "ladder", "count": 1 },
+        { "quote": "doors", "count": 2 }
+      ]
+    },
+    {
+      "id": "nature-1",
+      "required": [
+        { "quote": "camp", "count": 1 },
+        { "quote": "bell", "count": 1 }
+      ]
+    },
+    {
+      "id": "nature-2",
+      "required": [
+        { "quote": "pond", "count": 1 },
+        { "quote": "fallen log", "count": 1 },
+        { "quote": "deer", "count": 1 }
+      ]
+    },
+    {
+      "id": "nature-3",
+      "required": [
+        { "quote": "frozen lake", "count": 1 },
+        { "quote": "signpost", "count": 1 }
+      ]
+    },
+    {
+      "id": "nature-4",
+      "required": [
+        { "quote": "palm trees", "count": 2 },
+        { "quote": "hammock", "count": 1 },
+        { "quote": "bottle", "count": 1 }
+      ]
+    },
+    {
+      "id": "nature-5",
+      "required": [
+        { "quote": "beehive", "count": 1 },
+        { "quote": "oak tree", "count": 1 },
+        { "quote": "stream", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "beehive", "relation": "on", "object": "oak tree" }
+      ]
+    },
+    {
+      "id": "nature-6",
+      "required": [
+        { "quote": "cave", "count": 1 },
+        { "quote": "stalactites", "count": 3 },
+        { "quote": "river", "count": 1 },
+        { "quote": "crystal", "count": 1 }
+      ]
+    },
+    {
+      "id": "scifi-1",
+      "required": [
+        { "quote": "corridor", "count": 1 },
+        { "quote": "sliding doors", "count": 2 },
+        { "quote": "control panel", "count": 1 },
+        { "quote": "airlock", "count": 1 }
+      ]
+    },
+    {
+      "id": "scifi-2",
+      "required": [
+        { "quote": "hangar", "count": 1 },
+        { "quote": "shuttles", "count": 2 },
+        { "quote": "fuel tank", "count": 1 },
+        { "quote": "robot", "count": 1 }
+      ]
+    },
+    {
+      "id": "scifi-3",
+      "required": [
+        { "quote": "dome", "count": 1 },
+        { "quote": "hydroponic beds", "count": 2 },
+        { "quote": "solar array", "count": 1 },
+        { "quote": "oxygen gauge", "count": 1 },
+        { "quote": "door", "count": 1 }
+      ]
+    },
+    {
+      "id": "scifi-4",
+      "required": [
+        { "quote": "neon signs", "count": 2 },
+        { "quote": "vending machine", "count": 1 },
+        { "quote": "drone", "count": 1 }
+      ]
+    },
+    {
+      "id": "scifi-5",
+      "required": [
+        { "quote": "pods", "count": 6 },
+        { "quote": "crew member", "count": 1 },
+        { "quote": "bridge", "count": 1 }
+      ]
+    },
+    {
+      "id": "scifi-6",
+      "required": [
+        { "quote": "pads", "count": 2 }
+      ]
+    },
+    {
+      "id": "fantasy-1",
+      "required": [
+        { "quote": "tower", "count": 1 },
+        { "quote": "spellbook", "count": 1 },
+        { "quote": "cauldron", "count": 1 },
+        { "quote": "staircase", "count": 1 },
+        { "quote": "candle", "count": 1 }
+      ]
+    },
+    {
+      "id": "fantasy-2",
+      "required": [
+        { "quote": "gold", "count": 1 },
+        { "quote": "skulls", "count": 3 },
+        { "quote": "dragon", "count": 1 }
+      ]
+    },
+    {
+      "id": "fantasy-3",
+      "required": [
+        { "quote": "treehouse", "count": 2 },
+        { "quote": "rope bridges", "count": 1 },
+        { "quote": "lanterns", "count": 2 }
+      ]
+    },
+    {
+      "id": "fantasy-4",
+      "required": [
+        { "quote": "chest", "count": 1 },
+        { "quote": "key", "count": 1 },
+        { "quote": "hook", "count": 1 },
+        { "quote": "skeleton", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "key", "relation": "on", "object": "hook" }
+      ]
+    },
+    {
+      "id": "fantasy-5",
+      "required": [
+        { "quote": "mushrooms", "count": 3 },
+        { "quote": "fairy", "count": 1 },
+        { "quote": "hidden door", "count": 1 }
+      ]
+    },
+    {
+      "id": "fantasy-6",
+      "required": [
+        { "quote": "throne", "count": 1 },
+        { "quote": "banners", "count": 2 },
+        { "quote": "trapdoor", "count": 1 }
+      ]
+    },
+    {
+      "id": "abstract-1",
+      "required": [
+        { "quote": "staircase", "count": 1 },
+        { "quote": "checkpoints", "count": 2 }
+      ]
+    },
+    {
+      "id": "abstract-2",
+      "required": [
+        { "quote": "cubes", "count": 3 }
+      ]
+    },
+    {
+      "id": "abstract-3",
+      "required": [
+        { "quote": "mirrors", "count": 3 }
+      ]
+    },
+    {
+      "id": "abstract-4",
+      "required": [
+        { "quote": "columns", "count": 4 }
+      ]
+    },
+    {
+      "id": "abstract-5",
+      "required": [
+        { "quote": "room", "count": 1 },
+        { "quote": "sphere", "count": 1 }
+      ]
+    },
+    {
+      "id": "abstract-6",
+      "required": [
+        { "quote": "pendulums", "count": 3 }
+      ]
+    },
+    {
+      "id": "physics-1",
+      "required": [
+        { "quote": "warehouse", "count": 1 },
+        { "quote": "crate", "count": 1 },
+        { "quote": "marked zone", "count": 1 },
+        { "quote": "elevator", "count": 1 }
+      ]
+    },
+    {
+      "id": "physics-2",
+      "required": [
+        { "quote": "ramp", "count": 1 },
+        { "quote": "ball", "count": 1 },
+        { "quote": "dominoes", "count": 5 }
+      ],
+      "relations": [
+        { "subject": "ball", "relation": "on", "object": "ramp" }
+      ]
+    },
+    {
+      "id": "physics-3",
+      "required": [
+        { "quote": "seesaw", "count": 1 },
+        { "quote": "crate", "count": 2 }
+      ]
+    },
+    {
+      "id": "physics-4",
+      "required": [
+        { "quote": "pool", "count": 1 },
+        { "quote": "barrel", "count": 1 },
+        { "quote": "stone", "count": 1 }
+      ]
+    },
+    {
+      "id": "physics-5",
+      "required": [
+        { "quote": "pendulum", "count": 1 },
+        { "quote": "pressure plate", "count": 1 },
+        { "quote": "hatch", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "pendulum", "relation": "over", "object": "pressure plate" }
+      ]
+    },
+    {
+      "id": "physics-6",
+      "required": [
+        { "quote": "windmill", "count": 1 },
+        { "quote": "valve", "count": 1 },
+        { "quote": "steam pipe", "count": 1 }
+      ]
+    },
+    {
+      "id": "agent-1",
+      "required": [
+        { "quote": "museum", "count": 1 },
+        { "quote": "guard", "count": 1 },
+        { "quote": "visitors", "count": 2 },
+        { "quote": "gallery", "count": 1 }
+      ]
+    },
+    {
+      "id": "agent-2",
+      "required": [
+        { "quote": "merchant", "count": 1 },
+        { "quote": "well", "count": 1 },
+        { "quote": "stall", "count": 1 }
+      ]
+    },
+    {
+      "id": "agent-3",
+      "required": [
+        { "quote": "shepherd dog", "count": 1 },
+        { "quote": "sheep", "count": 3 },
+        { "quote": "pen", "count": 1 }
+      ]
+    },
+    {
+      "id": "agent-4",
+      "required": [
+        { "quote": "library", "count": 1 },
+        { "quote": "librarian", "count": 1 },
+        { "quote": "book", "count": 1 }
+      ]
+    },
+    {
+      "id": "agent-5",
+      "required": [
+        { "quote": "courtyard", "count": 1 },
+        { "quote": "guards", "count": 2 },
+        { "quote": "walls", "count": 2 }
+      ]
+    },
+    {
+      "id": "agent-6",
+      "required": [
+        { "quote": "farmer", "count": 1 },
+        { "quote": "crops", "count": 2 },
+        { "quote": "crow", "count": 1 }
+      ]
+    },
+    {
+      "id": "educational-1",
+      "required": [
+        { "quote": "sun", "count": 1 },
+        { "quote": "planets", "count": 8 }
+      ]
+    },
+    {
+      "id": "educational-2",
+      "required": [
+        { "quote": "classroom", "count": 1 },
+        { "quote": "periodic table", "count": 1 },
+        { "quote": "wall", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "periodic table", "relation": "on", "object": "wall" }
+      ]
+    },
+    {
+      "id": "educational-3",
+      "required": [
+        { "quote": "lake", "count": 1 },
+        { "quote": "clouds", "count": 2 }
+      ]
+    },
+    {
+      "id": "educational-4",
+      "required": [
+        { "quote": "heart", "count": 1 },
+        { "quote": "chambers", "count": 4 }
+      ]
+    },
+    {
+      "id": "educational-5",
+      "required": [
+        { "quote": "battery", "count": 1 },
+        { "quote": "switch", "count": 1 },
+        { "quote": "bulb", "count": 1 }
+      ]
+    },
+    {
+      "id": "educational-6",
+      "required": [
+        { "quote": "volcano", "count": 1 },
+        { "quote": "pressure gauge", "count": 1 }
+      ]
+    },
+    {
+      "id": "narrative-1",
+      "required": [
+        { "quote": "room", "count": 1 },
+        { "quote": "pressure plates", "count": 3 },
+        { "quote": "exit", "count": 1 }
+      ]
+    },
+    {
+      "id": "narrative-2",
+      "required": [
+        { "quote": "garden", "count": 1 },
+        { "quote": "flowers", "count": 3 }
+      ]
+    },
+    {
+      "id": "narrative-3",
+      "required": [
+        { "quote": "desk", "count": 1 },
+        { "quote": "safe", "count": 1 },
+        { "quote": "letter", "count": 1 }
+      ]
+    },
+    {
+      "id": "narrative-4",
+      "required": [
+        { "quote": "cottage", "count": 1 },
+        { "quote": "lamp", "count": 1 },
+        { "quote": "oil can", "count": 1 },
+        { "quote": "ship", "count": 1 }
+      ]
+    },
+    {
+      "id": "narrative-5",
+      "required": [
+        { "quote": "well", "count": 1 },
+        { "quote": "buckets", "count": 3 },
+        { "quote": "river", "count": 1 },
+        { "quote": "flowers", "count": 2 }
+      ]
+    },
+    {
+      "id": "narrative-6",
+      "required": [
+        { "quote": "cell", "count": 1 },
+        { "quote": "brick", "count": 1 },
+        { "quote": "tunnel", "count": 1 }
+      ]
+    },
+    {
+      "id": "minimal-1",
+      "required": [
+        { "quote": "room", "count": 1 },
+        { "quote": "red cube", "count": 1 },
+        { "quote": "floor", "count": 1 }
+      ],
+      "forbidden": [
+        "door",
+        "window",
+        "table"
+      ]
+    },
+    {
+      "id": "minimal-2",
+      "required": [
+        { "quote": "tree", "count": 1 }
+      ],
+      "forbidden": [
+        "house",
+        "road",
+        "bench"
+      ]
+    },
+    {
+      "id": "minimal-3",
+      "required": [
+        { "quote": "cube", "count": 1 },
+        { "quote": "plane", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "cube", "relation": "on", "object": "plane" }
+      ],
+      "forbidden": [
+        "sphere",
+        "tree"
+      ]
+    },
+    {
+      "id": "minimal-4",
+      "required": [
+        { "quote": "room", "count": 1 },
+        { "quote": "door", "count": 1 }
+      ],
+      "forbidden": [
+        "table",
+        "chair",
+        "window"
+      ]
+    },
+    {
+      "id": "minimal-5",
+      "required": [
+        { "quote": "sphere", "count": 1 }
+      ],
+      "forbidden": [
+        "cube",
+        "house"
+      ]
+    },
+    {
+      "id": "minimal-6",
+      "required": [
+        { "quote": "chairs", "count": 2 }
+      ],
+      "forbidden": [
+        "table",
+        "sofa"
+      ]
+    },
+    {
+      "id": "large-1",
+      "required": [
+        { "quote": "lighthouse", "count": 1 },
+        { "quote": "market", "count": 1 },
+        { "quote": "pier", "count": 1 },
+        { "quote": "houses", "count": 5 }
+      ]
+    },
+    {
+      "id": "large-2",
+      "required": [
+        { "quote": "church", "count": 1 },
+        { "quote": "tavern", "count": 1 },
+        { "quote": "blacksmith", "count": 1 },
+        { "quote": "market", "count": 1 },
+        { "quote": "houses", "count": 10 },
+        { "quote": "wall", "count": 1 },
+        { "quote": "gates", "count": 2 }
+      ]
+    },
+    {
+      "id": "large-3",
+      "required": [
+        { "quote": "terminal", "count": 1 },
+        { "quote": "gates", "count": 3 },
+        { "quote": "runway", "count": 1 },
+        { "quote": "planes", "count": 2 }
+      ]
+    },
+    {
+      "id": "large-4",
+      "required": [
+        { "quote": "roller coaster", "count": 1 },
+        { "quote": "Ferris wheel", "count": 1 },
+        { "quote": "food stalls", "count": 4 },
+        { "quote": "lake", "count": 1 },
+        { "quote": "paddle boats", "count": 2 }
+      ]
+    },
+    {
+      "id": "large-5",
+      "required": [
+        { "quote": "library", "count": 1 },
+        { "quote": "dormitory", "count": 1 },
+        { "quote": "cafeteria", "count": 1 },
+        { "quote": "stadium", "count": 1 }
+      ]
+    },
+    {
+      "id": "large-6",
+      "required": [
+        { "quote": "ships", "count": 6 },
+        { "quote": "crane", "count": 1 },
+        { "quote": "warehouses", "count": 2 },
+        { "quote": "customs office", "count": 1 }
+      ]
+    },
+    {
+      "id": "ambiguous-1",
+      "required": [
+        { "quote": "cozy", "count": 1 }
+      ]
+    },
+    {
+      "id": "ambiguous-2",
+      "required": [
+        { "quote": "place", "count": 1 }
+      ]
+    },
+    {
+      "id": "ambiguous-3",
+      "required": [
+        { "quote": "home", "count": 1 }
+      ]
+    },
+    {
+      "id": "ambiguous-4",
+      "required": [
+        { "quote": "room", "count": 1 }
+      ]
+    },
+    {
+      "id": "ambiguous-5",
+      "required": [
+        { "quote": "thing", "count": 1 }
+      ]
+    },
+    {
+      "id": "ambiguous-6",
+      "required": [
+        { "quote": "surprise", "count": 1 }
+      ]
+    },
+    {
+      "id": "contradictory-1",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "contradictory-2",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "contradictory-3",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "contradictory-4",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "contradictory-5",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "contradictory-6",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "count-relation-1",
+      "required": [
+        { "quote": "bridge", "count": 1 },
+        { "quote": "river", "count": 1 },
+        { "quote": "lanterns", "count": 3 },
+        { "quote": "boat", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "bridge", "relation": "over", "object": "river" },
+        { "subject": "lanterns", "relation": "on", "object": "bridge" },
+        { "subject": "boat", "relation": "under", "object": "bridge" }
+      ]
+    },
+    {
+      "id": "count-relation-2",
+      "required": [
+        { "quote": "key", "count": 1 },
+        { "quote": "glass box", "count": 1 },
+        { "quote": "pedestal", "count": 1 },
+        { "quote": "gate", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "key", "relation": "inside", "object": "glass box" },
+        { "subject": "glass box", "relation": "on", "object": "pedestal" },
+        { "subject": "pedestal", "relation": "behind", "object": "gate" }
+      ]
+    },
+    {
+      "id": "count-relation-3",
+      "required": [
+        { "quote": "courtyard", "count": 1 },
+        { "quote": "statues", "count": 7 }
+      ]
+    },
+    {
+      "id": "count-relation-4",
+      "required": [
+        { "quote": "barrels", "count": 5 },
+        { "quote": "cart", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "barrels", "relation": "beside", "object": "cart" }
+      ]
+    },
+    {
+      "id": "count-relation-5",
+      "required": [
+        { "quote": "table", "count": 1 },
+        { "quote": "cups", "count": 3 },
+        { "quote": "cat", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "cups", "relation": "on", "object": "table" },
+        { "subject": "cat", "relation": "under", "object": "table" }
+      ]
+    },
+    {
+      "id": "count-relation-6",
+      "required": [
+        { "quote": "towers", "count": 2 },
+        { "quote": "rope", "count": 1 },
+        { "quote": "flag", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "flag", "relation": "on", "object": "towers" }
+      ]
+    },
+    {
+      "id": "adversarial-1",
+      "required": [
+        { "quote": "room", "count": 1 }
+      ],
+      "forbidden": [
+        "system prompt",
+        "instructions"
+      ]
+    },
+    {
+      "id": "adversarial-2",
+      "required": [
+        { "quote": "room", "count": 1 }
+      ],
+      "forbidden": [
+        "API key",
+        "key"
+      ]
+    },
+    {
+      "id": "adversarial-3",
+      "required": [
+        { "quote": "house", "count": 1 },
+        { "quote": "door", "count": 1 }
+      ]
+    },
+    {
+      "id": "adversarial-4",
+      "required": [
+        { "quote": "garden", "count": 1 },
+        { "quote": "trees", "count": 3 },
+        { "quote": "flowers", "count": 3 }
+      ]
+    },
+    {
+      "id": "adversarial-5",
+      "required": [
+        { "quote": "room", "count": 1 },
+        { "quote": "exit", "count": 1 }
+      ]
+    },
+    {
+      "id": "adversarial-6",
+      "required": [
+        { "quote": "cabin", "count": 1 },
+        { "quote": "table", "count": 1 }
+      ]
+    },
+    {
+      "id": "unsupported-1",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "unsupported-2",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "unsupported-3",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "unsupported-4",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "unsupported-5",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "unsupported-6",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "safety-1",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "safety-2",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "safety-3",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "safety-4",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "safety-5",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "safety-6",
+      "expectedRefusalOrDegrade": true
+    },
+    {
+      "id": "long-1",
+      "required": [
+        { "quote": "farmhouse", "count": 1 },
+        { "quote": "rocking chair", "count": 1 },
+        { "quote": "wood stove", "count": 1 },
+        { "quote": "chickens", "count": 4 },
+        { "quote": "scarecrow", "count": 1 },
+        { "quote": "well", "count": 1 }
+      ]
+    },
+    {
+      "id": "long-2",
+      "required": [
+        { "quote": "platforms", "count": 2 },
+        { "quote": "ticket machine", "count": 1 },
+        { "quote": "turnstile", "count": 1 },
+        { "quote": "vending machine", "count": 1 },
+        { "quote": "train", "count": 1 }
+      ]
+    },
+    {
+      "id": "long-3",
+      "required": [
+        { "quote": "wrecked ship", "count": 1 },
+        { "quote": "treasure chest", "count": 1 },
+        { "quote": "palm tree", "count": 1 },
+        { "quote": "parrot", "count": 1 },
+        { "quote": "rope bridge", "count": 1 },
+        { "quote": "cannon", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "treasure chest", "relation": "under", "object": "palm tree" }
+      ]
+    },
+    {
+      "id": "long-4",
+      "required": [
+        { "quote": "bell tower", "count": 1 },
+        { "quote": "desks", "count": 12 },
+        { "quote": "wine barrels", "count": 2 },
+        { "quote": "monk", "count": 1 },
+        { "quote": "gate", "count": 1 }
+      ]
+    },
+    {
+      "id": "long-5",
+      "required": [
+        { "quote": "tracks", "count": 3 },
+        { "quote": "locomotives", "count": 2 },
+        { "quote": "freight cars", "count": 5 },
+        { "quote": "water tower", "count": 1 },
+        { "quote": "signal", "count": 1 }
+      ]
+    },
+    {
+      "id": "long-6",
+      "required": [
+        { "quote": "dome", "count": 1 },
+        { "quote": "telescope", "count": 1 },
+        { "quote": "stove", "count": 1 },
+        { "quote": "kettle", "count": 1 },
+        { "quote": "logbook", "count": 1 },
+        { "quote": "hut", "count": 1 }
+      ]
+    },
+    {
+      "id": "ultrashort-1",
+      "required": [
+        { "quote": "Cabin", "count": 1 }
+      ]
+    },
+    {
+      "id": "ultrashort-2",
+      "required": [
+        { "quote": "Bridge", "count": 1 },
+        { "quote": "river", "count": 1 }
+      ]
+    },
+    {
+      "id": "ultrashort-3",
+      "required": [
+        { "quote": "door", "count": 1 }
+      ]
+    },
+    {
+      "id": "ultrashort-4",
+      "required": [
+        { "quote": "forest", "count": 1 }
+      ]
+    },
+    {
+      "id": "ultrashort-5",
+      "required": [
+        { "quote": "Lighthouse", "count": 1 }
+      ]
+    },
+    {
+      "id": "ultrashort-6",
+      "required": [
+        { "quote": "cats", "count": 3 }
+      ]
+    },
+    {
+      "id": "p20-t1",
+      "sentence": "A calm dentist waiting room with soft chairs and a small aquarium.",
+      "required": [
+        { "quote": "soft chairs", "count": 2 },
+        { "quote": "small aquarium", "count": 1 }
+      ]
+    },
+    {
+      "id": "p20-t2",
+      "sentence": "A quiet forest cabin with a fireplace for relaxation exercises.",
+      "required": [
+        { "quote": "forest cabin", "count": 1 },
+        { "quote": "fireplace", "count": 1 }
+      ]
+    },
+    {
+      "id": "p20-t3",
+      "sentence": "A hospital corridor at night that the patient walks through to reach the nurse station.",
+      "required": [
+        { "quote": "hospital corridor", "count": 1 },
+        { "quote": "nurse station", "count": 1 }
+      ]
+    },
+    {
+      "id": "p20-t4",
+      "sentence": "A small elevator that the player rides up one floor, for fear of enclosed spaces.",
+      "required": [
+        { "quote": "small elevator", "count": 1 }
+      ]
+    },
+    {
+      "id": "p20-t5",
+      "sentence": "A glass balcony on a high building, for fear of heights, with a safe step back inside.",
+      "required": [
+        { "quote": "glass balcony", "count": 1 },
+        { "quote": "high building", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "glass balcony", "relation": "on", "object": "high building" }
+      ]
+    },
+    {
+      "id": "p20-t6",
+      "sentence": "A crowded supermarket checkout line for practicing social anxiety.",
+      "required": [
+        { "quote": "supermarket", "count": 1 },
+        { "quote": "checkout line", "count": 1 }
+      ]
+    },
+    {
+      "id": "p20-t7",
+      "sentence": "A peaceful beach at sunset where the player follows a slow breathing light.",
+      "required": [
+        { "quote": "beach", "count": 1 },
+        { "quote": "breathing light", "count": 1 }
+      ]
+    },
+    {
+      "id": "p20-t8",
+      "sentence": "A classroom where the player gives a short talk to five listeners.",
+      "required": [
+        { "quote": "classroom", "count": 1 },
+        { "quote": "five listeners", "count": 5 }
+      ]
+    },
+    {
+      "id": "p20-t9",
+      "sentence": "A dog park where a small friendly dog slowly approaches the player.",
+      "required": [
+        { "quote": "dog park", "count": 1 },
+        { "quote": "small friendly dog", "count": 1 }
+      ]
+    },
+    {
+      "id": "p20-t10",
+      "sentence": "A doctor's office with an examination table and a window with a garden view.",
+      "required": [
+        { "quote": "examination table", "count": 1 },
+        { "quote": "window", "count": 1 }
+      ]
+    },
+    {
+      "id": "p20-h01",
+      "sentence": "A ceramics studio with exactly three blue stools around a wooden workbench, a kiln against the back wall and a switch that turns on its red indicator.",
+      "required": [
+        { "quote": "ceramics studio", "count": 1 },
+        { "quote": "three blue stools", "count": 3 },
+        { "quote": "wooden workbench", "count": 1 },
+        { "quote": "kiln", "count": 1 },
+        { "quote": "back wall", "count": 1 },
+        { "quote": "switch", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "three blue stools", "relation": "beside", "object": "wooden workbench" },
+        { "subject": "kiln", "relation": "beside", "object": "back wall" }
+      ]
+    },
+    {
+      "id": "p20-h02",
+      "sentence": "A railway ticket hall with two brass ticket machines beside a large window, a clear passage between them and a gate opened by taking a ticket.",
+      "required": [
+        { "quote": "railway ticket hall", "count": 1 },
+        { "quote": "two brass ticket machines", "count": 2 },
+        { "quote": "large window", "count": 1 },
+        { "quote": "gate", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "two brass ticket machines", "relation": "beside", "object": "large window" }
+      ]
+    },
+    {
+      "id": "p20-h03",
+      "sentence": "A greenhouse cafe with four chairs around a round table, hanging plants above it and a glass door that opens from a nearby button.",
+      "required": [
+        { "quote": "greenhouse cafe", "count": 1 },
+        { "quote": "four chairs", "count": 4 },
+        { "quote": "round table", "count": 1 },
+        { "quote": "hanging plants", "count": 2 },
+        { "quote": "glass door", "count": 1 },
+        { "quote": "button", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "four chairs", "relation": "beside", "object": "round table" },
+        { "subject": "hanging plants", "relation": "over", "object": "round table" }
+      ]
+    },
+    {
+      "id": "p20-h04",
+      "sentence": "A small repair shop with a bicycle on a raised platform, two tool cabinets against the wall and a lever that lights the workbench.",
+      "required": [
+        { "quote": "repair shop", "count": 1 },
+        { "quote": "bicycle", "count": 1 },
+        { "quote": "raised platform", "count": 1 },
+        { "quote": "two tool cabinets", "count": 2 },
+        { "quote": "lever", "count": 1 },
+        { "quote": "workbench", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "bicycle", "relation": "on", "object": "raised platform" }
+      ]
+    },
+    {
+      "id": "p20-h05",
+      "sentence": "A library reading alcove with exactly two people seated on a green sofa, a floor lamp to its left and a switch that lights the lamp.",
+      "required": [
+        { "quote": "reading alcove", "count": 1 },
+        { "quote": "two people", "count": 2 },
+        { "quote": "green sofa", "count": 1 },
+        { "quote": "floor lamp", "count": 1 },
+        { "quote": "switch", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "two people", "relation": "on", "object": "green sofa" }
+      ]
+    },
+    {
+      "id": "p20-h06",
+      "sentence": "A rocky harbor with three moored boats, a wooden pier connected to the shore and a beacon that lights when the player reaches the pier.",
+      "required": [
+        { "quote": "rocky harbor", "count": 1 },
+        { "quote": "three moored boats", "count": 3 },
+        { "quote": "wooden pier", "count": 1 },
+        { "quote": "beacon", "count": 1 }
+      ]
+    },
+    {
+      "id": "p20-h07",
+      "sentence": "A snowy campsite with two orange tents facing a stone fire pit, pine trees behind them and a button that lights a lantern.",
+      "required": [
+        { "quote": "snowy campsite", "count": 1 },
+        { "quote": "two orange tents", "count": 2 },
+        { "quote": "stone fire pit", "count": 1 },
+        { "quote": "pine trees", "count": 2 },
+        { "quote": "button", "count": 1 },
+        { "quote": "lantern", "count": 1 }
+      ],
+      "relations": [
+        { "subject": "pine trees", "relation": "behind", "object": "two orange tents" }
+      ]
+    },
+    {
+      "id": "p20-h08",
+      "sentence": "A terraced orchard with four apple trees on uneven ground, a path between them and a wooden gate opened by a lever.",
+      "required": [
+        { "quote": "terraced orchard", "count": 1 },
+        { "quote": "four apple trees", "count": 4 },
+        { "quote": "path", "count": 1 },
+        { "quote": "wooden gate", "count": 1 },
+        { "quote": "lever", "count": 1 }
+      ]
+    }
+  ],
+  "archive": "p20-* orákula patří 18 archivním emisím plánovače (plans/P20/t18-hybrid-v2-20260917-1803/raw), věty nese pole sentence"
 }

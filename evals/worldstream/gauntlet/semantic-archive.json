@@ -1,0 +1,272 @@
+{
+  "source": "plans/P20/t18-hybrid-v2-20260917-1803/raw/*-planner.json (2026-09-17 archive)",
+  "oracles": "evals/worldstream/gauntlet/oracles.json (p20-*, human-written 2026-09-19)",
+  "scorer": "src/scene/requirements.ts scoreSemantics() – four equally weighted components",
+  "cases": 18,
+  "readable": 18,
+  "medianScore": 1,
+  "medianComponents": {
+    "presence": 1,
+    "counts": 1,
+    "relations": 1,
+    "forbidden": 1
+  },
+  "failuresByKind": {
+    "presence": 0,
+    "counts": 7,
+    "relations": 3,
+    "forbidden": 0
+  },
+  "perCase": [
+    {
+      "id": "p20-t1",
+      "sentence": "A calm dentist waiting room with soft chairs and a small aquarium.",
+      "readable": true,
+      "score": 1,
+      "components": {
+        "presence": 1,
+        "counts": 1,
+        "relations": 1,
+        "forbidden": 1
+      },
+      "failures": []
+    },
+    {
+      "id": "p20-t2",
+      "sentence": "A quiet forest cabin with a fireplace for relaxation exercises.",
+      "readable": true,
+      "score": 1,
+      "components": {
+        "presence": 1,
+        "counts": 1,
+        "relations": 1,
+        "forbidden": 1
+      },
+      "failures": []
+    },
+    {
+      "id": "p20-t3",
+      "sentence": "A hospital corridor at night that the patient walks through to reach the nurse station.",
+      "readable": true,
+      "score": 1,
+      "components": {
+        "presence": 1,
+        "counts": 1,
+        "relations": 1,
+        "forbidden": 1
+      },
+      "failures": []
+    },
+    {
+      "id": "p20-t4",
+      "sentence": "A small elevator that the player rides up one floor, for fear of enclosed spaces.",
+      "readable": true,
+      "score": 1,
+      "components": {
+        "presence": 1,
+        "counts": 1,
+        "relations": 1,
+        "forbidden": 1
+      },
+      "failures": []
+    },
+    {
+      "id": "p20-t5",
+      "sentence": "A glass balcony on a high building, for fear of heights, with a safe step back inside.",
+      "readable": true,
+      "score": 0.75,
+      "components": {
+        "presence": 1,
+        "counts": 1,
+        "relations": 0,
+        "forbidden": 1
+      },
+      "failures": [
+        "Missing relation: glass balcony on high building"
+      ]
+    },
+    {
+      "id": "p20-t6",
+      "sentence": "A crowded supermarket checkout line for practicing social anxiety.",
+      "readable": true,
+      "score": 1,
+      "components": {
+        "presence": 1,
+        "counts": 1,
+        "relations": 1,
+        "forbidden": 1
+      },
+      "failures": []
+    },
+    {
+      "id": "p20-t7",
+      "sentence": "A peaceful beach at sunset where the player follows a slow breathing light.",
+      "readable": true,
+      "score": 1,
+      "components": {
+        "presence": 1,
+        "counts": 1,
+        "relations": 1,
+        "forbidden": 1
+      },
+      "failures": []
+    },
+    {
+      "id": "p20-t8",
+      "sentence": "A classroom where the player gives a short talk to five listeners.",
+      "readable": true,
+      "score": 1,
+      "components": {
+        "presence": 1,
+        "counts": 1,
+        "relations": 1,
+        "forbidden": 1
+      },
+      "failures": []
+    },
+    {
+      "id": "p20-t9",
+      "sentence": "A dog park where a small friendly dog slowly approaches the player.",
+      "readable": true,
+      "score": 1,
+      "components": {
+        "presence": 1,
+        "counts": 1,
+        "relations": 1,
+        "forbidden": 1
+      },
+      "failures": []
+    },
+    {
+      "id": "p20-t10",
+      "sentence": "A doctor's office with an examination table and a window with a garden view.",
+      "readable": true,
+      "score": 1,
+      "components": {
+        "presence": 1,
+        "counts": 1,
+        "relations": 1,
+        "forbidden": 1
+      },
+      "failures": []
+    },
+    {
+      "id": "p20-h01",
+      "sentence": "A ceramics studio with exactly three blue stools around a wooden workbench, a kiln against the back wall and a switch that turns on its red indicator.",
+      "readable": true,
+      "score": 1,
+      "components": {
+        "presence": 1,
+        "counts": 1,
+        "relations": 1,
+        "forbidden": 1
+      },
+      "failures": []
+    },
+    {
+      "id": "p20-h02",
+      "sentence": "A railway ticket hall with two brass ticket machines beside a large window, a clear passage between them and a gate opened by taking a ticket.",
+      "readable": true,
+      "score": 1,
+      "components": {
+        "presence": 1,
+        "counts": 1,
+        "relations": 1,
+        "forbidden": 1
+      },
+      "failures": []
+    },
+    {
+      "id": "p20-h03",
+      "sentence": "A greenhouse cafe with four chairs around a round table, hanging plants above it and a glass door that opens from a nearby button.",
+      "readable": true,
+      "score": 0.875,
+      "components": {
+        "presence": 1,
+        "counts": 1,
+        "relations": 0.5,
+        "forbidden": 1
+      },
+      "failures": [
+        "Missing relation: hanging plants over round table"
+      ]
+    },
+    {
+      "id": "p20-h04",
+      "sentence": "A small repair shop with a bicycle on a raised platform, two tool cabinets against the wall and a lever that lights the workbench.",
+      "readable": true,
+      "score": 0.917,
+      "components": {
+        "presence": 1,
+        "counts": 0.667,
+        "relations": 1,
+        "forbidden": 1
+      },
+      "failures": [
+        "Expected 1 instances for: lever",
+        "Expected 1 instances for: workbench"
+      ]
+    },
+    {
+      "id": "p20-h05",
+      "sentence": "A library reading alcove with exactly two people seated on a green sofa, a floor lamp to its left and a switch that lights the lamp.",
+      "readable": true,
+      "score": 1,
+      "components": {
+        "presence": 1,
+        "counts": 1,
+        "relations": 1,
+        "forbidden": 1
+      },
+      "failures": []
+    },
+    {
+      "id": "p20-h06",
+      "sentence": "A rocky harbor with three moored boats, a wooden pier connected to the shore and a beacon that lights when the player reaches the pier.",
+      "readable": true,
+      "score": 0.938,
+      "components": {
+        "presence": 1,
+        "counts": 0.75,
+        "relations": 1,
+        "forbidden": 1
+      },
+      "failures": [
+        "Expected 1 instances for: rocky harbor"
+      ]
+    },
+    {
+      "id": "p20-h07",
+      "sentence": "A snowy campsite with two orange tents facing a stone fire pit, pine trees behind them and a button that lights a lantern.",
+      "readable": true,
+      "score": 0.667,
+      "components": {
+        "presence": 1,
+        "counts": 0.667,
+        "relations": 0,
+        "forbidden": 1
+      },
+      "failures": [
+        "Expected 1 instances for: button",
+        "Expected 1 instances for: lantern",
+        "Missing relation: pine trees behind two orange tents"
+      ]
+    },
+    {
+      "id": "p20-h08",
+      "sentence": "A terraced orchard with four apple trees on uneven ground, a path between them and a wooden gate opened by a lever.",
+      "readable": true,
+      "score": 0.9,
+      "components": {
+        "presence": 1,
+        "counts": 0.6,
+        "relations": 1,
+        "forbidden": 1
+      },
+      "failures": [
+        "Expected 1 instances for: wooden gate",
+        "Expected 1 instances for: lever"
+      ]
+    }
+  ]
+}
