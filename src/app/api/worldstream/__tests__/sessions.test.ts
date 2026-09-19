@@ -269,9 +269,13 @@ describe('založení relace', () => {
     expect(sessionId).toMatch(/[0-9a-f-]{36}/);
     expect(response.headers.get('x-worldstream-authored')).toBe('exact');
 
-    const frames = await readFrames(response, 4);
+    // Pět rámců, ne čtyři: od P22 T4 (`71be912`) jde hned za `session.accepted`
+    // hmotový náhled ze slov věty (`cathedral` je ve slovníku
+    // `word-massing.ts`), synchronně, ještě před prvním voláním modelu.
+    const frames = await readFrames(response, 5);
     expect(frames.map((frame) => frame.type)).toEqual([
       'session.accepted',
+      'visual.preview',
       'intent.ready',
       'blueprint.ready',
       'world.ready',
@@ -620,14 +624,20 @@ describe('proud relace', () => {
     // Proud koncové relace se zavře sám, takže se dá dočíst do konce.
     const frames = await readFrames(await events(stored.session.sessionId));
 
+    // **Žebřík relace `generated()` má od P22 T4 (`71be912`) šest příček, ne
+    // pět:** věta fixtury nese `mast`, takže `runGeneration` vydá hned za
+    // `session.accepted` hmotový náhled ze slov (`visual.preview`, sequence 2)
+    // a všechno za ním se posunulo o jedna. Kurzory `?since=` níž počítají
+    // s tímhle žebříkem.
     expect(frames.map((frame) => frame.type)).toEqual([
       'session.accepted',
+      'visual.preview',
       'intent.ready',
       'blueprint.ready',
       'world.ready',
       'session.failed',
     ]);
-    expect(frames.map((frame) => frame.sequence)).toEqual([1, 2, 3, 4, 5]);
+    expect(frames.map((frame) => frame.sequence)).toEqual([1, 2, 3, 4, 5, 6]);
     expect(new Set(frames.map((frame) => frame.sessionId))).toEqual(
       new Set([stored.session.sessionId]),
     );
@@ -645,8 +655,10 @@ describe('proud relace', () => {
     stored.session.fail('done for the test');
     const frames = await readFrames(await events(stored.session.sessionId, '?since=3'));
 
-    expect(frames.map((frame) => frame.type)).toEqual(['world.ready', 'session.failed']);
-    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5]);
+    // Kurzor 3 je od P22 T4 (`71be912`) `intent.ready`, ne `blueprint.ready`
+    // (náhled ze slov zabral sequence 2), takže za ním zbývají tři rámce.
+    expect(frames.map((frame) => frame.type)).toEqual(['blueprint.ready', 'world.ready', 'session.failed']);
+    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5, 6]);
   });
 
   it('`Last-Event-ID` dělá totéž, protože ho posílá prohlížeč sám', async () => {
@@ -656,7 +668,9 @@ describe('proud relace', () => {
       await events(stored.session.sessionId, '', { 'last-event-id': '3' }),
     );
 
-    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5]);
+    // Za kurzorem 3 jsou tři rámce, ne dva: P22 T4 (`71be912`) vsunul náhled
+    // ze slov na sequence 2 a konec žebříku je 6.
+    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5, 6]);
   });
 
   it('výslovný `?since=` přebije hlavičku od prohlížeče', async () => {
@@ -666,7 +680,9 @@ describe('proud relace', () => {
       await events(stored.session.sessionId, '?since=4', { 'last-event-id': '1' }),
     );
 
-    expect(frames.map((frame) => frame.sequence)).toEqual([5]);
+    // Dotaz vyhrál, když za kurzorem 4 přijde jen zbytek žebříku — od P22 T4
+    // (`71be912`) jsou to dva rámce (`world.ready`, `session.failed`), ne jeden.
+    expect(frames.map((frame) => frame.sequence)).toEqual([5, 6]);
   });
 
   it('`?since=` bez hodnoty neumlčí hlavičku a nepřehraje relaci od nuly', async () => {
@@ -680,7 +696,9 @@ describe('proud relace', () => {
       await events(stored.session.sessionId, '?since=', { 'last-event-id': '3' }),
     );
 
-    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5]);
+    // Hlavička platí, když za kurzorem 3 přijde zbytek žebříku — od P22 T4
+    // (`71be912`) tři rámce, protože náhled ze slov zabral sequence 2.
+    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5, 6]);
   });
 
   it('opakovaný `?since=` navazuje na první použitelný kurzor, ne na nulu', async () => {
@@ -693,7 +711,9 @@ describe('proud relace', () => {
     stored.session.fail('done for the test');
     const frames = await readFrames(await events(stored.session.sessionId, '?since=&since=3'));
 
-    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5]);
+    // Druhý `since=3` platí, když přijde zbytek žebříku za trojkou — od P22 T4
+    // (`71be912`) tři rámce, ne dva; nula by jich vydala šest.
+    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5, 6]);
   });
 
   it('prázdný dotaz i prázdná hlavička znamenají první připojení, ne chybu', async () => {
@@ -704,7 +724,9 @@ describe('proud relace', () => {
       await events(stored.session.sessionId, '?since=', { 'last-event-id': '' }),
     );
 
-    expect(frames.map((frame) => frame.sequence)).toEqual([1, 2, 3, 4, 5]);
+    // Celý žebřík má od P22 T4 (`71be912`) šest rámců — náhled ze slov je
+    // sequence 2.
+    expect(frames.map((frame) => frame.sequence)).toEqual([1, 2, 3, 4, 5, 6]);
   });
 
   it('useknutý požadavek vrátí odběr logu, ne až čtenář proudu', async () => {
@@ -801,16 +823,19 @@ describe('proud relace', () => {
 
   it('rámec zapsaný po připojení dorazí živě', async () => {
     const stored = await generated();
-    const response = await events(stored.session.sessionId, '?since=4');
+    // Kurzor 5, ne 4: doběhlá relace má od P22 T4 (`71be912`) pět rámců,
+    // protože náhled ze slov (`mast`) zabral sequence 2. Kurzor musí sedět
+    // na konci logu, jinak by tenhle test měřil backlog, ne živé doručení.
+    const response = await events(stored.session.sessionId, '?since=5');
 
-    // Čtyři rámce už proud viděl, takže backlog je prázdný a tohle je jediné,
+    // Pět rámců už proud viděl, takže backlog je prázdný a tohle je jediné,
     // co může dorazit — kdyby odběr nebyl zapojený, test spadne na timeoutu
     // vitestu, ne na tvrzení.
     stored.session.queue('ironMast', 32);
     const frames = await readFrames(response, 1);
 
     expect(frames.map((frame) => frame.type)).toEqual(['shape.queued']);
-    expect(frames[0].sequence).toBe(5);
+    expect(frames[0].sequence).toBe(6);
   });
 
   it('obnovení bez nového rámce dostane první kus hned, ne za heartbeat', async () => {
@@ -821,8 +846,11 @@ describe('proud relace', () => {
     // intervalu a prošlo by se týmž rámcem o 15 s později (mutant to 15. 9.
     // přežil přesně takhle).
     const stored = await generated();
+    // `?since=5` je poslední číslo logu od P22 T4 (`71be912`): náhled ze slov
+    // posunul `world.ready` na 5. S kurzorem 4 by backlog nebyl prázdný a
+    // první kus by byl `world.ready`, ne heartbeat.
     const raw = await Promise.race([
-      readRaw(await events(stored.session.sessionId, '?since=4')),
+      readRaw(await events(stored.session.sessionId, '?since=5')),
       new Promise<string>((resolve) => setTimeout(() => resolve('nothing within 1 s'), 1_000)),
     ]);
 
@@ -831,7 +859,8 @@ describe('proud relace', () => {
 
   it('proud se zavře sám, když relace skončí', async () => {
     const stored = await generated();
-    const response = await events(stored.session.sessionId, '?since=4');
+    // Kurzor 5 = za `world.ready`, které P22 T4 (`71be912`) posunulo ze 4 na 5.
+    const response = await events(stored.session.sessionId, '?since=5');
 
     stored.session.fail('the model could not be reached');
     // Bez zavření by tohle čtení běželo do timeoutu — a e2e sada by červenala
@@ -848,7 +877,8 @@ describe('proud relace', () => {
     const frames = await readFrames(await events(stored.session.sessionId));
 
     expect(frames.at(-1)?.type).toBe('session.failed');
-    expect(frames).toHaveLength(5);
+    // Šest, ne pět: náhled ze slov z P22 T4 (`71be912`) je druhý rámec.
+    expect(frames).toHaveLength(6);
   });
 
   it('heartbeat je komentář, který dekodér zahodí', async () => {
@@ -873,8 +903,12 @@ describe('generace se scriptovaným emitorem', () => {
     expect(stored.session.phase).toBe('world');
     expect(stored.fault).toBeNull();
     expect(emitter.calls()).toBe(2);
+    // Tři fáze modelu zůstávají tři; `visual.preview` mezi nimi je hmotový
+    // náhled ze slov věty (P22 T4, `71be912`), vydaný před prvním voláním
+    // modelu — proto se `calls()` nehnulo a rámec stojí hned za přijetím.
     expect(stored.session.events.all().map((event) => event.type)).toEqual([
       'session.accepted',
+      'visual.preview',
       'intent.ready',
       'blueprint.ready',
       'world.ready',
@@ -1013,8 +1047,10 @@ describe('generace se scriptovaným emitorem', () => {
 
     // Konec konců je tohle to jediné, co porotce uvidí: pořadí, ve kterém se
     // svět staví. Modul to umí a route to musí donést až k němu.
+    // Od P22 T4 (`71be912`) porotce vidí ještě před záměrem hmoty ze slov
+    // věty — `visual.preview` hned za přijetím je tedy součást cesty.
     const ladder = frames.map((frame) => frame.type).filter((type) => type !== 'session.failed');
-    expect(ladder).toEqual(['session.accepted', 'intent.ready', 'blueprint.ready', 'world.ready']);
+    expect(ladder).toEqual(['session.accepted', 'visual.preview', 'intent.ready', 'blueprint.ready', 'world.ready']);
   });
 });
 
