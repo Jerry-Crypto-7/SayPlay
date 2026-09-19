@@ -30,7 +30,7 @@
  *     npx vitest run --config vitest.measure.mts evals/worldstream/conversation.measure.ts
  */
 
-import { writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
 
@@ -45,6 +45,13 @@ import { authoredWorldById, emitterFor } from '@/worldstream/authored';
 import { openSession, runGeneration, serverGrammar } from '@/worldstream/sessions';
 
 const OUT_FILE = fileURLToPath(new URL('./conversation.json', import.meta.url));
+/**
+ * Odpovědi modelu po případech, **gitignorované** jako `create-raw.json`: nesou
+ * plné znění toho, co model napsal. Do `conversation.json` jde jen `answerBytes`
+ * a u odmítnutí `detail` — bez uložené odpovědi se po běhu 19. 9. 2026 nedalo
+ * říct, jaký `kind` model napsal, jen že byl mimo abecedu (P21 T20).
+ */
+const ANSWERS_DIR = fileURLToPath(new URL('./conversation-answers', import.meta.url));
 const SESSION_SEED = 4021;
 const WORLD_ID = 'c09';
 
@@ -85,6 +92,8 @@ interface CaseRecord {
   readonly outputTokens: number | null;
   readonly summary: string | null;
   readonly addedObject: string | null;
+  /** Bajty odpovědi modelu (kompaktní JSON); `null`, když se k modelu nedošlo. Plné znění: `conversation-answers/<id>.json`. */
+  readonly answerBytes: number | null;
 }
 
 const median = (values: readonly number[]): number => {
@@ -92,23 +101,26 @@ const median = (values: readonly number[]): number => {
   return sorted.length === 0 ? 0 : sorted[Math.floor((sorted.length - 1) / 2)];
 };
 
-function liveEmitter(): { emit: (request: UpstreamRequest) => Promise<unknown>; lastMs: () => number | null; lastUsage: () => { inputTokens: number; outputTokens: number } | null } {
+function liveEmitter(): { emit: (request: UpstreamRequest) => Promise<unknown>; lastMs: () => number | null; lastUsage: () => { inputTokens: number; outputTokens: number } | null; lastAnswer: () => unknown } {
   const config = upstreamConfigFromEnv({ ...process.env, WORLDSMITH_MODEL_ENDPOINT: CODEX_CLI_ENDPOINT });
   if (config === null) throw new Error('LIVE_UNAVAILABLE: no live branch is configured (see the docblock for the environment)');
   const branch = upstreamBranch(config);
   let lastMs: number | null = null;
   let lastUsage: { inputTokens: number; outputTokens: number } | null = null;
+  let lastAnswer: unknown = undefined;
   return {
     async emit(request) {
       const started = performance.now();
       const outcome = await branch.generate({ prompt: request.user, request });
       lastMs = performance.now() - started;
       lastUsage = outcome.usage;
+      lastAnswer = outcome.ok ? outcome.body : { error: `${outcome.reason}: ${outcome.detail}` };
       if (!outcome.ok) throw new Error(`${outcome.reason}: ${outcome.detail}`);
       return outcome.body;
     },
     lastMs: () => lastMs,
     lastUsage: () => lastUsage,
+    lastAnswer: () => lastAnswer,
   };
 }
 
@@ -127,23 +139,28 @@ describe('A10 live: sentence → first accepted piece', () => {
     const live = liveEmitter();
     const cases: CaseRecord[] = [];
 
+    mkdirSync(ANSWERS_DIR, { recursive: true });
     for (const sentence of EVERY_THIRD) {
+      const id = `s${String(TEN.indexOf(sentence)).padStart(2, '0')}`;
       const started = performance.now();
       const increment = planIncrement(sentence);
       if (!increment.ok) {
-        cases.push({ sentence, piece: '', queued: 0, target: '', verdict: 'REJECTED', reason: increment.reason, detail: increment.detail, ms: performance.now() - started, modelMs: null, inputTokens: null, outputTokens: null, summary: null, addedObject: null });
+        cases.push({ sentence, piece: '', queued: 0, target: '', verdict: 'REJECTED', reason: increment.reason, detail: increment.detail, ms: performance.now() - started, modelMs: null, inputTokens: null, outputTokens: null, summary: null, addedObject: null, answerBytes: null });
         continue;
       }
       const piece = increment.pieces[0].text;
       const grounding = groundTarget(piece, blueprint.objects, undefined);
       const adding = !grounding.ok && grounding.reason === 'NO_MATCH';
       if (!grounding.ok && !adding) {
-        cases.push({ sentence, piece, queued: increment.pieces.length - 1, target: '', verdict: 'REJECTED', reason: grounding.reason, detail: grounding.candidates.map((c) => c.stableId).join(', '), ms: performance.now() - started, modelMs: null, inputTokens: null, outputTokens: null, summary: null, addedObject: null });
+        cases.push({ sentence, piece, queued: increment.pieces.length - 1, target: '', verdict: 'REJECTED', reason: grounding.reason, detail: grounding.candidates.map((c) => c.stableId).join(', '), ms: performance.now() - started, modelMs: null, inputTokens: null, outputTokens: null, summary: null, addedObject: null, answerBytes: null });
         continue;
       }
       const target = grounding.ok ? grounding.target : null;
 
       const outcome = await planChange({ prompt: piece, blueprint, target, emit: live.emit });
+      const answer = live.lastAnswer();
+      const answerText = answer === undefined ? null : JSON.stringify(answer);
+      if (answerText !== null) writeFileSync(`${ANSWERS_DIR}/${id}.json`, `${JSON.stringify({ id, sentence, piece, measuredAt: new Date().toISOString(), answer }, null, 2)}\n`);
       const base = {
         sentence,
         piece,
@@ -152,15 +169,16 @@ describe('A10 live: sentence → first accepted piece', () => {
         modelMs: live.lastMs() === null ? null : Math.round(live.lastMs() as number),
         inputTokens: live.lastUsage()?.inputTokens ?? null,
         outputTokens: live.lastUsage()?.outputTokens ?? null,
+        answerBytes: answerText === null ? null : Buffer.byteLength(answerText),
       };
       if (outcome.kind === 'unavailable') {
         cases.push({ ...base, verdict: 'UNAVAILABLE', reason: 'MODEL_UNAVAILABLE', detail: outcome.detail, ms: performance.now() - started, summary: null, addedObject: null });
       } else if (outcome.kind === 'rejected') {
         cases.push({ ...base, verdict: 'REJECTED', reason: outcome.reason, detail: outcome.detail, ms: performance.now() - started, summary: null, addedObject: null });
       } else if (hasUnsupportedAppearance(outcome.plan)) {
-        cases.push({ ...base, verdict: 'REJECTED', reason: 'APPEARANCE_UNSUPPORTED', detail: null, ms: performance.now() - started, summary: outcome.plan.summary, addedObject: null });
+        cases.push({ ...base, verdict: 'REJECTED', reason: 'APPEARANCE_UNSUPPORTED', detail: 'the appearance operations ask for something the look cannot show', ms: performance.now() - started, summary: outcome.plan.summary, addedObject: null });
       } else if (hasUnsupportedMotion(outcome.plan, blueprint.world)) {
-        cases.push({ ...base, verdict: 'REJECTED', reason: 'MOTION_UNSUPPORTED', detail: null, ms: performance.now() - started, summary: outcome.plan.summary, addedObject: null });
+        cases.push({ ...base, verdict: 'REJECTED', reason: 'MOTION_UNSUPPORTED', detail: 'the behavior asks for motion the simulation cannot run', ms: performance.now() - started, summary: outcome.plan.summary, addedObject: null });
       } else {
         cases.push({ ...base, verdict: 'ACCEPTED', reason: null, detail: null, ms: performance.now() - started, summary: outcome.plan.summary, addedObject: outcome.plan.addition?.object.stableId ?? null });
       }
@@ -175,6 +193,7 @@ describe('A10 live: sentence → first accepted piece', () => {
       model: `${process.env.WORLDSMITH_MODEL ?? 'gpt-6-astra'}@${process.env.WORLDSMITH_MODEL_EFFORT ?? 'medium'}#cli`,
       effort: process.env.WORLDSMITH_MODEL_EFFORT ?? 'medium',
       callCap: Number(process.env.WORLDSMITH_CALL_CAP ?? NaN),
+      answersDir: 'evals/worldstream/conversation-answers (gitignored; one <id>.json per case that reached the model)',
       world: { id: WORLD_ID, prompt: world.prompt, objects: blueprint.objects.map((object) => object.stableId) },
       corpus: { total: TEN.length, measured: EVERY_THIRD.length, selection: 'every third of ten, first three (index 0, 3, 6)', remaining: TEN.filter((_, index) => index % 3 !== 0) },
       target: { ...TARGET, note: 'research targets, stated as a goal – the measured number decides, not this line' },

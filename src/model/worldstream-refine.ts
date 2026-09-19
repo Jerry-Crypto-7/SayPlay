@@ -41,7 +41,7 @@ import { observePhase, observePhaseAsync, type PhaseObserver } from './phase-obs
 import type { Operation } from 'rfc6902';
 
 import { pointerTokens } from '@/patch/reject';
-import { shapeProgramSchema, validateShapeProgram } from '@/shape/schema';
+import { SHAPE_NODE_GROUPS, shapeProgramSchema, validateShapeProgram } from '@/shape/schema';
 import {
   additionObjectSchema,
   MAX_HERO_SHAPES,
@@ -315,6 +315,25 @@ function readOperations(value: unknown, facet: Facet): readonly Operation[] | st
   return (value as readonly Operation[]).map(withRuleId);
 }
 
+/** Abeceda uzlů tvaru jako jedna věta — táž tabulka, kterou čte `shapeVocabulary()`. */
+const SHAPE_KIND_ALPHABET = Object.values(SHAPE_NODE_GROUPS).flat().join(', ');
+
+/**
+ * Detail odmítnutí tvaru. **Uzel mimo abecedu jmenuje to, co model napsal**,
+ * ne jen to, co se čekalo: živý běh 19. 9. 2026 (`evals/worldstream/conversation.json`)
+ * odmítl dva ze čtyř kusů na `nodes[0].kind`, a z detailu se nedalo poznat,
+ * jestli model tabulku přehlédl, nebo si vymyslel synonymum. Ostatní vady
+ * nesou první nález validace beze změny.
+ */
+function shapeInvalidDetail(shape: unknown, issues: readonly string[]): string {
+  const first = issues[0];
+  const at = /^schema:\/nodes\/(\d+)\/kind:/.exec(first);
+  if (at === null) return first;
+  const nodes = (shape as { readonly nodes?: readonly unknown[] }).nodes ?? [];
+  const kind = (nodes[Number(at[1])] as { readonly kind?: unknown } | undefined)?.kind;
+  return `nodes[${at[1]}].kind ${JSON.stringify(kind)} is not a shape node; allowed kinds: ${SHAPE_KIND_ALPHABET}`;
+}
+
 /**
  * Přečte odpověď modelu jako plán změny, nebo řekne proč ne.
  *
@@ -390,7 +409,7 @@ export function readRefineEmission(value: unknown, target: SemanticObject): Refi
     // napsat větu znovu. `repairEmission()` na téhle cestě neběží vůbec, takže
     // totéž platí o roli psané do `behavior`.
     const validation = validateShapeProgram(body.shape);
-    if (!validation.ok) return { ok: false, reason: 'SHAPE_INVALID', detail: validation.issues[0] };
+    if (!validation.ok) return { ok: false, reason: 'SHAPE_INVALID', detail: shapeInvalidDetail(body.shape, validation.issues) };
 
     const parsed = shapeProgramSchema.parse(body.shape);
     if (parsed.stableId !== target.stableId)
@@ -498,7 +517,7 @@ export function readAdditionEmission(value: unknown, blueprint: WorldstreamBluep
     };
 
   const validation = validateShapeProgram(body.shape);
-  if (!validation.ok) return { ok: false, reason: 'SHAPE_INVALID', detail: validation.issues[0] };
+  if (!validation.ok) return { ok: false, reason: 'SHAPE_INVALID', detail: shapeInvalidDetail(body.shape, validation.issues) };
   const shape = shapeProgramSchema.parse(body.shape);
 
   if (shape.stableId !== object.stableId)
@@ -745,6 +764,12 @@ export function buildAdditionRequest(sentence: string, blueprint: WorldstreamBlu
     '',
     'shape is the ShapeProgram that draws it. Its stableId is the object stableId; its shapeId is',
     'its own name, also not in takenNames. Its targetBounds are in SHAPE space, centred on the origin.',
+    // Živý běh 19. 9. 2026: dva kusy ze čtyř přišly s `nodes[0].kind` mimo
+    // abecedu, ačkoli tabulka o třicet řádků níž ji celou vypisuje. Hypotéza
+    // z T11 je, že model tabulku přehlédl; tahle věta stojí přímo u pole a
+    // T22 změří, jestli to stačí.
+    `Every node's kind is one of: ${SHAPE_KIND_ALPHABET}. Nothing else is a node — no pyramid,`,
+    'no wedge, no mesh; build such things from these.',
     '',
     shapeVocabulary(),
     '',

@@ -19,6 +19,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { GEOM_VERSION } from '@/geom/program';
+import { SHAPE_NODE_GROUPS } from '@/shape/schema';
 import { blueprintSchema, MAX_HERO_SHAPES, type WorldstreamBlueprint } from '@/worldstream/schema';
 
 import type { UpstreamRequest } from '../prompt';
@@ -696,6 +697,29 @@ describe('čtení nového objektu', () => {
 
   it('odpověď bez tvaru je WRONG_SHAPE — nový objekt bez podoby nemá co ukázat', () => {
     expect(reasonOf(readAdditionEmission(addition({ shape: null }), BLUEPRINT))).toContain('WRONG_SHAPE');
+  });
+
+  // Živý běh 19. 9. 2026 (`conversation.json`): dvě odmítnutí ze čtyř byla
+  // `nodes[0].kind` mimo abecedu, a detail říkal jen, co se čekalo – ne, co
+  // model napsal. Bez toho jména se nedá říct, jestli tabulku přehlédl,
+  // nebo si vymyslel synonymum.
+  it('uzel mimo abecedu tvarů je SHAPE_INVALID, který jmenuje ten uzel i celou abecedu', () => {
+    const read = readAdditionEmission(addition({ shape: { ...SIGNPOST, nodes: [{ kind: 'pyramid', size: [1, 1, 1] }] } }), BLUEPRINT);
+    expect(read.ok).toBe(false);
+    if (read.ok) return;
+    expect(read.reason).toBe('SHAPE_INVALID');
+    expect(read.detail).toContain('nodes[0].kind "pyramid"');
+    expect(read.detail).toContain(`allowed kinds: ${Object.values(SHAPE_NODE_GROUPS).flat().join(', ')}`);
+  });
+
+  it('zadání pro přidání jmenuje abecedu uzlů hned u pole shape, ne až v tabulce o třicet řádků níž', () => {
+    const system = buildAdditionRequest('add a signpost', BLUEPRINT).system;
+    const shapeLine = system.indexOf('shape is the ShapeProgram');
+    const alphabet = system.indexOf(`kind is one of: ${Object.values(SHAPE_NODE_GROUPS).flat().join(', ')}`);
+    const table = system.indexOf('Shape nodes:');
+    expect(shapeLine).toBeGreaterThan(-1);
+    expect(alphabet).toBeGreaterThan(shapeLine);
+    expect(alphabet).toBeLessThan(table);
   });
 
   /**

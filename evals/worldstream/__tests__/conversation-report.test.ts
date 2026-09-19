@@ -31,6 +31,8 @@ interface ConversationCase {
   readonly modelMs: number | null;
   readonly inputTokens: number | null;
   readonly outputTokens: number | null;
+  readonly detail: string | null;
+  readonly answerBytes?: number | null;
 }
 
 interface ConversationReport {
@@ -38,6 +40,7 @@ interface ConversationReport {
   readonly model: string;
   readonly effort: string;
   readonly callCap: number;
+  readonly answersDir?: string;
   readonly corpus: { readonly total: number; readonly measured: number; readonly remaining: readonly string[] };
   readonly target: { readonly medianMs: number; readonly acceptedOf: readonly [number, number]; readonly note: string };
   readonly summary: { readonly total: number; readonly accepted: number; readonly acceptedShare: number; readonly medianMs: number; readonly slowestMs: number };
@@ -69,7 +72,16 @@ describe('conversation.json – tři věty z deseti nad jedním světem', () => 
       expect(Number.isFinite(entry.ms), `${entry.sentence}: případ bez času`).toBe(true);
       expect(entry.ms).toBeGreaterThan(0);
       if (entry.verdict === 'ACCEPTED') expect(entry.reason, entry.sentence).toBeNull();
-      else expect(entry.reason?.length ?? 0, `${entry.sentence}: odmítnutí bez důvodu`).toBeGreaterThan(0);
+      else {
+        expect(entry.reason?.length ?? 0, `${entry.sentence}: odmítnutí bez důvodu`).toBeGreaterThan(0);
+        // Důvod sám nestačí: `SHAPE_INVALID` bez detailu neřekne, jaký `kind`
+        // model napsal, a přesně to bylo po běhu 19. 9. 2026 neznámé (P21 T20).
+        expect(entry.detail?.length ?? 0, `${entry.sentence}: odmítnutí bez detailu`).toBeGreaterThan(0);
+      }
+      // Od T20 se odpověď modelu ukládá vedle artefaktu a případ nese její délku;
+      // starší běh (bez `answersDir`) ji nemá a nic o ní netvrdí.
+      if (report.answersDir !== undefined && entry.modelMs !== null)
+        expect(entry.answerBytes, `${entry.sentence}: volání bez uložené odpovědi`).toBeGreaterThan(0);
       // Věta, která došla k modelu, nese jeho čas a spotřebu; jinak by se
       // odmítnutí zadarmo (grounding) nedalo odlišit od odmítnutí za peníze.
       if (entry.modelMs !== null) {
