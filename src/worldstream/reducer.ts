@@ -114,6 +114,13 @@ export interface ClientState {
   } | null;
   /** Veřejná věta o poruše. Text výjimky poskytovatele sem nikdy nejde. */
   readonly fault: string | null;
+  /**
+   * Svět vznikl z uložené odpovědi modelu na tutéž větu (P16 T6). Přijde
+   * v rámci `blueprint.ready` i snapshotem; `null`, dokud blueprint není
+   * nebo ho model psal teď. Stavová věta z toho říká porotci, že se na
+   * model nečekalo — jinak by rychlý svět vypadal jako rychlý model.
+   */
+  readonly reused: { readonly at: string; readonly savedCalls: number } | null;
 }
 
 export function initialClientState(): ClientState {
@@ -126,6 +133,7 @@ export function initialClientState(): ClientState {
     visualPreview: null,
     intent: null,
     fault: null,
+    reused: null,
   };
 }
 
@@ -201,6 +209,14 @@ function statedResolution(
 
 function count(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+/** Zásah cache z rámce nebo snapshotu, nebo `null`. Obě pole se soudí — payload je z drátu. */
+function reusedOf(value: unknown): ClientState['reused'] {
+  const fields = record(value);
+  const at = text(fields.at);
+  const savedCalls = count(fields.savedCalls);
+  return at === null || savedCalls === null ? null : { at, savedCalls };
 }
 
 /** Ke které fázi patří která událost. Ostatní fázi nemění. */
@@ -313,6 +329,7 @@ function apply(state: ClientState, event: SessionEvent): ClientState {
     visualPreview: event.type === 'blueprint.ready' ? null : preview?.success ? preview.data : state.visualPreview ?? null,
     intent: event.type === 'intent.ready' ? intentOf(fields) : state.intent,
     fault: event.type === 'session.failed' ? (text(fields.reason) ?? 'the session failed') : state.fault,
+    reused: event.type === 'blueprint.ready' ? reusedOf(fields.reused) : state.reused,
   };
 }
 
@@ -381,6 +398,7 @@ export interface ClientSnapshot {
   readonly blueprint?: unknown;
   readonly visualPreview?: unknown;
   readonly fault?: string | null;
+  readonly reused?: unknown;
 }
 
 function viewOfRecord(
@@ -442,5 +460,6 @@ export function applySnapshot(state: ClientState, snapshot: ClientSnapshot): Cli
       : Object.hasOwn(snapshot, 'visualPreview') ? (visualPreviewSchema.safeParse(snapshot.visualPreview).data ?? null) : state.visualPreview ?? null,
     intent: state.intent,
     fault: snapshot.fault ?? state.fault,
+    reused: Object.hasOwn(snapshot, 'reused') ? reusedOf(snapshot.reused) : state.reused,
   };
 }

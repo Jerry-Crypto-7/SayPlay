@@ -1,7 +1,14 @@
+import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
+import { createServer, type Server } from 'node:http';
+import { createServer as createNetServer } from 'node:net';
+import { join } from 'node:path';
+
 import { expect, test, type Page } from '@playwright/test';
 
 import { SseDecoder } from '../src/components/viewer/sse';
+import { requestStage } from '../src/model/worldstream-prompt';
 import type { SessionEvent } from '../src/worldstream/events';
+import { DOOR_PROMPT, doorAnswers } from './fixtures/door-world';
 import { deployedTarget } from './smoke-target';
 
 /**
@@ -246,4 +253,164 @@ test('snapshot vydá tentýž stav jako proud a nic z konfigurace poskytovatele'
   // pověření (`?key=`, `https://user:heslo@…`). Ven jde věta ze slovníku.
   expect(snapshot.raw).not.toMatch(/WORLDSMITH_|Bearer|api[_-]?key|https?:\/\//i);
   expect(JSON.stringify(stream.events)).not.toMatch(/WORLDSMITH_|Bearer|api[_-]?key/i);
+});
+
+/* ------------------------------------------------------------------ *
+ * Cache odpovědí modelu (P16 T6) — orákulum nad skutečným `next start`.
+ * ------------------------------------------------------------------ */
+
+/** Volný port: krátce se na něm poslouchá a zase pustí. */
+async function freePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const probe = createNetServer();
+    probe.once('error', reject);
+    probe.listen(0, '127.0.0.1', () => {
+      const address = probe.address();
+      probe.close(() => resolve(typeof address === 'object' && address !== null ? address.port : 0));
+    });
+  });
+}
+
+/**
+ * Falešný poskytovatel ve formátu Anthropic Messages, který odpovídá
+ * z fixtury a **počítá volání**. Odpověď vybírá podle fáze požadavku
+ * (`requestStage`), ne podle pořadí — dvě relace by jinak sdílely čítač.
+ */
+function fakeUpstream(): { readonly server: Server; readonly calls: () => number } {
+  const { planner, compiler } = doorAnswers();
+  let calls = 0;
+  const server = createServer((request, response) => {
+    let raw = '';
+    request.on('data', (chunk: Buffer) => { raw += chunk.toString('utf8'); });
+    request.on('end', () => {
+      calls += 1;
+      const body = JSON.parse(raw) as { model: string; system: string; messages: { content: string }[] };
+      const stage = requestStage({ model: body.model, system: body.system, user: body.messages[0].content });
+      const answer = stage === 'planner' ? planner : compiler;
+      response.setHeader('content-type', 'application/json');
+      response.end(JSON.stringify({
+        content: [{ type: 'text', text: JSON.stringify(answer) }],
+        usage: { input_tokens: 1_000, output_tokens: 2_000 },
+        stop_reason: 'end_turn',
+      }));
+    });
+  });
+  return { server, calls: () => calls };
+}
+
+/**
+ * Druhý `next start` nad týmž buildem, s živou větví namířenou na falešného
+ * poskytovatele. Hlavní server z `playwright.config.ts` běží bez klíče
+ * (`cloudEmitter()` → `null`), takže se cache odpovědí u něj vůbec nezeptá;
+ * tenhle proces je jediná cesta, jak ji doopravdy prohnat routou.
+ *
+ * `VERCEL_ENV=production` bez `VERCEL` dá knihu stropu v paměti procesu
+ * (`.env.example` u `WORLDSMITH_SPEND_STORE_URL`), tedy strop, který platí
+ * a nic sdíleného nepotřebuje. Cena je nastavená tak, aby dvě volání stála
+ * zlomek stropu a odmítnutí nebylo příčinou ničeho, co se tu měří.
+ */
+async function startLiveServer(upstreamPort: number): Promise<{ readonly url: string; stop(): void }> {
+  const port = await freePort();
+  const env: NodeJS.ProcessEnv = {
+    ...process.env,
+    WORLDSMITH_MODEL_ENDPOINT: `http://127.0.0.1:${String(upstreamPort)}/v1/messages`,
+    WORLDSMITH_MODEL_KEY: 'e2e-fake-upstream',
+    WORLDSMITH_MODEL_PROFILE: 'api',
+    WORLDSMITH_MODEL: 'e2e-fixture-model',
+    WORLDSMITH_USD_PER_MTOK_IN: '1',
+    WORLDSMITH_USD_PER_MTOK_OUT: '1',
+    WORLDSMITH_SPEND_CAP_USD: '5',
+    WORLDSMITH_ANSWER_CACHE: '',
+    WORLDSMITH_SPEND_STORE_URL: '',
+    WORLDSMITH_SPEND_STORE_TOKEN: '',
+    KV_REST_API_URL: '',
+    KV_REST_API_TOKEN: '',
+    VERCEL_ENV: 'production',
+  };
+  delete env.VERCEL;
+  // Playwright překládá spec do CJS, takže `import.meta.url` tu není; cesta
+  // jde od kořene repozitáře, odkud se `playwright test` spouští.
+  const nextBin = join(process.cwd(), 'node_modules', 'next', 'dist', 'bin', 'next');
+  const child: ChildProcess = spawn(process.execPath, [nextBin, 'start', '--port', String(port), '--hostname', '127.0.0.1'], {
+    env,
+    cwd: process.cwd(),
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  let output = '';
+  child.stdout?.on('data', (chunk: Buffer) => { output += chunk.toString('utf8'); });
+  child.stderr?.on('data', (chunk: Buffer) => { output += chunk.toString('utf8'); });
+  const url = `http://127.0.0.1:${String(port)}`;
+  const deadline = Date.now() + 60_000;
+  for (;;) {
+    if (child.exitCode !== null) throw new Error(`next start exited early:\n${output}`);
+    try {
+      const probe = await fetch(`${url}/api/build-id`);
+      if (probe.ok) break;
+    } catch {
+      // Ještě neposlouchá.
+    }
+    if (Date.now() > deadline) throw new Error(`next start did not come up in time:\n${output}`);
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  return {
+    url,
+    stop() {
+      // Podle PID, nikdy podle jména — a se stromem, protože `next start`
+      // na Windows drží pod sebou vlastní pracovní proces.
+      if (process.platform === 'win32' && child.pid !== undefined) spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F']);
+      else child.kill('SIGTERM');
+    },
+  };
+}
+
+test('doslova stejná věta podruhé dostane svět z cache: model dvě volání, ne čtyři, a stránka to řekne', async ({ page }) => {
+  test.setTimeout(180_000);
+  const upstream = fakeUpstream();
+  const upstreamPort = await freePort();
+  await new Promise<void>((resolve) => upstream.server.listen(upstreamPort, '127.0.0.1', resolve));
+  const live = await startLiveServer(upstreamPort);
+  const pageErrors: string[] = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+
+  try {
+    await page.goto(`${live.url}/`);
+    await expect(page.getByTestId('generation-mode')).toHaveValue('live');
+
+    // Poprvé: model se volá, dvakrát — plánovač a kompilátor.
+    await page.getByTestId('prompt-input').fill(DOOR_PROMPT);
+    await page.getByTestId('prompt-submit').click();
+    await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live', { timeout: 60_000 });
+    await expect(page.getByTestId('world-live-origin')).toBeVisible();
+    await expect(page.getByTestId('answer-reused')).toHaveCount(0);
+    expect(upstream.calls(), 'první svět má stát přesně dvě volání').toBe(2);
+
+    // Podruhé, táž věta jinak psaná: nic se nevolá a stavová věta to říká.
+    await page.getByTestId('prompt-input').fill(`  ${DOOR_PROMPT.toUpperCase()}  `);
+    await page.getByTestId('prompt-submit').click();
+    await expect(page.getByTestId('answer-reused')).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByTestId('answer-reused')).toHaveText(/Reused the model's earlier answer for this exact sentence/);
+    await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live', { timeout: 60_000 });
+    expect(upstream.calls(), 'zásah cache zavolal model').toBe(2);
+
+    // Totéž z druhé strany, přes routu bez prohlížeče: snapshot třetí relace
+    // nese `reused` a čítač poskytovatele pořád stojí.
+    const snapshot = await page.evaluate(async (sentence) => {
+      const response = await fetch('/api/worldstream/sessions', { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ prompt: sentence, live: true }) });
+      const opened = (await response.json()) as { snapshot: string };
+      for (let i = 0; i < 100; i += 1) {
+        const read = (await (await fetch(opened.snapshot)).json()) as { phase: string; reused: unknown };
+        if (read.phase === 'world' || read.phase === 'failed') return read;
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+      throw new Error('the third session never settled');
+    }, DOOR_PROMPT);
+    expect(snapshot.phase).toBe('world');
+    expect(snapshot.reused).toMatchObject({ savedCalls: 2 });
+    expect(upstream.calls()).toBe(2);
+    expect(pageErrors).toEqual([]);
+  } finally {
+    live.stop();
+    upstream.server.close();
+  }
 });

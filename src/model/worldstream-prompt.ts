@@ -53,10 +53,11 @@ import {
   TERRAIN_VARIANTS,
   type PieceKind,
 } from '../geom/program';
-import { canonical } from '../ir/worlddoc';
+import { canonical, canonicalHash } from '../ir/worlddoc';
 
 import { EMISSION_MODEL, EXAMPLE_MARKER, buildEmissionRequest, type Grammar, type UpstreamRequest } from './prompt';
-import { PLANNER_ANSWER_FIELDS, type PlannerEmission } from './worldstream-intent';
+import { buildIntentRequest, PLANNER_ANSWER_FIELDS, type PlannerEmission } from './worldstream-intent';
+import { EXAMPLE_PLAN } from './worldstream-examples';
 import { ADDITION_ANSWER_FIELDS, REFINE_ANSWER_FIELDS } from './worldstream-refine';
 import { shapeVocabulary } from './shape-vocabulary';
 import { CHUNK_FIELDS, EMISSION_CHUNKS, type ChunkName } from './emission-merge';
@@ -581,3 +582,26 @@ export function buildCompilerRequest(
 
   return { model: EMISSION_MODEL, system, user };
 }
+
+/**
+ * **Verze promptu, odvozená z jeho textu** (P16 T6).
+ *
+ * Cache odpovědí (`src/server/answer-cache.ts`) smí vydat starou odpověď
+ * jedině na tutéž otázku, a otázka je věta **plus** obě systémové zprávy.
+ * Ručně zvedané číslo by někdo zapomněl zvednout přesně v tom commitu, kde
+ * se prompt změnil; hash textu se zvedne sám. Grammar do hashe nejde — je
+ * zmrazená (`evals/frozen`) a do promptu vstupuje jen skrz ni; místo ní stojí
+ * značka, takže se hashuje text, který píše tenhle repozitář.
+ *
+ * FNV-1a přes `canonicalHash`, ne SHA-256: tenhle modul jde i do klientského
+ * bundlu (`worldstream-compiler.ts` → `proxy.ts`), kde `node:crypto` není.
+ * Osm hex znaků stačí — kolize dvou verzí promptu v jednom nasazení není
+ * hrozba, o kterou tu jde; klíč cache je pak SHA-256 nad celou čtveřicí.
+ */
+const GRAMMAR_MARK = ['<grammar>'] as const;
+export const PROMPT_VERSION: string = canonicalHash([
+  buildIntentRequest('').system,
+  buildCompilerRequest(EXAMPLE_PLAN, {
+    surfaceEvents: GRAMMAR_MARK, conditions: GRAMMAR_MARK, actions: GRAMMAR_MARK, simFields: GRAMMAR_MARK, lookFields: GRAMMAR_MARK,
+  }).system,
+]);

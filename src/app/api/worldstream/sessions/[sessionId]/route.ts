@@ -60,6 +60,9 @@ async function handleDurableGET(
       blueprint: stored.blueprint,
       visualPreview: stored.visualPreview ?? null,
       fault: stored.fault,
+      // Zásah cache odpovědí (P16 T6), nebo `null`. Klient po reconnectu
+      // rámec `blueprint.ready` neuvidí, tak to nese i snapshot.
+      reused: stored.reused ?? null,
       generationMetrics: stored.generationMetrics?.snapshot() ?? null,
       recovery:stored.recovery??null,
       // Adresa hotového světa, nebo `null`. Je to jediné místo, kde se adresa

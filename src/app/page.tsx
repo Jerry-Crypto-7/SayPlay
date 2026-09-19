@@ -74,7 +74,7 @@ const FutureViews = dynamic(() => import('@/components/worldstream/FutureViews')
 const UNKNOWN_FAULT = 'the session ended without a world';
 
 /** Co z relace vyleze: buď blueprint, nebo věta, proč žádný nebude. */
-type Arrival = { readonly blueprint: unknown } | { readonly fault: string };
+type Arrival = { readonly blueprint: unknown; readonly reused: ClientState['reused'] } | { readonly fault: string };
 
 /**
  * Hotové dějství II — **svět a adresa jeho relace, nerozdělitelně**.
@@ -129,7 +129,7 @@ function firstBlueprint(
         if (!settled && !state.blueprint && state.visualPreview && state.visualPreview!==lastPreview) {
           lastPreview=state.visualPreview;onVisualPreview?.(state.visualPreview);
         }
-        if (state.blueprint !== null) done({ blueprint: state.blueprint });
+        if (state.blueprint !== null) done({ blueprint: state.blueprint, reused: state.reused });
       },
     })
       .then((final) => done({ fault: final.fault ?? UNKNOWN_FAULT }))
@@ -226,6 +226,8 @@ export default function Page() {
   const [streaming, setStreaming] = useState(false);
   /** Co planner z věty přečetl, dokud compiler píše; s novou větou i se světem se maže. */
   const [intent, setIntent] = useState<ClientState['intent']>(null);
+  /** Zásah cache odpovědí (P16 T6) — přichází s blueprintem, mizí s novou větou. */
+  const [reused, setReused] = useState<ClientState['reused']>(null);
   const [stopped, setStopped] = useState<string | null>(null);
   const [fault, setFault] = useState<string | null>(null);
   /**
@@ -391,6 +393,7 @@ export default function Page() {
 
       setStreaming(true);
       setIntent(null);
+      setReused(null);
       setStopped(null);
       setFault(null);
       setWorld(null);
@@ -452,6 +455,7 @@ export default function Page() {
           return;
         }
         previewVersion++;setVisualWorld(null);
+        setReused(arrival.reused);
 
         // Server blueprint validoval taky. Čte se podruhé, protože mezi tím je
         // síť a `unknown` — bez toho by se dovnitř dostal objekt, o kterém
@@ -894,7 +898,7 @@ export default function Page() {
         </>
       }
       status={<>
-        <WorldStatus state={status} detail={fault} detailPending={streaming && world !== null} intent={world === null ? intent : null} wordMassing={wordGuess} />
+        <WorldStatus state={status} detail={fault} detailPending={streaming && world !== null} intent={world === null ? intent : null} wordMassing={wordGuess} reused={reused} />
         {visualWorld && !world && <p style={FACTS} data-testid="visual-preview-notice" data-stage={visualStage??'compiler-visuals'}>
           {wordGuess ? 'Provisional blocks from the words alone; the plan replaces them.' : visualStage==='intent-layout' ? 'Provisional layout from your plan. Placement and unfinished forms may change.' : 'Noninteractive scene preview.'}
           {' '}{stopped ? 'Waiting stopped before an accepted world arrived.' : streaming ? wordGuess ? 'Reading the sentence.' : visualStage==='intent-layout' ? 'Building and checking the rules.' : 'Checking a repair to the rules.' : 'The rules did not pass verification.'}

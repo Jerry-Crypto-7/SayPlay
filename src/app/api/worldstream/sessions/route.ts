@@ -74,6 +74,7 @@ import { randomUUID } from 'node:crypto';
 
 import { after } from 'next/server';
 import { cloudEmitter } from '../../../../server/worldstream-emitter';
+import { answerReuseFor } from '../../../../server/answer-cache';
 
 import { bodyRefusalResponse, readBody } from '../../../../http/body';
 import { withRequest } from '../../../../obs/trace';
@@ -657,6 +658,12 @@ async function handleDurablePOST(request: Request): Promise<Response> {
             legacyPlan: served !== null,
             emit,
             grammar,
+            // **Cache odpovědí jen pro živou větev** (P16 T6). Sklad nic
+            // nestojí, takže by „reused" nad ním byla věta bez obsahu — a
+            // `savedCalls: 2` lež. Sedí ZA všemi branami výš: kill switch,
+            // strop frekvence, moderace i slot rozhodly beze změny; zásah
+            // jen nevyrobí volání, které by strop utrácení jinak rezervoval.
+            ...(live ? answerReuseFor(process.env, verdict.prompt) : {}),
             log: (fault: SessionFault, detail: string) => {
               endedWith = fault;
               logRateLimited('worldstream/sessions', requestId, fault, detail);

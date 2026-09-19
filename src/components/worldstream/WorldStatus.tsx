@@ -46,6 +46,7 @@ export default function WorldStatus({
   detailPending = false,
   intent = null,
   wordMassing = false,
+  reused = null,
 }: {
   readonly state: WorldStatusState;
   readonly detailPending?: boolean;
@@ -58,6 +59,14 @@ export default function WorldStatus({
    * `WORD_MASSING_NOTICE`, tatáž věta, kterou nese sám náhled.
    */
   readonly wordMassing?: boolean;
+  /**
+   * Svět vznikl z uložené odpovědi modelu na tutéž větu (P16 T6). Říká se
+   * to nahlas, protože jinak by rychlý svět vypadal jako rychlý model —
+   * a porotce, který měří čas, má měřit to, co se doopravdy stalo. Jen
+   * v `building` a `live`: v `broken` není co znovu použít a v `preview`
+   * blueprint ještě nedorazil.
+   */
+  readonly reused?: { readonly at: string; readonly savedCalls: number } | null;
   /**
    * Co planner z věty přečetl, dokud compiler ještě píše. Jen v `building`
    * a jen dokud na plátně nic není: compiler je nejdelší volání celé cesty
@@ -142,6 +151,12 @@ export default function WorldStatus({
           {`Not simulated: ${unsupported.join(', ')}.`}
         </span>
       ) : null}
+      {reused !== null && (state === 'live' || state === 'building') ? (
+        <span data-testid="answer-reused" style={DETAIL}>
+          {' '}
+          {REUSED_NOTICE}
+        </span>
+      ) : null}
       {(broken || state === 'preview') && detail !== null && detail !== '' ? (
         <span data-testid="world-fault" style={DETAIL}>
           {' '}
@@ -153,3 +168,6 @@ export default function WorldStatus({
 }
 
 const DETAIL: React.CSSProperties = { opacity: 0.7 };
+
+/** Anglicky, jako celá měď. Bez počtu volání: ten je pro operátora, ne pro porotce. */
+export const REUSED_NOTICE = "Reused the model's earlier answer for this exact sentence.";

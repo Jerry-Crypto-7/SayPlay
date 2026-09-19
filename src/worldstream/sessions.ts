@@ -61,6 +61,9 @@ import {createSessionPersistence} from '@/server/session-persistence';
 import {buildIntentPreview} from '@/scene/intent-preview';
 import {buildMassingPreview,WORD_MASSING_NOTICE} from '@/scene/massing-preview';
 import {wordMassing} from '@/scene/word-massing';
+import type { AnswerCache, CachedAnswer } from '@/server/answer-cache';
+import type { PlannerEmission } from '@/model/worldstream-intent';
+import type { BlueprintOutcome } from '@/model/worldstream-repair';
 
 // Source projects have a single authoritative snapshot, separate from the
 // legacy blueprint workflow. T9 reads this complete world/evidence pair.
@@ -429,6 +432,20 @@ export interface StoredSession {
    * s ní i její previewy a nezůstane po nich mapa, kterou nikdo neuklidí.
    */
   readonly changes: Map<string, PendingChange>;
+  /**
+   * Svět vznikl z uložené odpovědi modelu na tutéž větu (P16 T6), nebo
+   * `null`/chybí, když ho model psal teď. Snapshot relace to vydává ven a
+   * rámec `blueprint.ready` to nese taky — porotce má vědět, že se nečekalo
+   * na model, protože jinak by čas do světa vypadal jako výkon modelu.
+   * Relace obnovená z disku to nenese: o svém původu už nic neví.
+   */
+  reused?: ReusedAnswer | null;
+}
+
+/** Co relace ví o zásahu cache. `savedCalls` jsou obě přeskočená volání: plánovač a kompilátor. */
+export interface ReusedAnswer {
+  readonly at: string;
+  readonly savedCalls: number;
 }
 
 const host=globalThis as typeof globalThis & {__worldstreamOrdinarySessions?:Map<string,StoredSession>;__worldstreamSessionDisk?:{
@@ -968,6 +985,12 @@ export interface GenerationDeps {
   readonly grammar: Grammar;
   /** Kam se zapisuje to, co ven nesmí. */
   readonly log?: (fault: SessionFault, detail: string) => void;
+  /**
+   * Cache odpovědí a klíč téhle věty (P16 T6). Chybí-li, model se volá vždy.
+   * Klíč počítá volající, protože jen on zná model a úsilí — `emit` je
+   * odsud neprůhledná funkce.
+   */
+  readonly answers?: { readonly cache: AnswerCache; readonly key: string };
 }
 
 /** Grammar ze zmrazeného protokolu, nebo věta, proč nejde přečíst. */
@@ -1029,32 +1052,54 @@ export async function runGeneration(
     session.events.append('visual.preview', { preview: rough.preview, attempt: 0 });
   }
 
-  let plan;
-  try {
-    const answer = await observePhaseAsync(serverPhaseObserver, 'intent-emitter', () => deps.emit(buildIntentRequest(prompt)));
-    plan = observePhase(serverPhaseObserver, 'intent-validation', () => readPlannerEmission(answer, { prompt, requireSceneSpec: deps.legacyPlan !== true }));
-  } catch (thrown) {
-    stop(unreachableFault(thrown), thrown instanceof Error ? thrown.message : String(thrown));
-    return;
-  }
-  if (!plan.ok) {
-    stop('PLANNER_REJECTED', `${plan.reason}: ${plan.detail}`);
-    return;
+  // **Uložená odpověď na tutéž větu se soudí celá DŘÍV, než se vydá první
+  // rámec** (P16 T6). Kdyby se replay rozpadl až u kompilátoru, relace by už
+  // stála ve fázi `intent` a živý pokus by neměl kam couvnout — žebřík je
+  // monotónní. Zásah proto znamená: obě uložené odpovědi prošly dnešními
+  // branami nad seedem téhle relace, a model se nevolá vůbec.
+  const replay = deps.answers === undefined ? null
+    : await observePhaseAsync(serverPhaseObserver, 'answer-cache-replay', () => replayAnswers(deps.answers!, prompt, deps, session.sessionSeed));
+  // Co model napsal, kvůli zápisu do cache: první odpověď je plánovač,
+  // poslední je kompilátor — a poslední je ta přijatá, protože
+  // `compileWithRepair` končí hned na kole, které prošlo.
+  const written: unknown[] = [];
+  const emit: BlueprintEmitter = async (request) => {
+    const answer = await deps.emit(request);
+    written.push(answer);
+    return answer;
+  };
+
+  let plan: PlannerEmission;
+  if (replay !== null) plan = replay.plan;
+  else {
+    let read;
+    try {
+      const answer = await observePhaseAsync(serverPhaseObserver, 'intent-emitter', () => emit(buildIntentRequest(prompt)));
+      read = observePhase(serverPhaseObserver, 'intent-validation', () => readPlannerEmission(answer, { prompt, requireSceneSpec: deps.legacyPlan !== true }));
+    } catch (thrown) {
+      stop(unreachableFault(thrown), thrown instanceof Error ? thrown.message : String(thrown));
+      return;
+    }
+    if (!read.ok) {
+      stop('PLANNER_REJECTED', `${read.reason}: ${read.detail}`);
+      return;
+    }
+    plan = read.value;
   }
 
   session.advance('intent', {
-    setting: plan.value.intent.setting,
-    spatialThesis: plan.value.intent.spatialThesis,
-    heroObjects: plan.value.intent.heroObjects,
-    unsupported: plan.value.intent.unsupported,
-    ...(plan.value.sceneSpec ? { sceneSpec: plan.value.sceneSpec } : {}),
+    setting: plan.intent.setting,
+    spatialThesis: plan.intent.spatialThesis,
+    heroObjects: plan.intent.heroObjects,
+    unsupported: plan.intent.unsupported,
+    ...(plan.sceneSpec ? { sceneSpec: plan.sceneSpec } : {}),
   });
 
   // This is derived from this request's validated identities and relations,
   // never a prepared scene or an accepted runtime. Unsupported plans skip it.
   if (deps.legacyPlan !== true && session.phase === 'intent') {
     const early = observePhase(serverPhaseObserver, 'intent-layout-preview',
-      () => buildIntentPreview(plan.value, { sessionSeed: session.sessionSeed }));
+      () => buildIntentPreview(plan, { sessionSeed: session.sessionSeed }));
     // **Odmítnutí přísného náhledu nesmí znamenat prázdnou obrazovku.**
     // Naměřeno nad osmnácti plány série T18: tímhle profilem projde jeden
     // (`intent-preview.ts`). Zbylých sedmnáct porotců do příchodu blueprintu
@@ -1063,7 +1108,7 @@ export async function runGeneration(
     // (`MASSING_PREVIEW_NOTICE`), ne tenhle rámec: přes snapshot §21 jde
     // jedině `visualPreview`, takže pole na payloadu by reconnect nepřežilo.
     const rough = early.ok ? null : observePhase(serverPhaseObserver, 'intent-massing-preview',
-      () => buildMassingPreview(plan.value, { sessionSeed: session.sessionSeed }));
+      () => buildMassingPreview(plan, { sessionSeed: session.sessionSeed }));
     const preview = early.ok ? early.preview : rough?.ok ? rough.preview : null;
     if (preview) {
       stored.visualPreview = preview;
@@ -1071,12 +1116,13 @@ export async function runGeneration(
     }
   }
 
-  const outcome = await compileWithRepair({
+  // Zásah už zkompilovaný blueprint nese; jinak se platí za kompilátor teď.
+  const outcome = replay?.outcome ?? await compileWithRepair({
     observePhase: serverPhaseObserver,
-    plan: plan.value,
+    plan,
     grammar: deps.grammar,
     sessionSeed: session.sessionSeed,
-    emit: deps.emit,
+    emit,
     onVisualPreview: (preview, attempt) => {
       if (session.phase !== 'intent') return;
       stored.visualPreview = preview;
@@ -1104,10 +1150,19 @@ export async function runGeneration(
   stored.visualPreview = null;
   stored.blueprint = blueprint;
 
+  // **Do cache jde jedině dvojice, která právě prošla oběma branami.** Zásah
+  // se nepřepisuje (má tytéž odpovědi) a neúspěch sem nedojde vůbec — každá
+  // cesta ven výš končí `stop()`. Zápis nikdy nevyhazuje (`answer-cache.ts`).
+  if (replay === null && deps.answers !== undefined)
+    await deps.answers.cache.write(deps.answers.key, { planner: written[0], compiler: written[written.length - 1] });
+  stored.reused = replay === null ? null : { at: new Date().toISOString(), savedCalls: 2 };
+
   // **Blueprint jde celý jedním rámcem, `world.ready` je pak jen povel.**
   // Klient, který se připojí až po něm, si ho vezme ze snapshotu (§21) — proto
   // je autoritativní snapshot, ne rámec, a proto se blueprint neposílá dvakrát.
-  session.advance('blueprint', { blueprint, rounds: outcome.rounds.length });
+  // Zásah cache jede v témž rámci: klient ho čte s blueprintem, ne o rámec
+  // později, a nepotřebuje kvůli němu snapshot.
+  session.advance('blueprint', { blueprint, rounds: outcome.rounds.length, ...(stored.reused ? { reused: stored.reused } : {}) });
   session.registerBlueprint(blueprint);
   // **Hotový svět dostane adresu, která přežije relaci** (T30, §22.4). Relace
   // je živá věc — vypadne z registru, skončí s procesem, stojí slot. Sdílený
@@ -1123,6 +1178,40 @@ export async function runGeneration(
     objects: blueprint.objects.length,
     shapes: blueprint.shapes.length,
   });
+}
+
+/**
+ * Uložené odpovědi na tutéž větu, prohnané dnešními branami — nebo `null`.
+ *
+ * `null` je jeden případ se třemi příčinami a všechny znamenají „jeď živě":
+ * klíč v cache není, záznam je poškozený (to už přeložila cache sama), nebo
+ * uložená odpověď branou dnešního buildu neprojde. Ten třetí případ je
+ * skutečný, ne teoretický: `PROMPT_VERSION` se hne s promptem, validace
+ * blueprintu se hýbe i bez něj. Miss tu stojí jedno zaplacené volání navíc;
+ * zásah, který by porotci vydal `BLUEPRINT_REJECTED` nad větou, která včera
+ * fungovala, by stál důvěru.
+ *
+ * Kompilátor běží s `maxRounds: 1` a emitorem, který vrací uložené kolo:
+ * opravné kolo by bylo placené volání a tady se neplatí nic.
+ */
+async function replayAnswers(
+  answers: NonNullable<GenerationDeps['answers']>,
+  prompt: string,
+  deps: GenerationDeps,
+  sessionSeed: number,
+): Promise<{ readonly plan: PlannerEmission; readonly outcome: Extract<BlueprintOutcome, { kind: 'compiled' }> } | null> {
+  const cached: CachedAnswer | null = await answers.cache.read(answers.key);
+  if (cached === null) return null;
+  const read = readPlannerEmission(cached.planner, { prompt, requireSceneSpec: deps.legacyPlan !== true });
+  if (!read.ok) return null;
+  const outcome = await compileWithRepair({
+    plan: read.value,
+    grammar: deps.grammar,
+    sessionSeed,
+    emit: () => Promise.resolve(cached.compiler),
+    maxRounds: 1,
+  });
+  return outcome.kind === 'compiled' ? { plan: read.value, outcome } : null;
 }
 
 /**
@@ -1195,6 +1284,7 @@ export function openSession(
     authoredWorldId: null,
     fault: null,
     sharedWorld: null,
+    reused: null,
     changes: new Map(),
   };
   return putSession(stored, now) ? stored : null;
