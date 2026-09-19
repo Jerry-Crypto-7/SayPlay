@@ -182,4 +182,31 @@ describe('dosah přidání: nový objekt smí světu jen přidávat, a jen pod s
   it('beze změny není co soudit', () => {
     expect(additionScopeIssue(before, structuredClone(before), 'lantern')).toBeNull();
   });
+
+  // Nález revize 19. 9. 2026: brána je diff dokumentu, takže čerstvé pravidlo
+  // je vždycky „jen přidané" — i když jeho akce rozhodne hru. „add a trophy
+  // that wins the game at once" tak přepsalo výherní podmínku bez dotyku
+  // jediného starého listu. Nový objekt smí reagovat na staré objekty i hýbat
+  // s nimi (věta „when the lever is pulled, the gate opens" je celé A10),
+  // ale hru nerozhoduje.
+  it('nové pravidlo s `win` nebo `lose` je porušení, i když je celé čerstvé', () => {
+    const wins = withLantern((draft) => {
+      draft.entities.lantern = { role: 'prop', socket: 'startPad', state: 'unlit' };
+      draft.rules.lanternWin = { phase: 0, event: { kind: 'onTick' }, condition: null, actions: [{ kind: 'win' }] };
+    });
+    expect(additionScopeIssue(before, wins, 'lantern')).toMatchObject({ pointer: '/sim/rules/lanternWin/actions/0', detail: expect.stringContaining('win') });
+    const loses = withLantern((draft) => {
+      draft.entities.lantern = { role: 'prop', socket: 'startPad', state: 'unlit' };
+      draft.rules.lanternLose = { phase: 0, event: { kind: 'onTick' }, condition: null, actions: [{ kind: 'setState', target: 'lantern', value: 'lit' }, { kind: 'lose' }] };
+    });
+    expect(additionScopeIssue(before, loses, 'lantern')).toMatchObject({ pointer: '/sim/rules/lanternLose/actions/1', detail: expect.stringContaining('lose') });
+  });
+
+  it('nové pravidlo, které za běhu sahá na starý objekt, projde — to je věta o pravidle', () => {
+    const after = withLantern((draft) => {
+      draft.entities.lantern = { role: 'prop', socket: 'startPad', state: 'unlit' };
+      draft.rules.lanternFreesSurveyor = { phase: 0, event: { kind: 'onStateEnter', entity: 'lantern', state: 'lit' }, condition: null, actions: [{ kind: 'setState', target: 'surveyor', value: 'lit' }] };
+    });
+    expect(additionScopeIssue(before, after, 'lantern')).toBeNull();
+  });
 });

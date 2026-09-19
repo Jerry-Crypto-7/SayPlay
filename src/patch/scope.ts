@@ -208,6 +208,7 @@ export function additionScopeIssue(
   stableId: string,
 ): AdditionScopeIssue | null {
   const before = isRecord(beforeSim) ? beforeSim : {};
+  const judgedRules = new Set<string>();
 
   for (const leaf of changedLeafEffects(beforeSim, afterSim, '/sim')) {
     const [, table, key] = pointerTokens(leaf.path);
@@ -237,7 +238,35 @@ export function additionScopeIssue(
         pointer: leaf.path,
         detail: `${leaf.path} writes into ${key}, which already existed before ${stableId} was added`,
       };
+
+    // Čerstvé pravidlo je v diffu vždycky jen `add`, i když rozhodne hru
+    // (nález revize 19. 9. 2026: „a trophy that wins the game at once" přepsalo
+    // výherní podmínku bez dotyku jediného starého listu). Reagovat na staré
+    // objekty a hýbat s nimi smí — to je věta o pravidle (A10) a svědek se
+    // přeověřuje; `win` a `lose` ne, protože nový předmět nemá co rozhodovat,
+    // kdy svět končí.
+    if (table === 'rules' && !judgedRules.has(key)) {
+      judgedRules.add(key);
+      const decided = decidingAction(afterSim, key);
+      if (decided !== null)
+        return {
+          pointer: decided.pointer,
+          detail: `${decided.pointer} ends the game with ${decided.kind}; adding ${stableId} may react to the world but never decide when it is won or lost`,
+        };
+    }
   }
 
+  return null;
+}
+
+/** První akce `win` / `lose` v pravidle `key` dokumentu `sim`, nebo `null`. */
+function decidingAction(sim: unknown, key: string): { pointer: string; kind: string } | null {
+  const rules = isRecord(sim) ? sim.rules : undefined;
+  const rule = isRecord(rules) ? rules[key] : undefined;
+  const actions = isRecord(rule) && Array.isArray(rule.actions) ? rule.actions : [];
+  for (const [index, action] of actions.entries()) {
+    const kind = isRecord(action) ? action.kind : undefined;
+    if (kind === 'win' || kind === 'lose') return { pointer: `/sim/rules/${key}/actions/${String(index)}`, kind };
+  }
   return null;
 }
