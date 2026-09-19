@@ -1,0 +1,112 @@
+{
+  "measuredAt": "2026-09-19T08:58:49.156Z",
+  "plan": "P21 T11 – A10 gate, one live run",
+  "model": "gpt-6-astra@medium#cli",
+  "effort": "medium",
+  "callCap": 40,
+  "world": {
+    "id": "c09",
+    "prompt": "A giant fallen tree hollowed into a village.",
+    "objects": [
+      "hollowFallenTree",
+      "treeVillage",
+      "villageDwellings",
+      "sharedPassage",
+      "villageCommons"
+    ]
+  },
+  "corpus": {
+    "total": 10,
+    "measured": 4,
+    "selection": "every third of ten - this run took index 0, 3, 6 AND 9: every third of ten is four, the plan asked for three; all four measured cases stay in (dropping the fourth, a rejection, would improve the share), so the denominator is 4",
+    "remaining": [
+      "Put a small brass bell by the gate.",
+      "There is a well in the middle of the courtyard.",
+      "place another crate next to the first one",
+      "When the lever is pulled, the gate opens.",
+      "If the lantern is lit the door unlocks",
+      "make the well deeper"
+    ]
+  },
+  "target": {
+    "medianMs": 5000,
+    "acceptedOf": [
+      2,
+      3
+    ],
+    "full": [
+      8,
+      10
+    ],
+    "note": "research targets, stated as a goal – the measured number decides, not this line"
+  },
+  "summary": {
+    "total": 4,
+    "accepted": 1,
+    "acceptedShare": 0.25,
+    "medianMs": 29834,
+    "slowestMs": 33701
+  },
+  "cases": [
+    {
+      "sentence": "add a lantern at the far edge",
+      "piece": "add a lantern at the far edge",
+      "queued": 0,
+      "target": "add",
+      "modelMs": 33696,
+      "inputTokens": 17516,
+      "outputTokens": 872,
+      "verdict": "REJECTED",
+      "reason": "SHAPE_INVALID",
+      "detail": "schema:/nodes/0/kind: Invalid discriminator value. Expected 'sphere' | 'box' | 'roundBox' | 'capsule' | 'cylinder' | 'cone' | 'torus' | 'plane' | 'prism' | 'ellipsoid' | 'union' | 'subtract' | 'intersect' | 'translate' | 'rotate' | 'scale' | 'mirror' | 'twist' | 'bend' | 'taper' | 'displace' | 'revo",
+      "ms": 33701,
+      "summary": null,
+      "addedObject": null
+    },
+    {
+      "sentence": "A wooden bench under the tree",
+      "piece": "A wooden bench under the tree",
+      "queued": 0,
+      "target": "hollowFallenTree",
+      "modelMs": 9643,
+      "inputTokens": 17086,
+      "outputTokens": 190,
+      "verdict": "REJECTED",
+      "reason": "EMPTY_CHANGE",
+      "detail": "the answer changes no shape, no rule and no material, so there is nothing to preview",
+      "ms": 9645,
+      "summary": null,
+      "addedObject": null
+    },
+    {
+      "sentence": "the bell should ring every time someone walks past the well",
+      "piece": "the bell should ring every time someone walks past the well",
+      "queued": 0,
+      "target": "add",
+      "modelMs": 33597,
+      "inputTokens": 17518,
+      "outputTokens": 1006,
+      "verdict": "ACCEPTED",
+      "reason": null,
+      "detail": null,
+      "ms": 33604,
+      "summary": "A bronze bell will appear on the ground beside the fallen tree.",
+      "addedObject": "villageBell"
+    },
+    {
+      "sentence": "Paint the gate rust red.",
+      "piece": "Paint the gate rust red",
+      "queued": 0,
+      "target": "add",
+      "modelMs": 29833,
+      "inputTokens": 17516,
+      "outputTokens": 844,
+      "verdict": "REJECTED",
+      "reason": "SHAPE_INVALID",
+      "detail": "schema:/nodes/0/kind: Invalid discriminator value. Expected 'sphere' | 'box' | 'roundBox' | 'capsule' | 'cylinder' | 'cone' | 'torus' | 'plane' | 'prism' | 'ellipsoid' | 'union' | 'subtract' | 'intersect' | 'translate' | 'rotate' | 'scale' | 'mirror' | 'twist' | 'bend' | 'taper' | 'displace' | 'revo",
+      "ms": 29834,
+      "summary": null,
+      "addedObject": null
+    }
+  ]
+}
