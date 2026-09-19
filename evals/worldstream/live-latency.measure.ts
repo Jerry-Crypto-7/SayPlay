@@ -19,11 +19,14 @@
  *                               `#cli` volá model přes Codex CLI (`codex exec`) místo HTTP proxy — jediná cesta ke `gpt-6-astra`
  *   WORLDSMITH_LATENCY_CASES    kolik vět z korpusu, výchozí 5 (bere každou šestou, ne prvních pět)
  *   WORLDSMITH_LATENCY_CHUNKED  `1` = svět na tři souběžné kusy (P21 T5); každý kus je vlastní záznam s `chunk`, případ nese
- *                               čas celého světa i nejdelšího kusu
+ *                               čas celého světa i nejdelšího kusu. **Píše `latency-p21.json`, ne `latency-report.json`:**
+ *                               ten nese měření ze 13. 9. (pět vět), ze kterého P21 cituje, a přepsat ho by citaci vzalo.
+ *                               P21 artefakt nese čtyři fáze čekání na větu a vedle nich staré číslo s datem a počtem vět
+ *                               (`evals/worldstream/__tests__/latency-report.test.ts`).
  *   + totéž co `live-create` (`WORLDSMITH_MODEL_ENDPOINT`, `_KEY`, `_PROFILE`, `_CALL_CAP`, ceny, `VERCEL_ENV`)
  */
 
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
 import { join, resolve } from 'node:path';
@@ -49,7 +52,9 @@ const CHUNKED = process.env.WORLDSMITH_LATENCY_CHUNKED === '1';
 
 // Explicit P20 run directories retain failures and answers without rewriting older reports.
 const P20_DIR = process.env.P20_RUN_DIR ? resolve(process.env.P20_RUN_DIR) : null;
-const REPORT_FILE = P20_DIR ? join(P20_DIR, 'latency-report.json') : fileURLToPath(new URL('./latency-report.json', import.meta.url));
+const BASELINE_FILE = fileURLToPath(new URL('./latency-report.json', import.meta.url));
+const P21_FILE = fileURLToPath(new URL('./latency-p21.json', import.meta.url));
+const REPORT_FILE = P20_DIR ? join(P20_DIR, 'latency-report.json') : CHUNKED ? P21_FILE : BASELINE_FILE;
 const RAW_FILE = P20_DIR ? join(P20_DIR, 'latency-raw.json') : fileURLToPath(new URL('../../scratch/latency-raw.json', import.meta.url));
 
 interface CallRecord {
@@ -63,6 +68,8 @@ interface CallRecord {
   /** První řádek důvodu odmítnutí, jen u opravného kola. */
   readonly reason: string | null;
   readonly ms: number;
+  /** Kdy volání skončilo, od začátku věty. U souběžných kusů je to jediné, z čeho jdou fáze čekání. */
+  readonly endedAtMs: number;
   readonly requestBytes: number;
   readonly answerBytes: number;
   readonly inputTokens: number | null;
@@ -116,7 +123,7 @@ function variantsFromEnv(): Variant[] {
  */
 function cliEmitter(variant: Variant): {
   upstream: { caseId: string; emit(request: UpstreamRequest): Promise<unknown> };
-  tap: { last: () => Usage | null; lastText: () => string; notJsonAsWritten: () => number };
+  tap: Tap;
 } {
   const config = upstreamConfigFromEnv({
     ...process.env,
@@ -126,14 +133,16 @@ function cliEmitter(variant: Variant): {
   });
   if (config === null) throw new Error('codex-cli variant needs the same WORLDSMITH_* environment as the http one');
   const branch = upstreamBranch(config);
-  let last: Usage | null = null;
+  // Účtenka po požadavku, ne „poslední": tři kusy letí naráz (T5) a sdílená
+  // proměnná by kusu připsala spotřebu souseda.
+  const usageByRequest = new WeakMap<UpstreamRequest, Usage>();
   let notJsonAsWritten = 0;
   return {
     upstream: {
       caseId: 'unknown',
       async emit(request) {
         const outcome = await branch.generate({ prompt: request.user, request });
-        last = outcome.usage;
+        if (outcome.usage !== null) usageByRequest.set(request, outcome.usage);
         if (!outcome.ok) {
           if (outcome.reason === 'MALFORMED_RESPONSE') notJsonAsWritten += 1;
           throw new Error(`${outcome.reason}: ${outcome.detail}`);
@@ -142,8 +151,16 @@ function cliEmitter(variant: Variant): {
       },
     },
     // Text odpovědi transport ven nevydává; okolí chyby se u `#cli` nevypisuje.
-    tap: { last: () => last, lastText: () => '', notJsonAsWritten: () => notJsonAsWritten },
+    tap: { usageOf: (request) => usageByRequest.get(request) ?? null, lastText: () => '', notJsonAsWritten: () => notJsonAsWritten },
   };
+}
+
+interface Tap {
+  /** Účtenka volání, které dostalo tenhle požadavek; `null`, když poskytovatel žádnou nevydal. */
+  usageOf: (request: UpstreamRequest) => Usage | null;
+  lastText: () => string;
+  /** Kolik odpovědí nebylo JSON tak, jak přišly (produkt je dopíše, nebo odmítne). */
+  notJsonAsWritten: () => number;
 }
 
 /**
@@ -151,13 +168,7 @@ function cliEmitter(variant: Variant): {
  * spotřebuje. Tokeny jsou to, co předplatné doopravdy platí — `-fast`
  * varianta padla právě na nich, ne na čase.
  */
-function usageTappingFetch(): {
-  fetch: typeof fetch;
-  last: () => Usage | null;
-  lastText: () => string;
-  /** Kolik odpovědí nebylo JSON tak, jak přišly (produkt je dopíše, nebo odmítne). */
-  notJsonAsWritten: () => number;
-} {
+function usageTappingFetch(): Tap & { fetch: typeof fetch } {
   let last: Usage | null = null;
   let lastText = '';
   let notJsonAsWritten = 0;
@@ -180,7 +191,8 @@ function usageTappingFetch(): {
   };
   return {
     fetch: tapped,
-    last: () => last,
+    // HTTP cesta jede po jednom volání, takže „poslední" je to správné.
+    usageOf: () => last,
     lastText: () => lastText,
     notJsonAsWritten: () => notJsonAsWritten,
   };
@@ -218,6 +230,64 @@ function chunkTimes(calls: readonly CallRecord[]): { longestMs: number; sumMs: n
   const byChunk: Record<string, number> = {};
   for (const call of chunked) byChunk[call.chunk ?? '?'] = Math.round(call.ms);
   return { longestMs: Math.round(Math.max(...chunked.map((c) => c.ms))), sumMs: Math.round(chunked.reduce((t, c) => t + c.ms, 0)), byChunk };
+}
+
+/**
+ * Čtyři fáze čekání na jednu větu, od odeslání (P21 T16). Fáze je `null`,
+ * když k ní věta nedošla.
+ *
+ * - `toMassingPreviewMs` — plánovač odpověděl; hmotový náhled (T2) z jeho
+ *   emise stojí milisekundy (`massing-preview.json`), takže se nepočítá zvlášť.
+ * - `toFirstChunkMs` — první kus kompilátoru odpověděl. **Dnes se z něj nic
+ *   nekreslí:** CLI proud nevydává (T3, `upstream-stream.test.ts`) a kusy se
+ *   slepují až všechny naráz, takže je to spodní mez, ne to, co porotce vidí.
+ * - `toFirstObjectMs` — první objekt na plátně; dnes totéž jako hratelný svět,
+ *   protože objekty vzniknou až ze slepeného blueprintu.
+ * - `toPlayableMs` — blueprint prošel branou a certifikací, hrdinové v hlíně.
+ * - `toFullDetailMs` — hrdinové vymeshovaní, celá věta hotová.
+ */
+function phasesOf(outcome: CaseOutcome, calls: readonly CallRecord[]): Record<'toMassingPreviewMs' | 'toFirstChunkMs' | 'toFirstObjectMs' | 'toPlayableMs' | 'toFullDetailMs', number | null> {
+  const planner = calls.find((call) => call.stage === 'planner');
+  const chunks = calls.filter((call) => call.chunk !== null && !call.repair);
+  const playable = outcome.compiledMs === undefined ? null : Math.round(outcome.compiledMs);
+  return {
+    toMassingPreviewMs: planner === undefined || !planner.ok ? null : Math.round(planner.endedAtMs),
+    toFirstChunkMs: chunks.length === 0 ? null : Math.round(Math.min(...chunks.map((call) => call.endedAtMs))),
+    toFirstObjectMs: playable,
+    toPlayableMs: playable,
+    toFullDetailMs: Math.round(outcome.latencyMs),
+  };
+}
+
+/**
+ * Měření ze 13. 9. 2026 pro srovnání — citované z commitnutého artefaktu,
+ * ne opsané rukou, a **s počtem vět a účinkem**, protože šlo na pěti větách
+ * jedním voláním na svět a tenhle běh na dvou větách po kusech.
+ */
+function baselineFor(model: string, caseIds: readonly string[]) {
+  const report = JSON.parse(readFileSync(BASELINE_FILE, 'utf8')) as {
+    measuredAt: string;
+    models: { model: string; cases: number; caseMedianMs: number; caseP95Ms: number; byStage: Record<string, { medianMs: number }>; perCase: { id: string; ms: number }[] }[];
+  };
+  const base = report.models.find((entry) => entry.model === model) ?? report.models[0];
+  const effort = base.model.split('@')[1]?.split('#')[0] ?? 'unknown';
+  return {
+    measuredAt: report.measuredAt,
+    file: 'evals/worldstream/latency-report.json',
+    model: base.model,
+    effort,
+    cases: base.cases,
+    caseIds: base.perCase.map((entry) => entry.id),
+    caseMedianMs: base.caseMedianMs,
+    caseP95Ms: base.caseP95Ms,
+    plannerMedianMs: base.byStage.planner?.medianMs ?? null,
+    compilerMedianMs: base.byStage.compiler?.medianMs ?? null,
+    perCaseMs: Object.fromEntries(base.perCase.filter((entry) => caseIds.includes(entry.id)).map((entry) => [entry.id, entry.ms])),
+    note:
+      `Baseline measured ${report.measuredAt.slice(0, 10)} on ${String(base.cases)} sentences with ${base.model} ` +
+      '(one compiler call per world, @' + effort + '); this run measures fewer sentences in concurrent chunks, ' +
+      'so compare per sentence where the id matches, and read the medians as different denominators.',
+  };
 }
 
 function summarise(model: string, cases: readonly CaseOutcome[], calls: readonly CallRecord[], notJsonAsWritten: number) {
@@ -292,13 +362,14 @@ describe('per-call latency of the live create path', () => {
     const mesh = createMeshClient({ allowMainThread: true });
     const raw: CallRecord[] = [];
     const summaries: ReturnType<typeof summarise>[] = [];
+    const allOutcomes: CaseOutcome[] = [];
 
     try {
       for (const variant of variants) {
         const model = variant.label;
         const { upstream, tap } = ((): {
           upstream: { caseId: string; emit(request: UpstreamRequest): Promise<unknown> };
-          tap: { last: () => Usage | null; lastText: () => string; notJsonAsWritten: () => number };
+          tap: Tap;
         } => {
           if (variant.transport === 'cli') return cliEmitter(variant);
           const httpTap = usageTappingFetch();
@@ -321,9 +392,12 @@ describe('per-call latency of the live create path', () => {
         for (const entry of cases) {
           upstream.caseId = entry.id;
           let call = 0;
+          const caseStarted = performance.now();
           const done = await driveCreateCase(entry, {
             emit: async (request) => {
+              // Pořadí se čte hned: tři kusy letí naráz a sdílený čítač by v `finally` ukázal všem třem totéž číslo.
               call += 1;
+              const index = call;
               const started = performance.now();
               let answer: unknown;
               let ok = true;
@@ -341,25 +415,26 @@ describe('per-call latency of the live create path', () => {
                 // Celá odpověď na disk — bez ní se nedá říct, jestli je vada v modelu, nebo v cestě k němu.
                 writeFileSync(
                   // `#cli` v popisku by v URL bylo fragmentem a jméno souboru by se uťalo.
-                  P20_DIR ? join(P20_DIR, 'answers', `${entry.id}-${call}-failed.txt`) : fileURLToPath(new URL(`../../scratch/latency-failed-${model.replace('#', '+')}-${entry.id}-${String(call)}.txt`, import.meta.url)),
+                  P20_DIR ? join(P20_DIR, 'answers', `${entry.id}-${index}-failed.txt`) : fileURLToPath(new URL(`../../scratch/latency-failed-${model.replace('#', '+')}-${entry.id}-${String(index)}.txt`, import.meta.url)),
                   tap.lastText(),
                 );
                 throw thrown;
               } finally {
-                if (P20_DIR) writeFileSync(join(P20_DIR, 'answers', `${entry.id}-${call}.json`), JSON.stringify({ request, answer, ok }, null, 2));
+                if (P20_DIR) writeFileSync(join(P20_DIR, 'answers', `${entry.id}-${index}.json`), JSON.stringify({ request, answer, ok }, null, 2));
                 const record: CallRecord = {
                   model,
                   caseId: entry.id,
-                  call,
+                  call: index,
                   stage: requestStage(request),
                   chunk: requestChunk(request),
                   repair: request.user.startsWith(REPAIR_PREFIX),
                   reason: reasonOf(request),
                   ms: performance.now() - started,
+                  endedAtMs: performance.now() - caseStarted,
                   requestBytes: Buffer.byteLength(request.system) + Buffer.byteLength(request.user),
                   answerBytes: Buffer.byteLength(JSON.stringify(answer ?? null)),
-                  inputTokens: tap.last()?.inputTokens ?? null,
-                  outputTokens: tap.last()?.outputTokens ?? null,
+                  inputTokens: tap.usageOf(request)?.inputTokens ?? null,
+                  outputTokens: tap.usageOf(request)?.outputTokens ?? null,
                   ok,
                 };
                 modelCalls.push(record);
@@ -392,15 +467,56 @@ describe('per-call latency of the live create path', () => {
           if (P20_DIR && done.failure?.stage === 'unavailable') break;
         }
         summaries.push(summarise(model, outcomes, modelCalls, tap.notJsonAsWritten()));
+        allOutcomes.push(...outcomes);
       }
     } finally {
       mesh.dispose();
       mkdirSync(fileURLToPath(new URL('../../scratch/', import.meta.url)), { recursive: true });
       writeFileSync(RAW_FILE, JSON.stringify(raw, null, 2));
-      writeFileSync(
-        REPORT_FILE,
-        `${JSON.stringify({ measuredAt: new Date().toISOString(), sessionSeed: SESSION_SEED, caseIds: cases.map((c) => c.id), models: summaries }, null, 2)}\n`,
-      );
+      const caseIds = cases.map((c) => c.id);
+      const measuredAt = new Date().toISOString();
+      if (CHUNKED && !P20_DIR) {
+        // P21 artefakt: jedna varianta, fáze na větu, staré číslo vedle nového
+        // a každé volání s kusem a spotřebou (orákulum T5).
+        const variant = variants[0];
+        const baseline = baselineFor(variant.label, caseIds);
+        writeFileSync(
+          P21_FILE,
+          `${JSON.stringify({
+            measuredAt,
+            plan: 'P21 T5 + T16 – one live run after the phase-1 changes',
+            model: variant.label,
+            effort: variant.effort ?? 'medium',
+            cases: cases.length,
+            caseIds,
+            chunked: true,
+            callCap: Number(process.env.WORLDSMITH_CALL_CAP ?? NaN),
+            sessionSeed: SESSION_SEED,
+            baseline,
+            summary: summaries[0] ?? null,
+            perCase: allOutcomes.map((outcome) => {
+              const entry = cases.find((c) => c.id === outcome.id);
+              return {
+                id: outcome.id,
+                prompt: entry?.prompt ?? '',
+                phases: phasesOf(outcome, raw.filter((call) => call.caseId === outcome.id)),
+                chunks: chunkTimes(raw.filter((call) => call.caseId === outcome.id)),
+                rounds: outcome.rounds,
+                authored: outcome.geometryAuthored,
+                certified: outcome.certified,
+                failure: outcome.failure,
+                baselineMs: baseline.perCaseMs[outcome.id] ?? null,
+              };
+            }),
+            calls: raw.map(({ model: _model, requestBytes: _bytes, ...call }) => ({ ...call, ms: Math.round(call.ms), endedAtMs: Math.round(call.endedAtMs) })),
+          }, null, 2)}\n`,
+        );
+      } else {
+        writeFileSync(
+          REPORT_FILE,
+          `${JSON.stringify({ measuredAt, sessionSeed: SESSION_SEED, caseIds, models: summaries }, null, 2)}\n`,
+        );
+      }
     }
 
     expect(summaries.length).toBe(variants.length);

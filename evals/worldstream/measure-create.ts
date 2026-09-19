@@ -378,6 +378,12 @@ export interface CaseOutcome {
   readonly certified: boolean;
   /** Od věty k hotovému hrubému světu, včetně meshingu hrdinů. */
   readonly latencyMs: number;
+  /**
+   * Od věty k certifikovanému blueprintu, **před** meshingem hrdinů — chvíle,
+   * kdy je svět hratelný, i když hrdinové ještě stojí v hlíně. Jen u světa,
+   * který vznikl; `latency-p21.json` z něj čte fázi `toPlayableMs`.
+   */
+  readonly compiledMs?: number;
   /** Kolik kol sebeopravy to stálo. Jedno znamená „napoprvé". */
   readonly rounds: number;
   readonly failure: { readonly stage: FailureStage; readonly detail: string } | null;
@@ -599,6 +605,7 @@ export async function driveCreateCase(entry: CreateCase, deps: CaseDeps): Promis
     };
   }
 
+  const compiledMs = clock() - started;
   const world = await buildProxyWorld(outcome, { mesh: deps.mesh });
   const blueprint = outcome.result.value;
   const authored = rungsAreAuthored(world);
@@ -612,6 +619,7 @@ export async function driveCreateCase(entry: CreateCase, deps: CaseDeps): Promis
     worldValid: world.kind === 'built',
     certified: outcome.result.verdict.body.outcome === 'CERTIFIED',
     latencyMs: clock() - started,
+    compiledMs,
     rounds: outcome.rounds.length,
     failure: authored
       ? null

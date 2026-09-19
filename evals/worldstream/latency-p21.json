@@ -1,0 +1,279 @@
+{
+  "measuredAt": "2026-09-19T08:55:08.117Z",
+  "plan": "P21 T5 + T16 – one live run after the phase-1 changes",
+  "model": "gpt-6-astra@medium#cli",
+  "effort": "medium",
+  "cases": 2,
+  "caseIds": [
+    "c01",
+    "c16"
+  ],
+  "chunked": true,
+  "callCap": 40,
+  "sessionSeed": 4021,
+  "baseline": {
+    "measuredAt": "2026-09-13T18:58:42.960Z",
+    "file": "evals/worldstream/latency-report.json",
+    "model": "gpt-6-astra@medium#cli",
+    "effort": "medium",
+    "cases": 5,
+    "caseIds": [
+      "c01",
+      "c07",
+      "c13",
+      "c19",
+      "c25"
+    ],
+    "caseMedianMs": 142581,
+    "caseP95Ms": 258877,
+    "plannerMedianMs": 16696,
+    "compilerMedianMs": 103209,
+    "perCaseMs": {
+      "c01": 96466
+    },
+    "note": "Baseline measured 2026-09-13 on 5 sentences with gpt-6-astra@medium#cli (one compiler call per world, @medium); this run measures fewer sentences in concurrent chunks, so compare per sentence where the id matches, and read the medians as different denominators."
+  },
+  "summary": {
+    "model": "gpt-6-astra@medium#cli",
+    "cases": 2,
+    "callsPerCase": 4,
+    "inputTokensPerCase": 72532,
+    "outputTokensPerCase": 8412,
+    "callsWithoutUsage": 0,
+    "notJsonAsWritten": 0,
+    "caseMedianMs": 143737,
+    "caseP95Ms": 224914,
+    "geometryAuthored": 0,
+    "certified": 0,
+    "byStage": {
+      "planner": {
+        "n": 2,
+        "medianMs": 75025,
+        "p95Ms": 79604,
+        "medianAnswerBytes": 6794
+      },
+      "compiler": {
+        "n": 6,
+        "medianMs": 45081,
+        "p95Ms": 145278,
+        "medianAnswerBytes": 1705
+      }
+    },
+    "repairCalls": 0,
+    "repairMedianMs": 0,
+    "repairReasons": {},
+    "chunked": true,
+    "perCase": [
+      {
+        "id": "c01",
+        "ms": 143737,
+        "chunks": {
+          "longestMs": 68523,
+          "sumMs": 151809,
+          "byChunk": {
+            "rules": 38206,
+            "objects": 45081,
+            "architecture": 68523
+          }
+        },
+        "rounds": 1,
+        "authored": false,
+        "failure": {
+          "stage": "schema",
+          "detail": "upperContainerA: on lowerContainerA: base does not rest inside a declared support surface"
+        }
+      },
+      {
+        "id": "c16",
+        "ms": 224914,
+        "chunks": {
+          "longestMs": 145278,
+          "sumMs": 235027,
+          "byChunk": {
+            "architecture": 16007,
+            "rules": 73742,
+            "objects": 145278
+          }
+        },
+        "rounds": 1,
+        "authored": false,
+        "failure": {
+          "stage": "shape",
+          "detail": "shapes[5]: shape overflows its own targetBounds on x, y, z: generated bounds were 4.9× the requested volume"
+        }
+      }
+    ]
+  },
+  "perCase": [
+    {
+      "id": "c01",
+      "prompt": "A cathedral of stacked shipping containers around a light well.",
+      "phases": {
+        "toMassingPreviewMs": 75026,
+        "toFirstChunkMs": 113267,
+        "toFirstObjectMs": null,
+        "toPlayableMs": null,
+        "toFullDetailMs": 143737
+      },
+      "chunks": {
+        "longestMs": 68523,
+        "sumMs": 151809,
+        "byChunk": {
+          "rules": 38206,
+          "objects": 45081,
+          "architecture": 68523
+        }
+      },
+      "rounds": 1,
+      "authored": false,
+      "certified": false,
+      "failure": {
+        "stage": "schema",
+        "detail": "upperContainerA: on lowerContainerA: base does not rest inside a declared support surface"
+      },
+      "baselineMs": 96466
+    },
+    {
+      "id": "c16",
+      "prompt": "A pneumatic tube station that sorts capsules into three chutes.",
+      "phases": {
+        "toMassingPreviewMs": 79605,
+        "toFirstChunkMs": 95620,
+        "toFirstObjectMs": null,
+        "toPlayableMs": null,
+        "toFullDetailMs": 224914
+      },
+      "chunks": {
+        "longestMs": 145278,
+        "sumMs": 235027,
+        "byChunk": {
+          "architecture": 16007,
+          "rules": 73742,
+          "objects": 145278
+        }
+      },
+      "rounds": 1,
+      "authored": false,
+      "certified": false,
+      "failure": {
+        "stage": "shape",
+        "detail": "shapes[5]: shape overflows its own targetBounds on x, y, z: generated bounds were 4.9× the requested volume"
+      },
+      "baselineMs": null
+    }
+  ],
+  "calls": [
+    {
+      "caseId": "c01",
+      "call": 1,
+      "stage": "planner",
+      "chunk": null,
+      "repair": false,
+      "reason": null,
+      "ms": 75025,
+      "endedAtMs": 75026,
+      "answerBytes": 6794,
+      "inputTokens": 15965,
+      "outputTokens": 2296,
+      "ok": true
+    },
+    {
+      "caseId": "c01",
+      "call": 4,
+      "stage": "compiler",
+      "chunk": "rules",
+      "repair": false,
+      "reason": null,
+      "ms": 38206,
+      "endedAtMs": 113267,
+      "answerBytes": 2750,
+      "inputTokens": 19341,
+      "outputTokens": 1135,
+      "ok": true
+    },
+    {
+      "caseId": "c01",
+      "call": 4,
+      "stage": "compiler",
+      "chunk": "objects",
+      "repair": false,
+      "reason": null,
+      "ms": 45081,
+      "endedAtMs": 120129,
+      "answerBytes": 1379,
+      "inputTokens": 18770,
+      "outputTokens": 1381,
+      "ok": true
+    },
+    {
+      "caseId": "c01",
+      "call": 4,
+      "stage": "compiler",
+      "chunk": "architecture",
+      "repair": false,
+      "reason": null,
+      "ms": 68523,
+      "endedAtMs": 143558,
+      "answerBytes": 1705,
+      "inputTokens": 17939,
+      "outputTokens": 2157,
+      "ok": true
+    },
+    {
+      "caseId": "c16",
+      "call": 1,
+      "stage": "planner",
+      "chunk": null,
+      "repair": false,
+      "reason": null,
+      "ms": 79604,
+      "endedAtMs": 79605,
+      "answerBytes": 7647,
+      "inputTokens": 15964,
+      "outputTokens": 2536,
+      "ok": true
+    },
+    {
+      "caseId": "c16",
+      "call": 4,
+      "stage": "compiler",
+      "chunk": "architecture",
+      "repair": false,
+      "reason": null,
+      "ms": 16007,
+      "endedAtMs": 95620,
+      "answerBytes": 177,
+      "inputTokens": 18235,
+      "outputTokens": 346,
+      "ok": true
+    },
+    {
+      "caseId": "c16",
+      "call": 4,
+      "stage": "compiler",
+      "chunk": "rules",
+      "repair": false,
+      "reason": null,
+      "ms": 73742,
+      "endedAtMs": 153388,
+      "answerBytes": 5029,
+      "inputTokens": 19637,
+      "outputTokens": 2277,
+      "ok": true
+    },
+    {
+      "caseId": "c16",
+      "call": 4,
+      "stage": "compiler",
+      "chunk": "objects",
+      "repair": false,
+      "reason": null,
+      "ms": 145278,
+      "endedAtMs": 224908,
+      "answerBytes": 5694,
+      "inputTokens": 19212,
+      "outputTokens": 4695,
+      "ok": true
+    }
+  ]
+}
