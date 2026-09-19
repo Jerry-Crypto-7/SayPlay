@@ -1,0 +1,408 @@
+{
+  "plan": "P22 T17 – judge gauntlet through the planner (G4, G5)",
+  "seed": 4021,
+  "excluded": [
+    "contradictory",
+    "unsupported",
+    "safety",
+    "abstract"
+  ],
+  "sample": [
+    {
+      "id": "ordinary-1",
+      "category": "ordinary"
+    },
+    {
+      "id": "architecture-3",
+      "category": "architecture"
+    },
+    {
+      "id": "nature-4",
+      "category": "nature"
+    },
+    {
+      "id": "scifi-6",
+      "category": "scifi"
+    },
+    {
+      "id": "fantasy-3",
+      "category": "fantasy"
+    },
+    {
+      "id": "physics-2",
+      "category": "physics"
+    },
+    {
+      "id": "agent-6",
+      "category": "agent"
+    },
+    {
+      "id": "educational-3",
+      "category": "educational"
+    },
+    {
+      "id": "narrative-1",
+      "category": "narrative"
+    },
+    {
+      "id": "minimal-2",
+      "category": "minimal"
+    },
+    {
+      "id": "large-4",
+      "category": "large"
+    },
+    {
+      "id": "ambiguous-4",
+      "category": "ambiguous"
+    },
+    {
+      "id": "count-relation-1",
+      "category": "count-relation"
+    },
+    {
+      "id": "adversarial-5",
+      "category": "adversarial"
+    },
+    {
+      "id": "long-1",
+      "category": "long"
+    },
+    {
+      "id": "ultrashort-4",
+      "category": "ultrashort"
+    }
+  ],
+  "runs": [
+    {
+      "measuredAt": "2026-09-19T20:30:58.851Z",
+      "plan": "P22 T17 – judge gauntlet, one live planner call per sentence",
+      "model": "gpt-6-astra@medium#cli",
+      "effort": "medium",
+      "plannerEffort": "low",
+      "calls": 16,
+      "callCap": 16,
+      "partial": false,
+      "reason": null,
+      "oracles": "evals/worldstream/gauntlet/oracles.json (human-written 2026-09-19)",
+      "scorer": "src/scene/requirements.ts scoreSemantics() – four equally weighted components; null when no readable answer",
+      "answersDir": "evals/worldstream/gauntlet/gauntlet-answers (committed; one <id>.json per called sentence)",
+      "summary": {
+        "total": 16,
+        "readable": 16,
+        "readableShare": 1,
+        "medianPlannerMs": 44885,
+        "medianScore": 1,
+        "medianComponents": {
+          "presence": 1,
+          "counts": 1,
+          "relations": 1,
+          "forbidden": 1
+        },
+        "failuresByCategory": {},
+        "semanticFailuresByKind": {
+          "presence": 0,
+          "counts": 12,
+          "relations": 3,
+          "forbidden": 0
+        }
+      },
+      "cases": [
+        {
+          "id": "ordinary-1",
+          "category": "ordinary",
+          "sentence": "A small alpine cabin with a fireplace, table, two chairs and a door that opens only after I light the fire.",
+          "plannerMs": 52147,
+          "massingBlocks": 6,
+          "answerBytes": 4314,
+          "readable": true,
+          "scoreSemantics": 1,
+          "components": {
+            "presence": 1,
+            "counts": 1,
+            "relations": 1,
+            "forbidden": 1
+          },
+          "failures": []
+        },
+        {
+          "id": "architecture-3",
+          "category": "architecture",
+          "sentence": "A round watchtower on a hill with a spiral staircase and a beacon on top.",
+          "plannerMs": 25153,
+          "massingBlocks": 4,
+          "answerBytes": 2769,
+          "readable": true,
+          "scoreSemantics": 1,
+          "components": {
+            "presence": 1,
+            "counts": 1,
+            "relations": 1,
+            "forbidden": 1
+          },
+          "failures": []
+        },
+        {
+          "id": "nature-4",
+          "category": "nature",
+          "sentence": "A tropical beach with palm trees, a hammock and waves that push a bottle onto the sand.",
+          "plannerMs": 48002,
+          "massingBlocks": 5,
+          "answerBytes": 3190,
+          "readable": true,
+          "scoreSemantics": 0.917,
+          "components": {
+            "presence": 1,
+            "counts": 0.667,
+            "relations": 1,
+            "forbidden": 1
+          },
+          "failures": [
+            "Expected 1 instances for: bottle"
+          ]
+        },
+        {
+          "id": "scifi-6",
+          "category": "scifi",
+          "sentence": "A teleporter room with two pads; stepping on one pad moves me to the other.",
+          "plannerMs": 32383,
+          "massingBlocks": 1,
+          "answerBytes": 2561,
+          "readable": true,
+          "scoreSemantics": 0.75,
+          "components": {
+            "presence": 1,
+            "counts": 0,
+            "relations": 1,
+            "forbidden": 1
+          },
+          "failures": [
+            "Expected 2 instances for: pads"
+          ]
+        },
+        {
+          "id": "fantasy-3",
+          "category": "fantasy",
+          "sentence": "An elven treehouse village connected by rope bridges with lanterns that light at dusk.",
+          "plannerMs": 48671,
+          "massingBlocks": 7,
+          "answerBytes": 5052,
+          "readable": true,
+          "scoreSemantics": 0.833,
+          "components": {
+            "presence": 1,
+            "counts": 0.333,
+            "relations": 1,
+            "forbidden": 1
+          },
+          "failures": [
+            "Expected 2 instances for: treehouse",
+            "Expected 1 instances for: rope bridges"
+          ]
+        },
+        {
+          "id": "physics-2",
+          "category": "physics",
+          "sentence": "A ramp with a ball at the top; releasing it knocks over a row of five dominoes.",
+          "plannerMs": 44380,
+          "massingBlocks": 7,
+          "answerBytes": 3152,
+          "readable": true,
+          "scoreSemantics": 1,
+          "components": {
+            "presence": 1,
+            "counts": 1,
+            "relations": 1,
+            "forbidden": 1
+          },
+          "failures": []
+        },
+        {
+          "id": "agent-6",
+          "category": "agent",
+          "sentence": "A farm where a farmer waters the crops and a crow steals seeds when the farmer is far away.",
+          "plannerMs": 49991,
+          "massingBlocks": 3,
+          "answerBytes": 3965,
+          "readable": true,
+          "scoreSemantics": 0.833,
+          "components": {
+            "presence": 1,
+            "counts": 0.333,
+            "relations": 1,
+            "forbidden": 1
+          },
+          "failures": [
+            "Expected 2 instances for: crops",
+            "Expected 1 instances for: crow"
+          ]
+        },
+        {
+          "id": "educational-3",
+          "category": "educational",
+          "sentence": "A water cycle diorama with a lake, clouds and rain that falls when the cloud is full.",
+          "plannerMs": 37516,
+          "massingBlocks": 3,
+          "answerBytes": 2691,
+          "readable": true,
+          "scoreSemantics": 1,
+          "components": {
+            "presence": 1,
+            "counts": 1,
+            "relations": 1,
+            "forbidden": 1
+          },
+          "failures": []
+        },
+        {
+          "id": "narrative-1",
+          "category": "narrative",
+          "sentence": "A room with three pressure plates; exit opens only when red and blue are pressed but not green.",
+          "plannerMs": 45390,
+          "massingBlocks": 4,
+          "answerBytes": 3344,
+          "readable": true,
+          "scoreSemantics": 1,
+          "components": {
+            "presence": 1,
+            "counts": 1,
+            "relations": 1,
+            "forbidden": 1
+          },
+          "failures": []
+        },
+        {
+          "id": "minimal-2",
+          "category": "minimal",
+          "sentence": "One tree.",
+          "plannerMs": 9225,
+          "massingBlocks": 1,
+          "answerBytes": 677,
+          "readable": true,
+          "scoreSemantics": 1,
+          "components": {
+            "presence": 1,
+            "counts": 1,
+            "relations": 1,
+            "forbidden": 1
+          },
+          "failures": []
+        },
+        {
+          "id": "large-4",
+          "category": "large",
+          "sentence": "A theme park with a roller coaster, a Ferris wheel, four food stalls and a lake with paddle boats.",
+          "plannerMs": 61896,
+          "massingBlocks": 10,
+          "answerBytes": 5030,
+          "readable": true,
+          "scoreSemantics": 1,
+          "components": {
+            "presence": 1,
+            "counts": 1,
+            "relations": 1,
+            "forbidden": 1
+          },
+          "failures": []
+        },
+        {
+          "id": "ambiguous-4",
+          "category": "ambiguous",
+          "sentence": "A room that reacts.",
+          "plannerMs": 11449,
+          "massingBlocks": 1,
+          "answerBytes": 1185,
+          "readable": true,
+          "scoreSemantics": 1,
+          "components": {
+            "presence": 1,
+            "counts": 1,
+            "relations": 1,
+            "forbidden": 1
+          },
+          "failures": []
+        },
+        {
+          "id": "count-relation-1",
+          "category": "count-relation",
+          "sentence": "A stone bridge over a narrow river, exactly three lanterns on the bridge and a boat under it.",
+          "plannerMs": 42700,
+          "massingBlocks": 6,
+          "answerBytes": 2921,
+          "readable": true,
+          "scoreSemantics": 0.75,
+          "components": {
+            "presence": 1,
+            "counts": 1,
+            "relations": 0,
+            "forbidden": 1
+          },
+          "failures": [
+            "Missing relation: bridge over river",
+            "Missing relation: lanterns on bridge",
+            "Missing relation: boat under bridge"
+          ]
+        },
+        {
+          "id": "adversarial-5",
+          "category": "adversarial",
+          "sentence": "A room where the exit is unreachable but the goal says reach the exit.",
+          "plannerMs": 24403,
+          "massingBlocks": 1,
+          "answerBytes": 1595,
+          "readable": true,
+          "scoreSemantics": 1,
+          "components": {
+            "presence": 1,
+            "counts": 1,
+            "relations": 1,
+            "forbidden": 1
+          },
+          "failures": []
+        },
+        {
+          "id": "long-1",
+          "category": "long",
+          "sentence": "A two-storey farmhouse with a red roof, a porch with a rocking chair, a kitchen with a wood stove, a bedroom upstairs with a window facing the barn, a chicken coop with four chickens, a vegetable garden with a scarecrow, and a well whose bucket must be lowered three times before the water comes up.",
+          "plannerMs": 71533,
+          "massingBlocks": 15,
+          "answerBytes": 7990,
+          "readable": true,
+          "scoreSemantics": 0.792,
+          "components": {
+            "presence": 1,
+            "counts": 0.167,
+            "relations": 1,
+            "forbidden": 1
+          },
+          "failures": [
+            "Expected 1 instances for: rocking chair",
+            "Expected 1 instances for: wood stove",
+            "Expected 4 instances for: chickens",
+            "Expected 1 instances for: scarecrow",
+            "Expected 1 instances for: well"
+          ]
+        },
+        {
+          "id": "ultrashort-4",
+          "category": "ultrashort",
+          "sentence": "Dark forest.",
+          "plannerMs": 47930,
+          "massingBlocks": 1,
+          "answerBytes": 4010,
+          "readable": true,
+          "scoreSemantics": 0.75,
+          "components": {
+            "presence": 1,
+            "counts": 0,
+            "relations": 1,
+            "forbidden": 1
+          },
+          "failures": [
+            "Expected 1 instances for: forest"
+          ]
+        }
+      ]
+    }
+  ]
+}

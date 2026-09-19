@@ -1,0 +1,182 @@
+{
+  "id": "educational-3",
+  "category": "educational",
+  "sentence": "A water cycle diorama with a lake, clouds and rain that falls when the cloud is full.",
+  "measuredAt": "2026-09-19T20:25:44.290Z",
+  "plannerMs": 37516,
+  "answer": {
+    "intent": {
+      "setting": "a water cycle diorama with a lake and rain-bearing clouds",
+      "mood": "educational",
+      "spatialThesis": "Clouds sit above a lake, so rain released when a cloud becomes full falls toward the water below.",
+      "actors": [],
+      "heroObjects": [
+        "the first cloud",
+        "the second cloud"
+      ],
+      "interactions": [
+        "Rain falls from a cloud when that cloud is full."
+      ],
+      "unsupported": []
+    },
+    "objects": [
+      {
+        "stableId": "lake",
+        "label": "the lake",
+        "synonyms": [
+          "lake",
+          "water",
+          "lake water",
+          "body of water"
+        ],
+        "role": "terrain",
+        "importance": 3
+      },
+      {
+        "stableId": "firstCloud",
+        "label": "the first cloud",
+        "synonyms": [
+          "cloud",
+          "first cloud",
+          "rain cloud",
+          "cloud one"
+        ],
+        "role": "hero",
+        "importance": 3
+      },
+      {
+        "stableId": "secondCloud",
+        "label": "the second cloud",
+        "synonyms": [
+          "cloud",
+          "second cloud",
+          "rain cloud",
+          "cloud two"
+        ],
+        "role": "hero",
+        "importance": 3
+      },
+      {
+        "stableId": "rain",
+        "label": "the rain",
+        "synonyms": [
+          "rain",
+          "rainfall",
+          "falling water",
+          "precipitation",
+          "raindrops"
+        ],
+        "role": "effect",
+        "importance": 3
+      }
+    ],
+    "sceneSpec": {
+      "version": 1,
+      "requirements": [
+        {
+          "id": "lakePresence",
+          "description": "One lake belongs to the water cycle diorama.",
+          "priority": "main",
+          "polarity": "required",
+          "count": 1,
+          "instanceIds": [
+            "lake"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "a lake"
+          }
+        },
+        {
+          "id": "cloudPresence",
+          "description": "Two clouds represent the requested plural clouds; their exact number is unspecified.",
+          "priority": "main",
+          "polarity": "required",
+          "count": 2,
+          "instanceIds": [
+            "firstCloud",
+            "secondCloud"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "clouds"
+          }
+        },
+        {
+          "id": "conditionalRain",
+          "description": "Rain falls from a cloud when that cloud is full; fullness is a trigger rather than a permanently asserted state.",
+          "priority": "main",
+          "polarity": "required",
+          "count": 1,
+          "instanceIds": [
+            "rain"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "rain that falls when the cloud is full"
+          }
+        },
+        {
+          "id": "waterCycleArrangement",
+          "description": "The clouds are above the lake and their rain falls onto it, connecting the named elements into a water cycle demonstration.",
+          "priority": "secondary",
+          "polarity": "required",
+          "count": 4,
+          "instanceIds": [
+            "lake",
+            "firstCloud",
+            "secondCloud",
+            "rain"
+          ],
+          "provenance": {
+            "kind": "inferred",
+            "reason": "Placing the clouds above the lake lets the conditional rainfall return water to the named body of water."
+          }
+        }
+      ],
+      "instances": [
+        {
+          "stableId": "lake",
+          "role": "terrain",
+          "orientation": "none"
+        },
+        {
+          "stableId": "firstCloud",
+          "role": "hero",
+          "orientation": "none"
+        },
+        {
+          "stableId": "secondCloud",
+          "role": "hero",
+          "orientation": "none"
+        },
+        {
+          "stableId": "rain",
+          "role": "effect",
+          "orientation": "none"
+        }
+      ],
+      "relations": [
+        {
+          "subjectId": "firstCloud",
+          "relation": "near",
+          "targetId": "lake",
+          "req": 3
+        },
+        {
+          "subjectId": "secondCloud",
+          "relation": "near",
+          "targetId": "lake",
+          "req": 3
+        },
+        {
+          "subjectId": "rain",
+          "relation": "on",
+          "targetId": "lake",
+          "req": 3
+        }
+      ],
+      "clarifications": []
+    }
+  }
+}

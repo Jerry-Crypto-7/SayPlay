@@ -17,6 +17,7 @@ v množném čísle bez čísla (`palm trees` → 2, `mushrooms` → 3).
 | `prompts.json` | 120 vět, 20 kategorií po šesti; `packCategory` říká, pod jakým jménem stála věta ve strategickém balíčku (`plans/P22/strategy-pack/07_JUDGE_GAUNTLET.csv`, všech 14 doslovně) |
 | `oracles.json` | jedno orákulum na větu: `required[{quote,count}]`, volitelně `forbidden[]` a `relations[{subject,relation,object}]`; kategorie `contradictory`, `unsupported`, `safety` nesou místo toho `expectedRefusalOrDegrade: true` |
 | `__tests__/corpus.test.ts` | pin: doslovnost citátů, vztahy jen mezi citáty téhož orákula, ≥ 5 vět na kategorii, 14 vět balíčku |
+| `gauntlet.json`, `gauntlet-answers/` | živý běh T17: 16 vět (jedna na kategorii mimo `contradictory`, `unsupported`, `safety`, `abstract`, semínko 4021) jednou skrz plánovač; odpovědi se **commitují**; skóre `null`, ne 0, když odpověď nepřišla (`gauntlet-score.ts`, pin `__tests__/gauntlet-report.test.ts`) |
 
 Vztahy: `on | under | inside | behind | over | beside`; `subject` a `object`
 jsou vždy citáty z `required` téhož orákula, aby je sémantické skóre (T2) našlo

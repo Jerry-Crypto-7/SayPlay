@@ -1,0 +1,348 @@
+{
+  "id": "fantasy-3",
+  "category": "fantasy",
+  "sentence": "An elven treehouse village connected by rope bridges with lanterns that light at dusk.",
+  "measuredAt": "2026-09-19T20:23:32.395Z",
+  "plannerMs": 48671,
+  "answer": {
+    "intent": {
+      "setting": "An elven village of treehouses linked by rope bridges.",
+      "mood": "Woodland, welcoming, softly luminous at dusk.",
+      "spatialThesis": "Treehouses occupy separate trees and connect through rope bridges, creating an elevated village whose lanterns light at dusk.",
+      "actors": [],
+      "heroObjects": [
+        "the treehouse village",
+        "the rope bridges"
+      ],
+      "interactions": [
+        "The lanterns light when dusk arrives."
+      ],
+      "unsupported": []
+    },
+    "objects": [
+      {
+        "stableId": "firstTreehouse",
+        "label": "the first elven treehouse",
+        "synonyms": [
+          "treehouse",
+          "house",
+          "elven house",
+          "first house",
+          "village dwelling"
+        ],
+        "role": "architecture",
+        "importance": 3
+      },
+      {
+        "stableId": "middleTreehouse",
+        "label": "the middle elven treehouse",
+        "synonyms": [
+          "treehouse",
+          "house",
+          "elven house",
+          "middle house",
+          "village dwelling"
+        ],
+        "role": "architecture",
+        "importance": 3
+      },
+      {
+        "stableId": "lastTreehouse",
+        "label": "the last elven treehouse",
+        "synonyms": [
+          "treehouse",
+          "house",
+          "elven house",
+          "last house",
+          "village dwelling"
+        ],
+        "role": "architecture",
+        "importance": 3
+      },
+      {
+        "stableId": "firstBridge",
+        "label": "the first rope bridge",
+        "synonyms": [
+          "bridge",
+          "rope bridge",
+          "first bridge",
+          "suspended walkway"
+        ],
+        "role": "hero",
+        "importance": 3
+      },
+      {
+        "stableId": "secondBridge",
+        "label": "the second rope bridge",
+        "synonyms": [
+          "bridge",
+          "rope bridge",
+          "second bridge",
+          "suspended walkway"
+        ],
+        "role": "hero",
+        "importance": 3
+      },
+      {
+        "stableId": "firstLantern",
+        "label": "the first lantern",
+        "synonyms": [
+          "lantern",
+          "light",
+          "first lantern",
+          "bridge light"
+        ],
+        "role": "prop",
+        "importance": 3
+      },
+      {
+        "stableId": "secondLantern",
+        "label": "the second lantern",
+        "synonyms": [
+          "lantern",
+          "light",
+          "second lantern",
+          "bridge light"
+        ],
+        "role": "prop",
+        "importance": 3
+      },
+      {
+        "stableId": "firstTree",
+        "label": "the first supporting tree",
+        "synonyms": [
+          "tree",
+          "supporting tree",
+          "first tree",
+          "treehouse tree"
+        ],
+        "role": "terrain",
+        "importance": 2
+      },
+      {
+        "stableId": "middleTree",
+        "label": "the middle supporting tree",
+        "synonyms": [
+          "tree",
+          "supporting tree",
+          "middle tree",
+          "treehouse tree"
+        ],
+        "role": "terrain",
+        "importance": 2
+      },
+      {
+        "stableId": "lastTree",
+        "label": "the last supporting tree",
+        "synonyms": [
+          "tree",
+          "supporting tree",
+          "last tree",
+          "treehouse tree"
+        ],
+        "role": "terrain",
+        "importance": 2
+      }
+    ],
+    "sceneSpec": {
+      "version": 1,
+      "requirements": [
+        {
+          "id": "elvenVillage",
+          "description": "An elven treehouse village.",
+          "priority": "main",
+          "polarity": "required",
+          "count": 3,
+          "instanceIds": [
+            "firstTreehouse",
+            "middleTreehouse",
+            "lastTreehouse"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "An elven treehouse village"
+          }
+        },
+        {
+          "id": "ropeConnections",
+          "description": "Rope bridges connect the treehouses.",
+          "priority": "main",
+          "polarity": "required",
+          "count": 2,
+          "instanceIds": [
+            "firstBridge",
+            "secondBridge"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "connected by rope bridges"
+          }
+        },
+        {
+          "id": "duskLanterns",
+          "description": "The lanterns switch on at dusk.",
+          "priority": "main",
+          "polarity": "required",
+          "count": 2,
+          "instanceIds": [
+            "firstLantern",
+            "secondLantern"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "lanterns that light at dusk"
+          }
+        },
+        {
+          "id": "supportingTrees",
+          "description": "Separate living trees support the elevated houses; three houses and two connecting bridges form a compact interpretation of the unspecified village size, with one lantern near each bridge.",
+          "priority": "secondary",
+          "polarity": "required",
+          "count": 3,
+          "instanceIds": [
+            "firstTree",
+            "middleTree",
+            "lastTree"
+          ],
+          "provenance": {
+            "kind": "inferred",
+            "reason": "Treehouses need supporting trees; the request leaves the village size, connection pattern, and lantern placement unspecified."
+          }
+        }
+      ],
+      "instances": [
+        {
+          "stableId": "firstTreehouse",
+          "role": "architecture",
+          "orientation": "none"
+        },
+        {
+          "stableId": "middleTreehouse",
+          "role": "architecture",
+          "orientation": "none"
+        },
+        {
+          "stableId": "lastTreehouse",
+          "role": "architecture",
+          "orientation": "none"
+        },
+        {
+          "stableId": "firstBridge",
+          "role": "hero",
+          "orientation": "none",
+          "attributes": [
+            {
+              "name": "material",
+              "value": "rope"
+            }
+          ]
+        },
+        {
+          "stableId": "secondBridge",
+          "role": "hero",
+          "orientation": "none",
+          "attributes": [
+            {
+              "name": "material",
+              "value": "rope"
+            }
+          ]
+        },
+        {
+          "stableId": "firstLantern",
+          "role": "prop",
+          "orientation": "none",
+          "attributes": [
+            {
+              "name": "state",
+              "value": "lights at dusk"
+            }
+          ]
+        },
+        {
+          "stableId": "secondLantern",
+          "role": "prop",
+          "orientation": "none",
+          "attributes": [
+            {
+              "name": "state",
+              "value": "lights at dusk"
+            }
+          ]
+        },
+        {
+          "stableId": "firstTree",
+          "role": "terrain",
+          "orientation": "none"
+        },
+        {
+          "stableId": "middleTree",
+          "role": "terrain",
+          "orientation": "none"
+        },
+        {
+          "stableId": "lastTree",
+          "role": "terrain",
+          "orientation": "none"
+        }
+      ],
+      "relations": [
+        {
+          "subjectId": "firstTreehouse",
+          "relation": "on",
+          "targetId": "firstTree",
+          "req": 3
+        },
+        {
+          "subjectId": "middleTreehouse",
+          "relation": "on",
+          "targetId": "middleTree",
+          "req": 3
+        },
+        {
+          "subjectId": "lastTreehouse",
+          "relation": "on",
+          "targetId": "lastTree",
+          "req": 3
+        },
+        {
+          "subjectId": "firstBridge",
+          "relation": "connected-to",
+          "targetId": "firstTreehouse",
+          "req": 1
+        },
+        {
+          "subjectId": "firstBridge",
+          "relation": "connected-to",
+          "targetId": "middleTreehouse",
+          "req": 1
+        },
+        {
+          "subjectId": "secondBridge",
+          "relation": "connected-to",
+          "targetId": "middleTreehouse",
+          "req": 1
+        },
+        {
+          "subjectId": "secondBridge",
+          "relation": "connected-to",
+          "targetId": "lastTreehouse",
+          "req": 1
+        },
+        {
+          "subjectId": "firstLantern",
+          "relation": "near",
+          "targetId": "firstBridge",
+          "req": 3
+        },
+        {
+          "subjectId": "secondLantern",
+          "relation": "near",
+          "targetId": "secondBridge",
+          "req": 3
+        }
+      ],
+      "clarifications": []
+    }
+  }
+}
