@@ -330,5 +330,97 @@ export function buildModels(lod = 0) {
   ellipsoid(lamp, 'bulb', [0.05, 0.07, 0.05], [0, 1.6, 0], bulb);
   cylinder(lamp, 'finial', 0.02, 0.02, 0.06, [0, 1.85, 0], brass);
   add('floor-lamp', 'Floor lamp with a fabric shade', ['lamp', 'floor-lamp', 'reading-lamp', 'lampshade'], lamp);
+
+  // Dávka 4/4: lantern, tent, tower, beacon, building, classroom.
+
+  const lantern = root('hanging-lantern');
+  cylinder(lantern, 'post-foot', 0.1, 0.13, 0.08, [0, 0.04, 0], iron);
+  cylinder(lantern, 'post', 0.035, 0.045, 1.9, [0, 1.03, 0], iron);
+  box(lantern, 'bracket', [0.5, 0.04, 0.04], [0.23, 1.96, 0], iron);
+  box(lantern, 'bracket-strut', [0.32, 0.03, 0.03], [0.14, 1.85, 0], iron).rotation.z = 0.6;
+  cylinder(lantern, 'hook', 0.012, 0.012, 0.08, [0.45, 1.9, 0], iron);
+  const cage = child(lantern, 'lantern-cage', [0.45, 1.86, 0]);
+  cone(cage, 'cap', 0.16, 0.1, [0, -0.05, 0], iron);
+  box(cage, 'glass-body', [0.18, 0.28, 0.18], [0, -0.26, 0], glass);
+  for (const x of [-0.09, 0.09]) for (const z of [-0.09, 0.09]) box(cage, 'cage-bar', [0.02, 0.3, 0.02], [x, -0.26, z], iron);
+  box(cage, 'floor-plate', [0.2, 0.03, 0.2], [0, -0.415, 0], iron);
+  ellipsoid(cage, 'flame', [0.035, 0.06, 0.035], [0, -0.27, 0], flame);
+  add('hanging-lantern', 'Iron lantern hanging from a post', ['lantern', 'oil-lantern', 'lamppost', 'street-lantern'], lantern,
+    { sockets: [{ id: 'hook', at: [0.45, 1.86, 0], normal: [0, -1, 0] }], parts: [{ id: 'cage', node: 'lantern-cage', pivot: [0.45, 1.86, 0], sockets: ['hook'] }] });
+
+  const tent = root('canvas-tent');
+  box(tent, 'groundsheet', [2.4, 0.02, 2.8], [0, 0.01, 0], dark);
+  for (const side of [-1, 1]) box(tent, 'panel', [1.94, 0.03, 2.6], [side * 0.55, 0.81, 0], canvas).rotation.z = -side * 0.9686;
+  for (const z of [-1.3, 1.3]) cylinder(tent, 'pole', 0.03, 0.035, 1.6, [0, 0.8, z], wood);
+  cylinder(tent, 'ridge', 0.03, 0.03, 2.8, [0, 1.6, 0], wood).rotation.x = Math.PI / 2;
+  // Zadní štít jako čtyři stupně, aby nevyčníval z šikmých panelů.
+  for (const [i, w] of [1.65, 1.13, 0.6, 0.1].entries()) box(tent, `back-panel-${i}`, [w, 0.38, 0.03], [0, 0.21 + i * 0.38, -1.28], canvas);
+  for (const side of [-1, 1]) box(tent, 'flap', [0.5, 1.2, 0.03], [side * 0.7, 0.62, 1.29], canvas).rotation.y = side * 0.5;
+  add('canvas-tent', 'A-frame canvas tent', ['tent', 'canvas-tent', 'camp', 'campsite', 'shelter'], tent);
+
+  const tower = root('watchtower');
+  for (const x of [-1.0, 1.0]) for (const z of [-1.0, 1.0]) cylinder(tower, 'leg', 0.09, 0.12, 5.0, [x, 2.5, z], wood);
+  for (const y of [1.6, 3.4]) {
+    for (const x of [-1.0, 1.0]) box(tower, 'brace-side', [0.08, 0.08, 2.0], [x, y, 0], wood);
+    for (const z of [-1.0, 1.0]) box(tower, 'brace-front', [2.0, 0.08, 0.08], [0, y, z], wood);
+  }
+  for (const side of [-1, 1]) box(tower, 'cross-brace', [0.06, 0.06, 2.6], [side * 1.0, 2.5, 0], wood).rotation.x = side * 0.75;
+  box(tower, 'platform', [2.8, 0.15, 2.8], [0, 5.075, 0], wood);
+  for (const x of [-1.3, 1.3]) for (const z of [-1.3, 1.3]) cylinder(tower, 'rail-post', 0.05, 0.05, 1.0, [x, 5.65, z], wood);
+  for (const x of [-1.3, 1.3]) box(tower, 'rail-side', [0.06, 0.06, 2.6], [x, 6.1, 0], wood);
+  for (const z of [-1.3, 1.3]) box(tower, 'rail-front', [2.6, 0.06, 0.06], [0, 6.1, z], wood);
+  for (const x of [-1.2, 1.2]) for (const z of [-1.2, 1.2]) cylinder(tower, 'roof-post', 0.05, 0.05, 2.0, [x, 6.15, z], wood);
+  cone(tower, 'roof', 2.1, 1.3, [0, 7.8, 0], stone);
+  cylinder(tower, 'ladder-rail', 0.03, 0.03, 5.0, [0.3, 2.5, 1.2], wood);
+  cylinder(tower, 'ladder-rail', 0.03, 0.03, 5.0, [-0.3, 2.5, 1.2], wood);
+  if (!lod) for (let i = 0; i < 10; i++) box(tower, `rung-${i}`, [0.6, 0.04, 0.04], [0, 0.4 + i * 0.48, 1.2], wood);
+  add('watchtower', 'Timber watchtower with a lookout platform', ['tower', 'watchtower', 'lookout', 'turret'], tower,
+    { supportSurfaces: [{ id: 'platform', center: [0, 5.15, 0], width: 2.8, depth: 2.8 }], sockets: [{ id: 'platform', at: [0, 5.15, 0], normal: [0, 1, 0] }] });
+
+  const beacon = root('fire-beacon');
+  cylinder(beacon, 'plinth', 0.55, 0.65, 0.3, [0, 0.15, 0], stone);
+  cylinder(beacon, 'mast', 0.06, 0.09, 2.9, [0, 1.75, 0], iron);
+  for (const [i, a] of [0, 2.094, 4.189].entries()) {
+    const stay = child(beacon, `stay-${i}`, [0, 0, 0]); stay.rotation.y = a;
+    cylinder(stay, 'stay-rod', 0.02, 0.02, 1.4, [0.27, 0.95, 0], iron).rotation.z = 0.45;
+  }
+  cylinder(beacon, 'brazier', 0.42, 0.26, 0.36, [0, 3.38, 0], iron);
+  for (const [i, a] of [0, 1.047, 2.094].entries()) box(beacon, `grate-${i}`, [0.86, 0.03, 0.03], [0, 3.58, 0], iron).rotation.y = a;
+  ellipsoid(beacon, 'fire', [0.3, 0.42, 0.3], [0, 3.85, 0], flame);
+  ellipsoid(beacon, 'fire-tip', [0.14, 0.32, 0.14], [0.05, 4.25, -0.03], flame);
+  add('fire-beacon', 'Iron fire beacon on a mast', ['beacon', 'warning-beacon', 'fire-beacon', 'brazier'], beacon);
+
+  const building = root('townhouse');
+  box(building, 'plinth', [6.2, 0.2, 5.2], [0, 0.1, 0], stone);
+  box(building, 'body', [5.8, 6.4, 4.8], [0, 3.4, 0], plaster);
+  box(building, 'string-course', [6.0, 0.15, 5.0], [0, 3.3, 0], stone);
+  box(building, 'parapet', [6.0, 0.4, 5.0], [0, 6.8, 0], stone);
+  box(building, 'door', [1.0, 2.2, 0.1], [0, 1.3, 2.42], dark);
+  box(building, 'door-step', [1.4, 0.15, 0.6], [0, 0.275, 2.7], stone);
+  for (const [y, x] of [[1.9, -2.0], [1.9, 2.0], [4.9, -2.0], [4.9, 0], [4.9, 2.0]]) {
+    box(building, 'window-frame', [0.9, 1.3, 0.08], [x, y, 2.42], wood);
+    box(building, 'window-glass', [0.74, 1.14, 0.06], [x, y, 2.45], glass);
+  }
+  cylinder(building, 'chimney', 0.22, 0.25, 1.2, [-2.2, 7.4, -1.5], stone);
+  cylinder(building, 'chimney', 0.22, 0.25, 1.2, [2.2, 7.4, -1.5], stone);
+  add('townhouse', 'Two-storey plastered townhouse', ['building', 'townhouse', 'house', 'apartment', 'facade'], building);
+
+  const classroom = root('classroom');
+  box(classroom, 'floor', [6.0, 0.1, 5.0], [0, 0.05, 0], wood);
+  box(classroom, 'back-wall', [6.0, 3.0, 0.1], [0, 1.6, -2.45], plaster);
+  for (const x of [-2.95, 2.95]) box(classroom, 'side-wall', [0.1, 3.0, 5.0], [x, 1.6, 0], plaster);
+  box(classroom, 'chalkboard', [3.2, 1.2, 0.05], [0, 1.7, -2.38], dark);
+  box(classroom, 'chalk-tray', [3.2, 0.05, 0.1], [0, 1.08, -2.35], wood);
+  box(classroom, 'teacher-desk', [1.4, 0.06, 0.7], [0, 0.78, -1.5], wood);
+  for (const x of [-0.65, 0.65]) box(classroom, 'teacher-desk-side', [0.06, 0.7, 0.7], [x, 0.45, -1.5], wood);
+  for (const row of [0, 1]) for (const col of [-1, 0, 1]) {
+    const x = col * 1.8, z = 0.2 + row * 1.6;
+    box(classroom, `desk-${row}-${col}`, [1.0, 0.05, 0.55], [x, 0.735, z], wood);
+    for (const dx of [-0.45, 0.45]) for (const dz of [-0.22, 0.22]) cylinder(classroom, 'desk-leg', 0.02, 0.02, 0.61, [x + dx, 0.405, z + dz], metal);
+    cylinder(classroom, 'seat', 0.17, 0.17, 0.04, [x, 0.5, z + 0.6], fabric);
+    cylinder(classroom, 'seat-post', 0.025, 0.03, 0.48, [x, 0.34, z + 0.6], metal);
+  }
+  add('classroom', 'Classroom with desks and a chalkboard', ['classroom', 'lecture-room', 'schoolroom', 'school'], classroom,
+    { supportSurfaces: [{ id: 'teacher-desk', center: [0, 0.81, -1.5], width: 1.4, depth: 0.7 }] });
   return models;
 }

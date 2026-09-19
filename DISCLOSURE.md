@@ -379,7 +379,7 @@ _Žádná položka._
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá.
 
-## Vlastní, ne třetí strana (81)
+## Vlastní, ne třetí strana (99)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
@@ -391,6 +391,12 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/bar-stool-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/bar-stool-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/bar-stool.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/canvas-tent-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/canvas-tent-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/canvas-tent.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/classroom-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/classroom-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/classroom.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/desktop-terminal-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/desktop-terminal-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/desktop-terminal.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
@@ -403,6 +409,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/elevator-car-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/elevator-car-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/elevator-car.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/fire-beacon-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/fire-beacon-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/fire-beacon.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/floor-lamp-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/floor-lamp-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/floor-lamp.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
@@ -412,6 +421,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/framed-window-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/framed-window-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/framed-window.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/hanging-lantern-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/hanging-lantern-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/hanging-lantern.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/iron-gate-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/iron-gate-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/iron-gate.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
@@ -449,9 +461,15 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/storage-cabinet-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/storage-cabinet-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/storage-cabinet.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/townhouse-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/townhouse-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/townhouse.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/wall-switch-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/wall-switch-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/wall-switch.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/watchtower-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/watchtower-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/watchtower.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/wooden-bridge-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/wooden-bridge-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/wooden-bridge.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
