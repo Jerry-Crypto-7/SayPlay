@@ -29,6 +29,8 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import { readSceneSpec, slimSceneSpec, type SceneSpec } from '@/scene/spec';
+
 const ARCHIVE = fileURLToPath(new URL('../../plans/P20/t18-hybrid-v2-20260917-1803/raw', import.meta.url));
 const ARCHIVE_SOURCE = 'plans/P20/t18-hybrid-v2-20260917-1803/raw/*-planner.json (2026-09-17 archive)';
 const REPORT_FILE = fileURLToPath(new URL('./planner-anatomy.json', import.meta.url));
@@ -90,15 +92,49 @@ function measure(answer: PlannerAnswer) {
 
 type Measured = ReturnType<typeof measure>;
 
+/**
+ * **Štíhlý tvar (P21 T18) nad týmž archivem — dvě čísla, protože archiv
+ * nevznikl podle štíhlého zadání.**
+ *
+ * `lossless` je `slimSceneSpec()` nad plným plánem: odebere jen to, co
+ * `readSceneSpec` doplní zpět beze změny (round-trip drží), takže původ
+ * instance, který se od požadavku liší třeba jen o slovo, zůstává. To je
+ * **dolní odhad** úspory. `asPrompted` je tvar, o který zadání od T18 žádá:
+ * bez `requirementIds`, bez původu u instancí a atributů, orientace jen
+ * citovaná, nejvýš 6 atributů — tedy **odhad toho, co model napíše**, a ten
+ * změří až T21 živě. Cíl ≤ 55 % celku je v artefaktu cíl, rozhoduje číslo.
+ */
+const SLIM_TARGET_SHARE = 0.55;
+
+function asPrompted(spec: SceneSpec) {
+  return {
+    ...spec,
+    instances: spec.instances.map(({ requirementIds: _ids, provenance: _origin, orientation, attributes, ...rest }) => ({
+      ...rest,
+      attributes: attributes.slice(0, 6).map(({ name, value }) => ({ name, value })),
+      ...(orientation.provenance.kind === 'requested' ? { orientation } : {}),
+    })),
+  };
+}
+
+function slimBytes(answer: PlannerAnswer): { lossless: number; asPrompted: number } | null {
+  const spec = readSceneSpec(answer.sceneSpec);
+  if (typeof spec === 'string') return null;
+  return {
+    lossless: bytes({ ...answer, sceneSpec: slimSceneSpec(spec) }),
+    asPrompted: bytes({ ...answer, sceneSpec: asPrompted(spec) }),
+  };
+}
+
 describe('the anatomy of the archived planner answers', () => {
   it('writes the bytes per field and the share of each field in the whole answer', () => {
     expect(existsSync(ARCHIVE), `${ARCHIVE} is missing — it is gitignored`).toBe(true);
     const files = readdirSync(ARCHIVE).filter((name) => name.endsWith('-planner.json')).sort();
 
-    const cases = files.map((file) => ({
-      id: file.replace('-planner.json', ''),
-      ...measure((JSON.parse(readFileSync(`${ARCHIVE}/${file}`, 'utf8')) as { value: PlannerAnswer }).value),
-    }));
+    const cases = files.map((file) => {
+      const answer = (JSON.parse(readFileSync(`${ARCHIVE}/${file}`, 'utf8')) as { value: PlannerAnswer }).value;
+      return { id: file.replace('-planner.json', ''), ...measure(answer), slim: slimBytes(answer) };
+    });
 
     const mean = (pick: (entry: Measured) => number) =>
       Math.round(cases.reduce((sum, entry) => sum + pick(entry), 0) / cases.length);
@@ -130,6 +166,16 @@ describe('the anatomy of the archived planner answers', () => {
       ),
     };
 
+    const slimmed = cases.flatMap((entry) => (entry.slim === null ? [] : [entry.slim]));
+    const slimMean = (pick: (entry: { lossless: number; asPrompted: number }) => number) =>
+      Math.round(slimmed.reduce((sum, entry) => sum + pick(entry), 0) / Math.max(1, slimmed.length));
+    const slim = {
+      readable: slimmed.length,
+      target: { shareOfWhole: SLIM_TARGET_SHARE, note: 'P21 T18 goal, stated as a goal – the measured number decides, not this line' },
+      lossless: { averageBytes: slimMean((e) => e.lossless), shareOfWhole: share(slimMean((e) => e.lossless)), method: 'slimSceneSpec() over the full archived plan; readSceneSpec() restores it byte for byte' },
+      asPrompted: { averageBytes: slimMean((e) => e.asPrompted), shareOfWhole: share(slimMean((e) => e.asPrompted)), method: 'what the planner prompt asks for since T18: no requirementIds, no instance/attribute provenance, orientation only when requested, at most 6 attributes — an estimate of the next live answer, measured by T21' },
+    };
+
     const report = {
       measuredAt: new Date().toISOString(),
       kind: 'byte anatomy of archived planner answers — zero model calls, no HTTP',
@@ -139,6 +185,7 @@ describe('the anatomy of the archived planner answers', () => {
       plans: files.length,
       average,
       shareOfWhole,
+      slim,
       cases,
     };
     writeFileSync(REPORT_FILE, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
@@ -157,6 +204,7 @@ describe('the anatomy of the archived planner answers', () => {
         `    requirements    ${String(f.requirements)} B`,
         `    relations       ${String(f.relations)} B`,
         `    clarifications  ${String(f.clarifications)} B`,
+        `slim (T18)          lossless ${String(slim.lossless.averageBytes)} B (${pct(slim.lossless.shareOfWhole)}) · as prompted ${String(slim.asPrompted.averageBytes)} B (${pct(slim.asPrompted.shareOfWhole)}) · target ${pct(SLIM_TARGET_SHARE)}`,
         '',
         `written to ${REPORT_FILE}`,
         '',

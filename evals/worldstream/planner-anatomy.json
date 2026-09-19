@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-09-19T09:59:04.766Z",
+  "measuredAt": "2026-09-19T10:14:43.370Z",
   "kind": "byte anatomy of archived planner answers — zero model calls, no HTTP",
   "source": "plans/P20/t18-hybrid-v2-20260917-1803/raw/*-planner.json (2026-09-17 archive)",
   "method": "UTF-8 bytes of compact JSON.stringify per field; sceneSpec.provenance sums every nested provenance object; envelope = whole - intent - objects - sceneSpec",
@@ -35,6 +35,23 @@
     "sceneSpec.relations": 0.168,
     "sceneSpec.clarifications": 0.002
   },
+  "slim": {
+    "readable": 18,
+    "target": {
+      "shareOfWhole": 0.55,
+      "note": "P21 T18 goal, stated as a goal – the measured number decides, not this line"
+    },
+    "lossless": {
+      "averageBytes": 6270,
+      "shareOfWhole": 0.925,
+      "method": "slimSceneSpec() over the full archived plan; readSceneSpec() restores it byte for byte"
+    },
+    "asPrompted": {
+      "averageBytes": 4734,
+      "shareOfWhole": 0.698,
+      "method": "what the planner prompt asks for since T18: no requirementIds, no instance/attribute provenance, orientation only when requested, at most 6 attributes — an estimate of the next live answer, measured by T21"
+    }
+  },
   "cases": [
     {
       "id": "h01",
@@ -52,6 +69,10 @@
         "instanceRequirementIds": 191,
         "relations": 2249,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 9803,
+        "asPrompted": 7566
       }
     },
     {
@@ -70,6 +91,10 @@
         "instanceRequirementIds": 148,
         "relations": 1537,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 7489,
+        "asPrompted": 6174
       }
     },
     {
@@ -88,6 +113,10 @@
         "instanceRequirementIds": 154,
         "relations": 2880,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 9785,
+        "asPrompted": 7741
       }
     },
     {
@@ -106,6 +135,10 @@
         "instanceRequirementIds": 144,
         "relations": 1861,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 8228,
+        "asPrompted": 6412
       }
     },
     {
@@ -124,6 +157,10 @@
         "instanceRequirementIds": 149,
         "relations": 1014,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 5603,
+        "asPrompted": 4664
       }
     },
     {
@@ -142,6 +179,10 @@
         "instanceRequirementIds": 153,
         "relations": 974,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 7161,
+        "asPrompted": 4941
       }
     },
     {
@@ -160,6 +201,10 @@
         "instanceRequirementIds": 149,
         "relations": 1270,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 8068,
+        "asPrompted": 5922
       }
     },
     {
@@ -178,6 +223,10 @@
         "instanceRequirementIds": 145,
         "relations": 931,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 7024,
+        "asPrompted": 5130
       }
     },
     {
@@ -196,6 +245,10 @@
         "instanceRequirementIds": 99,
         "relations": 837,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 4199,
+        "asPrompted": 3294
       }
     },
     {
@@ -214,6 +267,10 @@
         "instanceRequirementIds": 71,
         "relations": 512,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 3900,
+        "asPrompted": 3157
       }
     },
     {
@@ -232,6 +289,10 @@
         "instanceRequirementIds": 93,
         "relations": 664,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 4220,
+        "asPrompted": 3074
       }
     },
     {
@@ -250,6 +311,10 @@
         "instanceRequirementIds": 95,
         "relations": 404,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 4215,
+        "asPrompted": 3174
       }
     },
     {
@@ -268,6 +333,10 @@
         "instanceRequirementIds": 34,
         "relations": 146,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 2468,
+        "asPrompted": 1886
       }
     },
     {
@@ -286,6 +355,10 @@
         "instanceRequirementIds": 114,
         "relations": 885,
         "clarifications": 227
+      },
+      "slim": {
+        "lossless": 7343,
+        "asPrompted": 5109
       }
     },
     {
@@ -304,6 +377,10 @@
         "instanceRequirementIds": 147,
         "relations": 1402,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 8127,
+        "asPrompted": 5830
       }
     },
     {
@@ -322,6 +399,10 @@
         "instanceRequirementIds": 86,
         "relations": 666,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 5302,
+        "asPrompted": 3723
       }
     },
     {
@@ -340,6 +421,10 @@
         "instanceRequirementIds": 119,
         "relations": 1890,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 6891,
+        "asPrompted": 5215
       }
     },
     {
@@ -358,6 +443,10 @@
         "instanceRequirementIds": 51,
         "relations": 356,
         "clarifications": 2
+      },
+      "slim": {
+        "lossless": 3031,
+        "asPrompted": 2204
       }
     }
   ]

@@ -43,13 +43,24 @@ interface AnswerBytes {
   readonly sceneSpecFields: SceneSpecBytes;
 }
 
+interface SlimBytes {
+  readonly averageBytes: number;
+  readonly shareOfWhole: number;
+}
+
 interface AnatomyReport {
   readonly measuredAt: string;
   readonly source: string;
   readonly plans: number;
   readonly average: AnswerBytes;
   readonly shareOfWhole: Record<string, number>;
-  readonly cases: readonly (AnswerBytes & { readonly id: string })[];
+  readonly slim: {
+    readonly readable: number;
+    readonly target: { readonly shareOfWhole: number; readonly note: string };
+    readonly lossless: SlimBytes;
+    readonly asPrompted: SlimBytes;
+  };
+  readonly cases: readonly (AnswerBytes & { readonly id: string; readonly slim: { readonly lossless: number; readonly asPrompted: number } | null })[];
 }
 
 const report = JSON.parse(readFileSync(REPORT_FILE, 'utf8')) as AnatomyReport;
@@ -87,5 +98,19 @@ describe('planner-anatomy.json – co zabírá místo v odpovědi plánovače', 
 
     const { intent, objects, sceneSpec, envelope } = report.shareOfWhole;
     expect(intent + objects + sceneSpec + envelope).toBeCloseTo(1, 2);
+  });
+
+  it('štíhlý tvar (T18) je změřený nad všemi 18 plány, nikdy větší než plný, a cíl stojí jako cíl', () => {
+    expect(report.slim.readable).toBe(ARCHIVE_PLANS);
+    expect(report.cases.every((entry) => entry.slim !== null)).toBe(true);
+    for (const entry of report.cases) {
+      expect(entry.slim!.lossless, entry.id).toBeLessThanOrEqual(entry.whole);
+      expect(entry.slim!.asPrompted, entry.id).toBeLessThanOrEqual(entry.slim!.lossless);
+    }
+    expect(report.slim.lossless.averageBytes).toBeLessThanOrEqual(report.average.whole);
+    expect(report.slim.asPrompted.averageBytes).toBeLessThanOrEqual(report.slim.lossless.averageBytes);
+    expect(report.slim.lossless.shareOfWhole).toBeCloseTo(report.slim.lossless.averageBytes / report.average.whole, 2);
+    expect(report.slim.target.shareOfWhole).toBe(0.55);
+    expect(report.slim.target.note).toContain('goal');
   });
 });

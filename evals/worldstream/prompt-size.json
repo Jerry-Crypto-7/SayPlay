@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-09-18T12:35:16.873Z",
+  "measuredAt": "2026-09-19T10:13:44.453Z",
   "cases": [
     "c01",
     "c07",
@@ -14,86 +14,86 @@
     "chunkedCharsPerWorld": 107160
   },
   "after": {
-    "wholeCharsPerWorld": 82639,
-    "chunkedCharsPerWorld": 42805
+    "wholeCharsPerWorld": 82621,
+    "chunkedCharsPerWorld": 42787
   },
   "beforeTokensPerWorld": {
     "whole": 38849,
     "chunked": 44900
   },
   "afterTokensPerWorld": {
-    "whole": 34626,
-    "chunked": 17935
+    "whole": 34618,
+    "chunked": 17928
   },
   "drop": {
-    "whole": 0.1087,
-    "chunked": 0.6006
+    "whole": 0.1089,
+    "chunked": 0.6007
   },
   "rows": [
     {
       "caseId": "c01",
       "compilerCalls": 3,
-      "plannerChars": 6580,
+      "plannerChars": 6562,
       "wholeCallChars": 28963,
       "chunkCallChars": {
         "architecture": 8168,
         "objects": 12494,
         "rules": 14857
       },
-      "wholeCharsPerWorld": 93469,
-      "chunkedCharsPerWorld": 42099
+      "wholeCharsPerWorld": 93451,
+      "chunkedCharsPerWorld": 42081
     },
     {
       "caseId": "c07",
       "compilerCalls": 2,
-      "plannerChars": 6579,
+      "plannerChars": 6561,
       "wholeCallChars": 28750,
       "chunkCallChars": {
         "architecture": 8147,
         "objects": 12281,
         "rules": 14836
       },
-      "wholeCharsPerWorld": 64079,
-      "chunkedCharsPerWorld": 41843
+      "wholeCharsPerWorld": 64061,
+      "chunkedCharsPerWorld": 41825
     },
     {
       "caseId": "c13",
       "compilerCalls": 3,
-      "plannerChars": 6570,
+      "plannerChars": 6552,
       "wholeCallChars": 29252,
       "chunkCallChars": {
         "architecture": 8457,
         "objects": 12783,
         "rules": 15146
       },
-      "wholeCharsPerWorld": 94326,
-      "chunkedCharsPerWorld": 42956
+      "wholeCharsPerWorld": 94308,
+      "chunkedCharsPerWorld": 42938
     },
     {
       "caseId": "c19",
       "compilerCalls": 3,
-      "plannerChars": 6571,
+      "plannerChars": 6553,
       "wholeCallChars": 30046,
       "chunkCallChars": {
         "architecture": 8961,
         "objects": 13577,
         "rules": 15650
       },
-      "wholeCharsPerWorld": 96709,
-      "chunkedCharsPerWorld": 44759
+      "wholeCharsPerWorld": 96691,
+      "chunkedCharsPerWorld": 44741
     },
     {
       "caseId": "c25",
       "compilerCalls": 2,
-      "plannerChars": 6567,
+      "plannerChars": 6549,
       "wholeCallChars": 29022,
       "chunkCallChars": {
         "architecture": 8280,
         "objects": 12553,
         "rules": 14969
       },
-      "wholeCharsPerWorld": 64611,
-      "chunkedCharsPerWorld": 42369
+      "wholeCharsPerWorld": 64593,
+      "chunkedCharsPerWorld": 42351
     }
   ]
 }
