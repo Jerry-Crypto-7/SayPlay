@@ -18,6 +18,16 @@ export function buildModels(lod = 0) {
   const soil = material('dark-soil', '#332a22');
   const terracotta = material('terracotta', '#be6946');
   const screen = material('display', '#194963', { emissive: '#184759' });
+  // Paleta pro 24 modelů z naměřené poptávky (P22 T11); žádná fialová.
+  const stone = material('grey-stone', '#8d8a82', { roughness: 0.9 });
+  const plaster = material('warm-plaster', '#d9cfb8', { roughness: 0.85 });
+  const iron = material('cast-iron', '#3d4046', { metalness: 0.6, roughness: 0.45 });
+  const brass = material('aged-brass', '#b08d4a', { metalness: 0.7, roughness: 0.35 });
+  const canvas = material('sand-canvas', '#c9b58a', { roughness: 0.95 });
+  const fur = material('tan-fur', '#8a6a4a', { roughness: 0.95 });
+  const red = material('alarm-red', '#c0392b', { roughness: 0.4 });
+  const bulb = material('warm-bulb', '#f6d78a', { emissive: '#f0c05a' });
+  const flame = material('open-flame', '#f28b2a', { emissive: '#e0601a' });
   function mesh(parent, name, geometry, mat, at, scale) {
     // These models do not use textures; discard unused UVs before export.
     geometry.deleteAttribute('uv');
@@ -27,7 +37,10 @@ export function buildModels(lod = 0) {
   const box = (p, n, size, at, mat) => mesh(p, n, new T.BoxGeometry(...size), mat, at);
   const ellipsoid = (p, n, size, at, mat) => mesh(p, n, new T.SphereGeometry(1, segments, segments / 2), mat, at, size);
   const cylinder = (p, n, top, bottom, h, at, mat) => mesh(p, n, new T.CylinderGeometry(top, bottom, h, segments), mat, at);
+  const cone = (p, n, radius, h, at, mat) => mesh(p, n, new T.ConeGeometry(radius, h, segments), mat, at);
   const root = (name) => { const g = new T.Group(); g.name = name; return g; };
+  /** Pojmenovaná podskupina s vlastním pivotem – pro pohyblivé díly (`parts`). */
+  const child = (parent, name, at) => { const g = root(name); g.position.set(...at); parent.add(g); return g; };
   const models = [];
   const add = (id, label, tags, scene, extras = {}) => models.push({ id, label, tags, scene, sockets: [], parts: [], supportSurfaces: [], ...extras });
 
@@ -105,5 +118,75 @@ export function buildModels(lod = 0) {
   for (const z of [-0.065, 0.065]) { box(doorLeaf, 'handle-plate', [0.045, 0.17, 0.017], [0.84, 1.02, z], metal); box(doorLeaf, 'lever', [0.12, 0.022, 0.025], [0.8, 1.04, z * 1.4], metal); }
   for (const y of [0.3, 1.8]) cylinder(doorLeaf, 'hinge', 0.013, 0.013, 0.13, [0, y, 0], metal);
   add('panel-door', 'Panel door with hinged leaf', ['door', 'hinge', 'architecture'], door, { sockets: [{ id: 'hinge', at: [-0.47, 0, 0], normal: [0, 1, 0] }], parts: [{ id: 'leaf', node: 'door-leaf', pivot: [-0.47, 0, 0], sockets: ['hinge'] }] });
+
+  // --- P22 T11: 24 druhů z naměřené poptávky (evals/worldstream/gauntlet/asset-demand.json → top24) ---
+  // Dávka 1/4: tree, table, gate, boat, machine, cabinet.
+
+  const tree = root('oak-tree');
+  cylinder(tree, 'trunk', 0.14, 0.22, 2.0, [0, 1.0, 0], wood);
+  for (const [i, a] of [0.4, 2.5, 4.4].entries()) box(tree, `root-${i}`, [0.5, 0.12, 0.16], [Math.sin(a) * 0.3, 0.06, Math.cos(a) * 0.3], wood).rotation.y = a;
+  for (const [i, a] of [0.8, 2.9, 5.0].entries()) {
+    const branch = cylinder(tree, `branch-${i}`, 0.05, 0.09, 1.1, [Math.sin(a) * 0.4, 2.2, Math.cos(a) * 0.4], wood);
+    branch.rotation.set(Math.cos(a) * 0.7, 0, -Math.sin(a) * 0.7);
+  }
+  ellipsoid(tree, 'canopy-core', [1.4, 1.1, 1.4], [0, 3.1, 0], leaf);
+  for (const [i, a] of [0.5, 1.9, 3.3, 4.7].entries()) ellipsoid(tree, `canopy-${i}`, [0.9, 0.75, 0.9], [Math.sin(a) * 0.95, 2.85 + (i % 2) * 0.35, Math.cos(a) * 0.95], leaf);
+  ellipsoid(tree, 'canopy-top', [0.8, 0.7, 0.8], [0.1, 3.9, -0.1], leaf);
+  add('oak-tree', 'Broad oak tree', ['tree', 'oak', 'trunk', 'canopy', 'nature'], tree);
+
+  const table = root('dining-table');
+  box(table, 'top', [1.6, 0.05, 0.9], [0, 0.725, 0], wood);
+  box(table, 'apron', [1.45, 0.08, 0.75], [0, 0.66, 0], wood);
+  for (const x of [-0.7, 0.7]) for (const z of [-0.37, 0.37]) cylinder(table, 'leg', 0.032, 0.026, 0.7, [x, 0.35, z], wood);
+  add('dining-table', 'Walnut dining table', ['table', 'dining-table', 'desk', 'tabletop', 'furniture'], table,
+    { supportSurfaces: [{ id: 'top', center: [0, 0.75, 0], width: 1.6, depth: 0.9 }], sockets: [{ id: 'top', at: [0, 0.75, 0], normal: [0, 1, 0] }] });
+
+  const gate = root('iron-gate');
+  for (const x of [-1.0, 1.0]) { box(gate, 'pillar', [0.4, 2.2, 0.4], [x, 1.1, 0], stone); box(gate, 'pillar-cap', [0.5, 0.12, 0.5], [x, 2.26, 0], stone); }
+  const gateLeaf = child(gate, 'gate-leaf', [-0.8, 0, 0]);
+  for (const y of [0.25, 1.75]) box(gateLeaf, 'rail', [1.6, 0.06, 0.05], [0.8, y, 0], iron);
+  for (let i = 0; i < 7; i++) cylinder(gateLeaf, `bar-${i}`, 0.02, 0.02, 1.7, [0.1 + i * 0.2333, 0.95, 0], iron);
+  if (!lod) for (let i = 0; i < 7; i++) cone(gateLeaf, `spike-${i}`, 0.035, 0.1, [0.1 + i * 0.2333, 1.85, 0], iron);
+  for (const y of [0.4, 1.6]) cylinder(gateLeaf, 'hinge', 0.035, 0.035, 0.12, [0, y, 0], iron);
+  add('iron-gate', 'Wrought iron gate between stone pillars', ['gate', 'iron-gate', 'entrance', 'fence', 'portal'], gate,
+    { sockets: [{ id: 'hinge', at: [-0.8, 0, 0], normal: [0, 1, 0] }], parts: [{ id: 'leaf', node: 'gate-leaf', pivot: [-0.8, 0, 0], sockets: ['hinge'] }] });
+
+  const boat = root('rowing-boat');
+  ellipsoid(boat, 'hull', [0.7, 0.36, 1.6], [0, 0.36, 0], wood);
+  ellipsoid(boat, 'hull-inner', [0.6, 0.3, 1.45], [0, 0.44, 0], material('pale-plank', '#a98b62'));
+  box(boat, 'keel', [0.06, 0.08, 2.6], [0, 0.04, 0], wood);
+  for (const z of [-0.55, 0.45]) box(boat, 'thwart', [1.15, 0.05, 0.25], [0, 0.58, z], wood);
+  cone(boat, 'bow-post', 0.05, 0.3, [0, 0.75, 1.5], wood);
+  for (const side of [-1, 1]) {
+    const oar = cylinder(boat, 'oar', 0.02, 0.02, 2.0, [side * 0.75, 0.62, 0.1], wood);
+    oar.rotation.set(0, 0, side * 1.25);
+    box(boat, 'oar-blade', [0.3, 0.02, 0.12], [side * 1.7, 0.32, 0.1], wood);
+  }
+  add('rowing-boat', 'Wooden rowing boat with oars', ['boat', 'rowboat', 'ship', 'vessel', 'hull'], boat);
+
+  const machine = root('steam-machine');
+  box(machine, 'base', [1.4, 0.2, 0.9], [0, 0.1, 0], dark);
+  box(machine, 'body', [1.0, 0.8, 0.7], [0, 0.6, 0], metal);
+  cylinder(machine, 'boiler', 0.3, 0.3, 0.95, [0, 1.3, 0], brass).rotation.z = Math.PI / 2;
+  cylinder(machine, 'chimney', 0.07, 0.09, 0.7, [-0.3, 1.9, 0], iron);
+  cylinder(machine, 'flywheel', 0.35, 0.35, 0.08, [0.65, 0.6, 0], iron).rotation.z = Math.PI / 2;
+  cylinder(machine, 'axle', 0.05, 0.05, 0.5, [0.55, 0.6, 0], metal).rotation.z = Math.PI / 2;
+  cylinder(machine, 'gauge', 0.09, 0.09, 0.03, [0.25, 0.75, 0.36], screen).rotation.x = Math.PI / 2;
+  cylinder(machine, 'pipe', 0.04, 0.04, 0.6, [0.35, 1.0, -0.2], brass);
+  if (!lod) for (let i = 0; i < 6; i++) box(machine, `rivet-row-${i}`, [0.03, 0.03, 0.72], [-0.45 + i * 0.18, 1.0, 0], iron);
+  add('steam-machine', 'Brass and iron steam machine', ['machine', 'engine', 'boiler', 'generator', 'contraption', 'mechanism'], machine);
+
+  const cabinet = root('storage-cabinet');
+  box(cabinet, 'plinth', [0.86, 0.08, 0.46], [0, 0.04, 0], dark);
+  box(cabinet, 'carcass', [0.9, 1.8, 0.5], [0, 0.98, 0], wood);
+  const panel = material('warm-panel', '#8b6143');
+  box(cabinet, 'fixed-door', [0.42, 1.6, 0.03], [0.22, 0.98, 0.26], panel);
+  cylinder(cabinet, 'fixed-handle', 0.012, 0.012, 0.14, [0.06, 0.98, 0.29], metal);
+  const cabinetDoor = child(cabinet, 'cabinet-door', [-0.44, 0, 0.26]);
+  box(cabinetDoor, 'door-slab', [0.42, 1.6, 0.03], [0.22, 0.98, 0], panel);
+  cylinder(cabinetDoor, 'door-handle', 0.012, 0.012, 0.14, [0.38, 0.98, 0.03], metal);
+  add('storage-cabinet', 'Tall walnut storage cabinet', ['cabinet', 'cupboard', 'wardrobe', 'shelf', 'storage'], cabinet,
+    { supportSurfaces: [{ id: 'top', center: [0, 1.88, 0], width: 0.9, depth: 0.5 }], sockets: [{ id: 'hinge', at: [-0.44, 0, 0.26], normal: [0, 1, 0] }],
+      parts: [{ id: 'door', node: 'cabinet-door', pivot: [-0.44, 0, 0.26], sockets: ['hinge'] }] });
   return models;
 }

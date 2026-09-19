@@ -7,9 +7,10 @@ import catalog from '../catalog.json';
 import { assetCatalogSchema } from '../schema';
 
 describe('committed original GLB catalog', () => {
-  it('declares six complete normalized assets with genuinely cheaper LODs', () => {
+  it('declares twelve complete normalized assets with genuinely cheaper LODs', () => {
+    // Šest původních + dávky P22 T11 (24 druhů z naměřené poptávky); cílový stav je 30.
     const parsed = assetCatalogSchema.parse(catalog);
-    expect(parsed.assets).toHaveLength(6);
+    expect(parsed.assets).toHaveLength(12);
     for (const asset of parsed.assets) {
       expect(asset.units).toBe('meters'); expect(asset.up).toBe('+Y'); expect(asset.front).toBe('+Z');
       expect(asset.pivot).toEqual([0, 0, 0]); expect(asset.lods).toHaveLength(2);

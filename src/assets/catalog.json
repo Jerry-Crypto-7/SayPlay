@@ -20,7 +20,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
         "importedAt": "2026-09-17",
-        "sourceHash": "efc1f83a22b3fa00478d34fb266152135bf0ed1d996499295828960039f68102"
+        "sourceHash": "f2c32d7e4da42b6a9a3a02a4986a07421b56aafca1b8f5651b74b79664cf58dd"
       },
       "units": "meters",
       "up": "+Y",
@@ -143,7 +143,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
         "importedAt": "2026-09-17",
-        "sourceHash": "efc1f83a22b3fa00478d34fb266152135bf0ed1d996499295828960039f68102"
+        "sourceHash": "f2c32d7e4da42b6a9a3a02a4986a07421b56aafca1b8f5651b74b79664cf58dd"
       },
       "units": "meters",
       "up": "+Y",
@@ -268,7 +268,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
         "importedAt": "2026-09-17",
-        "sourceHash": "efc1f83a22b3fa00478d34fb266152135bf0ed1d996499295828960039f68102"
+        "sourceHash": "f2c32d7e4da42b6a9a3a02a4986a07421b56aafca1b8f5651b74b79664cf58dd"
       },
       "units": "meters",
       "up": "+Y",
@@ -390,7 +390,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
         "importedAt": "2026-09-17",
-        "sourceHash": "efc1f83a22b3fa00478d34fb266152135bf0ed1d996499295828960039f68102"
+        "sourceHash": "f2c32d7e4da42b6a9a3a02a4986a07421b56aafca1b8f5651b74b79664cf58dd"
       },
       "units": "meters",
       "up": "+Y",
@@ -514,7 +514,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
         "importedAt": "2026-09-17",
-        "sourceHash": "efc1f83a22b3fa00478d34fb266152135bf0ed1d996499295828960039f68102"
+        "sourceHash": "f2c32d7e4da42b6a9a3a02a4986a07421b56aafca1b8f5651b74b79664cf58dd"
       },
       "units": "meters",
       "up": "+Y",
@@ -624,7 +624,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
         "importedAt": "2026-09-17",
-        "sourceHash": "efc1f83a22b3fa00478d34fb266152135bf0ed1d996499295828960039f68102"
+        "sourceHash": "f2c32d7e4da42b6a9a3a02a4986a07421b56aafca1b8f5651b74b79664cf58dd"
       },
       "units": "meters",
       "up": "+Y",
@@ -748,6 +748,721 @@
             -0.47,
             0,
             0
+          ],
+          "sockets": [
+            "hinge"
+          ]
+        }
+      ]
+    },
+    {
+      "assetId": "oak-tree",
+      "version": 1,
+      "hash": "71d7541f3c93e95183e9a48ccd3b088f8462342bbc1cf278cde682e906ca6657",
+      "label": "Broad oak tree",
+      "tags": [
+        "tree",
+        "oak",
+        "trunk",
+        "canopy",
+        "nature"
+      ],
+      "style": "original stylized PBR",
+      "thumbnail": "/assets/worldstream/oak-tree.png",
+      "provenance": {
+        "source": "scripts/assets/originals.mjs",
+        "author": "Worldsmith project — Codex-assisted original geometry",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
+        "importedAt": "2026-09-17",
+        "sourceHash": "f2c32d7e4da42b6a9a3a02a4986a07421b56aafca1b8f5651b74b79664cf58dd"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -1.8499270946858957,
+          0,
+          -1.8381057814134216
+        ],
+        "max": [
+          1.7989850833030436,
+          4.6,
+          1.7337034337958541
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/oak-tree-lod0.glb",
+          "hash": "71d7541f3c93e95183e9a48ccd3b088f8462342bbc1cf278cde682e906ca6657",
+          "bytes": 73352,
+          "triangles": 2516,
+          "decodedGeometryBytes": 61992,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/oak-tree-lod1.glb",
+          "hash": "1398d16585319c79b6f731b510e20aff6846fb795ad22ecb81f18ec08c863922",
+          "bytes": 27196,
+          "triangles": 452,
+          "decodedGeometryBytes": 15912,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "oiled-walnut",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-1",
+          "name": "leaf-green",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -1.8499270946858957,
+              0,
+              -1.8381057814134216
+            ],
+            "max": [
+              1.7989850833030436,
+              4.6,
+              1.7337034337958541
+            ]
+          }
+        }
+      ],
+      "sockets": [],
+      "supportSurfaces": [],
+      "parts": []
+    },
+    {
+      "assetId": "dining-table",
+      "version": 1,
+      "hash": "09fa07769eda13619d429aa5aeee6cdd0e35593ed2d8ec14de4ef62343900628",
+      "label": "Walnut dining table",
+      "tags": [
+        "table",
+        "dining-table",
+        "desk",
+        "tabletop",
+        "furniture"
+      ],
+      "style": "original stylized PBR",
+      "thumbnail": "/assets/worldstream/dining-table.png",
+      "provenance": {
+        "source": "scripts/assets/originals.mjs",
+        "author": "Worldsmith project — Codex-assisted original geometry",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
+        "importedAt": "2026-09-17",
+        "sourceHash": "f2c32d7e4da42b6a9a3a02a4986a07421b56aafca1b8f5651b74b79664cf58dd"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -0.800000011920929,
+          5.960464455334602e-9,
+          -0.44999998807907104
+        ],
+        "max": [
+          0.800000011920929,
+          0.750000000372529,
+          0.44999998807907104
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/dining-table-lod0.glb",
+          "hash": "09fa07769eda13619d429aa5aeee6cdd0e35593ed2d8ec14de4ef62343900628",
+          "bytes": 20468,
+          "triangles": 344,
+          "decodedGeometryBytes": 15120,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/dining-table-lod1.glb",
+          "hash": "3fc34d53eaf46afb780191368a1bc8d62234085a2a13be166e79849e6fa31416",
+          "bytes": 12376,
+          "triangles": 152,
+          "decodedGeometryBytes": 7056,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "oiled-walnut",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -0.800000011920929,
+              5.960464455334602e-9,
+              -0.44999998807907104
+            ],
+            "max": [
+              0.800000011920929,
+              0.750000000372529,
+              0.44999998807907104
+            ]
+          }
+        }
+      ],
+      "sockets": [
+        {
+          "id": "top",
+          "at": [
+            0,
+            0.75,
+            0
+          ],
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        }
+      ],
+      "supportSurfaces": [
+        {
+          "id": "top",
+          "center": [
+            0,
+            0.75,
+            0
+          ],
+          "width": 1.6,
+          "depth": 0.9
+        }
+      ],
+      "parts": []
+    },
+    {
+      "assetId": "iron-gate",
+      "version": 1,
+      "hash": "c8ae4e686110a4c326776a854cea0c1561e93166a8cd6eaa1c4d7d4e26b2f074",
+      "label": "Wrought iron gate between stone pillars",
+      "tags": [
+        "gate",
+        "iron-gate",
+        "entrance",
+        "fence",
+        "portal"
+      ],
+      "style": "original stylized PBR",
+      "thumbnail": "/assets/worldstream/iron-gate.png",
+      "provenance": {
+        "source": "scripts/assets/originals.mjs",
+        "author": "Worldsmith project — Codex-assisted original geometry",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
+        "importedAt": "2026-09-17",
+        "sourceHash": "f2c32d7e4da42b6a9a3a02a4986a07421b56aafca1b8f5651b74b79664cf58dd"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -1.25,
+          -2.3841857821338408e-8,
+          -0.25
+        ],
+        "max": [
+          1.25,
+          2.3199999986588953,
+          0.25
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/iron-gate-lod0.glb",
+          "hash": "c8ae4e686110a4c326776a854cea0c1561e93166a8cd6eaa1c4d7d4e26b2f074",
+          "bytes": 69140,
+          "triangles": 1072,
+          "decodedGeometryBytes": 50616,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/iron-gate-lod1.glb",
+          "hash": "19d12153f765729845176ff8c5f9decc62cff3551125e56439aee1ce533b189a",
+          "bytes": 29144,
+          "triangles": 360,
+          "decodedGeometryBytes": 16848,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "grey-stone",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-1",
+          "name": "cast-iron",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -1.25,
+              -2.3841857821338408e-8,
+              -0.25
+            ],
+            "max": [
+              1.25,
+              2.3199999986588953,
+              0.25
+            ]
+          }
+        }
+      ],
+      "sockets": [
+        {
+          "id": "hinge",
+          "at": [
+            -0.8,
+            0,
+            0
+          ],
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        }
+      ],
+      "supportSurfaces": [],
+      "parts": [
+        {
+          "id": "leaf",
+          "node": "gate-leaf",
+          "pivot": [
+            -0.8,
+            0,
+            0
+          ],
+          "sockets": [
+            "hinge"
+          ]
+        }
+      ]
+    },
+    {
+      "assetId": "rowing-boat",
+      "version": 1,
+      "hash": "ac027dffe1694c8886141d816f8e7cb7569945409a0577f6d51e38da48cb1f55",
+      "label": "Wooden rowing boat with oars",
+      "tags": [
+        "boat",
+        "rowboat",
+        "ship",
+        "vessel",
+        "hull"
+      ],
+      "style": "original stylized PBR",
+      "thumbnail": "/assets/worldstream/rowing-boat.png",
+      "provenance": {
+        "source": "scripts/assets/originals.mjs",
+        "author": "Worldsmith project — Codex-assisted original geometry",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
+        "importedAt": "2026-09-17",
+        "sourceHash": "f2c32d7e4da42b6a9a3a02a4986a07421b56aafca1b8f5651b74b79664cf58dd"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -1.8500000059604644,
+          0,
+          -1.6
+        ],
+        "max": [
+          1.8500000059604644,
+          0.9543020543581511,
+          1.6
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/rowing-boat-lod0.glb",
+          "hash": "ac027dffe1694c8886141d816f8e7cb7569945409a0577f6d51e38da48cb1f55",
+          "bytes": 36132,
+          "triangles": 980,
+          "decodedGeometryBytes": 27792,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/rowing-boat-lod1.glb",
+          "hash": "ceed085ec8cb89556591c780d21cd7b1ffd6d6312d59078c161cc5614720d37b",
+          "bytes": 18076,
+          "triangles": 236,
+          "decodedGeometryBytes": 9792,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "oiled-walnut",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-1",
+          "name": "pale-plank",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -1.8500000059604644,
+              0,
+              -1.6
+            ],
+            "max": [
+              1.8500000059604644,
+              0.9543020543581511,
+              1.6
+            ]
+          }
+        }
+      ],
+      "sockets": [],
+      "supportSurfaces": [],
+      "parts": []
+    },
+    {
+      "assetId": "steam-machine",
+      "version": 1,
+      "hash": "3dc66ac57c0abfd4569298b655d37b183988518b3ff1ba8d1612a4aba301e0c2",
+      "label": "Brass and iron steam machine",
+      "tags": [
+        "machine",
+        "engine",
+        "boiler",
+        "generator",
+        "contraption",
+        "mechanism"
+      ],
+      "style": "original stylized PBR",
+      "thumbnail": "/assets/worldstream/steam-machine.png",
+      "provenance": {
+        "source": "scripts/assets/originals.mjs",
+        "author": "Worldsmith project — Codex-assisted original geometry",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
+        "importedAt": "2026-09-17",
+        "sourceHash": "f2c32d7e4da42b6a9a3a02a4986a07421b56aafca1b8f5651b74b79664cf58dd"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -0.699999988079071,
+          -1.4901161138336505e-9,
+          -0.44999998807907104
+        ],
+        "max": [
+          0.8,
+          2.2499999940395354,
+          0.44999998807907104
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/steam-machine-lod0.glb",
+          "hash": "3dc66ac57c0abfd4569298b655d37b183988518b3ff1ba8d1612a4aba301e0c2",
+          "bytes": 38332,
+          "triangles": 576,
+          "decodedGeometryBytes": 25920,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/steam-machine-lod1.glb",
+          "hash": "1609881d0aa6c478db9c1ed3bd8d3aeac59ce4831d155bef1db7e1022d4ab9a9",
+          "bytes": 17508,
+          "triangles": 216,
+          "decodedGeometryBytes": 9936,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "charcoal-polymer",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-1",
+          "name": "brushed-steel",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-2",
+          "name": "aged-brass",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-3",
+          "name": "cast-iron",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-4",
+          "name": "display",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -0.699999988079071,
+              -1.4901161138336505e-9,
+              -0.44999998807907104
+            ],
+            "max": [
+              0.8,
+              2.2499999940395354,
+              0.44999998807907104
+            ]
+          }
+        }
+      ],
+      "sockets": [],
+      "supportSurfaces": [],
+      "parts": []
+    },
+    {
+      "assetId": "storage-cabinet",
+      "version": 1,
+      "hash": "e4548b415ebeafa1bb9e3c16a2d569188fd968bb8551de4f1ea364fc13912ec5",
+      "label": "Tall walnut storage cabinet",
+      "tags": [
+        "cabinet",
+        "cupboard",
+        "wardrobe",
+        "shelf",
+        "storage"
+      ],
+      "style": "original stylized PBR",
+      "thumbnail": "/assets/worldstream/storage-cabinet.png",
+      "provenance": {
+        "source": "scripts/assets/originals.mjs",
+        "author": "Worldsmith project — Codex-assisted original geometry",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/PROVENANCE.md",
+        "importedAt": "2026-09-17",
+        "sourceHash": "f2c32d7e4da42b6a9a3a02a4986a07421b56aafca1b8f5651b74b79664cf58dd"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -0.44999998807907104,
+          8.940696724635266e-10,
+          -0.25
+        ],
+        "max": [
+          0.44999998807907104,
+          1.879999976158142,
+          0.30200000010430816
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/storage-cabinet-lod0.glb",
+          "hash": "e4548b415ebeafa1bb9e3c16a2d569188fd968bb8551de4f1ea364fc13912ec5",
+          "bytes": 15220,
+          "triangles": 208,
+          "decodedGeometryBytes": 9504,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/storage-cabinet-lod1.glb",
+          "hash": "74b197ff69498b643cf47d169947ca30d99919aa5fc7800973a2dd2ee53a71bc",
+          "bytes": 11176,
+          "triangles": 112,
+          "decodedGeometryBytes": 5472,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "charcoal-polymer",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-1",
+          "name": "oiled-walnut",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-2",
+          "name": "warm-panel",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        },
+        {
+          "id": "material-3",
+          "name": "brushed-steel",
+          "alphaMode": "OPAQUE",
+          "doubleSided": false
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -0.44999998807907104,
+              8.940696724635266e-10,
+              -0.25
+            ],
+            "max": [
+              0.44999998807907104,
+              1.879999976158142,
+              0.30200000010430816
+            ]
+          }
+        }
+      ],
+      "sockets": [
+        {
+          "id": "hinge",
+          "at": [
+            -0.44,
+            0,
+            0.26
+          ],
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        }
+      ],
+      "supportSurfaces": [
+        {
+          "id": "top",
+          "center": [
+            0,
+            1.88,
+            0
+          ],
+          "width": 0.9,
+          "depth": 0.5
+        }
+      ],
+      "parts": [
+        {
+          "id": "door",
+          "node": "cabinet-door",
+          "pivot": [
+            -0.44,
+            0,
+            0.26
           ],
           "sockets": [
             "hinge"

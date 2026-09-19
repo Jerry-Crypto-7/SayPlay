@@ -24,15 +24,16 @@ export default function AssetGallery() {
     const entries = [...catalog.assets, catalog.assets[0]];
     const objects = entries.flatMap((asset, index) => {
       if (mode === 'one' && index === 0) return [];
-      const x = (index % 4 - 1.5) * 3;
-      const z = Math.floor(index / 4) * 4 - 2;
+      // Mřížka 6 sloupců po 3 m; 31 vzorků (30 assetů + duplikát) dá 6 řad po 4 m.
+      const x = (index % 6 - 2.5) * 3;
+      const z = Math.floor(index / 6) * 4 - 10;
       return [{ stableId: `sample${index}`, label: asset.label, synonyms: [], role: 'prop', importance: 2,
         source: { kind: 'asset', assetId: asset.assetId, version: asset.version, hash: asset.hash },
         binding: { collider: { min: [x - 1.2, 0, z - 1.2], max: [x + 1.2, 2.8, z + 1.2] }, sockets: [], parts: [] },
         targetBounds: { min: [x - 1.2, 0, z - 1.2], max: [x + 1.2, 2.8, z + 1.2] } }];
     });
     const blueprint = blueprintSchema.safeParse({ ...DEMO_BLUEPRINT, version: 'worldstream-v2', title: 'GLB catalog', objects, shapes: [],
-      geometry: { ...DEMO_BLUEPRINT.geometry, nodes: [{ kind: 'terrain', variant: 'ridge', extent: [15, 9], amplitude: 0, seed: 1 }], root: 0 } });
+      geometry: { ...DEMO_BLUEPRINT.geometry, nodes: [{ kind: 'terrain', variant: 'ridge', extent: [21, 25], amplitude: 0, seed: 1 }], root: 0 } });
     if (!blueprint.success) { setError(blueprint.error.message); return; }
     void buildProxyWorldFrom(blueprint.data, { mesh: async () => { throw new Error('No shapes in asset gallery'); } })
       .then(built => {
