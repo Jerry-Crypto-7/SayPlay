@@ -2536,6 +2536,141 @@
       "scope": "prod"
     },
     {
+      "name": "public/assets/worldstream/dog-lod0.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/dog-lod1.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/dog.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/elevator-car-lod0.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/elevator-car-lod1.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/elevator-car.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/floor-lamp-lod0.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/floor-lamp-lod1.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/floor-lamp.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
       "name": "public/assets/worldstream/floor-lever-lod0.glb",
       "kind": "asset",
       "firstParty": true,
@@ -2567,6 +2702,51 @@
     },
     {
       "name": "public/assets/worldstream/floor-lever.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/framed-window-lod0.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/framed-window-lod1.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/framed-window.png",
       "kind": "asset",
       "firstParty": true,
       "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
@@ -3167,6 +3347,96 @@
     },
     {
       "name": "public/assets/worldstream/wall-switch.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/wooden-bridge-lod0.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/wooden-bridge-lod1.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/wooden-bridge.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/workbench-lod0.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/workbench-lod1.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",
+      "source": "scripts/assets/originals.mjs; scripts/assets/normalize.mjs",
+      "authorOrProvider": "Worldsmith project — Codex-assisted original geometry",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith starter models and generated previews, 2026-09-17.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/workbench.png",
       "kind": "asset",
       "firstParty": true,
       "reason": "Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.",

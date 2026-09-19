@@ -54,10 +54,10 @@ describe('provisional layouts from the exact current planner identities',()=>{
       expect([0,1,2].every(axis=>Math.min(a.bounds.max[axis],b.bounds.max[axis])-Math.max(a.bounds.min[axis],b.bounds.min[axis])>0.08)).toBe(false);
     }
     expect(result.preview.objects.find(o=>o.stableId==='computerTerminal')!.source.kind).toBe('asset');
-    // The catalog has no signal-light asset: retain its own labeled rough
-    // geometry rather than substituting a lamp or claiming final appearance.
-    expect(result.preview.objects.find(o=>o.stableId==='signalLight')!.source.kind).toBe('geom');
-    expect(result.preview.validation.limitations.join(' ')).toContain('signalLight: explicit unit-block rough proxy');
+    // Od P22 T11 má katalog lampu (floor-lamp) a synonymum "signal lamp" na ni
+    // ukáže tagem; do té doby zůstávalo světlo vlastní hrubou geometrií.
+    const lightObject=result.preview.objects.find(o=>o.stableId==='signalLight')!;
+    expect(lightObject.source.kind==='asset'&&lightObject.source.assetId).toBe('floor-lamp');
     expect(result.preview.validation.limitations.join(' ')).toContain('no cable, port, electrical behavior');
     expect(JSON.stringify(p)).toBe(before);expect(buildIntentPreview(p,{sessionSeed:17})).toEqual(result);
   });

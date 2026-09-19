@@ -254,5 +254,81 @@ export function buildModels(lod = 0) {
   for (const x of [-1.45, 1.45]) cylinder(wall, 'pier', 0.16, 0.18, 2.05, [x, 1.025, 0], stone);
   if (!lod) for (let r = 0; r < 6; r++) for (let c = 0; c < 5; c++) box(wall, `block-${r}-${c}`, [0.44, 0.22, 0.03], [-1.1 + c * 0.5 + (r % 2) * 0.25, 0.32 + r * 0.28, 0.205], stone);
   add('stone-wall', 'Plastered stone wall segment', ['wall', 'stone-wall', 'rampart', 'partition', 'barrier'], wall);
+
+  // Dávka 3/4: window, workbench, bridge, dog, elevator, lamp.
+
+  const casement = root('framed-window');
+  box(casement, 'wall-below', [1.6, 0.9, 0.2], [0, 0.45, 0], plaster);
+  box(casement, 'wall-above', [1.6, 0.4, 0.2], [0, 2.2, 0], plaster);
+  for (const x of [-0.65, 0.65]) box(casement, 'wall-side', [0.3, 1.1, 0.2], [x, 1.45, 0], plaster);
+  for (const x of [-0.46, 0.46]) box(casement, 'frame-jamb', [0.08, 1.1, 0.12], [x, 1.45, 0], wood);
+  for (const y of [0.94, 1.96]) box(casement, 'frame-rail', [1.0, 0.08, 0.12], [0, y, 0], wood);
+  box(casement, 'sill', [1.12, 0.06, 0.32], [0, 0.93, 0.06], wood);
+  const sash = child(casement, 'window-sash', [-0.42, 0.98, 0.03]);
+  box(sash, 'sash-glass', [0.84, 0.94, 0.01], [0.42, 0.47, 0], glass);
+  box(sash, 'sash-mullion', [0.04, 0.94, 0.04], [0.42, 0.47, 0], wood);
+  box(sash, 'sash-transom', [0.84, 0.04, 0.04], [0.42, 0.47, 0], wood);
+  cylinder(sash, 'sash-handle', 0.012, 0.012, 0.1, [0.78, 0.4, 0.05], brass);
+  add('framed-window', 'Casement window in a wall opening', ['window', 'framed-window', 'casement', 'pane'], casement,
+    { sockets: [{ id: 'hinge', at: [-0.42, 0.98, 0.03], normal: [0, 1, 0] }], parts: [{ id: 'sash', node: 'window-sash', pivot: [-0.42, 0.98, 0.03], sockets: ['hinge'] }] });
+
+  const workbench = root('workbench');
+  box(workbench, 'top', [1.8, 0.08, 0.7], [0, 0.86, 0], wood);
+  for (const x of [-0.8, 0.8]) for (const z of [-0.28, 0.28]) box(workbench, 'leg', [0.08, 0.82, 0.08], [x, 0.41, z], wood);
+  box(workbench, 'lower-shelf', [1.6, 0.04, 0.6], [0, 0.25, 0], wood);
+  for (const x of [-0.8, 0.8]) box(workbench, 'stretcher', [0.06, 0.06, 0.56], [x, 0.7, 0], wood);
+  box(workbench, 'vise-body', [0.2, 0.1, 0.14], [0.65, 0.95, 0.3], iron);
+  box(workbench, 'vise-jaw', [0.2, 0.1, 0.04], [0.65, 0.95, 0.42], iron);
+  cylinder(workbench, 'vise-screw', 0.015, 0.015, 0.3, [0.65, 0.95, 0.5], metal).rotation.x = Math.PI / 2;
+  cylinder(workbench, 'hammer-handle', 0.015, 0.018, 0.3, [-0.4, 0.92, 0.1], wood).rotation.z = Math.PI / 2;
+  box(workbench, 'hammer-head', [0.06, 0.05, 0.1], [-0.22, 0.925, 0.1], iron);
+  for (let i = 0; i < 3; i++) cylinder(workbench, `jar-${i}`, 0.04, 0.04, 0.1, [-0.7 + i * 0.12, 0.95, -0.22], glass);
+  add('workbench', 'Workshop bench with a vise', ['workbench', 'bench-top', 'workshop', 'worktable', 'craft-table'], workbench,
+    { supportSurfaces: [{ id: 'top', center: [0, 0.9, 0], width: 1.8, depth: 0.7 }], sockets: [{ id: 'top', at: [0, 0.9, 0], normal: [0, 1, 0] }] });
+
+  const bridge = root('wooden-bridge');
+  for (const z of [-2.1, 2.1]) box(bridge, 'abutment', [1.6, 0.4, 1.2], [0, 0.2, z], stone);
+  for (let i = 0; i < 9; i++) {
+    const z = -1.6 + i * 0.4, y = 0.43 + 0.32 * (1 - (z / 1.8) ** 2);
+    box(bridge, `plank-${i}`, [1.4, 0.06, 0.38], [0, y, z], wood);
+    if (i % 2 === 0) for (const x of [-0.66, 0.66]) cylinder(bridge, 'post', 0.03, 0.035, 0.9, [x, y + 0.42, z], wood);
+  }
+  for (const x of [-0.66, 0.66]) for (const [i, z] of [-1.2, 0, 1.2].entries()) box(bridge, `rail-${i}`, [0.05, 0.05, 1.2], [x, 1.3 + 0.32 * (1 - (z / 1.8) ** 2) - (i === 1 ? 0 : 0.06), z], wood).rotation.x = (i - 1) * 0.24;
+  add('wooden-bridge', 'Arched wooden footbridge', ['bridge', 'footbridge', 'crossing', 'walkway', 'plank-bridge'], bridge);
+
+  const dog = root('dog');
+  ellipsoid(dog, 'body', [0.17, 0.19, 0.36], [0, 0.48, 0], fur);
+  ellipsoid(dog, 'chest', [0.17, 0.2, 0.2], [0, 0.46, 0.2], fur);
+  ellipsoid(dog, 'head', [0.13, 0.13, 0.15], [0, 0.7, 0.42], fur);
+  ellipsoid(dog, 'snout', [0.07, 0.06, 0.11], [0, 0.66, 0.56], fur);
+  ellipsoid(dog, 'nose', [0.025, 0.02, 0.02], [0, 0.68, 0.665], dark);
+  for (const x of [-0.05, 0.05]) ellipsoid(dog, 'eye', [0.015, 0.015, 0.01], [x, 0.74, 0.54], dark);
+  for (const x of [-0.1, 0.1]) ellipsoid(dog, 'ear', [0.04, 0.09, 0.03], [x, 0.72, 0.36], hair).rotation.z = -x * 4;
+  for (const x of [-0.1, 0.1]) for (const z of [-0.22, 0.2]) cylinder(dog, 'leg', 0.04, 0.045, 0.36, [x, 0.18, z], fur);
+  cylinder(dog, 'tail', 0.015, 0.03, 0.3, [0, 0.62, -0.42], fur).rotation.x = -0.9;
+  add('dog', 'Standing dog', ['dog', 'hound', 'puppy', 'pet', 'animal'], dog);
+
+  const elevator = root('elevator-car');
+  box(elevator, 'floor', [1.7, 0.1, 1.7], [0, 0.05, 0], dark);
+  box(elevator, 'ceiling', [1.7, 0.1, 1.7], [0, 2.45, 0], dark);
+  box(elevator, 'back-wall', [1.7, 2.3, 0.08], [0, 1.25, -0.81], metal);
+  for (const x of [-0.81, 0.81]) box(elevator, 'side-wall', [0.08, 2.3, 1.7], [x, 1.25, 0], metal);
+  for (const x of [-0.72, 0.72]) box(elevator, 'door-post', [0.26, 2.3, 0.08], [x, 1.25, 0.81], dark);
+  box(elevator, 'lintel', [1.7, 0.25, 0.08], [0, 2.275, 0.81], dark);
+  const doors = child(elevator, 'elevator-doors', [0, 0, 0.8]);
+  for (const x of [-0.3, 0.3]) box(doors, 'door-leaf', [0.58, 2.05, 0.05], [x, 1.125, 0], metal);
+  box(elevator, 'call-panel', [0.16, 0.3, 0.02], [-0.66, 1.2, 0.86], dark);
+  cylinder(elevator, 'call-button', 0.025, 0.025, 0.02, [-0.66, 1.2, 0.88], bulb).rotation.x = Math.PI / 2;
+  box(elevator, 'floor-display', [0.4, 0.1, 0.02], [0, 2.3, 0.86], screen);
+  add('elevator-car', 'Steel elevator car with sliding doors', ['elevator', 'lift', 'elevator-car', 'hoist'], elevator,
+    { sockets: [{ id: 'doorway', at: [0, 0, 0.8], normal: [0, 0, 1] }], parts: [{ id: 'doors', node: 'elevator-doors', pivot: [0, 0, 0.8], sockets: ['doorway'] }] });
+
+  const lamp = root('floor-lamp');
+  cylinder(lamp, 'base', 0.18, 0.2, 0.03, [0, 0.015, 0], metal);
+  cylinder(lamp, 'pole', 0.018, 0.018, 1.5, [0, 0.78, 0], brass);
+  cylinder(lamp, 'shade', 0.25, 0.16, 0.34, [0, 1.65, 0], fabric);
+  ellipsoid(lamp, 'bulb', [0.05, 0.07, 0.05], [0, 1.6, 0], bulb);
+  cylinder(lamp, 'finial', 0.02, 0.02, 0.06, [0, 1.85, 0], brass);
+  add('floor-lamp', 'Floor lamp with a fabric shade', ['lamp', 'floor-lamp', 'reading-lamp', 'lampshade'], lamp);
   return models;
 }
