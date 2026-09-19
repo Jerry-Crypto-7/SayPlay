@@ -18,6 +18,8 @@
  *   WORLDSMITH_LATENCY_MODELS   čárkou oddělený seznam `model`, `model@effort` nebo `model@effort#cli`, výchozí `gpt-5.6-sol,gpt-5.6-sol-fast`
  *                               `#cli` volá model přes Codex CLI (`codex exec`) místo HTTP proxy — jediná cesta ke `gpt-6-astra`
  *   WORLDSMITH_LATENCY_CASES    kolik vět z korpusu, výchozí 5 (bere každou šestou, ne prvních pět)
+ *   WORLDSMITH_LATENCY_CHUNKED  `1` = svět na tři souběžné kusy (P21 T5); každý kus je vlastní záznam s `chunk`, případ nese
+ *                               čas celého světa i nejdelšího kusu
  *   + totéž co `live-create` (`WORLDSMITH_MODEL_ENDPOINT`, `_KEY`, `_PROFILE`, `_CALL_CAP`, ceny, `VERCEL_ENV`)
  */
 
@@ -33,7 +35,7 @@ import { describe, expect, it } from 'vitest';
 
 import { frozenGrammar } from '@/model/client';
 import type { UpstreamRequest } from '@/model/prompt';
-import { requestStage } from '@/model/worldstream-prompt';
+import { requestChunk, requestStage } from '@/model/worldstream-prompt';
 import { CODEX_CLI_ENDPOINT, upstreamBranch, upstreamConfigFromEnv } from '@/server/upstream';
 import { createMeshClient } from '@/shape/mesh-client';
 
@@ -43,6 +45,7 @@ import { readQualityCases } from './world-quality/corpus';
 
 const SESSION_SEED = 4021;
 const REPAIR_PREFIX = 'Your previous answer was rejected';
+const CHUNKED = process.env.WORLDSMITH_LATENCY_CHUNKED === '1';
 
 // Explicit P20 run directories retain failures and answers without rewriting older reports.
 const P20_DIR = process.env.P20_RUN_DIR ? resolve(process.env.P20_RUN_DIR) : null;
@@ -54,6 +57,8 @@ interface CallRecord {
   readonly caseId: string;
   readonly call: number;
   readonly stage: ReturnType<typeof requestStage>;
+  /** Který kus si požadavek říkal napsat; `null` u celé odpovědi. */
+  readonly chunk: ReturnType<typeof requestChunk>;
   readonly repair: boolean;
   /** První řádek důvodu odmítnutí, jen u opravného kola. */
   readonly reason: string | null;
@@ -207,6 +212,14 @@ function reasonOf(request: UpstreamRequest): string | null {
   return line.replace(/\[\d+\]/g, '[n]').slice(0, 120);
 }
 
+function chunkTimes(calls: readonly CallRecord[]): { longestMs: number; sumMs: number; byChunk: Record<string, number> } | null {
+  const chunked = calls.filter((call) => call.chunk !== null && !call.repair);
+  if (chunked.length === 0) return null;
+  const byChunk: Record<string, number> = {};
+  for (const call of chunked) byChunk[call.chunk ?? '?'] = Math.round(call.ms);
+  return { longestMs: Math.round(Math.max(...chunked.map((c) => c.ms))), sumMs: Math.round(chunked.reduce((t, c) => t + c.ms, 0)), byChunk };
+}
+
 function summarise(model: string, cases: readonly CaseOutcome[], calls: readonly CallRecord[], notJsonAsWritten: number) {
   const byStage: Record<string, { n: number; medianMs: number; p95Ms: number; medianAnswerBytes: number }> = {};
   for (const stage of ['planner', 'compiler'] as const) {
@@ -241,9 +254,12 @@ function summarise(model: string, cases: readonly CaseOutcome[], calls: readonly
     repairCalls: repairs.length,
     repairMedianMs: Math.round(median(repairs.map((c) => c.ms))),
     repairReasons: reasons,
+    chunked: CHUNKED,
     perCase: cases.map((c) => ({
       id: c.id,
       ms: Math.round(c.latencyMs),
+      // Souběh se pozná tady: svět má trvat zhruba nejdelší kus, ne jejich součet.
+      chunks: chunkTimes(calls.filter((call) => call.caseId === c.id)),
       rounds: c.rounds,
       authored: c.geometryAuthored,
       failure: c.failure,
@@ -336,6 +352,7 @@ describe('per-call latency of the live create path', () => {
                   caseId: entry.id,
                   call,
                   stage: requestStage(request),
+                  chunk: requestChunk(request),
                   repair: request.user.startsWith(REPAIR_PREFIX),
                   reason: reasonOf(request),
                   ms: performance.now() - started,
@@ -349,7 +366,7 @@ describe('per-call latency of the live create path', () => {
                 raw.push(record);
                 if (P20_DIR) writeFileSync(RAW_FILE, JSON.stringify(raw, null, 2));
                 process.stdout.write(
-                  `  ${entry.id} #${call} ${record.stage ?? '?'}${record.repair ? ' repair' : ''} ${Math.round(record.ms)} ms ${record.answerBytes} B in ${String(record.inputTokens ?? '?')} out ${String(record.outputTokens ?? '?')}${record.reason ? ` · ${record.reason}` : ''}\n`,
+                  `  ${entry.id} #${call} ${record.stage ?? '?'}${record.chunk === null ? '' : `/${record.chunk}`}${record.repair ? ' repair' : ''} ${Math.round(record.ms)} ms ${record.answerBytes} B in ${String(record.inputTokens ?? '?')} out ${String(record.outputTokens ?? '?')}${record.reason ? ` · ${record.reason}` : ''}\n`,
                 );
               }
               return answer;
@@ -357,6 +374,7 @@ describe('per-call latency of the live create path', () => {
             mesh: mesh.mesh,
             grammar: grammar.value,
             sessionSeed: SESSION_SEED,
+            chunked: CHUNKED,
           });
           outcomes.push(done);
           // Hotový svět na disk pro galerii kvality (`e2e/quality-gallery.spec.ts`):

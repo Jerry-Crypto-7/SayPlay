@@ -414,6 +414,8 @@ export interface CaseDeps {
    * cenou placeného volání, kterou nehlídaný běh na předplatném neplatí.
    */
   readonly maxRounds?: number;
+  /** Svět na tři souběžné kusy místo jednoho volání (`compileWithRepair.chunked`). */
+  readonly chunked?: boolean;
 }
 
 /**
@@ -573,6 +575,7 @@ export async function driveCreateCase(entry: CreateCase, deps: CaseDeps): Promis
     emit: deps.emit,
     ...(deps.now === undefined ? {} : { now: deps.now }),
     ...(deps.maxRounds === undefined ? {} : { maxRounds: deps.maxRounds }),
+    ...(deps.chunked === undefined ? {} : { chunked: deps.chunked }),
   });
 
   if (outcome.kind !== 'compiled') {

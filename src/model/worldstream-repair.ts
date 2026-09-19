@@ -63,6 +63,7 @@ import {
 import type { Grammar, UpstreamRequest } from './prompt';
 import type { PlannerEmission } from './worldstream-intent';
 import { EMISSION_CHUNKS, mergeEmissionChunks, type ChunkAnswer } from './emission-merge';
+import { SpendRefusalError } from '../server/spend-cap';
 
 /** Přijatý blueprint i s verdiktem, osekáními a opravami. */
 export type CompiledBlueprint = Extract<CompilerResult, { readonly ok: true }>;
@@ -453,16 +454,28 @@ export interface RepairInput {
    * že je Astra dobře napíše, když nevidí zbytek světa, naměřené **není**
    * a čeká na živý běh.
    *
-   * Kusy se tady posílají **po jednom, v pořadí**. Souběh je T5 a patří k němu
-   * i účtování každého kusu zvlášť — dřív než to platí strop útraty, se
-   * souběžně nic pouštět nemá.
+   * Kusy letí **souběžně** (`emitChunks`): každý `emit` je u stropu vlastní
+   * rezervace, takže tři kusy jsou tři započtená volání a odmítnutý kus nechá
+   * relaci v pojmenovaném stavu, ne v půlce světa (`chunked-live.test.ts`).
    */
   readonly chunked?: boolean;
 }
 
 /**
- * Jedno kolo přes několik kusů: N požadavků, jedna slepená odpověď, jeden
- * blueprint.
+ * Jedno kolo přes několik kusů: N požadavků **naráz**, jedna slepená odpověď,
+ * jeden blueprint.
+ *
+ * Kusy letí souběžně, protože celé čekání je model, jak píše (medián 103 s
+ * na jednu odpověď, 13. 9. 2026): svět má trvat nejdelší kus, ne součet tří.
+ * Souběh smí být, protože každý `emit` je u stropu vlastní rezervace
+ * (`cloudEmitter`), takže tři kusy jsou tři započtená volání a strop odmítne
+ * první, který by ho překročil.
+ *
+ * **Čeká se na všechny, i když jeden spadl.** Kus, který už letí, se nedá
+ * odvolat a jeho rezervace se vyrovnává až po odpovědi; vrátit výsledek dřív
+ * by nechalo peníze držené a relaci „v půlce světa". Až po dolétnutí se
+ * vybírá příčina: odmítnutí stropem (`SpendRefusalError`) má přednost před
+ * výpadkem, aby relace skončila `SPEND_CAP_BLOCKED` a ne „model nedostupný".
  *
  * `null` znamená „tudy to nešlo, zkus to jedním voláním" — a vrací se **jen**
  * když se kusu nedostalo odpovědi vůbec (rozbité prostředí). Odmítnutí od
@@ -472,22 +485,29 @@ export interface RepairInput {
  */
 async function emitChunks(input: RepairInput, clock: () => number): Promise<BlueprintOutcome | null> {
   const startedAt = clock();
-  const answers: ChunkAnswer[] = [];
-  let lastRequest = buildCompilerRequest(input.plan, input.grammar);
+  const requests = EMISSION_CHUNKS.map((chunk) => ({ chunk, request: buildCompilerRequest(input.plan, input.grammar, chunk) }));
+  const lastRequest = requests[requests.length - 1].request;
 
-  for (const chunk of EMISSION_CHUNKS) {
-    const request = buildCompilerRequest(input.plan, input.grammar, chunk);
-    lastRequest = request;
-    try {
-      answers.push({
-        chunk,
-        answer: await observePhaseAsync(input.observePhase, 'blueprint-emitter', () => input.emit(request)),
-      });
-    } catch (thrown) {
-      const message = thrown instanceof Error ? `${thrown.name}: ${thrown.message}` : String(thrown);
-      return { kind: 'unavailable', detail: `chunk ${chunk}: ${message}`, cause: thrown, rounds: [] };
-    }
+  const settled = await Promise.allSettled(
+    requests.map(({ request }) => observePhaseAsync(input.observePhase, 'blueprint-emitter', () => input.emit(request))),
+  );
+
+  const failures = requests.flatMap(({ chunk }, index) => {
+    const result = settled[index];
+    return result.status === 'rejected' ? [{ chunk, thrown: result.reason as unknown }] : [];
+  });
+  if (failures.length > 0) {
+    const cause = failures.find(({ thrown }) => thrown instanceof SpendRefusalError)?.thrown ?? failures[0].thrown;
+    const detail = failures
+      .map(({ chunk, thrown }) => `chunk ${chunk}: ${thrown instanceof Error ? `${thrown.name}: ${thrown.message}` : String(thrown)}`)
+      .join('; ');
+    return { kind: 'unavailable', detail, cause, rounds: [] };
   }
+
+  const answers: ChunkAnswer[] = requests.map(({ chunk }, index) => ({
+    chunk,
+    answer: (settled[index] as PromiseFulfilledResult<unknown>).value,
+  }));
 
   const merged = mergeEmissionChunks(answers);
   const ms = clock() - startedAt;
