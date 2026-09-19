@@ -1,6 +1,7 @@
 'use client';
 
 import type { BranchComparison as Comparison } from '@/worldstream/branch-controller';
+import { narrateComparison, type EntityNames } from '@/worldstream/comparison-narration';
 
 function value(id: string, amount: number) {
   if (id.endsWith(':locked')) return amount ? 'locked' : 'unlocked';
@@ -9,8 +10,10 @@ function value(id: string, amount: number) {
   return String(amount);
 }
 
-export default function BranchComparison({ comparison: c, original, busy, onOriginal, onChanged, onRestart, scope = 'server', summary }: {
+export default function BranchComparison({ comparison: c, names = {}, original, busy, onOriginal, onChanged, onRestart, scope = 'server', summary }: {
   readonly comparison: Comparison;
+  /** Jména entit z blueprintu; zdrojový projekt žádný blueprint nemá a mluví stabilními ID. */
+  readonly names?: EntityNames;
   readonly original: boolean;
   readonly busy: boolean;
   readonly onOriginal: () => void;
@@ -26,6 +29,8 @@ export default function BranchComparison({ comparison: c, original, busy, onOrig
     style={{ pointerEvents: 'auto', padding: 12, background: '#0b1214', color: '#cfe3e6',
       font: '12px/1.4 ui-monospace, monospace', maxHeight: '36dvh', overflow: 'auto' }}>
     <strong>Original and changed outcome</strong>
+    <p style={{ margin: '4px 0' }}><strong>From the state diff</strong></p>
+    <p style={{ margin: '4px 0' }} data-testid="comparison-narration">{narrateComparison(c, names).join(' ')}</p>
     {summary && <p>{summary}</p>}
     <p style={{ margin: '4px 0' }} data-testid="branch-rule">Rule {c.ruleId}: {c.previousDurationTicks !== undefined && c.durationTicks !== undefined
       ? `${c.previousDurationTicks / 20}s → ${c.durationTicks / 20}s`

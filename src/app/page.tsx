@@ -39,6 +39,7 @@ import { canonical } from '@/ir/worlddoc';
 import { prepareBranch, compareAcceptedBranch, type PreparedBranch } from '@/worldstream/accepted-branch';
 import { MAX_COMPARISON_TICK, type BranchComparison as Comparison } from '@/worldstream/branch-controller';
 import BranchComparison from '@/components/worldstream/BranchComparison';
+import type { EntityNames } from '@/worldstream/comparison-narration';
 import RuntimeInteraction from '@/components/worldstream/RuntimeInteraction';
 import SourcePanel, { type SourceGeneration } from '@/components/worldstream/SourcePanel';
 import type { ProjectRevision } from '@/worldstream/evidence-commit';
@@ -169,7 +170,7 @@ export default function Page() {
   const binding = useRef<RuntimeBinding | null>(null);
   const documentRef = useRef<WorldDoc | null>(null);
   const previewBranch = useRef<PreparedBranch | null>(null);
-  const [comparison, setComparison] = useState<{ result: Comparison; world: ProxyWorld; source: RuntimeController; changedWorld: ProxyWorld; summary: string } | null>(null);
+  const [comparison, setComparison] = useState<{ result: Comparison; world: ProxyWorld; source: RuntimeController; changedWorld: ProxyWorld; summary: string; names: EntityNames } | null>(null);
   const [viewOriginal, setViewOriginal] = useState(false);
   const [comparisonNote, setComparisonNote] = useState<string | null>(null);
   const [forkTick, setForkTick] = useState(0);
@@ -724,7 +725,8 @@ export default function Page() {
         binding.current = { sessionId, simulation: canonical(parsed.data.world.sim), controller: next };
         documentRef.current = parsed.data.world;
         setController(next);
-        setComparison({ result, world, source: prepared!.source, changedWorld: built, summary: change.summary });
+        setComparison({ result, world, source: prepared!.source, changedWorld: built, summary: change.summary,
+          names: Object.fromEntries(parsed.data.objects.map(object => [object.stableId, object.label])) });
         setViewOriginal(false);
         setComparisonNote(null);
       } else {
@@ -975,7 +977,7 @@ export default function Page() {
         )
       }
       controls={displayedWorld ? <div className="ws-runtime-tools">
-        {comparison && <BranchComparison comparison={comparison.result} original={viewOriginal} busy={changing} summary={comparison.summary}
+        {comparison && <BranchComparison comparison={comparison.result} names={comparison.names} original={viewOriginal} busy={changing} summary={comparison.summary}
           onRestart={() => {
             if (!sessionId || !documentRef.current) return;
             const accepted = documentRef.current;
