@@ -27,10 +27,11 @@ import { withServerMetrics, serverPhaseObserver, currentServerMetrics } from '@/
  * 3. **Grounding** — a ten je **před** modelem, tedy zadarmo. Nejasná věta se
  *    vrátí jako nabídka kandidátů a nestojí ani jedno placené volání. Je to
  *    zároveň jediný způsob, jak se druhá věta smí splést: nabídkou, ne odhadem.
- *    **Věta bez cíle není nejasná — zakládá nový objekt** (P21 T8): `NO_MATCH`
- *    jde k modelu jako zadání „přidej", ne zpátky jako nabídka celého světa.
- *    Nabídka zůstává tam, kde je věta doopravdy nerozhodnutá (`AMBIGUOUS`) nebo
- *    kde klient tvrdí id, které svět nemá (`UNKNOWN_ID`).
+ *    **Věta bez cíle není nejasná — zakládá nový objekt** (P21 T8): grounding
+ *    ji vrátí jako `addition` a jde k modelu jako zadání „přidej", ne zpátky
+ *    jako nabídka celého světa; „a bench under the tree" nese strom jako kotvu
+ *    (P22 T13). Nabídka zůstává tam, kde je věta doopravdy nerozhodnutá
+ *    (`AMBIGUOUS`) nebo kde klient tvrdí id, které svět nemá (`UNKNOWN_ID`).
  *
  * Za nimi stojí ještě **strop souběhu** — týž čítač jako u zakládání relace.
  * Není to brána vstupu, protože se bere až těsně před placeným voláním.
@@ -285,17 +286,18 @@ export async function createChange(
     // jako nabídka i na nasazení bez klíče: je to odpověď o světě, ne o modelu,
     // a platit za otázku, na kterou se ještě nikdo nezeptal, je čistá ztráta.
     const grounding = groundTarget(sentence, blueprint.objects, read.value.stableId);
-    // `NO_MATCH` bez `stableId` je věta o něčem, co ve světě není — a od P21 T8
-    // je to zadání, ne odmítnutí. `target === null` níž znamená právě tohle.
-    const adding = !grounding.ok && grounding.reason === 'NO_MATCH';
-    if (!grounding.ok && !adding)
+    if (!grounding.ok)
       return Response.json({
         requestId,
         outcome: 'AMBIGUOUS',
         reason: grounding.reason,
         candidates: grounding.candidates,
       });
-    const target = grounding.ok ? grounding.target : null;
+    // Věta o něčem, co ve světě není, je od P21 T8 zadání, ne odmítnutí:
+    // `target === null` níž znamená přidání. Kotva (P22 T13) je objekt, u kterého
+    // má nový stát — „a bench under the tree" staví lavičku, nemění strom.
+    const target = grounding.kind === 'edit' ? grounding.target : null;
+    const anchor = grounding.kind === 'addition' ? grounding.anchor : null;
 
     // **Živý model má přednost, sklad je za ním** (`T35-actsthree4`) — táž
     // záložní větev a totéž pořadí jako u zakládání relace. Sklad má jen změny
@@ -362,6 +364,7 @@ export async function createChange(
         prompt: sentence,
         blueprint,
         target,
+        anchor,
         emit,
       });
     } finally {

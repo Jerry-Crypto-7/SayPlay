@@ -71,8 +71,6 @@ export const MAX_PENDING_CHANGES = 8;
  * ------------------------------------------------------------------ */
 
 export type GroundingReason =
-  /** Věta nepojmenovala nic, co ve světě stojí. */
-  | 'NO_MATCH'
   /** Dvě jména stejné délky, tedy nic, čím se vybrat. */
   | 'AMBIGUOUS'
   /** Klient poslal `stableId`, který v blueprintu není. */
@@ -85,8 +83,21 @@ export interface GroundingCandidate {
   readonly matched: string | null;
 }
 
+/**
+ * Co věta se světem dělá. **Věta, která nejmenuje nic, co stojí, je přidání**
+ * — od P21 T8 to překládala route (`NO_MATCH` → přidej), od P22 T13 to říká
+ * grounding sám, protože přidání s kotvou a přidání bez ní musí být týž druh.
+ * Odmítnutí zbývá tam, kde si systém vybírat nemá: dvě stejně dobrá jména,
+ * nebo id, které svět nezná.
+ */
 export type Grounding =
-  | { readonly ok: true; readonly target: SemanticObject; readonly matched: string }
+  | { readonly ok: true; readonly kind: 'edit'; readonly target: SemanticObject; readonly matched: string }
+  | {
+      readonly ok: true;
+      readonly kind: 'addition';
+      /** Objekt, u kterého má nový stát („under the tree"), nebo `null`, když věta místo nejmenuje. */
+      readonly anchor: SemanticObject | null;
+    }
   | {
       readonly ok: false;
       readonly reason: GroundingReason;
@@ -126,8 +137,44 @@ function mentions(sentence: string, name: string): boolean {
   return sentence.includes(` ${name} `);
 }
 
+interface Hit {
+  readonly object: SemanticObject;
+  readonly matched: string;
+}
+
+/** Objekty, které text jmenuje, nejdelším jménem napřed. */
+function hitsIn(text: string, objects: readonly SemanticObject[]): readonly Hit[] {
+  return objects
+    .map((object) => {
+      const matched = namesOf(object)
+        .filter((name) => mentions(text, name))
+        .sort((a, b) => b.length - a.length);
+      return { object, matched: matched[0] ?? null };
+    })
+    .filter((hit): hit is Hit => hit.matched !== null)
+    .sort((a, b) => b.matched.length - a.matched.length);
+}
+
 /**
- * Který objekt ta věta míní.
+ * Předložky místa, delší napřed, aby „in front of" nevyhrálo jako „in".
+ * Věta tvaru `<nová věc> under <existující>` staví, nemění: objekt za
+ * předložkou je kotva, ne cíl (P22 T13). Živý běh 19. 9. 2026 poslal
+ * „A wooden bench under the tree" jako úpravu stromu a model správně
+ * odpověděl, že úprava nový objekt založit neumí.
+ */
+const PLACEMENT =
+  /\b(?:in front of|on top of|next to|underneath|under|beneath|beside|behind|above|near|against|inside|by|at|on|in)\b/g;
+
+/**
+ * Kus věty před předložkou zakládá věc: začíná slovesem přidání, nebo nese
+ * neurčitý člen. „make the tree taller on the outside" nemá ani jedno — a má
+ * strom před předložkou, což rozhodne ještě dřív.
+ */
+const NEW_THING =
+  /^\s*(?:please\s+)?(?:add|put|place|drop|build|create|spawn|include|hang|set|stand|plant|grow|carve|attach|mount|lean|install|leave|lay)\b|\b(?:a|an|another|some|one|two|three|several|many|more|new)\b/;
+
+/**
+ * Který objekt ta věta míní — nebo že žádný a věta staví.
  *
  * `stableId` od klienta má přednost před textem a je to celý smysl T23: až
  * porotce objekt klikne, o cíli rozhodl on, ne rozpoznávač. Neznámé id se
@@ -146,25 +193,31 @@ export function groundTarget(
     const named = objects.find((object) => object.stableId === stableId);
     return named === undefined
       ? { ok: false, reason: 'UNKNOWN_ID', candidates: offer() }
-      : { ok: true, target: named, matched: named.stableId };
+      : { ok: true, kind: 'edit', target: named, matched: named.stableId };
   }
 
   const text = ` ${normalize(sentence)} `;
-  const hits = objects
-    .map((object) => {
-      const matched = namesOf(object)
-        .filter((name) => mentions(text, name))
-        .sort((a, b) => b.length - a.length);
-      return { object, matched: matched[0] ?? null };
-    })
-    .filter((hit): hit is { object: SemanticObject; matched: string } => hit.matched !== null)
-    .sort((a, b) => b.matched.length - a.matched.length);
-
-  if (hits.length === 0) return { ok: false, reason: 'NO_MATCH', candidates: offer() };
+  const hits = hitsIn(text, objects);
+  if (hits.length === 0) return { ok: true, kind: 'addition', anchor: null };
 
   // Striktně nejdelší, ne „první po seřazení". Shoda stejné délky u dvou objektů
-  // je nerozhodnutá věta a nabízejí se oba.
-  if (hits.length > 1 && hits[0].matched.length === hits[1].matched.length) {
+  // je nerozhodnutá věta — u cíle se nabízejí oba, u kotvy se raději nekotví.
+  const strictlyLongest = (found: readonly Hit[]): Hit | null =>
+    found.length > 1 && found[0].matched.length === found[1].matched.length ? null : found[0];
+
+  // Věta o umístění: před předložkou nová věc a žádný stojící objekt, za ní
+  // kotva. Stojící objekt před předložkou znamená, že se mění on — a stojí
+  // pak před každou další předložkou, takže dál se nehledá.
+  for (const match of text.matchAll(PLACEMENT)) {
+    const before = `${text.slice(0, match.index)} `;
+    if (hitsIn(before, objects).length > 0) break;
+    if (!NEW_THING.test(before)) continue;
+    const anchors = hitsIn(` ${text.slice(match.index + match[0].length)}`, objects);
+    if (anchors.length > 0) return { ok: true, kind: 'addition', anchor: strictlyLongest(anchors)?.object ?? null };
+  }
+
+  const target = strictlyLongest(hits);
+  if (target === null) {
     const tied = hits.filter((hit) => hit.matched.length === hits[0].matched.length);
     return {
       ok: false,
@@ -177,7 +230,7 @@ export function groundTarget(
     };
   }
 
-  return { ok: true, target: hits[0].object, matched: hits[0].matched };
+  return { ok: true, kind: 'edit', target: target.object, matched: target.matched };
 }
 
 /* ------------------------------------------------------------------ *
@@ -742,7 +795,17 @@ function additionBrief(blueprint: WorldstreamBlueprint): string {
   );
 }
 
-export function buildAdditionRequest(sentence: string, blueprint: WorldstreamBlueprint): UpstreamRequest {
+/**
+ * @param anchor objekt, u kterého má nový stát („a bench under the tree"), nebo
+ *   `null`. Model dostane jeho id a kvádr zvlášť, ne jen v seznamu objektů:
+ *   věta říká „the tree" a model by si jinak vybíral, který objekt to je,
+ *   podruhé a jinak než grounding.
+ */
+export function buildAdditionRequest(
+  sentence: string,
+  blueprint: WorldstreamBlueprint,
+  anchor: SemanticObject | null,
+): UpstreamRequest {
   const system = [
     'A world is already running and a person has just asked for something that is not in it yet.',
     'You answer with ONE new object and nothing else: ONE object and at most ONE rule for it. Their',
@@ -792,6 +855,13 @@ export function buildAdditionRequest(sentence: string, blueprint: WorldstreamBlu
     'This is the world as it stands right now. Add to it, do not rewrite it:',
     additionBrief(blueprint),
     '',
+    ...(anchor === null
+      ? []
+      : [
+          `The new object stands next to this object: ${anchor.stableId} (${anchor.label}), whose targetBounds are ${JSON.stringify(anchor.targetBounds)}.`,
+          'Place it where the sentence says, touching or beside those bounds, and leave that object exactly as it is.',
+          '',
+        ]),
     'Their sentence:',
     sentence,
   ].join('\n');
@@ -814,6 +884,8 @@ export interface ChangeInput {
    * ne nabízet kandidáty.
    */
   readonly target: SemanticObject | null;
+  /** U přidání objekt, u kterého má nový stát (P22 T13); u úpravy se nečte. */
+  readonly anchor?: SemanticObject | null;
   readonly emit: BlueprintEmitter;
 }
 
@@ -843,7 +915,7 @@ export async function planChange(input: ChangeInput): Promise<ChangeOutcome> {
   const { target } = input;
   const request =
     target === null
-      ? buildAdditionRequest(input.prompt, input.blueprint)
+      ? buildAdditionRequest(input.prompt, input.blueprint, input.anchor ?? null)
       : buildRefineRequest(input.prompt, input.blueprint, target);
 
   let answer: unknown;

@@ -152,14 +152,16 @@ describe('A10 live: sentence → first accepted piece', () => {
       }
       const piece = increment.pieces[0].text;
       const grounding = groundTarget(piece, blueprint.objects, undefined);
-      const adding = !grounding.ok && grounding.reason === 'NO_MATCH';
-      if (!grounding.ok && !adding) {
+      if (!grounding.ok) {
         cases.push({ sentence, piece, queued: increment.pieces.length - 1, target: '', verdict: 'REJECTED', reason: grounding.reason, detail: grounding.candidates.map((c) => c.stableId).join(', '), ms: performance.now() - started, modelMs: null, inputTokens: null, outputTokens: null, summary: null, addedObject: null, answerBytes: null });
         continue;
       }
-      const target = grounding.ok ? grounding.target : null;
+      // Přidání s kotvou (P22 T13): „A wooden bench under the tree" jde k modelu
+      // jako zadání přidání u stromu, ne jako úprava stromu.
+      const target = grounding.kind === 'edit' ? grounding.target : null;
+      const anchor = grounding.kind === 'addition' ? grounding.anchor : null;
 
-      const outcome = await planChange({ prompt: piece, blueprint, target, emit: live.emit });
+      const outcome = await planChange({ prompt: piece, blueprint, target, anchor, emit: live.emit });
       const answer = live.lastAnswer();
       const answerText = answer === undefined ? null : JSON.stringify(answer);
       if (answerText !== null) writeFileSync(`${ANSWERS_DIR}/${id}.json`, `${JSON.stringify({ id, sentence, piece, measuredAt: new Date().toISOString(), answer }, null, 2)}\n`);

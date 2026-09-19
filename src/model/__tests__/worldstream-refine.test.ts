@@ -19,8 +19,10 @@
 import { describe, expect, it } from 'vitest';
 
 import { GEOM_VERSION } from '@/geom/program';
+import { planIncrement } from '@/model/incremental-planner';
 import { SHAPE_NODE_GROUPS } from '@/shape/schema';
-import { blueprintSchema, MAX_HERO_SHAPES, type WorldstreamBlueprint } from '@/worldstream/schema';
+import { authoredWorldById } from '@/worldstream/authored';
+import { blueprintSchema, MAX_HERO_SHAPES, semanticObjectSchema, type SemanticObject, type WorldstreamBlueprint } from '@/worldstream/schema';
 
 import type { UpstreamRequest } from '../prompt';
 import {
@@ -30,6 +32,7 @@ import {
   planChange,
   readAdditionEmission,
   readRefineEmission,
+  type Grounding,
   type GroundingCandidate,
 } from '../worldstream-refine';
 
@@ -153,6 +156,11 @@ function idsOf(candidates: readonly GroundingCandidate[]): string[] {
   return candidates.map((candidate) => candidate.stableId);
 }
 
+/** Cíl úpravy, nebo celý výsledek, aby chybný druh řekl v hlášce, co přišlo. */
+function editTarget(grounding: Grounding): string | Grounding {
+  return grounding.ok && grounding.kind === 'edit' ? grounding.target.stableId : grounding;
+}
+
 /* ------------------------------------------------------------------ *
  * Grounding.
  * ------------------------------------------------------------------ */
@@ -160,30 +168,30 @@ function idsOf(candidates: readonly GroundingCandidate[]): string[] {
 describe('grounding druhé věty', () => {
   it('trefí objekt podle popisku', () => {
     const grounding = ground('make the water darker');
-    expect(grounding.ok && grounding.target.stableId).toBe('deepWater');
+    expect(editTarget(grounding)).toBe('deepWater');
   });
 
   it('trefí objekt podle synonyma', () => {
     const grounding = ground('raise the crossing by two metres');
-    expect(grounding.ok && grounding.target.stableId).toBe('stoneBridge');
+    expect(editTarget(grounding)).toBe('stoneBridge');
   });
 
   it('trefí objekt podle slov ze stableId, i když je popisek jiný', () => {
     // `mossPatch` se jmenuje „the green carpet"; jediná cesta k němu vede přes
     // camelCase id rozepsané na slova.
     const grounding = ground('clear the moss patch off the stones');
-    expect(grounding.ok && grounding.target.stableId).toBe('mossPatch');
+    expect(editTarget(grounding)).toBe('mossPatch');
   });
 
   it('delší jméno vyhraje nad kratším, které je v něm obsažené', () => {
     const grounding = ground('raise the bridge railing');
-    expect(grounding.ok && grounding.target.stableId).toBe('bridgeRailing');
+    expect(editTarget(grounding)).toBe('bridgeRailing');
   });
 
   it('jméno se hledá po celých slovech, ne podřetězcem', () => {
+    // Podřetězec by z „water" udělal cíl; celé slovo nic netrefí a věta je přidání.
     const grounding = ground('the watercourse floods every spring');
-    expect(grounding.ok).toBe(false);
-    if (!grounding.ok) expect(grounding.reason).toBe('NO_MATCH');
+    expect(grounding).toEqual({ ok: true, kind: 'addition', anchor: null });
   });
 
   it('dvě jména stejné délky se nerozhodují a nabídnou se obě', () => {
@@ -196,17 +204,21 @@ describe('grounding druhé věty', () => {
     expect(idsOf(grounding.candidates).sort()).toEqual(['leftLantern', 'rightLantern']);
   });
 
-  it('věta bez jména nabídne všechny objekty', () => {
+  it('věta bez jména je přidání bez kotvy, ne nabídka celého světa', () => {
+    // P21 T8 to rozhodl v routě (`NO_MATCH` → přidání); od P22 T13 to říká
+    // grounding sám, aby věta s kotvou a věta bez ní byly týž druh.
     const grounding = ground('make it more beautiful please');
-    expect(grounding.ok).toBe(false);
-    if (grounding.ok) return;
-    expect(grounding.reason).toBe('NO_MATCH');
-    expect(grounding.candidates).toHaveLength(BLUEPRINT.objects.length);
+    expect(grounding).toEqual({ ok: true, kind: 'addition', anchor: null });
   });
 
   it('explicitní stableId přebije text věty', () => {
     const grounding = ground('make the water darker', 'stoneBridge');
-    expect(grounding.ok && grounding.target.stableId).toBe('stoneBridge');
+    expect(editTarget(grounding)).toBe('stoneBridge');
+  });
+
+  it('explicitní stableId přebije i větu o umístění — kliknutý objekt je cíl', () => {
+    const grounding = ground('a lantern on the bridge', 'stoneBridge');
+    expect(editTarget(grounding)).toBe('stoneBridge');
   });
 
   it('neznámé stableId se NEdohledá textem', () => {
@@ -215,6 +227,94 @@ describe('grounding druhé věty', () => {
     const grounding = ground('make the water darker', 'ghostBridge');
     expect(grounding.ok).toBe(false);
     if (!grounding.ok) expect(grounding.reason).toBe('UNKNOWN_ID');
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Věta o umístění je přidání s kotvou (P22 T13).
+ * ------------------------------------------------------------------ */
+
+/**
+ * Objekty světa `c09` („a giant fallen tree hollowed into a village"), nad
+ * kterým běží `evals/worldstream/conversation.measure.ts`. Plánovač je píše
+ * bez `source` a kvádru; grounding čte jen jména, tak se dosadí zástupné.
+ */
+const HOLLOW_TREE_OBJECTS: readonly SemanticObject[] = (
+  authoredWorldById('c09')!.planner as { objects: readonly Record<string, unknown>[] }
+).objects.map((object) =>
+  semanticObjectSchema.parse({ ...object, source: { kind: 'geom', node: 0 }, targetBounds: { min: [-1, 0, -1], max: [1, 2, 1] } }),
+);
+
+describe('věta o umístění je přidání s kotvou', () => {
+  /** Táž cesta jako v routě a v měření: první kus z `planIncrement`, pak grounding. */
+  const classify = (sentence: string): Grounding => {
+    const increment = planIncrement(sentence);
+    if (!increment.ok) throw new Error(`${sentence}: ${increment.reason}`);
+    return groundTarget(increment.pieces[0].text, HOLLOW_TREE_OBJECTS, undefined);
+  };
+  const anchorOf = (grounding: Grounding): string | null | Grounding =>
+    grounding.ok && grounding.kind === 'addition' ? (grounding.anchor?.stableId ?? null) : grounding;
+
+  /**
+   * Deset vět z `conversation.measure.ts` nad `c09`. Živý běh 19. 9. 2026
+   * poslal lavičku jako úpravu stromu a model správně odpověděl, že úprava
+   * nový objekt založit neumí (`conversation-answers/s03.json`). Ostatních
+   * devět nejmenuje nic, co v tom světě stojí — jsou to přidání bez kotvy,
+   * a to i „make the well deeper": studna tam není.
+   */
+  it.each([
+    ['add a lantern at the far edge', null],
+    ['Put a small brass bell by the gate.', null],
+    ['There is a well in the middle of the courtyard.', null],
+    ['A wooden bench under the tree', 'hollowFallenTree'],
+    ['place another crate next to the first one', null],
+    ['When the lever is pulled, the gate opens.', null],
+    ['the bell should ring every time someone walks past the well', null],
+    ['If the lantern is lit the door unlocks', null],
+    ['make the well deeper', null],
+    ['Paint the gate rust red.', null],
+  ])('„%s" je přidání s kotvou %s', (sentence, anchor) => {
+    expect(anchorOf(classify(sentence))).toBe(anchor);
+  });
+
+  it.each([
+    ['make the tree taller', 'hollowFallenTree'],
+    ['widen the shared passage', 'sharedPassage'],
+    // Předložka sama nestačí: objekt stojí PŘED ní, takže se mění, ne staví.
+    ['make the tree darker on the outside', 'hollowFallenTree'],
+  ])('úprava bez nového podstatného jména („%s") zůstává edit', (sentence, target) => {
+    expect(editTarget(classify(sentence))).toBe(target);
+  });
+
+  it('kotva, která ve světě není, je přidání bez kotvy, ne odmítnutí', () => {
+    expect(anchorOf(classify('a stone bench under the gate'))).toBe(null);
+  });
+
+  it('kotva se hledá nejdelším jménem za předložkou, jako cíl úpravy', () => {
+    expect(anchorOf(classify('put a lantern in front of the village commons'))).toBe('villageCommons');
+    expect(anchorOf(classify('hang a bell beside the trunk'))).toBe('hollowFallenTree');
+  });
+
+  it('zadání pro přidání jmenuje kotvu a její kvádr, bez kotvy nic', () => {
+    const tree = HOLLOW_TREE_OBJECTS[0];
+    const anchored = buildAdditionRequest('A wooden bench under the tree', BLUEPRINT, tree);
+    expect(anchored.user).toContain('next to this object: hollowFallenTree (the hollow fallen tree)');
+    expect(anchored.user).toContain(JSON.stringify(tree.targetBounds));
+    expect(buildAdditionRequest('add a signpost', BLUEPRINT, null).user).not.toContain('next to this object');
+  });
+
+  it('planChange s kotvou jde na přidání a kotva je v zadání', async () => {
+    const asked: UpstreamRequest[] = [];
+    const outcome = await planChange({
+      prompt: 'A wooden bench under the tree',
+      blueprint: BLUEPRINT,
+      target: null,
+      anchor: HOLLOW_TREE_OBJECTS[0],
+      emit: async (request) => { asked.push(request); return addition(); },
+    });
+    expect(outcome.kind).toBe('planned');
+    expect(asked[0].user).toContain('hollowFallenTree');
+    expect(asked[0].system).toContain('ONE new object');
   });
 });
 
@@ -713,7 +813,7 @@ describe('čtení nového objektu', () => {
   });
 
   it('zadání pro přidání jmenuje abecedu uzlů hned u pole shape, ne až v tabulce o třicet řádků níž', () => {
-    const system = buildAdditionRequest('add a signpost', BLUEPRINT).system;
+    const system = buildAdditionRequest('add a signpost', BLUEPRINT, null).system;
     const shapeLine = system.indexOf('shape is the ShapeProgram');
     const alphabet = system.indexOf(`kind is one of: ${Object.values(SHAPE_NODE_GROUPS).flat().join(', ')}`);
     const table = system.indexOf('Shape nodes:');
@@ -780,7 +880,7 @@ describe('čtení nového objektu', () => {
     });
 
     it('zadání pro model říká jeden objekt a nejvýš jedno pravidlo', () => {
-      expect(buildAdditionRequest('add a signpost', BLUEPRINT).system).toContain('ONE object and at most ONE rule');
+      expect(buildAdditionRequest('add a signpost', BLUEPRINT, null).system).toContain('ONE object and at most ONE rule');
     });
   });
 

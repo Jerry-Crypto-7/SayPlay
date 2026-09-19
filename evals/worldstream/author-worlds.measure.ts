@@ -290,9 +290,11 @@ describe('Codex uvaří světy dopředu', () => {
             // volání. Věta, kterou nerozřeší, se modelu neposílá vůbec: v provozu
             // by skončila nabídkou kandidátů, ne změnou, takže by uvařená emise
             // neměla kde vzniknout ani k čemu být.
+            // Sklad drží jen změny stojících objektů; věta, která staví
+            // (P22 T13 `addition`), se neuvaří a nepošle.
             const target = groundTarget(entry.prompt, blueprint.objects);
-            if (!target.ok) {
-              rejection = target.reason;
+            if (!target.ok || target.kind !== 'edit') {
+              rejection = target.ok ? 'ADDITION' : target.reason;
             } else {
               grounded = true;
               stableId = target.target.stableId;
