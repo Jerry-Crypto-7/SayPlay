@@ -55,7 +55,7 @@ import { serverPhaseObserver } from './worldstream-metrics';
 
 import { EMISSION_MODEL } from '../model/prompt';
 import type { ChunkName } from '../model/emission-merge';
-import { requestChunk } from '../model/worldstream-prompt';
+import { requestChunk, requestStage } from '../model/worldstream-prompt';
 
 import type { GenerationBranch, GenerationCall, GenerationOutcome } from './pipeline';
 import type { Pricing, Usage } from './spend-cap';
@@ -236,13 +236,32 @@ export const CHUNK_EFFORT: Readonly<Record<ChunkName, Effort>> = {
 };
 
 /**
- * Úsilí pro jedno volání. Rozhoduje **požadavek**, ne volající: kus se čte
- * z textu (`requestChunk`), takže přiřazení platí i na cestě, která si o něj
- * neřekla — přehrání archivu, opravné kolo, cokoli dalšího.
+ * **Úsilí po fázi, pro požadavky bez kusu (P21 T19).**
+ *
+ * Plánovač píše strukturu — rejstřík objektů a `sceneSpec` — ne geometrii.
+ * Doměření 19. 9. 2026 (`evals/worldstream/planner-anatomy.json`) ukázalo, že
+ * jeho 75–80 s je délka odpovědi (6,8 kB, z toho 79 % `sceneSpec`), ne
+ * uvažování; nižší úsilí je tedy levný pokus, který T21 změří **spolu** se
+ * štíhlým `sceneSpec` (T18) — artefakt T21 to připsání nerozdělí, protože
+ * oddělené měření by stálo druhý živý běh. Kompilátor a změna běžícího světa
+ * (`refine`) tu záměrně chybí: jedou dál na úsilí z prostředí, protože
+ * z nich pochází 3D.
+ */
+export const STAGE_EFFORT: Readonly<Partial<Record<NonNullable<ReturnType<typeof requestStage>>, Effort>>> = {
+  planner: 'low',
+};
+
+/**
+ * Úsilí pro jedno volání. Rozhoduje **požadavek**, ne volající: kus i fáze se
+ * čtou z textu (`requestChunk`, `requestStage`), takže přiřazení platí i na
+ * cestě, která si o něj neřekla — přehrání archivu, opravné kolo, cokoli
+ * dalšího. Kus má přednost před fází; požadavek bez obojího jede z prostředí.
  */
 export function effortForCall(call: GenerationCall, config: UpstreamConfig): Effort {
   const chunk = requestChunk(call.request);
-  return chunk === null ? config.effort : CHUNK_EFFORT[chunk];
+  if (chunk !== null) return CHUNK_EFFORT[chunk];
+  const stage = requestStage(call.request);
+  return (stage === null ? undefined : STAGE_EFFORT[stage]) ?? config.effort;
 }
 
 /**

@@ -19,10 +19,11 @@ import { describe, expect, it } from 'vitest';
 import fixture from '../../model/__fixtures__/archived-compiler-answer.json';
 import { EMISSION_CHUNKS } from '../../model/emission-merge';
 import { buildIntentRequest, readPlannerEmission } from '../../model/worldstream-intent';
-import { buildCompilerRequest, requestChunk } from '../../model/worldstream-prompt';
+import { buildCompilerRequest, requestChunk, requestStage } from '../../model/worldstream-prompt';
+import { REFINE_ANSWER_FIELDS } from '../../model/worldstream-refine';
 import { frozenGrammar } from '../../model/client';
 import type { Grammar } from '../../model/prompt';
-import { CHUNK_EFFORT, effortForCall, upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
+import { CHUNK_EFFORT, STAGE_EFFORT, effortForCall, upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
 
 const grammarRead = frozenGrammar();
 if (!grammarRead.ok) throw new Error(`frozen grammar unreadable: ${grammarRead.detail}`);
@@ -49,6 +50,14 @@ function plan() {
 
 function callFor(chunk?: 'architecture' | 'objects' | 'rules') {
   return { prompt: 'a spiral library where the stairs are the shelves', request: buildCompilerRequest(plan(), GRAMMAR, chunk) };
+}
+
+/** Požadavek druhé věty: `requestStage()` ho pozná podle téhož seznamu polí jako sklad. */
+function refineCall() {
+  return {
+    prompt: 'make the bridge woven roots',
+    request: { model: 'm', system: `Answer with exactly: ${REFINE_ANSWER_FIELDS.join(', ')}.`, user: 'u' },
+  };
 }
 
 /** Odpověď Messages API, kterou větev přijme jako úspěch. */
@@ -82,6 +91,22 @@ describe('úsilí podle kusu', () => {
     expect(effortForCall(callFor(), liveConfig({ WORLDSMITH_MODEL_EFFORT: 'medium' }))).toBe('medium');
     expect(effortForCall(callFor(), liveConfig())).toBe('low');
     expect(effortForCall({ prompt: 'p', request: { model: 'm', system: 's', user: 'u' } }, liveConfig({ WORLDSMITH_MODEL_EFFORT: 'xhigh' }))).toBe('xhigh');
+  });
+
+  it('plánovač jede nízko bez ohledu na prostředí, kompilátor a změna z prostředí (P21 T19)', () => {
+    const planner = { prompt: 'a spiral library', request: buildIntentRequest('a spiral library') };
+    expect(requestStage(planner.request)).toBe('planner');
+    expect(requestStage(callFor().request)).toBe('compiler');
+    expect(requestStage(refineCall().request)).toBe('refine');
+
+    const medium = liveConfig({ WORLDSMITH_MODEL_EFFORT: 'medium' });
+    const xhigh = liveConfig({ WORLDSMITH_MODEL_EFFORT: 'xhigh' });
+    expect(STAGE_EFFORT.planner).toBe('low');
+    expect(effortForCall(planner, medium)).toBe('low');
+    expect(effortForCall(planner, xhigh)).toBe('low');
+    expect(effortForCall(callFor(), medium)).toBe('medium');
+    expect(effortForCall(refineCall(), medium)).toBe('medium');
+    expect(effortForCall(callFor('rules'), xhigh)).toBe('low');
   });
 
   it('nastavení je na jednom místě a pokrývá všechny kusy', () => {
