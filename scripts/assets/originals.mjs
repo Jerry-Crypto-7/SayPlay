@@ -188,5 +188,71 @@ export function buildModels(lod = 0) {
   add('storage-cabinet', 'Tall walnut storage cabinet', ['cabinet', 'cupboard', 'wardrobe', 'shelf', 'storage'], cabinet,
     { supportSurfaces: [{ id: 'top', center: [0, 1.88, 0], width: 0.9, depth: 0.5 }], sockets: [{ id: 'hinge', at: [-0.44, 0, 0.26], normal: [0, 1, 0] }],
       parts: [{ id: 'door', node: 'cabinet-door', pivot: [-0.44, 0, 0.26], sockets: ['hinge'] }] });
+
+  // Dávka 2/4: stool, switch, button, cabin, lever, wall.
+
+  const stool = root('bar-stool');
+  cylinder(stool, 'seat-pad', 0.18, 0.18, 0.05, [0, 0.725, 0], fabric);
+  cylinder(stool, 'seat-plate', 0.16, 0.16, 0.02, [0, 0.69, 0], wood);
+  for (const [i, a] of [0.785, 2.356, 3.927, 5.498].entries()) cylinder(stool, `leg-${i}`, 0.02, 0.024, 0.68, [Math.sin(a) * 0.14, 0.34, Math.cos(a) * 0.14], wood);
+  for (const [i, a] of [0, 1.571].entries()) box(stool, `footrest-${i}`, [0.3, 0.025, 0.025], [0, 0.25, 0], wood).rotation.y = a;
+  add('bar-stool', 'Round wooden stool', ['stool', 'bar-stool', 'perch', 'footstool'], stool,
+    { supportSurfaces: [{ id: 'seat', center: [0, 0.75, 0], width: 0.36, depth: 0.36 }], sockets: [{ id: 'seat', at: [0, 0.75, 0], normal: [0, 1, 0] }] });
+
+  const wallSwitch = root('wall-switch');
+  box(wallSwitch, 'console', [0.4, 1.0, 0.3], [0, 0.5, 0], dark);
+  box(wallSwitch, 'console-foot', [0.5, 0.05, 0.4], [0, 0.025, 0], metal);
+  box(wallSwitch, 'face-plate', [0.22, 0.22, 0.02], [0, 1.05, 0.16], metal);
+  const toggle = child(wallSwitch, 'switch-toggle', [0, 1.05, 0.17]);
+  cylinder(toggle, 'toggle-lever', 0.02, 0.028, 0.12, [0, 0.03, 0.045], brass).rotation.x = 0.6;
+  ellipsoid(toggle, 'toggle-tip', [0.028, 0.028, 0.028], [0, 0.075, 0.08], red);
+  for (const y of [-0.08, 0.08]) cylinder(wallSwitch, 'plate-screw', 0.008, 0.008, 0.01, [0, 1.05 + y, 0.175], iron).rotation.x = Math.PI / 2;
+  add('wall-switch', 'Toggle switch on a control console', ['switch', 'toggle', 'wall-switch', 'control'], wallSwitch,
+    { sockets: [{ id: 'axis', at: [0, 1.05, 0.17], normal: [0, 0, 1] }], parts: [{ id: 'toggle', node: 'switch-toggle', pivot: [0, 1.05, 0.17], sockets: ['axis'] }] });
+
+  const button = root('push-button');
+  cylinder(button, 'pedestal', 0.16, 0.22, 0.9, [0, 0.45, 0], metal);
+  cylinder(button, 'top-plate', 0.22, 0.22, 0.05, [0, 0.925, 0], dark);
+  cylinder(button, 'guard-ring', 0.14, 0.14, 0.03, [0, 0.965, 0], brass);
+  const cap = child(button, 'button-cap', [0, 0.95, 0]);
+  cylinder(cap, 'cap-dome', 0.1, 0.11, 0.07, [0, 0.055, 0], red);
+  ellipsoid(cap, 'cap-top', [0.1, 0.02, 0.1], [0, 0.09, 0], red);
+  box(button, 'label-plate', [0.16, 0.05, 0.01], [0, 0.85, 0.2], brass);
+  add('push-button', 'Large red push button on a pedestal', ['button', 'push-button', 'pushbutton', 'control-button'], button,
+    { sockets: [{ id: 'press', at: [0, 0.95, 0], normal: [0, 1, 0] }], parts: [{ id: 'cap', node: 'button-cap', pivot: [0, 0.95, 0], sockets: ['press'] }] });
+
+  const cabin = root('log-cabin');
+  box(cabin, 'foundation', [4.0, 0.3, 3.5], [0, 0.15, 0], stone);
+  box(cabin, 'walls', [3.9, 2.2, 3.4], [0, 1.4, 0], wood);
+  for (let i = 0; i < 7; i++) {
+    const y = 0.45 + i * 0.28;
+    for (const z of [-1.72, 1.72]) cylinder(cabin, `log-front-${i}`, 0.12, 0.12, 4.0, [0, y, z], wood).rotation.z = Math.PI / 2;
+    for (const x of [-1.97, 1.97]) cylinder(cabin, `log-side-${i}`, 0.12, 0.12, 3.5, [x, y, 0], wood).rotation.x = Math.PI / 2;
+  }
+  for (const side of [-1, 1]) box(cabin, 'roof-slope', [4.8, 0.1, 2.3], [0, 3.1, side * 0.95], stone).rotation.x = side * 0.62;
+  box(cabin, 'gable', [3.6, 1.2, 0.2], [0, 3.05, 0], wood);
+  box(cabin, 'door', [0.8, 1.7, 0.08], [0.4, 1.15, 1.86], dark);
+  box(cabin, 'window', [0.7, 0.6, 0.08], [-1.0, 1.7, 1.86], glass);
+  box(cabin, 'chimney', [0.4, 1.2, 0.4], [-1.3, 3.5, -0.5], stone);
+  add('log-cabin', 'Log cabin with a pitched roof', ['cabin', 'log-cabin', 'hut', 'cottage', 'lodge'], cabin);
+
+  const lever = root('floor-lever');
+  box(lever, 'base-plate', [0.5, 0.1, 0.3], [0, 0.05, 0], metal);
+  box(lever, 'housing', [0.3, 0.2, 0.2], [0, 0.2, 0], dark);
+  cylinder(lever, 'pivot-pin', 0.04, 0.04, 0.34, [0, 0.3, 0], iron).rotation.z = Math.PI / 2;
+  const arm = child(lever, 'lever-arm', [0, 0.3, 0]);
+  cylinder(arm, 'arm-rod', 0.025, 0.03, 0.9, [0, 0.395, -0.216], iron).rotation.x = -0.5;
+  ellipsoid(arm, 'arm-knob', [0.06, 0.06, 0.06], [0, 0.79, -0.43], red);
+  box(lever, 'slot-guard', [0.06, 0.04, 0.32], [0, 0.32, -0.06], metal);
+  add('floor-lever', 'Floor-mounted pull lever', ['lever', 'floor-lever', 'handle', 'pull-lever'], lever,
+    { sockets: [{ id: 'axis', at: [0, 0.3, 0], normal: [1, 0, 0] }], parts: [{ id: 'arm', node: 'lever-arm', pivot: [0, 0.3, 0], sockets: ['axis'] }] });
+
+  const wall = root('stone-wall');
+  box(wall, 'footing', [3.0, 0.15, 0.5], [0, 0.075, 0], stone);
+  box(wall, 'body', [3.0, 1.8, 0.4], [0, 1.05, 0], plaster);
+  box(wall, 'coping', [3.1, 0.1, 0.5], [0, 2.0, 0], stone);
+  for (const x of [-1.45, 1.45]) cylinder(wall, 'pier', 0.16, 0.18, 2.05, [x, 1.025, 0], stone);
+  if (!lod) for (let r = 0; r < 6; r++) for (let c = 0; c < 5; c++) box(wall, `block-${r}-${c}`, [0.44, 0.22, 0.03], [-1.1 + c * 0.5 + (r % 2) * 0.25, 0.32 + r * 0.28, 0.205], stone);
+  add('stone-wall', 'Plastered stone wall segment', ['wall', 'stone-wall', 'rampart', 'partition', 'barrier'], wall);
   return models;
 }
