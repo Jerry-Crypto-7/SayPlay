@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { readSceneSpec, slimSceneSpec, type SceneSpec } from '../spec';
+import { readSceneSpec, slimSceneSpec, slimSceneSpecV2, type SceneSpec } from '../spec';
 
 const ARCHIVE = fileURLToPath(new URL('../../../plans/P20/t18-hybrid-v2-20260917-1803/raw', import.meta.url));
 const archived = existsSync(ARCHIVE)
@@ -135,6 +135,117 @@ describe('slimSceneSpec je bezztrátové zeštíhlení', () => {
       const slim = slimSceneSpec(fullRead);
       expect(readSceneSpec(slim), `${id}: round-trip`).toEqual(fullRead);
       expect(bytes(slim), id).toBeLessThanOrEqual(bytes(fullRead));
+    }
+  });
+});
+
+/**
+ * **Štíhlý tvar v2 (P22 T5): citace jednou, zbytek odkazem.**
+ *
+ * Po T18 zůstalo v odpovědi to, co čtenář neuměl odvodit: původ relací (každá
+ * relace opakovala citát požadavku), volný text orientace u každé instance
+ * a atributy, které žádné orákulum nečte. V2 proto (1) nechává `provenance`
+ * jen v `requirements[i]` a relace, instance i atributy na něj ukazují
+ * indexem `req`, (2) píše orientaci jako jedno ze slov `n|e|s|w|none`,
+ * (3) `attributes` vynechává, když instance žádný nemá.
+ *
+ * Vlastnost, kterou oko nepokryje: čtenář, který relaci bez `req` tiše
+ * zahodí, projde schématem a compiler o tu relaci přijde. Proto se soudí
+ * **hluboká rovnost** `SceneSpec` přečteného z v2 a ze starého tvaru — ne jen
+ * to, že čtení prošlo.
+ */
+describe('štíhlý tvar v2 dá týž SceneSpec jako starý tvar', () => {
+  /** Plný tvar, ve kterém relace, instance i atribut sdílejí citát s požadavkem. */
+  function fullV2(): SceneSpec {
+    const base = full();
+    return {
+      ...base,
+      instances: [
+        { ...base.instances[0], orientation: { description: 'Faces north.', provenance: inferred('the planner stated the facing as a compass word for this architecture') } },
+        base.instances[1],
+        { ...base.instances[2], provenance: requested('a tower'), attributes: [{ name: 'colour', value: 'brass', provenance: requested('two lamps') }] },
+      ],
+      relations: [
+        { subjectId: 'lampA', relation: 'near', targetId: 'tower', provenance: requested('two lamps') },
+        { subjectId: 'lampB', relation: 'facing', targetId: 'tower', provenance: requested('a tower') },
+      ],
+    };
+  }
+
+  /** Totéž, jak to plánovač píše od T5: bez opakovaných citátů. */
+  function v2(): unknown {
+    return {
+      version: 1,
+      requirements: fullV2().requirements,
+      instances: [
+        { stableId: 'tower', role: 'architecture', attributes: [{ name: 'material', value: 'stone' }], orientation: 'n' },
+        { stableId: 'lampA', role: 'prop', orientation: 'none' },
+        { stableId: 'lampB', role: 'prop', req: 0, attributes: [{ name: 'colour', value: 'brass', req: 1 }] },
+      ],
+      relations: [
+        { subjectId: 'lampA', relation: 'near', targetId: 'tower', req: 1 },
+        { subjectId: 'lampB', relation: 'facing', targetId: 'tower', req: 0 },
+      ],
+      clarifications: [],
+    };
+  }
+
+  it('relace s req, orientace slovem a instance bez attributes se přečtou na přesně starý tvar', () => {
+    expect(readSceneSpec(fullV2())).toEqual(fullV2());
+    expect(readSceneSpec(v2())).toEqual(readSceneSpec(fullV2()));
+    const read = readSceneSpec(v2());
+    if (typeof read === 'string') throw new Error(read);
+    expect(read.relations[1].provenance).toEqual(requested('a tower'));
+    expect(read.instances[1].attributes).toEqual([]);
+    expect(read.instances[1].orientation).toEqual(full().instances[1].orientation);
+  });
+
+  it('relace bez req i bez provenance se odmítne jménem — tiché zahození by compiler připravilo o relaci', () => {
+    const spec = v2() as { relations: Record<string, unknown>[] };
+    delete spec.relations[0].req;
+    expect(readSceneSpec(spec)).toBe('sceneSpec: relation lampA/near/tower has neither req nor provenance');
+  });
+
+  it('req mimo rozsah požadavků se odmítne, ne přečte jako undefined', () => {
+    const spec = v2() as { relations: Record<string, unknown>[] };
+    spec.relations[0].req = 2;
+    expect(readSceneSpec(spec)).toBe('sceneSpec: relation lampA/near/tower points at requirement 2 of 2');
+  });
+
+  it('orientace mimo n|e|s|w|none se odmítne schématem', () => {
+    const spec = v2() as { instances: Record<string, unknown>[] };
+    spec.instances[0].orientation = 'up';
+    expect(readSceneSpec(spec)).toContain('instances.0.orientation');
+  });
+
+  it('slimSceneSpecV2 píše slovo, index a nic navíc, a čtenář to vrátí beze změny', () => {
+    const slim = slimSceneSpecV2(fullV2());
+    expect(readSceneSpec(slim)).toEqual(fullV2());
+    expect(bytes(slim)).toBeLessThan(bytes(slimSceneSpec(fullV2())));
+    const instances = slim.instances as readonly Record<string, unknown>[];
+    expect(instances[0].orientation).toBe('n');
+    expect(instances[1]).not.toHaveProperty('orientation');
+    expect(instances[1]).not.toHaveProperty('attributes');
+    expect(instances[2]).toEqual({ stableId: 'lampB', role: 'prop', req: 0, attributes: [{ name: 'colour', value: 'brass', req: 1 }] });
+    expect(slim.relations).toEqual([
+      { subjectId: 'lampA', relation: 'near', targetId: 'tower', req: 1 },
+      { subjectId: 'lampB', relation: 'facing', targetId: 'tower', req: 0 },
+    ]);
+  });
+
+  it('původ, který žádný požadavek nenese, zůstává vypsaný — jinak by se round-trip rozešel', () => {
+    const slim = slimSceneSpecV2(full());
+    expect(readSceneSpec(slim)).toEqual(full());
+    expect(slim.relations[0]).toEqual(full().relations[0]);
+  });
+
+  it.skipIf(archived.length === 0)('18 plných plánů z archivu projde round-tripem přes v2 a není větších než v1', () => {
+    for (const { id, value } of archived) {
+      const fullRead = readSceneSpec(value.sceneSpec);
+      if (typeof fullRead === 'string') throw new Error(`${id}: ${fullRead}`);
+      const slim = slimSceneSpecV2(fullRead);
+      expect(readSceneSpec(slim), `${id}: round-trip v2`).toEqual(fullRead);
+      expect(bytes(slim), id).toBeLessThanOrEqual(bytes(slimSceneSpec(fullRead)));
     }
   });
 });

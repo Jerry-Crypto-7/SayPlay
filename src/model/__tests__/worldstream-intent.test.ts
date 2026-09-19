@@ -307,3 +307,48 @@ describe('6. ukázka učí všech pět rolí, protože to je jediné, co je uč�
     }
   });
 });
+
+describe('7. štíhlý sceneSpec v2 (P22 T5): zadání ho žádá a čtenář ho přijme', () => {
+  /** Plán s v2 `sceneSpec`: citát jednou v požadavku, relace odkazem `req`, orientace slovem. */
+  const V2_SCENE_SPEC = {
+    version: 1,
+    requirements: [
+      { id: 'wallReq', description: 'the retaining wall of stalls', priority: 'main', polarity: 'required', count: 1, instanceIds: ['cuttingWall'], provenance: { kind: 'requested', quote: 'a night market folded into a disused railway cutting' } },
+      { id: 'bedReq', description: 'the old track bed', priority: 'secondary', polarity: 'required', count: 1, instanceIds: ['trackBed'], provenance: { kind: 'inferred', reason: 'a cutting has a floor' } },
+    ],
+    instances: [
+      { stableId: 'cuttingWall', role: 'architecture', attributes: [{ name: 'material', value: 'brick' }], orientation: 's' },
+      { stableId: 'trackBed', role: 'terrain', orientation: 'none' },
+    ],
+    relations: [{ subjectId: 'cuttingWall', relation: 'on', targetId: 'trackBed', req: 1 }],
+    clarifications: [],
+  };
+
+  it('systémová zpráva žádá req index, slova orientace a jen orákulové atributy', () => {
+    const { system } = buildIntentRequest('a night market folded into a disused railway cutting');
+    expect(system).toContain('n|e|s|w|none');
+    expect(system).toContain('req');
+    expect(system).toContain('color, material, state');
+    // Citát se píše jednou — zadání nesmí dál žádat provenance u relací.
+    expect(system).not.toMatch(/relation[^\n]*provenance/i);
+  });
+
+  it('v2 odpověď projde a compiler dostane relaci s původem požadavku, ne bez něj', () => {
+    const result = readPlannerEmission(planWith((plan) => void (plan.sceneSpec = V2_SCENE_SPEC)), { requireSceneSpec: true, prompt: 'a night market folded into a disused railway cutting' });
+    expect(result.ok, result.ok ? '' : result.detail).toBe(true);
+    if (!result.ok) throw new Error('unreachable');
+    const spec = result.value.sceneSpec;
+    expect(spec?.relations).toEqual([{ subjectId: 'cuttingWall', relation: 'on', targetId: 'trackBed', provenance: { kind: 'inferred', reason: 'a cutting has a floor' } }]);
+    expect(spec?.instances[0].orientation.description).toBe('Faces south.');
+    expect(spec?.instances[1].attributes).toEqual([]);
+  });
+
+  it('relace bez req se v odpovědi plánovače odmítne jako WRONG_SHAPE, ne tiše zahodí', () => {
+    const broken = { ...V2_SCENE_SPEC, relations: [{ subjectId: 'cuttingWall', relation: 'on', targetId: 'trackBed' }] };
+    const result = readPlannerEmission(planWith((plan) => void (plan.sceneSpec = broken)));
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('unreachable');
+    expect(result.reason).toBe('WRONG_SHAPE');
+    expect(result.detail).toContain('neither req nor provenance');
+  });
+});

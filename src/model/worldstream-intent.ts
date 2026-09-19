@@ -170,20 +170,23 @@ export function buildIntentRequest(prompt: string): UpstreamRequest {
     'importance is 0 to 3. 3 is the thing the sentence is about and cannot be missing. 0 is atmosphere',
     'that can be dropped on a weak machine without the sentence becoming untrue.',
     '',
-    'Keep requested materials, colours and orientation as attributes. Do not invent numerical placement.',
+    'Keep requested colours, materials and states as attributes. Do not invent numerical placement.',
     'sceneSpec is required, with version:1, requirements, instances, relations, clarifications.',
     'Each requirement: id, description, priority (main|secondary), polarity (required|forbidden), count, instanceIds, provenance.',
     'Provenance is {kind:"requested",quote:"EXACT substring of the request"} or {kind:"inferred",reason:"why it is needed"}.',
+    'It is written ONCE, on the requirement. Anything else that needs an origin points at it with req, the 0-based index into requirements.',
     'Negations are forbidden requirements with count:0 and instanceIds:[]; required ones have an exact positive count.',
     'Every individual gets its own objects entry AND instances entry sharing stableId: five listeners are five IDs, never one crowd.',
     // Štíhlý tvar (P21 T18): instance nenese requirementIds ani provenance —
     // čtenář (`readSceneSpec`) obojí odvodí z požadavku, který ji jmenuje.
-    // Délka zadání je pinovaná (`prompt-size.json`, `plannerChars` neroste),
-    // proto jsou okolní věty kratší než do 19. 9. 2026.
-    'Each instance: stableId, role, attributes:[{name,value}] (at most 6). No requirementIds and no provenance on instances or',
-    'attributes — both come from the requirement listing the instance. orientation:{description,provenance} only when the',
-    'sentence states a facing.',
-    'Each relation: subjectId, relation (inside|on|against|near|facing|connected-to), targetId, provenance. Both IDs must name instances.',
+    // V2 (P22 T5): relace odkazuje na původ indexem `req`, orientace je slovo
+    // a atributy se píšou jen ty, které čte orákulum. Délka zadání je pinovaná
+    // (`prompt-size.json`, `plannerChars` neroste), proto jsou okolní věty
+    // kratší než do 19. 9. 2026.
+    'Each instance: stableId, role, orientation (one word: n|e|s|w|none; none unless the sentence states a facing).',
+    'attributes:[{name,value}] only when the sentence states one of color, material, state; omit the field otherwise.',
+    'No requirementIds and no provenance on instances — both come from the requirement listing the instance.',
+    'Each relation: subjectId, relation (inside|on|against|near|facing|connected-to), targetId, req. Both IDs must name instances.',
     'count equals the length of instanceIds; every instance is listed by a requirement.',
     'Keep invented objects with their original meaning; never swap them for a familiar one.',
     'A repeated reference to one thing is one thing. Added scene context is inferred, never requested.',

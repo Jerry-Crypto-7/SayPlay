@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-09-19T10:14:43.370Z",
+  "measuredAt": "2026-09-19T15:58:10.372Z",
   "kind": "byte anatomy of archived planner answers — zero model calls, no HTTP",
   "source": "plans/P20/t18-hybrid-v2-20260917-1803/raw/*-planner.json (2026-09-17 archive)",
   "method": "UTF-8 bytes of compact JSON.stringify per field; sceneSpec.provenance sums every nested provenance object; envelope = whole - intent - objects - sceneSpec",
@@ -52,6 +52,25 @@
       "method": "what the planner prompt asks for since T18: no requirementIds, no instance/attribute provenance, orientation only when requested, at most 6 attributes — an estimate of the next live answer, measured by T21"
     }
   },
+  "slimV2": {
+    "readable": 18,
+    "target": {
+      "medianBytes": 4000,
+      "note": "P22 T5 acceptance: median of asPrompted ≤ 4 000 B – the measured number decides, not this line"
+    },
+    "lossless": {
+      "medianBytes": 6540,
+      "averageBytes": 6061,
+      "shareOfWhole": 0.894,
+      "method": "slimSceneSpecV2() over the full archived plan: provenance equal to a requirement becomes a req index, orientation a word only where it is exactly the word expansion, empty attributes omitted; readSceneSpec() restores it byte for byte"
+    },
+    "asPrompted": {
+      "medianBytes": 3965,
+      "averageBytes": 3721,
+      "shareOfWhole": 0.549,
+      "method": "what the planner prompt asks for since T5: every relation a req index, orientation one of n|e|s|w|none, only color/material/state attributes, no instance provenance — an estimate of the next live answer, measured by T21"
+    }
+  },
   "cases": [
     {
       "id": "h01",
@@ -73,6 +92,10 @@
       "slim": {
         "lossless": 9803,
         "asPrompted": 7566
+      },
+      "slimV2": {
+        "lossless": 9304,
+        "asPrompted": 5684
       }
     },
     {
@@ -95,6 +118,10 @@
       "slim": {
         "lossless": 7489,
         "asPrompted": 6174
+      },
+      "slimV2": {
+        "lossless": 7252,
+        "asPrompted": 4355
       }
     },
     {
@@ -117,6 +144,10 @@
       "slim": {
         "lossless": 9785,
         "asPrompted": 7741
+      },
+      "slimV2": {
+        "lossless": 9283,
+        "asPrompted": 5715
       }
     },
     {
@@ -139,6 +170,10 @@
       "slim": {
         "lossless": 8228,
         "asPrompted": 6412
+      },
+      "slimV2": {
+        "lossless": 7917,
+        "asPrompted": 4838
       }
     },
     {
@@ -161,6 +196,10 @@
       "slim": {
         "lossless": 5603,
         "asPrompted": 4664
+      },
+      "slimV2": {
+        "lossless": 5381,
+        "asPrompted": 3599
       }
     },
     {
@@ -183,6 +222,10 @@
       "slim": {
         "lossless": 7161,
         "asPrompted": 4941
+      },
+      "slimV2": {
+        "lossless": 7024,
+        "asPrompted": 4148
       }
     },
     {
@@ -205,6 +248,10 @@
       "slim": {
         "lossless": 8068,
         "asPrompted": 5922
+      },
+      "slimV2": {
+        "lossless": 7595,
+        "asPrompted": 4620
       }
     },
     {
@@ -227,6 +274,10 @@
       "slim": {
         "lossless": 7024,
         "asPrompted": 5130
+      },
+      "slimV2": {
+        "lossless": 6608,
+        "asPrompted": 4172
       }
     },
     {
@@ -249,6 +300,10 @@
       "slim": {
         "lossless": 4199,
         "asPrompted": 3294
+      },
+      "slimV2": {
+        "lossless": 4199,
+        "asPrompted": 2600
       }
     },
     {
@@ -271,6 +326,10 @@
       "slim": {
         "lossless": 3900,
         "asPrompted": 3157
+      },
+      "slimV2": {
+        "lossless": 3820,
+        "asPrompted": 2553
       }
     },
     {
@@ -293,6 +352,10 @@
       "slim": {
         "lossless": 4220,
         "asPrompted": 3074
+      },
+      "slimV2": {
+        "lossless": 4139,
+        "asPrompted": 2606
       }
     },
     {
@@ -315,6 +378,10 @@
       "slim": {
         "lossless": 4215,
         "asPrompted": 3174
+      },
+      "slimV2": {
+        "lossless": 4063,
+        "asPrompted": 2568
       }
     },
     {
@@ -337,6 +404,10 @@
       "slim": {
         "lossless": 2468,
         "asPrompted": 1886
+      },
+      "slimV2": {
+        "lossless": 2452,
+        "asPrompted": 1511
       }
     },
     {
@@ -359,6 +430,10 @@
       "slim": {
         "lossless": 7343,
         "asPrompted": 5109
+      },
+      "slimV2": {
+        "lossless": 7343,
+        "asPrompted": 4309
       }
     },
     {
@@ -381,6 +456,10 @@
       "slim": {
         "lossless": 8127,
         "asPrompted": 5830
+      },
+      "slimV2": {
+        "lossless": 8031,
+        "asPrompted": 5036
       }
     },
     {
@@ -403,6 +482,10 @@
       "slim": {
         "lossless": 5302,
         "asPrompted": 3723
+      },
+      "slimV2": {
+        "lossless": 5208,
+        "asPrompted": 3037
       }
     },
     {
@@ -425,6 +508,10 @@
       "slim": {
         "lossless": 6891,
         "asPrompted": 5215
+      },
+      "slimV2": {
+        "lossless": 6471,
+        "asPrompted": 3782
       }
     },
     {
@@ -447,6 +534,10 @@
       "slim": {
         "lossless": 3031,
         "asPrompted": 2204
+      },
+      "slimV2": {
+        "lossless": 3015,
+        "asPrompted": 1843
       }
     }
   ]
