@@ -18,6 +18,8 @@
  *   WORLDSMITH_LATENCY_MODELS   čárkou oddělený seznam `model`, `model@effort` nebo `model@effort#cli`, výchozí `gpt-5.6-sol,gpt-5.6-sol-fast`
  *                               `#cli` volá model přes Codex CLI (`codex exec`) místo HTTP proxy — jediná cesta ke `gpt-6-astra`
  *   WORLDSMITH_LATENCY_CASES    kolik vět z korpusu, výchozí 5 (bere každou šestou, ne prvních pět)
+ *   WORLDSMITH_LATENCY_PHASE5   `1` = P21 T21: jedno volání kompilátoru, plánovač po štíhlém sceneSpec a na `low`; dopíše blok
+ *                               `phase5` do `latency-p21.json` a nic v něm nepřepíše (`WORLDSMITH_CALL_CAP=10`, dvě věty).
  *   WORLDSMITH_LATENCY_CHUNKED  `1` = svět na tři souběžné kusy (P21 T5); každý kus je vlastní záznam s `chunk`, případ nese
  *                               čas celého světa i nejdelšího kusu. **Píše `latency-p21.json`, ne `latency-report.json`:**
  *                               ten nese měření ze 13. 9. (pět vět), ze kterého P21 cituje, a přepsat ho by citaci vzalo.
@@ -39,7 +41,7 @@ import { describe, expect, it } from 'vitest';
 import { frozenGrammar } from '@/model/client';
 import type { UpstreamRequest } from '@/model/prompt';
 import { requestChunk, requestStage } from '@/model/worldstream-prompt';
-import { CODEX_CLI_ENDPOINT, upstreamBranch, upstreamConfigFromEnv } from '@/server/upstream';
+import { CODEX_CLI_ENDPOINT, STAGE_EFFORT, upstreamBranch, upstreamConfigFromEnv } from '@/server/upstream';
 import { createMeshClient } from '@/shape/mesh-client';
 
 import { readCorpus, type CreateCase } from './lock.mjs';
@@ -49,12 +51,19 @@ import { readQualityCases } from './world-quality/corpus';
 const SESSION_SEED = 4021;
 const REPAIR_PREFIX = 'Your previous answer was rejected';
 const CHUNKED = process.env.WORLDSMITH_LATENCY_CHUNKED === '1';
+/**
+ * P21 T21: jedno volání kompilátoru (kusy vypnuté), plánovač po štíhlém
+ * `sceneSpec` (T18) a s vlastním úsilím (T19). **Dopisuje blok `phase5` do
+ * `latency-p21.json`** vedle běhu z 19. 9. ráno; nic z toho souboru nepřepisuje
+ * a `latency-report.json` (13. 9.) nechává být.
+ */
+const PHASE5 = process.env.WORLDSMITH_LATENCY_PHASE5 === '1';
 
 // Explicit P20 run directories retain failures and answers without rewriting older reports.
 const P20_DIR = process.env.P20_RUN_DIR ? resolve(process.env.P20_RUN_DIR) : null;
 const BASELINE_FILE = fileURLToPath(new URL('./latency-report.json', import.meta.url));
 const P21_FILE = fileURLToPath(new URL('./latency-p21.json', import.meta.url));
-const REPORT_FILE = P20_DIR ? join(P20_DIR, 'latency-report.json') : CHUNKED ? P21_FILE : BASELINE_FILE;
+const REPORT_FILE = P20_DIR ? join(P20_DIR, 'latency-report.json') : CHUNKED || PHASE5 ? P21_FILE : BASELINE_FILE;
 const RAW_FILE = P20_DIR ? join(P20_DIR, 'latency-raw.json') : fileURLToPath(new URL('../../scratch/latency-raw.json', import.meta.url));
 
 interface CallRecord {
@@ -475,7 +484,73 @@ describe('per-call latency of the live create path', () => {
       writeFileSync(RAW_FILE, JSON.stringify(raw, null, 2));
       const caseIds = cases.map((c) => c.id);
       const measuredAt = new Date().toISOString();
-      if (CHUNKED && !P20_DIR) {
+      if (PHASE5 && !P20_DIR) {
+        // T21: blok `phase5` vedle běhu z 19. 9. ráno. Čte se existující soubor
+        // a dopisuje se do něj — přepsat ho by vzalo citaci, na které stojí T16.
+        const variant = variants[0];
+        const previous = JSON.parse(readFileSync(P21_FILE, 'utf8')) as {
+          measuredAt: string;
+          summary: { byStage: Record<string, { medianMs: number; medianAnswerBytes: number }> } | null;
+          calls: { stage: string | null; repair: boolean; outputTokens: number | null }[];
+        };
+        const baseline = baselineFor(variant.label, caseIds);
+        const stat = (stage: 'planner' | 'compiler') => {
+          const fresh = raw.filter((c) => c.stage === stage && !c.repair);
+          if (fresh.length === 0) return null;
+          const tokens = fresh.flatMap((c) => (c.outputTokens === null ? [] : [c.outputTokens]));
+          return {
+            n: fresh.length,
+            medianMs: Math.round(median(fresh.map((c) => c.ms))),
+            p95Ms: Math.round(percentile95(fresh.map((c) => c.ms))),
+            medianAnswerBytes: Math.round(median(fresh.map((c) => c.answerBytes))),
+            medianOutputTokens: tokens.length === 0 ? null : Math.round(median(tokens)),
+          };
+        };
+        const morningPlannerTokens = previous.calls.filter((c) => c.stage === 'planner' && !c.repair).flatMap((c) => (c.outputTokens === null ? [] : [c.outputTokens]));
+        const phase5 = {
+          measuredAt,
+          plan: 'P21 T21 – one live run after T18 (slim sceneSpec) + T19 (planner at low effort)',
+          model: variant.label,
+          effort: variant.effort ?? 'medium',
+          plannerEffort: STAGE_EFFORT.planner ?? variant.effort ?? 'medium',
+          cases: cases.length,
+          caseIds,
+          chunked: false,
+          callCap: Number(process.env.WORLDSMITH_CALL_CAP ?? NaN),
+          calls: raw.length,
+          byStage: { planner: stat('planner'), compiler: stat('compiler') },
+          previous: {
+            morning19: {
+              measuredAt: previous.measuredAt,
+              plannerMedianMs: previous.summary?.byStage.planner?.medianMs ?? null,
+              plannerAnswerBytes: previous.summary?.byStage.planner?.medianAnswerBytes ?? null,
+              plannerOutputTokens: morningPlannerTokens.length === 0 ? null : Math.round(median(morningPlannerTokens)),
+              note: 'the 2026-09-19 morning run above in this file: chunked compiler, planner on the environment effort, full sceneSpec',
+            },
+            baseline13: { measuredAt: baseline.measuredAt, plannerMedianMs: baseline.plannerMedianMs, note: baseline.note },
+          },
+          target: { plannerMs: 30_000, answerBytes: 4_000, note: 'P21 T21 goal, stated as a goal – the measured number decides, not this line' },
+          perCase: allOutcomes.map((outcome) => {
+            const mine = raw.filter((call) => call.caseId === outcome.id);
+            const planner = mine.find((call) => call.stage === 'planner');
+            const compiler = mine.find((call) => call.stage === 'compiler' && !call.repair);
+            return {
+              id: outcome.id,
+              plannerMs: planner === undefined ? null : Math.round(planner.ms),
+              plannerAnswerBytes: planner?.answerBytes ?? null,
+              plannerOutputTokens: planner?.outputTokens ?? null,
+              compilerMs: compiler === undefined ? null : Math.round(compiler.ms),
+              rounds: outcome.rounds,
+              authored: outcome.geometryAuthored,
+              certified: outcome.certified,
+              failure: outcome.failure,
+              phases: phasesOf(outcome, mine),
+            };
+          }),
+          calls5: raw.map(({ model: _model, requestBytes: _bytes, ...call }) => ({ ...call, ms: Math.round(call.ms), endedAtMs: Math.round(call.endedAtMs) })),
+        };
+        writeFileSync(P21_FILE, `${JSON.stringify({ ...previous, phase5 }, null, 2)}\n`);
+      } else if (CHUNKED && !P20_DIR) {
         // P21 artefakt: jedna varianta, fáze na větu, staré číslo vedle nového
         // a každé volání s kusem a spotřebou (orákulum T5).
         const variant = variants[0];

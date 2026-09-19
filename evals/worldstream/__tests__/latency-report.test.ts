@@ -49,6 +49,43 @@ interface P21Call {
   readonly ok: boolean;
 }
 
+interface StageStat {
+  readonly n: number;
+  readonly medianMs: number;
+  readonly medianAnswerBytes: number;
+  readonly medianOutputTokens: number | null;
+}
+
+interface Phase5Case {
+  readonly id: string;
+  readonly plannerMs: number | null;
+  readonly plannerAnswerBytes: number | null;
+  readonly plannerOutputTokens: number | null;
+  readonly compilerMs: number | null;
+  readonly authored: boolean;
+  readonly failure: { readonly stage: string; readonly detail: string } | null;
+}
+
+/** Blok fáze 5 (P21 T21): plánovač po štíhlém `sceneSpec` (T18) a nízkém úsilí (T19). */
+interface Phase5Block {
+  readonly measuredAt: string;
+  readonly model: string;
+  readonly effort: string;
+  readonly plannerEffort: string;
+  readonly cases: number;
+  readonly caseIds: readonly string[];
+  readonly chunked: boolean;
+  readonly callCap: number;
+  readonly calls: number;
+  readonly byStage: { readonly planner: StageStat; readonly compiler: StageStat | null };
+  readonly previous: {
+    readonly morning19: { readonly measuredAt: string; readonly plannerMedianMs: number; readonly plannerAnswerBytes: number; readonly plannerOutputTokens: number | null };
+    readonly baseline13: { readonly measuredAt: string; readonly plannerMedianMs: number };
+  };
+  readonly target: { readonly plannerMs: number; readonly answerBytes: number; readonly note: string };
+  readonly perCase: readonly Phase5Case[];
+}
+
 interface P21Report {
   readonly measuredAt: string;
   readonly model: string;
@@ -57,6 +94,7 @@ interface P21Report {
   readonly caseIds: readonly string[];
   readonly chunked: boolean;
   readonly callCap: number;
+  readonly phase5?: Phase5Block;
   readonly baseline: {
     readonly measuredAt: string;
     readonly file: string;
@@ -132,5 +170,49 @@ describe('latency-p21.json – dvě věty po P21 vedle měření ze 13. 9.', () 
     // Věta, kterou 13. 9. měřilo, nese své staré číslo vedle nového; ostatní poctivě null.
     for (const entry of report.perCase)
       if (entry.baselineMs !== null) expect(Number.isFinite(entry.baselineMs), entry.id).toBe(true);
+  });
+});
+
+// ⚠ Dočasné: `skipIf` odstranit, jakmile T21 živě doběhne a blok `phase5` v artefaktu je.
+// Do té doby by pin na `toBeDefined` držel celou sadu červenou kvůli běhu, který ještě nebyl.
+describe.skipIf(report.phase5 === undefined)('latency-p21.json › phase5 – plánovač po štíhlém sceneSpec a nízkém úsilí (T21)', () => {
+  const phase5 = report.phase5;
+
+  it('blok existuje, má obě věty a jede jedním voláním kompilátoru, ne po kusech', () => {
+    expect(phase5, 'phase5 chybí – T21 ještě neběželo').toBeDefined();
+    if (phase5 === undefined) return;
+    expect(phase5.cases).toBe(2);
+    expect(phase5.caseIds).toHaveLength(2);
+    expect(phase5.perCase.map((entry) => entry.id)).toEqual(phase5.caseIds);
+    expect(phase5.chunked).toBe(false);
+    expect(phase5.callCap).toBeLessThanOrEqual(10);
+    expect(phase5.calls).toBeLessThanOrEqual(phase5.callCap);
+    expect(phase5.model).toContain(`@${phase5.effort}`);
+    expect(phase5.plannerEffort).toBe('low');
+  });
+
+  it('každá věta nese plánovačský čas jako číslo, i když svět selhal později (nález revize 19. 9.)', () => {
+    if (phase5 === undefined) return;
+    for (const entry of phase5.perCase) {
+      if (entry.failure?.stage === 'unavailable') continue;
+      expect(Number.isFinite(entry.plannerMs), `${entry.id}: plánovač bez času`).toBe(true);
+      expect(entry.plannerAnswerBytes, `${entry.id}: plánovač bez délky odpovědi`).toBeGreaterThan(0);
+      if (entry.failure !== null) expect(entry.failure.detail.length, `${entry.id}: selhání bez důvodu`).toBeGreaterThan(0);
+      // Svět, který došel ke kompilátoru, nese i jeho čas.
+      if (entry.failure === null || !['planner', 'unavailable'].includes(entry.failure.stage))
+        expect(Number.isFinite(entry.compilerMs), `${entry.id}: kompilátor bez času`).toBe(true);
+    }
+    expect(phase5.byStage.planner.n).toBe(phase5.perCase.filter((entry) => entry.plannerMs !== null).length);
+  });
+
+  it('stará čísla stojí vedle nového s datem, a cíl stojí jako cíl', () => {
+    if (phase5 === undefined) return;
+    expect(phase5.previous.morning19.measuredAt.startsWith('2026-09-19')).toBe(true);
+    expect(phase5.previous.morning19.plannerMedianMs).toBe(75025);
+    expect(phase5.previous.morning19.plannerAnswerBytes).toBe(6794);
+    expect(phase5.previous.baseline13.measuredAt.startsWith('2026-09-13')).toBe(true);
+    expect(phase5.previous.baseline13.plannerMedianMs).toBe(16696);
+    expect(phase5.target).toMatchObject({ plannerMs: 30_000, answerBytes: 4_000 });
+    expect(phase5.target.note).toContain('goal');
   });
 });
