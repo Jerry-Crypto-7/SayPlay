@@ -21,7 +21,7 @@
  * ne podmínka projití.** Rozhoduje naměřené číslo; sada nad artefaktem
  * (`__tests__/conversation-report.test.ts`) hlídá jen úplnost jmenovatele.
  *
- * Od P21 T22 se každý běh dopisuje do pole `runs` vedle předchozích; první (T11,
+ * Od P21 T22 se každý běh dopisuje do pole `runs` vedle předchozích (P22 T18 je třetí); první (T11,
  * 19. 9. 2026 ráno, 1 ze 4) zůstává. Jeden živý běh, `WORLDSMITH_CALL_CAP=6`,
  * `@medium` (rozpočet v plánu P21):
  *
@@ -193,7 +193,7 @@ describe('A10 live: sentence → first accepted piece', () => {
     const accepted = cases.filter((entry) => entry.verdict === 'ACCEPTED').length;
     const run = {
       measuredAt: new Date().toISOString(),
-      plan: 'P21 T22 – A10 gate after T20, one live run',
+      plan: 'P22 T18 – A10 gate after the anchoring fix (T13), one live run',
       model: `${process.env.WORLDSMITH_MODEL ?? 'gpt-6-astra'}@${process.env.WORLDSMITH_MODEL_EFFORT ?? 'medium'}#cli`,
       effort: process.env.WORLDSMITH_MODEL_EFFORT ?? 'medium',
       callCap: Number(process.env.WORLDSMITH_CALL_CAP ?? NaN),
@@ -212,7 +212,7 @@ describe('A10 live: sentence → first accepted piece', () => {
     // vypadal jako zlepšení, i kdyby žádné nebylo (P21 T22).
     const previous = JSON.parse(readFileSync(OUT_FILE, 'utf8')) as { runs?: unknown[] };
     const report = {
-      plan: 'P21 – A10 gate, live runs side by side (T11, T22)',
+      plan: 'A10 gate, live runs side by side (P21 T11, T22; P22 T18)',
       world: { id: WORLD_ID, prompt: world.prompt, objects: blueprint.objects.map((object) => object.stableId) },
       target: { ...TARGET, note: 'research targets, stated as a goal – the measured number decides, not this line' },
       runs: [...(previous.runs ?? []), run],

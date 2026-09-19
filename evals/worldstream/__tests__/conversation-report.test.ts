@@ -1,5 +1,5 @@
 /**
- * **Report brány A10 — pin na jmenovatel a na oba běhy (P21 T11, T22).**
+ * **Report brány A10 — pin na jmenovatel a na všechny běhy (P21 T11, T22; P22 T18).**
  *
  * Artefakt `conversation.json` má dvě vlastnosti, které se dají zadarmo
  * zfalšovat. **Chybějící případ:** report o dvou větách místo tří, kde ta
@@ -71,6 +71,20 @@ describe('conversation.json – živé běhy brány A10 nad jedním světem', ()
     expect(second.callCap).toBe(6);
     expect(new Date(second.measuredAt).getTime()).toBeGreaterThan(new Date(first.measuredAt).getTime());
     for (const run of report.runs) expect(run.model).toContain(`@${run.effort}`);
+  });
+
+  it('třetí běh (P22 T18, po opravě ukotvení v T13) stojí vedle druhého, který zůstal nedotčený', () => {
+    // Třetí běh, který by druhý (2 ze 3) přepsal, by vypadal jako zlepšení,
+    // i kdyby žádné nebylo – proto je druhý připíchnutý časem i výsledkem.
+    expect(report.runs.length).toBe(3);
+    const [, second, third] = report.runs;
+    expect(second.measuredAt).toBe('2026-09-19T10:51:14.644Z');
+    expect(second.summary.accepted).toBe(2);
+    expect(third.plan).toContain('T18');
+    expect(third.callCap).toBe(6);
+    expect(third.cases.length).toBe(3);
+    expect(third.cases.map((entry) => entry.sentence)).toContain('A wooden bench under the tree');
+    expect(new Date(third.measuredAt).getTime()).toBeGreaterThan(new Date(second.measuredAt).getTime());
   });
 
   it('jmenovatel: první běh přiznává čtyři, každý další právě tři, zbylé věty jsou pojmenované, ne ztracené', () => {
