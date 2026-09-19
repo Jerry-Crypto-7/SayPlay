@@ -34,6 +34,18 @@
  * `Date.now()`, `performance.now()` ani skutečný `requestAnimationFrame` na
  * replay cestě nemají co dělat (`CLAUDE.md`, Determinismus). Simulovaný tik je
  * jediná jednotka; hlídá to lexikálně `src/sim/__tests__/rebranch.test.ts`.
+ *
+ * ## Značky „proč" (P22 T8)
+ *
+ * `WhyMarkers` níž je druhá věc, kterou tenhle soubor exportuje: řada značek
+ * nad tiky, ve kterých spustilo aspoň jedno pravidlo. Klik na značku **není
+ * přetočení** — jen vybere tik pro panel `WhyPanel`; kdo chce čas vrátit, má
+ * na to posuvník. Značky tu bydlí proto, že patří k ose, ne k ovládání; jenže
+ * osa v téhle komponentě běží nad vlastními větvemi a **kauzální kruh drží
+ * `RuntimeController`** (`src/worldstream/runtime-controller.ts`), který na
+ * hlavní cestě stojí pod ovládáním v `src/app/page.tsx`. Tiky proto dodává
+ * volající z toho kruhu, a `TimeAxis` sama značky nekreslí — její větve žádný
+ * kruh nemají a lhát „vysvětlím ti to" nad během bez záznamu by nemělo smysl.
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -372,6 +384,43 @@ export default function TimeAxis({
           No branch from here: {rejection}
         </p>
       )}
+    </div>
+  );
+}
+
+/**
+ * Značky tiků, ve kterých spustilo pravidlo. Klik vybere tik, nic nepřetáčí.
+ *
+ * `ticks` jsou tiky z kauzálního kruhu běhu (`explainTick`), ne z obrazu
+ * v komponentě — když kruh tik zapomene nebo ho přetočení smaže, značka zmizí
+ * s ním a panel nad ním nemá co ukázat.
+ */
+export function WhyMarkers({
+  ticks,
+  selected,
+  onSelect,
+}: {
+  readonly ticks: readonly number[];
+  readonly selected: number | null;
+  readonly onSelect: (tick: number) => void;
+}) {
+  if (ticks.length === 0) return null;
+  return (
+    <div className="ws-why-markers" data-testid="why-markers" aria-label="Ticks where a rule fired">
+      <span className="ws-why-markers-label">Why?</span>
+      {ticks.map((tick) => (
+        <button
+          key={tick}
+          type="button"
+          className="ws-why-marker"
+          data-testid={`why-marker-${String(tick)}`}
+          aria-pressed={tick === selected}
+          title={`Why did a rule fire at tick ${String(tick)}?`}
+          onClick={() => onSelect(tick)}
+        >
+          {String(tick)}
+        </button>
+      ))}
     </div>
   );
 }

@@ -416,6 +416,115 @@ body {
   border-color: var(--ws-verdigris);
 }
 
+/* --- Why (P22 T8) ---------------------------------------------------------
+
+   Značky pod posuvníkem času a panel v zásuvce. Značka je jantarová, protože
+   „tady se něco stalo" je totéž sdělení, jaké nese `Change one law here` na
+   ose; vybraná se vyplní. Panel sedí v `.ws-inspect-panels` jako každý jiný —
+   žádné vlastní kotvení. */
+
+.ws-why-markers {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0.25rem 0;
+}
+
+.ws-why-markers-label {
+  color: var(--ws-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ws-why-marker {
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--ws-amber);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ws-amber);
+  font: inherit;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.ws-why-marker[aria-pressed='true'] {
+  background: var(--ws-amber);
+  color: var(--ws-pelagic);
+}
+
+.ws-why {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 26rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border-left: 2px solid var(--ws-amber);
+  background: rgba(11, 18, 20, 0.82);
+  color: var(--ws-text);
+  font: 12px/1.5 ui-monospace, monospace;
+}
+
+.ws-why-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ws-why-title {
+  margin: 0 0 0.3rem;
+  font: inherit;
+  color: var(--ws-amber);
+}
+
+.ws-why-subtitle {
+  margin: 0.5rem 0 0.2rem;
+  font: inherit;
+  color: var(--ws-accent);
+}
+
+.ws-why-close {
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--ws-basalt);
+  border-radius: 0.3rem;
+  background: transparent;
+  color: var(--ws-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.ws-why-input,
+.ws-why-empty {
+  margin: 0 0 0.3rem;
+  color: var(--ws-muted);
+}
+
+.ws-why-rules {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.ws-why-rule {
+  margin-bottom: 0.3rem;
+}
+
+.ws-why-sentence,
+.ws-why-guard {
+  display: block;
+  color: var(--ws-muted);
+}
+
+.ws-why-writes {
+  margin: 0.15rem 0 0;
+  padding-left: 0.6rem;
+  list-style: none;
+  color: var(--ws-nacre);
+  font-variant-numeric: tabular-nums;
+}
+
 /* --- Druhá věta (T23) -----------------------------------------------------
 
    Dvě věci nad plátnem: kotvený popisek vybraného objektu a panel s rozsahem

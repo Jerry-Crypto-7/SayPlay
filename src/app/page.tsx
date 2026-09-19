@@ -33,7 +33,7 @@ import {
   type ProxyWorld,
 } from '@/worldstream/proxy';
 import { pickQualityTier, type QualityTier } from '@/worldstream/quality';
-import { bindRuntime, type RuntimeBinding, type RuntimeController } from '@/worldstream/runtime-controller';
+import { bindRuntime, type RuntimeBinding, type RuntimeController, type RuntimeSnapshot } from '@/worldstream/runtime-controller';
 import { buildRuntimeWorld } from '@/ir/build';
 import { canonical } from '@/ir/worlddoc';
 import { prepareBranch, compareAcceptedBranch, type PreparedBranch } from '@/worldstream/accepted-branch';
@@ -41,6 +41,8 @@ import { MAX_COMPARISON_TICK, type BranchComparison as Comparison } from '@/worl
 import BranchComparison from '@/components/worldstream/BranchComparison';
 import type { EntityNames } from '@/worldstream/comparison-narration';
 import RuntimeInteraction from '@/components/worldstream/RuntimeInteraction';
+import { WhyMarkers } from '@/components/worldstream/TimeAxis';
+import WhyPanel from '@/components/worldstream/WhyPanel';
 import SourcePanel, { type SourceGeneration } from '@/components/worldstream/SourcePanel';
 import type { ProjectRevision } from '@/worldstream/evidence-commit';
 import { sourceProxyFromRuntime } from '@/worldstream/source-view';
@@ -54,7 +56,9 @@ import type { ShapeDetailAssessment } from '@/shape/detail-policy';
 import { createPipelineMetrics, type PipelineMetricsSnapshot, type PipelineRunHandle, type PipelineStageHandle,
   type PipelineProvenance } from '@/worldstream/pipeline-metrics';
 
-declare global { interface Window { __worldstreamMetrics?: { snapshot(): PipelineMetricsSnapshot } } }
+declare global { interface Window { __worldstreamMetrics?: { snapshot(): PipelineMetricsSnapshot;
+  /** Kauzální stopa tiku z běhu, který stojí pod ovládáním — pin panelu Why (P22 T8). */
+  explainTick(tick: number): ReturnType<RuntimeController['explainTick']> } } }
 
 // `ssr: false` je povinné, ne kosmetické — WebGL2 kontext na serveru
 // neexistuje a `<Canvas>` by při prerenderu spadl na `document`.
@@ -154,8 +158,12 @@ export default function Page() {
     setDisplayMeasurement({ run, initialInputs, targetWorld, frame: metrics.startStage(run, 'first-frame', provenance),
       interaction: comparison || !waitForInteraction ? null : metrics.startStage(run, 'first-interaction', provenance) });
   }, [metrics]);
+  // Sonda čte běh přes ref, ne přes závislost efektu: jeho úklid ruší rozběhnuté
+  // měření, takže nesmí běžet znovu při každé výměně běhu.
+  const controllerProbe = useRef<RuntimeController | null>(null);
   useEffect(() => {
-    const probe = { snapshot: metrics.snapshot }; window.__worldstreamMetrics = probe;
+    const probe = { snapshot: metrics.snapshot, explainTick: (tick: number) => controllerProbe.current?.explainTick(tick) ?? [] };
+    window.__worldstreamMetrics = probe;
     return () => { if (window.__worldstreamMetrics === probe) delete window.__worldstreamMetrics;
       if (activeMeasurement.current) metrics.finishRun(activeMeasurement.current, 'cancelled'); };
   }, [metrics]);
@@ -178,6 +186,9 @@ export default function Page() {
   const rewindChoice = useRef<{ tick: number; end: number } | null>(null);
   const [observationTick, setObservationTick] = useState(0);
   const [controller, setController] = useState<RuntimeController | null>(null);
+  controllerProbe.current = controller;
+  /** Tik vybraný značkou „Why?"; `null` = panel zavřený. */
+  const [whyTick, setWhyTick] = useState<number | null>(null);
   const [recovery, setRecovery] = useState<{ message: string; retry: () => Promise<void>; detailOnly?: boolean } | null>(null);
   const installRuntime = useCallback((id: string, document: WorldDoc) => {
     setRecovery(null);
@@ -191,6 +202,7 @@ export default function Page() {
     setFocusId(null);
     setViewOriginal(false);
     setComparisonNote(null);
+    setWhyTick(null);
     setController(next.controller);
   }, []);
   const [world, setWorld] = useState<ProxyWorld | null>(null);
@@ -1024,7 +1036,8 @@ export default function Page() {
           }} />}
         {controller === null ? null : comparison
           ? <details><summary>Visitor replay</summary><RuntimeControls controller={controller} comparing /></details>
-          : <RuntimeControls controller={controller} onRoute={setRouteHighlight} onRewind={(tick,end) => { rewindChoice.current={tick,end}; setForkTick(tick); }} />}
+          : <RuntimeControls controller={controller} onRoute={setRouteHighlight} onRewind={(tick,end) => { rewindChoice.current={tick,end}; setForkTick(tick); }}
+              whyTick={whyTick} onWhy={(tick) => { setWhyTick(tick); setInspecting(true); }} />}
         <div style={FACTS}><button data-testid="camera-reset" onClick={() => { setFocusId(null); setCameraReset(value => value + 1); }}>Frame scene</button>
           <span> Drag to orbit · scroll to zoom · arrow keys to pan</span></div>
         {displayedWorld?.kind === 'built' && displayedWorld.environment?.kind === 'interior' && <div style={FACTS}>
@@ -1032,7 +1045,9 @@ export default function Page() {
           <span>{cutaway ? ' Cutaway inspection · rules and collisions stay unchanged' : ' Full architecture'}</span>
         </div>}
       </div> : null}
-      inspect={<><WorldFacts world={displayedWorld} repairAttempts={visualRepairAttempts} allowAssetRepair={world?.kind==='built'&&!comparison&&!sourceProject}
+      inspect={<>{controller !== null && whyTick !== null && documentRef.current !== null && (
+        <WhyPanel controller={controller} tick={whyTick} document={documentRef.current} onClose={() => setWhyTick(null)} />
+      )}<WorldFacts world={displayedWorld} repairAttempts={visualRepairAttempts} allowAssetRepair={world?.kind==='built'&&!comparison&&!sourceProject}
         onFocus={comparison ? undefined : id => { setFocusId(id); setCameraReset(value => value + 1); }} />{world && !sourceProject && <p style={FACTS} data-testid="no-source-evidence">
         No source evidence is attached to this world. A prompt alone is not a citation.
       </p>}</>}
@@ -1318,9 +1333,26 @@ const BUTTON: React.CSSProperties = {
   font: '14px/1.4 ui-monospace, monospace',
 };
 
+/**
+ * Tiky, ve kterých spustilo pravidlo, **podle kauzálního kruhu** běhu (P22 T8).
+ *
+ * `transitions` jmenuje tiky se vstupem nebo se spuštěním, kruh říká, co v nich
+ * doopravdy zapsalo. Značka vzniká jen tam, kde kruh tik ještě drží a aspoň
+ * jedno pravidlo prošlo stráží — jinak by klik otevřel panel, který nemá co říct.
+ */
+function firedTicks(controller: RuntimeController, state: RuntimeSnapshot): readonly number[] {
+  return state.transitions
+    .filter(entry => controller.explainTick(entry.tick).some(firing => firing.guardHeld))
+    .map(entry => entry.tick);
+}
+
 /** Jediné živé hodiny. Pauza zahodí nástěnný zbytek, nikoli stav enginu. */
-function RuntimeControls({ controller, comparing = false, onRewind, onRoute }: { readonly controller: RuntimeController; readonly comparing?: boolean;
-  readonly onRewind?: (tick:number,end:number)=>void; readonly onRoute?: (highlight: readonly string[]) => void }) {
+function RuntimeControls({ controller, comparing = false, onRewind, onRoute, whyTick = null, onWhy }: { readonly controller: RuntimeController; readonly comparing?: boolean;
+  readonly onRewind?: (tick:number,end:number)=>void; readonly onRoute?: (highlight: readonly string[]) => void;
+  /** Tik otevřený v panelu Why; jeho značka svítí. */
+  readonly whyTick?: number | null;
+  /** Klik na značku. Bez něj se značky nekreslí — porovnávací replay nemá kam panel otevřít. */
+  readonly onWhy?: (tick: number) => void }) {
   const state = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
   const furthest = useRef(state.observationTick);
   const previousController = useRef(controller);
@@ -1345,6 +1377,7 @@ function RuntimeControls({ controller, comparing = false, onRewind, onRoute }: {
       {!comparing && <div style={{flexBasis:'100%'}}>
         <label>Time · {(state.observationTick/20).toFixed(1)}s <input data-testid="world-time" type="range" min={0}
           max={Math.max(1,furthest.current)} value={state.observationTick} onChange={event => rewind(event.target.valueAsNumber)} /></label>
+        {onWhy && <WhyMarkers ticks={firedTicks(controller, state)} selected={whyTick} onSelect={onWhy} />}
         <button data-testid="rewind-before-action" disabled={controller.getInputLog().length===0}
           onClick={() => rewind(controller.getInputLog().at(-1)!.tick)}>Before my last action</button>
         <details><summary>Your actions</summary>{controller.getInputLog().map((input,index) => <button key={index}
