@@ -1,0 +1,1782 @@
+{
+  "sources": {
+    "sentences": "evals/worldstream/gauntlet/oracles.json required quotes (weight 1 per sentence)",
+    "archive": "plans/P20/t18-hybrid-v2-20260917-1803/raw/*-planner.json objects[].label (weight 2 per object)",
+    "coverage": [
+      "src/assets/catalog.json assetId + tags",
+      "src/shape/schema.ts SHAPE_NODE_GROUPS.primitive",
+      "src/scene/architecture.ts kinds"
+    ]
+  },
+  "catalogAssets": 6,
+  "kindsTotal": 248,
+  "coverageByWeight": 0.12,
+  "coveredKinds": 15,
+  "missingKinds": 233,
+  "top24": [
+    "tree",
+    "table",
+    "gate",
+    "boat",
+    "machine",
+    "cabinet",
+    "stool",
+    "switch",
+    "button",
+    "cabin",
+    "lever",
+    "wall",
+    "window",
+    "workbench",
+    "bridge",
+    "dog",
+    "elevator",
+    "lamp",
+    "lantern",
+    "tent",
+    "tower",
+    "beacon",
+    "building",
+    "classroom"
+  ],
+  "covered": [
+    {
+      "kind": "chair",
+      "sentences": 5,
+      "archive": 6,
+      "weight": 17,
+      "coveredBy": "catalog:lounge-chair"
+    },
+    {
+      "kind": "door",
+      "sentences": 9,
+      "archive": 1,
+      "weight": 11,
+      "coveredBy": "catalog:panel-door"
+    },
+    {
+      "kind": "room",
+      "sentences": 8,
+      "archive": 1,
+      "weight": 10,
+      "coveredBy": "architecture:room"
+    },
+    {
+      "kind": "plant",
+      "sentences": 1,
+      "archive": 2,
+      "weight": 5,
+      "coveredBy": "catalog:potted-plant"
+    },
+    {
+      "kind": "corridor",
+      "sentences": 2,
+      "archive": 1,
+      "weight": 4,
+      "coveredBy": "architecture:corridor"
+    },
+    {
+      "kind": "person",
+      "sentences": 0,
+      "archive": 2,
+      "weight": 4,
+      "coveredBy": "catalog:seated-person"
+    },
+    {
+      "kind": "aquarium",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": "catalog:aquarium"
+    },
+    {
+      "kind": "cube",
+      "sentences": 3,
+      "archive": 0,
+      "weight": 3,
+      "coveredBy": "shape:box"
+    },
+    {
+      "kind": "plane",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": "shape:plane"
+    },
+    {
+      "kind": "sphere",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": "shape:sphere"
+    },
+    {
+      "kind": "ball",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": "shape:sphere"
+    },
+    {
+      "kind": "box",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": "shape:box"
+    },
+    {
+      "kind": "column",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": "shape:cylinder"
+    },
+    {
+      "kind": "listener",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": "catalog:seated-person"
+    },
+    {
+      "kind": "terminal",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": "catalog:desktop-terminal"
+    }
+  ],
+  "missing": [
+    {
+      "kind": "tree",
+      "sentences": 7,
+      "archive": 7,
+      "weight": 21,
+      "coveredBy": null
+    },
+    {
+      "kind": "table",
+      "sentences": 8,
+      "archive": 2,
+      "weight": 12,
+      "coveredBy": null
+    },
+    {
+      "kind": "gate",
+      "sentences": 7,
+      "archive": 2,
+      "weight": 11,
+      "coveredBy": null
+    },
+    {
+      "kind": "boat",
+      "sentences": 3,
+      "archive": 3,
+      "weight": 9,
+      "coveredBy": null
+    },
+    {
+      "kind": "machine",
+      "sentences": 3,
+      "archive": 3,
+      "weight": 9,
+      "coveredBy": null
+    },
+    {
+      "kind": "cabinet",
+      "sentences": 1,
+      "archive": 3,
+      "weight": 7,
+      "coveredBy": null
+    },
+    {
+      "kind": "stool",
+      "sentences": 1,
+      "archive": 3,
+      "weight": 7,
+      "coveredBy": null
+    },
+    {
+      "kind": "switch",
+      "sentences": 3,
+      "archive": 2,
+      "weight": 7,
+      "coveredBy": null
+    },
+    {
+      "kind": "button",
+      "sentences": 2,
+      "archive": 2,
+      "weight": 6,
+      "coveredBy": null
+    },
+    {
+      "kind": "cabin",
+      "sentences": 4,
+      "archive": 1,
+      "weight": 6,
+      "coveredBy": null
+    },
+    {
+      "kind": "lever",
+      "sentences": 2,
+      "archive": 2,
+      "weight": 6,
+      "coveredBy": null
+    },
+    {
+      "kind": "wall",
+      "sentences": 4,
+      "archive": 1,
+      "weight": 6,
+      "coveredBy": null
+    },
+    {
+      "kind": "window",
+      "sentences": 4,
+      "archive": 1,
+      "weight": 6,
+      "coveredBy": null
+    },
+    {
+      "kind": "workbench",
+      "sentences": 2,
+      "archive": 2,
+      "weight": 6,
+      "coveredBy": null
+    },
+    {
+      "kind": "bridge",
+      "sentences": 5,
+      "archive": 0,
+      "weight": 5,
+      "coveredBy": null
+    },
+    {
+      "kind": "dog",
+      "sentences": 3,
+      "archive": 1,
+      "weight": 5,
+      "coveredBy": null
+    },
+    {
+      "kind": "elevator",
+      "sentences": 3,
+      "archive": 1,
+      "weight": 5,
+      "coveredBy": null
+    },
+    {
+      "kind": "lamp",
+      "sentences": 3,
+      "archive": 1,
+      "weight": 5,
+      "coveredBy": null
+    },
+    {
+      "kind": "lantern",
+      "sentences": 3,
+      "archive": 1,
+      "weight": 5,
+      "coveredBy": null
+    },
+    {
+      "kind": "tent",
+      "sentences": 1,
+      "archive": 2,
+      "weight": 5,
+      "coveredBy": null
+    },
+    {
+      "kind": "tower",
+      "sentences": 5,
+      "archive": 0,
+      "weight": 5,
+      "coveredBy": null
+    },
+    {
+      "kind": "beacon",
+      "sentences": 2,
+      "archive": 1,
+      "weight": 4,
+      "coveredBy": null
+    },
+    {
+      "kind": "building",
+      "sentences": 2,
+      "archive": 1,
+      "weight": 4,
+      "coveredBy": null
+    },
+    {
+      "kind": "classroom",
+      "sentences": 2,
+      "archive": 1,
+      "weight": 4,
+      "coveredBy": null
+    },
+    {
+      "kind": "customer",
+      "sentences": 0,
+      "archive": 2,
+      "weight": 4,
+      "coveredBy": null
+    },
+    {
+      "kind": "fireplace",
+      "sentences": 2,
+      "archive": 1,
+      "weight": 4,
+      "coveredBy": null
+    },
+    {
+      "kind": "garden",
+      "sentences": 2,
+      "archive": 1,
+      "weight": 4,
+      "coveredBy": null
+    },
+    {
+      "kind": "pier",
+      "sentences": 2,
+      "archive": 1,
+      "weight": 4,
+      "coveredBy": null
+    },
+    {
+      "kind": "platform",
+      "sentences": 2,
+      "archive": 1,
+      "weight": 4,
+      "coveredBy": null
+    },
+    {
+      "kind": "river",
+      "sentences": 4,
+      "archive": 0,
+      "weight": 4,
+      "coveredBy": null
+    },
+    {
+      "kind": "sofa",
+      "sentences": 2,
+      "archive": 1,
+      "weight": 4,
+      "coveredBy": null
+    },
+    {
+      "kind": "water",
+      "sentences": 0,
+      "archive": 2,
+      "weight": 4,
+      "coveredBy": null
+    },
+    {
+      "kind": "alcove",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "balcony",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "barrel",
+      "sentences": 3,
+      "archive": 0,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "beach",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "bicycle",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "cafe",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "counter",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "flower",
+      "sentences": 3,
+      "archive": 0,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "forest",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "hall",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "kiln",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "lake",
+      "sentences": 3,
+      "archive": 0,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "light",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "office",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "park",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "pit",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "ship",
+      "sentences": 3,
+      "archive": 0,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "shop",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "staircase",
+      "sentences": 3,
+      "archive": 0,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "station",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "stove",
+      "sentences": 3,
+      "archive": 0,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "studio",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "supermarket",
+      "sentences": 1,
+      "archive": 1,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "well",
+      "sentences": 3,
+      "archive": 0,
+      "weight": 3,
+      "coveredBy": null
+    },
+    {
+      "kind": "area",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "can",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "cashier",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "cat",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "condition",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "courtyard",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "crate",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "desk",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "dome",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "exit",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "five",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "four",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "front",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "gauge",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "guard",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "guardrail",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "hous",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "house",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "chest",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "indicator",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "inside",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "interior",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "key",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "library",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "lighthouse",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "market",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "one",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "participant",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "patient",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "pendulum",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "plate",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "practicing",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "ramp",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "shore",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "sign",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "stall",
+      "sentences": 2,
+      "archive": 0,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "three",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "ticket",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "two",
+      "sentences": 0,
+      "archive": 1,
+      "weight": 2,
+      "coveredBy": null
+    },
+    {
+      "kind": "airlock",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "aqueduct",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "arch",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "array",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "banner",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "barn",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "battery",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "bed",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "beehive",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "bell",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "bench",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "blacksmith",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "book",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "bottle",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "brick",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "bucket",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "bulb",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "bus",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "cafeteria",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "camp",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "campsite",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "candle",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "cannon",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "car",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "cart",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "cathedral",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "cauldron",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "cave",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "cell",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "cloud",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "coaster",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "cottage",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "crane",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "crop",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "crow",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "crystal",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "cup",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "deer",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "dominoe",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "dormitory",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "dragon",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "drone",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "entrance",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "fairy",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "farmer",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "farmhouse",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "flag",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "floor",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "gallery",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "garage",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "gold",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "hammock",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "hangar",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "harbor",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "hatch",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "hayloft",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "heart",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "hill",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "hook",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "hut",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "chamber",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "checkpoint",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "chicken",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "church",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "kettle",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "ladder",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "letter",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "librarian",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "line",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "loaf",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "lobby",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "locomotif",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "log",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "logbook",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "member",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "merchant",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "mirror",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "monk",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "museum",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "mushroom",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "orchard",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "oven",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "pad",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "panel",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "parrot",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "path",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "pedestal",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "pen",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "people",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "pipe",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "planet",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "pod",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "pond",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "pool",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "robot",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "rope",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "runway",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "safe",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "sandbox",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "scarecrow",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "seesaw",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "sheep",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "shelf",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "shuttle",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "signal",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "signpost",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "sink",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "skeleton",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "skull",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "spellbook",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "stadium",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "stalactite",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "statue",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "stone",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "stream",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "sun",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "swing",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "tank",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "tavern",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "telescope",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "television",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "terrace",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "throne",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "track",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "train",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "trapdoor",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "treehouse",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "tunnel",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "turnstile",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "valve",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "visitor",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "volcano",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "warehous",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "warehouse",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "watchtower",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "wheel",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "windmill",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    },
+    {
+      "kind": "zone",
+      "sentences": 1,
+      "archive": 0,
+      "weight": 1,
+      "coveredBy": null
+    }
+  ]
+}
