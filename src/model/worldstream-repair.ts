@@ -63,7 +63,6 @@ import {
 import type { Grammar, UpstreamRequest } from './prompt';
 import type { PlannerEmission } from './worldstream-intent';
 import { EMISSION_CHUNKS, mergeEmissionChunks, type ChunkAnswer } from './emission-merge';
-import { SpendRefusalError } from '../server/spend-cap';
 
 /** Přijatý blueprint i s verdiktem, osekáními a opravami. */
 export type CompiledBlueprint = Extract<CompilerResult, { readonly ok: true }>;
@@ -476,6 +475,9 @@ export interface RepairInput {
  * by nechalo peníze držené a relaci „v půlce světa". Až po dolétnutí se
  * vybírá příčina: odmítnutí stropem (`SpendRefusalError`) má přednost před
  * výpadkem, aby relace skončila `SPEND_CAP_BLOCKED` a ne „model nedostupný".
+ * Pozná se podle `name`, ne `instanceof`: tenhle modul táhne `proxy.ts` do
+ * klientského bundlu a `spend-cap.ts` stojí na `node:fs`, takže by ho
+ * hodnotový import shodil celý `next build` (naměřeno 19. 9. 2026).
  *
  * `null` znamená „tudy to nešlo, zkus to jedním voláním" — a vrací se **jen**
  * když se kusu nedostalo odpovědi vůbec (rozbité prostředí). Odmítnutí od
@@ -497,7 +499,7 @@ async function emitChunks(input: RepairInput, clock: () => number): Promise<Blue
     return result.status === 'rejected' ? [{ chunk, thrown: result.reason as unknown }] : [];
   });
   if (failures.length > 0) {
-    const cause = failures.find(({ thrown }) => thrown instanceof SpendRefusalError)?.thrown ?? failures[0].thrown;
+    const cause = failures.find(({ thrown }) => thrown instanceof Error && thrown.name === 'SpendRefusalError')?.thrown ?? failures[0].thrown;
     const detail = failures
       .map(({ chunk, thrown }) => `chunk ${chunk}: ${thrown instanceof Error ? `${thrown.name}: ${thrown.message}` : String(thrown)}`)
       .join('; ');
