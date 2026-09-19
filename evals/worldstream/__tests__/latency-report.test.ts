@@ -23,7 +23,7 @@ import { describe, expect, it } from 'vitest';
 
 const REPORT_FILE = fileURLToPath(new URL('../latency-p21.json', import.meta.url));
 
-const PHASES = ['toMassingPreviewMs', 'toFirstChunkMs', 'toFirstObjectMs', 'toPlayableMs', 'toFullDetailMs'] as const;
+const PHASES = ['massingPreviewMs', 'toFirstChunkMs', 'toFirstObjectMs', 'toPlayableMs', 'toFullDetailMs'] as const;
 
 interface P21Case {
   readonly id: string;

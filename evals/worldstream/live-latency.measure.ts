@@ -245,7 +245,7 @@ function chunkTimes(calls: readonly CallRecord[]): { longestMs: number; sumMs: n
  * Čtyři fáze čekání na jednu větu, od odeslání (P21 T16). Fáze je `null`,
  * když k ní věta nedošla.
  *
- * - `toMassingPreviewMs` — plánovač odpověděl; hmotový náhled (T2) z jeho
+ * - `massingPreviewMs` — plánovač odpověděl; hmotový náhled (T2) z jeho
  *   emise stojí milisekundy (`massing-preview.json`), takže se nepočítá zvlášť.
  * - `toFirstChunkMs` — první kus kompilátoru odpověděl. **Dnes se z něj nic
  *   nekreslí:** CLI proud nevydává (T3, `upstream-stream.test.ts`) a kusy se
@@ -255,12 +255,12 @@ function chunkTimes(calls: readonly CallRecord[]): { longestMs: number; sumMs: n
  * - `toPlayableMs` — blueprint prošel branou a certifikací, hrdinové v hlíně.
  * - `toFullDetailMs` — hrdinové vymeshovaní, celá věta hotová.
  */
-function phasesOf(outcome: CaseOutcome, calls: readonly CallRecord[]): Record<'toMassingPreviewMs' | 'toFirstChunkMs' | 'toFirstObjectMs' | 'toPlayableMs' | 'toFullDetailMs', number | null> {
+function phasesOf(outcome: CaseOutcome, calls: readonly CallRecord[]): Record<'massingPreviewMs' | 'toFirstChunkMs' | 'toFirstObjectMs' | 'toPlayableMs' | 'toFullDetailMs', number | null> {
   const planner = calls.find((call) => call.stage === 'planner');
   const chunks = calls.filter((call) => call.chunk !== null && !call.repair);
   const playable = outcome.compiledMs === undefined ? null : Math.round(outcome.compiledMs);
   return {
-    toMassingPreviewMs: planner === undefined || !planner.ok ? null : Math.round(planner.endedAtMs),
+    massingPreviewMs: planner === undefined || !planner.ok ? null : Math.round(planner.endedAtMs),
     toFirstChunkMs: chunks.length === 0 ? null : Math.round(Math.min(...chunks.map((call) => call.endedAtMs))),
     toFirstObjectMs: playable,
     toPlayableMs: playable,
