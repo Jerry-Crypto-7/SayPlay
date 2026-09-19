@@ -748,6 +748,13 @@ describe('čtení nového objektu', () => {
       expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), whole] }), BLUEPRINT))).not.toContain('TOO_MANY_PIECES');
     });
 
+    // Druhá revize 19. 9.: součet přes operace počítal týž klíč dvakrát.
+    it('týž nový klíč zapsaný po jednom i v celé tabulce je pořád jeden kus', () => {
+      const sim = BLUEPRINT.world.sim as { readonly rules?: Record<string, unknown> };
+      const table = { op: 'replace', path: '/sim/rules', value: { ...(sim.rules ?? {}), signpostGlows: { when: 'tick', then: [] } } };
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), rule('signpostGlows'), table] }), BLUEPRINT))).not.toContain('TOO_MANY_PIECES');
+    });
+
     it('zadání pro model říká jeden objekt a nejvýš jedno pravidlo', () => {
       expect(buildAdditionRequest('add a signpost', BLUEPRINT).system).toContain('ONE object and at most ONE rule');
     });

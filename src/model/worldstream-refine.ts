@@ -565,12 +565,14 @@ export function readAdditionEmission(value: unknown, blueprint: WorldstreamBluep
  */
 function countPieces(operations: readonly Operation[], sim: unknown): { readonly entities: number; readonly rules: number } {
   const tables = sim as { readonly entities?: unknown; readonly rules?: unknown };
-  const counts = { entities: 0, rules: 0 };
-  const freshKeys = (collection: 'entities' | 'rules', written: unknown): number => {
-    if (written === null || typeof written !== 'object' || Array.isArray(written)) return 0;
+  // Množiny, ne součty: týž klíč zapsaný dvakrát (po jednom a pak v celé
+  // tabulce) je pořád jeden kus (druhá revize 19. 9. 2026).
+  const fresh = { entities: new Set<string>(), rules: new Set<string>() };
+  const collect = (collection: 'entities' | 'rules', written: unknown): void => {
+    if (written === null || typeof written !== 'object' || Array.isArray(written)) return;
     const existing = tables[collection];
     const known = existing !== null && typeof existing === 'object' ? (existing as Record<string, unknown>) : {};
-    return Object.keys(written).filter((key) => !Object.hasOwn(known, key)).length;
+    for (const key of Object.keys(written)) if (!Object.hasOwn(known, key)) fresh[collection].add(key);
   };
   for (const operation of operations) {
     const [root, collection, name, ...rest] = pointerTokens(operation.path);
@@ -580,18 +582,18 @@ function countPieces(operations: readonly Operation[], sim: unknown): { readonly
     // a čerstvé klíče se počítají stejně, jako by přišly po jedné.
     if (collection === undefined) {
       const doc = written as { readonly entities?: unknown; readonly rules?: unknown } | null;
-      counts.entities += freshKeys('entities', doc?.entities);
-      counts.rules += freshKeys('rules', doc?.rules);
+      collect('entities', doc?.entities);
+      collect('rules', doc?.rules);
       continue;
     }
     if (collection !== 'entities' && collection !== 'rules') continue;
     if (name !== undefined) {
-      counts[collection] += 1;
+      fresh[collection].add(name);
       continue;
     }
-    counts[collection] += freshKeys(collection, written);
+    collect(collection, written);
   }
-  return counts;
+  return { entities: fresh.entities.size, rules: fresh.rules.size };
 }
 
 /* ------------------------------------------------------------------ *

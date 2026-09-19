@@ -253,17 +253,39 @@ export function additionScopeIssue(
           pointer: decided.pointer,
           detail: `${decided.pointer} ends the game with ${decided.kind}; adding ${stableId} may react to the world but never decide when it is won or lost`,
         };
+      // Druhá revize 19. 9.: bez `win` se hra rozhodne o krok dál — pravidlo na
+      // `onStart` v tiku 0 přepne stav, na který čeká staré výherní pravidlo.
+      // Pravidlo nového předmětu musí něco ve světě spustit; „hned na začátku"
+      // není reakce, je to tichý přepis počátečního stavu (`state` je mimo
+      // `ADDITION_TABLES` ze stejného důvodu). Ve zmrazených světech nese
+      // `onStart` jen základní svět (c03, c10), žádná uvařená změna.
+      if (ruleEvent(afterSim, key) === 'onStart')
+        return {
+          pointer: `/sim/rules/${key}/event/kind`,
+          detail: `/sim/rules/${key} fires onStart; a rule added with ${stableId} must be triggered by something in the world, not by the start`,
+        };
     }
   }
 
   return null;
 }
 
-/** První akce `win` / `lose` v pravidle `key` dokumentu `sim`, nebo `null`. */
-function decidingAction(sim: unknown, key: string): { pointer: string; kind: string } | null {
+function ruleOf(sim: unknown, key: string): Record<string, unknown> | undefined {
   const rules = isRecord(sim) ? sim.rules : undefined;
   const rule = isRecord(rules) ? rules[key] : undefined;
-  const actions = isRecord(rule) && Array.isArray(rule.actions) ? rule.actions : [];
+  return isRecord(rule) ? rule : undefined;
+}
+
+/** `event.kind` pravidla `key`, nebo `undefined`, když ho nemá. */
+function ruleEvent(sim: unknown, key: string): unknown {
+  const event = ruleOf(sim, key)?.event;
+  return isRecord(event) ? event.kind : undefined;
+}
+
+/** První akce `win` / `lose` v pravidle `key` dokumentu `sim`, nebo `null`. */
+function decidingAction(sim: unknown, key: string): { pointer: string; kind: string } | null {
+  const rule = ruleOf(sim, key);
+  const actions = rule !== undefined && Array.isArray(rule.actions) ? rule.actions : [];
   for (const [index, action] of actions.entries()) {
     const kind = isRecord(action) ? action.kind : undefined;
     if (kind === 'win' || kind === 'lose') return { pointer: `/sim/rules/${key}/actions/${String(index)}`, kind };

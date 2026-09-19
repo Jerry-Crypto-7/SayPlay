@@ -202,6 +202,16 @@ describe('dosah přidání: nový objekt smí světu jen přidávat, a jen pod s
     expect(additionScopeIssue(before, loses, 'lantern')).toMatchObject({ pointer: '/sim/rules/lanternLose/actions/1', detail: expect.stringContaining('lose') });
   });
 
+  // Druhá revize 19. 9. 2026: hra se rozhodne o krok dál — pravidlo na `onStart`
+  // přepne v tiku 0 stav, na který čeká staré výherní pravidlo (`reach`).
+  it('nové pravidlo na `onStart` je porušení — musí ho spustit něco ve světě', () => {
+    const after = withLantern((draft) => {
+      draft.entities.lantern = { role: 'prop', socket: 'startPad', state: 'unlit' };
+      draft.rules.lanternStart = { phase: 0, event: { kind: 'onStart' }, condition: null, actions: [{ kind: 'setState', target: 'surveyor', value: 'reached' }] };
+    });
+    expect(additionScopeIssue(before, after, 'lantern')).toMatchObject({ pointer: '/sim/rules/lanternStart/event/kind', detail: expect.stringContaining('onStart') });
+  });
+
   it('nové pravidlo, které za běhu sahá na starý objekt, projde — to je věta o pravidle', () => {
     const after = withLantern((draft) => {
       draft.entities.lantern = { role: 'prop', socket: 'startPad', state: 'unlit' };
