@@ -1,15 +1,20 @@
 [Unit]
-Description=WORLDSTREAM read-only health watchdog
-After=worldstream.service
+Description=WORLDSTREAM uptime monitor (writes ops/monitoring/heartbeat.jsonl)
+After=network-online.target worldstream.service
+Wants=network-online.target
 
 [Service]
-Type=oneshot
+Type=simple
 User=worldstream
 Group=worldstream
 WorkingDirectory=/srv/worldstream/current
-ExecStart=/usr/bin/node ops/watchdog/worldstream.mjs --target http://127.0.0.1:3116 --log /var/log/worldstream/watchdog.jsonl --timeout-ms 25000
-TimeoutStartSec=30
+ExecStart=/usr/bin/node ops/monitoring/monitor.mjs --loop --config ops/monitoring/uptime.json
+Restart=on-failure
+RestartSec=10
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/var/log/worldstream
+ReadWritePaths=/srv/worldstream/current/ops/monitoring
+
+[Install]
+WantedBy=multi-user.target

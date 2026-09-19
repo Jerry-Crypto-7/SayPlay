@@ -20,6 +20,10 @@ Terminál po stejné akci zapne původní signál a ve změněné větvi jej nec
 
 Úspěšná strukturální kontrola, nalezená vítězná stopa a deterministický replay necertifikují význam ani přesvědčivý vzhled. Lidská vizuální přejímka, širší spolehlivost generace, provider a veřejný provoz mají vlastní otevřené brány. Detaily: [P20](../../plans/P20-svet-a-dve-budoucnosti-2026-09-17.md), [stav](../../PROJECT-STATUS.md), [walkthrough](../submission/demo-walkthrough.md).
 
+## Hlídač dostupnosti
+
+`node ops/monitoring/monitor.mjs --once` obejde tři adresy z `ops/monitoring/uptime.json` (repozitář, demo, backend) se stropem 10 s na každou a připíše jeden řádek `{at, targets:[{url,status,ms,ok}]}` do `ops/monitoring/heartbeat.jsonl`; `--loop` totéž opakuje po `intervalSeconds`. Cíl, který neodpoví, se zapíše jako `ok:false` – hlídač kvůli němu nikdy nespadne, protože zahozený řádek by vypadal jako hlídač, který neběží. `node scripts/submission-check.mjs` kontrola [7] čte poslední řádek a bez něj nebo s řádkem starším než trojnásobek intervalu hlásí FAIL. Heartbeat je gitignorovaný, takže PASS platí pro stroj, na kterém hlídač právě běží; na hostu ho drží `ops/host/worldstream-watchdog.service` s `--loop`.
+
 ---
 
 <details>
