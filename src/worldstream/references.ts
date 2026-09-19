@@ -186,5 +186,15 @@ function findReferences(
     }
   });
 
+  // Vazba vzhledu (P22 T12) ukazuje na příznak nebo čítač, který simulace
+  // deklaruje – jinak by plátno četlo proměnnou, kterou žádné pravidlo nepíše.
+  if (sim) {
+    const state = sim.state as { flags?: object; counters?: object } | undefined;
+    (blueprint as { lookBindings?: readonly { variable: string }[] }).lookBindings?.forEach((binding, at) => {
+      if (!Object.hasOwn(state?.flags ?? {}, binding.variable) && !Object.hasOwn(state?.counters ?? {}, binding.variable))
+        fail(`lookBindings/${at}/variable`, `names missing flag or counter ${binding.variable}`);
+    });
+  }
+
   return issues;
 }

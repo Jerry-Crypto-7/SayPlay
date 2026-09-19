@@ -25,6 +25,7 @@ import {
   buildCompilerRequest,
   geometryVocabulary,
   capabilityManifest,
+  mentionsWeather,
   requestStage,
   shapeVocabulary,
 } from '../worldstream-prompt';
@@ -108,5 +109,44 @@ describe('povinné části zadání', () => {
     const request = buildEmissionRequest('a room', GRAMMAR);
     expect(request.system).toContain('simOutcome: "NO_FIT"');
     expect(request.system).toContain(EXAMPLE_MARKER);
+  });
+});
+
+/**
+ * Nabídka `lookBindings` (P22 T12) se platí jen tam, kde má smysl: zadání,
+ * které mluví o počasí nebo denní době. Archivovaný plán o ničem takovém
+ * nemluví, takže ji nedostane; týž plán s bouří v náladě ano – a kus, který
+ * `world` nepíše, ji nedostane nikdy, protože `lookBindings` patří k `rules`.
+ */
+describe('nabídka lookBindings jen k počasí a denní době', () => {
+  const stormy = () => {
+    const base = plan();
+    return { ...base, intent: { ...base.intent, mood: 'a storm gathering over the terrace' } };
+  };
+
+  it('bez počasí v zadání se lookBindings nenabízí', () => {
+    expect(mentionsWeather(plan())).toBe(false);
+    expect(whole().system).not.toContain('lookBindings');
+  });
+
+  it('bouře v zadání nabídku přidá, i s uzavřeným seznamem předvoleb', () => {
+    expect(mentionsWeather(stormy())).toBe(true);
+    const request = buildCompilerRequest(stormy(), GRAMMAR);
+    expect(requestStage(request)).toBe('compiler');
+    expect(request.system).toContain('lookBindings: [{ variable, values }]');
+    expect(request.system).toContain('day|dusk|night|storm|fog');
+  });
+
+  it('denní světlo v místnosti není denní doba', () => {
+    const base = plan();
+    expect(mentionsWeather({ ...base, intent: { ...base.intent, setting: 'Daylit room', mood: 'calm daylight' } })).toBe(false);
+  });
+
+  it('kus objektů nabídku nedostane, kus pravidel ano', () => {
+    // Zúžení kusu pole ostatních kusů jmenuje, takže se hledá věta nabídky, ne slovo.
+    const offer = 'lookBindings: [{ variable, values }]';
+    expect(buildCompilerRequest(stormy(), GRAMMAR, 'objects').system).not.toContain(offer);
+    expect(buildCompilerRequest(stormy(), GRAMMAR, 'rules').system).toContain(offer);
+    expect(CHUNK_FIELDS.rules).toContain('lookBindings');
   });
 });

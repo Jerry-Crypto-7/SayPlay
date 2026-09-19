@@ -24,19 +24,23 @@
  * scéně, ne z toho, co blueprint zamýšlel.
  */
 
-import { Canvas, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { PerspectiveCamera } from 'three';
+import { Color, Fog, PerspectiveCamera } from 'three';
 
 import WorldstreamLighting, {
+  WORLDSTREAM_FOG,
   WORLDSTREAM_GL,
+  WORLDSTREAM_KEY_LIGHT,
   WORLDSTREAM_SHADOWS,
 } from '@/components/viewer/WorldstreamLighting';
+import type { SceneEnvironment } from '@/scene/environment';
+import { boundLookPreset, deriveLookPreset, type LookBinding, type LookDescriptor, type LookPreset } from '@/worldstream/look';
 import WorldstreamStage from '@/components/viewer/WorldstreamStage';
 import { FRAMING_FOV, frameScene, safeAreaFromRects, type Bounds, type SafeArea } from '@/worldstream/framing';
 import { applyDiagramProjection, frameDiagram } from '@/worldstream/diagram-framing';
-import type { RuntimeController, RuntimeSnapshot } from '@/worldstream/runtime-controller';
+import { readVariable, type RuntimeController, type RuntimeSnapshot } from '@/worldstream/runtime-controller';
 import { CELL_SIZE } from '@/components/viewer/projection';
 import type { ProxyWorld } from '@/worldstream/proxy';
 import { budgetFor, type QualityTier } from '@/worldstream/quality';
@@ -47,8 +51,23 @@ export interface GuideProbe {
   (): { readonly figure: readonly [number, number, number] | null; readonly stops: readonly string[] };
 }
 
+/**
+ * Co o předvolbě vzhledu ví plátno: která platí, jak daleko tween došel a
+ * **ze kterého stavu ji odvodilo** – tik, hash a vstupy, aby test mohl týž
+ * běh přehrát v Node bez rendereru a porovnat hash.
+ */
+export interface LookProbe {
+  (): {
+    readonly preset: LookPreset | null;
+    readonly settled: boolean;
+    readonly tick: number;
+    readonly stateHash: string;
+    readonly inputs: readonly { readonly tick: number; readonly actor: string; readonly actionId: string; readonly target?: string }[];
+  };
+}
+
 declare global {
-  interface Window { __worldstreamGuide?: GuideProbe }
+  interface Window { __worldstreamGuide?: GuideProbe; __worldstreamLook?: LookProbe }
 }
 
 export interface SharedCamera {
@@ -256,6 +275,98 @@ function GuideFigure({ at }: { readonly at: readonly [number, number, number] })
   );
 }
 
+/**
+ * Popis vzhledu, který plátno hlavní cesty **doopravdy kreslí** – ne odvození
+ * z palety, které patří `/embed`. Hlavní plátno má pozadí a mlhu ze
+ * `SceneEnvironment` a klíčové světlo z `WorldstreamLighting`; tenhle popis
+ * je tatáž scéna zapsaná jako `LookDescriptor`, aby se na ní daly odvodit
+ * předvolby stejnou funkcí jako všude jinde. Svět bez vazeb ho nikdy nečte,
+ * takže dnešní snímky se nehnou ani o pixel.
+ */
+function lookOfEnvironment(environment: SceneEnvironment | undefined): LookDescriptor {
+  const background = environment?.background ?? WORLDSTREAM_FOG.color;
+  const [x, y, z] = WORLDSTREAM_KEY_LIGHT.position;
+  const length = Math.hypot(x, y, z);
+  return {
+    palette: 'harbor',
+    sky: { color: background, height: 0.5 },
+    water: { present: false, color: background },
+    ground: { present: false, color: background },
+    // Hustota 0,5 je střed rozpočtu: předvolba ji násobí a plátno z poměru
+    // odvozuje, o kolik se přiblíží konec mlhy. Hodnota sama nic nekreslí.
+    fog: { density: 0.5, color: background },
+    key: { direction: [x / length, y / length, z / length], temperature: environment?.night ? 7800 : 5600 },
+    rim: 0.6,
+    exposure: WORLDSTREAM_GL.toneMappingExposure,
+    dust: 0,
+  };
+}
+
+/** Časová konstanta tweenu v sekundách. Bouře se stáhne za necelé dvě, ne skokem. */
+const LOOK_TWEEN_TAU = 0.45;
+/** Pod tímhle zbytkem se tween hlásí jako usazený. */
+const LOOK_SETTLED = 0.01;
+
+/**
+ * Plynulý přechod mezi předvolbami vzhledu podle proměnné světa (P22 T12).
+ *
+ * **Mimo hash, schválně a celý.** Tween běží na snímcích (`useFrame`,
+ * nástěnný čas), ne na tiku simulace, a data tečou jedním směrem: snímek běhu
+ * → `readVariable()` → předvolba → barvy na scéně. Nic z toho, co tween
+ * spočítá, se nikam do stavu nevrací – `RuntimeController` o téhle komponentě
+ * neví a `look-binding.spec.ts` to drží rovností hashe s rendererem a bez něj.
+ *
+ * Kreslí se **do objektů, které už na scéně jsou** (`scene.fog`,
+ * `scene.background` z `WorldstreamLighting`, `gl.toneMappingExposure`),
+ * ne vedle nich: druhá mlha nebo druhé pozadí by se s těmi prvními přetahovaly
+ * o snímek. Když `WorldstreamLighting` objekty vymění (nový svět), tween
+ * pokračuje z toho, co najde, což je přesně základ.
+ */
+function LookTransition({ bindings, environment, controller }: { readonly bindings: readonly LookBinding[];
+  readonly environment: SceneEnvironment | undefined; readonly controller: RuntimeController | null }) {
+  const scene = useThree((state) => state.scene);
+  const gl = useThree((state) => state.gl);
+  const state = useSyncExternalStore(controller?.subscribe ?? subscribeEmpty, controller?.getSnapshot ?? emptySnapshot, emptySnapshot);
+  const base = useMemo(() => lookOfEnvironment(environment), [environment]);
+  const preset = state === null ? null : boundLookPreset(bindings, (variable) => readVariable(state, variable));
+  const target = useMemo(() => (preset === null ? base : deriveLookPreset(base, preset)), [base, preset]);
+  const current = useRef({ sky: new Color(base.sky.color), fog: new Color(base.fog.color), far: WORLDSTREAM_FOG.far, exposure: base.exposure });
+  const remaining = useRef(0);
+
+  useFrame((_, delta) => {
+    const goalSky = new Color(target.sky.color);
+    const goalFog = new Color(target.fog.color);
+    const goalFar = WORLDSTREAM_FOG.far * (base.fog.density / target.fog.density);
+    const goalExposure = WORLDSTREAM_GL.toneMappingExposure * (target.exposure / base.exposure);
+    const k = 1 - Math.exp(-Math.min(delta, 0.1) / LOOK_TWEEN_TAU);
+    const now = current.current;
+    now.sky.lerp(goalSky, k);
+    now.fog.lerp(goalFog, k);
+    now.far += (goalFar - now.far) * k;
+    now.exposure += (goalExposure - now.exposure) * k;
+    remaining.current = Math.max(
+      Math.abs(now.sky.r - goalSky.r), Math.abs(now.sky.g - goalSky.g), Math.abs(now.sky.b - goalSky.b),
+      Math.abs(now.far - goalFar) / WORLDSTREAM_FOG.far, Math.abs(now.exposure - goalExposure));
+
+    if (scene.background instanceof Color) scene.background.copy(now.sky);
+    else scene.background = now.sky.clone();
+    if (scene.fog instanceof Fog) { scene.fog.color.copy(now.fog); scene.fog.far = now.far; }
+    gl.toneMappingExposure = now.exposure;
+  });
+
+  useEffect(() => {
+    const probe: LookProbe = () => {
+      const snapshot = controller?.getSnapshot() ?? null;
+      return { preset, settled: remaining.current < LOOK_SETTLED, tick: snapshot?.tick ?? 0, stateHash: snapshot?.stateHash ?? '',
+        inputs: controller?.getInputLog().map((input) => ({ ...input })) ?? [] };
+    };
+    window.__worldstreamLook = probe;
+    return () => { if (window.__worldstreamLook === probe) delete window.__worldstreamLook; };
+  }, [controller, preset]);
+
+  return null;
+}
+
 export default function WorldstreamCanvas({ world, controller = null, sceneId = null, reset = 0, framing = 'scene', onPresented, sharedCamera, adaptiveAssets, focusId,cutaway=true, routeHighlight }: {
   readonly world: ProxyWorld | null;
   readonly controller?: RuntimeController | null;
@@ -297,6 +408,8 @@ export default function WorldstreamCanvas({ world, controller = null, sceneId = 
       dpr={[1, budgetFor(quality).pixelRatio]}
     >
       <WorldstreamLighting quality={quality} environment={world?.kind === 'built' ? world.environment : undefined} />
+      {world?.kind === 'built' && world.lookBindings !== undefined && world.lookBindings.length > 0 &&
+        <LookTransition bindings={world.lookBindings} environment={world.environment} controller={controller} />}
       <FrameCamera world={world} controller={controller} sceneId={sceneId} reset={reset} framing={framing} sharedCamera={sharedCamera} focusId={focusId} />
       {world !== null && world.kind === 'built' && <RuntimeStage key={sceneId} world={world} controller={controller} onPresented={onPresented} adaptiveAssets={adaptiveAssets} cutaway={cutaway} />}
       {stand !== null && <GuideFigure at={stand} />}

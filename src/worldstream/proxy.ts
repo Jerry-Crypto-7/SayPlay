@@ -55,7 +55,7 @@ import { planRootRepeat, type RepeatInstances } from '@/shape/repeat-plan';
 
 import { budgetFor, type QualityTier } from './quality';
 import { visualPreviewSchema, type VisualPreview, type WorldstreamBlueprint } from './schema';
-type VisualScene = Pick<WorldstreamBlueprint, 'geometry' | 'objects' | 'shapes' | 'sceneSpec' | 'intent' | 'title' | 'sessionSeed'>;
+type VisualScene = Pick<WorldstreamBlueprint, 'geometry' | 'objects' | 'shapes' | 'sceneSpec' | 'intent' | 'title' | 'sessionSeed'> & { readonly lookBindings?: WorldstreamBlueprint['lookBindings'] };
 import { boundsCenter, slotFromAsset, slotFromForm, slotFromWorldForm, type SemanticSlot } from './slots';
 import type { AssetManifest } from '@/assets/manifest';
 import { WORLDSTREAM_ASSETS } from '@/assets/catalog';
@@ -271,6 +271,8 @@ export type ProxyWorld =
   | {
       readonly kind: 'built';
       readonly environment?: SceneEnvironment;
+      /** Vazby proměnných světa na předvolby vzhledu (P22 T12); čte je jen plátno. */
+      readonly lookBindings?: readonly import('./look').LookBinding[];
       readonly sceneSpec?: import('@/scene/spec').SceneSpec;
       readonly title: string;
       readonly sessionSeed: number;
@@ -902,6 +904,7 @@ async function buildVisualProxyFrom(blueprint: VisualScene, deps: ProxyDeps): Pr
   return {
     kind: 'built',
     ...(blueprint.sceneSpec ? { sceneSpec: blueprint.sceneSpec, environment: sceneEnvironment(blueprint.intent) } : {}),
+    ...(blueprint.lookBindings ? { lookBindings: blueprint.lookBindings } : {}),
     title: blueprint.title,
     sessionSeed: blueprint.sessionSeed,
     resolution: budget.roughResolution,

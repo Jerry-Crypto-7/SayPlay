@@ -7,8 +7,12 @@ import { FAMILIES } from '@/geom/families';
 import { PALETTES, type PaletteName } from '@/kit';
 
 import {
+  LOOK_BUDGETS,
   LOOK_FIELDS,
+  LOOK_PRESETS,
+  boundLookPreset,
   deriveLook,
+  deriveLookPreset,
   lookDifference,
   terrainOfProgram,
   type LookDescriptor,
@@ -264,5 +268,106 @@ describe('pravidla, která odvození nesmí porušit', () => {
     expect(code).not.toContain('Math.random');
     expect(code).not.toContain('seedrandom');
     expect(code).toContain('xoroshiro128plus');
+  });
+});
+
+/**
+ * Oracle úlohy P22 T12 – **předvolby vzhledu, které pravidlo umí přepnout**.
+ *
+ * Vada, kterou tenhle blok hlídá, je předvolba, která vypadá jako bouře
+ * v názvu a v obraze se od dne neliší – nebo se liší tím, že sáhla do
+ * fialového pásma. Soudí se odstup předvoleb, směr změn (bouře tmavší
+ * a s nízkým světlem, mlha hustší a s tmavší oblohou), rozpočty a odstíny,
+ * a to nad celým součinem palet, terénů a předvoleb.
+ */
+describe('předvolby vzhledu odvozené z jednoho popisu', () => {
+  const luminance = (hex: string): number => {
+    const value = Number.parseInt(hex.slice(1), 16);
+    return (0.2126 * ((value >> 16) & 0xff) + 0.7152 * ((value >> 8) & 0xff) + 0.0722 * (value & 0xff)) / 255;
+  };
+  const base = deriveLook({ palette: 'harbor', terrain: 'flat', seed: 4242 });
+
+  it('pět předvoleb je pět a den je popis sám', () => {
+    expect([...LOOK_PRESETS]).toEqual(['day', 'dusk', 'night', 'storm', 'fog']);
+    expect(deriveLookPreset(base, 'day')).toEqual(base);
+  });
+
+  it('každá dvojice předvoleb se liší aspoň ve dvou polích', () => {
+    const looks = LOOK_PRESETS.map((preset) => [preset, deriveLookPreset(base, preset)] as const);
+    const pairs = looks.flatMap(([a, lookA], i) =>
+      looks.slice(i + 1).map(([b, lookB]) => [a, b, lookDifference(lookA, lookB)] as const));
+    for (const [a, b, difference] of pairs) expect(difference, `${a} a ${b} jsou skoro totéž`).toBeGreaterThanOrEqual(2);
+  });
+
+  it('bouře je tmavší a svítí nízko, mlha je hustší s tmavší oblohou', () => {
+    for (const palette of PALETTE_NAMES) {
+      for (const terrain of TERRAINS) {
+        const look = deriveLook({ palette, terrain, seed: 7 });
+        const storm = deriveLookPreset(look, 'storm');
+        const fog = deriveLookPreset(look, 'fog');
+        const where = `${palette}/${terrain}`;
+
+        expect(storm.exposure, `${where}: bouře není tmavší`).toBeLessThan(look.exposure);
+        expect(storm.key.direction[1], `${where}: klíčové světlo bouře není níž`).toBeLessThan(look.key.direction[1]);
+        expect(luminance(storm.sky.color), `${where}: obloha bouře není tmavší`).toBeLessThan(luminance(look.sky.color));
+
+        // Kotlina v hutích už stojí na stropu hustoty; tam se žádá strop, ne víc než strop.
+        expect(fog.fog.density, `${where}: mlha není hustší`)
+          .toBeGreaterThanOrEqual(Math.min(LOOK_BUDGETS.fogDensity.max, look.fog.density * 1.5));
+        expect(luminance(fog.sky.color), `${where}: obloha v mlze není tmavší`).toBeLessThan(luminance(look.sky.color));
+        expect(luminance(deriveLookPreset(look, 'night').sky.color), `${where}: noc není tmavší než bouře`)
+          .toBeLessThan(luminance(storm.sky.color));
+      }
+    }
+  });
+
+  it('žádná předvolba nepadne do fialového pásma a všechny drží rozpočty', () => {
+    const purple: string[] = [];
+    for (const palette of PALETTE_NAMES) {
+      for (const terrain of TERRAINS) {
+        for (const seed of SEEDS) {
+          const look = deriveLook({ palette, terrain, seed });
+          for (const preset of LOOK_PRESETS) {
+            const derived = deriveLookPreset(look, preset);
+            for (const hex of [...colorsOf(derived), derived.ground.color]) {
+              expect(hex).toMatch(/^#[0-9a-f]{6}$/);
+              if (inPurpleBand(hex)) purple.push(`${palette}/${terrain}/${String(seed)}/${preset}: ${hex}`);
+            }
+            expect(derived.fog.density).toBeGreaterThanOrEqual(0.05);
+            expect(derived.fog.density).toBeLessThanOrEqual(1);
+            expect(derived.exposure).toBeGreaterThanOrEqual(0.8);
+            expect(derived.exposure).toBeLessThanOrEqual(1.8);
+            expect(derived.rim).toBeGreaterThanOrEqual(0.1);
+            expect(derived.rim).toBeLessThanOrEqual(1);
+            expect(derived.dust).toBeGreaterThanOrEqual(0);
+            expect(derived.dust).toBeLessThanOrEqual(1);
+            expect(derived.key.temperature).toBeGreaterThanOrEqual(1500);
+            expect(derived.key.temperature).toBeLessThanOrEqual(12_000);
+            const [x, y, z] = derived.key.direction;
+            expect(Math.hypot(x, y, z)).toBeCloseTo(1, 6);
+            expect(y, `${preset}: světlo zespodu`).toBeGreaterThan(0);
+            expect(derived.palette).toBe(look.palette);
+            expect(derived.water.present).toBe(look.water.present);
+          }
+        }
+      }
+    }
+    expect(purple).toEqual([]);
+  });
+
+  it('předvolba se čte z hodnoty proměnné, ne z tweenu: první vazba se známou hodnotou rozhoduje', () => {
+    const bindings = [
+      { variable: 'storm', values: { '0': 'day', '1': 'storm' } },
+      { variable: 'hour', values: { '0': 'night', '2': 'dusk' } },
+    ] as const;
+    const read = (values: Record<string, number>) => (variable: string) => values[variable] ?? null;
+
+    expect(boundLookPreset(bindings, read({ storm: 1, hour: 0 }))).toBe('storm');
+    expect(boundLookPreset(bindings, read({ storm: 0, hour: 2 }))).toBe('day');
+    // Hodnota mimo tabulku první vazby propadne k další; žádná shoda = žádná předvolba.
+    expect(boundLookPreset(bindings, read({ storm: 5, hour: 2 }))).toBe('dusk');
+    expect(boundLookPreset(bindings, read({ storm: 5, hour: 9 }))).toBeNull();
+    expect(boundLookPreset(bindings, read({}))).toBeNull();
+    expect(boundLookPreset([], read({ storm: 1 }))).toBeNull();
   });
 });

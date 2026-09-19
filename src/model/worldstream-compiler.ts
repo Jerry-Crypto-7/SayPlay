@@ -83,7 +83,7 @@ import { validateLayout } from '@/scene/constraints';
 export { COMPILER_STAGE };
 
 /** Pole, která model smí napsat. Cokoli navíc je odmítnutí. */
-export const ANSWER_FIELDS = ['geometry', 'shapes', 'placements', 'world', 'architecture'] as const;
+export const ANSWER_FIELDS = ['geometry', 'shapes', 'placements', 'world', 'architecture', 'lookBindings'] as const;
 
 export type CompilerRejection =
   /** Odpověď není objekt, nebo je to pole. */
@@ -760,9 +760,14 @@ export function compileBlueprint(
 
   // --- obálka ------------------------------------------------------------
 
+  // Vazby vzhledu (P22 T12) jdou do obálky **beze změny**: tvar soudí
+  // `blueprintSchema`, existenci proměnné `findBlueprintReferenceIssues()`,
+  // a obojí vydá adresu, kterou model v opravném kole přečte. Jsou to v2
+  // pole, takže odpověď, která je nese, dostane v2 obálku stejně jako assety.
   const draft = {
     version: objects.some(object => object.source.kind === 'asset' || object.binding || object.stretchAxes || object.yaw!==undefined)
-      ? 'worldstream-v2' : 'worldstream-v1',
+      || answer.lookBindings !== undefined ? 'worldstream-v2' : 'worldstream-v1',
+    ...(answer.lookBindings !== undefined ? { lookBindings: answer.lookBindings } : {}),
     sessionSeed: options.sessionSeed,
     title: titleOf(plan.intent),
     intent: plan.intent,

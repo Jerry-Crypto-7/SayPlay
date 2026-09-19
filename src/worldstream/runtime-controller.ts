@@ -312,3 +312,25 @@ export function bindRuntime(previous: RuntimeBinding | null, sessionId: string, 
   if (!built.ok) throw new Error(`the simulation cannot run: ${built.issues.join('; ')}`);
   return { sessionId, simulation, controller: createRuntimeController({ ...built.world, trace: [] }) };
 }
+
+/**
+ * Hodnota jedné proměnné světa ze snímku běhu, nebo `null`, když ji svět
+ * nedeklaruje.
+ *
+ * Jméno je to, které model napsal do `sim.state` (`storm`), ne slot
+ * interpretu (`f:storm`) – předponu dosazuje tahle funkce, aby plátno kódování
+ * slotů neznalo. Příznak má přednost před čítačem, protože táž dvě jména
+ * v jednom světě nedávají smysl a schéma je nebrání jen proto, že to nikdo
+ * nepíše.
+ *
+ * **Jednosměrné.** Čte se ze snímku a nic se sem nepíše: renderer (tween
+ * předvoleb vzhledu v `WorldstreamCanvas`) z toho odvozuje obraz, a do
+ * hashovaného stavu se z obrazu nevrací nic.
+ */
+export function readVariable(snapshot: RuntimeSnapshot, variable: string): number | null {
+  for (const prefix of ['f:', 'c:']) {
+    const value = snapshot.values[`${prefix}${variable}`];
+    if (value !== undefined) return value;
+  }
+  return null;
+}

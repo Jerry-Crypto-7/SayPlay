@@ -39,6 +39,7 @@ import { worldDocSchema, validateLook } from '@/ir/worlddoc';
 import { INTENT_ROLES, readIntent, type IntentSummary } from '@/model/worldstream-intent';
 import { sceneSpecSchema, readSceneSpec } from '@/scene/spec';
 import { shapeProgramSchema } from '@/shape/schema';
+import { LOOK_PRESETS } from './look';
 
 export const BLUEPRINT_VERSION = 'worldstream-v1';
 export const BLUEPRINT_VERSION_V2 = 'worldstream-v2';
@@ -208,6 +209,29 @@ export const intentSummarySchema = z
   })
   .transform((value) => value as IntentSummary);
 
+/**
+ * **Vazba proměnné světa na předvolbu vzhledu** (P22 T12).
+ *
+ * `variable` je jméno příznaku nebo čítače v `world.sim.state`; že existuje,
+ * soudí `findBlueprintReferenceIssues()`, ne schéma – táž dělba jako
+ * u `signalFlag`. Klíče tabulky jsou celá čísla zapsaná jako řetězec: příznak
+ * je 0/1, čítač celé číslo, a `"on"` by muselo mít druhou tabulku aliasů,
+ * kterou by nikdo nečetl. Předvolby jsou uzavřený seznam z `look.ts`.
+ *
+ * Volitelné a **jen ve v2**: v1 blueprinty jsou zmrazené emise a nesmí začít
+ * padat na poli, které nikdy nenesly.
+ */
+export const lookBindingSchema = z
+  .object({
+    variable: identifier,
+    values: z
+      .record(z.string().regex(/^-?\d{1,9}$/, 'value keys are integers written as strings'), z.enum(LOOK_PRESETS))
+      .refine((values) => Object.keys(values).length > 0, { message: 'a binding needs at least one value' }),
+  })
+  .strict();
+
+export const MAX_LOOK_BINDINGS = 8;
+
 /* ------------------------------------------------------------------ *
  * Obálka.
  * ------------------------------------------------------------------ */
@@ -228,9 +252,12 @@ const blueprintEnvelopeSchema = z
     geometry: geomProgramSchema,
     objects: z.array(semanticObjectSchema).min(1).max(64),
     shapes: z.array(shapeProgramSchema).max(MAX_HERO_SHAPES),
+    lookBindings: z.array(lookBindingSchema).max(MAX_LOOK_BINDINGS).optional(),
   })
   .strict();
-function validateVisualEnvelope(blueprint: Pick<z.infer<typeof blueprintEnvelopeSchema>, 'version' | 'sceneSpec' | 'objects'>, ctx: z.RefinementCtx) {
+function validateVisualEnvelope(blueprint: Pick<z.infer<typeof blueprintEnvelopeSchema>, 'version' | 'sceneSpec' | 'objects'> & { readonly lookBindings?: unknown }, ctx: z.RefinementCtx) {
+    if (blueprint.version === BLUEPRINT_VERSION && blueprint.lookBindings !== undefined)
+      ctx.addIssue({ code: 'custom', path: ['lookBindings'], message: 'Look bindings require worldstream-v2' });
     if (blueprint.sceneSpec) {
       const result = readSceneSpec(blueprint.sceneSpec);
       if (typeof result === 'string') ctx.addIssue({ code: 'custom', path: ['sceneSpec'], message: result });

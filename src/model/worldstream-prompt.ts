@@ -54,6 +54,7 @@ import {
   type PieceKind,
 } from '../geom/program';
 import { canonical, canonicalHash } from '../ir/worlddoc';
+import { LOOK_PRESETS } from '../worldstream/look';
 
 import { EMISSION_MODEL, EXAMPLE_MARKER, buildEmissionRequest, type Grammar, type UpstreamRequest } from './prompt';
 import { buildIntentRequest, PLANNER_ANSWER_FIELDS, type PlannerEmission } from './worldstream-intent';
@@ -430,6 +431,42 @@ function exampleFor(chunk: ChunkName | undefined): Record<string, unknown> {
   return Object.fromEntries(Object.entries(whole).filter(([field]) => CHUNK_FIELDS[chunk].includes(field)));
 }
 
+/**
+ * Slova, po kterých se modelu nabídne `lookBindings` (P22 T12).
+ *
+ * Nabídka se dopisuje **jen k zadání, které mluví o počasí nebo denní době**,
+ * protože každý řádek promptu se platí u každé věty a vazba vzhledu je
+ * k ničemu ve světě, kde se obloha nemá čeho držet. Soudí se to, co planner
+ * o místě napsal (`setting`, `mood`, `interactions`, popisky), ne věta
+ * porotce – compiler ji nedostává, viz hlavičku.
+ *
+ * `day` v seznamu schválně není: „daylit room" je denní světlo, ne změna
+ * denní doby, a pustilo by nabídku skoro do každé věty.
+ */
+const WEATHER_WORDS =
+  /\b(storm|storms|stormy|thunder|lightning|rain|rains|rainy|snow|snowing|blizzard|hail|fog|foggy|mist|misty|weather|overcast|cloudburst|dusk|dawn|sunset|sunrise|twilight|nightfall|night|midnight|evening|daybreak)\b/i;
+
+export function mentionsWeather(plan: PlannerEmission): boolean {
+  const text = [
+    plan.intent.setting,
+    plan.intent.mood,
+    plan.intent.spatialThesis,
+    ...plan.intent.interactions,
+    ...plan.objects.flatMap((object) => [object.label, ...object.synonyms]),
+  ].join(' ');
+  return WEATHER_WORDS.test(text);
+}
+
+/** Nabídka `lookBindings` – jen tam, kde `mentionsWeather()` platí. */
+const LOOK_BINDINGS_OFFER = [
+  'This place speaks of weather or the time of day, so you may add one more optional top-level field:',
+  'lookBindings: [{ variable, values }] binds a flag or counter you declared in world.sim.state to a sky preset.',
+  `values maps the variable's integer value written as a string to one of ${LOOK_PRESETS.join('|')}; a flag is "0" or "1".`,
+  'Example: a rule that sets flag storm true darkens the sky with lookBindings:[{"variable":"storm","values":{"0":"day","1":"storm"}}].',
+  'The renderer reads the variable; it never writes it. Name only variables that exist in world.sim.state.',
+  '',
+];
+
 export function buildCompilerRequest(
   plan: PlannerEmission,
   grammar: Grammar,
@@ -454,7 +491,9 @@ export function buildCompilerRequest(
     'Somebody else already decided WHAT the place is. You decide how it stands up.',
     '',
     'Answer with a single JSON object and nothing else. Its top-level fields are exactly:',
-    `${COMPILER_ANSWER_FIELDS.join(', ')}. The only optional additional field is architecture. Other fields are rejected, including a title —`,
+    `${COMPILER_ANSWER_FIELDS.join(', ')}. The only optional additional field is architecture${
+      writes('world') && mentionsWeather(plan) ? ', plus lookBindings described below' : ''
+    }. Other fields are rejected, including a title —`,
     'the system writes that from the intent you were given.',
     ...(chunk === undefined ? [] : chunkNarrowing(chunk)),
     ...(writes('architecture')
@@ -544,6 +583,7 @@ export function buildCompilerRequest(
     'and derive the objective from their resulting state. A win alone is not a replacement for switching the visible lamp.',
     'Rules and witness still have to certify; visual quality never excuses invalid behavior.',
     '',
+    ...(mentionsWeather(plan) ? LOOK_BINDINGS_OFFER : []),
         ]),
     BLUEPRINT_EXAMPLE_MARKER,
     // **Odsazení tu musí zůstat**, ze stejného naměřeného důvodu jako

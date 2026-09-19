@@ -44,7 +44,8 @@ export type ChunkName = (typeof EMISSION_CHUNKS)[number];
 export const CHUNK_FIELDS: Readonly<Record<ChunkName, readonly string[]>> = {
   architecture: ['geometry', 'architecture'],
   objects: ['shapes', 'placements'],
-  rules: ['world'],
+  // Vazby vzhledu čtou proměnné ze `world.sim`, takže je píše tentýž kus.
+  rules: ['world', 'lookBindings'],
 };
 
 export type MergeRejection =

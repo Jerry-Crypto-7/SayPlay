@@ -26,6 +26,7 @@ import { SHAPE_LIMITS, type ShapeNode } from '@/shape/types';
 import { findBlueprintReferenceIssues } from '../references';
 import {
   BLUEPRINT_VERSION,
+  BLUEPRINT_VERSION_V2,
   MAX_HERO_SHAPES,
   MIN_TARGET_EXTENT,
   WORLD_COORDINATE_LIMIT,
@@ -384,5 +385,49 @@ describe('cross references', () => {
       parse({ objects: [hero, { ...wall, stableId: 'tallHive' }] }),
     );
     expect(found.map((issue) => issue.detail).join(' ')).toContain('already used');
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Vazby vzhledu (P22 T12) – volitelné pole v2, starý tvar bez něj prochází.
+ * ------------------------------------------------------------------ */
+
+describe('look bindings', () => {
+  const storm = [{ variable: 'hiveCalm', values: { '0': 'day', '1': 'storm' } }];
+
+  it('keeps validating the old envelope, which never carried lookBindings', () => {
+    const verdict = validateBlueprint(validBlueprint());
+    expect(verdict.issues).toEqual([]);
+    expect(validateBlueprint(withField({ version: BLUEPRINT_VERSION_V2 })).ok).toBe(true);
+  });
+
+  it('accepts a v2 envelope binding a flag to presets and parses it through', () => {
+    const blueprint = blueprintSchema.parse(withField({ version: BLUEPRINT_VERSION_V2, lookBindings: storm }));
+    expect(blueprint.lookBindings).toEqual(storm);
+  });
+
+  it('requires worldstream-v2 for lookBindings, like assets and bindings', () => {
+    const verdict = validateBlueprint(withField({ lookBindings: storm }));
+    expect(verdict.ok).toBe(false);
+    expect(verdict.issues.join(' ')).toContain('lookBindings');
+  });
+
+  it('rejects a preset outside the five, a non-integer key, an empty table and an extra field', () => {
+    const v2 = (lookBindings: unknown) => validateBlueprint(withField({ version: BLUEPRINT_VERSION_V2, lookBindings })).ok;
+    expect(v2([{ variable: 'hiveCalm', values: { '1': 'purple' } }])).toBe(false);
+    expect(v2([{ variable: 'hiveCalm', values: { on: 'storm' } }])).toBe(false);
+    expect(v2([{ variable: 'hiveCalm', values: {} }])).toBe(false);
+    expect(v2([{ variable: 'hiveCalm', values: { '1': 'storm' }, tween: 0.5 }])).toBe(false);
+    expect(v2([{ variable: 'hive calm', values: { '1': 'storm' } }])).toBe(false);
+    expect(v2([{ variable: 'hiveCalm', values: { '0': 'day', '1': 'storm' } }])).toBe(true);
+  });
+
+  it('catches a binding on a variable the simulation never declared', () => {
+    const parse = (lookBindings: unknown) => blueprintSchema.parse(withField({ version: BLUEPRINT_VERSION_V2, lookBindings }));
+    expect(findBlueprintReferenceIssues(parse(storm))).toEqual([]);
+    const issues = findBlueprintReferenceIssues(parse([{ variable: 'weather', values: { '1': 'storm' } }]));
+    expect(issues).toHaveLength(1);
+    expect(issues[0].where).toBe('lookBindings/0/variable');
+    expect(issues[0].detail).toContain('weather');
   });
 });
