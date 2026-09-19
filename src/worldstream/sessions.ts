@@ -1058,7 +1058,7 @@ export async function runGeneration(
   // monotónní. Zásah proto znamená: obě uložené odpovědi prošly dnešními
   // branami nad seedem téhle relace, a model se nevolá vůbec.
   const replay = deps.answers === undefined ? null
-    : await observePhaseAsync(serverPhaseObserver, 'answer-cache-replay', () => replayAnswers(deps.answers!, prompt, deps, session.sessionSeed));
+    : await observePhaseAsync(serverPhaseObserver, 'answer-cache-replay', () => replayAnswers(deps.answers!, deps, session.sessionSeed));
   // Co model napsal, kvůli zápisu do cache: první odpověď je plánovač,
   // poslední je kompilátor — a poslední je ta přijatá, protože
   // `compileWithRepair` končí hned na kole, které prošlo.
@@ -1154,7 +1154,7 @@ export async function runGeneration(
   // se nepřepisuje (má tytéž odpovědi) a neúspěch sem nedojde vůbec — každá
   // cesta ven výš končí `stop()`. Zápis nikdy nevyhazuje (`answer-cache.ts`).
   if (replay === null && deps.answers !== undefined)
-    await deps.answers.cache.write(deps.answers.key, { planner: written[0], compiler: written[written.length - 1] });
+    await deps.answers.cache.write(deps.answers.key, { sentence: prompt, planner: written[0], compiler: written[written.length - 1] });
   stored.reused = replay === null ? null : { at: new Date().toISOString(), savedCalls: 2 };
 
   // **Blueprint jde celý jedním rámcem, `world.ready` je pak jen povel.**
@@ -1193,16 +1193,21 @@ export async function runGeneration(
  *
  * Kompilátor běží s `maxRounds: 1` a emitorem, který vrací uložené kolo:
  * opravné kolo by bylo placené volání a tady se neplatí nic.
+ *
+ * **Plán se soudí proti uložené větě, ne proti `prompt` téhle relace.**
+ * Klíč větu normalizuje, ale `readSceneSpec` chce `requested` citaci jako
+ * doslovný substring — proti nové větě by `A Table` / `a table` prošlo
+ * klíčem a padlo tady, tedy dvě zaplacená volání pod cache, která tvrdí,
+ * že šetří (revize nad `7a3808f`). Model odpovídal na uloženou větu.
  */
 async function replayAnswers(
   answers: NonNullable<GenerationDeps['answers']>,
-  prompt: string,
   deps: GenerationDeps,
   sessionSeed: number,
 ): Promise<{ readonly plan: PlannerEmission; readonly outcome: Extract<BlueprintOutcome, { kind: 'compiled' }> } | null> {
   const cached: CachedAnswer | null = await answers.cache.read(answers.key);
   if (cached === null) return null;
-  const read = readPlannerEmission(cached.planner, { prompt, requireSceneSpec: deps.legacyPlan !== true });
+  const read = readPlannerEmission(cached.planner, { prompt: cached.sentence, requireSceneSpec: deps.legacyPlan !== true });
   if (!read.ok) return null;
   const outcome = await compileWithRepair({
     plan: read.value,

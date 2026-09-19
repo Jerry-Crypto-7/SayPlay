@@ -6,7 +6,12 @@
  * vlastní větu podruhé po obnovení stránky. Plánovač i kompilátor odpovídají
  * na tutéž otázku tímtéž — a každá taková dvojice stojí dvě placená volání
  * a přes minutu čekání. Tenhle modul si dvojici pamatuje sedm dní pod klíčem,
- * který je celá otázka: normalizovaná věta, verze promptu, model a úsilí.
+ * který je celá otázka: normalizovaná věta, verze promptu, model, **úsilí
+ * každé fáze tak, jak se doopravdy pošle** (`effortForCall` v `upstream.ts`,
+ * ne holé `WORLDSMITH_MODEL_EFFORT` — plánovač jede na `STAGE_EFFORT`), a
+ * koncový bod. Bez posledních dvou by změna tabulky úsilí nebo přepnutí
+ * poskytovatele pod týmž jménem modelu vydávalo sedm dní staré odpovědi
+ * (nález revize nad `7a3808f`).
  *
  * ## Kde to sedí vůči stropu utrácení a vypínačům
  *
@@ -21,13 +26,21 @@
  *
  * ## Co se ukládá: co model NAPSAL, ne co z toho vzniklo
  *
- * Hodnota jsou syrové odpovědi obou fází. Blueprint se z nich při zásahu
- * **staví znovu** týmž kompilátorem a týmiž branami jako poprvé: nese
- * `sessionSeed` nové relace a projde validací dnešního buildu. Kdyby se
- * ukládal hotový blueprint, vydal by se svět z včerejšího schématu pod
- * dnešním klientem. A protože prompt se mění častěji než validace, ale ne
- * vždycky s ní, je i uložená odpověď, která branou už neprojde, prostě
- * **miss** — relace jede živě a záznam se přepíše.
+ * Hodnota jsou syrové odpovědi obou fází **a věta, nad kterou vznikly**.
+ * Blueprint se z nich při zásahu **staví znovu** týmž kompilátorem a týmiž
+ * branami jako poprvé: nese `sessionSeed` nové relace a projde validací
+ * dnešního buildu. Kdyby se ukládal hotový blueprint, vydal by se svět
+ * z včerejšího schématu pod dnešním klientem. A protože prompt se mění
+ * častěji než validace, ale ne vždycky s ní, je i uložená odpověď, která
+ * branou už neprojde, prostě **miss** — relace jede živě a záznam se přepíše.
+ *
+ * **Plán se soudí proti uložené větě, ne proti té nové.** Klíč větu
+ * normalizuje (velikost písmen, mezery), ale `readSceneSpec` odmítá
+ * `requested` citaci, která není doslovný substring věty — proti nové větě
+ * by tedy `A Table` / `a table` byl zásah v klíči a miss v replayi, tedy
+ * dvě zaplacená volání s cache, která tvrdí, že šetří. Model odpovídal na
+ * uloženou větu, a proti ní jeho citace platí; svět se pak stejně lowersuje
+ * nad novým seedem.
  *
  * ## Úložiště je totéž co kniha stropu
  *
@@ -49,10 +62,12 @@
 
 import { createHash } from 'node:crypto';
 
-import { PROMPT_VERSION } from '../model/worldstream-prompt';
+import { buildIntentRequest } from '../model/worldstream-intent';
+import { buildCompilerRequest, PROMPT_VERSION } from '../model/worldstream-prompt';
+import { EXAMPLE_PLAN } from '../model/worldstream-examples';
 
 import { sharedStoreFromEnv, storePrefix } from './spend-store';
-import { upstreamConfigFromEnv } from './upstream';
+import { effortForCall, upstreamConfigFromEnv, type UpstreamConfig } from './upstream';
 
 /** Sedm dní. Demo den je jeden; týden pokryje zkoušku, den D i dohru. */
 export const ANSWER_TTL_SECONDS = 7 * 24 * 60 * 60;
@@ -71,6 +86,8 @@ export const ANSWER_CACHE_TIMEOUT_MS = 1_000;
 export const ANSWER_KEY_INFIX = ':answer:';
 
 export interface CachedAnswer {
+  /** Věta tak, jak ji model dostal — proti ní se uložený plán soudí, viz hlavička. */
+  readonly sentence: string;
   /** Syrová odpověď plánovače, tak jak ji model napsal. */
   readonly planner: unknown;
   /** Syrová odpověď kompilátoru, **ta přijatá** — poslední kolo, ne první. */
@@ -90,7 +107,7 @@ export interface AnswerStore {
 export interface AnswerCache {
   readonly id: string;
   read(key: string): Promise<CachedAnswer | null>;
-  write(key: string, answer: Pick<CachedAnswer, 'planner' | 'compiler'>): Promise<void>;
+  write(key: string, answer: Pick<CachedAnswer, 'sentence' | 'planner' | 'compiler'>): Promise<void>;
 }
 
 /** Trim, jedna mezera, malá písmena — „doslova stejná věta" bez daně za překlep v mezerách. */
@@ -103,7 +120,10 @@ export interface AnswerKeyInput {
   /** `PROMPT_VERSION` z `src/model/worldstream-prompt.ts`; test si dosadí vlastní. */
   readonly promptVersion: string;
   readonly model: string;
-  readonly effort: string;
+  /** Úsilí po fázi, tak jak ho `effortForCall` doopravdy pošle — ne hodnota z prostředí. */
+  readonly effort: { readonly planner: string; readonly compiler: string };
+  /** Koncový bod (nebo `codex-cli`). Jde jen do hashe, ven nikdy — může nést pověření. */
+  readonly endpoint: string;
 }
 
 /**
@@ -112,7 +132,7 @@ export interface AnswerKeyInput {
  */
 export function answerKey(input: AnswerKeyInput): string {
   return createHash('sha256')
-    .update([normalizeSentence(input.sentence), input.promptVersion, input.model, input.effort].join('\n'))
+    .update([normalizeSentence(input.sentence), input.promptVersion, input.model, input.effort.planner, input.effort.compiler, input.endpoint].join('\n'))
     .digest('hex');
 }
 
@@ -201,6 +221,7 @@ function isCachedAnswer(value: unknown): value is CachedAnswer {
     value !== null &&
     'planner' in value &&
     'compiler' in value &&
+    typeof (value as { sentence?: unknown }).sentence === 'string' &&
     typeof (value as { storedAt?: unknown }).storedAt === 'string'
   );
 }
@@ -231,7 +252,7 @@ export function answerCache(
       return null;
     },
     async write(key, answer) {
-      const record: CachedAnswer = { planner: answer.planner, compiler: answer.compiler, storedAt: new Date().toISOString() };
+      const record: CachedAnswer = { sentence: answer.sentence, planner: answer.planner, compiler: answer.compiler, storedAt: new Date().toISOString() };
       try {
         await store.set(key, JSON.stringify(record), ANSWER_TTL_SECONDS);
       } catch (thrown) {
@@ -264,10 +285,13 @@ export function answerCacheFromEnv(
 /**
  * Cache a klíč téhle věty pro `runGeneration`, nebo prázdný objekt.
  *
- * Model a úsilí jsou z téže konfigurace, ze které `cloudEmitter()` staví
- * větev — jiná odpověď na „který model" v repu není. Prázdný objekt (ne
- * `null`) proto, aby se dal rozbalit rovnou do `GenerationDeps`: bez
- * konfigurace nebo s vypnutou cache se `answers` prostě nepředá.
+ * Model, úsilí a koncový bod jsou z téže konfigurace, ze které
+ * `cloudEmitter()` staví větev — jiná odpověď na „který model" v repu není.
+ * Úsilí se neopisuje z `config.effort`, ale ptá se **téže funkce, která ho
+ * pošle** (`effortForCall`), nad požadavkem téže fáze: kdyby se tabulka
+ * `STAGE_EFFORT` hnula, hne se i klíč. Prázdný objekt (ne `null`) proto,
+ * aby se dal rozbalit rovnou do `GenerationDeps`: bez konfigurace nebo
+ * s vypnutou cache se `answers` prostě nepředá.
  */
 export function answerReuseFor(
   env: Record<string, string | undefined>,
@@ -276,5 +300,24 @@ export function answerReuseFor(
   const cache = answerCacheFromEnv(env);
   const config = upstreamConfigFromEnv(env);
   if (cache === null || config === null) return {};
-  return { answers: { cache, key: answerKey({ sentence, promptVersion: PROMPT_VERSION, model: config.model, effort: config.effort }) } };
+  return {
+    answers: {
+      cache,
+      key: answerKey({ sentence, promptVersion: PROMPT_VERSION, model: config.model, effort: sentEfforts(sentence, config), endpoint: config.endpoint }),
+    },
+  };
+}
+
+/**
+ * Úsilí, které by obě fáze **poslaly**. Požadavky se staví doopravdy
+ * (`effortForCall` čte fázi z textu), kompilátorový nad ukázkovým plánem
+ * a značkou místo grammar — na úsilí má vliv jen fáze, ne obsah.
+ */
+function sentEfforts(sentence: string, config: UpstreamConfig): AnswerKeyInput['effort'] {
+  const mark = ['<grammar>'] as const;
+  const compiler = buildCompilerRequest(EXAMPLE_PLAN, { surfaceEvents: mark, conditions: mark, actions: mark, simFields: mark, lookFields: mark });
+  return {
+    planner: effortForCall({ prompt: sentence, request: buildIntentRequest(sentence) }, config),
+    compiler: effortForCall({ prompt: sentence, request: compiler }, config),
+  };
 }

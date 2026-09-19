@@ -1042,7 +1042,7 @@ describe('cache odpovědí: táž věta podruhé nevolá model', () => {
   }
 
   function answersFor(sentence: string, cache: AnswerCache) {
-    return { cache, key: answerKey({ sentence, promptVersion: PROMPT_VERSION, model: 'test-model', effort: 'high' }) };
+    return { cache, key: answerKey({ sentence, promptVersion: PROMPT_VERSION, model: 'test-model', effort: { planner: 'low', compiler: 'high' }, endpoint: 'https://model.invalid' }) };
   }
 
   function strip(blueprint: unknown) {
@@ -1085,6 +1085,36 @@ describe('cache odpovědí: táž věta podruhé nevolá model', () => {
     expect((firstReady.payload as { reused?: unknown }).reused).toBeUndefined();
   });
 
+  /**
+   * **Věta s jinou velikostí písmen je zásah i tehdy, když plán cituje
+   * zadání doslova.** `readSceneSpec` odmítá `requested` citaci, která není
+   * substring věty — a klíč je z normalizované věty, takže by se `A Table`
+   * proti `a table` rozpadlo až v replayi a zaplatilo dvakrát (nález revize
+   * nad `7a3808f`). Uložený plán se proto soudí proti VĚTĚ, nad kterou
+   * vznikl, ne proti té nové; svět se pak stejně staví nad novým seedem.
+   */
+  it('plán s doslovnou citací zadání je zásah i pro větu psanou jinak', async () => {
+    const quoted = 'A cabin with a Table';
+    const plan = ownPlan();
+    const spec = plan.sceneSpec!;
+    const cited: PlannerEmission = { ...plan, sceneSpec: { ...spec,
+      requirements: spec.requirements.map((r, i) => (i === 0 ? { ...r, provenance: { kind: 'requested' as const, quote: 'a Table' } } : r)) } };
+    const cache = answerCache(memoryAnswerStore());
+    let calls = 0;
+    const emit: BlueprintEmitter = async () => (++calls % 2 === 1 ? cited : ANSWER);
+
+    const first = openSession('cache-quote-first', 4021)!;
+    await runGeneration(first, quoted, { grammar: grammar(), emit, answers: answersFor(quoted, cache) });
+    expect(first.session.phase).toBe('world');
+    expect(calls).toBe(2);
+
+    const second = openSession('cache-quote-second', 99)!;
+    await runGeneration(second, `  ${quoted.toLowerCase()}  `, { grammar: grammar(), emit, answers: answersFor(quoted, cache) });
+    expect(second.session.phase).toBe('world');
+    expect(calls, 'citace zadání s jinou velikostí písmen udělala z zásahu miss').toBe(2);
+    expect(second.reused?.savedCalls).toBe(2);
+  });
+
   it('jiná věta je miss a platí se znovu', async () => {
     const cache = answerCache(memoryAnswerStore());
     const paid = paidEmitter();
@@ -1110,7 +1140,7 @@ describe('cache odpovědí: táž věta podruhé nevolá model', () => {
   it('záznam, který branou už neprojde, je miss — relace jede živě a záznam se přepíše', async () => {
     const cache = answerCache(memoryAnswerStore());
     const answers = answersFor(SENTENCE, cache);
-    await cache.write(answers.key, { planner: { intent: 'stale' }, compiler: {} });
+    await cache.write(answers.key, { sentence: SENTENCE, planner: { intent: 'stale' }, compiler: {} });
     const paid = paidEmitter();
     const stored = openSession('cache-stale', 4021)!;
     await runGeneration(stored, SENTENCE, { grammar: grammar(), emit: paid.emit, answers });

@@ -10,12 +10,16 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
+import { PROMPT_VERSION } from '@/model/worldstream-prompt';
+import { STAGE_EFFORT } from '../upstream';
+
 import {
   ANSWER_CACHE_TIMEOUT_MS,
   ANSWER_TTL_SECONDS,
   answerCache,
   answerCacheFromEnv,
   answerKey,
+  answerReuseFor,
   httpAnswerStore,
   memoryAnswerStore,
   normalizeSentence,
@@ -24,8 +28,14 @@ import {
   type AnswerStore,
 } from '../answer-cache';
 
-const KEY_INPUT = { sentence: 'A cabin with a table', promptVersion: 'v-1', model: 'gpt-5.6-sol', effort: 'high' };
-const ANSWERS = { planner: { intent: { setting: 'a cabin' } }, compiler: { geometry: { nodes: [] } } };
+const KEY_INPUT = {
+  sentence: 'A cabin with a table',
+  promptVersion: 'v-1',
+  model: 'gpt-5.6-sol',
+  effort: { planner: 'low', compiler: 'high' },
+  endpoint: 'https://model.example.com/v1/messages',
+};
+const ANSWERS = { sentence: 'A cabin with a table', planner: { intent: { setting: 'a cabin' } }, compiler: { geometry: { nodes: [] } } };
 
 describe('klíč', () => {
   it('normalizace: trim, jedna mezera, malá písmena', () => {
@@ -36,12 +46,33 @@ describe('klíč', () => {
     expect(answerKey({ ...KEY_INPUT, sentence: '  a CABIN  with a table ' })).toBe(answerKey(KEY_INPUT));
   });
 
-  it('jiná verze promptu, model nebo úsilí je jiný klíč', () => {
+  it('jiná verze promptu, model, úsilí kterékoli fáze nebo koncový bod je jiný klíč', () => {
     const base = answerKey(KEY_INPUT);
     expect(answerKey({ ...KEY_INPUT, promptVersion: 'v-2' })).not.toBe(base);
     expect(answerKey({ ...KEY_INPUT, model: 'gpt-5.6-terra' })).not.toBe(base);
-    expect(answerKey({ ...KEY_INPUT, effort: 'low' })).not.toBe(base);
+    // Úsilí se soudí po fázi, ne z prostředí: `STAGE_EFFORT` v `upstream.ts`
+    // posílá plánovač na jiné úsilí, než jaké stojí v `WORLDSMITH_MODEL_EFFORT`.
+    expect(answerKey({ ...KEY_INPUT, effort: { planner: 'high', compiler: 'high' } })).not.toBe(base);
+    expect(answerKey({ ...KEY_INPUT, effort: { planner: 'low', compiler: 'low' } })).not.toBe(base);
+    expect(answerKey({ ...KEY_INPUT, endpoint: 'codex-cli' })).not.toBe(base);
     expect(base).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('klíč z konfigurace nese úsilí, které se doopravdy pošle, a koncový bod', () => {
+    const env = {
+      WORLDSMITH_MODEL_ENDPOINT: 'https://model.example.com/v1/messages',
+      WORLDSMITH_MODEL_KEY: 'k',
+      WORLDSMITH_USD_PER_MTOK_OUT: '1',
+      WORLDSMITH_MODEL: 'm',
+      WORLDSMITH_MODEL_EFFORT: 'high',
+    };
+    const base = answerReuseFor(env, KEY_INPUT.sentence).answers!.key;
+    // Plánovač jede na `STAGE_EFFORT.planner`, ne na úsilí z prostředí — proto
+    // se klíč liší od klíče, který by úsilí bral jen z `WORLDSMITH_MODEL_EFFORT`.
+    expect(base).toBe(answerKey({ ...KEY_INPUT, promptVersion: PROMPT_VERSION, model: 'm', effort: { planner: STAGE_EFFORT.planner!, compiler: 'high' } }));
+    expect(answerReuseFor({ ...env, WORLDSMITH_MODEL_EFFORT: 'low' }, KEY_INPUT.sentence).answers!.key).not.toBe(base);
+    expect(answerReuseFor({ ...env, WORLDSMITH_MODEL_ENDPOINT: 'https://other.example.com/v1/messages' }, KEY_INPUT.sentence).answers!.key).not.toBe(base);
+    expect(answerReuseFor({ ...env, WORLDSMITH_ANSWER_CACHE: 'off' }, KEY_INPUT.sentence)).toEqual({});
   });
 });
 
@@ -52,6 +83,7 @@ describe('cache nad úložištěm v paměti', () => {
     expect(await cache.read(key)).toBeNull();
     await cache.write(key, ANSWERS);
     const hit = await cache.read(key);
+    expect(hit?.sentence).toBe(ANSWERS.sentence);
     expect(hit?.planner).toEqual(ANSWERS.planner);
     expect(hit?.compiler).toEqual(ANSWERS.compiler);
     expect(typeof hit?.storedAt).toBe('string');
@@ -79,7 +111,7 @@ describe('cache nad úložištěm v paměti', () => {
     const log = vi.fn();
     const cache = answerCache(store, log);
     await store.set('broken', '{not json', ANSWER_TTL_SECONDS);
-    await store.set('shape', JSON.stringify({ planner: {} }), ANSWER_TTL_SECONDS);
+    await store.set('shape', JSON.stringify({ planner: {}, compiler: {}, storedAt: 't' }), ANSWER_TTL_SECONDS);
     await store.set('null', 'null', ANSWER_TTL_SECONDS);
     expect(await cache.read('broken')).toBeNull();
     expect(await cache.read('shape')).toBeNull();
