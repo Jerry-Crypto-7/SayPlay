@@ -37,9 +37,8 @@ import { bindRuntime, type RuntimeBinding, type RuntimeController, type RuntimeS
 import { buildRuntimeWorld } from '@/ir/build';
 import { canonical } from '@/ir/worlddoc';
 import { prepareBranch, compareAcceptedBranch, type PreparedBranch } from '@/worldstream/accepted-branch';
-import { MAX_COMPARISON_TICK, type BranchComparison as Comparison } from '@/worldstream/branch-controller';
+import { MAX_COMPARISON_TICK } from '@/worldstream/branch-controller';
 import BranchComparison from '@/components/worldstream/BranchComparison';
-import type { EntityNames } from '@/worldstream/comparison-narration';
 import RuntimeInteraction from '@/components/worldstream/RuntimeInteraction';
 import { WhyMarkers } from '@/components/worldstream/TimeAxis';
 import WhyPanel from '@/components/worldstream/WhyPanel';
@@ -66,6 +65,7 @@ const WorldstreamCanvas = dynamic(() => import('@/components/worldstream/Worldst
   ssr: false,
 });
 const FutureViews = dynamic(() => import('@/components/worldstream/FutureViews'), { ssr: false });
+import { MAX_FUTURES, type AcceptedFuture } from '@/components/worldstream/FutureViews';
 
 /**
  * Věta, kterou porotce uvidí, když relace skončí bez světa a bez důvodu.
@@ -179,7 +179,18 @@ export default function Page() {
   const binding = useRef<RuntimeBinding | null>(null);
   const documentRef = useRef<WorldDoc | null>(null);
   const previewBranch = useRef<PreparedBranch | null>(null);
-  const [comparison, setComparison] = useState<{ result: Comparison; world: ProxyWorld; source: RuntimeController; changedWorld: ProxyWorld; summary: string; names: EntityNames } | null>(null);
+  /**
+   * Přijaté alternativy (P22 T10). Do T10 tu stála jediná `comparison` a druhá
+   * přijatá změna tu první přepsala. Seznam přežije „Try another change from
+   * the original", padá až s novým světem. `shownFutureId` říká, která stojí
+   * vpravo vedle originálu; `null` = plátno bez porovnání.
+   */
+  const [futures, setFutures] = useState<readonly AcceptedFuture[]>([]);
+  const [shownFutureId, setShownFutureId] = useState<number | null>(null);
+  const futureIds = useRef(0);
+  const comparison = shownFutureId === null ? null : futures.find(future => future.id === shownFutureId) ?? null;
+  /** Věta, ze které vznikl rozpracovaný plán změny – položka seznamu ji ponese. */
+  const askedSentence = useRef('');
   const [viewOriginal, setViewOriginal] = useState(false);
   const [comparisonNote, setComparisonNote] = useState<string | null>(null);
   const [forkTick, setForkTick] = useState(0);
@@ -198,7 +209,7 @@ export default function Page() {
     documentRef.current = document;
     rewindChoice.current = null;
     previewBranch.current = null;
-    setComparison(null);
+    setFutures([]); setShownFutureId(null);
     setFocusId(null);
     setViewOriginal(false);
     setComparisonNote(null);
@@ -414,7 +425,7 @@ export default function Page() {
       documentRef.current = null;
       rewindChoice.current = null;
       previewBranch.current = null;
-      setComparison(null);
+      setFutures([]); setShownFutureId(null);
       setViewOriginal(false);
       setComparisonNote(null);
       setController(null);
@@ -602,6 +613,7 @@ export default function Page() {
         }
 
         previewBranch.current = prepared;
+        askedSentence.current = outcome.pieces?.asked ?? prompt;
         editMeasurement.current = { run: measured, review: metrics.startStage(measured, 'change-review', origin) };
         setForkTick(rewindChoice.current?.tick ?? 0);
         setObservationTick(Math.min(MAX_COMPARISON_TICK, Math.max(rewindChoice.current?.end ?? 0,
@@ -730,6 +742,7 @@ export default function Page() {
         throw new Error(built.reason);
       }
 
+      let acceptedFuture: AcceptedFuture | null = null;
       const compareTiming = behavior && prepared ? metrics.startStage(measured, 'compare') : null;
       const compared = done.comparison ? { verdict: 'COMPARED' as const, snapshot: { comparison: done.comparison } } : behavior && prepared
         ? compareAcceptedBranch(prepared, parsed.data.world, { forkTick, observationTick }) : null;
@@ -748,8 +761,13 @@ export default function Page() {
         binding.current = { sessionId, simulation: canonical(parsed.data.world.sim), controller: next };
         documentRef.current = parsed.data.world;
         setController(next);
-        setComparison({ result, world, source: prepared!.source, changedWorld: built, summary: change.summary,
-          names: Object.fromEntries(parsed.data.objects.map(object => [object.stableId, object.label])) });
+        const future: AcceptedFuture = { id: ++futureIds.current, sentence: askedSentence.current || change.summary,
+          result, world, source: prepared!.source, changedWorld: built, target: next, summary: change.summary,
+          names: Object.fromEntries(parsed.data.objects.map(object => [object.stableId, object.label])), document: parsed.data.world };
+        acceptedFuture = future;
+        // Nejstarší vypadne; ta nová je zobrazená, takže vypadnout nemůže.
+        setFutures(current => [...current, future].slice(-MAX_FUTURES));
+        setShownFutureId(future.id);
         setViewOriginal(false);
         setComparisonNote(null);
       } else {
@@ -786,7 +804,7 @@ export default function Page() {
             if (detailed.kind !== 'built') throw new Error(detailed.reason);
             if (failedShapes.size > 0) throw new Error('Detailed geometry is still unavailable.');
             measureDisplay(retryRun, changeFrom ? 'prepared' : 'unknown', 0, false, detailed);
-            setComparison(current => current ? { ...current, changedWorld: detailed } : null);
+            if (acceptedFuture) setFutures(current => current.map(future => future.id === acceptedFuture!.id ? { ...future, changedWorld: detailed } : future));
             setWorld(current => current === built ? detailed : current);
             setRecovery(null);
           } catch (error) {
@@ -822,6 +840,25 @@ export default function Page() {
       if (era === generation.current) setChanging(false);
     }
   }, [change, changing, installRuntime, sessionId, world, forkTick, observationTick, metrics, changeFrom, measureDisplay, registerMeasurement]);
+
+  /**
+   * Výběr, která přijatá alternativa stojí vedle originálu (P22 T10). Žádné
+   * volání serveru: obě větve už běží v prohlížeči. Starý cíl se zastaví, nový
+   * i originál se postaví na společný tik – jinak by pravý pohled nesl správnou
+   * větu a špatný svět. Server dál drží poslední přijatou revizi
+   * (`binding`, `documentRef`); tohle je volba pohledu, ne revize.
+   */
+  const showFuture = useCallback((id: number) => {
+    const next = futures.find(future => future.id === id);
+    if (next === undefined || comparison === null || next.id === comparison.id) return;
+    comparison.target.setPaused(true);
+    const tick = Math.min(next.result.observationTick, Math.max(next.result.forkTick, next.source.getSnapshot().observationTick));
+    next.source.setPaused(true); next.target.setPaused(true);
+    next.source.observeAt(tick); next.target.observeAt(tick);
+    setShownFutureId(next.id);
+    setController(viewOriginal ? next.source : next.target);
+    setWorld(viewOriginal ? next.world : next.changedWorld);
+  }, [futures, comparison, viewOriginal]);
 
   /** Zahození plánu. Sahá **jen** na panel — svět ani revize se nehnou. */
   const discard = useCallback(() => {
@@ -867,7 +904,7 @@ export default function Page() {
     setVisualWorld(null);
     setController(next); setSourceProject(project);
     setSourceGeneration(_generation);
-    setSessionId(null); setComparison(null); setViewOriginal(false); setComparisonNote(null);
+    setSessionId(null); setFutures([]); setShownFutureId(null); setViewOriginal(false); setComparisonNote(null);
     setChange(null); setChangeFrom(null); setOffer(null); setWriting(false); setSecondActMiss(null);
     setStreaming(false); setChanging(false); setFault(null); setProvenance(null);
     setStopped(null);
@@ -1011,16 +1048,18 @@ export default function Page() {
                 if (generation.current !== restoreEra || documentRef.current !== accepted) return;
                 restored = blueprintSchema.parse(restored);
                 const source = comparison.source;
+                comparison.target.setPaused(true);
                 source.observeAt(comparison.result.forkTick); source.setPaused(true);
                 binding.current = { sessionId, simulation: canonical(restored.world.sim), controller: source };
                 documentRef.current = restored.world;
-                setController(source); setWorld(comparison.changedWorld); setComparison(null); setViewOriginal(false);
+                // Server vrátil pravidla originálu, vzhled má z poslední přijaté změny.
+                setController(source); setWorld(futures[futures.length - 1]!.changedWorld); setShownFutureId(null); setViewOriginal(false);
                 setChange(null); previewBranch.current = null; setComparisonNote('Original rules restored. Try another change; your scene stays.');
               }).catch(error => { if (generation.current === restoreEra) setComparisonNote(error instanceof Error ? error.message : 'The original rules could not be restored.'); })
               .finally(() => { if (generation.current === restoreEra) setChanging(false); });
           }}
           onOriginal={() => {
-            binding.current?.controller.setPaused(true);
+            comparison.target.setPaused(true);
             setController(comparison.source);
             setWorld(comparison.world);
             setViewOriginal(true);
@@ -1030,7 +1069,7 @@ export default function Page() {
           }}
           onChanged={() => {
             comparison.source.setPaused(true);
-            setController(binding.current!.controller);
+            setController(comparison.target);
             setWorld(comparison.changedWorld);
             setViewOriginal(false);
           }} />}
@@ -1051,9 +1090,8 @@ export default function Page() {
         onFocus={comparison ? undefined : id => { setFocusId(id); setCameraReset(value => value + 1); }} />{world && !sourceProject && <p style={FACTS} data-testid="no-source-evidence">
         No source evidence is attached to this world. A prompt alone is not a citation.
       </p>}</>}
-      stage={comparison && binding.current ? <FutureViews original={comparison.world} changed={comparison.changedWorld}
-        source={comparison.source} target={binding.current.controller} forkTick={comparison.result.forkTick}
-        endTick={comparison.result.observationTick} reset={cameraReset} onPresented={presented} cutaway={cutaway} /> : <WorldstreamCanvas world={displayedWorld} controller={world?controller:null} reset={cameraReset}
+      stage={comparison ? <FutureViews futures={futures} selected={comparison} onSelect={showFuture}
+        reset={cameraReset} onPresented={presented} cutaway={cutaway} /> : <WorldstreamCanvas world={displayedWorld} controller={world?controller:null} reset={cameraReset}
         onPresented={presented} focusId={focusId} cutaway={cutaway} routeHighlight={routeHighlight}
         framing={sourceProject ? 'diagram' : 'scene'}
         sceneId={sourceProject ? (sourceProject.parent ?? sourceProject).projectRevision : sessionId} />}
