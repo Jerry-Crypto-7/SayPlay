@@ -59,7 +59,8 @@ import { sealSimHash, simHashOf, type WorldDoc } from '@/ir/worlddoc';
 import {openOrdinarySessionStore,SessionStoreError} from '@/server/session-store';
 import {createSessionPersistence} from '@/server/session-persistence';
 import {buildIntentPreview} from '@/scene/intent-preview';
-import {buildMassingPreview} from '@/scene/massing-preview';
+import {buildMassingPreview,WORD_MASSING_NOTICE} from '@/scene/massing-preview';
+import {wordMassing} from '@/scene/word-massing';
 
 // Source projects have a single authoritative snapshot, separate from the
 // legacy blueprint workflow. T9 reads this complete world/evidence pair.
@@ -1010,6 +1011,22 @@ export async function runGeneration(
     report(fault, detail);
     stored.fault = SESSION_FAULTS[fault];
     session.fail(SESSION_FAULTS[fault]);
+  }
+
+  // **Hmoty ze slov věty jdou do proudu ještě před prvním voláním modelu**
+  // (P21 T4). Plánovač odpovídá desítky vteřin a porotce do té doby neviděl
+  // nic; tohle je synchronní — žádný `await` nad ním — takže rámec stojí
+  // v logu dřív, než klient vůbec otevře proud. Nese vlastní značku
+  // (`WORD_MASSING_NOTICE`), a náhled plánovače níž ho do téhož slotu
+  // `visual.preview` **nahradí celý**: ze slov nepřežije jediná identita.
+  // `null` je věta bez známého podstatného jména; pak se nevydá nic.
+  const guessed = wordMassing(prompt, { sessionSeed: session.sessionSeed });
+  const rough = guessed === null ? null
+    : observePhase(serverPhaseObserver, 'word-massing-preview',
+      () => buildMassingPreview(guessed, { sessionSeed: session.sessionSeed, notice: WORD_MASSING_NOTICE }));
+  if (rough?.ok) {
+    stored.visualPreview = rough.preview;
+    session.events.append('visual.preview', { preview: rough.preview, attempt: 0 });
   }
 
   let plan;

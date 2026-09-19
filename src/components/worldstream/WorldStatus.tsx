@@ -1,5 +1,7 @@
 'use client';
 
+import { WORD_MASSING_NOTICE } from '@/scene/massing-preview';
+
 /**
  * Stav světa jako **jedna věta**, ne panel logů (design book §15.3, §16).
  *
@@ -43,9 +45,19 @@ export default function WorldStatus({
   detail = null,
   detailPending = false,
   intent = null,
+  wordMassing = false,
 }: {
   readonly state: WorldStatusState;
   readonly detailPending?: boolean;
+  /**
+   * Jsou bloky na plátně jen odhad ze slov věty (P21 T4)?
+   *
+   * Platí jen v `preview`: věta „Scene preview only. Its rules are not
+   * verified." by o blocích ze slovníku tvrdila víc, než je pravda — žádná
+   * pravidla ještě nikdo nepsal, plánovač nepromluvil. Místo ní stojí
+   * `WORD_MASSING_NOTICE`, tatáž věta, kterou nese sám náhled.
+   */
+  readonly wordMassing?: boolean;
   /**
    * Co planner z věty přečetl, dokud compiler ještě píše. Jen v `building`
    * a jen dokud na plátně nic není: compiler je nejdelší volání celé cesty
@@ -105,7 +117,9 @@ export default function WorldStatus({
         ? 'The validated scene is ready to use. Building its shape detail.'
         : reading !== null
           ? `Read as ${reading.setting}. Writing its geometry.`
-          : SENTENCE[state]}
+          : state === 'preview' && wordMassing
+            ? <span data-testid="word-massing-notice">{WORD_MASSING_NOTICE}</span>
+            : SENTENCE[state]}
       {reading !== null ? (
         <span data-testid="world-intent" style={DETAIL}>
           {' '}

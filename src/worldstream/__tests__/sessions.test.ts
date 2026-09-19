@@ -15,7 +15,7 @@
 
 import { readFileSync } from 'node:fs';
 
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   clearSessions,
@@ -27,12 +27,17 @@ import {
   openSession,
   QUOTA_ENGAGES_AT,
   putChange,
+  runGeneration,
   SESSION_FAULTS,
   TERMINAL_SESSION_MS,
   watchedSessionCount,
 } from '../sessions';
 import type { PendingChange } from '@/model/worldstream-refine';
+import type { PlannerEmission } from '@/model/worldstream-intent';
 import { UNIDENTIFIED_CALLER } from '@/server/rate-limit';
+import { WORD_MASSING_NOTICE, isWordMassing } from '@/scene/massing-preview';
+import { ANSWER, PLAN, grammar } from '@/app/api/worldstream/__tests__/world-fixture';
+import { initialClientState, reduceEvent } from '../reducer';
 
 /** Půlnoc, ať se v aserci pozná hodina od milisekundy. */
 const T0 = 1_760_000_000_000;
@@ -909,5 +914,91 @@ describe('doktrína u kvóty říká, čím se kvóta doopravdy klíčuje', () =
       'x-vercel-forwarded-for',
     );
     expect(blok, 'doktrína u kvóty nepodmiňuje zdroj hodnotou VERCEL=1').toContain('VERCEL=1');
+  });
+});
+
+/**
+ * **Hmoty ze slov věty stojí dřív, než plánovač odpoví — a nepřežijí ho** (P21 T4).
+ *
+ * Plánovač odpovídá desítky vteřin a do té doby porotce neviděl nic. Odhad
+ * ze slov (`wordMassing`) jde do proudu **synchronně při přijetí relace**,
+ * s vlastní hláškou `WORD_MASSING_NOTICE`. Jakmile plánovač odpoví, jeho
+ * náhled ten odhad **nahradí celý**: odhad, který by přežil, vypadá jako
+ * bohatší svět a je to lež — proto se tu pinuje, že po odpovědi plánovače
+ * nezůstane v náhledu ani jedna identita `word-`.
+ */
+describe('hmoty ze slov věty před odpovědí plánovače', () => {
+  /** Plán fixtury se `sceneSpec`, protože `readPlannerEmission` ho bez `legacyPlan` vyžaduje. */
+  function ownPlan(): PlannerEmission {
+    const provenance = { kind: 'inferred' as const, reason: 'Word massing regression fixture' };
+    return { ...structuredClone(PLAN), sceneSpec: { version: 1, clarifications: [], relations: [],
+      requirements: PLAN.objects.map((o) => ({ id: o.stableId, description: o.label, priority: 'main', polarity: 'required', count: 1, instanceIds: [o.stableId], provenance })),
+      instances: PLAN.objects.map((o) => ({ stableId: o.stableId, requirementIds: [o.stableId], role: o.role, provenance, attributes: [], orientation: { description: 'upright', provenance } })) } };
+  }
+
+  it('první náhled nese WORD_MASSING_NOTICE a aspoň jednu hmotu, ještě než plánovač promluví', async () => {
+    const stored = openSession('word-first', 4021)!;
+    let calls = 0;
+    void runGeneration(stored, 'A cabin with a table and two chairs', { grammar: grammar(),
+      emit: () => { calls++; return new Promise(() => undefined); } });
+    // Synchronně: `runGeneration` ještě nedošel k prvnímu `await`.
+    const preview = stored.visualPreview!;
+    expect(preview.validation.limitations[0]).toBe(WORD_MASSING_NOTICE);
+    expect(isWordMassing(preview)).toBe(true);
+    expect(preview.objects.length).toBeGreaterThanOrEqual(1);
+    expect(preview.objects.every((o) => o.stableId.startsWith('word-'))).toBe(true);
+    const events = stored.session.events.all();
+    expect(events.map((e) => e.type).slice(0, 2)).toEqual(['session.accepted', 'visual.preview']);
+    expect(stored.session.phase).toBe('accepted');
+    await Promise.resolve();
+    expect(calls).toBe(1);
+  });
+
+  it('náhled plánovače odhad ze slov nahradí celý — žádná identita `word-` nepřežije', async () => {
+    const stored = openSession('word-replaced', 4021)!;
+    let calls = 0, finish!: (value: unknown) => void;
+    // Věta fixtury obsahuje „mast", takže odhad ze slov a plánovač míří na
+    // tentýž objekt pod různými identitami — přesně případ, kdy by přeživší
+    // `word-mast` vedle `ironMast` zdvojil svět.
+    const pending = runGeneration(stored, PLAN.intent.setting, { grammar: grammar(), emit: async () => {
+      calls++; return calls === 1 ? ownPlan() : new Promise((resolve) => { finish = resolve; });
+    } });
+    expect(stored.visualPreview!.objects.some((o) => o.stableId === 'word-mast-1')).toBe(true);
+    await vi.waitFor(() => expect(isWordMassing(stored.visualPreview!)).toBe(false));
+    const preview = stored.visualPreview!;
+    expect(preview.objects.some((o) => o.stableId.startsWith('word-'))).toBe(false);
+    expect(preview.objects.map((o) => o.stableId)).toEqual(PLAN.objects.map((o) => o.stableId));
+    expect(preview.validation.limitations).not.toContain(WORD_MASSING_NOTICE);
+    // Rámec plánovače jde do téhož slotu `visual.preview`, takže klient nemá
+    // co slučovat — poslední rámec je celý náhled.
+    const previews = stored.session.events.all().filter((e) => e.type === 'visual.preview');
+    expect(previews).toHaveLength(2);
+    const last = (previews[1]!.payload as { preview: typeof preview }).preview;
+    expect(last.objects.some((o) => o.stableId.startsWith('word-'))).toBe(false);
+    // Klient to přečte stejně: reducer bere `visual.preview` už ve fázi
+    // `accepted` (dřív jen v `intent`) a rámec plánovače ho přepíše celý.
+    let state = initialClientState();
+    for (const event of stored.session.events.all()) {
+      const step = reduceEvent(state, event); if (!step.ok) throw new Error(step.fault); state = step.state;
+      if (event.type === 'visual.preview' && state.phase === 'accepted') expect(isWordMassing(state.visualPreview!)).toBe(true);
+    }
+    expect(state.phase).toBe('intent');
+    expect(state.visualPreview!.objects.some((o) => o.stableId.startsWith('word-'))).toBe(false);
+    finish(ANSWER); await pending;
+    expect(stored.session.phase).toBe('world'); expect(stored.visualPreview).toBeNull();
+  });
+
+  it('věta bez známého podstatného jména odhad nevydá a relace běží jako dřív', async () => {
+    const stored = openSession('word-none', 4021)!;
+    let calls = 0;
+    await runGeneration(stored, 'Something cozy.', { grammar: grammar(), emit: async () => (++calls === 1 ? ownPlan() : ANSWER) });
+    const events = stored.session.events.all();
+    const firstPreview = events.findIndex((e) => e.type === 'visual.preview');
+    const intent = events.findIndex((e) => e.type === 'intent.ready');
+    expect(intent).toBeGreaterThan(-1);
+    // Žádný náhled před `intent.ready`: nebylo z čeho hádat.
+    expect(firstPreview === -1 || firstPreview > intent).toBe(true);
+    expect(stored.session.phase).toBe('world');
+    expect(stored.blueprint).not.toBeNull();
   });
 });

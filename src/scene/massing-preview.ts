@@ -47,6 +47,16 @@ import {readSceneSpec} from './spec';
 export const MASSING_PREVIEW_NOTICE =
   'Rough massing only: one block per planned object, sized by its role and importance and placed in plan order. Nothing here is checked against the sentence — shapes, proportions, colors and spacing all change once the world is compiled.';
 
+/**
+ * Značka hmot odhadnutých **ze slov věty, bez modelu** (`word-massing.ts`, P21 T4).
+ *
+ * Táž cesta jako `MASSING_PREVIEW_NOTICE` — první řádek `limitations`, protože
+ * jen ten přežije snapshot — ale jiná věta, protože je to jiné tvrzení:
+ * plánovač ještě nepromluvil a bloky jsou slovník, ne plán. Klient podle ní
+ * ukáže vlastní hlášku (`isWordMassing()`), a náhled plánovače ji nahradí celou.
+ */
+export const WORD_MASSING_NOTICE = 'Blocks guessed from the words in your sentence. The model has not answered yet.';
+
 export interface MassOrigin {
   readonly stableId: string;
   /** Řádek `GeomProgram`, na kterém ta hmota stojí. */
@@ -96,9 +106,14 @@ function naturalSize(object: PlannedObject): {footprint: number; height: number}
   return {footprint: base.footprint * gain, height: base.height * gain};
 }
 
-export function buildMassingPreview(plan: PlannerEmission, options: {sessionSeed: number}): MassingPreviewResult {
+/**
+ * `notice` je první řádek `limitations` — výchozí je značka plánovačského
+ * hmotového náhledu, odhad ze slov posílá `WORD_MASSING_NOTICE`. Nic jiného
+ * se mezi oběma cestami neliší: geometrie je táž funkce nad jinou emisí.
+ */
+export function buildMassingPreview(plan: PlannerEmission, options: {sessionSeed: number; notice?: string}): MassingPreviewResult {
   const objects = plan.objects.slice(0, MAX_MASSES);
-  const limitations = [MASSING_PREVIEW_NOTICE];
+  const limitations = [options.notice ?? MASSING_PREVIEW_NOTICE];
   if (objects.length < plan.objects.length)
     limitations.push(`Only ${String(objects.length)} of the ${String(plan.objects.length)} planned identities fit one geometry program; the rest carry no block in this preview.`);
 
@@ -177,4 +192,9 @@ export function buildMassingPreview(plan: PlannerEmission, options: {sessionSeed
 /** Je tenhle náhled hrubý hmotový, nebo přísné rozvržení? Jediná otázka klienta. */
 export function isMassingPreview(preview: VisualPreview): boolean {
   return preview.validation.limitations[0] === MASSING_PREVIEW_NOTICE;
+}
+
+/** Jsou to hmoty ze slov věty, tedy náhled, který plánovač teprve nahradí? */
+export function isWordMassing(preview: VisualPreview): boolean {
+  return preview.validation.limitations[0] === WORD_MASSING_NOTICE;
 }

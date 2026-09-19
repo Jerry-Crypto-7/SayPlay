@@ -4,7 +4,7 @@ import {clearSessions,openSession,runGeneration} from '../sessions';
 import {GET} from '@/app/api/worldstream/sessions/[sessionId]/route';
 import type {PlannerEmission} from '@/model/worldstream-intent';
 import {buildIntentPreview} from '@/scene/intent-preview';
-import {isMassingPreview} from '@/scene/massing-preview';
+import {isMassingPreview,isWordMassing} from '@/scene/massing-preview';
 afterEach(clearSessions);
 function ownPlan():PlannerEmission {
   const provenance={kind:'inferred' as const,reason:'Explicit regression fixture'};
@@ -17,10 +17,14 @@ it('publishes own validated layout before the compiler returns, reconnects witho
   const pending=runGeneration(stored,PLAN.intent.setting,{grammar:grammar(),emit:async()=>{
     calls++;return calls===1?ownPlan():new Promise(resolve=>{finish=resolve;});
   }});
-  await vi.waitFor(()=>expect(stored.visualPreview?.stage).toBe('intent-layout'));
+  // Od P21 T4 stojí v tom slotu nejdřív hmoty ze slov věty (`stage` mají týž),
+  // takže se čeká na náhled, který napsal plánovač — ne na první náhled vůbec.
+  await vi.waitFor(()=>expect(isWordMassing(stored.visualPreview!)).toBe(false));
+  expect(stored.visualPreview?.stage).toBe('intent-layout');
   expect(calls).toBe(2);expect(stored.blueprint).toBeNull();expect(stored.sharedWorld).toBeNull();
   const events=stored.session.events.all();
-  expect(events.findIndex(e=>e.type==='intent.ready')).toBeLessThan(events.findIndex(e=>e.type==='visual.preview'));
+  // První `visual.preview` jsou hmoty ze slov (před `intent.ready`); ten plánovačský je až za ním.
+  expect(events.findIndex(e=>e.type==='intent.ready')).toBeLessThan(events.map(e=>e.type).lastIndexOf('visual.preview'));
   expect(events.some(e=>e.type==='world.ready'||e.type==='blueprint.ready')).toBe(false);
   const response=await GET(new Request('http://localhost'),{params:Promise.resolve({sessionId:'early-layout-session'})});
   const snapshot=await response.json();expect(snapshot.blueprint).toBeNull();

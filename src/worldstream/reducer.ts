@@ -286,7 +286,10 @@ function apply(state: ClientState, event: SessionEvent): ClientState {
   const phase = PHASE_OF[event.type];
   const fields = record(event.payload);
   const stableId = text(fields.stableId);
-  const preview = event.type === 'visual.preview' && state.phase === 'intent' && state.blueprint === null
+  // `accepted` je tu od P21 T4: hmoty ze slov věty přicházejí ještě před
+  // `intent.ready`, protože plánovač v tu chvíli nepromluvil. Slot je týž,
+  // takže náhled plánovače je pak prostě další rámec do téhož pole.
+  const preview = event.type === 'visual.preview' && (state.phase === 'accepted' || state.phase === 'intent') && state.blueprint === null
     ? visualPreviewSchema.safeParse(fields.preview) : null;
 
   const shapes =

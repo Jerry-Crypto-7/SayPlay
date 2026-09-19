@@ -49,6 +49,7 @@ import { createClock, pump } from '@/sim/clock';
 import type { WorldDoc } from '@/ir/worlddoc';
 import { blueprintSchema, visualPreviewSchema, type VisualPreview } from '@/worldstream/schema';
 import { visibilityReport } from '@/scene/visibility-report';
+import { isWordMassing } from '@/scene/massing-preview';
 import type { ShapeDetailAssessment } from '@/shape/detail-policy';
 import { createPipelineMetrics, type PipelineMetricsSnapshot, type PipelineRunHandle, type PipelineStageHandle,
   type PipelineProvenance } from '@/worldstream/pipeline-metrics';
@@ -195,6 +196,9 @@ export default function Page() {
   const [world, setWorld] = useState<ProxyWorld | null>(null);
   const [visualWorld,setVisualWorld]=useState<ProxyWorld|null>(null);
   const [visualStage,setVisualStage]=useState<VisualPreview['stage']>(undefined);
+  // Jsou bloky jen odhad ze slov věty (P21 T4)? Píše se spolu s `visualWorld`
+  // a čte se jen dokud `visualWorld` stojí, takže vlastní úklid nepotřebuje.
+  const [wordGuess,setWordGuess]=useState(false);
   const displayedWorld=world??visualWorld;
   // Keep the one-attempt inspection budget when the drawer closes/reopens.
   const visualRepairAttempts=useMemo(()=>new Set<string>(),[displayedWorld]);
@@ -425,7 +429,7 @@ export default function Page() {
         metrics.setRunProvenance(measured, origin);
         metrics.finishStage(requestTiming, 'completed', origin);
         const blueprintTiming = metrics.startStage(measured, 'blueprint-wait', origin);
-        let previewVersion=0;
+        let previewVersion=0,guessShown=false;
         const arrival = await firstBlueprint(handle, control.signal, (read) => {
           if (!control.signal.aborted) setIntent(read);
         }, (preview) => {
@@ -433,7 +437,7 @@ export default function Page() {
           const parsed=visualPreviewSchema.safeParse(preview),client=mesher.current;
           if(!parsed.success||!client)return;
           void buildVisualPreviewFrom(parsed.data,{mesh:order=>client.mesh(order,control.signal),quality:tier.current})
-            .then(built=>{if(!control.signal.aborted&&era===generation.current&&version===previewVersion&&built.kind==='built'){setVisualStage(parsed.data.stage);setVisualWorld(built);}})
+            .then(built=>{if(!control.signal.aborted&&era===generation.current&&version===previewVersion&&built.kind==='built'){guessShown=isWordMassing(parsed.data);setVisualStage(parsed.data.stage);setWordGuess(guessShown);setVisualWorld(built);}})
             .catch(()=>{/* The rejected simulation stays rejected if its optional visual preview also fails. */});
         });
         metrics.finishStage(blueprintTiming, 'blueprint' in arrival ? 'completed' : 'failed');
@@ -441,6 +445,9 @@ export default function Page() {
 
         if (!('blueprint' in arrival)) {
           metrics.finishRun(measured, 'failed');
+          // Bloky ze slov nesmí přežít relaci, která skončila bez plánovače:
+          // „the model has not answered yet" by nad poruchou lhalo (P21 T4).
+          if(guessShown){previewVersion++;setVisualWorld(null);}
           setFault(arrival.fault);
           return;
         }
@@ -887,10 +894,10 @@ export default function Page() {
         </>
       }
       status={<>
-        <WorldStatus state={status} detail={fault} detailPending={streaming && world !== null} intent={world === null ? intent : null} />
+        <WorldStatus state={status} detail={fault} detailPending={streaming && world !== null} intent={world === null ? intent : null} wordMassing={wordGuess} />
         {visualWorld && !world && <p style={FACTS} data-testid="visual-preview-notice" data-stage={visualStage??'compiler-visuals'}>
-          {visualStage==='intent-layout' ? 'Provisional layout from your plan. Placement and unfinished forms may change.' : 'Noninteractive scene preview.'}
-          {' '}{stopped ? 'Waiting stopped before an accepted world arrived.' : streaming ? visualStage==='intent-layout' ? 'Building and checking the rules.' : 'Checking a repair to the rules.' : 'The rules did not pass verification.'}
+          {wordGuess ? 'Provisional blocks from the words alone; the plan replaces them.' : visualStage==='intent-layout' ? 'Provisional layout from your plan. Placement and unfinished forms may change.' : 'Noninteractive scene preview.'}
+          {' '}{stopped ? 'Waiting stopped before an accepted world arrived.' : streaming ? wordGuess ? 'Reading the sentence.' : visualStage==='intent-layout' ? 'Building and checking the rules.' : 'Checking a repair to the rules.' : 'The rules did not pass verification.'}
           {' '}Actions, time travel and sharing are unavailable.</p>}
         {(streaming || writing) && <button data-testid="world-cancel" disabled={changing} onClick={stopWaiting}>Stop waiting</button>}
         {stopped && <p role="status" data-testid="world-cancelled" style={FACTS}>{stopped}</p>}
