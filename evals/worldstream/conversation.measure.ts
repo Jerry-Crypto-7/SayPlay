@@ -21,16 +21,18 @@
  * ne podmínka projití.** Rozhoduje naměřené číslo; sada nad artefaktem
  * (`__tests__/conversation-report.test.ts`) hlídá jen úplnost jmenovatele.
  *
- * Jeden živý běh, `WORLDSMITH_CALL_CAP=40`, `@medium` (rozpočet v plánu P21):
+ * Od P21 T22 se každý běh dopisuje do pole `runs` vedle předchozích; první (T11,
+ * 19. 9. 2026 ráno, 1 ze 4) zůstává. Jeden živý běh, `WORLDSMITH_CALL_CAP=6`,
+ * `@medium` (rozpočet v plánu P21):
  *
  *     WORLDSMITH_BRANCH=live WORLDSMITH_MODEL_ENDPOINT=codex-cli WORLDSMITH_MODEL_KEY=local-subscription \
- *     WORLDSMITH_MODEL_PROFILE=subscription WORLDSMITH_CALL_CAP=40 WORLDSMITH_USD_PER_MTOK_OUT=10 \
+ *     WORLDSMITH_MODEL_PROFILE=subscription WORLDSMITH_CALL_CAP=6 WORLDSMITH_USD_PER_MTOK_OUT=10 \
  *     WORLDSMITH_SPEND_CAP_USD=1000 WORLDSMITH_UPSTREAM_TIMEOUT_MS=600000 VERCEL_ENV=production \
  *     WORLDSMITH_MODEL=gpt-6-astra WORLDSMITH_MODEL_EFFORT=medium \
  *     npx vitest run --config vitest.measure.mts evals/worldstream/conversation.measure.ts
  */
 
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
 
@@ -187,16 +189,14 @@ describe('A10 live: sentence → first accepted piece', () => {
     }
 
     const accepted = cases.filter((entry) => entry.verdict === 'ACCEPTED').length;
-    const report = {
+    const run = {
       measuredAt: new Date().toISOString(),
-      plan: 'P21 T11 – A10 gate, one live run',
+      plan: 'P21 T22 – A10 gate after T20, one live run',
       model: `${process.env.WORLDSMITH_MODEL ?? 'gpt-6-astra'}@${process.env.WORLDSMITH_MODEL_EFFORT ?? 'medium'}#cli`,
       effort: process.env.WORLDSMITH_MODEL_EFFORT ?? 'medium',
       callCap: Number(process.env.WORLDSMITH_CALL_CAP ?? NaN),
       answersDir: 'evals/worldstream/conversation-answers (gitignored; one <id>.json per case that reached the model)',
-      world: { id: WORLD_ID, prompt: world.prompt, objects: blueprint.objects.map((object) => object.stableId) },
-      corpus: { total: TEN.length, measured: EVERY_THIRD.length, selection: 'every third of ten, first three (index 0, 3, 6)', remaining: TEN.filter((_, index) => index % 3 !== 0) },
-      target: { ...TARGET, note: 'research targets, stated as a goal – the measured number decides, not this line' },
+      corpus: { total: TEN.length, measured: EVERY_THIRD.length, selection: 'every third of ten, first three (index 0, 3, 6)', remaining: TEN.filter((sentence) => !EVERY_THIRD.includes(sentence)) },
       summary: {
         total: cases.length,
         accepted,
@@ -206,8 +206,17 @@ describe('A10 live: sentence → first accepted piece', () => {
       },
       cases: cases.map((entry) => ({ ...entry, ms: Math.round(entry.ms) })),
     };
+    // Běhy se skládají vedle sebe: druhý, který by první (1 ze 4) přepsal, by
+    // vypadal jako zlepšení, i kdyby žádné nebylo (P21 T22).
+    const previous = JSON.parse(readFileSync(OUT_FILE, 'utf8')) as { runs?: unknown[] };
+    const report = {
+      plan: 'P21 – A10 gate, live runs side by side (T11, T22)',
+      world: { id: WORLD_ID, prompt: world.prompt, objects: blueprint.objects.map((object) => object.stableId) },
+      target: { ...TARGET, note: 'research targets, stated as a goal – the measured number decides, not this line' },
+      runs: [...(previous.runs ?? []), run],
+    };
     writeFileSync(OUT_FILE, `${JSON.stringify(report, null, 2)}\n`);
-    process.stdout.write(`\naccepted ${String(accepted)}/${String(cases.length)}, median ${String(report.summary.medianMs)} ms\n`);
+    process.stdout.write(`\naccepted ${String(accepted)}/${String(cases.length)}, median ${String(run.summary.medianMs)} ms\n`);
 
     expect(cases).toHaveLength(EVERY_THIRD.length);
   }, 30 * 60_000);
