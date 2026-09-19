@@ -62,7 +62,7 @@ import {
 } from './worldstream-compiler';
 import type { Grammar, UpstreamRequest } from './prompt';
 import type { PlannerEmission } from './worldstream-intent';
-import { EMISSION_CHUNKS, mergeEmissionChunks, type ChunkAnswer } from './emission-merge';
+import { emissionChunks, mergeEmissionChunks, type ChunkAnswer } from './emission-merge';
 
 /** Přijatý blueprint i s verdiktem, osekáními a opravami. */
 export type CompiledBlueprint = Extract<CompilerResult, { readonly ok: true }>;
@@ -456,8 +456,11 @@ export interface RepairInput {
    * Kusy letí **souběžně** (`emitChunks`): každý `emit` je u stropu vlastní
    * rezervace, takže tři kusy jsou tři započtená volání a odmítnutý kus nechá
    * relaci v pojmenovaném stavu, ne v půlce světa (`chunked-live.test.ts`).
+   *
+   * `true` i `3` jsou tři kusy; `2` je dvoukusý řez `scene` + `rules`
+   * (P22 T16, měřený proti jedinému volání, ne zapnutý produktu).
    */
-  readonly chunked?: boolean;
+  readonly chunked?: boolean | 2 | 3;
 }
 
 /**
@@ -487,7 +490,7 @@ export interface RepairInput {
  */
 async function emitChunks(input: RepairInput, clock: () => number): Promise<BlueprintOutcome | null> {
   const startedAt = clock();
-  const requests = EMISSION_CHUNKS.map((chunk) => ({ chunk, request: buildCompilerRequest(input.plan, input.grammar, chunk) }));
+  const requests = emissionChunks(input.chunked === 2 ? 2 : 3).map((chunk) => ({ chunk, request: buildCompilerRequest(input.plan, input.grammar, chunk) }));
   const lastRequest = requests[requests.length - 1].request;
 
   const settled = await Promise.allSettled(
@@ -558,7 +561,7 @@ export async function compileWithRepair(input: RepairInput): Promise<BlueprintOu
   const first = buildCompilerRequest(input.plan, input.grammar);
   const clock = input.now ?? Date.now;
 
-  if (input.chunked === true) {
+  if (input.chunked !== undefined && input.chunked !== false) {
     const chunked = await emitChunks(input, clock);
     // Slepení selhalo → je to vada odpovědi jako každá jiná a jde do téhož
     // tvaru výsledku. Nepřepisuje se na jediné volání potichu: to by zakrylo,

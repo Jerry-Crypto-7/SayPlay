@@ -61,7 +61,7 @@ import { buildIntentRequest, PLANNER_ANSWER_FIELDS, type PlannerEmission } from 
 import { EXAMPLE_PLAN } from './worldstream-examples';
 import { ADDITION_ANSWER_FIELDS, REFINE_ANSWER_FIELDS } from './worldstream-refine';
 import { shapeVocabulary } from './shape-vocabulary';
-import { CHUNK_FIELDS, EMISSION_CHUNKS, type ChunkName } from './emission-merge';
+import { CHUNK_FIELDS, EMISSION_CHUNKS, EMISSION_CHUNKS_TWO, type ChunkName } from './emission-merge';
 import { WORLDSTREAM_ASSETS } from '@/assets/catalog';
 import { buildAssetBrief } from './worldstream-asset-brief';
 
@@ -344,8 +344,10 @@ function chunkClaim(chunk: ChunkName): string {
 }
 
 function chunkNarrowing(chunk: ChunkName): string[] {
-  const theirs = EMISSION_CHUNKS.filter((name) => name !== chunk)
-    .flatMap((name) => CHUNK_FIELDS[name])
+  // Cizí pole jsou všechna, která tenhle kus nepíše — u dvoukusého řezu tedy
+  // `scene` vidí jen pole `rules` a naopak, u tříkusého dvě zbylé sady.
+  const theirs = EMISSION_CHUNKS.flatMap((name) => CHUNK_FIELDS[name])
+    .filter((field) => !CHUNK_FIELDS[chunk].includes(field))
     .join(', ');
 
   return [
@@ -397,7 +399,7 @@ export function requestStage(request: UpstreamRequest): 'planner' | 'compiler' |
  * z archivu, kde žádný volající není.
  */
 export function requestChunk(request: UpstreamRequest): ChunkName | null {
-  return EMISSION_CHUNKS.find((chunk) => request.system.includes(chunkClaim(chunk))) ?? null;
+  return [...EMISSION_CHUNKS_TWO, ...EMISSION_CHUNKS].find((chunk) => request.system.includes(chunkClaim(chunk))) ?? null;
 }
 
 /**

@@ -22,6 +22,7 @@ import fixture from '../__fixtures__/archived-compiler-answer.json';
 import {
   CHUNK_FIELDS,
   EMISSION_CHUNKS,
+  EMISSION_CHUNKS_TWO,
   mergeEmissionChunks,
   splitAnswerIntoChunks,
   type ChunkAnswer,
@@ -30,7 +31,7 @@ import { type Grammar } from '../prompt';
 import { ANSWER_FIELDS, compileBlueprint } from '../worldstream-compiler';
 import { compileWithRepair } from '../worldstream-repair';
 import { readPlannerEmission } from '../worldstream-intent';
-import { buildCompilerRequest, requestStage } from '../worldstream-prompt';
+import { buildCompilerRequest, requestChunk, requestStage } from '../worldstream-prompt';
 
 const ANSWER = fixture.answer as Record<string, unknown>;
 const OPTIONS = { sessionSeed: 4021, upstream: { model: 'archived', system: 'system', user: 'user' } };
@@ -217,6 +218,34 @@ describe('požadavek na jeden kus', () => {
     });
 
     expect(asked).toEqual([...EMISSION_CHUNKS]);
+    expect(outcome.kind, outcome.kind === 'compiled' ? '' : JSON.stringify(outcome).slice(0, 300)).toBe('compiled');
+    if (outcome.kind !== 'compiled') return;
+
+    const reference = compileBlueprint(ANSWER, plan(), OPTIONS);
+    expect(reference.ok).toBe(true);
+    if (!reference.ok) return;
+    expect(JSON.stringify(outcome.result.value)).toBe(JSON.stringify(reference.value));
+  });
+
+  it('dva kusy (scene + rules) dají týž blueprint jako tři i jako jedno volání (P22 T16)', async () => {
+    const asked: string[] = [];
+    const outcome = await compileWithRepair({
+      plan: plan(),
+      grammar: grammar(),
+      sessionSeed: 4021,
+      chunked: 2,
+      now: () => 0,
+      emit: (request) => {
+        const chunk = requestChunk(request);
+        expect(chunk, 'požadavek se nehlásí k žádnému kusu').not.toBeNull();
+        asked.push(chunk!);
+        const part: Record<string, unknown> = {};
+        for (const field of CHUNK_FIELDS[chunk!]) if (field in ANSWER) part[field] = (ANSWER as Record<string, unknown>)[field];
+        return Promise.resolve(part);
+      },
+    });
+
+    expect(asked).toEqual([...EMISSION_CHUNKS_TWO]);
     expect(outcome.kind, outcome.kind === 'compiled' ? '' : JSON.stringify(outcome).slice(0, 300)).toBe('compiled');
     if (outcome.kind !== 'compiled') return;
 

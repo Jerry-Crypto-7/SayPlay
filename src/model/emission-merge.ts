@@ -35,10 +35,26 @@
  * ne posledním zápisem.
  */
 
-/** Kusy, na které se kompilátorový požadavek řeže. Pořadí je pořadí slepení. */
+/** Kusy, na které se kompilátorový požadavek řeže na tři. Pořadí je pořadí slepení. */
 export const EMISSION_CHUNKS = ['architecture', 'objects', 'rules'] as const;
 
-export type ChunkName = (typeof EMISSION_CHUNKS)[number];
+/**
+ * Řez na **dva** kusy (P22 T16): `scene` píše všechno prostorové naráz —
+ * architekturu i objekty — takže jediná vazba přes hranici kusu
+ * (`placements → geometry.nodes[i]`) zůstává uvnitř jednoho požadavku;
+ * `rules` je týž kus jako u tří. Který řez se použije, rozhoduje volající
+ * (`compileWithRepair.chunked`), ne tenhle modul.
+ */
+export const EMISSION_CHUNKS_TWO = ['scene', 'rules'] as const;
+
+export type ChunkName = (typeof EMISSION_CHUNKS)[number] | (typeof EMISSION_CHUNKS_TWO)[number];
+
+/** Všechny kusy, které umí požadavek nést. `scene` napřed, aby slepení dvou kusů drželo pořadí polí jako u tří. */
+const ALL_CHUNKS: readonly ChunkName[] = ['scene', ...EMISSION_CHUNKS];
+
+export function emissionChunks(pieces: 2 | 3): readonly ChunkName[] {
+  return pieces === 2 ? EMISSION_CHUNKS_TWO : EMISSION_CHUNKS;
+}
 
 /** Která top-level pole smí který kus napsat. Nic mimo tenhle seznam neprojde. */
 export const CHUNK_FIELDS: Readonly<Record<ChunkName, readonly string[]>> = {
@@ -46,6 +62,8 @@ export const CHUNK_FIELDS: Readonly<Record<ChunkName, readonly string[]>> = {
   objects: ['shapes', 'placements'],
   // Vazby vzhledu čtou proměnné ze `world.sim`, takže je píše tentýž kus.
   rules: ['world', 'lookBindings'],
+  // Dvoukusý řez: pořadí polí je totéž jako architecture + objects za sebou.
+  scene: ['geometry', 'architecture', 'shapes', 'placements'],
 };
 
 export type MergeRejection =
@@ -106,7 +124,7 @@ export function mergeEmissionChunks(chunks: readonly ChunkAnswer[]): MergeResult
   const answer: Record<string, unknown> = {};
   const writtenBy = new Map<string, ChunkName>();
 
-  for (const name of EMISSION_CHUNKS) {
+  for (const name of ALL_CHUNKS) {
     const arrived = chunks.filter((entry) => entry.chunk === name);
     if (arrived.length === 0) continue;
 

@@ -17,7 +17,7 @@
 import { describe, expect, it } from 'vitest';
 
 import fixture from '../../model/__fixtures__/archived-compiler-answer.json';
-import { EMISSION_CHUNKS } from '../../model/emission-merge';
+import { EMISSION_CHUNKS, EMISSION_CHUNKS_TWO } from '../../model/emission-merge';
 import { buildIntentRequest, readPlannerEmission } from '../../model/worldstream-intent';
 import { buildCompilerRequest, requestChunk, requestStage } from '../../model/worldstream-prompt';
 import { REFINE_ANSWER_FIELDS } from '../../model/worldstream-refine';
@@ -70,7 +70,7 @@ function ok() {
 
 describe('kus se pozná zpátky z požadavku', () => {
   it('každý kus se ze svého požadavku přečte, a nikdo jiný', () => {
-    for (const chunk of EMISSION_CHUNKS) expect(requestChunk(buildCompilerRequest(plan(), GRAMMAR, chunk))).toBe(chunk);
+    for (const chunk of [...EMISSION_CHUNKS, ...EMISSION_CHUNKS_TWO]) expect(requestChunk(buildCompilerRequest(plan(), GRAMMAR, chunk))).toBe(chunk);
   });
 
   it('celý požadavek ani plánovač žádný kus nenesou', () => {
@@ -109,9 +109,12 @@ describe('úsilí podle kusu', () => {
     expect(effortForCall(callFor('rules'), xhigh)).toBe('low');
   });
 
-  it('nastavení je na jednom místě a pokrývá všechny kusy', () => {
-    for (const chunk of EMISSION_CHUNKS) expect(CHUNK_EFFORT[chunk]).toBeDefined();
-    expect(Object.keys(CHUNK_EFFORT).sort()).toEqual([...EMISSION_CHUNKS].sort());
+  it('nastavení je na jednom místě a pokrývá všechny kusy obou řezů', () => {
+    const chunks = [...new Set([...EMISSION_CHUNKS, ...EMISSION_CHUNKS_TWO])];
+    for (const chunk of chunks) expect(CHUNK_EFFORT[chunk]).toBeDefined();
+    expect(Object.keys(CHUNK_EFFORT).sort()).toEqual(chunks.sort());
+    // Dvoukusý řez: `scene` píše geometrii i tvary, tedy 3D – jede vysoko jako architecture a objects.
+    expect(CHUNK_EFFORT.scene).toBe('high');
   });
 });
 

@@ -86,6 +86,31 @@ interface Phase5Block {
   readonly perCase: readonly Phase5Case[];
 }
 
+/**
+ * Blok P22 T16: svět na **dva** souběžné kusy (`scene` + `rules`) vedle
+ * jediného volání kompilátoru z `phase5`. Bez `calls` a `effort` by se
+ * blok tiše srovnával s během na `@high` – proto oba pin.
+ */
+interface P22Chunks2Block {
+  readonly measuredAt: string;
+  readonly plan: string;
+  readonly model: string;
+  readonly effort: string;
+  readonly cases: number;
+  readonly caseIds: readonly string[];
+  readonly chunked: number;
+  readonly pieces: readonly string[];
+  readonly callCap: number;
+  readonly calls: number;
+  readonly byStage: { readonly planner: StageStat | null; readonly compiler: { readonly n: number; readonly medianMs: number } | null };
+  readonly playableMs: Record<string, number | null>;
+  readonly baseline: { readonly phase5: { readonly compilerMedianMs: number; readonly measuredAt: string } };
+  readonly decision: { readonly chunked2Default: boolean; readonly reason: string };
+  readonly partial?: boolean;
+  readonly reason?: string;
+  readonly perCase: readonly { readonly id: string; readonly playableMs: number | null; readonly pieces: Record<string, number> | null }[];
+}
+
 interface P21Report {
   readonly measuredAt: string;
   readonly model: string;
@@ -95,6 +120,7 @@ interface P21Report {
   readonly chunked: boolean;
   readonly callCap: number;
   readonly phase5?: Phase5Block;
+  readonly p22chunks2?: P22Chunks2Block;
   readonly baseline: {
     readonly measuredAt: string;
     readonly file: string;
@@ -212,5 +238,45 @@ describe('latency-p21.json › phase5 – plánovač po štíhlém sceneSpec a n
     expect(phase5.previous.baseline13.plannerMedianMs).toBe(16696);
     expect(phase5.target).toMatchObject({ plannerMs: 30_000, answerBytes: 4_000 });
     expect(phase5.target.note).toContain('goal');
+  });
+});
+
+describe('latency-p21.json › p22chunks2 – dva kusy proti jedinému volání kompilátoru (P22 T16)', () => {
+  const block = report.p22chunks2;
+
+  it('blok existuje, nese obě věty, úsilí a počet volání do stropu 8', () => {
+    expect(block, 'p22chunks2 chybí – T16 ještě neběželo').toBeDefined();
+    if (block === undefined) return;
+    expect(block.chunked).toBe(2);
+    expect(block.pieces).toEqual(['scene', 'rules']);
+    expect(block.caseIds).toEqual(['c01', 'c16']);
+    expect(block.effort).toBe('medium');
+    expect(block.model).toContain(`@${block.effort}`);
+    expect(block.callCap).toBeLessThanOrEqual(8);
+    expect(block.calls).toBeLessThanOrEqual(8);
+    expect(Number.isFinite(block.calls)).toBe(true);
+    // Částečný běh smí mít méně vět, ale musí to říct; úplný má obě.
+    if (block.partial === true) {
+      expect(block.reason?.length ?? 0).toBeGreaterThan(0);
+      expect(block.cases).toBeLessThanOrEqual(2);
+    } else {
+      expect(block.cases).toBe(2);
+      expect(block.perCase.map((entry) => entry.id)).toEqual(block.caseIds);
+    }
+  });
+
+  it('kompilátor je součet kusů a slepení, hratelnost stojí vedle phase5 a rozhodnutí má důvod', () => {
+    if (block === undefined) return;
+    expect(block.baseline.phase5.compilerMedianMs).toBe(164270);
+    expect(block.baseline.phase5.measuredAt.startsWith('2026-09-19')).toBe(true);
+    for (const id of block.caseIds) expect(id in block.playableMs, `${id}: bez hratelnosti`).toBe(true);
+    expect(typeof block.decision.chunked2Default).toBe('boolean');
+    expect(block.decision.reason.length).toBeGreaterThan(0);
+    if (block.partial === true) expect(block.decision.chunked2Default).toBe(false);
+    for (const entry of block.perCase) {
+      if (entry.playableMs === null) continue;
+      expect(entry.pieces, `${entry.id}: hratelný svět bez kusů`).not.toBeNull();
+      expect(Object.keys(entry.pieces ?? {}).sort()).toEqual(['rules', 'scene']);
+    }
   });
 });

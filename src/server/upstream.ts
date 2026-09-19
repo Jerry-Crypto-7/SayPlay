@@ -233,6 +233,8 @@ export const CHUNK_EFFORT: Readonly<Record<ChunkName, Effort>> = {
   architecture: 'high',
   objects: 'high',
   rules: 'low',
+  // Dvoukusý řez (P22 T16): `scene` je architektura i objekty naráz, tedy 3D.
+  scene: 'high',
 };
 
 /**

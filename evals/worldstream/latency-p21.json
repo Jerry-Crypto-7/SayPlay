@@ -478,5 +478,214 @@
       }
     },
     "verdict": "planner median 59874 ms (-20 % vs the morning 75025 ms) and 5739 B (-16 % vs 6794 B); the goal (<= 30 s, <= 4000 B) is not met - the answer stays over half sceneSpec. Side finding: the single compiler call costs 164-188 s per world plus 113-195 s per repair round, so time to playable was 424763 ms on c01 and c16 never became playable (schema after 3 rounds); the chunked morning compiler was faster per world."
+  },
+  "p22chunks2": {
+    "measuredAt": "2026-09-19T20:08:26.316Z",
+    "plan": "P22 T16 – two pieces (scene + rules) against the single compiler call of phase5, one live run",
+    "model": "gpt-6-astra@medium#cli",
+    "effort": "medium",
+    "plannerEffort": "low",
+    "pieceEffort": {
+      "scene": "high",
+      "rules": "low"
+    },
+    "cases": 2,
+    "caseIds": [
+      "c01",
+      "c16"
+    ],
+    "chunked": 2,
+    "pieces": [
+      "scene",
+      "rules"
+    ],
+    "callCap": 8,
+    "calls": 6,
+    "byStage": {
+      "planner": {
+        "n": 2,
+        "medianMs": 35367,
+        "p95Ms": 63466,
+        "medianAnswerBytes": 3033,
+        "medianOutputTokens": 1023
+      },
+      "compiler": {
+        "n": 2,
+        "medianMs": 205929,
+        "wallMedianMs": 122158,
+        "note": "medianMs is the sum of the two pieces plus merge per world (what the subscription pays); wallMedianMs is first piece sent to last piece answered (what the judge waits); merge is sub-millisecond"
+      }
+    },
+    "playableMs": {
+      "c01": null,
+      "c16": null
+    },
+    "baseline": {
+      "phase5": {
+        "measuredAt": "2026-09-19T10:48:25.391Z",
+        "plannerMedianMs": 59874,
+        "compilerMedianMs": 164270,
+        "playableMs": {
+          "c01": 424611,
+          "c16": null
+        },
+        "note": "the phase5 block in this file: one compiler call per world at the environment effort, planner at low, same two sentences"
+      }
+    },
+    "decision": {
+      "chunked2Default": false,
+      "reason": "c01: two pieces playable at null ms (geom: schema:/nodes/101/children/0: Too big: expected number to be <=95) vs single call playable at 424611 ms; c16: two pieces playable at null ms (schema: blueprint:/lookBindings: Invalid input: expected array, received object) vs single call playable at null ms"
+    },
+    "perCase": [
+      {
+        "id": "c01",
+        "plannerMs": 63466,
+        "plannerOutputTokens": 1970,
+        "pieces": {
+          "rules": 59771,
+          "scene": 166298
+        },
+        "piecesSumMs": 226070,
+        "piecesLongestMs": 166298,
+        "compilerWallMs": 166298,
+        "playableMs": null,
+        "rounds": 1,
+        "authored": false,
+        "certified": false,
+        "failure": {
+          "stage": "geom",
+          "detail": "schema:/nodes/101/children/0: Too big: expected number to be <=95"
+        },
+        "phases": {
+          "massingPreviewMs": 63467,
+          "toFirstChunkMs": 123300,
+          "toFirstObjectMs": null,
+          "toPlayableMs": null,
+          "toFullDetailMs": 229828
+        },
+        "phase5": {
+          "compilerMs": 164270,
+          "playableMs": 424611
+        }
+      },
+      {
+        "id": "c16",
+        "plannerMs": 35367,
+        "plannerOutputTokens": 1023,
+        "pieces": {
+          "rules": 83771,
+          "scene": 122158
+        },
+        "piecesSumMs": 205929,
+        "piecesLongestMs": 122158,
+        "compilerWallMs": 122158,
+        "playableMs": null,
+        "rounds": 1,
+        "authored": false,
+        "certified": false,
+        "failure": {
+          "stage": "schema",
+          "detail": "blueprint:/lookBindings: Invalid input: expected array, received object"
+        },
+        "phases": {
+          "massingPreviewMs": 35367,
+          "toFirstChunkMs": 119174,
+          "toFirstObjectMs": null,
+          "toPlayableMs": null,
+          "toFullDetailMs": 157739
+        },
+        "phase5": {
+          "compilerMs": 187611,
+          "playableMs": null
+        }
+      }
+    ],
+    "calls2": [
+      {
+        "caseId": "c01",
+        "call": 1,
+        "stage": "planner",
+        "chunk": null,
+        "repair": false,
+        "reason": null,
+        "ms": 63466,
+        "endedAtMs": 63467,
+        "answerBytes": 6006,
+        "inputTokens": 16019,
+        "outputTokens": 1970,
+        "ok": true
+      },
+      {
+        "caseId": "c01",
+        "call": 3,
+        "stage": "compiler",
+        "chunk": "rules",
+        "repair": false,
+        "reason": null,
+        "ms": 59771,
+        "endedAtMs": 123300,
+        "answerBytes": 4646,
+        "inputTokens": 20401,
+        "outputTokens": 1820,
+        "ok": true
+      },
+      {
+        "caseId": "c01",
+        "call": 2,
+        "stage": "compiler",
+        "chunk": "scene",
+        "repair": false,
+        "reason": null,
+        "ms": 166298,
+        "endedAtMs": 229807,
+        "answerBytes": 6133,
+        "inputTokens": 21624,
+        "outputTokens": 5367,
+        "ok": true
+      },
+      {
+        "caseId": "c16",
+        "call": 1,
+        "stage": "planner",
+        "chunk": null,
+        "repair": false,
+        "reason": null,
+        "ms": 35367,
+        "endedAtMs": 35367,
+        "answerBytes": 3033,
+        "inputTokens": 16018,
+        "outputTokens": 1023,
+        "ok": true
+      },
+      {
+        "caseId": "c16",
+        "call": 3,
+        "stage": "compiler",
+        "chunk": "rules",
+        "repair": false,
+        "reason": null,
+        "ms": 83771,
+        "endedAtMs": 119174,
+        "answerBytes": 5797,
+        "inputTokens": 18992,
+        "outputTokens": 2647,
+        "ok": true
+      },
+      {
+        "caseId": "c16",
+        "call": 2,
+        "stage": "compiler",
+        "chunk": "scene",
+        "repair": false,
+        "reason": null,
+        "ms": 122158,
+        "endedAtMs": 157543,
+        "answerBytes": 4401,
+        "inputTokens": 19931,
+        "outputTokens": 3933,
+        "ok": true
+      }
+    ],
+    "verdict": "two pieces (scene@high + rules@low) did not reach a playable world in either sentence: c01 failed on geometry (a child index past the node table), c16 on lookBindings written as an object; the chunked path has no repair round (emitChunks returns after one attempt), while the single call got c01 playable after one repair. Wall time per world was 122-166 s (scene alone) against 164-188 s for the single call at @medium, so the split buys at most ~20 % on the wall and pays 206-226 s of model time per world; the single compiler call stays the default."
   }
 }

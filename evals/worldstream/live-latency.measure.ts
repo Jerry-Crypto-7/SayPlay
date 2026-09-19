@@ -23,6 +23,8 @@
  *   WORLDSMITH_LATENCY_CHUNKED  `1` = svět na tři souběžné kusy (P21 T5); každý kus je vlastní záznam s `chunk`, případ nese
  *                               čas celého světa i nejdelšího kusu. **Píše `latency-p21.json`, ne `latency-report.json`:**
  *                               ten nese měření ze 13. 9. (pět vět), ze kterého P21 cituje, a přepsat ho by citaci vzalo.
+ *                               `2` = svět na **dva** kusy (`scene` + `rules`, P22 T16); dopíše blok `p22chunks2` do
+ *                               `latency-p21.json` vedle `phase5` a nic v něm nepřepíše (`WORLDSMITH_CALL_CAP=8`, dvě věty).
  *                               P21 artefakt nese čtyři fáze čekání na větu a vedle nich staré číslo s datem a počtem vět
  *                               (`evals/worldstream/__tests__/latency-report.test.ts`).
  *   + totéž co `live-create` (`WORLDSMITH_MODEL_ENDPOINT`, `_KEY`, `_PROFILE`, `_CALL_CAP`, ceny, `VERCEL_ENV`)
@@ -41,7 +43,7 @@ import { describe, expect, it } from 'vitest';
 import { frozenGrammar } from '@/model/client';
 import type { UpstreamRequest } from '@/model/prompt';
 import { requestChunk, requestStage } from '@/model/worldstream-prompt';
-import { CODEX_CLI_ENDPOINT, STAGE_EFFORT, upstreamBranch, upstreamConfigFromEnv } from '@/server/upstream';
+import { CHUNK_EFFORT, CODEX_CLI_ENDPOINT, STAGE_EFFORT, upstreamBranch, upstreamConfigFromEnv } from '@/server/upstream';
 import { createMeshClient } from '@/shape/mesh-client';
 
 import { readCorpus, type CreateCase } from './lock.mjs';
@@ -50,7 +52,10 @@ import { readQualityCases } from './world-quality/corpus';
 
 const SESSION_SEED = 4021;
 const REPAIR_PREFIX = 'Your previous answer was rejected';
-const CHUNKED = process.env.WORLDSMITH_LATENCY_CHUNKED === '1';
+/** `null` = jediné volání kompilátoru; `3` = P21 T5 tři kusy; `2` = P22 T16 dva kusy. */
+const CHUNK_PIECES: 2 | 3 | null =
+  process.env.WORLDSMITH_LATENCY_CHUNKED === '1' ? 3 : process.env.WORLDSMITH_LATENCY_CHUNKED === '2' ? 2 : null;
+const CHUNKED = CHUNK_PIECES !== null;
 /**
  * P21 T21: jedno volání kompilátoru (kusy vypnuté), plánovač po štíhlém
  * `sceneSpec` (T18) a s vlastním úsilím (T19). **Dopisuje blok `phase5` do
@@ -458,7 +463,7 @@ describe('per-call latency of the live create path', () => {
             mesh: mesh.mesh,
             grammar: grammar.value,
             sessionSeed: SESSION_SEED,
-            chunked: CHUNKED,
+            chunked: CHUNK_PIECES ?? false,
           });
           outcomes.push(done);
           // Hotový svět na disk pro galerii kvality (`e2e/quality-gallery.spec.ts`):
@@ -550,6 +555,115 @@ describe('per-call latency of the live create path', () => {
           calls5: raw.map(({ model: _model, requestBytes: _bytes, ...call }) => ({ ...call, ms: Math.round(call.ms), endedAtMs: Math.round(call.endedAtMs) })),
         };
         writeFileSync(P21_FILE, `${JSON.stringify({ ...previous, phase5 }, null, 2)}\n`);
+      } else if (CHUNK_PIECES === 2 && !P20_DIR) {
+        // P22 T16: blok `p22chunks2` vedle `phase5`. Soubor se čte a dopisuje,
+        // nikdy nepřepisuje — `phase5` je baseline, proti které se tu rozhoduje.
+        const variant = variants[0];
+        const previous = JSON.parse(readFileSync(P21_FILE, 'utf8')) as {
+          phase5?: {
+            measuredAt: string;
+            byStage: { planner: { medianMs: number } | null; compiler: { medianMs: number } | null };
+            perCase: { id: string; compilerMs: number | null; phases: { toPlayableMs: number | null } }[];
+          };
+        };
+        const phase5 = previous.phase5;
+        const plannerCalls = raw.filter((c) => c.stage === 'planner' && !c.repair);
+        const plannerTokens = plannerCalls.flatMap((c) => (c.outputTokens === null ? [] : [c.outputTokens]));
+        const perCase = allOutcomes.map((outcome) => {
+          const mine = raw.filter((call) => call.caseId === outcome.id);
+          const planner = mine.find((call) => call.stage === 'planner');
+          const pieces = mine.filter((call) => call.chunk !== null && !call.repair);
+          const phases = phasesOf(outcome, mine);
+          const base = phase5?.perCase.find((entry) => entry.id === outcome.id);
+          return {
+            id: outcome.id,
+            plannerMs: planner === undefined ? null : Math.round(planner.ms),
+            plannerOutputTokens: planner?.outputTokens ?? null,
+            pieces: pieces.length === 0 ? null : Object.fromEntries(pieces.map((c) => [c.chunk ?? '?', Math.round(c.ms)])),
+            piecesSumMs: pieces.length === 0 ? null : Math.round(pieces.reduce((t, c) => t + c.ms, 0)),
+            piecesLongestMs: pieces.length === 0 ? null : Math.round(Math.max(...pieces.map((c) => c.ms))),
+            // Kusy letí naráz: stěna je od odeslání prvního po odpověď posledního; slepení je čistá funkce pod milisekundu.
+            compilerWallMs:
+              pieces.length === 0 ? null : Math.round(Math.max(...pieces.map((c) => c.endedAtMs)) - Math.min(...pieces.map((c) => c.endedAtMs - c.ms))),
+            playableMs: phases.toPlayableMs,
+            rounds: outcome.rounds,
+            authored: outcome.geometryAuthored,
+            certified: outcome.certified,
+            failure: outcome.failure,
+            phases,
+            phase5: base === undefined ? null : { compilerMs: base.compilerMs, playableMs: base.phases.toPlayableMs },
+          };
+        });
+        const sums = perCase.flatMap((entry) => (entry.piecesSumMs === null ? [] : [entry.piecesSumMs]));
+        const walls = perCase.flatMap((entry) => (entry.compilerWallMs === null ? [] : [entry.compilerWallMs]));
+        const complete = perCase.length === cases.length && raw.every((c) => c.ok);
+        // Rozhodnutí: dva kusy vyhrávají jen když **obě** věty došly k hratelnému
+        // světu a v obou byl ten svět hratelný dřív než u jediného volání (phase5).
+        const faster = perCase.map((entry) => {
+          const single = entry.phase5?.playableMs ?? null;
+          return entry.playableMs !== null && (single === null || entry.playableMs < single);
+        });
+        const chunked2Default = complete && perCase.length === 2 && faster.every(Boolean);
+        const describe = (entry: (typeof perCase)[number]) =>
+          `${entry.id}: two pieces playable at ${String(entry.playableMs)} ms (${
+            entry.failure === null ? 'ok' : `${entry.failure.stage}: ${entry.failure.detail.slice(0, 120)}`
+          }) vs single call playable at ${String(entry.phase5?.playableMs ?? null)} ms`;
+        const reason = !complete
+          ? `partial run: ${String(perCase.length)} of ${String(cases.length)} cases, ${String(raw.filter((c) => !c.ok).length)} failed call(s); ${perCase.map(describe).join('; ')}`
+          : chunked2Default
+            ? `two pieces reached a playable world faster than the single compiler call in both cases; ${perCase.map(describe).join('; ')}`
+            : perCase.map(describe).join('; ');
+        const p22chunks2 = {
+          measuredAt,
+          plan: 'P22 T16 – two pieces (scene + rules) against the single compiler call of phase5, one live run',
+          model: variant.label,
+          effort: variant.effort ?? 'medium',
+          plannerEffort: STAGE_EFFORT.planner ?? variant.effort ?? 'medium',
+          // Úsilí kusu rozhoduje `upstream.ts` z textu požadavku, ne popisek varianty.
+          pieceEffort: { scene: CHUNK_EFFORT.scene, rules: CHUNK_EFFORT.rules },
+          cases: perCase.length,
+          caseIds: perCase.map((entry) => entry.id),
+          chunked: 2,
+          pieces: ['scene', 'rules'],
+          callCap: Number(process.env.WORLDSMITH_CALL_CAP ?? NaN),
+          calls: raw.length,
+          ...(complete ? {} : { partial: true, reason }),
+          byStage: {
+            planner:
+              plannerCalls.length === 0
+                ? null
+                : {
+                    n: plannerCalls.length,
+                    medianMs: Math.round(median(plannerCalls.map((c) => c.ms))),
+                    p95Ms: Math.round(percentile95(plannerCalls.map((c) => c.ms))),
+                    medianAnswerBytes: Math.round(median(plannerCalls.map((c) => c.answerBytes))),
+                    medianOutputTokens: plannerTokens.length === 0 ? null : Math.round(median(plannerTokens)),
+                  },
+            compiler:
+              sums.length === 0
+                ? null
+                : {
+                    n: sums.length,
+                    medianMs: Math.round(median(sums)),
+                    wallMedianMs: Math.round(median(walls)),
+                    note: 'medianMs is the sum of the two pieces plus merge per world (what the subscription pays); wallMedianMs is first piece sent to last piece answered (what the judge waits); merge is sub-millisecond',
+                  },
+          },
+          playableMs: Object.fromEntries(perCase.map((entry) => [entry.id, entry.playableMs])),
+          baseline: {
+            phase5: {
+              measuredAt: phase5?.measuredAt ?? null,
+              plannerMedianMs: phase5?.byStage.planner?.medianMs ?? null,
+              compilerMedianMs: phase5?.byStage.compiler?.medianMs ?? null,
+              playableMs: Object.fromEntries((phase5?.perCase ?? []).map((entry) => [entry.id, entry.phases.toPlayableMs])),
+              note: 'the phase5 block in this file: one compiler call per world at the environment effort, planner at low, same two sentences',
+            },
+          },
+          decision: { chunked2Default, reason },
+          perCase,
+          calls2: raw.map(({ model: _model, requestBytes: _bytes, ...call }) => ({ ...call, ms: Math.round(call.ms), endedAtMs: Math.round(call.endedAtMs) })),
+        };
+        writeFileSync(P21_FILE, `${JSON.stringify({ ...previous, p22chunks2 }, null, 2)}\n`);
       } else if (CHUNKED && !P20_DIR) {
         // P21 artefakt: jedna varianta, fáze na větu, staré číslo vedle nového
         // a každé volání s kusem a spotřebou (orákulum T5).

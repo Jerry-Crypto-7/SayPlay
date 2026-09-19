@@ -420,8 +420,8 @@ export interface CaseDeps {
    * cenou placeného volání, kterou nehlídaný běh na předplatném neplatí.
    */
   readonly maxRounds?: number;
-  /** Svět na tři souběžné kusy místo jednoho volání (`compileWithRepair.chunked`). */
-  readonly chunked?: boolean;
+  /** Svět na souběžné kusy místo jednoho volání: `true`/`3` tři, `2` dva (`compileWithRepair.chunked`). */
+  readonly chunked?: boolean | 2 | 3;
 }
 
 /**
