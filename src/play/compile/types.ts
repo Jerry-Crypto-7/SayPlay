@@ -8,6 +8,7 @@
  */
 
 import type { SurfaceEventName } from '@/ir/types';
+import type { Tier } from '@/verify/tiers';
 
 import type { MechanicBinding, RoleBinding } from '../contracts';
 import type { RuntimeAction } from '../registry';
@@ -87,7 +88,7 @@ export interface SurfaceSim {
   readonly entities: Record<string, SurfaceEntity>;
   readonly state: SurfaceState;
   readonly rules: Record<string, SurfaceRule>;
-  readonly witness: { readonly tier: 'short'; readonly H_cert: number; readonly ops: readonly WitnessOp[] };
+  readonly witness: { readonly tier: Tier; readonly H_cert: number; readonly ops: readonly WitnessOp[] };
 }
 
 /** Co adaptér vidí: spec, rozvržení a překlad rolí na entity. */

@@ -13,6 +13,8 @@
  * a certifikuje ho týž `verifyWitness`.
  */
 
+import { TIERS, TIER_POLICY, type Tier } from '@/verify/tiers';
+
 import type { MechanicBinding } from '../contracts';
 import { MECHANICS, type MechanicEntry, type MechanicId, type RuntimeAction } from '../registry';
 import type { GameRole, GameSpecV1 } from '../spec';
@@ -62,6 +64,17 @@ function planWitness(sim: SurfaceSim, steps: readonly WitnessStep[]): WitnessOp[
     tick += 2;
   }
   return ops;
+}
+
+/**
+ * Nejkratší tier, jehož horizont pokryje svědka i nejdelší časovač s rezervou
+ * – výhra z `onTimerEnd` přijde tik po doběhnutí a horizont musí být ostře větší.
+ */
+function chooseTier(sim: SurfaceSim, ops: readonly WitnessOp[]): Tier {
+  const lastInput = ops.length > 0 ? (ops[ops.length - 1] as WitnessOp).tick : 0;
+  const longestTimer = Math.max(0, ...Object.values(sim.state.timers).map((timer) => timer.durationTicks));
+  const needed = Math.max(lastInput, longestTimer) + 60;
+  return TIERS.find((tier) => TIER_POLICY[tier].maxHorizonTicks >= needed) ?? 'long';
 }
 
 export function compileSim(spec: GameSpecV1, seed: number, adapters: AdapterTable = ADAPTERS): SimCompileResult {
@@ -124,6 +137,8 @@ export function compileSim(spec: GameSpecV1, seed: number, adapters: AdapterTabl
   }
 
   const state = { ...sim.state, slots, ...(agents.length > 0 ? { agents } : {}) };
-  const witness = { ...sim.witness, ops: planWitness(sim, steps) };
+  const ops = planWitness(sim, steps);
+  const tier = chooseTier({ ...sim, state }, ops);
+  const witness = { tier, H_cert: TIER_POLICY[tier].maxHorizonTicks, ops };
   return { ok: true, value: { sim: { ...sim, state, witness }, layout, mechanics, roles } };
 }

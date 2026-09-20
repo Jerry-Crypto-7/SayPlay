@@ -7,24 +7,28 @@
 import type { MechanicId } from '../../registry';
 import type { MechanicAdapter } from '../types';
 import { collectible } from './collectible';
+import { counter } from './counter';
+import { hazardZone } from './hazard-zone';
+import { health } from './health';
+import { timer } from './timer';
 import { zoneTrigger } from './zone-trigger';
 
 export const ADAPTERS: Readonly<Record<MechanicId, MechanicAdapter<never> | null>> = {
   collectible,
-  counter: null,
-  timer: null,
+  counter,
+  timer,
   zone_trigger: zoneTrigger,
   checkpoint: null,
   lock_key: null,
   switch: null,
-  hazard_zone: null,
+  hazard_zone: hazardZone,
   chaser: null,
   patrol: null,
   carry: null,
   stun: null,
   spawn_wave: null,
   property_transform: null,
-  health: null,
+  health,
   defeat: null,
 };
 

@@ -11,14 +11,14 @@
  * všechny instance jedné role a `countInZone {tag}` počítá touž skupinu.
  */
 
+import { TIER_POLICY } from '@/verify/tiers';
+
 import type { RoleBinding } from '../contracts';
 import type { GameRole, GameSpecV1 } from '../spec';
 import { type Layout, ZONE_KINDS, roleInstanceId } from './layout';
 import type { SurfaceEntity, SurfaceSim } from './types';
 
 export const PLAYER_SOCKET = 'spawn';
-/** Krátký tier a jeho strop – hry na 30–180 s hrané svědkem se vejdou. */
-export const WITNESS_HORIZON = 600;
 
 /** Výchozí stav entity podle druhu role; adaptéry stavy přepínají `setState`. */
 const INITIAL_STATE: Readonly<Record<GameRole['kind'], string>> = {
@@ -78,7 +78,8 @@ export function baseSim(spec: GameSpecV1, layout: Layout): { sim: SurfaceSim; ro
     entities,
     state: { counters: {}, flags: {}, timers: {}, zones, slots: 0, pool: {} },
     rules: {},
-    witness: { tier: 'short', H_cert: WITNESS_HORIZON, ops: [] },
+    // Tier a horizont dosadí `compileSim` až podle časovačů a délky svědka.
+    witness: { tier: 'short', H_cert: TIER_POLICY.short.maxHorizonTicks, ops: [] },
   };
   return { sim, roles, player };
 }
