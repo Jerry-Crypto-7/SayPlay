@@ -1,0 +1,51 @@
+{
+  "schema": "gamespec.v1",
+  "title": "Ghost Cat Library",
+  "archetype": "chase_escape",
+  "targetDurationSec": 75,
+  "theme": {
+    "setting": "haunted library after closing",
+    "mood": "spooky"
+  },
+  "objective": {
+    "kind": "reach",
+    "description": "Reach the front door before the ghost cat catches you.",
+    "role": "frontdoor"
+  },
+  "mechanics": [
+    {
+      "id": "chaser",
+      "params": {
+        "role": "ghostcat",
+        "speed": "normal",
+        "catchEffect": "lose"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "frontdoor",
+        "when": "enter",
+        "effect": "win"
+      }
+    },
+    {
+      "id": "stun",
+      "params": {
+        "targetRole": "ghostcat",
+        "seconds": 3,
+        "uses": 2
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "library mouse",
+      "count": 1
+    },
+    {
+      "id": "ghostcat",
+      "kind": "chaser",
+      "label": "ghos

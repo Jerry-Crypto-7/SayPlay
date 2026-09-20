@@ -1,0 +1,25 @@
+{
+  "schema": "gamespec.v1",
+  "title": "Coin Hatch",
+  "archetype": "collect_exit",
+  "targetDurationSec": 90,
+  "theme": { "setting": "pirate cave lit by lanterns", "mood": "adventurous" },
+  "objective": { "kind": "collect", "description": "Gather eight lost coins, then climb out through the hatch.", "count": 8, "role": "coin" },
+  "mechanics": [
+    { "id": "collectible", "params": { "role": "coin", "count": 8, "counter": "coins" } },
+    { "id": "zone_trigger", "params": { "role": "hatch", "when": "enter", "effect": "win" } }
+  ],
+  "roles": [
+    { "id": "player", "kind": "player", "label": "young pirate", "count": 1 },
+    { "id": "coin", "kind": "collectible", "label": "lost gold coin", "count": 8 },
+    { "id": "hatch", "kind": "exit", "label": "wooden hatch", "count": 1 },
+    { "id": "barrel", "kind": "prop", "label": "rum barrel", "count": 3 }
+  ],
+  "tutorial": { "goalLine": "Gather 8 coins, then leave through the hatch.", "controlsHint": "Tap a coin to walk there, tap again to pick it up." },
+  "verification": [
+    { "id": "eighth_coin_counts", "kind": "keypoint", "mechanic": "collectible", "setup": { "counters": { "coins": 7 } }, "actions": [{ "actionId": "pickup", "target": "coin" }], "assert": { "counters": { "coins": 8 }, "firedMechanics": ["collectible"] } },
+    { "id": "hatch_wins_when_done", "kind": "keypoint", "mechanic": "zone_trigger", "setup": { "counters": { "coins": 8 }, "placeAt": { "player": "hatch" } }, "ticks": 5, "assert": { "runState": "won" } },
+    { "id": "winnable", "kind": "reachability", "assert": { "runState": "won" } }
+  ],
+  "budgets": { "maxEntities": 40, "maxRules": 120, "maxTriangles": 200000 }
+}
