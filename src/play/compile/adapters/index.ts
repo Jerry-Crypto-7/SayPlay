@@ -6,6 +6,7 @@
 
 import type { MechanicId } from '../../registry';
 import type { MechanicAdapter } from '../types';
+import { carry } from './carry';
 import { chaser } from './chaser';
 import { checkpoint } from './checkpoint';
 import { collectible } from './collectible';
@@ -15,6 +16,8 @@ import { hazardZone } from './hazard-zone';
 import { health } from './health';
 import { lockKey } from './lock-key';
 import { patrol } from './patrol';
+import { propertyTransform } from './property-transform';
+import { spawnWave } from './spawn-wave';
 import { stun } from './stun';
 import { switchAdapter } from './switch';
 import { timer } from './timer';
@@ -31,10 +34,10 @@ export const ADAPTERS: Readonly<Record<MechanicId, MechanicAdapter<never> | null
   hazard_zone: hazardZone,
   chaser,
   patrol,
-  carry: null,
+  carry,
   stun,
-  spawn_wave: null,
-  property_transform: null,
+  spawn_wave: spawnWave,
+  property_transform: propertyTransform,
   health,
   defeat,
 };

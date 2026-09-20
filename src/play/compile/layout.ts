@@ -65,9 +65,14 @@ const key = ([x, y]: Cell): string => `${x},${y}`;
 const manhattan = ([ax, ay]: Cell, [bx, by]: Cell): number => Math.abs(ax - bx) + Math.abs(ay - by);
 const clamp = (value: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, value));
 
-/** Hráč první, cíle hned po něm (potřebují volné vzdálené buňky), zbytek v pořadí specu. */
+/**
+ * Hráč první, cíle hned po něm (potřebují volné vzdálené buňky), hazardy
+ * poslední (uhýbají trase svědka, která stojí až na cílech a checkpointech),
+ * zbytek v pořadí specu.
+ */
 function expandInstances(spec: GameSpecV1): Instance[] {
-  const rank = (role: GameRole): number => (role.kind === 'player' ? 0 : GOAL_KINDS.includes(role.kind) ? 1 : 2);
+  const rank = (role: GameRole): number =>
+    role.kind === 'player' ? 0 : GOAL_KINDS.includes(role.kind) ? 1 : role.kind === 'hazard' ? 3 : 2;
   const instances: Instance[] = [];
   for (const role of [...spec.roles].sort((a, b) => rank(a) - rank(b))) {
     for (let i = 0; i < role.count; i += 1) instances.push({ id: roleInstanceId(role, i), role });
@@ -158,6 +163,12 @@ function movePath(from: Cell, to: Cell): Cell[] {
   return cells;
 }
 
+/** Buňka prvního cíle, konec trasy svědka; `null` bez cíle (přežití, souboj). */
+function firstGoal(instances: readonly Instance[], cells: ReadonlyMap<string, Cell>): Cell | null {
+  const goal = instances.find((instance) => GOAL_KINDS.includes(instance.role.kind));
+  return goal === undefined ? null : (cells.get(goal.id) as Cell);
+}
+
 function tryPlace(
   instances: readonly Instance[],
   width: number,
@@ -184,24 +195,54 @@ function tryPlace(
   }
 
   const goalPaths = new Set<string>();
+  // Trasa svědka: spawn → checkpointy v pořadí instancí → první cíl. Checkpoint
+  // se klade tak, aby jeho úsek nevedl přes cíl (svědek by vyhrál dřív, než
+  // dohraje kroky); hazard na trase by svědka zabil, i když pulzuje. Přímou
+  // čáru spawn → cíl mimo trasu hazard krýt smí – právě tam hra „přejdi lávu
+  // po kamenech“ vzniká.
+  const goalCells = new Set<string>();
+  const witnessRoute = new Set<string>([key(spawn)]);
+  let routeEnd = spawn;
+  const extendRoute = (to: Cell): void => {
+    for (const cell of movePath(routeEnd, to)) witnessRoute.add(key(cell));
+    routeEnd = to;
+  };
+  const crossesGoal = (from: Cell, to: Cell): boolean => movePath(from, to).slice(0, -1).some((cell) => goalCells.has(key(cell)));
+
   for (const instance of instances.slice(1)) {
-    const isGoal = GOAL_KINDS.includes(instance.role.kind);
-    const offPath = instance.role.kind === 'chaser';
+    const kind = instance.role.kind;
+    const isGoal = GOAL_KINDS.includes(kind);
+    const isHazard = kind === 'hazard';
+    const isCheckpoint = kind === 'checkpoint';
+    const offPath = kind === 'chaser';
+    // Hazardy jsou poslední v pořadí; trasa je hotová, jakmile první z nich přijde na řadu.
+    if (isHazard) {
+      const goal = firstGoal(instances, cells);
+      if (goal !== null && routeEnd !== goal) extendRoute(goal);
+    }
     const candidates = freeCells(
       width,
       height,
       occupied,
-      (cell) => (!isGoal || manhattan(cell, spawn) >= minGoal) && (!offPath || !goalPaths.has(key(cell))),
+      (cell) =>
+        (!isGoal || manhattan(cell, spawn) >= minGoal) &&
+        (!offPath || !goalPaths.has(key(cell))) &&
+        (!isCheckpoint || !crossesGoal(routeEnd, cell)) &&
+        (!isHazard || !witnessRoute.has(key(cell))),
     );
     if (candidates.length === 0) return `no free cell for ${instance.id}`;
     const anchor = rng.pick(candidates);
     cells.set(instance.id, anchor);
     occupied.add(key(anchor));
     if (isGoal) for (const cell of movePath(spawn, anchor)) goalPaths.add(key(cell));
-    if (ZONE_KINDS.includes(instance.role.kind)) {
-      const rect = chooseZone(anchor, width, height, occupied, rng);
+    if (isCheckpoint) extendRoute(anchor);
+    if (ZONE_KINDS.includes(kind)) {
+      const rect = chooseZone(anchor, width, height, isHazard ? new Set([...occupied, ...witnessRoute]) : occupied, rng);
       zones[instance.id] = rect;
       for (const cell of rectCells(rect)) occupied.add(key(cell));
+      if (isGoal) for (const cell of rectCells(rect)) goalCells.add(key(cell));
+    } else if (isGoal) {
+      goalCells.add(key(anchor));
     }
   }
 
