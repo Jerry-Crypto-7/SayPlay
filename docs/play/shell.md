@@ -21,7 +21,8 @@ Pořadí bran (odmítnutí v kterémkoli kroku = do úložiště nešel ani bajt
 | Krok | Kód | Stav |
 |---|---|---|
 | vypínač `all` / `sessions` | `DISABLED` | 503 |
-| strop frekvence (dveře `play`, 50 / 10 s na volajícího) | `TOO_MANY_REQUESTS` / `SERVER_AT_CAPACITY` | 429 + `retry-after` |
+| identita za proxy nastavená a neověřená | `OWNER_IDENTITY_REQUIRED` / `OWNER_IDENTITY_UNAVAILABLE` | 403 / 503 |
+| strop frekvence (dveře `play`, 50 / 10 s na volajícího, klíč z důvěryhodného konce – `x-vercel-forwarded-for`, ne `x-forwarded-for`) | `TOO_MANY_REQUESTS` / `SERVER_AT_CAPACITY` | 429 + `retry-after` |
 | tělo nad 64 kB nebo věta nad 500 znaků | `BODY_TOO_LARGE` | 413 |
 | tělo není JSON, cizí pole, obojí / ani jedno, špatný `seed` | `BAD_REQUEST` | 400 |
 | `parentId` neexistuje nebo nemá tvar id | `UNKNOWN_PARENT` | 404 |
@@ -35,10 +36,12 @@ podruhé **200** téhož tvaru (`versionId` je hash obsahu – čte se dřív, n
 
 ### `GET /api/play/games/:id` – čtení
 
-`id` musí odpovídat `/^[a-f0-9]{8,64}$/`; jinak i pro neznámé id **404** `NOT_FOUND` –
+Tytéž brány jako u zápisu (vypínač čte páku `snapshots`, kterou vypne jedině `all`;
+strop frekvence sdílí dveře `play`). `id` musí odpovídat `/^[a-f0-9]{8,64}$/`; jinak i pro neznámé id **404** `NOT_FOUND` –
 táž odpověď, ať se z rozdílu nedá nic vyčíst. **200**
 `{ version, spec, blueprint, report, children: string[], lineage: GameVersion[] }`
-(`lineage` od kořene k listu, nejvýš 32). `cache-control: public, max-age=0, s-maxage=60`
+(`lineage` od kořene k listu, nejvýš 32 nejnovějších – uložený při publikaci, ne počítaný
+chůzí po rodičích; jeden `GET` = tři příkazy úložiště). `cache-control: public, max-age=0, s-maxage=60`
 – verze je neměnná, `children` může být na hraně o minutu pozadu.
 
 Velikost odpovědi nad fixturovými světy: 5–8 kB blueprintu (změřeno nad
@@ -61,7 +64,8 @@ jiný label a povaha nepřítele, bez nepřítele `harder`; `reskin` – jiné `
 `sealVersion` (`src/play/version/version.ts`): `versionId = gameVersionId(specHash, worldHash,
 seed, schemaVersion, compilerVersion, runtimeVersion, parentId)`; titul a `createdAt` do hashe
 nejdou. `VersionStore` (`store.ts`): paměť procesu, nebo Upstash REST z téhož obchodu jako
-kniha stropu (`sharedStoreFromEnv`, klíče `<prefix>:play:v:<id>`, `<prefix>:play:children:<parentId>`),
+kniha stropu (`sharedStoreFromEnv`, klíče `<prefix>:play:v:<id>`, `<prefix>:play:children:<parentId>`,
+`<prefix>:play:lineage:<id>`),
 `SET … NX` = zapiš jednou; čtení nikdy nevyhazuje, zápis při výpadku `VersionStoreUnavailable`.
 
 ## Testy

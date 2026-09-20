@@ -148,20 +148,32 @@ describe.each<{ name: string; make: () => { store: VersionStore; kv: Map<string,
     expect(await store.lineageOf(a.version.versionId)).toHaveLength(1);
   });
 
-  it('stops a cyclic lineage at 32 entries', async () => {
+  it('caps a long lineage at the 32 newest entries and never walks parents on read', async () => {
+    const { store } = make();
+    let parentId: string | null = null;
+    const ids: string[] = [];
+    for (let i = 1; i <= 40; i += 1) {
+      const game = publish(i, parentId);
+      await store.put(game);
+      parentId = game.version.versionId;
+      ids.push(parentId);
+    }
+    // Čtení rodokmenu je jeden záznam, ne chůze po rodičích – `get` portu se nevolá.
+    const reads = vi.spyOn(store, 'get');
+    const lineage = await store.lineageOf(ids[39]);
+    expect(lineage).toHaveLength(32);
+    expect(lineage.map((v) => v.versionId)).toEqual(ids.slice(8));
+    expect(reads).not.toHaveBeenCalled();
+  });
+
+  it('a forged parent pointing at a descendant cannot make a cycle', async () => {
     const { store } = make();
     const base = publish(1, null);
     const forge = (versionId: string, parentId: string): PublishedGame => ({ ...base, version: { ...base.version, versionId, parentId } });
     await store.put(forge('x', 'y'));
     await store.put(forge('y', 'x'));
-    // Chůze po rodičích jde přes `get` portu; víc než 40 čtení znamená, že strop nedržel.
-    const inner = store.get.bind(store);
-    const reads = vi.spyOn(store, 'get').mockImplementation((id) => {
-      if (reads.mock.calls.length > 40) throw new Error('lineage walk did not stop');
-      return inner(id);
-    });
-    await expect(store.lineageOf('x')).resolves.toHaveLength(32);
-    expect(reads.mock.calls.length).toBeLessThanOrEqual(32);
+    expect((await store.lineageOf('x')).map((v) => v.versionId)).toEqual(['x']);
+    expect((await store.lineageOf('y')).map((v) => v.versionId)).toEqual(['x', 'y']);
   });
 
   it('answers null for an unknown version', async () => {

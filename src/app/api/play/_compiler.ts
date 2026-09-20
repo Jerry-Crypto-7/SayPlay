@@ -40,12 +40,20 @@ type WorldResult =
   | { readonly ok: true; readonly blueprint: WorldstreamBlueprint }
   | { readonly ok: false; readonly issues: readonly string[] };
 
-/** Kompilace trvá 10–150 ms; každá dvojice (svět, seed) se staví jednou. */
+/**
+ * Semínko relace, které dvojník posílá kompilátoru – **jedno pro všechny hry**.
+ * Svět je uvařený a semínko volajícího by na něm nic nezměnilo; kdyby ale bylo
+ * v klíči cache, každý požadavek s jiným semínkem by přidal 50 ms CPU a ~46 kB
+ * haldy navždy (nález revize T3). Semínko hry žije ve `CompiledGame.seed` a v
+ * hashi verze, ne tady.
+ */
+const STUB_SESSION_SEED = 1;
+
+/** Kompilace trvá 10–150 ms; každý svět se staví jednou – nejvýš 8 záznamů. */
 const compiledWorlds = new Map<string, WorldResult>();
 
-function compileWorld(worldId: string, seed: number): WorldResult {
-  const key = `${worldId}:${seed}`;
-  const cached = compiledWorlds.get(key);
+function compileWorld(worldId: string): WorldResult {
+  const cached = compiledWorlds.get(worldId);
   if (cached !== undefined) return cached;
 
   const world = AUTHORED_STORE.worlds.find((entry) => entry.id === worldId)!;
@@ -55,14 +63,14 @@ function compileWorld(worldId: string, seed: number): WorldResult {
     result = { ok: false, issues: [`${worldId}: planner ${plan.reason}: ${plan.detail}`] };
   } else {
     const compiled = compileBlueprint(world.compiler, plan.value, {
-      sessionSeed: seed,
+      sessionSeed: STUB_SESSION_SEED,
       upstream: { model: 'authored', system: '', user: '' },
     });
     result = compiled.ok
       ? { ok: true, blueprint: compiled.value }
       : { ok: false, issues: [`${worldId}: ${compiled.reason}: ${compiled.detail}`, ...compiled.issues] };
   }
-  compiledWorlds.set(key, result);
+  compiledWorlds.set(worldId, result);
   return result;
 }
 
@@ -75,7 +83,7 @@ function winsAtTickOf(sim: WorldstreamBlueprint['world']['sim']): number | null 
 
 export function getCompiler(): GameCompiler {
   return (spec, seed): CompileGameResult => {
-    const world = compileWorld(WORLD_BY_ARCHETYPE[spec.archetype], seed);
+    const world = compileWorld(WORLD_BY_ARCHETYPE[spec.archetype]);
     if (!world.ok) return { ok: false, reason: 'WORLD_REJECTED', issues: world.issues };
     const { blueprint } = world;
     const value: CompiledGame = {

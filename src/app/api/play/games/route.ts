@@ -11,7 +11,7 @@ import { z } from 'zod';
 
 import { getDirector } from '../_director';
 import { fail, readJsonBody } from '../_errors';
-import { admit, isSeed, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishSpec, publishedResponse, seedFrom, store } from '../_publish';
+import { admit, isSeed, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
 
 const bodySchema = z
   .object({
@@ -45,6 +45,8 @@ export async function POST(request: Request): Promise<Response> {
     return published.ok ? publishedResponse(published.value) : published.response;
   }
 
-  const published = await publishSpec(versions, spec, seed ?? seedFrom(spec), parentId);
+  const read = readSpecOrFail(spec);
+  if (!read.ok) return read.response;
+  const published = await publishReadSpec(versions, read.value, seed ?? seedFrom(read.value), parentId);
   return published.ok ? publishedResponse(published.value) : published.response;
 }

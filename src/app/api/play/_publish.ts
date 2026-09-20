@@ -16,8 +16,9 @@ import { canonicalHash } from '@/ir/worlddoc';
 import type { CompileGameReason } from '@/play/contracts';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv } from '@/play/version';
-import { callerKey, rateLimitCode, takeRateSlot } from '@/server/rate-limit';
-import { killState } from '@/server/kill-switch';
+import { callerKey, rateLimitCode, takeRateSlot, trustedCallerKey } from '@/server/rate-limit';
+import { killState, type KillState } from '@/server/kill-switch';
+import { ownerIdentityRejection } from '@/server/owner-identity';
 
 import { getCompiler } from './_compiler';
 import { fail, VERSION_ID_PATTERN } from './_errors';
@@ -44,10 +45,20 @@ export interface Published {
 
 export type PublishResult = { readonly ok: true; readonly value: Published } | { readonly ok: false; readonly response: Response };
 
-/** Brány, které platí pro každý zápis: vypínač a strop frekvence. `null` = projdi. */
-export async function admit(request: Request): Promise<Response | null> {
-  if ((await killState(process.env)).sessions) return fail(503, 'DISABLED', 'publishing games is switched off right now');
-  const slot = takeRateSlot('play', callerKey(request));
+/**
+ * Brány, které platí pro každé dveře: vypínač, ověřená identita za proxy a strop
+ * frekvence. `null` = projdi. Zápis čte páku `sessions` (zakládání nového),
+ * čtení páku `snapshots` (vydávání hotového – vypne ji jedině `all`).
+ *
+ * **Klíč stropu je z důvěryhodného konce, ne z `x-forwarded-for`.** Tu hlavičku
+ * píše volající; s ní by si útočník kvótu resetoval každým požadavkem a naopak
+ * uměl vyčerpat cizí (nález revize T3, táž třída jako `rate-limit.ts` 6. 9.).
+ */
+export async function admit(request: Request, lever: keyof KillState = 'sessions'): Promise<Response | null> {
+  if ((await killState(process.env))[lever]) return fail(503, 'DISABLED', 'this part of PLAY is switched off right now');
+  const identity = ownerIdentityRejection(request);
+  if (identity !== null) return identity;
+  const slot = takeRateSlot('play', trustedCallerKey(request) ?? callerKey(request));
   if (!slot.allowed) {
     const code = rateLimitCode(slot);
     return fail(
@@ -77,16 +88,17 @@ const COMPILE_MESSAGE: Readonly<Record<CompileGameReason, string>> = {
   UNWINNABLE: 'no winning path was found for this game',
 };
 
-/** Posoudí spec od cizího, zkompiluje, zapečetí a zapíše. */
-export async function publishSpec(
-  versions: VersionStore,
-  input: unknown,
-  seed: number,
-  parentId: string | null,
-): Promise<PublishResult> {
+export type SpecRead = { readonly ok: true; readonly value: GameSpecV1 } | { readonly ok: false; readonly response: Response };
+
+/**
+ * Spec od cizího projde `readGameSpec` dřív, než se z něj cokoli počítá –
+ * i semínko. Hash nad surovým tělem by rekurzí spadl na hluboko vnořeném poli
+ * (nález revize T3); validovaný spec má hloubku danou schématem.
+ */
+export function readSpecOrFail(input: unknown): SpecRead {
   const read = readGameSpec(input);
   if (!read.ok) return { ok: false, response: fail(422, 'SPEC_REJECTED', `${read.reason}: ${read.issues[0] ?? 'the game description was rejected'}`) };
-  return publishReadSpec(versions, read.value, seed, parentId);
+  return { ok: true, value: read.value };
 }
 
 export async function publishReadSpec(

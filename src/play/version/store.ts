@@ -11,7 +11,13 @@
  * (`sharedStoreFromEnv`, `storePrefix`). Klíče:
  *
  * - `<prefix>:play:v:<versionId>` – JSON celé `PublishedGame`,
- * - `<prefix>:play:children:<parentId>` – JSON pole id dětí.
+ * - `<prefix>:play:children:<parentId>` – JSON pole id dětí,
+ * - `<prefix>:play:lineage:<versionId>` – JSON pole `GameVersion` od kořene k listu.
+ *
+ * **Rodokmen se píše při publikaci, ne počítá při čtení.** Chůze po `parentId`
+ * by stála jedno čtení na předka – až 32 příkazů na jeden `GET` z veřejných
+ * dveří, na témž úložišti, kde bydlí kniha stropu (nález revize T3). Takhle je
+ * publikace o dvě čtení dražší a čtení stojí jeden příkaz.
  *
  * Čtení nikdy nevyhazuje – neznámá hra i nedostupné úložiště jsou `null`.
  * Zápis při výpadku vyhazuje `VersionStoreUnavailable`, nikdy netvrdí
@@ -30,7 +36,7 @@ export interface VersionStore {
   get(versionId: string): Promise<PublishedGame | null>;
   put(game: PublishedGame): Promise<'stored' | 'exists' | 'conflict'>;
   childrenOf(versionId: string): Promise<string[]>;
-  /** Od kořene k listu, nejvýš `MAX_LINEAGE` záznamů – tvrdý strop, aby cyklus skončil. */
+  /** Od kořene k listu, nejvýš `MAX_LINEAGE` nejnovějších záznamů. */
   lineageOf(versionId: string): Promise<GameVersion[]>;
 }
 
@@ -62,6 +68,7 @@ function serialise(game: PublishedGame): string {
 function versionStoreOver(id: string, prefix: string, raw: RawStore): VersionStore {
   const versionKey = (versionId: string): string => `${prefix}:play:v:${versionId}`;
   const childrenKey = (parentId: string): string => `${prefix}:play:children:${parentId}`;
+  const lineageKey = (versionId: string): string => `${prefix}:play:lineage:${versionId}`;
 
   const store: VersionStore = {
     id,
@@ -87,6 +94,8 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore): VersionSto
           const existing = await raw.get(key);
           return existing === text ? 'exists' : 'conflict';
         }
+        const ancestors = game.version.parentId === null ? [] : await store.lineageOf(game.version.parentId);
+        await raw.set(lineageKey(game.version.versionId), JSON.stringify([...ancestors, game.version].slice(-MAX_LINEAGE)));
         if (game.version.parentId !== null) {
           // Přečti, přidej, zapiš – bez zámku. Dvě děti publikovaná v téže
           // chvíli si můžou navzájem ztratit zápis; seznam dětí je navigace,
@@ -110,15 +119,15 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore): VersionSto
       }
     },
     async lineageOf(versionId) {
-      const leafFirst: GameVersion[] = [];
-      let cursor: string | null = versionId;
-      while (cursor !== null && leafFirst.length < MAX_LINEAGE) {
-        const game = await store.get(cursor);
-        if (game === null) break;
-        leafFirst.push(game.version);
-        cursor = game.version.parentId;
+      try {
+        const text = await raw.get(lineageKey(versionId));
+        if (text !== null) return (JSON.parse(text) as GameVersion[]).slice(-MAX_LINEAGE);
+      } catch {
+        return [];
       }
-      return leafFirst.reverse();
+      // Verze bez rodokmenu: zápis rodokmenu za `SET NX` nedoběhl. Sama sobě je kořenem.
+      const game = await store.get(versionId);
+      return game === null ? [] : [game.version];
     },
   };
   return store;

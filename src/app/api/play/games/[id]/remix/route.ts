@@ -12,7 +12,7 @@ import { z } from 'zod';
 import { applyChip, CHIPS } from '@/play/remix';
 
 import { fail, notFound, readJsonBody, VERSION_ID_PATTERN } from '../../../_errors';
-import { admit, isSeed, publishSpec, publishedResponse, seedFrom, store } from '../../../_publish';
+import { admit, isSeed, publishReadSpec, publishedResponse, readSpecOrFail, seedFrom, store } from '../../../_publish';
 
 const bodySchema = z
   .object({
@@ -41,8 +41,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const parent = await versions.get(id);
   if (parent === null) return notFound();
 
-  const childSeed = seed ?? seedFrom({ parentId: id, chip: chip ?? null, spec: spec ?? null });
-  const childSpec = chip !== undefined ? applyChip(parent.spec, chip, childSeed) : spec;
-  const published = await publishSpec(versions, childSpec, childSeed, id);
+  // Čip mění spec deterministicky ze semínka, proto semínko čipu vzniká dřív než spec dítěte.
+  const chipSeed = seed ?? seedFrom({ parentId: id, chip: chip ?? null });
+  const read = readSpecOrFail(chip !== undefined ? applyChip(parent.spec, chip, chipSeed) : spec);
+  if (!read.ok) return read.response;
+  const childSeed = chip !== undefined ? chipSeed : (seed ?? seedFrom(read.value));
+  const published = await publishReadSpec(versions, read.value, childSeed, id);
   return published.ok ? publishedResponse(published.value) : published.response;
 }

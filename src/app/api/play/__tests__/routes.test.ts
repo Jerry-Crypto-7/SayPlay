@@ -56,6 +56,7 @@ beforeEach(() => {
 
 afterEach(() => {
   delete process.env.WORLDSMITH_CONTROL_FILE;
+  delete process.env.VERCEL;
   for (const path of temporary.splice(0)) rmSync(path, { recursive: true, force: true });
 });
 
@@ -236,6 +237,45 @@ describe('Oracle', () => {
     expect(down.status).toBe(503);
     expect((await down.json()).error.code).toBe('STORE_UNAVAILABLE');
     expect((await read((await publish('Collect the coins')).body.versionId)).status).toBe(200);
+  });
+
+  it('(7b) na platformě rozhoduje důvěryhodný konec, ne x-forwarded-for od volajícího', async () => {
+    process.env.VERCEL = '1';
+    let last: Response | null = null;
+    for (let i = 0; i < 51; i += 1)
+      last = await createGame(
+        post('/api/play/games', { sentence: 'Collect the coins' }, { 'x-forwarded-for': `10.0.${String(i)}.1`, 'x-vercel-forwarded-for': '203.0.113.9' }),
+      );
+    expect(last!.status).toBe(429);
+  });
+
+  it('(2b) čtení má bránu: vypínač all → 503, 51. GET → 429', async () => {
+    const created = await publish('Collect the coins');
+    resetRateWindows();
+    for (let i = 0; i < 50; i += 1) await readGame(new Request('http://play.test/x', { headers: CALLER }), params(created.body.versionId));
+    const limited = await readGame(new Request('http://play.test/x', { headers: CALLER }), params(created.body.versionId));
+    expect(limited.status).toBe(429);
+
+    const dir = mkdtempSync(join(tmpdir(), 'play-kill-'));
+    temporary.push(dir);
+    const file = join(dir, 'control.json');
+    writeFileSync(file, JSON.stringify({ off: ['all'] }));
+    process.env.WORLDSMITH_CONTROL_FILE = file;
+    resetRateWindows();
+    expect((await read(created.body.versionId)).status).toBe(503);
+  });
+
+  it('(4b) hluboko vnořený spec je 422, ne pád; semínko nemění svět', async () => {
+    // Tělo se skládá textem: `JSON.stringify` by na téže hloubce spadl dřív než dveře.
+    const response = await createGame(post('/api/play/games', `{"spec":${'['.repeat(20_000)}${']'.repeat(20_000)}}`));
+    expect(response.status).toBe(422);
+    expect((await response.json()).error.code).toBe('SPEC_REJECTED');
+
+    const one = await createGame(post('/api/play/games', { spec: collectExit, seed: 1 }));
+    const two = await createGame(post('/api/play/games', { spec: collectExit, seed: 2 }));
+    const [a, b] = [await (await read((await one.json()).versionId)).body, await (await read((await two.json()).versionId)).body];
+    expect(a.version.versionId).not.toBe(b.version.versionId);
+    expect(a.version.worldHash).toBe(b.version.worldHash);
   });
 
   it('chip mimo seznam a remix bez těla → 400', async () => {
