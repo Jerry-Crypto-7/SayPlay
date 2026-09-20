@@ -6,9 +6,13 @@
  * (`docs/play/shell.md`), zpráva je věta pro člověka a smí se měnit.
  */
 
+import { type BodyFailure, bodyRefusal, readBody } from '@/http/body';
+
 export type PlayErrorCode =
   | 'BAD_REQUEST'
   | 'BODY_TOO_LARGE'
+  | 'BODY_TIMEOUT'
+  | 'TOO_MANY_BODY_READS'
   | 'SPEC_REJECTED'
   | 'MECHANIC_UNSUPPORTED'
   | 'LAYOUT_FAILED'
@@ -34,18 +38,36 @@ export function notFound(): Response {
 /** Tvar id verze: hex z `canonicalHash`. Cokoli jiného je 404 dřív, než se sáhne na úložiště. */
 export const VERSION_ID_PATTERN = /^[a-f0-9]{8,64}$/;
 
-/** Nejvíc bajtů těla, které dveře přečtou. Spec má jednotky kB; věta 500 znaků. */
-export const MAX_BODY_BYTES = 64 * 1024;
-
 export type BodyRead = { readonly ok: true; readonly value: unknown } | { readonly ok: false; readonly response: Response };
 
-/** Přečte JSON tělo s tvrdým stropem na velikost; obojí odmítnutí je vlastní odpověď, ne výjimka. */
+/**
+ * Přečte JSON tělo přes sdílený čtecí kus `src/http/body.ts` – strop 64 kB
+ * v bajtech, deadline 5 s a počet souběžných čtení na volajícího i instanci.
+ * Dřív se tělo nejdřív celé načetlo a teprve pak měřilo (nález revize T3):
+ * nad stropem se teď nedrží nic. `TOO_LARGE` si dveře překládají na svůj
+ * `BODY_TOO_LARGE` – ten už je ve smlouvě (`docs/play/shell.md`).
+ */
 export async function readJsonBody(request: Request): Promise<BodyRead> {
-  const text = await request.text();
-  if (text.length > MAX_BODY_BYTES) return { ok: false, response: fail(413, 'BODY_TOO_LARGE', 'the request body is too large') };
+  let raw;
   try {
-    return { ok: true, value: JSON.parse(text) as unknown };
+    raw = await readBody(request);
+  } catch {
+    return { ok: false, response: fail(400, 'BAD_REQUEST', 'the request body could not be read') };
+  }
+  if (!raw.ok) return { ok: false, response: refuseBody(raw) };
+  try {
+    return { ok: true, value: JSON.parse(raw.text) as unknown };
   } catch {
     return { ok: false, response: fail(400, 'BAD_REQUEST', 'the request body is not JSON') };
   }
+}
+
+function refuseBody(failure: BodyFailure): Response {
+  const refusal = bodyRefusal(failure);
+  return fail(
+    refusal.status,
+    refusal.code === 'PAYLOAD_TOO_LARGE' ? 'BODY_TOO_LARGE' : refusal.code,
+    refusal.message,
+    refusal.retryAfterSeconds === undefined ? undefined : { 'retry-after': String(refusal.retryAfterSeconds) },
+  );
 }

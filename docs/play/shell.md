@@ -23,7 +23,9 @@ Pořadí bran (odmítnutí v kterémkoli kroku = do úložiště nešel ani bajt
 | vypínač `all` / `sessions` | `DISABLED` | 503 |
 | identita za proxy nastavená a neověřená | `OWNER_IDENTITY_REQUIRED` / `OWNER_IDENTITY_UNAVAILABLE` | 403 / 503 |
 | strop frekvence (dveře `play`, 50 / 10 s na volajícího, klíč z důvěryhodného konce – `x-vercel-forwarded-for`, ne `x-forwarded-for`) | `TOO_MANY_REQUESTS` / `SERVER_AT_CAPACITY` | 429 + `retry-after` |
-| tělo nad 64 kB nebo věta nad 500 znaků | `BODY_TOO_LARGE` | 413 |
+| tělo nad 64 kB (měří se po kusech, nad stropem se nic nedrží) nebo věta nad 500 znaků | `BODY_TOO_LARGE` | 413 |
+| tělo nedorazilo do 5 s | `BODY_TIMEOUT` | 408 |
+| příliš mnoho souběžně čtených těl (volající / instance) | `TOO_MANY_BODY_READS` / `SERVER_AT_CAPACITY` | 429 + `retry-after` |
 | tělo není JSON, cizí pole, obojí / ani jedno, špatný `seed` | `BAD_REQUEST` | 400 |
 | `parentId` neexistuje nebo nemá tvar id | `UNKNOWN_PARENT` | 404 |
 | spec neprošel `readGameSpec` (i z režiséra) | `SPEC_REJECTED` | 422 |

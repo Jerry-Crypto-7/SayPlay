@@ -17,6 +17,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import collectExit from '@/play/__fixtures__/collect_exit.json';
 import { __resetProcessVersionStore, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
+import { MAX_BODY_BYTES } from '@/http/body';
 import { resetRateWindows } from '@/server/rate-limit';
 
 import { POST as createGame } from '../games/route';
@@ -145,9 +146,24 @@ describe('Oracle', () => {
     }
   });
 
-  it('(2) věta o 10 kB → 413', async () => {
+  it('(2) věta o 10 kB → 413; tělo nad 64 kB → 413 BODY_TOO_LARGE dřív, než se celé načte', async () => {
     const response = await createGame(post('/api/play/games', { sentence: 'a'.repeat(10_000) }));
     expect(response.status).toBe(413);
+
+    // Tělo přichází po kusech a přeteče strop dřív, než skončí – dveře ho odmítají
+    // přes sdílený čtecí kus (`src/http/body.ts`), ne až po `request.text()`.
+    // Nezavřený proud a deadline pinuje `src/http/__tests__/body.test.ts`.
+    const chunk = new TextEncoder().encode(`{"sentence":"${'a'.repeat(4_095)}`);
+    const chunks = Math.ceil(MAX_BODY_BYTES / chunk.byteLength) + 1;
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        for (let i = 0; i < chunks; i += 1) controller.enqueue(chunk);
+        controller.close();
+      },
+    });
+    const big = await createGame(new Request('http://play.test/api/play/games', { method: 'POST', headers: CALLER, body: stream, duplex: 'half' } as RequestInit));
+    expect(big.status).toBe(413);
+    expect((await big.json()).error.code).toBe('BODY_TOO_LARGE');
   });
 
   it('(3) spec s projektilem → 422 SPEC_REJECTED', async () => {
