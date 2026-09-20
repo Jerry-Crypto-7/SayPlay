@@ -1,0 +1,182 @@
+/*
+ * Paleta PLAY – vlastní, mimo `theme.css` (na `.ws-*` třídy se nesahá).
+ * Teal jako akce, amber jako zvýraznění, slate jako pozadí. Fialová nikde:
+ * `starters.test.ts` měří odstín každého hexu v tomhle souboru.
+ */
+.play-root {
+  --play-bg: #0f172a;
+  --play-panel: #1e293b;
+  --play-line: #334155;
+  --play-text: #f1f5f9;
+  --play-muted: #94a3b8;
+  --play-action: #0f766e;
+  --play-action-hover: #115e59;
+  --play-accent: #f59e0b;
+  --play-danger: #dc2626;
+
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background: var(--play-bg);
+  color: var(--play-text);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.play-create {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 20px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.play-hero {
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  line-height: 1.1;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.play-subhead {
+  margin: 0;
+  color: var(--play-muted);
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.play-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.play-sentence {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--play-line);
+  background: var(--play-panel);
+  color: var(--play-text);
+  font: inherit;
+  font-size: 1.05rem;
+}
+
+.play-sentence:focus {
+  outline: 2px solid var(--play-action);
+  outline-offset: 1px;
+}
+
+.play-form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.play-counter {
+  color: var(--play-muted);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.play-counter[data-over='true'] {
+  color: var(--play-danger);
+}
+
+.play-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 24px;
+  background: var(--play-action);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.play-button:hover:not(:disabled) {
+  background: var(--play-action-hover);
+}
+
+.play-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.play-status {
+  margin: 0;
+  color: var(--play-accent);
+  font-size: 0.95rem;
+}
+
+.play-alert {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid var(--play-danger);
+  color: var(--play-text);
+}
+
+.play-starters-title {
+  margin: 12px 0 0;
+  color: var(--play-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.play-starters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.play-starter {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--play-line);
+  border-radius: 12px;
+  background: var(--play-panel);
+  color: var(--play-text);
+  padding: 12px 14px;
+  font: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.play-starter:hover {
+  border-color: var(--play-action);
+}
+
+.play-starter-label {
+  font-weight: 600;
+  color: var(--play-accent);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.play-starter-sentence {
+  color: var(--play-muted);
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+@media (max-width: 480px) {
+  .play-create {
+    padding: 28px 16px 40px;
+  }
+
+  .play-starters {
+    grid-template-columns: 1fr 1fr;
+  }
+}
