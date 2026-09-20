@@ -56,7 +56,8 @@ export function baseSim(spec: GameSpecV1, layout: Layout): { sim: SurfaceSim; ro
       const isPlayer = role.kind === 'player';
       const socket = isPlayer ? PLAYER_SOCKET : id;
       sockets[socket] = cell;
-      entities[id] = { role: isPlayer ? 'actor' : role.id, socket, state: INITIAL_STATE[role.kind] };
+      // Dveře začínají zamčené; kdo je odemyká (lock_key, switch), je věc mechaniky.
+      entities[id] = { role: isPlayer ? 'actor' : role.id, socket, state: INITIAL_STATE[role.kind], ...(role.kind === 'door' ? { locked: true } : {}) };
       if (isPlayer) player = id;
       const rect = layout.zones[id];
       collisionAabb[id] = rect ?? [cell[0], cell[1], 1, 1];

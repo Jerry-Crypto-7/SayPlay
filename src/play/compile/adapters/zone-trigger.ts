@@ -10,7 +10,7 @@
 import type { z } from 'zod';
 
 import type { MECHANICS } from '../../registry';
-import type { MechanicAdapter, SurfaceAction, SurfaceRule } from '../types';
+import type { MechanicAdapter, SurfaceAction, SurfaceCondition, SurfaceRule } from '../types';
 import { objectiveGuard } from './objective';
 
 type Params = z.infer<(typeof MECHANICS)['zone_trigger']['params']>;
@@ -19,15 +19,18 @@ export const zoneTrigger: MechanicAdapter<Params> = (params, ctx) => {
   const rules: Record<string, SurfaceRule> = {};
   const action: SurfaceAction =
     params.effect === 'signal' ? { kind: 'emit', signal: params.signal ?? `${params.role}Triggered` } : { kind: params.effect };
-  const condition = params.effect === 'win' ? objectiveGuard(ctx) : null;
+  const goal = params.effect === 'win' ? objectiveGuard(ctx) : null;
+  const isDoor = ctx.role(params.role).kind === 'door';
   for (const instance of ctx.instances(params.role)) {
     const id = `zone_trigger.${instance}`;
+    // Zamčené dveře nic fyzicky neblokují – průchod zamčenými proto nevyhraje.
+    const guards: SurfaceCondition[] = [...(goal ? [goal] : []), ...(isDoor ? [{ kind: 'lockedIs', target: instance, value: false }] : [])];
     rules[id] = {
       id,
       phase: 2,
       priority: 0,
       event: { kind: params.when === 'enter' ? 'onEnterZone' : 'onExitZone', entity: ctx.player, zone: instance },
-      condition,
+      condition: guards.length === 0 ? null : guards.length === 1 ? (guards[0] as SurfaceCondition) : { kind: 'allOf', operands: guards },
       actions: [action],
     };
   }

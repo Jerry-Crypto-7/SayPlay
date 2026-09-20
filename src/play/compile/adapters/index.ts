@@ -6,10 +6,13 @@
 
 import type { MechanicId } from '../../registry';
 import type { MechanicAdapter } from '../types';
+import { checkpoint } from './checkpoint';
 import { collectible } from './collectible';
 import { counter } from './counter';
 import { hazardZone } from './hazard-zone';
 import { health } from './health';
+import { lockKey } from './lock-key';
+import { switchAdapter } from './switch';
 import { timer } from './timer';
 import { zoneTrigger } from './zone-trigger';
 
@@ -18,9 +21,9 @@ export const ADAPTERS: Readonly<Record<MechanicId, MechanicAdapter<never> | null
   counter,
   timer,
   zone_trigger: zoneTrigger,
-  checkpoint: null,
-  lock_key: null,
-  switch: null,
+  checkpoint,
+  lock_key: lockKey,
+  switch: switchAdapter,
   hazard_zone: hazardZone,
   chaser: null,
   patrol: null,
