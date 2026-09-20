@@ -473,7 +473,11 @@ export default function Page() {
           metrics.finishRun(measured, 'failed');
           // Bloky ze slov nesmí přežít relaci, která skončila bez plánovače:
           // „the model has not answered yet" by nad poruchou lhalo (P21 T4).
-          if(guessShown){previewVersion++;setVisualWorld(null);}
+          // Verze se zneplatní vždy, ne jen po zobrazení: mesh ze slov může
+          // ještě běžet ve workeru a doběhnout až za poruchou – s platnou
+          // verzí by prošel všemi zámky a postavil se nad ní (Codex review).
+          previewVersion++;
+          if(guessShown)setVisualWorld(null);
           setFault(arrival.fault);
           return;
         }
