@@ -6,12 +6,16 @@
 
 import type { MechanicId } from '../../registry';
 import type { MechanicAdapter } from '../types';
+import { chaser } from './chaser';
 import { checkpoint } from './checkpoint';
 import { collectible } from './collectible';
 import { counter } from './counter';
+import { defeat } from './defeat';
 import { hazardZone } from './hazard-zone';
 import { health } from './health';
 import { lockKey } from './lock-key';
+import { patrol } from './patrol';
+import { stun } from './stun';
 import { switchAdapter } from './switch';
 import { timer } from './timer';
 import { zoneTrigger } from './zone-trigger';
@@ -25,14 +29,14 @@ export const ADAPTERS: Readonly<Record<MechanicId, MechanicAdapter<never> | null
   lock_key: lockKey,
   switch: switchAdapter,
   hazard_zone: hazardZone,
-  chaser: null,
-  patrol: null,
+  chaser,
+  patrol,
   carry: null,
-  stun: null,
+  stun,
   spawn_wave: null,
   property_transform: null,
   health,
-  defeat: null,
+  defeat,
 };
 
 export type AdapterTable = typeof ADAPTERS;

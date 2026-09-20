@@ -143,6 +143,21 @@ function reachableFrom(spawn: Cell, width: number, height: number, blocked: Read
   return seen;
 }
 
+/**
+ * Buňky, kterými projde `moveTo` z `from` do `to`: nejdřív po x, pak po y
+ * (`stepToward`, `src/sim/interpreter.ts:680`). Svědek chodí přímo, takže
+ * pronásledovatel na této čáře mezi spawnem a cílem by ho zabil i zmrazený.
+ */
+function movePath(from: Cell, to: Cell): Cell[] {
+  const cells: Cell[] = [];
+  const [fx, fy] = from;
+  const [tx, ty] = to;
+  for (let x = fx; x !== tx; x += Math.sign(tx - fx)) cells.push([x, fy]);
+  for (let y = fy; y !== ty; y += Math.sign(ty - fy)) cells.push([tx, y]);
+  cells.push([tx, ty]);
+  return cells;
+}
+
 function tryPlace(
   instances: readonly Instance[],
   width: number,
@@ -168,13 +183,21 @@ function tryPlace(
     occupied.add(key(cell));
   }
 
+  const goalPaths = new Set<string>();
   for (const instance of instances.slice(1)) {
     const isGoal = GOAL_KINDS.includes(instance.role.kind);
-    const candidates = freeCells(width, height, occupied, (cell) => !isGoal || manhattan(cell, spawn) >= minGoal);
+    const offPath = instance.role.kind === 'chaser';
+    const candidates = freeCells(
+      width,
+      height,
+      occupied,
+      (cell) => (!isGoal || manhattan(cell, spawn) >= minGoal) && (!offPath || !goalPaths.has(key(cell))),
+    );
     if (candidates.length === 0) return `no free cell for ${instance.id}`;
     const anchor = rng.pick(candidates);
     cells.set(instance.id, anchor);
     occupied.add(key(anchor));
+    if (isGoal) for (const cell of movePath(spawn, anchor)) goalPaths.add(key(cell));
     if (ZONE_KINDS.includes(instance.role.kind)) {
       const rect = chooseZone(anchor, width, height, occupied, rng);
       zones[instance.id] = rect;

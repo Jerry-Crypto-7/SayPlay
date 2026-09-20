@@ -119,6 +119,10 @@ export function compileSim(spec: GameSpecV1, seed: number, adapters: AdapterTabl
       if (id in sim.entities) throw new Error(`adapter ${mechanic.id}: entity ${id} already declared`);
       sim.entities[id] = entity;
     }
+    for (const [id, cell] of Object.entries(output.sockets ?? {})) {
+      if (id in sim.sockets) throw new Error(`adapter ${mechanic.id}: socket ${id} already declared`);
+      sim.sockets[id] = cell;
+    }
     Object.assign(sim.state.counters, output.counters ?? {});
     Object.assign(sim.state.flags, output.flags ?? {});
     Object.assign(sim.state.timers, output.timers ?? {});

@@ -121,6 +121,8 @@ export interface AdapterOutput {
   readonly rules: Record<string, SurfaceRule>;
   readonly witness?: readonly WitnessStep[];
   readonly entities?: Record<string, SurfaceEntity>;
+  /** Sokety navíc (cíle pohybu, zastávky hlídky); každý je zároveň zóna 1×1. */
+  readonly sockets?: Record<string, Cell>;
   readonly counters?: Record<string, CounterDecl>;
   readonly flags?: Record<string, { readonly init: boolean }>;
   readonly timers?: Record<string, TimerDecl>;
