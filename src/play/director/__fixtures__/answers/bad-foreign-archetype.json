@@ -1,0 +1,171 @@
+{
+  "schema": "gamespec.v1",
+  "title": "Vault With A Guard",
+  "archetype": "switch_puzzle",
+  "targetDurationSec": 90,
+  "theme": {
+    "setting": "bank vault corridor",
+    "mood": "sneaky"
+  },
+  "objective": {
+    "kind": "puzzle",
+    "description": "Pull the two correct levers to open the vault.",
+    "role": "vault"
+  },
+  "mechanics": [
+    {
+      "id": "switch",
+      "params": {
+        "switchRoles": [
+          "lever_a",
+          "lever_b",
+          "lever_c",
+          "lever_d"
+        ],
+        "doorRole": "vault",
+        "required": [
+          "lever_b",
+          "lever_d"
+        ]
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "vault",
+        "when": "enter",
+        "effect": "win"
+      }
+    },
+    {
+      "id": "chaser",
+      "params": {
+        "role": "guard",
+        "speed": "normal",
+        "catchEffect": "lose"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "cat burglar",
+      "count": 1
+    },
+    {
+      "id": "lever_a",
+      "kind": "switch",
+      "label": "brass lever",
+      "count": 1
+    },
+    {
+      "id": "lever_b",
+      "kind": "switch",
+      "label": "iron lever",
+      "count": 1
+    },
+    {
+      "id": "lever_c",
+      "kind": "switch",
+      "label": "copper lever",
+      "count": 1
+    },
+    {
+      "id": "lever_d",
+      "kind": "switch",
+      "label": "steel lever",
+      "count": 1
+    },
+    {
+      "id": "vault",
+      "kind": "door",
+      "label": "vault door",
+      "count": 1
+    },
+    {
+      "id": "guard",
+      "kind": "chaser",
+      "label": "night guard",
+      "count": 1
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Find the two levers that open the vault.",
+    "controlsHint": "Tap a lever to walk there, tap again to pull it."
+  },
+  "verification": [
+    {
+      "id": "right_pair_opens",
+      "kind": "keypoint",
+      "mechanic": "switch",
+      "setup": {
+        "entityStates": {
+          "lever_b": "on"
+        }
+      },
+      "actions": [
+        {
+          "actionId": "use",
+          "target": "lever_d"
+        }
+      ],
+      "assert": {
+        "locked": {
+          "vault": false
+        }
+      }
+    },
+    {
+      "id": "extra_lever_blocks",
+      "kind": "keypoint",
+      "mechanic": "switch",
+      "setup": {
+        "entityStates": {
+          "lever_b": "on",
+          "lever_d": "on"
+        }
+      },
+      "actions": [
+        {
+          "actionId": "use",
+          "target": "lever_a"
+        }
+      ],
+      "assert": {
+        "locked": {
+          "vault": true
+        }
+      }
+    },
+    {
+      "id": "open_vault_wins",
+      "kind": "keypoint",
+      "mechanic": "zone_trigger",
+      "setup": {
+        "locked": {
+          "vault": false
+        },
+        "placeAt": {
+          "player": "vault"
+        }
+      },
+      "ticks": 5,
+      "assert": {
+        "runState": "won"
+      }
+    },
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

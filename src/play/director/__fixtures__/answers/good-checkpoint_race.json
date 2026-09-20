@@ -1,0 +1,24 @@
+{
+  "schema": "gamespec.v1",
+  "title": "Paper Plane Hoops",
+  "archetype": "checkpoint_race",
+  "targetDurationSec": 60,
+  "theme": { "setting": "sunny classroom", "mood": "playful" },
+  "objective": { "kind": "checkpoints", "description": "Glide through all four hoops in order before the bell rings.", "count": 4, "role": "hoop" },
+  "mechanics": [
+    { "id": "checkpoint", "params": { "role": "hoop", "count": 4, "ordered": true } },
+    { "id": "timer", "params": { "id": "bell", "seconds": 60, "onEnd": "lose" } }
+  ],
+  "roles": [
+    { "id": "player", "kind": "player", "label": "paper plane", "count": 1 },
+    { "id": "hoop", "kind": "checkpoint", "label": "chalk hoop", "count": 4 },
+    { "id": "desk", "kind": "prop", "label": "school desk", "count": 4 }
+  ],
+  "tutorial": { "goalLine": "Pass all 4 hoops in order before the bell.", "controlsHint": "Tap the next hoop to glide to it." },
+  "verification": [
+    { "id": "first_hoop_counts", "kind": "keypoint", "mechanic": "checkpoint", "setup": { "counters": { "hoopsPassed": 0 } }, "actions": [{ "actionId": "moveTo", "target": "hoop" }], "assert": { "counters": { "hoopsPassed": 1 } } },
+    { "id": "bell_loses", "kind": "keypoint", "mechanic": "timer", "ticks": 3600, "assert": { "runState": "lost" } },
+    { "id": "winnable", "kind": "reachability", "assert": { "runState": "won" } }
+  ],
+  "budgets": { "maxEntities": 40, "maxRules": 120, "maxTriangles": 200000 }
+}

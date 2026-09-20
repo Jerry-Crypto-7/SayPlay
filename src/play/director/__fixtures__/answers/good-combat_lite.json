@@ -1,0 +1,23 @@
+{
+  "schema": "gamespec.v1",
+  "title": "Dojo Dummies",
+  "archetype": "combat_lite",
+  "targetDurationSec": 60,
+  "theme": { "setting": "wooden dojo at dawn", "mood": "focused" },
+  "objective": { "kind": "defeat_targets", "description": "Knock out all four training dummies.", "count": 4, "role": "dummy" },
+  "mechanics": [
+    { "id": "defeat", "params": { "role": "dummy", "count": 4, "hitsPerTarget": 2 } },
+    { "id": "health", "params": { "max": 3 } }
+  ],
+  "roles": [
+    { "id": "player", "kind": "player", "label": "karate student", "count": 1 },
+    { "id": "dummy", "kind": "target", "label": "training dummy", "count": 4 },
+    { "id": "mat", "kind": "prop", "label": "tatami mat", "count": 2 }
+  ],
+  "tutorial": { "goalLine": "Knock out all 4 dummies. Two hits each.", "controlsHint": "Tap a dummy to approach, tap again to strike." },
+  "verification": [
+    { "id": "last_dummy_wins", "kind": "keypoint", "mechanic": "defeat", "setup": { "counters": { "defeated": 3 }, "placeAt": { "player": "dummy" } }, "actions": [{ "actionId": "use", "target": "dummy" }, { "actionId": "use", "target": "dummy" }], "assert": { "counters": { "defeated": 4 }, "runState": "won" } },
+    { "id": "winnable", "kind": "reachability", "assert": { "runState": "won" } }
+  ],
+  "budgets": { "maxEntities": 40, "maxRules": 120, "maxTriangles": 200000 }
+}

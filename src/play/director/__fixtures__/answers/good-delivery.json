@@ -1,0 +1,27 @@
+{
+  "schema": "gamespec.v1",
+  "title": "Pizza Run",
+  "archetype": "delivery",
+  "targetDurationSec": 80,
+  "theme": { "setting": "windy harbour pier", "mood": "hurried" },
+  "objective": { "kind": "deliver", "description": "Bring the hot pizza to the lighthouse keeper.", "role": "keeper" },
+  "mechanics": [
+    { "id": "carry", "params": { "itemRole": "pizza", "destinationRole": "keeper", "fragile": false } },
+    { "id": "patrol", "params": { "role": "gull", "disposition": "restless", "stops": 4, "touchEffect": "damage" } },
+    { "id": "health", "params": { "max": 3 } }
+  ],
+  "roles": [
+    { "id": "player", "kind": "player", "label": "delivery rider", "count": 1 },
+    { "id": "pizza", "kind": "item", "label": "hot pizza box", "count": 1 },
+    { "id": "keeper", "kind": "destination", "label": "lighthouse keeper", "count": 1 },
+    { "id": "gull", "kind": "patrol", "label": "greedy seagull", "count": 1 }
+  ],
+  "tutorial": { "goalLine": "Carry the pizza to the keeper. Dodge the seagull.", "controlsHint": "Tap the pizza to pick it up, then tap the keeper." },
+  "verification": [
+    { "id": "handover_wins", "kind": "keypoint", "mechanic": "carry", "setup": { "placeAt": { "player": "keeper" } }, "actions": [{ "actionId": "pickup", "target": "pizza" }], "ticks": 40, "assert": { "runState": "won" } },
+    { "id": "gull_pecks", "kind": "keypoint", "mechanic": "patrol", "setup": { "placeAt": { "gull": "player" } }, "ticks": 20, "assert": { "firedMechanics": ["patrol"] } },
+    { "id": "third_peck_loses", "kind": "keypoint", "mechanic": "health", "setup": { "counters": { "hits": 2 }, "placeAt": { "gull": "player" } }, "ticks": 20, "assert": { "runState": "lost" } },
+    { "id": "winnable", "kind": "reachability", "assert": { "runState": "won" } }
+  ],
+  "budgets": { "maxEntities": 40, "maxRules": 120, "maxTriangles": 200000 }
+}

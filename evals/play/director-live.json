@@ -1,0 +1,123 @@
+{
+  "schema": "play-director-live-v1",
+  "measuredAt": "2026-09-20T11:35:23.853Z",
+  "model": "gpt-6-astra",
+  "effort": "medium",
+  "calls": 8,
+  "callCap": 12,
+  "partial": false,
+  "partialReason": null,
+  "prompts": [
+    {
+      "id": "chase_escape-1",
+      "ms": 41139,
+      "source": "draft",
+      "archetype": "chase_escape",
+      "expectArchetype": "chase_escape",
+      "archetypeHit": true,
+      "repairRounds": 0,
+      "fallbackReason": "MALFORMED",
+      "bytesOut": 1271,
+      "issues": [
+        "MALFORMED",
+        "UNVERIFIABLE",
+        "UNVERIFIABLE"
+      ]
+    },
+    {
+      "id": "collect_exit-1",
+      "ms": 55024,
+      "source": "authored",
+      "archetype": "collect_exit",
+      "expectArchetype": "collect_exit",
+      "archetypeHit": true,
+      "repairRounds": 0,
+      "fallbackReason": null,
+      "bytesOut": 3422,
+      "issues": [
+        "BUDGET"
+      ]
+    },
+    {
+      "id": "survival_timer-1",
+      "ms": 40405,
+      "source": "authored",
+      "archetype": "survival_timer",
+      "expectArchetype": "survival_timer",
+      "archetypeHit": true,
+      "repairRounds": 0,
+      "fallbackReason": null,
+      "bytesOut": 1707,
+      "issues": []
+    },
+    {
+      "id": "checkpoint_race-1",
+      "ms": 35294,
+      "source": "authored",
+      "archetype": "checkpoint_race",
+      "expectArchetype": "checkpoint_race",
+      "archetypeHit": true,
+      "repairRounds": 0,
+      "fallbackReason": null,
+      "bytesOut": 1567,
+      "issues": []
+    },
+    {
+      "id": "delivery-1",
+      "ms": 39646,
+      "source": "authored",
+      "archetype": "delivery",
+      "expectArchetype": "delivery",
+      "archetypeHit": true,
+      "repairRounds": 0,
+      "fallbackReason": null,
+      "bytesOut": 2202,
+      "issues": []
+    },
+    {
+      "id": "switch_puzzle-1",
+      "ms": 44113,
+      "source": "authored",
+      "archetype": "switch_puzzle",
+      "expectArchetype": "switch_puzzle",
+      "archetypeHit": true,
+      "repairRounds": 0,
+      "fallbackReason": null,
+      "bytesOut": 3054,
+      "issues": [
+        "BUDGET"
+      ]
+    },
+    {
+      "id": "hazard_crossing-1",
+      "ms": 44834,
+      "source": "authored",
+      "archetype": "hazard_crossing",
+      "expectArchetype": "hazard_crossing",
+      "archetypeHit": true,
+      "repairRounds": 0,
+      "fallbackReason": null,
+      "bytesOut": 2383,
+      "issues": []
+    },
+    {
+      "id": "combat_lite-1",
+      "ms": 35670,
+      "source": "authored",
+      "archetype": "combat_lite",
+      "expectArchetype": "combat_lite",
+      "archetypeHit": true,
+      "repairRounds": 0,
+      "fallbackReason": null,
+      "bytesOut": 1757,
+      "issues": []
+    }
+  ],
+  "summary": {
+    "authored": 7,
+    "draftFallback": 1,
+    "archetypeHits": 8,
+    "medianMs": 40405,
+    "p90Ms": 55024
+  }
+}

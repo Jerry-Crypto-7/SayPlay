@@ -1,0 +1,27 @@
+{
+  "schema": "gamespec.v1",
+  "title": "Sinking Slabs",
+  "archetype": "hazard_crossing",
+  "targetDurationSec": 90,
+  "theme": { "setting": "magma cavern", "mood": "perilous" },
+  "objective": { "kind": "reach", "description": "Reach the far shore across the magma slabs.", "role": "shore" },
+  "mechanics": [
+    { "id": "hazard_zone", "params": { "role": "magma", "effect": "lose", "pulse": { "onSeconds": 2, "offSeconds": 3 } } },
+    { "id": "zone_trigger", "params": { "role": "shore", "when": "enter", "effect": "win" } },
+    { "id": "checkpoint", "params": { "role": "slab", "count": 4, "ordered": false } }
+  ],
+  "roles": [
+    { "id": "player", "kind": "player", "label": "fire newt", "count": 1 },
+    { "id": "magma", "kind": "hazard", "label": "magma pool", "count": 6 },
+    { "id": "slab", "kind": "checkpoint", "label": "basalt slab", "count": 4 },
+    { "id": "shore", "kind": "exit", "label": "far shore", "count": 1 }
+  ],
+  "tutorial": { "goalLine": "Cross the magma to the far shore. Pools pulse.", "controlsHint": "Tap a slab when the magma beside it is dark." },
+  "verification": [
+    { "id": "magma_burns", "kind": "keypoint", "mechanic": "hazard_zone", "setup": { "placeAt": { "player": "magma" }, "entityStates": { "magma": "on" } }, "ticks": 10, "assert": { "runState": "lost" } },
+    { "id": "slab_counts", "kind": "keypoint", "mechanic": "checkpoint", "setup": { "counters": { "slabsReached": 0 } }, "actions": [{ "actionId": "moveTo", "target": "slab" }], "assert": { "counters": { "slabsReached": 1 } } },
+    { "id": "shore_wins", "kind": "keypoint", "mechanic": "zone_trigger", "setup": { "placeAt": { "player": "shore" } }, "ticks": 5, "assert": { "runState": "won" } },
+    { "id": "winnable", "kind": "reachability", "assert": { "runState": "won" } }
+  ],
+  "budgets": { "maxEntities": 40, "maxRules": 120, "maxTriangles": 200000 }
+}

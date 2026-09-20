@@ -1,0 +1,27 @@
+{
+  "schema": "gamespec.v1",
+  "title": "Ghost Cat Library",
+  "archetype": "chase_escape",
+  "targetDurationSec": 75,
+  "theme": { "setting": "haunted library after closing", "mood": "spooky" },
+  "objective": { "kind": "reach", "description": "Reach the front door before the ghost cat catches you.", "role": "frontdoor" },
+  "mechanics": [
+    { "id": "chaser", "params": { "role": "ghostcat", "speed": "normal", "catchEffect": "lose" } },
+    { "id": "zone_trigger", "params": { "role": "frontdoor", "when": "enter", "effect": "win" } },
+    { "id": "stun", "params": { "targetRole": "ghostcat", "seconds": 3, "uses": 2 } }
+  ],
+  "roles": [
+    { "id": "player", "kind": "player", "label": "library mouse", "count": 1 },
+    { "id": "ghostcat", "kind": "chaser", "label": "ghost cat", "count": 1 },
+    { "id": "frontdoor", "kind": "exit", "label": "front door", "count": 1 },
+    { "id": "bookcart", "kind": "prop", "label": "book cart", "count": 2 }
+  ],
+  "tutorial": { "goalLine": "Run to the front door. The ghost cat is hunting you.", "controlsHint": "Tap where to run. Tap the cat when close to scare it off." },
+  "verification": [
+    { "id": "cat_catches", "kind": "keypoint", "mechanic": "chaser", "setup": { "placeAt": { "ghostcat": "player" } }, "ticks": 10, "assert": { "runState": "lost" } },
+    { "id": "scare_freezes_cat", "kind": "keypoint", "mechanic": "stun", "setup": { "placeAt": { "ghostcat": "player" } }, "actions": [{ "actionId": "use", "target": "ghostcat" }], "assert": { "firedMechanics": ["stun"] } },
+    { "id": "door_wins", "kind": "keypoint", "mechanic": "zone_trigger", "setup": { "placeAt": { "player": "frontdoor" } }, "ticks": 5, "assert": { "runState": "won" } },
+    { "id": "winnable", "kind": "reachability", "assert": { "runState": "won" } }
+  ],
+  "budgets": { "maxEntities": 40, "maxRules": 120, "maxTriangles": 200000 }
+}
