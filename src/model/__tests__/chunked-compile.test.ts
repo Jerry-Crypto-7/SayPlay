@@ -160,6 +160,22 @@ describe('řezání a slepování kompilátorové odpovědi', () => {
     expect(merged).toMatchObject({ ok: false, reason: 'DANGLING_GEOM_NODE' });
   });
 
+  it('placement na tvar, který žádný kus nenapsal, se odmítne', () => {
+    const parts = splitAnswerIntoChunks(ANSWER);
+    const objects = parts.find((part) => part.chunk === 'objects')!;
+    const placements = (objects.answer as Record<string, unknown>).placements as Record<string, unknown>[];
+    const pointed = placements.map((entry, index) =>
+      index === 0 ? { ...entry, source: { kind: 'shape', shapeId: 'ghost' } } : entry,
+    );
+
+    const merged = mergeEmissionChunks([
+      ...parts.filter((p) => p.chunk !== 'objects'),
+      withField(objects, 'placements', pointed),
+    ]);
+
+    expect(merged).toMatchObject({ ok: false, reason: 'DANGLING_SHAPE' });
+  });
+
   it('kus, který nepřišel jako objekt, se pozná', () => {
     expect(mergeEmissionChunks([{ chunk: 'rules', answer: 'not an object' }])).toMatchObject({
       ok: false,

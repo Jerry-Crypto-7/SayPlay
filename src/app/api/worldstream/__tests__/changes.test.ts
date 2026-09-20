@@ -2328,6 +2328,28 @@ describe('přidání nového objektu', () => {
     });
   });
 
+  // Rozhodnutí, ne náhoda: UI srovnává každou úpravu pravidel a srovnání
+  // nemůže zároveň měnit geometrii – plán s tvarem I pravidly se proto odmítá
+  // už v preview a nic se neuloží (nález test-gap revize, 20. 9. 2026).
+  it('preview se srovnáním odmítne plán, který mění tvar i pravidla, a nic neuloží', async () => {
+    const stored = await generated();
+    const before = stored.session.events.sequence;
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'turn the mast into woven metal', comparison: true },
+      async () => ({
+        summary: 'the mast is rewoven and the salt goes dry',
+        shape: WOVEN_MAST,
+        behavior: [{ op: 'replace', path: '/sim/rules/guard/condition', value: { kind: 'stateIs', target: 'saltFlat', state: 'dry' } }],
+        appearance: [],
+      }),
+    );
+    const read = await body(response);
+    expect(response.status, JSON.stringify(read)).toBe(422);
+    expect(read.error).toMatchObject({ code: 'COMPARISON_REJECTED', message: 'A rule comparison cannot also replace geometry.' });
+    expect(stored.session.events.sequence, 'odmítnuté preview nesmí vydat rámec').toBe(before);
+  });
+
   it('preview odmítne přidání, které sahá na cizí objekt, pod ALLOWED_PATH', async () => {
     const stored = await generated();
     const answer = {
