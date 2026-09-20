@@ -205,11 +205,33 @@ describe('[4] písemný popis', () => {
 
   it('selže bez sémantického omezení i s úplnou legacy garancí', async () => {
     const dir = repo();
-    rewriteDescription(dir, description().replace('This acknowledgement does not certify semantic correctness. A structurally valid citation is not a semantic guarantee.', GUARANTEE));
+    rewriteDescription(dir, description().replace('This acknowledgement does not certify semantic correctness.', GUARANTEE));
     const results = await check(dir);
     expect(failed(results)).toEqual([4]);
     expect(detailOf(results, 4)).toContain('semantic-limit');
   });
+  // Náhrada uvařeným světem je to, co porotce uvidí nejčastěji, a zároveň to,
+  // co se dá z popisu nejsnáz vynechat: popis bez té věty čte líp a tvrdí
+  // něco, co produkt neumí. Proto má vlastní případ, ne jen položku v seznamu.
+  it('selže, když popis zamlčí náhradu nejbližším uvařeným světem', async () => {
+    const dir = repo();
+    rewriteDescription(dir, description().replace(
+      'A sentence the store does not recognise is answered by the nearest authored world, and the product labels that substitution.',
+      'Every sentence is answered by a freshly generated world.',
+    ));
+    const results = await check(dir);
+    expect(failed(results)).toEqual([4]);
+    expect(detailOf(results, 4)).toContain('authored-fallback');
+  });
+
+  it('selže, když popis zamlčí, že přetáčení času není na porotcově cestě', async () => {
+    const dir = repo();
+    rewriteDescription(dir, description().replace('Time rewind and branching futures are not on the judge path.', ''));
+    const results = await check(dir);
+    expect(failed(results)).toEqual([4]);
+    expect(detailOf(results, 4)).toContain('no-time-rewind');
+  });
+
   it('současný popis nevyžaduje legacy DESIGN-BOOK', async () => {
     const dir = repo();
     rmSync(join(dir, 'DESIGN-BOOK.md'));
@@ -320,6 +342,39 @@ describe('[6] disclosure napříč pěti třídami', () => {
     write(dir, 'src/thing.test.ts', "export const used = 'claude-opus-5';\n");
     stage(dir);
     expect(failed(await check(dir))).toEqual([]);
+  });
+
+  /**
+   * Trojice drží rozhodnutí z 18. 9. 2026: pravidlo o **umístění** literálu
+   * platí na produkt, nástroj je z něj vyjmutý podle role, a registrační
+   * půlka pravidla se tím nehne ani o kus.
+   *
+   * Naměřeno před rozhodnutím: 15 nálezů, z toho 0 nezveřejněných modelů —
+   * samé měřicí harnesy a provozní skripty. Zamítnutá alternativa byla
+   * dopsat těch 15 cest do `modelTablePaths`, čímž by pravidlo přestalo
+   * cokoli znamenat.
+   */
+  it('registrovaný model v provozním skriptu projde — nástroj není produkt', async () => {
+    const dir = repo();
+    write(dir, 'scripts/host-preflight.mjs', "export const expected = 'claude-opus-5';");
+    stage(dir);
+    expect(failed(await check(dir))).toEqual([]);
+  });
+
+  it('měřicí harness projde i uvnitř src — o výjimce rozhoduje role, ne adresář', async () => {
+    const dir = repo();
+    write(dir, 'src/latency.measure.ts', "export const model = 'claude-opus-5';");
+    stage(dir);
+    expect(failed(await check(dir))).toEqual([]);
+  });
+
+  it('NEregistrovaný model v provozním skriptu je pořád nález', async () => {
+    const dir = repo();
+    write(dir, 'scripts/host-preflight.mjs', "export const expected = 'mistral-42-large';");
+    stage(dir);
+    const results = await check(dir);
+    expect(failed(results)).toEqual([6]);
+    expect(detailOf(results, 6)).toContain('mistral-42-large');
   });
 
   it('položka první strany registraci splní — a nic víc po ní chtít nejde', async () => {

@@ -176,6 +176,16 @@ export default function RefineDevPage() {
         return;
       }
 
+      // Scriptovaná stránka umí jen výměnu podoby; věta, která staví, tu nemá
+      // model, který by nový objekt napsal (P22 T13).
+      if (grounding.kind === 'addition') {
+        setChange({
+          kind: 'refused',
+          message: 'this page rewrites one object that already stands; a sentence that adds a new one needs the model',
+        });
+        return;
+      }
+
       // Tahle větev je **skutečné** odmítnutí, ne harness: objekt kreslený
       // kompozicí nemá hrdinský tvar, takže mu ho druhá věta přepsat nemůže.
       // Táž podmínka a týž důvod jako `NO_SHAPE_SOURCE` v `readRefineEmission`.

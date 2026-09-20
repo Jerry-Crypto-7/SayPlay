@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { IrEffect } from '../../ir/types';
 import { hashHex } from '../hash';
 import {
   createRuntime,
@@ -9,7 +10,9 @@ import {
   type RunState,
   type WorldDocRuntime,
 } from '../interpreter';
+import { readSlot } from '../state';
 
+import { oscillator } from '../__fixtures__/oscillator';
 import instaWinWorld from '../__fixtures__/insta-win.world.json';
 import signalLoopWorld from '../__fixtures__/signal-loop.world.json';
 import stateCycleWorld from '../__fixtures__/state-cycle.world.json';
@@ -145,5 +148,118 @@ describe('pořadí vykonání pravidel je explicitní', () => {
     expect(createRuntime(shuffled).ruleOrder.map((rule) => rule.ruleId)).toEqual(
       createRuntime(stateCycle).ruleOrder.map((rule) => rule.ruleId),
     );
+  });
+});
+
+/**
+ * Kauzální stopa **vedle** stavu: co které spuštěné pravidlo zapsalo. Sbírá se
+ * jen ve fázi 3, takže `after` je hodnota po efektu, ne po `settle` — a nikdy
+ * nesahá na hashovaný stav, což pinuje běh se záznamem proti běhu bez něj.
+ */
+describe('vysvětlení tiku — co které pravidlo zapsalo', () => {
+  /** Svět ze `signalLoop`, ve kterém `r.kick` při startu provede zadané efekty. */
+  function kickWorld(effects: IrEffect[], overrides: Partial<WorldDocRuntime['ir']> = {}, space = signalLoop.space): WorldDocRuntime {
+    return {
+      ...signalLoop,
+      space,
+      ir: { ...signalLoop.ir, ...overrides, effects, rules: [{ ...signalLoop.ir.rules[0], effects: effects.map((_effect, i) => i) }] },
+    };
+  }
+
+  it('`assign` a `addCounter` nesou před/po v pořadí efektů', () => {
+    const runtime = createRuntime(vault);
+    step(runtime, []);
+    step(runtime, []);
+    const pulled = step(runtime, vault.trace);
+    expect(pulled.explain).toEqual([
+      {
+        ruleId: 'r.pull',
+        predicate: 'p.onAction.hero.pull.lever',
+        guardHeld: true,
+        writes: [
+          { slot: 'f:unlocked', before: 0, after: 1 },
+          { slot: 'c:keys', before: 0, after: 1 },
+        ],
+      },
+    ]);
+    // Emise do fronty není zápis slotu — pravidlo je ve stopě, zápisy prázdné.
+    expect(step(runtime, []).explain).toEqual([
+      { ruleId: 'r.threshold', predicate: 'p.onCounterReaches.keys.1', guardHeld: true, writes: [] },
+    ]);
+  });
+
+  it('pravidlo, jehož hrana nastala a stráž neprošla, je ve stopě se `guardHeld: false`', () => {
+    // `r.pull` bez `assign unlocked` — signál `open` dorazí, ale stráž `r.open` padne.
+    const noUnlock: WorldDocRuntime = {
+      ...vault,
+      ir: { ...vault.ir, rules: vault.ir.rules.map((rule) => (rule.ruleId === 'r.pull' ? { ...rule, effects: [1] } : rule)) },
+    };
+    const runtime = createRuntime(noUnlock);
+    run(runtime, 4);
+    const result = step(runtime, []);
+    expect(result.fired).toEqual([]);
+    expect(result.explain).toEqual([{ ruleId: 'r.open', predicate: 'p.onSignal.open', guardHeld: false, writes: [] }]);
+    expect(runtime.runState).toBe('running');
+  });
+
+  it('`startTimer` zapíše dobu — a `after` je hodnota z fáze 3, ne po `settle`', () => {
+    const runtime = createRuntime(
+      kickWorld([{ op: 'startTimer', slot: 'fuse', durationTicks: 5 }], {
+        slots: [{ space: 'timer', id: 'fuse', maxTicks: 16, initial: 0 }],
+      }),
+    );
+    const result = step(runtime, []);
+    expect(result.explain).toEqual([
+      { ruleId: 'r.kick', predicate: 'p.onStart', guardHeld: true, writes: [{ slot: 't:fuse', before: 0, after: 5 }] },
+    ]);
+    expect(readSlot(runtime.layout, runtime.state, 't:fuse')).toBe(4);
+  });
+
+  it('`spawn` zapíše aktivaci i obě souřadnice soketu', () => {
+    const runtime = createRuntime(
+      kickWorld(
+        [
+          { op: 'despawn', entity: 'hero' },
+          { op: 'spawn', poolTag: 'hero', socket: 's_far', selection: 'lowest-inactive' },
+        ],
+        {},
+        { ...signalLoop.space, sockets: { s_start: [0, 0], s_far: [2, 3] } },
+      ),
+    );
+    expect(step(runtime, []).explain[0].writes).toEqual([
+      { slot: 'e:hero:active', before: 1, after: 0 },
+      { slot: 'e:hero:active', before: 0, after: 1 },
+      { slot: 'e:hero:x', before: 0, after: 2 },
+      { slot: 'e:hero:y', before: 0, after: 3 },
+    ]);
+  });
+
+  it('tik ukončený `runtimeFault` vrací prázdnou stopu — stav se vrátil', () => {
+    const budget = createRuntime(stateCycle);
+    run(budget, TICK_BUDGET);
+    expect(budget.runState).toBe('runtimeFault');
+    expect(step(budget, []).explain).toEqual([]);
+
+    const overflow = createRuntime(signalLoop);
+    expect(step(overflow, []).explain).toHaveLength(1);
+    const faulted = step(overflow, []);
+    expect(faulted.fault).toBe('queue-overflow');
+    expect(faulted.explain).toEqual([]);
+  });
+
+  it('pin: hash stavu po 400 ticích se záznamem se rovná hashi bez záznamu', () => {
+    const recorded = createRuntime(oscillator());
+    const silent = createRuntime(oscillator());
+    silent.explain = false;
+    let writes = 0;
+    for (let i = 0; i < 400; i += 1) {
+      const result = step(recorded, []);
+      for (const firing of result.explain) writes += firing.writes.length;
+      expect(step(silent, []).explain).toEqual([]);
+    }
+    expect(recorded.tick).toBe(400);
+    expect(hashHex(recorded.state)).toBe(hashHex(silent.state));
+    // Bez tohohle by pin prošel i nad světem, kde se nikdy nic nezapsalo.
+    expect(writes).toBeGreaterThan(100);
   });
 });

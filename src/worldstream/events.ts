@@ -35,6 +35,7 @@
 export const SESSION_EVENT_TYPES = [
   'session.accepted',
   'intent.ready',
+  'visual.preview',
   'blueprint.ready',
   'world.ready',
   'shape.queued',
@@ -138,6 +139,9 @@ export interface SessionEvent<T = unknown> {
 export const MAX_LOG_EVENTS = 512;
 
 export interface SessionEventLog {
+  /** Durable barrier runs synchronously before any listener; errors are never swallowed. */
+  beforePublish(barrier:(()=>void)|null):void;
+  checkpoint():EventLogCheckpoint;
   /** Poslední přidělené číslo. Prázdný log má 0. */
   readonly sequence: number;
   readonly length: number;
@@ -186,8 +190,10 @@ interface LoggedEvent {
   event: SessionEvent;
   readonly subject: string;
 }
+export interface EventLogCheckpoint {readonly sequence:number;readonly floor:number;readonly entries:readonly LoggedEvent[]}
 
 export interface EventLogOptions {
+  readonly checkpoint?:EventLogCheckpoint;
   /**
    * Odkud se bere `at`. Testy sem dosadí pevné hodiny; nikdo se podle nich
    * nerozhoduje, takže na produkci stačí výchozí.
@@ -216,12 +222,14 @@ export interface EventLogOptions {
  */
 export function createEventLog(sessionId: string, options: EventLogOptions = {}): SessionEventLog {
   const now = options.now ?? (() => new Date().toISOString());
-  const entries: LoggedEvent[] = [];
+  const entries: LoggedEvent[] = structuredClone(options.checkpoint?.entries??[]) as LoggedEvent[];
   const listeners = new Set<(event: SessionEvent) => void>();
-  let sequence = options.startAt ?? 0;
-  let floor = 0;
+  let sequence = options.checkpoint?.sequence??options.startAt ?? 0;
+  let floor = options.checkpoint?.floor??options.startAt??0;
+  let barrier:(()=>void)|null=null;
 
   function publish(event: SessionEvent): SessionEvent {
+    barrier?.();
     for (const listener of [...listeners]) {
       try {
         listener(event);
@@ -233,6 +241,8 @@ export function createEventLog(sessionId: string, options: EventLogOptions = {})
   }
 
   return {
+    beforePublish(next){barrier=next;},
+    checkpoint(){return {sequence,floor,entries:structuredClone(entries)};},
     get sequence() {
       return sequence;
     },

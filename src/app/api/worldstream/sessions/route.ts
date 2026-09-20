@@ -1,3 +1,6 @@
+import {withSessionStorageResponse} from '@/server/session-persistence';
+import {assertSessionStorageReady} from '@/worldstream/sessions';
+import {ownerIdentityRejection} from '@/server/owner-identity';
 import { observePhaseAsync } from '@/model/phase-observer';
 import { withServerMetrics, serverPhaseObserver, currentServerMetrics, reportServerMetrics } from '@/server/worldstream-metrics';
 /**
@@ -71,6 +74,7 @@ import { randomUUID } from 'node:crypto';
 
 import { after } from 'next/server';
 import { cloudEmitter } from '../../../../server/worldstream-emitter';
+import { answerReuseFor } from '../../../../server/answer-cache';
 
 import { bodyRefusalResponse, readBody } from '../../../../http/body';
 import { withRequest } from '../../../../obs/trace';
@@ -86,6 +90,7 @@ import {
 } from '../../../../server/rate-limit';
 import { logRateLimited } from '../../../../server/public-faults';
 import { chooseAuthored, emitterFor } from '../../../../worldstream/authored';
+import { sessionEventStream } from './[sessionId]/events/route';
 import {
   MAX_SESSIONS_PER_CALLER,
   newSessionSeed,
@@ -344,7 +349,7 @@ function readPrompt(text: string): PromptRead | { readonly ok: false; readonly c
   return { ok: true, prompt: (body as { prompt?: unknown }).prompt, live: live === true };
 }
 
-export async function POST(request: Request): Promise<Response> {
+async function handleDurablePOST(request: Request): Promise<Response> {
   const requestId = randomUUID();
 
   return withRequest(requestId, () => withServerMetrics(requestId, 'prompt', async () => {
@@ -370,6 +375,8 @@ export async function POST(request: Request): Promise<Response> {
     // Strop na frekvenci, hned za vypínačem a před čtením těla. Tyhle dveře
     // stojí navíc placená volání, takže čítač souběhu níž zůstává — frekvence
     // a souběh měří dvě různé věci a jedna druhou nenahradí.
+    const identityRejection=ownerIdentityRejection(request);
+    if(identityRejection)return identityRejection;
     const slot = takeRateSlot('sessions', trustedCallerKey(request) ?? callerKey(request));
     if (!slot.allowed) {
       logRateLimited(
@@ -568,8 +575,12 @@ export async function POST(request: Request): Promise<Response> {
     // přepínač *Automatically expose System Environment Variables* zháší
     // `VERCEL` i `VERCEL_ENV` naráz, a s vypnutým přepínačem je kvóta i tam
     // vypnutá. Tvrdit „na Vercelu klíč je" bez té podmínky je nepravda.
+    // P20: explicit authenticated-proxy mode is verified above; its principal
+    // also enables this quota on a single-process host without claiming Vercel.
     const owner = trustedCallerKey(request) ?? UNIDENTIFIED_CALLER;
-    const stored = openSession(sessionId, newSessionSeed(), Date.now(), owner);
+    let stored:ReturnType<typeof openSession>;
+    try{stored=openSession(sessionId,newSessionSeed(),Date.now(),owner);}
+    catch(error){if(live)releaseSlot('world');throw error;}
     // **Nad vlastní kvótou se odmítá nováček, a slot se vrací.** Je to ten
     // další `return` mezi `acquireSlot('world')` a `work.finally`, o kterém
     // mluví komentář výš: bez `releaseSlot` by každé odmítnutí natrvalo ubralo
@@ -630,6 +641,7 @@ export async function POST(request: Request): Promise<Response> {
     // přes celý sklad znamená vydat cizí cíl.
     stored.authoredWorldId = served?.world.id ?? null;
     const metrics = currentServerMetrics();
+    stored.generationMetrics = metrics;
     metrics?.setProvenance(live ? 'live' : 'prepared');
     const finishGeneration = metrics?.observe('background-generation');
     const generationStarted = Date.now();
@@ -643,8 +655,15 @@ export async function POST(request: Request): Promise<Response> {
             stored.session.fail(stored.fault);
           })
         : runGeneration(stored, verdict.prompt, {
+            legacyPlan: served !== null,
             emit,
             grammar,
+            // **Cache odpovědí jen pro živou větev** (P16 T6). Sklad nic
+            // nestojí, takže by „reused" nad ním byla věta bez obsahu — a
+            // `savedCalls: 2` lež. Sedí ZA všemi branami výš: kill switch,
+            // strop frekvence, moderace i slot rozhodly beze změny; zásah
+            // jen nevyrobí volání, které by strop utrácení jinak rezervoval.
+            ...(live ? answerReuseFor(process.env, verdict.prompt) : {}),
             log: (fault: SessionFault, detail: string) => {
               endedWith = fault;
               logRateLimited('worldstream/sessions', requestId, fault, detail);
@@ -718,6 +737,19 @@ export async function POST(request: Request): Promise<Response> {
       void settled;
     }
 
+    // **Proud v téže odpovědi, když si o něj klient řekne** (P16 `T8-stream404`).
+    // Registr relací je paměť instance a druhý požadavek na `/events` smí na
+    // Vercelu dopadnout na instanci, která relaci nezná — naměřeno 15. 9. 2026
+    // jako 202 a o vteřinu později 404, porotce bez světa. Odpověď na založení
+    // odchází z instance, na které generace běží, takže tuhle relaci zná vždycky.
+    // Bez `accept: text/event-stream` zůstává 202 s adresami jako dosud.
+    if ((request.headers.get('accept') ?? '').includes('text/event-stream'))
+      return sessionEventStream(sessionId, stored, 0, request.signal, {
+        'x-worldstream-session': sessionId,
+        // Týž původ jako klíč `authored` v JSONu níž a ze stejného důvodu chybí, když píše model.
+        ...(served === null ? {} : { 'x-worldstream-authored': served.match }),
+      });
+
     return Response.json(
       {
         requestId,
@@ -732,4 +764,8 @@ export async function POST(request: Request): Promise<Response> {
       { status: 202 },
     );
   }));
+}
+
+export async function POST(...args:Parameters<typeof handleDurablePOST>):Promise<Response> {
+  return withSessionStorageResponse(async()=>{assertSessionStorageReady();return handleDurablePOST(...args);});
 }

@@ -17,17 +17,17 @@ test('unsupported appearance is refused by the actual server while preserving ru
     return route.fallback();
   });
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('A cathedral of stacked shipping containers around a light well.');
   const opened = page.waitForResponse(response => response.url().endsWith('/api/worldstream/sessions') && response.request().method() === 'POST');
-  const liveRefused = page.waitForResponse(response => response.url().endsWith('/api/worldstream/sessions')
-    && response.request().postDataJSON()?.live === true);
   await page.getByTestId('prompt-submit').click();
-  const sessionId = (await (await opened).json()).sessionId as string;
+  // Dějství I odpovídá proudem (P16 `T8-stream404`); id relace nese hlavička.
+  const sessionId = (await (await opened).headerValue('x-worldstream-session')) as string;
   await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live', { timeout: 90_000 });
   const tick = page.getByTestId('runtime-tick');
   await expect.poll(async () => Number(await tick.getAttribute('data-tick'))).toBeGreaterThan(5);
   // Odmítnuté dveře nic neslíbily, takže hláška o nedoručeném dějství II lhát nesmí.
-  expect((await liveRefused).status()).toBe(503);
+  expect((await opened).request().postDataJSON()).not.toHaveProperty('live');
   await expect(page.getByTestId('second-act-missed')).toHaveCount(0);
   await page.getByTestId('runtime-pause').click();
   await expect(page.getByTestId('runtime-pause')).toHaveText('Resume');
@@ -60,18 +60,21 @@ test('unsupported appearance is refused by the actual server while preserving ru
 });
 
 // Scriptovaný je transport fixture, nikoli controller ani renderer.
-test('a runtime timer moves the actual rendered slot without rebuilding the scene', async ({ page }) => {
+for (const version of ['worldstream-v1', 'worldstream-v2'] as const)
+test(`a runtime timer moves the actual rendered slot without rebuilding the scene (${version})`, async ({ page }) => {
   test.setTimeout(90_000);
   const sim = structuredClone(surface);
   sim.state.timers.countdown.initial = 100;
   const blueprint = blueprintSchema.parse({
-    version: 'worldstream-v1', sessionSeed: 4021, title: 'Runtime movement fixture',
+    version, sessionSeed: 4021, title: 'Runtime movement fixture',
     intent: EXAMPLE_PLAN.intent, geometry: EXAMPLE_BLUEPRINT_ANSWER.geometry, shapes: [],
     world: sealSimHash({ irVersion: 'v1', simRevision: 0, lookRevision: 0,
       sim: { ...sim, rules: { move_after_timer: { event: { kind: 'onTimerEnd', timer: 'countdown' },
         actions: [{ kind: 'moveTo', target: 'visitor', socket: 'sensorB', ticks: 1 }] } } },
       look: EXAMPLE_BLUEPRINT_ANSWER.world.look }),
-    objects: [{ stableId: 'visitor', label: 'the visitor', synonyms: [], role: 'prop', importance: 1,
+    objects: [{ stableId: version === 'worldstream-v2' ? 'visitorVisual' : 'visitor',
+      ...(version === 'worldstream-v2' ? { binding: { entityId: 'visitor',
+        collider: { min: [4.1, 0, 5.1], max: [4.9, 0.7, 5.9] }, sockets: [], parts: [] } } : {}), label: 'the visitor', synonyms: [], role: 'prop', importance: 1,
       source: { kind: 'geom', node: 5 }, targetBounds: { min: [4.1, 0, 5.1], max: [4.9, 0.7, 5.9] } }],
   });
   const id = '22222222-3333-4444-5555-666666666666';
@@ -88,14 +91,16 @@ test('a runtime timer moves the actual rendered slot without rebuilding the scen
       body: frame(1, 'blueprint.ready', { blueprint }) + frame(2, 'session.complete', {}) });
   });
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('Runtime movement fixture');
   await page.getByTestId('prompt-submit').click();
+  await page.getByText('Simulation details', { exact: true }).click();
   await expect(page.getByTestId('runtime-tick')).toBeVisible();
   await page.getByTestId('runtime-pause').click();
-  await page.waitForFunction(() => window.__worldstreamStage?.slots().some(s => s.stableId === 'visitor'));
+  await page.waitForFunction(() => window.__worldstreamStage?.slots().some(s => s.stableId === 'visitor' || s.stableId === 'visitorVisual'));
   const before = await page.evaluate(() => ({
     tick: Number(document.querySelector('[data-testid="runtime-tick"]')?.getAttribute('data-tick')),
-    slot: window.__worldstreamStage!.slots().find(s => s.stableId === 'visitor')!,
+    slot: window.__worldstreamStage!.slots().find(s => s.stableId === 'visitor' || s.stableId === 'visitorVisual')!,
     builds: window.__worldstreamStage!.builds(),
   }));
   expect(before.tick).toBeLessThan(100);
@@ -104,7 +109,7 @@ test('a runtime timer moves the actual rendered slot without rebuilding the scen
     { timeout: 20_000 }).toBeGreaterThan(109);
   await page.getByTestId('runtime-pause').click();
   const after = await page.evaluate(() => ({
-    slot: window.__worldstreamStage!.slots().find(s => s.stableId === 'visitor')!,
+    slot: window.__worldstreamStage!.slots().find(s => s.stableId === 'visitor' || s.stableId === 'visitorVisual')!,
     builds: window.__worldstreamStage!.builds(),
   }));
   expect(after.slot.transform.translation[0] - before.slot.transform.translation[0]).toBeCloseTo(7);

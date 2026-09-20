@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 
+import { openInspect } from './inspect';
 import { UI_TOKENS, UI_TOKENS_CVD } from '../src/kit/palettes';
 
 /**
@@ -75,4 +76,91 @@ test('HUD kreslí partii v barvách tématu a umí variantu pro barvoslepé', as
   await page.evaluate(() => document.documentElement.setAttribute('data-palette', 'cvd'));
   await expect(banner).toHaveCSS('color', rgbOf(UI_TOKENS_CVD.negative));
   expect(UI_TOKENS_CVD.negative).not.toBe(UI_TOKENS.negative);
+});
+
+/**
+ * Věta, kterou sklad autorovaných světů zná přesně
+ * (`src/worldstream/authored-worlds.json`). Model se pro demo nekupuje, takže
+ * tahle sada nesmí měřit, jestli je zrovna nakonfigurovaný klíč.
+ */
+const SHELL_PROMPT = 'A cathedral of stacked shipping containers around a light well.';
+
+/** Obdélníky, které se s plátnem nesmí protnout. */
+const SHELL_BOXES = ['.ws-dock', '.ws-controls', '.ws-inspect-panels'] as const;
+
+/**
+ * Oracle úlohy P18 T2 — **rozhraní se přes svět nekreslí**.
+ *
+ * Mřížka `.ws-shell` od P13 vlny 0 zaručovala, že se dok, ovládání a zásuvka
+ * neperou **mezi sebou**. Se scénou se ale pral pořád každý z nich: plátno bylo
+ * celý viewport a rozhraní leželo na něm. Je to tatáž vada, kterou mřížka
+ * zavírala uvnitř rozhraní, jen o patro níž — a stejně neviditelná, protože
+ * všechny ty boxy jsou průsvitné.
+ *
+ * Měří se **obdélníky za běhu**, ne zdrojový CSS: plocha plátna vzniká až ze
+ * skutečných sloupců mřížky a z výšky pruhu, a přesně ta se dá spočítat správně
+ * a přitom napsat do jiného místa, než kde plátno doopravdy končí.
+ *
+ * **Dvě pojistky proti testu, který projde nad ničím.** Prázdný obdélník se
+ * neprotne s čímkoli, takže se nejdřív měří, že všechny tři boxy nějakou plochu
+ * mají — a plátno scvrklé na proužek by taky prošlo, takže má vlastní spodní
+ * mez. Proto to celé stojí nad **postaveným** světem s **otevřenou** zásuvkou:
+ * ovládání se objeví teprve se světem a panely se do DOM dostanou teprve
+ * otevřením (`e2e/inspect.ts`).
+ */
+test('rozhraní nekreslí přes plátno: dok, ovládání ani panely se s ním neprotnou', async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+
+  await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
+  // Zásuvka se otevírá **před** větou: zavřená panely doopravdy odpojuje.
+  await openInspect(page);
+
+  await page.getByTestId('prompt-input').fill(SHELL_PROMPT);
+  await page.getByTestId('prompt-submit').click();
+  await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live', {
+    timeout: 90_000,
+  });
+
+  const measured = await page.evaluate((selectors) => {
+    const rect = (selector: string) => {
+      const node = document.querySelector(selector);
+      if (node === null) return { selector, missing: true, width: 0, height: 0,
+        left: 0, top: 0, right: 0, bottom: 0 };
+      const box = node.getBoundingClientRect();
+      return { selector, missing: false, width: box.width, height: box.height,
+        left: box.left, top: box.top, right: box.right, bottom: box.bottom };
+    };
+    return {
+      canvas: rect('[data-testid="worldstream-canvas"]'),
+      shell: selectors.map(rect),
+      view: { width: window.innerWidth, height: window.innerHeight },
+    };
+  }, [...SHELL_BOXES]);
+
+  expect(
+    measured.shell.filter((box) => box.missing || box.width === 0 || box.height === 0),
+    `nad nulovým obdélníkem se nedá nic dokázat: ${JSON.stringify(measured.shell)}`,
+  ).toEqual([]);
+  expect(measured.canvas.width, 'plátno se scvrklo na proužek').toBeGreaterThan(
+    measured.view.width * 0.5,
+  );
+  expect(measured.canvas.height, 'plátno se scvrklo na proužek').toBeGreaterThan(
+    measured.view.height * 0.5,
+  );
+
+  const canvas = measured.canvas;
+  const overlaps = measured.shell.filter(
+    (box) =>
+      box.left < canvas.right &&
+      box.right > canvas.left &&
+      box.top < canvas.bottom &&
+      box.bottom > canvas.top,
+  );
+  expect(
+    overlaps,
+    `rozhraní leží na plátně ${JSON.stringify(canvas)}: ${JSON.stringify(overlaps)}`,
+  ).toEqual([]);
 });

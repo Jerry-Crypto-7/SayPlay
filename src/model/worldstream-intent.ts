@@ -27,6 +27,7 @@
 
 import { EMISSION_MODEL, type UpstreamRequest } from './prompt';
 import { EXAMPLE_ONLY_IDENTIFIERS, EXAMPLE_PLAN, ROLE_HINTS } from './worldstream-examples';
+import { readSceneSpec, type SceneSpec } from '@/scene/spec';
 
 /**
  * Značka fáze. Píše se do provenance, aby šlo poznat plán od staré emise —
@@ -70,6 +71,8 @@ export interface PlannedObject {
 export interface PlannerEmission {
   readonly intent: IntentSummary;
   readonly objects: readonly PlannedObject[];
+  /** Absent only on explicitly supported historical replay/fixtures. */
+  readonly sceneSpec?: SceneSpec;
 }
 
 export type PlannerRejection =
@@ -134,7 +137,7 @@ const WORLD_DOC_FIELDS = ['irVersion', 'simRevision', 'lookRevision', 'sim', 'lo
  * dvou místech, rozešel by se a rozlišovač by tiše přestal rozlišovat —
  * sklad uvařených světů by pak na compiler požadavek vydal plán.
  */
-export const PLANNER_ANSWER_FIELDS = ['intent', 'objects'] as const;
+export const PLANNER_ANSWER_FIELDS = ['intent', 'objects', 'sceneSpec'] as const;
 
 export function buildIntentRequest(prompt: string): UpstreamRequest {
   const system = [
@@ -167,11 +170,31 @@ export function buildIntentRequest(prompt: string): UpstreamRequest {
     'importance is 0 to 3. 3 is the thing the sentence is about and cannot be missing. 0 is atmosphere',
     'that can be dropped on a weak machine without the sentence becoming untrue.',
     '',
-    'You do NOT write sizes, positions, materials, colours, or anything a renderer would read.',
+    'Keep requested colours, materials and states as attributes. Do not invent numerical placement.',
+    'sceneSpec is required, with version:1, requirements, instances, relations, clarifications.',
+    'Each requirement: id, description, priority (main|secondary), polarity (required|forbidden), count, instanceIds, provenance.',
+    'Provenance is {kind:"requested",quote:"EXACT substring of the request"} or {kind:"inferred",reason:"why it is needed"}.',
+    'It is written ONCE, on the requirement. Anything else that needs an origin points at it with req, the 0-based index into requirements.',
+    'Negations are forbidden requirements with count:0 and instanceIds:[]; required ones have an exact positive count.',
+    'Every individual gets its own objects entry AND instances entry sharing stableId: five listeners are five IDs, never one crowd.',
+    // Štíhlý tvar (P21 T18): instance nenese requirementIds ani provenance —
+    // čtenář (`readSceneSpec`) obojí odvodí z požadavku, který ji jmenuje.
+    // V2 (P22 T5): relace odkazuje na původ indexem `req`, orientace je slovo
+    // a atributy se píšou jen ty, které čte orákulum. Délka zadání je pinovaná
+    // (`prompt-size.json`, `plannerChars` neroste), proto jsou okolní věty
+    // kratší než do 19. 9. 2026.
+    'Each instance: stableId, role, orientation (one word: n|e|s|w|none; none unless the sentence states a facing).',
+    'attributes:[{name,value}] only when the sentence states one of color, material, state; omit the field otherwise.',
+    'No requirementIds and no provenance on instances — both come from the requirement listing the instance.',
+    'Each relation: subjectId, relation (inside|on|against|near|facing|connected-to), targetId, req. Both IDs must name instances.',
+    'count equals the length of instanceIds; every instance is listed by a requirement.',
+    'Keep invented objects with their original meaning; never swap them for a familiar one.',
+    'A repeated reference to one thing is one thing. Added scene context is inferred, never requested.',
+    'clarifications is normally []. Only a result-changing ambiguity merits {question,affects:"appearance"|"interaction",assumption}.',
     'You do NOT write a world graph. Fields like sim, look or irVersion belong to a different stage and',
     'an answer carrying them is rejected whole.',
     '',
-    'An example answer, for a sentence unrelated to yours. Copy the SHAPE and nothing else:',
+    'Historical example of intent and objects only; your answer additionally MUST include the sceneSpec contract above:',
     JSON.stringify(EXAMPLE_PLAN, null, 2),
   ].join('\n');
 
@@ -281,7 +304,7 @@ function readObject(value: unknown, index: number): PlannedObject | string {
  * Drží to test „jméno z ukázky se chytí i v jinak vlastním plánu": kdyby někdo
  * kontrolu jmen zúžil zpět na porovnání celého dokumentu, ten test zčervená.
  */
-export function readPlannerEmission(value: unknown): PlannerResult {
+export function readPlannerEmission(value: unknown, options: { requireSceneSpec?: boolean; prompt?: string } = {}): PlannerResult {
   if (value === null || typeof value !== 'object' || Array.isArray(value))
     return { ok: false, reason: 'NOT_AN_OBJECT', detail: 'the answer is not a JSON object' };
 
@@ -313,6 +336,8 @@ export function readPlannerEmission(value: unknown): PlannerResult {
     if (typeof object === 'string') return { ok: false, reason: 'WRONG_SHAPE', detail: object };
     objects.push(object);
   }
+  if (new Set(objects.map((object) => object.stableId)).size !== objects.length)
+    return { ok: false, reason: 'WRONG_SHAPE', detail: 'objects contains duplicate stableId' };
 
   const borrowed = objects
     .flatMap((object) => [object.stableId, object.label])
@@ -324,5 +349,11 @@ export function readPlannerEmission(value: unknown): PlannerResult {
       detail: `the answer reuses example-only names: ${[...new Set(borrowed)].join(', ')}`,
     };
 
-  return { ok: true, value: { intent, objects }, stage: PLANNER_STAGE };
+  if (body.sceneSpec === undefined && options.requireSceneSpec)
+    return { ok: false, reason: 'WRONG_SHAPE', detail: 'sceneSpec is required for new plans; legacy replay must be explicit' };
+  const sceneSpec = body.sceneSpec === undefined ? undefined : readSceneSpec(body.sceneSpec, objects.map((o) => o.stableId), options.prompt);
+  if (typeof sceneSpec === 'string') return { ok: false, reason: 'WRONG_SHAPE', detail: sceneSpec };
+  if (sceneSpec && sceneSpec.instances.some((instance) => objects.find((object) => object.stableId === instance.stableId)?.role !== instance.role))
+    return { ok: false, reason: 'WRONG_SHAPE', detail: 'sceneSpec instance role differs from planned object' };
+  return { ok: true, value: { intent, objects, ...(sceneSpec ? { sceneSpec } : {}) }, stage: PLANNER_STAGE };
 }

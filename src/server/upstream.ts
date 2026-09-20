@@ -54,6 +54,8 @@ import { serverPhaseObserver } from './worldstream-metrics';
  */
 
 import { EMISSION_MODEL } from '../model/prompt';
+import type { ChunkName } from '../model/emission-merge';
+import { requestChunk, requestStage } from '../model/worldstream-prompt';
 
 import type { GenerationBranch, GenerationCall, GenerationOutcome } from './pipeline';
 import type { Pricing, Usage } from './spend-cap';
@@ -208,6 +210,60 @@ function positiveNumber(raw: string | undefined, fallback: number): number {
 function effortLevel(raw: string | undefined): Effort {
   const value = (raw ?? '').trim().toLowerCase();
   return (EFFORT_LEVELS as readonly string[]).includes(value) ? (value as Effort) : DEFAULT_EFFORT;
+}
+
+/**
+ * **Kolik uvažování si který kus světa zaslouží — jediné místo, kde to stojí.**
+ *
+ * Naměřeno 14. 9. 2026 (`evals/worldstream/latency-report.json`):
+ * `gpt-6-astra@high` má medián 258 s a tři světy ze sedmi přes 300 s, což je
+ * mez, ve které hosting spojení utne; `astra@low` doručila 8 z 8 při mediánu
+ * 142 s. Plošně snížit úsilí ale nejde: geometrie je to jediné, co tenhle
+ * produkt prodává, a slepě ji nikdo neporovnal. Vysoké úsilí proto platíme
+ * tam, **odkud pochází 3D** (`architecture` píše geometrii a kulisu,
+ * `objects` tvary a jejich umístění), a pravidla světa jedou nízko — ta jsou
+ * graf událostí nad hotovým rejstříkem plánovače, ne prostorová úvaha.
+ *
+ * Tabulka je úplná nad `ChunkName`, takže nový kus bez rozhodnutí o úsilí
+ * neprojde typovou kontrolou. Jiné požadavky (plánovač, celý kompilátor,
+ * změna běžícího světa) žádný kus nenesou a jedou dál na úsilí z prostředí —
+ * to je dnešní chování a tahle úloha na něj nesahá.
+ */
+export const CHUNK_EFFORT: Readonly<Record<ChunkName, Effort>> = {
+  architecture: 'high',
+  objects: 'high',
+  rules: 'low',
+  // Dvoukusý řez (P22 T16): `scene` je architektura i objekty naráz, tedy 3D.
+  scene: 'high',
+};
+
+/**
+ * **Úsilí po fázi, pro požadavky bez kusu (P21 T19).**
+ *
+ * Plánovač píše strukturu — rejstřík objektů a `sceneSpec` — ne geometrii.
+ * Doměření 19. 9. 2026 (`evals/worldstream/planner-anatomy.json`) ukázalo, že
+ * jeho 75–80 s je délka odpovědi (6,8 kB, z toho 79 % `sceneSpec`), ne
+ * uvažování; nižší úsilí je tedy levný pokus, který T21 změří **spolu** se
+ * štíhlým `sceneSpec` (T18) — artefakt T21 to připsání nerozdělí, protože
+ * oddělené měření by stálo druhý živý běh. Kompilátor a změna běžícího světa
+ * (`refine`) tu záměrně chybí: jedou dál na úsilí z prostředí, protože
+ * z nich pochází 3D.
+ */
+export const STAGE_EFFORT: Readonly<Partial<Record<NonNullable<ReturnType<typeof requestStage>>, Effort>>> = {
+  planner: 'low',
+};
+
+/**
+ * Úsilí pro jedno volání. Rozhoduje **požadavek**, ne volající: kus i fáze se
+ * čtou z textu (`requestChunk`, `requestStage`), takže přiřazení platí i na
+ * cestě, která si o něj neřekla — přehrání archivu, opravné kolo, cokoli
+ * dalšího. Kus má přednost před fází; požadavek bez obojího jede z prostředí.
+ */
+export function effortForCall(call: GenerationCall, config: UpstreamConfig): Effort {
+  const chunk = requestChunk(call.request);
+  if (chunk !== null) return CHUNK_EFFORT[chunk];
+  const stage = requestStage(call.request);
+  return (stage === null ? undefined : STAGE_EFFORT[stage]) ?? config.effort;
 }
 
 /**
@@ -677,15 +733,31 @@ function codexArgs(model: string, effort: string, cwd: string): string[] {
   ];
 }
 
-/** Na Windows `taskkill /T` přes PID obalu, dokud obal žije; jinde celá skupina procesů. */
-function killCodexTree(child: ChildProcess): void {
-  if (process.platform === 'win32') execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true }, () => {});
-  else {
+/**
+ * Na Windows `taskkill /T` přes PID obalu, **jen dokud obal žije**; jinde celá
+ * skupina procesů. `afterKill` zavírá roury **až po doběhnutí `taskkill`**.
+ *
+ * Po `exit` obalu Windows jeho PID uvolní a smí ho dostat cizí proces, takže
+ * `taskkill /F` by zabil něco, co nám nepatří (`ship-pidreuse`, revize
+ * 15. 9. 2026). Proto ani roury nejdou zavřít dřív: zavřená roura sama obal
+ * ukončí, a `taskkill`, který PID vyhledá o desítky milisekund později, by
+ * trefil uvolněné číslo (security-reviewer před `/ship` 15. 9. 2026). Sirotka
+ * za mrtvým obalem ten PID stejně nenajde – s ním se vypořádají zavřené roury
+ * a lhůta ve `stop`. ID skupiny na POSIXu se neuvolní, dokud v ní někdo žije,
+ * takže tam se zabíjí dál.
+ */
+export function killCodexTree(child: ChildProcess, afterKill: () => void): void {
+  if (process.platform === 'win32') {
+    if (child.exitCode === null && child.signalCode === null)
+      execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true }, () => afterKill());
+    else afterKill();
+  } else {
     try {
       process.kill(-(child.pid ?? 0), 'SIGKILL');
     } catch {
       /* skupina už neexistuje */
     }
+    afterKill();
   }
 }
 
@@ -703,21 +775,28 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
     // Buffery, ne řetězec: znak UTF-8 rozdělený mezi dvě čtení roury by se
     // po kouscích dekódoval na U+FFFD (revize 15. 9. 2026, naměřeno 6 z 7 hranic).
     const chunks: Buffer[] = [];
-    let stderr = '';
+    // Totéž platí pro stderr: jméno uživatele s diakritikou rozdělené mezi dvě
+    // čtení by dostalo U+FFFD a redakce archivu by ho nepoznala.
+    const stderrChunks: Buffer[] = [];
+    let stderrBytes = 0;
     let outputBytes = 0;
     let cut: string | null = null;
     let done = false;
     let grace: ReturnType<typeof setTimeout> | undefined;
     const stop = (why: string) => {
-      cut ??= why;
-      killCodexTree(child);
-      // Obal, který už skončil, `taskkill /T` nenajde, a `close` pak nepřijde,
+      // Jen jednou: roury se zavírají až po `taskkill`, takže data mezitím tečou
+      // dál a každý další kus nad 8 MiB by pouštěl další `taskkill`.
+      if (cut !== null) return;
+      cut = why;
+      // Na obal, který už skončil, se `taskkill` neposílá, a `close` pak nepřijde,
       // dokud rouru drží potomek, který ho přežil. Roury se proto zavřou a po
       // krátké lhůtě se končí i bez `close` – odpověď ani adresář na sirotkovi
       // viset nesmí (revize 15. 9. 2026).
-      child.stdout.destroy();
-      child.stderr.destroy();
-      grace ??= setTimeout(() => finish(null), CODEX_KILL_GRACE_MS);
+      killCodexTree(child, () => {
+        child.stdout.destroy();
+        child.stderr.destroy();
+      });
+      grace = setTimeout(() => finish(null), CODEX_KILL_GRACE_MS);
     };
     const timer = setTimeout(() => stop('codex exec ran past the timeout'), timeoutMs);
     child.stdout.on('data', (chunk: Buffer) => {
@@ -726,7 +805,9 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
       else chunks.push(chunk);
     });
     child.stderr.on('data', (chunk: Buffer) => {
-      if (stderr.length < 300) stderr += chunk;
+      if (stderrBytes >= 1200) return;
+      stderrChunks.push(chunk);
+      stderrBytes += chunk.length;
     });
     child.stdin.on('error', () => {});
     child.stdin.end(input);
@@ -746,7 +827,7 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
       }
       const reason = cut ?? failure;
       if (reason === null) resolve(Buffer.concat(chunks).toString('utf8'));
-      else reject(new Error(`${reason} ${stderr.slice(0, 300)}`.trim()));
+      else reject(new Error(`${reason} ${Buffer.concat(stderrChunks).toString('utf8').slice(0, 300)}`.trim()));
     };
     child.on('error', (error) => finish(error.message.split('\n')[0]));
     child.on('close', (code) => finish(code === 0 ? null : `codex exec exited with code ${code}`));
@@ -758,7 +839,7 @@ async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig)
   try {
     output = await observePhaseAsync(serverPhaseObserver, 'provider-http-request', () => runCodex(
       config.model,
-      config.effort,
+      effortForCall(call, config),
       `${call.request.system}\n\n${call.request.user}`,
       config.timeoutMs,
     ));
@@ -821,7 +902,7 @@ async function generate(
         max_tokens: config.maxOutputTokens,
         // `effort` bydlí uvnitř `output_config`, ne nahoře — nahoře ho API
         // neuvidí a mlčky pojede na výchozím `high`.
-        output_config: { effort: config.effort },
+        output_config: { effort: effortForCall(call, config) },
         system: call.request.system,
         messages: [{ role: 'user', content: call.request.user }],
       }),

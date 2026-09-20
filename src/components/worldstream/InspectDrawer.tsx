@@ -8,6 +8,12 @@
  * **Nemažou se** — jsou to důkazy, na kterých produkt stojí, a porotce se na ně
  * musí umět podívat. Jen už neplatí, že je vidí každý, kdo přišel napsat větu.
  *
+ * Od P22 T8 sem patří i `WhyPanel` (`src/components/worldstream/WhyPanel.tsx`).
+ * Je to první panel, který zásuvku **otevírá sám**: klik na značku „Why?" pod
+ * posuvníkem času nastaví ve stránce tik a `inspecting` naráz, protože panel,
+ * který se objeví v zavřené zásuvce, není vidět — a porotce by hledal, kam se
+ * jeho kliknutí podělo. Přepínač se přitom nemění: zavře i tenhle panel.
+ *
  * ## Zavřená zásuvka opravdu nic nevykresluje
  *
  * `children` se do stromu dostanou teprve po otevření, ne skryté přes

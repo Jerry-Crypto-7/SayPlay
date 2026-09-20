@@ -45,7 +45,7 @@
 import { buildRuntimeWorld } from '../ir/build';
 import { ID_PATTERN } from '../ir/types';
 import { TIER_POLICY, isTier } from '../verify/tiers';
-import { solveWitness } from '../verify/solve';
+import { solveWitnessDetailed, type SolveDiagnostic } from '../verify/solve';
 import { verifyWitness } from '../verify/witness';
 
 /** Jeden zásah, tak jak ho uvidí porotce. Anglicky — je to viditelná měď produktu. */
@@ -63,6 +63,19 @@ export interface RepairNote {
 export interface RepairResult {
   readonly document: unknown;
   readonly notes: readonly RepairNote[];
+  readonly witnessSearch?: WitnessSearchEvidence;
+}
+
+export interface WitnessSearchEvidence {
+  readonly status: SolveDiagnostic['status'];
+  readonly nodes: number;
+  readonly ticks: number;
+  readonly limits: { readonly maxNodes: number; readonly maxTicks: number; readonly maxDepth: number; readonly settleTicks: number };
+}
+
+export function boundedSearchDetail(search: WitnessSearchEvidence | undefined): string | null {
+  if (!search || (search.status !== 'budget-exhausted' && search.status !== 'search-exhausted')) return null;
+  return `Bounded witness search ${search.status}: ${search.nodes}/${search.limits.maxNodes} replay nodes, ${search.ticks}/${search.limits.maxTicks} ticks; max input depth ${search.limits.maxDepth}, coarse spacing ${search.limits.settleTicks}. No certified route was found within this search. This is not proof that the world is unwinnable.`;
 }
 
 /**
@@ -71,8 +84,28 @@ export interface RepairResult {
  * `maxNodes` je v replayech, ne v čase — hledání musí v prohlížeči i v Node
  * skončit stejně. 20 000 replayů malého světa je řádově desetiny sekundy a
  * proti 40+ sekundám emise je to šum.
+ *
+ * **Velký svět ale ne** – proto i `maxTicks`. Nejdražší úspěšné hledání
+ * v archivu P19 stálo 14 805 tiků (171 replayů); 40 000 je 2,7× víc a
+ * nevyhratelný svět pokladny zamítne za ~12 s místo 127–167 s.
+ *
+ * **Širší rozpočet se zvažoval a měření ho zamítlo – 18. 9. 2026 (P21 T1).**
+ * Čtyřnásobek obou zdrojových mezí (80 000 uzlů / 160 000 tiků) proběhl nad
+ * všemi 72 světovými grafy v archivu `create-raw.json` vedle stávajícího
+ * rozpočtu a **nepřidal ani jeden certifikovaný svět**: 51 vyřešených předtím,
+ * 51 potom, žádná nalezená stopa se nehnula. Důvod je v číslech, ne v náhodě –
+ * **rozpočtu se nedotkl žádný z těch světů**. Nejhladovější snědl 421 uzlů
+ * (2,1 % stropu) a 34 020 tiků (85 %), a všech 17 neúspěchů skončilo statusem
+ * `search-exhausted`: hledači došel prostor, ne rozpočet, a tomu nepřidá ani
+ * stonásobek. Celé měření, včetně p95 času hledání, je
+ * `evals/worldstream/solve-budget.json`; znovu ho spustí
+ * `evals/worldstream/solve-budget.measure.ts`.
+ *
+ * Exportuje se kvůli `src/model/__tests__/solve-budget.test.ts`, který připíná,
+ * že se meze drží v uzlech a tikách a že nasazený rozpočet neztratí cestu,
+ * kterou předchozí našel. Kopie čísel v testu by tuhle vlastnost neměřila.
  */
-const SOLVE_BUDGET = { maxNodes: 20_000, maxDepth: 6, settleTicks: 30 } as const;
+export const SOLVE_BUDGET = { maxNodes: 20_000, maxTicks: 40_000, maxDepth: 6, settleTicks: 30 } as const;
 
 function asRecord(value: unknown): Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -401,7 +434,7 @@ function witnessEnvelope(sim: Record<string, unknown>): Record<string, unknown> 
   };
 }
 
-function solveFor(sim: Record<string, unknown>, notes: RepairNote[]): Record<string, unknown> {
+function solveFor(sim: Record<string, unknown>, notes: RepairNote[], onSearch: (search: WitnessSearchEvidence) => void): Record<string, unknown> {
   const built = buildRuntimeWorld(sim);
   // Svět, který se nedá ani snížit, nemá kde hledat — odmítne ho certifikace a
   // řekne u toho vlastní důvod.
@@ -417,7 +450,9 @@ function solveFor(sim: Record<string, unknown>, notes: RepairNote[]): Record<str
     }
   }
 
-  const found = solveWitness(built.world, SOLVE_BUDGET);
+  const diagnostic = solveWitnessDetailed(built.world, SOLVE_BUDGET);
+  onSearch({status:diagnostic.status,nodes:diagnostic.nodes,ticks:diagnostic.ticks,limits:SOLVE_BUDGET});
+  const found = diagnostic.result;
   if (found === null) return sim;
 
   notes.push({
@@ -466,8 +501,9 @@ export function repairEmission(body: unknown): RepairResult {
     rules: repairRules(sim, declared, rewrites, notes),
     witness: witnessEnvelope(sim),
   };
-  const withWitness = solveFor(withRules, notes);
+  let witnessSearch: WitnessSearchEvidence | undefined;
+  const withWitness = solveFor(withRules, notes, search => { witnessSearch = search; });
   const look = dropOrphanLookModules(asRecord(document.look), declared, notes);
 
-  return { document: { ...document, sim: withWitness, look }, notes };
+  return { document: { ...document, sim: withWitness, look }, notes, ...(witnessSearch ? {witnessSearch} : {}) };
 }

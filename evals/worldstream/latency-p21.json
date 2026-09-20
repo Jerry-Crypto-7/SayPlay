@@ -1,0 +1,691 @@
+{
+  "measuredAt": "2026-09-19T08:55:08.117Z",
+  "plan": "P21 T5 + T16 – one live run after the phase-1 changes",
+  "model": "gpt-6-astra@medium#cli",
+  "effort": "medium",
+  "cases": 2,
+  "caseIds": [
+    "c01",
+    "c16"
+  ],
+  "chunked": true,
+  "callCap": 40,
+  "sessionSeed": 4021,
+  "baseline": {
+    "measuredAt": "2026-09-13T18:58:42.960Z",
+    "file": "evals/worldstream/latency-report.json",
+    "model": "gpt-6-astra@medium#cli",
+    "effort": "medium",
+    "cases": 5,
+    "caseIds": [
+      "c01",
+      "c07",
+      "c13",
+      "c19",
+      "c25"
+    ],
+    "caseMedianMs": 142581,
+    "caseP95Ms": 258877,
+    "plannerMedianMs": 16696,
+    "compilerMedianMs": 103209,
+    "perCaseMs": {
+      "c01": 96466
+    },
+    "note": "Baseline measured 2026-09-13 on 5 sentences with gpt-6-astra@medium#cli (one compiler call per world, @medium); this run measures fewer sentences in concurrent chunks, so compare per sentence where the id matches, and read the medians as different denominators."
+  },
+  "summary": {
+    "model": "gpt-6-astra@medium#cli",
+    "cases": 2,
+    "callsPerCase": 4,
+    "inputTokensPerCase": 72532,
+    "outputTokensPerCase": 8412,
+    "callsWithoutUsage": 0,
+    "notJsonAsWritten": 0,
+    "caseMedianMs": 143737,
+    "caseP95Ms": 224914,
+    "geometryAuthored": 0,
+    "certified": 0,
+    "byStage": {
+      "planner": {
+        "n": 2,
+        "medianMs": 75025,
+        "p95Ms": 79604,
+        "medianAnswerBytes": 6794
+      },
+      "compiler": {
+        "n": 6,
+        "medianMs": 45081,
+        "p95Ms": 145278,
+        "medianAnswerBytes": 1705
+      }
+    },
+    "repairCalls": 0,
+    "repairMedianMs": 0,
+    "repairReasons": {},
+    "chunked": true,
+    "perCase": [
+      {
+        "id": "c01",
+        "ms": 143737,
+        "chunks": {
+          "longestMs": 68523,
+          "sumMs": 151809,
+          "byChunk": {
+            "rules": 38206,
+            "objects": 45081,
+            "architecture": 68523
+          }
+        },
+        "rounds": 1,
+        "authored": false,
+        "failure": {
+          "stage": "schema",
+          "detail": "upperContainerA: on lowerContainerA: base does not rest inside a declared support surface"
+        }
+      },
+      {
+        "id": "c16",
+        "ms": 224914,
+        "chunks": {
+          "longestMs": 145278,
+          "sumMs": 235027,
+          "byChunk": {
+            "architecture": 16007,
+            "rules": 73742,
+            "objects": 145278
+          }
+        },
+        "rounds": 1,
+        "authored": false,
+        "failure": {
+          "stage": "shape",
+          "detail": "shapes[5]: shape overflows its own targetBounds on x, y, z: generated bounds were 4.9× the requested volume"
+        }
+      }
+    ]
+  },
+  "perCase": [
+    {
+      "id": "c01",
+      "prompt": "A cathedral of stacked shipping containers around a light well.",
+      "phases": {
+        "massingPreviewMs": 75026,
+        "toFirstChunkMs": 113267,
+        "toFirstObjectMs": null,
+        "toPlayableMs": null,
+        "toFullDetailMs": 143737
+      },
+      "chunks": {
+        "longestMs": 68523,
+        "sumMs": 151809,
+        "byChunk": {
+          "rules": 38206,
+          "objects": 45081,
+          "architecture": 68523
+        }
+      },
+      "rounds": 1,
+      "authored": false,
+      "certified": false,
+      "failure": {
+        "stage": "schema",
+        "detail": "upperContainerA: on lowerContainerA: base does not rest inside a declared support surface"
+      },
+      "baselineMs": 96466
+    },
+    {
+      "id": "c16",
+      "prompt": "A pneumatic tube station that sorts capsules into three chutes.",
+      "phases": {
+        "massingPreviewMs": 79605,
+        "toFirstChunkMs": 95620,
+        "toFirstObjectMs": null,
+        "toPlayableMs": null,
+        "toFullDetailMs": 224914
+      },
+      "chunks": {
+        "longestMs": 145278,
+        "sumMs": 235027,
+        "byChunk": {
+          "architecture": 16007,
+          "rules": 73742,
+          "objects": 145278
+        }
+      },
+      "rounds": 1,
+      "authored": false,
+      "certified": false,
+      "failure": {
+        "stage": "shape",
+        "detail": "shapes[5]: shape overflows its own targetBounds on x, y, z: generated bounds were 4.9× the requested volume"
+      },
+      "baselineMs": null
+    }
+  ],
+  "calls": [
+    {
+      "caseId": "c01",
+      "call": 1,
+      "stage": "planner",
+      "chunk": null,
+      "repair": false,
+      "reason": null,
+      "ms": 75025,
+      "endedAtMs": 75026,
+      "answerBytes": 6794,
+      "inputTokens": 15965,
+      "outputTokens": 2296,
+      "ok": true
+    },
+    {
+      "caseId": "c01",
+      "call": 4,
+      "stage": "compiler",
+      "chunk": "rules",
+      "repair": false,
+      "reason": null,
+      "ms": 38206,
+      "endedAtMs": 113267,
+      "answerBytes": 2750,
+      "inputTokens": 19341,
+      "outputTokens": 1135,
+      "ok": true
+    },
+    {
+      "caseId": "c01",
+      "call": 4,
+      "stage": "compiler",
+      "chunk": "objects",
+      "repair": false,
+      "reason": null,
+      "ms": 45081,
+      "endedAtMs": 120129,
+      "answerBytes": 1379,
+      "inputTokens": 18770,
+      "outputTokens": 1381,
+      "ok": true
+    },
+    {
+      "caseId": "c01",
+      "call": 4,
+      "stage": "compiler",
+      "chunk": "architecture",
+      "repair": false,
+      "reason": null,
+      "ms": 68523,
+      "endedAtMs": 143558,
+      "answerBytes": 1705,
+      "inputTokens": 17939,
+      "outputTokens": 2157,
+      "ok": true
+    },
+    {
+      "caseId": "c16",
+      "call": 1,
+      "stage": "planner",
+      "chunk": null,
+      "repair": false,
+      "reason": null,
+      "ms": 79604,
+      "endedAtMs": 79605,
+      "answerBytes": 7647,
+      "inputTokens": 15964,
+      "outputTokens": 2536,
+      "ok": true
+    },
+    {
+      "caseId": "c16",
+      "call": 4,
+      "stage": "compiler",
+      "chunk": "architecture",
+      "repair": false,
+      "reason": null,
+      "ms": 16007,
+      "endedAtMs": 95620,
+      "answerBytes": 177,
+      "inputTokens": 18235,
+      "outputTokens": 346,
+      "ok": true
+    },
+    {
+      "caseId": "c16",
+      "call": 4,
+      "stage": "compiler",
+      "chunk": "rules",
+      "repair": false,
+      "reason": null,
+      "ms": 73742,
+      "endedAtMs": 153388,
+      "answerBytes": 5029,
+      "inputTokens": 19637,
+      "outputTokens": 2277,
+      "ok": true
+    },
+    {
+      "caseId": "c16",
+      "call": 4,
+      "stage": "compiler",
+      "chunk": "objects",
+      "repair": false,
+      "reason": null,
+      "ms": 145278,
+      "endedAtMs": 224908,
+      "answerBytes": 5694,
+      "inputTokens": 19212,
+      "outputTokens": 4695,
+      "ok": true
+    }
+  ],
+  "phase5": {
+    "measuredAt": "2026-09-19T10:48:25.391Z",
+    "plan": "P21 T21 – one live run after T18 (slim sceneSpec) + T19 (planner at low effort)",
+    "model": "gpt-6-astra@medium#cli",
+    "effort": "medium",
+    "plannerEffort": "low",
+    "cases": 2,
+    "caseIds": [
+      "c01",
+      "c16"
+    ],
+    "chunked": false,
+    "callCap": 9,
+    "calls": 7,
+    "byStage": {
+      "planner": {
+        "n": 2,
+        "medianMs": 59874,
+        "p95Ms": 65040,
+        "medianAnswerBytes": 5739,
+        "medianOutputTokens": 1867
+      },
+      "compiler": {
+        "n": 2,
+        "medianMs": 164270,
+        "p95Ms": 187611,
+        "medianAnswerBytes": 8065,
+        "medianOutputTokens": 5322
+      }
+    },
+    "previous": {
+      "morning19": {
+        "measuredAt": "2026-09-19T08:55:08.117Z",
+        "plannerMedianMs": 75025,
+        "plannerAnswerBytes": 6794,
+        "plannerOutputTokens": 2296,
+        "note": "the 2026-09-19 morning run above in this file: chunked compiler, planner on the environment effort, full sceneSpec"
+      },
+      "baseline13": {
+        "measuredAt": "2026-09-13T18:58:42.960Z",
+        "plannerMedianMs": 16696,
+        "note": "Baseline measured 2026-09-13 on 5 sentences with gpt-6-astra@medium#cli (one compiler call per world, @medium); this run measures fewer sentences in concurrent chunks, so compare per sentence where the id matches, and read the medians as different denominators."
+      }
+    },
+    "target": {
+      "plannerMs": 30000,
+      "answerBytes": 4000,
+      "note": "P21 T21 goal, stated as a goal – the measured number decides, not this line"
+    },
+    "perCase": [
+      {
+        "id": "c01",
+        "plannerMs": 65040,
+        "plannerAnswerBytes": 5797,
+        "plannerOutputTokens": 2017,
+        "compilerMs": 164270,
+        "rounds": 2,
+        "authored": true,
+        "certified": true,
+        "failure": null,
+        "phases": {
+          "massingPreviewMs": 65041,
+          "toFirstChunkMs": null,
+          "toFirstObjectMs": 424611,
+          "toPlayableMs": 424611,
+          "toFullDetailMs": 424763
+        }
+      },
+      {
+        "id": "c16",
+        "plannerMs": 59874,
+        "plannerAnswerBytes": 5739,
+        "plannerOutputTokens": 1867,
+        "compilerMs": 187611,
+        "rounds": 3,
+        "authored": false,
+        "certified": false,
+        "failure": {
+          "stage": "schema",
+          "detail": "firstChute: connected-to capsuleSorter: no adjoining face connects the objects"
+        },
+        "phases": {
+          "massingPreviewMs": 59875,
+          "toFirstChunkMs": null,
+          "toFirstObjectMs": null,
+          "toPlayableMs": null,
+          "toFullDetailMs": 504595
+        }
+      }
+    ],
+    "calls5": [
+      {
+        "caseId": "c01",
+        "call": 1,
+        "stage": "planner",
+        "chunk": null,
+        "repair": false,
+        "reason": null,
+        "ms": 65040,
+        "endedAtMs": 65041,
+        "answerBytes": 5797,
+        "inputTokens": 15974,
+        "outputTokens": 2017,
+        "ok": true
+      },
+      {
+        "caseId": "c01",
+        "call": 2,
+        "stage": "compiler",
+        "chunk": null,
+        "repair": false,
+        "reason": null,
+        "ms": 164270,
+        "endedAtMs": 229323,
+        "answerBytes": 8065,
+        "inputTokens": 23785,
+        "outputTokens": 5322,
+        "ok": true
+      },
+      {
+        "caseId": "c01",
+        "call": 3,
+        "stage": "compiler",
+        "chunk": null,
+        "repair": true,
+        "reason": "LAYOUT_INVALID · containerFour: on containerOne: base does not rest inside a declared support surface. Also wrong, and e",
+        "ms": 194734,
+        "endedAtMs": 424375,
+        "answerBytes": 12172,
+        "inputTokens": 26820,
+        "outputTokens": 6368,
+        "ok": true
+      },
+      {
+        "caseId": "c16",
+        "call": 1,
+        "stage": "planner",
+        "chunk": null,
+        "repair": false,
+        "reason": null,
+        "ms": 59874,
+        "endedAtMs": 59875,
+        "answerBytes": 5739,
+        "inputTokens": 15975,
+        "outputTokens": 1867,
+        "ok": true
+      },
+      {
+        "caseId": "c16",
+        "call": 2,
+        "stage": "compiler",
+        "chunk": null,
+        "repair": false,
+        "reason": null,
+        "ms": 187611,
+        "endedAtMs": 247489,
+        "answerBytes": 9921,
+        "inputTokens": 23845,
+        "outputTokens": 6119,
+        "ok": true
+      },
+      {
+        "caseId": "c16",
+        "call": 3,
+        "stage": "compiler",
+        "chunk": null,
+        "repair": true,
+        "reason": "SHAPE_INVALID · shapes[n]: shape overflows its own targetBounds on x, y, z: generated bounds were 4.7× the requested vol",
+        "ms": 113503,
+        "endedAtMs": 360998,
+        "answerBytes": 9897,
+        "inputTokens": 27462,
+        "outputTokens": 3599,
+        "ok": true
+      },
+      {
+        "caseId": "c16",
+        "call": 4,
+        "stage": "compiler",
+        "chunk": null,
+        "repair": true,
+        "reason": "BLUEPRINT_INVALID · blueprint:/shapes: Too big: expected array to have <=3 items. Fix that field and send the whole answ",
+        "ms": 142950,
+        "endedAtMs": 504246,
+        "answerBytes": 10380,
+        "inputTokens": 27389,
+        "outputTokens": 4626,
+        "ok": true
+      }
+    ],
+    "attempts": {
+      "killed": {
+        "calls": 1,
+        "note": "first attempt 2026-09-19 ~10:45 UTC was reaped with the session before its second call; its one planner call (c01) measured 83235 ms / 7589 B / 2489 output tokens and wrote no artefact"
+      },
+      "measured": {
+        "calls": 7,
+        "callCap": 9,
+        "note": "cap lowered from 10 to 9 so the phase-5 total (1 + 9 + 6 for T22) stays within the 16 calls the plan allows"
+      }
+    },
+    "verdict": "planner median 59874 ms (-20 % vs the morning 75025 ms) and 5739 B (-16 % vs 6794 B); the goal (<= 30 s, <= 4000 B) is not met - the answer stays over half sceneSpec. Side finding: the single compiler call costs 164-188 s per world plus 113-195 s per repair round, so time to playable was 424763 ms on c01 and c16 never became playable (schema after 3 rounds); the chunked morning compiler was faster per world."
+  },
+  "p22chunks2": {
+    "measuredAt": "2026-09-19T20:08:26.316Z",
+    "plan": "P22 T16 – two pieces (scene + rules) against the single compiler call of phase5, one live run",
+    "model": "gpt-6-astra@medium#cli",
+    "effort": "medium",
+    "plannerEffort": "low",
+    "pieceEffort": {
+      "scene": "high",
+      "rules": "low"
+    },
+    "cases": 2,
+    "caseIds": [
+      "c01",
+      "c16"
+    ],
+    "chunked": 2,
+    "pieces": [
+      "scene",
+      "rules"
+    ],
+    "callCap": 8,
+    "calls": 6,
+    "byStage": {
+      "planner": {
+        "n": 2,
+        "medianMs": 35367,
+        "p95Ms": 63466,
+        "medianAnswerBytes": 3033,
+        "medianOutputTokens": 1023
+      },
+      "compiler": {
+        "n": 2,
+        "medianMs": 205929,
+        "wallMedianMs": 122158,
+        "note": "medianMs is the sum of the two pieces plus merge per world (what the subscription pays); wallMedianMs is first piece sent to last piece answered (what the judge waits); merge is sub-millisecond"
+      }
+    },
+    "playableMs": {
+      "c01": null,
+      "c16": null
+    },
+    "baseline": {
+      "phase5": {
+        "measuredAt": "2026-09-19T10:48:25.391Z",
+        "plannerMedianMs": 59874,
+        "compilerMedianMs": 164270,
+        "playableMs": {
+          "c01": 424611,
+          "c16": null
+        },
+        "note": "the phase5 block in this file: one compiler call per world at the environment effort, planner at low, same two sentences"
+      }
+    },
+    "decision": {
+      "chunked2Default": false,
+      "reason": "c01: two pieces playable at null ms (geom: schema:/nodes/101/children/0: Too big: expected number to be <=95) vs single call playable at 424611 ms; c16: two pieces playable at null ms (schema: blueprint:/lookBindings: Invalid input: expected array, received object) vs single call playable at null ms"
+    },
+    "perCase": [
+      {
+        "id": "c01",
+        "plannerMs": 63466,
+        "plannerOutputTokens": 1970,
+        "pieces": {
+          "rules": 59771,
+          "scene": 166298
+        },
+        "piecesSumMs": 226070,
+        "piecesLongestMs": 166298,
+        "compilerWallMs": 166298,
+        "playableMs": null,
+        "rounds": 1,
+        "authored": false,
+        "certified": false,
+        "failure": {
+          "stage": "geom",
+          "detail": "schema:/nodes/101/children/0: Too big: expected number to be <=95"
+        },
+        "phases": {
+          "massingPreviewMs": 63467,
+          "toFirstChunkMs": 123300,
+          "toFirstObjectMs": null,
+          "toPlayableMs": null,
+          "toFullDetailMs": 229828
+        },
+        "phase5": {
+          "compilerMs": 164270,
+          "playableMs": 424611
+        }
+      },
+      {
+        "id": "c16",
+        "plannerMs": 35367,
+        "plannerOutputTokens": 1023,
+        "pieces": {
+          "rules": 83771,
+          "scene": 122158
+        },
+        "piecesSumMs": 205929,
+        "piecesLongestMs": 122158,
+        "compilerWallMs": 122158,
+        "playableMs": null,
+        "rounds": 1,
+        "authored": false,
+        "certified": false,
+        "failure": {
+          "stage": "schema",
+          "detail": "blueprint:/lookBindings: Invalid input: expected array, received object"
+        },
+        "phases": {
+          "massingPreviewMs": 35367,
+          "toFirstChunkMs": 119174,
+          "toFirstObjectMs": null,
+          "toPlayableMs": null,
+          "toFullDetailMs": 157739
+        },
+        "phase5": {
+          "compilerMs": 187611,
+          "playableMs": null
+        }
+      }
+    ],
+    "calls2": [
+      {
+        "caseId": "c01",
+        "call": 1,
+        "stage": "planner",
+        "chunk": null,
+        "repair": false,
+        "reason": null,
+        "ms": 63466,
+        "endedAtMs": 63467,
+        "answerBytes": 6006,
+        "inputTokens": 16019,
+        "outputTokens": 1970,
+        "ok": true
+      },
+      {
+        "caseId": "c01",
+        "call": 3,
+        "stage": "compiler",
+        "chunk": "rules",
+        "repair": false,
+        "reason": null,
+        "ms": 59771,
+        "endedAtMs": 123300,
+        "answerBytes": 4646,
+        "inputTokens": 20401,
+        "outputTokens": 1820,
+        "ok": true
+      },
+      {
+        "caseId": "c01",
+        "call": 2,
+        "stage": "compiler",
+        "chunk": "scene",
+        "repair": false,
+        "reason": null,
+        "ms": 166298,
+        "endedAtMs": 229807,
+        "answerBytes": 6133,
+        "inputTokens": 21624,
+        "outputTokens": 5367,
+        "ok": true
+      },
+      {
+        "caseId": "c16",
+        "call": 1,
+        "stage": "planner",
+        "chunk": null,
+        "repair": false,
+        "reason": null,
+        "ms": 35367,
+        "endedAtMs": 35367,
+        "answerBytes": 3033,
+        "inputTokens": 16018,
+        "outputTokens": 1023,
+        "ok": true
+      },
+      {
+        "caseId": "c16",
+        "call": 3,
+        "stage": "compiler",
+        "chunk": "rules",
+        "repair": false,
+        "reason": null,
+        "ms": 83771,
+        "endedAtMs": 119174,
+        "answerBytes": 5797,
+        "inputTokens": 18992,
+        "outputTokens": 2647,
+        "ok": true
+      },
+      {
+        "caseId": "c16",
+        "call": 2,
+        "stage": "compiler",
+        "chunk": "scene",
+        "repair": false,
+        "reason": null,
+        "ms": 122158,
+        "endedAtMs": 157543,
+        "answerBytes": 4401,
+        "inputTokens": 19931,
+        "outputTokens": 3933,
+        "ok": true
+      }
+    ],
+    "verdict": "two pieces (scene@high + rules@low) did not reach a playable world in either sentence: c01 failed on geometry (a child index past the node table), c16 on lookBindings written as an object; the chunked path has no repair round (emitChunks returns after one attempt), while the single call got c01 playable after one repair. Wall time per world was 122-166 s (scene alone) against 164-188 s for the single call at @medium, so the split buys at most ~20 % on the wall and pays 206-226 s of model time per world; the single compiler call stays the default."
+  }
+}

@@ -48,6 +48,11 @@ import {
   type MeshResolution,
 } from './cache';
 import type { QualityTier } from './quality';
+import { canonical } from '@/ir/worlddoc';
+import { blueprintSchema, semanticObjectSchema, type SemanticObject, type WorldstreamBlueprint } from './schema';
+import { findBlueprintReferenceIssues } from './references';
+import type { AssetManifest } from '@/assets/manifest';
+import { assetObjectIssues } from '@/assets/binding';
 
 /* ------------------------------------------------------------------ *
  * Fáze relace.
@@ -181,6 +186,7 @@ export type PhaseOutcome =
  * ------------------------------------------------------------------ */
 
 export interface RepresentationRecord {
+  readonly object?: SemanticObject;
   readonly stableId: string;
   readonly revision: number;
   readonly state: RepresentationState;
@@ -218,6 +224,9 @@ export interface GenerationSession {
   revisionOf(stableId: string): number | null;
   /** Objekty z blueprintu. Zakládá je jako `planned`, rámec nevydává. */
   register(stableIds: readonly string[]): void;
+  registerBlueprint(blueprint: WorldstreamBlueprint, assets?: AssetManifest): void;
+  replaceAsset(stableId: string, expectedRevision: number, object: SemanticObject, assets: AssetManifest):
+    { readonly ok: true; readonly revision: number } | { readonly ok: false; readonly reason: string };
   advance(to: SessionPhase, payload?: unknown): PhaseOutcome;
   fail(reason: string): PhaseOutcome;
   /** Práce zadaná pracovníkovi. Příčku nemění, vydá `shape.queued`. */
@@ -252,7 +261,7 @@ function build(seed: SessionSeed): GenerationSession {
   const log = seed.log;
   const cache = seed.cache;
   const records = new Map<string, RepresentationRecord>(
-    seed.representations.map((record) => [record.stableId, record]),
+    seed.representations.map((record) => [record.stableId, structuredClone(record)]),
   );
   let phase: SessionPhase = seed.phase;
 
@@ -261,7 +270,8 @@ function build(seed: SessionSeed): GenerationSession {
   }
 
   function write(stableId: string, revision: number, state: RepresentationState): void {
-    records.set(stableId, { stableId, revision, state });
+    const object = records.get(stableId)?.object;
+    records.set(stableId, { stableId, revision, state, ...(object ? { object } : {}) });
   }
 
   return {
@@ -275,7 +285,7 @@ function build(seed: SessionSeed): GenerationSession {
     },
 
     get representations() {
-      return [...records.values()];
+      return structuredClone([...records.values()]);
     },
 
     stateOf(stableId) {
@@ -293,6 +303,45 @@ function build(seed: SessionSeed): GenerationSession {
         // `planned` by odpojilo mesh, který na scéně stojí.
         if (!records.has(stableId)) write(stableId, 0, { kind: 'planned' });
       }
+    },
+
+    registerBlueprint(blueprint, assets) {
+      blueprint = blueprintSchema.parse(blueprint);
+      const issues = findBlueprintReferenceIssues(blueprint, assets);
+      if (issues.length) throw new Error(issues.map(issue => `${issue.where}: ${issue.detail}`).join('; '));
+      // Reconnect must not overwrite an accepted object's runtime contract.
+      for (const object of blueprint.objects) {
+        const old = records.get(object.stableId)?.object;
+        if (old && canonical(old) !== canonical(object)) throw new Error('Registered object has changed');
+      }
+      for (const object of blueprint.objects) {
+        const old = records.get(object.stableId);
+        records.set(object.stableId, { stableId: object.stableId, revision: old?.revision ?? 0,
+          state: old?.state ?? { kind: 'planned' }, object: structuredClone(object) });
+      }
+    },
+
+    replaceAsset(stableId, expectedRevision, input, assets) {
+      const record = records.get(stableId);
+      if (closed()) return { ok: false, reason: 'SESSION_CLOSED' };
+      if (!record?.object) return { ok: false, reason: 'UNKNOWN_OBJECT' };
+      if (record.revision !== expectedRevision) return { ok: false, reason: 'STALE_REVISION' };
+      const parsed = semanticObjectSchema.safeParse(input);
+      if (!parsed.success || parsed.data.source.kind !== 'asset' || !parsed.data.binding)
+        return { ok: false, reason: 'INVALID_ASSET_OBJECT' };
+      const next = parsed.data;
+      // Only representation data may change; identity, placement, collider,
+      // entity, part and socket contracts remain the accepted values.
+      const contract = ({ source: _source, stretchAxes: _stretch, ...rest }: SemanticObject) => rest;
+      if (canonical(contract(record.object)) !== canonical(contract(next)))
+        return { ok: false, reason: 'BINDING_MISMATCH' };
+      const resolved = assets.resolve(next.source);
+      if (!resolved.ok) return { ok: false, reason: resolved.reason };
+      const issues = assetObjectIssues(next, resolved.asset);
+      if (issues.length) return { ok: false, reason: issues.join('; ') };
+      const revision = record.revision + 1;
+      records.set(stableId, { stableId, revision, state: { kind: 'planned' }, object: structuredClone(next) });
+      return { ok: true, revision };
     },
 
     advance(to, payload = {}) {
@@ -394,7 +443,7 @@ function build(seed: SessionSeed): GenerationSession {
         phase,
         quality: seed.quality,
         sequence: log.sequence,
-        representations: [...records.values()],
+        representations: structuredClone([...records.values()]),
         cache: cache.snapshot(),
       };
     },
@@ -440,7 +489,7 @@ export function createSession(options: SessionOptions): GenerationSession {
  */
 export function restoreSession(
   snapshot: SessionSnapshot,
-  options: { readonly now?: () => string } = {},
+  options: { readonly now?: () => string;readonly eventLog?:import('./events').EventLogCheckpoint } = {},
 ): GenerationSession {
   return build({
     sessionId: snapshot.sessionId,
@@ -449,6 +498,6 @@ export function restoreSession(
     quality: snapshot.quality,
     representations: snapshot.representations,
     cache: restoreMeshCache(snapshot.cache, snapshot.sessionSeed),
-    log: createEventLog(snapshot.sessionId, { now: options.now, startAt: snapshot.sequence }),
+    log: createEventLog(snapshot.sessionId, { now: options.now, startAt: snapshot.sequence,checkpoint:options.eventLog }),
   });
 }

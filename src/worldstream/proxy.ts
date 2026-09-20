@@ -51,10 +51,17 @@ import {
   type MeshResult,
 } from '@/shape/mesh-client';
 import { MESH_DETAIL, type Bounds3, type ShapeProgram, type Vec3 } from '@/shape/types';
+import { planRootRepeat, type RepeatInstances } from '@/shape/repeat-plan';
 
 import { budgetFor, type QualityTier } from './quality';
-import type { WorldstreamBlueprint } from './schema';
-import { boundsCenter, slotFromForm, slotFromWorldForm, type SemanticSlot } from './slots';
+import { visualPreviewSchema, type VisualPreview, type WorldstreamBlueprint } from './schema';
+type VisualScene = Pick<WorldstreamBlueprint, 'geometry' | 'objects' | 'shapes' | 'sceneSpec' | 'intent' | 'title' | 'sessionSeed'> & { readonly lookBindings?: WorldstreamBlueprint['lookBindings'] };
+import { boundsCenter, slotFromAsset, slotFromForm, slotFromWorldForm, type SemanticSlot } from './slots';
+import type { AssetManifest } from '@/assets/manifest';
+import { WORLDSTREAM_ASSETS } from '@/assets/catalog';
+import { sceneEnvironment, type SceneEnvironment } from '@/scene/environment';
+import { readSurface } from '@/assets/materials';
+import type { AssetReference } from '@/assets/schema';
 
 /* ------------------------------------------------------------------ *
  * Žebřík — design book §27, v jeho pořadí.
@@ -212,10 +219,14 @@ export function overBudgetReason(heroes: number): string {
  * ------------------------------------------------------------------ */
 
 export type ProxyForm =
+  | { readonly rung: 'semantic-clay'; readonly kind: 'asset'; readonly drawn: true;
+      readonly reference: AssetReference; readonly level: number }
   | {
       readonly rung: 'g3-reduced';
       readonly kind: 'mesh';
       readonly mesh: MeshResult;
+      readonly repeat?: RepeatInstances;
+      readonly samplingAction?: {kind:'repeat-instanced'|'unsupported';reason:string};
       /**
        * Mřížka, ve které tenhle mesh doopravdy vznikl.
        *
@@ -250,6 +261,8 @@ export type ProxyForm =
     };
 
 export interface ProxySlot {
+  /** Immutable source for renderer sampling diagnostics, never a replacement mesh. */
+  readonly detailProgram?:ShapeProgram;
   readonly slot: SemanticSlot;
   readonly form: ProxyForm;
 }
@@ -257,6 +270,10 @@ export interface ProxySlot {
 export type ProxyWorld =
   | {
       readonly kind: 'built';
+      readonly environment?: SceneEnvironment;
+      /** Vazby proměnných světa na předvolby vzhledu (P22 T12); čte je jen plátno. */
+      readonly lookBindings?: readonly import('./look').LookBinding[];
+      readonly sceneSpec?: import('@/scene/spec').SceneSpec;
       readonly title: string;
       readonly sessionSeed: number;
       /**
@@ -307,6 +324,7 @@ export function slotResolutions(world: ProxyWorld): readonly number[] {
 }
 
 export interface ProxyDeps {
+  readonly assets?: AssetManifest;
   /** Only for a fully validated blueprint: show stable coarse slots before meshing. */
   readonly deferMeshes?: boolean;
   /**
@@ -444,7 +462,7 @@ interface Composition {
   readonly scenery: readonly GeomPlacement[];
 }
 
-function splitComposition(blueprint: WorldstreamBlueprint): Composition | string {
+function splitComposition(blueprint: VisualScene): Composition | string {
   const owners = new Set(
     blueprint.objects.flatMap((object) =>
       object.source.kind === 'geom' ? [object.source.node] : [],
@@ -487,6 +505,21 @@ function meshingOrder(shapes: readonly ShapeProgram[]): readonly ShapeProgram[] 
 interface MeshedShape {
   readonly mesh: MeshResult;
   readonly resolution: number;
+  readonly repeat?: RepeatInstances;
+  readonly samplingAction?: {kind:'repeat-instanced'|'unsupported';reason:string};
+}
+
+/** Shared rough/high request path. A unit mesh keeps the original slot's fit. */
+export async function meshShapeForRender(program:ShapeProgram,sessionSeed:number,resolution:number,mesh:(order:MeshOrder)=>Promise<MeshResult>):Promise<MeshedShape> {
+  const preserveInstances=resolution>32&&planRootRepeat(program,32).kind==='repeat-instanced';
+  const plan=planRootRepeat(program,resolution,preserveInstances);
+  const sampled=plan.kind==='repeat-instanced'?plan.program:program;
+  const result=await mesh({program:sampled,sessionSeed,resolution,bounds:sampled.targetBounds});
+  const count=plan.kind==='repeat-instanced'?plan.instances.offsets.length:1;
+  const limit=resolution>MESH_DETAIL.rough.resolution?MESH_DETAIL.high.maxTriangles:MESH_DETAIL.rough.maxTriangles;
+  if(result.triangleCount*count>limit)throw new MeshBudgetError(`Repeated mesh draws ${result.triangleCount*count} triangles across ${count} copies; limit ${limit}`);
+  return {mesh:result,resolution,...(plan.kind==='repeat-instanced'?{repeat:plan.instances,samplingAction:{kind:'repeat-instanced' as const,reason:`Meshed one bounded unit; ${count} internal instances preserve the original slot.`}}:
+    plan.kind==='unsupported'?{samplingAction:{kind:'unsupported' as const,reason:plan.reason}}:{})};
 }
 
 /**
@@ -538,24 +571,7 @@ async function meshDownTheLadder(
 
   for (const resolution of ladder) {
     try {
-      return {
-        mesh: await mesh({
-          program,
-          sessionSeed,
-          resolution,
-          // **Syrový `targetBounds` je tu správně a rezervu sem nepřidávej.**
-          // Od `T13-meshpadding` (2. 9. 2026) mele `handleMeshJob()`
-          // v `paddedBounds(bounds, resolution)`; objednávka říká, kam tvar
-          // patří, worker si k tomu přidá jednu buňku, aby tvar napsaný na
-          // svůj vlastní obal nezmizel. Rezerva na obou místech by kvádr
-          // nafoukla dvakrát a zbytečně zhrubla síť.
-          //
-          // Je to zároveň důvod, proč sestup po prázdném meshi něco změní:
-          // ta jedna buňka je na hrubší příčce větší.
-          bounds: program.targetBounds,
-        }),
-        resolution,
-      };
+      return await meshShapeForRender(program,sessionSeed,resolution,mesh);
     } catch (error) {
       refusal = error instanceof Error ? error.message : String(error);
 
@@ -736,6 +752,15 @@ export async function buildProxyWorldFrom(
   blueprint: WorldstreamBlueprint,
   deps: ProxyDeps,
 ): Promise<ProxyWorld> {
+  return buildVisualProxyFrom(blueprint, deps);
+}
+
+/** Render-only adapter. No synthetic WorldDoc, runtime controller or session registration. */
+export async function buildVisualPreviewFrom(preview: VisualPreview, deps: ProxyDeps): Promise<ProxyWorld & { interactive: false }> {
+  return { ...await buildVisualProxyFrom(visualPreviewSchema.parse(preview), deps), interactive: false };
+}
+
+async function buildVisualProxyFrom(blueprint: VisualScene, deps: ProxyDeps): Promise<ProxyWorld> {
   // **Úroveň se čte tady a nikde jinde** (§23): jedno přečtení před fan-outem,
   // pak už jen `budget`. Kdyby se `deps.quality` četlo uvnitř smyčky, mohla by
   // se úroveň mezi dvěma tvary změnit — a `contentHash` nese rozlišení, takže
@@ -794,6 +819,14 @@ export async function buildProxyWorldFrom(
       form: { rung: 'semantic-clay', kind: 'clay', reason, drawn },
     });
 
+    if (object.source.kind === 'asset') {
+      const resolved = (deps.assets ?? WORLDSTREAM_ASSETS).resolve(object.source);
+      if (!resolved?.ok) return clay(resolved?.reason ?? 'Asset catalog is unavailable');
+      return {
+        slot: slotFromAsset(object, resolved.asset),
+        form: { rung: 'semantic-clay', kind: 'asset', drawn: true, reference: object.source, level: 0 },
+      };
+    }
     if (object.source.kind === 'shape') {
       const program = shapesById.get(object.source.shapeId);
       if (deps.deferMeshes && program && heroPrograms.includes(program)) return {
@@ -821,6 +854,8 @@ export async function buildProxyWorldFrom(
           kind: 'mesh',
           mesh: result.mesh,
           resolution: result.resolution,
+          ...(result.repeat?{repeat:result.repeat}:{}),
+          ...(result.samplingAction?{samplingAction:result.samplingAction}:{}),
         },
       };
     }
@@ -868,11 +903,18 @@ export async function buildProxyWorldFrom(
 
   return {
     kind: 'built',
+    ...(blueprint.sceneSpec ? { sceneSpec: blueprint.sceneSpec, environment: sceneEnvironment(blueprint.intent) } : {}),
+    ...(blueprint.lookBindings ? { lookBindings: blueprint.lookBindings } : {}),
     title: blueprint.title,
     sessionSeed: blueprint.sessionSeed,
     resolution: budget.roughResolution,
     quality,
-    slots,
+    slots: slots.map(entry => ({ ...entry,
+      detailProgram:(()=>{const object=blueprint.objects.find(object=>object.stableId===entry.slot.stableId);return object?.source.kind==='shape'?shapesById.get(object.source.shapeId):undefined;})(),
+      slot: { ...entry.slot,
+      surface: readSurface(blueprint.sceneSpec?.instances.find(instance => instance.stableId === entry.slot.stableId)
+        ?.attributes.find(attribute => attribute.name === 'material')?.value),
+    } })),
     scenery,
   };
 }

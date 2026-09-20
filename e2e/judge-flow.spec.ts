@@ -162,6 +162,7 @@ test('porotce projde celou cestu, jak ji dostane na odevzdání', async ({ page 
   // ── Takt 0: porotce dorazí ───────────────────────────────────────────────
   const arrived = Date.now();
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await expect(page.getByTestId('worldstream-canvas')).toHaveCount(1);
   // Dokud nepřišla věta, produkt **nic nepředstírá**. Prázdný stav je poctivý
   // stav; místnost naslepo by porotci ukázala svět, který nepopsal.
@@ -215,12 +216,8 @@ test('porotce projde celou cestu, jak ji dostane na odevzdání', async ({ page 
     `hrdinský tvar se nevymešoval — meshovač nedodal ani jeden (příčky: ${rungs.join(', ')})`,
   ).toBeGreaterThan(0);
 
-  // ── Takt III: produkt mlčí tam, kde nemá co vysvětlovat ──────────────────
-  //
-  // Vlajkovou větu zná sklad **přesně**, takže se za nic neomlouvá. Poznámka
-  // o původu patří k náhradě, ne ke každému světu; kdyby stála i tady, byla by
-  // z ní omluva na pozadí, kterou porotce přestane číst.
-  await expect(page.getByTestId('world-authored')).toHaveCount(0);
+  // Explicit prepared mode always discloses authorship, including exact matches.
+  await expect(page.getByTestId('world-authored')).toHaveText('This world was authored ahead of time.');
   await expect(page.getByTestId('world-broken')).toHaveCount(0);
 
   // ── Takt IV: druhá věta chirurgicky změní jeden objekt ───────────────────
@@ -234,76 +231,15 @@ test('porotce projde celou cestu, jak ji dostane na odevzdání', async ({ page 
   await page.getByTestId('refine-input').fill(SECOND);
   await page.getByTestId('refine-submit').click();
 
-  const panel = page.getByTestId('change-preview');
-  // `data-kind` rozhoduje: `candidates` i `refused` jsou taky panel, jen to
-  // nejsou plány. Bez atributu by `toBeVisible()` prošlo i nad odmítnutím.
-  await expect(panel).toHaveAttribute('data-kind', 'preview', { timeout: CHANGE_BUDGET_MS });
-  act('takt IV – druhá věta → plán změny', Date.now() - planned);
+  // The historical prepared r02 also changes unsupported appearance fields.
+  // Current capability validation must refuse it atomically, not imply success.
+  await expect(page.getByTestId('change-preview')).toHaveAttribute('data-kind','refused',{timeout:CHANGE_BUDGET_MS});
+  await expect(page.getByTestId('change-refusal')).toContainText('APPEARANCE_UNSUPPORTED');
+  await expect(page.getByTestId('change-apply')).toHaveCount(0);
+  expect(await stageShape(page)).toEqual(beforeChange);
+  act('prepared unsupported change refused with scene preserved',Date.now()-planned);
 
-  // Plán míří na **jeden** objekt a řekne na který. Prázdný popisek by prošel
-  // pouhým `toBeVisible()`, takže se sada ptá na text.
-  await expect(page.getByTestId('change-target')).not.toBeEmpty();
-  await expect(page.getByTestId('change-summary')).not.toBeEmpty();
-
-  // **A tady se produkt zase ozve** (`T45-honestlabel`). Plán té změny nenapsal
-  // model teď, je to nejbližší uvařená změna, a porotce to má vědět. Je to jiná
-  // věta než ta o původu světa a jiná komponenta: přiznává se původ **plánu**,
-  // ne původ světa, který v tuhle chvíli sedí na přesné shodě a mlčí.
-  await expect(page.getByTestId('change-authored')).toHaveCount(1);
-
-  // **A co změna nechá být, to musí být pravda** (blokující nález nezávislé
-  // revize 6. 9. 2026). Do té doby se do seznamu psal každý objekt kromě cíle
-  // věty, takže panel porotci sliboval nedotčené nohy observatoře — a tatáž
-  // změna jim vzápětí přepsala `/look` parametr i kolizní kvádry. Seznam se
-  // proto počítá z operací a nad vlajkovou změnou z něj **nohy vypadnou**;
-  // zůstane plošina, které se `r02` nedotkne. Je to jediná aserce téhle sady,
-  // která vidí i změnu objektu kresleného kompozicí.
-  const preserved = page.getByTestId('change-preserved');
-  await expect(preserved).toHaveText('Not named by this change: the windswept plateau');
-
-  // ── Takt V: potvrzení přestaví svět a identita to přežije ────────────────
-  const applied = Date.now();
-  await page.getByTestId('change-apply').click();
-  // Panel po potvrzení zmizí: rozhodnuto je, není o čem rozhodovat.
-  await expect(panel).toHaveCount(0, { timeout: CHANGE_BUDGET_MS });
-  await page.waitForFunction(
-    (was) => (window.__worldstreamStage?.builds() ?? 0) > was,
-    beforeChange.builds,
-    { timeout: CHANGE_BUDGET_MS },
-  );
-  act('takt V – potvrzení → změněný svět', Date.now() - applied);
-
-  const afterChange = await stageShape(page);
-  // `world-status` se tu **neptáme schválně**: od taktu I je `live` a `apply()`
-  // na něj nesahá ani při selhání, takže by ta aserce byla zelená vždycky
-  // (nález nezávislé revize 6. 9. 2026). Neúspěšné potvrzení chytá panel výš —
-  // odmítnutí ho nechá stát s `data-kind="refused"`, takže `toHaveCount(0)` je
-  // ta pravá brána.
-  await expect(page.getByTestId('world-broken')).toHaveCount(0);
-
-  // **Identita změnu přežije** — to je celý slib dějství III. Mění se jeden
-  // objekt, ne svět: žádný `stableId` nesmí přibýt ani zmizet, jinak porotce
-  // dostal nový svět a tvrzení o chirurgické změně je nepravda.
-  expect(afterChange.ids, 'druhá věta vyměnila svět, ne objekt').toEqual(beforeChange.ids);
-
-  // **A právě jeden objekt musí vypadat jinak.** To je celý rozdíl mezi
-  // „chirurgickou změnou" a „novým světem", a drží obě strany naráz: nula
-  // znamená, že `apply()` svět jen přestavělo z týchž dat (`builds()` by
-  // vyrostlo i tak), víc než jedna znamená, že se porotci pod rukama změnilo
-  // i to, o co nežádal. Naměřeno: hne se jedině kupole, cíl věty.
-  const moved = afterChange.signatures.filter(
-    (signature, index) => signature !== beforeChange.signatures[index],
-  );
-  expect(
-    moved.length,
-    `druhá věta měla pohnout právě jedním vykresleným slotem (${beforeChange.signatures.join(' | ')} → ${afterChange.signatures.join(' | ')})`,
-  ).toBe(1);
-
-  // ── Takt VI: porotce zkusí vlastní větu ──────────────────────────────────
-  //
-  // `RULES.md` §3.3 mu na to dává právo, takže tohle je ta věta, o kterou se
-  // demo doopravdy rozbije. Nesmí skončit prázdnem ani chybou — nejbližší
-  // autorovaný svět je odpověď, ne výmluva.
+  // Prepared mode remains explicit for the next prompt, including nearest demos.
   const ownSentence = await sentenceToCanvas(page, UNSEEN);
   act('takt VI – vlastní věta porotce → svět', ownSentence);
 

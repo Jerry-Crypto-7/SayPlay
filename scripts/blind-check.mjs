@@ -112,7 +112,7 @@ function git(args, { allowFail = false } = {}) {
  *    chybě. Slít obojí do prázdného řetězce znamená číst rozbitý běh jako čistý.
  *    Chyba se proto vyhazuje a hlásí jako selhání kontroly.
  */
-function grepHistory(patterns, pathspec, { extended = false, word = false, namesOnly = false } = {}) {
+function grepHistory(patterns, pathspec, { extended = false, word = false, namesOnly = false, unless = [] } = {}) {
   // BEZ `allowFail`. Prázdný výstup smí znamenat „repozitář nemá commity" jenom
   // tehdy, když git skončil nulou; rozbitý ref nebo chybějící objekt by se jinak
   // četl jako čistá historie — a to je právě ta tichá zelená, kterou tahle
@@ -146,7 +146,17 @@ function grepHistory(patterns, pathspec, { extended = false, word = false, names
     // terminálu, do logu hooku a do CI. Nález se hlásí cestou, ne obsahem.
     const args = ['grep', `-I${namesOnly ? 'l' : 'n'}i${extended ? 'E' : ''}`];
     if (word) args.push('-w');
+    // `unless`: řádek, který sedí jen díky jednomu z těchhle literálů, se
+    // nepočítá. Závorky jsou nutné – `--and` u git grep váže těsněji než
+    // implicitní OR mezi `-e`, takže bez nich by výjimka platila jen pro
+    // poslední vzor. Slabina řečeno nahlas: řádek, který nese literál A VEDLE
+    // něj skutečné jméno, projde; je to výjimka na řádek, ne na token.
+    if (unless.length) args.push('(');
     for (const pattern of patterns) args.push('-e', pattern);
+    if (unless.length) {
+      args.push(')');
+      for (const literal of unless) args.push('--and', '--not', '-e', literal);
+    }
     args.push(...revisions.slice(start, start + CHUNK), '--', ...pathspec);
 
     // `spawnSync`, ne `execFileSync`: potřebujeme stderr i u nulového návratu.
@@ -238,6 +248,15 @@ function loadConfig() {
       account: typeof parsed.account === 'string' ? parsed.account : '',
       publicTokens,
       identityTokens: Array.isArray(parsed.identityTokens) ? parsed.identityTokens : [],
+      // Výjimka je literál + důvod. Bez důvodu se nebere: výjimka, u které nikdo
+      // neřekl proč, je jen vypnutá kontrola s jiným jménem. Literál kratší než
+      // hledaný token by vyřadil celé slovo, proto stejná spodní mez.
+      identityExceptions: Array.isArray(parsed.identityExceptions)
+        ? parsed.identityExceptions
+            .filter((entry) => entry && typeof entry.literal === 'string' && entry.literal.length >= SUBSTRING_MIN_LEN)
+            .filter((entry) => typeof entry.reason === 'string' && entry.reason.trim())
+            .map((entry) => entry.literal)
+        : [],
     };
   } catch (error) {
     return { error: `${CONFIG_FILE} se nedá přečíst: ${error.message}` };
@@ -335,9 +354,14 @@ check(3, 'committed content mentions neither the organiser nor the real author',
   const identity = (config.identityTokens ?? []).filter(Boolean);
   const long = identity.filter((token) => token.length >= SUBSTRING_MIN_LEN);
   const short = identity.filter((token) => token.length < SUBSTRING_MIN_LEN);
+  // `identityExceptions` z configu: identifikátor, ve kterém jméno sedí jen
+  // jako náhodný podřetězec (naměřeno 19. 9. 2026: pole `toMassingPreviewMs`
+  // v nepushnuté historii, 108 míst). Přepsat historii kvůli tomu je nevratné;
+  // výjimka žije v gitignorovaném configu s důvodem, ne tady.
+  const unless = config.identityExceptions ?? [];
   const identityHits = [
-    ...(long.length ? [grepHistory(long, ['.'], { namesOnly: true })] : []),
-    ...(short.length ? [grepHistory(short, ['.'], { namesOnly: true, word: true })] : []),
+    ...(long.length ? [grepHistory(long, ['.'], { namesOnly: true, unless })] : []),
+    ...(short.length ? [grepHistory(short, ['.'], { namesOnly: true, word: true, unless })] : []),
   ]
     .filter(Boolean)
     .join('\n');

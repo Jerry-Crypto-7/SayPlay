@@ -41,6 +41,9 @@ test('keyboard users can stop pending detail and complete another world in a nar
     expect(box!.y + box!.height).toBeLessThanOrEqual(844);
   }
 
+  await tabTo('generation-mode');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Tab');
   await tabTo('prompt-input');
   await page.keyboard.type('A cathedral of stacked shipping containers around a light well.');
   await page.keyboard.press('Enter');
@@ -85,6 +88,7 @@ test('validated scene runs before worker detail and keeps the same objects when 
   await page.route('**/api/worldstream/sessions', route => route.request().postDataJSON()?.live
     ? route.fulfill({ status: 503, json: {} }) : route.fallback());
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('A cathedral of stacked shipping containers around a light well.');
   await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('world-status')).toContainText('validated scene is ready', { timeout: 30_000 });
@@ -107,6 +111,7 @@ test('stopping detail preserves a static scene and a subsequent authored shape e
   test.setTimeout(90_000);
   await holdFutureMeshes(page);
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('A bridge town: houses hanging under a single span over a dry canyon.');
   await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('world-status')).toContainText('validated scene is ready', { timeout: 30_000 });
@@ -153,6 +158,7 @@ test('stopping pending detail preserves a paused runtime input and actual object
   test.setTimeout(90_000);
   await holdFutureMeshes(page);
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('A cathedral of stacked shipping containers around a light well.');
   await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('world-status')).toContainText('validated scene is ready', { timeout: 30_000 });

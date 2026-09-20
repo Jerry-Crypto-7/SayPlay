@@ -19,14 +19,20 @@
 import { describe, expect, it } from 'vitest';
 
 import { GEOM_VERSION } from '@/geom/program';
-import { blueprintSchema, type WorldstreamBlueprint } from '@/worldstream/schema';
+import { planIncrement } from '@/model/incremental-planner';
+import { SHAPE_NODE_GROUPS } from '@/shape/schema';
+import { authoredWorldById } from '@/worldstream/authored';
+import { blueprintSchema, MAX_HERO_SHAPES, semanticObjectSchema, type SemanticObject, type WorldstreamBlueprint } from '@/worldstream/schema';
 
 import type { UpstreamRequest } from '../prompt';
 import {
+  buildAdditionRequest,
   buildRefineRequest,
   groundTarget,
   planChange,
+  readAdditionEmission,
   readRefineEmission,
+  type Grounding,
   type GroundingCandidate,
 } from '../worldstream-refine';
 
@@ -150,6 +156,11 @@ function idsOf(candidates: readonly GroundingCandidate[]): string[] {
   return candidates.map((candidate) => candidate.stableId);
 }
 
+/** Cíl úpravy, nebo celý výsledek, aby chybný druh řekl v hlášce, co přišlo. */
+function editTarget(grounding: Grounding): string | Grounding {
+  return grounding.ok && grounding.kind === 'edit' ? grounding.target.stableId : grounding;
+}
+
 /* ------------------------------------------------------------------ *
  * Grounding.
  * ------------------------------------------------------------------ */
@@ -157,30 +168,30 @@ function idsOf(candidates: readonly GroundingCandidate[]): string[] {
 describe('grounding druhé věty', () => {
   it('trefí objekt podle popisku', () => {
     const grounding = ground('make the water darker');
-    expect(grounding.ok && grounding.target.stableId).toBe('deepWater');
+    expect(editTarget(grounding)).toBe('deepWater');
   });
 
   it('trefí objekt podle synonyma', () => {
     const grounding = ground('raise the crossing by two metres');
-    expect(grounding.ok && grounding.target.stableId).toBe('stoneBridge');
+    expect(editTarget(grounding)).toBe('stoneBridge');
   });
 
   it('trefí objekt podle slov ze stableId, i když je popisek jiný', () => {
     // `mossPatch` se jmenuje „the green carpet"; jediná cesta k němu vede přes
     // camelCase id rozepsané na slova.
     const grounding = ground('clear the moss patch off the stones');
-    expect(grounding.ok && grounding.target.stableId).toBe('mossPatch');
+    expect(editTarget(grounding)).toBe('mossPatch');
   });
 
   it('delší jméno vyhraje nad kratším, které je v něm obsažené', () => {
     const grounding = ground('raise the bridge railing');
-    expect(grounding.ok && grounding.target.stableId).toBe('bridgeRailing');
+    expect(editTarget(grounding)).toBe('bridgeRailing');
   });
 
   it('jméno se hledá po celých slovech, ne podřetězcem', () => {
+    // Podřetězec by z „water" udělal cíl; celé slovo nic netrefí a věta je přidání.
     const grounding = ground('the watercourse floods every spring');
-    expect(grounding.ok).toBe(false);
-    if (!grounding.ok) expect(grounding.reason).toBe('NO_MATCH');
+    expect(grounding).toEqual({ ok: true, kind: 'addition', anchor: null });
   });
 
   it('dvě jména stejné délky se nerozhodují a nabídnou se obě', () => {
@@ -193,17 +204,21 @@ describe('grounding druhé věty', () => {
     expect(idsOf(grounding.candidates).sort()).toEqual(['leftLantern', 'rightLantern']);
   });
 
-  it('věta bez jména nabídne všechny objekty', () => {
+  it('věta bez jména je přidání bez kotvy, ne nabídka celého světa', () => {
+    // P21 T8 to rozhodl v routě (`NO_MATCH` → přidání); od P22 T13 to říká
+    // grounding sám, aby věta s kotvou a věta bez ní byly týž druh.
     const grounding = ground('make it more beautiful please');
-    expect(grounding.ok).toBe(false);
-    if (grounding.ok) return;
-    expect(grounding.reason).toBe('NO_MATCH');
-    expect(grounding.candidates).toHaveLength(BLUEPRINT.objects.length);
+    expect(grounding).toEqual({ ok: true, kind: 'addition', anchor: null });
   });
 
   it('explicitní stableId přebije text věty', () => {
     const grounding = ground('make the water darker', 'stoneBridge');
-    expect(grounding.ok && grounding.target.stableId).toBe('stoneBridge');
+    expect(editTarget(grounding)).toBe('stoneBridge');
+  });
+
+  it('explicitní stableId přebije i větu o umístění — kliknutý objekt je cíl', () => {
+    const grounding = ground('a lantern on the bridge', 'stoneBridge');
+    expect(editTarget(grounding)).toBe('stoneBridge');
   });
 
   it('neznámé stableId se NEdohledá textem', () => {
@@ -212,6 +227,94 @@ describe('grounding druhé věty', () => {
     const grounding = ground('make the water darker', 'ghostBridge');
     expect(grounding.ok).toBe(false);
     if (!grounding.ok) expect(grounding.reason).toBe('UNKNOWN_ID');
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Věta o umístění je přidání s kotvou (P22 T13).
+ * ------------------------------------------------------------------ */
+
+/**
+ * Objekty světa `c09` („a giant fallen tree hollowed into a village"), nad
+ * kterým běží `evals/worldstream/conversation.measure.ts`. Plánovač je píše
+ * bez `source` a kvádru; grounding čte jen jména, tak se dosadí zástupné.
+ */
+const HOLLOW_TREE_OBJECTS: readonly SemanticObject[] = (
+  authoredWorldById('c09')!.planner as { objects: readonly Record<string, unknown>[] }
+).objects.map((object) =>
+  semanticObjectSchema.parse({ ...object, source: { kind: 'geom', node: 0 }, targetBounds: { min: [-1, 0, -1], max: [1, 2, 1] } }),
+);
+
+describe('věta o umístění je přidání s kotvou', () => {
+  /** Táž cesta jako v routě a v měření: první kus z `planIncrement`, pak grounding. */
+  const classify = (sentence: string): Grounding => {
+    const increment = planIncrement(sentence);
+    if (!increment.ok) throw new Error(`${sentence}: ${increment.reason}`);
+    return groundTarget(increment.pieces[0].text, HOLLOW_TREE_OBJECTS, undefined);
+  };
+  const anchorOf = (grounding: Grounding): string | null | Grounding =>
+    grounding.ok && grounding.kind === 'addition' ? (grounding.anchor?.stableId ?? null) : grounding;
+
+  /**
+   * Deset vět z `conversation.measure.ts` nad `c09`. Živý běh 19. 9. 2026
+   * poslal lavičku jako úpravu stromu a model správně odpověděl, že úprava
+   * nový objekt založit neumí (`conversation-answers/s03.json`). Ostatních
+   * devět nejmenuje nic, co v tom světě stojí — jsou to přidání bez kotvy,
+   * a to i „make the well deeper": studna tam není.
+   */
+  it.each([
+    ['add a lantern at the far edge', null],
+    ['Put a small brass bell by the gate.', null],
+    ['There is a well in the middle of the courtyard.', null],
+    ['A wooden bench under the tree', 'hollowFallenTree'],
+    ['place another crate next to the first one', null],
+    ['When the lever is pulled, the gate opens.', null],
+    ['the bell should ring every time someone walks past the well', null],
+    ['If the lantern is lit the door unlocks', null],
+    ['make the well deeper', null],
+    ['Paint the gate rust red.', null],
+  ])('„%s" je přidání s kotvou %s', (sentence, anchor) => {
+    expect(anchorOf(classify(sentence))).toBe(anchor);
+  });
+
+  it.each([
+    ['make the tree taller', 'hollowFallenTree'],
+    ['widen the shared passage', 'sharedPassage'],
+    // Předložka sama nestačí: objekt stojí PŘED ní, takže se mění, ne staví.
+    ['make the tree darker on the outside', 'hollowFallenTree'],
+  ])('úprava bez nového podstatného jména („%s") zůstává edit', (sentence, target) => {
+    expect(editTarget(classify(sentence))).toBe(target);
+  });
+
+  it('kotva, která ve světě není, je přidání bez kotvy, ne odmítnutí', () => {
+    expect(anchorOf(classify('a stone bench under the gate'))).toBe(null);
+  });
+
+  it('kotva se hledá nejdelším jménem za předložkou, jako cíl úpravy', () => {
+    expect(anchorOf(classify('put a lantern in front of the village commons'))).toBe('villageCommons');
+    expect(anchorOf(classify('hang a bell beside the trunk'))).toBe('hollowFallenTree');
+  });
+
+  it('zadání pro přidání jmenuje kotvu a její kvádr, bez kotvy nic', () => {
+    const tree = HOLLOW_TREE_OBJECTS[0];
+    const anchored = buildAdditionRequest('A wooden bench under the tree', BLUEPRINT, tree);
+    expect(anchored.user).toContain('next to this object: hollowFallenTree (the hollow fallen tree)');
+    expect(anchored.user).toContain(JSON.stringify(tree.targetBounds));
+    expect(buildAdditionRequest('add a signpost', BLUEPRINT, null).user).not.toContain('next to this object');
+  });
+
+  it('planChange s kotvou jde na přidání a kotva je v zadání', async () => {
+    const asked: UpstreamRequest[] = [];
+    const outcome = await planChange({
+      prompt: 'A wooden bench under the tree',
+      blueprint: BLUEPRINT,
+      target: null,
+      anchor: HOLLOW_TREE_OBJECTS[0],
+      emit: async (request) => { asked.push(request); return addition(); },
+    });
+    expect(outcome.kind).toBe('planned');
+    expect(asked[0].user).toContain('hollowFallenTree');
+    expect(asked[0].system).toContain('ONE new object');
   });
 });
 
@@ -519,11 +622,13 @@ describe('zadání pro model', () => {
     expect(request.system).toContain('Nothing here rewrites it for you');
   });
 
-  it('říká totéž o roli, kterou druhá věta zapisuje do /sim', () => {
-    const near = windowAround(request.system, 'role you write there');
-
-    expect(near).toContain('camelCase');
-    expect(near).toContain('no spaces');
+  it('describes the production A4 boundary without permitting entity rewrites', () => {
+    expect(request.system).toContain('exactly ONE existing rule');
+    expect(request.system).toContain('either its condition OR ONE existing action');
+    expect(request.system).toContain('Preserve all triggers, event targets, metadata and action count/order');
+    expect(request.system).toContain('Do not change entities, sockets, initial state');
+    expect(request.system).toContain('A shape-only edit remains supported');
+    expect(request.system).not.toContain('role you write there');
   });
 });
 
@@ -597,5 +702,198 @@ describe('planChange', () => {
     });
     expect(outcome.kind).toBe('rejected');
     if (outcome.kind === 'rejected') expect(outcome.reason).toBe('EMPTY_CHANGE');
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Založení nového objektu (P21 T8)
+ * ------------------------------------------------------------------ */
+
+const SIGNPOST = {
+  shapeId: 'signPole',
+  stableId: 'signpost',
+  nodes: [{ kind: 'prism', sides: 6, radius: 0.1, height: 2 }],
+  root: 0,
+  targetBounds: { min: [-0.2, -1.05, -0.2], max: [0.2, 1.05, 0.2] },
+  anchors: [],
+  materialIntent: 'wood',
+  priority: 4,
+};
+
+function addition(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    summary: 'a signpost stands at the far end of the bridge',
+    object: {
+      stableId: 'signpost',
+      label: 'the signpost',
+      synonyms: ['the sign'],
+      role: 'prop',
+      targetBounds: { min: [9.6, 0, 3.6], max: [10.4, 2.1, 4.4] },
+      importance: 1,
+    },
+    shape: SIGNPOST,
+    behavior: [{ op: 'add', path: '/sim/entities/signpost', value: { role: 'prop', socket: 'farPad', state: 'idle' } }],
+    ...overrides,
+  };
+}
+
+function reasonOf(read: ReturnType<typeof readAdditionEmission>): string {
+  return read.ok ? 'ok' : `${read.reason}: ${read.detail}`;
+}
+
+describe('čtení nového objektu', () => {
+  it('šťastná cesta: plán nese objekt se zdrojem dosazeným z tvaru a `shape` je null', () => {
+    const read = readAdditionEmission(addition(), BLUEPRINT);
+    expect(reasonOf(read)).toBe('ok');
+    if (!read.ok) return;
+    expect(read.value).toMatchObject({
+      stableId: 'signpost',
+      shape: null,
+      appearance: [],
+      addition: { object: { stableId: 'signpost', source: { kind: 'shape', shapeId: 'signPole' } }, shape: { shapeId: 'signPole' } },
+    });
+    expect(read.value.behavior).toHaveLength(1);
+  });
+
+  it.each([
+    ['objekt', { stableId: 'stoneBridge' }, 'stoneBridge'],
+    ['entita v sim', { stableId: 'walker' }, 'walker'],
+    ['socket v sim', { stableId: 'farPad' }, 'farPad'],
+  ])('jméno, které už nese %s, je IDENTITY_TAKEN', (_what, patch, name) => {
+    const body = addition();
+    body.object = { ...(body.object as object), ...patch };
+    body.shape = { ...SIGNPOST, stableId: name };
+    expect(reasonOf(readAdditionEmission(body, BLUEPRINT))).toContain(`IDENTITY_TAKEN: ${name}`);
+  });
+
+  it('tvar pojmenovaný jako existující tvar je IDENTITY_TAKEN, a tvar pojmenovaný jako objekt taky', () => {
+    expect(reasonOf(readAdditionEmission(addition({ shape: { ...SIGNPOST, shapeId: 'bridgeSpan' } }), BLUEPRINT))).toContain('IDENTITY_TAKEN: bridgeSpan');
+    expect(reasonOf(readAdditionEmission(addition({ shape: { ...SIGNPOST, shapeId: 'signpost' } }), BLUEPRINT))).toContain('IDENTITY_TAKEN: signpost names both');
+  });
+
+  it('svět s plným rozpočtem tvarů odmítne SHAPE_BUDGET, ne až meshing', () => {
+    const full = { ...BLUEPRINT, shapes: Array.from({ length: MAX_HERO_SHAPES }, (_, i) => ({ ...BRIDGE_SPAN, shapeId: `span${i}`, stableId: `bridge${i}` })) } as WorldstreamBlueprint;
+    expect(reasonOf(readAdditionEmission(addition(), full))).toContain('SHAPE_BUDGET');
+  });
+
+  it('tvar, který patří jinému objektu než tomu novému, je WRONG_TARGET', () => {
+    expect(reasonOf(readAdditionEmission(addition({ shape: { ...SIGNPOST, stableId: 'stoneBridge' } }), BLUEPRINT))).toContain('WRONG_TARGET');
+  });
+
+  it('objekt s dosazeným `source` nebo bez kvádru je OBJECT_INVALID', () => {
+    const withSource = addition();
+    withSource.object = { ...(withSource.object as object), source: { kind: 'shape', shapeId: 'signPole' } };
+    expect(reasonOf(readAdditionEmission(withSource, BLUEPRINT))).toContain('OBJECT_INVALID');
+    const noBounds = addition();
+    const { targetBounds: _bounds, ...rest } = noBounds.object as Record<string, unknown>;
+    noBounds.object = rest;
+    expect(reasonOf(readAdditionEmission(noBounds, BLUEPRINT))).toContain('OBJECT_INVALID: object/targetBounds');
+  });
+
+  it('operace do `/look` pod `behavior` je WRONG_PART, ne přeřazená operace', () => {
+    const read = readAdditionEmission(addition({ behavior: [{ op: 'replace', path: '/look/palette', value: 'sand' }] }), BLUEPRINT);
+    expect(reasonOf(read)).toContain('WRONG_PART');
+  });
+
+  it('odpověď bez tvaru je WRONG_SHAPE — nový objekt bez podoby nemá co ukázat', () => {
+    expect(reasonOf(readAdditionEmission(addition({ shape: null }), BLUEPRINT))).toContain('WRONG_SHAPE');
+  });
+
+  // Živý běh 19. 9. 2026 (`conversation.json`): dvě odmítnutí ze čtyř byla
+  // `nodes[0].kind` mimo abecedu, a detail říkal jen, co se čekalo – ne, co
+  // model napsal. Bez toho jména se nedá říct, jestli tabulku přehlédl,
+  // nebo si vymyslel synonymum.
+  it('uzel mimo abecedu tvarů je SHAPE_INVALID, který jmenuje ten uzel i celou abecedu', () => {
+    const read = readAdditionEmission(addition({ shape: { ...SIGNPOST, nodes: [{ kind: 'pyramid', size: [1, 1, 1] }] } }), BLUEPRINT);
+    expect(read.ok).toBe(false);
+    if (read.ok) return;
+    expect(read.reason).toBe('SHAPE_INVALID');
+    expect(read.detail).toContain('nodes[0].kind "pyramid"');
+    expect(read.detail).toContain(`allowed kinds: ${Object.values(SHAPE_NODE_GROUPS).flat().join(', ')}`);
+  });
+
+  it('zadání pro přidání jmenuje abecedu uzlů hned u pole shape, ne až v tabulce o třicet řádků níž', () => {
+    const system = buildAdditionRequest('add a signpost', BLUEPRINT, null).system;
+    const shapeLine = system.indexOf('shape is the ShapeProgram');
+    const alphabet = system.indexOf(`kind is one of: ${Object.values(SHAPE_NODE_GROUPS).flat().join(', ')}`);
+    const table = system.indexOf('Shape nodes:');
+    expect(shapeLine).toBeGreaterThan(-1);
+    expect(alphabet).toBeGreaterThan(shapeLine);
+    expect(alphabet).toBeLessThan(table);
+  });
+
+  /**
+   * P21 T9: jedna věta = jeden kus. Model na „add a lantern and a bell" umí
+   * vrátit oba jako dvě entity, nebo k jednomu objektu přibalit dvě pravidla —
+   * obojí projde schématem i dosahem a vypadá jako úspěch. Strop je tady, ne
+   * v zadání: zadání je prosba, tohle je brána.
+   */
+  describe('strop na jeden kus', () => {
+    const entity = (name: string) => ({ op: 'add', path: `/sim/entities/${name}`, value: { role: 'prop', socket: 'farPad', state: 'idle' } });
+    const rule = (name: string) => ({ op: 'add', path: `/sim/rules/${name}`, value: { when: 'tick', then: [] } });
+
+    it('jeden objekt a jedno pravidlo projdou', () => {
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), rule('signpostGlows')] }), BLUEPRINT))).toBe('ok');
+    });
+
+    it('dvě entity jsou TOO_MANY_PIECES', () => {
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), entity('bell')] }), BLUEPRINT))).toContain('TOO_MANY_PIECES: 2 entities and 0 rules');
+    });
+
+    it('dvě pravidla jsou TOO_MANY_PIECES', () => {
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), rule('a'), rule('b')] }), BLUEPRINT))).toContain('TOO_MANY_PIECES: 1 entities and 2 rules');
+    });
+
+    // Naměřeno 18. 9. 2026: zápis celé tabulky nesl dvě pravidla v jedné operaci
+    // a strop je nepočítal — brána dosahu vidí jen čerstvé listy, a ty jí nevadí.
+    it('dvě pravidla zapsaná jako celá tabulka jsou taky TOO_MANY_PIECES', () => {
+      const sim = BLUEPRINT.world.sim as { readonly rules?: Record<string, unknown> };
+      const table = { op: 'add', path: '/sim/rules', value: { ...(sim.rules ?? {}), a: { when: 'tick', then: [] }, b: { when: 'tick', then: [] } } };
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), table] }), BLUEPRINT))).toContain('TOO_MANY_PIECES: 1 entities and 2 rules');
+    });
+
+    it('celá tabulka s jedním novým pravidlem projde', () => {
+      const sim = BLUEPRINT.world.sim as { readonly rules?: Record<string, unknown> };
+      const table = { op: 'add', path: '/sim/rules', value: { ...(sim.rules ?? {}), a: { when: 'tick', then: [] } } };
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), table] }), BLUEPRINT))).toBe('ok');
+    });
+
+    // Nález revize 19. 9. 2026: cesta přesně `/sim` neměla tabulku, tak ji
+    // strop přeskočil — a přepis celého `sim` unesl dvě pravidla jako jedna operace.
+    it('dvě pravidla zapsaná přepisem celého /sim jsou taky TOO_MANY_PIECES', () => {
+      const sim = BLUEPRINT.world.sim as { readonly rules?: Record<string, unknown> };
+      const whole = { op: 'replace', path: '/sim', value: { ...(sim as object), rules: { ...(sim.rules ?? {}), a: { when: 'tick', then: [] }, b: { when: 'tick', then: [] } } } };
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), whole] }), BLUEPRINT))).toContain('TOO_MANY_PIECES: 1 entities and 2 rules');
+    });
+
+    it('přepis celého /sim s jedním novým pravidlem projde stropem', () => {
+      const sim = BLUEPRINT.world.sim as { readonly rules?: Record<string, unknown> };
+      const whole = { op: 'replace', path: '/sim', value: { ...(sim as object), rules: { ...(sim.rules ?? {}), a: { when: 'tick', then: [] } } } };
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), whole] }), BLUEPRINT))).not.toContain('TOO_MANY_PIECES');
+    });
+
+    // Druhá revize 19. 9.: součet přes operace počítal týž klíč dvakrát.
+    it('týž nový klíč zapsaný po jednom i v celé tabulce je pořád jeden kus', () => {
+      const sim = BLUEPRINT.world.sim as { readonly rules?: Record<string, unknown> };
+      const table = { op: 'replace', path: '/sim/rules', value: { ...(sim.rules ?? {}), signpostGlows: { when: 'tick', then: [] } } };
+      expect(reasonOf(readAdditionEmission(addition({ behavior: [entity('signpost'), rule('signpostGlows'), table] }), BLUEPRINT))).not.toContain('TOO_MANY_PIECES');
+    });
+
+    it('zadání pro model říká jeden objekt a nejvýš jedno pravidlo', () => {
+      expect(buildAdditionRequest('add a signpost', BLUEPRINT, null).system).toContain('ONE object and at most ONE rule');
+    });
+  });
+
+  it('planChange bez cíle jde na přidání a plán nese `addition`', async () => {
+    const asked: UpstreamRequest[] = [];
+    const outcome = await planChange({
+      prompt: 'add a signpost at the far end',
+      blueprint: BLUEPRINT,
+      target: null,
+      emit: async (request) => { asked.push(request); return addition(); },
+    });
+    expect(asked).toHaveLength(1);
+    expect(outcome.kind).toBe('planned');
+    if (outcome.kind === 'planned') expect(outcome.plan.addition?.object.stableId).toBe('signpost');
   });
 });

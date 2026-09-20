@@ -17,9 +17,32 @@ function sourceFiles(dir: string): string[] {
 }
 
 describe('kit se vejde do rozpočtu', () => {
-  it('má mezi 36 a 44 kusy z jednoho indexu', () => {
+  it('má počet kusů mezi stropy z jednoho indexu', () => {
     expect(KIT.length).toBeGreaterThanOrEqual(KIT_BUDGETS.minPieces);
     expect(KIT.length).toBeLessThanOrEqual(KIT_BUDGETS.maxPieces);
+  });
+
+  // Strop se zvedá vědomě s každým novým kusem (P19 T6), ne do zásoby: rezerva
+  // víc než dvou kusů by pustila další kus bez rozhodnutí.
+  it('strop počtu kusů sedí na velikost kitu', () => {
+    expect(KIT_BUDGETS.maxPieces - KIT.length).toBeLessThanOrEqual(2);
+  });
+
+  // P19 T6: kusy, podle kterých se místnost pozná (F1 §4 – frekvence × specificita).
+  it.each([
+    'fixture.aquarium',
+    'fixture.fireplace',
+    'fixture.checkout',
+    'fixture.couch',
+    'fixture.reception',
+    'actor.seated',
+    // P19 T7: venkovní vodítka pro pláž, park a balkon.
+    'organic.waterline',
+    'organic.path',
+    'panel.railing',
+    'panel.facade',
+  ])('%s je v kitu', (id) => {
+    expect(KIT.some((piece) => piece.id === id)).toBe(true);
   });
 
   it('žádné dvě id se neopakují', () => {

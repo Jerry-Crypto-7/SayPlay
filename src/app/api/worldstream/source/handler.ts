@@ -1,3 +1,4 @@
+import {ownerIdentityRejection} from '@/server/owner-identity';
 import { observePhase, observePhaseAsync } from '@/model/phase-observer';
 import { withServerMetrics, serverPhaseObserver, currentServerMetrics } from '@/server/worldstream-metrics';
 import { randomUUID } from 'node:crypto';
@@ -24,6 +25,8 @@ export async function handleSourceRequest(request: Request, propose = runSourceP
   currentServerMetrics()?.setProvenance(generation);
   const fail = (code: string, status = 400) => response({ kind: 'rejected', code }, status);
   if ((await observePhaseAsync(serverPhaseObserver, 'request-kill-switch', () => killState(process.env))).sessions) return fail('SESSIONS_DISABLED', 503);
+  const identityRejection=ownerIdentityRejection(request);
+  if(identityRejection)return identityRejection;
   const rate = takeRateSlot('sessions', trustedCallerKey(request) ?? callerKey(request));
   if (!rate.allowed) return rateLimitedResponse(requestId, rate);
   try {

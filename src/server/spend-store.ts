@@ -208,8 +208,12 @@ const BASE_PREFIX = 'worldsmith:spend';
  * i `ledgerFromEnv()`. Dvě definice by se rozešly a klíč by pak mluvil o jiném
  * uložišti, než do kterého zápis doopravdy míří; u peněz je to ten druh
  * rozporu, který se pozná až na faktuře.
+ *
+ * **Od P16 T6 ji čte i `answer-cache.ts`** — cache odpovědí modelu bydlí
+ * v témž obchodě pod touž předponou, aby operátor viděl rozpočet, vypínače
+ * i uložené odpovědi pohromadě a nemusel konfigurovat druhé úložiště.
  */
-function sharedStoreFromEnv(
+export function sharedStoreFromEnv(
   env: Record<string, string | undefined>,
 ): { readonly url: string; readonly token: string } | null {
   // **Druhý pár názvů je integrace Upstash z Vercel Marketplace** (14. 9. 2026):

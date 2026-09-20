@@ -249,6 +249,40 @@ describe('založení relace', () => {
     expect(body).not.toHaveProperty('blueprint');
   });
 
+  it('na požádání vrátí proud relace rovnou v odpovědi, ne přes druhé dveře', async () => {
+    // **P16 `T8-stream404`.** Registr relací je paměť instance a na Vercelu
+    // dopadl `GET /events` o vteřinu později na jinou instanci: 202, pak 404.
+    // Proud v odpovědi na založení jde z instance, která relaci drží. Kdyby
+    // route hlavičku `accept` ignorovala, klient spadne na druhé dveře a
+    // lokálně, na jedné instanci, to vypadá stejně.
+    const response = await createSession(
+      new Request('http://127.0.0.1/api/worldstream/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', accept: 'text/event-stream, application/json' },
+        body: JSON.stringify({ prompt: 'A cathedral of stacked shipping containers around a light well.' }),
+      }),
+    );
+    const sessionId = response.headers.get('x-worldstream-session');
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('text/event-stream; charset=utf-8');
+    expect(sessionId).toMatch(/[0-9a-f-]{36}/);
+    expect(response.headers.get('x-worldstream-authored')).toBe('exact');
+
+    // Pět rámců, ne čtyři: od P22 T4 (`71be912`) jde hned za `session.accepted`
+    // hmotový náhled ze slov věty (`cathedral` je ve slovníku
+    // `word-massing.ts`), synchronně, ještě před prvním voláním modelu.
+    const frames = await readFrames(response, 5);
+    expect(frames.map((frame) => frame.type)).toEqual([
+      'session.accepted',
+      'visual.preview',
+      'intent.ready',
+      'blueprint.ready',
+      'world.ready',
+    ]);
+    expect(new Set(frames.map((frame) => frame.sessionId))).toEqual(new Set([sessionId]));
+  });
+
   it('odpověď přizná, že svět jde ze skladu, a jak přesně věta trefila', async () => {
     // Bez tohohle klíče nemá popisek `T45-honestlabel` odkud vzniknout:
     // `chooseAuthored()` běží na serveru a klient sklad nevidí. Sada běží bez
@@ -590,14 +624,20 @@ describe('proud relace', () => {
     // Proud koncové relace se zavře sám, takže se dá dočíst do konce.
     const frames = await readFrames(await events(stored.session.sessionId));
 
+    // **Žebřík relace `generated()` má od P22 T4 (`71be912`) šest příček, ne
+    // pět:** věta fixtury nese `mast`, takže `runGeneration` vydá hned za
+    // `session.accepted` hmotový náhled ze slov (`visual.preview`, sequence 2)
+    // a všechno za ním se posunulo o jedna. Kurzory `?since=` níž počítají
+    // s tímhle žebříkem.
     expect(frames.map((frame) => frame.type)).toEqual([
       'session.accepted',
+      'visual.preview',
       'intent.ready',
       'blueprint.ready',
       'world.ready',
       'session.failed',
     ]);
-    expect(frames.map((frame) => frame.sequence)).toEqual([1, 2, 3, 4, 5]);
+    expect(frames.map((frame) => frame.sequence)).toEqual([1, 2, 3, 4, 5, 6]);
     expect(new Set(frames.map((frame) => frame.sessionId))).toEqual(
       new Set([stored.session.sessionId]),
     );
@@ -615,8 +655,10 @@ describe('proud relace', () => {
     stored.session.fail('done for the test');
     const frames = await readFrames(await events(stored.session.sessionId, '?since=3'));
 
-    expect(frames.map((frame) => frame.type)).toEqual(['world.ready', 'session.failed']);
-    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5]);
+    // Kurzor 3 je od P22 T4 (`71be912`) `intent.ready`, ne `blueprint.ready`
+    // (náhled ze slov zabral sequence 2), takže za ním zbývají tři rámce.
+    expect(frames.map((frame) => frame.type)).toEqual(['blueprint.ready', 'world.ready', 'session.failed']);
+    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5, 6]);
   });
 
   it('`Last-Event-ID` dělá totéž, protože ho posílá prohlížeč sám', async () => {
@@ -626,7 +668,9 @@ describe('proud relace', () => {
       await events(stored.session.sessionId, '', { 'last-event-id': '3' }),
     );
 
-    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5]);
+    // Za kurzorem 3 jsou tři rámce, ne dva: P22 T4 (`71be912`) vsunul náhled
+    // ze slov na sequence 2 a konec žebříku je 6.
+    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5, 6]);
   });
 
   it('výslovný `?since=` přebije hlavičku od prohlížeče', async () => {
@@ -636,7 +680,9 @@ describe('proud relace', () => {
       await events(stored.session.sessionId, '?since=4', { 'last-event-id': '1' }),
     );
 
-    expect(frames.map((frame) => frame.sequence)).toEqual([5]);
+    // Dotaz vyhrál, když za kurzorem 4 přijde jen zbytek žebříku — od P22 T4
+    // (`71be912`) jsou to dva rámce (`world.ready`, `session.failed`), ne jeden.
+    expect(frames.map((frame) => frame.sequence)).toEqual([5, 6]);
   });
 
   it('`?since=` bez hodnoty neumlčí hlavičku a nepřehraje relaci od nuly', async () => {
@@ -650,7 +696,9 @@ describe('proud relace', () => {
       await events(stored.session.sessionId, '?since=', { 'last-event-id': '3' }),
     );
 
-    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5]);
+    // Hlavička platí, když za kurzorem 3 přijde zbytek žebříku — od P22 T4
+    // (`71be912`) tři rámce, protože náhled ze slov zabral sequence 2.
+    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5, 6]);
   });
 
   it('opakovaný `?since=` navazuje na první použitelný kurzor, ne na nulu', async () => {
@@ -663,7 +711,9 @@ describe('proud relace', () => {
     stored.session.fail('done for the test');
     const frames = await readFrames(await events(stored.session.sessionId, '?since=&since=3'));
 
-    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5]);
+    // Druhý `since=3` platí, když přijde zbytek žebříku za trojkou — od P22 T4
+    // (`71be912`) tři rámce, ne dva; nula by jich vydala šest.
+    expect(frames.map((frame) => frame.sequence)).toEqual([4, 5, 6]);
   });
 
   it('prázdný dotaz i prázdná hlavička znamenají první připojení, ne chybu', async () => {
@@ -674,7 +724,9 @@ describe('proud relace', () => {
       await events(stored.session.sessionId, '?since=', { 'last-event-id': '' }),
     );
 
-    expect(frames.map((frame) => frame.sequence)).toEqual([1, 2, 3, 4, 5]);
+    // Celý žebřík má od P22 T4 (`71be912`) šest rámců — náhled ze slov je
+    // sequence 2.
+    expect(frames.map((frame) => frame.sequence)).toEqual([1, 2, 3, 4, 5, 6]);
   });
 
   it('useknutý požadavek vrátí odběr logu, ne až čtenář proudu', async () => {
@@ -771,21 +823,44 @@ describe('proud relace', () => {
 
   it('rámec zapsaný po připojení dorazí živě', async () => {
     const stored = await generated();
-    const response = await events(stored.session.sessionId, '?since=4');
+    // Kurzor 5, ne 4: doběhlá relace má od P22 T4 (`71be912`) pět rámců,
+    // protože náhled ze slov (`mast`) zabral sequence 2. Kurzor musí sedět
+    // na konci logu, jinak by tenhle test měřil backlog, ne živé doručení.
+    const response = await events(stored.session.sessionId, '?since=5');
 
-    // Čtyři rámce už proud viděl, takže backlog je prázdný a tohle je jediné,
+    // Pět rámců už proud viděl, takže backlog je prázdný a tohle je jediné,
     // co může dorazit — kdyby odběr nebyl zapojený, test spadne na timeoutu
     // vitestu, ne na tvrzení.
     stored.session.queue('ironMast', 32);
     const frames = await readFrames(response, 1);
 
     expect(frames.map((frame) => frame.type)).toEqual(['shape.queued']);
-    expect(frames[0].sequence).toBe(5);
+    expect(frames[0].sequence).toBe(6);
+  });
+
+  it('obnovení bez nového rámce dostane první kus hned, ne za heartbeat', async () => {
+    // `next` pošle hlavičky až s prvním kusem těla a úspěšná relace zůstává
+    // otevřená ve fázi `world`, takže prázdný backlog znamenal 15 s bez
+    // hlaviček — `fetch` klienta, který navázal za posledním číslem, visel.
+    // Soudí se **do vteřiny**: bez meze by čtení počkalo na heartbeat z
+    // intervalu a prošlo by se týmž rámcem o 15 s později (mutant to 15. 9.
+    // přežil přesně takhle).
+    const stored = await generated();
+    // `?since=5` je poslední číslo logu od P22 T4 (`71be912`): náhled ze slov
+    // posunul `world.ready` na 5. S kurzorem 4 by backlog nebyl prázdný a
+    // první kus by byl `world.ready`, ne heartbeat.
+    const raw = await Promise.race([
+      readRaw(await events(stored.session.sessionId, '?since=5')),
+      new Promise<string>((resolve) => setTimeout(() => resolve('nothing within 1 s'), 1_000)),
+    ]);
+
+    expect(raw).toBe(HEARTBEAT_FRAME);
   });
 
   it('proud se zavře sám, když relace skončí', async () => {
     const stored = await generated();
-    const response = await events(stored.session.sessionId, '?since=4');
+    // Kurzor 5 = za `world.ready`, které P22 T4 (`71be912`) posunulo ze 4 na 5.
+    const response = await events(stored.session.sessionId, '?since=5');
 
     stored.session.fail('the model could not be reached');
     // Bez zavření by tohle čtení běželo do timeoutu — a e2e sada by červenala
@@ -802,7 +877,8 @@ describe('proud relace', () => {
     const frames = await readFrames(await events(stored.session.sessionId));
 
     expect(frames.at(-1)?.type).toBe('session.failed');
-    expect(frames).toHaveLength(5);
+    // Šest, ne pět: náhled ze slov z P22 T4 (`71be912`) je druhý rámec.
+    expect(frames).toHaveLength(6);
   });
 
   it('heartbeat je komentář, který dekodér zahodí', async () => {
@@ -822,13 +898,17 @@ describe('generace se scriptovaným emitorem', () => {
   it('projde tři fáze v pořadí a dvěma voláními modelu', async () => {
     const emitter = scripted();
     const stored = openSession('scripted-happy', 4021)!;
-    await runGeneration(stored, PLAN.intent.setting, { emit: emitter.emit, grammar: grammar() });
+    await runGeneration(stored, PLAN.intent.setting, { legacyPlan: true, emit: emitter.emit, grammar: grammar() });
 
     expect(stored.session.phase).toBe('world');
     expect(stored.fault).toBeNull();
     expect(emitter.calls()).toBe(2);
+    // Tři fáze modelu zůstávají tři; `visual.preview` mezi nimi je hmotový
+    // náhled ze slov věty (P22 T4, `71be912`), vydaný před prvním voláním
+    // modelu — proto se `calls()` nehnulo a rámec stojí hned za přijetím.
     expect(stored.session.events.all().map((event) => event.type)).toEqual([
       'session.accepted',
+      'visual.preview',
       'intent.ready',
       'blueprint.ready',
       'world.ready',
@@ -851,7 +931,7 @@ describe('generace se scriptovaným emitorem', () => {
 
   it('model, který nedodá záměr, skončí relaci veřejnou větou', async () => {
     const stored = openSession('scripted-rejected', 4021)!;
-    await runGeneration(stored, PLAN.intent.setting, {
+    await runGeneration(stored, PLAN.intent.setting, { legacyPlan: true,
       emit: async () => ({ intent: 'a salt flat' }),
       grammar: grammar(),
     });
@@ -863,7 +943,7 @@ describe('generace se scriptovaným emitorem', () => {
 
   it('nedostupný model skončí relaci, ne nezachyceným slibem', async () => {
     const stored = openSession('scripted-unavailable', 4021)!;
-    await runGeneration(stored, PLAN.intent.setting, {
+    await runGeneration(stored, PLAN.intent.setting, { legacyPlan: true,
       emit: async () => {
         throw new Error('connect ECONNREFUSED https://provider.example/v1?key=sk-secret');
       },
@@ -909,7 +989,7 @@ describe('generace se scriptovaným emitorem', () => {
     it('odmítnutí u plánovače dá vlastní větu, ne poruchu modelu', async () => {
       const stored = openSession('scripted-cap-planner', 4021)!;
       const logged: string[] = [];
-      await runGeneration(stored, PLAN.intent.setting, {
+      await runGeneration(stored, PLAN.intent.setting, { legacyPlan: true,
         emit: async () => {
           throw refusal('STORE_UNCONFIGURED');
         },
@@ -930,7 +1010,7 @@ describe('generace se scriptovaným emitorem', () => {
     it('odmítnutí u kompilátoru projde přes opravnou smyčku se stejným verdiktem', async () => {
       const stored = openSession('scripted-cap-compiler', 4021)!;
       let calls = 0;
-      await runGeneration(stored, PLAN.intent.setting, {
+      await runGeneration(stored, PLAN.intent.setting, { legacyPlan: true,
         emit: async () => {
           calls += 1;
           if (calls === 1) return { intent: PLAN.intent, objects: PLAN.objects };
@@ -947,7 +1027,7 @@ describe('generace se scriptovaným emitorem', () => {
 
     it('mlčící poskytovatel zůstává poruchou modelu', async () => {
       const stored = openSession('scripted-cap-control', 4021)!;
-      await runGeneration(stored, PLAN.intent.setting, {
+      await runGeneration(stored, PLAN.intent.setting, { legacyPlan: true,
         emit: async () => {
           // Táž zpráva, jinak vyhozená. Kdyby se rozhodovalo podle textu,
           // tenhle test by spadl spolu s tím výš.
@@ -967,8 +1047,10 @@ describe('generace se scriptovaným emitorem', () => {
 
     // Konec konců je tohle to jediné, co porotce uvidí: pořadí, ve kterém se
     // svět staví. Modul to umí a route to musí donést až k němu.
+    // Od P22 T4 (`71be912`) porotce vidí ještě před záměrem hmoty ze slov
+    // věty — `visual.preview` hned za přijetím je tedy součást cesty.
     const ladder = frames.map((frame) => frame.type).filter((type) => type !== 'session.failed');
-    expect(ladder).toEqual(['session.accepted', 'intent.ready', 'blueprint.ready', 'world.ready']);
+    expect(ladder).toEqual(['session.accepted', 'visual.preview', 'intent.ready', 'blueprint.ready', 'world.ready']);
   });
 });
 
@@ -1392,6 +1474,33 @@ describe('strop na frekvenci dorazí až k zakládání relace', () => {
  * **kvóta by mlčky nedělala nic** a celá ochrana by byla dekorace. Tenhle
  * soubor je jediné místo, kde se dá pinovat, že provoz posílá skutečný klíč.
  */
+describe('explicit single-process proxy owner quota',()=>{
+  const fixtureSecret='FIXTURE_ONLY_NOT_A_REAL_SECRET_000000000000';
+  const request=(owner:string,key=fixtureSecret)=>{
+    const req=createRequest({prompt:'A calm reading room'});
+    req.headers.set('x-worldsmith-owner',owner);req.headers.set('x-worldsmith-proxy-key',key);
+    req.headers.set('x-forwarded-for','same-shared-NAT');req.headers.set('x-vercel-forwarded-for','spoofed-victim');return req;
+  };
+  beforeEach(()=>{vi.stubEnv('VERCEL',undefined);vi.stubEnv('WORLDSMITH_OWNER_IDENTITY','trusted-proxy');vi.stubEnv('WORLDSMITH_OWNER_PROXY_SECRET',fixtureSecret);});
+  afterEach(()=>vi.unstubAllEnvs());
+  it('enforces independent route quotas for three owners and rejects forged headers before session admission',async()=>{
+    resetRateWindows();
+    for(let i=0;i<QUOTA_ENGAGES_AT;i++)openSession(`proxy-filler-${i}`,i+1,Date.now(),`filler-${i}`)!.session.events.subscribe(()=>{});
+    const retained:string[]=[];
+    for(const owner of ['alice','bob','carol']) {
+      for(let i=0;i<MAX_SESSIONS_PER_CALLER;i++) {
+        const response=await createSession(request(owner));expect(response.status).toBe(202);
+        retained.push(((await response.json()) as {sessionId:string}).sessionId);
+      }
+      const denied=await createSession(request(owner));expect(denied.status).toBe(429);
+      expect((await denied.json()).error.code).toBe('TOO_MANY_SESSIONS_PER_CALLER');
+    }
+    const before=liveSessionCount();
+    for(const key of ['forged',''])expect((await createSession(request('alice',key))).status).toBe(403);
+    expect(liveSessionCount()).toBe(before);expect(retained.every(id=>getSession(id)!==null)).toBe(true);
+  });
+});
+
 describe('relaci zakládá klíč volajícího, ne anonym', () => {
   /**
    * **Tenhle blok popisuje nasazení na Vercelu, a od 5. 9. 2026 to musí říct
@@ -1762,6 +1871,37 @@ describe('zdroj emise: dějství I ze skladu, dějství II od modelu', () => {
 
       expect(stored.session.phase).toBe('failed');
       expect(stored.fault).not.toBeNull();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('proud v odpovědi nepřizná sklad, když svět píše model', async () => {
+    // Hlavička `x-worldstream-authored` je týž popisek `T45-honestlabel` jako
+    // klíč `authored` v JSONu. Kdyby ji route posílala i bez skladu, porotce by
+    // nad světem od modelu četl, že je uvařený předem – i u věty, kterou sklad
+    // zná přesně (revize testů před `/ship` 15. 9. 2026). Stojí tady, za testem
+    // stropu utrácení: živé volání z modulového stropu ubere a ten ho rezervuje celý.
+    stubCloud();
+    try {
+      const response = await createSession(
+        new Request('http://127.0.0.1/api/worldstream/sessions', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', accept: 'text/event-stream, application/json' },
+          body: JSON.stringify({ prompt: AUTHORED.prompt, live: true }),
+        }),
+      );
+
+      const sessionId = response.headers.get('x-worldstream-session');
+      expect(response.status).toBe(200);
+      expect(sessionId).toMatch(/[0-9a-f-]{36}/);
+      expect(response.headers.get('x-worldstream-authored')).toBeNull();
+      // Po sobě nenechá běžící generaci: čeká se na její poruchu na
+      // `model.invalid`, ne na fázi – tu by ukončila i zavřená odpověď.
+      await vi.waitFor(() => {
+        if ((getSession(sessionId!)?.fault ?? null) === null) throw new Error('generace ještě běží');
+      }, { timeout: 20_000, interval: 25 });
+      await response.body?.cancel();
     } finally {
       vi.unstubAllEnvs();
     }

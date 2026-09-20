@@ -1,0 +1,435 @@
+﻿[
+    {
+        "irVersion":  "v1",
+        "simRevision":  0,
+        "lookRevision":  0,
+        "sim":  {
+                    "layout":  {
+                                   "width":  9,
+                                   "height":  9
+                               },
+                    "grid":  {
+                                 "cell":  1
+                             },
+                    "sockets":  {
+                                    "roomPad":  [
+                                                    4,
+                                                    2
+                                                ],
+                                    "aquariumPad":  [
+                                                        3,
+                                                        6
+                                                    ],
+                                    "firstSeatPad":  [
+                                                         3,
+                                                         4
+                                                     ],
+                                    "secondSeatPad":  [
+                                                          4,
+                                                          4
+                                                      ],
+                                    "terminalPad":  [
+                                                        6,
+                                                        4
+                                                    ],
+                                    "signalPad":  [
+                                                      6,
+                                                      5
+                                                  ],
+                                    "entrancePad":  [
+                                                        4,
+                                                        1
+                                                    ]
+                                },
+                    "collisionAabb":  {
+
+                                      },
+                    "entities":  {
+                                     "readingRoom":  {
+                                                         "role":  "readingRoom",
+                                                         "socket":  "roomPad",
+                                                         "state":  "open",
+                                                         "locked":  false
+                                                     },
+                                     "glassAquarium":  {
+                                                           "role":  "aquarium",
+                                                           "socket":  "aquariumPad",
+                                                           "state":  "displaying",
+                                                           "locked":  false
+                                                       },
+                                     "firstPerson":  {
+                                                         "role":  "actor",
+                                                         "socket":  "firstSeatPad",
+                                                         "state":  "seated",
+                                                         "locked":  false
+                                                     },
+                                     "secondPerson":  {
+                                                          "role":  "agent",
+                                                          "socket":  "secondSeatPad",
+                                                          "state":  "seated",
+                                                          "locked":  false
+                                                      },
+                                     "computerTerminal":  {
+                                                              "role":  "terminal",
+                                                              "socket":  "terminalPad",
+                                                              "state":  "ready",
+                                                              "locked":  false
+                                                          },
+                                     "signalLight":  {
+                                                         "role":  "signalLamp",
+                                                         "socket":  "signalPad",
+                                                         "state":  "off",
+                                                         "locked":  false
+                                                     }
+                                 },
+                    "rules":  {
+                                  "activateSignal":  {
+                                                         "phase":  0,
+                                                         "priority":  0,
+                                                         "event":  {
+                                                                       "kind":  "onClick",
+                                                                       "entity":  "computerTerminal"
+                                                                   },
+                                                         "condition":  {
+                                                                           "kind":  "flagIs",
+                                                                           "flag":  "signalOn",
+                                                                           "value":  false
+                                                                       },
+                                                         "actions":  [
+                                                                         {
+                                                                             "kind":  "setFlag",
+                                                                             "flag":  "signalOn",
+                                                                             "value":  true
+                                                                         },
+                                                                         {
+                                                                             "kind":  "setState",
+                                                                             "target":  "computerTerminal",
+                                                                             "value":  "activated"
+                                                                         },
+                                                                         {
+                                                                             "kind":  "setState",
+                                                                             "target":  "signalLight",
+                                                                             "value":  "on"
+                                                                         }
+                                                                     ]
+                                                     },
+                                  "win":  {
+                                              "phase":  1,
+                                              "priority":  0,
+                                              "event":  {
+                                                            "kind":  "onStateEnter",
+                                                            "entity":  "signalLight",
+                                                            "state":  "on"
+                                                        },
+                                              "condition":  {
+                                                                "kind":  "flagIs",
+                                                                "flag":  "signalOn",
+                                                                "value":  true
+                                                            },
+                                              "actions":  [
+                                                              {
+                                                                  "kind":  "win"
+                                                              }
+                                                          ]
+                                          }
+                              },
+                    "state":  {
+                                  "counters":  {
+
+                                               },
+                                  "flags":  {
+                                                "signalOn":  {
+                                                                 "init":  false
+                                                             }
+                                            },
+                                  "timers":  {
+
+                                             },
+                                  "zones":  {
+
+                                            },
+                                  "slots":  0,
+                                  "pool":  {
+
+                                           }
+                              }
+                },
+        "look":  {
+                     "modules":  {
+                                     "computerTerminal":  {
+                                                              "interactionLabel":  "Switch on the signal light",
+                                                              "objective":  "Use the computer terminal to switch on the signal light."
+                                                          },
+                                     "signalLight":  {
+                                                         "states":  {
+                                                                        "off":  {
+                                                                                    "emissiveIntensity":  0
+                                                                                },
+                                                                        "on":  {
+                                                                                   "emissiveIntensity":  2,
+                                                                                   "emissiveColor":  "#E8BA63"
+                                                                               }
+                                                                    }
+                                                     }
+                                 },
+                     "palette":  {
+                                     "walls":  "#DEDACF",
+                                     "floor":  "#A18D73",
+                                     "furniture":  "#655747",
+                                     "accent":  "#698E94"
+                                 },
+                     "lightRig":  {
+                                      "ambientIntensity":  0.65,
+                                      "key":  {
+                                                  "position":  [
+                                                                   3,
+                                                                   6,
+                                                                   3
+                                                               ],
+                                                  "color":  "#FFF1D9",
+                                                  "intensity":  0.8
+                                              }
+                                  },
+                     "atmosphere":  {
+                                        "mood":  "quiet and attentive",
+                                        "fogDensity":  0
+                                    },
+                     "materialRoles":  {
+                                           "walls":  "mattePlaster",
+                                           "floor":  "oak",
+                                           "furniture":  "oiledWood"
+                                       },
+                     "camera":  {
+                                    "kind":  "orbit",
+                                    "position":  [
+                                                     10,
+                                                     10,
+                                                     -7
+                                                 ],
+                                    "target":  [
+                                                   4,
+                                                   0.8,
+                                                   4.5
+                                               ]
+                                },
+                     "audio":  {
+                                   "ambience":  "soft aquarium pump",
+                                   "volume":  0.12
+                               }
+                 }
+    },
+    {
+        "irVersion":  "v1",
+        "simRevision":  1,
+        "lookRevision":  0,
+        "sim":  {
+                    "layout":  {
+                                   "width":  9,
+                                   "height":  9
+                               },
+                    "grid":  {
+                                 "cell":  1
+                             },
+                    "sockets":  {
+                                    "roomPad":  [
+                                                    4,
+                                                    2
+                                                ],
+                                    "aquariumPad":  [
+                                                        3,
+                                                        6
+                                                    ],
+                                    "firstSeatPad":  [
+                                                         3,
+                                                         4
+                                                     ],
+                                    "secondSeatPad":  [
+                                                          4,
+                                                          4
+                                                      ],
+                                    "terminalPad":  [
+                                                        6,
+                                                        4
+                                                    ],
+                                    "signalPad":  [
+                                                      6,
+                                                      5
+                                                  ],
+                                    "entrancePad":  [
+                                                        4,
+                                                        1
+                                                    ]
+                                },
+                    "collisionAabb":  {
+
+                                      },
+                    "entities":  {
+                                     "readingRoom":  {
+                                                         "role":  "readingRoom",
+                                                         "socket":  "roomPad",
+                                                         "state":  "open",
+                                                         "locked":  false
+                                                     },
+                                     "glassAquarium":  {
+                                                           "role":  "aquarium",
+                                                           "socket":  "aquariumPad",
+                                                           "state":  "displaying",
+                                                           "locked":  false
+                                                       },
+                                     "firstPerson":  {
+                                                         "role":  "actor",
+                                                         "socket":  "firstSeatPad",
+                                                         "state":  "seated",
+                                                         "locked":  false
+                                                     },
+                                     "secondPerson":  {
+                                                          "role":  "agent",
+                                                          "socket":  "secondSeatPad",
+                                                          "state":  "seated",
+                                                          "locked":  false
+                                                      },
+                                     "computerTerminal":  {
+                                                              "role":  "terminal",
+                                                              "socket":  "terminalPad",
+                                                              "state":  "ready",
+                                                              "locked":  false
+                                                          },
+                                     "signalLight":  {
+                                                         "role":  "signalLamp",
+                                                         "socket":  "signalPad",
+                                                         "state":  "off",
+                                                         "locked":  false
+                                                     }
+                                 },
+                    "rules":  {
+                                  "activateSignal":  {
+                                                         "phase":  0,
+                                                         "priority":  0,
+                                                         "event":  {
+                                                                       "kind":  "onClick",
+                                                                       "entity":  "computerTerminal"
+                                                                   },
+                                                         "condition":  {
+                                                                           "kind":  "flagIs",
+                                                                           "flag":  "signalOn",
+                                                                           "value":  false
+                                                                       },
+                                                         "actions":  [
+                                                                         {
+                                                                             "kind":  "setFlag",
+                                                                             "flag":  "signalOn",
+                                                                             "value":  true
+                                                                         },
+                                                                         {
+                                                                             "kind":  "setState",
+                                                                             "target":  "computerTerminal",
+                                                                             "value":  "activated"
+                                                                         },
+                                                                         {
+                                                                             "kind":  "setState",
+                                                                             "target":  "signalLight",
+                                                                             "value":  "on"
+                                                                         }
+                                                                     ]
+                                                     },
+                                  "win":  {
+                                              "phase":  1,
+                                              "priority":  0,
+                                              "event":  {
+                                                            "kind":  "onClick",
+                                                            "entity":  "computerTerminal"
+                                                        },
+                                              "condition":  null,
+                                              "actions":  [
+                                                              {
+                                                                  "kind":  "win"
+                                                              }
+                                                          ]
+                                          }
+                              },
+                    "state":  {
+                                  "counters":  {
+
+                                               },
+                                  "flags":  {
+                                                "signalOn":  {
+                                                                 "init":  false
+                                                             }
+                                            },
+                                  "timers":  {
+
+                                             },
+                                  "zones":  {
+
+                                            },
+                                  "slots":  0,
+                                  "pool":  {
+
+                                           }
+                              }
+                },
+        "look":  {
+                     "modules":  {
+                                     "computerTerminal":  {
+                                                              "interactionLabel":  "Switch on the signal light",
+                                                              "objective":  "Use the computer terminal to switch on the signal light."
+                                                          },
+                                     "signalLight":  {
+                                                         "states":  {
+                                                                        "off":  {
+                                                                                    "emissiveIntensity":  0
+                                                                                },
+                                                                        "on":  {
+                                                                                   "emissiveIntensity":  2,
+                                                                                   "emissiveColor":  "#E8BA63"
+                                                                               }
+                                                                    }
+                                                     }
+                                 },
+                     "palette":  {
+                                     "walls":  "#DEDACF",
+                                     "floor":  "#A18D73",
+                                     "furniture":  "#655747",
+                                     "accent":  "#698E94"
+                                 },
+                     "lightRig":  {
+                                      "ambientIntensity":  0.65,
+                                      "key":  {
+                                                  "position":  [
+                                                                   3,
+                                                                   6,
+                                                                   3
+                                                               ],
+                                                  "color":  "#FFF1D9",
+                                                  "intensity":  0.8
+                                              }
+                                  },
+                     "atmosphere":  {
+                                        "mood":  "quiet and attentive",
+                                        "fogDensity":  0
+                                    },
+                     "materialRoles":  {
+                                           "walls":  "mattePlaster",
+                                           "floor":  "oak",
+                                           "furniture":  "oiledWood"
+                                       },
+                     "camera":  {
+                                    "kind":  "orbit",
+                                    "position":  [
+                                                     10,
+                                                     10,
+                                                     -7
+                                                 ],
+                                    "target":  [
+                                                   4,
+                                                   0.8,
+                                                   4.5
+                                               ]
+                                },
+                     "audio":  {
+                                   "ambience":  "soft aquarium pump",
+                                   "volume":  0.12
+                               }
+                 }
+    }
+]

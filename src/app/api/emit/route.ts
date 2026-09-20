@@ -1,3 +1,4 @@
+import {ownerIdentityRejection} from '@/server/owner-identity';
 /**
  * `POST /api/emit` — emise celého světa proti zmrazenému promptu.
  *
@@ -194,6 +195,8 @@ export async function POST(request: Request): Promise<Response> {
 
     // Strop na frekvenci, pořád před čtením těla — táž mez a totéž odůvodnění
     // jako u `/api/edit`, viz `src/server/rate-limit.ts`.
+    const identityRejection=ownerIdentityRejection(request);
+    if(identityRejection)return identityRejection;
     const slot = takeRateSlot('emit', trustedCallerKey(request) ?? callerKey(request));
     if (!slot.allowed) {
       logRateLimited('emit', requestId, rateLimitCode(slot), `${String(slot.count)} in window`);

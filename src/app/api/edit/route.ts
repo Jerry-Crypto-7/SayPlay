@@ -1,3 +1,4 @@
+import {ownerIdentityRejection} from '@/server/owner-identity';
 /**
  * `POST /api/edit` — emise **patche** proti běžícímu světu. Druhá větev téhož
  * kontraktu, kterou `/api/emit` obsluhuje pro tvorbu.
@@ -252,6 +253,8 @@ export async function POST(request: Request): Promise<Response> {
      * nenaplní. Odůvodnění čísel i toho, proč je mez na proces, je
      * v `src/server/rate-limit.ts`.
      */
+    const identityRejection=ownerIdentityRejection(request);
+    if(identityRejection)return identityRejection;
     const slot = takeRateSlot('edit', trustedCallerKey(request) ?? callerKey(request));
     if (!slot.allowed) {
       logRateLimited('edit', requestId, rateLimitCode(slot), `${String(slot.count)} in window`);

@@ -83,6 +83,22 @@ describe('strop rezervuje dopředu, nezaznamenává zpětně', () => {
     expect((await cap.reserve(0.6)).ok).toBe(false);
   });
 
+  it('tři rezervace naráz nad stropem na dvě: přesně jedna odmítnutá, žádná ztracená', async () => {
+    // Kusy kompilátoru (P21 T5) rezervují souběžně, ne po sobě. „Přičti a
+    // případně vrať" musí dát totéž jako tři rezervace za sebou: dvě prošly,
+    // třetí ne, a odmítnutá nic nedrží. Kdyby se rozhodovalo nad společným
+    // čtením, prošly by všechny tři.
+    const cap = new SpendCap({ enabled: true, capUsd: 10, callCap: 2 });
+    const outcomes = await Promise.all([cap.reserve(1), cap.reserve(1), cap.reserve(1)]);
+    const passed = outcomes.filter((outcome) => outcome.ok);
+    expect(passed).toHaveLength(2);
+    expect(outcomes.filter((outcome) => !outcome.ok).map((outcome) => (outcome.ok ? '' : outcome.reason))).toEqual(['CALL_CAP_EXHAUSTED']);
+    expect(cap.snapshot().callsMade).toBe(2);
+    for (const reservation of passed) if (reservation.ok) await reservation.settle(0.25);
+    expect(cap.snapshot().reservedUsd).toBe(0);
+    expect(cap.snapshot().spentUsd).toBeCloseTo(0.5, 10);
+  });
+
   it('vyrovnání skutečnou cenou uvolní rozdíl proti odhadu', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: 1 });
     const reservation = await cap.reserve(0.6);

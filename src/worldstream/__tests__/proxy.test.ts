@@ -45,6 +45,22 @@ import {
 } from '../proxy';
 import { blueprintSchema, type WorldstreamBlueprint } from '../schema';
 import { boundsCenter, toWorld } from '../slots';
+import {assessShapeDetail} from '@/shape/detail-policy';
+
+it('main proxy path meshes one risky repeated unit and keeps the whole target slot',async()=>{
+  const initial=blueprint(), original=initial.shapes[0];
+  const repeated={...original,nodes:[{kind:'box' as const,size:[1,.08,.12]},{kind:'repeat' as const,child:0,count:2,step:[0,1.2,0]}],root:1,
+    targetBounds:{min:[-.5,-.04,-.06],max:[.5,1.24,.06]},anchors:[]};
+  const doc=blueprint({shapes:[repeated]});
+  const recorder=recordingMesher(),world=await build(compiled(doc),recorder.mesh);
+  const entry=slotOf(world,original.stableId);
+  expect(recorder.orders[0].program.nodes).toHaveLength(1);
+  expect(recorder.orders[0].bounds).toEqual({min:[-.5,-.04,-.06],max:[.5,.04,.06]});
+  expect(entry.form).toMatchObject({kind:'mesh',repeat:{offsets:[[0,0,0],[0,1.2,0]]},samplingAction:{kind:'repeat-instanced'}});
+  expect(entry.slot.localBounds).toEqual(repeated.targetBounds);
+  expect(built(world).slots.map(s=>s.slot.stableId)).toEqual(doc.objects.map(o=>o.stableId));
+  expect(entry.slot.worldBounds).toEqual(doc.objects.find(o=>o.stableId===original.stableId)!.targetBounds);
+});
 
 /* ------------------------------------------------------------------ *
  * Fixtura.
@@ -235,6 +251,16 @@ describe('every semantic object becomes its own slot', () => {
  * ------------------------------------------------------------------ */
 
 describe('the hero object is meshed from its own shape program', () => {
+  it('preserves the source features for assessment against the grid actually rendered',async()=>{
+    const world=built(await build());
+    const hero=world.slots.find(entry=>entry.slot.stableId==='tallHive')!;
+    expect(hero.detailProgram?.stableId).toBe('tallHive');
+    if(hero.form.kind!=='mesh'||!hero.detailProgram)throw new Error('expected rendered SDF');
+    const assessment=assessShapeDetail(hero.detailProgram,hero.form.resolution);
+    expect(assessment.resolution).toBe(hero.form.resolution);
+    expect(assessment.features.length).toBeGreaterThan(0);
+    expect(world.slots.filter(entry=>entry.form.kind==='placements').every(entry=>!entry.detailProgram)).toBe(true);
+  });
   it('orders the rough grid, not the detailed one', async () => {
     const mesher = recordingMesher();
     const world = built(await buildProxyWorld(compiled(blueprint()), { mesh: mesher.mesh }));

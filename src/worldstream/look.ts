@@ -431,3 +431,148 @@ export function terrainOfProgram(program: GeomProgram): TerrainKind {
 export function lookDifference(a: LookDescriptor, b: LookDescriptor): number {
   return LOOK_FIELDS.filter((field) => JSON.stringify(a[field]) !== JSON.stringify(b[field])).length;
 }
+
+/* ------------------------------------------------------------------ *
+ * Předvolby (P22 T12) – vzhled, který umí přepnout pravidlo světa.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Pět předvoleb, které umí pravidlo světa zapnout. Uzavřený seznam schválně:
+ * čte ho schéma blueprintu (`lookBindings`) i prompt kompilátoru, a jméno
+ * mimo seznam se má odmítnout u brány, ne tiše spadnout na den.
+ */
+export const LOOK_PRESETS = ['day', 'dusk', 'night', 'storm', 'fog'] as const;
+
+export type LookPreset = (typeof LOOK_PRESETS)[number];
+
+/**
+ * Vazba proměnné světa na předvolbu: `values` je tabulka hodnota → předvolba,
+ * klíčovaná celým číslem zapsaným jako řetězec (`"0"`, `"1"`, `"3"`), protože
+ * příznak je 0/1 a čítač celé číslo a JSON jiný klíč nemá.
+ */
+export interface LookBinding {
+  readonly variable: string;
+  readonly values: Readonly<Record<string, LookPreset>>;
+}
+
+/**
+ * Nádechy, ke kterým se obloha při předvolbě přiklání. Šedomodré a jantarové
+ * schválně: míchání sRGB neběží po oblouku odstínů, a mezi teplou oblohou
+ * (`kiln`, `dunes`) a čistě modrým nádechem by cesta vedla přes fialovou.
+ * Zelenomodrý nádech se s červení potká v šedi, ne v purpuru – a měří to
+ * `look.test.ts` nad celým součinem palet, terénů a předvoleb.
+ */
+const TINT = {
+  dusk: '#b8683a',
+  night: '#0f2429',
+  storm: '#2e3a3f',
+  fog: '#8e9a9c',
+} as const;
+
+/** Šedá téhož jasu. Míchání k ní odbarví, ale nezesvětlí – mlha tmavou oblohu nesmí rozsvítit. */
+function greyOf(hex: string): string {
+  const [r, g, b] = channels(hex);
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return toHex([luminance, luminance, luminance]);
+}
+
+/** Klíčové světlo přitlačené k obzoru: `y` se zmenší a vektor se znovu znormuje. */
+function lowered(direction: KeyLightLook['direction'], factor: number): KeyLightLook['direction'] {
+  const [x, y, z] = direction;
+  const flat = Math.hypot(x, z) || 1;
+  const lowY = y * factor;
+  const scale = Math.sqrt(Math.max(0, 1 - lowY * lowY)) / flat;
+  return [x * scale, lowY, z * scale];
+}
+
+/**
+ * Vzhled téhož světa v jiné denní době nebo počasí.
+ *
+ * Čistá funkce nad popisem: neptá se na semínko ani na hodiny, takže tentýž
+ * `look` a táž předvolba dají pokaždé týž výsledek. `day` je popis sám –
+ * odvození už je svět za denního světla a druhá definice dne by se s ním
+ * rozešla. Voda, zem a paleta se nemění: předvolba mění vzduch, ne svět.
+ *
+ * Směr každé předvolby je pevný a hlídá ho test: bouře je **tmavší a s nízkým
+ * klíčovým světlem** (expozice na podlaze rozpočtu, světlo přitlačené
+ * k obzoru), mlha **hustší a s tmavší oblohou**, noc nejtmavší ze všech.
+ */
+export function deriveLookPreset(look: LookDescriptor, preset: LookPreset): LookDescriptor {
+  switch (preset) {
+    case 'day':
+      return look;
+    case 'dusk': {
+      const sky = shade(mix(look.sky.color, TINT.dusk, 0.4), -0.22);
+      return {
+        ...look,
+        sky: { ...look.sky, color: sky },
+        fog: { density: budgeted('fogDensity', look.fog.density * 1.1), color: mix(sky, look.fog.color, 0.4) },
+        key: { direction: lowered(look.key.direction, 0.5), temperature: budgeted('temperature', 3000) },
+        rim: budgeted('rim', look.rim * 1.15),
+        exposure: budgeted('exposure', look.exposure * 0.9),
+      };
+    }
+    case 'night': {
+      const sky = shade(mix(look.sky.color, TINT.night, 0.6), -0.62);
+      return {
+        ...look,
+        sky: { ...look.sky, color: sky },
+        fog: { density: budgeted('fogDensity', look.fog.density * 0.9), color: mix(sky, TINT.night, 0.3) },
+        key: { direction: lowered(look.key.direction, 0.7), temperature: budgeted('temperature', 8500) },
+        rim: budgeted('rim', look.rim * 1.2),
+        exposure: LOOK_BUDGETS.exposure.min,
+        dust: budgeted('dust', look.dust * 0.5),
+      };
+    }
+    case 'storm': {
+      const sky = shade(mix(look.sky.color, TINT.storm, 0.55), -0.4);
+      return {
+        ...look,
+        sky: { ...look.sky, color: sky },
+        fog: { density: budgeted('fogDensity', look.fog.density * 1.5), color: mix(sky, TINT.storm, 0.35) },
+        key: { direction: lowered(look.key.direction, 0.35), temperature: budgeted('temperature', 7200) },
+        rim: budgeted('rim', look.rim * 0.6),
+        exposure: LOOK_BUDGETS.exposure.min,
+        dust: budgeted('dust', look.dust * 1.2),
+      };
+    }
+    case 'fog': {
+      const sky = shade(mix(look.sky.color, greyOf(look.sky.color), 0.5), -0.25);
+      return {
+        ...look,
+        sky: { ...look.sky, color: sky },
+        fog: { density: budgeted('fogDensity', Math.max(0.6, look.fog.density * 1.8)), color: mix(sky, TINT.fog, 0.45) },
+        key: { ...look.key, temperature: budgeted('temperature', 6500) },
+        rim: budgeted('rim', look.rim * 0.7),
+        exposure: budgeted('exposure', look.exposure * 0.94),
+        dust: budgeted('dust', look.dust * 0.6),
+      };
+    }
+    default: {
+      const exhaustive: never = preset;
+      throw new Error(`unknown look preset: ${String(exhaustive)}`);
+    }
+  }
+}
+
+/**
+ * Která předvolba právě platí, podle hodnot proměnných světa.
+ *
+ * `read` vrací hodnotu proměnné ze **snímku běhu** (`RuntimeSnapshot.values`),
+ * nikdy z tweenu na plátně – tohle je jediný směr, kterým data tečou: stav →
+ * předvolba → obraz. První vazba, jejíž proměnná existuje a jejíž tabulka
+ * hodnotu zná, rozhoduje; bez shody se nic nepřepíná a plátno kreslí svět
+ * tak, jak ho odvodilo.
+ */
+export function boundLookPreset(
+  bindings: readonly LookBinding[],
+  read: (variable: string) => number | null,
+): LookPreset | null {
+  for (const binding of bindings) {
+    const value = read(binding.variable);
+    if (value === null) continue;
+    const preset = binding.values[String(value)];
+    if (preset !== undefined) return preset;
+  }
+  return null;
+}

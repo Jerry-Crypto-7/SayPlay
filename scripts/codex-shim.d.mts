@@ -2,6 +2,7 @@
  * Typy k `codex-shim.mjs`. Skript běží holým Nodem bez build kroku; test je
  * TypeScript a potřebuje jeho kontrakt zapsaný.
  */
+import type { ChildProcess } from 'node:child_process';
 import type { Server } from 'node:http';
 
 export declare interface ShimOptions {
@@ -21,3 +22,9 @@ export declare interface ShimOptions {
 }
 
 export declare function createShim(options: ShimOptions): Server;
+
+/**
+ * Zabije strom procesů codexu; na Windows jen dokud obal žije (`ship-pidreuse`).
+ * `afterKill` přijde až po doběhnutí `taskkill`, jinde hned.
+ */
+export declare function killTree(child: ChildProcess, afterKill: () => void): void;

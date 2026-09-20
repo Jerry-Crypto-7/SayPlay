@@ -378,6 +378,12 @@ export interface CaseOutcome {
   readonly certified: boolean;
   /** Od věty k hotovému hrubému světu, včetně meshingu hrdinů. */
   readonly latencyMs: number;
+  /**
+   * Od věty k certifikovanému blueprintu, **před** meshingem hrdinů — chvíle,
+   * kdy je svět hratelný, i když hrdinové ještě stojí v hlíně. Jen u světa,
+   * který vznikl; `latency-p21.json` z něj čte fázi `toPlayableMs`.
+   */
+  readonly compiledMs?: number;
   /** Kolik kol sebeopravy to stálo. Jedno znamená „napoprvé". */
   readonly rounds: number;
   readonly failure: { readonly stage: FailureStage; readonly detail: string } | null;
@@ -386,6 +392,18 @@ export interface CaseOutcome {
   readonly profile: WorldProfile | null;
   /** Hotový blueprint, ze kterého svět vznikl — pro galerii kvality. `null`, když nevznikl. */
   readonly blueprint: WorldstreamBlueprint | null;
+  /**
+   * Tvary, které se ořely o strop času a přesto prošly – jmenovitě.
+   *
+   * Naplní se jedině tehdy, když je klient meshe `untimed`, tedy v přehrání
+   * archivu. Živý běh soudí čas dál a tohle pole v něm zůstává prázdné.
+   *
+   * **Je to jediné, co odliší pohyb čísla od pohybu kódu.** `geometryAuthored`
+   * se cituje v reportech a v `K2`; dokud v něm seděl wall-clock, každý rozdíl
+   * mezi dvěma běhy vypadal jako regrese (P20 F2). Kdo čte číslo, musí vidět
+   * i tenhle seznam.
+   */
+  readonly timeWaived: readonly string[];
 }
 
 export interface CaseDeps {
@@ -402,6 +420,8 @@ export interface CaseDeps {
    * cenou placeného volání, kterou nehlídaný běh na předplatném neplatí.
    */
   readonly maxRounds?: number;
+  /** Svět na souběžné kusy místo jednoho volání: `true`/`3` tři, `2` dva (`compileWithRepair.chunked`). */
+  readonly chunked?: boolean | 2 | 3;
 }
 
 /**
@@ -472,6 +492,18 @@ export function clayDetail(world: ProxyWorld & { kind: 'built' }): string {
   return `${String(clay.length)} of ${String(world.slots.length)} objects fell back to clay — ${named.join('; ')}`;
 }
 
+/**
+ * Jména tvarů, jejichž mesh by neprošel stropem času a prošel jen díky
+ * `untimed` klientovi. Prázdné pole znamená „každý mesh se vešel do rozpočtu",
+ * a v živém běhu je prázdné vždycky – tam se přetečený čas pořád odmítá.
+ */
+export function shapesOverTime(world: ProxyWorld): readonly string[] {
+  if (world.kind !== 'built') return [];
+  return world.slots
+    .filter((entry) => entry.form.kind === 'mesh' && entry.form.mesh.overTime === true)
+    .map((entry) => entry.slot.stableId);
+}
+
 /** Autorská geometrie znamená, že žádný slot nespadl na hlínu. */
 export function rungsAreAuthored(world: ProxyWorld): boolean {
   if (world.kind !== 'built') return false;
@@ -495,6 +527,7 @@ export async function driveCreateCase(entry: CreateCase, deps: CaseDeps): Promis
     rungs: [] as readonly ProxyRung[],
     profile: null,
     blueprint: null,
+    timeWaived: [] as readonly string[],
   };
 
   // Semínko píše měřidlo a s plánem nemá co dělat, takže se ověří **před**
@@ -548,6 +581,7 @@ export async function driveCreateCase(entry: CreateCase, deps: CaseDeps): Promis
     emit: deps.emit,
     ...(deps.now === undefined ? {} : { now: deps.now }),
     ...(deps.maxRounds === undefined ? {} : { maxRounds: deps.maxRounds }),
+    ...(deps.chunked === undefined ? {} : { chunked: deps.chunked }),
   });
 
   if (outcome.kind !== 'compiled') {
@@ -571,6 +605,7 @@ export async function driveCreateCase(entry: CreateCase, deps: CaseDeps): Promis
     };
   }
 
+  const compiledMs = clock() - started;
   const world = await buildProxyWorld(outcome, { mesh: deps.mesh });
   const blueprint = outcome.result.value;
   const authored = rungsAreAuthored(world);
@@ -584,6 +619,7 @@ export async function driveCreateCase(entry: CreateCase, deps: CaseDeps): Promis
     worldValid: world.kind === 'built',
     certified: outcome.result.verdict.body.outcome === 'CERTIFIED',
     latencyMs: clock() - started,
+    compiledMs,
     rounds: outcome.rounds.length,
     failure: authored
       ? null
@@ -597,6 +633,7 @@ export async function driveCreateCase(entry: CreateCase, deps: CaseDeps): Promis
     rungs: world.kind === 'built' ? world.slots.map((entry_) => entry_.form.rung) : [],
     profile: worldProfile(blueprint),
     blueprint,
+    timeWaived: shapesOverTime(world),
   };
 }
 
@@ -643,6 +680,12 @@ export interface CreateReport {
     readonly geometryAuthored: number;
     readonly worldValid: number;
     readonly certified: number;
+    /**
+     * Kolik vět má aspoň jeden tvar, který prošel jen díky `untimed` klientovi.
+     * V živém běhu je to vždycky nula; nenulové číslo říká, že tenhle report
+     * je přehrání a že `geometryAuthored` se bez téhle výhrady necituje.
+     */
+    readonly timeWaived: number;
   };
   readonly geometryAuthoredRate: number;
   readonly latencyP95Ms: number;
@@ -701,6 +744,7 @@ export function buildCreateReport(
     geometryAuthored: cases.filter((entry) => entry.geometryAuthored).length,
     worldValid: cases.filter((entry) => entry.worldValid).length,
     certified: cases.filter((entry) => entry.certified).length,
+    timeWaived: cases.filter((entry) => entry.timeWaived.length > 0).length,
   };
 
   const failuresByStage = Object.fromEntries(
@@ -989,13 +1033,14 @@ export const REPLAY_MEASURES: readonly string[] = [
 ];
 
 /**
- * **Která z těch čísel se na jiném stroji hnou.** Patří do souboru, ne do
- * commit zprávy: kdo tenhle artefakt čte, čte ho bez ní.
+ * **Co přehrání schválně NEsoudí a proč.** Patří do souboru, ne do commit
+ * zprávy: kdo tenhle artefakt čte, čte ho bez ní.
  */
 export const REPLAY_WALL_CLOCK_CAVEAT: readonly string[] = [
-  'The rung a shape lands on is decided partly by wall clock: MESH_DETAIL budgets cap maxMs alongside maxTriangles, so a slower machine can push a shape one rung further down than this file records.',
-  'Measured on the archived run: four of the eight shapes rescued by COARSER_GRIDS had missed the rough budget on time, not on triangles, and glowingAnemoneColony alone gave 363 and 421 ms in two runs of the same archive.',
-  'Everything else here is deterministic: the answers come from the archive, the compiler and the mesher are hand written, and the session seed is fixed, so the same machine replaying the same archive gives the same verdicts.',
+  'This replay does not apply the mesh time budget. MESH_DETAIL caps maxMs next to maxTriangles, and maxMs measures the machine, not the program: the same commit over the same archive gave c08 380, 410 and 722 ms against a 350 ms rough budget, and scored 21 of 30 in one run and 20 in the next.',
+  'Shapes that leaned on that waiver are named in timeWaived, case by case. Read geometryAuthored with that list in hand: without it, a number that moved because the machine was busy reads as a code change, which is the mistake finding P20 F2 made.',
+  'Triangle budgets are still applied, and so is every other gate. maxTriangles is a property of the program, so it says the same thing on any machine; only the clock was taken out of the verdict.',
+  'Everything else here is deterministic: the answers come from the archive, the compiler and the mesher are hand written, and the session seed is fixed, so the same archive gives the same verdicts on any machine.',
   'Latency is deliberately absent. It measured the paid provider, and a replay that spends nothing cannot honestly report it.',
 ];
 
@@ -1025,7 +1070,19 @@ export interface ReplayComparison {
     readonly attempted: number;
     readonly geometryAuthored: number;
     readonly failuresByStage: Readonly<Record<FailureStage, number>>;
+    /** Kolik vět uneslo aspoň jeden tvar přes strop času. Viz `timeWaived`. */
+    readonly timeWaived: number;
   };
+  /**
+   * Které věty to byly a které tvary v nich, jmenovitě.
+   *
+   * **Bez tohohle seznamu se `geometryAuthored` nesmí číst jako verdikt o kódu.**
+   * Strop `MESH_DETAIL.rough.maxMs` je měření stroje: týž commit dal nad týmž
+   * archivem 380 i 722 ms, takže přehrání ho neuplatňuje a místo rozsudku vypíše
+   * sem, komu by ho bývalo dalo. Věta odsud je důvod, proč se číslo mohlo hnout
+   * bez jediné změny kódu – přesně ta záměna, kterou udělal nález P20 F2.
+   */
+  readonly timeWaived: readonly { readonly id: string; readonly shapes: readonly string[] }[];
   readonly moved: readonly ReplayMove[];
   readonly measures: readonly string[];
   readonly wallClock: readonly string[];
@@ -1085,7 +1142,11 @@ export function compareReplay(
       attempted: after.totals.attempted,
       geometryAuthored: after.totals.geometryAuthored,
       failuresByStage: after.failuresByStage,
+      timeWaived: after.totals.timeWaived,
     },
+    timeWaived: after.cases
+      .filter((entry) => entry.timeWaived.length > 0)
+      .map((entry) => ({ id: entry.id, shapes: entry.timeWaived })),
     moved,
     measures: REPLAY_MEASURES,
     wallClock: REPLAY_WALL_CLOCK_CAVEAT,

@@ -34,8 +34,8 @@
  *
  * Slovník uzlů, varianty kusů, kotvy, odstíny i všechny stropy se čtou
  * z `src/geom/program.ts` a `src/shape/schema.ts`. Argumenty jednotlivých uzlů
- * odvodit nejdou — ty stojí v tabulkách níž, a **jejich úplnost hlídá
- * překladač**: `Record<ShapeNodeKind, string>` bez jednoho klíče se nepřeloží.
+ * odvodit nejdou — ty stojí v tabulce níž a v `shape-vocabulary.ts`, a **jejich
+ * úplnost hlídá překladač**: `Record<ShapeNodeKind, string>` bez jednoho klíče se nepřeloží.
  * To je pojistka, kterou test nepotřebuje; test navíc hlídá, že se každé jméno
  * do hotového textu doopravdy dostalo.
  */
@@ -53,13 +53,17 @@ import {
   TERRAIN_VARIANTS,
   type PieceKind,
 } from '../geom/program';
-import { canonical } from '../ir/worlddoc';
-import { SHAPE_NODE_GROUPS } from '../shape/schema';
-import { SHAPE_LIMITS, type ShapeNodeKind } from '../shape/types';
+import { canonical, canonicalHash } from '../ir/worlddoc';
+import { LOOK_PRESETS } from '../worldstream/look';
 
-import { EMISSION_MODEL, buildEmissionRequest, type Grammar, type UpstreamRequest } from './prompt';
-import { PLANNER_ANSWER_FIELDS, type PlannerEmission } from './worldstream-intent';
-import { REFINE_ANSWER_FIELDS } from './worldstream-refine';
+import { EMISSION_MODEL, EXAMPLE_MARKER, buildEmissionRequest, type Grammar, type UpstreamRequest } from './prompt';
+import { buildIntentRequest, PLANNER_ANSWER_FIELDS, type PlannerEmission } from './worldstream-intent';
+import { EXAMPLE_PLAN } from './worldstream-examples';
+import { ADDITION_ANSWER_FIELDS, REFINE_ANSWER_FIELDS } from './worldstream-refine';
+import { shapeVocabulary } from './shape-vocabulary';
+import { CHUNK_FIELDS, EMISSION_CHUNKS, EMISSION_CHUNKS_TWO, type ChunkName } from './emission-merge';
+import { WORLDSTREAM_ASSETS } from '@/assets/catalog';
+import { buildAssetBrief } from './worldstream-asset-brief';
 
 /** Značka fáze. Odlišuje blueprint od plánu i od staré emise v logu i v provenance. */
 export const COMPILER_STAGE = 'worldstream-blueprint';
@@ -105,35 +109,6 @@ const GEOM_NODE_ARGUMENTS: Readonly<Record<GeomNodeKind, string>> = {
   scatter: 'child, count (2 to 24), radius (0.5 to 32), seed',
   arrayAlongCurve: `child, count (2 to 24), points [[x,y,z], ...] (2 to ${MAX_CURVE_POINTS}) — copies are moved, never turned along the tangent`,
   anchorTo: `child, target (another node), site (${ANCHOR_SITES.join('|')}), offset — the TARGET is a reference and is not built, so put it in the same group if you want to see it`,
-};
-
-const SHAPE_NODE_ARGUMENTS: Readonly<Record<ShapeNodeKind, string>> = {
-  sphere: 'radius',
-  box: 'size [w,h,d] — the FULL size, not the half-extent',
-  roundBox: 'size [w,h,d], radius',
-  capsule: 'height, radius',
-  cylinder: 'height, radius',
-  cone: 'height, radius',
-  torus: 'majorRadius, minorRadius',
-  plane: 'normal [x,y,z], offset',
-  prism: 'sides (3 to 12), radius, height',
-  ellipsoid: 'radii [rx,ry,rz]',
-  union: 'children [i, ...] (2 to 8), k — k is the blend radius; LEAVE IT OUT for a sharp edge, never write 0',
-  subtract: 'children [i, ...] — the first child minus the rest, k optional',
-  intersect: 'children [i, ...], k optional',
-  translate: 'child, offset [x,y,z]',
-  rotate: 'child, yaw, pitch, roll (radians)',
-  scale: 'child, factor [sx,sy,sz] (0.05 to 20, never negative — use mirror to flip)',
-  mirror: 'child, axis, about',
-  twist: 'child, axis, radiansPerUnit (-8 to 8)',
-  bend: 'child, axis, curvature (-8 to 8)',
-  taper: 'child, axis, amount (-4 to 4)',
-  displace: 'child, amplitude (0 to 8), frequency (0.01 to 16), seed — surface noise, the expensive node',
-  revolve: 'child, axis, radius, sweep (0.05 to 2*PI radians, the WHOLE angle: PI is a half arch)',
-  repeat: 'child, count (2 to 64), step [x,y,z]',
-  radialArray: 'child, count, axis, radius',
-  arrayAlongCurve: `child, count, points [[x,y,z], ...] (2 to ${SHAPE_LIMITS.maxCurvePoints})`,
-  clip: 'child, region { kind: "halfSpace", normal, offset } or { kind: "box", center, size }',
 };
 
 /* ------------------------------------------------------------------ *
@@ -299,6 +274,16 @@ export const EXAMPLE_ONLY_IDENTIFIERS: readonly string[] = [
  * to jako jeho volba.
  */
 export function capabilityManifest(): string {
+  return [geometryVocabulary(), '', shapeVocabulary()].join('\n');
+}
+
+/**
+ * Slovník kompozice. Od P21 T7 je oddělený od slovníku tvarů, protože kus,
+ * který píše jen pravidla světa, nepotřebuje ani jeden — a kus, který píše
+ * geometrii, nepotřebuje ten druhý. Rozdělení je **čistě řez v textu**:
+ * `capabilityManifest()` obě půlky vrací pořád složené, bajtově jak dřív.
+ */
+export function geometryVocabulary(): string {
   const pieceLines = (Object.keys(PIECE_VARIANTS) as PieceKind[]).map(
     (kind) => `  ${kind}: ${PIECE_VARIANTS[kind].join(' | ')}`,
   );
@@ -306,11 +291,6 @@ export function capabilityManifest(): string {
   const geomLines = SHAPE_KINDS.map(
     (kind) => `  ${kind} — ${GEOM_NODE_ARGUMENTS[kind]}`,
   ).concat(OPERATION_KINDS.map((kind) => `  ${kind} — ${GEOM_NODE_ARGUMENTS[kind]}`));
-
-  const shapeLines = Object.entries(SHAPE_NODE_GROUPS).flatMap(([group, kinds]) => [
-    `  ${group}:`,
-    ...kinds.map((kind) => `    ${kind} — ${SHAPE_NODE_ARGUMENTS[kind]}`),
-  ]);
 
   return [
     'GEOMETRY — the composition. One flat table of nodes; every child index points STRICTLY LOWER',
@@ -328,32 +308,15 @@ export function capabilityManifest(): string {
     '',
     'Geometry nodes:',
     ...geomLines,
-    '',
-    'SHAPES — hero objects, written as a distance field the browser meshes itself. Same table rule:',
-    'children point strictly lower, root is last, every row reachable.',
-    `At most ${SHAPE_LIMITS.maxNodes} rows, depth ${SHAPE_LIMITS.maxDepth}, ${SHAPE_LIMITS.maxInstances} copies after arrays expand,`,
-    `and ${SHAPE_LIMITS.maxEvaluations} distance evaluations per grid cell. That last one is the real cost:`,
-    'a shared subtree is free in the copy count and is not free here.',
-    '',
-    'Shape nodes:',
-    ...shapeLines,
-    '',
-    'A shape carries: shapeId, stableId (the object it belongs to), nodes, root, targetBounds',
-    '{ min, max } in SHAPE space, anchors [{ name, at, normal }] where sockets sit, materialIntent',
-    '(camelCase, no spaces — a name, never a colour and never a phrase: brushedSteel, not "brushed steel"),',
-    'priority (higher is meshed first).',
-    'You do NOT write grid resolution, quality, cost or meshing order. Those are pipeline decisions.',
-    // **Naměřeno 14. 9. 2026 na c07.** „Les, kde stromy jsou hrudní koše" přišel
-    // jako jeden tvar: strom o 5,3 m se žebry 15 cm, zopakovaný 3× a 2×, takže
-    // targetBounds byl 14,5 m a buňka mřížky 45 cm — žebra se rozpadla. Mřížka
-    // je pevná, takže opakování se platí rozlišením a platí se zbytečně. Brána
-    // `repeatedHeroIssue` to odmítá; tenhle odstavec je ta věta předem.
-    'ONE shape is ONE object. If a hero appears many times — a forest of the same tree, a row of',
-    'the same lamp — write it ONCE, with targetBounds around that single copy, and put the copies',
-    'in the composition. The mesh grid is fixed, so a targetBounds stretched around repeated copies',
-    'spends its resolution on the gaps between them and the detail inside each one is lost.',
   ].join('\n');
 }
+
+/**
+ * Slovník tvarů. Důvod oddělení od geometrie je u `geometryVocabulary()`;
+ * bydlí v `shape-vocabulary.ts`, protože ho čte i druhá věta a ta by odsud
+ * importovat nemohla bez cyklu.
+ */
+export { shapeVocabulary };
 
 /* ------------------------------------------------------------------ *
  * Požadavek.
@@ -361,6 +324,46 @@ export function capabilityManifest(): string {
 
 /** Pole, která tahle fáze v odpovědi žádá. Důvod je u `PLANNER_ANSWER_FIELDS`. */
 export const COMPILER_ANSWER_FIELDS = ['geometry', 'shapes', 'placements', 'world'] as const;
+
+/**
+ * Věty, kterými se celý požadavek zúží na jeden kus.
+ *
+ * Kusy běží souběžně nad **týmž rejstříkem plánovače**, takže každý vidí
+ * všechny identity — nevidí jen text, který zrovna píšou ostatní. Jediná
+ * vazba, která hranici kusu překračuje, je `placements → geometry.nodes[i]`,
+ * a tu po slepení kontroluje `mergeEmissionChunks`.
+ */
+/**
+ * Věta, kterou se kus v požadavku přihlásí — a podle které se zpátky pozná
+ * (`requestChunk`). Je to funkce, a ne text na dvou místech, ze stejného
+ * důvodu, jaký je u `PLANNER_ANSWER_FIELDS`: dvě kopie se rozejdou a
+ * rozlišovač tiše přestane rozlišovat.
+ */
+function chunkClaim(chunk: ChunkName): string {
+  return `YOU ARE WRITING ONE PART OF THAT ANSWER. Write exactly these top-level fields and no others: ${CHUNK_FIELDS[chunk].join(', ')}.`;
+}
+
+function chunkNarrowing(chunk: ChunkName): string[] {
+  // Cizí pole jsou všechna, která tenhle kus nepíše — u dvoukusého řezu tedy
+  // `scene` vidí jen pole `rules` a naopak, u tříkusého dvě zbylé sady.
+  const theirs = EMISSION_CHUNKS.flatMap((name) => CHUNK_FIELDS[name])
+    .filter((field) => !CHUNK_FIELDS[chunk].includes(field))
+    .join(', ');
+
+  return [
+    '',
+    chunkClaim(chunk),
+    `The fields ${theirs} are being written right now by parallel requests against this same registry.`,
+    'Leave them out entirely. A field written twice is rejected by the merge, not silently overwritten,',
+    'so an empty placeholder is worse than an absent field.',
+    ...(chunk === 'objects'
+      ? [
+          'Your placements may point at geometry rows you did not write: source {kind:"geom",node:<row>}',
+          'indexes the geometry table from the architecture part, in the order it declares it.',
+        ]
+      : []),
+  ];
+}
 
 /**
  * Která ze tří fází si o tenhle požadavek řekla.
@@ -383,49 +386,183 @@ export function requestStage(request: UpstreamRequest): 'planner' | 'compiler' |
   if (request.system.includes(`${COMPILER_ANSWER_FIELDS.join(', ')}.`)) return 'compiler';
   if (request.system.includes(`${PLANNER_ANSWER_FIELDS.join(', ')}.`)) return 'planner';
   if (request.system.includes(`${REFINE_ANSWER_FIELDS.join(', ')}.`)) return 'refine';
+  // Založení nového objektu je táž fáze — druhá věta — s jiným seznamem polí.
+  if (request.system.includes(`${ADDITION_ANSWER_FIELDS.join(', ')}.`)) return 'refine';
   return null;
 }
 
-export function buildCompilerRequest(plan: PlannerEmission, grammar: Grammar): UpstreamRequest {
-  const heroIds = plan.objects
-    .filter((object) => object.role === 'hero')
-    .map((object) => object.stableId);
+/**
+ * Který kus si tenhle požadavek říká napsat, nebo `null` u celé odpovědi.
+ *
+ * Je to táž cesta jako u `requestStage()` — rozhoduje text požadavku, ne
+ * pořadí ani proměnná vedle něj — takže to platí i na požadavek přečtený
+ * z archivu, kde žádný volající není.
+ */
+export function requestChunk(request: UpstreamRequest): ChunkName | null {
+  return [...EMISSION_CHUNKS_TWO, ...EMISSION_CHUNKS].find((chunk) => request.system.includes(chunkClaim(chunk))) ?? null;
+}
+
+/**
+ * Kus, o který si tenhle požadavek říká. `undefined` = celá odpověď, tedy
+ * dnešní jediné volání.
+ *
+ * **Narovnání, ne protiřečení.** Seznam „top-level fields are exactly" zůstává
+ * v požadavku beze změny — čte ho `requestStage()` a přehrávání archivu podle
+ * něj pozná fázi. Kus se pod něj dopisuje jako zúžení: tvar odpovědi je pořád
+ * týž, píše se z něj jen část.
+ */
+/**
+ * Kontrakt světa bez vlastního ukázkového světa.
+ *
+ * Řeže se **podle exportovaného `EXAMPLE_MARKER`**, ne podle opsané věty:
+ * kdyby ten řádek v `prompt.ts` někdo změnil, tohle spadne na kontrole níž
+ * místo aby tiše vložilo ukázku zpátky. Tutéž cestu bere i lokální větev
+ * (`src/model/local/engine.ts`), když ukázku vypouští z opravného kola.
+ */
+function contractWithoutExample(grammar: Grammar): string {
+  const contract = buildEmissionRequest('', grammar, { allowNoFit: false }).system;
+  const markerAt = contract.indexOf(EXAMPLE_MARKER);
+  if (markerAt < 0) throw new Error('world contract no longer carries EXAMPLE_MARKER');
+  return contract.slice(0, markerAt).trimEnd();
+}
+
+/** Ukázka zúžená na pole, která ten kus píše. Celá odpověď vidí celou ukázku. */
+function exampleFor(chunk: ChunkName | undefined): Record<string, unknown> {
+  const whole = EXAMPLE_BLUEPRINT_ANSWER as unknown as Record<string, unknown>;
+  if (chunk === undefined) return whole;
+  return Object.fromEntries(Object.entries(whole).filter(([field]) => CHUNK_FIELDS[chunk].includes(field)));
+}
+
+/**
+ * Slova, po kterých se modelu nabídne `lookBindings` (P22 T12).
+ *
+ * Nabídka se dopisuje **jen k zadání, které mluví o počasí nebo denní době**,
+ * protože každý řádek promptu se platí u každé věty a vazba vzhledu je
+ * k ničemu ve světě, kde se obloha nemá čeho držet. Soudí se to, co planner
+ * o místě napsal (`setting`, `mood`, `interactions`, popisky), ne věta
+ * porotce – compiler ji nedostává, viz hlavičku.
+ *
+ * `day` v seznamu schválně není: „daylit room" je denní světlo, ne změna
+ * denní doby, a pustilo by nabídku skoro do každé věty.
+ */
+const WEATHER_WORDS =
+  /\b(storm|storms|stormy|thunder|lightning|rain|rains|rainy|snow|snowing|blizzard|hail|fog|foggy|mist|misty|weather|overcast|cloudburst|dusk|dawn|sunset|sunrise|twilight|nightfall|night|midnight|evening|daybreak)\b/i;
+
+export function mentionsWeather(plan: PlannerEmission): boolean {
+  const text = [
+    plan.intent.setting,
+    plan.intent.mood,
+    plan.intent.spatialThesis,
+    ...plan.intent.interactions,
+    ...plan.objects.flatMap((object) => [object.label, ...object.synonyms]),
+  ].join(' ');
+  return WEATHER_WORDS.test(text);
+}
+
+/** Nabídka `lookBindings` – jen tam, kde `mentionsWeather()` platí. */
+const LOOK_BINDINGS_OFFER = [
+  'This place speaks of weather or the time of day, so you may add one more optional top-level field:',
+  'lookBindings: [{ variable, values }] binds a flag or counter you declared in world.sim.state to a sky preset.',
+  `values maps the variable's integer value written as a string to one of ${LOOK_PRESETS.join('|')}; a flag is "0" or "1".`,
+  'Example: a rule that sets flag storm true darkens the sky with lookBindings:[{"variable":"storm","values":{"0":"day","1":"storm"}}].',
+  'The renderer reads the variable; it never writes it. Name only variables that exist in world.sim.state.',
+  '',
+];
+
+export function buildCompilerRequest(
+  plan: PlannerEmission,
+  grammar: Grammar,
+  chunk?: ChunkName,
+): UpstreamRequest {
   const placeableIds = plan.objects
     .filter((object) => object.role !== 'effect')
     .map((object) => object.stableId);
+
+  /**
+   * **Píše tenhle požadavek tohle pole?** U celé odpovědi vždycky, u kusu jen
+   * podle téhož seznamu, kterým se odpovědi slepují zpátky (`CHUNK_FIELDS`).
+   *
+   * Tím je zúžení zadání a řez odpovědi **jedno rozhodnutí, ne dvě**: kus,
+   * který by dostal slovník k poli, jež psát nesmí, by se ho snažil napsat
+   * a slepení by ho odmítlo.
+   */
+  const writes = (field: string): boolean => chunk === undefined || CHUNK_FIELDS[chunk].includes(field);
 
   const system = [
     'You are given a finished description of a place and you write the geometry that builds it.',
     'Somebody else already decided WHAT the place is. You decide how it stands up.',
     '',
     'Answer with a single JSON object and nothing else. Its top-level fields are exactly:',
-    `${COMPILER_ANSWER_FIELDS.join(', ')}. Anything else is rejected, including a title —`,
+    `${COMPILER_ANSWER_FIELDS.join(', ')}. The only optional additional field is architecture${
+      writes('world') && mentionsWeather(plan) ? ', plus lookBindings described below' : ''
+    }. Other fields are rejected, including a title —`,
     'the system writes that from the intent you were given.',
+    ...(chunk === undefined ? [] : chunkNarrowing(chunk)),
+    ...(writes('architecture')
+      ? [
+          'Optional architecture is an array of authored rooms/corridors: {stableId,kind:"room"|"corridor",at:[x,y,z],width,depth,height,thickness,openings:[{wall:"north"|"south"|"east"|"west",offset,width,height}]}.',
+          'at is floor center in meters. Openings start at offset from the negative end of that wall and cut from floor upward. Walls are continuous, floors are continuous slabs; no roof is added.',
+        ]
+      : []),
+    ...(writes('architecture') || writes('placements')
+      ? [
+          'Use source:{kind:"architecture"} on the matching stableId placement. This lowers into your authored geometry; never duplicate those walls in geometry.nodes. geometry may have nodes:[] when architecture supplies it.',
+          'Keep opening approach areas clear (0.6m on either side). Satisfy sceneSpec relations using actual contain-fit asset dimensions, +Z forward and declared support surfaces. near means at most 2m surface distance.',
+        ]
+      : []),
     '',
-    capabilityManifest(),
+    ...(writes('geometry') || writes('architecture') ? [geometryVocabulary()] : []),
+    ...(writes('geometry') && writes('shapes') ? [''] : []),
+    ...(writes('shapes') ? [shapeVocabulary()] : []),
     '',
+    ...(!writes('placements')
+      ? []
+      : [
     'PLACEMENTS bind the two together. One entry per object you were given, except objects whose role',
     'is "effect" — air, light and weather have no geometry and are carried by the look layer.',
     'Each entry carries: stableId (one of the ids you were given, never a new one),',
-    'source ({ kind: "geom", node: <row index> } or { kind: "shape", shapeId: <one of yours> }),',
+    'source ({ kind: "geom", node: <row index> }, { kind: "shape", shapeId: <one of yours> }, or an exact approved asset source below),',
     'targetBounds { min, max } in WORLD space — the box the object occupies on the ground.',
     '',
     'THE LINK RUNS BOTH WAYS. A shape names its object in stableId and that object must source from',
     'that shape. A shape nobody sources from is meshed and never shown, and the object stays a rough',
     'lump for ever with nothing reporting it.',
     '',
-    `Write a shape, not kit pieces, for the object the sentence is really about: ${heroIds.length > 0 ? heroIds.join(', ') : 'the object with the highest importance'}.`,
-    'That is what the distance field is for — the kit builds architecture and cannot build a bone,',
-    'a root, a hull or a hive. Everything else is cheaper and steadier as composition.',
+    'Choose an approved asset for a matching known object, parametric composition for architecture/terrain,',
+    'and an authored shape for unusual forms. Heroes are NOT required to be shapes. Preserve every identity.',
+    'Candidates are suggestions: a surreal object must not be renamed to fit the catalog. A cache miss is explicit.',
+    'For assets write binding { collider: targetBounds, sockets: [], parts: [] }; add entityId only for an existing sim entity.',
+    'If using sockets or parts, transform the approved local sockets into world space with uniform bottom-centered contain fit.',
+    'Preserve native proportions and meters. Five people need five placements; sharing an asset never merges their identities.',
+    'Asset placements may carry yaw in radians from -PI to PI. Native forward is +Z; toward a target use atan2(target.x-subject.x,target.z-subject.z).',
+    'Missing asset yaw is derived from a facing relation. Explicit yaw is respected and checked. Sockets and collider remain accepted world coordinates and must match the rotated fit; never combine nonzero yaw with anisotropic stretch.',
+    'For seated/on contacts, placement.supportSocket names an imported downward socket (for example seat) already declared in binding.sockets. Position that exact world socket on the target support surface, not the feet on top of the chair.',
+    'Terrain on-relations are checked against actual triangles at the contact. Do not use the top of the terrain bounding bounds as ground height; wide rigid feet intersecting a slope are rejected with a contact diagnostic.',
+    'For a visible lamp or terminal status, binding.signalFlag may name an existing sim.state.flags entry; the renderer displays its current value. Never invent a flag outside world.sim.',
+    'Honor sceneSpec counts, negations and relationships. Use an opening and clear passage for every usable door.',
     '',
-    'You never answer with the name of a style, a family or a preset. There is no library of finished',
-    'places to pick from. If you write a string where a program belongs, the answer is rejected as',
-    'geometry you did not author, because that is exactly what it is.',
-    '',
+        ]),
+    ...(writes('world')
+      ? []
+      : [
+          'You never answer with the name of a style, a family or a preset. There is no library of finished',
+          'places to pick from. If you write a string where a program belongs, the answer is rejected as',
+          'geometry you did not author, because that is exactly what it is.',
+          '',
+        ]),
+    ...(!writes('world')
+      ? []
+      : [
     WORLD_CONTRACT_MARKER,
     // Vloženo doslova z `buildEmissionRequest`. Prompt je prázdný schválně:
     // bere se jen systémová část, do které se text zadání nikdy nedostane.
-    buildEmissionRequest('', grammar).system,
+    //
+    // **Bez vlastní ukázky a bez nabídky odmítnout — P21 T7.** Ukázkový svět
+    // z `prompt.ts` (2 700 znaků) ukazuje tytéž fáze `sim` a `look`, které
+    // o kus níž ukazuje ukázkový blueprint ve svém poli `world`, a platily se
+    // obě; test `prompt-size.test.ts` to pokrytí drží. `allowNoFit: false`
+    // řeší totéž na straně nabídky — důvod je u `EmissionRequestOptions`.
+    contractWithoutExample(grammar),
     WORLD_CONTRACT_END,
     '',
     // ⚠ **Zavření `NO_FIT` je oprava naměřeného zaseknutí, ne opatrnost.**
@@ -434,21 +571,30 @@ export function buildCompilerRequest(plan: PlannerEmission, grammar: Grammar): U
     // `sim: null`, `simOutcome: "NO_FIT"`. Tři opravná kola ho z toho
     // nedostala, protože věta o odmítnutí sama nabízela „keep declining".
     // Kontrakt nad tímhle blokem tu nabídku dělá právem: sdílí se s cestou,
-    // kde model dostane holou větu a nemusí za ní nic stát. Sem se ale vkládá
-    // doslova, takže se ta nabídka musí zavřít tady, ne v něm.
-    'THE CONTRACT ABOVE OFFERS YOU NO_FIT. On this path you do not have it.',
-    'It is written for a stage that may be handed a sentence with nothing behind it. You are handed',
-    'a place that already stands, so there is always a sim to write: whoever walks in, one socket the',
-    'place already contains, and a win rule that says what reaching it means. That is the whole',
-    'minimum, and it is never unreachable. Answering with sim: null here is not honesty — it is a',
-    'place nobody can enter, and it is rejected exactly like a broken one.',
+    // kde model dostane holou větu a nemusí za ní nic stát. **Od P21 T7 se
+    // sem vkládá bez ní** (`allowNoFit: false`), takže tady zbývá jen ta
+    // kladná polovina — co místo odmítnutí udělat.
+    'You do not have NO_FIT on this path: you are handed a concrete requested place.',
+    'Propose a reachable action using a visible object already present:',
+    'open its door, switch its lamp, or activate its mechanism. Bind that object to the corresponding entity.',
+    'The objective must express this action. Do not invent an invisible universal win trigger.',
+    'VISITOR INPUT CONTRACT: visible controls dispatch onAction, never onClick. For a terminal or switch,',
+    'declare event {kind:"onAction",actor:"<existing actor entity>",actionId:"activate",target:"<visible object entity>"}.',
+    'onClick is a legacy surface event with no visitor input producer in this runtime; do not use it for interactive rules.',
+    'A witness step is {tick:0,actor:"<same actor>",actionId:"activate",target:"<same object>"}. Keep the actual requested effects',
+    'and derive the objective from their resulting state. A win alone is not a replacement for switching the visible lamp.',
+    'Rules and witness still have to certify; visual quality never excuses invalid behavior.',
     '',
+    ...(mentionsWeather(plan) ? LOOK_BINDINGS_OFFER : []),
+        ]),
     BLUEPRINT_EXAMPLE_MARKER,
     // **Odsazení tu musí zůstat**, ze stejného naměřeného důvodu jako
     // u ukázky v `./prompt.ts`: kompaktní ukázka zkrátila odpovědi a zaplatila
     // se vynechanými poli. Model si odsazený příklad prochází po řádcích jako
-    // seznam polí; na jednom dlouhém řádku tu oporu ztratí.
-    JSON.stringify(EXAMPLE_BLUEPRINT_ANSWER, null, 2),
+    // seznam polí; na jednom dlouhém řádku tu oporu ztratí. Kus proto ukázku
+    // **nezkracuje formátem, ale rozsahem**: vidí celá ta pole, která píše,
+    // odsazená jako vždycky, a ta ostatní nevidí vůbec.
+    JSON.stringify(exampleFor(chunk), null, 2),
   ].join('\n');
 
   const user = [
@@ -457,13 +603,47 @@ export function buildCompilerRequest(plan: PlannerEmission, grammar: Grammar): U
     'table or its shape table is rejected even if you rename everything around them.',
     `Do not reuse these example-only names: ${EXAMPLE_ONLY_IDENTIFIERS.join(', ')}.`,
     '',
-    `Every one of these objects needs a placement: ${placeableIds.join(', ')}.`,
-    'An object you were given and did not place is an object the sentence asked for and the world',
-    'does not contain.',
-    '',
+    ...(writes('placements')
+      ? [
+          `Every one of these objects needs a placement: ${placeableIds.join(', ')}.`,
+          'An object you were given and did not place is an object the sentence asked for and the world',
+          'does not contain.',
+          '',
+        ]
+      : []),
     'Build this place. This is the whole brief; there is no other text behind it:',
     canonical(plan),
+    ...(writes('placements')
+      ? [
+          'APPROVED REPRESENTATION CANDIDATES (exact sources only; no URLs):',
+          'Each object lists short candidate keys. Emit source:{kind:"asset",key:"assetId@version"}; the compiler resolves the immutable hash from this approved dictionary. Full exact source references remain accepted. Never combine key with other source fields. Shared candidates never merge object identities.',
+          canonical(buildAssetBrief(plan.objects, WORLDSTREAM_ASSETS)),
+        ]
+      : []),
   ].join('\n');
 
   return { model: EMISSION_MODEL, system, user };
 }
+
+/**
+ * **Verze promptu, odvozená z jeho textu** (P16 T6).
+ *
+ * Cache odpovědí (`src/server/answer-cache.ts`) smí vydat starou odpověď
+ * jedině na tutéž otázku, a otázka je věta **plus** obě systémové zprávy.
+ * Ručně zvedané číslo by někdo zapomněl zvednout přesně v tom commitu, kde
+ * se prompt změnil; hash textu se zvedne sám. Grammar do hashe nejde — je
+ * zmrazená (`evals/frozen`) a do promptu vstupuje jen skrz ni; místo ní stojí
+ * značka, takže se hashuje text, který píše tenhle repozitář.
+ *
+ * FNV-1a přes `canonicalHash`, ne SHA-256: tenhle modul jde i do klientského
+ * bundlu (`worldstream-compiler.ts` → `proxy.ts`), kde `node:crypto` není.
+ * Osm hex znaků stačí — kolize dvou verzí promptu v jednom nasazení není
+ * hrozba, o kterou tu jde; klíč cache je pak SHA-256 nad celou čtveřicí.
+ */
+const GRAMMAR_MARK = ['<grammar>'] as const;
+export const PROMPT_VERSION: string = canonicalHash([
+  buildIntentRequest('').system,
+  buildCompilerRequest(EXAMPLE_PLAN, {
+    surfaceEvents: GRAMMAR_MARK, conditions: GRAMMAR_MARK, actions: GRAMMAR_MARK, simFields: GRAMMAR_MARK, lookFields: GRAMMAR_MARK,
+  }).system,
+]);

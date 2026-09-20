@@ -7,6 +7,7 @@ import * as sessions from '../../worldstream/sessions';
 import * as provider from '../worldstream-emitter';
 import { resetRateWindows } from '../rate-limit';
 import { POST, acquireSlot, MAX_WORLD_GENERATIONS, resetConcurrency } from '../../app/api/worldstream/sessions/route';
+import { GET as sessionSnapshot } from '../../app/api/worldstream/sessions/[sessionId]/route';
 
 vi.mock('next/server', () => ({ after: vi.fn((work: Promise<unknown>) => { void work.catch(() => undefined); }) }));
 afterEach(() => { vi.restoreAllMocks(); vi.mocked(after).mockClear(); sessions.clearSessions(); resetRateWindows(); resetConcurrency(); });
@@ -45,6 +46,7 @@ describe('server phase diagnostics', () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     vi.spyOn(provider, 'cloudEmitter').mockResolvedValue(async () => ({}));
     vi.spyOn(sessions, 'runGeneration').mockImplementation(async (stored, _prompt, deps) => {
+      await new Promise(resolve => setTimeout(resolve, 25));
       if (code === null) return;
       deps.log?.(code, 'private gate detail');
       stored.fault = sessions.SESSION_FAULTS[code];
@@ -54,12 +56,21 @@ describe('server phase diagnostics', () => {
     }));
     expect(response.status).toBe(202);
     await vi.mocked(after).mock.calls.at(-1)?.[0];
+    const accepted = await response.json() as { requestId: string; sessionId: string };
+    const snapshot = await sessionSnapshot(new Request('http://localhost'), { params: Promise.resolve({ sessionId: accepted.sessionId }) });
+    const body = await snapshot.json();
+    expect(body.generationMetrics).toMatchObject({ requestId: accepted.requestId, provenance: live ? 'live' : 'prepared' });
+    expect(body.generationMetrics.phases).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: 'background-generation', elapsedMs: expect.any(Number) }),
+    ]));
+    expect(JSON.stringify(body.generationMetrics)).not.toContain('private gate detail');
     const ended = log.mock.calls.map(call => JSON.parse(call[0] as string)).filter(entry => entry.event === 'worldstream.generation');
     expect(ended).toEqual([expect.objectContaining({
-      requestId: ((await response.json()) as { requestId: string }).requestId,
+      requestId: accepted.requestId,
       provenance: live ? 'live' : 'prepared', outcome, code, fault: code === null ? null : sessions.SESSION_FAULTS[code],
     })]);
-    expect(ended[0].ms).toBeGreaterThanOrEqual(0);
+    // Generace trvá 25 ms, takže `ms` musí nést délku, ne jen nezápornou nulu.
+    expect(ended[0].ms).toBeGreaterThanOrEqual(20);
     expect(JSON.stringify(ended)).not.toContain('private gate detail');
   });
 

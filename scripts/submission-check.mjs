@@ -319,21 +319,38 @@ export function mp4DurationSeconds(buffer) {
   return timescale > 0 ? duration / timescale : null;
 }
 
-/** Current English submission copy contract, aligned with the Reality Compiler
- * source pilot in README and plan 19 A12. These are disclosure requirements,
- * not an automated semantic review. Wording and layout may change; there is no
- * required quotation from the superseded DESIGN-BOOK or claimed success rate.
- * A human still checks consistency and the meaning of the complete description.
+/** Current English submission copy contract for WORLDSTREAM — the product the
+ * judge actually opens: a sentence becomes a 3D world with executable rules.
+ *
+ * **Přepsáno 16. 9. 2026 (P18 T10).** Do té doby tenhle seznam vymáhal slovník
+ * Reality Compiler pilotu — „seven parameter groups", „one timer intervention",
+ * „short source". Ta věta popisuje jiný produkt, než jaký je na demo adrese, a
+ * kontrola tím nutila popis lhát: zelená brána nad popisem cizího produktu je
+ * horší než červená. Sedm položek níž jsou omezení **tohoto** produktu a každé
+ * je doložené — `docs/demo/judge-runbook.md` (náhrada uvařeným světem, limit
+ * druhé věty, chybějící přetáčení času), `evals/worldstream/latency-report.json`
+ * (původ časů) a hodnocení G1 (2 z 10 poznaných místností).
+ *
+ * Jsou to disclosure požadavky, ne automatická sémantická revize. Formulace i
+ * rozvržení se smí měnit; smysl celého popisu pořád soudí člověk.
  */
 const DESCRIPTION_DISCLOSURES = [
-  ['source-scope', /\bshort\b[^.!?]{0,100}\b(?:source|text)\b/i,
-    /\bdiscrete\b[^.!?]{0,80}\b(?:spatial|procedure|scenario|movement)/i,
-    /\b(?:one|single) timer intervention\b/i],
-  ['parameter-review', /\b(?:user|human)\b[^.!?]{0,120}\breviews?\b[^.!?]{0,80}\b(?:seven|7)\b[^.!?]{0,60}\bparameter/i,
-    /\b(?:missing|conflicting)\b[^.!?]{0,100}\bblocks? acceptance\b/i],
+  ['sentence-scope', /\bsentence\b[^.!?]{0,120}\b(?:3D|three.dimensional)\b/i,
+    /\bdeterministic\b[^.!?]{0,80}\brules?\b/i],
+  // Porotce smí psát vlastní věty (`RULES.md` §3.3). Že na neznámou větu
+  // odpoví nejbližší uvařený svět, je ta nejdůležitější věc, kterou o sobě
+  // tenhle produkt musí říct nahlas — a musí říct i to, že to přizná na obrazovce.
+  ['authored-fallback', /\bnearest\b[^.!?]{0,80}\bauthored world\b/i,
+    /\bauthored world\b[^.!?]{0,80}\blabels?\b/i],
+  ['second-sentence-limit', /\bsecond sentence\b/i, /\b(?:refused|rejected|declined)\b/i],
+  ['no-time-rewind', /\btime rewind\b[^.!?]{0,120}\bnot on\b/i],
+  // Nejdůležitější omezení tohohle produktu a jediné, které se z hotového
+  // snímku nepozná: svět projde všemi strukturálními kontrolami a přitom
+  // neznamená, co věta říkala. G1 (16. 9. 2026) to naměřila jako 2 z 10.
   ['semantic-limit', /\b(?:not a semantic guarantee|(?:does not|cannot) (?:certify|guarantee|establish) semantic (?:correctness|accuracy))\b/i],
   ['geometry-limit', /\bgeometry\b[^.!?]{0,35}\bschematic\b/i],
-  ['latency-provenance', /\b(?:CLI|generation|creation) timings?\b[^.!?]{0,100}\b(?:include|includes)\b[^.!?]{0,100}\b(?:process|transport) overhead\b/i],
+  ['latency-provenance', /\b(?:CLI|generation|creation) timings?\b[^.!?]{0,100}\b(?:include|includes)\b[^.!?]{0,100}\b(?:process|transport) overhead\b/i,
+    /\bauthored store\b[^.!?]{0,60}\bnot a live model\b/i],
   ['independent-review', /\bindependent semantic review\b/i, /\b(?:usability|human|five.person)\b[^.!?]{0,100}\b(?:evidence|study|review)\b/i],
 ];
 
@@ -341,7 +358,7 @@ export function descriptionContractProblems(text) {
   // Comments/code are not disclosures visible in the written submission.
   const prose = proseOf(text.replace(/<!--[\s\S]*?-->/g, '').replace(/```[\s\S]*?```|~~~[\s\S]*?~~~/g, ''));
   return DESCRIPTION_DISCLOSURES.filter(([, ...patterns]) => !patterns.every(pattern => pattern.test(prose)))
-    .map(([id]) => `chybí aktuální disclosure ${id} (Reality Compiler source pilot)`);
+    .map(([id]) => `chybí aktuální disclosure ${id} (WORLDSTREAM)`);
 }
 
 /** Text bez rozdílů, které nejsou obsahem: zalomení, dvojité mezery, nbsp. */
@@ -448,17 +465,34 @@ export function modelTablePaths(manifest) {
   return [...new Set(all)];
 }
 
+/** Adresáře, jejichž obsah se nikam nenasazuje. */
+const TOOLING_ROOTS = ['scripts/', 'ops/', 'evals/', 'e2e/'];
+
 /**
- * Test nebo fixtura, tedy kód, který se nikam nenasazuje.
+ * Nástroj, ne produkt: testy, fixtury, měřicí harnesy a provozní skripty.
  *
- * Smí jmenovat model mimo tabulku, protože **rozptýlený literál v testu není ta
- * díra, kvůli které kontrola vzniká**: test se nevolá za běhu a jeho účelem
- * bývá právě identifikátor, který tabulka nezná. Registraci to nepromíjí —
- * podmínka výš platí i tady, takže třetí strana jmenovaná jenom v testu
- * z disclosure neuteče.
+ * Pravidlo o **umístění** literálu platí na produkt — `src/**` a nasazený
+ * runtime. Nástroj z něj vyjmutý je proto, že rozptýlený literál v produkci
+ * je ta díra, kvůli které kontrola vznikla; literál v nástroji se za běhu
+ * nikam nedostane a bývá právě tím, co ten nástroj měří nebo ověřuje.
+ *
+ * **Registraci to nepromíjí** — podmínka výš platí i tady, takže třetí strana
+ * jmenovaná jenom v harnesu z disclosure neuteče.
+ *
+ * Rozhodnuto 18. 9. 2026 nad naměřenými 15 nálezy (0 nezveřejněných modelů,
+ * 10 v `*.measure.ts`, 5 v provozních a měřicích skriptech). Druhá zvažovaná
+ * podoba — napojit všech 15 souborů na jediný zdroj jména — je zamítnutá:
+ * `ops/host/preflight.mjs` tvrdí, že proměnná prostředí se rovná
+ * `gpt-6-astra`, a kdyby to jméno četl z téhož místa, prošlo by mu cokoli.
+ *
+ * Polarita je schválně opačná než allowlist cest: vyjmenované jsou
+ * **nástroje**, takže nový adresář produktu spadá pod pravidlo od prvního
+ * dne, aniž si na něj někdo vzpomene.
  */
-export function isFixturePath(path) {
-  return /(^|\/)__tests__(\/|$)/.test(path) || /\.test\.(ts|tsx|mts|mjs|js)$/.test(path);
+export function isToolingPath(path) {
+  return TOOLING_ROOTS.some((root) => path.startsWith(root))
+    || /(^|[/])__tests__([/]|$)/.test(path)
+    || /[.](test|measure)[.](ts|tsx|mts|mjs|js)$/.test(path);
 }
 
 /** Cesty deklarované položkami `kind: dataset`. */
@@ -652,9 +686,11 @@ check(6, 'disclosure je úplná napříč pěti třídami', false, ({ repo, mani
   // Nová podoba se ptá na obojí a v tomhle pořadí:
   //  1. **každý** identifikátor kdekoli musí být v registru jako `kind: model`
   //     — to je disclosure otázka a je přísnější než dřív;
-  //  2. mimo deklarované tabulky ho smí jmenovat jen test nebo fixtura —
-  //     to je otázka pořádku v kódu a zůstává, protože právě rozptýlený
-  //     literál v produkci je ta díra, kvůli které kontrola vznikla.
+  //  2. mimo deklarované tabulky ho smí jmenovat jen nástroj — test, fixtura,
+  //     měřicí harness nebo provozní skript — to je otázka pořádku v kódu
+  //     a zůstává, protože právě rozptýlený literál v produkci je ta díra,
+  //     kvůli které kontrola vznikla. Hranici drží `isToolingPath()` a její
+  //     odůvodnění stojí u ní.
   const tables = modelTablePaths(manifest);
   if (tables.length === 0) {
     problems.push(`${MANIFEST_FILE} neurčuje "modelTablePaths" — bez nich není co allowlistovat`);
@@ -673,7 +709,7 @@ check(6, 'disclosure je úplná napříč pěti třídami', false, ({ repo, mani
     for (const id of ids) {
       if (!known.has(id)) problems.push(`${path}: model "${id}" není v registru jako kind: model`);
     }
-    if (tables.includes(path) || isFixturePath(path)) continue;
+    if (tables.includes(path) || isToolingPath(path)) continue;
     // Hlásí se cesta, ne jen jméno — jinak se nedá opravit.
     problems.push(`${path} jmenuje model ${[...ids].join(', ')} mimo tabulky ${tables.join(', ')}`);
   }

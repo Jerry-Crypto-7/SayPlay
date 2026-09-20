@@ -77,6 +77,25 @@ describe('a hero repeated inside its own shape', () => {
     expect(repeatsIssue(scaledBy(make(), factor))).toBe(repeatsIssue(make()));
   });
 
+  /**
+   * `ship-testgaps2`: činitele se násobí **po osách**. Protažení jednou osou
+   * s krabicí protaženou stejně je tentýž tvar; kdyby se `scale` nebral vůbec,
+   * nebo jedním číslem z jiné osy, vyjde poměr 3× a 5,25× a tvar se odmítne.
+   */
+  it.each([[[1, 1, 3]], [[3, 1, 1]]] as const)('judges boxRow stretched by scale %j like the same shape unstretched', (factor) => {
+    const program = boxRow();
+    const stretched: ShapeProgram = {
+      ...program,
+      nodes: [...program.nodes, { kind: 'scale', child: program.root, factor: [factor[0], factor[1], factor[2]] }],
+      root: program.nodes.length,
+      targetBounds: {
+        min: program.targetBounds.min.map((value, axis) => value * factor[axis]) as [number, number, number],
+        max: program.targetBounds.max.map((value, axis) => value * factor[axis]) as [number, number, number],
+      },
+    };
+    expect(repeatsIssue(stretched)).toBe(false);
+  });
+
   it('keeps the two unwrapped shapes on either side of the threshold', () => {
     expect(repeatsIssue(boxRow())).toBe(false);
     expect(repeatsIssue(ribcageTrees())).toBe(true);

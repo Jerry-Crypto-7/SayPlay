@@ -1,0 +1,99 @@
+{
+  "version": "worldstream-world-quality-v1",
+  "writtenAt": "2026-09-17",
+  "meaning": "Both live T18 series joined in one file. Per-case raw answers stay in plans/P20/t18-hybrid-*/ and are gitignored, so this file is the citable record, not a derivation a clean clone can recompute. Nothing here is a human verdict.",
+  "denominator": 30,
+  "series": [
+    {
+      "id": "original",
+      "source": "plans/P20/t18-hybrid-20260917-1624",
+      "frozenAt": "2026-09-17T16:24Z",
+      "completed": 30,
+      "pending": 0,
+      "certifiedBlueprints": 11,
+      "modelCalls": 87,
+      "stopReason": null,
+      "intentP95Ms": 120076.8,
+      "generationCompletionP95Ms": 437221.165,
+      "certifiedCompletionP95Ms": 451047.932,
+      "outcomes": {
+        "compiled": 11,
+        "rejected": 19,
+        "unavailable": 0,
+        "pending": 0
+      },
+      "failuresByReason": {
+        "LAYOUT_INVALID": 10,
+        "BLUEPRINT_INVALID": 4,
+        "WORLD_REJECTED": 3,
+        "REFERENCE_BROKEN": 2
+      }
+    },
+    {
+      "id": "v2-final",
+      "source": "plans/P20/t18-hybrid-v2-20260917-1803",
+      "frozenAt": "2026-09-17T18:03Z",
+      "completed": 18,
+      "pending": 12,
+      "certifiedBlueprints": 6,
+      "modelCalls": 51,
+      "stopReason": "transport-failure-no-automatic-retry",
+      "intentP95Ms": 114185.974,
+      "generationCompletionP95Ms": 429677.626,
+      "certifiedCompletionP95Ms": 354228.293,
+      "outcomes": {
+        "compiled": 6,
+        "rejected": 11,
+        "unavailable": 1,
+        "pending": 12
+      },
+      "failuresByReason": {
+        "LAYOUT_INVALID": 7,
+        "WORLD_REJECTED": 2,
+        "REFERENCE_BROKEN": 1,
+        "BLUEPRINT_INVALID": 1,
+        "unavailable": 1
+      }
+    }
+  ],
+  "whySeriesEndedAt18": "The v2 run stopped on a transport failure and the harness does not retry a live call automatically, so twelve of the thirty sentences were never attempted. The series is closed at the eighteen cases that exist; it is not a 30/30 result and must never be written as one.",
+  "gates": {
+    "G-R": {
+      "status": "FAIL",
+      "why": "Measured over the original 30/30 series; no browser composition or live percentile closes it."
+    },
+    "G-L": {
+      "status": "FAIL",
+      "why": "Same: a single live browser observation is not a p95 and the prompt-to-world budget is not met."
+    },
+    "G-V": {
+      "status": "PENDING_HUMANS",
+      "why": "Three independent reviewers have not scored the gallery. study-cards.md is the prepared package, not the study."
+    },
+    "G-W": {
+      "status": "PENDING_HUMANS",
+      "why": "Same three reviewers."
+    },
+    "G-A4": {
+      "status": "PENDING_HUMANS",
+      "why": "Ten real model interventions over fixtures exist; the five outside people do not."
+    },
+    "G-P": {
+      "status": "PENDING_TARGET_HARDWARE",
+      "why": "Budgets measured on an RTX 3090; the target is a 1080p laptop and both viewports."
+    },
+    "G-E": {
+      "status": "PENDING_REAL_ASSETS",
+      "why": "The import path is closed offline, but no new provider asset was generated or approved."
+    },
+    "G-D": {
+      "status": "PENDING_EXTERNAL",
+      "why": "No authorized host, no public repository (the declared address returns 404) and no monitoring."
+    }
+  },
+  "warnings": [
+    "The two series are separate runs against different frozen sources. Their counts must not be added and their percentiles must not be merged.",
+    "A green unit test here means a stored result, never that the generation met the brief.",
+    "Model wall time includes transport and CLI waiting; it is not isolated inference time."
+  ]
+}

@@ -1,0 +1,247 @@
+[
+  {
+    "id": "t1",
+    "category": "p19-regression",
+    "prompt": "A calm dentist waiting room with soft chairs and a small aquarium.",
+    "spatialThesis": "A calm dentist waiting room with soft chairs and a small aquarium.",
+    "heroObjects": [
+      "soft chairs",
+      "small aquarium"
+    ],
+    "mustName": [
+      "soft chairs",
+      "small aquarium"
+    ],
+    "visibleBeat": "Preserve the requested behavior; otherwise provide one explicit reachable interaction.",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "soft chairs",
+      "small aquarium"
+    ]
+  },
+  {
+    "id": "t2",
+    "category": "p19-regression",
+    "prompt": "A quiet forest cabin with a fireplace for relaxation exercises.",
+    "spatialThesis": "A quiet forest cabin with a fireplace for relaxation exercises.",
+    "heroObjects": [
+      "forest cabin",
+      "fireplace"
+    ],
+    "mustName": [
+      "forest cabin",
+      "fireplace"
+    ],
+    "visibleBeat": "Preserve the requested behavior; otherwise provide one explicit reachable interaction.",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "forest cabin",
+      "fireplace"
+    ]
+  },
+  {
+    "id": "t3",
+    "category": "p19-regression",
+    "prompt": "A hospital corridor at night that the patient walks through to reach the nurse station.",
+    "spatialThesis": "A hospital corridor at night that the patient walks through to reach the nurse station.",
+    "heroObjects": [
+      "hospital corridor",
+      "night",
+      "reachable nurse station"
+    ],
+    "mustName": [
+      "hospital corridor",
+      "night",
+      "reachable nurse station"
+    ],
+    "visibleBeat": "Preserve the requested behavior; otherwise provide one explicit reachable interaction.",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "hospital corridor",
+      "night",
+      "reachable nurse station"
+    ]
+  },
+  {
+    "id": "t4",
+    "category": "p19-regression",
+    "prompt": "A small elevator that the player rides up one floor, for fear of enclosed spaces.",
+    "spatialThesis": "A small elevator that the player rides up one floor, for fear of enclosed spaces.",
+    "heroObjects": [
+      "small elevator",
+      "ride up one floor"
+    ],
+    "mustName": [
+      "small elevator",
+      "ride up one floor"
+    ],
+    "visibleBeat": "Preserve the requested behavior; otherwise provide one explicit reachable interaction.",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "small elevator",
+      "ride up one floor"
+    ]
+  },
+  {
+    "id": "t5",
+    "category": "p19-regression",
+    "prompt": "A glass balcony on a high building, for fear of heights, with a safe step back inside.",
+    "spatialThesis": "A glass balcony on a high building, for fear of heights, with a safe step back inside.",
+    "heroObjects": [
+      "glass balcony",
+      "high building",
+      "safe return inside"
+    ],
+    "mustName": [
+      "glass balcony",
+      "high building",
+      "safe return inside"
+    ],
+    "visibleBeat": "Preserve the requested behavior; otherwise provide one explicit reachable interaction.",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "glass balcony",
+      "high building",
+      "safe return inside"
+    ]
+  },
+  {
+    "id": "t6",
+    "category": "p19-regression",
+    "prompt": "A crowded supermarket checkout line for practicing social anxiety.",
+    "spatialThesis": "A crowded supermarket checkout line for practicing social anxiety.",
+    "heroObjects": [
+      "supermarket checkout",
+      "crowded queue"
+    ],
+    "mustName": [
+      "supermarket checkout",
+      "crowded queue"
+    ],
+    "visibleBeat": "Preserve the requested behavior; otherwise provide one explicit reachable interaction.",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "supermarket checkout",
+      "crowded queue"
+    ]
+  },
+  {
+    "id": "t7",
+    "category": "p19-regression",
+    "prompt": "A peaceful beach at sunset where the player follows a slow breathing light.",
+    "spatialThesis": "A peaceful beach at sunset where the player follows a slow breathing light.",
+    "heroObjects": [
+      "beach",
+      "sunset",
+      "slow breathing light"
+    ],
+    "mustName": [
+      "beach",
+      "sunset",
+      "slow breathing light"
+    ],
+    "visibleBeat": "Preserve the requested behavior; otherwise provide one explicit reachable interaction.",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "beach",
+      "sunset",
+      "slow breathing light"
+    ]
+  },
+  {
+    "id": "t8",
+    "category": "p19-regression",
+    "prompt": "A classroom where the player gives a short talk to five listeners.",
+    "spatialThesis": "A classroom where the player gives a short talk to five listeners.",
+    "heroObjects": [
+      "classroom",
+      "exactly five listeners"
+    ],
+    "mustName": [
+      "classroom",
+      "exactly five listeners"
+    ],
+    "visibleBeat": "Preserve the requested behavior; otherwise provide one explicit reachable interaction.",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "classroom",
+      "exactly five listeners"
+    ]
+  },
+  {
+    "id": "t9",
+    "category": "p19-regression",
+    "prompt": "A dog park where a small friendly dog slowly approaches the player.",
+    "spatialThesis": "A dog park where a small friendly dog slowly approaches the player.",
+    "heroObjects": [
+      "dog park",
+      "small friendly dog",
+      "slow approach"
+    ],
+    "mustName": [
+      "dog park",
+      "small friendly dog",
+      "slow approach"
+    ],
+    "visibleBeat": "Preserve the requested behavior; otherwise provide one explicit reachable interaction.",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "dog park",
+      "small friendly dog",
+      "slow approach"
+    ]
+  },
+  {
+    "id": "t10",
+    "category": "p19-regression",
+    "prompt": "A doctor's office with an examination table and a window with a garden view.",
+    "spatialThesis": "A doctor's office with an examination table and a window with a garden view.",
+    "heroObjects": [
+      "examination table",
+      "window",
+      "visible garden"
+    ],
+    "mustName": [
+      "examination table",
+      "window",
+      "visible garden"
+    ],
+    "visibleBeat": "Preserve the requested behavior; otherwise provide one explicit reachable interaction.",
+    "forbiddenSubstitutions": [
+      "a different place",
+      "a single merged object replacing separately requested instances"
+    ],
+    "requirements": [
+      "examination table",
+      "window",
+      "visible garden"
+    ]
+  }
+]

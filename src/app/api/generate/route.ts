@@ -1,3 +1,4 @@
+import {ownerIdentityRejection} from '@/server/owner-identity';
 /**
  * `POST /api/generate` — volný text od uživatele skrz řetěz moderace → strop →
  * generování.
@@ -505,6 +506,8 @@ export async function POST(request: Request): Promise<Response> {
      * memoizovaný, offline větev nikam nezapisuje a placená větev má nad sebou
      * vlastní stropy. Piny jsou v `route.test.ts`, testy o přihrádkách.
      */
+    const identityRejection=ownerIdentityRejection(request);
+    if(identityRejection)return identityRejection;
     const slot = takeRateSlot('generate', trustedCallerKey(request) ?? callerKey(request));
     if (!slot.allowed) {
       logRateLimited('generate', requestId, rateLimitCode(slot), `${String(slot.count)} in window`);

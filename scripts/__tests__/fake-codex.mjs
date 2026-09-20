@@ -37,6 +37,9 @@ process.stdin.on('end', () => {
     process.stdout.write(`${JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 120, output_tokens: 30 } })}\n`);
   } else if (mode === 'rejected') {
     process.stdout.write(`${JSON.stringify({ type: 'turn.failed', error: { message: 'usage limit' } })}\n`);
+  } else if (mode === 'flood') {
+    // Víc než strop 8 MiB: most musí běh useknout a `taskkill` poslat jednou.
+    process.stdout.write('x'.repeat(9 * 1024 * 1024));
   } else {
     process.stderr.write('boom\n');
     process.exitCode = 1;

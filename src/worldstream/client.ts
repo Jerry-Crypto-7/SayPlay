@@ -33,6 +33,9 @@
  * vada serveru a donekonečna se z ní zotavovat znamená točit se na místě.
  */
 
+import type { ComparisonCommit } from './accepted-branch';
+import type { BranchComparison } from './branch-controller';
+import type { WorldstreamBlueprint } from './schema';
 import {
   applySnapshot,
   initialClientState,
@@ -121,6 +124,12 @@ export interface SessionHandle {
    * vznikl dopředu a jeho věta ho jen našla (`T45-honestlabel`).
    */
   readonly authored: AuthoredProvenance | null;
+  /**
+   * Proud relace, který přišel rovnou v odpovědi na otevření (P16
+   * `T8-stream404`), nebo nic, když server odpověděl 202 s adresami. Čte se
+   * jednou — první čtení `followSession()`; obnovení jde přes `events`.
+   */
+  readonly stream?: Response;
 }
 
 export interface ClientOptions {
@@ -186,13 +195,28 @@ export async function openWorldstreamSession(
   const call = options.fetch ?? fetch;
   const response = await call('/api/worldstream/sessions', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', accept: 'text/event-stream, application/json' },
     // **Klíč se posílá jen tehdy, když něco znamená.** Dveře přijímají prompt
     // a `live` a nic jiného, takže `live: false` by byl klíč navíc, který nic
     // nemění — a tělo dějství I má zůstat tím, čím bylo.
     body: JSON.stringify(options.live === true ? { prompt, live: true } : { prompt }),
     signal: options.signal,
   });
+
+  // **Proud v odpovědi je hlavní cesta** (P16 `T8-stream404`): na Vercelu smí
+  // druhý požadavek na `/events` dopadnout na instanci, která relaci nezná.
+  // Odmítnutí chodí dál jako JSON a 202 s adresami se čte po staru.
+  const opened = response.headers.get('x-worldstream-session');
+  if (response.ok && opened !== null && response.body !== null) {
+    const provenance = response.headers.get('x-worldstream-authored');
+    return {
+      sessionId: opened,
+      events: `/api/worldstream/sessions/${opened}/events`,
+      snapshot: `/api/worldstream/sessions/${opened}`,
+      authored: provenance === 'exact' || provenance === 'nearest' ? { match: provenance } : null,
+      stream: response,
+    };
+  }
 
   const body = (await response.json().catch(() => null)) as
     | (Partial<SessionHandle> & { error?: { code?: string; message?: string } })
@@ -252,9 +276,12 @@ export async function followSession(
   let state = initialClientState();
   let since = options.since ?? 0;
   let resumes = 0;
+  // Proud z odpovědi na otevření začíná od nuly a dá se přečíst jen jednou.
+  let opened = since === 0 ? handle.stream : undefined;
 
   for (;;) {
-    const outcome = await readOnce(call, handle, since, state, options);
+    const outcome = await readOnce(call, handle, since, state, options, opened);
+    opened = undefined;
     state = outcome.state;
 
     if (outcome.stop === 'done' || outcome.stop === 'aborted') return state;
@@ -290,13 +317,20 @@ async function readOnce(
   since: number,
   start: ClientState,
   options: FollowOptions,
+  opened: Response | undefined,
 ): Promise<ReadOutcome> {
   let state = start;
 
-  const response = await call(`${handle.events}?since=${since}`, {
-    headers: { accept: 'text/event-stream' },
-    signal: options.signal,
-  });
+  const response =
+    opened ??
+    (await call(`${handle.events}?since=${since}`, {
+      headers: { accept: 'text/event-stream' },
+      signal: options.signal,
+    }));
+  if(response.status===409) {
+    const failure=await response.json().catch(()=>null) as {error?:{code?:string}}|null;
+    if(failure?.error?.code==='EVENT_HISTORY_TRUNCATED')return {state,stop:'gap'};
+  }
   if (!response.ok || response.body === null)
     throw new Error(`the world stream refused to open: HTTP ${response.status}`);
 
@@ -381,10 +415,17 @@ export interface ChangePreviewed {
     readonly shape: boolean;
     readonly behavior: number;
     readonly appearance: number;
+    /** Věta zakládá objekt, který ve světě nebyl (P21 T8). Starší server pole neposílá. */
+    readonly addition?: boolean;
   };
   readonly preserved: readonly string[];
   /** `null`, když změnu psal model. Jinak odkud se vzala (`T45-honestlabel`). */
   readonly authored: AuthoredProvenance | null;
+  /**
+   * Věta mluvila o víc věcech (P21 T9): `asked` šlo modelu, `remaining` čeká
+   * na další věty. Chybí, když věta byla o jedné věci.
+   */
+  readonly pieces?: { readonly asked: string; readonly remaining: readonly string[] };
 }
 
 /** Věta byla nejasná — server nabízí objekty, mezi kterými se má vybrat. */
@@ -423,7 +464,7 @@ export type ChangeOutcomeRead = ChangePreviewed | ChangeAmbiguous | ChangeRefuse
 export async function requestChange(
   sessionId: string,
   prompt: string,
-  options: ClientOptions & { readonly stableId?: string } = {},
+  options: ClientOptions & { readonly stableId?: string; readonly comparison?: boolean } = {},
 ): Promise<ChangeOutcomeRead> {
   const call = options.fetch ?? fetch;
   const response = await call(`/api/worldstream/sessions/${sessionId}/changes`, {
@@ -432,6 +473,7 @@ export async function requestChange(
     body: JSON.stringify({
       prompt,
       ...(options.stableId === undefined ? {} : { stableId: options.stableId }),
+      ...(options.comparison === undefined ? {} : { comparison: options.comparison }),
     }),
     signal: options.signal,
   });
@@ -481,31 +523,36 @@ export async function requestChange(
     scope: body.scope as ChangePreviewed['scope'],
     preserved: (body.preserved ?? []) as readonly string[],
     authored: match === 'exact' || match === 'nearest' ? { match } : null,
+    ...(body.pieces === undefined ? {} : { pieces: body.pieces as ChangePreviewed['pieces'] }),
   };
 }
 
 /** Jak dopadl commit. Odmítnutí je 200 s verdiktem, ne výjimka. */
 export type ChangeCommitted =
   | { readonly kind: 'committed'; readonly stableId: string; readonly summary: string;
+      readonly acceptedBlueprint?: WorldstreamBlueprint;
+      readonly comparison?: BranchComparison;
       readonly acceptedRevision?: { readonly sim: number; readonly look: number } }
   | { readonly kind: 'refused'; readonly detail: string };
 
 /**
  * Potvrzení plánu — **jediné místo, kde se svět mění**.
  *
- * Nevrací nový blueprint schválně: autoritativní stav je snapshot relace
- * (§21), takže volající si o svět řekne toutéž cestou, kterou by ho dostal po
- * reconnectu. Druhá kopie světa v odpovědi commitu by byla druhá pravda.
+ * A4 vrací přesně uložený snapshot a porovnání ověřené před jeho uložením.
+ * Ostatní změny zachovávají obnovu přes snapshot relace.
  */
 export async function commitChange(
   sessionId: string,
   changeId: string,
-  options: ClientOptions = {},
+  options: ClientOptions & { readonly comparison?: ComparisonCommit } = {},
 ): Promise<ChangeCommitted> {
   const call = options.fetch ?? fetch;
   const response = await call(
     `/api/worldstream/sessions/${sessionId}/changes/${changeId}/commit`,
-    { method: 'POST', signal: options.signal },
+    { method: 'POST', signal: options.signal,
+      ...(options.comparison === undefined ? {} : {
+        headers: { 'content-type': 'application/json' }, body: JSON.stringify(options.comparison),
+      }) },
   );
 
   const body = (await response.json().catch(() => null)) as Record<string, unknown> | null;
@@ -537,7 +584,9 @@ export async function commitChange(
   return {
     kind: 'committed',
     stableId: String(body.stableId ?? ''),
-    summary: String(body.summary ?? ''),
+      summary: String(body.summary ?? ''),
+      ...(body.acceptedBlueprint === undefined ? {} : { acceptedBlueprint: body.acceptedBlueprint as WorldstreamBlueprint }),
+      ...(body.comparison === undefined ? {} : { comparison: body.comparison as BranchComparison }),
     ...(typeof sim === 'number' && Number.isSafeInteger(sim) && sim >= 0 &&
       typeof look === 'number' && Number.isSafeInteger(look) && look >= 0 ? { acceptedRevision: { sim, look } } : {}),
   };
@@ -562,4 +611,17 @@ export async function readBlueprint(
   if (response.status === 404) throw new Error('The session is unavailable (HTTP 404). It may have expired or the server restarted. Start a new world.');
   if (!response.ok) throw new Error(`the world snapshot is gone: HTTP ${response.status}`);
   return ((await response.json()) as ClientSnapshot).blueprint ?? null;
+}
+
+/** Restore server-recorded comparison rules, retaining a monotonically newer revision. */
+export async function restoreComparison(sessionId: string,
+  expected: { readonly simRevision: number; readonly lookRevision: number; readonly simHash: string },
+  options: ClientOptions = {}): Promise<WorldstreamBlueprint> {
+  const response = await (options.fetch ?? fetch)(`/api/worldstream/sessions/${sessionId}/comparison/restore`, {
+    method: 'POST', signal: options.signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify(expected),
+  });
+  const body = await response.json().catch(() => null);
+  if (!response.ok || body?.outcome !== 'RESTORED')
+    throw new Error(refusal('the original rules were not restored', body?.error, response.status));
+  return body.acceptedBlueprint as WorldstreamBlueprint;
 }

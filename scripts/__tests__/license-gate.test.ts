@@ -1403,6 +1403,13 @@ describe('license-gate: čisté funkce', () => {
     expect([...hosts]).toEqual(['opravdu-ostra.io']);
   });
 
+  it('ignores the SVG xmlns identifier but still reports W3C fetches and other attributes', () => {
+    expect([...hostsIn('const svg = `<svg xmlns="http://www.w3.org/2000/svg"/>`;')]).toEqual([]);
+    expect([...hostsIn("fetch('http://www.w3.org/2000/svg');")]).toEqual(['www.w3.org']);
+    expect([...hostsIn('const svg = `<svg href="http://www.w3.org/2000/svg"/>`;')]).toEqual(['www.w3.org']);
+    expect([...hostsIn('const svg = `<svg xmlns="http://www.w3.org/other"/>`;')]).toEqual(['www.w3.org']);
+  });
+
   it('noticesFor rozloží složenou licenci na notices všech částí', () => {
     const notices = noticesFor('Apache-2.0 AND LGPL-3.0-or-later');
     expect(notices).toContain('označení změn');

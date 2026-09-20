@@ -1,9 +1,11 @@
 import { canonical, type WorldDoc } from '@/ir/worlddoc';
 import { buildRuntimeWorld } from '@/ir/build';
-import { createRuntime, entityPlacements, type EntityPlacement, type RunState, type Runtime, type WorldDocRuntime } from '@/sim/interpreter';
+import { createRuntime, entityPlacements, entitySlotId, type EntityPlacement, type RuleFiring, type RunState, type Runtime, type WorldDocRuntime } from '@/sim/interpreter';
+import type { IrNode, StateRef } from '@/ir/types';
 import { advance, createTimeline, seekTo, type Timeline } from '@/sim/timeline';
 import { rebranchAt, type RebranchRejection } from '@/sim/rebranch';
 import { runtimeActions, sameAction, type RuntimeAction } from './runtime-input';
+import { hashHex } from '@/sim/hash';
 
 export interface RuntimeTransition {
   readonly tick: number;
@@ -12,6 +14,7 @@ export interface RuntimeTransition {
 }
 
 export interface RuntimeSnapshot {
+  readonly stateHash: string;
   readonly observationTick: number;
   readonly tick: number;
   readonly endedAtTick: number | null;
@@ -21,6 +24,103 @@ export interface RuntimeSnapshot {
   readonly values: Readonly<Record<string, number>>;
   readonly transitions: readonly RuntimeTransition[];
   readonly canInput: boolean;
+}
+
+/** A rule that fired after `tick` and whose predicate read a slot written in that tick. */
+export interface DownstreamFiring {
+  readonly tick: number;
+  readonly ruleId: string;
+  /** The written slots the predicate reads, in the predicate's own order. */
+  readonly reads: readonly string[];
+}
+
+/** Kolik tiků kauzální stopy se drží. Starší tiky se zahazují, ne archivují. */
+const EXPLAIN_RING = 4000;
+
+const NO_FIRINGS: readonly RuleFiring[] = Object.freeze([]);
+
+function placementSlots(entity: string, into: Set<string>): void {
+  into.add(entitySlotId(entity, 'active'));
+  into.add(entitySlotId(entity, 'x'));
+  into.add(entitySlotId(entity, 'y'));
+}
+
+/**
+ * Sloty, ze kterých `sense()` odvozuje hodnotu odkazu. Prefixy zrcadlí
+ * `writeRef` v interpretu; odvozené fakty se rozkládají na sloty, ze kterých
+ * je fáze 1 počítá — `inZone` je poloha a aktivita entity, ne vlastní slot.
+ */
+function refSlots(runtime: Runtime, ref: StateRef, into: Set<string>): void {
+  switch (ref.space) {
+    case 'counter':
+      into.add(`c:${ref.slot}`);
+      break;
+    case 'flag':
+      into.add(`f:${ref.slot}`);
+      break;
+    case 'timer':
+      into.add(`t:${ref.slot}`);
+      break;
+    case 'inventory':
+      into.add(`i:${ref.slot}`);
+      break;
+    case 'memory':
+      into.add(`m:${ref.agent}#${ref.index}`);
+      break;
+    case 'entityState':
+      into.add(entitySlotId(ref.entity, 'state'));
+      break;
+    case 'locked':
+      into.add(entitySlotId(ref.entity, 'locked'));
+      break;
+    case 'observed':
+      if (ref.fact === 'hasItem') into.add(`i:${ref.args[0]}`);
+      else if (ref.fact === 'inZone') placementSlots(ref.args[0], into);
+      else if (ref.fact === 'overlapping' || ref.fact === 'visible') {
+        placementSlots(ref.args[0], into);
+        placementSlots(ref.args[1], into);
+      }
+      // `started` a `socketHolds` ze stavu nečtou nic.
+      break;
+    case 'pulse':
+      // Fronta událostí, ne slot.
+      break;
+    default: {
+      const exhaustive: never = ref;
+      throw new Error(`unreachable ref space: ${String(exhaustive)}`);
+    }
+  }
+}
+
+function slotsReadBy(runtime: Runtime, index: number, into: Set<string>): void {
+  const node: IrNode = runtime.doc.ir.nodes[index];
+  switch (node.kind) {
+    case 'literal':
+      break;
+    case 'ref':
+      refSlots(runtime, node.ref, into);
+      break;
+    case 'query':
+      for (const entity of runtime.entityOrder) {
+        if ((runtime.doc.space.tags[entity] ?? entity) === node.tag) placementSlots(entity, into);
+      }
+      break;
+    case 'compare':
+      slotsReadBy(runtime, node.lhs, into);
+      slotsReadBy(runtime, node.rhs, into);
+      break;
+    case 'allOf':
+    case 'anyOf':
+      for (const operand of node.operands) slotsReadBy(runtime, operand, into);
+      break;
+    case 'not':
+      slotsReadBy(runtime, node.operand, into);
+      break;
+    default: {
+      const exhaustive: never = node;
+      throw new Error(`unreachable node: ${String(exhaustive)}`);
+    }
+  }
 }
 
 export type RuntimeForkResult = RebranchRejection | {
@@ -47,7 +147,21 @@ function ownRuntime(initial: Runtime, timeline: Timeline) {
   const listeners = new Set<() => void>();
   let paused = false;
   let observationTick = runtime.tick;
+  const inputEffects = new Map<number, readonly string[]>();
+  /** Tik → stopa. Klíče rostou, takže první klíč je vždy nejstarší tik. */
+  const explainRing = new Map<number, readonly RuleFiring[]>();
+  const predicateReads = new Map<string, ReadonlySet<string>>();
+  const readsOf = (predicateId: string): ReadonlySet<string> => {
+    const cached = predicateReads.get(predicateId);
+    if (cached !== undefined) return cached;
+    const reads = new Set<string>();
+    slotsReadBy(runtime, runtime.predicateIndex.get(predicateId)!, reads);
+    predicateReads.set(predicateId, reads);
+    return reads;
+  };
+  const explainTick = (tick: number): readonly RuleFiring[] => explainRing.get(tick) ?? NO_FIRINGS;
   const snapshot = (): RuntimeSnapshot => Object.freeze({
+    stateHash: hashHex(runtime.state),
     observationTick,
     tick: runtime.tick,
     endedAtTick: runtime.runState === 'running' ? null : runtime.tick,
@@ -75,6 +189,9 @@ function ownRuntime(initial: Runtime, timeline: Timeline) {
     const tick = runtime.tick;
     const stepInputs = inputs.filter(input => input.tick === tick);
     const result = advance(timeline, runtime, stepInputs);
+    explainRing.set(tick, result.explain);
+    if (explainRing.size > EXPLAIN_RING) explainRing.delete(explainRing.keys().next().value!);
+    if (stepInputs.length) inputEffects.set(tick, Object.freeze([...result.fired]));
     highWaterTick = Math.max(highWaterTick, runtime.tick);
     if (stepInputs.length || result.fired.length) {
       transitions = Object.freeze([...transitions, Object.freeze({ tick,
@@ -104,6 +221,13 @@ function ownRuntime(initial: Runtime, timeline: Timeline) {
       return { verdict: 'REBRANCHED', atFork, atObservation: branch.getSnapshot(), controller: branch };
     },
     getInputLog: () => Object.freeze(inputs.map(input => Object.freeze({ ...input }))),
+    /** Rules fired during each input tick, not a claim of per-action causality. */
+    getInputEffects: (fromTick: number) => Object.freeze(inputs.filter(input => input.tick >= fromTick && input.tick < observationTick)
+      .map(input => Object.freeze({ input: Object.freeze({ ...input }),
+        status: input.tick >= runtime.tick ? 'terminal' as const
+          : (inputEffects.get(input.tick)?.length ?? 0) > 0 ? 'rules-fired' as const : 'no-rule-fired' as const,
+        ruleIds: inputEffects.get(input.tick) ?? Object.freeze([] as string[]),
+      }))),
     dispatch: (action: RuntimeAction) => {
       if (!current.canInput) return { ok: false as const, reason: 'Resume at the latest tick to interact.' };
       if (!actions.some(candidate => sameAction(candidate, action))) {
@@ -118,6 +242,22 @@ function ownRuntime(initial: Runtime, timeline: Timeline) {
       return { ok: true as const, tick, ruleIds: result.fired, runState: result.runState };
     },
     getSnapshot: () => current,
+    /** What each rule wrote in `tick`; empty outside the last 4000 ticks. */
+    explainTick,
+    /** Rules fired in the next `horizon` ticks whose predicate reads a slot written in `tick`. */
+    downstreamOf: (tick: number, horizon = 20): readonly DownstreamFiring[] => {
+      const written = new Set<string>();
+      for (const firing of explainTick(tick)) for (const write of firing.writes) written.add(write.slot);
+      const found: DownstreamFiring[] = [];
+      for (let at = tick + 1; at <= tick + horizon; at += 1) {
+        for (const firing of explainTick(at)) {
+          if (!firing.guardHeld) continue;
+          const reads = [...readsOf(firing.predicate)].filter(slot => written.has(slot));
+          if (reads.length) found.push(Object.freeze({ tick: at, ruleId: firing.ruleId, reads: Object.freeze(reads) }));
+        }
+      }
+      return Object.freeze(found);
+    },
     subscribe: (listener: () => void) => {
       listeners.add(listener);
       return () => { listeners.delete(listener); };
@@ -142,6 +282,8 @@ function ownRuntime(initial: Runtime, timeline: Timeline) {
       validateTick(tick);
       if (tick < runtime.tick) {
         seekTo(timeline, runtime, tick);
+        for (const inputTick of inputEffects.keys()) if (inputTick >= tick) inputEffects.delete(inputTick);
+        for (const explained of explainRing.keys()) if (explained >= tick) explainRing.delete(explained);
         transitions = Object.freeze(transitions.filter(entry => entry.tick < runtime.tick));
       } else {
         while (runtime.tick < tick && runtime.runState === 'running') advanceOne();
@@ -169,4 +311,26 @@ export function bindRuntime(previous: RuntimeBinding | null, sessionId: string, 
   const built = buildRuntimeWorld(doc.sim);
   if (!built.ok) throw new Error(`the simulation cannot run: ${built.issues.join('; ')}`);
   return { sessionId, simulation, controller: createRuntimeController({ ...built.world, trace: [] }) };
+}
+
+/**
+ * Hodnota jedné proměnné světa ze snímku běhu, nebo `null`, když ji svět
+ * nedeklaruje.
+ *
+ * Jméno je to, které model napsal do `sim.state` (`storm`), ne slot
+ * interpretu (`f:storm`) – předponu dosazuje tahle funkce, aby plátno kódování
+ * slotů neznalo. Příznak má přednost před čítačem, protože táž dvě jména
+ * v jednom světě nedávají smysl a schéma je nebrání jen proto, že to nikdo
+ * nepíše.
+ *
+ * **Jednosměrné.** Čte se ze snímku a nic se sem nepíše: renderer (tween
+ * předvoleb vzhledu v `WorldstreamCanvas`) z toho odvozuje obraz, a do
+ * hashovaného stavu se z obrazu nevrací nic.
+ */
+export function readVariable(snapshot: RuntimeSnapshot, variable: string): number | null {
+  for (const prefix of ['f:', 'c:']) {
+    const value = snapshot.values[`${prefix}${variable}`];
+    if (value !== undefined) return value;
+  }
+  return null;
 }

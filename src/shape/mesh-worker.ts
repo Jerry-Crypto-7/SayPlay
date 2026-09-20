@@ -60,6 +60,48 @@ function budgetFor(resolution: number): (typeof MESH_DETAIL)[keyof typeof MESH_D
   return resolution <= MESH_DETAIL.rough.resolution ? MESH_DETAIL.rough : MESH_DETAIL.high;
 }
 
+/**
+ * Rozsudek rozpočtu nad **hotovým** meshem, jako čistá funkce.
+ *
+ * Stojí zvlášť proto, že jinak se nedá otestovat: `maxMs` se překročí jedině
+ * doopravdy pomalým tvarem, a takový test měří stroj místo pravidla. Takhle je
+ * výjimka pro čas souzená přímo a mutace v ní se ozve.
+ */
+export type BudgetVerdict =
+  | { readonly kind: 'pass' }
+  /** Prošlo jen díky `untimed`. Volající to musí přiznat v odpovědi. */
+  | { readonly kind: 'waived-time' }
+  | { readonly kind: 'refused'; readonly error: string };
+
+export function judgeBudget(input: {
+  readonly resolution: number;
+  readonly triangleCount: number;
+  readonly elapsedMs: number;
+  readonly unbudgeted?: boolean;
+  readonly untimed?: boolean;
+}): BudgetVerdict {
+  if (input.unbudgeted === true) return { kind: 'pass' };
+  const budget = budgetFor(input.resolution);
+
+  if (input.triangleCount > budget.maxTriangles)
+    return {
+      kind: 'refused',
+      error: `mesh is ${String(input.triangleCount)} triangles, above maxTriangles ${String(budget.maxTriangles)} for resolution ${String(input.resolution)}`,
+    };
+
+  if (input.elapsedMs > budget.maxMs) {
+    // **`untimed` neruší měření, jen rozsudek.** Trojúhelníky se soudí výš
+    // i tak: `maxTriangles` je vlastnost programu, `maxMs` měření stroje.
+    if (input.untimed === true) return { kind: 'waived-time' };
+    return {
+      kind: 'refused',
+      error: `mesh took ${String(input.elapsedMs)} ms, above maxMs ${String(budget.maxMs)} for resolution ${String(input.resolution)}`,
+    };
+  }
+
+  return { kind: 'pass' };
+}
+
 /** Zadání jedné práce. Program se posílá jako data, ne jako funkce. */
 export interface MeshJobRequest {
   readonly jobId: string;
@@ -77,7 +119,8 @@ export interface MeshJobRequest {
    */
   readonly bounds: Bounds3;
   /**
-   * Změřit, ale nesoudit. **Jediné dveře ven z rozpočtu, a jsou pojmenované.**
+   * Změřit, ale nesoudit. **Širší z dvojích dveří ven z rozpočtu, a obě jsou
+   * pojmenované** – ta druhá je `untimed` níž a vypouští jedině hodiny.
    *
    * Měřicí stránka `/dev/mesh-budget` si říká o mřížky **mimo žebřík** (64³
    * a 96³), které report vede schválně bez rozsudku — nemá je tedy co soudit
@@ -107,6 +150,24 @@ export interface MeshJobRequest {
    * worker, dvě čísla v jednom sloupci reportu by se přestala dát srovnat.
    */
   readonly unbudgeted?: boolean;
+  /**
+   * Změřit čas, ale nesoudit podle něj. **Druhé dveře ven z rozpočtu, a užší
+   * než `unbudgeted`: trojúhelníky se soudí dál.**
+   *
+   * `maxMs` je měření stroje, ne programu – týž archiv dá na témže commitu
+   * jednou 380 ms a podruhé 722 ms. V živém produktu je to správný soudce,
+   * protože porotce čeká na skutečných hodinách. V **přehrání archivu** ale
+   * udělá z čísla, které má měřit kód, měření zátěže stroje – a každý rozdíl
+   * mezi dvěma běhy se pak čte jako pohyb kódu (P20 F2 tu chybu udělala).
+   *
+   * Práce, která by se o strop opřela, proto projde a nese `overTime: true`.
+   * Volající tu známku **musí** donést do artefaktu: je to jediné, co odliší
+   * tvar zachráněný výjimkou od tvaru, který se do rozpočtu vešel.
+   *
+   * **Výchozí hodnota je ta přísná** a produkt si o výjimku říct nemůže:
+   * `MeshOrder` tohle pole nemá, nese ho až `createMeshClient({ untimed: true })`.
+   */
+  readonly untimed?: boolean;
 }
 
 export interface MeshJobSuccess {
@@ -120,6 +181,12 @@ export interface MeshJobSuccess {
   readonly bounds: Bounds3;
   /** Kolik to trvalo ve workeru. Rozpočty vlny 1 T5 se pinují na tohle číslo. */
   readonly elapsedMs: number;
+  /**
+   * Tenhle mesh by **strop času neprosel** a prošel jen proto, že si volající
+   * řekl o `untimed`. Bez té volánky se objevit nemůže – tam se přetečený čas
+   * pořád vrací jako `overBudget` odmítnutí.
+   */
+  readonly overTime?: true;
 }
 
 export interface MeshJobFailure {
@@ -314,34 +381,22 @@ export function handleMeshJob(request: MeshJobRequest): MeshJobOutcome {
     // hodiny ve vzorkovací smyčce, což je změna ceny meshování — vlastní úloha,
     // ne oprava u review.
     const elapsedMs = Date.now() - startedAt;
+    const verdict = judgeBudget({
+      resolution: request.resolution,
+      triangleCount: mesh.triangleCount,
+      elapsedMs,
+      ...(request.unbudgeted === undefined ? {} : { unbudgeted: request.unbudgeted }),
+      ...(request.untimed === undefined ? {} : { untimed: request.untimed }),
+    });
 
-    if (request.unbudgeted !== true) {
-      const budget = budgetFor(request.resolution);
-
-      if (mesh.triangleCount > budget.maxTriangles) {
-        return {
-          response: {
-            jobId: request.jobId,
-            ok: false,
-            error: `mesh is ${mesh.triangleCount} triangles, above maxTriangles ${budget.maxTriangles} for resolution ${request.resolution}`,
-            overBudget: true,
-          },
-          transfer: [],
-        };
-      }
-
-      if (elapsedMs > budget.maxMs) {
-        return {
-          response: {
-            jobId: request.jobId,
-            ok: false,
-            error: `mesh took ${elapsedMs} ms, above maxMs ${budget.maxMs} for resolution ${request.resolution}`,
-            overBudget: true,
-          },
-          transfer: [],
-        };
-      }
+    if (verdict.kind === 'refused') {
+      return {
+        response: { jobId: request.jobId, ok: false, error: verdict.error, overBudget: true },
+        transfer: [],
+      };
     }
+
+    const overTime = verdict.kind === 'waived-time';
 
     return {
       response: {
@@ -354,6 +409,7 @@ export function handleMeshJob(request: MeshJobRequest): MeshJobOutcome {
         triangleCount: mesh.triangleCount,
         bounds: mesh.bounds,
         elapsedMs,
+        ...(overTime ? { overTime: true as const } : {}),
       },
       transfer: [mesh.positions.buffer, mesh.normals.buffer, mesh.indices.buffer] as ArrayBuffer[],
     };

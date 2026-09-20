@@ -52,6 +52,8 @@ export interface ChangeScope {
   readonly shape: boolean;
   readonly behavior: number;
   readonly appearance: number;
+  /** Věta zakládá objekt, který ve světě nebyl (P21 T8). */
+  readonly addition?: boolean;
 }
 
 export type ChangeState =
@@ -69,8 +71,32 @@ export type ChangeState =
       readonly scope: ChangeScope;
       /** Popisky objektů, kterých se změna **nedotkne**. */
       readonly preserved: readonly string[];
+      /**
+       * Věta mluvila o víc věcech (P21 T9): `asked` šlo modelu, `remaining`
+       * čeká na další věty. Chybí, když věta byla o jedné věci.
+       */
+      readonly pieces?: ChangeQueue;
     }
   | { readonly kind: 'refused'; readonly message: string };
+
+/** Fronta kusů jedné věty — přesně to, co vrací route pod `pieces`. */
+export interface ChangeQueue {
+  readonly asked: string;
+  readonly remaining: readonly string[];
+}
+
+/**
+ * Fronta jako věta. `null`, když věta byla o jedné věci — jedna věc není
+ * fronta a prázdné „Still to send:" by tvrdilo, že něco zbývá.
+ *
+ * Exportované ze stejného důvodu jako `scopeParts`: je to jediné rozhodování
+ * v panelu navíc a měří se levněji jako čistá funkce.
+ */
+export function queueLine(pieces: ChangeQueue): string | null {
+  if (pieces.remaining.length === 0) return null;
+  const quoted = (text: string) => `“${text}”`;
+  return `This sentence asked for ${String(pieces.remaining.length + 1)} things. Sent first: ${quoted(pieces.asked)}. Still to send: ${pieces.remaining.map(quoted).join('; ')}.`;
+}
 
 export interface ChangePreviewProps {
   readonly state: ChangeState;
@@ -94,6 +120,7 @@ export interface ChangePreviewProps {
  */
 export function scopeParts(scope: ChangeScope): readonly string[] {
   const parts: string[] = [];
+  if (scope.addition) parts.push('a new object');
   if (scope.shape) parts.push('a new shape');
   if (scope.behavior > 0)
     parts.push(`${scope.behavior} behaviour ${scope.behavior === 1 ? 'change' : 'changes'}`);
@@ -166,6 +193,13 @@ export default function ChangePreview({
       {state.preserved.length > 0 && (
         <p className="ws-change-preserved" data-testid="change-preserved">
           Not named by this change: {state.preserved.join(', ')}
+        </p>
+      )}
+      {/* Fronta kusů (P21 T9): co z věty šlo modelu a co porotci zbývá poslat.
+          Po `Apply` se zbytek předvyplní do pole — to dělá stránka, ne panel. */}
+      {state.pieces !== undefined && queueLine(state.pieces) !== null && (
+        <p className="ws-change-preserved" data-testid="change-queue">
+          {queueLine(state.pieces)}
         </p>
       )}
       <div className="ws-change-actions">

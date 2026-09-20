@@ -1,37 +1,51 @@
 {
-  "$comment": "Veřejné demo běží na Vercelu (ověřeno 14. 9. 2026 kouřovým testem 3/3 proti demoUrl). Od 14. 9. 2026 má nasazení živý model a sdílený obchod stropu (Upstash), ale model k němu teče dočasným tunelem z vývojového stroje: když tunel neběží, živá větev selže a zůstane jen sklad uvařených světů. Trvalý backend do 25. 11. zatím není. TODO: MISSING zachovává fail-closed konvenci submission brány. Nejde o dokončené veřejné odevzdání.",
-  "repositoryUrl": "https://github.com/Jerry-Crypto-7/Hackathon",
-  "demoUrl": "https://worldstream-sigma.vercel.app",
-  "backendUrl": "https://worldstream-sigma.vercel.app/api/health",
-  "videoPath": "TODO: MISSING — video/final.mp4",
-  "descriptionPath": "docs/submission/description.md",
-  "modelTablePaths": [
-    "src/model/prompt.ts",
-    "evals/harness/preflight.ts"
-  ],
-  "monitoringPath": "ops/monitoring/uptime.json",
-  "dataDirs": [
-    "evals/frozen",
-    "evals/contracts/gold",
-    "evals/reality-compiler/holdout-v1"
-  ],
-  "measurementReports": [
-    "evals/reality-compiler/subscription-report.md",
-    "evals/reality-compiler/subscription-demo.md",
-    "evals/reality-compiler/decision.md",
-    "evals/reality-compiler/user-study-results.json"
-  ],
-  "localDemo": {
-    "command": "npm run demo:subscription",
-    "scope": "own local source demo",
-    "billing": "subscription",
-    "apiFallback": false,
-    "walkthrough": "docs/submission/demo-walkthrough.md",
-    "readiness": "evals/reality-compiler/submission-readiness.md",
-    "operatingProposal": "ops/worldstream-single-process.md",
-    "preparedVideoPath": "video/prepared-walkthrough.mp4",
-    "preparedVideoManifest": "video/prepared-walkthrough.manifest.json",
-    "preparedVideoScope": "scripted fixture, virtual clock, no model calls or human study; not final submission video",
-    "developmentReviewProtocol": "evals/reality-compiler/holdout-v2/protocol.md"
-  }
+    "$comment":  "Veřejné demo běží na Vercelu (ověřeno 14. 9. 2026 kouřovým testem 3/3 proti demoUrl). Od 14. 9. 2026 má nasazení živý model a sdílený obchod stropu (Upstash), ale model k němu teče dočasným tunelem z vývojového stroje: když tunel neběží, živá větev selže a zůstane jen sklad uvařených světů. Trvalý backend do 25. 11. zatím není. TODO: MISSING zachovává fail-closed konvenci submission brány. Nejde o dokončené veřejné odevzdání.",
+    "repositoryUrl":  "https://github.com/Jerry-Crypto-7/Hackathon",
+    "p20Status":  {
+                      "date":  "2026-09-17",
+                      "scope":  "local implementation; P20 changes have not been deployed by this session",
+                      "acceptance":  "evals/worldstream/world-quality/report.md",
+                      "walkthrough":  "docs/demo/judge-runbook.md",
+                      "publicRepositoryCheck":  "submission-check returned HTTP 404 on 2026-09-17; not proof of public availability",
+                      "missing":  [
+                                      "independent human acceptance",
+                                      "provider-generated new assets",
+                                      "authorized durable hosting",
+                                      "registration confirmation",
+                                      "monitor heartbeat"
+                                  ],
+                      "localVideo":  "videos/worldstream-a4/worldstream-a4-live.mp4 — 90s recorded real live generation and non-timer A4; 5x generation speedup; original 258.445s generation"
+                  },
+    "demoUrl":  "https://worldstream-sigma.vercel.app",
+    "backendUrl":  "https://worldstream-sigma.vercel.app/api/health",
+    "videoPath":  "videos/worldstream-a4/worldstream-a4-live.mp4",
+    "descriptionPath":  "docs/submission/description.md",
+    "modelTablePaths":  [
+                            "src/model/prompt.ts",
+                            "evals/harness/preflight.ts"
+                        ],
+    "monitoringPath":  "ops/monitoring/uptime.json",
+    "dataDirs":  [
+                     "evals/frozen",
+                     "evals/contracts/gold",
+                     "evals/reality-compiler/holdout-v1"
+                 ],
+    "measurementReports":  [
+                               "evals/worldstream/latency-report.json",
+                               "evals/worldstream/create-report.json",
+                               "evals/reality-compiler/decision.md"
+                           ],
+    "localDemo":  {
+                      "command":  "npm run demo:subscription",
+                      "scope":  "own local source demo",
+                      "billing":  "subscription",
+                      "apiFallback":  false,
+                      "walkthrough":  "docs/submission/demo-walkthrough.md",
+                      "readiness":  "evals/reality-compiler/submission-readiness.md",
+                      "operatingProposal":  "ops/worldstream-single-process.md",
+                      "preparedVideoPath":  "video/prepared-walkthrough.mp4",
+                      "preparedVideoManifest":  "video/prepared-walkthrough.manifest.json",
+                      "preparedVideoScope":  "scripted fixture, virtual clock, no model calls or human study; not final submission video",
+                      "developmentReviewProtocol":  "evals/reality-compiler/holdout-v2/protocol.md"
+                  }
 }

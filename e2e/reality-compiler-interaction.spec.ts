@@ -8,11 +8,18 @@ import surface from '../evals/reality-compiler/museum.sim.json';
 async function museum(page: Page) {
   const blueprint = blueprintSchema.parse({
     version: 'worldstream-v1', sessionSeed: 4021, title: 'Museum interaction fixture',
-    intent: EXAMPLE_PLAN.intent, geometry: EXAMPLE_BLUEPRINT_ANSWER.geometry, shapes: [],
+    // The visitor starts at visual x4.5 for runtime cell1. Declare the full
+    // ten-cell corridor, so a stable camera can frame its actual travel area.
+    intent: EXAMPLE_PLAN.intent, geometry: {...EXAMPLE_BLUEPRINT_ANSWER.geometry,nodes:[...EXAMPLE_BLUEPRINT_ANSWER.geometry.nodes,
+      {kind:'mass',variant:'block',at:[6,-0.2,5.5],scale:[5,0.2,3]},
+      {kind:'repeat',child:9,count:2,step:[5,0,0]},
+      {kind:'group',children:[8,10]}],root:11}, shapes: [],
     world: sealSimHash({ irVersion: 'v1', simRevision: 0, lookRevision: 0,
       sim: surface, look: EXAMPLE_BLUEPRINT_ANSWER.world.look }),
     objects: [{ stableId: 'visitor', label: 'the visitor', synonyms: [], role: 'prop', importance: 1,
-      source: { kind: 'geom', node: 5 }, targetBounds: { min: [4.1, 0, 5.1], max: [4.9, 0.7, 5.9] } }],
+      source: { kind: 'geom', node: 5 }, targetBounds: { min: [4.1, 0, 5.1], max: [4.9, 0.7, 5.9] } },
+      {stableId:'corridorFloor',label:'the ten-cell fixture corridor',synonyms:[],role:'prop',importance:1,
+        source:{kind:'geom',node:10},targetBounds:{min:[3.5,-0.3,4],max:[13.5,-0.1,7]}}],
   });
   const id = '22222222-3333-4444-5555-666666666666';
   await page.route('**/api/worldstream/sessions', route => {
@@ -28,6 +35,7 @@ async function museum(page: Page) {
       body: frame(1, 'blueprint.ready', { blueprint }) + frame(2, 'session.complete', {}) });
   });
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('Museum interaction fixture');
   await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('runtime-act')).toBeEnabled({ timeout: 30_000 });

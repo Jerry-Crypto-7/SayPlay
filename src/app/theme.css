@@ -35,6 +35,21 @@
      bez něj je nad světlou podlahou nečitelný. */
   --ws-text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
   --ws-ui-font: ui-sans-serif, system-ui, sans-serif;
+
+  /* Rozměry skořápky. Čte je mřížka rozhraní (`.ws-shell`) **i volná plocha
+     plátna**, a je to jediný důvod, proč to jsou proměnné: dvě opsaná čísla by
+     se rozešla a plátno by zase leželo pod dokem. Barva tu žádná není schválně
+     — `theme.test.ts` hlídá, že barevný token v `:root` nevznikne mimo
+     `UI_TOKENS`, a rozměr do toho seznamu nepatří. */
+  --ws-shell-pad: 1rem;
+  --ws-shell-gap: 0.75rem;
+  /* Dolní pruh rozhraní. **Pevná výška, ne `auto`** (P18 T2): plátno si o svou
+     volnou plochu musí umět říct dopředu a plocha odvozená z obsahu doku by se
+     hnula s každou delší stavovou větou. Co se do pruhu nevejde, roluje se
+     uvnitř doku — dřív to přeteklo přes svět. */
+  --ws-shell-strip: 16rem;
+  /* Pravý sloupec s otevřenou zásuvkou. Pevný ze stejného důvodu. */
+  --ws-inspect-column: 22rem;
 }
 
 :root[data-palette='cvd'] {
@@ -154,11 +169,12 @@ body {
      zbytek. `minmax(0, …)` je nutnost — bez něj sloupec neumí být užší než
      obsah a mřížka by přetekla přes okno. */
   grid-template-columns: minmax(0, 1fr) minmax(0, 46rem) minmax(0, 1fr);
-  /* Horní řádek je volná plocha světa, dolní pruh patří rozhraní. */
-  grid-template-rows: minmax(0, 1fr) auto;
+  /* Horní řádek je volná plocha světa, dolní pruh patří rozhraní — a ten pruh
+     má od T2 pevnou výšku, protože se o ni opírá plátno níž. */
+  grid-template-rows: minmax(0, 1fr) var(--ws-shell-strip);
   align-items: end;
-  gap: 0.75rem;
-  padding: 1rem;
+  gap: var(--ws-shell-gap);
+  padding: var(--ws-shell-pad);
   /* Překryv kryje celé plátno, takže by jinak spolkl každé kliknutí do scény.
      Klikatelnost si zapíná každá buňka sama. */
   pointer-events: none;
@@ -167,7 +183,42 @@ body {
 /* Otevřená zásuvka potřebuje víc než třetinu, jinak by se panely srazily do
    sloupce užšího, než je jejich vlastní šířka, a přetekly by z něj. */
 .ws-shell[data-inspecting='true'] {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 46rem) minmax(21rem, auto);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 46rem) var(--ws-inspect-column);
+}
+
+/* --- Volná plocha plátna ---------------------------------------------------
+
+   **Rozhraní se přes svět nekreslí** (P18 T2). Do 16. 9. 2026 bylo plátno celý
+   viewport a dok, ovládání i panely ležely na něm; sloupce mřížky zaručovaly
+   jen to, že se ty tři neperou mezi sebou. Se scénou se pral pořád každý z nich
+   — a je to tatáž vada, jakou mřížka zavírala uvnitř rozhraní, jen o patro níž.
+
+   Plátno proto končí tam, kde rozhraní začíná: dolní pruh a s otevřenou
+   zásuvkou i pravý sloupec jsou pro svět mimo hru. Čísla jsou tytéž proměnné,
+   ze kterých je postavená mřížka, plus jedna mezera navíc, aby se obdélníky ani
+   nedotýkaly.
+
+   **Proč `max-width`/`max-height`, a ne `position: absolute` s `inset`:**
+   `<Canvas>` z `@react-three/fiber` si píše `position`, `width` a `height`
+   **inline**, takže by je stylopis přebil jedině přes `!important`. Strop je
+   jiná vlastnost, inline ji nikdo nenastavuje a výsledek je tentýž. Plátno
+   zároveň zůstává v toku u levého horního rohu, a **to je podmínka, ne
+   náhoda**: `WorldstreamStage.toScreen()` vrací souřadnice v pixelech plátna a
+   popisek objektu je píše do `transform` prvku kotveného k `<main>`. Posunout
+   počátek plátna by rozhodilo popisky i kliknutí vedená sondou `screen()`.
+
+   Selektor jde přes `data-testid`, protože plátno vlastní třídu nemá a
+   `WorldstreamCanvas.tsx` patří jiné úloze. Sourozenecký `~` drží pravidlo u
+   stránek se skořápkou — `/dev/worldstream` kreslí totéž plátno bez ní a tam se
+   nic zmenšovat nemá. */
+
+.ws-shell ~ [data-testid='worldstream-canvas'], .ws-shell ~ .ws-futures {
+  max-height: calc(100% - var(--ws-shell-strip) - var(--ws-shell-pad) - var(--ws-shell-gap));
+}
+
+.ws-shell[data-inspecting='true'] ~ [data-testid='worldstream-canvas'],
+.ws-shell[data-inspecting='true'] ~ .ws-futures {
+  max-width: calc(100% - var(--ws-inspect-column) - var(--ws-shell-pad) - var(--ws-shell-gap));
 }
 
 .ws-dock {
@@ -245,27 +296,45 @@ body {
   grid-template-columns: minmax(16rem, 20rem) minmax(0, 40rem) minmax(3rem, 1fr);
 }
 .ws-shell[data-controls='true'][data-inspecting='true'] {
-  grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr) minmax(18rem, 22rem);
+  grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr) var(--ws-inspect-column);
 }
 .ws-controls, .ws-dock { min-width: 0; }
-.ws-runtime-tools { max-height: 58dvh; overflow: auto; width: 100%; }
+/* Nic v dolním pruhu nesmí být vyšší než pruh sám. Dokud plátno leželo pod
+   rozhraním, bylo jedno, kam dok nebo ovládání vyrostou — strop `58dvh` je
+   z té doby. Teď je pruh hranice mezi rozhraním a světem, takže přebytek
+   roluje uvnitř, místo aby se vysunul přes scénu. */
+.ws-controls, .ws-dock { max-height: var(--ws-shell-strip); overflow-y: auto; }
+.ws-runtime-tools { max-height: var(--ws-shell-strip); overflow: auto; width: 100%; }
 .ws-runtime-tools button, .ws-runtime-tools select { max-width: 100%; }
 .ws-source fieldset { min-width: 0; margin: 0.5rem 0; }
 .ws-source h4 { margin: 0.65rem 0 0.25rem; }
 
 @media (max-width: 760px) {
+  .ws-prompt-form { flex-wrap: wrap; }
+  .ws-generation-mode { flex-basis: 100%; }
+  /* Na úzké obrazovce stojí rozhraní ve třech řádcích pod sebou, takže pruh
+     pro plátno je součet jejich stropů (16 + 22 + 14 dvh), tří mezer a
+     odsazení. Ty stropy se od téhle chvíle **sčítat musí**: kdyby jeden
+     povyrostl, plátno by pod ním zase leželo. Zásuvka je tu přes celou šířku,
+     takže vedle plátna nestojí nic a pravý sloupec je nulový. */
+  :root {
+    --ws-shell-pad: 0.6rem;
+    --ws-shell-gap: 0.4rem;
+    --ws-shell-strip: calc(52dvh + 2rem);
+    --ws-inspect-column: 0rem;
+  }
   .ws-shell, .ws-shell[data-controls='true'], .ws-shell[data-inspecting='true'],
   .ws-shell[data-controls='true'][data-inspecting='true'] {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr) auto auto auto;
-    gap: 0.4rem;
-    padding: 0.6rem;
+    gap: var(--ws-shell-gap);
+    padding: var(--ws-shell-pad);
   }
-  .ws-controls { grid-column: 1; grid-row: 2; width: 100%; }
-  .ws-runtime-tools { max-height: 25dvh; }
-  .ws-dock { grid-column: 1; grid-row: 3; max-height: 35dvh; overflow: auto; }
+  .ws-controls { grid-column: 1; grid-row: 2; width: 100%; max-height: 16dvh; }
+  .ws-runtime-tools { max-height: 16dvh; }
+  .ws-dock { grid-column: 1; grid-row: 3; max-height: 22dvh; overflow: auto; }
   .ws-dock > * { flex-shrink: 0; }
-  .ws-shell .ws-inspect { grid-column: 1; grid-row: 4; max-height: 30dvh; }
+  .ws-shell .ws-inspect { grid-column: 1; grid-row: 4; max-height: 14dvh; }
 }
 
 /* Inspect. Jeden bod, ne panel: zapnutý stav se pozná podle patiny mědi.
@@ -345,6 +414,115 @@ body {
 
 .ws-inspect-toggle[aria-expanded='true'] {
   border-color: var(--ws-verdigris);
+}
+
+/* --- Why (P22 T8) ---------------------------------------------------------
+
+   Značky pod posuvníkem času a panel v zásuvce. Značka je jantarová, protože
+   „tady se něco stalo" je totéž sdělení, jaké nese `Change one law here` na
+   ose; vybraná se vyplní. Panel sedí v `.ws-inspect-panels` jako každý jiný —
+   žádné vlastní kotvení. */
+
+.ws-why-markers {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0.25rem 0;
+}
+
+.ws-why-markers-label {
+  color: var(--ws-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ws-why-marker {
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--ws-amber);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ws-amber);
+  font: inherit;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.ws-why-marker[aria-pressed='true'] {
+  background: var(--ws-amber);
+  color: var(--ws-pelagic);
+}
+
+.ws-why {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 26rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border-left: 2px solid var(--ws-amber);
+  background: rgba(11, 18, 20, 0.82);
+  color: var(--ws-text);
+  font: 12px/1.5 ui-monospace, monospace;
+}
+
+.ws-why-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ws-why-title {
+  margin: 0 0 0.3rem;
+  font: inherit;
+  color: var(--ws-amber);
+}
+
+.ws-why-subtitle {
+  margin: 0.5rem 0 0.2rem;
+  font: inherit;
+  color: var(--ws-accent);
+}
+
+.ws-why-close {
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--ws-basalt);
+  border-radius: 0.3rem;
+  background: transparent;
+  color: var(--ws-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.ws-why-input,
+.ws-why-empty {
+  margin: 0 0 0.3rem;
+  color: var(--ws-muted);
+}
+
+.ws-why-rules {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.ws-why-rule {
+  margin-bottom: 0.3rem;
+}
+
+.ws-why-sentence,
+.ws-why-guard {
+  display: block;
+  color: var(--ws-muted);
+}
+
+.ws-why-writes {
+  margin: 0.15rem 0 0;
+  padding-left: 0.6rem;
+  list-style: none;
+  color: var(--ws-nacre);
+  font-variant-numeric: tabular-nums;
 }
 
 /* --- Druhá věta (T23) -----------------------------------------------------
@@ -456,4 +634,81 @@ body {
   font-size: 0.8rem;
   /* Věta je sdělení, ne ovladač — stejně jako `.ws-status`. */
   pointer-events: none;
+}
+.ws-futures { width: 100%; height: 100%; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto minmax(0, 1fr); }
+.ws-future-toolbar { grid-column: 1 / -1; padding: .7rem 1rem; background: #101b20; color: #e8eeea; display: flex; gap: 1rem; align-items: center; }
+.ws-future-toolbar label { flex: 1; }
+.ws-future-toolbar input { width: 55%; margin-left: 1rem; }
+/* Seznam přijatých alternativ (P22 T10): druhý řádek mřížky, přes oba sloupce.
+   Položka je tlačítko – stisknutá stojí vpravo vedle originálu. */
+.ws-future-list { grid-column: 1 / -1; padding: .4rem 1rem; background: #0c161a; color: #e8eeea; display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; border-top: 1px solid #52676d; }
+.ws-future-list > strong { margin-right: .4rem; }
+.ws-future-list button { font: inherit; color: var(--ws-nacre); background: var(--ws-basalt); border: 1px solid #52676d; border-radius: .35rem; padding: .25rem .6rem; cursor: pointer; max-width: 22rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ws-future-list button > span { color: var(--ws-muted); margin-right: .3rem; }
+.ws-future-list button[aria-pressed='true'] { background: var(--ws-verdigris); border-color: var(--ws-verdigris); color: var(--ws-pelagic); }
+.ws-future-list button[aria-pressed='true'] > span { color: var(--ws-pelagic); }
+.ws-futures section { min-width: 0; min-height: 0; position: relative; border-right: 1px solid #52676d; }
+.ws-futures section > strong { position: absolute; z-index: 1; top: 1rem; left: 1rem; color: #e8eeea; background: #101b20; padding: .3rem .7rem; }
+@media (max-width: 760px) {
+  .ws-futures { grid-template-columns: 1fr; }
+  .ws-future-toolbar { flex-wrap: wrap; gap: .4rem; }
+  .ws-future-toolbar label { flex-basis: 100%; }
+  .ws-futures[data-side="original"] .ws-future-changed, .ws-futures[data-side="changed"] .ws-future-original { display: none; }
+}
+
+/* --- Prázdná scéna (P21 T10) ----------------------------------------------
+
+   Horní řádek mřížky, prostřední sloupec: volná plocha světa nad dokem. Je to
+   buňka, ne kotvený box — čtvrtý `position: absolute` s rohem je přesně ta
+   vada, kvůli které `.ws-shell` vznikla. Sama kliknutí nebere, jen tlačítko
+   v ní; jinak by karta uprostřed brala scéně orbit myší. */
+
+.ws-empty {
+  grid-row: 1;
+  grid-column: 2;
+  justify-self: center;
+  align-self: center;
+  pointer-events: none;
+}
+
+.ws-empty > * {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: 34rem;
+  padding: 1rem 1.4rem;
+  border-radius: 0.5rem;
+  background: rgba(7, 20, 31, 0.72);
+  color: var(--ws-nacre);
+  text-align: center;
+  text-shadow: var(--ws-text-shadow);
+}
+
+.ws-empty-lead {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.ws-empty-next {
+  margin: 0;
+  color: var(--ws-muted);
+  font-size: 0.88rem;
+}
+
+.ws-empty-example {
+  pointer-events: auto;
+  cursor: pointer;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--ws-verdigris);
+  border-radius: 0.35rem;
+  background: rgba(46, 143, 134, 0.18);
+  color: var(--ws-nacre);
+  font: inherit;
+  font-style: italic;
+}
+
+.ws-empty-example:hover,
+.ws-empty-example:focus-visible {
+  background: rgba(46, 143, 134, 0.36);
 }

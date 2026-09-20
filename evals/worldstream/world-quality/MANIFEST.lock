@@ -1,0 +1,11 @@
+{
+  "version": "p20-v1",
+  "algorithm": "sha256-normalized-lf",
+  "note": "Local integrity record; not an externally immutable freeze.",
+  "files": {
+    "protocol.json": "1dde95d09d50e5716258bb61e8bed0991728a419b80a69f29cd3dfd4120f0fbf",
+    "development.json": "f8637dc5d2e3f28de99ccaf1d42783c4997d7c486a86b5018e3b69cdb00fb2d4",
+    "holdout.json": "d15a804cfa04f2e138fdb54d6fd4e2801e7c63a336ece90652ae4f9d3d96bf99",
+    "a4-cases.json": "fe94b5c1b78257408b9f1798582d3374387dba92f65d33166c5fba876b328662"
+  }
+}

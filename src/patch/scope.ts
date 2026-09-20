@@ -52,7 +52,7 @@
  */
 
 import { canonical } from '../ir/worlddoc';
-import { pointerOf } from './reject';
+import { pointerOf, pointerTokens } from './reject';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -158,4 +158,137 @@ export function changedLeafEffects(before: unknown, after: unknown, prefix = '')
 /** Samotné adresy. Projekce `changedLeafEffects`, aby existoval jeden výpočet. */
 export function changedLeaves(before: unknown, after: unknown, prefix = ''): readonly string[] {
   return changedLeafEffects(before, after, prefix).map((leaf) => leaf.path);
+}
+
+/* ------------------------------------------------------------------ *
+ * Dosah věty, která zakládá nový objekt (P21 T8).
+ * ------------------------------------------------------------------ */
+
+/**
+ * Tabulky `sim`, do kterých smí nový objekt psát, a **pod jakým klíčem**.
+ *
+ * `own` — klíč je id nového objektu: entita a její půdorys.
+ * `fresh` — klíč je nový, tedy před změnou v tabulce nebyl: socket, pravidlo.
+ *
+ * Nic jiného. `state` sem nepatří schválně: příznaky, časovače a čítače jsou
+ * počáteční stav světa, který si porotce rozehrál, a nový předmět do něj nemá
+ * co mluvit. Až věta, která zákon potřebuje s příznakem, ukáže naměřený případ,
+ * rozšíří se tabulka tady — na jednom místě, které soudí preview i commit.
+ */
+const ADDITION_TABLES: Readonly<Record<string, 'own' | 'fresh'>> = {
+  entities: 'own',
+  collisionAabb: 'own',
+  sockets: 'fresh',
+  rules: 'fresh',
+};
+
+export interface AdditionScopeIssue {
+  /** List, který kontrakt porušil — první v seřazené množině. */
+  readonly pointer: string;
+  readonly detail: string;
+}
+
+/**
+ * Sáhla změna jen na nový objekt?
+ *
+ * Soudí se **diffem `sim` před a po**, ze stejného důvodu jako celý tenhle
+ * soubor: cesty v operacích o dosahu lžou, listy ne. Věta, která zakládá
+ * objekt, smí světu jen **přidávat** — každý změněný list má účinek `add`
+ * a leží pod tabulkou z `ADDITION_TABLES` pod klíčem, který novému objektu
+ * patří. `replace` nebo `remove` kdekoli znamená, že se hnul stav nebo
+ * identita něčeho, co už stálo; `add` pod cizím klíčem (`/sim/entities/
+ * surveyor/motion`) totéž.
+ *
+ * Vrací první porušení, ne všechna: na rozdíl od kontroly odkazů tohle nejde
+ * do sebeopravy — odmítnutá druhá věta se porotci vrací celá a on píše novou.
+ */
+export function additionScopeIssue(
+  beforeSim: unknown,
+  afterSim: unknown,
+  stableId: string,
+): AdditionScopeIssue | null {
+  const before = isRecord(beforeSim) ? beforeSim : {};
+  const judgedRules = new Set<string>();
+
+  for (const leaf of changedLeafEffects(beforeSim, afterSim, '/sim')) {
+    const [, table, key] = pointerTokens(leaf.path);
+
+    if (leaf.effect !== 'add')
+      return {
+        pointer: leaf.path,
+        detail: `adding ${stableId} may only add, but ${leaf.path} was ${leaf.effect}d`,
+      };
+
+    const rule = table === undefined ? undefined : ADDITION_TABLES[table];
+    if (rule === undefined || key === undefined)
+      return {
+        pointer: leaf.path,
+        detail: `${leaf.path} is outside the tables a new object may write (${Object.keys(ADDITION_TABLES).map((name) => `/sim/${name}`).join(', ')})`,
+      };
+
+    if (rule === 'own' && key !== stableId)
+      return {
+        pointer: leaf.path,
+        detail: `${leaf.path} belongs to ${key}, and adding ${stableId} may not touch another object`,
+      };
+
+    const existing = before[table];
+    if (rule === 'fresh' && isRecord(existing) && Object.hasOwn(existing, key))
+      return {
+        pointer: leaf.path,
+        detail: `${leaf.path} writes into ${key}, which already existed before ${stableId} was added`,
+      };
+
+    // Čerstvé pravidlo je v diffu vždycky jen `add`, i když rozhodne hru
+    // (nález revize 19. 9. 2026: „a trophy that wins the game at once" přepsalo
+    // výherní podmínku bez dotyku jediného starého listu). Reagovat na staré
+    // objekty a hýbat s nimi smí — to je věta o pravidle (A10) a svědek se
+    // přeověřuje; `win` a `lose` ne, protože nový předmět nemá co rozhodovat,
+    // kdy svět končí.
+    if (table === 'rules' && !judgedRules.has(key)) {
+      judgedRules.add(key);
+      const decided = decidingAction(afterSim, key);
+      if (decided !== null)
+        return {
+          pointer: decided.pointer,
+          detail: `${decided.pointer} ends the game with ${decided.kind}; adding ${stableId} may react to the world but never decide when it is won or lost`,
+        };
+      // Druhá revize 19. 9.: bez `win` se hra rozhodne o krok dál — pravidlo na
+      // `onStart` v tiku 0 přepne stav, na který čeká staré výherní pravidlo.
+      // Pravidlo nového předmětu musí něco ve světě spustit; „hned na začátku"
+      // není reakce, je to tichý přepis počátečního stavu (`state` je mimo
+      // `ADDITION_TABLES` ze stejného důvodu). Ve zmrazených světech nese
+      // `onStart` jen základní svět (c03, c10), žádná uvařená změna.
+      if (ruleEvent(afterSim, key) === 'onStart')
+        return {
+          pointer: `/sim/rules/${key}/event/kind`,
+          detail: `/sim/rules/${key} fires onStart; a rule added with ${stableId} must be triggered by something in the world, not by the start`,
+        };
+    }
+  }
+
+  return null;
+}
+
+function ruleOf(sim: unknown, key: string): Record<string, unknown> | undefined {
+  const rules = isRecord(sim) ? sim.rules : undefined;
+  const rule = isRecord(rules) ? rules[key] : undefined;
+  return isRecord(rule) ? rule : undefined;
+}
+
+/** `event.kind` pravidla `key`, nebo `undefined`, když ho nemá. */
+function ruleEvent(sim: unknown, key: string): unknown {
+  const event = ruleOf(sim, key)?.event;
+  return isRecord(event) ? event.kind : undefined;
+}
+
+/** První akce `win` / `lose` v pravidle `key` dokumentu `sim`, nebo `null`. */
+function decidingAction(sim: unknown, key: string): { pointer: string; kind: string } | null {
+  const rule = ruleOf(sim, key);
+  const actions = rule !== undefined && Array.isArray(rule.actions) ? rule.actions : [];
+  for (const [index, action] of actions.entries()) {
+    const kind = isRecord(action) ? action.kind : undefined;
+    if (kind === 'win' || kind === 'lose') return { pointer: `/sim/rules/${key}/actions/${String(index)}`, kind };
+  }
+  return null;
 }

@@ -15,7 +15,7 @@
 
 import { readFileSync } from 'node:fs';
 
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   clearSessions,
@@ -27,12 +27,22 @@ import {
   openSession,
   QUOTA_ENGAGES_AT,
   putChange,
+  runGeneration,
   SESSION_FAULTS,
   TERMINAL_SESSION_MS,
   watchedSessionCount,
 } from '../sessions';
 import type { PendingChange } from '@/model/worldstream-refine';
+import type { PlannerEmission } from '@/model/worldstream-intent';
 import { UNIDENTIFIED_CALLER } from '@/server/rate-limit';
+import { WORD_MASSING_NOTICE, isWordMassing } from '@/scene/massing-preview';
+import { ANSWER, PLAN, grammar } from '@/app/api/worldstream/__tests__/world-fixture';
+import { initialClientState, reduceEvent } from '../reducer';
+import { answerCache, answerKey, memoryAnswerStore, type AnswerCache } from '@/server/answer-cache';
+import { memoryLedger } from '@/server/spend-store';
+import { SpendCap, SpendRefusalError } from '@/server/spend-cap';
+import { PROMPT_VERSION } from '@/model/worldstream-prompt';
+import type { BlueprintEmitter } from '@/model/worldstream-repair';
 
 /** Půlnoc, ať se v aserci pozná hodina od milisekundy. */
 const T0 = 1_760_000_000_000;
@@ -909,5 +919,234 @@ describe('doktrína u kvóty říká, čím se kvóta doopravdy klíčuje', () =
       'x-vercel-forwarded-for',
     );
     expect(blok, 'doktrína u kvóty nepodmiňuje zdroj hodnotou VERCEL=1').toContain('VERCEL=1');
+  });
+});
+
+/**
+ * **Hmoty ze slov věty stojí dřív, než plánovač odpoví — a nepřežijí ho** (P21 T4).
+ *
+ * Plánovač odpovídá desítky vteřin a do té doby porotce neviděl nic. Odhad
+ * ze slov (`wordMassing`) jde do proudu **synchronně při přijetí relace**,
+ * s vlastní hláškou `WORD_MASSING_NOTICE`. Jakmile plánovač odpoví, jeho
+ * náhled ten odhad **nahradí celý**: odhad, který by přežil, vypadá jako
+ * bohatší svět a je to lež — proto se tu pinuje, že po odpovědi plánovače
+ * nezůstane v náhledu ani jedna identita `word-`.
+ */
+describe('hmoty ze slov věty před odpovědí plánovače', () => {
+  /** Plán fixtury se `sceneSpec`, protože `readPlannerEmission` ho bez `legacyPlan` vyžaduje. */
+  function ownPlan(): PlannerEmission {
+    const provenance = { kind: 'inferred' as const, reason: 'Word massing regression fixture' };
+    return { ...structuredClone(PLAN), sceneSpec: { version: 1, clarifications: [], relations: [],
+      requirements: PLAN.objects.map((o) => ({ id: o.stableId, description: o.label, priority: 'main', polarity: 'required', count: 1, instanceIds: [o.stableId], provenance })),
+      instances: PLAN.objects.map((o) => ({ stableId: o.stableId, requirementIds: [o.stableId], role: o.role, provenance, attributes: [], orientation: { description: 'upright', provenance } })) } };
+  }
+
+  it('první náhled nese WORD_MASSING_NOTICE a aspoň jednu hmotu, ještě než plánovač promluví', async () => {
+    const stored = openSession('word-first', 4021)!;
+    let calls = 0;
+    void runGeneration(stored, 'A cabin with a table and two chairs', { grammar: grammar(),
+      emit: () => { calls++; return new Promise(() => undefined); } });
+    // Synchronně: `runGeneration` ještě nedošel k prvnímu `await`.
+    const preview = stored.visualPreview!;
+    expect(preview.validation.limitations[0]).toBe(WORD_MASSING_NOTICE);
+    expect(isWordMassing(preview)).toBe(true);
+    expect(preview.objects.length).toBeGreaterThanOrEqual(1);
+    expect(preview.objects.every((o) => o.stableId.startsWith('word-'))).toBe(true);
+    const events = stored.session.events.all();
+    expect(events.map((e) => e.type).slice(0, 2)).toEqual(['session.accepted', 'visual.preview']);
+    expect(stored.session.phase).toBe('accepted');
+    await Promise.resolve();
+    expect(calls).toBe(1);
+  });
+
+  it('náhled plánovače odhad ze slov nahradí celý — žádná identita `word-` nepřežije', async () => {
+    const stored = openSession('word-replaced', 4021)!;
+    let calls = 0, finish!: (value: unknown) => void;
+    // Věta fixtury obsahuje „mast", takže odhad ze slov a plánovač míří na
+    // tentýž objekt pod různými identitami — přesně případ, kdy by přeživší
+    // `word-mast` vedle `ironMast` zdvojil svět.
+    const pending = runGeneration(stored, PLAN.intent.setting, { grammar: grammar(), emit: async () => {
+      calls++; return calls === 1 ? ownPlan() : new Promise((resolve) => { finish = resolve; });
+    } });
+    expect(stored.visualPreview!.objects.some((o) => o.stableId === 'word-mast-1')).toBe(true);
+    await vi.waitFor(() => expect(isWordMassing(stored.visualPreview!)).toBe(false));
+    const preview = stored.visualPreview!;
+    expect(preview.objects.some((o) => o.stableId.startsWith('word-'))).toBe(false);
+    expect(preview.objects.map((o) => o.stableId)).toEqual(PLAN.objects.map((o) => o.stableId));
+    expect(preview.validation.limitations).not.toContain(WORD_MASSING_NOTICE);
+    // Rámec plánovače jde do téhož slotu `visual.preview`, takže klient nemá
+    // co slučovat — poslední rámec je celý náhled.
+    const previews = stored.session.events.all().filter((e) => e.type === 'visual.preview');
+    expect(previews).toHaveLength(2);
+    const last = (previews[1]!.payload as { preview: typeof preview }).preview;
+    expect(last.objects.some((o) => o.stableId.startsWith('word-'))).toBe(false);
+    // Klient to přečte stejně: reducer bere `visual.preview` už ve fázi
+    // `accepted` (dřív jen v `intent`) a rámec plánovače ho přepíše celý.
+    let state = initialClientState();
+    for (const event of stored.session.events.all()) {
+      const step = reduceEvent(state, event); if (!step.ok) throw new Error(step.fault); state = step.state;
+      if (event.type === 'visual.preview' && state.phase === 'accepted') expect(isWordMassing(state.visualPreview!)).toBe(true);
+    }
+    expect(state.phase).toBe('intent');
+    expect(state.visualPreview!.objects.some((o) => o.stableId.startsWith('word-'))).toBe(false);
+    finish(ANSWER); await pending;
+    expect(stored.session.phase).toBe('world'); expect(stored.visualPreview).toBeNull();
+  });
+
+  it('věta bez známého podstatného jména odhad nevydá a relace běží jako dřív', async () => {
+    const stored = openSession('word-none', 4021)!;
+    let calls = 0;
+    await runGeneration(stored, 'Something cozy.', { grammar: grammar(), emit: async () => (++calls === 1 ? ownPlan() : ANSWER) });
+    const events = stored.session.events.all();
+    const firstPreview = events.findIndex((e) => e.type === 'visual.preview');
+    const intent = events.findIndex((e) => e.type === 'intent.ready');
+    expect(intent).toBeGreaterThan(-1);
+    // Žádný náhled před `intent.ready`: nebylo z čeho hádat.
+    expect(firstPreview === -1 || firstPreview > intent).toBe(true);
+    expect(stored.session.phase).toBe('world');
+    expect(stored.blueprint).not.toBeNull();
+  });
+});
+
+/**
+ * **Doslova stejná věta podruhé nestojí ani jedno volání** (P16 T6).
+ *
+ * Emitor tu rezervuje u skutečného `SpendCap` nad knihou v paměti, aby se
+ * počítadlo volání soudilo tam, kde bydlí doopravdy — ne na čítači testu.
+ * Zásah cache se pozná trojím: kniha stojí, `reused.savedCalls` je 2 a svět
+ * je týž až na `sessionSeed`, které píše relace, ne model.
+ */
+describe('cache odpovědí: táž věta podruhé nevolá model', () => {
+  const SENTENCE = 'A cabin with a table and two chairs';
+
+  function ownPlan(): PlannerEmission {
+    const provenance = { kind: 'inferred' as const, reason: 'Answer cache regression fixture' };
+    return { ...structuredClone(PLAN), sceneSpec: { version: 1, clarifications: [], relations: [],
+      requirements: PLAN.objects.map((o) => ({ id: o.stableId, description: o.label, priority: 'main', polarity: 'required', count: 1, instanceIds: [o.stableId], provenance })),
+      instances: PLAN.objects.map((o) => ({ stableId: o.stableId, requirementIds: [o.stableId], role: o.role, provenance, attributes: [], orientation: { description: 'upright', provenance } })) } };
+  }
+
+  /** Emitor, který každé volání rezervuje a vyrovná u stropu nad vlastní knihou. */
+  function paidEmitter() {
+    const ledger = memoryLedger();
+    const cap = new SpendCap({ enabled: true, capUsd: 5, callCap: 200 }, null, ledger);
+    let calls = 0;
+    const emit: BlueprintEmitter = async () => {
+      const reservation = await cap.reserve(0.01);
+      if (!reservation.ok) throw new SpendRefusalError(reservation);
+      calls += 1;
+      await reservation.settle(0.001);
+      return calls % 2 === 1 ? ownPlan() : ANSWER;
+    };
+    return { emit, calls: () => calls, ledgerCalls: async () => (await ledger.add(0, 0)).calls };
+  }
+
+  function answersFor(sentence: string, cache: AnswerCache) {
+    return { cache, key: answerKey({ sentence, promptVersion: PROMPT_VERSION, model: 'test-model', effort: { planner: 'low', compiler: 'high' }, endpoint: 'https://model.invalid' }) };
+  }
+
+  function strip(blueprint: unknown) {
+    const { sessionSeed: _seed, ...rest } = blueprint as Record<string, unknown>;
+    return rest;
+  }
+
+  it('druhá relace se stejnou větou dostane týž svět, `reused.savedCalls` 2 a kniha zůstane na dvou voláních', async () => {
+    const cache = answerCache(memoryAnswerStore());
+    const paid = paidEmitter();
+
+    const first = openSession('cache-first', 4021)!;
+    await runGeneration(first, SENTENCE, { grammar: grammar(), emit: paid.emit, answers: answersFor(SENTENCE, cache) });
+    expect(first.session.phase).toBe('world');
+    expect(first.reused ?? null).toBeNull();
+    expect(paid.calls()).toBe(2);
+    expect(await paid.ledgerCalls()).toBe(2);
+
+    // Jiný seed, jiná relace, mezery a velikost písmen navíc — klíč je z normalizované věty.
+    const second = openSession('cache-second', 777)!;
+    await runGeneration(second, `  ${SENTENCE.toUpperCase()}  `, { grammar: grammar(), emit: paid.emit, answers: answersFor(SENTENCE, cache) });
+    expect(second.session.phase).toBe('world');
+    expect(paid.calls(), 'zásah cache zavolal model').toBe(2);
+    expect(await paid.ledgerCalls(), 'zásah cache rezervoval u stropu').toBe(2);
+    expect(second.reused?.savedCalls).toBe(2);
+    expect(typeof second.reused?.at).toBe('string');
+    expect(strip(second.blueprint)).toEqual(strip(first.blueprint));
+    expect((second.blueprint as { sessionSeed: number }).sessionSeed).toBe(777);
+
+    // Zásah jde ven rámcem `blueprint.ready`, takže ho klient přečte bez snapshotu.
+    const ready = second.session.events.all().find((e) => e.type === 'blueprint.ready')!;
+    expect((ready.payload as { reused?: unknown }).reused).toEqual(second.reused);
+    let state = initialClientState();
+    for (const event of second.session.events.all()) {
+      const step = reduceEvent(state, event); if (!step.ok) throw new Error(step.fault); state = step.state;
+    }
+    expect(state.reused).toEqual(second.reused);
+    // První relace o žádném zásahu nemluví — ani v rámci, ani ve stavu klienta.
+    const firstReady = first.session.events.all().find((e) => e.type === 'blueprint.ready')!;
+    expect((firstReady.payload as { reused?: unknown }).reused).toBeUndefined();
+  });
+
+  /**
+   * **Věta s jinou velikostí písmen je zásah i tehdy, když plán cituje
+   * zadání doslova.** `readSceneSpec` odmítá `requested` citaci, která není
+   * substring věty — a klíč je z normalizované věty, takže by se `A Table`
+   * proti `a table` rozpadlo až v replayi a zaplatilo dvakrát (nález revize
+   * nad `7a3808f`). Uložený plán se proto soudí proti VĚTĚ, nad kterou
+   * vznikl, ne proti té nové; svět se pak stejně staví nad novým seedem.
+   */
+  it('plán s doslovnou citací zadání je zásah i pro větu psanou jinak', async () => {
+    const quoted = 'A cabin with a Table';
+    const plan = ownPlan();
+    const spec = plan.sceneSpec!;
+    const cited: PlannerEmission = { ...plan, sceneSpec: { ...spec,
+      requirements: spec.requirements.map((r, i) => (i === 0 ? { ...r, provenance: { kind: 'requested' as const, quote: 'a Table' } } : r)) } };
+    const cache = answerCache(memoryAnswerStore());
+    let calls = 0;
+    const emit: BlueprintEmitter = async () => (++calls % 2 === 1 ? cited : ANSWER);
+
+    const first = openSession('cache-quote-first', 4021)!;
+    await runGeneration(first, quoted, { grammar: grammar(), emit, answers: answersFor(quoted, cache) });
+    expect(first.session.phase).toBe('world');
+    expect(calls).toBe(2);
+
+    const second = openSession('cache-quote-second', 99)!;
+    await runGeneration(second, `  ${quoted.toLowerCase()}  `, { grammar: grammar(), emit, answers: answersFor(quoted, cache) });
+    expect(second.session.phase).toBe('world');
+    expect(calls, 'citace zadání s jinou velikostí písmen udělala z zásahu miss').toBe(2);
+    expect(second.reused?.savedCalls).toBe(2);
+  });
+
+  it('jiná věta je miss a platí se znovu', async () => {
+    const cache = answerCache(memoryAnswerStore());
+    const paid = paidEmitter();
+    const first = openSession('cache-a', 4021)!;
+    await runGeneration(first, SENTENCE, { grammar: grammar(), emit: paid.emit, answers: answersFor(SENTENCE, cache) });
+    const other = openSession('cache-b', 4021)!;
+    await runGeneration(other, 'A lighthouse on black sand', { grammar: grammar(), emit: paid.emit, answers: answersFor('A lighthouse on black sand', cache) });
+    expect(other.session.phase).toBe('world');
+    expect(paid.calls()).toBe(4);
+    expect(other.reused ?? null).toBeNull();
+  });
+
+  it('neúspěšná generace se do cache nezapíše', async () => {
+    const cache = answerCache(memoryAnswerStore());
+    const answers = answersFor(SENTENCE, cache);
+    const failed = openSession('cache-fail', 4021)!;
+    let calls = 0;
+    await runGeneration(failed, SENTENCE, { grammar: grammar(), answers, emit: async () => (++calls === 1 ? ownPlan() : { geometry: 'not a program' }) });
+    expect(failed.session.phase).toBe('failed');
+    expect(await cache.read(answers.key)).toBeNull();
+  });
+
+  it('záznam, který branou už neprojde, je miss — relace jede živě a záznam se přepíše', async () => {
+    const cache = answerCache(memoryAnswerStore());
+    const answers = answersFor(SENTENCE, cache);
+    await cache.write(answers.key, { sentence: SENTENCE, planner: { intent: 'stale' }, compiler: {} });
+    const paid = paidEmitter();
+    const stored = openSession('cache-stale', 4021)!;
+    await runGeneration(stored, SENTENCE, { grammar: grammar(), emit: paid.emit, answers });
+    expect(stored.session.phase).toBe('world');
+    expect(paid.calls()).toBe(2);
+    expect(stored.reused ?? null).toBeNull();
+    expect((await cache.read(answers.key))?.compiler).toEqual(ANSWER);
   });
 });

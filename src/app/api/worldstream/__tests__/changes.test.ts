@@ -37,6 +37,7 @@ import { BODY_DEADLINE_MS, MAX_CONCURRENT_BODY_READS_UNIDENTIFIED, readBody } fr
 import type { UpstreamRequest } from '@/model/prompt';
 import { resetFaultLog } from '@/server/public-faults';
 import { DEFAULT_CAP_USD, SpendRefusalError } from '@/server/spend-cap';
+import { MAX_HERO_SHAPES } from '@/worldstream/schema';
 import {
   callerKey,
   MAX_REQUESTS_PER_WINDOW,
@@ -44,13 +45,16 @@ import {
   resetRateWindows,
   takeRateSlot,
 } from '@/server/rate-limit';
-import type { PendingChange, RefinePlan } from '@/model/worldstream-refine';
+import { readAdditionEmission, type PendingChange, type RefinePlan } from '@/model/worldstream-refine';
 import {
   clearSessions,
   getSession,
   MAX_LIVE_SESSIONS,
   openSession,
   putChange,
+  peekChange,
+  newSessionSeed,
+  runGeneration,
   type StoredSession,
 } from '@/worldstream/sessions';
 
@@ -66,8 +70,10 @@ import {
   slotsDetail,
 } from '../sessions/route';
 import { POST as commitChange } from '../sessions/[sessionId]/changes/[changeId]/commit/route';
+import { POST as restoreComparison } from '../sessions/[sessionId]/comparison/restore/route';
 import { POST as previewChange, createChange } from '../sessions/[sessionId]/changes/route';
-import { ANSWER, generated } from './world-fixture';
+import { ANSWER, generated, grammar } from './world-fixture';
+import { stormBellAnswers } from '../../../../../e2e/fixtures/storm-bell';
 
 /* ------------------------------------------------------------------ *
  * Volání route.
@@ -137,6 +143,7 @@ function plan(overrides: Partial<RefinePlan> = {}): RefinePlan {
     shape: null,
     behavior: [],
     appearance: [],
+    addition: null,
     ...overrides,
   };
 }
@@ -225,13 +232,85 @@ describe('preview druhé věty', () => {
   it('nejasná věta vrátí kandidáty, a to i bez klíče k modelu', async () => {
     // Grounding je před modelem. Kdyby byl za ním, tahle odpověď by na nasazení
     // bez `.env` neexistovala a porotce by místo nabídky dostal 503.
+    // **Nejasná** znamená nerozhodnutá — `the mast` i `the flat` jsou stejně
+    // dlouhé. Věta bez jakéhokoli cíle už nejasná není: od P21 T8 zakládá objekt.
     const stored = await generated();
-    const response = await preview(stored.session.sessionId, { prompt: 'make it nicer' }, null);
+    const response = await preview(stored.session.sessionId, { prompt: 'raise the mast and the flat' }, null);
     expect(response.status).toBe(200);
     const read = await body(response);
     expect(read.outcome).toBe('AMBIGUOUS');
-    expect(read.reason).toBe('NO_MATCH');
+    expect(read.reason).toBe('AMBIGUOUS');
     expect(read.candidates).toHaveLength(2);
+  });
+
+  it('věta bez cíle ve světě jde k modelu jako přidání, ne zpátky jako nabídka', async () => {
+    // P21 T8: `NO_MATCH` už není odmítnutí. Bez modelu a bez skladu je to 503
+    // `NO_AUTHORED_CHANGE` — a to je pravda o nasazení, ne o větě.
+    const stored = await generated();
+    const asked: string[] = [];
+    const response = await preview(stored.session.sessionId, { prompt: 'add a lantern at the far edge' }, (request) => {
+      asked.push(request.system);
+      return Promise.resolve({});
+    });
+    expect(asked).toHaveLength(1);
+    expect(asked[0]).toContain('ONE new object');
+    // Prázdná odpověď modelu je odmítnutí přidání, ne nabídka kandidátů.
+    expect(await body(response)).toMatchObject({ outcome: 'REJECTED', reason: 'WRONG_SHAPE' });
+
+    const withoutModel = await preview(stored.session.sessionId, { prompt: 'add a lantern at the far edge' }, null);
+    expect(withoutModel.status).toBe(503);
+    expect((await body(withoutModel)).error).toMatchObject({ code: 'NO_AUTHORED_CHANGE' });
+  });
+
+  /**
+   * P21 T9: věta se řeže na kusy **před** groundingem a před modelem.
+   * Věta bez obsahu projde moderací a model by na ni objekt vymyslel — tady
+   * je odmítnutá zadarmo. Dlouhá věta jde modelu po prvním kusu a zbytek se
+   * vrací porotci jako fronta, ne tiše zahozený.
+   */
+  it('věta bez obsahu je NO_CONTENT a model se nevolá', async () => {
+    const stored = await generated();
+    const asked: string[] = [];
+    const response = await preview(stored.session.sessionId, { prompt: 'ok add something nice please' }, (request) => {
+      asked.push(request.user);
+      return Promise.resolve(LANTERN_ANSWER);
+    });
+    expect(response.status).toBe(200);
+    expect(await body(response)).toMatchObject({ outcome: 'REJECTED', reason: 'NO_CONTENT' });
+    expect(asked).toHaveLength(0);
+    expect(stored.session.events.all().at(-1)).toMatchObject({ type: 'patch.rejected', payload: { reason: 'NO_CONTENT' } });
+  });
+
+  it('dlouhá věta jde modelu po prvním kusu a zbytek se vrací jako fronta', async () => {
+    const stored = await generated();
+    const asked: string[] = [];
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'add a lantern at the far edge, then put a bell on the mast. When the bell rings, the lantern lights up.' },
+      (request) => {
+        asked.push(request.user);
+        return Promise.resolve(LANTERN_ANSWER);
+      },
+    );
+    expect(asked).toHaveLength(1);
+    expect(asked[0]).toContain('add a lantern at the far edge');
+    expect(asked[0]).not.toContain('bell');
+    expect(await body(response)).toMatchObject({
+      outcome: 'PREVIEW',
+      target: { stableId: 'lantern' },
+      pieces: { asked: 'add a lantern at the far edge', remaining: ['put a bell on the mast', 'When the bell rings, the lantern lights up'] },
+    });
+  });
+
+  it('věta o jednom kusu jde modelu doslova a `pieces` v odpovědi není', async () => {
+    const stored = await generated();
+    const asked: string[] = [];
+    const response = await preview(stored.session.sessionId, { prompt: 'add a lantern at the far edge.' }, (request) => {
+      asked.push(request.user);
+      return Promise.resolve(LANTERN_ANSWER);
+    });
+    expect(asked[0]).toContain('add a lantern at the far edge.');
+    expect(await body(response)).not.toHaveProperty('pieces');
   });
 
   it('jasná věta bez nakonfigurovaného modelu je 503, relace zůstane živá', async () => {
@@ -309,7 +388,7 @@ describe('preview druhé věty', () => {
     const read = await body(response);
     expect(read.outcome).toBe('PREVIEW');
     expect(read.target).toMatchObject({ stableId: 'ironMast' });
-    expect(read.scope).toEqual({ shape: true, behavior: 0, appearance: 0 });
+    expect(read.scope).toEqual({ shape: true, behavior: 0, appearance: 0, addition: false });
     expect(read.preserved).toEqual(['the salt flat']);
 
     // **Žádný meshing před commitem.** Podoba stojí tam, kde stála, revize se
@@ -852,6 +931,50 @@ describe('preview druhé věty', () => {
  * ------------------------------------------------------------------ */
 
 describe('commit druhé věty', () => {
+  it.each([false, true])('A4 pre-commit comparison is atomic (invalid fork=%s)', async invalid => {
+    const stored = await generated();
+    const doc = worldOf(stored);
+    const change = pending(stored, plan({ behavior: [{ op: 'replace',
+      path: '/sim/rules/guard/condition', value: { kind: 'stateIs', target: 'saltFlat', state: 'dry' } }] }));
+    const before = JSON.stringify(stored.blueprint);
+    const response = await commitChange(new Request('http://127.0.0.1/commit', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ base: { simRevision: doc.simRevision, simHash: doc.simHash,
+        comparisonRevision: 0, inputCount: 0 }, inputs: [], forkTick: invalid ? 2 : 0, observationTick: 1 }),
+    }), { params: Promise.resolve({ sessionId: stored.session.sessionId, changeId: change.changeId }) });
+    const result = await body(response);
+    if (invalid) {
+      expect(response.status).toBe(422);
+      expect(result.error).toMatchObject({ code: 'COMPARISON_REJECTED' });
+      expect(JSON.stringify(stored.blueprint)).toBe(before);
+      expect(peekChange(stored, change.changeId)).not.toBeNull();
+    } else {
+      expect(result.outcome, JSON.stringify(result)).toBe('COMMITTED');
+      expect(result.acceptedBlueprint).toEqual(stored.blueprint);
+      expect(result.comparison).toMatchObject({ intervention: { kind: 'condition', ruleId: 'guard' },
+        originalAtFork: { tick: 0 }, changedAtFork: { tick: 0 } });
+      expect(worldOf(stored).simRevision).toBe(doc.simRevision + 1);
+      const accepted = worldOf(stored);
+      const geometry = stored.blueprint!.objects;
+      const restore = (payload: unknown) => restoreComparison(new Request('http://127.0.0.1/restore', {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload),
+      }), { params: Promise.resolve({ sessionId: stored.session.sessionId }) });
+      const expected = { simRevision: accepted.simRevision, lookRevision: accepted.lookRevision, simHash: accepted.simHash };
+      expect((await restore({ ...expected, simHash: 'stale' })).status).toBe(409);
+      expect(worldOf(stored)).toBe(accepted);
+      expect((await restore({ ...expected, original: doc })).status).toBe(400);
+      expect(worldOf(stored)).toBe(accepted);
+      const restored = await restore(expected);
+      expect(restored.status).toBe(200);
+      expect((await body(restored)).acceptedBlueprint).toEqual(stored.blueprint);
+      expect(worldOf(stored).sim).toEqual(doc.sim);
+      expect(worldOf(stored).simRevision).toBe(accepted.simRevision + 1);
+      expect(stored.blueprint!.objects).toBe(geometry);
+      expect(stored.comparisonOrigin).toBeNull();
+      expect((await restore(expected)).status).toBe(409);
+    }
+  });
+
   it('neznámé preview je 404', async () => {
     const stored = await generated();
     const response = await commit(stored.session.sessionId, 'never-existed');
@@ -1392,14 +1515,14 @@ describe('razítková brána stojí na tom, že se čas na server nedostal', () 
     return found;
   }
 
-  function importClosure(entry: string, boundary?: string): Set<string> {
+  function importClosure(entry: string, boundary?: string | readonly string[]): Set<string> {
     const seen = new Set<string>();
     const stack = [entry];
     while (stack.length > 0) {
       const next = stack.pop() as string;
       if (seen.has(next)) continue;
       seen.add(next);
-      if (next === boundary) continue;
+      if (typeof boundary === 'string' ? next === boundary : boundary?.includes(next)) continue;
       stack.push(...resolvedImports(next));
     }
     return seen;
@@ -1416,14 +1539,22 @@ describe('razítková brána stojí na tom, že se čas na server nedostal', () 
     );
   });
 
-  it('legacy dveře nedosáhnou na přetáčení času mimo oddělenou project transakci', () => {
+  it('server replay remains behind pure comparison or project boundaries', () => {
     // T8 privately replays a source project, never rolling back the legacy
     // blueprint or its rejectedAt stamps. Keep checking the FULL closure for
     // blueprint writers below; do not exempt project code from that invariant.
     expect(
-      routes.filter((route) => importClosure(route, 'src/worldstream/evidence-commit.ts').has(REBRANCH)),
+      routes.filter((route) => importClosure(route, ['src/worldstream/evidence-commit.ts',
+        ...(route.includes('/changes/[changeId]/commit/') ? ['src/worldstream/accepted-branch.ts'] : [])]).has(REBRANCH)),
       'přetáčení času dostalo serverové dveře, takže svět umí jít na dřívější revizi a razítková brána se nad ním znovu otevře — otevři T22-rewindrevision',
     ).toEqual([]);
+  });
+
+  it('A4 comparison cannot access the mutable session or blueprint registry', () => {
+    const comparison = importClosure('src/worldstream/accepted-branch.ts');
+    expect(comparison.has('src/worldstream/sessions.ts')).toBe(false);
+    expect(comparison.has('src/worldstream/session.ts')).toBe(false);
+    expect(comparison.has('src/worldstream/snapshot-store.ts')).toBe(false);
   });
 
   it('project transakce nemá přístup k mutable legacy relaci ani registru blueprintů', () => {
@@ -2125,5 +2256,355 @@ describe('strop na frekvenci dorazí až ke dveřím', () => {
       for (const h of held) h.finish();
       await Promise.all(pending);
     }
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Přidání nového objektu (P21 T8)
+ * ------------------------------------------------------------------ */
+
+/**
+ * Lucerna, kterou svět z fixtury nemá. Objekt bez `source` — tak ho píše model
+ * a `readAdditionEmission` mu zdroj dosadí z tvaru — plus vlastní socket,
+ * kvádr a entita, všechno pod klíčem, který novému objektu patří.
+ */
+const LANTERN_ANSWER = {
+  summary: 'a lantern stands at the far edge of the flat',
+  object: {
+    stableId: 'lantern',
+    label: 'the lantern',
+    synonyms: ['the lamp', 'the light'],
+    role: 'prop',
+    targetBounds: { min: [2.6, 0, 0.6], max: [3.4, 0.9, 1.4] },
+    importance: 1,
+  },
+  shape: {
+    shapeId: 'lanternBody',
+    stableId: 'lantern',
+    nodes: [{ kind: 'prism', sides: 6, radius: 0.3, height: 0.8 }],
+    root: 0,
+    targetBounds: { min: [-0.4, -0.45, -0.4], max: [0.4, 0.45, 0.4] },
+    anchors: [],
+    materialIntent: 'metal',
+    priority: 5,
+  },
+  behavior: [
+    { op: 'add', path: '/sim/sockets/lanternPad', value: [3, 1] },
+    { op: 'add', path: '/sim/collisionAabb/lantern', value: [3, 1, 1, 1] },
+    { op: 'add', path: '/sim/entities/lantern', value: { role: 'prop', socket: 'lanternPad', state: 'unlit' } },
+  ],
+};
+
+/** Plán přidání přečtený **toutéž** funkcí, kterou ho čte route. */
+function additionPlan(stored: StoredSession, answer: Record<string, unknown> = LANTERN_ANSWER): RefinePlan {
+  const read = readAdditionEmission(answer, stored.blueprint!);
+  if (!read.ok) throw new Error(`${read.reason}: ${read.detail}`);
+  return read.value;
+}
+
+/** Co se přidáním nesmí hnout: staré objekty, staré tvary a stav světa. */
+function untouchedOf(stored: StoredSession) {
+  const blueprint = stored.blueprint!;
+  return {
+    objects: blueprint.objects,
+    shapes: blueprint.shapes,
+    entities: JSON.stringify((worldOf(stored).sim as { entities: unknown }).entities),
+    bytes: JSON.stringify(blueprint),
+  };
+}
+
+describe('přidání nového objektu', () => {
+  // Skutečné UI posílá `comparison: true` vždycky (page.tsx); přidání se nesmí
+  // dostat do srovnávací větve, protože svět před ním ten objekt neměl.
+  it('preview se srovnáním přidání nesrovnává a vrátí PREVIEW', async () => {
+    const stored = await generated();
+    const previewed = await body(
+      await preview(stored.session.sessionId, { prompt: 'add a lantern at the far edge', comparison: true }, () => Promise.resolve(LANTERN_ANSWER)),
+    );
+    expect(previewed, JSON.stringify(previewed)).toMatchObject({
+      outcome: 'PREVIEW',
+      target: { stableId: 'lantern' },
+      scope: { addition: true },
+    });
+  });
+
+  // Rozhodnutí, ne náhoda: UI srovnává každou úpravu pravidel a srovnání
+  // nemůže zároveň měnit geometrii – plán s tvarem I pravidly se proto odmítá
+  // už v preview a nic se neuloží (nález test-gap revize, 20. 9. 2026).
+  it('preview se srovnáním odmítne plán, který mění tvar i pravidla, a nic neuloží', async () => {
+    const stored = await generated();
+    const before = stored.session.events.sequence;
+    const response = await preview(
+      stored.session.sessionId,
+      { prompt: 'turn the mast into woven metal', comparison: true },
+      async () => ({
+        summary: 'the mast is rewoven and the salt goes dry',
+        shape: WOVEN_MAST,
+        behavior: [{ op: 'replace', path: '/sim/rules/guard/condition', value: { kind: 'stateIs', target: 'saltFlat', state: 'dry' } }],
+        appearance: [],
+      }),
+    );
+    const read = await body(response);
+    expect(response.status, JSON.stringify(read)).toBe(422);
+    expect(read.error).toMatchObject({ code: 'COMPARISON_REJECTED', message: 'A rule comparison cannot also replace geometry.' });
+    expect(stored.session.events.sequence, 'odmítnuté preview nesmí vydat rámec').toBe(before);
+  });
+
+  it('preview odmítne přidání, které sahá na cizí objekt, pod ALLOWED_PATH', async () => {
+    const stored = await generated();
+    const answer = {
+      ...LANTERN_ANSWER,
+      behavior: [...LANTERN_ANSWER.behavior, { op: 'replace', path: '/sim/entities/surveyor/state', value: 'lit' }],
+    };
+    const previewed = await body(await preview(stored.session.sessionId, { prompt: 'add a lantern at the far edge' }, () => Promise.resolve(answer)));
+    expect(previewed, JSON.stringify(previewed)).toMatchObject({ outcome: 'REJECTED', reason: 'ALLOWED_PATH' });
+    expect(stored.session.events.all().at(-1)).toMatchObject({ type: 'patch.rejected', payload: { reason: 'ALLOWED_PATH' } });
+  });
+
+  it('věta bez cíle projde previewm i commitem a staré objekty se nehnou', async () => {
+    const stored = await generated();
+    const before = untouchedOf(stored);
+
+    const previewed = await body(await preview(stored.session.sessionId, { prompt: 'add a lantern at the far edge' }, () => Promise.resolve(LANTERN_ANSWER)));
+    expect(previewed).toMatchObject({
+      outcome: 'PREVIEW',
+      target: { stableId: 'lantern', label: 'the lantern' },
+      scope: { shape: false, behavior: 3, appearance: 0, addition: true },
+      basedOn: { representation: 0, sim: 0, look: 0 },
+    });
+    // Preview do světa nezapsalo nic — ani do registru podob.
+    expect(JSON.stringify(stored.blueprint)).toBe(before.bytes);
+    expect(stored.session.revisionOf('lantern')).toBeNull();
+
+    const read = await body(await commit(stored.session.sessionId, previewed.changeId as string));
+    expect(read, JSON.stringify(read)).toMatchObject({ outcome: 'COMMITTED', stableId: 'lantern', applied: ['sim'], representation: null });
+    expect(read.certificate).toMatchObject({ verdict: 'CERTIFIED' });
+
+    const blueprint = stored.blueprint!;
+    // Nový objekt a jeho tvar jsou ve světě a ukazují na sebe.
+    expect(blueprint.objects.map((object) => object.stableId)).toEqual(['saltFlat', 'ironMast', 'lantern']);
+    expect(blueprint.objects[2]).toMatchObject({ source: { kind: 'shape', shapeId: 'lanternBody' } });
+    expect(blueprint.shapes.map((shape) => shape.shapeId)).toEqual(['mastPost', 'lanternBody']);
+    // Dosavadní objekty a tvary jdou dál **týmiž** referencemi, ne kopiemi.
+    before.objects.forEach((object, index) => expect(blueprint.objects[index]).toBe(object));
+    before.shapes.forEach((shape, index) => expect(blueprint.shapes[index]).toBe(shape));
+    // Stav dosavadních entit je bajt po bajtu týž; přibyla jen lucerna.
+    const entities = (worldOf(stored).sim as { entities: Record<string, unknown> }).entities;
+    const { lantern, ...others } = entities;
+    expect(JSON.stringify(others)).toBe(before.entities);
+    expect(lantern).toEqual({ role: 'prop', socket: 'lanternPad', state: 'unlit' });
+    expect(worldOf(stored).simRevision).toBe(1);
+    // Registr podob: nový objekt na nule, ty staré tam, kde byly.
+    expect(stored.session.revisionOf('lantern')).toBe(0);
+    expect(stored.session.revisionOf('ironMast')).toBe(0);
+    expect(stored.session.revisionOf('saltFlat')).toBe(0);
+    // Preview se commitem spotřebovalo.
+    expect(peekChange(stored, previewed.changeId as string)).toBeNull();
+  });
+
+  it('druhé přidání téhož jména je IDENTITY_TAKEN na commitu, i když preview vzniklo dřív', async () => {
+    const stored = await generated();
+    // Obě preview vznikla nad světem bez lucerny, takže obě prošla čtením.
+    const first = pending(stored, additionPlan(stored), 'first');
+    const second = pending(stored, additionPlan(stored), 'second');
+
+    expect((await body(await commit(stored.session.sessionId, first.changeId))).outcome).toBe('COMMITTED');
+    const after = untouchedOf(stored);
+
+    const read = await body(await commit(stored.session.sessionId, second.changeId));
+    expect(read.outcome).toBe('REJECTED');
+    expect(read.rejections).toMatchObject([{ reason: 'IDENTITY_TAKEN' }]);
+    expect(JSON.stringify(stored.blueprint)).toBe(after.bytes);
+    expect(stored.session.revisionOf('lantern')).toBe(0);
+  });
+
+  it('přidání, které sáhne na cizí entitu, je ALLOWED_PATH a ve světě není ani bajt', async () => {
+    const stored = await generated();
+    const before = untouchedOf(stored);
+    const change = pending(stored, additionPlan(stored, {
+      ...LANTERN_ANSWER,
+      behavior: [...LANTERN_ANSWER.behavior, { op: 'replace', path: '/sim/entities/surveyor/state', value: 'lit' }],
+    }));
+
+    const read = await body(await commit(stored.session.sessionId, change.changeId));
+    expect(read.outcome).toBe('REJECTED');
+    expect(read.rejections).toMatchObject([{ reason: 'ALLOWED_PATH', pointer: '/sim/entities/surveyor/state' }]);
+    expect(JSON.stringify(stored.blueprint)).toBe(before.bytes);
+    expect(stored.session.revisionOf('lantern')).toBeNull();
+    // Odmítnutí preview nespálí — platí i pro přidání.
+    expect(peekChange(stored, change.changeId)).not.toBeNull();
+  });
+
+  it('přidání bez jediné operace je čistě vizuální objekt: řetěz pravidel se nespouští a sim stojí', async () => {
+    // Nález revize `bae05c0`: `readAdditionEmission` prázdné `behavior` přijme
+    // a route pak obejde router, staleRevision i svědka. To je záměr — objekt
+    // bez entity v1 povoluje — ale nikdo to nepřipíchl.
+    const stored = await generated();
+    const before = untouchedOf(stored);
+    const hashBefore = worldOf(stored).simHash;
+    const change = pending(stored, additionPlan(stored, { ...LANTERN_ANSWER, behavior: [] }));
+
+    const read = await body(await commit(stored.session.sessionId, change.changeId));
+    expect(read).toMatchObject({ outcome: 'COMMITTED', stableId: 'lantern', applied: [], representation: null });
+    expect(stored.blueprint!.objects.map((object) => object.stableId)).toEqual(['saltFlat', 'ironMast', 'lantern']);
+    expect(stored.blueprint!.shapes.map((shape) => shape.shapeId)).toEqual(['mastPost', 'lanternBody']);
+    expect(JSON.stringify((worldOf(stored).sim as { entities: unknown }).entities)).toBe(before.entities);
+    expect(worldOf(stored).simRevision).toBe(0);
+    expect(worldOf(stored).simHash).toBe(hashBefore);
+    expect(stored.session.revisionOf('lantern')).toBe(0);
+  });
+
+  it('plný rozpočet tvarů mezi preview a commitem odmítne s ukazatelem na /shapes, ne /objects', async () => {
+    const stored = await generated();
+    const change = pending(stored, additionPlan(stored));
+    // Svět se mezitím naplnil až po strop — jinou cestou, než je tenhle commit.
+    const filler = Array.from({ length: MAX_HERO_SHAPES - stored.blueprint!.shapes.length }, (_, i) => ({
+      ...stored.blueprint!.shapes[0], shapeId: `filler${i}`, stableId: `fillerObject${i}`,
+    }));
+    stored.blueprint = { ...stored.blueprint!, shapes: [...stored.blueprint!.shapes, ...filler] };
+    const before = untouchedOf(stored);
+
+    const read = await body(await commit(stored.session.sessionId, change.changeId));
+    expect(read.outcome).toBe('REJECTED');
+    expect(read.rejections).toMatchObject([{ reason: 'BLUEPRINT_INVALID', pointer: '/shapes' }]);
+    expect(JSON.stringify(stored.blueprint)).toBe(before.bytes);
+    expect(stored.session.revisionOf('lantern')).toBeNull();
+    expect(peekChange(stored, change.changeId)).not.toBeNull();
+  });
+
+  it('když registr podob nový objekt odmítne, preview i svět zůstanou tam, kde byly', async () => {
+    // Pořadí zápisů: registr → spotřeba preview → dokument. Výjimka registru
+    // (dnes bez volajícího, který by ji vyvolal) nesmí nechat půlku commitu.
+    const stored = await generated();
+    const before = untouchedOf(stored);
+    const change = pending(stored, additionPlan(stored));
+    vi.spyOn(stored.session, 'registerBlueprint').mockImplementation(() => { throw new Error('registry refused'); });
+
+    await expect(commit(stored.session.sessionId, change.changeId)).rejects.toThrow('registry refused');
+    expect(JSON.stringify(stored.blueprint)).toBe(before.bytes);
+    expect(peekChange(stored, change.changeId)).not.toBeNull();
+  });
+
+  it('přidání se srovnáním dvou budoucností je 422 a svět se nehne', async () => {
+    const stored = await generated();
+    const before = untouchedOf(stored);
+    const doc = worldOf(stored);
+    const change = pending(stored, additionPlan(stored));
+
+    const response = await commitChange(new Request('http://127.0.0.1/commit', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ base: { simRevision: doc.simRevision, simHash: doc.simHash, comparisonRevision: 0, inputCount: 0 },
+        inputs: [], forkTick: 0, observationTick: 1 }),
+    }), { params: Promise.resolve({ sessionId: stored.session.sessionId, changeId: change.changeId }) });
+    expect(response.status).toBe(422);
+    // Důvod je přidání samo, ne až odmítnutí zásahu uvnitř srovnání — bez téhle
+    // brány by řetěz srovnání vrátil týž kód s větou o pravidlech, a porotce
+    // by hledal chybu v pravidle, které nenapsal.
+    expect((await body(response)).error).toMatchObject({ code: 'COMPARISON_REJECTED', message: 'A new object has no earlier future to compare against.' });
+    expect(JSON.stringify(stored.blueprint)).toBe(before.bytes);
+    expect(peekChange(stored, change.changeId)).not.toBeNull();
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * P22 T19 – druhá věta nesmí nechat viset vazbu vzhledu ani signálu.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Nález nezávislé revize fáze 4 (`T12-1.md`, nález 1): commit jen pravidel
+ * skládal blueprint bez kontroly odkazů, takže věta, která odstraní příznak,
+ * nechala `lookBindings[].variable` i `binding.signalFlag` ukazovat do prázdna.
+ * `lookBindings` není směrovatelná část (`ROUTABLE = sim|look`), takže to
+ * žádný další patch neopraví – a `session-store.ts` pak záznam odmítne a otráví
+ * trvalé úložiště všem relacím. Rozhodnutí je **odmítnout**, ne prořezat:
+ * prořezání by tiše změnilo svět, o který porotce žádal.
+ *
+ * Svět je zvon s bouří z `e2e/fixtures/storm-bell.ts` – přesně ta fixtura,
+ * na které revize díru předvedla – prohnaný skutečným kompilátorem, takže
+ * `lookBindings` i `signalFlag` v něm napsal produkční kód, ne test.
+ */
+describe('commit, který nechá viset vazbu na příznak', () => {
+  async function stormBell(): Promise<StoredSession> {
+    const { planner, compiler } = stormBellAnswers();
+    let calls = 0;
+    const stored = openSession(`test-${newSessionSeed()}`, 1722)!;
+    await runGeneration(stored, 'A hilltop bell that starts a storm when rung', {
+      legacyPlan: true,
+      emit: () => { calls += 1; return Promise.resolve(calls === 1 ? planner : compiler); },
+      grammar: grammar(),
+    });
+    if (stored.blueprint === null) throw new Error(`storm-bell world did not build: ${stored.session.phase}`);
+    return stored;
+  }
+
+  /** Pravidla bez příznaku: zvon jen odemkne bránu, průchod nic nepodmiňuje. Svědek dál vede k výhře. */
+  const WITHOUT_STORM: RefinePlan['behavior'] = [
+    { op: 'replace', path: '/sim/rules/ring/actions', value: [
+      { kind: 'setState', entity: 'bell', value: 'ringing' },
+      { kind: 'setLocked', entity: 'gate', value: false },
+    ] },
+    { op: 'replace', path: '/sim/rules/pass/condition', value: null },
+    { op: 'remove', path: '/sim/state/flags/storm' },
+  ];
+
+  function bindingOf(stored: StoredSession, stableId: string) {
+    return stored.blueprint!.objects.find((object) => object.stableId === stableId)?.binding;
+  }
+
+  it('fixtura nese obě vazby, jinak by testy níž neměřily nic', async () => {
+    const stored = await stormBell();
+    expect(stored.blueprint!.lookBindings).toEqual([{ variable: 'storm', values: { '0': 'day', '1': 'storm' } }]);
+    expect(bindingOf(stored, 'bell')?.signalFlag).toBe('storm');
+  });
+
+  it('odstranění příznaku, na který ukazuje lookBindings, je BLUEPRINT_INVALID a svět se nehne', async () => {
+    const stored = await stormBell();
+    // Signál zvonu pryč, aby tu zbyla jen vazba vzhledu a verdikt ukázal na ni.
+    stored.blueprint = { ...stored.blueprint!, objects: stored.blueprint!.objects.map((object) =>
+      object.stableId === 'bell' ? { ...object, binding: { ...object.binding!, signalFlag: undefined } } : object) };
+    const before = JSON.stringify(stored.blueprint);
+    const change = pending(stored, plan({ stableId: 'bell', summary: 'the bell no longer calls the storm', behavior: WITHOUT_STORM }));
+
+    const response = await commit(stored.session.sessionId, change.changeId);
+    expect(response.status).toBe(200);
+    expect(await body(response)).toMatchObject({
+      outcome: 'REJECTED',
+      rejections: [{ stage: 'apply', reason: 'BLUEPRINT_INVALID', pointer: '/lookBindings/0/variable' }],
+    });
+    expect(JSON.stringify(stored.blueprint)).toBe(before);
+    expect(worldOf(stored).simRevision).toBe(0);
+    expect(peekChange(stored, change.changeId)).not.toBeNull();
+  });
+
+  it('odstranění příznaku, na který ukazuje signalFlag, je BLUEPRINT_INVALID a svět se nehne', async () => {
+    const stored = await stormBell();
+    // Vazba vzhledu pryč, aby tu zbyl jen signál objektu a verdikt ukázal na něj.
+    stored.blueprint = { ...stored.blueprint!, lookBindings: undefined };
+    const before = JSON.stringify(stored.blueprint);
+    const change = pending(stored, plan({ stableId: 'bell', summary: 'the bell no longer calls the storm', behavior: WITHOUT_STORM }));
+
+    const response = await commit(stored.session.sessionId, change.changeId);
+    expect(response.status).toBe(200);
+    expect(await body(response)).toMatchObject({
+      outcome: 'REJECTED',
+      rejections: [{ stage: 'apply', reason: 'BLUEPRINT_INVALID', pointer: '/objects/1/binding/signalFlag' }],
+    });
+    expect(JSON.stringify(stored.blueprint)).toBe(before);
+    expect(worldOf(stored).simRevision).toBe(0);
+    expect(peekChange(stored, change.changeId)).not.toBeNull();
+  });
+
+  it('změna pravidel, která příznak nechá být, se commitne – brána nesmí odmítat naslepo', async () => {
+    const stored = await stormBell();
+    const change = pending(stored, plan({ stableId: 'bell', summary: 'the gate matters more', behavior: [
+      { op: 'replace', path: '/sim/rules/pass/priority', value: 3 },
+    ] }));
+
+    const response = await commit(stored.session.sessionId, change.changeId);
+    expect(response.status).toBe(200);
+    expect(await body(response)).toMatchObject({ outcome: 'COMMITTED', applied: ['sim'] });
+    expect(worldOf(stored).simRevision).toBe(1);
+    expect(stored.blueprint!.lookBindings).toEqual([{ variable: 'storm', values: { '0': 'day', '1': 'storm' } }]);
+    expect(bindingOf(stored, 'bell')?.signalFlag).toBe('storm');
   });
 });

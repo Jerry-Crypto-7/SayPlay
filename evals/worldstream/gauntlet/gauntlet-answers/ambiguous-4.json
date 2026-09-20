@@ -1,0 +1,77 @@
+{
+  "id": "ambiguous-4",
+  "category": "ambiguous",
+  "sentence": "A room that reacts.",
+  "measuredAt": "2026-09-19T20:27:52.252Z",
+  "plannerMs": 11449,
+  "answer": {
+    "intent": {
+      "setting": "a responsive room",
+      "mood": "reactive",
+      "spatialThesis": "The room encloses a space whose surrounding architecture responds to what happens within it.",
+      "actors": [],
+      "heroObjects": [
+        "the responsive room"
+      ],
+      "interactions": [
+        "The room reacts; the trigger and form of its response are unspecified."
+      ],
+      "unsupported": []
+    },
+    "objects": [
+      {
+        "stableId": "reactiveRoom",
+        "label": "the responsive room",
+        "synonyms": [
+          "room",
+          "reactive room",
+          "responsive room",
+          "space",
+          "enclosure"
+        ],
+        "role": "architecture",
+        "importance": 3
+      }
+    ],
+    "sceneSpec": {
+      "version": 1,
+      "requirements": [
+        {
+          "id": "responsiveRoom",
+          "description": "One room that reacts, with its response mechanism and triggers unspecified.",
+          "priority": "main",
+          "polarity": "required",
+          "count": 1,
+          "instanceIds": [
+            "reactiveRoom"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "A room that reacts."
+          }
+        }
+      ],
+      "instances": [
+        {
+          "stableId": "reactiveRoom",
+          "role": "architecture",
+          "orientation": "none",
+          "attributes": [
+            {
+              "name": "state",
+              "value": "reactive"
+            }
+          ]
+        }
+      ],
+      "relations": [],
+      "clarifications": [
+        {
+          "question": "What does the room react to, and what does it do in response?",
+          "affects": "interaction",
+          "assumption": "The architecture itself is responsive; its triggers and responses remain unspecified."
+        }
+      ]
+    }
+  }
+}

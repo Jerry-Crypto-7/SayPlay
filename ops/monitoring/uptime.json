@@ -1,0 +1,14 @@
+{
+  "targets": [
+    { "name": "repository", "url": "https://github.com/Jerry-Crypto-7/Hackathon" },
+    { "name": "demo", "url": "https://worldstream-sigma.vercel.app" },
+    { "name": "backend", "url": "https://worldstream-sigma.vercel.app/api/health" }
+  ],
+  "intervalSeconds": 300,
+  "coverageUntil": "2026-11-26",
+  "alert": {
+    "channel": "github-issue",
+    "destination": "https://github.com/Jerry-Crypto-7/Hackathon/issues"
+  },
+  "heartbeatPath": "ops/monitoring/heartbeat.jsonl"
+}

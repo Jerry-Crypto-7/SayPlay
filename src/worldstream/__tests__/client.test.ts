@@ -131,11 +131,69 @@ describe('reduceEvent', () => {
     const state = feed([events[0], told]);
     expect(state.phase).toBe('intent');
     expect(state.blueprint).toBeNull();
-    expect(state.intent).toEqual({ setting: 'a drowned cathedral', spatialThesis: 'One nave, flooded to the capitals.' });
+    // Rámec bez seznamů je pořád platný záměr: **chybějící seznam je prázdný
+    // seznam**, ne zahozený rámec. Setting a teze jsou jediná dvě povinná pole.
+    expect(state.intent).toEqual({
+      setting: 'a drowned cathedral',
+      spatialThesis: 'One nave, flooded to the capitals.',
+      heroObjects: [],
+      unsupported: [],
+    });
 
     // Blueprint ho nepřepíše — věta o pochopení platí, dokud relace žije.
     const rest = events.slice(events.indexOf(intentFrame) + 1);
     expect(feed(rest, state).intent).toEqual(state.intent);
+  });
+
+  /**
+   * **Server ta dvě pole posílá už dávno a klient je do T5 zahazoval.**
+   * `sessions.ts:952` nese `heroObjects` i `unsupported` z plannera, `intentOf()`
+   * si ale bral jen `setting` a `spatialThesis` — takže jediné, co porotce po
+   * dobu stodesetivteřinového compileru četl, byla jedna věta o uspořádání.
+   * Pin je na tom, že rámec **projde celý**: kdyby se seznamy zase ztratily,
+   * stránka by vypadala úplně stejně jako předtím a nic by nezčervenalo.
+   */
+  it('`intent.ready` donese i hrdiny a to, co model neumí', () => {
+    const { events } = generation();
+    const intentFrame = events.find((event) => event.type === 'intent.ready')!;
+    const told = {
+      ...intentFrame,
+      payload: {
+        setting: 'a drowned cathedral',
+        spatialThesis: 'One nave, flooded to the capitals.',
+        heroObjects: ['the flooded nave', 'the drowned altar'],
+        unsupported: ['the water is a surface, not a fluid you can displace'],
+      },
+    };
+
+    const state = feed([events[0], told]);
+
+    expect(state.intent?.heroObjects).toEqual(['the flooded nave', 'the drowned altar']);
+    expect(state.intent?.unsupported).toEqual([
+      'the water is a surface, not a fluid you can displace',
+    ]);
+  });
+
+  it('seznam, který není seznamem řetězců, se zahodí a záměr přežije', () => {
+    // Rámec je `unknown` a čte se z drátu. Číslo v `heroObjects` nesmí shodit
+    // stavovou větu — teze je pořád pravda a je to to hlavní, co se říká.
+    const { events } = generation();
+    const intentFrame = events.find((event) => event.type === 'intent.ready')!;
+    const told = {
+      ...intentFrame,
+      payload: {
+        setting: 'a drowned cathedral',
+        spatialThesis: 'One nave, flooded to the capitals.',
+        heroObjects: [7, 'the drowned altar'],
+        unsupported: 'not an array',
+      },
+    };
+
+    const state = feed([events[0], told]);
+
+    expect(state.intent?.setting).toBe('a drowned cathedral');
+    expect(state.intent?.heroObjects).toEqual([]);
+    expect(state.intent?.unsupported).toEqual([]);
   });
 
   it('je idempotentní: tentýž rámec podruhé stavem nehne', () => {
@@ -489,6 +547,15 @@ function streamResponse(stream: ReadableStream<Uint8Array>): Response {
 }
 
 describe('followSession', () => {
+  it('reloads an authoritative snapshot after a persisted event backlog was truncated', async () => {
+    const {session}=generation();session.advance('complete',{});const calls:string[]=[];
+    const state=await followSession(HANDLE,{maxResumes:2,fetch:async(input)=>{
+      const url=String(input);calls.push(url);
+      return url===HANDLE.snapshot?Response.json(session.snapshot()):Response.json({error:{code:'EVENT_HISTORY_TRUNCATED'}},{status:409});
+    }});
+    expect(state.phase).toBe('complete');expect(state.sequence).toBe(session.events.sequence);
+    expect(calls).toEqual([`${HANDLE.events}?since=0`,HANDLE.snapshot]);
+  });
   it('přečte celou relaci a skončí na koncové fázi', async () => {
     const { session } = generation();
     session.advance('complete', {});
@@ -665,6 +732,93 @@ describe('openWorldstreamSession', () => {
     expect(handle).toEqual(HANDLE);
   });
 
+  it('proud z odpovědi na otevření se dočte bez druhého požadavku', async () => {
+    // **P16 `T8-stream404`.** Druhý požadavek na `/events` smí na Vercelu
+    // dopadnout na instanci, která relaci nezná. Kdyby čtečka proud
+    // z odpovědi zahodila a šla na `events`, lokálně by to vypadalo stejně.
+    const { session } = generation();
+    session.advance('complete', {});
+    const frames = session.events.all().map(sessionFrame);
+    const calls: Call[] = [];
+    let accept: string | null = null;
+    const call: typeof fetch = async (input, init) => {
+      calls.push({ url: String(input), method: init?.method ?? 'GET' });
+      if (init?.method !== 'POST') throw new Error(`nečekaný požadavek na ${String(input)}`);
+      accept = new Headers(init.headers).get('accept');
+      return new Response(body(frames, false), {
+        status: 200,
+        headers: {
+          'content-type': 'text/event-stream; charset=utf-8',
+          'x-worldstream-session': SESSION_ID,
+          'x-worldstream-authored': 'exact',
+        },
+      });
+    };
+
+    const handle = await openWorldstreamSession('a drowned cathedral', { fetch: call });
+    const state = await followSession(handle, { fetch: call, maxResumes: 0 });
+
+    expect(accept).toContain('text/event-stream');
+    expect(handle.sessionId).toBe(SESSION_ID);
+    expect(handle.authored).toEqual({ match: 'exact' });
+    expect(state.phase).toBe('complete');
+    expect(calls).toEqual([{ url: '/api/worldstream/sessions', method: 'POST' }]);
+  });
+
+  it('po zavřeném proudu z otevření naváže přes `events`, ne znovu z téže odpovědi', async () => {
+    // Úspěšná relace zůstává otevřená ve fázi `world` a Vercel odpověď na POST
+    // po `maxDuration` usekne, takže tohle navázání je u delší relace běžná
+    // cesta. Odpověď z otevření se dá přečíst jen jednou (revize testů před
+    // `/ship` 15. 9. 2026).
+    const { session } = generation();
+    const opening = session.events.all().map(sessionFrame);
+    const last = session.events.sequence;
+    session.advance('complete', {});
+    const rest = session.events.all().filter((event) => event.sequence > last).map(sessionFrame);
+    const stream = { 'content-type': 'text/event-stream; charset=utf-8' };
+    const calls: Call[] = [];
+    const call: typeof fetch = async (input, init) => {
+      const url = String(input);
+      calls.push({ url, method: init?.method ?? 'GET' });
+      if (init?.method === 'POST')
+        return new Response(body(opening, false), { status: 200, headers: { ...stream, 'x-worldstream-session': SESSION_ID } });
+      if (url === `${HANDLE.events}?since=${last}`) return new Response(body(rest, false), { status: 200, headers: stream });
+      throw new Error(`nečekaný požadavek na ${url}`);
+    };
+
+    const handle = await openWorldstreamSession('a drowned cathedral', { fetch: call });
+    const state = await followSession(handle, { fetch: call, maxResumes: 1 });
+
+    expect(state.phase).toBe('complete');
+    expect(calls).toEqual([
+      { url: '/api/worldstream/sessions', method: 'POST' },
+      { url: `${HANDLE.events}?since=${last}`, method: 'GET' },
+    ]);
+  });
+
+  it('proud bez hlavičky původu je svět od modelu, neznámý původ taky', async () => {
+    // Popisek „authored ahead of time" je tvrzení (`T45-honestlabel`): bez
+    // hlavičky ho klient nesmí domyslet, stejně jako u odpovědi 202 bez klíče.
+    const open = async (authored?: string) =>
+      (
+        await openWorldstreamSession('a drowned cathedral', {
+          fetch: async () =>
+            new Response(body([], false), {
+              status: 200,
+              headers: {
+                'content-type': 'text/event-stream; charset=utf-8',
+                'x-worldstream-session': SESSION_ID,
+                ...(authored === undefined ? {} : { 'x-worldstream-authored': authored }),
+              },
+            }),
+        })
+      ).authored;
+
+    expect(await open()).toBeNull();
+    expect(await open('nearest')).toEqual({ match: 'nearest' });
+    expect(await open('somewhere-in-between')).toBeNull();
+  });
+
   it('původ ze skladu se veze s adresami, ne zvlášť', async () => {
     const handle = await openWorldstreamSession('a place nobody wrote', {
       fetch: async () =>
@@ -751,6 +905,29 @@ describe('openWorldstreamSession', () => {
  * v panelu změny na obrazovce.
  */
 describe('requestChange a commitChange – co se ukáže při odmítnutí', () => {
+  it('sends the bounded visitor history and returns the atomic accepted snapshot', async () => {
+    const comparison = { base: { simRevision: 3, simHash: 'abc', comparisonRevision: 0 as const, inputCount: 1 },
+      inputs: [{ tick: 2, actor: 'visitor', actionId: 'activate', target: 'door' }], forkTick: 1, observationTick: 8 };
+    const acceptedBlueprint = { world: { simRevision: 4, lookRevision: 0 } };
+    const result = await commitChange(SESSION_ID, 'change-1', { comparison,
+      fetch: async (_url, options) => {
+        expect(options?.method).toBe('POST');
+        expect(JSON.parse(String(options?.body))).toEqual(comparison);
+        expect(options?.headers).toEqual({ 'content-type': 'application/json' });
+        return Response.json({ outcome: 'COMMITTED', acceptedBlueprint,
+          comparison: { forkTick: 1, observationTick: 8 }, revisions: { sim: { after: 4 }, look: { after: 0 } } });
+      } });
+    expect(result).toMatchObject({ kind: 'committed', acceptedBlueprint,
+      comparison: { forkTick: 1, observationTick: 8 }, acceptedRevision: { sim: 4, look: 0 } });
+  });
+
+  it('keeps a bodyless commit compatible with older snapshot recovery', async () => {
+    const result = await commitChange(SESSION_ID, 'change-1', { fetch: async (_url, options) => {
+      expect(options?.body).toBeUndefined();
+      return Response.json({ outcome: 'COMMITTED' });
+    } });
+    expect(result).toEqual({ kind: 'committed', stableId: '', summary: '' });
+  });
   it('ven jde věta serveru a kód se veze za ní, ne místo ní', async () => {
     await expect(
       requestChange(SESSION_ID, 'make the mast taller', {

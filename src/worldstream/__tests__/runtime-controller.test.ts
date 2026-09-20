@@ -4,7 +4,11 @@ import oracle from '../../../evals/reality-compiler/oracle.json';
 import { buildRuntimeWorld } from '@/ir/build';
 import { sealSimHash, type WorldDoc } from '@/ir/worlddoc';
 import { verifyWitness } from '@/verify/witness';
+import type { WorldDocRuntime } from '@/sim/interpreter';
+import vaultWorld from '@/sim/__fixtures__/vault.world.json';
 import { bindRuntime, createRuntimeController } from '../runtime-controller';
+
+const vault = vaultWorld as unknown as WorldDocRuntime;
 
 function document(terminal = false) {
   const sim = structuredClone(surface);
@@ -112,5 +116,94 @@ describe('single runtime controller', () => {
     off();
     controller.advanceTicks(1);
     expect(calls).toBe(1);
+  });
+});
+
+describe('explain ring beside the timeline', () => {
+  it('keeps what each fired rule wrote and names the rules that read it downstream', () => {
+    const controller = createRuntimeController(vault);
+    controller.advanceTicks(5);
+    expect(controller.explainTick(2)).toEqual([{
+      ruleId: 'r.pull', predicate: 'p.onAction.hero.pull.lever', guardHeld: true,
+      writes: [{ slot: 'f:unlocked', before: 0, after: 1 }, { slot: 'c:keys', before: 0, after: 1 }],
+    }]);
+    expect(controller.explainTick(1)).toEqual([]);
+    // `r.threshold` reads `keys` in its predicate; `r.open` reads only the signal pulse.
+    expect(controller.downstreamOf(2)).toEqual([{ tick: 3, ruleId: 'r.threshold', reads: ['c:keys'] }]);
+    expect(controller.downstreamOf(3)).toEqual([]);
+    expect(controller.downstreamOf(2, 0)).toEqual([]);
+  });
+
+  it('records the lowered museum rules with the phase-3 values', () => {
+    const controller = createRuntimeController(document());
+    controller.advanceTicks(30);
+    expect(controller.explainTick(20)).toEqual([{
+      ruleId: 'start_countdown', predicate: 'p.onAction.visitor.activate.sensorA', guardHeld: true,
+      writes: [{ slot: 'f:started', before: 0, after: 1 }, { slot: 't:countdown', before: 0, after: 400 }],
+    }]);
+    expect(controller.explainTick(21)[0]).toMatchObject({ ruleId: 'sys.moveTo.approachB', guardHeld: true });
+    expect(controller.explainTick(21)[0].writes.map(write => write.slot)).toEqual(['e:visitor:moveTo', 'e:visitor:moveTicks']);
+    // The move is settled in phase 4, so no rule "wrote" the visitor's position.
+    expect(controller.downstreamOf(21)).toEqual([]);
+  });
+
+  it('holds the last 4000 ticks, drops the future on rewind and refills it on replay', () => {
+    const controller = createRuntimeController(document());
+    controller.advanceTicks(300);
+    const unlock = controller.explainTick(260);
+    expect(unlock).toMatchObject([{ ruleId: 'unlock_case', writes: [
+      { slot: 'e:case:locked', before: 1, after: 0 }, { slot: 't:countdown', before: 160, after: 0 },
+    ] }]);
+    controller.observeAt(100);
+    expect(controller.explainTick(260)).toEqual([]);
+    expect(controller.explainTick(20)).toHaveLength(1);
+    controller.observeAt(300);
+    expect(controller.explainTick(260)).toEqual(unlock);
+    controller.advanceTicks(4200);
+    expect(controller.explainTick(260)).toEqual([]);
+    expect(controller.explainTick(4499)).toEqual([]);
+    expect(controller.explainTick(500)).toEqual([]);
+  });
+});
+
+describe('downstream reads behind observed facts', () => {
+  /** `r.jump` respawns the hero inside the zone at start; `r.enter` reacts to the zone fact one tick later. */
+  const jumpWorld: WorldDocRuntime = {
+    trace: [],
+    space: { sockets: { s_start: [0, 0], s_far: [2, 3] }, zones: { far: [2, 3, 1, 1] }, blocked: [], tags: {} },
+    ir: {
+      irVersion: 'world-ir-v1',
+      limits: { maxEntities: 2, maxZones: 1, maxSlots: 4, maxRules: 4, maxRuleFiringsPerTick: 4, maxQueueDepth: 2,
+        maxAgents: 0, memorySlotsPerAgent: 0, gridWidth: 4, gridHeight: 4 },
+      slots: [{ space: 'counter', id: 'visits', min: 0, max: 9, initial: 0 }],
+      entities: [{ stableId: 'hero', role: 'actor', socket: 's_start', states: ['idle'], initialState: 'idle', initialLocked: false }],
+      nodes: [
+        { kind: 'ref', ref: { space: 'observed', fact: 'started', args: [] } },
+        { kind: 'ref', ref: { space: 'observed', fact: 'inZone', args: ['hero', 'far'] } },
+      ],
+      predicates: [
+        { predicateId: 'p.onStart', source: 'onStart', expr: 0 },
+        { predicateId: 'p.onEnterZone.hero.far', source: 'onEnterZone', expr: 1 },
+      ],
+      effects: [
+        { op: 'despawn', entity: 'hero' },
+        { op: 'spawn', poolTag: 'hero', socket: 's_far', selection: 'lowest-inactive' },
+        { op: 'addCounter', slot: 'visits', delta: 1 },
+      ],
+      rules: [
+        { ruleId: 'r.jump', phase: 0, priority: 0, trigger: { kind: 'onEdge', predicate: 'p.onStart', became: true }, guard: null, effects: [0, 1] },
+        { ruleId: 'r.enter', phase: 0, priority: 1, trigger: { kind: 'onEdge', predicate: 'p.onEnterZone.hero.far', became: true }, guard: null, effects: [2] },
+      ],
+    },
+  };
+
+  it('a zone fact reads the position and activity slots the spawn wrote', () => {
+    const controller = createRuntimeController(jumpWorld);
+    controller.advanceTicks(3);
+    expect(controller.explainTick(1)).toEqual([{ ruleId: 'r.enter', predicate: 'p.onEnterZone.hero.far', guardHeld: true,
+      writes: [{ slot: 'c:visits', before: 0, after: 1 }] }]);
+    expect(controller.downstreamOf(0)).toEqual([{ tick: 1, ruleId: 'r.enter', reads: ['e:hero:active', 'e:hero:x', 'e:hero:y'] }]);
+    // Only the written slots count: `visits` is read by nobody, so nothing follows tick 1.
+    expect(controller.downstreamOf(1)).toEqual([]);
   });
 });

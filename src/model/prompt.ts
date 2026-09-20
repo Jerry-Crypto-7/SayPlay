@@ -244,17 +244,36 @@ export const EXAMPLE_ONLY_IDENTIFIERS = [
   ...Object.keys(EXAMPLE_WORLD.sim.rules).filter((identifier) => identifier !== 'win'),
 ];
 
-export function buildEmissionRequest(prompt: string, grammar: Grammar): UpstreamRequest {
+/**
+ * **Smí ten, kdo tohle čte, odmítnout?**
+ *
+ * Na holé větě ano: `NO_FIT` je poctivá odpověď na zadání, za kterým nic
+ * nestojí, a je to výchozí chování. Kompilátorová cesta ale dostává **hotový
+ * popis místa** — tam odmítnutí není pravda o zadání, je to zaseknutí.
+ * Naměřeno 5. 9. 2026 (spike `d749ce7`, věta `c01`): model napsal geometrii,
+ * tvary i placementy, odmítl jen sim, a tři opravná kola ho z toho nedostala,
+ * protože nabídku měl pořád před sebou. Do 18. 9. se to řešilo protivětou
+ * pod vloženým kontraktem — nabídka i její vyvrácení se tedy platily obě.
+ */
+export interface EmissionRequestOptions {
+  readonly allowNoFit?: boolean;
+}
+
+export function buildEmissionRequest(prompt: string, grammar: Grammar, options: EmissionRequestOptions = {}): UpstreamRequest {
   const system = [
     'You emit a declarative world graph. You never write code, control flow, or expressions to be evaluated.',
     '',
     'Answer with a single JSON object and nothing else. Its top-level fields are exactly:',
     'irVersion, simRevision, lookRevision, sim, look.',
     '',
-    'If the request cannot be expressed in the vocabulary below, decline instead of inventing one:',
-    'answer with the same object, sim set to null, and one extra field simOutcome: "NO_FIT".',
-    'look stays REQUIRED in that case — the refusal covers sim only, and the scene is built either way.',
-    '',
+    ...(options.allowNoFit === false
+      ? []
+      : [
+          'If the request cannot be expressed in the vocabulary below, decline instead of inventing one:',
+          'answer with the same object, sim set to null, and one extra field simOutcome: "NO_FIT".',
+          'look stays REQUIRED in that case — the refusal covers sim only, and the scene is built either way.',
+          '',
+        ]),
     `sim carries: ${grammar.simFields.join(', ')}. It is inside the state hash.`,
     `look carries: ${grammar.lookFields.join(', ')}. It is outside the state hash, and its only`,
     'permitted link into sim is an entity stableId. Every key of look.modules IS one: it must appear',

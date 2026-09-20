@@ -49,6 +49,8 @@
  */
 
 import { meshResolution } from './cache';
+import { visualPreviewSchema, type VisualPreview } from './schema';
+import { readSceneSpec, type SceneSpec } from '@/scene/spec';
 import type { MeshFailure, MeshResolution } from './cache';
 import type { SessionEvent, SessionEventType } from './events';
 import type { RepresentationRung, SessionPhase } from './session';
@@ -87,6 +89,7 @@ export interface ClientState {
   readonly shapes: readonly ShapeView[];
   /** Autoritativní blueprint. Přijde rámcem `blueprint.ready` i snapshotem. */
   readonly blueprint: unknown | null;
+  readonly visualPreview?: VisualPreview | null;
   /**
    * Co planner z věty přečetl, jakmile to ví — **dřív než blueprint**.
    *
@@ -95,10 +98,29 @@ export interface ClientState {
    * world." bez jediné známky, že se věta vůbec pochopila. Setting a teze
    * jsou to, co se dá v tu chvíli pravdivě říct. Snapshot je nenese, takže
    * po reconnectu zůstává to, co klient viděl v rámci.
+   *
+   * **Čtyři pole, ne dvě — P18 T5.** Server posílá celou čtveřici od
+   * `sessions.ts:952` a klient si z ní do té doby bral půlku: hrdiny i seznam
+   * abstrakcí zahazoval `intentOf()`, takže se porotce za celý compiler
+   * nedozvěděl, které objekty ze své věty dostane a co systém neumí.
+   * Seznamy jsou vždycky pole — chybějící seznam je prázdný, viz `stringList`.
    */
-  readonly intent: { readonly setting: string; readonly spatialThesis: string } | null;
+  readonly intent: {
+    readonly sceneSpec?: SceneSpec;
+    readonly setting: string;
+    readonly spatialThesis: string;
+    readonly heroObjects: readonly string[];
+    readonly unsupported: readonly string[];
+  } | null;
   /** Veřejná věta o poruše. Text výjimky poskytovatele sem nikdy nejde. */
   readonly fault: string | null;
+  /**
+   * Svět vznikl z uložené odpovědi modelu na tutéž větu (P16 T6). Přijde
+   * v rámci `blueprint.ready` i snapshotem; `null`, dokud blueprint není
+   * nebo ho model psal teď. Stavová věta z toho říká porotci, že se na
+   * model nečekalo — jinak by rychlý svět vypadal jako rychlý model.
+   */
+  readonly reused: { readonly at: string; readonly savedCalls: number } | null;
 }
 
 export function initialClientState(): ClientState {
@@ -108,8 +130,10 @@ export function initialClientState(): ClientState {
     sequence: 0,
     shapes: [],
     blueprint: null,
+    visualPreview: null,
     intent: null,
     fault: null,
+    reused: null,
   };
 }
 
@@ -152,6 +176,19 @@ function text(value: unknown): string | null {
 }
 
 /**
+ * Seznam řetězců z rámce, nebo prázdný.
+ *
+ * Rámec jde po drátě a jeho payload je `unknown`, takže se **soudí každý
+ * prvek**, ne jen `Array.isArray`. Jediné číslo uvnitř by jinak doteklo až do
+ * `join()` ve stavové větě a porotce by četl „7" mezi jmény objektů.
+ */
+function stringList(value: unknown): readonly string[] {
+  return Array.isArray(value) && value.every((entry) => typeof entry === 'string')
+    ? (value as readonly string[])
+    : [];
+}
+
+/**
  * Mřížka z rámce, pokud ji ten rámec **nese**. `undefined` znamená „rámec
  * o mřížce nic neřekl", `null` znamená „řekl číslo, které žebřík nejmenuje".
  *
@@ -172,6 +209,14 @@ function statedResolution(
 
 function count(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+/** Zásah cache z rámce nebo snapshotu, nebo `null`. Obě pole se soudí — payload je z drátu. */
+function reusedOf(value: unknown): ClientState['reused'] {
+  const fields = record(value);
+  const at = text(fields.at);
+  const savedCalls = count(fields.savedCalls);
+  return at === null || savedCalls === null ? null : { at, savedCalls };
 }
 
 /** Ke které fázi patří která událost. Ostatní fázi nemění. */
@@ -257,6 +302,11 @@ function apply(state: ClientState, event: SessionEvent): ClientState {
   const phase = PHASE_OF[event.type];
   const fields = record(event.payload);
   const stableId = text(fields.stableId);
+  // `accepted` je tu od P21 T4: hmoty ze slov věty přicházejí ještě před
+  // `intent.ready`, protože plánovač v tu chvíli nepromluvil. Slot je týž,
+  // takže náhled plánovače je pak prostě další rámec do téhož pole.
+  const preview = event.type === 'visual.preview' && (state.phase === 'accepted' || state.phase === 'intent') && state.blueprint === null
+    ? visualPreviewSchema.safeParse(fields.preview) : null;
 
   const shapes =
     stableId === null
@@ -276,16 +326,36 @@ function apply(state: ClientState, event: SessionEvent): ClientState {
     sequence: Math.max(state.sequence, event.sequence),
     shapes,
     blueprint: event.type === 'blueprint.ready' ? (fields.blueprint ?? null) : state.blueprint,
+    visualPreview: event.type === 'blueprint.ready' ? null : preview?.success ? preview.data : state.visualPreview ?? null,
     intent: event.type === 'intent.ready' ? intentOf(fields) : state.intent,
     fault: event.type === 'session.failed' ? (text(fields.reason) ?? 'the session failed') : state.fault,
+    reused: event.type === 'blueprint.ready' ? reusedOf(fields.reused) : state.reused,
   };
 }
 
-/** Jen dvě pole z `intent.ready`, a jen když jsou obě řetězce; jinak se nic netvrdí. */
+/**
+ * Záměr z `intent.ready`. **Rozhodují dvě pole, nesou se čtyři.**
+ *
+ * Setting a teze jsou povinné: bez nich se o pochopení věty nedá tvrdit nic a
+ * stav zůstane `null`. Seznamy povinné nejsou a **chybějící seznam je prázdný
+ * seznam** — na rozdíl od mřížky výš, kde se ty dva stavy slít nesmějí. Tady
+ * ani jeden nic netvrdí: planner smí `unsupported` vrátit prázdné vědomě
+ * („nic jsem neabstrahoval") a rámec, který pole nenese, o hrdinech mlčí
+ * stejně. Věta nad tím pak buď má co vypsat, nebo popisek nenapíše vůbec.
+ */
 function intentOf(fields: Record<string, unknown>): ClientState['intent'] {
   const setting = text(fields.setting);
   const spatialThesis = text(fields.spatialThesis);
-  return setting === null || spatialThesis === null ? null : { setting, spatialThesis };
+  const spec = fields.sceneSpec === undefined ? null : readSceneSpec(fields.sceneSpec);
+  return setting === null || spatialThesis === null
+    ? null
+    : {
+        setting,
+        spatialThesis,
+        heroObjects: stringList(fields.heroObjects),
+        unsupported: stringList(fields.unsupported),
+        ...(spec && typeof spec !== 'string' ? { sceneSpec: spec } : {}),
+      };
 }
 
 /**
@@ -326,7 +396,9 @@ export interface ClientSnapshot {
     readonly state: { readonly kind: string; readonly [key: string]: unknown };
   }[];
   readonly blueprint?: unknown;
+  readonly visualPreview?: unknown;
   readonly fault?: string | null;
+  readonly reused?: unknown;
 }
 
 function viewOfRecord(
@@ -384,7 +456,10 @@ export function applySnapshot(state: ClientState, snapshot: ClientSnapshot): Cli
     sequence: snapshot.sequence,
     shapes,
     blueprint: snapshot.blueprint ?? state.blueprint,
+    visualPreview: (snapshot.blueprint ?? state.blueprint) !== null ? null
+      : Object.hasOwn(snapshot, 'visualPreview') ? (visualPreviewSchema.safeParse(snapshot.visualPreview).data ?? null) : state.visualPreview ?? null,
     intent: state.intent,
     fault: snapshot.fault ?? state.fault,
+    reused: Object.hasOwn(snapshot, 'reused') ? reusedOf(snapshot.reused) : state.reused,
   };
 }

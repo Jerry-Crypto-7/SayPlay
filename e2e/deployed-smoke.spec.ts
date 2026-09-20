@@ -105,7 +105,7 @@ test('první věta na hlavní stránce postaví živý svět od modelu', async (
 
   // Nedoručený svět od 15. 9. 2026 řekne proč (`second-act-missed`); test pak
   // skončí hned a s tím důvodem, ne až po 330 s mlčení (P16 `T8-silentlive`).
-  const missed = page.getByTestId('second-act-missed');
+  const missed = page.locator('[data-testid="world-status"][data-state="broken"], [data-testid="visual-preview-notice"]');
   await expect(page.getByTestId('world-live-origin').or(missed)).toBeVisible({ timeout: 330_000 });
   expect((await missed.count()) === 0 ? '' : await missed.textContent(), 'živý svět nedorazil').toBe('');
   expect(errors, `stránka vyhodila chybu: ${errors.join(' | ')}`).toEqual([]);

@@ -2,6 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 
 import { SseDecoder } from '../src/components/viewer/sse';
 import type { SessionEvent } from '../src/worldstream/events';
+import { DOOR_PROMPT, doorAnswers } from './fixtures/door-world';
+import { fakeUpstream, freePort, startLiveServer } from './live-server';
 import { deployedTarget } from './smoke-target';
 
 /**
@@ -246,4 +248,63 @@ test('snapshot vydá tentýž stav jako proud a nic z konfigurace poskytovatele'
   // pověření (`?key=`, `https://user:heslo@…`). Ven jde věta ze slovníku.
   expect(snapshot.raw).not.toMatch(/WORLDSMITH_|Bearer|api[_-]?key|https?:\/\//i);
   expect(JSON.stringify(stream.events)).not.toMatch(/WORLDSMITH_|Bearer|api[_-]?key/i);
+});
+
+/* ------------------------------------------------------------------ *
+ * Cache odpovědí modelu (P16 T6) — orákulum nad skutečným `next start`.
+ * ------------------------------------------------------------------ */
+
+// `freePort`, `fakeUpstream` a `startLiveServer` bydlí v `./live-server.ts`
+// (přesun v P22 T12, kdy dostaly druhého volajícího).
+
+test('doslova stejná věta podruhé dostane svět z cache: model dvě volání, ne čtyři, a stránka to řekne', async ({ page }) => {
+  test.setTimeout(180_000);
+  const upstream = fakeUpstream(doorAnswers());
+  const upstreamPort = await freePort();
+  await new Promise<void>((resolve) => upstream.server.listen(upstreamPort, '127.0.0.1', resolve));
+  const live = await startLiveServer(upstreamPort);
+  const pageErrors: string[] = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+
+  try {
+    await page.goto(`${live.url}/`);
+    await expect(page.getByTestId('generation-mode')).toHaveValue('live');
+
+    // Poprvé: model se volá, dvakrát — plánovač a kompilátor.
+    await page.getByTestId('prompt-input').fill(DOOR_PROMPT);
+    await page.getByTestId('prompt-submit').click();
+    await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live', { timeout: 60_000 });
+    await expect(page.getByTestId('world-live-origin')).toBeVisible();
+    await expect(page.getByTestId('answer-reused')).toHaveCount(0);
+    expect(upstream.calls(), 'první svět má stát přesně dvě volání').toBe(2);
+
+    // Podruhé, táž věta jinak psaná: nic se nevolá a stavová věta to říká.
+    await page.getByTestId('prompt-input').fill(`  ${DOOR_PROMPT.toUpperCase()}  `);
+    await page.getByTestId('prompt-submit').click();
+    await expect(page.getByTestId('answer-reused')).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByTestId('answer-reused')).toHaveText(/Reused the model's earlier answer for this exact sentence/);
+    await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'live', { timeout: 60_000 });
+    expect(upstream.calls(), 'zásah cache zavolal model').toBe(2);
+
+    // Totéž z druhé strany, přes routu bez prohlížeče: snapshot třetí relace
+    // nese `reused` a čítač poskytovatele pořád stojí.
+    const snapshot = await page.evaluate(async (sentence) => {
+      const response = await fetch('/api/worldstream/sessions', { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ prompt: sentence, live: true }) });
+      const opened = (await response.json()) as { snapshot: string };
+      for (let i = 0; i < 100; i += 1) {
+        const read = (await (await fetch(opened.snapshot)).json()) as { phase: string; reused: unknown };
+        if (read.phase === 'world' || read.phase === 'failed') return read;
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+      throw new Error('the third session never settled');
+    }, DOOR_PROMPT);
+    expect(snapshot.phase).toBe('world');
+    expect(snapshot.reused).toMatchObject({ savedCalls: 2 });
+    expect(upstream.calls()).toBe(2);
+    expect(pageErrors).toEqual([]);
+  } finally {
+    live.stop();
+    upstream.server.close();
+  }
 });

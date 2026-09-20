@@ -57,8 +57,10 @@
     "@types/react": "19.2.x",
     "@types/react-dom": "19.2.x",
     "@types/three": "0.185.x",
+    "gltf-validator": "^2.0.0-dev.3.10",
     "typescript": "6.0.x",
-    "vitest": "4.1.x"
+    "vitest": "4.1.x",
+    "sharp": "0.35.3"
   },
   "overrides": {
     "three": "0.185.1"

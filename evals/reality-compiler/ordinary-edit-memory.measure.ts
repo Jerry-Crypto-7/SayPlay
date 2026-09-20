@@ -9,9 +9,11 @@ import { ORDINARY_MEMORY_SEQUENCE, ordinaryMemoryFixture, ordinaryMemoryFixtureH
   type OrdinaryMemorySample } from '../../scripts/reality-compiler-ordinary-edit-memory';
 import type { StageProbe } from '../../src/components/viewer/WorldstreamStage';
 import type { PipelineMetricsSnapshot } from '../../src/worldstream/pipeline-metrics';
+import type { RuntimeController } from '../../src/worldstream/runtime-controller';
 
 declare global { interface Window { __ordinaryMemoryJobs?: number; __worldstreamStage?: StageProbe;
-  __worldstreamMetrics?: { snapshot(): PipelineMetricsSnapshot } } }
+  __worldstreamMetrics?: { snapshot(): PipelineMetricsSnapshot;
+    explainTick(tick: number): ReturnType<RuntimeController['explainTick']> } } }
 const sources = ['src/shape/mesh-cache.ts', 'src/shape/mesh-client.ts', 'src/app/page.tsx',
   'src/components/viewer/WorldstreamStage.tsx', 'src/worldstream/pipeline-metrics.ts',
   'scripts/reality-compiler-ordinary-edit-memory.ts', 'evals/reality-compiler/ordinary-edit-memory.measure.ts'];

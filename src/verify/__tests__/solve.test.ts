@@ -28,7 +28,7 @@ const grammar = (): Grammar => ({
   lookFields: ['modules', 'palette'],
 });
 
-const BUDGET = { maxNodes: 20_000, maxDepth: 6, settleTicks: 30 } as const;
+const BUDGET = { maxNodes: 20_000, maxTicks: 100_000, maxDepth: 6, settleTicks: 30 } as const;
 
 /** Ukázkový svět z hotové systémové zprávy, tedy ten, který vidí model. */
 function exampleSim(): Record<string, unknown> {
@@ -107,7 +107,7 @@ describe('solveWitness', () => {
   });
 
   it('respektuje rozpočet a vrátí null místo aby běžel dál', () => {
-    const found = solveWitness(build(exampleSim()), { maxNodes: 1, maxDepth: 6, settleTicks: 30 });
+    const found = solveWitness(build(exampleSim()), { maxNodes: 1, maxTicks: 100_000, maxDepth: 6, settleTicks: 30 });
 
     expect(found, 'hledač si vzal víc uzlů, než dostal').toBeNull();
   });
@@ -118,5 +118,27 @@ describe('solveWitness', () => {
     const second = solveWitness(world, BUDGET);
 
     expect(first?.ops).toEqual(second?.ops);
+  });
+});
+
+describe('rozpočet v tikách', () => {
+  it('vrátí null, když odsimulované tiky přesáhnou strop, i s volnými uzly', () => {
+    const world = build(exampleSim());
+    expect(solveWitness(world, BUDGET), 'bez stropu musí příklad jít vyřešit').not.toBeNull();
+    // Samotný úvodní replay „vyhraje svět sám?" stojí celý horizont.
+    expect(solveWitness(world, { ...BUDGET, maxTicks: 1 })).toBeNull();
+  });
+
+  it('sčítá tiky přes všechny replaye, ne jen ten úvodní', () => {
+    const world = build(exampleSim());
+    // Strop leží uvnitř naměřeného okna. Úvodní replay „vyhraje svět sám?"
+    // stojí 601–609 tiků; celé prohledávání se vejde mezi 3 000 a 5 000 (nad
+    // 5 000 cestu najde). Uvnitř toho okna rozhoduje **jenom** sčítání: s ním
+    // se strop vyčerpá a vrátí se null, bez `ticks += outcome.tick` zůstane
+    // čítač na úvodní hodnotě, strop nesepne nikdy a hledač cestu najde.
+    //
+    // Případ nad tímhle (`maxTicks: 1`) trhá strop už na `alone.tick`, takže by
+    // prošel i bez sčítání — sám o sobě tedy rozpočet v tikách nehlídá.
+    expect(solveWitness(world, { ...BUDGET, maxTicks: 2_000 })).toBeNull();
   });
 });

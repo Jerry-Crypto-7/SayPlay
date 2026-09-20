@@ -1,5 +1,13 @@
+import {withSessionStorageResponse} from '@/server/session-persistence';
+import {assertSessionStorageReady} from '@/worldstream/sessions';
+import {ownerIdentityRejection} from '@/server/owner-identity';
 import { observePhase, observePhaseAsync } from '@/model/phase-observer';
 import { APPEARANCE_UNSUPPORTED, hasUnsupportedAppearance, hasUnsupportedMotion, MOTION_UNSUPPORTED, SHAPE_ONLY_MOTION_SUMMARY } from '@/server/worldstream-capabilities';
+import { routePatch, type RoutedPatch } from '@/patch/router';
+import { additionScopeIssue } from '@/patch/scope';
+import { commitRoutedParts } from '@/app/api/edit/commit';
+import type { PartPatch } from '@/ir/revision';
+import {prepareComparisonCandidate} from '@/worldstream/comparison-candidate';
 import { withServerMetrics, serverPhaseObserver, currentServerMetrics } from '@/server/worldstream-metrics';
 /**
  * `POST /api/worldstream/sessions/:id/changes` — **preview druhé věty** (P15 T22, §21).
@@ -19,6 +27,11 @@ import { withServerMetrics, serverPhaseObserver, currentServerMetrics } from '@/
  * 3. **Grounding** — a ten je **před** modelem, tedy zadarmo. Nejasná věta se
  *    vrátí jako nabídka kandidátů a nestojí ani jedno placené volání. Je to
  *    zároveň jediný způsob, jak se druhá věta smí splést: nabídkou, ne odhadem.
+ *    **Věta bez cíle není nejasná — zakládá nový objekt** (P21 T8): grounding
+ *    ji vrátí jako `addition` a jde k modelu jako zadání „přidej", ne zpátky
+ *    jako nabídka celého světa; „a bench under the tree" nese strom jako kotvu
+ *    (P22 T13). Nabídka zůstává tam, kde je věta doopravdy nerozhodnutá
+ *    (`AMBIGUOUS`) nebo kde klient tvrdí id, které svět nemá (`UNKNOWN_ID`).
  *
  * Za nimi stojí ještě **strop souběhu** — týž čítač jako u zakládání relace.
  * Není to brána vstupu, protože se bere až těsně před placeným voláním.
@@ -53,6 +66,7 @@ import {
   type RefinePlan,
 } from '@/model/worldstream-refine';
 import type { BlueprintEmitter } from '@/model/worldstream-repair';
+import { planIncrement } from '@/model/incremental-planner';
 import { withRequest } from '@/obs/trace';
 import { killState } from '@/server/kill-switch';
 import { moderatePrompt } from '@/server/moderation';
@@ -65,6 +79,7 @@ import {
   chooseAuthoredChange,
 } from '@/worldstream/authored';
 import { preservedBy } from '@/worldstream/preserved';
+import type { WorldstreamBlueprint } from '@/worldstream/schema';
 import { getSession, putChange, SESSION_FAULTS } from '@/worldstream/sessions';
 
 import { acquireSlot, cloudEmitter, releaseSlot, slotsDetail } from '../../route';
@@ -78,6 +93,7 @@ function fail(requestId: string, status: number, code: string, message: string):
 interface ChangeRequest {
   readonly prompt: unknown;
   readonly stableId?: string;
+  readonly comparison?: boolean;
 }
 
 type BodyRead = { ok: true; value: ChangeRequest } | { ok: false; code: string; message: string };
@@ -93,7 +109,7 @@ function readChangeBody(text: string): BodyRead {
   if (body === null || typeof body !== 'object' || Array.isArray(body))
     return { ok: false, code: 'BODY_NOT_AN_OBJECT', message: 'the request body is not a JSON object' };
 
-  const extra = Object.keys(body).filter((key) => key !== 'prompt' && key !== 'stableId');
+  const extra = Object.keys(body).filter((key) => key !== 'prompt' && key !== 'stableId' && key !== 'comparison');
   if (extra.length > 0)
     return {
       ok: false,
@@ -101,19 +117,20 @@ function readChangeBody(text: string): BodyRead {
       message: `this endpoint takes a prompt and an optional stableId; it will not accept ${extra.join(', ')}`,
     };
 
-  const { prompt, stableId } = body as { prompt?: unknown; stableId?: unknown };
+  const { prompt, stableId, comparison } = body as { prompt?: unknown; stableId?: unknown; comparison?: unknown };
+  if (comparison !== undefined && typeof comparison !== 'boolean') return {ok:false,code:'INVALID_COMPARISON',message:'comparison must be a boolean'};
   if (stableId !== undefined && typeof stableId !== 'string')
     return { ok: false, code: 'INVALID_STABLE_ID', message: 'stableId must be a string' };
 
-  return { ok: true, value: { prompt, ...(stableId === undefined ? {} : { stableId }) } };
+  return { ok: true, value: { prompt, ...(comparison === undefined ? {} : { comparison }), ...(stableId === undefined ? {} : { stableId }) } };
 }
 
-export async function POST(
+async function handleDurablePOST(
   request: Request,
   context: { params: Promise<{ sessionId: string }> },
 ): Promise<Response> {
   const { sessionId } = await context.params;
-  return createChange(request, sessionId, await cloudEmitter());
+  return createChange(request, sessionId, await cloudEmitter(sessionId));
 }
 
 /**
@@ -171,6 +188,8 @@ export async function createChange(
     // Strop na frekvenci, hned za vypínačem a před čtením těla. Tyhle dveře
     // stojí navíc placené volání, takže čítač souběhu níž zůstává — frekvence
     // a souběh měří dvě různé věci a jedna druhou nenahradí.
+    const identityRejection=ownerIdentityRejection(request);
+    if(identityRejection)return identityRejection;
     const slot = takeRateSlot('changes', trustedCallerKey(request) ?? callerKey(request));
     if (!slot.allowed) {
       logRateLimited(
@@ -246,10 +265,27 @@ export async function createChange(
     const verdict = moderatePrompt(read.value.prompt);
     if (!verdict.ok) return fail(requestId, 400, verdict.category, verdict.detail);
 
+    // **Jedna věta = jeden kus** (P21 T9), rozhodnuto před groundingem a před
+    // modelem. Věta bez obsahu („ok add something nice") projde moderací a model
+    // by na ni objekt vymyslel — tady je odmítnutá zadarmo. Věta o víc věcech
+    // jde dál jen svým prvním kusem; zbytek se vrací porotci jako fronta, aby
+    // ho poslal další větou. Věta o jedné věci jde dál **doslova**, ne
+    // ořezaná: sklad uvařených změn ji hledá podle textu.
+    const increment = planIncrement(verdict.prompt);
+    if (!increment.ok) {
+      stored.session.events.append('patch.rejected', { reason: increment.reason, detail: increment.detail });
+      return Response.json({ requestId, outcome: 'REJECTED', reason: increment.reason, detail: increment.detail });
+    }
+    const pieces =
+      increment.pieces.length > 1
+        ? { asked: increment.pieces[0].text, remaining: increment.pieces.slice(1).map((piece) => piece.text) }
+        : null;
+    const sentence = pieces === null ? verdict.prompt : pieces.asked;
+
     // **Grounding je před modelem, a proto je zadarmo.** Nejasná věta se vrátí
     // jako nabídka i na nasazení bez klíče: je to odpověď o světě, ne o modelu,
     // a platit za otázku, na kterou se ještě nikdo nezeptal, je čistá ztráta.
-    const grounding = groundTarget(verdict.prompt, blueprint.objects, read.value.stableId);
+    const grounding = groundTarget(sentence, blueprint.objects, read.value.stableId);
     if (!grounding.ok)
       return Response.json({
         requestId,
@@ -257,10 +293,16 @@ export async function createChange(
         reason: grounding.reason,
         candidates: grounding.candidates,
       });
+    // Věta o něčem, co ve světě není, je od P21 T8 zadání, ne odmítnutí:
+    // `target === null` níž znamená přidání. Kotva (P22 T13) je objekt, u kterého
+    // má nový stát — „a bench under the tree" staví lavičku, nemění strom.
+    const target = grounding.kind === 'edit' ? grounding.target : null;
+    const anchor = grounding.kind === 'addition' ? grounding.anchor : null;
 
     // **Živý model má přednost, sklad je za ním** (`T35-actsthree4`) — táž
-    // záložní větev a totéž pořadí jako u zakládání relace.
-    const authored = cloud === null ? authoredChangeFor(stored, verdict.prompt, grounding.target.stableId) : null;
+    // záložní větev a totéž pořadí jako u zakládání relace. Sklad má jen změny
+    // existujících objektů; nový objekt bez modelu nikdo nenapíše.
+    const authored = cloud === null && target !== null ? authoredChangeFor(stored, sentence, target.stableId) : null;
     const emit = cloud ?? (authored === null ? null : changeEmitterFor(authored.change));
 
     // `null` znamená „cloudová větev není nakonfigurovaná a sklad na tenhle
@@ -319,9 +361,10 @@ export async function createChange(
     try {
       outcome = await planChange({
         observePhase: serverPhaseObserver,
-        prompt: verdict.prompt,
+        prompt: sentence,
         blueprint,
-        target: grounding.target,
+        target,
+        anchor,
         emit,
       });
     } finally {
@@ -380,7 +423,29 @@ export async function createChange(
       // reuse the old summary or silently narrow an already stored preview.
       plan = { ...plan, behavior: [], summary: SHAPE_ONLY_MOTION_SUMMARY };
     }
-    const target = grounding.target;
+    // **Dosah přidání se soudí nad skutečným dokumentem už tady**, ne až na
+    // commitu: brána je diff stavu (`additionScopeIssue`), takže potřebuje
+    // dokument po patchi — a `commitRoutedParts` je čistá funkce nad kopií,
+    // takže dry run do relace nezapíše nic. Porotce tak vidí `ALLOWED_PATH`
+    // dřív, než by klikl na commit, a commit soudí toutéž funkcí ještě jednou.
+    if (plan.addition !== null && plan.behavior.length > 0) {
+      const out = additionOutOfScope(plan.behavior, blueprint.world, plan.stableId);
+      if (out !== null) {
+        stored.session.events.append('patch.rejected', { reason: out.reason, detail: out.detail });
+        return Response.json({ requestId, outcome: 'REJECTED', reason: out.reason, detail: out.detail });
+      }
+    }
+    // The main UI compares every behavior edit. Validate its typed/scope contract
+    // before offering confirmation; a winning witness is not required for A4.
+    // Přidání se nesrovnává: svět před ním ten objekt neměl, takže není s čím.
+    if(read.value.comparison === true && plan.behavior.length>0 && plan.addition === null){
+      if(plan.shape!==null)return fail(requestId,422,'COMPARISON_REJECTED','A rule comparison cannot also replace geometry.');
+      const routed=routePatch({operations:plan.behavior},blueprint.world);
+      if(routed.verdict==='REJECTED')return fail(requestId,422,'COMPARISON_REJECTED',routed.detail);
+      const prepared=prepareComparisonCandidate(blueprint.world,routed.patches.map(p=>({part:p.part,baseRevision:blueprint.world.simRevision,operations:p.operations})));
+      if(!prepared.ok)return fail(requestId,422,'COMPARISON_REJECTED',`${prepared.reason}: ${prepared.detail}`);
+    }
+    const named = plan.addition === null ? target! : plan.addition.object;
     const change: PendingChange = {
       changeId: randomUUID(),
       plan,
@@ -398,6 +463,8 @@ export async function createChange(
       shape: plan.shape !== null,
       behavior: plan.behavior.length,
       appearance: plan.appearance.length,
+      /** Věta zakládá objekt, který ve světě nebyl (P21 T8). */
+      addition: plan.addition !== null,
     };
 
     stored.session.events.append(
@@ -411,7 +478,7 @@ export async function createChange(
       changeId: change.changeId,
       outcome: 'PREVIEW',
       summary: plan.summary,
-      target: { stableId: target.stableId, label: target.label },
+      target: { stableId: named.stableId, label: named.label },
       scope,
       // §4 ukazuje porotci vedle rozsahu i to, co změna **nechá být**. Je to
       // polovina slibu „bez resetu" a bez ní se ta věta nedá ověřit očima.
@@ -421,8 +488,46 @@ export async function createChange(
       // větu: přehrávanou změnu porotce odhalí tím, že dvě různé věty udělají
       // totéž, a produkt to má říct dřív než on.
       ...(authored === null ? {} : { authored: { match: authored.match } }),
+      // **Jen když se věta řezala** (P21 T9): co z ní šlo modelu a co porotci
+      // zbývá poslat další větou. Věta o jedné věci pole nenese.
+      ...(pieces === null ? {} : { pieces }),
       basedOn: change.basedOn,
       commit: `/api/worldstream/sessions/${sessionId}/changes/${change.changeId}/commit`,
     });
   }));
+}
+
+/**
+ * Sáhly by operace přidání na něco, co už ve světě stálo?
+ *
+ * Dry run stávajícím řetězem — router rozhodne dráhu, `commitRoutedParts`
+ * provede patch nad kopií — a pak diff `sim` před a po. Odmítnutí routeru nebo
+ * commitu se vrací pod svým jménem: jsou to jiné vady než cizí cesta a porotce
+ * má číst tu pravou.
+ */
+function additionOutOfScope(
+  operations: RefinePlan['behavior'],
+  doc: WorldstreamBlueprint['world'],
+  stableId: string,
+): { readonly reason: string; readonly detail: string } | null {
+  const routing = routePatch({ operations }, doc);
+  if (routing.verdict === 'REJECTED') return { reason: routing.reason, detail: routing.detail };
+
+  const patches = routing.patches.map(
+    (routed: RoutedPatch): PartPatch => ({
+      part: routed.part,
+      baseRevision: routed.part === 'sim' ? doc.simRevision : doc.lookRevision,
+      operations: routed.operations,
+    }),
+  );
+  const committed = commitRoutedParts(doc, patches);
+  if (committed.outcome === 'REJECTED')
+    return { reason: committed.rejections[0].reason, detail: committed.rejections[0].detail };
+
+  const issue = additionScopeIssue(doc.sim, committed.after.sim, stableId);
+  return issue === null ? null : { reason: 'ALLOWED_PATH', detail: issue.detail };
+}
+
+export async function POST(...args:Parameters<typeof handleDurablePOST>):Promise<Response> {
+  return withSessionStorageResponse(async()=>{assertSessionStorageReady();return handleDurablePOST(...args);});
 }

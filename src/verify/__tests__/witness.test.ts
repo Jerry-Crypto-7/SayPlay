@@ -51,6 +51,41 @@ describe('certifikace vyhratelného světa', () => {
     expect(result).toMatchObject({ reason: 'NO_WIN' });
   });
 
+  /**
+   * Druhá cesta k `NO_WIN`. `witness.ts` odmítá dvakrát: jednou za vyčerpaný
+   * horizont (běh nikam nedošel) a jednou za **prohraný** běh. Ta druhá větev
+   * byla do 16. 9. 2026 dekorativní — mutace `NO_WIN` → `RUNTIME_FAULT` na
+   * `witness.ts:250` nechala celou sadu zelenou, protože žádný test neměl svět
+   * se stavem `lost`. Vyrábí se tu proto ze světa, který vyhrát nejde, přidáním
+   * jediného efektu `{ op: 'lose' }`.
+   */
+  it('a prohraný běh je odmítnutý jako prohraný, ne jako vyčerpaný horizont', () => {
+    const effects: IrEffect[] = [...unwinnable.ir.effects, { op: 'lose' }];
+    const rules: IrRule[] = [
+      ...unwinnable.ir.rules,
+      {
+        ruleId: 'r.doom',
+        phase: 0,
+        priority: 3,
+        trigger: { kind: 'onEdge', predicate: 'p.onAction.hero.pull.lever', became: true },
+        guard: null,
+        effects: [effects.length - 1],
+      },
+    ];
+    const doomed: VerifiableWorld = { ...unwinnable, ir: { ...unwinnable.ir, effects, rules } };
+    const witness: TraceInput[] = [{ tick: 1, actor: 'hero', actionId: 'pull', target: 'lever' }];
+
+    const result = verifyWitness(doomed, witness);
+    expect(result).toMatchObject({ verdict: 'REJECTED', reason: 'NO_WIN', atStep: 1 });
+    expect((result as { detail: string }).detail).toContain('run was lost at tick 1');
+
+    // Týž svět BEZ toho efektu dojde na konec horizontu, takže odmítnutí
+    // vyrobila prohra, ne horizont — dvě různé věty od jednoho `NO_WIN`.
+    const exhausted = verifyWitness(unwinnable, witness);
+    expect(exhausted).toMatchObject({ verdict: 'REJECTED', reason: 'NO_WIN' });
+    expect((exhausted as { detail: string }).detail).toContain('horizon');
+  });
+
   it('bez příčinného vstupu se stejný svět necertifikuje', () => {
     // Kdyby prošel, certifikát by neříkal nic o tom, že ho vyhrál SVĚDEK.
     expect(verifyWitness(vault, []).verdict).toBe('REJECTED');

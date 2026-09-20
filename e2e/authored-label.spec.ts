@@ -37,6 +37,7 @@ test('věta mimo sklad dostane svět a produkt to řekne nahlas', async ({ page 
   test.setTimeout(180_000);
 
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await buildWorld(page, UNKNOWN);
 
   const notice = page.getByTestId('world-authored');
@@ -77,6 +78,7 @@ test('i věta, kterou sklad zná přesně, se přizná k uloženému světu', as
   test.setTimeout(180_000);
 
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await buildWorld(page, AUTHORED);
 
   // ⚠ **Tenhle test do 7. 9. 2026 tvrdil pravý opak** (`toHaveCount(0)`)
@@ -100,6 +102,7 @@ test('i věta, kterou sklad zná přesně, se přizná k uloženému světu', as
 
 test('prázdné plátno o původu mlčí', async ({ page }) => {
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'empty');
   await expect(page.getByTestId('world-authored')).toHaveCount(0);
 });

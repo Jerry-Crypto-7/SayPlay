@@ -1,0 +1,1654 @@
+{
+  "measuredAt": "2026-09-18T11:20:48.968Z",
+  "kind": "replay of archived world graphs — zero model calls, no HTTP",
+  "source": "evals/worldstream/create-raw.json (2026-09-06 archive, seed 4021, 104 calls / 30 cases)",
+  "sessionSeed": 4021,
+  "verdict": "no new cases",
+  "verdictDetail": "No world in the archive ever reached the current budget: 0 of 72 ended as budget-exhausted, the rest either solved or ran the search space dry. Widening a limit nothing touches cannot certify anything new, so SOLVE_BUDGET stays at budgets.old.",
+  "budgets": {
+    "old": {
+      "maxNodes": 20000,
+      "maxTicks": 40000,
+      "maxDepth": 6,
+      "settleTicks": 30
+    },
+    "candidate": {
+      "maxNodes": 80000,
+      "maxTicks": 160000,
+      "maxDepth": 6,
+      "settleTicks": 30
+    }
+  },
+  "limitsAreTimeFree": "Both budgets are expressed in replay nodes and simulated ticks. The milliseconds below are the price of the search, never an input to it — a wall-clock cut-off would make the browser and Node disagree.",
+  "summary": {
+    "worldsSearched": 72,
+    "skipped": 0,
+    "certifiedOld": 51,
+    "certifiedCandidate": 51,
+    "newlyCertified": [],
+    "lostCertification": [],
+    "tracesThatMoved": [],
+    "statuses": {
+      "old": {
+        "solved": 51,
+        "search-exhausted": 17,
+        "ineligible": 4
+      },
+      "candidate": {
+        "solved": 51,
+        "search-exhausted": 17,
+        "ineligible": 4
+      }
+    },
+    "budgetPressure": {
+      "casesThatHitTheOldBudget": [],
+      "nodesUsedPercentOfOldCap": 2.1,
+      "ticksUsedPercentOfOldCap": 85.1
+    },
+    "old": {
+      "p50SearchMs": 47.606,
+      "p95SearchMs": 3858.459,
+      "maxSearchMs": 5339.836,
+      "maxNodesUsed": 421,
+      "maxTicksUsed": 34020
+    },
+    "candidate": {
+      "p50SearchMs": 50.328,
+      "p95SearchMs": 3552.281,
+      "maxSearchMs": 6372.595,
+      "maxNodesUsed": 421,
+      "maxTicksUsed": 34020
+    }
+  },
+  "warnings": [
+    "Replay of one archived run on one machine. It measures the searcher, not the model, and closes no gate.",
+    "Milliseconds vary with the machine; the nodes and ticks do not. Read the counts first."
+  ],
+  "skipped": [],
+  "cases": [
+    {
+      "id": "c01#2",
+      "caseId": "c01",
+      "call": 2,
+      "prompt": "A cathedral of stacked shipping containers around a light well.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 621,
+        "ms": 32.003,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 621,
+        "ms": 34.685,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c01#3",
+      "caseId": "c01",
+      "call": 3,
+      "prompt": "A cathedral of stacked shipping containers around a light well.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 621,
+        "ms": 30.351,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 621,
+        "ms": 28.448,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c01#4",
+      "caseId": "c01",
+      "call": 4,
+      "prompt": "A cathedral of stacked shipping containers around a light well.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 621,
+        "ms": 23.094,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 621,
+        "ms": 22.912,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c02#6",
+      "caseId": "c02",
+      "call": 6,
+      "prompt": "A spiral library where the stairs are the shelves.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 25,
+        "ticks": 1976,
+        "ms": 133.142,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 25,
+        "ticks": 1976,
+        "ms": 112.859,
+        "moves": null
+      }
+    },
+    {
+      "id": "c02#7",
+      "caseId": "c02",
+      "call": 7,
+      "prompt": "A spiral library where the stairs are the shelves.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 25,
+        "ticks": 1976,
+        "ms": 215.892,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 25,
+        "ticks": 1976,
+        "ms": 165.416,
+        "moves": null
+      }
+    },
+    {
+      "id": "c02#8",
+      "caseId": "c02",
+      "call": 8,
+      "prompt": "A spiral library where the stairs are the shelves.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 25,
+        "ticks": 1976,
+        "ms": 239.349,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 25,
+        "ticks": 1976,
+        "ms": 109.77,
+        "moves": null
+      }
+    },
+    {
+      "id": "c03#10",
+      "caseId": "c03",
+      "call": 10,
+      "prompt": "A bridge town: houses hanging under a single span over a dry canyon.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 658,
+        "ms": 24.239,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 658,
+        "ms": 25.2,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c03#11",
+      "caseId": "c03",
+      "call": 11,
+      "prompt": "A bridge town: houses hanging under a single span over a dry canyon.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 658,
+        "ms": 37.138,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 658,
+        "ms": 23.778,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c03#12",
+      "caseId": "c03",
+      "call": 12,
+      "prompt": "A bridge town: houses hanging under a single span over a dry canyon.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 658,
+        "ms": 29.416,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 658,
+        "ms": 38.934,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c04#14",
+      "caseId": "c04",
+      "call": 14,
+      "prompt": "A brutalist observatory, one dome on three splayed legs, on a windswept plateau.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 621,
+        "ms": 27.818,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 621,
+        "ms": 28.7,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c04#15",
+      "caseId": "c04",
+      "call": 15,
+      "prompt": "A brutalist observatory, one dome on three splayed legs, on a windswept plateau.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 621,
+        "ms": 24.106,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 621,
+        "ms": 23.008,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c05#17",
+      "caseId": "c05",
+      "call": 17,
+      "prompt": "A flooded parking garage with ramps rising out of the water.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 5,
+        "ticks": 759,
+        "ms": 41.499,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 5,
+        "ticks": 759,
+        "ms": 46.724,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c05#18",
+      "caseId": "c05",
+      "call": 18,
+      "prompt": "A flooded parking garage with ramps rising out of the water.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 5,
+        "ticks": 759,
+        "ms": 68.612,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 5,
+        "ticks": 759,
+        "ms": 63.604,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c05#19",
+      "caseId": "c05",
+      "call": 19,
+      "prompt": "A flooded parking garage with ramps rising out of the water.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 5,
+        "ticks": 759,
+        "ms": 56.899,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 5,
+        "ticks": 759,
+        "ms": 61.404,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c06#21",
+      "caseId": "c06",
+      "call": 21,
+      "prompt": "A watchtower made of one continuous ramp coiling around an empty core.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 9,
+        "ticks": 1060,
+        "ms": 38.659,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 9,
+        "ticks": 1060,
+        "ms": 38.874,
+        "moves": null
+      }
+    },
+    {
+      "id": "c06#22",
+      "caseId": "c06",
+      "call": 22,
+      "prompt": "A watchtower made of one continuous ramp coiling around an empty core.",
+      "old": {
+        "status": "ineligible",
+        "certified": false,
+        "nodes": 0,
+        "ticks": 1,
+        "ms": 0.087,
+        "moves": null
+      },
+      "candidate": {
+        "status": "ineligible",
+        "certified": false,
+        "nodes": 0,
+        "ticks": 1,
+        "ms": 0.072,
+        "moves": null
+      }
+    },
+    {
+      "id": "c07#24",
+      "caseId": "c07",
+      "call": 24,
+      "prompt": "A forest where the trees are ribcages and the ground breathes.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 670,
+        "ms": 30.094,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 670,
+        "ms": 22.805,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c07#25",
+      "caseId": "c07",
+      "call": 25,
+      "prompt": "A forest where the trees are ribcages and the ground breathes.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 670,
+        "ms": 18.521,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 670,
+        "ms": 23.137,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c08#27",
+      "caseId": "c08",
+      "call": 27,
+      "prompt": "A tidal cave with a colony of glowing anemones on the ceiling.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 615,
+        "ms": 34.848,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 615,
+        "ms": 31.646,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c08#28",
+      "caseId": "c08",
+      "call": 28,
+      "prompt": "A tidal cave with a colony of glowing anemones on the ceiling.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 615,
+        "ms": 32.675,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 615,
+        "ms": 34.743,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c09#30",
+      "caseId": "c09",
+      "call": 30,
+      "prompt": "A giant fallen tree hollowed into a village.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 36,
+        "ticks": 2617,
+        "ms": 343.223,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 36,
+        "ticks": 2617,
+        "ms": 339.199,
+        "moves": null
+      }
+    },
+    {
+      "id": "c09#31",
+      "caseId": "c09",
+      "call": 31,
+      "prompt": "A giant fallen tree hollowed into a village.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 625,
+        "ms": 87.068,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 625,
+        "ms": 80.387,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c10#33",
+      "caseId": "c10",
+      "call": 33,
+      "prompt": "A coral reef growing over a sunken radio tower.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 4,
+        "ticks": 716,
+        "ms": 27.699,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 4,
+        "ticks": 716,
+        "ms": 34.149,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c10#34",
+      "caseId": "c10",
+      "call": 34,
+      "prompt": "A coral reef growing over a sunken radio tower.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 4,
+        "ticks": 716,
+        "ms": 25.716,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 4,
+        "ticks": 716,
+        "ms": 22.901,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c10#35",
+      "caseId": "c10",
+      "call": 35,
+      "prompt": "A coral reef growing over a sunken radio tower.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 4,
+        "ticks": 716,
+        "ms": 23.38,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 4,
+        "ticks": 716,
+        "ms": 25.103,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c11#37",
+      "caseId": "c11",
+      "call": 37,
+      "prompt": "A field of slow-moving grazing rock creatures.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 48,
+        "ticks": 6139,
+        "ms": 202.174,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 48,
+        "ticks": 6139,
+        "ms": 180.458,
+        "moves": null
+      }
+    },
+    {
+      "id": "c11#38",
+      "caseId": "c11",
+      "call": 38,
+      "prompt": "A field of slow-moving grazing rock creatures.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 48,
+        "ticks": 6139,
+        "ms": 220.015,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 48,
+        "ticks": 6139,
+        "ms": 172.499,
+        "moves": null
+      }
+    },
+    {
+      "id": "c11#39",
+      "caseId": "c11",
+      "call": 39,
+      "prompt": "A field of slow-moving grazing rock creatures.",
+      "old": {
+        "status": "ineligible",
+        "certified": false,
+        "nodes": 0,
+        "ticks": 1,
+        "ms": 0.055,
+        "moves": null
+      },
+      "candidate": {
+        "status": "ineligible",
+        "certified": false,
+        "nodes": 0,
+        "ticks": 1,
+        "ms": 0.039,
+        "moves": null
+      }
+    },
+    {
+      "id": "c12#41",
+      "caseId": "c12",
+      "call": 41,
+      "prompt": "A clock tower where the gears are big enough to walk on.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 625,
+        "ms": 39.261,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 625,
+        "ms": 61.456,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c13#43",
+      "caseId": "c13",
+      "call": 43,
+      "prompt": "A drawbridge worked by a counterweight full of water.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 421,
+        "ticks": 34020,
+        "ms": 3174.206,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 421,
+        "ticks": 34020,
+        "ms": 3084.607,
+        "moves": null
+      }
+    },
+    {
+      "id": "c13#44",
+      "caseId": "c13",
+      "call": 44,
+      "prompt": "A drawbridge worked by a counterweight full of water.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 421,
+        "ticks": 34020,
+        "ms": 2734.175,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 421,
+        "ticks": 34020,
+        "ms": 3487.664,
+        "moves": null
+      }
+    },
+    {
+      "id": "c13#45",
+      "caseId": "c13",
+      "call": 45,
+      "prompt": "A drawbridge worked by a counterweight full of water.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 421,
+        "ticks": 34020,
+        "ms": 3099.594,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 421,
+        "ticks": 34020,
+        "ms": 3552.281,
+        "moves": null
+      }
+    },
+    {
+      "id": "c14#47",
+      "caseId": "c14",
+      "call": 47,
+      "prompt": "A water-driven mill that lifts crates onto a platform.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 143,
+        "ticks": 12947,
+        "ms": 2152.785,
+        "moves": 4
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 143,
+        "ticks": 12947,
+        "ms": 2215.048,
+        "moves": 4
+      }
+    },
+    {
+      "id": "c15#50",
+      "caseId": "c15",
+      "call": 50,
+      "prompt": "An orrery the size of a room, planets on brass arms.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 6,
+        "ticks": 760,
+        "ms": 64.545,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 6,
+        "ticks": 760,
+        "ms": 62.362,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c15#51",
+      "caseId": "c15",
+      "call": 51,
+      "prompt": "An orrery the size of a room, planets on brass arms.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 6,
+        "ticks": 760,
+        "ms": 59.017,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 6,
+        "ticks": 760,
+        "ms": 62.665,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c15#52",
+      "caseId": "c15",
+      "call": 52,
+      "prompt": "An orrery the size of a room, planets on brass arms.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 6,
+        "ticks": 760,
+        "ms": 72.912,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 6,
+        "ticks": 760,
+        "ms": 65.356,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c16#54",
+      "caseId": "c16",
+      "call": 54,
+      "prompt": "A pneumatic tube station that sorts capsules into three chutes.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 234,
+        "ticks": 18958,
+        "ms": 2804.94,
+        "moves": 3
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 234,
+        "ticks": 18958,
+        "ms": 2454.845,
+        "moves": 3
+      }
+    },
+    {
+      "id": "c16#55",
+      "caseId": "c16",
+      "call": 55,
+      "prompt": "A pneumatic tube station that sorts capsules into three chutes.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 234,
+        "ticks": 18958,
+        "ms": 2617.195,
+        "moves": 3
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 234,
+        "ticks": 18958,
+        "ms": 2480.282,
+        "moves": 3
+      }
+    },
+    {
+      "id": "c16#56",
+      "caseId": "c16",
+      "call": 56,
+      "prompt": "A pneumatic tube station that sorts capsules into three chutes.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 234,
+        "ticks": 18958,
+        "ms": 3858.459,
+        "moves": 3
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 234,
+        "ticks": 18958,
+        "ms": 3311.15,
+        "moves": 3
+      }
+    },
+    {
+      "id": "c17#58",
+      "caseId": "c17",
+      "call": 58,
+      "prompt": "A lighthouse in fog so thick the beam is the only straight line.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 619,
+        "ms": 15.732,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 619,
+        "ms": 27.442,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c17#59",
+      "caseId": "c17",
+      "call": 59,
+      "prompt": "A lighthouse in fog so thick the beam is the only straight line.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 619,
+        "ms": 10.411,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 619,
+        "ms": 13.528,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c19#62",
+      "caseId": "c19",
+      "call": 62,
+      "prompt": "A sandstorm rolling into an abandoned drive-in cinema.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 676,
+        "ms": 244.935,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 676,
+        "ms": 183.751,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c19#63",
+      "caseId": "c19",
+      "call": 63,
+      "prompt": "A sandstorm rolling into an abandoned drive-in cinema.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 676,
+        "ms": 222.611,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 676,
+        "ms": 187.362,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c19#64",
+      "caseId": "c19",
+      "call": 64,
+      "prompt": "A sandstorm rolling into an abandoned drive-in cinema.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 676,
+        "ms": 179.788,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 676,
+        "ms": 189.151,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c20#66",
+      "caseId": "c20",
+      "call": 66,
+      "prompt": "A tunnel lit only by the train that is about to arrive.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 617,
+        "ms": 51.169,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 617,
+        "ms": 50.942,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c20#67",
+      "caseId": "c20",
+      "call": 67,
+      "prompt": "A tunnel lit only by the train that is about to arrive.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 617,
+        "ms": 47.606,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 617,
+        "ms": 39.177,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c20#68",
+      "caseId": "c20",
+      "call": 68,
+      "prompt": "A tunnel lit only by the train that is about to arrive.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 617,
+        "ms": 39.231,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 617,
+        "ms": 46.565,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c21#70",
+      "caseId": "c21",
+      "call": 70,
+      "prompt": "A monsoon courtyard where the rain sheets off every roof edge.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 617,
+        "ms": 88.634,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 617,
+        "ms": 88.995,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c21#71",
+      "caseId": "c21",
+      "call": 71,
+      "prompt": "A monsoon courtyard where the rain sheets off every roof edge.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 617,
+        "ms": 101.862,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 617,
+        "ms": 104.235,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c21#72",
+      "caseId": "c21",
+      "call": 72,
+      "prompt": "A monsoon courtyard where the rain sheets off every roof edge.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 617,
+        "ms": 87.046,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 617,
+        "ms": 98.163,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c22#74",
+      "caseId": "c22",
+      "call": 74,
+      "prompt": "A space where gravity points toward the nearest wall.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 613,
+        "ms": 13.25,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 613,
+        "ms": 13.547,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c22#75",
+      "caseId": "c22",
+      "call": 75,
+      "prompt": "A space where gravity points toward the nearest wall.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 613,
+        "ms": 11.996,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 1,
+        "ticks": 613,
+        "ms": 12.554,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c23#77",
+      "caseId": "c23",
+      "call": 77,
+      "prompt": "A room that is the inside of a sorting algorithm.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 53,
+        "ticks": 3657,
+        "ms": 501.406,
+        "moves": 2
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 53,
+        "ticks": 3657,
+        "ms": 599.283,
+        "moves": 2
+      }
+    },
+    {
+      "id": "c23#78",
+      "caseId": "c23",
+      "call": 78,
+      "prompt": "A room that is the inside of a sorting algorithm.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 53,
+        "ticks": 3657,
+        "ms": 607.108,
+        "moves": 2
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 53,
+        "ticks": 3657,
+        "ms": 556.579,
+        "moves": 2
+      }
+    },
+    {
+      "id": "c23#79",
+      "caseId": "c23",
+      "call": 79,
+      "prompt": "A room that is the inside of a sorting algorithm.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 53,
+        "ticks": 3657,
+        "ms": 529.535,
+        "moves": 2
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 53,
+        "ticks": 3657,
+        "ms": 534.516,
+        "moves": 2
+      }
+    },
+    {
+      "id": "c24#81",
+      "caseId": "c24",
+      "call": 81,
+      "prompt": "A place built out of the negative space of a staircase.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 12,
+        "ticks": 1243,
+        "ms": 47.123,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 12,
+        "ticks": 1243,
+        "ms": 46.782,
+        "moves": null
+      }
+    },
+    {
+      "id": "c24#82",
+      "caseId": "c24",
+      "call": 82,
+      "prompt": "A place built out of the negative space of a staircase.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 12,
+        "ticks": 1243,
+        "ms": 39.196,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 12,
+        "ticks": 1243,
+        "ms": 35.783,
+        "moves": null
+      }
+    },
+    {
+      "id": "c24#83",
+      "caseId": "c24",
+      "call": 83,
+      "prompt": "A place built out of the negative space of a staircase.",
+      "old": {
+        "status": "ineligible",
+        "certified": false,
+        "nodes": 0,
+        "ticks": 1,
+        "ms": 0.095,
+        "moves": null
+      },
+      "candidate": {
+        "status": "ineligible",
+        "certified": false,
+        "nodes": 0,
+        "ticks": 1,
+        "ms": 0.075,
+        "moves": null
+      }
+    },
+    {
+      "id": "c25#85",
+      "caseId": "c25",
+      "call": 85,
+      "prompt": "A landscape where distance is measured in silence.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 674,
+        "ms": 15.189,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 674,
+        "ms": 15.71,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c25#86",
+      "caseId": "c25",
+      "call": 86,
+      "prompt": "A landscape where distance is measured in silence.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 674,
+        "ms": 15.3,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 2,
+        "ticks": 674,
+        "ms": 17.361,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c26#88",
+      "caseId": "c26",
+      "call": 88,
+      "prompt": "Make me a chess engine that beats me.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 369,
+        "ticks": 32319,
+        "ms": 4948.889,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 369,
+        "ticks": 32319,
+        "ms": 6372.595,
+        "moves": null
+      }
+    },
+    {
+      "id": "c26#89",
+      "caseId": "c26",
+      "call": 89,
+      "prompt": "Make me a chess engine that beats me.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 369,
+        "ticks": 32319,
+        "ms": 5339.836,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 369,
+        "ticks": 32319,
+        "ms": 4049.864,
+        "moves": null
+      }
+    },
+    {
+      "id": "c26#90",
+      "caseId": "c26",
+      "call": 90,
+      "prompt": "Make me a chess engine that beats me.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 369,
+        "ticks": 32319,
+        "ms": 4430.283,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 369,
+        "ticks": 32319,
+        "ms": 4721.194,
+        "moves": null
+      }
+    },
+    {
+      "id": "c27#92",
+      "caseId": "c27",
+      "call": 92,
+      "prompt": "Write a haiku about the sea.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 6,
+        "ticks": 907,
+        "ms": 14.122,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 6,
+        "ticks": 907,
+        "ms": 13.935,
+        "moves": null
+      }
+    },
+    {
+      "id": "c27#93",
+      "caseId": "c27",
+      "call": 93,
+      "prompt": "Write a haiku about the sea.",
+      "old": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 6,
+        "ticks": 907,
+        "ms": 19.18,
+        "moves": null
+      },
+      "candidate": {
+        "status": "search-exhausted",
+        "certified": false,
+        "nodes": 6,
+        "ticks": 907,
+        "ms": 14.587,
+        "moves": null
+      }
+    },
+    {
+      "id": "c27#94",
+      "caseId": "c27",
+      "call": 94,
+      "prompt": "Write a haiku about the sea.",
+      "old": {
+        "status": "ineligible",
+        "certified": false,
+        "nodes": 0,
+        "ticks": 1,
+        "ms": 0.042,
+        "moves": null
+      },
+      "candidate": {
+        "status": "ineligible",
+        "certified": false,
+        "nodes": 0,
+        "ticks": 1,
+        "ms": 0.026,
+        "moves": null
+      }
+    },
+    {
+      "id": "c29#98",
+      "caseId": "c29",
+      "call": 98,
+      "prompt": "Recreate my apartment from this floor plan: three rooms, sixty square metres, balcony to the south.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 3,
+        "ticks": 679,
+        "ms": 42.832,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 3,
+        "ticks": 679,
+        "ms": 50.328,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c29#99",
+      "caseId": "c29",
+      "call": 99,
+      "prompt": "Recreate my apartment from this floor plan: three rooms, sixty square metres, balcony to the south.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 3,
+        "ticks": 679,
+        "ms": 50.206,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 3,
+        "ticks": 679,
+        "ms": 48.611,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c29#100",
+      "caseId": "c29",
+      "call": 100,
+      "prompt": "Recreate my apartment from this floor plan: three rooms, sixty square metres, balcony to the south.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 3,
+        "ticks": 679,
+        "ms": 42.443,
+        "moves": 1
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 3,
+        "ticks": 679,
+        "ms": 43.143,
+        "moves": 1
+      }
+    },
+    {
+      "id": "c30#102",
+      "caseId": "c30",
+      "call": 102,
+      "prompt": "Simulate an epidemic across ten thousand people and plot the curve.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 38,
+        "ticks": 2760,
+        "ms": 279.304,
+        "moves": 2
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 38,
+        "ticks": 2760,
+        "ms": 295.196,
+        "moves": 2
+      }
+    },
+    {
+      "id": "c30#103",
+      "caseId": "c30",
+      "call": 103,
+      "prompt": "Simulate an epidemic across ten thousand people and plot the curve.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 38,
+        "ticks": 2760,
+        "ms": 338.64,
+        "moves": 2
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 38,
+        "ticks": 2760,
+        "ms": 320.716,
+        "moves": 2
+      }
+    },
+    {
+      "id": "c30#104",
+      "caseId": "c30",
+      "call": 104,
+      "prompt": "Simulate an epidemic across ten thousand people and plot the curve.",
+      "old": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 38,
+        "ticks": 2760,
+        "ms": 337.405,
+        "moves": 2
+      },
+      "candidate": {
+        "status": "solved",
+        "certified": true,
+        "nodes": 38,
+        "ticks": 2760,
+        "ms": 376.082,
+        "moves": 2
+      }
+    }
+  ]
+}

@@ -32,7 +32,8 @@
 
 import { Color, type ColorRepresentation, MeshStandardMaterial } from 'three';
 
-import { UI_TOKENS } from '@/kit';
+import { UI_TOKENS, type Palette } from '@/kit';
+import type { IntentRole } from '@/model/worldstream-intent';
 
 /**
  * Naladění hlíny jako **data, ne jen jako atributy v JSX**.
@@ -47,6 +48,41 @@ export const CLAY = {
   /** Podíl vlastní barvy, který povrch vydá sám. Viz hlavička — podlaha jasu. */
   emissiveShare: 0.06,
 } as const;
+
+/**
+ * Odstín hmoty podle role slotu (P18 T3).
+ *
+ * ## Proč to vzniklo
+ *
+ * Snímky z živých běhů byly **šedé desky na jednom odstínu** a příčina nebyla
+ * ve světlech — rig má čtyři a mlhu. Byla tady: `buildRough()` dával hrdinům
+ * i hliněným kvádrům `clayMaterial()` bez barvy, tedy token `clay` na všechno.
+ * Svět složený z pěti objektů tak měl pět kusů téže hlíny a nešlo v něm
+ * rozeznat podlahu od zdi ani zeď od hrdiny. Kusy kitu tuhle vadu nikdy neměly,
+ * protože vezou odstín ve vrcholech a `repaint()` je přebarvuje paletou.
+ *
+ * ## Proč odstín z palety, a ne vlastní hex
+ *
+ * Táž úvaha jako u terénu v `geom/compile.ts`: odstín mimo paletu by `repaint()`
+ * odmítl a paleta by se rozpadla na dva nezávislé zdroje barev. Role si proto
+ * vybírá **z šesti políček palety**, nevymýšlí si.
+ *
+ * Mapa je záměrně hodnotová: hrdina dostane teplý odstín, protože k němu má jít
+ * oko; drobnost tmavý, protože má ustoupit; efekt jediný sytý. `moss` zůstává
+ * kitu a terénním kusům, aby se krajina neslila s podlahou slotu.
+ */
+const ROLE_SWATCH = {
+  architecture: 'shell',
+  hero: 'warm',
+  prop: 'deep',
+  terrain: 'sand',
+  effect: 'accent',
+} as const satisfies Record<IntentRole, keyof Palette>;
+
+/** Odstín hmoty pro roli. Vždycky jedno ze šesti políček zadané palety. */
+export function shadeForRole(role: IntentRole, palette: Palette): string {
+  return palette[ROLE_SWATCH[role]];
+}
 
 export interface ClayOverrides {
   /**

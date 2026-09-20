@@ -1,0 +1,557 @@
+{
+  "id": "long-1",
+  "category": "long",
+  "sentence": "A two-storey farmhouse with a red roof, a porch with a rocking chair, a kitchen with a wood stove, a bedroom upstairs with a window facing the barn, a chicken coop with four chickens, a vegetable garden with a scarecrow, and a well whose bucket must be lowered three times before the water comes up.",
+  "measuredAt": "2026-09-19T20:30:10.890Z",
+  "plannerMs": 71533,
+  "answer": {
+    "intent": {
+      "setting": "A two-storey farmhouse and its surrounding farm buildings, garden, and well.",
+      "mood": "Domestic and rural.",
+      "spatialThesis": "The farmhouse connects a porch and kitchen to an upstairs bedroom whose window faces the barn, while the chicken coop, vegetable garden, and well occupy the surrounding farm.",
+      "actors": [
+        "four chickens"
+      ],
+      "heroObjects": [
+        "the two-storey farmhouse",
+        "the well"
+      ],
+      "interactions": [
+        "The well's bucket must be lowered three times before water comes up."
+      ],
+      "unsupported": []
+    },
+    "objects": [
+      {
+        "stableId": "farmhouse",
+        "label": "the two-storey farmhouse",
+        "synonyms": [
+          "farmhouse",
+          "house",
+          "farm house",
+          "two-storey house",
+          "two-story farmhouse"
+        ],
+        "role": "architecture",
+        "importance": 3
+      },
+      {
+        "stableId": "roof",
+        "label": "the red roof",
+        "synonyms": [
+          "roof",
+          "red roof",
+          "farmhouse roof"
+        ],
+        "role": "architecture",
+        "importance": 2
+      },
+      {
+        "stableId": "porch",
+        "label": "the porch",
+        "synonyms": [
+          "porch",
+          "veranda",
+          "front porch"
+        ],
+        "role": "architecture",
+        "importance": 2
+      },
+      {
+        "stableId": "rockingChair",
+        "label": "the rocking chair",
+        "synonyms": [
+          "rocking chair",
+          "chair",
+          "rocker"
+        ],
+        "role": "prop",
+        "importance": 2
+      },
+      {
+        "stableId": "kitchen",
+        "label": "the kitchen",
+        "synonyms": [
+          "kitchen",
+          "farmhouse kitchen"
+        ],
+        "role": "architecture",
+        "importance": 2
+      },
+      {
+        "stableId": "woodStove",
+        "label": "the wood stove",
+        "synonyms": [
+          "wood stove",
+          "stove",
+          "wood-burning stove",
+          "wood burner"
+        ],
+        "role": "prop",
+        "importance": 2
+      },
+      {
+        "stableId": "bedroom",
+        "label": "the upstairs bedroom",
+        "synonyms": [
+          "bedroom",
+          "upstairs bedroom",
+          "sleeping room"
+        ],
+        "role": "architecture",
+        "importance": 2
+      },
+      {
+        "stableId": "bedroomWindow",
+        "label": "the bedroom window facing the barn",
+        "synonyms": [
+          "window",
+          "bedroom window",
+          "upstairs window",
+          "barn-facing window"
+        ],
+        "role": "architecture",
+        "importance": 2
+      },
+      {
+        "stableId": "barn",
+        "label": "the barn",
+        "synonyms": [
+          "barn",
+          "farm barn"
+        ],
+        "role": "architecture",
+        "importance": 2
+      },
+      {
+        "stableId": "chickenCoop",
+        "label": "the chicken coop",
+        "synonyms": [
+          "chicken coop",
+          "coop",
+          "henhouse",
+          "chicken house"
+        ],
+        "role": "architecture",
+        "importance": 2
+      },
+      {
+        "stableId": "chickenOne",
+        "label": "the first chicken",
+        "synonyms": [
+          "chicken",
+          "first chicken",
+          "chicken one",
+          "bird"
+        ],
+        "role": "prop",
+        "importance": 2
+      },
+      {
+        "stableId": "chickenTwo",
+        "label": "the second chicken",
+        "synonyms": [
+          "chicken",
+          "second chicken",
+          "chicken two",
+          "bird"
+        ],
+        "role": "prop",
+        "importance": 2
+      },
+      {
+        "stableId": "chickenThree",
+        "label": "the third chicken",
+        "synonyms": [
+          "chicken",
+          "third chicken",
+          "chicken three",
+          "bird"
+        ],
+        "role": "prop",
+        "importance": 2
+      },
+      {
+        "stableId": "chickenFour",
+        "label": "the fourth chicken",
+        "synonyms": [
+          "chicken",
+          "fourth chicken",
+          "chicken four",
+          "bird"
+        ],
+        "role": "prop",
+        "importance": 2
+      },
+      {
+        "stableId": "vegetableGarden",
+        "label": "the vegetable garden",
+        "synonyms": [
+          "vegetable garden",
+          "garden",
+          "vegetable patch",
+          "kitchen garden"
+        ],
+        "role": "terrain",
+        "importance": 2
+      },
+      {
+        "stableId": "scarecrow",
+        "label": "the scarecrow",
+        "synonyms": [
+          "scarecrow",
+          "garden scarecrow"
+        ],
+        "role": "prop",
+        "importance": 2
+      },
+      {
+        "stableId": "well",
+        "label": "the well",
+        "synonyms": [
+          "well",
+          "water well"
+        ],
+        "role": "hero",
+        "importance": 3
+      },
+      {
+        "stableId": "wellBucket",
+        "label": "the well's bucket",
+        "synonyms": [
+          "bucket",
+          "well bucket",
+          "water bucket",
+          "pail"
+        ],
+        "role": "prop",
+        "importance": 3
+      }
+    ],
+    "sceneSpec": {
+      "version": 1,
+      "requirements": [
+        {
+          "id": "farmhouseRequirement",
+          "description": "One farmhouse has two storeys.",
+          "priority": "main",
+          "polarity": "required",
+          "count": 1,
+          "instanceIds": [
+            "farmhouse"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "A two-storey farmhouse"
+          }
+        },
+        {
+          "id": "roofRequirement",
+          "description": "The farmhouse has one red roof.",
+          "priority": "secondary",
+          "polarity": "required",
+          "count": 1,
+          "instanceIds": [
+            "roof"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "with a red roof"
+          }
+        },
+        {
+          "id": "porchRequirement",
+          "description": "The farmhouse has a porch with one rocking chair on it.",
+          "priority": "secondary",
+          "polarity": "required",
+          "count": 2,
+          "instanceIds": [
+            "porch",
+            "rockingChair"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "a porch with a rocking chair"
+          }
+        },
+        {
+          "id": "kitchenRequirement",
+          "description": "The farmhouse contains a kitchen with one wood-burning stove; wood describes its fuel, not its construction material.",
+          "priority": "secondary",
+          "polarity": "required",
+          "count": 2,
+          "instanceIds": [
+            "kitchen",
+            "woodStove"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "a kitchen with a wood stove"
+          }
+        },
+        {
+          "id": "bedroomRequirement",
+          "description": "One bedroom is upstairs in the farmhouse.",
+          "priority": "secondary",
+          "polarity": "required",
+          "count": 1,
+          "instanceIds": [
+            "bedroom"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "a bedroom upstairs"
+          }
+        },
+        {
+          "id": "windowBarnRequirement",
+          "description": "The upstairs bedroom has one window facing one barn; no compass direction is specified.",
+          "priority": "secondary",
+          "polarity": "required",
+          "count": 2,
+          "instanceIds": [
+            "bedroomWindow",
+            "barn"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "a bedroom upstairs with a window facing the barn"
+          }
+        },
+        {
+          "id": "coopRequirement",
+          "description": "One chicken coop houses exactly four individual chickens.",
+          "priority": "secondary",
+          "polarity": "required",
+          "count": 5,
+          "instanceIds": [
+            "chickenCoop",
+            "chickenOne",
+            "chickenTwo",
+            "chickenThree",
+            "chickenFour"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "a chicken coop with four chickens"
+          }
+        },
+        {
+          "id": "gardenRequirement",
+          "description": "One vegetable garden contains one scarecrow.",
+          "priority": "secondary",
+          "polarity": "required",
+          "count": 2,
+          "instanceIds": [
+            "vegetableGarden",
+            "scarecrow"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "a vegetable garden with a scarecrow"
+          }
+        },
+        {
+          "id": "wellRequirement",
+          "description": "One well has one bucket. Water comes up only after the bucket has been lowered three times; the first two lowerings do not bring up water.",
+          "priority": "main",
+          "polarity": "required",
+          "count": 2,
+          "instanceIds": [
+            "well",
+            "wellBucket"
+          ],
+          "provenance": {
+            "kind": "requested",
+            "quote": "a well whose bucket must be lowered three times before the water comes up"
+          }
+        }
+      ],
+      "instances": [
+        {
+          "stableId": "farmhouse",
+          "role": "architecture",
+          "orientation": "none"
+        },
+        {
+          "stableId": "roof",
+          "role": "architecture",
+          "orientation": "none",
+          "attributes": [
+            {
+              "name": "color",
+              "value": "red"
+            }
+          ]
+        },
+        {
+          "stableId": "porch",
+          "role": "architecture",
+          "orientation": "none"
+        },
+        {
+          "stableId": "rockingChair",
+          "role": "prop",
+          "orientation": "none"
+        },
+        {
+          "stableId": "kitchen",
+          "role": "architecture",
+          "orientation": "none"
+        },
+        {
+          "stableId": "woodStove",
+          "role": "prop",
+          "orientation": "none"
+        },
+        {
+          "stableId": "bedroom",
+          "role": "architecture",
+          "orientation": "none"
+        },
+        {
+          "stableId": "bedroomWindow",
+          "role": "architecture",
+          "orientation": "none"
+        },
+        {
+          "stableId": "barn",
+          "role": "architecture",
+          "orientation": "none"
+        },
+        {
+          "stableId": "chickenCoop",
+          "role": "architecture",
+          "orientation": "none"
+        },
+        {
+          "stableId": "chickenOne",
+          "role": "prop",
+          "orientation": "none"
+        },
+        {
+          "stableId": "chickenTwo",
+          "role": "prop",
+          "orientation": "none"
+        },
+        {
+          "stableId": "chickenThree",
+          "role": "prop",
+          "orientation": "none"
+        },
+        {
+          "stableId": "chickenFour",
+          "role": "prop",
+          "orientation": "none"
+        },
+        {
+          "stableId": "vegetableGarden",
+          "role": "terrain",
+          "orientation": "none"
+        },
+        {
+          "stableId": "scarecrow",
+          "role": "prop",
+          "orientation": "none"
+        },
+        {
+          "stableId": "well",
+          "role": "hero",
+          "orientation": "none"
+        },
+        {
+          "stableId": "wellBucket",
+          "role": "prop",
+          "orientation": "none"
+        }
+      ],
+      "relations": [
+        {
+          "subjectId": "roof",
+          "relation": "on",
+          "targetId": "farmhouse",
+          "req": 1
+        },
+        {
+          "subjectId": "porch",
+          "relation": "connected-to",
+          "targetId": "farmhouse",
+          "req": 2
+        },
+        {
+          "subjectId": "rockingChair",
+          "relation": "on",
+          "targetId": "porch",
+          "req": 2
+        },
+        {
+          "subjectId": "kitchen",
+          "relation": "inside",
+          "targetId": "farmhouse",
+          "req": 3
+        },
+        {
+          "subjectId": "woodStove",
+          "relation": "inside",
+          "targetId": "kitchen",
+          "req": 3
+        },
+        {
+          "subjectId": "bedroom",
+          "relation": "inside",
+          "targetId": "farmhouse",
+          "req": 4
+        },
+        {
+          "subjectId": "bedroomWindow",
+          "relation": "inside",
+          "targetId": "bedroom",
+          "req": 5
+        },
+        {
+          "subjectId": "bedroomWindow",
+          "relation": "facing",
+          "targetId": "barn",
+          "req": 5
+        },
+        {
+          "subjectId": "chickenOne",
+          "relation": "inside",
+          "targetId": "chickenCoop",
+          "req": 6
+        },
+        {
+          "subjectId": "chickenTwo",
+          "relation": "inside",
+          "targetId": "chickenCoop",
+          "req": 6
+        },
+        {
+          "subjectId": "chickenThree",
+          "relation": "inside",
+          "targetId": "chickenCoop",
+          "req": 6
+        },
+        {
+          "subjectId": "chickenFour",
+          "relation": "inside",
+          "targetId": "chickenCoop",
+          "req": 6
+        },
+        {
+          "subjectId": "scarecrow",
+          "relation": "inside",
+          "targetId": "vegetableGarden",
+          "req": 7
+        },
+        {
+          "subjectId": "wellBucket",
+          "relation": "connected-to",
+          "targetId": "well",
+          "req": 8
+        }
+      ],
+      "clarifications": []
+    }
+  }
+}

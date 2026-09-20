@@ -1,4 +1,31 @@
+# Lokální demo — aktuální P20 předání
+
+Stav 17. 9. 2026: hotový místní [90sekundový živý A4 záznam](../../videos/worldstream-a4/worldstream-a4-live.mp4), [původ a kontrola](../../videos/worldstream-a4/README.md). Veřejné odevzdání, veřejný provoz ani lidské přijetí se tím neprohlašují za dokončené.
+
+1. Spusť produkční build (`npm run build`, `npm run start`) v prostředí s již autorizovaným a nakonfigurovaným modelovým transportem a spend controls. Samotný start aplikace živou službu nekonfiguruje. Nepoužívej starý subscription postup níže jako aktuální návod na přihlášení.
+2. Na hlavní stránce nech **Generate my world** a zadej vlastní scénu. Pro zaznamenanou ukázku bylo zadání: `A small reading room with one glass aquarium, two seated people facing the aquarium, and a computer terminal that switches on a signal light.` Žádný ruční náhradní svět ani automatický prepared fallback.
+3. Vyčkej na přijatý ovladatelný svět. Prozatímní layout či vizuální preview jsou označené a neinteraktivní. Chybu generace zachovej jako chybu, ne jako úspěšný preview. V zaznamenaném jednom běhu trvala generace 258,445 s; není to p95 ani splněný cíl latence.
+4. Vyber skutečnou dostupnou akci terminálu, proveď ji a použij **Before my last action**. Pokud nový svět vhodnou akci neposkytuje, tento scénář na něj nepřenášej pomocí fixture nebo vloženého pravidla.
+5. Navrhni změnu pouze existující akce: `Change the computer terminal so its activate action switches the existing signalOn signal off instead of on. Change only that one action; preserve all other rules and objects.` Ověř skutečný název signálu a cíle daného světa. Přečti náhled, při nejednoznačnosti zvol nabídnutý cíl, poté potvrď.
+6. Porovnej obě budoucnosti ve stejném čase a ze stejné kamery. Desktop ukazuje oba pohledy, mobil je přepíná. Zaznamenaná ukázka má obě větve `won`, ale světlo vlevo svítí a vpravo je zhasnuté. Commit je `comparison-only`, `certificate:null`; nejde o nové vítězné osvědčení změněné větve.
+7. Volba návratu k původním pravidlům přijme novou revizi a umožní další návrh bez regenerace geometrie. Reload stránky neobnoví lokální návštěvnickou historii.
+
+Celá následná A4 cesta v jediném záznamu trvala 8,555 s. [Raw video, požadavky, výsledky a snímky](../../plans/P20/live-browser-v3-20260917-1825/README.md) jsou automatizovaný produkční browser průchod, nikoli lidská studie. Při natáčení běžely i další práce; čas není izolovaný benchmark.
+
+**Prepared demo** lze zvolit výslovně pro místní ukázku bez živé generace. Označení původu zůstává viditelné i u přesné shody. Omezené authored změny nejsou důkazem obecné editace; odmítnutí je platný výsledek. Reference `/dev/reference-scenes` slouží ke kalibraci rendereru.
+
+Podrobnosti: [aktuální runbook](../demo/judge-runbook.md), [stav projektu](../../PROJECT-STATUS.md).
+
+---
+
+<details>
+<summary>Historický source/timer walkthrough z 10. 9. — neaktuální provozní návod</summary>
+
+Níže zachované údaje o dispatcheru, chybějícím videu a tehdejších omezeních platí pouze pro tehdejší verzi. Nenahrazují současný postup výše.
+
 # Lokální demo — průvodce předáním
+
+**P20 aktualizace 17. 9. 2026:** aktuální produktový průchod je v [judge runbooku](../demo/judge-runbook.md). Hlavní stránka podporuje nečasovačovou změnu a dva současné synchronní pohledy. Produkční fixture test není živá modelová generace ani lidská studie. Nový živý hybridní blueprint a veškerá odmítnutí se archivují v `plans/P20`; viz [stav](../../PROJECT-STATUS.md). Níže je historický source/timer postup z 10. 9., nikoli aktuální přejímací scénář P20. Finální video zůstává MISSING.
 
 Aktuálně 10. 9. 2026: `npm run demo:subscription` odmítá před loginem/spawn chybou `SUBSCRIPTION_PRODUCTION_NOT_VALIDATED`. Následující scénář je připravený postup pro budoucí validovaný dispatcher, nikoli dnes ověřená živá cesta. Credential-free CLI metadata, authored OS fixture a připravené browserové průchody nedokládají autentizovanou inferenci. Finální živé video zůstává MISSING; [stav předání](../../evals/reality-compiler/submission-readiness.md) rozlišuje konkrétní důkazy.
 
@@ -28,3 +55,5 @@ Průvodce čeká na skutečné ruční potvrzení parametrů. Marker `GUIDED_DEM
 Finální video dosud není natočené. Tento scénář ani screenshot se nesmějí vydávat za `video/final.mp4`. Záložní připravený průchod musí být označen prepared; neprokazuje čerstvou generaci.
 
 Připravený záznam skutečného UI je nyní dostupný v [prepared-walkthrough.mp4](../../video/prepared-walkthrough.mp4): 45,32 s bez střihu, trvale označený scripted/virtual clock/0 model calls. [Manifest a evidence](../../evals/reality-compiler/prepared-video.md) oddělují tento technický průchod od živé generace a lidské studie.
+
+</details>

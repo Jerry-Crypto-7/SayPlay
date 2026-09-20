@@ -1,3 +1,5 @@
+import {withSessionStorageResponse} from '@/server/session-persistence';
+import {assertSessionStorageReady} from '@/worldstream/sessions';
 /**
  * `GET /api/worldstream/sessions/:id/events` — proud relace, který jde obnovit
  * (P13 T16, §20 a §21).
@@ -80,9 +82,10 @@
 import { clearInterval, setInterval } from 'node:timers';
 
 import { killState } from '@/server/kill-switch';
+import {serverIsDraining,registerStreamDrain} from '@/server/shutdown';
 
 import type { SessionEvent } from '../../../../../../worldstream/events';
-import { getSession } from '../../../../../../worldstream/sessions';
+import { getSession, type StoredSession } from '../../../../../../worldstream/sessions';
 
 export const runtime = 'nodejs';
 
@@ -206,7 +209,7 @@ export function readResumePoint(request: Request): ResumePoint {
   return { ok: true, after };
 }
 
-export async function GET(
+async function handleDurableGET(
   request: Request,
   context: { params: Promise<{ sessionId: string }> },
 ): Promise<Response> {
@@ -247,8 +250,33 @@ export async function GET(
       { status: 404, headers: { 'cache-control': 'no-store' } },
     );
 
+  return sessionEventStream(sessionId, stored, after, request.signal);
+}
+
+/**
+ * Proud jedné relace od čísla `after`, jako hotová odpověď.
+ *
+ * **Volají ho dvoje dveře, ne jedny** (P16 `T8-stream404`). Registr relací
+ * je paměť instance, a na Vercelu `GET /events` občas dopadl na jinou
+ * instanci než `POST`, který relaci založil — naměřeno 15. 9. 2026: 202
+ * a o vteřinu později 404, porotce bez světa. `POST /sessions` proto na
+ * požádání vrátí tentýž proud rovnou ve své odpovědi, tedy z instance, na
+ * které generace běží. Tahle route zůstává pro obnovení spojení.
+ *
+ * `headers` jsou hlavičky navíc, které nese jen odpověď na založení.
+ */
+export function sessionEventStream(
+  sessionId: string,
+  stored: StoredSession,
+  after: number,
+  signal: AbortSignal,
+  headers: Readonly<Record<string, string>> = {},
+): Response {
+  if(serverIsDraining())return Response.json({error:{code:'SERVER_DRAINING',message:'The server is restarting. Reconnect shortly.'}},{status:503,headers:{'cache-control':'no-store','retry-after':'1'}});
+  if(after<stored.session.events.floor)return Response.json({error:{code:'EVENT_HISTORY_TRUNCATED',message:'Reload the authoritative session snapshot before reconnecting.'},sequence:stored.session.events.sequence},
+    {status:409,headers:{'cache-control':'no-store'}});
   // **Slot až tady, za 400 i za 404.** Odmítnutý požadavek nesmí obsadit
-  // místo, které pak nikdo nevrátí — a obě větve nad tímhle řádkem se vracejí
+  // místo, které pak nikdo nevrátí — a obě větve před voláním se vracejí
   // dřív, než by měly co uklízet.
   if (!acquireStream(sessionId))
     return Response.json(
@@ -266,8 +294,10 @@ export async function GET(
   let unsubscribe: (() => void) | null = null;
   let beat: ReturnType<typeof setInterval> | null = null;
   let holdsSlot = true;
+  let unregisterDrain:(()=>void)|null=null;
 
   function release(): void {
+    unregisterDrain?.();unregisterDrain=null;
     unsubscribe?.();
     unsubscribe = null;
     if (beat !== null) clearInterval(beat);
@@ -321,7 +351,11 @@ export async function GET(
         if (terminal(stored.session.phase)) finish();
       });
 
-      for (const event of log.since(after)) write(sessionFrame(event));
+      let wroteBacklog = false;
+      for (const event of log.since(after)) {
+        write(sessionFrame(event));
+        wroteBacklog = true;
+      }
 
       // Relace, která doběhla dřív, než se klient připojil: backlog je celý
       // příběh a čekat na další rámec by znamenalo čekat navždy.
@@ -330,9 +364,20 @@ export async function GET(
         return;
       }
 
+      // **Obnovení bez nového rámce dostane hlavičky hned, ne za 15 s.** `next`
+      // pošle hlavičky až s prvním kusem těla (`dist/server/pipe-readable.js`,
+      // „don't flush the headers until we've started writing chunks"), a
+      // úspěšná relace zůstává ve fázi `world` otevřená napořád. Klient, který
+      // navázal za posledním číslem, tak visel na `fetch` do prvního heartbeatu.
+      // Naměřeno 15. 9. 2026 na `e2e/worldstream-session.spec.ts:174`: dvě
+      // obnovení po 15 s přetekla strop testu 30 s, na `fc8ed39` i před ním.
+      // Komentář dekodér zahodí, takže první stavový rámec zůstává `id: 1`.
+      if (!wroteBacklog) write(HEARTBEAT_FRAME);
+
       beat = setInterval(() => write(HEARTBEAT_FRAME), HEARTBEAT_MS);
       // Otevřený proud nesmí být důvod, proč proces (nebo běh sady) neskončí.
       beat.unref();
+      unregisterDrain=registerStreamDrain(finish);
     },
   });
 
@@ -352,8 +397,8 @@ export async function GET(
   // takže by odběr i patnáctivteřinový časovač přežily požadavek, který se
   // nikdy nezačal číst. Doměřeno nezávislou revizí 2. 9. 2026 nad předem
   // zrušeným signálem (stav 200, odběr zapsaný, úklid neproběhl).
-  if (request.signal.aborted) release();
-  else request.signal.addEventListener('abort', () => release(), { once: true });
+  if (signal.aborted) release();
+  else signal.addEventListener('abort', () => release(), { once: true });
 
   return new Response(stream, {
     headers: {
@@ -364,6 +409,11 @@ export async function GET(
       'cache-control': 'no-store, no-transform',
       // A tohle je proti obrácené proxy, ne proti kompresi v procesu.
       'x-accel-buffering': 'no',
+      ...headers,
     },
   });
+}
+
+export async function GET(...args:Parameters<typeof handleDurableGET>):Promise<Response> {
+  return withSessionStorageResponse(async()=>{assertSessionStorageReady();return handleDurableGET(...args);});
 }

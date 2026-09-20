@@ -124,3 +124,15 @@ ops/**/*.jsonl
 # vzniká při každém pytest běhu a repo jde podle RULES.md §2 ven.
 __pycache__/
 *.pyc
+
+# Výstupy pojmenovaných běhů Playwrightu (T18 a spol.). `test-results/` výše pokrývá
+# jen výchozí jméno; každý pojmenovaný běh si zakládá vlastní adresář.
+test-results-*/
+
+# Pracovní kopie normalizovaných assetů před přijetím do katalogu.
+asset-quarantine/
+
+# Odpovědi modelu po případech z měření brány A10 (P21 T20) – plné znění toho,
+# co model napsal, tedy táž třída dat jako create-raw.json. `conversation.json`
+# vedle nich se commituje: nese jen bajty odpovědi a u odmítnutí detail.
+evals/worldstream/conversation-answers/

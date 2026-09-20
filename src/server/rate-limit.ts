@@ -1,3 +1,5 @@
+import {proxyOwnerIdentity} from './owner-identity';
+
 /**
  * **Strop na frekvenci veřejných dveří** (P15 `T28-editrate`).
  *
@@ -464,6 +466,11 @@ export function trustedCallerKey(
   request: Request,
   env: Record<string, string | undefined> = process.env,
 ): string | null {
+  const proxy=proxyOwnerIdentity(request,env);
+  if(proxy.kind==='verified')return proxy.key;
+  // Configured identity never falls back to caller-authored forwarding headers.
+  // HTTP mutation doors reject this case before taking any rate/provider slot.
+  if(proxy.kind!=='disabled')return 'proxy-owner:unverified';
   // ⚠ **Vlastní kopie `isServerless()` ze `spend-store.ts`, a rozhodlo o tom
   // měření, ne preference.** Import té funkce položí pinnutou vlastnost
   // `mezi čtením těla a odpovědí není jediný await` (`src/app/api/edit`):

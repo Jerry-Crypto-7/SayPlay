@@ -76,15 +76,24 @@ export function codexArgs(model, effort, cwd) {
   ];
 }
 
-/** Na Windows `taskkill /T` přes PID obalu, dokud obal žije; jinde celá skupina procesů. */
-export function killTree(child) {
-  if (process.platform === 'win32') execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true }, () => {});
-  else {
+/**
+ * Na Windows `taskkill /T` přes PID obalu, jen dokud obal žije; jinde celá skupina procesů.
+ * Po `exit` obalu smí jeho PID dostat cizí proces (`ship-pidreuse`), a proto
+ * `afterKill` zavírá roury až po doběhnutí `taskkill`; celé odůvodnění je
+ * u `killCodexTree` v `src/server/upstream.ts`.
+ */
+export function killTree(child, afterKill) {
+  if (process.platform === 'win32') {
+    if (child.exitCode === null && child.signalCode === null)
+      execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true }, () => afterKill());
+    else afterKill();
+  } else {
     try {
       process.kill(-child.pid, 'SIGKILL');
     } catch {
       /* skupina už neexistuje */
     }
+    afterKill();
   }
 }
 
@@ -224,14 +233,18 @@ export function createShim({
       let done = false;
       let grace = null;
       const stop = (why) => {
-        cut ??= why;
-        killTree(child);
-        // Obal, který už skončil, `taskkill /T` nenajde, a `close` nepřijde,
+        // Jen jednou: roury se zavírají až po `taskkill`, takže data mezitím
+        // tečou dál a každý další kus nad strop by pouštěl další `taskkill`.
+        if (cut !== null) return;
+        cut = why;
+        // Na obal, který už skončil, se `taskkill` neposílá, a `close` nepřijde,
         // dokud rouru drží potomek, který ho přežil – slot by zůstal obsazený
         // navždy. Roury se zavřou a po lhůtě se končí i bez `close`.
-        child.stdout.destroy();
-        child.stderr.destroy();
-        grace ??= setTimeout(() => finish(-1), KILL_GRACE_MS);
+        killTree(child, () => {
+          child.stdout.destroy();
+          child.stderr.destroy();
+        });
+        grace = setTimeout(() => finish(-1), KILL_GRACE_MS);
       };
       const timer = setTimeout(() => stop('timeout'), timeoutMs);
       res.on('close', () => {

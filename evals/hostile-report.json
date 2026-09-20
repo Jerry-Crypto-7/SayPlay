@@ -30,7 +30,7 @@
     "NO_SHAPE": 64
   },
   "winnable": 70,
-  "slowestMs": 28.319300000000112,
+  "slowestMs": 13.8279,
   "violations": {
     "emptyScene": [],
     "threw": [],
@@ -48,7 +48,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 19.969600000000128,
+      "ms": 13.8279,
       "overBudget": false
     },
     {
@@ -62,7 +62,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 2.7101000000000113,
+      "ms": 2.9377000000000066,
       "overBudget": false
     },
     {
@@ -76,7 +76,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 2.0389000000000124,
+      "ms": 2.3122000000000185,
       "overBudget": false
     },
     {
@@ -90,7 +90,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 5.081400000000031,
+      "ms": 1.8614000000000033,
       "overBudget": false
     },
     {
@@ -104,7 +104,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 6.205200000000104,
+      "ms": 1.6587999999999852,
       "overBudget": false
     },
     {
@@ -118,7 +118,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 1.265999999999849,
+      "ms": 0.6999999999999886,
       "overBudget": false
     },
     {
@@ -132,7 +132,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 1.4177999999999429,
+      "ms": 1.3211999999999762,
       "overBudget": false
     },
     {
@@ -146,7 +146,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 1.149299999999812,
+      "ms": 0.6431999999999789,
       "overBudget": false
     },
     {
@@ -160,7 +160,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 2.5150000000001,
+      "ms": 2.1873999999999683,
       "overBudget": false
     },
     {
@@ -174,7 +174,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 1.295699999999897,
+      "ms": 0.7823999999999955,
       "overBudget": false
     },
     {
@@ -188,7 +188,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 2.2070000000001073,
+      "ms": 1.4972000000000207,
       "overBudget": false
     },
     {
@@ -202,7 +202,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.7823000000000775,
+      "ms": 0.5432999999999879,
       "overBudget": false
     },
     {
@@ -216,7 +216,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 2.514900000000125,
+      "ms": 1.5253000000000156,
       "overBudget": false
     },
     {
@@ -230,7 +230,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6684000000000196,
+      "ms": 0.6468000000000416,
       "overBudget": false
     },
     {
@@ -244,7 +244,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.9519999999999982,
+      "ms": 0.5947999999999638,
       "overBudget": false
     },
     {
@@ -258,7 +258,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 6.040200000000141,
+      "ms": 2.571399999999983,
       "overBudget": false
     },
     {
@@ -272,7 +272,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.7703000000001339,
+      "ms": 0.44240000000002055,
       "overBudget": false
     },
     {
@@ -286,7 +286,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.7436000000000149,
+      "ms": 0.3883999999999901,
       "overBudget": false
     },
     {
@@ -300,7 +300,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.9112999999999829,
+      "ms": 0.44220000000007076,
       "overBudget": false
     },
     {
@@ -314,7 +314,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.7792999999999211,
+      "ms": 0.39809999999999945,
       "overBudget": false
     },
     {
@@ -328,7 +328,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.7915000000000418,
+      "ms": 0.43089999999995143,
       "overBudget": false
     },
     {
@@ -342,7 +342,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.9510000000000218,
+      "ms": 0.4112999999999829,
       "overBudget": false
     },
     {
@@ -356,7 +356,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6677999999999429,
+      "ms": 0.3069000000000415,
       "overBudget": false
     },
     {
@@ -370,7 +370,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.7818999999999505,
+      "ms": 0.36770000000001346,
       "overBudget": false
     },
     {
@@ -384,7 +384,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.8344999999999345,
+      "ms": 0.5939999999999372,
       "overBudget": false
     },
     {
@@ -398,7 +398,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6144999999999072,
+      "ms": 0.522199999999998,
       "overBudget": false
     },
     {
@@ -412,7 +412,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6893999999999778,
+      "ms": 0.3532999999999902,
       "overBudget": false
     },
     {
@@ -426,7 +426,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6911999999999807,
+      "ms": 0.3262000000000853,
       "overBudget": false
     },
     {
@@ -440,7 +440,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6755000000000564,
+      "ms": 0.34980000000007294,
       "overBudget": false
     },
     {
@@ -454,7 +454,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6790999999998348,
+      "ms": 0.8144999999999527,
       "overBudget": false
     },
     {
@@ -468,7 +468,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 15.022499999999809,
+      "ms": 0.5507999999999811,
       "overBudget": false
     },
     {
@@ -482,7 +482,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 1.0611999999998716,
+      "ms": 0.561200000000099,
       "overBudget": false
     },
     {
@@ -496,7 +496,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.9759999999998854,
+      "ms": 0.6995999999999185,
       "overBudget": false
     },
     {
@@ -510,7 +510,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 1.6119000000001051,
+      "ms": 1.5194999999999936,
       "overBudget": false
     },
     {
@@ -524,7 +524,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 1.3371999999999389,
+      "ms": 0.6431999999999789,
       "overBudget": false
     },
     {
@@ -538,7 +538,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.8048000000001139,
+      "ms": 0.8473000000000184,
       "overBudget": false
     },
     {
@@ -552,7 +552,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 2.3727000000001226,
+      "ms": 0.6968000000000529,
       "overBudget": false
     },
     {
@@ -566,7 +566,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.8256000000001222,
+      "ms": 0.6725000000000136,
       "overBudget": false
     },
     {
@@ -580,7 +580,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.8123000000000502,
+      "ms": 0.46660000000008495,
       "overBudget": false
     },
     {
@@ -594,7 +594,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6876999999999498,
+      "ms": 0.5850999999998976,
       "overBudget": false
     },
     {
@@ -608,7 +608,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.9490000000000691,
+      "ms": 0.5457000000000107,
       "overBudget": false
     },
     {
@@ -622,7 +622,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6945999999998094,
+      "ms": 0.7567000000000235,
       "overBudget": false
     },
     {
@@ -636,7 +636,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6296999999999571,
+      "ms": 0.4957000000000562,
       "overBudget": false
     },
     {
@@ -650,7 +650,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.8476000000000568,
+      "ms": 0.47430000000008476,
       "overBudget": false
     },
     {
@@ -664,7 +664,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6822999999999411,
+      "ms": 0.47289999999998145,
       "overBudget": false
     },
     {
@@ -678,7 +678,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.8496999999999844,
+      "ms": 0.46839999999997417,
       "overBudget": false
     },
     {
@@ -692,7 +692,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6259999999999764,
+      "ms": 0.5482999999999265,
       "overBudget": false
     },
     {
@@ -706,7 +706,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6244000000001506,
+      "ms": 0.5322999999999638,
       "overBudget": false
     },
     {
@@ -720,7 +720,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6605999999999312,
+      "ms": 0.8890999999999849,
       "overBudget": false
     },
     {
@@ -734,7 +734,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.723299999999881,
+      "ms": 0.3408999999999196,
       "overBudget": false
     },
     {
@@ -748,7 +748,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.9360000000001492,
+      "ms": 0.7780999999999949,
       "overBudget": false
     },
     {
@@ -762,7 +762,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6515999999999167,
+      "ms": 0.5485000000001037,
       "overBudget": false
     },
     {
@@ -776,7 +776,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6667999999999665,
+      "ms": 0.3853000000000293,
       "overBudget": false
     },
     {
@@ -790,7 +790,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 1.4210000000000491,
+      "ms": 0.3647999999999456,
       "overBudget": false
     },
     {
@@ -804,7 +804,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.7041000000001532,
+      "ms": 0.3486000000000331,
       "overBudget": false
     },
     {
@@ -818,7 +818,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6426000000001295,
+      "ms": 0.3130999999999631,
       "overBudget": false
     },
     {
@@ -832,7 +832,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.7916999999999916,
+      "ms": 0.3725000000000591,
       "overBudget": false
     },
     {
@@ -846,7 +846,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 14.287800000000061,
+      "ms": 0.5971000000000686,
       "overBudget": false
     },
     {
@@ -860,7 +860,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.5979999999999563,
+      "ms": 0.6214999999999691,
       "overBudget": false
     },
     {
@@ -874,7 +874,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 1.5219999999999345,
+      "ms": 0.6554999999999609,
       "overBudget": false
     },
     {
@@ -888,7 +888,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6925999999998567,
+      "ms": 0.5499999999999545,
       "overBudget": false
     },
     {
@@ -902,7 +902,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6145000000001346,
+      "ms": 0.3745000000000118,
       "overBudget": false
     },
     {
@@ -916,7 +916,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6112000000000535,
+      "ms": 0.3365999999999758,
       "overBudget": false
     },
     {
@@ -930,7 +930,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 1.142799999999852,
+      "ms": 0.3166999999999689,
       "overBudget": false
     },
     {
@@ -944,7 +944,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.651700000000119,
+      "ms": 0.30760000000009313,
       "overBudget": false
     },
     {
@@ -958,7 +958,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.641399999999976,
+      "ms": 0.29359999999996944,
       "overBudget": false
     },
     {
@@ -972,7 +972,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.9877999999998792,
+      "ms": 0.29169999999999163,
       "overBudget": false
     },
     {
@@ -986,7 +986,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 28.319300000000112,
+      "ms": 0.28489999999999327,
       "overBudget": false
     },
     {
@@ -1000,7 +1000,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6653999999998632,
+      "ms": 0.26889999999991687,
       "overBudget": false
     },
     {
@@ -1014,7 +1014,7 @@
       "emptyScene": false,
       "winnable": true,
       "threw": null,
-      "ms": 0.6777999999999338,
+      "ms": 0.35779999999999745,
       "overBudget": false
     }
   ]

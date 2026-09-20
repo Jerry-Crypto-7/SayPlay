@@ -685,6 +685,10 @@ export function hostsIn(source) {
   const found = new Set();
   const scan = scanSource(source);
   for (const match of scan.text.matchAll(URL_IN_SOURCE)) {
+    // The exact SVG XML namespace inside an xmlns attribute identifies a format;
+    // it is not fetched. Do not exclude the W3C host or the same URL in API calls.
+    if (/^http:\/\/www\.w3\.org\/2000\/svg$/.test(match[0])
+      && /<svg\b[^<>]*\bxmlns\s*=\s*["']$/.test(scan.text.slice(0, match.index))) continue;
     const raw = match[0].replace(TRAILING_PUNCTUATION, '');
     if (raw.includes('\\')) {
       found.add(`${safeShape(raw)} — URL nese zpětné lomítko, host se z ní nedá určit`);

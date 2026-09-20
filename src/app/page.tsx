@@ -8,7 +8,7 @@
  */
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
 
 import ChangePreview, { type ChangeState } from '@/components/worldstream/ChangePreview';
 import WorldStatus, { type WorldStatusState } from '@/components/worldstream/WorldStatus';
@@ -21,40 +21,51 @@ import {
   openWorldstreamSession,
   readBlueprint,
   requestChange,
+  restoreComparison,
   type AuthoredProvenance,
   type SessionHandle,
 } from '@/worldstream/client';
 import type { ClientState } from '@/worldstream/reducer';
 import {
   buildProxyWorldFrom,
+  buildVisualPreviewFrom,
   PROXY_RUNG_LABELS,
   type ProxyWorld,
 } from '@/worldstream/proxy';
 import { pickQualityTier, type QualityTier } from '@/worldstream/quality';
-import { bindRuntime, type RuntimeBinding, type RuntimeController } from '@/worldstream/runtime-controller';
+import { bindRuntime, type RuntimeBinding, type RuntimeController, type RuntimeSnapshot } from '@/worldstream/runtime-controller';
 import { buildRuntimeWorld } from '@/ir/build';
 import { canonical } from '@/ir/worlddoc';
 import { prepareBranch, compareAcceptedBranch, type PreparedBranch } from '@/worldstream/accepted-branch';
-import { MAX_COMPARISON_TICK, type BranchComparison as Comparison } from '@/worldstream/branch-controller';
+import { MAX_COMPARISON_TICK } from '@/worldstream/branch-controller';
 import BranchComparison from '@/components/worldstream/BranchComparison';
 import RuntimeInteraction from '@/components/worldstream/RuntimeInteraction';
+import { WhyMarkers } from '@/components/worldstream/TimeAxis';
+import WhyPanel from '@/components/worldstream/WhyPanel';
 import SourcePanel, { type SourceGeneration } from '@/components/worldstream/SourcePanel';
 import type { ProjectRevision } from '@/worldstream/evidence-commit';
 import { sourceProxyFromRuntime } from '@/worldstream/source-view';
 import { createRuntimeController } from '@/worldstream/runtime-controller';
 import { createClock, pump } from '@/sim/clock';
 import type { WorldDoc } from '@/ir/worlddoc';
-import { blueprintSchema } from '@/worldstream/schema';
+import { blueprintSchema, visualPreviewSchema, type VisualPreview } from '@/worldstream/schema';
+import { visibilityReport } from '@/scene/visibility-report';
+import { isWordMassing } from '@/scene/massing-preview';
+import type { ShapeDetailAssessment } from '@/shape/detail-policy';
 import { createPipelineMetrics, type PipelineMetricsSnapshot, type PipelineRunHandle, type PipelineStageHandle,
   type PipelineProvenance } from '@/worldstream/pipeline-metrics';
 
-declare global { interface Window { __worldstreamMetrics?: { snapshot(): PipelineMetricsSnapshot } } }
+declare global { interface Window { __worldstreamMetrics?: { snapshot(): PipelineMetricsSnapshot;
+  /** Kauzální stopa tiku z běhu, který stojí pod ovládáním — pin panelu Why (P22 T8). */
+  explainTick(tick: number): ReturnType<RuntimeController['explainTick']> } } }
 
 // `ssr: false` je povinné, ne kosmetické — WebGL2 kontext na serveru
 // neexistuje a `<Canvas>` by při prerenderu spadl na `document`.
 const WorldstreamCanvas = dynamic(() => import('@/components/worldstream/WorldstreamCanvas'), {
   ssr: false,
 });
+const FutureViews = dynamic(() => import('@/components/worldstream/FutureViews'), { ssr: false });
+import { MAX_FUTURES, type AcceptedFuture } from '@/components/worldstream/FutureViews';
 
 /**
  * Věta, kterou porotce uvidí, když relace skončí bez světa a bez důvodu.
@@ -67,7 +78,7 @@ const WorldstreamCanvas = dynamic(() => import('@/components/worldstream/Worldst
 const UNKNOWN_FAULT = 'the session ended without a world';
 
 /** Co z relace vyleze: buď blueprint, nebo věta, proč žádný nebude. */
-type Arrival = { readonly blueprint: unknown } | { readonly fault: string };
+type Arrival = { readonly blueprint: unknown; readonly reused: ClientState['reused'] } | { readonly fault: string };
 
 /**
  * Hotové dějství II — **svět a adresa jeho relace, nerozdělitelně**.
@@ -102,9 +113,11 @@ function firstBlueprint(
   handle: SessionHandle,
   signal: AbortSignal,
   onIntent?: (intent: NonNullable<ClientState['intent']>) => void,
+  onVisualPreview?: (preview:VisualPreview) => void,
 ): Promise<Arrival> {
   return new Promise((resolve) => {
     let settled = false;
+    let lastPreview:VisualPreview|null=null;
     const done = (arrival: Arrival): void => {
       if (settled) return;
       settled = true;
@@ -117,7 +130,10 @@ function firstBlueprint(
         // Planner odpoví desítky vteřin před compilerem; co přečetl, patří na
         // obrazovku hned, ne až se světem.
         if (state.intent !== null && !settled) onIntent?.(state.intent);
-        if (state.blueprint !== null) done({ blueprint: state.blueprint });
+        if (!settled && !state.blueprint && state.visualPreview && state.visualPreview!==lastPreview) {
+          lastPreview=state.visualPreview;onVisualPreview?.(state.visualPreview);
+        }
+        if (state.blueprint !== null) done({ blueprint: state.blueprint, reused: state.reused });
       },
     })
       .then((final) => done({ fault: final.fault ?? UNKNOWN_FAULT }))
@@ -142,8 +158,12 @@ export default function Page() {
     setDisplayMeasurement({ run, initialInputs, targetWorld, frame: metrics.startStage(run, 'first-frame', provenance),
       interaction: comparison || !waitForInteraction ? null : metrics.startStage(run, 'first-interaction', provenance) });
   }, [metrics]);
+  // Sonda čte běh přes ref, ne přes závislost efektu: jeho úklid ruší rozběhnuté
+  // měření, takže nesmí běžet znovu při každé výměně běhu.
+  const controllerProbe = useRef<RuntimeController | null>(null);
   useEffect(() => {
-    const probe = { snapshot: metrics.snapshot }; window.__worldstreamMetrics = probe;
+    const probe = { snapshot: metrics.snapshot, explainTick: (tick: number) => controllerProbe.current?.explainTick(tick) ?? [] };
+    window.__worldstreamMetrics = probe;
     return () => { if (window.__worldstreamMetrics === probe) delete window.__worldstreamMetrics;
       if (activeMeasurement.current) metrics.finishRun(activeMeasurement.current, 'cancelled'); };
   }, [metrics]);
@@ -151,16 +171,35 @@ export default function Page() {
   const [sourceGeneration, setSourceGeneration] = useState<SourceGeneration>('live');
   const [sourceEpoch, setSourceEpoch] = useState(0);
   const [cameraReset, setCameraReset] = useState(0);
+  const [focusId, setFocusId] = useState<string | null>(null);
+  const [cutaway, setCutaway] = useState(true);
+  /** Zastávky cesty, kterou naposledy našel průvodce. Prázdné, dokud se nikdo nezeptal. */
+  const [routeHighlight, setRouteHighlight] = useState<readonly string[]>([]);
   const sourceRuntimes = useRef(new Map<ProjectRevision, RuntimeController>());
   const binding = useRef<RuntimeBinding | null>(null);
   const documentRef = useRef<WorldDoc | null>(null);
   const previewBranch = useRef<PreparedBranch | null>(null);
-  const [comparison, setComparison] = useState<{ result: Comparison; world: ProxyWorld; source: RuntimeController; changedWorld: ProxyWorld } | null>(null);
+  /**
+   * Přijaté alternativy (P22 T10). Do T10 tu stála jediná `comparison` a druhá
+   * přijatá změna tu první přepsala. Seznam přežije „Try another change from
+   * the original", padá až s novým světem. `shownFutureId` říká, která stojí
+   * vpravo vedle originálu; `null` = plátno bez porovnání.
+   */
+  const [futures, setFutures] = useState<readonly AcceptedFuture[]>([]);
+  const [shownFutureId, setShownFutureId] = useState<number | null>(null);
+  const futureIds = useRef(0);
+  const comparison = shownFutureId === null ? null : futures.find(future => future.id === shownFutureId) ?? null;
+  /** Věta, ze které vznikl rozpracovaný plán změny – položka seznamu ji ponese. */
+  const askedSentence = useRef('');
   const [viewOriginal, setViewOriginal] = useState(false);
   const [comparisonNote, setComparisonNote] = useState<string | null>(null);
   const [forkTick, setForkTick] = useState(0);
+  const rewindChoice = useRef<{ tick: number; end: number } | null>(null);
   const [observationTick, setObservationTick] = useState(0);
   const [controller, setController] = useState<RuntimeController | null>(null);
+  controllerProbe.current = controller;
+  /** Tik vybraný značkou „Why?"; `null` = panel zavřený. */
+  const [whyTick, setWhyTick] = useState<number | null>(null);
   const [recovery, setRecovery] = useState<{ message: string; retry: () => Promise<void>; detailOnly?: boolean } | null>(null);
   const installRuntime = useCallback((id: string, document: WorldDoc) => {
     setRecovery(null);
@@ -168,16 +207,26 @@ export default function Page() {
     const next = bindRuntime(binding.current, id, document);
     binding.current = next;
     documentRef.current = document;
+    rewindChoice.current = null;
     previewBranch.current = null;
-    setComparison(null);
+    setFutures([]); setShownFutureId(null);
+    setFocusId(null);
     setViewOriginal(false);
     setComparisonNote(null);
+    setWhyTick(null);
     setController(next.controller);
   }, []);
   const [world, setWorld] = useState<ProxyWorld | null>(null);
+  const [visualWorld,setVisualWorld]=useState<ProxyWorld|null>(null);
+  const [visualStage,setVisualStage]=useState<VisualPreview['stage']>(undefined);
+  // Jsou bloky jen odhad ze slov věty (P21 T4)? Píše se spolu s `visualWorld`
+  // a čte se jen dokud `visualWorld` stojí, takže vlastní úklid nepotřebuje.
+  const [wordGuess,setWordGuess]=useState(false);
+  const displayedWorld=world??visualWorld;
+  // Keep the one-attempt inspection budget when the drawer closes/reopens.
+  const visualRepairAttempts=useMemo(()=>new Set<string>(),[displayedWorld]);
   const presented = useCallback((paintedWorld: ProxyWorld) => {
-    if (paintedWorld !== world || !displayMeasurement) return;
-    if (displayMeasurement.targetWorld && paintedWorld !== displayMeasurement.targetWorld) return;
+    if (!displayMeasurement || paintedWorld !== (displayMeasurement.targetWorld ?? world)) return;
     metrics.finishStage(displayMeasurement.frame); metrics.finishRun(displayMeasurement.run);
   }, [world, displayMeasurement, metrics]);
   useEffect(() => {
@@ -200,6 +249,8 @@ export default function Page() {
   const [streaming, setStreaming] = useState(false);
   /** Co planner z věty přečetl, dokud compiler píše; s novou větou i se světem se maže. */
   const [intent, setIntent] = useState<ClientState['intent']>(null);
+  /** Zásah cache odpovědí (P16 T6) — přichází s blueprintem, mizí s novou větou. */
+  const [reused, setReused] = useState<ClientState['reused']>(null);
   const [stopped, setStopped] = useState<string | null>(null);
   const [fault, setFault] = useState<string | null>(null);
   /**
@@ -211,6 +262,7 @@ export default function Page() {
    */
   const [provenance, setProvenance] = useState<AuthoredProvenance | null>(null);
   const [sentence, setSentence] = useState('');
+  const [generationMode, setGenerationMode] = useState<'live' | 'prepared'>('live');
   const [inspecting, setInspecting] = useState(false);
   const toggleInspect = useCallback(() => setInspecting((was) => !was), []);
 
@@ -288,6 +340,8 @@ export default function Page() {
   const mesher = useRef<MeshClient | null>(null);
   /** Čtení právě běžící relace. Nová věta to předchozí zruší. */
   const reading = useRef<AbortController | null>(null);
+  /** Pole na větu — příklad z prázdné scény ho vyplní a předá mu kurzor (P21 T10). */
+  const promptInput = useRef<HTMLInputElement | null>(null);
   /** Úroveň kvality. Čte se jednou, po připojení — sahá na `document`. */
   const tier = useRef<QualityTier>('full');
 
@@ -342,78 +396,6 @@ export default function Page() {
     committed.current = false;
   }, [installRuntime, metrics]);
 
-  /**
-   * **Dějství II: druhá relace, vlastní placený slot, nabídnutý výsledek.**
-   *
-   * Běží jedině nad uvařeným světem — když první větu psal model, není co
-   * dohánět. Odsud dál se nesahá na nic z dějství I: jiná relace znamená, že
-   * blueprint ani commit porotce nemá tahle větev jak přepsat, a to je
-   * konstrukce, ne hlídání (debata Opus ↔ Codex 7. 9. 2026, nález F2).
-   *
-   * **Spadlé dějství II nemění na plátně svět** — žádná porucha, žádné prázdno.
-   * Porotce má na plátně svět z dějství I a ten platí dál.
-   *
-   * **Mlčet o tom ale nesmí.** Do 15. 9. 2026 končilo pět různých selhání
-   * stejně — zmizelo „is writing" a nic víc. Porotce to četl jako „pořád
-   * tentýž svět" (P15 `G1-modelab`) a na produkci se z toho nedalo poznat, jestli
-   * svět odmítla brána, nebo nedorazil proud (P16 `T8-silentlive`). Každá větev
-   * proto řekne jednou větou, na čem ztroskotala.
-   */
-  const runSecondAct = useCallback(
-    async (prompt: string): Promise<void> => {
-      const control = new AbortController();
-      secondReading.current = control;
-      setSecondActMiss(null);
-      const miss = (reason: string): void => {
-        if (!control.signal.aborted) setSecondActMiss(reason);
-      };
-      // Odmítnuté dveře (`LIVE_UNAVAILABLE` na nasazení bez modelu) přijdou
-      // dřív, než se „is writing" ukáže — tam porotci nikdo nic neslíbil
-      // a hláška o nedoručené verzi by lhala stejně jako ten popisek.
-      let shown = false;
-
-      try {
-        const handle = await openWorldstreamSession(prompt, {
-          signal: control.signal,
-          live: true,
-        });
-        if (control.signal.aborted) return;
-        setWriting(true);
-        shown = true;
-
-        const arrival = await firstBlueprint(handle, control.signal, (read) => {
-          if (!control.signal.aborted) setIntent(read);
-        });
-        if (control.signal.aborted) return;
-        if (!('blueprint' in arrival)) return miss(arrival.fault);
-
-        const parsed = blueprintSchema.safeParse(arrival.blueprint);
-        if (!parsed.success) return miss(`its world does not parse: ${parsed.error.issues[0]?.message ?? '?'}`);
-
-        const client = mesher.current;
-        if (client === null) return miss('the mesher is not running');
-        const built = await buildProxyWorldFrom(parsed.data, {
-          mesh: (order) => client.mesh(order, control.signal),
-          quality: tier.current,
-        });
-        if (control.signal.aborted) return;
-        if (built.kind !== 'built') return miss(built.reason);
-
-        // **Tady se rozhoduje, jestli je to výměna, nebo nabídka.** Automaticky
-        // přepsat svět, do kterého porotce zasáhl, nemá žádné produktové
-        // odůvodnění; dokud nezasáhl, je výměna to, co chtěl.
-        const next: SecondAct = { world: built, sessionId: handle.sessionId, document: parsed.data.world };
-        if (committed.current || (binding.current?.controller.getInputLog().length ?? 0) > 0) setOffer(next);
-        else adopt(next);
-      } catch (error: unknown) {
-        if (shown) miss(error instanceof Error ? error.message : String(error));
-      } finally {
-        if (!control.signal.aborted) setWriting(false);
-      }
-    },
-    [adopt],
-  );
-
   const submit = useCallback(
     async (event: FormEvent): Promise<void> => {
       event.preventDefault();
@@ -434,13 +416,16 @@ export default function Page() {
 
       setStreaming(true);
       setIntent(null);
+      setReused(null);
       setStopped(null);
       setFault(null);
       setWorld(null);
+      setVisualWorld(null);
       binding.current = null;
       documentRef.current = null;
+      rewindChoice.current = null;
       previewBranch.current = null;
-      setComparison(null);
+      setFutures([]); setShownFutureId(null);
       setViewOriginal(false);
       setComparisonNote(null);
       setController(null);
@@ -465,22 +450,39 @@ export default function Page() {
       registerMeasurement(measured);
       const requestTiming = metrics.startStage(measured, 'session-request');
       try {
-        const handle = await openWorldstreamSession(prompt, { signal: control.signal });
+        const handle = await openWorldstreamSession(prompt, { signal: control.signal, live: generationMode === 'live' });
         const origin = handle.authored ? 'prepared' : 'unknown';
         metrics.setRunProvenance(measured, origin);
         metrics.finishStage(requestTiming, 'completed', origin);
         const blueprintTiming = metrics.startStage(measured, 'blueprint-wait', origin);
+        let previewVersion=0,guessShown=false;
         const arrival = await firstBlueprint(handle, control.signal, (read) => {
           if (!control.signal.aborted) setIntent(read);
+        }, (preview) => {
+          const version=++previewVersion;
+          const parsed=visualPreviewSchema.safeParse(preview),client=mesher.current;
+          if(!parsed.success||!client)return;
+          void buildVisualPreviewFrom(parsed.data,{mesh:order=>client.mesh(order,control.signal),quality:tier.current})
+            .then(built=>{if(!control.signal.aborted&&era===generation.current&&version===previewVersion&&built.kind==='built'){guessShown=isWordMassing(parsed.data);setVisualStage(parsed.data.stage);setWordGuess(guessShown);setVisualWorld(built);}})
+            .catch(()=>{/* The rejected simulation stays rejected if its optional visual preview also fails. */});
         });
         metrics.finishStage(blueprintTiming, 'blueprint' in arrival ? 'completed' : 'failed');
         if (control.signal.aborted) return;
 
         if (!('blueprint' in arrival)) {
           metrics.finishRun(measured, 'failed');
+          // Bloky ze slov nesmí přežít relaci, která skončila bez plánovače:
+          // „the model has not answered yet" by nad poruchou lhalo (P21 T4).
+          // Verze se zneplatní vždy, ne jen po zobrazení: mesh ze slov může
+          // ještě běžet ve workeru a doběhnout až za poruchou – s platnou
+          // verzí by prošel všemi zámky a postavil se nad ní (Codex review).
+          previewVersion++;
+          if(guessShown)setVisualWorld(null);
           setFault(arrival.fault);
           return;
         }
+        previewVersion++;setVisualWorld(null);
+        setReused(arrival.reused);
 
         // Server blueprint validoval taky. Čte se podruhé, protože mezi tím je
         // síť a `unknown` — bez toho by se dovnitř dostal objekt, o kterém
@@ -527,10 +529,7 @@ export default function Page() {
           // An edit can win while coarse geometry is already interactive.
           // Its accepted world must never be overwritten by older detail.
           if (!committed.current) setWorld(built);
-          // **Dějství II začíná jedině nad uvařeným světem.** `authored === null`
-          // znamená, že tenhle svět napsal model — druhá relace by pak psala
-          // podruhé totéž a platilo by se to dvakrát.
-          if (handle.authored !== null && !committed.current) void runSecondAct(prompt);
+
         } else setFault(built.reason);
       } catch (error: unknown) {
         metrics.finishRun(measured, control.signal.aborted ? 'cancelled' : 'failed');
@@ -541,7 +540,7 @@ export default function Page() {
         if (!control.signal.aborted) setStreaming(false);
       }
     },
-    [installRuntime, runSecondAct, sentence, streaming, metrics, registerMeasurement, measureDisplay],
+    [installRuntime, generationMode, sentence, streaming, metrics, registerMeasurement, measureDisplay],
   );
 
   function stopWaiting() {
@@ -588,6 +587,7 @@ export default function Page() {
         const prepared = documentRef.current && binding.current
           ? prepareBranch(documentRef.current, binding.current.controller) : null;
         const outcome = await requestChange(sessionId, prompt, {
+          comparison: true,
           ...(signal === undefined ? {} : { signal }),
           ...(stableId === undefined ? {} : { stableId }),
         });
@@ -617,9 +617,11 @@ export default function Page() {
         }
 
         previewBranch.current = prepared;
+        askedSentence.current = outcome.pieces?.asked ?? prompt;
         editMeasurement.current = { run: measured, review: metrics.startStage(measured, 'change-review', origin) };
-        setForkTick(0);
-        setObservationTick(Math.min(MAX_COMPARISON_TICK, prepared?.source.getSnapshot().observationTick ?? 0));
+        setForkTick(rewindChoice.current?.tick ?? 0);
+        setObservationTick(Math.min(MAX_COMPARISON_TICK, Math.max(rewindChoice.current?.end ?? 0,
+          prepared?.source.getSnapshot().observationTick ?? 0)));
         setChange({
           kind: 'preview',
           changeId: outcome.changeId,
@@ -627,6 +629,7 @@ export default function Page() {
           target: outcome.target,
           scope: outcome.scope,
           preserved: outcome.preserved,
+          ...(outcome.pieces === undefined ? {} : { pieces: outcome.pieces }),
         });
         setChangeFrom(outcome.authored);
       } catch (error: unknown) {
@@ -656,8 +659,10 @@ export default function Page() {
     const signal = reading.current?.signal;
     const era = generation.current;
     const prepared = previewBranch.current;
-    const behavior = change.scope.behavior > 0;
-    if (behavior && prepared && prepared.base.inputCount !== prepared.source.getInputLog().length) {
+    // Přidání se nesrovnává: svět před ním ten objekt neměl, takže není s čím
+    // (server takové tělo odmítá 422). Operace přidání jdou commitem bez větve.
+    const behavior = change.scope.behavior > 0 && change.scope.addition !== true;
+    if (behavior && prepared && (prepared.base.comparisonRevision !== 0 || prepared.base.inputCount !== prepared.source.getInputLog().length)) {
       setChange({ kind: 'refused', message: 'Visitor inputs changed after the preview. Request the change again.' });
       return;
     }
@@ -683,6 +688,8 @@ export default function Page() {
     try {
       const done = await commitChange(sessionId, change.changeId, {
         ...(signal === undefined ? {} : { signal }),
+        ...(behavior && prepared ? { comparison: { base: { ...prepared.base, comparisonRevision: 0 as const },
+          inputs: [...prepared.source.getInputLog()], forkTick, observationTick } } : {}),
       });
       // Svět se pod tímhle commitem mohl vyměnit. Zapsat jeho výsledek by
       // znamenalo postavit na plátno svět jedné relace a do pole druhé věty
@@ -700,7 +707,7 @@ export default function Page() {
       const snapshotTiming = metrics.startStage(measured, 'snapshot-request');
       let snapshot;
       try {
-        snapshot = await readBlueprint(sessionId, { ...(signal === undefined ? {} : { signal }) });
+        snapshot = done.acceptedBlueprint ?? await readBlueprint(sessionId, { ...(signal === undefined ? {} : { signal }) });
         metrics.finishStage(snapshotTiming);
       } catch (error) { metrics.finishStage(snapshotTiming, 'failed'); throw error; }
       const validationTiming = metrics.startStage(measured, 'validation');
@@ -739,8 +746,9 @@ export default function Page() {
         throw new Error(built.reason);
       }
 
+      let acceptedFuture: AcceptedFuture | null = null;
       const compareTiming = behavior && prepared ? metrics.startStage(measured, 'compare') : null;
-      const compared = behavior && prepared
+      const compared = done.comparison ? { verdict: 'COMPARED' as const, snapshot: { comparison: done.comparison } } : behavior && prepared
         ? compareAcceptedBranch(prepared, parsed.data.world, { forkTick, observationTick }) : null;
       metrics.finishStage(compareTiming, compared?.verdict === 'REJECTED' ? 'failed' : 'completed');
       const loweringTiming = metrics.startStage(measured, 'lowering');
@@ -753,10 +761,17 @@ export default function Page() {
         const next = fork.controller;
         next.setPaused(true);
         prepared!.source.setPaused(true);
+        prepared!.source.observeAt(result.observationTick);
         binding.current = { sessionId, simulation: canonical(parsed.data.world.sim), controller: next };
         documentRef.current = parsed.data.world;
         setController(next);
-        setComparison({ result, world, source: prepared!.source, changedWorld: built });
+        const future: AcceptedFuture = { id: ++futureIds.current, sentence: askedSentence.current || change.summary,
+          result, world, source: prepared!.source, changedWorld: built, target: next, summary: change.summary,
+          names: Object.fromEntries(parsed.data.objects.map(object => [object.stableId, object.label])), document: parsed.data.world };
+        acceptedFuture = future;
+        // Nejstarší vypadne; ta nová je zobrazená, takže vypadnout nemůže.
+        setFutures(current => [...current, future].slice(-MAX_FUTURES));
+        setShownFutureId(future.id);
         setViewOriginal(false);
         setComparisonNote(null);
       } else {
@@ -769,7 +784,11 @@ export default function Page() {
       setWorld(built);
       setChange(null);
       setChangeFrom(null);
-      setSecond('');
+      // Fronta kusů (P21 T9/T10): zbytek věty se předvyplní do pole, aby další
+      // odeslání pokračovalo tam, kde tahle věta skončila. Spojené tečkou, tedy
+      // hranicí, na které server řeže — pošle se zase jen první kus a zbytek
+      // se vrátí jako nová fronta.
+      setSecond(change.pieces === undefined ? '' : change.pieces.remaining.join('. '));
       setRecovery(null);
       if (failedShapes.size > 0) {
         // The accepted document and runtime already work. Retry only its local
@@ -789,7 +808,7 @@ export default function Page() {
             if (detailed.kind !== 'built') throw new Error(detailed.reason);
             if (failedShapes.size > 0) throw new Error('Detailed geometry is still unavailable.');
             measureDisplay(retryRun, changeFrom ? 'prepared' : 'unknown', 0, false, detailed);
-            setComparison(current => current ? { ...current, changedWorld: detailed } : null);
+            if (acceptedFuture) setFutures(current => current.map(future => future.id === acceptedFuture!.id ? { ...future, changedWorld: detailed } : future));
             setWorld(current => current === built ? detailed : current);
             setRecovery(null);
           } catch (error) {
@@ -826,6 +845,25 @@ export default function Page() {
     }
   }, [change, changing, installRuntime, sessionId, world, forkTick, observationTick, metrics, changeFrom, measureDisplay, registerMeasurement]);
 
+  /**
+   * Výběr, která přijatá alternativa stojí vedle originálu (P22 T10). Žádné
+   * volání serveru: obě větve už běží v prohlížeči. Starý cíl se zastaví, nový
+   * i originál se postaví na společný tik – jinak by pravý pohled nesl správnou
+   * větu a špatný svět. Server dál drží poslední přijatou revizi
+   * (`binding`, `documentRef`); tohle je volba pohledu, ne revize.
+   */
+  const showFuture = useCallback((id: number) => {
+    const next = futures.find(future => future.id === id);
+    if (next === undefined || comparison === null || next.id === comparison.id) return;
+    comparison.target.setPaused(true);
+    const tick = Math.min(next.result.observationTick, Math.max(next.result.forkTick, next.source.getSnapshot().observationTick));
+    next.source.setPaused(true); next.target.setPaused(true);
+    next.source.observeAt(tick); next.target.observeAt(tick);
+    setShownFutureId(next.id);
+    setController(viewOriginal ? next.source : next.target);
+    setWorld(viewOriginal ? next.world : next.changedWorld);
+  }, [futures, comparison, viewOriginal]);
+
   /** Zahození plánu. Sahá **jen** na panel — svět ani revize se nehnou. */
   const discard = useCallback(() => {
     if (editMeasurement.current) metrics.finishRun(editMeasurement.current.run, 'cancelled');
@@ -838,7 +876,7 @@ export default function Page() {
   // Pořadí je pořadí pravdy: porucha přebíjí běžící relaci, protože relace
   // skončila; běžící relace přebíjí prázdno, protože se něco děje.
   const status: WorldStatusState =
-    fault !== null ? 'broken' : streaming ? 'building' : world === null ? 'empty' : 'live';
+    visualWorld && !world ? 'preview' : fault !== null ? 'broken' : streaming ? 'building' : world === null ? 'empty' : 'live';
 
   function acceptSource(project: ProjectRevision, _generation: SourceGeneration) {
     let next = sourceRuntimes.current.get(project);
@@ -867,9 +905,10 @@ export default function Page() {
     documentRef.current = project.world;
     previewBranch.current = null;
     setWorld(sourceProxyFromRuntime(built.world, project.sources[0]?.title ?? 'Source scenario'));
+    setVisualWorld(null);
     setController(next); setSourceProject(project);
     setSourceGeneration(_generation);
-    setSessionId(null); setComparison(null); setViewOriginal(false); setComparisonNote(null);
+    setSessionId(null); setFutures([]); setShownFutureId(null); setViewOriginal(false); setComparisonNote(null);
     setChange(null); setChangeFrom(null); setOffer(null); setWriting(false); setSecondActMiss(null);
     setStreaming(false); setChanging(false); setFault(null); setProvenance(null);
     setStopped(null);
@@ -879,10 +918,19 @@ export default function Page() {
     <WorldstreamApp
       inspecting={inspecting}
       onInspect={toggleInspect}
+      empty={displayedWorld === null && !streaming && fault === null ? (
+        <EmptyScene onExample={(text) => { setSentence(text); promptInput.current?.focus(); }} />
+      ) : null}
       prompt={
         <>
-        <form onSubmit={(event) => void submit(event)} data-testid="prompt-form" style={FORM}>
+        <form onSubmit={(event) => void submit(event)} data-testid="prompt-form" className="ws-prompt-form" style={FORM}>
+          <label className="ws-generation-mode">World source <select data-testid="generation-mode" value={generationMode} disabled={streaming}
+            onChange={event => setGenerationMode(event.target.value as 'live' | 'prepared')}>
+            <option value="live">Generate my world</option>
+            <option value="prepared">Prepared demo</option>
+          </select></label>
           <input
+            ref={promptInput}
             data-testid="prompt-input"
             aria-label="Describe a place"
             placeholder="a drowned cathedral lit from below"
@@ -903,7 +951,11 @@ export default function Page() {
         </>
       }
       status={<>
-        <WorldStatus state={status} detail={fault} detailPending={streaming && world !== null} intent={world === null ? intent : null} />
+        <WorldStatus state={status} detail={fault} detailPending={streaming && world !== null} intent={world === null ? intent : null} wordMassing={wordGuess} reused={reused} />
+        {visualWorld && !world && <p style={FACTS} data-testid="visual-preview-notice" data-stage={visualStage??'compiler-visuals'}>
+          {wordGuess ? 'Provisional blocks from the words alone; the plan replaces them.' : visualStage==='intent-layout' ? 'Provisional layout from your plan. Placement and unfinished forms may change.' : 'Noninteractive scene preview.'}
+          {' '}{stopped ? 'Waiting stopped before an accepted world arrived.' : streaming ? wordGuess ? 'Reading the sentence.' : visualStage==='intent-layout' ? 'Building and checking the rules.' : 'Checking a repair to the rules.' : 'The rules did not pass verification.'}
+          {' '}Actions, time travel and sharing are unavailable.</p>}
         {(streaming || writing) && <button data-testid="world-cancel" disabled={changing} onClick={stopWaiting}>Stop waiting</button>}
         {stopped && <p role="status" data-testid="world-cancelled" style={FACTS}>{stopped}</p>}
       </>}
@@ -950,11 +1002,19 @@ export default function Page() {
             <AuthoredChangeNotice provenance={change === null ? null : changeFrom} />
             {change?.kind === 'preview' && change.scope.behavior > 0 && <fieldset style={{ ...FACTS, maxWidth: 'none' }}>
               <legend>Compare the same visitor inputs</legend>
+              <label>Change begins at {(forkTick / 20).toFixed(1)}s
+                <input aria-label="Change begins" type="range" min={0} max={Math.max(observationTick,1)} value={forkTick}
+                  onChange={event => setForkTick(event.target.valueAsNumber)} /></label>
+              <label>Look ahead {(observationTick / 20).toFixed(1)}s
+                <input aria-label="Look ahead" type="range" min={forkTick} max={Math.min(MAX_COMPARISON_TICK,Math.max(400,observationTick))}
+                  value={observationTick} onChange={event => setObservationTick(event.target.valueAsNumber)} /></label>
+              <details><summary>Exact simulation times</summary>
               <label>Fork tick <input data-testid="branch-fork-input" type="number" min={0} max={MAX_COMPARISON_TICK}
                 value={forkTick} disabled={changing} onChange={e => setForkTick(e.target.valueAsNumber)} /></label>
               <label>Observation tick <input data-testid="branch-observation-input" type="number" min={forkTick} max={MAX_COMPARISON_TICK}
                 value={observationTick} disabled={changing} onChange={e => setObservationTick(e.target.valueAsNumber)} /></label>
-              <p>Fork before the timer starts. Both branches replay your recorded actions.</p>
+              </details>
+              <p>Return before the action you want to change. Both futures replay your recorded actions.</p>
             </fieldset>}
             {comparisonNote && <p role="status" data-testid="branch-note" style={FACTS}>{comparisonNote}</p>}
             <form
@@ -980,12 +1040,30 @@ export default function Page() {
           </>
         )
       }
-      controls={world ? <div className="ws-runtime-tools">
-        {world && <div style={FACTS}><button data-testid="camera-reset" onClick={() => setCameraReset(value => value + 1)}>Frame scene</button>
-          <span> Drag to orbit · scroll to zoom · arrow keys to pan</span></div>}
-        {comparison && <BranchComparison comparison={comparison.result} original={viewOriginal} busy={changing}
+      controls={displayedWorld ? <div className="ws-runtime-tools">
+        {comparison && <BranchComparison comparison={comparison.result} names={comparison.names} original={viewOriginal} busy={changing} summary={comparison.summary}
+          onRestart={() => {
+            if (!sessionId || !documentRef.current) return;
+            const accepted = documentRef.current;
+            const restoreEra = generation.current;
+            setChanging(true);
+            void restoreComparison(sessionId, { simRevision: accepted.simRevision, lookRevision: accepted.lookRevision, simHash: accepted.simHash })
+              .then(restored => {
+                if (generation.current !== restoreEra || documentRef.current !== accepted) return;
+                restored = blueprintSchema.parse(restored);
+                const source = comparison.source;
+                comparison.target.setPaused(true);
+                source.observeAt(comparison.result.forkTick); source.setPaused(true);
+                binding.current = { sessionId, simulation: canonical(restored.world.sim), controller: source };
+                documentRef.current = restored.world;
+                // Server vrátil pravidla originálu, vzhled má z poslední přijaté změny.
+                setController(source); setWorld(futures[futures.length - 1]!.changedWorld); setShownFutureId(null); setViewOriginal(false);
+                setChange(null); previewBranch.current = null; setComparisonNote('Original rules restored. Try another change; your scene stays.');
+              }).catch(error => { if (generation.current === restoreEra) setComparisonNote(error instanceof Error ? error.message : 'The original rules could not be restored.'); })
+              .finally(() => { if (generation.current === restoreEra) setChanging(false); });
+          }}
           onOriginal={() => {
-            binding.current?.controller.setPaused(true);
+            comparison.target.setPaused(true);
             setController(comparison.source);
             setWorld(comparison.world);
             setViewOriginal(true);
@@ -995,20 +1073,60 @@ export default function Page() {
           }}
           onChanged={() => {
             comparison.source.setPaused(true);
-            setController(binding.current!.controller);
+            setController(comparison.target);
             setWorld(comparison.changedWorld);
             setViewOriginal(false);
           }} />}
-        {controller === null ? null : <RuntimeControls controller={controller} />}
+        {controller === null ? null : comparison
+          ? <details><summary>Visitor replay</summary><RuntimeControls controller={controller} comparing /></details>
+          : <RuntimeControls controller={controller} onRoute={setRouteHighlight} onRewind={(tick,end) => { rewindChoice.current={tick,end}; setForkTick(tick); }}
+              whyTick={whyTick} onWhy={(tick) => { setWhyTick(tick); setInspecting(true); }} />}
+        <div style={FACTS}><button data-testid="camera-reset" onClick={() => { setFocusId(null); setCameraReset(value => value + 1); }}>Frame scene</button>
+          <span> Drag to orbit · scroll to zoom · arrow keys to pan</span></div>
+        {displayedWorld?.kind === 'built' && displayedWorld.environment?.kind === 'interior' && <div style={FACTS}>
+          <button data-testid="cutaway-toggle" aria-pressed={cutaway} onClick={() => setCutaway(value => !value)}>{cutaway ? 'Show full walls' : 'Cut away walls'}</button>
+          <span>{cutaway ? ' Cutaway inspection · rules and collisions stay unchanged' : ' Full architecture'}</span>
+        </div>}
       </div> : null}
-      inspect={<><WorldFacts world={world} />{world && !sourceProject && <p style={FACTS} data-testid="no-source-evidence">
+      inspect={<>{controller !== null && whyTick !== null && documentRef.current !== null && (
+        <WhyPanel controller={controller} tick={whyTick} document={documentRef.current} onClose={() => setWhyTick(null)} />
+      )}<WorldFacts world={displayedWorld} repairAttempts={visualRepairAttempts} allowAssetRepair={world?.kind==='built'&&!comparison&&!sourceProject}
+        onFocus={comparison ? undefined : id => { setFocusId(id); setCameraReset(value => value + 1); }} />{world && !sourceProject && <p style={FACTS} data-testid="no-source-evidence">
         No source evidence is attached to this world. A prompt alone is not a citation.
       </p>}</>}
-      stage={<WorldstreamCanvas world={world} controller={controller} reset={cameraReset}
-        onPresented={presented}
+      stage={comparison ? <FutureViews futures={futures} selected={comparison} onSelect={showFuture}
+        reset={cameraReset} onPresented={presented} cutaway={cutaway} /> : <WorldstreamCanvas world={displayedWorld} controller={world?controller:null} reset={cameraReset}
+        onPresented={presented} focusId={focusId} cutaway={cutaway} routeHighlight={routeHighlight}
         framing={sourceProject ? 'diagram' : 'scene'}
         sceneId={sourceProject ? (sourceProject.parent ?? sourceProject).projectRevision : sessionId} />}
     />
+  );
+}
+
+/** Věta, kterou prázdná scéna nabízí. Táž, co stojí v `placeholder` pole. */
+const EXAMPLE_SENTENCE = 'a drowned cathedral lit from below';
+
+/**
+ * Prázdná nasvícená scéna s jedním příkladem věty (P21 T10).
+ *
+ * Do T10 byla výchozí obrazovka plátno bez ničeho a pole s `placeholder`em —
+ * cizí člověk (G-V) nevěděl, že se má psát celou větou, ani že svět pak
+ * poroste po větách. Tři řádky: co udělat, jeden příklad k odkliknutí, a co
+ * přijde potom. Příklad je tlačítko, které pole **vyplní, ne odešle** —
+ * odeslání je rozhodnutí porotce a stojí placené volání.
+ *
+ * Mizí s prvním světem, s prvním náhledem i s rozběhnutou stavbou, protože
+ * v té chvíli už plátno mluví samo.
+ */
+function EmptyScene({ onExample }: { readonly onExample: (sentence: string) => void }) {
+  return (
+    <section data-testid="empty-scene" aria-label="How to begin">
+      <p className="ws-empty-lead">Describe a place in one sentence, and it will stand here.</p>
+      <button type="button" data-testid="example-sentence" className="ws-empty-example" onClick={() => onExample(EXAMPLE_SENTENCE)}>
+        Try: {EXAMPLE_SENTENCE}
+      </button>
+      <p className="ws-empty-next">Then keep talking. Each sentence adds one thing or changes one rule, and time can always be rewound.</p>
+    </section>
   );
 }
 
@@ -1124,7 +1242,18 @@ function AuthoredChangeNotice({
  * `RepairRounds`, `ModelProgress`) sem **nejde**: stojí nad lokální emisí a
  * `WorldDocRuntime`, tedy nad systémem, který na `/classic` zůstal celý.
  */
-function WorldFacts({ world }: { readonly world: ProxyWorld | null }) {
+function WorldFacts({ world, onFocus, allowAssetRepair, repairAttempts }: { readonly world: ProxyWorld | null; onFocus?: (id: string) => void;
+  allowAssetRepair: boolean; repairAttempts: Set<string> }) {
+  const [visibility, setVisibility] = useState<ReturnType<typeof visibilityReport> | null>(null);
+  const [detail, setDetail] = useState<readonly {id:string; assessment:ShapeDetailAssessment; action:{kind:'repeat-instanced'|'unsupported';reason:string}|null}[]>([]);
+  const [attempted, setAttempted] = useState<ReadonlySet<string>>(()=>new Set(repairAttempts));
+  const [assetRepairs,setAssetRepairs]=useState<ReturnType<NonNullable<Window['__worldstreamStage']>['slots']>>([]);
+  const [repairMessage,setRepairMessage]=useState<string|null>(null);
+  const era=useRef(0);
+  useEffect(() => {
+    era.current++;setVisibility(null);setDetail([]);setAttempted(new Set(repairAttempts));setAssetRepairs([]);setRepairMessage(null);
+    return ()=>{era.current++;};
+  }, [world,repairAttempts]);
   if (world === null || world.kind !== 'built') return null;
 
   return (
@@ -1138,6 +1267,54 @@ function WorldFacts({ world }: { readonly world: ProxyWorld | null }) {
           </li>
         ))}
       </ol>
+        <button data-testid="inspect-visibility" onClick={() => {
+          const stage=window.__worldstreamStage;
+          setVisibility(world.sceneSpec ? visibilityReport(world.sceneSpec,stage?.visibility() ?? []) : null);
+          setDetail((stage?.slots() ?? []).flatMap(slot=>slot.detailAssessment ? [{id:slot.stableId,assessment:slot.detailAssessment,action:slot.samplingAction}] : []));
+          setAssetRepairs(stage?.slots()??[]);
+        }}>
+          Check this view
+        </button>
+        {allowAssetRepair && assetRepairs.some(slot=>slot.assetRetry.status!=='unavailable') && <div data-testid="asset-repair-report">
+          <p>One retry can reload the same approved object after a download or loading failure. It does not change the world or its rules.</p>
+          {assetRepairs.filter(slot=>slot.assetRetry.status!=='unavailable').map(slot=><p key={slot.stableId} data-testid="asset-repair-row" data-object={slot.stableId}>
+            {slot.stableId}: {slot.assetRetry.status}{slot.assetRetry.reason ? ` · ${slot.assetRetry.reason}` : ''}
+            {slot.assetRetry.status==='available' && <button data-testid="asset-repair-retry" disabled={attempted.has(slot.stableId)} onClick={async()=>{
+              const stage=window.__worldstreamStage;if(!stage||repairAttempts.has(slot.stableId))return;
+              const currentEra=era.current;repairAttempts.add(slot.stableId);setAttempted(new Set(repairAttempts));
+              setRepairMessage(`Reloading ${slot.stableId}…`);
+              try{
+                const result=await stage.retryAsset(slot.stableId);
+                if(era.current!==currentEra||window.__worldstreamStage!==stage)return;
+                setAssetRepairs(stage.slots());setVisibility(world.sceneSpec?visibilityReport(world.sceneSpec,stage.visibility()):null);
+                setRepairMessage(result.status==='loaded'?`${slot.stableId} reloaded. Check this view; recognition still needs human review.`
+                  :`${slot.stableId}: ${result.status}. ${result.reason??'The object was not replaced.'}`);
+              }catch{
+                if(era.current===currentEra&&window.__worldstreamStage===stage)setRepairMessage(`${slot.stableId}: reload failed. No further automatic attempt is available.`);
+              }
+            }}>Retry this object</button>}
+          </p>)}
+        </div>}
+        {allowAssetRepair&&repairMessage&&<p role="status" data-testid="asset-repair-status">{repairMessage}</p>}
+        {detail.some(item=>item.assessment.recommendation) && <div data-testid="shape-detail-report">
+          <p>Shape sampling diagnostics. Recognition still needs human review.</p>
+          {detail.filter(item=>item.assessment.recommendation).map(item=><p key={item.id}><strong>{item.id}</strong>: {item.action?.kind==='repeat-instanced'
+            ? `Applied: ${item.action.reason} The original whole-object grid had a sampling risk; inspect the resulting detail.`
+            : <>{item.assessment.recommendation}{item.action ? ` Automatic change unavailable: ${item.action.reason}` : ''}</>}</p>)}
+        </div>}
+      {world.sceneSpec && <>
+        {visibility && <div data-testid="visibility-report">
+          <p>Five sampled sight lines per object; 24px diagnostic minimum. Recognition still needs human review. Recheck after one targeted camera adjustment.</p>
+          {visibility.map((requirement,index) => <div key={index}><strong>{requirement.description}</strong>
+            {requirement.instances.map(instance => <p key={instance.stableId}>{instance.stableId}: {instance.status}
+              {instance.observation ? ` · ${Math.round(instance.observation.screenPixels)}px` : ''}
+              {instance.repair ? ` · ${instance.repair}` : ''}
+              {instance.status === 'loaded' && onFocus && <button disabled={attempted.has(instance.stableId)}
+                onClick={() => { repairAttempts.add(instance.stableId);setAttempted(new Set(repairAttempts));onFocus(instance.stableId); }}>Inspect this object</button>}
+              {attempted.has(instance.stableId) && instance.status === 'loaded' ? ' · One targeted repair attempted; recheck. If still hidden, geometry or occlusion needs review.' : ''}</p>)}
+          </div>)}
+        </div>}
+      </>}
     </section>
   );
 }
@@ -1198,11 +1375,34 @@ const BUTTON: React.CSSProperties = {
   font: '14px/1.4 ui-monospace, monospace',
 };
 
+/**
+ * Tiky, ve kterých spustilo pravidlo, **podle kauzálního kruhu** běhu (P22 T8).
+ *
+ * `transitions` jmenuje tiky se vstupem nebo se spuštěním, kruh říká, co v nich
+ * doopravdy zapsalo. Značka vzniká jen tam, kde kruh tik ještě drží a aspoň
+ * jedno pravidlo prošlo stráží — jinak by klik otevřel panel, který nemá co říct.
+ */
+function firedTicks(controller: RuntimeController, state: RuntimeSnapshot): readonly number[] {
+  return state.transitions
+    .filter(entry => controller.explainTick(entry.tick).some(firing => firing.guardHeld))
+    .map(entry => entry.tick);
+}
+
 /** Jediné živé hodiny. Pauza zahodí nástěnný zbytek, nikoli stav enginu. */
-function RuntimeControls({ controller }: { readonly controller: RuntimeController }) {
+function RuntimeControls({ controller, comparing = false, onRewind, onRoute, whyTick = null, onWhy }: { readonly controller: RuntimeController; readonly comparing?: boolean;
+  readonly onRewind?: (tick:number,end:number)=>void; readonly onRoute?: (highlight: readonly string[]) => void;
+  /** Tik otevřený v panelu Why; jeho značka svítí. */
+  readonly whyTick?: number | null;
+  /** Klik na značku. Bez něj se značky nekreslí — porovnávací replay nemá kam panel otevřít. */
+  readonly onWhy?: (tick: number) => void }) {
   const state = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
+  const furthest = useRef(state.observationTick);
+  const previousController = useRef(controller);
+  if (previousController.current !== controller) { previousController.current=controller; furthest.current=state.observationTick; }
+  furthest.current = Math.max(furthest.current,state.observationTick);
+  const rewind = (tick:number) => { controller.setPaused(true); controller.observeAt(tick); onRewind?.(tick,furthest.current); };
   useEffect(() => {
-    if (state.paused || state.endedAtTick !== null) return;
+    if (comparing || state.paused || state.endedAtTick !== null) return;
     const clock = createClock();
     let last = performance.now();
     const timer = window.setInterval(() => {
@@ -1212,19 +1412,30 @@ function RuntimeControls({ controller }: { readonly controller: RuntimeControlle
       controller.advanceTicks(due);
     }, 50);
     return () => window.clearInterval(timer);
-  }, [controller, state.paused, state.endedAtTick]);
+  }, [controller, state.paused, state.endedAtTick, comparing]);
   return (
     <section data-testid="runtime-controls" style={{ ...FACTS, maxWidth: 'none', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.65rem' }} aria-label="Simulation controls">
-      <div data-testid="runtime-tick" data-tick={state.tick}>Tick {state.tick}</div>
+      <RuntimeInteraction controller={controller} readOnly={comparing} onRoute={onRoute} />
+      {!comparing && <div style={{flexBasis:'100%'}}>
+        <label>Time · {(state.observationTick/20).toFixed(1)}s <input data-testid="world-time" type="range" min={0}
+          max={Math.max(1,furthest.current)} value={state.observationTick} onChange={event => rewind(event.target.valueAsNumber)} /></label>
+        {onWhy && <WhyMarkers ticks={firedTicks(controller, state)} selected={whyTick} onSelect={onWhy} />}
+        <button data-testid="rewind-before-action" disabled={controller.getInputLog().length===0}
+          onClick={() => rewind(controller.getInputLog().at(-1)!.tick)}>Before my last action</button>
+        <details><summary>Your actions</summary>{controller.getInputLog().map((input,index) => <button key={index}
+          onClick={() => rewind(input.tick)}>{(input.tick/20).toFixed(1)}s · {input.actionId} {input.target ?? ''}</button>)}</details>
+      </div>}
       <div data-testid="runtime-state">{state.runState}</div>
-      {state.endedAtTick !== null && <div>Ended at tick {state.endedAtTick}</div>}
-      <div data-testid="runtime-observation">Observation tick {state.observationTick}</div>
       <button type="button" data-testid="runtime-pause" style={BUTTON}
-        disabled={state.endedAtTick !== null}
+        disabled={comparing || state.endedAtTick !== null}
         onClick={() => controller.setPaused(!state.paused)}>
         {state.paused ? 'Resume' : 'Pause'}
       </button>
-      <RuntimeInteraction controller={controller} />
+      <details><summary>Simulation details</summary>
+        <div data-testid="runtime-tick" data-tick={state.tick}>Tick {state.tick}</div>
+        {state.endedAtTick !== null && <div>Ended at tick {state.endedAtTick}</div>}
+        <div data-testid="runtime-observation">Observation tick {state.observationTick}</div>
+      </details>
     </section>
   );
 }

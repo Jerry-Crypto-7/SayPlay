@@ -26,8 +26,9 @@
  * prohlédnutý.**
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import { execFile } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -37,7 +38,14 @@ import { frozenGrammar } from '../../model/client';
 import type { Grammar } from '../../model/prompt';
 import { runPipeline } from '../pipeline';
 import { SpendCap } from '../spend-cap';
-import { parseAnswerText, upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
+import { killCodexTree, parseAnswerText, upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
+
+// `execFile` se obaluje, ne nahrazuje: `taskkill` doopravdy běží a test sirotka
+// jen čte, s čím se volal (`ship-pidreuse`).
+vi.mock('node:child_process', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:child_process')>();
+  return { ...actual, execFile: vi.fn(actual.execFile) };
+});
 
 const grammarRead = frozenGrammar();
 if (!grammarRead.ok) throw new Error(`frozen grammar unreadable: ${grammarRead.detail}`);
@@ -1162,11 +1170,17 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
     let orphan = 0;
     try {
       await withScript(file, async () => {
+        vi.mocked(execFile).mockClear();
         const started = Date.now();
         const outcome = await upstreamBranch(liveConfig({ ...CLI_ENV, WORLDSMITH_UPSTREAM_TIMEOUT_MS: '1500' })).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
         orphan = Number(readFileSync(marker, 'utf8'));
         expect(outcome).toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE' });
         expect(Date.now() - started, 'volání čekalo na sirotka').toBeLessThan(10_000);
+        // Obal skončil hned, takže jeho PID už smí patřit cizímu procesu (`ship-pidreuse`).
+        expect(
+          vi.mocked(execFile).mock.calls.filter(([file]) => file === 'taskkill'),
+          'taskkill šel na PID obalu, který už skončil',
+        ).toEqual([]);
       });
     } finally {
       try {
@@ -1176,6 +1190,33 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
       }
     }
   }, 30_000);
+
+  // Security-reviewer před `/ship` 15. 9. 2026: zavřená roura sama obal ukončí
+  // a jeho PID se uvolní; `taskkill`, který ho vyhledá o desítky milisekund
+  // později, by trefil cizí proces. Roury se proto zavírají až po něm.
+  it.runIf(process.platform === 'win32')('roury zavře až po doběhnutí taskkill, u mrtvého obalu hned', async () => {
+    const actual = await vi.importActual<typeof import('node:child_process')>('node:child_process');
+    const gone = actual.spawn(process.execPath, ['-e', ''], { stdio: 'ignore' });
+    await new Promise((resolve) => gone.once('exit', resolve));
+    let goneClosed = false;
+    killCodexTree(gone, () => {
+      goneClosed = true;
+    });
+    expect(goneClosed, 'roury obalu, který už skončil, zůstaly otevřené').toBe(true);
+
+    let returned = false;
+    vi.mocked(execFile).mockImplementationOnce(((file: string, args: string[], options: object, callback: () => void) =>
+      actual.execFile(file, args, options, () => {
+        returned = true;
+        callback();
+      })) as never);
+    const running = actual.spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });
+    await new Promise((resolve) => running.once('spawn', resolve));
+    const exited = new Promise((resolve) => running.once('exit', resolve));
+    const closedAfterTaskkill = await new Promise<boolean>((resolve) => killCodexTree(running, () => resolve(returned)));
+    expect(closedAfterTaskkill, 'roury se zavřely dřív, než taskkill doběhl').toBe(true);
+    await exited;
+  });
 
   // Revize testových mezer před /ship 15. 9. 2026: spadlý codex s rozepsaným
   // proudem je výpadek, ne vadná odpověď, která by si řekla o placenou opravu.
@@ -1189,14 +1230,54 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
     });
   });
 
+  // Revize R2 z P19: jméno s diakritikou rozdělené mezi dvě čtení stderr nesmí
+  // dostat U+FFFD, jinak ho redakce archivu nepozná.
+  it('znak UTF-8 rozdělený mezi dvě čtení stderr zůstane celý', async () => {
+    const file = fakeCodex('split-stderr', [okStream[0]], [
+      '  process.stderr.write(Buffer.from([0x74, 0x6f, 0x6d, 0xc3]));',
+      '  setTimeout(() => { process.stderr.write(Buffer.from([0xa1, 0x73])); setTimeout(() => process.exit(1), 50); }, 100);',
+    ].join('\n'));
+    await withScript(file, async () => {
+      const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
+      expect(outcome.ok).toBe(false);
+      if (outcome.ok) return;
+      expect(outcome.detail).toContain('tomás');
+    });
+  });
+
   it('proud delší než 8 MiB se utne jako výpadek', async () => {
     const file = fakeCodex('flood', [okStream[0]], "  process.stdout.write('x'.repeat(9 * 1024 * 1024));");
     await withScript(file, async () => {
+      vi.mocked(execFile).mockClear();
       const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
       expect(outcome).toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE' });
+      // Roury se zavírají až po `taskkill`, takže data mezitím tečou dál; další
+      // kus nad stropem nesmí pouštět další `taskkill` (/ship 15. 9. 2026).
+      expect(vi.mocked(execFile).mock.calls.filter(([name]) => name === 'taskkill').length).toBeLessThanOrEqual(1);
       if (outcome.ok) return;
       expect(outcome.detail).toContain('8 MiB');
     });
+  });
+
+  it('codex, který se nespustí, je výpadek, ne pád serveru', async () => {
+    // `spawn` bez spustitelného souboru vystřelí `error` místo `close`; bez
+    // posluchače by nezachycená událost shodila celý proces serveru
+    // (`ship-testgaps2`). Prázdné `WORLDSMITH_CODEX_JS` znamená `codex` z PATH,
+    // a PATH tady míří do prázdného adresáře.
+    const empty = mkdtempSync(join(tmpdir(), 'no-codex-'));
+    const saved = { script: process.env.WORLDSMITH_CODEX_JS, path: process.env.PATH };
+    process.env.WORLDSMITH_CODEX_JS = '';
+    process.env.PATH = empty;
+    try {
+      const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 's', user: PROMPT } });
+      expect(outcome).toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE' });
+      if (outcome.ok) return;
+      expect(outcome.detail).toContain('ENOENT');
+    } finally {
+      if (saved.script === undefined) delete process.env.WORLDSMITH_CODEX_JS;
+      else process.env.WORLDSMITH_CODEX_JS = saved.script;
+      process.env.PATH = saved.path;
+    }
   });
 
   it('bez codex-cli v koncovém bodu zůstává výchozí strop 120 s, s ním 240 s', () => {
@@ -1239,5 +1320,9 @@ describe('8. parseAnswerText opraví jen konec, nanejvýš o dvě závorky', () 
     if (!cut.ok) expect(cut.detail).toContain('max_tokens');
     const finished = await upstreamBranch(liveConfig(), answer('end_turn')).generate(call);
     expect(finished).toMatchObject({ ok: true, body: { a: [1, 2] } });
+    // Useknutí znamená jen `max_tokens`. Porovnání `!== 'end_turn'` by tuhle
+    // odpověď odmítlo taky a obě věty nad tímhle řádkem by prošly dál.
+    const stopped = await upstreamBranch(liveConfig(), answer('stop_sequence')).generate(call);
+    expect(stopped).toMatchObject({ ok: true, body: { a: [1, 2] } });
   });
 });

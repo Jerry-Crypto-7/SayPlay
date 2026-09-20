@@ -1,4 +1,6 @@
 import { observePhase, observePhaseAsync, type PhaseObserver } from './phase-observer';
+import { WORLDSTREAM_ASSETS } from '@/assets/catalog';
+import type { VisualPreview } from '@/worldstream/schema';
 /**
  * **Sebeoprava blueprintu (P13 T12): odmítnutí compileru → další pokus.**
  *
@@ -60,6 +62,7 @@ import {
 } from './worldstream-compiler';
 import type { Grammar, UpstreamRequest } from './prompt';
 import type { PlannerEmission } from './worldstream-intent';
+import { emissionChunks, mergeEmissionChunks, type ChunkAnswer } from './emission-merge';
 
 /** Přijatý blueprint i s verdiktem, osekáními a opravami. */
 export type CompiledBlueprint = Extract<CompilerResult, { readonly ok: true }>;
@@ -166,6 +169,8 @@ const MAX_ISSUES_IN_SENTENCE = 6;
  * kterému se celý modul vyhýbá.
  */
 const WHAT_TO_DO: Readonly<Record<CompilerRejection, string>> = {
+  LAYOUT_INVALID:
+    'Fix the named spatial relation or blocked opening using actual object bounds. Preserve identities, bindings and required counts; do not hide the relation or remove the requested object.',
   NOT_AN_OBJECT:
     'Answer with one JSON object whose fields are exactly geometry, shapes, placements and world.',
   WRONG_SHAPE:
@@ -357,11 +362,32 @@ export function buildRepairRequest(
   previous: unknown,
   fault: BlueprintFault,
 ): UpstreamRequest {
+  const inputDiagnosis = visitorInputDiagnosis(previous, fault);
   return {
     model: first.model,
     system: first.system,
-    user: repairRequest(first.user, previous, blueprintRejectionSentence(fault)),
+    user: repairRequest(first.user, previous, `${blueprintRejectionSentence(fault)}${inputDiagnosis}`),
   };
+}
+
+/** Grounded feedback for a missing activation input, not a rewrite of authored behavior.
+ * onClick lowers to clicked; visitor dispatch and witness replay only produce acted.
+ * Keep frozen grammar and simulator semantics intact. */
+function visitorInputDiagnosis(previous: unknown, fault: BlueprintFault): string {
+  if (fault.reason !== 'WORLD_REJECTED' || fault.world?.rejection.stage !== 'witness'
+    || fault.world.rejection.reason !== 'NO_WIN') return '';
+  const record = (value: unknown): Record<string, unknown> =>
+    value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+  const sim = record(record(record(previous).world).sim), rules = record(sim.rules);
+  const clicked = Object.entries(rules).filter(([, rule]) => record(record(rule).event).kind === 'onClick');
+  if (!clicked.length) return '';
+  const actors = Object.entries(record(sim.entities)).filter(([, entity]) => record(entity).role === 'actor').map(([id]) => id);
+  const event = record(record(clicked[0][1]).event);
+  const target = typeof event.entity === 'string' ? event.entity : '<existing visible object entity>';
+  const example = { kind: 'onAction', actor: actors[0] ?? '<existing visible actor entity>', actionId: 'activate', target };
+  return `\nINPUT_CONTRACT: ${clicked.slice(0, 6).map(([id]) => JSON.stringify(id)).join(', ')} use onClick, but visitor controls and witness replay emit onAction/acted, not clicked.`
+    + ` These click rules cannot be triggered by sim.witness.ops. Use an explicit declared visitor action, for example ${JSON.stringify(example)},`
+    + ' with matching actor/actionId/target in the witness. Keep the requested state-changing effects and their guards; do not add an unconditional win or increase the horizon. Keep geometry and placements unchanged.';
 }
 
 /**
@@ -395,6 +421,7 @@ function sameFault(before: BlueprintFault, after: BlueprintFault): boolean {
 export type BlueprintEmitter = (request: UpstreamRequest) => Promise<unknown>;
 
 export interface RepairInput {
+  readonly onVisualPreview?: (preview: VisualPreview, attempt: number) => void;
   readonly observePhase?: PhaseObserver;
   readonly plan: PlannerEmission;
   readonly grammar: Grammar;
@@ -416,6 +443,102 @@ export interface RepairInput {
    * nekupuje nic a jen zahazuje rozdělanou práci.
    */
   readonly maxRounds?: number;
+  /**
+   * Napsat svět na několik požadavků místo jednoho.
+   *
+   * **Výchozí je `false`, tedy dnešní jediné volání.** Rozřezání se zapíná
+   * volajícímu, protože mění počet placených volání na jeden svět — z jednoho
+   * na tři. Že se kusy dají slepit beze ztráty, je naměřené nad archivem
+   * (`evals/worldstream/chunked-compile.json`: 52 z 52 bajtově týž blueprint);
+   * že je Astra dobře napíše, když nevidí zbytek světa, naměřené **není**
+   * a čeká na živý běh.
+   *
+   * Kusy letí **souběžně** (`emitChunks`): každý `emit` je u stropu vlastní
+   * rezervace, takže tři kusy jsou tři započtená volání a odmítnutý kus nechá
+   * relaci v pojmenovaném stavu, ne v půlce světa (`chunked-live.test.ts`).
+   *
+   * `true` i `3` jsou tři kusy; `2` je dvoukusý řez `scene` + `rules`
+   * (P22 T16, měřený proti jedinému volání, ne zapnutý produktu).
+   */
+  readonly chunked?: boolean | 2 | 3;
+}
+
+/**
+ * Jedno kolo přes několik kusů: N požadavků **naráz**, jedna slepená odpověď,
+ * jeden blueprint.
+ *
+ * Kusy letí souběžně, protože celé čekání je model, jak píše (medián 103 s
+ * na jednu odpověď, 13. 9. 2026): svět má trvat nejdelší kus, ne součet tří.
+ * Souběh smí být, protože každý `emit` je u stropu vlastní rezervace
+ * (`cloudEmitter`), takže tři kusy jsou tři započtená volání a strop odmítne
+ * první, který by ho překročil.
+ *
+ * **Čeká se na všechny, i když jeden spadl.** Kus, který už letí, se nedá
+ * odvolat a jeho rezervace se vyrovnává až po odpovědi; vrátit výsledek dřív
+ * by nechalo peníze držené a relaci „v půlce světa". Až po dolétnutí se
+ * vybírá příčina: odmítnutí stropem (`SpendRefusalError`) má přednost před
+ * výpadkem, aby relace skončila `SPEND_CAP_BLOCKED` a ne „model nedostupný".
+ * Pozná se podle `name`, ne `instanceof`: tenhle modul táhne `proxy.ts` do
+ * klientského bundlu a `spend-cap.ts` stojí na `node:fs`, takže by ho
+ * hodnotový import shodil celý `next build` (naměřeno 19. 9. 2026).
+ *
+ * `null` znamená „tudy to nešlo, zkus to jedním voláním" — a vrací se **jen**
+ * když se kusu nedostalo odpovědi vůbec (rozbité prostředí). Odmítnutí od
+ * brány i rozpor při slepení jsou výsledky, ne důvod tiše přejít na starou
+ * cestu: kdyby se přecházelo, report by ukazoval úspěch tam, kde řezání
+ * selhalo.
+ */
+async function emitChunks(input: RepairInput, clock: () => number): Promise<BlueprintOutcome | null> {
+  const startedAt = clock();
+  const requests = emissionChunks(input.chunked === 2 ? 2 : 3).map((chunk) => ({ chunk, request: buildCompilerRequest(input.plan, input.grammar, chunk) }));
+  const lastRequest = requests[requests.length - 1].request;
+
+  const settled = await Promise.allSettled(
+    requests.map(({ request }) => observePhaseAsync(input.observePhase, 'blueprint-emitter', () => input.emit(request))),
+  );
+
+  const failures = requests.flatMap(({ chunk }, index) => {
+    const result = settled[index];
+    return result.status === 'rejected' ? [{ chunk, thrown: result.reason as unknown }] : [];
+  });
+  if (failures.length > 0) {
+    const cause = failures.find(({ thrown }) => thrown instanceof Error && thrown.name === 'SpendRefusalError')?.thrown ?? failures[0].thrown;
+    const detail = failures
+      .map(({ chunk, thrown }) => `chunk ${chunk}: ${thrown instanceof Error ? `${thrown.name}: ${thrown.message}` : String(thrown)}`)
+      .join('; ');
+    return { kind: 'unavailable', detail, cause, rounds: [] };
+  }
+
+  const answers: ChunkAnswer[] = requests.map(({ chunk }, index) => ({
+    chunk,
+    answer: (settled[index] as PromiseFulfilledResult<unknown>).value,
+  }));
+
+  const merged = mergeEmissionChunks(answers);
+  const ms = clock() - startedAt;
+  if (!merged.ok) {
+    const fault: BlueprintFault = { reason: 'WRONG_SHAPE', detail: `${merged.reason}: ${merged.detail}`, issues: [] };
+    return { kind: 'rejected', fault, rounds: [{ attempt: 1, fault, ms }] };
+  }
+
+  const result = observePhase(input.observePhase, 'blueprint-validation-and-lowering', () =>
+    compileBlueprint(merged.answer, input.plan, {
+      sessionSeed: input.sessionSeed,
+      upstream: lastRequest,
+      assets: WORLDSTREAM_ASSETS,
+    }),
+  );
+
+  if (result.ok) return { kind: 'compiled', result, rounds: [{ attempt: 1, fault: null, ms }] };
+
+  if (result.preview) input.onVisualPreview?.(result.preview, 1);
+  const fault: BlueprintFault = {
+    reason: result.reason,
+    detail: result.detail,
+    issues: result.issues,
+    ...(result.world === undefined ? {} : { world: result.world }),
+  };
+  return { kind: 'rejected', fault, rounds: [{ attempt: 1, fault, ms }] };
 }
 
 /**
@@ -437,6 +560,14 @@ export async function compileWithRepair(input: RepairInput): Promise<BlueprintOu
 
   const first = buildCompilerRequest(input.plan, input.grammar);
   const clock = input.now ?? Date.now;
+
+  if (input.chunked !== undefined && input.chunked !== false) {
+    const chunked = await emitChunks(input, clock);
+    // Slepení selhalo → je to vada odpovědi jako každá jiná a jde do téhož
+    // tvaru výsledku. Nepřepisuje se na jediné volání potichu: to by zakrylo,
+    // že řezání v tomhle případě nefunguje, a report by četl úspěch.
+    if (chunked !== null) return chunked;
+  }
 
   const rounds: BlueprintRound[] = [];
   const seen: BlueprintFault[] = [];
@@ -464,6 +595,7 @@ export async function compileWithRepair(input: RepairInput): Promise<BlueprintOu
     const result = observePhase(input.observePhase, 'blueprint-validation-and-lowering', () => compileBlueprint(answer, input.plan, {
       sessionSeed: input.sessionSeed,
       upstream: request,
+      assets: WORLDSTREAM_ASSETS,
     }));
     const ms = clock() - startedAt;
 
@@ -471,6 +603,8 @@ export async function compileWithRepair(input: RepairInput): Promise<BlueprintOu
       rounds.push({ attempt, fault: null, ms });
       return { kind: 'compiled', result, rounds };
     }
+
+    if (result.preview) input.onVisualPreview?.(result.preview, attempt);
 
     const fault: BlueprintFault = {
       reason: result.reason,

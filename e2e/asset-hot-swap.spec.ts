@@ -1,0 +1,44 @@
+import {test,expect} from '@playwright/test';
+import catalog from '../src/assets/catalog.json';
+
+test('five live identities keep state, camera and sockets through LOD swaps, rewind and removal',async({page},testInfo)=>{
+  test.setTimeout(90_000);
+  const asset=catalog.assets.find(a=>a.assetId==='seated-person')!,errors:string[]=[];
+  page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('/dev/asset-hot-swap');
+  const ready=async(count:number,level:number)=>expect.poll(()=>page.evaluate(({hash})=>{
+    const slots=window.__worldstreamStage?.slots()??[];
+    return {count:slots.length,loaded:slots.every(s=>s.contentHash===hash&&s.rung==='g3-ready'&&!s.failure)};
+  },{hash:asset.lods[level].hash}),{timeout:30_000}).toEqual({count,loaded:true});
+  await ready(5,0);
+  const before=await page.evaluate(()=>({slots:window.__worldstreamStage!.slots(),camera:window.__worldstreamStage!.camera(),builds:window.__worldstreamStage!.builds(),memory:window.__worldstreamStage!.memory()}));
+  expect(new Set(before.slots.map(s=>s.objectId)).size).toBe(5);
+  expect(before.slots[0].transform.rotationY).toBeCloseTo(-Math.PI/3);
+  await page.getByRole('button',{name:'Interact',exact:true}).click();
+  const acted=await page.getByTestId('runtime-state').textContent();
+  expect(JSON.parse(acted!).tick).toBe(1);
+  await page.getByRole('button',{name:'LOD 0',exact:true}).click();await ready(5,1);
+  expect(await page.getByTestId('runtime-state').textContent()).toBe(acted);
+  const after=await page.evaluate(()=>({slots:window.__worldstreamStage!.slots(),camera:window.__worldstreamStage!.camera(),builds:window.__worldstreamStage!.builds(),visibility:window.__worldstreamStage!.visibility()}));
+  expect(after.camera).toEqual(before.camera);expect(after.builds).toBe(before.builds);
+  expect(after.slots.map(s=>({id:s.objectId,transform:s.transform,sockets:s.sockets}))).toEqual(before.slots.map(s=>({id:s.objectId,transform:s.transform,sockets:s.sockets})));
+  expect(after.slots[0].triangles).toBeLessThan(before.slots[0].triangles);
+  expect(after.visibility.every(v=>v.loaded)).toBe(true);
+  expect(after.visibility.some(v=>v.inFrame&&v.screenPixels>20&&v.unoccludedSamples>0)).toBe(true);
+  await page.screenshot({path:testInfo.outputPath('five-listeners-lod1.png')});
+  await page.getByRole('button',{name:'Rewind',exact:true}).click();
+  const rewound=await page.getByTestId('runtime-state').textContent();expect(JSON.parse(rewound!).tick).toBe(0);
+  await page.getByRole('button',{name:'LOD 1',exact:true}).click();await ready(5,0);
+  expect(await page.getByTestId('runtime-state').textContent()).toBe(rewound);
+  await page.getByRole('button',{name:'Toggle fifth listener',exact:true}).click();await ready(4,0);
+  expect(await page.evaluate(()=>window.__worldstreamStage!.slots().map(s=>s.objectId))).toEqual(before.slots.slice(0,4).map(s=>s.objectId));
+  await page.getByRole('button',{name:'Toggle fifth listener',exact:true}).click();await ready(5,0);
+  await expect.poll(()=>page.evaluate(()=>window.__worldstreamStage!.memory())).toEqual(before.memory);
+  await page.getByRole('button',{name:'Adaptive off',exact:true}).click();
+  const canvas=page.getByTestId('worldstream-canvas');const rectangle=await canvas.boundingBox();
+  await page.mouse.move(rectangle!.x+rectangle!.width/2,rectangle!.y+rectangle!.height*0.7);
+  await page.mouse.wheel(0,2400);
+  await ready(5,1);
+  expect(await page.getByTestId('runtime-state').textContent()).toBe(rewound);
+  expect(errors).toEqual([]);
+});

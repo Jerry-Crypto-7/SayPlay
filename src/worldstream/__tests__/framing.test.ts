@@ -23,6 +23,7 @@ import {
   insideFrustum,
   pitchForSky,
   project,
+  safeAreaFromRects,
   skyShareForPitch,
 } from '../framing';
 
@@ -30,6 +31,14 @@ const ASPECT = 16 / 9;
 
 /** Běžný svět produktu: mřížka zhruba 12×8 s kulisou kolem a nízkou zástavbou. */
 const WORLD: Bounds = { min: { x: -14, y: 0, z: -10 }, max: { x: 14, y: 6, z: 10 } };
+
+it('centers an indoor inspection subject in the free viewport without cropping its room', () => {
+  const bounds={min:{x:-4,y:0,z:-3},max:{x:4,y:3,z:3}},hero={x:0,y:1,z:0};
+  const view=frameScene({bounds,hero,aspect:ASPECT,pitch:Math.PI*.27,heroHeight:.5});
+  expect(project(hero,view.eye,view.target,view.fov,ASPECT).y).toBeCloseTo(0,8);
+  for(const x of [-4,4])for(const y of [0,3])for(const z of [-3,3])
+    expect(insideFrustum({x,y,z},view.eye,view.target,view.fov,ASPECT)).toBe(true);
+});
 
 /** Osm rohů obalu. Koule opsaná obalu je odhad, rohy jsou odpověď. */
 function cornersOf(bounds: Bounds): readonly { x: number; y: number; z: number }[] {
@@ -157,6 +166,149 @@ describe('hrdina a obal', () => {
     const once = frameScene({ bounds: WORLD, hero: { x: 1, y: 2, z: 3 }, aspect: ASPECT });
     const twice = frameScene({ bounds: WORLD, hero: { x: 1, y: 2, z: 3 }, aspect: ASPECT });
     expect(once).toEqual(twice);
+  });
+});
+
+describe('volná plocha okna', () => {
+  /** Dok přes spodní třetinu, ovládání a otevřená zásuvka po čtvrtině šířky. */
+  const SAFE = { bottom: 0.3, left: 0.25, right: 0.25 };
+  const CENTER = { x: 0, y: 3, z: 0 };
+
+  it('obal padne nad dolní pruh a mezi krajní sloupce, ne pod dok', () => {
+    const framing = frameScene({ bounds: WORLD, aspect: ASPECT, safeArea: SAFE });
+
+    // Střed obalu je na třetině **volné plochy** (naměřeno 16. 9. 2026:
+    // `+0,0667`), zatímco bez `safeArea` sedí na třetině okna (`−1/3`) —
+    // tedy uvnitř pruhu, který kryje dok.
+    const at = project(CENTER, framing.eye, framing.target, framing.fov, ASPECT);
+    expect(at.y).toBeGreaterThan(-1 + 2 * SAFE.bottom);
+    expect(at.y).toBeCloseTo(2 * HERO_HEIGHT * (1 - SAFE.bottom) - 1 + 2 * SAFE.bottom, 6);
+
+    for (const corner of cornersOf(WORLD)) {
+      expect(
+        insideFrustum(corner, framing.eye, framing.target, framing.fov, ASPECT, SAFE),
+        `roh ${JSON.stringify(corner)} skončil pod rozhraním`,
+      ).toBe(true);
+    }
+  });
+
+  it('bez safeArea by pod rozhraním skončil — jinak by test neměřil nic', () => {
+    const plain = frameScene({ bounds: WORLD, aspect: ASPECT });
+
+    // Střed obalu sedí na třetině okna, tedy jen 0,067 nad hranou pruhu — celá
+    // spodní polovina světa i s hrdinou už je pod dokem. Váhu nese aserce nad
+    // rohy: střed sám by prošel a vada by zůstala neviditelná.
+    const at = project(CENTER, plain.eye, plain.target, plain.fov, ASPECT);
+    expect(at.y).toBeCloseTo(2 * HERO_HEIGHT - 1, 6);
+    expect(
+      cornersOf(WORLD).every((corner) =>
+        insideFrustum(corner, plain.eye, plain.target, plain.fov, ASPECT, SAFE),
+      ),
+    ).toBe(false);
+  });
+
+  it('prázdná safeArea nehne ani jedním dnešním číslem', () => {
+    const hero = { x: 2, y: 1, z: -3 };
+    expect(frameScene({ bounds: WORLD, hero, aspect: ASPECT, safeArea: {} })).toEqual(
+      frameScene({ bounds: WORLD, hero, aspect: ASPECT }),
+    );
+    // Nesmyslná hodnota z měření v DOM (nulové plátno dá `NaN`) je totéž jako
+    // žádná, ne `NaN` v kameře.
+    expect(
+      frameScene({ bounds: WORLD, hero, aspect: ASPECT, safeArea: { bottom: Number.NaN } }),
+    ).toEqual(frameScene({ bounds: WORLD, hero, aspect: ASPECT }));
+  });
+
+  it('nesouměrné sloupce posunou obal do zbylé půlky', () => {
+    const framing = frameScene({ bounds: WORLD, aspect: ASPECT, safeArea: { left: 0.4 } });
+
+    const at = project(CENTER, framing.eye, framing.target, framing.fov, ASPECT);
+    // Střed volné plochy leží na `left − right`, tedy 0,4 vpravo od středu okna.
+    expect(at.x).toBeCloseTo(0.4, 6);
+  });
+});
+
+describe('safeAreaFromRects — zakrytí se počítá z průniku, ne z rozdílu hran', () => {
+  /** Plátno 1000×600 u levého horního rohu okna. */
+  const FRAME = { left: 0, top: 0, right: 1000, bottom: 600 };
+
+  it('plátno, které pod rozhraní nesahá, není zakryté ničím', () => {
+    // **Tohle je ta vada, kvůli které funkce vznikla** (P18 T2b). Po T2 končí
+    // plátno nad dolním pruhem, takže dok leží celý pod ním. Rozdíl hran by dal
+    // záporné číslo a `cover()` by ho ořízl na nulu — tedy tentýž výsledek, ale
+    // ze špatného důvodu a jen náhodou.
+    const area = safeAreaFromRects(FRAME, {
+      bottom: { left: 300, top: 620, right: 700, bottom: 700 },
+      left: { left: 0, top: 620, right: 250, bottom: 700 },
+      right: { left: 760, top: 620, right: 1000, bottom: 700 },
+    });
+
+    expect(area).toEqual({ bottom: 0, left: 0, right: 0 });
+  });
+
+  it('nezakryté plátno nehne rámováním ani o kousek', () => {
+    // Váhu nese až tohle: nula se musí projevit jako **dnešní** snímek. Kdyby
+    // některá hrana vyšla kladně, kamera by se odtlačila a nikdo by to z obrazu
+    // nepoznal — jen by se svět „nějak krčil".
+    const area = safeAreaFromRects(FRAME, {
+      bottom: { left: 300, top: 620, right: 700, bottom: 700 },
+      left: null,
+      right: null,
+    });
+
+    expect(frameScene({ bounds: WORLD, aspect: ASPECT, safeArea: area })).toEqual(
+      frameScene({ bounds: WORLD, aspect: ASPECT }),
+    );
+  });
+
+  it('dok ležící na plátně zakryje přesně svůj průnik', () => {
+    const area = safeAreaFromRects(FRAME, {
+      bottom: { left: 300, top: 500, right: 700, bottom: 700 },
+    });
+
+    // Sto pixelů z šesti set.
+    expect(area.bottom).toBeCloseTo(100 / 600, 12);
+  });
+
+  it('ovládání vedle plátna nezúží obraz, ovládání na plátně ano', () => {
+    // Stará podoba počítala `controls.right − frame.left`, tedy kladných 0,25
+    // i pro sloupec, který s plátnem nemá jediný společný pixel.
+    const beside = safeAreaFromRects(FRAME, {
+      left: { left: 0, top: 620, right: 250, bottom: 700 },
+    });
+    expect(beside.left).toBe(0);
+
+    const across = safeAreaFromRects(FRAME, {
+      left: { left: 0, top: 100, right: 250, bottom: 500 },
+    });
+    expect(across.left).toBeCloseTo(0.25, 12);
+  });
+
+  it('zásuvka zprava se počítá jen tehdy, když do plátna zasahuje', () => {
+    expect(
+      safeAreaFromRects(FRAME, { right: { left: 800, top: 0, right: 1000, bottom: 600 } }).right,
+    ).toBeCloseTo(0.2, 12);
+
+    // Plátno zúžené na 700: zásuvka začíná až za jeho pravou hranou.
+    expect(
+      safeAreaFromRects(
+        { ...FRAME, right: 700 },
+        { right: { left: 760, top: 0, right: 1000, bottom: 600 } },
+      ).right,
+    ).toBe(0);
+  });
+
+  it('nerozvržené plátno nekryje nic, místo aby dělilo nulou', () => {
+    const area = safeAreaFromRects(
+      { left: 0, top: 0, right: 0, bottom: 0 },
+      { bottom: { left: 0, top: 0, right: 100, bottom: 100 } },
+    );
+
+    expect(area).toEqual({});
+    // A projde to až do kamery, ne jako `Infinity` v klopení.
+    expect(frameScene({ bounds: WORLD, aspect: ASPECT, safeArea: area })).toEqual(
+      frameScene({ bounds: WORLD, aspect: ASPECT }),
+    );
   });
 });
 

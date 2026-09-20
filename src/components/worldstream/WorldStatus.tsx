@@ -1,5 +1,7 @@
 'use client';
 
+import { WORD_MASSING_NOTICE } from '@/scene/massing-preview';
+
 /**
  * Stav světa jako **jedna věta**, ne panel logů (design book §15.3, §16).
  *
@@ -23,7 +25,7 @@
  */
 
 /** Co se o světě dá pravdivě říct. Pořadí je pořadí, ve kterém se stavy střídají. */
-export type WorldStatusState = 'empty' | 'building' | 'broken' | 'live';
+export type WorldStatusState = 'empty' | 'building' | 'broken' | 'live' | 'preview';
 
 /**
  * Copy pro každý stav. Anglicky, protože **viditelná měď produktu je anglicky**
@@ -35,6 +37,7 @@ const SENTENCE: Record<WorldStatusState, string> = {
   building: 'Writing the world.',
   broken: 'That sentence did not produce a world that can run.',
   live: 'The world is live.',
+  preview: 'Scene preview only. Its rules are not verified.',
 };
 
 export default function WorldStatus({
@@ -42,18 +45,51 @@ export default function WorldStatus({
   detail = null,
   detailPending = false,
   intent = null,
+  wordMassing = false,
+  reused = null,
 }: {
   readonly state: WorldStatusState;
   readonly detailPending?: boolean;
   /**
+   * Jsou bloky na plátně jen odhad ze slov věty (P21 T4)?
+   *
+   * Platí jen v `preview`: věta „Scene preview only. Its rules are not
+   * verified." by o blocích ze slovníku tvrdila víc, než je pravda — žádná
+   * pravidla ještě nikdo nepsal, plánovač nepromluvil. Místo ní stojí
+   * `WORD_MASSING_NOTICE`, tatáž věta, kterou nese sám náhled.
+   */
+  readonly wordMassing?: boolean;
+  /**
+   * Svět vznikl z uložené odpovědi modelu na tutéž větu (P16 T6). Říká se
+   * to nahlas, protože jinak by rychlý svět vypadal jako rychlý model —
+   * a porotce, který měří čas, má měřit to, co se doopravdy stalo. Jen
+   * v `building` a `live`: v `broken` není co znovu použít a v `preview`
+   * blueprint ještě nedorazil.
+   */
+  readonly reused?: { readonly at: string; readonly savedCalls: number } | null;
+  /**
    * Co planner z věty přečetl, dokud compiler ještě píše. Jen v `building`
    * a jen dokud na plátně nic není: compiler je nejdelší volání celé cesty
    * (12. 9. 2026: 64 s proti 8 s planneru) a „Writing the world." po celou tu
-   * dobu neřekne, jestli se věta vůbec pochopila. Setting a teze jsou to
-   * jediné, co se v tu chvíli dá pravdivě říct — a jsou to modelova slova,
+   * dobu neřekne, jestli se věta vůbec pochopila. Jsou to modelova slova,
    * ne naše.
+   *
+   * **Hrdinové a abstrakce přibyly v P18 T5.** Věta o uspořádání sama neřekne,
+   * které objekty ze zadání porotce dostane; `heroObjects` jsou jeho vlastní
+   * slova zpátky, a `unsupported` je to, co model vědomě neumí — a co se
+   * **vypíše místo zamlčení**, protože zamlčená abstrakce se pozná až na
+   * hotovém světě, kde vypadá jako vada.
+   *
+   * Seznamy jsou nepovinné: `classic/page.tsx` záměr neposílá vůbec a rámec
+   * bez seznamu o hrdinech nic netvrdí.
    */
-  readonly intent?: { readonly setting: string; readonly spatialThesis: string } | null;
+  readonly intent?: {
+    readonly sceneSpec?: import('@/scene/spec').SceneSpec;
+    readonly setting: string;
+    readonly spatialThesis: string;
+    readonly heroObjects?: readonly string[];
+    readonly unsupported?: readonly string[];
+  } | null;
   /**
    * Proč se svět nepostavil, **větou ze serveru nebo ze stavby** — ne kódem
    * a ne výjimkou poskytovatele; do proudu relace se nic jiného nedostane
@@ -66,6 +102,15 @@ export default function WorldStatus({
   readonly detail?: string | null;
 }) {
   const broken = state === 'broken';
+  /**
+   * Čte se modelův záměr právě teď?
+   *
+   * `detailPending` ho přebíjí schválně: v tu chvíli scéna na plátně **už
+   * stojí** a věta o tom, co se teprve čte, by lhala o pořadí.
+   */
+  const reading = state === 'building' && !detailPending ? (intent ?? null) : null;
+  const heroes = reading?.heroObjects ?? [];
+  const unsupported = reading?.unsupported ?? [];
   return (
     <p
       // Keep one polite region through asynchronous phases; an urgent fault
@@ -79,16 +124,40 @@ export default function WorldStatus({
     >
       {state === 'building' && detailPending
         ? 'The validated scene is ready to use. Building its shape detail.'
-        : state === 'building' && intent !== null
-          ? `Read as ${intent.setting}. Writing its geometry.`
-          : SENTENCE[state]}
-      {state === 'building' && !detailPending && intent !== null ? (
+        : reading !== null
+          ? `Read as ${reading.setting}. Writing its geometry.`
+          : state === 'preview' && wordMassing
+            ? <span data-testid="word-massing-notice">{WORD_MASSING_NOTICE}</span>
+            : SENTENCE[state]}
+      {reading !== null ? (
         <span data-testid="world-intent" style={DETAIL}>
           {' '}
-          {intent.spatialThesis}
+          {reading.spatialThesis}
         </span>
       ) : null}
-      {broken && detail !== null && detail !== '' ? (
+      {heroes.length > 0 ? (
+        <span data-testid="world-intent-heroes" style={DETAIL}>
+          {' '}
+          {`Building: ${heroes.join(', ')}.`}
+        </span>
+      ) : null}
+      {reading?.sceneSpec && <span data-testid="world-intent-counts" style={DETAIL}>
+        {reading.sceneSpec.requirements.filter(requirement => requirement.provenance.kind === 'requested')
+          .map(requirement => `${requirement.polarity === 'forbidden' ? 'Without' : requirement.count} ${requirement.description}`).join(' · ')}
+      </span>}
+      {unsupported.length > 0 ? (
+        <span data-testid="world-intent-unsupported" style={DETAIL}>
+          {' '}
+          {`Not simulated: ${unsupported.join(', ')}.`}
+        </span>
+      ) : null}
+      {reused !== null && (state === 'live' || state === 'building') ? (
+        <span data-testid="answer-reused" style={DETAIL}>
+          {' '}
+          {REUSED_NOTICE}
+        </span>
+      ) : null}
+      {(broken || state === 'preview') && detail !== null && detail !== '' ? (
         <span data-testid="world-fault" style={DETAIL}>
           {' '}
           {detail}
@@ -99,3 +168,6 @@ export default function WorldStatus({
 }
 
 const DETAIL: React.CSSProperties = { opacity: 0.7 };
+
+/** Anglicky, jako celá měď. Bez počtu volání: ten je pro operátora, ne pro porotce. */
+export const REUSED_NOTICE = "Reused the model's earlier answer for this exact sentence.";

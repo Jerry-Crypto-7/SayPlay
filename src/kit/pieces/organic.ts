@@ -1,4 +1,4 @@
-import { ConeGeometry, CylinderGeometry, IcosahedronGeometry } from 'three';
+import { BoxGeometry, ConeGeometry, CylinderGeometry, IcosahedronGeometry } from 'three';
 
 import { assemble, type Piece } from './primitives';
 
@@ -105,6 +105,31 @@ export const organicPieces: readonly Piece[] = [
           position: [0.18, -0.1, -0.08],
           rotation: [0, 0, -0.2],
         },
+      ]),
+  },
+  // P19 T7: venkovní vodítka – pláž a park se bez nich čtou jako prázdná rovina.
+  {
+    id: 'organic.waterline',
+    category: 'organic',
+    build: () =>
+      assemble([
+        { geometry: new BoxGeometry(2, 0.06, 0.9), swatch: 'sand', position: [0, 0, -0.45] },
+        { geometry: new BoxGeometry(2, 0.04, 0.9), swatch: 'accent', position: [0, -0.01, 0.45] },
+        { geometry: new BoxGeometry(2, 0.05, 0.08), swatch: 'shell', position: [0, 0.01, 0.02] },
+        { geometry: new IcosahedronGeometry(0.08, 0), swatch: 'shell', position: [-0.6, 0.05, -0.3] },
+        { geometry: new IcosahedronGeometry(0.06, 0), swatch: 'deep', position: [0.5, 0.04, -0.6] },
+      ]),
+  },
+  {
+    id: 'organic.path',
+    category: 'organic',
+    build: () =>
+      assemble([
+        { geometry: new BoxGeometry(0.7, 0.04, 2), swatch: 'sand' },
+        { geometry: new BoxGeometry(0.5, 0.05, 2), swatch: 'moss', position: [-0.6, 0, 0] },
+        { geometry: new BoxGeometry(0.5, 0.05, 2), swatch: 'moss', position: [0.6, 0, 0] },
+        { geometry: new IcosahedronGeometry(0.2, 0), swatch: 'moss', position: [-0.62, 0.16, -0.6] },
+        { geometry: new IcosahedronGeometry(0.16, 0), swatch: 'moss', position: [0.64, 0.13, 0.5] },
       ]),
   },
 ];

@@ -59,6 +59,7 @@ test('kořen je worldstreamové plátno, ne stará herní scéna', async ({ page
   test.setTimeout(120_000);
 
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await expect(page.getByTestId('worldstream-canvas')).toHaveCount(1);
 
   // Stará scéna tu **není**, a je to celý smysl přestěhování. `stage-canvas`
@@ -68,11 +69,22 @@ test('kořen je worldstreamové plátno, ne stará herní scéna', async ({ page
   await expect(page.getByTestId('stage-canvas')).toHaveCount(0);
   expect(await page.evaluate(() => window.__worldsmith === undefined)).toBe(true);
 
-  // Plátno drží celý viewport (design book §15.3), stejně jako drželo staré.
+  // Plátno drží **volnou plochu** okna, ne celé okno.
+  //
+  // ⚠ **Do 16. 9. 2026 tu stálo „plátno drží celý viewport"** a byla to pravda
+  // tehdejšího rozvržení: svět kreslil pod dok, ovládání i panely. P18 T2 to
+  // obrací — dolní pruh patří rozhraní a svět do něj nesahá (`theme.css`,
+  // „Volná plocha plátna"). Zavřená zásuvka nic neubírá zprava, takže šířka
+  // zůstává celá; výšku ukrajuje pruh, a přesně to se tu měří.
   const view = page.viewportSize()!;
   const canvas = (await page.getByTestId('worldstream-canvas').boundingBox())!;
   expect(canvas.width, 'plátno nezabírá celou šířku okna').toBeGreaterThanOrEqual(view.width - 1);
-  expect(canvas.height, 'plátno nezabírá celou výšku okna').toBeGreaterThanOrEqual(view.height - 1);
+  expect(canvas.y, 'plátno nezačíná u horní hrany okna').toBeLessThanOrEqual(1);
+  expect(canvas.height, 'plátno se scvrklo na proužek').toBeGreaterThan(view.height * 0.5);
+  expect(
+    canvas.y + canvas.height,
+    'plátno sahá až pod dolní pruh, kde stojí rozhraní',
+  ).toBeLessThan(view.height);
 
   // Dokud nepřišla věta, produkt nic nepředstírá.
   await expect(page.getByTestId('world-status')).toHaveAttribute('data-state', 'empty');
@@ -83,6 +95,7 @@ test('věta postaví svět a ten dojde až na plátno', async ({ page }) => {
   test.setTimeout(180_000);
 
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await buildWorld(page, AUTHORED);
 
   // **Sloty, ne jeden objekt.** Prázdný slot v hrubém světě neexistuje
@@ -107,6 +120,7 @@ test('Inspect nad hlavní cestou vypisuje sloty, ne panely staré scény', async
   test.setTimeout(180_000);
 
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await buildWorld(page, AUTHORED);
   await openInspect(page);
 
@@ -136,6 +150,7 @@ test('věta, kterou nikdo nepředvídal, dostane svět, ne prázdno', async ({ p
   test.setTimeout(180_000);
 
   await page.goto('/');
+  await page.getByTestId('generation-mode').selectOption('prepared');
   await buildWorld(page, 'A greenhouse swallowed by a glacier, its panes still warm.');
 
   expect(await page.evaluate(() => window.__worldstreamStage!.slots().length)).toBeGreaterThan(0);

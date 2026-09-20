@@ -107,6 +107,10 @@ export function createEvidenceProject() {
           durationTicks: request.durationTicks, forkTick: request.forkTick, observationTick: request.observationTick });
         if (compared.verdict !== 'COMPARED') return reject(compared.reason);
         const comparison = compared.snapshot.comparison!;
+        // This evidence endpoint still edits only timer parameters; generalized
+        // accepted rule comparisons belong to the worldstream branch adapter.
+        if (comparison.previousDurationTicks === undefined || comparison.durationTicks === undefined)
+          return reject('UNSUPPORTED_CHANGE');
         const world = comparison.changedDocument;
         const { evidenceHash: _hash, ...draft } = structuredClone(parent.evidence);
         // Allocate stable IDs without colliding with model-chosen identifiers.

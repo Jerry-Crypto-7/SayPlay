@@ -252,7 +252,7 @@ describe('compilePlacements', () => {
     for (const [name, source] of PROGRAMS) {
       it(name, () => {
         const expected = compileGeomProgram(source);
-        const baked = bakePlacements(compilePlacements(source));
+        const baked = bakePlacements(compilePlacements(source, undefined, { settle: false }));
         expectSameGeometry(baked, expected);
       });
     }

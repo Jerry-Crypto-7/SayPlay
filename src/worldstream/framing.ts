@@ -41,6 +41,20 @@
  *    a odchylka osy se sčítají. Osm rohů je přesná odpověď na otázku „je celý
  *    v záběru", zatímco koule je jen odhad.
  *
+ * ## Snímek není okno — `safeArea`
+ *
+ * Rozhraní stojí **v** obraze, ne vedle něj: dolní pruh s dokem a krajní sloupce
+ * s ovládáním a zásuvkou Inspect kryjí plátno, které je celý viewport. Rámovat
+ * do celého okna proto znamená rámovat hrdinu pod dok. `safeArea` popisuje
+ * zakrytý podíl každé hrany a celý výpočet se pak vede nad **volnou plochou**:
+ * svisle `[−1 + 2·bottom, 1]`, vodorovně `[−1 + 2·left, 1 − 2·right]`.
+ *
+ * Nezmenšuje se zorný úhel — ten patří kameře a scéna má krajní sloupce
+ * vyplňovat, ne končit na jejich hraně. Zmenší se **poloúhly, do kterých se
+ * obal cpe**, a o rozdíl středů se posune to, kam kamera míří: klopení nese
+ * svislý posun (obzor drží zadaný podíl volné plochy, ne okna) a vodorovný
+ * posun cíle nese nesouměrnost sloupců.
+ *
  * ## Čistá funkce schválně
  *
  * Žádný `three`, žádné plátno. Rámování je jediná věc, kterou z hotového
@@ -60,6 +74,19 @@ export interface Vec3 {
 export interface Bounds {
   readonly min: Vec3;
   readonly max: Vec3;
+}
+
+/**
+ * Zakrytý podíl hrany snímku, 0 až `MAX_COVER`. `bottom: 0.3` znamená, že
+ * spodních 30 % výšky kryje rozhraní.
+ *
+ * Horní hrana chybí schválně: nad scénou nic nestojí a obloha se má dotýkat
+ * horní hrany okna, jinak se svět čte jako obrázek v rámečku.
+ */
+export interface SafeArea {
+  readonly bottom?: number;
+  readonly left?: number;
+  readonly right?: number;
 }
 
 /**
@@ -138,6 +165,96 @@ const MIN_DISTANCE = 3;
 
 /** Poměr stran, když ho volající nezná. */
 const DEFAULT_ASPECT = 16 / 9;
+
+/**
+ * Nejvíc, co smí jedna hrana ukousnout.
+ *
+ * `safeArea` se měří z DOM, takže na úzkém okně může zásuvka Inspect vyjít
+ * širší než polovina plátna a volná plocha by zmizela do nuly. Strop 45 %
+ * nechá i v tom případě desetinu šířky a desetinu výšky, do které se dá
+ * rámovat. Je to validace vstupu zvenčí, ne pojistka na vlastní kód.
+ */
+const MAX_COVER = 0.45;
+
+/** Zakrytý podíl hrany. Chybějící i nesmyslná hodnota znamená „nic nekryje". */
+function cover(share: number | undefined): number {
+  return share !== undefined && Number.isFinite(share) ? Math.min(Math.max(share, 0), MAX_COVER) : 0;
+}
+
+/**
+ * Obdélník na obrazovce. Vlastní typ, aby modul nezávisel na DOM — `DOMRect`
+ * má stejná čtyři pole, takže se sem dá předat rovnou.
+ */
+export interface Rect {
+  readonly left: number;
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+}
+
+/** Protínají se ty dva obdélníky vodorovně, resp. svisle? */
+function overlapsX(a: Rect, b: Rect): boolean {
+  return a.left < b.right && a.right > b.left;
+}
+
+function overlapsY(a: Rect, b: Rect): boolean {
+  return a.top < b.bottom && a.bottom > b.top;
+}
+
+/**
+ * Zakrytý podíl hran z naměřených obdélníků.
+ *
+ * ## Proč to není počítané v komponentě (P18 T2b)
+ *
+ * Do 16. 9. 2026 to tam počítané bylo, a byla to **tichá vada složená ze dvou
+ * zelených úloh**. T1 měřila překryv rozhraní s plátnem jako rozdíl hran
+ * (`frame.bottom − dock.top`), což platilo, dokud plátno bylo celý viewport.
+ * T2 pak zmenšila **samo plátno**, takže žádný překryv nezbyl — a tentýž
+ * rozdíl začal vycházet **záporně**. `cover()` ho ořízl na nulu, takže se nic
+ * nerozbilo nahlas: `safeArea` prostě zmlkla a rámování se vrátilo k chování
+ * před T1. Jednotkové testy T1 na to nemohly přijít, protože si `safeArea`
+ * předávají přímo a DOM nikdy neviděly.
+ *
+ * Horší půlka téže vady byla `left`: počítal se jako `controls.right −
+ * frame.left`, tedy **kladné** číslo i tehdy, když ovládání stojí docela mimo
+ * plátno. Zúžil by jehlan zleva bez důvodu a na snímku by to vypadalo jen jako
+ * „svět je nějak daleko".
+ *
+ * Proto se tu měří **skutečný průnik**, ne rozdíl hran: hrana se počítá jedině
+ * tehdy, když ji ten obdélník doopravdy překrývá i na druhé ose. Když plátno
+ * pod rozhraním nesahá, vyjde nula — a nula je tady správná odpověď, ne
+ * selhání: zmenšené plátno už svou volnou plochou je.
+ */
+export function safeAreaFromRects(
+  frame: Rect,
+  covers: {
+    readonly bottom?: Rect | null;
+    readonly left?: Rect | null;
+    readonly right?: Rect | null;
+  },
+): SafeArea {
+  const width = frame.right - frame.left;
+  const height = frame.bottom - frame.top;
+  // Plátno, které se ještě nerozvrhlo, je nulové. Dělit jím by dalo `Infinity`
+  // v každé hraně; „nic nekryje" je jediná odpověď, která z toho dává snímek.
+  if (!(width > 0) || !(height > 0)) return {};
+
+  const { bottom, left, right } = covers;
+  return {
+    bottom:
+      bottom != null && overlapsX(frame, bottom) && overlapsY(frame, bottom)
+        ? Math.max(0, frame.bottom - bottom.top) / height
+        : 0,
+    left:
+      left != null && overlapsX(frame, left) && overlapsY(frame, left)
+        ? Math.max(0, left.right - frame.left) / width
+        : 0,
+    right:
+      right != null && overlapsX(frame, right) && overlapsY(frame, right)
+        ? Math.max(0, frame.right - right.left) / width
+        : 0,
+  };
+}
 
 /**
  * Kde kamera stojí kolem scény, v radiánech od osy `−z`.
@@ -291,16 +408,29 @@ export function project(
   return { x: across / (tanV * aspect * depth), y: above / (tanV * depth), behind: false };
 }
 
-/** Je bod uvnitř jehlanu vidění? Přesná odpověď, ne odhad. */
+/**
+ * Je bod uvnitř jehlanu vidění? Přesná odpověď, ne odhad.
+ *
+ * Se `safeArea` se soudí proti **zúženému** jehlanu: bod schovaný za dokem je
+ * sice v záběru kamery, ale porotce ho nevidí, a to je pro rámování totéž jako
+ * kdyby vypadl ze snímku.
+ */
 export function insideFrustum(
   point: Vec3,
   eye: Vec3,
   target: Vec3,
   fovDegrees: number = FRAMING_FOV,
   aspect: number = DEFAULT_ASPECT,
+  safeArea?: SafeArea,
 ): boolean {
   const at = project(point, eye, target, fovDegrees, aspect);
-  return !at.behind && Math.abs(at.x) <= 1 && Math.abs(at.y) <= 1;
+  return (
+    !at.behind &&
+    at.x >= -1 + 2 * cover(safeArea?.left) &&
+    at.x <= 1 - 2 * cover(safeArea?.right) &&
+    at.y >= -1 + 2 * cover(safeArea?.bottom) &&
+    at.y <= 1
+  );
 }
 
 /** Oko pro danou vzdálenost. Cíl leží nad hrdinou, oko za ním a nad ním. */
@@ -326,6 +456,15 @@ export interface FrameSceneInput {
   readonly azimuth?: number;
   /** Kolik snímku má zabírat obloha. Výchozí `SKY_SHARE`. */
   readonly skyShare?: number;
+  /** Optional inspection composition, in radians; defaults preserve outdoor framing. */
+  readonly pitch?: number;
+  /** Vertical fraction of the free viewport, measured from the bottom. */
+  readonly heroHeight?: number;
+  /**
+   * Zakrytý podíl hran snímku. Bez něj se rámuje do celého okna, což je dodnes
+   * platný vstup — `/dev/worldstream` ani sledovací kamera překryv nemají.
+   */
+  readonly safeArea?: SafeArea;
 }
 
 /**
@@ -352,13 +491,34 @@ export function frameScene(input: FrameSceneInput): Framing {
   const azimuth =
     azimuthInput !== undefined && Number.isFinite(azimuthInput) ? azimuthInput : DEFAULT_AZIMUTH;
 
-  const pitch = pitchForSky(input.skyShare ?? SKY_SHARE, fov);
+  const bottom = cover(input.safeArea?.bottom);
+  const left = cover(input.safeArea?.left);
+  const right = cover(input.safeArea?.right);
+
+  // Obzor drží zadaný podíl **volné plochy**, ne okna. Volná plocha sahá od
+  // `−1 + 2·bottom` k `1`, takže obzor patří na `1 − 2·share·(1 − bottom)` — a
+  // to je přesně `pitchForSky` se zmenšeným podílem. Vedlejším účinkem je právě
+  // ten svislý posun, který dolní pruh vyžaduje: kamera klopí víc, obraz jde
+  // nahoru. Při `bottom = 0` je součin s jedničkou přesný a klopení je dnešní.
+  const pitch = input.pitch !== undefined && Number.isFinite(input.pitch)
+    ? Math.max(0,Math.min(Math.PI * 0.42,input.pitch))
+    : pitchForSky((input.skyShare ?? SKY_SHARE) * (1 - bottom), fov);
+  const heroHeight = input.heroHeight !== undefined && Number.isFinite(input.heroHeight)
+    ? Math.max(0.2,Math.min(0.8,input.heroHeight)) : HERO_HEIGHT;
   const hero = isFinitePoint(input.hero) ? input.hero : center;
 
   // Koule opsaná obalu je odhad startovní vzdálenosti, ne odpověď: osa pohledu
   // míří na zvednutý cíl, ne do středu, takže se odchylka osy přičítá.
+  //
+  // Poloúhly se krátí o zakrytý podíl, zorný úhel ne — kamera vidí dál, jen se
+  // obal cpe do menšího obdélníku a startovní vzdálenost tomu musí odpovídat.
+  // Osm kroků po 8 % (faktor 1,85) pak dorovná zbytek; samotné krácení by ho
+  // u `0,3 / 0,25 / 0,25` nedohnalo.
   const tanV = Math.tan((fov / 2) * DEGREES);
-  const halfAngle = Math.min(Math.atan(tanV), Math.atan(tanV * aspect));
+  const halfAngle = Math.min(
+    Math.atan(tanV * (1 - bottom)),
+    Math.atan(tanV * aspect * (1 - left - right)),
+  );
   let distance = Math.max(MIN_DISTANCE, (radius / Math.sin(halfAngle)) * FIT_MARGIN);
 
   // O kolik se zvedne cíl nad hrdinu, aby hrdina padl na `HERO_HEIGHT`.
@@ -373,18 +533,42 @@ export function frameScene(input: FrameSceneInput): Framing {
   // dá rozřešit přesně, a tohle je její kořen. Jmenovatel je vždycky kladný:
   // `k ≤ 1` a `tan(phi) · sin(pitch) < cos(pitch)` pro každý zorný úhel, který
   // sem projde.
-  const drop = 1 - 2 * HERO_HEIGHT;
+  //
+  // Třetina se měří ve volné ploše, ne v okně: žádaná výška hrdiny je
+  // `−1 + 2·bottom + 2·HERO_HEIGHT·(1 − bottom)` a `drop` je její záporná
+  // hodnota. Při `bottom = 0` se výraz vrací na `1 − 2·HERO_HEIGHT` bez jediného
+  // zaokrouhlení (odečítá se nula). Při dolním pruhu 0,3 vyjde **záporný**, tedy
+  // cíl klesne pod hrdinu — kamera už klopí tak, že by hrdina jinak vyjel nad
+  // třetinu.
+  const drop = 1 - 2 * bottom - 2 * heroHeight * (1 - bottom);
   const lift = (span: number): number =>
     (drop * tanV * span) / (Math.cos(pitch) - drop * tanV * Math.sin(pitch));
 
-  let target = { x: hero.x, y: hero.y + lift(distance), z: hero.z };
-  let eye = seat(target, distance, pitch, azimuth);
+  // Vodorovně střed volné plochy sedí na `left − right`, takže se cíl posune
+  // proti tomu — po ose `right` kamery, která je pro azimut `(cos, 0, −sin)`.
+  // Souměrné sloupce dají nulu a cíl zůstane nad hrdinou jako dosud.
+  const across = right - left;
+  const place = (span: number): { target: Vec3; eye: Vec3 } => {
+    const rise = lift(span);
+    const side = across * tanV * aspect * (span + rise * Math.sin(pitch));
+    const target = {
+      x: hero.x + side * Math.cos(azimuth),
+      y: hero.y + rise,
+      z: hero.z - side * Math.sin(azimuth),
+    };
+    return { target, eye: seat(target, span, pitch, azimuth) };
+  };
+
+  let { target, eye } = place(distance);
 
   for (let attempt = 0; attempt < FIT_ATTEMPTS; attempt += 1) {
-    if (corners.every((corner) => insideFrustum(corner, eye, target, fov, aspect))) break;
+    if (
+      corners.every((corner) => insideFrustum(corner, eye, target, fov, aspect, input.safeArea))
+    ) {
+      break;
+    }
     distance *= FIT_STEP;
-    target = { x: hero.x, y: hero.y + lift(distance), z: hero.z };
-    eye = seat(target, distance, pitch, azimuth);
+    ({ target, eye } = place(distance));
   }
 
   return {
@@ -394,7 +578,7 @@ export function frameScene(input: FrameSceneInput): Framing {
     pitch,
     distance,
     skyShare: skyShareForPitch(pitch, fov),
-    heroHeight: HERO_HEIGHT,
+    heroHeight,
     fallback,
   };
 }
@@ -433,4 +617,13 @@ export function followSeat(
   // Osa pohledu jde z oka na `hrdina + lift`. Aby klesala právě o `pitch`, musí
   // platit `(offset.y − lift) / offset.z = tan(pitch)`.
   return { offset, lift: offset.y - offset.z * Math.tan(pitch), pitch };
+}
+/** A seekable 20 s review path; camera-only, outside deterministic simulation state. */
+export function referenceCameraAt(points: readonly (readonly [number, number, number])[], seconds: number): [number, number, number] {
+  if (points.length < 2 || !Number.isFinite(seconds)) throw new Error('Invalid reference camera path');
+  const t = Math.max(0, Math.min(20, seconds)) / 20 * (points.length - 1);
+  const index = Math.min(points.length - 2, Math.floor(t));
+  const fraction = t - index;
+  const ease = fraction * fraction * (3 - 2 * fraction);
+  return [0, 1, 2].map(axis => points[index][axis] + (points[index + 1][axis] - points[index][axis]) * ease) as [number, number, number];
 }

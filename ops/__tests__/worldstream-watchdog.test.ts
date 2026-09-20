@@ -33,6 +33,17 @@ const WATCHDOG = join(dirname(fileURLToPath(import.meta.url)), '..', 'watchdog',
 const scratch = mkdtempSync(join(tmpdir(), 'worldstream-watchdog-'));
 const servers: Server[] = [];
 
+it('aborts a probe whose health response body never completes', async () => {
+  let signal: AbortSignal | undefined;
+  const verdict = await probeWorldstream({ target: 'http://127.0.0.1:1', timeoutMs: 15,
+    fetchImpl: async (_url: string, init: RequestInit) => {
+      signal = init.signal as AbortSignal;
+      return { status: 200, json: () => new Promise(() => {}) };
+    } });
+  expect(verdict).toMatchObject({ ok: false, reason: 'PROBE_TIMEOUT' });
+  expect(signal?.aborted).toBe(true);
+});
+
 afterEach(async () => {
   for (const server of servers.splice(0)) await new Promise((done) => server.close(done));
 });

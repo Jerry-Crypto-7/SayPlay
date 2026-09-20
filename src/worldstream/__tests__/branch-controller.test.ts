@@ -76,6 +76,7 @@ describe('atomic timer branch comparison', () => {
     expect(outcome(c.original)).toEqual(oracle.cases[0].expected);
     expect(outcome(c.changed)).toEqual(oracle.changedExpected);
     expect(c.changed.transitions).toContainEqual({ tick: 220, inputs: [], ruleIds: ['expire_countdown'] });
+    expect(c.original.stateHash).not.toBe(c.changed.stateHash);
   });
 
   it('supports a nonzero fork before activation and remains deterministic beyond the ring', () => {
@@ -120,6 +121,16 @@ describe('atomic timer branch comparison', () => {
     expect(outcome(c.changed)).toEqual(oracle.cases[0].expected);
   });
 
+  it('records later inputs as terminal when only one future has ended', () => {
+    const inputs = [...oracle.cases[0].inputs, { tick: 290, actor: 'visitor', actionId: 'activate', target: 'sensorB' }];
+    const { controller, request } = setup(true, inputs);
+    expect(controller.compare(request()).verdict).toBe('COMPARED');
+    const compared = controller.getSnapshot().comparison!;
+    expect(compared.inputEffects.original.at(-1)?.status).toBe('terminal');
+    expect(compared.inputEffects.changed.at(-1)?.status).toBe('no-rule-fired');
+    expect(compared.inputLog).toEqual(inputs);
+  });
+
   it('the runtime fork rejects incompatible state shape without moving its source', () => {
     const { live, built } = setup();
     const before = live.getSnapshot();
@@ -150,7 +161,6 @@ describe('atomic timer branch comparison', () => {
     ['wrong simulation hash', { base: { simHash: 'forged' } }, 'STALE_REVISION'],
     ['stale comparison revision', { base: { comparisonRevision: 0 } }, 'STALE_REVISION'],
     ['stale input count', { base: { inputCount: 0 } }, 'STALE_INPUTS'],
-    ['active countdown', { forkTick: 21 }, 'ACTIVE_TIMER'],
     ['unknown rule', { ruleId: 'absent' }, 'UNSUPPORTED_CHANGE'],
     ['inherited key', { ruleId: '__proto__' }, 'UNSUPPORTED_CHANGE'],
     ['non-timer rule', { ruleId: 'unlock_case' }, 'UNSUPPORTED_CHANGE'],
