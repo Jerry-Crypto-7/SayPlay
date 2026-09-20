@@ -13,12 +13,18 @@
  * a certifikuje ho týž `verifyWitness`.
  */
 
+import { buildRuntimeWorld } from '@/ir/build';
+import { canonicalHash } from '@/ir/worlddoc';
 import { TIERS, TIER_POLICY, type Tier } from '@/verify/tiers';
+import { verifyWitness } from '@/verify/witness';
+import { findBlueprintReferenceIssues } from '@/worldstream/references';
+import { validateBlueprint } from '@/worldstream/schema';
 
-import type { MechanicBinding } from '../contracts';
+import { type CompileGameResult, GAME_COMPILER_VERSION, type GameCompiler, type MechanicBinding } from '../contracts';
 import { MECHANICS, type MechanicEntry, type MechanicId, type RuntimeAction } from '../registry';
 import type { GameRole, GameSpecV1 } from '../spec';
 import { ADAPTERS, type AdapterTable } from './adapters';
+import { assembleBlueprint } from './blueprint';
 import { layoutRoles, roleInstanceId } from './layout';
 import { createCompileRng } from './rng';
 import { PLAYER_SOCKET, baseSim } from './sim';
@@ -146,3 +152,38 @@ export function compileSim(spec: GameSpecV1, seed: number, adapters: AdapterTabl
   const witness = { tier, H_cert: TIER_POLICY[tier].maxHorizonTicks, ops };
   return { ok: true, value: { sim: { ...sim, state, witness }, layout, mechanics, roles } };
 }
+
+/**
+ * Kontrakt `GameCompiler`: `compileSim` → blueprint → táž brána jako u emise
+ * modelu (schéma, křížové odkazy, snížení, svědek). `worldHash` je zapečetěný
+ * `simHash` – identita hratelné instance nezávislá na vzhledu.
+ */
+export const compileGame: GameCompiler = (spec, seed): CompileGameResult => {
+  const compilation = compileSim(spec, seed);
+  if (!compilation.ok) return compilation;
+  const blueprint = assembleBlueprint(spec, seed, compilation.value);
+
+  const validation = validateBlueprint(blueprint);
+  if (!validation.ok) return { ok: false, reason: 'WORLD_REJECTED', issues: validation.issues };
+  const dangling = findBlueprintReferenceIssues(blueprint);
+  if (dangling.length > 0) return { ok: false, reason: 'WORLD_REJECTED', issues: dangling.map((issue) => `${issue.where}: ${issue.detail}`) };
+  const built = buildRuntimeWorld(blueprint.world.sim);
+  if (!built.ok) return { ok: false, reason: 'WORLD_REJECTED', issues: built.issues };
+  const verdict = verifyWitness(built.world, built.world.trace);
+  if (verdict.verdict !== 'CERTIFIED') return { ok: false, reason: 'UNWINNABLE', issues: [`${verdict.reason}: ${verdict.detail}`] };
+
+  return {
+    ok: true,
+    value: {
+      spec,
+      specHash: canonicalHash(spec),
+      seed,
+      compilerVersion: GAME_COMPILER_VERSION,
+      blueprint,
+      worldHash: blueprint.world.simHash,
+      mechanics: compilation.value.mechanics,
+      roles: compilation.value.roles,
+      winsAtTick: verdict.witnessLength,
+    },
+  };
+};
