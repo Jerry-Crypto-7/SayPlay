@@ -52,9 +52,13 @@ const temporary: string[] = [];
 beforeEach(() => {
   __resetProcessVersionStore();
   resetRateWindows();
+  // Okno stropu je 10 s wall-clocku; pod zátěží paralelních workerů by se smyčka 51 požadavků
+  // uměla přehoupnout přes jeho hranici a čítač by se vynuloval. Čas proto stojí.
+  vi.useFakeTimers({ now: 1_700_000_000_000, toFake: ['Date'] });
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   delete process.env.WORLDSMITH_CONTROL_FILE;
   delete process.env.VERCEL;
   for (const path of temporary.splice(0)) rmSync(path, { recursive: true, force: true });
