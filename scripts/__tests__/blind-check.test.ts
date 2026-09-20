@@ -46,6 +46,8 @@ interface Fixture {
   readonly remote?: string | null;
   /** Zakázané tokeny identity v configu. Default je jeden dlouhý (`johndoe`). */
   readonly identityTokens?: readonly string[];
+  /** Výjimky na řádek: identifikátor, ve kterém token sedí jen jako podřetězec. */
+  readonly identityExceptions?: readonly { readonly literal: string; readonly reason?: string }[];
   /** Zakázaná jména organizátora v configu. Default je `PUBLIC_TOKENS`. */
   readonly publicTokens?: readonly string[];
   /** Config vznikne, ale klíč `publicTokens` v něm vůbec nebude. */
@@ -76,6 +78,7 @@ function makeRepo(fixture: Fixture = {}): string {
         account: ACCOUNT,
         ...(fixture.omitPublicTokens ? {} : { publicTokens: fixture.publicTokens ?? PUBLIC_TOKENS }),
         identityTokens: fixture.identityTokens ?? ['johndoe'],
+        ...(fixture.identityExceptions ? { identityExceptions: fixture.identityExceptions } : {}),
       }),
       'utf8',
     );
@@ -652,6 +655,45 @@ describe('kontrola 3 hledá i skutečné jméno autora, ne jen jméno organizát
     const result = blindCheck(dir);
     expect(result.code).toBe(0);
     expect(failedChecks(result.out)).toEqual([]);
+  });
+
+  /**
+   * Naměřeno 19. 9. 2026 v ostrém repu: pole `toMassingPreviewMs` neslo jméno
+   * autora jako náhodný podřetězec na 108 místech nepushnuté historie. Přepis
+   * historie je nevratný, proto výjimka na řádek v gitignorovaném configu –
+   * ale jen s důvodem, a řádek, kde jméno stojí i mimo literál, padá dál.
+   */
+  it('[3] výjimka s důvodem pustí token schovaný v identifikátoru', () => {
+    const dir = makeRepo({
+      identityTokens: ['zqxvw'],
+      identityExceptions: [{ literal: 'toZqxvwPreviewMs', reason: 'název pole, ne jméno' }],
+      extraFile: { name: 'latency.json', body: '{ "toZqxvwPreviewMs": 75026 }\n' },
+    });
+    const result = blindCheck(dir);
+    expect(result.code).toBe(0);
+    expect(failedChecks(result.out)).toEqual([]);
+  });
+
+  it('[3] výjimka bez důvodu se nebere', () => {
+    const dir = makeRepo({
+      identityTokens: ['zqxvw'],
+      identityExceptions: [{ literal: 'toZqxvwPreviewMs' }],
+      extraFile: { name: 'latency.json', body: '{ "toZqxvwPreviewMs": 75026 }\n' },
+    });
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([3]);
+  });
+
+  it('[3] výjimka nekryje týž token mimo literál', () => {
+    const dir = makeRepo({
+      identityTokens: ['zqxvw'],
+      identityExceptions: [{ literal: 'toZqxvwPreviewMs', reason: 'název pole, ne jméno' }],
+      extraFile: { name: 'latency.json', body: '{ "toZqxvwPreviewMs": 75026 }\n// měřil zqxvw\n' },
+    });
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([3]);
   });
 
   /**
