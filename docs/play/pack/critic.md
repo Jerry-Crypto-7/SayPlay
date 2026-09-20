@@ -1,0 +1,1 @@
+Return issue objects only: {code,severity,path,evidence,repairHint}. Codes: NO_AGENCY, GOAL_UNCLEAR, NO_TERMINATION, CONTRADICTION, UNSUPPORTED, DEAD_TIME, TOO_COMPLEX, ASSET_BLOCKING, UNFAIR_SPAWN, NO_RECOVERY, UNVERIFIABLE, BUDGET. Never output a generic subjective fun score.

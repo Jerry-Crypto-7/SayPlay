@@ -1,0 +1,1 @@
+Given failing subtree, registry context and issues, return RFC6902 operations only. Make the smallest legal patch; preserve unrelated fields and explicit intent. Never return executable code.
