@@ -15,7 +15,7 @@
 import { canonicalHash } from '@/ir/worlddoc';
 import type { CompileGameReason } from '@/play/contracts';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
-import { type PublishedGame, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv } from '@/play/version';
+import { type PublishedGame, type PutOutcome, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv } from '@/play/version';
 import { callerKey, rateLimitCode, takeRateSlot, trustedCallerKey } from '@/server/rate-limit';
 import { killState, type KillState } from '@/server/kill-switch';
 import { ownerIdentityRejection } from '@/server/owner-identity';
@@ -116,7 +116,7 @@ export async function publishReadSpec(
   const existing = await versions.get(version.versionId);
   if (existing !== null) return { ok: true, value: { status: 200, game: existing } };
 
-  let outcome: 'stored' | 'exists' | 'conflict';
+  let outcome: PutOutcome;
   try {
     outcome = await versions.put(game);
   } catch (thrown) {
@@ -124,6 +124,8 @@ export async function publishReadSpec(
       return { ok: false, response: fail(503, 'STORE_UNAVAILABLE', 'the game could not be saved right now') };
     throw thrown;
   }
+  if (outcome === 'quota')
+    return { ok: false, response: fail(429, 'PUBLISH_QUOTA', "today's publishing quota is used up; try again tomorrow", { 'retry-after': '3600' }) };
   if (outcome === 'conflict')
     return { ok: false, response: fail(409, 'VERSION_CONFLICT', 'a different game already holds this version id') };
   return { ok: true, value: { status: outcome === 'stored' ? 201 : 200, game } };

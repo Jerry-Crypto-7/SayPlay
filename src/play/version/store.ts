@@ -19,6 +19,12 @@
  * dveří, na témž úložišti, kde bydlí kniha stropu (nález revize T3). Takhle je
  * publikace o dvě čtení dražší a čtení stojí jeden příkaz.
  *
+ * **Zápisy mají strop a expiraci** (nález bezpečnostní revize 20. 9. 2026):
+ * publikace jsou anonymní, a bez meze by jeden volající zaplnil kvótu obchodu,
+ * o který se dělí kniha stropu – ta pak selhává zavřeně a placená cesta modelu
+ * umře. Každý klíč hry dostane `EX <ttl>` a denní počítadlo
+ * `<prefix>:play:quota:<den>` zastaví publikace nad `dailyCap` (`quota`).
+ *
  * Čtení nikdy nevyhazuje – neznámá hra i nedostupné úložiště jsou `null`.
  * Zápis při výpadku vyhazuje `VersionStoreUnavailable`, nikdy netvrdí
  * `stored`: publikace, o které se neví, jestli dorazila, není publikace.
@@ -34,13 +40,31 @@ export interface VersionStore {
   readonly id: string;
   /** `null` je „neznámá hra“ – i když je to proto, že úložiště neodpovědělo nebo drží rozbitý záznam. */
   get(versionId: string): Promise<PublishedGame | null>;
-  put(game: PublishedGame): Promise<'stored' | 'exists' | 'conflict'>;
+  /** `quota` = denní strop publikací vyčerpán; nic se nezapsalo. */
+  put(game: PublishedGame): Promise<PutOutcome>;
   childrenOf(versionId: string): Promise<string[]>;
   /** Od kořene k listu, nejvýš `MAX_LINEAGE` nejnovějších záznamů. */
   lineageOf(versionId: string): Promise<GameVersion[]>;
 }
 
+export type PutOutcome = 'stored' | 'exists' | 'conflict' | 'quota';
+
 export const MAX_LINEAGE = 32;
+
+/** Meze zápisu; `versionStoreFromEnv` je čte z `PLAY_VERSION_TTL_SECONDS` a `PLAY_PUBLISH_DAILY_CAP`. */
+export interface WriteLimits {
+  /** Jak dlouho hra žije od publikace. Výchozí 60 dní – porota otvírá odkazy týdny po odevzdání. */
+  readonly ttlSeconds: number;
+  /** Kolik publikací (pokusů o zápis) za den napříč všemi volajícími. */
+  readonly dailyCap: number;
+}
+
+export const DEFAULT_WRITE_LIMITS: WriteLimits = { ttlSeconds: 60 * 24 * 3600, dailyCap: 500 };
+
+/** Den v UTC pro klíč počítadla. */
+function quotaDay(nowMs: number): string {
+  return new Date(nowMs).toISOString().slice(0, 10);
+}
 
 /** Kolik se čeká na sdílené úložiště; táž hodnota jako u knihy stropu. */
 export const VERSION_STORE_TIMEOUT_MS = 2_000;
@@ -56,8 +80,10 @@ export class VersionStoreUnavailable extends Error {
 interface RawStore {
   get(key: string): Promise<string | null>;
   /** `true`, když klíč ještě nebyl a zápis prošel. */
-  setNx(key: string, value: string): Promise<boolean>;
-  set(key: string, value: string): Promise<void>;
+  setNx(key: string, value: string, ttlSeconds: number): Promise<boolean>;
+  set(key: string, value: string, ttlSeconds: number): Promise<void>;
+  /** Zvýší počítadlo a vrátí novou hodnotu; klíč vyprší po `ttlSeconds` od prvního zvýšení. */
+  incr(key: string, ttlSeconds: number): Promise<number>;
 }
 
 /** Jediná serializace pro zápis: seřazené klíče, bez `undefined`. */
@@ -74,7 +100,7 @@ function sameContent(a: PublishedGame, b: PublishedGame): boolean {
   return strip(a) === strip(b);
 }
 
-function versionStoreOver(id: string, prefix: string, raw: RawStore): VersionStore {
+function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: WriteLimits, now: () => number): VersionStore {
   const versionKey = (versionId: string): string => `${prefix}:play:v:${versionId}`;
   const childrenKey = (parentId: string): string => `${prefix}:play:children:${parentId}`;
   const lineageKey = (versionId: string): string => `${prefix}:play:lineage:${versionId}`;
@@ -99,7 +125,8 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore): VersionSto
       const key = versionKey(game.version.versionId);
       const text = serialise(game);
       try {
-        if (!(await raw.setNx(key, text))) {
+        if ((await raw.incr(`${prefix}:play:quota:${quotaDay(now())}`, 2 * 24 * 3600)) > limits.dailyCap) return 'quota';
+        if (!(await raw.setNx(key, text, limits.ttlSeconds))) {
           const existing = await raw.get(key);
           if (existing === text) return 'exists';
           if (existing === null) return 'conflict';
@@ -110,7 +137,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore): VersionSto
           }
         }
         const ancestors = game.version.parentId === null ? [] : await store.lineageOf(game.version.parentId);
-        await raw.set(lineageKey(game.version.versionId), JSON.stringify([...ancestors, game.version].slice(-MAX_LINEAGE)));
+        await raw.set(lineageKey(game.version.versionId), JSON.stringify([...ancestors, game.version].slice(-MAX_LINEAGE)), limits.ttlSeconds);
         if (game.version.parentId !== null) {
           // Přečti, přidej, zapiš – bez zámku. Dvě děti publikovaná v téže
           // chvíli si můžou navzájem ztratit zápis; seznam dětí je navigace,
@@ -118,7 +145,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore): VersionSto
           const childrenOfParent = childrenKey(game.version.parentId);
           const siblings = await raw.get(childrenOfParent);
           const list = siblings === null ? [] : (JSON.parse(siblings) as string[]);
-          await raw.set(childrenOfParent, JSON.stringify([...list, game.version.versionId]));
+          await raw.set(childrenOfParent, JSON.stringify([...list, game.version.versionId]), limits.ttlSeconds);
         }
         return 'stored';
       } catch (thrown) {
@@ -148,9 +175,11 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore): VersionSto
   return store;
 }
 
-export function memoryVersionStore(): VersionStore {
+/** Paměť procesu neexpiruje – drží ji denní strop, a `next start` žije kratší dobu než TTL. */
+export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, now: () => number = Date.now): VersionStore {
   const entries = new Map<string, string>();
-  return versionStoreOver('memory', 'memory', {
+  const counters = new Map<string, number>();
+  const raw: RawStore = {
     get: (key) => Promise.resolve(entries.get(key) ?? null),
     setNx: (key, value) => {
       if (entries.has(key)) return Promise.resolve(false);
@@ -161,7 +190,13 @@ export function memoryVersionStore(): VersionStore {
       entries.set(key, value);
       return Promise.resolve();
     },
-  });
+    incr: (key) => {
+      const next = (counters.get(key) ?? 0) + 1;
+      counters.set(key, next);
+      return Promise.resolve(next);
+    },
+  };
+  return versionStoreOver('memory', 'memory', raw, limits, now);
 }
 
 export interface HttpVersionStoreConfig {
@@ -171,6 +206,8 @@ export interface HttpVersionStoreConfig {
   /** Táž předpona jako u knihy stropu. */
   readonly prefix: string;
   readonly timeoutMs: number;
+  readonly limits?: WriteLimits;
+  readonly now?: () => number;
 }
 
 /** Úložiště přes REST Upstash: `SET key value NX` a `SET key value` jedním příkazem, `GET` druhým. */
@@ -189,7 +226,7 @@ export function httpVersionStore(config: HttpVersionStoreConfig, fetchImpl: type
     return ((await response.json()) as { result?: unknown }).result;
   };
 
-  return versionStoreOver('http', config.prefix, {
+  const raw: RawStore = {
     async get(key) {
       const response = await fetchImpl(`${config.url}/get/${encodeURIComponent(key)}`, {
         headers,
@@ -202,11 +239,32 @@ export function httpVersionStore(config: HttpVersionStoreConfig, fetchImpl: type
       if (typeof result !== 'string') throw new Error('version store answered a shape this server cannot read');
       return result;
     },
-    setNx: async (key, value) => (await command(['SET', key, value, 'NX'])) === 'OK',
-    async set(key, value) {
-      await command(['SET', key, value]);
+    setNx: async (key, value, ttlSeconds) => (await command(['SET', key, value, 'NX', 'EX', String(ttlSeconds)])) === 'OK',
+    async set(key, value, ttlSeconds) {
+      await command(['SET', key, value, 'EX', String(ttlSeconds)]);
     },
-  });
+    async incr(key, ttlSeconds) {
+      const count = await command(['INCR', key]);
+      if (typeof count !== 'number') throw new Error('version store answered a shape this server cannot read');
+      // Expirace jen při prvním zvýšení – další ji neposouvají, den skončí kdy má.
+      if (count === 1) await command(['EXPIRE', key, String(ttlSeconds)]);
+      return count;
+    },
+  };
+  return versionStoreOver('http', config.prefix, raw, config.limits ?? DEFAULT_WRITE_LIMITS, config.now ?? Date.now);
+}
+
+/** Kladné celé číslo z prostředí, jinak výchozí – špatná hodnota nesmí strop zrušit. */
+function positiveInt(text: string | undefined, fallback: number): number {
+  const value = Number(text);
+  return Number.isInteger(value) && value > 0 ? value : fallback;
+}
+
+export function writeLimitsFromEnv(env: Record<string, string | undefined>): WriteLimits {
+  return {
+    ttlSeconds: positiveInt(env.PLAY_VERSION_TTL_SECONDS, DEFAULT_WRITE_LIMITS.ttlSeconds),
+    dailyCap: positiveInt(env.PLAY_PUBLISH_DAILY_CAP, DEFAULT_WRITE_LIMITS.dailyCap),
+  };
 }
 
 /** Jedno úložiště na proces, když se s nikým nesdílí. */
@@ -220,8 +278,9 @@ export function __resetProcessVersionStore(): void {
 /** Sdílené úložiště podle prostředí (týž obchod a předpona jako kniha stropu), jinak paměť procesu. */
 export function versionStoreFromEnv(env: Record<string, string | undefined>, fetchImpl: typeof fetch = fetch): VersionStore {
   const shared = sharedStoreFromEnv(env);
+  const limits = writeLimitsFromEnv(env);
   if (shared !== null)
-    return httpVersionStore({ url: shared.url, token: shared.token, prefix: storePrefix(env), timeoutMs: VERSION_STORE_TIMEOUT_MS }, fetchImpl);
-  processStore ??= memoryVersionStore();
+    return httpVersionStore({ url: shared.url, token: shared.token, prefix: storePrefix(env), timeoutMs: VERSION_STORE_TIMEOUT_MS, limits }, fetchImpl);
+  processStore ??= memoryVersionStore(limits);
   return processStore;
 }

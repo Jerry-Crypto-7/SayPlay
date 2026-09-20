@@ -1,5 +1,6 @@
 export { sealVersion, type PublishedGame } from './version';
 export {
+  DEFAULT_WRITE_LIMITS,
   MAX_LINEAGE,
   VERSION_STORE_TIMEOUT_MS,
   VersionStoreUnavailable,
@@ -7,6 +8,9 @@ export {
   httpVersionStore,
   memoryVersionStore,
   versionStoreFromEnv,
+  writeLimitsFromEnv,
   type HttpVersionStoreConfig,
+  type PutOutcome,
   type VersionStore,
+  type WriteLimits,
 } from './store';

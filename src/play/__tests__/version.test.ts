@@ -20,11 +20,13 @@ import { RUNTIME_VERSION } from '@/sim/interpreter';
 
 import {
   __resetProcessVersionStore,
+  DEFAULT_WRITE_LIMITS,
   httpVersionStore,
   memoryVersionStore,
   sealVersion,
   versionStoreFromEnv,
   VersionStoreUnavailable,
+  writeLimitsFromEnv,
   type PublishedGame,
   type VersionStore,
 } from '../version';
@@ -65,16 +67,30 @@ function publish(seed: number, parentId: string | null, replayEqual = true): Pub
   return { version: sealVersion(game, parentId, () => 1_700_000_000_000), spec: game.spec, blueprint: game.blueprint, report: report(game, replayEqual) };
 }
 
-/** Falešný Upstash: `GET /get/<key>` a `POST /` s `['SET', key, value, 'NX'?]`. */
-function fakeUpstash(kv: Map<string, string>): typeof fetch {
+/** Falešný Upstash: SET (NX, EX), GET, INCR, EXPIRE. Expirace se zapisují do `ttl`, aby šly ověřit. */
+function fakeUpstash(kv: Map<string, string>, ttl: Map<string, number> = new Map()): typeof fetch {
   return async (input, init) => {
     const url = String(input);
     const getMatch = /\/get\/(.+)$/.exec(url);
     if (getMatch !== null) return Response.json({ result: kv.get(decodeURIComponent(getMatch[1])) ?? null });
-    const [command, key, value, flag] = JSON.parse(String(init?.body)) as string[];
+    const parts = JSON.parse(String(init?.body)) as string[];
+    const [command, key] = parts;
+    if (command === 'INCR') {
+      const next = Number(kv.get(key) ?? '0') + 1;
+      kv.set(key, String(next));
+      return Response.json({ result: next });
+    }
+    if (command === 'EXPIRE') {
+      ttl.set(key, Number(parts[2]));
+      return Response.json({ result: 1 });
+    }
     if (command !== 'SET') throw new Error(`fake store does not know ${command}`);
-    if (flag === 'NX' && kv.has(key)) return Response.json({ result: null });
+    const value = parts[2];
+    const flags = parts.slice(3);
+    if (flags.includes('NX') && kv.has(key)) return Response.json({ result: null });
     kv.set(key, value);
+    const ex = flags.indexOf('EX');
+    if (ex !== -1) ttl.set(key, Number(flags[ex + 1]));
     return Response.json({ result: 'OK' });
   };
 }
@@ -94,6 +110,15 @@ describe('sealVersion', () => {
     expect(sealVersion(game, null, () => 99).versionId).toBe(version.versionId);
     expect(sealVersion(game, 'parent', () => 0).versionId).not.toBe(version.versionId);
     expect(sealVersion(compiled(8), null, () => 0).versionId).not.toBe(version.versionId);
+  });
+
+  it('derives a 128-bit id that also covers the spec itself', () => {
+    const game = compiled(7);
+    const version = sealVersion(game, null, () => 0);
+    expect(version.versionId).toMatch(/^[a-f0-9]{32}$/);
+    // Stejná pole verze (specHash, worldHash, seed…), jiný spec → jiné id: 32-bitový specHash sám nestačí.
+    const retitled: CompiledGame = { ...game, spec: { ...game.spec, title: `${game.spec.title} II` } };
+    expect(sealVersion(retitled, null, () => 0).versionId).not.toBe(version.versionId);
   });
 });
 
@@ -225,7 +250,58 @@ describe('VersionStore http', () => {
     await store.put(root);
     expect(kv.has(`${PREFIX}:play:v:${root.version.versionId}`)).toBe(true);
     expect((calls[0].init?.headers as Record<string, string>).authorization).toBe('Bearer secret');
-    expect(JSON.parse(String(calls[0].init?.body))).toEqual(['SET', `${PREFIX}:play:v:${root.version.versionId}`, expect.any(String), 'NX']);
+    // První příkaz je denní počítadlo, druhý zápis hry s NX a expirací.
+    expect(JSON.parse(String(calls[0].init?.body))).toEqual(['INCR', expect.stringMatching(new RegExp(`^${PREFIX}:play:quota:\\d{4}-\\d{2}-\\d{2}$`))]);
+    const setCall = calls.find((call) => String(call.init?.body).startsWith('["SET"'));
+    expect(JSON.parse(String(setCall?.init?.body))).toEqual([
+      'SET',
+      `${PREFIX}:play:v:${root.version.versionId}`,
+      expect.any(String),
+      'NX',
+      'EX',
+      String(DEFAULT_WRITE_LIMITS.ttlSeconds),
+    ]);
+  });
+
+  it('expires every play key and stops writing above the daily cap', async () => {
+    const kv = new Map<string, string>();
+    const ttl = new Map<string, number>();
+    let day = Date.UTC(2026, 8, 20, 10);
+    const limits = { ttlSeconds: 3600, dailyCap: 2 };
+    const store = httpVersionStore({ url: 'https://x', token: 't', prefix: PREFIX, timeoutMs: 500, limits, now: () => day }, fakeUpstash(kv, ttl));
+    const root = publish(1, null);
+    expect(await store.put(root)).toBe('stored');
+    expect(await store.put(publish(2, root.version.versionId))).toBe('stored');
+    expect(ttl.get(`${PREFIX}:play:v:${root.version.versionId}`)).toBe(3600);
+    expect(ttl.get(`${PREFIX}:play:lineage:${root.version.versionId}`)).toBe(3600);
+    expect(ttl.get(`${PREFIX}:play:children:${root.version.versionId}`)).toBe(3600);
+    expect(ttl.get(`${PREFIX}:play:quota:2026-09-20`)).toBe(2 * 24 * 3600);
+
+    // Třetí publikace dne: strop – nic se nezapíše, ani opakovaná stejná hra neprojde jako exists.
+    const third = publish(3, null);
+    expect(await store.put(third)).toBe('quota');
+    expect(kv.has(`${PREFIX}:play:v:${third.version.versionId}`)).toBe(false);
+    expect(await store.put(root)).toBe('quota');
+
+    // Další den počítadlo začíná znovu.
+    day += 24 * 3600 * 1000;
+    expect(await store.put(third)).toBe('stored');
+  });
+
+  it('memory store honours the same daily cap', async () => {
+    const store = memoryVersionStore({ ttlSeconds: 60, dailyCap: 1 }, () => 0);
+    expect(await store.put(publish(1, null))).toBe('stored');
+    expect(await store.put(publish(2, null))).toBe('quota');
+    expect(await store.get(publish(2, null).version.versionId)).toBeNull();
+  });
+});
+
+describe('writeLimitsFromEnv', () => {
+  it('reads positive integers and falls back to the defaults on anything else', () => {
+    expect(writeLimitsFromEnv({})).toEqual(DEFAULT_WRITE_LIMITS);
+    expect(writeLimitsFromEnv({ PLAY_VERSION_TTL_SECONDS: '86400', PLAY_PUBLISH_DAILY_CAP: '20' })).toEqual({ ttlSeconds: 86400, dailyCap: 20 });
+    expect(writeLimitsFromEnv({ PLAY_VERSION_TTL_SECONDS: '0', PLAY_PUBLISH_DAILY_CAP: 'unlimited' })).toEqual(DEFAULT_WRITE_LIMITS);
+    expect(writeLimitsFromEnv({ PLAY_PUBLISH_DAILY_CAP: '-5' }).dailyCap).toBe(DEFAULT_WRITE_LIMITS.dailyCap);
   });
 });
 

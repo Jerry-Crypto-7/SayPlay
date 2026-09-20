@@ -23,6 +23,7 @@ export type PlayErrorCode =
   | 'VERSION_CONFLICT'
   | 'DISABLED'
   | 'TOO_MANY_REQUESTS'
+  | 'PUBLISH_QUOTA'
   | 'SERVER_AT_CAPACITY'
   | 'STORE_UNAVAILABLE';
 

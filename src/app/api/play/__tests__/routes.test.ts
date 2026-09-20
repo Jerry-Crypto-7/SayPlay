@@ -259,6 +259,25 @@ describe('Oracle', () => {
     expect((await read((await publish('Collect the coins')).body.versionId)).status).toBe(200);
   });
 
+  it('denní strop publikací → 429 PUBLISH_QUOTA s retry-after, nic se neuložilo', async () => {
+    process.env.PLAY_PUBLISH_DAILY_CAP = '1';
+    __resetProcessVersionStore();
+    try {
+      const first = await publish('Collect the coins');
+      expect(first.status).toBe(201);
+      const second = await createGame(post('/api/play/games', { sentence: 'Escape the chasing wolves' }));
+      expect(second.status).toBe(429);
+      expect(second.headers.get('retry-after')).toBe('3600');
+      expect((await second.json()).error.code).toBe('PUBLISH_QUOTA');
+      // Strop platí i pro remix – jde touž cestou zápisu.
+      const remix = await remixGame(post(`/api/play/games/${first.body.versionId}/remix`, { chip: 'harder' }), params(first.body.versionId));
+      expect(remix.status).toBe(429);
+      expect((await read(first.body.versionId)).body.children).toEqual([]);
+    } finally {
+      delete process.env.PLAY_PUBLISH_DAILY_CAP;
+    }
+  });
+
   it('(7b) na platformě rozhoduje důvěryhodný konec, ne x-forwarded-for od volajícího', async () => {
     process.env.VERCEL = '1';
     let last: Response | null = null;
