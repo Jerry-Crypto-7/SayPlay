@@ -1,0 +1,86 @@
+{
+  "schema": "gamespec.v1",
+  "targetDurationSec": 90,
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "title": "Neon Gates",
+  "archetype": "checkpoint_race",
+  "theme": {
+    "setting": "neon racetrack",
+    "mood": "fast"
+  },
+  "objective": {
+    "kind": "checkpoints",
+    "description": "Pass five neon gates in order.",
+    "count": 5,
+    "role": "gate"
+  },
+  "mechanics": [
+    {
+      "id": "checkpoint",
+      "params": {
+        "role": "gate",
+        "count": 5,
+        "ordered": true
+      }
+    },
+    {
+      "id": "timer",
+      "params": {
+        "id": "clock",
+        "seconds": 90,
+        "onEnd": "lose"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "hoverbike"
+    },
+    {
+      "id": "gate",
+      "kind": "checkpoint",
+      "label": "neon gate",
+      "count": 5
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Pass all 5 gates in order before time runs out.",
+    "controlsHint": "Tap the next gate to race to it."
+  },
+  "verification": [
+    {
+      "id": "order_enforced",
+      "kind": "keypoint",
+      "mechanic": "checkpoint",
+      "setup": {
+        "counters": {
+          "gatesPassed": 0
+        }
+      },
+      "actions": [
+        {
+          "actionId": "moveTo",
+          "target": "gate"
+        }
+      ],
+      "assert": {
+        "counters": {
+          "gatesPassed": 1
+        }
+      }
+    },
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "schema": "gamespec.v1",
+  "targetDurationSec": 90,
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "title": "Roomba Aisle",
+  "archetype": "chase_escape",
+  "theme": {
+    "setting": "supermarket at night",
+    "mood": "frantic"
+  },
+  "objective": {
+    "kind": "reach",
+    "description": "Reach the exit doors before the Roomba catches you.",
+    "role": "exit"
+  },
+  "mechanics": [
+    {
+      "id": "chaser",
+      "params": {
+        "role": "roomba",
+        "speed": "normal",
+        "catchEffect": "lose"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "exit",
+        "when": "enter",
+        "effect": "win"
+      }
+    },
+    {
+      "id": "stun",
+      "params": {
+        "targetRole": "roomba",
+        "seconds": 4,
+        "uses": 3
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "hamster"
+    },
+    {
+      "id": "roomba",
+      "kind": "chaser",
+      "label": "giant Roomba"
+    },
+    {
+      "id": "exit",
+      "kind": "exit",
+      "label": "exit doors"
+    },
+    {
+      "id": "cart",
+      "kind": "prop",
+      "label": "shopping cart",
+      "count": 3
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Escape through the exit doors. The Roomba hunts you.",
+    "controlsHint": "Tap where to run. Use a cart to stun the Roomba."
+  },
+  "verification": [
+    {
+      "id": "stun_freezes",
+      "kind": "keypoint",
+      "mechanic": "stun",
+      "setup": {
+        "placeAt": {
+          "roomba": "player"
+        }
+      },
+      "actions": [
+        {
+          "actionId": "use",
+          "target": "roomba"
+        }
+      ],
+      "assert": {
+        "firedMechanics": [
+          "stun"
+        ]
+      }
+    },
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "schema": "gamespec.v1",
+  "targetDurationSec": 90,
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "title": "Lava Stepping Stones",
+  "archetype": "hazard_crossing",
+  "theme": {
+    "setting": "volcanic cavern",
+    "mood": "dangerous"
+  },
+  "objective": {
+    "kind": "reach",
+    "description": "Cross the lava field to the far ledge.",
+    "role": "ledge"
+  },
+  "mechanics": [
+    {
+      "id": "hazard_zone",
+      "params": {
+        "role": "lava",
+        "effect": "lose",
+        "pulse": {
+          "onSeconds": 2,
+          "offSeconds": 4
+        }
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "ledge",
+        "when": "enter",
+        "effect": "win"
+      }
+    },
+    {
+      "id": "checkpoint",
+      "params": {
+        "role": "stone",
+        "count": 3,
+        "ordered": false
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "salamander"
+    },
+    {
+      "id": "lava",
+      "kind": "hazard",
+      "label": "lava vent",
+      "count": 5
+    },
+    {
+      "id": "stone",
+      "kind": "checkpoint",
+      "label": "stepping stone",
+      "count": 3
+    },
+    {
+      "id": "ledge",
+      "kind": "exit",
+      "label": "far ledge"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Reach the far ledge. Lava vents pulse.",
+    "controlsHint": "Tap a stepping stone when the lava is calm."
+  },
+  "verification": [
+    {
+      "id": "lava_off_is_safe",
+      "kind": "keypoint",
+      "mechanic": "hazard_zone",
+      "setup": {
+        "placeAt": {
+          "player": "lava"
+        },
+        "entityStates": {
+          "lava": "off"
+        }
+      },
+      "ticks": 20,
+      "assert": {
+        "runState": "running"
+      }
+    },
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ]
+}

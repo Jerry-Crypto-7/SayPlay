@@ -1,0 +1,88 @@
+{
+  "schema": "gamespec.v1",
+  "targetDurationSec": 60,
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "title": "Red Tiles",
+  "archetype": "survival_timer",
+  "theme": {
+    "setting": "neon arena",
+    "mood": "tense"
+  },
+  "objective": {
+    "kind": "survive",
+    "description": "Survive 60 seconds while red floor tiles pulse.",
+    "seconds": 60
+  },
+  "mechanics": [
+    {
+      "id": "timer",
+      "params": {
+        "id": "clock",
+        "seconds": 60,
+        "onEnd": "win"
+      }
+    },
+    {
+      "id": "hazard_zone",
+      "params": {
+        "role": "tile",
+        "effect": "lose",
+        "pulse": {
+          "onSeconds": 3,
+          "offSeconds": 5
+        }
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "robot"
+    },
+    {
+      "id": "tile",
+      "kind": "hazard",
+      "label": "red floor tile",
+      "count": 6
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Stay off the red tiles for 60 seconds.",
+    "controlsHint": "Tap a safe spot to move there."
+  },
+  "verification": [
+    {
+      "id": "tile_kills_when_on",
+      "kind": "keypoint",
+      "mechanic": "hazard_zone",
+      "setup": {
+        "placeAt": {
+          "player": "tile"
+        }
+      },
+      "ticks": 80,
+      "assert": {
+        "runState": "lost"
+      }
+    },
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    },
+    {
+      "id": "ends",
+      "kind": "termination",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ]
+}
