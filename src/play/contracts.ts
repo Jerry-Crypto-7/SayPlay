@@ -11,9 +11,11 @@
  * dvojníka jiné vrstvy, píše ho u sebe (`__fixtures__`), ne sem.
  */
 
+import { createHash } from 'node:crypto';
+
+import { canonical } from '@/ir/worlddoc';
 import { RUNTIME_VERSION } from '@/sim/interpreter';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
-import { canonicalHash } from '@/ir/worlddoc';
 
 import type { GameSpecV1 } from './spec';
 
@@ -103,8 +105,15 @@ export interface GameVersion {
   readonly createdAt: string;
 }
 
-export function gameVersionId(fields: Omit<GameVersion, 'versionId' | 'createdAt' | 'title'>): string {
-  return canonicalHash(fields);
+/**
+ * Veřejné id verze: prvních 128 bitů SHA-256 nad poli verze **a celým specem**.
+ * 32-bitový `canonicalHash` sem nepatří – id, které jde trefit hrubou silou za
+ * minuty (volný `seed`), by nechalo útočníka „zabrat“ adresu cizí hry ještě
+ * před jejím autorem (nález bezpečnostní revize 20. 9. 2026). Spec jde do
+ * hashe přímo, protože `specHash`/`worldHash` jsou samy 32-bitové.
+ */
+export function gameVersionId(fields: Omit<GameVersion, 'versionId' | 'createdAt' | 'title'>, spec: GameSpecV1): string {
+  return createHash('sha256').update(canonical({ ...fields, spec })).digest('hex').slice(0, 32);
 }
 
 /** Jak režisér skončil. `draft` je okamžitá šablona ze slov, `authored` odpověď modelu. */

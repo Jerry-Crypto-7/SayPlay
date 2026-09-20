@@ -31,7 +31,7 @@ export function sealVersion(compiled: CompiledGame, parentId: string | null, now
     parentId,
   };
   return {
-    versionId: gameVersionId(fields),
+    versionId: gameVersionId(fields, compiled.spec),
     title: compiled.spec.title,
     ...fields,
     createdAt: new Date(now()).toISOString(),

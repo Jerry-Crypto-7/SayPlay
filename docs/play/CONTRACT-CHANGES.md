@@ -76,3 +76,7 @@ na téže roli.
   proto přijímá `/^[a-f0-9]{8,64}$/`, aby delší hash prošel bez změny. Doporučení: v
   kontraktu spočítat `versionId` přes SHA-256 (`node:crypto` je na serveru, kde se
   pečetí, k dispozici) a nechat `canonicalHash` jen pro `specHash`/`worldHash`.
+  **Vyřešeno při sloučení 20. 9. 2026:** bezpečnostní revize id trefila hrubou silou za
+  7,6 min (volný `seed`), takže `gameVersionId(fields, spec)` je od teď prvních 128 bitů
+  SHA-256 nad poli verze i celým specem (32 hex). Zároveň dostaly klíče hry expiraci a
+  publikace denní strop (`PLAY_VERSION_TTL_SECONDS`, `PLAY_PUBLISH_DAILY_CAP`; `put` → `quota`, routa 429 `PUBLISH_QUOTA`).
