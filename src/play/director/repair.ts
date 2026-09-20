@@ -46,8 +46,8 @@ export const NEAREST_MECHANIC: Readonly<Record<string, MechanicId | null>> = {
   moving_platform: 'hazard_zone',
 };
 
-type Loose = Record<string, unknown>;
-type LooseMechanic = { id: string; params: Loose };
+export type Loose = Record<string, unknown>;
+export type LooseMechanic = { id: string; params: Loose };
 type LooseRole = { id: string; kind: string; label: string; count?: number };
 
 const TEMPLATES: readonly GameSpecV1[] = [collectExit, chaseEscape, survivalTimer, checkpointRace, delivery, switchPuzzle, hazardCrossing, combatLite] as GameSpecV1[];
@@ -232,7 +232,7 @@ function ensureWin(spec: Loose, applied: string[]): void {
 }
 
 /** Keypoint z fixtury, která mechaniku ověřuje, s rolemi a čítači přepsanými na tenhle spec. */
-function keypointFor(spec: Loose, mechanic: LooseMechanic): VerificationAssertion | null {
+export function keypointFor(spec: Loose, mechanic: LooseMechanic): VerificationAssertion | null {
   const id = mechanic.id as MechanicId;
   const player = rolesOf(spec).find((role) => role.kind === 'player')?.id ?? 'player';
   for (const template of TEMPLATES) {
