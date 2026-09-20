@@ -378,8 +378,15 @@ export function solveWitnessDetailed(world: VerifiableWorld, options: SolveOptio
 
         // Dedukce podle stavového hashe: dvě různé cesty do téhož stavu mají
         // odsud tutéž budoucnost, takže druhá z nich je práce navíc.
-        if (seen.has(outcome.hash)) continue;
-        seen.add(outcome.hash);
+        // S cílem hledání ale mají tutéž budoucnost jen tehdy, když obě cílem
+        // prošly – nebo obě ne. Bit `reached` proto patří do klíče; bez něj
+        // přímá cesta zahodí tu, která cílem prošla a vrátila se do téhož
+        // stavu (naměřeno 20. 9. 2026: cíl, který zmizí při tahu z pravidla
+        // na zónu, dostal NO_ROUTE, ačkoli cesta existovala). Bez cíle je
+        // `reached` vždy `true`, takže klíč je bit po bitu tentýž jako dřív.
+        const key = watch === null ? outcome.hash : `${outcome.hash}:${outcome.reached ? 1 : 0}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
         next.push(candidate);
       }
     }

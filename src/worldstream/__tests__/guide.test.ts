@@ -134,6 +134,44 @@ describe('guideRoute nad cílem, který ve světě je', () => {
     if (answer.status !== 'ROUTE') return;
     expect(verifyWitness({ ...world, trace: answer.ops }, answer.ops).verdict).toBe('CERTIFIED');
   });
+
+  /**
+   * Cíl, který zmizí dřív, než se dá vyhrát: páka se přehazuje vstupem do zóny
+   * a přitom deska mizí. Cesta k desce tak musí jít deska → zóna páky → brána,
+   * jenže po kroku k páce je stav **bit po bitu tentýž** jako bez desky – a
+   * hledač dedukuje podle hashe stavu. Kdyby klíč nenesl bit „cílem prošel",
+   * zahodí právě tu cestu, kterou hledal, a odpoví NO_ROUTE nad cílem, ke
+   * kterému cesta vede (nález Codex review, naměřeno 20. 9. 2026).
+   */
+  it('cesta přes cíl přežije dedukci proti přímé cestě do téhož stavu', () => {
+    const sim = exampleSim();
+    const rules = sim.rules as Record<string, { actions: unknown[] }>;
+    const world = build({
+      ...sim,
+      sockets: { ...(sim.sockets as Record<string, unknown>), nookPad: [1, 1] },
+      collisionAabb: { ...(sim.collisionAabb as Record<string, unknown>), plaque: [1, 1, 1, 1] },
+      entities: {
+        ...(sim.entities as Record<string, unknown>),
+        plaque: { role: 'prop', socket: 'nookPad', state: 'idle' },
+      },
+      rules: {
+        ...rules,
+        pull: {
+          ...rules.pull,
+          event: { kind: 'onEnterZone', entity: 'player', zone: 'leverPad' },
+          actions: [...rules.pull.actions, { kind: 'despawn', target: 'plaque' }],
+        },
+      },
+    });
+    const answer = guideRoute(world, 'plaque', { ...BUDGET, maxTicks: 400_000 });
+
+    expect(answer.status, 'k desce vede cesta, dedukce ji nesmí zahodit').toBe('ROUTE');
+    if (answer.status !== 'ROUTE') return;
+    const plaque = walk(world, [], 'plaque').last;
+    const player = walk(world, answer.ops, 'player');
+    expect(player.runState).toBe('won');
+    expect(player.cells, 'certifikovaná cesta kolem desky nešla').toContainEqual(plaque);
+  });
 });
 
 describe('guideRoute nad cílem, který ve světě není', () => {
