@@ -1,0 +1,101 @@
+{
+  "schema": "gamespec.v1",
+  "targetDurationSec": 90,
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "title": "Five Mushrooms",
+  "archetype": "collect_exit",
+  "theme": {
+    "setting": "moonlit forest clearing",
+    "mood": "calm"
+  },
+  "objective": {
+    "kind": "collect",
+    "description": "Collect five glowing mushrooms, then step through the portal.",
+    "count": 5,
+    "role": "ghost"
+  },
+  "mechanics": [
+    {
+      "id": "collectible",
+      "params": {
+        "role": "mushroom",
+        "count": 5,
+        "counter": "collected"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "portal",
+        "when": "enter",
+        "effect": "win"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "fox"
+    },
+    {
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "glowing mushroom",
+      "count": 5
+    },
+    {
+      "id": "portal",
+      "kind": "exit",
+      "label": "stone portal"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Collect 5 mushrooms, then reach the portal.",
+    "controlsHint": "Tap a mushroom to walk to it. Tap again to pick it up."
+  },
+  "verification": [
+    {
+      "id": "fifth_opens_portal",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+        "counters": {
+          "collected": 4
+        }
+      },
+      "actions": [
+        {
+          "actionId": "pickup",
+          "target": "mushroom"
+        }
+      ],
+      "assert": {
+        "counters": {
+          "collected": 5
+        },
+        "firedMechanics": [
+          "collectible"
+        ]
+      }
+    },
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    },
+    {
+      "id": "replay",
+      "kind": "replay",
+      "assert": {
+        "replayEqual": true
+      }
+    }
+  ]
+}

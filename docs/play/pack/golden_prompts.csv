@@ -1,0 +1,16 @@
+bucket,prompt,must_test
+chase_escape,A hamster escapes a supermarket while a giant Roomba hunts it.,pursuer;destination
+collect_exit,Collect five glowing mushrooms then open a portal.,exact_count;exit
+survival_timer,Survive 60 seconds while red floor tiles pulse dangerously.,timer;hazard
+checkpoint_race,Race through five neon gates in order.,ordered_checkpoints
+delivery,Carry a fragile cake across a kitchen to a party table.,carry;destination
+switch_puzzle,Press red and blue but not green to open the door.,state_graph;door
+hazard_platforming,Cross floating islands; falling restarts at the last checkpoint.,jump;checkpoint;fall
+combat_lite,Defeat five slime targets with energy balls.,targets;projectile
+ambiguity,Make something fun involving dinosaurs and office chairs.,director_invents_loop
+contradiction,A room with no doors and exactly one door; make it playable.,graceful_resolution
+scale,A city with one million simulated citizens and a two-minute chase.,budget_degrade
+remix,Keep gameplay identical but make it neon sci-fi.,presentation_only
+remix,Make shopping carts stun the pursuer.,minimal_mechanic_patch
+count,Exactly seven statues; only the fourth from the left moves.,count;ordinal
+relation,A key inside a glass box on a pedestal behind a locked gate.,relations

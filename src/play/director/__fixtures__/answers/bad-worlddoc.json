@@ -1,0 +1,24 @@
+{
+  "schema": "worldstream.v1",
+  "title": "Ghost Cat Library",
+  "sim": {
+    "layout": {
+      "grid": {
+        "w": 12,
+        "h": 12
+      }
+    },
+    "entities": [
+      {
+        "id": "player",
+        "kind": "agent"
+      }
+    ],
+    "rules": [],
+    "state": {}
+  },
+  "look": {
+    "palette": "moody"
+  },
+  "geometry": []
+}

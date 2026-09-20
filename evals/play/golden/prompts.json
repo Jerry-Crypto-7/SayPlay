@@ -1,0 +1,285 @@
+{
+  "schema": "play-golden-v1",
+  "prompts": [
+    {
+      "id": "chase_escape-1",
+      "bucket": "chase_escape",
+      "prompt": "A hamster escapes a supermarket while a giant Roomba hunts it.",
+      "mustTest": ["pursuer", "destination"],
+      "expectArchetype": "chase_escape"
+    },
+    {
+      "id": "chase_escape-2",
+      "bucket": "chase_escape",
+      "prompt": "A mouse flees a haunted library while a ghost cat chases it to the front door.",
+      "mustTest": ["pursuer", "destination"],
+      "expectArchetype": "chase_escape"
+    },
+    {
+      "id": "chase_escape-3",
+      "bucket": "chase_escape",
+      "prompt": "Escape the flooded subway before the security drone catches you.",
+      "mustTest": ["pursuer", "destination"],
+      "expectArchetype": "chase_escape"
+    },
+    {
+      "id": "chase_escape-4",
+      "bucket": "chase_escape",
+      "prompt": "A penguin flees a hungry seal across the ice to reach its burrow.",
+      "mustTest": ["pursuer", "destination"],
+      "expectArchetype": "chase_escape"
+    },
+    {
+      "id": "collect_exit-1",
+      "bucket": "collect_exit",
+      "prompt": "Collect five glowing mushrooms then open a portal.",
+      "mustTest": ["exact_count", "exit"],
+      "expectArchetype": "collect_exit"
+    },
+    {
+      "id": "collect_exit-2",
+      "bucket": "collect_exit",
+      "prompt": "Gather eight lost coins in a pirate cave and leave through the hatch.",
+      "mustTest": ["exact_count", "exit"],
+      "expectArchetype": "collect_exit"
+    },
+    {
+      "id": "collect_exit-3",
+      "bucket": "collect_exit",
+      "prompt": "Pick up three keys hidden in a garden, then unlock the gate.",
+      "mustTest": ["exact_count", "exit"],
+      "expectArchetype": "collect_exit"
+    },
+    {
+      "id": "collect_exit-4",
+      "bucket": "collect_exit",
+      "prompt": "Find all six rubber ducks in a bathhouse before you can exit.",
+      "mustTest": ["exact_count", "exit"],
+      "expectArchetype": "collect_exit"
+    },
+    {
+      "id": "survival_timer-1",
+      "bucket": "survival_timer",
+      "prompt": "Survive 60 seconds while red floor tiles pulse dangerously.",
+      "mustTest": ["timer", "hazard"],
+      "expectArchetype": "survival_timer"
+    },
+    {
+      "id": "survival_timer-2",
+      "bucket": "survival_timer",
+      "prompt": "Last 90 seconds on a rooftop while drones sweep the area.",
+      "mustTest": ["timer", "hazard"],
+      "expectArchetype": "survival_timer"
+    },
+    {
+      "id": "survival_timer-3",
+      "bucket": "survival_timer",
+      "prompt": "Outlast a 45 second sandstorm in a desert camp.",
+      "mustTest": ["timer"],
+      "expectArchetype": "survival_timer"
+    },
+    {
+      "id": "survival_timer-4",
+      "bucket": "survival_timer",
+      "prompt": "Stay alive for two minutes in a haunted kitchen where the stove flares up.",
+      "mustTest": ["timer", "hazard"],
+      "expectArchetype": "survival_timer"
+    },
+    {
+      "id": "checkpoint_race-1",
+      "bucket": "checkpoint_race",
+      "prompt": "Race through five neon gates in order.",
+      "mustTest": ["ordered_checkpoints"],
+      "expectArchetype": "checkpoint_race"
+    },
+    {
+      "id": "checkpoint_race-2",
+      "bucket": "checkpoint_race",
+      "prompt": "Fly a paper plane through four hoops in the right order across a classroom.",
+      "mustTest": ["ordered_checkpoints"],
+      "expectArchetype": "checkpoint_race"
+    },
+    {
+      "id": "checkpoint_race-3",
+      "bucket": "checkpoint_race",
+      "prompt": "Run a lap around the stadium hitting six checkpoints.",
+      "mustTest": ["ordered_checkpoints"],
+      "expectArchetype": "checkpoint_race"
+    },
+    {
+      "id": "checkpoint_race-4",
+      "bucket": "checkpoint_race",
+      "prompt": "Sprint through three flaming rings before the clock runs out.",
+      "mustTest": ["ordered_checkpoints", "timer"],
+      "expectArchetype": "checkpoint_race"
+    },
+    {
+      "id": "delivery-1",
+      "bucket": "delivery",
+      "prompt": "Carry a fragile cake across a kitchen to a party table.",
+      "mustTest": ["carry", "destination"],
+      "expectArchetype": "delivery"
+    },
+    {
+      "id": "delivery-2",
+      "bucket": "delivery",
+      "prompt": "Deliver a hot pizza to the lighthouse keeper before it gets cold.",
+      "mustTest": ["carry", "destination"],
+      "expectArchetype": "delivery"
+    },
+    {
+      "id": "delivery-3",
+      "bucket": "delivery",
+      "prompt": "Bring the glowing crystal from the mine entrance to the altar.",
+      "mustTest": ["carry", "destination"],
+      "expectArchetype": "delivery"
+    },
+    {
+      "id": "delivery-4",
+      "bucket": "delivery",
+      "prompt": "Carry an egg across a busy farmyard to the nest without cracking it.",
+      "mustTest": ["carry", "destination", "fragile"],
+      "expectArchetype": "delivery"
+    },
+    {
+      "id": "switch_puzzle-1",
+      "bucket": "switch_puzzle",
+      "prompt": "Press red and blue but not green to open the door.",
+      "mustTest": ["state_graph", "door"],
+      "expectArchetype": "switch_puzzle"
+    },
+    {
+      "id": "switch_puzzle-2",
+      "bucket": "switch_puzzle",
+      "prompt": "Flip the two correct levers among four to open the vault.",
+      "mustTest": ["state_graph", "door"],
+      "expectArchetype": "switch_puzzle"
+    },
+    {
+      "id": "switch_puzzle-3",
+      "bucket": "switch_puzzle",
+      "prompt": "Press the temple buttons so the golden door opens, but never touch the skull switch.",
+      "mustTest": ["state_graph", "door"],
+      "expectArchetype": "switch_puzzle"
+    },
+    {
+      "id": "switch_puzzle-4",
+      "bucket": "switch_puzzle",
+      "prompt": "Toggle the switches on the control panel until the hangar door unlocks.",
+      "mustTest": ["state_graph", "door"],
+      "expectArchetype": "switch_puzzle"
+    },
+    {
+      "id": "hazard_crossing-1",
+      "bucket": "hazard_platforming",
+      "prompt": "Cross floating islands; falling restarts at the last checkpoint.",
+      "mustTest": ["jump", "checkpoint", "fall"],
+      "expectArchetype": "hazard_crossing"
+    },
+    {
+      "id": "hazard_crossing-2",
+      "bucket": "hazard_crossing",
+      "prompt": "Cross a lava field on stepping stones that sink when you linger.",
+      "mustTest": ["hazard", "checkpoint"],
+      "expectArchetype": "hazard_crossing"
+    },
+    {
+      "id": "hazard_crossing-3",
+      "bucket": "hazard_crossing",
+      "prompt": "Cross a frozen lake where the ice cracks under you every few seconds.",
+      "mustTest": ["hazard", "pulse"],
+      "expectArchetype": "hazard_crossing"
+    },
+    {
+      "id": "hazard_crossing-4",
+      "bucket": "hazard_crossing",
+      "prompt": "Hop between floating platforms over an acid pool to reach the far door.",
+      "mustTest": ["hazard", "exit"],
+      "expectArchetype": "hazard_crossing"
+    },
+    {
+      "id": "combat_lite-1",
+      "bucket": "combat_lite",
+      "prompt": "Defeat five slime targets with energy balls.",
+      "mustTest": ["targets", "projectile"],
+      "expectArchetype": "combat_lite"
+    },
+    {
+      "id": "combat_lite-2",
+      "bucket": "combat_lite",
+      "prompt": "Knock out four training dummies in the dojo.",
+      "mustTest": ["targets", "exact_count"],
+      "expectArchetype": "combat_lite"
+    },
+    {
+      "id": "combat_lite-3",
+      "bucket": "combat_lite",
+      "prompt": "Destroy the six cardboard robots invading the toy store.",
+      "mustTest": ["targets", "exact_count"],
+      "expectArchetype": "combat_lite"
+    },
+    {
+      "id": "combat_lite-4",
+      "bucket": "combat_lite",
+      "prompt": "Hit every wasp nest in the orchard until all seven are gone.",
+      "mustTest": ["targets", "exact_count"],
+      "expectArchetype": "combat_lite"
+    },
+    {
+      "id": "ambiguity-1",
+      "bucket": "ambiguity",
+      "prompt": "Make something fun involving dinosaurs and office chairs.",
+      "mustTest": ["director_invents_loop"],
+      "expectArchetype": null
+    },
+    {
+      "id": "contradiction-1",
+      "bucket": "contradiction",
+      "prompt": "A room with no doors and exactly one door; make it playable.",
+      "mustTest": ["graceful_resolution"],
+      "expectArchetype": null
+    },
+    {
+      "id": "scale-1",
+      "bucket": "scale",
+      "prompt": "A city with one million simulated citizens and a two-minute chase.",
+      "mustTest": ["budget_degrade"],
+      "expectArchetype": null
+    },
+    {
+      "id": "remix-1",
+      "bucket": "remix",
+      "prompt": "Keep gameplay identical but make it neon sci-fi.",
+      "mustTest": ["presentation_only"],
+      "expectArchetype": null
+    },
+    {
+      "id": "remix-2",
+      "bucket": "remix",
+      "prompt": "Make shopping carts stun the pursuer.",
+      "mustTest": ["minimal_mechanic_patch"],
+      "expectArchetype": null
+    },
+    {
+      "id": "remix-3",
+      "bucket": "remix",
+      "prompt": "Make the Roomba twice as fast.",
+      "mustTest": ["parameter_only"],
+      "expectArchetype": null
+    },
+    {
+      "id": "count-1",
+      "bucket": "count",
+      "prompt": "Exactly seven statues; only the fourth from the left moves.",
+      "mustTest": ["count", "ordinal"],
+      "expectArchetype": null
+    },
+    {
+      "id": "relation-1",
+      "bucket": "relation",
+      "prompt": "A key inside a glass box on a pedestal behind a locked gate.",
+      "mustTest": ["relations"],
+      "expectArchetype": null
+    }
+  ]
+}

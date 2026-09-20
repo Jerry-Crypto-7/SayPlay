@@ -1,0 +1,94 @@
+{
+  "schema": "gamespec.v1",
+  "targetDurationSec": 90,
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "title": "Fragile Cake",
+  "archetype": "delivery",
+  "theme": {
+    "setting": "busy kitchen",
+    "mood": "careful"
+  },
+  "objective": {
+    "kind": "deliver",
+    "description": "Carry the cake to the party table without breaking it.",
+    "role": "table"
+  },
+  "mechanics": [
+    {
+      "id": "carry",
+      "params": {
+        "itemRole": "cake",
+        "destinationRole": "table",
+        "fragile": true
+      }
+    },
+    {
+      "id": "patrol",
+      "params": {
+        "role": "waiter",
+        "disposition": "bold",
+        "stops": 3,
+        "touchEffect": "lose"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "chef"
+    },
+    {
+      "id": "cake",
+      "kind": "item",
+      "label": "fragile cake"
+    },
+    {
+      "id": "table",
+      "kind": "destination",
+      "label": "party table"
+    },
+    {
+      "id": "waiter",
+      "kind": "patrol",
+      "label": "hurried waiter"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Bring the cake to the party table. Avoid the waiter.",
+    "controlsHint": "Tap the cake, pick it up, then tap the table."
+  },
+  "verification": [
+    {
+      "id": "drop_at_table_wins",
+      "kind": "keypoint",
+      "mechanic": "carry",
+      "setup": {
+        "placeAt": {
+          "player": "table"
+        }
+      },
+      "actions": [
+        {
+          "actionId": "pickup",
+          "target": "cake"
+        }
+      ],
+      "ticks": 40,
+      "assert": {
+        "runState": "won"
+      }
+    },
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "schema": "gamespec.v1",
+  "targetDurationSec": 90,
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "title": "Not Green",
+  "archetype": "switch_puzzle",
+  "theme": {
+    "setting": "stone vault",
+    "mood": "puzzling"
+  },
+  "objective": {
+    "kind": "puzzle",
+    "description": "Press red and blue, but not green, to open the door.",
+    "role": "door"
+  },
+  "mechanics": [
+    {
+      "id": "switch",
+      "params": {
+        "switchRoles": [
+          "red",
+          "blue",
+          "green"
+        ],
+        "doorRole": "door",
+        "required": [
+          "red",
+          "blue"
+        ]
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "door",
+        "when": "enter",
+        "effect": "win"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "explorer"
+    },
+    {
+      "id": "red",
+      "kind": "switch",
+      "label": "red button"
+    },
+    {
+      "id": "blue",
+      "kind": "switch",
+      "label": "blue button"
+    },
+    {
+      "id": "green",
+      "kind": "switch",
+      "label": "green button"
+    },
+    {
+      "id": "door",
+      "kind": "door",
+      "label": "vault door"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Open the vault door with the right buttons.",
+    "controlsHint": "Tap a button to walk there, tap again to press it."
+  },
+  "verification": [
+    {
+      "id": "red_blue_opens",
+      "kind": "keypoint",
+      "mechanic": "switch",
+      "setup": {
+        "entityStates": {
+          "red": "on"
+        }
+      },
+      "actions": [
+        {
+          "actionId": "use",
+          "target": "blue"
+        }
+      ],
+      "assert": {
+        "locked": {
+          "door": false
+        }
+      }
+    },
+    {
+      "id": "green_blocks",
+      "kind": "keypoint",
+      "mechanic": "switch",
+      "setup": {
+        "entityStates": {
+          "red": "on",
+          "blue": "on"
+        }
+      },
+      "actions": [
+        {
+          "actionId": "use",
+          "target": "green"
+        }
+      ],
+      "assert": {
+        "locked": {
+          "door": true
+        }
+      }
+    },
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ]
+}
