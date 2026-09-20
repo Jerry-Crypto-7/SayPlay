@@ -216,7 +216,8 @@ export type RateLimitedDoor =
   | 'generate'
   | 'sessions'
   | 'changes'
-  | 'commit';
+  | 'commit'
+  | 'play';
 
 export interface RateVerdict {
   readonly allowed: boolean;
