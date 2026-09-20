@@ -122,6 +122,16 @@ describe.each<{ name: string; make: () => { store: VersionStore; kv: Map<string,
     expect(kept).toEqual(root);
   });
 
+  it('treats the same game sealed a moment later as exists, keeping the first record', async () => {
+    const { store } = make();
+    const root = publish(1, null);
+    expect(await store.put(root)).toBe('stored');
+    const later: PublishedGame = { ...root, version: { ...root.version, createdAt: '2026-09-20T12:00:00.000Z' } };
+    expect(later.version.versionId).toBe(root.version.versionId);
+    expect(await store.put(later)).toBe('exists');
+    expect((await store.get(root.version.versionId))?.version.createdAt).toBe(root.version.createdAt);
+  });
+
   it('appends children only on stored', async () => {
     const { store } = make();
     const root = publish(1, null);

@@ -60,9 +60,18 @@ interface RawStore {
   set(key: string, value: string): Promise<void>;
 }
 
-/** Jediná serializace pro zápis i pro porovnání: seřazené klíče, bez `undefined`. */
+/** Jediná serializace pro zápis: seřazené klíče, bez `undefined`. */
 function serialise(game: PublishedGame): string {
   return canonical(game);
+}
+
+/**
+ * Porovnání obsahu bez `createdAt`: `versionId` čas vzniku nenese, takže dvě
+ * souběžné publikace téže hry se liší jen jím – to je `exists`, ne `conflict`.
+ */
+function sameContent(a: PublishedGame, b: PublishedGame): boolean {
+  const strip = (game: PublishedGame): string => canonical({ ...game, version: { ...game.version, createdAt: '' } });
+  return strip(a) === strip(b);
 }
 
 function versionStoreOver(id: string, prefix: string, raw: RawStore): VersionStore {
@@ -92,7 +101,13 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore): VersionSto
       try {
         if (!(await raw.setNx(key, text))) {
           const existing = await raw.get(key);
-          return existing === text ? 'exists' : 'conflict';
+          if (existing === text) return 'exists';
+          if (existing === null) return 'conflict';
+          try {
+            return sameContent(JSON.parse(existing) as PublishedGame, game) ? 'exists' : 'conflict';
+          } catch {
+            return 'conflict';
+          }
         }
         const ancestors = game.version.parentId === null ? [] : await store.lineageOf(game.version.parentId);
         await raw.set(lineageKey(game.version.versionId), JSON.stringify([...ancestors, game.version].slice(-MAX_LINEAGE)));
