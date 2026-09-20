@@ -37,7 +37,7 @@ describe('golden corpus', () => {
   });
 
   it('carries the fifteen pack rows verbatim, with the platforming bucket mapped to hazard_crossing', () => {
-    const rows = readFileSync(CSV, 'utf8').trim().split('\n').slice(1);
+    const rows = readFileSync(CSV, 'utf8').trim().split(/\r?\n/).slice(1);
     expect(rows).toHaveLength(15);
     for (const row of rows) {
       const [bucket, prompt, mustTest] = row.split(',');
