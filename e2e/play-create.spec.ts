@@ -35,7 +35,8 @@ test.describe('/play – create', () => {
     await page.getByTestId('play-sentence').fill('A sentence the director refuses.');
     await page.getByTestId('play-create').click();
 
-    const alert = page.getByRole('alert');
+    // Route announcer Next.js nese taky `role="alert"` – hlášku dveří drží `.play-alert`.
+    const alert = page.locator('p.play-alert');
     await expect(alert).toBeVisible();
     await expect(alert).toContainText('no_loop');
     await expect(page).toHaveURL(/\/play$/);
