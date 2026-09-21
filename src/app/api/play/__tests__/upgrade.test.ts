@@ -20,6 +20,8 @@ const director = vi.hoisted(() => ({
   script: [] as unknown[],
   calls: 0,
   gate: Promise.resolve() as Promise<void>,
+  /** Režie odmítnutá vyčerpaným počtem volajícího (R8). */
+  callerLimited: false,
 }));
 
 vi.mock('../_director', async () => {
@@ -29,7 +31,8 @@ vi.mock('../_director', async () => {
     getDirector: () => async (sentence: string) => {
       director.calls += 1;
       await director.gate;
-      return direct(sentence, { branch: branchOf(director.script as ScriptedOutcome[]), now: Date.now });
+      if (director.callerLimited) return { ...(await direct(sentence, { branch: branchOf([]), now: Date.now })), callerLimited: true };
+      return { ...(await direct(sentence, { branch: branchOf(director.script as ScriptedOutcome[]), now: Date.now })), callerLimited: false };
     },
   };
 });
@@ -77,6 +80,7 @@ beforeEach(() => {
   __resetUpgrades();
   resetRateWindows();
   director.calls = 0;
+  director.callerLimited = false;
   director.script = [answered(answerFixture('good-collect_exit'))];
   director.gate = Promise.resolve();
 });
@@ -168,22 +172,31 @@ describe('GET …/upgrade', () => {
     expect(director.calls).toBe(1);
   });
 
-  it('proces bez záznamu práci sám spustí z věty u návrhu a počká na ni', async () => {
+  it('proces bez záznamu vrátí uložený draft-final a režiséra nezaplatí znovu (R10)', async () => {
     director.script = [failed('UPSTREAM_UNAVAILABLE')];
     const created = await publish({ sentence: SENTENCE });
-    await settled(created.body.versionId);
+    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
     __resetUpgrades();
     director.script = [answered(answerFixture('good-collect_exit'))];
-    const outcome = await upgrade(created.body.versionId);
+    expect(await upgrade(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
+    expect(director.calls).toBe(1);
+  });
+
+  it('vyčerpaný počet diváka se nepamatuje – další dotaz dostane vlastní pokus (revize R8)', async () => {
+    director.callerLimited = true;
+    const created = await publish({ sentence: SENTENCE });
+    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
+    director.callerLimited = false;
+    const outcome = await settled(created.body.versionId);
     expect(outcome.status).toBe('ready');
     expect((await game(outcome.versionId)).version.parentId).toBe(created.body.versionId);
-    expect(director.calls).toBe(2);
   });
 
   it('souběžné dotazy bez záznamu spustí režiséra jednou', async () => {
-    director.script = [failed('UPSTREAM_UNAVAILABLE')];
+    director.callerLimited = true;
     const created = await publish({ sentence: SENTENCE });
     await settled(created.body.versionId);
+    director.callerLimited = false;
     __resetUpgrades();
     director.script = [answered(answerFixture('good-collect_exit'))];
     director.calls = 0;
@@ -215,7 +228,7 @@ describe('GET …/upgrade', () => {
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/^\s*\/\/.*$/gm, '');
     expect(source).toContain("import { after } from 'next/server'");
-    expect(source).toMatch(/const remembered = job\.done\.then\([\s\S]*?after\(remembered\)/);
+    expect(source).toMatch(/const remembered = attempt\.then\([\s\S]*?after\(remembered\)/);
   });
 
   it('neznámé a špatné id je 404', async () => {

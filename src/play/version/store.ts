@@ -54,6 +54,13 @@ export interface VersionStore {
    * napříč instancemi. Výpadek úložiště je `VersionStoreUnavailable`.
    */
   takeDirectorCall(caller: string, limit: number): Promise<boolean>;
+  /**
+   * Proč návrh zůstal návrhem, když to už jednou někdo spočítal (R10); `null`
+   * = neví se, i při výpadku úložiště. Zápis výpadek spolkne – nejhůř se
+   * režie zaplatí znovu, jako před R10.
+   */
+  upgradeVerdict(draftId: string): Promise<string | null>;
+  rememberUpgradeVerdict(draftId: string, reason: string, ttlSeconds: number): Promise<void>;
   childrenOf(versionId: string): Promise<string[]>;
   /** Od kořene k listu, nejvýš `MAX_LINEAGE` nejnovějších záznamů. */
   lineageOf(versionId: string): Promise<GameVersion[]>;
@@ -141,6 +148,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const lineageKey = (versionId: string): string => `${prefix}:play:lineage:${versionId}`;
   const quotaKey = (): string => `${prefix}:play:quota:${quotaDay(now())}`;
   const recentKey = `${prefix}:play:recent`;
+  const verdictKey = (draftId: string): string => `${prefix}:play:upgrade-final:${draftId}`;
 
   const store: VersionStore = {
     id,
@@ -215,6 +223,20 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         return (await raw.incr(`${prefix}:play:director:${quotaDay(now())}:${caller}`, 2 * 24 * 3600)) <= limit;
       } catch (thrown) {
         throw new VersionStoreUnavailable(thrown);
+      }
+    },
+    async upgradeVerdict(draftId) {
+      try {
+        return await raw.get(verdictKey(draftId));
+      } catch {
+        return null;
+      }
+    },
+    async rememberUpgradeVerdict(draftId, reason, ttlSeconds) {
+      try {
+        await raw.set(verdictKey(draftId), reason, ttlSeconds);
+      } catch {
+        // Viz `upgradeVerdict`.
       }
     },
     async childrenOf(versionId) {
