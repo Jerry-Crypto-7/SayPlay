@@ -24,6 +24,9 @@ import { resetProcessSpendCap } from '@/server/spend-cap';
 import { acquireSlot, resetConcurrency } from '../../worldstream/sessions/route';
 import { DIRECTOR_BUDGET_MS, getDirector, MIN_CALL_MS } from '../_director';
 import { POST as createGame } from '../games/route';
+import { GET as readUpgrade } from '../games/[id]/upgrade/route';
+import { directorCallerOf, UNTRUSTED_DIRECTOR_CALLER } from '../_publish';
+import { __resetUpgrades } from '../_upgrade';
 
 // Bez sdíleného úložiště dá `directorCacheFromEnv` každé režii novou paměť;
 // test cache potřebuje jednu na celý test.
@@ -52,6 +55,7 @@ beforeEach(() => {
   __resetProcessVersionStore();
   resetRateWindows();
   resetConcurrency();
+  __resetUpgrades();
   vi.stubGlobal('fetch', () => {
     fetchCalls += 1;
     return Promise.resolve(new Response('upstream down', { status: 503 }));
@@ -182,6 +186,40 @@ describe('getDirector – kvóty a cache (R8)', () => {
     const again = await createGame(post({ sentence: SENTENCE }));
     expect(again.status).toBe(200);
     expect((await again.json()).versionId).toBe((await first.json()).versionId);
+  });
+});
+
+describe('denní počet volání režiséra – klíč z důvěryhodného konce (R12)', () => {
+  const OTHER = 'A cat delivers a fragile cake across a busy kitchen.';
+
+  async function sentenceFrom(sentence: string, headers: Record<string, string>): Promise<void> {
+    const created = await createGame(
+      new Request('http://play.test/api/play/games', { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify({ sentence }) }),
+    );
+    expect(created.status).toBe(201);
+    const { versionId } = await created.json();
+    // Práce spuštěná POSTem běží na pozadí; upgrade vrací `pending`, dokud nedoběhne.
+    await vi.waitFor(async () => {
+      const outcome = await readUpgrade(new Request(`http://play.test/api/play/games/${versionId}/upgrade`, { headers }), { params: Promise.resolve({ id: versionId }) });
+      expect((await outcome.json()).status).toBe('draft-final');
+    });
+  }
+
+  it('mimo Vercel nový x-forwarded-for počet neobnoví – bez důvěryhodného klíče sdílí volající jeden', async () => {
+    stubEnv({ ...LIVE, PLAY_DIRECTOR_CALLS_PER_CALLER: '1' });
+    await sentenceFrom(SENTENCE, { 'x-forwarded-for': '198.51.100.1' });
+    expect(fetchCalls).toBe(1);
+    await sentenceFrom(OTHER, { 'x-forwarded-for': '198.51.100.2' });
+    expect(fetchCalls, 'podvržená hlavička dala nový počet').toBe(1);
+  });
+
+  // Přes routu to změřit nejde: na `VERCEL` bez sdíleného úložiště strop
+  // utrácení placenou cestu zavře dřív, než se počet čte.
+  it('na Vercelu má každý volající z platformní hlavičky vlastní počet', () => {
+    vi.stubEnv('VERCEL', '1');
+    const from = (address: string) => directorCallerOf(new Request('http://play.test/', { headers: { 'x-vercel-forwarded-for': address } }));
+    expect(from('198.51.100.1')).not.toBe(UNTRUSTED_DIRECTOR_CALLER);
+    expect(from('198.51.100.1')).not.toBe(from('198.51.100.2'));
   });
 });
 

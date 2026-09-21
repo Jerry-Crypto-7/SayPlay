@@ -19,7 +19,7 @@ import { diversify } from '@/play/version/diversify';
 
 import { getDirector } from '../_director';
 import { fail, readJsonBody } from '../_errors';
-import { admit, callerOf, derivedSeeds, isSeed, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishRefusal, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
+import { admit, derivedSeeds, directorCallerOf, isSeed, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishRefusal, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
 import { upgradeOf } from '../_upgrade';
 
 const bodySchema = z
@@ -98,7 +98,7 @@ export async function POST(request: Request): Promise<Response> {
   if (seed !== undefined && !isSeed(seed)) return fail(400, 'BAD_REQUEST', 'seed must be a whole number from 1 to 2^31 - 1');
 
   const versions = store();
-  const caller = callerOf(request);
+  const caller = directorCallerOf(request);
   if (parentId !== null && (await parentOf(versions, parentId)) === null) return fail(404, 'UNKNOWN_PARENT', 'the parent game does not exist');
 
   if (sentence !== undefined) {

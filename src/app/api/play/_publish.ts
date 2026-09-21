@@ -88,9 +88,24 @@ export async function admit(request: Request, lever: keyof KillState = 'sessions
   return null;
 }
 
-/** Klíč volajícího pro strop frekvence i denní počet volání režiséra. */
+/** Klíč volajícího pro strop frekvence. */
 export function callerOf(request: Request): string {
   return trustedCallerKey(request) ?? callerKey(request);
+}
+
+/** Společný počet všech volajících bez důvěryhodného klíče (R12). */
+export const UNTRUSTED_DIRECTOR_CALLER = 'untrusted';
+
+/**
+ * Klíč denního počtu placených volání režiséra (R12). Jen z důvěryhodného
+ * konce řetězu: mimo Vercel (a bez ověřené proxy vlastníka) žádný není a pád
+ * `callerKey()` čte `x-forwarded-for`, kterou píše volající – každou novou
+ * hlavičkou by si počet obnovil. Takoví volající proto sdílejí jeden počet:
+ * pro poctivé horší mez, ale placená režie zůstane omezená. Lokální
+ * `next start` je jeden stroj, tam je jeden počet správně.
+ */
+export function directorCallerOf(request: Request): string {
+  return trustedCallerKey(request) ?? UNTRUSTED_DIRECTOR_CALLER;
 }
 
 export function store(): VersionStore {
