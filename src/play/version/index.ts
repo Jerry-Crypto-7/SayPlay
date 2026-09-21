@@ -1,4 +1,4 @@
-export { sealVersion, type PublishedGame } from './version';
+export { sealVersion, type PlayTimings, type PublishedGame } from './version';
 export {
   DEFAULT_WRITE_LIMITS,
   MAX_LINEAGE,

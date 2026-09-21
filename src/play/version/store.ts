@@ -97,11 +97,12 @@ function serialise(game: PublishedGame): string {
 }
 
 /**
- * Porovnání obsahu bez `createdAt`: `versionId` čas vzniku nenese, takže dvě
- * souběžné publikace téže hry se liší jen jím – to je `exists`, ne `conflict`.
+ * Porovnání obsahu bez `createdAt` a `timings`: `versionId` čas vzniku ani
+ * naměřené časy nenese, takže dvě souběžné publikace téže hry se liší jen jimi
+ * – to je `exists`, ne `conflict`.
  */
 function sameContent(a: PublishedGame, b: PublishedGame): boolean {
-  const strip = (game: PublishedGame): string => canonical({ ...game, version: { ...game.version, createdAt: '' } });
+  const strip = (game: PublishedGame): string => canonical({ ...game, timings: undefined, version: { ...game.version, createdAt: '' } });
   return strip(a) === strip(b);
 }
 

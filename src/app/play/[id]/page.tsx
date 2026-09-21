@@ -91,6 +91,7 @@ export default async function PlayGamePage({ params }: Params) {
       lineage={lineage.length > 0 ? lineage : [game.version]}
       remixes={children.length}
       lab={labFacts(game.spec, game.report)}
+      upgrade={game.origin !== undefined && game.relation === undefined ? `/api/play/games/${game.version.versionId}/upgrade` : null}
     />
   );
 }

@@ -15,7 +15,7 @@
 import { canonicalHash } from '@/ir/worlddoc';
 import type { CompileGameReason } from '@/play/contracts';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
-import { type PublishedGame, type PutOutcome, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv } from '@/play/version';
+import { type PlayTimings, type PublishedGame, type PutOutcome, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv } from '@/play/version';
 import { callerKey, rateLimitCode, takeRateSlot, trustedCallerKey } from '@/server/rate-limit';
 import { killState, type KillState } from '@/server/kill-switch';
 import { ownerIdentityRejection } from '@/server/owner-identity';
@@ -130,30 +130,53 @@ export async function publishRefusal(versions: VersionStore): Promise<Response |
   return fail(429, 'PUBLISH_QUOTA', "today's publishing quota is used up; try again tomorrow", { 'retry-after': '3600' });
 }
 
+/**
+ * Co se k publikované hře přidá mimo verzi (P23-D T2): původ návrhu, vztah
+ * upgradu a vodopád bez kompilace a kontroly – ty dvě čísla změří tahle cesta.
+ */
+export interface PublishExtras {
+  readonly origin?: PublishedGame['origin'];
+  readonly relation?: PublishedGame['relation'];
+  readonly timings?: Omit<PlayTimings, 'compileMs' | 'verifyMs'>;
+}
+
 export async function publishReadSpec(
   versions: VersionStore,
   spec: GameSpecV1,
   seeds: readonly number[],
   parentId: string | null,
+  extras: PublishExtras = {},
 ): Promise<PublishResult> {
   const compile = getCompiler();
+  const compileStarted = performance.now();
   let compiled = compile(spec, seeds[0]);
   for (const seed of seeds.slice(1)) {
     if (compiled.ok || !SEED_DEPENDENT.has(compiled.reason)) break;
     compiled = compile(spec, seed);
   }
+  const compileMs = performance.now() - compileStarted;
   if (!compiled.ok) return { ok: false, response: fail(422, compiled.reason, COMPILE_MESSAGE[compiled.reason]) };
 
   // Hra, jejíž keypoint, svědek, replay nebo rozpočet neprošel, se nepublikuje –
   // odkaz by vedl na hru, která nedělá, co slibuje.
+  const verifyStarted = performance.now();
   const report = reportFor(compiled.value);
+  const verifyMs = performance.now() - verifyStarted;
   if (!report.publishEligible) {
     const keypoints = report.keypoints.filter((keypoint) => !keypoint.passed).map((keypoint) => keypoint.assertionId);
     return { ok: false, response: fail(422, 'NOT_PUBLISHABLE', 'the game did not pass its own checks', undefined, { keypoints }) };
   }
 
   const version = sealVersion(compiled.value, parentId, Date.now);
-  const game: PublishedGame = { version, spec, blueprint: compiled.value.blueprint, report };
+  const game: PublishedGame = {
+    version,
+    spec,
+    blueprint: compiled.value.blueprint,
+    report,
+    ...(extras.origin === undefined ? {} : { origin: extras.origin }),
+    ...(extras.relation === undefined ? {} : { relation: extras.relation }),
+    ...(extras.timings === undefined ? {} : { timings: { ...extras.timings, compileMs, verifyMs } }),
+  };
 
   const existing = await versions.get(version.versionId);
   if (existing !== null) return { ok: true, value: { status: 200, game: existing } };
@@ -173,8 +196,8 @@ export async function publishReadSpec(
   return { ok: true, value: { status: outcome === 'stored' ? 201 : 200, game } };
 }
 
-/** Odpověď obou publikujících dveří: kam jít hrát. */
-export function publishedResponse(published: Published): Response {
+/** Odpověď obou publikujících dveří: kam jít hrát, u návrhu z věty i kde čekat na autorskou verzi. */
+export function publishedResponse(published: Published, upgrade = false): Response {
   const { version, spec } = published.game;
   return Response.json(
     {
@@ -183,6 +206,7 @@ export function publishedResponse(published: Published): Response {
       parentId: version.parentId,
       archetype: spec.archetype,
       url: `/play/${version.versionId}`,
+      ...(upgrade ? { upgrade: `/api/play/games/${version.versionId}/upgrade` } : {}),
     },
     { status: published.status },
   );

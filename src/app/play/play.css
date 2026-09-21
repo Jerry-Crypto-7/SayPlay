@@ -358,6 +358,22 @@
   text-align: center;
 }
 
+.play-upgrade {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+  border-radius: 999px;
+  background: var(--play-panel);
+  border: 1px solid var(--play-accent);
+  white-space: nowrap;
+}
+
 .play-outcome-title {
   margin: 0;
   font-size: 2rem;

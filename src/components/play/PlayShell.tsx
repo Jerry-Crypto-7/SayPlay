@@ -32,6 +32,7 @@ import type { LabFacts } from './lab';
 import { Lineage } from './Lineage';
 import { PostRun } from './PostRun';
 import { TargetCards } from './TargetCards';
+import { UpgradeBanner, useUpgrade } from './UpgradeBanner';
 import { keyAction, playerActor, tapAction, targetCards } from './targets';
 
 // `ssr: false` je povinné – WebGL2 kontext na serveru není a `<Canvas>` by
@@ -79,9 +80,12 @@ export interface PlayShellProps {
   readonly lineage: readonly GameVersion[];
   readonly remixes: number;
   readonly lab: LabFacts;
+  /** Adresa `GET …/upgrade`, když je hra návrh z věty; `null` = není na co čekat. */
+  readonly upgrade: string | null;
 }
 
-export function PlayShell({ versionId, spec, blueprint, lineage, remixes, lab }: PlayShellProps) {
+export function PlayShell({ versionId, spec, blueprint, lineage, remixes, lab, upgrade }: PlayShellProps) {
+  const upgraded = useUpgrade(upgrade);
   const [controller] = useState(() => bindRuntime(null, versionId, blueprint.world).controller);
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
   const [world, setWorld] = useState<ProxyWorld | null>(null);
@@ -176,6 +180,7 @@ export function PlayShell({ versionId, spec, blueprint, lineage, remixes, lab }:
       </div>
       <Hud spec={spec} snapshot={snapshot} />
       <Lineage lineage={lineage} remixes={remixes} />
+      {upgraded !== null && <UpgradeBanner versionId={upgraded} />}
       <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
       {!built && fault === null && (
         <p className="play-building" data-testid="play-building" aria-live="polite">Building the world…</p>

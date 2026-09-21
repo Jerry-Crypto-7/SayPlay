@@ -80,3 +80,13 @@ na téže roli.
   7,6 min (volný `seed`), takže `gameVersionId(fields, spec)` je od teď prvních 128 bitů
   SHA-256 nad poli verze i celým specem (32 hex). Zároveň dostaly klíče hry expiraci a
   publikace denní strop (`PLAY_VERSION_TTL_SECONDS`, `PLAY_PUBLISH_DAILY_CAP`; `put` → `quota`, routa 429 `PUBLISH_QUOTA`).
+
+## P23-D
+
+- **Progresivní hra přidala tři volitelná pole do uloženého `PublishedGame`, ne do
+  `GameVersion`** (T2, 21. 9. 2026): `origin { sentence, seed }` u návrhu z věty (upgrade jde
+  spustit i z procesu, který POST neviděl), `relation: 'upgrade'` u autorské verze návrhu
+  (`parentId` = návrh; remix pole nemá) a `timings` (`ackMs`, `draftReadyMs`, `directorMs`,
+  `compileMs`, `verifyMs`, `source`). Do `versionId` nejde nic z toho; `put` porovnává obsah
+  bez `timings`, takže táž verze s jinými časy je `exists`. `GET /api/play/games/:id` je vrací
+  beze změny tvaru ostatních polí; `POST` s větou vrací navíc `upgrade` (adresu dotazu).

@@ -5,6 +5,10 @@
  * právě jedno ze `sentence`/`spec`. Odpověď `201 { versionId, title, parentId,
  * archetype, url }`; táž hra podruhé `200` téhož tvaru. Kódy chyb a jejich
  * pořadí: `docs/play/shell.md`.
+ *
+ * Věta dostane návrh ze slov synchronně a v odpovědi navíc `upgrade` – adresu,
+ * kde se klient ptá na autorskou verzi, kterou režisér dopočítá na pozadí
+ * (`_upgrade.ts`, P23-D T2).
  */
 
 import { z } from 'zod';
@@ -14,6 +18,7 @@ import { draftGameSpec } from '@/play/draft';
 import { getDirector } from '../_director';
 import { fail, readJsonBody } from '../_errors';
 import { admit, derivedSeeds, isSeed, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishRefusal, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
+import { upgradeOf } from '../_upgrade';
 
 const bodySchema = z
   .object({
@@ -25,6 +30,7 @@ const bodySchema = z
   .strict();
 
 export async function POST(request: Request): Promise<Response> {
+  const received = performance.now();
   const refused = await admit(request);
   if (refused !== null) return refused;
 
@@ -43,13 +49,19 @@ export async function POST(request: Request): Promise<Response> {
   if (sentence !== undefined) {
     const refused = await publishRefusal(versions);
     if (refused !== null) return refused;
-    // Režisér vrací vždy hru: autorskou od modelu, nebo návrh ze slov.
-    const directed = await getDirector()(sentence);
     const seeds = seed !== undefined ? [seed] : derivedSeeds(seedFrom(sentence.trim()));
-    let published = await publishReadSpec(versions, directed.spec, seeds, parentId);
-    // Hra od modelu, která neprošla kompilací ani kontrolou, nesmí hráči vzít návrh ze slov.
-    if (!published.ok && published.response.status === 422 && directed.source !== 'draft')
-      published = await publishReadSpec(versions, draftGameSpec(sentence), seeds, parentId);
+    const ackMs = performance.now() - received;
+    // Návrh ze slov jde ven hned; autorská verze od režiséra doběhne na pozadí (T2).
+    const draft = await publishReadSpec(versions, draftGameSpec(sentence), seeds, parentId, { origin: { sentence, seed: seed ?? null } });
+    if (draft.ok) {
+      void upgradeOf(versions, draft.value.game, { sentence, seed: seed ?? null, ackMs, draftReadyMs: performance.now() - received });
+      return publishedResponse(draft.value, true);
+    }
+    if (draft.response.status !== 422) return draft.response;
+    // Návrh, který se nedá hrát, nemá co ukázat hned – věta čeká na režiséra jako před T2.
+    const directed = await getDirector()(sentence);
+    if (directed.source === 'draft') return draft.response;
+    const published = await publishReadSpec(versions, directed.spec, seeds, parentId);
     return published.ok ? publishedResponse(published.value) : published.response;
   }
 
