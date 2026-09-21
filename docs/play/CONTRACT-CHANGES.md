@@ -29,6 +29,14 @@ je proti skutečnému světu měkký. **Návrh pro P23-D:** přepsat `cost` na v
 `chaser` buď zastropovat plochou mřížky, nebo nechat kompilátor vydat pásma, až bude hledač
 umět více než jeden `moveTo` na tik.
 
+**Vyřešeno 21. 9. 2026 (P23-D R1):** `cost` sedmi mechanik počítá podle tabulky a z počtu
+instancí rolí, ne z parametrů; `chaser` bere horní mez plochy mřížky (`maxLayoutCells` přes
+všechny hody kompilátoru – mřížka se přestěhovala do registru jako `LAYOUT_GRID`), `carry`
+počet chodců z druhů rolí. Navíc `patrol`: mysl `1 + stops × 3` plus `touch` na instanci
+(odhad byl o jedno pravidlo pod `delivery`). `registry-cost.test.ts` drží skutečný počet
+pravidel světa (`ir.rules` včetně `sys.moveTo` a myslí) ≤ odhad nad všemi fixturami,
+semínka 1–8; po opravě `collect_exit` 14 / 14, `chase_escape` 76 / 77, `delivery` 19 / 19.
+
 ### `property_transform.from` mimo výchozí stav role (T7)
 
 Výchozí stav entity dává druh role (`INITIAL_STATE` v `compile/sim.ts`: `exit` → `open`,

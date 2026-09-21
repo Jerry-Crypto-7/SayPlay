@@ -13,6 +13,7 @@
  * takže `LAYOUT_FAILED` zbývá jen pro spec, který se na mřížku nevejde.
  */
 
+import { LAYOUT_GRID, layoutGridSize } from '../registry';
 import type { GameRole, GameSpecV1, RoleKind } from '../spec';
 import { type CompileRng, createCompileRng } from './rng';
 
@@ -40,12 +41,7 @@ export const GOAL_KINDS: readonly RoleKind[] = ['exit', 'destination'];
 export const ZONE_KINDS: readonly RoleKind[] = ['exit', 'destination', 'hazard', 'checkpoint', 'zone', 'door'];
 
 const GRID = {
-  minWidth: 8,
-  minHeight: 6,
-  maxWidth: 24,
-  maxHeight: 16,
-  /** Kolik buněk mřížky připadá na jednu instanci role. */
-  cellsPerInstance: 5,
+  ...LAYOUT_GRID,
   /** Podíl překážek na prvním pokusu; každý další pokus ho snižuje až na nulu. */
   obstacleShare: 0.08,
   attempts: 6,
@@ -63,7 +59,6 @@ interface Instance {
 
 const key = ([x, y]: Cell): string => `${x},${y}`;
 const manhattan = ([ax, ay]: Cell, [bx, by]: Cell): number => Math.abs(ax - bx) + Math.abs(ay - by);
-const clamp = (value: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, value));
 
 /**
  * Hráč první, cíle hned po něm (potřebují volné vzdálené buňky), hazardy
@@ -81,10 +76,8 @@ function expandInstances(spec: GameSpecV1): Instance[] {
 }
 
 function gridSize(instances: number, rng: CompileRng): { width: number; height: number } {
-  const area = Math.max(GRID.minWidth * GRID.minHeight, instances * GRID.cellsPerInstance);
-  const width = clamp(Math.ceil(Math.sqrt(area * 1.5)) + rng.int(0, 2), GRID.minWidth, GRID.maxWidth);
-  const height = clamp(Math.ceil(area / width) + rng.int(0, 1), GRID.minHeight, GRID.maxHeight);
-  return { width, height };
+  const dw = rng.int(0, 2);
+  return layoutGridSize(instances, dw, rng.int(0, 1));
 }
 
 function rectCells([x, y, w, h]: Rect): Cell[] {
