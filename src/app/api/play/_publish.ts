@@ -75,7 +75,7 @@ export async function admit(request: Request, lever: keyof KillState = 'sessions
   if ((await killState(process.env))[lever]) return fail(503, 'DISABLED', 'this part of PLAY is switched off right now');
   const identity = ownerIdentityRejection(request);
   if (identity !== null) return identity;
-  const slot = takeRateSlot('play', trustedCallerKey(request) ?? callerKey(request));
+  const slot = takeRateSlot('play', callerOf(request));
   if (!slot.allowed) {
     const code = rateLimitCode(slot);
     return fail(
@@ -86,6 +86,11 @@ export async function admit(request: Request, lever: keyof KillState = 'sessions
     );
   }
   return null;
+}
+
+/** Klíč volajícího pro strop frekvence i denní počet volání režiséra. */
+export function callerOf(request: Request): string {
+  return trustedCallerKey(request) ?? callerKey(request);
 }
 
 export function store(): VersionStore {

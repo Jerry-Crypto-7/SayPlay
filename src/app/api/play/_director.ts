@@ -16,6 +16,7 @@
  */
 
 import { direct, directorCacheFromEnv, type DirectedGame } from '@/play/director';
+import { VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { killState } from '@/server/kill-switch';
 import type { GenerationBranch } from '@/server/pipeline';
 import { costUsd, processSpendCap } from '@/server/spend-cap';
@@ -41,8 +42,30 @@ export const DIRECTOR_BUDGET_MS = 270_000;
 /** Pod tohle volání neodejde: odpověď astry trvá v mediánu desítky sekund. */
 export const MIN_CALL_MS = 30_000;
 
+/**
+ * Kolik placených volání režiséra smí jeden volající za den (R8). Věta stojí
+ * 1–3 volání, takže výchozích 40 je 13–40 vět; bez meze by jeden volající
+ * různými větami vyčerpal sdílený `DEFAULT_CALL_CAP` celého dema.
+ */
+export const DEFAULT_DIRECTOR_CALLS_PER_CALLER = 40;
+
+function callsPerCaller(env: Record<string, string | undefined>): number {
+  const value = Number(env.PLAY_DIRECTOR_CALLS_PER_CALLER);
+  return Number.isInteger(value) && value > 0 ? value : DEFAULT_DIRECTOR_CALLS_PER_CALLER;
+}
+
+/** Počítadlo volajícího; nedostupné úložiště volání nepustí. */
+async function callerAllows(caller: string, env: Record<string, string | undefined>): Promise<boolean> {
+  try {
+    return await versionStoreFromEnv(env).takeDirectorCall(caller, callsPerCaller(env));
+  } catch (thrown) {
+    if (thrown instanceof VersionStoreUnavailable) return false;
+    throw thrown;
+  }
+}
+
 /** Živá větev obalená stropem; `null` = model se volat nebude. */
-async function cappedBranch(env: Record<string, string | undefined>, deadline: number): Promise<GenerationBranch | null> {
+async function cappedBranch(env: Record<string, string | undefined>, deadline: number, caller: string): Promise<GenerationBranch | null> {
   if (env.WORLDSMITH_BRANCH !== 'live') return null;
   if ((await killState(env)).upstream) return null;
   const config = upstreamConfigFromEnv(env);
@@ -59,6 +82,7 @@ async function cappedBranch(env: Record<string, string | undefined>, deadline: n
         console.warn(`[play] director call skipped: ${String(Math.round(left / 1000))} s left of the route budget`);
         return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'too little time left in the route', usage: null };
       }
+      if (!(await callerAllows(caller, env))) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: "the caller's daily director calls are used up", usage: null };
       const bounded = left < config.timeoutMs ? upstreamBranch({ ...config, timeoutMs: left }) : branch;
       const reservation = await cap.reserve(branch.worstCaseUsd(call));
       if (!reservation.ok) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'spend cap refused the call', usage: null };
@@ -74,7 +98,11 @@ async function cappedBranch(env: Record<string, string | undefined>, deadline: n
   };
 }
 
-/** Větev bez modelu: `direct()` z ní udělá návrh ze slov, nikam se nevolá. */
+/**
+ * Větev bez modelu: `direct()` z ní udělá návrh ze slov, nikam se nevolá.
+ * Má totéž `id` (`'live'`) jako živá, takže bez slotu se cache čte pod týmž
+ * klíčem a táž věta dá tutéž hru bez ohledu na zátěž (R8).
+ */
 const NO_MODEL: GenerationBranch = upstreamBranch(null);
 
 /**
@@ -87,11 +115,11 @@ const NO_MODEL: GenerationBranch = upstreamBranch(null);
  *
  * `startedAt` je příchod požadavku (`Date.now()`), jehož `maxDuration` režii drží.
  */
-export function getDirector(startedAt: number): Director {
+export function getDirector(startedAt: number, caller: string): Director {
   return async (sentence) => {
     const deadline = startedAt + DIRECTOR_BUDGET_MS;
     const cache = directorCacheFromEnv(process.env);
-    const branch = await cappedBranch(process.env, deadline);
+    const branch = await cappedBranch(process.env, deadline, caller);
     if (branch === null || !acquireSlot('play')) return direct(sentence, { branch: NO_MODEL, cache, now: Date.now });
     try {
       return await direct(sentence, { branch, cache, now: Date.now });

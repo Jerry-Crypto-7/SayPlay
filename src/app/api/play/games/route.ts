@@ -19,7 +19,7 @@ import { diversify } from '@/play/version/diversify';
 
 import { getDirector } from '../_director';
 import { fail, readJsonBody } from '../_errors';
-import { admit, derivedSeeds, isSeed, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishRefusal, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
+import { admit, callerOf, derivedSeeds, isSeed, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishRefusal, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
 import { upgradeOf } from '../_upgrade';
 
 const bodySchema = z
@@ -98,22 +98,26 @@ export async function POST(request: Request): Promise<Response> {
   if (seed !== undefined && !isSeed(seed)) return fail(400, 'BAD_REQUEST', 'seed must be a whole number from 1 to 2^31 - 1');
 
   const versions = store();
+  const caller = callerOf(request);
   if (parentId !== null && (await parentOf(versions, parentId)) === null) return fail(404, 'UNKNOWN_PARENT', 'the parent game does not exist');
 
   if (sentence !== undefined) {
+    // Vyčerpaná kvóta ještě nezavírá: už publikovaná věta je `200` (R8) –
+    // `publishReadSpec` čte dřív, než píše, a novou hru úložiště odmítne samo.
     const refused = await publishRefusal(versions);
-    if (refused !== null) return refused;
+    if (refused !== null && refused.status !== 429) return refused;
     const seeds = seed !== undefined ? [seed] : derivedSeeds(seedFrom(sentence.trim()));
     const ackMs = performance.now() - received;
     // Návrh ze slov jde ven hned; autorská verze od režiséra doběhne na pozadí (T2).
     const draft = await publishReadSpec(versions, draftGameSpec(sentence), seeds, parentId, { origin: { sentence, seed: seed ?? null } });
     if (draft.ok) {
-      void upgradeOf(versions, draft.value.game, { sentence, seed: seed ?? null, ackMs, draftReadyMs: performance.now() - received, startedAt });
+      void upgradeOf(versions, draft.value.game, { sentence, seed: seed ?? null, ackMs, draftReadyMs: performance.now() - received, startedAt, caller });
       return publishedResponse(draft.value, true);
     }
     if (draft.response.status !== 422) return draft.response;
+    if (refused !== null) return refused;
     // Návrh, který se nedá hrát, nemá co ukázat hned – věta čeká na režiséra jako před T2.
-    const directed = await getDirector(startedAt)(sentence);
+    const directed = await getDirector(startedAt, caller)(sentence);
     if (directed.source === 'draft') return draft.response;
     const published = await publishReadSpec(versions, directed.spec, seeds, parentId);
     return published.ok ? publishedResponse(published.value) : published.response;

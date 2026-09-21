@@ -12,7 +12,7 @@
  */
 
 import { notFound, VERSION_ID_PATTERN } from '../../../_errors';
-import { admit, store } from '../../../_publish';
+import { admit, callerOf, store } from '../../../_publish';
 import { knownUpgrade, type UpgradeStatus, upgradeOf } from '../../../_upgrade';
 
 const UPGRADE_WAIT_MS = 25_000;
@@ -45,7 +45,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const waited = new Promise<UpgradeStatus>((resolve) => {
     timer = setTimeout(() => resolve({ status: 'pending' }), UPGRADE_WAIT_MS);
   });
-  const done = upgradeOf(versions, draft, { ...draft.origin, ackMs: null, draftReadyMs: null, startedAt });
+  const done = upgradeOf(versions, draft, { ...draft.origin, ackMs: null, draftReadyMs: null, startedAt, caller: callerOf(request) });
   try {
     return answer(await Promise.race([done, waited]));
   } finally {

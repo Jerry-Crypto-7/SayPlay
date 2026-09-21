@@ -48,6 +48,12 @@ export interface VersionStore {
    * dřív, než kvůli publikaci zaplatí model. Výpadek úložiště je `VersionStoreUnavailable`.
    */
   canPublish(): Promise<boolean>;
+  /**
+   * Započte jedno placené volání režiséra volajícímu na dnešek; `false` = byl
+   * by nad `limit` (R8). Denní počítadlo leží vedle kvóty publikací, sdílené
+   * napříč instancemi. Výpadek úložiště je `VersionStoreUnavailable`.
+   */
+  takeDirectorCall(caller: string, limit: number): Promise<boolean>;
   childrenOf(versionId: string): Promise<string[]>;
   /** Od kořene k listu, nejvýš `MAX_LINEAGE` nejnovějších záznamů. */
   lineageOf(versionId: string): Promise<GameVersion[]>;
@@ -203,6 +209,13 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         throw new VersionStoreUnavailable(thrown);
       }
       return text === null || Number(text) < limits.dailyCap;
+    },
+    async takeDirectorCall(caller, limit) {
+      try {
+        return (await raw.incr(`${prefix}:play:director:${quotaDay(now())}:${caller}`, 2 * 24 * 3600)) <= limit;
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
     },
     async childrenOf(versionId) {
       try {
