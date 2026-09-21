@@ -61,10 +61,12 @@ function witnessOps(witness: unknown): readonly { readonly tick: number; readonl
   if (!Array.isArray(ops)) return [];
   return ops
     .map((op) => op as { readonly tick?: unknown; readonly actor?: unknown; readonly actionId?: unknown; readonly target?: unknown })
-    .filter((op) => typeof op.actor === 'string' && typeof op.actionId === 'string')
+    // Svědek kompilátoru PLAY herce nepíše (hraje vždy hráč); `playWitness` ho
+    // doplní z akcí runtime. Svědek bez herce i bez hráče nemá kdo zahrát.
+    .filter((op) => typeof op.actionId === 'string')
     .map((op) => ({
       tick: typeof op.tick === 'number' ? op.tick : 0,
-      action: { actor: op.actor as string, actionId: op.actionId as string, ...(typeof op.target === 'string' ? { target: op.target } : {}) },
+      action: { actor: typeof op.actor === 'string' ? op.actor : '', actionId: op.actionId as string, ...(typeof op.target === 'string' ? { target: op.target } : {}) },
     }))
     .sort((a, b) => a.tick - b.tick);
 }

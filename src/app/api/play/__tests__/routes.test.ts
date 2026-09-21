@@ -16,10 +16,15 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import collectExit from '@/play/__fixtures__/collect_exit.json';
+import switchPuzzle from '@/play/__fixtures__/switch_puzzle.json';
+import { GAME_COMPILER_VERSION } from '@/play/contracts';
+import { STARTERS } from '@/components/play/starters';
+import { draftGameSpec } from '@/play/draft';
 import { __resetProcessVersionStore, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { MAX_BODY_BYTES } from '@/http/body';
 import { resetRateWindows } from '@/server/rate-limit';
 
+import { seedFrom } from '../_publish';
 import { POST as createGame } from '../games/route';
 import { GET as readGame } from '../games/[id]/route';
 import { POST as remixGame } from '../games/[id]/remix/route';
@@ -69,11 +74,8 @@ describe('publikace → čtení → remix → rodokmen', () => {
   it('201 s odkazem, GET 200 s celou hrou, remix 201 s rodičem, rodokmen na obou stranách', async () => {
     const created = await publish('Collect five glowing mushrooms in a moonlit forest');
     expect(created.status).toBe(201);
-    expect(created.body).toMatchObject({
-      parentId: null,
-      archetype: 'collect_exit',
-      title: 'Collect five glowing mushrooms in a moonlit forest',
-    });
+    // Titulek píše návrh ze slov („Collect Five Glowing Mushrooms"), ne opis věty.
+    expect(created.body).toMatchObject({ parentId: null, archetype: 'collect_exit', title: 'Collect Five Glowing Mushrooms' });
     expect(created.body.versionId).toMatch(/^[a-f0-9]{8,64}$/);
     expect(created.body.url).toBe(`/play/${created.body.versionId}`);
 
@@ -304,7 +306,7 @@ describe('Oracle', () => {
     expect((await read(created.body.versionId)).status).toBe(503);
   });
 
-  it('(4b) hluboko vnořený spec je 422, ne pád; semínko nemění svět', async () => {
+  it('(4b) hluboko vnořený spec je 422, ne pád; semínko je součást verze i rozvržení', async () => {
     // Tělo se skládá textem: `JSON.stringify` by na téže hloubce spadl dřív než dveře.
     const response = await createGame(post('/api/play/games', `{"spec":${'['.repeat(20_000)}${']'.repeat(20_000)}}`));
     expect(response.status).toBe(422);
@@ -314,7 +316,7 @@ describe('Oracle', () => {
     const two = await createGame(post('/api/play/games', { spec: collectExit, seed: 2 }));
     const [a, b] = [await (await read((await one.json()).versionId)).body, await (await read((await two.json()).versionId)).body];
     expect(a.version.versionId).not.toBe(b.version.versionId);
-    expect(a.version.worldHash).toBe(b.version.worldHash);
+    expect(a.version.worldHash).not.toBe(b.version.worldHash);
   });
 
   it('chip mimo seznam a remix bez těla → 400', async () => {
@@ -323,5 +325,57 @@ describe('Oracle', () => {
       const response = await remixGame(post(`/api/play/games/${created.body.versionId}/remix`, body), params(created.body.versionId));
       expect(response.status).toBe(400);
     }
+  });
+});
+
+/** Semínko z věty o dortu, na kterém rozvržení návrhu prohraje ve 6. tiku (naměřeno 21. 9. 2026). */
+const UNWINNABLE_DELIVERY_SEED = 1964188670;
+
+describe('skutečný kompilátor, verifikátor a režisér (P23-D T1)', () => {
+  it('osm startovních vět → osm různých archetypů; každá 201 a GET nese ověřené keypointy', async () => {
+    const archetypes = new Set<string>();
+    for (const starter of STARTERS) {
+      const created = await publish(starter.sentence);
+      expect(created.status, starter.sentence).toBe(201);
+      expect(created.body.archetype, starter.sentence).toBe(starter.archetype);
+      archetypes.add(created.body.archetype);
+      const game = await read(created.body.versionId);
+      expect(game.body.version.compilerVersion).toBe(GAME_COMPILER_VERSION);
+      expect(game.body.report.keypoints.length, starter.sentence).toBeGreaterThan(0);
+      expect(game.body.report.publishEligible, starter.sentence).toBe(true);
+      expect('stub' in game.body.report).toBe(false);
+    }
+    expect(archetypes.size).toBe(8);
+  });
+
+  it('spec, jehož keypoint neprojde, je 422 NOT_PUBLISHABLE s ids a nic se neuložilo', async () => {
+    const spec = structuredClone(switchPuzzle) as { mechanics: { id: string; params: Record<string, unknown> }[] };
+    spec.mechanics.find((mechanic) => mechanic.id === 'switch')!.params.required = ['red', 'blue', 'green'];
+    const store = versionStoreFromEnv(process.env);
+    const put = vi.spyOn(store, 'put');
+    const response = await createGame(post('/api/play/games', { spec }));
+    expect(response.status).toBe(422);
+    const json = await response.json();
+    expect(json.error.code).toBe('NOT_PUBLISHABLE');
+    expect(json.error.keypoints).toContain('green_blocks');
+    expect(put).not.toHaveBeenCalled();
+  });
+
+  it('semínko zvolené volajícím se nemění: nevyhratelné rozvržení je 422 UNWINNABLE, bez semínka se hra najde', async () => {
+    const spec = draftGameSpec('Carry a fragile cake across a kitchen to a party table.');
+    const pinned = await createGame(post('/api/play/games', { spec, seed: UNWINNABLE_DELIVERY_SEED }));
+    expect(pinned.status).toBe(422);
+    expect((await pinned.json()).error.code).toBe('UNWINNABLE');
+    // Věta sama vede na totéž odvozené semínko; dveře zkusí další a hra vznikne.
+    expect(seedFrom('Carry a fragile cake across a kitchen to a party table.')).toBe(UNWINNABLE_DELIVERY_SEED);
+    expect((await publish('Carry a fragile cake across a kitchen to a party table.')).status).toBe(201);
+  });
+
+  it('čip harder jde přes remixPatch režiséra a dítě je publikovatelné', async () => {
+    const created = await publish('Collect five glowing mushrooms then open a portal.');
+    const remixed = await remixGame(post(`/api/play/games/${created.body.versionId}/remix`, { chip: 'harder' }), params(created.body.versionId));
+    expect(remixed.status).toBe(201);
+    const child = await read((await remixed.json()).versionId);
+    expect(child.body.report.publishEligible).toBe(true);
   });
 });

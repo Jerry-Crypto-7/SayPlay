@@ -22,7 +22,7 @@ import { ownerIdentityRejection } from '@/server/owner-identity';
 
 import { getCompiler } from './_compiler';
 import { fail, VERSION_ID_PATTERN } from './_errors';
-import { stubReport } from './_report';
+import { reportFor } from './_report';
 
 /** Nejdelší věta, kterou dveře vezmou. Delší je 413, ne oříznutí. */
 export const MAX_SENTENCE_CHARS = 500;
@@ -33,6 +33,20 @@ export const MAX_SEED = 2 ** 31;
 export function seedFrom(value: unknown): number {
   return (Number.parseInt(canonicalHash(value).slice(0, 8), 16) % (MAX_SEED - 1)) + 1;
 }
+
+/**
+ * Semínka, která dveře zkusí, když si volající žádné nevybral: odvozené a za
+ * ním tři další, pořád deterministicky z něj. Rozvržení na některém semínku
+ * umí vyjít nevyhratelné (naměřeno 21. 9. 2026: návrh „fragile cake" na
+ * semínku z věty prohraje ve 6. tiku, na semínkách 1–3 vyhraje) – věta se
+ * kvůli tomu nemá stát chybou. Semínko zvolené volajícím se nemění nikdy.
+ */
+export function derivedSeeds(base: number): readonly number[] {
+  return [base, ...[1, 2, 3].map((attempt) => seedFrom({ base, attempt }))];
+}
+
+/** Důvody kompilace, které závisí na rozvržení, a proto má smysl zkusit jiné semínko. */
+const SEED_DEPENDENT: ReadonlySet<CompileGameReason> = new Set(['UNWINNABLE', 'LAYOUT_FAILED']);
 
 export function isSeed(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= MAX_SEED;
@@ -104,14 +118,27 @@ export function readSpecOrFail(input: unknown): SpecRead {
 export async function publishReadSpec(
   versions: VersionStore,
   spec: GameSpecV1,
-  seed: number,
+  seeds: readonly number[],
   parentId: string | null,
 ): Promise<PublishResult> {
-  const compiled = getCompiler()(spec, seed);
+  const compile = getCompiler();
+  let compiled = compile(spec, seeds[0]);
+  for (const seed of seeds.slice(1)) {
+    if (compiled.ok || !SEED_DEPENDENT.has(compiled.reason)) break;
+    compiled = compile(spec, seed);
+  }
   if (!compiled.ok) return { ok: false, response: fail(422, compiled.reason, COMPILE_MESSAGE[compiled.reason]) };
 
+  // Hra, jejíž keypoint, svědek, replay nebo rozpočet neprošel, se nepublikuje –
+  // odkaz by vedl na hru, která nedělá, co slibuje.
+  const report = reportFor(compiled.value);
+  if (!report.publishEligible) {
+    const keypoints = report.keypoints.filter((keypoint) => !keypoint.passed).map((keypoint) => keypoint.assertionId);
+    return { ok: false, response: fail(422, 'NOT_PUBLISHABLE', 'the game did not pass its own checks', undefined, { keypoints }) };
+  }
+
   const version = sealVersion(compiled.value, parentId, Date.now);
-  const game: PublishedGame = { version, spec, blueprint: compiled.value.blueprint, report: stubReport(compiled.value) };
+  const game: PublishedGame = { version, spec, blueprint: compiled.value.blueprint, report };
 
   const existing = await versions.get(version.versionId);
   if (existing !== null) return { ok: true, value: { status: 200, game: existing } };
