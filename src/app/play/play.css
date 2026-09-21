@@ -487,3 +487,8 @@
     overflow-y: auto;
   }
 }
+
+a.play-button {
+  display: inline-block;
+  text-decoration: none;
+}
