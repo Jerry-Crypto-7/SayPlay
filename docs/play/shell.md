@@ -75,3 +75,49 @@ kniha stropu (`sharedStoreFromEnv`, klíče `<prefix>:play:v:<id>`, `<prefix>:pl
 `npx vitest run src/play src/app/api/play` – dvojníci (`stubs.test.ts`), verze a úložiště
 (`version.test.ts`, oba backendy), čipy (`chips.test.ts`), routy s osmi poli Oracle
 (`routes.test.ts`, handlery volané přímo).
+
+## Stránky
+
+| Adresa | Soubor | Co dělá |
+|---|---|---|
+| `/play` | `src/app/play/page.tsx`, `src/components/play/CreateGame.tsx` | věta → `POST /api/play/games` → přechod na `/play/<id>`; osm startovních karet |
+| `/play/<id>` | `src/app/play/[id]/page.tsx`, `src/components/play/PlayShell.tsx` | hra: plátno, HUD, karty cílů, konec, po dohrání, rodokmen, „How this game works“ |
+| `/play/<neznámé id>` | `src/app/play/[id]/not-found.tsx` | 404 s větou `This game does not exist or has expired.` a odkazem na `/play` |
+| `GET /api/play/games/:id/og` | `src/app/api/play/games/[id]/og/route.ts`, `_og.ts` | PNG 1200×630 podle `spec.theme.mood`, `s-maxage=3600`; neznámé id 404 JSON |
+
+Stránka hry čte úložiště verzí přímo (ne přes HTTP), bez přihlášení a bez kroku „create“.
+`generateMetadata` dává `<title>` `<titul> – WORLDSTREAM PLAY`, `og:description` = `tutorial.goalLine`
+a absolutní `og:image` složený z hlaviček požadavku (kořenový layout `metadataBase` nemá).
+
+**Ovládání „klepni na cíl“** (`targets.ts`): karta na každý cíl hráče z `controller.actions`,
+popisek z `blueprint.objects[].label`. První klepnutí `moveTo`, druhé na tutéž kartu `pickup`
+nebo `use`, když je svět pro ten cíl deklaruje (jinak karta hlásí `Move here`). Klávesy 1–9,
+mezerník, E přes `intentFromKey`. Klepnutí přímo na mesh v plátně není – vyžadovalo by zásah
+do `WorldstreamCanvas.tsx` (nález pro P23-D). Autorské světy dvojníka nabízejí jen `moveTo`.
+
+**Hodiny:** `setInterval` po 50 ms volá `advanceTicks(1)`, dokud hra běží, svět je postavený
+a záložka je vidět. **Replay** přetočí runtime na tik 0 (`observeAt(0)`) a nechá hodiny
+přehrát uložené vstupy – nic se nepřipíše, konec je tentýž tik.
+
+**Po dohrání:** čipy `play-chip-<harder|twist|swap_enemy|reskin>` → `POST …/remix` → nová
+stránka (shell má `key` = id verze, takže dostane nový runtime). `CHALLENGE A FRIEND` kopíruje
+adresu; bez schránky ukáže pole s adresou. Měď čipů je opis `CHIP_LABELS` ve `starters.ts`
+(klient nesmí táhnout zod přes `src/play/remix`), test ji drží proti balíčku i remixu.
+
+**„How this game works“:** věty skládá server (`lab.ts` – registr mechanik zůstává mimo
+klientský bundl): mechaniky s vysvětlením a parametry, `Rules checked: N/M`,
+`Winnable at tick T` / `Not proven`, `Replay: identical` / `stub`, zkrácené id a předci.
+
+## Sonda `window.__playShell`
+
+Jen pro e2e, stejný vzor jako `__worldstreamStage`: `inputs()` (vstupní log runtime),
+`tick()`, `playWitness()` – přehraje `witness.ops` světa posunuté o aktuální tik a dotočí běh
+do konce (strop 3 600 tiků), vrací `{ runState, tick }`.
+
+## e2e
+
+`E2E_PORT=3121 npx playwright test --project=chromium e2e/play-*.spec.ts` – 14 testů, ~2 min
+včetně buildu. `play-create` (formulář), `play-shell` (HUD, tik, klepnutí, mobil 390×844,
+svědek → `You won`), `play-postrun` (Replay, čip → jiné id a rodokmen, sdílení),
+`play-share` (čistý kontext, OG meta a PNG, 404), `play-language` (lexikální filtr z
+`interface-language.spec.ts` nad všemi obrazovkami a otevřeným panelem). Po běhu `git status`.

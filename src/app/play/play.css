@@ -180,3 +180,370 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* ---------------------------------------------------------------- *
+ * PLAY shell (`/play/[id]`): plátno přes celou výšku, HUD nahoře,
+ * karty cílů dole, overlay konce přes střed. Žádný `.ws-*` slot.
+ * ---------------------------------------------------------------- */
+.play-shell {
+  position: relative;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.play-stage {
+  position: absolute;
+  inset: 0;
+}
+
+.play-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.play-hud {
+  position: relative;
+  z-index: 1;
+  margin: 16px;
+  padding: 12px 16px;
+  max-width: 420px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid var(--play-line);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+}
+
+.play-hud-title {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--play-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.play-hud-goal {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.play-hud-hint {
+  margin: 4px 0 0;
+  color: var(--play-muted);
+  font-size: 0.9rem;
+}
+
+.play-hud-progress {
+  margin: 8px 0 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--play-accent);
+  font-weight: 600;
+}
+
+.play-hud-tick {
+  color: var(--play-muted);
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.play-building {
+  position: relative;
+  z-index: 1;
+  margin: 0 16px;
+  color: var(--play-accent);
+  font-size: 0.95rem;
+}
+
+.play-shell .play-alert {
+  position: relative;
+  z-index: 1;
+  margin: 0 16px;
+}
+
+.play-targets {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0));
+}
+
+.play-targets-empty {
+  position: relative;
+  z-index: 1;
+  margin: auto 16px 16px;
+  color: var(--play-muted);
+}
+
+.play-target {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--play-line);
+  background: var(--play-panel);
+  color: var(--play-text);
+  font: inherit;
+  cursor: pointer;
+  max-width: 100%;
+}
+
+.play-target:hover:not(:disabled) {
+  border-color: var(--play-action);
+}
+
+.play-target[aria-pressed='true'] {
+  background: var(--play-action);
+  border-color: var(--play-action);
+}
+
+.play-target:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.play-target-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(241, 245, 249, 0.12);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.play-target-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.play-target-next {
+  color: var(--play-accent);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.play-target[aria-pressed='true'] .play-target-next {
+  color: #fff;
+}
+
+.play-outcome {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  padding: 24px 32px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--play-accent);
+  text-align: center;
+}
+
+.play-outcome-title {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+}
+
+.play-outcome-detail {
+  margin: 6px 0 0;
+  color: var(--play-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 480px) {
+  .play-hud {
+    margin: 10px;
+    padding: 10px 12px;
+    max-width: none;
+  }
+
+  .play-hud-goal {
+    font-size: 1rem;
+  }
+
+  .play-targets {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  }
+
+  .play-target {
+    flex: 0 0 auto;
+  }
+
+  .play-outcome {
+    width: calc(100% - 32px);
+    padding: 20px;
+  }
+}
+
+/* Po dohrání (T6): Replay, CHANGE ONE THING, CHALLENGE A FRIEND, rodokmen. */
+.play-lineage {
+  position: relative;
+  z-index: 1;
+  margin: 0 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: var(--play-muted);
+  font-size: 0.85rem;
+}
+
+.play-lineage a {
+  color: var(--play-accent);
+}
+
+.play-lineage-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.play-postrun {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.play-postrun-title {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  color: var(--play-muted);
+}
+
+.play-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.play-chip {
+  border: 1px solid var(--play-line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: var(--play-panel);
+  color: var(--play-text);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.play-chip:hover:not(:disabled) {
+  border-color: var(--play-accent);
+}
+
+.play-chip:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.play-share {
+  background: var(--play-accent);
+  color: var(--play-bg);
+}
+
+.play-button.play-share:hover:not(:disabled) {
+  background: #d97706;
+}
+
+.play-share-url {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--play-line);
+  background: var(--play-panel);
+  color: var(--play-text);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 480px) {
+  .play-outcome {
+    top: 45%;
+    max-height: 80dvh;
+    overflow-y: auto;
+  }
+}
+
+a.play-button {
+  display: inline-block;
+  text-decoration: none;
+}
+
+/* „How this game works“ (T8): sbalený, nad plátnem, pod rodokmenem. */
+.play-lab {
+  position: relative;
+  z-index: 1;
+  margin: 8px 16px 0;
+  max-width: 420px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid var(--play-line);
+  font-size: 0.85rem;
+  color: var(--play-muted);
+}
+
+.play-lab[open] {
+  max-height: 40dvh;
+  overflow-y: auto;
+}
+
+.play-lab summary {
+  cursor: pointer;
+  color: var(--play-text);
+}
+
+.play-lab-mechanics {
+  margin: 8px 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+}
+
+.play-lab-mechanics strong {
+  color: var(--play-text);
+  text-transform: capitalize;
+}
+
+.play-lab-params {
+  display: block;
+  color: var(--play-accent);
+  font-size: 0.8rem;
+}
+
+.play-lab-quality,
+.play-lab-version {
+  margin: 4px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 480px) {
+  .play-lab {
+    margin: 6px 10px 0;
+    max-width: none;
+  }
+}

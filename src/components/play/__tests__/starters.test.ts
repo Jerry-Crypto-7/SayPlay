@@ -6,8 +6,9 @@ import { describe, expect, it } from 'vitest';
 import { MAX_SENTENCE_CHARS } from '@/app/api/play/_publish';
 import { archetypeFor } from '@/app/api/play/_director';
 import { ARCHETYPES } from '@/play/registry';
+import { CHIP_LABELS, CHIPS } from '@/play/remix';
 
-import { BUILD_STEPS, HERO, PLACEHOLDER, SENTENCE_LIMIT, STARTERS, SUBHEAD } from '../starters';
+import { BUILD_STEPS, CHALLENGE_A_FRIEND, CHANGE_ONE_THING, HERO, PLACEHOLDER, POST_RUN_CHIPS, SENTENCE_LIMIT, STARTERS, SUBHEAD } from '../starters';
 
 /**
  * Stránka `/play` vypadá hotově i s kartou, která pošle větu na cizí archetyp,
@@ -53,6 +54,14 @@ describe('měď z PRODUCT_COPY.md', () => {
     expect(HERO).toBe(copyLine('Hero'));
     expect(SUBHEAD).toBe(copyLine('Subhead'));
     expect(PLACEHOLDER).toBe(copyLine('Placeholder'));
+  });
+
+  it('po dohrání: nadpis, sdílení a čipy doslova z balíčku, čipy v pořadí a se jmény z remixu', () => {
+    expect(CHANGE_ONE_THING).toBe(copyLine('Post-run'));
+    expect(CHALLENGE_A_FRIEND).toBe(copyLine('Share'));
+    expect(POST_RUN_CHIPS.map((entry) => entry.label)).toEqual(copyLine('Chips').replace(/.$/, '').split(' / '));
+    expect(POST_RUN_CHIPS.map((entry) => entry.chip)).toEqual([...CHIPS]);
+    for (const entry of POST_RUN_CHIPS) expect(entry.label).toBe(CHIP_LABELS[entry.chip]);
   });
 
   it('stavový řádek jde přes čtyři stavy v pořadí balíčku', () => {

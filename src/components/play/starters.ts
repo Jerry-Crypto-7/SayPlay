@@ -35,3 +35,19 @@ export const STARTERS: readonly Starter[] = [
   { archetype: 'hazard_crossing', label: 'Cross', sentence: 'Cross floating islands; falling restarts at the last checkpoint.' },
   { archetype: 'combat_lite', label: 'Fight', sentence: 'Defeat five slime targets with energy balls.' },
 ];
+
+/**
+ * Měď po dohrání (T6), doslova z `PRODUCT_COPY.md`. Čipy jsou opis
+ * `CHIP_LABELS` z `src/play/remix/chips.ts` – ten modul táhne registr a zod,
+ * a do klientského bundlu nepatří; `__tests__/starters.test.ts` drží obě
+ * kopie u sebe.
+ */
+export const CHANGE_ONE_THING = 'CHANGE ONE THING';
+export const CHALLENGE_A_FRIEND = 'CHALLENGE A FRIEND';
+
+export const POST_RUN_CHIPS = [
+  { chip: 'harder', label: 'Make it harder' },
+  { chip: 'twist', label: 'Add a twist' },
+  { chip: 'swap_enemy', label: 'Swap the enemy' },
+  { chip: 'reskin', label: 'Change the world, keep the rules' },
+] as const;
