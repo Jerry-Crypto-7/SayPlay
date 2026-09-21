@@ -59,6 +59,25 @@ export const ROLE_KINDS = [
 ] as const;
 export type RoleKind = (typeof ROLE_KINDS)[number];
 
+/** Výchozí stav entity podle druhu role; adaptéry stavy přepínají `setState`. */
+export const ROLE_INITIAL_STATE: Readonly<Record<RoleKind, string>> = {
+  player: 'idle',
+  exit: 'open',
+  collectible: 'present',
+  key: 'present',
+  door: 'closed',
+  switch: 'off',
+  hazard: 'on',
+  chaser: 'hunting',
+  patrol: 'walking',
+  item: 'present',
+  destination: 'waiting',
+  checkpoint: 'pending',
+  target: 'alive',
+  prop: 'idle',
+  zone: 'idle',
+};
+
 export const OBJECTIVE_KINDS = ['reach', 'collect', 'survive', 'checkpoints', 'deliver', 'puzzle', 'defeat_targets'] as const;
 export type ObjectiveKind = (typeof OBJECTIVE_KINDS)[number];
 
@@ -267,6 +286,23 @@ export function readGameSpec(input: unknown): GameSpecResult {
     }
     for (const [field, roleId] of entry.roleRefs(params.data)) {
       if (!roleIds.has(roleId)) issues.push(`/mechanics/${index}/params/${field}: unknown role ${roleId}`);
+    }
+  });
+  if (issues.length > 0) return { ok: false, reason: 'MECHANIC_REJECTED', issues };
+
+  // `property_transform.from`, který role nemá od startu a žádná mechanika ho
+  // nenastaví, je mrtvé pravidlo: spec by prošel a transformace nevystřelila.
+  const reachable = new Map(spec.roles.map((role) => [role.id, new Set([ROLE_INITIAL_STATE[role.kind]])]));
+  const parsedParams = spec.mechanics.map((mechanic) => (MECHANICS[mechanic.id] as MechanicEntry<unknown>).params.parse(mechanic.params));
+  spec.mechanics.forEach((mechanic, index) => {
+    const entry = MECHANICS[mechanic.id] as MechanicEntry<unknown>;
+    for (const [roleId, state] of entry.setsStates?.(parsedParams[index]) ?? []) reachable.get(roleId)?.add(state);
+  });
+  spec.mechanics.forEach((mechanic, index) => {
+    if (mechanic.id !== 'property_transform') return;
+    const { role, from } = parsedParams[index] as { role: string; from: string };
+    if (!reachable.get(role)?.has(from)) {
+      issues.push(`/mechanics/${index}/params/from: role ${role} is never in state ${from} (reachable: ${[...(reachable.get(role) ?? [])].join(', ')})`);
     }
   });
   if (issues.length > 0) return { ok: false, reason: 'MECHANIC_REJECTED', issues };

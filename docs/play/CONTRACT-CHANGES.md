@@ -45,10 +45,18 @@ mechanika ho nenastaví, je mrtvé pravidlo – spec projde, transformace nikdy 
 **Návrh:** validovat `from` proti výchozímu stavu druhu role, nebo ho ze schématu vypustit a
 brát výchozí stav role.
 
+**Vyřešeno 21. 9. 2026 (P23-D R2):** výchozí stavy se přestěhovaly do `spec.ts`
+(`ROLE_INITIAL_STATE`), mechaniky deklarují `setsStates` a `readGameSpec` odmítne
+(`MECHANIC_REJECTED`) `from`, který role nemá od startu a žádná mechanika ho nenastaví.
+Shodu `setsStates` s adaptéry drží `registry-cost.test.ts` nad všemi fixturami.
+
 ### `property_transform` s `trigger: 'timer'` nemá délku (T7)
 
 Parametry nemají `afterSeconds`; kompilátor bere pevných `TRANSFORM_AFTER_SECONDS = 10`.
 **Návrh:** přidat `afterSeconds` do `propertyTransformParams`.
+
+**Vyřešeno 21. 9. 2026 (P23-D R2):** `afterSeconds` volitelné (1–180, výchozí 10), kompilátor
+ho použije; konstanta zmizela.
 
 ### `spawn_wave` oživuje, nespawnuje (T7)
 

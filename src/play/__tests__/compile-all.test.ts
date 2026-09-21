@@ -17,6 +17,7 @@ import { verifyWitness } from '@/verify/witness';
 
 import { compileSim, type SimCompilation, type SurfaceSim } from '../compile';
 import { ADAPTERS } from '../compile/adapters';
+import { TICKS_PER_SECOND } from '../compile/adapters/timer';
 import { ARCHETYPE_IDS, MECHANIC_IDS } from '../registry';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 
@@ -65,9 +66,13 @@ const placement = (runtime: Runtime, id: string) => entityPlacements(runtime).fi
 const slot = (runtime: Runtime, id: string): number => readSlot(runtime.layout, runtime.state, id);
 
 /** Fixtura s mechanikou navíc; koření (`SPICE`) má každý archetyp povolené. */
-function withMechanic(base: string, mechanic: { id: string; params: Record<string, unknown> }): GameSpecV1 {
+function rawWithMechanic(base: string, mechanic: { id: string; params: Record<string, unknown> }): Record<string, unknown> {
   const raw = JSON.parse(readFileSync(new URL(`${base}.json`, `file://${fixturesDir.replace(/\\/g, '/')}`), 'utf8')) as Record<string, unknown>;
-  return spec({ ...raw, mechanics: [...(raw.mechanics as unknown[]), mechanic] }, `${base}+${mechanic.id}`);
+  return { ...raw, mechanics: [...(raw.mechanics as unknown[]), mechanic] };
+}
+
+function withMechanic(base: string, mechanic: { id: string; params: Record<string, unknown> }): GameSpecV1 {
+  return spec(rawWithMechanic(base, mechanic), `${base}+${mechanic.id}`);
 }
 
 describe('compileSim – every archetype', () => {
@@ -156,6 +161,26 @@ describe('compileSim – property_transform', () => {
     expect(placement(runtime, 'portal')?.state).toBe('open');
     run(runtime, [], 2);
     expect(placement(runtime, 'portal')?.state).toBe('sealed');
+  });
+
+  it('times the transform by afterSeconds, 10 s when omitted', () => {
+    const params = { role: 'portal', from: 'open', to: 'sealed', trigger: 'timer' } as const;
+    const ticksOf = (extra: object): number | undefined =>
+      compiled(withMechanic('collect_exit', { id: 'property_transform', params: { ...params, ...extra } }), 1).sim.state.timers.portal_transform?.durationTicks;
+    expect(ticksOf({})).toBe(10 * TICKS_PER_SECOND);
+    expect(ticksOf({ afterSeconds: 3 })).toBe(3 * TICKS_PER_SECOND);
+  });
+
+  it('rejects a from state the role never reaches, accepts one another mechanic sets', () => {
+    const dead = readGameSpec(rawWithMechanic('collect_exit', { id: 'property_transform', params: { role: 'portal', from: 'closed', to: 'sealed', trigger: 'use' } }));
+    expect(dead.ok).toBe(false);
+    if (!dead.ok) {
+      expect(dead.reason).toBe('MECHANIC_REJECTED');
+      expect(dead.issues.join('\n')).toContain('/params/from: role portal is never in state closed');
+    }
+    // Spínač začíná `off`, `on` mu nastaví mechanika `switch`.
+    const setByAnother = rawWithMechanic('switch_puzzle', { id: 'property_transform', params: { role: 'red', from: 'on', to: 'jammed', trigger: 'use' } });
+    expect(readGameSpec(setByAnother).ok).toBe(true);
   });
 
   it('flips the state on the named signal, or on <role>Triggered without a name', () => {

@@ -109,6 +109,12 @@ export interface MechanicEntry<P = unknown> {
   readonly cost: (params: P, roleCount: (roleId: string) => number, world: CostWorld) => MechanicCost;
   /** Jedna anglická věta pro hráče a pro kritika: co mechanika dělá. */
   readonly explanation: string;
+  /**
+   * Dvojice `[ID role, stav]` pro každý `setState`, který kompilátor vydá na
+   * instance role. `readGameSpec` z nich pozná `property_transform.from`, který
+   * nikdy nenastane; `registry-cost.test.ts` drží shodu s adaptéry.
+   */
+  readonly setsStates?: (params: P) => readonly (readonly [string, string])[];
 }
 
 function entry<P>(definition: MechanicEntry<P>): MechanicEntry<P> {
@@ -175,6 +181,8 @@ const propertyTransformParams = z
     to: z.string().regex(/^[A-Za-z][A-Za-z0-9_]{0,31}$/),
     trigger: z.enum(['use', 'signal', 'timer']),
     signal: roleRef.optional(),
+    /** Délka časovače pro `trigger: 'timer'`; jinak se nečte. */
+    afterSeconds: seconds.default(10),
   })
   .strict();
 const healthParams = z.object({ max: z.int().min(1).max(5) }).strict();
@@ -219,6 +227,7 @@ export const MECHANICS = {
     roleRefs: (p) => [['role', p.role]],
     capabilities: { events: ['onEnterZone', 'onCounterReaches'], actions: ['addCounter', 'setState', 'win'] },
     cost: (p) => ({ entities: p.count, rules: p.count + 1 }),
+    setsStates: (p) => [[p.role, 'passed']],
     explanation: 'Pass through checkpoints, in order when required.',
   }),
   lock_key: entry({
@@ -230,6 +239,7 @@ export const MECHANICS = {
     ],
     capabilities: { events: ['onPickup', 'onCounterReaches'], actions: ['addCounter', 'setLocked', 'setState'] },
     cost: (p, count) => ({ entities: p.keysNeeded + 1, rules: count(p.keyRole) + 1 }),
+    setsStates: (p) => [[p.doorRole, 'open']],
     explanation: 'Collecting enough keys unlocks a door.',
   }),
   switch: entry({
@@ -242,6 +252,7 @@ export const MECHANICS = {
       entities: p.switchRoles.length + 1,
       rules: 4 * [...new Set(p.switchRoles)].reduce((sum, role) => sum + count(role), 0),
     }),
+    setsStates: (p) => p.switchRoles.flatMap((role) => [[role, 'on'] as const, [role, 'off'] as const]),
     explanation: 'Using switches toggles them; the right combination opens the door.',
   }),
   hazard_zone: entry({
@@ -251,6 +262,7 @@ export const MECHANICS = {
     capabilities: { events: ['onEnterZone', 'onTimerEnd', 'onStart'], actions: ['lose', 'addCounter', 'setState', 'startTimer'] },
     /** `enter` + `start` na instanci, s pulzem navíc `catch` a dvě pravidla přepnutí. */
     cost: (p, count) => ({ entities: count(p.role), rules: count(p.role) * (p.pulse ? 3 : 2) + (p.pulse ? 2 : 0) }),
+    setsStates: (p) => (p.pulse ? [[p.role, 'on'], [p.role, 'off']] : []),
     explanation: 'Standing in a hazard hurts or ends the run; hazards may pulse on and off.',
   }),
   chaser: entry({
@@ -308,6 +320,7 @@ export const MECHANICS = {
     roleRefs: (p) => [['role', p.role]],
     capabilities: { events: ['onAction', 'onSignal', 'onTimerEnd'], actions: ['setState'] },
     cost: (p, count) => ({ entities: 0, rules: count(p.role) }),
+    setsStates: (p) => [[p.role, p.to]],
     explanation: 'Something changes its state when used, signalled or timed.',
   }),
   health: entry({
@@ -325,6 +338,7 @@ export const MECHANICS = {
     capabilities: { events: ['onAction', 'onCounterReaches'], actions: ['addCounter', 'despawn', 'setState', 'win'] },
     /** `hit` + `down` na cíl bez ohledu na `hitsPerTarget`, plus výhra. */
     cost: (p, count) => ({ entities: p.count, rules: 2 * count(p.role) + 1 }),
+    setsStates: (p) => [[p.role, 'down']],
     explanation: 'Using a target while next to it lands a hit; enough hits remove it.',
   }),
 } as const;
