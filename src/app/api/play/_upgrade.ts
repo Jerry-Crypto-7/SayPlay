@@ -100,41 +100,37 @@ const REFUSAL_REASON: Readonly<Record<number, DraftFinalReason>> = { 422: 'NOT_P
  * Jak dlouho platí uložený `draft-final` (R10). Mapa v paměti procesu nepřežije
  * restart, jinou instanci ani vytlačení, a návrh z věty polluje každý divák
  * sdíleného odkazu – bez záznamu v úložišti by každý z nich zaplatil novou
- * režii. Hodina místo navždy: výpadek modelu nebo plné sloty jsou přechodné
- * a návrh má po nich dostat další šanci.
+ * režii. Hodina místo navždy.
  */
 export const DRAFT_FINAL_TTL_SECONDS = 3600;
 
-/** Výpadek úložiště se nepamatuje – ten neřekl nic o návrhu. */
-const FORGOTTEN: ReadonlySet<DraftFinalReason> = new Set(['STORE_UNAVAILABLE']);
-
 /**
- * Výsledek jednoho pokusu. `personal` = návrh zůstal návrhem jen proto, že
- * volající, jehož dotaz práci spustil, vyčerpal svůj denní počet volání
- * režiséra (revize R8). O větě to neříká nic, takže se to nepamatuje ani
- * v úložišti, ani v paměti procesu – další divák dostane vlastní pokus.
+ * Pamatuje se (v úložišti i v paměti procesu) jen verdikt **o větě**: model
+ * odpověděl a výsledek se nedá použít. Výpadek modelu, plné sloty, vypínač,
+ * strop utrácení, vyčerpaný počet volajícího nebo úložiště o větě neříkají
+ * nic – uložené by na hodinu zmrazily cizí návrh a útočník by to uměl
+ * vyvolat zdarma (revize R10). Další dotaz pak dostane nový pokus.
  */
-interface Attempt {
-  readonly outcome: UpgradeOutcome;
-  readonly personal: boolean;
+const SENTENCE_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'UNCHANGED', 'NOT_PLAYABLE']);
+
+function isTransient(outcome: UpgradeOutcome): boolean {
+  return outcome.status === 'draft-final' && !SENTENCE_VERDICTS.has(outcome.reason);
 }
 
-async function runUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest): Promise<Attempt> {
+async function runUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest): Promise<UpgradeOutcome> {
   const draftId = draft.version.versionId;
   const existing = await publishedUpgrade(versions, draftId);
-  if (existing !== null) return { outcome: { status: 'ready', versionId: existing }, personal: false };
+  if (existing !== null) return { status: 'ready', versionId: existing };
   const remembered = await versions.upgradeVerdict(draftId);
-  if (remembered !== null) return { outcome: { status: 'draft-final', reason: remembered as DraftFinalReason }, personal: false };
+  if (remembered !== null) return { status: 'draft-final', reason: remembered as DraftFinalReason };
 
-  const attempt = await directUpgrade(versions, draft, request);
-  const { outcome } = attempt;
-  if (outcome.status === 'draft-final' && !attempt.personal && !FORGOTTEN.has(outcome.reason))
-    await versions.rememberUpgradeVerdict(draftId, outcome.reason, DRAFT_FINAL_TTL_SECONDS);
-  return attempt;
+  const outcome = await directUpgrade(versions, draft, request);
+  if (outcome.status === 'draft-final' && !isTransient(outcome)) await versions.rememberUpgradeVerdict(draftId, outcome.reason, DRAFT_FINAL_TTL_SECONDS);
+  return outcome;
 }
 
-async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest): Promise<Attempt> {
-  const final = (reason: DraftFinalReason, personal = false): Attempt => ({ outcome: { status: 'draft-final', reason }, personal });
+async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest): Promise<UpgradeOutcome> {
+  const final = (reason: DraftFinalReason): UpgradeOutcome => ({ status: 'draft-final', reason });
   const draftId = draft.version.versionId;
 
   // Výpadek úložiště dřív, než se zaplatí model. Vyčerpaná kvóta ne – dítě se
@@ -149,7 +145,7 @@ async function directUpgrade(versions: VersionStore, draft: PublishedGame, reque
   const directorStarted = performance.now();
   const directed = await getDirector(request.startedAt, request.caller)(request.sentence);
   const directorMs = performance.now() - directorStarted;
-  if (directed.source === 'draft') return final(directed.fallbackReason ?? 'MODEL_UNAVAILABLE', directed.callerLimited);
+  if (directed.source === 'draft') return final(directed.fallbackReason ?? 'MODEL_UNAVAILABLE');
   if (gameSpecHash(directed.spec) === gameSpecHash(draft.spec)) return final('UNCHANGED');
 
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
@@ -158,7 +154,7 @@ async function directUpgrade(versions: VersionStore, draft: PublishedGame, reque
     timings: { ackMs: request.ackMs, draftReadyMs: request.draftReadyMs, directorMs, source: directed.source },
   });
   if (!published.ok) return final(REFUSAL_REASON[published.response.status] ?? 'FAILED');
-  return { outcome: { status: 'ready', versionId: published.value.game.version.versionId }, personal: false };
+  return { status: 'ready', versionId: published.value.game.version.versionId };
 }
 
 /**
@@ -172,13 +168,13 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
   const known = map.get(draftId);
   if (known !== undefined) return known.done;
 
-  const attempt = runUpgrade(versions, draft, request).catch((thrown: unknown): Attempt => {
+  const attempt = runUpgrade(versions, draft, request).catch((thrown: unknown): UpgradeOutcome => {
     console.error(`[play] upgrade of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
-    return { outcome: { status: 'draft-final', reason: 'FAILED' }, personal: false };
+    return { status: 'draft-final', reason: 'FAILED' };
   });
-  const job: Job = { done: attempt.then(({ outcome }) => outcome), outcome: null };
-  const remembered = attempt.then(({ outcome, personal }) => {
-    if (personal) {
+  const job: Job = { done: attempt, outcome: null };
+  const remembered = attempt.then((outcome) => {
+    if (isTransient(outcome)) {
       if (map.get(draftId) === job) map.delete(draftId);
       return;
     }

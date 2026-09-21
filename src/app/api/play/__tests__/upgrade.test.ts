@@ -187,14 +187,23 @@ describe('GET …/upgrade', () => {
     expect(director.calls).toBe(1);
   });
 
-  it('proces bez záznamu vrátí uložený draft-final a režiséra nezaplatí znovu (R10)', async () => {
+  it('proces bez záznamu vrátí uložený verdikt o větě a režiséra nezaplatí znovu (R10)', async () => {
+    director.script = [answered('this is not a game')];
+    const created = await publish({ sentence: SENTENCE });
+    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+    __resetUpgrades();
+    director.script = [answered(answerFixture('good-collect_exit'))];
+    expect(await upgrade(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+    expect(director.calls).toBe(1);
+  });
+
+  it('přechodný výpadek modelu se nepamatuje – další dotaz dostane nový pokus (revize R10)', async () => {
     director.script = [failed('UPSTREAM_UNAVAILABLE')];
     const created = await publish({ sentence: SENTENCE });
     expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
-    __resetUpgrades();
     director.script = [answered(answerFixture('good-collect_exit'))];
-    expect(await upgrade(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
-    expect(director.calls).toBe(1);
+    const outcome = await settled(created.body.versionId);
+    expect(outcome.status).toBe('ready');
   });
 
   it('vyčerpaný počet diváka se nepamatuje – další dotaz dostane vlastní pokus (revize R8)', async () => {
