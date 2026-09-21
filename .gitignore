@@ -136,3 +136,6 @@ asset-quarantine/
 # co model napsal, tedy táž třída dat jako create-raw.json. `conversation.json`
 # vedle nich se commituje: nese jen bajty odpovědi a u odmítnutí detail.
 evals/worldstream/conversation-answers/
+
+# HyperFrames video projekt (15 MB), nepatri do verejneho repa
+/videos/
