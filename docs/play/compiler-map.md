@@ -183,7 +183,8 @@ svědka s `pickup` bez předchozího `moveTo` – sběr na dálku je v runtimu l
 | hazard_crossing | 5/5 | 27.4, 33.2, 31.7, 29.4, 38.7 | 10 | 21 | 32–42 |
 | combat_lite | 5/5 | 12.7, 37.7, 11.6, 10.2, 12.0 | 6 | 12 | 11 |
 
-- **40/40 eligible**, medián `compileMs` **23.9 ms** (strop testu 500 ms; modelový kompilátor 164–188 s).
+- **40/40 eligible**, medián `compileMs` **~24 ms** (23.7–23.9 ve dvou bězích; test `report.json` při každém běhu
+  přepíše, časy se hýbou o jednotky ms; strop testu 500 ms; modelový kompilátor 164–188 s).
   Test drží `eligible ≥ 40` jako pin a každý archetyp ≥ 4/5.
 - Nejdražší je `survival_timer` (~240 ms): certifikace přehraje celých 1 201 tiků 60s časovače.
   Časy prvních seedů zahrnují zahřátí JIT, proto je `collect_exit/1` dražší než zbytek.
