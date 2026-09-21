@@ -16,6 +16,8 @@
  * Podtržítko v názvu: Next.js soubor nebere jako route.
  */
 
+import { after } from 'next/server';
+
 import { gameSpecHash } from '@/play/spec';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
 
@@ -137,11 +139,21 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
     }),
     outcome: null,
   };
-  void job.done.then((outcome) => {
+  const remembered = job.done.then((outcome) => {
     job.outcome = outcome;
     forgetSettled(map);
   });
   map.set(draftId, job);
+  // **`after()`, ne holé `void`** (revize T2): na serverless se instance po
+  // odpovědi zmrazí a rezervace stropu by zůstala nevyrovnaná – tentýž důvod
+  // jako u generace v `worldstream/sessions/route.ts`. Mimo request scope
+  // (test volá handler přímo, `next start`) `after()` vyhodí a práce doběhne
+  // sama, protože se tam proces nezmrazí.
+  try {
+    after(remembered);
+  } catch {
+    void remembered;
+  }
   return job.done;
 }
 

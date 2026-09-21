@@ -5,6 +5,8 @@
  * `gate` drží režiséra, dokud ji test nepustí, aby šel vidět stav `pending`.
  */
 
+import { readFileSync } from 'node:fs';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import collectExit from '@/play/__fixtures__/collect_exit.json';
@@ -204,6 +206,16 @@ describe('GET …/upgrade', () => {
     const child = await versions.get(ready.versionId);
     if (child?.timings === undefined) throw new Error('child without timings');
     expect(await versions.put({ ...child, timings: { ...child.timings, directorMs: child.timings.directorMs + 1 } })).toBe('exists');
+  });
+
+  // Zmrazení instance po odpovědi je vlastnost platformy a zevnitř procesu se
+  // změřit nedá (vzor `sessions.test.ts`): soudí se zdroj bez komentářů.
+  it('práce na pozadí se předává platformě přes `after()`, ne jen `void`', () => {
+    const source = readFileSync('src/app/api/play/_upgrade.ts', 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    expect(source).toContain("import { after } from 'next/server'");
+    expect(source).toMatch(/const remembered = job\.done\.then\([\s\S]*?after\(remembered\)/);
   });
 
   it('neznámé a špatné id je 404', async () => {
