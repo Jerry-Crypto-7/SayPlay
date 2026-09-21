@@ -82,6 +82,7 @@ export async function GET(request: Request): Promise<Response> {
 
 export async function POST(request: Request): Promise<Response> {
   const received = performance.now();
+  const startedAt = Date.now();
   const refused = await admit(request);
   if (refused !== null) return refused;
 
@@ -107,12 +108,12 @@ export async function POST(request: Request): Promise<Response> {
     // Návrh ze slov jde ven hned; autorská verze od režiséra doběhne na pozadí (T2).
     const draft = await publishReadSpec(versions, draftGameSpec(sentence), seeds, parentId, { origin: { sentence, seed: seed ?? null } });
     if (draft.ok) {
-      void upgradeOf(versions, draft.value.game, { sentence, seed: seed ?? null, ackMs, draftReadyMs: performance.now() - received });
+      void upgradeOf(versions, draft.value.game, { sentence, seed: seed ?? null, ackMs, draftReadyMs: performance.now() - received, startedAt });
       return publishedResponse(draft.value, true);
     }
     if (draft.response.status !== 422) return draft.response;
     // Návrh, který se nedá hrát, nemá co ukázat hned – věta čeká na režiséra jako před T2.
-    const directed = await getDirector()(sentence);
+    const directed = await getDirector(startedAt)(sentence);
     if (directed.source === 'draft') return draft.response;
     const published = await publishReadSpec(versions, directed.spec, seeds, parentId);
     return published.ok ? publishedResponse(published.value) : published.response;

@@ -47,6 +47,8 @@ export interface UpgradeRequest {
   readonly seed: number | null;
   readonly ackMs: number | null;
   readonly draftReadyMs: number | null;
+  /** Příchod požadavku, v jehož `after()` práce běží (`Date.now()`); od něj se měří rozpočet režie (R7). */
+  readonly startedAt: number;
 }
 
 interface Job {
@@ -107,7 +109,7 @@ async function runUpgrade(versions: VersionStore, draft: PublishedGame, request:
   }
 
   const directorStarted = performance.now();
-  const directed = await getDirector()(request.sentence);
+  const directed = await getDirector(request.startedAt)(request.sentence);
   const directorMs = performance.now() - directorStarted;
   if (directed.source === 'draft') return { status: 'draft-final', reason: directed.fallbackReason ?? 'MODEL_UNAVAILABLE' };
   if (gameSpecHash(directed.spec) === gameSpecHash(draft.spec)) return { status: 'draft-final', reason: 'UNCHANGED' };

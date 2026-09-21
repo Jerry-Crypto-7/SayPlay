@@ -28,12 +28,18 @@ export type Director = (sentence: string) => Promise<DirectedGame>;
 /**
  * Kolik smí trvat celá režie (R7). Routy PLAY mají `maxDuration = 300` s;
  * když platforma funkci zabije uprostřed volání, `settle()` neproběhne
- * a rezervace stropu visí do expirace knihy. Proto nové volání odejde, jen
- * když by doběhlo i při plném timeoutu poskytovatele – zbylých 30 s patří
- * kompilaci a zápisu. Kompilace čtyř semínek je naměřeně pod 2 s (P23-D T3:
- * medián 25 ms, max 445 ms na semínko), vlastní strop souběhu nepotřebuje.
+ * a rezervace stropu visí do expirace knihy. Rozpočet běží od příchodu
+ * požadavku, ne od začátku režie, a timeout každého volání se zkrátí na čas,
+ * který z něj zbývá – nasazený timeout (285 s kvůli codex-shimu) je delší než
+ * celý rozpočet, takže odmítnutí místo zkrácení by nepustilo volání nikdy
+ * (revize R7). Zbylých 30 s patří kompilaci a zápisu. Kompilace čtyř semínek
+ * je naměřeně pod 2 s (P23-D T3: medián 25 ms, max 445 ms na semínko), vlastní
+ * strop souběhu nepotřebuje.
  */
 export const DIRECTOR_BUDGET_MS = 270_000;
+
+/** Pod tohle volání neodejde: odpověď astry trvá v mediánu desítky sekund. */
+export const MIN_CALL_MS = 30_000;
 
 /** Živá větev obalená stropem; `null` = model se volat nebude. */
 async function cappedBranch(env: Record<string, string | undefined>, deadline: number): Promise<GenerationBranch | null> {
@@ -48,11 +54,16 @@ async function cappedBranch(env: Record<string, string | undefined>, deadline: n
     pricing: branch.pricing,
     worstCaseUsd: (call) => branch.worstCaseUsd(call),
     async generate(call) {
-      if (Date.now() + config.timeoutMs > deadline) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the call could outlast the route', usage: null };
+      const left = deadline - Date.now();
+      if (left < MIN_CALL_MS) {
+        console.warn(`[play] director call skipped: ${String(Math.round(left / 1000))} s left of the route budget`);
+        return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'too little time left in the route', usage: null };
+      }
+      const bounded = left < config.timeoutMs ? upstreamBranch({ ...config, timeoutMs: left }) : branch;
       const reservation = await cap.reserve(branch.worstCaseUsd(call));
       if (!reservation.ok) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'spend cap refused the call', usage: null };
       try {
-        const outcome = await branch.generate(call);
+        const outcome = await bounded.generate(call);
         await reservation.settle(outcome.usage === null ? 'unknown' : costUsd(outcome.usage, branch.pricing));
         return outcome;
       } catch (thrown) {
@@ -73,10 +84,12 @@ const NO_MODEL: GenerationBranch = upstreamBranch(null);
  * `/api/generate` (druhé kolo revize T1). Bez volného slotu se model nevolá a
  * hra je návrh: jinak by jeden volající se stovkou různých vět vyčerpal strop
  * volání celého dema (nález revize T1).
+ *
+ * `startedAt` je příchod požadavku (`Date.now()`), jehož `maxDuration` režii drží.
  */
-export function getDirector(): Director {
+export function getDirector(startedAt: number): Director {
   return async (sentence) => {
-    const deadline = Date.now() + DIRECTOR_BUDGET_MS;
+    const deadline = startedAt + DIRECTOR_BUDGET_MS;
     const cache = directorCacheFromEnv(process.env);
     const branch = await cappedBranch(process.env, deadline);
     if (branch === null || !acquireSlot('play')) return direct(sentence, { branch: NO_MODEL, cache, now: Date.now });

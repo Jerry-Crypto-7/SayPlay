@@ -17,7 +17,7 @@ import { resetRateWindows } from '@/server/rate-limit';
 import { resetProcessSpendCap } from '@/server/spend-cap';
 
 import { acquireSlot, resetConcurrency } from '../../worldstream/sessions/route';
-import { DIRECTOR_BUDGET_MS, getDirector } from '../_director';
+import { DIRECTOR_BUDGET_MS, getDirector, MIN_CALL_MS } from '../_director';
 import { POST as createGame } from '../games/route';
 
 const SENTENCE = 'A hamster escapes a supermarket while a giant Roomba hunts it.';
@@ -61,7 +61,7 @@ function stubEnv(env: Record<string, string>): void {
 describe('getDirector – brány placené větve', () => {
   it('klíč bez objednávky live: model se nevolá, hra je návrh', async () => {
     stubEnv({ ...LIVE, WORLDSMITH_BRANCH: '' });
-    const game = await getDirector()(SENTENCE);
+    const game = await getDirector(Date.now())(SENTENCE);
     expect(game.source).toBe('draft');
     expect(fetchCalls).toBe(0);
   });
@@ -72,21 +72,21 @@ describe('getDirector – brány placené větve', () => {
     const file = join(dir, 'control.json');
     writeFileSync(file, JSON.stringify({ off: ['upstream'] }));
     stubEnv({ ...LIVE, WORLDSMITH_CONTROL_FILE: file });
-    const game = await getDirector()(SENTENCE);
+    const game = await getDirector(Date.now())(SENTENCE);
     expect(game.fallbackReason).toBe('MODEL_UNAVAILABLE');
     expect(fetchCalls).toBe(0);
   });
 
   it('strop 0 USD: rezervace odmítne, k poskytovateli nic neodejde', async () => {
     stubEnv({ ...LIVE, WORLDSMITH_SPEND_CAP_USD: '0' });
-    const game = await getDirector()(SENTENCE);
+    const game = await getDirector(Date.now())(SENTENCE);
     expect(game.source).toBe('draft');
     expect(fetchCalls).toBe(0);
   });
 
   it('volný strop: volání odejde a výpadek poskytovatele skončí návrhem', async () => {
     stubEnv(LIVE);
-    const game = await getDirector()(SENTENCE);
+    const game = await getDirector(Date.now())(SENTENCE);
     expect(fetchCalls).toBeGreaterThan(0);
     expect(game.source).toBe('draft');
     expect(game.fallbackReason).toBe('MODEL_UNAVAILABLE');
@@ -94,20 +94,19 @@ describe('getDirector – brány placené větve', () => {
 });
 
 describe('getDirector – rozpočet času režie (R7)', () => {
-  it('volání, jehož timeout přesáhne rozpočet, neodejde', async () => {
-    stubEnv({ ...LIVE, WORLDSMITH_UPSTREAM_TIMEOUT_MS: String(DIRECTOR_BUDGET_MS + 1) });
-    const game = await getDirector()(SENTENCE);
-    expect(game.source).toBe('draft');
-    expect(fetchCalls).toBe(0);
+  it('nasazený timeout 285 s, delší než rozpočet, volání nezavře – zkrátí se (revize R7)', async () => {
+    stubEnv({ ...LIVE, WORLDSMITH_UPSTREAM_TIMEOUT_MS: '285000' });
+    await getDirector(Date.now())(SENTENCE);
+    expect(fetchCalls).toBeGreaterThan(0);
   });
 
-  it('rozpočet se počítá od začátku režie, ne od volání', async () => {
-    stubEnv({ ...LIVE, WORLDSMITH_UPSTREAM_TIMEOUT_MS: '100000' });
-    // První čtení hodin je začátek režie; každé další je o 200 s později.
-    vi.spyOn(Date, 'now').mockReturnValueOnce(0).mockReturnValue(200_000);
-    const game = await getDirector()(SENTENCE);
+  it('rozpočet běží od příchodu požadavku: pod MIN_CALL_MS zbytku volání neodejde', async () => {
+    stubEnv(LIVE);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const game = await getDirector(Date.now() - (DIRECTOR_BUDGET_MS - MIN_CALL_MS + 1_000))(SENTENCE);
     expect(game.source).toBe('draft');
     expect(fetchCalls).toBe(0);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('director call skipped'));
   });
 });
 
@@ -124,7 +123,7 @@ describe('getDirector – souběh a pořadí bran (nálezy revize T1)', () => {
     stubEnv(LIVE);
     expect(acquireSlot('play')).toBe(true);
     expect(acquireSlot('play')).toBe(true);
-    const game = await getDirector()(SENTENCE);
+    const game = await getDirector(Date.now())(SENTENCE);
     expect(game.source).toBe('draft');
     expect(fetchCalls).toBe(0);
   });
@@ -133,14 +132,14 @@ describe('getDirector – souběh a pořadí bran (nálezy revize T1)', () => {
     stubEnv(LIVE);
     expect(acquireSlot('generate')).toBe(true);
     expect(acquireSlot('generate')).toBe(true);
-    await getDirector()(SENTENCE);
+    await getDirector(Date.now())(SENTENCE);
     expect(fetchCalls, 'plné dveře generate zavřely PLAY').toBeGreaterThan(0);
   });
 
   it('slot se vrací i po výpadku modelu – další věta ho dostane znovu', async () => {
     stubEnv(LIVE);
-    await getDirector()(SENTENCE);
-    await getDirector()(SENTENCE);
+    await getDirector(Date.now())(SENTENCE);
+    await getDirector(Date.now())(SENTENCE);
     expect(acquireSlot('play')).toBe(true);
     expect(acquireSlot('play')).toBe(true);
   });

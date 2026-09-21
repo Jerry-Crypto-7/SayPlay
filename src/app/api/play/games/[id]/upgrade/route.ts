@@ -25,6 +25,7 @@ function answer(status: UpgradeStatus): Response {
 }
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }): Promise<Response> {
+  const startedAt = Date.now();
   const refused = await admit(request);
   if (refused !== null) return refused;
 
@@ -44,7 +45,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const waited = new Promise<UpgradeStatus>((resolve) => {
     timer = setTimeout(() => resolve({ status: 'pending' }), UPGRADE_WAIT_MS);
   });
-  const done = upgradeOf(versions, draft, { ...draft.origin, ackMs: null, draftReadyMs: null });
+  const done = upgradeOf(versions, draft, { ...draft.origin, ackMs: null, draftReadyMs: null, startedAt });
   try {
     return answer(await Promise.race([done, waited]));
   } finally {

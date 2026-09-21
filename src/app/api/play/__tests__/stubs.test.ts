@@ -60,7 +60,7 @@ describe('getCompiler + reportFor', () => {
 describe('getDirector bez modelu', () => {
   it('vrací návrh ze slov; větev bez konfigurace nikam nesáhne', async () => {
     delete process.env.WORLDSMITH_BRANCH;
-    const game = await getDirector()('A hamster escapes a supermarket while a giant Roomba hunts it.');
+    const game = await getDirector(Date.now())('A hamster escapes a supermarket while a giant Roomba hunts it.');
     expect(game.source).toBe('draft');
     expect(game.spec.archetype).toBe('chase_escape');
     expect(game.fallbackReason).toBe('MODEL_UNAVAILABLE');
