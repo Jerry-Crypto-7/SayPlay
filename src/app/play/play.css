@@ -492,3 +492,58 @@ a.play-button {
   display: inline-block;
   text-decoration: none;
 }
+
+/* „How this game works“ (T8): sbalený, nad plátnem, pod rodokmenem. */
+.play-lab {
+  position: relative;
+  z-index: 1;
+  margin: 8px 16px 0;
+  max-width: 420px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid var(--play-line);
+  font-size: 0.85rem;
+  color: var(--play-muted);
+}
+
+.play-lab[open] {
+  max-height: 40dvh;
+  overflow-y: auto;
+}
+
+.play-lab summary {
+  cursor: pointer;
+  color: var(--play-text);
+}
+
+.play-lab-mechanics {
+  margin: 8px 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+}
+
+.play-lab-mechanics strong {
+  color: var(--play-text);
+  text-transform: capitalize;
+}
+
+.play-lab-params {
+  display: block;
+  color: var(--play-accent);
+  font-size: 0.8rem;
+}
+
+.play-lab-quality,
+.play-lab-version {
+  margin: 4px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 480px) {
+  .play-lab {
+    margin: 6px 10px 0;
+    max-width: none;
+  }
+}

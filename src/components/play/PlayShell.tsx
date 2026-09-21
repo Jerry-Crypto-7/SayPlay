@@ -26,7 +26,9 @@ import { bindRuntime, type RuntimeController } from '@/worldstream/runtime-contr
 import type { RuntimeAction } from '@/worldstream/runtime-input';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
+import { HowItWorks } from './HowItWorks';
 import { Hud } from './Hud';
+import type { LabFacts } from './lab';
 import { Lineage } from './Lineage';
 import { PostRun } from './PostRun';
 import { TargetCards } from './TargetCards';
@@ -74,9 +76,10 @@ export interface PlayShellProps {
   /** Od kořene k listu; poslední záznam je tahle hra. */
   readonly lineage: readonly GameVersion[];
   readonly remixes: number;
+  readonly lab: LabFacts;
 }
 
-export function PlayShell({ versionId, spec, blueprint, lineage, remixes }: PlayShellProps) {
+export function PlayShell({ versionId, spec, blueprint, lineage, remixes, lab }: PlayShellProps) {
   const [controller] = useState(() => bindRuntime(null, versionId, blueprint.world).controller);
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
   const [world, setWorld] = useState<ProxyWorld | null>(null);
@@ -171,6 +174,7 @@ export function PlayShell({ versionId, spec, blueprint, lineage, remixes }: Play
       </div>
       <Hud spec={spec} snapshot={snapshot} />
       <Lineage lineage={lineage} remixes={remixes} />
+      <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
       {!built && fault === null && (
         <p className="play-building" data-testid="play-building" aria-live="polite">Building the world…</p>
       )}

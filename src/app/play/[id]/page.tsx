@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { VERSION_ID_PATTERN } from '@/app/api/play/_errors';
+import { labFacts } from '@/components/play/lab';
 import { PlayShell } from '@/components/play/PlayShell';
 import { versionStoreFromEnv } from '@/play/version';
 
@@ -59,6 +60,7 @@ export default async function PlayGamePage({ params }: Params) {
       blueprint={game.blueprint}
       lineage={lineage.length > 0 ? lineage : [game.version]}
       remixes={children.length}
+      lab={labFacts(game.spec, game.report)}
     />
   );
 }
