@@ -144,6 +144,23 @@ describe('getDirector – kvóty a cache (R8)', () => {
     expect(fetchCalls).toBe(2);
   });
 
+  it('volání odmítnuté stropem utrácení volajícímu počet neubere (revize R8)', async () => {
+    stubEnv({ ...LIVE, WORLDSMITH_SPEND_CAP_USD: '0', PLAY_DIRECTOR_CALLS_PER_CALLER: '1' });
+    await getDirector(Date.now(), 'caller-a')(SENTENCE);
+    expect(fetchCalls).toBe(0);
+    stubEnv({ ...LIVE, PLAY_DIRECTOR_CALLS_PER_CALLER: '1' });
+    const game = await getDirector(Date.now(), 'caller-a')(SENTENCE);
+    expect(fetchCalls).toBe(1);
+    expect(game.callerLimited).toBe(false);
+  });
+
+  it('vyčerpaný počet je v režii vidět jako callerLimited', async () => {
+    stubEnv({ ...LIVE, PLAY_DIRECTOR_CALLS_PER_CALLER: '1' });
+    await getDirector(Date.now(), 'caller-a')(SENTENCE);
+    const limited = await getDirector(Date.now(), 'caller-a')(SENTENCE);
+    expect(limited.callerLimited).toBe(true);
+  });
+
   it('bez volného slotu se cache čte pod klíčem živé větve – táž věta, táž hra', async () => {
     stubEnv(LIVE);
     const request = buildDirectorRequest(SENTENCE, draftGameSpec(SENTENCE));
