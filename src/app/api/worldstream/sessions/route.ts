@@ -131,7 +131,7 @@ export const runtime = 'nodejs';
 export const MAX_CONCURRENT_GENERATIONS = 8;
 
 /**
- * Kolik z těch čtyř smí naráz držet **zakládání relace**.
+ * Kolik z těch osmi smí naráz držet **zakládání relace**.
  *
  * Jeden čítač obsluhoval dvoje dveře, jejichž doba držení se liší o dva řády.
  * Zakládání drží slot po **celou** generaci na pozadí — volání na záměr plus až
@@ -235,10 +235,10 @@ export function slotsDetail(door: PaidDoor): string {
 /**
  * Vzít slot pro jedno placené volání v letu. Vrací `false`, když je plno.
  *
- * **Jeden strop na oboje dveře** — zakládání relace i preview druhé věty.
- * Dva oddělené stropy po čtyřech nejsou strop čtyř: kdo chce platit za osm
- * volání naráz, střídá obě adresy. Proto se `running.world + running.refine`
- * porovnává proti `MAX_CONCURRENT_GENERATIONS` **vždycky**, ať přijdou které
+ * **Jeden strop na všechny dveře** — zakládání relace, `/api/generate`,
+ * preview druhé věty i režie PLAY. Oddělené stropy nejsou jeden strop: kdo
+ * chce platit za víc volání naráz, střídá adresy. Proto se součet všech čtyř
+ * čítačů porovnává proti `MAX_CONCURRENT_GENERATIONS` **vždycky**, ať přijdou které
  * dveře chtějí. Kontrola a zvýšení jsou v jednom synchronním kroku, takže mezi
  * ně nemá co vklouznout.
  *
