@@ -75,7 +75,8 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   const request = buildDirectorRequest(sentence, draft);
   const key = directorKey({ sentence, promptVersion: DIRECTOR_PROMPT_VERSION, model: request.model, endpoint: deps.branch.id });
   const cached = deps.cache === undefined ? null : await deps.cache.read(key);
-  if (cached !== null) {
+  // Záznam přijal kritik tehdejšího buildu; co dnešní kritik blokuje, je miss.
+  if (cached !== null && blockingIssues(critique(cached)).length === 0) {
     return { ok: true, spec: cached, source: 'cached', repairRounds: 0, fallbackReason: null, warnings: warningsOf(cached), ms: deps.now() - started, calls };
   }
 

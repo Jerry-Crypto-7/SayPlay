@@ -181,6 +181,15 @@ describe('direct – cache', () => {
     expect(game).toMatchObject({ source: 'authored', calls: 1 });
   });
 
+  it('a cached spec the critic blocks today is a miss – the model is called again', async () => {
+    const stale = unrepairableByTable();
+    const cache = { id: 'stale', read: () => Promise.resolve(stale), write: () => Promise.resolve() };
+    const branch = fakeBranch([answered(answerFixture('good-collect_exit'))]);
+    const game = await run(branch, { cache });
+    expect(game).toMatchObject({ source: 'authored', calls: 1 });
+    expect(game.spec).toEqual(good('good-collect_exit'));
+  });
+
   it('a draft fallback is never written – the next direct calls the model again', async () => {
     const cache = directorCache(memoryAnswerStore(), () => undefined);
     const first = await run(fakeBranch([answered(unrepairableByTable()), answered({}), answered({})]), { cache });
