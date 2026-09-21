@@ -29,6 +29,9 @@ Pořadí bran (odmítnutí v kterémkoli kroku = do úložiště nešel ani bajt
 | tělo není JSON, cizí pole, obojí / ani jedno, špatný `seed` | `BAD_REQUEST` | 400 |
 | `parentId` neexistuje nebo nemá tvar id | `UNKNOWN_PARENT` | 404 |
 | spec neprošel `readGameSpec` (i z režiséra) | `SPEC_REJECTED` | 422 |
+
+U věty se denní strop publikací a zdraví úložiště ověří **před** režisérem (`publishRefusal`: 429 `PUBLISH_QUOTA` / 503 `STORE_UNAVAILABLE`), aby se nezaplatil model za hru, kterou by úložiště odmítlo. Režisér volá model jen s volným slotem dveří `generate` (sdílený čítač souběžných placených volání s `/api/generate` a relacemi WORLDSTREAM); bez slotu je hra návrh ze slov. Hra od modelu, která neprojde kompilací ani kontrolou (422), spadne na návrh ze slov.
+
 | kompilátor odmítl (u odvozeného semínka se `LAYOUT_FAILED`/`UNWINNABLE` zkouší ještě na třech dalších, `derivedSeeds`) | `MECHANIC_UNSUPPORTED` / `LAYOUT_FAILED` / `WORLD_REJECTED` / `UNWINNABLE` | 422 |
 | verifikátor (`verifyGame`) nepustil hru k publikaci – keypoint, svědek, replay nebo rozpočet | `NOT_PUBLISHABLE` + `keypoints: string[]` (ids, které neprošly) | 422 |
 | jiná hra pod týmž id (liší se jen to, co do hashe nejde) | `VERSION_CONFLICT` | 409 |

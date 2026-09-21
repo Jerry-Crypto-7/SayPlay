@@ -9,9 +9,11 @@
 
 import { z } from 'zod';
 
+import { draftGameSpec } from '@/play/draft';
+
 import { getDirector } from '../_director';
 import { fail, readJsonBody } from '../_errors';
-import { admit, derivedSeeds, isSeed, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
+import { admit, derivedSeeds, isSeed, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishRefusal, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
 
 const bodySchema = z
   .object({
@@ -39,9 +41,15 @@ export async function POST(request: Request): Promise<Response> {
   if (parentId !== null && (await parentOf(versions, parentId)) === null) return fail(404, 'UNKNOWN_PARENT', 'the parent game does not exist');
 
   if (sentence !== undefined) {
+    const refused = await publishRefusal(versions);
+    if (refused !== null) return refused;
     // Režisér vrací vždy hru: autorskou od modelu, nebo návrh ze slov.
     const directed = await getDirector()(sentence);
-    const published = await publishReadSpec(versions, directed.spec, seed !== undefined ? [seed] : derivedSeeds(seedFrom(sentence.trim())), parentId);
+    const seeds = seed !== undefined ? [seed] : derivedSeeds(seedFrom(sentence.trim()));
+    let published = await publishReadSpec(versions, directed.spec, seeds, parentId);
+    // Hra od modelu, která neprošla kompilací ani kontrolou, nesmí hráči vzít návrh ze slov.
+    if (!published.ok && published.response.status === 422 && directed.source !== 'draft')
+      published = await publishReadSpec(versions, draftGameSpec(sentence), seeds, parentId);
     return published.ok ? publishedResponse(published.value) : published.response;
   }
 

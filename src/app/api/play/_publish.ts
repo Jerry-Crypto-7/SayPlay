@@ -115,6 +115,21 @@ export function readSpecOrFail(input: unknown): SpecRead {
   return { ok: true, value: read.value };
 }
 
+/**
+ * Denní strop a zdraví úložiště **před** placeným voláním: věta, kterou by
+ * úložiště stejně odmítlo, nesmí nejdřív zaplatit model (nález revize T1).
+ * `null` = publikovat se dá.
+ */
+export async function publishRefusal(versions: VersionStore): Promise<Response | null> {
+  try {
+    if (await versions.canPublish()) return null;
+  } catch (thrown) {
+    if (thrown instanceof VersionStoreUnavailable) return fail(503, 'STORE_UNAVAILABLE', 'the game could not be saved right now');
+    throw thrown;
+  }
+  return fail(429, 'PUBLISH_QUOTA', "today's publishing quota is used up; try again tomorrow", { 'retry-after': '3600' });
+}
+
 export async function publishReadSpec(
   versions: VersionStore,
   spec: GameSpecV1,

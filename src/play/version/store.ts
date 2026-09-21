@@ -42,6 +42,11 @@ export interface VersionStore {
   get(versionId: string): Promise<PublishedGame | null>;
   /** `quota` = denní strop publikací vyčerpán; nic se nezapsalo. */
   put(game: PublishedGame): Promise<PutOutcome>;
+  /**
+   * Zbývá dnes na publikaci? Jen čte počítadlo, nic nezapočítá – dveře se ptají
+   * dřív, než kvůli publikaci zaplatí model. Výpadek úložiště je `VersionStoreUnavailable`.
+   */
+  canPublish(): Promise<boolean>;
   childrenOf(versionId: string): Promise<string[]>;
   /** Od kořene k listu, nejvýš `MAX_LINEAGE` nejnovějších záznamů. */
   lineageOf(versionId: string): Promise<GameVersion[]>;
@@ -104,6 +109,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const versionKey = (versionId: string): string => `${prefix}:play:v:${versionId}`;
   const childrenKey = (parentId: string): string => `${prefix}:play:children:${parentId}`;
   const lineageKey = (versionId: string): string => `${prefix}:play:lineage:${versionId}`;
+  const quotaKey = (): string => `${prefix}:play:quota:${quotaDay(now())}`;
 
   const store: VersionStore = {
     id,
@@ -125,7 +131,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       const key = versionKey(game.version.versionId);
       const text = serialise(game);
       try {
-        if ((await raw.incr(`${prefix}:play:quota:${quotaDay(now())}`, 2 * 24 * 3600)) > limits.dailyCap) return 'quota';
+        if ((await raw.incr(quotaKey(), 2 * 24 * 3600)) > limits.dailyCap) return 'quota';
         if (!(await raw.setNx(key, text, limits.ttlSeconds))) {
           const existing = await raw.get(key);
           if (existing === text) return 'exists';
@@ -151,6 +157,15 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       } catch (thrown) {
         throw new VersionStoreUnavailable(thrown);
       }
+    },
+    async canPublish() {
+      let text: string | null;
+      try {
+        text = await raw.get(quotaKey());
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+      return text === null || Number(text) < limits.dailyCap;
     },
     async childrenOf(versionId) {
       try {
@@ -178,7 +193,6 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
 /** Paměť procesu neexpiruje – drží ji denní strop, a `next start` žije kratší dobu než TTL. */
 export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, now: () => number = Date.now): VersionStore {
   const entries = new Map<string, string>();
-  const counters = new Map<string, number>();
   const raw: RawStore = {
     get: (key) => Promise.resolve(entries.get(key) ?? null),
     setNx: (key, value) => {
@@ -190,9 +204,10 @@ export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, n
       entries.set(key, value);
       return Promise.resolve();
     },
+    // Počítadlo leží mezi hodnotami jako text, stejně jako v Redisu – `get` ho přečte.
     incr: (key) => {
-      const next = (counters.get(key) ?? 0) + 1;
-      counters.set(key, next);
+      const next = Number(entries.get(key) ?? '0') + 1;
+      entries.set(key, String(next));
       return Promise.resolve(next);
     },
   };

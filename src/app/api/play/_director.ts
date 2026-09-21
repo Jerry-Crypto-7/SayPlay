@@ -21,6 +21,8 @@ import type { GenerationBranch } from '@/server/pipeline';
 import { costUsd, processSpendCap } from '@/server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '@/server/upstream';
 
+import { acquireSlot, releaseSlot } from '../worldstream/sessions/route';
+
 export type Director = (sentence: string) => Promise<DirectedGame>;
 
 /** Živá větev obalená stropem; `null` = model se volat nebude. */
@@ -53,9 +55,21 @@ async function cappedBranch(env: Record<string, string | undefined>): Promise<Ge
 /** Větev bez modelu: `direct()` z ní udělá návrh ze slov, nikam se nevolá. */
 const NO_MODEL: GenerationBranch = upstreamBranch(null);
 
+/**
+ * Placená větev drží po celou režii jeden slot dveří `generate` – týž čítač
+ * souběžných placených volání jako `/api/generate` a relace WORLDSTREAM. Bez
+ * volného slotu se model nevolá a hra je návrh: jinak by jeden volající se
+ * stovkou různých vět vyčerpal strop volání celého dema (nález revize T1).
+ */
 export function getDirector(): Director {
   return async (sentence) => {
-    const branch = (await cappedBranch(process.env)) ?? NO_MODEL;
-    return direct(sentence, { branch, cache: directorCacheFromEnv(process.env), now: Date.now });
+    const cache = directorCacheFromEnv(process.env);
+    const branch = await cappedBranch(process.env);
+    if (branch === null || !acquireSlot('generate')) return direct(sentence, { branch: NO_MODEL, cache, now: Date.now });
+    try {
+      return await direct(sentence, { branch, cache, now: Date.now });
+    } finally {
+      releaseSlot('generate');
+    }
   };
 }
