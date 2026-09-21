@@ -108,10 +108,18 @@ describe('getDirector – brány placené větve', () => {
 });
 
 describe('getDirector – rozpočet času režie (R7)', () => {
-  it('nasazený timeout 285 s, delší než rozpočet, volání nezavře – zkrátí se (revize R7)', async () => {
+  it('nasazený timeout 285 s, delší než rozpočet, volání nezavře – zkrátí se na zbytek (revize R7)', async () => {
     stubEnv({ ...LIVE, WORLDSMITH_UPSTREAM_TIMEOUT_MS: '285000' });
-    await getDirector(Date.now(), 'test-caller')(SENTENCE);
+    const timeouts = vi.spyOn(AbortSignal, 'timeout');
+    const left = MIN_CALL_MS + 10_000;
+    await getDirector(Date.now() - (DIRECTOR_BUDGET_MS - left), 'test-caller')(SENTENCE);
     expect(fetchCalls).toBeGreaterThan(0);
+    const used = timeouts.mock.calls.map(([ms]) => ms);
+    expect(used.length).toBeGreaterThan(0);
+    for (const ms of used) {
+      expect(ms).toBeLessThanOrEqual(left);
+      expect(ms).toBeGreaterThan(left - 5_000);
+    }
   });
 
   it('rozpočet běží od příchodu požadavku: pod MIN_CALL_MS zbytku volání neodejde', async () => {

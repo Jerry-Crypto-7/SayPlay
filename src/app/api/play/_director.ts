@@ -39,8 +39,12 @@ export type Director = (sentence: string) => Promise<DirectedGame>;
  */
 export const DIRECTOR_BUDGET_MS = 270_000;
 
-/** Pod tohle volání neodejde: odpověď astry trvá v mediánu desítky sekund. */
-export const MIN_CALL_MS = 30_000;
+/**
+ * Pod tohle volání neodejde. Plánovač astry trvá naměřeně ~75 s (P21), takže
+ * kratší zbytek by zaplatil volání, které skoro jistě nedoběhne, a zahodil i
+ * placenou první odpověď (revize R7, kolo 2).
+ */
+export const MIN_CALL_MS = 75_000;
 
 /**
  * Kolik placených volání režiséra smí jeden volající za den (R8). Věta stojí
