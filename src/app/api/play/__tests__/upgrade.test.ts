@@ -197,6 +197,16 @@ describe('GET …/upgrade', () => {
     expect(director.calls).toBe(1);
   });
 
+  it('uložený přechodný důvod (starší build) se nečte – nový pokus (revize R10 kolo 2)', async () => {
+    director.script = [failed('UPSTREAM_UNAVAILABLE')];
+    const created = await publish({ sentence: SENTENCE });
+    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
+    await versionStoreFromEnv(process.env).rememberUpgradeVerdict(created.body.versionId, 'MODEL_UNAVAILABLE', 3600);
+    __resetUpgrades();
+    director.script = [answered(answerFixture('good-collect_exit'))];
+    expect((await settled(created.body.versionId)).status).toBe('ready');
+  });
+
   it('přechodný výpadek modelu se nepamatuje – další dotaz dostane nový pokus (revize R10)', async () => {
     director.script = [failed('UPSTREAM_UNAVAILABLE')];
     const created = await publish({ sentence: SENTENCE });

@@ -30,7 +30,6 @@ export type DraftFinalReason =
   | 'UNREPAIRED'
   | 'UNCHANGED'
   | 'NOT_PLAYABLE'
-  | 'PUBLISH_QUOTA'
   | 'STORE_UNAVAILABLE'
   | 'NOT_FROM_SENTENCE'
   | 'FAILED';
@@ -94,7 +93,7 @@ async function publishedUpgrade(versions: VersionStore, draftId: string): Promis
   return null;
 }
 
-const REFUSAL_REASON: Readonly<Record<number, DraftFinalReason>> = { 422: 'NOT_PLAYABLE', 429: 'PUBLISH_QUOTA', 503: 'STORE_UNAVAILABLE' };
+const REFUSAL_REASON: Readonly<Record<number, DraftFinalReason>> = { 422: 'NOT_PLAYABLE', 503: 'STORE_UNAVAILABLE' };
 
 /**
  * Jak dlouho platí uložený `draft-final` (R10). Mapa v paměti procesu nepřežije
@@ -121,8 +120,10 @@ async function runUpgrade(versions: VersionStore, draft: PublishedGame, request:
   const draftId = draft.version.versionId;
   const existing = await publishedUpgrade(versions, draftId);
   if (existing !== null) return { status: 'ready', versionId: existing };
+  // Čte se jen verdikt o větě: záznam z buildu před revizí R10 (nebo z jiného
+  // nasazení nad týmž prefixem) může nést přechodný důvod.
   const remembered = await versions.upgradeVerdict(draftId);
-  if (remembered !== null) return { status: 'draft-final', reason: remembered as DraftFinalReason };
+  if (remembered !== null && SENTENCE_VERDICTS.has(remembered as DraftFinalReason)) return { status: 'draft-final', reason: remembered as DraftFinalReason };
 
   const outcome = await directUpgrade(versions, draft, request);
   if (outcome.status === 'draft-final' && !isTransient(outcome)) await versions.rememberUpgradeVerdict(draftId, outcome.reason, DRAFT_FINAL_TTL_SECONDS);
