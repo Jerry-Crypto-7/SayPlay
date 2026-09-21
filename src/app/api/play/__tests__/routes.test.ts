@@ -16,6 +16,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import collectExit from '@/play/__fixtures__/collect_exit.json';
+import hazardCrossing from '@/play/__fixtures__/hazard_crossing.json';
 import switchPuzzle from '@/play/__fixtures__/switch_puzzle.json';
 import { GAME_COMPILER_VERSION } from '@/play/contracts';
 import { STARTERS } from '@/components/play/starters';
@@ -369,6 +370,42 @@ describe('skutečný kompilátor, verifikátor a režisér (P23-D T1)', () => {
     // Věta sama vede na totéž odvozené semínko; dveře zkusí další a hra vznikne.
     expect(seedFrom('Carry a fragile cake across a kitchen to a party table.')).toBe(UNWINNABLE_DELIVERY_SEED);
     expect((await publish('Carry a fragile cake across a kitchen to a party table.')).status).toBe(201);
+  });
+
+  // Tři mutanty, které přežily ověření T1 (21. 9. 2026): semínko volajícího se
+  // na větné a remixové cestě dalo tiše vyměnit za odvozená, a čip bez účinku
+  // šel smazat.
+  it('věta se semínkem volajícího: nevyhratelné rozvržení je 422 UNWINNABLE, ne jiné semínko', async () => {
+    const pinned = await createGame(
+      post('/api/play/games', { sentence: 'Carry a fragile cake across a kitchen to a party table.', seed: UNWINNABLE_DELIVERY_SEED }),
+    );
+    expect(pinned.status).toBe(422);
+    expect((await pinned.json()).error.code).toBe('UNWINNABLE');
+  });
+
+  it('remix se semínkem volajícího: nevyhratelné rozvržení je 422 UNWINNABLE, ne jiné semínko', async () => {
+    const created = await publish('Collect five glowing mushrooms then open a portal.');
+    const spec = draftGameSpec('Carry a fragile cake across a kitchen to a party table.');
+    const remixed = await remixGame(
+      post(`/api/play/games/${created.body.versionId}/remix`, { spec, seed: UNWINNABLE_DELIVERY_SEED }),
+      params(created.body.versionId),
+    );
+    expect(remixed.status).toBe(422);
+    expect((await remixed.json()).error.code).toBe('UNWINNABLE');
+  });
+
+  it('čip, který na hře nemá co změnit, je 422 a rodič nevyjde pod novým id', async () => {
+    // Twist přidá mechaniku jen do čtyř; hra se čtyřmi ho už nepustí.
+    const created = await createGame(post('/api/play/games', { spec: hazardCrossing }));
+    expect(created.status).toBe(201);
+    const parentId = (await created.json()).versionId as string;
+    const twisted = await remixGame(post(`/api/play/games/${parentId}/remix`, { chip: 'twist' }), params(parentId));
+    expect(twisted.status).toBe(201);
+    const childId = (await twisted.json()).versionId as string;
+    expect((await read(childId)).body.spec.mechanics).toHaveLength(4);
+    const again = await remixGame(post(`/api/play/games/${childId}/remix`, { chip: 'twist' }), params(childId));
+    expect(again.status).toBe(422);
+    expect((await again.json()).error.message).toContain('does not apply');
   });
 
   it('čip harder jde přes remixPatch režiséra a dítě je publikovatelné', async () => {

@@ -102,21 +102,29 @@ function post(body: unknown): Request {
 }
 
 describe('getDirector – souběh a pořadí bran (nálezy revize T1)', () => {
-  it('bez volného slotu dveří generate se model nevolá a hra je návrh', async () => {
+  it('bez volného slotu dveří play se model nevolá a hra je návrh', async () => {
     stubEnv(LIVE);
-    expect(acquireSlot('generate')).toBe(true);
-    expect(acquireSlot('generate')).toBe(true);
+    expect(acquireSlot('play')).toBe(true);
+    expect(acquireSlot('play')).toBe(true);
     const game = await getDirector()(SENTENCE);
     expect(game.source).toBe('draft');
     expect(fetchCalls).toBe(0);
+  });
+
+  it('režie PLAY nebere sloty /api/generate (druhé kolo revize T1)', async () => {
+    stubEnv(LIVE);
+    expect(acquireSlot('generate')).toBe(true);
+    expect(acquireSlot('generate')).toBe(true);
+    await getDirector()(SENTENCE);
+    expect(fetchCalls, 'plné dveře generate zavřely PLAY').toBeGreaterThan(0);
   });
 
   it('slot se vrací i po výpadku modelu – další věta ho dostane znovu', async () => {
     stubEnv(LIVE);
     await getDirector()(SENTENCE);
     await getDirector()(SENTENCE);
-    expect(acquireSlot('generate')).toBe(true);
-    expect(acquireSlot('generate')).toBe(true);
+    expect(acquireSlot('play')).toBe(true);
+    expect(acquireSlot('play')).toBe(true);
   });
 
   it('vyčerpaný denní strop publikací je 429 dřív, než se zaplatí model', async () => {

@@ -455,7 +455,7 @@ describe('založení relace', () => {
     // obou stranách by se strop dal zvednout ze tří na třicet a řádek by se
     // pořád shodoval sám se sebou.
     expect(refusals[0]).toContain(
-      'paid slots in flight: 3 world + 0 generate + 0 refine of 6 on this instance; ' +
+      'paid slots in flight: 3 world + 0 generate + 0 refine + 0 play of 8 on this instance; ' +
         'the world door may hold 3',
     );
     vi.unstubAllEnvs();

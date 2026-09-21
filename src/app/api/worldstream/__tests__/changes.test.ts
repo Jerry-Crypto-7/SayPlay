@@ -1663,14 +1663,14 @@ describe('strop souběžných placených volání', () => {
     // Čítač se sytí **všemi troje dveřmi**, protože žádné na dno samy nesmí:
     // každé se zastaví o svůj strop dřív a zbytek drží ty ostatní. Tenhle test
     // soudí sdílenost stropu, ne rezervu — tu soudí dva testy pod ním.
-    // Součet stropů (7) je nad dnem (6), takže se sytí **na dno**, ne na stropy:
+    // Součet stropů (9) je nad dnem (8), takže se sytí **na dno**, ne na stropy:
     // poslední slot vezme ten, kdo přijde první.
     for (let taken = 0; taken < MAX_CONCURRENT_GENERATIONS; taken += 1) {
-      const door = (['world', 'generate', 'refine'] as const)[taken % 3];
+      const door = (['world', 'generate', 'refine', 'play'] as const)[taken % 4];
       expect(acquireSlot(door), `slot ${taken} (${door}) měl být volný`).toBe(true);
     }
 
-    // Troje dveře, jeden strop. Kdyby měly čítače vlastní, útočník by je
+    // Čtvery dveře, jeden strop. Kdyby měly čítače vlastní, útočník by je
     // střídal a v letu by běželo dvanáct placených volání místo čtyř.
     //
     // ⚠ **Dveře na zakládání relace to od `T14r-actone` dokazují jinak.**
@@ -1731,7 +1731,7 @@ describe('strop souběžných placených volání', () => {
     // řádek nad nimi pinuje `sessions.test.ts` na jediné cestě, kde odmítnutí
     // zbylo: plný stroj a prázdný sklad.
     expect(refusedChanges[0]).toContain(
-      'paid slots in flight: 2 world + 2 generate + 2 refine of 6 on this instance; ' +
+      'paid slots in flight: 2 world + 2 generate + 2 refine + 2 play of 8 on this instance; ' +
         'the refine door may hold 2',
     );
 
@@ -1856,7 +1856,9 @@ describe('strop souběžných placených volání', () => {
     // jiným dveřím: dveře, které nedrží nic, se dovnitř dostanou, jen když na
     // dno čítače nedosáhnou ty ostatní **samy**. Soudí se to nad konstantami
     // i chováním, protože komentář nad `DOOR_CEILING` to uhlídat nemůže.
-    const doors = ['world', 'generate', 'refine'] as const;
+    // `play` (P23-D T1) je tu schválně: režisér PLAY nesmí vyhladovět
+    // `/api/generate` ani obráceně.
+    const doors = ['world', 'generate', 'refine', 'play'] as const;
 
     for (const door of doors) {
       const others = doors
@@ -1891,18 +1893,18 @@ describe('strop souběžných placených volání', () => {
   it('součet přes všechny dveře nepřeroste strop, ať přijdou v jakémkoli pořadí', async () => {
     // **Rozpad po dveřích je rozpad, ne druhý strop.** Kdyby si každé dveře
     // hlídaly jen svoje číslo, běželo by v letu tolik volání, kolik je součet
-    // stropů — dnes sedm proti dnu šesti — a dno by bylo jen návod, jak se
+    // stropů — dnes devět proti dnu osmi — a dno by bylo jen návod, jak se
     // střídat. Součet proto rozhoduje pořád, ať se dveře prokládají jakkoli.
-    for (const door of ['world', 'generate', 'refine'] as const)
+    for (const door of ['world', 'generate', 'refine', 'play'] as const)
       for (let i = 0; i < DOOR_CEILING[door] - (door === 'world' ? 0 : 1); i += 1)
         expect(acquireSlot(door), `${door} nedosáhlo na svůj strop`).toBe(true);
 
-    // Pět v letu: `world` na svém stropu, `generate` i `refine` pod ním. Šestý
-    // slot ještě je, sedmý ne — a odmítne ho **součet**, ne strop těch dveří.
-    expect(acquireSlot('refine'), 'šestý slot měl být volný').toBe(true);
-    for (const door of ['generate', 'refine'] as const)
-      expect(acquireSlot(door), `${door}: součet přerostl MAX_CONCURRENT_GENERATIONS`).toBe(false);
-    expect(MAX_CONCURRENT_GENERATIONS, 'dno se pohnulo — přepiš i tenhle test').toBe(6);
+    // Šest v letu: `world` na svém stropu, ostatní o jeden pod ním. Sedmý a
+    // osmý slot ještě jsou, devátý ne — a odmítne ho **součet**, ne strop dveří.
+    expect(acquireSlot('refine'), 'sedmý slot měl být volný').toBe(true);
+    expect(acquireSlot('play'), 'osmý slot měl být volný').toBe(true);
+    expect(acquireSlot('generate'), 'generate: součet přerostl MAX_CONCURRENT_GENERATIONS').toBe(false);
+    expect(MAX_CONCURRENT_GENERATIONS, 'dno se pohnulo — přepiš i tenhle test').toBe(8);
   });
 
   it('neznámé dveře slot nedostanou a čítač neotráví (P15 T22-doorkeyguard)', () => {
@@ -1917,15 +1919,15 @@ describe('strop souběžných placených volání', () => {
     releaseSlot(stranger);
     expect(acquireSlot(stranger), 'cizí dveře slot dostaly').toBe(false);
 
-    // Čítač zůstal beze změny: všechna troje dveře dojdou přesně na svůj strop
-    // a součet pak odmítne — kdyby byl `NaN`, prošlo by cokoli.
-    // Součet stropů (7) je nad dnem (6), takže se sytí **na dno**, ne na stropy:
+    // Čítač zůstal beze změny: všechny dveře dojdou na dno a součet pak
+    // odmítne — kdyby byl `NaN`, prošlo by cokoli.
+    // Součet stropů (9) je nad dnem (8), takže se sytí **na dno**, ne na stropy:
     // poslední slot vezme ten, kdo přijde první.
     for (let taken = 0; taken < MAX_CONCURRENT_GENERATIONS; taken += 1) {
-      const door = (['world', 'generate', 'refine'] as const)[taken % 3];
+      const door = (['world', 'generate', 'refine', 'play'] as const)[taken % 4];
       expect(acquireSlot(door), `slot ${taken} (${door}) měl být volný`).toBe(true);
     }
-    for (const door of ['world', 'generate', 'refine'] as const)
+    for (const door of ['world', 'generate', 'refine', 'play'] as const)
       expect(acquireSlot(door), `${door}: čítač je otrávený, součet nekousl`).toBe(false);
     expect(slotsDetail('world')).not.toContain('NaN');
   });

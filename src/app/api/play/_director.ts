@@ -56,20 +56,22 @@ async function cappedBranch(env: Record<string, string | undefined>): Promise<Ge
 const NO_MODEL: GenerationBranch = upstreamBranch(null);
 
 /**
- * Placená větev drží po celou režii jeden slot dveří `generate` – týž čítač
- * souběžných placených volání jako `/api/generate` a relace WORLDSTREAM. Bez
- * volného slotu se model nevolá a hra je návrh: jinak by jeden volající se
- * stovkou různých vět vyčerpal strop volání celého dema (nález revize T1).
+ * Placená větev drží po celou režii jeden slot **vlastních dveří `play`** – pod
+ * týmž celkovým stropem souběžných placených volání jako `/api/generate` a
+ * relace WORLDSTREAM, ale s vlastním čítačem, aby visící režie nezavřela
+ * `/api/generate` (druhé kolo revize T1). Bez volného slotu se model nevolá a
+ * hra je návrh: jinak by jeden volající se stovkou různých vět vyčerpal strop
+ * volání celého dema (nález revize T1).
  */
 export function getDirector(): Director {
   return async (sentence) => {
     const cache = directorCacheFromEnv(process.env);
     const branch = await cappedBranch(process.env);
-    if (branch === null || !acquireSlot('generate')) return direct(sentence, { branch: NO_MODEL, cache, now: Date.now });
+    if (branch === null || !acquireSlot('play')) return direct(sentence, { branch: NO_MODEL, cache, now: Date.now });
     try {
       return await direct(sentence, { branch, cache, now: Date.now });
     } finally {
-      releaseSlot('generate');
+      releaseSlot('play');
     }
   };
 }
