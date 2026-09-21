@@ -13,7 +13,19 @@ import { versionStoreFromEnv } from '@/play/version';
 export default async function PlayGamePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!VERSION_ID_PATTERN.test(id)) notFound();
-  const game = await versionStoreFromEnv(process.env).get(id);
+  const versions = versionStoreFromEnv(process.env);
+  const game = await versions.get(id);
   if (game === null) notFound();
-  return <PlayShell versionId={game.version.versionId} spec={game.spec} blueprint={game.blueprint} />;
+  const [children, lineage] = await Promise.all([versions.childrenOf(id), versions.lineageOf(id)]);
+  // `key`: přechod na remix je klientská navigace a nová hra musí dostat nový runtime, ne ten rodičův.
+  return (
+    <PlayShell
+      key={game.version.versionId}
+      versionId={game.version.versionId}
+      spec={game.spec}
+      blueprint={game.blueprint}
+      lineage={lineage.length > 0 ? lineage : [game.version]}
+      remixes={children.length}
+    />
+  );
 }

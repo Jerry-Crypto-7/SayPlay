@@ -396,3 +396,94 @@
     padding: 20px;
   }
 }
+
+/* Po dohrání (T6): Replay, CHANGE ONE THING, CHALLENGE A FRIEND, rodokmen. */
+.play-lineage {
+  position: relative;
+  z-index: 1;
+  margin: 0 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: var(--play-muted);
+  font-size: 0.85rem;
+}
+
+.play-lineage a {
+  color: var(--play-accent);
+}
+
+.play-lineage-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.play-postrun {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.play-postrun-title {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  color: var(--play-muted);
+}
+
+.play-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.play-chip {
+  border: 1px solid var(--play-line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: var(--play-panel);
+  color: var(--play-text);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.play-chip:hover:not(:disabled) {
+  border-color: var(--play-accent);
+}
+
+.play-chip:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.play-share {
+  background: var(--play-accent);
+  color: var(--play-bg);
+}
+
+.play-button.play-share:hover:not(:disabled) {
+  background: #d97706;
+}
+
+.play-share-url {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--play-line);
+  background: var(--play-panel);
+  color: var(--play-text);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 480px) {
+  .play-outcome {
+    top: 45%;
+    max-height: 80dvh;
+    overflow-y: auto;
+  }
+}

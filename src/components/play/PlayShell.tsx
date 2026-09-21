@@ -17,6 +17,7 @@
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
+import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 import { createMeshClient } from '@/shape/mesh-client';
 import { createCachedMeshClient } from '@/shape/mesh-cache';
@@ -26,6 +27,8 @@ import type { RuntimeAction } from '@/worldstream/runtime-input';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
 import { Hud } from './Hud';
+import { Lineage } from './Lineage';
+import { PostRun } from './PostRun';
 import { TargetCards } from './TargetCards';
 import { keyAction, playerActor, tapAction, targetCards } from './targets';
 
@@ -68,9 +71,12 @@ export interface PlayShellProps {
   readonly versionId: string;
   readonly spec: GameSpecV1;
   readonly blueprint: WorldstreamBlueprint;
+  /** Od kořene k listu; poslední záznam je tahle hra. */
+  readonly lineage: readonly GameVersion[];
+  readonly remixes: number;
 }
 
-export function PlayShell({ versionId, spec, blueprint }: PlayShellProps) {
+export function PlayShell({ versionId, spec, blueprint, lineage, remixes }: PlayShellProps) {
   const [controller] = useState(() => bindRuntime(null, versionId, blueprint.world).controller);
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
   const [world, setWorld] = useState<ProxyWorld | null>(null);
@@ -164,13 +170,14 @@ export function PlayShell({ versionId, spec, blueprint }: PlayShellProps) {
         <WorldstreamCanvas world={world} controller={controller} sceneId={versionId} framing="scene" />
       </div>
       <Hud spec={spec} snapshot={snapshot} />
+      <Lineage lineage={lineage} remixes={remixes} />
       {!built && fault === null && (
         <p className="play-building" data-testid="play-building" aria-live="polite">Building the world…</p>
       )}
       {fault !== null && (
         <p className="play-alert" role="alert">This game could not be built: {fault}</p>
       )}
-      <TargetCards cards={cards} selected={selected} disabled={!running || !built} onTap={(card) => {
+      <TargetCards cards={cards} selected={selected} disabled={!snapshot.canInput || !built} onTap={(card) => {
         const hit = tapAction(card, selected);
         send(hit.action, hit.selected);
       }} />
@@ -178,6 +185,7 @@ export function PlayShell({ versionId, spec, blueprint }: PlayShellProps) {
         <section className="play-outcome" data-testid="play-outcome" role="status">
           <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
           <p className="play-outcome-detail">at tick {snapshot.tick}</p>
+          <PostRun versionId={versionId} onReplay={() => controller.observeAt(0)} />
         </section>
       )}
     </main>
