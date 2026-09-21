@@ -137,9 +137,10 @@ async function directUpgrade(versions: VersionStore, draft: PublishedGame, reque
   const final = (reason: DraftFinalReason, personal = false): Attempt => ({ outcome: { status: 'draft-final', reason }, personal });
   const draftId = draft.version.versionId;
 
-  // Denní strop dřív, než se zaplatí model – dítě by úložiště stejně odmítlo.
+  // Výpadek úložiště dřív, než se zaplatí model. Vyčerpaná kvóta ne – dítě se
+  // do ní nepočítá (R11), takže odpověď `canPublish` tu nerozhoduje.
   try {
-    if (!(await versions.canPublish())) return final('PUBLISH_QUOTA');
+    await versions.canPublish();
   } catch (thrown) {
     if (thrown instanceof VersionStoreUnavailable) return final('STORE_UNAVAILABLE');
     throw thrown;

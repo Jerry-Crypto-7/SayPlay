@@ -131,6 +131,21 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect((await game(draftId)).children).toEqual([ready.versionId]);
   });
 
+  it('autorské dítě se do denního stropu publikací nepočítá (R11)', async () => {
+    vi.stubEnv('PLAY_PUBLISH_DAILY_CAP', '1');
+    __resetProcessVersionStore();
+    try {
+      const created = await publish({ sentence: SENTENCE });
+      expect(created.status).toBe(201);
+      expect((await settled(created.body.versionId)).status).toBe('ready');
+      // Kvóta patří dál návrhům: druhá nová věta narazí.
+      expect((await publish({ sentence: 'A cat delivers a fragile cake across a busy kitchen.' })).status).toBe(429);
+    } finally {
+      vi.unstubAllEnvs();
+      __resetProcessVersionStore();
+    }
+  });
+
   it('model nedostupný: draft-final s důvodem a žádné dítě', async () => {
     director.script = [failed('UPSTREAM_UNAVAILABLE')];
     const created = await publish({ sentence: SENTENCE });

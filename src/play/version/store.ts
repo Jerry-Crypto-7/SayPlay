@@ -90,7 +90,7 @@ export const MAX_LINEAGE = 32;
 export interface WriteLimits {
   /** Jak dlouho hra žije od publikace. Výchozí 60 dní – porota otvírá odkazy týdny po odevzdání. */
   readonly ttlSeconds: number;
-  /** Kolik publikací (pokusů o zápis) za den napříč všemi volajícími. */
+  /** Kolik publikací (pokusů o zápis) za den napříč všemi volajícími; autorská dítě (`relation: 'upgrade'`) se nepočítají. */
   readonly dailyCap: number;
 }
 
@@ -170,7 +170,10 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       const key = versionKey(game.version.versionId);
       const text = serialise(game);
       try {
-        if ((await raw.incr(quotaKey(), 2 * 24 * 3600)) > limits.dailyCap) return 'quota';
+        // Autorské dítě se do kvóty nepočítá (R11): stojí placené volání a drží
+        // ho strop utrácení a denní počet volajícího. Jinak by věta zapsala dvě
+        // hry a strop by pustil jen polovinu vět.
+        if (game.relation !== 'upgrade' && (await raw.incr(quotaKey(), 2 * 24 * 3600)) > limits.dailyCap) return 'quota';
         if (!(await raw.setNx(key, text, limits.ttlSeconds))) {
           const existing = await raw.get(key);
           if (existing === text) return 'exists';
