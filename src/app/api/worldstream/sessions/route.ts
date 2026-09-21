@@ -127,6 +127,13 @@ export const runtime = 'nodejs';
  * /api/play/games` zavřely `/api/generate` na minuty. PLAY má proto čtvrté
  * dveře se stropem 2: 3 + 2 + 2 + 2 = 9 proti dnu 8, ostatní dveře dosáhnou
  * nejvýš na 7, rezerva platí pro všechny čtvery. Peníze dál drží strop útraty.
+ *
+ * ✅ **Osm potvrzeno proti živému mostu 21. 9. 2026 (P23-D R9).** Most
+ * codex-shim pouští dva běhy naráz a třetí odmítne hned 429 `busy`, bez fronty
+ * (`scripts/__tests__/codex-shim.test.ts`). Volání 3–8 tedy netlačí k timeoutu
+ * 120 s, skončí za milisekundy: PLAY návrhem, ostatní dveře chybovou cestou.
+ * Snížit dno na dva nejde – rozbilo by rezervu dveří a mez mostu platí napříč
+ * instancemi, kdežto tahle jen na jednu. S API klíčem na finále platí osm celé.
  */
 export const MAX_CONCURRENT_GENERATIONS = 8;
 

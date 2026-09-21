@@ -109,6 +109,23 @@ describe('getDirector – brány placené větve', () => {
     expect(game.source).toBe('draft');
     expect(game.fallbackReason).toBe('MODEL_UNAVAILABLE');
   });
+
+  // R9: most codex-shim pouští dva běhy naráz a třetí hned odmítne 429 `busy`
+  // (`scripts/__tests__/codex-shim.test.ts`), nic nečeká ve frontě. Strop
+  // osmi slotů proto nevede k timeoutu, jen k rychlému návrhu.
+  it('plný most (429 busy) skončí návrhem hned, ne po timeoutu volání', async () => {
+    stubEnv(LIVE);
+    vi.stubGlobal('fetch', () => {
+      fetchCalls += 1;
+      return Promise.resolve(Response.json({ type: 'error', error: { type: 'rate_limit_error', message: 'busy' } }, { status: 429 }));
+    });
+    const started = performance.now();
+    const game = await getDirector(Date.now(), 'test-caller')(SENTENCE);
+    expect(fetchCalls).toBe(1);
+    expect(game.source).toBe('draft');
+    expect(game.fallbackReason).toBe('MODEL_UNAVAILABLE');
+    expect(performance.now() - started).toBeLessThan(5_000);
+  });
 });
 
 describe('getDirector – rozpočet času režie (R7)', () => {
