@@ -15,7 +15,8 @@ import { type Runtime, createRuntime, entityPlacements, entitySlotId, step } fro
 import { readSlot } from '@/sim/state';
 import { verifyWitness } from '@/verify/witness';
 
-import { compileSim, type SimCompilation, type SurfaceSim } from '../compile';
+import { compileGame, compileSim, type SimCompilation, type SurfaceSim } from '../compile';
+import { draftGameSpec } from '../draft';
 import { ADAPTERS } from '../compile/adapters';
 import { TICKS_PER_SECOND } from '../compile/adapters/timer';
 import { ARCHETYPE_IDS, MECHANIC_IDS } from '../registry';
@@ -137,6 +138,13 @@ describe('compileSim – delivery (carry)', () => {
     expect(run(held, [{ tick: 0, actionId: 'pickup', target: 'cake' }, walk], 80)).toBe('lost');
     const empty = runtimeOf({ ...sim, sockets, state, rules });
     expect(run(empty, [walk], 80)).toBe('running');
+  });
+});
+
+describe('compileGame – waiting witness (R6)', () => {
+  it('the fragile cake that lost to the waiter at tick 6 on seed 1964188670 now wins by waiting', () => {
+    const result = compileGame(draftGameSpec('Carry a fragile cake across a kitchen to a party table.'), 1964188670);
+    expect(result.ok).toBe(true);
   });
 });
 
