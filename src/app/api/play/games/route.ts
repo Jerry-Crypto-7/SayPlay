@@ -85,7 +85,9 @@ export async function POST(request: Request): Promise<Response> {
   const { sentence, spec, seed, parentId = null } = parsed.data;
   if ((sentence === undefined) === (spec === undefined)) return fail(400, 'BAD_REQUEST', 'send exactly one of sentence or spec');
   if (sentence !== undefined && sentence.length > MAX_SENTENCE_CHARS) return fail(413, 'BODY_TOO_LARGE', `the sentence is longer than ${String(MAX_SENTENCE_CHARS)} characters`);
-  if (seed !== undefined && !isSeed(seed)) return fail(400, 'BAD_REQUEST', 'seed must be a whole number from 1 to 2^31');
+  // Prázdná věta by dala hru, kterou nikdo nepopsal – a pod jejím hashem jednu pro všechny.
+  if (sentence !== undefined && sentence.trim() === '') return fail(400, 'BAD_REQUEST', 'the sentence is empty');
+  if (seed !== undefined && !isSeed(seed)) return fail(400, 'BAD_REQUEST', 'seed must be a whole number from 1 to 2^31 - 1');
 
   const versions = store();
   if (parentId !== null && (await parentOf(versions, parentId)) === null) return fail(404, 'UNKNOWN_PARENT', 'the parent game does not exist');

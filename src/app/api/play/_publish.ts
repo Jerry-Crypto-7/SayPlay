@@ -27,11 +27,14 @@ import { reportFor } from './_report';
 /** Nejdelší věta, kterou dveře vezmou. Delší je 413, ne oříznutí. */
 export const MAX_SENTENCE_CHARS = 500;
 
-/** Semínko je celé číslo 1..2^31; bez něj se odvodí z obsahu – nikde `Math.random`. */
-export const MAX_SEED = 2 ** 31;
+/**
+ * Semínko je celé číslo 1..2^31 − 1 (strop `sessionSeed` v blueprintu); bez něj
+ * se odvodí z obsahu – nikde `Math.random`.
+ */
+export const MAX_SEED = 2 ** 31 - 1;
 
 export function seedFrom(value: unknown): number {
-  return (Number.parseInt(canonicalHash(value).slice(0, 8), 16) % (MAX_SEED - 1)) + 1;
+  return (Number.parseInt(canonicalHash(value).slice(0, 8), 16) % MAX_SEED) + 1;
 }
 
 /**

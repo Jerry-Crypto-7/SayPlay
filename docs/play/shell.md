@@ -13,7 +13,7 @@ cesta ani adresa úložiště. `code` je stabilní, `message` je věta pro člov
 ### `POST /api/play/games` – publikace
 
 Tělo: `{ sentence?: string, spec?: GameSpecV1, seed?: number, parentId?: string | null }`,
-právě jedno ze `sentence` / `spec`. `seed` je celé číslo 1..2^31; bez něj se odvodí hashem
+právě jedno ze `sentence` / `spec`. `seed` je celé číslo 1..2^31 − 1 (strop `sessionSeed` blueprintu); bez něj se odvodí hashem
 z věty nebo specu (nikde `Math.random`, táž věta = táž hra).
 
 Pořadí bran (odmítnutí v kterémkoli kroku = do úložiště nešel ani bajt):

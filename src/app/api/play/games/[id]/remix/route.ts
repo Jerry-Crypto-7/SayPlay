@@ -35,7 +35,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!parsed.success) return fail(400, 'BAD_REQUEST', 'send a chip from the list, or a spec');
   const { chip, spec, seed } = parsed.data;
   if ((chip === undefined) === (spec === undefined)) return fail(400, 'BAD_REQUEST', 'send exactly one of chip or spec');
-  if (seed !== undefined && !isSeed(seed)) return fail(400, 'BAD_REQUEST', 'seed must be a whole number from 1 to 2^31');
+  if (seed !== undefined && !isSeed(seed)) return fail(400, 'BAD_REQUEST', 'seed must be a whole number from 1 to 2^31 - 1');
 
   const versions = store();
   const parent = await versions.get(id);

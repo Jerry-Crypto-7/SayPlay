@@ -329,6 +329,62 @@ describe('Oracle', () => {
   });
 });
 
+describe('chybové cesty ze ship-review (P23-D R5)', () => {
+  function switchOff(...off: string[]): void {
+    const dir = mkdtempSync(join(tmpdir(), 'play-kill-'));
+    temporary.push(dir);
+    const file = join(dir, 'control.json');
+    writeFileSync(file, JSON.stringify({ off }));
+    process.env.WORLDSMITH_CONTROL_FILE = file;
+  }
+
+  it('semínko: 0, 1.5, "7", 2^31 a −1 → 400 na obou dveřích; 2^31 − 1 → 201', async () => {
+    // Strop je `sessionSeed` blueprintu; 2^31 dřív prošlo dveřmi a spadlo až jako WORLD_REJECTED.
+    const created = await publish('Collect the coins');
+    for (const seed of [0, 1.5, '7', 2 ** 31, -1]) {
+      const game = await createGame(post('/api/play/games', { spec: collectExit, seed }));
+      expect(game.status, `games ${String(seed)}`).toBe(400);
+      const remix = await remixGame(post(`/api/play/games/${created.body.versionId}/remix`, { chip: 'harder', seed }), params(created.body.versionId));
+      expect(remix.status, `remix ${String(seed)}`).toBe(400);
+    }
+    const top = await createGame(post('/api/play/games', { spec: collectExit, seed: 2 ** 31 - 1 }));
+    expect(top.status).toBe(201);
+  });
+
+  it('parentId na POST /games: známý rodič → 201 s rodokmenem na obou stranách; `../etc` → 404', async () => {
+    const parent = await publish('Collect the coins');
+    const response = await createGame(post('/api/play/games', { spec: collectExit, seed: 3, parentId: parent.body.versionId }));
+    expect(response.status).toBe(201);
+    const child = await response.json();
+    expect(child.parentId).toBe(parent.body.versionId);
+    expect((await read(parent.body.versionId)).body.children).toEqual([child.versionId]);
+    expect((await read(child.versionId)).body.lineage.map((v: { versionId: string }) => v.versionId)).toEqual([parent.body.versionId, child.versionId]);
+
+    const hostile = await createGame(post('/api/play/games', { spec: collectExit, parentId: '../etc' }));
+    expect(hostile.status).toBe(404);
+  });
+
+  it('páka sessions vypne zápis (POST i remix 503), čtení hotové hry dál 200', async () => {
+    // Opačný směr (čtení vypnuté, zápis běží) páky neumí: `snapshots` vypne jen `all`.
+    const created = await publish('Collect the coins');
+    switchOff('sessions');
+    expect((await createGame(post('/api/play/games', { sentence: 'Escape the chasing wolves' }))).status).toBe(503);
+    const remix = await remixGame(post(`/api/play/games/${created.body.versionId}/remix`, { chip: 'harder' }), params(created.body.versionId));
+    expect(remix.status).toBe(503);
+    expect((await read(created.body.versionId)).status).toBe(200);
+  });
+
+  it('prázdná věta i věta z mezer → 400, nic se neuložilo', async () => {
+    const store = versionStoreFromEnv(process.env);
+    const put = vi.spyOn(store, 'put');
+    for (const sentence of ['', '   ']) {
+      const response = await createGame(post('/api/play/games', { sentence }));
+      expect(response.status, JSON.stringify(sentence)).toBe(400);
+    }
+    expect(put).not.toHaveBeenCalled();
+  });
+});
+
 describe('feed GET /api/play/games?recent (P23-D T4)', () => {
   const feed = async (query: string): Promise<{ status: number; body: Record<string, any> }> => {
     const response = await listGames(new Request(`http://play.test/api/play/games${query}`, { headers: CALLER }));
