@@ -11,8 +11,6 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { ARCHETYPES, type ArchetypeId } from '@/play/registry';
-
 interface FeedGame {
   readonly versionId: string;
   readonly title: string;
@@ -22,11 +20,12 @@ interface FeedGame {
 
 const FEED_URL = '/api/play/games?recent=24';
 
-function pitchOf(archetype: string): string {
-  return Object.hasOwn(ARCHETYPES, archetype) ? ARCHETYPES[archetype as ArchetypeId].pitch : '';
-}
-
-export function Feed() {
+/**
+ * `pitches` – věta archetypu podle id. Počítá je serverová stránka: registr
+ * táhne zod a do klientského bundlu nepatří (stejně jako u `lab.ts`).
+ */
+export function Feed({ pitches }: { readonly pitches: Readonly<Record<string, string>> }) {
+  const pitchOf = (archetype: string): string => (Object.hasOwn(pitches, archetype) ? pitches[archetype] : '');
   const [games, setGames] = useState<readonly FeedGame[] | null>(null);
 
   useEffect(() => {

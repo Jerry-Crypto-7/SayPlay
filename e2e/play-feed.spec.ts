@@ -40,6 +40,9 @@ test.describe('/play – feed', () => {
     const cards = page.getByTestId('play-feed-card');
     await expect(cards).toHaveCount(3);
     await expect(cards.nth(0)).toContainText(created[0].title);
+    // Věta archetypu přichází ze serverové stránky, ne z registru v klientovi.
+    expect(created[0].archetype).toBe('chase_escape');
+    await expect(cards.nth(0)).toContainText('Something hunts the player');
     await expect(cards.nth(0)).toContainText('0 remixes');
     await expect(cards.nth(1)).toContainText('1 remix');
 
