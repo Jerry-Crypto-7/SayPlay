@@ -167,3 +167,34 @@ svědka s `pickup` bez předchozího `moveTo` – sběr na dálku je v runtimu l
 - **Hlídka:** `state.agents` s cíli na soketech `<role>_stop<i>` (bez tečky, kvůli `SYMBOL_PATTERN`).
 - **Vlny:** `state.pool.<role> = { size, tag }`, členové poolu se jmenují prefixem jména poolu
   (`src/ir/build.ts:85` `buildTags`); `spawn {poolTag, socket}` oživí nejnižší neaktivní.
+
+## Naměřeno (T10, 21. 9. 2026)
+
+`evals/play/compiled/report.json`, 8 fixtur × seedy 1–5, `compileGame` + `verifyGame`:
+
+| Archetyp | eligible | `compileMs` (seed 1–5) | entity | pravidla | `winsAtTick` |
+|---|---|---|---|---|---|
+| collect_exit | 5/5 | 85.6, 67.2, 25.6, 18.0, 23.5 | 7 | 7 | 17–23 |
+| chase_escape | 5/5 | 28.3, 18.4, 23.5, 20.6, 20.9 | 6 | 70 | 9–15 |
+| survival_timer | 5/5 | 238.4, 201.5, 247.6, 251.2, 259.1 | 7 | 21 | 1201 |
+| checkpoint_race | 5/5 | 20.8, 23.8, 34.6, 35.4, 23.9 | 6 | 7 | 38–54 |
+| delivery | 5/5 | 24.3, 12.2, 10.2, 19.3, 10.0 | 4 | 5 | 9–15 |
+| switch_puzzle | 5/5 | 13.0, 10.3, 50.2, 11.5, 18.9 | 5 | 13 | 7–14 |
+| hazard_crossing | 5/5 | 27.4, 33.2, 31.7, 29.4, 38.7 | 10 | 21 | 32–42 |
+| combat_lite | 5/5 | 12.7, 37.7, 11.6, 10.2, 12.0 | 6 | 12 | 11 |
+
+- **40/40 eligible**, medián `compileMs` **23.9 ms** (strop testu 500 ms; modelový kompilátor 164–188 s).
+  Test drží `eligible ≥ 40` jako pin a každý archetyp ≥ 4/5.
+- Nejdražší je `survival_timer` (~240 ms): certifikace přehraje celých 1 201 tiků 60s časovače.
+  Časy prvních seedů zahrnují zahřátí JIT, proto je `collect_exit/1` dražší než zbytek.
+- `triangles` jsou `null` – počítá je až prohlížeč, který geometrii kompiluje.
+- **Piny `worldHash` seedu 1:** `collect_exit 96952ab5`, `chase_escape 65f7583d`, `survival_timer 31d2a7f8`,
+  `checkpoint_race f2f00cb3`, `delivery 0f91dd46`, `switch_puzzle e3d6d7fb`, `hazard_crossing 941e9389`,
+  `combat_lite 64ccf7d4`. Posun = vědomá změna kompilátoru: zvednout `GAME_COMPILER_VERSION`, zapsat
+  nález do `CONTRACT-CHANGES.md`, smazat `report.json` a test pustit znovu.
+- Odpovědi na „Co nevíme“ plánu: hra s pronásledovatelem je dohratelná (`chase_escape` 5/5, svědek
+  vyhrává). 70 pravidel `chase_escape` je pod rozpočtem specu (120), ale nad odhadem registru –
+  `estimateCost` horní mez není, nález T7 je v `CONTRACT-CHANGES.md`.
+- Verifikátor (T9): `reachability` přehrává certifikovaného autorského svědka (`verifyWitness`), hledač
+  `solveWitnessDetailed` se nevolá (48 s na svět); `firedMechanics` = aspoň jedno pravidlo mechaniky
+  spustilo a žádné dvakrát.
