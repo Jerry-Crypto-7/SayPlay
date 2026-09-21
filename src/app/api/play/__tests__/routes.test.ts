@@ -361,6 +361,8 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
     const a = await authoredOf(first.body.versionId, 'a'.repeat(32));
     vi.setSystemTime(1_700_000_002_000);
     const b = await authoredOf(second.body.versionId, 'b'.repeat(32));
+    // Remix autorské verze se počítá na její kartě; do feedu sám nejde.
+    expect((await remixGame(post(`/api/play/games/${a}/remix`, { chip: 'harder' }), params(a))).status).toBe(201);
 
     const { status, body } = await feed('?recent=24');
     expect(status).toBe(200);
@@ -371,8 +373,9 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
       archetype: 'collect_exit',
       createdAt: new Date(1_700_000_001_000).toISOString(),
       parentId: first.body.versionId,
-      remixes: 0,
+      remixes: 1,
     });
+    expect(body.games[0].remixes).toBe(0);
     expect((await feed('?recent=1')).body.games).toHaveLength(1);
   });
 

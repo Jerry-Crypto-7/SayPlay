@@ -69,8 +69,7 @@ function publish(seed: number, parentId: string | null, replayEqual = true): Pub
 }
 
 /** Falešný Upstash: SET (NX, EX), GET, MGET, INCR, EXPIRE, LPUSH, LTRIM, LRANGE. Expirace se zapisují do `ttl`, aby šly ověřit. */
-function fakeUpstash(kv: Map<string, string>, ttl: Map<string, number> = new Map()): typeof fetch {
-  const lists = new Map<string, string[]>();
+function fakeUpstash(kv: Map<string, string>, ttl: Map<string, number> = new Map(), lists: Map<string, string[]> = new Map()): typeof fetch {
   return async (input, init) => {
     const url = String(input);
     const getMatch = /\/get\/(.+)$/.exec(url);
@@ -285,6 +284,16 @@ describe('feed expiry', () => {
 });
 
 describe('VersionStore http', () => {
+  // `recent()` čte nejvýš RECENT_CAP řádků, takže zkrácení seznamu v úložišti přes něj vidět není – měří se seznam sám.
+  it(`trims the stored feed list to ${String(RECENT_CAP)} entries`, async () => {
+    const lists = new Map<string, string[]>();
+    const store = httpVersionStore({ url: 'https://x', token: 't', prefix: PREFIX, timeoutMs: 500 }, fakeUpstash(new Map(), new Map(), lists));
+    const base: PublishedGame = { ...publish(1, null), relation: 'upgrade' };
+    const createdAt = new Date().toISOString();
+    for (let i = 0; i < RECENT_CAP + 5; i++) await store.put({ ...base, version: { ...base.version, versionId: `id${String(i)}`, createdAt } });
+    expect(lists.get(`${PREFIX}:play:recent`)).toHaveLength(RECENT_CAP);
+  });
+
   it('treats corrupted JSON as an unknown version', async () => {
     const kv = new Map<string, string>([[`${PREFIX}:play:v:bad`, '{not json']]);
     const store = httpVersionStore({ url: 'https://x', token: 't', prefix: PREFIX, timeoutMs: 500 }, fakeUpstash(kv));
