@@ -43,7 +43,7 @@ jsou jediný živý běh režiséra 20. 9. (`gpt-6-astra`, 8 vět). Zdroje:
 | ≥ 95 % korpusu hratelné | ≥ 95 % | 40/40 = 100 % (návrh ze slov) | `regression/report.json` `summary.eligible` | PASS |
 | p50 < 12 s / p90 < 25 s – návrh | do hratelné hry | p50 53,6 ms, p90 260,5 ms (návrh + kompilace + kontrola na serveru, bez sítě) | `regression/report.json` (`draftMs + compileMs + verifyMs`) | PASS |
 | p50 < 12 s / p90 < 25 s – autorská verze | do verze od režiséra | p50 40 405 ms, p90 55 024 ms (8 vět) | `director-live.json` `summary` | FAIL |
-| vodopád T2 přes API | ack a hratelný návrh přes HTTP | NOT MEASURED – měří T6 (`evals/play/regression/live.json`) | – | NOT MEASURED |
+| vodopád T2 přes API | ack a hratelný návrh přes HTTP, p50 < 12 s | živě přes `next start`, 4 věty: p50 ack 126 ms, hratelný návrh nejpozději 421 ms; autorská verze p50 40 925 ms, `authored` 2/4 (2× `draft-final` `NOT_PLAYABLE`, hráč zůstal u hratelného návrhu) | `regression/live.json` `summary` | PASS |
 | ≥ 90 % zlatých vět bez plné regenerace | ≥ 90 % | 40/40 zkompilováno napoprvé; živě 0 opravných kol v 8/8 | `regression/report.json`; `director-live.json` `repairRounds` | PASS |
 | 100 % replay korpusu | 100 % | 40/40 | `compiled/report.json` | PASS |
 | rozpočty entit a pravidel | server růst vynutí | 40/40 v rozpočtu (součást `publishEligible`); odhad pravidel registru není horní mez (R1 otevřený) | `src/play/verify/index.ts:129`; `compiled/report.json` | PASS |

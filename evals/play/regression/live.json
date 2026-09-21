@@ -1,0 +1,59 @@
+{
+  "schema": "play-live-v1",
+  "measuredAt": "2026-09-21T16:48:31.826Z",
+  "model": "gpt-6-astra",
+  "baseUrl": "http://127.0.0.1:3121",
+  "partial": false,
+  "partialReason": null,
+  "rows": [
+    {
+      "sentence": "A hamster escapes a supermarket while a giant Roomba hunts it.",
+      "ackMs": 345,
+      "draftPlayableMs": 421,
+      "upgradeStatus": "ready",
+      "upgradeReason": null,
+      "upgradeMs": 40925,
+      "source": "authored",
+      "archetypeDraft": "chase_escape",
+      "archetypeAuthored": "chase_escape"
+    },
+    {
+      "sentence": "Collect five glowing mushrooms then open a portal.",
+      "ackMs": 126,
+      "draftPlayableMs": 162,
+      "upgradeStatus": "draft-final",
+      "upgradeReason": "NOT_PLAYABLE",
+      "upgradeMs": 44691,
+      "source": null,
+      "archetypeDraft": "collect_exit",
+      "archetypeAuthored": null
+    },
+    {
+      "sentence": "Press red and blue but not green to open the door.",
+      "ackMs": 181,
+      "draftPlayableMs": 240,
+      "upgradeStatus": "ready",
+      "upgradeReason": null,
+      "upgradeMs": 46703,
+      "source": "authored",
+      "archetypeDraft": "switch_puzzle",
+      "archetypeAuthored": "switch_puzzle"
+    },
+    {
+      "sentence": "Carry a fragile cake across a kitchen to a party table.",
+      "ackMs": 54,
+      "draftPlayableMs": 79,
+      "upgradeStatus": "draft-final",
+      "upgradeReason": "NOT_PLAYABLE",
+      "upgradeMs": 36422,
+      "source": null,
+      "archetypeDraft": "delivery",
+      "archetypeAuthored": null
+    }
+  ],
+  "summary": {
+    "p50AckMs": 126,
+    "p50UpgradeMs": 40925,
+    "authored": "2/4"
+  }
+}
