@@ -312,6 +312,23 @@ describe('VersionStore http', () => {
     await expect(refused.put(publish(1, null))).rejects.toBeInstanceOf(VersionStoreUnavailable);
   });
 
+  it('a write that dies after SET NX refuses the put, but the game reads and is its own lineage root', async () => {
+    const kv = new Map<string, string>();
+    const upstash = fakeUpstash(kv);
+    let sets = 0;
+    // Druhý SET je zápis rodokmenu – první (NX) hru už uložil.
+    const flaky: typeof fetch = (input, init) => {
+      const parts = init?.body === undefined ? [] : (JSON.parse(String(init.body)) as string[]);
+      if (parts[0] === 'SET' && ++sets === 2) return Promise.reject(new Error('ECONNRESET'));
+      return upstash(input, init);
+    };
+    const store = httpVersionStore({ url: 'https://x', token: 't', prefix: PREFIX, timeoutMs: 500 }, flaky);
+    const game = publish(1, null);
+    await expect(store.put(game)).rejects.toBeInstanceOf(VersionStoreUnavailable);
+    expect(await store.get(game.version.versionId)).not.toBeNull();
+    expect((await store.lineageOf(game.version.versionId)).map((version) => version.versionId)).toEqual([game.version.versionId]);
+  });
+
   it('sends the bearer token and the prefixed key', async () => {
     const calls: { url: string; init: RequestInit | undefined }[] = [];
     const kv = new Map<string, string>();
