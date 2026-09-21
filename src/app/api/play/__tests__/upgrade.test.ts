@@ -239,6 +239,19 @@ describe('GET …/upgrade', () => {
     expect(director.calls).toBe(1);
   });
 
+  it('připojený divák přechodného pokusu dostane pending a jeho další dotaz vlastní pokus (R13)', async () => {
+    director.callerLimited = true;
+    const created = await publish({ sentence: SENTENCE });
+    await settled(created.body.versionId);
+    __resetUpgrades();
+    const outcomes = await Promise.all([upgrade(created.body.versionId), upgrade(created.body.versionId)]);
+    expect(outcomes).toContainEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
+    expect(outcomes).toContainEqual({ status: 'pending' });
+    director.callerLimited = false;
+    director.script = [answered(answerFixture('good-collect_exit'))];
+    expect((await settled(created.body.versionId)).status).toBe('ready');
+  });
+
   it('hra z hotového specu nemá z čeho vylepšit', async () => {
     const created = await publish({ spec: collectExit });
     expect(created.body.upgrade).toBeUndefined();

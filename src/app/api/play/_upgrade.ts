@@ -163,11 +163,13 @@ async function directUpgrade(versions: VersionStore, draft: PublishedGame, reque
  * a zápis do mapy jsou v jednom synchronním kroku, takže dva souběžné dotazy
  * na týž návrh spustí režiséra jednou.
  */
-export function upgradeOf(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest): Promise<UpgradeOutcome> {
+export function upgradeOf(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest): Promise<UpgradeStatus> {
   const map = jobs();
   const draftId = draft.version.versionId;
   const known = map.get(draftId);
-  if (known !== undefined) return known.done;
+  // Přechodný výsledek patří jen tomu, čí dotaz práci spustil (R13): připojený
+  // divák by na `draft-final` přestal pollovat, ač jeho vlastní pokus by běžel.
+  if (known !== undefined) return known.done.then((outcome) => (isTransient(outcome) ? { status: 'pending' } : outcome));
 
   const attempt = runUpgrade(versions, draft, request).catch((thrown: unknown): UpgradeOutcome => {
     console.error(`[play] upgrade of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
