@@ -147,8 +147,8 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
   // **`after()`, ne holé `void`** (revize T2): na serverless se instance po
   // odpovědi zmrazí a rezervace stropu by zůstala nevyrovnaná – tentýž důvod
   // jako u generace v `worldstream/sessions/route.ts`. Mimo request scope
-  // (test volá handler přímo, `next start`) `after()` vyhodí a práce doběhne
-  // sama, protože se tam proces nezmrazí.
+  // (test volá handler přímo) `after()` vyhodí a práce doběhne sama, protože
+  // se tam proces nezmrazí; pod `next start` i na Vercelu scope je.
   try {
     after(remembered);
   } catch {
