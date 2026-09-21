@@ -25,8 +25,18 @@ import { acquireSlot, releaseSlot } from '../worldstream/sessions/route';
 
 export type Director = (sentence: string) => Promise<DirectedGame>;
 
+/**
+ * Kolik smí trvat celá režie (R7). Routy PLAY mají `maxDuration = 300` s;
+ * když platforma funkci zabije uprostřed volání, `settle()` neproběhne
+ * a rezervace stropu visí do expirace knihy. Proto nové volání odejde, jen
+ * když by doběhlo i při plném timeoutu poskytovatele – zbylých 30 s patří
+ * kompilaci a zápisu. Kompilace čtyř semínek je naměřeně pod 2 s (P23-D T3:
+ * medián 25 ms, max 445 ms na semínko), vlastní strop souběhu nepotřebuje.
+ */
+export const DIRECTOR_BUDGET_MS = 270_000;
+
 /** Živá větev obalená stropem; `null` = model se volat nebude. */
-async function cappedBranch(env: Record<string, string | undefined>): Promise<GenerationBranch | null> {
+async function cappedBranch(env: Record<string, string | undefined>, deadline: number): Promise<GenerationBranch | null> {
   if (env.WORLDSMITH_BRANCH !== 'live') return null;
   if ((await killState(env)).upstream) return null;
   const config = upstreamConfigFromEnv(env);
@@ -38,6 +48,7 @@ async function cappedBranch(env: Record<string, string | undefined>): Promise<Ge
     pricing: branch.pricing,
     worstCaseUsd: (call) => branch.worstCaseUsd(call),
     async generate(call) {
+      if (Date.now() + config.timeoutMs > deadline) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the call could outlast the route', usage: null };
       const reservation = await cap.reserve(branch.worstCaseUsd(call));
       if (!reservation.ok) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'spend cap refused the call', usage: null };
       try {
@@ -65,8 +76,9 @@ const NO_MODEL: GenerationBranch = upstreamBranch(null);
  */
 export function getDirector(): Director {
   return async (sentence) => {
+    const deadline = Date.now() + DIRECTOR_BUDGET_MS;
     const cache = directorCacheFromEnv(process.env);
-    const branch = await cappedBranch(process.env);
+    const branch = await cappedBranch(process.env, deadline);
     if (branch === null || !acquireSlot('play')) return direct(sentence, { branch: NO_MODEL, cache, now: Date.now });
     try {
       return await direct(sentence, { branch, cache, now: Date.now });

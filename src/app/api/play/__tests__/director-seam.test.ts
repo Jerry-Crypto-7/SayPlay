@@ -17,7 +17,7 @@ import { resetRateWindows } from '@/server/rate-limit';
 import { resetProcessSpendCap } from '@/server/spend-cap';
 
 import { acquireSlot, resetConcurrency } from '../../worldstream/sessions/route';
-import { getDirector } from '../_director';
+import { DIRECTOR_BUDGET_MS, getDirector } from '../_director';
 import { POST as createGame } from '../games/route';
 
 const SENTENCE = 'A hamster escapes a supermarket while a giant Roomba hunts it.';
@@ -90,6 +90,24 @@ describe('getDirector – brány placené větve', () => {
     expect(fetchCalls).toBeGreaterThan(0);
     expect(game.source).toBe('draft');
     expect(game.fallbackReason).toBe('MODEL_UNAVAILABLE');
+  });
+});
+
+describe('getDirector – rozpočet času režie (R7)', () => {
+  it('volání, jehož timeout přesáhne rozpočet, neodejde', async () => {
+    stubEnv({ ...LIVE, WORLDSMITH_UPSTREAM_TIMEOUT_MS: String(DIRECTOR_BUDGET_MS + 1) });
+    const game = await getDirector()(SENTENCE);
+    expect(game.source).toBe('draft');
+    expect(fetchCalls).toBe(0);
+  });
+
+  it('rozpočet se počítá od začátku režie, ne od volání', async () => {
+    stubEnv({ ...LIVE, WORLDSMITH_UPSTREAM_TIMEOUT_MS: '100000' });
+    // První čtení hodin je začátek režie; každé další je o 200 s později.
+    vi.spyOn(Date, 'now').mockReturnValueOnce(0).mockReturnValue(200_000);
+    const game = await getDirector()(SENTENCE);
+    expect(game.source).toBe('draft');
+    expect(fetchCalls).toBe(0);
   });
 });
 

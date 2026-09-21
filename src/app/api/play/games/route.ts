@@ -31,6 +31,13 @@ const bodySchema = z
   })
   .strict();
 
+/**
+ * Strop trvání funkce (R7): drží synchronní režii i upgrade v `after()`.
+ * Režisér se do něj vejde sám (`DIRECTOR_BUDGET_MS` v `_director.ts`);
+ * Next.js čte hodnotu staticky, proto literál.
+ */
+export const maxDuration = 300;
+
 /** Nejvíc karet na jeden dotaz feedu. Neexportuje se – route soubor smí vyvážet jen handlery. */
 const MAX_FEED = 48;
 

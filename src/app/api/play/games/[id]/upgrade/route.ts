@@ -17,6 +17,9 @@ import { knownUpgrade, type UpgradeStatus, upgradeOf } from '../../../_upgrade';
 
 const UPGRADE_WAIT_MS = 25_000;
 
+/** Práce spuštěná odsud běží v `after()` a potřebuje týž strop jako POST (R7). */
+export const maxDuration = 300;
+
 function answer(status: UpgradeStatus): Response {
   return Response.json(status, { headers: { 'cache-control': 'no-store' } });
 }

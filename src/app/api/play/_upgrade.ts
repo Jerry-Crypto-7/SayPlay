@@ -152,6 +152,9 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
   try {
     after(remembered);
   } catch {
+    // Pod `next start` i na Vercelu se sem nedojde; kdyby ano, práce běží bez
+    // záruky doběhnutí a rezervace stropu může zůstat nevyrovnaná (R7).
+    console.warn(`[play] after() unavailable, upgrade of ${draftId} runs unguarded`);
     void remembered;
   }
   return job.done;
