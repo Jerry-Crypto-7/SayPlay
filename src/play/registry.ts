@@ -310,9 +310,11 @@ export const MECHANICS = {
     id: 'spawn_wave',
     params: spawnWaveParams,
     roleRefs: (p) => [['role', p.role]],
-    capabilities: { events: ['onStart', 'onTimerEnd'], actions: ['spawn', 'startTimer'] },
-    cost: (p) => ({ entities: p.poolSize, rules: 3 }),
-    explanation: 'New things of this role appear on a schedule from a bounded pool.',
+    capabilities: { events: ['onStart', 'onTimerEnd', 'onEnterZone'], actions: ['spawn', 'startTimer', 'setState', 'addCounter'] },
+    /** Start, opakování a oživení; s `defeat` na téže roli navíc `revive` na instanci. */
+    cost: (p, count) => ({ entities: p.poolSize, rules: 3 + count(p.role) }),
+    setsStates: (p) => [[p.role, 'alive']],
+    explanation: 'Knocked-out things of this role come back on a schedule, fresh, up to a limit.',
   }),
   property_transform: entry({
     id: 'property_transform',

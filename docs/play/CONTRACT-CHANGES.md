@@ -67,6 +67,12 @@ schedule“) slibuje víc. **Návrh:** buď `active: false` v `SurfaceEntity` pr
 `maxAlive`, nebo přepsat `explanation` a `roleRefs` tak, aby `spawn_wave` vyžadoval `defeat`
 na téže roli.
 
+**Vyřešeno 21. 9. 2026 (P23-D R3):** oživení zůstává (runtime „neaktivní od startu“ pořád
+nezná), ale je úplné: s `defeat` na téže roli přidá `spawn_wave` na instanci `revive` –
+vstup do hnízda ve stavu `down` vrátí `alive` a vynuluje čítač zásahů (dřív byl oživený cíl
+aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne nové kusy. Test nad
+`combat_lite` + `spawn_wave`: oživený slime jde srazit podruhé.
+
 ## P23-B
 
 - **`DirectorResult` větev `ok:false` nemá kdy nastat.** `direct()` (`src/play/director/index.ts`)

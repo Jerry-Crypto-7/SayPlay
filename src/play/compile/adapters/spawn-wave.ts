@@ -9,16 +9,19 @@
  * jmenuje jako role a jeho instance `<role>_N` do něj padají samy. Oživený
  * člen se objeví v hnízdě `<role>_nest` (soket ze seedu mimo obsazené buňky);
  * `countInZone` počítá nad **jedním** obdélníkem, aréna je proto celá mřížka.
- * Tři pravidla: start časovače, jeho opakování a oživení se stráží.
+ * Tři pravidla: start časovače, jeho opakování a oživení se stráží; s `defeat`
+ * na téže roli navíc `revive` na instanci, který vrátí stav boje.
  */
 
 import type { z } from 'zod';
 
 import type { MECHANICS } from '../../registry';
 import type { MechanicAdapter, SurfaceRule } from '../types';
+import { hitsCounter } from './defeat';
 import { TICKS_PER_SECOND } from './timer';
 
 type Params = z.infer<(typeof MECHANICS)['spawn_wave']['params']>;
+type DefeatParams = z.infer<(typeof MECHANICS)['defeat']['params']>;
 
 export const spawnWave: MechanicAdapter<Params> = (params, ctx) => {
   const { width, height, cells } = ctx.layout;
@@ -56,6 +59,27 @@ export const spawnWave: MechanicAdapter<Params> = (params, ctx) => {
       actions: [{ kind: 'spawn', poolTag: params.role, socket: nestSocket }],
     },
   };
+  // Oživený cíl `defeat` by zůstal `down` s nasyceným čítačem zásahů, tedy
+  // aktivní a nezranitelný. Spawn ho postaví do hnízda, takže vstup do hnízda
+  // ve stavu `down` je právě oživení (despawnutá entita v žádné zóně není).
+  const defeat = ctx.spec.mechanics.find((mechanic) => mechanic.id === 'defeat' && (mechanic.params as DefeatParams).role === params.role);
+  if (defeat !== undefined) {
+    const { hitsPerTarget } = defeat.params as DefeatParams;
+    for (const id of ctx.instances(params.role)) {
+      const revive = `spawn_wave.${id}.revive`;
+      rules[revive] = {
+        id: revive,
+        phase: 0,
+        priority: 0,
+        event: { kind: 'onEnterZone', entity: id, zone: nestSocket },
+        condition: { kind: 'stateIs', target: id, value: 'down' },
+        actions: [
+          { kind: 'setState', target: id, value: 'alive' },
+          { kind: 'addCounter', ref: hitsCounter(id), by: -hitsPerTarget },
+        ],
+      };
+    }
+  }
   return {
     rules,
     sockets: { [nestSocket]: nest },

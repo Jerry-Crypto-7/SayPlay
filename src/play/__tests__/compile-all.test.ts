@@ -224,4 +224,15 @@ describe('compileSim – spawn_wave', () => {
     expect([revived?.x, revived?.y]).toEqual(sim.sockets.slime_nest);
     expect(slot(runtime, entitySlotId('slime_1', 'active'))).toBe(1);
   });
+
+  it('revives with a fresh combat state, so the second wave can be knocked out again', () => {
+    const { sim } = compiled(gameSpec, 1);
+    const runtime = runtimeOf(sim);
+    run(runtime, [{ tick: 0, actionId: 'use', target: 'slime_1' }], 3);
+    expect(placement(runtime, 'slime_1')?.active).toBe(false);
+    run(runtime, [], 62);
+    expect(placement(runtime, 'slime_1')).toMatchObject({ active: true, state: 'alive' });
+    run(runtime, [{ tick: 0, actionId: 'use', target: 'slime_1' }], 3);
+    expect(placement(runtime, 'slime_1')?.active).toBe(false);
+  });
 });
