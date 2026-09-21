@@ -4,7 +4,11 @@
  * nemá fialovou a neznámá hra dostane tutéž 404 jako čtení.
  */
 
-import { beforeEach, describe, expect, it } from 'vitest';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { __resetProcessVersionStore } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
@@ -32,9 +36,17 @@ function hueOf(hex: string): number | null {
   return (((hue * 60) % 360) + 360) % 360;
 }
 
+const temporary: string[] = [];
+
 beforeEach(() => {
   __resetProcessVersionStore();
   resetRateWindows();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+  delete process.env.WORLDSMITH_CONTROL_FILE;
+  for (const path of temporary.splice(0)) rmSync(path, { recursive: true, force: true });
 });
 
 describe('GET /api/play/games/:id/og', () => {
@@ -66,13 +78,32 @@ describe('GET /api/play/games/:id/og', () => {
       expect(await response.json()).toEqual({ error: { code: 'NOT_FOUND', message: expect.any(String) } });
     }
   });
+
+  it('same gates as the read door: 51st request → 429 with retry-after, kill switch → 503 DISABLED', async () => {
+    // Okno stropu je 10 s wall-clocku; pod zátěží by se smyčka přehoupla přes hranici.
+    vi.useFakeTimers({ now: 1_700_000_000_000, toFake: ['Date'] });
+    for (let i = 0; i < 50; i += 1) expect((await og('deadbeef')).status).toBe(404);
+    const limited = await og('deadbeef');
+    expect(limited.status).toBe(429);
+    expect(limited.headers.get('retry-after')).toMatch(/^\d+$/);
+
+    const dir = mkdtempSync(join(tmpdir(), 'play-og-kill-'));
+    temporary.push(dir);
+    const file = join(dir, 'control.json');
+    writeFileSync(file, JSON.stringify({ off: ['all'] }));
+    process.env.WORLDSMITH_CONTROL_FILE = file;
+    resetRateWindows();
+    const disabled = await og('deadbeef');
+    expect(disabled.status).toBe(503);
+    expect((await disabled.json()).error.code).toBe('DISABLED');
+  });
 });
 
 describe('mood palette', () => {
   it('keywords pick their palette, other moods land deterministically, different moods differ', () => {
     expect(paletteForMood('Calm').id).toBe('calm');
     expect(paletteForMood('very tense').id).toBe('tense');
-    expect(paletteForMood('melancholic').id).toBe(paletteForMood('melancholic').id);
+    expect(paletteForMood('melancholic').id).toBe('cartoon');
     expect(ogPngFor('calm')).not.toEqual(ogPngFor('tense'));
   });
 
