@@ -14,6 +14,8 @@
 import { z } from 'zod';
 
 import { draftGameSpec } from '@/play/draft';
+import { RECENT_CAP } from '@/play/version';
+import { diversify, withoutUpgradedDrafts } from '@/play/version/diversify';
 
 import { getDirector } from '../_director';
 import { fail, readJsonBody } from '../_errors';
@@ -28,6 +30,45 @@ const bodySchema = z
     parentId: z.string().nullable().optional(),
   })
   .strict();
+
+/** Nejvíc karet na jeden dotaz feedu. Neexportuje se – route soubor smí vyvážet jen handlery. */
+const MAX_FEED = 48;
+
+/**
+ * `GET /api/play/games?recent=N` – feed (P23-D T4): `{ games: [{ versionId,
+ * title, archetype, createdAt, parentId, remixes }] }` od nejnovější, v každé
+ * osmici nejvýš tři hry téhož archetypu (`diversify`). Návrh, jehož autorská
+ * verze už ve feedu je, se skryje. Stojí dva příkazy úložiště (seznam a
+ * počty dětí), páku a strop má jako každé čtení; hrana ho smí 15 s držet.
+ */
+export async function GET(request: Request): Promise<Response> {
+  const refused = await admit(request, 'snapshots');
+  if (refused !== null) return refused;
+
+  const text = new URL(request.url).searchParams.get('recent');
+  const limit = Number(text);
+  if (text === null || !/^\d{1,3}$/.test(text) || limit < 1 || limit > MAX_FEED) {
+    return fail(400, 'BAD_REQUEST', `recent must be a whole number from 1 to ${String(MAX_FEED)}`);
+  }
+
+  const versions = store();
+  // Rezerva nad `limit`: rozmanitost odkládá hry do dalších osmic.
+  const rows = diversify(withoutUpgradedDrafts(await versions.recent(Math.min(RECENT_CAP, limit * 4))), limit);
+  const remixes = await versions.childCounts(rows.map((row) => row.versionId));
+  return Response.json(
+    {
+      games: rows.map((row, index) => ({
+        versionId: row.versionId,
+        title: row.title,
+        archetype: row.archetype,
+        createdAt: row.createdAt,
+        parentId: row.parentId,
+        remixes: remixes[index] ?? 0,
+      })),
+    },
+    { headers: { 'cache-control': 'public, max-age=0, s-maxage=15' } },
+  );
+}
 
 export async function POST(request: Request): Promise<Response> {
   const received = performance.now();

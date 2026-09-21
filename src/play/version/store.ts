@@ -12,7 +12,8 @@
  *
  * - `<prefix>:play:v:<versionId>` – JSON celé `PublishedGame`,
  * - `<prefix>:play:children:<parentId>` – JSON pole id dětí,
- * - `<prefix>:play:lineage:<versionId>` – JSON pole `GameVersion` od kořene k listu.
+ * - `<prefix>:play:lineage:<versionId>` – JSON pole `GameVersion` od kořene k listu,
+ * - `<prefix>:play:recent` – seznam `RecentGame` od nejnovější, nejvýš `RECENT_CAP` (feed, P23-D T4).
  *
  * **Rodokmen se píše při publikaci, ne počítá při čtení.** Chůze po `parentId`
  * by stála jedno čtení na předka – až 32 příkazů na jeden `GET` z veřejných
@@ -50,7 +51,20 @@ export interface VersionStore {
   childrenOf(versionId: string): Promise<string[]>;
   /** Od kořene k listu, nejvýš `MAX_LINEAGE` nejnovějších záznamů. */
   lineageOf(versionId: string): Promise<GameVersion[]>;
+  /** Nejnovější publikace způsobilé pro feed, od nejnovější; nedostupné úložiště je `[]`. */
+  recent(limit: number): Promise<RecentGame[]>;
+  /** Počet dětí každé verze, jedním čtením; nedostupné úložiště jsou nuly. */
+  childCounts(versionIds: readonly string[]): Promise<number[]>;
 }
+
+/** Řádek feedu: verze plus to, co karta ukáže a co feed potřebuje k rozmanitosti. */
+export interface RecentGame extends GameVersion {
+  readonly archetype: string;
+  readonly relation?: 'upgrade';
+}
+
+/** Kolik publikací si feed pamatuje. */
+export const RECENT_CAP = 200;
 
 export type PutOutcome = 'stored' | 'exists' | 'conflict' | 'quota';
 
@@ -89,6 +103,12 @@ interface RawStore {
   set(key: string, value: string, ttlSeconds: number): Promise<void>;
   /** Zvýší počítadlo a vrátí novou hodnotu; klíč vyprší po `ttlSeconds` od prvního zvýšení. */
   incr(key: string, ttlSeconds: number): Promise<number>;
+  /** Přidá na začátek seznamu a usekne ho na `cap` položek. */
+  pushCapped(key: string, value: string, cap: number, ttlSeconds: number): Promise<void>;
+  /** Prvních `count` položek seznamu. */
+  head(key: string, count: number): Promise<string[]>;
+  /** Hodnoty klíčů v témž pořadí, chybějící jako `null`. */
+  getMany(keys: readonly string[]): Promise<(string | null)[]>;
 }
 
 /** Jediná serializace pro zápis: seřazené klíče, bez `undefined`. */
@@ -111,6 +131,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const childrenKey = (parentId: string): string => `${prefix}:play:children:${parentId}`;
   const lineageKey = (versionId: string): string => `${prefix}:play:lineage:${versionId}`;
   const quotaKey = (): string => `${prefix}:play:quota:${quotaDay(now())}`;
+  const recentKey = `${prefix}:play:recent`;
 
   const store: VersionStore = {
     id,
@@ -154,10 +175,18 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
           const list = siblings === null ? [] : (JSON.parse(siblings) as string[]);
           await raw.set(childrenOfParent, JSON.stringify([...list, game.version.versionId]), limits.ttlSeconds);
         }
-        return 'stored';
       } catch (thrown) {
         throw new VersionStoreUnavailable(thrown);
       }
+      if (game.report.publishEligible) {
+        const row: RecentGame = { ...game.version, archetype: game.spec.archetype, ...(game.relation ? { relation: game.relation } : {}) };
+        try {
+          await raw.pushCapped(recentKey, JSON.stringify(row), RECENT_CAP, limits.ttlSeconds);
+        } catch {
+          // Feed je navigace: hra je uložená a odkaz na ni platí, i když se do feedu nedostala.
+        }
+      }
+      return 'stored';
     },
     async canPublish() {
       let text: string | null;
@@ -187,6 +216,36 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       const game = await store.get(versionId);
       return game === null ? [] : [game.version];
     },
+    async recent(limit) {
+      try {
+        const rows = await raw.head(recentKey, Math.min(limit, RECENT_CAP));
+        return rows.flatMap((text) => {
+          try {
+            return [JSON.parse(text) as RecentGame];
+          } catch {
+            return [];
+          }
+        });
+      } catch {
+        return [];
+      }
+    },
+    async childCounts(versionIds) {
+      if (versionIds.length === 0) return [];
+      try {
+        const texts = await raw.getMany(versionIds.map(childrenKey));
+        return texts.map((text) => {
+          if (text === null) return 0;
+          try {
+            return (JSON.parse(text) as string[]).length;
+          } catch {
+            return 0;
+          }
+        });
+      } catch {
+        return versionIds.map(() => 0);
+      }
+    },
   };
   return store;
 }
@@ -194,6 +253,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
 /** Paměť procesu neexpiruje – drží ji denní strop, a `next start` žije kratší dobu než TTL. */
 export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, now: () => number = Date.now): VersionStore {
   const entries = new Map<string, string>();
+  const lists = new Map<string, string[]>();
   const raw: RawStore = {
     get: (key) => Promise.resolve(entries.get(key) ?? null),
     setNx: (key, value) => {
@@ -211,6 +271,12 @@ export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, n
       entries.set(key, String(next));
       return Promise.resolve(next);
     },
+    pushCapped: (key, value, cap) => {
+      lists.set(key, [value, ...(lists.get(key) ?? [])].slice(0, cap));
+      return Promise.resolve();
+    },
+    head: (key, count) => Promise.resolve((lists.get(key) ?? []).slice(0, count)),
+    getMany: (keys) => Promise.resolve(keys.map((key) => entries.get(key) ?? null)),
   };
   return versionStoreOver('memory', 'memory', raw, limits, now);
 }
@@ -265,6 +331,21 @@ export function httpVersionStore(config: HttpVersionStoreConfig, fetchImpl: type
       // Expirace jen při prvním zvýšení – další ji neposouvají, den skončí kdy má.
       if (count === 1) await command(['EXPIRE', key, String(ttlSeconds)]);
       return count;
+    },
+    async pushCapped(key, value, cap, ttlSeconds) {
+      await command(['LPUSH', key, value]);
+      await command(['LTRIM', key, '0', String(cap - 1)]);
+      await command(['EXPIRE', key, String(ttlSeconds)]);
+    },
+    async head(key, count) {
+      const result = await command(['LRANGE', key, '0', String(count - 1)]);
+      if (!Array.isArray(result) || !result.every((item) => typeof item === 'string')) throw new Error('version store answered a shape this server cannot read');
+      return result as string[];
+    },
+    async getMany(keys) {
+      const result = await command(['MGET', ...keys]);
+      if (!Array.isArray(result) || result.length !== keys.length) throw new Error('version store answered a shape this server cannot read');
+      return result.map((item) => (typeof item === 'string' ? item : null));
     },
   };
   return versionStoreOver('http', config.prefix, raw, config.limits ?? DEFAULT_WRITE_LIMITS, config.now ?? Date.now);

@@ -23,6 +23,7 @@ import {
   DEFAULT_WRITE_LIMITS,
   httpVersionStore,
   memoryVersionStore,
+  RECENT_CAP,
   sealVersion,
   versionStoreFromEnv,
   VersionStoreUnavailable,
@@ -67,14 +68,25 @@ function publish(seed: number, parentId: string | null, replayEqual = true): Pub
   return { version: sealVersion(game, parentId, () => 1_700_000_000_000), spec: game.spec, blueprint: game.blueprint, report: report(game, replayEqual) };
 }
 
-/** Falešný Upstash: SET (NX, EX), GET, INCR, EXPIRE. Expirace se zapisují do `ttl`, aby šly ověřit. */
+/** Falešný Upstash: SET (NX, EX), GET, MGET, INCR, EXPIRE, LPUSH, LTRIM, LRANGE. Expirace se zapisují do `ttl`, aby šly ověřit. */
 function fakeUpstash(kv: Map<string, string>, ttl: Map<string, number> = new Map()): typeof fetch {
+  const lists = new Map<string, string[]>();
   return async (input, init) => {
     const url = String(input);
     const getMatch = /\/get\/(.+)$/.exec(url);
     if (getMatch !== null) return Response.json({ result: kv.get(decodeURIComponent(getMatch[1])) ?? null });
     const parts = JSON.parse(String(init?.body)) as string[];
     const [command, key] = parts;
+    if (command === 'MGET') return Response.json({ result: parts.slice(1).map((k) => kv.get(k) ?? null) });
+    if (command === 'LPUSH') {
+      lists.set(key, [parts[2], ...(lists.get(key) ?? [])]);
+      return Response.json({ result: lists.get(key)?.length });
+    }
+    if (command === 'LTRIM') {
+      lists.set(key, (lists.get(key) ?? []).slice(Number(parts[2]), Number(parts[3]) + 1));
+      return Response.json({ result: 'OK' });
+    }
+    if (command === 'LRANGE') return Response.json({ result: (lists.get(key) ?? []).slice(Number(parts[2]), Number(parts[3]) + 1) });
     if (command === 'INCR') {
       const next = Number(kv.get(key) ?? '0') + 1;
       kv.set(key, String(next));
@@ -216,6 +228,36 @@ describe.each<{ name: string; make: () => { store: VersionStore; kv: Map<string,
     expect(await store.get('nope')).toBeNull();
     expect(await store.childrenOf('nope')).toEqual([]);
     expect(await store.lineageOf('nope')).toEqual([]);
+    expect(await store.recent(24)).toEqual([]);
+    expect(await store.childCounts([])).toEqual([]);
+  });
+
+  it('feeds only stored, publish-eligible versions, newest first, with child counts', async () => {
+    const { store } = make();
+    const root = publish(1, null);
+    const child = publish(2, root.version.versionId);
+    const ineligible: PublishedGame = { ...publish(3, null), report: { ...publish(3, null).report, publishEligible: false } };
+    const upgrade: PublishedGame = { ...publish(4, root.version.versionId), relation: 'upgrade' };
+    for (const game of [root, child, ineligible, upgrade]) expect(await store.put(game)).toBe('stored');
+    // `exists` a `conflict` feed nepřidají.
+    await store.put(root);
+    await store.put(publish(1, null, false));
+
+    const recent = await store.recent(24);
+    expect(recent.map((row) => row.versionId)).toEqual([upgrade.version.versionId, child.version.versionId, root.version.versionId]);
+    expect(recent[0]).toMatchObject({ archetype: root.spec.archetype, relation: 'upgrade', parentId: root.version.versionId, title: root.version.title });
+    expect(recent[2].relation).toBeUndefined();
+    expect(await store.recent(1)).toHaveLength(1);
+    expect(await store.childCounts([root.version.versionId, child.version.versionId, 'nope'])).toEqual([2, 0, 0]);
+  });
+
+  it(`remembers at most ${String(RECENT_CAP)} games in the feed`, async () => {
+    const { store } = make();
+    const base = publish(1, null);
+    for (let i = 0; i < RECENT_CAP + 5; i++) await store.put({ ...base, version: { ...base.version, versionId: `id${String(i)}` } });
+    const recent = await store.recent(RECENT_CAP + 5);
+    expect(recent).toHaveLength(RECENT_CAP);
+    expect(recent[0].versionId).toBe(`id${String(RECENT_CAP + 4)}`);
   });
 });
 

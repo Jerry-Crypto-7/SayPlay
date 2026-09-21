@@ -26,7 +26,7 @@ import { MAX_BODY_BYTES } from '@/http/body';
 import { resetRateWindows } from '@/server/rate-limit';
 
 import { seedFrom } from '../_publish';
-import { POST as createGame } from '../games/route';
+import { GET as listGames, POST as createGame } from '../games/route';
 import { GET as readGame } from '../games/[id]/route';
 import { POST as remixGame } from '../games/[id]/remix/route';
 
@@ -326,6 +326,59 @@ describe('Oracle', () => {
       const response = await remixGame(post(`/api/play/games/${created.body.versionId}/remix`, body), params(created.body.versionId));
       expect(response.status).toBe(400);
     }
+  });
+});
+
+describe('feed GET /api/play/games?recent (P23-D T4)', () => {
+  const feed = async (query: string): Promise<{ status: number; body: Record<string, any> }> => {
+    const response = await listGames(new Request(`http://play.test/api/play/games${query}`, { headers: CALLER }));
+    return { status: response.status, body: await response.json() };
+  };
+
+  it('prázdný feed je prázdné pole, ne vymyšlené hry', async () => {
+    expect(await feed('?recent=24')).toEqual({ status: 200, body: { games: [] } });
+  });
+
+  it('publikované hry od nejnovější s archetypem a počtem remixů', async () => {
+    const first = await publish('Collect five glowing mushrooms in a moonlit forest');
+    vi.setSystemTime(1_700_000_001_000);
+    const second = await publish(STARTERS[1].sentence);
+    vi.setSystemTime(1_700_000_002_000);
+    const remix = await remixGame(post(`/api/play/games/${first.body.versionId}/remix`, { chip: 'harder' }), params(first.body.versionId));
+    expect(remix.status).toBe(201);
+    const remixId = (await remix.json()).versionId as string;
+
+    const { status, body } = await feed('?recent=24');
+    expect(status).toBe(200);
+    expect(body.games.map((g: { versionId: string }) => g.versionId)).toEqual([remixId, second.body.versionId, first.body.versionId]);
+    expect(body.games[2]).toEqual({
+      versionId: first.body.versionId,
+      title: first.body.title,
+      archetype: 'collect_exit',
+      createdAt: new Date(1_700_000_000_000).toISOString(),
+      parentId: null,
+      remixes: 1,
+    });
+    expect(body.games[0]).toMatchObject({ parentId: first.body.versionId, remixes: 0 });
+    expect((await feed('?recent=1')).body.games).toHaveLength(1);
+  });
+
+  it('recent mimo 1–48 nebo chybějící → 400', async () => {
+    for (const query of ['', '?recent=0', '?recent=49', '?recent=abc', '?recent=2.5', '?recent=-1']) {
+      expect((await feed(query)).status, query).toBe(400);
+    }
+  });
+
+  it('feed čte přes páku snapshots: vypínač all → 503, sessions samo feed nechá', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'play-kill-'));
+    temporary.push(dir);
+    const file = join(dir, 'control.json');
+    writeFileSync(file, JSON.stringify({ off: ['sessions'] }));
+    process.env.WORLDSMITH_CONTROL_FILE = file;
+    expect((await feed('?recent=24')).status).toBe(200);
+    writeFileSync(file, JSON.stringify({ off: ['all'] }));
+    process.env.WORLDSMITH_CONTROL_FILE = file;
+    expect((await feed('?recent=24')).status).toBe(503);
   });
 });
 

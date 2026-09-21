@@ -2,6 +2,7 @@ export { sealVersion, type PlayTimings, type PublishedGame } from './version';
 export {
   DEFAULT_WRITE_LIMITS,
   MAX_LINEAGE,
+  RECENT_CAP,
   VERSION_STORE_TIMEOUT_MS,
   VersionStoreUnavailable,
   __resetProcessVersionStore,
@@ -11,6 +12,7 @@ export {
   writeLimitsFromEnv,
   type HttpVersionStoreConfig,
   type PutOutcome,
+  type RecentGame,
   type VersionStore,
   type WriteLimits,
 } from './store';
