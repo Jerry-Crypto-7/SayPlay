@@ -51,7 +51,10 @@ export interface VersionStore {
   childrenOf(versionId: string): Promise<string[]>;
   /** Od kořene k listu, nejvýš `MAX_LINEAGE` nejnovějších záznamů. */
   lineageOf(versionId: string): Promise<GameVersion[]>;
-  /** Nejnovější publikace způsobilé pro feed, od nejnovější; nedostupné úložiště je `[]`. */
+  /**
+   * Nejnovější autorské verze (`relation: 'upgrade'`, `publishEligible`), od
+   * nejnovější, bez vypršelých; nedostupné úložiště je `[]`.
+   */
   recent(limit: number): Promise<RecentGame[]>;
   /** Počet dětí každé verze, jedním čtením; nedostupné úložiště jsou nuly. */
   childCounts(versionIds: readonly string[]): Promise<number[]>;
@@ -60,7 +63,7 @@ export interface VersionStore {
 /** Řádek feedu: verze plus to, co karta ukáže a co feed potřebuje k rozmanitosti. */
 export interface RecentGame extends GameVersion {
   readonly archetype: string;
-  readonly relation?: 'upgrade';
+  readonly relation: 'upgrade';
 }
 
 /** Kolik publikací si feed pamatuje. */
@@ -178,8 +181,12 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       } catch (thrown) {
         throw new VersionStoreUnavailable(thrown);
       }
-      if (game.report.publishEligible) {
-        const row: RecentGame = { ...game.version, archetype: game.spec.archetype, ...(game.relation ? { relation: game.relation } : {}) };
+      // Do feedu jen autorská verze od režiséra (nález revize T4-1): titul
+      // ručního specu, remixu i návrhu ze slov píše volající, a feed by ho
+      // zdarma ukázal každému návštěvníkovi `/play`. Autorská verze stojí
+      // placené volání pod stropy a titul jí napsal model.
+      if (game.report.publishEligible && game.relation === 'upgrade') {
+        const row: RecentGame = { ...game.version, archetype: game.spec.archetype, relation: game.relation };
         try {
           await raw.pushCapped(recentKey, JSON.stringify(row), RECENT_CAP, limits.ttlSeconds);
         } catch {
@@ -219,9 +226,12 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
     async recent(limit) {
       try {
         const rows = await raw.head(recentKey, Math.min(limit, RECENT_CAP));
+        // Seznam žije od poslední publikace, hra od své – vypršelá hra by vedla na 404.
+        const oldest = now() - limits.ttlSeconds * 1000;
         return rows.flatMap((text) => {
           try {
-            return [JSON.parse(text) as RecentGame];
+            const row = JSON.parse(text) as RecentGame;
+            return Date.parse(row.createdAt) > oldest ? [row] : [];
           } catch {
             return [];
           }

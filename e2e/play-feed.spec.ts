@@ -1,38 +1,50 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * Feed na `/play` (P23-D T4): po třech publikacích skutečnými dveřmi feed
- * ukáže jejich karty a klepnutí na kartu vede na hru. Prázdný stav se měří
- * přes `page.route` – sdílený server mají i ostatní sady, takže prázdný feed
- * by se bez zástupu nikdy neukázal.
+ * Feed na `/play` (P23-D T4). Do feedu jde jen autorská verze od režiséra
+ * (nález revize T4-1: titul návrhu i ručního specu píše volající), a e2e
+ * model nevolá – skutečný feed tu proto návrhy ukázat nesmí, a to se měří
+ * přímo na dveřích. Karty se měří nad třemi skutečně publikovanými hrami,
+ * jejichž řádky feedu dodá `page.route`; klepnutí vede na skutečnou hru.
  */
 
-// Tři různé archetypy, aby rozmanitost feedu žádnou z nich neodložila.
 const SENTENCES = [
   'A hamster escapes a supermarket while a giant Roomba hunts it.',
   'Carry a fragile cake across a kitchen to a party table.',
-  'Flip three switches to open a vault door.',
+  'Race through five neon gates in order.',
 ];
 
+interface Created {
+  readonly versionId: string;
+  readonly title: string;
+  readonly archetype: string;
+}
+
 test.describe('/play – feed', () => {
-  test('three publications show up as cards and a card opens its game', async ({ page, request }) => {
-    const ids: string[] = [];
+  test('drafts stay out of the real feed; feed cards open their games', async ({ page, request }) => {
+    const created: Created[] = [];
     for (const sentence of SENTENCES) {
       const response = await request.post('/api/play/games', { data: { sentence } });
       expect(response.status(), sentence).toBeLessThan(300);
-      ids.push(((await response.json()) as { versionId: string }).versionId);
+      created.push((await response.json()) as Created);
     }
 
+    const real = await request.get('/api/play/games?recent=24');
+    expect(real.status()).toBe(200);
+    const ids = ((await real.json()) as { games: { versionId: string }[] }).games.map((game) => game.versionId);
+    for (const game of created) expect(ids).not.toContain(game.versionId);
+
+    const rows = created.map((game, index) => ({ ...game, createdAt: new Date(Date.now() - index * 1000).toISOString(), parentId: null, remixes: index }));
+    await page.route('**/api/play/games?recent=*', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ games: rows }) }));
     await page.goto('/play');
     const cards = page.getByTestId('play-feed-card');
-    await expect(cards.first()).toBeVisible();
-    expect(await cards.count()).toBeGreaterThanOrEqual(3);
-    for (const id of ids) await expect(page.locator(`a[data-testid="play-feed-card"][href="/play/${id}"]`)).toBeVisible();
+    await expect(cards).toHaveCount(3);
+    await expect(cards.nth(0)).toContainText(created[0].title);
+    await expect(cards.nth(0)).toContainText('0 remixes');
+    await expect(cards.nth(1)).toContainText('1 remix');
 
-    const card = page.locator(`a[data-testid="play-feed-card"][href="/play/${ids[0]}"]`);
-    await expect(card).toContainText(/\d+ remix(es)?/);
-    await card.click();
-    await expect(page).toHaveURL(new RegExp(`/play/${ids[0]}$`));
+    await cards.nth(2).click();
+    await expect(page).toHaveURL(new RegExp(`/play/${created[2].versionId}$`));
   });
 
   test('an empty feed says so honestly', async ({ page }) => {

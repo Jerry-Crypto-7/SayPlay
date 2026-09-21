@@ -339,45 +339,61 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
     expect(await feed('?recent=24')).toEqual({ status: 200, body: { games: [] } });
   });
 
-  it('publikované hry od nejnovější s archetypem a počtem remixů', async () => {
+  /** Autorská verze návrhu, jak by ji zapsal upgrade na pozadí – bez modelu v testu. */
+  async function authoredOf(draftId: string, versionId: string): Promise<string> {
+    const versions = versionStoreFromEnv(process.env);
+    const draft = await versions.get(draftId);
+    if (draft === null) throw new Error('draft missing');
+    const createdAt = new Date(Date.now()).toISOString();
+    expect(await versions.put({ ...draft, relation: 'upgrade', version: { ...draft.version, versionId, parentId: draftId, createdAt } })).toBe('stored');
+    return versionId;
+  }
+
+  it('návrh, remix ani ruční spec do feedu nejdou; autorské verze od nejnovější s počtem remixů', async () => {
     const first = await publish('Collect five glowing mushrooms in a moonlit forest');
-    vi.setSystemTime(1_700_000_001_000);
     const second = await publish(STARTERS[1].sentence);
-    vi.setSystemTime(1_700_000_002_000);
     const remix = await remixGame(post(`/api/play/games/${first.body.versionId}/remix`, { chip: 'harder' }), params(first.body.versionId));
     expect(remix.status).toBe(201);
-    const remixId = (await remix.json()).versionId as string;
+    expect((await createGame(post('/api/play/games', { spec: switchPuzzle }))).status).toBeLessThan(300);
+    expect((await feed('?recent=24')).body.games).toEqual([]);
+
+    vi.setSystemTime(1_700_000_001_000);
+    const a = await authoredOf(first.body.versionId, 'a'.repeat(32));
+    vi.setSystemTime(1_700_000_002_000);
+    const b = await authoredOf(second.body.versionId, 'b'.repeat(32));
 
     const { status, body } = await feed('?recent=24');
     expect(status).toBe(200);
-    expect(body.games.map((g: { versionId: string }) => g.versionId)).toEqual([remixId, second.body.versionId, first.body.versionId]);
-    expect(body.games[2]).toEqual({
-      versionId: first.body.versionId,
+    expect(body.games.map((g: { versionId: string }) => g.versionId)).toEqual([b, a]);
+    expect(body.games[1]).toEqual({
+      versionId: a,
       title: first.body.title,
       archetype: 'collect_exit',
-      createdAt: new Date(1_700_000_000_000).toISOString(),
-      parentId: null,
-      remixes: 1,
+      createdAt: new Date(1_700_000_001_000).toISOString(),
+      parentId: first.body.versionId,
+      remixes: 0,
     });
-    expect(body.games[0]).toMatchObject({ parentId: first.body.versionId, remixes: 0 });
     expect((await feed('?recent=1')).body.games).toHaveLength(1);
   });
 
-  it('recent mimo 1–48 nebo chybějící → 400', async () => {
-    for (const query of ['', '?recent=0', '?recent=49', '?recent=abc', '?recent=2.5', '?recent=-1']) {
+  it('recent mimo 1–48, s nulou na začátku, chybějící nebo s parametrem navíc → 400', async () => {
+    for (const query of ['', '?recent=0', '?recent=49', '?recent=abc', '?recent=2.5', '?recent=-1', '?recent=024', '?recent=24&x=1', '?recent=24&recent=24']) {
       expect((await feed(query)).status, query).toBe(400);
     }
   });
 
-  it('feed čte přes páku snapshots: vypínač all → 503, sessions samo feed nechá', async () => {
+  it('páka feed vypne jen feed, odkaz na hru dál čte; sessions feed nechá; all vypne obojí', async () => {
+    const created = await publish('Collect the coins');
     const dir = mkdtempSync(join(tmpdir(), 'play-kill-'));
     temporary.push(dir);
     const file = join(dir, 'control.json');
+    process.env.WORLDSMITH_CONTROL_FILE = file;
     writeFileSync(file, JSON.stringify({ off: ['sessions'] }));
-    process.env.WORLDSMITH_CONTROL_FILE = file;
     expect((await feed('?recent=24')).status).toBe(200);
+    writeFileSync(file, JSON.stringify({ off: ['feed'] }));
+    expect((await feed('?recent=24')).status).toBe(503);
+    expect((await read(created.body.versionId)).status).toBe(200);
     writeFileSync(file, JSON.stringify({ off: ['all'] }));
-    process.env.WORLDSMITH_CONTROL_FILE = file;
     expect((await feed('?recent=24')).status).toBe(503);
   });
 });

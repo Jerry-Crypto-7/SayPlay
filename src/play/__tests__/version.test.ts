@@ -232,32 +232,55 @@ describe.each<{ name: string; make: () => { store: VersionStore; kv: Map<string,
     expect(await store.childCounts([])).toEqual([]);
   });
 
-  it('feeds only stored, publish-eligible versions, newest first, with child counts', async () => {
+  it('feeds only stored, publish-eligible authored versions, newest first, with child counts', async () => {
     const { store } = make();
-    const root = publish(1, null);
-    const child = publish(2, root.version.versionId);
-    const ineligible: PublishedGame = { ...publish(3, null), report: { ...publish(3, null).report, publishEligible: false } };
-    const upgrade: PublishedGame = { ...publish(4, root.version.versionId), relation: 'upgrade' };
-    for (const game of [root, child, ineligible, upgrade]) expect(await store.put(game)).toBe('stored');
+    const authored = (seed: number, parentId: string | null, eligible = true): PublishedGame => {
+      const game = publish(seed, parentId);
+      // Feed vypršelé hry schová – čas musí být dnešní, ne ten z `publish`.
+      const createdAt = new Date(Date.now() + seed).toISOString();
+      return { ...game, relation: 'upgrade', version: { ...game.version, createdAt }, report: { ...game.report, publishEligible: eligible } };
+    };
+    // Návrh, remix a ruční spec píše volající – do feedu nesmí.
+    const draft = publish(1, null);
+    const remix = publish(2, draft.version.versionId);
+    const first = authored(3, draft.version.versionId);
+    const ineligible = authored(4, draft.version.versionId, false);
+    const second = authored(5, draft.version.versionId);
+    for (const game of [draft, remix, first, ineligible, second]) expect(await store.put(game)).toBe('stored');
     // `exists` a `conflict` feed nepřidají.
-    await store.put(root);
-    await store.put(publish(1, null, false));
+    expect(await store.put(first)).toBe('exists');
+    expect(await store.put({ ...first, report: { ...first.report, replayEqual: false } })).toBe('conflict');
 
     const recent = await store.recent(24);
-    expect(recent.map((row) => row.versionId)).toEqual([upgrade.version.versionId, child.version.versionId, root.version.versionId]);
-    expect(recent[0]).toMatchObject({ archetype: root.spec.archetype, relation: 'upgrade', parentId: root.version.versionId, title: root.version.title });
-    expect(recent[2].relation).toBeUndefined();
+    expect(recent.map((row) => row.versionId)).toEqual([second.version.versionId, first.version.versionId]);
+    expect(recent[0]).toMatchObject({ archetype: draft.spec.archetype, relation: 'upgrade', parentId: draft.version.versionId, title: draft.version.title });
     expect(await store.recent(1)).toHaveLength(1);
-    expect(await store.childCounts([root.version.versionId, child.version.versionId, 'nope'])).toEqual([2, 0, 0]);
+    expect(await store.childCounts([draft.version.versionId, first.version.versionId, 'nope'])).toEqual([4, 0, 0]);
   });
 
   it(`remembers at most ${String(RECENT_CAP)} games in the feed`, async () => {
     const { store } = make();
-    const base = publish(1, null);
-    for (let i = 0; i < RECENT_CAP + 5; i++) await store.put({ ...base, version: { ...base.version, versionId: `id${String(i)}` } });
+    const base: PublishedGame = { ...publish(1, null), relation: 'upgrade' };
+    const createdAt = new Date().toISOString();
+    for (let i = 0; i < RECENT_CAP + 5; i++) await store.put({ ...base, version: { ...base.version, versionId: `id${String(i)}`, createdAt } });
     const recent = await store.recent(RECENT_CAP + 5);
     expect(recent).toHaveLength(RECENT_CAP);
     expect(recent[0].versionId).toBe(`id${String(RECENT_CAP + 4)}`);
+  });
+});
+
+describe('feed expiry', () => {
+  it('drops feed rows whose game has already expired', async () => {
+    let clock = Date.parse('2026-09-01T00:00:00.000Z');
+    const store = memoryVersionStore({ ttlSeconds: 3600, dailyCap: 100 }, () => clock);
+    const base: PublishedGame = { ...publish(1, null), relation: 'upgrade' };
+    const at = (versionId: string, createdAt: number): PublishedGame => ({ ...base, version: { ...base.version, versionId, createdAt: new Date(createdAt).toISOString() } });
+    await store.put(at('old', clock));
+    clock += 1800 * 1000;
+    await store.put(at('fresh', clock));
+    expect((await store.recent(24)).map((row) => row.versionId)).toEqual(['fresh', 'old']);
+    clock += 1801 * 1000;
+    expect((await store.recent(24)).map((row) => row.versionId)).toEqual(['fresh']);
   });
 });
 

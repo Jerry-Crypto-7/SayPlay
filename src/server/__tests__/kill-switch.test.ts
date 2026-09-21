@@ -90,6 +90,7 @@ describe('bez povelu běží všechno', () => {
       sessions: false,
       refine: false,
       snapshots: false,
+      feed: false,
       replay: false,
     });
   });
@@ -104,6 +105,7 @@ describe('bez povelu běží všechno', () => {
       sessions: false,
       refine: false,
       snapshots: false,
+      feed: false,
       replay: false,
     });
   });
@@ -120,6 +122,7 @@ describe('každá vrstva se vypíná zvlášť', () => {
       sessions: false,
       refine: false,
       snapshots: false,
+      feed: false,
       replay: false,
     });
   });
@@ -130,6 +133,7 @@ describe('každá vrstva se vypíná zvlášť', () => {
       sessions: true,
       refine: false,
       snapshots: false,
+      feed: false,
       replay: false,
     });
   });
@@ -140,6 +144,7 @@ describe('každá vrstva se vypíná zvlášť', () => {
       sessions: false,
       refine: true,
       snapshots: false,
+      feed: false,
       replay: false,
     });
   });
@@ -150,6 +155,7 @@ describe('každá vrstva se vypíná zvlášť', () => {
       sessions: false,
       refine: true,
       snapshots: false,
+      feed: false,
       replay: false,
     });
   });
@@ -160,12 +166,24 @@ describe('každá vrstva se vypíná zvlášť', () => {
       sessions: true,
       refine: true,
       snapshots: true,
+      feed: true,
       replay: true,
     });
   });
 
-  it('žádné jiné jméno než tahle čtyři neexistuje', () => {
-    expect([...KILL_SWITCHES]).toEqual(['upstream', 'sessions', 'refine', 'all']);
+  it('žádné jiné jméno než tahle pět neexistuje', () => {
+    expect([...KILL_SWITCHES]).toEqual(['upstream', 'sessions', 'refine', 'feed', 'all']);
+  });
+
+  it('feed vypne jen feed PLAY, čtení her i ostatní dveře zůstanou', () => {
+    expect(killStateFrom({ off: ['feed'] })).toEqual({
+      upstream: false,
+      sessions: false,
+      refine: false,
+      snapshots: false,
+      feed: true,
+      replay: false,
+    });
   });
 });
 
@@ -275,6 +293,7 @@ describe('ovládací soubor je jeden, ne dva', () => {
       sessions: false,
       refine: false,
       snapshots: false,
+      feed: false,
       replay: false,
     });
   });
@@ -297,6 +316,7 @@ describe('ovládací soubor je jeden, ne dva', () => {
       sessions: false,
       refine: false,
       snapshots: false,
+      feed: false,
       replay: false,
     });
     const cap = spendCapFromEnv(variables);
@@ -399,6 +419,7 @@ describe('povel jde napsat i tam, kde není disk', () => {
       sessions: true,
       refine: true,
       snapshots: true,
+      feed: true,
       replay: true,
     });
     // Klíč leží vedle knihy, pod toutéž předponou — operátor vidí rozpočet

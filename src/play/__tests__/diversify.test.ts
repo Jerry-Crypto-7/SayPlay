@@ -6,11 +6,11 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { diversify, FEED_BLOCK, MAX_PER_ARCHETYPE, withoutUpgradedDrafts, type FeedRow } from '../version/diversify';
+import { diversify, FEED_BLOCK, MAX_PER_ARCHETYPE, type FeedRow } from '../version/diversify';
 
-function row(index: number, archetype: string, extra: Partial<FeedRow> = {}): FeedRow {
+function row(index: number, archetype: string): FeedRow {
   // Vyšší index = novější hra.
-  return { versionId: `v${String(index)}`, archetype, createdAt: new Date(1_700_000_000_000 + index * 1000).toISOString(), parentId: null, ...extra };
+  return { versionId: `v${String(index)}`, archetype, createdAt: new Date(1_700_000_000_000 + index * 1000).toISOString() };
 }
 
 function assertBlocks(rows: readonly FeedRow[]): void {
@@ -51,15 +51,5 @@ describe('diversify', () => {
     const rows = Array.from({ length: 30 }, (_, i) => row(i, ['a', 'b', 'c', 'd'][i % 4]));
     expect(diversify(rows, 24)).toHaveLength(24);
     expect(diversify([], 24)).toEqual([]);
-  });
-});
-
-describe('withoutUpgradedDrafts', () => {
-  it('hides a draft once its authored version is in the feed, keeps drafts without one', () => {
-    const draft = row(1, 'delivery');
-    const authored = row(2, 'delivery', { parentId: 'v1', relation: 'upgrade' });
-    const remix = row(3, 'delivery', { parentId: 'v2' });
-    const lonely = row(4, 'chase_escape');
-    expect(withoutUpgradedDrafts([lonely, remix, authored, draft]).map((r) => r.versionId)).toEqual(['v4', 'v3', 'v2']);
   });
 });

@@ -86,7 +86,7 @@ import { readControl } from './control-file';
  * Jména, která smí stát v `off`. `all` je zkratka za všechna ostatní **plus
  * snapshoty** — je to „vypni provoz", ne „vypni tři věci".
  */
-export const KILL_SWITCHES = ['upstream', 'sessions', 'refine', 'all'] as const;
+export const KILL_SWITCHES = ['upstream', 'sessions', 'refine', 'feed', 'all'] as const;
 
 export type KillSwitch = (typeof KILL_SWITCHES)[number];
 
@@ -112,6 +112,13 @@ export interface KillState {
    * neruší.
    */
   readonly snapshots: boolean;
+  /**
+   * Feed posledních her na `/play` (`GET /api/play/games?recent`, P23-D T4).
+   * Vlastní páka, protože feed je jediné místo, kde se cizí hra ukáže každému
+   * návštěvníkovi – vypnout ho musí jít bez toho, aby umřely odkazy na hry
+   * (`snapshots`). Rozbitý vypínač ho nechá běžet jako ostatní čtení; vypne ho `feed` nebo `all`.
+   */
+  readonly feed: boolean;
   /**
    * Dveře, které jen **přehrávají zmrazený korpus** — `/api/edit`,
    * `/api/emit` a `/api/emit/stream`. Neplatí se na nich nic, takže je rozbitý
@@ -140,6 +147,7 @@ const NOTHING_OFF: KillState = {
   sessions: false,
   refine: false,
   snapshots: false,
+  feed: false,
   replay: false,
 };
 
@@ -149,6 +157,7 @@ const PAID_OFF: KillState = {
   sessions: true,
   refine: true,
   snapshots: false,
+  feed: false,
   replay: false,
 };
 
@@ -157,6 +166,7 @@ const EVERYTHING_OFF: KillState = {
   sessions: true,
   refine: true,
   snapshots: true,
+  feed: true,
   replay: true,
 };
 
@@ -181,6 +191,7 @@ export function killStateFrom(value: Record<string, unknown>): KillState {
     sessions: named.has('sessions'),
     refine: named.has('refine'),
     snapshots: false,
+    feed: named.has('feed'),
     replay: false,
   };
 }

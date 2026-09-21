@@ -16,17 +16,6 @@ export interface FeedRow {
   readonly versionId: string;
   readonly archetype: string;
   readonly createdAt: string;
-  readonly parentId: string | null;
-  readonly relation?: 'upgrade';
-}
-
-/**
- * Návrh, jehož autorská verze už ve feedu je, se skryje – táž věta by jinak
- * visela ve feedu dvakrát. Autorská verze je lepší hra a odkaz na ni je týž zážitek.
- */
-export function withoutUpgradedDrafts<Row extends FeedRow>(rows: readonly Row[]): Row[] {
-  const upgraded = new Set(rows.flatMap((row) => (row.relation === 'upgrade' && row.parentId !== null ? [row.parentId] : [])));
-  return rows.filter((row) => !upgraded.has(row.versionId));
 }
 
 export function diversify<Row extends FeedRow>(rows: readonly Row[], limit: number = Number.POSITIVE_INFINITY): Row[] {

@@ -15,7 +15,7 @@ import { z } from 'zod';
 
 import { draftGameSpec } from '@/play/draft';
 import { RECENT_CAP } from '@/play/version';
-import { diversify, withoutUpgradedDrafts } from '@/play/version/diversify';
+import { diversify } from '@/play/version/diversify';
 
 import { getDirector } from '../_director';
 import { fail, readJsonBody } from '../_errors';
@@ -37,23 +37,26 @@ const MAX_FEED = 48;
 /**
  * `GET /api/play/games?recent=N` – feed (P23-D T4): `{ games: [{ versionId,
  * title, archetype, createdAt, parentId, remixes }] }` od nejnovější, v každé
- * osmici nejvýš tři hry téhož archetypu (`diversify`). Návrh, jehož autorská
- * verze už ve feedu je, se skryje. Stojí dva příkazy úložiště (seznam a
- * počty dětí), páku a strop má jako každé čtení; hrana ho smí 15 s držet.
+ * osmici nejvýš tři hry téhož archetypu (`diversify`). Jen autorské verze od
+ * režiséra – proč, říká `put` v `store.ts`. Stojí dva příkazy úložiště
+ * (seznam a počty dětí), vlastní páku `feed` a strop jako každé čtení; hrana
+ * ho smí 15 s držet, a proto dotaz nesmí nést nic jiného než kanonické `recent`
+ * – náhodný parametr navíc by cache obešel pokaždé.
  */
 export async function GET(request: Request): Promise<Response> {
-  const refused = await admit(request, 'snapshots');
+  const refused = await admit(request, 'feed');
   if (refused !== null) return refused;
 
-  const text = new URL(request.url).searchParams.get('recent');
+  const query = new URL(request.url).searchParams;
+  const text = query.get('recent');
   const limit = Number(text);
-  if (text === null || !/^\d{1,3}$/.test(text) || limit < 1 || limit > MAX_FEED) {
-    return fail(400, 'BAD_REQUEST', `recent must be a whole number from 1 to ${String(MAX_FEED)}`);
+  if (text === null || [...query.keys()].length !== 1 || !/^[1-9]\d?$/.test(text) || limit > MAX_FEED) {
+    return fail(400, 'BAD_REQUEST', `send only recent, a whole number from 1 to ${String(MAX_FEED)}`);
   }
 
   const versions = store();
   // Rezerva nad `limit`: rozmanitost odkládá hry do dalších osmic.
-  const rows = diversify(withoutUpgradedDrafts(await versions.recent(Math.min(RECENT_CAP, limit * 4))), limit);
+  const rows = diversify(await versions.recent(Math.min(RECENT_CAP, limit * 4)), limit);
   const remixes = await versions.childCounts(rows.map((row) => row.versionId));
   return Response.json(
     {
