@@ -19,7 +19,7 @@
 
 import type { GenerationBranch } from '@/server/pipeline';
 
-import type { DirectorResult } from '../contracts';
+import type { DirectorResult, FallbackReason } from '../contracts';
 import { draftGameSpec } from '../draft';
 import type { GameSpecV1 } from '../spec';
 
@@ -30,11 +30,10 @@ import { DIRECTOR_PROMPT_VERSION, buildDirectorRequest } from './prompt';
 import { readDirectorAnswer } from './read';
 import { MAX_REPAIR_ROUNDS, applyRepairAnswer, buildRepairRequest, repairDeterministically } from './repair';
 
-export type FallbackReason = 'MODEL_UNAVAILABLE' | 'MALFORMED' | 'UNREPAIRED';
+export type { FallbackReason } from '../contracts';
 
 /** Rozšíření `DirectorResult` – přiřaditelné do kontraktu, s tím, co obálka a měření potřebují navíc. */
-export type DirectedGame = Extract<DirectorResult, { ok: true }> & {
-  readonly fallbackReason: FallbackReason | null;
+export type DirectedGame = DirectorResult & {
   /** Varovné nálezy kritika nad vráceným specem. */
   readonly warnings: readonly CriticIssue[];
   readonly ms: number;

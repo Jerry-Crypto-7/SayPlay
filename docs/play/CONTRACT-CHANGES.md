@@ -82,6 +82,8 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   `Extract<DirectorResult, {ok:true}>` o `fallbackReason`, `warnings`, `ms`, `calls` –
   přiřaditelné do kontraktu beze změny. Návrh: při společném kroku větev `ok:false` z
   `DirectorResult` vypustit a `fallbackReason` do kontraktu přidat.
+  **Vyřešeno 21. 9. 2026 (P23-D R4):** `DirectorResult` je jediný tvar `ok: true` s
+  `fallbackReason`; `FallbackReason` bydlí v kontraktu, `DirectedGame` ho jen rozšiřuje.
 - **Klíč cache** bere `endpoint` z `GenerationBranch.id` a `model` z `UpstreamRequest.model`
   (= `EMISSION_MODEL`), protože `direct()` dostává větev, ne konfiguraci. Kdyby obálka měla dva
   koncové body s týmž `id`, potřebuje kontrakt `branch.id` odlišit – zatím není důvod.
@@ -93,6 +95,7 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   (`src/app/api/play/_compiler.ts`) svou verzi `'stub-authored-v1'` vydává přes přetypování
   na jednom místě. `GameVersion.compilerVersion` už `string` je; `CompiledGame` by měl
   být stejně široký, aby dvojník i budoucí druhá verze kompilátoru prošly bez castu.
+  **Vyřešeno 21. 9. 2026 (P23-D R4):** `CompiledGame.compilerVersion: string`.
 - **`gameVersionId` dává 8 hex znaků (FNV-1a 32 bitů z `canonicalHash`).** Veřejné id
   hry s 2^32 hodnotami je na hraně kolize už u desítek tisíc her; obálka (`_errors.ts`)
   proto přijímá `/^[a-f0-9]{8,64}$/`, aby delší hash prošel bez změny. Doporučení: v

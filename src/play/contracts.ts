@@ -42,7 +42,7 @@ export interface CompiledGame {
   readonly spec: GameSpecV1;
   readonly specHash: string;
   readonly seed: number;
-  readonly compilerVersion: typeof GAME_COMPILER_VERSION;
+  readonly compilerVersion: string;
   readonly blueprint: WorldstreamBlueprint;
   /** `simHashOf(blueprint.world)` – identita hratelné instance. */
   readonly worldHash: string;
@@ -119,9 +119,20 @@ export function gameVersionId(fields: Omit<GameVersion, 'versionId' | 'createdAt
 /** Jak režisér skončil. `draft` je okamžitá šablona ze slov, `authored` odpověď modelu. */
 export type DirectorSource = 'draft' | 'authored' | 'cached';
 
-export type DirectorResult =
-  | { readonly ok: true; readonly spec: GameSpecV1; readonly source: DirectorSource; readonly repairRounds: number }
-  | { readonly ok: false; readonly reason: 'MODEL_UNAVAILABLE' | 'SPEC_REJECTED' | 'REPAIR_EXHAUSTED'; readonly issues: readonly string[] };
+/** Proč režisér vrátil návrh ze slov místo odpovědi modelu. */
+export type FallbackReason = 'MODEL_UNAVAILABLE' | 'MALFORMED' | 'UNREPAIRED';
+
+/**
+ * Režisér neselže: výpadek modelu, nečitelná odpověď i neopravitelný spec
+ * skončí návrhem ze slov (`source: 'draft'`) s důvodem ve `fallbackReason`.
+ */
+export interface DirectorResult {
+  readonly ok: true;
+  readonly spec: GameSpecV1;
+  readonly source: DirectorSource;
+  readonly repairRounds: number;
+  readonly fallbackReason: FallbackReason | null;
+}
 
 /** Věta po dohrání: čím se liší dítě od rodiče. Určuje, co se musí přepočítat. */
 export type RemixClass = 'parameter' | 'mechanic' | 'presentation' | 'topology' | 'objective';
