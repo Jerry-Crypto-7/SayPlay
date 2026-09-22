@@ -889,6 +889,124 @@ def shopping_cart():
         box("steel", (0.015, 0.75, 0.38), (x, 0, 0.55))
 
 
+# ---- běžec (P25): překážky a trať; id čte arkádové jádro P25A
+
+
+def _striped_bar(length, thickness, z, colors, stripes=6, y=0.0):
+    """Vodorovná tyč podél X ze střídavých pruhů – čitelná jako „nesahat“."""
+    width = length / stripes
+    for i in range(stripes):
+        box(
+            colors[i % 2],
+            (width, thickness, thickness),
+            (-length / 2 + width * (i + 0.5), y, z),
+        )
+
+
+@model(
+    "hurdle",
+    "Striped hurdle",
+    [
+        "hurdle",
+        "hurdles",
+        "obstacle",
+        "obstacles",
+        "barrier",
+        "barriers",
+        "fence",
+        "fences",
+        "jump",
+    ],
+)
+def hurdle():
+    # dvě nohy s patkou, nahoře pruhované prkno ve výšce skoku
+    for side in (-1, 1):
+        cyl("white", 0.035, 0.5, (side * 0.5, 0, 0.25))
+        box("dark-grey", (0.08, 0.42, 0.05), (side * 0.5, 0, 0.025), bevel=0.01)
+        cyl("dark-grey", 0.05, 0.04, (side * 0.5, 0, 0.52))
+    _striped_bar(1.0, 0.16, 0.44, ("red-cloth", "white"), stripes=5)
+    box("dark-grey", (1.0, 0.04, 0.04), (0, 0, 0.25))
+
+
+@model(
+    "slide-bar",
+    "Glowing slide bar",
+    ["bar", "bars", "laser", "lasers", "beam", "beams", "limbo", "slide"],
+)
+def slide_bar():
+    # sloupy s podstavou, mezi nimi tyč ve výšce hlavy – podklouznout
+    for side in (-1, 1):
+        cyl("dark-grey", 0.2, 0.08, (side * 0.62, 0, 0.04))
+        cyl("dark-steel", 0.07, 1.4, (side * 0.62, 0, 0.74))
+        ball("glow-red", 0.09, (side * 0.62, 0, 1.48))
+    _striped_bar(1.16, 0.12, 1.05, ("yellow", "black"), stripes=8)
+    cyl("glow-red", 0.025, 1.16, (0, -0.08, 0.92), rot=(0, 90, 0))
+
+
+@model("cone", "Traffic cone", ["cone", "cones", "traffic-cone", "pylon", "pylons"])
+def cone():
+    box("black", (0.4, 0.4, 0.04), (0, 0, 0.02), bevel=0.01)
+    cyl("orange", 0.15, 0.5, (0, 0, 0.29), top=0.025)
+    for z, radius in ((0.2, 0.123), (0.34, 0.09)):
+        cyl("white", radius, 0.07, (0, 0, z), top=radius - 0.02)
+
+
+@model(
+    "crate",
+    "Wooden crate",
+    ["crate", "crates", "box", "boxes", "wooden-box", "cargo"],
+)
+def crate():
+    size = 0.7
+    box("light-wood", (size, size, size), (0, 0, size / 2), bevel=0.01)
+    # rám z tmavších latí po hranách a úhlopříčky na bocích
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            box("wood", (0.08, 0.08, size + 0.01), (sx * 0.32, sy * 0.32, size / 2))
+    for z in (0.04, size - 0.04):
+        for side in (-1, 1):
+            box("wood", (size + 0.01, 0.08, 0.08), (0, side * 0.32, z))
+            box("wood", (0.08, size + 0.01, 0.08), (side * 0.32, 0, z))
+    diagonal = size * 1.28
+    for side in (-1, 1):
+        box(
+            "wood",
+            (diagonal * 0.72, 0.03, 0.08),
+            (0, side * 0.355, size / 2),
+            rot=(0, 45, 0),
+        )
+        box(
+            "wood",
+            (0.03, diagonal * 0.72, 0.08),
+            (side * 0.355, 0, size / 2),
+            rot=(45, 0, 0),
+        )
+    # hlavičky hřebíků – oblé, aby LOD1 měl co ubrat
+    for sx in (-1, 1):
+        for sz in (0.04, size - 0.04):
+            cyl("steel", 0.022, 0.02, (sx * 0.32, -0.365, sz), rot=(90, 0, 0))
+
+
+@model(
+    "track-tile",
+    "Running track tile",
+    ["track", "tracks", "lane", "lanes", "runway", "course"],
+)
+def track_tile():
+    # dílek trati 3 pruhy × 1,2 m, délka 2 m; pruhy odděluje bílá čára
+    lane, length = 1.2, 2.0
+    width = lane * 3
+    box("dark-grey", (width, length, 0.06), (0, 0, 0.03))
+    box("red-cloth", (width - 0.1, length, 0.02), (0, 0, 0.07))
+    for x in (-lane / 2, lane / 2):
+        box("white", (0.06, length, 0.012), (x, 0, 0.085))
+    for side in (-1, 1):
+        box("white", (0.08, length, 0.1), (side * (width / 2 + 0.04), 0, 0.05))
+        # odrazky na obrubníku – oblé, ať LOD1 zlevní
+        for y in (-0.6, 0.6):
+            cyl("glow-yellow", 0.035, 0.02, (side * (width / 2 + 0.04), y, 0.105))
+
+
 # ---------------------------------------------------------------- export
 def clear_scene():
     bpy.ops.object.select_all(action="SELECT")
