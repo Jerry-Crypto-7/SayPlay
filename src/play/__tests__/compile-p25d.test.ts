@@ -154,6 +154,30 @@ describe('hazard_zone.pulse.alternate – moving walls (P25D T3)', () => {
     expect(states(without(sim, /\.stagger$/), 5)[2]).toBe('on,on,on,on');
   });
 
+  it('a wall that shifts onto a standing player loses at that tick, not a phase later', () => {
+    // Hráč nevstoupil, zeď přijela k němu – `enter` je hrana a mine to, chytá
+    // to `catch`. Střídavá zeď má liché polohy na `on` časovači, takže špatný
+    // časovač by prohru posunul o fázi (tik 80), ne zrušil. Proto tik pinujeme.
+    const { sim } = compiled(gameSpec, 1);
+    const stand = (source: SurfaceSim): { lostAt: number; state: string } => {
+      const runtime = runtimeOf(source);
+      let lostAt = -1;
+      for (let tick = 0; tick < 100 && runtime.runState === 'running'; tick += 1) {
+        if (tick === 5) {
+          // wall_2 je druhá poloha první zdi – při startu vypnutá (stagger).
+          const [x, y] = sim.sockets.wall_2;
+          writeSlot(runtime.layout, runtime.state, 'e:player:x', x);
+          writeSlot(runtime.layout, runtime.state, 'e:player:y', y);
+        }
+        step(runtime, []);
+        if (runtime.runState === 'lost' && lostAt < 0) lostAt = tick;
+      }
+      return { lostAt, state: runtime.runState };
+    };
+    expect(stand(sim)).toEqual({ lostAt: 40, state: 'lost' });
+    expect(stand(without(sim, /^hazard_zone\.wall_2\.catch$/)).state).toBe('running');
+  });
+
   it('drafts s076 with moving walls, and the drafted game publishes', () => {
     const drafted = draftGameSpec('a maze game where the walls move');
     expect(drafted.mechanics.find((mechanic) => mechanic.id === 'hazard_zone')?.params.pulse).toMatchObject({ alternate: true });
