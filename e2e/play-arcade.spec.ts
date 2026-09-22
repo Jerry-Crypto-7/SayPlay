@@ -37,6 +37,15 @@ test.describe('/play/[id] – arcade runner', () => {
     await expect.poll(() => page.evaluate(() => window.__playShell!.inputs().length)).toBe(before + 1);
   });
 
+  test('ArrowLeft moves the runner to the left of the screen', async ({ page }) => {
+    await page.goto(url);
+    const stage = page.getByTestId('arcade-stage');
+    await expect(stage).toHaveAttribute('data-player-x', /.+/, { timeout: 60_000 });
+    const start = Number(await stage.getAttribute('data-player-x'));
+    await page.keyboard.press('ArrowLeft');
+    await expect.poll(async () => Number(await stage.getAttribute('data-player-x'))).toBeLessThan(start - 0.05);
+  });
+
   test('the verifier bot replayed by the probe wins and the outcome says so', async ({ page }) => {
     await page.goto(url);
     await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });

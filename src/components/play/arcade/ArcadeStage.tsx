@@ -118,11 +118,12 @@ function lerp(from: number, to: number, alpha: number): number {
   return from + (to - from) * alpha;
 }
 
-function World({ session, playerModel }: { readonly session: ArcadeSession; readonly playerModel: string }) {
+function World({ session, playerModel, surface }: { readonly session: ArcadeSession; readonly playerModel: string; readonly surface: React.RefObject<HTMLDivElement | null> }) {
   const views = useMemo(() => bodiesOf(session), [session]);
   const groups = useRef<(Group | null)[]>([]);
   const camera = useThree((three) => three.camera);
   const look = useMemo(() => new Vector3(), []);
+  const projected = useMemo(() => new Vector3(), []);
 
   useFrame((_, delta) => {
     const alpha = session.advance(delta * 1000);
@@ -133,8 +134,9 @@ function World({ session, playerModel }: { readonly session: ArcadeSession; read
       if (group === null || group === undefined) continue;
       const base = bodyBase(view.index);
       group.visible = ((state[base + BODY.flags] as number) & FLAG.alive) !== 0;
+      // Kamera kouká po +z, takže +x jádra by vyšlo na obrazovce vlevo a „LEFT“ (x − 1) by hráče poslal doprava.
       group.position.set(
-        lerp(prev[base + BODY.x] as number, state[base + BODY.x] as number, alpha) / UNIT,
+        -lerp(prev[base + BODY.x] as number, state[base + BODY.x] as number, alpha) / UNIT,
         lerp(prev[base + BODY.y] as number, state[base + BODY.y] as number, alpha) / UNIT,
         lerp(prev[base + BODY.z] as number, state[base + BODY.z] as number, alpha) / UNIT,
       );
@@ -148,6 +150,9 @@ function World({ session, playerModel }: { readonly session: ArcadeSession; read
       camera.position.set(x * 0.6, 3.4, z - 6.5);
       look.set(x * 0.4, 1.1, z + 9);
       camera.lookAt(look);
+      camera.updateMatrixWorld();
+      // Kde je hráč na obrazovce (−1 vlevo … 1 vpravo) – e2e tím hlídá směr pruhů, z obrázku se to nepřečte.
+      if (surface.current !== null) surface.current.dataset.playerX = projected.copy(player.position).project(camera).x.toFixed(3);
     }
   });
 
@@ -237,7 +242,7 @@ export default function ArcadeStage({ session, playerModel }: { readonly session
         <fog attach="fog" args={['#bae6fd', 30, 90]} />
         <hemisphereLight args={['#e0f2fe', '#166534', 0.9]} />
         <directionalLight position={[6, 12, -4]} intensity={1.6} />
-        <World session={session} playerModel={playerModel} />
+        <World session={session} playerModel={playerModel} surface={surface} />
       </Canvas>
     </div>
   );
