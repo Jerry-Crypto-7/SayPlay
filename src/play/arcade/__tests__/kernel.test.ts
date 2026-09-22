@@ -414,6 +414,12 @@ describe('arkádové jádro v2', () => {
     const v1 = [...w.initial.slice(0, 4), ...w.initial.slice(HEADER.counters)];
     const upgraded = instantiate({ ...w, runtimeVersion: 'arcade-v1' as never, initial: v1 });
     expect(Array.from(upgraded)).toEqual(Array.from(instantiate(w)));
+
+    // Počet těl je uložené číslo: vadný záznam musí spadnout na kontrole,
+    // ne si podle něj nejdřív vyžádat pole.
+    const forged = [...v1];
+    forged[HEADER.bodyCount] = 2 ** 28;
+    expect(() => instantiate({ ...w, runtimeVersion: 'arcade-v1' as never, initial: forged })).toThrow(/malformed initial state/);
   });
 
   it('stejný záznam dá stejný hash i s plošinami, spawnem a respawnem (200 záznamů)', () => {

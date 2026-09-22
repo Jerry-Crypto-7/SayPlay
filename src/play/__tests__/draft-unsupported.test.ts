@@ -65,6 +65,19 @@ describe('unsupportedGame', () => {
     expect(unsupportedGame('tower defense runner', { archetype: 'hazard_crossing', control: 'runner' })?.closest).toBe('an endless runner');
   });
 
+  // Všechny arkádové šablony mají archetyp `hazard_crossing`, takže podle něj
+  // by hláška plošinovce i poletování slibovala přecházení silnice.
+  it('names the arcade game the player actually got, not the template archetype', () => {
+    for (const [sentence, closest] of [
+      ['a tower defense platformer where you jump between ledges', 'a platformer'],
+      ['an idle clicker where a bird flaps through pipes', 'a flappy game'],
+    ] as const) {
+      const draft = draftGameSpec(sentence);
+      expect(draft.archetype, sentence).toBe('hazard_crossing');
+      expect(unsupportedGame(sentence, draft)?.closest, sentence).toBe(closest);
+    }
+  });
+
   // Revize fáze P25E: obecná slova (empire, protect, mirrors, craft) patří i hrám, které umíme.
   it('leaves playable sentences with common words alone', () => {
     for (const sentence of [

@@ -282,6 +282,33 @@ describe('collectible.hiddenIn – search the room (P25D T2)', () => {
     expect(collected(open)).toBe(1);
   });
 
+  // Hledání stojí svědka dva tahy na předmět (dojdi ke skrýši, seber), takže
+  // šestnáct předmětů přeteče strop tahů short tieru, i když se do horizontu
+  // vejdou. Tier proto vybírá obě meze; bez toho věta o 16 věcech nedostala hru.
+  it('publishes a search with sixteen hidden objects, where the witness needs more inputs than the short tier allows', () => {
+    // Nad šestnáct už návrh počet nepřevezme (spadne na výchozích pět), takže
+    // šestnáct je skutečné maximum téhle cesty, ne libovolně zvolené číslo.
+    for (const count of [12, 16]) {
+      const sentence = `find the ${count} hidden objects in a messy bedroom`;
+      const drafted = draftGameSpec(sentence);
+      expect(drafted.mechanics.find((mechanic) => mechanic.id === 'collectible')?.params.count, sentence).toBe(count);
+      expect(publishFailures(drafted, 1), sentence).toEqual([]);
+    }
+  });
+
+  // Runtime páruje pool podle `id.startsWith(name)`, takže `mushroom_1` by
+  // spolkl `mushroom_10`; adaptér to řeší pořadím a od deseti předmětů to platí.
+  it('gives every hidden item its own pool, also past nine items', () => {
+    const drafted = draftGameSpec('find the 12 hidden objects in a messy bedroom');
+    const { sim } = compiled(drafted, 1);
+    const pools = Object.keys(sim.state.pool);
+    expect(pools).toHaveLength(12);
+    expect(new Set(Object.values(sim.state.pool).map((entry) => entry.tag)).size).toBe(12);
+    const runtime = runtimeOf(sim);
+    const tags = new Set(pools.map((id) => runtime.doc.space.tags[id] ?? id));
+    expect(tags.size, 'each item keeps its own tag in the world').toBe(12);
+  });
+
   it('drafts s074 and s184 as a search game with spots, and each drafted game publishes', () => {
     for (const sentence of [
       'find the hidden objects in a messy bedroom',

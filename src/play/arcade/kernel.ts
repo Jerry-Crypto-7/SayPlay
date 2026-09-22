@@ -165,6 +165,11 @@ const V1_HEADER_SIZE = 12;
  */
 function upgradeV1(initial: readonly number[]): Int32Array {
   const count = initial[HEADER.bodyCount] as number;
+  // Počet těl se čte z uloženého stavu, takže se ověřuje dřív, než podle něj
+  // něco alokujeme – jinak by vadný záznam žádal o pole libovolné velikosti.
+  if (!Number.isInteger(count) || count < 0 || count > ARCADE_LIMITS.maxBodies || V1_HEADER_SIZE + count * BODY_STRIDE > initial.length) {
+    throw new Error('arcade: malformed initial state');
+  }
   const state = new Int32Array(stateSize(count));
   for (let i = 0; i < 4; i += 1) state[i] = initial[i] as number;
   for (let i = 0; i < ARCADE_LIMITS.maxCounters; i += 1) state[HEADER.counters + i] = initial[4 + i] as number;

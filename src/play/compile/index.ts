@@ -108,12 +108,16 @@ export function greenStart(tick: number, walk: number, window: WitnessWindow): n
 /**
  * Nejkratší tier, jehož horizont pokryje svědka i nejdelší časovač s rezervou
  * – výhra z `onTimerEnd` přijde tik po doběhnutí a horizont musí být ostře větší.
+ *
+ * Tier má dvě meze a rozhodují obě: hledání schovaných věcí dá na předmět dva
+ * tahy (dojdi ke skrýši, seber), takže 16 předmětů přeteče `maxInputs` short
+ * tieru, i když se svědek do horizontu pohodlně vejde.
  */
 function chooseTier(sim: SurfaceSim, ops: readonly WitnessOp[]): Tier {
   const lastInput = ops.length > 0 ? (ops[ops.length - 1] as WitnessOp).tick : 0;
   const longestTimer = Math.max(0, ...Object.values(sim.state.timers).map((timer) => timer.durationTicks));
   const needed = Math.max(lastInput, longestTimer) + 60;
-  return TIERS.find((tier) => TIER_POLICY[tier].maxHorizonTicks >= needed) ?? 'long';
+  return TIERS.find((tier) => TIER_POLICY[tier].maxHorizonTicks >= needed && TIER_POLICY[tier].maxInputs >= ops.length) ?? 'long';
 }
 
 export function compileSim(spec: GameSpecV1, seed: number, adapters: AdapterTable = ADAPTERS): SimCompileResult {

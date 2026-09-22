@@ -94,6 +94,13 @@ const CLOSEST: Readonly<Record<ArchetypeId, string>> = {
   combat_lite: 'a fight game',
 };
 
+/** Arkádové hry sdílejí archetyp šablony, takže je pojmenuje ovládání. */
+const ARCADE_CLOSEST: Readonly<Record<string, string | undefined>> = {
+  runner: 'an endless runner',
+  platform: 'a platformer',
+  flap: 'a flappy game',
+};
+
 /** Věta a hotový návrh → hláška, nebo `null`, když hra splní, co věta chtěla. */
 export function unsupportedGame(sentence: string, draft: Pick<GameSpecV1, 'archetype' | 'control'>): Honesty | null {
   const text = sentence.toLowerCase();
@@ -102,7 +109,9 @@ export function unsupportedGame(sentence: string, draft: Pick<GameSpecV1, 'arche
   return {
     kind: match.kind,
     reason: match.reason,
-    closest: draft.control === 'runner' ? 'an endless runner' : CLOSEST[draft.archetype],
+    // Arkádová hra si nese jméno podle ovládání – archetyp šablony je u všech
+    // `hazard_crossing`, takže by hláška u plošinovky slibovala přecházení.
+    closest: ARCADE_CLOSEST[draft.control ?? 'tap_go'] ?? CLOSEST[draft.archetype],
   };
 }
 
