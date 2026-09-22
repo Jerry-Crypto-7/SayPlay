@@ -28,6 +28,10 @@ import hazardCrossing from '../__fixtures__/hazard_crossing.json';
 import survivalTimer from '../__fixtures__/survival_timer.json';
 import switchPuzzle from '../__fixtures__/switch_puzzle.json';
 
+import runnerTemplate from '../arcade/__fixtures__/runner.json';
+import type { RunnerDensity } from '../arcade/pieces/runner';
+
+import { pickControl } from './controls';
 import { plural, readNumbers, readRoles, scoreArchetypes, singular, type SentenceRoles } from './lexicon';
 
 const TEMPLATES: Readonly<Record<ArchetypeId, unknown>> = {
@@ -253,8 +257,27 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
   },
 };
 
+/** Běžec (P25A): šablona `runner.json`, přepíše se titul, popisky a hustota. */
+function draftRunner(sentence: string, seed: number, density: RunnerDensity | null): GameSpecV1 | null {
+  const spec = JSON.parse(JSON.stringify(runnerTemplate)) as GameSpecV1;
+  const roles = readRoles(sentence);
+  const rng = xoroshiro128plus(seed);
+  spec.title = titleFrom(sentence, spec.title);
+  role(spec, 'player').label = cap(roles.player ?? PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)], 60);
+  if (roles.collectible !== null) role(spec, 'coin').label = cap(roles.collectible, 60);
+  if (roles.setting !== null) spec.theme.setting = cap(roles.setting, 80);
+  if (density !== null) spec.controlParams = { ...spec.controlParams, density };
+  const result = readGameSpec(spec);
+  return result.ok ? result.value : null;
+}
+
 export function draftGameSpecWithMeta(sentence: string, seed = 1): DraftMeta {
   const scores = scoreArchetypes(sentence);
+  const control = pickControl(sentence.toLowerCase());
+  if (control !== null) {
+    const runner = draftRunner(sentence, seed, control.density);
+    if (runner !== null) return { spec: runner, archetype: runner.archetype, scores, fellBack: false };
+  }
   const archetype = pickArchetype(scores);
   const spec = template(archetype);
   const roles = readRoles(sentence);
