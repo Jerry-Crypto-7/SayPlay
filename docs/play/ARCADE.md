@@ -82,10 +82,12 @@ Výsledek má tvar `QualityReport` (`src/play/contracts.ts`), takže publikace, 
 | `idle` | 8 | – | – | – | mimo jádro: poctivá hláška |
 | `sandbox` | 3 | – | – | – | mimo rozsah krátké hry |
 
-Hotové: `runner` (P25A). Ostatní řádky jsou plán fází 2–4 řídicího plánu.
+Hotové: `runner` (P25A), `platform` a `flap` (P25C). Ostatní řádky jsou plán fází 2–4 řídicího plánu.
 
 ## Výkon
 
 Krok jádra (22. 9. 2026, čistý Node 22, bundle přes rolldown, fixtura běžce, 5 semínek × 5 opakování, 600 tiků se vstupy robota): **medián 0,0024 ms/tik, nejhorší vzorek 0,013 ms/tik** – cíl < 1 ms drží s rezervou ~80×. Pod vitestem je jádro ~15× pomalejší (importy jsou gettery), proto se neměří tam.
 
-Prohlížeč: `ArcadeStage` tiká pevným krokem 1/60 s z `useFrame` (akumulátor, strop 250 ms na snímek – skrytá záložka hru nedohraje) a těla interpoluje mezi dvěma posledními tiky.
+Plošinovka a poletování (22. 9. 2026, P25C T6, pod vitestem a souběžně s `npm run build`, fixtury `platform.json` a `flap.json`, 5 opakování × 600 tiků se vstupy robota): **plošinovka 0,0035–0,0059 ms/tik, poletování 0,0030–0,0047 ms/tik** (běžec týmž měřením 0,0047–0,0075, první zahřívací vzorek 0,037). I se ~15× přirážkou vitestu cíl < 1 ms drží s rezervou přes 150×.
+
+Prohlížeč: `ArcadeStage` tiká pevným krokem 1/60 s z `useFrame` (akumulátor, strop 250 ms na snímek – skrytá záložka hru nedohraje) a těla interpoluje mezi dvěma posledními tiky. Scéna podle `control`: běžec kamera za hráčem, plošinovka a poletování boční kamera (stojí na −x, +z jde doprava; na výšku ustoupí, aby byla vidět trať vpředu). Plošinovka drží osu (`session.hold`, zapisuje se do každého tiku, kdy je nenulová); dotyk: levá čtvrtina vlevo, druhá vpravo, pravá polovina skok. Poletování čeká na první ťuk (`waitForInput`), jinak by ptáček spadl dřív, než ho hráč uvidí.
