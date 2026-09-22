@@ -20,6 +20,7 @@ import { verifyWitness } from '@/verify/witness';
 import { findBlueprintReferenceIssues } from '@/worldstream/references';
 import { validateBlueprint } from '@/worldstream/schema';
 
+import { compileArcade } from '../arcade/compile';
 import { type CompileGameResult, GAME_COMPILER_VERSION, type GameCompiler, type MechanicBinding } from '../contracts';
 import { MECHANICS, type MechanicEntry, type MechanicId, type RuntimeAction } from '../registry';
 import type { GameRole, GameSpecV1 } from '../spec';
@@ -176,6 +177,8 @@ function waitingWitnesses(ops: readonly WitnessOp[]): WitnessOp[][] {
  * 1964188670 prohrál s chodcem v 6. tiku, s čekáním vyhraje).
  */
 export const compileGame: GameCompiler = (spec, seed): CompileGameResult => {
+  // Arkádová hra (P25A) má vlastní jádro; mřížková cesta pod tímhle řádkem se jí netýká.
+  if (spec.control === 'runner') return compileArcade(spec, seed);
   const compilation = compileSim(spec, seed);
   if (!compilation.ok) return compilation;
   const { sim } = compilation.value;

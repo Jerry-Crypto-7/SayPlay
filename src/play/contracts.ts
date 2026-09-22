@@ -17,6 +17,8 @@ import { canonical } from '@/ir/worlddoc';
 import { RUNTIME_VERSION } from '@/sim/interpreter';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
+import type { ArcadeWorld } from './arcade/contract';
+
 import type { GameSpecV1 } from './spec';
 
 /** Verze kompilátoru: zvednout, když stejný spec+seed dá jiný `WorldDoc`. */
@@ -43,8 +45,11 @@ export interface CompiledGame {
   readonly specHash: string;
   readonly seed: number;
   readonly compilerVersion: string;
-  readonly blueprint: WorldstreamBlueprint;
-  /** `simHashOf(blueprint.world)` – identita hratelné instance. */
+  /** Mřížkový svět (`src/sim`); `null` u arkádové hry, ta běží z `arcade`. */
+  readonly blueprint: WorldstreamBlueprint | null;
+  /** Arkádový svět (P25A), jen u her s `control` jiným než `tap_go`. */
+  readonly arcade?: ArcadeWorld;
+  /** `simHashOf(blueprint.world)`, u arkády `canonicalHash(arcade)` – identita hratelné instance. */
   readonly worldHash: string;
   readonly mechanics: readonly MechanicBinding[];
   readonly roles: readonly RoleBinding[];

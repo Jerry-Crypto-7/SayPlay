@@ -28,6 +28,7 @@ import { z } from 'zod';
 import { ID_PATTERN } from '@/ir/types';
 import { canonicalHash } from '@/ir/worlddoc';
 
+import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK } from './arcade/pieces/runner';
 import { ARCHETYPES, MECHANICS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from './registry';
 
 export const GAME_SPEC_SCHEMA = 'gamespec.v1' as const;
@@ -192,9 +193,31 @@ export const tutorialSchema = z
   })
   .strict();
 
+/**
+ * Ovládání (P25A). `tap_go` = dnešní mřížka (`src/sim`), `runner` = arkádové
+ * jádro (`src/play/arcade`). Pole je volitelné a **bez výchozí hodnoty**:
+ * default by ho vepsal do každého přečteného specu a pohnul `specHash` všech
+ * dnešních her.
+ */
+export const CONTROLS = ['tap_go', 'runner'] as const;
+export type ControlId = (typeof CONTROLS)[number];
+
+/** Parametry běžce; co chybí, doplní generátor tratě svým výchozím. */
+export const runnerParamsSchema = z
+  .object({
+    speed: z.enum(RUNNER_SPEEDS).optional(),
+    density: z.enum(RUNNER_DENSITIES).optional(),
+    lengthM: z.int().min(RUNNER_TRACK.minLengthM).max(RUNNER_TRACK.maxLengthM).optional(),
+    obstacles: z.array(z.enum(OBSTACLE_KINDS)).min(1).max(OBSTACLE_KINDS.length).optional(),
+  })
+  .strict();
+export type RunnerParams = z.infer<typeof runnerParamsSchema>;
+
 export const gameSpecSchema = z
   .object({
     schema: z.literal(GAME_SPEC_SCHEMA),
+    control: z.enum(CONTROLS).optional(),
+    controlParams: runnerParamsSchema.optional(),
     title: text.max(80),
     archetype: z.enum(Object.keys(ARCHETYPES) as [ArchetypeId, ...ArchetypeId[]]),
     targetDurationSec: z.int().min(30).max(180),
@@ -257,6 +280,9 @@ export function readGameSpec(input: unknown): GameSpecResult {
     };
   }
   const spec = parsed.data;
+  if (spec.controlParams !== undefined && spec.control !== 'runner') {
+    return { ok: false, reason: 'MALFORMED_SPEC', issues: ['/controlParams: only a runner game takes control parameters'] };
+  }
   const archetype = ARCHETYPES[spec.archetype];
   const roleIds = new Set(spec.roles.map((role) => role.id));
   const issues: string[] = [];

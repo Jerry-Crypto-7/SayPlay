@@ -124,3 +124,20 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   `worldHash` u `chase_escape`; ostatní archetypy mají svět beze změny. Blueprint navíc
   vyřezává kulisy rodiny nad hrací plochou (`carve` + rovný terén) – to je geometrie, ne
   simulace, a `worldHash` nehýbe. Staré publikované hry zůstávají pod `play-compiler-v1`.
+
+## P25A
+
+- **`GameSpec` → volitelné `control: 'tap_go' | 'runner'` a `controlParams`** (22. 9. 2026).
+  Bez `control` je hra `tap_go` – dnešní mřížka, beze změny. Pole nemá výchozí hodnotu
+  schválně: default by se vepsal do každého přečteného specu a pohnul `specHash` všech her.
+  `controlParams` (`speed` slow/normal/fast, `density` low/normal/high, `lengthM` 60–500,
+  `obstacles` hurdle/slide-bar/cone/crate) bere jen `control: 'runner'`, jinak
+  `MALFORMED_SPEC`. Prompt režiséra tím narostl z 10 485 na 10 654 B.
+- **`CompiledGame.blueprint` a `PublishedGame.blueprint` smí být `null`; nové volitelné
+  `arcade: ArcadeWorld`.** Arkádová hra (`src/play/arcade`) nemá mřížkový svět – hraje se
+  z `arcade`. `compileGame` ji pozná podle `control` a pošle do `compileArcade`; `reportFor`
+  ji ověří `verifyArcade` (robot se zpožděním 8 tiků vyhraje, nečinný hráč ne, dvojí přehrání
+  = týž hash, meze jádra) do téhož `QualityReport` – keypointy `bot_wins`, `idle_loses`,
+  `replay_equal`, `within_limits`. `worldHash` = `canonicalHash(arcade)`,
+  `compilerVersion` = `play-compiler-v2/arcade-v1`. `verifyGame` na arkádovou hru hodí
+  výjimku (nemá ji kdo volat). Hashe v `evals/play/compiled/report.json` beze změny.

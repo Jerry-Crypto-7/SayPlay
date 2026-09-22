@@ -81,6 +81,8 @@ export default async function PlayGamePage({ params }: Params) {
     );
   }
   const { game, children, lineage } = loaded;
+  // Arkádová hra (P25A) se hraje v `ArcadeStage`; dokud ho shell nemá, nemá ji kde hrát.
+  if (game.blueprint === null) notFound();
   // `key`: přechod na remix je klientská navigace a nová hra musí dostat nový runtime, ne ten rodičův.
   return (
     <PlayShell

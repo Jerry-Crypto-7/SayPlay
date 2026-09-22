@@ -195,6 +195,7 @@ export async function publishReadSpec(
     version,
     spec,
     blueprint: compiled.value.blueprint,
+    ...(compiled.value.arcade === undefined ? {} : { arcade: compiled.value.arcade }),
     report,
     ...(extras.origin === undefined ? {} : { origin: extras.origin }),
     ...(extras.relation === undefined ? {} : { relation: extras.relation }),
