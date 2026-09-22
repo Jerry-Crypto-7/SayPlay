@@ -1,0 +1,81 @@
+# Arkádové jádro (`src/play/arcade`)
+
+Kontrakt: `src/play/arcade/contract.ts`. Řídicí plán: `plans/P25-play-knihovna-ovladani-2026-09-22.md`.
+
+## Proč vedle `src/sim`, ne v něm
+
+- `src/sim` je mřížka 20 Hz: pozice jsou celá políčka, pohyb je políčko za tik, „kolize“ je rovnost políček a vstup jsou diskrétní akce `moveTo/pickup/use`. Rychlost, gravitace ani spojitá kolize v něm nejsou.
+- Skok, pruh, řízení nebo let na tom postavit nejde bez změny tvaru stavu – a ta by pohnula hashi, svědky i e2e všech dnešních her.
+- Proto samostatné jádro: dnešní hry (`control: 'tap_go'`, výchozí) jdou beze změny do `src/sim`, arkádové (`control: 'runner'`, …) do `src/play/arcade`.
+
+## Jednotky a stav
+
+- **1 m = 1000 jednotek** (`UNIT`), rychlost je v jednotkách za tik, **60 Hz** (`ARCADE_HZ`).
+- Stav je jeden `Int32Array`: hlavička (`tick`, `runState`, počet těl, index hráče, 8 čítačů) + těla po 14 slotech (`x y z vx vy vz w h d flags role kind aux0 aux1`).
+- Osy: `x` do stran, `y` nahoru, `z` vpřed. `x/y/z` je střed spodní stěny obrysu (AABB).
+- Despawn jen shodí bit `alive`; indexy těl jsou stabilní po celý běh.
+
+## Determinismus
+
+- Žádné floaty ve stavu, žádné `Math.random`, `Date.now`, `performance.now` v `src/play/arcade/**` (hlídá grep test).
+- Jediná náhoda je `pure-rand` (stream `layout` z `src/sim/rng.ts`) a spotřebuje ji jen generátor úrovně. Jádro samo je bez náhody: stav v tiku *t* je funkce počátečního stavu a vstupů 0..*t*.
+- Hash stavu je FNV-1a z `src/sim/hash.ts` nad bajty stavu.
+- Všechny smyčky mají strop z `ARCADE_LIMITS` (256 těl, 16 pravidel, 64 efektů za tik, horizont 5400 tiků).
+- Klient: `requestAnimationFrame` jen **pohání** tiky přes akumulátor pevného kroku; vstupy se zapisují po ticích, takže záznam jde přehrát.
+
+## Tik jádra
+
+vstup → ovládání (kus `control`) → integrace (rychlost, gravitace) → kolize AABB hráče s ostatními (s přistáním na horní hraně pevného těla) → pravidla (`contact`, `tick`, `counter` → `score`, `damage`, `lose`, `win`, `despawn`) → úklid.
+
+## Kusy
+
+| Kus | Rozhraní | Příklad |
+|---|---|---|
+| `control` | `step(state, player, input, params)` – mění jen tělo hráče | `runner`: sám běží, ťuk = skok, swipe = pruh, dolů = skluz |
+| `rule` | `fire(ctx, params) → efekty` na `contact` / `tick` / `counter` | náraz → prohra, mince → skóre, konec trati → výhra |
+| `generator` | `generate(seed, params) → těla` – hratelné z konstrukce | trať s překážkami, mezery vždy v dosahu skoku |
+| `bot` | `decide(pozorování, params) → vstup`, pozorování je 8 tiků staré | robot běžce |
+
+Každý kus nese `params` (zod), `cost` (těla, pravidla) a `roles`.
+
+## Kontrakt ověření (`verifyArcade`)
+
+Hra je publikovatelná, když platí vše:
+
+1. robot se zpožděním reakce 8 tiků vyhraje,
+2. nečinný hráč nevyhraje,
+3. dvě přehrání robotova záznamu dají stejný hash,
+4. výhra přijde do 5400 tiků (90 s),
+5. svět je v mezích (`ARCADE_LIMITS`).
+
+Výsledek má tvar `QualityReport` (`src/play/contracts.ts`), takže publikace, feed a sdílení zůstávají jedna cesta.
+
+## Ovládání z poptávky → kusy
+
+Štítky z `evals/play/demand/labels.json` (200 vět, 22. 9.). „Kus“ = co je potřeba nad jádrem; jádro (integrace, AABB, pravidla) je společné.
+
+| Ovládání | Vět | Ovládání (`control`) | Generátor | Pravidla | Robot |
+|---|---|---|---|---|---|
+| `tap_go` | 42 | zůstává v `src/sim` | – | – | – |
+| `runner` | 16 | `runner` (auto běh, skok, pruh, skluz) | trať s překážkami | náraz, mince, konec trati | čte překážky vpředu |
+| `platform` | 15 | vlevo/vpravo + skok | plošiny, hroty, checkpoint | pád, hrot, cíl | cesta po plošinách |
+| `flap` | 1 | ťuk = vzlet | trubky s mezerou | náraz, průlet → skóre | drží výšku mezery |
+| `steer` | 19 | řízení osou | trať se zatáčkami, soupeři | kolo, čas, náraz | sleduje středovou čáru |
+| `move_free` | 13 | volný pohyb osou ve 2D | aréna s jídlem a soupeři | sněz menší, utíkej větším | chamtivý se strachem |
+| `aim_shoot` | 15 | míření osou + ťuk = výstřel (projektil) | terče, vlny | zásah → skóre, munice | míří na nejbližší |
+| `throw` | 14 | tah-pusť: síla + úhel (projektil) | koš, terč, věž z bloků | trefa, pád bloků | hledá sílu a úhel |
+| `timing` | 16 | ťuk ve správnou chvíli | pohyblivý předmět | přesnost → skóre, minutí → prohra | ťukne v okně |
+| `rhythm` | 6 | ťuk do rytmu | beat mapa z BPM a semínka | trefa v okně | ťuká podle mapy |
+| `melee` | 5 | úder / uhnutí | vzorec soupeře | okna úderu a obrany | reaguje na nápřah |
+| `manipulate` | 15 | – | – | – | mimo jádro: deska a dílky, poctivá hláška (P25 T28) |
+| `build_place` | 12 | – | – | – | mimo jádro: poctivá hláška |
+| `idle` | 8 | – | – | – | mimo jádro: poctivá hláška |
+| `sandbox` | 3 | – | – | – | mimo rozsah krátké hry |
+
+Hotové: `runner` (P25A). Ostatní řádky jsou plán fází 2–4 řídicího plánu.
+
+## Výkon
+
+Krok jádra (22. 9. 2026, čistý Node 22, bundle přes rolldown, fixtura běžce, 5 semínek × 5 opakování, 600 tiků se vstupy robota): **medián 0,0024 ms/tik, nejhorší vzorek 0,013 ms/tik** – cíl < 1 ms drží s rezervou ~80×. Pod vitestem je jádro ~15× pomalejší (importy jsou gettery), proto se neměří tam.
+
+Prohlížeč: `ArcadeStage` tiká pevným krokem 1/60 s z `useFrame` (akumulátor, strop 250 ms na snímek – skrytá záložka hru nedohraje) a těla interpoluje mezi dvěma posledními tiky.

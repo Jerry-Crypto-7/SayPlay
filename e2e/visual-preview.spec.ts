@@ -16,7 +16,7 @@ test('rejected rules retain a noninteractive authored preview; next accepted wor
     ?frame(1,'intent.ready',preview.intent)+frame(2,'visual.preview',{preview,attempt:1})+frame(3,'session.failed',{reason:'No verified rules.',code:'BLUEPRINT_REJECTED'})
     :frame(1,'blueprint.ready',{blueprint:DEMO_BLUEPRINT})+frame(2,'session.complete',{})}));
   const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
-  await page.goto('/');await page.getByTestId('prompt-input').fill('Preview fixture');await page.getByTestId('prompt-submit').click();
+  await page.goto('/studio');await page.getByTestId('prompt-input').fill('Preview fixture');await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('visual-preview-notice')).toBeVisible({timeout:30_000});
   await expect.poll(()=>page.evaluate(()=>window.__worldstreamStage?.slots().length??0)).toBeGreaterThan(0);
   await expect(page.getByTestId('runtime-controls')).toHaveCount(0);await expect(page.getByTestId('refine-form')).toHaveCount(0);

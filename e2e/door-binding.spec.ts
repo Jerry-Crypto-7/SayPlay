@@ -10,7 +10,7 @@ test('compiler opening and GLB hinge follow a verified door rule and rewind on t
     `data: ${JSON.stringify({sessionId:id,sequence:1,type:'blueprint.ready',at:'1970-01-01T00:00:00.000Z',payload:{blueprint}})}\n\n`+
     `data: ${JSON.stringify({sessionId:id,sequence:2,type:'session.complete',at:'1970-01-01T00:00:00.000Z',payload:{}})}\n\n`}));
   const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
-  await page.goto('/');await page.getByTestId('prompt-input').fill('Door compiler fixture');await page.getByTestId('prompt-submit').click();
+  await page.goto('/studio');await page.getByTestId('prompt-input').fill('Door compiler fixture');await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('runtime-controls')).toBeVisible({timeout:30_000});
   await expect.poll(()=>page.evaluate(()=>window.__worldstreamStage?.slots().find(s=>s.stableId==='gate')?.contentHash)).toBeTruthy();
   await page.getByTestId('cutaway-toggle').click();

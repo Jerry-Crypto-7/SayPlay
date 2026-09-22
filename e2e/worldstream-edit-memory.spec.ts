@@ -69,7 +69,7 @@ test('25 ordinary shape edits retain runtime, camera and bounded renderer resour
     snapshots++;
     return route.fulfill({ json: { blueprint } });
   });
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('Ordinary edit memory fixture');
   await page.getByTestId('prompt-submit').click();

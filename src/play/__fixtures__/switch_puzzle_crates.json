@@ -1,0 +1,119 @@
+{
+  "schema": "gamespec.v1",
+  "targetDurationSec": 90,
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "title": "Crate Plates",
+  "archetype": "switch_puzzle",
+  "theme": {
+    "setting": "robot warehouse",
+    "mood": "puzzling"
+  },
+  "objective": {
+    "kind": "puzzle",
+    "description": "Push a crate onto each pressure plate to open the door.",
+    "role": "door"
+  },
+  "mechanics": [
+    {
+      "id": "switch",
+      "params": {
+        "switchRoles": [
+          "red",
+          "blue"
+        ],
+        "doorRole": "door",
+        "required": [
+          "red",
+          "blue"
+        ],
+        "crateRole": "box"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "door",
+        "when": "enter",
+        "effect": "win"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "lost robot"
+    },
+    {
+      "id": "red",
+      "kind": "switch",
+      "label": "red plate"
+    },
+    {
+      "id": "blue",
+      "kind": "switch",
+      "label": "blue plate"
+    },
+    {
+      "id": "box",
+      "kind": "prop",
+      "label": "crate",
+      "count": 2
+    },
+    {
+      "id": "door",
+      "kind": "door",
+      "label": "warehouse door"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Push a crate onto every plate to open the door.",
+    "controlsHint": "Tap a crate to push it one step toward its plate."
+  },
+  "verification": [
+    {
+      "id": "crate_opens",
+      "kind": "keypoint",
+      "mechanic": "switch",
+      "setup": {
+        "entityStates": {
+          "blue": "on"
+        }
+      },
+      "actions": [
+        {
+          "actionId": "use",
+          "target": "box"
+        },
+        {
+          "actionId": "use",
+          "target": "box"
+        },
+        {
+          "actionId": "use",
+          "target": "box"
+        }
+      ],
+      "ticks": 40,
+      "assert": {
+        "entityStates": {
+          "red": "on"
+        },
+        "locked": {
+          "door": false
+        }
+      }
+    },
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ]
+}

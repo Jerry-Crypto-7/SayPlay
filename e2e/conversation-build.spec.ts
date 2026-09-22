@@ -57,7 +57,7 @@ test('one sentence adds a new object to a live world without touching what alrea
   };
 
   await page.setViewportSize({ width: 1600, height: 900 });
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('prompt-input').fill(WORLD);
   await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('prompt-submit')).toBeEnabled({ timeout: 850_000 });
@@ -163,7 +163,7 @@ test('the page opens on an empty lit scene, and later sentences add to the world
   });
 
   await page.setViewportSize({ width: 1600, height: 900 });
-  await page.goto('/');
+  await page.goto('/studio');
   const empty = page.getByTestId('empty-scene');
   await expect(empty).toBeVisible();
   // Prvním interaktivním prvkem zůstává pole — příklad je za ním v DOM.

@@ -7,7 +7,7 @@ test('own prompt sends one live request and an unavailable model never falls bac
     requests.push(route.request().postDataJSON());
     return route.fulfill({status:503,json:{error:{code:'LIVE_UNAVAILABLE',message:'Explicit test transport refusal'}}});
   });
-  await page.goto('/');await expect(page.getByTestId('generation-mode')).toHaveValue('live');
+  await page.goto('/studio');await expect(page.getByTestId('generation-mode')).toHaveValue('live');
   await page.getByTestId('prompt-input').fill('My own room');await page.getByTestId('prompt-submit').click();
   await expect(page.getByText(/Explicit test transport refusal/)).toBeVisible();
   await expect(page.getByTestId('prompt-submit')).toBeEnabled();
@@ -26,7 +26,7 @@ test('explicit prepared demo stays in one labelled session without background li
   await page.route(`**/api/worldstream/sessions/${id}/events*`,route=>route.fulfill({contentType:'text/event-stream',body:
     `data: ${JSON.stringify({sessionId:id,sequence:1,type:'blueprint.ready',at:'1970-01-01T00:00:00.000Z',payload:{blueprint}})}\n\n`+
     `data: ${JSON.stringify({sessionId:id,sequence:2,type:'session.complete',at:'1970-01-01T00:00:00.000Z',payload:{}})}\n\n`}));
-  await page.goto('/');await page.getByTestId('generation-mode').selectOption('prepared');
+  await page.goto('/studio');await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('Prepared door example');await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('runtime-controls')).toBeVisible({timeout:30_000});
   await expect(page.getByTestId('runtime-act')).toBeInViewport();

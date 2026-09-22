@@ -1,0 +1,24 @@
+{
+ "verbs": {
+  "tap_go": "ťukni na místo/předmět, postava tam dojde (dnešní runtime)",
+  "runner": "postava běží sama, ťuk/swipe = skok, skluz, změna pruhu (Subway Surfers, Geometry Dash)",
+  "platform": "hráč řídí pohyb vlevo/vpravo + skok, gravitace (Mario, obby, Doodle Jump)",
+  "flap": "ťuk = vzlet, gravitace táhne dolů (Flappy Bird)",
+  "steer": "tažením/náklonem řídí vozidlo nebo letadlo (závody, parkování)",
+  "aim_shoot": "zamíří a vystřelí (střílečky, lukostřelba)",
+  "throw": "tah-pusť, síla a úhel, fyzika letu (Angry Birds, basketbal, golf)",
+  "timing": "ťuk/držení ve správnou chvíli (Stack, helix, cut the rope)",
+  "rhythm": "ťuk do rytmu hudby (Piano Tiles)",
+  "melee": "úder/uhnutí v souboji zblízka",
+  "move_free": "volný pohyb joystickem po aréně, růst/pojídání (agar.io, Vampire Survivors)",
+  "manipulate": "přesouvá/prohazuje/spojuje dílky na desce (match-3, sort, pipes)",
+  "build_place": "umísťuje věci – věže, oblečení, nábytek (tower defense, dress-up)",
+  "idle": "ekonomika, klikání a vylepšování, merge",
+  "sandbox": "otevřený svět / multiplayer – mimo rozsah krátké hry"
+ },
+ "coverage": {
+  "F": "dnešní PLAY to pokryje věrně",
+  "P": "dnešní ovládání sedí, ale chybí klíčové pravidlo nebo vizuál",
+  "N": "potřebuje ovládání, které nemáme"
+ }
+}

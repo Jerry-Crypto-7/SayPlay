@@ -29,7 +29,7 @@ test('own provisional layout is visible while compilation is pending, without a 
     ?frame(1,'intent.ready',plan.intent)+frame(2,'visual.preview',{preview:built.preview,attempt:0})
     :frame(1,'blueprint.ready',{blueprint:DEMO_BLUEPRINT})+frame(2,'session.complete',{})});
   });
-  await page.goto('/');await page.getByTestId('prompt-input').fill(plan.intent.setting);await page.getByTestId('prompt-submit').click();
+  await page.goto('/studio');await page.getByTestId('prompt-input').fill(plan.intent.setting);await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('visual-preview-notice')).toHaveAttribute('data-stage','intent-layout',{timeout:30_000});
   await expect(page.getByTestId('visual-preview-notice')).toContainText('Provisional layout from your plan');
   await expect.poll(()=>page.evaluate(()=>window.__worldstreamStage?.slots().map(s=>s.stableId).sort())).toEqual(objects.map(o=>o.stableId).sort());

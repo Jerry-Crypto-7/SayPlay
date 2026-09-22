@@ -1,0 +1,80 @@
+{
+  "schema": "gamespec.v1",
+  "control": "runner",
+  "controlParams": {
+    "speed": "normal",
+    "density": "high",
+    "lengthM": 250
+  },
+  "title": "Obstacle Dash",
+  "archetype": "hazard_crossing",
+  "targetDurationSec": 60,
+  "theme": {
+    "setting": "sunny arcade track",
+    "mood": "energetic"
+  },
+  "objective": {
+    "kind": "reach",
+    "description": "Run to the finish line without hitting an obstacle.",
+    "role": "finish"
+  },
+  "mechanics": [
+    {
+      "id": "hazard_zone",
+      "params": {
+        "role": "obstacle",
+        "effect": "lose"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "finish",
+        "when": "enter",
+        "effect": "win"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "runner"
+    },
+    {
+      "id": "obstacle",
+      "kind": "hazard",
+      "label": "hurdle",
+      "count": 5
+    },
+    {
+      "id": "coin",
+      "kind": "collectible",
+      "label": "coin",
+      "count": 5
+    },
+    {
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Reach the finish line. Jump, slide and switch lanes.",
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

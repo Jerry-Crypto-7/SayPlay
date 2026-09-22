@@ -124,6 +124,7 @@ export function directorSystemPrompt(): string {
     DIRECTOR_RULES,
     ANSWER_SHAPE_LINE,
     'Runtime is a tap-to-move grid: the player taps a target to walk there, picks items up and uses things next to them. Everything happens by walking, picking up and using; express any other fantasy through the registered mechanics.',
+    'control: omit it for the grid above. Set control "runner" only when the sentence asks for a runner, jumping over obstacles or dodging while running (endless runner, subway surfers, temple run): the player runs forward on its own, tap = jump, swipe = lane, swipe down = slide, win at the finish line. A runner keeps archetype hazard_crossing, the roles player, obstacle, coin, finish and controlParams {speed, density, lengthM}; if the starting point already has control, keep it.',
     renderRegistry(),
     renderShape(),
     'EXAMPLES (verification omitted for length; write it in full in your answer):',

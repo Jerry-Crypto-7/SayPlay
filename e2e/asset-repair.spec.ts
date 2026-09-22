@@ -29,7 +29,7 @@ async function openFailedAsset(page:Page,permanent=false){
   await page.route('**/api/worldstream/sessions',route=>{posts++;return route.fulfill({status:202,json:{sessionId:'asset-repair-fixture',events:'/api/worldstream/sessions/asset-repair-fixture/events'}});});
   const frame=(sequence:number,type:string,payload:unknown)=>`data: ${JSON.stringify({sessionId:'asset-repair-fixture',sequence,type,payload,at:'1970-01-01T00:00:00.000Z'})}\n\n`;
   await page.route('**/api/worldstream/sessions/asset-repair-fixture/events*',route=>route.fulfill({contentType:'text/event-stream',body:frame(1,'blueprint.ready',{blueprint})+frame(2,'session.complete',{})}));
-  await page.goto('/');await page.getByTestId('prompt-input').fill('Explicit approved asset failure fixture');await page.getByTestId('prompt-submit').click();
+  await page.goto('/studio');await page.getByTestId('prompt-input').fill('Explicit approved asset failure fixture');await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('runtime-controls')).toBeVisible();
   if(await page.getByTestId('runtime-act').isEnabled())await page.getByTestId('runtime-act').click();
   if(await page.getByTestId('runtime-pause').isEnabled())await page.getByTestId('runtime-pause').click();

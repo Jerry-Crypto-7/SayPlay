@@ -1,0 +1,127 @@
+{
+  "schema": "gamespec.v1",
+  "targetDurationSec": 90,
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "title": "Museum Heist",
+  "archetype": "collect_exit",
+  "theme": {
+    "setting": "museum at night",
+    "mood": "tense"
+  },
+  "objective": {
+    "kind": "collect",
+    "description": "Steal the diamond, then slip out through the exit.",
+    "count": 1,
+    "role": "diamond"
+  },
+  "mechanics": [
+    {
+      "id": "collectible",
+      "params": {
+        "role": "diamond",
+        "count": 1,
+        "counter": "collected"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "exit",
+        "when": "enter",
+        "effect": "win"
+      }
+    },
+    {
+      "id": "patrol",
+      "params": {
+        "role": "guard",
+        "disposition": "bold",
+        "stops": 3,
+        "touchEffect": "lose",
+        "sight": true
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "raccoon"
+    },
+    {
+      "id": "diamond",
+      "kind": "collectible",
+      "label": "diamond",
+      "count": 1
+    },
+    {
+      "id": "exit",
+      "kind": "exit",
+      "label": "exit doors"
+    },
+    {
+      "id": "guard",
+      "kind": "patrol",
+      "label": "guard",
+      "count": 2
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Steal the diamond and get out. Stay off the guards' paths.",
+    "controlsHint": "Tap the diamond to sneak to it. Tap again to take it."
+  },
+  "verification": [
+    {
+      "id": "spotted_loses",
+      "kind": "keypoint",
+      "mechanic": "patrol",
+      "setup": {
+        "placeAt": {
+          "player": "guard"
+        }
+      },
+      "ticks": 3,
+      "assert": {
+        "runState": "lost"
+      }
+    },
+    {
+      "id": "diamond_counts",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "actions": [
+        {
+          "actionId": "pickup",
+          "target": "diamond"
+        }
+      ],
+      "ticks": 2,
+      "assert": {
+        "counters": {
+          "collected": 1
+        },
+        "firedMechanics": [
+          "collectible"
+        ]
+      }
+    },
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    },
+    {
+      "id": "replay",
+      "kind": "replay",
+      "assert": {
+        "replayEqual": true
+      }
+    }
+  ]
+}

@@ -67,7 +67,7 @@ function collectPageErrors(page: Page): string[] {
 test('nasazená adresa odpoví na kořeni a nespadne', async ({ page }) => {
   const errors = collectPageErrors(page);
 
-  const response = await page.goto('/');
+  const response = await page.goto('/studio');
   expect(response?.status(), 'kořen nevrátil 200').toBe(200);
 
   await expect(page.getByTestId('prompt-input')).toBeVisible({ timeout: 30_000 });
@@ -98,7 +98,7 @@ test('první věta na hlavní stránce postaví živý svět od modelu', async (
   // Generování má na Vercelu strop funkce 300 s; test čeká chvíli nad ním.
   test.setTimeout(420_000);
   const errors = collectPageErrors(page);
-  await page.goto('/');
+  await page.goto('/studio');
   await expect(page.getByTestId('prompt-input')).toBeVisible({ timeout: 30_000 });
   await fillStable(page, LIVE_PROMPT);
   await page.getByTestId('prompt-submit').click();

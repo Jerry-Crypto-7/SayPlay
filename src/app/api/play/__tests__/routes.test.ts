@@ -15,6 +15,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import chaseEscape from '@/play/__fixtures__/chase_escape.json';
 import collectExit from '@/play/__fixtures__/collect_exit.json';
 import hazardCrossing from '@/play/__fixtures__/hazard_crossing.json';
 import switchPuzzle from '@/play/__fixtures__/switch_puzzle.json';
@@ -456,9 +457,13 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
   });
 });
 
-/** Semínko z věty o dortu, na kterém rozvržení návrhu prohraje ve 6. tiku (naměřeno 21. 9. 2026). */
-// Nevyhratelné i s čekajícími náhradními svědky (R6); 1964188670 z věty už vyhraje.
-const UNWINNABLE_DELIVERY_SEED = 13;
+/**
+ * Závod přes pět bran za dvě sekundy: na semínku 1 ho nevyhraje žádný svědek, na
+ * semínku 2 ano (naměřeno 22. 9. 2026). Věta o dortu (semínko 13) přestala stačit,
+ * když se hlídka od `play-compiler-v3` vyhýbá startu – semínka 1–400 jsou vyhratelná.
+ */
+const SHORT_RACE = 'Race through five neon gates in 2 seconds.';
+const UNWINNABLE_RACE_SEED = 1;
 
 describe('skutečný kompilátor, verifikátor a režisér (P23-D T1)', () => {
   it('osm startovních vět → osm různých archetypů; každá 201 a GET nese ověřené keypointy', async () => {
@@ -491,11 +496,11 @@ describe('skutečný kompilátor, verifikátor a režisér (P23-D T1)', () => {
   });
 
   it('semínko zvolené volajícím se nemění: nevyhratelné rozvržení je 422 UNWINNABLE, bez semínka se hra najde', async () => {
-    const spec = draftGameSpec('Carry a fragile cake across a kitchen to a party table.');
-    const pinned = await createGame(post('/api/play/games', { spec, seed: UNWINNABLE_DELIVERY_SEED }));
+    const spec = draftGameSpec(SHORT_RACE);
+    const pinned = await createGame(post('/api/play/games', { spec, seed: UNWINNABLE_RACE_SEED }));
     expect(pinned.status).toBe(422);
     expect((await pinned.json()).error.code).toBe('UNWINNABLE');
-    expect((await publish('Carry a fragile cake across a kitchen to a party table.')).status).toBe(201);
+    expect((await publish(SHORT_RACE)).status).toBe(201);
   });
 
   // Tři mutanty, které přežily ověření T1 (21. 9. 2026): semínko volajícího se
@@ -503,7 +508,7 @@ describe('skutečný kompilátor, verifikátor a režisér (P23-D T1)', () => {
   // šel smazat.
   it('věta se semínkem volajícího: nevyhratelné rozvržení je 422 UNWINNABLE, ne jiné semínko', async () => {
     const pinned = await createGame(
-      post('/api/play/games', { sentence: 'Carry a fragile cake across a kitchen to a party table.', seed: UNWINNABLE_DELIVERY_SEED }),
+      post('/api/play/games', { sentence: SHORT_RACE, seed: UNWINNABLE_RACE_SEED }),
     );
     expect(pinned.status).toBe(422);
     expect((await pinned.json()).error.code).toBe('UNWINNABLE');
@@ -511,9 +516,9 @@ describe('skutečný kompilátor, verifikátor a režisér (P23-D T1)', () => {
 
   it('remix se semínkem volajícího: nevyhratelné rozvržení je 422 UNWINNABLE, ne jiné semínko', async () => {
     const created = await publish('Collect five glowing mushrooms then open a portal.');
-    const spec = draftGameSpec('Carry a fragile cake across a kitchen to a party table.');
+    const spec = draftGameSpec(SHORT_RACE);
     const remixed = await remixGame(
-      post(`/api/play/games/${created.body.versionId}/remix`, { spec, seed: UNWINNABLE_DELIVERY_SEED }),
+      post(`/api/play/games/${created.body.versionId}/remix`, { spec, seed: UNWINNABLE_RACE_SEED }),
       params(created.body.versionId),
     );
     expect(remixed.status).toBe(422);
@@ -522,11 +527,11 @@ describe('skutečný kompilátor, verifikátor a režisér (P23-D T1)', () => {
 
   it('čip, který na hře nemá co změnit, je 422 a rodič nevyjde pod novým id', async () => {
     // Twist přidá mechaniku jen do čtyř; hra se čtyřmi ho už nepustí.
-    const created = await createGame(post('/api/play/games', { spec: hazardCrossing }));
+    // Honička: u lávy od `play-compiler-v3` twist neprojde kontrolami na žádném
+    // semínku 1–8, u honičky na všech (naměřeno 22. 9. 2026).
+    const created = await createGame(post('/api/play/games', { spec: chaseEscape }));
     expect(created.status).toBe(201);
     const parentId = (await created.json()).versionId as string;
-    // Pevné semínko: twist pustí jen mechaniku, se kterou hra projde kontrolami,
-    // a u lávy to vyjde jen na některých rozloženích (hlídka) – semínko 3 ano.
     const twisted = await remixGame(post(`/api/play/games/${parentId}/remix`, { chip: 'twist', seed: 3 }), params(parentId));
     expect(twisted.status).toBe(201);
     const childId = (await twisted.json()).versionId as string;

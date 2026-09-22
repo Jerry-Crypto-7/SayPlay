@@ -456,8 +456,9 @@ describe('skutečný strom repozitáře', () => {
   it('obal jádra je netriviální — jinak by test neměřil nic', () => {
     expect(reach.has(`${SRC}/components/Stage.tsx`)).toBe(true);
     expect(reach.has(`${SRC}/app/api/emit/route.ts`)).toBe(true);
-    // Nepřímý případ: kořenová `page.tsx` na jádro nesahá, sahá na `Stage.tsx`.
-    expect(reach.has(`${SRC}/app/page.tsx`)).toBe(true);
+    // Nepřímý případ: stránka studia na jádro nesahá, sahá na `Stage.tsx`
+    // (od P25B T7 bydlí na `/studio`, kořen jen přesměruje na `/play`).
+    expect(reach.has(`${SRC}/app/studio/page.tsx`)).toBe(true);
     // A případ, na který import graf sám nestačí: `smoke.spec.ts` z jádra
     // neimportuje nic, sahá na globál, který deklaruje `Stage.tsx`. Jméno toho
     // globálu se sem napsat nesmí — viz poznámka v hlavičce.

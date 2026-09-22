@@ -24,11 +24,16 @@ import checkpointRace from '../__fixtures__/checkpoint_race.json';
 import collectExit from '../__fixtures__/collect_exit.json';
 import combatLite from '../__fixtures__/combat_lite.json';
 import delivery from '../__fixtures__/delivery.json';
+import deliveryOrders from '../__fixtures__/delivery_orders.json';
 import hazardCrossing from '../__fixtures__/hazard_crossing.json';
 import survivalTimer from '../__fixtures__/survival_timer.json';
 import switchPuzzle from '../__fixtures__/switch_puzzle.json';
 
-import { plural, readNumbers, readRoles, scoreArchetypes, singular, type SentenceRoles } from './lexicon';
+import runnerTemplate from '../arcade/__fixtures__/runner.json';
+import type { RunnerDensity } from '../arcade/pieces/runner';
+
+import { pickControl } from './controls';
+import { FOOD, FOODS, ORDER_PUZZLE, ORDERS, PUSH_CRATES, plural, readNumbers, readRoles, scoreArchetypes, singular, type SentenceRoles } from './lexicon';
 
 const TEMPLATES: Readonly<Record<ArchetypeId, unknown>> = {
   collect_exit: collectExit,
@@ -82,7 +87,13 @@ function titleCase(words: readonly string[]): string {
   return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
-const TITLE_SKIP = new Set(['a', 'an', 'the', 'and', 'but', 'or', 'to', 'of', 'in', 'on', 'at', 'it', 'its', 'you', 'while', 'then', 'with', 'from', 'through', 'across', 'before', 'make', 'something']);
+// Výplňová slova („game“, „a lot of“, „must“) dělala tituly jako „Jumping Arcade Game Lot“.
+const TITLE_SKIP = new Set([
+  'a', 'an', 'the', 'and', 'but', 'or', 'to', 'of', 'in', 'on', 'at', 'it', 'its', 'you', 'while', 'then', 'with', 'from',
+  'through', 'across', 'before', 'make', 'something', 'game', 'games', 'lot', 'lots', 'many', 'some', 'very', 'really',
+  'must', 'have', 'has', 'is', 'are', 'be', 'can', 'will', 'want', 'i', 'me', 'my', 'like', 'for', 'by', 'as', 'where',
+  'that', 'who', 'please',
+]);
 
 /** Do čtyř nosných slov věty; bez nich titul fixtury. */
 function titleFrom(sentence: string, fallback: string): string {
@@ -94,6 +105,37 @@ function titleFrom(sentence: string, fallback: string): string {
     .slice(0, 4);
   const title = words.length === 0 ? fallback : titleCase(words);
   return title.slice(0, 80);
+}
+
+/** Výchozí menu podle prostředí věty, když jídla nejmenuje (nebo jen jedno). */
+const MENU_DEFAULTS: readonly (readonly [RegExp, readonly [string, string]])[] = [
+  [/\bcoffee\b|\bbarista\b|\bcaf[eé]\b/, ['coffee', 'croissant']],
+  [/\bsushi\b/, ['sushi', 'tea']],
+  [/\bpizza\b/, ['pizza', 'soda']],
+  [/\bsupermarket\b|\bshop\b|\bcheckout\b|\bcashier\b/, ['groceries', 'milk']],
+  [/\bfarm\b|\bharvest\b|\bplant\b/, ['carrot', 'apple']],
+];
+
+/**
+ * Objednávky (P25B T5): šablonou je fixtura `delivery_orders` – dva zákazníci,
+ * dvě jídla, směna 90 s. Věta dá popisky jídel (co jmenuje, jinak výchozí
+ * menu podle prostředí); ID rolí `burger`/`fries` zůstávají kvůli keypointům.
+ */
+function takeOrders(spec: GameSpecV1, read: Read): void {
+  const orders = JSON.parse(JSON.stringify(deliveryOrders)) as GameSpecV1;
+  const player = role(spec, 'player').label;
+  spec.mechanics = orders.mechanics;
+  spec.roles = orders.roles;
+  spec.objective = orders.objective;
+  spec.tutorial = orders.tutorial;
+  spec.verification = orders.verification;
+  role(spec, 'player').label = player;
+  const named = FOODS.filter((food) => new RegExp(`\\b${food}s?\\b`).test(read.text));
+  const fallback = MENU_DEFAULTS.find(([cue]) => cue.test(read.text))?.[1] ?? ['burger', 'fries'];
+  const [first, second] = [...new Set([...named, ...fallback])];
+  role(spec, 'burger').label = first;
+  role(spec, 'fries').label = second;
+  spec.objective.description = cap(`Serve every customer the ${first} or ${second} they ordered before the shift ends.`, 120);
 }
 
 function cap(text: string, max: number): string {
@@ -124,6 +166,56 @@ function rewriteCounters(spec: GameSpecV1, counter: string, before: number, afte
   }
 }
 
+/**
+ * Nepřítel ve sběru (nález P24: „…while dodging ghosts“ duchy zahodil).
+ * Vyhýbání dá hlídku (dva kusy pro množné číslo), lov pronásledovatele;
+ * dotyk prohraje. Keypoint dokazuje právě dotyk: nepřítel postavený na hráče.
+ */
+function addThreat(spec: GameSpecV1, threat: NonNullable<SentenceRoles['threat']>, text: string): void {
+  const count = threat.mover === 'patrol' && threat.plural ? 2 : 1;
+  spec.roles.push({ id: 'enemy', kind: threat.mover, label: label(threat.label, 'ghost'), count });
+  if (threat.mover === 'chaser') {
+    const speed = /\b(fast|quick|speedy)\b/.test(text) ? 'fast' : /\b(slow|sluggish)\b/.test(text) ? 'slow' : 'normal';
+    spec.mechanics.push({ id: 'chaser', params: { role: 'enemy', speed, catchEffect: 'lose' } });
+    // Pravidlo pohybu na každou buňku mřížky – strop fixtury (120) by nestačil.
+    spec.budgets.maxRules = 200;
+  } else {
+    spec.mechanics.push({ id: 'patrol', params: { role: 'enemy', disposition: 'bold', stops: 3, touchEffect: 'lose' } });
+  }
+  const enemies = plural(threat.label, count);
+  spec.tutorial.goalLine = cap(`${spec.tutorial.goalLine} Avoid the ${enemies}.`, 80);
+  spec.verification.splice(1, 0, {
+    id: 'enemy_touch_loses',
+    kind: 'keypoint',
+    mechanic: threat.mover,
+    setup: { placeAt: { enemy: 'player' } },
+    ticks: 5,
+    assert: { runState: 'lost' },
+  });
+}
+
+/**
+ * Plížení (P25B T3): stráže jsou hlídky s výhledem (`patrol.sight`) – kdo
+ * stojí na úseku, který stráž právě jde, prohraje. Světla a kamery z věty
+ * („avoid the flashlights“) nesou stráže, proto popisek `guard`.
+ */
+function addGuards(spec: GameSpecV1, threat: SentenceRoles['threat']): void {
+  const named = threat !== null && !/light|camera|laser/.test(threat.label) ? threat.label : 'guard';
+  const count = threat?.plural === true || named === 'guard' ? 2 : 1;
+  spec.roles.push({ id: 'enemy', kind: 'patrol', label: label(named, 'guard'), count });
+  spec.mechanics.push({ id: 'patrol', params: { role: 'enemy', disposition: 'bold', stops: 3, touchEffect: 'lose', sight: true } });
+  const guards = plural(named, count);
+  spec.tutorial.goalLine = cap(`${spec.tutorial.goalLine} Stay off the ${guards}${count > 1 ? "'" : "'s"} paths.`, 80);
+  spec.verification.splice(1, 0, {
+    id: 'spotted_loses',
+    kind: 'keypoint',
+    mechanic: 'patrol',
+    setup: { placeAt: { player: 'enemy' } },
+    ticks: 3,
+    assert: { runState: 'lost' },
+  });
+}
+
 interface Read {
   readonly roles: SentenceRoles;
   readonly seconds: number | null;
@@ -134,7 +226,8 @@ interface Read {
 
 const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
   collect_exit(spec, read) {
-    const count = clamp(read.counts[0] ?? 5, 1, 20);
+    // Kořist plížení bývá jedna („steal a diamond“), sbírání pět.
+    const count = clamp(read.counts[0] ?? (read.roles.stealth ? (read.roles.collectibleMany ? 3 : 1) : 5), 1, 20);
     const item = role(spec, 'mushroom');
     item.label = label(read.roles.collectible, item.label);
     item.count = count;
@@ -144,6 +237,8 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     rewriteCounters(spec, 'collected', count - 1, count);
     spec.tutorial.goalLine = cap(`Collect ${count} ${plural(item.label, count)}, then reach the exit.`, 80);
     spec.tutorial.controlsHint = cap(`Tap ${withArticle(item.label)} to walk to it. Tap again to pick it up.`, 80);
+    if (read.roles.stealth) addGuards(spec, read.roles.threat);
+    else if (read.roles.threat !== null) addThreat(spec, read.roles.threat, read.text);
   },
   chase_escape(spec, read) {
     const chaser = role(spec, 'roomba');
@@ -180,6 +275,11 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     spec.tutorial.controlsHint = cap(`Tap the next ${gate.label} to race to it.`, 80);
   },
   delivery(spec, read) {
+    // „Carry/deliver X to Y“ je nesení do cíle, i v kuchyni nebo s pizzou.
+    if (read.roles.destination === null && (ORDERS.test(read.text) || FOOD.test(read.text))) {
+      takeOrders(spec, read);
+      return;
+    }
     const item = role(spec, 'cake');
     const destination = role(spec, 'table');
     item.label = label(read.roles.item, item.label);
@@ -223,6 +323,49 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
       spec.objective.description = cap(`Press ${required.join(' and ')}${not.length > 0 ? `, but not ${not.join(' or ')},` : ''} to open the door.`, 120);
     }
     spec.tutorial.goalLine = cap('Open the door with the right switches.', 80);
+    // P25B T4: „in the right order“ – žádané spínače jdou jen v pořadí `required`.
+    if (ORDER_PUZZLE.test(read.text)) {
+      const params = mechanic(spec, 'switch');
+      params.ordered = true;
+      const required = params.required as string[];
+      if (required.length >= 2) {
+        // Tři a víc: první svítí, stisk třetího ho zhasne. Dva: stisk druhého nic nerozsvítí.
+        const skipped = required.length >= 3 ? required[0] : required[1];
+        spec.verification.splice(1, 0, {
+          id: 'wrong_order_resets',
+          kind: 'keypoint',
+          mechanic: 'switch',
+          setup: { entityStates: required.length >= 3 ? { [required[0]]: 'on' } : {} },
+          actions: [{ actionId: 'use', target: required[required.length - 1] }],
+          assert: { entityStates: { [skipped]: 'off' }, locked: { door: true } },
+        });
+      }
+      spec.objective.description = cap(`Press ${required.join(', then ')} in that order to open the door.`, 120);
+      spec.tutorial.goalLine = cap('Open the door by pressing the switches in the right order.', 80);
+    }
+    // P25B T4: „push boxes onto switches“ – na každou žádanou desku jedna bedna.
+    const crate = PUSH_CRATES.exec(read.text);
+    if (crate !== null) {
+      const params = mechanic(spec, 'switch');
+      const required = params.required as string[];
+      const noun = singular(crate[1]);
+      spec.roles.push({ id: 'box', kind: 'prop', label: noun, count: required.length });
+      params.crateRole = 'box';
+      // Stisk desky s bednou nic nedělá – keypointy „stiskni poslední“ nahradí příjezd bedny.
+      spec.verification = spec.verification.filter((assertion) => !['red_blue_opens', 'right_combination_opens'].includes(assertion.id));
+      spec.verification.unshift({
+        id: 'crate_opens',
+        kind: 'keypoint',
+        mechanic: 'switch',
+        setup: { entityStates: Object.fromEntries(required.slice(1).map((plate) => [plate, 'on'])) },
+        actions: Array.from({ length: 3 }, () => ({ actionId: 'use' as const, target: 'box' })),
+        ticks: 40,
+        assert: { locked: { door: false } },
+      });
+      spec.objective.description = cap(`Push ${withArticle(noun)} onto each plate to open the door.`, 120);
+      spec.tutorial.goalLine = cap(`Push ${withArticle(noun)} onto every plate to open the door.`, 80);
+      spec.tutorial.controlsHint = cap(`Tap ${withArticle(noun)} to push it one step toward its plate.`, 80);
+    }
   },
   hazard_crossing(spec, read) {
     const hazard = role(spec, 'lava');
@@ -247,8 +390,27 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
   },
 };
 
+/** Běžec (P25A): šablona `runner.json`, přepíše se titul, popisky a hustota. */
+function draftRunner(sentence: string, seed: number, density: RunnerDensity | null): GameSpecV1 | null {
+  const spec = JSON.parse(JSON.stringify(runnerTemplate)) as GameSpecV1;
+  const roles = readRoles(sentence);
+  const rng = xoroshiro128plus(seed);
+  spec.title = titleFrom(sentence, spec.title);
+  role(spec, 'player').label = cap(roles.player ?? PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)], 60);
+  if (roles.collectible !== null) role(spec, 'coin').label = cap(roles.collectible, 60);
+  if (roles.setting !== null) spec.theme.setting = cap(roles.setting, 80);
+  if (density !== null) spec.controlParams = { ...spec.controlParams, density };
+  const result = readGameSpec(spec);
+  return result.ok ? result.value : null;
+}
+
 export function draftGameSpecWithMeta(sentence: string, seed = 1): DraftMeta {
   const scores = scoreArchetypes(sentence);
+  const control = pickControl(sentence.toLowerCase());
+  if (control !== null) {
+    const runner = draftRunner(sentence, seed, control.density);
+    if (runner !== null) return { spec: runner, archetype: runner.archetype, scores, fellBack: false };
+  }
   const archetype = pickArchetype(scores);
   const spec = template(archetype);
   const roles = readRoles(sentence);

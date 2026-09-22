@@ -1,0 +1,105 @@
+{
+ "measuredAt": "2026-09-22T13:17:35.600Z",
+ "method": "Korpus 200 vět psal agent bez přístupu k repu (žánry podle Poki/CrazyGames/hypercasual žebříčků; jemné rozdělení je jeho odhad). s001–s003 jsou věty uživatele z QA. Ovládání a pokrytí přiřazeno ručně (legenda v labels.json), archetyp návrhu změřen draftGameSpec se semínkem 1.",
+ "total": 200,
+ "coverageToday": {
+  "N": 158,
+  "P": 29,
+  "F": 13
+ },
+ "verbs": {
+  "tap_go": 42,
+  "steer": 19,
+  "runner": 16,
+  "timing": 16,
+  "platform": 15,
+  "aim_shoot": 15,
+  "manipulate": 15,
+  "throw": 14,
+  "move_free": 13,
+  "build_place": 12,
+  "idle": 8,
+  "rhythm": 6,
+  "melee": 5,
+  "sandbox": 3,
+  "flap": 1
+ },
+ "silentMismatch": 158,
+ "draftArchetypeForUncovered": {
+  "collect_exit": 124,
+  "_covered": 42,
+  "hazard_crossing": 12,
+  "checkpoint_race": 11,
+  "chase_escape": 5,
+  "combat_lite": 2,
+  "survival_timer": 2,
+  "switch_puzzle": 2
+ },
+ "ladder": [
+  {
+   "add": "steer",
+   "sentences": 19,
+   "coveredAfter": 32
+  },
+  {
+   "add": "runner",
+   "sentences": 16,
+   "coveredAfter": 48
+  },
+  {
+   "add": "timing",
+   "sentences": 16,
+   "coveredAfter": 64
+  },
+  {
+   "add": "platform",
+   "sentences": 15,
+   "coveredAfter": 79
+  },
+  {
+   "add": "aim_shoot",
+   "sentences": 15,
+   "coveredAfter": 94
+  },
+  {
+   "add": "manipulate",
+   "sentences": 15,
+   "coveredAfter": 109
+  },
+  {
+   "add": "throw",
+   "sentences": 14,
+   "coveredAfter": 123
+  },
+  {
+   "add": "move_free",
+   "sentences": 13,
+   "coveredAfter": 136
+  },
+  {
+   "add": "build_place",
+   "sentences": 12,
+   "coveredAfter": 148
+  },
+  {
+   "add": "idle",
+   "sentences": 8,
+   "coveredAfter": 156
+  },
+  {
+   "add": "rhythm",
+   "sentences": 6,
+   "coveredAfter": 162
+  },
+  {
+   "add": "melee",
+   "sentences": 5,
+   "coveredAfter": 167
+  },
+  {
+   "add": "flap",
+   "sentences": 1,
+   "coveredAfter": 168
+  }
+ ]
+}

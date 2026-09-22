@@ -124,3 +124,62 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   `worldHash` u `chase_escape`; ostatní archetypy mají svět beze změny. Blueprint navíc
   vyřezává kulisy rodiny nad hrací plochou (`carve` + rovný terén) – to je geometrie, ne
   simulace, a `worldHash` nehýbe. Staré publikované hry zůstávají pod `play-compiler-v1`.
+
+## P25A
+
+- **`GameSpec` → volitelné `control: 'tap_go' | 'runner'` a `controlParams`** (22. 9. 2026).
+  Bez `control` je hra `tap_go` – dnešní mřížka, beze změny. Pole nemá výchozí hodnotu
+  schválně: default by se vepsal do každého přečteného specu a pohnul `specHash` všech her.
+  `controlParams` (`speed` slow/normal/fast, `density` low/normal/high, `lengthM` 60–500,
+  `obstacles` hurdle/slide-bar/cone/crate) bere jen `control: 'runner'`, jinak
+  `MALFORMED_SPEC`. Prompt režiséra tím narostl z 10 485 na 10 654 B.
+- **`CompiledGame.blueprint` a `PublishedGame.blueprint` smí být `null`; nové volitelné
+  `arcade: ArcadeWorld`.** Arkádová hra (`src/play/arcade`) nemá mřížkový svět – hraje se
+  z `arcade`. `compileGame` ji pozná podle `control` a pošle do `compileArcade`; `reportFor`
+  ji ověří `verifyArcade` (robot se zpožděním 8 tiků vyhraje, nečinný hráč ne, dvojí přehrání
+  = týž hash, meze jádra) do téhož `QualityReport` – keypointy `bot_wins`, `idle_loses`,
+  `replay_equal`, `within_limits`. `worldHash` = `canonicalHash(arcade)`,
+  `compilerVersion` = `${GAME_COMPILER_VERSION}/arcade-v1` (po sloučení s P25B
+  `play-compiler-v3/arcade-v1`). `verifyGame` na arkádovou hru hodí
+  výjimku (nemá ji kdo volat). Hashe v `evals/play/compiled/report.json` beze změny.
+- **Po sloučení (revize P25A):** trať, kterou vyhraje i nečinný hráč, vrací `compileArcade`
+  jako `LAYOUT_FAILED` (dveře zkusí další semínko); vylepšení režisérem, které změní
+  `control` návrhu, skončí `draft-final` / `MALFORMED` a dítě nevznikne.
+
+## P25B
+
+- **`GAME_COMPILER_VERSION` → `play-compiler-v3`** (22. 9. 2026, T2). Hlídka (`patrol`) volí
+  zastávky tak, aby obdélník mezi po sobě jdoucími zastávkami (i od startovní buňky) nepokryl
+  spawn hráče; po 400 pokusech bere jakoukoli volnou buňku. Duchové v `collect_exit` jinak
+  zabili nečinného hráče v 6. tiku a hra nešla certifikovat. Mění se spotřeba losovače, a tedy
+  `worldHash` u archetypů s hlídkou (fixtura `delivery`). Tvar `GameSpec` ani registru beze
+  změny; návrh ze slov jen přidá roli `enemy` (hlídka nebo pronásledovatel) a keypoint
+  `enemy_touch_loses`.
+- **`patrol.params.sight?: boolean`** (T3, plížení). Nový volitelný parametr registru; bez něj
+  se hlídka kompiluje beze změny (hashe v3 drží). S ním je každý úsek trasy zóna
+  `<instance>_beat<i>` a hráč na úseku, který hlídka právě jde, prohraje; úseky se vyhnou cestě
+  svědka spawn → cíl. `patrol` má v capabilities navíc `onStart` (hráč vstříknutý do výhledu).
+  Plížení je varianta `collect_exit`, ne nový archetyp: registr už hlídku v každém archetypu
+  povoluje a cíl „ukradni a uteč“ je sběr + východ. Režisér vidí parametr ve schématu (prompt
+  +70 B, pin 10 555 B).
+- **`switch.params.ordered?: boolean`** (T4, pořadí). Bez něj se spínače kompilují beze změny
+  (hashe v3 drží). S ním jdou žádané spínače zapnout jen v pořadí `required`; stisk mimo
+  pořadí (pravidlo `switch.<sw>.wrong`) vypne všechny žádané a dveře zůstanou zamčené. Svědek
+  tiskne v pořadí `required`. Návrh ze slov: „in the right order“ a „knock … off“ jsou cue
+  `switch_puzzle` (věta s080 už nepadá do `checkpoint_race`), keypoint `wrong_order_resets`.
+- **`switch.params.crateRole?: roleRef`** (T4, bedny). i-tá žádaná deska dostane i-tou instanci
+  role; cesta bedny x-pak-y se dělí na nejvýš `PUSH_STEPS = 3` úseky (sokety
+  `<bedna>_push<k>`, čítač `<bedna>_at`) a `use` na bednu ji posune o úsek. Deska se zapne
+  příjezdem bedny (`onEnterZone`), ne stiskem; dveře odemkne příjezd, když ostatní spínače sedí.
+  Capabilities `switch` navíc `onEnterZone`, `moveTo`, `addCounter`. Svědek po posledním posunu
+  čeká dalšími `use` naprázdno, než bedna dojede. Návrh ze slov: „push boxes/crates onto“ →
+  role `box` (`prop`), keypoint `crate_opens` (věta s072). Bez parametru beze změny hashů.
+- **`carry.params.menu?: roleRef[]`** (T5, objednávky). Jídla jsou výdejny (sběr dá do slotu
+  ID role jídla), i-tý zákazník (instance `destinationRole`) chce `menu[i mod délka]`. Předávka
+  je `use` na zákazníka (vstup do zóny by obsloužil zákazníka po cestě); správné jídlo odebere a
+  přičte `orders_served` + `<zákazník>_served` (max 1), špatné nic. Všichni obslouženi = výhra,
+  prohru dává časovač směny. Capabilities `carry` navíc `onAction`, `onCounterReaches`,
+  `addCounter`. Fixtura `delivery_orders`, keypointy `right_order_scores`,
+  `wrong_order_ignored`. Návrh ze slov: vaření/zákazníci/obchod/farma nebo jídlo bez „… to Y“ →
+  objednávky (s160–s166); „carry/deliver X to Y“ zůstává nesením. Pin promptu režiséra
+  10 555 → 10 615 B (tři nové parametry ve schématu). Bez parametru beze změny hashů.

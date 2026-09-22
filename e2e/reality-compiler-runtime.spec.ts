@@ -16,7 +16,7 @@ test('unsupported appearance is refused by the actual server while preserving ru
     }
     return route.fallback();
   });
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('A cathedral of stacked shipping containers around a light well.');
   const opened = page.waitForResponse(response => response.url().endsWith('/api/worldstream/sessions') && response.request().method() === 'POST');
@@ -90,7 +90,7 @@ test(`a runtime timer moves the actual rendered slot without rebuilding the scen
     return route.fulfill({ status: 200, contentType: 'text/event-stream',
       body: frame(1, 'blueprint.ready', { blueprint }) + frame(2, 'session.complete', {}) });
   });
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('Runtime movement fixture');
   await page.getByTestId('prompt-submit').click();
