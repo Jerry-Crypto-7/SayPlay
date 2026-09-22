@@ -178,7 +178,7 @@ function waitingWitnesses(ops: readonly WitnessOp[]): WitnessOp[][] {
  */
 export const compileGame: GameCompiler = (spec, seed): CompileGameResult => {
   // Arkádová hra (P25A) má vlastní jádro; mřížková cesta pod tímhle řádkem se jí netýká.
-  if (spec.control === 'runner') return compileArcade(spec, seed);
+  if (spec.control !== undefined && spec.control !== 'tap_go') return compileArcade(spec, seed);
   const compilation = compileSim(spec, seed);
   if (!compilation.ok) return compilation;
   const { sim } = compilation.value;

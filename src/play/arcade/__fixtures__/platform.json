@@ -1,0 +1,80 @@
+{
+  "schema": "gamespec.v1",
+  "control": "platform",
+  "controlParams": {
+    "difficulty": "normal",
+    "lengthM": 90,
+    "checkpoints": true
+  },
+  "title": "Spike Hop",
+  "archetype": "hazard_crossing",
+  "targetDurationSec": 60,
+  "theme": {
+    "setting": "floating stone platforms",
+    "mood": "playful"
+  },
+  "objective": {
+    "kind": "reach",
+    "description": "Jump across the platforms to the flag without touching the spikes.",
+    "role": "finish"
+  },
+  "mechanics": [
+    {
+      "id": "hazard_zone",
+      "params": {
+        "role": "spikes",
+        "effect": "lose"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "finish",
+        "when": "enter",
+        "effect": "win"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "hero"
+    },
+    {
+      "id": "spikes",
+      "kind": "hazard",
+      "label": "spikes",
+      "count": 5
+    },
+    {
+      "id": "coin",
+      "kind": "collectible",
+      "label": "coin",
+      "count": 5
+    },
+    {
+      "id": "finish",
+      "kind": "exit",
+      "label": "flag"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Reach the flag. Jump over gaps and spikes.",
+    "controlsHint": "Arrows or A/D to move, Space or tap to jump."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

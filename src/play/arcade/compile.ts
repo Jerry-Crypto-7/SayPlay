@@ -1,6 +1,6 @@
 /**
- * Arkádová cesta kompilátoru (P25A, T5): `GameSpec` s `control: 'runner'` +
- * seed → `ArcadeWorld` a `CompiledGame`.
+ * Arkádová cesta kompilátoru (P25A, T5; P25C, T5): `GameSpec` s `control`
+ * `runner` / `platform` / `flap` + seed → `ArcadeWorld` a `CompiledGame`.
  *
  * Ze specu se čte ovládání a jeho parametry a dvě koření z registru mechanik:
  * `health` (náraz ubere život místo prohry) a `timer` s `onEnd: 'lose'`
@@ -13,9 +13,11 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
-import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeWorld, type PieceRef } from './contract';
+import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeLevel, type ArcadeWorld, type PieceRef } from './contract';
 import { buildWorld, replay } from './kernel';
 import { ARCADE_LIBRARY } from './library';
+import { flapRules, flapTrack } from './pieces/flap';
+import { platformLevel, platformRules } from './pieces/platform';
 import { runnerTrack } from './pieces/runner';
 import { runBot } from './verify';
 
@@ -24,25 +26,46 @@ export const ARCADE_COMPILER_VERSION = `${GAME_COMPILER_VERSION}/${ARCADE_RUNTIM
 
 export type ArcadeWorldResult = { readonly ok: true; readonly world: ArcadeWorld } | { readonly ok: false; readonly issues: readonly string[] };
 
-/** Spec + seed → svět. Bez ověření robotem – to dělá `compileArcade`. */
-export function arcadeWorldOf(spec: GameSpecV1, seed: number): ArcadeWorldResult {
-  const params = runnerTrack.params.parse({ ...spec.controlParams });
-  const level = runnerTrack.generate(seed, params);
-  const health = spec.mechanics.find((mechanic) => mechanic.id === 'health')?.params as { readonly max: number } | undefined;
-  const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
+/** Ovládání, trať a pravidla, která se liší podle `control`. */
+interface ArcadeParts {
+  readonly control: PieceRef;
+  readonly bot: PieceRef;
+  readonly level: ArcadeLevel;
+  readonly rules: PieceRef[];
+}
 
+function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): ArcadeParts {
+  if (spec.control === 'platform') {
+    const params = platformLevel.params.parse({ ...spec.controlParams });
+    return {
+      control: { id: 'platform', params: { doubleJump: params.doubleJump } },
+      bot: { id: 'platform_bot', params: {} },
+      level: platformLevel.generate(seed, params),
+      rules: platformRules(params, health),
+    };
+  }
+  if (spec.control === 'flap') {
+    const params = flapTrack.params.parse({ ...spec.controlParams });
+    return { control: { id: 'flap', params: {} }, bot: { id: 'flap_bot', params: {} }, level: flapTrack.generate(seed, params), rules: flapRules(health) };
+  }
+  const params = runnerTrack.params.parse({ ...spec.controlParams });
   const rules: PieceRef[] = [
     { id: 'hit', params: { role: 'obstacle', effect: health === undefined ? 'lose' : 'damage' } },
     { id: 'pickup', params: {} },
     { id: 'finish', params: {} },
   ];
   if (health !== undefined) rules.push({ id: 'out_of_health', params: {} });
+  return { control: { id: 'runner', params: { speed: params.speed } }, bot: { id: 'runner_bot', params: {} }, level: runnerTrack.generate(seed, params), rules };
+}
+
+/** Spec + seed → svět. Bez ověření robotem – to dělá `compileArcade`. */
+export function arcadeWorldOf(spec: GameSpecV1, seed: number): ArcadeWorldResult {
+  const health = (spec.mechanics.find((mechanic) => mechanic.id === 'health')?.params as { readonly max: number } | undefined)?.max;
+  const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
+  const { control, bot, level, rules } = partsOf(spec, seed, health);
   if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: Math.min(ARCADE_LIMITS.maxTicks / 60, Math.max(10, timer.seconds)) } });
 
-  const built = buildWorld(
-    { seed, control: { id: 'runner', params: { speed: params.speed } }, rules, bot: { id: 'runner_bot', params: {} }, level, ...(health === undefined ? {} : { health: health.max }) },
-    ARCADE_LIBRARY,
-  );
+  const built = buildWorld({ seed, control, rules, bot, level, ...(health === undefined ? {} : { health }) }, ARCADE_LIBRARY);
   return built.ok ? { ok: true, world: built.world } : built;
 }
 

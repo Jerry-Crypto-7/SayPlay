@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { applyRemix, REMIX_CHIPS, remixPatch } from '../../director/remix';
-import { readGameSpec, type GameSpecV1 } from '../../spec';
+import { readGameSpec, type GameSpecV1, type RunnerParams } from '../../spec';
 import fixture from '../__fixtures__/runner.json';
 import { arcadeWorldOf } from '../compile';
 import { verifyArcade } from '../verify';
@@ -59,7 +59,8 @@ describe('runner remix chips', () => {
     }
     expect([...added].sort()).toEqual(['health', 'timer']);
     const swapped = remix('swap_enemy', parent);
-    expect(swapped.controlParams?.obstacles).toBeDefined();
-    expect(swapped.controlParams?.obstacles).not.toEqual(parent.controlParams?.obstacles);
+    const obstacles = (spec: GameSpecV1) => (spec.controlParams as RunnerParams | undefined)?.obstacles;
+    expect(obstacles(swapped)).toBeDefined();
+    expect(obstacles(swapped)).not.toEqual(obstacles(parent));
   });
 });

@@ -1,0 +1,79 @@
+{
+  "schema": "gamespec.v1",
+  "control": "flap",
+  "controlParams": {
+    "difficulty": "normal",
+    "lengthM": 120
+  },
+  "title": "Pipe Flutter",
+  "archetype": "hazard_crossing",
+  "targetDurationSec": 60,
+  "theme": {
+    "setting": "bright sky over green pipes",
+    "mood": "cheerful"
+  },
+  "objective": {
+    "kind": "reach",
+    "description": "Flap through the gaps between the pipes to the finish.",
+    "role": "finish"
+  },
+  "mechanics": [
+    {
+      "id": "hazard_zone",
+      "params": {
+        "role": "pipe",
+        "effect": "lose"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "finish",
+        "when": "enter",
+        "effect": "win"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "bird"
+    },
+    {
+      "id": "pipe",
+      "kind": "hazard",
+      "label": "pipe",
+      "count": 5
+    },
+    {
+      "id": "coin",
+      "kind": "collectible",
+      "label": "coin",
+      "count": 5
+    },
+    {
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Fly through the pipe gaps to the finish.",
+    "controlsHint": "Tap or Space to flap."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

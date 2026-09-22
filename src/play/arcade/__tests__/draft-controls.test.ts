@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 
 import { draftGameSpec } from '../../draft';
 import { pickControl } from '../../draft/controls';
-import { readGameSpec } from '../../spec';
+import { type RunnerParams, readGameSpec } from '../../spec';
 import { arcadeWorldOf } from '../compile';
 import { verifyArcade } from '../verify';
 
@@ -55,7 +55,7 @@ describe('draft control choice', () => {
   it('drafts a valid runner spec that the arcade verifier publishes', () => {
     const spec = draftGameSpec('jumping arcade game with a lot of obstacles');
     expect(spec.control).toBe('runner');
-    expect(spec.controlParams?.density).toBe('high');
+    expect((spec.controlParams as RunnerParams | undefined)?.density).toBe('high');
     expect(readGameSpec(spec).ok).toBe(true);
     const built = arcadeWorldOf(spec, 1);
     if (!built.ok) throw new Error(built.issues.join('; '));

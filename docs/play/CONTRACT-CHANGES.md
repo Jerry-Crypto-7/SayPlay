@@ -211,3 +211,11 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   není. Hashe mřížkových her (`evals/play/compiled/report.json`) beze změny.
 - **Uložené hry `arcade-v1` hrají dál:** `instantiate` pozná `runtimeVersion: 'arcade-v1'` a
   počáteční stav převede do rozložení v2 (vloží `spawnBase` a místo návratu = start hráče).
+- **`GameSpec.control` += `'platform' | 'flap'`** (T5). `controlParams` je ve schématu sjednocení
+  parametrů běžce, plošinovky a poletování (všechna pole volitelná, bez výchozích hodnot, takže
+  `specHash` starých her se nehne); `readGameSpec` je pak ověří proti schématu zvoleného
+  `control` – parametry jiného ovládání = `MALFORMED_SPEC` s `(… control)` na konci hlášky.
+  Hláška pro parametry u mřížkové hry se změnila na „only an arcade game (runner, platform,
+  flap) takes control parameters“. Kód, který čte pole běžce (`speed`, `density`,
+  `obstacles`), musí `controlParams` zúžit na `RunnerParams`. Kompilátor posílá do arkádového
+  jádra každé `control` kromě `tap_go`.
