@@ -37,11 +37,13 @@ import {
   CARE,
   FOOD,
   FOODS,
+  LILY_PADS,
   ORDER_PUZZLE,
   ORDERS,
   PUSH_CRATES,
   MOVING_WALLS,
   RED_LIGHT,
+  ROAD,
   SEARCH,
   SMASH,
   UNDERWATER,
@@ -155,6 +157,52 @@ function takeOrders(spec: GameSpecV1, read: Read): void {
   role(spec, 'burger').label = first;
   role(spec, 'fries').label = second;
   spec.objective.description = cap(`Serve every customer the ${first} or ${second} they ordered before the shift ends.`, 120);
+}
+
+/** Keypoint přechodu: hráč postavený do nebezpečí prohraje (šablona dokazuje jen bezpečné „off“). */
+function hazardLoses(spec: GameSpecV1, id: string): void {
+  spec.verification.splice(1, 0, { id, kind: 'keypoint', mechanic: 'hazard_zone', setup: { placeAt: { player: 'lava' } }, ticks: 5, assert: { runState: 'lost' } });
+}
+
+/**
+ * Lekníny (P25D T6, s034): voda nepulzuje – kdo šlápne mimo leknín, spadne.
+ * Víc vody než lávy, aby se skákalo z leknínu na leknín.
+ */
+function hopPads(spec: GameSpecV1, read: Read): void {
+  const water = role(spec, 'lava');
+  water.label = 'deep water';
+  water.count = 8;
+  role(spec, 'stone').label = 'lily pad';
+  role(spec, 'ledge').label = 'far bank';
+  if (read.roles.player === null) role(spec, 'player').label = 'frog';
+  delete mechanic(spec, 'hazard_zone').pulse;
+  spec.theme = { setting: 'lily pond', mood: 'playful' };
+  spec.objective.description = 'Hop across the pond from lily pad to lily pad without falling in.';
+  spec.tutorial.goalLine = 'Reach the far bank. Step only on lily pads.';
+  spec.tutorial.controlsHint = 'Tap a lily pad to hop onto it. Deep water sinks you.';
+  // Stálá voda nemá stav `off`; bezpečné je stát na leknínu.
+  spec.verification = spec.verification.filter((assertion) => assertion.id !== 'lava_off_is_safe');
+  spec.verification.unshift({ id: 'lily_pad_is_safe', kind: 'keypoint', mechanic: 'hazard_zone', setup: { placeAt: { player: 'stone' } }, ticks: 20, assert: { runState: 'running' } });
+  hazardLoses(spec, 'falling_in_loses');
+}
+
+/**
+ * Silnice (P25D T6, s036): auta jako pohyblivé zdi z T3 – každé auto
+ * přeskakuje mezi dvěma polohami (`pulse.alternate`), po sekundě.
+ */
+function crossRoad(spec: GameSpecV1, read: Read): void {
+  const car = role(spec, 'lava');
+  car.label = 'car';
+  car.count = 6;
+  role(spec, 'stone').label = 'safe strip';
+  role(spec, 'ledge').label = 'other side';
+  if (read.roles.player === null) role(spec, 'player').label = 'chicken';
+  mechanic(spec, 'hazard_zone').pulse = { onSeconds: 1, offSeconds: 1, alternate: true };
+  spec.theme = { setting: 'busy country road', mood: 'playful' };
+  spec.objective.description = 'Cross the road to the other side without getting hit by a car.';
+  spec.tutorial.goalLine = 'Reach the other side. Cars switch lanes every second.';
+  spec.tutorial.controlsHint = 'Tap a safe strip to run to it. Never step where a car is.';
+  hazardLoses(spec, 'hit_by_car_loses');
 }
 
 /**
@@ -517,6 +565,8 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     spec.objective.description = cap(`Cross the ${hazard.label} field to the far side.`, 120);
     spec.tutorial.goalLine = cap(`Reach the far side. The ${hazard.label} pulses.`, 80);
     spec.tutorial.controlsHint = cap(`Tap ${withArticle(stone.label)} when the ${hazard.label} is calm.`, 80);
+    if (ROAD.test(read.text)) crossRoad(spec, read);
+    else if (LILY_PADS.test(read.text)) hopPads(spec, read);
   },
   combat_lite(spec, read) {
     const count = clamp(read.counts[0] ?? 5, 1, 12);

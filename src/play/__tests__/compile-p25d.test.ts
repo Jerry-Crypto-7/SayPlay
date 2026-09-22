@@ -179,6 +179,24 @@ describe('smash and pop – defeat without enemies (P25D T4)', () => {
   });
 });
 
+describe('crossings – lily pads and a busy road (P25D T6)', () => {
+  it('drafts s034 with still water around lily pads and s036 with cars switching lanes; stepping into either loses and both publish', () => {
+    const pond = draftGameSpec('hop on lily pads across a pond without falling in');
+    expect(pond.archetype).toBe('hazard_crossing');
+    expect(pond.roles.map((role) => role.label)).toEqual(['frog', 'deep water', 'lily pad', 'far bank']);
+    expect(pond.mechanics.find((mechanic) => mechanic.id === 'hazard_zone')?.params.pulse).toBeUndefined();
+    expect(pond.verification.map((assertion) => assertion.id)).toContain('falling_in_loses');
+    expect(publishFailures(pond, 1)).toEqual([]);
+
+    const road = draftGameSpec('a chicken crossing an endless road like crossy road');
+    expect(road.archetype).toBe('hazard_crossing');
+    expect(road.roles.find((role) => role.id === 'lava')?.label).toBe('car');
+    expect(road.mechanics.find((mechanic) => mechanic.id === 'hazard_zone')?.params.pulse).toMatchObject({ alternate: true });
+    expect(road.verification.map((assertion) => assertion.id)).toContain('hit_by_car_loses');
+    expect(publishFailures(road, 1)).toEqual([]);
+  });
+});
+
 describe('treating patients – orders renamed (P25D T5)', () => {
   it('drafts s169 as a vet clinic where the right treatment scores and the wrong one does not, and it publishes', () => {
     const drafted = draftGameSpec('a vet clinic where you heal cute pets');

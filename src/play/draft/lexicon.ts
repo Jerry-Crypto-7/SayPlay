@@ -45,6 +45,12 @@ export const CARE =
  */
 export const SMASH = /\b(pop(?:s|ping)? (?:stuff|things|everything|all|bubbles?|balloons?)|bubble ?(?:pop|wrap)|pop(?:ping)? game)\b|\bsmash(?:es|ing)?\b|\bdestroy everything\b|\bwreck(?:s|ing)?\b|\bbreak everything\b/;
 
+/** Přechod po leknínech (P25D T6, s034). */
+export const LILY_PADS = /\blily ?pads?\b|\bstepping stones? (?:across|over) (?:a |the )?(?:pond|river|stream|water)\b/;
+
+/** Přechod silnice (P25D T6, s036): auta přeskakují mezi pruhy. */
+export const ROAD = /\bcrossy road\b|\bfrogger\b|\bcross(?:es|ing)? (?:the |an? )?(?:endless |busy |big )?(?:road|street|highway|traffic)\b/;
+
 /** Pohyblivé zdi (`hazard_zone.pulse.alternate`, P25D T3, s076). */
 export const MOVING_WALLS = /\b(?:walls?|hedges?) (?:that |which )?(?:move|moves|moving|shift|shifts|shifting|slide|slides|sliding)\b|\b(?:moving|shifting|sliding) (?:walls?|maze|labyrinth)\b/;
 
