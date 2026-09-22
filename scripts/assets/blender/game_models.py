@@ -163,6 +163,20 @@ def ring(mat, major, minor, loc=(0, 0, 0), rot=(0, 0, 0)):
     return _finish(bpy.context.active_object, mat, loc, rot, (1, 1, 1))
 
 
+def prism(mat, outline, depth, loc=(0, 0, 0)):
+    """Obrys v rovině XZ vytažený do hloubky Y – plochý tvar čitelný zepředu."""
+    n = len(outline)
+    verts = [(x, y, z) for y in (-depth / 2, depth / 2) for x, z in outline]
+    faces = [list(range(n))[::-1], list(range(n, 2 * n))]
+    faces += [[i, (i + 1) % n, n + (i + 1) % n, n + i] for i in range(n)]
+    mesh = bpy.data.meshes.new(mat)
+    mesh.from_pydata(verts, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(mat, mesh)
+    bpy.context.collection.objects.link(obj)
+    return _finish(obj, mat, loc, (0, 0, 0), (1, 1, 1))
+
+
 def eyes(z, y, spread, size, mat="ink", x=0.0):
     """Dvě oči na přední straně (-Y) – postavy musí mít čitelný obličej."""
     for side in (-1, 1):
@@ -296,21 +310,14 @@ def crystal():
 
 @model("star", "Glowing star", ["star", "stars", "starfish"])
 def star():
-    for i in range(5):
-        angle = i / 5 * 360
-        box("glow-yellow", (0.09, 0.07, 0.2), (0, 0, 0.35), rot=(0, angle, 0))
-        box(
-            "glow-yellow",
-            (0.09, 0.07, 0.2),
-            (
-                math.sin(math.radians(angle)) * 0.1,
-                0,
-                0.35 + math.cos(math.radians(angle)) * 0.1,
-            ),
-            rot=(0, angle, 0),
-        )
+    outline = []
+    for i in range(10):
+        angle = math.radians(i * 36)
+        radius = 0.2 if i % 2 == 0 else 0.085
+        outline.append((math.sin(angle) * radius, math.cos(angle) * radius))
+    prism("glow-yellow", outline, 0.08, (0, 0, 0.36))
     cyl("dark-grey", 0.1, 0.03, (0, 0, 0.015))
-    cyl("dark-grey", 0.02, 0.16, (0, 0, 0.1))
+    cyl("dark-grey", 0.02, 0.24, (0, 0, 0.14))
 
 
 @model("rubber-duck", "Rubber duck", ["duck", "ducks", "ducky", "duckling", "rubber"])
@@ -806,7 +813,9 @@ def shopping_cart():
         cyl("steel", 0.015, 0.33, (side * 0.22, -0.3, 0.17))
         for y in (-0.3, 0.3):
             cyl("black", 0.05, 0.04, (side * 0.22, y, 0.05), rot=(0, 90, 0))
-    box("red-cloth", (0.5, 0.05, 0.05), (0, 0.44, 0.85))
+    for side in (-1, 1):
+        box("steel", (0.03, 0.12, 0.03), (side * 0.22, 0.43, 0.76), rot=(-35, 0, 0))
+    box("red-cloth", (0.5, 0.05, 0.05), (0, 0.48, 0.8))
     for x in (-0.12, 0.0, 0.12):
         box("steel", (0.015, 0.75, 0.38), (x, 0, 0.55))
 
