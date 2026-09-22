@@ -44,6 +44,14 @@ describe('draft control choice', () => {
     expect(pickControl('ski jumping')).toBeNull();
   });
 
+  // Nález revize P25A (R2): dvě slabá slova přehodila přechod a honičku na běžce.
+  it('keeps crossing and chase sentences on the grid unless a genre cue says runner', () => {
+    expect(pickControl('a frog must hop across the road and dodge cars')).toBeNull();
+    expect(pickControl('run from the zombie and avoid the traps')).toBeNull();
+    expect(draftGameSpec('A frog must hop across the road and dodge cars').archetype).toBe('hazard_crossing');
+    expect(pickControl('an endless runner where you escape a giant boulder')?.control).toBe('runner');
+  });
+
   it('drafts a valid runner spec that the arcade verifier publishes', () => {
     const spec = draftGameSpec('jumping arcade game with a lot of obstacles');
     expect(spec.control).toBe('runner');

@@ -32,6 +32,16 @@ const WEAK_CUES: readonly RegExp[] = [
   /\bskateboard\w*\b/,
 ];
 
+// Narážka na mřížkovou hru přebije slabé skóre: „hop across the road and dodge
+// cars“ je přechod, „run from the zombie and avoid the traps“ honička. Silnou
+// narážku (žánr, titul) nepřebije.
+const GRID_CUES: readonly RegExp[] = [
+  /\b(?:cross|crosses|crossing)\b/,
+  /\bacross the (?:road|street|river|highway|lava)\b/,
+  /\b(?:runs?|running) (?:from|away)\b/,
+  /\b(?:escape|escapes|escaping|flee|flees|chase|chases|chased|chasing|hunts?|hunting)\b/,
+];
+
 const HIGH_DENSITY = /\b(?:a lot of|lots of|many|tons of|loads of|full of|everywhere|hard|super hard)\b/;
 const LOW_DENSITY = /\b(?:few|easy|simple|chill|relaxing|calm)\b/;
 
@@ -42,6 +52,7 @@ export interface ControlChoice {
 
 export function runnerScore(text: string): number {
   if (STRONG_CUES.some((cue) => cue.test(text))) return 2;
+  if (GRID_CUES.some((cue) => cue.test(text))) return 0;
   return WEAK_CUES.filter((cue) => cue.test(text)).length;
 }
 
