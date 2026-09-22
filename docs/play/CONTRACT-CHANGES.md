@@ -124,3 +124,13 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   `worldHash` u `chase_escape`; ostatní archetypy mají svět beze změny. Blueprint navíc
   vyřezává kulisy rodiny nad hrací plochou (`carve` + rovný terén) – to je geometrie, ne
   simulace, a `worldHash` nehýbe. Staré publikované hry zůstávají pod `play-compiler-v1`.
+
+## P25B
+
+- **`GAME_COMPILER_VERSION` → `play-compiler-v3`** (22. 9. 2026, T2). Hlídka (`patrol`) volí
+  zastávky tak, aby obdélník mezi po sobě jdoucími zastávkami (i od startovní buňky) nepokryl
+  spawn hráče; po 400 pokusech bere jakoukoli volnou buňku. Duchové v `collect_exit` jinak
+  zabili nečinného hráče v 6. tiku a hra nešla certifikovat. Mění se spotřeba losovače, a tedy
+  `worldHash` u archetypů s hlídkou (fixtura `delivery`). Tvar `GameSpec` ani registru beze
+  změny; návrh ze slov jen přidá roli `enemy` (hlídka nebo pronásledovatel) a keypoint
+  `enemy_touch_loses`.

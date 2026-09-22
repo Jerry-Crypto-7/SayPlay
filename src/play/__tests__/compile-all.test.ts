@@ -20,6 +20,7 @@ import { draftGameSpec } from '../draft';
 import { ADAPTERS } from '../compile/adapters';
 import { TICKS_PER_SECOND } from '../compile/adapters/timer';
 import { ARCHETYPE_IDS, MECHANIC_IDS } from '../registry';
+import { verifyGame } from '../verify';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 
 const fixturesDir = fileURLToPath(new URL('../__fixtures__/', import.meta.url));
@@ -118,7 +119,9 @@ describe('compileSim – delivery (carry)', () => {
 
   it('does not win at the table without the cake', () => {
     const { sim } = compiled(gameSpec, 1);
-    const runtime = runtimeOf(sim);
+    // Bez číšníka: test je o doručení, dotyk hlídky na trase by ho prohrál jinak.
+    const rules = Object.fromEntries(Object.entries(sim.rules).filter(([id]) => !id.startsWith('patrol.')));
+    const runtime = runtimeOf({ ...sim, rules, state: { ...sim.state, agents: [] } });
     expect(run(runtime, [{ tick: 0, actionId: 'moveTo', target: 'table' }], 80)).toBe('running');
   });
 
@@ -145,6 +148,32 @@ describe('compileGame – waiting witness (R6)', () => {
   it('the fragile cake that lost to the waiter at tick 6 on seed 1964188670 now wins by waiting', () => {
     const result = compileGame(draftGameSpec('Carry a fragile cake across a kitchen to a party table.'), 1964188670);
     expect(result.ok).toBe(true);
+  });
+});
+
+describe('draft – enemies in collect_exit (P25B T2)', () => {
+  const ghosts = 'A knight must collect three keys in a haunted castle while dodging ghosts.';
+
+  it('keeps the dodged ghosts as a patrol whose touch loses, and the game still verifies', () => {
+    const gameSpec = draftGameSpec(ghosts);
+    expect(gameSpec.archetype).toBe('collect_exit');
+    expect(gameSpec.roles.find((role) => role.id === 'enemy')).toMatchObject({ kind: 'patrol', label: 'ghost', count: 2 });
+    expect(gameSpec.tutorial.goalLine).toMatch(/Avoid the ghosts\.$/);
+    for (const seed of [1, 2, 3]) {
+      const result = compileGame(gameSpec, seed);
+      if (!result.ok) throw new Error(`seed ${seed}: ${result.reason} ${result.issues.join('; ')}`);
+      const report = verifyGame(result.value);
+      expect(report.keypoints.filter((keypoint) => !keypoint.passed), `seed ${seed}`).toEqual([]);
+      expect(report.publishEligible, `seed ${seed}`).toBe(true);
+    }
+  });
+
+  it('turns a hunting enemy into a chaser, and a dodged hazard stays out of the roles', () => {
+    const hunted = draftGameSpec('Collect five coins while a goblin hunts you.');
+    expect(hunted.roles.find((role) => role.id === 'enemy')).toMatchObject({ kind: 'chaser', label: 'goblin', count: 1 });
+    expect(hunted.mechanics.map((mechanic) => mechanic.id)).toContain('chaser');
+    expect(readGameSpec(hunted).ok).toBe(true);
+    expect(draftGameSpec('Collect five coins and avoid the lava.').roles.some((role) => role.id === 'enemy')).toBe(false);
   });
 });
 

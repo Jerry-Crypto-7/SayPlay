@@ -84,7 +84,7 @@ describe('compileGame – blueprint over the eight fixtures', () => {
     for (const [archetype, game] of games) {
       expect(simHashOf(game.blueprint.world), archetype).toBe(game.worldHash);
       expect(game.blueprint.world.simHash, archetype).toBe(game.worldHash);
-      expect(game.compilerVersion).toBe('play-compiler-v2');
+      expect(game.compilerVersion).toBe('play-compiler-v3');
       expect(game.seed).toBe(1);
       expect(game.blueprint.sessionSeed).toBe(1);
     }

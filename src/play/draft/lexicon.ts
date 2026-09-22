@@ -174,6 +174,11 @@ export interface SentenceRoles {
   readonly target: string | null;
   readonly checkpoint: string | null;
   readonly hazard: string | null;
+  /**
+   * Nepřítel, kterému se hráč vyhýbá: „while dodging ghosts“ → hlídka,
+   * „while a ghost hunts you“ → pronásledovatel. `plural` = věta mluví o víc kusech.
+   */
+  readonly threat: { readonly label: string; readonly mover: 'patrol' | 'chaser'; readonly plural: boolean } | null;
   /** Spínače podle barev; `required` jsou ty před „but not / never". */
   readonly switches: { readonly all: readonly string[]; readonly required: readonly string[] } | null;
   readonly setting: string | null;
@@ -218,6 +223,11 @@ export function readRoles(sentence: string): SentenceRoles {
     switches = { all: colours, required: required.length > 0 ? required : colours.slice(0, 1) };
   }
   const setting = first(text, [/\b(?:in|inside|across|through|on|around|at|into) (?:a |an |the )?([a-z][a-z -]*)/]);
+  // Vyhýbání se nebezpečné ploše („avoid the lava“) je hazard, ne postava.
+  const dodged = first(text, [/\b(?:dodg|avoid|evad)(?:e|es|ed|ing)? (?:the |a |an |all |any )?([a-z][a-z -]*)/], 2);
+  const threatNoun = chaser ?? (dodged !== null && !HAZARD_WORDS.test(dodged) ? dodged : null);
+  const threat: SentenceRoles['threat'] =
+    threatNoun === null ? null : { label: singular(threatNoun), mover: chaser !== null ? 'chaser' : 'patrol', plural: singular(threatNoun) !== threatNoun };
   return {
     player,
     chaser,
@@ -227,6 +237,7 @@ export function readRoles(sentence: string): SentenceRoles {
     target: target === null ? null : singular(target),
     checkpoint: checkpointMatch === null ? null : singular(nounPhrase(checkpointMatch[1]) ?? checkpointMatch[1]),
     hazard: hazardMatch === null ? null : hazardMatch[1],
+    threat,
     switches,
     setting,
   };

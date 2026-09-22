@@ -130,6 +130,34 @@ function rewriteCounters(spec: GameSpecV1, counter: string, before: number, afte
   }
 }
 
+/**
+ * Nepřítel ve sběru (nález P24: „…while dodging ghosts“ duchy zahodil).
+ * Vyhýbání dá hlídku (dva kusy pro množné číslo), lov pronásledovatele;
+ * dotyk prohraje. Keypoint dokazuje právě dotyk: nepřítel postavený na hráče.
+ */
+function addThreat(spec: GameSpecV1, threat: NonNullable<SentenceRoles['threat']>, text: string): void {
+  const count = threat.mover === 'patrol' && threat.plural ? 2 : 1;
+  spec.roles.push({ id: 'enemy', kind: threat.mover, label: label(threat.label, 'ghost'), count });
+  if (threat.mover === 'chaser') {
+    const speed = /\b(fast|quick|speedy)\b/.test(text) ? 'fast' : /\b(slow|sluggish)\b/.test(text) ? 'slow' : 'normal';
+    spec.mechanics.push({ id: 'chaser', params: { role: 'enemy', speed, catchEffect: 'lose' } });
+    // Pravidlo pohybu na každou buňku mřížky – strop fixtury (120) by nestačil.
+    spec.budgets.maxRules = 200;
+  } else {
+    spec.mechanics.push({ id: 'patrol', params: { role: 'enemy', disposition: 'bold', stops: 3, touchEffect: 'lose' } });
+  }
+  const enemies = plural(threat.label, count);
+  spec.tutorial.goalLine = cap(`${spec.tutorial.goalLine} Avoid the ${enemies}.`, 80);
+  spec.verification.splice(1, 0, {
+    id: 'enemy_touch_loses',
+    kind: 'keypoint',
+    mechanic: threat.mover,
+    setup: { placeAt: { enemy: 'player' } },
+    ticks: 5,
+    assert: { runState: 'lost' },
+  });
+}
+
 interface Read {
   readonly roles: SentenceRoles;
   readonly seconds: number | null;
@@ -150,6 +178,7 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     rewriteCounters(spec, 'collected', count - 1, count);
     spec.tutorial.goalLine = cap(`Collect ${count} ${plural(item.label, count)}, then reach the exit.`, 80);
     spec.tutorial.controlsHint = cap(`Tap ${withArticle(item.label)} to walk to it. Tap again to pick it up.`, 80);
+    if (read.roles.threat !== null) addThreat(spec, read.roles.threat, read.text);
   },
   chase_escape(spec, read) {
     const chaser = role(spec, 'roomba');
