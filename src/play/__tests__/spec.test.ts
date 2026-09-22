@@ -124,6 +124,6 @@ describe('readGameSpec', () => {
 
   it('fixture directory holds nothing but the twelve files this test names', () => {
     const files = readdirSync(fixturesDir).filter((name) => name.endsWith('.json')).sort();
-    expect(files).toEqual([...ARCHETYPE_IDS, 'collect_exit_stealth', 'switch_puzzle_crates', 'switch_puzzle_ordered', 'invalid-dangling-role', 'invalid-over-budget', 'invalid-unknown-mechanic'].map((n) => `${n}.json`).sort());
+    expect(files).toEqual([...ARCHETYPE_IDS, 'collect_exit_stealth', 'delivery_orders', 'switch_puzzle_crates', 'switch_puzzle_ordered', 'invalid-dangling-role', 'invalid-over-budget', 'invalid-unknown-mechanic'].map((n) => `${n}.json`).sort());
   });
 });

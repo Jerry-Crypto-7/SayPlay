@@ -24,11 +24,12 @@ import checkpointRace from '../__fixtures__/checkpoint_race.json';
 import collectExit from '../__fixtures__/collect_exit.json';
 import combatLite from '../__fixtures__/combat_lite.json';
 import delivery from '../__fixtures__/delivery.json';
+import deliveryOrders from '../__fixtures__/delivery_orders.json';
 import hazardCrossing from '../__fixtures__/hazard_crossing.json';
 import survivalTimer from '../__fixtures__/survival_timer.json';
 import switchPuzzle from '../__fixtures__/switch_puzzle.json';
 
-import { ORDER_PUZZLE, PUSH_CRATES, plural, readNumbers, readRoles, scoreArchetypes, singular, type SentenceRoles } from './lexicon';
+import { FOOD, FOODS, ORDER_PUZZLE, ORDERS, PUSH_CRATES, plural, readNumbers, readRoles, scoreArchetypes, singular, type SentenceRoles } from './lexicon';
 
 const TEMPLATES: Readonly<Record<ArchetypeId, unknown>> = {
   collect_exit: collectExit,
@@ -100,6 +101,37 @@ function titleFrom(sentence: string, fallback: string): string {
     .slice(0, 4);
   const title = words.length === 0 ? fallback : titleCase(words);
   return title.slice(0, 80);
+}
+
+/** Výchozí menu podle prostředí věty, když jídla nejmenuje (nebo jen jedno). */
+const MENU_DEFAULTS: readonly (readonly [RegExp, readonly [string, string]])[] = [
+  [/\bcoffee\b|\bbarista\b|\bcaf[eé]\b/, ['coffee', 'croissant']],
+  [/\bsushi\b/, ['sushi', 'tea']],
+  [/\bpizza\b/, ['pizza', 'soda']],
+  [/\bsupermarket\b|\bshop\b|\bcheckout\b|\bcashier\b/, ['groceries', 'milk']],
+  [/\bfarm\b|\bharvest\b|\bplant\b/, ['carrot', 'apple']],
+];
+
+/**
+ * Objednávky (P25B T5): šablonou je fixtura `delivery_orders` – dva zákazníci,
+ * dvě jídla, směna 90 s. Věta dá popisky jídel (co jmenuje, jinak výchozí
+ * menu podle prostředí); ID rolí `burger`/`fries` zůstávají kvůli keypointům.
+ */
+function takeOrders(spec: GameSpecV1, read: Read): void {
+  const orders = JSON.parse(JSON.stringify(deliveryOrders)) as GameSpecV1;
+  const player = role(spec, 'player').label;
+  spec.mechanics = orders.mechanics;
+  spec.roles = orders.roles;
+  spec.objective = orders.objective;
+  spec.tutorial = orders.tutorial;
+  spec.verification = orders.verification;
+  role(spec, 'player').label = player;
+  const named = FOODS.filter((food) => new RegExp(`\\b${food}s?\\b`).test(read.text));
+  const fallback = MENU_DEFAULTS.find(([cue]) => cue.test(read.text))?.[1] ?? ['burger', 'fries'];
+  const [first, second] = [...new Set([...named, ...fallback])];
+  role(spec, 'burger').label = first;
+  role(spec, 'fries').label = second;
+  spec.objective.description = cap(`Serve every customer the ${first} or ${second} they ordered before the shift ends.`, 120);
 }
 
 function cap(text: string, max: number): string {
@@ -239,6 +271,11 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     spec.tutorial.controlsHint = cap(`Tap the next ${gate.label} to race to it.`, 80);
   },
   delivery(spec, read) {
+    // „Carry/deliver X to Y“ je nesení do cíle, i v kuchyni nebo s pizzou.
+    if (read.roles.destination === null && (ORDERS.test(read.text) || FOOD.test(read.text))) {
+      takeOrders(spec, read);
+      return;
+    }
     const item = role(spec, 'cake');
     const destination = role(spec, 'table');
     item.label = label(read.roles.item, item.label);

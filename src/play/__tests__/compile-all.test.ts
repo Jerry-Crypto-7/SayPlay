@@ -411,3 +411,62 @@ describe('switch.crateRole – pushed crates press the plates (P25B T4)', () => 
     expect(verifyGame(result.value).publishEligible).toBe(true);
   });
 });
+
+describe('carry.menu – customer orders (P25B T5)', () => {
+  const gameSpec = fixture('delivery_orders');
+
+  it('compiles the diner, certifies serving everyone and passes every keypoint on seeds 1..3', () => {
+    for (const seed of [1, 2, 3]) {
+      const result = compileGame(gameSpec, seed);
+      if (!result.ok) throw new Error(`seed ${seed}: ${result.reason} ${result.issues.join('; ')}`);
+      const report = verifyGame(result.value);
+      expect(report.keypoints.map((keypoint) => [keypoint.assertionId, keypoint.passed, ...keypoint.failures]), `seed ${seed}`).toEqual([
+        ['right_order_scores', true],
+        ['wrong_order_ignored', true],
+        ['winnable', true],
+      ]);
+      expect(report.publishEligible, `seed ${seed}`).toBe(true);
+    }
+  });
+
+  it('serves each customer once, only with the dish they ordered, and wins when all are served', () => {
+    const { sim } = compiled(gameSpec, 1);
+    const runtime = runtimeOf(sim);
+    const inputs = [
+      // Špatné jídlo nic, správné jednou, podruhé týž zákazník nic nechce.
+      { tick: 0, actionId: 'pickup', target: 'fries' },
+      { tick: 2, actionId: 'use', target: 'customer_1' },
+      { tick: 4, actionId: 'pickup', target: 'burger' },
+      { tick: 6, actionId: 'use', target: 'customer_1' },
+      { tick: 8, actionId: 'pickup', target: 'burger' },
+      { tick: 10, actionId: 'use', target: 'customer_1' },
+    ];
+    expect(run(runtime, inputs, 15)).toBe('running');
+    expect([slot(runtime, 'c:orders_served'), slot(runtime, 'c:customer_1_served')]).toEqual([1, 1]);
+    run(runtime, [
+      { tick: 0, actionId: 'pickup', target: 'fries' },
+      { tick: 2, actionId: 'use', target: 'customer_2' },
+    ], 6);
+    expect(runtime.runState).toBe('won');
+  });
+
+  it('drafts the P-labelled cooking sentences as order games (s160–s166)', () => {
+    for (const sentence of [
+      'cooking game where you make burgers fast for customers',
+      'like overcooked but in a food truck',
+      'run a sushi restaurant with a conveyor belt',
+      'A barista rushes orders during the morning coffee rush',
+      'make pizza and deliver it',
+      'run a supermarket, stock shelves and scan items at the checkout',
+      'farm game plant carrots harvest sell',
+    ]) {
+      const drafted = draftGameSpec(sentence);
+      expect(drafted.archetype, sentence).toBe('delivery');
+      expect(drafted.mechanics.find((mechanic) => mechanic.id === 'carry')?.params.menu, sentence).toHaveLength(2);
+      expect(readGameSpec(drafted).ok, sentence).toBe(true);
+      const result = compileGame(drafted, 1);
+      if (!result.ok) throw new Error(`${sentence}: ${result.reason} ${result.issues.join('; ')}`);
+      expect(verifyGame(result.value).publishEligible, sentence).toBe(true);
+    }
+  });
+});

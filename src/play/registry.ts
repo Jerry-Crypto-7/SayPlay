@@ -185,7 +185,19 @@ const patrolParams = z
     sight: z.boolean().optional(),
   })
   .strict();
-const carryParams = z.object({ itemRole: roleRef, destinationRole: roleRef, fragile: z.boolean() }).strict();
+const carryParams = z
+  .object({
+    itemRole: roleRef,
+    destinationRole: roleRef,
+    fragile: z.boolean(),
+    /**
+     * Objednávky (P25B T5): role jídel. i-tý zákazník (instance `destinationRole`)
+     * chce jídlo `menu[i mod délka]`; správné doručení přičte `orders_served`,
+     * obsloužení všech vyhraje. Bez menu se nese jedna věc do cíle.
+     */
+    menu: z.array(roleRef).min(1).max(4).optional(),
+  })
+  .strict();
 const stunParams = z
   .object({ targetRole: roleRef, seconds: z.int().min(1).max(10), uses: z.int().min(0).max(10) })
   .strict();
@@ -325,12 +337,21 @@ export const MECHANICS = {
     roleRefs: (p) => [
       ['itemRole', p.itemRole],
       ['destinationRole', p.destinationRole],
+      ...(p.menu ?? []).map((role) => ['menu', role] as const),
     ],
-    capabilities: { events: ['onPickup', 'onDrop', 'onEnterZone', 'onCollide'], actions: ['giveItem', 'takeItem', 'win', 'lose'] },
-    /** Na předmět sběr, sběr v cíli, doručení do každého cíle a u křehkého rozbití o každého chodce. */
+    capabilities: {
+      events: ['onPickup', 'onDrop', 'onEnterZone', 'onCollide', 'onAction', 'onCounterReaches'],
+      actions: ['giveItem', 'takeItem', 'addCounter', 'win', 'lose'],
+    },
+    /**
+     * Na předmět sběr, sběr v cíli, doručení do každého cíle a u křehkého
+     * rozbití o každého chodce. Menu: sběr na jídlo, obsluha na zákazníka a výhra.
+     */
     cost: (p, count, world) => ({
-      entities: 2,
-      rules: count(p.itemRole) * (2 + count(p.destinationRole) + (p.fragile ? world.kindCount('patrol') + world.kindCount('chaser') : 0)),
+      entities: p.menu === undefined ? 2 : 2 + p.menu.length + count(p.destinationRole),
+      rules:
+        count(p.itemRole) * (2 + count(p.destinationRole) + (p.fragile ? world.kindCount('patrol') + world.kindCount('chaser') : 0)) +
+        (p.menu === undefined ? 0 : [...new Set(p.menu)].reduce((sum, role) => sum + count(role), 0) + count(p.destinationRole) + 1),
     }),
     explanation: 'Pick up an item and bring it to the destination; a fragile one breaks on contact.',
   }),

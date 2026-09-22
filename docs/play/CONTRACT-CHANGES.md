@@ -153,3 +153,12 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   Capabilities `switch` navíc `onEnterZone`, `moveTo`, `addCounter`. Svědek po posledním posunu
   čeká dalšími `use` naprázdno, než bedna dojede. Návrh ze slov: „push boxes/crates onto“ →
   role `box` (`prop`), keypoint `crate_opens` (věta s072). Bez parametru beze změny hashů.
+- **`carry.params.menu?: roleRef[]`** (T5, objednávky). Jídla jsou výdejny (sběr dá do slotu
+  ID role jídla), i-tý zákazník (instance `destinationRole`) chce `menu[i mod délka]`. Předávka
+  je `use` na zákazníka (vstup do zóny by obsloužil zákazníka po cestě); správné jídlo odebere a
+  přičte `orders_served` + `<zákazník>_served` (max 1), špatné nic. Všichni obslouženi = výhra,
+  prohru dává časovač směny. Capabilities `carry` navíc `onAction`, `onCounterReaches`,
+  `addCounter`. Fixtura `delivery_orders`, keypointy `right_order_scores`,
+  `wrong_order_ignored`. Návrh ze slov: vaření/zákazníci/obchod/farma nebo jídlo bez „… to Y“ →
+  objednávky (s160–s166); „carry/deliver X to Y“ zůstává nesením. Pin promptu režiséra
+  10 555 → 10 615 B (tři nové parametry ve schématu). Bez parametru beze změny hashů.

@@ -18,6 +18,14 @@ export const STEALTH =
 /** Hádanka pořadí: spínače jdou zapnout jen v daném pořadí (`switch.ordered`). */
 export const ORDER_PUZZLE = /\bin (?:the )?(?:right|correct|exact) order\b/;
 
+/** Obsluha zákazníků (`carry.menu`): vaření, restaurace, obchod, farma na prodej. */
+export const ORDERS =
+  /\bcook(?:s|ing)?\b|\bcustomers?\b|\borders\b|\btakes? (?:an? )?orders?\b|\brestaurant\b|\bbarista\b|\bovercooked\b|\bserv(?:e|es|ing)\b|\bdiner\b|\bcaf[eé]\b|\bfood truck\b|\bkitchen\b|\bsupermarket\b|\bcheckout\b|\bcashier\b|\bsell(?:s|ing)?\b|\bharvest(?:s|ing)?\b/;
+
+/** Jídla, která věta objednávek může jmenovat (menu); dort a vejce chybí schválně – to je křehké nesení. */
+export const FOODS = ['burger', 'fries', 'pizza', 'sushi', 'coffee', 'latte', 'tea', 'taco', 'salad', 'soup', 'carrot', 'apple', 'bread', 'noodles', 'sandwich', 'milk'] as const;
+export const FOOD = new RegExp(`\\b(?:${FOODS.join('|')})s?\\b`);
+
 /** Bedny tlačené na desky (`switch.crateRole`); skupina 1 = podstatné jméno bedny. */
 export const PUSH_CRATES = /\bpush(?:es|ing)? (?:the |a )?(?:[a-z]+ )?(box|boxes|crates?|blocks?|boulders?)\b/;
 
@@ -43,7 +51,7 @@ export const ARCHETYPE_CUES: Readonly<Record<ArchetypeId, readonly RegExp[]>> = 
   ],
   survival_timer: [/\bsurviv(?:e|es|ed|ing|al)\b/, /\bseconds?\b/, /\bminutes?\b/, /\blast(?:s|ing)?\b/, /\boutlast(?:s)?\b/, /\bstay alive\b/],
   checkpoint_race: [/\brac(?:e|es|ing)\b/, /\bgates\b/, /\bcheckpoints?\b/, /\bin (?:the right )?order\b/, /\blaps?\b/, /\bhoops\b/, /\brings\b/, /\bsprint(?:s|ing)?\b/],
-  delivery: [/\bcarry(?:ing)?\b|\bcarries\b/, /\bdeliver(?:s|ed|ing)?\b/, /\bbring(?:s|ing)?\b/, /\bfragile\b/],
+  delivery: [/\bcarry(?:ing)?\b|\bcarries\b/, /\bdeliver(?:s|ed|ing)?\b/, /\bbring(?:s|ing)?\b/, /\bfragile\b/, ORDERS, FOOD],
   switch_puzzle: [/\bpress(?:es|ing)?\b/, /\bbuttons?\b/, /\bswitch(?:es)?\b/, /\blevers?\b/, /\bnot\b|\bnever\b/, /\bflip(?:s|ping)?\b|\btoggle(?:s|d)?\b|\bpull(?:s|ing)?\b/,
     // P25B T4: „shoď věci v pořadí“ je hádanka pořadí, ne závod – dva body přebijí `checkpoint_race`.
     /\bknock(?:s|ed|ing)? (?:[a-z]+ ){1,3}off\b/,
