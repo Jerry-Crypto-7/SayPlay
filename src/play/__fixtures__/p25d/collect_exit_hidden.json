@@ -1,0 +1,122 @@
+{
+  "schema": "gamespec.v1",
+  "targetDurationSec": 90,
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "title": "Hide and Seek Room",
+  "archetype": "collect_exit",
+  "theme": {
+    "setting": "cluttered attic bedroom",
+    "mood": "curious"
+  },
+  "objective": {
+    "kind": "collect",
+    "description": "Search the room for three hidden toys, then leave through the door.",
+    "count": 3,
+    "role": "mushroom"
+  },
+  "mechanics": [
+    {
+      "id": "collectible",
+      "params": {
+        "role": "mushroom",
+        "count": 3,
+        "counter": "collected",
+        "hiddenIn": "spot"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "portal",
+        "when": "enter",
+        "effect": "win"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "kid"
+    },
+    {
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "toy",
+      "count": 3
+    },
+    {
+      "id": "spot",
+      "kind": "prop",
+      "label": "hiding spot",
+      "count": 5
+    },
+    {
+      "id": "portal",
+      "kind": "exit",
+      "label": "door"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Find 3 hidden toys, then leave through the door.",
+    "controlsHint": "Tap a hiding spot to search it. Tap a toy to pick it up."
+  },
+  "verification": [
+    {
+      "id": "hidden_item_does_not_count",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "actions": [
+        {
+          "actionId": "pickup",
+          "target": "mushroom"
+        }
+      ],
+      "ticks": 10,
+      "assert": {
+        "counters": {
+          "collected": 0
+        }
+      }
+    },
+    {
+      "id": "found_item_counts",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "actions": [
+        {
+          "actionId": "moveTo",
+          "target": "spot"
+        },
+        {
+          "actionId": "pickup",
+          "target": "mushroom"
+        }
+      ],
+      "ticks": 10,
+      "assert": {
+        "counters": {
+          "collected": 1
+        }
+      }
+    },
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    },
+    {
+      "id": "replay",
+      "kind": "replay",
+      "assert": {
+        "replayEqual": true
+      }
+    }
+  ]
+}

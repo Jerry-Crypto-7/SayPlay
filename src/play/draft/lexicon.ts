@@ -22,6 +22,15 @@ export const STEALTH =
 export const RED_LIGHT =
   /\bred light\b|\bgreen light\b|\bsquid games?\b|\bwhen (?:you|u) (?:look away|turn away|(?:don'?t|do not|aren'?t|are not) (?:look|watch)(?:ing)?)\b|\bfreddy'?s?\b|\bfnaf\b|\b(?:musical |play(?:ing)? )statues\b|\bstatues? game\b/;
 
+/**
+ * Hledání (`collectible.hiddenIn`, P25D T2): předměty leží ve skrýších a
+ * objeví se, až je hráč prohledá. Jen mění sběr, archetyp nevybírá.
+ */
+export const SEARCH = /\bhidden\b|\bhide and seek\b|\bexplor(?:e|es|ing)\b|\bruins?\b|\bsearch(?:es|ing)?\b/;
+
+/** Hledání pod hladinou (s184): relikvie v troskách, cíl je vyplavat. */
+export const UNDERWATER = /\bunder ?water\b|\bsunken\b|\bunder the sea\b|\bocean\b|\bsubmarine\b|\bshipwreck\b/;
+
 /** Hlídač červené–zelené, když ho věta jmenuje; skupina 1 = popisek. */
 export const WATCHER = /\b((?:creepy |giant |haunted |old |evil )?(?:doll|statue|animatronic|mannequin|puppet|clown))s?\b/;
 

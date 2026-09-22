@@ -6,7 +6,7 @@
  * 10 485 B nad 40 větami korpusu (strop plánu 12 000 B); 22. 9. 2026 s poli
  * `control`/`controlParams` (P25A) 10 654 B, s popisem běžce (T7) 11 135 B,
  * po sloučení s P25B (výhled hlídky, pořadí, bedny, menu objednávek) 11 253 B,
- * s fázemi světla (P25D T1) 11 362 B.
+ * s fázemi světla (P25D T1) 11 362 B, se skrýšemi (P25D T2) 11 453 B.
  */
 
 import { readFileSync } from 'node:fs';
@@ -42,14 +42,14 @@ describe('director prompt', () => {
     for (const forbidden of ['projectile', 'moving_platform']) expect(request.system).not.toContain(forbidden);
   });
 
-  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 362 B)', () => {
+  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 453 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const request = buildDirectorRequest(entry.prompt, draftGameSpec(entry.prompt));
       max = Math.max(max, Buffer.byteLength(request.system + request.user));
     }
     expect(max).toBeLessThanOrEqual(12_000);
-    expect(max).toBeLessThanOrEqual(11_400);
+    expect(max).toBeLessThanOrEqual(11_500);
   });
 
   it('compacts schemas: role ids, enums, bounded ints, optional fields with defaults', () => {

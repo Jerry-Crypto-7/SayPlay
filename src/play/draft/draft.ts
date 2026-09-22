@@ -40,6 +40,8 @@ import {
   ORDERS,
   PUSH_CRATES,
   RED_LIGHT,
+  SEARCH,
+  UNDERWATER,
   WATCHER,
   plural,
   readNumbers,
@@ -260,6 +262,43 @@ function addRedLight(spec: GameSpecV1): void {
   );
 }
 
+/**
+ * Hledání (P25D T2): předměty čekají ve skrýších (o dvě víc, dvě zůstanou
+ * prázdné) a ukážou se, až do skrýše hráč vstoupí. Pod vodou relikvie
+ * v troskách a cíl je vyplavat na hladinu.
+ */
+function searchLabels(spec: GameSpecV1, read: Read): boolean {
+  const sea = UNDERWATER.test(read.text);
+  if (read.roles.collectible === null) role(spec, 'mushroom').label = sea ? 'relic' : 'hidden toy';
+  if (read.roles.destination === null) role(spec, 'portal').label = sea ? 'surface' : 'door';
+  if (read.roles.player === null && /\bsubmarine\b/.test(read.text)) role(spec, 'player').label = 'little submarine';
+  if (sea && read.roles.setting === null) spec.theme.setting = 'sunken ruins on the sea floor';
+  spec.theme.mood = 'curious';
+  return sea;
+}
+
+function addHidden(spec: GameSpecV1, count: number, sea: boolean): void {
+  const spot = sea ? 'wreckage' : 'hiding spot';
+  spec.roles.push({ id: 'spot', kind: 'prop', label: spot, count: clamp(count + 2, 1, 20) });
+  mechanic(spec, 'collectible').hiddenIn = 'spot';
+  const item = role(spec, 'mushroom').label;
+  spec.objective.description = cap(`Search every ${spot} for ${spell(count)} ${plural(item, count)}, then reach the ${role(spec, 'portal').label}.`, 120);
+  spec.tutorial.goalLine = cap(`Find ${count} hidden ${plural(item, count)}, then reach the exit.`, 80);
+  spec.tutorial.controlsHint = cap(`Tap ${withArticle(spot)} to search it. Tap what you find to pick it up.`, 80);
+  // Počítací keypoint šablony sbírá první předmět – ten leží v první skrýši.
+  for (const assertion of spec.verification) {
+    if (assertion.mechanic === 'collectible' && assertion.actions !== undefined) assertion.actions = [{ actionId: 'moveTo', target: 'spot' }, ...assertion.actions];
+  }
+  spec.verification.splice(1, 0, {
+    id: 'hidden_item_does_not_count',
+    kind: 'keypoint',
+    mechanic: 'collectible',
+    actions: [{ actionId: 'pickup', target: 'mushroom' }],
+    ticks: 10,
+    assert: { counters: { collected: 0 } },
+  });
+}
+
 interface Read {
   readonly roles: SentenceRoles;
   readonly seconds: number | null;
@@ -273,6 +312,8 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     // Kořist plížení bývá jedna („steal a diamond“), sbírání pět.
     const redLight = RED_LIGHT.test(read.text);
     if (redLight) redLightLabels(spec, read);
+    const search = !redLight && SEARCH.test(read.text);
+    const sea = search && searchLabels(spec, read);
     const count = clamp(read.counts[0] ?? (read.roles.stealth ? (read.roles.collectibleMany ? 3 : 1) : redLight ? 3 : 5), 1, 20);
     const item = role(spec, 'mushroom');
     item.label = label(read.roles.collectible, item.label);
@@ -283,6 +324,7 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     rewriteCounters(spec, 'collected', count - 1, count);
     spec.tutorial.goalLine = cap(`Collect ${count} ${plural(item.label, count)}, then reach the exit.`, 80);
     spec.tutorial.controlsHint = cap(`Tap ${withArticle(item.label)} to walk to it. Tap again to pick it up.`, 80);
+    if (search) addHidden(spec, count, sea);
     if (redLight) addRedLight(spec);
     else if (read.roles.stealth) addGuards(spec, read.roles.threat);
     else if (read.roles.threat !== null) addThreat(spec, read.roles.threat, read.text);

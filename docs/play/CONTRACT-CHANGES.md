@@ -201,3 +201,13 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   `moving_on_red_loses` a `standing_on_red_is_safe`. Fixtury P25D leží v
   `src/play/__fixtures__/p25d/`, aby nehýbaly počtem fixtur v testech jiných plánů. Pin promptu
   režiséra 11 253 → 11 362 B. Bez parametru beze změny hashů.
+- **`collectible.params.hiddenIn?: roleRef`** (22. 9. 2026, T2, hledání schovaných věcí).
+  i-tý předmět leží v i-té instanci role skrýše; `onStart` všechny schované předměty
+  despawnuje (neaktivní entita se nevykreslí), vstup hráče do skrýše předmět spawne (vlastní
+  pool na předmět, `tag` = ID instance) a nastaví čítač `<instance>_found`. Runtime akci na
+  neaktivní entitu nezakáže, proto sebrání hlídá i `<instance>_found = 1`. Capabilities
+  `collectible` navíc `onStart`, `onEnterZone`, `despawn`, `spawn`. Svědek jde do skrýše,
+  pak sbírá. Návrh ze slov: „hidden / hide and seek / explore / ruins / search“ mění sběr na
+  hledání (skrýší o dvě víc než předmětů), pod vodou relikvie v troskách a cíl „surface“
+  (s074, s184); keypoint `hidden_item_does_not_count`, počítací keypoint šablony nejdřív
+  vstoupí do skrýše. Pin promptu režiséra 11 362 → 11 453 B. Bez parametru beze změny hashů.

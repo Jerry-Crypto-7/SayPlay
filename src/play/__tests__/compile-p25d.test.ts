@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import { buildRuntimeWorld } from '@/ir/build';
-import { type Runtime, createRuntime, step } from '@/sim/interpreter';
+import { type Runtime, createRuntime, entityActive, step } from '@/sim/interpreter';
 import { readSlot, writeSlot } from '@/sim/state';
 
 import { compileGame, compileSim, greenStart, type SimCompilation, type SurfaceSim } from '../compile';
@@ -124,5 +124,52 @@ describe('timer.phases – red light, green light (P25D T1)', () => {
     }
     expect(draftGameSpec('horror game where a creepy doll moves when u dont look').roles.find((role) => role.id === 'watcher')?.label).toBe('creepy doll');
     expect(draftGameSpec('red light green light like squid game').roles.find((role) => role.id === 'portal')?.label).toBe('finish line');
+  });
+});
+
+describe('collectible.hiddenIn – search the room (P25D T2)', () => {
+  const gameSpec = fixture('collect_exit_hidden');
+
+  it('compiles, certifies a witness that searches every spot and passes every keypoint on seeds 1..5', () => {
+    for (const seed of [1, 2, 3, 4, 5]) expect(publishFailures(gameSpec, seed), `seed ${seed}`).toEqual([]);
+  });
+
+  it('a hidden item neither shows nor counts until the player enters its spot; without hiddenIn it counts at once', () => {
+    const { sim } = compiled(gameSpec, 1);
+    const item = Object.keys(sim.entities).find((id) => id.startsWith('mushroom')) as string;
+    const spot = Object.keys(sim.entities).find((id) => id.startsWith('spot')) as string;
+    const pickup = [{ tick: 2, actionId: 'pickup', target: item }];
+    const collected = (runtime: Runtime): number => readSlot(runtime.layout, runtime.state, 'c:collected');
+
+    const hidden = runtimeOf(sim);
+    run(hidden, pickup, 6);
+    expect(collected(hidden)).toBe(0);
+    expect(entityActive(hidden, item)).toBe(false);
+
+    const found = runtimeOf(sim);
+    run(found, [{ tick: 0, actionId: 'moveTo', target: spot }, { tick: 40, actionId: 'pickup', target: item }], 44);
+    expect(entityActive(found, item)).toBe(true);
+    expect(collected(found)).toBe(1);
+
+    const { hiddenIn: _dropped, ...openParams } = gameSpec.mechanics[0]?.params as Record<string, unknown>;
+    const openSpec = { ...gameSpec, mechanics: gameSpec.mechanics.map((mechanic, index) => (index === 0 ? { ...mechanic, params: openParams } : mechanic)) };
+    const open = runtimeOf(compiled(openSpec, 1).sim);
+    run(open, pickup, 6);
+    expect(collected(open)).toBe(1);
+  });
+
+  it('drafts s074 and s184 as a search game with spots, and each drafted game publishes', () => {
+    for (const sentence of [
+      'find the hidden objects in a messy bedroom',
+      'explore underwater ruins as a little submarine',
+    ]) {
+      const drafted = draftGameSpec(sentence);
+      expect(drafted.archetype, sentence).toBe('collect_exit');
+      expect(drafted.mechanics.find((mechanic) => mechanic.id === 'collectible')?.params.hiddenIn, sentence).toBe('spot');
+      expect(drafted.verification.map((assertion) => assertion.id), sentence).toContain('hidden_item_does_not_count');
+      expect(publishFailures(drafted, 1), sentence).toEqual([]);
+    }
+    const sea = draftGameSpec('explore underwater ruins as a little submarine');
+    expect([sea.roles.find((role) => role.id === 'mushroom')?.label, sea.roles.find((role) => role.id === 'portal')?.label]).toEqual(['relic', 'surface']);
   });
 });
