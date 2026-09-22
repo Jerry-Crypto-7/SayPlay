@@ -22,7 +22,7 @@
  *   `chunked` tři volání na svět, každé zúžené na svůj kus (T4, zatím opt-in)
  */
 
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
@@ -32,8 +32,6 @@ import { type Grammar } from '@/model/prompt';
 import { EMISSION_CHUNKS } from '@/model/emission-merge';
 import { buildCompilerRequest } from '@/model/worldstream-prompt';
 import { buildIntentRequest, readPlannerEmission } from '@/model/worldstream-intent';
-
-import archive from './create-raw.json';
 
 /** Tytéž věty, nad kterými se 13. 9. měřila latence (`latency-report.json`). */
 const CASES = ['c01', 'c07', 'c13', 'c19', 'c25'] as const;
@@ -62,7 +60,9 @@ interface ArchivedCall {
   readonly answer: unknown;
 }
 
-const calls = archive as unknown as ArchivedCall[];
+// Archiv je gitignorovaný (3,8 MB), takže se čte za běhu – statický import by
+// shodil typecheck buildu z čistého exportu, kde soubor není.
+const calls = JSON.parse(readFileSync(fileURLToPath(new URL('./create-raw.json', import.meta.url)), 'utf8')) as ArchivedCall[];
 
 const chars = (request: { system: string; user: string }): number => request.system.length + request.user.length;
 
