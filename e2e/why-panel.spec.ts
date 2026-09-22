@@ -60,7 +60,7 @@ async function museum(page: Page) {
     return route.fulfill({ status: 200, contentType: 'text/event-stream',
       body: frame(1, 'blueprint.ready', { blueprint }) + frame(2, 'session.complete', {}) });
   });
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('Museum why fixture');
   await page.getByTestId('prompt-submit').click();

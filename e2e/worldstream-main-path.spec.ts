@@ -58,7 +58,7 @@ async function buildWorld(page: Page, sentence: string): Promise<void> {
 test('kořen je worldstreamové plátno, ne stará herní scéna', async ({ page }) => {
   test.setTimeout(120_000);
 
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');
   await expect(page.getByTestId('worldstream-canvas')).toHaveCount(1);
 
@@ -94,7 +94,7 @@ test('kořen je worldstreamové plátno, ne stará herní scéna', async ({ page
 test('věta postaví svět a ten dojde až na plátno', async ({ page }) => {
   test.setTimeout(180_000);
 
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');
   await buildWorld(page, AUTHORED);
 
@@ -119,7 +119,7 @@ test('věta postaví svět a ten dojde až na plátno', async ({ page }) => {
 test('Inspect nad hlavní cestou vypisuje sloty, ne panely staré scény', async ({ page }) => {
   test.setTimeout(180_000);
 
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');
   await buildWorld(page, AUTHORED);
   await openInspect(page);
@@ -149,7 +149,7 @@ test('Inspect nad hlavní cestou vypisuje sloty, ne panely staré scény', async
 test('věta, kterou nikdo nepředvídal, dostane svět, ne prázdno', async ({ page }) => {
   test.setTimeout(180_000);
 
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');
   await buildWorld(page, 'A greenhouse swallowed by a glacier, its panes still warm.');
 

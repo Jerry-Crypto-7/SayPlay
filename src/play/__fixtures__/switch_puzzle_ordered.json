@@ -1,0 +1,133 @@
+{
+  "schema": "gamespec.v1",
+  "targetDurationSec": 90,
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "title": "Shelf Order",
+  "archetype": "switch_puzzle",
+  "theme": {
+    "setting": "kitchen shelves",
+    "mood": "puzzling"
+  },
+  "objective": {
+    "kind": "puzzle",
+    "description": "Knock off the red, blue and green vases in that order to reach the fish.",
+    "role": "door"
+  },
+  "mechanics": [
+    {
+      "id": "switch",
+      "params": {
+        "switchRoles": [
+          "red",
+          "blue",
+          "green"
+        ],
+        "doorRole": "door",
+        "required": [
+          "red",
+          "blue",
+          "green"
+        ],
+        "ordered": true
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "door",
+        "when": "enter",
+        "effect": "win"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "cat"
+    },
+    {
+      "id": "red",
+      "kind": "switch",
+      "label": "red vase"
+    },
+    {
+      "id": "blue",
+      "kind": "switch",
+      "label": "blue vase"
+    },
+    {
+      "id": "green",
+      "kind": "switch",
+      "label": "green vase"
+    },
+    {
+      "id": "door",
+      "kind": "door",
+      "label": "fish bowl"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Knock the vases off in the right order to reach the fish.",
+    "controlsHint": "Tap a vase to walk there, tap again to knock it off."
+  },
+  "verification": [
+    {
+      "id": "right_order_opens",
+      "kind": "keypoint",
+      "mechanic": "switch",
+      "setup": {
+        "entityStates": {
+          "red": "on",
+          "blue": "on"
+        }
+      },
+      "actions": [
+        {
+          "actionId": "use",
+          "target": "green"
+        }
+      ],
+      "assert": {
+        "locked": {
+          "door": false
+        }
+      }
+    },
+    {
+      "id": "wrong_order_resets",
+      "kind": "keypoint",
+      "mechanic": "switch",
+      "setup": {
+        "entityStates": {
+          "red": "on"
+        }
+      },
+      "actions": [
+        {
+          "actionId": "use",
+          "target": "green"
+        }
+      ],
+      "assert": {
+        "entityStates": {
+          "red": "off"
+        },
+        "locked": {
+          "door": true
+        }
+      }
+    },
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ]
+}

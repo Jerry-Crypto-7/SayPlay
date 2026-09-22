@@ -141,8 +141,21 @@ const switchParams = z
     doorRole: roleRef,
     /** Spínače, které musí být `on`; ostatní z `switchRoles` musí zůstat `off`. */
     required: z.array(roleRef).min(1).max(6),
+    /**
+     * Pořadí (P25B T4): žádané spínače jdou zapnout jen v pořadí `required`;
+     * spínač mimo pořadí vypne všechny žádané a dveře zamkne.
+     */
+    ordered: z.boolean().optional(),
+    /**
+     * Bedny (P25B T4): i-tá žádaná deska dostane i-tou instanci této role.
+     * `use` na bednu ji posune o úsek cesty k desce (nejvýš `PUSH_STEPS`
+     * úseků); deska se zapne, když na ni bedna dojede, ne stiskem.
+     */
+    crateRole: roleRef.optional(),
   })
   .strict();
+/** Na kolik úseků se dělí cesta bedny na desku (`switch.crateRole`). */
+export const PUSH_STEPS = 3;
 const hazardZoneParams = z
   .object({
     role: roleRef,
@@ -165,9 +178,26 @@ const patrolParams = z
     disposition: z.enum(['bold', 'wary', 'restless']),
     stops: z.int().min(3).max(6),
     touchEffect: z.enum(['lose', 'damage', 'none']),
+    /**
+     * Plížení (P25B T3): hlídka vidí po úseku trasy, který právě jde. Hráč na
+     * témže úseku prohraje. Úseky se vyhnou cestě svědka, takže hra jde vyhrát.
+     */
+    sight: z.boolean().optional(),
   })
   .strict();
-const carryParams = z.object({ itemRole: roleRef, destinationRole: roleRef, fragile: z.boolean() }).strict();
+const carryParams = z
+  .object({
+    itemRole: roleRef,
+    destinationRole: roleRef,
+    fragile: z.boolean(),
+    /**
+     * Objednávky (P25B T5): role jídel. i-tý zákazník (instance `destinationRole`)
+     * chce jídlo `menu[i mod délka]`; správné doručení přičte `orders_served`,
+     * obsloužení všech vyhraje. Bez menu se nese jedna věc do cíle.
+     */
+    menu: z.array(roleRef).min(1).max(4).optional(),
+  })
+  .strict();
 const stunParams = z
   .object({ targetRole: roleRef, seconds: z.int().min(1).max(10), uses: z.int().min(0).max(10) })
   .strict();
@@ -245,13 +275,28 @@ export const MECHANICS = {
   switch: entry({
     id: 'switch',
     params: switchParams,
-    roleRefs: (p) => [...p.switchRoles.map((role) => ['switchRoles', role] as const), ['doorRole', p.doorRole] as const],
-    capabilities: { events: ['onAction', 'onStateEnter'], actions: ['setState', 'setLocked', 'setFlag'] },
-    /** Na spínač čtyři pravidla: zapnout, vypnout, odemknout a zamknout podle kombinace „po přepnutí“. */
-    cost: (p, count) => ({
-      entities: p.switchRoles.length + 1,
-      rules: 4 * [...new Set(p.switchRoles)].reduce((sum, role) => sum + count(role), 0),
-    }),
+    roleRefs: (p) => [
+      ...p.switchRoles.map((role) => ['switchRoles', role] as const),
+      ['doorRole', p.doorRole] as const,
+      ...(p.crateRole === undefined ? [] : [['crateRole', p.crateRole] as const]),
+    ],
+    capabilities: {
+      events: ['onAction', 'onStateEnter', 'onEnterZone'],
+      actions: ['setState', 'setLocked', 'setFlag', 'moveTo', 'addCounter'],
+    },
+    /**
+     * Na spínač čtyři pravidla: zapnout, vypnout, odemknout a zamknout podle
+     * kombinace „po přepnutí“. V pořadí navíc pravidlo „mimo pořadí“ na každý
+     * žádaný spínač; bedna přidá `PUSH_STEPS` posunů a dvě pravidla příjezdu.
+     */
+    cost: (p, count) => {
+      const instances = (roles: readonly string[]): number => [...new Set(roles)].reduce((sum, role) => sum + count(role), 0);
+      const crates = p.crateRole === undefined ? 0 : count(p.crateRole);
+      return {
+        entities: p.switchRoles.length + 1 + crates,
+        rules: 4 * instances(p.switchRoles) + (p.ordered === true ? instances(p.required) : 0) + crates * (PUSH_STEPS + 2),
+      };
+    },
     setsStates: (p) => p.switchRoles.flatMap((role) => [[role, 'on'] as const, [role, 'off'] as const]),
     explanation: 'Using switches toggles them; the right combination opens the door.',
   }),
@@ -278,10 +323,13 @@ export const MECHANICS = {
     id: 'patrol',
     params: patrolParams,
     roleRefs: (p) => [['role', p.role]],
-    capabilities: { events: ['onCollide', 'onEnterZone'], actions: ['moveTo', 'lose', 'addCounter'], agents: true },
-    /** Mysl `1 + stops × 3` (`sim/agents.ts`) plus `touch` na instanci. */
-    cost: (p, count) => ({ entities: count(p.role), rules: count(p.role) * (p.stops * 3 + 2) }),
-    explanation: 'A character walks a fixed route; its temperament decides how.',
+    capabilities: { events: ['onCollide', 'onEnterZone', 'onStart'], actions: ['moveTo', 'lose', 'addCounter'], agents: true },
+    /**
+     * Mysl `1 + stops × 3` (`sim/agents.ts`) plus `touch` na instanci; výhled
+     * dvě pravidla na úsek (`stops + 1` úseků) a jedno startovní.
+     */
+    cost: (p, count) => ({ entities: count(p.role), rules: count(p.role) * (p.stops * 3 + 2 + (p.sight === true ? 2 * (p.stops + 1) + 1 : 0)) }),
+    explanation: 'A character walks a fixed route; its temperament decides how. With sight, being on its current stretch loses.',
   }),
   carry: entry({
     id: 'carry',
@@ -289,12 +337,21 @@ export const MECHANICS = {
     roleRefs: (p) => [
       ['itemRole', p.itemRole],
       ['destinationRole', p.destinationRole],
+      ...(p.menu ?? []).map((role) => ['menu', role] as const),
     ],
-    capabilities: { events: ['onPickup', 'onDrop', 'onEnterZone', 'onCollide'], actions: ['giveItem', 'takeItem', 'win', 'lose'] },
-    /** Na předmět sběr, sběr v cíli, doručení do každého cíle a u křehkého rozbití o každého chodce. */
+    capabilities: {
+      events: ['onPickup', 'onDrop', 'onEnterZone', 'onCollide', 'onAction', 'onCounterReaches'],
+      actions: ['giveItem', 'takeItem', 'addCounter', 'win', 'lose'],
+    },
+    /**
+     * Na předmět sběr, sběr v cíli, doručení do každého cíle a u křehkého
+     * rozbití o každého chodce. Menu: sběr na jídlo, obsluha na zákazníka a výhra.
+     */
     cost: (p, count, world) => ({
-      entities: 2,
-      rules: count(p.itemRole) * (2 + count(p.destinationRole) + (p.fragile ? world.kindCount('patrol') + world.kindCount('chaser') : 0)),
+      entities: p.menu === undefined ? 2 : 2 + p.menu.length + count(p.destinationRole),
+      rules:
+        count(p.itemRole) * (2 + count(p.destinationRole) + (p.fragile ? world.kindCount('patrol') + world.kindCount('chaser') : 0)) +
+        (p.menu === undefined ? 0 : [...new Set(p.menu)].reduce((sum, role) => sum + count(role), 0) + count(p.destinationRole) + 1),
     }),
     explanation: 'Pick up an item and bring it to the destination; a fragile one breaks on contact.',
   }),

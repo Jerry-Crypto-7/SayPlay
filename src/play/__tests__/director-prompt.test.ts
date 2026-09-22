@@ -4,7 +4,8 @@
  * zdroje (změna `explanation` hne verzí), že v něm je všech 16 mechanik a
  * 8 archetypů, a že velikost nepřeteče – naměřené maximum 20. 9. 2026 je
  * 10 485 B nad 40 větami korpusu (strop plánu 12 000 B); 22. 9. 2026 s poli
- * `control`/`controlParams` (P25A) 10 654 B, s popisem běžce (T7) 11 135 B.
+ * `control`/`controlParams` (P25A) 10 654 B, s popisem běžce (T7) 11 135 B,
+ * po sloučení s P25B (výhled hlídky, pořadí, bedny, menu objednávek) 11 253 B.
  */
 
 import { readFileSync } from 'node:fs';
@@ -40,14 +41,14 @@ describe('director prompt', () => {
     for (const forbidden of ['projectile', 'moving_platform']) expect(request.system).not.toContain(forbidden);
   });
 
-  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 135 B)', () => {
+  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 253 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const request = buildDirectorRequest(entry.prompt, draftGameSpec(entry.prompt));
       max = Math.max(max, Buffer.byteLength(request.system + request.user));
     }
     expect(max).toBeLessThanOrEqual(12_000);
-    expect(max).toBeLessThanOrEqual(11_200);
+    expect(max).toBeLessThanOrEqual(11_300);
   });
 
   it('compacts schemas: role ids, enums, bounded ints, optional fields with defaults', () => {

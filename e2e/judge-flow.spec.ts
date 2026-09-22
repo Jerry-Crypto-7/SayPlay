@@ -161,7 +161,7 @@ test('porotce projde celou cestu, jak ji dostane na odevzdání', async ({ page 
 
   // ── Takt 0: porotce dorazí ───────────────────────────────────────────────
   const arrived = Date.now();
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');
   await expect(page.getByTestId('worldstream-canvas')).toHaveCount(1);
   // Dokud nepřišla věta, produkt **nic nepředstírá**. Prázdný stav je poctivý

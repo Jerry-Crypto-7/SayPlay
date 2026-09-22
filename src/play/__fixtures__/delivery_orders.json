@@ -1,0 +1,118 @@
+{
+  "schema": "gamespec.v1",
+  "targetDurationSec": 90,
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "title": "Burger Rush",
+  "archetype": "delivery",
+  "theme": {
+    "setting": "burger diner",
+    "mood": "hectic"
+  },
+  "objective": {
+    "kind": "deliver",
+    "description": "Serve every customer the dish they ordered before the shift ends.",
+    "role": "customer"
+  },
+  "mechanics": [
+    {
+      "id": "carry",
+      "params": {
+        "itemRole": "burger",
+        "destinationRole": "customer",
+        "fragile": false,
+        "menu": [
+          "burger",
+          "fries"
+        ]
+      }
+    },
+    {
+      "id": "timer",
+      "params": {
+        "id": "shift",
+        "seconds": 90,
+        "onEnd": "lose"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "cook"
+    },
+    {
+      "id": "burger",
+      "kind": "item",
+      "label": "burger"
+    },
+    {
+      "id": "fries",
+      "kind": "item",
+      "label": "fries"
+    },
+    {
+      "id": "customer",
+      "kind": "destination",
+      "label": "hungry customer",
+      "count": 2
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Serve each customer the dish they ordered before time runs out.",
+    "controlsHint": "Tap a dish to grab it, then tap the customer who ordered it."
+  },
+  "verification": [
+    {
+      "id": "right_order_scores",
+      "kind": "keypoint",
+      "mechanic": "carry",
+      "actions": [
+        {
+          "actionId": "pickup",
+          "target": "burger"
+        },
+        {
+          "actionId": "use",
+          "target": "customer"
+        }
+      ],
+      "assert": {
+        "counters": {
+          "orders_served": 1
+        }
+      }
+    },
+    {
+      "id": "wrong_order_ignored",
+      "kind": "keypoint",
+      "mechanic": "carry",
+      "actions": [
+        {
+          "actionId": "pickup",
+          "target": "fries"
+        },
+        {
+          "actionId": "use",
+          "target": "customer"
+        }
+      ],
+      "assert": {
+        "counters": {
+          "orders_served": 0
+        }
+      }
+    },
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ]
+}

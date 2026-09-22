@@ -11,9 +11,36 @@
 
 import type { ArchetypeId } from '../registry';
 
+/** Věta o plížení: stráže s výhledem místo slepých hlídek. */
+export const STEALTH =
+  /\bsneak(?:s|ing|y)?\b|\bstealth(?:y)?\b|\bguards?\b|\bunseen\b|\bundetected\b|\bwithout (?:being )?(?:seen|spotted|caught|noticed|waking)\b|\bhid(?:e|es|ing)\b|\bflashlights?\b/;
+
+/** Hádanka pořadí: spínače jdou zapnout jen v daném pořadí (`switch.ordered`). */
+export const ORDER_PUZZLE = /\bin (?:the )?(?:right|correct|exact) order\b/;
+
+/** Obsluha zákazníků (`carry.menu`): vaření, restaurace, obchod, farma na prodej. */
+export const ORDERS =
+  /\bcook(?:s|ing)?\b|\bcustomers?\b|\borders\b|\btakes? (?:an? )?orders?\b|\brestaurant\b|\bbarista\b|\bovercooked\b|\bserv(?:e|es|ing)\b|\bdiner\b|\bcaf[eé]\b|\bfood truck\b|\bkitchen\b|\bsupermarket\b|\bcheckout\b|\bcashier\b|\bsell(?:s|ing)?\b|\bharvest(?:s|ing)?\b/;
+
+/** Jídla, která věta objednávek může jmenovat (menu); dort a vejce chybí schválně – to je křehké nesení. */
+export const FOODS = ['burger', 'fries', 'pizza', 'sushi', 'coffee', 'latte', 'tea', 'taco', 'salad', 'soup', 'carrot', 'apple', 'bread', 'noodles', 'sandwich', 'milk'] as const;
+export const FOOD = new RegExp(`\\b(?:${FOODS.join('|')})s?\\b`);
+
+/** Bedny tlačené na desky (`switch.crateRole`); skupina 1 = podstatné jméno bedny. */
+export const PUSH_CRATES = /\bpush(?:es|ing)? (?:the |a )?(?:[a-z]+ )?(box|boxes|crates?|blocks?|boulders?)\b/;
+
 /** Slova, po kterých se archetyp pozná. Každý zásah je jeden bod; remíza jde pořadím `ARCHETYPE_IDS`. */
 export const ARCHETYPE_CUES: Readonly<Record<ArchetypeId, readonly RegExp[]>> = {
-  collect_exit: [/\bcollect(?:s|ing)?\b/, /\bgather(?:s|ing)?\b/, /\bfind(?:s|ing)?\b/, /\bpick(?:s|ing)? up\b/, /\bgrab(?:s|bing)?\b/],
+  collect_exit: [
+    /\bcollect(?:s|ing)?\b/,
+    /\bgather(?:s|ing)?\b/,
+    /\bfind(?:s|ing)?\b/,
+    /\bpick(?:s|ing)? up\b/,
+    /\bgrab(?:s|bing)?\b/,
+    // Plížení (P25B T3) je sběr s hlídkami, které vidí – „steal the diamond and get out“.
+    /\bsteal(?:s|ing)?\b/,
+    STEALTH,
+  ],
   chase_escape: [
     /\bchas(?:e|es|ed|ing)\b/,
     /\bhunt(?:s|ed|ing)?\b/,
@@ -24,8 +51,13 @@ export const ARCHETYPE_CUES: Readonly<Record<ArchetypeId, readonly RegExp[]>> = 
   ],
   survival_timer: [/\bsurviv(?:e|es|ed|ing|al)\b/, /\bseconds?\b/, /\bminutes?\b/, /\blast(?:s|ing)?\b/, /\boutlast(?:s)?\b/, /\bstay alive\b/],
   checkpoint_race: [/\brac(?:e|es|ing)\b/, /\bgates\b/, /\bcheckpoints?\b/, /\bin (?:the right )?order\b/, /\blaps?\b/, /\bhoops\b/, /\brings\b/, /\bsprint(?:s|ing)?\b/],
-  delivery: [/\bcarry(?:ing)?\b|\bcarries\b/, /\bdeliver(?:s|ed|ing)?\b/, /\bbring(?:s|ing)?\b/, /\bfragile\b/],
-  switch_puzzle: [/\bpress(?:es|ing)?\b/, /\bbuttons?\b/, /\bswitch(?:es)?\b/, /\blevers?\b/, /\bnot\b|\bnever\b/, /\bflip(?:s|ping)?\b|\btoggle(?:s|d)?\b|\bpull(?:s|ing)?\b/],
+  delivery: [/\bcarry(?:ing)?\b|\bcarries\b/, /\bdeliver(?:s|ed|ing)?\b/, /\bbring(?:s|ing)?\b/, /\bfragile\b/, ORDERS, FOOD],
+  switch_puzzle: [/\bpress(?:es|ing)?\b/, /\bbuttons?\b/, /\bswitch(?:es)?\b/, /\blevers?\b/, /\bnot\b|\bnever\b/, /\bflip(?:s|ping)?\b|\btoggle(?:s|d)?\b|\bpull(?:s|ing)?\b/,
+    // P25B T4: „shoď věci v pořadí“ je hádanka pořadí, ne závod – dva body přebijí `checkpoint_race`.
+    /\bknock(?:s|ed|ing)? (?:[a-z]+ ){1,3}off\b/,
+    ORDER_PUZZLE,
+    PUSH_CRATES,
+  ],
   hazard_crossing: [
     /\bcross(?:es|ing)?\b/,
     /\blava\b|\bmagma\b|\bacid\b/,
@@ -169,11 +201,20 @@ export interface SentenceRoles {
   readonly player: string | null;
   readonly chaser: string | null;
   readonly collectible: string | null;
+  /** Sbíraná věc je ve větě v množném čísle („steal cookies“); „steal a diamond“ = jeden kus. */
+  readonly collectibleMany: boolean;
+  /** Věta mluví o plížení (`STEALTH`). */
+  readonly stealth: boolean;
   readonly item: string | null;
   readonly destination: string | null;
   readonly target: string | null;
   readonly checkpoint: string | null;
   readonly hazard: string | null;
+  /**
+   * Nepřítel, kterému se hráč vyhýbá: „while dodging ghosts“ → hlídka,
+   * „while a ghost hunts you“ → pronásledovatel. `plural` = věta mluví o víc kusech.
+   */
+  readonly threat: { readonly label: string; readonly mover: 'patrol' | 'chaser'; readonly plural: boolean } | null;
   /** Spínače podle barev; `required` jsou ty před „but not / never". */
   readonly switches: { readonly all: readonly string[]; readonly required: readonly string[] } | null;
   readonly setting: string | null;
@@ -204,7 +245,7 @@ export function readRoles(sentence: string): SentenceRoles {
     /\b(?:hunted|chased|pursued|followed) by (?:a |an |the )?([a-z][a-z -]*)/,
     /\b(?:flees|escapes|escape|flee|run from|runs from|outrun|outruns) (?:from )?(?:a |an |the )?([a-z][a-z -]*)/,
   ], 2);
-  const collectible = first(text, [/\b(?:collect|gather|find|pick up|grab)s? (?:all |every )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/], 2);
+  const collectible = first(text, [/\b(?:collect|gather|find|pick up|grab|steal)s? (?:all |every )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/], 2);
   const delivery = /\b(?:carry|deliver|bring|take|escort)s? (?:a |an |the )?([a-z][a-z -]*?) (?:from (?:a |an |the )?[a-z][a-z -]*? )?(?:across (?:a |an |the )?[a-z][a-z -]*? )?to (?:a |an |the )?([a-z][a-z -]*)/.exec(text);
   const target = first(text, [/\b(?:defeat|destroy|knock out|hit|smash|beat)s? (?:all |every |the )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/], 2);
   const checkpointMatch = /(?:[a-z]+ )?((?:[a-z]+ )?(?:gates?|hoops?|rings?|checkpoints?|flags?|arches?|posts?))\b/.exec(text);
@@ -218,15 +259,26 @@ export function readRoles(sentence: string): SentenceRoles {
     switches = { all: colours, required: required.length > 0 ? required : colours.slice(0, 1) };
   }
   const setting = first(text, [/\b(?:in|inside|across|through|on|around|at|into) (?:a |an |the )?([a-z][a-z -]*)/]);
+  // Vyhýbání se nebezpečné ploše („avoid the lava“) je hazard, ne postava.
+  const dodged = first(text, [
+    /\b(?:dodg|avoid|evad)(?:e|es|ed|ing)? (?:the |a |an |all |any )?([a-z][a-z -]*)/,
+    /\b(?:sneak(?:s|ing)? past|without waking) (?:the |a |an |all |any )?([a-z][a-z -]*)/,
+  ], 2);
+  const threatNoun = chaser ?? (dodged !== null && !HAZARD_WORDS.test(dodged) ? dodged : null);
+  const threat: SentenceRoles['threat'] =
+    threatNoun === null ? null : { label: singular(threatNoun), mover: chaser !== null ? 'chaser' : 'patrol', plural: singular(threatNoun) !== threatNoun };
   return {
     player,
     chaser,
     collectible: collectible === null ? null : singular(collectible),
+    collectibleMany: collectible !== null && singular(collectible) !== collectible,
+    stealth: STEALTH.test(text),
     item: delivery === null ? null : nounPhrase(delivery[1]),
     destination: delivery === null ? null : nounPhrase(delivery[2]),
     target: target === null ? null : singular(target),
     checkpoint: checkpointMatch === null ? null : singular(nounPhrase(checkpointMatch[1]) ?? checkpointMatch[1]),
     hazard: hazardMatch === null ? null : hazardMatch[1],
+    threat,
     switches,
     setting,
   };

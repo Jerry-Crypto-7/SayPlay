@@ -30,7 +30,7 @@ async function fixtureTransport(page:Page,{holdFirst=false,failFirst=false}={}){
   });return {requests,release};
 }
 test('prepared mode preserves visitor input and slot identity without automatic replacement',async({page})=>{
-  const transport=await fixtureTransport(page);await page.goto('/');
+  const transport=await fixtureTransport(page);await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');await buildWorld(page,'Explicit prepared fixture');
   await page.getByTestId('runtime-action').selectOption({label:'activate gate (visitor)'});await page.getByTestId('runtime-act').click();
   await expect(page.getByTestId('runtime-input-result')).toContainText('open');await expect(page.getByTestId('prompt-submit')).toBeEnabled();
@@ -41,7 +41,7 @@ test('prepared mode preserves visitor input and slot identity without automatic 
   await expect(page.getByTestId('world-authored')).toBeVisible();await expect(page.getByTestId('second-act-offer')).toHaveCount(0);
 });
 test('cancelled pending live generation cannot replace a newer prepared session',async({page})=>{
-  const transport=await fixtureTransport(page,{holdFirst:true});await page.goto('/');
+  const transport=await fixtureTransport(page,{holdFirst:true});await page.goto('/studio');
   await page.getByTestId('prompt-input').fill('Pending own world');await page.getByTestId('prompt-submit').click();
   await expect.poll(()=>transport.requests.length).toBe(1);await page.getByTestId('world-cancel').click();
   await page.getByTestId('generation-mode').selectOption('prepared');await buildWorld(page,'New prepared choice');
@@ -52,7 +52,7 @@ test('cancelled pending live generation cannot replace a newer prepared session'
   await expect(page.getByTestId('world-authored')).toBeVisible();await expect(page.getByTestId('refine-submit')).toBeEnabled();
 });
 test('live failure stays failed until the user explicitly requests a prepared demo',async({page})=>{
-  const transport=await fixtureTransport(page,{failFirst:true});await page.goto('/');
+  const transport=await fixtureTransport(page,{failFirst:true});await page.goto('/studio');
   await page.getByTestId('prompt-input').fill('Own world');await page.getByTestId('prompt-submit').click();
   await expect(page.getByText(/Explicit live failure/)).toBeVisible();expect(transport.requests).toEqual([{prompt:'Own world',live:true}]);
   await expect(page.getByTestId('runtime-controls')).toHaveCount(0);
@@ -65,7 +65,7 @@ test('nová věta během potvrzování změny odemkne úpravy nového světa', a
   test.setTimeout(180_000);
   const acts = await holdPreparedCommit(page);
 
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');
   await buildWorld(page, AUTHORED);
   await page.getByTestId('refine-input').fill(REFINE);

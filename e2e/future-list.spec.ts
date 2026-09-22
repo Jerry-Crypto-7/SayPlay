@@ -80,7 +80,7 @@ async function museum(page: Page) {
     return route.fulfill({ json: { outcome: 'RESTORED', acceptedBlueprint: blueprint } });
   });
   await page.route(`**/api/worldstream/sessions/${id}`, route => route.fulfill({ json: { blueprint: structuredClone(blueprint) } }));
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('Museum future list fixture');
   await page.getByTestId('prompt-submit').click();

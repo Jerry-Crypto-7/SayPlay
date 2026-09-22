@@ -18,7 +18,7 @@ test('keyboard users can stop pending detail and complete another world in a nar
   test.setTimeout(90_000);
   await page.setViewportSize({ width: 390, height: 844 });
   await holdFutureMeshes(page);
-  await page.goto('/');
+  await page.goto('/studio');
   const status = page.getByTestId('world-status');
   await expect(status).toHaveAttribute('role', 'status');
   await expect(status).toHaveAttribute('aria-atomic', 'true');
@@ -87,7 +87,7 @@ test('validated scene runs before worker detail and keeps the same objects when 
   });
   await page.route('**/api/worldstream/sessions', route => route.request().postDataJSON()?.live
     ? route.fulfill({ status: 503, json: {} }) : route.fallback());
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('A cathedral of stacked shipping containers around a light well.');
   await page.getByTestId('prompt-submit').click();
@@ -110,7 +110,7 @@ test('validated scene runs before worker detail and keeps the same objects when 
 test('stopping detail preserves a static scene and a subsequent authored shape edit renders', async ({ page }) => {
   test.setTimeout(90_000);
   await holdFutureMeshes(page);
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('A bridge town: houses hanging under a single span over a dry canyon.');
   await page.getByTestId('prompt-submit').click();
@@ -157,7 +157,7 @@ test('stopping detail preserves a static scene and a subsequent authored shape e
 test('stopping pending detail preserves a paused runtime input and actual object identities', async ({ page }) => {
   test.setTimeout(90_000);
   await holdFutureMeshes(page);
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('A cathedral of stacked shipping containers around a light well.');
   await page.getByTestId('prompt-submit').click();

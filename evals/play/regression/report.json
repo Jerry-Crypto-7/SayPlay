@@ -1,13 +1,13 @@
 {
   "schema": "play-regression-report.v1",
-  "measuredAt": "2026-09-21T14:58:36.535Z",
+  "measuredAt": "2026-09-22T13:52:59.824Z",
   "seed": 1,
   "rows": [
     {
       "id": "chase_escape-1",
       "bucket": "chase_escape",
       "expectArchetype": "chase_escape",
-      "draftMs": 14.4,
+      "draftMs": 14.7,
       "archetype": "chase_escape",
       "archetypeHit": true,
       "specValid": true,
@@ -19,14 +19,14 @@
       "winsAtTick": 11,
       "entities": 6,
       "rules": 70,
-      "compileMs": 187,
-      "verifyMs": 59.1
+      "compileMs": 176,
+      "verifyMs": 152.9
     },
     {
       "id": "chase_escape-2",
       "bucket": "chase_escape",
       "expectArchetype": "chase_escape",
-      "draftMs": 6.2,
+      "draftMs": 4.7,
       "archetype": "chase_escape",
       "archetypeHit": true,
       "specValid": true,
@@ -38,14 +38,14 @@
       "winsAtTick": 11,
       "entities": 6,
       "rules": 70,
-      "compileMs": 73.2,
-      "verifyMs": 25.3
+      "compileMs": 159.2,
+      "verifyMs": 21.9
     },
     {
       "id": "chase_escape-3",
       "bucket": "chase_escape",
       "expectArchetype": "chase_escape",
-      "draftMs": 6.8,
+      "draftMs": 1.2,
       "archetype": "chase_escape",
       "archetypeHit": true,
       "specValid": true,
@@ -57,14 +57,14 @@
       "winsAtTick": 11,
       "entities": 6,
       "rules": 70,
-      "compileMs": 55.1,
-      "verifyMs": 44.9
+      "compileMs": 34.3,
+      "verifyMs": 21.9
     },
     {
       "id": "chase_escape-4",
       "bucket": "chase_escape",
       "expectArchetype": "chase_escape",
-      "draftMs": 1.4,
+      "draftMs": 1.3,
       "archetype": "chase_escape",
       "archetypeHit": true,
       "specValid": true,
@@ -76,14 +76,14 @@
       "winsAtTick": 11,
       "entities": 6,
       "rules": 70,
-      "compileMs": 37.1,
-      "verifyMs": 44.9
+      "compileMs": 67.9,
+      "verifyMs": 99.9
     },
     {
       "id": "collect_exit-1",
       "bucket": "collect_exit",
       "expectArchetype": "collect_exit",
-      "draftMs": 3,
+      "draftMs": 5.3,
       "archetype": "collect_exit",
       "archetypeHit": true,
       "specValid": true,
@@ -95,14 +95,14 @@
       "winsAtTick": 19,
       "entities": 7,
       "rules": 7,
-      "compileMs": 38.7,
-      "verifyMs": 72.8
+      "compileMs": 40.1,
+      "verifyMs": 38.1
     },
     {
       "id": "collect_exit-2",
       "bucket": "collect_exit",
       "expectArchetype": "collect_exit",
-      "draftMs": 1,
+      "draftMs": 1.4,
       "archetype": "collect_exit",
       "archetypeHit": true,
       "specValid": true,
@@ -114,14 +114,14 @@
       "winsAtTick": 25,
       "entities": 10,
       "rules": 10,
-      "compileMs": 41,
-      "verifyMs": 91.3
+      "compileMs": 65.6,
+      "verifyMs": 97.3
     },
     {
       "id": "collect_exit-3",
       "bucket": "collect_exit",
       "expectArchetype": "collect_exit",
-      "draftMs": 0.9,
+      "draftMs": 2.6,
       "archetype": "collect_exit",
       "archetypeHit": true,
       "specValid": true,
@@ -133,8 +133,8 @@
       "winsAtTick": 15,
       "entities": 5,
       "rules": 5,
-      "compileMs": 10.8,
-      "verifyMs": 22.3
+      "compileMs": 38.8,
+      "verifyMs": 14.2
     },
     {
       "id": "collect_exit-4",
@@ -152,14 +152,14 @@
       "winsAtTick": 21,
       "entities": 8,
       "rules": 8,
-      "compileMs": 68.7,
-      "verifyMs": 62.1
+      "compileMs": 44.4,
+      "verifyMs": 36.4
     },
     {
       "id": "survival_timer-1",
       "bucket": "survival_timer",
       "expectArchetype": "survival_timer",
-      "draftMs": 3.6,
+      "draftMs": 3.7,
       "archetype": "survival_timer",
       "archetypeHit": true,
       "specValid": true,
@@ -171,14 +171,14 @@
       "winsAtTick": 1201,
       "entities": 7,
       "rules": 21,
-      "compileMs": 616.9,
-      "verifyMs": 1111.3
+      "compileMs": 405.6,
+      "verifyMs": 853.9
     },
     {
       "id": "survival_timer-2",
       "bucket": "survival_timer",
       "expectArchetype": "survival_timer",
-      "draftMs": 1.2,
+      "draftMs": 1,
       "archetype": "survival_timer",
       "archetypeHit": true,
       "specValid": true,
@@ -190,14 +190,14 @@
       "winsAtTick": 1801,
       "entities": 7,
       "rules": 21,
-      "compileMs": 534.3,
-      "verifyMs": 1920.4
+      "compileMs": 355.6,
+      "verifyMs": 1172.6
     },
     {
       "id": "survival_timer-3",
       "bucket": "survival_timer",
       "expectArchetype": "survival_timer",
-      "draftMs": 1.7,
+      "draftMs": 0.7,
       "archetype": "survival_timer",
       "archetypeHit": true,
       "specValid": true,
@@ -209,14 +209,14 @@
       "winsAtTick": 901,
       "entities": 7,
       "rules": 21,
-      "compileMs": 232.5,
-      "verifyMs": 985.5
+      "compileMs": 145.6,
+      "verifyMs": 525.8
     },
     {
       "id": "survival_timer-4",
       "bucket": "survival_timer",
       "expectArchetype": "survival_timer",
-      "draftMs": 0.8,
+      "draftMs": 0.7,
       "archetype": "survival_timer",
       "archetypeHit": true,
       "specValid": true,
@@ -228,14 +228,14 @@
       "winsAtTick": 2401,
       "entities": 7,
       "rules": 21,
-      "compileMs": 773.9,
-      "verifyMs": 1992.1
+      "compileMs": 396.4,
+      "verifyMs": 1445.4
     },
     {
       "id": "checkpoint_race-1",
       "bucket": "checkpoint_race",
       "expectArchetype": "checkpoint_race",
-      "draftMs": 1.4,
+      "draftMs": 1.5,
       "archetype": "checkpoint_race",
       "archetypeHit": true,
       "specValid": true,
@@ -247,14 +247,14 @@
       "winsAtTick": 41,
       "entities": 6,
       "rules": 7,
-      "compileMs": 17,
-      "verifyMs": 39.9
+      "compileMs": 26.5,
+      "verifyMs": 29.3
     },
     {
       "id": "checkpoint_race-2",
       "bucket": "checkpoint_race",
       "expectArchetype": "checkpoint_race",
-      "draftMs": 0.8,
+      "draftMs": 1.4,
       "archetype": "checkpoint_race",
       "archetypeHit": true,
       "specValid": true,
@@ -266,8 +266,8 @@
       "winsAtTick": 30,
       "entities": 5,
       "rules": 6,
-      "compileMs": 13.1,
-      "verifyMs": 16
+      "compileMs": 19.5,
+      "verifyMs": 17.5
     },
     {
       "id": "checkpoint_race-3",
@@ -285,14 +285,14 @@
       "winsAtTick": 49,
       "entities": 7,
       "rules": 8,
-      "compileMs": 23.1,
-      "verifyMs": 42.6
+      "compileMs": 33.7,
+      "verifyMs": 39.6
     },
     {
       "id": "checkpoint_race-4",
       "bucket": "checkpoint_race",
       "expectArchetype": "checkpoint_race",
-      "draftMs": 0.9,
+      "draftMs": 0.7,
       "archetype": "checkpoint_race",
       "archetypeHit": true,
       "specValid": true,
@@ -304,14 +304,14 @@
       "winsAtTick": 22,
       "entities": 4,
       "rules": 5,
-      "compileMs": 10.2,
-      "verifyMs": 9.6
+      "compileMs": 27.1,
+      "verifyMs": 11.4
     },
     {
       "id": "delivery-1",
       "bucket": "delivery",
       "expectArchetype": "delivery",
-      "draftMs": 1.9,
+      "draftMs": 2.2,
       "archetype": "delivery",
       "archetypeHit": true,
       "specValid": true,
@@ -323,14 +323,14 @@
       "winsAtTick": 11,
       "entities": 4,
       "rules": 5,
-      "compileMs": 13.5,
-      "verifyMs": 7.6
+      "compileMs": 24.4,
+      "verifyMs": 10
     },
     {
       "id": "delivery-2",
       "bucket": "delivery",
       "expectArchetype": "delivery",
-      "draftMs": 0.8,
+      "draftMs": 1,
       "archetype": "delivery",
       "archetypeHit": true,
       "specValid": true,
@@ -342,11 +342,30 @@
       "winsAtTick": 11,
       "entities": 4,
       "rules": 4,
-      "compileMs": 8.8,
-      "verifyMs": 11.7
+      "compileMs": 27.7,
+      "verifyMs": 7.1
     },
     {
       "id": "delivery-3",
+      "bucket": "delivery",
+      "expectArchetype": "delivery",
+      "draftMs": 0.6,
+      "archetype": "delivery",
+      "archetypeHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 2,
+      "keypointsTotal": 2,
+      "winsAtTick": 11,
+      "entities": 4,
+      "rules": 4,
+      "compileMs": 15.9,
+      "verifyMs": 7.1
+    },
+    {
+      "id": "delivery-4",
       "bucket": "delivery",
       "expectArchetype": "delivery",
       "draftMs": 0.7,
@@ -360,88 +379,12 @@
       "keypointsTotal": 2,
       "winsAtTick": 11,
       "entities": 4,
-      "rules": 4,
-      "compileMs": 12.1,
-      "verifyMs": 11.8
-    },
-    {
-      "id": "delivery-4",
-      "bucket": "delivery",
-      "expectArchetype": "delivery",
-      "draftMs": 2.6,
-      "archetype": "delivery",
-      "archetypeHit": true,
-      "specValid": true,
-      "compiled": true,
-      "reason": null,
-      "publishEligible": true,
-      "keypointsPassed": 2,
-      "keypointsTotal": 2,
-      "winsAtTick": 11,
-      "entities": 4,
       "rules": 5,
-      "compileMs": 10.1,
-      "verifyMs": 8.4
+      "compileMs": 13.6,
+      "verifyMs": 4.4
     },
     {
       "id": "switch_puzzle-1",
-      "bucket": "switch_puzzle",
-      "expectArchetype": "switch_puzzle",
-      "draftMs": 1.9,
-      "archetype": "switch_puzzle",
-      "archetypeHit": true,
-      "specValid": true,
-      "compiled": true,
-      "reason": null,
-      "publishEligible": true,
-      "keypointsPassed": 3,
-      "keypointsTotal": 3,
-      "winsAtTick": 10,
-      "entities": 5,
-      "rules": 13,
-      "compileMs": 27.5,
-      "verifyMs": 30.3
-    },
-    {
-      "id": "switch_puzzle-2",
-      "bucket": "switch_puzzle",
-      "expectArchetype": "switch_puzzle",
-      "draftMs": 3.3,
-      "archetype": "switch_puzzle",
-      "archetypeHit": true,
-      "specValid": true,
-      "compiled": true,
-      "reason": null,
-      "publishEligible": true,
-      "keypointsPassed": 3,
-      "keypointsTotal": 3,
-      "winsAtTick": 10,
-      "entities": 5,
-      "rules": 13,
-      "compileMs": 16.7,
-      "verifyMs": 26
-    },
-    {
-      "id": "switch_puzzle-3",
-      "bucket": "switch_puzzle",
-      "expectArchetype": "switch_puzzle",
-      "draftMs": 0.8,
-      "archetype": "switch_puzzle",
-      "archetypeHit": true,
-      "specValid": true,
-      "compiled": true,
-      "reason": null,
-      "publishEligible": true,
-      "keypointsPassed": 3,
-      "keypointsTotal": 3,
-      "winsAtTick": 10,
-      "entities": 5,
-      "rules": 13,
-      "compileMs": 13.7,
-      "verifyMs": 17.6
-    },
-    {
-      "id": "switch_puzzle-4",
       "bucket": "switch_puzzle",
       "expectArchetype": "switch_puzzle",
       "draftMs": 1.6,
@@ -456,14 +399,71 @@
       "winsAtTick": 10,
       "entities": 5,
       "rules": 13,
-      "compileMs": 16.9,
-      "verifyMs": 21.1
+      "compileMs": 24.4,
+      "verifyMs": 16.9
+    },
+    {
+      "id": "switch_puzzle-2",
+      "bucket": "switch_puzzle",
+      "expectArchetype": "switch_puzzle",
+      "draftMs": 1,
+      "archetype": "switch_puzzle",
+      "archetypeHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 3,
+      "keypointsTotal": 3,
+      "winsAtTick": 10,
+      "entities": 5,
+      "rules": 13,
+      "compileMs": 21.5,
+      "verifyMs": 15.4
+    },
+    {
+      "id": "switch_puzzle-3",
+      "bucket": "switch_puzzle",
+      "expectArchetype": "switch_puzzle",
+      "draftMs": 1,
+      "archetype": "switch_puzzle",
+      "archetypeHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 3,
+      "keypointsTotal": 3,
+      "winsAtTick": 10,
+      "entities": 5,
+      "rules": 13,
+      "compileMs": 18,
+      "verifyMs": 14.8
+    },
+    {
+      "id": "switch_puzzle-4",
+      "bucket": "switch_puzzle",
+      "expectArchetype": "switch_puzzle",
+      "draftMs": 0.9,
+      "archetype": "switch_puzzle",
+      "archetypeHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 3,
+      "keypointsTotal": 3,
+      "winsAtTick": 10,
+      "entities": 5,
+      "rules": 13,
+      "compileMs": 22.9,
+      "verifyMs": 17
     },
     {
       "id": "hazard_crossing-1",
       "bucket": "hazard_platforming",
       "expectArchetype": "hazard_crossing",
-      "draftMs": 1.9,
+      "draftMs": 1,
       "archetype": "hazard_crossing",
       "archetypeHit": true,
       "specValid": true,
@@ -475,8 +475,8 @@
       "winsAtTick": 32,
       "entities": 10,
       "rules": 21,
-      "compileMs": 33.9,
-      "verifyMs": 69.8
+      "compileMs": 47.8,
+      "verifyMs": 69.9
     },
     {
       "id": "hazard_crossing-2",
@@ -494,14 +494,14 @@
       "winsAtTick": 32,
       "entities": 10,
       "rules": 21,
-      "compileMs": 25.2,
-      "verifyMs": 60.2
+      "compileMs": 69.1,
+      "verifyMs": 47.3
     },
     {
       "id": "hazard_crossing-3",
       "bucket": "hazard_crossing",
       "expectArchetype": "hazard_crossing",
-      "draftMs": 0.7,
+      "draftMs": 0.8,
       "archetype": "hazard_crossing",
       "archetypeHit": true,
       "specValid": true,
@@ -513,14 +513,14 @@
       "winsAtTick": 32,
       "entities": 10,
       "rules": 21,
-      "compileMs": 37.9,
-      "verifyMs": 62
+      "compileMs": 48.2,
+      "verifyMs": 45.9
     },
     {
       "id": "hazard_crossing-4",
       "bucket": "hazard_crossing",
       "expectArchetype": "hazard_crossing",
-      "draftMs": 0.7,
+      "draftMs": 3.7,
       "archetype": "hazard_crossing",
       "archetypeHit": true,
       "specValid": true,
@@ -532,14 +532,14 @@
       "winsAtTick": 32,
       "entities": 10,
       "rules": 21,
-      "compileMs": 43,
-      "verifyMs": 71.1
+      "compileMs": 37.7,
+      "verifyMs": 41.7
     },
     {
       "id": "combat_lite-1",
       "bucket": "combat_lite",
       "expectArchetype": "combat_lite",
-      "draftMs": 2,
+      "draftMs": 1.5,
       "archetype": "combat_lite",
       "archetypeHit": true,
       "specValid": true,
@@ -551,14 +551,14 @@
       "winsAtTick": 11,
       "entities": 6,
       "rules": 12,
-      "compileMs": 15.1,
-      "verifyMs": 15.9
+      "compileMs": 23.7,
+      "verifyMs": 7.6
     },
     {
       "id": "combat_lite-2",
       "bucket": "combat_lite",
       "expectArchetype": "combat_lite",
-      "draftMs": 0.7,
+      "draftMs": 0.9,
       "archetype": "combat_lite",
       "archetypeHit": true,
       "specValid": true,
@@ -570,14 +570,14 @@
       "winsAtTick": 9,
       "entities": 5,
       "rules": 10,
-      "compileMs": 18.8,
+      "compileMs": 17.9,
       "verifyMs": 5.1
     },
     {
       "id": "combat_lite-3",
       "bucket": "combat_lite",
       "expectArchetype": "combat_lite",
-      "draftMs": 0.6,
+      "draftMs": 0.7,
       "archetype": "combat_lite",
       "archetypeHit": true,
       "specValid": true,
@@ -589,14 +589,14 @@
       "winsAtTick": 13,
       "entities": 7,
       "rules": 14,
-      "compileMs": 17.4,
-      "verifyMs": 11.3
+      "compileMs": 25.3,
+      "verifyMs": 8.2
     },
     {
       "id": "combat_lite-4",
       "bucket": "combat_lite",
       "expectArchetype": "combat_lite",
-      "draftMs": 0.7,
+      "draftMs": 0.5,
       "archetype": "combat_lite",
       "archetypeHit": true,
       "specValid": true,
@@ -608,14 +608,14 @@
       "winsAtTick": 15,
       "entities": 8,
       "rules": 16,
-      "compileMs": 17.9,
-      "verifyMs": 13.9
+      "compileMs": 29.2,
+      "verifyMs": 13.3
     },
     {
       "id": "ambiguity-1",
       "bucket": "ambiguity",
       "expectArchetype": null,
-      "draftMs": 0.8,
+      "draftMs": 0.7,
       "archetype": "collect_exit",
       "archetypeHit": null,
       "specValid": true,
@@ -627,14 +627,14 @@
       "winsAtTick": 19,
       "entities": 7,
       "rules": 7,
-      "compileMs": 18.9,
-      "verifyMs": 33.9
+      "compileMs": 27.6,
+      "verifyMs": 22.1
     },
     {
       "id": "contradiction-1",
       "bucket": "contradiction",
       "expectArchetype": null,
-      "draftMs": 0.9,
+      "draftMs": 0.7,
       "archetype": "collect_exit",
       "archetypeHit": null,
       "specValid": true,
@@ -646,14 +646,14 @@
       "winsAtTick": 11,
       "entities": 3,
       "rules": 3,
-      "compileMs": 9.1,
-      "verifyMs": 6.7
+      "compileMs": 11.9,
+      "verifyMs": 5.1
     },
     {
       "id": "scale-1",
       "bucket": "scale",
       "expectArchetype": null,
-      "draftMs": 0.7,
+      "draftMs": 0.9,
       "archetype": "chase_escape",
       "archetypeHit": null,
       "specValid": true,
@@ -665,8 +665,8 @@
       "winsAtTick": 11,
       "entities": 6,
       "rules": 70,
-      "compileMs": 18.4,
-      "verifyMs": 17
+      "compileMs": 26.8,
+      "verifyMs": 15.6
     },
     {
       "id": "remix-1",
@@ -684,14 +684,14 @@
       "winsAtTick": 19,
       "entities": 7,
       "rules": 7,
-      "compileMs": 25.2,
-      "verifyMs": 27.9
+      "compileMs": 28.2,
+      "verifyMs": 22.3
     },
     {
       "id": "remix-2",
       "bucket": "remix",
       "expectArchetype": null,
-      "draftMs": 0.7,
+      "draftMs": 0.6,
       "archetype": "chase_escape",
       "archetypeHit": null,
       "specValid": true,
@@ -703,50 +703,12 @@
       "winsAtTick": 11,
       "entities": 6,
       "rules": 70,
-      "compileMs": 17.3,
-      "verifyMs": 15.6
+      "compileMs": 22.1,
+      "verifyMs": 16.3
     },
     {
       "id": "remix-3",
       "bucket": "remix",
-      "expectArchetype": null,
-      "draftMs": 0.6,
-      "archetype": "collect_exit",
-      "archetypeHit": null,
-      "specValid": true,
-      "compiled": true,
-      "reason": null,
-      "publishEligible": true,
-      "keypointsPassed": 3,
-      "keypointsTotal": 3,
-      "winsAtTick": 19,
-      "entities": 7,
-      "rules": 7,
-      "compileMs": 16.6,
-      "verifyMs": 34.9
-    },
-    {
-      "id": "count-1",
-      "bucket": "count",
-      "expectArchetype": null,
-      "draftMs": 1.4,
-      "archetype": "collect_exit",
-      "archetypeHit": null,
-      "specValid": true,
-      "compiled": true,
-      "reason": null,
-      "publishEligible": true,
-      "keypointsPassed": 3,
-      "keypointsTotal": 3,
-      "winsAtTick": 23,
-      "entities": 9,
-      "rules": 9,
-      "compileMs": 19.7,
-      "verifyMs": 43.3
-    },
-    {
-      "id": "relation-1",
-      "bucket": "relation",
       "expectArchetype": null,
       "draftMs": 0.7,
       "archetype": "collect_exit",
@@ -760,8 +722,46 @@
       "winsAtTick": 19,
       "entities": 7,
       "rules": 7,
-      "compileMs": 16.6,
-      "verifyMs": 26.7
+      "compileMs": 22.8,
+      "verifyMs": 19.5
+    },
+    {
+      "id": "count-1",
+      "bucket": "count",
+      "expectArchetype": null,
+      "draftMs": 0.9,
+      "archetype": "collect_exit",
+      "archetypeHit": null,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 3,
+      "keypointsTotal": 3,
+      "winsAtTick": 23,
+      "entities": 9,
+      "rules": 9,
+      "compileMs": 27.3,
+      "verifyMs": 30.4
+    },
+    {
+      "id": "relation-1",
+      "bucket": "relation",
+      "expectArchetype": null,
+      "draftMs": 0.8,
+      "archetype": "collect_exit",
+      "archetypeHit": null,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 3,
+      "keypointsTotal": 3,
+      "winsAtTick": 19,
+      "entities": 7,
+      "rules": 7,
+      "compileMs": 20.9,
+      "verifyMs": 14.4
     }
   ],
   "summary": {
@@ -771,7 +771,7 @@
     "total": 40,
     "archetypeHits": 32,
     "withExpect": 32,
-    "medianCompileMs": 18.8,
-    "p90CompileMs": 187
+    "medianCompileMs": 27.6,
+    "p90CompileMs": 159.2
   }
 }

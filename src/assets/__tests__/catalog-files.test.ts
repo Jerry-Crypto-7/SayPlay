@@ -7,12 +7,12 @@ import catalog from '../catalog.json';
 import { assetCatalogSchema } from '../schema';
 
 describe('committed original GLB catalog', () => {
-  it('declares seventy-two complete normalized assets with genuinely cheaper LODs', () => {
-    // 30 z `originals.mjs` (šest původních + P22 T11) a 42 herních modelů
-    // z Blenderu (`blender/game_models.py`, QA PLAY 22. 9. 2026).
+  it('declares seventy-seven complete normalized assets with genuinely cheaper LODs', () => {
+    // 30 z `originals.mjs` (šest původních + P22 T11) a 47 herních modelů
+    // z Blenderu (`blender/game_models.py`, QA PLAY 22. 9. 2026; + 5 pro běžce, P25B).
     const parsed = assetCatalogSchema.parse(catalog);
     expect(parsed.assets.filter((a) => a.provenance.source === 'scripts/assets/originals.mjs')).toHaveLength(30);
-    expect(parsed.assets.filter((a) => a.provenance.source === 'scripts/assets/blender/game_models.py')).toHaveLength(42);
+    expect(parsed.assets.filter((a) => a.provenance.source === 'scripts/assets/blender/game_models.py')).toHaveLength(47);
     for (const asset of parsed.assets) {
       expect(asset.units).toBe('meters'); expect(asset.up).toBe('+Y'); expect(asset.front).toBe('+Z');
       expect(asset.pivot).toEqual([0, 0, 0]); expect(asset.lods).toHaveLength(2);

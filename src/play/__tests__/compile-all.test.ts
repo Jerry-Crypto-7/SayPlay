@@ -20,6 +20,7 @@ import { draftGameSpec } from '../draft';
 import { ADAPTERS } from '../compile/adapters';
 import { TICKS_PER_SECOND } from '../compile/adapters/timer';
 import { ARCHETYPE_IDS, MECHANIC_IDS } from '../registry';
+import { verifyGame } from '../verify';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 
 const fixturesDir = fileURLToPath(new URL('../__fixtures__/', import.meta.url));
@@ -118,7 +119,9 @@ describe('compileSim – delivery (carry)', () => {
 
   it('does not win at the table without the cake', () => {
     const { sim } = compiled(gameSpec, 1);
-    const runtime = runtimeOf(sim);
+    // Bez číšníka: test je o doručení, dotyk hlídky na trase by ho prohrál jinak.
+    const rules = Object.fromEntries(Object.entries(sim.rules).filter(([id]) => !id.startsWith('patrol.')));
+    const runtime = runtimeOf({ ...sim, rules, state: { ...sim.state, agents: [] } });
     expect(run(runtime, [{ tick: 0, actionId: 'moveTo', target: 'table' }], 80)).toBe('running');
   });
 
@@ -145,6 +148,90 @@ describe('compileGame – waiting witness (R6)', () => {
   it('the fragile cake that lost to the waiter at tick 6 on seed 1964188670 now wins by waiting', () => {
     const result = compileGame(draftGameSpec('Carry a fragile cake across a kitchen to a party table.'), 1964188670);
     expect(result.ok).toBe(true);
+  });
+});
+
+describe('draft – enemies in collect_exit (P25B T2)', () => {
+  const ghosts = 'A knight must collect three keys in a haunted castle while dodging ghosts.';
+
+  it('keeps the dodged ghosts as a patrol whose touch loses, and the game still verifies', () => {
+    const gameSpec = draftGameSpec(ghosts);
+    expect(gameSpec.archetype).toBe('collect_exit');
+    expect(gameSpec.roles.find((role) => role.id === 'enemy')).toMatchObject({ kind: 'patrol', label: 'ghost', count: 2 });
+    expect(gameSpec.tutorial.goalLine).toMatch(/Avoid the ghosts\.$/);
+    for (const seed of [1, 2, 3]) {
+      const result = compileGame(gameSpec, seed);
+      if (!result.ok) throw new Error(`seed ${seed}: ${result.reason} ${result.issues.join('; ')}`);
+      const report = verifyGame(result.value);
+      expect(report.keypoints.filter((keypoint) => !keypoint.passed), `seed ${seed}`).toEqual([]);
+      expect(report.publishEligible, `seed ${seed}`).toBe(true);
+    }
+  });
+
+  it('turns a hunting enemy into a chaser, and a dodged hazard stays out of the roles', () => {
+    const hunted = draftGameSpec('Collect five coins while a goblin hunts you.');
+    expect(hunted.roles.find((role) => role.id === 'enemy')).toMatchObject({ kind: 'chaser', label: 'goblin', count: 1 });
+    expect(hunted.mechanics.map((mechanic) => mechanic.id)).toContain('chaser');
+    expect(readGameSpec(hunted).ok).toBe(true);
+    expect(draftGameSpec('Collect five coins and avoid the lava.').roles.some((role) => role.id === 'enemy')).toBe(false);
+  });
+});
+
+describe('patrol sight – stealth (P25B T3)', () => {
+  const gameSpec = fixture('collect_exit_stealth');
+
+  it('compiles the museum heist, certifies the witness and passes every keypoint on seeds 1..3', () => {
+    for (const seed of [1, 2, 3]) {
+      const result = compileGame(gameSpec, seed);
+      if (!result.ok) throw new Error(`seed ${seed}: ${result.reason} ${result.issues.join('; ')}`);
+      const report = verifyGame(result.value);
+      expect(report.keypoints.filter((keypoint) => !keypoint.passed), `seed ${seed}`).toEqual([]);
+      expect(report.publishEligible, `seed ${seed}`).toBe(true);
+    }
+  });
+
+  it('loses by sight alone: stepping onto the stretch a guard walks, with the touch rules removed', () => {
+    const { sim } = compiled(gameSpec, 1);
+    const noTouch = Object.fromEntries(Object.entries(sim.rules).filter(([id]) => !id.endsWith('.touch')));
+    const noSight = Object.fromEntries(Object.entries(noTouch).filter(([id]) => !/\.(spot|sees)\d+$|\.start$/.test(id) || !id.startsWith('patrol.')));
+    // Hráč na startu stráže = na úseku 0, po kterém stráž hned vyrazí.
+    const onGuard = { ...sim.sockets, spawn: sim.sockets.guard_1 as readonly [number, number] };
+    expect(run(runtimeOf({ ...sim, sockets: onGuard, rules: noTouch }), [], 5)).toBe('lost');
+    expect(run(runtimeOf({ ...sim, sockets: onGuard, rules: noSight }), [], 5)).toBe('running');
+  });
+
+  it('keeps every guard stretch off the witness route from spawn to the exit', () => {
+    for (const seed of [1, 2, 3]) {
+      const { sim } = compiled(gameSpec, seed);
+      const [sx, sy] = sim.sockets.spawn as readonly [number, number];
+      const beats = Object.entries(sim.state.zones).filter(([name]) => name.includes('_beat'));
+      expect(beats.length, `seed ${seed}`).toBe(8);
+      for (const [, rects] of beats) {
+        for (const [x, y, w, h] of rects) expect(sx >= x && sx < x + w && sy >= y && sy < y + h, `seed ${seed}`).toBe(false);
+      }
+    }
+  });
+
+  it('drafts the P-labelled stealth sentences as collect games with seeing guards', () => {
+    for (const sentence of [
+      'sneak past guards in a museum and steal a diamond',
+      'A kid sneaks down at night to steal cookies without waking mom',
+      'stealth game as a ninja cat',
+      'hide and seek in a big house',
+      'prison escape, avoid the flashlights',
+      'sneak into the teachers room to change my grades lol',
+    ]) {
+      const drafted = draftGameSpec(sentence);
+      expect(drafted.archetype, sentence).toBe('collect_exit');
+      expect(drafted.mechanics.find((mechanic) => mechanic.id === 'patrol')?.params.sight, sentence).toBe(true);
+    }
+    const heist = draftGameSpec('sneak past guards in a museum and steal a diamond');
+    expect(heist.roles.find((role) => role.id === 'enemy')).toMatchObject({ label: 'guard', count: 2 });
+    expect(heist.objective.count).toBe(1);
+    expect(draftGameSpec('A kid sneaks down at night to steal cookies without waking mom').roles.find((role) => role.id === 'enemy')?.label).toBe('mom');
+    const result = compileGame(heist, 1);
+    if (!result.ok) throw new Error(`${result.reason} ${result.issues.join('; ')}`);
+    expect(verifyGame(result.value).publishEligible).toBe(true);
   });
 });
 
@@ -242,5 +329,144 @@ describe('compileSim – spawn_wave', () => {
     expect(placement(runtime, 'slime_1')).toMatchObject({ active: true, state: 'alive' });
     run(runtime, [{ tick: 0, actionId: 'use', target: 'slime_1' }], 3);
     expect(placement(runtime, 'slime_1')?.active).toBe(false);
+  });
+});
+
+describe('switch.ordered – order puzzle (P25B T4)', () => {
+  const gameSpec = fixture('switch_puzzle_ordered');
+
+  it('compiles the shelf puzzle, certifies the in-order witness and passes every keypoint on seeds 1..3', () => {
+    for (const seed of [1, 2, 3]) {
+      const result = compileGame(gameSpec, seed);
+      if (!result.ok) throw new Error(`seed ${seed}: ${result.reason} ${result.issues.join('; ')}`);
+      const report = verifyGame(result.value);
+      expect(report.keypoints.map((keypoint) => [keypoint.assertionId, keypoint.passed]), `seed ${seed}`).toEqual([
+        ['right_order_opens', true],
+        ['wrong_order_resets', true],
+        ['winnable', true],
+      ]);
+      expect(report.publishEligible, `seed ${seed}`).toBe(true);
+    }
+  });
+
+  it('out of order resets the lit switches and keeps the door shut; in order opens it', () => {
+    const { sim } = compiled(gameSpec, 1);
+    const wrong = runtimeOf(sim);
+    run(wrong, [
+      { tick: 0, actionId: 'use', target: 'red' },
+      { tick: 1, actionId: 'use', target: 'green' },
+    ], 3);
+    expect([placement(wrong, 'red')?.state, placement(wrong, 'green')?.state]).toEqual(['off', 'off']);
+    const right = runtimeOf(sim);
+    run(right, ['red', 'blue', 'green'].map((target, tick) => ({ tick, actionId: 'use', target })), 4);
+    expect(placement(right, 'green')?.state).toBe('on');
+  });
+
+  it('drafts "in the right order" as an ordered switch puzzle, not a race (s080)', () => {
+    const drafted = draftGameSpec('a cat must knock things off shelves in the right order to reach the fish');
+    expect(drafted.archetype).toBe('switch_puzzle');
+    expect(drafted.mechanics.find((mechanic) => mechanic.id === 'switch')?.params.ordered).toBe(true);
+    expect(drafted.verification.map((assertion) => assertion.id)).toContain('wrong_order_resets');
+    expect(readGameSpec(drafted).ok).toBe(true);
+    const result = compileGame(drafted, 1);
+    if (!result.ok) throw new Error(`${result.reason} ${result.issues.join('; ')}`);
+    expect(verifyGame(result.value).publishEligible).toBe(true);
+    expect(draftGameSpec('race through the gates in the right order').archetype).toBe('checkpoint_race');
+  });
+});
+
+describe('switch.crateRole – pushed crates press the plates (P25B T4)', () => {
+  const gameSpec = fixture('switch_puzzle_crates');
+
+  it('compiles the warehouse, certifies the push witness and passes every keypoint on seeds 1..3', () => {
+    for (const seed of [1, 2, 3]) {
+      const result = compileGame(gameSpec, seed);
+      if (!result.ok) throw new Error(`seed ${seed}: ${result.reason} ${result.issues.join('; ')}`);
+      const report = verifyGame(result.value);
+      expect(report.keypoints.filter((keypoint) => !keypoint.passed), `seed ${seed}`).toEqual([]);
+      expect(report.publishEligible, `seed ${seed}`).toBe(true);
+    }
+  });
+
+  it('a plate ignores being tapped; only a crate arriving on it turns it on', () => {
+    const { sim } = compiled(gameSpec, 1);
+    const tapped = runtimeOf(sim);
+    run(tapped, [{ tick: 0, actionId: 'use', target: 'red' }], 3);
+    expect(placement(tapped, 'red')?.state).toBe('off');
+    const pushed = runtimeOf(sim);
+    run(pushed, [0, 8, 16].map((tick) => ({ tick, actionId: 'use', target: 'box_1' })), 40);
+    expect(placement(pushed, 'red')?.state).toBe('on');
+    const box = placement(pushed, 'box_1');
+    expect([box?.x, box?.y]).toEqual(sim.sockets.red);
+  });
+
+  it('drafts "push boxes onto switches" as crates on plates (s072)', () => {
+    const drafted = draftGameSpec('A lost robot must push boxes onto switches to open the door');
+    expect(drafted.archetype).toBe('switch_puzzle');
+    const params = drafted.mechanics.find((mechanic) => mechanic.id === 'switch')?.params;
+    expect(params?.crateRole).toBe('box');
+    expect(readGameSpec(drafted).ok).toBe(true);
+    const result = compileGame(drafted, 1);
+    if (!result.ok) throw new Error(`${result.reason} ${result.issues.join('; ')}`);
+    expect(verifyGame(result.value).publishEligible).toBe(true);
+  });
+});
+
+describe('carry.menu – customer orders (P25B T5)', () => {
+  const gameSpec = fixture('delivery_orders');
+
+  it('compiles the diner, certifies serving everyone and passes every keypoint on seeds 1..3', () => {
+    for (const seed of [1, 2, 3]) {
+      const result = compileGame(gameSpec, seed);
+      if (!result.ok) throw new Error(`seed ${seed}: ${result.reason} ${result.issues.join('; ')}`);
+      const report = verifyGame(result.value);
+      expect(report.keypoints.map((keypoint) => [keypoint.assertionId, keypoint.passed, ...keypoint.failures]), `seed ${seed}`).toEqual([
+        ['right_order_scores', true],
+        ['wrong_order_ignored', true],
+        ['winnable', true],
+      ]);
+      expect(report.publishEligible, `seed ${seed}`).toBe(true);
+    }
+  });
+
+  it('serves each customer once, only with the dish they ordered, and wins when all are served', () => {
+    const { sim } = compiled(gameSpec, 1);
+    const runtime = runtimeOf(sim);
+    const inputs = [
+      // Špatné jídlo nic, správné jednou, podruhé týž zákazník nic nechce.
+      { tick: 0, actionId: 'pickup', target: 'fries' },
+      { tick: 2, actionId: 'use', target: 'customer_1' },
+      { tick: 4, actionId: 'pickup', target: 'burger' },
+      { tick: 6, actionId: 'use', target: 'customer_1' },
+      { tick: 8, actionId: 'pickup', target: 'burger' },
+      { tick: 10, actionId: 'use', target: 'customer_1' },
+    ];
+    expect(run(runtime, inputs, 15)).toBe('running');
+    expect([slot(runtime, 'c:orders_served'), slot(runtime, 'c:customer_1_served')]).toEqual([1, 1]);
+    run(runtime, [
+      { tick: 0, actionId: 'pickup', target: 'fries' },
+      { tick: 2, actionId: 'use', target: 'customer_2' },
+    ], 6);
+    expect(runtime.runState).toBe('won');
+  });
+
+  it('drafts the P-labelled cooking sentences as order games (s160–s166)', () => {
+    for (const sentence of [
+      'cooking game where you make burgers fast for customers',
+      'like overcooked but in a food truck',
+      'run a sushi restaurant with a conveyor belt',
+      'A barista rushes orders during the morning coffee rush',
+      'make pizza and deliver it',
+      'run a supermarket, stock shelves and scan items at the checkout',
+      'farm game plant carrots harvest sell',
+    ]) {
+      const drafted = draftGameSpec(sentence);
+      expect(drafted.archetype, sentence).toBe('delivery');
+      expect(drafted.mechanics.find((mechanic) => mechanic.id === 'carry')?.params.menu, sentence).toHaveLength(2);
+      expect(readGameSpec(drafted).ok, sentence).toBe(true);
+      const result = compileGame(drafted, 1);
+      if (!result.ok) throw new Error(`${sentence}: ${result.reason} ${result.issues.join('; ')}`);
+      expect(verifyGame(result.value).publishEligible, sentence).toBe(true);
+    }
   });
 });

@@ -9,7 +9,7 @@ test('main-page compiler fixture samples one repeated unit and retains one seman
     `data: ${JSON.stringify({sessionId:id,sequence:1,type:'blueprint.ready',at:'1970-01-01T00:00:00.000Z',payload:{blueprint}})}\n\n`+
     `data: ${JSON.stringify({sessionId:id,sequence:2,type:'session.complete',at:'1970-01-01T00:00:00.000Z',payload:{}})}\n\n`}));
   const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
-  await page.goto('/');await page.getByTestId('prompt-input').fill('Explicit repeat compiler fixture');await page.getByTestId('prompt-submit').click();
+  await page.goto('/studio');await page.getByTestId('prompt-input').fill('Explicit repeat compiler fixture');await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('runtime-controls')).toBeVisible({timeout:30_000});
   await expect.poll(()=>page.evaluate(()=>window.__worldstreamStage?.slots().find(s=>s.stableId==='fins')?.samplingAction?.kind),{timeout:30_000}).toBe('repeat-instanced');
   const slots=await page.evaluate(()=>window.__worldstreamStage!.slots());

@@ -64,7 +64,8 @@ describe('control v GameSpec a směrování kompilace', () => {
   it('staré fixtury zůstávají platné a jejich specHash se nepohnul', () => {
     const dir = fileURLToPath(new URL('../../__fixtures__/', import.meta.url));
     const valid = readdirSync(dir).filter((name) => name.endsWith('.json') && !name.startsWith('invalid-'));
-    expect(valid.length).toBe(8);
+    // 8 archetypů + 4 varianty z P25B (plížení, pořadí, bedny, objednávky).
+    expect(valid.length).toBe(12);
     for (const name of valid) {
       const raw = JSON.parse(readFileSync(`${dir}/${name}`, 'utf8')) as Record<string, unknown>;
       const read = readGameSpec(raw);
