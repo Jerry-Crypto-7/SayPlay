@@ -31,10 +31,15 @@ interface RawSim {
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 const isRect = (value: unknown): value is SightRect => Array.isArray(value) && value.length === 4 && value.every((n) => typeof n === 'number');
 
+/** Rozměr mřížky ze `sim.layout`; ten převádí buňku na svět (`cellToWorld`). */
+export function gridOf(sim: { readonly layout: unknown }): Sight['grid'] {
+  const layout = isRecord(sim.layout) ? sim.layout : {};
+  return { width: Number(layout.width) || 0, height: Number(layout.height) || 0 };
+}
+
 /** Úseky výhledu všech stráží a rozměr mřížky; hra bez plížení dá `beats: []`. */
 export function readSight(sim: RawSim): Sight {
-  const layout = isRecord(sim.layout) ? sim.layout : {};
-  const grid = { width: Number(layout.width) || 0, height: Number(layout.height) || 0 };
+  const grid = gridOf(sim);
   const entities = isRecord(sim.entities) ? sim.entities : {};
   const zones = isRecord(sim.state) && isRecord(sim.state.zones) ? sim.state.zones : {};
   const beats: SightBeat[] = [];

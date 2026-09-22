@@ -49,11 +49,25 @@ test.describe('/play/[id] – what the scene shows', () => {
     expect(sight.watched).toBeGreaterThan(0);
   });
 
-  test('a game without stealth draws no beats', async ({ page, request }) => {
+  test('a game without stealth draws no beats and no order bubbles', async ({ page, request }) => {
     const game = await publish(request, 'Collect five glowing mushrooms then open a portal.');
     await page.goto(game.url);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
     const beats = await page.evaluate(() => window.__playSight?.().beats ?? 0);
     expect(beats).toBe(0);
+    const orders = await page.evaluate(() => window.__playOrders?.().orders ?? 0);
+    expect(orders).toBe(0);
+  });
+
+  test('every customer shows a bubble until served', async ({ page, request }) => {
+    const game = await publish(request, 'cooking game where you make burgers fast for customers');
+    await page.goto(game.url);
+    await page.waitForFunction(() => window.__playOrders !== undefined && window.__playOrders().orders > 0, undefined, { timeout: 60_000 });
+    const before = await page.evaluate(() => window.__playOrders!());
+    expect(before.open).toBe(before.orders);
+
+    const outcome = await page.evaluate(() => window.__playShell!.playWitness());
+    expect(outcome.runState).toBe('won');
+    await expect.poll(() => page.evaluate(() => window.__playOrders!().open)).toBe(0);
   });
 });

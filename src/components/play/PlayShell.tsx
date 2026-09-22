@@ -34,6 +34,7 @@ import { HowItWorks } from './HowItWorks';
 import { Hud } from './Hud';
 import type { LabFacts } from './lab';
 import { Lineage } from './Lineage';
+import { OrderBubbles } from './OrderBubbles';
 import { PatrolSight } from './PatrolSight';
 import { PostRun } from './PostRun';
 import { TargetCards } from './TargetCards';
@@ -204,7 +205,12 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, lab, upgrade 
     <main className="play-shell">
       <div className="play-stage" aria-hidden="true">
         <WorldstreamCanvas world={world} controller={controller} sceneId={versionId} framing="scene" guide={false}>
-          {built && blueprint.world.sim !== null && <PatrolSight sim={blueprint.world.sim} controller={controller} />}
+          {built && blueprint.world.sim !== null && (
+            <>
+              <PatrolSight sim={blueprint.world.sim} controller={controller} />
+              <OrderBubbles sim={blueprint.world.sim} roles={spec.roles} controller={controller} />
+            </>
+          )}
         </WorldstreamCanvas>
       </div>
       <Hud spec={spec} snapshot={snapshot} />
