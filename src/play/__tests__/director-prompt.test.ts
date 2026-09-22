@@ -41,14 +41,14 @@ describe('director prompt', () => {
     for (const forbidden of ['projectile', 'moving_platform']) expect(request.system).not.toContain(forbidden);
   });
 
-  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 253 B)', () => {
+  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 340 B, P25C adds platform and flap)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const request = buildDirectorRequest(entry.prompt, draftGameSpec(entry.prompt));
       max = Math.max(max, Buffer.byteLength(request.system + request.user));
     }
     expect(max).toBeLessThanOrEqual(12_000);
-    expect(max).toBeLessThanOrEqual(11_300);
+    expect(max).toBeLessThanOrEqual(11_400);
   });
 
   it('compacts schemas: role ids, enums, bounded ints, optional fields with defaults', () => {

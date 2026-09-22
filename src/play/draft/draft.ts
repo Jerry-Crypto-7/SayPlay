@@ -29,10 +29,11 @@ import hazardCrossing from '../__fixtures__/hazard_crossing.json';
 import survivalTimer from '../__fixtures__/survival_timer.json';
 import switchPuzzle from '../__fixtures__/switch_puzzle.json';
 
+import flapTemplate from '../arcade/__fixtures__/flap.json';
+import platformTemplate from '../arcade/__fixtures__/platform.json';
 import runnerTemplate from '../arcade/__fixtures__/runner.json';
-import type { RunnerDensity } from '../arcade/pieces/runner';
 
-import { pickControl } from './controls';
+import { type ControlChoice, pickControl } from './controls';
 import { FOOD, FOODS, ORDER_PUZZLE, ORDERS, PUSH_CRATES, plural, readNumbers, readRoles, scoreArchetypes, singular, type SentenceRoles } from './lexicon';
 
 const TEMPLATES: Readonly<Record<ArchetypeId, unknown>> = {
@@ -390,16 +391,32 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
   },
 };
 
-/** Běžec (P25A): šablona `runner.json`, přepíše se titul, popisky a hustota. */
-function draftRunner(sentence: string, seed: number, density: RunnerDensity | null): GameSpecV1 | null {
-  const spec = JSON.parse(JSON.stringify(runnerTemplate)) as GameSpecV1;
+const ARCADE_TEMPLATES = { runner: runnerTemplate, platform: platformTemplate, flap: flapTemplate } as const;
+
+/**
+ * Arkádová hra (P25A běžec, P25C plošinovka a poletování): šablona fixtury
+ * ovládání, přepíše se titul, popisky a parametry, které věta řekla.
+ */
+function draftArcade(sentence: string, seed: number, choice: ControlChoice): GameSpecV1 | null {
+  const spec = JSON.parse(JSON.stringify(ARCADE_TEMPLATES[choice.control])) as GameSpecV1;
   const roles = readRoles(sentence);
   const rng = xoroshiro128plus(seed);
   spec.title = titleFrom(sentence, spec.title);
-  role(spec, 'player').label = cap(roles.player ?? PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)], 60);
+  // Ptáček poletování zůstane ptáčkem, když věta hráče nejmenuje.
+  const fallback = choice.control === 'flap' ? role(spec, 'player').label : PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)];
+  role(spec, 'player').label = cap(roles.player ?? fallback, 60);
   if (roles.collectible !== null) role(spec, 'coin').label = cap(roles.collectible, 60);
   if (roles.setting !== null) spec.theme.setting = cap(roles.setting, 80);
-  if (density !== null) spec.controlParams = { ...spec.controlParams, density };
+  if (choice.control === 'runner') {
+    if (choice.density !== null) spec.controlParams = { ...spec.controlParams, density: choice.density };
+  } else if (choice.control === 'platform') {
+    spec.controlParams = {
+      ...spec.controlParams,
+      ...(choice.difficulty === null ? {} : { difficulty: choice.difficulty }),
+      ...(choice.movingPlatforms ? { movingPlatforms: true } : {}),
+      ...(choice.doubleJump ? { doubleJump: true } : {}),
+    };
+  } else if (choice.difficulty !== null) spec.controlParams = { ...spec.controlParams, difficulty: choice.difficulty };
   const result = readGameSpec(spec);
   return result.ok ? result.value : null;
 }
@@ -408,8 +425,8 @@ export function draftGameSpecWithMeta(sentence: string, seed = 1): DraftMeta {
   const scores = scoreArchetypes(sentence);
   const control = pickControl(sentence.toLowerCase());
   if (control !== null) {
-    const runner = draftRunner(sentence, seed, control.density);
-    if (runner !== null) return { spec: runner, archetype: runner.archetype, scores, fellBack: false };
+    const arcade = draftArcade(sentence, seed, control);
+    if (arcade !== null) return { spec: arcade, archetype: arcade.archetype, scores, fellBack: false };
   }
   const archetype = pickArchetype(scores);
   const spec = template(archetype);
