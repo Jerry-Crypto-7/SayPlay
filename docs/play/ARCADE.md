@@ -76,4 +76,6 @@ Hotové: `runner` (P25A). Ostatní řádky jsou plán fází 2–4 řídicího p
 
 ## Výkon
 
-Krok jádra: měří se v T6 (cíl < 1 ms průměr přes 600 tiků v Node).
+Krok jádra (22. 9. 2026, čistý Node 22, bundle přes rolldown, fixtura běžce, 5 semínek × 5 opakování, 600 tiků se vstupy robota): **medián 0,0024 ms/tik, nejhorší vzorek 0,013 ms/tik** – cíl < 1 ms drží s rezervou ~80×. Pod vitestem je jádro ~15× pomalejší (importy jsou gettery), proto se neměří tam.
+
+Prohlížeč: `ArcadeStage` tiká pevným krokem 1/60 s z `useFrame` (akumulátor, strop 250 ms na snímek – skrytá záložka hru nedohraje) a těla interpoluje mezi dvěma posledními tiky.
