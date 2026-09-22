@@ -331,3 +331,46 @@ describe('compileSim – spawn_wave', () => {
     expect(placement(runtime, 'slime_1')?.active).toBe(false);
   });
 });
+
+describe('switch.ordered – order puzzle (P25B T4)', () => {
+  const gameSpec = fixture('switch_puzzle_ordered');
+
+  it('compiles the shelf puzzle, certifies the in-order witness and passes every keypoint on seeds 1..3', () => {
+    for (const seed of [1, 2, 3]) {
+      const result = compileGame(gameSpec, seed);
+      if (!result.ok) throw new Error(`seed ${seed}: ${result.reason} ${result.issues.join('; ')}`);
+      const report = verifyGame(result.value);
+      expect(report.keypoints.map((keypoint) => [keypoint.assertionId, keypoint.passed]), `seed ${seed}`).toEqual([
+        ['right_order_opens', true],
+        ['wrong_order_resets', true],
+        ['winnable', true],
+      ]);
+      expect(report.publishEligible, `seed ${seed}`).toBe(true);
+    }
+  });
+
+  it('out of order resets the lit switches and keeps the door shut; in order opens it', () => {
+    const { sim } = compiled(gameSpec, 1);
+    const wrong = runtimeOf(sim);
+    run(wrong, [
+      { tick: 0, actionId: 'use', target: 'red' },
+      { tick: 1, actionId: 'use', target: 'green' },
+    ], 3);
+    expect([placement(wrong, 'red')?.state, placement(wrong, 'green')?.state]).toEqual(['off', 'off']);
+    const right = runtimeOf(sim);
+    run(right, ['red', 'blue', 'green'].map((target, tick) => ({ tick, actionId: 'use', target })), 4);
+    expect(placement(right, 'green')?.state).toBe('on');
+  });
+
+  it('drafts "in the right order" as an ordered switch puzzle, not a race (s080)', () => {
+    const drafted = draftGameSpec('a cat must knock things off shelves in the right order to reach the fish');
+    expect(drafted.archetype).toBe('switch_puzzle');
+    expect(drafted.mechanics.find((mechanic) => mechanic.id === 'switch')?.params.ordered).toBe(true);
+    expect(drafted.verification.map((assertion) => assertion.id)).toContain('wrong_order_resets');
+    expect(readGameSpec(drafted).ok).toBe(true);
+    const result = compileGame(drafted, 1);
+    if (!result.ok) throw new Error(`${result.reason} ${result.issues.join('; ')}`);
+    expect(verifyGame(result.value).publishEligible).toBe(true);
+    expect(draftGameSpec('race through the gates in the right order').archetype).toBe('checkpoint_race');
+  });
+});

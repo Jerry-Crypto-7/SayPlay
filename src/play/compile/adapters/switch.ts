@@ -30,6 +30,9 @@ export const switchAdapter: MechanicAdapter<Params> = (params, ctx) => {
   const doors = ctx.instances(params.doorRole);
   const lockDoors = (locked: boolean): SurfaceAction[] => doors.map((door) => ({ kind: 'setLocked', target: door, locked }));
 
+  // Žádané spínače v pořadí `required` – v uspořádané hře v tomto pořadí jdou zapnout.
+  const requiredInOrder = [...new Set(params.required)].flatMap((role) => ctx.instances(role));
+
   for (const sw of switches) {
     const use = { kind: 'onAction', actor: ctx.player, actionId: 'use', target: sw } as const;
     // Kombinace po přepnutí `sw`: ostatní tak, jak mají být; `sw` obráceně.
@@ -41,12 +44,26 @@ export const switchAdapter: MechanicAdapter<Params> = (params, ctx) => {
       const id = `switch.${sw}.${suffix}`;
       rules[id] = { id, phase, priority: 0, event: use, condition, actions };
     };
-    rule('on', 0, stateIs(sw, 'off'), [{ kind: 'setState', target: sw, value: 'on' }]);
+    // V pořadí jde žádaný spínač zapnout, jen když všechny před ním svítí;
+    // jinak vypne všechny žádané. Dveře zamkne pravidlo `lock` – kombinace
+    // po stisku mimo pořadí nikdy nesedí.
+    const before = params.ordered === true ? requiredInOrder.slice(0, Math.max(0, requiredInOrder.indexOf(sw))) : [];
+    const inOrder: SurfaceCondition = { kind: 'allOf', operands: before.map((prev) => stateIs(prev, 'on')) };
+    const setOn: SurfaceAction[] = [{ kind: 'setState', target: sw, value: 'on' }];
+    if (before.length === 0) {
+      rule('on', 0, stateIs(sw, 'off'), setOn);
+    } else {
+      rule('on', 0, { kind: 'allOf', operands: [stateIs(sw, 'off'), inOrder] }, setOn);
+      rule('wrong', 0, { kind: 'allOf', operands: [stateIs(sw, 'off'), { kind: 'not', operand: inOrder }] }, [
+        ...requiredInOrder.map((target): SurfaceAction => ({ kind: 'setState', target, value: 'off' })),
+      ]);
+    }
     rule('off', 0, stateIs(sw, 'on'), [{ kind: 'setState', target: sw, value: 'off' }]);
     rule('unlock', 1, comboAfter, lockDoors(false));
     rule('lock', 1, { kind: 'not', operand: comboAfter }, lockDoors(true));
   }
 
-  const witness: WitnessStep[] = switches.filter((sw) => wanted(sw) === 'on').map((sw) => ({ actionId: 'use', target: sw, stage: 0 }));
+  const witnessOrder = params.ordered === true ? requiredInOrder : switches.filter((sw) => wanted(sw) === 'on');
+  const witness: WitnessStep[] = witnessOrder.map((sw) => ({ actionId: 'use', target: sw, stage: 0 }));
   return { rules, witness };
 };

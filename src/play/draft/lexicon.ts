@@ -15,6 +15,9 @@ import type { ArchetypeId } from '../registry';
 export const STEALTH =
   /\bsneak(?:s|ing|y)?\b|\bstealth(?:y)?\b|\bguards?\b|\bunseen\b|\bundetected\b|\bwithout (?:being )?(?:seen|spotted|caught|noticed|waking)\b|\bhid(?:e|es|ing)\b|\bflashlights?\b/;
 
+/** Hádanka pořadí: spínače jdou zapnout jen v daném pořadí (`switch.ordered`). */
+export const ORDER_PUZZLE = /\bin (?:the )?(?:right|correct|exact) order\b/;
+
 /** Slova, po kterých se archetyp pozná. Každý zásah je jeden bod; remíza jde pořadím `ARCHETYPE_IDS`. */
 export const ARCHETYPE_CUES: Readonly<Record<ArchetypeId, readonly RegExp[]>> = {
   collect_exit: [
@@ -38,7 +41,12 @@ export const ARCHETYPE_CUES: Readonly<Record<ArchetypeId, readonly RegExp[]>> = 
   survival_timer: [/\bsurviv(?:e|es|ed|ing|al)\b/, /\bseconds?\b/, /\bminutes?\b/, /\blast(?:s|ing)?\b/, /\boutlast(?:s)?\b/, /\bstay alive\b/],
   checkpoint_race: [/\brac(?:e|es|ing)\b/, /\bgates\b/, /\bcheckpoints?\b/, /\bin (?:the right )?order\b/, /\blaps?\b/, /\bhoops\b/, /\brings\b/, /\bsprint(?:s|ing)?\b/],
   delivery: [/\bcarry(?:ing)?\b|\bcarries\b/, /\bdeliver(?:s|ed|ing)?\b/, /\bbring(?:s|ing)?\b/, /\bfragile\b/],
-  switch_puzzle: [/\bpress(?:es|ing)?\b/, /\bbuttons?\b/, /\bswitch(?:es)?\b/, /\blevers?\b/, /\bnot\b|\bnever\b/, /\bflip(?:s|ping)?\b|\btoggle(?:s|d)?\b|\bpull(?:s|ing)?\b/],
+  switch_puzzle: [/\bpress(?:es|ing)?\b/, /\bbuttons?\b/, /\bswitch(?:es)?\b/, /\blevers?\b/, /\bnot\b|\bnever\b/, /\bflip(?:s|ping)?\b|\btoggle(?:s|d)?\b|\bpull(?:s|ing)?\b/,
+    // P25B T4: „shoď věci v pořadí“ je hádanka pořadí, ne závod – dva body přebijí `checkpoint_race`.
+    /\bknock(?:s|ed|ing)? (?:[a-z]+ ){1,3}off\b/,
+    ORDER_PUZZLE,
+    /\bpush(?:es|ing)? (?:the |a )?(?:[a-z]+ )?(?:box|boxes|crates?|blocks?|boulders?)\b/,
+  ],
   hazard_crossing: [
     /\bcross(?:es|ing)?\b/,
     /\blava\b|\bmagma\b|\bacid\b/,

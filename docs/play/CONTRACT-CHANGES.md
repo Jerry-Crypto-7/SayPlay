@@ -141,3 +141,8 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   Plížení je varianta `collect_exit`, ne nový archetyp: registr už hlídku v každém archetypu
   povoluje a cíl „ukradni a uteč“ je sběr + východ. Režisér vidí parametr ve schématu (prompt
   +70 B, pin 10 555 B).
+- **`switch.params.ordered?: boolean`** (T4, pořadí). Bez něj se spínače kompilují beze změny
+  (hashe v3 drží). S ním jdou žádané spínače zapnout jen v pořadí `required`; stisk mimo
+  pořadí (pravidlo `switch.<sw>.wrong`) vypne všechny žádané a dveře zůstanou zamčené. Svědek
+  tiskne v pořadí `required`. Návrh ze slov: „in the right order“ a „knock … off“ jsou cue
+  `switch_puzzle` (věta s080 už nepadá do `checkpoint_race`), keypoint `wrong_order_resets`.

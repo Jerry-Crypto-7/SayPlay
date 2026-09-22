@@ -28,7 +28,7 @@ import hazardCrossing from '../__fixtures__/hazard_crossing.json';
 import survivalTimer from '../__fixtures__/survival_timer.json';
 import switchPuzzle from '../__fixtures__/switch_puzzle.json';
 
-import { plural, readNumbers, readRoles, scoreArchetypes, singular, type SentenceRoles } from './lexicon';
+import { ORDER_PUZZLE, plural, readNumbers, readRoles, scoreArchetypes, singular, type SentenceRoles } from './lexicon';
 
 const TEMPLATES: Readonly<Record<ArchetypeId, unknown>> = {
   collect_exit: collectExit,
@@ -282,6 +282,26 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
       spec.objective.description = cap(`Press ${required.join(' and ')}${not.length > 0 ? `, but not ${not.join(' or ')},` : ''} to open the door.`, 120);
     }
     spec.tutorial.goalLine = cap('Open the door with the right switches.', 80);
+    // P25B T4: „in the right order“ – žádané spínače jdou jen v pořadí `required`.
+    if (ORDER_PUZZLE.test(read.text)) {
+      const params = mechanic(spec, 'switch');
+      params.ordered = true;
+      const required = params.required as string[];
+      if (required.length >= 2) {
+        // Tři a víc: první svítí, stisk třetího ho zhasne. Dva: stisk druhého nic nerozsvítí.
+        const skipped = required.length >= 3 ? required[0] : required[1];
+        spec.verification.splice(1, 0, {
+          id: 'wrong_order_resets',
+          kind: 'keypoint',
+          mechanic: 'switch',
+          setup: { entityStates: required.length >= 3 ? { [required[0]]: 'on' } : {} },
+          actions: [{ actionId: 'use', target: required[required.length - 1] }],
+          assert: { entityStates: { [skipped]: 'off' }, locked: { door: true } },
+        });
+      }
+      spec.objective.description = cap(`Press ${required.join(', then ')} in that order to open the door.`, 120);
+      spec.tutorial.goalLine = cap('Open the door by pressing the switches in the right order.', 80);
+    }
   },
   hazard_crossing(spec, read) {
     const hazard = role(spec, 'lava');
