@@ -82,7 +82,13 @@ function titleCase(words: readonly string[]): string {
   return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
-const TITLE_SKIP = new Set(['a', 'an', 'the', 'and', 'but', 'or', 'to', 'of', 'in', 'on', 'at', 'it', 'its', 'you', 'while', 'then', 'with', 'from', 'through', 'across', 'before', 'make', 'something']);
+// Výplňová slova („game“, „a lot of“, „must“) dělala tituly jako „Jumping Arcade Game Lot“.
+const TITLE_SKIP = new Set([
+  'a', 'an', 'the', 'and', 'but', 'or', 'to', 'of', 'in', 'on', 'at', 'it', 'its', 'you', 'while', 'then', 'with', 'from',
+  'through', 'across', 'before', 'make', 'something', 'game', 'games', 'lot', 'lots', 'many', 'some', 'very', 'really',
+  'must', 'have', 'has', 'is', 'are', 'be', 'can', 'will', 'want', 'i', 'me', 'my', 'like', 'for', 'by', 'as', 'where',
+  'that', 'who', 'please',
+]);
 
 /** Do čtyř nosných slov věty; bez nich titul fixtury. */
 function titleFrom(sentence: string, fallback: string): string {
