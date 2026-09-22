@@ -117,6 +117,25 @@ describe('compileGame – blueprint over the eight fixtures', () => {
     expect(assetShare).toBeGreaterThan(0.5);
   });
 
+  // Rodina kulis je celá scéna a stavěla přímo na hrací plochu: rytíř a klíče
+  // stáli uvnitř zdí a kamera za nimi (QA 22. 9. 2026).
+  it('carves the scenery out of the play area and the camera side', () => {
+    for (const [archetype, game] of games) {
+      // Poslední řez je ten kolem hry; rodina (např. `works`) může mít vlastní.
+      const carve = [...game.blueprint.geometry.nodes].reverse().find((node) => node.kind === 'carve');
+      if (carve?.kind !== 'carve') throw new Error(`${archetype}: no carve`);
+      for (const object of game.blueprint.objects) {
+        for (const axis of [0, 1, 2]) {
+          expect(object.targetBounds.min[axis], `${archetype}/${object.stableId}`).toBeGreaterThanOrEqual(carve.at[axis] - carve.size[axis] / 2);
+          expect(object.targetBounds.max[axis], `${archetype}/${object.stableId}`).toBeLessThanOrEqual(carve.at[axis] + carve.size[axis] / 2);
+        }
+      }
+      // Výchozí kamera přichází od +x/+z – tam musí řez sahat dál než za hru.
+      expect(carve.at[0], archetype).toBeGreaterThan(0);
+      expect(carve.at[2], archetype).toBeGreaterThan(0);
+    }
+  });
+
   it('chooses the family from the theme so the viewer picks the same one', () => {
     for (const [archetype, game] of games) {
       const family = chooseFamily(game.blueprint.world.look, game.seed);
