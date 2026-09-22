@@ -130,6 +130,7 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
     state[base + BODY.d] = body.d;
     state[base + BODY.role] = ROLE[body.role];
     state[base + BODY.kind] = kinds.indexOf(body.kind);
+    if (body.kinematic === true) state[base + BODY.aux1] = body.period ?? 0;
     const player = index === 0 ? FLAG.gravity | FLAG.grounded : 0;
     state[base + BODY.flags] =
       (body.template === true ? 0 : FLAG.alive) |
@@ -225,6 +226,16 @@ function integrate(state: ArcadeState, count: number): void {
       state[base + S.y] = 0;
       state[base + S.vy] = 0;
       state[base + S.flags] = (state[base + S.flags] as number) | F.grounded;
+    }
+    // Kyvadlo: kinematické tělo s periodou po `aux1` ticích obrátí směr.
+    if ((flags & F.kinematic) !== 0 && (state[base + S.aux1] as number) > 0) {
+      const leg = (state[base + S.aux0] as number) + 1;
+      if (leg >= (state[base + S.aux1] as number)) {
+        state[base + S.aux0] = 0;
+        state[base + S.vx] = -(state[base + S.vx] as number);
+        state[base + S.vy] = -(state[base + S.vy] as number);
+        state[base + S.vz] = -(state[base + S.vz] as number);
+      } else state[base + S.aux0] = leg;
     }
   }
 }

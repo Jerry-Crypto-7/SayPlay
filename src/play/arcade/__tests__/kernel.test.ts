@@ -329,6 +329,16 @@ describe('arkádové jádro v2', () => {
     expect(state[P + BODY.y]).toBe(500);
   });
 
+  it('kinematické tělo s periodou kyvadlově jezdí tam a zpět', () => {
+    const shuttle = body('platform', 0, { w: 2000, d: 2000, h: 500, solid: true, kinematic: true, vz: 20, period: 50 });
+    const state = run(v2World([{ ...shuttle, x: 5000 }]), 50);
+    expect(state[bodyBase(1) + BODY.z]).toBe(1000);
+    expect(state[bodyBase(1) + BODY.vz]).toBe(-20);
+    for (let t = 0; t < 50; t += 1) step(state, NO_INPUT, loadProgram(v2World([{ ...shuttle, x: 5000 }]), v2Library));
+    expect(state[bodyBase(1) + BODY.z]).toBe(0);
+    expect(state[bodyBase(1) + BODY.vz]).toBe(20);
+  });
+
   it('plošina jedoucí nahoru hráče zvedá, gravitace ji nestáhne', () => {
     const lift = body('platform', 0, { w: 4000, d: 4000, h: 500, solid: true, kinematic: true, gravity: true, vy: 10 });
     const state = run(v2World([lift], [], { start: { y: 500 } }), 50);

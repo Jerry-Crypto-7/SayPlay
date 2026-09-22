@@ -249,6 +249,11 @@ export interface BodyInit {
   readonly gravity?: boolean;
   /** `FLAG.kinematic`: jede svou rychlostí, nic ho nezastaví, hráč se na něm veze. */
   readonly kinematic?: boolean;
+  /**
+   * Jen s `kinematic`: po tolika ticích se rychlost otočí (kyvadlo tam a zpět).
+   * Jádro ho drží v `aux1`, uběhlé tiky úseku v `aux0`.
+   */
+  readonly period?: number;
   /** Předloha pro efekt `spawn`: ve světě je, ale není živá. */
   readonly template?: boolean;
 }
