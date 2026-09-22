@@ -34,6 +34,7 @@ import type { RunnerDensity } from '../arcade/pieces/runner';
 
 import { pickControl } from './controls';
 import {
+  CARE,
   FOOD,
   FOODS,
   ORDER_PUZZLE,
@@ -154,6 +155,25 @@ function takeOrders(spec: GameSpecV1, read: Read): void {
   role(spec, 'burger').label = first;
   role(spec, 'fries').label = second;
   spec.objective.description = cap(`Serve every customer the ${first} or ${second} they ordered before the shift ends.`, 120);
+}
+
+/**
+ * Ošetřování (P25D T5): objednávky `carry.menu` stačí – nástroj (lék, obvaz)
+ * je jídlo, pacient zákazník, správné ošetření přičte `orders_served`. Nové
+ * pravidlo by jen zopakovalo „dones správnou věc správnému“.
+ */
+function treatPatients(spec: GameSpecV1, read: Read, patient: string | undefined): void {
+  const noun = patient === undefined || /^pets?$/.test(patient) ? 'pet' : singular(patient.replace(/^puppies$/, 'puppy'));
+  const sick = noun === 'patient' ? 'patient' : `sick ${noun}`;
+  if (read.roles.player === null) role(spec, 'player').label = 'vet';
+  role(spec, 'burger').label = 'medicine';
+  role(spec, 'fries').label = 'bandage';
+  role(spec, 'customer').label = sick;
+  if (read.roles.setting === null) spec.theme.setting = 'cozy vet clinic';
+  spec.theme.mood = 'cozy';
+  spec.objective.description = cap(`Treat every ${sick}: bring each the medicine or bandage it needs before the clinic closes.`, 120);
+  spec.tutorial.goalLine = cap(`Treat every ${sick} before the clinic closes.`, 80);
+  spec.tutorial.controlsHint = cap(`Tap the medicine or bandage, then tap the ${sick} who needs it.`, 80);
 }
 
 function cap(text: string, max: number): string {
@@ -392,6 +412,12 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
   },
   delivery(spec, read) {
     // „Carry/deliver X to Y“ je nesení do cíle, i v kuchyni nebo s pizzou.
+    const care = CARE.exec(read.text);
+    if (care !== null) {
+      takeOrders(spec, read);
+      treatPatients(spec, read, care[1]);
+      return;
+    }
     if (read.roles.destination === null && (ORDERS.test(read.text) || FOOD.test(read.text))) {
       takeOrders(spec, read);
       return;

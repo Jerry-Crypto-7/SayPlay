@@ -179,6 +179,17 @@ describe('smash and pop – defeat without enemies (P25D T4)', () => {
   });
 });
 
+describe('treating patients – orders renamed (P25D T5)', () => {
+  it('drafts s169 as a vet clinic where the right treatment scores and the wrong one does not, and it publishes', () => {
+    const drafted = draftGameSpec('a vet clinic where you heal cute pets');
+    expect(drafted.archetype).toBe('delivery');
+    expect(drafted.roles.map((role) => role.label)).toEqual(['vet', 'medicine', 'bandage', 'sick pet']);
+    expect(drafted.mechanics.find((mechanic) => mechanic.id === 'carry')?.params.menu).toEqual(['burger', 'fries']);
+    expect(drafted.verification.map((assertion) => assertion.id)).toEqual(['right_order_scores', 'wrong_order_ignored', 'winnable']);
+    expect(publishFailures(drafted, 1)).toEqual([]);
+  });
+});
+
 describe('collectible.hiddenIn – search the room (P25D T2)', () => {
   const gameSpec = fixture('collect_exit_hidden');
 

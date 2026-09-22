@@ -32,6 +32,14 @@ export const SEARCH = /\bhidden\b|\bhide and seek\b|\bexplor(?:e|es|ing)\b|\brui
 export const UNDERWATER = /\bunder ?water\b|\bsunken\b|\bunder the sea\b|\bocean\b|\bsubmarine\b|\bshipwreck\b/;
 
 /**
+ * Ošetřování (P25D T5, s169): objednávky `carry.menu` přejmenované na léčbu –
+ * hráč vezme lék nebo obvaz a donese ho zvířeti, které ho potřebuje.
+ * Skupina 1 = kdo je pacient.
+ */
+export const CARE =
+  /\b(?:vet|vets|veterinar(?:y|ian)|animal hospital|pet clinic)\b|\b(?:heal(?:s|ing)?|cure(?:s|ing)?|treat(?:s|ing)?|nurs(?:e|es|ing)|care for) (?:the |cute |sick |injured |hurt )*(pets?|animals?|patients?|puppies|puppy|kittens?|dogs?|cats?)\b/;
+
+/**
  * Ničení a pukání (P25D T4, s097, s198): `defeat` bez nepřátel – `use` cíl
  * odstraní a přičte, poslední zničený vyhraje. Skupina 1 = „pop“.
  */
@@ -80,7 +88,7 @@ export const ARCHETYPE_CUES: Readonly<Record<ArchetypeId, readonly RegExp[]>> = 
   ],
   survival_timer: [/\bsurviv(?:e|es|ed|ing|al)\b/, /\bseconds?\b/, /\bminutes?\b/, /\blast(?:s|ing)?\b/, /\boutlast(?:s)?\b/, /\bstay alive\b/],
   checkpoint_race: [/\brac(?:e|es|ing)\b/, /\bgates\b/, /\bcheckpoints?\b/, /\bin (?:the right )?order\b/, /\blaps?\b/, /\bhoops\b/, /\brings\b/, /\bsprint(?:s|ing)?\b/],
-  delivery: [/\bcarry(?:ing)?\b|\bcarries\b/, /\bdeliver(?:s|ed|ing)?\b/, /\bbring(?:s|ing)?\b/, /\bfragile\b/, ORDERS, FOOD],
+  delivery: [/\bcarry(?:ing)?\b|\bcarries\b/, /\bdeliver(?:s|ed|ing)?\b/, /\bbring(?:s|ing)?\b/, /\bfragile\b/, ORDERS, FOOD, CARE],
   switch_puzzle: [/\bpress(?:es|ing)?\b/, /\bbuttons?\b/, /\bswitch(?:es)?\b/, /\blevers?\b/, /\bnot\b|\bnever\b/, /\bflip(?:s|ping)?\b|\btoggle(?:s|d)?\b|\bpull(?:s|ing)?\b/,
     // P25B T4: „shoď věci v pořadí“ je hádanka pořadí, ne závod – dva body přebijí `checkpoint_race`.
     /\bknock(?:s|ed|ing)? (?:[a-z]+ ){1,3}off\b/,
