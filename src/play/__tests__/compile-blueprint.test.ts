@@ -108,10 +108,10 @@ describe('compileGame – blueprint over the eight fixtures', () => {
     expect(sources.get('delivery/table')).toBe('asset');
     expect(sources.get('switch_puzzle/red')).toBe('asset');
     expect(sources.get('switch_puzzle/door')).toBe('asset');
-    // Od herních modelů z Blenderu (22. 9. 2026) mají model i sbíraná houba a láva;
-    // liška (hráč fixtury) model nemá, a proto dál dostane rodinnou geometrii.
+    // Od herních modelů z Blenderu (22. 9. 2026) mají model i sbíraná houba,
+    // láva a liška (hráč fixtury).
     expect(sources.get('collect_exit/mushroom_1')).toBe('asset');
-    expect(sources.get('collect_exit/player')).toBe('geom');
+    expect(sources.get('collect_exit/player')).toBe('asset');
     expect(sources.get('hazard_crossing/lava_1')).toBe('asset');
     const assetShare = [...sources.values()].filter((kind) => kind === 'asset').length / sources.size;
     expect(assetShare).toBeGreaterThan(0.5);

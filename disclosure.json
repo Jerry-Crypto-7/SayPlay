@@ -2986,6 +2986,51 @@
       "scope": "prod"
     },
     {
+      "name": "public/assets/worldstream/game/astronaut-lod0.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
+      "source": "scripts/assets/blender/game_models.py; scripts/assets/game-models.mjs",
+      "authorOrProvider": "Worldsmith project — AI-assisted original geometry (Blender)",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/game/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith game models and Blender previews, 2026-09-22.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/game/astronaut-lod1.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
+      "source": "scripts/assets/blender/game_models.py; scripts/assets/game-models.mjs",
+      "authorOrProvider": "Worldsmith project — AI-assisted original geometry (Blender)",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/game/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith game models and Blender previews, 2026-09-22.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/game/astronaut.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
+      "source": "scripts/assets/blender/game_models.py; scripts/assets/game-models.mjs",
+      "authorOrProvider": "Worldsmith project — AI-assisted original geometry (Blender)",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/game/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith game models and Blender previews, 2026-09-22.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
       "name": "public/assets/worldstream/game/bird-nest-lod0.glb",
       "kind": "asset",
       "firstParty": true,
@@ -3346,6 +3391,51 @@
       "scope": "prod"
     },
     {
+      "name": "public/assets/worldstream/game/explorer-lod0.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
+      "source": "scripts/assets/blender/game_models.py; scripts/assets/game-models.mjs",
+      "authorOrProvider": "Worldsmith project — AI-assisted original geometry (Blender)",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/game/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith game models and Blender previews, 2026-09-22.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/game/explorer-lod1.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
+      "source": "scripts/assets/blender/game_models.py; scripts/assets/game-models.mjs",
+      "authorOrProvider": "Worldsmith project — AI-assisted original geometry (Blender)",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/game/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith game models and Blender previews, 2026-09-22.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/game/explorer.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
+      "source": "scripts/assets/blender/game_models.py; scripts/assets/game-models.mjs",
+      "authorOrProvider": "Worldsmith project — AI-assisted original geometry (Blender)",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/game/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith game models and Blender previews, 2026-09-22.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
       "name": "public/assets/worldstream/game/finish-flag-lod0.glb",
       "kind": "asset",
       "firstParty": true,
@@ -3377,6 +3467,51 @@
     },
     {
       "name": "public/assets/worldstream/game/finish-flag.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
+      "source": "scripts/assets/blender/game_models.py; scripts/assets/game-models.mjs",
+      "authorOrProvider": "Worldsmith project — AI-assisted original geometry (Blender)",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/game/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith game models and Blender previews, 2026-09-22.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/game/fox-lod0.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
+      "source": "scripts/assets/blender/game_models.py; scripts/assets/game-models.mjs",
+      "authorOrProvider": "Worldsmith project — AI-assisted original geometry (Blender)",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/game/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith game models and Blender previews, 2026-09-22.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/game/fox-lod1.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
+      "source": "scripts/assets/blender/game_models.py; scripts/assets/game-models.mjs",
+      "authorOrProvider": "Worldsmith project — AI-assisted original geometry (Blender)",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/game/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith game models and Blender previews, 2026-09-22.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/game/fox.png",
       "kind": "asset",
       "firstParty": true,
       "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
@@ -3796,6 +3931,51 @@
       "scope": "prod"
     },
     {
+      "name": "public/assets/worldstream/game/kid-lod0.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
+      "source": "scripts/assets/blender/game_models.py; scripts/assets/game-models.mjs",
+      "authorOrProvider": "Worldsmith project — AI-assisted original geometry (Blender)",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/game/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith game models and Blender previews, 2026-09-22.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/game/kid-lod1.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
+      "source": "scripts/assets/blender/game_models.py; scripts/assets/game-models.mjs",
+      "authorOrProvider": "Worldsmith project — AI-assisted original geometry (Blender)",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/game/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith game models and Blender previews, 2026-09-22.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/game/kid.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
+      "source": "scripts/assets/blender/game_models.py; scripts/assets/game-models.mjs",
+      "authorOrProvider": "Worldsmith project — AI-assisted original geometry (Blender)",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/game/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith game models and Blender previews, 2026-09-22.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
       "name": "public/assets/worldstream/game/knight-lod0.glb",
       "kind": "asset",
       "firstParty": true,
@@ -4022,6 +4202,51 @@
     },
     {
       "name": "public/assets/worldstream/game/PROVENANCE.md",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
+      "source": "scripts/assets/blender/game_models.py; scripts/assets/game-models.mjs",
+      "authorOrProvider": "Worldsmith project — AI-assisted original geometry (Blender)",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/game/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith game models and Blender previews, 2026-09-22.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/game/raccoon-lod0.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
+      "source": "scripts/assets/blender/game_models.py; scripts/assets/game-models.mjs",
+      "authorOrProvider": "Worldsmith project — AI-assisted original geometry (Blender)",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/game/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith game models and Blender previews, 2026-09-22.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/game/raccoon-lod1.glb",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",
+      "source": "scripts/assets/blender/game_models.py; scripts/assets/game-models.mjs",
+      "authorOrProvider": "Worldsmith project — AI-assisted original geometry (Blender)",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; original project geometry. See public/assets/worldstream/game/PROVENANCE.md."
+      ],
+      "attribution": "Original Worldsmith game models and Blender previews, 2026-09-22.",
+      "reviewNote": "First-party, reproducible original geometry; no downloaded model or texture. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/game/raccoon.png",
       "kind": "asset",
       "firstParty": true,
       "reason": "Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.",

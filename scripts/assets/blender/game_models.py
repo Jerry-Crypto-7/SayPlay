@@ -381,6 +381,75 @@ def waiter():
     ball("white", 0.07, (0.32, -0.1, 1.27), scale=(1, 1, 0.5))
 
 
+# Hrdinové, které návrh ze slov losuje, když věta hráče nejmenuje
+# (`PLAYER_LABELS` v `src/play/draft/draft.ts`) – bez modelu byl hráč šedý blok.
+@model("explorer", "Explorer", ["explorer", "explorers", "adventurer", "hiker"])
+def explorer():
+    head_z = _biped("teal-cloth", "skin", 0.16, 1.5, legs="leather")
+    cyl("straw", 0.3, 0.03, (0, 0, head_z + 0.08))
+    cyl("straw", 0.15, 0.14, (0, 0, head_z + 0.16), top=0.13)
+    box("leather", (0.3, 0.14, 0.36), (0, 0.24, 0.8))
+    box("red-cloth", (0.3, 0.05, 0.05), (0, -0.2, 0.62))
+
+
+@model("kid", "Kid", ["kid", "kids", "child", "children", "boy", "girl"])
+def kid():
+    head_z = _biped("blue", "skin", 0.18, 1.1, legs="dark-grey")
+    ball("red-cloth", 0.185, (0, 0.01, head_z + 0.04), scale=(1, 1, 0.75))
+    box("red-cloth", (0.2, 0.16, 0.03), (0, -0.2, head_z + 0.06))
+    box("yellow", (0.14, 0.03, 0.14), (0, -0.2, 0.55))
+
+
+@model("astronaut", "Astronaut", ["astronaut", "astronauts", "spaceman", "cosmonaut"])
+def astronaut():
+    head_z = _biped("white", "white", 0.21, 1.5, legs="white")
+    ball("glow-cyan", 0.15, (0, -0.1, head_z + 0.02), scale=(1.1, 0.7, 0.8))
+    box("grey", (0.36, 0.18, 0.44), (0, 0.24, 0.85))
+    box("red-cloth", (0.12, 0.03, 0.08), (0, -0.2, 0.9))
+    for side in (-1, 1):
+        cyl("grey", 0.08, 0.06, (side * 0.09, 0, 0.03))
+
+
+@model("fox", "Fox", ["fox", "foxes", "vixen"])
+def fox():
+    ball("orange", 0.2, (0, 0.05, 0.27), scale=(0.8, 1.4, 0.8))
+    ball("cream", 0.12, (0, -0.16, 0.25), scale=(0.9, 0.8, 1.1))
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            cyl("black", 0.04, 0.18, (sx * 0.1, 0.05 + sy * 0.17, 0.09))
+    ball("orange", 0.15, (0, -0.25, 0.46))
+    cyl("orange", 0.08, 0.16, (0, -0.4, 0.43), rot=(90, 0, 0), top=0.02)
+    ball("ink", 0.025, (0, -0.48, 0.43))
+    for side in (-1, 1):
+        cyl("orange", 0.06, 0.14, (side * 0.08, -0.24, 0.63), top=0.0, verts=4)
+    eyes(0.5, -0.37, 0.06, 0.025)
+    ball("orange", 0.12, (0, 0.38, 0.4), scale=(0.9, 2.0, 0.9), rot=(-30, 0, 0))
+    ball("white", 0.07, (0, 0.55, 0.52), scale=(1, 1.4, 1))
+
+
+@model("raccoon", "Raccoon", ["raccoon", "raccoons"])
+def raccoon():
+    ball("grey", 0.22, (0, 0.05, 0.27), scale=(0.9, 1.3, 0.85))
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            cyl("dark-grey", 0.045, 0.16, (sx * 0.11, 0.05 + sy * 0.16, 0.08))
+    ball("grey", 0.16, (0, -0.24, 0.47))
+    box("black", (0.3, 0.05, 0.07), (0, -0.37, 0.5))
+    ball("cream", 0.06, (0, -0.38, 0.42), scale=(1, 1.1, 0.8))
+    ball("ink", 0.025, (0, -0.44, 0.43))
+    eyes(0.51, -0.4, 0.07, 0.025, mat="white")
+    for side in (-1, 1):
+        ball("grey", 0.05, (side * 0.1, -0.22, 0.62), scale=(1, 0.5, 1))
+    for i in range(5):
+        cyl(
+            "black" if i % 2 else "grey",
+            0.07,
+            0.07,
+            (0, 0.3 + i * 0.06, 0.3 + i * 0.03),
+            rot=(-60, 0, 0),
+        )
+
+
 @model(
     "goblin",
     "Goblin",

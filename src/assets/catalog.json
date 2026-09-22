@@ -3672,7 +3672,7 @@
     {
       "assetId": "knight",
       "version": 1,
-      "hash": "bb235f64d84aa53e9dbebadaeeedffd5075ce36a8934c2cc766cd2833f634978",
+      "hash": "441e4dbbc090583e2f82c8aff964d8055fdc62017110050ce4705116dd000ebe",
       "label": "Armoured knight hero",
       "tags": [
         "knight",
@@ -3691,7 +3691,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -3718,7 +3718,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/knight-lod0.glb",
-          "hash": "bb235f64d84aa53e9dbebadaeeedffd5075ce36a8934c2cc766cd2833f634978",
+          "hash": "441e4dbbc090583e2f82c8aff964d8055fdc62017110050ce4705116dd000ebe",
           "bytes": 105864,
           "triangles": 1880,
           "decodedGeometryBytes": 99984,
@@ -3728,7 +3728,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/knight-lod1.glb",
-          "hash": "08a8a74652ef7cc975adbedc66adba3f88f9f08f95d73424a555b91acc5f192a",
+          "hash": "b4f7569d826d436d2af8709710b84ee827e2d512ae745754983aa25a5ab2edd9",
           "bytes": 39424,
           "triangles": 610,
           "decodedGeometryBytes": 33564,
@@ -3804,7 +3804,7 @@
     {
       "assetId": "key",
       "version": 1,
-      "hash": "00988ee17d07aede6f0a88b753a6843d076df0b785b77797bdd532a21449457a",
+      "hash": "6f74959912fa35154254e559f0071918754383de01490e115898919790584b86",
       "label": "Golden key",
       "tags": [
         "key",
@@ -3819,7 +3819,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -3846,7 +3846,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/key-lod0.glb",
-          "hash": "00988ee17d07aede6f0a88b753a6843d076df0b785b77797bdd532a21449457a",
+          "hash": "6f74959912fa35154254e559f0071918754383de01490e115898919790584b86",
           "bytes": 33008,
           "triangles": 568,
           "decodedGeometryBytes": 30288,
@@ -3856,7 +3856,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/key-lod1.glb",
-          "hash": "9b7d3c7ee76fb06a1742d001f25fb8892e5353f09e76551e3a602af90d8fb924",
+          "hash": "adababe538c16de5b7973cd9913cbc178f8630f0910024ff3f5b07e9559f6067",
           "bytes": 13660,
           "triangles": 202,
           "decodedGeometryBytes": 10956,
@@ -3908,7 +3908,7 @@
     {
       "assetId": "ghost",
       "version": 1,
-      "hash": "ad742931a31e881928734af60269ab4bfefaf3bb746804e7b0ba472fefbb1a75",
+      "hash": "74e433f94e9d0d1fa0c3a8f1d34f67338554a7bf863c3e3ca79e68d8196f93c0",
       "label": "Floating ghost",
       "tags": [
         "ghost",
@@ -3927,7 +3927,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -3954,7 +3954,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/ghost-lod0.glb",
-          "hash": "ad742931a31e881928734af60269ab4bfefaf3bb746804e7b0ba472fefbb1a75",
+          "hash": "74e433f94e9d0d1fa0c3a8f1d34f67338554a7bf863c3e3ca79e68d8196f93c0",
           "bytes": 88536,
           "triangles": 1516,
           "decodedGeometryBytes": 86664,
@@ -3964,7 +3964,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/ghost-lod1.glb",
-          "hash": "66124af582a4cf0cdec9800b6fe01ba155a8e2ec54150a49d6fbf7f7731cabf9",
+          "hash": "f32a65b3ba2d24b481d21bf8bb4ec7f968f1a830b5e2464335090a1c8bd34788",
           "bytes": 25452,
           "triangles": 388,
           "decodedGeometryBytes": 23592,
@@ -4010,7 +4010,7 @@
     {
       "assetId": "mushroom",
       "version": 1,
-      "hash": "239f7eb5dfc380b91339b941cb9c6f2fd65c1de257571d83b0d05d11c234e84c",
+      "hash": "1e94314f33c67d721469f657ec15b5b281f7820715a5206e58cd4f57de7301c2",
       "label": "Glowing mushroom",
       "tags": [
         "mushroom",
@@ -4028,7 +4028,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -4055,7 +4055,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/mushroom-lod0.glb",
-          "hash": "239f7eb5dfc380b91339b941cb9c6f2fd65c1de257571d83b0d05d11c234e84c",
+          "hash": "1e94314f33c67d721469f657ec15b5b281f7820715a5206e58cd4f57de7301c2",
           "bytes": 85524,
           "triangles": 1464,
           "decodedGeometryBytes": 82152,
@@ -4065,7 +4065,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/mushroom-lod1.glb",
-          "hash": "0da22e4f2cab990cd2343b5a125d04b3a1860ea3ea5f15a34ad31de96f788df2",
+          "hash": "6a242a69bac1686f3d469b5430f2b6fbbe0bb6edd3062baba80847558714e463",
           "bytes": 21136,
           "triangles": 300,
           "decodedGeometryBytes": 17784,
@@ -4140,7 +4140,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -4249,7 +4249,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -4347,7 +4347,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -4430,7 +4430,7 @@
     {
       "assetId": "rubber-duck",
       "version": 1,
-      "hash": "97d0bbcc1630fa312c44026b6f8e911d303c0cc1acd372e97d15fb403bfde9e2",
+      "hash": "5e53654a8fd0ee07b8091b26842b4ed6167dd411c6575f83fbaf1c3ff578b2a8",
       "label": "Rubber duck",
       "tags": [
         "duck",
@@ -4447,7 +4447,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -4474,7 +4474,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/rubber-duck-lod0.glb",
-          "hash": "97d0bbcc1630fa312c44026b6f8e911d303c0cc1acd372e97d15fb403bfde9e2",
+          "hash": "5e53654a8fd0ee07b8091b26842b4ed6167dd411c6575f83fbaf1c3ff578b2a8",
           "bytes": 79844,
           "triangles": 1344,
           "decodedGeometryBytes": 77184,
@@ -4484,7 +4484,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/rubber-duck-lod1.glb",
-          "hash": "02eef14e90ad6688355bd0541902fa6ae161fe71d6dbf45df03d554af7d43e59",
+          "hash": "ee49303ad5d8e1c14d9e4c75b43747b4be84fa66f0245a82ddcbc4bd44653ca2",
           "bytes": 18272,
           "triangles": 252,
           "decodedGeometryBytes": 15624,
@@ -4553,7 +4553,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -4642,7 +4642,7 @@
     {
       "assetId": "waiter",
       "version": 1,
-      "hash": "b52339e3a81dcf76440948e3b469e243b6d3d4f35591e09d4a5a56606004ab95",
+      "hash": "ef973a4e08eee933adb339a22819d2d01a05a8edb69f184ac9c6152fe1112bda",
       "label": "Hurried waiter",
       "tags": [
         "waiter",
@@ -4661,7 +4661,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -4688,7 +4688,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/waiter-lod0.glb",
-          "hash": "b52339e3a81dcf76440948e3b469e243b6d3d4f35591e09d4a5a56606004ab95",
+          "hash": "ef973a4e08eee933adb339a22819d2d01a05a8edb69f184ac9c6152fe1112bda",
           "bytes": 90088,
           "triangles": 1564,
           "decodedGeometryBytes": 84264,
@@ -4698,7 +4698,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/waiter-lod1.glb",
-          "hash": "2db4fff2ca45d67461ddb5217f694c9df3b2ea916ec6b33660e14f6565badcea",
+          "hash": "491597b978629f74d3b71ee0820b00f8ec167f11ec26b115950e3ed6cc7c3bb9",
           "bytes": 28188,
           "triangles": 402,
           "decodedGeometryBytes": 22380,
@@ -4774,7 +4774,7 @@
     {
       "assetId": "goblin",
       "version": 1,
-      "hash": "a0a64d4e22f3701c291657468595dc5b2c63b0da24d6e88b3dd64b8347f61d0d",
+      "hash": "365d7aa7205d2dd81f5eb55e318694085d7cf37d7ce593913ccd68a7bea3129b",
       "label": "Goblin",
       "tags": [
         "goblin",
@@ -4795,7 +4795,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -4822,7 +4822,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/goblin-lod0.glb",
-          "hash": "a0a64d4e22f3701c291657468595dc5b2c63b0da24d6e88b3dd64b8347f61d0d",
+          "hash": "365d7aa7205d2dd81f5eb55e318694085d7cf37d7ce593913ccd68a7bea3129b",
           "bytes": 103760,
           "triangles": 1788,
           "decodedGeometryBytes": 97896,
@@ -4832,7 +4832,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/goblin-lod1.glb",
-          "hash": "1283420f122eb78e734df8b2a96077e4656173c4cab0e5d7dcb10f745e91e554",
+          "hash": "59533fff408435c4fbf27a952a2c7c1f7e31e1839e5164bd37bd9e38c68afed7",
           "bytes": 31160,
           "triangles": 444,
           "decodedGeometryBytes": 25320,
@@ -4908,7 +4908,7 @@
     {
       "assetId": "roomba",
       "version": 1,
-      "hash": "30a399603f677eea030dd442430b312c806cc90049c88b34eaf3a84f4dcdd71c",
+      "hash": "426e33cdaa2cd4f9f954736e14911e8d14b79b26408999f2da5752d8e34d799a",
       "label": "Robot vacuum",
       "tags": [
         "roomba",
@@ -4926,7 +4926,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -4953,7 +4953,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/roomba-lod0.glb",
-          "hash": "30a399603f677eea030dd442430b312c806cc90049c88b34eaf3a84f4dcdd71c",
+          "hash": "426e33cdaa2cd4f9f954736e14911e8d14b79b26408999f2da5752d8e34d799a",
           "bytes": 46148,
           "triangles": 820,
           "decodedGeometryBytes": 42000,
@@ -4963,7 +4963,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/roomba-lod1.glb",
-          "hash": "739ca20c65182769f4dba6f88d452dd72f4dbd919456dd0f5284c82b9e8533df",
+          "hash": "2d8303a7dcd0a8897df7663bd7bb37b657ab4d5a21ccec6b8696f519609f5b87",
           "bytes": 16760,
           "triangles": 240,
           "decodedGeometryBytes": 12624,
@@ -5027,7 +5027,7 @@
     {
       "assetId": "drone",
       "version": 1,
-      "hash": "ac9f6d097ef162d32035c45425bddcce319e2da41c19080c1a25101ce0bb02f3",
+      "hash": "95ca1177c2996e0905c015b4497475c5c5e05c973378ba9990ec30e30c001d4f",
       "label": "Security drone",
       "tags": [
         "drone",
@@ -5043,7 +5043,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -5070,7 +5070,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/drone-lod0.glb",
-          "hash": "ac9f6d097ef162d32035c45425bddcce319e2da41c19080c1a25101ce0bb02f3",
+          "hash": "95ca1177c2996e0905c015b4497475c5c5e05c973378ba9990ec30e30c001d4f",
           "bytes": 46660,
           "triangles": 932,
           "decodedGeometryBytes": 43320,
@@ -5080,7 +5080,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/drone-lod1.glb",
-          "hash": "c6ba69fdb0a8b6a9eb0fad86cc1b5a6a4ff514a6cdd9aa40d0e3262c3dfa28a2",
+          "hash": "b03cd10be70c38ba58e17b0070b5c56dfe675334abeb2c14f4528745255757e6",
           "bytes": 20616,
           "triangles": 354,
           "decodedGeometryBytes": 17292,
@@ -5138,7 +5138,7 @@
     {
       "assetId": "cat",
       "version": 1,
-      "hash": "13447d7ec843e51529c552726149f5885bd61d90a133f001d9be4d3abcf2433b",
+      "hash": "f6baa87b7941e34935f8543524492244d0cf9520baaf6746a536e4089ed23284",
       "label": "Cat",
       "tags": [
         "cat",
@@ -5154,7 +5154,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -5181,7 +5181,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/cat-lod0.glb",
-          "hash": "13447d7ec843e51529c552726149f5885bd61d90a133f001d9be4d3abcf2433b",
+          "hash": "f6baa87b7941e34935f8543524492244d0cf9520baaf6746a536e4089ed23284",
           "bytes": 81180,
           "triangles": 1432,
           "decodedGeometryBytes": 78480,
@@ -5191,7 +5191,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/cat-lod1.glb",
-          "hash": "64edcb46d17207e7892749ba2d415caf9a83dc4cf7bbf7fdc63eec13b3d012ac",
+          "hash": "e4e3c6e45451746e7fb28c08cb6e2fcf893e837516b5edf8949fa6ff3191bf66",
           "bytes": 22304,
           "triangles": 342,
           "decodedGeometryBytes": 19620,
@@ -5243,7 +5243,7 @@
     {
       "assetId": "seal",
       "version": 1,
-      "hash": "023b1754c58b238723754243f33bc10b12c91387d7c30ca3e3ff733a4a702733",
+      "hash": "0f7edd517678138248c2f32270236dc0249f142e59998d1faa199d05d6e4afbf",
       "label": "Hungry seal",
       "tags": [
         "seal",
@@ -5259,7 +5259,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -5286,7 +5286,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/seal-lod0.glb",
-          "hash": "023b1754c58b238723754243f33bc10b12c91387d7c30ca3e3ff733a4a702733",
+          "hash": "0f7edd517678138248c2f32270236dc0249f142e59998d1faa199d05d6e4afbf",
           "bytes": 82572,
           "triangles": 1380,
           "decodedGeometryBytes": 79128,
@@ -5296,7 +5296,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/seal-lod1.glb",
-          "hash": "4ece3a0b5522788456ae7d161ecba78c25109ff751b5c9be4df93582a533bd94",
+          "hash": "77238c9f6ef9dea78609a12a4dc092cf9a819c2dbc449c571d9266e9b78f2a76",
           "bytes": 20992,
           "triangles": 288,
           "decodedGeometryBytes": 17568,
@@ -5354,7 +5354,7 @@
     {
       "assetId": "slime",
       "version": 1,
-      "hash": "acd696940a641e8d436386365db5cf929d750b7474d14baf9c96fbadb3b8f04b",
+      "hash": "a22141c86f80f7f1196455914449613045055f4bc4ec1038836fb6f66bdad471",
       "label": "Slime",
       "tags": [
         "slime",
@@ -5372,7 +5372,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -5399,7 +5399,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/slime-lod0.glb",
-          "hash": "acd696940a641e8d436386365db5cf929d750b7474d14baf9c96fbadb3b8f04b",
+          "hash": "a22141c86f80f7f1196455914449613045055f4bc4ec1038836fb6f66bdad471",
           "bytes": 92688,
           "triangles": 1568,
           "decodedGeometryBytes": 90048,
@@ -5409,7 +5409,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/slime-lod1.glb",
-          "hash": "d7ac0653be23d2ecdf94dc502beeef4d30888917cbd1f73578c5796a9b6bb784",
+          "hash": "9e7e1343e3fe5cdaaf0f586bf776b937e8731d3c1eaf7ac4c2c7a5ea52750582",
           "bytes": 20856,
           "triangles": 294,
           "decodedGeometryBytes": 18228,
@@ -5478,7 +5478,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -5515,7 +5515,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/training-dummy-lod1.glb",
-          "hash": "1534a2ba7165de66243e41690ec01f0f7a1611625e6f7466da0b2a64e4d8c004",
+          "hash": "0c41a0c4a11b5e4e20a082433db245ad5fcbe98abf2610332ff434675533ee9b",
           "bytes": 21056,
           "triangles": 300,
           "decodedGeometryBytes": 16824,
@@ -5579,7 +5579,7 @@
     {
       "assetId": "robot",
       "version": 1,
-      "hash": "b8f8afce257de1a0942fc9e2e2e8cf20a721d72b45fc06fbf058b0f1d25285a7",
+      "hash": "0f2d9ade09487480b6d1127369b0e5974fb563c57ebc540addce155d7a8cbb98",
       "label": "Cardboard robot",
       "tags": [
         "robot",
@@ -5597,7 +5597,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -5624,7 +5624,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/robot-lod0.glb",
-          "hash": "b8f8afce257de1a0942fc9e2e2e8cf20a721d72b45fc06fbf058b0f1d25285a7",
+          "hash": "0f2d9ade09487480b6d1127369b0e5974fb563c57ebc540addce155d7a8cbb98",
           "bytes": 51412,
           "triangles": 828,
           "decodedGeometryBytes": 46368,
@@ -5634,7 +5634,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/robot-lod1.glb",
-          "hash": "3c1f5fde22f691dae64d661186c0c5b16008348b911c0ccc5e96882e581f9483",
+          "hash": "eeb5129da35110823601f51c75e6efe6e67666c8762909e9d2da5f45182fcf6b",
           "bytes": 19104,
           "triangles": 246,
           "decodedGeometryBytes": 14076,
@@ -5704,7 +5704,7 @@
     {
       "assetId": "wasp-nest",
       "version": 1,
-      "hash": "270803eb9a336a32f99467a3600293de339c5106cffe43b5bdaf0c23c7e7a050",
+      "hash": "e4f6552f49fc796f1863e77c9b7cc878c69e132c9d7b8fb344e923cafb2ad075",
       "label": "Wasp nest",
       "tags": [
         "wasp",
@@ -5723,7 +5723,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -5750,7 +5750,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/wasp-nest-lod0.glb",
-          "hash": "270803eb9a336a32f99467a3600293de339c5106cffe43b5bdaf0c23c7e7a050",
+          "hash": "e4f6552f49fc796f1863e77c9b7cc878c69e132c9d7b8fb344e923cafb2ad075",
           "bytes": 114272,
           "triangles": 1960,
           "decodedGeometryBytes": 110832,
@@ -5760,7 +5760,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/wasp-nest-lod1.glb",
-          "hash": "0af8be9fab492c385b3efca0c308d9049e4080b5350c64a36c28e8401f538be9",
+          "hash": "5865f3c67c78478a56fdf1a0808c43f513646239ec31a6f0d35ff298ad65cccb",
           "bytes": 29156,
           "triangles": 432,
           "decodedGeometryBytes": 25728,
@@ -5818,7 +5818,7 @@
     {
       "assetId": "hamster",
       "version": 1,
-      "hash": "22278b54c6b4ae567d4612f831a228e2696e5ac3cf7a55ac79d16eeadf9372d6",
+      "hash": "4c61a99f84ce92baa97c2071a7d2a412e66f076926211114a3439d5c0e0ccb31",
       "label": "Hamster",
       "tags": [
         "hamster",
@@ -5837,7 +5837,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -5864,7 +5864,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/hamster-lod0.glb",
-          "hash": "22278b54c6b4ae567d4612f831a228e2696e5ac3cf7a55ac79d16eeadf9372d6",
+          "hash": "4c61a99f84ce92baa97c2071a7d2a412e66f076926211114a3439d5c0e0ccb31",
           "bytes": 144948,
           "triangles": 2464,
           "decodedGeometryBytes": 141504,
@@ -5874,7 +5874,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/hamster-lod1.glb",
-          "hash": "1e612d609fe716fb73ded01d4902a875c88fc0a47b24657be2b7f1cbf20c471c",
+          "hash": "4f7612e6e67b6fa796889583c12a6b0415dd2e882ac3be9249758906aa1dc93b",
           "bytes": 32064,
           "triangles": 462,
           "decodedGeometryBytes": 28644,
@@ -5932,7 +5932,7 @@
     {
       "assetId": "penguin",
       "version": 1,
-      "hash": "0df9d6f6ce8aaf151e7893bddf47be594d80af6213e7df279c745af546766a98",
+      "hash": "d192ea915dfc4f89a1b619b31a151ae8ed7071d6db6661323ec4de0c20464655",
       "label": "Penguin",
       "tags": [
         "penguin",
@@ -5946,7 +5946,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -5973,7 +5973,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/penguin-lod0.glb",
-          "hash": "0df9d6f6ce8aaf151e7893bddf47be594d80af6213e7df279c745af546766a98",
+          "hash": "d192ea915dfc4f89a1b619b31a151ae8ed7071d6db6661323ec4de0c20464655",
           "bytes": 83856,
           "triangles": 1402,
           "decodedGeometryBytes": 80412,
@@ -5983,7 +5983,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/penguin-lod1.glb",
-          "hash": "b73543c944f56489a02d77b00d4f0b38c91ffb60e9c970db7a3463c008b00056",
+          "hash": "e8001c75434cb7db37f7560f032a3907a8e15ad1912bda48c8bff4d4d8bc2932",
           "bytes": 22280,
           "triangles": 310,
           "decodedGeometryBytes": 18852,
@@ -6041,7 +6041,7 @@
     {
       "assetId": "cake",
       "version": 1,
-      "hash": "7a20bc92d0a3d8572327e0513a8196770aeae03ba1181371563e1924643ccbe9",
+      "hash": "58d8da3997c7f8cee6b67b7dc5e565f517ed88791e26af0e3493ea6a31240cde",
       "label": "Birthday cake",
       "tags": [
         "cake",
@@ -6058,7 +6058,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -6085,7 +6085,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/cake-lod0.glb",
-          "hash": "7a20bc92d0a3d8572327e0513a8196770aeae03ba1181371563e1924643ccbe9",
+          "hash": "58d8da3997c7f8cee6b67b7dc5e565f517ed88791e26af0e3493ea6a31240cde",
           "bytes": 92520,
           "triangles": 1660,
           "decodedGeometryBytes": 87576,
@@ -6095,7 +6095,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/cake-lod1.glb",
-          "hash": "c7de10caae28c8d363f4a9ac6a9ede09b2c32e033b8e9b10cba3f11df2ee0087",
+          "hash": "b1d7039912e180f4aaafbb419cd37fb2a999459edf4a10f212b25013bf15da84",
           "bytes": 28024,
           "triangles": 426,
           "decodedGeometryBytes": 23100,
@@ -6180,7 +6180,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -6281,7 +6281,7 @@
     {
       "assetId": "egg",
       "version": 1,
-      "hash": "24fc2803f8aac33bb7c0f3b5afc6a1ad649ff3e8ea56cbadc93faeccae14a9fc",
+      "hash": "86d55e91ebe8d2e2d07d853a02aeceb5c3f6ee992b5ca5956c9810d90e54e4ee",
       "label": "Egg",
       "tags": [
         "egg",
@@ -6295,7 +6295,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -6322,7 +6322,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/egg-lod0.glb",
-          "hash": "24fc2803f8aac33bb7c0f3b5afc6a1ad649ff3e8ea56cbadc93faeccae14a9fc",
+          "hash": "86d55e91ebe8d2e2d07d853a02aeceb5c3f6ee992b5ca5956c9810d90e54e4ee",
           "bytes": 28184,
           "triangles": 484,
           "decodedGeometryBytes": 26328,
@@ -6332,7 +6332,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/egg-lod1.glb",
-          "hash": "b763f82b6b388902685b346127322275fb0ec037a63553bac2dad03419c3c5f7",
+          "hash": "b061de6a1ed2911c42d597a922102462c9880651a48f5a04e5d4490a9cfc5622",
           "bytes": 10356,
           "triangles": 154,
           "decodedGeometryBytes": 8508,
@@ -6378,7 +6378,7 @@
     {
       "assetId": "altar",
       "version": 1,
-      "hash": "9f47778ee6e3b3fc08d26011144c685073087475f12a3ca18f25b103769930fa",
+      "hash": "fc187883e5d530c947e815bd5192a3a20f48bc5466fdddb74ae94e0b4833dd57",
       "label": "Stone altar",
       "tags": [
         "altar",
@@ -6396,7 +6396,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -6423,7 +6423,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/altar-lod0.glb",
-          "hash": "9f47778ee6e3b3fc08d26011144c685073087475f12a3ca18f25b103769930fa",
+          "hash": "fc187883e5d530c947e815bd5192a3a20f48bc5466fdddb74ae94e0b4833dd57",
           "bytes": 45284,
           "triangles": 732,
           "decodedGeometryBytes": 40968,
@@ -6433,7 +6433,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/altar-lod1.glb",
-          "hash": "4c0fd920048df1d1edca5bb88fa535821820e21aff0d08bc00c661cf3a922369",
+          "hash": "8a40e5196c75903e357a71032bfdfd21e7676e2a1de4adef29617b0e7864a40d",
           "bytes": 21736,
           "triangles": 296,
           "decodedGeometryBytes": 17424,
@@ -6497,7 +6497,7 @@
     {
       "assetId": "bird-nest",
       "version": 1,
-      "hash": "29d038ad9e7a84dea5c5bb1b6e3b4e0e1a1f51eb0c69c4386b08499781b41e32",
+      "hash": "a3035507b2133e860caae4b54a39d0eef25884ee744f9ee2805873c576f111f1",
       "label": "Bird nest",
       "tags": [
         "nest",
@@ -6514,7 +6514,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -6541,7 +6541,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/bird-nest-lod0.glb",
-          "hash": "29d038ad9e7a84dea5c5bb1b6e3b4e0e1a1f51eb0c69c4386b08499781b41e32",
+          "hash": "a3035507b2133e860caae4b54a39d0eef25884ee744f9ee2805873c576f111f1",
           "bytes": 54720,
           "triangles": 932,
           "decodedGeometryBytes": 52056,
@@ -6551,7 +6551,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/bird-nest-lod1.glb",
-          "hash": "4fa433403e8d0a2a881c6db7edea5e96ba36cb2cdaa7e6d9da66790d62d601e0",
+          "hash": "73db1fd2cf2e9060452dae984fbfc8d37e0e97c2a4f72d3f1b3d6b9b89c3ce90",
           "bytes": 16340,
           "triangles": 238,
           "decodedGeometryBytes": 13716,
@@ -6621,7 +6621,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -6747,7 +6747,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -6830,7 +6830,7 @@
     {
       "assetId": "finish-flag",
       "version": 1,
-      "hash": "468f6d4a0fe5b0aa2d08eabad70ff780b2ed01c3c7d9077691f947c76cd5f7bc",
+      "hash": "679d4a7343e34012eb8834aa4da52a03abd53746a49b3ea68610fba6a51d4907",
       "label": "Finish flag on a ledge",
       "tags": [
         "ledge",
@@ -6850,7 +6850,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -6877,7 +6877,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/finish-flag-lod0.glb",
-          "hash": "468f6d4a0fe5b0aa2d08eabad70ff780b2ed01c3c7d9077691f947c76cd5f7bc",
+          "hash": "679d4a7343e34012eb8834aa4da52a03abd53746a49b3ea68610fba6a51d4907",
           "bytes": 27228,
           "triangles": 412,
           "decodedGeometryBytes": 22416,
@@ -6887,7 +6887,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/finish-flag-lod1.glb",
-          "hash": "0be023e26b935d455b69b8b9ddf3a02c8aade5e4487dbaf5c4a267cfedb652ab",
+          "hash": "b85b12869054a98cfb1630827aa650798fa5ec2b252ad00c9af1901e9c5cf4e0",
           "bytes": 15444,
           "triangles": 194,
           "decodedGeometryBytes": 10644,
@@ -6974,7 +6974,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -7011,7 +7011,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/checkpoint-lod1.glb",
-          "hash": "6c922be68af4d8eb0b1aa71ca1bf1dcacc8424eadd4d7e813bead680a2e5e1b5",
+          "hash": "eed9245089ee69d4a0c119881f10ef2b531d8e0a14663a802ded60d2c30e24a8",
           "bytes": 12220,
           "triangles": 174,
           "decodedGeometryBytes": 8868,
@@ -7087,7 +7087,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -7182,7 +7182,7 @@
     {
       "assetId": "stepping-stone",
       "version": 1,
-      "hash": "fba6c49b3a246f75a91cf30a15bcda04771f3b8f874b33c2256edba91715addc",
+      "hash": "50a4ed047749be821b65819fad2a337de13e0548312804ee055d656dc7f2cf9d",
       "label": "Stepping stone",
       "tags": [
         "stepping",
@@ -7200,7 +7200,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -7227,7 +7227,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/stepping-stone-lod0.glb",
-          "hash": "fba6c49b3a246f75a91cf30a15bcda04771f3b8f874b33c2256edba91715addc",
+          "hash": "50a4ed047749be821b65819fad2a337de13e0548312804ee055d656dc7f2cf9d",
           "bytes": 17376,
           "triangles": 280,
           "decodedGeometryBytes": 15504,
@@ -7237,7 +7237,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/stepping-stone-lod1.glb",
-          "hash": "0f3ef5492c96c4df86bd8594f5a32b04154a54e1222693c755f15424978bbd50",
+          "hash": "6c553d5dd8bd987102f8fe28dc97a3091a23ca28e21f39344f7923c71a6bc3a2",
           "bytes": 7108,
           "triangles": 98,
           "decodedGeometryBytes": 5244,
@@ -7283,7 +7283,7 @@
     {
       "assetId": "lava-pool",
       "version": 1,
-      "hash": "e2d2ef6b448027a3fdedcf0370a617426b1d5403e117e37fb58e6db95c9aaeff",
+      "hash": "7ebdc3c90f9bd1b70ba1f1f50e5ae3156c314eaae8f47f2dcfa1878ac4faeedf",
       "label": "Lava pool",
       "tags": [
         "lava",
@@ -7301,7 +7301,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -7328,7 +7328,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/lava-pool-lod0.glb",
-          "hash": "e2d2ef6b448027a3fdedcf0370a617426b1d5403e117e37fb58e6db95c9aaeff",
+          "hash": "7ebdc3c90f9bd1b70ba1f1f50e5ae3156c314eaae8f47f2dcfa1878ac4faeedf",
           "bytes": 49792,
           "triangles": 832,
           "decodedGeometryBytes": 47040,
@@ -7338,7 +7338,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/lava-pool-lod1.glb",
-          "hash": "06bcd333fe9f79ec4b5221462ea747e7a754fb743371a5827b45fc136bef988d",
+          "hash": "25a9ede4e63dda2792cf2dab95522c462397f633184c77b82898ecdca26a66e5",
           "bytes": 16652,
           "triangles": 230,
           "decodedGeometryBytes": 13908,
@@ -7407,7 +7407,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -7490,7 +7490,7 @@
     {
       "assetId": "acid-pool",
       "version": 1,
-      "hash": "646312b322a0ad9eaed38d0452e17c90103e9f74fc4f861fa578f15f7df6d234",
+      "hash": "eee2ec74508aabd3e3c4da8b68bd6acc98040b8563232f3a692b0f1dced86e19",
       "label": "Acid pool",
       "tags": [
         "acid",
@@ -7508,7 +7508,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -7535,7 +7535,7 @@
         {
           "level": 0,
           "path": "/assets/worldstream/game/acid-pool-lod0.glb",
-          "hash": "646312b322a0ad9eaed38d0452e17c90103e9f74fc4f861fa578f15f7df6d234",
+          "hash": "eee2ec74508aabd3e3c4da8b68bd6acc98040b8563232f3a692b0f1dced86e19",
           "bytes": 45832,
           "triangles": 792,
           "decodedGeometryBytes": 43920,
@@ -7545,7 +7545,7 @@
         {
           "level": 1,
           "path": "/assets/worldstream/game/acid-pool-lod1.glb",
-          "hash": "a1c210de1f45621ea7f11451a1dff17649593bf00b1f774b5a30e0e5b2a49750",
+          "hash": "88881d8e35339067b3e9013dc4d8aae2610083ff576744dc20273a91b904f6e6",
           "bytes": 12692,
           "triangles": 190,
           "decodedGeometryBytes": 10788,
@@ -7609,7 +7609,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -7715,7 +7715,7 @@
         "license": "LicenseRef-Worldsmith-Original",
         "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
         "importedAt": "2026-09-22",
-        "sourceHash": "f4539f57e322dd4717e80761eae4e2011c8f80c4f51f044bccae4edda12df166"
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
       },
       "units": "meters",
       "up": "+Y",
@@ -7793,6 +7793,608 @@
               0.26499998569488525,
               0.8250000476837158,
               0.4449999928474426
+            ]
+          }
+        }
+      ],
+      "sockets": [],
+      "supportSurfaces": [],
+      "parts": []
+    },
+    {
+      "assetId": "explorer",
+      "version": 1,
+      "hash": "abcae38964b56b570bc2faf8622b7d420f92025d69fd4e9dbf78bc40e3ee8b89",
+      "label": "Explorer",
+      "tags": [
+        "explorer",
+        "explorers",
+        "adventurer",
+        "hiker"
+      ],
+      "style": "original low-poly stylized",
+      "thumbnail": "/assets/worldstream/game/explorer.png",
+      "provenance": {
+        "source": "scripts/assets/blender/game_models.py",
+        "author": "Worldsmith project — AI-assisted original geometry (Blender)",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
+        "importedAt": "2026-09-22",
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -0.3380265235900879,
+          0,
+          -0.3050000071525574
+        ],
+        "max": [
+          0.3380265235900879,
+          1.349000096321106,
+          0.3050000071525574
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/game/explorer-lod0.glb",
+          "hash": "abcae38964b56b570bc2faf8622b7d420f92025d69fd4e9dbf78bc40e3ee8b89",
+          "bytes": 63568,
+          "triangles": 1116,
+          "decodedGeometryBytes": 58536,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/game/explorer-lod1.glb",
+          "hash": "5c250a54407594584ba0bccee854e0ccd2c04c50c0e27b35057d78a6d4fb22dd",
+          "bytes": 22192,
+          "triangles": 318,
+          "decodedGeometryBytes": 17172,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "leather",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-1",
+          "name": "teal-cloth",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-2",
+          "name": "skin",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-3",
+          "name": "ink",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-4",
+          "name": "straw",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-5",
+          "name": "red-cloth",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -0.3380265235900879,
+              0,
+              -0.3050000071525574
+            ],
+            "max": [
+              0.3380265235900879,
+              1.349000096321106,
+              0.3050000071525574
+            ]
+          }
+        }
+      ],
+      "sockets": [],
+      "supportSurfaces": [],
+      "parts": []
+    },
+    {
+      "assetId": "kid",
+      "version": 1,
+      "hash": "1d339ae560f5a0a28aaba03919bff1fbdddb5d6e70e6c174b7883fde08e5183a",
+      "label": "Kid",
+      "tags": [
+        "kid",
+        "kids",
+        "child",
+        "children",
+        "boy",
+        "girl"
+      ],
+      "style": "original low-poly stylized",
+      "thumbnail": "/assets/worldstream/game/kid.png",
+      "provenance": {
+        "source": "scripts/assets/blender/game_models.py",
+        "author": "Worldsmith project — AI-assisted original geometry (Blender)",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
+        "importedAt": "2026-09-22",
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -0.32492807507514954,
+          0,
+          -0.24000000953674316
+        ],
+        "max": [
+          0.32492807507514954,
+          1.056999921798706,
+          0.24000000953674316
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/game/kid-lod0.glb",
+          "hash": "1d339ae560f5a0a28aaba03919bff1fbdddb5d6e70e6c174b7883fde08e5183a",
+          "bytes": 71068,
+          "triangles": 1220,
+          "decodedGeometryBytes": 66072,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/game/kid-lod1.glb",
+          "hash": "8befc5a94f69289d75b8b209b335c9ed92d983efc7418aaad755054dae5c9c58",
+          "bytes": 22452,
+          "triangles": 312,
+          "decodedGeometryBytes": 17472,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "dark-grey",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-1",
+          "name": "blue",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-2",
+          "name": "skin",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-3",
+          "name": "ink",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-4",
+          "name": "red-cloth",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-5",
+          "name": "yellow",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -0.32492807507514954,
+              0,
+              -0.24000000953674316
+            ],
+            "max": [
+              0.32492807507514954,
+              1.056999921798706,
+              0.24000000953674316
+            ]
+          }
+        }
+      ],
+      "sockets": [],
+      "supportSurfaces": [],
+      "parts": []
+    },
+    {
+      "assetId": "astronaut",
+      "version": 1,
+      "hash": "2f6b9d3aa43f860a534427db2573e1ab70a32f0d21a78ad4725027b4d2b33bdb",
+      "label": "Astronaut",
+      "tags": [
+        "astronaut",
+        "astronauts",
+        "spaceman",
+        "cosmonaut"
+      ],
+      "style": "original low-poly stylized",
+      "thumbnail": "/assets/worldstream/game/astronaut.png",
+      "provenance": {
+        "source": "scripts/assets/blender/game_models.py",
+        "author": "Worldsmith project — AI-assisted original geometry (Blender)",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
+        "importedAt": "2026-09-22",
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -0.3380265235900879,
+          0,
+          -0.2724999785423279
+        ],
+        "max": [
+          0.3380265235900879,
+          1.374000072479248,
+          0.2724999785423279
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/game/astronaut-lod0.glb",
+          "hash": "2f6b9d3aa43f860a534427db2573e1ab70a32f0d21a78ad4725027b4d2b33bdb",
+          "bytes": 75672,
+          "triangles": 1340,
+          "decodedGeometryBytes": 71400,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/game/astronaut-lod1.glb",
+          "hash": "bbe6b3bf88fd1a3377be31b49ce8417721bead05f95266e79e910c22229c1078",
+          "bytes": 24036,
+          "triangles": 360,
+          "decodedGeometryBytes": 19776,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "white",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-1",
+          "name": "ink",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-2",
+          "name": "glow-cyan",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-3",
+          "name": "grey",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-4",
+          "name": "red-cloth",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -0.3380265235900879,
+              0,
+              -0.2724999785423279
+            ],
+            "max": [
+              0.3380265235900879,
+              1.374000072479248,
+              0.2724999785423279
+            ]
+          }
+        }
+      ],
+      "sockets": [],
+      "supportSurfaces": [],
+      "parts": []
+    },
+    {
+      "assetId": "fox",
+      "version": 1,
+      "hash": "2ead07afac9ce289771dc5334262a027d81b3dd775b976018700056043872a95",
+      "label": "Fox",
+      "tags": [
+        "fox",
+        "foxes",
+        "vixen"
+      ],
+      "style": "original low-poly stylized",
+      "thumbnail": "/assets/worldstream/game/fox.png",
+      "provenance": {
+        "source": "scripts/assets/blender/game_models.py",
+        "author": "Worldsmith project — AI-assisted original geometry (Blender)",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
+        "importedAt": "2026-09-22",
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -0.1599999964237213,
+          0,
+          -0.5764999985694885
+        ],
+        "max": [
+          0.1599999964237213,
+          0.6999999284744263,
+          0.5764999985694885
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/game/fox-lod0.glb",
+          "hash": "2ead07afac9ce289771dc5334262a027d81b3dd775b976018700056043872a95",
+          "bytes": 121308,
+          "triangles": 2104,
+          "decodedGeometryBytes": 117072,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/game/fox-lod1.glb",
+          "hash": "e0db0d4dd560fe0c0af278168544be3eec17572bb348ed029c54a97033466693",
+          "bytes": 31640,
+          "triangles": 468,
+          "decodedGeometryBytes": 27432,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "orange",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-1",
+          "name": "cream",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-2",
+          "name": "black",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-3",
+          "name": "ink",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-4",
+          "name": "white",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -0.1599999964237213,
+              0,
+              -0.5764999985694885
+            ],
+            "max": [
+              0.1599999964237213,
+              0.6999999284744263,
+              0.5764999985694885
+            ]
+          }
+        }
+      ],
+      "sockets": [],
+      "supportSurfaces": [],
+      "parts": []
+    },
+    {
+      "assetId": "raccoon",
+      "version": 1,
+      "hash": "e47923e164cb8657bda9b4e584453d56697259b3846f996f298ab2b50d471516",
+      "label": "Raccoon",
+      "tags": [
+        "raccoon",
+        "raccoons"
+      ],
+      "style": "original low-poly stylized",
+      "thumbnail": "/assets/worldstream/game/raccoon.png",
+      "provenance": {
+        "source": "scripts/assets/blender/game_models.py",
+        "author": "Worldsmith project — AI-assisted original geometry (Blender)",
+        "license": "LicenseRef-Worldsmith-Original",
+        "licenseEvidence": "public/assets/worldstream/game/PROVENANCE.md",
+        "importedAt": "2026-09-22",
+        "sourceHash": "b6c672d6502d876066b2f5fd210653a75f7063707937c2d9b8095958a02f8e8d"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -0.1979999840259552,
+          0,
+          -0.5351554155349731
+        ],
+        "max": [
+          0.1979999840259552,
+          0.6700000166893005,
+          0.5351554155349731
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/game/raccoon-lod0.glb",
+          "hash": "e47923e164cb8657bda9b4e584453d56697259b3846f996f298ab2b50d471516",
+          "bytes": 132564,
+          "triangles": 2344,
+          "decodedGeometryBytes": 127536,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/game/raccoon-lod1.glb",
+          "hash": "40169a53b48636b9e89627187e1c9651c5a15eba5f254cb1d9800a9354224b7a",
+          "bytes": 36856,
+          "triangles": 564,
+          "decodedGeometryBytes": 31848,
+          "decodedTextureBytes": 0,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "grey",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-1",
+          "name": "dark-grey",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-2",
+          "name": "black",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-3",
+          "name": "cream",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-4",
+          "name": "ink",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        },
+        {
+          "id": "material-5",
+          "name": "white",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -0.1979999840259552,
+              0,
+              -0.5351554155349731
+            ],
+            "max": [
+              0.1979999840259552,
+              0.6700000166893005,
+              0.5351554155349731
             ]
           }
         }
