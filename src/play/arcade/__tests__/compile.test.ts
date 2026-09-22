@@ -54,6 +54,24 @@ describe('control v GameSpec a směrování kompilace', () => {
     expect(reportFor(compiled.value).publishEligible).toBe(true);
   });
 
+  // Revize testů: bez tohohle by časový limit mohl nikdy nevystřelit a sada by
+  // zůstala zelená – hra s limitem potřebuje jen, aby robot vyhrál.
+  it('časový limit kratší než trať robot nestihne – UNWINNABLE', () => {
+    const spec = runner();
+    const rushed = readGameSpec({
+      ...spec,
+      controlParams: { ...spec.controlParams, speed: 'slow', lengthM: 500 },
+      mechanics: [...spec.mechanics, { id: 'timer', params: { id: 'clock', seconds: 10, onEnd: 'lose' } }],
+    });
+    if (!rushed.ok) throw new Error(rushed.issues.join('; '));
+    const compiled = compileGame(rushed.value, 1);
+    expect(compiled.ok).toBe(false);
+    if (!compiled.ok) {
+      expect(compiled.reason).toBe('UNWINNABLE');
+      expect(compiled.issues[0]).toMatch(/lost at tick 601\b/);
+    }
+  });
+
   // R3: krátká řídká trať se životy se dala vyhrát bez hraní a publikace spadla
   // na 422 bez dalšího semínka. Teď je to vada rozvržení, na kterou dveře zkusí jiné.
   it('trať, kterou vyhraje i nečinný hráč, je LAYOUT_FAILED, ne hra', () => {

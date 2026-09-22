@@ -54,6 +54,7 @@ describe('runner remix chips', () => {
       const twisted = remix('twist', parent, seed);
       const rules = twisted.mechanics.map((m) => m.id).filter((id) => id === 'health' || id === 'timer');
       expect(rules).toHaveLength(1);
+      expect(publishable(twisted), `seed ${seed}`).toBe(true);
       added.add(rules[0]);
     }
     expect([...added].sort()).toEqual(['health', 'timer']);
