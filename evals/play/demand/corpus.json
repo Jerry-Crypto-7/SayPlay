@@ -1,0 +1,1802 @@
+[
+ {
+  "id": "s001",
+  "text": "jumping arcade game with a lot of obstacles",
+  "genreGuess": "platformer",
+  "verb": "platform",
+  "coverage": "N",
+  "draftArchetype": "hazard_crossing",
+  "fellBack": false
+ },
+ {
+  "id": "s002",
+  "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+  "genreGuess": "adventure",
+  "verb": "tap_go",
+  "coverage": "F",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s003",
+  "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+  "genreGuess": "chase",
+  "verb": "tap_go",
+  "coverage": "F",
+  "draftArchetype": "chase_escape",
+  "fellBack": false
+ },
+ {
+  "id": "s004",
+  "text": "endless runner in a neon city",
+  "genreGuess": "runner",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s005",
+  "text": "like subway surfers but on a pirate ship",
+  "genreGuess": "runner",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s006",
+  "text": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+  "genreGuess": "runner",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s007",
+  "text": "run and dodge cars",
+  "genreGuess": "runner",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s008",
+  "text": "temple run but you're a banana running from a monkey",
+  "genreGuess": "runner",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s009",
+  "text": "a ninja running on rooftops sliding under laser beams",
+  "genreGuess": "runner",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s010",
+  "text": "runner game where you collect people and your crowd gets bigger then fight the boss at the end",
+  "genreGuess": "runner",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s011",
+  "text": "skateboard down a hill avoiding trash cans and grannies",
+  "genreGuess": "runner",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s012",
+  "text": "i want to run on a rainbow road and collect stars",
+  "genreGuess": "runner",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s013",
+  "text": "A penguin slides down an icy mountain collecting fish",
+  "genreGuess": "runner",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s014",
+  "text": "endles runner with zombies chasing u",
+  "genreGuess": "runner",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "chase_escape",
+  "fellBack": false
+ },
+ {
+  "id": "s015",
+  "text": "a girl running late to school, jump over dogs and puddles",
+  "genreGuess": "runner",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "hazard_crossing",
+  "fellBack": false
+ },
+ {
+  "id": "s016",
+  "text": "runner where you pick gates that multiply or divide your army",
+  "genreGuess": "runner",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "checkpoint_race",
+  "fellBack": false
+ },
+ {
+  "id": "s017",
+  "text": "a mouse runs through a kitchen dodging knives and pans",
+  "genreGuess": "runner",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s018",
+  "text": "lava floor runner",
+  "genreGuess": "runner",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "hazard_crossing",
+  "fellBack": false
+ },
+ {
+  "id": "s019",
+  "text": "a platformer where you jump between floating islands in the sky",
+  "genreGuess": "platformer",
+  "verb": "platform",
+  "coverage": "N",
+  "draftArchetype": "hazard_crossing",
+  "fellBack": false
+ },
+ {
+  "id": "s020",
+  "text": "like mario but you're a frog",
+  "genreGuess": "platformer",
+  "verb": "platform",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s021",
+  "text": "obby game with lava and spinning bars",
+  "genreGuess": "platformer",
+  "verb": "platform",
+  "coverage": "N",
+  "draftArchetype": "hazard_crossing",
+  "fellBack": false
+ },
+ {
+  "id": "s022",
+  "text": "A tiny robot climbs a tower of moving platforms to reach its charger",
+  "genreGuess": "platformer",
+  "verb": "platform",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s023",
+  "text": "jump king style game where falling is super punishing",
+  "genreGuess": "platformer",
+  "verb": "platform",
+  "coverage": "N",
+  "draftArchetype": "hazard_crossing",
+  "fellBack": false
+ },
+ {
+  "id": "s024",
+  "text": "parkour on skyscrapers",
+  "genreGuess": "platformer",
+  "verb": "platform",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s025",
+  "text": "a slime that bounces higher every time it eats a candy",
+  "genreGuess": "platformer",
+  "verb": "platform",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s026",
+  "text": "only up but in a candy land",
+  "genreGuess": "platformer",
+  "verb": "platform",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s027",
+  "text": "doodle jump but in space with asteroids",
+  "genreGuess": "platformer",
+  "verb": "platform",
+  "coverage": "N",
+  "draftArchetype": "hazard_crossing",
+  "fellBack": false
+ },
+ {
+  "id": "s028",
+  "text": "jump across rooftops of a medieval village at night",
+  "genreGuess": "platformer",
+  "verb": "platform",
+  "coverage": "N",
+  "draftArchetype": "hazard_crossing",
+  "fellBack": false
+ },
+ {
+  "id": "s029",
+  "text": "a squirrel jumping from tree to tree collecting acorns before winter",
+  "genreGuess": "platformer",
+  "verb": "platform",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s030",
+  "text": "hard platformer with spikes everywhere that makes me rage",
+  "genreGuess": "platformer",
+  "verb": "platform",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s031",
+  "text": "fall guys style obstacle course",
+  "genreGuess": "platformer",
+  "verb": "platform",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s032",
+  "text": "a sock trying to climb out of a washing machine",
+  "genreGuess": "platformer",
+  "verb": "platform",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s033",
+  "text": "geometry dash but 3d",
+  "genreGuess": "platformer",
+  "verb": "runner",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s034",
+  "text": "hop on lily pads across a pond without falling in",
+  "genreGuess": "platformer",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "hazard_crossing",
+  "fellBack": false
+ },
+ {
+  "id": "s035",
+  "text": "like flappy bird but underwater",
+  "genreGuess": "platformer",
+  "verb": "flap",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s036",
+  "text": "a chicken crossing an endless road like crossy road",
+  "genreGuess": "platformer",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "hazard_crossing",
+  "fellBack": false
+ },
+ {
+  "id": "s037",
+  "text": "A space marine shoots alien bugs in a mining colony",
+  "genreGuess": "shooter",
+  "verb": "aim_shoot",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s038",
+  "text": "shooting game",
+  "genreGuess": "shooter",
+  "verb": "aim_shoot",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s039",
+  "text": "zombie shooter in a mall",
+  "genreGuess": "shooter",
+  "verb": "aim_shoot",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s040",
+  "text": "cowboy duel at high noon, first to shoot wins",
+  "genreGuess": "shooter",
+  "verb": "aim_shoot",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s041",
+  "text": "shoot balloons with a bow before they fly away",
+  "genreGuess": "shooter",
+  "verb": "aim_shoot",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s042",
+  "text": "sniper game where you have to find the target in a crowd",
+  "genreGuess": "shooter",
+  "verb": "aim_shoot",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s043",
+  "text": "a spaceship shooting asteroids and ufos, retro vibes",
+  "genreGuess": "shooter",
+  "verb": "aim_shoot",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s044",
+  "text": "water gun fight in a backyard with my little brothers",
+  "genreGuess": "shooter",
+  "verb": "aim_shoot",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s045",
+  "text": "like krunker but with pirates",
+  "genreGuess": "shooter",
+  "verb": "aim_shoot",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s046",
+  "text": "shooting range with bottles and targets",
+  "genreGuess": "shooter",
+  "verb": "aim_shoot",
+  "coverage": "N",
+  "draftArchetype": "combat_lite",
+  "fellBack": false
+ },
+ {
+  "id": "s047",
+  "text": "A duck with a laser gun defends its pond from robot frogs",
+  "genreGuess": "shooter",
+  "verb": "aim_shoot",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s048",
+  "text": "fps where u shoot paint at robots",
+  "genreGuess": "shooter",
+  "verb": "aim_shoot",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s049",
+  "text": "survive waves of monsters with an auto shooting wand like vampire survivors",
+  "genreGuess": "shooter",
+  "verb": "move_free",
+  "coverage": "N",
+  "draftArchetype": "survival_timer",
+  "fellBack": false
+ },
+ {
+  "id": "s050",
+  "text": "throwing snowballs at kids behind a snow fort",
+  "genreGuess": "shooter",
+  "verb": "throw",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s051",
+  "text": "tank battle in a desert",
+  "genreGuess": "shooter",
+  "verb": "aim_shoot",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s052",
+  "text": "shoot the ghosts in a haunted carnival shooting gallery",
+  "genreGuess": "shooter",
+  "verb": "aim_shoot",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s053",
+  "text": "car racing game",
+  "genreGuess": "racing",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "checkpoint_race",
+  "fellBack": false
+ },
+ {
+  "id": "s054",
+  "text": "drift around a mountain road at night",
+  "genreGuess": "racing",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s055",
+  "text": "like mario kart but with shopping carts",
+  "genreGuess": "racing",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s056",
+  "text": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
+  "genreGuess": "racing",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "checkpoint_race",
+  "fellBack": false
+ },
+ {
+  "id": "s057",
+  "text": "monster truck jumping over cars",
+  "genreGuess": "racing",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "hazard_crossing",
+  "fellBack": false
+ },
+ {
+  "id": "s058",
+  "text": "boat race through a jungle river full of crocodiles",
+  "genreGuess": "racing",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "checkpoint_race",
+  "fellBack": false
+ },
+ {
+  "id": "s059",
+  "text": "racing snails lol",
+  "genreGuess": "racing",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "checkpoint_race",
+  "fellBack": false
+ },
+ {
+  "id": "s060",
+  "text": "motorbike stunts on crazy ramps in the sky",
+  "genreGuess": "racing",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s061",
+  "text": "parking game where you have to park without hitting anything",
+  "genreGuess": "racing",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "combat_lite",
+  "fellBack": false
+ },
+ {
+  "id": "s062",
+  "text": "escape the police in a stolen ice cream truck",
+  "genreGuess": "racing",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "chase_escape",
+  "fellBack": false
+ },
+ {
+  "id": "s063",
+  "text": "hill climb racing but with a bathtub on wheels",
+  "genreGuess": "racing",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "checkpoint_race",
+  "fellBack": false
+ },
+ {
+  "id": "s064",
+  "text": "formula 1 race in monaco",
+  "genreGuess": "racing",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "checkpoint_race",
+  "fellBack": false
+ },
+ {
+  "id": "s065",
+  "text": "A kid races a sled down a snowy hill against a yeti",
+  "genreGuess": "racing",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "checkpoint_race",
+  "fellBack": false
+ },
+ {
+  "id": "s066",
+  "text": "bumper cars arena",
+  "genreGuess": "racing",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s067",
+  "text": "horse race on a beach at sunset",
+  "genreGuess": "racing",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "checkpoint_race",
+  "fellBack": false
+ },
+ {
+  "id": "s068",
+  "text": "a match 3 game with fruits",
+  "genreGuess": "puzzle",
+  "verb": "manipulate",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s069",
+  "text": "candy crush but with gems in a cave",
+  "genreGuess": "puzzle",
+  "verb": "manipulate",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s070",
+  "text": "puzzle where you slide blocks to get the red car out",
+  "genreGuess": "puzzle",
+  "verb": "manipulate",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s071",
+  "text": "sort colored balls into tubes",
+  "genreGuess": "puzzle",
+  "verb": "manipulate",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s072",
+  "text": "A lost robot must push boxes onto switches to open the door",
+  "genreGuess": "puzzle",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "switch_puzzle",
+  "fellBack": false
+ },
+ {
+  "id": "s073",
+  "text": "untangle ropes puzzle",
+  "genreGuess": "puzzle",
+  "verb": "manipulate",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s074",
+  "text": "find the hidden objects in a messy bedroom",
+  "genreGuess": "puzzle",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s075",
+  "text": "connect pipes so the water reaches the flowers",
+  "genreGuess": "puzzle",
+  "verb": "manipulate",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s076",
+  "text": "a maze game where the walls move",
+  "genreGuess": "puzzle",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s077",
+  "text": "escape room in a spaceship",
+  "genreGuess": "puzzle",
+  "verb": "tap_go",
+  "coverage": "F",
+  "draftArchetype": "chase_escape",
+  "fellBack": false
+ },
+ {
+  "id": "s078",
+  "text": "tetris but in 3D with furniture",
+  "genreGuess": "puzzle",
+  "verb": "manipulate",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s079",
+  "text": "unscrew the screws to drop all the plates like those ads",
+  "genreGuess": "puzzle",
+  "verb": "manipulate",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s080",
+  "text": "a cat must knock things off shelves in the right order to reach the fish",
+  "genreGuess": "puzzle",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "checkpoint_race",
+  "fellBack": false
+ },
+ {
+  "id": "s081",
+  "text": "mahjong tiles but 3d",
+  "genreGuess": "puzzle",
+  "verb": "manipulate",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s082",
+  "text": "guide light beams with mirrors to light up a temple",
+  "genreGuess": "puzzle",
+  "verb": "manipulate",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s083",
+  "text": "pull the pins to save the guy from lava",
+  "genreGuess": "puzzle",
+  "verb": "manipulate",
+  "coverage": "N",
+  "draftArchetype": "switch_puzzle",
+  "fellBack": false
+ },
+ {
+  "id": "s084",
+  "text": "matching game with cute animals",
+  "genreGuess": "puzzle",
+  "verb": "manipulate",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s085",
+  "text": "park the cars in a jammed parking lot, tap them to drive out in the right order",
+  "genreGuess": "puzzle",
+  "verb": "manipulate",
+  "coverage": "N",
+  "draftArchetype": "checkpoint_race",
+  "fellBack": false
+ },
+ {
+  "id": "s086",
+  "text": "a word game where letters fall from the sky",
+  "genreGuess": "puzzle",
+  "verb": "manipulate",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s087",
+  "text": "throw a basketball into a hoop from crazy angles",
+  "genreGuess": "physics",
+  "verb": "throw",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s088",
+  "text": "angry birds but with cats and cardboard boxes",
+  "genreGuess": "physics",
+  "verb": "throw",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s089",
+  "text": "flip a bottle so it lands standing",
+  "genreGuess": "physics",
+  "verb": "throw",
+  "coverage": "N",
+  "draftArchetype": "switch_puzzle",
+  "fellBack": false
+ },
+ {
+  "id": "s090",
+  "text": "launch a guy from a cannon as far as possible",
+  "genreGuess": "physics",
+  "verb": "throw",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s091",
+  "text": "throw paper balls into the trash can in an office while the boss isnt looking",
+  "genreGuess": "physics",
+  "verb": "throw",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s092",
+  "text": "ragdoll falling down stairs and breaking bones for points",
+  "genreGuess": "physics",
+  "verb": "throw",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s093",
+  "text": "knock down towers with a wrecking ball",
+  "genreGuess": "physics",
+  "verb": "throw",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s094",
+  "text": "toss a pancake and catch it on the pan",
+  "genreGuess": "physics",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "chase_escape",
+  "fellBack": false
+ },
+ {
+  "id": "s095",
+  "text": "knife throwing at a spinning log",
+  "genreGuess": "physics",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s096",
+  "text": "slingshot fruit at a giant blender",
+  "genreGuess": "physics",
+  "verb": "throw",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s097",
+  "text": "destroy everything in a house with a hammer, smash simulator",
+  "genreGuess": "physics",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "combat_lite",
+  "fellBack": false
+ },
+ {
+  "id": "s098",
+  "text": "stack blocks as high as u can",
+  "genreGuess": "stacking",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s099",
+  "text": "build the tallest pancake tower before it falls over",
+  "genreGuess": "stacking",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s100",
+  "text": "tap at the right time to stop the moving platform",
+  "genreGuess": "timing",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s101",
+  "text": "stack burgers on a plate as they fly across the screen",
+  "genreGuess": "stacking",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s102",
+  "text": "A crane operator stacks containers on a ship in a storm",
+  "genreGuess": "stacking",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s103",
+  "text": "one tap game where a ball bounces down a helix tower",
+  "genreGuess": "timing",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s104",
+  "text": "time your jumps through spinning rings",
+  "genreGuess": "timing",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "checkpoint_race",
+  "fellBack": false
+ },
+ {
+  "id": "s105",
+  "text": "stack animals on top of each other on noah's ark",
+  "genreGuess": "stacking",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s106",
+  "text": "cut the rope at the right moment to feed the monster",
+  "genreGuess": "timing",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s107",
+  "text": "hold to grow a bridge and let go to cross the gap",
+  "genreGuess": "timing",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "hazard_crossing",
+  "fellBack": false
+ },
+ {
+  "id": "s108",
+  "text": "stack the jenga blocks without it falling",
+  "genreGuess": "stacking",
+  "verb": "manipulate",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s109",
+  "text": "like agar.io but you're a fish eating smaller fish",
+  "genreGuess": "io",
+  "verb": "move_free",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s110",
+  "text": "snake game where you grow and cut off other snakes",
+  "genreGuess": "io",
+  "verb": "move_free",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s111",
+  "text": "a black hole that swallows a city, it gets bigger the more it eats",
+  "genreGuess": "io",
+  "verb": "move_free",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s112",
+  "text": "paper io style capture territory",
+  "genreGuess": "io",
+  "verb": "move_free",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s113",
+  "text": "sumo push everyone off an ice platform",
+  "genreGuess": "io",
+  "verb": "move_free",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s114",
+  "text": "A snowball rolls through a village getting bigger and flattening snowmen",
+  "genreGuess": "io",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s115",
+  "text": "battle royale with chickens",
+  "genreGuess": "io",
+  "verb": "move_free",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s116",
+  "text": "collect coins in an arena and bump other players out",
+  "genreGuess": "io",
+  "verb": "move_free",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s117",
+  "text": "slither io but with dragons",
+  "genreGuess": "io",
+  "verb": "move_free",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s118",
+  "text": "eat everything as a hungry shark",
+  "genreGuess": "io",
+  "verb": "move_free",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s119",
+  "text": "idle game where i build a donut empire",
+  "genreGuess": "idle",
+  "verb": "idle",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s120",
+  "text": "merge swords to make stronger swords and fight monsters",
+  "genreGuess": "idle",
+  "verb": "idle",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s121",
+  "text": "clicker game with cookies but in space",
+  "genreGuess": "idle",
+  "verb": "idle",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s122",
+  "text": "merge cute animals to get rare ones",
+  "genreGuess": "idle",
+  "verb": "idle",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s123",
+  "text": "A gold mine where I hire dwarves and upgrade the elevator",
+  "genreGuess": "idle",
+  "verb": "idle",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s124",
+  "text": "tap to grow a garden that makes money while im away",
+  "genreGuess": "idle",
+  "verb": "idle",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s125",
+  "text": "idle factory making toys",
+  "genreGuess": "idle",
+  "verb": "idle",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s126",
+  "text": "merge watermelons like suika game",
+  "genreGuess": "idle",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s127",
+  "text": "penalty kicks against a goalkeeper",
+  "genreGuess": "sports",
+  "verb": "throw",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s128",
+  "text": "basketball free throws",
+  "genreGuess": "sports",
+  "verb": "throw",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s129",
+  "text": "mini golf with windmills and loops",
+  "genreGuess": "sports",
+  "verb": "throw",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s130",
+  "text": "bowling in a haunted alley",
+  "genreGuess": "sports",
+  "verb": "throw",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s131",
+  "text": "soccer game but the players are hamsters",
+  "genreGuess": "sports",
+  "verb": "move_free",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s132",
+  "text": "archery olympics",
+  "genreGuess": "sports",
+  "verb": "aim_shoot",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s133",
+  "text": "ski jumping",
+  "genreGuess": "sports",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "hazard_crossing",
+  "fellBack": false
+ },
+ {
+  "id": "s134",
+  "text": "table tennis vs a robot",
+  "genreGuess": "sports",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s135",
+  "text": "A surfer rides giant waves and does tricks while avoiding sharks",
+  "genreGuess": "sports",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s136",
+  "text": "rocket league with tractors",
+  "genreGuess": "sports",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s137",
+  "text": "fishing game on a frozen lake",
+  "genreGuess": "sports",
+  "verb": "timing",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s138",
+  "text": "pool billiards trick shots",
+  "genreGuess": "sports",
+  "verb": "throw",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s139",
+  "text": "boxing match against a kangaroo",
+  "genreGuess": "sports",
+  "verb": "melee",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s140",
+  "text": "tap to the beat with glowing tiles",
+  "genreGuess": "rhythm",
+  "verb": "rhythm",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s141",
+  "text": "like beat saber but with swords cutting fruit to music",
+  "genreGuess": "rhythm",
+  "verb": "rhythm",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s142",
+  "text": "a dance battle in a disco",
+  "genreGuess": "rhythm",
+  "verb": "rhythm",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s143",
+  "text": "piano tiles but falling from space",
+  "genreGuess": "rhythm",
+  "verb": "rhythm",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s144",
+  "text": "A drummer frog plays on lily pads and the pond lights up with the beat",
+  "genreGuess": "rhythm",
+  "verb": "rhythm",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s145",
+  "text": "music game where a ball rolls on a road to the beat and jumps on the drops",
+  "genreGuess": "rhythm",
+  "verb": "rhythm",
+  "coverage": "N",
+  "draftArchetype": "hazard_crossing",
+  "fellBack": false
+ },
+ {
+  "id": "s146",
+  "text": "sneak past guards in a museum and steal a diamond",
+  "genreGuess": "stealth",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s147",
+  "text": "A kid sneaks down at night to steal cookies without waking mom",
+  "genreGuess": "stealth",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s148",
+  "text": "stealth game as a ninja cat",
+  "genreGuess": "stealth",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s149",
+  "text": "hide and seek in a big house",
+  "genreGuess": "stealth",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s150",
+  "text": "prison escape, avoid the flashlights",
+  "genreGuess": "stealth",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "chase_escape",
+  "fellBack": false
+ },
+ {
+  "id": "s151",
+  "text": "A cat steals fish from a market while dodging the owner",
+  "genreGuess": "stealth",
+  "verb": "tap_go",
+  "coverage": "F",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s152",
+  "text": "sneak into the teachers room to change my grades lol",
+  "genreGuess": "stealth",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s153",
+  "text": "red light green light like squid game",
+  "genreGuess": "stealth",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s154",
+  "text": "tower defense with cats defending a sofa from mice",
+  "genreGuess": "towerdefense",
+  "verb": "build_place",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s155",
+  "text": "defend the castle from waves of goblins",
+  "genreGuess": "towerdefense",
+  "verb": "build_place",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s156",
+  "text": "plants vs zombies but with vegetables vs bugs",
+  "genreGuess": "towerdefense",
+  "verb": "build_place",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s157",
+  "text": "tower defense in space",
+  "genreGuess": "towerdefense",
+  "verb": "build_place",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s158",
+  "text": "place snowmen to stop evil penguins from stealing presents",
+  "genreGuess": "towerdefense",
+  "verb": "build_place",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s159",
+  "text": "protect the cake from ants",
+  "genreGuess": "towerdefense",
+  "verb": "build_place",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s160",
+  "text": "cooking game where you make burgers fast for customers",
+  "genreGuess": "management",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s161",
+  "text": "like overcooked but in a food truck",
+  "genreGuess": "management",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s162",
+  "text": "run a sushi restaurant with a conveyor belt",
+  "genreGuess": "management",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s163",
+  "text": "A barista rushes orders during the morning coffee rush",
+  "genreGuess": "management",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s164",
+  "text": "make pizza and deliver it",
+  "genreGuess": "management",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "delivery",
+  "fellBack": false
+ },
+ {
+  "id": "s165",
+  "text": "run a supermarket, stock shelves and scan items at the checkout",
+  "genreGuess": "management",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s166",
+  "text": "farm game plant carrots harvest sell",
+  "genreGuess": "management",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s167",
+  "text": "manage a hotel for monsters",
+  "genreGuess": "management",
+  "verb": "idle",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s168",
+  "text": "bake a cake and decorate it",
+  "genreGuess": "management",
+  "verb": "build_place",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s169",
+  "text": "a vet clinic where you heal cute pets",
+  "genreGuess": "management",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s170",
+  "text": "dress up a princess for the royal ball",
+  "genreGuess": "dressup",
+  "verb": "build_place",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s171",
+  "text": "fashion show runway where you pick outfits that match the theme",
+  "genreGuess": "dressup",
+  "verb": "build_place",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s172",
+  "text": "makeover game for a messy zombie",
+  "genreGuess": "dressup",
+  "verb": "build_place",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s173",
+  "text": "design my own room with cute furniture",
+  "genreGuess": "dressup",
+  "verb": "build_place",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s174",
+  "text": "nail salon asmr",
+  "genreGuess": "dressup",
+  "verb": "build_place",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s175",
+  "text": "scary game in an abandoned hospital",
+  "genreGuess": "horror",
+  "verb": "tap_go",
+  "coverage": "F",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s176",
+  "text": "five nights at freddys but in a school",
+  "genreGuess": "horror",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s177",
+  "text": "A girl explores a foggy forest with only a flashlight while something follows her",
+  "genreGuess": "horror",
+  "verb": "tap_go",
+  "coverage": "F",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s178",
+  "text": "horror game where a creepy doll moves when u dont look",
+  "genreGuess": "horror",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s179",
+  "text": "escape granny's house",
+  "genreGuess": "horror",
+  "verb": "tap_go",
+  "coverage": "F",
+  "draftArchetype": "chase_escape",
+  "fellBack": false
+ },
+ {
+  "id": "s180",
+  "text": "backrooms but you have to find the exit before the lights go out",
+  "genreGuess": "horror",
+  "verb": "tap_go",
+  "coverage": "F",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s181",
+  "text": "survive the night in a cabin with a monster outside",
+  "genreGuess": "horror",
+  "verb": "tap_go",
+  "coverage": "F",
+  "draftArchetype": "survival_timer",
+  "fellBack": false
+ },
+ {
+  "id": "s182",
+  "text": "A dragon searches a volcano for its stolen egg",
+  "genreGuess": "adventure",
+  "verb": "tap_go",
+  "coverage": "F",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s183",
+  "text": "treasure hunt on a tropical island",
+  "genreGuess": "adventure",
+  "verb": "tap_go",
+  "coverage": "F",
+  "draftArchetype": "chase_escape",
+  "fellBack": false
+ },
+ {
+  "id": "s184",
+  "text": "explore underwater ruins as a little submarine",
+  "genreGuess": "adventure",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s185",
+  "text": "zelda like dungeon with a sword and keys",
+  "genreGuess": "adventure",
+  "verb": "tap_go",
+  "coverage": "F",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s186",
+  "text": "sword fighting game with ninjas",
+  "genreGuess": "fighting",
+  "verb": "melee",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s187",
+  "text": "stickman fight on a rooftop",
+  "genreGuess": "fighting",
+  "verb": "melee",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s188",
+  "text": "A grandma karate fights a gang of pigeons in the park",
+  "genreGuess": "fighting",
+  "verb": "melee",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s189",
+  "text": "pillow fight in a sleepover",
+  "genreGuess": "fighting",
+  "verb": "melee",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s190",
+  "text": "goat simulator but you're a raccoon in a city",
+  "genreGuess": "simulation",
+  "verb": "move_free",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s191",
+  "text": "fly a paper plane through a house",
+  "genreGuess": "simulation",
+  "verb": "steer",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s192",
+  "text": "be a bee collecting pollen and bringing it to the hive",
+  "genreGuess": "simulation",
+  "verb": "tap_go",
+  "coverage": "F",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s193",
+  "text": "survive on a raft in the ocean, catch debris and build",
+  "genreGuess": "survival",
+  "verb": "move_free",
+  "coverage": "N",
+  "draftArchetype": "chase_escape",
+  "fellBack": false
+ },
+ {
+  "id": "s194",
+  "text": "minecraft but tiny, mine and craft to survive the first night",
+  "genreGuess": "survival",
+  "verb": "sandbox",
+  "coverage": "N",
+  "draftArchetype": "survival_timer",
+  "fellBack": false
+ },
+ {
+  "id": "s195",
+  "text": "something relaxing with bubbles",
+  "genreGuess": "casual",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s196",
+  "text": "a cozy game",
+  "genreGuess": "casual",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s197",
+  "text": "something fun and colorful for my little sister",
+  "genreGuess": "casual",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s198",
+  "text": "satisfying game where you pop stuff",
+  "genreGuess": "casual",
+  "verb": "tap_go",
+  "coverage": "P",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s199",
+  "text": "An open world where I'm a dragon rider, fight bosses, level up, upgrade my dragon and explore three kingdoms",
+  "genreGuess": "adventure",
+  "verb": "sandbox",
+  "coverage": "N",
+  "draftArchetype": "collect_exit",
+  "fellBack": false
+ },
+ {
+  "id": "s200",
+  "text": "A multiplayer city where I build my house, drive cars, rob banks and the cops chase me like GTA",
+  "genreGuess": "simulation",
+  "verb": "sandbox",
+  "coverage": "N",
+  "draftArchetype": "chase_escape",
+  "fellBack": false
+ }
+]
