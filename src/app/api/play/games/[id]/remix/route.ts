@@ -10,9 +10,12 @@
 import { z } from 'zod';
 
 import { applyRemix, REMIX_CHIPS, remixPatch } from '@/play/director/remix';
+import type { GameSpecV1 } from '@/play/spec';
 
+import { getCompiler } from '../../../_compiler';
 import { fail, notFound, readJsonBody, VERSION_ID_PATTERN } from '../../../_errors';
 import { admit, derivedSeeds, isSeed, publishReadSpec, publishedResponse, readSpecOrFail, seedFrom, store } from '../../../_publish';
+import { reportFor } from '../../../_report';
 
 const bodySchema = z
   .object({
@@ -45,7 +48,15 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const chipSeed = seed ?? seedFrom({ parentId: id, chip: chip ?? null });
   let child;
   if (chip !== undefined) {
-    const ops = remixPatch(chip, parent.spec, chipSeed);
+    // Twist smí přidat jen mechaniku, se kterou hra projde svými kontrolami –
+    // stejnou kompilací a zprávou jako publikace níž.
+    const compile = getCompiler();
+    const acceptSeed = derivedSeeds(chipSeed)[0];
+    const accept = (candidate: GameSpecV1): boolean => {
+      const compiled = compile(candidate, acceptSeed);
+      return compiled.ok && reportFor(compiled.value).publishEligible;
+    };
+    const ops = remixPatch(chip, parent.spec, chipSeed, accept);
     // Čip, který na téhle hře nemá co změnit, by vydal rodiče pod novým id.
     if (ops.length === 0) return fail(422, 'SPEC_REJECTED', 'this change does not apply to this game');
     const applied = applyRemix(parent.spec, ops);
