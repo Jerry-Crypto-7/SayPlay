@@ -151,52 +151,60 @@ export function instantiate(world: ArcadeWorld): ArcadeState {
 // ---------------------------------------------------------------------------
 // Tik
 
-const alive = (state: ArcadeState, base: number): boolean => ((state[base + BODY.flags] as number) & FLAG.alive) !== 0;
+// Místní kopie importů pro horkou smyčku: pod vitestem je každý importovaný
+// název getter modulu a tik s nimi stál 15× víc než v prohlížeči (50 µs × 3 µs).
+const S = BODY;
+const F = FLAG;
+const HD = HEADER;
+const CT = COUNTER;
+const baseOf = bodyBase;
+
+const alive = (state: ArcadeState, base: number): boolean => ((state[base + S.flags] as number) & F.alive) !== 0;
 
 /** Průnik AABB; `x/z` je střed, `y` spodní stěna. Dotyk hranou není průnik. */
 function overlaps(state: ArcadeState, a: number, b: number): boolean {
   return (
-    Math.abs((state[a + BODY.x] as number) - (state[b + BODY.x] as number)) * 2 < (state[a + BODY.w] as number) + (state[b + BODY.w] as number) &&
-    Math.abs((state[a + BODY.z] as number) - (state[b + BODY.z] as number)) * 2 < (state[a + BODY.d] as number) + (state[b + BODY.d] as number) &&
-    (state[a + BODY.y] as number) < (state[b + BODY.y] as number) + (state[b + BODY.h] as number) &&
-    (state[b + BODY.y] as number) < (state[a + BODY.y] as number) + (state[a + BODY.h] as number)
+    Math.abs((state[a + S.x] as number) - (state[b + S.x] as number)) * 2 < (state[a + S.w] as number) + (state[b + S.w] as number) &&
+    Math.abs((state[a + S.z] as number) - (state[b + S.z] as number)) * 2 < (state[a + S.d] as number) + (state[b + S.d] as number) &&
+    (state[a + S.y] as number) < (state[b + S.y] as number) + (state[b + S.h] as number) &&
+    (state[b + S.y] as number) < (state[a + S.y] as number) + (state[a + S.h] as number)
   );
 }
 
 function integrate(state: ArcadeState, count: number): void {
   for (let i = 0; i < count; i += 1) {
-    const base = bodyBase(i);
+    const base = baseOf(i);
     if (!alive(state, base)) continue;
-    const flags = state[base + BODY.flags] as number;
-    if ((flags & FLAG.gravity) !== 0) {
-      state[base + BODY.vy] = (state[base + BODY.vy] as number) - GRAVITY;
-      state[base + BODY.flags] = flags & ~FLAG.grounded;
+    const flags = state[base + S.flags] as number;
+    if ((flags & F.gravity) !== 0) {
+      state[base + S.vy] = (state[base + S.vy] as number) - GRAVITY;
+      state[base + S.flags] = flags & ~F.grounded;
     }
-    state[base + BODY.x] = (state[base + BODY.x] as number) + (state[base + BODY.vx] as number);
-    state[base + BODY.y] = (state[base + BODY.y] as number) + (state[base + BODY.vy] as number);
-    state[base + BODY.z] = (state[base + BODY.z] as number) + (state[base + BODY.vz] as number);
-    if ((flags & FLAG.gravity) !== 0 && (state[base + BODY.y] as number) <= 0) {
-      state[base + BODY.y] = 0;
-      state[base + BODY.vy] = 0;
-      state[base + BODY.flags] = (state[base + BODY.flags] as number) | FLAG.grounded;
+    state[base + S.x] = (state[base + S.x] as number) + (state[base + S.vx] as number);
+    state[base + S.y] = (state[base + S.y] as number) + (state[base + S.vy] as number);
+    state[base + S.z] = (state[base + S.z] as number) + (state[base + S.vz] as number);
+    if ((flags & F.gravity) !== 0 && (state[base + S.y] as number) <= 0) {
+      state[base + S.y] = 0;
+      state[base + S.vy] = 0;
+      state[base + S.flags] = (state[base + S.flags] as number) | F.grounded;
     }
   }
 }
 
 /** Kolize hráče: dopad shora na pevné tělo hráče postaví na jeho horní hranu, ostatní průniky jsou kontakty. */
 function collide(state: ArcadeState, count: number, player: number, prevY: number): number[] {
-  const p = bodyBase(player);
+  const p = baseOf(player);
   const contacts: number[] = [];
   for (let i = 0; i < count; i += 1) {
     if (i === player) continue;
-    const base = bodyBase(i);
+    const base = baseOf(i);
     if (!alive(state, base) || !overlaps(state, p, base)) continue;
-    const top = (state[base + BODY.y] as number) + (state[base + BODY.h] as number);
-    const solid = ((state[base + BODY.flags] as number) & FLAG.solid) !== 0;
-    if (solid && prevY >= top && (state[p + BODY.vy] as number) <= 0) {
-      state[p + BODY.y] = top;
-      state[p + BODY.vy] = 0;
-      state[p + BODY.flags] = (state[p + BODY.flags] as number) | FLAG.grounded;
+    const top = (state[base + S.y] as number) + (state[base + S.h] as number);
+    const solid = ((state[base + S.flags] as number) & F.solid) !== 0;
+    if (solid && prevY >= top && (state[p + S.vy] as number) <= 0) {
+      state[p + S.y] = top;
+      state[p + S.vy] = 0;
+      state[p + S.flags] = (state[p + S.flags] as number) | F.grounded;
       continue;
     }
     contacts.push(i);
@@ -216,28 +224,28 @@ function apply(state: ArcadeState, count: number, effects: readonly ArcadeEffect
   let lost = false;
   for (let i = from; i < effects.length; i += 1) {
     const effect = effects[i] as ArcadeEffect;
-    if (effect.kind === 'score') state[HEADER.counters + COUNTER.score] = (state[HEADER.counters + COUNTER.score] as number) + effect.amount;
-    else if (effect.kind === 'damage') state[HEADER.counters + COUNTER.health] = (state[HEADER.counters + COUNTER.health] as number) - effect.amount;
+    if (effect.kind === 'score') state[HD.counters + CT.score] = (state[HD.counters + CT.score] as number) + effect.amount;
+    else if (effect.kind === 'damage') state[HD.counters + CT.health] = (state[HD.counters + CT.health] as number) - effect.amount;
     else if (effect.kind === 'lose') lost = true;
     else if (effect.kind === 'win') won = true;
     else if (effect.body >= 0 && effect.body < count) {
-      const flags = bodyBase(effect.body) + BODY.flags;
-      state[flags] = (state[flags] as number) & ~FLAG.alive;
+      const flags = baseOf(effect.body) + S.flags;
+      state[flags] = (state[flags] as number) & ~F.alive;
     }
   }
   // Prohra má přednost: náraz a páska v tomtéž tiku není výhra.
-  if (lost) state[HEADER.runState] = RUN_STATE.lost;
-  else if (won) state[HEADER.runState] = RUN_STATE.won;
+  if (lost) state[HD.runState] = RUN_STATE.lost;
+  else if (won) state[HD.runState] = RUN_STATE.won;
 }
 
 /** Jeden tik. Po konci běhu (`won`/`lost`) nedělá nic. Vrací efekty, které pravidla v tiku vydala. */
 export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProgram): readonly ArcadeEffect[] {
-  if (state[HEADER.runState] !== RUN_STATE.running) return [];
-  const count = state[HEADER.bodyCount] as number;
-  const player = state[HEADER.player] as number;
+  if (state[HD.runState] !== RUN_STATE.running) return [];
+  const count = state[HD.bodyCount] as number;
+  const player = state[HD.player] as number;
 
   program.control.piece.step(state, player, input, program.control.params);
-  const prevY = state[bodyBase(player) + BODY.y] as number;
+  const prevY = state[baseOf(player) + S.y] as number;
   integrate(state, count);
   const contacts = collide(state, count, player, prevY);
 
@@ -257,7 +265,7 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   }
   apply(state, count, effects, countersFrom);
 
-  state[HEADER.tick] = (state[HEADER.tick] as number) + 1;
+  state[HD.tick] = (state[HD.tick] as number) + 1;
   return effects;
 }
 
@@ -266,7 +274,7 @@ export function hashArcade(state: ArcadeState): string {
 }
 
 export function outcomeOf(state: ArcadeState): ArcadeOutcome {
-  const code = state[HEADER.runState];
+  const code = state[HD.runState];
   return code === RUN_STATE.won ? 'won' : code === RUN_STATE.lost ? 'lost' : 'running';
 }
 
@@ -284,10 +292,10 @@ export function replay(world: ArcadeWorld, inputs: readonly InputEvent[], librar
   const program = loadProgram(world, library);
   const state = instantiate(world);
   let next = 0;
-  for (let tick = 0; tick < horizon && state[HEADER.runState] === RUN_STATE.running; tick += 1) {
+  for (let tick = 0; tick < horizon && state[HD.runState] === RUN_STATE.running; tick += 1) {
     while (next < inputs.length && (inputs[next] as InputEvent).tick < tick) next += 1;
     const event = inputs[next];
     step(state, event !== undefined && event.tick === tick ? event : NO_INPUT, program);
   }
-  return { hash: hashArcade(state), outcome: outcomeOf(state), tick: state[HEADER.tick] as number };
+  return { hash: hashArcade(state), outcome: outcomeOf(state), tick: state[HD.tick] as number };
 }

@@ -176,6 +176,8 @@ export const runnerTrack: GeneratorPiece<RunnerTrackParams> = {
       // Bez přeskočitelné překážky smí řada obsadit nejvýš dva pruhy.
       const cap = passable.length > 0 ? maxLanes : Math.min(maxLanes, RUNNER.lanes - 1);
       const taken = rng.shuffle(lanes).slice(0, rng.int(Math.min(minLanes, cap), cap));
+      // První řada vždy stojí i ve startovním pruhu: nečinný hráč nesmí trať proběhnout.
+      if (row === 0 && !taken.includes(0)) taken[0] = 0;
       const kinds = taken.map(() => rng.pick(params.obstacles));
       // Tři pruhy s obstrukcí „jen pruhem“ by řadu zavřely: jeden pruh dostane přeskočitelnou.
       if (kinds.length === RUNNER.lanes && kinds.every((kind) => OBSTACLES[kind].passBy === 'lane')) kinds[0] = rng.pick(passable);

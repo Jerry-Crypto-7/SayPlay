@@ -223,7 +223,14 @@ export interface GeneratorPiece<P = unknown> extends PieceBase<P> {
 export interface ArcadeObservation {
   readonly state: ArcadeState;
   readonly player: number;
+  /** Tik, ze kterého je `state` – o `reactionTicks` starší než tik, pro který robot volí. */
   readonly tick: number;
+  /**
+   * Vstupy, které robot vydal za posledních `reactionTicks` tiků a které v
+   * `state` ještě nejsou vidět. Zpoždění je ve vnímání, ne v paměti: hráč ví,
+   * co zmáčkl, a nezmáčkne „vlevo“ osmkrát, jen protože to ještě nevidí.
+   */
+  readonly recent: readonly ArcadeInput[];
 }
 
 export interface BotPiece<P = unknown> extends PieceBase<P> {
