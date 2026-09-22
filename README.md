@@ -1,6 +1,30 @@
-# WORLDSTREAM – a counterfactual world compiler
+# WORLDSTREAM PLAY – Imagine a game. Play it.
 
-Describe a place in one sentence, act inside the world it compiles to, rewind, change one of its laws in words, and compare two synchronized futures side by side.
+Write one sentence and get a short 3D game you can play right away by tapping where to go. When you win or lose, change one thing ("Make it harder"), get a new game that remembers where it came from, and send the link to a friend – no account, no install.
+
+**Try it at `/play`** on a running build (see Quick start). Every game has its own permanent link, `/play/<id>`, and every remix points back to its parent.
+
+## How it works
+
+```
+sentence ─► Director ─► GameSpec ─► Compiler ─► WorldDoc blueprint ─► deterministic runtime
+            (model)     (~1–2 kB)   (deterministic,     (world + geometry + objects)
+                                     milliseconds)
+                                        │
+                                        └─► Verifier: keypoints + winning witness + replay ─► QualityReport
+GameVersion = hash(spec, world, seed, schema/compiler/runtime versions, parent)
+```
+
+- **Instant draft, better version later.** A deterministic draft built from the words of the sentence is compiled, verified and published at once; the model-written version replaces it when it is ready ("Your custom version is ready"), without breaking the link.
+- **The model writes only a GameSpec** – archetype, mechanics from a closed registry, roles and a goal. It never writes code, rules or geometry. The compiler turns the spec into the world the runtime below already runs.
+- **Nothing unwinnable is published.** The verifier proves each keypoint of the goal over the real runtime, finds a winning path and replays it to an equal state hash; a game that fails any of these is refused with its reason.
+- **Versions never change.** The id is a hash of everything the game stands on; publishing the same game twice returns the same id, and a remix is a new version whose parent stays as it was.
+
+Measured numbers and verdicts for every release gate are in [docs/play/GATES.md](docs/play/GATES.md). In short: all 40 golden sentences give a publishable draft (median 53.6 ms on the server from sentence to verified game); the model-written version took a median of 40.4 s in one live run of 8 sentences.
+
+## Under the hood – the WORLDSTREAM world compiler
+
+PLAY stands on the world compiler this repository started as: describe a place in one sentence, act inside the world it compiles to, rewind, change one of its laws in words, and compare two synchronized futures side by side.
 
 The sentence never becomes code. A planner turns it into a plan, a compiler turns the plan into a **WorldDoc** (declarative rules, state and geometry), and a hand-written deterministic runtime checks that document, searches for a winning path, and runs it at 20 ticks per second with no real-world time in the hashed state. Because the runtime is deterministic, the same world can be rewound to any tick and re-run under a rewritten rule, and the two runs stay comparable to the tick.
 
@@ -26,7 +50,7 @@ What you do on the page, in order:
 
 **Prepared demo** is a separate, explicitly labelled choice. A failed or unavailable live generation reports its reason; it never substitutes a prepared world in the background.
 
-## Architecture
+## Architecture of the world compiler
 
 ![Language to plan to WorldDoc to a verified deterministic runtime to two futures](docs/architecture.svg)
 
@@ -37,7 +61,7 @@ What you do on the page, in order:
 - **Geometry.** 30 first-party models under `public/assets/worldstream/` (two levels of detail each, provenance in `PROVENANCE.md` there), parametric architecture and terrain, and SDF shapes meshed in a Web Worker for forms the catalog does not have.
 - **Answer cache.** `src/server/answer-cache.ts` keys on the sentence, the stage and the model effort; a hit is announced on screen as a reused answer.
 
-## Known limitations
+## Known limitations of the world compiler
 
 All numbers are single measurements on the dates given, not percentiles or guarantees.
 

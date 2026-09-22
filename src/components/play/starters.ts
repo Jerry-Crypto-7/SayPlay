@@ -38,7 +38,7 @@ export const STARTERS: readonly Starter[] = [
 
 /**
  * Měď po dohrání (T6), doslova z `PRODUCT_COPY.md`. Čipy jsou opis
- * `CHIP_LABELS` z `src/play/remix/chips.ts` – ten modul táhne registr a zod,
+ * `REMIX_CHIP_LABELS` ze `src/play/director/remix.ts` – ten modul táhne registr a zod,
  * a do klientského bundlu nepatří; `__tests__/starters.test.ts` drží obě
  * kopie u sebe.
  */

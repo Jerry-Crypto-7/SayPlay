@@ -32,6 +32,7 @@ import type { LabFacts } from './lab';
 import { Lineage } from './Lineage';
 import { PostRun } from './PostRun';
 import { TargetCards } from './TargetCards';
+import { UpgradeBanner, useUpgrade } from './UpgradeBanner';
 import { keyAction, playerActor, tapAction, targetCards } from './targets';
 
 // `ssr: false` je povinné – WebGL2 kontext na serveru není a `<Canvas>` by
@@ -61,10 +62,12 @@ function witnessOps(witness: unknown): readonly { readonly tick: number; readonl
   if (!Array.isArray(ops)) return [];
   return ops
     .map((op) => op as { readonly tick?: unknown; readonly actor?: unknown; readonly actionId?: unknown; readonly target?: unknown })
-    .filter((op) => typeof op.actor === 'string' && typeof op.actionId === 'string')
+    // Svědek kompilátoru PLAY herce nepíše (hraje vždy hráč); `playWitness` ho
+    // doplní z akcí runtime. Svědek bez herce i bez hráče nemá kdo zahrát.
+    .filter((op) => typeof op.actionId === 'string')
     .map((op) => ({
       tick: typeof op.tick === 'number' ? op.tick : 0,
-      action: { actor: op.actor as string, actionId: op.actionId as string, ...(typeof op.target === 'string' ? { target: op.target } : {}) },
+      action: { actor: typeof op.actor === 'string' ? op.actor : '', actionId: op.actionId as string, ...(typeof op.target === 'string' ? { target: op.target } : {}) },
     }))
     .sort((a, b) => a.tick - b.tick);
 }
@@ -77,9 +80,12 @@ export interface PlayShellProps {
   readonly lineage: readonly GameVersion[];
   readonly remixes: number;
   readonly lab: LabFacts;
+  /** Adresa `GET …/upgrade`, když je hra návrh z věty; `null` = není na co čekat. */
+  readonly upgrade: string | null;
 }
 
-export function PlayShell({ versionId, spec, blueprint, lineage, remixes, lab }: PlayShellProps) {
+export function PlayShell({ versionId, spec, blueprint, lineage, remixes, lab, upgrade }: PlayShellProps) {
+  const upgraded = useUpgrade(upgrade);
   const [controller] = useState(() => bindRuntime(null, versionId, blueprint.world).controller);
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
   const [world, setWorld] = useState<ProxyWorld | null>(null);
@@ -174,6 +180,7 @@ export function PlayShell({ versionId, spec, blueprint, lineage, remixes, lab }:
       </div>
       <Hud spec={spec} snapshot={snapshot} />
       <Lineage lineage={lineage} remixes={remixes} />
+      {upgraded !== null && <UpgradeBanner versionId={upgraded} />}
       <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
       {!built && fault === null && (
         <p className="play-building" data-testid="play-building" aria-live="polite">Building the world…</p>

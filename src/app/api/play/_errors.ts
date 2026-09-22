@@ -18,6 +18,7 @@ export type PlayErrorCode =
   | 'LAYOUT_FAILED'
   | 'WORLD_REJECTED'
   | 'UNWINNABLE'
+  | 'NOT_PUBLISHABLE'
   | 'NOT_FOUND'
   | 'UNKNOWN_PARENT'
   | 'VERSION_CONFLICT'
@@ -27,8 +28,14 @@ export type PlayErrorCode =
   | 'SERVER_AT_CAPACITY'
   | 'STORE_UNAVAILABLE';
 
-export function fail(status: number, code: PlayErrorCode, message: string, headers?: Record<string, string>): Response {
-  return Response.json({ error: { code, message } }, { status, headers });
+export function fail(
+  status: number,
+  code: PlayErrorCode,
+  message: string,
+  headers?: Record<string, string>,
+  extra?: Readonly<Record<string, unknown>>,
+): Response {
+  return Response.json({ error: { code, message, ...extra } }, { status, headers });
 }
 
 /** Hra, která není, a id, které nemůže být, dostávají tutéž odpověď – ať se z rozdílu nedá nic vyčíst. */

@@ -147,7 +147,7 @@ function fitBudget(spec: Loose, share: number, applied: string[]): boolean {
   for (let round = 0; round < 12; round += 1) {
     let cost;
     try {
-      cost = estimateCost(mechanics, roles.map((role) => ({ id: role.id, count: role.count ?? 1 })));
+      cost = estimateCost(mechanics, roles.map((role) => ({ id: role.id, kind: role.kind, count: role.count ?? 1 })));
     } catch {
       return false;
     }

@@ -14,30 +14,11 @@
 import { TIER_POLICY } from '@/verify/tiers';
 
 import type { RoleBinding } from '../contracts';
-import type { GameRole, GameSpecV1 } from '../spec';
+import { type GameSpecV1, ROLE_INITIAL_STATE } from '../spec';
 import { type Layout, ZONE_KINDS, roleInstanceId } from './layout';
 import type { SurfaceEntity, SurfaceSim } from './types';
 
 export const PLAYER_SOCKET = 'spawn';
-
-/** Výchozí stav entity podle druhu role; adaptéry stavy přepínají `setState`. */
-const INITIAL_STATE: Readonly<Record<GameRole['kind'], string>> = {
-  player: 'idle',
-  exit: 'open',
-  collectible: 'present',
-  key: 'present',
-  door: 'closed',
-  switch: 'off',
-  hazard: 'on',
-  chaser: 'hunting',
-  patrol: 'walking',
-  item: 'present',
-  destination: 'waiting',
-  checkpoint: 'pending',
-  target: 'alive',
-  prop: 'idle',
-  zone: 'idle',
-};
 
 export function baseSim(spec: GameSpecV1, layout: Layout): { sim: SurfaceSim; roles: RoleBinding[]; player: string } {
   const sockets: Record<string, readonly [number, number]> = {};
@@ -57,7 +38,7 @@ export function baseSim(spec: GameSpecV1, layout: Layout): { sim: SurfaceSim; ro
       const socket = isPlayer ? PLAYER_SOCKET : id;
       sockets[socket] = cell;
       // Dveře začínají zamčené; kdo je odemyká (lock_key, switch), je věc mechaniky.
-      entities[id] = { role: isPlayer ? 'actor' : role.id, socket, state: INITIAL_STATE[role.kind], ...(role.kind === 'door' ? { locked: true } : {}) };
+      entities[id] = { role: isPlayer ? 'actor' : role.id, socket, state: ROLE_INITIAL_STATE[role.kind], ...(role.kind === 'door' ? { locked: true } : {}) };
       if (isPlayer) player = id;
       const rect = layout.zones[id];
       collisionAabb[id] = rect ?? [cell[0], cell[1], 1, 1];

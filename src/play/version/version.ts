@@ -12,12 +12,34 @@ import type { WorldstreamBlueprint } from '@/worldstream/schema';
 import { gameVersionId, type CompiledGame, type GameVersion, type QualityReport } from '../contracts';
 import type { GameSpecV1 } from '../spec';
 
+/**
+ * Vodopád progresivní hry (P23-D T2), milisekundy. `ackMs` a `draftReadyMs`
+ * měří `POST /api/play/games` od příchodu požadavku; `null`, když upgrade
+ * spustil až dotaz na `…/upgrade` (restart, serverless) a POST je neznámý.
+ */
+export interface PlayTimings {
+  readonly ackMs: number | null;
+  readonly draftReadyMs: number | null;
+  readonly directorMs: number;
+  readonly compileMs: number;
+  readonly verifyMs: number;
+  readonly source: 'draft' | 'cached' | 'authored';
+}
+
 /** Co se publikuje pohromadě: verze, spec, svět a důkaz, že to hrálo. */
 export interface PublishedGame {
   readonly version: GameVersion;
   readonly spec: GameSpecV1;
   readonly blueprint: WorldstreamBlueprint;
   readonly report: QualityReport;
+  /**
+   * Návrh z věty si nese větu a semínko volajícího (`null` = odvozené), aby
+   * upgrade šel spustit i bez paměti procesu, která POST viděla (P23-D T2).
+   */
+  readonly origin?: { readonly sentence: string; readonly seed: number | null };
+  /** `'upgrade'` = autorská verze návrhu `version.parentId`, ne remix. */
+  readonly relation?: 'upgrade';
+  readonly timings?: PlayTimings;
 }
 
 export function sealVersion(compiled: CompiledGame, parentId: string | null, now: () => number): GameVersion {

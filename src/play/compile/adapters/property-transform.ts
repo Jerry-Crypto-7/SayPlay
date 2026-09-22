@@ -3,11 +3,10 @@
  * `use`, na signál nebo po doběhnutí časovače. Jedno pravidlo na instanci se
  * stráží `stateIs(from)`, takže druhé spuštění už nic nemění.
  *
- * Výchozí stav entity dává druh role (`INITIAL_STATE` v `sim.ts`); `from`,
- * který se s ním neshoduje a nikdo ho nenastaví, je mrtvé pravidlo – nález v
- * `docs/play/CONTRACT-CHANGES.md`. Časovač nemá v parametrech délku, proto
- * bere pevných `TRANSFORM_AFTER_SECONDS`; signál bez jména je
- * `<role>Triggered`, tj. výchozí jméno `zone_trigger` na téže roli.
+ * Výchozí stav entity dává druh role (`ROLE_INITIAL_STATE` ve `spec.ts`);
+ * `from`, který se s ním neshoduje a žádná mechanika ho nenastaví, odmítne už
+ * `readGameSpec`. Časovač trvá `afterSeconds` (výchozí 10); signál bez jména
+ * je `<role>Triggered`, tj. výchozí jméno `zone_trigger` na téže roli.
  */
 
 import type { z } from 'zod';
@@ -16,8 +15,6 @@ import type { MECHANICS } from '../../registry';
 import type { MechanicAdapter, SurfaceEvent, SurfaceRule, TimerDecl } from '../types';
 import { TICKS_PER_SECOND } from './timer';
 
-export const TRANSFORM_AFTER_SECONDS = 10;
-
 type Params = z.infer<(typeof MECHANICS)['property_transform']['params']>;
 
 export const propertyTransform: MechanicAdapter<Params> = (params, ctx) => {
@@ -25,7 +22,7 @@ export const propertyTransform: MechanicAdapter<Params> = (params, ctx) => {
   const timers: Record<string, TimerDecl> = {};
   const timerId = `${params.role}_transform`;
   if (params.trigger === 'timer') {
-    const ticks = TRANSFORM_AFTER_SECONDS * TICKS_PER_SECOND;
+    const ticks = params.afterSeconds * TICKS_PER_SECOND;
     timers[timerId] = { durationTicks: ticks, init: ticks };
   }
   const trigger = (instance: string): SurfaceEvent => {

@@ -13,7 +13,7 @@ cesta ani adresa úložiště. `code` je stabilní, `message` je věta pro člov
 ### `POST /api/play/games` – publikace
 
 Tělo: `{ sentence?: string, spec?: GameSpecV1, seed?: number, parentId?: string | null }`,
-právě jedno ze `sentence` / `spec`. `seed` je celé číslo 1..2^31; bez něj se odvodí hashem
+právě jedno ze `sentence` / `spec`. `seed` je celé číslo 1..2^31 − 1 (strop `sessionSeed` blueprintu); bez něj se odvodí hashem
 z věty nebo specu (nikde `Math.random`, táž věta = táž hra).
 
 Pořadí bran (odmítnutí v kterémkoli kroku = do úložiště nešel ani bajt):
@@ -29,7 +29,11 @@ Pořadí bran (odmítnutí v kterémkoli kroku = do úložiště nešel ani bajt
 | tělo není JSON, cizí pole, obojí / ani jedno, špatný `seed` | `BAD_REQUEST` | 400 |
 | `parentId` neexistuje nebo nemá tvar id | `UNKNOWN_PARENT` | 404 |
 | spec neprošel `readGameSpec` (i z režiséra) | `SPEC_REJECTED` | 422 |
-| kompilátor odmítl | `MECHANIC_UNSUPPORTED` / `LAYOUT_FAILED` / `WORLD_REJECTED` / `UNWINNABLE` | 422 |
+
+U věty se zdraví úložiště ověří **před** režisérem (`publishRefusal`: 503 `STORE_UNAVAILABLE`), aby se nezaplatil model za hru, kterou by úložiště odmítlo. Vyčerpaný denní strop publikací už publikovanou větu nezavře (200); novou hru odmítne úložiště (429 `PUBLISH_QUOTA`) a synchronní režie se pak nespustí. Autorská verze (`relation: 'upgrade'`) se do denního stropu nepočítá – drží ji strop utrácení a denní počet placených volání režiséra na volajícího (`PLAY_DIRECTOR_CALLS_PER_CALLER`, výchozí 12); volající se pro ten počet pozná jen z důvěryhodného konce (`x-vercel-forwarded-for` na Vercelu, ověřená proxy vlastníka), jinak všichni sdílejí jeden počet – `x-forwarded-for` píše volající. Režisér volá model jen s volným slotem vlastních dveří `play` (pod celkovým stropem souběžných placených volání s `/api/generate` a relacemi WORLDSTREAM); bez slotu je hra návrh ze slov nebo odpověď z cache. Režie má rozpočet 270 s od příchodu požadavku (`maxDuration` 300 s); timeout volání se zkrátí na zbytek a pod 75 s zbytku volání neodejde. Hra od modelu, která neprojde kompilací ani kontrolou (422), spadne na návrh ze slov.
+
+| kompilátor odmítl (u odvozeného semínka se `LAYOUT_FAILED`/`UNWINNABLE` zkouší ještě na třech dalších, `derivedSeeds`) | `MECHANIC_UNSUPPORTED` / `LAYOUT_FAILED` / `WORLD_REJECTED` / `UNWINNABLE` | 422 |
+| verifikátor (`verifyGame`) nepustil hru k publikaci – keypoint, svědek, replay nebo rozpočet | `NOT_PUBLISHABLE` + `keypoints: string[]` (ids, které neprošly) | 422 |
 | jiná hra pod týmž id (liší se jen to, co do hashe nejde) | `VERSION_CONFLICT` | 409 |
 | úložiště neodpovídá | `STORE_UNAVAILABLE` | 503 |
 
@@ -52,14 +56,14 @@ Velikost odpovědi nad fixturovými světy: 5–8 kB blueprintu (změřeno nad
 ### `POST /api/play/games/:id/remix` – remix
 
 Tělo: `{ chip: "harder" | "twist" | "swap_enemy" | "reskin" }` nebo `{ spec: GameSpecV1 }`,
-volitelně `seed`. Rodič z úložiště (404 `NOT_FOUND`), čip → `applyChip` (`src/play/remix/chips.ts`,
-lokální dvojník remixu z P23-B, jen pole schématu), výsledek přes `readGameSpec` (422),
+volitelně `seed`. Rodič z úložiště (404 `NOT_FOUND`), čip → `remixPatch` + `applyRemix` (`src/play/director/remix.ts`,
+RFC 6902 záplata bez modelu; čip, který na hře nemá co změnit, je 422), výsledek přes `readGameSpec` (422),
 publikace jako výše s `parentId = id`. **Rodič se nemění**; semínko dítěte se odvozuje
 z rodiče a čipu, takže týž čip podruhé je **200** s týmž `versionId`.
 
-Čipy: `harder` – rychlejší pronásledovatel / kratší čas / +2 sbíraných, bez toho kratší hra;
-`twist` – jedno koření navíc (`timer` → `health` → `counter`) s keypointem; `swap_enemy` –
-jiný label a povaha nepřítele, bez nepřítele `harder`; `reskin` – jiné `theme` a titul.
+Čipy popisuje hlavička `src/play/director/remix.ts` (P23-B T8): `harder` mění právě jeden parametr,
+`twist` přidá mechaniku s rolí a keypointem, `swap_enemy` jiný nepřítel (bez něj `harder`),
+`reskin` jen `theme`, titul a `label`y.
 
 ## Verze a úložiště
 
@@ -72,8 +76,9 @@ kniha stropu (`sharedStoreFromEnv`, klíče `<prefix>:play:v:<id>`, `<prefix>:pl
 
 ## Testy
 
-`npx vitest run src/play src/app/api/play` – dvojníci (`stubs.test.ts`), verze a úložiště
-(`version.test.ts`, oba backendy), čipy (`chips.test.ts`), routy s osmi poli Oracle
+`npx vitest run src/play src/app/api/play` – švy nad skutečnými vrstvami (`stubs.test.ts`),
+brány placené větve režiséra (`director-seam.test.ts`), verze a úložiště (`version.test.ts`,
+oba backendy), remix (`director-remix.test.ts`), routy s osmi poli Oracle a `NOT_PUBLISHABLE`
 (`routes.test.ts`, handlery volané přímo).
 
 ## Stránky

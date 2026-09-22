@@ -9,11 +9,12 @@ import { expect, test } from '@playwright/test';
 test.describe('/play/[id] – share landing', () => {
   let url = '';
   let id = '';
+  let gameTitle = '';
 
   test.beforeAll(async ({ request }) => {
     const response = await request.post('/api/play/games', { data: { sentence: 'Race through five neon gates in order.' } });
     expect(response.status(), await response.text()).toBeLessThan(300);
-    ({ url } = (await response.json()) as { url: string });
+    ({ url, title: gameTitle } = (await response.json()) as { url: string; title: string });
     id = url.split('/').at(-1)!;
   });
 
@@ -30,7 +31,9 @@ test.describe('/play/[id] – share landing', () => {
   test('the page carries the game title and a PNG preview image', async ({ page, request }) => {
     await page.goto(url);
     const title = await page.locator('meta[property="og:title"]').getAttribute('content');
-    expect(title).toContain('Race through five neon gates in order.');
+    // Titulek píše návrh ze slov, ne opis věty – náhled nese ten, který dveře vrátily.
+    expect(gameTitle).not.toBe('');
+    expect(title).toContain(gameTitle);
     expect(title).toContain('WORLDSTREAM PLAY');
     await expect(page).toHaveTitle(/WORLDSTREAM PLAY/);
     const image = await page.locator('meta[property="og:image"]').getAttribute('content');

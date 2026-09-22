@@ -12,7 +12,8 @@
  *
  * - `<prefix>:play:v:<versionId>` – JSON celé `PublishedGame`,
  * - `<prefix>:play:children:<parentId>` – JSON pole id dětí,
- * - `<prefix>:play:lineage:<versionId>` – JSON pole `GameVersion` od kořene k listu.
+ * - `<prefix>:play:lineage:<versionId>` – JSON pole `GameVersion` od kořene k listu,
+ * - `<prefix>:play:recent` – seznam `RecentGame` od nejnovější, nejvýš `RECENT_CAP` (feed, P23-D T4).
  *
  * **Rodokmen se píše při publikaci, ne počítá při čtení.** Chůze po `parentId`
  * by stála jedno čtení na předka – až 32 příkazů na jeden `GET` z veřejných
@@ -42,10 +43,44 @@ export interface VersionStore {
   get(versionId: string): Promise<PublishedGame | null>;
   /** `quota` = denní strop publikací vyčerpán; nic se nezapsalo. */
   put(game: PublishedGame): Promise<PutOutcome>;
+  /**
+   * Zbývá dnes na publikaci? Jen čte počítadlo, nic nezapočítá – dveře se ptají
+   * dřív, než kvůli publikaci zaplatí model. Výpadek úložiště je `VersionStoreUnavailable`.
+   */
+  canPublish(): Promise<boolean>;
+  /**
+   * Započte jedno placené volání režiséra volajícímu na dnešek; `false` = byl
+   * by nad `limit` (R8). Denní počítadlo leží vedle kvóty publikací, sdílené
+   * napříč instancemi. Výpadek úložiště je `VersionStoreUnavailable`.
+   */
+  takeDirectorCall(caller: string, limit: number): Promise<boolean>;
+  /**
+   * Proč návrh zůstal návrhem, když to už jednou někdo spočítal (R10); `null`
+   * = neví se, i při výpadku úložiště. Zápis výpadek spolkne – nejhůř se
+   * režie zaplatí znovu, jako před R10.
+   */
+  upgradeVerdict(draftId: string): Promise<string | null>;
+  rememberUpgradeVerdict(draftId: string, reason: string, ttlSeconds: number): Promise<void>;
   childrenOf(versionId: string): Promise<string[]>;
   /** Od kořene k listu, nejvýš `MAX_LINEAGE` nejnovějších záznamů. */
   lineageOf(versionId: string): Promise<GameVersion[]>;
+  /**
+   * Nejnovější autorské verze (`relation: 'upgrade'`, `publishEligible`), od
+   * nejnovější, bez vypršelých; nedostupné úložiště je `[]`.
+   */
+  recent(limit: number): Promise<RecentGame[]>;
+  /** Počet dětí každé verze, jedním čtením; nedostupné úložiště jsou nuly. */
+  childCounts(versionIds: readonly string[]): Promise<number[]>;
 }
+
+/** Řádek feedu: verze plus to, co karta ukáže a co feed potřebuje k rozmanitosti. */
+export interface RecentGame extends GameVersion {
+  readonly archetype: string;
+  readonly relation: 'upgrade';
+}
+
+/** Kolik publikací si feed pamatuje. */
+export const RECENT_CAP = 200;
 
 export type PutOutcome = 'stored' | 'exists' | 'conflict' | 'quota';
 
@@ -55,7 +90,7 @@ export const MAX_LINEAGE = 32;
 export interface WriteLimits {
   /** Jak dlouho hra žije od publikace. Výchozí 60 dní – porota otvírá odkazy týdny po odevzdání. */
   readonly ttlSeconds: number;
-  /** Kolik publikací (pokusů o zápis) za den napříč všemi volajícími. */
+  /** Kolik publikací (pokusů o zápis) za den napříč všemi volajícími; autorská dítě (`relation: 'upgrade'`) se nepočítají. */
   readonly dailyCap: number;
 }
 
@@ -84,6 +119,12 @@ interface RawStore {
   set(key: string, value: string, ttlSeconds: number): Promise<void>;
   /** Zvýší počítadlo a vrátí novou hodnotu; klíč vyprší po `ttlSeconds` od prvního zvýšení. */
   incr(key: string, ttlSeconds: number): Promise<number>;
+  /** Přidá na začátek seznamu a usekne ho na `cap` položek. */
+  pushCapped(key: string, value: string, cap: number, ttlSeconds: number): Promise<void>;
+  /** Prvních `count` položek seznamu. */
+  head(key: string, count: number): Promise<string[]>;
+  /** Hodnoty klíčů v témž pořadí, chybějící jako `null`. */
+  getMany(keys: readonly string[]): Promise<(string | null)[]>;
 }
 
 /** Jediná serializace pro zápis: seřazené klíče, bez `undefined`. */
@@ -92,11 +133,12 @@ function serialise(game: PublishedGame): string {
 }
 
 /**
- * Porovnání obsahu bez `createdAt`: `versionId` čas vzniku nenese, takže dvě
- * souběžné publikace téže hry se liší jen jím – to je `exists`, ne `conflict`.
+ * Porovnání obsahu bez `createdAt` a `timings`: `versionId` čas vzniku ani
+ * naměřené časy nenese, takže dvě souběžné publikace téže hry se liší jen jimi
+ * – to je `exists`, ne `conflict`.
  */
 function sameContent(a: PublishedGame, b: PublishedGame): boolean {
-  const strip = (game: PublishedGame): string => canonical({ ...game, version: { ...game.version, createdAt: '' } });
+  const strip = (game: PublishedGame): string => canonical({ ...game, timings: undefined, version: { ...game.version, createdAt: '' } });
   return strip(a) === strip(b);
 }
 
@@ -104,6 +146,9 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const versionKey = (versionId: string): string => `${prefix}:play:v:${versionId}`;
   const childrenKey = (parentId: string): string => `${prefix}:play:children:${parentId}`;
   const lineageKey = (versionId: string): string => `${prefix}:play:lineage:${versionId}`;
+  const quotaKey = (): string => `${prefix}:play:quota:${quotaDay(now())}`;
+  const recentKey = `${prefix}:play:recent`;
+  const verdictKey = (draftId: string): string => `${prefix}:play:upgrade-final:${draftId}`;
 
   const store: VersionStore = {
     id,
@@ -125,7 +170,10 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       const key = versionKey(game.version.versionId);
       const text = serialise(game);
       try {
-        if ((await raw.incr(`${prefix}:play:quota:${quotaDay(now())}`, 2 * 24 * 3600)) > limits.dailyCap) return 'quota';
+        // Autorské dítě se do kvóty nepočítá (R11): stojí placené volání a drží
+        // ho strop utrácení a denní počet volajícího. Jinak by věta zapsala dvě
+        // hry a strop by pustil jen polovinu vět.
+        if (game.relation !== 'upgrade' && (await raw.incr(quotaKey(), 2 * 24 * 3600)) > limits.dailyCap) return 'quota';
         if (!(await raw.setNx(key, text, limits.ttlSeconds))) {
           const existing = await raw.get(key);
           if (existing === text) return 'exists';
@@ -147,9 +195,51 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
           const list = siblings === null ? [] : (JSON.parse(siblings) as string[]);
           await raw.set(childrenOfParent, JSON.stringify([...list, game.version.versionId]), limits.ttlSeconds);
         }
-        return 'stored';
       } catch (thrown) {
         throw new VersionStoreUnavailable(thrown);
+      }
+      // Do feedu jen autorská verze od režiséra (nález revize T4-1): titul
+      // ručního specu, remixu i návrhu ze slov píše volající, a feed by ho
+      // zdarma ukázal každému návštěvníkovi `/play`. Autorská verze stojí
+      // placené volání pod stropy a titul jí napsal model.
+      if (game.report.publishEligible && game.relation === 'upgrade') {
+        const row: RecentGame = { ...game.version, archetype: game.spec.archetype, relation: game.relation };
+        try {
+          await raw.pushCapped(recentKey, JSON.stringify(row), RECENT_CAP, limits.ttlSeconds);
+        } catch {
+          // Feed je navigace: hra je uložená a odkaz na ni platí, i když se do feedu nedostala.
+        }
+      }
+      return 'stored';
+    },
+    async canPublish() {
+      let text: string | null;
+      try {
+        text = await raw.get(quotaKey());
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+      return text === null || Number(text) < limits.dailyCap;
+    },
+    async takeDirectorCall(caller, limit) {
+      try {
+        return (await raw.incr(`${prefix}:play:director:${quotaDay(now())}:${caller}`, 2 * 24 * 3600)) <= limit;
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+    },
+    async upgradeVerdict(draftId) {
+      try {
+        return await raw.get(verdictKey(draftId));
+      } catch {
+        return null;
+      }
+    },
+    async rememberUpgradeVerdict(draftId, reason, ttlSeconds) {
+      try {
+        await raw.set(verdictKey(draftId), reason, ttlSeconds);
+      } catch {
+        // Viz `upgradeVerdict`.
       }
     },
     async childrenOf(versionId) {
@@ -171,6 +261,39 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       const game = await store.get(versionId);
       return game === null ? [] : [game.version];
     },
+    async recent(limit) {
+      try {
+        const rows = await raw.head(recentKey, Math.min(limit, RECENT_CAP));
+        // Seznam žije od poslední publikace, hra od své – vypršelá hra by vedla na 404.
+        const oldest = now() - limits.ttlSeconds * 1000;
+        return rows.flatMap((text) => {
+          try {
+            const row = JSON.parse(text) as RecentGame;
+            return Date.parse(row.createdAt) > oldest ? [row] : [];
+          } catch {
+            return [];
+          }
+        });
+      } catch {
+        return [];
+      }
+    },
+    async childCounts(versionIds) {
+      if (versionIds.length === 0) return [];
+      try {
+        const texts = await raw.getMany(versionIds.map(childrenKey));
+        return texts.map((text) => {
+          if (text === null) return 0;
+          try {
+            return (JSON.parse(text) as string[]).length;
+          } catch {
+            return 0;
+          }
+        });
+      } catch {
+        return versionIds.map(() => 0);
+      }
+    },
   };
   return store;
 }
@@ -178,7 +301,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
 /** Paměť procesu neexpiruje – drží ji denní strop, a `next start` žije kratší dobu než TTL. */
 export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, now: () => number = Date.now): VersionStore {
   const entries = new Map<string, string>();
-  const counters = new Map<string, number>();
+  const lists = new Map<string, string[]>();
   const raw: RawStore = {
     get: (key) => Promise.resolve(entries.get(key) ?? null),
     setNx: (key, value) => {
@@ -190,11 +313,18 @@ export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, n
       entries.set(key, value);
       return Promise.resolve();
     },
+    // Počítadlo leží mezi hodnotami jako text, stejně jako v Redisu – `get` ho přečte.
     incr: (key) => {
-      const next = (counters.get(key) ?? 0) + 1;
-      counters.set(key, next);
+      const next = Number(entries.get(key) ?? '0') + 1;
+      entries.set(key, String(next));
       return Promise.resolve(next);
     },
+    pushCapped: (key, value, cap) => {
+      lists.set(key, [value, ...(lists.get(key) ?? [])].slice(0, cap));
+      return Promise.resolve();
+    },
+    head: (key, count) => Promise.resolve((lists.get(key) ?? []).slice(0, count)),
+    getMany: (keys) => Promise.resolve(keys.map((key) => entries.get(key) ?? null)),
   };
   return versionStoreOver('memory', 'memory', raw, limits, now);
 }
@@ -249,6 +379,21 @@ export function httpVersionStore(config: HttpVersionStoreConfig, fetchImpl: type
       // Expirace jen při prvním zvýšení – další ji neposouvají, den skončí kdy má.
       if (count === 1) await command(['EXPIRE', key, String(ttlSeconds)]);
       return count;
+    },
+    async pushCapped(key, value, cap, ttlSeconds) {
+      await command(['LPUSH', key, value]);
+      await command(['LTRIM', key, '0', String(cap - 1)]);
+      await command(['EXPIRE', key, String(ttlSeconds)]);
+    },
+    async head(key, count) {
+      const result = await command(['LRANGE', key, '0', String(count - 1)]);
+      if (!Array.isArray(result) || !result.every((item) => typeof item === 'string')) throw new Error('version store answered a shape this server cannot read');
+      return result as string[];
+    },
+    async getMany(keys) {
+      const result = await command(['MGET', ...keys]);
+      if (!Array.isArray(result) || result.length !== keys.length) throw new Error('version store answered a shape this server cannot read');
+      return result.map((item) => (typeof item === 'string' ? item : null));
     },
   };
   return versionStoreOver('http', config.prefix, raw, config.limits ?? DEFAULT_WRITE_LIMITS, config.now ?? Date.now);

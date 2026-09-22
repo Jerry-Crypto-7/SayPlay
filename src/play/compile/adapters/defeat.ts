@@ -14,6 +14,9 @@ import type { CounterDecl, MechanicAdapter, SurfaceRule, WitnessStep } from '../
 
 export const DEFEATED_COUNTER = 'defeated';
 
+/** Čítač zásahů jednoho cíle; `spawn_wave` ho při oživení vynuluje. */
+export const hitsCounter = (target: string): string => `${target}_hits`;
+
 type Params = z.infer<(typeof MECHANICS)['defeat']['params']>;
 
 export const defeat: MechanicAdapter<Params> = (params, ctx) => {
@@ -22,7 +25,7 @@ export const defeat: MechanicAdapter<Params> = (params, ctx) => {
   const counters: Record<string, CounterDecl> = { [DEFEATED_COUNTER]: { min: 0, max: targets.length, init: 0 } };
   const witness: WitnessStep[] = [];
   for (const target of targets) {
-    const hits = `${target}_hits`;
+    const hits = hitsCounter(target);
     counters[hits] = { min: 0, max: params.hitsPerTarget, init: 0 };
     rules[`defeat.${target}.hit`] = {
       id: `defeat.${target}.hit`,

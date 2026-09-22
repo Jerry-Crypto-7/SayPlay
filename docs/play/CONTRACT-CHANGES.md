@@ -29,6 +29,14 @@ je proti skutečnému světu měkký. **Návrh pro P23-D:** přepsat `cost` na v
 `chaser` buď zastropovat plochou mřížky, nebo nechat kompilátor vydat pásma, až bude hledač
 umět více než jeden `moveTo` na tik.
 
+**Vyřešeno 21. 9. 2026 (P23-D R1):** `cost` sedmi mechanik počítá podle tabulky a z počtu
+instancí rolí, ne z parametrů; `chaser` bere horní mez plochy mřížky (`maxLayoutCells` přes
+všechny hody kompilátoru – mřížka se přestěhovala do registru jako `LAYOUT_GRID`), `carry`
+počet chodců z druhů rolí. Navíc `patrol`: mysl `1 + stops × 3` plus `touch` na instanci
+(odhad byl o jedno pravidlo pod `delivery`). `registry-cost.test.ts` drží skutečný počet
+pravidel světa (`ir.rules` včetně `sys.moveTo` a myslí) ≤ odhad nad všemi fixturami,
+semínka 1–8; po opravě `collect_exit` 14 / 14, `chase_escape` 76 / 77, `delivery` 19 / 19.
+
 ### `property_transform.from` mimo výchozí stav role (T7)
 
 Výchozí stav entity dává druh role (`INITIAL_STATE` v `compile/sim.ts`: `exit` → `open`,
@@ -37,10 +45,18 @@ mechanika ho nenastaví, je mrtvé pravidlo – spec projde, transformace nikdy 
 **Návrh:** validovat `from` proti výchozímu stavu druhu role, nebo ho ze schématu vypustit a
 brát výchozí stav role.
 
+**Vyřešeno 21. 9. 2026 (P23-D R2):** výchozí stavy se přestěhovaly do `spec.ts`
+(`ROLE_INITIAL_STATE`), mechaniky deklarují `setsStates` a `readGameSpec` odmítne
+(`MECHANIC_REJECTED`) `from`, který role nemá od startu a žádná mechanika ho nenastaví.
+Shodu `setsStates` s adaptéry drží `registry-cost.test.ts` nad všemi fixturami.
+
 ### `property_transform` s `trigger: 'timer'` nemá délku (T7)
 
 Parametry nemají `afterSeconds`; kompilátor bere pevných `TRANSFORM_AFTER_SECONDS = 10`.
 **Návrh:** přidat `afterSeconds` do `propertyTransformParams`.
+
+**Vyřešeno 21. 9. 2026 (P23-D R2):** `afterSeconds` volitelné (1–180, výchozí 10), kompilátor
+ho použije; konstanta zmizela.
 
 ### `spawn_wave` oživuje, nespawnuje (T7)
 
@@ -51,6 +67,12 @@ schedule“) slibuje víc. **Návrh:** buď `active: false` v `SurfaceEntity` pr
 `maxAlive`, nebo přepsat `explanation` a `roleRefs` tak, aby `spawn_wave` vyžadoval `defeat`
 na téže roli.
 
+**Vyřešeno 21. 9. 2026 (P23-D R3):** oživení zůstává (runtime „neaktivní od startu“ pořád
+nezná), ale je úplné: s `defeat` na téže roli přidá `spawn_wave` na instanci `revive` –
+vstup do hnízda ve stavu `down` vrátí `alive` a vynuluje čítač zásahů (dřív byl oživený cíl
+aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne nové kusy. Test nad
+`combat_lite` + `spawn_wave`: oživený slime jde srazit podruhé.
+
 ## P23-B
 
 - **`DirectorResult` větev `ok:false` nemá kdy nastat.** `direct()` (`src/play/director/index.ts`)
@@ -60,6 +82,8 @@ na téže roli.
   `Extract<DirectorResult, {ok:true}>` o `fallbackReason`, `warnings`, `ms`, `calls` –
   přiřaditelné do kontraktu beze změny. Návrh: při společném kroku větev `ok:false` z
   `DirectorResult` vypustit a `fallbackReason` do kontraktu přidat.
+  **Vyřešeno 21. 9. 2026 (P23-D R4):** `DirectorResult` je jediný tvar `ok: true` s
+  `fallbackReason`; `FallbackReason` bydlí v kontraktu, `DirectedGame` ho jen rozšiřuje.
 - **Klíč cache** bere `endpoint` z `GenerationBranch.id` a `model` z `UpstreamRequest.model`
   (= `EMISSION_MODEL`), protože `direct()` dostává větev, ne konfiguraci. Kdyby obálka měla dva
   koncové body s týmž `id`, potřebuje kontrakt `branch.id` odlišit – zatím není důvod.
@@ -71,6 +95,7 @@ na téže roli.
   (`src/app/api/play/_compiler.ts`) svou verzi `'stub-authored-v1'` vydává přes přetypování
   na jednom místě. `GameVersion.compilerVersion` už `string` je; `CompiledGame` by měl
   být stejně široký, aby dvojník i budoucí druhá verze kompilátoru prošly bez castu.
+  **Vyřešeno 21. 9. 2026 (P23-D R4):** `CompiledGame.compilerVersion: string`.
 - **`gameVersionId` dává 8 hex znaků (FNV-1a 32 bitů z `canonicalHash`).** Veřejné id
   hry s 2^32 hodnotami je na hraně kolize už u desítek tisíc her; obálka (`_errors.ts`)
   proto přijímá `/^[a-f0-9]{8,64}$/`, aby delší hash prošel bez změny. Doporučení: v
@@ -80,3 +105,13 @@ na téže roli.
   7,6 min (volný `seed`), takže `gameVersionId(fields, spec)` je od teď prvních 128 bitů
   SHA-256 nad poli verze i celým specem (32 hex). Zároveň dostaly klíče hry expiraci a
   publikace denní strop (`PLAY_VERSION_TTL_SECONDS`, `PLAY_PUBLISH_DAILY_CAP`; `put` → `quota`, routa 429 `PUBLISH_QUOTA`).
+
+## P23-D
+
+- **Progresivní hra přidala tři volitelná pole do uloženého `PublishedGame`, ne do
+  `GameVersion`** (T2, 21. 9. 2026): `origin { sentence, seed }` u návrhu z věty (upgrade jde
+  spustit i z procesu, který POST neviděl), `relation: 'upgrade'` u autorské verze návrhu
+  (`parentId` = návrh; remix pole nemá) a `timings` (`ackMs`, `draftReadyMs`, `directorMs`,
+  `compileMs`, `verifyMs`, `source`). Do `versionId` nejde nic z toho; `put` porovnává obsah
+  bez `timings`, takže táž verze s jinými časy je `exists`. `GET /api/play/games/:id` je vrací
+  beze změny tvaru ostatních polí; `POST` s větou vrací navíc `upgrade` (adresu dotazu).

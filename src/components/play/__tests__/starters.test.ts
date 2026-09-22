@@ -4,9 +4,9 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { MAX_SENTENCE_CHARS } from '@/app/api/play/_publish';
-import { archetypeFor } from '@/app/api/play/_director';
 import { ARCHETYPES } from '@/play/registry';
-import { CHIP_LABELS, CHIPS } from '@/play/remix';
+import { REMIX_CHIP_LABELS as CHIP_LABELS, REMIX_CHIPS as CHIPS } from '@/play/director/remix';
+import { draftGameSpec } from '@/play/draft';
 
 import { BUILD_STEPS, CHALLENGE_A_FRIEND, CHANGE_ONE_THING, HERO, PLACEHOLDER, POST_RUN_CHIPS, SENTENCE_LIMIT, STARTERS, SUBHEAD } from '../starters';
 
@@ -31,8 +31,8 @@ describe('startovní karty', () => {
     expect(STARTERS.map((starter) => starter.archetype).sort()).toEqual(Object.keys(ARCHETYPES).sort());
   });
 
-  it('věta karty přistane u režiséra-dvojníka na svém archetypu', () => {
-    for (const starter of STARTERS) expect(archetypeFor(starter.sentence), starter.archetype).toBe(starter.archetype);
+  it('věta karty přistane v návrhu ze slov na svém archetypu', () => {
+    for (const starter of STARTERS) expect(draftGameSpec(starter.sentence).archetype, starter.archetype).toBe(starter.archetype);
   });
 
   it('věty jsou zlaté prompty z balíčku (hazard_platforming → hazard_crossing)', () => {

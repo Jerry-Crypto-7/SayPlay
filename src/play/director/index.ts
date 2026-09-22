@@ -19,7 +19,7 @@
 
 import type { GenerationBranch } from '@/server/pipeline';
 
-import type { DirectorResult } from '../contracts';
+import type { DirectorResult, FallbackReason } from '../contracts';
 import { draftGameSpec } from '../draft';
 import type { GameSpecV1 } from '../spec';
 
@@ -30,11 +30,10 @@ import { DIRECTOR_PROMPT_VERSION, buildDirectorRequest } from './prompt';
 import { readDirectorAnswer } from './read';
 import { MAX_REPAIR_ROUNDS, applyRepairAnswer, buildRepairRequest, repairDeterministically } from './repair';
 
-export type FallbackReason = 'MODEL_UNAVAILABLE' | 'MALFORMED' | 'UNREPAIRED';
+export type { FallbackReason } from '../contracts';
 
 /** Rozšíření `DirectorResult` – přiřaditelné do kontraktu, s tím, co obálka a měření potřebují navíc. */
-export type DirectedGame = Extract<DirectorResult, { ok: true }> & {
-  readonly fallbackReason: FallbackReason | null;
+export type DirectedGame = DirectorResult & {
   /** Varovné nálezy kritika nad vráceným specem. */
   readonly warnings: readonly CriticIssue[];
   readonly ms: number;
@@ -76,7 +75,8 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   const request = buildDirectorRequest(sentence, draft);
   const key = directorKey({ sentence, promptVersion: DIRECTOR_PROMPT_VERSION, model: request.model, endpoint: deps.branch.id });
   const cached = deps.cache === undefined ? null : await deps.cache.read(key);
-  if (cached !== null) {
+  // Záznam přijal kritik tehdejšího buildu; co dnešní kritik blokuje, je miss.
+  if (cached !== null && blockingIssues(critique(cached)).length === 0) {
     return { ok: true, spec: cached, source: 'cached', repairRounds: 0, fallbackReason: null, warnings: warningsOf(cached), ms: deps.now() - started, calls };
   }
 

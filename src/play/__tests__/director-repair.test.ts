@@ -136,6 +136,16 @@ describe('model repair round', () => {
     const schema = applyRepairAnswer(spec, [{ op: 'replace', path: '/schema', value: 'gamespec.v2' }]);
     expect(schema.ok).toBe(false);
     if (!schema.ok) expect(schema.reason).toBe('SCHEMA_TOUCHED');
+    // Schéma se nesmí ani přesunout jinam, ani přepsat celým dokumentem.
+    for (const operation of [
+      { op: 'move', from: '/schema', path: '/title' },
+      { op: 'copy', from: '/schema', path: '/title' },
+      { op: 'replace', path: '', value: {} },
+      { op: 'replace', path: '/', value: {} },
+    ]) {
+      const touched = applyRepairAnswer(spec, [operation]);
+      expect(touched, JSON.stringify(operation)).toMatchObject({ ok: false, reason: 'SCHEMA_TOUCHED' });
+    }
 
     const object = applyRepairAnswer(spec, { op: 'replace', path: '/title', value: 'x' });
     expect(object.ok).toBe(false);

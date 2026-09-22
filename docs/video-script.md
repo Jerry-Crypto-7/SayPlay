@@ -1,4 +1,34 @@
-# Scénář odevzdávaného videa – 3:00, teze „counterfactual world compiler“
+# Scénář odevzdávaného videa – 90 s, teze PLAY „Imagine a game. Play it.“
+
+Tvrdý limit je **3:00** (`RULES.md` §2); tohle video má **1:30** a zbytek limitu je rezerva, ne místo na vatu. Bez obličeje a bez rozpoznatelného hlasu (`RULES.md` §5), proto **anglické titulky, žádná narace**. Dokument je česky pro toho, kdo stříhá; titulky anglicky pro porotce.
+
+Teze je jedna smyčka: **věta → hra → zahraj → změň jednu věc → nová hra s rodokmenem → pošli odkaz**. Každý záběr je skutečný prohlížeč nad `next start`, žádná fixtura vydávaná za generaci.
+
+## Časová osa 1:30
+
+| Čas | Beat | Co je na obrazovce | Titulek | Záběr |
+|---|---|---|---|---|
+| 0:00–0:08 | věta | `/play`: hero „Imagine a game. Play it.“, do pole se píše vlastní věta (ne startovní karta), klik **Play it**. | `One sentence in.` | Točí se nad `next start`, bez modelu. |
+| 0:08–0:18 | hra (návrh) | Adresa přejde na `/play/<id>`, hned stojí hratelná hra z návrhu ze slov věty; karty cílů dole. | `A playable game at once – drafted from the words of your sentence, then proven winnable.` | Bez modelu. Číslo času do titulku nepatří, dokud ho T6 nezměří přes HTTP. |
+| 0:18–0:38 | hraní klepnutím | Klepnutí na karty cílů: postava jde, sbírá, otvírá; počítadlo cíle roste. | `Tap where to go. No keyboard, no tutorial.` | Bez modelu. |
+| 0:38–0:44 | You won | Obrazovka „You won“ s po-herními volbami. | `Every published game has a proven winning path.` | Bez modelu. |
+| 0:44–0:52 | autorská verze | Proužek „Your custom version is ready“, klik – hra se přepne na verzi, kterou napsal model, odkaz zůstává. | `Meanwhile the model designs a better version. Same link.` | **Potřebuje živý model** (T6 nebo samostatně rozpočtovaný běh). Bez něj se beat vystřihne a čas jde do hraní. |
+| 0:52–1:04 | Make it harder | Čip **Make it harder** → nová hra; rodokmen ukáže rodiče. | `Change one thing. A new game – the original stays exactly as it was.` | Bez modelu jde čip přes návrh; s modelem přes režiséra. |
+| 1:04–1:14 | odkaz kamarádovi | **CHALLENGE A FRIEND** zkopíruje odkaz („Link copied“); druhé okno (anonymní) ho otevře a hraje. | `Send the link. It plays anywhere, no account.` | Bez modelu. |
+| 1:14–1:26 | Lab | Rozbalené „How this game works“: mechaniky z registru, jejich parametry a zpráva o kvalitě (keypointy, svědek, replay). | `Under the hood: a closed set of mechanics, a deterministic runtime, a verified winning path.` | Bez modelu. |
+| 1:26–1:30 | závěr | Tmavé plátno, věta a adresa dema. | `Imagine a game. Play it.` | Adresa až po veřejném nasazení. |
+
+**Součet 1:30.** Kde se škrtá, škrtá se beat „autorská verze“ (bez živého modelu), nikdy smyčka hraj → změň → pošli.
+
+## Co se netočí, a proč
+
+- **Žádné časy v titulku, které nejsou v `docs/play/GATES.md` s verdiktem `PASS`.** Návrh má naměřeno 53,6 ms na serveru, ne čas v prohlížeči; autorská verze p50 40,4 s cíl nesplňuje. Titulek „in N seconds“ až po T6.
+- **Žádná čísla o objemu práce** – ani v titulku, ani v záběru na terminál nebo git.
+- **Žádný firemní branding, paleta ani font zaměstnavatele** (`RULES.md` §5). Paleta PLAY je z `src/app/play/play.css`, bez fialové.
+
+---
+
+## Archiv – scénář 3:00 teze „counterfactual world compiler“ (překonáno 21. 9. 2026)
 
 Tvrdý limit je **3:00** (`RULES.md` §2). Bez obličeje a bez rozpoznatelného hlasu (`RULES.md` §5), proto **anglické titulky, žádná narace**. Tenhle dokument je česky, protože ho čte ten, kdo stříhá; titulky jsou anglicky, protože je čte porotce.
 

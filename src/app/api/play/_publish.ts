@@ -15,24 +15,41 @@
 import { canonicalHash } from '@/ir/worlddoc';
 import type { CompileGameReason } from '@/play/contracts';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
-import { type PublishedGame, type PutOutcome, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv } from '@/play/version';
+import { type PlayTimings, type PublishedGame, type PutOutcome, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv } from '@/play/version';
 import { callerKey, rateLimitCode, takeRateSlot, trustedCallerKey } from '@/server/rate-limit';
 import { killState, type KillState } from '@/server/kill-switch';
 import { ownerIdentityRejection } from '@/server/owner-identity';
 
 import { getCompiler } from './_compiler';
 import { fail, VERSION_ID_PATTERN } from './_errors';
-import { stubReport } from './_report';
+import { reportFor } from './_report';
 
 /** Nejdelší věta, kterou dveře vezmou. Delší je 413, ne oříznutí. */
 export const MAX_SENTENCE_CHARS = 500;
 
-/** Semínko je celé číslo 1..2^31; bez něj se odvodí z obsahu – nikde `Math.random`. */
-export const MAX_SEED = 2 ** 31;
+/**
+ * Semínko je celé číslo 1..2^31 − 1 (strop `sessionSeed` v blueprintu); bez něj
+ * se odvodí z obsahu – nikde `Math.random`.
+ */
+export const MAX_SEED = 2 ** 31 - 1;
 
 export function seedFrom(value: unknown): number {
-  return (Number.parseInt(canonicalHash(value).slice(0, 8), 16) % (MAX_SEED - 1)) + 1;
+  return (Number.parseInt(canonicalHash(value).slice(0, 8), 16) % MAX_SEED) + 1;
 }
+
+/**
+ * Semínka, která dveře zkusí, když si volající žádné nevybral: odvozené a za
+ * ním tři další, pořád deterministicky z něj. Rozvržení na některém semínku
+ * umí vyjít nevyhratelné (naměřeno 21. 9. 2026: návrh „fragile cake" na
+ * semínku z věty prohraje ve 6. tiku, na semínkách 1–3 vyhraje) – věta se
+ * kvůli tomu nemá stát chybou. Semínko zvolené volajícím se nemění nikdy.
+ */
+export function derivedSeeds(base: number): readonly number[] {
+  return [base, ...[1, 2, 3].map((attempt) => seedFrom({ base, attempt }))];
+}
+
+/** Důvody kompilace, které závisí na rozvržení, a proto má smysl zkusit jiné semínko. */
+const SEED_DEPENDENT: ReadonlySet<CompileGameReason> = new Set(['UNWINNABLE', 'LAYOUT_FAILED']);
 
 export function isSeed(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= MAX_SEED;
@@ -58,7 +75,7 @@ export async function admit(request: Request, lever: keyof KillState = 'sessions
   if ((await killState(process.env))[lever]) return fail(503, 'DISABLED', 'this part of PLAY is switched off right now');
   const identity = ownerIdentityRejection(request);
   if (identity !== null) return identity;
-  const slot = takeRateSlot('play', trustedCallerKey(request) ?? callerKey(request));
+  const slot = takeRateSlot('play', callerOf(request));
   if (!slot.allowed) {
     const code = rateLimitCode(slot);
     return fail(
@@ -69,6 +86,26 @@ export async function admit(request: Request, lever: keyof KillState = 'sessions
     );
   }
   return null;
+}
+
+/** Klíč volajícího pro strop frekvence. */
+export function callerOf(request: Request): string {
+  return trustedCallerKey(request) ?? callerKey(request);
+}
+
+/** Společný počet všech volajících bez důvěryhodného klíče (R12). */
+export const UNTRUSTED_DIRECTOR_CALLER = 'untrusted';
+
+/**
+ * Klíč denního počtu placených volání režiséra (R12). Jen z důvěryhodného
+ * konce řetězu: mimo Vercel (a bez ověřené proxy vlastníka) žádný není a pád
+ * `callerKey()` čte `x-forwarded-for`, kterou píše volající – každou novou
+ * hlavičkou by si počet obnovil. Takoví volající proto sdílejí jeden počet:
+ * pro poctivé horší mez, ale placená režie zůstane omezená. Lokální
+ * `next start` je jeden stroj, tam je jeden počet správně.
+ */
+export function directorCallerOf(request: Request): string {
+  return trustedCallerKey(request) ?? UNTRUSTED_DIRECTOR_CALLER;
 }
 
 export function store(): VersionStore {
@@ -101,17 +138,68 @@ export function readSpecOrFail(input: unknown): SpecRead {
   return { ok: true, value: read.value };
 }
 
+/**
+ * Denní strop a zdraví úložiště **před** placeným voláním: věta, kterou by
+ * úložiště stejně odmítlo, nesmí nejdřív zaplatit model (nález revize T1).
+ * `null` = publikovat se dá.
+ */
+export async function publishRefusal(versions: VersionStore): Promise<Response | null> {
+  try {
+    if (await versions.canPublish()) return null;
+  } catch (thrown) {
+    if (thrown instanceof VersionStoreUnavailable) return fail(503, 'STORE_UNAVAILABLE', 'the game could not be saved right now');
+    throw thrown;
+  }
+  return fail(429, 'PUBLISH_QUOTA', "today's publishing quota is used up; try again tomorrow", { 'retry-after': '3600' });
+}
+
+/**
+ * Co se k publikované hře přidá mimo verzi (P23-D T2): původ návrhu, vztah
+ * upgradu a vodopád bez kompilace a kontroly – ty dvě čísla změří tahle cesta.
+ */
+export interface PublishExtras {
+  readonly origin?: PublishedGame['origin'];
+  readonly relation?: PublishedGame['relation'];
+  readonly timings?: Omit<PlayTimings, 'compileMs' | 'verifyMs'>;
+}
+
 export async function publishReadSpec(
   versions: VersionStore,
   spec: GameSpecV1,
-  seed: number,
+  seeds: readonly number[],
   parentId: string | null,
+  extras: PublishExtras = {},
 ): Promise<PublishResult> {
-  const compiled = getCompiler()(spec, seed);
+  const compile = getCompiler();
+  const compileStarted = performance.now();
+  let compiled = compile(spec, seeds[0]);
+  for (const seed of seeds.slice(1)) {
+    if (compiled.ok || !SEED_DEPENDENT.has(compiled.reason)) break;
+    compiled = compile(spec, seed);
+  }
+  const compileMs = performance.now() - compileStarted;
   if (!compiled.ok) return { ok: false, response: fail(422, compiled.reason, COMPILE_MESSAGE[compiled.reason]) };
 
+  // Hra, jejíž keypoint, svědek, replay nebo rozpočet neprošel, se nepublikuje –
+  // odkaz by vedl na hru, která nedělá, co slibuje.
+  const verifyStarted = performance.now();
+  const report = reportFor(compiled.value);
+  const verifyMs = performance.now() - verifyStarted;
+  if (!report.publishEligible) {
+    const keypoints = report.keypoints.filter((keypoint) => !keypoint.passed).map((keypoint) => keypoint.assertionId);
+    return { ok: false, response: fail(422, 'NOT_PUBLISHABLE', 'the game did not pass its own checks', undefined, { keypoints }) };
+  }
+
   const version = sealVersion(compiled.value, parentId, Date.now);
-  const game: PublishedGame = { version, spec, blueprint: compiled.value.blueprint, report: stubReport(compiled.value) };
+  const game: PublishedGame = {
+    version,
+    spec,
+    blueprint: compiled.value.blueprint,
+    report,
+    ...(extras.origin === undefined ? {} : { origin: extras.origin }),
+    ...(extras.relation === undefined ? {} : { relation: extras.relation }),
+    ...(extras.timings === undefined ? {} : { timings: { ...extras.timings, compileMs, verifyMs } }),
+  };
 
   const existing = await versions.get(version.versionId);
   if (existing !== null) return { ok: true, value: { status: 200, game: existing } };
@@ -131,8 +219,8 @@ export async function publishReadSpec(
   return { ok: true, value: { status: outcome === 'stored' ? 201 : 200, game } };
 }
 
-/** Odpověď obou publikujících dveří: kam jít hrát. */
-export function publishedResponse(published: Published): Response {
+/** Odpověď obou publikujících dveří: kam jít hrát, u návrhu z věty i kde čekat na autorskou verzi. */
+export function publishedResponse(published: Published, upgrade = false): Response {
   const { version, spec } = published.game;
   return Response.json(
     {
@@ -141,6 +229,7 @@ export function publishedResponse(published: Published): Response {
       parentId: version.parentId,
       archetype: spec.archetype,
       url: `/play/${version.versionId}`,
+      ...(upgrade ? { upgrade: `/api/play/games/${version.versionId}/upgrade` } : {}),
     },
     { status: published.status },
   );

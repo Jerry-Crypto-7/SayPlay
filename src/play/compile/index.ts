@@ -28,7 +28,7 @@ import { assembleBlueprint } from './blueprint';
 import { layoutRoles, roleInstanceId } from './layout';
 import { createCompileRng } from './rng';
 import { PLAYER_SOCKET, baseSim } from './sim';
-import type { AdapterContext, AdapterOutput, MechanicAdapter, SimCompileResult, SurfaceRule, SurfaceSim, WitnessOp, WitnessStep } from './types';
+import type { AdapterContext, AdapterOutput, MechanicAdapter, SimCompilation, SimCompileResult, SurfaceRule, SurfaceSim, WitnessOp, WitnessStep } from './types';
 
 export type { AdapterContext, AdapterOutput, MechanicAdapter, SimCompilation, SimCompileResult, SurfaceSim } from './types';
 
@@ -153,25 +153,63 @@ export function compileSim(spec: GameSpecV1, seed: number, adapters: AdapterTabl
   return { ok: true, value: { sim: { ...sim, state, witness }, layout, mechanics, roles } };
 }
 
+/** Kolik tiků svědek zkusí počkat, když ho na přímé cestě srazí chodec. */
+const WITNESS_WAITS = [10, 20, 40, 80] as const;
+
+/**
+ * Náhradní svědci pro případ, že přímý prohraje: počkat na startu, nebo po
+ * prvním kroku (typicky sebrat předmět a pak nechat chodce projít). Pořadí
+ * je pevné, takže vítězná varianta – a s ní `worldHash` – je deterministická.
+ */
+function waitingWitnesses(ops: readonly WitnessOp[]): WitnessOp[][] {
+  const shifted = (from: number, wait: number): WitnessOp[] => ops.map((op, index) => (index < from ? op : { ...op, tick: op.tick + wait }));
+  return WITNESS_WAITS.flatMap((wait) => [shifted(0, wait), ...(ops.length > 1 ? [shifted(1, wait)] : [])]);
+}
+
 /**
  * Kontrakt `GameCompiler`: `compileSim` → blueprint → táž brána jako u emise
  * modelu (schéma, křížové odkazy, snížení, svědek). `worldHash` je zapečetěný
  * `simHash` – identita hratelné instance nezávislá na vzhledu.
+ *
+ * Svědek, kterého ověřovač nepotvrdí, dostane náhradníky z `waitingWitnesses`;
+ * `UNWINNABLE` je až tehdy, když prohrají všichni (R6: křehký dort na semínku
+ * 1964188670 prohrál s chodcem v 6. tiku, s čekáním vyhraje).
  */
 export const compileGame: GameCompiler = (spec, seed): CompileGameResult => {
   const compilation = compileSim(spec, seed);
   if (!compilation.ok) return compilation;
-  const blueprint = assembleBlueprint(spec, seed, compilation.value);
+  const { sim } = compilation.value;
+  const candidates = [sim.witness.ops, ...waitingWitnesses(sim.witness.ops)];
 
-  const validation = validateBlueprint(blueprint);
-  if (!validation.ok) return { ok: false, reason: 'WORLD_REJECTED', issues: validation.issues };
-  const dangling = findBlueprintReferenceIssues(blueprint);
-  if (dangling.length > 0) return { ok: false, reason: 'WORLD_REJECTED', issues: dangling.map((issue) => `${issue.where}: ${issue.detail}`) };
-  const built = buildRuntimeWorld(blueprint.world.sim);
-  if (!built.ok) return { ok: false, reason: 'WORLD_REJECTED', issues: built.issues };
-  const verdict = verifyWitness(built.world, built.world.trace);
-  if (verdict.verdict !== 'CERTIFIED') return { ok: false, reason: 'UNWINNABLE', issues: [`${verdict.reason}: ${verdict.detail}`] };
+  let firstLoss: string | null = null;
+  for (const ops of candidates) {
+    const tier = chooseTier(sim, ops);
+    const witnessed = { ...sim, witness: { tier, H_cert: TIER_POLICY[tier].maxHorizonTicks, ops } };
+    const blueprint = assembleBlueprint(spec, seed, { ...compilation.value, sim: witnessed });
 
+    const validation = validateBlueprint(blueprint);
+    if (!validation.ok) return { ok: false, reason: 'WORLD_REJECTED', issues: validation.issues };
+    const dangling = findBlueprintReferenceIssues(blueprint);
+    if (dangling.length > 0) return { ok: false, reason: 'WORLD_REJECTED', issues: dangling.map((issue) => `${issue.where}: ${issue.detail}`) };
+    const built = buildRuntimeWorld(blueprint.world.sim);
+    if (!built.ok) return { ok: false, reason: 'WORLD_REJECTED', issues: built.issues };
+    const verdict = verifyWitness(built.world, built.world.trace);
+    if (verdict.verdict !== 'CERTIFIED') {
+      firstLoss ??= `${verdict.reason}: ${verdict.detail}`;
+      continue;
+    }
+    return certifiedGame(spec, seed, compilation.value, blueprint, verdict.witnessLength);
+  }
+  return { ok: false, reason: 'UNWINNABLE', issues: [firstLoss ?? 'no witness'] };
+};
+
+function certifiedGame(
+  spec: GameSpecV1,
+  seed: number,
+  compilation: SimCompilation,
+  blueprint: ReturnType<typeof assembleBlueprint>,
+  winsAtTick: number,
+): CompileGameResult {
   return {
     ok: true,
     value: {
@@ -181,9 +219,9 @@ export const compileGame: GameCompiler = (spec, seed): CompileGameResult => {
       compilerVersion: GAME_COMPILER_VERSION,
       blueprint,
       worldHash: blueprint.world.simHash,
-      mechanics: compilation.value.mechanics,
-      roles: compilation.value.roles,
-      winsAtTick: verdict.witnessLength,
+      mechanics: compilation.mechanics,
+      roles: compilation.roles,
+      winsAtTick,
     },
   };
-};
+}
