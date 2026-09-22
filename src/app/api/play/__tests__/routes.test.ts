@@ -525,13 +525,25 @@ describe('skutečný kompilátor, verifikátor a režisér (P23-D T1)', () => {
     const created = await createGame(post('/api/play/games', { spec: hazardCrossing }));
     expect(created.status).toBe(201);
     const parentId = (await created.json()).versionId as string;
-    const twisted = await remixGame(post(`/api/play/games/${parentId}/remix`, { chip: 'twist' }), params(parentId));
+    // Pevné semínko: twist pustí jen mechaniku, se kterou hra projde kontrolami,
+    // a u lávy to vyjde jen na některých rozloženích (hlídka) – semínko 3 ano.
+    const twisted = await remixGame(post(`/api/play/games/${parentId}/remix`, { chip: 'twist', seed: 3 }), params(parentId));
     expect(twisted.status).toBe(201);
     const childId = (await twisted.json()).versionId as string;
     expect((await read(childId)).body.spec.mechanics).toHaveLength(4);
     const again = await remixGame(post(`/api/play/games/${childId}/remix`, { chip: 'twist' }), params(childId));
     expect(again.status).toBe(422);
     expect((await again.json()).error.message).toContain('does not apply');
+  });
+
+  it('twist nikdy nevydá hru, která neprojde svými kontrolami', async () => {
+    const created = await createGame(post('/api/play/games', { spec: hazardCrossing }));
+    const parentId = (await created.json()).versionId as string;
+    for (let seed = 1; seed <= 8; seed += 1) {
+      const twisted = await remixGame(post(`/api/play/games/${parentId}/remix`, { chip: 'twist', seed }), params(parentId));
+      const code = twisted.status === 201 ? 'created' : (await twisted.json()).error.code;
+      expect(['created', 'SPEC_REJECTED'], `seed ${seed}`).toContain(code);
+    }
   });
 
   it('čip harder jde přes remixPatch režiséra a dítě je publikovatelné', async () => {

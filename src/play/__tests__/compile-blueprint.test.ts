@@ -84,7 +84,7 @@ describe('compileGame – blueprint over the eight fixtures', () => {
     for (const [archetype, game] of games) {
       expect(simHashOf(game.blueprint.world), archetype).toBe(game.worldHash);
       expect(game.blueprint.world.simHash, archetype).toBe(game.worldHash);
-      expect(game.compilerVersion).toBe('play-compiler-v1');
+      expect(game.compilerVersion).toBe('play-compiler-v2');
       expect(game.seed).toBe(1);
       expect(game.blueprint.sessionSeed).toBe(1);
     }
@@ -108,11 +108,32 @@ describe('compileGame – blueprint over the eight fixtures', () => {
     expect(sources.get('delivery/table')).toBe('asset');
     expect(sources.get('switch_puzzle/red')).toBe('asset');
     expect(sources.get('switch_puzzle/door')).toBe('asset');
-    expect(sources.get('collect_exit/player')).toBe('geom');
-    expect(sources.get('hazard_crossing/lava_1')).toBe('geom');
+    // Od herních modelů z Blenderu (22. 9. 2026) mají model i sbíraná houba,
+    // láva a liška (hráč fixtury).
+    expect(sources.get('collect_exit/mushroom_1')).toBe('asset');
+    expect(sources.get('collect_exit/player')).toBe('asset');
+    expect(sources.get('hazard_crossing/lava_1')).toBe('asset');
     const assetShare = [...sources.values()].filter((kind) => kind === 'asset').length / sources.size;
-    // Podíl assetů se zapisuje do outcome T8; katalog 30 kusů pokrývá jen nábytek a dveře.
-    expect(assetShare).toBeGreaterThan(0);
+    expect(assetShare).toBeGreaterThan(0.5);
+  });
+
+  // Rodina kulis je celá scéna a stavěla přímo na hrací plochu: rytíř a klíče
+  // stáli uvnitř zdí a kamera za nimi (QA 22. 9. 2026).
+  it('carves the scenery out of the play area and the camera side', () => {
+    for (const [archetype, game] of games) {
+      // Poslední řez je ten kolem hry; rodina (např. `works`) může mít vlastní.
+      const carve = [...game.blueprint.geometry.nodes].reverse().find((node) => node.kind === 'carve');
+      if (carve?.kind !== 'carve') throw new Error(`${archetype}: no carve`);
+      for (const object of game.blueprint.objects) {
+        for (const axis of [0, 1, 2]) {
+          expect(object.targetBounds.min[axis], `${archetype}/${object.stableId}`).toBeGreaterThanOrEqual(carve.at[axis] - carve.size[axis] / 2);
+          expect(object.targetBounds.max[axis], `${archetype}/${object.stableId}`).toBeLessThanOrEqual(carve.at[axis] + carve.size[axis] / 2);
+        }
+      }
+      // Výchozí kamera přichází od +x/+z – tam musí řez sahat dál než za hru.
+      expect(carve.at[0], archetype).toBeGreaterThan(0);
+      expect(carve.at[2], archetype).toBeGreaterThan(0);
+    }
   });
 
   it('chooses the family from the theme so the viewer picks the same one', () => {

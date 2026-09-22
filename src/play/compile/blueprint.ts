@@ -9,8 +9,9 @@
  * posune entitu. `intent` se čte z tématu, cíle a vysvětlení mechanik.
  *
  * Řádky entit se věší pod nový kořen `group` (nejvýš 16 potomků, proto po
- * šestnácti do podskupin); rodina má do 17 řádků a spec do 64 entit, strop
- * `GEOM_LIMITS.maxNodes = 96` tedy drží i v nejhorším případě (17 + 64 + 5).
+ * šestnácti do podskupin); rodina má do 17 řádků, `clearArena` přidá 3 a spec
+ * do 64 entit, strop `GEOM_LIMITS.maxNodes = 96` tedy drží i v nejhorším
+ * případě (17 + 3 + 64 + 5).
  */
 
 import { cellToWorld } from '@/components/viewer/projection';
@@ -29,6 +30,45 @@ import type { SimCompilation } from './types';
 /** Kolik z buňky podoba zabere – mezera mezi sousedy, ať se kusy nedotýkají. */
 const CELL_FILL = 0.9;
 const GROUP_CHILDREN = 16;
+/**
+ * Kolik metrů kolem hrací plochy se z kulis vyřízne. Rodiny jsou celé scény
+ * (terasy, věže) a stavěly přímo na plochu, takže rytíř a klíče stáli uvnitř
+ * zdí (QA 22. 9. 2026). Řez bere trojúhelníky podle těžiště, velké stěny
+ * rodin mají těžiště daleko – proto rezerva, ne těsný obrys.
+ */
+const ARENA_MARGIN = 4;
+/**
+ * Na straně kamery se řeže až k ní: výchozí pohled přichází od +x/+z
+ * (`DEFAULT_AZIMUTH` ve `framing.ts`) ze vzdálenosti přes 13 m, a zeď rodiny
+ * v té dráze zakryla celou hru. Za hrou kulisy zůstávají jako pozadí.
+ */
+const CAMERA_SIDE_MARGIN = 20;
+const ARENA_CEILING = 40;
+/**
+ * Řez začíná hluboko pod podlahou. Terén rodiny je strmý (amplituda až 3,4 m)
+ * a řez soudí podle těžiště: při −0,05 zůstaly trojúhelníky s těžištěm těsně
+ * pod nulou, jejichž vrcholy prorážely podlahu jako šedé střepy.
+ */
+const CARVE_FLOOR = -1.5;
+
+/** Kulisy bez ničeho nad hrací plochou a pod ní rovný terén, ať řez nenechá díru. */
+function clearArena(base: GeomProgram, layout: Layout): GeomProgram {
+  const width = layout.width + ARENA_MARGIN * 2;
+  const depth = layout.height + ARENA_MARGIN * 2;
+  const shift = (CAMERA_SIDE_MARGIN - ARENA_MARGIN) / 2;
+  const nodes: GeomNode[] = [
+    ...base.nodes,
+    {
+      kind: 'carve',
+      child: base.root,
+      at: [shift, CARVE_FLOOR + ARENA_CEILING / 2, shift],
+      size: [width + shift * 2, ARENA_CEILING, depth + shift * 2],
+    },
+    { kind: 'terrain', variant: 'flat', extent: [width + shift * 2, depth + shift * 2], amplitude: 0, seed: 0, at: [shift, 0, shift] },
+  ];
+  nodes.push({ kind: 'group', children: [nodes.length - 2, nodes.length - 1] });
+  return { version: base.version, nodes, root: nodes.length - 1 };
+}
 
 const ACTOR_KINDS: readonly GameRole['kind'][] = ['player', 'chaser', 'patrol', 'target'];
 const HERO_KINDS: readonly GameRole['kind'][] = ['exit', 'destination', 'door'];
@@ -103,7 +143,7 @@ export function assembleBlueprint(spec: GameSpecV1, seed: number, compilation: S
     if (asset === null) pieces.push({ id, node: pieceNode(kind, targetBounds) });
     entries.push({ base, asset });
   }
-  const { geometry, nodeOf } = extendGeometry(family.compose(seed), pieces);
+  const { geometry, nodeOf } = extendGeometry(clearArena(family.compose(seed), layout), pieces);
   const objects: SemanticObject[] = entries.map(({ base, asset }) => ({
     ...base,
     source: asset ?? { kind: 'geom', node: nodeOf.get(base.stableId) as number },

@@ -190,8 +190,15 @@ function twistParams(child: GameSpecV1, id: MechanicId): Record<string, unknown>
       return { role: roleOf('hazard') ?? addRole(child, 'hazard', 'hazard', 'sparking floor', 2), effect: 'lose', pulse: { onSeconds: 2, offSeconds: 4 } };
     case 'timer':
       return { id: 'clock', seconds: child.targetDurationSec, onEnd: 'lose' };
-    case 'health':
-      return { max: 3 };
+    case 'health': {
+      // Zdraví ubírá jen zásah s účinkem `damage`; bez něj pravidlo nikdy
+      // nevystřelí, keypoint `health_fires` neprojde a čip končí 422.
+      const damaging = child.mechanics.some((m) => {
+        const params = m.params as Record<string, unknown>;
+        return params.effect === 'damage' || params.catchEffect === 'damage' || params.touchEffect === 'damage';
+      });
+      return damaging ? { max: 3 } : null;
+    }
     case 'stun': {
       const target = roleOf('chaser') ?? roleOf('patrol');
       return target === undefined ? null : { targetRole: target, seconds: 3, uses: 3 };
@@ -207,7 +214,13 @@ function twistParams(child: GameSpecV1, id: MechanicId): Record<string, unknown>
   }
 }
 
-function twist(child: GameSpecV1, pick: (max: number) => number): boolean {
+/**
+ * `accept` pustí jen kandidáta, jehož hra projde vlastními kontrolami. Pět
+ * mechanik (chaser, patrol, timer, health, lock_key) nemá keypoint ve
+ * fixturách a dostane náhradní „vystřelí do 30 tiků“ – časovač ani zdraví bez
+ * zásahu to nikdy nesplní a čip končil 422 (22. 9. 2026).
+ */
+function twist(child: GameSpecV1, pick: (max: number) => number, accept?: (spec: GameSpecV1) => boolean): boolean {
   if (child.mechanics.length >= 4) return false;
   const present = new Set(child.mechanics.map((m) => m.id));
   // `timer` u `survive` a `zone_trigger` bez smyslu se přeskočí; ostatní jdou přes `twistParams`.
@@ -225,6 +238,7 @@ function twist(child: GameSpecV1, pick: (max: number) => number): boolean {
     const keypoint = keypointFor(probe, { id, params });
     if (keypoint !== null) probe.verification.push(keypoint);
     if (!readGameSpec(probe).ok) continue;
+    if (accept !== undefined && !accept(probe)) continue;
     Object.assign(child, probe);
     return true;
   }
@@ -232,7 +246,7 @@ function twist(child: GameSpecV1, pick: (max: number) => number): boolean {
 }
 
 /** RFC 6902 operace čipu; stejný `seed` dá stejné operace. Prázdné pole = na tomhle specu čip nemá co změnit. */
-export function remixPatch(chip: RemixChip, parent: GameSpecV1, seed = 1): Operation[] {
+export function remixPatch(chip: RemixChip, parent: GameSpecV1, seed = 1, accept?: (spec: GameSpecV1) => boolean): Operation[] {
   const rng = xoroshiro128plus(seed);
   const pick = (max: number): number => uniformInt(rng, 0, max - 1);
   const child = clone(parent);
@@ -241,7 +255,7 @@ export function remixPatch(chip: RemixChip, parent: GameSpecV1, seed = 1): Opera
       harder(child);
       break;
     case 'twist':
-      twist(child, pick);
+      twist(child, pick, accept);
       break;
     case 'swap_enemy':
       if (!swapEnemy(child, pick)) harder(child);

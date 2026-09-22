@@ -20,7 +20,7 @@ import type { WorldstreamBlueprint } from '@/worldstream/schema';
 import type { GameSpecV1 } from './spec';
 
 /** Verze kompilátoru: zvednout, když stejný spec+seed dá jiný `WorldDoc`. */
-export const GAME_COMPILER_VERSION = 'play-compiler-v1';
+export const GAME_COMPILER_VERSION = 'play-compiler-v2';
 
 /** Které pravidlo a entita ve `WorldDoc` patří které mechanice a roli. Verifikátor a panel „Why“ to čtou. */
 export interface MechanicBinding {

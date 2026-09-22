@@ -107,6 +107,20 @@ describe('remix chips', () => {
     }
   });
 
+  // Zdraví přidané k lávě, která rovnou zabíjí, nikdy nevystřelí: keypoint
+  // `health_fires` neprošel a čip vracel 422 (odkryto 22. 9. 2026 novým losem).
+  it('twist adds health only where something deals damage', () => {
+    for (const id of ARCHETYPE_IDS) {
+      const parent = base(id);
+      for (let seed = 1; seed <= 40; seed += 1) {
+        const result = applyRemix(parent, remixPatch('twist', parent, seed));
+        if (!result.ok || result.spec.mechanics.length === parent.mechanics.length || result.spec.mechanics.at(-1)?.id !== 'health') continue;
+        const damaging = result.spec.mechanics.some((m) => Object.values(m.params as Record<string, unknown>).includes('damage'));
+        expect(damaging, `${id} seed ${seed}`).toBe(true);
+      }
+    }
+  });
+
   it('swap_enemy renames the chaser or patrol, and falls back to harder without an enemy', () => {
     const chase = applyRemix(base('chase_escape'), remixPatch('swap_enemy', base('chase_escape'), 1));
     expect(chase.ok && chase.spec.roles.find((r) => r.kind === 'chaser')?.label).not.toBe('Roomba');

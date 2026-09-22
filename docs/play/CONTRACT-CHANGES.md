@@ -115,3 +115,12 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   `compileMs`, `verifyMs`, `source`). Do `versionId` nejde nic z toho; `put` porovnává obsah
   bez `timings`, takže táž verze s jinými časy je `exists`. `GET /api/play/games/:id` je vrací
   beze změny tvaru ostatních polí; `POST` s větou vrací navíc `upgrade` (adresu dotazu).
+
+## P24
+
+- **`GAME_COMPILER_VERSION` → `play-compiler-v2`** (22. 9. 2026). Pronásledovatel se poprvé
+  rozjíždí až po `CHASER_START_GRACE` = 60 tiků (3 s), dřív za `CHASER_DELAY` (8 tiků): hráč
+  v honičce prohrál na ticku 17 bez jediného vstupu. Mění to pravidla simulace, a tedy
+  `worldHash` u `chase_escape`; ostatní archetypy mají svět beze změny. Blueprint navíc
+  vyřezává kulisy rodiny nad hrací plochou (`carve` + rovný terén) – to je geometrie, ne
+  simulace, a `worldHash` nehýbe. Staré publikované hry zůstávají pod `play-compiler-v1`.

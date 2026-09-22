@@ -5,11 +5,13 @@
  * naměřeného 20. 9. 2026 (32/32 s archetypem, 8/8 bucketových vět CSV).
  */
 
+import { readFileSync } from 'node:fs';
+
 import { describe, expect, it } from 'vitest';
 
 import { goldenPrompts, packBucketPrompts } from '../../../evals/play/golden';
 import { draftGameSpec, draftGameSpecWithMeta, readNumbers, readRoles } from '../draft';
-import { readGameSpec } from '../spec';
+import { type GameSpecV1, readGameSpec } from '../spec';
 
 const corpus = goldenPrompts();
 
@@ -54,6 +56,30 @@ describe('draftGameSpec', () => {
     // Milion občanů se ořízne do mezí schématu, ne odmítne.
     const city = draftGameSpec('Collect one million coins in the city.');
     expect(city.mechanics.find((m) => m.id === 'collectible')?.params.count).toBe(20);
+  });
+
+  it('puts the right article in front of the renamed role', () => {
+    expect(draftGameSpec('A lone knight gathers three iron keys inside a haunted castle.').tutorial.controlsHint).toMatch(/^Tap an iron key /);
+    expect(draftGameSpec('A knight must collect three keys in a haunted castle.').tutorial.controlsHint).toMatch(/^Tap a key /);
+  });
+
+  // Hráč s větou o klíčích dostal „Tap a mushroom“ (QA 22. 9. 2026): text
+  // ovládání zůstal z předlohy, i když se role přejmenovala.
+  it('never leaves a template label in the texts after the sentence renamed that role', () => {
+    let renamed = 0;
+    for (const entry of corpus) {
+      const meta = draftGameSpecWithMeta(entry.prompt, 1);
+      const template = JSON.parse(readFileSync(new URL(`../__fixtures__/${meta.archetype}.json`, import.meta.url), 'utf8')) as GameSpecV1;
+      const texts = [meta.spec.tutorial.controlsHint, meta.spec.tutorial.goalLine, meta.spec.objective.description].join(' ').toLowerCase();
+      for (const role of meta.spec.roles) {
+        // Podstatné jméno předlohy („glowing mushroom“ → „mushroom“) – texty ho píšou samotné.
+        const before = template.roles.find((r) => r.id === role.id)?.label.toLowerCase().split(' ').at(-1);
+        if (before === undefined || role.label.toLowerCase().includes(before)) continue;
+        renamed += 1;
+        expect(texts, `${entry.id}: ${before} -> ${role.label}`).not.toMatch(new RegExp(`\\b${before}`));
+      }
+    }
+    expect(renamed).toBeGreaterThan(10);
   });
 
   it('keeps the tutorial goal line under 80 characters and the labels under 60 for every sentence', () => {

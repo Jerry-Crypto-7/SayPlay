@@ -24,6 +24,12 @@ import { DAMAGE_COUNTER } from './health';
 
 /** Tiky prodlevy před prvním krokem; potom 1 buňka za tik (`settle`). */
 export const CHASER_DELAY: Readonly<Record<'slow' | 'normal' | 'fast', number>> = { slow: 12, normal: 8, fast: 5 };
+/**
+ * Prodleva prvního rozjezdu (3 s). S `CHASER_DELAY` byl hráč chycen na ticku
+ * 17, dřív než stihl přečíst zadání (QA 22. 9. 2026). Další kroky honičky
+ * zůstávají rychlé – prodlouží se jen start.
+ */
+export const CHASER_START_GRACE = 60;
 
 type Params = z.infer<(typeof MECHANICS)['chaser']['params']>;
 
@@ -56,7 +62,7 @@ export const chaser: MechanicAdapter<Params> = (params, ctx) => {
       priority: 0,
       event: { kind: 'onSeen', agent: id, target: ctx.player },
       condition: null,
-      actions: [{ kind: 'moveTo', target: id, socket: PLAYER_SOCKET, ticks }],
+      actions: [{ kind: 'moveTo', target: id, socket: PLAYER_SOCKET, ticks: Math.max(ticks, CHASER_START_GRACE) }],
     };
     const touch = `chaser.${id}.touch`;
     rules[touch] = { id: touch, phase: 1, priority: 0, event: { kind: 'onCollide', a: id, b: ctx.player }, condition: null, actions: [hit] };

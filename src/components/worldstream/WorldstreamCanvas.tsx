@@ -375,7 +375,7 @@ function LookTransition({ bindings, environment, controller }: { readonly bindin
   return null;
 }
 
-export default function WorldstreamCanvas({ world, controller = null, sceneId = null, reset = 0, framing = 'scene', onPresented, sharedCamera, adaptiveAssets, focusId,cutaway=true, routeHighlight }: {
+export default function WorldstreamCanvas({ world, controller = null, sceneId = null, reset = 0, framing = 'scene', onPresented, sharedCamera, adaptiveAssets, focusId,cutaway=true, routeHighlight, guide = true }: {
   readonly world: ProxyWorld | null;
   readonly controller?: RuntimeController | null;
   readonly sceneId?: string | null;
@@ -388,13 +388,15 @@ export default function WorldstreamCanvas({ world, controller = null, sceneId = 
   readonly cutaway?:boolean;
   /** Zastávky cesty od průvodce, v jejím pořadí. Prázdné pole nekreslí nic. */
   readonly routeHighlight?: readonly string[];
+  /** Figura průvodce. PLAY ji vypíná: vedle hráčovy postavy čte jako druhý hrdina (QA 22. 9. 2026). */
+  readonly guide?: boolean;
 }) {
   // Úroveň se čte ze **světa**, ne z volajícího: kdo svět dostane, ví, proti
   // jakému rozpočtu se má soudit (`proxy.ts`). Prázdné plátno kreslí `full`,
   // protože nekreslí nic.
   const quality: QualityTier = world?.kind === 'built' ? world.quality : 'full';
 
-  const stand = useMemo(() => (world === null ? null : guideStand(world)), [world]);
+  const stand = useMemo(() => (world === null || !guide ? null : guideStand(world)), [world, guide]);
   const markers = useMemo(() => (world === null ? [] : routeMarkers(world, routeHighlight ?? [])), [world, routeHighlight]);
   // Sonda pro e2e, stejným způsobem jako `__worldstreamStage`. Ptá se na to,
   // co se z obrázku plátna přečíst nedá: **stojí tu postava a které zastávky

@@ -176,7 +176,7 @@ export function PlayShell({ versionId, spec, blueprint, lineage, remixes, lab, u
   return (
     <main className="play-shell">
       <div className="play-stage" aria-hidden="true">
-        <WorldstreamCanvas world={world} controller={controller} sceneId={versionId} framing="scene" />
+        <WorldstreamCanvas world={world} controller={controller} sceneId={versionId} framing="scene" guide={false} />
       </div>
       <Hud spec={spec} snapshot={snapshot} />
       <Lineage lineage={lineage} remixes={remixes} />
