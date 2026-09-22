@@ -33,7 +33,21 @@ import runnerTemplate from '../arcade/__fixtures__/runner.json';
 import type { RunnerDensity } from '../arcade/pieces/runner';
 
 import { pickControl } from './controls';
-import { FOOD, FOODS, ORDER_PUZZLE, ORDERS, PUSH_CRATES, plural, readNumbers, readRoles, scoreArchetypes, singular, type SentenceRoles } from './lexicon';
+import {
+  FOOD,
+  FOODS,
+  ORDER_PUZZLE,
+  ORDERS,
+  PUSH_CRATES,
+  RED_LIGHT,
+  WATCHER,
+  plural,
+  readNumbers,
+  readRoles,
+  scoreArchetypes,
+  singular,
+  type SentenceRoles,
+} from './lexicon';
 
 const TEMPLATES: Readonly<Record<ArchetypeId, unknown>> = {
   collect_exit: collectExit,
@@ -216,6 +230,36 @@ function addGuards(spec: GameSpecV1, threat: SentenceRoles['threat']): void {
   });
 }
 
+/**
+ * Červená–zelená (P25D T1): sběr a cíl zůstávají, přibude světlo (`timer.phases`)
+ * a hlídač, který se v červené dívá. Squid Game dá kuličky a cílovou čáru,
+ * horor baterky, dveře ven a strašidelného hlídače – pravidlo je totéž.
+ */
+function redLightLabels(spec: GameSpecV1, read: Read): void {
+  const squid = /\bred light\b|\bgreen light\b|\bsquid games?\b/.test(read.text);
+  const named = WATCHER.exec(read.text)?.[1];
+  const watcher = named ?? (squid ? 'giant doll' : /\bfreddy|\bfnaf\b/.test(read.text) ? 'animatronic bear' : 'creepy doll');
+  spec.roles.push({ id: 'watcher', kind: 'prop', label: label(watcher, 'giant doll'), count: 1 });
+  if (read.roles.collectible === null) role(spec, 'mushroom').label = squid ? 'marble' : 'flashlight battery';
+  role(spec, 'portal').label = squid ? 'finish line' : 'exit door';
+  spec.theme.mood = 'tense';
+}
+
+function addRedLight(spec: GameSpecV1): void {
+  const watcher = role(spec, 'watcher').label;
+  spec.mechanics.push({ id: 'timer', params: { id: 'light', seconds: 120, onEnd: 'lose', phases: { goSeconds: 4, stopSeconds: 2, watcher: 'watcher' } } });
+  spec.objective.description = cap(`${spec.objective.description} Freeze whenever the ${watcher} looks.`, 120);
+  spec.tutorial.goalLine = cap(`${spec.tutorial.goalLine} Freeze when the ${watcher} looks.`, 80);
+  spec.tutorial.controlsHint = cap(`Tap to walk. Stand still while the ${watcher} watches.`, 80);
+  const red = { flags: { light_red: true } };
+  spec.verification.splice(
+    1,
+    0,
+    { id: 'moving_on_red_loses', kind: 'keypoint', mechanic: 'timer', setup: red, actions: [{ actionId: 'moveTo', target: 'portal' }], ticks: 6, assert: { runState: 'lost' } },
+    { id: 'standing_on_red_is_safe', kind: 'keypoint', mechanic: 'timer', setup: red, ticks: 30, assert: { runState: 'running' } },
+  );
+}
+
 interface Read {
   readonly roles: SentenceRoles;
   readonly seconds: number | null;
@@ -227,7 +271,9 @@ interface Read {
 const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
   collect_exit(spec, read) {
     // Kořist plížení bývá jedna („steal a diamond“), sbírání pět.
-    const count = clamp(read.counts[0] ?? (read.roles.stealth ? (read.roles.collectibleMany ? 3 : 1) : 5), 1, 20);
+    const redLight = RED_LIGHT.test(read.text);
+    if (redLight) redLightLabels(spec, read);
+    const count = clamp(read.counts[0] ?? (read.roles.stealth ? (read.roles.collectibleMany ? 3 : 1) : redLight ? 3 : 5), 1, 20);
     const item = role(spec, 'mushroom');
     item.label = label(read.roles.collectible, item.label);
     item.count = count;
@@ -237,7 +283,8 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     rewriteCounters(spec, 'collected', count - 1, count);
     spec.tutorial.goalLine = cap(`Collect ${count} ${plural(item.label, count)}, then reach the exit.`, 80);
     spec.tutorial.controlsHint = cap(`Tap ${withArticle(item.label)} to walk to it. Tap again to pick it up.`, 80);
-    if (read.roles.stealth) addGuards(spec, read.roles.threat);
+    if (redLight) addRedLight(spec);
+    else if (read.roles.stealth) addGuards(spec, read.roles.threat);
     else if (read.roles.threat !== null) addThreat(spec, read.roles.threat, read.text);
   },
   chase_escape(spec, read) {

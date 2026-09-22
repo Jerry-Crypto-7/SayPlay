@@ -183,3 +183,21 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   `wrong_order_ignored`. Návrh ze slov: vaření/zákazníci/obchod/farma nebo jídlo bez „… to Y“ →
   objednávky (s160–s166); „carry/deliver X to Y“ zůstává nesením. Pin promptu režiséra
   10 555 → 10 615 B (tři nové parametry ve schématu). Bez parametru beze změny hashů.
+
+## P25D
+
+- **`timer.params.phases?: { goSeconds, stopSeconds, watcher? }`** (22. 9. 2026, T1,
+  červená–zelená). Parametr dostal `timer`, ne `patrol`: světlo je čistě hodinové (žádná
+  trasa ani mysl postavy) a `timer` je koření povolené v každém archetypu. Časovače
+  `<id>_go`/`<id>_stop` střídají flag `<id>_red`; každý sloupec a řádek mřížky je zóna
+  `<id>_col<x>`/`<id>_row<y>` a vstup hráče do kterékoli v červené prohraje (runtime nemá
+  událost „pohnul se“, každý krok ale vstoupí do nového sloupce nebo řádku). Flag
+  `<id>_armed` z `onStart` odfiltruje první tik, ve kterém runtime vidí hráče „vstoupit“ do
+  buňky, kde stojí. `watcher` (role) je v zelené `away`, v červené `watching`. Capabilities
+  `timer` navíc `onEnterZone`, `setFlag`, `setState`; `CostWorld` má nově `maxSpan`
+  (šířka + výška mřížky). `AdapterOutput.witnessWindow` řekne `planWitness`, že svědek smí
+  chodit jen v zelené. Návrh ze slov: „red light / green light / squid game / when you don't
+  look / freddy / fnaf“ → `collect_exit` se světlem a hlídačem (s153, s176, s178), keypointy
+  `moving_on_red_loses` a `standing_on_red_is_safe`. Fixtury P25D leží v
+  `src/play/__fixtures__/p25d/`, aby nehýbaly počtem fixtur v testech jiných plánů. Pin promptu
+  režiséra 11 253 → 11 362 B. Bez parametru beze změny hashů.

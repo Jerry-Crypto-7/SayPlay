@@ -1,0 +1,153 @@
+{
+  "schema": "gamespec.v1",
+  "targetDurationSec": 90,
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "title": "Red Light Green Light",
+  "archetype": "collect_exit",
+  "theme": {
+    "setting": "sandy playground field",
+    "mood": "tense"
+  },
+  "objective": {
+    "kind": "collect",
+    "description": "Collect three marbles, then reach the finish line. Freeze while the light is red.",
+    "count": 3,
+    "role": "mushroom"
+  },
+  "mechanics": [
+    {
+      "id": "collectible",
+      "params": {
+        "role": "mushroom",
+        "count": 3,
+        "counter": "collected"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "portal",
+        "when": "enter",
+        "effect": "win"
+      }
+    },
+    {
+      "id": "timer",
+      "params": {
+        "id": "light",
+        "seconds": 120,
+        "onEnd": "lose",
+        "phases": {
+          "goSeconds": 2,
+          "stopSeconds": 2,
+          "watcher": "watcher"
+        }
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "kid"
+    },
+    {
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "marble",
+      "count": 3
+    },
+    {
+      "id": "portal",
+      "kind": "exit",
+      "label": "finish line"
+    },
+    {
+      "id": "watcher",
+      "kind": "prop",
+      "label": "giant doll"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Collect 3 marbles, then cross the finish line. Freeze on red.",
+    "controlsHint": "Tap a marble to walk to it. Stand still while the doll watches."
+  },
+  "verification": [
+    {
+      "id": "moving_on_red_loses",
+      "kind": "keypoint",
+      "mechanic": "timer",
+      "setup": {
+        "flags": {
+          "light_red": true
+        }
+      },
+      "actions": [
+        {
+          "actionId": "moveTo",
+          "target": "portal"
+        }
+      ],
+      "ticks": 6,
+      "assert": {
+        "runState": "lost"
+      }
+    },
+    {
+      "id": "standing_on_red_is_safe",
+      "kind": "keypoint",
+      "mechanic": "timer",
+      "setup": {
+        "flags": {
+          "light_red": true
+        }
+      },
+      "ticks": 30,
+      "assert": {
+        "runState": "running"
+      }
+    },
+    {
+      "id": "third_marble_counts",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+        "counters": {
+          "collected": 2
+        }
+      },
+      "actions": [
+        {
+          "actionId": "pickup",
+          "target": "mushroom"
+        }
+      ],
+      "assert": {
+        "counters": {
+          "collected": 3
+        },
+        "firedMechanics": [
+          "collectible"
+        ]
+      }
+    },
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    },
+    {
+      "id": "replay",
+      "kind": "replay",
+      "assert": {
+        "replayEqual": true
+      }
+    }
+  ]
+}

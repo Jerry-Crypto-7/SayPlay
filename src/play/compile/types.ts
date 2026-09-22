@@ -131,6 +131,17 @@ export interface AdapterOutput {
   readonly agents?: readonly AgentDecl[];
   /** Kolik inventárních slotů mechanika žádá (`giveItem`/`hasItem`). */
   readonly slots?: number;
+  /**
+   * Svědek smí chodit jen v zelené (`timer.phases`, P25D T1): od tiku 0 se
+   * střídá `goTicks` zelené a `stopTicks` červené; `planWitness` posune
+   * každou chůzi tak, aby celá proběhla v zelené.
+   */
+  readonly witnessWindow?: WitnessWindow;
+}
+
+export interface WitnessWindow {
+  readonly goTicks: number;
+  readonly stopTicks: number;
 }
 
 export type MechanicAdapter<P = unknown> = (params: P, ctx: AdapterContext) => AdapterOutput;

@@ -29,7 +29,18 @@ import { assembleBlueprint } from './blueprint';
 import { layoutRoles, roleInstanceId } from './layout';
 import { createCompileRng } from './rng';
 import { PLAYER_SOCKET, baseSim } from './sim';
-import type { AdapterContext, AdapterOutput, MechanicAdapter, SimCompilation, SimCompileResult, SurfaceRule, SurfaceSim, WitnessOp, WitnessStep } from './types';
+import type {
+  AdapterContext,
+  AdapterOutput,
+  MechanicAdapter,
+  SimCompilation,
+  SimCompileResult,
+  SurfaceRule,
+  SurfaceSim,
+  WitnessOp,
+  WitnessStep,
+  WitnessWindow,
+} from './types';
 
 export type { AdapterContext, AdapterOutput, MechanicAdapter, SimCompilation, SimCompileResult, SurfaceSim } from './types';
 
@@ -56,21 +67,42 @@ function checkCapabilities(mechanicId: MechanicId, rules: Readonly<Record<string
  * `src/sim/interpreter.ts:795`), akce bez pohybu se projeví týž tik; mezi kroky
  * jsou 2 tiky navíc, aby `onEnterZone` stihl hranu a `emit` doručení.
  */
-function planWitness(sim: SurfaceSim, steps: readonly WitnessStep[]): WitnessOp[] {
+function planWitness(sim: SurfaceSim, steps: readonly WitnessStep[], window: WitnessWindow | null): WitnessOp[] {
   const ordered = [...steps].sort((a, b) => a.stage - b.stage);
   const ops: WitnessOp[] = [];
   let at = sim.sockets[PLAYER_SOCKET];
   let tick = 0;
   for (const step of ordered) {
-    ops.push({ tick, actionId: step.actionId, target: step.target });
     if (step.actionId === 'moveTo') {
       const cell = sim.sockets[sim.entities[step.target].socket];
-      tick += 1 + Math.abs(cell[0] - at[0]) + Math.abs(cell[1] - at[1]);
+      const walk = 1 + Math.abs(cell[0] - at[0]) + Math.abs(cell[1] - at[1]);
+      if (window !== null) tick = greenStart(tick, walk, window);
+      ops.push({ tick, actionId: step.actionId, target: step.target });
+      tick += walk;
       at = cell;
+    } else {
+      ops.push({ tick, actionId: step.actionId, target: step.target });
     }
     tick += 2;
   }
   return ops;
+}
+
+/** Tiky rezervy na obou koncích zelené – přepnutí světla přijde tik po doběhnutí časovače. */
+const GREEN_MARGIN = 3;
+
+/**
+ * Nejbližší tik od `tick`, od kterého chůze délky `walk` celá proběhne v
+ * zelené. Zelená je fáze `[0, goTicks)` periody `goTicks + stopTicks`
+ * (naměřeno: červená od fáze `goTicks + 1`). Chůze delší než zelená se
+ * neposouvá – svědek pak prohraje a hra se nepublikuje, což je poctivý konec.
+ */
+export function greenStart(tick: number, walk: number, window: WitnessWindow): number {
+  const period = window.goTicks + window.stopTicks;
+  if (walk + 2 * GREEN_MARGIN > window.goTicks) return tick;
+  const phase = tick % period;
+  if (phase >= GREEN_MARGIN && phase + walk + GREEN_MARGIN <= window.goTicks) return tick;
+  return tick - phase + (phase < GREEN_MARGIN ? GREEN_MARGIN : period + GREEN_MARGIN);
 }
 
 /**
@@ -112,6 +144,7 @@ export function compileSim(spec: GameSpecV1, seed: number, adapters: AdapterTabl
   const steps: WitnessStep[] = [];
   const agents = [...(sim.state.agents ?? [])];
   let slots = sim.state.slots;
+  let window: WitnessWindow | null = null;
   for (const mechanic of spec.mechanics) {
     const entry = MECHANICS[mechanic.id] as MechanicEntry<unknown>;
     const params = entry.params.parse(mechanic.params);
@@ -138,6 +171,7 @@ export function compileSim(spec: GameSpecV1, seed: number, adapters: AdapterTabl
     agents.push(...(output.agents ?? []));
     steps.push(...(output.witness ?? []));
     slots = Math.max(slots, output.slots ?? 0);
+    window = output.witnessWindow ?? window;
 
     mechanics.push({
       mechanicId: mechanic.id,
@@ -148,7 +182,7 @@ export function compileSim(spec: GameSpecV1, seed: number, adapters: AdapterTabl
   }
 
   const state = { ...sim.state, slots, ...(agents.length > 0 ? { agents } : {}) };
-  const ops = planWitness(sim, steps);
+  const ops = planWitness(sim, steps, window);
   const tier = chooseTier({ ...sim, state }, ops);
   const witness = { tier, H_cert: TIER_POLICY[tier].maxHorizonTicks, ops };
   return { ok: true, value: { sim: { ...sim, state, witness }, layout, mechanics, roles } };

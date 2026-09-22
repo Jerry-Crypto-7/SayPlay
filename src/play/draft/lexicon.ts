@@ -15,6 +15,16 @@ import type { ArchetypeId } from '../registry';
 export const STEALTH =
   /\bsneak(?:s|ing|y)?\b|\bstealth(?:y)?\b|\bguards?\b|\bunseen\b|\bundetected\b|\bwithout (?:being )?(?:seen|spotted|caught|noticed|waking)\b|\bhid(?:e|es|ing)\b|\bflashlights?\b/;
 
+/**
+ * Červená–zelená (`timer.phases`, P25D T1): hýbat se smíš, jen když se hlídač
+ * nedívá. Squid Game i horor „hýbe se, když se nedíváš“ jsou tatáž hra.
+ */
+export const RED_LIGHT =
+  /\bred light\b|\bgreen light\b|\bsquid games?\b|\bwhen (?:you|u) (?:look away|turn away|(?:don'?t|do not|aren'?t|are not) (?:look|watch)(?:ing)?)\b|\bfreddy'?s?\b|\bfnaf\b|\b(?:musical |play(?:ing)? )statues\b|\bstatues? game\b/;
+
+/** Hlídač červené–zelené, když ho věta jmenuje; skupina 1 = popisek. */
+export const WATCHER = /\b((?:creepy |giant |haunted |old |evil )?(?:doll|statue|animatronic|mannequin|puppet|clown))s?\b/;
+
 /** Hádanka pořadí: spínače jdou zapnout jen v daném pořadí (`switch.ordered`). */
 export const ORDER_PUZZLE = /\bin (?:the )?(?:right|correct|exact) order\b/;
 
@@ -40,6 +50,7 @@ export const ARCHETYPE_CUES: Readonly<Record<ArchetypeId, readonly RegExp[]>> = 
     // Plížení (P25B T3) je sběr s hlídkami, které vidí – „steal the diamond and get out“.
     /\bsteal(?:s|ing)?\b/,
     STEALTH,
+    RED_LIGHT,
   ],
   chase_escape: [
     /\bchas(?:e|es|ed|ing)\b/,
