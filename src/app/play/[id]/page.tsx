@@ -8,8 +8,8 @@ import { admit } from '@/app/api/play/_publish';
 import { labFacts } from '@/components/play/lab';
 import { PlayShell } from '@/components/play/PlayShell';
 import type { GameVersion } from '@/play/contracts';
-import { type Honesty, unsupportedGame } from '@/play/draft/unsupported';
-import { type PublishedGame, type VersionStore, versionStoreFromEnv } from '@/play/version';
+import { type Honesty, honestyOf } from '@/play/draft/unsupported';
+import { type PublishedGame, versionStoreFromEnv } from '@/play/version';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -41,16 +41,9 @@ const load = cache(async (id: string): Promise<Loaded> => {
   const versions = versionStoreFromEnv(process.env);
   const game = await versions.get(id);
   if (game === null) return { kind: 'missing' };
-  const [children, lineage, sentence] = await Promise.all([versions.childrenOf(id), versions.lineageOf(id), sentenceOf(versions, game)]);
-  return { kind: 'game', game, children, lineage, honesty: sentence === null ? null : unsupportedGame(sentence, game.spec) };
+  const [children, lineage, honesty] = await Promise.all([versions.childrenOf(id), versions.lineageOf(id), honestyOf(versions, game)]);
+  return { kind: 'game', game, children, lineage, honesty };
 });
-
-/** Věta, ze které hra vznikla: návrh ji nese sám, autorská verze po upgradu ji má u rodiče. */
-async function sentenceOf(versions: VersionStore, game: PublishedGame): Promise<string | null> {
-  if (game.origin !== undefined) return game.origin.sentence;
-  if (game.relation !== 'upgrade' || game.version.parentId === null) return null;
-  return (await versions.get(game.version.parentId))?.origin?.sentence ?? null;
-}
 
 /**
  * Náhled odkazu. `og:image` musí být absolutní adresa a kořenový layout

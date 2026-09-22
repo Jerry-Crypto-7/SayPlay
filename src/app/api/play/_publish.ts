@@ -160,6 +160,7 @@ export async function publishRefusal(versions: VersionStore): Promise<Response |
  */
 export interface PublishExtras {
   readonly origin?: PublishedGame['origin'];
+  readonly sentence?: string;
   readonly relation?: PublishedGame['relation'];
   readonly timings?: Omit<PlayTimings, 'compileMs' | 'verifyMs'>;
 }
@@ -199,6 +200,7 @@ export async function publishReadSpec(
     ...(compiled.value.arcade === undefined ? {} : { arcade: compiled.value.arcade }),
     report,
     ...(extras.origin === undefined ? {} : { origin: extras.origin }),
+    ...(extras.sentence === undefined ? {} : { sentence: extras.sentence }),
     ...(extras.relation === undefined ? {} : { relation: extras.relation }),
     ...(extras.timings === undefined ? {} : { timings: { ...extras.timings, compileMs, verifyMs } }),
   };

@@ -122,7 +122,8 @@ export async function POST(request: Request): Promise<Response> {
     // Návrh, který se nedá hrát, nemá co ukázat hned – věta čeká na režiséra jako před T2.
     const directed = await getDirector(startedAt, caller)(sentence);
     if (directed.source === 'draft') return draft.response;
-    const published = await publishReadSpec(versions, directed.spec, seeds, parentId);
+    // Věta jde k verzi, aby `/play/[id]` ukázal tutéž hlášku jako odpověď (R1).
+    const published = await publishReadSpec(versions, directed.spec, seeds, parentId, { sentence });
     return published.ok ? publishedResponse(published.value, false, unsupportedGame(sentence, directed.spec)) : published.response;
   }
 

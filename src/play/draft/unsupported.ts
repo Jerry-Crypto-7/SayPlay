@@ -13,6 +13,7 @@
 
 import type { ArchetypeId } from '../registry';
 import type { GameSpecV1 } from '../spec';
+import type { PublishedGame, VersionStore } from '../version';
 
 export type UnsupportedKind = 'sandbox' | 'manipulate' | 'idle' | 'build_place';
 
@@ -103,4 +104,20 @@ export function unsupportedGame(sentence: string, draft: Pick<GameSpecV1, 'arche
     reason: match.reason,
     closest: draft.control === 'runner' ? 'an endless runner' : CLOSEST[draft.archetype],
   };
+}
+
+/**
+ * Hláška pro publikovanou hru. Věta: návrh ji nese v `origin`, hra od režiséra
+ * bez návrhu v `sentence`, autorská verze po upgradu ji má u rodiče.
+ */
+export async function honestyOf(versions: Pick<VersionStore, 'get'>, game: PublishedGame): Promise<Honesty | null> {
+  const sentence = await sentenceOf(versions, game);
+  return sentence === null ? null : unsupportedGame(sentence, game.spec);
+}
+
+async function sentenceOf(versions: Pick<VersionStore, 'get'>, game: PublishedGame): Promise<string | null> {
+  if (game.origin !== undefined) return game.origin.sentence;
+  if (game.sentence !== undefined) return game.sentence;
+  if (game.relation !== 'upgrade' || game.version.parentId === null) return null;
+  return (await versions.get(game.version.parentId))?.origin?.sentence ?? null;
 }
