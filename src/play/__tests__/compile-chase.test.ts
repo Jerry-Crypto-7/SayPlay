@@ -79,6 +79,14 @@ describe('compileSim – chase_escape', () => {
     expect(run(runtimeOf(chaserNextToPlayer(sim)), [], 200)).toBe('lost');
   });
 
+  it('gives a player who has not moved yet three seconds before the first catch', () => {
+    for (const seed of [1, 2, 3]) {
+      const runtime = runtimeOf(chaserNextToPlayer(compiled(spec, seed).sim));
+      expect(run(runtime, [], 55), `seed ${seed}`).toBe('running');
+      expect(run(runtime, [], 200), `seed ${seed}`).toBe('lost');
+    }
+  });
+
   it('keeps running while the roomba is stunned, then catches up', () => {
     const { sim } = compiled(spec, 2);
     const runtime = runtimeOf(chaserNextToPlayer(sim));
