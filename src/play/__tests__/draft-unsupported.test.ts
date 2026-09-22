@@ -65,6 +65,20 @@ describe('unsupportedGame', () => {
     expect(unsupportedGame('tower defense runner', { archetype: 'hazard_crossing', control: 'runner' })?.closest).toBe('an endless runner');
   });
 
+  // Revize fáze P25E: obecná slova (empire, protect, mirrors, craft) patří i hrám, které umíme.
+  it('leaves playable sentences with common words alone', () => {
+    for (const sentence of [
+      'escape the galactic empire on a hoverboard',
+      'protect the princess while running',
+      'a thief sneaks through a hall of mirrors',
+      'craft a raft and cross the river',
+      'sort of a racing game with pipes everywhere',
+      'defend the goal in a quick soccer shootout',
+    ]) {
+      expect(unsupportedGame(sentence, draftGameSpec(sentence)), sentence).toBeNull();
+    }
+  });
+
   it('puts an open world before the building inside it', () => {
     const sentence = 'A multiplayer city where I build my house';
     expect(unsupportedGame(sentence, draftGameSpec(sentence))?.kind).toBe('sandbox');

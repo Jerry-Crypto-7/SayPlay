@@ -52,11 +52,10 @@ test.describe('/play/[id] – what the scene shows', () => {
   test('a game without stealth draws no beats and no order bubbles', async ({ page, request }) => {
     const game = await publish(request, 'Collect five glowing mushrooms then open a portal.');
     await page.goto(game.url);
-    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
-    const beats = await page.evaluate(() => window.__playSight?.().beats ?? 0);
-    expect(beats).toBe(0);
-    const orders = await page.evaluate(() => window.__playOrders?.().orders ?? 0);
-    expect(orders).toBe(0);
+    // Sondy musí existovat: vrstvy, které se nepřipojily vůbec, by „nula“ jen předstíraly.
+    await page.waitForFunction(() => window.__playSight !== undefined && window.__playOrders !== undefined, undefined, { timeout: 60_000 });
+    expect(await page.evaluate(() => window.__playSight!().beats)).toBe(0);
+    expect(await page.evaluate(() => window.__playOrders!().orders)).toBe(0);
   });
 
   test('every customer shows a bubble until served', async ({ page, request }) => {
