@@ -146,3 +146,10 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   pořadí (pravidlo `switch.<sw>.wrong`) vypne všechny žádané a dveře zůstanou zamčené. Svědek
   tiskne v pořadí `required`. Návrh ze slov: „in the right order“ a „knock … off“ jsou cue
   `switch_puzzle` (věta s080 už nepadá do `checkpoint_race`), keypoint `wrong_order_resets`.
+- **`switch.params.crateRole?: roleRef`** (T4, bedny). i-tá žádaná deska dostane i-tou instanci
+  role; cesta bedny x-pak-y se dělí na nejvýš `PUSH_STEPS = 3` úseky (sokety
+  `<bedna>_push<k>`, čítač `<bedna>_at`) a `use` na bednu ji posune o úsek. Deska se zapne
+  příjezdem bedny (`onEnterZone`), ne stiskem; dveře odemkne příjezd, když ostatní spínače sedí.
+  Capabilities `switch` navíc `onEnterZone`, `moveTo`, `addCounter`. Svědek po posledním posunu
+  čeká dalšími `use` naprázdno, než bedna dojede. Návrh ze slov: „push boxes/crates onto“ →
+  role `box` (`prop`), keypoint `crate_opens` (věta s072). Bez parametru beze změny hashů.

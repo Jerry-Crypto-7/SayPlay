@@ -146,8 +146,16 @@ const switchParams = z
      * spínač mimo pořadí vypne všechny žádané a dveře zamkne.
      */
     ordered: z.boolean().optional(),
+    /**
+     * Bedny (P25B T4): i-tá žádaná deska dostane i-tou instanci této role.
+     * `use` na bednu ji posune o úsek cesty k desce (nejvýš `PUSH_STEPS`
+     * úseků); deska se zapne, když na ni bedna dojede, ne stiskem.
+     */
+    crateRole: roleRef.optional(),
   })
   .strict();
+/** Na kolik úseků se dělí cesta bedny na desku (`switch.crateRole`). */
+export const PUSH_STEPS = 3;
 const hazardZoneParams = z
   .object({
     role: roleRef,
@@ -255,18 +263,26 @@ export const MECHANICS = {
   switch: entry({
     id: 'switch',
     params: switchParams,
-    roleRefs: (p) => [...p.switchRoles.map((role) => ['switchRoles', role] as const), ['doorRole', p.doorRole] as const],
-    capabilities: { events: ['onAction', 'onStateEnter'], actions: ['setState', 'setLocked', 'setFlag'] },
+    roleRefs: (p) => [
+      ...p.switchRoles.map((role) => ['switchRoles', role] as const),
+      ['doorRole', p.doorRole] as const,
+      ...(p.crateRole === undefined ? [] : [['crateRole', p.crateRole] as const]),
+    ],
+    capabilities: {
+      events: ['onAction', 'onStateEnter', 'onEnterZone'],
+      actions: ['setState', 'setLocked', 'setFlag', 'moveTo', 'addCounter'],
+    },
     /**
      * Na spínač čtyři pravidla: zapnout, vypnout, odemknout a zamknout podle
      * kombinace „po přepnutí“. V pořadí navíc pravidlo „mimo pořadí“ na každý
-     * žádaný spínač.
+     * žádaný spínač; bedna přidá `PUSH_STEPS` posunů a dvě pravidla příjezdu.
      */
     cost: (p, count) => {
       const instances = (roles: readonly string[]): number => [...new Set(roles)].reduce((sum, role) => sum + count(role), 0);
+      const crates = p.crateRole === undefined ? 0 : count(p.crateRole);
       return {
-        entities: p.switchRoles.length + 1,
-        rules: 4 * instances(p.switchRoles) + (p.ordered === true ? instances(p.required) : 0),
+        entities: p.switchRoles.length + 1 + crates,
+        rules: 4 * instances(p.switchRoles) + (p.ordered === true ? instances(p.required) : 0) + crates * (PUSH_STEPS + 2),
       };
     },
     setsStates: (p) => p.switchRoles.flatMap((role) => [[role, 'on'] as const, [role, 'off'] as const]),

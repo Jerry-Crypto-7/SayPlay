@@ -28,7 +28,7 @@ import hazardCrossing from '../__fixtures__/hazard_crossing.json';
 import survivalTimer from '../__fixtures__/survival_timer.json';
 import switchPuzzle from '../__fixtures__/switch_puzzle.json';
 
-import { ORDER_PUZZLE, plural, readNumbers, readRoles, scoreArchetypes, singular, type SentenceRoles } from './lexicon';
+import { ORDER_PUZZLE, PUSH_CRATES, plural, readNumbers, readRoles, scoreArchetypes, singular, type SentenceRoles } from './lexicon';
 
 const TEMPLATES: Readonly<Record<ArchetypeId, unknown>> = {
   collect_exit: collectExit,
@@ -301,6 +301,29 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
       }
       spec.objective.description = cap(`Press ${required.join(', then ')} in that order to open the door.`, 120);
       spec.tutorial.goalLine = cap('Open the door by pressing the switches in the right order.', 80);
+    }
+    // P25B T4: „push boxes onto switches“ – na každou žádanou desku jedna bedna.
+    const crate = PUSH_CRATES.exec(read.text);
+    if (crate !== null) {
+      const params = mechanic(spec, 'switch');
+      const required = params.required as string[];
+      const noun = singular(crate[1]);
+      spec.roles.push({ id: 'box', kind: 'prop', label: noun, count: required.length });
+      params.crateRole = 'box';
+      // Stisk desky s bednou nic nedělá – keypointy „stiskni poslední“ nahradí příjezd bedny.
+      spec.verification = spec.verification.filter((assertion) => !['red_blue_opens', 'right_combination_opens'].includes(assertion.id));
+      spec.verification.unshift({
+        id: 'crate_opens',
+        kind: 'keypoint',
+        mechanic: 'switch',
+        setup: { entityStates: Object.fromEntries(required.slice(1).map((plate) => [plate, 'on'])) },
+        actions: Array.from({ length: 3 }, () => ({ actionId: 'use' as const, target: 'box' })),
+        ticks: 40,
+        assert: { locked: { door: false } },
+      });
+      spec.objective.description = cap(`Push ${withArticle(noun)} onto each plate to open the door.`, 120);
+      spec.tutorial.goalLine = cap(`Push ${withArticle(noun)} onto every plate to open the door.`, 80);
+      spec.tutorial.controlsHint = cap(`Tap ${withArticle(noun)} to push it one step toward its plate.`, 80);
     }
   },
   hazard_crossing(spec, read) {

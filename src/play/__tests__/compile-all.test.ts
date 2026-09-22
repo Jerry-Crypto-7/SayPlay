@@ -374,3 +374,40 @@ describe('switch.ordered – order puzzle (P25B T4)', () => {
     expect(draftGameSpec('race through the gates in the right order').archetype).toBe('checkpoint_race');
   });
 });
+
+describe('switch.crateRole – pushed crates press the plates (P25B T4)', () => {
+  const gameSpec = fixture('switch_puzzle_crates');
+
+  it('compiles the warehouse, certifies the push witness and passes every keypoint on seeds 1..3', () => {
+    for (const seed of [1, 2, 3]) {
+      const result = compileGame(gameSpec, seed);
+      if (!result.ok) throw new Error(`seed ${seed}: ${result.reason} ${result.issues.join('; ')}`);
+      const report = verifyGame(result.value);
+      expect(report.keypoints.filter((keypoint) => !keypoint.passed), `seed ${seed}`).toEqual([]);
+      expect(report.publishEligible, `seed ${seed}`).toBe(true);
+    }
+  });
+
+  it('a plate ignores being tapped; only a crate arriving on it turns it on', () => {
+    const { sim } = compiled(gameSpec, 1);
+    const tapped = runtimeOf(sim);
+    run(tapped, [{ tick: 0, actionId: 'use', target: 'red' }], 3);
+    expect(placement(tapped, 'red')?.state).toBe('off');
+    const pushed = runtimeOf(sim);
+    run(pushed, [0, 8, 16].map((tick) => ({ tick, actionId: 'use', target: 'box_1' })), 40);
+    expect(placement(pushed, 'red')?.state).toBe('on');
+    const box = placement(pushed, 'box_1');
+    expect([box?.x, box?.y]).toEqual(sim.sockets.red);
+  });
+
+  it('drafts "push boxes onto switches" as crates on plates (s072)', () => {
+    const drafted = draftGameSpec('A lost robot must push boxes onto switches to open the door');
+    expect(drafted.archetype).toBe('switch_puzzle');
+    const params = drafted.mechanics.find((mechanic) => mechanic.id === 'switch')?.params;
+    expect(params?.crateRole).toBe('box');
+    expect(readGameSpec(drafted).ok).toBe(true);
+    const result = compileGame(drafted, 1);
+    if (!result.ok) throw new Error(`${result.reason} ${result.issues.join('; ')}`);
+    expect(verifyGame(result.value).publishEligible).toBe(true);
+  });
+});

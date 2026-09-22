@@ -18,6 +18,9 @@ export const STEALTH =
 /** Hádanka pořadí: spínače jdou zapnout jen v daném pořadí (`switch.ordered`). */
 export const ORDER_PUZZLE = /\bin (?:the )?(?:right|correct|exact) order\b/;
 
+/** Bedny tlačené na desky (`switch.crateRole`); skupina 1 = podstatné jméno bedny. */
+export const PUSH_CRATES = /\bpush(?:es|ing)? (?:the |a )?(?:[a-z]+ )?(box|boxes|crates?|blocks?|boulders?)\b/;
+
 /** Slova, po kterých se archetyp pozná. Každý zásah je jeden bod; remíza jde pořadím `ARCHETYPE_IDS`. */
 export const ARCHETYPE_CUES: Readonly<Record<ArchetypeId, readonly RegExp[]>> = {
   collect_exit: [
@@ -45,7 +48,7 @@ export const ARCHETYPE_CUES: Readonly<Record<ArchetypeId, readonly RegExp[]>> = 
     // P25B T4: „shoď věci v pořadí“ je hádanka pořadí, ne závod – dva body přebijí `checkpoint_race`.
     /\bknock(?:s|ed|ing)? (?:[a-z]+ ){1,3}off\b/,
     ORDER_PUZZLE,
-    /\bpush(?:es|ing)? (?:the |a )?(?:[a-z]+ )?(?:box|boxes|crates?|blocks?|boulders?)\b/,
+    PUSH_CRATES,
   ],
   hazard_crossing: [
     /\bcross(?:es|ing)?\b/,
