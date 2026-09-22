@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Arkádová hra na `/play/[id]` (P25A T6): plátno běžce, HUD, konec hry.
+ * Arkádová hra na `/play/[id]` (P25A T6, P25C T6): plátno, HUD, konec hry.
  *
  * Rodokmen, „How it works“, banner vylepšení a obrazovka po hře jsou tytéž
  * komponenty jako u mřížky; jiné je jen plátno a HUD. Sonda
@@ -30,11 +30,15 @@ const ArcadeStage = dynamic(() => import('./ArcadeStage'), { ssr: false });
 /** Hrdinové, kteří v katalogu mají model; jiný popisek hráče kreslí `explorer`. */
 const HERO_MODELS = new Set(['explorer', 'robot', 'fox', 'kid', 'raccoon', 'astronaut', 'knight', 'penguin', 'cat', 'hamster', 'goblin', 'slime', 'seal', 'ghost']);
 
+/** Poletování bez známého hrdiny kreslí ptáčka (primitiv), ostatní `explorer`. */
 function heroModel(spec: GameSpecV1): string {
   const label = spec.roles.find((role) => role.kind === 'player')?.label.toLowerCase() ?? '';
   const noun = label.split(/\s+/).at(-1) ?? '';
-  return HERO_MODELS.has(noun) ? noun : 'explorer';
+  return HERO_MODELS.has(noun) ? noun : spec.control === 'flap' ? 'bird' : 'explorer';
 }
+
+/** Poletování počítá i průlety mezerou, ne jen mince. */
+const scoreUnit = (spec: GameSpecV1): string => (spec.control === 'flap' ? 'points' : 'coins');
 
 function ArcadeHud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly snapshot: ArcadeSnapshot }) {
   const lives = spec.mechanics.some((m) => m.id === 'health') ? ` · ${snapshot.health} lives` : '';
@@ -45,7 +49,7 @@ function ArcadeHud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly sna
       <p className="play-hud-hint">{spec.tutorial.controlsHint}</p>
       <p className="play-hud-progress">
         <span data-testid="play-progress" data-progress={snapshot.progress}>
-          {snapshot.progress}% · {snapshot.score} coins{lives}
+          {snapshot.progress}% · {snapshot.score} {scoreUnit(spec)}{lives}
         </span>
         <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick}>
           {snapshot.distanceM} m
@@ -67,7 +71,7 @@ export interface ArcadePlayProps {
 
 export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, lab, upgrade }: ArcadePlayProps) {
   const upgraded = useUpgrade(upgrade);
-  const [session] = useState(() => createArcadeSession(arcade));
+  const [session] = useState(() => createArcadeSession(arcade, { waitForInput: arcade.control.id === 'flap' }));
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
   const running = snapshot.runState === 'running';
 
@@ -98,7 +102,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, lab, upg
         <section className="play-outcome" data-testid="play-outcome" role="status">
           <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
           <p className="play-outcome-detail">
-            {snapshot.distanceM} m · {snapshot.score} coins
+            {snapshot.distanceM} m · {snapshot.score} {scoreUnit(spec)}
           </p>
           <PostRun versionId={versionId} onReplay={() => session.restart()} />
         </section>

@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import collectExit from '@/play/__fixtures__/collect_exit.json';
-import { answerFixture } from '@/play/director/__fixtures__';
+import { answerFixture, runnerAnswer } from '@/play/director/__fixtures__';
 import { answered, failed, fakeBranch, type ScriptedOutcome } from '@/play/director/__fixtures__/branch';
 import { draftGameSpec } from '@/play/draft';
 import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
@@ -169,6 +169,27 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
   it('vylepšení, které ztratí ovládání běžce, zůstane návrhem bez dítěte', async () => {
     const created = await publish({ sentence: 'jumping arcade game with a lot of obstacles' });
     expect((await game(created.body.versionId)).spec.control).toBe('runner');
+    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+    expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
+  });
+
+  // P25E T5: druhé dva směry téhož pravidla – shoda ovládání projde, mřížka neshodu nesnese taky.
+  it('běžec vylepšený běžcem je ready a dítě zůstane běžcem', async () => {
+    director.script = [answered(runnerAnswer())];
+    const created = await publish({ sentence: 'endless runner in a neon city' });
+    expect((await game(created.body.versionId)).spec.control).toBe('runner');
+    expect((await settled(created.body.versionId)).status).toBe('ready');
+    const children = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
+    expect(children).toHaveLength(1);
+    const child = await game(children[0] as string);
+    expect(child.spec.control).toBe('runner');
+    expect(child.spec.title).toBe('Neon Rooftop Sprint');
+  });
+
+  it('mřížkový návrh vylepšený běžcem zůstane návrhem bez dítěte', async () => {
+    director.script = [answered(runnerAnswer())];
+    const created = await publish({ sentence: SENTENCE });
+    expect((await game(created.body.versionId)).spec.control).toBeUndefined();
     expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
     expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
   });

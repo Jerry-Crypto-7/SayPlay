@@ -9,6 +9,11 @@
  * a hráče, který v zapnuté zóně už při startu stojí (`start`, pro `placeAt`
  * keypointů). `damage` bez mechaniky `health` ve specu padá na `lose`, aby
  * pravidlo neodkazovalo na čítač, který nikdo nedeklaroval.
+ *
+ * `pulse.alternate` (P25D T3, pohyblivá zeď): instance 2k a 2k+1 jsou dvě
+ * polohy jedné zdi; liché svítí, když sudé ne, takže zeď „přeskakuje“ mezi
+ * nimi. Runtime má `blocked` pevné a entity neblokují, proto zeď cestu
+ * nezavře – vstup do zapnuté polohy prohraje, jako u každého hazardu.
  */
 
 import type { z } from 'zod';
@@ -28,6 +33,8 @@ export const hazardZone: MechanicAdapter<Params> = (params, ctx) => {
   const hit: SurfaceAction = params.effect === 'damage' && hasHealth ? { kind: 'addCounter', ref: DAMAGE_COUNTER, by: 1 } : { kind: 'lose' };
   const onTimer = `${params.role}_on`;
   const offTimer = `${params.role}_off`;
+  const alternate = params.pulse?.alternate === true;
+  const flip = (index: number, value: 'on' | 'off'): 'on' | 'off' => (alternate && index % 2 === 1 ? (value === 'on' ? 'off' : 'on') : value);
 
   if (params.pulse !== undefined) {
     const onTicks = params.pulse.onSeconds * TICKS_PER_SECOND;
@@ -42,7 +49,7 @@ export const hazardZone: MechanicAdapter<Params> = (params, ctx) => {
       priority: 0,
       event: { kind: 'onTimerEnd', timer: onTimer },
       condition: null,
-      actions: [...instances.map((id): SurfaceAction => ({ kind: 'setState', target: id, value: 'off' })), { kind: 'startTimer', ref: offTimer }],
+      actions: [...instances.map((id, index): SurfaceAction => ({ kind: 'setState', target: id, value: flip(index, 'off') })), { kind: 'startTimer', ref: offTimer }],
     };
     rules[toOn] = {
       id: toOn,
@@ -50,11 +57,22 @@ export const hazardZone: MechanicAdapter<Params> = (params, ctx) => {
       priority: 0,
       event: { kind: 'onTimerEnd', timer: offTimer },
       condition: null,
-      actions: [...instances.map((id): SurfaceAction => ({ kind: 'setState', target: id, value: 'on' })), { kind: 'startTimer', ref: onTimer }],
+      actions: [...instances.map((id, index): SurfaceAction => ({ kind: 'setState', target: id, value: flip(index, 'on') })), { kind: 'startTimer', ref: onTimer }],
     };
+    if (alternate) {
+      // Hazard startuje `on`; liché polohy zdi musí začít vypnuté.
+      rules[`hazard_zone.${params.role}.stagger`] = {
+        id: `hazard_zone.${params.role}.stagger`,
+        phase: 0,
+        priority: 0,
+        event: { kind: 'onStart' },
+        condition: null,
+        actions: instances.filter((_, index) => index % 2 === 1).map((id): SurfaceAction => ({ kind: 'setState', target: id, value: 'off' })),
+      };
+    }
   }
 
-  for (const id of instances) {
+  for (const [index, id] of instances.entries()) {
     const active = { kind: 'stateIs', target: id, value: 'on' };
     const inside = { kind: 'inZone', entity: ctx.player, zone: id };
     rules[`hazard_zone.${id}.enter`] = {
@@ -78,7 +96,8 @@ export const hazardZone: MechanicAdapter<Params> = (params, ctx) => {
         id: `hazard_zone.${id}.catch`,
         phase: 1,
         priority: 0,
-        event: { kind: 'onTimerEnd', timer: offTimer },
+        // Poloha se zapne na konci `off` časovače, lichá poloha střídající zdi na konci `on`.
+        event: { kind: 'onTimerEnd', timer: flip(index, 'on') === 'on' ? offTimer : onTimer },
         condition: inside,
         actions: [hit],
       };

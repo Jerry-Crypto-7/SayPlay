@@ -56,7 +56,8 @@ describe('verifyArcade', () => {
     const verdict = verifyArcade(worldOf(broken));
     expect(verdict.publishEligible).toBe(false);
     expect(verdict.failures).toHaveLength(1);
-    expect(verdict.failures[0]).toMatch(/^bot_wins: the bot lost at tick \d+, 60 m into the track$/);
+    // Jádro v2 hráče zastaví na přední stěně zdi (60 m − 0,55 m), ne v ní.
+    expect(verdict.failures[0]).toMatch(/^bot_wins: the bot lost at tick \d+, 59 m into the track$/);
   });
 
   it('trať bez překážek neprojde: nečinný hráč by vyhrál', () => {

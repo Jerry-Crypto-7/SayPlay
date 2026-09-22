@@ -9,13 +9,13 @@ import { ARCADE_HZ, BODY, COUNTER, HEADER, ROLE, type RulePiece, bodyBase } from
 
 const roleOf = (state: Int32Array, body: number): number => state[bodyBase(body) + BODY.role] as number;
 
-const hitParams = z.object({ role: z.enum(['obstacle', 'chaser']), effect: z.enum(['lose', 'damage']) }).strict();
+const hitParams = z.object({ role: z.enum(['obstacle', 'chaser', 'hazard', 'enemy']), effect: z.enum(['lose', 'damage']) }).strict();
 
 /** Náraz do role → prohra, nebo ztráta života (a překážka zmizí, aby nebrala život každý tik). */
 export const hit: RulePiece<z.infer<typeof hitParams>> = {
   id: 'hit',
   params: hitParams,
-  roles: ['player', 'obstacle', 'chaser'],
+  roles: ['player', 'obstacle', 'chaser', 'hazard', 'enemy'],
   trigger: 'contact',
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state, other }, params) => {
@@ -81,4 +81,26 @@ export const timeLimit: RulePiece<z.infer<typeof timeLimitParams>> = {
   fire: ({ state }, params) => ((state[HEADER.tick] as number) >= params.seconds * ARCADE_HZ ? [{ kind: 'lose' }] : []),
 };
 
-export const RULES = { hit, pickup, finish, out_of_health: outOfHealth, time_limit: timeLimit } as const;
+const fallOutParams = z.object({ belowY: z.int(), effect: z.enum(['lose', 'respawn']) }).strict();
+
+/** Pád pod úroveň (spodní stěna hráče pod `belowY`) → prohra, nebo návrat na checkpoint. */
+export const fallOut: RulePiece<z.infer<typeof fallOutParams>> = {
+  id: 'fall_out',
+  params: fallOutParams,
+  roles: ['player'],
+  trigger: 'tick',
+  cost: () => ({ bodies: 0, rules: 1 }),
+  fire: ({ state, player }, params) => ((state[bodyBase(player) + BODY.y] as number) < params.belowY ? [{ kind: params.effect }] : []),
+};
+
+/** Dotek checkpointu → místo návratu je na něm. */
+export const checkpoint: RulePiece<z.infer<typeof noParams>> = {
+  id: 'checkpoint',
+  params: noParams,
+  roles: ['player', 'checkpoint'],
+  trigger: 'contact',
+  cost: () => ({ bodies: 0, rules: 1 }),
+  fire: ({ state, other }) => (roleOf(state, other) === ROLE.checkpoint ? [{ kind: 'checkpoint', body: other }] : []),
+};
+
+export const RULES = { hit, pickup, finish, out_of_health: outOfHealth, time_limit: timeLimit, fall_out: fallOut, checkpoint } as const;

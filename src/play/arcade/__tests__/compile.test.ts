@@ -8,13 +8,56 @@ import { compileGame } from '@/play/compile';
 import { readGameSpec, type GameSpecV1 } from '@/play/spec';
 
 import { ARCADE_COMPILER_VERSION } from '../compile';
+import flapFixture from '../__fixtures__/flap.json';
+import platformFixture from '../__fixtures__/platform.json';
 import runnerFixture from '../__fixtures__/runner.json';
 
-const runner = (): GameSpecV1 => {
-  const read = readGameSpec(runnerFixture);
-  if (!read.ok) throw new Error(read.issues.join('; '));
-  return read.value;
+const read = (raw: unknown): GameSpecV1 => {
+  const result = readGameSpec(raw);
+  if (!result.ok) throw new Error(result.issues.join('; '));
+  return result.value;
 };
+const runner = (): GameSpecV1 => read(runnerFixture);
+
+describe('plošinovka a poletování (P25C)', () => {
+  it.each([
+    ['platform', platformFixture, 'platform_bot'],
+    ['flap', flapFixture, 'flap_bot'],
+  ] as const)('fixtura %s se zkompiluje do arkádového světa a projde ověřením', (control, fixture, bot) => {
+    const compiled = compileGame(read(fixture), 1);
+    if (!compiled.ok) throw new Error(compiled.issues.join('; '));
+    expect(compiled.value.blueprint).toBeNull();
+    expect(compiled.value.arcade?.control.id).toBe(control);
+    expect(compiled.value.arcade?.bot.id).toBe(bot);
+    const report = reportFor(compiled.value);
+    expect(report.keypoints.filter((keypoint) => !keypoint.passed)).toEqual([]);
+    expect(report.publishEligible).toBe(true);
+  });
+
+  it('parametry specu dojdou do generátoru a pravidel', () => {
+    const platform = compileGame(read(platformFixture), 1);
+    if (!platform.ok) throw new Error(platform.issues.join('; '));
+    // checkpoints: true → pád vrací na checkpoint místo prohry.
+    expect(platform.value.arcade?.rules.map((rule) => rule.id)).toContain('checkpoint');
+    // Výchozí délka je 120 m; úroveň končí na celé desce, proto rozsah.
+    expect(platform.value.arcade?.length).toBeGreaterThan(80_000);
+    expect(platform.value.arcade?.length).toBeLessThan(100_000);
+
+    const spec = read(flapFixture);
+    const flap = compileGame(read({ ...spec, mechanics: [...spec.mechanics, { id: 'health', params: { max: 3 } }] }), 1);
+    if (!flap.ok) throw new Error(flap.issues.join('; '));
+    expect(flap.value.arcade?.rules[0]?.params).toEqual({ role: 'obstacle', effect: 'damage' });
+    expect(flap.value.arcade?.length).toBe(120_000);
+  });
+
+  it('parametry jiného ovládání spec odmítne', () => {
+    const wrong = readGameSpec({ ...platformFixture, controlParams: { speed: 'fast' } });
+    expect(wrong.ok).toBe(false);
+    const crossed = readGameSpec({ ...flapFixture, controlParams: { difficulty: 'hard', doubleJump: true } });
+    expect(crossed.ok).toBe(false);
+    if (!crossed.ok) expect(crossed.issues[0]).toMatch(/^\/controlParams.*\(flap\)$/);
+  });
+});
 
 describe('control v GameSpec a směrování kompilace', () => {
   it('fixtura běžce se zkompiluje do arkádového světa a projde ověřením', () => {

@@ -183,3 +183,82 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   `wrong_order_ignored`. Návrh ze slov: vaření/zákazníci/obchod/farma nebo jídlo bez „… to Y“ →
   objednávky (s160–s166); „carry/deliver X to Y“ zůstává nesením. Pin promptu režiséra
   10 555 → 10 615 B (tři nové parametry ve schématu). Bez parametru beze změny hashů.
+
+## P25C
+
+- **`ARCADE_RUNTIME_VERSION` → `arcade-v2`** (22. 9. 2026, T1), tedy `compilerVersion`
+  arkádových her `play-compiler-v3/arcade-v2`. Co se změnilo v jádru:
+  - **Hlavička stavu +4 sloty** (`spawnBase`, `respawnX/Y/Z`), čítače od slotu 8, těla od 16.
+  - **Pevné tělo zastaví hráče i z boku a zespodu** (dřív jen dopad shora): bok vrátí hráče na
+    hranu a vynuluje `vx`/`vz`, strop vynuluje `vy`; kontakt se hlásí dál, takže pravidlo
+    `hit` běžce prohraje stejně. Odkud hráč přišel, se čte z polohy před integrací (u
+    pohyblivého tělesa z jeho polohy minus rychlost).
+  - **`BodyInit` volitelně `vx/vy/vz`, `gravity`, `kinematic`, `template`**; `ArcadeLevel`
+    volitelně `spawnSlots` (rezerva pro spawn, součet s těly ≤ `maxBodies`). `FLAG.kinematic`:
+    tělo jede jen svou rychlostí (gravitace ani země ho nezastaví) a hráč, který na něm stojí,
+    se veze. `template` = předloha pro spawn, ve světě mrtvá.
+  - **Role navíc** `platform` 6, `hazard` 7, `enemy` 8, `projectile` 9, `target` 10,
+    `checkpoint` 11 (stávající čísla beze změny).
+  - **Efekty navíc** `spawn` (kopie předlohy na pozici s rychlostí; slot = první mrtvý
+    spawnutý, jinak rezerva, jinak se zahodí – těla úrovně se nikdy nepřepíšou), `respawn`
+    (hráč na místo návratu bez rychlosti) a `checkpoint` (místo návratu = horní hrana těla).
+    `checkpoint` plán neuváděl; bez něj by `respawn` uměl jen start, a plošinovka (T2) ho
+    potřebuje.
+- **Hash běžce se mění vědomě:** stav je o 4 sloty delší, takže `worldHash` i hash každého
+  přehrání běžce je jiný. Výsledek her se nemění – robot běžce do boku nenaráží (náraz = prohra
+  i dřív); jediný viditelný rozdíl je, že prohraná hra končí na přední stěně překážky, ne v ní
+  (pin ve `verify.test.ts`: zeď v 60 m → „59 m into the track“). Pinovaný hash běžce v testech
+  není. Hashe mřížkových her (`evals/play/compiled/report.json`) beze změny.
+- **Uložené hry `arcade-v1` hrají dál:** `instantiate` pozná `runtimeVersion: 'arcade-v1'` a
+  počáteční stav převede do rozložení v2 (vloží `spawnBase` a místo návratu = start hráče).
+- **`GameSpec.control` += `'platform' | 'flap'`** (T5). `controlParams` je ve schématu sjednocení
+  parametrů běžce, plošinovky a poletování (všechna pole volitelná, bez výchozích hodnot, takže
+  `specHash` starých her se nehne); `readGameSpec` je pak ověří proti schématu zvoleného
+  `control` – parametry jiného ovládání = `MALFORMED_SPEC` s `(… control)` na konci hlášky.
+  Hláška pro parametry u mřížkové hry se změnila na „only an arcade game (runner, platform,
+  flap) takes control parameters“. Kód, který čte pole běžce (`speed`, `density`,
+  `obstacles`), musí `controlParams` zúžit na `RunnerParams`. Kompilátor posílá do arkádového
+  jádra každé `control` kromě `tap_go`.
+
+## P25D
+
+- **`timer.params.phases?: { goSeconds, stopSeconds, watcher? }`** (22. 9. 2026, T1,
+  červená–zelená). Parametr dostal `timer`, ne `patrol`: světlo je čistě hodinové (žádná
+  trasa ani mysl postavy) a `timer` je koření povolené v každém archetypu. Časovače
+  `<id>_go`/`<id>_stop` střídají flag `<id>_red`; každý sloupec a řádek mřížky je zóna
+  `<id>_col<x>`/`<id>_row<y>` a vstup hráče do kterékoli v červené prohraje (runtime nemá
+  událost „pohnul se“, každý krok ale vstoupí do nového sloupce nebo řádku). Flag
+  `<id>_armed` z `onStart` odfiltruje první tik, ve kterém runtime vidí hráče „vstoupit“ do
+  buňky, kde stojí. `watcher` (role) je v zelené `away`, v červené `watching`. Capabilities
+  `timer` navíc `onEnterZone`, `setFlag`, `setState`; `CostWorld` má nově `maxSpan`
+  (šířka + výška mřížky). `AdapterOutput.witnessWindow` řekne `planWitness`, že svědek smí
+  chodit jen v zelené. Návrh ze slov: „red light / green light / squid game / when you don't
+  look / freddy / fnaf“ → `collect_exit` se světlem a hlídačem (s153, s176, s178), keypointy
+  `moving_on_red_loses` a `standing_on_red_is_safe`. Fixtury P25D leží v
+  `src/play/__fixtures__/p25d/`, aby nehýbaly počtem fixtur v testech jiných plánů. Pin promptu
+  režiséra 11 253 → 11 362 B. Bez parametru beze změny hashů.
+- **`collectible.params.hiddenIn?: roleRef`** (22. 9. 2026, T2, hledání schovaných věcí).
+  i-tý předmět leží v i-té instanci role skrýše; `onStart` všechny schované předměty
+  despawnuje (neaktivní entita se nevykreslí), vstup hráče do skrýše předmět spawne (vlastní
+  pool na předmět, `tag` = ID instance) a nastaví čítač `<instance>_found`. Runtime akci na
+  neaktivní entitu nezakáže, proto sebrání hlídá i `<instance>_found = 1`. Capabilities
+  `collectible` navíc `onStart`, `onEnterZone`, `despawn`, `spawn`. Svědek jde do skrýše,
+  pak sbírá. Návrh ze slov: „hidden / hide and seek / explore / ruins / search“ mění sběr na
+  hledání (skrýší o dvě víc než předmětů), pod vodou relikvie v troskách a cíl „surface“
+  (s074, s184); keypoint `hidden_item_does_not_count`, počítací keypoint šablony nejdřív
+  vstoupí do skrýše. Pin promptu režiséra 11 362 → 11 453 B. Bez parametru beze změny hashů.
+- **`hazard_zone.params.pulse.alternate?: boolean`** (22. 9. 2026, T3, pohyblivé zdi).
+  Instance 2k a 2k+1 jsou dvě polohy jedné zdi: liché svítí, když sudé ne (pravidlo
+  `<role>.stagger` z `onStart` je vypne, `catch` liché polohy čeká na konec `on` časovače).
+  Runtime má `space.blocked` pevné a entity neblokují, takže zeď cestu nezavře – vstup do
+  polohy, kde zeď stojí, prohraje. Návrh ze slov: „walls that move / moving walls / shifting
+  maze“ → dvě zdi (role `wall`, 4 instance) v `collect_exit` (s076), keypointy
+  `standing_wall_loses` a `moved_wall_is_safe`. Bez parametru beze změny hashů.
+
+## P25E
+
+- **`POST /api/play/games` → volitelné `honesty: { reason, closest }`** (T2). Jen u věty, na
+  kterou knihovna ovládání nemá (`unsupportedGame` v `src/play/draft/unsupported.ts`: třídy
+  `sandbox`, `manipulate`, `idle`, `build_place`). Hra se publikuje dál; `closest` je hra, kterou
+  návrh postavil místo toho („a collect-and-escape game“). Spec, verze ani hashe se nemění –
+  `/play/[id]` hlášku počítá znovu z `origin.sentence` (u upgradu z rodiče) a ukáže proužek.

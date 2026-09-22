@@ -290,6 +290,21 @@
   font-size: 0.9rem;
 }
 
+.play-hud-phase {
+  margin: 6px 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.play-hud-phase-green {
+  color: #34d399;
+}
+
+.play-hud-phase-red {
+  color: #f87171;
+}
+
 .play-hud-progress {
   margin: 8px 0 0;
   display: flex;
@@ -422,6 +437,51 @@
   background: var(--play-panel);
   border: 1px solid var(--play-accent);
   white-space: nowrap;
+}
+
+/* Poctivá hláška (P25E T2): nad hrou, hru odsune a ta pod ní běží dál. */
+.play-honest-frame {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.play-honest-frame > .play-shell {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+
+.play-honest {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--play-panel);
+  border-bottom: 2px solid var(--play-accent);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.play-honest-text {
+  margin: 0;
+  flex: 1;
+}
+
+.play-honest-text span {
+  color: var(--play-muted);
+}
+
+.play-honest-close {
+  flex: 0 0 auto;
+  border: 1px solid var(--play-line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: transparent;
+  color: var(--play-text);
+  font: inherit;
+  cursor: pointer;
 }
 
 .play-outcome-title {

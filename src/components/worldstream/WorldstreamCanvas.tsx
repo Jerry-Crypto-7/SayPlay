@@ -25,7 +25,7 @@
  */
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Color, Fog, PerspectiveCamera } from 'three';
 
@@ -375,7 +375,7 @@ function LookTransition({ bindings, environment, controller }: { readonly bindin
   return null;
 }
 
-export default function WorldstreamCanvas({ world, controller = null, sceneId = null, reset = 0, framing = 'scene', onPresented, sharedCamera, adaptiveAssets, focusId,cutaway=true, routeHighlight, guide = true }: {
+export default function WorldstreamCanvas({ world, controller = null, sceneId = null, reset = 0, framing = 'scene', onPresented, sharedCamera, adaptiveAssets, focusId,cutaway=true, routeHighlight, guide = true, children }: {
   readonly world: ProxyWorld | null;
   readonly controller?: RuntimeController | null;
   readonly sceneId?: string | null;
@@ -390,6 +390,8 @@ export default function WorldstreamCanvas({ world, controller = null, sceneId = 
   readonly routeHighlight?: readonly string[];
   /** Figura průvodce. PLAY ji vypíná: vedle hráčovy postavy čte jako druhý hrdina (QA 22. 9. 2026). */
   readonly guide?: boolean;
+  /** Vrstvy navíc uvnitř scény – PLAY tu kreslí výhled stráže a přání zákazníků (P25E). */
+  readonly children?: ReactNode;
 }) {
   // Úroveň se čte ze **světa**, ne z volajícího: kdo svět dostane, ví, proti
   // jakému rozpočtu se má soudit (`proxy.ts`). Prázdné plátno kreslí `full`,
@@ -424,6 +426,7 @@ export default function WorldstreamCanvas({ world, controller = null, sceneId = 
       {world !== null && world.kind === 'built' && <RuntimeStage key={sceneId} world={world} controller={controller} onPresented={onPresented} adaptiveAssets={adaptiveAssets} cutaway={cutaway} />}
       {stand !== null && <GuideFigure at={stand} />}
       <RouteRings markers={markers} />
+      {children}
     </Canvas>
   );
 }

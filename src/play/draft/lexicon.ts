@@ -15,6 +15,55 @@ import type { ArchetypeId } from '../registry';
 export const STEALTH =
   /\bsneak(?:s|ing|y)?\b|\bstealth(?:y)?\b|\bguards?\b|\bunseen\b|\bundetected\b|\bwithout (?:being )?(?:seen|spotted|caught|noticed|waking)\b|\bhid(?:e|es|ing)\b|\bflashlights?\b/;
 
+/**
+ * Červená–zelená (`timer.phases`, P25D T1): hýbat se smíš, jen když se hlídač
+ * nedívá. Squid Game i horor „hýbe se, když se nedíváš“ jsou tatáž hra.
+ */
+export const RED_LIGHT =
+  /\bred light\b|\bgreen light\b|\bsquid games?\b|\bwhen (?:you|u) (?:look away|turn away|(?:don'?t|do not|aren'?t|are not) (?:look|watch)(?:ing)?)\b|\bfreddy'?s?\b|\bfnaf\b|\b(?:musical |play(?:ing)? )statues\b|\bstatues? game\b/;
+
+/**
+ * Hledání (`collectible.hiddenIn`, P25D T2): předměty leží ve skrýších a
+ * objeví se, až je hráč prohledá. Jen mění sběr, archetyp nevybírá.
+ */
+export const SEARCH = /\bhidden\b|\bhide and seek\b|\bexplor(?:e|es|ing)\b|\bruins?\b|\bsearch(?:es|ing)?\b/;
+
+/** Hledání pod hladinou (s184): relikvie v troskách, cíl je vyplavat. */
+export const UNDERWATER = /\bunder ?water\b|\bsunken\b|\bunder the sea\b|\bocean\b|\bsubmarine\b|\bshipwreck\b/;
+
+/**
+ * Ošetřování (P25D T5, s169): objednávky `carry.menu` přejmenované na léčbu –
+ * hráč vezme lék nebo obvaz a donese ho zvířeti, které ho potřebuje.
+ * Skupina 1 = kdo je pacient.
+ */
+export const CARE =
+  /\b(?:vet|vets|veterinar(?:y|ian)|animal hospital|pet clinic)\b|\b(?:heal(?:s|ing)?|cure(?:s|ing)?|treat(?:s|ing)?|nurs(?:e|es|ing)|care for) (?:the |cute |sick |injured |hurt )*(pets?|animals?|patients?|puppies|puppy|kittens?|dogs?|cats?)\b/;
+
+/**
+ * Ničení a pukání (P25D T4, s097, s198): `defeat` bez nepřátel – `use` cíl
+ * odstraní a přičte, poslední zničený vyhraje. Skupina 1 = „pop“.
+ */
+export const SMASH = /\b(pop(?:s|ping)? (?:stuff|things|everything|all|bubbles?|balloons?)|bubble ?(?:pop|wrap)|pop(?:ping)? game)\b|\bsmash(?:es|ing)?\b|\bdestroy everything\b|\bwreck(?:s|ing)?\b|\bbreak everything\b/;
+
+/**
+ * Vágní klidné věty (P25D T7, s195–s197): sběr bez nepřátel s barevným
+ * tématem. `KID_FRIENDLY` vybere barevné téma, jinak útulné.
+ */
+export const GENTLE = /\b(?:relax(?:ing|ed)?|chill|calm|peaceful|soothing|cozy|cosy|wholesome)\b/;
+export const KID_FRIENDLY = /\bcolou?rful\b|\bfor (?:my )?(?:little |baby |younger )?(?:sister|brother|kids?|child|children|daughter|son|toddler)\b/;
+
+/** Přechod po leknínech (P25D T6, s034). */
+export const LILY_PADS = /\blily ?pads?\b|\bstepping stones? (?:across|over) (?:a |the )?(?:pond|river|stream|water)\b/;
+
+/** Přechod silnice (P25D T6, s036): auta přeskakují mezi pruhy. */
+export const ROAD = /\bcrossy road\b|\bfrogger\b|\bcross(?:es|ing)? (?:the |an? )?(?:endless |busy |big )?(?:road|street|highway|traffic)\b/;
+
+/** Pohyblivé zdi (`hazard_zone.pulse.alternate`, P25D T3, s076). */
+export const MOVING_WALLS = /\b(?:walls?|hedges?) (?:that |which )?(?:move|moves|moving|shift|shifts|shifting|slide|slides|sliding)\b|\b(?:moving|shifting|sliding) (?:walls?|maze|labyrinth)\b/;
+
+/** Hlídač červené–zelené, když ho věta jmenuje; skupina 1 = popisek. */
+export const WATCHER = /\b((?:creepy |giant |haunted |old |evil )?(?:doll|statue|animatronic|mannequin|puppet|clown))s?\b/;
+
 /** Hádanka pořadí: spínače jdou zapnout jen v daném pořadí (`switch.ordered`). */
 export const ORDER_PUZZLE = /\bin (?:the )?(?:right|correct|exact) order\b/;
 
@@ -40,6 +89,7 @@ export const ARCHETYPE_CUES: Readonly<Record<ArchetypeId, readonly RegExp[]>> = 
     // Plížení (P25B T3) je sběr s hlídkami, které vidí – „steal the diamond and get out“.
     /\bsteal(?:s|ing)?\b/,
     STEALTH,
+    RED_LIGHT,
   ],
   chase_escape: [
     /\bchas(?:e|es|ed|ing)\b/,
@@ -51,7 +101,7 @@ export const ARCHETYPE_CUES: Readonly<Record<ArchetypeId, readonly RegExp[]>> = 
   ],
   survival_timer: [/\bsurviv(?:e|es|ed|ing|al)\b/, /\bseconds?\b/, /\bminutes?\b/, /\blast(?:s|ing)?\b/, /\boutlast(?:s)?\b/, /\bstay alive\b/],
   checkpoint_race: [/\brac(?:e|es|ing)\b/, /\bgates\b/, /\bcheckpoints?\b/, /\bin (?:the right )?order\b/, /\blaps?\b/, /\bhoops\b/, /\brings\b/, /\bsprint(?:s|ing)?\b/],
-  delivery: [/\bcarry(?:ing)?\b|\bcarries\b/, /\bdeliver(?:s|ed|ing)?\b/, /\bbring(?:s|ing)?\b/, /\bfragile\b/, ORDERS, FOOD],
+  delivery: [/\bcarry(?:ing)?\b|\bcarries\b/, /\bdeliver(?:s|ed|ing)?\b/, /\bbring(?:s|ing)?\b/, /\bfragile\b/, ORDERS, FOOD, CARE],
   switch_puzzle: [/\bpress(?:es|ing)?\b/, /\bbuttons?\b/, /\bswitch(?:es)?\b/, /\blevers?\b/, /\bnot\b|\bnever\b/, /\bflip(?:s|ping)?\b|\btoggle(?:s|d)?\b|\bpull(?:s|ing)?\b/,
     // P25B T4: „shoď věci v pořadí“ je hádanka pořadí, ne závod – dva body přebijí `checkpoint_race`.
     /\bknock(?:s|ed|ing)? (?:[a-z]+ ){1,3}off\b/,
@@ -67,7 +117,7 @@ export const ARCHETYPE_CUES: Readonly<Record<ArchetypeId, readonly RegExp[]>> = 
     /\bstepping\b/,
     /\bcracks?\b/,
   ],
-  combat_lite: [/\bdefeat(?:s|ed|ing)?\b/, /\bknock(?:s|ed|ing)? out\b/, /\bhit(?:s|ting)?\b/, /\bdestroy(?:s|ed|ing)?\b/, /\btargets?\b/],
+  combat_lite: [/\bdefeat(?:s|ed|ing)?\b/, /\bknock(?:s|ed|ing)? out\b/, /\bhit(?:s|ting)?\b/, /\bdestroy(?:s|ed|ing)?\b/, /\btargets?\b/, SMASH],
 };
 
 /** Číslovky one..twenty a pár velkých; číslice se čtou přímo. */
