@@ -58,6 +58,11 @@ describe('draftGameSpec', () => {
     expect(city.mechanics.find((m) => m.id === 'collectible')?.params.count).toBe(20);
   });
 
+  it('puts the right article in front of the renamed role', () => {
+    expect(draftGameSpec('A lone knight gathers three iron keys inside a haunted castle.').tutorial.controlsHint).toMatch(/^Tap an iron key /);
+    expect(draftGameSpec('A knight must collect three keys in a haunted castle.').tutorial.controlsHint).toMatch(/^Tap a key /);
+  });
+
   // Hráč s větou o klíčích dostal „Tap a mushroom“ (QA 22. 9. 2026): text
   // ovládání zůstal z předlohy, i když se role přejmenovala.
   it('never leaves a template label in the texts after the sentence renamed that role', () => {

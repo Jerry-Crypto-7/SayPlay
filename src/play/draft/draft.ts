@@ -100,6 +100,11 @@ function cap(text: string, max: number): string {
   return text.length <= max ? text : `${text.slice(0, max - 1).trimEnd()}…`;
 }
 
+/** „a key“, „an iron key“ – podle první hlásky, ne pravopisu (stačí na popisky rolí). */
+function withArticle(noun: string): string {
+  return `${/^[aeiou]/i.test(noun) ? 'an' : 'a'} ${noun}`;
+}
+
 function label(text: string | null, fallback: string): string {
   return cap(text ?? fallback, 60);
 }
@@ -138,7 +143,7 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     spec.objective.description = cap(`Collect ${spell(count)} ${plural(item.label, count)}, then reach the ${role(spec, 'portal').label}.`, 120);
     rewriteCounters(spec, 'collected', count - 1, count);
     spec.tutorial.goalLine = cap(`Collect ${count} ${plural(item.label, count)}, then reach the exit.`, 80);
-    spec.tutorial.controlsHint = cap(`Tap a ${item.label} to walk to it. Tap again to pick it up.`, 80);
+    spec.tutorial.controlsHint = cap(`Tap ${withArticle(item.label)} to walk to it. Tap again to pick it up.`, 80);
   },
   chase_escape(spec, read) {
     const chaser = role(spec, 'roomba');
@@ -226,7 +231,7 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     if (read.roles.checkpoint !== null && read.roles.checkpoint !== hazard.label) stone.label = label(read.roles.checkpoint, stone.label);
     spec.objective.description = cap(`Cross the ${hazard.label} field to the far side.`, 120);
     spec.tutorial.goalLine = cap(`Reach the far side. The ${hazard.label} pulses.`, 80);
-    spec.tutorial.controlsHint = cap(`Tap a ${stone.label} when the ${hazard.label} is calm.`, 80);
+    spec.tutorial.controlsHint = cap(`Tap ${withArticle(stone.label)} when the ${hazard.label} is calm.`, 80);
   },
   combat_lite(spec, read) {
     const count = clamp(read.counts[0] ?? 5, 1, 12);
@@ -238,7 +243,7 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     spec.objective.description = cap(`Knock out all ${spell(count)} ${plural(target.label, count)}.`, 120);
     rewriteCounters(spec, 'defeated', count - 1, count);
     spec.tutorial.goalLine = cap(`Knock out all ${count} ${plural(target.label, count)}.`, 80);
-    spec.tutorial.controlsHint = cap(`Tap a ${target.label} to approach, tap again to hit it.`, 80);
+    spec.tutorial.controlsHint = cap(`Tap ${withArticle(target.label)} to approach, tap again to hit it.`, 80);
   },
 };
 
