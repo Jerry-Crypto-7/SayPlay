@@ -14,7 +14,7 @@ import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts'
 import type { GameSpecV1 } from '@/play/spec';
 
 import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeWorld, type PieceRef } from './contract';
-import { buildWorld } from './kernel';
+import { buildWorld, replay } from './kernel';
 import { ARCADE_LIBRARY } from './library';
 import { runnerTrack } from './pieces/runner';
 import { runBot } from './verify';
@@ -52,6 +52,10 @@ export function compileArcade(spec: GameSpecV1, seed: number): CompileGameResult
   const { world } = made;
   const bot = runBot(world);
   if (bot.outcome !== 'won') return { ok: false, reason: 'UNWINNABLE', issues: [`the bot ${bot.outcome === 'lost' ? 'lost' : 'did not finish'} at tick ${bot.tick}, ${bot.distanceM} m into the track`] };
+  // Trať, kterou vyhraje i nečinný hráč, je vada rozvržení – dveře publikace
+  // zkusí další semínko, místo aby `verifyArcade` hru až potom odmítl (R3).
+  const idle = replay(world, [], ARCADE_LIBRARY);
+  if (idle.outcome === 'won') return { ok: false, reason: 'LAYOUT_FAILED', issues: [`a player who does nothing wins at tick ${idle.tick}`] };
   return {
     ok: true,
     value: {

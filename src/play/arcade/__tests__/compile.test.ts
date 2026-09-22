@@ -54,6 +54,21 @@ describe('control v GameSpec a směrování kompilace', () => {
     expect(reportFor(compiled.value).publishEligible).toBe(true);
   });
 
+  // R3: krátká řídká trať se životy se dala vyhrát bez hraní a publikace spadla
+  // na 422 bez dalšího semínka. Teď je to vada rozvržení, na kterou dveře zkusí jiné.
+  it('trať, kterou vyhraje i nečinný hráč, je LAYOUT_FAILED, ne hra', () => {
+    const spec = runner();
+    const easy = readGameSpec({
+      ...spec,
+      controlParams: { ...spec.controlParams, lengthM: 60, density: 'low' },
+      mechanics: [...spec.mechanics, { id: 'health', params: { max: 3 } }],
+    });
+    if (!easy.ok) throw new Error(easy.issues.join('; '));
+    const compiled = compileGame(easy.value, 1);
+    expect(compiled.ok).toBe(false);
+    if (!compiled.ok) expect(compiled.reason).toBe('LAYOUT_FAILED');
+  });
+
   it('parametry ovládání jen u běžce', () => {
     const { control: _control, ...grid } = runner();
     const read = readGameSpec(grid);
