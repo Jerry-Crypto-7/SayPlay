@@ -6,15 +6,22 @@
  * hledač svědka čte abecedu jen z `p.onAction.<hráč>.<akce>.<cíl>`
  * (`src/verify/solve.ts:188`) – svět by byl hratelný, ale nedokazatelný.
  *
- * Entita se nedespawnuje ani nemění stav (obojí mimo capabilities), takže
- * „už sebráno“ drží čítač `<instance>_taken` s `max: 1` a stráž `counterIs = 0`;
- * bez ní by týž předmět šel sebrat pětkrát a svědek by hru vyhrál z místa.
+ * Entita se nedespawnuje ani nemění stav, takže „už sebráno“ drží čítač
+ * `<instance>_taken` s `max: 1` a stráž `counterIs = 0`; bez ní by týž
+ * předmět šel sebrat pětkrát a svědek by hru vyhrál z místa.
+ *
+ * Skrýše (`hiddenIn`, P25D T2): runtime nezná „neaktivní od startu“, proto
+ * `onStart` všechny předměty despawnuje – neaktivní entita se nevykreslí
+ * (`WorldstreamStage`) a akce na ni runtime nepřijme. Vstup hráče do i-té
+ * skrýše i-tý předmět v ní spawne. Každý předmět má vlastní pool (jméno =
+ * ID instance); `buildTags` hledá pool podle prefixu jména, proto delší jména
+ * první – jinak by `gem_10` spadl do poolu `gem_1`.
  */
 
 import type { z } from 'zod';
 
 import type { MECHANICS } from '../../registry';
-import type { CounterDecl, MechanicAdapter, SurfaceRule, WitnessStep } from '../types';
+import type { AdapterOutput, CounterDecl, MechanicAdapter, SurfaceAction, SurfaceRule, WitnessStep } from '../types';
 
 type Params = z.infer<(typeof MECHANICS)['collectible']['params']>;
 
@@ -22,11 +29,17 @@ export const collectible: MechanicAdapter<Params> = (params, ctx) => {
   const rules: Record<string, SurfaceRule> = {};
   const witness: WitnessStep[] = [];
   const counters: Record<string, CounterDecl> = { [params.counter]: { min: 0, max: params.count, init: 0 } };
-  for (const instance of ctx.instances(params.role)) {
+  const items = ctx.instances(params.role);
+  const spots = params.hiddenIn === undefined ? [] : ctx.instances(params.hiddenIn);
+  items.forEach((instance, index) => {
     const id = `collectible.${instance}.pick`;
     const taken = `${instance}_taken`;
+    const spot = spots[index];
     counters[taken] = { min: 0, max: 1, init: 0 };
-    if (witness.length < params.count) witness.push({ actionId: 'pickup', target: instance, stage: 0 });
+    if (witness.length < params.count * (spot === undefined ? 1 : 2)) {
+      if (spot !== undefined) witness.push({ actionId: 'moveTo', target: spot, stage: 0 });
+      witness.push({ actionId: 'pickup', target: instance, stage: 0 });
+    }
     rules[id] = {
       id,
       phase: 0,
@@ -38,7 +51,17 @@ export const collectible: MechanicAdapter<Params> = (params, ctx) => {
         { kind: 'addCounter', ref: params.counter, by: 1 },
       ],
     };
-  }
+    if (spot !== undefined) {
+      rules[`collectible.${instance}.reveal`] = {
+        id: `collectible.${instance}.reveal`,
+        phase: 0,
+        priority: 0,
+        event: { kind: 'onEnterZone', entity: ctx.player, zone: spot },
+        condition: null,
+        actions: [{ kind: 'spawn', poolTag: instance, socket: spot }],
+      };
+    }
+  });
   const full = `collectible.${params.role}.full`;
   rules[full] = {
     id: full,
@@ -48,5 +71,20 @@ export const collectible: MechanicAdapter<Params> = (params, ctx) => {
     condition: null,
     actions: [{ kind: 'emit', signal: `${params.counter}Full` }],
   };
-  return { counters, rules, witness };
+  const output: AdapterOutput = { counters, rules, witness };
+  if (spots.length === 0) return output;
+
+  const hidden = items.slice(0, spots.length);
+  rules[`collectible.${params.role}.hide`] = {
+    id: `collectible.${params.role}.hide`,
+    phase: 0,
+    priority: 0,
+    event: { kind: 'onStart' },
+    condition: null,
+    actions: hidden.map((instance): SurfaceAction => ({ kind: 'despawn', target: instance })),
+  };
+  const pool = Object.fromEntries(
+    [...hidden].sort((a, b) => b.length - a.length).map((instance) => [instance, { size: 1, tag: instance }] as const),
+  );
+  return { ...output, pool };
 };

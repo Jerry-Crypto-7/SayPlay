@@ -136,7 +136,16 @@ function entry<P>(definition: MechanicEntry<P>): MechanicEntry<P> {
 }
 
 const collectibleParams = z
-  .object({ role: roleRef, count: z.int().min(1).max(20), counter: roleRef.default('collected') })
+  .object({
+    role: roleRef,
+    count: z.int().min(1).max(20),
+    counter: roleRef.default('collected'),
+    /**
+     * Skrýše (P25D T2): i-tý předmět leží schovaný v i-té instanci této role
+     * a není vidět, dokud hráč do skrýše nevstoupí. Skrýší smí být víc (prázdné).
+     */
+    hiddenIn: roleRef.optional(),
+  })
   .strict();
 const counterParams = z
   .object({ id: roleRef, min: z.int().min(0).max(999), max: z.int().min(1).max(999), initial: z.int().min(0).max(999) })
@@ -251,9 +260,13 @@ export const MECHANICS = {
   collectible: entry({
     id: 'collectible',
     params: collectibleParams,
-    roleRefs: (p) => [['role', p.role]],
-    capabilities: { events: ['onPickup', 'onCounterReaches'], actions: ['addCounter', 'emit'] },
-    cost: (p, count) => ({ entities: p.count, rules: count(p.role) + 1 }),
+    roleRefs: (p) => [['role', p.role], ...(p.hiddenIn === undefined ? [] : [['hiddenIn', p.hiddenIn] as const])],
+    capabilities: { events: ['onPickup', 'onCounterReaches', 'onStart', 'onEnterZone'], actions: ['addCounter', 'emit', 'despawn', 'spawn'] },
+    /** Skrýše: jedno schování na startu a odhalení na předmět. */
+    cost: (p, count) => ({
+      entities: p.count + (p.hiddenIn === undefined ? 0 : count(p.hiddenIn)),
+      rules: count(p.role) + 1 + (p.hiddenIn === undefined ? 0 : count(p.role) + 1),
+    }),
     explanation: 'Picking up an item of this role advances a counter.',
   }),
   counter: entry({
