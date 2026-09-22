@@ -22,6 +22,7 @@ import { type Operation, applyPatch, createPatch } from 'rfc6902';
 
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
+import { runnerHarder, runnerSwapObstacles, runnerTwist } from '../arcade/remix';
 import type { RemixClass } from '../contracts';
 import { ARCHETYPES, type MechanicId } from '../registry';
 import { readGameSpec, type GameSpecReason, type GameSpecV1, type GameRole } from '../spec';
@@ -250,6 +251,12 @@ export function remixPatch(chip: RemixChip, parent: GameSpecV1, seed = 1, accept
   const rng = xoroshiro128plus(seed);
   const pick = (max: number): number => uniformInt(rng, 0, max - 1);
   const child = clone(parent);
+  if (parent.control === 'runner' && chip !== 'reskin') {
+    if (chip === 'harder') runnerHarder(child);
+    else if (chip === 'twist') runnerTwist(child, pick, accept);
+    else runnerSwapObstacles(child, pick);
+    return createPatch(parent, child);
+  }
   switch (chip) {
     case 'harder':
       harder(child);
