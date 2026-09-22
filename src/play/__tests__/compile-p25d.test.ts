@@ -268,6 +268,10 @@ describe('collectible.hiddenIn – search the room (P25D T2)', () => {
       expect(drafted.verification.map((assertion) => assertion.id), sentence).toContain('hidden_item_does_not_count');
       expect(publishFailures(drafted, 1), sentence).toEqual([]);
     }
+    // Hide and seek je plížení; se skrýšemi navíc se nepublikovalo.
+    const hideAndSeek = draftGameSpec('hide and seek in a big house');
+    expect(hideAndSeek.mechanics.find((mechanic) => mechanic.id === 'collectible')?.params.hiddenIn).toBeUndefined();
+    expect(publishFailures(hideAndSeek, 1)).toEqual([]);
     const sea = draftGameSpec('explore underwater ruins as a little submarine');
     expect([sea.roles.find((role) => role.id === 'mushroom')?.label, sea.roles.find((role) => role.id === 'portal')?.label]).toEqual(['relic', 'surface']);
   });

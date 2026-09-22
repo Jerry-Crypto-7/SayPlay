@@ -431,7 +431,8 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     // Kořist plížení bývá jedna („steal a diamond“), sbírání pět.
     const redLight = RED_LIGHT.test(read.text);
     if (redLight) redLightLabels(spec, read);
-    const search = !redLight && SEARCH.test(read.text);
+    // Plížení se skrýšemi svědek necertifikuje (s149 „hide and seek“ padal) – plížení má přednost.
+    const search = !redLight && !read.roles.stealth && SEARCH.test(read.text);
     const sea = search && searchLabels(spec, read);
     const count = clamp(read.counts[0] ?? (read.roles.stealth ? (read.roles.collectibleMany ? 3 : 1) : redLight ? 3 : 5), 1, 20);
     const item = role(spec, 'mushroom');
