@@ -164,6 +164,14 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'NOT_PLAYABLE' });
     expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
   });
+
+  // R1 (P25A): model odpověděl mřížkovou hrou na větu, ze které návrh udělal běžce.
+  it('vylepšení, které ztratí ovládání běžce, zůstane návrhem bez dítěte', async () => {
+    const created = await publish({ sentence: 'jumping arcade game with a lot of obstacles' });
+    expect((await game(created.body.versionId)).spec.control).toBe('runner');
+    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+    expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
+  });
 });
 
 describe('GET …/upgrade', () => {

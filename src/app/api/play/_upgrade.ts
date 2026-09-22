@@ -148,6 +148,9 @@ async function directUpgrade(versions: VersionStore, draft: PublishedGame, reque
   const directorMs = performance.now() - directorStarted;
   if (directed.source === 'draft') return final(directed.fallbackReason ?? 'MODEL_UNAVAILABLE');
   if (gameSpecHash(directed.spec) === gameSpecHash(draft.spec)) return final('UNCHANGED');
+  // Vylepšení nesmí vyměnit ovládání: běžec by se přepsal na mřížkovou hru
+  // a hráči by se pod rukama změnila hra (R1, P25A).
+  if ((directed.spec.control ?? 'tap_go') !== (draft.spec.control ?? 'tap_go')) return final('MALFORMED');
 
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
   const published = await publishReadSpec(versions, directed.spec, seeds, draftId, {

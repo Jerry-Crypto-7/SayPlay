@@ -139,8 +139,12 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   ji ověří `verifyArcade` (robot se zpožděním 8 tiků vyhraje, nečinný hráč ne, dvojí přehrání
   = týž hash, meze jádra) do téhož `QualityReport` – keypointy `bot_wins`, `idle_loses`,
   `replay_equal`, `within_limits`. `worldHash` = `canonicalHash(arcade)`,
-  `compilerVersion` = `play-compiler-v2/arcade-v1`. `verifyGame` na arkádovou hru hodí
+  `compilerVersion` = `${GAME_COMPILER_VERSION}/arcade-v1` (po sloučení s P25B
+  `play-compiler-v3/arcade-v1`). `verifyGame` na arkádovou hru hodí
   výjimku (nemá ji kdo volat). Hashe v `evals/play/compiled/report.json` beze změny.
+- **Po sloučení (revize P25A):** trať, kterou vyhraje i nečinný hráč, vrací `compileArcade`
+  jako `LAYOUT_FAILED` (dveře zkusí další semínko); vylepšení režisérem, které změní
+  `control` návrhu, skončí `draft-final` / `MALFORMED` a dítě nevznikne.
 
 ## P25B
 
