@@ -1,0 +1,80 @@
+{
+  "schema": "gamespec.v1",
+  "control": "runner",
+  "controlParams": {
+    "speed": "fast",
+    "density": "normal",
+    "lengthM": 300
+  },
+  "title": "Neon Rooftop Sprint",
+  "archetype": "hazard_crossing",
+  "targetDurationSec": 60,
+  "theme": {
+    "setting": "neon city rooftops at night",
+    "mood": "electric"
+  },
+  "objective": {
+    "kind": "reach",
+    "description": "Sprint across the rooftops to the glowing billboard.",
+    "role": "finish"
+  },
+  "mechanics": [
+    {
+      "id": "hazard_zone",
+      "params": {
+        "role": "obstacle",
+        "effect": "lose"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "finish",
+        "when": "enter",
+        "effect": "win"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "courier"
+    },
+    {
+      "id": "obstacle",
+      "kind": "hazard",
+      "label": "air vent",
+      "count": 6
+    },
+    {
+      "id": "coin",
+      "kind": "collectible",
+      "label": "data chip",
+      "count": 6
+    },
+    {
+      "id": "finish",
+      "kind": "exit",
+      "label": "glowing billboard"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Reach the glowing billboard. Jump vents and switch lanes.",
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}
