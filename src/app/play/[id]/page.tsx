@@ -8,6 +8,7 @@ import { admit } from '@/app/api/play/_publish';
 import { labFacts } from '@/components/play/lab';
 import { PlayShell } from '@/components/play/PlayShell';
 import type { GameVersion } from '@/play/contracts';
+import { type Honesty, honestyOf } from '@/play/draft/unsupported';
 import { type PublishedGame, versionStoreFromEnv } from '@/play/version';
 
 type Params = { params: Promise<{ id: string }> };
@@ -22,7 +23,7 @@ type Params = { params: Promise<{ id: string }> };
 type Loaded =
   | { readonly kind: 'refused' }
   | { readonly kind: 'missing' }
-  | { readonly kind: 'game'; readonly game: PublishedGame; readonly children: readonly string[]; readonly lineage: readonly GameVersion[] };
+  | { readonly kind: 'game'; readonly game: PublishedGame; readonly children: readonly string[]; readonly lineage: readonly GameVersion[]; readonly honesty: Honesty | null };
 
 /**
  * Jedno načtení na požadavek, sdílené metadaty i stránkou (`cache` z Reactu).
@@ -40,8 +41,8 @@ const load = cache(async (id: string): Promise<Loaded> => {
   const versions = versionStoreFromEnv(process.env);
   const game = await versions.get(id);
   if (game === null) return { kind: 'missing' };
-  const [children, lineage] = await Promise.all([versions.childrenOf(id), versions.lineageOf(id)]);
-  return { kind: 'game', game, children, lineage };
+  const [children, lineage, honesty] = await Promise.all([versions.childrenOf(id), versions.lineageOf(id), honestyOf(versions, game)]);
+  return { kind: 'game', game, children, lineage, honesty };
 });
 
 /**
@@ -80,7 +81,7 @@ export default async function PlayGamePage({ params }: Params) {
       </main>
     );
   }
-  const { game, children, lineage } = loaded;
+  const { game, children, lineage, honesty } = loaded;
   // Arkádová hra (P25A) nese svět v `arcade` a `blueprint: null`; hra bez obojího nemá kde běžet.
   if (game.blueprint === null && game.arcade === undefined) notFound();
   // `key`: přechod na remix je klientská navigace a nová hra musí dostat nový runtime, ne ten rodičův.
@@ -94,6 +95,7 @@ export default async function PlayGamePage({ params }: Params) {
       lineage={lineage.length > 0 ? lineage : [game.version]}
       remixes={children.length}
       lab={labFacts(game.spec, game.report)}
+      honesty={honesty}
       upgrade={game.origin !== undefined && game.relation === undefined ? `/api/play/games/${game.version.versionId}/upgrade` : null}
     />
   );

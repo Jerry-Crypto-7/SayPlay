@@ -254,3 +254,11 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   polohy, kde zeď stojí, prohraje. Návrh ze slov: „walls that move / moving walls / shifting
   maze“ → dvě zdi (role `wall`, 4 instance) v `collect_exit` (s076), keypointy
   `standing_wall_loses` a `moved_wall_is_safe`. Bez parametru beze změny hashů.
+
+## P25E
+
+- **`POST /api/play/games` → volitelné `honesty: { reason, closest }`** (T2). Jen u věty, na
+  kterou knihovna ovládání nemá (`unsupportedGame` v `src/play/draft/unsupported.ts`: třídy
+  `sandbox`, `manipulate`, `idle`, `build_place`). Hra se publikuje dál; `closest` je hra, kterou
+  návrh postavil místo toho („a collect-and-escape game“). Spec, verze ani hashe se nemění –
+  `/play/[id]` hlášku počítá znovu z `origin.sentence` (u upgradu z rodiče) a ukáže proužek.

@@ -19,6 +19,7 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
 import type { GameVersion } from '@/play/contracts';
+import type { Honesty } from '@/play/draft/unsupported';
 import type { GameSpecV1 } from '@/play/spec';
 import { createMeshClient } from '@/shape/mesh-client';
 import { createCachedMeshClient } from '@/shape/mesh-cache';
@@ -28,10 +29,13 @@ import type { RuntimeAction } from '@/worldstream/runtime-input';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
 import { ArcadePlay } from './arcade/ArcadePlay';
+import { HonestyStrip } from './HonestyStrip';
 import { HowItWorks } from './HowItWorks';
 import { Hud } from './Hud';
 import type { LabFacts } from './lab';
 import { Lineage } from './Lineage';
+import { OrderBubbles } from './OrderBubbles';
+import { PatrolSight } from './PatrolSight';
 import { PostRun } from './PostRun';
 import { TargetCards } from './TargetCards';
 import { UpgradeBanner, useUpgrade } from './UpgradeBanner';
@@ -86,11 +90,26 @@ export interface PlayShellProps {
   readonly upgrade: string | null;
 }
 
-/** Arkádová hra (P25A) jde do `ArcadePlay`, mřížková beze změny. */
-export function PlayShell({ blueprint, arcade, ...rest }: Omit<PlayShellProps, 'blueprint'> & { readonly blueprint: WorldstreamBlueprint | null; readonly arcade?: ArcadeWorld }) {
-  if (arcade !== undefined) return <ArcadePlay {...rest} arcade={arcade} />;
-  if (blueprint === null) throw new Error('PlayShell: a grid game needs its blueprint');
-  return <GridShell {...rest} blueprint={blueprint} />;
+/**
+ * Arkádová hra (P25A) jde do `ArcadePlay`, mřížková beze změny. Poctivá hláška
+ * (P25E) leží nad oběma, proto ji kreslí rozcestník, ne shell.
+ */
+export function PlayShell({
+  blueprint,
+  arcade,
+  honesty = null,
+  ...rest
+}: Omit<PlayShellProps, 'blueprint'> & { readonly blueprint: WorldstreamBlueprint | null; readonly arcade?: ArcadeWorld; readonly honesty?: Honesty | null }) {
+  if (blueprint === null && arcade === undefined) throw new Error('PlayShell: a grid game needs its blueprint');
+  const shell = arcade !== undefined ? <ArcadePlay {...rest} arcade={arcade} /> : blueprint !== null && <GridShell {...rest} blueprint={blueprint} />;
+  if (honesty === null) return shell;
+  // Proužek hru odsune, nepřekryje: HUD s cílem hry musí zůstat vidět.
+  return (
+    <div className="play-honest-frame">
+      <HonestyStrip honesty={honesty} />
+      {shell}
+    </div>
+  );
 }
 
 function GridShell({ versionId, spec, blueprint, lineage, remixes, lab, upgrade }: PlayShellProps) {
@@ -185,7 +204,14 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, lab, upgrade 
   return (
     <main className="play-shell">
       <div className="play-stage" aria-hidden="true">
-        <WorldstreamCanvas world={world} controller={controller} sceneId={versionId} framing="scene" guide={false} />
+        <WorldstreamCanvas world={world} controller={controller} sceneId={versionId} framing="scene" guide={false}>
+          {built && blueprint.world.sim !== null && (
+            <>
+              <PatrolSight sim={blueprint.world.sim} controller={controller} />
+              <OrderBubbles sim={blueprint.world.sim} roles={spec.roles} controller={controller} />
+            </>
+          )}
+        </WorldstreamCanvas>
       </div>
       <Hud spec={spec} snapshot={snapshot} />
       <Lineage lineage={lineage} remixes={remixes} />

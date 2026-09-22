@@ -41,6 +41,11 @@ export interface PublishedGame {
    * upgrade šel spustit i bez paměti procesu, která POST viděla (P23-D T2).
    */
   readonly origin?: { readonly sentence: string; readonly seed: number | null };
+  /**
+   * Věta u hry, kterou publikoval rovnou režisér, protože návrh ze slov nešel
+   * hrát (P25E R1). Jen pro poctivou hlášku – na rozdíl od `origin` upgrade nespouští.
+   */
+  readonly sentence?: string;
   /** `'upgrade'` = autorská verze návrhu `version.parentId`, ne remix. */
   readonly relation?: 'upgrade';
   readonly timings?: PlayTimings;

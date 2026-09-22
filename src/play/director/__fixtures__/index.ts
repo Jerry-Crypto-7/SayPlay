@@ -30,6 +30,14 @@ export function answerFixture(name: AnswerFixtureName): unknown {
   return JSON.parse(readFileSync(new URL(`${name}.json`, `file://${answersDir.replace(/\\/g, '/')}`), 'utf8'));
 }
 
+/**
+ * Dobrá odpověď s ovládáním běžce (P25E T5). Mimo `GOOD_ANSWERS`: ty jdou po
+ * archetypech mřížky a běžec je `hazard_crossing` s jiným ovládáním.
+ */
+export function runnerAnswer(): unknown {
+  return JSON.parse(readFileSync(new URL('good-runner.json', `file://${answersDir.replace(/\\/g, '/')}`), 'utf8'));
+}
+
 /** Useknutý text odpovědi – jediná fixtura, která nejde přečíst jako JSON. */
 export function truncatedAnswerText(): string {
   return readFileSync(new URL('bad-truncated.txt', `file://${answersDir.replace(/\\/g, '/')}`), 'utf8');
