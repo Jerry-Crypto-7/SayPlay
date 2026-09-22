@@ -31,6 +31,12 @@ export const SEARCH = /\bhidden\b|\bhide and seek\b|\bexplor(?:e|es|ing)\b|\brui
 /** Hledání pod hladinou (s184): relikvie v troskách, cíl je vyplavat. */
 export const UNDERWATER = /\bunder ?water\b|\bsunken\b|\bunder the sea\b|\bocean\b|\bsubmarine\b|\bshipwreck\b/;
 
+/**
+ * Ničení a pukání (P25D T4, s097, s198): `defeat` bez nepřátel – `use` cíl
+ * odstraní a přičte, poslední zničený vyhraje. Skupina 1 = „pop“.
+ */
+export const SMASH = /\b(pop(?:s|ping)? (?:stuff|things|everything|all|bubbles?|balloons?)|bubble ?(?:pop|wrap)|pop(?:ping)? game)\b|\bsmash(?:es|ing)?\b|\bdestroy everything\b|\bwreck(?:s|ing)?\b|\bbreak everything\b/;
+
 /** Pohyblivé zdi (`hazard_zone.pulse.alternate`, P25D T3, s076). */
 export const MOVING_WALLS = /\b(?:walls?|hedges?) (?:that |which )?(?:move|moves|moving|shift|shifts|shifting|slide|slides|sliding)\b|\b(?:moving|shifting|sliding) (?:walls?|maze|labyrinth)\b/;
 
@@ -90,7 +96,7 @@ export const ARCHETYPE_CUES: Readonly<Record<ArchetypeId, readonly RegExp[]>> = 
     /\bstepping\b/,
     /\bcracks?\b/,
   ],
-  combat_lite: [/\bdefeat(?:s|ed|ing)?\b/, /\bknock(?:s|ed|ing)? out\b/, /\bhit(?:s|ting)?\b/, /\bdestroy(?:s|ed|ing)?\b/, /\btargets?\b/],
+  combat_lite: [/\bdefeat(?:s|ed|ing)?\b/, /\bknock(?:s|ed|ing)? out\b/, /\bhit(?:s|ting)?\b/, /\bdestroy(?:s|ed|ing)?\b/, /\btargets?\b/, SMASH],
 };
 
 /** Číslovky one..twenty a pár velkých; číslice se čtou přímo. */

@@ -42,6 +42,7 @@ import {
   MOVING_WALLS,
   RED_LIGHT,
   SEARCH,
+  SMASH,
   UNDERWATER,
   WATCHER,
   plural,
@@ -502,8 +503,26 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     rewriteCounters(spec, 'defeated', count - 1, count);
     spec.tutorial.goalLine = cap(`Knock out all ${count} ${plural(target.label, count)}.`, 80);
     spec.tutorial.controlsHint = cap(`Tap ${withArticle(target.label)} to approach, tap again to hit it.`, 80);
+    const smash = SMASH.exec(read.text);
+    if (smash !== null) smashing(spec, read, count, smash[1] !== undefined);
   },
 };
+
+/**
+ * Ničení a pukání (P25D T4): tentýž `defeat`, ale nic neútočí – bez zdraví,
+ * cíle jsou věci. „Everything / stuff“ není popisek, dostane téma.
+ */
+function smashing(spec: GameSpecV1, read: Read, count: number, pop: boolean): void {
+  const target = role(spec, 'slime');
+  if (read.roles.target === null || /^(?:everything|stuff|things|all)$/.test(read.roles.target)) target.label = pop ? 'bubble' : 'vase';
+  spec.mechanics = spec.mechanics.filter((candidate) => candidate.id !== 'health');
+  const verb = pop ? 'Pop' : 'Smash';
+  spec.objective.description = cap(`${verb} all ${spell(count)} ${plural(target.label, count)}. The last one wins.`, 120);
+  spec.tutorial.goalLine = cap(`${verb} all ${count} ${plural(target.label, count)}.`, 80);
+  spec.tutorial.controlsHint = cap(`Tap ${withArticle(target.label)} to walk to it, tap again to ${verb.toLowerCase()} it.`, 80);
+  spec.theme.mood = pop ? 'playful' : 'cartoon';
+  if (pop && read.roles.setting === null) spec.theme.setting = 'sunny bubble meadow';
+}
 
 /** Běžec (P25A): šablona `runner.json`, přepíše se titul, popisky a hustota. */
 function draftRunner(sentence: string, seed: number, density: RunnerDensity | null): GameSpecV1 | null {

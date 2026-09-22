@@ -162,6 +162,23 @@ describe('hazard_zone.pulse.alternate – moving walls (P25D T3)', () => {
   });
 });
 
+describe('smash and pop – defeat without enemies (P25D T4)', () => {
+  it('drafts s097 and s198 as destroy-everything games where the last smash wins, and each publishes', () => {
+    for (const [sentence, label] of [
+      ['destroy everything in a house with a hammer, smash simulator', 'vase'],
+      ['satisfying game where you pop stuff', 'bubble'],
+    ] as const) {
+      const drafted = draftGameSpec(sentence);
+      expect(drafted.archetype, sentence).toBe('combat_lite');
+      expect(drafted.roles.find((role) => role.id === 'slime')?.label, sentence).toBe(label);
+      expect(drafted.mechanics.map((mechanic) => mechanic.id), sentence).toEqual(['defeat']);
+      const last = drafted.verification.find((assertion) => assertion.id === 'hit_removes_slime');
+      expect(last?.assert, sentence).toMatchObject({ runState: 'won' });
+      expect(publishFailures(drafted, 1), sentence).toEqual([]);
+    }
+  });
+});
+
 describe('collectible.hiddenIn – search the room (P25D T2)', () => {
   const gameSpec = fixture('collect_exit_hidden');
 
