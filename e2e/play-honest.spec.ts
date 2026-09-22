@@ -35,3 +35,25 @@ test.describe('/play/[id] – honesty strip', () => {
     await expect(page.getByTestId('play-honest')).toHaveCount(0);
   });
 });
+
+/**
+ * Co hra hráči dřív neukázala (P25E T3, T4): úsek, po kterém stráž vidí.
+ * Sondy `__playSight` hlásí, co scéna doopravdy nakreslila.
+ */
+test.describe('/play/[id] – what the scene shows', () => {
+  test('a stealth game draws the guard beats, one of them watched', async ({ page, request }) => {
+    const game = await publish(request, 'sneak past guards in a museum and steal a diamond');
+    await page.goto(game.url);
+    await page.waitForFunction(() => window.__playSight !== undefined && window.__playSight().beats > 0, undefined, { timeout: 60_000 });
+    const sight = await page.evaluate(() => window.__playSight!());
+    expect(sight.watched).toBeGreaterThan(0);
+  });
+
+  test('a game without stealth draws no beats', async ({ page, request }) => {
+    const game = await publish(request, 'Collect five glowing mushrooms then open a portal.');
+    await page.goto(game.url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
+    const beats = await page.evaluate(() => window.__playSight?.().beats ?? 0);
+    expect(beats).toBe(0);
+  });
+});
