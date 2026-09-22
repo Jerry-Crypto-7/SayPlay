@@ -9,6 +9,8 @@
 import { RUNTIME_VERSION } from '@/sim/interpreter';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
+import type { ArcadeWorld } from '../arcade/contract';
+
 import { gameVersionId, type CompiledGame, type GameVersion, type QualityReport } from '../contracts';
 import type { GameSpecV1 } from '../spec';
 
@@ -30,7 +32,9 @@ export interface PlayTimings {
 export interface PublishedGame {
   readonly version: GameVersion;
   readonly spec: GameSpecV1;
-  readonly blueprint: WorldstreamBlueprint;
+  /** `null` u arkádové hry – ta se hraje z `arcade`. */
+  readonly blueprint: WorldstreamBlueprint | null;
+  readonly arcade?: ArcadeWorld;
   readonly report: QualityReport;
   /**
    * Návrh z věty si nese větu a semínko volajícího (`null` = odvozené), aby

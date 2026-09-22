@@ -17,7 +17,7 @@ import { chooseFamily } from '@/geom/family-choice';
 import { simHashOf } from '@/ir/worlddoc';
 import { certifySteps, type EmitPhase } from '@/model/certify';
 import { findBlueprintReferenceIssues } from '@/worldstream/references';
-import { validateBlueprint } from '@/worldstream/schema';
+import { type WorldstreamBlueprint, validateBlueprint } from '@/worldstream/schema';
 
 import { compileGame } from '../compile';
 import type { CompiledGame } from '../contracts';
@@ -33,14 +33,17 @@ function fixture(name: string): GameSpecV1 {
   return result.value;
 }
 
-function compiled(spec: GameSpecV1, seed: number): CompiledGame {
+type GridGame = CompiledGame & { readonly blueprint: WorldstreamBlueprint };
+
+function compiled(spec: GameSpecV1, seed: number): GridGame {
   const result = compileGame(spec, seed);
   if (!result.ok) throw new Error(`${spec.title}/${seed}: ${result.reason} ${result.issues.join('; ')}`);
-  return result.value;
+  if (result.value.blueprint === null) throw new Error(`${spec.title}: expected a grid game`);
+  return result.value as GridGame;
 }
 
 /** Prožene `world` certifikačním řetězem modelu; vrátí dosažené fáze a výsledek. */
-function certify(game: CompiledGame): { phases: EmitPhase[]; outcome: string; detail: string } {
+function certify(game: GridGame): { phases: EmitPhase[]; outcome: string; detail: string } {
   const { simHash: _sealed, ...body } = game.blueprint.world;
   const steps = certifySteps({
     promptId: game.spec.title,

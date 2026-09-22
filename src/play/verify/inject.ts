@@ -36,6 +36,8 @@ export interface Injected {
 }
 
 export function surfaceOf(compiled: CompiledGame): SurfaceSim {
+  // Arkádovou hru (P25A) ověřuje `verifyArcade`; sem se dostat nemá.
+  if (compiled.blueprint === null) throw new Error('verifyGame: an arcade game has no grid world');
   return compiled.blueprint.world.sim as unknown as SurfaceSim;
 }
 

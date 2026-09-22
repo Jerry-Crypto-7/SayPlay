@@ -38,6 +38,7 @@ describe('getCompiler + reportFor', () => {
       if (!result.ok) throw new Error(`${archetype}: ${result.reason} ${result.issues.join('; ')}`);
       const compiled = result.value;
       expect(compiled.compilerVersion).toBe(GAME_COMPILER_VERSION);
+      if (compiled.blueprint === null) throw new Error(`${archetype}: expected a grid game`);
       expect(validateBlueprint(compiled.blueprint).ok).toBe(true);
       expect(bindRuntime(null, 'x', compiled.blueprint.world).controller.actions.length).toBeGreaterThanOrEqual(1);
       const report = reportFor(compiled);

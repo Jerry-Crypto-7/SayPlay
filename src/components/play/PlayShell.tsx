@@ -17,6 +17,7 @@
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
+import type { ArcadeWorld } from '@/play/arcade/contract';
 import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 import { createMeshClient } from '@/shape/mesh-client';
@@ -26,6 +27,7 @@ import { bindRuntime, type RuntimeController } from '@/worldstream/runtime-contr
 import type { RuntimeAction } from '@/worldstream/runtime-input';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
+import { ArcadePlay } from './arcade/ArcadePlay';
 import { HowItWorks } from './HowItWorks';
 import { Hud } from './Hud';
 import type { LabFacts } from './lab';
@@ -84,7 +86,14 @@ export interface PlayShellProps {
   readonly upgrade: string | null;
 }
 
-export function PlayShell({ versionId, spec, blueprint, lineage, remixes, lab, upgrade }: PlayShellProps) {
+/** Arkádová hra (P25A) jde do `ArcadePlay`, mřížková beze změny. */
+export function PlayShell({ blueprint, arcade, ...rest }: Omit<PlayShellProps, 'blueprint'> & { readonly blueprint: WorldstreamBlueprint | null; readonly arcade?: ArcadeWorld }) {
+  if (arcade !== undefined) return <ArcadePlay {...rest} arcade={arcade} />;
+  if (blueprint === null) throw new Error('PlayShell: a grid game needs its blueprint');
+  return <GridShell {...rest} blueprint={blueprint} />;
+}
+
+function GridShell({ versionId, spec, blueprint, lineage, remixes, lab, upgrade }: PlayShellProps) {
   const upgraded = useUpgrade(upgrade);
   const [controller] = useState(() => bindRuntime(null, versionId, blueprint.world).controller);
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);

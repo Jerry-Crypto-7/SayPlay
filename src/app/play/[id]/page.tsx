@@ -81,6 +81,8 @@ export default async function PlayGamePage({ params }: Params) {
     );
   }
   const { game, children, lineage } = loaded;
+  // Arkádová hra (P25A) nese svět v `arcade` a `blueprint: null`; hra bez obojího nemá kde běžet.
+  if (game.blueprint === null && game.arcade === undefined) notFound();
   // `key`: přechod na remix je klientská navigace a nová hra musí dostat nový runtime, ne ten rodičův.
   return (
     <PlayShell
@@ -88,6 +90,7 @@ export default async function PlayGamePage({ params }: Params) {
       versionId={game.version.versionId}
       spec={game.spec}
       blueprint={game.blueprint}
+      {...(game.arcade === undefined ? {} : { arcade: game.arcade })}
       lineage={lineage.length > 0 ? lineage : [game.version]}
       remixes={children.length}
       lab={labFacts(game.spec, game.report)}
