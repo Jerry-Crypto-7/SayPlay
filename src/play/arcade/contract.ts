@@ -18,7 +18,7 @@ export const ARCADE_HZ = 60;
 /** Jednotek na metr – pozice, rozměry i rychlosti (za tik) jsou celá čísla. */
 export const UNIT = 1000;
 /** Zvednout, když stejný svět a stejné vstupy dají jiný hash. */
-export const ARCADE_RUNTIME_VERSION = 'arcade-v1';
+export const ARCADE_RUNTIME_VERSION = 'arcade-v2';
 
 /** Meze, které drží smyčky jádra konečné a svět malý. */
 export const ARCADE_LIMITS = {
@@ -45,8 +45,14 @@ export const HEADER = {
   bodyCount: 2,
   /** Index těla hráče. */
   player: 3,
+  /** První slot pro těla z efektu `spawn` (= počet těl úrovně); sloty od něj jádro znovu použije. */
+  spawnBase: 4,
+  /** Kam efekt `respawn` vrátí hráče: start, po efektu `checkpoint` horní hrana checkpointu. */
+  respawnX: 5,
+  respawnY: 6,
+  respawnZ: 7,
   /** Čítače (`COUNTER`) od tohoto slotu. Náhodu spotřebuje jen generátor, jádro žádnou. */
-  counters: 4,
+  counters: 8,
 } as const;
 export const HEADER_SIZE = HEADER.counters + ARCADE_LIMITS.maxCounters;
 
@@ -88,6 +94,11 @@ export const FLAG = {
   sliding: 1 << 3,
   /** Jádro na tělo působí gravitací a drží ho nad zemí (`y >= 0`). */
   gravity: 1 << 4,
+  /**
+   * Hýbe se jen svou rychlostí: gravitace ani země ho nezastaví a hráč, který
+   * na něm stojí, se veze (pohyblivá plošina, auto, trubka).
+   */
+  kinematic: 1 << 5,
 } as const;
 
 /** Pevné sloty čítačů v hlavičce (`HEADER.counters + index`). */
@@ -101,6 +112,12 @@ export const ROLE = {
   collectible: 3,
   goal: 4,
   chaser: 5,
+  platform: 6,
+  hazard: 7,
+  enemy: 8,
+  projectile: 9,
+  target: 10,
+  checkpoint: 11,
 } as const;
 export type ArcadeRole = keyof typeof ROLE;
 export type ArcadeRoleCode = (typeof ROLE)[ArcadeRole];
@@ -176,7 +193,26 @@ export type ArcadeEffect =
   | { readonly kind: 'damage'; readonly amount: number }
   | { readonly kind: 'lose' }
   | { readonly kind: 'win' }
-  | { readonly kind: 'despawn'; readonly body: number };
+  | { readonly kind: 'despawn'; readonly body: number }
+  /**
+   * Nové tělo jako kopie předlohy `template` (tvar, role, model, příznaky) na
+   * pozici s rychlostí. Jde do mrtvého slotu od `HEADER.spawnBase`, nebo do
+   * volné rezervy světa; když není kam, efekt se zahodí.
+   */
+  | {
+      readonly kind: 'spawn';
+      readonly template: number;
+      readonly x: number;
+      readonly y: number;
+      readonly z: number;
+      readonly vx: number;
+      readonly vy: number;
+      readonly vz: number;
+    }
+  /** Hráč zpět na místo návratu (`HEADER.respawnX..Z`), bez rychlosti. */
+  | { readonly kind: 'respawn' }
+  /** Místo návratu = střed horní hrany těla `body`. */
+  | { readonly kind: 'checkpoint'; readonly body: number };
 
 export type RuleTrigger = 'contact' | 'tick' | 'counter';
 
@@ -205,6 +241,16 @@ export interface BodyInit {
   readonly h: number;
   readonly d: number;
   readonly solid: boolean;
+  /** Počáteční rychlost v jednotkách za tik. */
+  readonly vx?: number;
+  readonly vy?: number;
+  readonly vz?: number;
+  /** Padá a drží se nad zemí (`FLAG.gravity`); hráč ji má vždy. */
+  readonly gravity?: boolean;
+  /** `FLAG.kinematic`: jede svou rychlostí, nic ho nezastaví, hráč se na něm veze. */
+  readonly kinematic?: boolean;
+  /** Předloha pro efekt `spawn`: ve světě je, ale není živá. */
+  readonly template?: boolean;
 }
 
 export interface ArcadeLevel {
@@ -212,6 +258,8 @@ export interface ArcadeLevel {
   readonly bodies: readonly BodyInit[];
   /** Délka trati v jednotkách (konec = cíl), nebo 0, když úroveň konec nemá. */
   readonly length: number;
+  /** Volné sloty pro těla z efektu `spawn` (součet s `bodies` nejvýš `maxBodies`). */
+  readonly spawnSlots?: number;
 }
 
 /** Stavba úrovně: seed + parametry → těla. Hratelnost z konstrukce je jeho povinnost. */

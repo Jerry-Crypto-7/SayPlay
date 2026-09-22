@@ -11,7 +11,7 @@ Kontrakt: `src/play/arcade/contract.ts`. Řídicí plán: `plans/P25-play-knihov
 ## Jednotky a stav
 
 - **1 m = 1000 jednotek** (`UNIT`), rychlost je v jednotkách za tik, **60 Hz** (`ARCADE_HZ`).
-- Stav je jeden `Int32Array`: hlavička (`tick`, `runState`, počet těl, index hráče, 8 čítačů) + těla po 14 slotech (`x y z vx vy vz w h d flags role kind aux0 aux1`).
+- Stav je jeden `Int32Array`: hlavička (`tick`, `runState`, počet těl, index hráče, `spawnBase`, místo návratu `respawnX/Y/Z`, 8 čítačů) + těla po 14 slotech (`x y z vx vy vz w h d flags role kind aux0 aux1`). Za těly úrovně je volitelná rezerva `spawnSlots` pro efekt `spawn`.
 - Osy: `x` do stran, `y` nahoru, `z` vpřed. `x/y/z` je střed spodní stěny obrysu (AABB).
 - Despawn jen shodí bit `alive`; indexy těl jsou stabilní po celý běh.
 
@@ -25,7 +25,17 @@ Kontrakt: `src/play/arcade/contract.ts`. Řídicí plán: `plans/P25-play-knihov
 
 ## Tik jádra
 
-vstup → ovládání (kus `control`) → integrace (rychlost, gravitace) → kolize AABB hráče s ostatními (s přistáním na horní hraně pevného těla) → pravidla (`contact`, `tick`, `counter` → `score`, `damage`, `lose`, `win`, `despawn`) → úklid.
+vstup → ovládání (kus `control`) → vezení (hráč stojící na kinematickém tělese dostane jeho rychlost) → integrace (rychlost, gravitace) → kolize AABB hráče s ostatními → pravidla (`contact`, `tick`, `counter` → `score`, `damage`, `lose`, `win`, `despawn`, `spawn`, `respawn`, `checkpoint`) → úklid.
+
+Kolize s pevným tělem podle toho, odkud hráč přišel (poloha před integrací; u pohyblivého tělesa jeho poloha minus rychlost):
+
+| Odkud | Co jádro udělá | Kontakt pro pravidla |
+|---|---|---|
+| shora | hráč stojí na horní hraně, `vy = 0`, `grounded` | ne |
+| zdola | hlava pod spodní hranou, `vy = 0` | ano |
+| z boku (`x` nebo `z`) | hráč na hraně, `vx`/`vz` = 0; přes roh rozhodne menší průnik | ano |
+
+Nepevné tělo je jen kontakt. Příznaky těla: `solid` (stojí se na něm, zastaví), `gravity` (padá, drží se nad zemí `y ≥ 0`), `kinematic` (jede jen svou rychlostí, nic ho nezastaví, hráč se veze). Předloha (`template`) je ve světě mrtvá a efekt `spawn` ji kopíruje do rezervy; mrtvé spawnuté sloty se použijí znovu, těla úrovně nikdy, a když není kam, efekt se zahodí.
 
 ## Kusy
 

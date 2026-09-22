@@ -183,3 +183,31 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   `wrong_order_ignored`. Návrh ze slov: vaření/zákazníci/obchod/farma nebo jídlo bez „… to Y“ →
   objednávky (s160–s166); „carry/deliver X to Y“ zůstává nesením. Pin promptu režiséra
   10 555 → 10 615 B (tři nové parametry ve schématu). Bez parametru beze změny hashů.
+
+## P25C
+
+- **`ARCADE_RUNTIME_VERSION` → `arcade-v2`** (22. 9. 2026, T1), tedy `compilerVersion`
+  arkádových her `play-compiler-v3/arcade-v2`. Co se změnilo v jádru:
+  - **Hlavička stavu +4 sloty** (`spawnBase`, `respawnX/Y/Z`), čítače od slotu 8, těla od 16.
+  - **Pevné tělo zastaví hráče i z boku a zespodu** (dřív jen dopad shora): bok vrátí hráče na
+    hranu a vynuluje `vx`/`vz`, strop vynuluje `vy`; kontakt se hlásí dál, takže pravidlo
+    `hit` běžce prohraje stejně. Odkud hráč přišel, se čte z polohy před integrací (u
+    pohyblivého tělesa z jeho polohy minus rychlost).
+  - **`BodyInit` volitelně `vx/vy/vz`, `gravity`, `kinematic`, `template`**; `ArcadeLevel`
+    volitelně `spawnSlots` (rezerva pro spawn, součet s těly ≤ `maxBodies`). `FLAG.kinematic`:
+    tělo jede jen svou rychlostí (gravitace ani země ho nezastaví) a hráč, který na něm stojí,
+    se veze. `template` = předloha pro spawn, ve světě mrtvá.
+  - **Role navíc** `platform` 6, `hazard` 7, `enemy` 8, `projectile` 9, `target` 10,
+    `checkpoint` 11 (stávající čísla beze změny).
+  - **Efekty navíc** `spawn` (kopie předlohy na pozici s rychlostí; slot = první mrtvý
+    spawnutý, jinak rezerva, jinak se zahodí – těla úrovně se nikdy nepřepíšou), `respawn`
+    (hráč na místo návratu bez rychlosti) a `checkpoint` (místo návratu = horní hrana těla).
+    `checkpoint` plán neuváděl; bez něj by `respawn` uměl jen start, a plošinovka (T2) ho
+    potřebuje.
+- **Hash běžce se mění vědomě:** stav je o 4 sloty delší, takže `worldHash` i hash každého
+  přehrání běžce je jiný. Výsledek her se nemění – robot běžce do boku nenaráží (náraz = prohra
+  i dřív); jediný viditelný rozdíl je, že prohraná hra končí na přední stěně překážky, ne v ní
+  (pin ve `verify.test.ts`: zeď v 60 m → „59 m into the track“). Pinovaný hash běžce v testech
+  není. Hashe mřížkových her (`evals/play/compiled/report.json`) beze změny.
+- **Uložené hry `arcade-v1` hrají dál:** `instantiate` pozná `runtimeVersion: 'arcade-v1'` a
+  počáteční stav převede do rozložení v2 (vloží `spawnBase` a místo návratu = start hráče).
