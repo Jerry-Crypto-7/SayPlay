@@ -47,12 +47,30 @@ export function progressLine(spec: GameSpecV1, snapshot: Pick<RuntimeSnapshot, '
   return `${seconds}s`;
 }
 
+/**
+ * Fáze světla (P25D T1): hra „červená–zelená“ prohraje krok v červené, ale
+ * barva je jen flag ve stavu – bez tohohle řádku hráč nevidí, kdy stát.
+ * Jméno flagu skládá `timer.ts` jako `<id>_red`; tady opsané ze stejného
+ * důvodu jako jména čítačů výš.
+ */
+export function phaseLine(spec: GameSpecV1, snapshot: Pick<RuntimeSnapshot, 'values'>): string | null {
+  const timer = spec.mechanics.find((entry) => entry.id === 'timer' && entry.params.phases !== undefined);
+  if (timer === undefined || typeof timer.params.id !== 'string') return null;
+  return readVariable(snapshot as RuntimeSnapshot, `${timer.params.id}_red`) === 1 ? 'RED – freeze' : 'GREEN – go';
+}
+
 export function Hud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly snapshot: RuntimeSnapshot }) {
+  const phase = phaseLine(spec, snapshot);
   return (
     <header className="play-hud" aria-label="Game status">
       <h1 className="play-hud-title">{spec.title}</h1>
       <p className="play-hud-goal" data-testid="play-goal">{spec.tutorial.goalLine}</p>
       <p className="play-hud-hint">{spec.tutorial.controlsHint}</p>
+      {phase === null ? null : (
+        <p className={phase.startsWith('RED') ? 'play-hud-phase play-hud-phase-red' : 'play-hud-phase play-hud-phase-green'} data-testid="play-phase">
+          {phase}
+        </p>
+      )}
       <p className="play-hud-progress">
         <span data-testid="play-progress">{progressLine(spec, snapshot)}</span>
         <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick}>

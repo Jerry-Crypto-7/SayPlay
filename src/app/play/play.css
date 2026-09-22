@@ -290,6 +290,21 @@
   font-size: 0.9rem;
 }
 
+.play-hud-phase {
+  margin: 6px 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.play-hud-phase-green {
+  color: #34d399;
+}
+
+.play-hud-phase-red {
+  color: #f87171;
+}
+
 .play-hud-progress {
   margin: 8px 0 0;
   display: flex;
