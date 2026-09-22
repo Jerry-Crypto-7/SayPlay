@@ -39,6 +39,7 @@ import {
   ORDER_PUZZLE,
   ORDERS,
   PUSH_CRATES,
+  MOVING_WALLS,
   RED_LIGHT,
   SEARCH,
   UNDERWATER,
@@ -299,6 +300,30 @@ function addHidden(spec: GameSpecV1, count: number, sea: boolean): void {
   });
 }
 
+/**
+ * Pohyblivé zdi (P25D T3): dvě zdi, každá přeskakuje mezi dvěma polohami
+ * (`hazard_zone.pulse.alternate`). Vstup do polohy, kde zeď stojí, prohraje.
+ */
+function addMovingWalls(spec: GameSpecV1): void {
+  spec.roles.push({ id: 'wall', kind: 'hazard', label: 'moving wall', count: 4 });
+  spec.mechanics.push({ id: 'hazard_zone', params: { role: 'wall', effect: 'lose', pulse: { onSeconds: 2, offSeconds: 2, alternate: true } } });
+  spec.theme.mood = 'tense';
+  spec.tutorial.controlsHint = cap('Tap to walk. Never step where a wall stands; walls shift every 2 s.', 80);
+  spec.verification.splice(
+    1,
+    0,
+    { id: 'standing_wall_loses', kind: 'keypoint', mechanic: 'hazard_zone', setup: { placeAt: { player: 'wall' } }, ticks: 5, assert: { runState: 'lost' } },
+    {
+      id: 'moved_wall_is_safe',
+      kind: 'keypoint',
+      mechanic: 'hazard_zone',
+      setup: { placeAt: { player: 'wall' }, entityStates: { wall: 'off' } },
+      ticks: 20,
+      assert: { runState: 'running' },
+    },
+  );
+}
+
 interface Read {
   readonly roles: SentenceRoles;
   readonly seconds: number | null;
@@ -325,6 +350,7 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     spec.tutorial.goalLine = cap(`Collect ${count} ${plural(item.label, count)}, then reach the exit.`, 80);
     spec.tutorial.controlsHint = cap(`Tap ${withArticle(item.label)} to walk to it. Tap again to pick it up.`, 80);
     if (search) addHidden(spec, count, sea);
+    if (MOVING_WALLS.test(read.text)) addMovingWalls(spec);
     if (redLight) addRedLight(spec);
     else if (read.roles.stealth) addGuards(spec, read.roles.threat);
     else if (read.roles.threat !== null) addThreat(spec, read.roles.threat, read.text);

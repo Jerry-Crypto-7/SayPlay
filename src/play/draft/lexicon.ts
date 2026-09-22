@@ -31,6 +31,9 @@ export const SEARCH = /\bhidden\b|\bhide and seek\b|\bexplor(?:e|es|ing)\b|\brui
 /** Hledání pod hladinou (s184): relikvie v troskách, cíl je vyplavat. */
 export const UNDERWATER = /\bunder ?water\b|\bsunken\b|\bunder the sea\b|\bocean\b|\bsubmarine\b|\bshipwreck\b/;
 
+/** Pohyblivé zdi (`hazard_zone.pulse.alternate`, P25D T3, s076). */
+export const MOVING_WALLS = /\b(?:walls?|hedges?) (?:that |which )?(?:move|moves|moving|shift|shifts|shifting|slide|slides|sliding)\b|\b(?:moving|shifting|sliding) (?:walls?|maze|labyrinth)\b/;
+
 /** Hlídač červené–zelené, když ho věta jmenuje; skupina 1 = popisek. */
 export const WATCHER = /\b((?:creepy |giant |haunted |old |evil )?(?:doll|statue|animatronic|mannequin|puppet|clown))s?\b/;
 

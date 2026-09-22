@@ -127,6 +127,41 @@ describe('timer.phases – red light, green light (P25D T1)', () => {
   });
 });
 
+describe('hazard_zone.pulse.alternate – moving walls (P25D T3)', () => {
+  const gameSpec = fixture('collect_exit_moving_walls');
+
+  it('compiles, certifies a witness and passes every keypoint on seeds 1..5', () => {
+    for (const seed of [1, 2, 3, 4, 5]) expect(publishFailures(gameSpec, seed), `seed ${seed}`).toEqual([]);
+  });
+
+  it('each wall stands in exactly one of its two positions and shifts every 2 s; without the stagger both stand at once', () => {
+    const states = (sim: SurfaceSim, ticks: number): string[] => {
+      const runtime = runtimeOf(sim);
+      const seen: string[] = [];
+      for (let tick = 0; tick < ticks; tick += 1) {
+        step(runtime, []);
+        const row = ['wall_1', 'wall_2', 'wall_3', 'wall_4'].map((id) => runtime.entityStates.get(id)?.values[readSlot(runtime.layout, runtime.state, `e:${id}:state`)]);
+        seen.push(row.join(','));
+      }
+      return seen;
+    };
+    const { sim } = compiled(gameSpec, 1);
+    expect(Object.keys(sim.entities).filter((id) => id.startsWith('wall'))).toEqual(['wall_1', 'wall_2', 'wall_3', 'wall_4']);
+    const walls = states(sim, 170);
+    expect(new Set(walls)).toEqual(new Set(['on,off,on,off', 'off,on,off,on']));
+    expect(walls.indexOf('off,on,off,on')).toBeGreaterThan(30);
+    expect(walls.lastIndexOf('on,off,on,off')).toBeGreaterThan(100);
+    expect(states(without(sim, /\.stagger$/), 5)[2]).toBe('on,on,on,on');
+  });
+
+  it('drafts s076 with moving walls, and the drafted game publishes', () => {
+    const drafted = draftGameSpec('a maze game where the walls move');
+    expect(drafted.mechanics.find((mechanic) => mechanic.id === 'hazard_zone')?.params.pulse).toMatchObject({ alternate: true });
+    expect(drafted.verification.map((assertion) => assertion.id)).toContain('standing_wall_loses');
+    expect(publishFailures(drafted, 1)).toEqual([]);
+  });
+});
+
 describe('collectible.hiddenIn – search the room (P25D T2)', () => {
   const gameSpec = fixture('collect_exit_hidden');
 

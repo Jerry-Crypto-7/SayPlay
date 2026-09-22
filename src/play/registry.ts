@@ -199,7 +199,8 @@ const hazardZoneParams = z
     role: roleRef,
     effect: z.enum(['lose', 'damage']),
     /** Pulzování: `onSeconds` aktivní, `offSeconds` bezpečná. Bez toho je nebezpečí stálé. */
-    pulse: z.object({ onSeconds: seconds, offSeconds: seconds }).strict().optional(),
+    /** `alternate` (P25D T3, pohyblivá zeď): liché instance svítí, když sudé nesvítí. */
+    pulse: z.object({ onSeconds: seconds, offSeconds: seconds, alternate: z.boolean().optional() }).strict().optional(),
   })
   .strict();
 const chaserParams = z
@@ -355,8 +356,8 @@ export const MECHANICS = {
     params: hazardZoneParams,
     roleRefs: (p) => [['role', p.role]],
     capabilities: { events: ['onEnterZone', 'onTimerEnd', 'onStart'], actions: ['lose', 'addCounter', 'setState', 'startTimer'] },
-    /** `enter` + `start` na instanci, s pulzem navíc `catch` a dvě pravidla přepnutí. */
-    cost: (p, count) => ({ entities: count(p.role), rules: count(p.role) * (p.pulse ? 3 : 2) + (p.pulse ? 2 : 0) }),
+    /** `enter` + `start` na instanci, s pulzem navíc `catch` a dvě pravidla přepnutí, střídání ještě vypnutí na startu. */
+    cost: (p, count) => ({ entities: count(p.role), rules: count(p.role) * (p.pulse ? 3 : 2) + (p.pulse ? 2 : 0) + (p.pulse?.alternate ? 1 : 0) }),
     setsStates: (p) => (p.pulse ? [[p.role, 'on'], [p.role, 'off']] : []),
     explanation: 'Standing in a hazard hurts or ends the run; hazards may pulse on and off.',
   }),

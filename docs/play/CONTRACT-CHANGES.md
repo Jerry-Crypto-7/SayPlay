@@ -211,3 +211,10 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   hledání (skrýší o dvě víc než předmětů), pod vodou relikvie v troskách a cíl „surface“
   (s074, s184); keypoint `hidden_item_does_not_count`, počítací keypoint šablony nejdřív
   vstoupí do skrýše. Pin promptu režiséra 11 362 → 11 453 B. Bez parametru beze změny hashů.
+- **`hazard_zone.params.pulse.alternate?: boolean`** (22. 9. 2026, T3, pohyblivé zdi).
+  Instance 2k a 2k+1 jsou dvě polohy jedné zdi: liché svítí, když sudé ne (pravidlo
+  `<role>.stagger` z `onStart` je vypne, `catch` liché polohy čeká na konec `on` časovače).
+  Runtime má `space.blocked` pevné a entity neblokují, takže zeď cestu nezavře – vstup do
+  polohy, kde zeď stojí, prohraje. Návrh ze slov: „walls that move / moving walls / shifting
+  maze“ → dvě zdi (role `wall`, 4 instance) v `collect_exit` (s076), keypointy
+  `standing_wall_loses` a `moved_wall_is_safe`. Bez parametru beze změny hashů.
