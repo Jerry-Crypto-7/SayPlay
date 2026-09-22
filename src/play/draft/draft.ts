@@ -158,6 +158,28 @@ function addThreat(spec: GameSpecV1, threat: NonNullable<SentenceRoles['threat']
   });
 }
 
+/**
+ * Plížení (P25B T3): stráže jsou hlídky s výhledem (`patrol.sight`) – kdo
+ * stojí na úseku, který stráž právě jde, prohraje. Světla a kamery z věty
+ * („avoid the flashlights“) nesou stráže, proto popisek `guard`.
+ */
+function addGuards(spec: GameSpecV1, threat: SentenceRoles['threat']): void {
+  const named = threat !== null && !/light|camera|laser/.test(threat.label) ? threat.label : 'guard';
+  const count = threat?.plural === true || named === 'guard' ? 2 : 1;
+  spec.roles.push({ id: 'enemy', kind: 'patrol', label: label(named, 'guard'), count });
+  spec.mechanics.push({ id: 'patrol', params: { role: 'enemy', disposition: 'bold', stops: 3, touchEffect: 'lose', sight: true } });
+  const guards = plural(named, count);
+  spec.tutorial.goalLine = cap(`${spec.tutorial.goalLine} Stay off the ${guards}${count > 1 ? "'" : "'s"} paths.`, 80);
+  spec.verification.splice(1, 0, {
+    id: 'spotted_loses',
+    kind: 'keypoint',
+    mechanic: 'patrol',
+    setup: { placeAt: { player: 'enemy' } },
+    ticks: 3,
+    assert: { runState: 'lost' },
+  });
+}
+
 interface Read {
   readonly roles: SentenceRoles;
   readonly seconds: number | null;
@@ -168,7 +190,8 @@ interface Read {
 
 const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
   collect_exit(spec, read) {
-    const count = clamp(read.counts[0] ?? 5, 1, 20);
+    // Kořist plížení bývá jedna („steal a diamond“), sbírání pět.
+    const count = clamp(read.counts[0] ?? (read.roles.stealth ? (read.roles.collectibleMany ? 3 : 1) : 5), 1, 20);
     const item = role(spec, 'mushroom');
     item.label = label(read.roles.collectible, item.label);
     item.count = count;
@@ -178,7 +201,8 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     rewriteCounters(spec, 'collected', count - 1, count);
     spec.tutorial.goalLine = cap(`Collect ${count} ${plural(item.label, count)}, then reach the exit.`, 80);
     spec.tutorial.controlsHint = cap(`Tap ${withArticle(item.label)} to walk to it. Tap again to pick it up.`, 80);
-    if (read.roles.threat !== null) addThreat(spec, read.roles.threat, read.text);
+    if (read.roles.stealth) addGuards(spec, read.roles.threat);
+    else if (read.roles.threat !== null) addThreat(spec, read.roles.threat, read.text);
   },
   chase_escape(spec, read) {
     const chaser = role(spec, 'roomba');

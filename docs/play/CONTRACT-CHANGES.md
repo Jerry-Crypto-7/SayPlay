@@ -134,3 +134,10 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   `worldHash` u archetypů s hlídkou (fixtura `delivery`). Tvar `GameSpec` ani registru beze
   změny; návrh ze slov jen přidá roli `enemy` (hlídka nebo pronásledovatel) a keypoint
   `enemy_touch_loses`.
+- **`patrol.params.sight?: boolean`** (T3, plížení). Nový volitelný parametr registru; bez něj
+  se hlídka kompiluje beze změny (hashe v3 drží). S ním je každý úsek trasy zóna
+  `<instance>_beat<i>` a hráč na úseku, který hlídka právě jde, prohraje; úseky se vyhnou cestě
+  svědka spawn → cíl. `patrol` má v capabilities navíc `onStart` (hráč vstříknutý do výhledu).
+  Plížení je varianta `collect_exit`, ne nový archetyp: registr už hlídku v každém archetypu
+  povoluje a cíl „ukradni a uteč“ je sběr + východ. Režisér vidí parametr ve schématu (prompt
+  +70 B, pin 10 555 B).

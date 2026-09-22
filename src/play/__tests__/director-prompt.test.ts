@@ -3,7 +3,7 @@
  * vypadal úplně a zestárl by; test drží, že registr je vyrenderovaný ze
  * zdroje (změna `explanation` hne verzí), že v něm je všech 16 mechanik a
  * 8 archetypů, a že velikost nepřeteče – naměřené maximum 20. 9. 2026 je
- * 10 485 B nad 40 větami korpusu (strop plánu 12 000 B).
+ * 10 555 B nad 40 větami korpusu (strop plánu 12 000 B; +70 B výhled hlídky, P25B).
  */
 
 import { readFileSync } from 'node:fs';
@@ -38,14 +38,14 @@ describe('director prompt', () => {
     for (const forbidden of ['projectile', 'jump', 'moving_platform']) expect(request.system).not.toContain(forbidden);
   });
 
-  it('stays under 12 000 bytes for all forty golden sentences (pin: 10 485 B)', () => {
+  it('stays under 12 000 bytes for all forty golden sentences (pin: 10 555 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const request = buildDirectorRequest(entry.prompt, draftGameSpec(entry.prompt));
       max = Math.max(max, Buffer.byteLength(request.system + request.user));
     }
     expect(max).toBeLessThanOrEqual(12_000);
-    expect(max).toBeLessThanOrEqual(10_500);
+    expect(max).toBeLessThanOrEqual(10_600);
   });
 
   it('compacts schemas: role ids, enums, bounded ints, optional fields with defaults', () => {

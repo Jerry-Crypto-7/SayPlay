@@ -165,6 +165,11 @@ const patrolParams = z
     disposition: z.enum(['bold', 'wary', 'restless']),
     stops: z.int().min(3).max(6),
     touchEffect: z.enum(['lose', 'damage', 'none']),
+    /**
+     * Plížení (P25B T3): hlídka vidí po úseku trasy, který právě jde. Hráč na
+     * témže úseku prohraje. Úseky se vyhnou cestě svědka, takže hra jde vyhrát.
+     */
+    sight: z.boolean().optional(),
   })
   .strict();
 const carryParams = z.object({ itemRole: roleRef, destinationRole: roleRef, fragile: z.boolean() }).strict();
@@ -278,10 +283,13 @@ export const MECHANICS = {
     id: 'patrol',
     params: patrolParams,
     roleRefs: (p) => [['role', p.role]],
-    capabilities: { events: ['onCollide', 'onEnterZone'], actions: ['moveTo', 'lose', 'addCounter'], agents: true },
-    /** Mysl `1 + stops × 3` (`sim/agents.ts`) plus `touch` na instanci. */
-    cost: (p, count) => ({ entities: count(p.role), rules: count(p.role) * (p.stops * 3 + 2) }),
-    explanation: 'A character walks a fixed route; its temperament decides how.',
+    capabilities: { events: ['onCollide', 'onEnterZone', 'onStart'], actions: ['moveTo', 'lose', 'addCounter'], agents: true },
+    /**
+     * Mysl `1 + stops × 3` (`sim/agents.ts`) plus `touch` na instanci; výhled
+     * dvě pravidla na úsek (`stops + 1` úseků) a jedno startovní.
+     */
+    cost: (p, count) => ({ entities: count(p.role), rules: count(p.role) * (p.stops * 3 + 2 + (p.sight === true ? 2 * (p.stops + 1) + 1 : 0)) }),
+    explanation: 'A character walks a fixed route; its temperament decides how. With sight, being on its current stretch loses.',
   }),
   carry: entry({
     id: 'carry',

@@ -11,9 +11,22 @@
 
 import type { ArchetypeId } from '../registry';
 
+/** Věta o plížení: stráže s výhledem místo slepých hlídek. */
+export const STEALTH =
+  /\bsneak(?:s|ing|y)?\b|\bstealth(?:y)?\b|\bguards?\b|\bunseen\b|\bundetected\b|\bwithout (?:being )?(?:seen|spotted|caught|noticed|waking)\b|\bhid(?:e|es|ing)\b|\bflashlights?\b/;
+
 /** Slova, po kterých se archetyp pozná. Každý zásah je jeden bod; remíza jde pořadím `ARCHETYPE_IDS`. */
 export const ARCHETYPE_CUES: Readonly<Record<ArchetypeId, readonly RegExp[]>> = {
-  collect_exit: [/\bcollect(?:s|ing)?\b/, /\bgather(?:s|ing)?\b/, /\bfind(?:s|ing)?\b/, /\bpick(?:s|ing)? up\b/, /\bgrab(?:s|bing)?\b/],
+  collect_exit: [
+    /\bcollect(?:s|ing)?\b/,
+    /\bgather(?:s|ing)?\b/,
+    /\bfind(?:s|ing)?\b/,
+    /\bpick(?:s|ing)? up\b/,
+    /\bgrab(?:s|bing)?\b/,
+    // Plížení (P25B T3) je sběr s hlídkami, které vidí – „steal the diamond and get out“.
+    /\bsteal(?:s|ing)?\b/,
+    STEALTH,
+  ],
   chase_escape: [
     /\bchas(?:e|es|ed|ing)\b/,
     /\bhunt(?:s|ed|ing)?\b/,
@@ -169,6 +182,10 @@ export interface SentenceRoles {
   readonly player: string | null;
   readonly chaser: string | null;
   readonly collectible: string | null;
+  /** Sbíraná věc je ve větě v množném čísle („steal cookies“); „steal a diamond“ = jeden kus. */
+  readonly collectibleMany: boolean;
+  /** Věta mluví o plížení (`STEALTH`). */
+  readonly stealth: boolean;
   readonly item: string | null;
   readonly destination: string | null;
   readonly target: string | null;
@@ -209,7 +226,7 @@ export function readRoles(sentence: string): SentenceRoles {
     /\b(?:hunted|chased|pursued|followed) by (?:a |an |the )?([a-z][a-z -]*)/,
     /\b(?:flees|escapes|escape|flee|run from|runs from|outrun|outruns) (?:from )?(?:a |an |the )?([a-z][a-z -]*)/,
   ], 2);
-  const collectible = first(text, [/\b(?:collect|gather|find|pick up|grab)s? (?:all |every )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/], 2);
+  const collectible = first(text, [/\b(?:collect|gather|find|pick up|grab|steal)s? (?:all |every )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/], 2);
   const delivery = /\b(?:carry|deliver|bring|take|escort)s? (?:a |an |the )?([a-z][a-z -]*?) (?:from (?:a |an |the )?[a-z][a-z -]*? )?(?:across (?:a |an |the )?[a-z][a-z -]*? )?to (?:a |an |the )?([a-z][a-z -]*)/.exec(text);
   const target = first(text, [/\b(?:defeat|destroy|knock out|hit|smash|beat)s? (?:all |every |the )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/], 2);
   const checkpointMatch = /(?:[a-z]+ )?((?:[a-z]+ )?(?:gates?|hoops?|rings?|checkpoints?|flags?|arches?|posts?))\b/.exec(text);
@@ -224,7 +241,10 @@ export function readRoles(sentence: string): SentenceRoles {
   }
   const setting = first(text, [/\b(?:in|inside|across|through|on|around|at|into) (?:a |an |the )?([a-z][a-z -]*)/]);
   // Vyhýbání se nebezpečné ploše („avoid the lava“) je hazard, ne postava.
-  const dodged = first(text, [/\b(?:dodg|avoid|evad)(?:e|es|ed|ing)? (?:the |a |an |all |any )?([a-z][a-z -]*)/], 2);
+  const dodged = first(text, [
+    /\b(?:dodg|avoid|evad)(?:e|es|ed|ing)? (?:the |a |an |all |any )?([a-z][a-z -]*)/,
+    /\b(?:sneak(?:s|ing)? past|without waking) (?:the |a |an |all |any )?([a-z][a-z -]*)/,
+  ], 2);
   const threatNoun = chaser ?? (dodged !== null && !HAZARD_WORDS.test(dodged) ? dodged : null);
   const threat: SentenceRoles['threat'] =
     threatNoun === null ? null : { label: singular(threatNoun), mover: chaser !== null ? 'chaser' : 'patrol', plural: singular(threatNoun) !== threatNoun };
@@ -232,6 +252,8 @@ export function readRoles(sentence: string): SentenceRoles {
     player,
     chaser,
     collectible: collectible === null ? null : singular(collectible),
+    collectibleMany: collectible !== null && singular(collectible) !== collectible,
+    stealth: STEALTH.test(text),
     item: delivery === null ? null : nounPhrase(delivery[1]),
     destination: delivery === null ? null : nounPhrase(delivery[2]),
     target: target === null ? null : singular(target),

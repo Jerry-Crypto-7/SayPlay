@@ -177,6 +177,64 @@ describe('draft – enemies in collect_exit (P25B T2)', () => {
   });
 });
 
+describe('patrol sight – stealth (P25B T3)', () => {
+  const gameSpec = fixture('collect_exit_stealth');
+
+  it('compiles the museum heist, certifies the witness and passes every keypoint on seeds 1..3', () => {
+    for (const seed of [1, 2, 3]) {
+      const result = compileGame(gameSpec, seed);
+      if (!result.ok) throw new Error(`seed ${seed}: ${result.reason} ${result.issues.join('; ')}`);
+      const report = verifyGame(result.value);
+      expect(report.keypoints.filter((keypoint) => !keypoint.passed), `seed ${seed}`).toEqual([]);
+      expect(report.publishEligible, `seed ${seed}`).toBe(true);
+    }
+  });
+
+  it('loses by sight alone: stepping onto the stretch a guard walks, with the touch rules removed', () => {
+    const { sim } = compiled(gameSpec, 1);
+    const noTouch = Object.fromEntries(Object.entries(sim.rules).filter(([id]) => !id.endsWith('.touch')));
+    const noSight = Object.fromEntries(Object.entries(noTouch).filter(([id]) => !/\.(spot|sees)\d+$|\.start$/.test(id) || !id.startsWith('patrol.')));
+    // Hráč na startu stráže = na úseku 0, po kterém stráž hned vyrazí.
+    const onGuard = { ...sim.sockets, spawn: sim.sockets.guard_1 as readonly [number, number] };
+    expect(run(runtimeOf({ ...sim, sockets: onGuard, rules: noTouch }), [], 5)).toBe('lost');
+    expect(run(runtimeOf({ ...sim, sockets: onGuard, rules: noSight }), [], 5)).toBe('running');
+  });
+
+  it('keeps every guard stretch off the witness route from spawn to the exit', () => {
+    for (const seed of [1, 2, 3]) {
+      const { sim } = compiled(gameSpec, seed);
+      const [sx, sy] = sim.sockets.spawn as readonly [number, number];
+      const beats = Object.entries(sim.state.zones).filter(([name]) => name.includes('_beat'));
+      expect(beats.length, `seed ${seed}`).toBe(8);
+      for (const [, rects] of beats) {
+        for (const [x, y, w, h] of rects) expect(sx >= x && sx < x + w && sy >= y && sy < y + h, `seed ${seed}`).toBe(false);
+      }
+    }
+  });
+
+  it('drafts the P-labelled stealth sentences as collect games with seeing guards', () => {
+    for (const sentence of [
+      'sneak past guards in a museum and steal a diamond',
+      'A kid sneaks down at night to steal cookies without waking mom',
+      'stealth game as a ninja cat',
+      'hide and seek in a big house',
+      'prison escape, avoid the flashlights',
+      'sneak into the teachers room to change my grades lol',
+    ]) {
+      const drafted = draftGameSpec(sentence);
+      expect(drafted.archetype, sentence).toBe('collect_exit');
+      expect(drafted.mechanics.find((mechanic) => mechanic.id === 'patrol')?.params.sight, sentence).toBe(true);
+    }
+    const heist = draftGameSpec('sneak past guards in a museum and steal a diamond');
+    expect(heist.roles.find((role) => role.id === 'enemy')).toMatchObject({ label: 'guard', count: 2 });
+    expect(heist.objective.count).toBe(1);
+    expect(draftGameSpec('A kid sneaks down at night to steal cookies without waking mom').roles.find((role) => role.id === 'enemy')?.label).toBe('mom');
+    const result = compileGame(heist, 1);
+    if (!result.ok) throw new Error(`${result.reason} ${result.issues.join('; ')}`);
+    expect(verifyGame(result.value).publishEligible).toBe(true);
+  });
+});
+
 describe('compileSim – property_transform', () => {
   it('flips the state on use once, from the declared state only', () => {
     const gameSpec = withMechanic('collect_exit', { id: 'property_transform', params: { role: 'portal', from: 'open', to: 'sealed', trigger: 'use' } });
