@@ -5,7 +5,7 @@
  * i systémová `sys.moveTo.*` z `buildRuntimeWorld`.
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
@@ -13,10 +13,15 @@ import { describe, expect, it } from 'vitest';
 import { buildRuntimeWorld } from '@/ir/build';
 
 import { compileSim } from '../compile';
-import { ARCHETYPE_IDS, MECHANICS, type MechanicEntry, estimateCost } from '../registry';
+import { MECHANICS, type MechanicEntry, estimateCost } from '../registry';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 
 const fixturesDir = fileURLToPath(new URL('../__fixtures__/', import.meta.url));
+/** Každá platná fixtura, i varianty archetypů (P25B a P25D v `p25d/`) – ne jen osm šablon. */
+const FIXTURES = [
+  ...readdirSync(fixturesDir).filter((file) => file.endsWith('.json') && !file.startsWith('invalid-')),
+  ...readdirSync(`${fixturesDir}p25d`).map((file) => `p25d/${file}`),
+].map((file) => file.slice(0, -'.json'.length));
 
 function fixture(name: string): GameSpecV1 {
   const raw = JSON.parse(readFileSync(`${fixturesDir}${name}.json`, 'utf8'));
@@ -35,7 +40,7 @@ function compiledRules(spec: GameSpecV1, seed: number): number {
 
 describe('estimateCost', () => {
   it('never undercounts the rules the compiler emits (every fixture, seeds 1–8)', () => {
-    for (const id of ARCHETYPE_IDS) {
+    for (const id of FIXTURES) {
       const spec = fixture(id);
       const estimate = estimateCost(spec.mechanics, spec.roles).rules;
       for (let seed = 1; seed <= 8; seed += 1) {
@@ -47,7 +52,7 @@ describe('estimateCost', () => {
 
 describe('setsStates', () => {
   it('declares every state the compiler sets on a role instance (every fixture)', () => {
-    for (const id of ARCHETYPE_IDS) {
+    for (const id of FIXTURES) {
       const spec = fixture(id);
       const declared = new Set<string>();
       for (const mechanic of spec.mechanics) {

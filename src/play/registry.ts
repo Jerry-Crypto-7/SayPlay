@@ -61,6 +61,8 @@ export interface MechanicCost {
 /** Co o světě víme před rozvržením: horní mez buněk mřížky a počty instancí podle druhu role. */
 export interface CostWorld {
   readonly maxCells: number;
+  /** Horní mez šířky + výšky mřížky (sloupce a řádky, P25D T1). */
+  readonly maxSpan: number;
   readonly kindCount: (kind: string) => number;
 }
 
@@ -98,6 +100,18 @@ export function maxLayoutCells(instances: number): number {
   return max;
 }
 
+/** Největší šířka + výška mřížky přes všechny hody kompilátoru. */
+export function maxLayoutSpan(instances: number): number {
+  let max = 0;
+  for (let dw = 0; dw <= 2; dw += 1) {
+    for (let dh = 0; dh <= 1; dh += 1) {
+      const { width, height } = layoutGridSize(instances, dw, dh);
+      max = Math.max(max, width + height);
+    }
+  }
+  return max;
+}
+
 export interface MechanicEntry<P = unknown> {
   /** Shodné s klíčem v `MECHANICS`; test to drží. */
   readonly id: string;
@@ -122,13 +136,37 @@ function entry<P>(definition: MechanicEntry<P>): MechanicEntry<P> {
 }
 
 const collectibleParams = z
-  .object({ role: roleRef, count: z.int().min(1).max(20), counter: roleRef.default('collected') })
+  .object({
+    role: roleRef,
+    count: z.int().min(1).max(20),
+    counter: roleRef.default('collected'),
+    /**
+     * Skrýše (P25D T2): i-tý předmět leží schovaný v i-té instanci této role
+     * a není vidět, dokud hráč do skrýše nevstoupí. Skrýší smí být víc (prázdné).
+     */
+    hiddenIn: roleRef.optional(),
+  })
   .strict();
 const counterParams = z
   .object({ id: roleRef, min: z.int().min(0).max(999), max: z.int().min(1).max(999), initial: z.int().min(0).max(999) })
   .strict();
 const timerParams = z
-  .object({ id: roleRef, seconds, onEnd: z.enum(['win', 'lose', 'signal']), signal: roleRef.optional() })
+  .object({
+    id: roleRef,
+    seconds,
+    onEnd: z.enum(['win', 'lose', 'signal']),
+    signal: roleRef.optional(),
+    /**
+     * Fáze (P25D T1, „červená–zelená“): světlo se střídá `goSeconds` zelená a
+     * `stopSeconds` červená podle tiků. Krok hráče v červené prohraje.
+     * `watcher` je role, která to hlídá (panenka, animatronik): v zelené je
+     * ve stavu `away`, v červené `watching`.
+     */
+    phases: z
+      .object({ goSeconds: z.int().min(2).max(20), stopSeconds: z.int().min(1).max(10), watcher: roleRef.optional() })
+      .strict()
+      .optional(),
+  })
   .strict();
 const zoneTriggerParams = z
   .object({ role: roleRef, when: z.enum(['enter', 'exit']), effect: z.enum(['win', 'lose', 'signal']), signal: roleRef.optional() })
@@ -161,7 +199,8 @@ const hazardZoneParams = z
     role: roleRef,
     effect: z.enum(['lose', 'damage']),
     /** Pulzování: `onSeconds` aktivní, `offSeconds` bezpečná. Bez toho je nebezpečí stálé. */
-    pulse: z.object({ onSeconds: seconds, offSeconds: seconds }).strict().optional(),
+    /** `alternate` (P25D T3, pohyblivá zeď): liché instance svítí, když sudé nesvítí. */
+    pulse: z.object({ onSeconds: seconds, offSeconds: seconds, alternate: z.boolean().optional() }).strict().optional(),
   })
   .strict();
 const chaserParams = z
@@ -222,9 +261,13 @@ export const MECHANICS = {
   collectible: entry({
     id: 'collectible',
     params: collectibleParams,
-    roleRefs: (p) => [['role', p.role]],
-    capabilities: { events: ['onPickup', 'onCounterReaches'], actions: ['addCounter', 'emit'] },
-    cost: (p, count) => ({ entities: p.count, rules: count(p.role) + 1 }),
+    roleRefs: (p) => [['role', p.role], ...(p.hiddenIn === undefined ? [] : [['hiddenIn', p.hiddenIn] as const])],
+    capabilities: { events: ['onPickup', 'onCounterReaches', 'onStart', 'onEnterZone'], actions: ['addCounter', 'emit', 'despawn', 'spawn'] },
+    /** Skrýše: jedno schování na startu a odhalení na předmět. */
+    cost: (p, count) => ({
+      entities: p.count + (p.hiddenIn === undefined ? 0 : count(p.hiddenIn)),
+      rules: count(p.role) + 1 + (p.hiddenIn === undefined ? 0 : count(p.role) + 1),
+    }),
     explanation: 'Picking up an item of this role advances a counter.',
   }),
   counter: entry({
@@ -238,10 +281,18 @@ export const MECHANICS = {
   timer: entry({
     id: 'timer',
     params: timerParams,
-    roleRefs: () => [],
-    capabilities: { events: ['onStart', 'onTimerEnd'], actions: ['startTimer', 'win', 'lose', 'emit'] },
-    cost: () => ({ entities: 0, rules: 2 }),
-    explanation: 'A countdown that ends the game or fires a signal.',
+    roleRefs: (p) => (p.phases?.watcher === undefined ? [] : [['phases.watcher', p.phases.watcher]]),
+    capabilities: {
+      events: ['onStart', 'onTimerEnd', 'onEnterZone'],
+      actions: ['startTimer', 'win', 'lose', 'emit', 'setFlag', 'setState'],
+    },
+    /** Fáze: dvě přepnutí a krok v červené na každý sloupec a řádek mřížky. */
+    cost: (p, count, world) => ({
+      entities: p.phases?.watcher === undefined ? 0 : count(p.phases.watcher),
+      rules: 2 + (p.phases === undefined ? 0 : 2 + world.maxSpan),
+    }),
+    setsStates: (p) => (p.phases?.watcher === undefined ? [] : [[p.phases.watcher, 'away'], [p.phases.watcher, 'watching']]),
+    explanation: 'A countdown that ends the game or fires a signal; with phases, moving on red loses.',
   }),
   zone_trigger: entry({
     id: 'zone_trigger',
@@ -305,8 +356,8 @@ export const MECHANICS = {
     params: hazardZoneParams,
     roleRefs: (p) => [['role', p.role]],
     capabilities: { events: ['onEnterZone', 'onTimerEnd', 'onStart'], actions: ['lose', 'addCounter', 'setState', 'startTimer'] },
-    /** `enter` + `start` na instanci, s pulzem navíc `catch` a dvě pravidla přepnutí. */
-    cost: (p, count) => ({ entities: count(p.role), rules: count(p.role) * (p.pulse ? 3 : 2) + (p.pulse ? 2 : 0) }),
+    /** `enter` + `start` na instanci, s pulzem navíc `catch` a dvě pravidla přepnutí, střídání ještě vypnutí na startu. */
+    cost: (p, count) => ({ entities: count(p.role), rules: count(p.role) * (p.pulse ? 3 : 2) + (p.pulse ? 2 : 0) + (p.pulse?.alternate ? 1 : 0) }),
     setsStates: (p) => (p.pulse ? [[p.role, 'on'], [p.role, 'off']] : []),
     explanation: 'Standing in a hazard hurts or ends the run; hazards may pulse on and off.',
   }),
@@ -499,8 +550,10 @@ export function estimateCost(
   roles: readonly { readonly id: string; readonly kind: string; readonly count: number }[],
 ): MechanicCost {
   const countOf = (roleId: string): number => roles.find((role) => role.id === roleId)?.count ?? 0;
+  const instances = roles.reduce((sum, role) => sum + role.count, 0);
   const world: CostWorld = {
-    maxCells: maxLayoutCells(roles.reduce((sum, role) => sum + role.count, 0)),
+    maxCells: maxLayoutCells(instances),
+    maxSpan: maxLayoutSpan(instances),
     kindCount: (kind) => roles.filter((role) => role.kind === kind).reduce((sum, role) => sum + role.count, 0),
   };
   const paidRoles = new Set<string>();

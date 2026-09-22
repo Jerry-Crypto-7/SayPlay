@@ -34,7 +34,30 @@ import platformTemplate from '../arcade/__fixtures__/platform.json';
 import runnerTemplate from '../arcade/__fixtures__/runner.json';
 
 import { type ControlChoice, pickControl } from './controls';
-import { FOOD, FOODS, ORDER_PUZZLE, ORDERS, PUSH_CRATES, plural, readNumbers, readRoles, scoreArchetypes, singular, type SentenceRoles } from './lexicon';
+import {
+  CARE,
+  FOOD,
+  FOODS,
+  GENTLE,
+  KID_FRIENDLY,
+  LILY_PADS,
+  ORDER_PUZZLE,
+  ORDERS,
+  PUSH_CRATES,
+  MOVING_WALLS,
+  RED_LIGHT,
+  ROAD,
+  SEARCH,
+  SMASH,
+  UNDERWATER,
+  WATCHER,
+  plural,
+  readNumbers,
+  readRoles,
+  scoreArchetypes,
+  singular,
+  type SentenceRoles,
+} from './lexicon';
 
 const TEMPLATES: Readonly<Record<ArchetypeId, unknown>> = {
   collect_exit: collectExit,
@@ -139,6 +162,94 @@ function takeOrders(spec: GameSpecV1, read: Read): void {
   spec.objective.description = cap(`Serve every customer the ${first} or ${second} they ordered before the shift ends.`, 120);
 }
 
+/**
+ * Vágní klidné věty (P25D T7): sběr zůstává (nic neútočí), jen téma je
+ * klidné a barevné – bubliny, útulná zahrada, nebo duhová pro dítě.
+ * Popisky, které věta jmenuje, mají přednost.
+ */
+function gentle(spec: GameSpecV1, read: Read): void {
+  const [setting, item, exit, player, mood] = /\bbubbles?\b/.test(read.text)
+    ? ['sunny meadow full of floating bubbles', 'bubble', 'rainbow arch', 'otter', 'relaxed']
+    : KID_FRIENDLY.test(read.text)
+      ? ['rainbow candy garden', 'rainbow star', 'rainbow arch', 'bunny', 'playful']
+      : ['cozy cottage garden', 'warm cookie', 'cottage door', 'kitten', 'cozy'];
+  if (read.roles.setting === null) spec.theme.setting = setting;
+  spec.theme.mood = mood;
+  if (read.roles.player === null) role(spec, 'player').label = player;
+  if (read.roles.destination === null) role(spec, 'portal').label = exit;
+  const collectible = role(spec, 'mushroom');
+  if (read.roles.collectible === null) collectible.label = item;
+  const count = collectible.count ?? 5;
+  spec.objective.description = cap(`Gather ${spell(count)} ${plural(collectible.label, count)} at your own pace, then stroll to the ${role(spec, 'portal').label}.`, 120);
+  spec.tutorial.goalLine = cap(`Gather ${count} ${plural(collectible.label, count)}, then reach the ${role(spec, 'portal').label}.`, 80);
+  spec.tutorial.controlsHint = cap(`Tap ${withArticle(collectible.label)} to walk to it. Nothing here can hurt you.`, 80);
+}
+
+/** Keypoint přechodu: hráč postavený do nebezpečí prohraje (šablona dokazuje jen bezpečné „off“). */
+function hazardLoses(spec: GameSpecV1, id: string): void {
+  spec.verification.splice(1, 0, { id, kind: 'keypoint', mechanic: 'hazard_zone', setup: { placeAt: { player: 'lava' } }, ticks: 5, assert: { runState: 'lost' } });
+}
+
+/**
+ * Lekníny (P25D T6, s034): voda nepulzuje – kdo šlápne mimo leknín, spadne.
+ * Víc vody než lávy, aby se skákalo z leknínu na leknín.
+ */
+function hopPads(spec: GameSpecV1, read: Read): void {
+  const water = role(spec, 'lava');
+  water.label = 'deep water';
+  water.count = 8;
+  role(spec, 'stone').label = 'lily pad';
+  role(spec, 'ledge').label = 'far bank';
+  if (read.roles.player === null) role(spec, 'player').label = 'frog';
+  delete mechanic(spec, 'hazard_zone').pulse;
+  spec.theme = { setting: 'lily pond', mood: 'playful' };
+  spec.objective.description = 'Hop across the pond from lily pad to lily pad without falling in.';
+  spec.tutorial.goalLine = 'Reach the far bank. Step only on lily pads.';
+  spec.tutorial.controlsHint = 'Tap a lily pad to hop onto it. Deep water sinks you.';
+  // Stálá voda nemá stav `off`; bezpečné je stát na leknínu.
+  spec.verification = spec.verification.filter((assertion) => assertion.id !== 'lava_off_is_safe');
+  spec.verification.unshift({ id: 'lily_pad_is_safe', kind: 'keypoint', mechanic: 'hazard_zone', setup: { placeAt: { player: 'stone' } }, ticks: 20, assert: { runState: 'running' } });
+  hazardLoses(spec, 'falling_in_loses');
+}
+
+/**
+ * Silnice (P25D T6, s036): auta jako pohyblivé zdi z T3 – každé auto
+ * přeskakuje mezi dvěma polohami (`pulse.alternate`), po sekundě.
+ */
+function crossRoad(spec: GameSpecV1, read: Read): void {
+  const car = role(spec, 'lava');
+  car.label = 'car';
+  car.count = 6;
+  role(spec, 'stone').label = 'safe strip';
+  role(spec, 'ledge').label = 'other side';
+  if (read.roles.player === null) role(spec, 'player').label = 'chicken';
+  mechanic(spec, 'hazard_zone').pulse = { onSeconds: 1, offSeconds: 1, alternate: true };
+  spec.theme = { setting: 'busy country road', mood: 'playful' };
+  spec.objective.description = 'Cross the road to the other side without getting hit by a car.';
+  spec.tutorial.goalLine = 'Reach the other side. Cars switch lanes every second.';
+  spec.tutorial.controlsHint = 'Tap a safe strip to run to it. Never step where a car is.';
+  hazardLoses(spec, 'hit_by_car_loses');
+}
+
+/**
+ * Ošetřování (P25D T5): objednávky `carry.menu` stačí – nástroj (lék, obvaz)
+ * je jídlo, pacient zákazník, správné ošetření přičte `orders_served`. Nové
+ * pravidlo by jen zopakovalo „dones správnou věc správnému“.
+ */
+function treatPatients(spec: GameSpecV1, read: Read, patient: string | undefined): void {
+  const noun = patient === undefined || /^pets?$/.test(patient) ? 'pet' : singular(patient.replace(/^puppies$/, 'puppy'));
+  const sick = noun === 'patient' ? 'patient' : `sick ${noun}`;
+  if (read.roles.player === null) role(spec, 'player').label = 'vet';
+  role(spec, 'burger').label = 'medicine';
+  role(spec, 'fries').label = 'bandage';
+  role(spec, 'customer').label = sick;
+  if (read.roles.setting === null) spec.theme.setting = 'cozy vet clinic';
+  spec.theme.mood = 'cozy';
+  spec.objective.description = cap(`Treat every ${sick}: bring each the medicine or bandage it needs before the clinic closes.`, 120);
+  spec.tutorial.goalLine = cap(`Treat every ${sick} before the clinic closes.`, 80);
+  spec.tutorial.controlsHint = cap(`Tap the medicine or bandage, then tap the ${sick} who needs it.`, 80);
+}
+
 function cap(text: string, max: number): string {
   return text.length <= max ? text : `${text.slice(0, max - 1).trimEnd()}…`;
 }
@@ -217,6 +328,97 @@ function addGuards(spec: GameSpecV1, threat: SentenceRoles['threat']): void {
   });
 }
 
+/**
+ * Červená–zelená (P25D T1): sběr a cíl zůstávají, přibude světlo (`timer.phases`)
+ * a hlídač, který se v červené dívá. Squid Game dá kuličky a cílovou čáru,
+ * horor baterky, dveře ven a strašidelného hlídače – pravidlo je totéž.
+ */
+function redLightLabels(spec: GameSpecV1, read: Read): void {
+  const squid = /\bred light\b|\bgreen light\b|\bsquid games?\b/.test(read.text);
+  const named = WATCHER.exec(read.text)?.[1];
+  const watcher = named ?? (squid ? 'giant doll' : /\bfreddy|\bfnaf\b/.test(read.text) ? 'animatronic bear' : 'creepy doll');
+  spec.roles.push({ id: 'watcher', kind: 'prop', label: label(watcher, 'giant doll'), count: 1 });
+  if (read.roles.collectible === null) role(spec, 'mushroom').label = squid ? 'marble' : 'flashlight battery';
+  role(spec, 'portal').label = squid ? 'finish line' : 'exit door';
+  spec.theme.mood = 'tense';
+}
+
+function addRedLight(spec: GameSpecV1): void {
+  const watcher = role(spec, 'watcher').label;
+  spec.mechanics.push({ id: 'timer', params: { id: 'light', seconds: 120, onEnd: 'lose', phases: { goSeconds: 4, stopSeconds: 2, watcher: 'watcher' } } });
+  spec.objective.description = cap(`${spec.objective.description} Freeze whenever the ${watcher} looks.`, 120);
+  spec.tutorial.goalLine = cap(`${spec.tutorial.goalLine} Freeze when the ${watcher} looks.`, 80);
+  spec.tutorial.controlsHint = cap(`Tap to walk. Stand still while the ${watcher} watches.`, 80);
+  const red = { flags: { light_red: true } };
+  spec.verification.splice(
+    1,
+    0,
+    { id: 'moving_on_red_loses', kind: 'keypoint', mechanic: 'timer', setup: red, actions: [{ actionId: 'moveTo', target: 'portal' }], ticks: 6, assert: { runState: 'lost' } },
+    { id: 'standing_on_red_is_safe', kind: 'keypoint', mechanic: 'timer', setup: red, ticks: 30, assert: { runState: 'running' } },
+  );
+}
+
+/**
+ * Hledání (P25D T2): předměty čekají ve skrýších (o dvě víc, dvě zůstanou
+ * prázdné) a ukážou se, až do skrýše hráč vstoupí. Pod vodou relikvie
+ * v troskách a cíl je vyplavat na hladinu.
+ */
+function searchLabels(spec: GameSpecV1, read: Read): boolean {
+  const sea = UNDERWATER.test(read.text);
+  if (read.roles.collectible === null) role(spec, 'mushroom').label = sea ? 'relic' : 'hidden toy';
+  if (read.roles.destination === null) role(spec, 'portal').label = sea ? 'surface' : 'door';
+  if (read.roles.player === null && /\bsubmarine\b/.test(read.text)) role(spec, 'player').label = 'little submarine';
+  if (sea && read.roles.setting === null) spec.theme.setting = 'sunken ruins on the sea floor';
+  spec.theme.mood = 'curious';
+  return sea;
+}
+
+function addHidden(spec: GameSpecV1, count: number, sea: boolean): void {
+  const spot = sea ? 'wreckage' : 'hiding spot';
+  spec.roles.push({ id: 'spot', kind: 'prop', label: spot, count: clamp(count + 2, 1, 20) });
+  mechanic(spec, 'collectible').hiddenIn = 'spot';
+  const item = role(spec, 'mushroom').label;
+  spec.objective.description = cap(`Search every ${spot} for ${spell(count)} ${plural(item, count)}, then reach the ${role(spec, 'portal').label}.`, 120);
+  spec.tutorial.goalLine = cap(`Find ${count} hidden ${plural(item, count)}, then reach the exit.`, 80);
+  spec.tutorial.controlsHint = cap(`Tap ${withArticle(spot)} to search it. Tap what you find to pick it up.`, 80);
+  // Počítací keypoint šablony sbírá první předmět – ten leží v první skrýši.
+  for (const assertion of spec.verification) {
+    if (assertion.mechanic === 'collectible' && assertion.actions !== undefined) assertion.actions = [{ actionId: 'moveTo', target: 'spot' }, ...assertion.actions];
+  }
+  spec.verification.splice(1, 0, {
+    id: 'hidden_item_does_not_count',
+    kind: 'keypoint',
+    mechanic: 'collectible',
+    actions: [{ actionId: 'pickup', target: 'mushroom' }],
+    ticks: 10,
+    assert: { counters: { collected: 0 } },
+  });
+}
+
+/**
+ * Pohyblivé zdi (P25D T3): dvě zdi, každá přeskakuje mezi dvěma polohami
+ * (`hazard_zone.pulse.alternate`). Vstup do polohy, kde zeď stojí, prohraje.
+ */
+function addMovingWalls(spec: GameSpecV1): void {
+  spec.roles.push({ id: 'wall', kind: 'hazard', label: 'moving wall', count: 4 });
+  spec.mechanics.push({ id: 'hazard_zone', params: { role: 'wall', effect: 'lose', pulse: { onSeconds: 2, offSeconds: 2, alternate: true } } });
+  spec.theme.mood = 'tense';
+  spec.tutorial.controlsHint = cap('Tap to walk. Never step where a wall stands; walls shift every 2 s.', 80);
+  spec.verification.splice(
+    1,
+    0,
+    { id: 'standing_wall_loses', kind: 'keypoint', mechanic: 'hazard_zone', setup: { placeAt: { player: 'wall' } }, ticks: 5, assert: { runState: 'lost' } },
+    {
+      id: 'moved_wall_is_safe',
+      kind: 'keypoint',
+      mechanic: 'hazard_zone',
+      setup: { placeAt: { player: 'wall' }, entityStates: { wall: 'off' } },
+      ticks: 20,
+      assert: { runState: 'running' },
+    },
+  );
+}
+
 interface Read {
   readonly roles: SentenceRoles;
   readonly seconds: number | null;
@@ -228,7 +430,12 @@ interface Read {
 const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
   collect_exit(spec, read) {
     // Kořist plížení bývá jedna („steal a diamond“), sbírání pět.
-    const count = clamp(read.counts[0] ?? (read.roles.stealth ? (read.roles.collectibleMany ? 3 : 1) : 5), 1, 20);
+    const redLight = RED_LIGHT.test(read.text);
+    if (redLight) redLightLabels(spec, read);
+    // Plížení se skrýšemi svědek necertifikuje (s149 „hide and seek“ padal) – plížení má přednost.
+    const search = !redLight && !read.roles.stealth && SEARCH.test(read.text);
+    const sea = search && searchLabels(spec, read);
+    const count = clamp(read.counts[0] ?? (read.roles.stealth ? (read.roles.collectibleMany ? 3 : 1) : redLight ? 3 : 5), 1, 20);
     const item = role(spec, 'mushroom');
     item.label = label(read.roles.collectible, item.label);
     item.count = count;
@@ -238,7 +445,11 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     rewriteCounters(spec, 'collected', count - 1, count);
     spec.tutorial.goalLine = cap(`Collect ${count} ${plural(item.label, count)}, then reach the exit.`, 80);
     spec.tutorial.controlsHint = cap(`Tap ${withArticle(item.label)} to walk to it. Tap again to pick it up.`, 80);
-    if (read.roles.stealth) addGuards(spec, read.roles.threat);
+    if (search) addHidden(spec, count, sea);
+    else if (!redLight && !read.roles.stealth && read.roles.threat === null && (GENTLE.test(read.text) || KID_FRIENDLY.test(read.text))) gentle(spec, read);
+    if (MOVING_WALLS.test(read.text)) addMovingWalls(spec);
+    if (redLight) addRedLight(spec);
+    else if (read.roles.stealth) addGuards(spec, read.roles.threat);
     else if (read.roles.threat !== null) addThreat(spec, read.roles.threat, read.text);
   },
   chase_escape(spec, read) {
@@ -277,6 +488,12 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
   },
   delivery(spec, read) {
     // „Carry/deliver X to Y“ je nesení do cíle, i v kuchyni nebo s pizzou.
+    const care = CARE.exec(read.text);
+    if (care !== null) {
+      takeOrders(spec, read);
+      treatPatients(spec, read, care[1]);
+      return;
+    }
     if (read.roles.destination === null && (ORDERS.test(read.text) || FOOD.test(read.text))) {
       takeOrders(spec, read);
       return;
@@ -376,6 +593,8 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     spec.objective.description = cap(`Cross the ${hazard.label} field to the far side.`, 120);
     spec.tutorial.goalLine = cap(`Reach the far side. The ${hazard.label} pulses.`, 80);
     spec.tutorial.controlsHint = cap(`Tap ${withArticle(stone.label)} when the ${hazard.label} is calm.`, 80);
+    if (ROAD.test(read.text)) crossRoad(spec, read);
+    else if (LILY_PADS.test(read.text)) hopPads(spec, read);
   },
   combat_lite(spec, read) {
     const count = clamp(read.counts[0] ?? 5, 1, 12);
@@ -388,8 +607,26 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     rewriteCounters(spec, 'defeated', count - 1, count);
     spec.tutorial.goalLine = cap(`Knock out all ${count} ${plural(target.label, count)}.`, 80);
     spec.tutorial.controlsHint = cap(`Tap ${withArticle(target.label)} to approach, tap again to hit it.`, 80);
+    const smash = SMASH.exec(read.text);
+    if (smash !== null) smashing(spec, read, count, smash[1] !== undefined);
   },
 };
+
+/**
+ * Ničení a pukání (P25D T4): tentýž `defeat`, ale nic neútočí – bez zdraví,
+ * cíle jsou věci. „Everything / stuff“ není popisek, dostane téma.
+ */
+function smashing(spec: GameSpecV1, read: Read, count: number, pop: boolean): void {
+  const target = role(spec, 'slime');
+  if (read.roles.target === null || /^(?:everything|stuff|things|all)$/.test(read.roles.target)) target.label = pop ? 'bubble' : 'vase';
+  spec.mechanics = spec.mechanics.filter((candidate) => candidate.id !== 'health');
+  const verb = pop ? 'Pop' : 'Smash';
+  spec.objective.description = cap(`${verb} all ${spell(count)} ${plural(target.label, count)}. The last one wins.`, 120);
+  spec.tutorial.goalLine = cap(`${verb} all ${count} ${plural(target.label, count)}.`, 80);
+  spec.tutorial.controlsHint = cap(`Tap ${withArticle(target.label)} to walk to it, tap again to ${verb.toLowerCase()} it.`, 80);
+  spec.theme.mood = pop ? 'playful' : 'cartoon';
+  if (pop && read.roles.setting === null) spec.theme.setting = 'sunny bubble meadow';
+}
 
 const ARCADE_TEMPLATES = { runner: runnerTemplate, platform: platformTemplate, flap: flapTemplate } as const;
 

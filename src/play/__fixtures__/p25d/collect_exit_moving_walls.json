@@ -1,0 +1,126 @@
+{
+  "schema": "gamespec.v1",
+  "targetDurationSec": 90,
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "title": "Shifting Maze",
+  "archetype": "collect_exit",
+  "theme": {
+    "setting": "stone hedge maze",
+    "mood": "tense"
+  },
+  "objective": {
+    "kind": "collect",
+    "description": "Collect three keys, then reach the exit. The walls shift back and forth.",
+    "count": 3,
+    "role": "mushroom"
+  },
+  "mechanics": [
+    {
+      "id": "collectible",
+      "params": {
+        "role": "mushroom",
+        "count": 3,
+        "counter": "collected"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "portal",
+        "when": "enter",
+        "effect": "win"
+      }
+    },
+    {
+      "id": "hazard_zone",
+      "params": {
+        "role": "wall",
+        "effect": "lose",
+        "pulse": {
+          "onSeconds": 2,
+          "offSeconds": 2,
+          "alternate": true
+        }
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "explorer"
+    },
+    {
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "key",
+      "count": 3
+    },
+    {
+      "id": "portal",
+      "kind": "exit",
+      "label": "maze exit"
+    },
+    {
+      "id": "wall",
+      "kind": "hazard",
+      "label": "moving wall",
+      "count": 4
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Collect 3 keys, then reach the exit. Walls shift every 2 s.",
+    "controlsHint": "Tap to walk. Never step where a wall stands."
+  },
+  "verification": [
+    {
+      "id": "standing_wall_loses",
+      "kind": "keypoint",
+      "mechanic": "hazard_zone",
+      "setup": {
+        "placeAt": {
+          "player": "wall"
+        }
+      },
+      "ticks": 5,
+      "assert": {
+        "runState": "lost"
+      }
+    },
+    {
+      "id": "moved_wall_is_safe",
+      "kind": "keypoint",
+      "mechanic": "hazard_zone",
+      "setup": {
+        "placeAt": {
+          "player": "wall"
+        },
+        "entityStates": {
+          "wall": "off"
+        }
+      },
+      "ticks": 20,
+      "assert": {
+        "runState": "running"
+      }
+    },
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    },
+    {
+      "id": "replay",
+      "kind": "replay",
+      "assert": {
+        "replayEqual": true
+      }
+    }
+  ]
+}

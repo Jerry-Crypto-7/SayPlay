@@ -219,3 +219,38 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   flap) takes control parameters“. Kód, který čte pole běžce (`speed`, `density`,
   `obstacles`), musí `controlParams` zúžit na `RunnerParams`. Kompilátor posílá do arkádového
   jádra každé `control` kromě `tap_go`.
+
+## P25D
+
+- **`timer.params.phases?: { goSeconds, stopSeconds, watcher? }`** (22. 9. 2026, T1,
+  červená–zelená). Parametr dostal `timer`, ne `patrol`: světlo je čistě hodinové (žádná
+  trasa ani mysl postavy) a `timer` je koření povolené v každém archetypu. Časovače
+  `<id>_go`/`<id>_stop` střídají flag `<id>_red`; každý sloupec a řádek mřížky je zóna
+  `<id>_col<x>`/`<id>_row<y>` a vstup hráče do kterékoli v červené prohraje (runtime nemá
+  událost „pohnul se“, každý krok ale vstoupí do nového sloupce nebo řádku). Flag
+  `<id>_armed` z `onStart` odfiltruje první tik, ve kterém runtime vidí hráče „vstoupit“ do
+  buňky, kde stojí. `watcher` (role) je v zelené `away`, v červené `watching`. Capabilities
+  `timer` navíc `onEnterZone`, `setFlag`, `setState`; `CostWorld` má nově `maxSpan`
+  (šířka + výška mřížky). `AdapterOutput.witnessWindow` řekne `planWitness`, že svědek smí
+  chodit jen v zelené. Návrh ze slov: „red light / green light / squid game / when you don't
+  look / freddy / fnaf“ → `collect_exit` se světlem a hlídačem (s153, s176, s178), keypointy
+  `moving_on_red_loses` a `standing_on_red_is_safe`. Fixtury P25D leží v
+  `src/play/__fixtures__/p25d/`, aby nehýbaly počtem fixtur v testech jiných plánů. Pin promptu
+  režiséra 11 253 → 11 362 B. Bez parametru beze změny hashů.
+- **`collectible.params.hiddenIn?: roleRef`** (22. 9. 2026, T2, hledání schovaných věcí).
+  i-tý předmět leží v i-té instanci role skrýše; `onStart` všechny schované předměty
+  despawnuje (neaktivní entita se nevykreslí), vstup hráče do skrýše předmět spawne (vlastní
+  pool na předmět, `tag` = ID instance) a nastaví čítač `<instance>_found`. Runtime akci na
+  neaktivní entitu nezakáže, proto sebrání hlídá i `<instance>_found = 1`. Capabilities
+  `collectible` navíc `onStart`, `onEnterZone`, `despawn`, `spawn`. Svědek jde do skrýše,
+  pak sbírá. Návrh ze slov: „hidden / hide and seek / explore / ruins / search“ mění sběr na
+  hledání (skrýší o dvě víc než předmětů), pod vodou relikvie v troskách a cíl „surface“
+  (s074, s184); keypoint `hidden_item_does_not_count`, počítací keypoint šablony nejdřív
+  vstoupí do skrýše. Pin promptu režiséra 11 362 → 11 453 B. Bez parametru beze změny hashů.
+- **`hazard_zone.params.pulse.alternate?: boolean`** (22. 9. 2026, T3, pohyblivé zdi).
+  Instance 2k a 2k+1 jsou dvě polohy jedné zdi: liché svítí, když sudé ne (pravidlo
+  `<role>.stagger` z `onStart` je vypne, `catch` liché polohy čeká na konec `on` časovače).
+  Runtime má `space.blocked` pevné a entity neblokují, takže zeď cestu nezavře – vstup do
+  polohy, kde zeď stojí, prohraje. Návrh ze slov: „walls that move / moving walls / shifting
+  maze“ → dvě zdi (role `wall`, 4 instance) v `collect_exit` (s076), keypointy
+  `standing_wall_loses` a `moved_wall_is_safe`. Bez parametru beze změny hashů.
