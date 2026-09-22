@@ -134,13 +134,16 @@ const TIERS: Readonly<Record<PlatformDifficulty, Tier>> = {
 
 export const PLATFORM_LEVEL = {
   minLengthM: 60,
-  maxLengthM: 300,
+  /** Robot na „hard“ dojde 250 m za ~75 s; delší úroveň se do 90 s nevejde. */
+  maxLengthM: 250,
+  /** Čekání na pohyblivé plošiny stojí čas: s nimi nejvýš 180 m. */
+  maxMovingLengthM: 180,
   startSlab: 8000,
   finalSlab: 6000,
   /** Mezera s pohyblivou plošinou a její deska. */
   shuttleGap: [7000, 9000] as const,
   shuttleSlab: 2500,
-  shuttleSpeed: 20,
+  shuttleSpeed: 30,
   /** Nejmenší mezera mezi pohyblivou plošinou a hranou v krajní poloze. */
   shuttleClear: 250,
   maxCoins: 60,
@@ -183,7 +186,7 @@ export const platformLevel: GeneratorPiece<PlatformLevelParams> = {
   generate: (seed, params) => {
     const rng = createCompileRng(seed);
     const tier = TIERS[params.difficulty];
-    const length = params.lengthM * UNIT;
+    const length = (params.movingPlatforms ? Math.min(params.lengthM, PLATFORM_LEVEL.maxMovingLengthM) : params.lengthM) * UNIT;
     const { startSlab, finalSlab } = PLATFORM_LEVEL;
 
     const player: BodyInit = { role: 'player', kind: 'player', x: 0, y: PLATFORM.baseTop, z: 0, w: PLATFORM.playerW, h: PLATFORM.playerH, d: PLATFORM.playerD, solid: false };

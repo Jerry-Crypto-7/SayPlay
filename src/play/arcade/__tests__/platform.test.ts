@@ -25,7 +25,7 @@ describe('plošinovka – generátor', () => {
     for (const difficulty of PLATFORM_DIFFICULTIES) {
       for (let seed = 1; seed <= 50; seed += 1) {
         expect(checkPlatformLevel(platformLevel.generate(seed, params(difficulty))), `${difficulty}/${seed}`).toEqual([]);
-        const full = platformLevel.generate(seed * 7919, params(difficulty, { lengthM: 300, movingPlatforms: true, checkpoints: true }));
+        const full = platformLevel.generate(seed * 7919, params(difficulty, { lengthM: 250, movingPlatforms: true, checkpoints: true }));
         expect(checkPlatformLevel(full), `${difficulty}/${seed}/full`).toEqual([]);
       }
     }
