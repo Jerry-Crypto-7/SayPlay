@@ -32,7 +32,7 @@ async function proposal(input: { title: string; text: string; origin: string; ri
 }
 async function source(page: Page) {
   await page.route('**/api/worldstream/source', async route => route.fulfill({ json: await proposal(route.request().postDataJSON()) }));
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByText('Build from a source', { exact: true }).click();
   await page.getByTestId('source-input').fill(text);
   await page.getByTestId('source-submit').click();
@@ -227,7 +227,7 @@ test('changed branch explains an assumption and returning to origin restores the
 
 test('keyboard source input enforces size and ordinary prompts never inherit source citations', async ({ page }) => {
   await ordinaryTransport(page);
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByText('Build from a source', { exact: true }).focus();
   await page.keyboard.press('Enter');
   await expect(page.getByTestId('source-input')).toBeVisible();
@@ -244,7 +244,7 @@ test('keyboard source input enforces size and ordinary prompts never inherit sou
 
 test('parameters require explicit review and editing the source invalidates the proposal', async ({ page }) => {
   await page.route('**/api/worldstream/source', async route => route.fulfill({ json: await proposal(route.request().postDataJSON()) }));
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByText('Build from a source', { exact: true }).click();
   await page.getByTestId('source-input').fill(text);
   await page.getByTestId('source-submit').click();
@@ -266,7 +266,7 @@ test('parameters require explicit review and editing the source invalidates the 
 
 test('pipeline timings separate human review, the rendered frame and input in a rule-firing step', async ({ page }) => {
   await page.route('**/api/worldstream/source', async route => route.fulfill({ json: await proposal(route.request().postDataJSON()) }));
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByText('Build from a source', { exact: true }).click();
   await page.getByTestId('source-input').fill(text);
   await page.getByTestId('source-submit').click();
@@ -337,7 +337,7 @@ test('supplements and component evidence survive review, a timer intervention an
       }) });
     await route.fulfill({ json: { ...result, generation: 'fixture' } });
   });
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByText('Build from a source', { exact: true }).click();
   await page.getByTestId('source-input').fill(text);
   await page.getByTestId('source-supplement').fill(supplement);
@@ -436,7 +436,7 @@ test('a late source response cannot replace a newer ordinary world', async ({ pa
     const response = await proposal(route.request().postDataJSON()); await held;
     await route.fulfill({ json: response }).catch(() => {});
   });
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByText('Build from a source', { exact: true }).click();
   await page.getByTestId('source-input').fill(text);
   const sent = page.waitForRequest('**/api/worldstream/source');

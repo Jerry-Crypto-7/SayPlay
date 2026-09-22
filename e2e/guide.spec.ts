@@ -80,7 +80,7 @@ async function doorSession(page: Page) {
   await page.route(`**/api/worldstream/sessions/${ID}`, route =>
     route.fulfill({ json: { blueprint: structuredClone(blueprint) } }));
 
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('prompt-input').fill('Guide door fixture');
   await page.getByTestId('prompt-submit').click();
   await expect(page.getByTestId('runtime-controls')).toBeVisible({ timeout: 30_000 });

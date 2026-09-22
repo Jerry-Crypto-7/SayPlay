@@ -46,7 +46,7 @@ test('word-guessed blocks and their notice show before the planner answers and v
     // Další navázání se drží otevřené: stav má stát, ne skončit.
   });
 
-  await page.goto('/');await page.getByTestId('prompt-input').fill(sentence);await page.getByTestId('prompt-submit').click();
+  await page.goto('/studio');await page.getByTestId('prompt-input').fill(sentence);await page.getByTestId('prompt-submit').click();
 
   // Před odpovědí plánovače: hláška ze slov a jen identity `word-`.
   await expect(page.getByTestId('word-massing-notice')).toBeVisible({timeout:30_000});

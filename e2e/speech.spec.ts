@@ -108,7 +108,7 @@ test('bez rozhraní prohlížeče se tlačítko vůbec nevykreslí', async ({ pa
   // všechny prohlížeče stejné — kdyby v něm tlačítko bylo, ve Firefoxu by
   // bliklo a po připojení komponenty zmizelo. Proto se dostupnost čte až tam,
   // a proto se to měří na syrové odpovědi, ne na živé stránce.
-  const serverHtml = await (await page.request.get('/')).text();
+  const serverHtml = await (await page.request.get('/studio')).text();
   expect(serverHtml, 'tlačítko na diktování přišlo už ze serveru').not.toContain('prompt-dictate');
 
   await page.goto('/classic');

@@ -35,7 +35,7 @@ test('measures one real main-page generation without routes, fixtures or fallbac
       if(timing.interactive===null&&document.querySelector('[data-testid="runtime-controls"]'))timing.interactive=at;
     }).observe(document.documentElement,{subtree:true,childList:true,attributes:true}));
   });
-  await page.setViewportSize({width:1920,height:1080});await page.goto('/');
+  await page.setViewportSize({width:1920,height:1080});await page.goto('/studio');
   await page.getByTestId('prompt-input').fill(prompt);await page.getByTestId('prompt-submit').click();
   const previewCapture=page.getByTestId('visual-preview-notice').waitFor({state:'visible',timeout:850_000})
     .then(async()=>{await page.screenshot({path:join(folder,'first-preview.png')});return true;}).catch(()=>false);

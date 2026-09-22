@@ -159,7 +159,7 @@ async function storedWorld(page: Page) {
     route.fulfill({ json: { blueprint: structuredClone(blueprint) } }),
   );
 
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByTestId('generation-mode').selectOption('prepared');
   await page.getByTestId('prompt-input').fill('Budget run fixture');
   await page.getByTestId('prompt-submit').click();
