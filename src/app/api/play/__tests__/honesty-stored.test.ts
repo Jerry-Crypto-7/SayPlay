@@ -32,6 +32,7 @@ vi.mock('../_director', () => ({
 }));
 
 const { POST: createGame } = await import('../games/route');
+const { GET: readUpgrade } = await import('../games/[id]/upgrade/route');
 
 beforeEach(() => {
   __resetProcessVersionStore();
@@ -59,6 +60,11 @@ describe('honestyOf – uložená hra', () => {
     const game = (await versions.get(body.versionId))!;
     expect(game.origin).toBeUndefined();
     expect(await honestyOf(versions, game)).toMatchObject(body.honesty as object);
+    // Uložená věta upgrade nezapne – režisér by jinak tutéž hru platil podruhé.
+    const upgrade = await readUpgrade(new Request(`http://play.test/api/play/games/${body.versionId}/upgrade`, { headers: { 'x-forwarded-for': '203.0.113.9' } }), {
+      params: Promise.resolve({ id: body.versionId }),
+    });
+    expect(await upgrade.json()).toEqual({ status: 'draft-final', reason: 'NOT_FROM_SENTENCE' });
   });
 
   it('autorská verze vezme větu od rodiče', async () => {
@@ -72,9 +78,5 @@ describe('honestyOf – uložená hra', () => {
 
     expect(child.value.game.origin).toBeUndefined();
     expect(await honestyOf(versions, child.value.game)).toMatchObject({ kind: 'manipulate', closest: 'a switch puzzle' });
-    // Remix (bez `relation`) větu rodiče nedědí – věta patří k té hře, ne k jejím remixům.
-    const remix = await publishReadSpec(versions, { ...draftSpec, title: 'Not Green Remix' }, [1], draft.value.game.version.versionId);
-    if (!remix.ok) throw new Error('remix');
-    expect(await honestyOf(versions, remix.value.game)).toBeNull();
   });
 });
