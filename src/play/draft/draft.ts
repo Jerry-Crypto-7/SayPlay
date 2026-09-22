@@ -138,6 +138,7 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     spec.objective.description = cap(`Collect ${spell(count)} ${plural(item.label, count)}, then reach the ${role(spec, 'portal').label}.`, 120);
     rewriteCounters(spec, 'collected', count - 1, count);
     spec.tutorial.goalLine = cap(`Collect ${count} ${plural(item.label, count)}, then reach the exit.`, 80);
+    spec.tutorial.controlsHint = cap(`Tap a ${item.label} to walk to it. Tap again to pick it up.`, 80);
   },
   chase_escape(spec, read) {
     const chaser = role(spec, 'roomba');
@@ -225,6 +226,7 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     if (read.roles.checkpoint !== null && read.roles.checkpoint !== hazard.label) stone.label = label(read.roles.checkpoint, stone.label);
     spec.objective.description = cap(`Cross the ${hazard.label} field to the far side.`, 120);
     spec.tutorial.goalLine = cap(`Reach the far side. The ${hazard.label} pulses.`, 80);
+    spec.tutorial.controlsHint = cap(`Tap a ${stone.label} when the ${hazard.label} is calm.`, 80);
   },
   combat_lite(spec, read) {
     const count = clamp(read.counts[0] ?? 5, 1, 12);
