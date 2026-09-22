@@ -45,7 +45,7 @@ export const HEADER = {
   bodyCount: 2,
   /** Index těla hráče. */
   player: 3,
-  /** Čítače (`ArcadeWorld.counters`) od tohoto slotu. Náhodu spotřebuje jen generátor, jádro žádnou. */
+  /** Čítače (`COUNTER`) od tohoto slotu. Náhodu spotřebuje jen generátor, jádro žádnou. */
   counters: 4,
 } as const;
 export const HEADER_SIZE = HEADER.counters + ARCADE_LIMITS.maxCounters;
@@ -86,7 +86,13 @@ export const FLAG = {
   solid: 1 << 1,
   grounded: 1 << 2,
   sliding: 1 << 3,
+  /** Jádro na tělo působí gravitací a drží ho nad zemí (`y >= 0`). */
+  gravity: 1 << 4,
 } as const;
+
+/** Pevné sloty čítačů v hlavičce (`HEADER.counters + index`). */
+export const COUNTER = { score: 0, health: 1 } as const;
+export type ArcadeCounter = keyof typeof COUNTER;
 
 /** Role těla – co s ním pravidla dělají. Čísla jsou součást hashe, nepřečíslovat. */
 export const ROLE = {
@@ -95,7 +101,6 @@ export const ROLE = {
   collectible: 3,
   goal: 4,
   chaser: 5,
-  ground: 6,
 } as const;
 export type ArcadeRole = keyof typeof ROLE;
 export type ArcadeRoleCode = (typeof ROLE)[ArcadeRole];
@@ -134,7 +139,7 @@ export interface ArcadeInput {
 
 export const NO_INPUT: ArcadeInput = { buttons: 0, axis: 0 };
 
-/** Záznam hry: vstup se ukládá jen v ticích, kdy se změnil – přehrání ho rozvine. */
+/** Záznam hry: jen tiky s nenulovým vstupem; tik bez záznamu je `NO_INPUT`. */
 export interface InputEvent extends ArcadeInput {
   readonly tick: number;
 }
@@ -151,7 +156,9 @@ export interface PieceCost {
 interface PieceBase<P> {
   readonly id: string;
   readonly params: z.ZodType<P>;
-  readonly cost: (params: P) => PieceCost;
+  // Metody, ne vlastnosti s funkcí: knihovna drží kusy s různým `P` pod
+  // `Piece<unknown>` a to jde jen s bivariantními parametry metod.
+  cost(params: P): PieceCost;
   /** Role, které kus čte nebo vyrábí. */
   readonly roles: readonly ArcadeRole[];
 }
@@ -161,7 +168,7 @@ interface PieceBase<P> {
  * gravitaci a kolize dělá jádro, ne ovládání.
  */
 export interface ControlPiece<P = unknown> extends PieceBase<P> {
-  readonly step: (state: ArcadeState, player: number, input: ArcadeInput, params: P) => void;
+  step(state: ArcadeState, player: number, input: ArcadeInput, params: P): void;
 }
 
 export type ArcadeEffect =
@@ -184,7 +191,7 @@ export interface RuleContext {
 /** Pravidlo: spouštěč → efekty. Stav nemění samo, efekty aplikuje jádro. */
 export interface RulePiece<P = unknown> extends PieceBase<P> {
   readonly trigger: RuleTrigger;
-  readonly fire: (ctx: RuleContext, params: P) => readonly ArcadeEffect[];
+  fire(ctx: RuleContext, params: P): readonly ArcadeEffect[];
 }
 
 /** Počáteční tělo, jak ho vydá generátor. */
@@ -209,7 +216,7 @@ export interface ArcadeLevel {
 
 /** Stavba úrovně: seed + parametry → těla. Hratelnost z konstrukce je jeho povinnost. */
 export interface GeneratorPiece<P = unknown> extends PieceBase<P> {
-  readonly generate: (seed: number, params: P) => ArcadeLevel;
+  generate(seed: number, params: P): ArcadeLevel;
 }
 
 /** Co robot vidí: stav z doby před `reactionTicks` (věrohodný hráč nereaguje hned). */
@@ -221,7 +228,7 @@ export interface ArcadeObservation {
 
 export interface BotPiece<P = unknown> extends PieceBase<P> {
   readonly reactionTicks: number;
-  readonly decide: (observation: ArcadeObservation, params: P) => ArcadeInput;
+  decide(observation: ArcadeObservation, params: P): ArcadeInput;
 }
 
 /** Instance kusu ve světě: id z knihovny a už přečtené parametry. */
@@ -241,7 +248,6 @@ export interface ArcadeWorld {
   readonly rules: readonly PieceRef[];
   readonly bot: PieceRef;
   readonly kinds: readonly string[];
-  readonly counters: readonly string[];
   /** Délka trati v jednotkách. */
   readonly length: number;
   readonly initial: readonly number[];
