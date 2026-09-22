@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest';
 
 import { applyRemix, REMIX_CHIPS, remixPatch } from '../../director/remix';
 import { readGameSpec, type GameSpecV1, type RunnerParams } from '../../spec';
+import flapFixture from '../__fixtures__/flap.json';
+import platformFixture from '../__fixtures__/platform.json';
 import fixture from '../__fixtures__/runner.json';
 import { arcadeWorldOf } from '../compile';
 import { verifyArcade } from '../verify';
@@ -62,5 +64,50 @@ describe('runner remix chips', () => {
     const obstacles = (spec: GameSpecV1) => (spec.controlParams as RunnerParams | undefined)?.obstacles;
     expect(obstacles(swapped)).toBeDefined();
     expect(obstacles(swapped)).not.toEqual(obstacles(parent));
+  });
+});
+
+describe('platform and flap remix chips (P25C)', () => {
+  const read = (raw: unknown): GameSpecV1 => {
+    const result = readGameSpec(raw);
+    if (!result.ok) throw new Error(result.issues.join('; '));
+    return result.value;
+  };
+  const PARENTS = [
+    ['platform', read(platformFixture)],
+    ['flap', read(flapFixture)],
+  ] as const;
+
+  for (const [control, base] of PARENTS) {
+    it.each(REMIX_CHIPS)(`%s changes the ${control} game and the child still passes the arcade verifier`, (chip) => {
+      const child = remix(chip, base);
+      expect(child.control).toBe(control);
+      expect(child).not.toEqual(base);
+      expect(publishable(child)).toBe(true);
+    });
+
+    it(`${control}: harder changes exactly one parameter, difficulty first, up to the ceiling`, () => {
+      let spec = base;
+      const paths: string[] = [];
+      for (let round = 0; round < 8; round += 1) {
+        const ops = remixPatch('harder', spec);
+        if (ops.length === 0) break;
+        expect(ops).toHaveLength(1);
+        paths.push(ops[0]!.path);
+        spec = remix('harder', spec);
+        expect(publishable(spec), `round ${round}`).toBe(true);
+      }
+      expect(paths[0]).toBe('/controlParams/difficulty');
+      expect(spec.controlParams).toMatchObject({ difficulty: 'hard', lengthM: 250 });
+    });
+  }
+
+  it('swap_enemy renames the hazard, and the platformer toggles moving platforms', () => {
+    for (const [control, base] of PARENTS) {
+      const swapped = remix('swap_enemy', base);
+      const label = (spec: GameSpecV1) => spec.roles.find((role) => role.kind === 'hazard')?.label;
+      expect(label(swapped), control).not.toBe(label(base));
+      if (control === 'platform') expect(swapped.controlParams).toMatchObject({ movingPlatforms: true });
+    }
   });
 });
