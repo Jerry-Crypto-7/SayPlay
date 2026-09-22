@@ -10,6 +10,13 @@ import { expect, test } from '@playwright/test';
  */
 
 test.describe('/play – create', () => {
+  // P25B T7: hlavní adresa vede na hry, stará aplikace je na /studio.
+  test('the home address lands on /play', async ({ page }) => {
+    await page.goto('/');
+    await expect(page).toHaveURL(/\/play$/);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Imagine a game. Play it.');
+  });
+
   test('hero, starter card fills the sentence, Play it lands on /play/<id>', async ({ page }) => {
     await page.goto('/play');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Imagine a game. Play it.');
