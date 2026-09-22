@@ -197,6 +197,24 @@ describe('crossings – lily pads and a busy road (P25D T6)', () => {
   });
 });
 
+describe('vague gentle sentences – calm, colourful, no enemies (P25D T7)', () => {
+  it('drafts s195, s196 and s197 as enemy-free themed collecting games that publish', () => {
+    const hostile = /^(?:chaser|patrol|hazard_zone|defeat|spawn_wave|health)$/;
+    for (const [sentence, item] of [
+      ['something relaxing with bubbles', 'bubble'],
+      ['a cozy game', 'warm cookie'],
+      ['something fun and colorful for my little sister', 'rainbow star'],
+    ] as const) {
+      const drafted = draftGameSpec(sentence);
+      expect(drafted.archetype, sentence).toBe('collect_exit');
+      expect(drafted.mechanics.filter((mechanic) => hostile.test(mechanic.id)), sentence).toEqual([]);
+      expect(drafted.roles.find((role) => role.id === 'mushroom')?.label, sentence).toBe(item);
+      expect(drafted.theme.setting, sentence).not.toBe('moonlit forest clearing');
+      expect(publishFailures(drafted, 1), sentence).toEqual([]);
+    }
+  });
+});
+
 describe('treating patients – orders renamed (P25D T5)', () => {
   it('drafts s169 as a vet clinic where the right treatment scores and the wrong one does not, and it publishes', () => {
     const drafted = draftGameSpec('a vet clinic where you heal cute pets');

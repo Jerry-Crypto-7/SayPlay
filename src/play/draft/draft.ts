@@ -37,6 +37,8 @@ import {
   CARE,
   FOOD,
   FOODS,
+  GENTLE,
+  KID_FRIENDLY,
   LILY_PADS,
   ORDER_PUZZLE,
   ORDERS,
@@ -157,6 +159,29 @@ function takeOrders(spec: GameSpecV1, read: Read): void {
   role(spec, 'burger').label = first;
   role(spec, 'fries').label = second;
   spec.objective.description = cap(`Serve every customer the ${first} or ${second} they ordered before the shift ends.`, 120);
+}
+
+/**
+ * Vágní klidné věty (P25D T7): sběr zůstává (nic neútočí), jen téma je
+ * klidné a barevné – bubliny, útulná zahrada, nebo duhová pro dítě.
+ * Popisky, které věta jmenuje, mají přednost.
+ */
+function gentle(spec: GameSpecV1, read: Read): void {
+  const [setting, item, exit, player, mood] = /\bbubbles?\b/.test(read.text)
+    ? ['sunny meadow full of floating bubbles', 'bubble', 'rainbow arch', 'otter', 'relaxed']
+    : KID_FRIENDLY.test(read.text)
+      ? ['rainbow candy garden', 'rainbow star', 'rainbow arch', 'bunny', 'playful']
+      : ['cozy cottage garden', 'warm cookie', 'cottage door', 'kitten', 'cozy'];
+  if (read.roles.setting === null) spec.theme.setting = setting;
+  spec.theme.mood = mood;
+  if (read.roles.player === null) role(spec, 'player').label = player;
+  if (read.roles.destination === null) role(spec, 'portal').label = exit;
+  const collectible = role(spec, 'mushroom');
+  if (read.roles.collectible === null) collectible.label = item;
+  const count = collectible.count ?? 5;
+  spec.objective.description = cap(`Gather ${spell(count)} ${plural(collectible.label, count)} at your own pace, then stroll to the ${role(spec, 'portal').label}.`, 120);
+  spec.tutorial.goalLine = cap(`Gather ${count} ${plural(collectible.label, count)}, then reach the ${role(spec, 'portal').label}.`, 80);
+  spec.tutorial.controlsHint = cap(`Tap ${withArticle(collectible.label)} to walk to it. Nothing here can hurt you.`, 80);
 }
 
 /** Keypoint přechodu: hráč postavený do nebezpečí prohraje (šablona dokazuje jen bezpečné „off“). */
@@ -419,6 +444,7 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     spec.tutorial.goalLine = cap(`Collect ${count} ${plural(item.label, count)}, then reach the exit.`, 80);
     spec.tutorial.controlsHint = cap(`Tap ${withArticle(item.label)} to walk to it. Tap again to pick it up.`, 80);
     if (search) addHidden(spec, count, sea);
+    else if (!redLight && !read.roles.stealth && read.roles.threat === null && (GENTLE.test(read.text) || KID_FRIENDLY.test(read.text))) gentle(spec, read);
     if (MOVING_WALLS.test(read.text)) addMovingWalls(spec);
     if (redLight) addRedLight(spec);
     else if (read.roles.stealth) addGuards(spec, read.roles.threat);

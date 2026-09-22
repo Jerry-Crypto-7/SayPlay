@@ -45,6 +45,13 @@ export const CARE =
  */
 export const SMASH = /\b(pop(?:s|ping)? (?:stuff|things|everything|all|bubbles?|balloons?)|bubble ?(?:pop|wrap)|pop(?:ping)? game)\b|\bsmash(?:es|ing)?\b|\bdestroy everything\b|\bwreck(?:s|ing)?\b|\bbreak everything\b/;
 
+/**
+ * Vágní klidné věty (P25D T7, s195–s197): sběr bez nepřátel s barevným
+ * tématem. `KID_FRIENDLY` vybere barevné téma, jinak útulné.
+ */
+export const GENTLE = /\b(?:relax(?:ing|ed)?|chill|calm|peaceful|soothing|cozy|cosy|wholesome)\b/;
+export const KID_FRIENDLY = /\bcolou?rful\b|\bfor (?:my )?(?:little |baby |younger )?(?:sister|brother|kids?|child|children|daughter|son|toddler)\b/;
+
 /** Přechod po leknínech (P25D T6, s034). */
 export const LILY_PADS = /\blily ?pads?\b|\bstepping stones? (?:across|over) (?:a |the )?(?:pond|river|stream|water)\b/;
 
