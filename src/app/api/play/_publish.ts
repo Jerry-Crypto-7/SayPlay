@@ -14,6 +14,7 @@
 
 import { canonicalHash } from '@/ir/worlddoc';
 import type { CompileGameReason } from '@/play/contracts';
+import type { Honesty } from '@/play/draft/unsupported';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 import { type PlayTimings, type PublishedGame, type PutOutcome, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv } from '@/play/version';
 import { callerKey, rateLimitCode, takeRateSlot, trustedCallerKey } from '@/server/rate-limit';
@@ -220,8 +221,11 @@ export async function publishReadSpec(
   return { ok: true, value: { status: outcome === 'stored' ? 201 : 200, game } };
 }
 
-/** Odpověď obou publikujících dveří: kam jít hrát, u návrhu z věty i kde čekat na autorskou verzi. */
-export function publishedResponse(published: Published, upgrade = false): Response {
+/**
+ * Odpověď obou publikujících dveří: kam jít hrát, u návrhu z věty i kde čekat
+ * na autorskou verzi. `honesty` (P25E) jen u věty, kterou knihovna neumí.
+ */
+export function publishedResponse(published: Published, upgrade = false, honesty: Honesty | null = null): Response {
   const { version, spec } = published.game;
   return Response.json(
     {
@@ -231,6 +235,7 @@ export function publishedResponse(published: Published, upgrade = false): Respon
       archetype: spec.archetype,
       url: `/play/${version.versionId}`,
       ...(upgrade ? { upgrade: `/api/play/games/${version.versionId}/upgrade` } : {}),
+      ...(honesty === null ? {} : { honesty: { reason: honesty.reason, closest: honesty.closest } }),
     },
     { status: published.status },
   );

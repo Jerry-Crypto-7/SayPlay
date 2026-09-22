@@ -8,7 +8,8 @@ import { admit } from '@/app/api/play/_publish';
 import { labFacts } from '@/components/play/lab';
 import { PlayShell } from '@/components/play/PlayShell';
 import type { GameVersion } from '@/play/contracts';
-import { type PublishedGame, versionStoreFromEnv } from '@/play/version';
+import { type Honesty, unsupportedGame } from '@/play/draft/unsupported';
+import { type PublishedGame, type VersionStore, versionStoreFromEnv } from '@/play/version';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -22,7 +23,7 @@ type Params = { params: Promise<{ id: string }> };
 type Loaded =
   | { readonly kind: 'refused' }
   | { readonly kind: 'missing' }
-  | { readonly kind: 'game'; readonly game: PublishedGame; readonly children: readonly string[]; readonly lineage: readonly GameVersion[] };
+  | { readonly kind: 'game'; readonly game: PublishedGame; readonly children: readonly string[]; readonly lineage: readonly GameVersion[]; readonly honesty: Honesty | null };
 
 /**
  * Jedno načtení na požadavek, sdílené metadaty i stránkou (`cache` z Reactu).
@@ -40,9 +41,16 @@ const load = cache(async (id: string): Promise<Loaded> => {
   const versions = versionStoreFromEnv(process.env);
   const game = await versions.get(id);
   if (game === null) return { kind: 'missing' };
-  const [children, lineage] = await Promise.all([versions.childrenOf(id), versions.lineageOf(id)]);
-  return { kind: 'game', game, children, lineage };
+  const [children, lineage, sentence] = await Promise.all([versions.childrenOf(id), versions.lineageOf(id), sentenceOf(versions, game)]);
+  return { kind: 'game', game, children, lineage, honesty: sentence === null ? null : unsupportedGame(sentence, game.spec) };
 });
+
+/** Věta, ze které hra vznikla: návrh ji nese sám, autorská verze po upgradu ji má u rodiče. */
+async function sentenceOf(versions: VersionStore, game: PublishedGame): Promise<string | null> {
+  if (game.origin !== undefined) return game.origin.sentence;
+  if (game.relation !== 'upgrade' || game.version.parentId === null) return null;
+  return (await versions.get(game.version.parentId))?.origin?.sentence ?? null;
+}
 
 /**
  * Náhled odkazu. `og:image` musí být absolutní adresa a kořenový layout
@@ -80,7 +88,7 @@ export default async function PlayGamePage({ params }: Params) {
       </main>
     );
   }
-  const { game, children, lineage } = loaded;
+  const { game, children, lineage, honesty } = loaded;
   // Arkádová hra (P25A) nese svět v `arcade` a `blueprint: null`; hra bez obojího nemá kde běžet.
   if (game.blueprint === null && game.arcade === undefined) notFound();
   // `key`: přechod na remix je klientská navigace a nová hra musí dostat nový runtime, ne ten rodičův.
@@ -94,6 +102,7 @@ export default async function PlayGamePage({ params }: Params) {
       lineage={lineage.length > 0 ? lineage : [game.version]}
       remixes={children.length}
       lab={labFacts(game.spec, game.report)}
+      honesty={honesty}
       upgrade={game.origin !== undefined && game.relation === undefined ? `/api/play/games/${game.version.versionId}/upgrade` : null}
     />
   );

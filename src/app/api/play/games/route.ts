@@ -8,12 +8,14 @@
  *
  * Věta dostane návrh ze slov synchronně a v odpovědi navíc `upgrade` – adresu,
  * kde se klient ptá na autorskou verzi, kterou režisér dopočítá na pozadí
- * (`_upgrade.ts`, P23-D T2).
+ * (`_upgrade.ts`, P23-D T2). Věta, kterou knihovna ovládání neumí, dostane
+ * navíc `honesty: { reason, closest }` (P25E T2) – hra se publikuje i tak.
  */
 
 import { z } from 'zod';
 
 import { draftGameSpec } from '@/play/draft';
+import { unsupportedGame } from '@/play/draft/unsupported';
 import { RECENT_CAP } from '@/play/version';
 import { diversify } from '@/play/version/diversify';
 
@@ -109,10 +111,11 @@ export async function POST(request: Request): Promise<Response> {
     const seeds = seed !== undefined ? [seed] : derivedSeeds(seedFrom(sentence.trim()));
     const ackMs = performance.now() - received;
     // Návrh ze slov jde ven hned; autorská verze od režiséra doběhne na pozadí (T2).
-    const draft = await publishReadSpec(versions, draftGameSpec(sentence), seeds, parentId, { origin: { sentence, seed: seed ?? null } });
+    const drafted = draftGameSpec(sentence);
+    const draft = await publishReadSpec(versions, drafted, seeds, parentId, { origin: { sentence, seed: seed ?? null } });
     if (draft.ok) {
       void upgradeOf(versions, draft.value.game, { sentence, seed: seed ?? null, ackMs, draftReadyMs: performance.now() - received, startedAt, caller });
-      return publishedResponse(draft.value, true);
+      return publishedResponse(draft.value, true, unsupportedGame(sentence, drafted));
     }
     if (draft.response.status !== 422) return draft.response;
     if (refused !== null) return refused;
@@ -120,7 +123,7 @@ export async function POST(request: Request): Promise<Response> {
     const directed = await getDirector(startedAt, caller)(sentence);
     if (directed.source === 'draft') return draft.response;
     const published = await publishReadSpec(versions, directed.spec, seeds, parentId);
-    return published.ok ? publishedResponse(published.value) : published.response;
+    return published.ok ? publishedResponse(published.value, false, unsupportedGame(sentence, directed.spec)) : published.response;
   }
 
   const read = readSpecOrFail(spec);

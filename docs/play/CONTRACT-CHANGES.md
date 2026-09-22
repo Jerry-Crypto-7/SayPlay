@@ -183,3 +183,11 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   `wrong_order_ignored`. Návrh ze slov: vaření/zákazníci/obchod/farma nebo jídlo bez „… to Y“ →
   objednávky (s160–s166); „carry/deliver X to Y“ zůstává nesením. Pin promptu režiséra
   10 555 → 10 615 B (tři nové parametry ve schématu). Bez parametru beze změny hashů.
+
+## P25E
+
+- **`POST /api/play/games` → volitelné `honesty: { reason, closest }`** (T2). Jen u věty, na
+  kterou knihovna ovládání nemá (`unsupportedGame` v `src/play/draft/unsupported.ts`: třídy
+  `sandbox`, `manipulate`, `idle`, `build_place`). Hra se publikuje dál; `closest` je hra, kterou
+  návrh postavil místo toho („a collect-and-escape game“). Spec, verze ani hashe se nemění –
+  `/play/[id]` hlášku počítá znovu z `origin.sentence` (u upgradu z rodiče) a ukáže proužek.
