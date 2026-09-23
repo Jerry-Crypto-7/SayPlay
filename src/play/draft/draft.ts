@@ -29,9 +29,12 @@ import hazardCrossing from '../__fixtures__/hazard_crossing.json';
 import survivalTimer from '../__fixtures__/survival_timer.json';
 import switchPuzzle from '../__fixtures__/switch_puzzle.json';
 
+import duelTemplate from '../arcade/__fixtures__/duel.json';
 import flapTemplate from '../arcade/__fixtures__/flap.json';
 import platformTemplate from '../arcade/__fixtures__/platform.json';
+import rhythmTemplate from '../arcade/__fixtures__/rhythm.json';
 import runnerTemplate from '../arcade/__fixtures__/runner.json';
+import timingTemplate from '../arcade/__fixtures__/timing.json';
 
 import { type ControlChoice, pickControl } from './controls';
 import {
@@ -628,23 +631,68 @@ function smashing(spec: GameSpecV1, read: Read, count: number, pop: boolean): vo
   if (pop && read.roles.setting === null) spec.theme.setting = 'sunny bubble meadow';
 }
 
-const ARCADE_TEMPLATES = { runner: runnerTemplate, platform: platformTemplate, flap: flapTemplate } as const;
+const ARCADE_TEMPLATES = {
+  runner: runnerTemplate,
+  platform: platformTemplate,
+  flap: flapTemplate,
+  timing: timingTemplate,
+  rhythm: rhythmTemplate,
+  duel: duelTemplate,
+} as const;
+
+// Sbíraná role šablony; souboj žádnou nemá.
+const COLLECTIBLE_ROLE: Readonly<Record<ControlChoice['control'], string | null>> = {
+  runner: 'coin',
+  platform: 'coin',
+  flap: 'coin',
+  timing: 'block',
+  rhythm: 'note',
+  duel: null,
+};
+
+// Texty načasování podle režimu; šablona je `stack`.
+const TIMING_TEXT = {
+  precision: {
+    description: 'Stop the moving marker inside the target zone. Hit it eight times to win.',
+    goalLine: 'Stop the marker in the target zone 8 times.',
+    controlsHint: 'Tap or Space to stop the marker.',
+  },
+  bridge: {
+    description: 'Stop each plank over the gap. Lay eight to cross.',
+    goalLine: 'Stop each plank over the gap. Lay 8 to cross.',
+    controlsHint: 'Tap or Space to drop the plank.',
+  },
+} as const;
 
 /**
- * Arkádová hra (P25A běžec, P25C plošinovka a poletování): šablona fixtury
- * ovládání, přepíše se titul, popisky a parametry, které věta řekla.
+ * Arkádová hra (P25A běžec, P25C plošinovka a poletování, P25H načasování,
+ * rytmus a souboj): šablona fixtury ovládání, přepíše se titul, popisky a
+ * parametry, které věta řekla.
  */
 function draftArcade(sentence: string, seed: number, choice: ControlChoice): GameSpecV1 | null {
   const spec = JSON.parse(JSON.stringify(ARCADE_TEMPLATES[choice.control])) as GameSpecV1;
   const roles = readRoles(sentence);
   const rng = xoroshiro128plus(seed);
   spec.title = titleFrom(sentence, spec.title);
-  // Ptáček poletování zůstane ptáčkem, když věta hráče nejmenuje.
-  const fallback = choice.control === 'flap' ? role(spec, 'player').label : PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)];
+  // Postava šablony (ptáček, jeřáb, bubeník, bojovník) zůstane, když věta hráče nejmenuje; běžec a plošinovka losují.
+  const keepsHero = choice.control !== 'runner' && choice.control !== 'platform';
+  const fallback = keepsHero ? role(spec, 'player').label : PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)];
   role(spec, 'player').label = cap(roles.player ?? fallback, 60);
-  if (roles.collectible !== null) role(spec, 'coin').label = cap(roles.collectible, 60);
+  const collectible = COLLECTIBLE_ROLE[choice.control];
+  if (roles.collectible !== null && collectible !== null) role(spec, collectible).label = cap(roles.collectible, 60);
   if (roles.setting !== null) spec.theme.setting = cap(roles.setting, 80);
-  if (choice.control === 'runner') {
+  if (choice.control === 'duel' && roles.target !== null) role(spec, 'rival').label = cap(roles.target, 60);
+  if (choice.control === 'timing') {
+    if (choice.mode !== 'stack') {
+      const text = TIMING_TEXT[choice.mode];
+      spec.objective.description = text.description;
+      spec.tutorial.goalLine = text.goalLine;
+      spec.tutorial.controlsHint = text.controlsHint;
+    }
+    spec.controlParams = { ...spec.controlParams, mode: choice.mode, ...(choice.speed === null ? {} : { speed: choice.speed }) };
+  } else if (choice.control === 'rhythm') {
+    if (choice.density !== null) spec.controlParams = { ...spec.controlParams, density: choice.density };
+  } else if (choice.control === 'runner') {
     if (choice.density !== null) spec.controlParams = { ...spec.controlParams, density: choice.density };
   } else if (choice.control === 'platform') {
     spec.controlParams = {

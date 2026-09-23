@@ -9,11 +9,58 @@
  * běžec > slabá plošinovka – „endless runner“ zůstává běžcem, i když skáče.
  * Hustotu a obtížnost čte jen z kvantifikátorů; co věta neřekne, doplní
  * generátor svým výchozím.
+ *
+ * P25H: rytmus, souboj a načasování mají jen silné narážky (žánr, titul,
+ * sloveso hry) a jdou hned za poletováním – „tap to the beat“ ani „time
+ * your jumps“ nejsou skákačka, „sword fighting with ninjas“ není běh.
  */
 
+import type { DuelDifficulty } from '../arcade/pieces/duel';
 import type { FlapDifficulty } from '../arcade/pieces/flap';
 import type { PlatformDifficulty } from '../arcade/pieces/platform';
+import type { RhythmDensity } from '../arcade/pieces/rhythm';
 import type { RunnerDensity } from '../arcade/pieces/runner';
+import type { TimingMode, TimingSpeed } from '../arcade/pieces/timing';
+
+const RHYTHM_CUES: readonly RegExp[] = [
+  /\brhythm\b/,
+  /\b(?:to|with|on) the beat\b/,
+  /\bbeat saber\b/,
+  /\bpiano tiles\b/,
+  /\bguitar hero\b/,
+  /\bmusic game\b/,
+  /\bto (?:the )?music\b/,
+  /\bdanc(?:e|es|ing)\b/,
+  /\bdrumm(?:er|ing)\b/,
+  /\bdisco\b/,
+];
+
+// Holé „fight“ a „ninja“ jsou moc široké („fight the boss“, „ninja running on
+// rooftops“, „water gun fight“) – jen spojení, která znamenají souboj zblízka.
+const DUEL_CUES: readonly RegExp[] = [
+  /\bfight(?:s|ing)? (?:game|match|with|against)\b/,
+  /\b(?:sword|stickman|pillow|fist|street|ninja|samurai) ?fight/,
+  /\bduel\b(?!.*\bshoot)/,
+  /\bbox(?:ing|er)\b/,
+  /\bkarate\b/,
+  /\bkung fu\b/,
+  /\bdodge and (?:strike|hit|punch)\b/,
+];
+
+const TIMING_CUES: readonly RegExp[] = [
+  /\bstack(?:s|ing)?\b/,
+  // „tower of moving platforms“ je plošinovka – jen věž, která se staví.
+  /\b(?:tallest|highest)\b[a-z ]* tower\b/,
+  /\b(?:at )?the right (?:time|moment)\b/,
+  /\bperfect timing\b/,
+  /\btime your\b/,
+  /\bstop the (?:bar|moving|block|needle)\b/,
+  /\bhelix\b/,
+  /\bcut the rope\b/,
+  /\b(?:grow|build) a bridge\b/,
+  /\bfishing\b/,
+  /\bcatch it on\b/,
+];
 
 const STRONG_CUES: readonly RegExp[] = [
   /\bend+les+ runner\b/,
@@ -81,7 +128,10 @@ export type ControlChoice =
       readonly movingPlatforms: boolean;
       readonly doubleJump: boolean;
     }
-  | { readonly control: 'flap'; readonly difficulty: FlapDifficulty | null };
+  | { readonly control: 'flap'; readonly difficulty: FlapDifficulty | null }
+  | { readonly control: 'timing'; readonly mode: TimingMode; readonly speed: TimingSpeed | null }
+  | { readonly control: 'rhythm'; readonly density: RhythmDensity | null }
+  | { readonly control: 'duel'; readonly difficulty: DuelDifficulty | null };
 
 export function runnerScore(text: string): number {
   if (STRONG_CUES.some((cue) => cue.test(text))) return 2;
@@ -101,6 +151,13 @@ const difficultyOf = (text: string): 'easy' | 'hard' | null => (HIGH_DENSITY.tes
 /** `text` je věta malými písmeny. */
 export function pickControl(text: string): ControlChoice | null {
   if (FLAP_CUES.some((cue) => cue.test(text))) return { control: 'flap', difficulty: difficultyOf(text) };
+  const level = difficultyOf(text);
+  if (RHYTHM_CUES.some((cue) => cue.test(text))) return { control: 'rhythm', density: level === 'hard' ? 'dense' : level === 'easy' ? 'sparse' : null };
+  if (DUEL_CUES.some((cue) => cue.test(text))) return { control: 'duel', difficulty: level };
+  if (TIMING_CUES.some((cue) => cue.test(text))) {
+    const mode = /\b(?:bridge|rope)\b/.test(text) ? 'bridge' : /\b(?:stack|stacks|stacking|tower|pile)\b/.test(text) ? 'stack' : 'precision';
+    return { control: 'timing', mode, speed: level === 'hard' ? 'fast' : level === 'easy' ? 'slow' : null };
+  }
   const runner = runnerScore(text);
   const platform = platformScore(text);
   const strongRunner = STRONG_CUES.some((cue) => cue.test(text));

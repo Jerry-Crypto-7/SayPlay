@@ -1,0 +1,85 @@
+{
+  "schema": "gamespec.v1",
+  "control": "rhythm",
+  "controlParams": {
+    "bpm": 120,
+    "density": "normal",
+    "beats": 48
+  },
+  "title": "Beat Tiles",
+  "archetype": "hazard_crossing",
+  "targetDurationSec": 30,
+  "theme": {
+    "setting": "a neon stage",
+    "mood": "energetic"
+  },
+  "objective": {
+    "kind": "reach",
+    "description": "Tap each tile as it reaches the line and play the song to the last beat.",
+    "role": "finish"
+  },
+  "mechanics": [
+    {
+      "id": "hazard_zone",
+      "params": {
+        "role": "miss",
+        "effect": "damage"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "finish",
+        "when": "enter",
+        "effect": "win"
+      }
+    },
+    {
+      "id": "health",
+      "params": {
+        "max": 3
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "drummer"
+    },
+    {
+      "id": "note",
+      "kind": "collectible",
+      "label": "tile",
+      "count": 12
+    },
+    {
+      "id": "miss",
+      "kind": "hazard",
+      "label": "missed beat"
+    },
+    {
+      "id": "finish",
+      "kind": "exit",
+      "label": "last beat"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Tap as each tile hits the line. Three misses end the song.",
+    "controlsHint": "Tap or Space on the beat. M toggles sound."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

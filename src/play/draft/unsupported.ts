@@ -99,6 +99,9 @@ const ARCADE_CLOSEST: Readonly<Record<string, string | undefined>> = {
   runner: 'an endless runner',
   platform: 'a platformer',
   flap: 'a flappy game',
+  timing: 'a timing game',
+  rhythm: 'a rhythm game',
+  duel: 'a duel',
 };
 
 /** Věta a hotový návrh → hláška, nebo `null`, když hra splní, co věta chtěla. */

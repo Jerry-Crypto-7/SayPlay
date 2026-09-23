@@ -42,13 +42,53 @@ describe('draft control choice', () => {
     expect(idsPicking('runner', (v) => v === 'platform')).toEqual(['s001', 's024']);
   });
 
-  // P25C T7, naměřeno 22. 9. 2026: plošinovka 13/15, cizí štítek jen s103
-  // („a ball bounces down a helix tower“, načasování), poletování s035.
+  // P25C T7, naměřeno 22. 9. 2026: plošinovka 13/15, poletování s035. Helix
+  // věž (s103) od P25H T5 bere načasování, cizí štítek plošinovce nezbyl.
   it('picks the platformer for 13 of 15 platform sentences and flap for the flappy one (pin)', () => {
     expect(corpus.filter((e) => e.verb === 'platform')).toHaveLength(15);
     expect(idsPicking('platform', (v) => v === 'platform')).toHaveLength(13);
-    expect(idsPicking('platform', (v) => v !== 'platform')).toEqual(['s103']);
+    expect(idsPicking('platform', (v) => v !== 'platform')).toEqual([]);
     expect(idsPicking('flap', () => true)).toEqual(['s035']);
+  });
+
+  // P25H T5, naměřeno 23. 9. 2026. Načasování nechytí s059 (závod šneků),
+  // s095 (házení nožů = házení), s126 (slučování) a s133 (skok na lyžích);
+  // jediný cizí je s108 (jenga, štítek manipulate – stavění věže sedí).
+  it('picks timing, rhythm and duel for their sentences with at most 3 foreign picks (pin)', () => {
+    expect(idsPicking('timing', (v) => v === 'timing')).toHaveLength(12);
+    expect(idsPicking('rhythm', (v) => v === 'rhythm')).toHaveLength(6);
+    expect(idsPicking('duel', (v) => v === 'melee')).toHaveLength(5);
+    expect(idsPicking('timing', (v) => v !== 'timing')).toEqual(['s108']);
+    expect(idsPicking('rhythm', (v) => v !== 'rhythm')).toEqual([]);
+    expect(idsPicking('duel', (v) => v !== 'melee')).toEqual([]);
+  });
+
+  it('reads the timing mode and levels from the sentence', () => {
+    expect(pickControl('hold to grow a bridge and let go to cross the gap')).toEqual({ control: 'timing', mode: 'bridge', speed: null });
+    expect(pickControl('stack blocks as high as u can')).toEqual({ control: 'timing', mode: 'stack', speed: null });
+    expect(pickControl('tap at the right time to stop the moving platform')).toEqual({ control: 'timing', mode: 'precision', speed: null });
+    expect(pickControl('a hard rhythm game')).toEqual({ control: 'rhythm', density: 'dense' });
+    expect(pickControl('an easy boxing match')).toEqual({ control: 'duel', difficulty: 'easy' });
+    expect(pickControl('ninja running on rooftops')).not.toMatchObject({ control: 'duel' });
+    expect(pickControl('cowboy duel at high noon, first to shoot wins')).toBeNull();
+  });
+
+  it('drafts timing, rhythm and duel specs that the arcade verifier publishes', () => {
+    for (const [sentence, control] of [
+      ['stack blocks as high as u can', 'timing'],
+      ['hold to grow a bridge and let go to cross the gap', 'timing'],
+      ['tap to the beat with glowing tiles', 'rhythm'],
+      ['boxing match against a kangaroo', 'duel'],
+      ['pillow fight in a sleepover', 'duel'],
+    ] as const) {
+      const spec = draftGameSpec(sentence);
+      expect(spec.control, sentence).toBe(control);
+      expect(readGameSpec(spec).ok).toBe(true);
+      const built = arcadeWorldOf(spec, 1);
+      if (!built.ok) throw new Error(built.issues.join('; '));
+      expect(verifyArcade(built.world).publishEligible, sentence).toBe(true);
+    }
+    expect(draftGameSpec('hold to grow a bridge and let go to cross the gap').tutorial.controlsHint).toBe('Tap or Space to drop the plank.');
   });
 
   it('keeps genre priority: flap > runner genre > platform genre > runner words > platform words', () => {
