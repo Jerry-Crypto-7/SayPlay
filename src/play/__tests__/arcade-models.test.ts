@@ -12,6 +12,7 @@ import runner from '../arcade/__fixtures__/runner.json';
 import shooter from '../arcade/__fixtures__/shooter.json';
 import throwGame from '../arcade/__fixtures__/throw.json';
 import { enemyModel, heroModel, modelOf, modelPath, propModels } from '../arcade/models';
+import { lookOf } from '../arcade/look';
 import { draftGameSpec } from '../draft';
 import type { GameSpecV1 } from '../spec';
 
@@ -64,6 +65,14 @@ describe('arcade model choice from role labels', () => {
     ['a cat running and dodging dogs', (spec: GameSpecV1) => `${heroModel(spec)}|${propModels(spec).obstacle}`, 'cat|dog'],
   ])('sentence %s reaches the scene', (sentence, read, expected) => {
     expect(read(draftGameSpec(sentence))).toBe(expected);
+  });
+
+  // Nález T11: místo bez předložky se v návrhu ztratilo a scéna zůstala na louce.
+  it.each([
+    ['flappy bird but underwater', 'underwater'],
+    ['throw snowballs at kids from a snow fort', 'snow'],
+  ])('sentence %s keeps its place (%s)', (sentence, look) => {
+    expect(lookOf(draftGameSpec(sentence).theme)).toBe(look);
   });
 
   it('every model a label can pick has a GLB on disk', () => {
