@@ -26,7 +26,7 @@ import hazardCrossing from '../__fixtures__/hazard_crossing.json';
 import survivalTimer from '../__fixtures__/survival_timer.json';
 import switchPuzzle from '../__fixtures__/switch_puzzle.json';
 import { controlOf, readsMechanic } from '../capabilities';
-import { ARCHETYPES, MECHANICS, MECHANIC_IDS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from '../registry';
+import { ARCHETYPES, MECHANICS, MECHANIC_IDS, REGISTRY_LIMITS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from '../registry';
 import { readGameSpec, type GameSpecReason, type GameSpecV1, type VerificationAssertion } from '../spec';
 
 import type { CriticIssue } from './critic';
@@ -160,6 +160,7 @@ function fitBudget(spec: Loose, share: number, applied: string[]): boolean {
   if (!isRecord(budgets) || typeof budgets.maxEntities !== 'number' || typeof budgets.maxRules !== 'number') return false;
   const roles = rolesOf(spec);
   const mechanics = mechanicsOf(spec) as { id: MechanicId; params: Loose }[];
+  const limit = { entities: budgets.maxEntities, rules: budgets.maxRules };
   for (let round = 0; round < 12; round += 1) {
     let cost;
     try {
@@ -167,11 +168,22 @@ function fitBudget(spec: Loose, share: number, applied: string[]): boolean {
     } catch {
       return false;
     }
-    if (cost.entities <= budgets.maxEntities * share && cost.rules <= budgets.maxRules * share) {
+    // Rozpočet ve specu je odhad modelu (naměřeno 23. 9.: 12 entit / 80 pravidel u hry, která
+    // potřebuje 20 / 238). Nejdřív ho zvednout k mezi registru, hru zmenšovat až nad ní.
+    if (round === 0) {
+      const entities = Math.min(REGISTRY_LIMITS.maxEntities, Math.max(limit.entities, Math.ceil(cost.entities / share)));
+      const rules = Math.min(REGISTRY_LIMITS.maxRules, Math.max(limit.rules, Math.ceil(cost.rules / share)));
+      if (entities !== limit.entities || rules !== limit.rules) {
+        budgets.maxEntities = limit.entities = entities;
+        budgets.maxRules = limit.rules = rules;
+        applied.push(`budgets raised to ${String(entities)} entities / ${String(rules)} rules`);
+      }
+    }
+    if (cost.entities <= limit.entities * share && cost.rules <= limit.rules * share) {
       if (round > 0) applied.push(`scaled counts to fit ${String(cost.entities)} entities / ${String(cost.rules)} rules`);
       return true;
     }
-    const factor = Math.min((budgets.maxEntities * share) / cost.entities, (budgets.maxRules * share) / cost.rules, 0.9);
+    const factor = Math.min((limit.entities * share) / cost.entities, (limit.rules * share) / cost.rules, 0.9);
     let moved = false;
     for (const role of roles) {
       const count = role.count ?? 1;
@@ -223,6 +235,40 @@ function syncObjective(spec: Loose, applied: string[]): void {
       }
     }
   }
+}
+
+const COUNTED_MECHANICS = ['defeat', 'collectible', 'checkpoint'];
+
+/**
+ * Doplní pole cíle, které čtečka vyžaduje a model vynechal (naměřeno 23. 9.:
+ * střelba s `defeat_targets` bez `count`). Počet z mechaniky, jinak z počtu
+ * instancí cílové role; sekundy z časovače, jinak z délky hry.
+ */
+function fillObjective(spec: Loose, applied: string[]): void {
+  const objective = spec.objective;
+  if (!isRecord(objective)) return;
+  if (objective.count === undefined && ['collect', 'checkpoints', 'defeat_targets'].includes(String(objective.kind))) {
+    const counted = mechanicsOf(spec).find((mechanic) => COUNTED_MECHANICS.includes(mechanic.id) && typeof mechanic.params.count === 'number');
+    const role = rolesOf(spec).find((candidate) => candidate.id === objective.role);
+    objective.count = counted?.params.count ?? role?.count ?? 1;
+    applied.push(`objective.count filled with ${String(objective.count)}`);
+  }
+  if (objective.seconds === undefined && objective.kind === 'survive') {
+    const timer = mechanicsOf(spec).find((mechanic) => mechanic.id === 'timer');
+    objective.seconds = timer?.params.seconds ?? spec.targetDurationSec ?? 60;
+    applied.push(`objective.seconds filled with ${String(objective.seconds)}`);
+  }
+}
+
+/** Druhý výskyt téže mechaniky pryč – čtečka ho odmítne jako `declared twice`. */
+function dedupeMechanics(spec: Loose, applied: string[]): void {
+  const seen = new Set<string>();
+  const kept = mechanicsOf(spec).filter((mechanic) => {
+    if (!seen.has(mechanic.id)) return seen.add(mechanic.id);
+    applied.push(`dropped duplicate ${mechanic.id}`);
+    return false;
+  });
+  if (kept.length !== mechanicsOf(spec).length) spec.mechanics = kept;
 }
 
 function ensureWin(spec: Loose, applied: string[]): void {
@@ -293,6 +339,8 @@ export function keypointFor(spec: Loose, mechanic: LooseMechanic): VerificationA
 }
 
 function ensureVerified(spec: Loose, applied: string[]): void {
+  // Arkádu dokazuje robot, keypointy mřížky nečte.
+  if (spec.control !== undefined && spec.control !== 'tap_go') return;
   const verification = Array.isArray(spec.verification) ? spec.verification : [];
   const verified = new Set(verification.map((v) => (isRecord(v) ? v.mechanic : undefined)));
   for (const mechanic of mechanicsOf(spec)) {
@@ -354,7 +402,11 @@ export function repairDeterministically(spec: unknown, issues: readonly CriticIs
     if (!fixMechanics(work, applied)) return null;
   }
   if (typeof issues !== 'string' && issues.some((issue) => issue.code === 'UNSUPPORTED' && issue.severity === 'block')) dropUnread(work, applied);
-  if (codes.has('DANGLING_REFERENCE')) ensurePlayer(work, applied);
+  if (codes.has('DANGLING_REFERENCE')) {
+    ensurePlayer(work, applied);
+    dedupeMechanics(work, applied);
+  }
+  if (codes.has('OBJECTIVE_MISMATCH')) fillObjective(work, applied);
   if (codes.has('BUDGET_EXCEEDED') && !fitBudget(work, 1, applied)) return null;
   if (codes.has('BUDGET') && !fitBudget(work, 0.8, applied)) return null;
   if (codes.has('NO_TERMINATION') || codes.has('NO_AGENCY')) ensureWin(work, applied);

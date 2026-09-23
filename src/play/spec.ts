@@ -537,11 +537,12 @@ export function readGameSpec(input: unknown): GameSpecResult {
   });
   if (issues.length > 0) return { ok: false, reason: 'DANGLING_REFERENCE', issues };
 
-  const cost = estimateCost(spec.mechanics, spec.roles);
-  if (cost.entities > spec.budgets.maxEntities) {
+  // Odhad počítá pravidla mřížky; arkáda je nekompiluje a svoje meze drží `ARCADE_LIMITS` (P26 T3).
+  const cost = arcade ? null : estimateCost(spec.mechanics, spec.roles);
+  if (cost !== null && cost.entities > spec.budgets.maxEntities) {
     issues.push(`/budgets/maxEntities: estimate ${cost.entities} exceeds ${spec.budgets.maxEntities}`);
   }
-  if (cost.rules > spec.budgets.maxRules) issues.push(`/budgets/maxRules: estimate ${cost.rules} exceeds ${spec.budgets.maxRules}`);
+  if (cost !== null && cost.rules > spec.budgets.maxRules) issues.push(`/budgets/maxRules: estimate ${cost.rules} exceeds ${spec.budgets.maxRules}`);
   if (issues.length > 0) return { ok: false, reason: 'BUDGET_EXCEEDED', issues };
 
   return { ok: true, value: spec, specHash: gameSpecHash(spec) };

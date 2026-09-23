@@ -236,7 +236,7 @@ export function critique(spec: GameSpecV1): CriticIssue[] {
   const cost = estimateCost(spec.mechanics, spec.roles);
   const overEntities = cost.entities > spec.budgets.maxEntities * BUDGET_HEADROOM;
   const overRules = cost.rules > spec.budgets.maxRules * BUDGET_HEADROOM;
-  if (overEntities || overRules) {
+  if (grid && (overEntities || overRules)) {
     issues.push({
       code: 'BUDGET',
       severity: 'warn',
