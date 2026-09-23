@@ -139,3 +139,6 @@ evals/worldstream/conversation-answers/
 
 # HyperFrames video projekt (15 MB), nepatri do verejneho repa
 /videos/
+
+# Snímky a surová data sady věrnosti (P26 T1). Commituje se jen report.json.
+evals/play/fidelity/runs/
