@@ -113,7 +113,10 @@ export function RhythmScene({ session, surface }: { readonly session: ArcadeSess
       material.emissive.set(recent !== null || near ? material.color : '#000000');
       material.emissiveIntensity = recent !== null ? 0.8 : near ? 0.4 : 0;
     }
-    camera.position.set(0, 3.2, -4.5);
+    // Na výšku (mobil) kamera ustoupí a zvedne se, ať jsou vidět všechny čtyři pruhy u lišty.
+    const tan = Math.tan((camera.fov * Math.PI) / 360);
+    const back = Math.max(4.5, (bar.w + 0.8) / (2 * tan * camera.aspect) - 1);
+    camera.position.set(0, 3.2 * (back / 4.5), -back);
     camera.lookAt(look);
   });
 
