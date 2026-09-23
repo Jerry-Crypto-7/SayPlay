@@ -107,8 +107,12 @@ export const FLAG = {
   kinematic: 1 << 5,
 } as const;
 
-/** Pevné sloty čítačů v hlavičce (`HEADER.counters + index`). */
-export const COUNTER = { score: 0, health: 1 } as const;
+/**
+ * Pevné sloty čítačů v hlavičce (`HEADER.counters + index`). `ammo` = náboje
+ * v zásobníku (u hodu zbývající hody), `reserve` = náboje mimo zásobník,
+ * `cooldown` = tiky, než zbraň znovu vystřelí (rozestup ran, přebíjení).
+ */
+export const COUNTER = { score: 0, health: 1, ammo: 2, reserve: 3, cooldown: 4 } as const;
 export type ArcadeCounter = keyof typeof COUNTER;
 
 /** Role těla – co s ním pravidla dělají. Čísla jsou součást hashe, nepřečíslovat. */
@@ -215,6 +219,8 @@ export type ArcadeEffect =
       readonly vy: number;
       readonly vz: number;
     }
+  /** Přičte `amount` (i záporné) k čítači `counter`. `score` a `damage` jsou jeho zkratky. */
+  | { readonly kind: 'count'; readonly counter: ArcadeCounter; readonly amount: number }
   /** Hráč zpět na místo návratu (`HEADER.respawnX..Z`), bez rychlosti. */
   | { readonly kind: 'respawn' }
   /** Místo návratu = střed horní hrany těla `body`. */
@@ -282,6 +288,8 @@ export interface ArcadeLevel {
   readonly length: number;
   /** Volné sloty pro těla z efektu `spawn` (součet s `bodies` nejvýš `maxBodies`). */
   readonly spawnSlots?: number;
+  /** Počáteční čítače úrovně (zásobník, rezerva); `health` nastavuje svět, ne úroveň. */
+  readonly counters?: Readonly<Partial<Record<Exclude<ArcadeCounter, 'health'>, number>>>;
 }
 
 /** Stavba úrovně: seed + parametry → těla. Hratelnost z konstrukce je jeho povinnost. */

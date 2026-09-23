@@ -11,10 +11,12 @@ import { platformBot } from './pieces/platform-bot';
 import { RULES } from './pieces/rules';
 import { runnerControl, runnerTrack } from './pieces/runner';
 import { runnerBot } from './pieces/runner-bot';
+import { gun, shooterControl, shooterRange } from './pieces/shooter';
+import { SHOT_RULES } from './pieces/shots';
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {
-  controls: { runner: runnerControl, platform: platformControl, flap: flapControl },
-  rules: RULES,
-  generators: { runner_track: runnerTrack, platform_level: platformLevel, flap_track: flapTrack },
+  controls: { runner: runnerControl, platform: platformControl, flap: flapControl, shooter: shooterControl },
+  rules: { ...RULES, ...SHOT_RULES, gun },
+  generators: { runner_track: runnerTrack, platform_level: platformLevel, flap_track: flapTrack, shooter_range: shooterRange },
   bots: { runner_bot: runnerBot, platform_bot: platformBot, flap_bot: flapBot },
 };

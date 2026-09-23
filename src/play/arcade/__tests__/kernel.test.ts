@@ -642,6 +642,33 @@ describe('projektil v jádře', () => {
     }
   });
 
+  it('úroveň nastaví počáteční čítače, efekt count k nim přičte', () => {
+    const counting: RulePiece<Record<string, never>> = {
+      id: 'counting',
+      params: z.object({}).strict(),
+      roles: [],
+      trigger: 'tick',
+      cost: () => ({ bodies: 0, rules: 1 }),
+      fire: () => [
+        { kind: 'count', counter: 'ammo', amount: -1 },
+        { kind: 'count', counter: 'cooldown', amount: 2 },
+      ],
+    };
+    const lib: ArcadeLibrary = { ...shotLibrary, rules: { ...shotLibrary.rules, counting } };
+    const built = buildWorld(
+      { seed: 1, control: { id: 'move', params: { vz: 0 } }, rules: [{ id: 'counting', params: {} }], bot: { id: 'idle', params: {} }, level: { bodies: [player], length: 0, counters: { ammo: 10, reserve: 7 } }, health: 3 },
+      lib,
+    );
+    if (!built.ok) throw new Error(built.issues.join('; '));
+    const state = instantiate(built.world);
+    expect([COUNTER.ammo, COUNTER.reserve, COUNTER.health].map((c) => state[HEADER.counters + c])).toEqual([10, 7, 3]);
+    const program = loadProgram(built.world, lib);
+    for (let t = 0; t < 4; t += 1) step(state, NO_INPUT, program);
+    expect(state[HEADER.counters + COUNTER.ammo]).toBe(6);
+    expect(state[HEADER.counters + COUNTER.cooldown]).toBe(8);
+    expect(state[HEADER.counters + COUNTER.reserve]).toBe(7);
+  });
+
   it('buildWorld odmítne nekonečný nebo nesmyslný projektil', () => {
     const issuesOf = (extra: Partial<BodyInit>, role: BodyInit['role'] = 'projectile'): readonly string[] => {
       const built = buildWorld(

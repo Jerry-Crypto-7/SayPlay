@@ -15,6 +15,7 @@ import { hashHex } from '@/sim/hash';
 import {
   ARCADE_LIMITS,
   ARCADE_RUNTIME_VERSION,
+  type ArcadeCounter,
   type ArcadeEffect,
   type ArcadeInput,
   type ArcadeLevel,
@@ -132,6 +133,7 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
   state[HEADER.respawnY] = bodies[0]?.y ?? 0;
   state[HEADER.respawnZ] = bodies[0]?.z ?? 0;
   state[HEADER.counters + COUNTER.health] = input.health ?? 0;
+  for (const [name, value] of Object.entries(input.level.counters ?? {})) state[HEADER.counters + COUNTER[name as ArcadeCounter]] = value;
   bodies.forEach((body, index) => {
     const base = bodyBase(index);
     state[base + BODY.x] = body.x;
@@ -447,6 +449,7 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
     const effect = effects[i] as ArcadeEffect;
     if (effect.kind === 'score') state[HD.counters + CT.score] = (state[HD.counters + CT.score] as number) + effect.amount;
     else if (effect.kind === 'damage') state[HD.counters + CT.health] = (state[HD.counters + CT.health] as number) - effect.amount;
+    else if (effect.kind === 'count') state[HD.counters + CT[effect.counter]] = (state[HD.counters + CT[effect.counter]] as number) + effect.amount;
     else if (effect.kind === 'lose') lost = true;
     else if (effect.kind === 'win') won = true;
     else if (effect.kind === 'spawn') spawn(state, effect);

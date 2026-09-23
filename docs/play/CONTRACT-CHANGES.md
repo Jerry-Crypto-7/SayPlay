@@ -279,3 +279,8 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   - **Hráč projektil nevidí:** `collide` role `projectile` přeskočí (ani zastavení, ani
     kontakt), aby střela nezasáhla střelce. Nepřátelská střela na hráče zatím není.
   - Pořadí tiku: … kolize hráče → projektily → pravidla (`contact`, `hit`, `tick`, `counter`).
+- **Čítače zbraně a efekt `count`** (23. 9. 2026, T2). `COUNTER` += `ammo` 2, `reserve` 3,
+  `cooldown` 4 (sloty hlavičky existovaly, jen neměly jméno); efekt `{ kind: 'count', counter,
+  amount }` přičte k čítači; `ArcadeLevel.counters?` nastaví počáteční hodnoty (kromě `health`,
+  to dál nese `BuildWorldInput.health`). Pravidla nemění stav sama, takže zásobník a přebíjení
+  bez efektu udělat nešlo. Stávající hry čítače 2–4 nečtou, hashe beze změny.
