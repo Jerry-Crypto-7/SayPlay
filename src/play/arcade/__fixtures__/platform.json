@@ -18,23 +18,7 @@
     "description": "Jump across the platforms to the flag without touching the spikes.",
     "role": "finish"
   },
-  "mechanics": [
-    {
-      "id": "hazard_zone",
-      "params": {
-        "role": "spikes",
-        "effect": "lose"
-      }
-    },
-    {
-      "id": "zone_trigger",
-      "params": {
-        "role": "finish",
-        "when": "enter",
-        "effect": "win"
-      }
-    }
-  ],
+  "mechanics": [],
   "roles": [
     {
       "id": "player",

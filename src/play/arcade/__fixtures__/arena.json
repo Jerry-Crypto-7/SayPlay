@@ -25,13 +25,6 @@
         "seconds": 40,
         "onEnd": "lose"
       }
-    },
-    {
-      "id": "hazard_zone",
-      "params": {
-        "role": "hunter",
-        "effect": "lose"
-      }
     }
   ],
   "roles": [

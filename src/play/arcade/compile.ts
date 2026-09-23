@@ -61,7 +61,8 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
   if (spec.control === 'steer') {
     const params = steerTrack.params.parse({ ...spec.controlParams });
     const level = steerTrack.generate(seed, params);
-    return { control: steerControlRef(level, params), bot: steerBotRef(level, params), level, rules: steerRules(level) };
+    // Závod životy nebere (P26 T5): bez `health: undefined` by svět nesl počet, který nic neubere.
+    return { control: steerControlRef(level, params), bot: steerBotRef(level, params), level, rules: steerRules(level), health: undefined };
   }
   if (spec.control === 'move_free') {
     // `readGameSpec` už odmítl spec, kde by cíl a časovač nesouhlasily.
@@ -81,7 +82,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
   if (spec.control === 'throw') {
     // Hod nemá čím ubrat život: `health` se nečte, prohra je „hody došly“.
     const params = throwField.params.parse({ ...spec.controlParams });
-    return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, level: throwField.generate(seed, params), rules: throwRules() };
+    return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, level: throwField.generate(seed, params), rules: throwRules(), health: undefined };
   }
   const params = runnerTrack.params.parse({ ...spec.controlParams });
   const rules: PieceRef[] = [

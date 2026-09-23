@@ -17,23 +17,7 @@
     "description": "Steer through the bends and cross the finish line before the rival cars.",
     "role": "finish"
   },
-  "mechanics": [
-    {
-      "id": "hazard_zone",
-      "params": {
-        "role": "barrier",
-        "effect": "lose"
-      }
-    },
-    {
-      "id": "zone_trigger",
-      "params": {
-        "role": "finish",
-        "when": "enter",
-        "effect": "win"
-      }
-    }
-  ],
+  "mechanics": [],
   "roles": [
     {
       "id": "player",

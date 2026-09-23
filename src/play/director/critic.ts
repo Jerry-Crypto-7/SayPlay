@@ -13,6 +13,7 @@
  * horší než žádný. Test to pinuje.
  */
 
+import { controlOf, unreadItems } from '../capabilities';
 import { NUMBER_WORDS } from '../draft/lexicon';
 import { ARCHETYPES, type MechanicId, estimateCost } from '../registry';
 import type { GameSpecV1 } from '../spec';
@@ -66,12 +67,29 @@ function indexOf(spec: GameSpecV1, id: MechanicId): number {
   return spec.mechanics.findIndex((mechanic) => mechanic.id === id);
 }
 
+/**
+ * Co ovládání z tabulky schopností nepoužije (P26 T5). Mechanika, kterou
+ * kompilátor nečte, blokuje a deterministická oprava ji ze specu vyjme – spec
+ * pak netvrdí nic, co hra nehraje. Popisek, který vykreslení nečte, je
+ * varování: zůstává v obálce a sada věrnosti ho počítá jako „not built“.
+ */
+function unread(spec: GameSpecV1): CriticIssue[] {
+  const control = controlOf(spec);
+  return unreadItems(spec).map((item) =>
+    item.kind === 'mechanic'
+      ? { code: 'UNSUPPORTED', severity: 'block', path: item.path, evidence: `control ${control} does not play mechanic ${item.what}`, repairHint: `remove it, or pick a control that plays it` }
+      : { code: 'UNSUPPORTED', severity: 'warn', path: item.path, evidence: `control ${control} never shows "${item.what}"`, repairHint: 'keep only roles the control shows' },
+  );
+}
+
 export function critique(spec: GameSpecV1): CriticIssue[] {
-  const issues: CriticIssue[] = [];
+  const issues: CriticIssue[] = unread(spec);
   const ids = spec.mechanics.map((mechanic) => mechanic.id);
   const has = (id: MechanicId): boolean => ids.includes(id);
+  // Kontroly hratelnosti mřížky; arkádu místo nich ověřuje robot nad tratí z generátoru.
+  const grid = controlOf(spec) === 'tap_go';
 
-  if (!ids.some((id) => AGENCY_MECHANICS.includes(id))) {
+  if (grid && !ids.some((id) => AGENCY_MECHANICS.includes(id))) {
     issues.push({
       code: 'NO_AGENCY',
       severity: 'block',
@@ -86,7 +104,7 @@ export function critique(spec: GameSpecV1): CriticIssue[] {
   // Aréna (P25F) vyhrává v jádře růstem nebo přežitím (`arenaWinOf`, pravidla `grow_to` /
   // `survive_time`) – časovač končící prohrou je tam limit na růst, ne chybějící výhra.
   const arenaWin = spec.control === 'move_free';
-  if (!zoneWin && !timerWin && !arenaWin && !ids.some((id) => WIN_MECHANICS.includes(id))) {
+  if (grid && !zoneWin && !timerWin && !arenaWin && !ids.some((id) => WIN_MECHANICS.includes(id))) {
     issues.push({
       code: 'NO_TERMINATION',
       severity: 'block',
@@ -158,7 +176,7 @@ export function critique(spec: GameSpecV1): CriticIssue[] {
     ['/objective/description', objective.description],
     ...spec.roles.map((role, index) => [`/roles/${String(index)}/label`, role.label] as const),
   ];
-  for (const [path, text] of texts) {
+  for (const [path, text] of grid ? texts : []) {
     const word = UNSUPPORTED_WORDS.exec(text);
     if (word !== null) {
       issues.push({
@@ -171,7 +189,7 @@ export function critique(spec: GameSpecV1): CriticIssue[] {
     }
   }
 
-  if (spec.targetDurationSec > DEAD_TIME_SECONDS && !ids.some((id) => PRESSURE_MECHANICS.includes(id))) {
+  if (grid && spec.targetDurationSec > DEAD_TIME_SECONDS && !ids.some((id) => PRESSURE_MECHANICS.includes(id))) {
     issues.push({
       code: 'DEAD_TIME',
       severity: 'warn',
@@ -204,7 +222,7 @@ export function critique(spec: GameSpecV1): CriticIssue[] {
 
   const verified = new Set(spec.verification.map((assertion) => assertion.mechanic).filter((id): id is string => id !== undefined));
   spec.mechanics.forEach((mechanic, index) => {
-    if (!verified.has(mechanic.id)) {
+    if (grid && !verified.has(mechanic.id)) {
       issues.push({
         code: 'UNVERIFIABLE',
         severity: 'warn',

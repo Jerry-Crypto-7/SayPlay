@@ -18,23 +18,7 @@
     "description": "Run to the finish line without hitting an obstacle.",
     "role": "finish"
   },
-  "mechanics": [
-    {
-      "id": "hazard_zone",
-      "params": {
-        "role": "obstacle",
-        "effect": "lose"
-      }
-    },
-    {
-      "id": "zone_trigger",
-      "params": {
-        "role": "finish",
-        "when": "enter",
-        "effect": "win"
-      }
-    }
-  ],
+  "mechanics": [],
   "roles": [
     {
       "id": "player",

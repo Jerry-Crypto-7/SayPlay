@@ -317,7 +317,7 @@ export const duelParamsSchema = z.object({ difficulty: z.enum(DUEL_DIFFICULTIES)
 export type DuelParams = z.infer<typeof duelParamsSchema>;
 
 /** Která ovládání berou parametry a jakým schématem; `readGameSpec` je přiřadí podle `control`. */
-const CONTROL_PARAMS = {
+export const CONTROL_PARAMS = {
   runner: runnerParamsSchema,
   platform: platformParamsSchema,
   flap: flapParamsSchema,
@@ -354,7 +354,8 @@ export const gameSpecSchema = z
     theme: themeSchema,
     objective: objectiveSchema,
     /** Právě jedna nesmí chybět; nad pěti se hra přestává vysvětlit jednou větou. */
-    mechanics: z.array(mechanicSchema).min(1).max(5),
+    // Arkáda (P26 T5) smí být bez mechanik; mřížce aspoň jednu vynutí povinné mechaniky archetypu.
+    mechanics: z.array(mechanicSchema).max(5),
     roles: z.array(roleSchema).min(2).max(30),
     tutorial: tutorialSchema,
     verification: z.array(verificationSchema).min(1).max(20),
@@ -466,7 +467,10 @@ export function readGameSpec(input: unknown): GameSpecResult {
   });
   if (issues.length > 0) return { ok: false, reason: 'DANGLING_REFERENCE', issues };
 
-  for (const required of archetype.requiredMechanics) {
+  // Arkáda povinné mechaniky archetypu nečte (P26 T5, `capabilities.ts`) – vyžadovat
+  // je by nutilo model psát, co hra nehraje.
+  const arcade = spec.control !== undefined && spec.control !== 'tap_go';
+  for (const required of arcade ? [] : archetype.requiredMechanics) {
     if (!mechanicIds.has(required)) issues.push(`/mechanics: archetype ${spec.archetype} requires ${required}`);
   }
   spec.mechanics.forEach((mechanic, index) => {

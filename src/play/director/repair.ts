@@ -25,6 +25,7 @@ import delivery from '../__fixtures__/delivery.json';
 import hazardCrossing from '../__fixtures__/hazard_crossing.json';
 import survivalTimer from '../__fixtures__/survival_timer.json';
 import switchPuzzle from '../__fixtures__/switch_puzzle.json';
+import { controlOf, readsMechanic } from '../capabilities';
 import { ARCHETYPES, MECHANICS, MECHANIC_IDS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from '../registry';
 import { readGameSpec, type GameSpecReason, type GameSpecV1, type VerificationAssertion } from '../spec';
 
@@ -70,6 +71,21 @@ function archetypeOf(spec: Loose): ArchetypeId | null {
 
 function dropVerificationOf(spec: Loose, mechanicId: string): void {
   if (Array.isArray(spec.verification)) spec.verification = spec.verification.filter((v) => !isRecord(v) || v.mechanic !== mechanicId);
+}
+
+/** Vyjme mechaniky, které zvolené ovládání nehraje (P26 T5, nález `UNSUPPORTED` s blokem). */
+function dropUnread(spec: Loose, applied: string[]): void {
+  const control = controlOf(spec as Pick<GameSpecV1, 'control'>);
+  spec.mechanics = mechanicsOf(spec).filter((mechanic) => {
+    if (readsMechanic(control, mechanic.id)) return true;
+    applied.push(`dropped ${mechanic.id} (control ${control} does not play it)`);
+    dropVerificationOf(spec, mechanic.id);
+    return false;
+  });
+  // Arkádu ověřuje robot nad tratí; schéma chce aspoň jedno tvrzení.
+  if (Array.isArray(spec.verification) && spec.verification.length === 0) {
+    spec.verification = [{ id: 'wins', kind: 'reachability', assert: { runState: 'won' } }];
+  }
 }
 
 function defaultParams(id: MechanicId, spec: Loose): Loose | null {
@@ -337,6 +353,7 @@ export function repairDeterministically(spec: unknown, issues: readonly CriticIs
   if (codes.has('MECHANIC_REJECTED') || codes.has('MALFORMED_SPEC')) {
     if (!fixMechanics(work, applied)) return null;
   }
+  if (typeof issues !== 'string' && issues.some((issue) => issue.code === 'UNSUPPORTED' && issue.severity === 'block')) dropUnread(work, applied);
   if (codes.has('DANGLING_REFERENCE')) ensurePlayer(work, applied);
   if (codes.has('BUDGET_EXCEEDED') && !fitBudget(work, 1, applied)) return null;
   if (codes.has('BUDGET') && !fitBudget(work, 0.8, applied)) return null;
