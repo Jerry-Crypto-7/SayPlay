@@ -26,8 +26,8 @@ export interface ControlCapability {
   readonly finish: boolean;
   /** Co model musí dodržet navíc (archetyp, cíl). */
   readonly note?: string;
-  /** Popisky rolí, podle kterých vykreslení volí model: `'all'`, nebo role hráče / role `enemy`. */
-  readonly labels: 'all' | readonly ('player' | 'enemy')[];
+  /** Popisky rolí, podle kterých vykreslení volí model: `'all'`, nebo role hráče a id rolí (`enemy`, `coin`, `obstacle`, `target` – P26 T12). */
+  readonly labels: 'all' | readonly ('player' | 'enemy' | 'coin' | 'obstacle' | 'target')[];
   /** Mechaniky, které kompilátor čte – mění svět. */
   readonly mechanics: 'all' | readonly MechanicId[];
   /** Počty rolí (`count`) mění svět. */
@@ -49,9 +49,9 @@ const arcade = (entry: Omit<ControlCapability, 'counts' | 'setting' | 'maxRoles'
 
 export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   tap_go: { cues: 'tap-to-move grid', roles: [], finish: false, labels: 'all', mechanics: 'all', counts: true, setting: true, maxRoles: 12 },
-  runner: arcade({ setting: true, cues: 'endless runner, subway surfers', roles: ['obstacle', 'coin'], finish: true, labels: ['player'], mechanics: LIVES_AND_TIMER }),
-  platform: arcade({ setting: true, cues: 'platformer, mario, obby', roles: ['spikes', 'coin'], finish: true, labels: ['player'], mechanics: LIVES_AND_TIMER }),
-  flap: arcade({ setting: true, cues: 'flappy bird, pipe gaps', roles: ['pipe', 'coin'], finish: true, labels: ['player'], mechanics: LIVES_AND_TIMER }),
+  runner: arcade({ setting: true, cues: 'endless runner, subway surfers', roles: ['obstacle', 'coin'], finish: true, labels: ['player', 'obstacle', 'coin'], mechanics: LIVES_AND_TIMER }),
+  platform: arcade({ setting: true, cues: 'platformer, mario, obby', roles: ['spikes', 'coin'], finish: true, labels: ['player', 'coin'], mechanics: LIVES_AND_TIMER }),
+  flap: arcade({ setting: true, cues: 'flappy bird, pipe gaps', roles: ['pipe', 'coin'], finish: true, labels: ['player', 'coin'], mechanics: LIVES_AND_TIMER }),
   steer: arcade({ cues: 'racing, fly a plane', roles: ['barrier', 'rival', 'turbo'], finish: true, labels: ['player'], mechanics: ['timer'] }),
   move_free: arcade({
     cues: 'agar.io, eat smaller, grow',
@@ -62,7 +62,7 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
     mechanics: LIVES_AND_TIMER,
   }),
   shooter: arcade({ setting: true, cues: 'tap = shoot', roles: ['enemy'], finish: false, note: 'archetype combat_lite', labels: ['player', 'enemy'], mechanics: LIVES_AND_TIMER }),
-  throw: arcade({ setting: true, cues: 'hold, release', roles: ['target'], finish: false, note: 'archetype combat_lite', labels: ['player'], mechanics: ['timer'] }),
+  throw: arcade({ setting: true, cues: 'hold, release', roles: ['target'], finish: false, note: 'archetype combat_lite', labels: ['player', 'target'], mechanics: ['timer'] }),
   timing: arcade({ cues: 'stack, stop the bar', roles: ['block', 'miss'], finish: false, labels: [], mechanics: LIVES_AND_TIMER }),
   rhythm: arcade({ cues: 'tap on the beat', roles: ['note', 'miss'], finish: false, labels: [], mechanics: LIVES_AND_TIMER }),
   duel: arcade({ cues: 'fight, boxing', roles: ['rival'], finish: false, labels: [], mechanics: LIVES_AND_TIMER }),
@@ -74,7 +74,8 @@ export const controlOf = (spec: Pick<GameSpecV1, 'control'>): ControlId => spec.
 export function readsLabel(control: ControlId, role: Pick<GameRole, 'id' | 'kind'>): boolean {
   const { labels } = CAPABILITIES[control];
   if (labels === 'all') return true;
-  return (role.kind === 'player' && labels.includes('player')) || (role.id === 'enemy' && labels.includes('enemy'));
+  if (role.kind === 'player') return labels.includes('player');
+  return (labels as readonly string[]).includes(role.id);
 }
 
 /** Čte kompilátor tuhle mechaniku? */

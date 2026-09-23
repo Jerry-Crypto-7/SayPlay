@@ -14,7 +14,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { ARCADE_LIMITS, type ArcadeWorld } from '@/play/arcade/contract';
 import { lookOf } from '@/play/arcade/look';
-import { enemyModel, heroModel } from '@/play/arcade/models';
+import { enemyModel, heroModel, propModels } from '@/play/arcade/models';
 import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
@@ -127,7 +127,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
 
   return (
     <main className="play-shell">
-      <ArcadeStage session={session} playerModel={heroModel(spec)} enemyModel={enemyModel(spec)} lookId={lookOf(spec.theme)} />
+      <ArcadeStage session={session} cast={{ player: heroModel(spec), enemy: enemyModel(spec), props: propModels(spec) }} lookId={lookOf(spec.theme)} />
       <ArcadeHud spec={spec} snapshot={snapshot} />
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       {upgraded !== null && <UpgradeBanner versionId={upgraded} />}

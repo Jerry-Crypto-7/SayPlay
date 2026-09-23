@@ -131,13 +131,13 @@ export function controlPromptLine(): string {
   const entries = (Object.keys(CONTROL_PARAMS) as (keyof typeof CONTROL_PARAMS)[]).map((id) => {
     const c = CAPABILITIES[id];
     const mechanics = c.mechanics === 'all' || c.mechanics.join() === 'health,timer' ? '' : `only ${c.mechanics.join('/')}; `;
-    const shows = c.labels === 'all' || c.labels.join() === 'player' ? '' : `shows ${c.labels.join('+') || 'no'} label; `;
+    const shows = c.labels === 'all' || c.labels.join() === 'player' ? '' : `shows ${c.labels.join('+') || 'no'}; `;
     const note = c.note === undefined ? '' : `${c.note}; `;
     return `"${id}" (${c.cues}): ${note}${mechanics}${shows}${[...(c.finish ? ['finish'] : []), ...c.roles].join(', ')}; {${Object.keys(CONTROL_PARAMS[id].shape).join(', ')}}.`;
   });
   return [
     "control: omit for the grid above; change the starting point's if another fits the verb better.",
-    'Arcade: archetype hazard_crossing, mechanics only health/timer, screen shows only the player label – put the nouns there; verification [{id: wins, kind: reachability, assert: {runState: won}}]. Per control (cues): exceptions; roles besides player; controlParams.',
+    'Arcade: archetype hazard_crossing, mechanics only health/timer, screen shows only the player label unless "shows" lists more role labels – put the nouns there; verification [{id: wins, kind: reachability, assert: {runState: won}}]. Per control (cues): exceptions; roles besides player; controlParams.',
     ...entries,
   ].join(' ');
 }

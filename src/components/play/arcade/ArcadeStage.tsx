@@ -23,6 +23,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import { AXIS_MAX, BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
+import { modelPath, type PropRole } from '@/play/arcade/models';
 import { FLAP } from '@/play/arcade/pieces/flap';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { RUNNER } from '@/play/arcade/pieces/runner';
@@ -38,8 +39,6 @@ import { ShooterRig } from './shooter/ShooterRig';
 import { SteerBackdrop, placeChase, useSteerInput } from './steer/SteerScene';
 import { ThrowRig } from './throw/ThrowRig';
 import { TimingScene, useTapInput } from './timing/TimingScene';
-
-const MODEL_BASE = '/assets/worldstream/game/';
 
 /** Barva náhradního kvádru podle id těla; nic fialového. */
 const FALLBACK_COLOR: Readonly<Record<string, string>> = {
@@ -57,11 +56,24 @@ const FALLBACK_COLOR: Readonly<Record<string, string>> = {
 /** Id modelu, který katalog nemá – kreslí se primitivem (objednávka modelů pro P25F je ve Findings plánu). */
 const PRIMITIVE = new Set(['platform', 'platform-moving', 'spikes', 'pipe', 'ceiling', 'bird', ...SHOT_PRIMITIVES]);
 
-/** Id těla → id modelu v katalogu. Hráč dostane model hrdiny z popisku role, nepřítel střelnice model z popisku nepřátel. */
-function modelIdOf(view: BodyView, playerModel: string, enemyModel: string): string {
-  if (view.role === ROLE.player) return playerModel;
+/** Modely z popisků rolí (`@/play/arcade/models`): hrdina, nepřítel střelnice a rekvizity. */
+export interface Cast {
+  readonly player: string;
+  readonly enemy: string;
+  readonly props: Partial<Record<PropRole, string>>;
+}
+
+/** Překážky běžce, které smí nést model z popisku; skluzová laťka tvarem říká „podlez“, tu ne. */
+const SWAPPABLE_OBSTACLES: ReadonlySet<string> = new Set(['hurdle', 'cone', 'crate']);
+
+/** Id těla → id modelu v katalogu. Hráč, nepřítel, mince, překážka a terč berou model z popisku role, když ho katalog má. */
+function modelIdOf(view: BodyView, cast: Cast): string {
+  if (view.role === ROLE.player) return cast.player;
   if (view.kind === 'finish') return 'finish-flag';
-  if (view.kind === 'enemy') return enemyModel;
+  if (view.kind === 'enemy') return cast.enemy;
+  if (view.role === ROLE.collectible && view.kind === 'coin') return cast.props.coin ?? view.kind;
+  if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return cast.props.obstacle ?? view.kind;
+  if (view.role === ROLE.target && view.kind === 'target') return cast.props.target ?? view.kind;
   return view.kind;
 }
 
@@ -71,7 +83,7 @@ function loadModel(id: string): Promise<Object3D | null> {
   let pending = modelCache.get(id);
   if (pending === undefined) {
     pending = new GLTFLoader()
-      .loadAsync(`${MODEL_BASE}${id}-lod1.glb`)
+      .loadAsync(modelPath(id))
       .then((gltf) => gltf.scene as Object3D)
       .catch(() => null);
     modelCache.set(id, pending);
@@ -221,13 +233,12 @@ function placeSide(camera: PerspectiveCamera, look: Vector3, z: number, y: numbe
 interface WorldProps {
   readonly session: ArcadeSession;
   readonly control: string;
-  readonly playerModel: string;
-  readonly enemyModel: string;
+  readonly cast: Cast;
   readonly surface: React.RefObject<HTMLDivElement | null>;
   readonly scene: Look;
 }
 
-function World({ session, control, playerModel, enemyModel, surface, scene }: WorldProps) {
+function World({ session, control, cast, surface, scene }: WorldProps) {
   const views = useMemo(() => bodiesOf(session), [session]);
   const groups = useRef<(Group | null)[]>([]);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
@@ -292,10 +303,10 @@ function World({ session, control, playerModel, enemyModel, surface, scene }: Wo
         // Branka poletování je neviditelná: jen počítá průlet mezerou.
         view.kind === 'gate' ? null : (
           <group key={view.index} ref={(group) => { groups.current[view.index] = group; }}>
-            {PRIMITIVE.has(modelIdOf(view, playerModel, enemyModel)) ? (
-              <Primitive id={modelIdOf(view, playerModel, enemyModel)} w={view.w} h={view.h} d={view.d} />
+            {PRIMITIVE.has(modelIdOf(view, cast)) ? (
+              <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} />
             ) : (
-              <FittedModel id={modelIdOf(view, playerModel, enemyModel)} w={view.w} h={view.h} d={view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
+              <FittedModel id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
             )}
           </group>
         ),
@@ -507,13 +518,11 @@ function useFlapInput(session: ArcadeSession, target: React.RefObject<HTMLDivEle
 
 export default function ArcadeStage({
   session,
-  playerModel,
-  enemyModel = 'robot',
+  cast,
   lookId = 'meadow',
 }: {
   readonly session: ArcadeSession;
-  readonly playerModel: string;
-  readonly enemyModel?: string;
+  readonly cast: Cast;
   readonly lookId?: LookId;
 }) {
   const surface = useRef<HTMLDivElement | null>(null);
@@ -546,7 +555,7 @@ export default function ArcadeStage({
             {control === 'move_free' ? (
               <ArenaWorld session={session} half={Number(session.world.control.params.half)} surface={surface} />
             ) : (
-              <World session={session} control={control} playerModel={playerModel} enemyModel={enemyModel} surface={surface} scene={look} />
+              <World session={session} control={control} cast={cast} surface={surface} scene={look} />
             )}
           </>
         )}

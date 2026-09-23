@@ -56,14 +56,15 @@ describe('director prompt', () => {
   // 12 000 B byl rozpočet plánu P23, ne mez poskytovatele; posouvá se na 12 500 B.
   // P26 T7 přidal pravidlo o popiscích rolí (1–3 slova, žádný pokyn): 12 447 B.
   // P26 T11 přidal výčet 18 sad prostředí `theme.look` (+142 B): 12 589 B, strop 12 700 B.
-  it('stays under 12 700 bytes for all forty golden sentences (pin: 12 589 B)', () => {
+  // P26 T12: scéna čte i popisky mince, překážky a terče, řádek je vyjmenuje: 12 684 B.
+  it('stays under 12 700 bytes for all forty golden sentences (pin: 12 684 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const request = buildDirectorRequest(entry.prompt, draftGameSpec(entry.prompt));
       max = Math.max(max, Buffer.byteLength(request.system + request.user));
     }
     expect(max).toBeLessThanOrEqual(12_700);
-    expect(max).toBeLessThanOrEqual(12_589);
+    expect(max).toBeLessThanOrEqual(12_684);
   });
 
   // Zlaté věty vedou všechny na mřížku, arkádové fixtury tak strop neměřil nikdo.

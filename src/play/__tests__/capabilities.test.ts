@@ -22,7 +22,7 @@ import steer from '../arcade/__fixtures__/steer.json';
 import throwGame from '../arcade/__fixtures__/throw.json';
 import timing from '../arcade/__fixtures__/timing.json';
 import { arcadeWorldOf } from '../arcade/compile';
-import { enemyModel, heroModel } from '../arcade/models';
+import { enemyModel, heroModel, propModels } from '../arcade/models';
 import { CAPABILITIES, readsLabel, readsMechanic, unreadItems } from '../capabilities';
 import { blockingIssues, critique } from '../director/critic';
 import { repairDeterministically } from '../director/repair';
@@ -64,7 +64,7 @@ function withMechanic(spec: GameSpecV1, id: 'health' | 'timer'): GameSpecV1 {
   return next;
 }
 
-const pick = (spec: GameSpecV1): string => `${heroModel(spec)}|${enemyModel(spec)}`;
+const pick = (spec: GameSpecV1): string => `${heroModel(spec)}|${enemyModel(spec)}|${JSON.stringify(propModels(spec))}`;
 
 describe('capability table against the arcade compiler and renderer', () => {
   for (const [control, fixture] of FIXTURES) {
@@ -107,7 +107,7 @@ describe('capability table against the arcade compiler and renderer', () => {
         // `fox` je v katalogu; u závodu přepíná auto na letadlo `plane`.
         next.roles[index] = { ...role, label: control === 'steer' ? 'plane' : 'fox' };
         const changed = pick(next) !== pick(spec) || worldHash(next) !== worldHash(spec);
-        // Kreslení čte jen hráče a `enemy`; tabulka u P25H ovládání tvrdí „nic“, a to kód
+        // Kreslení čte hráče, `enemy` a rekvizity z `PROP_ROLES`; tabulka u P25H ovládání tvrdí „nic“, a to kód
         // vybírá model jen pro postavu, kterou ta ovládání nekreslí – tady proto jen směr „čte“.
         if (readsLabel(control, role)) expect(changed, `${control} ${role.id}`).toBe(true);
         else if (role.kind !== 'player') expect(changed, `${control} ${role.id}`).toBe(false);

@@ -1,25 +1,158 @@
 /**
- * Který model katalogu kreslí hrdinu a nepřítele arkády – z popisku role.
+ * Který model katalogu kreslí role arkády – z popisku role (P26 T12).
+ *
+ * Arkáda a mřížka mají jeden katalog `src/assets/catalog.json` (86 modelů).
+ * Popisek se čte od posledního slova (hlava fráze: „cardboard robot“ je robot,
+ * ne karton): přímé slovo → tag katalogu → jednotné číslo. Postava, kterou
+ * katalog nemá, dostane nejbližší kategorii (zvíře, člověk, stroj, příšera),
+ * a teprve slovo bez kategorie výchozí model role. Věc bez modelu (ponožka,
+ * banán) kategorii nemá – kvádr ani kovboj by ji nepředstavovaly poctivě; tu
+ * dodá až generování (T13/T15).
  *
  * Čisté funkce mimo React (P26 T5): tabulka schopností `src/play/capabilities.ts`
  * tvrdí, které popisky vykreslení čte, a test to ověřuje právě tady.
  */
 
+import catalog from '@/assets/catalog.json';
+
+import { controlOf, readsLabel } from '../capabilities';
 import type { GameSpecV1 } from '../spec';
+import { OBSTACLE_KINDS } from './pieces/runner';
 
-/** Hrdinové, kteří v katalogu mají model; jiný popisek hráče kreslí `explorer`. */
-export const HERO_MODELS: ReadonlySet<string> = new Set(['explorer', 'robot', 'fox', 'kid', 'raccoon', 'astronaut', 'knight', 'penguin', 'cat', 'hamster', 'goblin', 'slime', 'seal', 'ghost']);
+const GAME_BASE = '/assets/worldstream/game/';
 
-/** Poletování bez známého hrdiny kreslí ptáčka (primitiv), závod auto nebo letadlo, ostatní `explorer`. */
-export function heroModel(spec: GameSpecV1): string {
-  const label = spec.roles.find((role) => role.kind === 'player')?.label.toLowerCase() ?? '';
-  if (spec.control === 'steer') return /\b(?:plane|pilot|jet)\b/.test(label) ? 'plane' : 'race-car';
-  const noun = label.split(/\s+/).at(-1) ?? '';
-  return HERO_MODELS.has(noun) ? noun : spec.control === 'flap' ? 'bird' : 'explorer';
+/** Id modelu → cesta k jeho LOD1 v katalogu. */
+const PATHS: ReadonlyMap<string, string> = new Map(
+  catalog.assets.map((asset) => [asset.assetId, asset.lods.find((lod) => lod.level === 1)?.path ?? asset.lods[0]?.path ?? '']),
+);
+
+/** Tag → model. Tag, který nese víc modelů (`robot`), patří tomu, který se tak jmenuje. */
+const BY_TAG: ReadonlyMap<string, string> = (() => {
+  const index = new Map<string, string>();
+  for (const asset of catalog.assets) {
+    for (const tag of [asset.assetId, ...asset.tags]) {
+      if (!index.has(tag) || tag === asset.assetId) index.set(tag, asset.assetId);
+    }
+  }
+  return index;
+})();
+
+/**
+ * Slova, která tag katalogu nese jinak, než je myslí věta: pták je postava
+ * (primitiv `bird`), ne hnízdo; zombie a drak jsou příšera.
+ */
+const WORD_MODEL: Readonly<Record<string, string>> = {
+  bird: 'bird',
+  birds: 'bird',
+  jet: 'plane',
+  helicopter: 'drone',
+  ufo: 'rocket',
+  submarine: 'rowing-boat',
+  canoe: 'rowing-boat',
+  kayak: 'rowing-boat',
+  zombie: 'goblin',
+  alien: 'goblin',
+  dragon: 'goblin',
+  demon: 'goblin',
+  vampire: 'goblin',
+  skeleton: 'goblin',
+  dinosaur: 'goblin',
+  dino: 'goblin',
+  mummy: 'goblin',
+  werewolf: 'goblin',
+  ogre: 'goblin',
+  mouse: 'hamster',
+  rabbit: 'hamster',
+  bunny: 'hamster',
+  squirrel: 'hamster',
+  puppy: 'dog',
+  wolf: 'dog',
+  chef: 'waiter',
+  bee: 'wasp-nest',
+};
+
+/** Nejbližší kategorie postavy, kterou katalog nemá. */
+const CATEGORY: ReadonlyArray<readonly [model: string, words: readonly string[]]> = [
+  ['fox', ['animal', 'bear', 'lion', 'tiger', 'pig', 'cow', 'horse', 'sheep', 'goat', 'chicken', 'monkey', 'panda', 'koala', 'deer', 'hedgehog', 'turtle', 'frog', 'snake', 'lizard', 'owl', 'bat', 'sloth', 'llama', 'giraffe', 'elephant', 'zebra', 'kangaroo', 'otter', 'beaver', 'badger']],
+  ['explorer', ['man', 'woman', 'person', 'guy', 'lady', 'hero', 'heroine', 'soldier', 'ninja', 'pirate', 'cowboy', 'wizard', 'witch', 'princess', 'prince', 'king', 'queen', 'cop', 'police', 'officer', 'guard', 'thief', 'farmer', 'doctor', 'nurse', 'teacher', 'student', 'runner', 'athlete', 'skater', 'surfer', 'viking', 'samurai', 'spy', 'agent', 'courier', 'player', 'grandma', 'grandpa', 'baby', 'shopper', 'tourist']],
+  ['robot', ['machine', 'mech', 'tank', 'truck', 'train', 'bus', 'tractor', 'bulldozer', 'forklift', 'cyborg', 'toaster']],
+];
+
+const CATEGORY_OF: ReadonlyMap<string, string> = new Map(CATEGORY.flatMap(([model, words]) => words.map((word) => [word, model] as const)));
+
+/** Jednotné číslo pro vyhledání – jen tvary, které korpus opravdu nese. */
+function singulars(word: string): readonly string[] {
+  const out: string[] = [];
+  if (word.endsWith('ies')) out.push(`${word.slice(0, -3)}y`);
+  if (word.endsWith('es')) out.push(word.slice(0, -2));
+  if (word.endsWith('s')) out.push(word.slice(0, -1));
+  if (word.endsWith('men')) out.push(`${word.slice(0, -3)}man`);
+  return out;
 }
 
-/** Nepřátelé střelnice: model z popisku role `enemy`, když ho katalog má, jinak robot. */
+function lookup(word: string, index: (form: string) => string | undefined): string | undefined {
+  for (const form of [word, ...singulars(word)]) {
+    const found = index(form);
+    if (found !== undefined) return found;
+  }
+  return undefined;
+}
+
+/** Model katalogu (nebo primitiv `bird`), který popisek jmenuje; kategorie jen u postav. */
+export function modelOf(label: string, character: boolean): string | undefined {
+  const words = label.toLowerCase().match(/[a-z][a-z-]*/g) ?? [];
+  for (const word of [...words].reverse()) {
+    const found = lookup(word, (form) => WORD_MODEL[form] ?? BY_TAG.get(form));
+    if (found !== undefined) return found;
+  }
+  if (!character) return undefined;
+  for (const word of [...words].reverse()) {
+    const found = lookup(word, (form) => CATEGORY_OF.get(form));
+    if (found !== undefined) return found;
+  }
+  return undefined;
+}
+
+/** Vozidla, která závod umí nést; jiný popisek řídí auto. */
+const VEHICLES: ReadonlySet<string> = new Set(['race-car', 'rival-car', 'plane', 'rocket', 'rowing-boat', 'shopping-cart', 'drone']);
+
+/** Hrdina z popisku hráče; bez shody ptáček u poletování, auto v závodě, jinak `explorer`. */
+export function heroModel(spec: GameSpecV1): string {
+  const label = spec.roles.find((role) => role.kind === 'player')?.label ?? '';
+  const found = modelOf(label, spec.control !== 'steer');
+  if (spec.control === 'steer') return found !== undefined && VEHICLES.has(found) ? found : 'race-car';
+  return found ?? (spec.control === 'flap' ? 'bird' : 'explorer');
+}
+
+/** Nepřátelé střelnice: model z popisku role `enemy`, jinak robot. */
 export function enemyModel(spec: GameSpecV1): string {
-  const noun = spec.roles.find((role) => role.id === 'enemy')?.label.toLowerCase().split(/\s+/).at(-1) ?? '';
-  return HERO_MODELS.has(noun) ? noun : 'robot';
+  return modelOf(spec.roles.find((role) => role.id === 'enemy')?.label ?? '', true) ?? 'robot';
+}
+
+/** Role arkády, jejichž těla smí nést model z popisku: sbíraná mince, překážka běžce, terč hodu. */
+export const PROP_ROLES = ['coin', 'obstacle', 'target'] as const;
+export type PropRole = (typeof PROP_ROLES)[number];
+
+/** Co jádro pro roli kreslí samo; popisek, který jmenuje právě tohle („obstacles“), nic nemění. */
+const OWN_KINDS: Readonly<Record<PropRole, readonly string[]>> = {
+  coin: ['coin'],
+  obstacle: OBSTACLE_KINDS,
+  target: ['target'],
+};
+
+/** Modely rekvizit z popisků rolí – jen přímá shoda s katalogem, bez kategorií. */
+export function propModels(spec: GameSpecV1): Partial<Record<PropRole, string>> {
+  const out: Partial<Record<PropRole, string>> = {};
+  for (const id of PROP_ROLES) {
+    const role = spec.roles.find((candidate) => candidate.id === id);
+    if (role === undefined || !readsLabel(controlOf(spec), role)) continue;
+    const found = modelOf(role.label, false);
+    if (found !== undefined && found !== 'bird' && !OWN_KINDS[id].includes(found)) out[id] = found;
+  }
+  return out;
+}
+
+/** Cesta ke GLB: katalog zná 86 modelů, jiné id (tělo jádra) leží ve složce her. */
+export function modelPath(id: string): string {
+  return PATHS.get(id) || `${GAME_BASE}${id}-lod1.glb`;
 }
