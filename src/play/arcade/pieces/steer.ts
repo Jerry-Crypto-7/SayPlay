@@ -116,7 +116,7 @@ const toward = (value: number, target: number, step: number): number => (value <
 // Trať pro soupeře a robota
 
 /** Osa trati: úsek `i` končí v `ends[i]` a jeho střed je `centers[i]`. */
-const courseSchema = z
+export const courseSchema = z
   .object({
     ends: z.array(z.int()).max(ARCADE_LIMITS.maxBodies),
     centers: z.array(z.int()).max(ARCADE_LIMITS.maxBodies),
@@ -384,7 +384,12 @@ export function steerControlRef(level: ArcadeLevel, params: Pick<SteerTrackParam
   return { id: 'steer', params: { topSpeed: params.topSpeed, drift: params.drift, course: courseOf(level) } };
 }
 
-/** Pravidla závodu: turbo, cíl, soupeř v cíli, časový limit z `health` se tu nepoužívá. */
+/** Robot řidiče (`steer-bot.ts`) s tou samou osou trati. */
+export function steerBotRef(level: ArcadeLevel, params: Pick<SteerTrackParams, 'topSpeed' | 'drift'>): PieceRef {
+  return { id: 'steer_bot', params: { topSpeed: params.topSpeed, drift: params.drift, course: courseOf(level) } };
+}
+
+/** Pravidla závodu: turbo, cíl, soupeř v cíli. */
 export function steerRules(level: ArcadeLevel): PieceRef[] {
   const rules: PieceRef[] = [
     { id: 'pickup', params: {} },

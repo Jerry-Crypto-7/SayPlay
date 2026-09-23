@@ -1,0 +1,85 @@
+{
+  "schema": "gamespec.v1",
+  "control": "steer",
+  "controlParams": {
+    "difficulty": "normal",
+    "lengthM": 450
+  },
+  "title": "Tire Wall Rally",
+  "archetype": "hazard_crossing",
+  "targetDurationSec": 60,
+  "theme": {
+    "setting": "twisty race track lined with tire walls",
+    "mood": "fast"
+  },
+  "objective": {
+    "kind": "reach",
+    "description": "Steer through the bends and cross the finish line before the rival cars.",
+    "role": "finish"
+  },
+  "mechanics": [
+    {
+      "id": "hazard_zone",
+      "params": {
+        "role": "barrier",
+        "effect": "lose"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "finish",
+        "when": "enter",
+        "effect": "win"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "race car"
+    },
+    {
+      "id": "barrier",
+      "kind": "hazard",
+      "label": "tire barrier",
+      "count": 5
+    },
+    {
+      "id": "rival",
+      "kind": "patrol",
+      "label": "rival car",
+      "count": 3
+    },
+    {
+      "id": "turbo",
+      "kind": "collectible",
+      "label": "turbo",
+      "count": 3
+    },
+    {
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Beat the rival cars to the finish line.",
+    "controlsHint": "Drag, tilt or arrows to steer. Down to brake."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

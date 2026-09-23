@@ -12,10 +12,11 @@ import { RULES } from './pieces/rules';
 import { runnerControl, runnerTrack } from './pieces/runner';
 import { runnerBot } from './pieces/runner-bot';
 import { rivalFinish, steerControl, steerTrack } from './pieces/steer';
+import { steerBot } from './pieces/steer-bot';
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {
   controls: { runner: runnerControl, platform: platformControl, flap: flapControl, steer: steerControl },
   rules: { ...RULES, rival_finish: rivalFinish },
   generators: { runner_track: runnerTrack, platform_level: platformLevel, flap_track: flapTrack, steer_track: steerTrack },
-  bots: { runner_bot: runnerBot, platform_bot: platformBot, flap_bot: flapBot },
+  bots: { runner_bot: runnerBot, platform_bot: platformBot, flap_bot: flapBot, steer_bot: steerBot },
 };

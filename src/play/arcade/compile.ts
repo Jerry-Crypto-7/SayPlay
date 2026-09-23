@@ -19,6 +19,7 @@ import { ARCADE_LIBRARY } from './library';
 import { flapRules, flapTrack } from './pieces/flap';
 import { platformLevel, platformRules } from './pieces/platform';
 import { runnerTrack } from './pieces/runner';
+import { steerBotRef, steerControlRef, steerRules, steerTrack } from './pieces/steer';
 import { runBot } from './verify';
 
 /** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra. */
@@ -43,6 +44,11 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
       level: platformLevel.generate(seed, params),
       rules: platformRules(params, health),
     };
+  }
+  if (spec.control === 'steer') {
+    const params = steerTrack.params.parse({ ...spec.controlParams });
+    const level = steerTrack.generate(seed, params);
+    return { control: steerControlRef(level, params), bot: steerBotRef(level, params), level, rules: steerRules(level) };
   }
   if (spec.control === 'flap') {
     const params = flapTrack.params.parse({ ...spec.controlParams });

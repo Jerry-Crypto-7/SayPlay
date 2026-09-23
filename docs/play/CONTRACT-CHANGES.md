@@ -262,3 +262,18 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   `sandbox`, `manipulate`, `idle`, `build_place`). Hra se publikuje dál; `closest` je hra, kterou
   návrh postavil místo toho („a collect-and-escape game“). Spec, verze ani hashe se nemění –
   `/play/[id]` hlášku počítá znovu z `origin.sentence` (u upgradu z rodiče) a ukáže proužek.
+
+## P25F
+
+- **`GameSpec.control` += `'steer'`** (23. 9. 2026, T3, závod). `controlParams` závodu:
+  `{ difficulty?, lengthM? (200–800), rivals?, turbo?, drift? }`, všechna volitelná a bez
+  výchozích hodnot; sjednocení ve schématu je o `steerParamsSchema` delší. Hláška pro
+  parametry u mřížkové hry je teď „only an arcade game (runner, platform, flap, steer) takes
+  control parameters“. Jádro (`kernel.ts`, `contract.ts`) ani `ARCADE_RUNTIME_VERSION` se
+  nemění, hashe běžce, plošinovky, poletování i mřížkových her beze změny.
+- **Kusy v knihovně:** ovládání `steer`, generátor `steer_track`, robot `steer_bot`,
+  pravidlo `rival_finish` (`tick`: živé tělo role `enemy` přední hranou za `atZ` → prohra).
+  Ovládání `steer` nese v parametrech osu trati (`course`: konce úseků, středy, polovina
+  šířky) a podle ní v každém tiku nastaví boční rychlost kinematickým soupeřům – jádro nemá
+  krok, ve kterém by se hýbala cizí těla (Findings P25F). `aux0`/`aux1` hráče = tiky turba
+  a skóre, při kterém turbo naskočilo.
