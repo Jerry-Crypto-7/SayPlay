@@ -19,6 +19,7 @@ import { ARCADE_LIBRARY } from './library';
 import { flapRules, flapTrack } from './pieces/flap';
 import { platformLevel, platformRules } from './pieces/platform';
 import { runnerTrack } from './pieces/runner';
+import { duelParts } from './pieces/duel';
 import { rhythmParts } from './pieces/rhythm';
 import { timingParts } from './pieces/timing';
 import { runBot } from './verify';
@@ -43,6 +44,7 @@ interface ArcadeParts {
 function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): ArcadeParts {
   if (spec.control === 'timing') return timingParts(seed, { ...spec.controlParams }, health);
   if (spec.control === 'rhythm') return rhythmParts(seed, { ...spec.controlParams }, health);
+  if (spec.control === 'duel') return duelParts(seed, { ...spec.controlParams }, health);
   if (spec.control === 'platform') {
     const params = platformLevel.params.parse({ ...spec.controlParams });
     return {

@@ -11,14 +11,16 @@ import { platformBot } from './pieces/platform-bot';
 import { RULES } from './pieces/rules';
 import { runnerControl, runnerTrack } from './pieces/runner';
 import { runnerBot } from './pieces/runner-bot';
+import { duelArena, duelControl } from './pieces/duel';
+import { duelBot } from './pieces/duel-bot';
 import { rhythmControl, rhythmLevel } from './pieces/rhythm';
 import { rhythmBot } from './pieces/rhythm-bot';
 import { judgeRule, timingControl, timingLevel } from './pieces/timing';
 import { timingBot } from './pieces/timing-bot';
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {
-  controls: { runner: runnerControl, platform: platformControl, flap: flapControl, timing: timingControl, rhythm: rhythmControl },
+  controls: { runner: runnerControl, platform: platformControl, flap: flapControl, timing: timingControl, rhythm: rhythmControl, duel: duelControl },
   rules: { ...RULES, judge: judgeRule },
-  generators: { runner_track: runnerTrack, platform_level: platformLevel, flap_track: flapTrack, timing_level: timingLevel, rhythm_level: rhythmLevel },
-  bots: { runner_bot: runnerBot, platform_bot: platformBot, flap_bot: flapBot, timing_bot: timingBot, rhythm_bot: rhythmBot },
+  generators: { runner_track: runnerTrack, platform_level: platformLevel, flap_track: flapTrack, timing_level: timingLevel, rhythm_level: rhythmLevel, duel_arena: duelArena },
+  bots: { runner_bot: runnerBot, platform_bot: platformBot, flap_bot: flapBot, timing_bot: timingBot, rhythm_bot: rhythmBot, duel_bot: duelBot },
 };
