@@ -727,10 +727,12 @@ export const CODEX_SCHEMA_FILE = 'answer-schema.json';
 
 export function codexArgs(model: string, effort: string, cwd: string, withSchema = false): string[] {
   return [
-    // Přepínač codex tiše ignoruje, když má zapnuté nástroje nebo MCP
-    // (openai/codex#15451); tady jsou vypnuté všechny a `--ignore-user-config` drží MCP venku.
+    'exec',
+    // Přepínač patří podpříkazu `exec` – před ním codex skončí kódem 2 (naměřeno 23. 9.).
+    // Tiše ho ignoruje, když má zapnuté nástroje nebo MCP (openai/codex#15451); tady jsou
+    // vypnuté všechny a `--ignore-user-config` drží MCP venku.
     ...(withSchema ? ['--output-schema', join(cwd, CODEX_SCHEMA_FILE)] : []),
-    'exec', '--ignore-user-config', '--ignore-rules', '--ephemeral', '--skip-git-repo-check', '--sandbox', 'read-only',
+    '--ignore-user-config', '--ignore-rules', '--ephemeral', '--skip-git-repo-check', '--sandbox', 'read-only',
     '-c', 'approval_policy="never"', '-c', 'forced_login_method="chatgpt"', '-c', 'model_provider="openai"',
     '-c', `model_reasoning_effort="${effort}"`,
     '-c', 'features.shell_tool=false', '-c', 'features.apps=false', '-c', 'web_search="disabled"',

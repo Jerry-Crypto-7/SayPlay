@@ -151,7 +151,8 @@ describe('director answer schema (strict mode)', () => {
   });
 
   it('codex gets the schema file only when the request carries one', () => {
-    expect(codexArgs('m', 'high', 'C:/tmp/x', true).join(' ')).toMatch(/--output-schema \S*answer-schema\.json/);
+    // Za `exec`, ne před ním: `codex --output-schema … exec` končí „unexpected argument“.
+    expect(codexArgs('m', 'high', 'C:/tmp/x', true).join(' ')).toMatch(/^exec .*--output-schema \S*answer-schema\.json/);
     expect(codexArgs('m', 'high', 'C:/tmp/x')).not.toContain('--output-schema');
   });
 });
