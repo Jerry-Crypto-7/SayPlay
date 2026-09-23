@@ -59,10 +59,70 @@
      "upgradeSecondsP90": 68.415
     }
    }
+  },
+  {
+   "runId": "2026-09-23-t5",
+   "measuredAt": "2026-09-23T14:17:09.815Z",
+   "commit": "d1c0b74",
+   "note": "P26 T3+T4+T5 (d1c0b74)",
+   "metrics": {
+    "n": 30,
+    "upgradeSuccess": {
+     "ok": 16,
+     "of": 30,
+     "failures": {
+      "NOT_PLAYABLE": 3,
+      "MALFORMED": 11
+     }
+    },
+    "specFidelity": {
+     "final": 0.432,
+     "draft": 0.36,
+     "ai": 0.619,
+     "inSpecFinal": 0.62
+    },
+    "recognizable": {
+     "final": {
+      "items": {
+       "hit": 16,
+       "of": 110
+      },
+      "hero": {
+       "hit": 4,
+       "of": 18
+      },
+      "setting": {
+       "hit": 0,
+       "of": 24
+      },
+      "judged": 30
+     },
+     "draft": {
+      "items": {
+       "hit": 15,
+       "of": 110
+      },
+      "hero": {
+       "hit": 5,
+       "of": 18
+      },
+      "setting": {
+       "hit": 0,
+       "of": 24
+      },
+      "judged": 30
+     }
+    },
+    "timing": {
+     "draftMsP50": 444,
+     "upgradeSecondsP50": 37.015,
+     "upgradeSecondsP90": 67.914
+    }
+   }
   }
  ],
  "latest": {
-  "runId": "2026-09-23-baseline",
+  "runId": "2026-09-23-t5",
   "sentences": [
    {
     "id": "h01",
@@ -72,7 +132,7 @@
      "ai": null
     },
     "upgrade": "NOT_PLAYABLE",
-    "upgradeSeconds": 61,
+    "upgradeSeconds": 68,
     "fidelity": {
      "draft": 0.4,
      "ai": null
@@ -92,7 +152,7 @@
      "ai": null
     },
     "upgrade": "MALFORMED",
-    "upgradeSeconds": 37,
+    "upgradeSeconds": 43,
     "fidelity": {
      "draft": 0.333,
      "ai": null
@@ -110,18 +170,19 @@
     "text": "defend a castle from dragons by throwing snowballs",
     "controls": {
      "draft": "throw",
-     "ai": "throw"
+     "ai": null
     },
-    "upgrade": "ai",
-    "upgradeSeconds": 28,
+    "upgrade": "MALFORMED",
+    "upgradeSeconds": 43,
     "fidelity": {
      "draft": 0.25,
-     "ai": 0.5
+     "ai": null
     },
     "recognized": [],
     "missing": [
-     "castle (in spec, not read)",
-     "dragon (in spec, not read)"
+     "castle",
+     "dragon",
+     "snowball"
     ]
    },
    {
@@ -132,7 +193,7 @@
      "ai": "tap_go"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 48,
+    "upgradeSeconds": 55,
     "fidelity": {
      "draft": 0.75,
      "ai": 1
@@ -150,7 +211,7 @@
      "ai": "duel"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 36,
+    "upgradeSeconds": 33,
     "fidelity": {
      "draft": 0.333,
      "ai": 0.333
@@ -169,7 +230,7 @@
      "ai": null
     },
     "upgrade": "MALFORMED",
-    "upgradeSeconds": 68,
+    "upgradeSeconds": 70,
     "fidelity": {
      "draft": 0,
      "ai": null
@@ -191,7 +252,7 @@
      "ai": "tap_go"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 52,
+    "upgradeSeconds": 58,
     "fidelity": {
      "draft": 0.333,
      "ai": 0.667
@@ -209,7 +270,7 @@
      "ai": "tap_go"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 44,
+    "upgradeSeconds": 50,
     "fidelity": {
      "draft": 0.333,
      "ai": 0.667
@@ -227,7 +288,7 @@
      "ai": null
     },
     "upgrade": "NOT_PLAYABLE",
-    "upgradeSeconds": 52,
+    "upgradeSeconds": 49,
     "fidelity": {
      "draft": 0.333,
      "ai": null
@@ -246,7 +307,7 @@
      "ai": null
     },
     "upgrade": "MALFORMED",
-    "upgradeSeconds": 60,
+    "upgradeSeconds": 33,
     "fidelity": {
      "draft": 0,
      "ai": null
@@ -268,7 +329,7 @@
      "ai": "tap_go"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 49,
+    "upgradeSeconds": 53,
     "fidelity": {
      "draft": 1,
      "ai": 1
@@ -288,13 +349,14 @@
      "ai": "tap_go"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 49,
+    "upgradeSeconds": 37,
     "fidelity": {
      "draft": 1,
      "ai": 1
     },
     "recognized": [
-     "hamster"
+     "hamster",
+     "roomba"
     ],
     "missing": []
    },
@@ -303,20 +365,20 @@
     "text": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
     "controls": {
      "draft": "runner",
-     "ai": null
+     "ai": "runner"
     },
-    "upgrade": "MALFORMED",
-    "upgradeSeconds": 49,
+    "upgrade": "ai",
+    "upgradeSeconds": 34,
     "fidelity": {
      "draft": 0.4,
-     "ai": null
+     "ai": 0.4
     },
     "recognized": [
      "run"
     ],
     "missing": [
-     "sausage",
-     "sprinkler",
+     "sausage (in spec, not read)",
+     "sprinkler (in spec, not read)",
      "park (in spec, not read)"
     ]
    },
@@ -328,7 +390,7 @@
      "ai": "runner"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 53,
+    "upgradeSeconds": 37,
     "fidelity": {
      "draft": 0.667,
      "ai": 0.667
@@ -337,7 +399,7 @@
      "run"
     ],
     "missing": [
-     "monkey (in spec, not read)"
+     "monkey"
     ]
    },
    {
@@ -345,17 +407,17 @@
     "text": "obby game with lava and spinning bars",
     "controls": {
      "draft": "platform",
-     "ai": null
+     "ai": "platform"
     },
-    "upgrade": "MALFORMED",
-    "upgradeSeconds": 58,
+    "upgrade": "ai",
+    "upgradeSeconds": 29,
     "fidelity": {
      "draft": 0.333,
-     "ai": null
+     "ai": 0.333
     },
     "recognized": [],
     "missing": [
-     "lava",
+     "lava (in spec, not read)",
      "spinning bar"
     ]
    },
@@ -364,21 +426,18 @@
     "text": "A tiny robot climbs a tower of moving platforms to reach its charger",
     "controls": {
      "draft": "platform",
-     "ai": null
+     "ai": "platform"
     },
-    "upgrade": "MALFORMED",
-    "upgradeSeconds": 53,
+    "upgrade": "ai",
+    "upgradeSeconds": 37,
     "fidelity": {
      "draft": 0.25,
-     "ai": null
+     "ai": 0.5
     },
-    "recognized": [
-     "robot"
-    ],
+    "recognized": [],
     "missing": [
-     "robot",
-     "charger",
-     "tower"
+     "charger (in spec, not read)",
+     "tower (in spec, not read)"
     ]
    },
    {
@@ -389,15 +448,16 @@
      "ai": "flap"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 41,
+    "upgradeSeconds": 33,
     "fidelity": {
      "draft": 0.667,
-     "ai": 0.667
+     "ai": 0.333
     },
     "recognized": [
      "bird"
     ],
     "missing": [
+     "bird",
      "underwater (in spec, not read)"
     ]
    },
@@ -406,19 +466,20 @@
     "text": "A space marine shoots alien bugs in a mining colony",
     "controls": {
      "draft": "shooter",
-     "ai": "shooter"
+     "ai": null
     },
-    "upgrade": "ai",
-    "upgradeSeconds": 48,
+    "upgrade": "MALFORMED",
+    "upgradeSeconds": 33,
     "fidelity": {
      "draft": 0.25,
-     "ai": 0.5
+     "ai": null
     },
     "recognized": [
      "shoot"
     ],
     "missing": [
-     "alien bug (in spec, not read)",
+     "space marine",
+     "alien bug",
      "mining colony (in spec, not read)"
     ]
    },
@@ -430,16 +491,15 @@
      "ai": "shooter"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 4,
+    "upgradeSeconds": 25,
     "fidelity": {
      "draft": 0.333,
-     "ai": 0.333
+     "ai": 0.667
     },
     "recognized": [
      "shoot"
     ],
     "missing": [
-     "zombie (in spec, not read)",
      "mall (in spec, not read)"
     ]
    },
@@ -448,18 +508,19 @@
     "text": "throwing snowballs at kids behind a snow fort",
     "controls": {
      "draft": "throw",
-     "ai": "throw"
+     "ai": null
     },
-    "upgrade": "ai",
+    "upgrade": "MALFORMED",
     "upgradeSeconds": 28,
     "fidelity": {
      "draft": 0.25,
-     "ai": 0.5
+     "ai": null
     },
     "recognized": [],
     "missing": [
-     "kid (in spec, not read)",
-     "snow fort (in spec, not read)"
+     "snowball",
+     "kid",
+     "snow fort"
     ]
    },
    {
@@ -470,7 +531,7 @@
      "ai": null
     },
     "upgrade": "MALFORMED",
-    "upgradeSeconds": 49,
+    "upgradeSeconds": 29,
     "fidelity": {
      "draft": 0.5,
      "ai": null
@@ -492,7 +553,7 @@
      "ai": null
     },
     "upgrade": "MALFORMED",
-    "upgradeSeconds": 45,
+    "upgradeSeconds": 30,
     "fidelity": {
      "draft": 0.25,
      "ai": null
@@ -511,17 +572,18 @@
     "text": "candy crush but with gems in a cave",
     "controls": {
      "draft": "tap_go",
-     "ai": null
+     "ai": "tap_go"
     },
-    "upgrade": "NOT_PLAYABLE",
-    "upgradeSeconds": 65,
+    "upgrade": "ai",
+    "upgradeSeconds": 37,
     "fidelity": {
      "draft": 0.333,
-     "ai": null
+     "ai": 0.667
     },
-    "recognized": [],
+    "recognized": [
+     "gem"
+    ],
     "missing": [
-     "gem",
      "match"
     ]
    },
@@ -533,17 +595,13 @@
      "ai": "throw"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 41,
+    "upgradeSeconds": 28,
     "fidelity": {
      "draft": 0.333,
-     "ai": 0.667
+     "ai": 1
     },
-    "recognized": [
-     "cat"
-    ],
-    "missing": [
-     "cardboard box (in spec, not read)"
-    ]
+    "recognized": [],
+    "missing": []
    },
    {
     "id": "s095",
@@ -553,7 +611,7 @@
      "ai": null
     },
     "upgrade": "MALFORMED",
-    "upgradeSeconds": 69,
+    "upgradeSeconds": 31,
     "fidelity": {
      "draft": 0,
      "ai": null
@@ -592,7 +650,7 @@
      "ai": "move_free"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 69,
+    "upgradeSeconds": 37,
     "fidelity": {
      "draft": 0.333,
      "ai": 0.333
@@ -611,7 +669,7 @@
      "ai": null
     },
     "upgrade": "MALFORMED",
-    "upgradeSeconds": 53,
+    "upgradeSeconds": 34,
     "fidelity": {
      "draft": 0.25,
      "ai": null
@@ -631,7 +689,7 @@
      "ai": null
     },
     "upgrade": "MALFORMED",
-    "upgradeSeconds": 57,
+    "upgradeSeconds": 61,
     "fidelity": {
      "draft": 0,
      "ai": null
@@ -648,18 +706,18 @@
     "text": "A grandma karate fights a gang of pigeons in the park",
     "controls": {
      "draft": "duel",
-     "ai": "duel"
+     "ai": null
     },
-    "upgrade": "ai",
-    "upgradeSeconds": 44,
+    "upgrade": "NOT_PLAYABLE",
+    "upgradeSeconds": 68,
     "fidelity": {
      "draft": 0.25,
-     "ai": 0.25
+     "ai": null
     },
     "recognized": [],
     "missing": [
-     "grandma (in spec, not read)",
-     "pigeon (in spec, not read)",
+     "grandma",
+     "pigeon",
      "park (in spec, not read)"
     ]
    }
