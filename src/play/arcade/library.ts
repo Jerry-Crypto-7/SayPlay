@@ -12,10 +12,11 @@ import { RULES } from './pieces/rules';
 import { runnerControl, runnerTrack } from './pieces/runner';
 import { runnerBot } from './pieces/runner-bot';
 import { judgeRule, timingControl, timingLevel } from './pieces/timing';
+import { timingBot } from './pieces/timing-bot';
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {
   controls: { runner: runnerControl, platform: platformControl, flap: flapControl, timing: timingControl },
   rules: { ...RULES, judge: judgeRule },
   generators: { runner_track: runnerTrack, platform_level: platformLevel, flap_track: flapTrack, timing_level: timingLevel },
-  bots: { runner_bot: runnerBot, platform_bot: platformBot, flap_bot: flapBot },
+  bots: { runner_bot: runnerBot, platform_bot: platformBot, flap_bot: flapBot, timing_bot: timingBot },
 };

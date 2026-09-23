@@ -254,6 +254,19 @@ export const timingLevel: GeneratorPiece<TimingLevelParams> = {
 /** Pravidla načasování. */
 export const timingRules = (rounds: number, health?: number): PieceRef[] => judgeRules(rounds, health);
 
+/** Díly světa pro kompilátor: parametry specu → ovládání, robot, úroveň, pravidla a nálezy kontroly. */
+export function timingParts(seed: number, raw: Readonly<Record<string, unknown>>, health: number | undefined) {
+  const params = timingLevel.params.parse(raw);
+  const level = timingLevel.generate(seed, params);
+  return {
+    control: { id: 'timing', params: { mode: params.mode, rounds: params.rounds } },
+    bot: { id: 'timing_bot', params: {} },
+    level,
+    rules: timingRules(params.rounds, health),
+    issues: checkTimingLevel(level),
+  };
+}
+
 /** Tvrzení „hratelné z konstrukce“ nad hotovou úrovní; prázdné pole = hratelná. */
 export function checkTimingLevel(level: ArcadeLevel): string[] {
   const issues: string[] = [];

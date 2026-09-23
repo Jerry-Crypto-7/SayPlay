@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
+import { type GameSpecV1, readGameSpec } from '../../spec';
+import flapFixture from '../__fixtures__/flap.json';
+import { arcadeWorldOf, compileArcade } from '../compile';
 import { type ArcadeLevel, type ArcadeWorld, BODY, BUTTON, COUNTER, FLAG, HEADER, type InputEvent, bodyBase } from '../contract';
 import { buildWorld, instantiate, loadProgram, replay, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
@@ -17,14 +20,14 @@ import {
   timingRules,
   timingWindowTicks,
 } from '../pieces/timing';
+import { runBot, verifyArcade } from '../verify';
 
 const params = (speed: TimingSpeed, extra: Partial<TimingLevelParams> = {}): TimingLevelParams => timingLevel.params.parse({ speed, ...extra });
 
-// Robot načasování přijde v T2; `buildWorld` jen chce existujícího.
 function worldOf(level: ArcadeLevel, mode: TimingMode, health?: number): ArcadeWorld {
   const rounds = level.bodies.length - TIMING_SLOTS.marks;
   const built = buildWorld(
-    { seed: 1, control: { id: 'timing', params: { mode, rounds } }, rules: timingRules(rounds, health), bot: { id: 'flap_bot', params: {} }, level, ...(health === undefined ? {} : { health }) },
+    { seed: 1, control: { id: 'timing', params: { mode, rounds } }, rules: timingRules(rounds, health), bot: { id: 'timing_bot', params: {} }, level, ...(health === undefined ? {} : { health }) },
     ARCADE_LIBRARY,
   );
   if (!built.ok) throw new Error(built.issues.join('; '));
@@ -141,3 +144,62 @@ describe('načasování – ovládání a pravidla', () => {
     expect(run.tick).toBe((taps.at(-1)?.tick as number) + 1);
   });
 });
+
+// Spec načasování na šabloně poletování – kompilátor čte jen `control`, parametry a mechaniky.
+const timingSpec = (controlParams: Record<string, unknown>, health?: number): GameSpecV1 => ({
+  ...(flapFixture as GameSpecV1),
+  control: 'timing',
+  controlParams,
+  mechanics: [...(flapFixture as GameSpecV1).mechanics, ...(health === undefined ? [] : [{ id: 'health' as const, params: { max: health } }])],
+});
+
+describe('načasování – robot a ověření', () => {
+  it('robot vyhraje 30 semínek × 3 rychlosti, nečinný hráč prohraje, dvě přehrání dají týž hash', () => {
+    for (const speed of TIMING_SPEEDS) {
+      for (let seed = 1; seed <= 30; seed += 1) {
+        const mode = TIMING_MODES[seed % TIMING_MODES.length] as TimingMode;
+        const made = arcadeWorldOf(timingSpec({ speed, mode }, seed % 2 === 0 ? 3 : undefined), seed);
+        if (!made.ok) throw new Error(made.issues.join('; '));
+        const verdict = verifyArcade(made.world);
+        expect(verdict.failures, `${speed}/${seed}`).toEqual([]);
+        expect(verdict.bot.outcome).toBe('won');
+        expect(verdict.idle.outcome, `${speed}/${seed} idle`).toBe('lost');
+        expect(verdict.replayEqual).toBe(true);
+      }
+    }
+  });
+
+  it('robot ťuká na střed: každá trefa za 3 body', () => {
+    const made = arcadeWorldOf(timingSpec({ speed: 'fast', rounds: 10 }), 4);
+    if (!made.ok) throw new Error(made.issues.join('; '));
+    const run = runBot(made.world);
+    expect(run.outcome).toBe('won');
+    expect(run.inputs).toHaveLength(10);
+    const end = replayState(made.world, run.inputs);
+    expect(end[HEADER.counters + COUNTER.score]).toBe(30);
+  });
+
+  it('úroveň s tolerancí užší než krok za tik kompilátor odmítne s důvodem', () => {
+    const made = arcadeWorldOf(timingSpec({ speed: 'fast', tolerance: 60 }), 1);
+    expect(made.ok).toBe(false);
+    if (made.ok) return;
+    expect(made.issues.join()).toMatch(/tolerance 0\.06 m is not wider than one tick of travel \(0\.09 m\)/);
+    const compiled = compileArcade(timingSpec({ speed: 'fast', tolerance: 60 }), 1);
+    expect(compiled.ok ? null : compiled.reason).toBe('WORLD_REJECTED');
+    // Spec takovou toleranci ani nepustí.
+    expect(readGameSpec(timingSpec({ speed: 'fast', tolerance: 60 })).ok).toBe(false);
+    expect(readGameSpec(timingSpec({ speed: 'fast', tolerance: TIMING.minSpecTolerance })).ok).toBe(true);
+  });
+});
+
+function replayState(world: ArcadeWorld, inputs: readonly InputEvent[]): Int32Array {
+  const program = loadProgram(world, ARCADE_LIBRARY);
+  const state = instantiate(world);
+  let next = 0;
+  for (let tick = 0; tick < 5400 && state[HEADER.runState] === 0; tick += 1) {
+    const event = inputs[next];
+    if (event !== undefined && event.tick === tick) next += 1;
+    step(state, event !== undefined && event.tick === tick ? event : { buttons: 0, axis: 0 }, program);
+  }
+  return state;
+}
