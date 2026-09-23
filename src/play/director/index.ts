@@ -28,7 +28,7 @@ import { directorKey } from './cache';
 import { type CriticIssue, blockingIssues, critique } from './critic';
 import { DIRECTOR_PROMPT_VERSION, buildDirectorRequest } from './prompt';
 import { readDirectorAnswer, unwrapAnswer } from './read';
-import { MAX_REPAIR_ROUNDS, applyRepairAnswer, buildRepairRequest, repairDeterministically } from './repair';
+import { MAX_REPAIR_ROUNDS, type RepairIssue, applyRepairAnswer, buildRepairRequest, repairDeterministically } from './repair';
 
 export type { FallbackReason } from '../contracts';
 
@@ -62,6 +62,13 @@ export interface DirectorDeps {
   /** Návrh ze slov, synchronně před prvním `await` – obálka ho může hned kompilovat. */
   readonly onDraft?: (spec: GameSpecV1) => void;
   readonly maxRepairRounds?: number;
+  /**
+   * Ověření hry robotem nad specem, který kritik pustil (P26 T10a): neprošlý
+   * keypoint jde modelu jako nález do opravného kola. Jestli je chybná hra, nebo
+   * tvrzení keypointu, rozhoduje model – tichá výměna by publikovala hru, která
+   * nedělá, co tvrdí. Prázdné pole = hra prošla.
+   */
+  readonly check?: (spec: GameSpecV1) => readonly RepairIssue[];
 }
 
 function warningsOf(spec: GameSpecV1): CriticIssue[] {
@@ -119,22 +126,32 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     }
   }
 
+  // Ověření robotem (P26 T10a) jen nad specem, který kritik pustil.
+  const checkOf = (candidate: GameSpecV1): readonly RepairIssue[] => (deps.check === undefined ? [] : deps.check(candidate));
+  let checked = blocks.length === 0 ? checkOf(spec) : [];
   const maxRounds = deps.maxRepairRounds ?? MAX_REPAIR_ROUNDS;
   let repairRounds = 0;
-  while (blocks.length > 0 && repairRounds < maxRounds) {
+  while ((blocks.length > 0 || checked.length > 0) && repairRounds < maxRounds) {
     repairRounds += 1;
     calls += 1;
-    const answer = await deps.branch.generate({ prompt: sentence, request: buildRepairRequest(spec, blocks) });
-    if (!answer.ok) return fallback('MODEL_UNAVAILABLE', { stage: 'model', reason: answer.reason, detail: `repair round ${repairRounds}: ${answer.detail}`, raw: answer.raw ?? null });
+    const answer = await deps.branch.generate({ prompt: sentence, request: buildRepairRequest(spec, blocks.length > 0 ? blocks : checked) });
+    if (!answer.ok) {
+      // Spec, který kritik pustil, jde dál a odmítne ho až publikace (NOT_PLAYABLE) –
+      // výpadek opravného kola o větě nic neříká.
+      if (blocks.length === 0) break;
+      return fallback('MODEL_UNAVAILABLE', { stage: 'model', reason: answer.reason, detail: `repair round ${repairRounds}: ${answer.detail}`, raw: answer.raw ?? null });
+    }
     const applied = applyRepairAnswer(spec, answer.body);
     // Špatná záplata nechává spec i nálezy, jak byly – další kolo je dostane znovu.
     if (!applied.ok) continue;
     spec = applied.spec;
     blocks = blockingIssues(critique(spec));
+    checked = blocks.length === 0 ? checkOf(spec) : [];
   }
   if (blocks.length > 0) return fallback('UNREPAIRED', { stage: 'critic', reason: 'UNREPAIRED', detail: blocks.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; '), raw: spec });
 
-  await deps.cache?.write(key, spec);
+  // Hra, která neprošla ověřením, se do cache nedává – příští pokus dostane novou šanci.
+  if (checked.length === 0) await deps.cache?.write(key, spec);
   return { ok: true, spec, source: 'authored', repairRounds, fallbackReason: null, warnings: warningsOf(spec), ms: deps.now() - started, calls };
 }
 
@@ -142,3 +159,4 @@ export { directorCache, directorCacheFromEnv, directorKey, type DirectorCache } 
 export { type CriticIssue, blockingIssues, critique } from './critic';
 export { DIRECTOR_PROMPT_VERSION, buildDirectorRequest } from './prompt';
 export { readDirectorAnswer, type DirectorRead, type DirectorReadReason } from './read';
+export type { RepairIssue } from './repair';

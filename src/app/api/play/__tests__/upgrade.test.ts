@@ -13,7 +13,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import collectExit from '@/play/__fixtures__/collect_exit.json';
 import { answerFixture, runnerAnswer } from '@/play/director/__fixtures__';
-import { answered, failed, fakeBranch, type ScriptedOutcome } from '@/play/director/__fixtures__/branch';
+import type { DirectorDeps } from '@/play/director';
+import { answered, failed, fakeBranch, type FakeBranch, type ScriptedOutcome } from '@/play/director/__fixtures__/branch';
 import { draftGameSpec } from '@/play/draft';
 import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
@@ -26,17 +27,20 @@ const director = vi.hoisted(() => ({
   gate: Promise.resolve() as Promise<void>,
   /** Režie odmítnutá vyčerpaným počtem volajícího (R8). */
   callerLimited: false,
+  /** Větev poslední režie – test čte, co model dostal. */
+  branch: null as FakeBranch | null,
 }));
 
 vi.mock('../_director', async () => {
   const { direct } = await import('@/play/director');
   const { fakeBranch: branchOf } = await import('@/play/director/__fixtures__/branch');
   return {
-    getDirector: () => async (sentence: string) => {
+    getDirector: (_startedAt: number, _caller: string, check?: DirectorDeps['check']) => async (sentence: string) => {
       director.calls += 1;
       await director.gate;
-      if (director.callerLimited) return { ...(await direct(sentence, { branch: branchOf([]), now: Date.now })), callerLimited: true };
-      return { ...(await direct(sentence, { branch: branchOf(director.script as ScriptedOutcome[]), now: Date.now })), callerLimited: false };
+      if (director.callerLimited) return { ...(await direct(sentence, { branch: branchOf([]), now: Date.now, check })), callerLimited: true };
+      director.branch = branchOf(director.script as ScriptedOutcome[]);
+      return { ...(await direct(sentence, { branch: director.branch, now: Date.now, check })), callerLimited: false };
     },
   };
 });
@@ -191,6 +195,30 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     director.script = [answered(broken)];
     const created = await publish({ sentence: SENTENCE });
     expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'NOT_PLAYABLE' });
+    expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
+  });
+
+  // P26 T10a: neprošlý keypoint jde modelu k opravě, nerozhoduje tichá výměna.
+  function brokenSwitch(): unknown {
+    const broken = structuredClone(answerFixture('good-switch_puzzle')) as { mechanics: { id: string; params: Record<string, unknown> }[] };
+    broken.mechanics[0].params.required = ['red', 'blue', 'green'];
+    return broken;
+  }
+
+  it('neprošlý keypoint dostane opravné kolo a opravená hra se publikuje', async () => {
+    director.script = [answered(brokenSwitch()), answered([{ op: 'replace', path: '/mechanics/0/params/required', value: ['lever_b', 'lever_d'] }])];
+    const created = await publish({ sentence: SENTENCE });
+    expect((await settled(created.body.versionId)).status).toBe('ready');
+    const repair = director.branch?.calls[1]?.request.user ?? '';
+    expect(repair).toContain('KEYPOINT_FAILED');
+    expect(repair).toContain('right_pair_opens');
+  });
+
+  it('neopravený keypoint zůstane NOT_PLAYABLE i po opravných kolech', async () => {
+    director.script = [answered(brokenSwitch()), answered([]), answered([])];
+    const created = await publish({ sentence: SENTENCE });
+    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'NOT_PLAYABLE' });
+    expect(director.branch?.calls).toHaveLength(3);
     expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
   });
 

@@ -442,7 +442,10 @@ export function repairDeterministically(spec: unknown, issues: readonly CriticIs
 const REPAIR_ANSWER_LINE =
   'Answer with a JSON array of RFC 6902 operations ({"op":"replace"|"add"|"remove","path":"/json/pointer","value":...}) and nothing else. Never touch /schema. Keep every field the issues do not mention.';
 
-export function buildRepairRequest(spec: GameSpecV1, issues: readonly CriticIssue[]): UpstreamRequest {
+/** Nález pro modelové kolo: od kritika, nebo z ověření hry robotem (`DirectorDeps.check`). */
+export type RepairIssue = Pick<CriticIssue, 'path' | 'evidence' | 'repairHint'> & { readonly code: string };
+
+export function buildRepairRequest(spec: GameSpecV1, issues: readonly RepairIssue[]): UpstreamRequest {
   return {
     model: EMISSION_MODEL,
     system: [REPAIR_RULES, REPAIR_ANSWER_LINE, renderRegistry()].join('\n\n'),

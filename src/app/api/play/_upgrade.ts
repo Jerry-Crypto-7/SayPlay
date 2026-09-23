@@ -25,7 +25,7 @@ import { gameSpecHash } from '@/play/spec';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
 
 import { getDirector } from './_director';
-import { derivedSeeds, publishReadSpec, seedFrom } from './_publish';
+import { derivedSeeds, playabilityIssues, publishReadSpec, seedFrom } from './_publish';
 
 export type DraftFinalReason =
   | 'MODEL_UNAVAILABLE'
@@ -177,15 +177,16 @@ async function directUpgrade(versions: VersionStore, draft: PublishedGame, reque
     throw thrown;
   }
 
+  const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
   const directorStarted = performance.now();
-  const directed = await getDirector(request.startedAt, request.caller)(request.sentence);
+  // Neprošlý keypoint jde modelu k opravě dřív, než publikace hru odmítne (P26 T10a).
+  const directed = await getDirector(request.startedAt, request.caller, (spec) => playabilityIssues(spec, seeds))(request.sentence);
   const directorMs = performance.now() - directorStarted;
   if (directed.source === 'draft') return final(directed.fallbackReason ?? 'MODEL_UNAVAILABLE', directed.failure);
   if (gameSpecHash(directed.spec) === gameSpecHash(draft.spec)) return final('UNCHANGED', { stage: 'upgrade', reason: 'UNCHANGED', detail: 'the model returned the draft', raw: directed.spec });
   // Ovládání smí AI vyměnit (P26 T4, ruší R1 z P25A): návrh ze slov žánr jen
   // odhaduje a nová hra projde tímtéž ověřením robotem jako každá jiná.
 
-  const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
   const published = await publishReadSpec(versions, directed.spec, seeds, draftId, {
     relation: 'upgrade',
     timings: { ackMs: request.ackMs, draftReadyMs: request.draftReadyMs, directorMs, source: directed.source },
