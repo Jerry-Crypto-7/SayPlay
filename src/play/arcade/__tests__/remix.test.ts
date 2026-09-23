@@ -264,4 +264,16 @@ describe('timing, rhythm and duel remix chips (P25H)', () => {
       expect(paths[0]).toBe(firstPath);
     });
   }
+
+  // Fixtury `health` nesou, takže twist bez něj jinak nikdo nevidí – dřív tu padal na větu běžce.
+  it.each(['rhythm', 'duel'] as const)('%s twist without health tells its own goal and changes the game', (control) => {
+    const base = structuredClone(PARENTS.find(([name]) => name === control)![1]);
+    base.mechanics = base.mechanics.filter((m) => m.id !== 'health');
+    for (let seed = 1; seed <= 6; seed += 1) {
+      const twisted = remix('twist', base, seed);
+      expect(twisted.objective.description).not.toContain('Run to the finish');
+      if (control === 'duel') expect(twisted.mechanics.some((m) => m.id === 'timer')).toBe(true);
+      expect(publishable(twisted), `seed ${seed}`).toBe(true);
+    }
+  });
 });

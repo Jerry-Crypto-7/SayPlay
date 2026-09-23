@@ -137,6 +137,7 @@ const LIVES_LINE: Readonly<Record<string, string>> = {
   shooter: 'Hit every target. An enemy that reaches you costs a life – you have 3.',
   move_free: 'A bite costs a life – you have 3.',
   timing: 'Stop each block over the target. A miss costs a life – you have 3.',
+  rhythm: 'Tap as each tile hits the line. Three misses end the song.',
 };
 
 const TIMER_LINE: Readonly<Record<string, (seconds: string) => string>> = {
@@ -150,7 +151,8 @@ const TIMER_LINE: Readonly<Record<string, (seconds: string) => string>> = {
 
 function withHealth(child: GameSpecV1): GameSpecV1 | null {
   // Závod životy nečte (náraz do mantinelu zastaví, soupeř v cíli vyhraje) – twist je tam jen limit.
-  if (child.control === 'steer' || child.mechanics.some((m) => m.id === 'health')) return null;
+  // Souboj má bez `health` tři životy sám (`DUEL.lives`), přidané tři by hru nezměnily.
+  if (child.control === 'steer' || child.control === 'duel' || child.mechanics.some((m) => m.id === 'health')) return null;
   const probe = structuredClone(child);
   probe.mechanics.push({ id: 'health', params: { max: 3 } });
   // Zásah teď ubírá život – jádro to čte z přítomnosti `health`, text i spec to musí říct taky.
